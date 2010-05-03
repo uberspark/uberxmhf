@@ -273,8 +273,8 @@ void isl_handleintercept_hlt(void){
 		HALT();
 	}
 
-	printf("\nIntercept(HLT): Guest going to protected mode (CR0=0x%08x)...",
-		v86monitor_guest_reg_cr0);
+	//printf("\nIntercept(HLT): Guest going to protected mode (CR0=0x%08x)...",
+	//	v86monitor_guest_reg_cr0);
 					
 	
 	guest_nextstate = GSTATE_PROTECTEDMODE;
@@ -481,15 +481,15 @@ void handle_intercept_cr4access(u32 gpr, u32 tofrom){
 	
 	if ( (*((u32 *)islgprtable[gpr]) & CR4_PAE) && !(control_CR4_shadow & CR4_PAE) ){
 		//PAE being enabled by guest
-		printf("\nPAE enabled by guest.");
+		//printf("\nPAE enabled by guest.");
 		control_CR4_shadow |= CR4_PAE;
 	}else if ( !(*((u32 *)islgprtable[gpr]) & CR4_PAE) && (control_CR4_shadow & CR4_PAE) ) {
 		//PAE being disabled by guest
-		printf("\nPAE disabled by guest.");
+		//printf("\nPAE disabled by guest.");
 		control_CR4_shadow &= ~CR4_PAE;
 	} else {
-		printf("\nMOV TO CR4 (flush TLB?), current=0x%08x, proposed=0x%08x",
-			(u32)guest_CR4, *((u32 *)islgprtable[gpr]) );
+		//printf("\nMOV TO CR4 (flush TLB?), current=0x%08x, proposed=0x%08x",
+		//	(u32)guest_CR4, *((u32 *)islgprtable[gpr]) );
 	}
 
 	//check if we are operating in protected mode with paging, if so
@@ -622,7 +622,7 @@ void isl_handle_intercept_ioportaccess(u32 portnum, u32 access_type, u32 access_
 		//printf(" --> EAX=0x%08lx", guest_RAX);
 		if(portnum == ACPI_CONTROLREG_PORT && access_size == IO_SIZE_WORD){
 			if( (u16)guest_RAX & (u16)(1 << 13) ){
-				printf("\nACPI Sleep_EN toggled, hibernation caught..resetting...");
+				//printf("\nACPI Sleep_EN toggled, hibernation caught..resetting...");
 				//sleep enable toggled, we just reset after setting our
 				//next boot environment
 				{

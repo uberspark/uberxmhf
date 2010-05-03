@@ -171,6 +171,7 @@ void cstartup(unsigned long bootmodule_start, unsigned long bootmodule_size, uns
 	{
 		extern u32 operatingmode;
 		u8 destopmode;
+		ata_resetdrives();
 		printf("\ngetting current operating mode..");
 		if(!DiskGetIndicator(1, &destopmode)){
 			printf("\nfatal, unable to get operating mode");
