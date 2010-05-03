@@ -625,7 +625,7 @@ void isl_handle_intercept_ioportaccess(u32 portnum, u32 access_type, u32 access_
 				//printf("\nACPI Sleep_EN toggled, hibernation caught..resetting...");
 				//sleep enable toggled, we just reset after setting our
 				//next boot environment
-				{
+				/*{
 					if( operatingmode == __LDN_MODE_UNTRUSTED){
 						if(!DiskSetIndicator(1, __LDN_MODE_TRUSTED)){
 							printf("\nfatal, unable to set mode to TRUSTED on next boot");
@@ -638,7 +638,7 @@ void isl_handle_intercept_ioportaccess(u32 portnum, u32 access_type, u32 access_
 							HALT();
 						}
 					}
-				}				
+				}*/				
 
 				islayer_reboot();
 			}

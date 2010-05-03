@@ -168,7 +168,7 @@ void cstartup(unsigned long bootmodule_start, unsigned long bootmodule_size, uns
 	//bootmodule_start/size => untrusted
 	//bootmodule1_start/size => trusted
 	
-	{
+	/*{
 		extern u32 operatingmode;
 		u8 destopmode;
 		ata_resetdrives();
@@ -190,7 +190,7 @@ void cstartup(unsigned long bootmodule_start, unsigned long bootmodule_size, uns
 			operatingmode = __LDN_MODE_UNTRUSTED;
 		}
 		
-	}
+	}*/
 
 	
 	
