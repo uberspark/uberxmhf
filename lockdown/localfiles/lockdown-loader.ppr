@@ -1,0 +1,64 @@
+[Config]
+Relative path=1
+Compilator.SaveAll=0
+Compilator.Capture=0
+Compilator.HideOutput=0
+Compilator.LogType=0
+DefaultDir=d:\amit\rpad\intel-vt-v86vmm\loader\
+DefaultCPIndex=0
+LogtoEnd=1
+DontOpen=0
+FileFormat=1
+[Project tree]
+intel-vt-v86vmm-loader
+	+src
+		..\loader\entry.S
+		..\loader\Makefile
+		..\loader\loader.lds.S
+		..\loader\loader.c
+		..\Makefile
+		..\include\target.h
+		..\..\intel-vt\loader\lentry.c
+		..\loader\linuxrelc.c
+		..\common\string.c
+		..\include\error.h
+[Open project files]
+0=..\Makefile
+1=..\loader\Makefile
+2=..\loader\loader.lds.S
+3=..\loader\entry.S
+4=..\loader\loader.c
+5=..\include\target.h
+6=..\loader\linuxrelc.c
+7=..\include\error.h
+8=..\common\string.c
+[Selected Project Files]
+Main=
+Selected=..\common\string.c
+[..\Makefile]
+TopLine=12
+Caret=1,19
+[..\loader\Makefile]
+TopLine=4
+Caret=1,17
+[..\loader\loader.lds.S]
+TopLine=1
+Caret=8,8
+[..\loader\entry.S]
+TopLine=3
+Caret=9,19
+[..\loader\loader.c]
+TopLine=1
+Caret=20,10
+[..\include\target.h]
+TopLine=8
+Caret=1,27
+[..\loader\linuxrelc.c]
+TopLine=98
+Caret=6,106
+[..\include\error.h]
+TopLine=1
+Caret=1,1
+[..\common\string.c]
+TopLine=31
+Caret=19,41

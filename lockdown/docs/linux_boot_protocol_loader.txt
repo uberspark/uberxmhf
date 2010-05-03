@@ -1,0 +1,27 @@
+if using initrd the following is the grub
+entry to use the boot protocol loader
+
+title xxx
+	root (hd0, 4)
+	kernel /loader.bin
+	module /runtime.bin.gz
+	module /vmlinuz xxx
+	module /initrd.img
+	
+if using initramfs the following is the 
+grub entry
+
+title xxx
+	root (hd0, 4)
+	kernel /loader.bin
+	module /runtime.bin.gz
+	module /vmlinuz xxx
+	modulenounzip /initrd.img
+	
+
+code comments:
+
+	we MUST load initrd at the top of available memory to kernel
+	max add is 0x38000000, so we need to load as close to this
+	address. tried and works with both hibernate and resume via
+	our boot loader

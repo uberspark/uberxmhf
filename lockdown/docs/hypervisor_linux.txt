@@ -1,0 +1,4 @@
+note that we specify the amount of memory
+to the linux kernel using mem=1024 then do not
+use INT 15h hook. if using int 15h hook do not
+specify mem=xxx. they seem to conflict!

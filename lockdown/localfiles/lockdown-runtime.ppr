@@ -1,0 +1,136 @@
+[Config]
+Relative path=1
+Compilator.SaveAll=0
+Compilator.Capture=0
+Compilator.HideOutput=0
+Compilator.LogType=0
+DefaultDir=d:\amit\rpad\intel-vt-v86vmm\runtime
+DefaultCPIndex=0
+LogtoEnd=1
+DontOpen=0
+FileFormat=1
+[Project tree]
+intel-vt-v86vmm-runtime
+	+src
+		..\runtime\Makefile
+		..\Makefile
+		..\runtime\runtime.c
+		..\runtime\runtimesup.S
+		..\runtime\runtime.lds.S
+		..\runtime\entry.S
+		..\include\target.h
+		..\include\machine.h
+		..\include\str.h
+		..\include\msr.h
+		..\runtime\lst
+		..\include\processor.h
+		..\docs\sourcefiles.txt
+		..\runtime\islayer_npae_alg0.c
+		..\runtime\v86monitor.c
+		..\runtime\v86monitorsup.S
+		..\runtime\islayersup.S
+		..\debug\printf.c
+		..\include\error.h
+		..\include\paging.h
+		..\include\vtx.h
+		..\include\print.h
+		..\include\shadow_paging_npae_alg0.h
+		..\runtime\shadow_paging_npae_alg0.c
+		..\common\string.c
+		..\runtime\islayer_skeleton.c
+		..\runtime\acpi.c
+		..\runtime\acpi.h
+		..\vault\nbp-0.32-public\nbp-0.32-public\vmx\vmxtraps.c
+		..\vault\nbp-0.32-public\nbp-0.32-public\vmx\vmx.c
+[Open project files]
+0=..\Makefile
+1=..\runtime\Makefile
+2=..\runtime\runtime.lds.S
+3=..\runtime\runtime.c
+4=..\runtime\entry.S
+5=..\include\target.h
+6=..\include\msr.h
+7=..\include\str.h
+8=..\include\machine.h
+9=..\runtime\v86monitor.c
+10=..\docs\sourcefiles.txt
+11=..\include\error.h
+12=..\runtime\islayersup.S
+13=..\include\processor.h
+14=..\include\vtx.h
+15=..\common\string.c
+16=..\include\paging.h
+17=..\include\print.h
+18=..\runtime\islayer_skeleton.c
+19=..\runtime\v86monitorsup.S
+20=..\runtime\acpi.h
+21=..\runtime\acpi.c
+[Selected Project Files]
+Main=
+Selected=..\runtime\acpi.h
+[..\Makefile]
+TopLine=1
+Caret=2,7
+[..\runtime\Makefile]
+TopLine=36
+Caret=42,65
+[..\runtime\runtime.lds.S]
+TopLine=1
+Caret=9,8
+[..\runtime\runtime.c]
+TopLine=139
+Caret=2,148
+[..\runtime\entry.S]
+TopLine=148
+Caret=1,161
+[..\include\target.h]
+TopLine=1
+Caret=1,1
+[..\include\msr.h]
+TopLine=14
+Caret=51,29
+[..\include\str.h]
+TopLine=1
+Caret=8,18
+[..\include\machine.h]
+TopLine=125
+Caret=11,155
+[..\runtime\v86monitor.c]
+TopLine=329
+Caret=1,357
+[..\docs\sourcefiles.txt]
+TopLine=1
+Caret=5,9
+[..\include\error.h]
+TopLine=1
+Caret=43,12
+[..\runtime\islayersup.S]
+TopLine=28
+Caret=1,28
+[..\include\processor.h]
+TopLine=6
+Caret=18,28
+[..\include\vtx.h]
+TopLine=113
+Caret=1,134
+[..\common\string.c]
+TopLine=81
+Caret=1,98
+[..\include\paging.h]
+TopLine=1
+Caret=29,17
+[..\include\print.h]
+TopLine=1
+Caret=1,16
+[..\runtime\islayer_skeleton.c]
+TopLine=274
+Caret=31,275
+[..\runtime\v86monitorsup.S]
+TopLine=18
+Caret=14,27
+[..\runtime\acpi.h]
+TopLine=1
+Caret=39,16
+[..\runtime\acpi.c]
+TopLine=156
+Caret=24,172
