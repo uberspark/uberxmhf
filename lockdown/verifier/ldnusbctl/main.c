@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
 	}
 
 	//for the first time we start, get the status from VMM and set it
-	if(!usbdevice_setdevicestate(hdl,0)){ //now force to trusted
+	if(!usbdevice_setdevicestate(hdl,1)){ //now force to trusted
 		fprintf(stderr, "\nunable to set device state");
 		return -1;
 	}
@@ -142,12 +142,12 @@ int main(int argc, char *argv[])
 			;
 		printf("\ngot button press");
 
-		//SetSuspendState(TRUE, FALSE,FALSE);
+		SetSuspendState(TRUE, FALSE,FALSE);
 	
 		printf("\ngot awake...");
 
 		//get state from vmm and set it
-		if(!usbdevice_setdevicestate(hdl, 0)){ //now force to trusted
+		if(!usbdevice_setdevicestate(hdl, 1)){ //now force to trusted
 			fprintf(stderr, "\nunable to set device state");
 			return -1;
 		}
