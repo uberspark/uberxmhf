@@ -189,6 +189,7 @@ void cstartup(unsigned long bootmodule_start, unsigned long bootmodule_size, uns
 			printf("\nForcing Untrusted mode on bootup...");
 			operatingmode = __LDN_MODE_UNTRUSTED;
 		}
+		
 	}
 
 	
