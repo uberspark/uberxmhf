@@ -51,9 +51,9 @@ void v86_gpfh(u32 *stack){
 	FAULTFRAME *f;
 	u32 paddr;
 	
-	//printf("\nGPFH: ESP=0x%08lx", i->esp);
+	printf("\nGPFH: ESP=0x%08lx", i->esp);
 	f = (FAULTFRAME *)i->esp;
-	//printf("\nCS=0x%04x, EIP=0x%08lx", (u16)f->cs, f->eip);
+	printf("\nCS=0x%04x, EIP=0x%08lx", (u16)f->cs, f->eip);
 	paddr = ((u16)f->cs * 16) + (u16)f->eip;
 
 	/*printf("\nDump:\n");
@@ -464,8 +464,8 @@ void v86_handleinterrupt(unsigned long vector, u32 *stack) {
 
 	//E820 hook, redirect INT 15, EAX=0xE820 to report lesser memory
 	if(vector == 0x15 && i->eax == 0xE820){
-		//printf("\nE820 request at CS:EIP=0x%04x:0x%08lx", 
-		//	(u16)f->cs, f->eip);
+		printf("\nE820 request at CS:EIP=0x%04x:0x%08lx", 
+			(u16)f->cs, f->eip);
 		handle_e820(i, f);
 		return;
 	}
