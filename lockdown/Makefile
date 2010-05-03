@@ -17,8 +17,8 @@ export INCLUDEDIR = $(BASEDIR)/include
 # export INSTALLDIR = /cygdrive/Z
 export INSTALLDIR = ./build
 
-export DEBUG_SERIAL := n
-export DEBUG_VGA	:= y
+export DEBUG_SERIAL := y
+export DEBUG_VGA	:= n
 
 # hypervisor configuration
 export CONF_SKELETON_ISLAYER := y
