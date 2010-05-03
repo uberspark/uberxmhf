@@ -36,6 +36,8 @@ u16 isl_guest_LDTR_selector=0;
 
 u32 limbo_rsp=0;
 
+u32 operatingmode=0;
+
 unsigned long long  efcr, efer;
 u8	cpu_oem[ 16 ];
 u32	cpu_features;
@@ -609,6 +611,7 @@ static void vmx_inject_event(u32 idt_vectoring_information, u32 idt_vectoring_er
 //------------------------------------------------------------------------------
 
 
+
 void isl_handle_intercept_ioportaccess(u32 portnum, u32 access_type, u32 access_size, u32 stringio){
 	//printf("\n0x%04x:0x%08lx -> IO: port=0x%04x, type=%u, size=%u",
 	//	(u16)guest_CS_selector, (u32)guest_RIP, 
@@ -620,7 +623,23 @@ void isl_handle_intercept_ioportaccess(u32 portnum, u32 access_type, u32 access_
 		if(portnum == ACPI_CONTROLREG_PORT && access_size == IO_SIZE_WORD){
 			if( (u16)guest_RAX & (u16)(1 << 13) ){
 				printf("\nACPI Sleep_EN toggled, hibernation caught..resetting...");
-				//sleep enable toggled, we just reset
+				//sleep enable toggled, we just reset after setting our
+				//next boot environment
+				{
+					if( operatingmode == __LDN_MODE_UNTRUSTED){
+						if(!DiskSetIndicator(1, __LDN_MODE_TRUSTED)){
+							printf("\nfatal, unable to set mode to TRUSTED on next boot");
+							HALT();
+						}
+					}else{
+						//current operating mode is TRUSTED
+						if(!DiskSetIndicator(1, __LDN_MODE_UNTRUSTED)){
+							printf("\nfatal, unable to set mode to TRUSTED on next boot");
+							HALT();
+						}
+					}
+				}				
+
 				islayer_reboot();
 			}
 		}
@@ -1301,8 +1320,8 @@ u32 isl_prepareVMCS(u32 currentstate, u32 nextstate){
 				
 				
 				//setup IO intercepts
-				//islayer_set_ioport_intercept(ACPI_CONTROLREG_PORT);
-				//islayer_set_ioport_intercept(ACPI_STATUSREG_PORT);
+				islayer_set_ioport_intercept(ACPI_CONTROLREG_PORT);
+				islayer_set_ioport_intercept(ACPI_STATUSREG_PORT);
 
 				
 					control_pagefault_errorcode_mask  = 0x00000000;	//dont be concerned with 

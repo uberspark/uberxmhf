@@ -12,6 +12,12 @@
 #define __GUESTOSBOOTMODULE_BASE	0x20000
 #define __GUESTOSBOOTMODULESUP1_BASE	0x7C00
 
+//where we store the flag of our next "boot" OS, trusted or untrusted
+#define __LDN_SIGNATURE_SECTOR	(488300000UL)
+#define __LDN_MODE_TRUSTED			(0x5A)
+#define __LDN_MODE_UNTRUSTED		(0x7B)
+
+
 #define __CS 0x0008 /* Selector for GDT entry 1. RPL 0 */
 #define __DS 0x0010 /* Selector for GDT enry 0. RPL 0 */
 #define __TRSEL 0x0018

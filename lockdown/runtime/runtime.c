@@ -17,7 +17,7 @@
 #include <machine.h>
 #include <error.h>
 #include "acpi.h"
-
+#include <disk.h>
 
 
 
@@ -168,6 +168,28 @@ void cstartup(unsigned long bootmodule_start, unsigned long bootmodule_size, uns
 	//bootmodule_start/size => untrusted
 	//bootmodule1_start/size => trusted
 	
+	{
+		extern u32 operatingmode;
+		u8 destopmode;
+		printf("\ngetting current operating mode..");
+		if(!DiskGetIndicator(1, &destopmode)){
+			printf("\nfatal, unable to get operating mode");
+			HALT();
+		}
+		
+		//if(!DiskSetIndicator(1, __LDN_MODE_UNTRUSTED)){
+		//	printf("\nfatal, unable to set mode back to default!");
+		//	HALT();
+		//}
+		//printf("\nOPERATING MODE: %s", ("TRUSTED" ? (destopmode==__LDN_MODE_TRUSTED) : "UNTRUSTED"));
+		operatingmode=destopmode;
+		
+		if( (operatingmode != __LDN_MODE_TRUSTED) && (operatingmode != __LDN_MODE_UNTRUSTED) ){
+			printf("\nForcing Untrusted mode on bootup...");
+			operatingmode = __LDN_MODE_UNTRUSTED;
+		}
+	}
+
 	
 	
 	printf("\nCopying bootmodule(from 0x%08lx, size=0x%08lx",

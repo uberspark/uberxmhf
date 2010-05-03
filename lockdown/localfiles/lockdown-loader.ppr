@@ -4,7 +4,7 @@ Compilator.SaveAll=0
 Compilator.Capture=0
 Compilator.HideOutput=0
 Compilator.LogType=0
-DefaultDir=d:\amit\rpad\intel-vt-v86vmm\loader\
+DefaultDir=d:\amit\projects\lockdown\loader\
 DefaultCPIndex=0
 LogtoEnd=1
 DontOpen=0
@@ -34,7 +34,7 @@ intel-vt-v86vmm-loader
 8=..\common\string.c
 [Selected Project Files]
 Main=
-Selected=..\common\string.c
+Selected=..\loader\loader.c
 [..\Makefile]
 TopLine=12
 Caret=1,19
@@ -48,7 +48,7 @@ Caret=8,8
 TopLine=3
 Caret=9,19
 [..\loader\loader.c]
-TopLine=1
+TopLine=53
 Caret=20,10
 [..\include\target.h]
 TopLine=8
