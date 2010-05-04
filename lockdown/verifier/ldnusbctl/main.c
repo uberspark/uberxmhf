@@ -142,6 +142,11 @@ int main(int argc, char *argv[])
 			;
 		printf("\ngot button press");
 
+		if(!CopyFile("D:\\dbr_untrustedwindows.bin", "D:\\dbr_windows.bin", FALSE)){
+			printf("\nfailed to set destination environment!");
+			exit(1);
+		}
+		
 		SetSuspendState(TRUE, FALSE,FALSE);
 	
 		printf("\ngot awake...");
