@@ -23,6 +23,7 @@
 #include <error.h>
 #include "acpi.h"
 #include <disk.h>
+#include <ata-atapi.h>
 
 u32 isl_guesthastr=0;
 
@@ -615,17 +616,54 @@ void isl_handle_intercept_ioportaccess(u32 portnum, u32 access_type, u32 access_
 	//	(u16)guest_CS_selector, (u32)guest_RIP, 
 	//	(u16)portnum, access_type, access_size);
 	ASSERT(!stringio);	//we dont handle string IO intercepts
+
+	//check if any of the ATA ports are being accessed
+	if( portnum == ATA_COMMAND(ATA_BUS_PRIMARY) ||
+		portnum == ATA_SECTOR_COUNT(ATA_BUS_PRIMARY) ||
+		portnum == ATA_LBALOW(ATA_BUS_PRIMARY) ||
+		portnum == ATA_LBAMID(ATA_BUS_PRIMARY) ||
+		portnum == ATA_LBAHIGH(ATA_BUS_PRIMARY)
+		){
+			u32 retval;
+			//printf("\nATA IO port access:0x%04x", (u16)portnum);
+			retval = hp(portnum, access_type, access_size);
+			//retval= IOIO_CHAIN;
+			
+			if(retval == IOIO_SKIP){
+				guest_RIP +=info_vmexit_instruction_length;
+				return;
+			}else{
+				//IOIO_CHAIN
+				if(access_type == IO_TYPE_OUT){
+					if( access_size== IO_SIZE_BYTE)
+							outb((u8)guest_RAX, portnum);
+					else if (access_size == IO_SIZE_WORD)
+							outw((u16)guest_RAX, portnum);
+					else if (access_size == IO_SIZE_DWORD)
+							outl((u32)guest_RAX, portnum);	
+				}else{
+					if( access_size== IO_SIZE_BYTE){
+							guest_RAX &= 0xFFFFFF00UL;	//clear lower 8 bits
+							guest_RAX |= (u8)inb(portnum);
+					}else if (access_size == IO_SIZE_WORD){
+							guest_RAX &= 0xFFFF0000UL;	//clear lower 16 bits
+							guest_RAX |= (u16)inw(portnum);
+					}else if (access_size == IO_SIZE_DWORD){
+							guest_RAX = (u32)inl(portnum);	
+					}
+				}
+			
+				guest_RIP +=info_vmexit_instruction_length;
+				return;
+			}
+	}
+
 	
 	if(access_type == IO_TYPE_OUT){
 		//printf(" --> EAX=0x%08lx", guest_RAX);
 		if(portnum == ACPI_CONTROLREG_PORT && access_size == IO_SIZE_WORD){
 			if( (u16)guest_RAX & (u16)(1 << 13) ){
 				printf("\nACPI Sleep_EN toggled, hibernation caught..resetting...");
-				/*if(!DiskSetIndicator(1, __LDN_MODE_UNTRUSTED)){
-					printf("\nerror setting operating mode!");
-					HALT();
-				}*/
-				
 				//sleep enable toggled, we just reset
 				islayer_reboot();
 			}
@@ -633,11 +671,11 @@ void isl_handle_intercept_ioportaccess(u32 portnum, u32 access_type, u32 access_
 		
 		
 		if( access_size== IO_SIZE_BYTE)
-				outb(portnum, (u8)guest_RAX);
+				outb((u8)guest_RAX, portnum);
 		else if (access_size == IO_SIZE_WORD)
-				outw(portnum, (u16)guest_RAX);
+				outw((u16)guest_RAX, portnum);
 		else if (access_size == IO_SIZE_DWORD)
-				outl(portnum, (u32)guest_RAX);	
+				outl((u32)guest_RAX, portnum);	
 
 	}else{
 
@@ -738,7 +776,7 @@ void vt_intercepthandler(void){
 				u32 access_size, access_type, portnum, stringio;
 				access_size = (u32)info_exit_qualification & 0x00000007UL;
 				access_type = ((u32)info_exit_qualification & 0x00000008UL) >> 3;
-				portnum =  ((u32)info_exit_qualification & 0xFFFF000UL) >> 16;
+				portnum =  ((u32)info_exit_qualification & 0xFFFF0000UL) >> 16;
 				stringio = ((u32)info_exit_qualification & 0x00000010UL) >> 4;
 				isl_handle_intercept_ioportaccess(portnum, access_type, access_size, stringio);
 			}
@@ -1309,6 +1347,13 @@ u32 isl_prepareVMCS(u32 currentstate, u32 nextstate){
 				//setup IO intercepts
 				islayer_set_ioport_intercept(ACPI_CONTROLREG_PORT);
 				//islayer_set_ioport_intercept(ACPI_STATUSREG_PORT);
+
+
+				  islayer_set_ioport_intercept(ATA_COMMAND(ATA_BUS_PRIMARY));
+				  islayer_set_ioport_intercept(ATA_SECTOR_COUNT(ATA_BUS_PRIMARY));
+				  islayer_set_ioport_intercept(ATA_LBALOW(ATA_BUS_PRIMARY));
+				  islayer_set_ioport_intercept(ATA_LBAMID(ATA_BUS_PRIMARY));
+				  islayer_set_ioport_intercept(ATA_LBAHIGH(ATA_BUS_PRIMARY));
 
 				
 					control_pagefault_errorcode_mask  = 0x00000000;	//dont be concerned with 

@@ -25,6 +25,15 @@
 #define __LDN_MODE_TRUSTED	0x5A
 #define __LDN_MODE_UNTRUSTED 0xAA
 
+//hyperpartitioning defines (ADAMS laptop)
+#define IOIO_CHAIN	0x2
+#define IOIO_SKIP		0x3
+#define __GUESTOS_UNTRUSTED_BOOTPARTITION_STARTSECTOR (33554495UL)
+#define __GUESTOS_UNTRUSTED_BOOTPARTITION_ENDSECTOR (94994494UL)
+#define __GUESTOS_NULLSECTOR (488300000UL)
+
+
+
 #define ENTRY(x)\
   .globl x;	\
   .align;	\

@@ -122,7 +122,7 @@ extern u32 vm_esi, vm_edi, vm_ebp;
 //VMEXIT_IOIO defines
 #define	IO_SIZE_BYTE	0x0
 #define IO_SIZE_WORD	0x1
-#define IO_SIZE_DWORD	0x2
+#define IO_SIZE_DWORD	0x3
 
 #define IO_TYPE_IN		0x1
 #define IO_TYPE_OUT		0x0
