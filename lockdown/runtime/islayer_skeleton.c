@@ -1301,8 +1301,8 @@ u32 isl_prepareVMCS(u32 currentstate, u32 nextstate){
 				
 				
 				//setup IO intercepts
-				//islayer_set_ioport_intercept(ACPI_CONTROLREG_PORT);
-				//islayer_set_ioport_intercept(ACPI_STATUSREG_PORT);
+				islayer_set_ioport_intercept(ACPI_CONTROLREG_PORT);
+				islayer_set_ioport_intercept(ACPI_STATUSREG_PORT);
 
 				
 					control_pagefault_errorcode_mask  = 0x00000000;	//dont be concerned with 
