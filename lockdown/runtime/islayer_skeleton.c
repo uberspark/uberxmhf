@@ -273,8 +273,8 @@ void isl_handleintercept_hlt(void){
 		HALT();
 	}
 
-	printf("\nIntercept(HLT): Guest going to protected mode (CR0=0x%08x)...",
-		v86monitor_guest_reg_cr0);
+	//printf("\nIntercept(HLT): Guest going to protected mode (CR0=0x%08x)...",
+	//	v86monitor_guest_reg_cr0);
 					
 	
 	guest_nextstate = GSTATE_PROTECTEDMODE;
@@ -1549,20 +1549,20 @@ u32 isl_prepareVMCS(u32 currentstate, u32 nextstate){
 			ASSERT(nextstate & GSTATE_PROTECTEDMODE_GDTR);
 			
 			//debug
-			printf("\nPROTECTED_LIMBO --> PROTECTED");
+			//printf("\nPROTECTED_LIMBO --> PROTECTED");
 			//printf("\n	SS:ESP before=0x%04x:0x%08x", guest_SS_selector, (u32)guest_RSP);
 			//printf("\n	CS:EIP before=0x%04x:0x%08x", guest_CS_selector, (u32)guest_RIP);
 
 			//printf("\nEntering proper protected mode from limbo");
 			//printf("\n	Target CS:EIP=0x%04x:0x%08x",
 			//	guest_limbo_cs, guest_limbo_eip);
-			printf("\n	GUEST GDT load (base=0x%08x, limit=0x%04x)",
-					v86monitor_guest_gdt_base, v86monitor_guest_gdt_limit);
+			//printf("\n	GUEST GDT load (base=0x%08x, limit=0x%04x)",
+			//		v86monitor_guest_gdt_base, v86monitor_guest_gdt_limit);
 			guest_GDTR_base = v86monitor_guest_gdt_base;
 			guest_GDTR_limit = v86monitor_guest_gdt_limit;
 			if(nextstate & GSTATE_PROTECTEDMODE_IDTR){
-				printf("\n	GUEST IDT load (base=0x%08x, limit=0x%04x)",
-					v86monitor_guest_idt_base, v86monitor_guest_idt_limit);
+				//printf("\n	GUEST IDT load (base=0x%08x, limit=0x%04x)",
+				//	v86monitor_guest_idt_base, v86monitor_guest_idt_limit);
 				guest_IDTR_base = v86monitor_guest_idt_base;
 				guest_IDTR_limit = v86monitor_guest_idt_limit;
 			}else{
@@ -1660,7 +1660,7 @@ u32 isl_prepareVMCS(u32 currentstate, u32 nextstate){
 			return (nextstate);
 		}else if(nextstate == GSTATE_REALMODE){
 			//debug
-			printf("\nPROTECTED --> REAL");
+			//printf("\nPROTECTED --> REAL");
 			//printf("\n	SS:ESP before=0x%04x:0x%08x", guest_SS_selector, (u32)guest_RSP);
 			//printf("\n	CS:EIP before=0x%04x:0x%08x", guest_CS_selector, (u32)guest_RIP);
 
