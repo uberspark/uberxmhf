@@ -1,0 +1,310 @@
+   1              		.file	"util.c"
+   9              	.Ltext0:
+  10              		.align	2
+  11              		.global	delay
+  13              	delay:
+  14              	.LFB2:
+  15              		.file 1 "utils/util.c"
+   1:utils/util.c  **** /** @file
+   2:utils/util.c  ****  * Util.c
+   3:utils/util.c  ****  */
+   4:utils/util.c  **** /* copyright ©2008, 2008 #001142 */
+   5:utils/util.c  **** #include <stdlib.h>
+   6:utils/util.c  **** #include <string.h>
+   7:utils/util.c  **** 
+   8:utils/util.c  **** extern	int 		printf(const char *format, ...);
+   9:utils/util.c  **** 
+  10:utils/util.c  **** 
+  11:utils/util.c  **** void		delay(unsigned long d);
+  12:utils/util.c  **** char*		itoa(unsigned int num, char* buf, int radix );
+  13:utils/util.c  **** int			hex2int(char ch);
+  14:utils/util.c  **** int			findstr(char* str1, char* str2);
+  15:utils/util.c  **** 
+  16:utils/util.c  **** 
+  17:utils/util.c  **** void		delay(unsigned long d)
+  18:utils/util.c  **** {
+  16              		.loc 1 18 0
+  17              		@ Function supports interworking.
+  18              		@ args = 0, pretend = 0, frame = 0
+  19              		@ frame_needed = 0, uses_anonymous_args = 0
+  20              		@ link register save eliminated.
+  21              	.LVL0:
+  22              		@ lr needed for prologue
+  23 0000 010000EA 		b	.L2
+  24              	.L3:
+  19:utils/util.c  **** 	for(; d; --d)
+  20:utils/util.c  **** 	{
+  21:utils/util.c  **** 		asm volatile ("nop");
+  25              		.loc 1 21 0
+  26 0004 0000A0E1 		nop
+  27              		.loc 1 19 0
+  28 0008 010040E2 		sub	r0, r0, #1
+  29              	.L2:
+  30 000c 000050E3 		cmp	r0, #0
+  31 0010 FBFFFF1A 		bne	.L3
+  22:utils/util.c  **** 	}
+  23:utils/util.c  **** }
+  32              		.loc 1 23 0
+  33 0014 1EFF2FE1 		bx	lr
+  34              	.LFE2:
+  36              		.global	__umodsi3
+  37              		.global	__udivsi3
+  38              		.section	.rodata.str1.4,"aMS",%progbits,1
+  39              		.align	2
+  40              	.LC0:
+  41 0000 30313233 		.ascii	"0123456789abcdef\000"
+  41      34353637 
+  41      38396162 
+  41      63646566 
+  41      00
+  42 0011 000000   		.text
+  43              		.align	2
+  44              		.global	itoa
+  46              	itoa:
+  47              	.LFB3:
+  24:utils/util.c  **** 
+  25:utils/util.c  **** char*		itoa(unsigned int num, char* buf, int radix )
+  26:utils/util.c  **** {
+  48              		.loc 1 26 0
+  49              		@ Function supports interworking.
+  50              		@ args = 0, pretend = 0, frame = 0
+  51              		@ frame_needed = 0, uses_anonymous_args = 0
+  52              	.LVL1:
+  53 0018 F0402DE9 		stmfd	sp!, {r4, r5, r6, r7, lr}
+  54              	.LCFI0:
+  27:utils/util.c  **** 	char *p;
+  28:utils/util.c  **** 	buf[0]=buf[1]=buf[2]=buf[3]=buf[4]=buf[5]='0';
+  29:utils/util.c  **** 	buf[6] = '\0';		
+  55              		.loc 1 29 0
+  56 001c 0030A0E3 		mov	r3, #0
+  57              		.loc 1 26 0
+  58 0020 0140A0E1 		mov	r4, r1
+  30:utils/util.c  **** 
+  31:utils/util.c  **** 	if ( num > 0 ) {
+  59              		.loc 1 31 0
+  60 0024 006050E2 		subs	r6, r0, #0
+  61              		.loc 1 28 0
+  62 0028 3010A0E3 		mov	r1, #48
+  63              	.LVL2:
+  64 002c 0010C4E5 		strb	r1, [r4, #0]
+  65              		.loc 1 29 0
+  66 0030 0630C4E5 		strb	r3, [r4, #6]
+  67              		.loc 1 26 0
+  68 0034 0270A0E1 		mov	r7, r2
+  69              		.loc 1 28 0
+  70 0038 0510C4E5 		strb	r1, [r4, #5]
+  71 003c 0410C4E5 		strb	r1, [r4, #4]
+  72 0040 0310C4E5 		strb	r1, [r4, #3]
+  73 0044 0210C4E5 		strb	r1, [r4, #2]
+  74 0048 0110C4E5 		strb	r1, [r4, #1]
+  75              		.loc 1 31 0
+  76 004c 0C00000A 		beq	.L7
+  77              	.LVL3:
+  78 0050 0450A0E1 		mov	r5, r4
+  79              	.L9:
+  32:utils/util.c  **** 		p = &buf[5];
+  33:utils/util.c  **** 		while (num != 0) {
+  34:utils/util.c  **** 			*p-- = "0123456789abcdef"[num % radix];
+  80              		.loc 1 34 0
+  81 0054 0600A0E1 		mov	r0, r6
+  82 0058 0710A0E1 		mov	r1, r7
+  83 005c FEFFFFEB 		bl	__umodsi3
+  84 0060 28309FE5 		ldr	r3, .L12
+  85 0064 0030D3E7 		ldrb	r3, [r3, r0]	@ zero_extendqisi2
+  35:utils/util.c  **** 			num /= radix;
+  86              		.loc 1 35 0
+  87 0068 0710A0E1 		mov	r1, r7
+  88              		.loc 1 34 0
+  89 006c 0530C5E5 		strb	r3, [r5, #5]
+  90              		.loc 1 35 0
+  91 0070 0600A0E1 		mov	r0, r6
+  92 0074 FEFFFFEB 		bl	__udivsi3
+  93              		.loc 1 33 0
+  94 0078 006050E2 		subs	r6, r0, #0
+  95              		.loc 1 35 0
+  96 007c 015045E2 		sub	r5, r5, #1
+  97              		.loc 1 33 0
+  98 0080 F3FFFF1A 		bne	.L9
+  99              	.LVL4:
+ 100              	.L7:
+  36:utils/util.c  **** 		}
+  37:utils/util.c  **** 	}
+  38:utils/util.c  **** 	p = &buf[0];
+  39:utils/util.c  **** 	return p;
+  40:utils/util.c  **** }
+ 101              		.loc 1 40 0
+ 102 0084 0400A0E1 		mov	r0, r4
+ 103 0088 F040BDE8 		ldmfd	sp!, {r4, r5, r6, r7, lr}
+ 104 008c 1EFF2FE1 		bx	lr
+ 105              	.L13:
+ 106              		.align	2
+ 107              	.L12:
+ 108 0090 00000000 		.word	.LC0
+ 109              	.LFE3:
+ 111              		.align	2
+ 112              		.global	hex2int
+ 114              	hex2int:
+ 115              	.LFB4:
+  41:utils/util.c  **** 
+  42:utils/util.c  **** int		hex2int(char ch)
+  43:utils/util.c  **** {
+ 116              		.loc 1 43 0
+ 117              		@ Function supports interworking.
+ 118              		@ args = 0, pretend = 0, frame = 0
+ 119              		@ frame_needed = 0, uses_anonymous_args = 0
+ 120              		@ link register save eliminated.
+ 121              	.LVL5:
+ 122 0094 FF1000E2 		and	r1, r0, #255
+  44:utils/util.c  **** 	if ( (ch>='0')&&(ch<='9') )
+ 123              		.loc 1 44 0
+ 124 0098 302041E2 		sub	r2, r1, #48
+ 125 009c FF3002E2 		and	r3, r2, #255
+ 126 00a0 090053E3 		cmp	r3, #9
+ 127              		.loc 1 43 0
+ 128              		@ lr needed for prologue
+  45:utils/util.c  **** 		return ch - '0';
+  46:utils/util.c  **** 		
+  47:utils/util.c  **** 	if ( (ch>='A')&&(ch<='F') )
+ 129              		.loc 1 47 0
+ 130 00a4 41C041E2 		sub	ip, r1, #65
+ 131              		.loc 1 45 0
+ 132 00a8 0200A0E1 		mov	r0, r2
+ 133              	.LVL6:
+ 134              		.loc 1 44 0
+ 135 00ac 1EFF2F91 		bxls	lr
+ 136              		.loc 1 47 0
+ 137 00b0 05005CE3 		cmp	ip, #5
+ 138 00b4 0000E0E3 		mvn	r0, #0
+  48:utils/util.c  **** 		return ch - 'A' + 10;
+ 139              		.loc 1 48 0
+ 140 00b8 37004192 		subls	r0, r1, #55
+  49:utils/util.c  **** 		
+  50:utils/util.c  **** 	return -1;
+  51:utils/util.c  **** }
+ 141              		.loc 1 51 0
+ 142 00bc 1EFF2FE1 		bx	lr
+ 143              	.LFE4:
+ 145              		.align	2
+ 146              		.global	findstr
+ 148              	findstr:
+ 149              	.LFB5:
+  52:utils/util.c  **** 
+  53:utils/util.c  **** int		findstr(char* str1, char* str2)
+  54:utils/util.c  **** {
+ 150              		.loc 1 54 0
+ 151              		@ Function supports interworking.
+ 152              		@ args = 0, pretend = 0, frame = 0
+ 153              		@ frame_needed = 0, uses_anonymous_args = 0
+ 154              	.LVL7:
+ 155 00c0 70402DE9 		stmfd	sp!, {r4, r5, r6, lr}
+ 156              	.LCFI1:
+ 157              		.loc 1 54 0
+ 158 00c4 0140A0E1 		mov	r4, r1
+ 159 00c8 0060A0E1 		mov	r6, r0
+  55:utils/util.c  **** 	int i, j, k, k1;
+  56:utils/util.c  **** 	int l1, l2;
+  57:utils/util.c  **** 
+  58:utils/util.c  **** 	i = j = k = k1 = 0;
+  59:utils/util.c  **** 	l1 = strlen(str1);
+ 160              		.loc 1 59 0
+ 161 00cc FEFFFFEB 		bl	strlen
+ 162              	.LVL8:
+ 163 00d0 0050A0E1 		mov	r5, r0
+ 164              	.LVL9:
+  60:utils/util.c  **** 	l2 = strlen(str2);
+ 165              		.loc 1 60 0
+ 166 00d4 0400A0E1 		mov	r0, r4
+ 167 00d8 FEFFFFEB 		bl	strlen
+ 168 00dc 00E0A0E1 		mov	lr, r0
+ 169              	.LVL10:
+ 170 00e0 0000A0E3 		mov	r0, #0
+ 171              	.LVL11:
+ 172 00e4 0010A0E1 		mov	r1, r0
+ 173              	.LVL12:
+ 174 00e8 00C0A0E1 		mov	ip, r0
+ 175              	.LVL13:
+ 176 00ec 0D0000EA 		b	.L38
+ 177              	.L23:
+  61:utils/util.c  **** 	// printf("\n\rFindStr l1=%d l2=%d", l1, l2);
+  62:utils/util.c  **** 	while (i<=l1)  {
+  63:utils/util.c  **** 		if (str1[i]==str2[j])  {
+ 178              		.loc 1 63 0
+ 179 00f0 0020D6E7 		ldrb	r2, [r6, r0]	@ zero_extendqisi2
+ 180 00f4 0130D4E7 		ldrb	r3, [r4, r1]	@ zero_extendqisi2
+ 181 00f8 030052E1 		cmp	r2, r3
+ 182 00fc 0500001A 		bne	.L24
+  64:utils/util.c  **** 			i++;
+  65:utils/util.c  **** 			j++;
+ 183              		.loc 1 65 0
+ 184 0100 011081E2 		add	r1, r1, #1
+  66:utils/util.c  **** 			k1=1;
+  67:utils/util.c  **** 			if (j==l2)  {
+ 185              		.loc 1 67 0
+ 186 0104 01C0A0E3 		mov	ip, #1
+ 187 0108 0E0051E1 		cmp	r1, lr
+ 188              	.LVL14:
+ 189              		.loc 1 64 0
+ 190 010c 0C0080E0 		add	r0, r0, ip
+ 191              		.loc 1 67 0
+ 192 0110 0800000A 		beq	.L26
+ 193 0114 030000EA 		b	.L38
+ 194              	.LVL15:
+ 195              	.L24:
+  68:utils/util.c  **** 				k=1;
+  69:utils/util.c  **** 				break;
+  70:utils/util.c  **** 			}
+  71:utils/util.c  **** 		} else  {
+  72:utils/util.c  **** 			if (k1==1)  {
+ 196              		.loc 1 72 0
+ 197 0118 01005CE3 		cmp	ip, #1
+ 198 011c 00C0A003 		moveq	ip, #0
+ 199 0120 0C10A001 		moveq	r1, ip
+  73:utils/util.c  **** 				j=0;
+  74:utils/util.c  **** 				k1=0;
+  75:utils/util.c  **** 			} else
+  76:utils/util.c  **** 				i++;
+ 200              		.loc 1 76 0
+ 201 0124 01008012 		addne	r0, r0, #1
+ 202              	.L38:
+ 203              		.loc 1 62 0
+ 204 0128 050050E1 		cmp	r0, r5
+ 205 012c EFFFFFDA 		ble	.L23
+ 206 0130 0000E0E3 		mvn	r0, #0
+ 207              	.LVL16:
+ 208 0134 000000EA 		b	.L31
+ 209              	.LVL17:
+ 210              	.L26:
+  77:utils/util.c  **** 		}
+  78:utils/util.c  **** 	}
+  79:utils/util.c  **** 
+  80:utils/util.c  **** 	if (k==1)  {
+  81:utils/util.c  ****      //printf("\n\rStr %s Found i=%d j=%d Indx=%d", str2, i, j, (i-l2));
+  82:utils/util.c  ****      return (i-l2);
+ 211              		.loc 1 82 0
+ 212 0138 00006EE0 		rsb	r0, lr, r0
+ 213              	.LVL18:
+ 214              	.L31:
+  83:utils/util.c  ****   }  else  {
+  84:utils/util.c  ****      //printf("\n\rStr not Found");
+  85:utils/util.c  ****      return -1;
+  86:utils/util.c  ****   }
+  87:utils/util.c  **** }
+ 215              		.loc 1 87 0
+ 216 013c 7040BDE8 		ldmfd	sp!, {r4, r5, r6, lr}
+ 217 0140 1EFF2FE1 		bx	lr
+ 218              	.LFE5:
+ 294              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 util.c
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccfE2UHS.s:13     .text:00000000 delay
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccfE2UHS.s:23     .text:00000000 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccfE2UHS.s:46     .text:00000018 itoa
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccfE2UHS.s:108    .text:00000090 $d
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccfE2UHS.s:114    .text:00000094 hex2int
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccfE2UHS.s:122    .text:00000094 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccfE2UHS.s:148    .text:000000c0 findstr
+
+UNDEFINED SYMBOLS
+__umodsi3
+__udivsi3
+strlen

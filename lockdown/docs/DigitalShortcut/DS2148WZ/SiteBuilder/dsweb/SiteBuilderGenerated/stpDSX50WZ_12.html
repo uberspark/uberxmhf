@@ -1,0 +1,119 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" >
+ <title>Digital Shortcut Inc. Development Environment Setup for DSX50WZ</title>
+ <link rel="stylesheet" type="text/css" href="reset_19.css" >
+ <link rel="stylesheet" type="text/css" href="base_17.css">
+ <link rel="stylesheet" type="text/css" href="layout_18.css" >
+ <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+ <style type="text/css"> body {margin:0; padding:0; background-color:#00005D;}</style>
+</head>
+<body class="yui-skin-sam">
+<div id="doc3" class="yui-t1">
+ <div id="hd"><img class="floatleft" src="dsi_25.png" alt="DSI" width="500" height="80"></div>
+ <div id="bd">
+ <div id="yui-main">
+	 <div class="yui-b">
+	 <!-- start liquid corner box -->
+ <div class="top-left"></div>
+ <div class="top-right"></div>
+ <div class="insideleft">
+ <div class="insideright">
+ <div class="inside">
+ <div>
+ <h1 class="notopgap"> Development Environment Setup for DSX50WZ</h1>
+ We are using mostly open source or free tools. The only tool you have to buy is Xilinx download cable.
+ Our preferred is 'Platform Cable USB II” because of the “ChipScope”, but it is possible to use a clone
+ of “Parallel Cable III” with a BOM of just $1 (two HC125 buffers).
+ <img class="floatright" src="dsxdir_26.png" alt="dir">
+ <h2>DSX50WZ Software Package</h2>
+ Download Software Package compatibile with your hardware from our <a href="download_0A.html"> download page</a>.
+ We distribute our software as one zip file. Please “unzip” it into a directory of your choice.
+ It is important that the directory tree to be preserved. If you chose <strong>C:\</strong> as a directory then we will create
+ a tree starting from <strong>C:\DigitalShortcut\DSX50WZ\</strong>. Use Microsoft Windows command <strong>“subst”</strong> to substitute path as a virtual drive:
+ <span class="codex">subst C:\DigitalShortcut\DSX50WZ S:</span>You will create virtual drive S: and all our settings and path definitions will be preserved.
+ We recommend to insert the above line into a batch file located in: <span class="codex">~\Start Menu\Programs\Startup</span>.
+ Virtual drive <strong> S: </strong> will be created on every power up of your computer.
+ <br>
+ <h2>ISE® WebPACK™ </h2>
+ First download and install ISE WebPACK software from: <a href="http://www.xilinx.com/ise/logic_design_prod/webpack.htm">http://www.xilinx.com/ise/logic_design_prod/webpack.htm</a><br>
+ You need to open a Xilinx account and register. It is a really smart move to do because you get access to a vast amount of information; design examples,
+ code and most important you get free design tools. Download size is rather large but the installation can run unattended.<br>
+ Second download PicoBlaze for Extended Spartan3-A Family: <a href="http://www.xilinx.com/products/ipcenter/picoblaze-S3-V2-Pro.htm">http://www.xilinx.com/products/ipcenter/picoblaze-S3-V2-Pro.htm</a>
+ You will be asked to logon to your Xilinx acount again. The downloaded file name is <strong>KCPSM3.zip</strong>. Unzip it into <strong>S:\KCPSM</strong>.
+ Later on you will have to run a script to import selected files from it.
+ <br>
+ <h2>ActiveTcl</h2>
+ We like Tcl/Tk.<br>
+ Although Tcl 8.4.14 is included in ISE installation (10.1 and 11.1) there is no Tk so we recommend installing industry-standard
+ Tcl distribution of ActiveTcl version 8.5 from <a href="http://www.activestate.com/activetcl/">http://www.activestate.com/activetcl/</a>.
+ It is free and easy to install. ActtiveTcl is necessary to run our "SiteBuilder" utility and our handy RS232 "Terminal" application used
+ during debugging and communicating with PicoBlaze core.
+ <br>
+ <h2>WireShark – Network Analyzer</h2>
+ It is a must for all who play with the networks. It shows and analyzes network packets.
+ Download it from <a href="http://www.wireshark.org/">http://www.wireshark.org/</a>.<br>
+ WireShark can capture and interpret packets on your LAN and probably will capture more than you need.
+ Declare filter similar to: <span class="codex">ip.addr == 192.168.0.40</span> to filter some of them out.
+ <br>
+ <h2>Serial Port</h2>
+ Serial port present on DSX50WZ board is used to communicate with picoBlaze running inside Spartan3AN FPGA.
+ Our Tcl scripts automatically select correct settings ("115200,n,8,1") on your PC. All you have to do is point out the
+ correct com port number. The latest laptop computers typically don't have serial ports. The Solution is to use an
+ USB-Serial Converter. If you are unsure about your serial ports please run Windows Device Manager.
+ For your convenience we included in our S:\WebServer\Tcl folder a batch file “dm.bat” for starting Device Manager.
+ <br>
+ <h2>Network Configuration</h2>
+ The DSX50WZ board running our demo web server uses IEEE 820 MAC address derived from Spartan-3AN “device dna” formatted
+ as “locally administered” (the most significant byte is forced to 02h ) and therefore shall be connected to your local LAN.
+ Default network settings are:<br>
+ <span class="codex"> IP Address: . . 192.168.0.40<br>Subnet Mask: . . 255.255.255.0<br>Default Gateway: 192.168.0.1<br>
+ Server Port: . . 80</span><br>
+ You can change these parameters from ISE Tcl console or from "Terminal", please refer to DSX50WZ User Manual for detailed instruction.
+ </div>
+ <div>
+ <p class="nobottomgap" style="margin-top: 6px">
+ <br><br>
+ </p>
+ </div>
+ </div>
+ </div>
+ </div>
+ <div class="bottom-left"></div>
+ <div class="bottom-right"></div>
+ </div>
+	 </div>
+	 <div id="nav" class="yui-b">
+	 <div><p><br></p></div>
+	 <div class="mainmenu">
+ <div class="mainmenuitem"><p><a href="index.html"><img src="hi_28.gif" alt="" >&nbsp;&nbsp;Home</a></p></div>
+ <div class="mainmenuitem"><p><a href="products_0E.html" >&nbsp;&nbsp;&nbsp;&nbsp;Products</a></p></div>
+ <div class="mainmenuitem"><p><a href="services_10.html">&nbsp;&nbsp;&nbsp;&nbsp;Services</a></p></div>
+ <div class="mainmenuitem"><p><a href="support_13.html">&nbsp;&nbsp;&nbsp;&nbsp;Support</a></p></div>
+ <div class="mainmenuitem"><p><a href="download_0A.html"><img src="ai_1D.gif" alt="">&nbsp;&nbsp;Download</a></p></div>
+ <div class="mainmenuitem"><p><a href="corporate_08.html">&nbsp;&nbsp;&nbsp;&nbsp;Corporate</a></p></div>
+ <div class="mainmenuitem"><p><a href="hobby_0B.html">&nbsp;&nbsp;&nbsp;&nbsp;AppNotes</a></p></div>
+ </div>
+ <br>
+ <div class="clmenu"><a href=""> Customer Login</a></div>
+ <br>
+ <div class="xmenu">
+ <h2>&nbsp;External links</h2>
+ <a href="http://www.nxp.com/" target="_blank"> NXP</a> <br>
+ <a href="http://www.xilinx.com/" target="_blank">Xilinx</a> <br>
+ <a href="http://www.wiznet.co.kr/en/" target="_blank">WIZnet</a> <br>
+ <a href="http://www.gnuarm.com/" target="_blank"> GNUarm</a> <br>
+ <a href="http://wiki.tcl.tk/" target="_blank"> Tclers Wiki</a> <br>
+ <a href="http://srecord.sourceforge.net/" target="_blank">SRecord</a><br>
+ <br>
+ </div>
+	 </div>
+	 </div>
+ <div id="ft"><h6>© Copyright 2008 - Digital Shortcut Inc., All Rights Reserved</h6></div>
+</div>
+</body>
+</html>
+
+
+

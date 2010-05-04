@@ -1,0 +1,1304 @@
+Archive member included because of file (symbol)
+
+/armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memchr.o)
+                              http/httpserv.o (memchr)
+/armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcmp.o)
+                              http/httpserv.o (memcmp)
+/armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcpy.o)
+                              main_http.o (memcpy)
+/armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memset.o)
+                              utils/cmdint.o (memset)
+/armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(strlen.o)
+                              utils/util.o (strlen)
+/armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_udivsi3.o)
+                              utils/cmdint.o (__udivsi3)
+/armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_divsi3.o)
+                              i2c/i2c.o (__divsi3)
+/armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_umodsi3.o)
+                              main_http.o (__umodsi3)
+/armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_dvmd_tls.o)
+                              /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_udivsi3.o) (__div0)
+
+Allocating common symbols
+Common symbol       size              file
+
+CRdyMax             0x4               main_http.o
+i2cDataPtr          0x4               i2c/i2c.o
+tmp                 0x4               utils/cmdint.o
+socState            0x8               Wiznet/socket.o
+inBuf               0x5dd             http/httpserv.o
+Tst1Flag            0x4               main_http.o
+sCRcnt              0x4               main_http.o
+zero_1              0x14              main_http.o
+sOutBuf             0x190             utils/console.o
+tcnt                0x4               main_http.o
+p_ptr               0x4               http/httpserv.o
+u1                  0x4               main_http.o
+LogTim0             0x4               main_http.o
+ssrErr              0x20              Wiznet/socket.o
+CmdDone             0x4               utils/cmdint.o
+SndType             0x8               http/httpserv.o
+W53ErFlg            0x4               main_http.o
+scmd                0x1               utils/cmdint.o
+i2cDataBuffer       0x4               i2c/i2c.o
+CmdStr              0x1e              utils/cmdint.o
+cSoc                0x4               http/httpserv.o
+SndBPtr             0x20              http/httpserv.o
+httpPort            0x4               http/httpserv.o
+iinchip_source_port
+                    0x2               Wiznet/socket.o
+sOutRdPtr           0x4               utils/console.o
+OutHCnt             0x4               utils/console.o
+i2cErrno            0x4               i2c/i2c.o
+sOutWrPtr           0x4               utils/console.o
+Event               0x4               main_http.o
+miliSec             0x4               ARM2148/timerC.o
+i2cDataLenRead      0x4               i2c/i2c.o
+LogCnt              0x4               utils/cmdint.o
+EstbPhase           0x8               http/httpserv.o
+VoltVal             0x4               main_http.o
+zero_2              0x14              main_http.o
+tmpBuf              0x640             http/httpserv.o
+SpurIntCnt          0x4               main_http.o
+i2cDataLenWrite     0x4               i2c/i2c.o
+LogData             0x96a             utils/cmdint.o
+outBuf              0x201             http/httpserv.o
+RXMEM_SIZE          0x20              Wiznet/w5300.o
+SndLen              0x20              http/httpserv.o
+CmdPtr              0x4               utils/cmdint.o
+Snd0Flag            0x4               http/httpserv.o
+TXMEM_SIZE          0x20              Wiznet/w5300.o
+CmdRest             0x4               utils/cmdint.o
+CmdLen              0x4               utils/cmdint.o
+txfree_size         0x4               http/httpserv.o
+i2cAddress          0x1               i2c/i2c.o
+sOutFull            0x4               utils/console.o
+i2cBusInUse         0x4               i2c/i2c.o
+cmd                 0x1               utils/cmdint.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+flash            0x00000000         0x0007d000         xr
+ram              0x40000000         0x00007fe0         rw
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+LOAD crt.o
+LOAD main_http.o
+LOAD ARM2148/startup.o
+LOAD ARM2148/armVIC.o
+LOAD ARM2148/timerC.o
+LOAD utils/console.o
+LOAD utils/cmdint.o
+LOAD utils/printf.o
+LOAD utils/util.o
+LOAD DigiShort/ds5300.o
+LOAD http/httpserv.o
+LOAD Wiznet/socket.o
+LOAD Wiznet/sockutil.o
+LOAD Wiznet/w5300.o
+LOAD i2c/i2c.o
+LOAD /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a
+LOAD /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a
+LOAD /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a
+START GROUP
+LOAD /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a
+LOAD /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libg.a
+LOAD /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a
+END GROUP
+                0x40007fdc                __stack_end__ = 0x40007fdc
+                0x00000000                . = 0x0
+
+startup         0x00000000      0x164
+                0x00000000                __start_of_startup__ = .
+ *(.startup)
+ .startup       0x00000000      0x164 crt.o
+                0x00000164                __end_of_startup__ = .
+
+prog            0x00000164     0x6358
+                0x00000164                __start_of_text__ = .
+                0x00000164                __start_of_prog__ = .
+ *(.text)
+ .text          0x00000164      0x144 crt.o
+                0x00000164                start
+ .text          0x000002a8      0x554 main_http.o
+                0x00000534                WizNetInit
+                0x00000684                WizCheck0
+                0x00000438                LoadEE_MAC
+                0x00000404                ToggleP0_5
+                0x00000588                ShowIPs
+                0x000004a4                SetMAC
+                0x00000738                main
+                0x00000340                SpurInit
+                0x000002a8                P0Init
+                0x000003a8                UpdateVoltage
+                0x00000364                ToggleP0_7
+                0x00000388                PrepVars
+                0x00000304                SpuriousInt
+ .text          0x000007fc       0x84 ARM2148/startup.o
+                0x00000808                UNDEF_Routine
+                0x00000804                SWI_Routine
+                0x0000080c                Init2148
+                0x00000800                FIQ_Routine
+                0x000007fc                IRQ_Routine
+ .text          0x00000880       0x78 ARM2148/armVIC.o
+                0x00000880                restoreIRQ
+                0x000008c8                enableFIQ
+                0x000008b8                disableFIQ
+                0x000008e8                enableIRQ
+                0x0000089c                restoreFIQ
+                0x000008d8                disableIRQ
+ .text          0x000008f8      0x1a8 ARM2148/timerC.o
+                0x0000097c                timerDetach
+                0x000008f8                timer0ISR
+                0x000009a8                getT1
+                0x00000998                getT0
+                0x000009e4                timer0Init
+                0x000009b8                timer1Clear
+                0x00000a6c                timerInit
+                0x00000964                timerAttach
+ .text          0x00000aa0      0x324 utils/console.o
+                0x00000c7c                putchar
+                0x00000b44                ConsoleInit
+                0x00000d8c                puts
+                0x00000c5c                my_getchar
+                0x00000c3c                my_putchar
+                0x00000c20                getchar
+                0x00000aa0                Uart0ISR
+ .text          0x00000dc4      0xca0 utils/cmdint.o
+                0x00000efc                RdUi8Seq
+                0x0000149c                GetCmdLine
+                0x00001270                ClearEE
+                0x00000dc4                Get4cDecNum
+                0x00001510                CheckCmd
+                0x000012c0                DumpEE
+                0x0000107c                LogDisplay
+                0x00000fcc                LogWr
+                0x00001028                LogWrTim
+                0x00001378                InitEE_IP
+                0x00000e70                scanDecNumber
+                0x00000f94                LogInit
+ .text          0x00001a64      0x474 utils/printf.o
+                0x00001ea4                printf
+                0x00001e6c                sprintf
+ .text          0x00001ed8      0x144 utils/util.o
+                0x00001ef0                itoa
+                0x00001f6c                hex2int
+                0x00001f98                findstr
+                0x00001ed8                delay
+ .text          0x0000201c      0x8b4 DigiShort/ds5300.o
+                0x00002808                W5300PwrOff
+                0x00002250                IINCHIP_WRITE
+                0x00002864                W5300PwrOn
+                0x00002758                Rd5300_bl
+                0x000027b4                W5300Init2
+                0x00002474                wiz_read_buf
+                0x0000216c                IINCHIP_READ
+                0x000028ac                iinchip_init
+                0x0000204c                setMR
+                0x0000201c                P1Init
+                0x00002300                wiz_write_buf
+                0x000020d0                getMR
+ .text          0x000028d0      0xc04 http/httpserv.o
+                0x00002d60                http_serv_machine
+                0x000028e8                PrepDwnldData
+                0x00002918                wait4sendDone
+                0x000028d0                ToUpper
+                0x00002a54                CheckRequest
+                0x000029d0                send1st_DS
+                0x00002a08                socket_return
+                0x00002958                send_DS
+                0x00002bd0                PrepHeader
+ .text          0x000034d4      0x364 Wiznet/socket.o
+                0x000034ec                recv
+                0x000035fc                connect
+                0x000036f0                socket
+                0x000034d4                disconnect
+                0x000035b4                listen
+                0x00003774                close
+ .text          0x00003838       0xd4 Wiznet/sockutil.o
+                0x00003850                swapl
+                0x00003838                swaps
+                0x000038a4                ntohl
+                0x00003888                htonl
+                0x0000388c                ntohs
+                0x000038a8                inet_ntoa
+                0x00003870                htons
+ .text          0x0000390c      0xf0c Wiznet/w5300.o
+                0x00003938                wait_1ms
+                0x00003e40                setRTR
+                0x000046b4                getSIPR
+                0x000044cc                getSn_CR
+                0x00003bbc                setSn_TOSR
+                0x00003cdc                setSn_DHAR
+                0x00003f34                setSHAR
+                0x00004804                getIR
+                0x000046a0                getRTR
+                0x000044f0                getSn_MR
+                0x00003e28                setRCR
+                0x00004584                getUIPR
+                0x00004270                getSn_DHAR
+                0x000041dc                getSn_MSSR
+                0x00004098                getSn_RX_FIFOR
+                0x00003ff0                getSn_TTLR
+                0x00004250                getSn_DPORTR
+                0x00003c3c                setSn_MSSR
+                0x00003dd8                setPn_BRDYR
+                0x00004674                getPATR
+                0x000046fc                getSUBR
+                0x000041f8                getSn_DIPR
+                0x00003b78                setSn_FRAGR
+                0x000040b4                getSn_RX_RSR
+                0x0000478c                getSHAR
+                0x000043a0                getSn_IMR
+                0x00004074                getSn_PROTOR
+                0x00003c04                setSn_TX_WRSR
+                0x00003db4                setPn_BDPTHR
+                0x00004570                getUPORTR
+                0x00004688                getRCR
+                0x00003e5c                setSIPR
+                0x00003c60                setSn_DIPR
+                0x0000455c                getFMTUR
+                0x00003fd0                getSn_FRAGR
+                0x00004520                getPn_BDPTHR
+                0x00004744                getGAR
+                0x00003990                sysinit
+                0x00003e10                setPTIMER
+                0x0000437c                getSn_IR
+                0x00003964                wait_10ms
+                0x00003934                wait_1us
+                0x00004174                setSn_KPALVTR
+                0x00004144                getSn_TX_WRSR
+                0x0000453c                getPn_BRDYR
+                0x000040fc                getSn_TX_FSR
+                0x0000465c                getPTIMER
+                0x00004630                getPSIDR
+                0x000047f0                getIMR
+                0x0000450c                getIDR
+                0x00003df8                setPMAGICR
+                0x00003cb4                setSn_DPORTR
+                0x00003f98                setIMR
+                0x00003bdc                setSn_TX_FIFOR
+                0x00003d4c                setSn_IR
+                0x000041b4                getSn_KPALVTR
+                0x00004014                getSn_TOSR
+                0x00004034                setSn_PROTOR
+                0x00003ea4                setSUBR
+                0x00004644                getPMAGICR
+                0x00003d70                setSn_IMR
+                0x0000390c                getIINCHIP_TxMAX
+                0x00003fb4                setIR
+                0x00003d90                setSn_MR
+                0x000042e8                getSn_SSR
+                0x000045cc                getPDHAR
+                0x000043c0                setSn_CR
+                0x00003920                getIINCHIP_RxMAX
+                0x00003b98                setSn_TTLR
+                0x00003eec                setGAR
+ .text          0x00004818      0xc70 i2c/i2c.o
+                0x00005018                eepromRdSBlk
+                0x000053cc                i2cInit
+                0x00004fac                i2cWriteBuffer
+                0x00004ce0                i2cWriteReadBuffer_o
+                0x00004fd4                i2cWriteReadBuffer
+                0x00005000                i2cSetTimeout
+                0x00004e28                i2cTransferBytes
+                0x00004d48                i2cWriteBufferPoll
+                0x00005068                eepromRead
+                0x00004f10                i2cWriteBufferEx
+                0x00004c88                i2cWriteBuffer_o
+                0x0000510c                eepromWrite
+                0x00004c78                i2cSetTimeout_o
+                0x00004da0                i2cWaitComplete
+                0x00004fc0                i2cReadBuffer
+                0x00004d74                i2cWriteReadBufferPoll
+                0x00004f44                i2cReadBufferEx
+                0x00004cb4                i2cReadBuffer_o
+                0x00005040                eepromWrSBlk
+                0x00004f7c                i2cWriteReadBufferEx
+ .text          0x00005488      0x100 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memchr.o)
+                0x00005488                memchr
+ .text          0x00005588       0x98 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcmp.o)
+                0x00005588                memcmp
+ .text          0x00005620       0x9c /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcpy.o)
+                0x00005620                memcpy
+ .text          0x000056bc       0x98 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memset.o)
+                0x000056bc                memset
+ .text          0x00005754       0x90 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(strlen.o)
+                0x00005754                strlen
+ .text          0x000057e4      0x114 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_udivsi3.o)
+                0x000057e4                __udivsi3
+                0x000057e4                __aeabi_uidiv
+                0x000058e0                __aeabi_uidivmod
+ .text          0x000058f8      0x144 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_divsi3.o)
+                0x000058f8                __aeabi_idiv
+                0x000058f8                __divsi3
+                0x00005a24                __aeabi_idivmod
+ .text          0x00005a3c       0xd0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_umodsi3.o)
+                0x00005a3c                __umodsi3
+ .text          0x00005b0c        0x4 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_dvmd_tls.o)
+                0x00005b0c                __aeabi_ldiv0
+                0x00005b0c                __div0
+                0x00005b0c                __aeabi_idiv0
+                0x00005b10                __end_of_prog__ = .
+                0x00005b10                __start_of_rodata__ = .
+ *(.rodata)
+ .rodata        0x00005b10       0x22 utils/cmdint.o
+ *(.rodata*)
+ *fill*         0x00005b32        0x2 00
+ .rodata.str1.4
+                0x00005b34      0x10c main_http.o
+ .rodata.str1.4
+                0x00005c40      0x23d utils/cmdint.o
+                                0x250 (size before relaxing)
+ *fill*         0x00005e7d        0x3 00
+ .rodata.str1.4
+                0x00005e80        0x7 utils/printf.o
+                                  0x8 (size before relaxing)
+ *fill*         0x00005e87        0x1 00
+ .rodata.str1.4
+                0x00005e88       0x11 utils/util.o
+                                 0x14 (size before relaxing)
+ *fill*         0x00005e99        0x3 00
+ .rodata.str1.4
+                0x00005e9c      0x4f3 http/httpserv.o
+                                0x504 (size before relaxing)
+ *fill*         0x0000638f        0x1 00
+ .rodata.str1.4
+                0x00006390       0x66 Wiznet/socket.o
+                                 0x68 (size before relaxing)
+ .rodata.str1.4
+                0x00000000       0x66 Wiznet/sockutil.o
+                                  0xc (size before relaxing)
+ *fill*         0x000063f6        0x2 00
+ .rodata.str1.4
+                0x000063f8       0xc4 Wiznet/w5300.o
+                0x000064bc                __end_of_rodata__ = .
+                0x000064bc                __start_of_glue7__ = .
+ *(.glue_7)
+ .glue_7        0x000064bc        0x0 crt.o
+ .glue_7        0x000064bc        0x0 main_http.o
+ .glue_7        0x000064bc        0x0 ARM2148/startup.o
+ .glue_7        0x000064bc        0x0 ARM2148/armVIC.o
+ .glue_7        0x000064bc        0x0 ARM2148/timerC.o
+ .glue_7        0x000064bc        0x0 utils/console.o
+ .glue_7        0x000064bc        0x0 utils/cmdint.o
+ .glue_7        0x000064bc        0x0 utils/printf.o
+ .glue_7        0x000064bc        0x0 utils/util.o
+ .glue_7        0x000064bc        0x0 DigiShort/ds5300.o
+ .glue_7        0x000064bc        0x0 http/httpserv.o
+ .glue_7        0x000064bc        0x0 Wiznet/socket.o
+ .glue_7        0x000064bc        0x0 Wiznet/sockutil.o
+ .glue_7        0x000064bc        0x0 Wiznet/w5300.o
+ .glue_7        0x000064bc        0x0 i2c/i2c.o
+ .glue_7        0x000064bc        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memchr.o)
+ .glue_7        0x000064bc        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcmp.o)
+ .glue_7        0x000064bc        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcpy.o)
+ .glue_7        0x000064bc        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memset.o)
+ .glue_7        0x000064bc        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(strlen.o)
+ .glue_7        0x000064bc        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_udivsi3.o)
+ .glue_7        0x000064bc        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_divsi3.o)
+ .glue_7        0x000064bc        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_umodsi3.o)
+ .glue_7        0x000064bc        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_dvmd_tls.o)
+ *(.glue_7t)
+ .glue_7t       0x000064bc        0x0 crt.o
+ .glue_7t       0x000064bc        0x0 main_http.o
+ .glue_7t       0x000064bc        0x0 ARM2148/startup.o
+ .glue_7t       0x000064bc        0x0 ARM2148/armVIC.o
+ .glue_7t       0x000064bc        0x0 ARM2148/timerC.o
+ .glue_7t       0x000064bc        0x0 utils/console.o
+ .glue_7t       0x000064bc        0x0 utils/cmdint.o
+ .glue_7t       0x000064bc        0x0 utils/printf.o
+ .glue_7t       0x000064bc        0x0 utils/util.o
+ .glue_7t       0x000064bc        0x0 DigiShort/ds5300.o
+ .glue_7t       0x000064bc        0x0 http/httpserv.o
+ .glue_7t       0x000064bc        0x0 Wiznet/socket.o
+ .glue_7t       0x000064bc        0x0 Wiznet/sockutil.o
+ .glue_7t       0x000064bc        0x0 Wiznet/w5300.o
+ .glue_7t       0x000064bc        0x0 i2c/i2c.o
+ .glue_7t       0x000064bc        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memchr.o)
+ .glue_7t       0x000064bc        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcmp.o)
+ .glue_7t       0x000064bc        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcpy.o)
+ .glue_7t       0x000064bc        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memset.o)
+ .glue_7t       0x000064bc        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(strlen.o)
+ .glue_7t       0x000064bc        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_udivsi3.o)
+ .glue_7t       0x000064bc        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_divsi3.o)
+ .glue_7t       0x000064bc        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_umodsi3.o)
+ .glue_7t       0x000064bc        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_dvmd_tls.o)
+                0x000064bc                __end_of_glue7__ = .
+                0x000064bc                __end_of_text__ = .
+
+.intvects       0x40000000       0x40 load address 0x000064bc
+                0x40000000                __intvects_beg__ = .
+                0x000064bc                __intvects_beg_src__ = __end_of_text__
+ *(.intvects)
+ .intvects      0x40000000       0x40 crt.o
+                0x40000000                __intvects
+                0x40000040                __intvects_end__ = .
+                0x000064fc                __end_of_intvects__ = (__end_of_text__ + (__intvects_end__ - __intvects_beg__))
+
+.protected      0x40000040       0x78
+                0x40000040                __protected_beg__ = .
+ *(.protected)
+ .protected     0x40000040       0x78 crt.o
+                0x40000040                __abort_dat
+                0x400000b8                __protected_end__ = .
+
+.data           0x400000b8      0x1a8 load address 0x000064fc
+                0x400000b8                __data_beg__ = .
+                0x000064fc                __data_beg_src__ = __end_of_intvects__
+ *(.data)
+ .data          0x400000b8       0x3c crt.o
+                0x400000c8                __stack_beg_fiq
+                0x400000c0                __stack_beg_abt
+                0x400000b8                __stack_beg_und
+                0x400000d8                __stack_beg_svc
+                0x400000d0                __stack_beg_irq
+                0x400000cc                __stack_end_fiq
+                0x400000c4                __stack_end_abt
+                0x400000ec                __heap_beg
+                0x400000dc                __stack_end_svc
+                0x400000e0                __stack_beg_sys
+                0x400000f0                __heap_end
+                0x400000bc                __stack_end_und
+                0x400000e4                __stack_end_sys
+                0x400000e8                __heap_max
+                0x400000d4                __stack_end_irq
+ .data          0x400000f4       0x34 main_http.o
+                0x40000116                tx_mem_conf
+                0x40000110                mac_0
+                0x40000106                sn
+                0x4000011e                rx_mem_conf
+                0x400000f4                RevDate
+                0x40000102                gw
+                0x400000fe                ip_0
+                0x4000010a                mac_1
+ .data          0x40000128        0x0 ARM2148/startup.o
+ .data          0x40000128        0x0 ARM2148/armVIC.o
+ .data          0x40000128        0x0 ARM2148/timerC.o
+ .data          0x40000128        0x0 utils/console.o
+ .data          0x40000128       0xd4 utils/cmdint.o
+                0x40000128                LogRMark
+                0x40000170                LogRLen
+ .data          0x400001fc        0x0 utils/printf.o
+ .data          0x400001fc        0x0 utils/util.o
+ .data          0x400001fc        0x0 DigiShort/ds5300.o
+ .data          0x400001fc       0x60 http/httpserv.o
+                0x4000023c                uplOKmsg
+                0x400001fc                voltBuf
+ .data          0x4000025c        0x0 Wiznet/socket.o
+ .data          0x4000025c        0x0 Wiznet/sockutil.o
+ .data          0x4000025c        0x0 Wiznet/w5300.o
+ .data          0x4000025c        0x4 i2c/i2c.o
+                0x4000025c                i2cTimeout
+ .data          0x40000260        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memchr.o)
+ .data          0x40000260        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcmp.o)
+ .data          0x40000260        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcpy.o)
+ .data          0x40000260        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memset.o)
+ .data          0x40000260        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(strlen.o)
+ .data          0x40000260        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_udivsi3.o)
+ .data          0x40000260        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_divsi3.o)
+ .data          0x40000260        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_umodsi3.o)
+ .data          0x40000260        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_dvmd_tls.o)
+                0x40000260                __data_end__ = .
+
+.bss            0x40000260     0x1b10
+                0x40000260                __bss_beg__ = .
+ *(.bss)
+ .bss           0x40000260        0x0 crt.o
+ .bss           0x40000260        0x0 main_http.o
+ .bss           0x40000260        0x0 ARM2148/startup.o
+ .bss           0x40000260        0x0 ARM2148/armVIC.o
+ .bss           0x40000260       0x40 ARM2148/timerC.o
+ .bss           0x400002a0        0x0 utils/console.o
+ .bss           0x400002a0       0x14 utils/cmdint.o
+ .bss           0x400002b4        0x0 utils/printf.o
+ .bss           0x400002b4        0x0 utils/util.o
+ .bss           0x400002b4        0x0 DigiShort/ds5300.o
+ .bss           0x400002b4        0x0 http/httpserv.o
+ .bss           0x400002b4        0x0 Wiznet/socket.o
+ .bss           0x400002b4       0x10 Wiznet/sockutil.o
+ .bss           0x400002c4        0x0 Wiznet/w5300.o
+ .bss           0x400002c4        0x0 i2c/i2c.o
+ .bss           0x400002c4        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memchr.o)
+ .bss           0x400002c4        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcmp.o)
+ .bss           0x400002c4        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcpy.o)
+ .bss           0x400002c4        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memset.o)
+ .bss           0x400002c4        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(strlen.o)
+ .bss           0x400002c4        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_udivsi3.o)
+ .bss           0x400002c4        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_divsi3.o)
+ .bss           0x400002c4        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_umodsi3.o)
+ .bss           0x400002c4        0x0 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_dvmd_tls.o)
+ COMMON         0x400002c4       0x50 main_http.o
+                0x400002c4                CRdyMax
+                0x400002c8                Tst1Flag
+                0x400002cc                sCRcnt
+                0x400002d0                zero_1
+                0x400002e4                tcnt
+                0x400002e8                u1
+                0x400002ec                LogTim0
+                0x400002f0                W53ErFlg
+                0x400002f4                Event
+                0x400002f8                VoltVal
+                0x400002fc                zero_2
+                0x40000310                SpurIntCnt
+ COMMON         0x40000314        0x4 ARM2148/timerC.o
+                0x40000314                miliSec
+ COMMON         0x40000318      0x1a0 utils/console.o
+                0x40000318                sOutBuf
+                0x400004a8                sOutRdPtr
+                0x400004ac                OutHCnt
+                0x400004b0                sOutWrPtr
+                0x400004b4                sOutFull
+ COMMON         0x400004b8      0x9a5 utils/cmdint.o
+                0x400004b8                tmp
+                0x400004bc                CmdDone
+                0x400004c0                scmd
+                0x400004c1                CmdStr
+                0x400004e0                LogCnt
+                0x400004e4                LogData
+                0x40000e50                CmdPtr
+                0x40000e54                CmdRest
+                0x40000e58                CmdLen
+                0x40000e5c                cmd
+ *fill*         0x40000e5d        0x3 00
+ COMMON         0x40000e60      0xe88 http/httpserv.o
+                0x40000e60                inBuf
+                0x40001440                p_ptr
+                0x40001444                SndType
+                0x4000144c                cSoc
+                0x40001450                SndBPtr
+                0x40001470                httpPort
+                0x40001474                EstbPhase
+                0x4000147c                tmpBuf
+                0x40001abc                outBuf
+                0x40001cc0                SndLen
+                0x40001ce0                Snd0Flag
+                0x40001ce4                txfree_size
+ COMMON         0x40001ce8       0x2a Wiznet/socket.o
+                0x40001ce8                socState
+                0x40001cf0                ssrErr
+                0x40001d10                iinchip_source_port
+ *fill*         0x40001d12        0x2 00
+ COMMON         0x40001d14       0x40 Wiznet/w5300.o
+                0x40001d14                RXMEM_SIZE
+                0x40001d34                TXMEM_SIZE
+ COMMON         0x40001d54       0x1c i2c/i2c.o
+                0x40001d54                i2cDataPtr
+                0x40001d58                i2cDataBuffer
+                0x40001d5c                i2cErrno
+                0x40001d60                i2cDataLenRead
+                0x40001d64                i2cDataLenWrite
+                0x40001d68                i2cAddress
+                0x40001d6c                i2cBusInUse
+                0x40001d70                . = ALIGN (0x4)
+                0x40001d70                . = ALIGN (0x4)
+                0x40001d70                _end = .
+                0x40001d70                _bss_end__ = .
+                0x40001d70                __bss_end__ = .
+                0x40001d70                __heap_beg__ = .
+                0x40001d70                __heap_end__ = .
+                0x40001d70                __end__ = .
+                0x40001d70                PROVIDE (end, .)
+OUTPUT(HttpServ.elf elf32-littlearm)
+
+.debug_line     0x00000000     0x169f
+ .debug_line    0x00000000       0xf1 crt.o
+ .debug_line    0x000000f1       0xfc main_http.o
+ .debug_line    0x000001ed       0x6f ARM2148/startup.o
+ .debug_line    0x0000025c       0x67 ARM2148/armVIC.o
+ .debug_line    0x000002c3       0x99 ARM2148/timerC.o
+ .debug_line    0x0000035c       0xaa utils/console.o
+ .debug_line    0x00000406      0x19c utils/cmdint.o
+ .debug_line    0x000005a2      0x100 utils/printf.o
+ .debug_line    0x000006a2       0x6a utils/util.o
+ .debug_line    0x0000070c      0x213 DigiShort/ds5300.o
+ .debug_line    0x0000091f      0x1a6 http/httpserv.o
+ .debug_line    0x00000ac5       0xae Wiznet/socket.o
+ .debug_line    0x00000b73       0xc7 Wiznet/sockutil.o
+ .debug_line    0x00000c3a      0x2c0 Wiznet/w5300.o
+ .debug_line    0x00000efa      0x1d7 i2c/i2c.o
+ .debug_line    0x000010d1       0xde /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memchr.o)
+ .debug_line    0x000011af       0xc7 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcmp.o)
+ .debug_line    0x00001276       0xc8 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcpy.o)
+ .debug_line    0x0000133e       0xd3 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memset.o)
+ .debug_line    0x00001411       0xaf /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(strlen.o)
+ .debug_line    0x000014c0       0x84 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_udivsi3.o)
+ .debug_line    0x00001544       0x90 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_divsi3.o)
+ .debug_line    0x000015d4       0x6e /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_umodsi3.o)
+ .debug_line    0x00001642       0x5d /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_dvmd_tls.o)
+
+.debug_info     0x00000000     0x478b
+ .debug_info    0x00000000       0x7e crt.o
+ .debug_info    0x0000007e      0x48c main_http.o
+ .debug_info    0x0000050a       0xb4 ARM2148/startup.o
+ .debug_info    0x000005be      0x2d2 ARM2148/armVIC.o
+ .debug_info    0x00000890      0x1fd ARM2148/timerC.o
+ .debug_info    0x00000a8d      0x1d4 utils/console.o
+ .debug_info    0x00000c61      0x718 utils/cmdint.o
+ .debug_info    0x00001379      0x352 utils/printf.o
+ .debug_info    0x000016cb      0x199 utils/util.o
+ .debug_info    0x00001864      0x39b DigiShort/ds5300.o
+ .debug_info    0x00001bff      0x630 http/httpserv.o
+ .debug_info    0x0000222f      0x2be Wiznet/socket.o
+ .debug_info    0x000024ed      0x21d Wiznet/sockutil.o
+ .debug_info    0x0000270a      0xe61 Wiznet/w5300.o
+ .debug_info    0x0000356b      0xb51 i2c/i2c.o
+ .debug_info    0x000040bc      0x133 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memchr.o)
+ .debug_info    0x000041ef      0x110 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcmp.o)
+ .debug_info    0x000042ff      0x10a /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcpy.o)
+ .debug_info    0x00004409      0x10e /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memset.o)
+ .debug_info    0x00004517       0xd4 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(strlen.o)
+ .debug_info    0x000045eb       0x68 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_udivsi3.o)
+ .debug_info    0x00004653       0x68 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_divsi3.o)
+ .debug_info    0x000046bb       0x68 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_umodsi3.o)
+ .debug_info    0x00004723       0x68 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_dvmd_tls.o)
+
+.debug_abbrev   0x00000000     0x15c5
+ .debug_abbrev  0x00000000       0x10 crt.o
+ .debug_abbrev  0x00000010      0x14d main_http.o
+ .debug_abbrev  0x0000015d       0x69 ARM2148/startup.o
+ .debug_abbrev  0x000001c6       0xde ARM2148/armVIC.o
+ .debug_abbrev  0x000002a4      0x17b ARM2148/timerC.o
+ .debug_abbrev  0x0000041f      0x108 utils/console.o
+ .debug_abbrev  0x00000527      0x1e8 utils/cmdint.o
+ .debug_abbrev  0x0000070f      0x14d utils/printf.o
+ .debug_abbrev  0x0000085c       0xeb utils/util.o
+ .debug_abbrev  0x00000947      0x192 DigiShort/ds5300.o
+ .debug_abbrev  0x00000ad9      0x20b http/httpserv.o
+ .debug_abbrev  0x00000ce4       0xf9 Wiznet/socket.o
+ .debug_abbrev  0x00000ddd       0xcb Wiznet/sockutil.o
+ .debug_abbrev  0x00000ea8      0x1dd Wiznet/w5300.o
+ .debug_abbrev  0x00001085      0x1e5 i2c/i2c.o
+ .debug_abbrev  0x0000126a       0xb5 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memchr.o)
+ .debug_abbrev  0x0000131f       0x7c /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcmp.o)
+ .debug_abbrev  0x0000139b       0xa6 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcpy.o)
+ .debug_abbrev  0x00001441       0xa9 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memset.o)
+ .debug_abbrev  0x000014ea       0x8b /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(strlen.o)
+ .debug_abbrev  0x00001575       0x14 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_udivsi3.o)
+ .debug_abbrev  0x00001589       0x14 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_divsi3.o)
+ .debug_abbrev  0x0000159d       0x14 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_umodsi3.o)
+ .debug_abbrev  0x000015b1       0x14 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_dvmd_tls.o)
+
+.debug_aranges  0x00000000      0x310
+ .debug_aranges
+                0x00000000       0x30 crt.o
+ .debug_aranges
+                0x00000030       0x20 main_http.o
+ .debug_aranges
+                0x00000050       0x20 ARM2148/startup.o
+ .debug_aranges
+                0x00000070       0x20 ARM2148/armVIC.o
+ .debug_aranges
+                0x00000090       0x20 ARM2148/timerC.o
+ .debug_aranges
+                0x000000b0       0x20 utils/console.o
+ .debug_aranges
+                0x000000d0       0x20 utils/cmdint.o
+ .debug_aranges
+                0x000000f0       0x20 utils/printf.o
+ .debug_aranges
+                0x00000110       0x20 utils/util.o
+ .debug_aranges
+                0x00000130       0x20 DigiShort/ds5300.o
+ .debug_aranges
+                0x00000150       0x20 http/httpserv.o
+ .debug_aranges
+                0x00000170       0x20 Wiznet/socket.o
+ .debug_aranges
+                0x00000190       0x20 Wiznet/sockutil.o
+ .debug_aranges
+                0x000001b0       0x20 Wiznet/w5300.o
+ .debug_aranges
+                0x000001d0       0x20 i2c/i2c.o
+ .debug_aranges
+                0x000001f0       0x20 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memchr.o)
+ .debug_aranges
+                0x00000210       0x20 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcmp.o)
+ .debug_aranges
+                0x00000230       0x20 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcpy.o)
+ .debug_aranges
+                0x00000250       0x20 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memset.o)
+ .debug_aranges
+                0x00000270       0x20 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(strlen.o)
+ .debug_aranges
+                0x00000290       0x20 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_udivsi3.o)
+ .debug_aranges
+                0x000002b0       0x20 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_divsi3.o)
+ .debug_aranges
+                0x000002d0       0x20 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_umodsi3.o)
+ .debug_aranges
+                0x000002f0       0x20 /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_dvmd_tls.o)
+
+.debug_frame    0x00000000     0x1440
+ .debug_frame   0x00000000      0x138 main_http.o
+ .debug_frame   0x00000138       0x60 ARM2148/startup.o
+ .debug_frame   0x00000198       0x70 ARM2148/armVIC.o
+ .debug_frame   0x00000208       0xac ARM2148/timerC.o
+ .debug_frame   0x000002b4       0x98 utils/console.o
+ .debug_frame   0x0000034c      0x14c utils/cmdint.o
+ .debug_frame   0x00000498       0xd8 utils/printf.o
+ .debug_frame   0x00000570       0x6c utils/util.o
+ .debug_frame   0x000005dc      0x13c DigiShort/ds5300.o
+ .debug_frame   0x00000718       0xf8 http/httpserv.o
+ .debug_frame   0x00000810       0xbc Wiznet/socket.o
+ .debug_frame   0x000008cc       0x9c Wiznet/sockutil.o
+ .debug_frame   0x00000968      0x6dc Wiznet/w5300.o
+ .debug_frame   0x00001044      0x2c0 i2c/i2c.o
+ .debug_frame   0x00001304       0x28 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memchr.o)
+ .debug_frame   0x0000132c       0x28 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcmp.o)
+ .debug_frame   0x00001354       0x28 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcpy.o)
+ .debug_frame   0x0000137c       0x20 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memset.o)
+ .debug_frame   0x0000139c       0x20 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(strlen.o)
+ .debug_frame   0x000013bc       0x2c /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_udivsi3.o)
+ .debug_frame   0x000013e8       0x2c /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_divsi3.o)
+ .debug_frame   0x00001414       0x2c /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_umodsi3.o)
+
+.debug_loc      0x00000000     0x3c42
+ .debug_loc     0x00000000      0x15a main_http.o
+ .debug_loc     0x0000015a       0x72 ARM2148/armVIC.o
+ .debug_loc     0x000001cc       0x83 ARM2148/timerC.o
+ .debug_loc     0x0000024f       0xd2 utils/console.o
+ .debug_loc     0x00000321      0x5cc utils/cmdint.o
+ .debug_loc     0x000008ed      0x5d8 utils/printf.o
+ .debug_loc     0x00000ec5      0x139 utils/util.o
+ .debug_loc     0x00000ffe      0x37d DigiShort/ds5300.o
+ .debug_loc     0x0000137b      0x54c http/httpserv.o
+ .debug_loc     0x000018c7      0x2e4 Wiznet/socket.o
+ .debug_loc     0x00001bab      0x12d Wiznet/sockutil.o
+ .debug_loc     0x00001cd8     0x1018 Wiznet/w5300.o
+ .debug_loc     0x00002cf0      0xaf8 i2c/i2c.o
+ .debug_loc     0x000037e8      0x130 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memchr.o)
+ .debug_loc     0x00003918      0x13e /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcmp.o)
+ .debug_loc     0x00003a56       0xfc /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcpy.o)
+ .debug_loc     0x00003b52       0xa9 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memset.o)
+ .debug_loc     0x00003bfb       0x47 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(strlen.o)
+
+.debug_pubnames
+                0x00000000      0xf03
+ .debug_pubnames
+                0x00000000      0x1a2 main_http.o
+ .debug_pubnames
+                0x000001a2       0x61 ARM2148/startup.o
+ .debug_pubnames
+                0x00000203       0x6a ARM2148/armVIC.o
+ .debug_pubnames
+                0x0000026d       0x8d ARM2148/timerC.o
+ .debug_pubnames
+                0x000002fa       0xaf utils/console.o
+ .debug_pubnames
+                0x000003a9      0x136 utils/cmdint.o
+ .debug_pubnames
+                0x000004df       0x29 utils/printf.o
+ .debug_pubnames
+                0x00000508       0x3d utils/util.o
+ .debug_pubnames
+                0x00000545       0xc4 DigiShort/ds5300.o
+ .debug_pubnames
+                0x00000609      0x14c http/httpserv.o
+ .debug_pubnames
+                0x00000755       0x86 Wiznet/socket.o
+ .debug_pubnames
+                0x000007db       0x5c Wiznet/sockutil.o
+ .debug_pubnames
+                0x00000837      0x418 Wiznet/w5300.o
+ .debug_pubnames
+                0x00000c4f      0x223 i2c/i2c.o
+ .debug_pubnames
+                0x00000e72       0x1d /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memchr.o)
+ .debug_pubnames
+                0x00000e8f       0x1d /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcmp.o)
+ .debug_pubnames
+                0x00000eac       0x1d /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcpy.o)
+ .debug_pubnames
+                0x00000ec9       0x1d /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memset.o)
+ .debug_pubnames
+                0x00000ee6       0x1d /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(strlen.o)
+
+.debug_ranges   0x00000000       0xf8
+ .debug_ranges  0x00000000       0x30 main_http.o
+ .debug_ranges  0x00000030       0x30 ARM2148/startup.o
+ .debug_ranges  0x00000060       0x18 utils/cmdint.o
+ .debug_ranges  0x00000078       0x38 http/httpserv.o
+ .debug_ranges  0x000000b0       0x18 Wiznet/socket.o
+ .debug_ranges  0x000000c8       0x30 i2c/i2c.o
+
+.debug_str      0x00000000     0x1308
+ .debug_str     0x00000000      0x1f7 main_http.o
+                                0x229 (size before relaxing)
+ .debug_str     0x000001f7       0x52 ARM2148/startup.o
+                                 0xb8 (size before relaxing)
+ .debug_str     0x00000249       0x76 ARM2148/armVIC.o
+                                0x101 (size before relaxing)
+ .debug_str     0x000002bf       0x9f ARM2148/timerC.o
+                                0x169 (size before relaxing)
+ .debug_str     0x0000035e       0x76 utils/console.o
+                                0x124 (size before relaxing)
+ .debug_str     0x000003d4      0x154 utils/cmdint.o
+                                0x270 (size before relaxing)
+ .debug_str     0x00000528       0x70 utils/printf.o
+                                0x110 (size before relaxing)
+ .debug_str     0x00000598       0x38 utils/util.o
+                                0x11b (size before relaxing)
+ .debug_str     0x000005d0       0xad DigiShort/ds5300.o
+                                0x196 (size before relaxing)
+ .debug_str     0x0000067d      0x122 http/httpserv.o
+                                0x25d (size before relaxing)
+ .debug_str     0x0000079f       0x79 Wiznet/socket.o
+                                0x190 (size before relaxing)
+ .debug_str     0x00000818       0x82 Wiznet/sockutil.o
+                                0x184 (size before relaxing)
+ .debug_str     0x0000089a      0x3ad Wiznet/w5300.o
+                                0x4f7 (size before relaxing)
+ .debug_str     0x00000c47      0x4e3 i2c/i2c.o
+                                0x5d3 (size before relaxing)
+ .debug_str     0x0000112a       0x98 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memchr.o)
+                                0x12d (size before relaxing)
+ .debug_str     0x000011c2       0x43 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcmp.o)
+                                0x10c (size before relaxing)
+ .debug_str     0x00001205       0x6a /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcpy.o)
+                                 0xd6 (size before relaxing)
+ .debug_str     0x0000126f       0x50 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memset.o)
+                                0x120 (size before relaxing)
+ .debug_str     0x000012bf       0x49 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(strlen.o)
+                                0x11f (size before relaxing)
+
+.comment        0x00000000      0x156
+ .comment       0x00000000       0x12 main_http.o
+ .comment       0x00000012       0x12 ARM2148/startup.o
+ .comment       0x00000024       0x12 ARM2148/armVIC.o
+ .comment       0x00000036       0x12 ARM2148/timerC.o
+ .comment       0x00000048       0x12 utils/console.o
+ .comment       0x0000005a       0x12 utils/cmdint.o
+ .comment       0x0000006c       0x12 utils/printf.o
+ .comment       0x0000007e       0x12 utils/util.o
+ .comment       0x00000090       0x12 DigiShort/ds5300.o
+ .comment       0x000000a2       0x12 http/httpserv.o
+ .comment       0x000000b4       0x12 Wiznet/socket.o
+ .comment       0x000000c6       0x12 Wiznet/sockutil.o
+ .comment       0x000000d8       0x12 Wiznet/w5300.o
+ .comment       0x000000ea       0x12 i2c/i2c.o
+ .comment       0x000000fc       0x12 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memchr.o)
+ .comment       0x0000010e       0x12 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcmp.o)
+ .comment       0x00000120       0x12 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcpy.o)
+ .comment       0x00000132       0x12 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memset.o)
+ .comment       0x00000144       0x12 /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(strlen.o)
+
+Cross Reference Table
+
+Symbol                                            File
+CRdyMax                                           Wiznet/w5300.o
+                                                  DigiShort/ds5300.o
+                                                  main_http.o
+CheckCmd                                          utils/cmdint.o
+                                                  main_http.o
+CheckRequest                                      http/httpserv.o
+ClearEE                                           utils/cmdint.o
+CmdDone                                           utils/cmdint.o
+                                                  main_http.o
+CmdLen                                            utils/cmdint.o
+CmdPtr                                            utils/cmdint.o
+CmdRest                                           utils/cmdint.o
+CmdStr                                            utils/cmdint.o
+ConsoleInit                                       utils/console.o
+                                                  main_http.o
+DumpEE                                            utils/cmdint.o
+EstbPhase                                         http/httpserv.o
+                                                  DigiShort/ds5300.o
+Event                                             ARM2148/timerC.o
+                                                  main_http.o
+FIQ_Routine                                       ARM2148/startup.o
+                                                  crt.o
+Get4cDecNum                                       utils/cmdint.o
+GetCmdLine                                        utils/cmdint.o
+IINCHIP_READ                                      DigiShort/ds5300.o
+                                                  Wiznet/w5300.o
+                                                  Wiznet/socket.o
+                                                  main_http.o
+IINCHIP_WRITE                                     DigiShort/ds5300.o
+                                                  Wiznet/w5300.o
+                                                  Wiznet/socket.o
+                                                  http/httpserv.o
+                                                  main_http.o
+IRQ_Routine                                       ARM2148/startup.o
+Init2148                                          ARM2148/startup.o
+                                                  main_http.o
+InitEE_IP                                         utils/cmdint.o
+LoadEE_MAC                                        main_http.o
+LogCnt                                            utils/cmdint.o
+LogData                                           utils/cmdint.o
+LogDisplay                                        utils/cmdint.o
+LogInit                                           utils/cmdint.o
+                                                  main_http.o
+LogRLen                                           utils/cmdint.o
+LogRMark                                          utils/cmdint.o
+LogTim0                                           utils/cmdint.o
+                                                  main_http.o
+LogWr                                             utils/cmdint.o
+                                                  i2c/i2c.o
+LogWrTim                                          utils/cmdint.o
+OutHCnt                                           utils/console.o
+P0Init                                            main_http.o
+P1Init                                            DigiShort/ds5300.o
+                                                  main_http.o
+PrepDwnldData                                     http/httpserv.o
+PrepHeader                                        http/httpserv.o
+PrepVars                                          main_http.o
+RXMEM_SIZE                                        Wiznet/w5300.o
+Rd5300_bl                                         DigiShort/ds5300.o
+                                                  main_http.o
+RdUi8Seq                                          utils/cmdint.o
+RevDate                                           main_http.o
+                                                  utils/cmdint.o
+SWI_Routine                                       ARM2148/startup.o
+                                                  crt.o
+SetMAC                                            main_http.o
+ShowIPs                                           main_http.o
+                                                  utils/cmdint.o
+Snd0Flag                                          http/httpserv.o
+SndBPtr                                           http/httpserv.o
+SndLen                                            http/httpserv.o
+SndType                                           http/httpserv.o
+SpurInit                                          main_http.o
+SpurIntCnt                                        main_http.o
+SpuriousInt                                       main_http.o
+TXMEM_SIZE                                        Wiznet/w5300.o
+ToUpper                                           http/httpserv.o
+ToggleP0_5                                        main_http.o
+ToggleP0_7                                        main_http.o
+Tst1Flag                                          main_http.o
+UNDEF_Routine                                     ARM2148/startup.o
+Uart0ISR                                          utils/console.o
+UpdateVoltage                                     main_http.o
+                                                  http/httpserv.o
+VoltVal                                           main_http.o
+W5300Init2                                        DigiShort/ds5300.o
+                                                  main_http.o
+W5300PwrOff                                       DigiShort/ds5300.o
+W5300PwrOn                                        DigiShort/ds5300.o
+                                                  main_http.o
+W53ErFlg                                          Wiznet/w5300.o
+                                                  main_http.o
+WizCheck0                                         main_http.o
+WizNetInit                                        main_http.o
+__abort_dat                                       crt.o
+__aeabi_idiv                                      /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_divsi3.o)
+__aeabi_idiv0                                     /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_dvmd_tls.o)
+__aeabi_idivmod                                   /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_divsi3.o)
+__aeabi_ldiv0                                     /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_dvmd_tls.o)
+__aeabi_uidiv                                     /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_udivsi3.o)
+__aeabi_uidivmod                                  /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_udivsi3.o)
+__bss_beg__                                       crt.o
+__bss_end__                                       crt.o
+__data_beg__                                      crt.o
+__data_beg_src__                                  crt.o
+__data_end__                                      crt.o
+__div0                                            /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_dvmd_tls.o)
+                                                  /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_umodsi3.o)
+                                                  /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_divsi3.o)
+                                                  /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_udivsi3.o)
+__divsi3                                          /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_divsi3.o)
+                                                  i2c/i2c.o
+__heap_beg                                        crt.o
+__heap_beg__                                      crt.o
+__heap_end                                        crt.o
+__heap_end__                                      crt.o
+__heap_max                                        crt.o
+__intvects                                        crt.o
+__intvects_beg__                                  crt.o
+__intvects_beg_src__                              crt.o
+__intvects_end__                                  crt.o
+__stack_beg_abt                                   crt.o
+__stack_beg_fiq                                   crt.o
+__stack_beg_irq                                   crt.o
+__stack_beg_svc                                   crt.o
+__stack_beg_sys                                   crt.o
+__stack_beg_und                                   crt.o
+__stack_end__                                     crt.o
+__stack_end_abt                                   crt.o
+__stack_end_fiq                                   crt.o
+__stack_end_irq                                   crt.o
+__stack_end_svc                                   crt.o
+__stack_end_sys                                   crt.o
+__stack_end_und                                   crt.o
+__udivsi3                                         /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_udivsi3.o)
+                                                  utils/util.o
+                                                  utils/printf.o
+                                                  utils/cmdint.o
+__umodsi3                                         /armtools/bin/../lib/gcc/arm-elf/4.1.1/interwork/libgcc.a(_umodsi3.o)
+                                                  utils/util.o
+                                                  utils/printf.o
+                                                  utils/cmdint.o
+                                                  main_http.o
+cSoc                                              http/httpserv.o
+                                                  main_http.o
+close                                             Wiznet/socket.o
+                                                  http/httpserv.o
+cmd                                               utils/cmdint.o
+connect                                           Wiznet/socket.o
+delay                                             utils/util.o
+                                                  i2c/i2c.o
+                                                  DigiShort/ds5300.o
+                                                  utils/cmdint.o
+                                                  utils/console.o
+                                                  ARM2148/timerC.o
+                                                  main_http.o
+disableFIQ                                        ARM2148/armVIC.o
+disableIRQ                                        ARM2148/armVIC.o
+disconnect                                        Wiznet/socket.o
+                                                  http/httpserv.o
+eepromRdSBlk                                      i2c/i2c.o
+eepromRead                                        i2c/i2c.o
+                                                  utils/cmdint.o
+                                                  main_http.o
+eepromWrSBlk                                      i2c/i2c.o
+eepromWrite                                       i2c/i2c.o
+                                                  utils/cmdint.o
+enableFIQ                                         ARM2148/armVIC.o
+enableIRQ                                         ARM2148/armVIC.o
+                                                  ARM2148/timerC.o
+                                                  main_http.o
+endless_loop                                      crt.o
+findstr                                           utils/util.o
+                                                  http/httpserv.o
+                                                  utils/cmdint.o
+getFMTUR                                          Wiznet/w5300.o
+getGAR                                            Wiznet/w5300.o
+getIDR                                            Wiznet/w5300.o
+getIINCHIP_RxMAX                                  Wiznet/w5300.o
+getIINCHIP_TxMAX                                  Wiznet/w5300.o
+                                                  Wiznet/socket.o
+getIMR                                            Wiznet/w5300.o
+getIR                                             Wiznet/w5300.o
+getMR                                             DigiShort/ds5300.o
+                                                  main_http.o
+getPATR                                           Wiznet/w5300.o
+getPDHAR                                          Wiznet/w5300.o
+getPMAGICR                                        Wiznet/w5300.o
+getPSIDR                                          Wiznet/w5300.o
+getPTIMER                                         Wiznet/w5300.o
+getPn_BDPTHR                                      Wiznet/w5300.o
+getPn_BRDYR                                       Wiznet/w5300.o
+getRCR                                            Wiznet/w5300.o
+getRTR                                            Wiznet/w5300.o
+getSHAR                                           Wiznet/w5300.o
+getSIPR                                           Wiznet/w5300.o
+                                                  Wiznet/socket.o
+getSUBR                                           Wiznet/w5300.o
+getSn_CR                                          Wiznet/w5300.o
+getSn_DHAR                                        Wiznet/w5300.o
+getSn_DIPR                                        Wiznet/w5300.o
+getSn_DPORTR                                      Wiznet/w5300.o
+getSn_FRAGR                                       Wiznet/w5300.o
+getSn_IMR                                         Wiznet/w5300.o
+getSn_IR                                          Wiznet/w5300.o
+                                                  http/httpserv.o
+getSn_KPALVTR                                     Wiznet/w5300.o
+getSn_MR                                          Wiznet/w5300.o
+                                                  Wiznet/socket.o
+getSn_MSSR                                        Wiznet/w5300.o
+getSn_PROTOR                                      Wiznet/w5300.o
+getSn_RX_FIFOR                                    Wiznet/w5300.o
+getSn_RX_RSR                                      Wiznet/w5300.o
+                                                  http/httpserv.o
+getSn_SSR                                         Wiznet/w5300.o
+                                                  Wiznet/socket.o
+                                                  http/httpserv.o
+getSn_TOSR                                        Wiznet/w5300.o
+getSn_TTLR                                        Wiznet/w5300.o
+getSn_TX_FSR                                      Wiznet/w5300.o
+                                                  Wiznet/socket.o
+                                                  http/httpserv.o
+getSn_TX_WRSR                                     Wiznet/w5300.o
+getT0                                             ARM2148/timerC.o
+getT1                                             ARM2148/timerC.o
+getUIPR                                           Wiznet/w5300.o
+getUPORTR                                         Wiznet/w5300.o
+getchar                                           utils/console.o
+gw                                                main_http.o
+hex2int                                           utils/util.o
+                                                  http/httpserv.o
+htonl                                             Wiznet/sockutil.o
+htons                                             Wiznet/sockutil.o
+httpPort                                          http/httpserv.o
+                                                  main_http.o
+http_serv_machine                                 http/httpserv.o
+                                                  main_http.o
+i2cAddress                                        i2c/i2c.o
+i2cBusInUse                                       i2c/i2c.o
+i2cDataBuffer                                     i2c/i2c.o
+i2cDataLenRead                                    i2c/i2c.o
+i2cDataLenWrite                                   i2c/i2c.o
+i2cDataPtr                                        i2c/i2c.o
+i2cErrno                                          i2c/i2c.o
+i2cInit                                           i2c/i2c.o
+                                                  main_http.o
+i2cReadBuffer                                     i2c/i2c.o
+i2cReadBufferEx                                   i2c/i2c.o
+i2cReadBuffer_o                                   i2c/i2c.o
+i2cSetTimeout                                     i2c/i2c.o
+i2cSetTimeout_o                                   i2c/i2c.o
+i2cTimeout                                        i2c/i2c.o
+i2cTransferBytes                                  i2c/i2c.o
+i2cWaitComplete                                   i2c/i2c.o
+i2cWriteBuffer                                    i2c/i2c.o
+i2cWriteBufferEx                                  i2c/i2c.o
+i2cWriteBufferPoll                                i2c/i2c.o
+i2cWriteBuffer_o                                  i2c/i2c.o
+i2cWriteReadBuffer                                i2c/i2c.o
+i2cWriteReadBufferEx                              i2c/i2c.o
+i2cWriteReadBufferPoll                            i2c/i2c.o
+i2cWriteReadBuffer_o                              i2c/i2c.o
+iinchip_init                                      DigiShort/ds5300.o
+                                                  main_http.o
+iinchip_source_port                               Wiznet/socket.o
+inBuf                                             http/httpserv.o
+inet_ntoa                                         Wiznet/sockutil.o
+ip_0                                              main_http.o
+itoa                                              utils/util.o
+                                                  http/httpserv.o
+                                                  main_http.o
+listen                                            Wiznet/socket.o
+                                                  http/httpserv.o
+mac_0                                             main_http.o
+mac_1                                             main_http.o
+main                                              main_http.o
+                                                  crt.o
+memchr                                            /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memchr.o)
+                                                  http/httpserv.o
+memcmp                                            /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcmp.o)
+                                                  http/httpserv.o
+memcpy                                            /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memcpy.o)
+                                                  http/httpserv.o
+                                                  utils/cmdint.o
+                                                  main_http.o
+memset                                            /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(memset.o)
+                                                  Wiznet/sockutil.o
+                                                  utils/cmdint.o
+miliSec                                           i2c/i2c.o
+                                                  utils/cmdint.o
+                                                  ARM2148/timerC.o
+my_getchar                                        utils/console.o
+                                                  utils/cmdint.o
+my_putchar                                        utils/console.o
+ntohl                                             Wiznet/sockutil.o
+ntohs                                             Wiznet/sockutil.o
+outBuf                                            http/httpserv.o
+                                                  utils/cmdint.o
+p_ptr                                             http/httpserv.o
+printf                                            utils/printf.o
+                                                  Wiznet/w5300.o
+                                                  Wiznet/socket.o
+                                                  http/httpserv.o
+                                                  utils/cmdint.o
+                                                  main_http.o
+putchar                                           utils/console.o
+                                                  utils/printf.o
+                                                  utils/cmdint.o
+puts                                              utils/console.o
+recv                                              Wiznet/socket.o
+                                                  http/httpserv.o
+restoreFIQ                                        ARM2148/armVIC.o
+restoreIRQ                                        ARM2148/armVIC.o
+rx_mem_conf                                       main_http.o
+sCRcnt                                            Wiznet/w5300.o
+                                                  main_http.o
+sOutBuf                                           utils/console.o
+sOutFull                                          utils/console.o
+sOutRdPtr                                         utils/console.o
+sOutWrPtr                                         utils/console.o
+scanDecNumber                                     utils/cmdint.o
+scmd                                              utils/cmdint.o
+send1st_DS                                        http/httpserv.o
+send_DS                                           http/httpserv.o
+setGAR                                            Wiznet/w5300.o
+                                                  utils/cmdint.o
+                                                  main_http.o
+setIMR                                            Wiznet/w5300.o
+setIR                                             Wiznet/w5300.o
+setMR                                             DigiShort/ds5300.o
+setPMAGICR                                        Wiznet/w5300.o
+setPTIMER                                         Wiznet/w5300.o
+setPn_BDPTHR                                      Wiznet/w5300.o
+setPn_BRDYR                                       Wiznet/w5300.o
+setRCR                                            Wiznet/w5300.o
+setRTR                                            Wiznet/w5300.o
+setSHAR                                           Wiznet/w5300.o
+                                                  utils/cmdint.o
+                                                  main_http.o
+setSIPR                                           Wiznet/w5300.o
+                                                  utils/cmdint.o
+                                                  main_http.o
+setSUBR                                           Wiznet/w5300.o
+                                                  utils/cmdint.o
+                                                  main_http.o
+setSn_CR                                          Wiznet/w5300.o
+                                                  Wiznet/socket.o
+                                                  http/httpserv.o
+setSn_DHAR                                        Wiznet/w5300.o
+setSn_DIPR                                        Wiznet/w5300.o
+setSn_DPORTR                                      Wiznet/w5300.o
+setSn_FRAGR                                       Wiznet/w5300.o
+setSn_IMR                                         Wiznet/w5300.o
+                                                  DigiShort/ds5300.o
+setSn_IR                                          Wiznet/w5300.o
+                                                  Wiznet/socket.o
+                                                  http/httpserv.o
+setSn_KPALVTR                                     Wiznet/w5300.o
+setSn_MR                                          Wiznet/w5300.o
+setSn_MSSR                                        Wiznet/w5300.o
+setSn_PROTOR                                      Wiznet/w5300.o
+setSn_TOSR                                        Wiznet/w5300.o
+setSn_TTLR                                        Wiznet/w5300.o
+setSn_TX_FIFOR                                    Wiznet/w5300.o
+setSn_TX_WRSR                                     Wiznet/w5300.o
+                                                  http/httpserv.o
+sn                                                main_http.o
+socState                                          Wiznet/w5300.o
+                                                  Wiznet/socket.o
+socket                                            Wiznet/socket.o
+                                                  http/httpserv.o
+socket_return                                     http/httpserv.o
+sprintf                                           utils/printf.o
+                                                  Wiznet/sockutil.o
+ssrErr                                            Wiznet/w5300.o
+                                                  Wiznet/socket.o
+                                                  DigiShort/ds5300.o
+start                                             crt.o
+strlen                                            /armtools/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/lib/interwork/libc.a(strlen.o)
+                                                  http/httpserv.o
+                                                  utils/util.o
+swapl                                             Wiznet/sockutil.o
+swaps                                             Wiznet/sockutil.o
+sysinit                                           Wiznet/w5300.o
+                                                  main_http.o
+tcnt                                              main_http.o
+timer0ISR                                         ARM2148/timerC.o
+timer0Init                                        ARM2148/timerC.o
+timer1Clear                                       ARM2148/timerC.o
+                                                  http/httpserv.o
+timerAttach                                       ARM2148/timerC.o
+timerDetach                                       ARM2148/timerC.o
+timerInit                                         ARM2148/timerC.o
+                                                  main_http.o
+tmp                                               utils/cmdint.o
+tmpBuf                                            http/httpserv.o
+tx_mem_conf                                       main_http.o
+txfree_size                                       http/httpserv.o
+u1                                                main_http.o
+uplOKmsg                                          http/httpserv.o
+voltBuf                                           http/httpserv.o
+                                                  main_http.o
+wait4sendDone                                     http/httpserv.o
+wait_10ms                                         Wiznet/w5300.o
+                                                  Wiznet/socket.o
+wait_1ms                                          Wiznet/w5300.o
+wait_1us                                          Wiznet/w5300.o
+wiz_read_buf                                      DigiShort/ds5300.o
+                                                  Wiznet/socket.o
+wiz_write_buf                                     DigiShort/ds5300.o
+                                                  http/httpserv.o
+zero_1                                            main_http.o
+zero_2                                            main_http.o

@@ -1,0 +1,22 @@
+heap_2.o: heap_2.c \
+  /cygdrive/c/program\ files/gnuarm/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/sys-include/stdlib.h \
+  /cygdrive/c/program\ files/gnuarm/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/sys-include/_ansi.h \
+  /cygdrive/c/program\ files/gnuarm/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/sys-include/newlib.h \
+  /cygdrive/c/program\ files/gnuarm/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/sys-include/sys/config.h \
+  /cygdrive/c/program\ files/gnuarm/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/sys-include/machine/ieeefp.h \
+  /cygdrive/c/program\ files/gnuarm/bin/../lib/gcc/arm-elf/4.1.1/include/stddef.h \
+  /cygdrive/c/program\ files/gnuarm/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/sys-include/sys/reent.h \
+  /cygdrive/c/program\ files/gnuarm/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/sys-include/_ansi.h \
+  /cygdrive/c/program\ files/gnuarm/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/sys-include/sys/_types.h \
+  /cygdrive/c/program\ files/gnuarm/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/sys-include/sys/lock.h \
+  /cygdrive/c/program\ files/gnuarm/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/sys-include/machine/stdlib.h \
+  /cygdrive/c/program\ files/gnuarm/bin/../lib/gcc/arm-elf/4.1.1/../../../../arm-elf/sys-include/alloca.h \
+  /cygdrive/c/lpc/JDTarg/Wren_JD/FreeRTOS/include/FreeRTOS.h \
+  /cygdrive/c/lpc/JDTarg/Wren_JD/FreeRTOS/include/projdefs.h \
+  /cygdrive/c/lpc/JDTarg/Wren_JD/FreeRTOSConfig.h \
+  /cygdrive/c/lpc/JDTarg/Wren_JD/lpc210x.h \
+  /cygdrive/c/lpc/JDTarg/Wren_JD/sysdefs.h \
+  /cygdrive/c/lpc/JDTarg/Wren_JD/FreeRTOS/include/portable.h \
+  /cygdrive/c/lpc/JDTarg/Wren_JD/FreeRTOS/portable/GCC/ARM7_LPC2000/portmacro.h \
+  /cygdrive/c/lpc/JDTarg/Wren_JD/FreeRTOS/include/task.h \
+  /cygdrive/c/lpc/JDTarg/Wren_JD/FreeRTOS/include/list.h

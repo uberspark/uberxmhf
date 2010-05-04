@@ -1,0 +1,2329 @@
+   1              		.file	"httpserv.c"
+   9              	.Ltext0:
+  10              		.align	2
+  11              		.global	ToUpper
+  13              	ToUpper:
+  14              	.LFB3:
+  15              		.file 1 "http/httpserv.c"
+   1:http/httpserv.c **** /** @file
+   2:http/httpserv.c ****  * http server
+   3:http/httpserv.c ****  */
+   4:http/httpserv.c **** /* copyright DS©2008, 2008 */
+   5:http/httpserv.c **** 
+   6:http/httpserv.c **** #include <stdint.h>	// uint8_t 
+   7:http/httpserv.c **** #include <stdlib.h>
+   8:http/httpserv.c **** #include <string.h>
+   9:http/httpserv.c **** 
+  10:http/httpserv.c **** #include	"../types.h"
+  11:http/httpserv.c **** #include	"../Wiznet/w5300.h"
+  12:http/httpserv.c **** #include	"../DigiShort/ds5300.h"
+  13:http/httpserv.c **** #include	"../Wiznet/socket.h"
+  14:http/httpserv.c **** 
+  15:http/httpserv.c **** #include	"../ARM2148/lpc21xx.h"
+  16:http/httpserv.c **** #include	"../utils/util.h"
+  17:http/httpserv.c **** 
+  18:http/httpserv.c **** #include	"PageData.h"
+  19:http/httpserv.c **** #include	"http_conf.h"
+  20:http/httpserv.c **** 
+  21:http/httpserv.c **** extern	int 	putchar(int ch);
+  22:http/httpserv.c **** extern	void	UpdateVoltage(void);
+  23:http/httpserv.c **** extern	void	LogWr(uint16 data);
+  24:http/httpserv.c **** extern	void	LogWrTim(void);
+  25:http/httpserv.c **** extern	void	timer1Clear(void);
+  26:http/httpserv.c **** extern	unsigned int getT1(void);
+  27:http/httpserv.c ****   
+  28:http/httpserv.c **** 
+  29:http/httpserv.c **** int		send_DS(SOCKET s, uint8 * buf, int len);
+  30:http/httpserv.c **** int		send1st_DS(SOCKET s, uint8 * buf, int len);
+  31:http/httpserv.c **** int		wait4sendDone(SOCKET s);	
+  32:http/httpserv.c **** int 	PrepHeader(int pLen, char pType);
+  33:http/httpserv.c **** uint8 ToUpper(uint8 ch);
+  34:http/httpserv.c **** int		CheckRequest(int len);
+  35:http/httpserv.c **** void 	socket_return(void);
+  36:http/httpserv.c **** void 	http_serv_machine(void);
+  37:http/httpserv.c **** void	PrepDwnldData(void);
+  38:http/httpserv.c **** 
+  39:http/httpserv.c **** int		cSoc, txfree_size;
+  40:http/httpserv.c **** int 	httpPort, Snd0Flag;
+  41:http/httpserv.c **** 
+  42:http/httpserv.c **** 
+  43:http/httpserv.c **** 
+  44:http/httpserv.c **** #define CR	13		// 0x0D
+  45:http/httpserv.c **** #define LF	10		// 0x0A
+  46:http/httpserv.c **** 
+  47:http/httpserv.c **** 
+  48:http/httpserv.c **** #define  STOP_NOW			printf("\n\r### STOP ###");\
+  49:http/httpserv.c **** 											while (1) ;
+  50:http/httpserv.c **** 
+  51:http/httpserv.c **** struct p_rec *p_ptr;
+  52:http/httpserv.c **** 
+  53:http/httpserv.c **** 
+  54:http/httpserv.c **** 		
+  55:http/httpserv.c **** uint8 	outBuf[OBUF_SIZE+1];
+  56:http/httpserv.c **** uint8 	inBuf[IBUF_SIZE+1];
+  57:http/httpserv.c **** 
+  58:http/httpserv.c **** uint32	tmpBuf[400];
+  59:http/httpserv.c **** 
+  60:http/httpserv.c **** uint8	voltBuf[64] = {"2.345     "};
+  61:http/httpserv.c **** 
+  62:http/httpserv.c **** uint8					EstbPhase[MAX_SOCK_NUM];
+  63:http/httpserv.c **** uint8 * 			SndBPtr[MAX_SOCK_NUM];
+  64:http/httpserv.c **** unsigned int	SndLen[MAX_SOCK_NUM];	
+  65:http/httpserv.c **** uint8					SndType[MAX_SOCK_NUM];	
+  66:http/httpserv.c **** 
+  67:http/httpserv.c **** extern int printf(const char *format, ...);
+  68:http/httpserv.c **** 
+  69:http/httpserv.c **** #define HD_HTTP_OK	"HTTP/1.1 200 OK\r\n"
+  70:http/httpserv.c **** #define HD_ERR_400	"HTTP/1.1 400 Bad Request\r\n"
+  71:http/httpserv.c **** 
+  72:http/httpserv.c **** #define HD_SRVR_DS	"Server: Digital Shortcut Inc Server\r\n"
+  73:http/httpserv.c **** #define	HD_ENCGZIP	"Content-Encoding: gzip\r\n"
+  74:http/httpserv.c **** 
+  75:http/httpserv.c **** #define	HD_CONT_TXHTML 	"Content-Type: text/html\r\n"
+  76:http/httpserv.c **** #define	HD_CONT_GIF 		"Content-Type: image/gif\r\n"
+  77:http/httpserv.c **** #define	HD_CONT_PNG 		"Content-Type: image/png\r\n"
+  78:http/httpserv.c **** #define	HD_CONT_JPG 		"Content-Type: image/jpeg\r\n"
+  79:http/httpserv.c **** #define	HD_CONT_CSS 		"Content-Type: text/css\r\n"
+  80:http/httpserv.c **** #define	HD_CONT_ICO 		"Content-Type: image/x-icon\r\n"
+  81:http/httpserv.c **** 
+  82:http/httpserv.c **** #define	HD_CACHE_CNTRL	"Cache-Control: no-cache, must-revalidate\r\n"
+  83:http/httpserv.c **** 
+  84:http/httpserv.c **** #define	HD_CONT_LEN 	"Content-Length:  "
+  85:http/httpserv.c **** 
+  86:http/httpserv.c **** #define	HD_DONE		"\r\n"
+  87:http/httpserv.c **** #define	HD_DONE2	"\r\n\r\n"
+  88:http/httpserv.c **** 
+  89:http/httpserv.c **** //#define HD_DATE		"Date: Mon, 08 Jan 1990 12:45:31 GMT\r\n"
+  90:http/httpserv.c **** 
+  91:http/httpserv.c **** #define	HD_TXT	HD_HTTP_OK HD_SRVR_DS HD_CONT_TXHTML HD_CONT_LEN 
+  92:http/httpserv.c **** #define	HD_TXHT_GZ	HD_HTTP_OK HD_SRVR_DS HD_CONT_TXHTML HD_ENCGZIP HD_CONT_LEN 
+  93:http/httpserv.c **** #define	HD_GIF	HD_HTTP_OK HD_SRVR_DS HD_CONT_GIF HD_CONT_LEN  
+  94:http/httpserv.c **** #define	HD_JPG	HD_HTTP_OK HD_SRVR_DS HD_CONT_JPG HD_CONT_LEN  
+  95:http/httpserv.c **** #define	HD_PNG	HD_HTTP_OK HD_SRVR_DS HD_CONT_PNG HD_CONT_LEN  
+  96:http/httpserv.c **** #define	HD_CSS	HD_HTTP_OK HD_SRVR_DS HD_CONT_CSS HD_CONT_LEN
+  97:http/httpserv.c **** #define	HD_CSS_GZ	HD_HTTP_OK HD_SRVR_DS HD_CONT_CSS HD_ENCGZIP HD_CONT_LEN
+  98:http/httpserv.c **** #define	HD_PHP	HD_HTTP_OK HD_SRVR_DS HD_CACHE_CNTRL HD_CONT_TXHTML HD_CONT_LEN
+  99:http/httpserv.c **** #define	HD_ICO	HD_HTTP_OK HD_SRVR_DS HD_CONT_ICO HD_CONT_LEN
+ 100:http/httpserv.c **** #define	HD_ICO_GZ	HD_HTTP_OK HD_SRVR_DS HD_CONT_ICO HD_ENCGZIP HD_CONT_LEN
+ 101:http/httpserv.c **** 
+ 102:http/httpserv.c **** #define	HD_ERRX	HD_ERR_400 HD_SRVR_DS HD_DONE
+ 103:http/httpserv.c **** #define	HD_OKTXT	HD_HTTP_OK HD_SRVR_DS HD_CONT_TXHTML HD_DONE
+ 104:http/httpserv.c **** 
+ 105:http/httpserv.c **** 
+ 106:http/httpserv.c **** char uplOKmsg[] = {"The file has been uploaded\r\n\r\n"};
+ 107:http/httpserv.c **** 
+ 108:http/httpserv.c **** // File types
+ 109:http/httpserv.c **** #define TEXT_TYPE			1
+ 110:http/httpserv.c **** #define GIF_TYPE			2
+ 111:http/httpserv.c **** #define CSS_TYPE			3
+ 112:http/httpserv.c **** #define JPEG_TYPE			6
+ 113:http/httpserv.c **** #define PNG_TYPE			7
+ 114:http/httpserv.c **** #define HTML_GZ_TYPE	4
+ 115:http/httpserv.c **** #define CSS_GZ_TYPE		5
+ 116:http/httpserv.c **** #define ICON_TYPE			8
+ 117:http/httpserv.c **** #define PHP_TYPE			9
+ 118:http/httpserv.c **** 
+ 119:http/httpserv.c **** // Http Send Task Types
+ 120:http/httpserv.c **** #define STATIC				0
+ 121:http/httpserv.c **** #define VOLTM					1
+ 122:http/httpserv.c **** #define DOWNLOAD			2
+ 123:http/httpserv.c **** 
+ 124:http/httpserv.c **** #define VOLT_LEN			8
+ 125:http/httpserv.c **** 
+ 126:http/httpserv.c **** #define ESTB_NONE			0
+ 127:http/httpserv.c **** #define ESTB_RCVD			1
+ 128:http/httpserv.c **** #define ESTB_TRX			2
+ 129:http/httpserv.c **** #define ESTB_TXNRDY		3
+ 130:http/httpserv.c **** 
+ 131:http/httpserv.c **** #define POST_REQ			0x1000
+ 132:http/httpserv.c **** 
+ 133:http/httpserv.c **** 
+ 134:http/httpserv.c **** int PrepHeader(int pLen, char pType)
+ 135:http/httpserv.c **** {
+ 136:http/httpserv.c **** 	char tBuf[20];
+ 137:http/httpserv.c **** 	uint8* poB;
+ 138:http/httpserv.c **** 	char* pp;
+ 139:http/httpserv.c **** 	int leni, tlen;
+ 140:http/httpserv.c **** 	
+ 141:http/httpserv.c **** 	// combine header HTTP
+ 142:http/httpserv.c **** 	tlen = 0;
+ 143:http/httpserv.c **** 	poB = &outBuf[0];
+ 144:http/httpserv.c **** 	
+ 145:http/httpserv.c ****   switch (pType) {
+ 146:http/httpserv.c **** 	case TEXT_TYPE:
+ 147:http/httpserv.c **** 		//page_type 1: PLAIN TEXT
+ 148:http/httpserv.c **** 		leni = sizeof(HD_TXT)-1;
+ 149:http/httpserv.c **** 		memcpy( poB, HD_TXT, leni );
+ 150:http/httpserv.c **** 		break;
+ 151:http/httpserv.c **** 		
+ 152:http/httpserv.c **** 	case GIF_TYPE:
+ 153:http/httpserv.c **** 		//page_type 2: GIF image
+ 154:http/httpserv.c **** 		leni = sizeof(HD_GIF)-1;
+ 155:http/httpserv.c **** 		memcpy( poB, HD_GIF, leni );
+ 156:http/httpserv.c **** 		break;
+ 157:http/httpserv.c **** 
+ 158:http/httpserv.c **** 	case CSS_TYPE:
+ 159:http/httpserv.c **** 		//page_type 3: PLAIN CSS
+ 160:http/httpserv.c **** 		leni = sizeof(HD_CSS)-1;
+ 161:http/httpserv.c **** 		memcpy( poB, HD_CSS, leni );
+ 162:http/httpserv.c **** 		break;
+ 163:http/httpserv.c **** 				
+ 164:http/httpserv.c **** 	case HTML_GZ_TYPE:
+ 165:http/httpserv.c **** 		//page_type 4: GZIPed HTML TEXT
+ 166:http/httpserv.c **** 		leni = sizeof(HD_TXHT_GZ)-1;
+ 167:http/httpserv.c **** 		memcpy( poB, HD_TXHT_GZ, leni );
+ 168:http/httpserv.c **** 		break;
+ 169:http/httpserv.c **** 		
+ 170:http/httpserv.c **** 	case CSS_GZ_TYPE:
+ 171:http/httpserv.c **** 		//page_type 5: GZIPed CSS
+ 172:http/httpserv.c **** 		leni = sizeof(HD_CSS_GZ)-1;
+ 173:http/httpserv.c **** 		memcpy( poB, HD_CSS_GZ, leni );
+ 174:http/httpserv.c **** 		break;
+ 175:http/httpserv.c **** 
+ 176:http/httpserv.c **** 	case JPEG_TYPE:
+ 177:http/httpserv.c **** 		//page_type 6: JPEG image
+ 178:http/httpserv.c **** 		leni = sizeof(HD_JPG)-1;
+ 179:http/httpserv.c **** 		memcpy( poB, HD_JPG, leni );
+ 180:http/httpserv.c **** 		break;
+ 181:http/httpserv.c **** 
+ 182:http/httpserv.c **** 	case PNG_TYPE:
+ 183:http/httpserv.c **** 		//page_type 6: PNG image
+ 184:http/httpserv.c **** 		leni = sizeof(HD_PNG)-1;
+ 185:http/httpserv.c **** 		memcpy( poB, HD_PNG, leni );
+ 186:http/httpserv.c **** 		break;
+ 187:http/httpserv.c **** 
+ 188:http/httpserv.c **** 	case ICON_TYPE:
+ 189:http/httpserv.c **** 		//page_type 8: ICO image/x-icon
+ 190:http/httpserv.c **** 		leni = sizeof(HD_ICO)-1;
+ 191:http/httpserv.c **** 		memcpy( poB, HD_ICO, leni );
+ 192:http/httpserv.c **** 		break;
+ 193:http/httpserv.c **** 
+ 194:http/httpserv.c **** 	case PHP_TYPE:
+ 195:http/httpserv.c **** 		//page_type 9: PHP
+ 196:http/httpserv.c **** 		leni = sizeof(HD_PHP)-1;
+ 197:http/httpserv.c **** 		memcpy( poB, HD_PHP, leni );
+ 198:http/httpserv.c **** 		break;
+ 199:http/httpserv.c **** 		
+ 200:http/httpserv.c **** 	default:
+ 201:http/httpserv.c **** 		//default page_type 1: PLAIN TEXT
+ 202:http/httpserv.c **** 		leni = sizeof(HD_TXT)-1;
+ 203:http/httpserv.c **** 		memcpy( poB, HD_TXT, leni );
+ 204:http/httpserv.c **** 		break;
+ 205:http/httpserv.c **** 	}
+ 206:http/httpserv.c **** 				
+ 207:http/httpserv.c **** 	tlen += leni;
+ 208:http/httpserv.c **** 	poB += leni;
+ 209:http/httpserv.c **** 	
+ 210:http/httpserv.c **** 	pp = itoa(pLen, &tBuf[0], 10);
+ 211:http/httpserv.c **** 	leni = strlen(pp);
+ 212:http/httpserv.c **** 	memcpy( poB, pp, leni );
+ 213:http/httpserv.c **** 	tlen += leni;
+ 214:http/httpserv.c **** 	poB += leni;
+ 215:http/httpserv.c **** 	
+ 216:http/httpserv.c **** 	leni = sizeof(HD_DONE2)-1;
+ 217:http/httpserv.c **** 	memcpy( poB, HD_DONE2, leni );
+ 218:http/httpserv.c **** 	tlen += leni;
+ 219:http/httpserv.c **** 	
+ 220:http/httpserv.c **** 	outBuf[tlen] ='\0';
+ 221:http/httpserv.c **** 	
+ 222:http/httpserv.c **** 	return tlen;
+ 223:http/httpserv.c **** }
+ 224:http/httpserv.c **** 	
+ 225:http/httpserv.c **** 
+ 226:http/httpserv.c **** uint8 ToUpper(uint8 ch)
+ 227:http/httpserv.c **** {
+  16              		.loc 1 227 0
+  17              		@ Function supports interworking.
+  18              		@ args = 0, pretend = 0, frame = 0
+  19              		@ frame_needed = 0, uses_anonymous_args = 0
+  20              		@ link register save eliminated.
+  21              	.LVL0:
+  22 0000 0020A0E1 		mov	r2, r0
+  23 0004 FF0000E2 		and	r0, r0, #255
+ 228:http/httpserv.c **** 	if ( (ch>='a')&&(ch<='z') )  ch = ch & (~040);
+  24              		.loc 1 228 0
+  25 0008 613040E2 		sub	r3, r0, #97
+  26 000c 190053E3 		cmp	r3, #25
+  27 0010 DF000292 		andls	r0, r2, #223
+  28              		.loc 1 227 0
+  29              		@ lr needed for prologue
+  30              	.LVL1:
+ 229:http/httpserv.c **** 	return ch;
+ 230:http/httpserv.c **** }
+  31              		.loc 1 230 0
+  32 0014 1EFF2FE1 		bx	lr
+  33              	.LFE3:
+  35              		.align	2
+  36              		.global	PrepDwnldData
+  38              	PrepDwnldData:
+  39              	.LFB10:
+ 231:http/httpserv.c **** 
+ 232:http/httpserv.c **** int	CheckRequest(int len)
+ 233:http/httpserv.c **** {
+ 234:http/httpserv.c **** 	int i, id;
+ 235:http/httpserv.c **** 	char* p;
+ 236:http/httpserv.c **** 	char tstr[12];
+ 237:http/httpserv.c **** 	char c;
+ 238:http/httpserv.c **** 	
+ 239:http/httpserv.c **** 	for ( i = 0; i < len; i++ ) {
+ 240:http/httpserv.c **** 		inBuf[i] = ToUpper( inBuf[i] );
+ 241:http/httpserv.c **** 	}
+ 242:http/httpserv.c **** 	
+ 243:http/httpserv.c **** 	//printf("\n\rinBuf - %s", inBuf);
+ 244:http/httpserv.c **** 	if ( memcmp(inBuf, "GET ", 4)==0 ) {
+ 245:http/httpserv.c **** 		if ( memcmp(&inBuf[4], "/ HTTP", 6)==0 ) {
+ 246:http/httpserv.c **** 			return 0;
+ 247:http/httpserv.c **** 		}
+ 248:http/httpserv.c **** 			
+ 249:http/httpserv.c **** 		p = memchr( &inBuf[5], '.', len);
+ 250:http/httpserv.c **** 		if ( p == NULL ) return -1;
+ 251:http/httpserv.c **** 		
+ 252:http/httpserv.c **** 		memcpy (tstr, p-7, 7);
+ 253:http/httpserv.c **** 		tstr[7] = '\0';
+ 254:http/httpserv.c **** 		printf("\n\rDOT: %s", tstr);
+ 255:http/httpserv.c **** 		
+ 256:http/httpserv.c **** 		if ( memcmp(&tstr[2], "INDEX", 5)==0 ) {
+ 257:http/httpserv.c **** 			return 0;
+ 258:http/httpserv.c **** 		}			
+ 259:http/httpserv.c **** 			
+ 260:http/httpserv.c **** 		if ( memcmp(&tstr[0], "FAVICON", 7)==0 ) {
+ 261:http/httpserv.c **** 			return 1;
+ 262:http/httpserv.c **** 		}
+ 263:http/httpserv.c **** 		if ( (hex2int(tstr[5])>=0)&&(hex2int(tstr[6])>=0) ) {
+ 264:http/httpserv.c **** 			id = (hex2int(tstr[5])*16) + hex2int(tstr[6]);
+ 265:http/httpserv.c **** 			if ( id > 85 ) id = -1;
+ 266:http/httpserv.c **** 			return id;
+ 267:http/httpserv.c **** 		}			
+ 268:http/httpserv.c **** 		
+ 269:http/httpserv.c **** 		return -1;
+ 270:http/httpserv.c **** 	} // End GET Request
+ 271:http/httpserv.c **** 	
+ 272:http/httpserv.c **** 	if ( memcmp(inBuf, "POST ", 5)==0 ) {
+ 273:http/httpserv.c **** 		//c = inBuf[11];
+ 274:http/httpserv.c **** 		//inBuf[11] = 0;
+ 275:http/httpserv.c **** 		//printf("\n\rPOST inBuf=%s", inBuf);
+ 276:http/httpserv.c **** 		//inBuf[11] = c;
+ 277:http/httpserv.c **** 		return POST_REQ;
+ 278:http/httpserv.c **** 	}
+ 279:http/httpserv.c **** 	
+ 280:http/httpserv.c **** 	return -1;
+ 281:http/httpserv.c **** }
+ 282:http/httpserv.c **** 
+ 283:http/httpserv.c **** void socket_return(void)
+ 284:http/httpserv.c **** {
+ 285:http/httpserv.c **** 	int sn;
+ 286:http/httpserv.c **** 	
+ 287:http/httpserv.c **** 	for (sn = 0; sn < MAX_SOCK_NUM; sn++) {	
+ 288:http/httpserv.c **** 		if ( getSn_SSR(sn) == SOCK_CLOSED ) {
+ 289:http/httpserv.c **** 			socket(sn,  Sn_MR_TCP, (uint16)httpPort, 0x00);
+ 290:http/httpserv.c **** 			listen(sn);
+ 291:http/httpserv.c **** 		}
+ 292:http/httpserv.c **** 	}
+ 293:http/httpserv.c **** }
+ 294:http/httpserv.c **** 
+ 295:http/httpserv.c **** 
+ 296:http/httpserv.c **** void http_serv_machine(void)
+ 297:http/httpserv.c **** {
+ 298:http/httpserv.c **** 	uint16 v, ts;
+ 299:http/httpserv.c **** 	int idx, icnt, pi, hlen, len_done, snd_typ;
+ 300:http/httpserv.c **** 	//char tbuf[10];
+ 301:http/httpserv.c **** 	//char* p;
+ 302:http/httpserv.c **** 	
+ 303:http/httpserv.c **** 	v = getSn_SSR(cSoc);
+ 304:http/httpserv.c **** 	switch ( v ) {	// sock status
+ 305:http/httpserv.c **** 	case SOCK_CLOSED:
+ 306:http/httpserv.c **** 		socket(cSoc,  Sn_MR_TCP, (uint16)httpPort, 0x0020);	// No Delayed ACK Enabled
+ 307:http/httpserv.c **** 		break;
+ 308:http/httpserv.c **** 		
+ 309:http/httpserv.c **** 	case SOCK_INIT:
+ 310:http/httpserv.c **** 		//printf( "\n\r***SockInit_%d MR=%04x", cSoc, getSn_MR(cSoc) );	
+ 311:http/httpserv.c **** 		listen(cSoc);
+ 312:http/httpserv.c **** 		break;
+ 313:http/httpserv.c **** 		
+ 314:http/httpserv.c **** 	case SOCK_LISTEN:
+ 315:http/httpserv.c **** 		EstbPhase[cSoc] = ESTB_NONE;
+ 316:http/httpserv.c **** 		break;
+ 317:http/httpserv.c **** 		
+ 318:http/httpserv.c **** 	case SOCK_ESTABLISHED:	{
+ 319:http/httpserv.c **** 		int i, EndFlag;
+ 320:http/httpserv.c **** 		unsigned int t;
+ 321:http/httpserv.c **** 		switch (EstbPhase[cSoc]) {
+ 322:http/httpserv.c **** 		case ESTB_NONE :
+ 323:http/httpserv.c **** 			ts = getSn_RX_RSR(cSoc);
+ 324:http/httpserv.c **** 			if ( ts>30 ) {
+ 325:http/httpserv.c **** 				// data available in RecvFIFO
+ 326:http/httpserv.c **** 				uint16 n = getSn_RX_RSR(cSoc);
+ 327:http/httpserv.c **** 				if (n > IBUF_SIZE) n = IBUF_SIZE;
+ 328:http/httpserv.c **** 				icnt = recv(cSoc, &inBuf[0], n);
+ 329:http/httpserv.c **** 				
+ 330:http/httpserv.c **** 				pi = CheckRequest(icnt);
+ 331:http/httpserv.c **** 				//putchar('&');
+ 332:http/httpserv.c **** 				
+ 333:http/httpserv.c **** 				switch (pi) {
+ 334:http/httpserv.c **** 				case POST_REQ:
+ 335:http/httpserv.c **** 					// POST Service
+ 336:http/httpserv.c **** 					inBuf[icnt] = 0;
+ 337:http/httpserv.c **** 					idx = findstr((char*)inBuf, "\r\n\r\n");
+ 338:http/httpserv.c **** 					//printf("\n\r***POST len=%d recl=%d DATA Indx=%d \n\r", icnt, n, idx);
+ 339:http/httpserv.c **** 					if ( idx != -1 ) {
+ 340:http/httpserv.c **** 						//printf("\n\r**POST DATA: ");
+ 341:http/httpserv.c **** 						//for ( i = 0; i < 4; i++ ) printf("%c", inBuf[idx+4+i]);
+ 342:http/httpserv.c **** 						//printf("   ");	
+ 343:http/httpserv.c **** 						//for ( i = 0; i < 4; i++ ) printf("%02x ", inBuf[idx+4+i]);
+ 344:http/httpserv.c **** 						//printf("\n\r**End DATA: ");
+ 345:http/httpserv.c **** 						idx = icnt-4;
+ 346:http/httpserv.c **** 						//for ( i = 0; i < 4; i++ ) printf("%02x ", inBuf[idx+i]);
+ 347:http/httpserv.c **** 						if ( (inBuf[idx] == '-')&&(inBuf[idx+1] == '-')&&(inBuf[idx+2] == '\r')&&(inBuf[idx+3] == '\n
+ 348:http/httpserv.c **** 							hlen = PrepHeader( sizeof(uplOKmsg)-1, TEXT_TYPE );
+ 349:http/httpserv.c **** 							//printf("\n\r## Post End hlen=%d uplMsgLen=%d", hlen, (int)sizeof(uplOKmsg));
+ 350:http/httpserv.c **** 							if ( hlen > 0 ) {
+ 351:http/httpserv.c **** 								send1st_DS(cSoc, &outBuf[0], hlen);			//send file header
+ 352:http/httpserv.c **** 								EstbPhase[cSoc] = ESTB_TRX;
+ 353:http/httpserv.c **** 								SndType[cSoc] = STATIC;						
+ 354:http/httpserv.c **** 								SndBPtr[cSoc] = (uint8 *)(uplOKmsg);
+ 355:http/httpserv.c **** 								SndLen[cSoc] = sizeof(uplOKmsg)-1;
+ 356:http/httpserv.c **** 								EndFlag = 1;
+ 357:http/httpserv.c **** 							}
+ 358:http/httpserv.c **** 							break;
+ 359:http/httpserv.c **** 						} else {
+ 360:http/httpserv.c **** 							timer1Clear();
+ 361:http/httpserv.c **** 							EstbPhase[cSoc] = ESTB_RCVD;
+ 362:http/httpserv.c **** 							break;
+ 363:http/httpserv.c **** 						}
+ 364:http/httpserv.c **** 					} else	{
+ 365:http/httpserv.c **** 						// POST Error
+ 366:http/httpserv.c **** 						printf("\n\r *** POST Error *** ");
+ 367:http/httpserv.c **** 				
+ 368:http/httpserv.c **** 						//send_err400(cSoc);
+ 369:http/httpserv.c **** 						send1st_DS( cSoc, (uint8 *)HD_ERRX, (sizeof(HD_ERRX)-1) );
+ 370:http/httpserv.c **** 						disconnect(cSoc);
+ 371:http/httpserv.c **** 						EstbPhase[cSoc] = ESTB_NONE; 
+ 372:http/httpserv.c **** 						break;
+ 373:http/httpserv.c **** 					}
+ 374:http/httpserv.c **** 						
+ 375:http/httpserv.c **** 					break;
+ 376:http/httpserv.c **** 
+ 377:http/httpserv.c **** 				case -1:
+ 378:http/httpserv.c **** 					// Request Error
+ 379:http/httpserv.c **** 					printf("\n\r ***** RequestError ***** ");
+ 380:http/httpserv.c **** 				
+ 381:http/httpserv.c **** 					//send_err400(cSoc);
+ 382:http/httpserv.c **** 					send1st_DS( cSoc, (uint8 *)HD_ERRX, (sizeof(HD_ERRX)-1) );
+ 383:http/httpserv.c **** 					disconnect(cSoc);
+ 384:http/httpserv.c **** 					EstbPhase[cSoc] = ESTB_NONE; 
+ 385:http/httpserv.c **** 					break;
+ 386:http/httpserv.c **** 				
+ 387:http/httpserv.c **** 				default:
+ 388:http/httpserv.c **** 					// GET Service
+ 389:http/httpserv.c **** 					p_ptr = (struct p_rec*)PAGE_INFO_ADDR;
+ 390:http/httpserv.c **** 					printf("   PHead:%d size-%x, type-%d", pi, (p_ptr+pi)->size, (p_ptr+pi)->type );
+ 391:http/httpserv.c **** 					if ( (p_ptr+pi)->type == 0xff ) {
+ 392:http/httpserv.c **** 						printf(" ***ERROR*** ");
+ 393:http/httpserv.c **** 						//send_err400(cSoc);
+ 394:http/httpserv.c **** 						send1st_DS( cSoc, (uint8 *)HD_ERRX, (sizeof(HD_ERRX)-1) );
+ 395:http/httpserv.c **** 						disconnect(cSoc);
+ 396:http/httpserv.c **** 						EstbPhase[cSoc] = ESTB_NONE; 
+ 397:http/httpserv.c **** 						break;
+ 398:http/httpserv.c **** 					}
+ 399:http/httpserv.c **** 					
+ 400:http/httpserv.c **** 					if ( (p_ptr+pi)->type == PHP_TYPE ) {	// GET PHP Request
+ 401:http/httpserv.c **** 						uint8 *	tp;
+ 402:http/httpserv.c **** 						uint8	php_id;
+ 403:http/httpserv.c **** 						unsigned int tmpl;
+ 404:http/httpserv.c **** 						
+ 405:http/httpserv.c **** 						tp = (uint8 *)((p_ptr+pi)->offset+PAGE_INFO_ADDR) + (p_ptr+pi)->size;
+ 406:http/httpserv.c **** 						printf("\n\r ** PHP indx=%d id=%02x ", pi, *tp );
+ 407:http/httpserv.c **** 						for ( i = 0; i < 5; i++ ) {
+ 408:http/httpserv.c **** 							tp++;	printf("%02x ", *tp );
+ 409:http/httpserv.c **** 						}
+ 410:http/httpserv.c **** 						
+ 411:http/httpserv.c **** 						tp = (uint8 *)((p_ptr+pi)->offset+PAGE_INFO_ADDR) + (p_ptr+pi)->size + 4;
+ 412:http/httpserv.c **** 						tmpl = (*tp)<<24;	tp++;	tmpl += (*tp)<<16;
+ 413:http/httpserv.c **** 						tp -=3;
+ 414:http/httpserv.c **** 						tmpl += (*tp)<<8;	tp++;	tmpl += *tp;
+ 415:http/httpserv.c **** 						tmpl = (tmpl+1)*2;
+ 416:http/httpserv.c **** 						printf(" Length=%08x ", tmpl );
+ 417:http/httpserv.c **** 						
+ 418:http/httpserv.c **** 						tp = (uint8 *)((p_ptr+pi)->offset+PAGE_INFO_ADDR) + (p_ptr+pi)->size;
+ 419:http/httpserv.c **** 						php_id = (int)*tp;
+ 420:http/httpserv.c **** 						switch (php_id) {
+ 421:http/httpserv.c **** 						case VOLTM :
+ 422:http/httpserv.c **** 							//send php header
+ 423:http/httpserv.c **** 							send1st_DS(cSoc, (uint8 *)(((p_ptr+pi)->offset)+PAGE_INFO_ADDR+2), (p_ptr+pi)->size-2);	
+ 424:http/httpserv.c **** 							
+ 425:http/httpserv.c **** 							EstbPhase[cSoc] = ESTB_TRX;
+ 426:http/httpserv.c **** 							SndLen[cSoc] = tmpl;
+ 427:http/httpserv.c **** 							SndType[cSoc] = php_id;
+ 428:http/httpserv.c **** 							break;
+ 429:http/httpserv.c **** 
+ 430:http/httpserv.c **** 						case DOWNLOAD :
+ 431:http/httpserv.c **** 							//send php header
+ 432:http/httpserv.c **** 							send1st_DS(cSoc, (uint8 *)(((p_ptr+pi)->offset)+PAGE_INFO_ADDR+2), (p_ptr+pi)->size-2);	
+ 433:http/httpserv.c **** 							
+ 434:http/httpserv.c **** 							EstbPhase[cSoc] = ESTB_TRX;
+ 435:http/httpserv.c **** 							SndLen[cSoc] = tmpl;
+ 436:http/httpserv.c **** 							SndType[cSoc] = php_id;
+ 437:http/httpserv.c **** 							break;
+ 438:http/httpserv.c **** 							
+ 439:http/httpserv.c **** 						default:
+ 440:http/httpserv.c **** 							printf(" ***ERROR*** ");
+ 441:http/httpserv.c **** 							//send_err400(cSoc);
+ 442:http/httpserv.c **** 							send1st_DS( cSoc, (uint8 *)HD_ERRX, (sizeof(HD_ERRX)-1) );
+ 443:http/httpserv.c **** 							disconnect(cSoc);
+ 444:http/httpserv.c **** 							EstbPhase[cSoc] = ESTB_NONE; 
+ 445:http/httpserv.c **** 							break;
+ 446:http/httpserv.c **** 						} // End Switch php_id
+ 447:http/httpserv.c **** 						break;
+ 448:http/httpserv.c **** 					} // End GET PHP
+ 449:http/httpserv.c **** 					
+ 450:http/httpserv.c **** 					hlen = PrepHeader( (p_ptr+pi)->size, (p_ptr+pi)->type );
+ 451:http/httpserv.c **** 					if ( hlen > 0 ) {
+ 452:http/httpserv.c **** 						send1st_DS(cSoc, &outBuf[0], hlen);			//send file header
+ 453:http/httpserv.c **** 					
+ 454:http/httpserv.c **** 						EstbPhase[cSoc] = ESTB_TRX;
+ 455:http/httpserv.c **** 						SndType[cSoc] = STATIC;						
+ 456:http/httpserv.c **** 						SndBPtr[cSoc] = (uint8 *)((p_ptr+pi)->offset+PAGE_INFO_ADDR);
+ 457:http/httpserv.c **** 						SndLen[cSoc] = (p_ptr+pi)->size;
+ 458:http/httpserv.c **** 					}
+ 459:http/httpserv.c **** 					break;
+ 460:http/httpserv.c **** 				} // End Switch pi
+ 461:http/httpserv.c **** 			} // End data available in RecvFIFO
+ 462:http/httpserv.c **** 			break;
+ 463:http/httpserv.c **** 			
+ 464:http/httpserv.c **** 		case ESTB_RCVD :
+ 465:http/httpserv.c **** 			ts = getSn_RX_RSR(cSoc);
+ 466:http/httpserv.c **** 			EndFlag = 0;
+ 467:http/httpserv.c **** 			while ( ts>0 ) {
+ 468:http/httpserv.c **** 				// data available in RecvFIFO
+ 469:http/httpserv.c **** 				uint16 n = getSn_RX_RSR(cSoc);
+ 470:http/httpserv.c **** 				if (n > IBUF_SIZE) n = IBUF_SIZE;
+ 471:http/httpserv.c **** 				icnt = recv(cSoc, &inBuf[0], n);
+ 472:http/httpserv.c **** 				//LogWr(0x25); LogWr((uint16)icnt); LogWrTim();
+ 473:http/httpserv.c **** 				Snd0Flag = 0;
+ 474:http/httpserv.c **** 				idx = icnt-4;
+ 475:http/httpserv.c **** 				//printf("\n\r**End DATA: ");
+ 476:http/httpserv.c **** 				//for ( i = 0; i < 4; i++ ) printf("%02x ", inBuf[idx+i]);
+ 477:http/httpserv.c **** 				if ( (inBuf[idx] == '-')&&(inBuf[idx+1] == '-')&&(inBuf[idx+2] == '\r')&&(inBuf[idx+3] == '\n')
+ 478:http/httpserv.c **** 					hlen = PrepHeader( sizeof(uplOKmsg)-1, TEXT_TYPE );
+ 479:http/httpserv.c **** 					//printf("\n\r## Post End hlen=%d uplMsgLen=%d", hlen, (int)sizeof(uplOKmsg));
+ 480:http/httpserv.c **** 					if ( hlen > 0 ) {
+ 481:http/httpserv.c **** 						send1st_DS(cSoc, &outBuf[0], hlen);			//send file header
+ 482:http/httpserv.c **** 					
+ 483:http/httpserv.c **** 						EstbPhase[cSoc] = ESTB_TRX;
+ 484:http/httpserv.c **** 						SndType[cSoc] = STATIC;						
+ 485:http/httpserv.c **** 						SndBPtr[cSoc] = (uint8 *)(uplOKmsg);
+ 486:http/httpserv.c **** 						SndLen[cSoc] = sizeof(uplOKmsg)-1;
+ 487:http/httpserv.c **** 						EndFlag = 1;
+ 488:http/httpserv.c **** 						break;
+ 489:http/httpserv.c **** 					}
+ 490:http/httpserv.c **** 				}
+ 491:http/httpserv.c **** 				ts = getSn_RX_RSR(cSoc);
+ 492:http/httpserv.c **** 			}
+ 493:http/httpserv.c **** 			if ( EndFlag > 0 )
+ 494:http/httpserv.c **** 				break;
+ 495:http/httpserv.c **** 				
+ 496:http/httpserv.c **** 			//Recv Empty
+ 497:http/httpserv.c **** 			if ( !Snd0Flag )	{
+ 498:http/httpserv.c **** 				setSn_TX_WRSR(cSoc, 2);
+ 499:http/httpserv.c **** 				IINCHIP_WRITE(Sn_TX_FIFOR(cSoc), 0x2020);
+ 500:http/httpserv.c **** 				setSn_CR(cSoc, Sn_CR_SEND);
+ 501:http/httpserv.c **** 				//t = getT1();
+ 502:http/httpserv.c **** 				//LogWr(0x24); 
+ 503:http/httpserv.c **** 				//LogWr( (uint16)((t&0xffff0000)>>16) ); 
+ 504:http/httpserv.c **** 				//LogWr( (uint16)(t&0xffff) ); 
+ 505:http/httpserv.c **** 
+ 506:http/httpserv.c **** 				while( !(getSn_IR(cSoc) & Sn_IR_SENDOK) ) ;
+ 507:http/httpserv.c **** 				Snd0Flag = 1;
+ 508:http/httpserv.c **** 				setSn_IR(cSoc, Sn_IR_SENDOK);             // clear Sn_IR_SENDOK	
+ 509:http/httpserv.c **** 			}
+ 510:http/httpserv.c **** 			break;
+ 511:http/httpserv.c **** 
+ 512:http/httpserv.c **** 		case ESTB_TRX :
+ 513:http/httpserv.c **** 			// send chunk of data body (TXWRMAX-max size)
+ 514:http/httpserv.c **** 			snd_typ = SndType[cSoc];
+ 515:http/httpserv.c **** 			switch (snd_typ) {
+ 516:http/httpserv.c **** 			case STATIC :
+ 517:http/httpserv.c **** 				len_done = send_DS(cSoc, (uint8 *)SndBPtr[cSoc], SndLen[cSoc]);
+ 518:http/httpserv.c **** 				SndBPtr[cSoc] += len_done;
+ 519:http/httpserv.c **** 				break;
+ 520:http/httpserv.c **** 				
+ 521:http/httpserv.c **** 			case VOLTM :
+ 522:http/httpserv.c **** 				UpdateVoltage();
+ 523:http/httpserv.c **** 				len_done = send_DS(cSoc, voltBuf, VOLT_LEN);
+ 524:http/httpserv.c **** 				break;
+ 525:http/httpserv.c **** 				
+ 526:http/httpserv.c **** 			case DOWNLOAD :
+ 527:http/httpserv.c **** 				PrepDwnldData();
+ 528:http/httpserv.c **** 				len_done = send_DS(cSoc, (uint8 *)tmpBuf, SndLen[cSoc]);
+ 529:http/httpserv.c **** 				break;
+ 530:http/httpserv.c **** 				
+ 531:http/httpserv.c **** 			default:
+ 532:http/httpserv.c **** 				len_done = 0;
+ 533:http/httpserv.c **** 				break;
+ 534:http/httpserv.c **** 			}// End Switch snd_typ
+ 535:http/httpserv.c **** 								
+ 536:http/httpserv.c **** 			if ( len_done == 0 )
+ 537:http/httpserv.c **** 				break;
+ 538:http/httpserv.c **** 				
+ 539:http/httpserv.c **** 			SndLen[cSoc] -= len_done;
+ 540:http/httpserv.c **** 			if ( wait4sendDone(cSoc) == 0 ) {
+ 541:http/httpserv.c **** 				EstbPhase[cSoc] = ESTB_TXNRDY;
+ 542:http/httpserv.c **** 				break;
+ 543:http/httpserv.c **** 			} 
+ 544:http/httpserv.c **** 			if ( SndLen[cSoc] == 0 ) {
+ 545:http/httpserv.c **** 				// last chunk was sent
+ 546:http/httpserv.c **** 				setSn_CR(cSoc, Sn_CR_DISCON);     // Disconnect
+ 547:http/httpserv.c **** 				EstbPhase[cSoc] = ESTB_NONE;
+ 548:http/httpserv.c **** 			}
+ 549:http/httpserv.c **** 			socket_return();
+ 550:http/httpserv.c **** 			break;
+ 551:http/httpserv.c **** 			
+ 552:http/httpserv.c **** 		case ESTB_TXNRDY :
+ 553:http/httpserv.c **** 			// wait for previous SendOK acknowledge (Int)
+ 554:http/httpserv.c **** 			if ( wait4sendDone(cSoc) == 1 ) {
+ 555:http/httpserv.c **** 				if ( SndLen[cSoc] == 0 ) {
+ 556:http/httpserv.c **** 					// last chunk was sent
+ 557:http/httpserv.c **** 					setSn_CR(cSoc, Sn_CR_DISCON);     // Disconnect
+ 558:http/httpserv.c **** 					EstbPhase[cSoc] = ESTB_NONE;
+ 559:http/httpserv.c **** 					socket_return();
+ 560:http/httpserv.c **** 					break;
+ 561:http/httpserv.c **** 				} else
+ 562:http/httpserv.c **** 					EstbPhase[cSoc] = ESTB_TRX;
+ 563:http/httpserv.c **** 			}
+ 564:http/httpserv.c **** 			break;
+ 565:http/httpserv.c **** 			
+ 566:http/httpserv.c **** 		default:
+ 567:http/httpserv.c **** 			break;
+ 568:http/httpserv.c **** 		} // End Switch EstbPhase[cSoc]
+ 569:http/httpserv.c **** 		break;
+ 570:http/httpserv.c **** 	} // End case Sn_SSR(cSoc) == SOCK_ESTABLISHED
+ 571:http/httpserv.c **** 						
+ 572:http/httpserv.c **** 	case SOCK_CLOSE_WAIT:
+ 573:http/httpserv.c **** 		printf("\n\r*Soc_Close_Wait*");
+ 574:http/httpserv.c **** 		disconnect(cSoc);
+ 575:http/httpserv.c **** 		close(cSoc);
+ 576:http/httpserv.c **** 		break;
+ 577:http/httpserv.c **** 		
+ 578:http/httpserv.c **** 	} // End Switch v = Sn_SSR(cSoc)
+ 579:http/httpserv.c **** 	
+ 580:http/httpserv.c **** 	cSoc++;
+ 581:http/httpserv.c **** 	if ( cSoc >= MAX_SOCK_NUM )	
+ 582:http/httpserv.c **** 		cSoc = 0;
+ 583:http/httpserv.c **** }
+ 584:http/httpserv.c **** 
+ 585:http/httpserv.c **** int	send1st_DS(SOCKET s, uint8 * buf, int len)
+ 586:http/httpserv.c **** {
+ 587:http/httpserv.c **** 	wiz_write_buf(s, buf, len);    // copy data
+ 588:http/httpserv.c **** 
+ 589:http/httpserv.c **** 	setSn_TX_WRSR(s, len);   
+ 590:http/httpserv.c **** 	setSn_CR(s,Sn_CR_SEND);
+ 591:http/httpserv.c **** 	
+ 592:http/httpserv.c **** 	return 1;
+ 593:http/httpserv.c **** }
+ 594:http/httpserv.c **** 
+ 595:http/httpserv.c **** int	send_DS(SOCKET s, uint8 * buf, int len)
+ 596:http/httpserv.c **** {
+ 597:http/httpserv.c **** 	int cnt;
+ 598:http/httpserv.c **** 		
+ 599:http/httpserv.c **** 	txfree_size = (int)getSn_TX_FSR(s);
+ 600:http/httpserv.c **** 	if ( txfree_size == 0 ) 
+ 601:http/httpserv.c **** 		return 0;
+ 602:http/httpserv.c **** 			
+ 603:http/httpserv.c **** 	cnt = len;
+ 604:http/httpserv.c **** 	if ( cnt > txfree_size )	cnt = txfree_size;
+ 605:http/httpserv.c **** 	if ( cnt > TXWRMAX )	cnt = TXWRMAX;
+ 606:http/httpserv.c **** 
+ 607:http/httpserv.c **** 	wiz_write_buf(s, buf, cnt);    // copy data
+ 608:http/httpserv.c **** 	
+ 609:http/httpserv.c **** 	setSn_TX_WRSR(s, cnt);   			
+ 610:http/httpserv.c **** 
+ 611:http/httpserv.c **** 	return cnt;
+ 612:http/httpserv.c **** }
+ 613:http/httpserv.c **** 
+ 614:http/httpserv.c **** //int	wait4sendDone(SOCKET s, int length)	
+ 615:http/httpserv.c **** int	wait4sendDone(SOCKET s)	
+ 616:http/httpserv.c **** {
+ 617:http/httpserv.c **** 	uint8 isr;
+ 618:http/httpserv.c **** 	
+ 619:http/httpserv.c **** 	isr=0;
+ 620:http/httpserv.c **** 	// wait previous SEND command completion.
+ 621:http/httpserv.c **** 	if ( !((isr = getSn_IR(s)) & Sn_IR_SENDOK) ) {
+ 622:http/httpserv.c **** 		return 0;
+ 623:http/httpserv.c **** 	}
+ 624:http/httpserv.c **** 	
+ 625:http/httpserv.c **** 	setSn_IR(s, Sn_IR_SENDOK);             // clear Sn_IR_SENDOK	
+ 626:http/httpserv.c ****    
+ 627:http/httpserv.c **** 	setSn_CR(s,Sn_CR_SEND);
+ 628:http/httpserv.c **** 	
+ 629:http/httpserv.c **** 	return 1;
+ 630:http/httpserv.c **** }
+ 631:http/httpserv.c **** 
+ 632:http/httpserv.c **** void	PrepDwnldData(void)
+ 633:http/httpserv.c **** {
+  40              		.loc 1 633 0
+  41              		@ Function supports interworking.
+  42              		@ args = 0, pretend = 0, frame = 0
+  43              		@ frame_needed = 0, uses_anonymous_args = 0
+  44              		@ link register save eliminated.
+  45 0018 1C109FE5 		ldr	r1, .L11
+  46 001c 1C209FE5 		ldr	r2, .L11+4
+  47              	.LVL2:
+  48              		@ lr needed for prologue
+  49              	.L6:
+ 634:http/httpserv.c **** 	int i;
+ 635:http/httpserv.c **** 	uint32 * p;
+ 636:http/httpserv.c **** 	uint32 v;
+ 637:http/httpserv.c **** 	
+ 638:http/httpserv.c **** 	p = &tmpBuf[0];
+ 639:http/httpserv.c **** 	v = 0x12345678;
+ 640:http/httpserv.c **** 	
+ 641:http/httpserv.c **** 	for ( i = 0; i < (1480/4); i++ ) {
+  50              		.loc 1 641 0
+  51 0020 1C309FE5 		ldr	r3, .L11+8
+ 642:http/httpserv.c **** 		*p = v;
+  52              		.loc 1 642 0
+  53 0024 042001E5 		str	r2, [r1, #-4]
+ 643:http/httpserv.c **** 		p++;
+ 644:http/httpserv.c **** 		v += 3;
+  54              		.loc 1 644 0
+  55 0028 032082E2 		add	r2, r2, #3
+  56              		.loc 1 641 0
+  57 002c 030052E1 		cmp	r2, r3
+  58              		.loc 1 644 0
+  59 0030 041081E2 		add	r1, r1, #4
+  60              		.loc 1 641 0
+  61 0034 F9FFFF1A 		bne	.L6
+ 645:http/httpserv.c **** 	}
+ 646:http/httpserv.c **** }
+  62              		.loc 1 646 0
+  63 0038 1EFF2FE1 		bx	lr
+  64              	.L12:
+  65              		.align	2
+  66              	.L11:
+  67 003c 04000000 		.word	tmpBuf+4
+  68 0040 78563412 		.word	305419896
+  69 0044 CE5A3412 		.word	305421006
+  70              	.LFE10:
+  72              		.align	2
+  73              		.global	wait4sendDone
+  75              	wait4sendDone:
+  76              	.LFB9:
+  77              		.loc 1 616 0
+  78              		@ Function supports interworking.
+  79              		@ args = 0, pretend = 0, frame = 0
+  80              		@ frame_needed = 0, uses_anonymous_args = 0
+  81              	.LVL3:
+  82 0048 10402DE9 		stmfd	sp!, {r4, lr}
+  83              	.LCFI0:
+  84              		.loc 1 616 0
+  85 004c FF4000E2 		and	r4, r0, #255
+  86              		.loc 1 621 0
+  87 0050 0400A0E1 		mov	r0, r4
+  88              	.LVL4:
+  89 0054 FEFFFFEB 		bl	getSn_IR
+  90              		.loc 1 625 0
+  91 0058 1010A0E3 		mov	r1, #16
+  92              		.loc 1 621 0
+  93 005c 013010E0 		ands	r3, r0, r1
+  94              		.loc 1 625 0
+  95 0060 0400A0E1 		mov	r0, r4
+  96              		.loc 1 621 0
+  97 0064 0400000A 		beq	.L16
+  98              		.loc 1 625 0
+  99 0068 FEFFFFEB 		bl	setSn_IR
+ 100              		.loc 1 627 0
+ 101 006c 0400A0E1 		mov	r0, r4
+ 102 0070 2010A0E3 		mov	r1, #32
+ 103 0074 FEFFFFEB 		bl	setSn_CR
+ 104 0078 0130A0E3 		mov	r3, #1
+ 105              	.L16:
+ 106              		.loc 1 630 0
+ 107 007c 0300A0E1 		mov	r0, r3
+ 108 0080 1040BDE8 		ldmfd	sp!, {r4, lr}
+ 109 0084 1EFF2FE1 		bx	lr
+ 110              	.LFE9:
+ 112              		.align	2
+ 113              		.global	send_DS
+ 115              	send_DS:
+ 116              	.LFB8:
+ 117              		.loc 1 596 0
+ 118              		@ Function supports interworking.
+ 119              		@ args = 0, pretend = 0, frame = 0
+ 120              		@ frame_needed = 0, uses_anonymous_args = 0
+ 121              	.LVL5:
+ 122 0088 70402DE9 		stmfd	sp!, {r4, r5, r6, lr}
+ 123              	.LCFI1:
+ 124              		.loc 1 596 0
+ 125 008c FF5000E2 		and	r5, r0, #255
+ 126              		.loc 1 599 0
+ 127 0090 0500A0E1 		mov	r0, r5
+ 128              	.LVL6:
+ 129              		.loc 1 596 0
+ 130 0094 0140A0E1 		mov	r4, r1
+ 131 0098 0260A0E1 		mov	r6, r2
+ 132              		.loc 1 599 0
+ 133 009c FEFFFFEB 		bl	getSn_TX_FSR
+ 134              	.LVL7:
+ 135 00a0 50309FE5 		ldr	r3, .L23
+ 136 00a4 0020A0E1 		mov	r2, r0
+ 137              		.loc 1 600 0
+ 138 00a8 000052E3 		cmp	r2, #0
+ 139              		.loc 1 607 0
+ 140 00ac 0410A0E1 		mov	r1, r4
+ 141 00b0 0500A0E1 		mov	r0, r5
+ 142              		.loc 1 600 0
+ 143 00b4 0240A0E1 		mov	r4, r2
+ 144              	.LVL8:
+ 145              		.loc 1 599 0
+ 146 00b8 002083E5 		str	r2, [r3, #0]
+ 147              		.loc 1 600 0
+ 148 00bc 0A00000A 		beq	.L21
+ 149 00c0 34309FE5 		ldr	r3, .L23+4
+ 150 00c4 030056E1 		cmp	r6, r3
+ 151 00c8 0630A0B1 		movlt	r3, r6
+ 152              	.LVL9:
+ 153 00cc 030052E1 		cmp	r2, r3
+ 154 00d0 0240A0B1 		movlt	r4, r2
+ 155 00d4 0340A0A1 		movge	r4, r3
+ 156              		.loc 1 607 0
+ 157 00d8 0420A0E1 		mov	r2, r4
+ 158 00dc FEFFFFEB 		bl	wiz_write_buf
+ 159              	.LVL10:
+ 160              		.loc 1 609 0
+ 161 00e0 0500A0E1 		mov	r0, r5
+ 162 00e4 0410A0E1 		mov	r1, r4
+ 163 00e8 FEFFFFEB 		bl	setSn_TX_WRSR
+ 164              	.LVL11:
+ 165              	.L21:
+ 166              		.loc 1 612 0
+ 167 00ec 0400A0E1 		mov	r0, r4
+ 168 00f0 7040BDE8 		ldmfd	sp!, {r4, r5, r6, lr}
+ 169 00f4 1EFF2FE1 		bx	lr
+ 170              	.L24:
+ 171              		.align	2
+ 172              	.L23:
+ 173 00f8 00000000 		.word	txfree_size
+ 174 00fc B4050000 		.word	1460
+ 175              	.LFE8:
+ 177              		.align	2
+ 178              		.global	send1st_DS
+ 180              	send1st_DS:
+ 181              	.LFB7:
+ 182              		.loc 1 586 0
+ 183              		@ Function supports interworking.
+ 184              		@ args = 0, pretend = 0, frame = 0
+ 185              		@ frame_needed = 0, uses_anonymous_args = 0
+ 186              	.LVL12:
+ 187 0100 30402DE9 		stmfd	sp!, {r4, r5, lr}
+ 188              	.LCFI2:
+ 189              		.loc 1 586 0
+ 190 0104 FF4000E2 		and	r4, r0, #255
+ 191 0108 0250A0E1 		mov	r5, r2
+ 192              		.loc 1 587 0
+ 193 010c 0400A0E1 		mov	r0, r4
+ 194              	.LVL13:
+ 195 0110 FEFFFFEB 		bl	wiz_write_buf
+ 196              	.LVL14:
+ 197              		.loc 1 589 0
+ 198 0114 0400A0E1 		mov	r0, r4
+ 199 0118 0510A0E1 		mov	r1, r5
+ 200 011c FEFFFFEB 		bl	setSn_TX_WRSR
+ 201              		.loc 1 590 0
+ 202 0120 0400A0E1 		mov	r0, r4
+ 203 0124 2010A0E3 		mov	r1, #32
+ 204 0128 FEFFFFEB 		bl	setSn_CR
+ 205              		.loc 1 593 0
+ 206 012c 0100A0E3 		mov	r0, #1
+ 207 0130 3040BDE8 		ldmfd	sp!, {r4, r5, lr}
+ 208 0134 1EFF2FE1 		bx	lr
+ 209              	.LFE7:
+ 211              		.align	2
+ 212              		.global	socket_return
+ 214              	socket_return:
+ 215              	.LFB5:
+ 216              		.loc 1 284 0
+ 217              		@ Function supports interworking.
+ 218              		@ args = 0, pretend = 0, frame = 0
+ 219              		@ frame_needed = 0, uses_anonymous_args = 0
+ 220 0138 10402DE9 		stmfd	sp!, {r4, lr}
+ 221              	.LCFI3:
+ 222              		.loc 1 284 0
+ 223 013c 0040A0E3 		mov	r4, #0
+ 224              	.LVL15:
+ 225              	.LVL16:
+ 226              	.L28:
+ 227              		.loc 1 288 0
+ 228 0140 0400A0E1 		mov	r0, r4
+ 229 0144 FEFFFFEB 		bl	getSn_SSR
+ 230 0148 003050E2 		subs	r3, r0, #0
+ 231              		.loc 1 289 0
+ 232 014c 0110A0E3 		mov	r1, #1
+ 233 0150 0400A0E1 		mov	r0, r4
+ 234              		.loc 1 288 0
+ 235 0154 0400001A 		bne	.L29
+ 236              	.LVL17:
+ 237              		.loc 1 289 0
+ 238 0158 20209FE5 		ldr	r2, .L35
+ 239 015c B020D2E1 		ldrh	r2, [r2, #0]
+ 240 0160 FEFFFFEB 		bl	socket
+ 241              	.LVL18:
+ 242              		.loc 1 290 0
+ 243 0164 0400A0E1 		mov	r0, r4
+ 244 0168 FEFFFFEB 		bl	listen
+ 245              	.LVL19:
+ 246              	.L29:
+ 247              		.loc 1 287 0
+ 248 016c 014084E2 		add	r4, r4, #1
+ 249 0170 080054E3 		cmp	r4, #8
+ 250 0174 F1FFFF1A 		bne	.L28
+ 251              		.loc 1 293 0
+ 252 0178 1040BDE8 		ldmfd	sp!, {r4, lr}
+ 253 017c 1EFF2FE1 		bx	lr
+ 254              	.L36:
+ 255              		.align	2
+ 256              	.L35:
+ 257 0180 00000000 		.word	httpPort
+ 258              	.LFE5:
+ 260              		.section	.rodata.str1.4,"aMS",%progbits,1
+ 261              		.align	2
+ 262              	.LC0:
+ 263 0000 47455420 		.ascii	"GET \000"
+ 263      00
+ 264 0005 000000   		.align	2
+ 265              	.LC1:
+ 266 0008 2F204854 		.ascii	"/ HTTP\000"
+ 266      545000
+ 267 000f 00       		.align	2
+ 268              	.LC2:
+ 269 0010 0A0D444F 		.ascii	"\012\015DOT: %s\000"
+ 269      543A2025 
+ 269      7300
+ 270 001a 0000     		.align	2
+ 271              	.LC3:
+ 272 001c 494E4445 		.ascii	"INDEX\000"
+ 272      5800
+ 273 0022 0000     		.align	2
+ 274              	.LC4:
+ 275 0024 46415649 		.ascii	"FAVICON\000"
+ 275      434F4E00 
+ 276              		.align	2
+ 277              	.LC5:
+ 278 002c 504F5354 		.ascii	"POST \000"
+ 278      2000
+ 279              		.text
+ 280              		.align	2
+ 281              		.global	CheckRequest
+ 283              	CheckRequest:
+ 284              	.LFB4:
+ 285              		.loc 1 233 0
+ 286              		@ Function supports interworking.
+ 287              		@ args = 0, pretend = 0, frame = 12
+ 288              		@ frame_needed = 0, uses_anonymous_args = 0
+ 289              	.LVL20:
+ 290 0184 30402DE9 		stmfd	sp!, {r4, r5, lr}
+ 291              	.LCFI4:
+ 292 0188 4CC19FE5 		ldr	ip, .L57
+ 293 018c 0040A0E1 		mov	r4, r0
+ 294 0190 0CD04DE2 		sub	sp, sp, #12
+ 295              	.LCFI5:
+ 296              		.loc 1 233 0
+ 297 0194 0000A0E3 		mov	r0, #0
+ 298              	.LVL21:
+ 299 0198 050000EA 		b	.L38
+ 300              	.LVL22:
+ 301              	.L39:
+ 302              	.LBB4:
+ 303              	.LBB5:
+ 304 019c 0010DCE5 		ldrb	r1, [ip, #0]	@ zero_extendqisi2
+ 305 01a0 FF2001E2 		and	r2, r1, #255
+ 306              		.loc 1 228 0
+ 307 01a4 613042E2 		sub	r3, r2, #97
+ 308 01a8 190053E3 		cmp	r3, #25
+ 309 01ac DF200192 		andls	r2, r1, #223
+ 310              	.LBE5:
+ 311              	.LBE4:
+ 312              		.loc 1 240 0
+ 313 01b0 0120CCE4 		strb	r2, [ip], #1
+ 314              	.L38:
+ 315              		.loc 1 239 0
+ 316 01b4 040050E1 		cmp	r0, r4
+ 317 01b8 010080E2 		add	r0, r0, #1
+ 318 01bc F6FFFFBA 		blt	.L39
+ 319              		.loc 1 244 0
+ 320 01c0 14019FE5 		ldr	r0, .L57
+ 321              	.LVL23:
+ 322 01c4 14119FE5 		ldr	r1, .L57+4
+ 323 01c8 0420A0E3 		mov	r2, #4
+ 324              	.LVL24:
+ 325 01cc FEFFFFEB 		bl	memcmp
+ 326 01d0 005050E2 		subs	r5, r0, #0
+ 327 01d4 3200001A 		bne	.L43
+ 328              		.loc 1 245 0
+ 329 01d8 04019FE5 		ldr	r0, .L57+8
+ 330 01dc 04119FE5 		ldr	r1, .L57+12
+ 331 01e0 0620A0E3 		mov	r2, #6
+ 332 01e4 FEFFFFEB 		bl	memcmp
+ 333 01e8 000050E3 		cmp	r0, #0
+ 334 01ec 3400000A 		beq	.L45
+ 335              		.loc 1 249 0
+ 336 01f0 0420A0E1 		mov	r2, r4
+ 337 01f4 F0009FE5 		ldr	r0, .L57+16
+ 338 01f8 2E10A0E3 		mov	r1, #46
+ 339 01fc FEFFFFEB 		bl	memchr
+ 340              		.loc 1 250 0
+ 341 0200 000050E3 		cmp	r0, #0
+ 342 0204 3000000A 		beq	.L47
+ 343              		.loc 1 252 0
+ 344 0208 071040E2 		sub	r1, r0, #7
+ 345 020c 0720A0E3 		mov	r2, #7
+ 346 0210 0D00A0E1 		mov	r0, sp
+ 347 0214 FEFFFFEB 		bl	memcpy
+ 348              		.loc 1 254 0
+ 349 0218 0D10A0E1 		mov	r1, sp
+ 350 021c CC009FE5 		ldr	r0, .L57+20
+ 351              		.loc 1 253 0
+ 352 0220 0750CDE5 		strb	r5, [sp, #7]
+ 353              		.loc 1 254 0
+ 354 0224 FEFFFFEB 		bl	printf
+ 355              		.loc 1 256 0
+ 356 0228 02008DE2 		add	r0, sp, #2
+ 357 022c C0109FE5 		ldr	r1, .L57+24
+ 358 0230 0520A0E3 		mov	r2, #5
+ 359 0234 FEFFFFEB 		bl	memcmp
+ 360 0238 000050E3 		cmp	r0, #0
+ 361              		.loc 1 252 0
+ 362 023c 0D40A0E1 		mov	r4, sp
+ 363              	.LVL25:
+ 364              		.loc 1 256 0
+ 365 0240 1F00000A 		beq	.L45
+ 366              		.loc 1 260 0
+ 367 0244 0D00A0E1 		mov	r0, sp
+ 368 0248 A8109FE5 		ldr	r1, .L57+28
+ 369 024c 0720A0E3 		mov	r2, #7
+ 370 0250 FEFFFFEB 		bl	memcmp
+ 371 0254 000050E3 		cmp	r0, #0
+ 372              	.LVL26:
+ 373 0258 01008002 		addeq	r0, r0, #1
+ 374 025c 1B00000A 		beq	.L52
+ 375              		.loc 1 263 0
+ 376 0260 0500DDE5 		ldrb	r0, [sp, #5]	@ zero_extendqisi2
+ 377              	.LVL27:
+ 378 0264 FEFFFFEB 		bl	hex2int
+ 379 0268 000050E3 		cmp	r0, #0
+ 380 026c 160000BA 		blt	.L47
+ 381 0270 0600DDE5 		ldrb	r0, [sp, #6]	@ zero_extendqisi2
+ 382 0274 FEFFFFEB 		bl	hex2int
+ 383 0278 000050E3 		cmp	r0, #0
+ 384 027c 120000BA 		blt	.L47
+ 385              		.loc 1 264 0
+ 386 0280 0500DDE5 		ldrb	r0, [sp, #5]	@ zero_extendqisi2
+ 387 0284 FEFFFFEB 		bl	hex2int
+ 388 0288 0040A0E1 		mov	r4, r0
+ 389 028c 0600DDE5 		ldrb	r0, [sp, #6]	@ zero_extendqisi2
+ 390 0290 FEFFFFEB 		bl	hex2int
+ 391 0294 040280E0 		add	r0, r0, r4, asl #4
+ 392              	.LVL28:
+ 393              		.loc 1 265 0
+ 394 0298 550050E3 		cmp	r0, #85
+ 395 029c 0B0000DA 		ble	.L52
+ 396 02a0 090000EA 		b	.L47
+ 397              	.LVL29:
+ 398              	.L43:
+ 399              		.loc 1 272 0
+ 400 02a4 30009FE5 		ldr	r0, .L57
+ 401 02a8 4C109FE5 		ldr	r1, .L57+32
+ 402 02ac 0520A0E3 		mov	r2, #5
+ 403 02b0 FEFFFFEB 		bl	memcmp
+ 404 02b4 000050E3 		cmp	r0, #0
+ 405              	.LVL30:
+ 406 02b8 010A8002 		addeq	r0, r0, #4096
+ 407 02bc 0300000A 		beq	.L52
+ 408 02c0 010000EA 		b	.L47
+ 409              	.LVL31:
+ 410              	.L45:
+ 411 02c4 0000A0E3 		mov	r0, #0
+ 412              	.LVL32:
+ 413 02c8 000000EA 		b	.L52
+ 414              	.L47:
+ 415 02cc 0000E0E3 		mvn	r0, #0
+ 416              	.L52:
+ 417              	.LVL33:
+ 418              		.loc 1 281 0
+ 419 02d0 0CD08DE2 		add	sp, sp, #12
+ 420 02d4 3040BDE8 		ldmfd	sp!, {r4, r5, lr}
+ 421 02d8 1EFF2FE1 		bx	lr
+ 422              	.L58:
+ 423              		.align	2
+ 424              	.L57:
+ 425 02dc 00000000 		.word	inBuf
+ 426 02e0 00000000 		.word	.LC0
+ 427 02e4 04000000 		.word	inBuf+4
+ 428 02e8 08000000 		.word	.LC1
+ 429 02ec 05000000 		.word	inBuf+5
+ 430 02f0 10000000 		.word	.LC2
+ 431 02f4 1C000000 		.word	.LC3
+ 432 02f8 24000000 		.word	.LC4
+ 433 02fc 2C000000 		.word	.LC5
+ 434              	.LFE4:
+ 436              		.section	.rodata.str1.4
+ 437 0032 0000     		.align	2
+ 438              	.LC6:
+ 439 0034 48545450 		.ascii	"HTTP/1.1 200 OK\015\012Server: Digital Shortcut Inc"
+ 439      2F312E31 
+ 439      20323030 
+ 439      204F4B0D 
+ 439      0A536572 
+ 440 0061 20536572 		.ascii	" Server\015\012Content-Type: text/html\015\012Conte"
+ 440      7665720D 
+ 440      0A436F6E 
+ 440      74656E74 
+ 440      2D547970 
+ 441 0088 6E742D4C 		.ascii	"nt-Length:  \000"
+ 441      656E6774 
+ 441      683A2020 
+ 441      00
+ 442 0095 000000   		.align	2
+ 443              	.LC7:
+ 444 0098 48545450 		.ascii	"HTTP/1.1 200 OK\015\012Server: Digital Shortcut Inc"
+ 444      2F312E31 
+ 444      20323030 
+ 444      204F4B0D 
+ 444      0A536572 
+ 445 00c5 20536572 		.ascii	" Server\015\012Content-Type: image/gif\015\012Conte"
+ 445      7665720D 
+ 445      0A436F6E 
+ 445      74656E74 
+ 445      2D547970 
+ 446 00ec 6E742D4C 		.ascii	"nt-Length:  \000"
+ 446      656E6774 
+ 446      683A2020 
+ 446      00
+ 447 00f9 000000   		.align	2
+ 448              	.LC8:
+ 449 00fc 48545450 		.ascii	"HTTP/1.1 200 OK\015\012Server: Digital Shortcut Inc"
+ 449      2F312E31 
+ 449      20323030 
+ 449      204F4B0D 
+ 449      0A536572 
+ 450 0129 20536572 		.ascii	" Server\015\012Content-Type: text/css\015\012Conten"
+ 450      7665720D 
+ 450      0A436F6E 
+ 450      74656E74 
+ 450      2D547970 
+ 451 0150 742D4C65 		.ascii	"t-Length:  \000"
+ 451      6E677468 
+ 451      3A202000 
+ 452              		.align	2
+ 453              	.LC9:
+ 454 015c 48545450 		.ascii	"HTTP/1.1 200 OK\015\012Server: Digital Shortcut Inc"
+ 454      2F312E31 
+ 454      20323030 
+ 454      204F4B0D 
+ 454      0A536572 
+ 455 0189 20536572 		.ascii	" Server\015\012Content-Type: text/html\015\012Conte"
+ 455      7665720D 
+ 455      0A436F6E 
+ 455      74656E74 
+ 455      2D547970 
+ 456 01b0 6E742D45 		.ascii	"nt-Encoding: gzip\015\012Content-Length:  \000"
+ 456      6E636F64 
+ 456      696E673A 
+ 456      20677A69 
+ 456      700D0A43 
+ 457 01d5 000000   		.align	2
+ 458              	.LC10:
+ 459 01d8 48545450 		.ascii	"HTTP/1.1 200 OK\015\012Server: Digital Shortcut Inc"
+ 459      2F312E31 
+ 459      20323030 
+ 459      204F4B0D 
+ 459      0A536572 
+ 460 0205 20536572 		.ascii	" Server\015\012Content-Type: text/css\015\012Conten"
+ 460      7665720D 
+ 460      0A436F6E 
+ 460      74656E74 
+ 460      2D547970 
+ 461 022c 742D456E 		.ascii	"t-Encoding: gzip\015\012Content-Length:  \000"
+ 461      636F6469 
+ 461      6E673A20 
+ 461      677A6970 
+ 461      0D0A436F 
+ 462              		.align	2
+ 463              	.LC11:
+ 464 0250 48545450 		.ascii	"HTTP/1.1 200 OK\015\012Server: Digital Shortcut Inc"
+ 464      2F312E31 
+ 464      20323030 
+ 464      204F4B0D 
+ 464      0A536572 
+ 465 027d 20536572 		.ascii	" Server\015\012Content-Type: image/jpeg\015\012Cont"
+ 465      7665720D 
+ 465      0A436F6E 
+ 465      74656E74 
+ 465      2D547970 
+ 466 02a4 656E742D 		.ascii	"ent-Length:  \000"
+ 466      4C656E67 
+ 466      74683A20 
+ 466      2000
+ 467 02b2 0000     		.align	2
+ 468              	.LC12:
+ 469 02b4 48545450 		.ascii	"HTTP/1.1 200 OK\015\012Server: Digital Shortcut Inc"
+ 469      2F312E31 
+ 469      20323030 
+ 469      204F4B0D 
+ 469      0A536572 
+ 470 02e1 20536572 		.ascii	" Server\015\012Content-Type: image/png\015\012Conte"
+ 470      7665720D 
+ 470      0A436F6E 
+ 470      74656E74 
+ 470      2D547970 
+ 471 0308 6E742D4C 		.ascii	"nt-Length:  \000"
+ 471      656E6774 
+ 471      683A2020 
+ 471      00
+ 472 0315 000000   		.align	2
+ 473              	.LC13:
+ 474 0318 48545450 		.ascii	"HTTP/1.1 200 OK\015\012Server: Digital Shortcut Inc"
+ 474      2F312E31 
+ 474      20323030 
+ 474      204F4B0D 
+ 474      0A536572 
+ 475 0345 20536572 		.ascii	" Server\015\012Content-Type: image/x-icon\015\012Co"
+ 475      7665720D 
+ 475      0A436F6E 
+ 475      74656E74 
+ 475      2D547970 
+ 476 036c 6E74656E 		.ascii	"ntent-Length:  \000"
+ 476      742D4C65 
+ 476      6E677468 
+ 476      3A202000 
+ 477              		.align	2
+ 478              	.LC14:
+ 479 037c 48545450 		.ascii	"HTTP/1.1 200 OK\015\012Server: Digital Shortcut Inc"
+ 479      2F312E31 
+ 479      20323030 
+ 479      204F4B0D 
+ 479      0A536572 
+ 480 03a9 20536572 		.ascii	" Server\015\012Cache-Control: no-cache, must-revali"
+ 480      7665720D 
+ 480      0A436163 
+ 480      68652D43 
+ 480      6F6E7472 
+ 481 03d6 64617465 		.ascii	"date\015\012Content-Type: text/html\015\012Content-"
+ 481      0D0A436F 
+ 481      6E74656E 
+ 481      742D5479 
+ 481      70653A20 
+ 482 03fd 4C656E67 		.ascii	"Length:  \000"
+ 482      74683A20 
+ 482      2000
+ 483 0407 00       		.align	2
+ 484              	.LC15:
+ 485 0408 0D0A0D0A 		.ascii	"\015\012\015\012\000"
+ 485      00
+ 486              		.text
+ 487              		.align	2
+ 488              		.global	PrepHeader
+ 490              	PrepHeader:
+ 491              	.LFB2:
+ 492              		.loc 1 135 0
+ 493              		@ Function supports interworking.
+ 494              		@ args = 0, pretend = 0, frame = 20
+ 495              		@ frame_needed = 0, uses_anonymous_args = 0
+ 496              	.LVL34:
+ 497 0300 F0412DE9 		stmfd	sp!, {r4, r5, r6, r7, r8, lr}
+ 498              	.LCFI6:
+ 499 0304 FF1001E2 		and	r1, r1, #255
+ 500              		.loc 1 145 0
+ 501 0308 011041E2 		sub	r1, r1, #1
+ 502              	.LVL35:
+ 503              		.loc 1 135 0
+ 504 030c 14D04DE2 		sub	sp, sp, #20
+ 505              	.LCFI7:
+ 506              		.loc 1 135 0
+ 507 0310 0040A0E1 		mov	r4, r0
+ 508              		.loc 1 145 0
+ 509 0314 080051E3 		cmp	r1, #8
+ 510 0318 01F19F97 		ldrls	pc, [pc, r1, asl #2]
+ 511 031c 320000EA 		b	.L60
+ 512              		.p2align 2
+ 513              	.L70:
+ 514 0320 EC030000 		.word	.L60
+ 515 0324 44030000 		.word	.L62
+ 516 0328 50030000 		.word	.L63
+ 517 032c 68030000 		.word	.L64
+ 518 0330 80030000 		.word	.L65
+ 519 0334 98030000 		.word	.L66
+ 520 0338 B0030000 		.word	.L67
+ 521 033c BC030000 		.word	.L68
+ 522 0340 D4030000 		.word	.L69
+ 523              	.LVL36:
+ 524              	.L62:
+ 525              		.loc 1 155 0
+ 526 0344 18019FE5 		ldr	r0, .L74
+ 527 0348 18119FE5 		ldr	r1, .L74+4
+ 528 034c 280000EA 		b	.L73
+ 529              	.LVL37:
+ 530              	.L63:
+ 531              		.loc 1 161 0
+ 532 0350 0C019FE5 		ldr	r0, .L74
+ 533 0354 10119FE5 		ldr	r1, .L74+8
+ 534 0358 5F20A0E3 		mov	r2, #95
+ 535 035c FEFFFFEB 		bl	memcpy
+ 536 0360 5F80A0E3 		mov	r8, #95
+ 537              	.LVL38:
+ 538 0364 250000EA 		b	.L71
+ 539              	.LVL39:
+ 540              	.L64:
+ 541              		.loc 1 167 0
+ 542 0368 F4009FE5 		ldr	r0, .L74
+ 543 036c FC109FE5 		ldr	r1, .L74+12
+ 544 0370 7820A0E3 		mov	r2, #120
+ 545 0374 FEFFFFEB 		bl	memcpy
+ 546 0378 7880A0E3 		mov	r8, #120
+ 547              	.LVL40:
+ 548 037c 1F0000EA 		b	.L71
+ 549              	.LVL41:
+ 550              	.L65:
+ 551              		.loc 1 173 0
+ 552 0380 DC009FE5 		ldr	r0, .L74
+ 553 0384 E8109FE5 		ldr	r1, .L74+16
+ 554 0388 7720A0E3 		mov	r2, #119
+ 555 038c FEFFFFEB 		bl	memcpy
+ 556 0390 7780A0E3 		mov	r8, #119
+ 557              	.LVL42:
+ 558 0394 190000EA 		b	.L71
+ 559              	.LVL43:
+ 560              	.L66:
+ 561              		.loc 1 179 0
+ 562 0398 C4009FE5 		ldr	r0, .L74
+ 563 039c D4109FE5 		ldr	r1, .L74+20
+ 564 03a0 6120A0E3 		mov	r2, #97
+ 565 03a4 FEFFFFEB 		bl	memcpy
+ 566 03a8 6180A0E3 		mov	r8, #97
+ 567              	.LVL44:
+ 568 03ac 130000EA 		b	.L71
+ 569              	.LVL45:
+ 570              	.L67:
+ 571              		.loc 1 185 0
+ 572 03b0 AC009FE5 		ldr	r0, .L74
+ 573 03b4 C0109FE5 		ldr	r1, .L74+24
+ 574 03b8 0D0000EA 		b	.L73
+ 575              	.LVL46:
+ 576              	.L68:
+ 577              		.loc 1 191 0
+ 578 03bc A0009FE5 		ldr	r0, .L74
+ 579 03c0 B8109FE5 		ldr	r1, .L74+28
+ 580 03c4 6320A0E3 		mov	r2, #99
+ 581 03c8 FEFFFFEB 		bl	memcpy
+ 582 03cc 6380A0E3 		mov	r8, #99
+ 583              	.LVL47:
+ 584 03d0 0A0000EA 		b	.L71
+ 585              	.LVL48:
+ 586              	.L69:
+ 587              		.loc 1 197 0
+ 588 03d4 88009FE5 		ldr	r0, .L74
+ 589 03d8 A4109FE5 		ldr	r1, .L74+32
+ 590 03dc 8A20A0E3 		mov	r2, #138
+ 591 03e0 FEFFFFEB 		bl	memcpy
+ 592 03e4 8A80A0E3 		mov	r8, #138
+ 593              	.LVL49:
+ 594 03e8 040000EA 		b	.L71
+ 595              	.LVL50:
+ 596              	.L60:
+ 597              		.loc 1 203 0
+ 598 03ec 70009FE5 		ldr	r0, .L74
+ 599 03f0 90109FE5 		ldr	r1, .L74+36
+ 600              	.L73:
+ 601 03f4 6020A0E3 		mov	r2, #96
+ 602 03f8 FEFFFFEB 		bl	memcpy
+ 603 03fc 6080A0E3 		mov	r8, #96
+ 604              	.LVL51:
+ 605              	.L71:
+ 606              		.loc 1 210 0
+ 607 0400 0D10A0E1 		mov	r1, sp
+ 608 0404 0A20A0E3 		mov	r2, #10
+ 609 0408 0400A0E1 		mov	r0, r4
+ 610 040c FEFFFFEB 		bl	itoa
+ 611 0410 0060A0E1 		mov	r6, r0
+ 612              	.LVL52:
+ 613              		.loc 1 211 0
+ 614 0414 FEFFFFEB 		bl	strlen
+ 615              		.loc 1 208 0
+ 616 0418 44709FE5 		ldr	r7, .L74
+ 617              		.loc 1 211 0
+ 618 041c 0040A0E1 		mov	r4, r0
+ 619              	.LVL53:
+ 620              		.loc 1 208 0
+ 621 0420 075088E0 		add	r5, r8, r7
+ 622              	.LVL54:
+ 623              		.loc 1 212 0
+ 624 0424 0610A0E1 		mov	r1, r6
+ 625 0428 0420A0E1 		mov	r2, r4
+ 626              	.LVL55:
+ 627 042c 0500A0E1 		mov	r0, r5
+ 628 0430 FEFFFFEB 		bl	memcpy
+ 629              	.LVL56:
+ 630              		.loc 1 217 0
+ 631 0434 040085E0 		add	r0, r5, r4
+ 632 0438 4C109FE5 		ldr	r1, .L74+40
+ 633 043c 0420A0E3 		mov	r2, #4
+ 634 0440 FEFFFFEB 		bl	memcpy
+ 635              		.loc 1 213 0
+ 636 0444 044084E2 		add	r4, r4, #4
+ 637              	.LVL57:
+ 638              		.loc 1 218 0
+ 639 0448 044088E0 		add	r4, r8, r4
+ 640              	.LVL58:
+ 641              		.loc 1 220 0
+ 642 044c 0030A0E3 		mov	r3, #0
+ 643              		.loc 1 223 0
+ 644 0450 0400A0E1 		mov	r0, r4
+ 645              		.loc 1 220 0
+ 646 0454 0430C7E7 		strb	r3, [r7, r4]
+ 647              		.loc 1 223 0
+ 648 0458 14D08DE2 		add	sp, sp, #20
+ 649 045c F041BDE8 		ldmfd	sp!, {r4, r5, r6, r7, r8, lr}
+ 650 0460 1EFF2FE1 		bx	lr
+ 651              	.L75:
+ 652              		.align	2
+ 653              	.L74:
+ 654 0464 00000000 		.word	outBuf
+ 655 0468 98000000 		.word	.LC7
+ 656 046c FC000000 		.word	.LC8
+ 657 0470 5C010000 		.word	.LC9
+ 658 0474 D8010000 		.word	.LC10
+ 659 0478 50020000 		.word	.LC11
+ 660 047c B4020000 		.word	.LC12
+ 661 0480 18030000 		.word	.LC13
+ 662 0484 7C030000 		.word	.LC14
+ 663 0488 34000000 		.word	.LC6
+ 664 048c 08040000 		.word	.LC15
+ 665              	.LFE2:
+ 667              		.section	.rodata.str1.4
+ 668 040d 000000   		.align	2
+ 669              	.LC16:
+ 670 0410 0A0D202A 		.ascii	"\012\015 *** POST Error *** \000"
+ 670      2A2A2050 
+ 670      4F535420 
+ 670      4572726F 
+ 670      72202A2A 
+ 671 0427 00       		.align	2
+ 672              	.LC17:
+ 673 0428 48545450 		.ascii	"HTTP/1.1 400 Bad Request\015\012Server: Digital Sho"
+ 673      2F312E31 
+ 673      20343030 
+ 673      20426164 
+ 673      20526571 
+ 674 0455 72746375 		.ascii	"rtcut Inc Server\015\012\015\012\000"
+ 674      7420496E 
+ 674      63205365 
+ 674      72766572 
+ 674      0D0A0D0A 
+ 675 046a 0000     		.align	2
+ 676              	.LC18:
+ 677 046c 0A0D202A 		.ascii	"\012\015 ***** RequestError ***** \000"
+ 677      2A2A2A2A 
+ 677      20526571 
+ 677      75657374 
+ 677      4572726F 
+ 678 0489 000000   		.align	2
+ 679              	.LC19:
+ 680 048c 20202050 		.ascii	"   PHead:%d size-%x, type-%d\000"
+ 680      48656164 
+ 680      3A256420 
+ 680      73697A65 
+ 680      2D25782C 
+ 681 04a9 000000   		.align	2
+ 682              	.LC20:
+ 683 04ac 202A2A2A 		.ascii	" ***ERROR*** \000"
+ 683      4552524F 
+ 683      522A2A2A 
+ 683      2000
+ 684 04ba 0000     		.align	2
+ 685              	.LC21:
+ 686 04bc 0A0D202A 		.ascii	"\012\015 ** PHP indx=%d id=%02x \000"
+ 686      2A205048 
+ 686      5020696E 
+ 686      64783D25 
+ 686      64206964 
+ 687 04d7 00       		.align	2
+ 688              	.LC22:
+ 689 04d8 25303278 		.ascii	"%02x \000"
+ 689      2000
+ 690 04de 0000     		.align	2
+ 691              	.LC23:
+ 692 04e0 204C656E 		.ascii	" Length=%08x \000"
+ 692      6774683D 
+ 692      25303878 
+ 692      2000
+ 693 04ee 0000     		.align	2
+ 694              	.LC24:
+ 695 04f0 0A0D2A53 		.ascii	"\012\015*Soc_Close_Wait*\000"
+ 695      6F635F43 
+ 695      6C6F7365 
+ 695      5F576169 
+ 695      742A00
+ 696 0503 00       		.text
+ 697              		.align	2
+ 698              		.global	http_serv_machine
+ 700              	http_serv_machine:
+ 701              	.LFB6:
+ 702              		.loc 1 297 0
+ 703              		@ Function supports interworking.
+ 704              		@ args = 0, pretend = 0, frame = 0
+ 705              		@ frame_needed = 0, uses_anonymous_args = 0
+ 706 0490 F0412DE9 		stmfd	sp!, {r4, r5, r6, r7, r8, lr}
+ 707              	.LCFI8:
+ 708              		.loc 1 303 0
+ 709 0494 00479FE5 		ldr	r4, .L155
+ 710 0498 0000D4E5 		ldrb	r0, [r4, #0]	@ zero_extendqisi2
+ 711 049c FEFFFFEB 		bl	getSn_SSR
+ 712              		.loc 1 304 0
+ 713 04a0 140050E3 		cmp	r0, #20
+ 714 04a4 E600000A 		beq	.L153
+ 715 04a8 0400008A 		bhi	.L83
+ 716 04ac 000050E3 		cmp	r0, #0
+ 717 04b0 0700000A 		beq	.L78
+ 718 04b4 130050E3 		cmp	r0, #19
+ 719 04b8 A901001A 		bne	.L77
+ 720 04bc 0B0000EA 		b	.L79
+ 721              	.L83:
+ 722 04c0 170050E3 		cmp	r0, #23
+ 723 04c4 0C00000A 		beq	.L81
+ 724 04c8 1C0050E3 		cmp	r0, #28
+ 725 04cc A401001A 		bne	.L77
+ 726 04d0 9D0100EA 		b	.L82
+ 727              	.L78:
+ 728              		.loc 1 306 0
+ 729 04d4 C4369FE5 		ldr	r3, .L155+4
+ 730 04d8 0000D4E5 		ldrb	r0, [r4, #0]	@ zero_extendqisi2
+ 731 04dc B020D3E1 		ldrh	r2, [r3, #0]
+ 732 04e0 0110A0E3 		mov	r1, #1
+ 733 04e4 2030A0E3 		mov	r3, #32
+ 734 04e8 FEFFFFEB 		bl	socket
+ 735 04ec 9C0100EA 		b	.L77
+ 736              	.L79:
+ 737              		.loc 1 311 0
+ 738 04f0 0000D4E5 		ldrb	r0, [r4, #0]	@ zero_extendqisi2
+ 739 04f4 FEFFFFEB 		bl	listen
+ 740 04f8 990100EA 		b	.L77
+ 741              	.L81:
+ 742              	.LBB6:
+ 743              		.loc 1 321 0
+ 744 04fc 001094E5 		ldr	r1, [r4, #0]
+ 745 0500 9C369FE5 		ldr	r3, .L155+8
+ 746 0504 0130D3E7 		ldrb	r3, [r3, r1]	@ zero_extendqisi2
+ 747 0508 030053E3 		cmp	r3, #3
+ 748 050c 03F19F97 		ldrls	pc, [pc, r3, asl #2]
+ 749 0510 930100EA 		b	.L77
+ 750              		.p2align 2
+ 751              	.L88:
+ 752 0514 24050000 		.word	.L84
+ 753 0518 AC080000 		.word	.L85
+ 754 051c C0090000 		.word	.L86
+ 755 0520 B80A0000 		.word	.L87
+ 756              	.L84:
+ 757              		.loc 1 323 0
+ 758 0524 FF0001E2 		and	r0, r1, #255
+ 759 0528 FEFFFFEB 		bl	getSn_RX_RSR
+ 760              		.loc 1 324 0
+ 761 052c 0008A0E1 		mov	r0, r0, asl #16
+ 762 0530 1E0850E3 		cmp	r0, #1966080
+ 763 0534 8A01009A 		bls	.L77
+ 764              	.LBB7:
+ 765              		.loc 1 326 0
+ 766 0538 5C669FE5 		ldr	r6, .L155
+ 767 053c 0000D6E5 		ldrb	r0, [r6, #0]	@ zero_extendqisi2
+ 768 0540 FEFFFFEB 		bl	getSn_RX_RSR
+ 769              		.loc 1 328 0
+ 770 0544 5C569FE5 		ldr	r5, .L155+12
+ 771              		.loc 1 326 0
+ 772 0548 0008A0E1 		mov	r0, r0, asl #16
+ 773              		.loc 1 328 0
+ 774 054c 58269FE5 		ldr	r2, .L155+16
+ 775              		.loc 1 326 0
+ 776 0550 2008A0E1 		mov	r0, r0, lsr #16
+ 777              	.LVL59:
+ 778              		.loc 1 328 0
+ 779 0554 020050E1 		cmp	r0, r2
+ 780 0558 0020A031 		movcc	r2, r0
+ 781 055c 0510A0E1 		mov	r1, r5
+ 782 0560 0000D6E5 		ldrb	r0, [r6, #0]	@ zero_extendqisi2
+ 783              	.LVL60:
+ 784 0564 FEFFFFEB 		bl	recv
+ 785 0568 0070A0E1 		mov	r7, r0
+ 786              		.loc 1 330 0
+ 787 056c FEFFFFEB 		bl	CheckRequest
+ 788              	.LVL61:
+ 789              		.loc 1 333 0
+ 790 0570 010070E3 		cmn	r0, #1
+ 791              	.LVL62:
+ 792              		.loc 1 330 0
+ 793 0574 0040A0E1 		mov	r4, r0
+ 794              	.LVL63:
+ 795              		.loc 1 333 0
+ 796 0578 3C00000A 		beq	.L91
+ 797 057c 010A50E3 		cmp	r0, #4096
+ 798 0580 4500001A 		bne	.L90
+ 799              	.LVL64:
+ 800              	.LVL65:
+ 801              		.loc 1 336 0
+ 802 0584 014A40E2 		sub	r4, r0, #4096
+ 803              	.LVL66:
+ 804              		.loc 1 337 0
+ 805 0588 20169FE5 		ldr	r1, .L155+20
+ 806 058c 0500A0E1 		mov	r0, r5
+ 807              		.loc 1 336 0
+ 808 0590 0740C5E7 		strb	r4, [r5, r7]
+ 809              		.loc 1 337 0
+ 810 0594 FEFFFFEB 		bl	findstr
+ 811              		.loc 1 339 0
+ 812 0598 010070E3 		cmn	r0, #1
+ 813 059c 2700000A 		beq	.L93
+ 814              		.loc 1 345 0
+ 815 05a0 040047E2 		sub	r0, r7, #4
+ 816              	.LVL67:
+ 817              		.loc 1 347 0
+ 818 05a4 0030D5E7 		ldrb	r3, [r5, r0]	@ zero_extendqisi2
+ 819 05a8 2D0053E3 		cmp	r3, #45
+ 820 05ac 1C00001A 		bne	.L95
+ 821 05b0 050080E0 		add	r0, r0, r5
+ 822              	.LVL68:
+ 823 05b4 0130D0E5 		ldrb	r3, [r0, #1]	@ zero_extendqisi2
+ 824 05b8 2D0053E3 		cmp	r3, #45
+ 825 05bc 1800001A 		bne	.L95
+ 826 05c0 0230D0E5 		ldrb	r3, [r0, #2]	@ zero_extendqisi2
+ 827 05c4 0D0053E3 		cmp	r3, #13
+ 828 05c8 1500001A 		bne	.L95
+ 829 05cc 0330D0E5 		ldrb	r3, [r0, #3]	@ zero_extendqisi2
+ 830 05d0 0A0053E3 		cmp	r3, #10
+ 831 05d4 1200001A 		bne	.L95
+ 832              		.loc 1 348 0
+ 833 05d8 1E00A0E3 		mov	r0, #30
+ 834 05dc 0110A0E3 		mov	r1, #1
+ 835 05e0 FEFFFFEB 		bl	PrepHeader
+ 836              		.loc 1 350 0
+ 837 05e4 000050E3 		cmp	r0, #0
+ 838              	.LVL69:
+ 839 05e8 5D0100DA 		ble	.L77
+ 840              		.loc 1 351 0
+ 841 05ec 0020A0E1 		mov	r2, r0
+ 842 05f0 BC159FE5 		ldr	r1, .L155+24
+ 843 05f4 0000D6E5 		ldrb	r0, [r6, #0]	@ zero_extendqisi2
+ 844              	.LVL70:
+ 845 05f8 FEFFFFEB 		bl	send1st_DS
+ 846              	.LVL71:
+ 847              		.loc 1 352 0
+ 848 05fc 001096E5 		ldr	r1, [r6, #0]
+ 849              		.loc 1 355 0
+ 850 0600 B0359FE5 		ldr	r3, .L155+28
+ 851 0604 1E20A0E3 		mov	r2, #30
+ 852 0608 012183E7 		str	r2, [r3, r1, asl #2]
+ 853              		.loc 1 352 0
+ 854 060c 90359FE5 		ldr	r3, .L155+8
+ 855 0610 0220A0E3 		mov	r2, #2
+ 856 0614 0120C3E7 		strb	r2, [r3, r1]
+ 857              		.loc 1 353 0
+ 858 0618 9C359FE5 		ldr	r3, .L155+32
+ 859 061c 0140C3E7 		strb	r4, [r3, r1]
+ 860 0620 450100EA 		b	.L149
+ 861              	.LVL72:
+ 862              	.L95:
+ 863              		.loc 1 360 0
+ 864 0624 FEFFFFEB 		bl	timer1Clear
+ 865              	.LVL73:
+ 866              		.loc 1 361 0
+ 867 0628 6C359FE5 		ldr	r3, .L155
+ 868 062c 001093E5 		ldr	r1, [r3, #0]
+ 869 0630 0120A0E3 		mov	r2, #1
+ 870              	.LVL74:
+ 871              	.L148:
+ 872 0634 68359FE5 		ldr	r3, .L155+8
+ 873 0638 0120C3E7 		strb	r2, [r3, r1]
+ 874 063c 480100EA 		b	.L77
+ 875              	.LVL75:
+ 876              	.L93:
+ 877              		.loc 1 366 0
+ 878 0640 78059FE5 		ldr	r0, .L155+36
+ 879 0644 FEFFFFEB 		bl	printf
+ 880              		.loc 1 369 0
+ 881 0648 4120A0E3 		mov	r2, #65
+ 882 064c 70159FE5 		ldr	r1, .L155+40
+ 883 0650 0000D6E5 		ldrb	r0, [r6, #0]	@ zero_extendqisi2
+ 884 0654 FEFFFFEB 		bl	send1st_DS
+ 885              		.loc 1 370 0
+ 886 0658 0000D6E5 		ldrb	r0, [r6, #0]	@ zero_extendqisi2
+ 887 065c FEFFFFEB 		bl	disconnect
+ 888              		.loc 1 371 0
+ 889 0660 002096E5 		ldr	r2, [r6, #0]
+ 890 0664 38359FE5 		ldr	r3, .L155+8
+ 891 0668 0240C3E7 		strb	r4, [r3, r2]
+ 892 066c 3C0100EA 		b	.L77
+ 893              	.LVL76:
+ 894              	.L91:
+ 895              		.loc 1 379 0
+ 896 0670 50059FE5 		ldr	r0, .L155+44
+ 897              	.L154:
+ 898 0674 FEFFFFEB 		bl	printf
+ 899              		.loc 1 382 0
+ 900 0678 44159FE5 		ldr	r1, .L155+40
+ 901 067c 4120A0E3 		mov	r2, #65
+ 902 0680 0000D6E5 		ldrb	r0, [r6, #0]	@ zero_extendqisi2
+ 903 0684 FEFFFFEB 		bl	send1st_DS
+ 904              		.loc 1 383 0
+ 905 0688 0000D6E5 		ldrb	r0, [r6, #0]	@ zero_extendqisi2
+ 906 068c FEFFFFEB 		bl	disconnect
+ 907              		.loc 1 384 0
+ 908 0690 001096E5 		ldr	r1, [r6, #0]
+ 909              	.LVL77:
+ 910              	.L152:
+ 911 0694 0020A0E3 		mov	r2, #0
+ 912 0698 E5FFFFEA 		b	.L148
+ 913              	.LVL78:
+ 914              	.L90:
+ 915              		.loc 1 390 0
+ 916 069c 0C30A0E3 		mov	r3, #12
+ 917 06a0 900305E0 		mul	r5, r0, r3
+ 918              		.loc 1 389 0
+ 919 06a4 20759FE5 		ldr	r7, .L155+48
+ 920              		.loc 1 390 0
+ 921 06a8 032885E2 		add	r2, r5, #196608
+ 922              		.loc 1 389 0
+ 923 06ac 0388A0E3 		mov	r8, #196608
+ 924              		.loc 1 390 0
+ 925 06b0 083092E5 		ldr	r3, [r2, #8]
+ 926 06b4 0410A0E1 		mov	r1, r4
+ 927 06b8 042092E5 		ldr	r2, [r2, #4]
+ 928 06bc 0C059FE5 		ldr	r0, .L155+52
+ 929              	.LVL79:
+ 930              		.loc 1 389 0
+ 931 06c0 008087E5 		str	r8, [r7, #0]
+ 932              		.loc 1 390 0
+ 933 06c4 FEFFFFEB 		bl	printf
+ 934              	.LVL80:
+ 935              		.loc 1 391 0
+ 936 06c8 002097E5 		ldr	r2, [r7, #0]
+ 937 06cc 023085E0 		add	r3, r5, r2
+ 938 06d0 081093E5 		ldr	r1, [r3, #8]
+ 939 06d4 FF0051E3 		cmp	r1, #255
+ 940              		.loc 1 392 0
+ 941 06d8 F4049F05 		ldreq	r0, .L155+56
+ 942              		.loc 1 391 0
+ 943 06dc E4FFFF0A 		beq	.L154
+ 944              		.loc 1 400 0
+ 945 06e0 090051E3 		cmp	r1, #9
+ 946 06e4 5800001A 		bne	.L103
+ 947              	.LBB8:
+ 948              		.loc 1 405 0
+ 949 06e8 022095E7 		ldr	r2, [r5, r2]
+ 950 06ec 043093E5 		ldr	r3, [r3, #4]
+ 951 06f0 036082E0 		add	r6, r2, r3
+ 952              		.loc 1 406 0
+ 953 06f4 0410A0E1 		mov	r1, r4
+ 954 06f8 0820D6E7 		ldrb	r2, [r6, r8]	@ zero_extendqisi2
+ 955 06fc D4049FE5 		ldr	r0, .L155+60
+ 956 0700 FEFFFFEB 		bl	printf
+ 957 0704 0040A0E3 		mov	r4, #0
+ 958              	.LVL81:
+ 959              	.L105:
+ 960              		.loc 1 408 0
+ 961 0708 CC349FE5 		ldr	r3, .L155+64
+ 962 070c 042086E0 		add	r2, r6, r4
+ 963 0710 0310D2E7 		ldrb	r1, [r2, r3]	@ zero_extendqisi2
+ 964              		.loc 1 407 0
+ 965 0714 014084E2 		add	r4, r4, #1
+ 966              		.loc 1 408 0
+ 967 0718 C0049FE5 		ldr	r0, .L155+68
+ 968 071c FEFFFFEB 		bl	printf
+ 969              		.loc 1 407 0
+ 970 0720 050054E3 		cmp	r4, #5
+ 971 0724 F7FFFF1A 		bne	.L105
+ 972              		.loc 1 411 0
+ 973 0728 9C449FE5 		ldr	r4, .L155+48
+ 974              	.LVL82:
+ 975 072c 003094E5 		ldr	r3, [r4, #0]
+ 976 0730 031085E0 		add	r1, r5, r3
+ 977 0734 032095E7 		ldr	r2, [r5, r3]
+ 978 0738 043091E5 		ldr	r3, [r1, #4]
+ 979 073c 032082E0 		add	r2, r2, r3
+ 980 0740 032882E2 		add	r2, r2, #196608
+ 981              	.LVL83:
+ 982 0744 042082E2 		add	r2, r2, #4
+ 983              		.loc 1 412 0
+ 984 0748 0130D2E5 		ldrb	r3, [r2, #1]	@ zero_extendqisi2
+ 985 074c 0010D2E5 		ldrb	r1, [r2, #0]	@ zero_extendqisi2
+ 986              		.loc 1 414 0
+ 987 0750 010052E5 		ldrb	r0, [r2, #-1]	@ zero_extendqisi2
+ 988              		.loc 1 412 0
+ 989 0754 0338A0E1 		mov	r3, r3, asl #16
+ 990              		.loc 1 415 0
+ 991 0758 022052E5 		ldrb	r2, [r2, #-2]	@ zero_extendqisi2
+ 992              	.LVL84:
+ 993              		.loc 1 412 0
+ 994 075c 013C83E0 		add	r3, r3, r1, asl #24
+ 995              	.LVL85:
+ 996              		.loc 1 414 0
+ 997 0760 003083E0 		add	r3, r3, r0
+ 998              	.LVL86:
+ 999              		.loc 1 415 0
+ 1000 0764 023483E0 		add	r3, r3, r2, asl #8
+ 1001              	.LVL87:
+ 1002 0768 8330A0E1 		mov	r3, r3, asl #1
+ 1003 076c 026083E2 		add	r6, r3, #2
+ 1004              	.LVL88:
+ 1005              		.loc 1 416 0
+ 1006 0770 0610A0E1 		mov	r1, r6
+ 1007 0774 68049FE5 		ldr	r0, .L155+72
+ 1008 0778 FEFFFFEB 		bl	printf
+ 1009              		.loc 1 418 0
+ 1010 077c 003094E5 		ldr	r3, [r4, #0]
+ 1011 0780 032085E0 		add	r2, r5, r3
+ 1012 0784 031095E7 		ldr	r1, [r5, r3]
+ 1013 0788 042092E5 		ldr	r2, [r2, #4]
+ 1014              		.loc 1 420 0
+ 1015 078c 023081E0 		add	r3, r1, r2
+ 1016 0790 033883E2 		add	r3, r3, #196608
+ 1017 0794 0050D3E5 		ldrb	r5, [r3, #0]	@ zero_extendqisi2
+ 1018 0798 010055E3 		cmp	r5, #1
+ 1019 079c 0200000A 		beq	.L108
+ 1020 07a0 020055E3 		cmp	r5, #2
+ 1021 07a4 1D00001A 		bne	.L143
+ 1022 07a8 0E0000EA 		b	.L109
+ 1023              	.L108:
+ 1024              		.loc 1 423 0
+ 1025 07ac E8439FE5 		ldr	r4, .L155
+ 1026 07b0 031881E2 		add	r1, r1, #196608
+ 1027 07b4 021081E2 		add	r1, r1, #2
+ 1028 07b8 022042E2 		sub	r2, r2, #2
+ 1029 07bc 0000D4E5 		ldrb	r0, [r4, #0]	@ zero_extendqisi2
+ 1030 07c0 FEFFFFEB 		bl	send1st_DS
+ 1031              		.loc 1 425 0
+ 1032 07c4 002094E5 		ldr	r2, [r4, #0]
+ 1033              		.loc 1 427 0
+ 1034 07c8 EC339FE5 		ldr	r3, .L155+32
+ 1035 07cc 0250C3E7 		strb	r5, [r3, r2]
+ 1036              		.loc 1 425 0
+ 1037 07d0 CC339FE5 		ldr	r3, .L155+8
+ 1038 07d4 0210A0E3 		mov	r1, #2
+ 1039 07d8 0210C3E7 		strb	r1, [r3, r2]
+ 1040              		.loc 1 426 0
+ 1041 07dc D4339FE5 		ldr	r3, .L155+28
+ 1042 07e0 026183E7 		str	r6, [r3, r2, asl #2]
+ 1043 07e4 DE0000EA 		b	.L77
+ 1044              	.L109:
+ 1045              		.loc 1 432 0
+ 1046 07e8 AC439FE5 		ldr	r4, .L155
+ 1047 07ec 031881E2 		add	r1, r1, #196608
+ 1048 07f0 022042E2 		sub	r2, r2, #2
+ 1049 07f4 021081E2 		add	r1, r1, #2
+ 1050 07f8 0000D4E5 		ldrb	r0, [r4, #0]	@ zero_extendqisi2
+ 1051 07fc FEFFFFEB 		bl	send1st_DS
+ 1052              		.loc 1 434 0
+ 1053 0800 002094E5 		ldr	r2, [r4, #0]
+ 1054              		.loc 1 436 0
+ 1055 0804 B0339FE5 		ldr	r3, .L155+32
+ 1056 0808 0250C3E7 		strb	r5, [r3, r2]
+ 1057              		.loc 1 435 0
+ 1058 080c A4339FE5 		ldr	r3, .L155+28
+ 1059 0810 026183E7 		str	r6, [r3, r2, asl #2]
+ 1060              		.loc 1 434 0
+ 1061 0814 88339FE5 		ldr	r3, .L155+8
+ 1062 0818 0250C3E7 		strb	r5, [r3, r2]
+ 1063 081c D00000EA 		b	.L77
+ 1064              	.L143:
+ 1065              		.loc 1 442 0
+ 1066 0820 74439FE5 		ldr	r4, .L155
+ 1067              		.loc 1 440 0
+ 1068 0824 A8039FE5 		ldr	r0, .L155+56
+ 1069 0828 FEFFFFEB 		bl	printf
+ 1070              		.loc 1 442 0
+ 1071 082c 90139FE5 		ldr	r1, .L155+40
+ 1072 0830 4120A0E3 		mov	r2, #65
+ 1073 0834 0000D4E5 		ldrb	r0, [r4, #0]	@ zero_extendqisi2
+ 1074 0838 FEFFFFEB 		bl	send1st_DS
+ 1075              		.loc 1 443 0
+ 1076 083c 0000D4E5 		ldrb	r0, [r4, #0]	@ zero_extendqisi2
+ 1077 0840 FEFFFFEB 		bl	disconnect
+ 1078              	.L153:
+ 1079              		.loc 1 444 0
+ 1080 0844 001094E5 		ldr	r1, [r4, #0]
+ 1081 0848 91FFFFEA 		b	.L152
+ 1082              	.LVL89:
+ 1083              	.L103:
+ 1084              	.LBE8:
+ 1085              		.loc 1 450 0
+ 1086 084c FF1001E2 		and	r1, r1, #255
+ 1087 0850 040093E5 		ldr	r0, [r3, #4]
+ 1088 0854 FEFFFFEB 		bl	PrepHeader
+ 1089              		.loc 1 451 0
+ 1090 0858 000050E3 		cmp	r0, #0
+ 1091              	.LVL90:
+ 1092 085c C00000DA 		ble	.L77
+ 1093              		.loc 1 452 0
+ 1094 0860 0020A0E1 		mov	r2, r0
+ 1095 0864 48139FE5 		ldr	r1, .L155+24
+ 1096 0868 0000D6E5 		ldrb	r0, [r6, #0]	@ zero_extendqisi2
+ 1097              	.LVL91:
+ 1098 086c FEFFFFEB 		bl	send1st_DS
+ 1099              	.LVL92:
+ 1100              		.loc 1 454 0
+ 1101 0870 001096E5 		ldr	r1, [r6, #0]
+ 1102 0874 28339FE5 		ldr	r3, .L155+8
+ 1103 0878 0220A0E3 		mov	r2, #2
+ 1104 087c 0120C3E7 		strb	r2, [r3, r1]
+ 1105              		.loc 1 455 0
+ 1106 0880 34339FE5 		ldr	r3, .L155+32
+ 1107 0884 0020A0E3 		mov	r2, #0
+ 1108 0888 0120C3E7 		strb	r2, [r3, r1]
+ 1109              		.loc 1 456 0
+ 1110 088c 003097E5 		ldr	r3, [r7, #0]
+ 1111 0890 032095E7 		ldr	r2, [r5, r3]
+ 1112 0894 033085E0 		add	r3, r5, r3
+ 1113              		.loc 1 457 0
+ 1114 0898 040093E5 		ldr	r0, [r3, #4]
+ 1115 089c 14339FE5 		ldr	r3, .L155+28
+ 1116              		.loc 1 456 0
+ 1117 08a0 032882E2 		add	r2, r2, #196608
+ 1118              		.loc 1 457 0
+ 1119 08a4 010183E7 		str	r0, [r3, r1, asl #2]
+ 1120 08a8 A40000EA 		b	.L150
+ 1121              	.LVL93:
+ 1122              	.L85:
+ 1123              	.LBE7:
+ 1124              		.loc 1 465 0
+ 1125 08ac FF0001E2 		and	r0, r1, #255
+ 1126 08b0 200000EA 		b	.L146
+ 1127              	.LVL94:
+ 1128              	.L112:
+ 1129              	.LBB9:
+ 1130              		.loc 1 469 0
+ 1131 08b4 0000D5E5 		ldrb	r0, [r5, #0]	@ zero_extendqisi2
+ 1132              	.LVL95:
+ 1133 08b8 FEFFFFEB 		bl	getSn_RX_RSR
+ 1134              		.loc 1 471 0
+ 1135 08bc E8229FE5 		ldr	r2, .L155+16
+ 1136              		.loc 1 469 0
+ 1137 08c0 0008A0E1 		mov	r0, r0, asl #16
+ 1138 08c4 2008A0E1 		mov	r0, r0, lsr #16
+ 1139              	.LVL96:
+ 1140              		.loc 1 471 0
+ 1141 08c8 020050E1 		cmp	r0, r2
+ 1142 08cc 0020A031 		movcc	r2, r0
+ 1143 08d0 0410A0E1 		mov	r1, r4
+ 1144 08d4 0000D5E5 		ldrb	r0, [r5, #0]	@ zero_extendqisi2
+ 1145              	.LVL97:
+ 1146 08d8 FEFFFFEB 		bl	recv
+ 1147              		.loc 1 474 0
+ 1148 08dc 040040E2 		sub	r0, r0, #4
+ 1149              	.LVL98:
+ 1150              		.loc 1 477 0
+ 1151 08e0 0030D4E7 		ldrb	r3, [r4, r0]	@ zero_extendqisi2
+ 1152 08e4 2D0053E3 		cmp	r3, #45
+ 1153              		.loc 1 473 0
+ 1154 08e8 F8329FE5 		ldr	r3, .L155+76
+ 1155              		.loc 1 477 0
+ 1156 08ec 042080E0 		add	r2, r0, r4
+ 1157              		.loc 1 473 0
+ 1158 08f0 006083E5 		str	r6, [r3, #0]
+ 1159              		.loc 1 477 0
+ 1160 08f4 0D00001A 		bne	.L113
+ 1161 08f8 0130D2E5 		ldrb	r3, [r2, #1]	@ zero_extendqisi2
+ 1162 08fc 2D0053E3 		cmp	r3, #45
+ 1163 0900 0A00001A 		bne	.L113
+ 1164 0904 0230D2E5 		ldrb	r3, [r2, #2]	@ zero_extendqisi2
+ 1165 0908 0D0053E3 		cmp	r3, #13
+ 1166 090c 0700001A 		bne	.L113
+ 1167 0910 0330D2E5 		ldrb	r3, [r2, #3]	@ zero_extendqisi2
+ 1168 0914 0A0053E3 		cmp	r3, #10
+ 1169              		.loc 1 478 0
+ 1170 0918 0110A0E3 		mov	r1, #1
+ 1171 091c 1E00A0E3 		mov	r0, #30
+ 1172              	.LVL99:
+ 1173              		.loc 1 477 0
+ 1174 0920 0200001A 		bne	.L113
+ 1175              		.loc 1 478 0
+ 1176 0924 FEFFFFEB 		bl	PrepHeader
+ 1177              		.loc 1 480 0
+ 1178 0928 000050E3 		cmp	r0, #0
+ 1179              	.LVL100:
+ 1180 092c 750000CA 		bgt	.L139
+ 1181              	.LVL101:
+ 1182              	.L113:
+ 1183              		.loc 1 491 0
+ 1184 0930 64329FE5 		ldr	r3, .L155
+ 1185 0934 0000D3E5 		ldrb	r0, [r3, #0]	@ zero_extendqisi2
+ 1186              	.LVL102:
+ 1187              	.L146:
+ 1188 0938 FEFFFFEB 		bl	getSn_RX_RSR
+ 1189 093c 0008A0E1 		mov	r0, r0, asl #16
+ 1190 0940 2008A0E1 		mov	r0, r0, lsr #16
+ 1191              	.LVL103:
+ 1192              	.LBE9:
+ 1193              		.loc 1 467 0
+ 1194 0944 000050E3 		cmp	r0, #0
+ 1195              	.LBB10:
+ 1196              		.loc 1 469 0
+ 1197 0948 4C529FE5 		ldr	r5, .L155
+ 1198              		.loc 1 471 0
+ 1199 094c 54429FE5 		ldr	r4, .L155+12
+ 1200              		.loc 1 473 0
+ 1201 0950 0060A0E3 		mov	r6, #0
+ 1202              	.LBE10:
+ 1203              		.loc 1 467 0
+ 1204 0954 D6FFFF1A 		bne	.L112
+ 1205 0958 8A0000EA 		b	.L144
+ 1206              	.L120:
+ 1207              		.loc 1 498 0
+ 1208 095c 38429FE5 		ldr	r4, .L155
+ 1209 0960 0210A0E3 		mov	r1, #2
+ 1210 0964 0000D4E5 		ldrb	r0, [r4, #0]	@ zero_extendqisi2
+ 1211              	.LVL104:
+ 1212 0968 FEFFFFEB 		bl	setSn_TX_WRSR
+ 1213              		.loc 1 499 0
+ 1214 096c 000094E5 		ldr	r0, [r4, #0]
+ 1215 0970 0003A0E1 		mov	r0, r0, asl #6
+ 1216 0974 8B0F80E2 		add	r0, r0, #556
+ 1217 0978 020080E2 		add	r0, r0, #2
+ 1218 097c 68129FE5 		ldr	r1, .L155+80
+ 1219 0980 FEFFFFEB 		bl	IINCHIP_WRITE
+ 1220              		.loc 1 500 0
+ 1221 0984 0000D4E5 		ldrb	r0, [r4, #0]	@ zero_extendqisi2
+ 1222 0988 2010A0E3 		mov	r1, #32
+ 1223 098c FEFFFFEB 		bl	setSn_CR
+ 1224              	.L121:
+ 1225              		.loc 1 506 0
+ 1226 0990 04429FE5 		ldr	r4, .L155
+ 1227 0994 0000D4E5 		ldrb	r0, [r4, #0]	@ zero_extendqisi2
+ 1228 0998 FEFFFFEB 		bl	getSn_IR
+ 1229 099c 100010E3 		tst	r0, #16
+ 1230 09a0 FAFFFF0A 		beq	.L121
+ 1231              		.loc 1 507 0
+ 1232 09a4 3C329FE5 		ldr	r3, .L155+76
+ 1233 09a8 0120A0E3 		mov	r2, #1
+ 1234              		.loc 1 508 0
+ 1235 09ac 0000D4E5 		ldrb	r0, [r4, #0]	@ zero_extendqisi2
+ 1236 09b0 1010A0E3 		mov	r1, #16
+ 1237              		.loc 1 507 0
+ 1238 09b4 002083E5 		str	r2, [r3, #0]
+ 1239              		.loc 1 508 0
+ 1240 09b8 FEFFFFEB 		bl	setSn_IR
+ 1241 09bc 680000EA 		b	.L77
+ 1242              	.L86:
+ 1243              		.loc 1 515 0
+ 1244 09c0 F4319FE5 		ldr	r3, .L155+32
+ 1245 09c4 0130D3E7 		ldrb	r3, [r3, r1]	@ zero_extendqisi2
+ 1246 09c8 010053E3 		cmp	r3, #1
+ 1247 09cc 1000000A 		beq	.L125
+ 1248 09d0 0200003A 		bcc	.L124
+ 1249 09d4 020053E3 		cmp	r3, #2
+ 1250 09d8 1300000A 		beq	.L126
+ 1251 09dc 600000EA 		b	.L77
+ 1252              	.L124:
+ 1253              		.loc 1 517 0
+ 1254 09e0 08429FE5 		ldr	r4, .L155+84
+ 1255 09e4 CC319FE5 		ldr	r3, .L155+28
+ 1256 09e8 FF0001E2 		and	r0, r1, #255
+ 1257 09ec 012193E7 		ldr	r2, [r3, r1, asl #2]
+ 1258 09f0 011194E7 		ldr	r1, [r4, r1, asl #2]
+ 1259 09f4 FEFFFFEB 		bl	send_DS
+ 1260              		.loc 1 518 0
+ 1261 09f8 9C319FE5 		ldr	r3, .L155
+ 1262 09fc 002093E5 		ldr	r2, [r3, #0]
+ 1263 0a00 023194E7 		ldr	r3, [r4, r2, asl #2]
+ 1264              		.loc 1 517 0
+ 1265 0a04 0010A0E1 		mov	r1, r0
+ 1266              	.LVL105:
+ 1267              		.loc 1 518 0
+ 1268 0a08 003083E0 		add	r3, r3, r0
+ 1269 0a0c 023184E7 		str	r3, [r4, r2, asl #2]
+ 1270 0a10 0E0000EA 		b	.L127
+ 1271              	.LVL106:
+ 1272              	.L125:
+ 1273              		.loc 1 522 0
+ 1274 0a14 FEFFFFEB 		bl	UpdateVoltage
+ 1275              		.loc 1 523 0
+ 1276 0a18 7C319FE5 		ldr	r3, .L155
+ 1277 0a1c D0119FE5 		ldr	r1, .L155+88
+ 1278 0a20 0000D3E5 		ldrb	r0, [r3, #0]	@ zero_extendqisi2
+ 1279 0a24 0820A0E3 		mov	r2, #8
+ 1280 0a28 060000EA 		b	.L147
+ 1281              	.L126:
+ 1282              		.loc 1 527 0
+ 1283 0a2c FEFFFFEB 		bl	PrepDwnldData
+ 1284              		.loc 1 528 0
+ 1285 0a30 64119FE5 		ldr	r1, .L155
+ 1286 0a34 7C319FE5 		ldr	r3, .L155+28
+ 1287 0a38 002091E5 		ldr	r2, [r1, #0]
+ 1288 0a3c 0000D1E5 		ldrb	r0, [r1, #0]	@ zero_extendqisi2
+ 1289 0a40 022193E7 		ldr	r2, [r3, r2, asl #2]
+ 1290 0a44 AC119FE5 		ldr	r1, .L155+92
+ 1291              	.L147:
+ 1292 0a48 FEFFFFEB 		bl	send_DS
+ 1293 0a4c 0010A0E1 		mov	r1, r0
+ 1294              	.LVL107:
+ 1295              	.L127:
+ 1296              		.loc 1 536 0
+ 1297 0a50 000051E3 		cmp	r1, #0
+ 1298 0a54 4200000A 		beq	.L77
+ 1299              		.loc 1 539 0
+ 1300 0a58 3C519FE5 		ldr	r5, .L155
+ 1301 0a5c 54419FE5 		ldr	r4, .L155+28
+ 1302 0a60 003095E5 		ldr	r3, [r5, #0]
+ 1303 0a64 032194E7 		ldr	r2, [r4, r3, asl #2]
+ 1304 0a68 022061E0 		rsb	r2, r1, r2
+ 1305              		.loc 1 540 0
+ 1306 0a6c FF0003E2 		and	r0, r3, #255
+ 1307              		.loc 1 539 0
+ 1308 0a70 032184E7 		str	r2, [r4, r3, asl #2]
+ 1309              		.loc 1 540 0
+ 1310 0a74 FEFFFFEB 		bl	wait4sendDone
+ 1311              	.LVL108:
+ 1312 0a78 000050E3 		cmp	r0, #0
+ 1313 0a7c 000095E5 		ldr	r0, [r5, #0]
+ 1314              		.loc 1 541 0
+ 1315 0a80 1C319F05 		ldreq	r3, .L155+8
+ 1316 0a84 0320A003 		moveq	r2, #3
+ 1317 0a88 0020C307 		streqb	r2, [r3, r0]
+ 1318 0a8c 3400000A 		beq	.L77
+ 1319              	.L129:
+ 1320              		.loc 1 544 0
+ 1321 0a90 004194E7 		ldr	r4, [r4, r0, asl #2]
+ 1322 0a94 000054E3 		cmp	r4, #0
+ 1323 0a98 1800001A 		bne	.L151
+ 1324              		.loc 1 546 0
+ 1325 0a9c FF0000E2 		and	r0, r0, #255
+ 1326 0aa0 0810A0E3 		mov	r1, #8
+ 1327 0aa4 FEFFFFEB 		bl	setSn_CR
+ 1328              		.loc 1 547 0
+ 1329 0aa8 002095E5 		ldr	r2, [r5, #0]
+ 1330 0aac F0309FE5 		ldr	r3, .L155+8
+ 1331 0ab0 0240C3E7 		strb	r4, [r3, r2]
+ 1332 0ab4 110000EA 		b	.L151
+ 1333              	.L87:
+ 1334              		.loc 1 554 0
+ 1335 0ab8 FF0001E2 		and	r0, r1, #255
+ 1336 0abc FEFFFFEB 		bl	wait4sendDone
+ 1337 0ac0 010050E3 		cmp	r0, #1
+ 1338 0ac4 2600001A 		bne	.L77
+ 1339              		.loc 1 555 0
+ 1340 0ac8 CC609FE5 		ldr	r6, .L155
+ 1341 0acc E4309FE5 		ldr	r3, .L155+28
+ 1342 0ad0 000096E5 		ldr	r0, [r6, #0]
+ 1343 0ad4 004193E7 		ldr	r4, [r3, r0, asl #2]
+ 1344 0ad8 C4509FE5 		ldr	r5, .L155+8
+ 1345 0adc 000054E3 		cmp	r4, #0
+ 1346              		.loc 1 562 0
+ 1347 0ae0 0230A013 		movne	r3, #2
+ 1348 0ae4 0030C517 		strneb	r3, [r5, r0]
+ 1349              		.loc 1 555 0
+ 1350 0ae8 1D00001A 		bne	.L77
+ 1351              		.loc 1 557 0
+ 1352 0aec FF0000E2 		and	r0, r0, #255
+ 1353 0af0 0810A0E3 		mov	r1, #8
+ 1354 0af4 FEFFFFEB 		bl	setSn_CR
+ 1355              		.loc 1 558 0
+ 1356 0af8 003096E5 		ldr	r3, [r6, #0]
+ 1357 0afc 0340C5E7 		strb	r4, [r5, r3]
+ 1358              	.L151:
+ 1359              		.loc 1 559 0
+ 1360 0b00 FEFFFFEB 		bl	socket_return
+ 1361 0b04 160000EA 		b	.L77
+ 1362              	.LVL109:
+ 1363              	.L139:
+ 1364              	.LBB11:
+ 1365              		.loc 1 481 0
+ 1366 0b08 0020A0E1 		mov	r2, r0
+ 1367 0b0c A0109FE5 		ldr	r1, .L155+24
+ 1368 0b10 0000D5E5 		ldrb	r0, [r5, #0]	@ zero_extendqisi2
+ 1369              	.LVL110:
+ 1370 0b14 FEFFFFEB 		bl	send1st_DS
+ 1371              	.LVL111:
+ 1372              		.loc 1 483 0
+ 1373 0b18 001095E5 		ldr	r1, [r5, #0]
+ 1374              		.loc 1 486 0
+ 1375 0b1c 94309FE5 		ldr	r3, .L155+28
+ 1376 0b20 1E20A0E3 		mov	r2, #30
+ 1377 0b24 012183E7 		str	r2, [r3, r1, asl #2]
+ 1378              		.loc 1 483 0
+ 1379 0b28 74309FE5 		ldr	r3, .L155+8
+ 1380 0b2c 0220A0E3 		mov	r2, #2
+ 1381 0b30 0120C3E7 		strb	r2, [r3, r1]
+ 1382              		.loc 1 484 0
+ 1383 0b34 80309FE5 		ldr	r3, .L155+32
+ 1384 0b38 0160C3E7 		strb	r6, [r3, r1]
+ 1385              	.L149:
+ 1386              		.loc 1 485 0
+ 1387 0b3c B8209FE5 		ldr	r2, .L155+96
+ 1388              	.LVL112:
+ 1389              	.L150:
+ 1390 0b40 A8309FE5 		ldr	r3, .L155+84
+ 1391 0b44 012183E7 		str	r2, [r3, r1, asl #2]
+ 1392 0b48 050000EA 		b	.L77
+ 1393              	.LVL113:
+ 1394              	.L82:
+ 1395              	.LBE11:
+ 1396              	.LBE6:
+ 1397              		.loc 1 573 0
+ 1398 0b4c AC009FE5 		ldr	r0, .L155+100
+ 1399 0b50 FEFFFFEB 		bl	printf
+ 1400              		.loc 1 574 0
+ 1401 0b54 0000D4E5 		ldrb	r0, [r4, #0]	@ zero_extendqisi2
+ 1402 0b58 FEFFFFEB 		bl	disconnect
+ 1403              		.loc 1 575 0
+ 1404 0b5c 0000D4E5 		ldrb	r0, [r4, #0]	@ zero_extendqisi2
+ 1405 0b60 FEFFFFEB 		bl	close
+ 1406              	.LVL114:
+ 1407              	.L77:
+ 1408              		.loc 1 580 0
+ 1409 0b64 30209FE5 		ldr	r2, .L155
+ 1410 0b68 003092E5 		ldr	r3, [r2, #0]
+ 1411 0b6c 013083E2 		add	r3, r3, #1
+ 1412              		.loc 1 581 0
+ 1413 0b70 070053E3 		cmp	r3, #7
+ 1414              		.loc 1 580 0
+ 1415 0b74 003082E5 		str	r3, [r2, #0]
+ 1416              		.loc 1 582 0
+ 1417 0b78 0030A0C3 		movgt	r3, #0
+ 1418 0b7c 003082C5 		strgt	r3, [r2, #0]
+ 1419              		.loc 1 583 0
+ 1420 0b80 F041BDE8 		ldmfd	sp!, {r4, r5, r6, r7, r8, lr}
+ 1421 0b84 1EFF2FE1 		bx	lr
+ 1422              	.LVL115:
+ 1423              	.L144:
+ 1424              	.LBB12:
+ 1425              		.loc 1 497 0
+ 1426 0b88 58309FE5 		ldr	r3, .L155+76
+ 1427 0b8c 003093E5 		ldr	r3, [r3, #0]
+ 1428 0b90 000053E3 		cmp	r3, #0
+ 1429 0b94 F2FFFF1A 		bne	.L77
+ 1430 0b98 6FFFFFEA 		b	.L120
+ 1431              	.L156:
+ 1432              		.align	2
+ 1433              	.L155:
+ 1434 0b9c 00000000 		.word	cSoc
+ 1435 0ba0 00000000 		.word	httpPort
+ 1436 0ba4 00000000 		.word	EstbPhase
+ 1437 0ba8 00000000 		.word	inBuf
+ 1438 0bac DC050000 		.word	1500
+ 1439 0bb0 08040000 		.word	.LC15
+ 1440 0bb4 00000000 		.word	outBuf
+ 1441 0bb8 00000000 		.word	SndLen
+ 1442 0bbc 00000000 		.word	SndType
+ 1443 0bc0 10040000 		.word	.LC16
+ 1444 0bc4 28040000 		.word	.LC17
+ 1445 0bc8 6C040000 		.word	.LC18
+ 1446 0bcc 00000000 		.word	p_ptr
+ 1447 0bd0 8C040000 		.word	.LC19
+ 1448 0bd4 AC040000 		.word	.LC20
+ 1449 0bd8 BC040000 		.word	.LC21
+ 1450 0bdc 01000300 		.word	196609
+ 1451 0be0 D8040000 		.word	.LC22
+ 1452 0be4 E0040000 		.word	.LC23
+ 1453 0be8 00000000 		.word	Snd0Flag
+ 1454 0bec 20200000 		.word	8224
+ 1455 0bf0 00000000 		.word	SndBPtr
+ 1456 0bf4 00000000 		.word	voltBuf
+ 1457 0bf8 00000000 		.word	tmpBuf
+ 1458 0bfc 00000000 		.word	uplOKmsg
+ 1459 0c00 F0040000 		.word	.LC24
+ 1460              	.LBE12:
+ 1461              	.LFE6:
+ 1463              		.global	voltBuf
+ 1464              		.data
+ 1465              		.align	2
+ 1468              	voltBuf:
+ 1469 0000 322E3334 		.ascii	"2.345     \000"
+ 1469      35202020 
+ 1469      202000
+ 1470 000b 00000000 		.space	53
+ 1470      00000000 
+ 1470      00000000 
+ 1470      00000000 
+ 1470      00000000 
+ 1471              		.global	uplOKmsg
+ 1472              		.align	2
+ 1475              	uplOKmsg:
+ 1476 0040 54686520 		.ascii	"The file has been uploaded\015\012\015\012\000"
+ 1476      66696C65 
+ 1476      20686173 
+ 1476      20626565 
+ 1476      6E207570 
+ 1477              		.comm	cSoc,4,4
+ 1478              		.comm	txfree_size,4,4
+ 1479              		.comm	httpPort,4,4
+ 1480              		.comm	Snd0Flag,4,4
+ 1481              		.comm	p_ptr,4,4
+ 1482              		.comm	outBuf,513,1
+ 1483              		.comm	inBuf,1501,1
+ 1484              		.comm	tmpBuf,1600,4
+ 1485              		.comm	EstbPhase,8,1
+ 1486              		.comm	SndBPtr,32,4
+ 1487              		.comm	SndLen,32,4
+ 1488              		.comm	SndType,8,1
+ 1667              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 httpserv.c
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:13     .text:00000000 ToUpper
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:22     .text:00000000 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:38     .text:00000018 PrepDwnldData
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:67     .text:0000003c $d
+                            *COM*:00000640 tmpBuf
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:75     .text:00000048 wait4sendDone
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:82     .text:00000048 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:115    .text:00000088 send_DS
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:173    .text:000000f8 $d
+                            *COM*:00000004 txfree_size
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:180    .text:00000100 send1st_DS
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:187    .text:00000100 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:214    .text:00000138 socket_return
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:257    .text:00000180 $d
+                            *COM*:00000004 httpPort
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:283    .text:00000184 CheckRequest
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:290    .text:00000184 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:425    .text:000002dc $d
+                            *COM*:000005dd inBuf
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:490    .text:00000300 PrepHeader
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:497    .text:00000300 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:514    .text:00000320 $d
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:526    .text:00000344 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:654    .text:00000464 $d
+                            *COM*:00000201 outBuf
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:700    .text:00000490 http_serv_machine
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:706    .text:00000490 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:752    .text:00000514 $d
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:758    .text:00000524 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:1434   .text:00000b9c $d
+                            *COM*:00000004 cSoc
+                            *COM*:00000008 EstbPhase
+                            *COM*:00000020 SndLen
+                            *COM*:00000008 SndType
+                            *COM*:00000004 p_ptr
+                            *COM*:00000004 Snd0Flag
+                            *COM*:00000020 SndBPtr
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:1468   .data:00000000 voltBuf
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cccQw6Fj.s:1475   .data:00000040 uplOKmsg
+
+UNDEFINED SYMBOLS
+getSn_IR
+setSn_IR
+setSn_CR
+getSn_TX_FSR
+wiz_write_buf
+setSn_TX_WRSR
+getSn_SSR
+socket
+listen
+memcmp
+memchr
+memcpy
+printf
+hex2int
+itoa
+strlen
+getSn_RX_RSR
+recv
+findstr
+timer1Clear
+disconnect
+IINCHIP_WRITE
+UpdateVoltage
+close

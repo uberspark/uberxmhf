@@ -1,0 +1,1207 @@
+   1              		.file	"main_http.c"
+   9              	.Ltext0:
+  10              		.align	2
+  11              		.global	P0Init
+  13              	P0Init:
+  14              	.LFB2:
+  15              		.file 1 "main_http.c"
+   1:main_http.c   **** /** @file
+   2:main_http.c   ****   main program
+   3:main_http.c   ****   Project Includes: 
+   4:main_http.c   ****  		HTTPServer: GET and POST
+   5:main_http.c   ****  		Serial  SignOn Message 115200kBaud 
+   6:main_http.c   ****  		EEProm support, Toggle P0.5 Pin
+   7:main_http.c   ****  		PageData starts at 0x30000
+   8:main_http.c   ****  Copyright Digital Shortcut 2008 **/
+   9:main_http.c   **** 
+  10:main_http.c   **** #include	<stdarg.h>
+  11:main_http.c   **** #include	<stdlib.h>
+  12:main_http.c   **** #include	<string.h>
+  13:main_http.c   **** 
+  14:main_http.c   **** #include	"utils/console.h"
+  15:main_http.c   **** #include	"utils/util.h"
+  16:main_http.c   **** 
+  17:main_http.c   **** #include	"ARM2148/lpc21xx.h"
+  18:main_http.c   **** #include	"ARM2148/processor.h"
+  19:main_http.c   **** #include	"ARM2148/timerC.h"          	
+  20:main_http.c   **** 
+  21:main_http.c   **** #include	"types.h"
+  22:main_http.c   **** #include	"Wiznet/w5300.h"
+  23:main_http.c   **** #include	"DigiShort/ds5300.h"
+  24:main_http.c   **** #include	"Wiznet/socket.h"
+  25:main_http.c   **** #include	"http/http_conf.h"
+  26:main_http.c   **** #include	"i2c/i2c.h"
+  27:main_http.c   **** 
+  28:main_http.c   **** 
+  29:main_http.c   **** extern	void http_serv(void);
+  30:main_http.c   **** 
+  31:main_http.c   **** #define HT	9
+  32:main_http.c   **** #define LF	10
+  33:main_http.c   **** #define CR	13
+  34:main_http.c   **** 
+  35:main_http.c   **** #define BAUD_RATE	115200
+  36:main_http.c   **** 
+  37:main_http.c   **** #define testR	0x21a
+  38:main_http.c   **** 
+  39:main_http.c   **** 
+  40:main_http.c   **** unsigned int	Event, u1;
+  41:main_http.c   **** int		CRdyMax, SpurIntCnt;
+  42:main_http.c   **** int		tcnt, W53ErFlg, sCRcnt, Tst1Flag;
+  43:main_http.c   **** uint32 LogTim0, VoltVal;
+  44:main_http.c   **** 
+  45:main_http.c   **** extern	int			CmdDone;
+  46:main_http.c   **** extern	int			cSoc;
+  47:main_http.c   **** extern	int 		httpPort;
+  48:main_http.c   **** extern	int			ssrErr[];
+  49:main_http.c   **** extern	uint8 	outBuf[];
+  50:main_http.c   **** extern	uint8		voltBuf[];
+  51:main_http.c   **** 
+  52:main_http.c   **** extern	void 		Init2148(void);
+  53:main_http.c   **** extern	void 		http_serv_machine(void);
+  54:main_http.c   **** extern	void		CheckCmd(void);
+  55:main_http.c   **** extern	void		LogInit(void);
+  56:main_http.c   **** 
+  57:main_http.c   **** extern	int 		printf(const char *format, ...);
+  58:main_http.c   **** 
+  59:main_http.c   **** //  Forward prototypes
+  60:main_http.c   **** void 	P0Init(void);
+  61:main_http.c   **** void 	SpurInit(void);
+  62:main_http.c   **** void 	ToggleP0_7(void);
+  63:main_http.c   **** void 	ToggleP0_5(void);
+  64:main_http.c   **** void 	WizCheck0(void);
+  65:main_http.c   **** void 	ShowIPs(void);
+  66:main_http.c   **** void 	WizNetInit(void);
+  67:main_http.c   **** void 	PrepVars(void);
+  68:main_http.c   **** void	SetMAC(void);
+  69:main_http.c   **** void	LoadEE_MAC(void);
+  70:main_http.c   **** void	UpdateVoltage(void);
+  71:main_http.c   **** 
+  72:main_http.c   **** char	RevDate[] = {"7/28/2009"};
+  73:main_http.c   **** 
+  74:main_http.c   **** 
+  75:main_http.c   **** void P0Init(void)
+  76:main_http.c   **** {
+  16              		.loc 1 76 0
+  17              		@ Function supports interworking.
+  18              		@ args = 0, pretend = 0, frame = 0
+  19              		@ frame_needed = 0, uses_anonymous_args = 0
+  20              		@ link register save eliminated.
+  77:main_http.c   ****   // Initialize Port0 P0.0-P0.23, P0.25, P0.28-P0.31
+  78:main_http.c   ****   PINSEL0 = (PINSEL0 & ~0x0000000F) | 0x00000005;	/* Enable RxD0 and TxD0              */
+  21              		.loc 1 78 0
+  22 0000 44209FE5 		ldr	r2, .L3
+  23 0004 003092E5 		ldr	r3, [r2, #0]
+  24 0008 0F30C3E3 		bic	r3, r3, #15
+  25 000c 053083E3 		orr	r3, r3, #5
+  26 0010 003082E5 		str	r3, [r2, #0]
+  79:main_http.c   **** 
+  80:main_http.c   ****   PINSEL0   &= 0x0010FFFF;		// P0.7 .. P0.0 GPIOs
+  27              		.loc 1 80 0
+  28 0014 003092E5 		ldr	r3, [r2, #0]
+  29 0018 FF34C3E3 		bic	r3, r3, #-16777216
+  30 001c EF38C3E3 		bic	r3, r3, #15663104
+  31 0020 003082E5 		str	r3, [r2, #0]
+  81:main_http.c   ****   FIO0DIR   |= 0x0FF03FFF;		// P0.7 .. P0.0 & P0.12..P0.13 Output
+  32              		.loc 1 81 0
+  33 0024 24109FE5 		ldr	r1, .L3+4
+  34 0028 24309FE5 		ldr	r3, .L3+8
+  35 002c FF2F11E5 		ldr	r2, [r1, #-4095]
+  36 0030 033082E1 		orr	r3, r2, r3
+  37 0034 FF3F01E5 		str	r3, [r1, #-4095]
+  82:main_http.c   ****   FIO0SET    = 0x0FF13FF1;		// "1" on P0.0 P0.4-P0. & P0.12-P0.13
+  38              		.loc 1 82 0
+  39 0038 18309FE5 		ldr	r3, .L3+12
+  40 003c E73F01E5 		str	r3, [r1, #-4071]
+  83:main_http.c   ****   
+  84:main_http.c   ****   FIO0CLR = 0x00000100;    			//P0.8 Low
+  41              		.loc 1 84 0
+  42 0040 013CA0E3 		mov	r3, #256
+  43              		.loc 1 76 0
+  44              		@ lr needed for prologue
+  45              		.loc 1 84 0
+  46 0044 E33F01E5 		str	r3, [r1, #-4067]
+  85:main_http.c   **** }    
+  47              		.loc 1 85 0
+  48 0048 1EFF2FE1 		bx	lr
+  49              	.L4:
+  50              		.align	2
+  51              	.L3:
+  52 004c 00C002E0 		.word	-536690688
+  53 0050 FFCFFF3F 		.word	1073729535
+  54 0054 FF3FF00F 		.word	267403263
+  55 0058 F13FF10F 		.word	267468785
+  56              	.LFE2:
+  58              		.align	2
+  59              		.global	SpuriousInt
+  61              	SpuriousInt:
+  62              	.LFB3:
+  86:main_http.c   **** 
+  87:main_http.c   **** 
+  88:main_http.c   **** void SpuriousInt(void) __attribute__((naked));
+  89:main_http.c   **** void SpuriousInt(void)
+  90:main_http.c   **** {
+  63              		.loc 1 90 0
+  64              		@ Function supports interworking.
+  65              		@ Naked Function: prologue and epilogue provided by programmer.
+  66              		@ args = 0, pretend = 0, frame = 0
+  67              		@ frame_needed = 0, uses_anonymous_args = 0
+  91:main_http.c   **** 	//uint32 v;
+  92:main_http.c   **** 	
+  93:main_http.c   **** 	ISR_ENTRY();
+  68              		.loc 1 93 0
+  69 005c 04E04EE2 		 sub   lr, lr,#4
+  70 0060 FF5F2DE9 	 stmfd sp!,{r0-r12,lr}
+  71 0064 00104FE1 	 mrs   r1, spsr
+  72 0068 02002DE9 	 stmfd sp!,{r1}
+  94:main_http.c   **** 	
+  95:main_http.c   **** 	//v = VICIRQStatus;
+  96:main_http.c   **** 
+  97:main_http.c   **** 	SpurIntCnt++;
+  73              		.loc 1 97 0
+  74 006c 20209FE5 		ldr	r2, .L7
+  75 0070 003092E5 		ldr	r3, [r2, #0]
+  76 0074 013083E2 		add	r3, r3, #1
+  77 0078 003082E5 		str	r3, [r2, #0]
+  98:main_http.c   **** 	
+  99:main_http.c   **** 	VICVectAddr = 0x00000000;             // clear this interrupt from the VIC
+  78              		.loc 1 99 0
+  79 007c 0020A0E3 		mov	r2, #0
+  80 0080 0F3CE0E3 		mvn	r3, #3840
+  81 0084 CF2003E5 		str	r2, [r3, #-207]
+ 100:main_http.c   **** 	
+ 101:main_http.c   **** 	ISR_EXIT();                           // recover registers and return
+  82              		.loc 1 101 0
+  83 0088 0200BDE8 		 ldmfd sp!,{r1}
+  84 008c 01F061E1 	 msr   spsr_c,r1
+  85 0090 FF9FFDE8 	 ldmfd sp!,{r0-r12,pc}^
+ 102:main_http.c   **** }
+  86              		.loc 1 102 0
+  87              	.L8:
+  88              		.align	2
+  89              	.L7:
+  90 0094 00000000 		.word	SpurIntCnt
+  91              	.LFE3:
+  93              		.align	2
+  94              		.global	SpurInit
+  96              	SpurInit:
+  97              	.LFB4:
+ 103:main_http.c   **** 
+ 104:main_http.c   **** 
+ 105:main_http.c   **** void SpurInit(void)
+ 106:main_http.c   **** {
+  98              		.loc 1 106 0
+  99              		@ Function supports interworking.
+ 100              		@ args = 0, pretend = 0, frame = 0
+ 101              		@ frame_needed = 0, uses_anonymous_args = 0
+ 102              		@ link register save eliminated.
+ 107:main_http.c   ****   SpurIntCnt = 0;
+ 103              		.loc 1 107 0
+ 104 0098 14309FE5 		ldr	r3, .L11
+ 105 009c 0020A0E3 		mov	r2, #0
+ 106 00a0 002083E5 		str	r2, [r3, #0]
+ 108:main_http.c   ****   
+ 109:main_http.c   **** 	VICDefVectAddr = (unsigned int)SpuriousInt;
+ 107              		.loc 1 109 0
+ 108 00a4 0C209FE5 		ldr	r2, .L11+4
+ 109 00a8 0F3CE0E3 		mvn	r3, #3840
+ 110              		.loc 1 106 0
+ 111              		@ lr needed for prologue
+ 112              		.loc 1 109 0
+ 113 00ac CB2003E5 		str	r2, [r3, #-203]
+ 110:main_http.c   **** }
+ 114              		.loc 1 110 0
+ 115 00b0 1EFF2FE1 		bx	lr
+ 116              	.L12:
+ 117              		.align	2
+ 118              	.L11:
+ 119 00b4 00000000 		.word	SpurIntCnt
+ 120 00b8 00000000 		.word	SpuriousInt
+ 121              	.LFE4:
+ 123              		.align	2
+ 124              		.global	ToggleP0_7
+ 126              	ToggleP0_7:
+ 127              	.LFB5:
+ 111:main_http.c   **** 
+ 112:main_http.c   **** 
+ 113:main_http.c   **** void ToggleP0_7(void)
+ 114:main_http.c   **** {
+ 128              		.loc 1 114 0
+ 129              		@ Function supports interworking.
+ 130              		@ args = 0, pretend = 0, frame = 0
+ 131              		@ frame_needed = 0, uses_anonymous_args = 0
+ 132              		@ link register save eliminated.
+ 115:main_http.c   **** 	if ( FIO0PIN & 0x00000080 ) 
+ 133              		.loc 1 115 0
+ 134 00bc 18209FE5 		ldr	r2, .L18
+ 135 00c0 EB3F12E5 		ldr	r3, [r2, #-4075]
+ 136 00c4 800013E3 		tst	r3, #128
+ 116:main_http.c   **** 		FIO0CLR = 0x00000080;    			//P0.7 OFF 
+ 137              		.loc 1 116 0
+ 138 00c8 8030A013 		movne	r3, #128
+ 117:main_http.c   **** 	else 	FIO0SET = 0x00000080;			//P0.7 ON
+ 139              		.loc 1 117 0
+ 140 00cc 8030A003 		moveq	r3, #128
+ 141              		.loc 1 114 0
+ 142              		@ lr needed for prologue
+ 143              		.loc 1 116 0
+ 144 00d0 E33F0215 		strne	r3, [r2, #-4067]
+ 145              		.loc 1 117 0
+ 146 00d4 E73F0205 		streq	r3, [r2, #-4071]
+ 147 00d8 1EFF2FE1 		bx	lr
+ 148              	.L19:
+ 149              		.align	2
+ 150              	.L18:
+ 151 00dc FFCFFF3F 		.word	1073729535
+ 152              	.LFE5:
+ 154              		.align	2
+ 155              		.global	PrepVars
+ 157              	PrepVars:
+ 158              	.LFB12:
+ 118:main_http.c   **** }
+ 119:main_http.c   **** 
+ 120:main_http.c   **** void ToggleP0_5(void)
+ 121:main_http.c   **** {
+ 122:main_http.c   **** 	delay(2000);
+ 123:main_http.c   **** 	if ( FIO0PIN & 0x00000020 ) 
+ 124:main_http.c   **** 		FIO0CLR = 0x00000020;    			//P0.5 OFF 
+ 125:main_http.c   **** 	else 	FIO0SET = 0x00000020;			//P0.5 ON
+ 126:main_http.c   **** }
+ 127:main_http.c   **** 
+ 128:main_http.c   **** void WizCheck0(void)
+ 129:main_http.c   **** { 
+ 130:main_http.c   **** 	uint16 v1, v2, v3, v4, v5;
+ 131:main_http.c   **** 	
+ 132:main_http.c   **** 	v1 = getMR();							// expected value is 0x3800
+ 133:main_http.c   ****   v2 = IINCHIP_READ(RTR);			// expected value is 0x07D0
+ 134:main_http.c   ****   v3 = IINCHIP_READ(RCR);			// expected value is 0x..08
+ 135:main_http.c   ****   v4 = IINCHIP_READ(IDR);
+ 136:main_http.c   **** 
+ 137:main_http.c   ****   v5 = IINCHIP_READ(testR);
+ 138:main_http.c   ****   
+ 139:main_http.c   ****   printf("MR=%04x RTR=%04x RCR=%02x IDR=%04x M_%x=%04x",
+ 140:main_http.c   ****        v1, v2, (v3&0xff), v4, testR, v5);
+ 141:main_http.c   **** 
+ 142:main_http.c   **** 	if ( (v1==1)&&(v2==0x7d0)&&((v3&0xff)==8)&&(v4==0x5300)&&(v5==0x1234) ) 
+ 143:main_http.c   **** 		printf("  ** OK **\n\r");
+ 144:main_http.c   **** 	else
+ 145:main_http.c   **** 		printf("  ** ???? **\n\r");
+ 146:main_http.c   ****        
+ 147:main_http.c   **** }  
+ 148:main_http.c   **** 
+ 149:main_http.c   **** void ShowIPs(void)
+ 150:main_http.c   **** { 
+ 151:main_http.c   **** 	uint8	tBuf[10];
+ 152:main_http.c   **** 	
+ 153:main_http.c   ****   Rd5300_bl(SIPR0, &tBuf[0], 4);
+ 154:main_http.c   ****   printf("IP:   %d.%d.%d.%d\n\r",tBuf[0],tBuf[1],tBuf[2],tBuf[3]);
+ 155:main_http.c   ****   Rd5300_bl(GAR0, &tBuf[0], 4);
+ 156:main_http.c   ****   printf("GAR:  %d.%d.%d.%d\n\r",tBuf[0],tBuf[1],tBuf[2],tBuf[3]);
+ 157:main_http.c   ****   Rd5300_bl(SUBR0, &tBuf[0], 4);												 // get subnet mask address   
+ 158:main_http.c   ****   printf("SUBR: %d.%d.%d.%d\n\r",tBuf[0],tBuf[1],tBuf[2],tBuf[3]);
+ 159:main_http.c   ****   Rd5300_bl(SHAR0, &tBuf[0], 6);
+ 160:main_http.c   ****   printf("SHAR: %02x:%02x:%02x:%02x:%02x:%02x\n\r",tBuf[0],tBuf[1],tBuf[2],tBuf[3],tBuf[4],tBuf[5])
+ 161:main_http.c   ****   printf("HttpPort: %d", httpPort);
+ 162:main_http.c   **** }
+ 163:main_http.c   **** 
+ 164:main_http.c   **** uint8 ip_0[4] = {192,168,0,41};                  	// for setting SIP register
+ 165:main_http.c   **** uint8 gw[4] = {192,168,0,1};                     	// for setting GAR register 
+ 166:main_http.c   **** uint8 sn[4] = {255,255,255,0};                    // for setting SUBR register
+ 167:main_http.c   **** uint8 zero_1[20];
+ 168:main_http.c   **** uint8 mac_1[6] = {0x00,0x08,0xDC,0x00,111,200};   // WizNet Mac Address
+ 169:main_http.c   **** uint8 mac_0[6] = {0x06,0x44,0x53,1,1,2};    			// Locally Administered Mac Addr + SN_112
+ 170:main_http.c   **** uint8 zero_2[20];
+ 171:main_http.c   **** 
+ 172:main_http.c   **** uint8 tx_mem_conf[8] = { 8, 8, 8, 8, 8, 8, 8, 8};  				// for setting TMSR, all socket TxBufs-14k 
+ 173:main_http.c   **** uint8 rx_mem_conf[8] = { 8, 8, 8, 8, 8, 8, 8, 8};         // for setting RMSR, all socket RxBufs-2k
+ 174:main_http.c   **** 
+ 175:main_http.c   **** 	// Initialize W5300 for Ethernet Operations
+ 176:main_http.c   **** void	WizNetInit(void)
+ 177:main_http.c   **** {
+ 178:main_http.c   **** 
+ 179:main_http.c   ****   /* initiate W5300 */
+ 180:main_http.c   ****   iinchip_init();			// MR_RES & MR_IND
+ 181:main_http.c   ****   W5300Init2();				// Init interrupts for 5300
+ 182:main_http.c   ****   
+ 183:main_http.c   ****   // configure internal W5300 TX/RX Memory Buffers
+ 184:main_http.c   ****   
+ 185:main_http.c   ****   if( sysinit(tx_mem_conf, rx_mem_conf)==0 ) {
+ 186:main_http.c   ****     printf("MEMORY CONFIG ERR.\r\n\r");
+ 187:main_http.c   ****     while(1);
+ 188:main_http.c   ****   }
+ 189:main_http.c   ****   
+ 190:main_http.c   ****   IINCHIP_WRITE(testR, 0x1234);
+ 191:main_http.c   ****   
+ 192:main_http.c   ****   SetMAC();
+ 193:main_http.c   ****  
+ 194:main_http.c   **** }
+ 195:main_http.c   **** 
+ 196:main_http.c   **** void	SetMAC(void)
+ 197:main_http.c   **** {
+ 198:main_http.c   **** 	uint8 tb[0x32];
+ 199:main_http.c   **** 
+ 200:main_http.c   ****   eepromRead(0, tb, 0x30);
+ 201:main_http.c   ****   
+ 202:main_http.c   ****   if ( (tb[0] == 0xff) && (tb[1] == 0xff)	&& (tb[2] == 0xff) ) {
+ 203:main_http.c   **** 	  setSIPR(ip_0);              // set source IP address
+ 204:main_http.c   ****   	setGAR(gw);                	// set gateway IP address
+ 205:main_http.c   ****   	setSUBR(sn);               	// set subnet mask address
+ 206:main_http.c   ****   	setSHAR(mac_0); 						// set source hardware address
+ 207:main_http.c   ****   	httpPort = HTTP_PORT;
+ 208:main_http.c   **** 
+ 209:main_http.c   ****   } else	{
+ 210:main_http.c   ****   	LoadEE_MAC();
+ 211:main_http.c   **** 	}
+ 212:main_http.c   **** }
+ 213:main_http.c   ****   	
+ 214:main_http.c   **** 
+ 215:main_http.c   **** void	LoadEE_MAC(void)
+ 216:main_http.c   **** {
+ 217:main_http.c   **** 	uint8 tc[36];
+ 218:main_http.c   **** 	
+ 219:main_http.c   **** 	eepromRead(0, tc, 0x22);
+ 220:main_http.c   **** 	delay(100000);
+ 221:main_http.c   **** 	
+ 222:main_http.c   **** 	setSHAR(&tc[0x00]); 					// set source hardware address MAC
+ 223:main_http.c   **** 	setSIPR(&tc[0x08]);          	// set source IP address
+ 224:main_http.c   ****  	setGAR(&tc[0x10]);            // set gateway IP address
+ 225:main_http.c   ****  	setSUBR(&tc[0x18]);           // set subnet mask address
+ 226:main_http.c   **** 	
+ 227:main_http.c   **** 	httpPort = tc[0x20] + 256*tc[0x21];
+ 228:main_http.c   **** }	
+ 229:main_http.c   **** 
+ 230:main_http.c   **** void	PrepVars(void)
+ 231:main_http.c   **** {
+ 159              		.loc 1 231 0
+ 160              		@ Function supports interworking.
+ 161              		@ args = 0, pretend = 0, frame = 0
+ 162              		@ frame_needed = 0, uses_anonymous_args = 0
+ 163              		@ link register save eliminated.
+ 232:main_http.c   **** 	
+ 233:main_http.c   **** 	W53ErFlg = 0;
+ 234:main_http.c   **** 	sCRcnt = 0;
+ 164              		.loc 1 234 0
+ 165 00e0 10209FE5 		ldr	r2, .L22
+ 166              		.loc 1 233 0
+ 167 00e4 0030A0E3 		mov	r3, #0
+ 168              		.loc 1 234 0
+ 169 00e8 003082E5 		str	r3, [r2, #0]
+ 170              		.loc 1 233 0
+ 171 00ec 08209FE5 		ldr	r2, .L22+4
+ 172              		.loc 1 231 0
+ 173              		@ lr needed for prologue
+ 174              		.loc 1 233 0
+ 175 00f0 003082E5 		str	r3, [r2, #0]
+ 235:main_http.c   **** 	
+ 236:main_http.c   **** }
+ 176              		.loc 1 236 0
+ 177 00f4 1EFF2FE1 		bx	lr
+ 178              	.L23:
+ 179              		.align	2
+ 180              	.L22:
+ 181 00f8 00000000 		.word	sCRcnt
+ 182 00fc 00000000 		.word	W53ErFlg
+ 183              	.LFE12:
+ 185              		.global	__umodsi3
+ 186              		.align	2
+ 187              		.global	UpdateVoltage
+ 189              	UpdateVoltage:
+ 190              	.LFB13:
+ 237:main_http.c   **** 
+ 238:main_http.c   **** // Pseudo Voltmeter
+ 239:main_http.c   **** void	UpdateVoltage(void)
+ 240:main_http.c   **** {
+ 191              		.loc 1 240 0
+ 192              		@ Function supports interworking.
+ 193              		@ args = 0, pretend = 0, frame = 12
+ 194              		@ frame_needed = 0, uses_anonymous_args = 0
+ 195 0100 10402DE9 		stmfd	sp!, {r4, lr}
+ 196              	.LCFI0:
+ 241:main_http.c   **** 	int v;
+ 242:main_http.c   **** 	char tb[10];
+ 243:main_http.c   **** 	
+ 244:main_http.c   **** 	VoltVal += 27;
+ 197              		.loc 1 244 0
+ 198 0104 48309FE5 		ldr	r3, .L26
+ 199 0108 002093E5 		ldr	r2, [r3, #0]
+ 200 010c 1B2082E2 		add	r2, r2, #27
+ 201              		.loc 1 240 0
+ 202 0110 0CD04DE2 		sub	sp, sp, #12
+ 203              	.LCFI1:
+ 204              		.loc 1 244 0
+ 205 0114 002083E5 		str	r2, [r3, #0]
+ 245:main_http.c   **** 	v = 200+(VoltVal%120); // miliVolts in range 200-319
+ 246:main_http.c   **** 	
+ 247:main_http.c   **** 	itoa(v, tb, 10);
+ 206              		.loc 1 247 0
+ 207 0118 0200A0E1 		mov	r0, r2
+ 208 011c 7810A0E3 		mov	r1, #120
+ 209 0120 FEFFFFEB 		bl	__umodsi3
+ 210 0124 02408DE2 		add	r4, sp, #2
+ 211 0128 0410A0E1 		mov	r1, r4
+ 212 012c 0A20A0E3 		mov	r2, #10
+ 213 0130 C80080E2 		add	r0, r0, #200
+ 214 0134 FEFFFFEB 		bl	itoa
+ 248:main_http.c   **** 	memcpy ( (char*)&voltBuf[2], &tb[3], 3);
+ 215              		.loc 1 248 0
+ 216 0138 031084E2 		add	r1, r4, #3
+ 217 013c 0320A0E3 		mov	r2, #3
+ 218 0140 10009FE5 		ldr	r0, .L26+4
+ 219 0144 FEFFFFEB 		bl	memcpy
+ 249:main_http.c   **** }
+ 220              		.loc 1 249 0
+ 221 0148 0CD08DE2 		add	sp, sp, #12
+ 222 014c 1040BDE8 		ldmfd	sp!, {r4, lr}
+ 223 0150 1EFF2FE1 		bx	lr
+ 224              	.L27:
+ 225              		.align	2
+ 226              	.L26:
+ 227 0154 00000000 		.word	VoltVal
+ 228 0158 02000000 		.word	voltBuf+2
+ 229              	.LFE13:
+ 231              		.align	2
+ 232              		.global	ToggleP0_5
+ 234              	ToggleP0_5:
+ 235              	.LFB6:
+ 236              		.loc 1 121 0
+ 237              		@ Function supports interworking.
+ 238              		@ args = 0, pretend = 0, frame = 0
+ 239              		@ frame_needed = 0, uses_anonymous_args = 0
+ 240 015c 04E02DE5 		str	lr, [sp, #-4]!
+ 241              	.LCFI2:
+ 242              		.loc 1 122 0
+ 243 0160 7D0EA0E3 		mov	r0, #2000
+ 244 0164 FEFFFFEB 		bl	delay
+ 245              		.loc 1 123 0
+ 246 0168 1C209FE5 		ldr	r2, .L33
+ 247 016c EB3F12E5 		ldr	r3, [r2, #-4075]
+ 248 0170 200013E3 		tst	r3, #32
+ 249              		.loc 1 124 0
+ 250 0174 2030A013 		movne	r3, #32
+ 251              		.loc 1 125 0
+ 252 0178 2030A003 		moveq	r3, #32
+ 253              		.loc 1 124 0
+ 254 017c E33F0215 		strne	r3, [r2, #-4067]
+ 255              		.loc 1 125 0
+ 256 0180 E73F0205 		streq	r3, [r2, #-4071]
+ 257              		.loc 1 126 0
+ 258 0184 04E09DE4 		ldr	lr, [sp], #4
+ 259 0188 1EFF2FE1 		bx	lr
+ 260              	.L34:
+ 261              		.align	2
+ 262              	.L33:
+ 263 018c FFCFFF3F 		.word	1073729535
+ 264              	.LFE6:
+ 266              		.align	2
+ 267              		.global	LoadEE_MAC
+ 269              	LoadEE_MAC:
+ 270              	.LFB11:
+ 271              		.loc 1 216 0
+ 272              		@ Function supports interworking.
+ 273              		@ args = 0, pretend = 0, frame = 36
+ 274              		@ frame_needed = 0, uses_anonymous_args = 0
+ 275 0190 10402DE9 		stmfd	sp!, {r4, lr}
+ 276              	.LCFI3:
+ 277 0194 24D04DE2 		sub	sp, sp, #36
+ 278              	.LCFI4:
+ 279              		.loc 1 219 0
+ 280 0198 2220A0E3 		mov	r2, #34
+ 281 019c 0D10A0E1 		mov	r1, sp
+ 282 01a0 0000A0E3 		mov	r0, #0
+ 283 01a4 FEFFFFEB 		bl	eepromRead
+ 284              		.loc 1 220 0
+ 285 01a8 44009FE5 		ldr	r0, .L37
+ 286 01ac FEFFFFEB 		bl	delay
+ 287              		.loc 1 222 0
+ 288 01b0 0D00A0E1 		mov	r0, sp
+ 289 01b4 FEFFFFEB 		bl	setSHAR
+ 290              		.loc 1 223 0
+ 291 01b8 08008DE2 		add	r0, sp, #8
+ 292 01bc FEFFFFEB 		bl	setSIPR
+ 293              		.loc 1 224 0
+ 294 01c0 10008DE2 		add	r0, sp, #16
+ 295 01c4 FEFFFFEB 		bl	setGAR
+ 296              		.loc 1 225 0
+ 297 01c8 18008DE2 		add	r0, sp, #24
+ 298 01cc FEFFFFEB 		bl	setSUBR
+ 299              		.loc 1 227 0
+ 300 01d0 2120DDE5 		ldrb	r2, [sp, #33]	@ zero_extendqisi2
+ 301 01d4 2030DDE5 		ldrb	r3, [sp, #32]	@ zero_extendqisi2
+ 302 01d8 023483E0 		add	r3, r3, r2, asl #8
+ 303 01dc 14209FE5 		ldr	r2, .L37+4
+ 304              		.loc 1 219 0
+ 305 01e0 0D40A0E1 		mov	r4, sp
+ 306              		.loc 1 227 0
+ 307 01e4 003082E5 		str	r3, [r2, #0]
+ 308              		.loc 1 228 0
+ 309 01e8 24D08DE2 		add	sp, sp, #36
+ 310 01ec 1040BDE8 		ldmfd	sp!, {r4, lr}
+ 311 01f0 1EFF2FE1 		bx	lr
+ 312              	.L38:
+ 313              		.align	2
+ 314              	.L37:
+ 315 01f4 A0860100 		.word	100000
+ 316 01f8 00000000 		.word	httpPort
+ 317              	.LFE11:
+ 319              		.align	2
+ 320              		.global	SetMAC
+ 322              	SetMAC:
+ 323              	.LFB10:
+ 324              		.loc 1 197 0
+ 325              		@ Function supports interworking.
+ 326              		@ args = 0, pretend = 0, frame = 52
+ 327              		@ frame_needed = 0, uses_anonymous_args = 0
+ 328 01fc 04E02DE5 		str	lr, [sp, #-4]!
+ 329              	.LCFI5:
+ 330 0200 34D04DE2 		sub	sp, sp, #52
+ 331              	.LCFI6:
+ 332              		.loc 1 200 0
+ 333 0204 02108DE2 		add	r1, sp, #2
+ 334 0208 3020A0E3 		mov	r2, #48
+ 335 020c 0000A0E3 		mov	r0, #0
+ 336 0210 FEFFFFEB 		bl	eepromRead
+ 337              		.loc 1 202 0
+ 338 0214 0230DDE5 		ldrb	r3, [sp, #2]	@ zero_extendqisi2
+ 339 0218 FF0053E3 		cmp	r3, #255
+ 340 021c 1100001A 		bne	.L40
+ 341 0220 0330DDE5 		ldrb	r3, [sp, #3]	@ zero_extendqisi2
+ 342 0224 FF0053E3 		cmp	r3, #255
+ 343 0228 0E00001A 		bne	.L40
+ 344 022c 0430DDE5 		ldrb	r3, [sp, #4]	@ zero_extendqisi2
+ 345 0230 FF0053E3 		cmp	r3, #255
+ 346              		.loc 1 203 0
+ 347 0234 3C009FE5 		ldr	r0, .L46
+ 348              		.loc 1 202 0
+ 349 0238 0A00001A 		bne	.L40
+ 350              		.loc 1 203 0
+ 351 023c FEFFFFEB 		bl	setSIPR
+ 352              		.loc 1 204 0
+ 353 0240 34009FE5 		ldr	r0, .L46+4
+ 354 0244 FEFFFFEB 		bl	setGAR
+ 355              		.loc 1 205 0
+ 356 0248 30009FE5 		ldr	r0, .L46+8
+ 357 024c FEFFFFEB 		bl	setSUBR
+ 358              		.loc 1 206 0
+ 359 0250 2C009FE5 		ldr	r0, .L46+12
+ 360 0254 FEFFFFEB 		bl	setSHAR
+ 361              		.loc 1 207 0
+ 362 0258 28309FE5 		ldr	r3, .L46+16
+ 363 025c 5020A0E3 		mov	r2, #80
+ 364 0260 002083E5 		str	r2, [r3, #0]
+ 365 0264 000000EA 		b	.L45
+ 366              	.L40:
+ 367              		.loc 1 210 0
+ 368 0268 FEFFFFEB 		bl	LoadEE_MAC
+ 369              	.L45:
+ 370              		.loc 1 212 0
+ 371 026c 34D08DE2 		add	sp, sp, #52
+ 372 0270 04E09DE4 		ldr	lr, [sp], #4
+ 373 0274 1EFF2FE1 		bx	lr
+ 374              	.L47:
+ 375              		.align	2
+ 376              	.L46:
+ 377 0278 00000000 		.word	ip_0
+ 378 027c 00000000 		.word	gw
+ 379 0280 00000000 		.word	sn
+ 380 0284 00000000 		.word	mac_0
+ 381 0288 00000000 		.word	httpPort
+ 382              	.LFE10:
+ 384              		.section	.rodata.str1.4,"aMS",%progbits,1
+ 385              		.align	2
+ 386              	.LC0:
+ 387 0000 4D454D4F 		.ascii	"MEMORY CONFIG ERR.\015\012\015\000"
+ 387      52592043 
+ 387      4F4E4649 
+ 387      47204552 
+ 387      522E0D0A 
+ 388              		.text
+ 389              		.align	2
+ 390              		.global	WizNetInit
+ 392              	WizNetInit:
+ 393              	.LFB9:
+ 394              		.loc 1 177 0
+ 395              		@ Function supports interworking.
+ 396              		@ args = 0, pretend = 0, frame = 0
+ 397              		@ frame_needed = 0, uses_anonymous_args = 0
+ 398 028c 04E02DE5 		str	lr, [sp, #-4]!
+ 399              	.LCFI7:
+ 400              		.loc 1 180 0
+ 401 0290 FEFFFFEB 		bl	iinchip_init
+ 402              		.loc 1 181 0
+ 403 0294 FEFFFFEB 		bl	W5300Init2
+ 404              		.loc 1 185 0
+ 405 0298 2C009FE5 		ldr	r0, .L53
+ 406 029c 2C109FE5 		ldr	r1, .L53+4
+ 407 02a0 FEFFFFEB 		bl	sysinit
+ 408 02a4 000050E3 		cmp	r0, #0
+ 409 02a8 0200001A 		bne	.L49
+ 410              		.loc 1 186 0
+ 411 02ac 20009FE5 		ldr	r0, .L53+8
+ 412 02b0 FEFFFFEB 		bl	printf
+ 413              	.L51:
+ 414 02b4 FEFFFFEA 		b	.L51
+ 415              	.L49:
+ 416              		.loc 1 190 0
+ 417 02b8 18009FE5 		ldr	r0, .L53+12
+ 418 02bc 18109FE5 		ldr	r1, .L53+16
+ 419 02c0 FEFFFFEB 		bl	IINCHIP_WRITE
+ 420              		.loc 1 194 0
+ 421 02c4 04E09DE4 		ldr	lr, [sp], #4
+ 422              		.loc 1 192 0
+ 423 02c8 FEFFFFEA 		b	SetMAC
+ 424              	.L54:
+ 425              		.align	2
+ 426              	.L53:
+ 427 02cc 00000000 		.word	tx_mem_conf
+ 428 02d0 00000000 		.word	rx_mem_conf
+ 429 02d4 00000000 		.word	.LC0
+ 430 02d8 1A020000 		.word	538
+ 431 02dc 34120000 		.word	4660
+ 432              	.LFE9:
+ 434              		.section	.rodata.str1.4
+ 435 0016 0000     		.align	2
+ 436              	.LC1:
+ 437 0018 49503A20 		.ascii	"IP:   %d.%d.%d.%d\012\015\000"
+ 437      20202564 
+ 437      2E25642E 
+ 437      25642E25 
+ 437      640A0D00 
+ 438              		.align	2
+ 439              	.LC2:
+ 440 002c 4741523A 		.ascii	"GAR:  %d.%d.%d.%d\012\015\000"
+ 440      20202564 
+ 440      2E25642E 
+ 440      25642E25 
+ 440      640A0D00 
+ 441              		.align	2
+ 442              	.LC3:
+ 443 0040 53554252 		.ascii	"SUBR: %d.%d.%d.%d\012\015\000"
+ 443      3A202564 
+ 443      2E25642E 
+ 443      25642E25 
+ 443      640A0D00 
+ 444              		.align	2
+ 445              	.LC4:
+ 446 0054 53484152 		.ascii	"SHAR: %02x:%02x:%02x:%02x:%02x:%02x\012\015\000"
+ 446      3A202530 
+ 446      32783A25 
+ 446      3032783A 
+ 446      25303278 
+ 447 007a 0000     		.align	2
+ 448              	.LC5:
+ 449 007c 48747470 		.ascii	"HttpPort: %d\000"
+ 449      506F7274 
+ 449      3A202564 
+ 449      00
+ 450              		.text
+ 451              		.align	2
+ 452              		.global	ShowIPs
+ 454              	ShowIPs:
+ 455              	.LFB8:
+ 456              		.loc 1 150 0
+ 457              		@ Function supports interworking.
+ 458              		@ args = 0, pretend = 0, frame = 12
+ 459              		@ frame_needed = 0, uses_anonymous_args = 0
+ 460 02e0 10402DE9 		stmfd	sp!, {r4, lr}
+ 461              	.LCFI8:
+ 462 02e4 18D04DE2 		sub	sp, sp, #24
+ 463              	.LCFI9:
+ 464              		.loc 1 153 0
+ 465 02e8 0E408DE2 		add	r4, sp, #14
+ 466 02ec 0410A0E1 		mov	r1, r4
+ 467 02f0 0420A0E3 		mov	r2, #4
+ 468 02f4 1800A0E3 		mov	r0, #24
+ 469 02f8 FEFFFFEB 		bl	Rd5300_bl
+ 470              		.loc 1 154 0
+ 471 02fc 11C0DDE5 		ldrb	ip, [sp, #17]	@ zero_extendqisi2
+ 472 0300 1030DDE5 		ldrb	r3, [sp, #16]	@ zero_extendqisi2
+ 473 0304 0E10DDE5 		ldrb	r1, [sp, #14]	@ zero_extendqisi2
+ 474 0308 0F20DDE5 		ldrb	r2, [sp, #15]	@ zero_extendqisi2
+ 475 030c B0009FE5 		ldr	r0, .L57
+ 476 0310 00C08DE5 		str	ip, [sp, #0]
+ 477 0314 FEFFFFEB 		bl	printf
+ 478              		.loc 1 155 0
+ 479 0318 0410A0E1 		mov	r1, r4
+ 480 031c 0420A0E3 		mov	r2, #4
+ 481 0320 1000A0E3 		mov	r0, #16
+ 482 0324 FEFFFFEB 		bl	Rd5300_bl
+ 483              		.loc 1 156 0
+ 484 0328 11C0DDE5 		ldrb	ip, [sp, #17]	@ zero_extendqisi2
+ 485 032c 1030DDE5 		ldrb	r3, [sp, #16]	@ zero_extendqisi2
+ 486 0330 0E10DDE5 		ldrb	r1, [sp, #14]	@ zero_extendqisi2
+ 487 0334 0F20DDE5 		ldrb	r2, [sp, #15]	@ zero_extendqisi2
+ 488 0338 88009FE5 		ldr	r0, .L57+4
+ 489 033c 00C08DE5 		str	ip, [sp, #0]
+ 490 0340 FEFFFFEB 		bl	printf
+ 491              		.loc 1 157 0
+ 492 0344 0410A0E1 		mov	r1, r4
+ 493 0348 0420A0E3 		mov	r2, #4
+ 494 034c 1400A0E3 		mov	r0, #20
+ 495 0350 FEFFFFEB 		bl	Rd5300_bl
+ 496              		.loc 1 158 0
+ 497 0354 11C0DDE5 		ldrb	ip, [sp, #17]	@ zero_extendqisi2
+ 498 0358 1030DDE5 		ldrb	r3, [sp, #16]	@ zero_extendqisi2
+ 499 035c 0E10DDE5 		ldrb	r1, [sp, #14]	@ zero_extendqisi2
+ 500 0360 0F20DDE5 		ldrb	r2, [sp, #15]	@ zero_extendqisi2
+ 501 0364 60009FE5 		ldr	r0, .L57+8
+ 502 0368 00C08DE5 		str	ip, [sp, #0]
+ 503 036c FEFFFFEB 		bl	printf
+ 504              		.loc 1 159 0
+ 505 0370 0410A0E1 		mov	r1, r4
+ 506 0374 0620A0E3 		mov	r2, #6
+ 507 0378 0800A0E3 		mov	r0, #8
+ 508 037c FEFFFFEB 		bl	Rd5300_bl
+ 509              		.loc 1 160 0
+ 510 0380 11C0DDE5 		ldrb	ip, [sp, #17]	@ zero_extendqisi2
+ 511 0384 12E0DDE5 		ldrb	lr, [sp, #18]	@ zero_extendqisi2
+ 512 0388 1340DDE5 		ldrb	r4, [sp, #19]	@ zero_extendqisi2
+ 513 038c 0E10DDE5 		ldrb	r1, [sp, #14]	@ zero_extendqisi2
+ 514 0390 1030DDE5 		ldrb	r3, [sp, #16]	@ zero_extendqisi2
+ 515 0394 0F20DDE5 		ldrb	r2, [sp, #15]	@ zero_extendqisi2
+ 516 0398 30009FE5 		ldr	r0, .L57+12
+ 517 039c 00508DE8 		stmia	sp, {ip, lr}	@ phole stm
+ 518 03a0 08408DE5 		str	r4, [sp, #8]
+ 519 03a4 FEFFFFEB 		bl	printf
+ 520              		.loc 1 161 0
+ 521 03a8 24309FE5 		ldr	r3, .L57+16
+ 522 03ac 24009FE5 		ldr	r0, .L57+20
+ 523 03b0 001093E5 		ldr	r1, [r3, #0]
+ 524 03b4 FEFFFFEB 		bl	printf
+ 525              		.loc 1 162 0
+ 526 03b8 18D08DE2 		add	sp, sp, #24
+ 527 03bc 1040BDE8 		ldmfd	sp!, {r4, lr}
+ 528 03c0 1EFF2FE1 		bx	lr
+ 529              	.L58:
+ 530              		.align	2
+ 531              	.L57:
+ 532 03c4 18000000 		.word	.LC1
+ 533 03c8 2C000000 		.word	.LC2
+ 534 03cc 40000000 		.word	.LC3
+ 535 03d0 54000000 		.word	.LC4
+ 536 03d4 00000000 		.word	httpPort
+ 537 03d8 7C000000 		.word	.LC5
+ 538              	.LFE8:
+ 540              		.section	.rodata.str1.4
+ 541 0089 000000   		.align	2
+ 542              	.LC6:
+ 543 008c 4D523D25 		.ascii	"MR=%04x RTR=%04x RCR=%02x IDR=%04x M_%x=%04x\000"
+ 543      30347820 
+ 543      5254523D 
+ 543      25303478 
+ 543      20524352 
+ 544 00b9 000000   		.align	2
+ 545              	.LC7:
+ 546 00bc 20202A2A 		.ascii	"  ** OK **\012\015\000"
+ 546      204F4B20 
+ 546      2A2A0A0D 
+ 546      00
+ 547 00c9 000000   		.align	2
+ 548              	.LC8:
+ 549 00cc 20202A2A 		.ascii	"  ** ???? **\012\015\000"
+ 549      203F3F3F 
+ 549      3F202A2A 
+ 549      0A0D00
+ 550              		.text
+ 551              		.align	2
+ 552              		.global	WizCheck0
+ 554              	WizCheck0:
+ 555              	.LFB7:
+ 556              		.loc 1 129 0
+ 557              		@ Function supports interworking.
+ 558              		@ args = 0, pretend = 0, frame = 0
+ 559              		@ frame_needed = 0, uses_anonymous_args = 0
+ 560 03dc F0452DE9 		stmfd	sp!, {r4, r5, r6, r7, r8, sl, lr}
+ 561              	.LCFI10:
+ 562 03e0 0CD04DE2 		sub	sp, sp, #12
+ 563              	.LCFI11:
+ 564              		.loc 1 132 0
+ 565 03e4 FEFFFFEB 		bl	getMR
+ 566 03e8 0070A0E1 		mov	r7, r0
+ 567              		.loc 1 133 0
+ 568 03ec 1C00A0E3 		mov	r0, #28
+ 569 03f0 FEFFFFEB 		bl	IINCHIP_READ
+ 570 03f4 0060A0E1 		mov	r6, r0
+ 571              		.loc 1 134 0
+ 572 03f8 1E00A0E3 		mov	r0, #30
+ 573 03fc FEFFFFEB 		bl	IINCHIP_READ
+ 574 0400 0040A0E1 		mov	r4, r0
+ 575              		.loc 1 135 0
+ 576 0404 FE00A0E3 		mov	r0, #254
+ 577 0408 FEFFFFEB 		bl	IINCHIP_READ
+ 578              		.loc 1 137 0
+ 579 040c 68509FE5 		ldr	r5, .L66
+ 580              		.loc 1 135 0
+ 581 0410 00A0A0E1 		mov	sl, r0
+ 582              		.loc 1 137 0
+ 583 0414 0500A0E1 		mov	r0, r5
+ 584 0418 FEFFFFEB 		bl	IINCHIP_READ
+ 585              		.loc 1 139 0
+ 586 041c FF8004E2 		and	r8, r4, #255
+ 587 0420 0710A0E1 		mov	r1, r7
+ 588              	.LVL0:
+ 589              		.loc 1 137 0
+ 590 0424 0040A0E1 		mov	r4, r0
+ 591              		.loc 1 139 0
+ 592 0428 0620A0E1 		mov	r2, r6
+ 593              	.LVL1:
+ 594 042c 0830A0E1 		mov	r3, r8
+ 595 0430 48009FE5 		ldr	r0, .L66+4
+ 596 0434 04508DE5 		str	r5, [sp, #4]
+ 597 0438 00A08DE5 		str	sl, [sp, #0]
+ 598 043c 08408DE5 		str	r4, [sp, #8]
+ 599 0440 FEFFFFEB 		bl	printf
+ 600              	.LVL2:
+ 601              		.loc 1 142 0
+ 602 0444 010057E3 		cmp	r7, #1
+ 603 0448 7D0E5603 		cmpeq	r6, #2000
+ 604              		.loc 1 145 0
+ 605 044c 30009FE5 		ldr	r0, .L66+8
+ 606              		.loc 1 142 0
+ 607 0450 0500001A 		bne	.L60
+ 608 0454 080058E3 		cmp	r8, #8
+ 609 0458 530C5A03 		cmpeq	sl, #21248
+ 610 045c 0200001A 		bne	.L60
+ 611 0460 20309FE5 		ldr	r3, .L66+12
+ 612 0464 030054E1 		cmp	r4, r3
+ 613              		.loc 1 143 0
+ 614 0468 1C009F05 		ldreq	r0, .L66+16
+ 615              	.L60:
+ 616              		.loc 1 145 0
+ 617 046c FEFFFFEB 		bl	printf
+ 618              		.loc 1 147 0
+ 619 0470 0CD08DE2 		add	sp, sp, #12
+ 620 0474 F045BDE8 		ldmfd	sp!, {r4, r5, r6, r7, r8, sl, lr}
+ 621 0478 1EFF2FE1 		bx	lr
+ 622              	.L67:
+ 623              		.align	2
+ 624              	.L66:
+ 625 047c 1A020000 		.word	538
+ 626 0480 8C000000 		.word	.LC6
+ 627 0484 CC000000 		.word	.LC8
+ 628 0488 34120000 		.word	4660
+ 629 048c BC000000 		.word	.LC7
+ 630              	.LFE7:
+ 632              		.section	.rodata.str1.4
+ 633 00db 00       		.align	2
+ 634              	.LC9:
+ 635 00dc 0A0D2323 		.ascii	"\012\015#####====  HTTP Server_Demo %s  ====#######"
+ 635      2323233D 
+ 635      3D3D3D20 
+ 635      20485454 
+ 635      50205365 
+ 636 0109 0A0D00   		.ascii	"\012\015\000"
+ 637              		.text
+ 638              		.align	2
+ 639              		.global	main
+ 641              	main:
+ 642              	.LFB14:
+ 250:main_http.c   **** 	
+ 251:main_http.c   **** 
+ 252:main_http.c   **** 	int
+ 253:main_http.c   **** main (void)
+ 254:main_http.c   **** {
+ 643              		.loc 1 254 0
+ 644              		@ Function supports interworking.
+ 645              		@ args = 0, pretend = 0, frame = 0
+ 646              		@ frame_needed = 0, uses_anonymous_args = 0
+ 647              	.LBB6:
+ 648              	.LBB7:
+ 649              		.loc 1 233 0
+ 650 0490 94309FE5 		ldr	r3, .L71
+ 651              	.LBE7:
+ 652              	.LBE6:
+ 653              		.loc 1 254 0
+ 654 0494 10402DE9 		stmfd	sp!, {r4, lr}
+ 655              	.LCFI12:
+ 656              	.LBB8:
+ 657              	.LBB9:
+ 658              		.loc 1 233 0
+ 659 0498 0040A0E3 		mov	r4, #0
+ 660 049c 004083E5 		str	r4, [r3, #0]
+ 661              		.loc 1 234 0
+ 662 04a0 88309FE5 		ldr	r3, .L71+4
+ 663 04a4 004083E5 		str	r4, [r3, #0]
+ 664              	.LBE9:
+ 665              	.LBE8:
+ 255:main_http.c   **** 	PrepVars();
+ 256:main_http.c   **** 		
+ 257:main_http.c   **** 	Init2148();			//LPC2148 PLL, CLK, PORTs startup init
+ 666              		.loc 1 257 0
+ 667 04a8 FEFFFFEB 		bl	Init2148
+ 258:main_http.c   **** 	
+ 259:main_http.c   **** 	P0Init();
+ 668              		.loc 1 259 0
+ 669 04ac FEFFFFEB 		bl	P0Init
+ 260:main_http.c   **** 	P1Init();
+ 670              		.loc 1 260 0
+ 671 04b0 FEFFFFEB 		bl	P1Init
+ 672              	.LBB10:
+ 673              	.LBB11:
+ 674              		.loc 1 109 0
+ 675 04b4 78209FE5 		ldr	r2, .L71+8
+ 676 04b8 0F3CE0E3 		mvn	r3, #3840
+ 677 04bc CB2003E5 		str	r2, [r3, #-203]
+ 678              		.loc 1 107 0
+ 679 04c0 70309FE5 		ldr	r3, .L71+12
+ 680              	.LBE11:
+ 681              	.LBE10:
+ 261:main_http.c   **** 	SpurInit();
+ 262:main_http.c   **** 	
+ 263:main_http.c   **** 	// init console Baud Rate 115000kbd
+ 264:main_http.c   **** 	ConsoleInit(60000000 / (16 * BAUD_RATE));
+ 682              		.loc 1 264 0
+ 683 04c4 2000A0E3 		mov	r0, #32
+ 684              	.LBB12:
+ 685              	.LBB13:
+ 686              		.loc 1 107 0
+ 687 04c8 004083E5 		str	r4, [r3, #0]
+ 688              	.LBE13:
+ 689              	.LBE12:
+ 690              		.loc 1 264 0
+ 691 04cc FEFFFFEB 		bl	ConsoleInit
+ 265:main_http.c   **** 	printf("\n\r#####====  HTTP Server_Demo %s  ====#######\n\r", RevDate );
+ 692              		.loc 1 265 0
+ 693 04d0 64109FE5 		ldr	r1, .L71+16
+ 694 04d4 64009FE5 		ldr	r0, .L71+20
+ 695 04d8 FEFFFFEB 		bl	printf
+ 266:main_http.c   **** 
+ 267:main_http.c   **** 	timerInit();
+ 696              		.loc 1 267 0
+ 697 04dc FEFFFFEB 		bl	timerInit
+ 268:main_http.c   **** 	LogInit();
+ 698              		.loc 1 268 0
+ 699 04e0 FEFFFFEB 		bl	LogInit
+ 269:main_http.c   **** 	i2cInit();
+ 700              		.loc 1 269 0
+ 701 04e4 FEFFFFEB 		bl	i2cInit
+ 270:main_http.c   **** 	
+ 271:main_http.c   **** 	W5300PwrOn();
+ 702              		.loc 1 271 0
+ 703 04e8 FEFFFFEB 		bl	W5300PwrOn
+ 272:main_http.c   **** 	WizNetInit();
+ 704              		.loc 1 272 0
+ 705 04ec FEFFFFEB 		bl	WizNetInit
+ 273:main_http.c   ****   
+ 274:main_http.c   **** 	enableIRQ();
+ 706              		.loc 1 274 0
+ 707 04f0 FEFFFFEB 		bl	enableIRQ
+ 275:main_http.c   **** 
+ 276:main_http.c   **** 	WizCheck0();
+ 708              		.loc 1 276 0
+ 709 04f4 FEFFFFEB 		bl	WizCheck0
+ 277:main_http.c   ****   ShowIPs();
+ 710              		.loc 1 277 0
+ 711 04f8 FEFFFFEB 		bl	ShowIPs
+ 278:main_http.c   ****   
+ 279:main_http.c   ****   CmdDone = 1;
+ 280:main_http.c   ****   Tst1Flag = 1;
+ 712              		.loc 1 280 0
+ 713 04fc 40309FE5 		ldr	r3, .L71+24
+ 714              		.loc 1 279 0
+ 715 0500 0120A0E3 		mov	r2, #1
+ 716              		.loc 1 280 0
+ 717 0504 002083E5 		str	r2, [r3, #0]
+ 281:main_http.c   ****   Event = 0;
+ 282:main_http.c   ****   cSoc = 0;
+ 718              		.loc 1 282 0
+ 719 0508 38309FE5 		ldr	r3, .L71+28
+ 720 050c 004083E5 		str	r4, [r3, #0]
+ 721              		.loc 1 279 0
+ 722 0510 34309FE5 		ldr	r3, .L71+32
+ 723 0514 002083E5 		str	r2, [r3, #0]
+ 724              		.loc 1 281 0
+ 725 0518 30309FE5 		ldr	r3, .L71+36
+ 726 051c 004083E5 		str	r4, [r3, #0]
+ 727              	.L69:
+ 283:main_http.c   ****   
+ 284:main_http.c   **** 	for (;;) {
+ 285:main_http.c   **** 		CheckCmd();
+ 728              		.loc 1 285 0
+ 729 0520 FEFFFFEB 		bl	CheckCmd
+ 286:main_http.c   **** 		//ToggleP0_5();
+ 287:main_http.c   **** 		//UpdateVoltage();
+ 288:main_http.c   **** 		http_serv_machine();
+ 730              		.loc 1 288 0
+ 731 0524 FEFFFFEB 		bl	http_serv_machine
+ 732 0528 FCFFFFEA 		b	.L69
+ 733              	.L72:
+ 734              		.align	2
+ 735              	.L71:
+ 736 052c 00000000 		.word	W53ErFlg
+ 737 0530 00000000 		.word	sCRcnt
+ 738 0534 00000000 		.word	SpuriousInt
+ 739 0538 00000000 		.word	SpurIntCnt
+ 740 053c 00000000 		.word	RevDate
+ 741 0540 DC000000 		.word	.LC9
+ 742 0544 00000000 		.word	Tst1Flag
+ 743 0548 00000000 		.word	cSoc
+ 744 054c 00000000 		.word	CmdDone
+ 745 0550 00000000 		.word	Event
+ 746              	.LFE14:
+ 748              		.global	RevDate
+ 749              		.data
+ 750              		.align	2
+ 753              	RevDate:
+ 754 0000 372F3238 		.ascii	"7/28/2009\000"
+ 754      2F323030 
+ 754      3900
+ 755              		.global	ip_0
+ 758              	ip_0:
+ 759 000a C0       		.byte	-64
+ 760 000b A8       		.byte	-88
+ 761 000c 00       		.byte	0
+ 762 000d 29       		.byte	41
+ 763              		.global	gw
+ 766              	gw:
+ 767 000e C0       		.byte	-64
+ 768 000f A8       		.byte	-88
+ 769 0010 00       		.byte	0
+ 770 0011 01       		.byte	1
+ 771              		.global	sn
+ 774              	sn:
+ 775 0012 FF       		.byte	-1
+ 776 0013 FF       		.byte	-1
+ 777 0014 FF       		.byte	-1
+ 778 0015 00       		.byte	0
+ 779              		.global	mac_1
+ 782              	mac_1:
+ 783 0016 00       		.byte	0
+ 784 0017 08       		.byte	8
+ 785 0018 DC       		.byte	-36
+ 786 0019 00       		.byte	0
+ 787 001a 6F       		.byte	111
+ 788 001b C8       		.byte	-56
+ 789              		.global	mac_0
+ 792              	mac_0:
+ 793 001c 06       		.byte	6
+ 794 001d 44       		.byte	68
+ 795 001e 53       		.byte	83
+ 796 001f 01       		.byte	1
+ 797 0020 01       		.byte	1
+ 798 0021 02       		.byte	2
+ 799              		.global	tx_mem_conf
+ 802              	tx_mem_conf:
+ 803 0022 08       		.byte	8
+ 804 0023 08       		.byte	8
+ 805 0024 08       		.byte	8
+ 806 0025 08       		.byte	8
+ 807 0026 08       		.byte	8
+ 808 0027 08       		.byte	8
+ 809 0028 08       		.byte	8
+ 810 0029 08       		.byte	8
+ 811              		.global	rx_mem_conf
+ 814              	rx_mem_conf:
+ 815 002a 08       		.byte	8
+ 816 002b 08       		.byte	8
+ 817 002c 08       		.byte	8
+ 818 002d 08       		.byte	8
+ 819 002e 08       		.byte	8
+ 820 002f 08       		.byte	8
+ 821 0030 08       		.byte	8
+ 822 0031 08       		.byte	8
+ 823              		.comm	Event,4,4
+ 824              		.comm	u1,4,4
+ 825              		.comm	CRdyMax,4,4
+ 826              		.comm	SpurIntCnt,4,4
+ 827              		.comm	tcnt,4,4
+ 828              		.comm	W53ErFlg,4,4
+ 829              		.comm	sCRcnt,4,4
+ 830              		.comm	Tst1Flag,4,4
+ 831              		.comm	LogTim0,4,4
+ 832              		.comm	VoltVal,4,4
+ 833              		.comm	zero_1,20,1
+ 834              		.comm	zero_2,20,1
+ 1044              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 main_http.c
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:13     .text:00000000 P0Init
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:22     .text:00000000 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:52     .text:0000004c $d
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:61     .text:0000005c SpuriousInt
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:69     .text:0000005c $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:90     .text:00000094 $d
+                            *COM*:00000004 SpurIntCnt
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:96     .text:00000098 SpurInit
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:104    .text:00000098 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:119    .text:000000b4 $d
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:126    .text:000000bc ToggleP0_7
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:134    .text:000000bc $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:151    .text:000000dc $d
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:157    .text:000000e0 PrepVars
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:165    .text:000000e0 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:181    .text:000000f8 $d
+                            *COM*:00000004 sCRcnt
+                            *COM*:00000004 W53ErFlg
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:189    .text:00000100 UpdateVoltage
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:195    .text:00000100 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:227    .text:00000154 $d
+                            *COM*:00000004 VoltVal
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:234    .text:0000015c ToggleP0_5
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:240    .text:0000015c $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:263    .text:0000018c $d
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:269    .text:00000190 LoadEE_MAC
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:275    .text:00000190 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:315    .text:000001f4 $d
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:322    .text:000001fc SetMAC
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:328    .text:000001fc $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:377    .text:00000278 $d
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:758    .data:0000000a ip_0
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:766    .data:0000000e gw
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:774    .data:00000012 sn
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:792    .data:0000001c mac_0
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:392    .text:0000028c WizNetInit
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:398    .text:0000028c $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:427    .text:000002cc $d
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:802    .data:00000022 tx_mem_conf
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:814    .data:0000002a rx_mem_conf
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:454    .text:000002e0 ShowIPs
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:460    .text:000002e0 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:532    .text:000003c4 $d
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:554    .text:000003dc WizCheck0
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:560    .text:000003dc $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:625    .text:0000047c $d
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:641    .text:00000490 main
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:650    .text:00000490 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:736    .text:0000052c $d
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:753    .data:00000000 RevDate
+                            *COM*:00000004 Tst1Flag
+                            *COM*:00000004 Event
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccxZqawZ.s:782    .data:00000016 mac_1
+                            *COM*:00000004 u1
+                            *COM*:00000004 CRdyMax
+                            *COM*:00000004 tcnt
+                            *COM*:00000004 LogTim0
+                            *COM*:00000014 zero_1
+                            *COM*:00000014 zero_2
+
+UNDEFINED SYMBOLS
+__umodsi3
+itoa
+memcpy
+voltBuf
+delay
+eepromRead
+setSHAR
+setSIPR
+setGAR
+setSUBR
+httpPort
+iinchip_init
+W5300Init2
+sysinit
+printf
+IINCHIP_WRITE
+Rd5300_bl
+getMR
+IINCHIP_READ
+Init2148
+P1Init
+ConsoleInit
+timerInit
+LogInit
+i2cInit
+W5300PwrOn
+enableIRQ
+CheckCmd
+http_serv_machine
+cSoc
+CmdDone

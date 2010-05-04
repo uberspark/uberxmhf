@@ -1,0 +1,608 @@
+   1              		.file	"console.c"
+   9              	.Ltext0:
+  10              		.align	2
+  11              		.global	Uart0ISR
+  13              	Uart0ISR:
+  14              	.LFB2:
+  15              		.file 1 "utils/console.c"
+   1:utils/console.c **** /*
+   2:utils/console.c **** 	LPCUSB, an USB device driver for LPC microcontrollers	
+   3:utils/console.c **** 	Copyright (C) 2006 Bertrik Sikken (bertrik@sikken.nl)
+   4:utils/console.c **** 
+   5:utils/console.c **** 	Redistribution and use in source and binary forms, with or without
+   6:utils/console.c **** 	modification, are permitted provided that the following conditions are met:
+   7:utils/console.c **** 
+   8:utils/console.c **** 	1. Redistributions of source code must retain the above copyright
+   9:utils/console.c **** 	   notice, this list of conditions and the following disclaimer.
+  10:utils/console.c **** 	2. Redistributions in binary form must reproduce the above copyright
+  11:utils/console.c **** 	   notice, this list of conditions and the following disclaimer in the
+  12:utils/console.c **** 	   documentation and/or other materials provided with the distribution.
+  13:utils/console.c **** 	3. The name of the author may not be used to endorse or promote products
+  14:utils/console.c **** 	   derived from this software without specific prior written permission.
+  15:utils/console.c **** 
+  16:utils/console.c **** 	THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+  17:utils/console.c **** 	IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+  18:utils/console.c **** 	OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+  19:utils/console.c **** 	IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, 
+  20:utils/console.c **** 	INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+  21:utils/console.c **** 	NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+  22:utils/console.c **** 	DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+  23:utils/console.c **** 	THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+  24:utils/console.c **** 	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+  25:utils/console.c **** 	THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  26:utils/console.c **** */
+  27:utils/console.c **** 
+  28:utils/console.c **** /*
+  29:utils/console.c **** 	Simple console input/output, over serial port #0
+  30:utils/console.c **** 
+  31:utils/console.c **** 	Partially copied from Jim Lynch's tutorial
+  32:utils/console.c **** */
+  33:utils/console.c **** 
+  34:utils/console.c **** #include "../ARM2148/lpc21xx.h"
+  35:utils/console.c **** #include "console.h"
+  36:utils/console.c **** #include "../ARM2148/processor.h"
+  37:utils/console.c **** 
+  38:utils/console.c **** 
+  39:utils/console.c **** extern	void	delay(unsigned long d);
+  40:utils/console.c **** 
+  41:utils/console.c **** int my_putchar(int ch);  
+  42:utils/console.c **** 
+  43:utils/console.c **** 
+  44:utils/console.c **** #define	sOBUF_SIZE	400
+  45:utils/console.c **** char		sOutBuf[sOBUF_SIZE];
+  46:utils/console.c **** volatile	char* 	sOutWrPtr;
+  47:utils/console.c **** volatile	char* 	sOutRdPtr;
+  48:utils/console.c **** volatile	int		sOutFull;
+  49:utils/console.c **** volatile	int		OutHCnt;	
+  50:utils/console.c **** 
+  51:utils/console.c **** 
+  52:utils/console.c **** void Uart0ISR(void) __attribute__((naked));
+  53:utils/console.c **** void Uart0ISR(void)
+  54:utils/console.c **** {
+  16              		.loc 1 54 0
+  17              		@ Function supports interworking.
+  18              		@ Naked Function: prologue and epilogue provided by programmer.
+  19              		@ args = 0, pretend = 0, frame = 0
+  20              		@ frame_needed = 0, uses_anonymous_args = 0
+  55:utils/console.c **** 	char ch;
+  56:utils/console.c **** 	
+  57:utils/console.c **** 	ISR_ENTRY();
+  21              		.loc 1 57 0
+  22 0000 04E04EE2 		 sub   lr, lr,#4
+  23 0004 FF5F2DE9 	 stmfd sp!,{r0-r12,lr}
+  24 0008 00104FE1 	 mrs   r1, spsr
+  25 000c 02002DE9 	 stmfd sp!,{r1}
+  58:utils/console.c **** 
+  59:utils/console.c **** 	if ( (sOutWrPtr != sOutRdPtr)||(sOutFull==1) ) {	
+  26              		.loc 1 59 0
+  27 0010 78009FE5 		ldr	r0, .L9
+  28 0014 78309FE5 		ldr	r3, .L9+4
+  29 0018 001090E5 		ldr	r1, [r0, #0]
+  30 001c 003093E5 		ldr	r3, [r3, #0]
+  31 0020 010053E1 		cmp	r3, r1
+  60:utils/console.c **** 		ch = *(sOutRdPtr++); 
+  61:utils/console.c **** 		if ( (int)(sOutRdPtr) >= (int)(sOutBuf+sOBUF_SIZE) ) sOutRdPtr = sOutBuf;
+  32              		.loc 1 61 0
+  33 0024 6CC09FE5 		ldr	ip, .L9+8
+  34              		.loc 1 59 0
+  35 0028 0700001A 		bne	.L2
+  36 002c 68309FE5 		ldr	r3, .L9+12
+  37 0030 003093E5 		ldr	r3, [r3, #0]
+  62:utils/console.c **** 		U0THR = ch;
+  63:utils/console.c **** 	} else   U0IER &= ~UIER_ETHREI;								// Disable THRE Int
+  38              		.loc 1 63 0
+  39 0034 64209FE5 		ldr	r2, .L9+16
+  40              		.loc 1 59 0
+  41 0038 010053E3 		cmp	r3, #1
+  42              		.loc 1 63 0
+  43 003c 0430D215 		ldrneb	r3, [r2, #4]	@ zero_extendqisi2
+  44 0040 FD300312 		andne	r3, r3, #253
+  45 0044 0430C215 		strneb	r3, [r2, #4]
+  46              		.loc 1 59 0
+  47 0048 0800001A 		bne	.L7
+  48              	.L2:
+  49              		.loc 1 60 0
+  50 004c 0120D1E4 		ldrb	r2, [r1], #1	@ zero_extendqisi2
+  51 0050 0130A0E1 		mov	r3, r1
+  52 0054 003080E5 		str	r3, [r0, #0]
+  53              		.loc 1 62 0
+  54 0058 40309FE5 		ldr	r3, .L9+16
+  55              		.loc 1 61 0
+  56 005c 0C0051E1 		cmp	r1, ip
+  57              		.loc 1 60 0
+  58 0060 FF2002E2 		and	r2, r2, #255
+  59              	.LVL0:
+  60              		.loc 1 61 0
+  61 0064 191E4CE2 		sub	r1, ip, #400
+  62 0068 001080A5 		strge	r1, [r0, #0]
+  63              		.loc 1 62 0
+  64 006c 0020C3E5 		strb	r2, [r3, #0]
+  65              	.L7:
+  64:utils/console.c **** 	
+  65:utils/console.c **** 	VICSoftIntClear = (1<<VIC_UART0);
+  66              		.loc 1 65 0
+  67 0070 0F3CE0E3 		mvn	r3, #3840
+  68 0074 4020A0E3 		mov	r2, #64
+  69              	.LVL1:
+  70 0078 E32003E5 		str	r2, [r3, #-227]
+  66:utils/console.c **** 	VICVectAddr = 0x00000000;             // clear this interrupt from the VIC
+  71              		.loc 1 66 0
+  72 007c 0020A0E3 		mov	r2, #0
+  73 0080 CF2003E5 		str	r2, [r3, #-207]
+  67:utils/console.c **** 	
+  68:utils/console.c **** 	ISR_EXIT();                           // recover registers and return
+  74              		.loc 1 68 0
+  75 0084 0200BDE8 		 ldmfd sp!,{r1}
+  76 0088 01F061E1 	 msr   spsr_c,r1
+  77 008c FF9FFDE8 	 ldmfd sp!,{r0-r12,pc}^
+  69:utils/console.c **** }
+  78              		.loc 1 69 0
+  79              	.L10:
+  80              		.align	2
+  81              	.L9:
+  82 0090 00000000 		.word	sOutRdPtr
+  83 0094 00000000 		.word	sOutWrPtr
+  84 0098 90010000 		.word	sOutBuf+400
+  85 009c 00000000 		.word	sOutFull
+  86 00a0 00C000E0 		.word	-536821760
+  87              	.LFE2:
+  89              		.align	2
+  90              		.global	ConsoleInit
+  92              	ConsoleInit:
+  93              	.LFB3:
+  70:utils/console.c **** 
+  71:utils/console.c **** void ConsoleInit(int iDivider)  
+  72:utils/console.c **** {               
+  94              		.loc 1 72 0
+  95              		@ Function supports interworking.
+  96              		@ args = 0, pretend = 0, frame = 0
+  97              		@ frame_needed = 0, uses_anonymous_args = 0
+  98              	.LVL2:
+  73:utils/console.c **** 	PINSEL0 = (PINSEL0 & ~0x0000000F) | 0x00000005;	// Enable RxD0 and TxD0 
+  99              		.loc 1 73 0
+ 100 00a4 B4C09FE5 		ldr	ip, .L13
+ 101 00a8 00309CE5 		ldr	r3, [ip, #0]
+ 102 00ac 0F30C3E3 		bic	r3, r3, #15
+  74:utils/console.c **** 	U0LCR = 0x80|(1<<2)|0x3;        // 8 bits, no Parity, 2 Stop bit     
+ 103              		.loc 1 74 0
+ 104 00b0 AC109FE5 		ldr	r1, .L13+4
+ 105              		.loc 1 73 0
+ 106 00b4 053083E3 		orr	r3, r3, #5
+ 107 00b8 00308CE5 		str	r3, [ip, #0]
+  75:utils/console.c **** 	U0DLL = iDivider & 0xFF;				// set divider / baud rate 
+  76:utils/console.c **** 	U0DLM = iDivider >> 8;
+ 108              		.loc 1 76 0
+ 109 00bc 4024A0E1 		mov	r2, r0, asr #8
+ 110              		.loc 1 74 0
+ 111 00c0 7830E0E3 		mvn	r3, #120
+ 112              		.loc 1 72 0
+ 113 00c4 04E02DE5 		str	lr, [sp, #-4]!
+ 114              	.LCFI0:
+ 115              		.loc 1 76 0
+ 116 00c8 FF2002E2 		and	r2, r2, #255
+ 117              		.loc 1 74 0
+ 118 00cc 0C30C1E5 		strb	r3, [r1, #12]
+ 119              		.loc 1 75 0
+ 120 00d0 FF0000E2 		and	r0, r0, #255
+ 121              	.LVL3:
+  77:utils/console.c **** 	U0LCR = 0x03;  									// DLAB = 0                 
+ 122              		.loc 1 77 0
+ 123 00d4 7C3083E2 		add	r3, r3, #124
+ 124              		.loc 1 75 0
+ 125 00d8 0000C1E5 		strb	r0, [r1, #0]
+ 126              		.loc 1 76 0
+ 127 00dc 0420C1E5 		strb	r2, [r1, #4]
+ 128              		.loc 1 77 0
+ 129 00e0 0C30C1E5 		strb	r3, [r1, #12]
+  78:utils/console.c **** 	
+  79:utils/console.c **** 	U0FCR = 1;											// enable FIFO
+ 130              		.loc 1 79 0
+ 131 00e4 0130A0E3 		mov	r3, #1
+ 132 00e8 0830C1E5 		strb	r3, [r1, #8]
+  80:utils/console.c **** 	
+  81:utils/console.c **** 	sOutWrPtr = sOutBuf;
+  82:utils/console.c **** 	sOutRdPtr = sOutBuf;
+  83:utils/console.c **** 	OutHCnt = 0;
+ 133              		.loc 1 83 0
+ 134 00ec 74309FE5 		ldr	r3, .L13+8
+ 135 00f0 00E0A0E3 		mov	lr, #0
+ 136 00f4 00E083E5 		str	lr, [r3, #0]
+  84:utils/console.c **** 	sOutFull = 0;	
+ 137              		.loc 1 84 0
+ 138 00f8 6C309FE5 		ldr	r3, .L13+12
+ 139 00fc 00E083E5 		str	lr, [r3, #0]
+  85:utils/console.c **** 	
+  86:utils/console.c **** 	// disable UART0 interrupt
+  87:utils/console.c **** 	VICIntEnClear |= 1<<VIC_UART0;	
+ 140              		.loc 1 87 0
+ 141 0100 0F2CE0E3 		mvn	r2, #3840
+ 142 0104 EB3012E5 		ldr	r3, [r2, #-235]
+ 143 0108 403083E3 		orr	r3, r3, #64
+ 144 010c EB3002E5 		str	r3, [r2, #-235]
+  88:utils/console.c **** 		
+  89:utils/console.c ****   //  Setup the VIC for the UART
+  90:utils/console.c ****   VICIntSelect &= ~(1<<VIC_UART0);
+ 145              		.loc 1 90 0
+ 146 0110 F33012E5 		ldr	r3, [r2, #-243]
+ 147 0114 4030C3E3 		bic	r3, r3, #64
+ 148 0118 F33002E5 		str	r3, [r2, #-243]
+  91:utils/console.c ****   VICVectAddr5 = (unsigned int) Uart0ISR;
+ 149              		.loc 1 91 0
+ 150 011c 4C309FE5 		ldr	r3, .L13+16
+ 151 0120 153082E5 		str	r3, [r2, #21]
+  92:utils/console.c ****   VICVectCntl5 = VIC_ENABLE | VIC_UART0;
+ 152              		.loc 1 92 0
+ 153 0124 2630A0E3 		mov	r3, #38
+ 154 0128 153182E5 		str	r3, [r2, #277]
+  93:utils/console.c ****   
+  94:utils/console.c ****   VICIntEnable |= (1<<VIC_UART0);
+ 155              		.loc 1 94 0
+ 156 012c EF3012E5 		ldr	r3, [r2, #-239]
+ 157 0130 403083E3 		orr	r3, r3, #64
+ 158 0134 EF3002E5 		str	r3, [r2, #-239]
+ 159              		.loc 1 81 0
+ 160 0138 34009FE5 		ldr	r0, .L13+20
+ 161              		.loc 1 82 0
+ 162 013c 34309FE5 		ldr	r3, .L13+24
+  95:utils/console.c **** 
+  96:utils/console.c ****   //  Enable UART0 interrupts
+  97:utils/console.c ****   U0IER |= UIER_ETHREI;								// Enable THRE Int
+ 163              		.loc 1 97 0
+ 164 0140 0420D1E5 		ldrb	r2, [r1, #4]	@ zero_extendqisi2
+ 165              		.loc 1 82 0
+ 166 0144 000083E5 		str	r0, [r3, #0]
+ 167              		.loc 1 81 0
+ 168 0148 2C309FE5 		ldr	r3, .L13+28
+ 169              		.loc 1 97 0
+ 170 014c 022082E3 		orr	r2, r2, #2
+ 171 0150 0420C1E5 		strb	r2, [r1, #4]
+ 172              		.loc 1 81 0
+ 173 0154 000083E5 		str	r0, [r3, #0]
+  98:utils/console.c **** }
+ 174              		.loc 1 98 0
+ 175 0158 04E09DE4 		ldr	lr, [sp], #4
+ 176 015c 1EFF2FE1 		bx	lr
+ 177              	.L14:
+ 178              		.align	2
+ 179              	.L13:
+ 180 0160 00C002E0 		.word	-536690688
+ 181 0164 00C000E0 		.word	-536821760
+ 182 0168 00000000 		.word	OutHCnt
+ 183 016c 00000000 		.word	sOutFull
+ 184 0170 00000000 		.word	Uart0ISR
+ 185 0174 00000000 		.word	sOutBuf
+ 186 0178 00000000 		.word	sOutRdPtr
+ 187 017c 00000000 		.word	sOutWrPtr
+ 188              	.LFE3:
+ 190              		.align	2
+ 191              		.global	getchar
+ 193              	getchar:
+ 194              	.LFB5:
+  99:utils/console.c **** 
+ 100:utils/console.c **** int putchar(int ch)  
+ 101:utils/console.c **** { 
+ 102:utils/console.c **** 	if ( sOutWrPtr==sOutRdPtr ) {		// buf empty
+ 103:utils/console.c **** 		if ( (U0LSR & 0x20) == 0 ) {
+ 104:utils/console.c **** 			*(sOutWrPtr++) = (unsigned char)ch;
+ 105:utils/console.c **** 			if ( (int)(sOutWrPtr) >= (int)(sOutBuf+sOBUF_SIZE) ) sOutWrPtr = sOutBuf;
+ 106:utils/console.c **** 		} else {
+ 107:utils/console.c **** 			U0THR = ch;
+ 108:utils/console.c **** 			OutHCnt++;
+ 109:utils/console.c **** 		}
+ 110:utils/console.c **** 		U0IER |= UIER_ETHREI;								// Enable THRE Int
+ 111:utils/console.c **** 		return ch;
+ 112:utils/console.c **** 	}
+ 113:utils/console.c **** 	
+ 114:utils/console.c **** 	*(sOutWrPtr++) = (unsigned char)ch;
+ 115:utils/console.c **** 	if ( (int)(sOutWrPtr) >= (int)(sOutBuf+sOBUF_SIZE) ) sOutWrPtr = sOutBuf;
+ 116:utils/console.c **** 	if ( sOutWrPtr != sOutRdPtr ) {
+ 117:utils/console.c **** 		return ch;
+ 118:utils/console.c **** 	}
+ 119:utils/console.c **** 	
+ 120:utils/console.c **** 	sOutFull = 1;	
+ 121:utils/console.c **** 	while ( sOutWrPtr == sOutRdPtr ) {
+ 122:utils/console.c **** 		U0IER |= UIER_ETHREI;								// Enable THRE Int
+ 123:utils/console.c **** 
+ 124:utils/console.c **** 		delay(10);
+ 125:utils/console.c **** 	}
+ 126:utils/console.c **** 	sOutFull = 0;									
+ 127:utils/console.c **** 	return ch;
+ 128:utils/console.c **** 	
+ 129:utils/console.c **** }
+ 130:utils/console.c **** 
+ 131:utils/console.c **** int getchar (void)  {                    /* Read character from Serial Port   */
+ 195              		.loc 1 131 0
+ 196              		@ Function supports interworking.
+ 197              		@ args = 0, pretend = 0, frame = 0
+ 198              		@ frame_needed = 0, uses_anonymous_args = 0
+ 199              		@ link register save eliminated.
+ 200              		@ lr needed for prologue
+ 201              	.L17:
+ 132:utils/console.c **** 
+ 133:utils/console.c ****   while (!(U0LSR & 0x01));
+ 202              		.loc 1 133 0
+ 203 0180 10209FE5 		ldr	r2, .L22
+ 204 0184 1430D2E5 		ldrb	r3, [r2, #20]	@ zero_extendqisi2
+ 205 0188 010013E3 		tst	r3, #1
+ 206 018c FBFFFF0A 		beq	.L17
+ 134:utils/console.c **** 
+ 135:utils/console.c ****   return (U0RBR);
+ 207              		.loc 1 135 0
+ 208 0190 0000D2E5 		ldrb	r0, [r2, #0]	@ zero_extendqisi2
+ 136:utils/console.c **** }
+ 209              		.loc 1 136 0
+ 210 0194 1EFF2FE1 		bx	lr
+ 211              	.L23:
+ 212              		.align	2
+ 213              	.L22:
+ 214 0198 00C000E0 		.word	-536821760
+ 215              	.LFE5:
+ 217              		.align	2
+ 218              		.global	my_putchar
+ 220              	my_putchar:
+ 221              	.LFB6:
+ 137:utils/console.c **** 
+ 138:utils/console.c **** int my_putchar(int ch)  
+ 139:utils/console.c **** {             
+ 222              		.loc 1 139 0
+ 223              		@ Function supports interworking.
+ 224              		@ args = 0, pretend = 0, frame = 0
+ 225              		@ frame_needed = 0, uses_anonymous_args = 0
+ 226              		@ link register save eliminated.
+ 227              	.LVL4:
+ 140:utils/console.c **** 	if (U0LSR & 0x20) U0THR = ch;
+ 228              		.loc 1 140 0
+ 229 019c 14209FE5 		ldr	r2, .L29
+ 230 01a0 1430D2E5 		ldrb	r3, [r2, #20]	@ zero_extendqisi2
+ 231 01a4 200013E3 		tst	r3, #32
+ 232 01a8 FF3000E2 		and	r3, r0, #255
+ 233 01ac 0000E003 		mvneq	r0, #0
+ 234              		.loc 1 139 0
+ 235              		@ lr needed for prologue
+ 236              		.loc 1 140 0
+ 237 01b0 0030C215 		strneb	r3, [r2, #0]
+ 238              	.LVL5:
+ 141:utils/console.c **** 	else ch = EOF;
+ 142:utils/console.c **** 	
+ 143:utils/console.c **** 	return ch;
+ 144:utils/console.c **** }
+ 239              		.loc 1 144 0
+ 240 01b4 1EFF2FE1 		bx	lr
+ 241              	.L30:
+ 242              		.align	2
+ 243              	.L29:
+ 244 01b8 00C000E0 		.word	-536821760
+ 245              	.LFE6:
+ 247              		.align	2
+ 248              		.global	my_getchar
+ 250              	my_getchar:
+ 251              	.LFB7:
+ 145:utils/console.c **** 
+ 146:utils/console.c **** 
+ 147:utils/console.c **** int my_getchar (void)  {                 /* Read character from Serial Port   */
+ 252              		.loc 1 147 0
+ 253              		@ Function supports interworking.
+ 254              		@ args = 0, pretend = 0, frame = 0
+ 255              		@ frame_needed = 0, uses_anonymous_args = 0
+ 256              		@ link register save eliminated.
+ 148:utils/console.c **** 
+ 149:utils/console.c **** 	if (U0LSR & 0x01) {
+ 257              		.loc 1 149 0
+ 258 01bc 14209FE5 		ldr	r2, .L36
+ 259 01c0 1430D2E5 		ldrb	r3, [r2, #20]	@ zero_extendqisi2
+ 260 01c4 010013E3 		tst	r3, #1
+ 150:utils/console.c **** 		return (U0RBR);
+ 261              		.loc 1 150 0
+ 262 01c8 0030D215 		ldrneb	r3, [r2, #0]	@ zero_extendqisi2
+ 263              		.loc 1 149 0
+ 264 01cc 0000E0E3 		mvn	r0, #0
+ 265              		.loc 1 150 0
+ 266 01d0 FF000312 		andne	r0, r3, #255
+ 267              		.loc 1 147 0
+ 268              		@ lr needed for prologue
+ 151:utils/console.c **** 	} else {
+ 152:utils/console.c **** 		return (EOF);
+ 153:utils/console.c **** 	}
+ 154:utils/console.c **** }
+ 269              		.loc 1 154 0
+ 270 01d4 1EFF2FE1 		bx	lr
+ 271              	.L37:
+ 272              		.align	2
+ 273              	.L36:
+ 274 01d8 00C000E0 		.word	-536821760
+ 275              	.LFE7:
+ 277              		.align	2
+ 278              		.global	putchar
+ 280              	putchar:
+ 281              	.LFB4:
+ 282              		.loc 1 101 0
+ 283              		@ Function supports interworking.
+ 284              		@ args = 0, pretend = 0, frame = 0
+ 285              		@ frame_needed = 0, uses_anonymous_args = 0
+ 286              	.LVL6:
+ 287              		.loc 1 102 0
+ 288 01dc F0209FE5 		ldr	r2, .L55
+ 289 01e0 F0C09FE5 		ldr	ip, .L55+4
+ 290 01e4 001092E5 		ldr	r1, [r2, #0]
+ 291 01e8 00309CE5 		ldr	r3, [ip, #0]
+ 292 01ec 030051E1 		cmp	r1, r3
+ 293              		.loc 1 101 0
+ 294 01f0 10402DE9 		stmfd	sp!, {r4, lr}
+ 295              	.LCFI1:
+ 296              		.loc 1 101 0
+ 297 01f4 0040A0E1 		mov	r4, r0
+ 298              		.loc 1 102 0
+ 299 01f8 1500001A 		bne	.L39
+ 300              	.LVL7:
+ 301              		.loc 1 103 0
+ 302 01fc D8009FE5 		ldr	r0, .L55+8
+ 303 0200 1430D0E5 		ldrb	r3, [r0, #20]	@ zero_extendqisi2
+ 304 0204 200013E3 		tst	r3, #32
+ 305 0208 FF3004E2 		and	r3, r4, #255
+ 306 020c 0600001A 		bne	.L41
+ 307              		.loc 1 104 0
+ 308 0210 0130C1E4 		strb	r3, [r1], #1
+ 309              		.loc 1 105 0
+ 310 0214 C4009FE5 		ldr	r0, .L55+12
+ 311 0218 000051E1 		cmp	r1, r0
+ 312              		.loc 1 104 0
+ 313 021c 001082E5 		str	r1, [r2, #0]
+ 314              		.loc 1 105 0
+ 315 0220 193E40A2 		subge	r3, r0, #400
+ 316 0224 040000AA 		bge	.L54
+ 317 0228 040000EA 		b	.L43
+ 318              	.L41:
+ 319              		.loc 1 107 0
+ 320 022c 0030C0E5 		strb	r3, [r0, #0]
+ 321              		.loc 1 108 0
+ 322 0230 AC209FE5 		ldr	r2, .L55+16
+ 323 0234 003092E5 		ldr	r3, [r2, #0]
+ 324 0238 013083E2 		add	r3, r3, #1
+ 325              	.L54:
+ 326 023c 003082E5 		str	r3, [r2, #0]
+ 327              	.L43:
+ 328              		.loc 1 110 0
+ 329 0240 94209FE5 		ldr	r2, .L55+8
+ 330 0244 0430D2E5 		ldrb	r3, [r2, #4]	@ zero_extendqisi2
+ 331 0248 023083E3 		orr	r3, r3, #2
+ 332 024c 0430C2E5 		strb	r3, [r2, #4]
+ 333 0250 1C0000EA 		b	.L45
+ 334              	.LVL8:
+ 335              	.L39:
+ 336              		.loc 1 114 0
+ 337 0254 FF3000E2 		and	r3, r0, #255
+ 338 0258 0130C1E4 		strb	r3, [r1], #1
+ 339              		.loc 1 115 0
+ 340 025c 7C009FE5 		ldr	r0, .L55+12
+ 341 0260 000051E1 		cmp	r1, r0
+ 342 0264 193E40A2 		subge	r3, r0, #400
+ 343              		.loc 1 114 0
+ 344 0268 001082E5 		str	r1, [r2, #0]
+ 345              		.loc 1 115 0
+ 346 026c 003082A5 		strge	r3, [r2, #0]
+ 347              		.loc 1 116 0
+ 348 0270 00309CE5 		ldr	r3, [ip, #0]
+ 349 0274 002092E5 		ldr	r2, [r2, #0]
+ 350 0278 030052E1 		cmp	r2, r3
+ 351 027c 1100001A 		bne	.L45
+ 352              		.loc 1 120 0
+ 353 0280 60309FE5 		ldr	r3, .L55+20
+ 354 0284 0120A0E3 		mov	r2, #1
+ 355 0288 002083E5 		str	r2, [r3, #0]
+ 356              	.L49:
+ 357              		.loc 1 122 0
+ 358 028c 48209FE5 		ldr	r2, .L55+8
+ 359 0290 0430D2E5 		ldrb	r3, [r2, #4]	@ zero_extendqisi2
+ 360 0294 023083E3 		orr	r3, r3, #2
+ 361 0298 0430C2E5 		strb	r3, [r2, #4]
+ 362              		.loc 1 124 0
+ 363 029c 0A00A0E3 		mov	r0, #10
+ 364 02a0 FEFFFFEB 		bl	delay
+ 365              		.loc 1 121 0
+ 366 02a4 28309FE5 		ldr	r3, .L55
+ 367 02a8 002093E5 		ldr	r2, [r3, #0]
+ 368 02ac 24309FE5 		ldr	r3, .L55+4
+ 369 02b0 003093E5 		ldr	r3, [r3, #0]
+ 370 02b4 030052E1 		cmp	r2, r3
+ 371 02b8 F3FFFF0A 		beq	.L49
+ 372              		.loc 1 126 0
+ 373 02bc 24309FE5 		ldr	r3, .L55+20
+ 374 02c0 0020A0E3 		mov	r2, #0
+ 375 02c4 002083E5 		str	r2, [r3, #0]
+ 376              	.L45:
+ 377              		.loc 1 129 0
+ 378 02c8 0400A0E1 		mov	r0, r4
+ 379 02cc 1040BDE8 		ldmfd	sp!, {r4, lr}
+ 380 02d0 1EFF2FE1 		bx	lr
+ 381              	.L56:
+ 382              		.align	2
+ 383              	.L55:
+ 384 02d4 00000000 		.word	sOutWrPtr
+ 385 02d8 00000000 		.word	sOutRdPtr
+ 386 02dc 00C000E0 		.word	-536821760
+ 387 02e0 90010000 		.word	sOutBuf+400
+ 388 02e4 00000000 		.word	OutHCnt
+ 389 02e8 00000000 		.word	sOutFull
+ 390              	.LFE4:
+ 392              		.align	2
+ 393              		.global	puts
+ 395              	puts:
+ 396              	.LFB8:
+ 155:utils/console.c **** 
+ 156:utils/console.c **** 
+ 157:utils/console.c **** int puts(const char *s)
+ 158:utils/console.c **** {
+ 397              		.loc 1 158 0
+ 398              		@ Function supports interworking.
+ 399              		@ args = 0, pretend = 0, frame = 0
+ 400              		@ frame_needed = 0, uses_anonymous_args = 0
+ 401              	.LVL9:
+ 402 02ec 10402DE9 		stmfd	sp!, {r4, lr}
+ 403              	.LCFI2:
+ 404              		.loc 1 158 0
+ 405 02f0 0040A0E1 		mov	r4, r0
+ 406 02f4 000000EA 		b	.L58
+ 407              	.LVL10:
+ 408              	.L59:
+ 159:utils/console.c **** 	while (*s) {
+ 160:utils/console.c **** 		putchar(*s++);
+ 409              		.loc 1 160 0
+ 410 02f8 FEFFFFEB 		bl	putchar
+ 411              	.LVL11:
+ 412              	.L58:
+ 413              		.loc 1 159 0
+ 414 02fc 0030D4E5 		ldrb	r3, [r4, #0]	@ zero_extendqisi2
+ 415 0300 000053E3 		cmp	r3, #0
+ 416              		.loc 1 160 0
+ 417 0304 0300A0E1 		mov	r0, r3
+ 418 0308 014084E2 		add	r4, r4, #1
+ 419              		.loc 1 159 0
+ 420 030c F9FFFF1A 		bne	.L59
+ 161:utils/console.c **** 	}
+ 162:utils/console.c **** 	putchar('\n');
+ 421              		.loc 1 162 0
+ 422 0310 0A00A0E3 		mov	r0, #10
+ 423 0314 FEFFFFEB 		bl	putchar
+ 163:utils/console.c **** 	return 1;
+ 164:utils/console.c **** }
+ 424              		.loc 1 164 0
+ 425 0318 0100A0E3 		mov	r0, #1
+ 426 031c 1040BDE8 		ldmfd	sp!, {r4, lr}
+ 427 0320 1EFF2FE1 		bx	lr
+ 428              	.LFE8:
+ 430              		.comm	sOutBuf,400,1
+ 431              		.comm	sOutWrPtr,4,4
+ 432              		.comm	sOutRdPtr,4,4
+ 433              		.comm	sOutFull,4,4
+ 434              		.comm	OutHCnt,4,4
+ 529              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 console.c
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cc9lGqJY.s:13     .text:00000000 Uart0ISR
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cc9lGqJY.s:22     .text:00000000 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cc9lGqJY.s:82     .text:00000090 $d
+                            *COM*:00000004 sOutRdPtr
+                            *COM*:00000004 sOutWrPtr
+                            *COM*:00000190 sOutBuf
+                            *COM*:00000004 sOutFull
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cc9lGqJY.s:92     .text:000000a4 ConsoleInit
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cc9lGqJY.s:100    .text:000000a4 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cc9lGqJY.s:180    .text:00000160 $d
+                            *COM*:00000004 OutHCnt
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cc9lGqJY.s:193    .text:00000180 getchar
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cc9lGqJY.s:203    .text:00000180 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cc9lGqJY.s:214    .text:00000198 $d
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cc9lGqJY.s:220    .text:0000019c my_putchar
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cc9lGqJY.s:229    .text:0000019c $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cc9lGqJY.s:244    .text:000001b8 $d
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cc9lGqJY.s:250    .text:000001bc my_getchar
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cc9lGqJY.s:258    .text:000001bc $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cc9lGqJY.s:274    .text:000001d8 $d
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cc9lGqJY.s:280    .text:000001dc putchar
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cc9lGqJY.s:288    .text:000001dc $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cc9lGqJY.s:384    .text:000002d4 $d
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cc9lGqJY.s:395    .text:000002ec puts
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/cc9lGqJY.s:402    .text:000002ec $a
+
+UNDEFINED SYMBOLS
+delay

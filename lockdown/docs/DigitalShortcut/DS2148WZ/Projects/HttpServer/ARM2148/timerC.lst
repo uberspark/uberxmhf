@@ -1,0 +1,484 @@
+   1              		.file	"timerC.c"
+   9              	.Ltext0:
+  10              		.align	2
+  11              		.global	timer0ISR
+  13              	timer0ISR:
+  14              	.LFB5:
+  15              		.file 1 "ARM2148/timerC.c"
+   1:ARM2148/timerC.c **** /*! \file timer.c \brief Timer Support Library for LPC2100. */
+   2:ARM2148/timerC.c **** //*****************************************************************************
+   3:ARM2148/timerC.c **** //
+   4:ARM2148/timerC.c **** // File Name	: 'timerC.c'
+   5:ARM2148/timerC.c **** // Title		: Timer Support for LPC2100
+   6:ARM2148/timerC.c **** // Author		: JD - Copyright (C) 2008
+   7:ARM2148/timerC.c **** // Created		: 2008.07.10
+   8:ARM2148/timerC.c **** // Revised		: 2008.12.04
+   9:ARM2148/timerC.c **** // Version		: 0.1
+  10:ARM2148/timerC.c **** // Target MCU	: ARM processors
+  11:ARM2148/timerC.c **** // Editor Tabs	: 2
+  12:ARM2148/timerC.c **** //
+  13:ARM2148/timerC.c **** //
+  14:ARM2148/timerC.c **** //*****************************************************************************
+  15:ARM2148/timerC.c **** 
+  16:ARM2148/timerC.c **** 
+  17:ARM2148/timerC.c **** #include "lpc21xx.h"
+  18:ARM2148/timerC.c **** #include "processor.h"
+  19:ARM2148/timerC.c **** 
+  20:ARM2148/timerC.c **** #include "timerC.h"
+  21:ARM2148/timerC.c **** 
+  22:ARM2148/timerC.c **** #define IRQ_MASK 0x00000080
+  23:ARM2148/timerC.c **** 
+  24:ARM2148/timerC.c **** volatile unsigned int	miliSec;
+  25:ARM2148/timerC.c **** 
+  26:ARM2148/timerC.c **** void timer0Init(void);
+  27:ARM2148/timerC.c **** 
+  28:ARM2148/timerC.c **** //extern void timer1Init(void);
+  29:ARM2148/timerC.c **** extern void	delay(unsigned long d);
+  30:ARM2148/timerC.c **** 
+  31:ARM2148/timerC.c **** static inline unsigned __get_cpsr(void)
+  32:ARM2148/timerC.c **** {
+  33:ARM2148/timerC.c ****   unsigned long retval;
+  34:ARM2148/timerC.c ****   asm volatile (" mrs  %0, cpsr" : "=r" (retval) : /* no inputs */  ); 
+  35:ARM2148/timerC.c ****   return retval;
+  36:ARM2148/timerC.c **** }
+  37:ARM2148/timerC.c **** 
+  38:ARM2148/timerC.c **** static inline void __set_cpsr(unsigned val)
+  39:ARM2148/timerC.c **** {
+  40:ARM2148/timerC.c ****   asm volatile (" msr  cpsr, %0" : /* no outputs */ : "r" (val)  );	
+  41:ARM2148/timerC.c **** }
+  42:ARM2148/timerC.c **** 
+  43:ARM2148/timerC.c **** 
+  44:ARM2148/timerC.c **** typedef void (*voidFuncPtr)(void);
+  45:ARM2148/timerC.c **** static volatile voidFuncPtr TimerIntrFunc[TIMER_NUM_INTERRUPTS];
+  46:ARM2148/timerC.c **** 
+  47:ARM2148/timerC.c **** extern	unsigned int	Event;
+  48:ARM2148/timerC.c **** 
+  49:ARM2148/timerC.c **** 
+  50:ARM2148/timerC.c **** void timerInit(void)
+  51:ARM2148/timerC.c **** {
+  52:ARM2148/timerC.c **** 	uint8 intNum;
+  53:ARM2148/timerC.c **** 	// detach all user functions from interrupts
+  54:ARM2148/timerC.c **** 	for(intNum=0; intNum<TIMER_NUM_INTERRUPTS; intNum++)
+  55:ARM2148/timerC.c **** 		timerDetach(intNum);
+  56:ARM2148/timerC.c **** 
+  57:ARM2148/timerC.c **** 	// initialize timer0
+  58:ARM2148/timerC.c **** 	timer0Init();
+  59:ARM2148/timerC.c **** 	
+  60:ARM2148/timerC.c **** 	// initialize timer1
+  61:ARM2148/timerC.c **** 	//timer1Init();
+  62:ARM2148/timerC.c **** 
+  63:ARM2148/timerC.c **** 	// enable interrupts
+  64:ARM2148/timerC.c **** 	enableIRQ();
+  65:ARM2148/timerC.c **** }
+  66:ARM2148/timerC.c **** 
+  67:ARM2148/timerC.c **** /** Timer0 Interrupt Service Every 1mSec
+  68:ARM2148/timerC.c **** **/
+  69:ARM2148/timerC.c **** void timer0ISR(void) __attribute__((naked));
+  70:ARM2148/timerC.c **** void timer0ISR(void)
+  71:ARM2148/timerC.c **** {
+  16              		.loc 1 71 0
+  17              		@ Function supports interworking.
+  18              		@ Naked Function: prologue and epilogue provided by programmer.
+  19              		@ args = 0, pretend = 0, frame = 0
+  20              		@ frame_needed = 0, uses_anonymous_args = 0
+  72:ARM2148/timerC.c **** 	ISR_ENTRY();
+  21              		.loc 1 72 0
+  22 0000 04E04EE2 		 sub   lr, lr,#4
+  23 0004 FF5F2DE9 	 stmfd sp!,{r0-r12,lr}
+  24 0008 00104FE1 	 mrs   r1, spsr
+  25 000c 02002DE9 	 stmfd sp!,{r1}
+  73:ARM2148/timerC.c **** 	
+  74:ARM2148/timerC.c **** 	T0IR |= TIR_MR0I;			// clear MR0 Interrupt
+  26              		.loc 1 74 0
+  27 0010 48209FE5 		ldr	r2, .L3
+  28 0014 003092E5 		ldr	r3, [r2, #0]
+  29 0018 013083E3 		orr	r3, r3, #1
+  30 001c 003082E5 		str	r3, [r2, #0]
+  75:ARM2148/timerC.c **** 
+  76:ARM2148/timerC.c **** 	VICSoftIntClear = (1<<VIC_TIMER0);
+  31              		.loc 1 76 0
+  32 0020 0F1CE0E3 		mvn	r1, #3840
+  33 0024 1030A0E3 		mov	r3, #16
+  34 0028 E33001E5 		str	r3, [r1, #-227]
+  77:ARM2148/timerC.c **** 	VICVectAddr = 0x00000000;             // clear this interrupt from the VIC
+  35              		.loc 1 77 0
+  36 002c 0030A0E3 		mov	r3, #0
+  37 0030 CF3001E5 		str	r3, [r1, #-207]
+  78:ARM2148/timerC.c **** 	Event |= Msec_1;
+  79:ARM2148/timerC.c **** 	
+  80:ARM2148/timerC.c **** 	miliSec++;
+  38              		.loc 1 80 0
+  39 0034 28009FE5 		ldr	r0, .L3+4
+  40              		.loc 1 78 0
+  41 0038 28109FE5 		ldr	r1, .L3+8
+  42              		.loc 1 80 0
+  43 003c 002090E5 		ldr	r2, [r0, #0]
+  44              		.loc 1 78 0
+  45 0040 003091E5 		ldr	r3, [r1, #0]
+  46              		.loc 1 80 0
+  47 0044 012082E2 		add	r2, r2, #1
+  48              		.loc 1 78 0
+  49 0048 013583E3 		orr	r3, r3, #4194304
+  50 004c 003081E5 		str	r3, [r1, #0]
+  51              		.loc 1 80 0
+  52 0050 002080E5 		str	r2, [r0, #0]
+  81:ARM2148/timerC.c **** 	
+  82:ARM2148/timerC.c **** 	ISR_EXIT();                           // recover registers and return
+  53              		.loc 1 82 0
+  54 0054 0200BDE8 		 ldmfd sp!,{r1}
+  55 0058 01F061E1 	 msr   spsr_c,r1
+  56 005c FF9FFDE8 	 ldmfd sp!,{r0-r12,pc}^
+  83:ARM2148/timerC.c **** }
+  57              		.loc 1 83 0
+  58              	.L4:
+  59              		.align	2
+  60              	.L3:
+  61 0060 004000E0 		.word	-536854528
+  62 0064 00000000 		.word	miliSec
+  63 0068 00000000 		.word	Event
+  64              	.LFE5:
+  66              		.align	2
+  67              		.global	timerAttach
+  69              	timerAttach:
+  70              	.LFB8:
+  84:ARM2148/timerC.c **** 
+  85:ARM2148/timerC.c **** 
+  86:ARM2148/timerC.c **** 
+  87:ARM2148/timerC.c **** /** Timer0 Interrupt Init for 1mSec
+  88:ARM2148/timerC.c **** **/
+  89:ARM2148/timerC.c **** void timer0Init(void)
+  90:ARM2148/timerC.c **** {
+  91:ARM2148/timerC.c **** 	T0PR = 0; 	// set prescaler
+  92:ARM2148/timerC.c **** 	
+  93:ARM2148/timerC.c **** 	// reset timer
+  94:ARM2148/timerC.c **** 	T0TCR = TCR_RESET;
+  95:ARM2148/timerC.c **** 	delay(2);
+  96:ARM2148/timerC.c **** 	// start timer
+  97:ARM2148/timerC.c **** 	T0TCR = TCR_ENABLE;
+  98:ARM2148/timerC.c **** 
+  99:ARM2148/timerC.c ****   //  Initialize TIMER0 interrupt
+ 100:ARM2148/timerC.c **** 	VICIntSelect &= ~(1<<VIC_TIMER0);					// setup timer0 interrupt as IRQ
+ 101:ARM2148/timerC.c **** 	VICVectCntl4 = VIC_ENABLE | VIC_TIMER0;		// assign VIC slot
+ 102:ARM2148/timerC.c **** 	VICVectAddr4 = (unsigned int)timer0ISR;
+ 103:ARM2148/timerC.c **** 	// enable interrupt
+ 104:ARM2148/timerC.c **** 	VICIntEnable |= (1<<VIC_TIMER0);
+ 105:ARM2148/timerC.c **** 
+ 106:ARM2148/timerC.c **** 	// setup MR0 value    -scz- to get 1ms tick
+ 107:ARM2148/timerC.c **** 	T0MR0 = (60000000/1000)-1;
+ 108:ARM2148/timerC.c **** 	
+ 109:ARM2148/timerC.c **** 	// enable timer0 interrupt and reset on MR0 match
+ 110:ARM2148/timerC.c **** 	T0MCR |= TMCR_MR0_I | TMCR_MR0_R;
+ 111:ARM2148/timerC.c **** 	
+ 112:ARM2148/timerC.c **** 	miliSec = 0;
+ 113:ARM2148/timerC.c **** 
+ 114:ARM2148/timerC.c **** }
+ 115:ARM2148/timerC.c **** 
+ 116:ARM2148/timerC.c **** void timer1Clear(void)
+ 117:ARM2148/timerC.c **** {
+ 118:ARM2148/timerC.c **** 	T1TCR = TCR_RESET;
+ 119:ARM2148/timerC.c **** 	delay(1);
+ 120:ARM2148/timerC.c **** 	T1TCR = TCR_ENABLE;
+ 121:ARM2148/timerC.c **** 
+ 122:ARM2148/timerC.c **** }
+ 123:ARM2148/timerC.c **** 
+ 124:ARM2148/timerC.c **** 
+ 125:ARM2148/timerC.c **** void timerAttach(uint8 interruptNum, void (*userFunc)(void) )
+ 126:ARM2148/timerC.c **** {
+  71              		.loc 1 126 0
+  72              		@ Function supports interworking.
+  73              		@ args = 0, pretend = 0, frame = 0
+  74              		@ frame_needed = 0, uses_anonymous_args = 0
+  75              		@ link register save eliminated.
+  76              	.LVL0:
+  77 006c FF0000E2 		and	r0, r0, #255
+ 127:ARM2148/timerC.c **** 	// make sure the interrupt number is within bounds
+ 128:ARM2148/timerC.c **** 	if(interruptNum < TIMER_NUM_INTERRUPTS)
+  78              		.loc 1 128 0
+  79 0070 0F0050E3 		cmp	r0, #15
+ 129:ARM2148/timerC.c **** 	{
+ 130:ARM2148/timerC.c **** 		// set the interrupt function to run
+ 131:ARM2148/timerC.c **** 		// the supplied user's function
+ 132:ARM2148/timerC.c **** 		TimerIntrFunc[interruptNum] = userFunc;
+  80              		.loc 1 132 0
+  81 0074 04309F95 		ldrls	r3, .L9
+  82              		.loc 1 126 0
+  83              		@ lr needed for prologue
+  84              		.loc 1 132 0
+  85 0078 00118397 		strls	r1, [r3, r0, asl #2]
+  86 007c 1EFF2FE1 		bx	lr
+  87              	.L10:
+  88              		.align	2
+  89              	.L9:
+  90 0080 00000000 		.word	TimerIntrFunc
+  91              	.LFE8:
+  93              		.align	2
+  94              		.global	timerDetach
+  96              	timerDetach:
+  97              	.LFB9:
+ 133:ARM2148/timerC.c **** 	}
+ 134:ARM2148/timerC.c **** }
+ 135:ARM2148/timerC.c **** 
+ 136:ARM2148/timerC.c **** void timerDetach(uint8 interruptNum)
+ 137:ARM2148/timerC.c **** {
+  98              		.loc 1 137 0
+  99              		@ Function supports interworking.
+ 100              		@ args = 0, pretend = 0, frame = 0
+ 101              		@ frame_needed = 0, uses_anonymous_args = 0
+ 102              		@ link register save eliminated.
+ 103              	.LVL1:
+ 104 0084 FF0000E2 		and	r0, r0, #255
+ 138:ARM2148/timerC.c **** 	// make sure the interrupt number is within bounds
+ 139:ARM2148/timerC.c **** 	if(interruptNum < TIMER_NUM_INTERRUPTS)
+ 105              		.loc 1 139 0
+ 106 0088 0F0050E3 		cmp	r0, #15
+ 140:ARM2148/timerC.c **** 	{
+ 141:ARM2148/timerC.c **** 		// set the interrupt function to run nothing
+ 142:ARM2148/timerC.c **** 		TimerIntrFunc[interruptNum] = 0;
+ 107              		.loc 1 142 0
+ 108 008c 08309F95 		ldrls	r3, .L15
+ 109 0090 0020A093 		movls	r2, #0
+ 110              		.loc 1 137 0
+ 111              		@ lr needed for prologue
+ 112              		.loc 1 142 0
+ 113 0094 00218397 		strls	r2, [r3, r0, asl #2]
+ 114 0098 1EFF2FE1 		bx	lr
+ 115              	.L16:
+ 116              		.align	2
+ 117              	.L15:
+ 118 009c 00000000 		.word	TimerIntrFunc
+ 119              	.LFE9:
+ 121              		.align	2
+ 122              		.global	getT0
+ 124              	getT0:
+ 125              	.LFB10:
+ 143:ARM2148/timerC.c **** 	}
+ 144:ARM2148/timerC.c **** }
+ 145:ARM2148/timerC.c **** 
+ 146:ARM2148/timerC.c **** unsigned int getT0(void)
+ 147:ARM2148/timerC.c **** {
+ 126              		.loc 1 147 0
+ 127              		@ Function supports interworking.
+ 128              		@ args = 0, pretend = 0, frame = 0
+ 129              		@ frame_needed = 0, uses_anonymous_args = 0
+ 130              		@ link register save eliminated.
+ 148:ARM2148/timerC.c **** 	unsigned int t;
+ 149:ARM2148/timerC.c **** 	
+ 150:ARM2148/timerC.c **** 	t = T0TC;
+ 131              		.loc 1 150 0
+ 132 00a0 04309FE5 		ldr	r3, .L19
+ 133 00a4 080093E5 		ldr	r0, [r3, #8]
+ 134              	.LVL2:
+ 135              		.loc 1 147 0
+ 136              		@ lr needed for prologue
+ 137              	.LVL3:
+ 151:ARM2148/timerC.c **** 	return	t;
+ 152:ARM2148/timerC.c **** }
+ 138              		.loc 1 152 0
+ 139 00a8 1EFF2FE1 		bx	lr
+ 140              	.L20:
+ 141              		.align	2
+ 142              	.L19:
+ 143 00ac 004000E0 		.word	-536854528
+ 144              	.LFE10:
+ 146              		.align	2
+ 147              		.global	getT1
+ 149              	getT1:
+ 150              	.LFB11:
+ 153:ARM2148/timerC.c **** 
+ 154:ARM2148/timerC.c **** unsigned int getT1(void)
+ 155:ARM2148/timerC.c **** {
+ 151              		.loc 1 155 0
+ 152              		@ Function supports interworking.
+ 153              		@ args = 0, pretend = 0, frame = 0
+ 154              		@ frame_needed = 0, uses_anonymous_args = 0
+ 155              		@ link register save eliminated.
+ 156:ARM2148/timerC.c **** 	unsigned int t;
+ 157:ARM2148/timerC.c **** 	
+ 158:ARM2148/timerC.c **** 	t = T1TC;
+ 156              		.loc 1 158 0
+ 157 00b0 04309FE5 		ldr	r3, .L23
+ 158 00b4 080093E5 		ldr	r0, [r3, #8]
+ 159              	.LVL4:
+ 160              		.loc 1 155 0
+ 161              		@ lr needed for prologue
+ 162              	.LVL5:
+ 159:ARM2148/timerC.c **** 	return	t;
+ 160:ARM2148/timerC.c **** }
+ 163              		.loc 1 160 0
+ 164 00b8 1EFF2FE1 		bx	lr
+ 165              	.L24:
+ 166              		.align	2
+ 167              	.L23:
+ 168 00bc 008000E0 		.word	-536838144
+ 169              	.LFE11:
+ 171              		.align	2
+ 172              		.global	timer1Clear
+ 174              	timer1Clear:
+ 175              	.LFB7:
+ 176              		.loc 1 117 0
+ 177              		@ Function supports interworking.
+ 178              		@ args = 0, pretend = 0, frame = 0
+ 179              		@ frame_needed = 0, uses_anonymous_args = 0
+ 180 00c0 10402DE9 		stmfd	sp!, {r4, lr}
+ 181              	.LCFI0:
+ 182              		.loc 1 118 0
+ 183 00c4 1C409FE5 		ldr	r4, .L27
+ 184 00c8 0230A0E3 		mov	r3, #2
+ 185 00cc 043084E5 		str	r3, [r4, #4]
+ 186              		.loc 1 119 0
+ 187 00d0 0100A0E3 		mov	r0, #1
+ 188 00d4 FEFFFFEB 		bl	delay
+ 189              		.loc 1 120 0
+ 190 00d8 0130A0E3 		mov	r3, #1
+ 191 00dc 043084E5 		str	r3, [r4, #4]
+ 192              		.loc 1 122 0
+ 193 00e0 1040BDE8 		ldmfd	sp!, {r4, lr}
+ 194 00e4 1EFF2FE1 		bx	lr
+ 195              	.L28:
+ 196              		.align	2
+ 197              	.L27:
+ 198 00e8 008000E0 		.word	-536838144
+ 199              	.LFE7:
+ 201              		.align	2
+ 202              		.global	timer0Init
+ 204              	timer0Init:
+ 205              	.LFB6:
+ 206              		.loc 1 90 0
+ 207              		@ Function supports interworking.
+ 208              		@ args = 0, pretend = 0, frame = 0
+ 209              		@ frame_needed = 0, uses_anonymous_args = 0
+ 210 00ec 30402DE9 		stmfd	sp!, {r4, r5, lr}
+ 211              	.LCFI1:
+ 212              		.loc 1 91 0
+ 213 00f0 6C409FE5 		ldr	r4, .L31
+ 214              		.loc 1 94 0
+ 215 00f4 0230A0E3 		mov	r3, #2
+ 216              		.loc 1 91 0
+ 217 00f8 0050A0E3 		mov	r5, #0
+ 218              		.loc 1 95 0
+ 219 00fc 0300A0E1 		mov	r0, r3
+ 220              		.loc 1 91 0
+ 221 0100 0C5084E5 		str	r5, [r4, #12]
+ 222              		.loc 1 94 0
+ 223 0104 043084E5 		str	r3, [r4, #4]
+ 224              		.loc 1 95 0
+ 225 0108 FEFFFFEB 		bl	delay
+ 226              		.loc 1 97 0
+ 227 010c 0130A0E3 		mov	r3, #1
+ 228 0110 043084E5 		str	r3, [r4, #4]
+ 229              		.loc 1 100 0
+ 230 0114 0F2CE0E3 		mvn	r2, #3840
+ 231 0118 F33012E5 		ldr	r3, [r2, #-243]
+ 232 011c 1030C3E3 		bic	r3, r3, #16
+ 233 0120 F33002E5 		str	r3, [r2, #-243]
+ 234              		.loc 1 101 0
+ 235 0124 2430A0E3 		mov	r3, #36
+ 236 0128 113182E5 		str	r3, [r2, #273]
+ 237              		.loc 1 102 0
+ 238 012c 34309FE5 		ldr	r3, .L31+4
+ 239 0130 113082E5 		str	r3, [r2, #17]
+ 240              		.loc 1 104 0
+ 241 0134 EF3012E5 		ldr	r3, [r2, #-239]
+ 242 0138 103083E3 		orr	r3, r3, #16
+ 243 013c EF3002E5 		str	r3, [r2, #-239]
+ 244              		.loc 1 107 0
+ 245 0140 24309FE5 		ldr	r3, .L31+8
+ 246 0144 183084E5 		str	r3, [r4, #24]
+ 247              		.loc 1 110 0
+ 248 0148 143094E5 		ldr	r3, [r4, #20]
+ 249 014c 033083E3 		orr	r3, r3, #3
+ 250 0150 143084E5 		str	r3, [r4, #20]
+ 251              		.loc 1 112 0
+ 252 0154 14309FE5 		ldr	r3, .L31+12
+ 253 0158 005083E5 		str	r5, [r3, #0]
+ 254              		.loc 1 114 0
+ 255 015c 3040BDE8 		ldmfd	sp!, {r4, r5, lr}
+ 256 0160 1EFF2FE1 		bx	lr
+ 257              	.L32:
+ 258              		.align	2
+ 259              	.L31:
+ 260 0164 004000E0 		.word	-536854528
+ 261 0168 00000000 		.word	timer0ISR
+ 262 016c 5FEA0000 		.word	59999
+ 263 0170 00000000 		.word	miliSec
+ 264              	.LFE6:
+ 266              		.align	2
+ 267              		.global	timerInit
+ 269              	timerInit:
+ 270              	.LFB4:
+ 271              		.loc 1 51 0
+ 272              		@ Function supports interworking.
+ 273              		@ args = 0, pretend = 0, frame = 0
+ 274              		@ frame_needed = 0, uses_anonymous_args = 0
+ 275 0174 04E02DE5 		str	lr, [sp, #-4]!
+ 276              	.LCFI2:
+ 277              		.loc 1 51 0
+ 278 0178 0010A0E3 		mov	r1, #0
+ 279              	.L34:
+ 280              	.LBB4:
+ 281              	.LBB5:
+ 282              		.loc 1 142 0
+ 283 017c 20309FE5 		ldr	r3, .L39
+ 284 0180 0020A0E3 		mov	r2, #0
+ 285 0184 012183E7 		str	r2, [r3, r1, asl #2]
+ 286 0188 011081E2 		add	r1, r1, #1
+ 287              	.LBE5:
+ 288              	.LBE4:
+ 289              		.loc 1 54 0
+ 290 018c 100051E3 		cmp	r1, #16
+ 291 0190 F9FFFF1A 		bne	.L34
+ 292              		.loc 1 58 0
+ 293 0194 FEFFFFEB 		bl	timer0Init
+ 294              		.loc 1 64 0
+ 295 0198 FEFFFFEB 		bl	enableIRQ
+ 296              		.loc 1 65 0
+ 297 019c 04E09DE4 		ldr	lr, [sp], #4
+ 298 01a0 1EFF2FE1 		bx	lr
+ 299              	.L40:
+ 300              		.align	2
+ 301              	.L39:
+ 302 01a4 00000000 		.word	TimerIntrFunc
+ 303              	.LFE4:
+ 305              		.bss
+ 306              		.align	2
+ 307              	TimerIntrFunc:
+ 308 0000 00000000 		.space	64
+ 308      00000000 
+ 308      00000000 
+ 308      00000000 
+ 308      00000000 
+ 309              		.comm	miliSec,4,4
+ 415              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 timerC.c
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:13     .text:00000000 timer0ISR
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:22     .text:00000000 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:61     .text:00000060 $d
+                            *COM*:00000004 miliSec
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:69     .text:0000006c timerAttach
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:77     .text:0000006c $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:90     .text:00000080 $d
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:307    .bss:00000000 TimerIntrFunc
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:96     .text:00000084 timerDetach
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:104    .text:00000084 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:118    .text:0000009c $d
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:124    .text:000000a0 getT0
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:132    .text:000000a0 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:143    .text:000000ac $d
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:149    .text:000000b0 getT1
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:157    .text:000000b0 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:168    .text:000000bc $d
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:174    .text:000000c0 timer1Clear
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:180    .text:000000c0 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:198    .text:000000e8 $d
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:204    .text:000000ec timer0Init
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:210    .text:000000ec $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:260    .text:00000164 $d
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:269    .text:00000174 timerInit
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:275    .text:00000174 $a
+/cygdrive/c/DOCUME~1/AMITVA~1/LOCALS~1/Temp/ccjlF7Mp.s:302    .text:000001a4 $d
+
+UNDEFINED SYMBOLS
+Event
+delay
+enableIRQ
