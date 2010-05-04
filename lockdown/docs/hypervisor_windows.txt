@@ -1,1 +1,4 @@
-05/04/2010: working hypervisor with ACPI intercepts for Windows
+05/04/2010: working hypervisor with ACPI intercepts for WindoWs
+
+05/04/2010 (10:50am); working hyperpartitioning integration with HP(ADAMS) 
+SATA controller
