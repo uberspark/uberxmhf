@@ -22,6 +22,7 @@
 #include <machine.h>
 #include <error.h>
 #include "acpi.h"
+#include <disk.h>
 
 u32 isl_guesthastr=0;
 
@@ -620,6 +621,11 @@ void isl_handle_intercept_ioportaccess(u32 portnum, u32 access_type, u32 access_
 		if(portnum == ACPI_CONTROLREG_PORT && access_size == IO_SIZE_WORD){
 			if( (u16)guest_RAX & (u16)(1 << 13) ){
 				printf("\nACPI Sleep_EN toggled, hibernation caught..resetting...");
+				if(!DiskSetIndicator(1, __LDN_MODE_UNTRUSTED)){
+					printf("\nerror setting operating mode!");
+					HALT();
+				}
+				
 				//sleep enable toggled, we just reset
 				islayer_reboot();
 			}

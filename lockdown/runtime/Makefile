@@ -9,7 +9,7 @@
 
 # source files
 AS_SOURCES = entry.S v86monitorsup.S islayersup.S
-C_SOURCES = runtime.c  v86monitor.c  acpi.c
+C_SOURCES = runtime.c  v86monitor.c  acpi.c disk.c
 
 ifeq ($(CONF_SHADOW_PAGING), y)
 

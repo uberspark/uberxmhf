@@ -22,6 +22,9 @@
 #define __V86M_CR0_INITVAL	0x00000020	//real-mode, no paging
 
 
+#define __LDN_MODE_TRUSTED	0x5A
+#define __LDN_MODE_UNTRUSTED 0xAA
+
 #define ENTRY(x)\
   .globl x;	\
   .align;	\
