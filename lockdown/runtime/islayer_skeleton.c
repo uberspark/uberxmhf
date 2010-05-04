@@ -612,9 +612,10 @@ static void vmx_inject_event(u32 idt_vectoring_information, u32 idt_vectoring_er
 
 
 void isl_handle_intercept_ioportaccess(u32 portnum, u32 access_type, u32 access_size, u32 stringio){
-	//printf("\n0x%04x:0x%08lx -> IO: port=0x%04x, type=%u, size=%u",
-	//	(u16)guest_CS_selector, (u32)guest_RIP, 
-	//	(u16)portnum, access_type, access_size);
+	printf("\n0x%04x:0x%08lx -> IO: port=0x%04x, type=%u, size=%u",
+		(u16)guest_CS_selector, (u32)guest_RIP, 
+		(u16)portnum, access_type, access_size);
+	HALT();
 	ASSERT(!stringio);	//we dont handle string IO intercepts
 
 	//check if any of the ATA ports are being accessed

@@ -35,7 +35,7 @@
 //#define ATA_BUS_PRIMARY			0xC000
 
 //ADAMS SATA
-#define ATA_BUS_PRIMARY			0xFFF0
+#define ATA_BUS_PRIMARY			0xFFA8
 
 #define ATA_BUS_SECONDARY   0x170
 
