@@ -398,6 +398,17 @@ static BOOL HandleVendorRequest(TSetupPacket *pSetup, int *piLen, U8 **ppbData)
 
 
 
+//------------------------------------------------------------------------------
+//wiznet chipset initialization
+void init_wiznet(void){
+  
+
+
+}
+
+
+//------------------------------------------------------------------------------
+
 
 
 int main(void)
@@ -468,7 +479,9 @@ int main(void)
 			break;
 
 			case STATE_WAIT_TRANSITION:
-			handle_state_wait_transition();
+			GreenLed_Off();
+			RedLed_On();
+      handle_state_wait_transition();
 			break;
 	
 			default:
