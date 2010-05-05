@@ -1350,11 +1350,11 @@ u32 isl_prepareVMCS(u32 currentstate, u32 nextstate){
 				//islayer_set_ioport_intercept(ACPI_STATUSREG_PORT);
 
 
-				  islayer_set_ioport_intercept(ATA_COMMAND(ATA_BUS_PRIMARY));
-				  islayer_set_ioport_intercept(ATA_SECTOR_COUNT(ATA_BUS_PRIMARY));
-				  islayer_set_ioport_intercept(ATA_LBALOW(ATA_BUS_PRIMARY));
-				  islayer_set_ioport_intercept(ATA_LBAMID(ATA_BUS_PRIMARY));
-				  islayer_set_ioport_intercept(ATA_LBAHIGH(ATA_BUS_PRIMARY));
+				  //islayer_set_ioport_intercept(ATA_COMMAND(ATA_BUS_PRIMARY));
+				  //islayer_set_ioport_intercept(ATA_SECTOR_COUNT(ATA_BUS_PRIMARY));
+				  //islayer_set_ioport_intercept(ATA_LBALOW(ATA_BUS_PRIMARY));
+				  //islayer_set_ioport_intercept(ATA_LBAMID(ATA_BUS_PRIMARY));
+				  //islayer_set_ioport_intercept(ATA_LBAHIGH(ATA_BUS_PRIMARY));
 
 				
 					control_pagefault_errorcode_mask  = 0x00000000;	//dont be concerned with 

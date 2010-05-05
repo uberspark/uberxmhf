@@ -87,8 +87,8 @@ Caret=9,8
 TopLine=141
 Caret=1,141
 [..\runtime\islayer_skeleton.c]
-TopLine=625
-Caret=44,643
+TopLine=1332
+Caret=23,1349
 [..\runtime\entry.S]
 TopLine=148
 Caret=1,161
@@ -105,8 +105,8 @@ Caret=8,18
 TopLine=128
 Caret=11,155
 [..\runtime\v86monitor.c]
-TopLine=41
-Caret=10,54
+TopLine=324
+Caret=1,332
 [..\docs\sourcefiles.txt]
 TopLine=1
 Caret=5,9
@@ -144,8 +144,8 @@ Caret=24,172
 TopLine=61
 Caret=5,78
 [..\runtime\hp_sdisk_ata.c]
-TopLine=181
-Caret=5,197
+TopLine=192
+Caret=7,226
 [..\include\ata-atapi.h]
 TopLine=17
 Caret=26,38
