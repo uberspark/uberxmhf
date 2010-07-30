@@ -5,6 +5,7 @@
 #include <target.h>
 
 #include <acpi.h>
+#include <libsechyp.h>
 
 // a placeholder for now...
 u32 sechyp_app_main(VCPU *vcpu){
@@ -20,6 +21,9 @@ u32 sechyp_app_main(VCPU *vcpu){
   
   printf("\nCPU(0x%02x): Lockdown; ACPI cp=0x%08x, sp=0x%08x",
     vcpu->id, acpi_control_portnum, acpi_status_portnum);
+  
+  //set I/O port intercept for ACPI control port
+  sechyp_iopm_set_write(vcpu, acpi_control_portnum, 2); //16-bit port
   
   return APP_INIT_SUCCESS;  //successful
 }
