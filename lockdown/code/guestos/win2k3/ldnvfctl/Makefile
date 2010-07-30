@@ -1,5 +1,5 @@
 # app defs
-EXE = main.exe
+EXE = ldnvfctl.exe
 LIBUSB =  ./libusb-win32-device-bin-0.1.12.1
 
 # tool defs
