@@ -6,3 +6,5 @@ author: amit vasudevan (amitvasudevan@acm.org)
 supermicro intel core i7 quad-core:
   + working r1086
   
+hp 8540p inte core i7 mobile quad-core:
+  + working r1087
