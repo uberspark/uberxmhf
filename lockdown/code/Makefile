@@ -19,8 +19,8 @@
   export SECHYP_INCLUDEDIR = $(BASEDIR)/sechypcore/include
   export INCLUDEDIR = $(SECHYP_INCLUDEDIR)
   export APP_INCLUDEDIR = $(BASEDIR)/app/include
-  #export INSTALLDIR = $(CURDIR)
-  export INSTALLDIR = /cygdrive/X
+  export INSTALLDIR = $(CURDIR)
+  #export INSTALLDIR = /cygdrive/X
   export SECHYPAPP = y
 
   export NESTED_PAGING := y
@@ -29,7 +29,7 @@
 
 #-----tools
   # change the line below to where you have the tools installed
-  export TOOLSBASE = /cygdrive/e/amit/tools/bin
+  export TOOLSBASE = /cygdrive/c/amit/tools/bin
   export CC = $(TOOLSBASE)/gcc
   export O_CC = /bin/gcc
   export RM = rm 
