@@ -1,0 +1,8 @@
+machines on which sechyp app version of lockdown has been
+tested as of now
+
+author: amit vasudevan (amitvasudevan@acm.org)
+
+supermicro intel core i7 quad-core:
+  + working r1086
+  
