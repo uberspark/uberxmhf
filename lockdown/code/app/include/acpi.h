@@ -39,9 +39,6 @@ extern u32 __PM1_CNTa_size, __PM1_CNTb_size;
 #define PM1_CNTb_SIZE	__PM1_CNTb_size
 
 
-u32 ACPIGetRSDP(void);
-void ACPIInitializeRegisters(void);
-u32 ACPIIsSystemACPI(void);
 
 //ACPI GAS, Generic Address Structure
 typedef struct {
@@ -155,5 +152,11 @@ typedef struct{
 	u8 x_gpe0_blk[12];
 	u8 x_gpe1_blk[12];
 }__attribute__ ((packed)) ACPI_FADT;
+
+
+ACPI_RSDP *ACPIGetRSDP(void);
+void ACPIInitializeRegisters(void);
+//u32 ACPIIsSystemACPI(void);
+
 
 #endif //__ACPI_H__

@@ -57,7 +57,7 @@ void ACPIInitializeRegisters(void){
 		HALT();
 	}
 	
-	printf("ACPI System (RSDP phys addr=0x%08X)", rsdp);
+	printf("\nACPI System (RSDP phys addr=0x%08X)", rsdp);
 
 	xsdt=(ACPI_XSDT *)(u32)rsdp->xsdtaddress;
 	printf("\nXSDT phys addr=0x%08X", xsdt);
@@ -66,7 +66,7 @@ void ACPIInitializeRegisters(void){
 	n_xsdt_entries=(u32)((xsdt->length-sizeof(ACPI_XSDT))/8);
   printf("\nNumber of XSDT entries=%u", n_xsdt_entries);
   xsdtentrylist=(u64 *) ( (u32)xsdt + sizeof(ACPI_XSDT) );
-  printf("\nxsdtentrylist phys addr=0x%08X", (u32)xsdtentrylist);
+  //printf("\nxsdtentrylist phys addr=0x%08X", (u32)xsdtentrylist);
 	
 	for(i=0; i< n_xsdt_entries; i++){
     fadt=(ACPI_FADT *)( (u32)xsdtentrylist[i]);
@@ -83,71 +83,71 @@ void ACPIInitializeRegisters(void){
 
 	//get register addresses
 	gas=(ACPI_GAS *)&fadt->x_pm2_cnt_blk;
-	printf("\nPM2_CNT_BLK");
-	printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
-		gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
-				gas->access_size, gas->address);
+	//printf("\nPM2_CNT_BLK");
+	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
+	//	gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
+	//			gas->access_size, gas->address);
 	
 	gas=(ACPI_GAS *)&fadt->x_pm_tmr_blk;
-	printf("\nPM_TMR_BLK");
-	printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
-		gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
-				gas->access_size, gas->address);
+	//printf("\nPM_TMR_BLK");
+	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
+	//	gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
+	//			gas->access_size, gas->address);
 	
 	gas=(ACPI_GAS *)&fadt->x_gpe0_blk;
-	printf("\nGPE0_BLK");
-	printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
-		gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
-				gas->access_size, gas->address);
+	//printf("\nGPE0_BLK");
+	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
+	//	gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
+	//			gas->access_size, gas->address);
 	gas=(ACPI_GAS *)&fadt->x_gpe1_blk;
-	printf("\nGPE1_BLK");
-	printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
-		gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
-				gas->access_size, gas->address);
+	//printf("\nGPE1_BLK");
+	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
+	//	gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
+	//			gas->access_size, gas->address);
 
 
-	printf("\nPM1_EVT_LEN=0x%08X", fadt->pm1_evt_len);
-	printf("\nPM1_CNT_LEN=0x%08X", fadt->pm1_cnt_len);
-	printf("\nPM2_CNT_LEN=0x%08X", fadt->pm2_cnt_len);
-	printf("\nPM_TMR_LEN=0x%08X", fadt->pm_tmr_len);
-	printf("\nGPE0_BLK_LEN=0x%08X", fadt->gpe0_blk_len);
-	printf("\nGPE1_BLK_LEN=0x%08X", fadt->gpe1_blk_len);
+	//printf("\nPM1_EVT_LEN=0x%08X", fadt->pm1_evt_len);
+	//printf("\nPM1_CNT_LEN=0x%08X", fadt->pm1_cnt_len);
+	//printf("\nPM2_CNT_LEN=0x%08X", fadt->pm2_cnt_len);
+	//printf("\nPM_TMR_LEN=0x%08X", fadt->pm_tmr_len);
+	//printf("\nGPE0_BLK_LEN=0x%08X", fadt->gpe0_blk_len);
+	//printf("\nGPE1_BLK_LEN=0x%08X", fadt->gpe1_blk_len);
 	
 	
 	//store register addresses
 	gas=(ACPI_GAS *)&fadt->x_pm1a_evt_blk;
-	printf("\nPM1a_EVT_BLK");
-	printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
-		gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
-				gas->access_size, gas->address);
+	//printf("\nPM1a_EVT_BLK");
+	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
+	//	gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
+	//			gas->access_size, gas->address);
 	__PM1a_STS=gas->address;
 	__PM1a_STS_size=(gas->register_bit_width/8)/2;
 	__PM1a_EN=gas->address+	((gas->register_bit_width/8)/2);
 	__PM1a_EN_size=(gas->register_bit_width/8)/2;
 
 	gas=(ACPI_GAS *)&fadt->x_pm1b_evt_blk;
-	printf("\nPM1b_EVT_BLK");
-	printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
-		gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
-				gas->access_size, gas->address);
+	//printf("\nPM1b_EVT_BLK");
+	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
+	//	gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
+	//			gas->access_size, gas->address);
 	__PM1b_STS=gas->address;
 	__PM1b_STS_size=(gas->register_bit_width/8)/2;
 	__PM1b_EN=gas->address+	((gas->register_bit_width/8)/2);
 	__PM1b_EN_size=(gas->register_bit_width/8)/2;
 
 	gas=(ACPI_GAS *)&fadt->x_pm1a_cnt_blk;
-	printf("\nPM1a_CNT_BLK");
-	printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
-		gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
-				gas->access_size, gas->address);
+	//printf("\nPM1a_CNT_BLK");
+	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
+	//	gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
+	//			gas->access_size, gas->address);
 	__PM1_CNTa=gas->address;
 	__PM1_CNTa_size=fadt->pm1_cnt_len;
 
 	gas=(ACPI_GAS *)&fadt->x_pm1b_cnt_blk;
-	printf("\nPM1b_CNT_BLK");
-	printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
-		gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
-				gas->access_size, gas->address);
+	//printf("\nPM1b_CNT_BLK");
+	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
+	//	gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
+	//			gas->access_size, gas->address);
 	__PM1_CNTb=gas->address;
 	__PM1_CNTb_size=fadt->pm1_cnt_len;
 	
@@ -164,11 +164,11 @@ void ACPIInitializeRegisters(void){
 	//3. RBO is zero
 	//4. ASID is 1
 	gas=(ACPI_GAS *)&fadt->reset_reg;
-	printf("\nRESET REG");
-	printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
-		gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
-				gas->access_size, gas->address);
-	printf("\nRESET VALUE=0x%02x", fadt->reset_value);
+	//printf("\nRESET REG");
+	//printf("\nASID=0x%02X, RBW=0x%02X, RBO=0x%02X, AC=0x%02X, Addr=0x%016X", 
+	//	gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
+	//			gas->access_size, gas->address);
+	//printf("\nRESET VALUE=0x%02x", fadt->reset_value);
 	ASSERT(gas->address && gas->address_space_id && (gas->register_bit_width == 8) &&
 			(gas->register_bit_offset == 0) );
 	__acpi_reset_reg = (u32)gas->address;
@@ -203,7 +203,7 @@ u32 _ACPIGetRSDPComputeChecksum(u32 spaddr, u32 size){
 
 //get the physical address of the root system description pointer (rsdp)
 //return 0 if not found
-u32 ACPIGetRSDP(void){
+ACPI_RSDP * ACPIGetRSDP(void){
   u16 ebdaseg;
   u32 ebdaphys;
   u32 i, found=0;
@@ -225,7 +225,7 @@ u32 ACPIGetRSDP(void){
   }
   
   if(found)
-    return (u32)rsdp;
+    return rsdp;
   
   //search within BIOS areas 0xE0000 to 0xFFFFF
   for(i=0xE0000; i < (0xFFFFF-8); i+=16){
@@ -239,13 +239,13 @@ u32 ACPIGetRSDP(void){
   }
 
   if(found)
-    return (u32)rsdp;
+    return rsdp;
   
-  return 0;  
+  return (ACPI_RSDP *)NULL;  
 }
 //------------------------------------------------------------------------------
 
 //non-zero is success, else no ACPI
-u32 ACPIIsSystemACPI(void){
-	return(ACPIGetRSDP());
-}
+//u32 ACPIIsSystemACPI(void){
+//	return(ACPIGetRSDP());
+//}
