@@ -1,0 +1,129 @@
+[Config]
+Compilator.SaveAll=0
+Compilator.Capture=0
+Compilator.HideOutput=0
+Compilator.LogType=0
+DefaultDir=C:\amit\rpad\verifier-DS2148WZ\ldnverifiermag
+DefaultCPIndex=0
+LogtoEnd=1
+DontOpen=0
+AbsolutePath=0
+FileFormat=1
+ProjectFilesOnly=0
+[Project tree]
+ldnverifiermag
+	+src
+		..\usbstdreq.c
+		..\usbinit.c
+		..\usbhw_lpc.h
+		..\usbhw_lpc.c
+		..\usbdebug.h
+		..\usbcontrol.c
+		..\usbapi.h
+		..\type.h
+		..\timerC.h
+		..\timerC.c
+		..\startup.c
+		..\printf.c
+		..\Makefile
+		..\lpcVIC.h
+		..\lpcTMR.h
+		..\lpcGPIO.h
+		..\lpc2148-rom.ld
+		..\LPC21xx.h
+		..\console.h
+		..\console.c
+		..\usbstruct.h
+		..\main.c
+[Open project files]
+0=..\LPC21xx.h
+1=..\usbstruct.h
+2=..\console.c
+3=..\console.h
+4=..\lpc2148-rom.ld
+5=..\lpcGPIO.h
+6=..\lpcTMR.h
+7=..\lpcVIC.h
+8=..\Makefile
+9=..\printf.c
+10=..\startup.c
+11=..\timerC.c
+12=..\timerC.h
+13=..\type.h
+14=..\usbapi.h
+15=..\usbcontrol.c
+16=..\usbdebug.h
+17=..\usbhw_lpc.c
+18=..\usbhw_lpc.h
+19=..\usbinit.c
+20=..\usbstdreq.c
+21=..\main.c
+[Selected Project Files]
+Main=
+Selected=..\main.c
+[..\LPC21xx.h]
+TopLine=1
+Caret=1,1
+[..\usbstruct.h]
+TopLine=1
+Caret=1,1
+[..\console.c]
+TopLine=1
+Caret=1,1
+[..\console.h]
+TopLine=1
+Caret=1,1
+[..\lpc2148-rom.ld]
+TopLine=1
+Caret=1,1
+[..\lpcGPIO.h]
+TopLine=1
+Caret=1,1
+[..\lpcTMR.h]
+TopLine=1
+Caret=1,1
+[..\lpcVIC.h]
+TopLine=1
+Caret=1,1
+[..\Makefile]
+TopLine=141
+Caret=38,159
+[..\printf.c]
+TopLine=1
+Caret=1,1
+[..\startup.c]
+TopLine=1
+Caret=1,1
+[..\timerC.c]
+TopLine=1
+Caret=1,1
+[..\timerC.h]
+TopLine=1
+Caret=1,1
+[..\type.h]
+TopLine=1
+Caret=1,1
+[..\usbapi.h]
+TopLine=1
+Caret=1,1
+[..\usbcontrol.c]
+TopLine=1
+Caret=1,1
+[..\usbdebug.h]
+TopLine=1
+Caret=1,1
+[..\usbhw_lpc.c]
+TopLine=1
+Caret=1,1
+[..\usbhw_lpc.h]
+TopLine=1
+Caret=1,1
+[..\usbinit.c]
+TopLine=1
+Caret=1,1
+[..\usbstdreq.c]
+TopLine=1
+Caret=1,1
+[..\main.c]
+TopLine=266
+Caret=17,281
