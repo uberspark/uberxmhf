@@ -1,13 +1,20 @@
 // lockdown verifier implementation main module
 // author: amit vasudevan(amitvasudevan@acm.org)
 
+
+#include "type.h"
+
 #include "console.h"
 #include "lpc21xx.h"
 #include "timerC.h"          	// timer functions
 //[USB]
-#include "type.h"
 #include "usbdebug.h"
 #include "usbapi.h"
+//[Wiznet]
+#include "include_netif/ds5300.h"
+#include "include_netif/w5300.h"
+
+
 //[USB]
 #define BULK_IN_EP		0x82
 #define BULK_OUT_EP		0x05
@@ -423,6 +430,13 @@ static BOOL HandleVendorRequest(TSetupPacket *pSetup, int *piLen, U8 **ppbData)
 	}
 	return TRUE;
 }
+
+//---wiznet network chipset interfaces------------------------------------------
+// the following variables are referenced by the core wiznet/ds2148 
+// implementation
+int		CRdyMax=0, SpurIntCnt=0;
+int		W53ErFlg=0, sCRcnt=0, Tst1Flag=0;
+uint8					EstbPhase[MAX_SOCK_NUM];
 			
 void ldnverifier_netif_initialize(void){
 

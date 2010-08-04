@@ -19,10 +19,10 @@
 //
 //*****************************************************************************
 
+#include "../types.h"
+
 #ifndef TIMERC_H
 #define TIMERC_H
-
-//typedef unsigned char		uint8;		/**< unsigned 8-bit */
 
 // defines
 #define TIMER0MATCH0_INT		0
@@ -35,20 +35,22 @@
 
 #define TIMER_NUM_INTERRUPTS	16
 
+// Reader Event Definitions
+#define EDGE_A0		0x01
+#define EDGE_A1		0x02
+
 // Event Definitions
 #define Msec_1		0x00400000
 
 // functions
-void delay(unsigned long d);
-
 void timerInit(void);
-void timer0Init(void);
+void timer1Clear(void);
+unsigned int getT0(void);
+unsigned int getT1(void);
 
 //! Attach a user function to a timer interrupt
-void timerAttach(U8 interruptNum, void (*userFunc)(void) );
+void timerAttach(uint8 interruptNum, void (*userFunc)(void) );
 //! Detach a user function from a timer interrupt
-void timerDetach(U8 interruptNum);
-
-void timer0Service(void) __attribute__((naked));
+void timerDetach(uint8 interruptNum);
 
 #endif

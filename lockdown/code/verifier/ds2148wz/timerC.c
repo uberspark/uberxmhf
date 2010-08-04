@@ -19,7 +19,7 @@
 //
 //*****************************************************************************
 
-
+#include "type.h"
 #include "lpc21xx.h"
 
 #include "timerC.h"
@@ -117,7 +117,7 @@ void delay(unsigned long d)
 
 void timerInit(void)
 {
-	uint8 intNum;
+	U8 intNum;
 	// detach all user functions from interrupts
 	for(intNum=0; intNum<TIMER_NUM_INTERRUPTS; intNum++)
 		timerDetach(intNum);
@@ -176,7 +176,7 @@ void timer0Service(void)
 	ISR_EXIT();                           // recover registers and return
 }
 
-void timerAttach(uint8 interruptNum, void (*userFunc)(void) )
+void timerAttach(U8 interruptNum, void (*userFunc)(void) )
 {
 	// make sure the interrupt number is within bounds
 	if(interruptNum < TIMER_NUM_INTERRUPTS)
@@ -187,7 +187,7 @@ void timerAttach(uint8 interruptNum, void (*userFunc)(void) )
 	}
 }
 
-void timerDetach(uint8 interruptNum)
+void timerDetach(U8 interruptNum)
 {
 	// make sure the interrupt number is within bounds
 	if(interruptNum < TIMER_NUM_INTERRUPTS)
