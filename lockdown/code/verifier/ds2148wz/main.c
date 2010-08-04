@@ -472,6 +472,47 @@ uint8					EstbPhase[MAX_SOCK_NUM];
 
 uint8 tx_mem_conf[8] = { 8, 8, 8, 8, 8, 8, 8, 8};  				// for setting TMSR, all socket TxBufs-14k 
 uint8 rx_mem_conf[8] = { 8, 8, 8, 8, 8, 8, 8, 8};         // for setting RMSR, all socket RxBufs-2k  
+
+uint8 ip[4] = {192,168,2,66};                  	// IP address, for setting SIP register
+uint8 gw[4] = {192,168,2,1};                     	// Gateway address, for setting GAR register 
+uint8 sn[4] = {255,255,255,0};                    // Subnet mask, for setting SUBR register
+uint8 mac[6] = {0x06,0x44,0x53,0x06,0x06,0x06};    			// Our MAC address
+
+			
+void debug_checknetifsetup(void){
+	uint16 v1, v2, v3, v4, v5;
+	
+	v1 = getMR();							// expected value is 0x3800
+  v2 = IINCHIP_READ(RTR);			// expected value is 0x07D0
+  v3 = IINCHIP_READ(RCR);			// expected value is 0x..08
+  v4 = IINCHIP_READ(IDR);
+
+  v5 = IINCHIP_READ(testR);
+  
+  printf("MR=%04x RTR=%04x RCR=%02x IDR=%04x M_%x=%04x\n",
+       v1, v2, (v3&0xff), v4, testR, v5);
+
+	if ( (v1==1)&&(v2==0x7d0)&&((v3&0xff)==8)&&(v4==0x5300)&&(v5==0x1234) ) 
+		printf("[TEST:OK]\n");
+	else
+		printf("[TEST:FAIL!!!]\n");
+
+  //show MAC, IP, gateway and subnetmask
+  { 
+  	uint8	tBuf[10];
+  	
+    Rd5300_bl(SIPR0, &tBuf[0], 4);
+    printf("IP:   %d.%d.%d.%d\n",tBuf[0],tBuf[1],tBuf[2],tBuf[3]);
+    Rd5300_bl(GAR0, &tBuf[0], 4);
+    printf("GAR:  %d.%d.%d.%d\n",tBuf[0],tBuf[1],tBuf[2],tBuf[3]);
+    Rd5300_bl(SUBR0, &tBuf[0], 4);												 // get subnet mask address   
+    printf("SUBR: %d.%d.%d.%d\n",tBuf[0],tBuf[1],tBuf[2],tBuf[3]);
+    Rd5300_bl(SHAR0, &tBuf[0], 6);
+    printf("SHAR: %02x:%02x:%02x:%02x:%02x:%02x\n",tBuf[0],tBuf[1],tBuf[2],tBuf[3],tBuf[4],tBuf[5]);
+ }
+
+
+}  
 			
 void ldnverifier_netif_initialize(void){
   printf("\n%s:", __FUNCTION__);
@@ -492,6 +533,21 @@ void ldnverifier_netif_initialize(void){
   IINCHIP_WRITE(testR, 0x1234);
 
   printf("NET: setup TX/RX buffers.\n");              
+  
+  //setup MAC, IP, gateway and subnet mask
+  //note: we really don't need the last three since we are going to
+  //be dealing with raw ethernet frames, but they are here for now
+ 	setSHAR(mac); 						// MAC
+  setSIPR(ip);              // IP
+  setGAR(gw);               // gateway IP
+  setSUBR(sn);              // subnet mask
+  
+  //enable IRQs
+  enableIRQ();
+  
+  //[debug: check if all was setup correctly]
+  debug_checknetifsetup();
+
   
 }
 
