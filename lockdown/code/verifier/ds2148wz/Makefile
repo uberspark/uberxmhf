@@ -28,9 +28,6 @@ SRC += usbcontrol.c
 SRC += usbhw_lpc.c
 SRC += usbinit.c
 SRC += usbstdreq.c
-SRC += netif_md5.c
-SRC += netif_socket.c
-SRC += netif_w5300.c
 
 # List Assembler source files here.
 ASRC = 
