@@ -132,6 +132,36 @@ extern	void Init2148(void);
 // Forward Prototypes
 void 	InitGPIO(void);
 
+/*
+Digital Shortcut Proprietary Interface: LPC2148 to WZ5300
+
+	LPC2148																			 ___________							WizNet5300
+																							|						|
+		P1.16-------------------AD0-------------->|2				19|-------------> WizAddr0
+																							|						|
+		P1.17-------------------AD1-------------->|3				18|-------------> WizAddr1
+																							|						|
+		P1.18-------------------AD2-------------->|4				17|-------------> WizAddr2
+																							|						|
+		P1.19-(WIZ_WR)----------WD3-------------->|5				16|-------------> WizWr_L
+																							|						|
+		P1.20-(WIZ_RD)----------RD4-------------->|6				15|-------------> WizRd_L
+																							|						|
+		P1.21-(WIZ_RES)---------RsD5------------->|7				14|-------------> WizRes_L
+																							|						|
+																							|	 74C573		|
+																							|						|
+		P1.23-(WIZ_ON)----------SD7-------------->|9				12|-------------> WizPwrOn
+																							|						|
+																							|						|
+		P1.24-(LATCH)-----------WLD---|>o---------|11					|
+																							|___________|
+
+		P1.25-(WIZ_CS)----------------|>o----------------------------------->	WizCS_L	
+		
+  Startup Defaults: WLD=0, WIZ_ON=1, WIZ_RES=1, WIZ_CS=0; WIZ_WR=1; WIZ_RD=1;																							
+*/
+
 //initialize LPC2148 GPIO pins
 void InitGPIO(void){
   
@@ -139,6 +169,7 @@ void InitGPIO(void){
   FIO0DIR   |= 0x7000007F;		// P0.6 .. P0.0 , P0.28-P0.30 Output
   FIO0CLR    = 0x7000007F;		// "0" on P0.0.. P0.6, P0.28-P0.30
 	
+	P1Init();
 }    
 
 //------------------------------------------------------------------------------
@@ -439,7 +470,7 @@ int		W53ErFlg=0, sCRcnt=0, Tst1Flag=0;
 uint8					EstbPhase[MAX_SOCK_NUM];
 			
 void ldnverifier_netif_initialize(void){
-
+  W5300PwrOn();
 
 }
 
