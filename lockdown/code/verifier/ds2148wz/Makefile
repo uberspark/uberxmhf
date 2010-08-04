@@ -28,6 +28,9 @@ SRC += usbcontrol.c
 SRC += usbhw_lpc.c
 SRC += usbinit.c
 SRC += usbstdreq.c
+SRC += netif_md5.c
+SRC += netif_socket.c
+SRC += netif_w5300.c
 
 # List Assembler source files here.
 ASRC = 
@@ -56,7 +59,7 @@ CSTANDARD = -std=gnu99
 CDEFS =  -D$(RUN_MODE) 
 
 # Place -I options here
-CINCS = -I $(LIBPATH)
+CINCS = -I $(LIBPATH) 
 
 # Place -D or -U options for ASM here
 ADEFS =  -D$(RUN_MODE)

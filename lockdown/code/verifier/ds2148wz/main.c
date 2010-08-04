@@ -424,7 +424,10 @@ static BOOL HandleVendorRequest(TSetupPacket *pSetup, int *piLen, U8 **ppbData)
 	return TRUE;
 }
 			
+void ldnverifier_netif_initialize(void){
 
+
+}
 
  
 //---starting point-------------------------------------------------------------
@@ -453,6 +456,15 @@ int main(void)
     while(1);
   }
 
+
+#if 1
+  printf("Doing network testing...\n");
+  ldnverifier_netif_initialize();
+  
+
+  printf("Done.\n");
+#endif
+
 #if 0
 	printf("Doing LED blinking\n");
 	while(1){
@@ -473,7 +485,7 @@ int main(void)
 	}	
 #endif	
 	
-#if 1	//USB code
+#if 0	//USB code
 
 	printf("Initialising USB stack\n");
 	
