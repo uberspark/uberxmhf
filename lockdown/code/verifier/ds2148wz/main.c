@@ -468,10 +468,31 @@ static BOOL HandleVendorRequest(TSetupPacket *pSetup, int *piLen, U8 **ppbData)
 int		CRdyMax=0, SpurIntCnt=0;
 int		W53ErFlg=0, sCRcnt=0, Tst1Flag=0;
 uint8					EstbPhase[MAX_SOCK_NUM];
+#define testR	0x21a //test register 
+
+uint8 tx_mem_conf[8] = { 8, 8, 8, 8, 8, 8, 8, 8};  				// for setting TMSR, all socket TxBufs-14k 
+uint8 rx_mem_conf[8] = { 8, 8, 8, 8, 8, 8, 8, 8};         // for setting RMSR, all socket RxBufs-2k  
 			
 void ldnverifier_netif_initialize(void){
+  printf("\n%s:", __FUNCTION__);
+  //power-on the network chipset and associated port
   W5300PwrOn();
+  printf("NET: powered up chipset/port.\n");
+  
+  //initialize W5300 chipset and setup interrupts
+  iinchip_init();			// MR_RES & MR_IND
+  W5300Init2();				// Init interrupts for 5300
+  printf("NET: initialized chipset and interrupts.\n");
+  
+  // configure internal W5300 TX/RX Memory Buffers
+  if( sysinit(tx_mem_conf, rx_mem_conf)==0 ) {
+    printf("FATAL: could not configure TX/RX buffers. HALTING!\n");
+    while(1);
+  }
+  IINCHIP_WRITE(testR, 0x1234);
 
+  printf("NET: setup TX/RX buffers.\n");              
+  
 }
 
  
