@@ -132,7 +132,16 @@ uint32   recv(SOCKET s, uint8 * buf, uint32 len)
 	}
    
 	wiz_read_buf(s, (uint8*)&pack_size, 2);        // extract the PACKET-INFO(DATA packet length)
-	pack_size = ((((pack_size << 8 ) & 0xFF00)) | ((pack_size >> 8)& 0x00FF));
+	
+  
+  //pack_size = ((((pack_size << 8 ) & 0xFF00)) | ((pack_size >> 8)& 0x00FF));
+  
+  if( (*(vint16*)MR) & MR_FS )
+      pack_size = ((((pack_size << 8 ) & 0xFF00)) | ((pack_size >> 8)& 0x00FF));
+   
+  printf("recv %d:pack_size=%d\r\n",s,pack_size);
+
+  
 	if ( pack_size>IBUF_SIZE ) {
 		printf("\n\rPack_size too big %d", pack_size);
 		pack_size = IBUF_SIZE;
@@ -147,3 +156,21 @@ uint32   recv(SOCKET s, uint8 * buf, uint32 len)
 	return (uint32)tps;
 }
 
+int	send(SOCKET s, uint8 * buf, int len)
+{
+	//int cnt, txfree_size;
+		
+	//txfree_size = (int)getSn_TX_FSR(s);
+	//if ( txfree_size == 0 ) 
+	//	return 0;
+			
+	//cnt = len;
+	//if ( cnt > txfree_size )	cnt = txfree_size;
+	//if ( cnt > TXWRMAX )	cnt = TXWRMAX;
+
+	return ( wiz_write_buf(s, buf, len) );    // copy data
+	
+	//setSn_TX_WRSR(s, cnt);   			
+
+	//return cnt;
+}

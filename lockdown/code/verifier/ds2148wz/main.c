@@ -13,6 +13,7 @@
 //[Wiznet]
 #include "include_netif/ds5300.h"
 #include "include_netif/w5300.h"
+#include "include_netif/socket.h"
 
 
 //[USB]
@@ -462,6 +463,33 @@ static BOOL HandleVendorRequest(TSetupPacket *pSetup, int *piLen, U8 **ppbData)
 	return TRUE;
 }
 
+//---crc32 routine--------------------------------------------------------------
+unsigned long crc32_table[256];
+#define CRC32_POLY 0x04c11db7 /* AUTODIN II, Ethernet, & FDDI */
+
+void init_crc32(){
+  int i, j;
+  unsigned long c;
+ 
+  for (i = 0; i < 256; ++i) {
+    for (c = i << 24, j = 8; j > 0; --j)
+      c = c & 0x80000000 ? (c << 1) ^ CRC32_POLY : (c << 1);
+   crc32_table[i] = c;
+  }
+}
+
+unsigned long crc32(unsigned char *buf, int len){
+  unsigned char *p;
+  unsigned long crc;
+
+  crc = 0xffffffff; /* preload shift register, per CRC-32 spec */
+  for (p = buf; len > 0; ++p, --len)
+   crc = (crc << 8) ^ crc32_table[(crc >> 24) ^ *p];
+  return ~crc; /* transmit complement, per CRC-32 spec */
+}
+
+
+
 //---wiznet network chipset interfaces------------------------------------------
 // the following variables are referenced by the core wiznet/ds2148 
 // implementation
@@ -477,6 +505,7 @@ uint8 ip[4] = {192,168,2,66};                  	// IP address, for setting SIP r
 uint8 gw[4] = {192,168,2,1};                     	// Gateway address, for setting GAR register 
 uint8 sn[4] = {255,255,255,0};                    // Subnet mask, for setting SUBR register
 uint8 mac[6] = {0x06,0x44,0x53,0x06,0x06,0x06};    			// Our MAC address
+uint8 bmac[6] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};    			// broadcast MAC address
 
 			
 void debug_checknetifsetup(void){
@@ -513,6 +542,155 @@ void debug_checknetifsetup(void){
 
 
 }  
+
+struct arpstruct {
+  unsigned char dstmac[6];
+  unsigned char srcmac[6];
+  unsigned char length[2];
+  unsigned char payload[46];
+  unsigned char fcs[4];
+} __attribute__((packed));
+
+char packetbuffer[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff,  //6-bytes dest MAC
+                       0x06,0x44,0x53,0x06,0x06,0x06,  //6-bytes src MAC
+                       0x08, 0x06,  //2-byte type (0x08,0x06 = ethernet ARP)
+                       
+                       //ARP packet
+                       0x00, 0x01,
+                       0x08, 0x00,
+                       0x06,
+                       0x04,
+                       0x00, 0x01,
+                       0x06,0x44,0x53,0x06,0x06,0x06, //our MAC address
+                       0xc0, 0xa8, 0x02, 0x42,  //our IP address
+                       0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  //MAC address of target 
+                       0xc0, 0xa8, 0x02, 0x1E,   //IP addr of target (192.168.2.30 in our example)
+                       
+                       0x00,0x00,0x00,0x00,
+                       0x00,0x00,0x00,0x00,
+                       0x00,0x00,0x00,0x00,
+                       0x00,0x00,0x00,0x00,
+                       0x00,0x00,                 //18 bytes pad to get to minimum payload of 46
+                       
+                       0x00,0x00,0x00,0x00        //4 byte FCS (CRC-32)
+                       };                             
+                       
+unsigned char recvbuffer[1518];
+
+//this sets socket 0 on the wiznet chipset to process raw ethernet
+//frames for send and receives
+void netif_setmacrawmode(void){
+  int opened=0;
+  do{
+    setSn_MR(0, Sn_MR_MACRAW); //MACraw mode for socket 0
+    setSn_CR(0, Sn_CR_OPEN);    //open the port
+    //check if the port was open
+    if ( getSn_SSR(0) == SOCK_MACRAW )
+      opened=1;
+    else
+      setSn_CR(0, Sn_CR_CLOSE);
+  }while(!opened);
+}
+
+//---wiznet recieve a raw ethernet frame----------------------------------------
+//note: this returns 0 if there are no frames to receive, else it returns
+//the size of the received frame in bytes. if the received size is greater
+//than length, it will return only length bytes of that frame 
+uint16 netif_recvnextframe(unsigned char *recvbuf, uint16 length){
+  uint32 framesize=0;
+  uint16 datapacketsize;
+  int numdatapacketrecords, i;
+  uint16 *databufferptr = (uint16 *)recvbuf;
+  
+  //get the size of the next frame
+  framesize = getSn_RX_RSR(0);
+  
+  //return 0 if there are no frames to be received
+  if(!framesize)
+    return 0;                                     
+  
+  //if framesize is greater than length, truncate frame to length bytes
+  if( (framesize + 0x4) > (uint32)length)
+    framesize = (uint32)length;
+    
+  //the format of raw frame returned by the wiznet chipset is:
+  //2 bytes of DATA packet size
+  //DATA packet (dest MAC, src MAC and payload excluding FCS)
+  //4 bytes of FCS
+  datapacketsize = getSn_RX_FIFOR(0);
+  printf("datapacketsize = %u bytes\n", datapacketsize);
+  //calculate number of data packet records (2 bytes each) that we need
+  //to gobble up from the FIFO register of socket 0
+  //if data packet size is odd wiznet would have padded it to 16-bit boundary
+  //adjust here if that is the case
+  if(datapacketsize & 0x1)
+    numdatapacketrecords = (datapacketsize + 1) / 2;
+  else
+    numdatapacketrecords = datapacketsize /2 ;
+    
+  //read the data packet into the buffer specified 
+  for(i=0; i < numdatapacketrecords; i++){
+    databufferptr[i] = getSn_RX_FIFOR(0);
+    databufferptr[i] =  ((uint16)databufferptr[i] << 8) | ((uint16)databufferptr[i] >> 8);  
+  }
+
+  //adjust databufferptr to remove any wiznet padding in the previous step
+  if(datapacketsize & 0x1){
+    databufferptr = (uint16 *) ((uint32)recvbuf + ((i*2) - 1));
+    framesize = (i*2) - 1;
+  }else{
+    databufferptr = (uint16 *) ((uint32)recvbuf + ((i*2)) );
+    framesize = (i*2);
+  }
+    
+  //read in the FCS as well
+  databufferptr[1] = getSn_RX_FIFOR(0);
+  databufferptr[0] = getSn_RX_FIFOR(0);
+  framesize += 0x4;  
+
+  //return the frame size
+  return framesize;  
+}
+
+/*void ldnverifier_netif_sendethpacket(void){
+  uint32 bytessent;
+  unsigned long crc;
+  int i;
+  
+  crc= crc32(&packetbuffer, sizeof(packetbuffer)-4);
+  printf("computed crc-32 of buffer = 0x%08x\n", crc);
+  packetbuffer[60] = (unsigned char) ( (unsigned long)crc >> 24 );
+  packetbuffer[61] = (unsigned char) ( ((unsigned long)crc << 8 ) >> 24 );
+  packetbuffer[62] = (unsigned char) ( ((unsigned long)crc << 16 ) >> 24 );
+  packetbuffer[63] = (unsigned char) ( ((unsigned long)crc << 24 ) >> 24 );
+  printf("crc in packet=0x%02x%02x%02x%02x\n", packetbuffer[60], packetbuffer[61],
+        packetbuffer[62], packetbuffer[63]);
+  
+  //send the packet
+  printf("sending ARP packet of %u bytes...\n", sizeof(packetbuffer));
+  bytessent=send(0, (uint8 *)&packetbuffer, sizeof(packetbuffer));
+  
+  if(!bytessent){
+    printf("FATAL error in sending. HALTING!\n");
+    while(1);
+  }
+  
+  printf("sent successfully bytes=%u\n", bytessent);  
+#endif
+                              
+  printf("waiting for packet...\n");
+  do{
+    bytessent = recv(0, (uint8 *)&recvbuffer, sizeof(recvbuffer));
+  }while(!bytessent);
+  
+  printf("received packet of length=%u\n", bytessent);
+
+  printf("packet dump follows:\n");
+  for(i=0; i < bytessent; i++)
+    printf("0x%02x ", recvbuffer[i]);
+  
+}*/
+
 			
 void ldnverifier_netif_initialize(void){
   printf("\n%s:", __FUNCTION__);
@@ -548,6 +726,10 @@ void ldnverifier_netif_initialize(void){
   //[debug: check if all was setup correctly]
   debug_checknetifsetup();
 
+  //enable MAC RAW mode
+  printf("NET: enabling RAW MAC mode on socket 0...\n");
+  netif_setmacrawmode();
+  printf("NET: RAW MAC mode enabled.\n");
   
 }
 
@@ -563,6 +745,9 @@ int main(void)
 	
 	printf("Lockdown verifier (Magnetron)...\n");
 	printf("Author: Amit Vasudevan (amitvasudevan@acm.org)\n");
+	
+	//crc init
+	init_crc32();
 	
 	timerInit();
 	Event=0;
@@ -582,9 +767,22 @@ int main(void)
 #if 1
   printf("Doing network testing...\n");
   ldnverifier_netif_initialize();
-  
+
+  {//receive test code
+    uint16 framesize=0;
+    int i;
+    printf("Waiting for a frame...\n");
+    do{
+      framesize = netif_recvnextframe(&recvbuffer, sizeof(recvbuffer));
+    }while(!framesize);
+    printf("Got a frame of size=%u bytes\n", framesize);
+    printf("Frame contents:\n");
+    for(i=0; i < framesize; i++)
+      printf("0x%02x ", recvbuffer[i]);
+  }
 
   printf("Done.\n");
+  while(1);
 #endif
 
 #if 0
