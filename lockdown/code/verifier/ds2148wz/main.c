@@ -413,7 +413,7 @@ static void _HandleNETIFSend(U8 bEP, U8 bEPStatus){
 		}
 
     //
-    printf(" read frame of %u bytes, xmit..\n", txframesize);
+    //printf(" read frame of %u bytes, xmit..\n", txframesize);
     //TODO:xmit
     netif_sendframe(&txframe, txframesize);
 		txframesize=0;
@@ -858,7 +858,7 @@ uint16 netif_sendframe(unsigned char *sendbuf, uint16 length){
   
   //set the TX size
   setSn_TX_WRSR(0, length);
-  printf("write size= 0x%08x bytes\n", getSn_TX_WRSR(0));
+  //printf("write size= 0x%08x bytes\n", getSn_TX_WRSR(0));
                        
   //xmit now
   setSn_CR(0, Sn_CR_SEND);
