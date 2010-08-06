@@ -175,12 +175,24 @@ int main(int argc, char *argv[])
 	}
   printf("\nclaimed lockdown USB interface.");
 
-	//send the ARP request ethernet frame across the NETIF_SEND_EP
 	memcpy(&ethpacket, &arpreqpacket, sizeof(arpreqpacket));
-  i = usb_bulk_write(hdl, NETIF_SEND_EP, (char *)&ethpacket, sizeof(ethpacket), 2000);
-	if (i < 0) {
-		fprintf(stderr, "usb_bulk_write failed %d\n", i);
-		return 0;
+	
+  {
+   int j;
+   unsigned int totalbytes=0;
+   for(j=0; j < 1024; j++){
+   
+    //send the ARP request ethernet frame across the NETIF_SEND_EP
+	 i = usb_bulk_write(hdl, NETIF_SEND_EP, (char *)&ethpacket, sizeof(ethpacket), 2000);
+	 if (i < 0) {
+	 	fprintf(stderr, "usb_bulk_write failed %d\n", i);
+	 	return 0;
+	 }
+	 totalbytes+= sizeof(ethpacket);
+	 
+	 }
+	 
+	 printf("\ntransmitted %u bytes", totalbytes);
 	}
   printf("\nwrote %u bytes successfully.", i);
 	
