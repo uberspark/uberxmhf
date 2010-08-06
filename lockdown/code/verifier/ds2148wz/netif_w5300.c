@@ -445,6 +445,11 @@ uint16   getSn_RX_FIFOR(SOCKET s)
    return IINCHIP_READ(Sn_RX_FIFOR(s));
 }
 
+uint16   getSn_TX_FIFOR(SOCKET s)
+{
+   return IINCHIP_READ(Sn_TX_FIFOR(s));
+}
+
 
 /* IP header field */
 

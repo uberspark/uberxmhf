@@ -51,8 +51,8 @@ ldnverifiermag
 Main=
 Selected=..\main.c
 [..\main.c]
-TopLine=536
-Caret=46,538
+TopLine=777
+Caret=3,799
 [..\Makefile]
 TopLine=15
 Caret=21,34
@@ -81,5 +81,5 @@ Caret=18,165
 TopLine=121
 Caret=49,128
 [..\netif_w5300.c]
-TopLine=61
-Caret=13,83
+TopLine=388
+Caret=23,405
