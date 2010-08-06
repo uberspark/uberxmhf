@@ -18,7 +18,9 @@
 
 //[USB]
 #define BULK_IN_EP		0x82
-#define BULK_OUT_EP		0x05
+//#define BULK_OUT_EP		0x05
+#define NETIF_SEND_EP	0x05
+#define NETIF_MAX_FRAMESIZE	(512)
 #define MAX_PACKET_SIZE	64
 #define LE_WORD(x)		((x)&0xFF),((x)>>8)
 
@@ -75,12 +77,21 @@ static const U8 abDescriptors[] = {
 	0,						// bInterval   		
 
 // bulk out
+//	0x07,   		
+//	DESC_ENDPOINT,   		
+//	BULK_OUT_EP,			// bEndpointAddress
+//	0x02,   				// bmAttributes = BULK
+//	LE_WORD(MAX_PACKET_SIZE),// wMaxPacketSize
+//	0,						// bInterval   		
+
+// netif SEND (bulk-out) endpoint
 	0x07,   		
 	DESC_ENDPOINT,   		
-	BULK_OUT_EP,			// bEndpointAddress
+	NETIF_SEND_EP,				// bEndpointAddress
 	0x02,   				// bmAttributes = BULK
 	LE_WORD(MAX_PACKET_SIZE),// wMaxPacketSize
 	0,						// bInterval   		
+
 
 // string descriptors
 	0x04,
@@ -116,6 +127,9 @@ typedef struct {
 static TMemoryCmd	MemoryCmd;
 static U8			abVendorReqData[sizeof(TMemoryCmd)];
 //-----------------------------------------------------------------------------
+
+uint16 netif_sendframe(unsigned char *sendbuf, uint16 length);
+
 
 
 volatile unsigned int	Event; // for timer
@@ -374,6 +388,37 @@ static void _HandleBulkOut(U8 bEP, U8 bEPStatus)
 	if (MemoryCmd.dwLength == 0) {
 		DBG("done\n");
 	}
+}
+
+#define ETH_MTU	1500
+#define ETH_PACKETSIZE (ETH_MTU+14)
+
+static uint32 txframesize=0;
+unsigned char txframe[ETH_PACKETSIZE];
+
+static void _HandleNETIFSend(U8 bEP, U8 bEPStatus){
+	int iChunk;
+	//printf("%s: got control\n", __FUNCTION__);
+
+	iChunk = USBHwEPRead(bEP, (unsigned char *)((uint32)&txframe + txframesize), MAX_PACKET_SIZE);
+	//printf(" read %u byte chunk\n", iChunk);
+	txframesize += iChunk;
+	//printf(" txtframesize=%u\n", txframesize);
+
+ 	if(txframesize >= ETH_PACKETSIZE){
+		//sanity check
+		if(txframesize != ETH_PACKETSIZE){
+			printf("%s: FATAL, we lost USB packets (%u)???\n", __FUNCTION__, txframesize);
+			while(1);
+		}
+
+    //
+    printf(" read frame of %u bytes, xmit..\n", txframesize);
+    //TODO:xmit
+    netif_sendframe(&txframe, txframesize);
+		txframesize=0;
+	}
+
 }
 
 
@@ -767,22 +812,22 @@ uint16 netif_sendframe(unsigned char *sendbuf, uint16 length){
   uint16 *databufferptr = (uint16 *)sendbuf;
   
   //assert length is multiple of 2
-  if(length & 0x1){
-    printf("%s: assertion failed, length is not even. HALTING!", __FUNCTION__);
-    while(1);
-  }
+  //if(length & 0x1){
+  //  printf("%s: assertion failed, length is not even. HALTING!", __FUNCTION__);
+  //  while(1);
+  //}
   
   //get free space in TX buffer
   freespace = getSn_TX_FSR(0);
-  printf("freespace = %u bytes\n", freespace);
-  printf("length = %u bytes\n", length);
+  //printf("freespace = %u bytes\n", freespace);
+  //printf("length = %u bytes\n", length);
   
   //return 0 if we cannot TX at this time since TX buffer is full
   if(freespace < (uint32)length)
     return 0;
 
-  printf("dest mac: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\n",
-    sendbuf[0], sendbuf[1], sendbuf[2], sendbuf[3], sendbuf[4], sendbuf[5]);
+  //printf("dest mac: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\n",
+  //  sendbuf[0], sendbuf[1], sendbuf[2], sendbuf[3], sendbuf[4], sendbuf[5]);
 
 #if 0  
   //calculate number of data packet records (2 bytes each) we need to
@@ -906,13 +951,16 @@ int main(void)
   }
 
 
-#if 1
-  printf("Doing network testing...\n");
+	
   ldnverifier_netif_initialize();
-
+	printf("NETIF initialized.\n");
   printf("Waiting for switch...\n");
   msec_delay(5000); //5 second wait
   printf("Done.\n");  
+  
+
+#if 0
+  printf("Doing network testing...\n");
   
   {//send frame test code
     uint16 framesize=0;
@@ -966,7 +1014,7 @@ int main(void)
 	}	
 #endif	
 	
-#if 0	//USB code
+#if 1	//USB code
 
 	printf("Initialising USB stack\n");
 	
@@ -981,7 +1029,8 @@ int main(void)
 
 	// register endpoints
 	USBHwRegisterEPIntHandler(BULK_IN_EP, _HandleBulkIn);
-	USBHwRegisterEPIntHandler(BULK_OUT_EP, _HandleBulkOut);
+	//USBHwRegisterEPIntHandler(BULK_OUT_EP, _HandleBulkOut);
+ 	USBHwRegisterEPIntHandler(NETIF_SEND_EP, _HandleNETIFSend);
 
 	printf("Starting USB communication\n");
 
@@ -992,7 +1041,7 @@ int main(void)
 	while (1) {
 		USBHwISR();
 		
-	
+#if 0	
 		//lockdown verifier logic
 		switch(devicestate){
 		 	case STATE_WAIT_UNTRUSTED:
@@ -1010,7 +1059,7 @@ int main(void)
 			default:
 			break;
 		}
-		
+#endif		
 		
 	}
 #endif
