@@ -701,6 +701,11 @@ uint16 netif_recvnextframe(unsigned char *recvbuf, uint16 length){
   //4 bytes of FCS
   datapacketsize = getSn_RX_FIFOR(0);
   printf("datapacketsize = %u bytes\n", datapacketsize);
+
+
+
+
+#if 0  
   //calculate number of data packet records (2 bytes each) that we need
   //to gobble up from the FIFO register of socket 0
   //if data packet size is odd wiznet would have padded it to 16-bit boundary
@@ -729,7 +734,19 @@ uint16 netif_recvnextframe(unsigned char *recvbuf, uint16 length){
   databufferptr[1] = getSn_RX_FIFOR(0);
   databufferptr[0] = getSn_RX_FIFOR(0);
   framesize += 0x4;  
+#else
+  //use DS function
+  {
+    uint32 resultsize;
+    framesize = datapacketsize + 0x4; //account for FCS
+    resultsize = wiz_read_buf(0, recvbuf, framesize);
+    if(resultsize != framesize){
+      printf("fatal error: mismatch in resultsize and framesize!\n");
+      while(1);
+    }
+  }
 
+#endif
   //[debug: dump our calculated CRC32 for verification]
   //{
   //  unsigned long crc;
@@ -763,7 +780,11 @@ uint16 netif_sendframe(unsigned char *sendbuf, uint16 length){
   //return 0 if we cannot TX at this time since TX buffer is full
   if(freespace < (uint32)length)
     return 0;
-  
+
+  printf("dest mac: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\n",
+    sendbuf[0], sendbuf[1], sendbuf[2], sendbuf[3], sendbuf[4], sendbuf[5]);
+
+#if 0  
   //calculate number of data packet records (2 bytes each) we need to
   //write to the send FIFO register
   numdatapacketrecords = length/2;
@@ -773,6 +794,10 @@ uint16 netif_sendframe(unsigned char *sendbuf, uint16 length){
     databufferptr[i] =  ((uint16)databufferptr[i] << 8) | ((uint16)databufferptr[i] >> 8);  
     setSn_TX_FIFOR(0, databufferptr[i]);
   }
+#else
+  wiz_write_buf(0, sendbuf, length);
+
+#endif
   
   //debug[] get and dump the FIFOR
   /*{
@@ -885,6 +910,9 @@ int main(void)
   printf("Doing network testing...\n");
   ldnverifier_netif_initialize();
 
+  printf("Waiting for switch...\n");
+  msec_delay(5000); //5 second wait
+  printf("Done.\n");  
   
   {//send frame test code
     uint16 framesize=0;
