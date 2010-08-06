@@ -1,3 +1,5 @@
+//lockdown verifier monitor application for windows
+// author: amit vasudevan (amitvasudevan@acm.org)
 
 //-----------------------------
 #include <windows.h>
@@ -14,6 +16,8 @@
 typedef unsigned int U32;
 typedef unsigned char U8;
 
+#define USB_EP_TEST0    1 //for testing purposes
+
 #define MAX_TIME 3000
 
 #define GREEN_LED     1
@@ -21,9 +25,11 @@ typedef unsigned char U8;
 
 static unsigned char abData[16384];
 
-// USB device specific definitions
+//our verifier Vendor and Product ID
 #define VENDOR_ID			0xFFFF
 #define PRODUCT_ID		0x0004
+
+
 #define BM_REQUEST_TYPE		(2<<5)
 
 //#define BULK_IN_EP			0x82
@@ -103,6 +109,90 @@ int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
 	return 0;
 }
 
+#ifdef USB_EP_TEST0
+
+#define ETH_MTU   1500
+#define ETH_PACKETSIZE  (ETH_MTU+14)  //6 bytes src MAC, 6 bytes dst MAC and 2 bytes type
+
+char arpreqpacket[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff,  //6-bytes dest MAC
+                       0x06,0x44,0x53,0x06,0x06,0x06,  //6-bytes src MAC
+                       0x08, 0x06,  //2-byte type (0x08,0x06 = ethernet ARP)
+                       
+                       //ARP packet
+                       0x00, 0x01,
+                       0x08, 0x00,
+                       0x06,
+                       0x04,
+                       0x00, 0x01,
+                       0x06,0x44,0x53,0x06,0x06,0x06, //our MAC address
+                       0xc0, 0xa8, 0x02, 0x42,  //our IP address
+                       0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  //MAC address of target 
+                       0xc0, 0xa8, 0x02, 0x1E,   //IP addr of target (192.168.2.30 in our example)
+                       
+                       0x00,0x00,0x00,0x00,
+                       0x00,0x00,0x00,0x00,
+                       0x00,0x00,0x00,0x00,
+                       0x00,0x00,0x00,0x00,
+                       0x00,0x00,                 //18 bytes pad to get to minimum payload of 46
+                       };                             
+
+char ethpacket[ETH_PACKETSIZE];
+
+#define NETIF_SEND_EP     0x05
+
+int main(int argc, char *argv[])
+{
+	struct usb_device *dev;	
+	struct usb_dev_handle *hdl;
+	int i;
+
+  printf("\ninitializing USB communication...");
+	usb_init();
+	usb_find_busses();                            
+  usb_find_devices();
+  printf("[SUCCESS].");
+	
+	dev = find_device(VENDOR_ID, PRODUCT_ID);
+	if (dev == NULL) {
+		printf("\nFATAL: lockdown verifier not found!");
+		return -1;
+	}
+	printf("\nlockdown verifier found.");
+	
+	hdl = usb_open(dev);
+	
+	i = usb_set_configuration(hdl, 1);
+	if (i < 0) {
+		fprintf(stderr, "usb_set_configuration failed\n");
+	}
+  printf("\nlockdown verifier configuration selected.");
+  
+	                                     
+	i = usb_claim_interface(hdl, 0);
+	if (i < 0) {
+		fprintf(stderr, "usb_claim_interface failed %d\n", i);
+		return -1;
+	}
+  printf("\nclaimed lockdown USB interface.");
+
+	//send the ARP request ethernet frame across the NETIF_SEND_EP
+	memcpy(&ethpacket, &arpreqpacket, sizeof(arpreqpacket));
+  i = usb_bulk_write(hdl, NETIF_SEND_EP, (char *)&ethpacket, sizeof(ethpacket), 2000);
+	if (i < 0) {
+		fprintf(stderr, "usb_bulk_write failed %d\n", i);
+		return 0;
+	}
+  printf("\nwrote %u bytes successfully.", i);
+	
+	usb_release_interface(hdl, 0);
+	usb_close(hdl);                             
+	printf("\nclosed lockdown verifier USB communication.");
+
+	return 0;
+}
+  
+
+#else
 int main(int argc, char *argv[])
 {
 	struct usb_device *dev;	
@@ -167,7 +257,7 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-
+#endif
 
 	
 
