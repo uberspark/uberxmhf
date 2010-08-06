@@ -154,6 +154,7 @@ ALL_ASFLAGS = -mcpu=$(MCU) $(THUMB_IW) -I. -x assembler-with-cpp $(ASFLAGS)
 # Default target.
 # all: begin gccversion sizebefore build sizeafter finished end
 all: gccversion build finished
+	lpc21isp -donotstart -control $(TARGET).hex com1 9600 14745
 
 # cleanup target
 clean:
