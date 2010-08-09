@@ -95,6 +95,12 @@
 #define ASID_GUEST_KERNEL 2
 #endif
 
+//emhf app constant definitions
+#define APP_IOINTERCEPT_CHAIN   0xA0
+#define APP_IOINTERCEPT_SKIP    0xA1
+#define APP_INIT_SUCCESS        0x0
+#define APP_INIT_FAIL           0xFF
+
 
 #ifndef __ASSEMBLY__
 

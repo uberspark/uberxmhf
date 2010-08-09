@@ -17,6 +17,8 @@ ifeq ($(DEBUG_VGA), y)
 OBJECTS_PRECOMPILED += ../debug/printf.o ../debug/vgamem.o
 endif
 
+OBJECTS_PRECOMPILED += $(wildcard $(APPOBJECTSDIR)/*.o) 
+
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 
 # targets
