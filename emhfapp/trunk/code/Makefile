@@ -51,9 +51,9 @@
   CFLAGS += -Werror -Wno-pointer-arith -Wextra -Wfloat-equal 
   CFLAGS += -Wbad-function-cast -Wcast-qual -Wsign-compare 
   CFLAGS += -Waggregate-return
-  CFLAGS += -Wunreachable-code -Winline
+  CFLAGS += -Winline
   CFLAGS += -m32 -march=k8 
-  CFLAGS += -nostdinc -pipe -I$(SECHYP_INCLUDEDIR) -I$(APP_INCLUDEDIR)
+  CFLAGS += -nostdinc -pipe -I$(EMHF_INCLUDEDIR) -I$(APP_INCLUDEDIR)
 
 #-----generate compiler/assembler defines from configuration options selected
   ifeq ($(NESTED_PAGING), y)
