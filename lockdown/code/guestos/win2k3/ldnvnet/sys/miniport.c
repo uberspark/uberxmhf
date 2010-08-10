@@ -34,6 +34,8 @@ Notes:
 --*/
 #include "miniport.h"
 
+#include "txrxfifo.h"
+
 #pragma NDIS_INIT_FUNCTION(DriverEntry)
 #pragma NDIS_PAGEABLE_FUNCTION(MPInitialize)
 #pragma NDIS_PAGEABLE_FUNCTION(MPHalt)
@@ -174,7 +176,12 @@ Arguments:
 
     
     DEBUGP(MP_TRACE, ("<--- DriverEntry\n"));
-    DbgPrint("%s: returning with status=0x%08x\n", __FUNCTION__, Status);
+    
+		Status = txrxfifo_initialize();
+		if(Status != STATUS_SUCCESS)
+			DEBUGP(MP_ERROR, ("%s:Error in initializing TX/RX FIFO\n", __FUNCTION__));
+		
+		DbgPrint("%s: returning with status=0x%08x\n", __FUNCTION__, Status);
     return Status;
     
 }
@@ -715,7 +722,11 @@ Return Value:
     
 --*/
 {
-    DEBUGP(MP_TRACE, ("--> MPUnload\n"));
+    char buffer[ETH_MAX_PACKET_SIZE];
+    ULONG length;
+    NTSTATUS opStatus  = STATUS_SUCCESS;
+    
+		DEBUGP(MP_TRACE, ("--> MPUnload\n"));
 
     PAGED_CODE();
 
@@ -723,7 +734,16 @@ Return Value:
     NdisFreeSpinLock(&GlobalData.Lock);
     
     DEBUGP(MP_TRACE, ("<--- MPUnload\n"));   
-    DbgPrint("%s: driver unload complete.\n", __FUNCTION__);
+    
+    //debug: now print all the packets we have collected
+    do {
+		 	opStatus = txrxfifo_txfifo_remove(&buffer, &length);
+			if(opStatus == STATUS_SUCCESS)
+				DEBUGP(MP_ERROR, ("packet length=%u bytes\n", length));
+		}while(opStatus != STATUS_NO_MORE_ENTRIES);
+    
+		txrxfifo_free();
+		DbgPrint("%s: driver unload complete.\n", __FUNCTION__);
 }
 
 VOID 

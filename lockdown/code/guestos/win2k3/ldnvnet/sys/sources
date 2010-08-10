@@ -27,5 +27,6 @@ SOURCES = \
 	request.c \
 	sendrcv.c \
         ioctl.c \
+        txrxfifo.c \
 	ldnvnet.rc 
 

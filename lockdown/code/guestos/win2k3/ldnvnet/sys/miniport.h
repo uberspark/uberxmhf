@@ -113,7 +113,7 @@ extern INT MPDebugLevel;
 { \
     if (Level <= MPDebugLevel) \
     { \
-        DbgPrint("NetVMini.SYS:"); \
+        DbgPrint("LDNVNET:"); \
         DbgPrint Fmt; \
     } \
 }

@@ -32,6 +32,7 @@ Notes:
 
 --*/
 #include "miniport.h"
+#include "txrxfifo.h"
 
 //returns TRUE on success, FALSE on error
 BOOLEAN	GetPacketBufferData(PMP_ADAPTER Adapter,
@@ -274,6 +275,7 @@ Return Value:
 		ULONG							p_BufferAddr;
 		ULONG							p_Length, i;
 		PUCHAR						p;
+		NTSTATUS					opStatus;
 		
     DEBUGP(MP_TRACE, ("--> NICSendPacket, Packet= %p\n", Packet));
 
@@ -286,6 +288,10 @@ Return Value:
 				p_BufferAddr = (ULONG)&Adapter->LdnSendPacketBufferData[0];
 			
 			  DEBUGP(MP_ERROR, ("OUT: size=%u bytes\n", p_Length));
+				opStatus = txrxfifo_txfifo_add(p_BufferAddr, p_Length);
+				if(opStatus != STATUS_SUCCESS){
+					DEBUGP(MP_ERROR, ("%s: Tx FIFO full, rejecting...\n", __FUNCTION__));
+				}		
 			
 			/*p=(PUCHAR)p_BufferAddr;	
 			
