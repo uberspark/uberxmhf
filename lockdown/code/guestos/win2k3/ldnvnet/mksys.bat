@@ -1,3 +1,6 @@
-call d:\WinDDK\6000\bin\setenv.bat d:\WinDDK\6000\ chk WNET
-cd d:\amit\lockdown2\ldnvnet\sys
+set TEMP=e:\temp
+call c:\WinDDK\7600.16385.1\bin\setenv.bat c:\WinDDK\7600.16385.1\ chk WNET
+e:
+cd e:\amit\projects\lockdown\code\guestos\win2k3\ldnvnet\sys
 build -ceZ
+				 
