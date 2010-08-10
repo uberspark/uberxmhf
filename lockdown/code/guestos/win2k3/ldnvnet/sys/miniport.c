@@ -44,7 +44,7 @@ Notes:
 #endif    
 
 MP_GLOBAL_DATA  GlobalData;
-INT             MPDebugLevel = MP_LOUD;
+INT             MPDebugLevel = MP_WARNING;
 NDIS_HANDLE     NdisWrapperHandle;
 
 NDIS_STATUS 
@@ -174,6 +174,7 @@ Arguments:
 
     
     DEBUGP(MP_TRACE, ("<--- DriverEntry\n"));
+    DbgPrint("%s: returning with status=0x%08x\n", __FUNCTION__, Status);
     return Status;
     
 }
@@ -722,6 +723,7 @@ Return Value:
     NdisFreeSpinLock(&GlobalData.Lock);
     
     DEBUGP(MP_TRACE, ("<--- MPUnload\n"));   
+    DbgPrint("%s: driver unload complete.\n", __FUNCTION__);
 }
 
 VOID 

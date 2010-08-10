@@ -240,7 +240,7 @@ Return Value:
 }
 
 
-
+//--- this routine is called by the OS to transmit a packet OUT-----------------
 NDIS_STATUS 
 NICSendPacket(
     PMP_ADAPTER Adapter,
@@ -285,6 +285,8 @@ Return Value:
 			if(GetPacketBufferData(Adapter, Packet, &Adapter->LdnSendPacketBufferData[0], &p_Length)){
 				p_BufferAddr = (ULONG)&Adapter->LdnSendPacketBufferData[0];
 			
+			  DEBUGP(MP_ERROR, ("OUT: size=%u bytes\n", p_Length));
+			
 			/*p=(PUCHAR)p_BufferAddr;	
 			
 			DEBUGP(MP_INFO, ("Send, Size=%u bytes\n", 
@@ -297,7 +299,7 @@ Return Value:
           
       DEBUGP(MP_INFO, ("\nDone.\n"));*/
                               
-	
+	    /*
 			//send it out to our VMM				
 			#define	__LDN_VMMCALL_PKTSEND		0xC0
     
@@ -318,8 +320,10 @@ Return Value:
 				pop ecx
 				pop ebx
 				pop eax		
-			}
-			}else
+			 }
+			 */
+      
+      }else
 				DEBUGP(MP_ERROR, ("Could not grab data for send packet\n"));
 					
 		}
@@ -370,7 +374,7 @@ Return Value:
 --*/
 {
 
-		#define	__LDN_VMMCALL_TIMERFIRE				0xA0
+		/*#define	__LDN_VMMCALL_TIMERFIRE				0xA0
     
     //vmmcall here
 		__asm {
@@ -383,7 +387,7 @@ Return Value:
 				__emit 0d9h
 				
 				pop eax		
-			}
+			}*/
 
 }
 
@@ -415,7 +419,7 @@ Return Value:
 --*/
 {
 
-#define __LDN_VMMCALL_DOPOLL					0xA1
+/*#define __LDN_VMMCALL_DOPOLL					0xA1
     
     //vmmcall here
 		__asm {
@@ -429,7 +433,8 @@ Return Value:
 				
 				pop eax		
 			}
-
+  */
+  
 }
 
 VOID
@@ -458,7 +463,7 @@ Return Value:
 --*/
 {
 
-#define __LDN_VMMCALL_DOPOLL_1					0xA2
+/*#define __LDN_VMMCALL_DOPOLL_1					0xA2
     
     //vmmcall here
 		__asm {
@@ -472,7 +477,7 @@ Return Value:
 				
 				pop eax		
 			}
-
+  */
 }
 
 VOID
@@ -522,7 +527,7 @@ Return Value:
     //NdisAcquireSpinLock(&Adapter->RecvLock);
     p_BufferAddr=(ULONG)&Adapter->LdnRecvPacketBufferData[0];
     
-		#define	__LDN_VMMCALL_PKTRECV		0xC1
+/*		#define	__LDN_VMMCALL_PKTRECV		0xC1
     
     //vmmcall here
 		__asm {
@@ -543,7 +548,7 @@ Return Value:
 				pop ebx
 				pop eax		
 			}
-			
+	*/		
 	
 		/*Adapter->LdnRecvPacketBufferData[0]=0x00;
 		Adapter->LdnRecvPacketBufferData[1]=0x15;
