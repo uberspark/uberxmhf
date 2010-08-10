@@ -20,6 +20,7 @@ clean:
 	$(RM) -rf ./sys/objchk_wnet_x86
 	$(RM) -rf ./sys/*.log
 	$(RM) -rf ./sys/*.err
+	$(RM) -rf ./sys/*.wrn
 	 
   
 
