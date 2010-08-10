@@ -35,6 +35,15 @@ ldnverifiermag
 		..\console.c
 		..\usbstruct.h
 		..\main.c
+		..\netif_w5300.c
+		..\netif_sockutil.c
+		..\netif_socket.c
+		..\netif_ds5300.c
+		..\include_netif\sockutil.h
+		..\include_netif\socket.h
+		..\include_netif\iinchip_conf.h
+		..\include_netif\ds5300.h
+		..\include_netif\w5300.h
 [Open project files]
 0=..\main.c
 1=..\Makefile
@@ -51,11 +60,11 @@ ldnverifiermag
 Main=
 Selected=..\main.c
 [..\main.c]
-TopLine=777
-Caret=3,799
+TopLine=853
+Caret=36,868
 [..\Makefile]
-TopLine=15
-Caret=21,34
+TopLine=146
+Caret=46,157
 [..\include_netif\w5300.h]
 TopLine=1
 Caret=1,1
