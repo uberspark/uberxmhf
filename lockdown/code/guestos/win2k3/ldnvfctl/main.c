@@ -209,11 +209,17 @@ int main(int argc, char *argv[])
 
 
 #elif defined(LDNVNET_DRV_COMM)
+	UCHAR packetbuffer[1514];
+  #define NETIF_SEND_EP     0x05
+
+
 	//ldnvnet driver communication test
 	int main(int argc, char *argv[]){
 		HANDLE drvh;
 		DWORD bytes;
-		UCHAR packetbuffer[1518];
+   	struct usb_device *dev;	
+	  struct usb_dev_handle *hdl;
+	  int i;
 		
 		printf("\nOpening device...");
 		drvh = CreateFile ( "\\\\.\\LDNVNET", 
@@ -230,8 +236,42 @@ int main(int argc, char *argv[])
 			
 		printf("\nOpened ldnvnet successfully.");
 
+    //[USB initialization]
+    printf("\ninitializing USB communication...");
+	  usb_init();
+	  usb_find_busses();                            
+    usb_find_devices();
+    printf("[SUCCESS].");
+	
+	  dev = find_device(VENDOR_ID, PRODUCT_ID);
+	  if (dev == NULL) {
+	  	printf("\nFATAL: lockdown verifier not found!");
+		  return -1;
+	  }  
+	  printf("\nlockdown verifier found.");
+	
+	  hdl = usb_open(dev);
+	
+	  i = usb_set_configuration(hdl, 1);
+	  if (i < 0) {
+		 printf("\nFATAL: usb_set_configuration failed");
+		 return -1;
+	  }
+    printf("\nlockdown verifier configuration selected.");
+  
+  	i = usb_claim_interface(hdl, 0);
+	  if (i < 0) {
+		  printf("\nFATAL: usb_claim_interface failed %d", i);
+		  return -1;
+	  }                                       
+    printf("\nclaimed lockdown USB interface.");
+
+
+
 		while(1){
-			if(!DeviceIoControl(drvh, IOCTL_LDNVNET_READ_DATA,
+			memset(packetbuffer, 0, sizeof(packetbuffer));
+			
+      if(!DeviceIoControl(drvh, IOCTL_LDNVNET_READ_DATA,
 					NULL, 0,
 					&packetbuffer, sizeof(packetbuffer),
 					&bytes, NULL)){
@@ -240,11 +280,16 @@ int main(int argc, char *argv[])
 			}
 
 			if(bytes){
-    		int i;
+    		int j;
 				printf("\nREAD %u bytes successfully (dump follows):\n", bytes);
-    		for(i=0; i < bytes; i++)
-    			printf("0x%02x ", packetbuffer[i]);
-    			
+    		for(j=0; j < bytes; j++)
+    			printf("0x%02x ", packetbuffer[j]);
+    		
+      	 i = usb_bulk_write(hdl, NETIF_SEND_EP, (char *)&packetbuffer, sizeof(packetbuffer), 2000);
+	       if (i < 0) {
+	 	       printf("\nFATAL: usb_bulk_write failed %d", i);
+	 	       return -1;
+	       }
     	}
     }
 		

@@ -6,7 +6,9 @@
 !include <Win32.Mak>
 
 OUTDIR = .
-LDNVFCTL_INSTALLDIR = e:\vpcvms\sharedfolder
+# LDNVFCTL_INSTALLDIR = e:\vpcvms\sharedfolder
+LDNVFCTL_INSTALLDIR = c:\ldnvf
+
 
 all: $(OUTDIR) $(OUTDIR)\ldnvfctl.exe 
 
