@@ -111,7 +111,8 @@ int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
 	return 0;
 }
 
-#ifdef USB_EP_TEST0
+//USB bulk r/w test
+#if defined (USB_EP_TEST0)
 
 #define ETH_MTU   1500
 #define ETH_PACKETSIZE  (ETH_MTU+14)  //6 bytes src MAC, 6 bytes dst MAC and 2 bytes type
@@ -206,8 +207,30 @@ int main(int argc, char *argv[])
 }
 
 
-//#elifdef	LDNVNET_DRV_COMM
-  
+#elif defined(LDNVNET_DRV_COMM)
+	//ldnvnet driver communication test
+	int main(int argc, char *argv[]){
+		HANDLE drvh;
+		
+		printf("\nOpening device...");
+		drvh = CreateFile ( "\\\\.\\LDNVNET", 
+								GENERIC_READ | GENERIC_WRITE,
+								FILE_SHARE_READ,
+								NULL,
+								OPEN_EXISTING,
+								FILE_ATTRIBUTE_NORMAL,
+								NULL);
+		if(drvh == INVALID_HANDLE_VALUE){
+		  printf("\nFATAL: could not open handle to virtual ethernet driver!");
+		  return -1;
+		}	
+			
+		printf("\nOpened ldnvnet successfully.");
+		
+		CloseHandle(drvh);	
+	
+		return 0;
+	}
 
 #else
 int main(int argc, char *argv[])

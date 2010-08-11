@@ -4,7 +4,7 @@ LIBUSB =  ./libusb-win32-device-bin-0.1.12.1
 
 # tool defs
 CFLAGS = -W -Wall -g -I$(LIBUSB)/include
-LIBS = $(LIBUSB)/lib/gcc/libusb.a /usr/lib/w32api/libpowrprof.a
+LIBS = $(LIBUSB)/lib/gcc/libusb.a /usr/lib/w32api/libpowrprof.a /usr/lib/w32api/libkernel32.a
 
 all: $(EXE)
 
