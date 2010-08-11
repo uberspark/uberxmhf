@@ -16,7 +16,9 @@
 typedef unsigned int U32;
 typedef unsigned char U8;
 
-#define USB_EP_TEST0    1 //for testing purposes
+//test modes
+//#define USB_EP_TEST0    1 //for USB bulk r/w tests
+#define LDNVNET_DRV_COMM	2	//communication with lockdown virtual ethernet driver
 
 #define MAX_TIME 3000
 
@@ -202,6 +204,9 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
+
+
+//#elifdef	LDNVNET_DRV_COMM
   
 
 #else
