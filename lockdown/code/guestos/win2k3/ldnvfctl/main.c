@@ -239,8 +239,13 @@ int main(int argc, char *argv[])
 				return -1;
 			}
 
-			if(bytes)
-    		printf("\nREAD %u bytes successfully.", bytes);
+			if(bytes){
+    		int i;
+				printf("\nREAD %u bytes successfully (dump follows):\n", bytes);
+    		for(i=0; i < bytes; i++)
+    			printf("0x%02x ", packetbuffer[i]);
+    			
+    	}
     }
 		
 		CloseHandle(drvh);	
