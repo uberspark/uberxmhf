@@ -28,6 +28,7 @@ Notes:
 
 #include "miniport.h"
 #include "public.h"
+#include "txrxfifo.h"
 
 //
 // Simple Mutual Exclusion constructs used in preference to
@@ -194,12 +195,18 @@ Return Value:
     switch (irpStack->MajorFunction)
     {
         case IRP_MJ_CREATE:
+    Irp->IoStatus.Information = 0;
+ 
             break;
         
         case IRP_MJ_CLEANUP:
+    Irp->IoStatus.Information = 0;
+ 
             break;
         
         case IRP_MJ_CLOSE:
+    Irp->IoStatus.Information = 0;
+ 
             break;        
         
         case IRP_MJ_DEVICE_CONTROL: 
@@ -214,14 +221,30 @@ Return Value:
             //
             // Add code here to handle ioctl commands.
             //
-            case IOCTL_LDNVNET_READ_DATA:
-                DEBUGP(MP_TRACE, ("Received Read IOCTL\n"));
+            case IOCTL_LDNVNET_READ_DATA:{
+						    	PCHAR buffer;
+						    	ULONG length;
+						    	NTSTATUS opStatus  = STATUS_SUCCESS;
+
+									buffer = Irp->AssociatedIrp.SystemBuffer;
+								 	opStatus = txrxfifo_txfifo_remove(buffer, &length);
+									if(opStatus == STATUS_SUCCESS)
+										Irp->IoStatus.Information = length;
+									else
+										Irp->IoStatus.Information = 0;
+									
+									if(Irp->IoStatus.Information)
+										DEBUGP(MP_ERROR, ("IOCTL(READ): returned %u bytes\n", 
+														Irp->IoStatus.Information));
+								}
                 break;
             case IOCTL_LDNVNET_WRITE_DATA:
                 DEBUGP(MP_TRACE, ("Received Write IOCTL\n"));
-                break;
+                Irp->IoStatus.Information = 0;
+ 								break;
             default:
-                status = STATUS_UNSUCCESSFUL;
+ 						    Irp->IoStatus.Information = 0;
+ 						    status = STATUS_UNSUCCESSFUL;
                 break;
           }
           break;  
@@ -229,7 +252,7 @@ Return Value:
         default:
             break;
     }
-    Irp->IoStatus.Information = 0;
+ 
     Irp->IoStatus.Status = status;
     IoCompleteRequest(Irp, IO_NO_INCREMENT);
 
