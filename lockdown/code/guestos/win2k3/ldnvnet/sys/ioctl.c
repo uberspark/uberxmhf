@@ -214,10 +214,10 @@ Return Value:
             //
             // Add code here to handle ioctl commands.
             //
-            case IOCTL_NETVMINI_READ_DATA:
+            case IOCTL_LDNVNET_READ_DATA:
                 DEBUGP(MP_TRACE, ("Received Read IOCTL\n"));
                 break;
-            case IOCTL_NETVMINI_WRITE_DATA:
+            case IOCTL_LDNVNET_WRITE_DATA:
                 DEBUGP(MP_TRACE, ("Received Write IOCTL\n"));
                 break;
             default:

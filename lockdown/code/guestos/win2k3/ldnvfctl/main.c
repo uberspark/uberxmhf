@@ -5,8 +5,8 @@
 #include <windows.h>
 #include <powrprof.h>
 #include <stdio.h>
-#include <unistd.h>
-#include <sys/timeb.h>
+//#include <unistd.h>
+//#include <sys/timeb.h>
 #include "usb.h"
 
 // types

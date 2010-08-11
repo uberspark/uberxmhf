@@ -1,22 +1,38 @@
-# app defs
-EXE = ldnvfctl.exe
-LIBUSB =  ./libusb-win32-device-bin-0.1.12.1
-export LDNVFCTL_INSTALLDIR := /cygdrive/e/vpcvms/sharedfolder
+# ldnvfctl makefile
+# author: amit vasudevan (amitvasudevan@acm.org)
 
-# tool defs
-CFLAGS = -W -Wall -g -I$(LIBUSB)/include
-LIBS = $(LIBUSB)/lib/gcc/libusb.a /usr/lib/w32api/libpowrprof.a /usr/lib/w32api/libkernel32.a
+!IF "$(TARGETOS)" == "WINNT"
 
-all: $(EXE)
-	cp ./ldnvfctl.exe $(LDNVFCTL_INSTALLDIR)/ldnvfctl.exe 
-	cp ./libusb0.dll $(LDNVFCTL_INSTALLDIR)/libusb0.dll
-	cp ./cyggcc_s-1.dll $(LDNVFCTL_INSTALLDIR)/.
-	cp ./cygwin1.dll $(LDNVFCTL_INSTALLDIR)/.
+!include <Win32.Mak>
 
-$(EXE): main.o
-	$(CC) -o $(EXE) $< $(LIBS)
+OUTDIR = .
+LDNVFCTL_INSTALLDIR = e:\vpcvms\sharedfolder
+
+all: $(OUTDIR) $(OUTDIR)\ldnvfctl.exe 
+
+$(OUTDIR) :
+    if not exist "$(OUTDIR)/$(NULL)" mkdir $(OUTDIR)
+
+.c{$(OUTDIR)}.obj:
+    $(cc) $(cdebug) $(cflags) $(cvarsmt) /I.\libusb-win32-device-bin-0.1.12.1\include /Fo"$(OUTDIR)\\" /Fd"$(OUTDIR)\\" $**
+
+
+## ldnvfctl dependencies
+
+ldnvfctl_objs = $(OUTDIR)\main.obj 
+
+$(OUTDIR)\ldnvfctl.exe: $(ldnvfctl_objs)
+    $(link) $(ldebug) $(conlflags) $(ldnvfctl_objs) \
+    -out:$(OUTDIR)\ldnvfctl.exe  $(conlibsmt) advapi32.lib kernel32.lib powrprof.lib .\libusb-win32-device-bin-0.1.12.1\lib\msvc\libusb.lib
+		copy $(OUTDIR)\ldnvfctl.exe $(LDNVFCTL_INSTALLDIR)\.
+		copy .\libusb-win32-device-bin-0.1.12.1\bin\libusb0.dll $(LDNVFCTL_INSTALLDIR)\. 
 
 clean:
-	$(RM) $(EXE) main.o 
+	del $(OUTDIR)\*.exe
+	del $(OUTDIR)\*.pdb
+	del $(OUTDIR)\*.obj
 	
 	
+!ELSE
+!MESSAGE This only builds for the Windows NT Platform
+!ENDIF

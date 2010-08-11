@@ -1,34 +1,18 @@
-/*++
+//lockdown virtual ethernet driver IOCTL codes
+//author: amit vasudevan (amitvasudevan@acm.org)
 
-Copyright (c) Microsoft Corporation.  All rights reserved.
+//note: this header MUST not contain any DDK specific macros
+//or definitions as it is intended to be used by both the driver
+//as well as the control application (ldnvfctl)
 
-    THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
-    KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
-    PURPOSE.
+#define IOCTL_LDNVNET_TYPE	40000		//user-defined range
 
-Module Name:
+//note: IOCTL function codes from 0x800-0xFFF are for user-defined use
+#define IOCTL_LDNVNET_READ_DATA \
+    CTL_CODE (IOCTL_LDNVNET_TYPE, 0x900, METHOD_BUFFERED, FILE_READ_ACCESS)
 
-    Public.h
-
-Abstract:
-
-    Header file common to app and the driver. Contains ioctl definitions
-        
-Environment:
-
-     User & Kernel-mode
-
-Revision History:
-
-
---*/
-
-#define IOCTL_NETVMINI_READ_DATA \
-    CTL_CODE (FILE_DEVICE_UNKNOWN, 0, METHOD_BUFFERED, FILE_READ_ACCESS)
-
-#define IOCTL_NETVMINI_WRITE_DATA \
-    CTL_CODE (FILE_DEVICE_UNKNOWN, 1, METHOD_BUFFERED, FILE_WRITE_ACCESS)
+#define IOCTL_LDNVNET_WRITE_DATA \
+    CTL_CODE (IOCTL_LDNVNET_TYPE, 0x904, METHOD_BUFFERED, FILE_WRITE_ACCESS)
 
 
 
