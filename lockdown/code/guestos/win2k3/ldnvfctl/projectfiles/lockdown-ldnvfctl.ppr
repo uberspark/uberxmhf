@@ -1,0 +1,28 @@
+[Config]
+Compilator.SaveAll=0
+Compilator.Capture=0
+Compilator.HideOutput=0
+Compilator.LogType=0
+DefaultCPIndex=0
+LogtoEnd=1
+DontOpen=0
+AbsolutePath=0
+FileFormat=0
+ProjectFilesOnly=0
+[Project tree]
+lockdown-ldnvfctl
+	+src
+		..\main.c
+		..\Makefile
+[Open project files]
+0=..\Makefile
+1=..\main.c
+[Selected Project Files]
+Main=
+Selected=..\main.c
+[..\Makefile]
+TopLine=1
+Caret=1,1
+[..\main.c]
+TopLine=1
+Caret=1,1
