@@ -14,7 +14,7 @@ $(OUTDIR) :
     if not exist "$(OUTDIR)/$(NULL)" mkdir $(OUTDIR)
 
 .c{$(OUTDIR)}.obj:
-    $(cc) $(cdebug) $(cflags) $(cvarsmt) /I.\libusb-win32-device-bin-0.1.12.1\include /Fo"$(OUTDIR)\\" /Fd"$(OUTDIR)\\" $**
+    $(cc) $(cdebug) $(cflags) $(cvarsmt) /I..\ldnvnet\sys /I.\libusb-win32-device-bin-0.1.12.1\include /Fo"$(OUTDIR)\\" /Fd"$(OUTDIR)\\" $**
 
 
 ## ldnvfctl dependencies

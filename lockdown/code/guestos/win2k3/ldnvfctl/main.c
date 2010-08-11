@@ -8,6 +8,7 @@
 //#include <unistd.h>
 //#include <sys/timeb.h>
 #include "usb.h"
+#include "public.h"
 
 // types
 #ifndef MIN
@@ -211,6 +212,8 @@ int main(int argc, char *argv[])
 	//ldnvnet driver communication test
 	int main(int argc, char *argv[]){
 		HANDLE drvh;
+		DWORD bytes;
+		UCHAR packetbuffer[1518];
 		
 		printf("\nOpening device...");
 		drvh = CreateFile ( "\\\\.\\LDNVNET", 
@@ -226,6 +229,19 @@ int main(int argc, char *argv[])
 		}	
 			
 		printf("\nOpened ldnvnet successfully.");
+
+		while(1){
+			if(!DeviceIoControl(drvh, IOCTL_LDNVNET_READ_DATA,
+					NULL, 0,
+					&packetbuffer, sizeof(packetbuffer),
+					&bytes, NULL)){
+				printf("\nFATAL: could not send IOCTL!\n");
+				return -1;
+			}
+
+			if(bytes)
+    		printf("\nREAD %u bytes successfully.", bytes);
+    }
 		
 		CloseHandle(drvh);	
 	
