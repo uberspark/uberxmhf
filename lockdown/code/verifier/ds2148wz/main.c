@@ -393,6 +393,8 @@ static void _HandleBulkOut(U8 bEP, U8 bEPStatus)
 #define ETH_MTU	1500
 #define ETH_PACKETSIZE (ETH_MTU+14)
 
+
+#if 0
 static uint32 txframesize=0;
 unsigned char txframe[ETH_PACKETSIZE];
 
@@ -402,7 +404,7 @@ static void _HandleNETIFSend(U8 bEP, U8 bEPStatus){
 
   iChunk = USBHwEPRead(bEP, (unsigned char *)((uint32)&txframe + txframesize), MAX_PACKET_SIZE);
 
-	/*iChunk = USBHwEPRead(bEP, (unsigned char *)((uint32)&txframe + txframesize), MAX_PACKET_SIZE);
+	iChunk = USBHwEPRead(bEP, (unsigned char *)((uint32)&txframe + txframesize), MAX_PACKET_SIZE);
 	//printf(" read %u byte chunk\n", iChunk);
 	txframesize += iChunk;
 	//printf(" txtframesize=%u\n", txframesize);
@@ -419,10 +421,44 @@ static void _HandleNETIFSend(U8 bEP, U8 bEPStatus){
     //TODO:xmit
     netif_sendframe(&txframe, txframesize);
 		txframesize=0;
-	} */
+	} 
+
+}
+#else
+
+static uint32 tx_in_progress=0;	//1 if we are pulling TX frame from host, else 0
+static uint32 txframesize=0;	//size of the TX frame that host will offer us 
+unsigned char txframe[ETH_PACKETSIZE]; //if above is non-zero the actual TX frame data
+static uint32 txframeoffset=0;	//since we pull in 64 byte chunks, we need to maintain the next offset
+
+static void _HandleNETIFSend(U8 bEP, U8 bEPStatus){
+	int iChunk;
+	//printf("%s got control...\n", __FUNCTION__);
+
+	if(tx_in_progress){ //we only pull the TX packet if there is one 
+  	if(txframesize - txframeoffset < MAX_PACKET_SIZE){
+  		USBHwEPRead(bEP, (unsigned char *)((uint32)&txframe + txframeoffset), (txframesize-txframeoffset) );
+			txframeoffset = txframesize;
+		}else{
+			USBHwEPRead(bEP, (unsigned char *)((uint32)&txframe + txframeoffset), MAX_PACKET_SIZE);
+			txframeoffset+= MAX_PACKET_SIZE;
+		}
+		
+		//check if we are done with the packet
+		if(txframeoffset >= txframesize){
+			//xmit the packet
+	    netif_sendframe(&txframe, txframesize);
+			txframeoffset=0;
+		  tx_in_progress=0;
+		}
+	}  
+
 
 }
 
+
+
+#endif
 
 static uint32 rx_in_progress=0;	//1 if host is pulling out RX frame from us, else 0
 static uint32 rxframesize=0;	//size of the RX frame that host will pull 
@@ -539,6 +575,19 @@ static BOOL HandleVendorRequest(TSetupPacket *pSetup, int *piLen, U8 **ppbData)
    		 	USBHwEPWrite(NETIF_RECV_EP, (unsigned char *)&rxframesize, sizeof(uint32));
    		 	if(rxframesize)
 					rx_in_progress=1; // we have a RX packet to offer, host will now pull RX frame from us
+			}	
+			*piLen = 0;
+   	}   		
+   	break;   	
+
+
+	case 0xE0:	//send packet command
+		{
+			printf("Got SEND PACKET control command (%u bytes)\n", pCmd->dwLength);
+   		if(!tx_in_progress){ //we ignore the command if tx_in_progress = 1
+  		 	txframesize = pCmd->dwLength;
+   		 	if(txframesize)
+					tx_in_progress=1; // we have a TX packet to pull from host
 			}	
 			*piLen = 0;
    	}   		
