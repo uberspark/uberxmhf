@@ -213,13 +213,48 @@ int main(int argc, char *argv[])
 
 #elif defined(LDNVNET_DRV_COMM)
 	UCHAR packetbuffer[1514];
+	UCHAR rxpacketbuffer[1514];
+	
   #define NETIF_SEND_EP     0x05
+  #define NETIF_RECV_EP   0x84
 
+  int ldnvf_read_packet(unsigned char *buffer, struct usb_dev_handle *hdl){
+	 int i;
+	 TMemoryCmd MemCmd;
+	 unsigned int rxframesize;
+	 
+	 // send a vendor request to check if packet is available
+	 MemCmd.dwAddress = 0x0;
+	 MemCmd.dwLength = 0x0;
+	 i = usb_control_msg(hdl, BM_REQUEST_TYPE, 0xF0, 0, 0, (char *)&MemCmd, sizeof(MemCmd), 1000);
+	 if (i < 0){
+		  printf("%s: usb_control_msg failed %d\n", __FUNCTION__, i);
+		  return 0;		
+	 }
+
+   i = usb_bulk_read(hdl, NETIF_RECV_EP, (char *)&rxframesize, sizeof(rxframesize), 2000);
+   if (i < 0) {
+  		printf("%s:usb_bulk_read failed %d\n", __FUNCTION__, i);
+  		return 0;
+   }
+ 
+   //if there is a packet we read it via the bulk
+   if(rxframesize){
+      	 i = usb_bulk_read(hdl, NETIF_RECV_EP, (char *)buffer, rxframesize, 2000);
+	       if (i < 0) {
+	 	       printf("\n%s: usb_bulk_read failed %d", __FUNCTION__, i);
+	 	       return 0;
+	       }
+   }
+ 
+ 
+   return rxframesize;
+  }
 
 	//ldnvnet driver communication test
 	int main(int argc, char *argv[]){
 		HANDLE drvh;
-		DWORD bytes;
+		DWORD bytes, rxbytes;
    	struct usb_device *dev;	
 	  struct usb_dev_handle *hdl;
 	  int i;
@@ -271,9 +306,10 @@ int main(int argc, char *argv[])
     printf("\nclaimed lockdown USB interface.");
 
 
-
-		while(1){
+    printf("\npress any key to quit...");
+		while(!kbhit()){
 			memset(packetbuffer, 0, sizeof(packetbuffer));
+			memset(rxpacketbuffer, 0, sizeof(rxpacketbuffer));
 			
       if(!DeviceIoControl(drvh, IOCTL_LDNVNET_READ_DATA,
 					NULL, 0,
@@ -285,9 +321,9 @@ int main(int argc, char *argv[])
 
 			if(bytes){
     		int j;
-				printf("\nREAD %u bytes successfully (dump follows):\n", bytes);
-    		for(j=0; j < bytes; j++)
-    			printf("0x%02x ", packetbuffer[j]);
+				printf("\nTX: %u bytes successfully (dump follows):\n", bytes);
+    		//for(j=0; j < bytes; j++)
+    		//	printf("0x%02x ", packetbuffer[j]);
     		
     		 //first send a vendor request confirming size of TX packet
       	 MemCmd.dwAddress = 0x0;
@@ -304,10 +340,30 @@ int main(int argc, char *argv[])
 	 	       printf("\nFATAL: usb_bulk_write failed %d", i);
 	 	       return -1;
 	       }
-	       
-       
-	       
     	}
+    	
+    	
+      //see if we have any RX packets to receive
+      bytes=ldnvf_read_packet(&rxpacketbuffer, hdl);
+      if(bytes){
+        int j;
+        printf("\nRX: %u bytes, dump follows:\n", bytes);
+        //for(j=0; j < packetlength; j++)
+    		//	printf("0x%02x ", packetbuffer[j]);
+      
+        if(!DeviceIoControl(drvh, IOCTL_LDNVNET_WRITE_DATA,
+					&rxpacketbuffer, bytes,
+					NULL, 0,
+					&rxbytes, NULL)){
+				printf("\nFATAL: could not send IOCTL!\n");
+				return -1;
+  			}
+
+      
+      }
+
+    	
+    	
     }
 		
 		CloseHandle(drvh);	
