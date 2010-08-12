@@ -148,7 +148,7 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize){
 
   //debug: print grube820list
   {
-    int i;
+    u32 i;
   	printf("\nOriginal E820 map follows:\n");
 	  for(i=0; i < grube820list_numentries; i++){
       printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
