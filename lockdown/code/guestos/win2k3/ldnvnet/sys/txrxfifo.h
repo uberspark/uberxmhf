@@ -20,5 +20,7 @@ NTSTATUS txrxfifo_initialize(void);
 NTSTATUS txrxfifo_free(void);
 NTSTATUS txrxfifo_txfifo_add(UCHAR *payload, ULONG length);
 NTSTATUS txrxfifo_txfifo_remove(UCHAR *buffer, ULONG *length);
+NTSTATUS txrxfifo_rxfifo_remove(UCHAR *buffer, ULONG *length);
+NTSTATUS txrxfifo_rxfifo_add(UCHAR *payload, ULONG length);
 
 #endif //_TXRXFIFO_H

@@ -517,7 +517,8 @@ Return Value:
     ULONG isPacketAvailable=0;
     ULONG p_PacketLength=0, p_BufferAddr;
   	PNDIS_PACKET PacketArray[1];
-		 
+   	NTSTATUS opStatus  = STATUS_SUCCESS;
+ 
     DEBUGP(MP_TRACE, ("--->NICIndicateReceiveTimerDpc = %p\n", Adapter));
 
     //
@@ -572,7 +573,10 @@ Return Value:
 		Adapter->LdnRecvPacketBufferData[13]=0xBB;*/
 		
 		
-		if(p_PacketLength){
+	 	opStatus = txrxfifo_rxfifo_remove(p_BufferAddr, &p_PacketLength);
+								
+		
+		if(opStatus == STATUS_SUCCESS && p_PacketLength){
 		    NdisAdjustBufferLength(Adapter->LdnRecvPacketBuffer, p_PacketLength);
 		    NdisRecalculatePacketCounts(Adapter->LdnRecvPacket);
 		    

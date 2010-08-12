@@ -40,13 +40,13 @@ lockdown_ldnvnet
 13=..\sys\public.h
 [Selected Project Files]
 Main=
-Selected=..\sys\public.h
+Selected=..\mksys.bat
 [..\mksys.bat]
 TopLine=1
-Caret=1,1
+Caret=65,4
 [..\Makefile]
 TopLine=1
-Caret=25,24
+Caret=45,13
 [..\sys\sendrcv.c]
 TopLine=277
 Caret=45,291

@@ -96,3 +96,53 @@ NTSTATUS txrxfifo_txfifo_remove(UCHAR *buffer, ULONG *length){
 	
 	return STATUS_SUCCESS;
 }
+
+
+//---put an entry into the RX FIFO----------------------------------------------
+NTSTATUS txrxfifo_rxfifo_add(UCHAR *payload, ULONG length){
+	PTXRXFIFOENTRY pRxEntry;
+	
+	ASSERT(payload != NULL && length <= ETH_MAX_PACKET_SIZE );
+	
+	//allocate memory for a Tx FIFO entry
+	pRxEntry = (PTXRXFIFOENTRY) ExAllocatePoolWithTag( NonPagedPool, 
+					sizeof(TXRXFIFOENTRY), LDNVNET_POOLTAG_RXFIFO );
+					
+	if(!pRxEntry){
+		DEBUGP(MP_ERROR, ("%s: could not allocate entry in Rx FIFO\n",
+		__FUNCTION__));
+		return STATUS_INSUFFICIENT_RESOURCES;
+	}
+	
+	
+	//copy the payload into the Rx FIFO entry and set correct length
+	memcpy(pRxEntry->payload, payload, length);
+	pRxEntry->payloadLength = length;
+	
+	//insert this entry into the Rx FIFO queue
+	ExInterlockedInsertTailList(&pRxfifohead->ListEntry, &pRxEntry->ListEntry,
+		&rxfifoLock);
+
+	return STATUS_SUCCESS;
+}
+
+//---remove an entry from the RX FIFO----------------------------------------------
+NTSTATUS txrxfifo_rxfifo_remove(UCHAR *buffer, ULONG *length){
+	PTXRXFIFOENTRY pRxEntry;
+	
+	ASSERT(buffer != NULL && length != NULL);
+		
+	pRxEntry = (PTXRXFIFOENTRY) ExInterlockedRemoveHeadList(&pRxfifohead->ListEntry, 
+																&rxfifoLock);
+																
+	if(pRxEntry == NULL)
+		return STATUS_NO_MORE_ENTRIES;
+		
+	
+	memcpy(buffer, pRxEntry->payload, pRxEntry->payloadLength);
+	*length = pRxEntry->payloadLength;
+	
+	ExFreePoolWithTag(pRxEntry, LDNVNET_POOLTAG_RXFIFO);		
+	
+	return STATUS_SUCCESS;
+}

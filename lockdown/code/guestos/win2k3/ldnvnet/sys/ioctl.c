@@ -238,10 +238,25 @@ Return Value:
 														Irp->IoStatus.Information));
 								}
                 break;
-            case IOCTL_LDNVNET_WRITE_DATA:
-                DEBUGP(MP_TRACE, ("Received Write IOCTL\n"));
-                Irp->IoStatus.Information = 0;
- 								break;
+            case IOCTL_LDNVNET_WRITE_DATA:{
+                PCHAR buffer;
+                ULONG length;
+                NTSTATUS opStatus = STATUS_SUCCESS;
+                buffer = Irp->AssociatedIrp.SystemBuffer;
+                length = irpStack->Parameters.DeviceIoControl.InputBufferLength;
+                
+                opStatus = txrxfifo_rxfifo_add(buffer, length);
+								if(opStatus == STATUS_SUCCESS)
+									Irp->IoStatus.Information = length;
+								else
+									Irp->IoStatus.Information = 0;
+								
+                
+                	if(Irp->IoStatus.Information)
+										DEBUGP(MP_ERROR, ("IOCTL(WRITE): returned %u bytes\n", 
+														Irp->IoStatus.Information));
+ 								}
+                break;
             default:
  						    Irp->IoStatus.Information = 0;
  						    status = STATUS_UNSUCCESSFUL;
