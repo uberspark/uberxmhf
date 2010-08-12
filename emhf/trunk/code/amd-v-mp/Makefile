@@ -1,6 +1,8 @@
 # top-level makefile for emhf core 
 # author: amit vasudevan (amitvasudevan@acm.org)
 
+export MP_VERSION := y
+
 #-----build rules
 .PHONY: all
 all: 
