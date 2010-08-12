@@ -22,7 +22,7 @@ Main=
 Selected=..\main.c
 [..\Makefile]
 TopLine=1
-Caret=1,1
+Caret=31,10
 [..\main.c]
-TopLine=1
-Caret=1,1
+TopLine=321
+Caret=61,338

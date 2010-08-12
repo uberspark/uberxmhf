@@ -19,7 +19,10 @@ typedef unsigned char U8;
 
 //test modes
 //#define USB_EP_TEST0    1 //for USB bulk r/w tests
-#define LDNVNET_DRV_COMM	2	//communication with lockdown virtual ethernet driver
+//#define LDNVNET_DRV_COMM	2	//communication with lockdown virtual ethernet driver
+
+#define USB_NETIF_READPACKET  3 //testing reading of n/w packets from verifier via USB
+
 
 #define MAX_TIME 3000
 
@@ -282,14 +285,23 @@ int main(int argc, char *argv[])
 			if(bytes){
     		int j;
 				printf("\nREAD %u bytes successfully (dump follows):\n", bytes);
-    		for(j=0; j < bytes; j++)
-    			printf("0x%02x ", packetbuffer[j]);
+    		//for(j=0; j < bytes; j++)
+    		//	printf("0x%02x ", packetbuffer[j]);
     		
       	 i = usb_bulk_write(hdl, NETIF_SEND_EP, (char *)&packetbuffer, sizeof(packetbuffer), 2000);
 	       if (i < 0) {
 	 	       printf("\nFATAL: usb_bulk_write failed %d", i);
 	 	       return -1;
 	       }
+	       
+	       //read any response from the verifier/NETIF
+	       //i = usb_bulk_read(hdl, NETIF_RECV_EP, (char *)&packetbuffer, sizeof(packetbuffer), 2000);
+	       //if (i < 0) {
+	 	     //  printf("\nFATAL: usb_bulk_write failed %d", i);
+	 	     //  return -1;
+	       //}
+	       
+	       
     	}
     }
 		
@@ -297,6 +309,104 @@ int main(int argc, char *argv[])
 	
 		return 0;
 	}
+
+#elif defined(USB_NETIF_READPACKET)
+  #define NETIF_RECV_EP   0x84
+  #define NETIF_SEND_EP   0x05
+  
+
+  int ldnvf_read_packet(unsigned char *buffer, struct usb_dev_handle *hdl){
+	 int i;
+	 TMemoryCmd MemCmd;
+	 unsigned int rxframesize;
+	 
+	 // send a vendor request to check if packet is available
+	 MemCmd.dwAddress = 0x0;
+	 MemCmd.dwLength = 0x0;
+	 i = usb_control_msg(hdl, BM_REQUEST_TYPE, 0xF0, 0, 0, (char *)&MemCmd, sizeof(MemCmd), 1000);
+	 if (i < 0){
+		  printf("%s: usb_control_msg failed %d\n", __FUNCTION__, i);
+		  return 0;		
+	 }
+
+   i = usb_bulk_read(hdl, NETIF_RECV_EP, (char *)&rxframesize, sizeof(rxframesize), 2000);
+   if (i < 0) {
+  		printf("%s:usb_bulk_read failed %d\n", __FUNCTION__, i);
+  		return 0;
+   }
+ 
+   //if there is a packet we read it via the bulk
+   if(rxframesize){
+      	 i = usb_bulk_read(hdl, NETIF_RECV_EP, (char *)buffer, rxframesize, 2000);
+	       if (i < 0) {
+	 	       printf("\n%s: usb_bulk_read failed %d", __FUNCTION__, i);
+	 	       return 0;
+	       }
+   }
+ 
+ 
+   return rxframesize;
+  }
+
+
+  //read packet from verifier test
+  int main(int argc, char *argv[])
+  { 
+	 	struct usb_device *dev;	
+	  struct usb_dev_handle *hdl;
+	  int i;
+   	 TMemoryCmd MemCmd;
+		
+    //[USB initialization]
+    printf("\ninitializing USB communication...");
+	  usb_init();
+	  usb_find_busses();                            
+    usb_find_devices();
+    printf("[SUCCESS].");
+	
+	  dev = find_device(VENDOR_ID, PRODUCT_ID);
+	  if (dev == NULL) {
+	  	printf("\nFATAL: lockdown verifier not found!");
+		  return -1;
+	  }  
+	  printf("\nlockdown verifier found.");
+	
+	  hdl = usb_open(dev);
+	
+	  i = usb_set_configuration(hdl, 1);
+	  if (i < 0) {
+		 printf("\nFATAL: usb_set_configuration failed");
+		 return -1;
+	  }
+    printf("\nlockdown verifier configuration selected.");
+  
+  	i = usb_claim_interface(hdl, 0);
+	  if (i < 0) {
+		  printf("\nFATAL: usb_claim_interface failed %d", i);
+		  return -1;
+	  }                                       
+    printf("\nclaimed lockdown USB interface.");
+
+    printf("\nreading packets (any key to abort)...");
+    fflush(stdin);
+    while(!kbhit()){
+      int packetlength, j;
+      unsigned char packetbuffer[1514];  //max eth payload excluding FCS
+            
+      packetlength=ldnvf_read_packet(&packetbuffer, hdl);
+      if(packetlength){
+        printf("\nREAD packet, %u bytes, dump follows:\n", packetlength);
+        for(j=0; j < packetlength; j++)
+    			printf("0x%02x ", packetbuffer[j]);
+      }
+    
+    }
+    
+  	usb_release_interface(hdl, 0);
+	  usb_close(hdl);
+
+	  return 0;
+  }
 
 #else
 int main(int argc, char *argv[])
