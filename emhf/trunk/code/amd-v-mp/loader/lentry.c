@@ -147,16 +147,17 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize){
   }
 
   //debug: print grube820list
-  //{
-  //  int i;
-  //  for(i=0; i < grube820list_numentries; i++){
-  //    printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
-  //        grube820list[i].baseaddr_high, grube820list[i].baseaddr_low,
-  //        grube820list[i].length_high, grube820list[i].length_low,
-  //        grube820list[i].type);
-  //  }
-  //
-  //}
+  {
+    int i;
+  	printf("\nOriginal E820 map follows:\n");
+	  for(i=0; i < grube820list_numentries; i++){
+      printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
+          grube820list[i].baseaddr_high, grube820list[i].baseaddr_low,
+          grube820list[i].length_high, grube820list[i].length_low,
+          grube820list[i].type);
+    }
+  
+  }
   
   //traverse e820 list backwards to find an entry with type=0x1 (free)
   //with free amount of memory for runtime
