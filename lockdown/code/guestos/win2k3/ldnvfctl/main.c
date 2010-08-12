@@ -19,9 +19,9 @@ typedef unsigned char U8;
 
 //test modes
 //#define USB_EP_TEST0    1 //for USB bulk r/w tests
-//#define LDNVNET_DRV_COMM	2	//communication with lockdown virtual ethernet driver
+#define LDNVNET_DRV_COMM	2	//communication with lockdown virtual ethernet driver
 
-#define USB_NETIF_READPACKET  3 //testing reading of n/w packets from verifier via USB
+//#define USB_NETIF_READPACKET  3 //testing reading of n/w packets from verifier via USB
 
 
 #define MAX_TIME 3000
@@ -223,7 +223,8 @@ int main(int argc, char *argv[])
    	struct usb_device *dev;	
 	  struct usb_dev_handle *hdl;
 	  int i;
-		
+		 TMemoryCmd MemCmd;
+	
 		printf("\nOpening device...");
 		drvh = CreateFile ( "\\\\.\\LDNVNET", 
 								GENERIC_READ | GENERIC_WRITE,
@@ -285,22 +286,26 @@ int main(int argc, char *argv[])
 			if(bytes){
     		int j;
 				printf("\nREAD %u bytes successfully (dump follows):\n", bytes);
-    		//for(j=0; j < bytes; j++)
-    		//	printf("0x%02x ", packetbuffer[j]);
+    		for(j=0; j < bytes; j++)
+    			printf("0x%02x ", packetbuffer[j]);
     		
-      	 i = usb_bulk_write(hdl, NETIF_SEND_EP, (char *)&packetbuffer, sizeof(packetbuffer), 2000);
+    		 //first send a vendor request confirming size of TX packet
+      	 MemCmd.dwAddress = 0x0;
+      	 MemCmd.dwLength = bytes;
+      	 i = usb_control_msg(hdl, BM_REQUEST_TYPE, 0xE0, 0, 0, (char *)&MemCmd, sizeof(MemCmd), 1000);
+      	 if (i < 0){
+      		  printf("%s: usb_control_msg failed %d\n", __FUNCTION__, i);
+      		  return -1;		
+      	 }
+    		 
+    		 //now write out the TX packet
+      	 i = usb_bulk_write(hdl, NETIF_SEND_EP, (char *)&packetbuffer, bytes, 2000);
 	       if (i < 0) {
 	 	       printf("\nFATAL: usb_bulk_write failed %d", i);
 	 	       return -1;
 	       }
 	       
-	       //read any response from the verifier/NETIF
-	       //i = usb_bulk_read(hdl, NETIF_RECV_EP, (char *)&packetbuffer, sizeof(packetbuffer), 2000);
-	       //if (i < 0) {
-	 	     //  printf("\nFATAL: usb_bulk_write failed %d", i);
-	 	     //  return -1;
-	       //}
-	       
+       
 	       
     	}
     }
