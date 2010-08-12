@@ -557,9 +557,19 @@ void initSVM(VCPU *vcpu){
 
 #ifdef __NESTED_PAGING__
   // check for nested paging support and number of ASIDs 
-  //if(!npt_detect()){
-	//		__asm__ __volatile__("hlt\r\n");
-	//}
+	cpuid(0x8000000A, &eax, &ebx, &ecx, &edx);
+  if(!(edx & 0x1)){
+		printf("\nCPU(0x%02x): No support for Nested Paging, HALTING!");
+		HALT();
+	}
+	
+	printf("\nCPU(0x%02x): Nested paging support present");
+	if( (ebx-1) < 2 ){
+		printf("\nCPU(0x%02x): Total number of ASID is too low, HALTING!");
+		HALT();
+	}
+	
+	printf("\nCPU(0x%02x): Total ASID is valid");
 #endif
 
   // enable SVM and debugging support (if required)   
