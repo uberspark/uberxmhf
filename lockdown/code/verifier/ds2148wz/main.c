@@ -20,13 +20,12 @@
 #define BULK_IN_EP		0x82
 //#define BULK_OUT_EP		0x05
 #define NETIF_SEND_EP	0x05
+#define NETIF_RECV_EP	0x84
+
+
 #define NETIF_MAX_FRAMESIZE	(512)
 #define MAX_PACKET_SIZE	64
 #define LE_WORD(x)		((x)&0xFF),((x)>>8)
-
-#define SIMHOST_GET_OPSTATUS			0x10
-#define SIMHOST_GET_BUTTONSTATUS  0x11
-#define SIMHOST_SET_LEDSTATUS			0x12
 
 
 static const U8 abDescriptors[] = {
@@ -50,7 +49,7 @@ static const U8 abDescriptors[] = {
 // configuration
 	0x09,
 	DESC_CONFIGURATION,
-	LE_WORD(0x20),  		// wTotalLength
+	LE_WORD(0x27),  		// wTotalLength
 	0x01,  					// bNumInterfaces
 	0x01,  					// bConfigurationValue
 	0x00,  					// iConfiguration
@@ -62,7 +61,7 @@ static const U8 abDescriptors[] = {
 	DESC_INTERFACE, 
 	0x00,  		 			// bInterfaceNumber
 	0x00,   				// bAlternateSetting
-	0x02,   				// bNumEndPoints
+	0x03,   				// bNumEndPoints
 	0xFF,   				// bInterfaceClass
 	0x00,   				// bInterfaceSubClass
 	0x00,   				// bInterfaceProtocol
@@ -76,18 +75,18 @@ static const U8 abDescriptors[] = {
 	LE_WORD(MAX_PACKET_SIZE),// wMaxPacketSize
 	0,						// bInterval   		
 
-// bulk out
-//	0x07,   		
-//	DESC_ENDPOINT,   		
-//	BULK_OUT_EP,			// bEndpointAddress
-//	0x02,   				// bmAttributes = BULK
-//	LE_WORD(MAX_PACKET_SIZE),// wMaxPacketSize
-//	0,						// bInterval   		
-
 // netif SEND (bulk-out) endpoint
 	0x07,   		
 	DESC_ENDPOINT,   		
 	NETIF_SEND_EP,				// bEndpointAddress
+	0x02,   				// bmAttributes = BULK
+	LE_WORD(MAX_PACKET_SIZE),// wMaxPacketSize
+	0,						// bInterval   		
+
+// netif RECV (bulk-in) endpoint
+	0x07,   		
+	DESC_ENDPOINT,   		
+	NETIF_RECV_EP,				// bEndpointAddress
 	0x02,   				// bmAttributes = BULK
 	LE_WORD(MAX_PACKET_SIZE),// wMaxPacketSize
 	0,						// bInterval   		
@@ -129,6 +128,7 @@ static U8			abVendorReqData[sizeof(TMemoryCmd)];
 //-----------------------------------------------------------------------------
 
 uint16 netif_sendframe(unsigned char *sendbuf, uint16 length);
+uint16 netif_recvnextframe(unsigned char *recvbuf, uint16 length);
 
 
 
@@ -398,9 +398,11 @@ unsigned char txframe[ETH_PACKETSIZE];
 
 static void _HandleNETIFSend(U8 bEP, U8 bEPStatus){
 	int iChunk;
-	//printf("%s: got control\n", __FUNCTION__);
+	printf("%s: got control\n", __FUNCTION__);
 
-	iChunk = USBHwEPRead(bEP, (unsigned char *)((uint32)&txframe + txframesize), MAX_PACKET_SIZE);
+  iChunk = USBHwEPRead(bEP, (unsigned char *)((uint32)&txframe + txframesize), MAX_PACKET_SIZE);
+
+	/*iChunk = USBHwEPRead(bEP, (unsigned char *)((uint32)&txframe + txframesize), MAX_PACKET_SIZE);
 	//printf(" read %u byte chunk\n", iChunk);
 	txframesize += iChunk;
 	//printf(" txtframesize=%u\n", txframesize);
@@ -417,15 +419,42 @@ static void _HandleNETIFSend(U8 bEP, U8 bEPStatus){
     //TODO:xmit
     netif_sendframe(&txframe, txframesize);
 		txframesize=0;
-	}
+	} */
 
+}
+
+
+static uint32 rx_in_progress=0;	//1 if host is pulling out RX frame from us, else 0
+static uint32 rxframesize=0;	//size of the RX frame that host will pull 
+unsigned char rxframe[ETH_PACKETSIZE]; //if above is non-zero the actual RX frame data
+static uint32 rxframeoffset=0;	//since we serve in 64 byte chunks, we need to maintain the next offset
+
+static void _HandleNETIFRecv(U8 bEP, U8 bEPStatus){
+	int iChunk;
+	//printf("%s got control...\n", __FUNCTION__);
+	
+	if(rx_in_progress){ //we only serve the RX packet if there is one 
+  	if(rxframesize - rxframeoffset < MAX_PACKET_SIZE){
+  		USBHwEPWrite(bEP, (unsigned char *)((uint32)&rxframe + rxframeoffset), (rxframesize-rxframeoffset) );
+			rxframeoffset = rxframesize;
+		}else{
+			USBHwEPWrite(bEP, (unsigned char *)((uint32)&rxframe + rxframeoffset), MAX_PACKET_SIZE);
+			rxframeoffset+= MAX_PACKET_SIZE;
+		}
+		
+		//check if we are done with the packet
+		if(rxframeoffset >= rxframesize){
+			rxframeoffset=0;
+		  rx_in_progress=0;
+		}
+	}  
 }
 
 
 unsigned char tempbuffer[0x40];
 unsigned char bufferbuttonstatus[0x30];
 
-
+						
 /*************************************************************************
 	HandleVendorRequest
 	===================
@@ -500,6 +529,21 @@ static BOOL HandleVendorRequest(TSetupPacket *pSetup, int *piLen, U8 **ppbData)
    		*piLen =1;
    	}   		
    	break;   	
+
+
+	case 0xF0:	//read packet command
+		{
+			//printf("Got READ PACKET control command\n");
+   		if(!rx_in_progress){ //we ignore the command if rx_in_progress = 1
+  		 	rxframesize = (uint32)netif_recvnextframe(&rxframe, ETH_PACKETSIZE);
+   		 	USBHwEPWrite(NETIF_RECV_EP, (unsigned char *)&rxframesize, sizeof(uint32));
+   		 	if(rxframesize)
+					rx_in_progress=1; // we have a RX packet to offer, host will now pull RX frame from us
+			}	
+			*piLen = 0;
+   	}   		
+   	break;   	
+
 		
 	default:
 		printf("Unhandled request %X\n", pSetup->bRequest);
@@ -745,7 +789,7 @@ uint16 netif_recvnextframe(unsigned char *recvbuf, uint16 length){
   //DATA packet (dest MAC, src MAC and payload excluding FCS)
   //4 bytes of FCS
   datapacketsize = getSn_RX_FIFOR(0);
-  printf("datapacketsize = %u bytes\n", datapacketsize);
+  //printf("datapacketsize = %u bytes\n", datapacketsize);
 
 
 
@@ -789,6 +833,9 @@ uint16 netif_recvnextframe(unsigned char *recvbuf, uint16 length){
       printf("fatal error: mismatch in resultsize and framesize!\n");
       while(1);
     }
+    
+    //we dont want the FCS so reduce framesize by 4
+    framesize -= 0x4;
   }
 
 #endif
@@ -1028,9 +1075,14 @@ int main(void)
 	USBRegisterRequestHandler(REQTYPE_TYPE_VENDOR, HandleVendorRequest, abVendorReqData);
 
 	// register endpoints
-	USBHwRegisterEPIntHandler(BULK_IN_EP, _HandleBulkIn);
+	//USBHwRegisterEPIntHandler(BULK_IN_EP, _HandleBulkIn);
 	//USBHwRegisterEPIntHandler(BULK_OUT_EP, _HandleBulkOut);
  	USBHwRegisterEPIntHandler(NETIF_SEND_EP, _HandleNETIFSend);
+ 	USBHwRegisterEPIntHandler(NETIF_RECV_EP, _HandleNETIFRecv);
+
+  //USBHwEPConfig(NETIF_SEND_EP, MAX_PACKET_SIZE);
+	//USBHwEPConfig(NETIF_SEND_EP, MAX_PACKET_SIZE);
+	
 
 	printf("Starting USB communication\n");
 

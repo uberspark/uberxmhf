@@ -196,6 +196,7 @@ void USBHwRegisterEPIntHandler(U8 bEP, TFnEPIntHandler *pfnHandler)
 
 	ASSERT(idx<32);
 
+	//printf("%s: EP=0x%02x, IDX=%d", __FUNCTION__,  bEP, idx);
 	/* add handler to list of EP handlers */
 	_apfnEPIntHandlers[idx / 2] = pfnHandler;
 	
@@ -487,6 +488,7 @@ DEBUG_LED_OFF(8);
 						((bEPStat & EPSTAT_EPN) ? EP_STATUS_NACKED : 0) |
 						((bEPStat & EPSTAT_PO) ? EP_STATUS_ERROR : 0);
 				// call handler
+				//printf("%s: calling EP callback 0x%02x\n", __FUNCTION__, IDX2EP(i));
 				if (_apfnEPIntHandlers[i / 2] != NULL) {
 DEBUG_LED_ON(10);		
 					_apfnEPIntHandlers[i / 2](IDX2EP(i), bStat);
