@@ -1,12 +1,6 @@
 # top-level makefile for emhf core 
 # author: amit vasudevan (amitvasudevan@acm.org)
 
-export MP_VERSION := y
-
-  ifeq ($(MP_VERSION), y)
-  CFLAGS += -D__MP_VERSION__
-  endif
-
 #-----build rules
 .PHONY: all
 all: 
