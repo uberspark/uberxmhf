@@ -1,0 +1,161 @@
+(TLoader) /initrd-2.6.21-up.img is INITRD; relocating.
+(TLoader) initrd_size:
+(TLoader) 00 ae 34 00 
+(TLoader) Hash of TrustVisor's init section:
+(TLoader) 46 d7 80 66 21 f7 0f bf ce 59 a1 40 92 f7 22 08
+(TLoader) 3e e4 e7 09 
+(TLoader) Expected PCR-17 value:
+(TLoader) 71 64 03 76 1a 06 eb ac d5 53 a4 74 26 a6 7a db
+(TLoader) b9 12 c8 8b 
+(TLoader) ERROR: prepare_tpm returned error (watch out for endianness): (TLoader) ff ff ff ff 
+(TLoader) Continuing anyways...
+(TLoader) Start all APs to clear their microcode.
+(TLoader) There's an AP corresponding to this line.
+(TLoader) There's an AP corresponding to this line.
+(TLoader) There's an AP corresponding to this line.
+(TLoader) There's an AP corresponding to this line.
+(TLoader) There's an AP corresponding to this line.
+(TLoader) There's an AP corresponding to this line.
+(TLoader) There's an AP corresponding to this line.
+(TLoader) ap_halt_count now = naps
+(TLoader) There's an AP with cleared microcode corresponding to this line.
+(TLoader) There's an AP with cleared microcode corresponding to this line.
+(TLoader) There's an AP with cleared microcode corresponding to this line.
+(TLoader) There's an AP with cleared microcode corresponding to this line.
+(TLoader) There's an AP with cleared microcode corresponding to this line.
+(TLoader) There's an AP with cleared microcode corresponding to this line.
+(TLoader) There's an AP with cleared microcode corresponding to this line.
+(TLoader) start_all_aps() returned true :-)
+(TLoader) BSP microcode cleared.
+(TLoader) Microcode clear SUCCEEDED; calculated PCR-17 should match actual.
+(TrustVisor) DEBUG: initsec prepare tpm
+(TrustVisor) INFO: Initialized display
+(TrustVisor) INFO: Maximum page number is 0x00130000
+(TrustVisor)     : Maximum page number is over 4GB address space, current system assume the memory in 32 bit addres space
+(TrustVisor)     : Maximum page number is changed 0x00130000 ==> 0x000c0000
+(TrustVisor) INFO: No microcode patch found. Continuing anyways.
+(TrustVisor) INFO: Visor is relocated to address 0xbe000000
+(TrustVisor) INFO: Switch to runtime DEV protection vector
+(TrustVisor) DEBUG: Initialized heap starting at 0x02ad1000 (size 5423 pages)
+(TrustVisor) INFO: SVM HSA set up
+(TrustVisor) INFO: SVM msr permission bitmap initialized
+(TrustVisor) INFO: SVM io permission bitmap initialized
+(TrustVisor) INFO: Linux bootstrap environment initialized ....
+(TrustVisor) entered slb_tis_init phys base 0xfed40000
+(TrustVisor) entered slb_tis_init virt base 0xfed40000
+(TrustVisor) id->did_vid:  0xffffffff
+(TrustVisor) No TPM found!
+(TrustVisor) tis init failed 0x0
+(TrustVisor) ERROR: slb_prepare_tpm returned: 0xffffffc4
+(TrustVisor) DEBUG: nested_pd_table is 0x2019000
+(TrustVisor) DEBUG: Host CR3 after NPT activation is 0xbe014060
+(TrustVisor) DEBUG: Remove DEV protection for init section of TrustVisor
+(TrustVisor) TPM expects more data: 0xff
+(TrustVisor) TIS write error:  0xfffffffe
+(TrustVisor) Performance: TrustVisor Generate 2048 bits RSA Key pair, time 687 (ms)
+(TrustVisor) Create RSA Key Complete
+(TrustVisor) initsec TPM extend
+(TrustVisor) tis_deactivate failed
+(TrustVisor) DEBUG: CPU CR3 value is 0xbe014040
+(TrustVisor) INFO: Now booting Linux....
+(TrustVisor) INFO: intercepted vmmcall (exitcode 81, eip 0x8048462)
+(TrustVisor) DEBUG: CPU CR3 value before vmmcall is 0xbe014040
+(TrustVisor) 
+(TrustVisor) DEBUG: ************************************
+(TrustVisor) DEBUG: ********** scode register **********
+(TrustVisor) DEBUG: ************************************
+(TrustVisor) DEBUG: add to whitelist, gcr3 0x42deb80, scode_info 0xbf963abc, gssp 0x804cff0, gventry 0x8049000
+(TrustVisor) DEBUG: entry point vaddr is 0x8049000, paddr is 0x6d9ef000
+(TrustVisor) scode.c DEBUG: pm_addr 0xbf963b38, pm_parse num is 0
+(TrustVisor) DEBUG: parse param info at 0xbf963b38, param num is 0!
+(TrustVisor) DEBUG: initialize the rand generator
+(TrustVisor) DEBUG: get random from hardware TPM
+(TrustVisor) DEBUG: setup arc4
+(TrustVisor) DEBUG: scode_info addr 2acdc28, section num is 4
+(TrustVisor) DEBUG: section 1 type 1 addr 0x8049000 size 1
+(TrustVisor) DEBUG: section 2 type 2 addr 0x804a000 size 1
+(TrustVisor) DEBUG: section 3 type 3 addr 0x804b000 size 1
+(TrustVisor) DEBUG: section 4 type 4 addr 0x804c000 size 1
+(TrustVisor) DEBUG: gvaddr 0x8049000, vcurr 0x804a000, vend 0x804a000, index 0, paddr 0x6d9ef001
+(TrustVisor) DEBUG: gvaddr 0x804a000, vcurr 0x804b000, vend 0x804b000, index 0, paddr 0x6de14002
+(TrustVisor) DEBUG: gvaddr 0x804b000, vcurr 0x804c000, vend 0x804c000, index 0, paddr 0x6d9d1000
+(TrustVisor) DEBUG: gvaddr 0x804c000, vcurr 0x804d000, vend 0x804d000, index 0, paddr 0x6f1c3000
+(TrustVisor) DEBUG: set_prot(pte 0x2ad1000, size 0x4000): page No.1, pfn 0x6d9ef
+(TrustVisor) DEBUG: nested_pdptp is 0x2014060
+(TrustVisor) DEBUG: npd 0x201a000, pde old 0x201ab60, 0xbe389067
+(TrustVisor) DEBUG: pte old 0x6d9ef067, new 0x6d9ef261
+(TrustVisor) DEBUG: set_prot(pte 0x2ad1000, size 0x4000): page No.2, pfn 0x6de14
+(TrustVisor) DEBUG: nested_pdptp is 0x2014060
+(TrustVisor) DEBUG: npd 0x201a000, pde old 0x201ab78, 0xbe38c067
+(TrustVisor) DEBUG: pte old 0x6de14067, new 0x6de14263
+(TrustVisor) DEBUG: set_prot(pte 0x2ad1000, size 0x4000): page No.3, pfn 0x6d9d1
+(TrustVisor) DEBUG: nested_pdptp is 0x2014060
+(TrustVisor) DEBUG: npd 0x201a000, pde old 0x201ab60, 0xbe389067
+(TrustVisor) DEBUG: pte old 0x6d9d1067, new 0x6d9d1263
+(TrustVisor) DEBUG: set_prot(pte 0x2ad1000, size 0x4000): page No.4, pfn 0x6f1c3
+(TrustVisor) DEBUG: nested_pdptp is 0x2014060
+(TrustVisor) DEBUG: npd 0x201a000, pde old 0x201abc0, 0xbe395067
+(TrustVisor) DEBUG: pte old 0x6f1c3067, new 0x6f1c3263
+(TrustVisor) DEBUG: find gvaddr in scode 0 section 1 !
+(TrustVisor) DEBUG: measure scode pte_page 0x2ad1000, size 0x4000
+(TrustVisor) DEBUG: measure scode page 1 paddr 0x6d9ef000
+(TrustVisor) DEBUG: measure scode page 2 paddr 0x6de14000
+(TrustVisor) DEBUG: ignore scode page 3 paddr 0x6d9d1000
+(TrustVisor) DEBUG: ignore scode page 4 paddr 0x6f1c3000
+(TrustVisor) DEBUG: SCODE measurement is:
+(TrustVisor) DEBUG: 72 ff 30 bb 8b 8d f e 14 66 35 8e ff f2 52 a3 65 a0 2c de 
+(TrustVisor) DEBUG: PCR 0 read, scode_curr 0
+(TrustVisor) DEBUG: PCR Write 0
+(TrustVisor) DEBUG: now pcr 0 value 0, 0x6486882c
+(TrustVisor) DEBUG: TPM PCR[0] value:
+(TrustVisor) DEBUG: 2c 88 86 64 85 2c 67 76 61 83 c8 35 5 b2 2d 7c 1 f 38 b7 
+(TrustVisor) DEBUG: nested page fault (rip 0x8049000, gcr3 0x42deb80, gpaddr 0x6d9ef000 errorcode 0x15
+(TrustVisor) DEBUG: find gvaddr in scode 0 section 1 !
+(TrustVisor) DEBUG: ************************************
+(TrustVisor) DEBUG: *********** switch r->s ************
+(TrustVisor) DEBUG: ************************************
+(TrustVisor) DEBUG: expose SCODE related PTE pages
+(TrustVisor) DEBUG: expose page 0x42deb80 
+(TrustVisor) DEBUG: expose page 0x3491a000 
+(TrustVisor) DEBUG: expose page 0x6f107000 
+(TrustVisor) DEBUG: expose GDT related PTE pages
+(TrustVisor) DEBUG: expose page 0x2007000 
+(TrustVisor) DEBUG: expose page 0x2000 
+(TrustVisor) DEBUG: nested_pd_table is 0x2019000
+(TrustVisor) DEBUG: nested_pdp is 0x2014060
+(TrustVisor) DEBUG: saved guest regular stack 0xbf963b9c, switch to sensitive code stack 0x804cff0
+(TrustVisor) DEBUG: params number is 0.Return!
+(TrustVisor) DEBUG: return address is 0x804861b
+(TrustVisor) DEBUG: host stack pointer is 0x804cfec
+(TrustVisor) DEBUG: nested page fault (rip 0x804861b, gcr3 0x42deb80, gpaddr 0x6d9a0618 errorcode 0x15
+(TrustVisor) DEBUG: no matching scode found
+(TrustVisor) DEBUG: ************************************
+(TrustVisor) DEBUG: *********** switch s->r ************
+(TrustVisor) DEBUG: ************************************
+(TrustVisor) DEBUG: unmarshall
+(TrustVisor) DEBUG: unmarshall pm numbuer is 0. Return!
+(TrustVisor) DEBUG: unexpose pte_page
+(TrustVisor) DEBUG: switch from current stack 0x804cff0 back to regular stack 0xbf963b9c
+(TrustVisor) INFO: intercepted vmmcall (exitcode 81, eip 0x804848c)
+(TrustVisor) DEBUG: CPU CR3 value before vmmcall is 0xbe014040
+(TrustVisor) 
+(TrustVisor) DEBUG: ************************************
+(TrustVisor) DEBUG: ********* scode unregister *********
+(TrustVisor) DEBUG: ************************************
+(TrustVisor) DEBUG: remove from whitelist gcr3 0x42deb80, gvaddr 0x8049000
+(TrustVisor) DEBUG: clear_prot pte 0x2ad1000, size 0x4000, pfn 0x6d9ef
+(TrustVisor) DEBUG: pde old 0xbe389067, new 0xbe389067
+(TrustVisor) DEBUG: pte old 0x6d9ef261, new 0x6d9ef067
+(TrustVisor) DEBUG: clear_prot pte 0x2ad1000, size 0x4000, pfn 0x6de14
+(TrustVisor) DEBUG: pde old 0xbe38c067, new 0xbe38c067
+(TrustVisor) DEBUG: pte old 0x6de14263, new 0x6de14067
+(TrustVisor) DEBUG: (Disabled) promote 2M page pfn 0x6de14
+(TrustVisor) DEBUG: clear_prot pte 0x2ad1000, size 0x4000, pfn 0x6d9d1
+(TrustVisor) DEBUG: pde old 0xbe389067, new 0xbe389067
+(TrustVisor) DEBUG: pte old 0x6d9d1263, new 0x6d9d1067
+(TrustVisor) DEBUG: (Disabled) promote 2M page pfn 0x6d9d1
+(TrustVisor) DEBUG: clear_prot pte 0x2ad1000, size 0x4000, pfn 0x6f1c3
+(TrustVisor) DEBUG: pde old 0xbe395067, new 0xbe395067
+(TrustVisor) DEBUG: pte old 0x6f1c3263, new 0x6f1c3067
+(TrustVisor) DEBUG: (Disabled) promote 2M page pfn 0x6f1c3
+
