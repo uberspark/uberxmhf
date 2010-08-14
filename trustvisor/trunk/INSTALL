@@ -1,0 +1,50 @@
+0 source code files 
+	TrustVisor source code					
+	Linux Kernel source code (with TrustVisor patch)		linux-2.6.21.i686.std.tar.gz
+
+1 Build Linux Kernel
+  1.1 untar the Linux kernel source code with TrustVisor patch
+	tar xzvf linux-2.6.21.i686.std.tar.gz 
+	cd linux-2.6.21.i686
+  1.2 Disable SMP and Virtualization support inside configuration file
+	make oldconfig
+	make menuconfig
+  1.3 build linux kernel	
+	make
+      or
+        make -j n
+      n depends on how many CPUs on your machine
+  1.4 install linux kernel
+	make modules_install install
+2 Build TrustVisor
+  2.1 untar the TrustVisor source code
+	cd trustvisor
+  2.2 build TrustVisor
+	make
+  2.3 install TrustVisor
+	cp visor_out/TrustVisor.gz /boot/
+	cp loader/loader_out/TLoader.gz /boot/
+  2.4 config grub for TrustVisor, add a entry in /boot/grub/menu.lst as the following:
+	title TrustVisor (up)
+		root (hd0,0)
+		kernel /TLoader.gz
+		module /TrustVisor.gz
+		module /vmlinuz-2.6.21-prep ro root=LABLE=/ mem=1536M
+		module /initrd-2.6.21-prep.img
+
+	note: you should specify the root device in the entry based on the configuration of your machine
+
+3 Reboot machine to see how TrustVisor works
+
+4 Additional notes:
+  4.1 Debug Support
+      there are serial port output support embedded in TrustVisor, you can see all the boot message and 
+      runtime message by default the serial console. the default serial port is ttyS0, which corresponding
+      to port 0x3f8, you can change it to 0x2f8 if your machine use ttyS1. At the beginning of drivers/uart.c 
+      in TrustVisor source code, you can find how to change this definition.
+  4.2 Kernel version
+      currently we tried 2.6.20.14 and 2.6.21 from Fedora. But theoretically, you should be able to use
+      any Linux Kernel with TrustVisor, you only need to disable SMP and virtualization support inside Linux
+      Kernel
+      Another thing is that, the bootloader of TrustVisor assumes the existense of initrd, so you'd better
+      use Linux Kernel from Fedora for simplicity.
