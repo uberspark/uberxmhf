@@ -17,9 +17,7 @@ CFLAGS=-g -O2 -DnotPERFCPIT -fno-stack-protector
 
 # oject files
 C_OBJS = slb.o \
-		 foo.o \
-		 pm.o \
-		 passwd.o 
+	 foo.o
 
 # source .c file
 SRCS = slb.c \

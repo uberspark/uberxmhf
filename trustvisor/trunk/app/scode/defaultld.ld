@@ -66,33 +66,9 @@ SECTIONS
   } =0x90909090
   .plt            : { *(.plt) }
 
-  .FOO ALIGN(0x1000):
+  .text  :
   {
-    foo.o(.text .stub .text. .gnu.linkonce.t.*) 
-    KEEP (foo.o(.text))
-  } =0x90909090
-
-  .FOOD            : 
-  {
-    foo.o(.data .bss)
-    KEEP(foo.o(.data .bss))
-  } =0x90909090
-
-  .PARAM ALIGN(0x1000):
-  {
-    pm.o
-    KEEP(pm.o(.data .bss))
-  } =0x90909090
-  
-  .STAC ALIGN(0x1000):
-  {
-    passwd.o
-    KEEP(passwd.o(.data .bss))
-  } =0x90909090
-
-  .text ALIGN(0x1000):
-  {
-    *(EXCLUDE_FILE(foo.o pm.o passwd.o) .text .stub .text.* .gnu.linkonce.t.*)
+    *(EXCLUDE_FILE(foo.o slb.o) .text .stub .text.* .gnu.linkonce.t.*)
     KEEP (*(.text.*personality*))
     /* .gnu.warning sections are handled specially by elf32.em.  */
     *(.gnu.warning)
@@ -139,7 +115,32 @@ SECTIONS
     KEEP (*(SORT(.fini_array.*)))
     PROVIDE_HIDDEN (__fini_array_end = .);
   }
-  .ctors          :
+
+  .FOO ALIGN(0x1000):
+  {
+    foo.o(.text .rodata .rodata.* .gnu.linkonce.*) 
+    KEEP (foo.o(.text .rodata .rodata.* .gnu.linkonce.*))
+  } =0x90909090
+
+  .FOOD ALIGN(0x1000):
+  {
+    *.o(.sdata)
+    KEEP(*.o(.sdata))
+  } =0x90909090
+
+  .PARAM ALIGN(0x1000):
+  {
+    *.o(.sparam)
+    KEEP(*.o(.sparam))
+  } =0x90909090
+  
+  .STAC ALIGN(0x1000):
+  {
+    *.o(.sstack)
+    KEEP(*.o(.sstack))
+  } =0x90909090
+
+  .ctors ALIGN(0x1000):
   {
     /* gcc uses crtbegin.o to find the start of
        the constructors, so we make sure it is

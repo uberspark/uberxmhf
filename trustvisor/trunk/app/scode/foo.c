@@ -33,30 +33,8 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/*
- * =====================================================================================
- *
- *       Filename:  foo.c
- *
- *    Description:  test program
- *
- *        Version:  1.0
- *        Created:  10/15/2009 04:52:48 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Zongwei Zhou (cyclone), cyclone82@gmail.com
- *        Company:  Carnegie Mellon University, USA
- *
- * =====================================================================================
- */
-
 #include  <foo.h>
 #define  NUM 10
-
-
-//static const int incr[] __attribute__ ((section (".sdata")))=
-//{1,2,3,4,5,6,7,8,9,10};
 
 /* sensitive code  */
 void bar() 

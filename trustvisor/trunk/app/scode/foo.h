@@ -33,23 +33,6 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/*
- * =====================================================================================
- *
- *       Filename:  foo.h
- *
- *    Description:  test program
- *
- *        Version:  1.0
- *        Created:  10/15/2009 05:01:24 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Zongwei Zhou (cyclone), cyclone82@gmail.com
- *        Company:  Carnegie Mellon University, USA
- *
- * =====================================================================================
- */
 void bar();
 int foo(int b);
 int barbar(int b);

@@ -35,11 +35,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <foo.h>
 #include "scode.h"
 #include "foo.h"
 
-#define PAGE_SIZE 0x1000
+int sdatajunk[] __attribute__ ((section (".sdata")))  = {2,3,4,5,6};
+int paramjunk[] __attribute__ ((section (".sparam"))) = {3,4,5,6,7};
+int stackjunk[] __attribute__ ((section (".sstack"))) = {4,5,6,7,8};
 
 enum VisorScmd
 {
@@ -47,101 +48,113 @@ enum VisorScmd
 	VISOR_SCMD_UNREG = 2,
 };
 
-//function scode_registration
-//todo: register secure sensitive code
-int scode_registration(unsigned int start, unsigned int size, unsigned int ssp, unsigned int params)
+int scode_registration(unsigned int pageinfo, unsigned int ssp, unsigned int params, unsigned int entry)
 {
 	int ret;
 	__asm__ __volatile__(
 			"vmmcall\n\t"
 			:"=a"(ret)
-			: "a"(VISOR_SCMD_REG), "b"(start), "c"(size), "d"(ssp), "S"(params));
+			: "a"(1), "b"(pageinfo), "d"(ssp), "S"(params), "D"(entry));
 }
 
-// function scode_unregistration
-// todo: unregister secure sensitive code
 int scode_unregistration(unsigned int start)
 {
 	int ret;
 	__asm__ __volatile__(
 			"vmmcall\n\t"
 			:"=a"(ret)
-			: "a"(VISOR_SCMD_UNREG), "b"(start));
+			: "a"(2), "b"(start));
 }
 
-
-// function main
-// register some sensitive code and data in libfoo.so and call bar()
-int main(void)
+/* Routines for preparing input and registering PAL 
+ *
+ * called by untrusted application, not in PAL
+ * */
+int register_pal()
 {
-	unsigned int i_saddr; /*sensitive code begin address*/
-	unsigned int i_pminfo; /* sensitive code parameter info address*/
+	unsigned int entry; 
+	struct scode_params_info params_info;
+	struct scode_sections_info scode_info;
+
+	unsigned int pminfo; 
+	unsigned int psinfo; 
+
 	int ssp;
-	//int data[10];
+
 	unsigned int addrdata;
 	int num;
 	int numPage;
+	int textPage;
 
 	/* parameter marshalling */
-	/* now bar() don't have any input and output,
-	 * so all zero :-) */
-	struct scode_params_info params_info;
 	params_info.params_num = 0;
 	params_info.pm_str[0].type = PARAMS_TYPE_POINTER;  /* pointer */
 	params_info.pm_str[0].size = 0;
 	params_info.pm_str[1].type = PARAMS_TYPE_INTEGRE;  /* integer */
 	params_info.pm_str[1].size = 0;
-	i_pminfo = (unsigned int)&params_info;
+	pminfo = (unsigned int)&params_info;
 
-	/* get the start address and number of page in sensitive code block */
+	/* scode page sections info */
+	entry = (unsigned int)bar;
 
-	/* The content stored in 0x8049xxx is the actual address of bar(), 
-	 * and also the start address of our sensitive code block.
-	 * you need to do "objdump -D slb" and find the plt entry of bar()
-	 * For example:
-	 *     8040000 <bar@plt>
-	 *     8040001 jmp *0x80497c0
-	 * Get the address after "jmp *" and hardcode it below
-	 * You also need to know how many pages are there in you scode block,
-	 * (include scode, param, stac section in shared library libfoo.so)
-	 * and change numPage below */
-	//i_saddr = (unsigned int)*((int *)MAGIC_ADDR);
-	i_saddr = (int)bar;
-	numPage=3;
-	printf("i_saddr = %x, num of pages is %d!\n", i_saddr, numPage);
+	scode_info.section_num = 4;
+	numPage=0;
+	textPage=0;
+
+	scode_info.ps_str[0].type = SECTION_TYPE_SCODE; 
+	scode_info.ps_str[0].start_addr = entry; 
+	scode_info.ps_str[0].page_num = 1;
+	numPage += scode_info.ps_str[0].page_num;
+	textPage += scode_info.ps_str[0].page_num;
+
+	scode_info.ps_str[1].type = SECTION_TYPE_SDATA; 
+	scode_info.ps_str[1].start_addr = entry+numPage*PAGE_SIZE; 
+	scode_info.ps_str[1].page_num = 1;
+	numPage += scode_info.ps_str[1].page_num;
+	textPage += scode_info.ps_str[1].page_num;
+
+	scode_info.ps_str[2].type = SECTION_TYPE_PARAM;  
+	scode_info.ps_str[2].start_addr = entry+numPage*PAGE_SIZE; 
+	scode_info.ps_str[2].page_num = 1;
+	numPage += scode_info.ps_str[2].page_num;
+
+	scode_info.ps_str[3].type = SECTION_TYPE_STACK; 
+	scode_info.ps_str[3].start_addr = entry+numPage*PAGE_SIZE; 
+	scode_info.ps_str[3].page_num = 1;
+	numPage += scode_info.ps_str[3].page_num;
+	psinfo = (unsigned int)&scode_info;
+
+	/* REMEMBER to replace ssp with the stack point for PAL,
+	 * ssp is the end of you .stack section (-0x10 for safe) */
+	ssp = (scode_info.ps_str[3].start_addr)+PAGE_SIZE-0x10;
 
 	/* REMEMBER to active pages before you register them */        
-	for( num = 0 ; num<numPage ; num++ )  {
-		// read all pages
-		addrdata = *(unsigned int *)(i_saddr+num*PAGE_SIZE);
-		printf("addrdata = %x!\n",addrdata);
-		if (num == numPage-1)
-		    *(unsigned int *)(i_saddr+num*PAGE_SIZE) = addrdata+1;
-		//data[num] = addrdata;
-		// write (will create a copy - COW)
-		//*(unsigned int *)(i_saddr) = addrdata;
+	for( num = 0 ; num < numPage ; num++ )  {
+		/* read all pages */
+		addrdata = *((unsigned int *)(entry+num*PAGE_SIZE+10));
+		printf("addrdata = %d\n", addrdata);
+		/* write non-text pages */
+		if (num >= textPage)
+			*((unsigned int *)(entry+num*PAGE_SIZE+10)) = addrdata;
 	}
-#if 0
-	bar();
-#endif
 
-#if 1        
 	/* register scode */
+	scode_registration(psinfo, ssp, pminfo, (unsigned int)entry);
 
-	/* Remember to replace ssp with the stack point for sensitive code,
-	 * ssp should be at the end of you .stack section (-0x10 for safe) */
-	ssp = (((unsigned int)i_saddr + numPage*PAGE_SIZE) & ~(PAGE_SIZE - 1)) - 0x10;
-	printf("ssp is %x!\n", ssp);
+	return 0;
+}
 
-	scode_registration((unsigned int)i_saddr, numPage*PAGE_SIZE, ssp, i_pminfo);
-	printf("registration finished!\n");
-#endif
-#if 1
+int unreg_pal(unsigned int addr)
+{
+	scode_unregistration(addr);
+	return 0;
+}
+
+// function main
+// register some sensitive code and data in libfoo.so and call bar()
+int main(void)
+{
+	register_pal();
 	bar();
-#endif
-
-#if 1
-	// unregister scode 
-	scode_unregistration((unsigned int)i_saddr);
-#endif 
+	unreg_pal((unsigned int)bar);
 } 

@@ -33,15 +33,20 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* define for attribute */
-#define FC __attribute__((fastcall))
-#define RP3 __attribute__((regparm(3)))
-
-
-/* definde for parameter marshalling */
-#define MAX_PARAMS_NUM 5
+#define  MAX_PARAMS_NUM 10
 #define PARAMS_TYPE_INTEGRE 1
 #define PARAMS_TYPE_POINTER 2
+
+#define  SECTION_TYPE_SCODE 1
+#define  SECTION_TYPE_SDATA 2
+#define  SECTION_TYPE_PARAM 3
+#define  SECTION_TYPE_STACK 4
+#define  SECTION_TYPE_STEXT 5
+/* definde for scode sections info */
+#define MAX_SECTION_NUM 10  /* max sections that are allowed in scode registration */
+#define PAGE_SIZE 0x1000
+
+//typedef int SECTION_TYPE;  /* section type, different section types have different page permission */
 
 struct scode_params_struct{
     int type;  /* 1: integer ;  2:pointer*/
@@ -52,3 +57,15 @@ struct scode_params_info{
    int params_num;
    struct scode_params_struct pm_str[MAX_PARAMS_NUM];
 };
+
+struct scode_sections_struct{
+    int type;  
+	unsigned int start_addr;
+    int page_num;
+};
+
+struct scode_sections_info{
+   int section_num;
+   struct scode_sections_struct ps_str[MAX_SECTION_NUM];
+};
+
