@@ -1,0 +1,28 @@
+TrustVisor on EMHF
+Zongwei Zhou
+
+Main function:
+TrustVisor: mantain PAL and sTPM state, PAL isolation and protection, support on-demand loading, DRTM
+emhf core: provide general interaces for memory, IO management, and controlling other sys resources
+
+Interface list: (VMMCALL: hypercall to emhf, NPF: nested page fault)
+- VMMCALL: PAL registration 
+	- verify and register PAL entry point(s)
+		- INTERFACE: guest page table walk (gvaddr -> gpaddr)
+	- register PAL input and output parameter(s)
+		- INTERFACE: copy mem content from guest to host
+	- verify and register PAL mem region(s)
+		- INTERFACE: set(or clear) IOMMU DEV for PAL physical mem page(s)
+		- INTERFACE: set(or clear) nested page perm for PAL mem pages 
+		- INTERFACE: TLB flush
+	- initialize software TPM
+	- measure PAL and extend hash to TPM PCR
+
+- VMMCALL: PAL unregistration
+- VMMCALL: software TPM seal
+- VMMCALL: software TPM unseal
+- VMMCALL: software TPM quote
+- VMMCALL: PAL UART output
+
+
+- NPF:
