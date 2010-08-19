@@ -4,11 +4,16 @@
 
 #include <target.h>
 
-#include <acpi.h>
+#include "./include/lockdown.h"
+#include "./include/acpi.h"
+
 
 u32 acpi_control_portnum=0;
+u32 currentenvironment = LDN_ENV_UNTRUSTED_SIGNATURE; //default to untrusted env.
 
-u32 sechyp_app_main(VCPU *vcpu){
+                            
+u32 sechyp_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
+  LDNPB *pldnPb;
   printf("\nCPU(0x%02x): Lockdown initiaizing...", vcpu->id);
   
 	//ACPI initialization
@@ -21,6 +26,15 @@ u32 sechyp_app_main(VCPU *vcpu){
   
   //set I/O port intercept for ACPI control port
   sechyp_iopm_set_write(vcpu, acpi_control_portnum, 2); //16-bit port
+
+  //grab the ldn parameter block from verifier, this tells us the
+  //destination environment characteristics
+  //TODO: verifier integration, for now we just take it from the apb
+  ASSERT( apb->optionalmodule_size > 0 );
+  pldnPb = (LDNPB *) apb->optionalmodule_ptr;
+  printf("\nCPU(0x%02x): destination environment signature = 0x%08x", 
+      vcpu->id, pldnPb->signature);
+  currentenvironment = pldnPb->signature;  
   
   return APP_INIT_SUCCESS;  //successful
 }
