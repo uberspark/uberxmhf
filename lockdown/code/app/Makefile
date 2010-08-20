@@ -4,7 +4,7 @@
 
 # source files
 AS_SOURCES = 
-C_SOURCES = appmain.c acpi.c
+C_SOURCES = appmain.c acpi.c hp_sdisk_ata.c
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
