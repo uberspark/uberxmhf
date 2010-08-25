@@ -3,7 +3,7 @@ Compilator.SaveAll=0
 Compilator.Capture=0
 Compilator.HideOutput=0
 Compilator.LogType=0
-DefaultDir=e:\amit\projects\lockdown\code
+DefaultDir=c:\amit\projects\lockdown\code
 DefaultCPIndex=0
 LogtoEnd=1
 DontOpen=0
@@ -17,36 +17,78 @@ sechyp-lockdown
 		..\app\Makefile
 		..\Makefile
 		..\app\acpi.c
-		..\app\include\acpi.h
+		..\app\include\lockdown.h
+		..\emhfcore\intel-vt-mp\include\_libsechyp.h
+		..\emhfcore\intel-vt-mp\runtime\libsechyp.c
+		..\emhfcore\intel-vt-mp\runtime\runtime.c
+		..\emhfcore\intel-vt-mp\runtime\runtimesup.S
+		..\emhfcore\intel-vt-mp\include\target.h
+		..\emhfcore\intel-vt-mp\loader\lentry.c
+		..\app\include\ata-atapi.h
+		..\app\hp_sdisk_ata.c
+		..\emhfcore\intel-vt-mp\runtime\islayer.c
+		..\emhfcore\intel-vt-mp\debug\uart.c
 [Open project files]
 0=..\Makefile
 1=..\app\Makefile
-2=..\app\appmain.c
-3=..\app\acpi.c
-4=..\app\include\acpi.h
-5=..\sechypcore\include\target.h
-6=..\sechypcore\include\vtx.h
+2=..\app\acpi.c
+3=..\app\include\lockdown.h
+4=..\emhfcore\intel-vt-mp\loader\lentry.c
+5=..\emhfcore\intel-vt-mp\include\target.h
+6=..\emhfcore\intel-vt-mp\runtime\runtimesup.S
+7=..\emhfcore\intel-vt-mp\runtime\runtime.c
+8=..\emhfcore\intel-vt-mp\runtime\libsechyp.c
+9=..\emhfcore\intel-vt-mp\include\_libsechyp.h
+10=..\app\appmain.c
+11=..\app\hp_sdisk_ata.c
+12=..\emhfcore\intel-vt-mp\runtime\islayer.c
+13=..\app\include\ata-atapi.h
+14=..\emhfcore\intel-vt-mp\debug\uart.c
 [Selected Project Files]
 Main=
-Selected=..\app\appmain.c
+Selected=..\app\hp_sdisk_ata.c
 [..\Makefile]
-TopLine=1
-Caret=1,1
+TopLine=6
+Caret=33,26
 [..\app\Makefile]
 TopLine=1
-Caret=29,7
-[..\app\appmain.c]
-TopLine=10
-Caret=43,31
+Caret=44,7
 [..\app\acpi.c]
-TopLine=177
-Caret=5,209
-[..\app\include\acpi.h]
 TopLine=1
 Caret=1,1
-[..\sechypcore\include\target.h]
-TopLine=67
-Caret=1,67
-[..\sechypcore\include\vtx.h]
-TopLine=97
-Caret=20,113
+[..\app\include\lockdown.h]
+TopLine=1
+Caret=38,21
+[..\emhfcore\intel-vt-mp\loader\lentry.c]
+TopLine=371
+Caret=48,396
+[..\emhfcore\intel-vt-mp\include\target.h]
+TopLine=61
+Caret=30,83
+[..\emhfcore\intel-vt-mp\runtime\runtimesup.S]
+TopLine=83
+Caret=9,85
+[..\emhfcore\intel-vt-mp\runtime\runtime.c]
+TopLine=332
+Caret=22,343
+[..\emhfcore\intel-vt-mp\runtime\libsechyp.c]
+TopLine=1
+Caret=1,1
+[..\emhfcore\intel-vt-mp\include\_libsechyp.h]
+TopLine=1
+Caret=1,8
+[..\app\appmain.c]
+TopLine=16
+Caret=25,16
+[..\app\hp_sdisk_ata.c]
+TopLine=60
+Caret=36,60
+[..\emhfcore\intel-vt-mp\runtime\islayer.c]
+TopLine=1455
+Caret=28,1484
+[..\app\include\ata-atapi.h]
+TopLine=31
+Caret=42,35
+[..\emhfcore\intel-vt-mp\debug\uart.c]
+TopLine=81
+Caret=25,94

@@ -55,14 +55,28 @@ void CPU32_TO_LBA28(u32 value, u8 *bits27_24,
 	*bits7_0 =   (u8) ( ((u64)value & 0x000000FFULL) >> 0 );
 }
 
+//this is an array of known sectors that access should be allowed
+//irrespective of the environment we are in. these include the MBR and
+//start sectors of extended partitions if any.
+u32 hp_allowedsectors[] = {
+  LDN_ALLOWED_SECTORS
+};
+
 
 //check if a given LBA is out of bounds of the partition
 //returns 1 if out of bounds, else 0
 extern u32 currentenvironment;
 
 u32 check_if_LBA_outofbounds(u64 lbaaddr){
-	ASSERT(currentenvironment == LDN_ENV_TRUSTED_SIGNATURE ||
+	u32 i;
+  ASSERT(currentenvironment == LDN_ENV_TRUSTED_SIGNATURE ||
       currentenvironment == LDN_ENV_UNTRUSTED_SIGNATURE);
+  
+  //check if the given LBA falls into one of the allowed sectors list
+  for(i=0; i< (sizeof(hp_allowedsectors)/sizeof(u32)); i++){
+    if(hp_allowedsectors[i] == (u32)lbaaddr)
+      return 0; //not out of bounds
+  }
       
   if(currentenvironment == LDN_ENV_TRUSTED_SIGNATURE){
 	 //if we are operating in the TRUSTED environment, restrict all sector

@@ -22,7 +22,8 @@
 	#MP/UP selection, y=Multiprocessor, n=Uniprocessor
   export MP_VERSION := n
 	#where you want loader and runtime binaries to go, defaults to current dir.
-	export INSTALLDIR = $(CURDIR)
+	#export INSTALLDIR = $(CURDIR)
+	export INSTALLDIR = /cygdrive/e/
   #misc. configuaration w.r.t serial debugging and NPT/EPT support
 	export NESTED_PAGING := y
   export DEBUG_SERIAL := y
@@ -101,8 +102,8 @@ all:
 	cd $(EMHFCOREDIR) && $(MAKE) -w all
 
 	# copy the app loader and runtime binaries to installation location
-	$(CP) $(EMHFCOREDIR)/loader/loader.bin $(INSTALLDIR)/loader-$(TARGET_HWPLATFORM).bin
-	$(CP) $(EMHFCOREDIR)/runtime/runtime.bin.gz $(INSTALLDIR)/runtime-$(TARGET_HWPLATFORM).bin.gz
+	$(CP) $(EMHFCOREDIR)/loader/loader.bin $(INSTALLDIR)/$(TARGET)-loader-$(TARGET_HWPLATFORM).bin
+	$(CP) $(EMHFCOREDIR)/runtime/runtime.bin.gz $(INSTALLDIR)/$(TARGET)-runtime-$(TARGET_HWPLATFORM).bin.gz
 	
 #------cleanup rules
 .PHONY: clean 
