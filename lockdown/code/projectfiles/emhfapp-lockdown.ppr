@@ -44,9 +44,10 @@ sechyp-lockdown
 12=..\emhfcore\intel-vt-mp\runtime\islayer.c
 13=..\app\include\ata-atapi.h
 14=..\emhfcore\intel-vt-mp\debug\uart.c
+15=New1.txt
 [Selected Project Files]
 Main=
-Selected=..\app\hp_sdisk_ata.c
+Selected=New1.txt
 [..\Makefile]
 TopLine=6
 Caret=33,26
@@ -92,3 +93,6 @@ Caret=42,35
 [..\emhfcore\intel-vt-mp\debug\uart.c]
 TopLine=81
 Caret=25,94
+[New1.txt]
+TopLine=40
+Caret=14,18

@@ -2,9 +2,28 @@
 # app top-level makefile for apps based on sechyp
 # author: amit vasudevan (amitvasudevan@acm.org)
 
+# app-specific configuration options
+export LDN_HYPERSWITCHING := y
+export LDN_HYPERPARTITIONING := y
+export LDN_APPROVEDEXEC := y
+
+ifeq ($(LDN_HYPERSWITCHING), y)
+  CFLAGS += -D__LDN_HYPERSWITCHING__
+endif
+ifeq ($(LDN_HYPERPARTITIONING), y)
+  CFLAGS += -D__LDN_HYPERPARTITIONING__
+endif
+ifeq ($(LDN_APPROVEDEXEC), y)
+  CFLAGS += -D__LDN_APPROVEDEXEC__
+endif
+
+
+
+
+
 # source files
 AS_SOURCES = 
-C_SOURCES = appmain.c acpi.c hp_sdisk_ata.c
+C_SOURCES = appmain.c acpi.c hp_sdisk_ata.c approvedexec.c
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
