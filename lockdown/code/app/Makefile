@@ -3,9 +3,11 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # app-specific configuration options
-export LDN_HYPERSWITCHING := y
-export LDN_HYPERPARTITIONING := y
-export LDN_APPROVEDEXEC := y
+export LDN_HYPERSWITCHING := n
+export LDN_HYPERPARTITIONING := n
+export LDN_APPROVEDEXEC := n
+export LDN_SSLPA := y
+
 
 ifeq ($(LDN_HYPERSWITCHING), y)
   CFLAGS += -D__LDN_HYPERSWITCHING__
@@ -15,6 +17,9 @@ ifeq ($(LDN_HYPERPARTITIONING), y)
 endif
 ifeq ($(LDN_APPROVEDEXEC), y)
   CFLAGS += -D__LDN_APPROVEDEXEC__
+endif
+ifeq ($(LDN_SSLPA), y)
+  CFLAGS += -D__LDN_SSLPA__
 endif
 
 
