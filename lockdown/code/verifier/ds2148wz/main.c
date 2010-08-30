@@ -467,9 +467,10 @@ static uint32 rxframeoffset=0;	//since we serve in 64 byte chunks, we need to ma
 
 static void _HandleNETIFRecv(U8 bEP, U8 bEPStatus){
 	int iChunk;
-	//printf("%s got control...\n", __FUNCTION__);
 	
 	if(rx_in_progress){ //we only serve the RX packet if there is one 
+	  //printf("%s got control...\n", __FUNCTION__);
+
   	if(rxframesize - rxframeoffset < MAX_PACKET_SIZE){
   		USBHwEPWrite(bEP, (unsigned char *)((uint32)&rxframe + rxframeoffset), (rxframesize-rxframeoffset) );
 			rxframeoffset = rxframesize;
@@ -583,7 +584,7 @@ static BOOL HandleVendorRequest(TSetupPacket *pSetup, int *piLen, U8 **ppbData)
 
 	case 0xE0:	//send packet command
 		{
-			printf("Got SEND PACKET control command (%u bytes)\n", pCmd->dwLength);
+			//printf("Got SEND PACKET control command (%u bytes)\n", pCmd->dwLength);
    		if(!tx_in_progress){ //we ignore the command if tx_in_progress = 1
   		 	txframesize = pCmd->dwLength;
    		 	if(txframesize)
@@ -713,8 +714,8 @@ uint8					EstbPhase[MAX_SOCK_NUM];
 uint8 tx_mem_conf[8] = { 8, 8, 8, 8, 8, 8, 8, 8};  				// for setting TMSR, all socket TxBufs-14k 
 uint8 rx_mem_conf[8] = { 8, 8, 8, 8, 8, 8, 8, 8};         // for setting RMSR, all socket RxBufs-2k  
 
-uint8 ip[4] = {192,168,2,66};                  	// IP address, for setting SIP register
-uint8 gw[4] = {192,168,2,1};                     	// Gateway address, for setting GAR register 
+uint8 ip[4] = {192,168,0,66};                  	// IP address, for setting SIP register
+uint8 gw[4] = {192,168,0,1};                     	// Gateway address, for setting GAR register 
 uint8 sn[4] = {255,255,255,0};                    // Subnet mask, for setting SUBR register
 uint8 mac[6] = {0x06,0x44,0x53,0x06,0x06,0x06};    			// Our MAC address
 uint8 bmac[6] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};    			// broadcast MAC address
