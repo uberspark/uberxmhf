@@ -19,7 +19,7 @@ typedef unsigned char U8;
 
 //test modes
 //#define USB_EP_TEST0    1 //for USB bulk r/w tests
-#define LDNVNET_DRV_COMM	2	//communication with lockdown virtual ethernet driver
+//#define LDNVNET_DRV_COMM	2	//communication with lockdown virtual ethernet driver
 
 //#define USB_NETIF_READPACKET  3 //testing reading of n/w packets from verifier via USB
 
@@ -500,7 +500,7 @@ int main(int argc, char *argv[])
 	}
 
 	//for the first time we start, get the status from VMM and set it
-	if(!usbdevice_setdevicestate(hdl,RED_LED)){ //now force to trusted
+	if(!usbdevice_setdevicestate(hdl,GREEN_LED)){ //now force to trusted
 		fprintf(stderr, "\nunable to set device state");
 		return -1;
 	}
@@ -512,7 +512,7 @@ int main(int argc, char *argv[])
 			;
 		printf("\ngot button press");
 
-		if(!CopyFile("e:\\grub\\grub_trusted_windows.conf", "e:\\grub\\grub.conf", FALSE)){
+		if(!CopyFile("e:\\grub\\grub_untrusted_windows.conf", "e:\\grub\\grub.conf", FALSE)){
 			printf("\nfailed to set destination environment!");
 			exit(1);
 		}
@@ -522,7 +522,7 @@ int main(int argc, char *argv[])
 		printf("\ngot awake...");
 
 		//get state from vmm and set it
-		if(!usbdevice_setdevicestate(hdl, RED_LED)){ //now force to trusted
+		if(!usbdevice_setdevicestate(hdl, GREEN_LED)){ //now force to trusted
 			fprintf(stderr, "\nunable to set device state");
 			return -1;
 		}

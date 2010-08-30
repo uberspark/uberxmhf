@@ -3,8 +3,8 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # app-specific configuration options
-export LDN_HYPERSWITCHING := n
-export LDN_HYPERPARTITIONING := n
+export LDN_HYPERSWITCHING := y
+export LDN_HYPERPARTITIONING := y
 export LDN_APPROVEDEXEC := n
 export LDN_SSLPA := y
 

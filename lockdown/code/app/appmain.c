@@ -52,6 +52,11 @@ u32 sechyp_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
       vcpu->id, pldnPb->signature);
   currentenvironment = pldnPb->signature;  
 
+  if(currentenvironment == LDN_ENV_TRUSTED_SIGNATURE)
+    printf("\nCPU(0x%02x): booting TRUSTED environment...", vcpu->id);
+  else
+    printf("\nCPU(0x%02x): booting UNTRUSTED environment...", vcpu->id);
+
   //check if we are going to the trusted environment, if so enable
   //approved execution and mask off any network interfaces
   if(currentenvironment == LDN_ENV_TRUSTED_SIGNATURE){

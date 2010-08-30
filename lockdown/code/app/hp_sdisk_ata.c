@@ -84,7 +84,8 @@ u32 check_if_LBA_outofbounds(u64 lbaaddr){
    //the legacy bootmanager area
    if( (((u64)lbaaddr >= (u64)LDN_ENV_TRUSTED_STARTSECTOR)
 	   && ((u64)lbaaddr <= (u64)LDN_ENV_TRUSTED_ENDSECTOR))
-		  || ((u64)lbaaddr < 63ULL) )
+		  || ((u64)lbaaddr < 63ULL) ||
+      ((u64)lbaaddr >= 63ULL && (u64)lbaaddr <= 33554494ULL) )  //include the boot partition for demo purposes
 			return 0; //not out of bounds
 	 else
 			return 1; //out of bounds

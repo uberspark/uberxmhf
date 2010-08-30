@@ -1142,7 +1142,7 @@ int main(void)
 	while (1) {
 		USBHwISR();
 		
-#if 0	
+#if 1	
 		//lockdown verifier logic
 		switch(devicestate){
 		 	case STATE_WAIT_UNTRUSTED:
