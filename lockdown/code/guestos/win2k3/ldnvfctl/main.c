@@ -16,7 +16,7 @@
 typedef unsigned int U32;
 typedef unsigned char U8;
 
-#define BUILD_FOR_TRUSTED   1     //define this to build monitor for trusted environment
+//#define BUILD_FOR_TRUSTED   1     //define this to build monitor for trusted environment
 
 
 #define MAX_TIME 3000
@@ -237,7 +237,7 @@ int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
               
               			if(bytes){
                   		int j;
-              				printf("\nTX: %u bytes successfully (dump follows):\n", bytes);
+              				//printf("\nTX: %u bytes successfully (dump follows):\n", bytes);
                   		//for(j=0; j < bytes; j++)
                   		//	printf("0x%02x ", packetbuffer[j]);
                   		
@@ -263,7 +263,7 @@ int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
                     bytes=ldnvf_read_packet(&rxpacketbuffer, hdl);
                     if(bytes){
                       int j;
-                      printf("\nRX: %u bytes, dump follows:\n", bytes);
+                      //printf("\nRX: %u bytes, dump follows:\n", bytes);
                       //for(j=0; j < packetlength; j++)
                   		//	printf("0x%02x ", packetbuffer[j]);
                     

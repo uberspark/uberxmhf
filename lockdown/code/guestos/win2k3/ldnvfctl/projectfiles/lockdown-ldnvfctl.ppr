@@ -26,7 +26,7 @@ TopLine=1
 Caret=31,10
 [..\main.c]
 TopLine=1
-Caret=1,19
+Caret=3,19
 [..\main_backup_08302010.c]
 TopLine=503
 Caret=1,529

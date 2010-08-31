@@ -249,7 +249,7 @@ u32 hp(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size
 				ata_lbahigh_buf[0] = ata_lbahigh_buf[1] = 0;
 				
 			}else {
-				printf("\nATA command: 0x%02x",	command);
+				//printf("\nATA command: 0x%02x",	command);
 			}
 			
 			ata_sector_count_index=0;

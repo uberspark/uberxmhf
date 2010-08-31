@@ -125,7 +125,7 @@ u32 sechyp_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
 #if defined(__LDN_HYPERSWITCHING__)  
   if(access_type == IO_TYPE_OUT && portnum == acpi_control_portnum && 
       access_size == IO_SIZE_WORD && ((u16)r->eax & (u16)(1 << 13)) ){
-      printf("\nCPU(0x%02x): Lockdown; ACPI SLEEP_EN signal caught. resetting...",
+      printf("\nCPU(0x%02x): Lockdown; ACPI SLEEP_EN signal caught. resetting firmware...",
           vcpu->id);
       sechyp_reboot();
       //we should never get here

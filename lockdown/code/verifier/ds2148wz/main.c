@@ -532,7 +532,7 @@ static BOOL HandleVendorRequest(TSetupPacket *pSetup, int *piLen, U8 **ppbData)
 		break;
 
 	case 0xB0: //set led command
-		printf("SET_LEDSTATUS:\n");
+		printf("Command: Set LED\n");
 		memcpy(&tempbuffer, pbData, 0x40);
 		//printf("tempbuffer[0]=%x, tempbuffer[1]=%x\n", tempbuffer[0], tempbuffer[1]);
 		if(tempbuffer[0] == 1){
@@ -570,13 +570,15 @@ static BOOL HandleVendorRequest(TSetupPacket *pSetup, int *piLen, U8 **ppbData)
 
 	case 0xF0:	//read packet command
 		{
-			//printf("Got READ PACKET control command\n");
    		if(!rx_in_progress){ //we ignore the command if rx_in_progress = 1
   		 	rxframesize = (uint32)netif_recvnextframe(&rxframe, ETH_PACKETSIZE);
    		 	USBHwEPWrite(NETIF_RECV_EP, (unsigned char *)&rxframesize, sizeof(uint32));
    		 	if(rxframesize)
 					rx_in_progress=1; // we have a RX packet to offer, host will now pull RX frame from us
-			}	
+			
+   			printf("<Packet READ, %u bytes payload\n", rxframesize);
+
+      }	
 			*piLen = 0;
    	}   		
    	break;   	
@@ -584,12 +586,14 @@ static BOOL HandleVendorRequest(TSetupPacket *pSetup, int *piLen, U8 **ppbData)
 
 	case 0xE0:	//send packet command
 		{
-			//printf("Got SEND PACKET control command (%u bytes)\n", pCmd->dwLength);
    		if(!tx_in_progress){ //we ignore the command if tx_in_progress = 1
   		 	txframesize = pCmd->dwLength;
    		 	if(txframesize)
 					tx_in_progress=1; // we have a TX packet to pull from host
-			}	
+			 
+   			printf(">Packet SEND, %u bytes payload\n", pCmd->dwLength);
+
+      }	
 			*piLen = 0;
    	}   		
    	break;   	

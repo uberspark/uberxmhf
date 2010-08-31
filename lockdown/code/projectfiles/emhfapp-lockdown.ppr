@@ -63,7 +63,7 @@ TopLine=1
 Caret=1,1
 [..\app\include\lockdown.h]
 TopLine=1
-Caret=44,24
+Caret=62,24
 [..\emhfcore\intel-vt-mp\loader\lentry.c]
 TopLine=380
 Caret=48,396
@@ -74,8 +74,8 @@ Caret=32,145
 TopLine=83
 Caret=9,85
 [..\emhfcore\intel-vt-mp\runtime\runtime.c]
-TopLine=1
-Caret=1,1
+TopLine=331
+Caret=1,331
 [..\emhfcore\intel-vt-mp\runtime\libsechyp.c]
 TopLine=25
 Caret=47,25
@@ -83,11 +83,11 @@ Caret=47,25
 TopLine=6
 Caret=1,25
 [..\app\appmain.c]
-TopLine=42
-Caret=73,58
+TopLine=131
+Caret=31,160
 [..\app\hp_sdisk_ata.c]
-TopLine=76
-Caret=1,88
+TopLine=239
+Caret=11,268
 [..\emhfcore\intel-vt-mp\runtime\islayer.c]
 TopLine=1028
 Caret=31,1028

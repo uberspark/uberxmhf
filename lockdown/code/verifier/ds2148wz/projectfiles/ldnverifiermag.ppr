@@ -60,8 +60,8 @@ ldnverifiermag
 Main=
 Selected=..\main.c
 [..\main.c]
-TopLine=1142
-Caret=1,1171
+TopLine=457
+Caret=29,457
 [..\Makefile]
 TopLine=146
 Caret=46,157
