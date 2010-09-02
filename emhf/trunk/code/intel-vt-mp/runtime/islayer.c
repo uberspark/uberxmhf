@@ -1477,7 +1477,7 @@ void isl_handleintercept_eptviolation(VCPU *vcpu, struct regs *r){
 //---I/O port access intercept handler------------------------------------------
 void isl_handle_intercept_ioportaccess(VCPU *vcpu, struct regs *r){
   u32 access_size, access_type, portnum, stringio;
-	u32 app_ret_status;
+	u32 app_ret_status = APP_IOINTERCEPT_CHAIN;
 	
   access_size = (u32)vcpu->vmcs.info_exit_qualification & 0x00000007UL;
 	access_type = ((u32)vcpu->vmcs.info_exit_qualification & 0x00000008UL) >> 3;
@@ -1488,8 +1488,8 @@ void isl_handle_intercept_ioportaccess(VCPU *vcpu, struct regs *r){
 
   //call our app handler, TODO: it should be possible for an app to
   //NOT want a callback by setting up some parameters during appmain
-  app_ret_status=sechyp_app_handleintercept_portaccess(vcpu, r, portnum, access_type, 
-          access_size);
+  //app_ret_status=sechyp_app_handleintercept_portaccess(vcpu, r, portnum, access_type, 
+  //        access_size);
 
   if(app_ret_status == APP_IOINTERCEPT_CHAIN){
    	if(access_type == IO_TYPE_OUT){

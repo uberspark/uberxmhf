@@ -84,6 +84,7 @@ void shadow_get_shadowentry(u32 gva, u32 **pdt_entry, u32 **pt_entry){
 	
 	s_pdt_entry = s_pdt[index_pdt];
 	*pdt_entry = (u32 *)&s_pdt[index_pdt];
+
 	if( !(s_pdt_entry & _PAGE_PRESENT) )
 		return; 
 	

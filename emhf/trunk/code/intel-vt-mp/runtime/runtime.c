@@ -536,7 +536,7 @@ void allcpus_common_start(VCPU *vcpu){
   initVMCS(vcpu); 
 
   //call app main
-  if(sechyp_app_main(vcpu)){
+  if(emhf_app_main(vcpu)){
     printf("\nCPU(0x%02x): Application failed to initialize. HALT!", vcpu->id);
     HALT();
   }
