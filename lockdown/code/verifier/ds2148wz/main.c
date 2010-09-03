@@ -573,10 +573,11 @@ static BOOL HandleVendorRequest(TSetupPacket *pSetup, int *piLen, U8 **ppbData)
    		if(!rx_in_progress){ //we ignore the command if rx_in_progress = 1
   		 	rxframesize = (uint32)netif_recvnextframe(&rxframe, ETH_PACKETSIZE);
    		 	USBHwEPWrite(NETIF_RECV_EP, (unsigned char *)&rxframesize, sizeof(uint32));
-   		 	if(rxframesize)
+   		 	if(rxframesize){
 					rx_in_progress=1; // we have a RX packet to offer, host will now pull RX frame from us
-			
-   			printf("<Packet READ, %u bytes payload\n", rxframesize);
+			    printf("<Packet READ, %u bytes payload\n", rxframesize);
+			   }
+   			
 
       }	
 			*piLen = 0;
