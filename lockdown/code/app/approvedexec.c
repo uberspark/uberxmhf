@@ -52,8 +52,8 @@ u32 approvedexec_handleevent(VCPU *vcpu, struct regs *r,
   u64 gpa, u64 gva, u64 violationcode){
   
   if(violationcode & HWPGTBL_FLAG_EXECUTE){
-    //printf("\nCPU(0x%02x): EPT/EXEC, p=0x%08x, v=0x%08x, pcp=0x%08x, pcv=0x%08x",
-    //  vcpu->id, (u32)gpa, (u32)gva, approvedexec_getguestpcpaddr(vcpu), approvedexec_getguestpcvaddr(vcpu));
+    printf("\nCPU(0x%02x): EPT/EXEC, p=0x%08x, v=0x%08x, pcp=0x%08x, pcv=0x%08x",
+      vcpu->id, (u32)gpa, (u32)gva, approvedexec_getguestpcpaddr(vcpu), approvedexec_getguestpcvaddr(vcpu));
     //we had a exec violation, time to check this physical page and lock it
     //TODO: check hash
     //give page execute permissions but prevent further writes
