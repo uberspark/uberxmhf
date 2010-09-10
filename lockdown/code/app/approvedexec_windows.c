@@ -2,20 +2,16 @@
 //implements windows OS specific approved execution in the trusted environment in lockdown
 //author(s): amit vasudevan (amitvasudevan@acm.org)
 
-#include <lockdown/types.h>
-#include <lockdown/lockdown.h>
-#include <lockdown/processor.h>
-#include <lockdown/svm.h>
-#include <lockdown/paging.h>
-#include <lockdown/error.h>
-#include <lockdown/sha1.h>
-#include <lockdown/print.h>
-#include <approvedexec/approvedexec.h>
-#include <approvedexec/windows.h>
-#include <approvedexec/exe_pe.h>
+#include <target.h>
+
+#include <lockdown.h>
+
+#include <approvedexec.h>
+#include <exe_pe.h>
+#include <sha1.h>
 
 
-
+#if 0
 //windows: current corner cases for implmentation
 //1. wrkx86.exe: INIT section, overwrites parts of itself 
 //0x001e9000-0x00216000 = rva of INIT
@@ -34,32 +30,37 @@ u32 windows_unrelocate_cornercases(u32 vaddr){
 
 	return 0;
 }
+#endif
 
-
+//------------------------------------------------------------------------------
 //gets the physical address of a virtual address vaddr
 //return 0xFFFFFFFF on virtual address not mapped else return physical address
 //assumption: the vaddr that is passed to us is a fully qualified vaddr,
 //in other words if paging is disabled, then the vaddr is the Cs.base + offset
-u32 windows_getphysicaladdress(u32 vaddr){
-	if( ((u32)win_vmcb->cr0 & (u32)CR0_PE) && ((u32)win_vmcb->cr0 & (u32)CR0_PG) ){	//paging enabled
-		return kernel_pt_walker(vaddr);
+u32 windows_getphysicaladdress(VCPU *vcpu, u32 vaddr){
+	if( (vcpu->guest_currentstate & GSTATE_PROTECTEDMODE) &&
+			(vcpu->guest_currentstate & GSTATE_PROTECTEDMODE_PG) ){	
+		//protected mode and paging enabled, so walk guest page tables
+		return emhf_guestpgtbl_walk(vcpu, vaddr);
 	}else{	//paging is disabled
 		return vaddr;
 	}
 }
 
-
+//------------------------------------------------------------------------------
 //gets the virtual address of the physical address paddr
-u32 windows_getvirtualaddress(u32 paddr){
-	if( ((u32)win_vmcb->cr0 & (u32)CR0_PE) && ((u32)win_vmcb->cr0 & (u32)CR0_PG) ){	//paging enabled
+u32 windows_getvirtualaddress(VCPU *vcpu, u32 paddr){
+	//if( (vcpu->guest_currentstate & GSTATE_PROTECTEDMODE) &&
+	//		(vcpu->guest_currentstate & GSTATE_PROTECTEDMODE_PG) ){	
+		//protected mode and paging enabled
 		//we just use a simple trick, on a NX fault which is the only time
-		//when windows_verifycodeintegrity is called, win_vmcb->rip will contain
+		//this is called, guest_RIP will contain
 		//the virtual address of the guest memory page causing the fault, which is
 		//the virtual address we need!
-		return (u32)win_vmcb->rip;
-	}else{	//paging is disabled
-		return (u32)win_vmcb->cs.base + (u32)win_vmcb->rip;
-	}
+	//	return (u32)vcpu->vmcs.guest_RIP;
+	//}else{	//paging is disabled
+		return (u32)vcpu->vmcs.guest_CS_base + (u32)vcpu->vmcs.guest_RIP;
+	//}
 }
 
 #define SKIPMEM									(0x00400000)
@@ -68,7 +69,7 @@ u32 windows_getvirtualaddress(u32 paddr){
 #define SCANMZPE_MAXPEHEADEROFFSET	0x300				//maximum distance we go until we find a PE from a MZ
 //scan for a valid MZ/PE header encompassing the given virtual adress
 //return: image base (virtual address) on success, 0xFFFFFFFF on failure
-u32 windows_scanmzpe(u32 vaddr, IMAGE_NT_HEADERS32 **storeNtHeader){
+u32 windows_scanmzpe(VCPU *vcpu, u32 vaddr, IMAGE_NT_HEADERS32 **storeNtHeader){
 //u32 windows_scanmzpe(u32 vaddr){
 	IMAGE_DOS_HEADER *dosHeader;
 	IMAGE_NT_HEADERS32 *ntHeader;
@@ -85,17 +86,17 @@ u32 windows_scanmzpe(u32 vaddr, IMAGE_NT_HEADERS32 **storeNtHeader){
 	//printf("\nwindows_scanmzpe: enter, vaddr=0x%08X, addr=0x%08X, end_addr=0x%08X", vaddr, addr, end_addr);
 	
 	for(i_addr=addr; i_addr > end_addr; i_addr-=4096){
-		dosHeader_paddr = windows_getphysicaladdress(i_addr);
-		if(dosHeader_paddr > 0x00100000 && dosHeader_paddr < __LDN_GUESTOS_PHYSMEMSIZE){
+		dosHeader_paddr = windows_getphysicaladdress(vcpu, i_addr);
+		if(dosHeader_paddr > 0x00100000 && dosHeader_paddr < LDN_ENV_PHYSICALMEMORYLIMIT){
 			dosHeader=(IMAGE_DOS_HEADER *)dosHeader_paddr;
 			
 			if((u16)dosHeader->e_magic == (u16)IMAGE_DOS_SIGNATURE){
 				//printf("\nprobable dos header at: 0x%08X, e_lfanew=0x%08X", i_addr, dosHeader->e_lfanew);
 	
 				if((u32)dosHeader->e_lfanew < (u32)SCANMZPE_MAXPEHEADEROFFSET){			
-					ntHeader_paddr = windows_getphysicaladdress(i_addr + (u32)dosHeader->e_lfanew);
+					ntHeader_paddr = windows_getphysicaladdress(vcpu, i_addr + (u32)dosHeader->e_lfanew);
 					
-					if(ntHeader_paddr > 0x00100000 && ntHeader_paddr < __LDN_GUESTOS_PHYSMEMSIZE){
+					if(ntHeader_paddr > 0x00100000 && ntHeader_paddr < LDN_ENV_PHYSICALMEMORYLIMIT){
 						ntHeader= (IMAGE_NT_HEADERS32 *)ntHeader_paddr;
 						
 						//sanity check: check if complete NT Headers is within the physical page
@@ -125,6 +126,53 @@ u32 windows_scanmzpe(u32 vaddr, IMAGE_NT_HEADERS32 **storeNtHeader){
 	return (u32)0xFFFFFFFF;
 }
 
+
+
+#if 0
+//------------------------------------------------------------------------------
+//sanity checks PE image in memory and obtains relocation information into
+//provided buffer
+//input: relocinfobuffer __must__ be of size MAX_RELOCATIONINFOSIZE
+//returns: UNRELOC_SUCCESS on success, else one of UNRELOC_ERR_xxx on error
+u32 windows_checkPEandgetrelocsection(IMAGE_NT_HEADERS32 *ntHeader,
+	u32 imagebase, u8 *relocinfobuffer){
+	u32 originalimagebase;
+	u32 reloc_size, reloc_vaddr;
+	u32 retval;
+	
+	//get PE original image base from header
+	originalimagebase=ntHeader->OptionalHeader.ImageBase;
+  	
+	//PE should never be relocated to an address "below" its imagebase
+	if(imagebase < originalimagebase){
+		AX_DEBUG(("\n error: imagebase < originalimagebase"));
+		return UNRELOC_ERR_IMAGEBASE;
+	}
+
+	//get hold of .reloc section base and size
+	reloc_vaddr=ntHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress;
+	reloc_size=ntHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].Size;
+
+	AX_DEBUG(("\n reloc section base=0x%08X, size=0x%08X", reloc_vaddr, reloc_size));
+	if(reloc_size > MAX_RELOCATIONINFOSIZE){
+		AX_DEBUG(("\n error: relocsize > MAX_RELOCATIONINFOSIZE"));
+		return UNRELOC_ERR_BUFEXCEEDED;
+	}
+	
+	//get relocation information from reloc section
+	memset(relocinfobuffer, 0, MAX_RELOCATIONINFOSIZE);
+	retval=windows_getrelocsection(imagebase+reloc_vaddr, reloc_size, relocinfobuffer);
+	if(retval != UNRELOC_SUCCESS){
+		AX_DEBUG(("\n error: unable to get relocation info!"));
+		return retval;
+	}
+	
+	return UNRELOC_SUCCESS;
+}
+#endif
+
+
+#if 1
 //==============================================================================
 //PE relocation routines
 typedef struct {
@@ -147,7 +195,7 @@ u8 relocationInfo[MAX_RELOCATIONINFOSIZE];
 #define UNRELOC_ERR_ZEROBLOCK									0x8
 #define	UNRELOC_ERR_NOPHYSMEM									0x9
 
-u32 windows_getrelocsection(u32 reloc_section_va, u32 reloc_section_size, u8 *relocBuffer){
+u32 windows_getrelocsection(VCPU *vcpu, u32 reloc_section_va, u32 reloc_section_size, u8 *relocBuffer){
 	u32 paligned_reloc_section_va;
 	u32 paligned_reloc_section_va_end;
 	u32 vaddr, paddr;
@@ -168,16 +216,16 @@ u32 windows_getrelocsection(u32 reloc_section_va, u32 reloc_section_size, u8 *re
 	}
 	
 	for(vaddr = paligned_reloc_section_va; vaddr <= paligned_reloc_section_va_end; vaddr+=PAGE_SIZE_4K){
-		paddr=windows_getphysicaladdress(vaddr);
-		if(paddr >= __LDN_GUESTOS_PHYSMEMSIZE){
+		paddr=windows_getphysicaladdress(vcpu, vaddr);
+		if(paddr >= LDN_ENV_PHYSICALMEMORYLIMIT){
 			AX_DEBUG(("\n  parts of reloc section is not in memory"));
 			return UNRELOC_ERR_SECTIONNOTINMEM;
 		}
 		
 		if(vaddr == paligned_reloc_section_va_end)
-			memcpy((u32)relocBuffer+offset, paddr, (reloc_section_size % PAGE_SIZE_4K));
+			memcpy((void *)((u32)relocBuffer+offset), (void *)paddr, (reloc_section_size % PAGE_SIZE_4K));
 		else
-			memcpy((u32)relocBuffer+offset, paddr, PAGE_SIZE_4K);
+			memcpy((void *)((u32)relocBuffer+offset), (void *)paddr, PAGE_SIZE_4K);
 
 		offset+=PAGE_SIZE_4K;		
 	}
@@ -189,7 +237,7 @@ u32 windows_getrelocsection(u32 reloc_section_va, u32 reloc_section_size, u8 *re
 u8 unrelocateBuffer[PAGE_SIZE_4K * 3];
 
 
-u32 windows_unrelocatepage_processrelocations(u32 imagebase, u32 originalimagebase,
+u32 windows_unrelocatepage_processrelocations(VCPU *vcpu, u32 imagebase, u32 originalimagebase,
 	void *page, IMAGE_BASE_RELOCATION *relocEntry, u8 *relocEntry_relocInfo){
 	
 	u32 i;
@@ -221,9 +269,12 @@ u32 windows_unrelocatepage_processrelocations(u32 imagebase, u32 originalimageba
 }
 
 
+
+
+
 //return 0 on error, 1 on success
 //u32 windows_unrelocatepage(IMAGE_NT_HEADERS32 *ntHeader, u32 imagebase, u32 vaddr, void *inputPage, void *outputPage){
-u32 windows_unrelocatepage(IMAGE_NT_HEADERS32 *ntHeader, u32 imagebase, u32 vaddr, void *inputPagePrevious, void *inputPage, void *inputPageNext, void *outputPage){
+u32 windows_unrelocatepage(VCPU *vcpu, IMAGE_NT_HEADERS32 *ntHeader, u32 imagebase, u32 vaddr, void *inputPagePrevious, void *inputPage, void *inputPageNext, void *outputPage){
 	IMAGE_BASE_RELOCATION *relocEntry;
 	IMAGE_BASE_RELOCATION	*relocEntryPrevious=NULL;
 	IMAGE_BASE_RELOCATION *relocEntryNext=NULL;
@@ -261,7 +312,7 @@ u32 windows_unrelocatepage(IMAGE_NT_HEADERS32 *ntHeader, u32 imagebase, u32 vadd
 	
 	//get relocation information from reloc section
 	memset(&relocationInfo, 0, MAX_RELOCATIONINFOSIZE);
-	retval=windows_getrelocsection(imagebase+reloc_vaddr, reloc_size, &relocationInfo);
+	retval=windows_getrelocsection(vcpu, imagebase+reloc_vaddr, reloc_size, (u8 *)&relocationInfo);
 	if(retval != UNRELOC_SUCCESS){
 		AX_DEBUG(("\n error: unable to get relocation info!"));
 		return retval;
@@ -343,18 +394,18 @@ u32 windows_unrelocatepage(IMAGE_NT_HEADERS32 *ntHeader, u32 imagebase, u32 vadd
 		}
 	
 		if(needPreviousPage){
-			if((u32)inputPagePrevious >= __LDN_GUESTOS_PHYSMEMSIZE){
+			if((u32)inputPagePrevious >= LDN_ENV_PHYSICALMEMORYLIMIT){
 				AX_DEBUG(("\n Need inputPagePrevious, but is not present in guest OS!"));
 				return UNRELOC_ERR_NOPHYSMEM;
 			}
 
 			AX_DEBUG(("\n Need inputPagePrevious - GOT IT!"));
-			memcpy((u32)unrelocateBuffer, inputPagePrevious, PAGE_SIZE_4K);
+			memcpy((void *)((u32)unrelocateBuffer), inputPagePrevious, PAGE_SIZE_4K);
 		}
 	}
 		
 	//copy inputPage 
-	memcpy((u32)unrelocateBuffer+PAGE_SIZE_4K, inputPage, PAGE_SIZE_4K);
+	memcpy((void *)((u32)unrelocateBuffer+PAGE_SIZE_4K), inputPage, PAGE_SIZE_4K);
 	
 	//determine if we need the next page to perform a successful unrelocation
 	if(relocEntryNext){
@@ -367,20 +418,20 @@ u32 windows_unrelocatepage(IMAGE_NT_HEADERS32 *ntHeader, u32 imagebase, u32 vadd
 		}
 	
 		if(needNextPage){
-			if((u32)inputPageNext >= __LDN_GUESTOS_PHYSMEMSIZE){
+			if((u32)inputPageNext >= LDN_ENV_PHYSICALMEMORYLIMIT){
 				AX_DEBUG(("\n Need inputPageNext, but is not present in guest OS!"));
 				return UNRELOC_ERR_NOPHYSMEM;
 			}
 
 			AX_DEBUG(("\n Need inputPageNext - GOT IT!"));
-			memcpy((u32)unrelocateBuffer+(2*PAGE_SIZE_4K), inputPageNext, PAGE_SIZE_4K);
+			memcpy((void *)((u32)unrelocateBuffer+(2*PAGE_SIZE_4K)), inputPageNext, PAGE_SIZE_4K);
 		}
 	}
 
 
 	//ok now we have unrelocateBuffer setup, perform the unrelocations
 	if(needPreviousPage){
-		retval = windows_unrelocatepage_processrelocations(imagebase, 
+		retval = windows_unrelocatepage_processrelocations(vcpu, imagebase, 
 				originalimagebase, (void *)((u32)unrelocateBuffer), relocEntryPrevious, relocEntryPrevious_relocInfo);
 		if(retval != UNRELOC_SUCCESS){
 			AX_DEBUG(("\n error in processing relocations for inputPagePrevious"));
@@ -388,7 +439,7 @@ u32 windows_unrelocatepage(IMAGE_NT_HEADERS32 *ntHeader, u32 imagebase, u32 vadd
 		}
 	}
 
-	retval = windows_unrelocatepage_processrelocations(imagebase, 
+	retval = windows_unrelocatepage_processrelocations(vcpu, imagebase, 
 			originalimagebase, (void *)((u32)unrelocateBuffer+PAGE_SIZE_4K), relocEntry, relocEntry_relocInfo);
 	if(retval != UNRELOC_SUCCESS){
 		AX_DEBUG(("\n error in processing relocations for inputPage"));
@@ -403,16 +454,17 @@ u32 windows_unrelocatepage(IMAGE_NT_HEADERS32 *ntHeader, u32 imagebase, u32 vadd
 }
 // end PE relocation code
 //==============================================================================
-
+#endif
 
 
 
 u8 outputPage[PAGE_SIZE_4K];
 
+//------------------------------------------------------------------------------
 //this is the top level function which verifies the code integrity of the 
 //memory page with physical address paddr under the windows OS
 //return: 1 on success, 0 on failure
-u32 windows_verifycodeintegrity(u32 paddr){
+u32 windows_verifycodeintegrity(VCPU *vcpu, u32 paddr, u32 vaddrfromcpu){
 	u32 vaddr, paligned_vaddr;
 	u32 imagebase, retval;
 	u8 *p;	
@@ -423,27 +475,36 @@ u32 windows_verifycodeintegrity(u32 paddr){
 	u32 paligned_paddr_prevpage, paligned_paddr_nextpage;
 	
 __step1:	//get virtual address inside guest OS corresponding to paddr
-	vaddr = windows_getvirtualaddress(paddr);
-	AX_DEBUG(("\nstep-1: paddr=0x%08x, vaddr=0x%08x", paddr, vaddr));
-	
-	if( (vaddr & (u32)0x00000FFF) - (paddr & (u32)0x00000FFF) > 0x10 ){
-		paligned_vaddr = PAGE_ALIGN_UP4K(vaddr);
-		vaddr = paligned_vaddr;
+	vaddr = windows_getvirtualaddress(vcpu, paddr);
+	if(vaddr != vaddrfromcpu){
+		printf("\nFATAL: computed vaddr=0x%08x != that from CPU=0x%08x",
+			vaddr, vaddrfromcpu);
+		//HALT();
 	}
-	
-	AX_DEBUG(("\n adjusted vaddr=0x%08x", vaddr));	
+
+	AX_DEBUG(("\nstep-1: paddr=0x%08x, vaddr=0x%08x", paddr, vaddr));
+
+	//we might need to adjust vaddr/paddr on AMD SVM based systems
+	//which report incorrect paddr if instruction straddles page boundaries
+	//if( (vaddr & (u32)0x00000FFF) - (paddr & (u32)0x00000FFF) > 0x10 ){
+	//	paligned_vaddr = PAGE_ALIGN_UP4K(vaddr);
+	//	vaddr = paligned_vaddr;
+	//}
+	//AX_DEBUG(("\n adjusted vaddr=0x%08x", vaddr));	
 	
 __step2:	//check for valid PE image if in protected mode
-	if(! ((u32)win_vmcb->cr0 & (u32)CR0_PE) ){
+	if(! (vcpu->guest_currentstate & GSTATE_PROTECTEDMODE) ){
 		AX_DEBUG(("\nstep-2: SKIPPED - in real mode"));
-		goto __step4;
+		retval = 0;
+		goto __step5;
 	}
 	
-	imagebase=windows_scanmzpe(vaddr, &ntHeader);
+	imagebase=windows_scanmzpe(vcpu, vaddr, &ntHeader);
 	
 	if(imagebase == 0xFFFFFFFF){
 		AX_DEBUG(("\nstep-2: SKIPPED - in protected mode, but unable to find PE image"));
-		goto __step4;
+		retval = 0;
+		goto __step5;
 	}
 	
 	//only print for PE image with load imagebase = 0x80800000 = nt kernel
@@ -464,21 +525,22 @@ __step3:	//unrelocate the memory page of the PE image if needed
 	}
 
 	paligned_vaddr = PAGE_ALIGN_4K(vaddr);
-	paddr_prevpage = windows_getphysicaladdress(vaddr - PAGE_SIZE_4K);
+	paddr_prevpage = windows_getphysicaladdress(vcpu, vaddr - PAGE_SIZE_4K);
 	paligned_paddr_prevpage = PAGE_ALIGN_4K(paddr_prevpage);
-	if(paligned_paddr_prevpage >= __LDN_GUESTOS_PHYSMEMSIZE)	paligned_paddr_prevpage = 0xFFFFFFFF;
-	paddr_nextpage = windows_getphysicaladdress(vaddr + PAGE_SIZE_4K);
+	if(paligned_paddr_prevpage >= LDN_ENV_PHYSICALMEMORYLIMIT)	paligned_paddr_prevpage = 0xFFFFFFFF;
+	paddr_nextpage = windows_getphysicaladdress(vcpu, vaddr + PAGE_SIZE_4K);
 	paligned_paddr_nextpage = PAGE_ALIGN_4K(paddr_nextpage);
-	if(paligned_paddr_nextpage >= __LDN_GUESTOS_PHYSMEMSIZE)	paligned_paddr_nextpage = 0xFFFFFFFF;
+	if(paligned_paddr_nextpage >= LDN_ENV_PHYSICALMEMORYLIMIT)	paligned_paddr_nextpage = 0xFFFFFFFF;
 	
 		
-	//retval=windows_unrelocatepage(ntHeader, imagebase, vaddr, paligned_paddr, &pagebuffer);
-	retval=windows_unrelocatepage(ntHeader, imagebase, vaddr, paligned_paddr_prevpage, paligned_paddr, paligned_paddr_nextpage, &outputPage);
+	retval=windows_unrelocatepage(vcpu, ntHeader, imagebase, vaddr, (void *)paligned_paddr_prevpage, (void *)paligned_paddr, (void *)paligned_paddr_nextpage, (void *)&outputPage);
 	if(retval != UNRELOC_SUCCESS_NOUNRELOCATIONNEEDED && retval != UNRELOC_SUCCESS_UNRELOCATED){
 		AX_DEBUG(("\nstep-3: ERROR - unrelocate failed, proceeding in any case"));
-		goto __step4;
+		retval=0;
+		goto __step5;
 	}
 	
+
 	if(retval == UNRELOC_SUCCESS_NOUNRELOCATIONNEEDED){
 		AX_DEBUG(("\nstep-3: SUCCESS - no unrelocation needed"));
 	}else{
@@ -489,14 +551,28 @@ __step3:	//unrelocate the memory page of the PE image if needed
 	
 
 __step4:	//verify the memory page conents with hash list 
-	if(windows_unrelocate_cornercases(vaddr)){
-		AX_DEBUG(("\nstep-4: SKIPPED - Corner Case encountered"));
-		return 1;
+	//if(windows_unrelocate_cornercases(vaddr)){
+	//	AX_DEBUG(("\nstep-4: SKIPPED - Corner Case encountered"));
+	//	return 1;
+	//}
+	{
+		extern struct hashinfo hashlist_full[];
+		extern struct hashinfo hashlist_partial[];
+		u32 index, fullhash;
+		retval=approvedexec_checkhashes(paligned_paddr, &index, &fullhash);
+
+		if(!retval){
+			printf("\nPE base=0x%08x, UNMATCHED, p=0x%08x, v=0x%08x", imagebase, PAGE_ALIGN_4K(paddr), paligned_vaddr);
+		}else{
+			printf("\nPE base=0x%08x, MATCHED  , p=0x%08x, v=0x%08x", imagebase, PAGE_ALIGN_4K(paddr), paligned_vaddr);
+			if(fullhash)
+				printf("\n  %s", hashlist_full[index].name);
+			else
+				printf("\n  %s", hashlist_partial[index].name);
+		}
 	}
 
-	
-	retval=approvedexec_checkhashes(paligned_paddr);
-
+__step5:	
 	if(retval){
 		AX_DEBUG(("\nstep-4: SUCCESS - verified page contents"));
 	}else{

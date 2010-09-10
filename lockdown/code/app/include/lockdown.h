@@ -24,6 +24,8 @@
 #define LDN_MACHINE_NETWORKDEVICES {0x44,0,0},{0x46,0x06,0x00}
 
 
+extern u32 LDN_ENV_PHYSICALMEMORYLIMIT;
+
 #ifndef __ASSEMBLY__
 
 typedef struct {

@@ -12,13 +12,32 @@
 u32 acpi_control_portnum=0;
 #endif
 
-
+u32 LDN_ENV_PHYSICALMEMORYLIMIT=0; //max physical memory address permissible
+																		//for the guest environment
+ 
 u32 currentenvironment = LDN_ENV_UNTRUSTED_SIGNATURE; //default to untrusted env.
+
+//------------------------------------------------------------------------------
+//memcmp implementation
+int memcmp (const unsigned char *str1, const unsigned char *str2, int count){
+  register const unsigned char *s1 = (const unsigned char*)str1;
+  register const unsigned char *s2 = (const unsigned char*)str2;
+
+  while (count-- > 0)
+    {
+      if (*s1++ != *s2++)
+	  return s1[-1] < s2[-1] ? -1 : 1;
+    }
+  return 0;
+}
 
                             
 u32 sechyp_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
   LDNPB *pldnPb;
   printf("\nCPU(0x%02x): Lockdown initiaizing...", vcpu->id);
+
+	//setup guest environment physical memory size
+	LDN_ENV_PHYSICALMEMORYLIMIT = apb->runtimephysmembase; 
 
 
 #if defined(__LDN_HYPERSWITCHING__)  
