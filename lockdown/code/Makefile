@@ -23,7 +23,7 @@
   export MP_VERSION := n
 	#where you want loader and runtime binaries to go, defaults to current dir.
 	#export INSTALLDIR = $(CURDIR)
-	export INSTALLDIR = /cygdrive/e/
+	export INSTALLDIR = /cygdrive/z/
   #misc. configuaration w.r.t serial debugging and NPT/EPT support
 	export NESTED_PAGING := y
   export DEBUG_SERIAL := y
@@ -70,6 +70,7 @@
   CFLAGS += -Winline
   CFLAGS += -m32 -march=k8 
   CFLAGS += -nostdinc -pipe -I$(EMHF_INCLUDEDIR) -I$(APP_INCLUDEDIR)
+  # CFLAGS += -O2
 
 #-----generate compiler/assembler defines from configuration options selected
   ifeq ($(NESTED_PAGING), y)
