@@ -514,6 +514,8 @@ __step2:	//check for valid PE image if in protected mode
 		ax_debug_flag=0;
 	*/
 	
+	printf("\nSQ: imagebase=0x%08x, vaddr=0x%08x", imagebase, vaddr);
+	
 	AX_DEBUG(("\nstep-2: PE imagebase(load=0x%08x, orig=0x%08x), image size=0x%08x", 
 		imagebase, ntHeader->OptionalHeader.ImageBase, ntHeader->OptionalHeader.SizeOfImage));
 
@@ -525,6 +527,7 @@ __step3:	//unrelocate the memory page of the PE image if needed
 	}
 
 	paligned_vaddr = PAGE_ALIGN_4K(vaddr);
+	printf("\npaligned_vaddr= 1-0x%08x,", paligned_vaddr);
 	paddr_prevpage = windows_getphysicaladdress(vcpu, vaddr - PAGE_SIZE_4K);
 	paligned_paddr_prevpage = PAGE_ALIGN_4K(paddr_prevpage);
 	if(paligned_paddr_prevpage >= LDN_ENV_PHYSICALMEMORYLIMIT)	paligned_paddr_prevpage = 0xFFFFFFFF;
@@ -540,6 +543,8 @@ __step3:	//unrelocate the memory page of the PE image if needed
 		goto __step5;
 	}
 	
+ 	printf("2-0x%08x,", paligned_vaddr);
+
 
 	if(retval == UNRELOC_SUCCESS_NOUNRELOCATIONNEEDED){
 		AX_DEBUG(("\nstep-3: SUCCESS - no unrelocation needed"));
@@ -561,14 +566,17 @@ __step4:	//verify the memory page conents with hash list
 		u32 index, fullhash;
 		retval=approvedexec_checkhashes(paligned_paddr, &index, &fullhash);
 
+   	printf("3-0x%08x", paligned_vaddr);
+
 		if(!retval){
-			printf("\nPE base=0x%08x, UNMATCHED, p=0x%08x, v=0x%08x", imagebase, PAGE_ALIGN_4K(paddr), paligned_vaddr);
+			printf("\nPE base=0x%08x, UNMATCHED, p=0x%08x, v=0x%08x", imagebase, paddr, paligned_vaddr);
+			ASSERT ( (paligned_vaddr - imagebase) < SCANMZPE_MAXPESIZE ); 
 		}else{
-			printf("\nPE base=0x%08x, MATCHED  , p=0x%08x, v=0x%08x", imagebase, PAGE_ALIGN_4K(paddr), paligned_vaddr);
-			if(fullhash)
-				printf("\n  %s", hashlist_full[index].name);
-			else
-				printf("\n  %s", hashlist_partial[index].name);
+			//printf("\nPE base=0x%08x, MATCHED  , p=0x%08x, v=0x%08x", imagebase, PAGE_ALIGN_4K(paddr), paligned_vaddr);
+			//if(fullhash)
+			//	printf("\n  %s", hashlist_full[index].name);
+			//else
+			//	printf("\n  %s", hashlist_partial[index].name);
 		}
 	}
 
