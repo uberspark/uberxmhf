@@ -3,7 +3,7 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # app-specific configuration options
-export LDN_HYPERSWITCHING := y
+export LDN_HYPERSWITCHING := n
 export LDN_HYPERPARTITIONING := n
 export LDN_APPROVEDEXEC := y
 export LDN_SSLPA := n
@@ -28,7 +28,11 @@ endif
 
 # source files
 AS_SOURCES = 
-C_SOURCES = appmain.c acpi.c hp_sdisk_ata.c approvedexec.c approvedexec_windows.c sha1.c
+C_SOURCES = appmain.c acpi.c hp_sdisk_ata.c 
+
+ifeq ($(LDN_APPROVEDEXEC), y)
+C_SOURCES += approvedexec.c approvedexec_windows.c sha1.c
+endif
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))

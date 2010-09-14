@@ -460,6 +460,12 @@ u32 windows_unrelocatepage(VCPU *vcpu, IMAGE_NT_HEADERS32 *ntHeader, u32 imageba
 
 u8 outputPage[PAGE_SIZE_4K];
 
+//some TODOS
+//1. we need to ensure that the import address table is factored out
+//of the hash comparison. the IAT lies within the code page and hence for
+//those pages we need to do partial hashes
+
+
 //------------------------------------------------------------------------------
 //this is the top level function which verifies the code integrity of the 
 //memory page with physical address paddr under the windows OS
@@ -470,29 +476,35 @@ u32 windows_verifycodeintegrity(VCPU *vcpu, u32 paddr, u32 vaddrfromcpu){
 	u8 *p;	
 	IMAGE_NT_HEADERS32 *ntHeader;
 	int i;
-	u32 paligned_paddr=PAGE_ALIGN_4K(paddr);
+	u32 paligned_paddr;
 	u32 paddr_prevpage, paddr_nextpage;
 	u32 paligned_paddr_prevpage, paligned_paddr_nextpage;
-	
-__step1:	//get virtual address inside guest OS corresponding to paddr
-	vaddr = windows_getvirtualaddress(vcpu, paddr);
-	if(vaddr != vaddrfromcpu){
-		printf("\nFATAL: computed vaddr=0x%08x != that from CPU=0x%08x",
-			vaddr, vaddrfromcpu);
-		//HALT();
-	}
 
+	
+__step1:	
+	//if an instruction straddles page boundaries, the nested/extended
+	//page-fault intercept can deliver a physical address that has a 
+	//forward bias. for example, if the faulting paddr=0x0fff and the instruction
+	//there spanned to the next page (0x1000), the fault will give us a 
+	//paddr = 0x1000. however we need the page 0x0000 for hash computation
+	//so we always get the virtual address and check if the lower 12 bits equal
+	//the lower 12 bits of the paddr. if not, we traverse the guest paging
+	//structures (if loaded) to compute the correct physical address
+	vaddr = windows_getvirtualaddress(vcpu, paddr);
+	if( (vaddr & (u32)0x00000FFF) != (paddr & (u32)0x00000FFF) ){
+	 	//need to adjust paddr
+	 	paddr = windows_getphysicaladdress(vcpu, vaddr);
+	 	ASSERT(paddr != 0xFFFFFFFFUL);
+	}
+	
 	AX_DEBUG(("\nstep-1: paddr=0x%08x, vaddr=0x%08x", paddr, vaddr));
 
-	//we might need to adjust vaddr/paddr on AMD SVM based systems
-	//which report incorrect paddr if instruction straddles page boundaries
-	//if( (vaddr & (u32)0x00000FFF) - (paddr & (u32)0x00000FFF) > 0x10 ){
-	//	paligned_vaddr = PAGE_ALIGN_UP4K(vaddr);
-	//	vaddr = paligned_vaddr;
-	//}
-	//AX_DEBUG(("\n adjusted vaddr=0x%08x", vaddr));	
+	paligned_vaddr = PAGE_ALIGN_4K(vaddr);
+	paligned_paddr = PAGE_ALIGN_4K(paddr);
+
 	
-__step2:	//check for valid PE image if in protected mode
+__step2:	
+	//check for valid PE image if in protected mode
 	if(! (vcpu->guest_currentstate & GSTATE_PROTECTEDMODE) ){
 		AX_DEBUG(("\nstep-2: SKIPPED - in real mode"));
 		retval = 0;
@@ -507,27 +519,19 @@ __step2:	//check for valid PE image if in protected mode
 		goto __step5;
 	}
 	
-	//only print for PE image with load imagebase = 0x80800000 = nt kernel
-	/*if(imagebase == NTKERNEL_LOADIMAGEBASE)
-		ax_debug_flag=1;
-	else
-		ax_debug_flag=0;
-	*/
-	
-	printf("\nSQ: imagebase=0x%08x, vaddr=0x%08x", imagebase, vaddr);
+	//printf("\nSQ: imagebase=0x%08x, vaddr=0x%08x", imagebase, vaddr);
 	
 	AX_DEBUG(("\nstep-2: PE imagebase(load=0x%08x, orig=0x%08x), image size=0x%08x", 
 		imagebase, ntHeader->OptionalHeader.ImageBase, ntHeader->OptionalHeader.SizeOfImage));
 
 
-__step3:	//unrelocate the memory page of the PE image if needed
+__step3:	
+	//unrelocate the memory page of the PE image if needed
 	if(imagebase == ntHeader->OptionalHeader.ImageBase){
 		AX_DEBUG(("\nstep-3: SKIPPED - PE image loaded at preferred adress, no relocation needed"));
 		goto __step4;
 	}
 
-	paligned_vaddr = PAGE_ALIGN_4K(vaddr);
-	printf("\npaligned_vaddr= 1-0x%08x,", paligned_vaddr);
 	paddr_prevpage = windows_getphysicaladdress(vcpu, vaddr - PAGE_SIZE_4K);
 	paligned_paddr_prevpage = PAGE_ALIGN_4K(paddr_prevpage);
 	if(paligned_paddr_prevpage >= LDN_ENV_PHYSICALMEMORYLIMIT)	paligned_paddr_prevpage = 0xFFFFFFFF;
@@ -543,9 +547,6 @@ __step3:	//unrelocate the memory page of the PE image if needed
 		goto __step5;
 	}
 	
- 	printf("2-0x%08x,", paligned_vaddr);
-
-
 	if(retval == UNRELOC_SUCCESS_NOUNRELOCATIONNEEDED){
 		AX_DEBUG(("\nstep-3: SUCCESS - no unrelocation needed"));
 	}else{
@@ -555,22 +556,18 @@ __step3:	//unrelocate the memory page of the PE image if needed
 	
 	
 
-__step4:	//verify the memory page conents with hash list 
-	//if(windows_unrelocate_cornercases(vaddr)){
-	//	AX_DEBUG(("\nstep-4: SKIPPED - Corner Case encountered"));
-	//	return 1;
-	//}
+__step4:	
+	//verify the memory page conents with hash list 
 	{
 		extern struct hashinfo hashlist_full[];
 		extern struct hashinfo hashlist_partial[];
 		u32 index, fullhash;
 		retval=approvedexec_checkhashes(paligned_paddr, &index, &fullhash);
 
-   	printf("3-0x%08x", paligned_vaddr);
-
 		if(!retval){
-			printf("\nPE base=0x%08x, UNMATCHED, p=0x%08x, v=0x%08x", imagebase, paddr, paligned_vaddr);
-			ASSERT ( (paligned_vaddr - imagebase) < SCANMZPE_MAXPESIZE ); 
+			printf("\nPEBase(o:a)=(0x%08x:0x%08x), UNMATCHED, p=0x%08x, v=0x%08x", 
+						ntHeader->OptionalHeader.ImageBase, imagebase, 
+						paddr, paligned_vaddr);
 		}else{
 			//printf("\nPE base=0x%08x, MATCHED  , p=0x%08x, v=0x%08x", imagebase, PAGE_ALIGN_4K(paddr), paligned_vaddr);
 			//if(fullhash)

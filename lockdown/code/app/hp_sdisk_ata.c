@@ -82,10 +82,7 @@ u32 check_if_LBA_outofbounds(u64 lbaaddr){
 	 //if we are operating in the TRUSTED environment, restrict all sector
 	 //accesses to the trusted partition and the first 63 sectors which is
    //the legacy bootmanager area
-   if( (((u64)lbaaddr >= (u64)LDN_ENV_TRUSTED_STARTSECTOR)
-	   && ((u64)lbaaddr <= (u64)LDN_ENV_TRUSTED_ENDSECTOR))
-		  || ((u64)lbaaddr < 63ULL) ||
-      ((u64)lbaaddr >= 63ULL && (u64)lbaaddr <= 33554494ULL) )  //include the boot partition for demo purposes
+   if( LDN_OUTOFBOUNDS_CHECK )  
 			return 0; //not out of bounds
 	 else
 			return 1; //out of bounds
