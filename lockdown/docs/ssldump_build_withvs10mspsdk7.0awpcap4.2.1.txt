@@ -33,7 +33,7 @@ build and get ssldump to work.
 
 5. patch the ssldump source base with the following
    diff
-
+	patch-ssldump-0.9b3
 
 
 
