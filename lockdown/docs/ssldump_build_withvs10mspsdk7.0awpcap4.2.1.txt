@@ -1,0 +1,51 @@
+building ssldump
+author: amit vasudevan (amitvasudevan@acm.org)
+
+premise:
+ssldump can build on windows only with visual c++ 6.0
+and winpcap 2.3. both of them are outdated. in fact
+winpcap 2.3 doesnt work with the new NDIS drivers on
+windows 2003 and above.
+
+getting ssldump to work with the following configuration
+proved to be a challenge:
+
+winpcap: version 4.1.2
+microsoft visual c++/studio 2010 express edition command line environment
+microsoft windows platform sdk v7.0A
+
+i came up with the steps as outlined below to succesfully
+build and get ssldump to work. 
+
+1. unpack ssldump-0.9b3.tar.gz to get
+   "path\ssldump-0.9b3". i will call this
+	SSLDUMP_BASE_DIR from this point on.
+
+
+2. unpack 2.3-WPcapSrc.zip into
+   SSLDUMP_BASE_DIR\win32
+
+3. unpack 2.3-WPdpack.zip into
+   SSLDUMP_BASE_DIR\win32
+
+4. unpack WpdPack_4_1_2.zip into
+   SSLDUMP_BASE_DIR\win32\wpcaplibs
+
+5. patch the ssldump source base with the following
+   diff
+
+
+
+
+6. fire up a VS/VC++ command line build environment
+   and from SSLDUMP_BASE_DIR issue the following
+   command
+
+   nmake /a /f win32\vcwin32.mak all
+
+   ignore the warnings (there will be a lot of them)
+
+7. final executable should be at:
+   SSLDUMP_BASE_DIR\win32\out32\ssldump.exe
+
+
