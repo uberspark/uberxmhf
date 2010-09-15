@@ -464,7 +464,8 @@ u8 outputPage[PAGE_SIZE_4K];
 //1. we need to ensure that the import address table is factored out
 //of the hash comparison. the IAT lies within the code page and hence for
 //those pages we need to do partial hashes
-
+//2. we need to account for PEs whose sections are not page aligned during
+//hash generation
 
 //------------------------------------------------------------------------------
 //this is the top level function which verifies the code integrity of the 
@@ -567,7 +568,7 @@ __step4:
 		if(!retval){
 			printf("\nPEBase(o:a)=(0x%08x:0x%08x), UNMATCHED, p=0x%08x, v=0x%08x", 
 						ntHeader->OptionalHeader.ImageBase, imagebase, 
-						paddr, paligned_vaddr);
+						paddr, vaddr);
 		}else{
 			//printf("\nPE base=0x%08x, MATCHED  , p=0x%08x, v=0x%08x", imagebase, PAGE_ALIGN_4K(paddr), paligned_vaddr);
 			//if(fullhash)
