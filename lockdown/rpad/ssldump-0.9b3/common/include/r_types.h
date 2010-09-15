@@ -63,6 +63,7 @@ typedef unsigned long UINT4;
 #endif
 #endif
 
+/*
 #ifndef R_DEFINED_UINT8
 #ifndef SIZEOF_UNSIGNED_LONG
 typedef unsigned long UINT8;
@@ -82,6 +83,7 @@ typedef unsigned __int64 UINT8;
 # endif
 #endif
 #endif
+*/
 
 #ifndef R_DEFINED_UCHAR
 typedef unsigned char UCHAR;

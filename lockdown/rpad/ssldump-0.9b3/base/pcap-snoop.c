@@ -179,6 +179,92 @@ static module_def modules[]={
 
 int parse_ssl_flag PROTO_LIST((int c));
 
+
+//------------------------------------------------------------------------------
+//getopt function
+int	opterr = 1,		/* if error message should be printed */
+	optind = 1,		/* index into parent argv vector */
+	optopt,			/* character checked for validity */
+	optreset;		/* reset getopt */
+char	*optarg;		/* argument associated with option */
+
+#define	BADCH	(int)'?'
+#define	BADARG	(int)':'
+#define	EMSG	""
+
+/*
+ * getopt --
+ *	Parse argc/argv argument vector.
+ */
+int
+getopt(nargc, nargv, ostr)
+	int nargc;
+	char * const *nargv;
+	const char *ostr;
+{
+#ifdef WIN32
+	char *__progname="ssldump";
+#else
+	extern char *__progname;
+#endif
+	static char *place = EMSG;		/* option letter processing */
+	char *oli;				/* option letter list index */
+
+	if (optreset || !*place) {		/* update scanning pointer */
+		optreset = 0;
+		if (optind >= nargc || *(place = nargv[optind]) != '-') {
+			place = EMSG;
+			return (-1);
+		}
+		if (place[1] && *++place == '-') {	/* found "--" */
+			++optind;
+			place = EMSG;
+			return (-1);
+		}
+	}					/* option letter okay? */
+	if ((optopt = (int)*place++) == (int)':' ||
+	    !(oli = strchr(ostr, optopt))) {
+		/*
+		 * if the user didn't specify '-' as an option,
+		 * assume it means -1.
+		 */
+		if (optopt == (int)'-')
+			return (-1);
+		if (!*place)
+			++optind;
+		if (opterr && *ostr != ':')
+			(void)fprintf(stderr,
+			    "%s: illegal option -- %c\n", __progname, optopt);
+		return (BADCH);
+	}
+	if (*++oli != ':') {			/* don't need argument */
+		optarg = NULL;
+		if (!*place)
+			++optind;
+	}
+	else {					/* need an argument */
+		if (*place)			/* no white space */
+			optarg = place;
+		else if (nargc <= ++optind) {	/* no arg */
+			place = EMSG;
+			if (*ostr == ':')
+				return (BADARG);
+			if (opterr)
+				(void)fprintf(stderr,
+				    "%s: option requires an argument -- %c\n",
+				    __progname, optopt);
+			return (BADCH);
+		}
+	 	else				/* white space */
+			optarg = nargv[optind];
+		place = EMSG;
+		++optind;
+	}
+	return (optopt);			/* dump back option letter */
+}
+
+
+
 int main(argc,argv)
   int argc;
   char **argv;
@@ -186,13 +272,13 @@ int main(argc,argv)
     pcap_t *p;
     int r;
     n_handler *n;
-#ifdef _WIN32
+/*#ifdef _WIN32
     __declspec(dllimport) char *optarg;
     __declspec(dllimport) int optind;
 #else
     extern char *optarg;
     extern int optind;
-#endif
+#endif*/
     char *interface_name=0;
     char *file=0;
     char *filter=0;
@@ -326,6 +412,9 @@ int main(argc,argv)
     if(r=network_handler_create(mod,&n))
       err_exit("Couldn't create network handler",r);
 
+		//print interface we are listening on (interface_name is always unicode)
+		printf("\nSSLDump on interface : %ws", interface_name);
+		
     pcap_loop(p,-1,pcap_cb,(u_char *)n);
 
     if(NET_print_flags & NET_PRINT_TYPESET)

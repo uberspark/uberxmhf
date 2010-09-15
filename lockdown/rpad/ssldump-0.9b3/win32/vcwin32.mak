@@ -75,6 +75,9 @@ WINPCAP_SRC_DIR=$(WIN32_DIR)\winpcap
 WINPCAP_INCLUDES=-I$(WINPCAP_DEV_DIR)\include -I$(WINPCAP_DEV_DIR)\include\net \
 -I$(WINPCAP_SRC_DIR)\wpcap\libpcap\win32\include
 
+WINPCAP_LIB_DIR=$(WIN32_DIR)\wpcaplibs\WpdPack
+
+
 #
 # OpenSSL-specific stuff
 #
@@ -131,7 +134,7 @@ COMMON_DEFINES=/D STDC /D WIN32 /D _CONSOLE \
 	$(OPENSSL_DEFINES) /D STDC_HEADERS /D SIZEOF_UNSIGNED_SHORT=2 /D SIZEOF_UNSIGNED_LONG=4 \
 	/D RETSIGTYPE=void /D SIZEOF_CHAR=1 /D SIZEOF_SHORT=2 /D SIZEOF_INT=4
 COMMON_CFLAGS=/nologo /W3 $(COMMON_INCLUDES) $(COMMON_DEFINES) /Fp"$(OBJ_DIR)\ssldump.pch" /YX /Fd"$(OBJ_DIR)\\" /FD /c 
-COMMON_LIBS=gdi32.lib Wsock32.lib $(WINPCAP_DEV_DIR)\lib\wpcap.lib
+COMMON_LIBS=gdi32.lib Wsock32.lib $(WINPCAP_LIB_DIR)\lib\wpcap.lib
 COMMON_LFLAGS=/nologo /subsystem:console /machine:I386 /opt:ref /incremental:no
 
 
