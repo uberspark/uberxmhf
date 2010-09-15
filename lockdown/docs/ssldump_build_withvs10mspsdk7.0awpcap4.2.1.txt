@@ -46,6 +46,6 @@ build and get ssldump to work.
    ignore the warnings (there will be a lot of them)
 
 7. final executable should be at:
-   SSLDUMP_BASE_DIR\win32\out32\ssldump.exe
+   SSLDUMP_BASE_DIR\out32\ssldump.exe
 
 
