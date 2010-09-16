@@ -146,6 +146,7 @@ int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
    return rxframesize;
   }
 
+/*
 	//ldnvnet driver communication test
 	int main(int argc, char *argv[]){
 		HANDLE drvh;
@@ -321,6 +322,6 @@ int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
 		return 0;
 	}
 
-
+*/
 	
 
