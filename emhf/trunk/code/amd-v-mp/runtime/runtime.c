@@ -38,6 +38,7 @@
 
 //---includes-------------------------------------------------------------------
 #include <target.h>
+#include <processor.h>
 
 //---notes
 // CLGI/STGI
@@ -64,6 +65,21 @@ PCPU *pcpus= (PCPU *)__mp_cpuinfo;
 MIDTAB *midtable = (MIDTAB *)__midtable;
 u32 midtable_numentries=0;
 
+// XXX When this defaults to 0 then we will attempt to skinit.
+// XXX Currently set to '1' to DISABLE skinit due to buggy HVM launch
+u32 skinit_status_flag=1; // set to 1 after skinit has run on BSP
+
+u32 cpus_active=0; //number of CPUs that are awake, should be equal to
+                  //midtable_numentries -1 if all went well with the
+                  //MP startup protocol
+u32 lock_cpus_active=1; //spinlock to access the above
+
+u32 ap_go_signal=0; //go signal becomes 1 after BSP finishes rallying
+u32 lock_ap_go_signal=1; //spunlock to access the above
+
+u32 cleared_ucode=0; //number of CPUs whose ucode has been cleared
+u32 lock_cleared_ucode=1; // spinlock to access the above
+                    
 
 //---forward declarations-------------------------------------------------------
 void cstartup(void);
@@ -155,7 +171,44 @@ void udelay(u32 usecs){
   outb(val, 0x61);
 }
 
+// layer of indirection for flag variable
+u32 is_drtm_complete(void) {
+    printf("\nskinit_status_flag %d", skinit_status_flag);
+    return skinit_status_flag;
+}
+
+// XXX TODO: integrate this function and wakeupAPs() to avoid
+// duplication of code. -JMM
+void send_init_ipi_to_all_APs(void) {
+  u32 eax, edx;
+  volatile u32 *icr;
+  
+  //read LAPIC base address from MSR
+  rdmsr(MSR_APIC_BASE, &eax, &edx);
+  ASSERT( edx == 0 ); //APIC is below 4G
+  printf("\nLAPIC base and status=0x%08x", eax);
+    
+  icr = (u32 *) (((u32)eax & 0xFFFFF000UL) + 0x300);
+
+  //our test code is at 1000:0000, we need to send 10 as vector
+  //send INIT
+  printf("\nSending INIT IPI to all APs...");
+  *icr = 0x000c4500UL;
+  udelay(10000);
+  //wait for command completion
+  {
+    u32 val;
+    do{
+      val = *icr;
+    }while( (val & 0x1000) );
+  }
+  printf("Done.");
+}
+
 //---wakeupAPs------------------------------------------------------------------
+// This function is called twice.  Once before DRTM is established, and once
+// afterwards.  On AMD, the APs need to be in the INIT state with their microcode cleared.
+
 void wakeupAPs(void){
   u32 eax, edx;
   volatile u32 *icr;
@@ -180,7 +233,7 @@ void wakeupAPs(void){
 
   //our test code is at 1000:0000, we need to send 10 as vector
   //send INIT
-  printf("\nSending INIT...");
+  printf("\nSending INIT IPI to all APs...");
   *icr = 0x000c4500UL;
   udelay(10000);
   //wait for command completion
@@ -211,6 +264,89 @@ void wakeupAPs(void){
   }    
     
   printf("\nAPs should be awake!");
+}
+
+void dump_bytes(char *label, unsigned char *bytes, unsigned int len) {
+  unsigned int i;
+  if(!bytes) return;
+  if(label) printf("\n%s (%d bytes):\n", label, len);
+
+  for (i=0; i<len; i++) {
+    printf("%02x", bytes[i]);
+    if(i>0 && !((i+1)%16)) {
+      printf("\n");
+    } else {
+      printf(" ");
+    }
+  }
+  if(len%16) {
+    printf("\n");
+  }
+}
+
+extern u32 uart_tx_empty(void);
+
+void do_drtm(void) {
+    int i;
+    void *slb_region;
+    // defined in slb.S:
+    extern u32 _slb_bootstrap_start[], _slb_bootstrap_end[],
+        _slb_start[], _slb_end[],
+        _slb_cr3_value[],
+        _slb_cr4_value[],
+        _slb_esp_value[],
+        _slb_ebp_value[],
+        _slb_post_skinit_entry[],
+        _slb_skinit_status_flag_ptr[];
+    
+    printf("\nglobal _slb_start 0x%08lx",             (unsigned int)_slb_start);
+    printf("\nglobal _slb_bootstrap_start 0x%08lx",   (unsigned int)_slb_bootstrap_start);
+    printf("\nglobal _slb_cr3_value 0x%08lx",         (unsigned int)_slb_cr3_value);
+    printf("\nglobal _slb_cr4_value 0x%08lx",         (unsigned int)_slb_cr4_value);
+    printf("\nglobal _slb_esp_value 0x%08lx",         (unsigned int)_slb_esp_value);
+    printf("\nglobal _slb_ebp_value 0x%08lx",         (unsigned int)_slb_ebp_value);
+    printf("\nglobal _slb_post_skinit_entry 0x%08lx", (unsigned int)_slb_post_skinit_entry);
+    printf("\nglobal _slb_skinit_status_flag_ptr 0x%08lx", (unsigned int)_slb_skinit_status_flag_ptr);
+    printf("\nglobal _slb_bootstrap_end 0x%08lx",     (unsigned int)_slb_bootstrap_end);
+    printf("\nglobal _slb_end 0x%08lx",               (unsigned int)_slb_end);
+
+    _slb_cr3_value[0] = read_cr3();
+    _slb_cr4_value[0] = read_cr4();
+    _slb_esp_value[0] = read_esp() & 0xfffff000; // mask stack; cheap way to read it
+    _slb_ebp_value[0] = read_ebp() & 0xfffff000; // mask base; cheap way to read it
+    _slb_post_skinit_entry[0] = (u32)cstartup;    
+    _slb_skinit_status_flag_ptr[0] = (u32)&skinit_status_flag;
+    
+    printf("\n_slb_cr3_value[0] 0x%08lx", _slb_cr3_value[0]);
+    printf("\n_slb_cr4_value[0] 0x%08lx", _slb_cr4_value[0]);
+    printf("\n_slb_esp_value[0] 0x%08lx", _slb_esp_value[0]);
+    printf("\n_slb_ebp_value[0] 0x%08lx", _slb_ebp_value[0]);
+    printf("\n_slb_post_skinit_entry[0] 0x%08lx", _slb_post_skinit_entry[0]);
+    printf("\n_slb_skinit_status_flag_ptr[0] 0x%08lx", _slb_skinit_status_flag_ptr[0]);
+
+    slb_region = (void *)0x20000; // 128KB
+    memset(slb_region, 0, 0x10000); // zero 64 KB
+    memcpy(slb_region, _slb_start, (unsigned int)_slb_end - (unsigned int)_slb_start);    
+    
+    // dump SLB's interesting contents for verification
+    dump_bytes("slb.S", (unsigned char *)_slb_start, (unsigned int)_slb_end-(unsigned int)_slb_start);
+
+    // APs need to be in INIT state to give skinit best chance to complete successfully
+    send_init_ipi_to_all_APs();
+
+    // Global variables that need to be reset to zero
+    // XXX TODO: group global variables into a nice struct and zero the whole thing cleanly
+
+    midtable_numentries=0;
+    cpus_active=0;
+    lock_cpus_active=1; //spinlock to access the above
+    ap_go_signal=0; //go signal becomes 1 after BSP finishes rallying
+    lock_ap_go_signal=1; //spunlock to access the above    
+    cleared_ucode=0; //number of CPUs whose ucode has been cleared
+    lock_cleared_ucode=1; // spinlock to access the above
+
+    
+    call_skinit((unsigned long)slb_region); // we will end up back in cstartup()!
 }
 
 #ifdef __NESTED_PAGING__
@@ -325,7 +461,6 @@ void setupvcpus(MIDTAB *midtable, u32 midtable_numentries){
 }
 
 
-
 //---runtime main---------------------------------------------------------------
 void cstartup(void){
 	//setup debugging	
@@ -366,6 +501,16 @@ void cstartup(void){
   //setup vcpus
   setupvcpus(midtable, midtable_numentries);
 
+  /* Possible alternative location for microcode clear; prefer allcpus_common_start. */
+/*   //inserted by Jon to clear BSP microcode */
+/*   //AP microcode cleared during bootup in runtimesup.S */
+/*   { */
+/*     int dummy=0; */
+/*     wrmsr(MSR_AMD64_PATCH_CLEAR, dummy, dummy); */
+/*   } */
+
+  
+  
   //wake up APS
   if(midtable_numentries > 1)
     wakeupAPs();
@@ -394,15 +539,6 @@ u32 isbsp(void){
   else
     return 0;
 }
-
-u32 cpus_active=0; //number of CPUs that are awake, should be equal to
-                  //midtable_numentries -1 if all went well with the
-                  //MP startup protocol
-u32 lock_cpus_active=1; //spinlock to access the above
-
-u32 ap_go_signal=0; //go signal becomes 1 after BSP finishes rallying
-u32 lock_ap_go_signal=1; //spunlock to access the above
-
 
 //---setup VMCB-----------------------------------------------------------------
 void initVMCB(VCPU *vcpu){
@@ -534,7 +670,6 @@ void initVMCB(VCPU *vcpu){
 }
 
 
-
 //---init SVM-------------------------------------------------------------------
 void initSVM(VCPU *vcpu){
   u32 eax, edx, ecx, ebx;
@@ -559,13 +694,13 @@ void initSVM(VCPU *vcpu){
   // check for nested paging support and number of ASIDs 
 	cpuid(0x8000000A, &eax, &ebx, &ecx, &edx);
   if(!(edx & 0x1)){
-		printf("\nCPU(0x%02x): No support for Nested Paging, HALTING!");
+      printf("\nCPU(0x%02x): No support for Nested Paging, HALTING!", vcpu->id);
 		HALT();
 	}
 	
-	printf("\nCPU(0x%02x): Nested paging support present");
+  printf("\nCPU(0x%02x): Nested paging support present", vcpu->id);
 	if( (ebx-1) < 2 ){
-		printf("\nCPU(0x%02x): Total number of ASID is too low, HALTING!");
+		printf("\nCPU(0x%02x): Total number of ASID is too low, HALTING!", vcpu->id);
 		HALT();
 	}
 	
@@ -602,12 +737,40 @@ void initSVM(VCPU *vcpu){
 }
 
 
+//---CPUs must all have their microcode cleared for SKINIT to be successful-----
+void clearMicrocode(VCPU *vcpu){
+  u32 ucode_rev;
+  u32 dummy=0;
+
+  // Current microcode patch level available via MSR read
+
+  rdmsr(MSR_AMD64_PATCH_LEVEL, &ucode_rev, &dummy);
+  printf("\nCPU%d: existing microcode version 0x%08x", vcpu->id, ucode_rev);
+    
+  if(ucode_rev != 0) {
+      wrmsr(MSR_AMD64_PATCH_CLEAR, dummy, dummy);
+      printf("\nCPU%d: microcode CLEARED", vcpu->id);
+  }
+
+  spin_lock(&lock_cleared_ucode);
+  cleared_ucode++;
+  spin_unlock(&lock_cleared_ucode);
+
+  printf("\ncleared_ucode now %d", cleared_ucode);
+}
+
+
 //---allcpus_common_start-------------------------------------------------------
 void allcpus_common_start(VCPU *vcpu){
   //we start here with all CPUs executing common code, we 
   //will make BSP distinction based on isbsp macro which basically
-  //reads the LAPIC MSR to see if it is the BSP
+  //reads the LAPIC MSR to see if it is the BSP. This function
+  //executes twice: before and after SKINIT
  
+  //clear microcode
+  if(!is_drtm_complete()) {
+    clearMicrocode(vcpu);
+  }
   
   //step:1 rally all APs up, make sure all of them started, this is
   //a task for the BSP
@@ -624,6 +787,15 @@ void allcpus_common_start(VCPU *vcpu){
     //that all APs have been successfully started
     while(cpus_active < midtable_numentries);
     
+    // Need to wait until APs active to do DRTM, since it is then that the APs will
+    // clear their microcode.    
+    if(!is_drtm_complete()) {
+        printf("\nBSP detects that DRTM has not yet been performed. Doing DRTM...");
+        do_drtm(); // this function will not return
+        printf("\nERROR: IMPOSSIBLE CODE PATH!");
+        HALT();
+    }
+    
     printf("\nAPs all awake...Setting them free...");
     spin_lock(&lock_ap_go_signal);
     ap_go_signal=1;
@@ -638,7 +810,18 @@ void allcpus_common_start(VCPU *vcpu){
     cpus_active++;
     spin_unlock(&lock_cpus_active);
 
-    while(!ap_go_signal);
+    // This code path is exercized twice:
+    // 1. Before SKINIT, APs are initially brought online to clear their microcode.
+    //    In this case, they should then halt and wait for the INIT IPI from the BSP.
+    // 2. After SKINIT, they are fully initialized and the full system boot should
+    //    proceed.
+    
+    if(!is_drtm_complete()) { // Before SKINIT, stop here, since microcode is already  
+        HALT();               // cleared.  Execution will not continue past this point.
+    }                         // Rather, BSP will send INIT IPI and then we will be    
+                              // reinitialized by SKINIT.
+
+    while(!ap_go_signal); // After SKINIT.  Just wait for the BSP to tell us all is well.
  
     printf("\nAP(0x%02x): My ESP is 0x%08x, Waiting for SIPI...", vcpu->id, vcpu->esp);
 

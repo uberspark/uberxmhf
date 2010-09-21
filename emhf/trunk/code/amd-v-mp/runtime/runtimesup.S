@@ -334,7 +334,11 @@ x_init_stack:
       movw %ax, %ds
       movw %ax, %es
       movw %ax, %ss
-      
+
+      // inserted by Jon to clear AP microcode
+      //movl $MSR_AMD64_PATCH_CLEAR, %ecx
+      //wrmsr // eax and edx ignored
+              
       movl $(_ap_cr3_value - _ap_bootstrap_start + (AP_BOOTSTRAP_CODE_SEG << 4)), %esi
       movl (%esi), %ebx
       movl %ebx, %cr3

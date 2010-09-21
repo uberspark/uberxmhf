@@ -99,7 +99,8 @@ static struct {
   u8 fifo;
 } uart_config = {115200, 8, PARITY_NONE, 1, 0};
 
-static inline u32 uart_tx_empty(void)
+//static
+inline u32 uart_tx_empty(void)
 {
   u8 x;
   x = UART_READ_REG(LSR)
@@ -124,7 +125,8 @@ void putstr(const char *str)
   while ((tmp = (u8)*str++) != '\0')
   {
     if (tmp == '\n')
-      tmp = '\r';
+        serial_putc('\r');        
+        //tmp = '\r';
     serial_putc(tmp);
   }
 

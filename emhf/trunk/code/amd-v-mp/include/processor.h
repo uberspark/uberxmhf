@@ -140,6 +140,18 @@ static inline unsigned long read_cr3(void){
   return __cr3;
 }
 
+static inline unsigned long read_esp(void){
+  unsigned long __esp;
+  __asm__("mov %%esp,%0\n\t" :"=r" (__esp));
+  return __esp;
+}
+
+static inline unsigned long read_ebp(void){
+  unsigned long __ebp;
+  __asm__("mov %%ebp,%0\n\t" :"=r" (__ebp));
+  return __ebp;
+}
+
 static inline void write_cr3(unsigned long val){
   __asm__("mov %0,%%cr3\n\t"
           "jmp 1f\n\t"
@@ -162,6 +174,11 @@ static inline unsigned long read_cr4(void){
 
 static inline void write_cr4(unsigned long val){
   __asm__("mov %0,%%cr4": :"r" ((unsigned long)val));
+}
+
+static inline void call_skinit(unsigned long eax) {
+    __asm__("mov %0, %%eax": :"r" (eax));
+    __asm__("skinit":);
 }
 
 

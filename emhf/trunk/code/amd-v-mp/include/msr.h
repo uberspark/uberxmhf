@@ -45,6 +45,9 @@
 #define IGNNE 0xc0010115        //can be used to freeze/restart 
 #define SMM_CTL 0xc0010116      //SMRAM control
 
+#define MSR_AMD64_PATCH_LEVEL 0x0000008b //AMD-specific microcode patch level MSR
+#define MSR_AMD64_PATCH_CLEAR 0xc0010021 //AMD-specific microcode patch clear
+
 #define MSR_APIC_BASE 0x0000001B
 
 // EFER bits 

@@ -2,7 +2,7 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files
-AS_SOURCES = runtimesup.S islayersup.S
+AS_SOURCES = runtimesup.S islayersup.S slb.S
 C_SOURCES = runtime.c islayer.c  apic.c libsechyp.c
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
