@@ -54,6 +54,7 @@
 // upon resuming the hypervisor or guest resumes normally!
 
 //---globals and externs--------------------------------------------------------
+// XXX TODO: Move these into globals.h
 extern u32 _xtlpb[];
 extern u32 __grube820buffer[], __mp_cpuinfo[], __midtable[];
 extern u32 svm_iopm[];
@@ -458,6 +459,7 @@ void cstartup(void){
 #endif
 	printf("\nruntime initializing...");
     init_runtime_globals(&g_runtime);
+    init_islayer_globals(&g_islayer);
 
   //debug, dump E820 and MP table
  	printf("\nNumber of E820 entries = %u", lpb->XtVmmE820NumEntries);

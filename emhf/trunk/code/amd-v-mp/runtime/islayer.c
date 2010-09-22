@@ -40,27 +40,10 @@
 
 //---globals and externs--------------------------------------------------------
 
-
-//the quiesce counter, all CPUs except for the one requesting the
-//quiesce will increment this when they get their quiesce signal
-u32 quiesce_counter=0;
-u32 lock_quiesce_counter=1; //spinlock to access the above
-
-//resume counter to rally all CPUs after resumption from quiesce
-u32 quiesce_resume_counter=0;
-u32 lock_quiesce_resume_counter=1; //spinlock to access the above
-
-//the quiesce variable and its lock
-u32 quiesce=0;      //if 1, then we have a quiesce in process
-u32 lock_quiesce=1; 
-
-//resume signal
-u32 quiesce_resume_signal=0; //signal becomes 1 to resume after quiescing
-u32 lock_quiesce_resume_signal=1; //spinlock to access the above
+ISLAYER_GLOBALS g_islayer; // initialized in runtime.c:cstartup
 
 // XXX not well-documented
 extern GRUBE820 *grube820list;
-u32 ine820handler=0;
 extern u32 lapic_base;
 
 //---function prototypes--------------------------------------------------------
@@ -71,30 +54,30 @@ VCPU *getvcpu(void);
 
 //---NMI processing routine-----------------------------------------------------
 void processNMI(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *r){
-  if( (!vcpu->nmiinhvm) && (!quiesce) ){
+  if( (!vcpu->nmiinhvm) && (!g_islayer.quiesce) ){
     printf("\nCPU(0x%02x): Spurious NMI within hypervisor. halt!", vcpu->id);
     HALT();
   }
 
-  if(quiesce){
-    //ok this NMI is because of quiesce. note: quiesce can be 1 and
+  if(g_islayer.quiesce){
+    //ok this NMI is because of g_islayer.quiesce. note: g_islayer.quiesce can be 1 and
     //this could be a NMI for the guest. we have no way of distinguising
-    //this. however, since quiesce=1, we can handle this NMI as a quiesce NMI
+    //this. however, since g_islayer.quiesce=1, we can handle this NMI as a g_islayer.quiesce NMI
     //and rely on the platform h/w to reissue the NMI later
-    printf("\nCPU(0x%02x): NMI for core quiesce", vcpu->id);
+    printf("\nCPU(0x%02x): NMI for core g_islayer.quiesce", vcpu->id);
     printf("\nCPU(0x%02x): CS:EIP=0x%04x:0x%08x", vcpu->id, (u16)vmcb->cs.sel, (u32)vmcb->rip);
   
     printf("\nCPU(0x%02x): quiesced, updating counter. awaiting EOQ...", vcpu->id);
-    spin_lock(&lock_quiesce_counter);
-    quiesce_counter++;
-    spin_unlock(&lock_quiesce_counter);
+    spin_lock(&g_islayer.lock_quiesce_counter);
+    g_islayer.quiesce_counter++;
+    spin_unlock(&g_islayer.lock_quiesce_counter);
     
-    while(!quiesce_resume_signal);
+    while(!g_islayer.quiesce_resume_signal);
     printf("\nCPU(0x%02x): EOQ received, resuming...", vcpu->id);
     
-    spin_lock(&lock_quiesce_resume_counter);
-    quiesce_resume_counter++;
-    spin_unlock(&lock_quiesce_resume_counter);
+    spin_lock(&g_islayer.lock_quiesce_resume_counter);
+    g_islayer.quiesce_resume_counter++;
+    spin_unlock(&g_islayer.lock_quiesce_resume_counter);
     
     //printf("\nCPU(0x%08x): Halting!", vcpu->id);
     //HALT();
@@ -153,20 +136,20 @@ void send_quiesce_signal(VCPU *vcpu, struct vmcb_struct *vmcb){
 void do_quiesce(VCPU *vcpu, struct vmcb_struct *vmcb){
         printf("\nCPU(0x%02x): got quiesce signal...", vcpu->id);
         //grab hold of quiesce lock
-        spin_lock(&lock_quiesce);
+        spin_lock(&g_islayer.lock_quiesce);
         printf("\nCPU(0x%02x): grabbed quiesce lock.", vcpu->id);
 
-        spin_lock(&lock_quiesce_counter);
-        quiesce_counter=0;
-        spin_unlock(&lock_quiesce_counter);
+        spin_lock(&g_islayer.lock_quiesce_counter);
+        g_islayer.quiesce_counter=0;
+        spin_unlock(&g_islayer.lock_quiesce_counter);
         
         //send all the other CPUs the quiesce signal
-        quiesce=1;  //we are now processing quiesce
+        g_islayer.quiesce=1;  //we are now processing quiesce
         send_quiesce_signal(vcpu, vmcb);
         
         //wait for all the remaining CPUs to quiesce
         printf("\nCPU(0x%02x): waiting for other CPUs to respond...", vcpu->id);
-        while(quiesce_counter < (g_runtime.midtable_numentries-1) );
+        while(g_islayer.quiesce_counter < (g_runtime.midtable_numentries-1) );
         printf("\nCPU(0x%02x): all CPUs quiesced successfully.", vcpu->id);
         
         //perform operation now with all CPUs halted...
@@ -174,24 +157,24 @@ void do_quiesce(VCPU *vcpu, struct vmcb_struct *vmcb){
         //set resume signal to resume the cores that are quiesced
         //Note: we do not need a spinlock for this since we are in any
         //case the only core active until this point
-        quiesce_resume_counter=0;
+        g_islayer.quiesce_resume_counter=0;
         printf("\nCPU(0x%02x): waiting for other CPUs to resume...", vcpu->id);
-        quiesce_resume_signal=1;
+        g_islayer.quiesce_resume_signal=1;
         
-        while(quiesce_resume_counter < (g_runtime.midtable_numentries-1) );
+        while(g_islayer.quiesce_resume_counter < (g_runtime.midtable_numentries-1) );
 
-        quiesce=0;  // we are out of quiesce at this point
+        g_islayer.quiesce=0;  // we are out of quiesce at this point
 
         printf("\nCPU(0x%02x): all CPUs resumed successfully.", vcpu->id);
         
         //reset resume signal
-        spin_lock(&lock_quiesce_resume_signal);
-        quiesce_resume_signal=0;
-        spin_unlock(&lock_quiesce_resume_signal);
+        spin_lock(&g_islayer.lock_quiesce_resume_signal);
+        g_islayer.quiesce_resume_signal=0;
+        spin_unlock(&g_islayer.lock_quiesce_resume_signal);
                 
         //release quiesce lock
         printf("\nCPU(0x%02x): releasing quiesce lock.", vcpu->id);
-        spin_unlock(&lock_quiesce);
+        spin_unlock(&g_islayer.lock_quiesce);
         
         //printf("\nCPU(0x%02x): Halting!", vcpu->id);
         //HALT();
@@ -309,14 +292,14 @@ handle_swint(struct vmcb_struct *vmcb, struct regs *r){
 	if(op1 == 0xCD){
 		if(op2 == 0x15){
 			printf("\nINT15: EAX=0x%08X", vmcb->rax);
-			if(ine820handler && (u32)vmcb->rax != 0xE820){
-				ine820handler=0;
+			if(g_islayer.ine820handler && (u32)vmcb->rax != 0xE820){
+				g_islayer.ine820handler=0;
 				vmcb->general1_intercepts &= ~(u32) GENERAL1_INTERCEPT_SWINT;
 				printf("\ndelinking SWINT...");
 			}
 			
 			if((u32)vmcb->rax == 0xE820){
-				ine820handler=1;
+				g_islayer.ine820handler=1;
 				//EAX=0xE820, EBX=continuation value, 0 for first call
 				//ES:DI pointer to buffer, ECX=buffer size, EDX='SMAP'
 				if(r->edx != 0x534D4150UL){ //'SMAP'

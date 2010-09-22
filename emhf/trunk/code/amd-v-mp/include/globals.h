@@ -49,11 +49,54 @@
  * structure.
  */ 
 
+/**
+ * Isolation Layer (islayer.c)
+ */
 typedef struct _islayer_globals {
-
+    //the quiesce counter, all CPUs except for the one requesting the
+    //quiesce will increment this when they get their quiesce signal
+    u32 quiesce_counter;
+    u32 lock_quiesce_counter; //spinlock to access the above
+    
+    //resume counter to rally all CPUs after resumption from quiesce
+    u32 quiesce_resume_counter;
+    u32 lock_quiesce_resume_counter; //spinlock to access the above
+    
+    //the quiesce variable and its lock
+    u32 quiesce;      //if 1, then we have a quiesce in process
+    u32 lock_quiesce; 
+    
+    //resume signal
+    u32 quiesce_resume_signal; //signal becomes 1 to resume after quiescing
+    u32 lock_quiesce_resume_signal; //spinlock to access the above
+    
+    // XXX not well-documented
+    u32 ine820handler;
 } ISLAYER_GLOBALS;
 
 extern ISLAYER_GLOBALS g_islayer;
+
+static inline void init_islayer_globals(ISLAYER_GLOBALS *g) {
+    if(!g) return;
+    
+    g->quiesce_counter=0;
+    g->lock_quiesce_counter=1;
+    
+    g->quiesce_resume_counter=0;
+    g->lock_quiesce_resume_counter=1;
+    
+    g->quiesce=0;
+    g->lock_quiesce=1; 
+    
+    g->quiesce_resume_signal=0;
+    g->lock_quiesce_resume_signal=1;
+
+    g->ine820handler=0;
+}
+
+/**
+ * Runtime (runtime.c)
+ */
 
 typedef struct _runtime_globals {
     // XXX This MUST come first,
