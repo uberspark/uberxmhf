@@ -53,6 +53,8 @@
 #include <error.h>
 #include <shadow_paging_npae.h>
 
+#define GUEST_PHYSICALMEMORY_LIMIT	(512*1024*1024) //512M guest physical limit
+
 u32 shadow_guest_CR3=0;
 
 /*
@@ -227,7 +229,15 @@ void shadow_updateshadowentries(u32 gva, u32 **sPDE, u32 **sPTE,
 		}	
 			
 		//copy the entire entry into shadow	
-		**sPTE = **gPTE;	
+		if( npae_get_addr_from_pte(**gPTE) <= GUEST_PHYSICALMEMORY_LIMIT){
+			**sPTE = **gPTE;
+		}else{
+			printf("\nillegal mapping!");
+			HALT();				
+		}
+
+		//copy the entire entry into shadow	
+		//**sPTE = **gPTE;	
 	}
 
 }
