@@ -36,12 +36,10 @@
 // islayer.c
 // author: amit vasudevan (amitvasudevan@acm.org) and ning qu (qning@cmu.edu)
 #include <target.h>
-
+#include <globals.h>
 
 //---globals and externs--------------------------------------------------------
-VCPU *getvcpu(void);
 
-extern u32 midtable_numentries;
 
 //the quiesce counter, all CPUs except for the one requesting the
 //quiesce will increment this when they get their quiesce signal
@@ -59,6 +57,17 @@ u32 lock_quiesce=1;
 //resume signal
 u32 quiesce_resume_signal=0; //signal becomes 1 to resume after quiescing
 u32 lock_quiesce_resume_signal=1; //spinlock to access the above
+
+// XXX not well-documented
+extern GRUBE820 *grube820list;
+u32 ine820handler=0;
+extern u32 lapic_base;
+
+//---function prototypes--------------------------------------------------------
+u32 XtRtmIslInterceptHandler(VCPU *vcpu, struct regs *r);
+void lapic_access_dbexception(VCPU *vcpu, struct regs *r);
+VCPU *getvcpu(void);
+
 
 //---NMI processing routine-----------------------------------------------------
 void processNMI(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *r){
@@ -157,7 +166,7 @@ void do_quiesce(VCPU *vcpu, struct vmcb_struct *vmcb){
         
         //wait for all the remaining CPUs to quiesce
         printf("\nCPU(0x%02x): waiting for other CPUs to respond...", vcpu->id);
-        while(quiesce_counter < (midtable_numentries-1) );
+        while(quiesce_counter < (g_runtime.midtable_numentries-1) );
         printf("\nCPU(0x%02x): all CPUs quiesced successfully.", vcpu->id);
         
         //perform operation now with all CPUs halted...
@@ -169,7 +178,7 @@ void do_quiesce(VCPU *vcpu, struct vmcb_struct *vmcb){
         printf("\nCPU(0x%02x): waiting for other CPUs to resume...", vcpu->id);
         quiesce_resume_signal=1;
         
-        while(quiesce_resume_counter < (midtable_numentries-1) );
+        while(quiesce_resume_counter < (g_runtime.midtable_numentries-1) );
 
         quiesce=0;  // we are out of quiesce at this point
 
@@ -289,9 +298,6 @@ u8 guest_readcode_byte(struct vmcb_struct *vmcb, u32 addr){
 
 //------------------------------------------------------------------------------
 //handle_swint - software INTn intercept handling
-extern GRUBE820 *grube820list;
-
-u32 ine820handler=0;
 handle_swint(struct vmcb_struct *vmcb, struct regs *r){
 	u8 op1, op2;
 
@@ -366,7 +372,6 @@ handle_swint(struct vmcb_struct *vmcb, struct regs *r){
 //end handle_swint - software INTn intercept handling
 //------------------------------------------------------------------------------
 
-extern u32 lapic_base;
 
 //invoked on a nested page-fault 
 //struct regs *r -> guest OS GPR state
@@ -390,7 +395,6 @@ void npt_handleexit(VCPU *vcpu, struct regs *r)
   return;
 }
 
-void lapic_access_dbexception(VCPU *vcpu, struct regs *r);
 
 //---NMI handling---------------------------------------------------------------
 // note: we use NMI for core quiescing, we simply inject the others back
@@ -468,7 +472,6 @@ void handle_msr(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *r){
 }
 
 
-u32 XtRtmIslInterceptHandler(VCPU *vcpu, struct regs *r);
 u32 XtRtmIslInterceptHandler(VCPU *vcpu, struct regs *r){
   struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
   

@@ -39,6 +39,7 @@
 //---includes-------------------------------------------------------------------
 #include <target.h>
 #include <processor.h>
+#include <globals.h>
 
 //---notes
 // CLGI/STGI
@@ -63,22 +64,8 @@ GRUBE820 *grube820list = (GRUBE820 *)__grube820buffer;
 PCPU *pcpus= (PCPU *)__mp_cpuinfo;
 
 MIDTAB *midtable = (MIDTAB *)__midtable;
-u32 midtable_numentries=0;
 
-// XXX When this defaults to 0 then we will attempt to skinit.
-// XXX Currently set to '1' to DISABLE skinit due to buggy HVM launch
-u32 skinit_status_flag=1; // set to 1 after skinit has run on BSP
-
-u32 cpus_active=0; //number of CPUs that are awake, should be equal to
-                  //midtable_numentries -1 if all went well with the
-                  //MP startup protocol
-u32 lock_cpus_active=1; //spinlock to access the above
-
-u32 ap_go_signal=0; //go signal becomes 1 after BSP finishes rallying
-u32 lock_ap_go_signal=1; //spunlock to access the above
-
-u32 cleared_ucode=0; //number of CPUs whose ucode has been cleared
-u32 lock_cleared_ucode=1; // spinlock to access the above
+RUNTIME_GLOBALS g_runtime; // from globals.h
                     
 
 //---forward declarations-------------------------------------------------------
@@ -128,7 +115,7 @@ VCPU *getvcpu(void){
   lapic_id = lapic_id >> 24;
   //printf("\n%s: lapic_id of core=0x%02x", __FUNCTION__, lapic_id);
   
-  for(i=0; i < (int)midtable_numentries; i++){
+  for(i=0; i < (int)g_runtime.midtable_numentries; i++){
     if(midtable[i].cpu_lapic_id == lapic_id)
         return( (VCPU *)midtable[i].vcpu_vaddr_ptr );
   }
@@ -173,8 +160,8 @@ void udelay(u32 usecs){
 
 // layer of indirection for flag variable
 u32 is_drtm_complete(void) {
-    printf("\nskinit_status_flag %d", skinit_status_flag);
-    return skinit_status_flag;
+    printf("\ng_runtime.skinit_status_flag %d", g_runtime.skinit_status_flag);
+    return g_runtime.skinit_status_flag;
 }
 
 // XXX TODO: integrate this function and wakeupAPs() to avoid
@@ -289,7 +276,7 @@ extern u32 uart_tx_empty(void);
 void do_drtm(void) {
     int i;
     void *slb_region;
-    // defined in slb.S:
+    // defined in slb.S.  XXX TODO Move extern declarations into globals.h
     extern u32 _slb_bootstrap_start[], _slb_bootstrap_end[],
         _slb_start[], _slb_end[],
         _slb_cr3_value[],
@@ -315,7 +302,7 @@ void do_drtm(void) {
     _slb_esp_value[0] = read_esp() & 0xfffff000; // mask stack; cheap way to read it
     _slb_ebp_value[0] = read_ebp() & 0xfffff000; // mask base; cheap way to read it
     _slb_post_skinit_entry[0] = (u32)cstartup;    
-    _slb_skinit_status_flag_ptr[0] = (u32)&skinit_status_flag;
+    _slb_skinit_status_flag_ptr[0] = (u32)&g_runtime.skinit_status_flag;
     
     printf("\n_slb_cr3_value[0] 0x%08lx", _slb_cr3_value[0]);
     printf("\n_slb_cr4_value[0] 0x%08lx", _slb_cr4_value[0]);
@@ -337,13 +324,13 @@ void do_drtm(void) {
     // Global variables that need to be reset to zero
     // XXX TODO: group global variables into a nice struct and zero the whole thing cleanly
 
-    midtable_numentries=0;
-    cpus_active=0;
-    lock_cpus_active=1; //spinlock to access the above
-    ap_go_signal=0; //go signal becomes 1 after BSP finishes rallying
-    lock_ap_go_signal=1; //spunlock to access the above    
-    cleared_ucode=0; //number of CPUs whose ucode has been cleared
-    lock_cleared_ucode=1; // spinlock to access the above
+    g_runtime.midtable_numentries=0;
+    g_runtime.cpus_active=0;
+    g_runtime.lock_cpus_active=1; //spinlock to access the above
+    g_runtime.ap_go_signal=0; //go signal becomes 1 after BSP finishes rallying
+    g_runtime.lock_ap_go_signal=1; //spunlock to access the above    
+    g_runtime.cleared_ucode=0; //number of CPUs whose ucode has been cleared
+    g_runtime.lock_cleared_ucode=1; // spinlock to access the above
 
     
     call_skinit((unsigned long)slb_region); // we will end up back in cstartup()!
@@ -387,6 +374,8 @@ void nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts_base){
 
 
 //---setup vcpu structures for all the cores including BSP----------------------
+// XXX TODO midtable_numentries is a parameter to this function,
+// even though it is a global. Need to clean that up.
 void setupvcpus(MIDTAB *midtable, u32 midtable_numentries){
   u32 i;
   extern u32 __cpustacks[], __vcpubuffers[];
@@ -468,6 +457,7 @@ void cstartup(void){
 	init_uart();
 #endif
 	printf("\nruntime initializing...");
+    init_runtime_globals(&g_runtime);
 
   //debug, dump E820 and MP table
  	printf("\nNumber of E820 entries = %u", lpb->XtVmmE820NumEntries);
@@ -492,14 +482,14 @@ void cstartup(void){
   {
     int i;
     for(i=0; i < (int)lpb->XtVmmMPCpuinfoNumEntries; i++){
-       midtable[midtable_numentries].cpu_lapic_id = pcpus[i].lapic_id;
-       midtable[midtable_numentries].vcpu_vaddr_ptr = 0;
-       midtable_numentries++;
+       midtable[g_runtime.midtable_numentries].cpu_lapic_id = pcpus[i].lapic_id;
+       midtable[g_runtime.midtable_numentries].vcpu_vaddr_ptr = 0;
+       g_runtime.midtable_numentries++;
     }
   }
 
   //setup vcpus
-  setupvcpus(midtable, midtable_numentries);
+  setupvcpus(midtable, g_runtime.midtable_numentries);
 
   /* Possible alternative location for microcode clear; prefer allcpus_common_start. */
 /*   //inserted by Jon to clear BSP microcode */
@@ -512,7 +502,7 @@ void cstartup(void){
   
   
   //wake up APS
-  if(midtable_numentries > 1)
+  if(g_runtime.midtable_numentries > 1)
     wakeupAPs();
 
   //fall through to common code  
@@ -752,11 +742,11 @@ void clearMicrocode(VCPU *vcpu){
       printf("\nCPU%d: microcode CLEARED", vcpu->id);
   }
 
-  spin_lock(&lock_cleared_ucode);
-  cleared_ucode++;
-  spin_unlock(&lock_cleared_ucode);
+  spin_lock(&g_runtime.lock_cleared_ucode);
+  g_runtime.cleared_ucode++;
+  spin_unlock(&g_runtime.lock_cleared_ucode);
 
-  printf("\ncleared_ucode now %d", cleared_ucode);
+  printf("\ng_runtime.cleared_ucode now %d", g_runtime.cleared_ucode);
 }
 
 
@@ -779,13 +769,13 @@ void allcpus_common_start(VCPU *vcpu){
     printf("\nBSP(0x%02x): My ESP is 0x%08x", vcpu->id, vcpu->esp);
 
     //increment a CPU to account for the BSP
-    spin_lock(&lock_cpus_active);
-    cpus_active++;
-    spin_unlock(&lock_cpus_active);
+    spin_lock(&g_runtime.lock_cpus_active);
+    g_runtime.cpus_active++;
+    spin_unlock(&g_runtime.lock_cpus_active);
 
-    //wait for cpus_active to become midtable_numentries -1 to indicate
+    //wait for g_runtime.cpus_active to become g_runtime.midtable_numentries -1 to indicate
     //that all APs have been successfully started
-    while(cpus_active < midtable_numentries);
+    while(g_runtime.cpus_active < g_runtime.midtable_numentries);
     
     // Need to wait until APs active to do DRTM, since it is then that the APs will
     // clear their microcode.    
@@ -797,18 +787,18 @@ void allcpus_common_start(VCPU *vcpu){
     }
     
     printf("\nAPs all awake...Setting them free...");
-    spin_lock(&lock_ap_go_signal);
-    ap_go_signal=1;
-    spin_unlock(&lock_ap_go_signal);
+    spin_lock(&g_runtime.lock_ap_go_signal);
+    g_runtime.ap_go_signal=1;
+    spin_unlock(&g_runtime.lock_ap_go_signal);
 
   
   }else{
     //we are an AP, so we need to simply update the AP startup counter
     //and wait until we are told to proceed
     //increment active CPUs
-    spin_lock(&lock_cpus_active);
-    cpus_active++;
-    spin_unlock(&lock_cpus_active);
+    spin_lock(&g_runtime.lock_cpus_active);
+    g_runtime.cpus_active++;
+    spin_unlock(&g_runtime.lock_cpus_active);
 
     // This code path is exercized twice:
     // 1. Before SKINIT, APs are initially brought online to clear their microcode.
@@ -821,7 +811,7 @@ void allcpus_common_start(VCPU *vcpu){
     }                         // Rather, BSP will send INIT IPI and then we will be    
                               // reinitialized by SKINIT.
 
-    while(!ap_go_signal); // After SKINIT.  Just wait for the BSP to tell us all is well.
+    while(!g_runtime.ap_go_signal); // After SKINIT.  Just wait for the BSP to tell us all is well.
  
     printf("\nAP(0x%02x): My ESP is 0x%08x, Waiting for SIPI...", vcpu->id, vcpu->esp);
 
@@ -844,7 +834,7 @@ void allcpus_common_start(VCPU *vcpu){
 
 #ifdef __NESTED_PAGING__
     //if we are the BSP setup SIPI intercept
-    if(isbsp() && (midtable_numentries > 1) )
+    if(isbsp() && (g_runtime.midtable_numentries > 1) )
       apic_setup(vcpu);
  
 #endif

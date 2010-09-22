@@ -369,8 +369,9 @@ x_init_stack:
   .fill (SIZE_STRUCT_MIDTAB * MAX_MIDTAB_ENTRIES), 1, 0
 
 .extern allcpus_common_start
-.extern midtable_numentries
-
+//.extern midtable_numentries
+.extern g_runtime
+              
 .section .text
   .global _ap_pmode_entry_with_paging
   _ap_pmode_entry_with_paging:
@@ -387,7 +388,8 @@ x_init_stack:
     movl (%eax), %eax
     shr $24, %eax
 
-    movl midtable_numentries, %edx
+    // XXX movl midtable_numentries, %edx
+    movl g_runtime, %edx
     
     //get vcpu virtual address of this CPU/core
     movl $(__midtable), %ebx

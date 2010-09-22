@@ -36,6 +36,7 @@
 // apic.c - APIC virtualization support
 // author: amit vasudevan (amitvasudevan@acm.org)
 #include <target.h>
+#include <globals.h>
 
 u32 lapic_base=0;
 u32 lapic_reg=0;
@@ -50,7 +51,6 @@ u32 lapic_op=LAPIC_OP_RSVD;
 extern u32 virtual_LAPIC_base[];
 
 extern MIDTAB *midtable;
-extern u32 midtable_numentries;
 
 
 //--NPT manipulation routines---------------------------------------------------
@@ -168,7 +168,7 @@ u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
   //find the vcpu entry of the core with dest_lapic_id
   {
     int i;
-    for(i=0; i < (int)midtable_numentries; i++){
+    for(i=0; i < (int)g_runtime.midtable_numentries; i++){
       if(midtable[i].cpu_lapic_id == dest_lapic_id){
         dest_vcpu = (VCPU *)midtable[i].vcpu_vaddr_ptr;
         ASSERT( dest_vcpu->id == dest_lapic_id );
