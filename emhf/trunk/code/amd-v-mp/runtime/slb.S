@@ -41,20 +41,18 @@
 #include <svm.h>
 
 //Useful macro for busy wait-based serial debug of a single character
-.altmacro
-.macro OneChar2Serial theChar
-      movl  $1000000, %edx
-1:
-      subl $1, %edx
-      cmpl $0, %edx
-      jz 1b
+// .altmacro
+// .macro OneChar2Serial theChar
+//       movl  $1000000, %edx
+// 1:
+//       subl $1, %edx
+//       cmpl $0, %edx
+//       jz 1b
 
-      movb &theChar&, %al
-      movw $0x3f8, %dx
-      out %al, (%dx)              
-.endm
-
-              
+//       movb &theChar&, %al
+//       movw $0x3f8, %dx
+//       out %al, (%dx)              
+// .endm              
 
 .section .text
               
@@ -102,10 +100,6 @@ _slb_start:
     .global _slb_post_skinit_entry
      _slb_post_skinit_entry: 
       .long 0
-    // pointer to variable keeping track of whether SKINIT has already run or not
-    .global _slb_skinit_status_flag_ptr
-    _slb_skinit_status_flag_ptr:
-      .long 0
               
   _slb_bootstrap_bypassdata:
               
@@ -113,41 +107,24 @@ _slb_start:
       movl $(temp_gdt - _slb_start + SLB_BOOTSTRAP_CODE_BASE), %esi
       lgdt %ss:(%esi)
 
-      OneChar2Serial $0x70              
-      OneChar2Serial $0x70              
-              
       // reload segment registers
       movw $0x10, %bx
-              
-      OneChar2Serial $0x61
-              
       movw  %bx, %es
-      OneChar2Serial $0x63
       movw  %bx, %fs
-      OneChar2Serial $0x64
       movw  %bx, %gs
-      OneChar2Serial $0x71
-      movw  %bx, %ds
-      OneChar2Serial $0x62
-              
+      movw  %bx, %ds              
               
       movl $(_slb_cr3_value - _slb_start + SLB_BOOTSTRAP_CODE_BASE), %esi
       movl (%esi), %ebx
       movl %ebx, %cr3
 
-      OneChar2Serial $0x72              
-              
       movl $(_slb_cr4_value - _slb_start + SLB_BOOTSTRAP_CODE_BASE), %esi
       movl (%esi), %ebx
       movl %ebx, %cr4
 
-      OneChar2Serial $0x73
-              
       // load target address for branch once paging is enabled
       movl $(_slb_post_skinit_entry - _slb_start + SLB_BOOTSTRAP_CODE_BASE), %ebx
 
-      OneChar2Serial $0x74
-              
       //    enable PG (paging) flag (bit 31 of CR0)
       movl %cr0, %eax
       orl $0x80000000, %eax
@@ -156,32 +133,11 @@ _slb_start:
       jmp 1f
 1:            
 
-      OneChar2Serial $0x75
-
       //    restore esp, ebp to pre-skinit values
       movl $(_slb_esp_value - _slb_start + SLB_BOOTSTRAP_CODE_BASE), %esi
       movl (%esi), %esp
       movl $(_slb_ebp_value - _slb_start + SLB_BOOTSTRAP_CODE_BASE), %esi
       movl (%esi), %ebp
-
-      OneChar2Serial $0x76
-              
-      // set flag to indicate that skinit has been run
-      movl $(_slb_skinit_status_flag_ptr - _slb_start + SLB_BOOTSTRAP_CODE_BASE), %esi // addr of location at 128K+delta in esi
-      movl (%esi), %eax // read actual pointer to global variable from memory location in esi
-      addl $1, (%eax) // increment value in memory at location of actual global variable
-
-      OneChar2Serial $0x77
-      OneChar2Serial $0x0a
-      OneChar2Serial $0x0d
-      OneChar2Serial $0x0a
-      OneChar2Serial $0x0d
-      OneChar2Serial $0x0a
-      OneChar2Serial $0x0d
-      OneChar2Serial $0x0a
-      OneChar2Serial $0x0d
-      OneChar2Serial $0x0a
-      OneChar2Serial $0x0d
               
       // resuming execution of code in runtimesup.S
       jmp *(%ebx)

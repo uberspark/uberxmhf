@@ -296,8 +296,7 @@ void do_drtm(void) {
         _slb_cr4_value[],
         _slb_esp_value[],
         _slb_ebp_value[],
-        _slb_post_skinit_entry[],
-        _slb_skinit_status_flag_ptr[];
+        _slb_post_skinit_entry[];
     
     printf("\nglobal _slb_start 0x%08lx",             (unsigned int)_slb_start);
     printf("\nglobal _slb_bootstrap_start 0x%08lx",   (unsigned int)_slb_bootstrap_start);
@@ -306,7 +305,6 @@ void do_drtm(void) {
     printf("\nglobal _slb_esp_value 0x%08lx",         (unsigned int)_slb_esp_value);
     printf("\nglobal _slb_ebp_value 0x%08lx",         (unsigned int)_slb_ebp_value);
     printf("\nglobal _slb_post_skinit_entry 0x%08lx", (unsigned int)_slb_post_skinit_entry);
-    printf("\nglobal _slb_skinit_status_flag_ptr 0x%08lx", (unsigned int)_slb_skinit_status_flag_ptr);
     printf("\nglobal _slb_bootstrap_end 0x%08lx",     (unsigned int)_slb_bootstrap_end);
     printf("\nglobal _slb_end 0x%08lx",               (unsigned int)_slb_end);
 
@@ -315,21 +313,19 @@ void do_drtm(void) {
     _slb_esp_value[0] = read_esp() & 0xfffff000; // mask stack; cheap way to read it
     _slb_ebp_value[0] = read_ebp() & 0xfffff000; // mask base; cheap way to read it
     _slb_post_skinit_entry[0] = (u32)cstartup;    
-    _slb_skinit_status_flag_ptr[0] = (u32)&g_runtime.skinit_status_flag;
     
     printf("\n_slb_cr3_value[0] 0x%08lx", _slb_cr3_value[0]);
     printf("\n_slb_cr4_value[0] 0x%08lx", _slb_cr4_value[0]);
     printf("\n_slb_esp_value[0] 0x%08lx", _slb_esp_value[0]);
     printf("\n_slb_ebp_value[0] 0x%08lx", _slb_ebp_value[0]);
     printf("\n_slb_post_skinit_entry[0] 0x%08lx", _slb_post_skinit_entry[0]);
-    printf("\n_slb_skinit_status_flag_ptr[0] 0x%08lx", _slb_skinit_status_flag_ptr[0]);
 
-    slb_region = (void *)SLB_BOOTSTRAP_CODE_BASE; // 512KB
+    slb_region = (void *)SLB_BOOTSTRAP_CODE_BASE; // 1GB
     memset(slb_region, 0, 0x10000); // zero 64 KB
     memcpy(slb_region, _slb_start, (unsigned int)_slb_end - (unsigned int)_slb_start);    
     
     // dump SLB's interesting contents for verification
-    dump_bytes("slb.S", (unsigned char *)_slb_start, (unsigned int)_slb_end-(unsigned int)_slb_start);
+    //dump_bytes("slb.S", (unsigned char *)_slb_start, (unsigned int)_slb_end-(unsigned int)_slb_start);
 
     // APs need to be in INIT state to give skinit best chance to complete successfully
     send_init_ipi_to_all_APs();

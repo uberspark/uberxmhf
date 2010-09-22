@@ -127,7 +127,7 @@ static inline void init_runtime_globals(RUNTIME_GLOBALS *g) {
 
     // XXX When this defaults to 0 then we will attempt to skinit.
     // XXX Currently set to '1' to DISABLE skinit due to buggy HVM launch
-    g->skinit_status_flag = 1; 
+    g->skinit_status_flag = 0; 
     
     g->cpus_active = 0;
     g->lock_cpus_active = 1;
