@@ -20,7 +20,7 @@
   #h/w platform, current choices are svm (for AMD) and vmx (for Intel)
 	export TARGET_HWPLATFORM := svm
 	#MP/UP selection, y=Multiprocessor, n=Uniprocessor
-  export MP_VERSION := n
+  export MP_VERSION := y
 	#where you want loader and runtime binaries to go, defaults to current dir.
 	export INSTALLDIR = $(CURDIR)
   #misc. configuaration w.r.t serial debugging and NPT/EPT support
