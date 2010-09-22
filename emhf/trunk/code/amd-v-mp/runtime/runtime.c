@@ -274,6 +274,18 @@ void dump_bytes(char *label, unsigned char *bytes, unsigned int len) {
 
 extern u32 uart_tx_empty(void);
 
+void print_affected_flags(void) {
+    u32 eflags, efer, vm_cr, dummy;    
+    
+    get_eflags(eflags);
+    rdmsr((u32)MSR_EFER, &efer, &dummy);
+    rdmsr((u32)VM_CR_MSR, &vm_cr, &dummy);
+
+    printf("\nFLAG: eflags 0x%08lx", eflags);
+    printf("\nFLAG: efer 0x%08lx", efer);
+    printf("\nFLAG: vm_cr 0x%08lx", vm_cr);          
+}
+
 void do_drtm(void) {
     int i;
     void *slb_region;
@@ -312,7 +324,7 @@ void do_drtm(void) {
     printf("\n_slb_post_skinit_entry[0] 0x%08lx", _slb_post_skinit_entry[0]);
     printf("\n_slb_skinit_status_flag_ptr[0] 0x%08lx", _slb_skinit_status_flag_ptr[0]);
 
-    slb_region = (void *)0x20000; // 128KB
+    slb_region = (void *)SLB_BOOTSTRAP_CODE_BASE; // 512KB
     memset(slb_region, 0, 0x10000); // zero 64 KB
     memcpy(slb_region, _slb_start, (unsigned int)_slb_end - (unsigned int)_slb_start);    
     
@@ -322,19 +334,18 @@ void do_drtm(void) {
     // APs need to be in INIT state to give skinit best chance to complete successfully
     send_init_ipi_to_all_APs();
 
-    // Global variables that need to be reset to zero
-    // XXX TODO: group global variables into a nice struct and zero the whole thing cleanly
+    // Global variables that need to be re-initialized
+    // XXX TODO: group global variables into a nice struct and init the whole thing cleanly
 
-    g_runtime.midtable_numentries=0;
-    g_runtime.cpus_active=0;
-    g_runtime.lock_cpus_active=1; //spinlock to access the above
-    g_runtime.ap_go_signal=0; //go signal becomes 1 after BSP finishes rallying
-    g_runtime.lock_ap_go_signal=1; //spunlock to access the above    
-    g_runtime.cleared_ucode=0; //number of CPUs whose ucode has been cleared
-    g_runtime.lock_cleared_ucode=1; // spinlock to access the above
-
+    init_runtime_globals(&g_runtime);
+    init_islayer_globals(&g_islayer);
+    g_runtime.skinit_status_flag = 1; // skinit not technically done yet, but we're at the point of no return
     
     call_skinit((unsigned long)slb_region); // we will end up back in cstartup()!
+/*     printf("\nFAKING SKINIT!!! Resetting esp/ebp and calling cstartup()\n"); */
+/*     __asm__ __volatile__("mov %0, %%esp":: "r"(_slb_esp_value[0])); */
+/*     __asm__ __volatile__("mov %0, %%ebp":: "r"(_slb_ebp_value[0])); */
+/*     cstartup(); */
 }
 
 #ifdef __NESTED_PAGING__
@@ -458,8 +469,23 @@ void cstartup(void){
 	init_uart();
 #endif
 	printf("\nruntime initializing...");
-    init_runtime_globals(&g_runtime);
+    if(is_drtm_complete()) {
+        u32 eax, edx;
+        
+        init_runtime_globals(&g_runtime);
+        g_runtime.skinit_status_flag = 1; // want to preserve skinit_status_flag
+
+        // need to clear some bits in VM_CR that were set by SKINIT
+        rdmsr((u32)VM_CR_MSR, &eax, &edx);
+        eax &= (~(1<<VM_CR_DPD)); // Clear DPD
+        eax &= (~(1<<VM_CR_R_INIT)); // Clear R_INIT
+        eax &= (~(1<<VM_CR_DIS_A20M)); // Clear DIS_A20M
+        wrmsr((u32)VM_CR_MSR, eax, edx);
+    } else {
+        init_runtime_globals(&g_runtime);
+    }
     init_islayer_globals(&g_islayer);
+    print_affected_flags();
 
   //debug, dump E820 and MP table
  	printf("\nNumber of E820 entries = %u", lpb->XtVmmE820NumEntries);

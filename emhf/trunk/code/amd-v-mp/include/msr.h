@@ -59,6 +59,8 @@
 
 // VM CR MSR bits 
 #define VM_CR_DPD 0
+#define VM_CR_R_INIT 1
+#define VM_CR_DIS_A20M 2
 #define VM_CR_SVME_DISABLE 4
 
 
