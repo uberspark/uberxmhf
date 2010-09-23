@@ -209,7 +209,7 @@ u32 sechyp_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
   return APP_IOINTERCEPT_CHAIN; //chain and do the required I/O    
 }
 
-                       
+#if defined (__NESTED_PAGING__)                       
 extern u32 approvedexec_handleevent(VCPU *vcpu, struct regs *r, 
   u64 gpa, u64 gva, u64 violationcode);
 
@@ -221,6 +221,10 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
   return( approvedexec_handleevent(vcpu, r, gpa, gva, violationcode) );
 #else
   printf("\nCPU(0x%02x): HW pgtbl handling feature unimplemented. Halting!", vcpu->id);
-  HALT();
+  printf("\nCPU(0x%02x): gva=0x%08x, gpa=0x%08x, code=0x%08x", vcpu->id,
+			(u32)gva, (u32)gpa, (u32)violationcode);
+  printf("\nprot is: 0x%016llx", emhf_hwpgtbl_getprot(vcpu, gpa));
+	HALT();
 #endif
 }
+#endif
