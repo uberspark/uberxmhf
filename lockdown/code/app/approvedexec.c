@@ -84,7 +84,19 @@ static u32 approvedexec_getguestpcpaddr(VCPU *vcpu){
   //get linear address of guest PC
   guestpclinearaddress = approvedexec_getguestpcvaddr(vcpu);
 
-  //if paging is enabled, then we walk the guest page-table to obtain
+if(vcpu->guest_unrestricted){
+	//if paging is enabled, then we walk the guest page-table to obtain
+  //the physical address
+  if( (vcpu->vmcs.guest_CR0 & CR0_PE) &&
+    (vcpu->vmcs.guest_CR0 & CR0_PG) ){
+    u32 guestpcpaddr = emhf_guestpgtbl_walk(vcpu, guestpclinearaddress);
+    ASSERT(guestpcpaddr != 0xFFFFFFFFUL);
+    return (u32)guestpcpaddr;  
+  }else{
+    return (u32)guestpclinearaddress; //linear address is physical address when no paging in effect
+  }
+}else{
+	//if paging is enabled, then we walk the guest page-table to obtain
   //the physical address
   if( (vcpu->guest_currentstate & GSTATE_PROTECTEDMODE) &&
     (vcpu->guest_currentstate & GSTATE_PROTECTEDMODE_PG) ){
@@ -94,6 +106,8 @@ static u32 approvedexec_getguestpcpaddr(VCPU *vcpu){
   }else{
     return (u32)guestpclinearaddress; //linear address is physical address when no paging in effect
   }
+}  
+  
 }
 
 //---returns 1 if code-modifying-data (cmd) falls on the same physical---------- 
@@ -126,6 +140,7 @@ u32 approvedexec_handleevent(VCPU *vcpu, struct regs *r,
     windows_verifycodeintegrity(vcpu, (u32)gpa, (u32)gva);
     //give page execute permissions but prevent further writes
     emhf_hwpgtbl_setprot(vcpu, gpa, HWPGTBL_FLAG_READ | HWPGTBL_FLAG_EXECUTE);
+
   }else{
     //printf("\nCPU(0x%02x): EPT/WR, p=0x%08x, v=0x%08x, pcp=0x%08x, pcv=0x%08x",
     //  vcpu->id, (u32)gpa, (u32)gva, approvedexec_getguestpcpaddr(vcpu), approvedexec_getguestpcvaddr(vcpu));
