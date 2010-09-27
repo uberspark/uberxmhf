@@ -33,7 +33,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include  <foo.h>
+#include  "foo.h"
 #define  NUM 10
 
 /* sensitive code  */
