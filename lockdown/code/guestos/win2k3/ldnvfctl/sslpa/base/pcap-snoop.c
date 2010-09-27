@@ -520,7 +520,7 @@ void sslpafeed(u_char *ptr, struct pcap_pkthdr *hdr, u_char *data){
   ssl_pa_analyze((unsigned char *)data, hdr->len);
 }
 
-
+/*
 //test: our main function to drive the protocol analyzer with libpcap
 //and a physical network interface
 int main(void){
@@ -573,7 +573,7 @@ int main(void){
   
   }
 }
-
+*/
 
 
   

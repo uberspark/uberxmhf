@@ -17,7 +17,7 @@ typedef unsigned int U32;
 typedef unsigned char U8;
 
 #define BUILD_FOR_TRUSTED   1     //define this to build monitor for trusted environment
-
+#define SSLPA   1                 //define this to hook into SSL protocol analyzer
 
 #define MAX_TIME 3000
 
@@ -146,7 +146,7 @@ int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
    return rxframesize;
   }
 
-/*
+
 	//ldnvnet driver communication test
 	int main(int argc, char *argv[]){
 		HANDLE drvh;
@@ -218,6 +218,13 @@ int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
 #endif
 
 
+#if defined(BUILD_FOR_TRUSTED)
+  #if defined(SSLPA)
+  //initialize sslpa
+  ssl_pa_init();
+  #endif
+#endif  
+
     printf("\npress any key to quit...");
 		while(!kbhit()){
 
@@ -250,6 +257,11 @@ int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
                     		  printf("%s: usb_control_msg failed %d\n", __FUNCTION__, i);
                     		  return -1;		
                     	 }
+                        
+                       //pass packet through analyzer
+                       #if defined(SSLPA)
+                       ssl_pa_analyze((unsigned char *)&packetbuffer, bytes);
+                       #endif
                   		 
                   		 //now write out the TX packet
                     	 i = usb_bulk_write(hdl, NETIF_SEND_EP, (char *)&packetbuffer, bytes, 2000);
@@ -267,6 +279,12 @@ int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
                       //printf("\nRX: %u bytes, dump follows:\n", bytes);
                       //for(j=0; j < packetlength; j++)
                   		//	printf("0x%02x ", packetbuffer[j]);
+                    
+                       //pass packet through analyzer
+                       #if defined(SSLPA)
+                       ssl_pa_analyze((unsigned char *)&rxpacketbuffer, bytes);
+                       #endif
+
                     
                       if(!DeviceIoControl(drvh, IOCTL_LDNVNET_WRITE_DATA,
               					&rxpacketbuffer, bytes,
@@ -321,6 +339,5 @@ int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
 	
 		return 0;
 	}
-*/
 	
 
