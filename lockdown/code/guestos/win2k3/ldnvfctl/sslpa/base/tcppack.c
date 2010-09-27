@@ -95,7 +95,8 @@ int process_tcp_packet(handler,ctx,p)
 	proper order. This shouldn't be a problem, though,
         except for simultaneous connects*/
       if((p->tcp->th_flags & (TH_SYN|TH_ACK))!=TH_SYN){
-	DBG((0,"TCP: rejecting packet from unknown connection\n"));
+	  //DBG((0,"TCP: rejecting packet from unknown connection\n"));
+	  printf("\nSSLPA: rejecting packet from unknown connection");
 	return(0);
       }
       

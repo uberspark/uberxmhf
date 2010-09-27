@@ -264,7 +264,7 @@ getopt(nargc, nargv, ostr)
 }
 
 
-
+#if 0
 int main(argc,argv)
   int argc;
   char **argv;
@@ -422,11 +422,11 @@ int main(argc,argv)
     
     exit(0);
   }
-      
+#endif      
 
 char *collapse_args(argc,argv)
   int argc;
-  char **argv;
+  char **argv;                
   {
     int i,len=0;
     char *ret;
@@ -452,3 +452,128 @@ char *collapse_args(argc,argv)
 
     return(ret);
   }
+  
+//---this is the main ssl protocol analyzer interface---------------------------
+n_handler *n;
+
+//------------------------------------------------------------------------------
+//initialize ssl pa
+//returns 0 on failure, 1 on success
+int ssl_pa_init(){
+    proto_mod *mod=&ssl_mod;
+    int r;
+
+    if(r=network_handler_create(mod,&n)){
+			printf("sslpa: could not create network handler: %d\n", r);
+			return 0;
+		}
+
+		return 1;
+}
+
+//------------------------------------------------------------------------------
+//high level pa function to analyze a particular packet. it expects a 
+//packet and its length
+void ssl_pa_analyze(unsigned char *packet, unsigned int packet_len){
+    int len;
+    struct ether_header *e_hdr=(struct ether_header *)packet;
+    int type;
+		struct timeval ts;
+    len=packet_len;
+    
+    type=ntohs(e_hdr->ether_type);
+
+    packet+=sizeof(struct ether_header);
+    len-=sizeof(struct ether_header);
+
+	  /* if vlans, push past VLAN header (4 bytes) */
+    if(type==ETHERTYPE_8021Q) {
+    	type=ntohs(*(u_int16_t *)(packet + 2));
+
+      packet+=4;
+      len+=4;
+    }
+
+    if(type!=ETHERTYPE_IP)	
+      return;								//TODO: check for DNS udp packet and if not DROP!
+        
+    //setup a dummy timestamp
+    ts.tv_sec = 0;
+    ts.tv_usec= 0;
+ 
+ 		//hand the packet off for analysis   
+    network_process_packet(n, &ts , packet ,len);
+}
+//------------------------------------------------------------------------------
+
+
+//our packet callback function
+void sslpafeed(u_char *ptr, struct pcap_pkthdr *hdr, u_char *data){
+  //sanity check
+  if(hdr->caplen != hdr->len){
+    printf("\nfatal error: packet length mismatch cap=%u, hdr=%u",
+      hdr->caplen, hdr->len);
+    exit(0);
+  } 
+  
+  //analyze it
+  ssl_pa_analyze((unsigned char *)data, hdr->len);
+}
+
+
+//test: our main function to drive the protocol analyzer with libpcap
+//and a physical network interface
+int main(void){
+  char *interface_name=0;
+  char errbuf[PCAP_ERRBUF_SIZE];
+  pcap_t *p;
+  int no_promiscuous=0;
+  
+  struct pcap_pkthdr hdr;
+  const u_char *packet;
+    
+  //lookup default libpcap interface
+  interface_name=pcap_lookupdev(errbuf);
+  if(!interface_name){
+    printf("\nfatal error: %s", errbuf);
+    exit(0);
+  }
+  printf("\nlookup=%ws", interface_name);
+  
+  //open it
+  if(!(p=pcap_open_live(interface_name,5000,!no_promiscuous,1000,errbuf))){
+	 printf("\nfatal error: %s", errbuf);
+   exit(0);
+  }
+  printf("\ninterface opened successfully.");  
+  
+  //initialize sslpa
+  ssl_pa_init();
+
+  //initialize internal parameters controlling debug output
+  
+  
+  //analyze every packet captured
+  //pcap_loop(p,-1,sslpafeed,(u_char *)n);
+  printf("\nAnalyzing stream...");
+  while(1){
+    packet = pcap_next(p, &hdr);
+    if(packet != NULL){
+      //sanity check
+      if(hdr.caplen != hdr.len){
+        printf("\nfatal error: packet length mismatch cap=%u, hdr=%u",
+         hdr.caplen, hdr.len);
+       exit(0);
+      }  
+    
+      //analyze it
+      printf("\nProcessing packet size=%u bytes", hdr.len);
+      ssl_pa_analyze((unsigned char *)packet, hdr.len);
+    }
+  
+  }
+}
+
+
+
+  

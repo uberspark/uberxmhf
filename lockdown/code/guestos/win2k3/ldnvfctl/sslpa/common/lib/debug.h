@@ -47,11 +47,11 @@
 #ifndef _debug_h
 #define _debug_h
 
-#ifdef DEBUG
-#define DBG(a) debug a
-#else
+//#ifdef DEBUG
+//#define DBG(a) debug a
+//#else
 #define DBG(a)
-#endif
+//#endif
 
 int debug(int class,char *format,...);
 int xdump PROTO_LIST((char *name,UCHAR *data,

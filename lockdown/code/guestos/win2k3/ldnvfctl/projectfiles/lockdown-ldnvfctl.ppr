@@ -3,6 +3,7 @@ Compilator.SaveAll=0
 Compilator.Capture=0
 Compilator.HideOutput=0
 Compilator.LogType=0
+DefaultDir=C:\amit\projects\lockdown\code\guestos\win2k3\ldnvfctl
 DefaultCPIndex=0
 LogtoEnd=1
 DontOpen=0
@@ -12,21 +13,42 @@ ProjectFilesOnly=0
 [Project tree]
 lockdown-ldnvfctl
 	+src
-		..\main_backup_08302010.c
 		..\Makefile
+		..\sslpa\base\pcap-snoop.c
+		..\main.c
 [Open project files]
 0=..\Makefile
 1=..\main.c
-2=..\main_backup_08302010.c
+2=..\sslpa\base\pcap-snoop.c
+3=..\sslpa\base\network.c
+4=..\sslpa\common\lib\debug.c
+5=..\sslpa\base\tcppack.c
+6=..\sslpa\common\lib\debug.h
+7=..\sslpa\ssl\ssl_analyze.c
 [Selected Project Files]
 Main=
-Selected=..\main.c
+Selected=..\sslpa\ssl\ssl_analyze.c
 [..\Makefile]
-TopLine=1
-Caret=31,10
+TopLine=29
+Caret=6,32
 [..\main.c]
-TopLine=1
-Caret=3,19
-[..\main_backup_08302010.c]
-TopLine=503
-Caret=1,529
+TopLine=125
+Caret=3,149
+[..\sslpa\base\pcap-snoop.c]
+TopLine=551
+Caret=37,572
+[..\sslpa\base\network.c]
+TopLine=112
+Caret=1,141
+[..\sslpa\common\lib\debug.c]
+TopLine=63
+Caret=1,92
+[..\sslpa\base\tcppack.c]
+TopLine=333
+Caret=40,333
+[..\sslpa\common\lib\debug.h]
+TopLine=33
+Caret=1,62
+[..\sslpa\ssl\ssl_analyze.c]
+TopLine=204
+Caret=60,204
