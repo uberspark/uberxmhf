@@ -38,14 +38,17 @@
 #include "scode.h"
 #include "foo.h"
 
+#define  TEST_VMM
+
 int sdatajunk[] __attribute__ ((section (".sdata")))  = {2,3,4,5,6};
 int paramjunk[] __attribute__ ((section (".sparam"))) = {3,4,5,6,7};
 int stackjunk[] __attribute__ ((section (".sstack"))) = {4,5,6,7,8};
 
-enum VisorScmd
+enum VMMcmd
 {
-	VISOR_SCMD_REG = 1,
-	VISOR_SCMD_UNREG = 2,
+	VMM_REG = 1,
+	VMM_UNREG = 2,
+	VMM_TEST = 255,
 };
 
 int scode_registration(unsigned int pageinfo, unsigned int ssp, unsigned int params, unsigned int entry)
@@ -54,7 +57,7 @@ int scode_registration(unsigned int pageinfo, unsigned int ssp, unsigned int par
 	__asm__ __volatile__(
 			"vmmcall\n\t"
 			:"=a"(ret)
-			: "a"(1), "b"(pageinfo), "d"(ssp), "S"(params), "D"(entry));
+			: "a"(VMM_REG), "b"(pageinfo), "d"(ssp), "S"(params), "D"(entry));
 }
 
 int scode_unregistration(unsigned int start)
@@ -63,8 +66,19 @@ int scode_unregistration(unsigned int start)
 	__asm__ __volatile__(
 			"vmmcall\n\t"
 			:"=a"(ret)
-			: "a"(2), "b"(start));
+			: "a"(VMM_UNREG), "b"(start));
 }
+
+#ifdef TEST_VMM
+int scode_test(void)
+{
+	int ret;
+	__asm__ __volatile__(
+			"vmmcall\n\t"
+			:"=a"(ret)
+			: "a"(VMM_TEST));
+}
+#endif
 
 /* Routines for preparing input and registering PAL 
  *
@@ -154,7 +168,11 @@ int unreg_pal(unsigned int addr)
 // register some sensitive code and data in libfoo.so and call bar()
 int main(void)
 {
+#ifndef TEST_VMM
 	register_pal();
 	bar();
 	unreg_pal((unsigned int)bar);
+#else
+	scode_test();
+#endif
 } 
