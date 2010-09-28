@@ -27,13 +27,13 @@ lockdown-ldnvfctl
 7=..\sslpa\ssl\ssl_analyze.c
 [Selected Project Files]
 Main=
-Selected=..\sslpa\ssl\ssl_analyze.c
+Selected=..\main.c
 [..\Makefile]
 TopLine=29
 Caret=6,32
 [..\main.c]
-TopLine=125
-Caret=3,149
+TopLine=1
+Caret=3,20
 [..\sslpa\base\pcap-snoop.c]
 TopLine=551
 Caret=37,572
