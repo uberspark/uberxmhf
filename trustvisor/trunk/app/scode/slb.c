@@ -38,7 +38,7 @@
 #include "scode.h"
 #include "foo.h"
 
-#define  TEST_VMM
+//#define  TEST_VMM
 
 int sdatajunk[] __attribute__ ((section (".sdata")))  = {2,3,4,5,6};
 int paramjunk[] __attribute__ ((section (".sparam"))) = {3,4,5,6,7};
@@ -125,7 +125,6 @@ int register_pal()
 	scode_info.ps_str[1].start_addr = entry+numPage*PAGE_SIZE; 
 	scode_info.ps_str[1].page_num = 1;
 	numPage += scode_info.ps_str[1].page_num;
-	textPage += scode_info.ps_str[1].page_num;
 
 	scode_info.ps_str[2].type = SECTION_TYPE_PARAM;  
 	scode_info.ps_str[2].start_addr = entry+numPage*PAGE_SIZE; 
@@ -169,10 +168,16 @@ int unreg_pal(unsigned int addr)
 int main(void)
 {
 #ifndef TEST_VMM
+	printf("start registering PAL!\n");
 	register_pal();
-	bar();
+	printf("start runing PAL!\n");
+//	bar();
+	printf("start unregistering PAL!\n");
 	unreg_pal((unsigned int)bar);
+	printf("Program finish!\n");
 #else
+	printf("start testing VMM!\n");
 	scode_test();
+	printf("finish testing VMM!\n");
 #endif
 } 

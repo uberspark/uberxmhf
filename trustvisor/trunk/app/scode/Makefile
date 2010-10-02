@@ -5,24 +5,37 @@
 # $* the prefix shared by target and dependent files. 
 
 CC=gcc
+LD=ld
 RM=rm -f
 
 #linker script
 LINK_SCRIPT = defaultld.ld 
 
 # for debug
-CFLAGS=-g -O2 -DnotPERFCPIT -fno-stack-protector 
+CFLAGS=-g -O2 -DnotPERFCPIT -fno-stack-protector
+#CFLAGS+=-I/usr/include 
 # for run
 #CFLAGS=-O2 -DnotPERFCPIT -fno-stack-protector 
 
 # oject files
-C_OBJS = slb.o \
-	 foo.o
+#OBJS = $(patsubst %.c, %.o, $(SRCS))
+OBJS = foo.o slb.o
 
 # source .c file
-SRCS = slb.c \
+#SRCS = slb.c foo.c 
 
-slb:$(C_OBJS)
-	$(CC) $(CFLAGS) -T $(LINK_SCRIPT) -o $@ $(C_OBJS)
+#I_SOURCES = $(wildcard *.h)
+
+slb:$(OBJS)
+	$(CC) $(CFLAGS) -T $(LINK_SCRIPT) -o $@ $(OBJS)
+
+#.PHONY: all
+#all: $(OBJS)
+#	$(LD) --oformat=pe-i386 -T $(LINK_SCRIPT) -L/usr/lib/libc.a -o slb.exe $(OBJS)
+
+#%.o:%.c $(I_SOURCES)
+#	$(CC) -c $(CFLAGS) -o $@ $<
+
+.PHONY: clean
 clean:
 	$(RM) .*.cmd *.o *.ko *~ -r .tmp* slb slb.D
