@@ -3,10 +3,10 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # app-specific configuration options
-export LDN_HYPERSWITCHING := y
-export LDN_HYPERPARTITIONING := y
-export LDN_APPROVEDEXEC := y
-export LDN_SSLPA := y
+export LDN_HYPERSWITCHING := n
+export LDN_HYPERPARTITIONING := n
+export LDN_APPROVEDEXEC := n
+export LDN_SSLPA := n
 
 
 ifeq ($(LDN_HYPERSWITCHING), y)
@@ -34,8 +34,8 @@ ifeq ($(LDN_APPROVEDEXEC), y)
 C_SOURCES += approvedexec.c approvedexec_windows.c sha1.c
 endif
 
-OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
-OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
+OBJECTS = $(patsubst %.S, $(APPOBJECTSDIR)/%.o, $(AS_SOURCES))
+OBJECTS += $(patsubst %.c, $(APPOBJECTSDIR)/%.o, $(C_SOURCES))
 
 I_SOURCES  =  $(wildcard $(SECHYP_INCLUDEDIR)/*.h)
 I_SOURCES  +=  $(wildcard $(APP_INCLUDEDIR)/*.h)
@@ -44,10 +44,10 @@ I_SOURCES  +=  $(wildcard $(APP_INCLUDEDIR)/*.h)
 .PHONY: all
 all: $(OBJECTS)
 
-%.o: %.S $(I_SOURCES) Makefile ../Makefile
-	$(CC) -c $(ASFLAGS) -o $(APPOBJECTSDIR)/$@ $<
-%.o: %.c $(I_SOURCES) Makefile ../Makefile
-	$(CC) -c $(CFLAGS) -o $(APPOBJECTSDIR)/$@ $<
+$(APPOBJECTSDIR)/%.o: %.S $(I_SOURCES) Makefile ../Makefile
+	$(CC) -c $(ASFLAGS) -o $@ $<
+$(APPOBJECTSDIR)/%.o: %.c $(I_SOURCES) Makefile ../Makefile
+	$(CC) -c $(CFLAGS) -o $@ $<
   
 .PHONY: clean 
 clean: 

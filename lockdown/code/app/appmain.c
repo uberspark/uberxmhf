@@ -1,5 +1,5 @@
 // appmain.c
-// sechyp application main module
+// emhf application main module
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <target.h>
@@ -32,7 +32,7 @@ int memcmp (const unsigned char *str1, const unsigned char *str2, int count){
 }
 
                             
-u32 sechyp_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
+u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
   LDNPB *pldnPb;
   printf("\nCPU(0x%02x): Lockdown initiaizing...", vcpu->id);
 
@@ -50,16 +50,16 @@ u32 sechyp_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
     vcpu->id, acpi_control_portnum);
   
   //set I/O port intercept for ACPI control port
-  sechyp_iopm_set_write(vcpu, acpi_control_portnum, 2); //16-bit port
+  emhf_iopm_set_write(vcpu, acpi_control_portnum, 2); //16-bit port
 #endif
 
 #if defined(__LDN_HYPERPARTITIONING__)
   //set IDE port intercepts for hyper-partitioning
-  sechyp_iopm_set_write(vcpu, ATA_COMMAND(ATA_BUS_PRIMARY), 1); //8-bit port
-  sechyp_iopm_set_write(vcpu, ATA_SECTOR_COUNT(ATA_BUS_PRIMARY), 1); //8-bit port
-  sechyp_iopm_set_write(vcpu, ATA_LBALOW(ATA_BUS_PRIMARY), 1); //8-bit port
-  sechyp_iopm_set_write(vcpu, ATA_LBAMID(ATA_BUS_PRIMARY), 1); //8-bit port
-  sechyp_iopm_set_write(vcpu, ATA_LBAHIGH(ATA_BUS_PRIMARY), 1); //8-bit port
+  emhf_iopm_set_write(vcpu, ATA_COMMAND(ATA_BUS_PRIMARY), 1); //8-bit port
+  emhf_iopm_set_write(vcpu, ATA_SECTOR_COUNT(ATA_BUS_PRIMARY), 1); //8-bit port
+  emhf_iopm_set_write(vcpu, ATA_LBALOW(ATA_BUS_PRIMARY), 1); //8-bit port
+  emhf_iopm_set_write(vcpu, ATA_LBAMID(ATA_BUS_PRIMARY), 1); //8-bit port
+  emhf_iopm_set_write(vcpu, ATA_LBAHIGH(ATA_BUS_PRIMARY), 1); //8-bit port
 #endif
 
   //grab the ldn parameter block from verifier, this tells us the
@@ -96,7 +96,7 @@ u32 sechyp_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
     
     //mask off all network interfaces by interposing on PCI bus accesses
     #if defined(__LDN_SSLPA__)
-    sechyp_iopm_set_write(vcpu, PCI_CONFIG_DATA_PORT, 2); //16-bit port
+    emhf_iopm_set_write(vcpu, PCI_CONFIG_DATA_PORT, 2); //16-bit port
     #endif
   
   }
@@ -138,7 +138,7 @@ u32 sslpa_isnetworkdevice(u32 bus, u32 device, u32 function){
 
 #endif
 
-u32 sechyp_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, 
+u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, 
   u32 portnum, u32 access_type, u32 access_size){
 
 #if defined(__LDN_HYPERSWITCHING__)  
@@ -146,7 +146,7 @@ u32 sechyp_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
       access_size == IO_SIZE_WORD && ((u16)r->eax & (u16)(1 << 13)) ){
       printf("\nCPU(0x%02x): Lockdown; ACPI SLEEP_EN signal caught. resetting firmware...",
           vcpu->id);
-      sechyp_reboot();
+      emhf_reboot();
       //we should never get here
       HALT();  
   }
