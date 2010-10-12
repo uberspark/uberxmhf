@@ -22,7 +22,7 @@
 	#MP/UP selection, y=Multiprocessor, n=Uniprocessor
   export MP_VERSION := y
 	#where you want loader and runtime binaries to go, defaults to current dir.
-	export INSTALLDIR = $(CURDIR)
+	export INSTALLDIR = /home/jmmccune/export
   #misc. configuaration w.r.t serial debugging and NPT/EPT support
 	export NESTED_PAGING := y
   export DEBUG_SERIAL := y

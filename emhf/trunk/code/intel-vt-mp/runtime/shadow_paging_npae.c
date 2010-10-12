@@ -69,6 +69,46 @@ u32 shadow_guest_CR3=0;
 	7. VMX transitions -> ALL TLB 
 */
 
+
+
+
+/* /\* ------------ Start for verification ------------ *\/ */
+
+/* u32 nondet_u32(); */
+/* int nondet_int(); */
+
+/* u32 shadow_new_context(u32 guest_CR3); */
+/* void shadow_invalidate_page(u32 address); */
+/* u32 shadow_page_fault(u32 cr2, u32 error_code); */
+
+/* void init_visor() { */
+
+/*     // Set initial state of guest and shadow pd */
+/*     //spd = nondet_pdt();  */
+/*     //gpd = nondet_pdt(); */
+
+/*     //assume all mapped phy address are less than or equal protected_mem_start */
+/*   __CPROVER_assume( npae_get_addr_from_pte(**gPTE) <= GUEST_PHYSICALMEMORY_LIMIT); */
+
+/*     //nondet calls */
+/*     int choice = nondet_int(); */
+
+/*     if (choice == 0) { */
+/*         shadow_new_context(nondet_u32()); */
+/*     } else if (choice == 1) { */
+/*         shadow_invalidate_page(nondet_u32()); */
+/*     } else { */
+/*         shadow_page_fault(nondet_u32(), nondet_u32()); */
+/*     } */
+
+/*     // SECURITY PROPERTY */
+/*     assert( npae_get_addr_from_pte(**gPTE) <= GUEST_PHYSICALMEMORY_LIMIT); */
+/* } */
+
+/* /\* ------------ End for verification ------------ *\/ */
+
+
+
 //------------------------------------------------------------------------------
 //return pointers to the 32-bit SHADOW pde and pte for a given guest
 //virtual address
