@@ -107,7 +107,7 @@ void init_visor() {
     int choice = nondet_int();
 
     if (choice == 0) {
-      shadow_new_context(nondet_u32());
+      //shadow_new_context(nondet_u32());
     } else if (choice == 1) {
         shadow_invalidate_page(nondet_u32());
     } else {
@@ -200,7 +200,12 @@ void shadow_get_guestentry(u32 gva, u32 gCR3, u32 **pdt_entry, u32 **pt_entry){
 u32 shadow_alloc_pt(u32 gva){
 	u32 index_pdt;
 	index_pdt= (gva >> 22);
-	memset( (void *)((index_pdt * PAGE_SIZE_4K) + (u32)__shadow_npae_p_tables), 0, PAGE_SIZE_4K);
+	//memset( (void *)((index_pdt * PAGE_SIZE_4K) + (u32)__shadow_npae_p_tables), 0, PAGE_SIZE_4K);
+	for (int i= 0; i < 1024; i++) {
+	  *((u32 *)((index_pdt * PAGE_SIZE_4K) + (u32)__shadow_npae_p_tables)+i) = (u32) 0;
+	}
+	//#include "temp.h"
+ 
 	return ( ((index_pdt * PAGE_SIZE_4K) + (u32)__shadow_npae_p_tables) );
 }
 
@@ -252,6 +257,13 @@ void shadow_updateshadowentries(u32 gva, u32 **sPDE, u32 **sPTE,
 	u32 index_pdt, index_pt; 
 	u32 flags;
 	u32 paddr;
+
+	if (**gPDE & _PAGE_PSE) {
+	  __CPROVER_assume(  npae_get_addr_from_pde(**sPDE) <= GUEST_PHYSICALMEMORY_LIMIT);
+	} else {
+	  __CPROVER_assume(  npae_get_addr_from_pte(**sPTE) <= GUEST_PHYSICALMEMORY_LIMIT);
+	}
+
 	
 	index_pdt= (gva >> 22);
 	index_pt  = ((gva & (u32)0x003FFFFF) >> 12);
@@ -262,8 +274,17 @@ void shadow_updateshadowentries(u32 gva, u32 **sPDE, u32 **sPTE,
 	//ASSERT( **gPDE & _PAGE_PRESENT );
 
 	if( **gPDE & _PAGE_PSE){	//4M page
+		//copy the entire entry into shadow	
+		if( npae_get_addr_from_pde(**gPDE) <= GUEST_PHYSICALMEMORY_LIMIT){
+			**sPDE = **gPDE;
+		}else{
+			printf("\nillegal mapping!");
+			HALT();				
+		}
+
+
 			//copy the entire entry into shadow
-			**sPDE = **gPDE;			
+			//**sPDE = **gPDE;			
 	}else{	//4K page table
 		flags=npae_get_flags_from_pde(**gPDE);
 		paddr=npae_get_addr_from_pde(**sPDE);
@@ -294,7 +315,14 @@ void shadow_updateshadowentries(u32 gva, u32 **sPDE, u32 **sPTE,
 	}
 
 	// SECURITY PROPERTY
-	assert( npae_get_addr_from_pte(**sPTE) <= GUEST_PHYSICALMEMORY_LIMIT);
+	if (**gPDE & _PAGE_PSE) {
+	  assert(  npae_get_addr_from_pde(**sPDE) <= GUEST_PHYSICALMEMORY_LIMIT);
+	} else {
+	  assert(  npae_get_addr_from_pte(**sPTE) <= GUEST_PHYSICALMEMORY_LIMIT);
+	}
+
+
+
 
 }
 
@@ -540,10 +568,10 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
 				//set_guestentry_accessed(gPDE, gPTE);
 				//set_shadowentry_dirtywaiting(sPDE, sPTE, gPDE, gPTE);
 				
-				if(!shadow_checkcontext((u32)__shadow_npae_pd_table)){
-					//printf("\nPF: Halting, reserved bits set in SHADOW paging structures!");
-					HALT();
-				}	
+				/* if(!shadow_checkcontext((u32)__shadow_npae_pd_table)){ */
+				/* 	//printf("\nPF: Halting, reserved bits set in SHADOW paging structures!"); */
+				/* 	HALT(); */
+				/* }	 */
 
 				//sdbg_dumpentries(gPDE, gPTE, sPDE, sPTE);
 				return VMX_EVENT_CANCEL;
