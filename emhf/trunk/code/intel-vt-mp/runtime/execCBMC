@@ -1,0 +1,3 @@
+#!/bin/bash
+
+./cbmc --no-bounds-check spa.c --function init_visor;

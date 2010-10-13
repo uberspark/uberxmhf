@@ -45,15 +45,28 @@
 #include <print.h>
 #include <processor.h>
 #include <msr.h>
-#include <vtx.h>
+//#include <vtx.h>
 #include <paging.h>
 #include <io.h>
 #include <str.h>
-#include <machine.h>
+//#include <machine.h> 
 #include <error.h>
 #include <shadow_paging_npae.h>
+#include "../common/string.c"
 
 #define GUEST_PHYSICALMEMORY_LIMIT	(512*1024*1024) //512M guest physical limit
+
+//u8 __shadow_npae_pd_table[4096];
+//u8 __shadow_npae_p_tables[1024 * 4096];
+#define gpa_to_hpa(x) x
+
+u16 guest_GDTR_limit;
+u16 guest_IDTR_limit;
+u16 guest_TR_limit;
+u32 guest_GDTR_base;
+u32 guest_IDTR_base;
+u32 guest_TR_base;
+
 
 u32 shadow_guest_CR3=0;
 
@@ -74,36 +87,36 @@ u32 shadow_guest_CR3=0;
 
 /* /\* ------------ Start for verification ------------ *\/ */
 
-/* u32 nondet_u32(); */
-/* int nondet_int(); */
+u32 nondet_u32();
+int nondet_int();
 
-/* u32 shadow_new_context(u32 guest_CR3); */
-/* void shadow_invalidate_page(u32 address); */
-/* u32 shadow_page_fault(u32 cr2, u32 error_code); */
+u32 shadow_new_context(u32 guest_CR3);
+void shadow_invalidate_page(u32 address);
+u32 shadow_page_fault(u32 cr2, u32 error_code);
 
-/* void init_visor() { */
+void init_visor() {
 
-/*     // Set initial state of guest and shadow pd */
-/*     //spd = nondet_pdt();  */
-/*     //gpd = nondet_pdt(); */
+    // Set initial state of guest and shadow pd
+    //spd = nondet_pdt();
+    //gpd = nondet_pdt();
 
-/*     //assume all mapped phy address are less than or equal protected_mem_start */
-/*   __CPROVER_assume( npae_get_addr_from_pte(**gPTE) <= GUEST_PHYSICALMEMORY_LIMIT); */
+    //assume all mapped phy address are less than or equal protected_mem_start
+  //__CPROVER_assume( npae_get_addr_from_pte(**gPTE) <= GUEST_PHYSICALMEMORY_LIMIT);
 
-/*     //nondet calls */
-/*     int choice = nondet_int(); */
+    //nondet calls
+    int choice = nondet_int();
 
-/*     if (choice == 0) { */
-/*         shadow_new_context(nondet_u32()); */
-/*     } else if (choice == 1) { */
-/*         shadow_invalidate_page(nondet_u32()); */
-/*     } else { */
-/*         shadow_page_fault(nondet_u32(), nondet_u32()); */
-/*     } */
+    if (choice == 0) {
+      shadow_new_context(nondet_u32());
+    } else if (choice == 1) {
+        shadow_invalidate_page(nondet_u32());
+    } else {
+        shadow_page_fault(nondet_u32(), nondet_u32());
+    }
 
-/*     // SECURITY PROPERTY */
-/*     assert( npae_get_addr_from_pte(**gPTE) <= GUEST_PHYSICALMEMORY_LIMIT); */
-/* } */
+    // SECURITY PROPERTY
+    //assert( npae_get_addr_from_pte(**gPTE) <= GUEST_PHYSICALMEMORY_LIMIT);
+}
 
 /* /\* ------------ End for verification ------------ *\/ */
 
@@ -194,7 +207,7 @@ u32 shadow_alloc_pt(u32 gva){
 
 //returns 1 if the page is present in guest, else 0
 u32 is_present_guest(u32 *gPDE, u32 *gPTE){
-	ASSERT ( gPDE != (u32 *)0 );
+	//ASSERT ( gPDE != (u32 *)0 );
 	
 	if( !(*gPDE & _PAGE_PRESENT) )
 		return 0;
@@ -202,7 +215,7 @@ u32 is_present_guest(u32 *gPDE, u32 *gPTE){
 	if( *gPDE & _PAGE_PSE )
 		return 1;
 	
-	ASSERT ( gPTE != (u32 *)0 );
+	//ASSERT ( gPTE != (u32 *)0 );
 	
 	if( !(*gPTE & _PAGE_PRESENT) )
 		return 0;
@@ -214,7 +227,7 @@ u32 is_present_guest(u32 *gPDE, u32 *gPTE){
 void set_guestentry_accessed(u32 *gPDE, u32 *gPTE){
 	u32 *guest_entry;
 	
-	ASSERT( gPDE != (u32 *)0 );
+	//ASSERT( gPDE != (u32 *)0 );
 	
 	if( ! (*gPDE & _PAGE_PRESENT) )
 		return;
@@ -224,7 +237,7 @@ void set_guestentry_accessed(u32 *gPDE, u32 *gPTE){
 	if(*gPDE & _PAGE_PSE)
 		return;
 		
-	ASSERT( gPTE != (u32 *)0 );
+	//ASSERT( gPTE != (u32 *)0 );
 	
 	if ( *gPTE & _PAGE_PRESENT)
 		*gPTE |= _PAGE_ACCESSED;
@@ -245,8 +258,8 @@ void shadow_updateshadowentries(u32 gva, u32 **sPDE, u32 **sPTE,
 	
 	//printf("\n	index_pdt=%u, index_pt=%u", index_pdt, index_pt);
 	
-	ASSERT( *gPDE != (u32 *)0 ); //gPDE MUST be valid, either a 4M page or point to a PT
-	ASSERT( **gPDE & _PAGE_PRESENT );
+	//ASSERT( *gPDE != (u32 *)0 ); //gPDE MUST be valid, either a 4M page or point to a PT
+	//ASSERT( **gPDE & _PAGE_PRESENT );
 
 	if( **gPDE & _PAGE_PSE){	//4M page
 			//copy the entire entry into shadow
@@ -257,12 +270,12 @@ void shadow_updateshadowentries(u32 gva, u32 **sPDE, u32 **sPTE,
 		//propagate guest PDE flags to shadow PDE
 		**sPDE = npae_make_pde(paddr, flags);
 			
-		ASSERT( *gPTE != (u32 *)0 ); //gPTE MUST be valid and present
-		ASSERT( **gPTE & _PAGE_PRESENT );
+		//ASSERT( *gPTE != (u32 *)0 ); //gPTE MUST be valid and present
+		//ASSERT( **gPTE & _PAGE_PRESENT );
 
 		//check if we have a valid shadow PT
 		if(*sPTE == (u32 *)0){	//no shadow PT, so assign one
-			ASSERT(paddr == 0);
+			//ASSERT(paddr == 0);
 			paddr = shadow_alloc_pt(gva);
 			**sPDE = npae_make_pde(paddr, flags);
 			*sPTE = (u32 *)(paddr + (index_pt * sizeof(u32))); 			
@@ -280,13 +293,16 @@ void shadow_updateshadowentries(u32 gva, u32 **sPDE, u32 **sPTE,
 		//**sPTE = **gPTE;	
 	}
 
+	// SECURITY PROPERTY
+	assert( npae_get_addr_from_pte(**sPTE) <= GUEST_PHYSICALMEMORY_LIMIT);
+
 }
 
 
 //[DEBUG]: dump the page table entries for both shadow and guest
 void sdbg_dumpentries(u32 *gPDE, u32 *gPTE,
 		u32 *sPDE, u32 *sPTE){
-	ASSERT( (gPDE != (u32 *)0 && sPDE != (u32 *)0) );
+	//ASSERT( (gPDE != (u32 *)0 && sPDE != (u32 *)0) );
 	printf("\n	__s_pd=0x%08x, __s_pt=0x%08x", 
 		(u32)__shadow_npae_pd_table, (u32)__shadow_npae_p_tables);
 	printf("\n	PDEs: g=0x%08x, s=0x%08x", *gPDE, *sPDE);
@@ -351,15 +367,15 @@ void clear_shadowentry_dirtywaiting(u32 *sPDE, u32 *sPTE){
 	
 	//grab original RW bit value 
 	//and also determine which shadow entry we will use (PDE or PTE)
-	ASSERT( sPDE != (u32 *)0 );
-	ASSERT( *sPDE & _PAGE_PRESENT );
+	//ASSERT( sPDE != (u32 *)0 );
+	//ASSERT( *sPDE & _PAGE_PRESENT );
 	
 	if(*sPDE & _PAGE_PSE){	//4M page
 		original_rw_bit = (*sPDE & _PAGE_SHADOW_ORIGINALRWBIT);
 		shadow_entry = sPDE;
 	}else{
-		ASSERT( sPTE != (u32 *)0 );
-		ASSERT( *sPTE & _PAGE_PRESENT );
+		//ASSERT( sPTE != (u32 *)0 );
+		//ASSERT( *sPTE & _PAGE_PRESENT );
 		original_rw_bit = (*sPTE & _PAGE_SHADOW_ORIGINALRWBIT);
 		shadow_entry = sPTE;
 	}
@@ -382,14 +398,14 @@ u32 is_shadowentry_writable(u32 *sPDE, u32 *sPTE){
 	
 	//grab original RW bit value 
 	//and also determine which shadow entry we will use (PDE or PTE)
-	ASSERT( sPDE != (u32 *)0 );
-	ASSERT( *sPDE & _PAGE_PRESENT );
+	//ASSERT( sPDE != (u32 *)0 );
+	//ASSERT( *sPDE & _PAGE_PRESENT );
 	
 	if(*sPDE & _PAGE_PSE){	//4M page
 		shadow_entry = sPDE;
 	}else{
-		ASSERT( sPTE != (u32 *)0 );
-		ASSERT( *sPTE & _PAGE_PRESENT );
+		//ASSERT( sPTE != (u32 *)0 );
+		//ASSERT( *sPTE & _PAGE_PRESENT );
 		shadow_entry = sPTE;
 	}
 
@@ -410,15 +426,15 @@ void set_shadowentry_dirtywaiting(u32 *sPDE, u32 *sPTE,
 	
 	//grab original RW bit value from guest paging structures
 	//and also determine which shadow entry we will use (PDE or PTE)
-	ASSERT( gPDE != (u32 *)0 );
-	ASSERT( *gPDE & _PAGE_PRESENT );
+	//ASSERT( gPDE != (u32 *)0 );
+	//ASSERT( *gPDE & _PAGE_PRESENT );
 	
 	if(*gPDE & _PAGE_PSE){	//4M page
 		original_rw_bit = (*gPDE & _PAGE_RW);
 		shadow_entry = sPDE;
 	}else{
-		ASSERT( gPTE != (u32 *)0 );
-		ASSERT( *gPTE & _PAGE_PRESENT );
+		//ASSERT( gPTE != (u32 *)0 );
+		//ASSERT( *gPTE & _PAGE_PRESENT );
 		original_rw_bit = (*gPTE & _PAGE_RW);
 		shadow_entry = sPTE;
 	}
@@ -440,14 +456,14 @@ u32 is_shadowentry_dirtywaiting(u32 *sPDE, u32 *sPTE){
 	u32 *shadow_entry;
 	
 	//determine which shadow entry we will use (PDE or PTE)
-	ASSERT( sPDE != (u32 *)0 );
-	ASSERT( *sPDE & _PAGE_PRESENT );
+	//ASSERT( sPDE != (u32 *)0 );
+	//ASSERT( *sPDE & _PAGE_PRESENT );
 	
 	if(*sPDE & _PAGE_PSE){	//4M page
 		shadow_entry = sPDE;
 	}else{
-		ASSERT( sPTE != (u32 *)0 );
-		ASSERT( *sPTE & _PAGE_PRESENT );
+		//ASSERT( sPTE != (u32 *)0 );
+		//ASSERT( *sPTE & _PAGE_PRESENT );
 		shadow_entry = sPTE;
 	}
 
@@ -463,14 +479,14 @@ void set_guestentry_dirty(u32 *gPDE, u32 *gPTE){
 	u32 *guest_entry;
 	
 	//determine which GUEST entry we will use (PDE or PTE)
-	ASSERT( gPDE != (u32 *)0 );
-	ASSERT( *gPDE & _PAGE_PRESENT );
+	//ASSERT( gPDE != (u32 *)0 );
+	//ASSERT( *gPDE & _PAGE_PRESENT );
 	
 	if(*gPDE & _PAGE_PSE){	//4M page
 		guest_entry = gPDE;
 	}else{
-		ASSERT( gPTE != (u32 *)0 );
-		ASSERT( *gPTE & _PAGE_PRESENT );
+		//ASSERT( gPTE != (u32 *)0 );
+		//ASSERT( *gPTE & _PAGE_PRESENT );
 		guest_entry = gPTE;
 	}
 
@@ -500,7 +516,7 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
 	}
 
 	//[scheck] we assume CR0.WP=1 always
-	ASSERT( ((guest_CR0 & CR0_WP) && (control_CR0_shadow & CR0_WP)) );
+	//ASSERT( ((guest_CR0 & CR0_WP) && (control_CR0_shadow & CR0_WP)) );
 
 	//get SHADOW and GUEST paging entries for the fault-address (CR2)
 	shadow_get_guestentry(cr2, shadow_guest_CR3, &gPDE, &gPTE);
@@ -537,7 +553,7 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
 				return VMX_EVENT_INJECT;
 			}
 	}else if (error_code & PFERR_WR_MASK){
-			ASSERT(is_present_guest(gPDE, gPTE));
+			//ASSERT(is_present_guest(gPDE, gPTE));
 
 			//if(is_shadowentry_dirtywaiting(sPDE, sPTE)){
 			//	printf("\n	SHADOW-PRESENT (GUEST-PRESENT): processing dirty-waiting...");
@@ -583,8 +599,8 @@ void shadow_invalidate_page(u32 address){
 	shadow_get_shadowentry(address, &sPDE, &sPTE);
 	//sdbg_dumpentries(gPDE, gPTE, sPDE, sPTE);
 
-	ASSERT( gPDE != (u32 *)0 );
-	ASSERT( sPDE != (u32 *)0 );
+	//ASSERT( gPDE != (u32 *)0 );
+	//ASSERT( sPDE != (u32 *)0 );
 
 #if 1	//control for conservative/actual policy of INVLPG 1=actual policy	
 	//bail out if we dont have a SHADOW page-directory, we wil sync on
@@ -604,7 +620,7 @@ void shadow_invalidate_page(u32 address){
 			if(sPTE){
 				*sPTE=0;
 			}else{
-				ASSERT(*sPDE & _PAGE_PSE);
+				//ASSERT(*sPDE & _PAGE_PSE);
 				*sPDE=0;
 			}		
 		}
