@@ -3,11 +3,16 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # app-specific configuration options
-export LDN_HYPERSWITCHING := n
+export LDN_HYPERSWITCHING := y
 export LDN_HYPERPARTITIONING := n
 export LDN_APPROVEDEXEC := n
 export LDN_SSLPA := n
-
+# test modes
+	# fwreset, experiment with minimal device reset and cycle through GRUB
+	export LDN_TEST_FWRESET	:=	n
+	# mload, experiment with manual bzImage/initrd-ramfs load without GRUB
+	export LDN_TEST_MLOAD	:=	y
+	
 
 ifeq ($(LDN_HYPERSWITCHING), y)
   CFLAGS += -D__LDN_HYPERSWITCHING__
@@ -22,13 +27,19 @@ ifeq ($(LDN_SSLPA), y)
   CFLAGS += -D__LDN_SSLPA__
 endif
 
+ifeq ($(LDN_TEST_FWRESET), y)
+  CFLAGS += -D__LDN_TEST_FWRESET__
+endif
+ifeq ($(LDN_TEST_MLOAD), y)
+  CFLAGS += -D__LDN_TEST_MLOAD__
+endif
 
 
 
 
 # source files
 AS_SOURCES = 
-C_SOURCES = appmain.c acpi.c hp_sdisk_ata.c 
+C_SOURCES = appmain.c acpi.c hp_sdisk_ata.c fwreset.c linuxrelc.c
 
 ifeq ($(LDN_APPROVEDEXEC), y)
 C_SOURCES += approvedexec.c approvedexec_windows.c sha1.c

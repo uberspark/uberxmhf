@@ -31,6 +31,13 @@ int memcmp (const unsigned char *str1, const unsigned char *str2, int count){
   return 0;
 }
 
+
+#if defined (__LDN_TEST_FWRESET__)
+//our boot-sector buffer to restore between switches
+u8 test_bootsectorbuffer[512];
+u8 test_first1024[1024]; //the first 1K of low memory
+#endif
+
                             
 u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
   LDNPB *pldnPb;
@@ -38,6 +45,54 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 
 	//setup guest environment physical memory size
 	LDN_ENV_PHYSICALMEMORYLIMIT = apb->runtimephysmembase; 
+
+#if defined (__LDN_TEST_MLOAD__)
+	//we use the app param. block fields as below
+	//bootsector_ptr and bootsector_size now become vmlinuz_ptr and vmlinuz_size
+	//optionalmodule_ptr and optionalmodule_size become initramfs_ptr and initramfs_size
+	
+	//sanity checks
+	ASSERT( apb->bootsector_size > 0 && apb->optionalmodule_size > 0 );
+	
+	printf("\nCPU(0x%02x): vmlinuz b=0x%08x, size=%u bytes", vcpu->id,
+			apb->bootsector_ptr, apb->bootsector_size);
+	printf("\nCPU(0x%02x): initramfs b=0x%08x, size=%u bytes", vcpu->id,
+			apb->optionalmodule_ptr, apb->optionalmodule_size);
+	
+	setuplinuxboot(vcpu, apb->bootsector_ptr, apb->bootsector_size, 
+		apb->optionalmodule_ptr, apb->optionalmodule_size);
+#endif
+
+
+#if defined (__LDN_TEST_FWRESET__)
+	//some sanity checks
+	ASSERT( apb->bootsector_size == 512 );
+	#if defined (__MP_VERSION__)
+		#error TEST code is not designed to work with MP version (yet?)
+	#endif
+	//copy the boot-sector into our buffer
+	memcpy((void *)&test_bootsectorbuffer, (void *)apb->bootsector_ptr, apb->bootsector_size);
+	printf("\nCPU(0x%02x): saved guest boot-sector, sig=0x%02x%02x", vcpu->id, test_bootsectorbuffer[510], 
+				test_bootsectorbuffer[511]);
+	memcpy((void *)&test_first1024, (void *)0x00000000, 1024);
+	printf("\nCPU(0x%02x): saved low 1K of mem", vcpu->id);
+	
+	//initialize pci subsystem
+	if(!pci_initialize()){
+		printf("\nCPU(0x%02x): fatal error, could not initialze PCI subsystem. Halting!", vcpu->id);
+		HALT();
+	}
+	
+	hw_disk_printpciconf();
+	hw_disk_savepciconf();
+	hw_disk_restorepciconf();
+	hw_disk_printpciconf();
+	hw_vga_reset();
+	printf("\nCPU(0x%02x): sent VGA compatible reset sequence...", vcpu->id);
+	hw_disk_reset();
+	printf("\nCPU(0x%02x): sent ATA/ATAPI compatible reset sequence...", vcpu->id);
+	
+#endif
 
 
 #if defined(__LDN_HYPERSWITCHING__)  
@@ -109,6 +164,8 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
   return APP_INIT_SUCCESS;  //successful
 }
 
+
+
 extern u32 hp(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size);
 
 
@@ -146,7 +203,40 @@ u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
       access_size == IO_SIZE_WORD && ((u16)r->eax & (u16)(1 << 13)) ){
       printf("\nCPU(0x%02x): Lockdown; ACPI SLEEP_EN signal caught. resetting firmware...",
           vcpu->id);
-      emhf_reboot();
+      
+			#if defined (__LDN_TEST_FWRESET__)			
+			{
+				extern void initunrestrictedguestVMCS(VCPU *vcpu);
+				extern void dumpVMCS(VCPU *vcpu);
+				
+				ASSERT(vcpu->guest_unrestricted);
+				memcpy((void *)0x7c00, (void *)&test_bootsectorbuffer, 512);
+				memcpy((void *)0x00000000, (void *)&test_first1024, 1024);				
+				initunrestrictedguestVMCS(vcpu);
+				printf("\nCPU(0x%02x): Now restarting guest again...", vcpu->id);
+				r->eax=0;
+				r->ebx=0;
+				r->ecx=0;
+				r->edx=0x80;
+				r->esi=0;
+				r->edi=0;
+				r->ebp=0;
+				vcpu->vmcs.info_vmexit_instruction_length=0; //needed since when we return APP_IOINTERCEPT_SKIP
+						//islayer will add this to RIP
+				hw_disk_printpciconf();
+				hw_disk_restorepciconf();
+				hw_disk_printpciconf();
+				hw_vga_reset();
+				printf("\nCPU(0x%02x): sent VGA compatible reset sequence...", vcpu->id);
+				hw_disk_reset();
+				printf("\nCPU(0x%02x): sent ATA/ATAPI compatible reset sequence...", vcpu->id);
+				//dumpVMCS(vcpu);
+				//HALT();
+				return APP_IOINTERCEPT_SKIP;
+			}	
+			#else
+				emhf_reboot();
+			#endif
       //we should never get here
       HALT();  
   }

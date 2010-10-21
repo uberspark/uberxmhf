@@ -17,18 +17,24 @@
 	export TARGET = lockdown
   export TARGET_VERSION = 0
   export TARGET_SUBVERSION = 3
-  #h/w platform, current choices are svm (for AMD) and vmx (for Intel)
+  
+	#h/w platform, current choices are svm (for AMD) and vmx (for Intel)
 	export TARGET_HWPLATFORM := vmx
+	
 	#MP/UP selection, y=Multiprocessor, n=Uniprocessor
   export MP_VERSION := n
+	
 	#where you want loader and runtime binaries to go, defaults to current dir.
 	#export INSTALLDIR = $(CURDIR)
 	export INSTALLDIR = /cygdrive/z/
-  #misc. configuaration w.r.t serial debugging and NPT/EPT support
+  
+	#misc. configuaration w.r.t serial debugging, NPT/EPT support and
+	#unrestricted guest caps. (for Intel only)
 	export NESTED_PAGING := y
   export DEBUG_SERIAL := y
   export DEBUG_VGA	:= n
-
+  export DISABLE_UG	:= n
+  
 #-----configuration that typically need not be touched
   ifeq ($(TARGET_HWPLATFORM), svm)
   export EMHFCOREDIR := ./emhfcore/amd-v-mp
@@ -84,6 +90,9 @@
   endif
   ifeq ($(MP_VERSION), y)
   CFLAGS += -D__MP_VERSION__
+  endif
+  ifeq ($(DISABLE_UG), y)
+  CFLAGS += -D__DISABLE_UG__
   endif
 
 
