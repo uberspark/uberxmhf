@@ -1,0 +1,75 @@
+this document describes how to flash a firmware image to the
+dsw2148wz board.
+
+author: amit vasudevan (amitvasudevan@acm.org)
+
+you will need the following hardware:
+	1. the dsw2148wz board
+	2. one NULL modem serial DB-9 cable
+	3. an USB cable (A to B type), A at the host end and B at the
+		 verifier end.
+	4. a PC running windows (or alternatively the 
+		"Windows Service/Development Environment" partition if you
+		already have the lockdown development disk-image written to 
+		a hard-disk)
+
+this document assumes that the lockdown repository root as:
+	lockdown/		
+
+you may need to change this according to where you checked out
+the repository. e.g, c:\amit\projects\lockdown
+
+this document also assumes that you are going to use the
+lockdown development disk-image and have the 
+"Windows Service/Development Environment" (hereon referred to
+as WSDE)
+
+1. boot into WSDE
+
+2. from the tools\verifier\ds2148wz subdirectory unzip
+	flash.isp.utility.lpc2000.zip to a directory of your choice
+	and run the "Philips Flash Utility Installation.exe".
+	this will install the Philips NXP flash tool. 
+	
+	the WSDE should have this pre-installed in:
+	Start->Programs->Philips Semiconductors->Flash Utility->
+			Launch LPC210x_ISP.exe
+
+3. from the code\verifier\ds2148wz\firmwarebuilds subdirectory
+	grab the latest binary build of the verifier firmware (v1.0 as
+	of this writing)
+			
+4. connect one end of the DB-9 cable to the verifier and the
+	other end to a serial port on the PC. If the PC does not have a
+	serial port (e.g, laptops) then use a USB to serial converter.
+
+5. locate the "programming jumper" on the dsw2148wz board. this is
+	a black switch just next to the serial port on the verifier with
+	a "Load ->" marked on the board. Flip the switch to the opposite
+	side of the ->. This will put the bootloader on the board to 
+	"program mode" and will allow you to flash a new firmware.
+	
+6. connect the B-end of the USB cable to the verifier and the
+	A-end to the PC.
+	
+7. within the Philips NXP flash tools in the "Communication" section,
+ 	select the correct COM port and use 9600 as baud rate. Check the
+	"Use DRT/RTS for Reset and Boot Loader Selection".
+	
+	Hit the "Read Device ID" button in the "Device" section. If the connections 
+	were good, then the utility will read the Part ID and Boot Loader ID from
+	the board.  
+	 
+	In the "Flash Programming" section click on "..." to select the verifier
+	firmware binary (step-3 above). Uncheck "Execute Code after Upload"
+	and click "Upload to Flash". After some time the utility will report
+	a successful write to the board.
+	
+8. Now disconnect the serial and USB cables from the PC. switch the 
+	"programming jumper" on the dsw2148wz board to "Load" (i.e to the side
+	of the Load ->). 
+	
+The verifier is now ready with the new firmware.	
+		
+	
+			 			

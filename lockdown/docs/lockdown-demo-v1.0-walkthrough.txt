@@ -1,0 +1,106 @@
+this document describes the steps to be taken to perform 
+a demo (v1.0) of the lockdown prototype
+
+author: amit vasudevan (amitvasudevan@acm.org)
+
+this document assumes that you have already written the
+lockdown development disk-image to the hard-disk of the demo machine.
+it also assumes that the demo machine is a laptop that 
+supports intel VMX with EPT capabilities.
+
+1. plug the AC adapter into the laptop and power it on. make sure
+	the verifier is not connected to the laptop
+
+2. when the GRUB menu appears, immediately press the "UP" arrow key
+	to halt the boot process at the menu. 
+	
+3. select the "Linux Service/Development Environment" and boot into it.
+	use the following username and password at the login prompt.
+	username: root
+	password: 9cylab_cmu
+	
+4. execute the following script to reset the demo to start with the
+	untrusted environment bootup.
+	./resetenv.sh
+
+5. reboot by issuing the following command
+	shutdown -r now
+	
+6. when the GRUB menu appears, immediately press the "UP" arrow key
+	to halt the boot process at the menu.
+	
+7. slide the switch on the verifier to the untrusted environment (the
+	red LED). plug in an ethernet cable to the ethernet port of the verifier.
+	the other end of the ethernet cable must go to a router/switch that is
+	capable of serving a dynamic IP via DHCP.
+	
+8. (optional) make sure the "programming jumper" on the verifier is set to the
+	"Load" mode. refer to lockdown-verifier-dsw2148wz-flashing.txt for
+	more information on this. 		 
+
+
+9. connect the verifier to the laptop using the "designated" USB port. on
+	the hp8540p laptops this is the USB port immediately below and next to the 
+	ethernet LAN port on the right-side of the laptop. this step is important
+	as connecting the verifier to any other port can cause incorrect behavior.
+	
+
+10. after a few seconds the verifier red LED should start blinking.
+
+11. from the GRUB menu, now select the "Lockdown" option and boot into it.
+
+12. the untrusted windows environment will bootup and after some time the
+	blinking red LED will change to a solid RED led signifying that lockdown
+	has booted into the untrusted partition.
+	
+13. login to the untrusted windows partition using the following credentials:
+	username: Administrator
+	password: 9cylab_cmu
+	
+14. you can see that the physical network devices are present as usual and
+	the untrusted environment works as expected. 
+	
+15. now flip the switch on the verifier to the trusted side, the green LED.
+	the verifier red LED will immediately start blinking and the untrusted
+	partition will now be put to sleep. the system will automatically reboot
+	and boot into the trusted partition.
+	
+16. once lockdown has booted into the trusted partition, the red blinking led
+will change to a green solid LED indicating a successful transition to the
+trusted environment. login to the trusted windows partition using the following
+credentials:
+	username: Administrator
+	password: 9cylab_cmu
+	
+17. one of the important differences you will see is in the network settings
+there is only a "Lockdown Virtual Ethernet Adapter" and all the physical 
+adapters are masked.
+
+18. launch internet explorer or firefox and visit a SSL enabled website.
+	(https://www.bankofamerica.com). Now, maximize a black command window on
+	the tray and you can see all the SSL records being disassembled showing 
+	the protocol analyzer/filter working. Minimize the black command window.
+	make sure you dont "close" it accidentally.
+	
+19. now flip the switch on the verifier back to untrusted and watch the
+	red led blinking and the trusted environment being brought down. the system
+	will automatically reboot into the untrusted environment and the cycle
+	repeats.
+	
+20. to power off the laptop, assuming you are in the untrusted environment,
+ 	flip the switch on the verifier to trusted and let the system reboot. 
+	 when the GRUB menu appears, press the "UP" arrow key immediately to
+	 halt the boot-process at the menu. Now you can power off the laptop
+	 and disconnect the verifier.
+
+
+Notes: this demo has the approved execution and network protocol analyzer
+working, however the policies are yet to be defined. For example, if you
+run a unapproved app in the trusted environment, it will continue to run, but
+you can notice a warning message from the hypervisor if you connect it to
+another system via the AMT debug port. Similarly, for the network protocol
+analyzer, the SSL streams are seperated from the non-SSL ones but all 
+network traffic is allowed through. Implementing the desired policies should not
+be too tough on the existing prototype.
+	 					
+		 
