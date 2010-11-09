@@ -1,0 +1,98 @@
+this document describes the steps to be taken to recover
+the lockdown prototype demo platform in case of any errors
+
+author: amit vasudevan (amitvasudevan@acm.org)
+
+1. plug the AC adapter into the laptop and power it on. make sure
+	the verifier is not connected to the laptop
+
+2. when the GRUB menu appears, immediately press the "UP" arrow key
+	to halt the boot process at the menu. 
+	
+3. select the "Linux Service/Development Environment" and boot into it.
+	use the following username and password at the login prompt.
+	username: root
+	password: 9cylab_cmu
+	
+4. execute the following script to reset the demo to start with the
+	untrusted environment bootup.
+	./resetenv.sh
+
+5. reboot by issuing the following command
+	shutdown -r now
+	
+6. when the GRUB menu appears, immediately press the "UP" arrow key
+	to halt the boot process at the menu.
+	
+7. slide the switch on the verifier to the untrusted environment (the
+	red LED). plug in an ethernet cable to the ethernet port of the verifier.
+	the other end of the ethernet cable must go to a router/switch that is
+	capable of serving a dynamic IP via DHCP.
+	
+8. connect the verifier to the laptop using the "designated" USB port. on
+	the hp8540p laptops this is the USB port immediately below and next to the 
+	ethernet LAN port on the right-side of the laptop. this step is important
+	as connecting the verifier to any other port can cause incorrect behavior.
+	
+9. after a few seconds the verifier red LED should start blinking.
+
+10. from the GRUB menu, now select the "Lockdown" option and boot into it.
+
+11. the untrusted windows environment will bootup.
+
+12. login to the untrusted windows partition using the following credentials:
+	username: Administrator
+	password: 9cylab_cmu
+
+13. if the untrusted windows environment booted up by doing a 
+	"resume from hibernation", you should have a "command window" that is
+	minimized on the tray. click on it and goto step 15 
+	
+14. if for some reason the untrusted windows environment booted from scratch 
+	(e.g, the resume image was corrupted), launch a new "command window" using
+	Start->Run and type cmd.
+	
+15. in the command window change directory to:
+	c:\ldnvf\
+	
+16. execute ldnvfctlu.exe by typing it at the command prompt. the verifier
+	led should now glow solid RED.
+
+17. minimize the command window and slide the verifier switch to the
+	"secure" (trusted) mode. the untrusted environment will now be put to sleep
+	and the system will automatically reboot into the trusted environment.
+	
+18. login to the trusted windows partition using the following credentials:
+	username: Administrator
+	password: 9cylab_cmu
+
+19. if the trusted windows environment booted up by doing a 
+	"resume from hibernation", you should have a "command window" that is
+	minimized on the tray. click on it and goto step 21  
+
+20. if for some reason the trusted windows environment booted from scratch 
+	(e.g, the resume image was corrupted), launch a new "command window" using
+	Start->Run and type cmd.
+
+21. in the command window change directory to:
+	c:\ldnvf\
+
+22. execute the following commands one after the other (ignore any warnings
+	e.g, no devices were removed):
+	
+	devcon remove ldnvnet.inf "root\ldnvnet"
+	devcon install ldnvnet.inf "root\ldnvnet" (in the dialog box that pops up, select continue anyway)
+	ldnvfctlt
+	
+23. after the last command, the verifier led should now glow solid GREEN.
+
+
+24. minimize the command window and slide the verifier switch to the
+	"insecure" (untrusted) mode. the trusted environment will now be put to sleep
+	and the system will automatically reboot.
+	
+25. when the GRUB menu appears, immediately press the "UP" arrow key
+	to halt the boot process at the menu. 
+	
+26. power off the system. it is now ready for the demo
+	(see lockdown-demo-v1.0-walkthrough.txt)	
