@@ -1,0 +1,4 @@
+for network, we have the following
+size=619.8MB
+time taken = 20m:29s
+throughput = 516.4 KB/S

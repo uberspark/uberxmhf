@@ -1,0 +1,3 @@
+size = 619.8MB
+throughput = 68K/S
+
