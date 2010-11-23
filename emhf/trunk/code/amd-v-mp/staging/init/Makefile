@@ -2,7 +2,7 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files
-AS_SOURCES = header.S
+AS_SOURCES = header.S initsup.S
 C_SOURCES = init.c 
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))

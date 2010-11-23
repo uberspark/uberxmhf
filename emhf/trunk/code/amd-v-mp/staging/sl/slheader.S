@@ -71,9 +71,12 @@
 	
 	//[DEBUG]
 	//enable HDT debugging, SKINIT disables it
+	//also clear R_INIT and DIS_A20M
 	movl $(VM_CR_MSR), %ecx
 	rdmsr
 	andl $(~(1<<VM_CR_DPD)), %eax
+	andl $(~(1<<VM_CR_R_INIT)), %eax
+	andl $(~(1<<VM_CR_DIS_A20M)), %eax
 	wrmsr
 						  
 
@@ -136,7 +139,7 @@ sl_startnew:
 	movw %ax, %gs
 
 	//setup ESP to top of 64K
-	movl $0xFFFF, %esp	
+	movl $0x10000, %esp	
 
 	pushl %ebp
 	call slmain
@@ -163,17 +166,11 @@ sl_startnew:
 	.quad	0x0000000000000000				//0x20: NULL selector	
 	sl_gdt_end:
 
-
-//this is the stack section
+	
+//sl stack, this is just a placeholder and ensures that the linker
+//actually "allocates" the stack up until 0x10000
 .section .sl_stack
-	.fill __SL_STACKSIZE, 1, 0 
-
-//this section exists so that the linker script can pad our sl image
-//to exactly 64K
-.section .sl_trailer
-	.global _sl_trailer
-	_sl_trailer:
-	.fill 4096, 1, 0
+	.fill 4096, 1, 0  	
 	
 //this section is the input parameter section for the secure loader
 //parameters from "init" are placed here. ordering of the variables
@@ -190,4 +187,6 @@ sl_startnew:
 	.long 0																//isEarlyInit
 	.long 0																//numE820Entries
 	.fill	(SIZE_STRUCT_GRUBE820 * MAX_E820_ENTRIES), 1, 0	//grub E820 map buffer
-		
+	.long	0																//numCPUEntries
+	.fill (SIZE_STRUCT_PCPU * MAX_PCPU_ENTRIES), 1, 0	//cpu table buffer
+	.long 0																//size of the runtime image		

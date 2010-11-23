@@ -18,27 +18,42 @@ emhf-init
 		..\init\header.S
 		..\init\Makefile
 		..\Makefile
+		..\init\initsup.S
+		..\include\target.h
+		..\include\multiboot.h
 [Open project files]
 0=..\Makefile
 1=..\init\Makefile
 2=..\init\header.S
 3=..\init\init.c
 4=..\init\init.lds.S
+5=..\include\multiboot.h
+6=..\include\target.h
+7=..\init\initsup.S
 [Selected Project Files]
 Main=
-Selected=..\Makefile
+Selected=..\init\initsup.S
 [..\Makefile]
 TopLine=73
 Caret=1,115
 [..\init\Makefile]
 TopLine=1
-Caret=1,1
+Caret=32,5
 [..\init\header.S]
-TopLine=1
-Caret=1,1
+TopLine=8
+Caret=17,31
 [..\init\init.c]
-TopLine=1
-Caret=1,1
+TopLine=392
+Caret=1,392
 [..\init\init.lds.S]
 TopLine=1
+Caret=15,8
+[..\include\multiboot.h]
+TopLine=1
 Caret=1,1
+[..\include\target.h]
+TopLine=45
+Caret=1,72
+[..\init\initsup.S]
+TopLine=91
+Caret=1,134

@@ -43,6 +43,7 @@
 void cstartup(multiboot_info_t *mbi);
 MPFP * MP_GetFPStructure(void);
 u32 _MPFPComputeChecksum(u32 spaddr, u32 size);
+u32 isbsp(void);
 
 //---globals--------------------------------------------------------------------
 PCPU pcpus[MAX_PCPU_ENTRIES];
@@ -54,6 +55,11 @@ GRUBE820 grube820list[MAX_E820_ENTRIES];
 u32 grube820list_numentries=0;        //actual number of e820 entries returned
                                   //by grub
 
+extern u32 __midtable[];
+MIDTAB *midtable = (MIDTAB *)__midtable;
+u32 midtable_numentries=0;
+
+extern init_core_lowlevel_setup(void);
 
 //---MP config table handling---------------------------------------------------
 void dealwithMP(void){
@@ -368,6 +374,112 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize){
 }
 
 
+//---do_drtm--------------------------------------------------------------------
+//this establishes a dynamic root of trust
+//inputs: 
+//cpu_vendor = intel or amd
+//slbase= physical memory address of start of sl
+void do_drtm(u32 cpu_vendor, u32 slbase){
+	if(cpu_vendor == CPU_VENDOR_AMD){
+		//send INIT IPI to all APs so that SKINIT can complete successfully
+		send_init_ipi_to_all_APs();
+		printf("\nINIT(early): sent INIT IPI to APs");
+
+  	//our secure loader is the first 64K of the hypervisor image
+  	printf("\nINIT(early): transferring control to SL...");
+		skinit((u32)slbase);
+
+	 	printf("\nINIT(early): error(fatal), should never come here!");
+		HALT();
+  	
+	}else{
+	  printf("\nINIT(early): error(fatal), DRTM unimplemented for CPU!");
+	  HALT();
+	}	
+	                          	
+
+
+}
+
+
+void setupvcpus(MIDTAB *midtable, u32 midtable_numentries){
+  u32 i;
+  extern u32 __cpustacks[], __vcpubuffers[];
+  VCPU *vcpu;
+  
+  printf("\n%s: __cpustacks range 0x%08x-0x%08x in 0x%08x chunks",
+    __FUNCTION__, (u32)__cpustacks, (u32)__cpustacks + (RUNTIME_STACK_SIZE * MAX_VCPU_ENTRIES),
+        RUNTIME_STACK_SIZE);
+  printf("\n%s: __vcpubuffers range 0x%08x-0x%08x in 0x%08x chunks",
+    __FUNCTION__, (u32)__vcpubuffers, (u32)__vcpubuffers + (SIZE_STRUCT_VCPU * MAX_VCPU_ENTRIES),
+        SIZE_STRUCT_VCPU);
+          
+  for(i=0; i < midtable_numentries; i++){
+    vcpu = (VCPU *)((u32)__vcpubuffers + (u32)(i * SIZE_STRUCT_VCPU));
+    memset((void *)vcpu, 0, sizeof(VCPU));
+    
+    vcpu->esp = ((u32)__cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;    
+    vcpu->id = midtable[i].cpu_lapic_id;
+
+    midtable[i].vcpu_vaddr_ptr = (u32)vcpu;
+    printf("\nCPU #%u: vcpu_vaddr_ptr=0x%08x, esp=0x%08x", i, midtable[i].vcpu_vaddr_ptr,
+      vcpu->esp);
+  }
+}
+
+
+//---wakeupAPs------------------------------------------------------------------
+void wakeupAPs(void){
+  u32 eax, edx;
+  volatile u32 *icr;
+  
+  //read LAPIC base address from MSR
+  rdmsr(MSR_APIC_BASE, &eax, &edx);
+  ASSERT( edx == 0 ); //APIC is below 4G
+  //printf("\nLAPIC base and status=0x%08x", eax);
+    
+  icr = (u32 *) (((u32)eax & 0xFFFFF000UL) + 0x300);
+    
+  {
+    extern u32 _ap_bootstrap_start[], _ap_bootstrap_end[];
+    memcpy((void *)0x10000, (void *)_ap_bootstrap_start, (u32)_ap_bootstrap_end - (u32)_ap_bootstrap_start + 1);
+  }
+
+  //our test code is at 1000:0000, we need to send 10 as vector
+  //send INIT
+  printf("\nSending INIT IPI to all APs...");
+  *icr = 0x000c4500UL;
+  udelay(10000);
+  //wait for command completion
+  {
+    u32 val;
+    do{
+      val = *icr;
+    }while( (val & 0x1000) );
+  }
+  printf("Done.");
+
+  //send SIPI (twice as per the MP protocol)
+  {
+    int i;
+    for(i=0; i < 2; i++){
+      printf("\nSending SIPI-%u...", i);
+      *icr = 0x000c4610UL;
+      udelay(200);
+        //wait for command completion
+        {
+          u32 val;
+          do{
+            val = *icr;
+          }while( (val & 0x1000) );
+        }
+        printf("Done.");
+      }
+  }    
+    
+  printf("\nAPs should be awake!");
+}
+
 
 //---init main----------------------------------------------------------------
 void cstartup(multiboot_info_t *mbi){
@@ -432,24 +544,107 @@ void cstartup(multiboot_info_t *mbi){
 	printf("\nINIT(early): relocated hypervisor binary image to 0x%08x", hypervisor_image_baseaddress);
 	printf("\nINIT(early): 2M aligned size = 0x%08x", PAGE_ALIGN_UP2M((mod_array[0].mod_end - mod_array[0].mod_start)));
 
-	if(cpu_vendor == CPU_VENDOR_AMD){
-		//send INIT IPI to all APs so that SKINIT can complete successfully
-		send_init_ipi_to_all_APs();
-		printf("\nINIT(early): sent INIT IPI to APs");
+	//switch to MP mode
+	  //setup Master-ID Table (MIDTABLE)
+	  {
+  	  int i;
+    	for(i=0; i < (int)pcpus_numentries; i++){
+       midtable[midtable_numentries].cpu_lapic_id = pcpus[i].lapic_id;
+       midtable[midtable_numentries].vcpu_vaddr_ptr = 0;
+       midtable_numentries++;
+    	}
+  	}
 
-  	//our secure loader is the first 64K of the hypervisor image
-  	printf("\nINIT(early): transferring control to SL...");
-		skinit((u32)hypervisor_image_baseaddress);
-  	
-  	goto nevercomehere;	//failsafe
-  	
-	}else{
-	  printf("\nINIT(early): error(fatal), DRTM unimplemented for CPU!");
-	  HALT();
-	}	
-	 
+  	//setup vcpus
+  	setupvcpus(midtable, midtable_numentries);
+	
+ 		//wakeup all APs
+    wakeupAPs();
 
-nevercomehere:
- 	printf("\nINIT(early): error(fatal), should never come here!");
-	HALT();
+		//fall through and enter mp_cstartup via init_core_lowlevel_setup
+		init_core_lowlevel_setup();
+		
+	 	printf("\nINIT(early): error(fatal), should never come here!");
+		HALT();
+}
+
+//---isbsp----------------------------------------------------------------------
+//returns 1 if the calling CPU is the BSP, else 0
+u32 isbsp(void){
+  u32 eax, edx;
+  //read LAPIC base address from MSR
+  rdmsr(MSR_APIC_BASE, &eax, &edx);
+  ASSERT( edx == 0 ); //APIC is below 4G
+  
+  if(eax & 0x100)
+    return 1;
+  else
+    return 0;
+}
+
+
+//---CPUs must all have their microcode cleared for SKINIT to be successful-----
+void clearMicrocode(VCPU *vcpu){
+  u32 ucode_rev;
+  u32 dummy=0;
+
+  // Current microcode patch level available via MSR read
+  rdmsr(MSR_AMD64_PATCH_LEVEL, &ucode_rev, &dummy);
+  printf("\nCPU(0x%02x): existing microcode version 0x%08x", vcpu->id, ucode_rev);
+    
+  if(ucode_rev != 0) {
+      wrmsr(MSR_AMD64_PATCH_CLEAR, dummy, dummy);
+      printf("\nCPU(0x%02x): microcode CLEARED", vcpu->id);
+  }
+}
+
+
+u32 cpus_active=0; //number of CPUs that are awake, should be equal to
+                       //midtable_numentries -1 if all went well with the
+                       //MP startup protocol
+u32 lock_cpus_active=1; //spinlock to access the above
+
+
+//------------------------------------------------------------------------------
+//all cores enter here 
+void mp_cstartup (VCPU *vcpu){
+
+  if(isbsp()){
+		printf("\nBSP(0x%02x): Clearing microcode...", vcpu->id);
+		clearMicrocode(vcpu);
+		
+    printf("\nBSP(0x%02x): Microcode clear. Rallying APs...", vcpu->id);
+
+    //increment a CPU to account for the BSP
+    spin_lock(&lock_cpus_active);
+    cpus_active++;
+    spin_unlock(&lock_cpus_active);
+
+    //wait for cpus_active to become midtable_numentries -1 to indicate
+    //that all APs have been successfully started
+    while(cpus_active < midtable_numentries);
+    
+    printf("\nBSP(0x%02x): APs ready, issuing SKINIT...", vcpu->id);
+    do_drtm(cpu_vendor, hypervisor_image_baseaddress); // this function will not return
+    
+    printf("\nBSP(0x%02x): FATAL, should never be here!", vcpu->id);
+    HALT();
+    
+  }else{
+    //we are an AP, so we need to first clear our microcode
+		//and then update the AP startup counter
+    //finally we wait for SKINIT
+    printf("\nAP(0x%02x): Clearing microcode...", vcpu->id);
+    clearMicrocode(vcpu);
+    
+    spin_lock(&lock_cpus_active);
+    cpus_active++;
+    spin_unlock(&lock_cpus_active);
+
+    printf("\nAP(0x%02x): Microcode clear. Waiting for SKINIT...", vcpu->id);
+ 
+		HALT();               
+  }
+
+
 }

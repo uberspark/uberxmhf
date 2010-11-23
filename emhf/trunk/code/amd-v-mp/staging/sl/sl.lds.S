@@ -58,17 +58,12 @@ SECTIONS
 
 	.sl_stack : {
 		*(.sl_stack)
- 		. = ALIGN(4096);    
-	} =0x9090
-
- 	.sl_trailer : {
-		*(.sl_trailer)
  		. = ALIGN(0x10000);    
 	} =0x9090
 
  	.sl_params : {
 		*(.sl_params)
- 		. = ALIGN(4096);    
+ 		. = ALIGN(0x200000);    
 	} =0x9090
 
 }

@@ -58,66 +58,22 @@ multiboot_header:
 	.global init_start
 init_start:
 	
-	movl    $(init_stack + 8192), %esp
+	movl    $(init_stack + INIT_STACK_SIZE), %esp
      
   pushl   $0
   popf
      
   pushl   %ebx
   //pushl   %eax
-     
 	call cstartup
 	
 halt:
 	hlt
 	jmp halt
 	
-//------------------------------------------------------------------------------	
-	.global XtLdrTransferControlToRtm
-XtLdrTransferControlToRtm:
-//------------------------------------------------------------------------------
-	movl 	0x4(%esp), %esi
-	movl 	0x8(%esp), %edi
-
-	subl  0x8, %esp
-	
-	movw  (%esi), %ax
-	movw  %ax, (%esp)
-	movl  0x2(%esi), %eax
-	movl  %eax, 0x2(%esp)
-	
-	lgdt	(%esp)
-
-	movw  (%edi), %ax
-	movw  %ax, (%esp)
-	movl  0x2(%edi), %eax
-	movl  %eax, 0x2(%esp)
-	
-	lidt	(%esp)
-
-	addl  0x8, %esp
-	
-	movw	$(__DS), %ax
-	movw	%ax, %ds	
-	movw	%ax, %es
-	movw	%ax, %fs
-	movw	%ax, %gs
-	ljmp	$(__CS), $(1f)
-1:
-
-	pushl	$0
-	popf
-
-	movl 	0xC(%esp), %edi
-	movl  0x10(%esp), %esi
-	
-	movl  %esi,  %esp
-	
-	jmpl *%edi
-	
-	
 	.section .stack
 	.global init_stack
 init_stack:
-	.fill	8192, 1, 0
+	.fill	INIT_STACK_SIZE, 1, 0
 	
+

@@ -64,9 +64,6 @@
 //runtime base address (virtual)
 #define __TARGET_BASE	0xC0000000
 
-//"sl" stack size, MUST match sl.lds.S
-#define __SL_STACKSIZE	(4096*2)	//8K 
-
 //"sl" parameter block magic value
 #define SL_PARAMETER_BLOCK_MAGIC	0xDEADBEEF
 
@@ -99,6 +96,7 @@
 #define SLB_BOOTSTRAP_CODE_BASE 0x40000000 /* 0x80000 */ /* 0x20000 */
 
 #define RUNTIME_STACK_SIZE  (16384)     //16K stack for each core
+#define INIT_STACK_SIZE	(8192)					//8K stack for each core in "init"
 
 #ifdef __NESTED_PAGING__
 #define ASID_GUEST_KERNEL 2
@@ -225,6 +223,9 @@ typedef struct {
 	u32 isEarlyInit;	//"early" or "late" init
 	u32 numE820Entries;		//number of E820 entries
 	GRUBE820 e820map[MAX_E820_ENTRIES];	//E820 memory-map buffer
+	u32 numCPUEntries;	//number of cores
+	PCPU pcpus[MAX_PCPU_ENTRIES];	//CPU table buffer
+	u32 runtime_size;			//size of the runtime image
 } __attribute__((packed)) SL_PARAMETER_BLOCK;
 
 
