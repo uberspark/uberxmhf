@@ -1,0 +1,44 @@
+[Config]
+Compilator.SaveAll=0
+Compilator.Capture=0
+Compilator.HideOutput=0
+Compilator.LogType=0
+DefaultDir=E:\amit\external\hyp\emhf\trunk\code\amd-v-mp\staging
+DefaultCPIndex=0
+LogtoEnd=1
+DontOpen=0
+AbsolutePath=0
+FileFormat=1
+ProjectFilesOnly=0
+[Project tree]
+emhf-init
+	+src
+		..\init\init.lds.S
+		..\init\init.c
+		..\init\header.S
+		..\init\Makefile
+		..\Makefile
+[Open project files]
+0=..\Makefile
+1=..\init\Makefile
+2=..\init\header.S
+3=..\init\init.c
+4=..\init\init.lds.S
+[Selected Project Files]
+Main=
+Selected=..\Makefile
+[..\Makefile]
+TopLine=73
+Caret=1,115
+[..\init\Makefile]
+TopLine=1
+Caret=1,1
+[..\init\header.S]
+TopLine=1
+Caret=1,1
+[..\init\init.c]
+TopLine=1
+Caret=1,1
+[..\init\init.lds.S]
+TopLine=1
+Caret=1,1

@@ -56,11 +56,23 @@
 
 //change the following two defines to suit your needs
 //note: the limits MUST be page-aligned i.e multiple of 4096
-#define GUEST_PHYSICALMEMORY_LIMIT	 (4096*1024)  //4MB guest PA
-#define GUEST_VIRTUALMEMORY_LIMIT		 (4096*1024)	//4MB guest VA 
 
-//u8 __shadow_npae_pd_table[4096];
-//u8 __shadow_npae_p_tables[1024 * 4096];
+//GPL is the maximum physical memory address that is valid during the validity check
+//Original value 512*1024*1024
+#define GUEST_PHYSICALMEMORY_LIMIT	 (4096*2)  //4MB guest PA
+
+
+// GUEST_VIRTUALMEMORY_LIMIT allows you to tweak the number of iterations in loops in
+// shadow_new_context and shadow_alloc_pt
+// Max value is 4096*1024*1024
+#define GUEST_VIRTUALMEMORY_LIMIT		 (4096*2)	//4GB guest VA 
+
+u32 __shadow_npae_pd_table[1024];
+//#define __shadow_npae_pd_table  0xdeadbeef
+
+u32 __shadow_npae_p_tables[1024];
+//#define __shadow_npae_p_tables 0xddddffff
+
 #define gpa_to_hpa(x) x
 
 u16 guest_GDTR_limit;
@@ -90,6 +102,7 @@ u32 shadow_guest_CR3=0;
 
 /*------------ Start for verification ------------*/
 
+
 u32 nondet_u32();
 int nondet_int();
 
@@ -97,46 +110,49 @@ u32 shadow_new_context(u32 guest_CR3);
 void shadow_invalidate_page(u32 address);
 u32 shadow_page_fault(u32 cr2, u32 error_code);
 
-void init_visor() {
+void main() {
 
   /* Initial Condition */
-  //__CPROVER_assume(memset((void *)__shadow_npae_pd_table, 0, PAGE_SIZE_4K));
-
   npdt_t s_pdt = (npdt_t)(u32)__shadow_npae_pd_table;
-  //for(u32 index_pdt = 0; index_pdt < (~0); index_pdt++) {
-  for(u32 index_pdt = 0; index_pdt < 1; index_pdt++) {
-    u32 s_pdt_entry =  s_pdt[index_pdt];
-    if (s_pdt_entry & _PAGE_PSE) {
-      __CPROVER_assume(npae_get_addr_from_pde(s_pdt_entry) <= GUEST_PHYSICALMEMORY_LIMIT);
-    } else {
-      /* GET PTE */
-      /* Do something */
-      /*   __CPROVER_assume(  npae_get_addr_from_pte(**sPTE) <= GUEST_PHYSICALMEMORY_LIMIT); */
-    }
-  }
+  //assert (s_pdt == (npdt_t)(u32)__shadow_npae_pd_table);
+  u32 s_pdt_entry =  s_pdt[0];
+  __CPROVER_assume(s_pdt[0] == 0); // XXX define number of pages
+  //__CPROVER_assume(pgdir > GUEST_PHYSICALMEMORY_LIMIT);
+
+  u32 *ptable = (u32 *)((u32)__shadow_npae_p_tables);
+  __CPROVER_assume(ptable[0]==0);  // XXX define number of pages
 
   //nondet calls
   int choice = nondet_int();
 
+  // u32 restrict_addrs_4K  = 0x00000FFF;
+  // XXX can change this without changing verification
+  // since verification condition only mentions 0 entries of pdt and pt
+  u32 restrict_addrs_4K  = 0xFFFFFFFF; 
+
   if (choice == 0) {
-    shadow_new_context(nondet_u32()); /* XXX ADD, kills the MCer */
+    //shadow_new_context(nondet_u32() & restrict_addrs_4K);
   } else if (choice == 1) {
-    //shadow_invalidate_page(nondet_u32());
+    //shadow_invalidate_page(nondet_u32() & restrict_addrs_4K);
   } else {
-    //shadow_page_fault(nondet_u32(), nondet_u32());
+    shadow_page_fault(nondet_u32() & restrict_addrs_4K, nondet_u32() & restrict_addrs_4K);
   }
 
-  /* VERIF Condition */
-  npdt_t s_pdt = (npdt_t)(u32)__shadow_npae_pd_table;
-  //for(u32 index_pdt = 0; index_pdt < 0xffffffff; index_pdt++) {
-  for(u32 index_pdt = 0; index_pdt < 1; index_pdt++) {
-    u32 s_pdt_entry =  s_pdt[index_pdt];
+  /* VERIF Condition (ONLY checks 0 entries of pdt and pt) */
+  s_pdt = (npdt_t)(u32)__shadow_npae_pd_table;
+  s_pdt_entry =  s_pdt[0];
+
+  if( (s_pdt_entry & _PAGE_PRESENT) ) {
     if (s_pdt_entry & _PAGE_PSE) {
-      assert(npae_get_addr_from_pde(s_pdt_entry) <= GUEST_PHYSICALMEMORY_LIMIT);
-    } else {
-      /* GET PTE */
-      /* Do something */
-      /*   assert(  npae_get_addr_from_pte(**sPTE) <= GUEST_PHYSICALMEMORY_LIMIT); */
+      assert(npae_get_addr_from_pde(s_pdt_entry) < GUEST_PHYSICALMEMORY_LIMIT);
+    }else {
+      //this is a regular page directory entry, so get the page table
+      npt_t s_pt = (npt_t)(u32)npae_get_addr_from_pde(s_pdt_entry);
+      u32 pt_entry = s_pt[0]; 
+      
+      if( (pt_entry & _PAGE_PRESENT) ) {
+	assert(npae_get_addr_from_pte(pt_entry) < GUEST_PHYSICALMEMORY_LIMIT);
+      }
     }
   }
 }
@@ -150,7 +166,9 @@ void init_visor() {
 //an entry will be null (0) if not present or applicable
 void shadow_get_shadowentry(u32 gva, u32 **pdt_entry, u32 **pt_entry){
   u32 index_pdt, index_pt; 
-  npdt_t s_pdt = (npdt_t)(u32)__shadow_npae_pd_table;
+  // XXX this line causes warnings, I don't understand why
+  //npdt_t s_pdt = (npdt_t)(u32)__shadow_npae_pd_table; 
+
   npt_t s_pt;
   u32 s_pdt_entry, s_pt_entry;
 	
@@ -159,8 +177,8 @@ void shadow_get_shadowentry(u32 gva, u32 **pdt_entry, u32 **pt_entry){
 	
   *pdt_entry = *pt_entry = (u32 *)0;	//zero all
 	
-  s_pdt_entry = s_pdt[index_pdt];
-  *pdt_entry = (u32 *)&s_pdt[index_pdt];
+  s_pdt_entry = __shadow_npae_pd_table[index_pdt];
+  *pdt_entry = (u32 *)&__shadow_npae_pd_table[index_pdt];
 
   if( !(s_pdt_entry & _PAGE_PRESENT) )
     return; 
@@ -181,6 +199,7 @@ void shadow_get_shadowentry(u32 gva, u32 **pdt_entry, u32 **pt_entry){
 //set the ACCESSED bit
 //as we traverse the guest paging structures 
 void shadow_get_guestentry(u32 gva, u32 gCR3, u32 **pdt_entry, u32 **pt_entry){
+  __CPROVER_assume(gCR3 != 0); // XXX avoids invalid pointer error
   u32 index_pdt, index_pt; 
   npdt_t g_pdt=(npdt_t)gpa_to_hpa((u32)npae_get_addr_from_32bit_cr3(gCR3));;
   npt_t g_pt;
@@ -225,33 +244,29 @@ u32 shadow_alloc_pt(u32 gva, u32 guest_virtualmemory_limit){
   u32 ptable_vabasepointedto;
 
   index_pdt= (gva >> 22);	//grab page-directory index from guest virtual address
-  
-	//get a pointer to the page-table that we are allocating
-	ptable = (u32 *)((index_pdt * PAGE_SIZE_4K) + (u32)__shadow_npae_p_tables);
+  assert(index_pdt == 0);
+
+  //get a pointer to the page-table that we are allocating
+  ptable = (u32 *)((index_pdt * PAGE_SIZE_4K) + (u32)__shadow_npae_p_tables);
+  //assert (ptable == (u32 *)(u32)__shadow_npae_p_tables);
 	
-	//this is the 4MB aligned virtual address base that the page-table will
-	//address (patable_vabasepointedto to patable_vabasepointedto+4MB)
-	ptable_vabasepointedto = index_pdt * (PAGE_SIZE_4K * 1024); 
+  //this is the 4MB aligned virtual address base that the page-table will
+  //address (patable_vabasepointedto to patable_vabasepointedto+4MB)
+  //ptable_vabasepointedto = index_pdt * (PAGE_SIZE_4K * 1024); 
 	
-	//memset( (void *)((index_pdt * PAGE_SIZE_4K) + (u32)__shadow_npae_p_tables), 0, PAGE_SIZE_4K);
+  //memset( (void *)((index_pdt * PAGE_SIZE_4K) + (u32)__shadow_npae_p_tables), 0, PAGE_SIZE_4K);
   
   //sanity check
-  ASSERT(guest_virtualmemory_limit > ptable_vabasepointedto);
+  //assert(guest_virtualmemory_limit > ptable_vabasepointedto);
 	
-  if(guest_virtualmemory_limit - ptable_vabasepointedto > (PAGE_SIZE_4K * 1024) )
-    //we need to zero out the entire page-table
-		for (int i= 0; i < 1024; i++) {
-  	  ptable[i]= (u32) 0;
-  	}
-  }else{
-		//we only need to zero out part of the page-table
-		u32 indexuntil =  (guest_virtualmemory_limit - ptable_vabasepointedto) / PAGE_SIZE_4K;
-		for (int i= 0; i < indexuntil; i++) {
-  	  ptable[i]= (u32) 0;
-  	}			
-	}
- 
- 	//return the allocated page-table
+
+  //we need to zero out the entire page-table 
+  // XXX COMMENTED THIS OUT AND VERIFICATION HOLDS 
+  //for (int i= 0; i < 1024; i++) {
+    //ptable[i]= (u32) 0;
+  //}
+
+  //return the allocated page-table
   return ( (u32)ptable );
 }
 
@@ -304,13 +319,6 @@ void shadow_updateshadowentries(u32 gva, u32 **sPDE, u32 **sPTE,
   u32 flags;
   u32 paddr;
 
-  /* Initial state */
-  /* if (**gPDE & _PAGE_PSE) { */
-  /*   __CPROVER_assume(  npae_get_addr_from_pde(**sPDE) <= GUEST_PHYSICALMEMORY_LIMIT); */
-  /* } else { */
-  /*   __CPROVER_assume(  npae_get_addr_from_pte(**sPTE) <= GUEST_PHYSICALMEMORY_LIMIT); */
-  /* } */
-	
   index_pdt= (gva >> 22);
   index_pt  = ((gva & (u32)0x003FFFFF) >> 12);
 	
@@ -325,13 +333,16 @@ void shadow_updateshadowentries(u32 gva, u32 **sPDE, u32 **sPTE,
       **sPDE = **gPDE;
     }else{
       printf("\nillegal mapping!");
-      HALT();				
+      __CPROVER_assume(0); // HALT
     }
   }else{	//4K page table
-    flags=npae_get_flags_from_pde(**gPDE);
+    flags=npae_get_flags_from_pde(**gPDE); 
+
     paddr=npae_get_addr_from_pde(**sPDE);
     //propagate guest PDE flags to shadow PDE
     **sPDE = npae_make_pde(paddr, flags);
+
+
 			
     //ASSERT( *gPTE != (u32 *)0 ); //gPTE MUST be valid and present
     //ASSERT( **gPTE & _PAGE_PRESENT );
@@ -340,25 +351,28 @@ void shadow_updateshadowentries(u32 gva, u32 **sPDE, u32 **sPTE,
     if(*sPTE == (u32 *)0){	//no shadow PT, so assign one
       //ASSERT(paddr == 0);
       paddr = shadow_alloc_pt(gva, GUEST_VIRTUALMEMORY_LIMIT);
+      //assert (paddr == (u32)__shadow_npae_p_tables);
       **sPDE = npae_make_pde(paddr, flags);
-      *sPTE = (u32 *)(paddr + (index_pt * sizeof(u32))); 			
+      *sPTE = (u32 *)(paddr + (index_pt * sizeof(u32)));
     }	
 			
     //copy the entire entry into shadow	
     if( npae_get_addr_from_pte(**gPTE) < GUEST_PHYSICALMEMORY_LIMIT){
       **sPTE = **gPTE;
     }else{
-      printf("\nillegal mapping!");
-      HALT();				
+      //printf("\nillegal mapping!");
+      __CPROVER_assume(0);	//HALT
+      
     }
   }
 
-  // SECURITY PROPERTY
-  /* if (**gPDE & _PAGE_PSE) { */
-  /*   assert(  npae_get_addr_from_pde(**sPDE) <= GUEST_PHYSICALMEMORY_LIMIT); */
-  /* } else { */
-  /*   assert(  npae_get_addr_from_pte(**sPTE) <= GUEST_PHYSICALMEMORY_LIMIT); */
-  /* } */
+  //SECURITY PROPERTY
+  if (**gPDE & _PAGE_PSE) {
+    u32 temp_addr =  npae_get_addr_from_pde(**sPDE);
+    assert(  npae_get_addr_from_pde(**sPDE) <= GUEST_PHYSICALMEMORY_LIMIT);
+  } else {
+    assert(  npae_get_addr_from_pte(**sPTE) <= GUEST_PHYSICALMEMORY_LIMIT);
+  }
 
 }
 
@@ -392,9 +406,9 @@ void sdbg_dumppfdetails(u32 cr2, u32 error_code){
   index_pdt= (cr2 >> 22);
   index_pt  = ((cr2 & (u32)0x003FFFFF) >> 12);
 
-  printf("\n0x%04x:0x%08x: #PF (cr2=0x%08x, error_code=0x%08x), pair=%u,%u -> ", 
-	 (unsigned short)guest_CS_selector, (unsigned int)guest_RIP, 
-	 (unsigned int)cr2, (unsigned int)error_code, index_pdt, index_pt);
+/*   printf("\n0x%04x:0x%08x: #PF (cr2=0x%08x, error_code=0x%08x), pair=%u,%u -> ",  */
+/* 	 (unsigned short)guest_CS_selector, (unsigned int)guest_RIP,  */
+/* 	 (unsigned int)cr2, (unsigned int)error_code, index_pdt, index_pt); */
 
   if(error_code & PFERR_US_MASK)
     printf("U,");
@@ -576,13 +590,13 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
   //[scheck] RSVD bit set, should never happen during normal execution
   if(error_code & PFERR_RSVD_MASK){
     printf("\nRSVD bit set on page-fault, Halt!");
-    HALT();
+    __CPROVER_assume(0); // HALT
   }
 
   //[scheck] we assume CR0.WP=1 always
-  //ASSERT( ((guest_CR0 & CR0_WP) && (control_CR0_shadow & CR0_WP)) );
+  //assert( ((guest_CR0 & CR0_WP) && (control_CR0_shadow & CR0_WP)) );
 
-	ASSERT(cr2 < GUEST_VIRTUALMEMORY_LIMIT);
+  //assert(cr2 < GUEST_VIRTUALMEMORY_LIMIT);
 
   //get SHADOW and GUEST paging entries for the fault-address (CR2)
   shadow_get_guestentry(cr2, shadow_guest_CR3, &gPDE, &gPTE);
@@ -598,7 +612,7 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
 
   //if(!shadow_checkcontext( (u32)npae_get_addr_from_32bit_cr3((u32)shadow_guest_CR3) ) ){
   //		printf("\nPF: Halting, reserved bits set in GUEST paging structures!");
-  //		HALT();
+  //		__CPROVER_assume(0);
   //}	
 
 	
@@ -607,7 +621,7 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
       //printf("\n	SHADOW-NOT-PRESENT (GUEST-PRESENT): syncing...");
 
 
-      //shadow_updateshadowentries(cr2, &sPDE, &sPTE,&gPDE, &gPTE);
+      shadow_updateshadowentries(cr2, &sPDE, &sPTE,&gPDE, &gPTE);
       /* Commented out for verif XXX */
 
 
@@ -624,7 +638,7 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
 				
       /* if(!shadow_checkcontext((u32)__shadow_npae_pd_table)){ */
       /* 	//printf("\nPF: Halting, reserved bits set in SHADOW paging structures!"); */
-      /* 	HALT(); */
+      /* 	__CPROVER_assume(0); */
       /* }	 */
 
       //sdbg_dumpentries(gPDE, gPTE, sPDE, sPTE);
@@ -673,7 +687,7 @@ void shadow_invalidate_page(u32 address){
   u32 *gPDE, *gPTE;
   u32 *sPDE, *sPTE;
 
-	ASSERT(address < GUEST_VIRTUALMEMORY_LIMIT);
+  //ASSERT(address < GUEST_VIRTUALMEMORY_LIMIT);
 	
   //printf("\n0x%04x:0x%08x: INVLPG (address=0x%08x)", 
   //	(unsigned short)guest_CS_selector, (unsigned int)guest_RIP, 
@@ -787,20 +801,17 @@ u32 shadow_new_context(u32 guest_CR3){
   /* XXX removed for verif */
   //memset((void *)__shadow_npae_pd_table, 0, PAGE_SIZE_4K);
 
-  //memset( (void *)((index_pdt * PAGE_SIZE_4K) + (u32)__shadow_npae_p_tables), 0, PAGE_SIZE_4K);
-  /*for (int i= 0; i < PAGE_SIZE_4K; i++) {
-    *((u32 *)((u32)__shadow_npae_p_tables)+i) &= (u32) 0xfffffffe;
-  }*/
-  
   {
-		u32 num_pagedir_entries;
-		u32 *pgdir =((u32 *)((u32)__shadow_npae_pd_table)); 
-		num_pagedir_entries = GUEST_VIRTUALMEMORY_LIMIT / (4096*1024);
-  	for (int i= 0; i < num_pagedir_entries; i++) {
-    	pgdir[i] = 0;
-  	}
-	}
+    u32 num_pagedir_entries;
+    u32 *pgdir =((u32 *)((u32)__shadow_npae_pd_table)); 
+    num_pagedir_entries = GUEST_VIRTUALMEMORY_LIMIT / (4096*1023);
 
+    //for (u32 i= 0; i < num_pagedir_entries; i++) {
+    //pgdir[i] = 0;
+    //assert(0); // XXX this doesn't even execute
+      //}
+  }
+  
 
   //we need to populate GDT, IDT and TSS memory pages as we dont want
   //them causing double/triple faults that we will need to process
@@ -883,7 +894,7 @@ u32 shadow_new_context(u32 guest_CR3){
 
   //if(!shadow_checkcontext( (u32)npae_get_addr_from_32bit_cr3((u32)guest_CR3) ) ){
   //	printf("\nHalting, reserved bits set in GUEST paging structures!");
-  //	HALT();
+  //	__CPROVER_assume(0);();
   //}	
 
   return guest_CR3;

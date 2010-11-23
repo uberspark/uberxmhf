@@ -1,0 +1,549 @@
+/*
+ * @XMHF_LICENSE_HEADER_START@
+ *
+ * eXtensible, Modular Hypervisor Framework (XMHF)
+ * Copyright (c) 2009-2012 Carnegie Mellon University
+ * Copyright (c) 2010-2012 VDG Inc.
+ * All Rights Reserved.
+ *
+ * Developed by: XMHF Team
+ *               Carnegie Mellon University / CyLab
+ *               VDG Inc.
+ *               http://xmhf.org
+ *
+ * This file is part of the EMHF historical reference
+ * codebase, and is released under the terms of the
+ * GNU General Public License (GPL) version 2.
+ * Please see the LICENSE file for details.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ * @XMHF_LICENSE_HEADER_END@
+ */
+
+// svm.h - AMD SVM definitions
+
+#ifndef __SVM_H__
+#define __SVM_H__
+
+#define INTERCEPT_ALL_EXCEPTIONS 0xffffffff
+#define SKINIT_SLB_SIZE 0x10000
+#define NP_ENABLE 0
+
+#define SIZEOF_IOPM_BITMAP    (3*4096)
+#define SIZEOF_MSRPM_BITMAP   (2*4096)
+
+#ifndef __ASSEMBLY__
+/* exception intecerpt bits */
+enum GenericExceptionbits{
+  EXCEPTION_INTERCEPT_DB = 1 << 1,
+  EXCEPTION_INTERCEPT_BP = 1 << 3,
+	EXCEPTION_INTERCEPT_GP = 1 << 13,
+  EXCEPTION_INTERCEPT_PF = 1 << 14
+};
+
+/* general 1 intercepts */
+enum GenericIntercept1bits
+{
+  GENERAL1_INTERCEPT_INTR          = 1 << 0,
+  GENERAL1_INTERCEPT_NMI           = 1 << 1,
+  GENERAL1_INTERCEPT_SMI           = 1 << 2,
+  GENERAL1_INTERCEPT_INIT          = 1 << 3,
+  GENERAL1_INTERCEPT_VINTR         = 1 << 4,
+  GENERAL1_INTERCEPT_CR0_SEL_WRITE = 1 << 5, 
+  GENERAL1_INTERCEPT_IDTR_READ     = 1 << 6,
+  GENERAL1_INTERCEPT_GDTR_READ     = 1 << 7,
+  GENERAL1_INTERCEPT_LDTR_READ     = 1 << 8,
+  GENERAL1_INTERCEPT_TR_READ       = 1 << 9,
+  GENERAL1_INTERCEPT_IDTR_WRITE    = 1 << 10,
+  GENERAL1_INTERCEPT_GDTR_WRITE    = 1 << 11,
+  GENERAL1_INTERCEPT_LDTR_WRITE    = 1 << 12,
+  GENERAL1_INTERCEPT_TR_WRITE      = 1 << 13,
+  GENERAL1_INTERCEPT_RDTSC         = 1 << 14,
+  GENERAL1_INTERCEPT_RDPMC         = 1 << 15,
+  GENERAL1_INTERCEPT_PUSHF         = 1 << 16,
+  GENERAL1_INTERCEPT_POPF          = 1 << 17,
+  GENERAL1_INTERCEPT_CPUID         = 1 << 18,
+  GENERAL1_INTERCEPT_RSM           = 1 << 19,
+  GENERAL1_INTERCEPT_IRET          = 1 << 20,
+  GENERAL1_INTERCEPT_SWINT         = 1 << 21,
+  GENERAL1_INTERCEPT_INVD          = 1 << 22,
+  GENERAL1_INTERCEPT_PAUSE         = 1 << 23,
+  GENERAL1_INTERCEPT_HLT           = 1 << 24,
+  GENERAL1_INTERCEPT_INVLPG        = 1 << 25,
+  GENERAL1_INTERCEPT_INVLPGA       = 1 << 26,
+  GENERAL1_INTERCEPT_IOIO_PROT     = 1 << 27,
+  GENERAL1_INTERCEPT_MSR_PROT      = 1 << 28,
+  GENERAL1_INTERCEPT_TASK_SWITCH   = 1 << 29,
+  GENERAL1_INTERCEPT_FERR_FREEZE   = 1 << 30,
+  GENERAL1_INTERCEPT_SHUTDOWN_EVT  = 1 << 31
+};
+
+/* general 2 intercepts */
+enum GenericIntercept2bits
+{
+  GENERAL2_INTERCEPT_VMRUN   = 1 << 0,
+  GENERAL2_INTERCEPT_VMMCALL = 1 << 1,
+  GENERAL2_INTERCEPT_VMLOAD  = 1 << 2,
+  GENERAL2_INTERCEPT_VMSAVE  = 1 << 3,
+  GENERAL2_INTERCEPT_STGI    = 1 << 4,
+  GENERAL2_INTERCEPT_CLGI    = 1 << 5,
+  GENERAL2_INTERCEPT_SKINIT  = 1 << 6,
+  GENERAL2_INTERCEPT_RDTSCP  = 1 << 7,
+  GENERAL2_INTERCEPT_ICEBP   = 1 << 8
+};
+
+
+/* control register intercepts */
+enum CRInterceptBits
+{
+  CR_INTERCEPT_CR0_READ   = 1 << 0,
+  CR_INTERCEPT_CR1_READ   = 1 << 1,
+  CR_INTERCEPT_CR2_READ   = 1 << 2,
+  CR_INTERCEPT_CR3_READ   = 1 << 3,
+  CR_INTERCEPT_CR4_READ   = 1 << 4,
+  CR_INTERCEPT_CR5_READ   = 1 << 5,
+  CR_INTERCEPT_CR6_READ   = 1 << 6,
+  CR_INTERCEPT_CR7_READ   = 1 << 7,
+  CR_INTERCEPT_CR8_READ   = 1 << 8,
+  CR_INTERCEPT_CR9_READ   = 1 << 9,
+  CR_INTERCEPT_CR10_READ  = 1 << 10,
+  CR_INTERCEPT_CR11_READ  = 1 << 11,
+  CR_INTERCEPT_CR12_READ  = 1 << 12,
+  CR_INTERCEPT_CR13_READ  = 1 << 13,
+  CR_INTERCEPT_CR14_READ  = 1 << 14,
+  CR_INTERCEPT_CR15_READ  = 1 << 15,
+  CR_INTERCEPT_CR0_WRITE  = 1 << 16,
+  CR_INTERCEPT_CR1_WRITE  = 1 << 17,
+  CR_INTERCEPT_CR2_WRITE  = 1 << 18,
+  CR_INTERCEPT_CR3_WRITE  = 1 << 19,
+  CR_INTERCEPT_CR4_WRITE  = 1 << 20,
+  CR_INTERCEPT_CR5_WRITE  = 1 << 21,
+  CR_INTERCEPT_CR6_WRITE  = 1 << 22,
+  CR_INTERCEPT_CR7_WRITE  = 1 << 23,
+  CR_INTERCEPT_CR8_WRITE  = 1 << 24,
+  CR_INTERCEPT_CR9_WRITE  = 1 << 25,
+  CR_INTERCEPT_CR10_WRITE = 1 << 26,
+  CR_INTERCEPT_CR11_WRITE = 1 << 27,
+  CR_INTERCEPT_CR12_WRITE = 1 << 28,
+  CR_INTERCEPT_CR13_WRITE = 1 << 29,
+  CR_INTERCEPT_CR14_WRITE = 1 << 30,
+  CR_INTERCEPT_CR15_WRITE = 1 << 31,
+};
+
+
+/* debug register intercepts */
+enum DRInterceptBits
+{
+  DR_INTERCEPT_DR0_READ   = 1 << 0,
+  DR_INTERCEPT_DR1_READ   = 1 << 1,
+  DR_INTERCEPT_DR2_READ   = 1 << 2,
+  DR_INTERCEPT_DR3_READ   = 1 << 3,
+  DR_INTERCEPT_DR4_READ   = 1 << 4,
+  DR_INTERCEPT_DR5_READ   = 1 << 5,
+  DR_INTERCEPT_DR6_READ   = 1 << 6,
+  DR_INTERCEPT_DR7_READ   = 1 << 7,
+  DR_INTERCEPT_DR8_READ   = 1 << 8,
+  DR_INTERCEPT_DR9_READ   = 1 << 9,
+  DR_INTERCEPT_DR10_READ  = 1 << 10,
+  DR_INTERCEPT_DR11_READ  = 1 << 11,
+  DR_INTERCEPT_DR12_READ  = 1 << 12,
+  DR_INTERCEPT_DR13_READ  = 1 << 13,
+  DR_INTERCEPT_DR14_READ  = 1 << 14,
+  DR_INTERCEPT_DR15_READ  = 1 << 15,
+  DR_INTERCEPT_DR0_WRITE  = 1 << 16,
+  DR_INTERCEPT_DR1_WRITE  = 1 << 17,
+  DR_INTERCEPT_DR2_WRITE  = 1 << 18,
+  DR_INTERCEPT_DR3_WRITE  = 1 << 19,
+  DR_INTERCEPT_DR4_WRITE  = 1 << 20,
+  DR_INTERCEPT_DR5_WRITE  = 1 << 21,
+  DR_INTERCEPT_DR6_WRITE  = 1 << 22,
+  DR_INTERCEPT_DR7_WRITE  = 1 << 23,
+  DR_INTERCEPT_DR8_WRITE  = 1 << 24,
+  DR_INTERCEPT_DR9_WRITE  = 1 << 25,
+  DR_INTERCEPT_DR10_WRITE = 1 << 26,
+  DR_INTERCEPT_DR11_WRITE = 1 << 27,
+  DR_INTERCEPT_DR12_WRITE = 1 << 28,
+  DR_INTERCEPT_DR13_WRITE = 1 << 29,
+  DR_INTERCEPT_DR14_WRITE = 1 << 30,
+  DR_INTERCEPT_DR15_WRITE = 1 << 31,
+};
+
+/* for lazy save/restore we'd like to intercept all DR writes */
+#define DR_INTERCEPT_ALL_WRITES \
+  ( DR_INTERCEPT_DR0_WRITE|DR_INTERCEPT_DR1_WRITE|DR_INTERCEPT_DR2_WRITE \
+  | DR_INTERCEPT_DR3_WRITE|DR_INTERCEPT_DR4_WRITE|DR_INTERCEPT_DR5_WRITE \
+  | DR_INTERCEPT_DR6_WRITE|DR_INTERCEPT_DR7_WRITE) 
+
+
+enum VMEXIT_EXITCODE
+{
+  /* control register read exitcodes */
+  VMEXIT_CR0_READ    =   0,
+  VMEXIT_CR1_READ    =   1,
+  VMEXIT_CR2_READ    =   2,
+  VMEXIT_CR3_READ    =   3,
+  VMEXIT_CR4_READ    =   4,
+  VMEXIT_CR5_READ    =   5,
+  VMEXIT_CR6_READ    =   6,
+  VMEXIT_CR7_READ    =   7,
+  VMEXIT_CR8_READ    =   8,
+  VMEXIT_CR9_READ    =   9,
+  VMEXIT_CR10_READ   =  10,
+  VMEXIT_CR11_READ   =  11,
+  VMEXIT_CR12_READ   =  12,
+  VMEXIT_CR13_READ   =  13,
+  VMEXIT_CR14_READ   =  14,
+  VMEXIT_CR15_READ   =  15,
+
+  /* control register write exitcodes */
+  VMEXIT_CR0_WRITE   =  16,
+  VMEXIT_CR1_WRITE   =  17,
+  VMEXIT_CR2_WRITE   =  18,
+  VMEXIT_CR3_WRITE   =  19,
+  VMEXIT_CR4_WRITE   =  20,
+  VMEXIT_CR5_WRITE   =  21,
+  VMEXIT_CR6_WRITE   =  22,
+  VMEXIT_CR7_WRITE   =  23,
+  VMEXIT_CR8_WRITE   =  24,
+  VMEXIT_CR9_WRITE   =  25,
+  VMEXIT_CR10_WRITE  =  26,
+  VMEXIT_CR11_WRITE  =  27,
+  VMEXIT_CR12_WRITE  =  28,
+  VMEXIT_CR13_WRITE  =  29,
+  VMEXIT_CR14_WRITE  =  30,
+  VMEXIT_CR15_WRITE  =  31,
+
+  /* debug register read exitcodes */
+  VMEXIT_DR0_READ    =  32,
+  VMEXIT_DR1_READ    =  33,
+  VMEXIT_DR2_READ    =  34,
+  VMEXIT_DR3_READ    =  35,
+  VMEXIT_DR4_READ    =  36,
+  VMEXIT_DR5_READ    =  37,
+  VMEXIT_DR6_READ    =  38,
+  VMEXIT_DR7_READ    =  39,
+  VMEXIT_DR8_READ    =  40,
+  VMEXIT_DR9_READ    =  41,
+  VMEXIT_DR10_READ   =  42,
+  VMEXIT_DR11_READ   =  43,
+  VMEXIT_DR12_READ   =  44,
+  VMEXIT_DR13_READ   =  45,
+  VMEXIT_DR14_READ   =  46,
+  VMEXIT_DR15_READ   =  47,
+
+  /* debug register write exitcodes */
+  VMEXIT_DR0_WRITE   =  48,
+  VMEXIT_DR1_WRITE   =  49,
+  VMEXIT_DR2_WRITE   =  50,
+  VMEXIT_DR3_WRITE   =  51,
+  VMEXIT_DR4_WRITE   =  52,
+  VMEXIT_DR5_WRITE   =  53,
+  VMEXIT_DR6_WRITE   =  54,
+  VMEXIT_DR7_WRITE   =  55,
+  VMEXIT_DR8_WRITE   =  56,
+  VMEXIT_DR9_WRITE   =  57,
+  VMEXIT_DR10_WRITE  =  58,
+  VMEXIT_DR11_WRITE  =  59,
+  VMEXIT_DR12_WRITE  =  60,
+  VMEXIT_DR13_WRITE  =  61,
+  VMEXIT_DR14_WRITE  =  62,
+  VMEXIT_DR15_WRITE  =  63,
+
+  /* processor exception exitcodes (VMEXIT_EXCP[0-31]) */
+  VMEXIT_EXCEPTION_DE  =  64, /* divide-by-zero-error */
+  VMEXIT_EXCEPTION_DB  =  65, /* debug */
+  VMEXIT_EXCEPTION_NMI =  66, /* non-maskable-interrupt */
+  VMEXIT_EXCEPTION_BP  =  67, /* breakpoint */
+  VMEXIT_EXCEPTION_OF  =  68, /* overflow */
+  VMEXIT_EXCEPTION_BR  =  69, /* bound-range */
+  VMEXIT_EXCEPTION_UD  =  70, /* invalid-opcode*/
+  VMEXIT_EXCEPTION_NM  =  71, /* device-not-available */
+  VMEXIT_EXCEPTION_DF  =  72, /* double-fault */
+  VMEXIT_EXCEPTION_09  =  73, /* unsupported (reserved) */
+  VMEXIT_EXCEPTION_TS  =  74, /* invalid-tss */
+  VMEXIT_EXCEPTION_NP  =  75, /* segment-not-present */
+  VMEXIT_EXCEPTION_SS  =  76, /* stack */
+  VMEXIT_EXCEPTION_GP  =  77, /* general-protection */
+  VMEXIT_EXCEPTION_PF  =  78, /* page-fault */
+  VMEXIT_EXCEPTION_15  =  79, /* reserved */
+  VMEXIT_EXCEPTION_MF  =  80, /* x87 floating-point exception-pending */
+  VMEXIT_EXCEPTION_AC  =  81, /* alignment-check */
+  VMEXIT_EXCEPTION_MC  =  82, /* machine-check */
+  VMEXIT_EXCEPTION_XF  =  83, /* simd floating-point */
+
+  /* exceptions 20-31 (exitcodes 84-95) are reserved */
+
+  /* ...and the rest of the #VMEXITs */
+  VMEXIT_INTR             =  96,
+  VMEXIT_NMI              =  97,
+  VMEXIT_SMI              =  98,
+  VMEXIT_INIT             =  99,
+  VMEXIT_VINTR            = 100,
+  VMEXIT_CR0_SEL_WRITE    = 101,
+  VMEXIT_IDTR_READ        = 102,
+  VMEXIT_GDTR_READ        = 103,
+  VMEXIT_LDTR_READ        = 104,
+  VMEXIT_TR_READ          = 105,
+  VMEXIT_IDTR_WRITE       = 106,
+  VMEXIT_GDTR_WRITE       = 107,
+  VMEXIT_LDTR_WRITE       = 108,
+  VMEXIT_TR_WRITE         = 109,
+  VMEXIT_RDTSC            = 110,
+  VMEXIT_RDPMC            = 111,
+  VMEXIT_PUSHF            = 112,
+  VMEXIT_POPF             = 113,
+  VMEXIT_CPUID            = 114,
+  VMEXIT_RSM              = 115,
+  VMEXIT_IRET             = 116,
+  VMEXIT_SWINT            = 117,
+  VMEXIT_INVD             = 118,
+  VMEXIT_PAUSE            = 119,
+  VMEXIT_HLT              = 120,
+  VMEXIT_INVLPG           = 121,
+  VMEXIT_INVLPGA          = 122,
+  VMEXIT_IOIO             = 123,
+  VMEXIT_MSR              = 124,
+  VMEXIT_TASK_SWITCH      = 125,
+  VMEXIT_FERR_FREEZE      = 126,
+  VMEXIT_SHUTDOWN         = 127,
+  VMEXIT_VMRUN            = 128,
+  VMEXIT_VMMCALL          = 129,
+  VMEXIT_VMLOAD           = 130,
+  VMEXIT_VMSAVE           = 131,
+  VMEXIT_STGI             = 132,
+  VMEXIT_CLGI             = 133,
+  VMEXIT_SKINIT           = 134,
+  VMEXIT_RDTSCP           = 135,
+  VMEXIT_ICEBP            = 136,
+  VMEXIT_NPF              = 1024, /* nested paging fault */
+  VMEXIT_INVALID          =  -1
+};
+
+/* control register intercepts */
+enum TLBControl
+{
+  TLB_CONTROL_NOTHING = 0,
+  TLB_CONTROL_FLUSHALL = 1,
+};
+
+/* control register intercepts */
+enum PFErrorcode
+{
+  PF_ERRORCODE_PRESENT   = 1 << 0,
+  PF_ERRORCODE_WRITE     = 1 << 1,
+  PF_ERRORCODE_USER      = 1 << 2,
+  PF_ERRORCODE_RSV       = 1 << 3,
+  PF_ERRORCODE_INST      = 1 << 4,
+};
+
+/* Definitions of segment state are borrowed by the generic HVM code. */
+
+/* 
+ * Attribute for segment selector. This is a copy of bit 40:47 & 52:55 of the
+ * segment descriptor. It happens to match the format of an AMD SVM VMCB.
+ */
+typedef union segment_attributes {
+  u16 bytes;
+  struct
+  {
+    u16 type:4;    /* 0;  Bit 40-43 */
+    u16 s:   1;    /* 4;  Bit 44 */
+    u16 dpl: 2;    /* 5;  Bit 45-46 */
+    u16 p:   1;    /* 7;  Bit 47 */
+    u16 avl: 1;    /* 8;  Bit 52 */
+    u16 l:   1;    /* 9;  Bit 53 */
+    u16 db:  1;    /* 10; Bit 54 */
+    u16 g:   1;    /* 11; Bit 55 */
+  } fields;
+} __attribute__ ((packed)) segment_attributes_t;
+
+/*
+ * Full state of a segment register (visible and hidden portions).
+ * Again, this happens to match the format of an AMD SVM VMCB.
+ */
+typedef struct segment_register {
+  u16        sel;
+  segment_attributes_t attr;
+  u32        limit;
+  u64        base;
+} __attribute__ ((packed)) segment_register_t;
+
+
+typedef segment_attributes_t svm_segment_attributes_t;
+typedef segment_register_t svm_segment_register_t;
+
+typedef union 
+{
+  u64 bytes;
+  struct 
+  {
+    u64 vector:    8;
+    u64 type:      3;
+    u64 ev:        1;
+    u64 resvd1:   19;
+    u64 v:         1;
+    u64 errorcode:32;
+  } fields;
+} __attribute__ ((packed)) eventinj_t;
+
+enum EVENTTYPES
+{
+  EVENTTYPE_INTR = 0,
+  EVENTTYPE_NMI = 2,
+  EVENTTYPE_EXCEPTION = 3,
+  EVENTTYPE_SWINT = 4,
+};
+
+typedef union 
+{
+  u64 bytes;
+  struct 
+  {
+    u64 tpr:          8;
+    u64 irq:          1;
+    u64 rsvd0:        7;
+    u64 prio:         4;
+    u64 ign_tpr:      1;
+    u64 rsvd1:        3;
+    u64 intr_masking: 1;
+    u64 rsvd2:        7;
+    u64 vector:       8;
+    u64 rsvd3:       24;
+  } fields;
+} __attribute__ ((packed)) vintr_t;
+
+typedef union
+{
+  u64 bytes;
+  struct 
+  {
+    u64 type: 1;
+    u64 rsv0: 1;
+    u64 str:  1;
+    u64 rep:  1;
+    u64 sz8:  1;
+    u64 sz16: 1;
+    u64 sz32: 1;
+    u64 rsv1: 9;
+    u64 port: 16;
+  } fields;
+} __attribute__ ((packed)) ioio_info_t;
+
+struct vmcb_struct {
+  u32 cr_intercepts;          /* offset 0x00 */
+  u32 dr_intercepts;          /* offset 0x04 */
+  u32 exception_intercepts;   /* offset 0x08 */
+  u32 general1_intercepts;    /* offset 0x0C */
+  u32 general2_intercepts;    /* offset 0x10 */
+  u32 res01;                  /* offset 0x14 */
+  u64 res02;                  /* offset 0x18 */
+  u64 res03;                  /* offset 0x20 */
+  u64 res04;                  /* offset 0x28 */
+  u64 res05;                  /* offset 0x30 */
+  u64 res06;                  /* offset 0x38 */
+  u64 iopm_base_pa;           /* offset 0x40 */
+  u64 msrpm_base_pa;          /* offset 0x48 */
+  u64 tsc_offset;             /* offset 0x50 */
+  u32 guest_asid;             /* offset 0x58 */
+  u8  tlb_control;            /* offset 0x5C */
+  u8  res07[3];
+  vintr_t vintr;              /* offset 0x60 */
+  u64 interrupt_shadow;       /* offset 0x68 */
+  u64 exitcode;               /* offset 0x70 */
+  u64 exitinfo1;              /* offset 0x78 */
+  u64 exitinfo2;              /* offset 0x80 */
+  eventinj_t  exitintinfo;    /* offset 0x88 */
+  u64 np_enable;              /* offset 0x90 */
+  u64 res08[2];
+  eventinj_t  eventinj;       /* offset 0xA8 */
+  u64 h_cr3;                  /* offset 0xB0 */
+  u64 res09[105];             /* offset 0xB8 pad to save area */
+
+  svm_segment_register_t es;      /* offset 1024 */
+  svm_segment_register_t cs;
+  svm_segment_register_t ss;
+  svm_segment_register_t ds;
+  svm_segment_register_t fs;
+  svm_segment_register_t gs;
+  svm_segment_register_t gdtr;
+  svm_segment_register_t ldtr;
+  svm_segment_register_t idtr;
+  svm_segment_register_t tr;
+  u64 res10[5];
+  u8 res11[3];
+  u8 cpl;
+  u32 res12;
+  u64 efer;                   /* offset 1024 + 0xD0 */
+  u64 res13[14];
+  u64 cr4;                    /* loffset 1024 + 0x148 */
+  u64 cr3;
+  u64 cr0;
+  u64 dr7;
+  u64 dr6;
+  u64 rflags;
+  u64 rip;
+  u64 res14[11];
+  u64 rsp;
+  u64 res15[3];
+  u64 rax;
+  u64 star;
+  u64 lstar;
+  u64 cstar;
+  u64 sfmask;
+  u64 kerngsbase;
+  u64 sysenter_cs;
+  u64 sysenter_esp;
+  u64 sysenter_eip;
+  u64 cr2;
+  u64 pdpe0;
+  u64 pdpe1;
+  u64 pdpe2;
+  u64 pdpe3;
+  u64 g_pat;
+  u64 res16[50];
+  u64 res17[128];
+  u64 res18[128];
+} __attribute__ ((packed));
+
+
+struct regs
+{
+  u32 eax;
+  u32 ecx;
+  u32 edx;
+  u32 ebx;
+  u32 esp;
+  u32 ebp;
+  u32 esi;
+  u32 edi;
+}__attribute__ ((packed));
+
+
+static inline void vmsave(u32 vmcb){
+  __asm__("vmsave"
+          :  // no output
+          :"a"(vmcb));
+}
+
+static inline void vmload(u32 vmcb){
+  __asm__("vmload"
+          :  // no output
+          :"a"(vmcb));
+}
+
+#endif /* __ASSEMBLY__ */
+
+#endif /* __SVM_H__ */

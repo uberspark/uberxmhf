@@ -43,10 +43,10 @@
 //extern u32 __shadow_pd_tables[];
 //extern u32 __shadow_p_tables[];
 
-extern u32 __shadow_npae_pd_table[];
-extern u32 __shadow_npae_p_tables[];
+//extern u32 __shadow_npae_pd_table[];
+//extern u32 __shadow_npae_p_tables[];
 
-extern u32 shadow_guest_CR3;
+//extern u32 shadow_guest_CR3;
 
 u32 shadow_page_fault(u32 cr2, u32 error_code);
 void shadow_invalidate_page(u32 address);

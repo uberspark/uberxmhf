@@ -1,0 +1,455 @@
+/*
+ * @XMHF_LICENSE_HEADER_START@
+ *
+ * eXtensible, Modular Hypervisor Framework (XMHF)
+ * Copyright (c) 2009-2012 Carnegie Mellon University
+ * Copyright (c) 2010-2012 VDG Inc.
+ * All Rights Reserved.
+ *
+ * Developed by: XMHF Team
+ *               Carnegie Mellon University / CyLab
+ *               VDG Inc.
+ *               http://xmhf.org
+ *
+ * This file is part of the EMHF historical reference
+ * codebase, and is released under the terms of the
+ * GNU General Public License (GPL) version 2.
+ * Please see the LICENSE file for details.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ * @XMHF_LICENSE_HEADER_END@
+ */
+
+//init.c - EMHF early initialization blob functionality
+//author: amit vasudevan (amitvasudevan@acm.org)
+
+//---includes-------------------------------------------------------------------
+#include <target.h>
+
+//---forward prototypes---------------------------------------------------------
+void cstartup(multiboot_info_t *mbi);
+MPFP * MP_GetFPStructure(void);
+u32 _MPFPComputeChecksum(u32 spaddr, u32 size);
+
+//---globals--------------------------------------------------------------------
+PCPU pcpus[MAX_PCPU_ENTRIES];
+u32 pcpus_numentries=0;
+u32 cpu_vendor;	//CPU_VENDOR_INTEL or CPU_VENDOR_AMD
+u32 hypervisor_image_baseaddress;	//2M aligned highest physical memory address
+						//where the hypervisor binary is relocated to
+GRUBE820 grube820list[MAX_E820_ENTRIES];
+u32 grube820list_numentries=0;        //actual number of e820 entries returned
+                                  //by grub
+
+
+//---MP config table handling---------------------------------------------------
+void dealwithMP(void){
+  MPFP *mpfp;
+  MPCONFTABLE *mpctable;
+  
+  mpfp = MP_GetFPStructure();
+
+#ifdef __MP_VERSION__  
+  if(!mpfp){
+    printf("\nNo MP table, falling back to UP...");
+    pcpus[pcpus_numentries].lapic_id = 0x0;
+    pcpus[pcpus_numentries].lapic_ver = 0x0;
+    pcpus[pcpus_numentries].lapic_base = 0xFEE00000;
+    pcpus[pcpus_numentries].isbsp = 1;
+    pcpus_numentries++;
+    goto fallthrough;
+  }
+#else
+  printf("\nForcing UP...");
+  pcpus[pcpus_numentries].lapic_id = 0x0;
+  pcpus[pcpus_numentries].lapic_ver = 0x0;
+  pcpus[pcpus_numentries].lapic_base = 0xFEE00000;
+  pcpus[pcpus_numentries].isbsp = 1;
+  pcpus_numentries++;
+  goto fallthrough;
+#endif
+  printf("\nMP table found at: 0x%08x", (u32)mpfp);
+  printf("\nMP spec rev=0x%02x", mpfp->spec_rev);
+  printf("\nMP feature info1=0x%02x", mpfp->mpfeatureinfo1);
+  printf("\nMP feature info2=0x%02x", mpfp->mpfeatureinfo2);
+  printf("\nMP Configuration table at 0x%08x", mpfp->paddrpointer);
+  
+  mpctable = (MPCONFTABLE *)mpfp->paddrpointer;
+  ASSERT(mpctable->signature == MPCONFTABLE_SIGNATURE);
+  
+  {//debug
+    int i;
+    printf("\nOEM ID: ");
+    for(i=0; i < 8; i++)
+      printf("%c", mpctable->oemid[i]);
+    printf("\nProduct ID: ");
+    for(i=0; i < 12; i++)
+      printf("%c", mpctable->productid[i]);
+  }
+  
+  printf("\nEntry count=%u", mpctable->entrycount);
+  printf("\nLAPIC base=0x%08x", mpctable->lapicaddr);
+  
+  //now step through CPU entries in the MP-table to determine
+  //how many CPUs we have
+  {
+    int i;
+    u32 addrofnextentry= (u32)mpctable + sizeof(MPCONFTABLE);
+    
+    for(i=0; i < mpctable->entrycount; i++){
+      MPENTRYCPU *cpu = (MPENTRYCPU *)addrofnextentry;
+      if(cpu->entrytype != 0)
+        break;
+      
+      if(cpu->cpuflags & 0x1){
+        printf("\nCPU (0x%08x) #%u: lapic id=0x%02x, ver=0x%02x, cpusig=0x%08x", 
+          (u32)cpu, i, cpu->lapicid, cpu->lapicver, cpu->cpusig);
+        pcpus[pcpus_numentries].lapic_id = cpu->lapicid;
+        pcpus[pcpus_numentries].lapic_ver = cpu->lapicver;
+        pcpus[pcpus_numentries].lapic_base = mpctable->lapicaddr;
+        pcpus[pcpus_numentries].isbsp = cpu->cpuflags & 0x2;
+        pcpus_numentries++;
+      }
+            
+      addrofnextentry += sizeof(MPENTRYCPU);
+    }
+  }
+
+
+fallthrough:
+  return;  
+  //debug
+  {
+    u32 i;
+    printf("\nCPU table:");
+    for(i=0; i < pcpus_numentries; i++)
+      printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x", i, pcpus[i].isbsp, pcpus[i].lapic_id);
+  }
+}
+
+u32 _MPFPComputeChecksum(u32 spaddr, u32 size){
+  char *p;
+  char checksum=0;
+  u32 i;
+
+  p=(char *)spaddr;
+  
+  for(i=0; i< size; i++)
+    checksum+= (char)(*(p+i));
+  
+  return (u32)checksum;
+}
+
+
+//get the MP FP structure
+MPFP *MP_GetFPStructure(void){
+  u16 ebdaseg;
+  u32 ebdaphys;
+  u32 i, found=0;
+  MPFP *mpfp;
+  
+  //get EBDA segment from 040E:0000h in BIOS data area
+  ebdaseg= * ((u16 *)0x0000040E);
+  //convert it to its 32-bit physical address
+  ebdaphys=(u32)(ebdaseg * 16);
+  //search first 1KB of ebda for rsdp signature (4 bytes long)
+  for(i=0; i < (1024-4); i+=16){
+    mpfp=(MPFP *)(ebdaphys+i);
+    if(mpfp->signature == MPFP_SIGNATURE){
+      if(!_MPFPComputeChecksum((u32)mpfp, 16)){
+        found=1;
+        break;
+      }
+    }
+  }
+  
+  if(found)
+    return mpfp;
+  
+  //search within BIOS areas 0xE0000 to 0xFFFFF
+  for(i=0xE0000; i < (0xFFFFF-4); i+=16){
+    mpfp=(MPFP *)i;
+    if(mpfp->signature == MPFP_SIGNATURE){
+      if(!_MPFPComputeChecksum((u32)mpfp, 16)){
+        found=1;
+        break;
+      }
+    }
+  }
+
+  if(found)
+    return mpfp;
+  
+  return (MPFP *)0;  
+}
+
+//---microsecond delay----------------------------------------------------------
+void udelay(u32 usecs){
+  u8 val;
+  u32 latchregval;  
+
+  //enable 8254 ch-2 counter
+  val = inb(0x61);
+  val &= 0x0d; //turn PC speaker off
+  val |= 0x01; //turn on ch-2
+  outb(val, 0x61);
+  
+  //program ch-2 as one-shot
+  outb(0xB0, 0x43);
+  
+  //compute appropriate latch register value depending on usecs
+  latchregval = (1193182 * usecs) / 1000000;
+
+  //write latch register to ch-2
+  val = (u8)latchregval;
+  outb(val, 0x42);
+  val = (u8)((u32)latchregval >> (u32)8);
+  outb(val , 0x42);
+  
+  //wait for countdown
+  while(!(inb(0x61) & 0x20));
+  
+  //disable ch-2 counter
+  val = inb(0x61);
+  val &= 0x0c;
+  outb(val, 0x61);
+}
+
+
+//---INIT IPI routine-----------------------------------------------------------
+void send_init_ipi_to_all_APs(void) {
+  u32 eax, edx;
+  volatile u32 *icr;
+  
+  //read LAPIC base address from MSR
+  rdmsr(MSR_APIC_BASE, &eax, &edx);
+  ASSERT( edx == 0 ); //APIC is below 4G
+  printf("\nLAPIC base and status=0x%08x", eax);
+    
+  icr = (u32 *) (((u32)eax & 0xFFFFF000UL) + 0x300);
+
+  //send INIT
+  printf("\nSending INIT IPI to all APs...");
+  *icr = 0x000c4500UL;
+  udelay(10000);
+  //wait for command completion
+  {
+    u32 val;
+    do{
+      val = *icr;
+    }while( (val & 0x1000) );
+  }
+  printf("Done.");
+}
+
+
+//---E820 parsing and handling--------------------------------------------------
+//runtimesize is assumed to be 2M aligned
+u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize){
+  //check if GRUB has a valid E820 map
+  if(!(mbi->flags & MBI_MEMMAP)){
+    printf("\n%s: FATAL error, no E820 map provided!", __FUNCTION__);
+    HALT();
+  }
+  
+  //zero out grub e820 list
+  memset((void *)&grube820list, 0, sizeof(GRUBE820)*MAX_E820_ENTRIES);
+  
+  //grab e820 list into grube820list
+  {
+    memory_map_t *mmap;
+    for ( mmap = (memory_map_t *) mbi->mmap_addr;
+          (unsigned long) mmap < mbi->mmap_addr + mbi->mmap_length;
+           mmap = (memory_map_t *) ((unsigned long) mmap
+                                       + mmap->size + sizeof (mmap->size))){
+      grube820list[grube820list_numentries].baseaddr_low = mmap->base_addr_low;
+      grube820list[grube820list_numentries].baseaddr_high = mmap->base_addr_high;
+      grube820list[grube820list_numentries].length_low = mmap->length_low;
+      grube820list[grube820list_numentries].length_high = mmap->length_high; 
+      grube820list[grube820list_numentries].type = mmap->type;
+      grube820list_numentries++;
+    }
+  }
+
+  //debug: print grube820list
+  {
+    u32 i;
+  	printf("\nOriginal E820 map follows:\n");
+	  for(i=0; i < grube820list_numentries; i++){
+      printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
+          grube820list[i].baseaddr_high, grube820list[i].baseaddr_low,
+          grube820list[i].length_high, grube820list[i].length_low,
+          grube820list[i].type);
+    }
+  
+  }
+  
+  //traverse e820 list backwards to find an entry with type=0x1 (free)
+  //with free amount of memory for runtime
+  {
+    u32 foundentry=0;
+    u32 runtimephysicalbase=0;
+    int i;
+     
+    //#define ADDR_4GB  (0xFFFFFFFFUL)
+    for(i= (int)(grube820list_numentries-1); i >=0; i--){
+      u32 baseaddr, size;
+      baseaddr = grube820list[i].baseaddr_low;
+      //size = PAGE_ALIGN_4K(grube820list[i].length_low);  
+      size = grube820list[i].length_low;
+    
+      if(grube820list[i].type == 0x1){ //free memory?
+        if(grube820list[i].baseaddr_high) //greater than 4GB? then skip
+          continue; 
+
+        if(grube820list[i].length_high){
+          printf("\noops 64-bit length unhandled!");
+          HALT();
+        }
+      
+        runtimephysicalbase = PAGE_ALIGN_2M((u32)baseaddr + size) - runtimesize;
+
+        if( runtimephysicalbase >= baseaddr ){
+          foundentry=1;
+          break;
+        }
+      }
+    } 
+    
+    if(!foundentry){
+      printf("\nFatal: unable to find E820 memory for runtime!");
+      HALT();
+    }
+
+    //entry number we need to split is indexed by i, we need to
+    //make place for 1 extra entry at position i
+    if(grube820list_numentries == MAX_E820_ENTRIES){
+      printf("\noops, exhausted max E820 entries!");
+      HALT();
+    }
+
+    if(i == (int)(grube820list_numentries-1)){
+      //if this is the last entry, we dont need memmove
+      //deal with i and i+1
+      
+    }else{
+      memmove( (void *)&grube820list[i+2], (void *)&grube820list[i+1], (grube820list_numentries-i-1)*sizeof(GRUBE820));
+      memset (&grube820list[i+1], 0, sizeof(GRUBE820));
+      //deal with i and i+1 
+      {
+        u32 sizetosplit= grube820list[i].length_low;
+        u32 newsizeofiplusone = grube820list[i].baseaddr_low + sizetosplit - runtimephysicalbase;
+        u32 newsizeofi = runtimephysicalbase - grube820list[i].baseaddr_low;
+        grube820list[i].length_low = newsizeofi;
+        grube820list[i+1].baseaddr_low = runtimephysicalbase;
+        grube820list[i+1].type = 0x2;// reserved
+        grube820list[i+1].length_low = newsizeofiplusone;
+      
+      }
+    }
+    grube820list_numentries++;
+    
+    return runtimephysicalbase;
+  }
+  
+}
+
+
+
+//---init main----------------------------------------------------------------
+void cstartup(multiboot_info_t *mbi){
+	module_t *mod_array;
+	u32 mods_count;
+	
+  //initialize debugging early on
+	#ifdef __DEBUG_SERIAL__		
+		init_uart();
+	#endif
+
+	#ifdef __DEBUG_VGA__
+		vgamem_clrscr();
+	#endif
+
+  mod_array = (module_t*)mbi->mods_addr;
+  mods_count = mbi->mods_count;
+
+	printf("\nINIT(early): initializing, total modules=%u", mods_count);
+  ASSERT(mods_count == 2);  //runtime and OS boot sector for the time-being
+
+
+	//check CPU type (Intel vs AMD)
+  {
+    u32 vendor_dword1, vendor_dword2, vendor_dword3;
+	  asm(	"xor	%%eax, %%eax \n"
+				  "cpuid \n"		
+				  "mov	%%ebx, %0 \n"
+				  "mov	%%edx, %1 \n"
+				  "mov	%%ecx, %2 \n"
+			     :	//no inputs
+					 : "m"(vendor_dword1), "m"(vendor_dword2), "m"(vendor_dword3)
+					 : "eax", "ebx", "ecx", "edx" );
+
+		if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
+				&& vendor_dword3 == AMD_STRING_DWORD3)
+			cpu_vendor = CPU_VENDOR_AMD;
+		else if(vendor_dword1 == INTEL_STRING_DWORD1 && vendor_dword2 == INTEL_STRING_DWORD2
+				&& vendor_dword3 == INTEL_STRING_DWORD3)
+   	 	cpu_vendor = CPU_VENDOR_INTEL;
+		else{
+			printf("\nINIT(early): error(fatal), unrecognized CPU! 0x%08x:0x%08x:0x%08x",
+				vendor_dword1, vendor_dword2, vendor_dword3);
+			HALT();
+		}   	 	
+  }
+
+	printf("\nINIT(early): detected an %s CPU", ((cpu_vendor == CPU_VENDOR_INTEL) ? "Intel" : "AMD"));
+
+
+	//deal with MP and get CPU table
+  dealwithMP();
+
+  //find highest 2MB aligned physical memory address that the hypervisor
+	//binary must be moved to 
+  hypervisor_image_baseaddress = dealwithE820(mbi, PAGE_ALIGN_UP2M((mod_array[0].mod_end - mod_array[0].mod_start))); 
+
+	//relocate the hypervisor binary to the above calculated address
+	memcpy((void*)hypervisor_image_baseaddress, (void*)mod_array[0].mod_start, (mod_array[0].mod_end - mod_array[0].mod_start));
+
+	//print out stats
+	printf("\nINIT(early): relocated hypervisor binary image to 0x%08x", hypervisor_image_baseaddress);
+	printf("\nINIT(early): 2M aligned size = 0x%08x", PAGE_ALIGN_UP2M((mod_array[0].mod_end - mod_array[0].mod_start)));
+
+	if(cpu_vendor == CPU_VENDOR_AMD){
+		//send INIT IPI to all APs so that SKINIT can complete successfully
+		send_init_ipi_to_all_APs();
+		printf("\nINIT(early): sent INIT IPI to APs");
+
+  	//our secure loader is the first 64K of the hypervisor image
+  	printf("\nINIT(early): transferring control to SL...");
+		skinit((u32)hypervisor_image_baseaddress);
+  	
+  	goto nevercomehere;	//failsafe
+  	
+	}else{
+	  printf("\nINIT(early): error(fatal), DRTM unimplemented for CPU!");
+	  HALT();
+	}	
+	 
+
+nevercomehere:
+ 	printf("\nINIT(early): error(fatal), should never come here!");
+	HALT();
+}

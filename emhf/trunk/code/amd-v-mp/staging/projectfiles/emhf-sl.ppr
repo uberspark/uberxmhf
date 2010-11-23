@@ -1,0 +1,55 @@
+[Config]
+Compilator.SaveAll=0
+Compilator.Capture=0
+Compilator.HideOutput=0
+Compilator.LogType=0
+DefaultDir=E:\amit\external\hyp\emhf\trunk\code\amd-v-mp\staging
+DefaultCPIndex=0
+LogtoEnd=1
+DontOpen=0
+AbsolutePath=0
+FileFormat=1
+ProjectFilesOnly=0
+[Project tree]
+emhf-sl
+	+src
+		..\sl\slheader.S
+		..\sl\sl.c
+		..\sl\Makefile
+		..\Makefile
+		New1.txt
+		..\..\..\..\..\docs\emhf_design_notes.txt
+		..\include\target.h
+		..\sl\sl.lds.S
+[Open project files]
+0=..\Makefile
+1=..\sl\Makefile
+2=..\sl\slheader.S
+3=..\sl\sl.c
+4=..\sl\sl.lds.S
+5=..\include\target.h
+6=..\..\..\..\..\docs\emhf_design_notes.txt
+[Selected Project Files]
+Main=
+Selected=..\..\..\..\..\docs\emhf_design_notes.txt
+[..\Makefile]
+TopLine=102
+Caret=43,112
+[..\sl\Makefile]
+TopLine=1
+Caret=3,22
+[..\sl\slheader.S]
+TopLine=1
+Caret=22,1
+[..\sl\sl.c]
+TopLine=1
+Caret=62,30
+[..\sl\sl.lds.S]
+TopLine=4
+Caret=1,38
+[..\include\target.h]
+TopLine=151
+Caret=1,151
+[..\..\..\..\..\docs\emhf_design_notes.txt]
+TopLine=45
+Caret=29,56

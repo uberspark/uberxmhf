@@ -1,0 +1,3 @@
+#!/bin/bash
+
+./cbmc -I ../include/ --pointer-check --unwind 1025 minimal_sp.c;

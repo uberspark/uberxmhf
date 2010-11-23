@@ -45,13 +45,15 @@
 #include <print.h>
 #include <processor.h>
 #include <msr.h>
-#include <vtx.h>
+//#include <vtx.h>
 #include <paging.h>
 #include <io.h>
 #include <str.h>
-#include <machine.h>
+//#include <machine.h> // XXX for verif
 #include <error.h>
-#include <shadow_paging.h>
+//#include <shadow_paging.h> // XXX for verif
+#include <shadow_paging_npae.h> // XXX for verif
+#include "../common/string.c" // XXX for verif
 
 u32 shadow_guest_CR3=0;
 
@@ -66,6 +68,89 @@ u32 shadow_guest_CR3=0;
 	6. Task Switch changing value of CR3 -> ALL TLB except global
 	7. VMX transitions -> ALL TLB 
 */
+
+/*------------ Start for verification ------------*/
+
+u16 guest_GDTR_limit;
+u16 guest_IDTR_limit;
+u16 guest_TR_limit;
+u32 guest_GDTR_base;
+u32 guest_IDTR_base;
+u32 guest_TR_base;
+
+//GPL is the maximum physical memory address that is valid during the validity check
+//Original value 512*1024*1024
+#define GUEST_PHYSICALMEMORY_LIMIT	 (4096*2)  //4MB guest PA
+
+// GUEST_VIRTUALMEMORY_LIMIT allows you to tweak the number of iterations in loops in
+// shadow_new_context and shadow_alloc_pt
+// Max value is 4096*1024*1024
+#define GUEST_VIRTUALMEMORY_LIMIT		 (4096*2)	//4GB guest VA 
+
+#define gpa_to_hpa(x) x
+
+u32 __shadow_pdp_table[1024];
+u32 __shadow_pd_tables[1024];
+u32 __shadow_p_tables[1024];
+
+u32 nondet_u32();
+int nondet_int();
+
+u32 shadow_new_context(u32 guest_CR3);
+void shadow_invalidate_page(u32 address);
+u32 shadow_page_fault(u32 cr2, u32 error_code);
+
+void main() {
+
+  /* Initial Condition */
+  __shadow_pdp_table[0] = 0;
+  __CPROVER_assume(__shadow_pdp_table[0] == 0);
+
+  npdt_t s_pdt = (npdt_t)(u32)__shadow_pd_tables;
+  u32 s_pdt_entry =  s_pdt[0];
+  __CPROVER_assume(s_pdt[0] == 0); // XXX define number of pages
+
+
+  u32 *ptable = (u32 *)((u32)__shadow_p_tables);
+  __CPROVER_assume(ptable[0]==0);  // XXX define number of pages
+
+  //nondet calls
+  int choice = nondet_int();
+
+  // u32 restrict_addrs_4K  = 0x00000FFF;
+  // XXX can change this without changing verification
+  // since verification condition only mentions 0 entries of pdt and pt
+  u32 restrict_addrs_4K  = 0xFFFFFFFF; 
+
+  if (choice == 0) {
+    //shadow_new_context(nondet_u32() & restrict_addrs_4K);
+  } else if (choice == 1) {
+    //shadow_invalidate_page(nondet_u32() & restrict_addrs_4K);
+  } else {
+    shadow_page_fault(nondet_u32() & restrict_addrs_4K, nondet_u32() & restrict_addrs_4K);
+  }
+
+  /* VERIF Condition (ONLY checks 0 entries of pdt and pt) */
+  s_pdt = (npdt_t)(u32)__shadow_pd_tables;
+  s_pdt_entry =  s_pdt[0];
+
+  if( (s_pdt_entry & _PAGE_PRESENT) ) {
+    if (s_pdt_entry & _PAGE_PSE) {
+      assert(pae_get_addr_from_pde(s_pdt_entry) < GUEST_PHYSICALMEMORY_LIMIT);
+    }else {
+      //this is a regular page directory entry, so get the page table
+      npt_t s_pt = (npt_t)(u32)pae_get_addr_from_pde(s_pdt_entry);
+      u32 pt_entry = s_pt[0]; 
+      
+      if( (pt_entry & _PAGE_PRESENT) ) {
+	assert(pae_get_addr_from_pte(pt_entry) < GUEST_PHYSICALMEMORY_LIMIT);
+      }
+    }
+  }
+}
+
+/* ------------ End for verification ------------ */
+
 
 //------------------------------------------------------------------------------
 //return pointers to the 64-bit SHADOW pdpte, pde and pte for a given guest
@@ -525,11 +610,12 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
 	if(error_code & PFERR_RSVD_MASK){
 		printf("\nRSVD bit set on page-fault, dumping shadow root structures:");
 		printf("\nHalt!");
-		HALT();
+		__CPROVER_assume(0); //HALT();
 	}
 
 	//[scheck] we assume CR0.WP=1 always
-	ASSERT( ((guest_CR0 & CR0_WP) && (control_CR0_shadow & CR0_WP)) );
+	// XXX for verif - guest_CRO undefined
+	//ASSERT( ((guest_CR0 & CR0_WP) && (control_CR0_shadow & CR0_WP)) );
 
 	//get SHADOW and GUEST paging entries for the fault-address (CR2)
 	shadow_get_guestentry(cr2, shadow_guest_CR3, &gPDPTE, &gPDE, &gPTE);
@@ -539,7 +625,7 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
 
 	//if(!shadow_checkcontext( (u32)pae_get_addr_from_32bit_cr3((u32)shadow_guest_CR3) ) ){
 	//		printf("\nPF: Halting, reserved bits set in GUEST paging structures!");
-	//		HALT();
+	//		__CPROVER_assume(0); //HALT();
 	//}	
 
 	
@@ -554,10 +640,10 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
 				set_shadowentry_dirtywaiting(sPDPTE, sPDE, sPTE, gPDPTE, gPDE, gPTE);
 				*/
 				
-				if(!shadow_checkcontext((u32)__shadow_pdp_table)){
-					printf("\nPF: Halting, reserved bits set in SHADOW paging structures!");
-					HALT();
-				}	
+/* 				if(!shadow_checkcontext((u32)__shadow_pdp_table)){ */
+/* 					printf("\nPF: Halting, reserved bits set in SHADOW paging structures!"); */
+/* 					__CPROVER_assume(0); //HALT(); */
+/* 				}	 */
 
 				//sdbg_dumpentries(gPDPTE, gPDE, gPTE, sPDPTE, sPDE, sPTE);
 				return VMX_EVENT_CANCEL;
@@ -589,7 +675,7 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
 	if(error_code & PFERR_RSVD_MASK){
 		printf("\nRSVD bit set on page-fault, hmhmhmm!!!");
 		printf("\nHalt!");
-		HALT();
+		__CPROVER_assume(0); //HALT();
 	}
 
 	return VMX_EVENT_INJECT;
@@ -872,15 +958,15 @@ u32 shadow_new_context(u32 guest_CR3){
 
 #if 1
 	//copy guest CR3 structures to shadow
-	if(!shadow_checkcontext( (u32)pae_get_addr_from_32bit_cr3((u32)guest_CR3) ) ){
-		printf("\nHalting, reserved bits set in GUEST paging structures!");
-		HALT();
-	}	
-	shadow_copy(guest_CR3);
-	if(!shadow_checkcontext((u32)__shadow_pdp_table)){
-		printf("\nHalting, reserved bits set in SHADOW paging structures!");
-		HALT();
-	}	
+/* 	if(!shadow_checkcontext( (u32)pae_get_addr_from_32bit_cr3((u32)guest_CR3) ) ){ */
+/* 		printf("\nHalting, reserved bits set in GUEST paging structures!"); */
+/* 		__CPROVER_assume(0); //HALT(); */
+/* 	}	 */
+/* 	shadow_copy(guest_CR3); */
+/* 	if(!shadow_checkcontext((u32)__shadow_pdp_table)){ */
+/* 		printf("\nHalting, reserved bits set in SHADOW paging structures!"); */
+/* 		__CPROVER_assume(0); //HALT(); */
+/* 	}	 */
 #else
 	memset((void *)__shadow_pdp_table, 0, PAGE_SIZE_4K);
 
@@ -967,7 +1053,7 @@ u32 shadow_new_context(u32 guest_CR3){
 
 	//if(!shadow_checkcontext( (u32)pae_get_addr_from_32bit_cr3((u32)guest_CR3) ) ){
 	//	printf("\nHalting, reserved bits set in GUEST paging structures!");
-	//	HALT();
+	//	__CPROVER_assume(0); //HALT();
 	//}	
 
 	return guest_CR3;
