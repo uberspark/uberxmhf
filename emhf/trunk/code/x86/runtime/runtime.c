@@ -658,10 +658,10 @@ void allcpus_common_start(VCPU *vcpu){
   initVMCB(vcpu); 
 
   //call app main
-  //if(emhf_app_main(vcpu)){
-  //  printf("\nCPU(0x%02x): Application failed to initialize. HALT!", vcpu->id);
-  //  HALT();
-  //}
+  if(emhf_app_main(vcpu)){
+    printf("\nCPU(0x%02x): Application failed to initialize. HALT!", vcpu->id);
+    HALT();
+  }
 
 
 #ifdef __NESTED_PAGING__
