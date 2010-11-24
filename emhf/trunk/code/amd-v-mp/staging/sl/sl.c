@@ -41,6 +41,72 @@
 
 
 extern u32 slpb_buffer[];
+PXTLPB lpb;
+u32 sl_baseaddr=0;	
+extern void XtLdrTransferControlToRtm(u32 gdtbase, u32 idtbase,
+	u32 entrypoint, u32 stacktop)__attribute__((cdecl)); 
+
+
+//---runtime paging setup-------------------------------------------------------
+//physaddr and virtaddr are assumed to be 2M aligned
+void runtime_setup_paging(u32 physaddr, u32 virtaddr, u32 totalsize){
+	pdpt_t xpdpt;
+	pdt_t xpdt;
+	u32 paddr=0, i, j, y;
+	u32 l_cr0, l_cr3, l_cr4;
+	u64 flags;
+	u32 runtime_image_offset = PAGE_SIZE_2M;
+	
+	xpdpt=(pdpt_t)((u32)lpb->XtVmmPdptBase - __TARGET_BASE + runtime_image_offset);
+	xpdt=(pdt_t)((u32)lpb->XtVmmPdtsBase  - __TARGET_BASE + runtime_image_offset);
+	
+	//printf("\npa xpdpt=0x%08x, xpdt=0x%08x", (u32)xpdpt, (u32)xpdt);
+	
+  flags = (u64)(_PAGE_PRESENT);
+  //init pdpt
+  for(i = 0; i < PAE_PTRS_PER_PDPT; i++){
+    y = (u32)__pa((u32)sl_baseaddr + (u32)xpdt + (i << PAGE_SHIFT_4K));
+    xpdpt[i] = pae_make_pdpe((u64)y, flags);
+  }
+ 
+ 	//init pdts with unity mappings
+  j  = ADDR_4GB >> (PAE_PDT_SHIFT);
+  flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE);
+  for(i = 0, paddr = 0; i < j; i ++, paddr += PAGE_SIZE_2M){
+    if(paddr >= physaddr && paddr < (physaddr+totalsize)){
+      //map this virtual address to physical memory occupied by runtime virtual range
+      u32 offset = paddr - physaddr;
+      xpdt[i] = pae_make_pde_big((u64)virtaddr+offset, flags);
+    }else if(paddr >= virtaddr && paddr < (virtaddr+totalsize)){
+      //map this virtual addr to runtime physical addr
+      u32 offset = paddr - virtaddr;
+      xpdt[i] = pae_make_pde_big((u64)physaddr+offset, flags);
+    }else{
+      //unity map
+      if(paddr == 0xfee00000)
+        flags |= (u64)(_PAGE_PCD);
+        
+      xpdt[i] = pae_make_pde_big((u64)paddr, flags);
+    }
+  }
+
+	//setup cr4
+  l_cr4 = CR4_PSE | CR4_PAE;
+  write_cr4(l_cr4);
+  
+  //setup cr0
+	l_cr0 = 0x00000015; // ET, EM, PE
+  write_cr0(l_cr0);
+
+  //set up cr3
+  l_cr3 = __pa((u32)sl_baseaddr + (u32)xpdpt);
+	write_cr3(l_cr3);
+  
+  //enable paging
+  l_cr0 |= (u32)0x80000000;
+	write_cr0(l_cr0);
+
+}
 
 
 //we get here from slheader.S
@@ -49,7 +115,10 @@ void slmain(u32 baseaddr){
 	u32 runtime_physical_base;
 	u32 runtime_size_2Maligned;
 	
-	PXTLPB lpb;
+	u32 runtime_gdt;
+	u32 runtime_idt;
+	u32 runtime_entrypoint;
+	u32 runtime_topofstack;
 		
 	//initialize debugging early on
 	#ifdef __DEBUG_SERIAL__		
@@ -60,7 +129,9 @@ void slmain(u32 baseaddr){
 		vgamem_clrscr();
 	#endif
 	
-	printf("\nSL: at 0x%08x, starting...", baseaddr);
+	//initialze sl_baseaddr variable and print its value out
+	sl_baseaddr = baseaddr;
+	printf("\nSL: at 0x%08x, starting...", sl_baseaddr);
 	
 	//deal with SL parameter block
 	slpb = (SL_PARAMETER_BLOCK *)slpb_buffer;
@@ -77,12 +148,30 @@ void slmain(u32 baseaddr){
 	printf("\n	numCPUEntries=%u", slpb->numCPUEntries);
 	printf("\n	pcpus at 0x%08x", &slpb->pcpus);
 	printf("\n	runtime size= %u bytes", slpb->runtime_size);
+  //debug, dump E820 and MP table
+ 	printf("\n	e820map:\n");
+  {
+    u32 i;
+    for(i=0; i < slpb->numE820Entries; i++){
+      printf("\n		0x%08x%08x, size=0x%08x%08x (%u)", 
+          slpb->e820map[i].baseaddr_high, slpb->e820map[i].baseaddr_low,
+          slpb->e820map[i].length_high, slpb->e820map[i].length_low,
+          slpb->e820map[i].type);
+    }
+  }
+  printf("\n	pcpus:\n");
+  {
+    u32 i;
+    for(i=0; i < slpb->numCPUEntries; i++)
+      printf("\n		CPU #%u: bsp=%u, lapic_id=0x%02x", i, slpb->pcpus[i].isbsp, slpb->pcpus[i].lapic_id);
+  }
+
 	
 	//check for unsuccessful DRT
 	//TODO
 	
 	//get runtime physical base
-	runtime_physical_base = baseaddr + PAGE_SIZE_2M;	//base of SL + 2M
+	runtime_physical_base = sl_baseaddr + PAGE_SIZE_2M;	//base of SL + 2M
 	
 	//compute 2M aligned runtime size
 	runtime_size_2Maligned = PAGE_ALIGN_UP2M(slpb->runtime_size);
@@ -104,15 +193,71 @@ void slmain(u32 baseaddr){
 	//setup runtime image for startup
 	
 		//get a pointer to the runtime header
-  	lpb=(PXTLPB)runtime_physical_base;
+  	lpb=(PXTLPB)PAGE_SIZE_2M;	//runtime starts at offset 2M from sl base
+		ASSERT(lpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
+		
+    //store runtime physical and virtual base addresses along with size
+  	lpb->XtVmmRuntimePhysBase = runtime_physical_base;
+  	lpb->XtVmmRuntimeVirtBase = __TARGET_BASE;
+  	lpb->XtVmmRuntimeSize = slpb->runtime_size;
 
-    //setup paging for runtime and reinitialize pointer to the runtime header
-		//runtime_setup_paging(runtime_physical_base, __TARGET_BASE, runtime_size_2Maligned);
+	  //store revised E820 map and number of entries
+	  memcpy((void *)lpb->XtVmmE820Buffer, (void *)&slpb->e820map, (sizeof(GRUBE820) * slpb->numE820Entries));
+  	lpb->XtVmmE820NumEntries = slpb->numE820Entries; 
+
+		//store CPU table and number of CPUs
+    memcpy((void *)lpb->XtVmmMPCpuinfoBuffer, (void *)&slpb->pcpus, (sizeof(PCPU) * slpb->numCPUEntries));
+  	lpb->XtVmmMPCpuinfoNumEntries = slpb->numCPUEntries; 
+
+   	//setup guest OS boot module info in LPB	
+		//TODO
+		//lpb->XtGuestOSBootModuleBase=;
+		//lpb->XtGuestOSBootModuleSize=;
+
+	 	//setup runtime IDT
+		{
+			u32 *fptr, idtbase;
+			idtentry_t *idtentry;
+			u32 i;
+			
+			fptr=(u32 *)((u32)lpb->XtVmmIdtFunctionPointers - __TARGET_BASE + PAGE_SIZE_2M);
+			idtbase= *(u32 *)(((u32)lpb->XtVmmIdt - __TARGET_BASE + PAGE_SIZE_2M) + 2);
+			for(i=0; i < lpb->XtVmmIdtEntries; i++){
+				idtentry_t *idtentry=(idtentry_t *)((u32)idtbase+ (i*8));
+				idtentry->isrLow= (u16)fptr[i];
+				idtentry->isrHigh= (u16) ( (u32)fptr[i] >> 16 );
+				idtentry->isrSelector = __CS;
+				idtentry->count=0x0;
+				idtentry->type=0x8E;
+			}
+			printf("\nSL: setup runtime IDT.");
+		}
+
+		//obtain runtime gdt, idt, entrypoint and stacktop values and patch
+		//entry point in XtLdrTransferControltoRtm
+		{
+			extern u32 sl_runtime_entrypoint_patch[];
+			u32 *patchloc = (u32 *)((u32)sl_runtime_entrypoint_patch + 1);
+			
+			runtime_gdt = lpb->XtVmmGdt;
+			runtime_idt = lpb->XtVmmIdt;
+			runtime_entrypoint = lpb->XtVmmEntryPoint;
+			runtime_topofstack = lpb->XtVmmStackBase+lpb->XtVmmStackSize; 
+			printf("\nSL: runtime entry values:");
+			printf("\n	gdt=0x%08x, idt=0x%08x", runtime_gdt, runtime_idt);
+			printf("\n	entrypoint=0x%08x, topofstack=0x%08x", runtime_entrypoint, runtime_topofstack);
+			*patchloc = runtime_entrypoint;
+		}
+		
+		//setup paging for runtime 
+		runtime_setup_paging(runtime_physical_base, __TARGET_BASE, runtime_size_2Maligned);
 		printf("\nSL: setup runtime paging.");	
-  	lpb=(PXTLPB)__TARGET_BASE;
 
+	  //transfer control to runtime
+		XtLdrTransferControlToRtm(runtime_gdt, runtime_idt, 
+				runtime_entrypoint, runtime_topofstack);
 
-	
-	
-	HALT();
+		//we should never get here
+		printf("\nSL: Fatal, should never be here!");
+		HALT();
 } 

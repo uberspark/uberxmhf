@@ -13,7 +13,7 @@ ProjectFilesOnly=0
 [Project tree]
 emhf-sl
 	+src
-		..\sl\slheader.S
+		..\sl\slsup.S
 		..\sl\sl.c
 		..\sl\Makefile
 		..\Makefile
@@ -21,35 +21,45 @@ emhf-sl
 		..\..\..\..\..\docs\emhf_design_notes.txt
 		..\include\target.h
 		..\sl\sl.lds.S
+		..\include\paging.h
+		..\sl\slheader.S
 [Open project files]
 0=..\Makefile
 1=..\sl\Makefile
-2=..\sl\slheader.S
+2=..\sl\slsup.S
 3=..\sl\sl.c
 4=..\sl\sl.lds.S
 5=..\include\target.h
 6=..\..\..\..\..\docs\emhf_design_notes.txt
+7=..\include\paging.h
+8=..\sl\slheader.S
 [Selected Project Files]
 Main=
-Selected=..\..\..\..\..\docs\emhf_design_notes.txt
+Selected=..\sl\slsup.S
 [..\Makefile]
 TopLine=102
-Caret=43,112
+Caret=3,113
 [..\sl\Makefile]
 TopLine=1
-Caret=3,22
-[..\sl\slheader.S]
-TopLine=1
-Caret=22,1
+Caret=33,5
+[..\sl\slsup.S]
+TopLine=45
+Caret=11,50
 [..\sl\sl.c]
-TopLine=1
-Caret=62,30
+TopLine=190
+Caret=1,215
 [..\sl\sl.lds.S]
 TopLine=4
-Caret=1,38
+Caret=18,31
 [..\include\target.h]
-TopLine=151
-Caret=1,151
+TopLine=195
+Caret=50,236
 [..\..\..\..\..\docs\emhf_design_notes.txt]
-TopLine=45
-Caret=29,56
+TopLine=58
+Caret=9,90
+[..\include\paging.h]
+TopLine=1
+Caret=1,1
+[..\sl\slheader.S]
+TopLine=89
+Caret=1,89

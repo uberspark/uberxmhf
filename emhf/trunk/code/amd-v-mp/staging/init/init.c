@@ -544,6 +544,21 @@ void cstartup(multiboot_info_t *mbi){
 	printf("\nINIT(early): relocated hypervisor binary image to 0x%08x", hypervisor_image_baseaddress);
 	printf("\nINIT(early): 2M aligned size = 0x%08x", PAGE_ALIGN_UP2M((mod_array[0].mod_end - mod_array[0].mod_start)));
 
+	//fill in "sl" parameter block
+	{
+		//"sl" parameter block is at hypervisor_image_baseaddress + 0x10000
+		SL_PARAMETER_BLOCK *slpb = (SL_PARAMETER_BLOCK *)((u32)hypervisor_image_baseaddress + 0x10000);
+		ASSERT(slpb->magic == SL_PARAMETER_BLOCK_MAGIC);
+		slpb->hashSL = 0;
+		slpb->errorHandler = 0;
+		slpb->isEarlyInit = 1;	//this is an "early" init
+		slpb->numE820Entries = grube820list_numentries;
+		memcpy((void *)&slpb->e820map, (void *)&grube820list, (sizeof(GRUBE820) * grube820list_numentries)); 		
+		slpb->numCPUEntries = pcpus_numentries;
+		memcpy((void *)&slpb->pcpus, (void *)&pcpus, (sizeof(PCPU) * pcpus_numentries));
+		slpb->runtime_size = (mod_array[0].mod_end - mod_array[0].mod_start) - PAGE_SIZE_2M;  	
+	}
+
 	//switch to MP mode
 	  //setup Master-ID Table (MIDTABLE)
 	  {

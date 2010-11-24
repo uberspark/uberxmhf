@@ -68,6 +68,8 @@
 #define SL_PARAMETER_BLOCK_MAGIC	0xDEADBEEF
 
 
+//"runtime" parameter block magic value
+#define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
 
 //guest boot record is always loaded at 0000:7C00
 #define __GUESTOSBOOTMODULE_BASE	0x7c00
@@ -230,6 +232,7 @@ typedef struct {
 
 
 typedef struct {
+	u32 magic;
 	u32 XtVmmEntryPoint;
 	u32 XtVmmPdptBase;
 	u32 XtVmmPdtsBase;

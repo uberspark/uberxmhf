@@ -99,7 +99,7 @@ all:
 	cd sl && $(MAKE) -w all
 
 	#make runtime
-	#cd runtime && $(MAKE) -w all
+	cd runtime && $(MAKE) -w all
 	#cd runtime && gzip -c runtime.bin > runtime.bin.gz
 
 
@@ -110,14 +110,13 @@ all:
 	# concatenate 64K sl image and runtime image and copy to installation loc.
 	$(CAT) $(EMHFCOREDIR)/sl/sl.bin $(EMHFCOREDIR)/runtime/runtime.bin > $(EMHFCOREDIR)/hypervisor.tmp.img
 	$(CP) $(EMHFCOREDIR)/hypervisor.tmp.img $(INSTALLDIR)/hypervisor-$(TARGET_HWPLATFORM).bin
-	$(RM) -rf $(EMHFCOREDIR)/hypervisor.tmp.img 
+	#$(RM) -rf $(EMHFCOREDIR)/hypervisor.tmp.img 
 
 # cleanup rules
 .PHONY: clean 
 clean: 
-	#cd runtime && $(MAKE) -w clean
-  
+	cd runtime && $(MAKE) -w clean
+	cd sl && $(MAKE) -w clean
 	cd init && $(MAKE) -w clean
 	cd libcommon && $(MAKE) -w clean
-	cd sl && $(MAKE) -w clean
-
+	

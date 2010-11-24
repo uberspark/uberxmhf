@@ -2,7 +2,7 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files
-AS_SOURCES = slheader.S
+AS_SOURCES = slheader.S  slsup.S
 C_SOURCES = sl.c 
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
