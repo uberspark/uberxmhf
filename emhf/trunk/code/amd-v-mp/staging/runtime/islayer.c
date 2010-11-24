@@ -291,11 +291,11 @@ handle_swint(struct vmcb_struct *vmcb, struct regs *r){
 
 	if(op1 == 0xCD){
 		if(op2 == 0x15){
-			printf("\nINT15: EAX=0x%08X", vmcb->rax);
+			//printf("\nINT15: EAX=0x%08X", vmcb->rax);
 			if(g_islayer.ine820handler && (u32)vmcb->rax != 0xE820){
 				g_islayer.ine820handler=0;
 				vmcb->general1_intercepts &= ~(u32) GENERAL1_INTERCEPT_SWINT;
-				printf("\ndelinking SWINT...");
+				printf("\nDone with INT 15h trapping.");
 			}
 			
 			if((u32)vmcb->rax == 0xE820){
@@ -315,10 +315,10 @@ handle_swint(struct vmcb_struct *vmcb, struct regs *r){
 					HALT();				
 				}
 			
-				printf("\nECX=%u", r->ecx);
+				//printf("\nECX=%u", r->ecx);
 			
-				printf("\nreturning for index=%u", r->ebx);
-				printf("\nES=0x%04X, DI=0x%04X", vmcb->es.base, (u16)r->edi);
+				//printf("\nreturning for index=%u", r->ebx);
+				//printf("\nES=0x%04X, DI=0x%04X", vmcb->es.base, (u16)r->edi);
 				memcpy((void *)((u32)((vmcb->es.base)+(u16)r->edi)), (void *)&grube820list[r->ebx],
 					sizeof(GRUBE820));
 				r->ebx=r->ebx+1;
@@ -334,7 +334,7 @@ handle_swint(struct vmcb_struct *vmcb, struct regs *r){
 					vmcb->rflags &= ~((u64)0x1);
 				}
 
-				printf("\nnext continuation value=%u", r->ebx);
+				//printf("\nnext continuation value=%u", r->ebx);
 				vmcb->eventinj.bytes=0;
 				vmcb->rip+=2;
 				return;
@@ -348,7 +348,7 @@ handle_swint(struct vmcb_struct *vmcb, struct regs *r){
 		vmcb->eventinj.fields.v=1;
 		vmcb->rip+=2;
 	}else{
-		printf("\nSWINT:0x%02X 0x%02X", op1, op2);
+		printf("\nUnhandled SWINT:0x%02X 0x%02X", op1, op2);
 		HALT();
 	}
 }

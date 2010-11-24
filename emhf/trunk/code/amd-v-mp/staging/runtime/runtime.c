@@ -342,7 +342,6 @@ void cstartup(void){
 	init_uart();
 #endif
 	printf("\nruntime initializing...");
-	HALT();
         
   init_runtime_globals(&g_runtime);
   g_runtime.skinit_status_flag = 1; // want to preserve skinit_status_flag
@@ -382,7 +381,6 @@ void cstartup(void){
   //setup vcpus
   setupvcpus(midtable, g_runtime.midtable_numentries);
 
-  
   //wake up APS
   if(g_runtime.midtable_numentries > 1)
     wakeupAPs();

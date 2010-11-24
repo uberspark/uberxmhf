@@ -190,3 +190,5 @@ sl_startnew:
 	.long	0																//numCPUEntries
 	.fill (SIZE_STRUCT_PCPU * MAX_PCPU_ENTRIES), 1, 0	//cpu table buffer
 	.long 0																//size of the runtime image		
+	.long 0																//guest OS boot module base
+	.long 0																//guest OS boot module size

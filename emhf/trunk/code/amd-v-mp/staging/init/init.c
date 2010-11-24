@@ -381,9 +381,11 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize){
 //slbase= physical memory address of start of sl
 void do_drtm(u32 cpu_vendor, u32 slbase){
 	if(cpu_vendor == CPU_VENDOR_AMD){
+#ifdef __MP_VERSION__  
 		//send INIT IPI to all APs so that SKINIT can complete successfully
 		send_init_ipi_to_all_APs();
 		printf("\nINIT(early): sent INIT IPI to APs");
+#endif  
 
   	//our secure loader is the first 64K of the hypervisor image
   	printf("\nINIT(early): transferring control to SL...");
@@ -499,7 +501,7 @@ void cstartup(multiboot_info_t *mbi){
   mods_count = mbi->mods_count;
 
 	printf("\nINIT(early): initializing, total modules=%u", mods_count);
-  ASSERT(mods_count == 2);  //runtime and OS boot sector for the time-being
+  //ASSERT(mods_count == 2);  //runtime and OS boot sector for the time-being
 
 
 	//check CPU type (Intel vs AMD)
@@ -557,6 +559,8 @@ void cstartup(multiboot_info_t *mbi){
 		slpb->numCPUEntries = pcpus_numentries;
 		memcpy((void *)&slpb->pcpus, (void *)&pcpus, (sizeof(PCPU) * pcpus_numentries));
 		slpb->runtime_size = (mod_array[0].mod_end - mod_array[0].mod_start) - PAGE_SIZE_2M;  	
+		slpb->runtime_osbootmodule_base = mod_array[1].mod_start;
+		slpb->runtime_osbootmodule_size = (mod_array[1].mod_end - mod_array[1].mod_start); 
 	}
 
 	//switch to MP mode
@@ -574,7 +578,8 @@ void cstartup(multiboot_info_t *mbi){
   	setupvcpus(midtable, midtable_numentries);
 	
  		//wakeup all APs
-    wakeupAPs();
+    if(midtable_numentries > 1)
+			wakeupAPs();
 
 		//fall through and enter mp_cstartup via init_core_lowlevel_setup
 		init_core_lowlevel_setup();

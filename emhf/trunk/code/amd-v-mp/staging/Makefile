@@ -100,17 +100,15 @@ all:
 
 	#make runtime
 	cd runtime && $(MAKE) -w all
-	#cd runtime && gzip -c runtime.bin > runtime.bin.gz
-
 
  	# copy the init image to installation location
 	$(CP) $(EMHFCOREDIR)/init/init.bin $(INSTALLDIR)/init-$(TARGET_HWPLATFORM).bin
 	
-	
-	# concatenate 64K sl image and runtime image and copy to installation loc.
+	# concatenate sl image and runtime image and copy to installation loc.
 	$(CAT) $(EMHFCOREDIR)/sl/sl.bin $(EMHFCOREDIR)/runtime/runtime.bin > $(EMHFCOREDIR)/hypervisor.tmp.img
-	$(CP) $(EMHFCOREDIR)/hypervisor.tmp.img $(INSTALLDIR)/hypervisor-$(TARGET_HWPLATFORM).bin
-	#$(RM) -rf $(EMHFCOREDIR)/hypervisor.tmp.img 
+	gzip -c $(EMHFCOREDIR)/hypervisor.tmp.img > $(EMHFCOREDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz
+	$(RM) -rf $(EMHFCOREDIR)/hypervisor.tmp.img 
+	$(CP) $(EMHFCOREDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz $(INSTALLDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz
 
 # cleanup rules
 .PHONY: clean 

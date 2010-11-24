@@ -148,6 +148,9 @@ void slmain(u32 baseaddr){
 	printf("\n	numCPUEntries=%u", slpb->numCPUEntries);
 	printf("\n	pcpus at 0x%08x", &slpb->pcpus);
 	printf("\n	runtime size= %u bytes", slpb->runtime_size);
+	printf("\n	OS bootmodule at 0x%08x, size=%u bytes", 
+		slpb->runtime_osbootmodule_base, slpb->runtime_osbootmodule_size);
+	
   //debug, dump E820 and MP table
  	printf("\n	e820map:\n");
   {
@@ -202,17 +205,16 @@ void slmain(u32 baseaddr){
   	lpb->XtVmmRuntimeSize = slpb->runtime_size;
 
 	  //store revised E820 map and number of entries
-	  memcpy((void *)lpb->XtVmmE820Buffer, (void *)&slpb->e820map, (sizeof(GRUBE820) * slpb->numE820Entries));
+	  memcpy((void *)((u32)lpb->XtVmmE820Buffer - __TARGET_BASE + PAGE_SIZE_2M), (void *)&slpb->e820map, (sizeof(GRUBE820) * slpb->numE820Entries));
   	lpb->XtVmmE820NumEntries = slpb->numE820Entries; 
 
 		//store CPU table and number of CPUs
-    memcpy((void *)lpb->XtVmmMPCpuinfoBuffer, (void *)&slpb->pcpus, (sizeof(PCPU) * slpb->numCPUEntries));
+    memcpy((void *)((u32)lpb->XtVmmMPCpuinfoBuffer - __TARGET_BASE + PAGE_SIZE_2M), (void *)&slpb->pcpus, (sizeof(PCPU) * slpb->numCPUEntries));
   	lpb->XtVmmMPCpuinfoNumEntries = slpb->numCPUEntries; 
 
    	//setup guest OS boot module info in LPB	
-		//TODO
-		//lpb->XtGuestOSBootModuleBase=;
-		//lpb->XtGuestOSBootModuleSize=;
+		lpb->XtGuestOSBootModuleBase=slpb->runtime_osbootmodule_base;
+		lpb->XtGuestOSBootModuleSize=slpb->runtime_osbootmodule_size;
 
 	 	//setup runtime IDT
 		{

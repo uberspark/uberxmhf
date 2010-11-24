@@ -47,7 +47,6 @@ XtLdrTransferControlToRtm:
 	popf
 	
 	
-	int $0x03
 //we will patch the entrypoint to the hypervisor runtime before
 //transfering control. not the most elegant approach, but since our
 //sl CS is segmented, the flat runtime CS can only be reloaded with
