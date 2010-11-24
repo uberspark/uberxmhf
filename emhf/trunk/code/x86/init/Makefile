@@ -25,7 +25,7 @@ all: $(OBJECTS)
 	$(LD) --oformat=pe-i386 --image-base=0x1E00000 -T init.lds.S -o init.exe $(OBJECTS) $(OBJECTS_PRECOMPILED)
 	$(CP) init.exe init_syms.exe
 	$(STRIP) -s init.exe
-	$(OBJCOPY) --input-format=pe-i386 --output-format=binary init.exe init.bin
+	$(OBJCOPY) --input-format=pe-i386 --output-format=binary init.exe init-$(TARGET_HWPLATFORM).bin
 
 %.o: %.S $(I_SOURCES) Makefile ../Makefile
 	$(CC) -c $(ASFLAGS) -o $@ $<
