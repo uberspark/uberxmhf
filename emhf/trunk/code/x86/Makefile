@@ -18,9 +18,9 @@ all:
 	cd runtime && $(MAKE) -w all
 
 	# concatenate sl image and runtime image 
-	$(CAT) $(EMHFCOREDIR)/sl/sl.bin $(EMHFCOREDIR)/runtime/runtime.bin > $(EMHFCOREDIR)/hypervisor.tmp.img
-	gzip -c $(EMHFCOREDIR)/hypervisor.tmp.img > $(EMHFCOREDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz
-	$(RM) -rf $(EMHFCOREDIR)/hypervisor.tmp.img 
+	$(CAT) ./sl/sl.bin ./runtime/runtime.bin > ./hypervisor.tmp.img
+	gzip -c ./hypervisor.tmp.img > ./hypervisor-$(TARGET_HWPLATFORM).bin.gz
+	$(RM) -rf ./hypervisor.tmp.img 
 
 # cleanup rules
 .PHONY: clean 
