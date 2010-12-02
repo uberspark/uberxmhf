@@ -41,7 +41,8 @@
 #define CAN_USE_HEAP 				0x81 				//loadflag to indicate that heap is usable
 
 //kernel command line to be passed
-char linux_kernel_cmdline[] = "ro root=/dev/sda8 resume=/dev/sda10 maxcpus=1 mem=1024M no_console_suspend earlyprintk=1"; 
+char linux_kernel_cmdline[] = "ro root=/dev/sda8 resume=/dev/sda9 maxcpus=1 mem=1024M no_console_suspend earlyprintk=1 nomodeset apm=off acpi=off edd=off pci=noacpi noapic"; 
+//char linux_kernel_cmdline[] = "ro root=/dev/sda8 resume=/dev/sda10 maxcpus=1 mem=1024M no_console_suspend earlyprintk=1 edd=off noapic";
 
 struct linux_setup_header {
   u8 setup_sects;		

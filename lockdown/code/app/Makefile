@@ -3,15 +3,15 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # app-specific configuration options
-export LDN_HYPERSWITCHING := y
+export LDN_HYPERSWITCHING := n
 export LDN_HYPERPARTITIONING := n
-export LDN_APPROVEDEXEC := n
+export LDN_APPROVEDEXEC := y
 export LDN_SSLPA := n
 # test modes
 	# fwreset, experiment with minimal device reset and cycle through GRUB
 	export LDN_TEST_FWRESET	:=	n
 	# mload, experiment with manual bzImage/initrd-ramfs load without GRUB
-	export LDN_TEST_MLOAD	:=	y
+	export LDN_TEST_MLOAD	:=	n
 	
 
 ifeq ($(LDN_HYPERSWITCHING), y)

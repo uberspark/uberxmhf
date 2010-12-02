@@ -28,6 +28,27 @@ sechyp-lockdown
 		..\app\hp_sdisk_ata.c
 		..\emhfcore\intel-vt-mp\runtime\islayer.c
 		..\emhfcore\intel-vt-mp\debug\uart.c
+		..\emhfcore\intel-vt-mp\include\libemhf.h
+		..\app\linuxrelc.c
+		..\app\fwreset.c
+		..\emhfcore\intel-vt-mp\runtime\islayer_ug.c
+		..\emhfcore\intel-vt-mp\common\string.c
+		..\emhfcore\intel-vt-mp\runtime\Makefile
+		..\emhfcore\intel-vt-mp\runtime\islayer_v86monitor.c
+		..\emhfcore\intel-vt-mp\runtime\islayersup.S
+		..\emhfcore\intel-vt-mp\include\acpi.h
+		..\emhfcore\intel-vt-mp\loader\smp.c
+		..\emhfcore\intel-vt-mp\include\hardware_paging.h
+		..\emhfcore\intel-vt-mp\include\vtx.h
+		..\emhfcore\intel-vt-mp\include\apic.h
+		..\emhfcore\intel-vt-mp\runtime\apic.c
+		..\emhfcore\intel-vt-mp\loader\Makefile
+		..\emhfcore\intel-vt-mp\runtime\libemhf.c
+		..\emhfcore\intel-vt-mp\runtime\globaldata.c
+		..\emhfcore\intel-vt-mp\runtime\v86monitorsup.S
+		..\emhfcore\intel-vt-mp\runtime\v86monitor.c
+		..\emhfcore\intel-vt-mp\runtime\hardware_paging.c
+		..\app\approvedexec.c
 [Open project files]
 0=..\Makefile
 1=..\app\Makefile
@@ -55,15 +76,20 @@ sechyp-lockdown
 23=..\emhfcore\intel-vt-mp\loader\smp.c
 24=..\app\acpi.c
 25=..\emhfcore\intel-vt-mp\include\acpi.h
+26=..\app\include\lockdown.h
+27=..\app\fwreset.c
+28=..\app\linuxrelc.c
+29=..\emhfcore\intel-vt-mp\common\string.c
+30=..\app\approvedexec.c
 [Selected Project Files]
 Main=
-Selected=..\emhfcore\intel-vt-mp\runtime\islayer.c
+Selected=..\app\approvedexec.c
 [..\Makefile]
-TopLine=12
-Caret=25,36
+TopLine=1
+Caret=1,1
 [..\app\Makefile]
-TopLine=28
-Caret=24,50
+TopLine=1
+Caret=29,8
 [..\emhfcore\intel-vt-mp\runtime\Makefile]
 TopLine=1
 Caret=1,1
@@ -71,11 +97,11 @@ Caret=1,1
 TopLine=1
 Caret=1,28
 [..\emhfcore\intel-vt-mp\runtime\islayer.c]
-TopLine=1
-Caret=29,11
+TopLine=698
+Caret=1,715
 [..\emhfcore\intel-vt-mp\runtime\runtime.c]
-TopLine=440
-Caret=24,464
+TopLine=280
+Caret=6,299
 [..\emhfcore\intel-vt-mp\runtime\v86monitor.c]
 TopLine=139
 Caret=62,144
@@ -83,32 +109,32 @@ Caret=62,144
 TopLine=304
 Caret=22,332
 [..\emhfcore\intel-vt-mp\runtime\islayersup.S]
-TopLine=1
-Caret=2,22
+TopLine=66
+Caret=32,86
 [..\emhfcore\intel-vt-mp\runtime\v86monitorsup.S]
 TopLine=119
 Caret=1,135
 [..\emhfcore\intel-vt-mp\runtime\islayer_v86monitor.c]
-TopLine=176
-Caret=1,215
+TopLine=852
+Caret=29,873
 [..\emhfcore\intel-vt-mp\runtime\islayer_ug.c]
-TopLine=167
-Caret=1,196
+TopLine=130
+Caret=1,151
 [..\emhfcore\intel-vt-mp\runtime\globaldata.c]
 TopLine=226
 Caret=1,240
 [..\emhfcore\intel-vt-mp\include\libemhf.h]
 TopLine=1
-Caret=60,26
+Caret=1,36
 [..\emhfcore\intel-vt-mp\runtime\libemhf.c]
 TopLine=116
 Caret=59,146
 [..\app\appmain.c]
-TopLine=1
-Caret=1,9
+TopLine=263
+Caret=8,283
 [..\emhfcore\intel-vt-mp\include\target.h]
-TopLine=423
-Caret=56,432
+TopLine=1
+Caret=1,1
 [..\emhfcore\intel-vt-mp\loader\Makefile]
 TopLine=1
 Caret=27,6
@@ -136,3 +162,18 @@ Caret=29,19
 [..\emhfcore\intel-vt-mp\include\acpi.h]
 TopLine=1
 Caret=80,8
+[..\app\include\lockdown.h]
+TopLine=1
+Caret=1,1
+[..\app\fwreset.c]
+TopLine=118
+Caret=20,156
+[..\app\linuxrelc.c]
+TopLine=86
+Caret=23,128
+[..\emhfcore\intel-vt-mp\common\string.c]
+TopLine=44
+Caret=1,44
+[..\app\approvedexec.c]
+TopLine=130
+Caret=1,130
