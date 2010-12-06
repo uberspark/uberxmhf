@@ -261,7 +261,7 @@ void nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts_base){
 //---setup vcpu structures for all the cores including BSP----------------------
 // XXX TODO midtable_numentries is a parameter to this function,
 // even though it is a global. Need to clean that up.
-void setupvcpus(MIDTAB *midtable, u32 midtable_numentries){
+void setupvcpus(u32 cpu_vendor, MIDTAB *midtable, u32 midtable_numentries){
   u32 i;
   extern u32 __cpustacks[], __vcpubuffers[];
   extern u32 svm_hsave_buffers[], svm_vmcb_buffers[];
@@ -304,6 +304,8 @@ void setupvcpus(MIDTAB *midtable, u32 midtable_numentries){
     vcpu = (VCPU *)((u32)__vcpubuffers + (u32)(i * SIZE_STRUCT_VCPU));
     memset((void *)vcpu, 0, sizeof(VCPU));
     
+    vcpu->cpu_vendor = cpu_vendor;
+    
     vcpu->esp = ((u32)__cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;    
     vcpu->hsave_vaddr_ptr = ((u32)svm_hsave_buffers + (i * 8192));
     vcpu->vmcb_vaddr_ptr = ((u32)svm_vmcb_buffers + (i * 8192));
@@ -337,11 +339,40 @@ void setupvcpus(MIDTAB *midtable, u32 midtable_numentries){
 
 //---runtime main---------------------------------------------------------------
 void cstartup(void){
+	u32 cpu_vendor;
+
 	//setup debugging	
 #ifdef __DEBUG_SERIAL__	
 	init_uart();
 #endif
 	printf("\nruntime initializing...");
+
+	//check CPU type (Intel vs AMD)
+  {
+    u32 vendor_dword1, vendor_dword2, vendor_dword3;
+	  asm(	"xor	%%eax, %%eax \n"
+				  "cpuid \n"		
+				  "mov	%%ebx, %0 \n"
+				  "mov	%%edx, %1 \n"
+				  "mov	%%ecx, %2 \n"
+			     :	//no inputs
+					 : "m"(vendor_dword1), "m"(vendor_dword2), "m"(vendor_dword3)
+					 : "eax", "ebx", "ecx", "edx" );
+
+		if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
+				&& vendor_dword3 == AMD_STRING_DWORD3)
+			cpu_vendor = CPU_VENDOR_AMD;
+		else if(vendor_dword1 == INTEL_STRING_DWORD1 && vendor_dword2 == INTEL_STRING_DWORD2
+				&& vendor_dword3 == INTEL_STRING_DWORD3)
+   	 	cpu_vendor = CPU_VENDOR_INTEL;
+		else{
+			printf("\nRuntime: Fatal error, unrecognized CPU! 0x%08x:0x%08x:0x%08x",
+				vendor_dword1, vendor_dword2, vendor_dword3);
+			HALT();
+		}   	 	
+  }
+
+
         
   init_runtime_globals(&g_runtime);
   g_runtime.skinit_status_flag = 1; // want to preserve skinit_status_flag
@@ -378,8 +409,8 @@ void cstartup(void){
     }
   }
 
-  //setup vcpus
-  setupvcpus(midtable, g_runtime.midtable_numentries);
+  //setup vcpus [There are architecture dependent components here]
+  setupvcpus(cpu_vendor, midtable, g_runtime.midtable_numentries);
 
   //wake up APS
   if(g_runtime.midtable_numentries > 1)
@@ -650,6 +681,22 @@ void allcpus_common_start(VCPU *vcpu){
     while(!vcpu->sipireceived);
     printf("\nAP(0x%02x): SIPI signal received, vector=0x%02x", vcpu->id, vcpu->sipivector);
   }
+  
+  
+  //point to diffrentiate Intel vs AMD
+  
+	//outline of steps
+	//1. initialize isolation layer (initSVM and initVMCB in case of AMD)
+	//2. call app main (common to AMD and Intel)
+	//3. wait for all cores to cycle through app main (common to AMD and Intel)
+	//4. if BSP setup sipi (different for Intel and AMD)
+	//5. if AP wait for sipi (different for Intel and AMD)
+	//6. enter HVM (different for BSP and AP but common for Intel and AMD)
+	
+	if(vcpu->cpu_vendor == CPU_VENDOR_INTEL){
+		printf("\nCPU(0x%02x): Intel integration still WiP, HALT!", vcpu->id);
+		HALT();
+	}
   
   //initialize SVM
   initSVM(vcpu);

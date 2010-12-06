@@ -3,7 +3,7 @@ Compilator.SaveAll=0
 Compilator.Capture=0
 Compilator.HideOutput=0
 Compilator.LogType=0
-DefaultDir=E:\amit\external\hyp\emhf\trunk\code\amd-v-mp\staging
+DefaultDir=E:\amit\external\hyp\emhfapp\trunk\code\emhfcore\x86
 DefaultCPIndex=0
 LogtoEnd=1
 DontOpen=0
@@ -22,6 +22,8 @@ emhf-init
 		..\include\target.h
 		..\include\multiboot.h
 		..\include\globals.h
+		..\init\smp.c
+		..\include\processor.h
 [Open project files]
 0=..\Makefile
 1=..\init\Makefile
@@ -32,12 +34,14 @@ emhf-init
 6=..\include\target.h
 7=..\init\initsup.S
 8=..\include\globals.h
+9=..\include\processor.h
+10=..\init\smp.c
 [Selected Project Files]
 Main=
-Selected=..\init\init.c
+Selected=..\init\smp.c
 [..\Makefile]
-TopLine=73
-Caret=1,115
+TopLine=33
+Caret=1,33
 [..\init\Makefile]
 TopLine=1
 Caret=32,5
@@ -45,8 +49,8 @@ Caret=32,5
 TopLine=8
 Caret=17,31
 [..\init\init.c]
-TopLine=498
-Caret=1,506
+TopLine=143
+Caret=3,170
 [..\init\init.lds.S]
 TopLine=1
 Caret=15,8
@@ -62,3 +66,9 @@ Caret=1,134
 [..\include\globals.h]
 TopLine=60
 Caret=1,92
+[..\include\processor.h]
+TopLine=1
+Caret=28,15
+[..\init\smp.c]
+TopLine=1
+Caret=1,1

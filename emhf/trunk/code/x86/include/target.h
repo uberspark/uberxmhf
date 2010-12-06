@@ -91,7 +91,7 @@
 #define SIZE_STRUCT_MIDTAB  (8)
 #define MAX_MIDTAB_ENTRIES  (MAX_PCPU_ENTRIES)
 
-#define SIZE_STRUCT_VCPU    (44)
+#define SIZE_STRUCT_VCPU    (48)
 #define MAX_VCPU_ENTRIES    (MAX_PCPU_ENTRIES)
 
 #define AP_BOOTSTRAP_CODE_SEG 0x1000
@@ -151,6 +151,7 @@ typedef struct {
   u32 sipivector;         //SIPI vector 
   u32 sipireceived;       //SIPI received indicator, 1 if yes
   u32 nmiinhvm;           //this is 1 if there was a NMI when in HVM, else 0        
+	u32 cpu_vendor;					//Intel or AMD
 } __attribute__((packed)) VCPU;
 
 typedef struct {

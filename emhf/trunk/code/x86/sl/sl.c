@@ -169,7 +169,7 @@ void slmain(u32 baseaddr){
       printf("\n		CPU #%u: bsp=%u, lapic_id=0x%02x", i, slpb->pcpus[i].isbsp, slpb->pcpus[i].lapic_id);
   }
 
-	
+
 	//check for unsuccessful DRT
 	//TODO
 	

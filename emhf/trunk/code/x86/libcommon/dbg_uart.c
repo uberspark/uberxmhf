@@ -43,8 +43,11 @@
 
 #include <target.h>
 
-#define PORT 0x3f8
-
+#if defined (__DEBUG_SERIAL_AMT__)
+	#define PORT 0x6080
+#else
+	#define PORT 0x3f8
+#endif
 /* Register offsets */
 #define RBR             0x00    /* receive buffer       */
 #define THR             0x00    /* transmit holding     */

@@ -61,6 +61,7 @@ u32 midtable_numentries=0;
 
 extern init_core_lowlevel_setup(void);
 
+/*
 //---MP config table handling---------------------------------------------------
 void dealwithMP(void){
   MPFP *mpfp;
@@ -201,6 +202,16 @@ MPFP *MP_GetFPStructure(void){
   
   return (MPFP *)0;  
 }
+*/
+
+//---MP config table handling---------------------------------------------------
+void dealwithMP(void){
+	if(!smp_getinfo(&pcpus, &pcpus_numentries)){
+		printf("\nFatal error with SMP detection. Halting!");
+		HALT();
+	}
+}
+
 
 //---microsecond delay----------------------------------------------------------
 void udelay(u32 usecs){
@@ -379,32 +390,47 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize){
 //inputs: 
 //cpu_vendor = intel or amd
 //slbase= physical memory address of start of sl
-void do_drtm(u32 cpu_vendor, u32 slbase){
-	if(cpu_vendor == CPU_VENDOR_AMD){
-#ifdef __MP_VERSION__  
-		//send INIT IPI to all APs so that SKINIT can complete successfully
+void do_drtm(VCPU *vcpu, u32 slbase){
+	#ifdef __MP_VERSION__  
+		//send INIT IPI to all APs 
 		send_init_ipi_to_all_APs();
 		printf("\nINIT(early): sent INIT IPI to APs");
-#endif  
+	#endif  
 
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
+		//issue SKINIT
   	//our secure loader is the first 64K of the hypervisor image
   	printf("\nINIT(early): transferring control to SL...");
 		skinit((u32)slbase);
 
+	}else{
+		//TODO: issue GETSEC[SENTER], for now just transfer control via jump
+  	printf("\nINIT(early): transferring control to SL...");
+		{	
+			u32 entrypoint;
+			u16 offset;
+			offset = *((u16 *)slbase);
+			entrypoint = slbase + (u32)offset;
+			printf("\nINIT(early): SENTER stub, slbase=0x%08x, o=0x%04x, ep=0x%08x",
+				slbase, offset, entrypoint); 
+			__asm__ __volatile__("cli\r\n"
+													 "movl %0, %%eax\r\n"
+													 "movl %1, %%ebx\r\n"
+													 "call *%%ebx\r\n"	
+			  : //no outputs
+			  : "r"(slbase), "r"(entrypoint)
+			  : "eax", "ebx"
+			);
+		}
+		
 	 	printf("\nINIT(early): error(fatal), should never come here!");
 		HALT();
-  	
-	}else{
-	  printf("\nINIT(early): error(fatal), DRTM unimplemented for CPU!");
-	  HALT();
 	}	
-	                          	
-
 
 }
 
 
-void setupvcpus(MIDTAB *midtable, u32 midtable_numentries){
+void setupvcpus(u32 cpu_vendor, MIDTAB *midtable, u32 midtable_numentries){
   u32 i;
   extern u32 __cpustacks[], __vcpubuffers[];
   VCPU *vcpu;
@@ -419,6 +445,8 @@ void setupvcpus(MIDTAB *midtable, u32 midtable_numentries){
   for(i=0; i < midtable_numentries; i++){
     vcpu = (VCPU *)((u32)__vcpubuffers + (u32)(i * SIZE_STRUCT_VCPU));
     memset((void *)vcpu, 0, sizeof(VCPU));
+    
+    vcpu->cpu_vendor = cpu_vendor;
     
     vcpu->esp = ((u32)__cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;    
     vcpu->id = midtable[i].cpu_lapic_id;
@@ -575,7 +603,7 @@ void cstartup(multiboot_info_t *mbi){
   	}
 
   	//setup vcpus
-  	setupvcpus(midtable, midtable_numentries);
+  	setupvcpus(cpu_vendor, midtable, midtable_numentries);
 	
  		//wakeup all APs
     if(midtable_numentries > 1)
@@ -628,12 +656,19 @@ u32 lock_cpus_active=1; //spinlock to access the above
 //------------------------------------------------------------------------------
 //all cores enter here 
 void mp_cstartup (VCPU *vcpu){
+	//sanity, we should be an Intel or AMD core
+	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_INTEL ||
+			vcpu->cpu_vendor == CPU_VENDOR_AMD);
 
   if(isbsp()){
-		printf("\nBSP(0x%02x): Clearing microcode...", vcpu->id);
-		clearMicrocode(vcpu);
-		
-    printf("\nBSP(0x%02x): Microcode clear. Rallying APs...", vcpu->id);
+		//clear microcode if AMD CPU
+		if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
+			printf("\nBSP(0x%02x): Clearing microcode...", vcpu->id);
+			clearMicrocode(vcpu);
+			printf("\nBSP(0x%02x): Microcode clear.", vcpu->id);
+		}
+		 
+    printf("\nBSP(0x%02x): Rallying APs...", vcpu->id);
 
     //increment a CPU to account for the BSP
     spin_lock(&lock_cpus_active);
@@ -644,24 +679,26 @@ void mp_cstartup (VCPU *vcpu){
     //that all APs have been successfully started
     while(cpus_active < midtable_numentries);
     
-    printf("\nBSP(0x%02x): APs ready, issuing SKINIT...", vcpu->id);
-    do_drtm(cpu_vendor, hypervisor_image_baseaddress); // this function will not return
+    printf("\nBSP(0x%02x): APs ready, doing DRTM...", vcpu->id);
+    do_drtm(vcpu, hypervisor_image_baseaddress); // this function will not return
     
     printf("\nBSP(0x%02x): FATAL, should never be here!", vcpu->id);
     HALT();
     
   }else{
-    //we are an AP, so we need to first clear our microcode
-		//and then update the AP startup counter
-    //finally we wait for SKINIT
-    printf("\nAP(0x%02x): Clearing microcode...", vcpu->id);
-    clearMicrocode(vcpu);
+    //clear microcode if AMD CPU
+		if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
+    	printf("\nAP(0x%02x): Clearing microcode...", vcpu->id);
+    	clearMicrocode(vcpu);
+    	printf("\nAP(0x%02x): Microcode clear.", vcpu->id);
+    }
     
+		//update the AP startup counter
     spin_lock(&lock_cpus_active);
     cpus_active++;
     spin_unlock(&lock_cpus_active);
 
-    printf("\nAP(0x%02x): Microcode clear. Waiting for SKINIT...", vcpu->id);
+		printf("\nAP(0x%02x): Waiting for DRTM establishment...", vcpu->id);
  
 		HALT();               
   }

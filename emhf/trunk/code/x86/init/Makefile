@@ -3,7 +3,7 @@
 
 # source files
 AS_SOURCES = header.S initsup.S
-C_SOURCES = init.c 
+C_SOURCES = init.c smp.c
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))

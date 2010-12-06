@@ -3,7 +3,7 @@ Compilator.SaveAll=0
 Compilator.Capture=0
 Compilator.HideOutput=0
 Compilator.LogType=0
-DefaultDir=E:\amit\external\hyp\emhf\trunk\code\amd-v-mp\staging
+DefaultDir=E:\amit\external\hyp\emhfapp\trunk\code\emhfcore\x86
 DefaultCPIndex=0
 LogtoEnd=1
 DontOpen=0
@@ -30,15 +30,14 @@ emhf-sl
 3=..\sl\sl.c
 4=..\sl\sl.lds.S
 5=..\include\target.h
-6=..\..\..\..\..\docs\emhf_design_notes.txt
-7=..\include\paging.h
-8=..\sl\slheader.S
+6=..\include\paging.h
+7=..\sl\slheader.S
 [Selected Project Files]
 Main=
 Selected=..\sl\slsup.S
 [..\Makefile]
-TopLine=102
-Caret=3,113
+TopLine=33
+Caret=3,33
 [..\sl\Makefile]
 TopLine=1
 Caret=33,5
@@ -54,9 +53,6 @@ Caret=18,31
 [..\include\target.h]
 TopLine=195
 Caret=50,236
-[..\..\..\..\..\docs\emhf_design_notes.txt]
-TopLine=58
-Caret=9,90
 [..\include\paging.h]
 TopLine=1
 Caret=1,1

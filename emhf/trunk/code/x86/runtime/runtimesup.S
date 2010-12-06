@@ -235,7 +235,7 @@ x_init_stack:
   .fill SIZE_STRUCT_VCPU * MAX_VCPU_ENTRIES, 1, 0
   
 	
-	.section	.svmdata
+	.section	.palign_data
 	.align 4096
 	//page tables for the runtime
   xtrac_3level_pdpt:

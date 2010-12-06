@@ -53,8 +53,8 @@ SECTIONS
  		. = ALIGN(4096);    
   } =0x9090 
 
-  .svmdata : {
-    *(.svmdata)
+  .palign_data : {
+    *(.palign_data)
  		. = ALIGN(4096);    
   } =0x9090 
   

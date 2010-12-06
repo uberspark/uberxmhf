@@ -39,7 +39,7 @@
 #include <target.h>
 #include <msr.h>
 #include <svm.h>
-
+#include <processor.h>
 
 //our C main
 .extern slmain
@@ -60,24 +60,61 @@
 .section .text
               
 	.global _sl_start
-	_sl_start:	//we get here with CS and SS as flat code and data segment 	
-						  //selectors, ESP is initialized to _sl_end, GIF=0 so we are
-						  //running with no interruptions, EFLAGS_IF=0 and paging is off
-						  //EAX = 64K aligned physical memory address where our sl was
-						  //loaded
+	_sl_start:	
 	
-	//save EAX 
+	//save EAX, for AMD and the stub SENTER DRTM this contains the
+	//64K aligned physical memory address where the sl was loaded 
 	movl %eax, %ebp
 	
-	//[DEBUG]
-	//enable HDT debugging, SKINIT disables it
-	//also clear R_INIT and DIS_A20M
+	//other assumptions: common to both Intel and AMD (?)
+	//CS and SS as flat code and data segment selectors
+	//EFLAGS_IF=0 (GIF=0 on AMD) so we are running with no interruptions
+	//CR0.PG= 0 i.e, paging is off
+	
+
+	//determine processor type, we need to perform some low-level inits
+	//after DRTM depending on the processor. for example on the AMD CPUs
+	//we need to clear R_INIT, DIS_A20M and CR_DPD in VM_CR_MSR
+sl_cpu_vendor:	
+		xor	%eax, %eax
+		cpuid		
+		cmpl $(INTEL_STRING_DWORD1), %ebx
+		jne sl_cpu_vendor_notintel
+		cmpl $(INTEL_STRING_DWORD2), %edx
+		jne sl_cpu_vendor_notintel
+		cmpl $(INTEL_STRING_DWORD3), %ecx
+		jne sl_cpu_vendor_notintel
+		movl $(CPU_VENDOR_INTEL), %esi
+		jmp sl_cpu_vendor_done
+	sl_cpu_vendor_notintel:
+		cmpl $(AMD_STRING_DWORD1), %ebx
+		jne sl_cpu_vendor_unknown
+		cmpl $(AMD_STRING_DWORD2), %edx
+		jne sl_cpu_vendor_unknown
+		cmpl $(AMD_STRING_DWORD3), %ecx
+		jne sl_cpu_vendor_unknown
+		movl $(CPU_VENDOR_AMD), %esi
+		jmp sl_cpu_vendor_done
+	sl_cpu_vendor_unknown:
+		//this should never happen, but we have a fallback in case
+		ud2
+		hlt		
+	sl_cpu_vendor_done:		
+	//%esi contains vendor CPU_VENDOR_INTEL or CPU_VENDOR_AMD
+
+	//if AMD CPU enable a few things that SKINIT disables
+	//enable HDT debugging, also clear R_INIT and DIS_A20M
+	cmpl $(CPU_VENDOR_AMD), %esi
+	jne sl_cpu_common
 	movl $(VM_CR_MSR), %ecx
 	rdmsr
 	andl $(~(1<<VM_CR_DPD)), %eax
 	andl $(~(1<<VM_CR_R_INIT)), %eax
 	andl $(~(1<<VM_CR_DIS_A20M)), %eax
 	wrmsr
+
+	//common code from now on						  
+sl_cpu_common:
 						  
 
 	//from here on we use EBP as base and variable accesses will be as offsets
