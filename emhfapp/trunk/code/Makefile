@@ -27,11 +27,13 @@
 	#MP/UP selection, y=Multiprocessor, n=Uniprocessor
   export MP_VERSION := y
 	#where you want loader and runtime binaries to go, defaults to current dir.
-	export INSTALLDIR = $(CURDIR)
+	#export INSTALLDIR = $(CURDIR)
+	export INSTALLDIR = /cygdrive/z
   #misc. configuaration w.r.t serial debugging and NPT/EPT support
 	export NESTED_PAGING := y
   export DEBUG_SERIAL := y
-  export DEBUG_VGA	:= n
+  export DEBUG_SERIAL_AMT := y
+	export DEBUG_VGA	:= n
 
 #-----configuration that typically need not be touched
   #ifeq ($(TARGET_HWPLATFORM), svm)
@@ -85,6 +87,9 @@
   endif
   ifeq ($(DEBUG_SERIAL), y)
   CFLAGS += -D__DEBUG_SERIAL__
+  endif
+  ifeq ($(DEBUG_SERIAL_AMT), y)
+  CFLAGS += -D__DEBUG_SERIAL_AMT__
   endif
   ifeq ($(DEBUG_VGA), y)
   CFLAGS += -D__DEBUG_VGA__
