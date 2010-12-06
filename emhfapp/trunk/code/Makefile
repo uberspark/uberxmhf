@@ -32,7 +32,7 @@
   #misc. configuaration w.r.t serial debugging and NPT/EPT support
 	export NESTED_PAGING := y
   export DEBUG_SERIAL := y
-  export DEBUG_SERIAL_AMT := y
+  export DEBUG_SERIAL_PORT := 0x6080
 	export DEBUG_VGA	:= n
 
 #-----configuration that typically need not be touched
@@ -87,10 +87,8 @@
   endif
   ifeq ($(DEBUG_SERIAL), y)
   CFLAGS += -D__DEBUG_SERIAL__
-  endif
-  ifeq ($(DEBUG_SERIAL_AMT), y)
-  CFLAGS += -D__DEBUG_SERIAL_AMT__
-  endif
+  CFLAGS += -DDEBUG_PORT=$(DEBUG_SERIAL_PORT)
+	endif
   ifeq ($(DEBUG_VGA), y)
   CFLAGS += -D__DEBUG_VGA__
   endif
@@ -99,6 +97,7 @@
   endif
 
 
+	
   ASFLAGS = $(CFLAGS) -D__ASSEMBLY__
 
   export CFLAGS
