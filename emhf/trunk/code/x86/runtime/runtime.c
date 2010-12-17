@@ -41,305 +41,12 @@
 #include <processor.h>
 #include <globals.h>
 
-//---notes
-// CLGI/STGI
-// GIF is set to 1 always when reset and SVM first enabled
-// if you send an NMI when GIF=0, it is held pending until GIF=1 again
-
-// so we set GIF=1 on all cores and NMI intercept as well
-// when we get the VMEXIT_NMI, we do a simple trick
-// CLGI followed by STGI this will make GIF=0 and then GIF=1 which will
-// deliver the pending NMI to the current IDT whichi will xfer control
-// to the exception handler within the hypervisor where we quiesce.
-// upon resuming the hypervisor or guest resumes normally!
-
-//---globals and externs--------------------------------------------------------
-// XXX TODO: Move these into globals.h
-extern u32 _xtlpb[];
-extern u32 __grube820buffer[], __mp_cpuinfo[], __midtable[];
-extern u32 svm_iopm[];
-extern u32 svm_msrpm[];
-
-PXTLPB	lpb=(PXTLPB)_xtlpb;
-GRUBE820 *grube820list = (GRUBE820 *)__grube820buffer;
-PCPU *pcpus= (PCPU *)__mp_cpuinfo;
-
-MIDTAB *midtable = (MIDTAB *)__midtable;
-
-RUNTIME_GLOBALS g_runtime; // from globals.h
-                    
-
-//---forward declarations-------------------------------------------------------
-void cstartup(void);
-u32 isbsp(void);
-
-
-//---IOPM Bitmap initialization routine-----------------------------------------
-void initIOinterception(VCPU *vcpu, struct vmcb_struct *vmcb){
-  //clear bitmap buffer
-  memset((void *)svm_iopm, 0, SIZEOF_IOPM_BITMAP);
-  
-  //setup default intercept for PCI data port
-  sechyp_iopm_set_write(vcpu, PCI_CONFIG_DATA_PORT, 4);
-  
-  //setup vmcb iopm
-  vmcb->iopm_base_pa = __hva2spa__((u32)svm_iopm);
-}   
-
-//---MSRPM Bitmap initialization routine----------------------------------------
-void initMSRinterception(VCPU *vcpu, struct vmcb_struct *vmcb){
-  //clear bitmap buffer
-  memset((void *)svm_msrpm, 0, SIZEOF_MSRPM_BITMAP);
-  
-  //[test]setup default intercept for MSR_LAPIC
-  sechyp_msrpm_set_write(vcpu, MSR_EFER);
-    
-  //setup vmcb msrpm
-  vmcb->msrpm_base_pa = __hva2spa__((u32)svm_msrpm);
-}   
-
-
-//---function to obtain the vcpu of the currently executing core----------------
-//note: this always returns a valid VCPU pointer
-VCPU *getvcpu(void){
-  int i;
-  u32 eax, edx, *lapic_reg;
-  u32 lapic_id;
-  
-  //read LAPIC id of this core
-  rdmsr(MSR_APIC_BASE, &eax, &edx);
-  ASSERT( edx == 0 ); //APIC is below 4G
-  eax &= (u32)0xFFFFF000UL;
-  lapic_reg = (u32 *)((u32)eax+ (u32)LAPIC_ID);
-  lapic_id = *lapic_reg;
-  //printf("\n%s: lapic base=0x%08x, id reg=0x%08x", __FUNCTION__, eax, lapic_id);
-  lapic_id = lapic_id >> 24;
-  //printf("\n%s: lapic_id of core=0x%02x", __FUNCTION__, lapic_id);
-  
-  for(i=0; i < (int)g_runtime.midtable_numentries; i++){
-    if(midtable[i].cpu_lapic_id == lapic_id)
-        return( (VCPU *)midtable[i].vcpu_vaddr_ptr );
-  }
-
-  printf("\n%s: fatal, unable to retrieve vcpu for id=0x%02x", __FUNCTION__, lapic_id);
-  HALT();
-}
-
-
-
-//---microsecond delay----------------------------------------------------------
-void udelay(u32 usecs){
-  u8 val;
-  u32 latchregval;  
-
-  //enable 8254 ch-2 counter
-  val = inb(0x61);
-  val &= 0x0d; //turn PC speaker off
-  val |= 0x01; //turn on ch-2
-  outb(val, 0x61);
-  
-  //program ch-2 as one-shot
-  outb(0xB0, 0x43);
-  
-  //compute appropriate latch register value depending on usecs
-  latchregval = (1193182 * usecs) / 1000000;
-
-  //write latch register to ch-2
-  val = (u8)latchregval;
-  outb(val, 0x42);
-  val = (u8)((u32)latchregval >> (u32)8);
-  outb(val , 0x42);
-  
-  //wait for countdown
-  while(!(inb(0x61) & 0x20));
-  
-  //disable ch-2 counter
-  val = inb(0x61);
-  val &= 0x0c;
-  outb(val, 0x61);
-}
-
-
-
-//---wakeupAPs------------------------------------------------------------------
-void wakeupAPs(void){
-  u32 eax, edx;
-  volatile u32 *icr;
-  
-  //read LAPIC base address from MSR
-  rdmsr(MSR_APIC_BASE, &eax, &edx);
-  ASSERT( edx == 0 ); //APIC is below 4G
-  printf("\nLAPIC base and status=0x%08x", eax);
-    
-  icr = (u32 *) (((u32)eax & 0xFFFFF000UL) + 0x300);
-    
-  {
-    //extern u32 ap_code_start[], ap_code_end[];
-    //memcpy(0x10000, (void *)ap_code_start, (u32)ap_code_end - (u32)ap_code_start + 1);
-    extern u32 _ap_bootstrap_start[], _ap_bootstrap_end[];
-    extern u32 _ap_cr3_value, _ap_cr4_value;
-    _ap_cr3_value = read_cr3();
-    _ap_cr4_value = read_cr4();
-    memcpy((void *)0x10000, (void *)_ap_bootstrap_start, (u32)_ap_bootstrap_end - (u32)_ap_bootstrap_start + 1);
-  
-  }
-
-  //our test code is at 1000:0000, we need to send 10 as vector
-  //send INIT
-  printf("\nSending INIT IPI to all APs...");
-  *icr = 0x000c4500UL;
-  udelay(10000);
-  //wait for command completion
-  {
-    u32 val;
-    do{
-      val = *icr;
-    }while( (val & 0x1000) );
-  }
-  printf("Done.");
-
-  //send SIPI (twice as per the MP protocol)
-  {
-    int i;
-    for(i=0; i < 2; i++){
-      printf("\nSending SIPI-%u...", i);
-      *icr = 0x000c4610UL;
-      udelay(200);
-        //wait for command completion
-        {
-          u32 val;
-          do{
-            val = *icr;
-          }while( (val & 0x1000) );
-        }
-        printf("Done.");
-      }
-  }    
-    
-  printf("\nAPs should be awake!");
-}
-
-
-
-#ifdef __NESTED_PAGING__
-//---npt initialize-------------------------------------------------------------
-void nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts_base){
-	pdpt_t pdpt;
-	pdt_t pdts, pdt;
-	pt_t pt;
-	u32 paddr=0, i, j, k, y, z;
-	u64 flags;
-	
-	printf("\n%s: pdpt=0x%08x, pdts=0x%08x, pts=0x%08x",
-    __FUNCTION__, npt_pdpt_base, npt_pdts_base, npt_pts_base);
-	
-	pdpt=(pdpt_t)npt_pdpt_base;
-
-  for(i = 0; i < PAE_PTRS_PER_PDPT; i++){
-    y = (u32)__hva2spa__((u32)npt_pdts_base + (i << PAGE_SHIFT_4K));
-    flags = (u64)(_PAGE_PRESENT);
-		pdpt[i] = pae_make_pdpe((u64)y, flags);
-    pdt=(pdt_t)((u32)npt_pdts_base + (i << PAGE_SHIFT_4K));
-	       	
-		for(j=0; j < PAE_PTRS_PER_PDT; j++){
-			z=(u32)__hva2spa__((u32)npt_pts_base + ((i * PAE_PTRS_PER_PDT + j) << (PAGE_SHIFT_4K)));
-		  flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
-			pdt[j] = pae_make_pde((u64)z, flags);
-			pt=(pt_t)((u32)npt_pts_base + ((i * PAE_PTRS_PER_PDT + j) << (PAGE_SHIFT_4K)));
-			
-			for(k=0; k < PAE_PTRS_PER_PT; k++){
-        flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
-        pt[k] = pae_make_pte((u64)paddr, flags);
-				paddr+= PAGE_SIZE_4K;
-			}
-		}
-  }
-}
-#endif
-
-
-//---setup vcpu structures for all the cores including BSP----------------------
-// XXX TODO midtable_numentries is a parameter to this function,
-// even though it is a global. Need to clean that up.
-void setupvcpus(u32 cpu_vendor, MIDTAB *midtable, u32 midtable_numentries){
-  u32 i;
-  extern u32 __cpustacks[], __vcpubuffers[];
-  extern u32 svm_hsave_buffers[], svm_vmcb_buffers[];
-  extern u32 svm_npt_pdpt_buffers[], svm_npt_pdts_buffers[], svm_sipi_page_buffers[];
-  extern u32 svm_npt_pts_buffers[];
-  
-  
-#ifdef __NESTED_PAGING__
-  u32 npt_current_asid=ASID_GUEST_KERNEL;
-#endif
-  
-  VCPU *vcpu;
-  
-  printf("\n%s: __cpustacks range 0x%08x-0x%08x in 0x%08x chunks",
-    __FUNCTION__, (u32)__cpustacks, (u32)__cpustacks + (RUNTIME_STACK_SIZE * MAX_VCPU_ENTRIES),
-        RUNTIME_STACK_SIZE);
-  printf("\n%s: __vcpubuffers range 0x%08x-0x%08x in 0x%08x chunks",
-    __FUNCTION__, (u32)__vcpubuffers, (u32)__vcpubuffers + (SIZE_STRUCT_VCPU * MAX_VCPU_ENTRIES),
-        SIZE_STRUCT_VCPU);
-  printf("\n%s: svm_hsave_buffers range 0x%08x-0x%08x in 0x%08x chunks",
-    __FUNCTION__, (u32)svm_hsave_buffers, (u32)svm_hsave_buffers + (8192 * MAX_VCPU_ENTRIES),
-        8192);
-  printf("\n%s: svm_vmcb_buffers range 0x%08x-0x%08x in 0x%08x chunks",
-    __FUNCTION__, (u32)svm_vmcb_buffers, (u32)svm_vmcb_buffers + (8192 * MAX_VCPU_ENTRIES),
-        8192);
-
-#ifdef __NESTED_PAGING__
-    printf("\n%s: svm_npt_pdpt_buffers range 0x%08x-0x%08x in 0x%08x chunks",
-      __FUNCTION__, (u32)svm_npt_pdpt_buffers, (u32)svm_npt_pdpt_buffers + (4096 * MAX_VCPU_ENTRIES),
-          4096);
-    printf("\n%s: svm_npt_pdts_buffers range 0x%08x-0x%08x in 0x%08x chunks",
-      __FUNCTION__, (u32)svm_npt_pdts_buffers, (u32)svm_npt_pdts_buffers + (16384 * MAX_VCPU_ENTRIES),
-          16384);
-    printf("\n%s: svm_npt_pts_buffers range 0x%08x-0x%08x in 0x%08x chunks",
-      __FUNCTION__, (u32)svm_npt_pts_buffers, (u32)svm_npt_pts_buffers + ((2048*4096) * MAX_VCPU_ENTRIES),
-          (2048*4096));
-#endif
-          
-  for(i=0; i < midtable_numentries; i++){
-    vcpu = (VCPU *)((u32)__vcpubuffers + (u32)(i * SIZE_STRUCT_VCPU));
-    memset((void *)vcpu, 0, sizeof(VCPU));
-    
-    vcpu->cpu_vendor = cpu_vendor;
-    
-    vcpu->esp = ((u32)__cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;    
-    vcpu->hsave_vaddr_ptr = ((u32)svm_hsave_buffers + (i * 8192));
-    vcpu->vmcb_vaddr_ptr = ((u32)svm_vmcb_buffers + (i * 8192));
-
-#ifdef __NESTED_PAGING__
-    {
-      u32 npt_pdpt_base, npt_pdts_base, npt_pts_base;
-      npt_pdpt_base = ((u32)svm_npt_pdpt_buffers + (i * 4096)); 
-      npt_pdts_base = ((u32)svm_npt_pdts_buffers + (i * 16384));
-      npt_pts_base = ((u32)svm_npt_pts_buffers + (i * (2048*4096)));
-      nptinitialize(npt_pdpt_base, npt_pdts_base, npt_pts_base);
-      vcpu->npt_vaddr_ptr = npt_pdpt_base;
-      vcpu->npt_vaddr_pts = npt_pts_base;
-      vcpu->npt_asid = npt_current_asid;
-      npt_current_asid++;
-    }
-#endif
-    
-    vcpu->id = midtable[i].cpu_lapic_id;
-    vcpu->sipivector = 0;
-    vcpu->sipireceived = 0;
-
-    midtable[i].vcpu_vaddr_ptr = (u32)vcpu;
-    printf("\nCPU #%u: vcpu_vaddr_ptr=0x%08x, esp=0x%08x", i, midtable[i].vcpu_vaddr_ptr,
-      vcpu->esp);
-    printf("\n  hsave_vaddr_ptr=0x%08x, vmcb_vaddr_ptr=0x%08x", vcpu->hsave_vaddr_ptr,
-          vcpu->vmcb_vaddr_ptr);
-  }
-}
-
-
 //---runtime main---------------------------------------------------------------
 void cstartup(void){
 	u32 cpu_vendor;
+
+	//initialize global runtime variables
+	runtime_globals_init();
 
 	//setup debugging	
 #ifdef __DEBUG_SERIAL__	
@@ -372,48 +79,40 @@ void cstartup(void){
 		}   	 	
   }
 
-
-        
-  init_runtime_globals(&g_runtime);
-  g_runtime.skinit_status_flag = 1; // want to preserve skinit_status_flag
-
-	init_islayer_globals(&g_islayer);
-
   //debug, dump E820 and MP table
- 	printf("\nNumber of E820 entries = %u", lpb->XtVmmE820NumEntries);
+ 	printf("\nNumber of E820 entries = %u", rpb->XtVmmE820NumEntries);
   {
     int i;
-    for(i=0; i < (int)lpb->XtVmmE820NumEntries; i++){
+    for(i=0; i < (int)rpb->XtVmmE820NumEntries; i++){
       printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
-          grube820list[i].baseaddr_high, grube820list[i].baseaddr_low,
-          grube820list[i].length_high, grube820list[i].length_low,
-          grube820list[i].type);
+          g_e820map[i].baseaddr_high, g_e820map[i].baseaddr_low,
+          g_e820map[i].length_high, g_e820map[i].length_low,
+          g_e820map[i].type);
     }
   
   }
-
-  printf("\nNumber of MP entries = %u", lpb->XtVmmMPCpuinfoNumEntries);
+  printf("\nNumber of MP entries = %u", rpb->XtVmmMPCpuinfoNumEntries);
   {
     int i;
-    for(i=0; i < (int)lpb->XtVmmMPCpuinfoNumEntries; i++)
-      printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x", i, pcpus[i].isbsp, pcpus[i].lapic_id);
+    for(i=0; i < (int)rpb->XtVmmMPCpuinfoNumEntries; i++)
+      printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x", i, g_cpumap[i].isbsp, g_cpumap[i].lapic_id);
   }
 
   //setup Master-ID Table (MIDTABLE)
   {
     int i;
-    for(i=0; i < (int)lpb->XtVmmMPCpuinfoNumEntries; i++){
-       midtable[g_runtime.midtable_numentries].cpu_lapic_id = pcpus[i].lapic_id;
-       midtable[g_runtime.midtable_numentries].vcpu_vaddr_ptr = 0;
-       g_runtime.midtable_numentries++;
+    for(i=0; i < (int)rpb->XtVmmMPCpuinfoNumEntries; i++){
+       g_midtable[g_midtable_numentries].cpu_lapic_id = g_cpumap[i].lapic_id;
+       g_midtable[g_midtable_numentries].vcpu_vaddr_ptr = 0;
+       g_midtable_numentries++;
     }
   }
 
-  //setup vcpus [There are architecture dependent components here]
-  setupvcpus(cpu_vendor, midtable, g_runtime.midtable_numentries);
+  //setup vcpus 
+  setupvcpus(cpu_vendor, g_midtable, g_midtable_numentries);
 
   //wake up APS
-  if(g_runtime.midtable_numentries > 1)
+  if(g_midtable_numentries > 1)
     wakeupAPs();
 
   //fall through to common code  
@@ -425,218 +124,6 @@ void cstartup(void){
    HALT();
   }
 }
-
-
-//---isbsp----------------------------------------------------------------------
-//returns 1 if the calling CPU is the BSP, else 0
-u32 isbsp(void){
-  u32 eax, edx;
-  //read LAPIC base address from MSR
-  rdmsr(MSR_APIC_BASE, &eax, &edx);
-  ASSERT( edx == 0 ); //APIC is below 4G
-  
-  if(eax & 0x100)
-    return 1;
-  else
-    return 0;
-}
-
-//---setup VMCB-----------------------------------------------------------------
-void initVMCB(VCPU *vcpu){
-  
-  struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
-  
-  printf("\nCPU(0x%02x): VMCB at 0x%08x", vcpu->id, (u32)vmcb);
-  memset(vmcb, 0, sizeof(struct vmcb_struct));
-  
-  // set up CS descr 
-  vmcb->cs.sel = 0x0;
-  vmcb->cs.base = 0x0;
-  vmcb->cs.limit = 0x0ffff; // 64K limit since g=0 
-  vmcb->cs.attr.bytes = 0x009b;
-  
-  // set up DS descr 
-  vmcb->ds.sel = 0x0;
-  vmcb->ds.base = 0x0;
-  vmcb->ds.limit = 0x0ffff; // 64K limit since g=0 
-  vmcb->ds.attr.bytes = 0x0093; // read/write 
-  
-  // set up ES descr 
-  vmcb->es.sel = 0x0;
-  vmcb->es.base = 0x0;
-  vmcb->es.limit = 0x0ffff; // 64K limit since g=0 
-  vmcb->es.attr.bytes = 0x0093; // read/write 
-
-  // set up FS descr 
-  vmcb->fs.sel = 0x0;
-  vmcb->fs.base = 0x0;
-  vmcb->fs.limit = 0x0ffff; // 64K limit since g=0 
-  vmcb->fs.attr.bytes = 0x0093; // read/write 
-
-  // set up GS descr 
-  vmcb->gs.sel = 0x0;
-  vmcb->gs.base = 0x0;
-  vmcb->gs.limit = 0x0ffff; // 64K limit since g=0 
-  vmcb->gs.attr.bytes = 0x0093; // read/write 
-
-  // set up SS descr 
-  vmcb->ss.sel = 0x0;
-  vmcb->ss.base = 0x0;
-  vmcb->ss.limit = 0x0ffff; // 64K limit since g=0 
-  vmcb->ss.attr.bytes = 0x0093; // read/write 
-
-  vmcb->idtr.limit = 0x03ff;
-
-  // SVME needs to be set in EFER for vmrun to execute 
-  vmcb->efer |= (1 << EFER_SVME);
-   
-  // set guest PAT to state at reset. 
-  vmcb->g_pat = 0x0007040600070406ULL;
-
-  // other-non general purpose registers/state 
-  vmcb->guest_asid = 1; // ASID 0 reserved for host 
-  vmcb->cpl = 0; // set cpl to 0 for real mode 
-
-  // general purpose registers 
-  vmcb->rax= 0x0ULL;
-  vmcb->rsp= 0x0ULL;
-
-  if(isbsp()){
-    printf("\nBSP(0x%02x): copying boot-module to boot guest", vcpu->id);
-  	memcpy((void *)__GUESTOSBOOTMODULE_BASE, (void *)lpb->XtGuestOSBootModuleBase, lpb->XtGuestOSBootModuleSize);
-    vmcb->rip = 0x7c00ULL;
-  }else{
-
-#ifdef __NESTED_PAGING__
-      vmcb->cs.sel = (vcpu->sipivector * PAGE_SIZE_4K) >> 4;
-      vmcb->cs.base = (vcpu->sipivector * PAGE_SIZE_4K);
-      vmcb->rip = 0x0ULL;
-#else
-      //poke a spin loop at 0040:00AC BDA-reserved loc
-      u8 *code = (u8 *)0x4AC;
-      printf("\nCPU(0x%02x): poking spin loop to start guest", vcpu->id);
-      code[0]=0xEB; code[1]=0xFE;
-      vmcb->rip = 0xACULL;
-      vmcb->cs.sel = 0x0040;
-      vmcb->cs.base = 0x400;
-#endif
-
-  }
-  vmcb->rflags = 0x0ULL;
-  
-  vmcb->cr0 = 0x00000010ULL;
-  vmcb->cr2 = 0ULL;
-  vmcb->cr3 = 0x0ULL;
-  vmcb->cr4 = 0ULL;
-  
-  vmcb->dr6 = 0xffff0ff0ULL;
-  vmcb->dr7 = 0x00000400ULL;
- 
-  vmcb->cr_intercepts = 0;
-  vmcb->dr_intercepts = 0;
-  
-  // intercept all SVM instructions 
-  vmcb->general2_intercepts |= (u32)(GENERAL2_INTERCEPT_VMRUN |
-					  GENERAL2_INTERCEPT_VMMCALL |
-					  GENERAL2_INTERCEPT_VMLOAD |
-					  GENERAL2_INTERCEPT_VMSAVE |
-					  GENERAL2_INTERCEPT_STGI |
-					  GENERAL2_INTERCEPT_CLGI |
-					  GENERAL2_INTERCEPT_SKINIT |
-					  GENERAL2_INTERCEPT_ICEBP);
-
-#ifdef __NESTED_PAGING__
-	vmcb->h_cr3 = __hva2spa__(vcpu->npt_vaddr_ptr);
-  vmcb->np_enable |= (1ULL << NP_ENABLE);
-	vmcb->guest_asid = vcpu->npt_asid;
-	printf("\nCPU(0x%02x): Activated NPTs.", vcpu->id);
-#endif
-
-  if(isbsp())
-	 vmcb->general1_intercepts |= (u32) GENERAL1_INTERCEPT_SWINT;
-
-  //intercept NMIs, required for core quiescing support
-  vmcb->general1_intercepts |= (u32) GENERAL1_INTERCEPT_NMI;
-
-  //setup IO interception
-  initIOinterception(vcpu, vmcb);
-  vmcb->general1_intercepts |= (u32) GENERAL1_INTERCEPT_IOIO_PROT;
-
-  //setup MSR interception
-  initMSRinterception(vcpu, vmcb);
-  vmcb->general1_intercepts |= (u32) GENERAL1_INTERCEPT_MSR_PROT;
-
-
-  return;
-}
-
-
-//---init SVM-------------------------------------------------------------------
-void initSVM(VCPU *vcpu){
-  u32 eax, edx, ecx, ebx;
-  u64 hsave_pa;
-  u32 i;
-
-  //check if CPU supports SVM extensions 
-  cpuid(0x80000001, &eax, &ebx, &ecx, &edx);
-  if( !(ecx & (1<<ECX_SVM)) ){
-   printf("\nCPU(0x%02x): no SVM extensions. HALT!", vcpu->id);
-   HALT();
-  }
-  
-  //check if SVM extensions are disabled by the BIOS 
-  rdmsr(VM_CR_MSR, &eax, &edx);
-  if( eax & (1<<VM_CR_SVME_DISABLE) ){
-    printf("\nCPU(0x%02x): SVM extensions disabled in the BIOS. HALT!", vcpu->id);
-    HALT();
-  }
-
-#ifdef __NESTED_PAGING__
-  // check for nested paging support and number of ASIDs 
-	cpuid(0x8000000A, &eax, &ebx, &ecx, &edx);
-  if(!(edx & 0x1)){
-      printf("\nCPU(0x%02x): No support for Nested Paging, HALTING!", vcpu->id);
-		HALT();
-	}
-	
-  printf("\nCPU(0x%02x): Nested paging support present", vcpu->id);
-	if( (ebx-1) < 2 ){
-		printf("\nCPU(0x%02x): Total number of ASID is too low, HALTING!", vcpu->id);
-		HALT();
-	}
-	
-	printf("\nCPU(0x%02x): Total ASID is valid");
-#endif
-
-  // enable SVM and debugging support (if required)   
-  rdmsr((u32)VM_CR_MSR, &eax, &edx);
-  eax &= (~(1<<VM_CR_DPD));
-  wrmsr((u32)VM_CR_MSR, eax, edx);
-  printf("\nCPU(0x%02x): HDT debugging enabled", vcpu->id);
-
-  rdmsr((u32)MSR_EFER, &eax, &edx);
-  eax |= (1<<EFER_SVME);
-  wrmsr((u32)MSR_EFER, eax, edx);
-  printf("\nCPU(0x%02x): SVM extensions enabled", vcpu->id);
-
-  // Initialize the HSA 
-  //printf("\nHSAVE area=0x%08X", vcpu->hsave_vaddr_ptr);
-  hsave_pa = __hva2spa__(vcpu->hsave_vaddr_ptr);
-  //printf("\nHSAVE physaddr=0x%08x", hsave_pa);
-  eax = (u32)hsave_pa;
-  edx = (u32)(hsave_pa >> 32);
-  wrmsr((u32)VM_HSAVE_PA, eax, edx);
-  printf("\nCPU(0x%02x): SVM HSAVE initialized", vcpu->id);
-
-  // enable NX protections 
-  rdmsr(MSR_EFER, &eax, &edx);
-  eax |= (1 << EFER_NXE);
-  wrmsr(MSR_EFER, eax, edx);
-  printf("\nCPU(0x%02x): NX protection enabled", vcpu->id);
-
-  return;
-}
-
 
 
 //---allcpus_common_start-------------------------------------------------------
@@ -652,29 +139,29 @@ void allcpus_common_start(VCPU *vcpu){
     printf("\nBSP(0x%02x): My ESP is 0x%08x", vcpu->id, vcpu->esp);
 
     //increment a CPU to account for the BSP
-    spin_lock(&g_runtime.lock_cpus_active);
-    g_runtime.cpus_active++;
-    spin_unlock(&g_runtime.lock_cpus_active);
+    spin_lock(&g_lock_cpus_active);
+    g_cpus_active++;
+    spin_unlock(&g_lock_cpus_active);
 
-    //wait for g_runtime.cpus_active to become g_runtime.midtable_numentries -1 to indicate
+    //wait for g_cpus_active to become g_midtable_numentries -1 to indicate
     //that all APs have been successfully started
-    while(g_runtime.cpus_active < g_runtime.midtable_numentries);
+    while(g_cpus_active < g_midtable_numentries);
     
     printf("\nAPs all awake...Setting them free...");
-    spin_lock(&g_runtime.lock_ap_go_signal);
-    g_runtime.ap_go_signal=1;
-    spin_unlock(&g_runtime.lock_ap_go_signal);
+    spin_lock(&g_lock_ap_go_signal);
+    g_ap_go_signal=1;
+    spin_unlock(&g_lock_ap_go_signal);
 
   
   }else{
     //we are an AP, so we need to simply update the AP startup counter
     //and wait until we are told to proceed
     //increment active CPUs
-    spin_lock(&g_runtime.lock_cpus_active);
-    g_runtime.cpus_active++;
-    spin_unlock(&g_runtime.lock_cpus_active);
+    spin_lock(&g_lock_cpus_active);
+    g_cpus_active++;
+    spin_unlock(&g_lock_cpus_active);
 
-    while(!g_runtime.ap_go_signal); //Just wait for the BSP to tell us all is well.
+    while(!g_ap_go_signal); //Just wait for the BSP to tell us all is well.
  
     printf("\nAP(0x%02x): My ESP is 0x%08x, Waiting for SIPI...", vcpu->id, vcpu->esp);
 
@@ -713,7 +200,7 @@ void allcpus_common_start(VCPU *vcpu){
 
 #ifdef __NESTED_PAGING__
     //if we are the BSP setup SIPI intercept
-    if(isbsp() && (g_runtime.midtable_numentries > 1) )
+    if(isbsp() && (g_midtable_numentries > 1) )
       apic_setup(vcpu);
  
 #endif

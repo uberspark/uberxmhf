@@ -83,7 +83,7 @@ u32 guest_IDTR_base;
 u32 guest_TR_base;
 
 
-u32 shadow_guest_CR3=0;
+u32 shadow_guest_CR3=0x00001111;
 
 /*
 	A note of all events that cause TLB flushes on the IA-32
@@ -135,7 +135,7 @@ void main() {
   } else if (choice == 1) {
     //shadow_invalidate_page(nondet_u32() & restrict_addrs_4K);
   } else {
-    shadow_page_fault(nondet_u32() & restrict_addrs_4K, nondet_u32() & restrict_addrs_4K);
+    shadow_page_fault(nondet_u32() & restrict_addrs_4K, nondet_u32());
   }
 
   /* VERIF Condition (ONLY checks 0 entries of pdt and pt) */
@@ -199,9 +199,9 @@ void shadow_get_shadowentry(u32 gva, u32 **pdt_entry, u32 **pt_entry){
 //set the ACCESSED bit
 //as we traverse the guest paging structures 
 void shadow_get_guestentry(u32 gva, u32 gCR3, u32 **pdt_entry, u32 **pt_entry){
-  __CPROVER_assume(gCR3 != 0); // XXX avoids invalid pointer error
   u32 index_pdt, index_pt; 
-  npdt_t g_pdt=(npdt_t)gpa_to_hpa((u32)npae_get_addr_from_32bit_cr3(gCR3));;
+  //npdt_t g_pdt=(npdt_t)gpa_to_hpa((u32)npae_get_addr_from_32bit_cr3(gCR3));
+  npdt_t g_pdt=(npdt_t)gpa_to_hpa((u32)npae_get_addr_from_32bit_cr3(gCR3));
   npt_t g_pt;
   u32 g_pdt_entry, g_pt_entry;
 	
@@ -584,31 +584,21 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
   u32 *gPDE, *gPTE;
   u32 *sPDE, *sPTE;
 	
-  //[debug]
-  //sdbg_dumppfdetails(cr2, error_code);
-	
+
+
   //[scheck] RSVD bit set, should never happen during normal execution
   if(error_code & PFERR_RSVD_MASK){
     printf("\nRSVD bit set on page-fault, Halt!");
     __CPROVER_assume(0); // HALT
   }
 
-  //[scheck] we assume CR0.WP=1 always
-  //assert( ((guest_CR0 & CR0_WP) && (control_CR0_shadow & CR0_WP)) );
-
-  //assert(cr2 < GUEST_VIRTUALMEMORY_LIMIT);
 
   //get SHADOW and GUEST paging entries for the fault-address (CR2)
   shadow_get_guestentry(cr2, shadow_guest_CR3, &gPDE, &gPTE);
+
   shadow_get_shadowentry(cr2, &sPDE, &sPTE);
   //sdbg_dumpentries(gPDE, gPTE, sPDE, sPTE);
 
-  /* Security Property, Initial state */
-  /* if (*gPDE & _PAGE_PSE) { */
-  /*   __CPROVER_assume(  npae_get_addr_from_pde(*sPDE) <= GUEST_PHYSICALMEMORY_LIMIT); */
-  /* } else { */
-  /*   __CPROVER_assume(  npae_get_addr_from_pte(*sPTE) <= GUEST_PHYSICALMEMORY_LIMIT); */
-  /* } */
 
   //if(!shadow_checkcontext( (u32)npae_get_addr_from_32bit_cr3((u32)shadow_guest_CR3) ) ){
   //		printf("\nPF: Halting, reserved bits set in GUEST paging structures!");
@@ -617,9 +607,10 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
 
 	
   if( !(error_code & PFERR_PRESENT_MASK) ){
+    assert(0);
     if(is_present_guest(gPDE, gPTE)){
       //printf("\n	SHADOW-NOT-PRESENT (GUEST-PRESENT): syncing...");
-
+      assert(0);
 
       shadow_updateshadowentries(cr2, &sPDE, &sPTE,&gPDE, &gPTE);
       /* Commented out for verif XXX */

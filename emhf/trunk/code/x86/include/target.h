@@ -110,6 +110,11 @@
 #define APP_INIT_SUCCESS        0x0
 #define APP_INIT_FAIL           0xFF
 
+//LAPIC emulation defines
+#define LAPIC_OP_RSVD   (3)
+#define LAPIC_OP_READ   (2)
+#define LAPIC_OP_WRITE  (1)
+
 
 #ifndef __ASSEMBLY__
 
@@ -207,7 +212,7 @@ typedef struct {
 
 #define __pa(x) (x)
 
-#define __hva2spa__(x) ((x) - __TARGET_BASE + lpb->XtVmmRuntimePhysBase)
+#define __hva2spa__(x) ((x) - __TARGET_BASE + rpb->XtVmmRuntimePhysBase)
 
 
 typedef struct {
@@ -217,6 +222,16 @@ typedef struct {
   u32 length_high;
   u32 type;  
 } __attribute__((packed)) GRUBE820;
+
+
+typedef struct {
+  u32 baseaddr_low;
+  u32 baseaddr_high;
+  u32 length_low;
+  u32 length_high;
+  u32 type;  
+} __attribute__((packed)) E820MAP;
+
 
 //"sl" parameter block structure 
 typedef struct {
@@ -268,12 +283,20 @@ typedef struct {
 	u32 XtVmmE820NumEntries;
 	u32 XtVmmMPCpuinfoBuffer;
 	u32 XtVmmMPCpuinfoNumEntries;
-} __attribute__((packed)) XTLPB, *PXTLPB;
-
-extern PXTLPB	lpb;
+} __attribute__((packed)) RPB, *PRPB;
 
 
 #include <_libsechyp.h> //the SecHyp interface library
+
+
+//function prototypes
+//islayer.c
+void wakeupAPs(void);
+VCPU *getvcpu(void);
+void initMSRinterception(VCPU *vcpu, struct vmcb_struct *vmcb);
+void initIOinterception(VCPU *vcpu, struct vmcb_struct *vmcb);
+void setupvcpus(u32 cpu_vendor, MIDTAB *midtable, u32 midtable_numentries);
+u32 isbsp(void);
 
 #endif
 

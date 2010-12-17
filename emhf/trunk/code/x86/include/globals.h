@@ -49,94 +49,146 @@
  * structure.
  */ 
 
+
+
+
+//system e820 map
+extern E820MAP g_e820map[] __attribute__(( section(".data") ));
+
+//SMP CPU map; lapic id, base, ver and bsp indication for each available core
+extern PCPU	g_cpumap[] __attribute__(( section(".data") ));
+
+//runtime stacks for individual cores
+extern u8 g_cpustacks[] __attribute__(( section(".stack") ));
+
+//VCPU structure for each "guest OS" core
+extern VCPU g_vcpubuffers[] __attribute__(( section(".data") ));
+
+//master id table, contains core lapic id to VCPU mapping information
+extern MIDTAB g_midtable[] __attribute__(( section(".data") ));
+
+//number of entries in the master id table, in essence the number of 
+//physical cores in the system
+extern u32 g_midtable_numentries __attribute__(( section(".data") ));
+
+//variable that is incremented by 1 by all cores that boot up, this should
+//be finally equal to g_midtable_numentries at runtime which signifies
+//that all physical cores have been booted up and initialized by the runtime
+extern u32 g_cpus_active __attribute__(( section(".data") ));
+
+//SMP lock for the above variable
+extern u32 g_lock_cpus_active __attribute__(( section(".data") ));
+    
+//variable that is set to 1 by the BSP after rallying all the other cores.
+//this is used by the application cores to enter the "wait-for-SIPI" state    
+extern u32 g_ap_go_signal __attribute__(( section(".data") ));
+
+//SMP lock for the above variable
+extern u32 g_lock_ap_go_signal __attribute__(( section(".data") ));
+
+
+//runtime parameter block data area (in runtimesup.S)
+extern u8 _rpb[];
+
+//runtime parameter block pointer 
+extern RPB *rpb __attribute__(( section(".data") )); 
+
+//defined in runtimesup.S(.text), this is the start of the real-mode AP
+//bootstrap code
+extern u32 _ap_bootstrap_start[];
+
+//defined in runtimesup.S(.text), this is the end of the real-mode AP
+//bootstrap code
+extern u32 _ap_bootstrap_end[];
+
+//the CR3 value to be loaded by the AP boot-strap code is placed in this
+//variable by the runtime before waking up the APs
+//defined in runtimesup.S(.text)
+extern u32 _ap_cr3_value;
+
+//the CR4 value to be loaded by the AP boot-strap code is placed in this
+//variable by the runtime before waking up the APs
+//defined in runtimesup.S(.text)
+extern u32 _ap_cr4_value;
+
+
+//------------------------------------------------------------------------------
+//isolation layer specific runtime globals
+//these are global variables accessed across islayer.c, islayersup.S and
+//apic.c
+
+
+
 /**
  * Isolation Layer (islayer.c)
  */
-typedef struct _islayer_globals {
-    //the quiesce counter, all CPUs except for the one requesting the
-    //quiesce will increment this when they get their quiesce signal
-    u32 quiesce_counter;
-    u32 lock_quiesce_counter; //spinlock to access the above
-    
-    //resume counter to rally all CPUs after resumption from quiesce
-    u32 quiesce_resume_counter;
-    u32 lock_quiesce_resume_counter; //spinlock to access the above
-    
-    //the quiesce variable and its lock
-    u32 quiesce;      //if 1, then we have a quiesce in process
-    u32 lock_quiesce; 
-    
-    //resume signal
-    u32 quiesce_resume_signal; //signal becomes 1 to resume after quiescing
-    u32 lock_quiesce_resume_signal; //spinlock to access the above
-    
-    // XXX not well-documented
-    u32 ine820handler;
-} ISLAYER_GLOBALS;
 
-extern ISLAYER_GLOBALS g_islayer;
+//the quiesce counter, all CPUs except for the one requesting the
+//quiesce will increment this when they get their quiesce signal
+extern u32 g_svm_quiesce_counter __attribute__(( section(".data") ));
 
-static inline void init_islayer_globals(ISLAYER_GLOBALS *g) {
-    if(!g) return;
-    
-    g->quiesce_counter=0;
-    g->lock_quiesce_counter=1;
-    
-    g->quiesce_resume_counter=0;
-    g->lock_quiesce_resume_counter=1;
-    
-    g->quiesce=0;
-    g->lock_quiesce=1; 
-    
-    g->quiesce_resume_signal=0;
-    g->lock_quiesce_resume_signal=1;
+//SMP lock to access the above variable
+extern u32 g_svm_lock_quiesce_counter __attribute__(( section(".data") )); 
 
-    g->ine820handler=0;
-}
+//resume counter to rally all CPUs after resumption from quiesce
+extern u32 g_svm_quiesce_resume_counter __attribute__(( section(".data") ));
 
-/**
- * Runtime (runtime.c)
- */
+//SMP lock to access the above variable
+extern u32 g_svm_lock_quiesce_resume_counter __attribute__(( section(".data") )); 
+    
+//the "quiesce" variable, if 1, then we have a quiesce in process
+extern u32 g_svm_quiesce __attribute__(( section(".data") ));      
 
-typedef struct _runtime_globals {
-    // XXX This MUST come first,
-    // as g_runtime is used in place of midtable_numentries in runtimesup.S
-    u32 midtable_numentries;
+//SMP lock to access the above variable
+extern u32 g_svm_lock_quiesce __attribute__(( section(".data") )); 
+    
+//resume signal, becomes 1 to signal resume after quiescing
+extern u32 g_svm_quiesce_resume_signal __attribute__(( section(".data") ));  
 
-    u32 skinit_status_flag; // set to 1 after skinit has run on BSP
+//SMP lock to access the above variable
+extern u32 g_svm_lock_quiesce_resume_signal __attribute__(( section(".data") )); 
     
-    u32 cpus_active; //number of CPUs that are awake, should be equal to
-                       //midtable_numentries -1 if all went well with the
-                       //MP startup protocol
-    u32 lock_cpus_active; //spinlock to access the above
-    
-    u32 ap_go_signal; //go signal becomes 1 after BSP finishes rallying
-    u32 lock_ap_go_signal; //spunlock to access the above
-    
-    u32 cleared_ucode; //number of CPUs whose ucode has been cleared
-    u32 lock_cleared_ucode; // spinlock to access the above
-    
-} RUNTIME_GLOBALS;
+//variable that is used to de-link the INT 15 handler, if 1 then signifies that
+//we have processed E820 requests and its safe to de-link
+extern u32 g_svm_ine820handler __attribute__(( section(".data") ));
 
-extern RUNTIME_GLOBALS g_runtime;
+//apic.c
 
-static inline void init_runtime_globals(RUNTIME_GLOBALS *g) {
-    if(!g) return;
-    
-    g->midtable_numentries = 0;
+//the BSP LAPIC base address
+extern u32 g_svm_lapic_base __attribute__(( section(".data") ));
 
-    // XXX When this defaults to 0 then we will attempt to skinit.
-    // XXX Currently set to '1' to DISABLE skinit due to buggy HVM launch
-    g->skinit_status_flag = 0; 
-    
-    g->cpus_active = 0;
-    g->lock_cpus_active = 1;
-    
-    g->ap_go_signal = 0;
-    g->lock_ap_go_signal = 1;
-    
-    g->cleared_ucode = 0;
-    g->lock_cleared_ucode = 1;
-}
+
+
+//4k buffer which is the virtual LAPIC page that guest reads and writes from/to
+//during INIT-SIPI-SIPI emulation
+extern u8 g_svm_virtual_LAPIC_base[] __attribute__(( section(".palign_data") ));
+
+//SVM NPT PDPT buffers
+extern u8 g_svm_npt_pdpt_buffers[] __attribute__(( section(".palign_data") ));
+  
+//SVM NPT PDT buffers
+extern u8 g_svm_npt_pdts_buffers[]__attribute__(( section(".palign_data") ));
+
+//SVM NPT PT buffers
+extern u8 g_svm_npt_pts_buffers[]__attribute__(( section(".palign_data") )); 
+
+//SVM SIPI page buffers used for guest INIT-SIPI-SIPI emulation
+extern u8 g_svm_sipi_page_buffers[]__attribute__(( section(".palign_data") ));
+
+//SVM VM_HSAVE buffers 
+extern u8 g_svm_hsave_buffers[]__attribute__(( section(".palign_data") ));
+
+//SVM VMCB buffers 
+extern u8 g_svm_vmcb_buffers[]__attribute__(( section(".palign_data") )); 
+
+//SVM IO bitmap buffer
+extern u8 g_svm_iopm[]__attribute__(( section(".palign_data") )); 
+
+//SVM MSR bitmap buffer
+extern u8 g_svm_msrpm[]__attribute__(( section(".palign_data") ));
+
+
+//function that initializes the runtime global variables
+void runtime_globals_init(void);
 
 #endif /* __GLOBALS_H__ */

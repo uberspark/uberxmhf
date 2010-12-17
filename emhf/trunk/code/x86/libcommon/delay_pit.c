@@ -33,60 +33,44 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-int non_det_int();
+// delay.c
+// implements micro/milli second delay based on 8254 Programmable
+// interval timer. 
+// author: amit vasudevan (amitvasudevan@acm.org)
+// note: due to 8254 PIT usage, the routines in this module should not
+// be called when a guest OS has been booted up on the physical PIT without
+// saving/restoring the PIT registers
 
-int A[2];
-int B[1];
+#include <target.h>
 
-#define MAX 1
+//---microsecond delay----------------------------------------------------------
+void udelay(u32 usecs){
+  u8 val;
+  u32 latchregval;  
 
-
-int procA() {
-
-  A[0] = 4;
-
-  if (A[0] > MAX) {
-    A[1] = 1;
-  } else {
-    A[1] = 2;
-  }
-}
-
-
-int procB() {
-
-  if (non_det_int(0) == 0) {
-    B[0] = 4;
-  } else {
-
-    if (A[0] > MAX) {
-      A[1] = 1;
-    } else {
-      A[1] = 2;
-    }
-
-  }
-      
-
-}
-
-
-int main() {
-
-  //__CPROVER_assume(A[0] == B[0] || A[1] == B[0]);
-
-  procA();
-  procB();
-
-  assert(A[0] == B[0] || A[1] == B[0]);
-
-  //__CPROVER_assume(B[0] != A[1]);
-
-  //assert(B[0] == A[0]);
+  //enable 8254 ch-2 counter
+  val = inb(0x61);
+  val &= 0x0d; //turn PC speaker off
+  val |= 0x01; //turn on ch-2
+  outb(val, 0x61);
   
-  //__CPROVER_assume(B[0] != A[0]);
+  //program ch-2 as one-shot
+  outb(0xB0, 0x43);
+  
+  //compute appropriate latch register value depending on usecs
+  latchregval = (1193182 * usecs) / 1000000;
 
-  // Should be unreachable
-  assert(0);
-  //assert(B[0] != A[1]);
+  //write latch register to ch-2
+  val = (u8)latchregval;
+  outb(val, 0x42);
+  val = (u8)((u32)latchregval >> (u32)8);
+  outb(val , 0x42);
+  
+  //wait for countdown
+  while(!(inb(0x61) & 0x20));
+  
+  //disable ch-2 counter
+  val = inb(0x61);
+  val &= 0x0c;
+  outb(val, 0x61);
 }

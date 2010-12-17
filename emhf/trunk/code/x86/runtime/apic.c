@@ -38,19 +38,25 @@
 #include <target.h>
 #include <globals.h>
 
-u32 lapic_base=0;
-u32 lapic_reg=0;
-#define LAPIC_OP_RSVD   (3)
-#define LAPIC_OP_READ   (2)
-#define LAPIC_OP_WRITE  (1)
-u32 lapic_op=LAPIC_OP_RSVD;
+//generic globals used by the svm islayer
+//g_midtable_numentries
+
+//u32 lapic_base=0;
+//u32 lapic_reg=0;
+//u32 lapic_op=LAPIC_OP_RSVD;
+
+//the LAPIC register that is being accessed during emulation
+static u32 g_svm_lapic_reg __attribute__(( section(".data") )) = 0;
+
+//the LAPIC operation that is being performed during emulation
+static u32 g_svm_lapic_op __attribute__(( section(".data") )) = LAPIC_OP_RSVD;
 
 //have one 4k buffer
 //2. virtual_LAPIC_vaddr  - 4k buffer which is the virtual LAPIC page that
 //                        guest reads and writes from/to
-extern u32 virtual_LAPIC_base[];
+//extern u32 virtual_LAPIC_base[];
 
-extern MIDTAB *midtable;
+//extern MIDTAB *midtable;
 
 
 //--NPT manipulation routines---------------------------------------------------
@@ -78,7 +84,7 @@ static inline void stgi(void){
 //------------------------------------------------------------------------------
 //if there is a read request, store the register accessed
 //store request as READ
-//map npt entry of the physical LAPIC page with lapic_base and single-step
+//map npt entry of the physical LAPIC page with g_svm_lapic_base and single-step
 //if there is a write request, map npt entry of physical LAPIC
 //page with physical address of virtual_LAPIC page, store the
 //register accessed, store request as WRITE and single-step
@@ -87,24 +93,24 @@ u32 lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
   struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
   
   //get LAPIC register being accessed
-  lapic_reg = (paddr - lapic_base);
+  g_svm_lapic_reg = (paddr - g_svm_lapic_base);
 
   if(errorcode & PF_ERRORCODE_WRITE){
-    if(lapic_reg == LAPIC_ICR_LOW || lapic_reg == LAPIC_ICR_HIGH ){
-      lapic_op = LAPIC_OP_WRITE;
+    if(g_svm_lapic_reg == LAPIC_ICR_LOW || g_svm_lapic_reg == LAPIC_ICR_HIGH ){
+      g_svm_lapic_op = LAPIC_OP_WRITE;
 
       //change LAPIC physical address NPT mapping to point to physical 
       //address of virtual_LAPIC_base
       //printf("\nvirtual_LAPIC_base, v=0x%08x, p=0x%08x",  
       //  (u32)virtual_LAPIC_base, __hva2spa__((u32)virtual_LAPIC_base));
-      npt_changemapping(vcpu, lapic_base, __hva2spa__((u32)virtual_LAPIC_base), (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+      npt_changemapping(vcpu, g_svm_lapic_base, __hva2spa__((u32)g_svm_virtual_LAPIC_base), (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
       vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
 
     }else{
-      lapic_op = LAPIC_OP_RSVD;
+      g_svm_lapic_op = LAPIC_OP_RSVD;
 
       //change LAPIC physical address NPT mapping to point to physical LAPIC
-      npt_changemapping(vcpu, lapic_base, lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+      npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
       vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
     }    
     
@@ -118,22 +124,22 @@ u32 lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
     
   }else{
     //printf("\nREAD from LAPIC register");
-    if(lapic_reg == LAPIC_ICR_LOW || lapic_reg == LAPIC_ICR_HIGH ){
-      lapic_op = LAPIC_OP_READ;
+    if(g_svm_lapic_reg == LAPIC_ICR_LOW || g_svm_lapic_reg == LAPIC_ICR_HIGH ){
+      g_svm_lapic_op = LAPIC_OP_READ;
 
       //change LAPIC physical address NPT mapping to point to physical 
       //address of virtual_LAPIC_base
       //printf("\nvirtual_LAPIC_base, v=0x%08x, p=0x%08x",  
       //  (u32)virtual_LAPIC_base, __hva2spa__((u32)virtual_LAPIC_base));
-      npt_changemapping(vcpu, lapic_base, __hva2spa__((u32)virtual_LAPIC_base), (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+      npt_changemapping(vcpu, g_svm_lapic_base, __hva2spa__((u32)g_svm_virtual_LAPIC_base), (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
       vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
 
     }else{
 
-      lapic_op = LAPIC_OP_RSVD;
+      g_svm_lapic_op = LAPIC_OP_RSVD;
 
       //change LAPIC physical address NPT mapping to point to physical LAPIC
-      npt_changemapping(vcpu, lapic_base, lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+      npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
       vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
     }  
 
@@ -168,9 +174,9 @@ u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
   //find the vcpu entry of the core with dest_lapic_id
   {
     int i;
-    for(i=0; i < (int)g_runtime.midtable_numentries; i++){
-      if(midtable[i].cpu_lapic_id == dest_lapic_id){
-        dest_vcpu = (VCPU *)midtable[i].vcpu_vaddr_ptr;
+    for(i=0; i < (int)g_midtable_numentries; i++){
+      if(g_midtable[i].cpu_lapic_id == dest_lapic_id){
+        dest_vcpu = (VCPU *)g_midtable[i].vcpu_vaddr_ptr;
         ASSERT( dest_vcpu->id == dest_lapic_id );
         break;        
       }
@@ -216,27 +222,27 @@ void lapic_access_dbexception(VCPU *vcpu, struct regs *r){
   struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
   u32 delink_lapic_interception=0;
   
-  if(lapic_op == LAPIC_OP_WRITE){
+  if(g_svm_lapic_op == LAPIC_OP_WRITE){
     u32 src_registeraddress, dst_registeraddress;
     u32 value_tobe_written;
     
-    ASSERT( (lapic_reg == LAPIC_ICR_LOW) || (lapic_reg == LAPIC_ICR_HIGH) );
+    ASSERT( (g_svm_lapic_reg == LAPIC_ICR_LOW) || (g_svm_lapic_reg == LAPIC_ICR_HIGH) );
    
-    src_registeraddress = (u32)virtual_LAPIC_base + lapic_reg;
-    dst_registeraddress = (u32)lapic_base + lapic_reg;
+    src_registeraddress = (u32)g_svm_virtual_LAPIC_base + g_svm_lapic_reg;
+    dst_registeraddress = (u32)g_svm_lapic_base + g_svm_lapic_reg;
     
     value_tobe_written= *((u32 *)src_registeraddress);
     
-    if(lapic_reg == LAPIC_ICR_LOW){
+    if(g_svm_lapic_reg == LAPIC_ICR_LOW){
       if ( (value_tobe_written & 0x00000F00) == 0x500){
         //this is an INIT IPI, we just void it
         printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) INIT IPI detected and skipped, value=0x%08x", 
-          (u16)vmcb->cs.sel, (u32)vmcb->rip, lapic_reg, value_tobe_written);
+          (u16)vmcb->cs.sel, (u32)vmcb->rip, g_svm_lapic_reg, value_tobe_written);
       }else if( (value_tobe_written & 0x00000F00) == 0x600 ){
         //this is a STARTUP IPI
-        u32 icr_value_high = *((u32 *)((u32)virtual_LAPIC_base + (u32)LAPIC_ICR_HIGH));
+        u32 icr_value_high = *((u32 *)((u32)g_svm_virtual_LAPIC_base + (u32)LAPIC_ICR_HIGH));
         printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) STARTUP IPI detected, value=0x%08x", 
-          (u16)vmcb->cs.sel, (u32)vmcb->rip, lapic_reg, value_tobe_written);
+          (u16)vmcb->cs.sel, (u32)vmcb->rip, g_svm_lapic_reg, value_tobe_written);
         delink_lapic_interception=processSIPI(vcpu, value_tobe_written, icr_value_high);
       }else{
         //neither an INIT or SIPI, just propagate this IPI to physical LAPIC
@@ -246,16 +252,16 @@ void lapic_access_dbexception(VCPU *vcpu, struct regs *r){
       *((u32 *)dst_registeraddress) = value_tobe_written;
     }
                 
-  }else if( lapic_op == LAPIC_OP_READ){
+  }else if( g_svm_lapic_op == LAPIC_OP_READ){
     u32 src_registeraddress;
     u32 value_read;
-    ASSERT( (lapic_reg == LAPIC_ICR_LOW) || (lapic_reg == LAPIC_ICR_HIGH) );
+    ASSERT( (g_svm_lapic_reg == LAPIC_ICR_LOW) || (g_svm_lapic_reg == LAPIC_ICR_HIGH) );
 
-    src_registeraddress = (u32)virtual_LAPIC_base + lapic_reg;
+    src_registeraddress = (u32)g_svm_virtual_LAPIC_base + g_svm_lapic_reg;
    
     value_read = *((u32 *)src_registeraddress);
     //printf("\n0x%04x:0x%08x -> (ICR=0x%08x read), value=0x%08x", 
-    //  (u16)vmcb->cs.sel, (u32)vmcb->rip, lapic_reg, value_read);
+    //  (u16)vmcb->cs.sel, (u32)vmcb->rip, g_svm_lapic_reg, value_read);
   }
 
 fallthrough:  
@@ -269,10 +275,10 @@ fallthrough:
   //make LAPIC page inaccessible and flush TLB
   if(delink_lapic_interception){
     printf("\n%s: delinking LAPIC interception since all cores have SIPI", __FUNCTION__);
-    npt_changemapping(vcpu, lapic_base, lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+    npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
 	  vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
   }else{
-    npt_changemapping(vcpu, lapic_base, lapic_base, 0);
+    npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, 0);
 	  vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
 	}
   
@@ -289,12 +295,57 @@ void apic_setup(VCPU *vcpu){
   //read APIC base address from MSR
   rdmsr(MSR_APIC_BASE, &eax, &edx);
   ASSERT( edx == 0 ); //APIC is below 4G
-  lapic_base = eax & 0xFFFFF000UL;
-  printf("\nBSP(0x%02x): Local APIC base=0x%08x", vcpu->id, lapic_base);
+  g_svm_lapic_base = eax & 0xFFFFF000UL;
+  printf("\nBSP(0x%02x): Local APIC base=0x%08x", vcpu->id, g_svm_lapic_base);
   
   //set physical 4K page of APIC base address to not-present
   //this will cause NPF on access to the APIC page which is then
   //handled by lapic_access_handler
-  npt_changemapping(vcpu, lapic_base, lapic_base, 0);
+  npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, 0);
   vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
 }
+
+//---apic_wakeupAPs-------------------------------------------------------------
+//wake up APs using the LAPIC by sending the INIT-SIPI-SIPI IPI sequence
+void apic_wakeupAPs(void){
+  u32 eax, edx;
+  volatile u32 *icr;
+  
+  //read LAPIC base address from MSR
+  rdmsr(MSR_APIC_BASE, &eax, &edx);
+  ASSERT( edx == 0 ); //APIC is below 4G
+
+	//construct the command register address (offset 0x300)    
+  icr = (u32 *) (((u32)eax & 0xFFFFF000UL) + 0x300);
+    
+  //our AP boot-strap code is at physical memory location 0x10000.
+	//so use 0x10 as the vector (0x10000/0x1000 = 0x10)
+
+  //send INIT
+  *icr = 0x000c4500UL;
+  udelay(10000);
+  //wait for command completion
+  {
+    u32 val;
+    do{
+      val = *icr;
+    }while( (val & 0x1000) );
+  }
+
+  //send SIPI (twice as per the MP protocol)
+  {
+    int i;
+    for(i=0; i < 2; i++){
+      *icr = 0x000c4610UL;
+      udelay(200);
+        //wait for command completion
+        {
+          u32 val;
+          do{
+            val = *icr;
+          }while( (val & 0x1000) );
+        }
+      }
+  }    
+}
+

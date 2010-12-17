@@ -43,7 +43,7 @@ SECTIONS
 	. = 0xC0000000;
 
   .text : {
-  	*(.s_xtlpb)
+  	*(.s_rpb)
  		*(.text)
  		. = ALIGN(4096);    
   } =0x9090 

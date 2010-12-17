@@ -40,6 +40,7 @@
 #include <target.h>
 
 #include <_libsechyp.h>
+#include <globals.h>
 
 static void __set_page_prot(u32 pfn, u8 *bit_vector){
   u32 byte_offset, bit_offset;
@@ -74,16 +75,14 @@ static u32 __test_page_prot(u32 pfn, u8 *bit_vector){
 
 //---IOPM Bitmap interface------------------------------------------------------
 void sechyp_iopm_set_write(VCPU *vcpu, u32 port, u32 size){
-  extern u32 svm_iopm[];
   u32 i;
 
   for (i = 0; i < size; i ++)
-    __set_page_prot((port+i), (u8 *)svm_iopm);
+    __set_page_prot((port+i), (u8 *)g_svm_iopm);
 }
 
 //---MSRPM Bitmap interface------------------------------------------------------
 void sechyp_msrpm_set_write(VCPU *vcpu, u32 msr){
-  extern u8 svm_msrpm[];
   u32 byte_offset, bit_offset;
 
   if ((msr >= (u32)0xC0000000) && (msr < (u32)0xC0002000))
@@ -94,6 +93,6 @@ void sechyp_msrpm_set_write(VCPU *vcpu, u32 msr){
   // each msr covers 2 bits, one for read and one for write 
   byte_offset = (msr << 1) / 8;
   bit_offset = (msr << 1) & 7;
-  svm_msrpm[byte_offset] |= (1 << (bit_offset + 1));
+  g_svm_msrpm[byte_offset] |= (1 << (bit_offset + 1));
 }
 

@@ -41,7 +41,7 @@
 
 
 extern u32 slpb_buffer[];
-PXTLPB lpb;
+RPB * rpb;
 u32 sl_baseaddr=0;	
 extern void XtLdrTransferControlToRtm(u32 gdtbase, u32 idtbase,
 	u32 entrypoint, u32 stacktop)__attribute__((cdecl)); 
@@ -57,8 +57,8 @@ void runtime_setup_paging(u32 physaddr, u32 virtaddr, u32 totalsize){
 	u64 flags;
 	u32 runtime_image_offset = PAGE_SIZE_2M;
 	
-	xpdpt=(pdpt_t)((u32)lpb->XtVmmPdptBase - __TARGET_BASE + runtime_image_offset);
-	xpdt=(pdt_t)((u32)lpb->XtVmmPdtsBase  - __TARGET_BASE + runtime_image_offset);
+	xpdpt=(pdpt_t)((u32)rpb->XtVmmPdptBase - __TARGET_BASE + runtime_image_offset);
+	xpdt=(pdt_t)((u32)rpb->XtVmmPdtsBase  - __TARGET_BASE + runtime_image_offset);
 	
 	//printf("\npa xpdpt=0x%08x, xpdt=0x%08x", (u32)xpdpt, (u32)xpdt);
 	
@@ -196,25 +196,25 @@ void slmain(u32 baseaddr){
 	//setup runtime image for startup
 	
 		//get a pointer to the runtime header
-  	lpb=(PXTLPB)PAGE_SIZE_2M;	//runtime starts at offset 2M from sl base
-		ASSERT(lpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
+  	rpb=(RPB *)PAGE_SIZE_2M;	//runtime starts at offset 2M from sl base
+		ASSERT(rpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
 		
     //store runtime physical and virtual base addresses along with size
-  	lpb->XtVmmRuntimePhysBase = runtime_physical_base;
-  	lpb->XtVmmRuntimeVirtBase = __TARGET_BASE;
-  	lpb->XtVmmRuntimeSize = slpb->runtime_size;
+  	rpb->XtVmmRuntimePhysBase = runtime_physical_base;
+  	rpb->XtVmmRuntimeVirtBase = __TARGET_BASE;
+  	rpb->XtVmmRuntimeSize = slpb->runtime_size;
 
 	  //store revised E820 map and number of entries
-	  memcpy((void *)((u32)lpb->XtVmmE820Buffer - __TARGET_BASE + PAGE_SIZE_2M), (void *)&slpb->e820map, (sizeof(GRUBE820) * slpb->numE820Entries));
-  	lpb->XtVmmE820NumEntries = slpb->numE820Entries; 
+	  memcpy((void *)((u32)rpb->XtVmmE820Buffer - __TARGET_BASE + PAGE_SIZE_2M), (void *)&slpb->e820map, (sizeof(GRUBE820) * slpb->numE820Entries));
+  	rpb->XtVmmE820NumEntries = slpb->numE820Entries; 
 
 		//store CPU table and number of CPUs
-    memcpy((void *)((u32)lpb->XtVmmMPCpuinfoBuffer - __TARGET_BASE + PAGE_SIZE_2M), (void *)&slpb->pcpus, (sizeof(PCPU) * slpb->numCPUEntries));
-  	lpb->XtVmmMPCpuinfoNumEntries = slpb->numCPUEntries; 
+    memcpy((void *)((u32)rpb->XtVmmMPCpuinfoBuffer - __TARGET_BASE + PAGE_SIZE_2M), (void *)&slpb->pcpus, (sizeof(PCPU) * slpb->numCPUEntries));
+  	rpb->XtVmmMPCpuinfoNumEntries = slpb->numCPUEntries; 
 
    	//setup guest OS boot module info in LPB	
-		lpb->XtGuestOSBootModuleBase=slpb->runtime_osbootmodule_base;
-		lpb->XtGuestOSBootModuleSize=slpb->runtime_osbootmodule_size;
+		rpb->XtGuestOSBootModuleBase=slpb->runtime_osbootmodule_base;
+		rpb->XtGuestOSBootModuleSize=slpb->runtime_osbootmodule_size;
 
 	 	//setup runtime IDT
 		{
@@ -222,9 +222,9 @@ void slmain(u32 baseaddr){
 			idtentry_t *idtentry;
 			u32 i;
 			
-			fptr=(u32 *)((u32)lpb->XtVmmIdtFunctionPointers - __TARGET_BASE + PAGE_SIZE_2M);
-			idtbase= *(u32 *)(((u32)lpb->XtVmmIdt - __TARGET_BASE + PAGE_SIZE_2M) + 2);
-			for(i=0; i < lpb->XtVmmIdtEntries; i++){
+			fptr=(u32 *)((u32)rpb->XtVmmIdtFunctionPointers - __TARGET_BASE + PAGE_SIZE_2M);
+			idtbase= *(u32 *)(((u32)rpb->XtVmmIdt - __TARGET_BASE + PAGE_SIZE_2M) + 2);
+			for(i=0; i < rpb->XtVmmIdtEntries; i++){
 				idtentry_t *idtentry=(idtentry_t *)((u32)idtbase+ (i*8));
 				idtentry->isrLow= (u16)fptr[i];
 				idtentry->isrHigh= (u16) ( (u32)fptr[i] >> 16 );
@@ -241,10 +241,10 @@ void slmain(u32 baseaddr){
 			extern u32 sl_runtime_entrypoint_patch[];
 			u32 *patchloc = (u32 *)((u32)sl_runtime_entrypoint_patch + 1);
 			
-			runtime_gdt = lpb->XtVmmGdt;
-			runtime_idt = lpb->XtVmmIdt;
-			runtime_entrypoint = lpb->XtVmmEntryPoint;
-			runtime_topofstack = lpb->XtVmmStackBase+lpb->XtVmmStackSize; 
+			runtime_gdt = rpb->XtVmmGdt;
+			runtime_idt = rpb->XtVmmIdt;
+			runtime_entrypoint = rpb->XtVmmEntryPoint;
+			runtime_topofstack = rpb->XtVmmStackBase+rpb->XtVmmStackSize; 
 			printf("\nSL: runtime entry values:");
 			printf("\n	gdt=0x%08x, idt=0x%08x", runtime_gdt, runtime_idt);
 			printf("\n	entrypoint=0x%08x, topofstack=0x%08x", runtime_entrypoint, runtime_topofstack);

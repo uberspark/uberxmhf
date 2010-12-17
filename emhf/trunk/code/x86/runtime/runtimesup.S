@@ -109,17 +109,27 @@ XtRtmEmitIdtStub 1e
 XtRtmEmitIdtStub 1f	
 
 
+	
+	.extern g_e820map
+	.extern g_cpumap	
+	.extern g_midtable
+	.extern g_midtable_numentries
+
 	.extern cstartup
+	.extern allcpus_common_start
 	
+
+//------------------------------------------------------------------------------
+//RUNTIME PARAMETER BLOCK DATA
+//------------------------------------------------------------------------------
 	
-	
-	.section .s_xtlpb
-	.global _xtlpb
-_xtlpb:
+	.section .s_rpb
+	.global _rpb
+_rpb:
 	.long RUNTIME_PARAMETER_BLOCK_MAGIC
 	.long cstartup
-	.long xtrac_3level_pdpt
-	.long	xtrac_3level_pdt
+	.long x_3level_pdpt
+	.long	x_3level_pdt
 	.long 0
 	.long 0
 	.long 0
@@ -147,10 +157,15 @@ _xtlpb:
 	.long 0  //physical base address of runtime
 	.long 0  //virtual base address of runtime
 	.long 0  //2M aligned size of runtime
-	.long __grube820buffer   //GRUB E820 map
+	.long g_e820map				   //system E820 map
 	.long 0                  //number of entries
-	.long __mp_cpuinfo       //MP cpu information
+	.long g_cpumap		       //system CPU map
 	.long 0                  //number of entries
+
+
+//------------------------------------------------------------------------------
+//DATA (LOCAL)
+//------------------------------------------------------------------------------
 	
 	.section .data
 	x_gdt:
@@ -208,91 +223,38 @@ _xtlpb:
 	.long XtRtmIdtStub1e
 	.long XtRtmIdtStub1f
 	
-	
-	.global __grube820buffer
-  __grube820buffer:
-	.fill SIZE_STRUCT_GRUBE820 * MAX_E820_ENTRIES, 1, 0
-	
-	.global __mp_cpuinfo
-	__mp_cpuinfo:
-	.fill SIZE_STRUCT_PCPU * MAX_PCPU_ENTRIES, 1, 0
-	
+
+//------------------------------------------------------------------------------
+//STACK (LOCAL)
+//------------------------------------------------------------------------------
 	
 	.section .stack
-	.global x_init_stack
 x_init_stack:
 	.fill	8192, 1, 0
 
-  //runtime stacks for individual CPUs
-  .global __cpustacks
-  __cpustacks:
-  .fill RUNTIME_STACK_SIZE * MAX_PCPU_ENTRIES, 1, 0
+//------------------------------------------------------------------------------
+// DATA (LOCAL, PAGE_ALIGNED)
+//------------------------------------------------------------------------------
 
-  .section .data
-  .align 4
-  .global __vcpubuffers
-  __vcpubuffers:
-  .fill SIZE_STRUCT_VCPU * MAX_VCPU_ENTRIES, 1, 0
-  
-	
 	.section	.palign_data
 	.align 4096
 	//page tables for the runtime
-  xtrac_3level_pdpt:
+  x_3level_pdpt:
 		.fill 4096, 1, 0
 	.global xtrac_3level_pdt
-	xtrac_3level_pdt:
+	x_3level_pdt:
 		.fill 4*4096, 1, 0
 
 
 
-	//virtual LAPIC page for BSP to track SIPI
-	.global virtual_LAPIC_base
-	virtual_LAPIC_base:
-	 .fill 4096, 1, 0
+//------------------------------------------------------------------------------
+//CODE
+//------------------------------------------------------------------------------
 
-  //nested page tables for CPUs
-  .global svm_npt_pdpt_buffers
-  svm_npt_pdpt_buffers:
-    .fill 4096 * MAX_VCPU_ENTRIES, 1, 0
-  
-  .global svm_npt_pdts_buffers
-  svm_npt_pdts_buffers:
-    .fill (4*4096)* MAX_VCPU_ENTRIES, 1, 0
-
-	.global svm_npt_pts_buffers
-	svm_npt_pts_buffers:
-		.fill (2048*4096) * MAX_VCPU_ENTRIES, 1, 0
-
-  //sipi pages for CPUs
-  .global svm_sipi_page_buffers
-  svm_sipi_page_buffers:
-    .fill 4096 * MAX_VCPU_ENTRIES, 1, 0
-
-  //VM_HSAVE buffers for CPUs
-  .global svm_hsave_buffers
-  svm_hsave_buffers:
-  .fill 8192 * MAX_VCPU_ENTRIES, 1, 0
-  
-  //VMCB buffers for CPUs
-  .global svm_vmcb_buffers
-  svm_vmcb_buffers:
-  .fill 8192 * MAX_VCPU_ENTRIES, 1, 0 
-
-  //IOPM buffer for CPUs
-  .global svm_iopm
-	svm_iopm:
-		.fill	SIZEOF_IOPM_BITMAP, 1, 0
-
-  //MSRPM buffer for CPUs
-  .global svm_msrpm
-  svm_msrpm:
-    .fill SIZEOF_MSRPM_BITMAP, 1, 0
-
-
-//---AP boot-strap code---------------------------------------------------------
 .section .text
-  .code16
+
+	//---AP boot-strap code-------------------------------------------------------
+	.code16
   .global _ap_bootstrap_start
   _ap_bootstrap_start:
     jmp ap_bootstrap_bypassdata
@@ -359,18 +321,7 @@ x_init_stack:
     nop
     nop
 
-//------------------------------------------------------------------------------    
-.section  .data
-  .align 8
-  .global __midtable
-  __midtable:
-  .fill (SIZE_STRUCT_MIDTAB * MAX_MIDTAB_ENTRIES), 1, 0
-
-.extern allcpus_common_start
-//.extern midtable_numentries
-.extern g_runtime
-              
-.section .text
+	//---AP common low-level entry point with paging enabled----------------------
   .global _ap_pmode_entry_with_paging
   _ap_pmode_entry_with_paging:
     //load our gdt and idt
@@ -386,11 +337,13 @@ x_init_stack:
     movl (%eax), %eax
     shr $24, %eax
 
-    // XXX movl midtable_numentries, %edx
-    movl g_runtime, %edx
+    movl g_midtable_numentries, %edx
+    //movl g_runtime, %edx
+    
     
     //get vcpu virtual address of this CPU/core
-    movl $(__midtable), %ebx
+    //movl $(__midtable), %ebx
+    movl $(g_midtable), %ebx
     xorl %ecx, %ecx
 getvcpuloop:
     movl 0x0(%ebx, %ecx, SIZE_STRUCT_MIDTAB), %ebp  //ebp contains the lapic id

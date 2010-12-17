@@ -3,13 +3,13 @@
 
 # source files
 AS_SOURCES = runtimesup.S islayersup.S 
-C_SOURCES = runtime.c islayer.c apic.c libsechyp.c
+C_SOURCES = runtime.c islayer.c apic.c libsechyp.c globals.c
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
 
-OBJECTS_PRECOMPILED = ../libcommon/mpsup.o ../libcommon/string.o
+OBJECTS_PRECOMPILED = ../libcommon/mpsup.o ../libcommon/string.o ../libcommon/delay_pit.o
 
 ifeq ($(DEBUG_SERIAL), y)
 OBJECTS_PRECOMPILED += ../libcommon/dbg_printf.o ../libcommon/dbg_uart.o

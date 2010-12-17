@@ -150,11 +150,11 @@ void shadow_get_shadowentry(u32 gva, u32 **pdt_entry, u32 **pt_entry){
 
 
 void shadow_get_guestentry(u32 gva, u32 gCR3, u32 **pdt_entry, u32 **pt_entry){
-  __CPROVER_assume(gCR3 != 0);
+  //__CPROVER_assume(gCR3 != 0);
   u32 index_pdt, index_pt; 
   npdt_t g_pdt=(npdt_t)gpa_to_hpa((u32)npae_get_addr_from_32bit_cr3(gCR3));
 
-  __CPROVER_assume(g_pdt != 0);
+  //__CPROVER_assume(g_pdt != 0);
   npt_t g_pt;
   u32 g_pdt_entry, g_pt_entry;
 	
@@ -205,7 +205,7 @@ u32 shadow_alloc_pt(u32 gva){
 
 //returns 1 if the page is present in guest, else 0
 u32 is_present_guest(u32 *gPDE, u32 *gPTE){
-  assert ( gPDE != (u32 *)0 );
+  //assert ( gPDE != (u32 *)0 );
 	
   if( !(*gPDE & _PAGE_PRESENT) )
     return 0;
@@ -262,6 +262,7 @@ void shadow_updateshadowentries(u32 gva, u32 **sPDE, u32 **sPTE,
 
   if( **gPDE & _PAGE_PSE){	//4M page
     //copy the entire entry into shadow	
+
     if( npae_get_addr_from_pde(**gPDE) <= GUEST_PHYSICALMEMORY_LIMIT){
       **sPDE = **gPDE;
     }else{
