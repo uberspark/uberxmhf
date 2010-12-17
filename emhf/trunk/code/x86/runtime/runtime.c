@@ -135,7 +135,9 @@ void allcpus_common_start(VCPU *vcpu){
   //step:1 rally all APs up, make sure all of them started, this is
   //a task for the BSP
   if(isbsp()){
-    printf("\nBSP rallying APs...");
+    vcpu->isbsp = 1;	//this core is a BSP
+    
+		printf("\nBSP rallying APs...");
     printf("\nBSP(0x%02x): My ESP is 0x%08x", vcpu->id, vcpu->esp);
 
     //increment a CPU to account for the BSP
@@ -157,6 +159,8 @@ void allcpus_common_start(VCPU *vcpu){
     //we are an AP, so we need to simply update the AP startup counter
     //and wait until we are told to proceed
     //increment active CPUs
+		vcpu->isbsp=0;	//this core is a AP
+
     spin_lock(&g_lock_cpus_active);
     g_cpus_active++;
     spin_unlock(&g_lock_cpus_active);
@@ -164,32 +168,15 @@ void allcpus_common_start(VCPU *vcpu){
     while(!g_ap_go_signal); //Just wait for the BSP to tell us all is well.
  
     printf("\nAP(0x%02x): My ESP is 0x%08x, proceeding...", vcpu->id, vcpu->esp);
-
-    //while(!vcpu->sipireceived);
-    //printf("\nAP(0x%02x): SIPI signal received, vector=0x%02x", vcpu->id, vcpu->sipivector);
   }
   
-  
-  //point to diffrentiate Intel vs AMD
-  
-	//outline of steps
-	//1. initialize isolation layer (initSVM and initVMCB in case of AMD)
-	//2. call app main (common to AMD and Intel)
-	//3. wait for all cores to cycle through app main (common to AMD and Intel)
-	//4. if BSP setup sipi (different for Intel and AMD)
-	//5. if AP wait for sipi (different for Intel and AMD)
-	//6. enter HVM (different for BSP and AP but common for Intel and AMD)
-	
 	if(vcpu->cpu_vendor == CPU_VENDOR_INTEL){
 		printf("\nCPU(0x%02x): Intel integration still WiP, HALT!", vcpu->id);
 		HALT();
 	}
   
-  //initialize SVM
-  initSVM(vcpu);
- 
-  //initiaize VMCB
-  initVMCB(vcpu); 
+  //initialize SVM-based isolation layer
+	svm_initialize(vcpu);
 
   //call app main
   if(emhf_app_main(vcpu)){
@@ -213,7 +200,7 @@ void allcpus_common_start(VCPU *vcpu){
 #if defined (__MP_VERSION__)  
 	//if we are the BSP setup SIPI intercept
   if(isbsp()){
-    apic_setup(vcpu);
+    svm_apic_setup(vcpu);
 		printf("\nCPU(0x%02x): BSP, setup SIPI interception.", vcpu->id);
   }else{ //else, we are an AP and wait for SIPI signal
     printf("\nCPU(0x%02x): AP, waiting for SIPI signal...", vcpu->id);
@@ -226,36 +213,16 @@ void allcpus_common_start(VCPU *vcpu){
 		//	vcpu->vmcs.guest_CS_selector = (vcpu->sipivector * PAGE_SIZE_4K) >> 4;
 		//	vcpu->vmcs.guest_CS_base = (vcpu->sipivector * PAGE_SIZE_4K);
 		//}else
-		{
-			//update VMCB with startup CS:IP
-			struct vmcb_struct *vmcb;
-      vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr; 
-			vmcb->rip = 0x0ULL;
-			vmcb->cs.sel = (vcpu->sipivector * PAGE_SIZE_4K) >> 4; 
-			vmcb->cs.base = (vcpu->sipivector * PAGE_SIZE_4K); 
-		}
+		
+		svm_initialize_vmcb_csrip(vcpu, ((vcpu->sipivector * PAGE_SIZE_4K) >> 4),
+					 (vcpu->sipivector * PAGE_SIZE_4K), 0x0ULL);
 	}
 #endif
 
 
-
-//#ifdef __NESTED_PAGING__
-    //if we are the BSP setup SIPI intercept
-//    if(isbsp() && (g_midtable_numentries > 1) )
-//      apic_setup(vcpu);
- 
-//#endif
-    
   //start HVM
-  {
-    struct vmcb_struct *vmcb;
-    void startHVM(VCPU *vcpu, u32 vmcb_phys_addr);
-    printf("\nCPU(0x%02x): Starting HVM...", vcpu->id);
-    vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
-    printf("\n  CS:EIP=0x%04x:0x%08x", (u16)vmcb->cs.sel, (u32)vmcb->rip);
-    startHVM(vcpu, __hva2spa__(vcpu->vmcb_vaddr_ptr));
-    printf("\nCPU(0x%02x): FATAL, should not be here. HALTING!", vcpu->id);
-    HALT();
-  }
+  svm_start_hvm(vcpu);
 
+  printf("\nCPU(0x%02x): FATAL, should not be here. HALTING!", vcpu->id);
+  HALT();
 }

@@ -40,41 +40,20 @@
 #include <target.h>
 #include <globals.h>
 
-//__grub_e820list
 //system e820 map
 E820MAP g_e820map[MAX_E820_ENTRIES] __attribute__(( section(".data") ));
-
-//	.global __mp_cpuinfo
-//	__mp_cpuinfo:
-//	.fill SIZE_STRUCT_PCPU * MAX_PCPU_ENTRIES, 1, 0
 
 //SMP CPU map; lapic id, base, ver and bsp indication for each available core
 PCPU	g_cpumap[MAX_PCPU_ENTRIES] __attribute__(( section(".data") ));
 
 //runtime stacks for individual cores
-//  .global __cpustacks
-//  __cpustacks:
-//  .fill RUNTIME_STACK_SIZE * MAX_PCPU_ENTRIES, 1, 0
 u8 g_cpustacks[RUNTIME_STACK_SIZE * MAX_PCPU_ENTRIES] __attribute__(( section(".stack") ));
 
-
-//  .section .data
-//  .align 4
-//  .global __vcpubuffers
-//  __vcpubuffers:
-//  .fill SIZE_STRUCT_VCPU * MAX_VCPU_ENTRIES, 1, 0
 //VCPU structure for each "guest OS" core
 VCPU g_vcpubuffers[MAX_VCPU_ENTRIES] __attribute__(( section(".data") ));
 
-//------------------------------------------------------------------------------    
-//.section  .data
-//  .align 8
-//  .global __midtable
-//  __midtable:
-//  .fill (SIZE_STRUCT_MIDTAB * MAX_MIDTAB_ENTRIES), 1, 0
 //master id table, contains core lapic id to VCPU mapping information
 MIDTAB g_midtable[MAX_MIDTAB_ENTRIES] __attribute__(( section(".data") ));
-
 
 //number of entries in the master id table, in essence the number of 
 //physical cores in the system
@@ -104,22 +83,22 @@ u32 g_appmain_success_counter __attribute__(( section(".data") )) = 0;
 //SMP lock for the above variable
 u32 g_lock_appmain_success_counter __attribute__(( section(".data") )) = 1;
 
-
-
 //runtime parameter block pointer 
 RPB *rpb __attribute__(( section(".data") )); 
 
 
 //------------------------------------------------------------------------------
-//isolation layer specific runtime globals
-//these are global variables accessed across islayer.c, islayersup.S and
-//apic.c
+//SVM isolation layer specific runtime globals
+//these are global variables accessed across islayer_svm.c, islayersup_svm.S and
+//apic_svm.c
+
+//apic_svm.c
+
+//the BSP LAPIC base address
+u32 g_svm_lapic_base __attribute__(( section(".data") )) = 0;
 
 
-
-/**
- * Isolation Layer (islayer.c)
- */
+//islayer_svm.c
 
 //the quiesce counter, all CPUs except for the one requesting the
 //quiesce will increment this when they get their quiesce signal
@@ -150,79 +129,39 @@ u32 g_svm_lock_quiesce_resume_signal __attribute__(( section(".data") )) = 1;
 //we have processed E820 requests and its safe to de-link
 u32 g_svm_ine820handler __attribute__(( section(".data") )) = 0;
 
-
-//apic.c
-
-//the BSP LAPIC base address
-u32 g_svm_lapic_base __attribute__(( section(".data") )) = 0;
-
-
-
-
 //4k buffer which is the virtual LAPIC page that guest reads and writes from/to
 //during INIT-SIPI-SIPI emulation
-	//virtual LAPIC page for BSP to track SIPI
-	//.global virtual_LAPIC_base
-	//virtual_LAPIC_base:
-	// .fill 4096, 1, 0
 u8 g_svm_virtual_LAPIC_base[PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
 
-
-//  .global svm_npt_pdpt_buffers
-//  svm_npt_pdpt_buffers:
-//   .fill 4096 * MAX_VCPU_ENTRIES, 1, 0
 //SVM NPT PDPT buffers
 u8 g_svm_npt_pdpt_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
   
-//  .global svm_npt_pdts_buffers
-//  svm_npt_pdts_buffers:
-//    .fill (4*4096)* MAX_VCPU_ENTRIES, 1, 0
 //SVM NPT PDT buffers
 u8 g_svm_npt_pdts_buffers[PAE_PTRS_PER_PDPT * PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".palign_data") ));
 
-//	.global svm_npt_pts_buffers
-//	svm_npt_pts_buffers:
-//		.fill (2048*4096) * MAX_VCPU_ENTRIES, 1, 0
 //SVM NPT PT buffers
 u8 g_svm_npt_pts_buffers[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".palign_data") )); 
 
-  //sipi pages for CPUs
-//  .global svm_sipi_page_buffers
-//  svm_sipi_page_buffers:
-//    .fill 4096 * MAX_VCPU_ENTRIES, 1, 0
 //SVM SIPI page buffers used for guest INIT-SIPI-SIPI emulation
 u8 g_svm_sipi_page_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".palign_data") ));
 
-//  .global svm_hsave_buffers
-//  svm_hsave_buffers:
-//  .fill 8192 * MAX_VCPU_ENTRIES, 1, 0
 //SVM VM_HSAVE buffers 
 u8 g_svm_hsave_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".palign_data") ));
 
-  
-//  .global svm_vmcb_buffers
-//  svm_vmcb_buffers:
-//  .fill 8192 * MAX_VCPU_ENTRIES, 1, 0
 //SVM VMCB buffers 
 u8 g_svm_vmcb_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".palign_data") )); 
 
-//  .global svm_iopm
-//	svm_iopm:
-//		.fill	SIZEOF_IOPM_BITMAP, 1, 0
 //SVM IO bitmap buffer
 u8 g_svm_iopm[SIZEOF_IOPM_BITMAP]__attribute__(( section(".palign_data") )); 
 
-//  .global svm_msrpm
-//  svm_msrpm:
-//    .fill SIZEOF_MSRPM_BITMAP, 1, 0
 //SVM MSR bitmap buffer
 u8 g_svm_msrpm[SIZEOF_MSRPM_BITMAP]__attribute__(( section(".palign_data") ));
 
 
+//------------------------------------------------------------------------------
 void runtime_globals_init(){
 
 	//initialize runtime parameter block pointer
 	rpb = (RPB *)_rpb;
-
 }
  

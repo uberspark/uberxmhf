@@ -61,12 +61,6 @@
 //_ap_cr4_value;
 
 
-//extern u32 g_svm_iopm[];
-//extern u32 g_svm_msrpm[];
-//  extern u32 g_svm_hsave_buffers[], g_svm_vmcb_buffers[];
-//  extern u32 g_svm_npt_pdpt_buffers[], g_svm_npt_pdts_buffers[], g_svm_sipi_page_buffers[];
-//  extern u32 g_svm_npt_pts_buffers[];
-
 
 //---function prototypes--------------------------------------------------------
 u32 XtRtmIslInterceptHandler(VCPU *vcpu, struct regs *r);
@@ -961,3 +955,39 @@ void wakeupAPs(void){
   printf("\nBSP: APs should be awake.");
 }
 
+//------------------------------------------------------------------------------
+//svm_initialize
+//initialize SVM on the core
+void svm_initialize(VCPU *vcpu){
+  //initialize SVM
+  initSVM(vcpu);
+ 
+  //initiaize VMCB
+  initVMCB(vcpu); 
+}
+
+//------------------------------------------------------------------------------
+//svm_initialize_vmcb_csrip
+//initialize CS and RIP fields in the VMCB of the core
+void svm_initialize_vmcb_csrip(VCPU *vcpu, u16 cs_selector, u32 cs_base,
+		u64 rip){
+	struct vmcb_struct *vmcb;
+  vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr; 
+	
+	vmcb->rip = rip;
+	vmcb->cs.sel = cs_selector; 
+	vmcb->cs.base = cs_base; 
+}
+
+//------------------------------------------------------------------------------
+//svm_start_hvm
+//start a HVM on the core
+void svm_start_hvm(VCPU *vcpu){
+    struct vmcb_struct *vmcb;
+    vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+    printf("\nCPU(0x%02x): Starting HVM using CS:EIP=0x%04x:0x%08x...", vcpu->id,
+			(u16)vmcb->cs.sel, (u32)vmcb->rip);
+    __svm_start_hvm(vcpu, __hva2spa__(vcpu->vmcb_vaddr_ptr));
+ 		//we never get here, if we do, we just return and our caller is responsible
+ 		//for halting the core as something really bad happened!
+}

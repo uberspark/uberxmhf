@@ -38,25 +38,12 @@
 #include <target.h>
 #include <globals.h>
 
-//generic globals used by the svm islayer
-//g_midtable_numentries
-
-//u32 lapic_base=0;
-//u32 lapic_reg=0;
-//u32 lapic_op=LAPIC_OP_RSVD;
 
 //the LAPIC register that is being accessed during emulation
 static u32 g_svm_lapic_reg __attribute__(( section(".data") )) = 0;
 
 //the LAPIC operation that is being performed during emulation
 static u32 g_svm_lapic_op __attribute__(( section(".data") )) = LAPIC_OP_RSVD;
-
-//have one 4k buffer
-//2. virtual_LAPIC_vaddr  - 4k buffer which is the virtual LAPIC page that
-//                        guest reads and writes from/to
-//extern u32 virtual_LAPIC_base[];
-
-//extern MIDTAB *midtable;
 
 
 //--NPT manipulation routines---------------------------------------------------
@@ -156,6 +143,27 @@ u32 lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
   
 }
 
+
+//---checks if all logical cores have received SIPI
+//returns 1 if yes, 0 if no
+static u32 have_all_cores_recievedSIPI(void){
+  u32 i;
+  VCPU *vcpu;
+  
+	//iterate through all logical processors in master-id table
+	for(i=0; i < g_midtable_numentries; i++){
+  	vcpu = (VCPU *)g_midtable[i].vcpu_vaddr_ptr;
+		if(vcpu->isbsp)
+			continue;	//BSP does not receive SIPI
+		
+		if(!vcpu->sipireceived)
+			return 0;	//one or more logical cores have not received SIPI
+  }
+  
+  return 1;	//all logical cores have received SIPI
+}
+
+
 //---SIPI processing logic------------------------------------------------------
 //return 1 if lapic interception has to be discontinued, typically after
 //all aps have received their SIPI, else 0
@@ -188,26 +196,20 @@ u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
   printf("\nfound AP to pass SIPI to; id=0x%02x, vcpu=0x%08x",
       dest_vcpu->id, (u32)dest_vcpu);  
   
-  //debug, halt on id=0x2
-  //if(dest_vcpu->id == 0x3){
-  //  printf("\nonly 2 AP supported as of now!");
-  //  HALT();
-  //}
   
   //send the sipireceived flag to trigger the AP to start the HVM
   if(dest_vcpu->sipireceived){
-    printf("\nDestination CPU #0x%02x has already received SIPI, ignoring", dest_vcpu->id);
-    if(dest_vcpu->id == 0x03)
-      return 1;
-    else
-      return 0;
+    printf("\nCPU(0x%02x): destination CPU #0x%02x has already received SIPI, ignoring", vcpu->id, dest_vcpu->id);
+  }else{
+		dest_vcpu->sipivector = (u8)icr_low_value;
+  	dest_vcpu->sipireceived = 1;
+  	printf("\nCPU(0x%02x): Sent SIPI command to AP, should awaken it!");
   }
-  
-  dest_vcpu->sipivector = (u8)icr_low_value;
-  dest_vcpu->sipireceived = 1;
-  
-  printf("\nSent SIPI command to AP, should awaken it!");
-  return 0;  
+
+	if(have_all_cores_recievedSIPI())
+		return 1;	//all cores have received SIPI, we can discontinue LAPIC interception
+	else
+		return 0;	//some cores are still to receive SIPI, continue LAPIC interception  
 }
 
 
@@ -288,7 +290,7 @@ fallthrough:
 
 
 
-void apic_setup(VCPU *vcpu){
+void svm_apic_setup(VCPU *vcpu){
   u32 eax, edx;
   struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
   

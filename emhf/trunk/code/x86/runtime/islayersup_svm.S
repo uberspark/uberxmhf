@@ -64,10 +64,10 @@
 
 .section .text
 
-//---startHVM-------------------------------------------------------------------	
+//---__svm_start_hvm------------------------------------------------------------	
 //we dont care about saving any CPU GPRs as we enter startHVM
-.global startHVM
-startHVM:
+.global __svm_start_hvm
+__svm_start_hvm:
   movl 0x4(%esp), %ebx  //ebx = vcpu vaddr of current CPU
   movl 0x8(%esp), %eax  //eax = vmcb phys. addr of current CPU
 
