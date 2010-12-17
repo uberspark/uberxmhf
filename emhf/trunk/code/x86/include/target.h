@@ -91,7 +91,7 @@
 #define SIZE_STRUCT_MIDTAB  (8)
 #define MAX_MIDTAB_ENTRIES  (MAX_PCPU_ENTRIES)
 
-#define SIZE_STRUCT_VCPU    (48)
+#define SIZE_STRUCT_VCPU    (52)
 #define MAX_VCPU_ENTRIES    (MAX_PCPU_ENTRIES)
 
 #define AP_BOOTSTRAP_CODE_SEG 0x1000
@@ -157,6 +157,7 @@ typedef struct {
   u32 sipireceived;       //SIPI received indicator, 1 if yes
   u32 nmiinhvm;           //this is 1 if there was a NMI when in HVM, else 0        
 	u32 cpu_vendor;					//Intel or AMD
+	u32 isbsp;							//1 if this core is BSP else 0
 } __attribute__((packed)) VCPU;
 
 typedef struct {
@@ -297,6 +298,14 @@ void initMSRinterception(VCPU *vcpu, struct vmcb_struct *vmcb);
 void initIOinterception(VCPU *vcpu, struct vmcb_struct *vmcb);
 void setupvcpus(u32 cpu_vendor, MIDTAB *midtable, u32 midtable_numentries);
 u32 isbsp(void);
+
+
+//SVM isolation layer interfaces
+void svm_initialize(VCPU *vcpu);
+void svm_initialize_vmcb_csrip(VCPU *vcpu, u16 cs_selector, u32 cs_base, u64 rip);
+void svm_apic_setup(VCPU *vcpu);
+void __svm_start_hvm(VCPU *vcpu, u32 vmcb_phys_addr);
+void svm_start_hvm(VCPU *vcpu);
 
 #endif
 

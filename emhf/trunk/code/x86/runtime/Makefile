@@ -5,7 +5,7 @@
 AS_SOURCES = runtimesup.S 
 C_SOURCES = runtime.c globals.c libsechyp.c 
 
-AS_SOURCE += islayersup_svm.S 
+AS_SOURCES += islayersup_svm.S 
 C_SOURCES += islayer_svm.c apic_svm.c  
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))

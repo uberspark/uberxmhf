@@ -41,17 +41,6 @@
 #ifndef __GLOBALS_H__
 #define __GLOBALS_H__
 
-/**
- * XXX TODO At the moment the globals are organized by what C file
- * contains their actual (non-extern) definition.  This design
- * decision should be more carefully considered.  Ideally, there won't
- * be many globals, and they can all be collapsed into a single
- * structure.
- */ 
-
-
-
-
 //system e820 map
 extern E820MAP g_e820map[] __attribute__(( section(".data") ));
 
@@ -95,7 +84,6 @@ extern u32 g_appmain_success_counter __attribute__(( section(".data") ));
 //SMP lock for the above variable
 extern u32 g_lock_appmain_success_counter __attribute__(( section(".data") ));
 
-
 //runtime parameter block data area (in runtimesup.S)
 extern u8 _rpb[];
 
@@ -121,16 +109,20 @@ extern u32 _ap_cr3_value;
 extern u32 _ap_cr4_value;
 
 
+
+
+
 //------------------------------------------------------------------------------
-//isolation layer specific runtime globals
-//these are global variables accessed across islayer.c, islayersup.S and
-//apic.c
+//SVM isolation layer specific runtime globals
+//these are global variables accessed across islayer_svm.c, islayersup_svm.S and
+//apic_svm.c
 
+//apic_svm.c
 
+//the BSP LAPIC base address
+extern u32 g_svm_lapic_base __attribute__(( section(".data") ));
 
-/**
- * Isolation Layer (islayer.c)
- */
+//islayer_svm.c
 
 //the quiesce counter, all CPUs except for the one requesting the
 //quiesce will increment this when they get their quiesce signal
@@ -160,12 +152,6 @@ extern u32 g_svm_lock_quiesce_resume_signal __attribute__(( section(".data") ));
 //variable that is used to de-link the INT 15 handler, if 1 then signifies that
 //we have processed E820 requests and its safe to de-link
 extern u32 g_svm_ine820handler __attribute__(( section(".data") ));
-
-//apic.c
-
-//the BSP LAPIC base address
-extern u32 g_svm_lapic_base __attribute__(( section(".data") ));
-
 
 
 //4k buffer which is the virtual LAPIC page that guest reads and writes from/to
