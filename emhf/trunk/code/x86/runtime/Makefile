@@ -30,9 +30,9 @@ all: $(OBJECTS)
 	$(STRIP) -s runtime.exe
 	$(OBJCOPY) --input-format=pe-i386 --output-format=binary runtime.exe runtime.bin
 
-%.o: %.S $(I_SOURCES) Makefile ../Makefile
+%.o: %.S $(I_SOURCES) Makefile ../Makefile ../../../Makefile
 	$(CC) -c $(ASFLAGS) -o $@ $<
-%.o: %.c $(I_SOURCES) Makefile ../Makefile
+%.o: %.c $(I_SOURCES) Makefile ../Makefile ../../../Makefile 
 	$(CC) -c $(CFLAGS) -o $@ $<
     
 .PHONY: clean 

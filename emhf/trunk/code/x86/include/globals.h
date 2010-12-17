@@ -86,6 +86,15 @@ extern u32 g_ap_go_signal __attribute__(( section(".data") ));
 //SMP lock for the above variable
 extern u32 g_lock_ap_go_signal __attribute__(( section(".data") ));
 
+//variable that is incremented by 1 by all cores that cycle through appmain
+//successfully, this should be finally equal to g_midtable_numentries at
+//runtime which signifies that EMHF appmain executed successfully on all
+//cores
+extern u32 g_appmain_success_counter __attribute__(( section(".data") ));
+
+//SMP lock for the above variable
+extern u32 g_lock_appmain_success_counter __attribute__(( section(".data") ));
+
 
 //runtime parameter block data area (in runtimesup.S)
 extern u8 _rpb[];

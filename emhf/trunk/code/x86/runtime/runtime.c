@@ -163,10 +163,10 @@ void allcpus_common_start(VCPU *vcpu){
 
     while(!g_ap_go_signal); //Just wait for the BSP to tell us all is well.
  
-    printf("\nAP(0x%02x): My ESP is 0x%08x, Waiting for SIPI...", vcpu->id, vcpu->esp);
+    printf("\nAP(0x%02x): My ESP is 0x%08x, proceeding...", vcpu->id, vcpu->esp);
 
-    while(!vcpu->sipireceived);
-    printf("\nAP(0x%02x): SIPI signal received, vector=0x%02x", vcpu->id, vcpu->sipivector);
+    //while(!vcpu->sipireceived);
+    //printf("\nAP(0x%02x): SIPI signal received, vector=0x%02x", vcpu->id, vcpu->sipivector);
   }
   
   
@@ -193,17 +193,58 @@ void allcpus_common_start(VCPU *vcpu){
 
   //call app main
   if(emhf_app_main(vcpu)){
-    printf("\nCPU(0x%02x): Application failed to initialize. HALT!", vcpu->id);
+    printf("\nCPU(0x%02x): EMHF app. failed to initialize. HALT!", vcpu->id);
     HALT();
   }
 
+ 	//increment app main success counter
+	spin_lock(&g_lock_appmain_success_counter);
+  g_appmain_success_counter++;
+  spin_unlock(&g_lock_appmain_success_counter);
+	
+	//if BSP, wait for all cores to go through app main successfully
+	if(isbsp() && (g_midtable_numentries > 1)){
+		printf("\nCPU(0x%02x): Waiting for all cores to cycle through appmain...", vcpu->id);
+		while(g_appmain_success_counter < g_midtable_numentries);	
+		printf("\nCPU(0x%02x): All cores have successfully been through appmain.", vcpu->id);
+	}
 
-#ifdef __NESTED_PAGING__
-    //if we are the BSP setup SIPI intercept
-    if(isbsp() && (g_midtable_numentries > 1) )
-      apic_setup(vcpu);
- 
+
+#if defined (__MP_VERSION__)  
+	//if we are the BSP setup SIPI intercept
+  if(isbsp()){
+    apic_setup(vcpu);
+		printf("\nCPU(0x%02x): BSP, setup SIPI interception.", vcpu->id);
+  }else{ //else, we are an AP and wait for SIPI signal
+    printf("\nCPU(0x%02x): AP, waiting for SIPI signal...", vcpu->id);
+    while(!vcpu->sipireceived);
+    printf("\nCPU(0x%02x): SIPI signal received, vector=0x%02x", vcpu->id, vcpu->sipivector);
+
+		//if(vcpu->cpu_vendor == CPU_VENDOR_INTEL){
+		//	//update VMCS with startup CS:IP
+ 		//	vcpu->vmcs.guest_RIP = 0x0ULL;
+		//	vcpu->vmcs.guest_CS_selector = (vcpu->sipivector * PAGE_SIZE_4K) >> 4;
+		//	vcpu->vmcs.guest_CS_base = (vcpu->sipivector * PAGE_SIZE_4K);
+		//}else
+		{
+			//update VMCB with startup CS:IP
+			struct vmcb_struct *vmcb;
+      vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr; 
+			vmcb->rip = 0x0ULL;
+			vmcb->cs.sel = (vcpu->sipivector * PAGE_SIZE_4K) >> 4; 
+			vmcb->cs.base = (vcpu->sipivector * PAGE_SIZE_4K); 
+		}
+	}
 #endif
+
+
+
+//#ifdef __NESTED_PAGING__
+    //if we are the BSP setup SIPI intercept
+//    if(isbsp() && (g_midtable_numentries > 1) )
+//      apic_setup(vcpu);
+ 
+//#endif
     
   //start HVM
   {
