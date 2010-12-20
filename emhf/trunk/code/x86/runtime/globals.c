@@ -158,6 +158,9 @@ u8 g_svm_iopm[SIZEOF_IOPM_BITMAP]__attribute__(( section(".palign_data") ));
 u8 g_svm_msrpm[SIZEOF_MSRPM_BITMAP]__attribute__(( section(".palign_data") ));
 
 
+//isolation layer abstraction
+struct isolation_layer *g_isl __attribute__(( section(".data") ));
+
 //------------------------------------------------------------------------------
 void runtime_globals_init(){
 

@@ -60,7 +60,7 @@
         popl	%esi	; \
         popl	%edi	; 
 
-.extern XtRtmIslInterceptHandler
+.extern svm_intercept_handler
 
 .section .text
 
@@ -81,7 +81,7 @@ __svm_start_hvm:
 	movl $0x0, %esi
 	movl $0x0, %edi
 
-resumeHVM:	
+__svm_resume_hvm:	
 	//execute the HVM
 	//stgi
   vmrun
@@ -101,13 +101,13 @@ resumeHVM:
 	//1st argument is vcpu followed by pointer to saved GPRs
 	pushl %eax
 	pushl %ebx
-	call XtRtmIslInterceptHandler
+	call svm_intercept_handler
   addl $0x08, %esp
 
   //restore all CPU GPRs, will also resture eax=phys. addr of vmcb
   RESTOREALL_GPRS
 
   //resume HVM
-  jmp resumeHVM
+  jmp __svm_resume_hvm
   
 	

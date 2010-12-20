@@ -79,6 +79,12 @@ void cstartup(void){
 		}   	 	
   }
 
+	//initialize isolation layer abstraction
+  if(cpu_vendor == CPU_VENDOR_INTEL)
+  	g_isl = &g_isolation_layer_svm;
+	else
+		g_isl = &g_isolation_layer_svm; 
+
   //debug, dump E820 and MP table
  	printf("\nNumber of E820 entries = %u", rpb->XtVmmE820NumEntries);
   {
@@ -109,11 +115,12 @@ void cstartup(void){
   }
 
   //setup vcpus 
-  setupvcpus(cpu_vendor, g_midtable, g_midtable_numentries);
+  //svm_setupvcpus(cpu_vendor);
+  g_isl->setupvcpus(cpu_vendor);
 
   //wake up APS
   if(g_midtable_numentries > 1)
-    wakeupAPs();
+    g_isl->wakeup_aps();
 
   //fall through to common code  
   {
@@ -134,7 +141,7 @@ void allcpus_common_start(VCPU *vcpu){
 	
   //step:1 rally all APs up, make sure all of them started, this is
   //a task for the BSP
-  if(isbsp()){
+  if(g_isl->isbsp()){
     vcpu->isbsp = 1;	//this core is a BSP
     
 		printf("\nBSP rallying APs...");
@@ -175,8 +182,8 @@ void allcpus_common_start(VCPU *vcpu){
 		HALT();
 	}
   
-  //initialize SVM-based isolation layer
-	svm_initialize(vcpu);
+  //initialize isolation layer
+	g_isl->initialize(vcpu);
 
   //call app main
   if(emhf_app_main(vcpu)){
@@ -190,7 +197,7 @@ void allcpus_common_start(VCPU *vcpu){
   spin_unlock(&g_lock_appmain_success_counter);
 	
 	//if BSP, wait for all cores to go through app main successfully
-	if(isbsp() && (g_midtable_numentries > 1)){
+	if(vcpu->isbsp && (g_midtable_numentries > 1)){
 		printf("\nCPU(0x%02x): Waiting for all cores to cycle through appmain...", vcpu->id);
 		while(g_appmain_success_counter < g_midtable_numentries);	
 		printf("\nCPU(0x%02x): All cores have successfully been through appmain.", vcpu->id);
@@ -199,8 +206,8 @@ void allcpus_common_start(VCPU *vcpu){
 
 #if defined (__MP_VERSION__)  
 	//if we are the BSP setup SIPI intercept
-  if(isbsp()){
-    svm_apic_setup(vcpu);
+  if(vcpu->isbsp){
+    g_isl->hvm_apic_setup(vcpu);
 		printf("\nCPU(0x%02x): BSP, setup SIPI interception.", vcpu->id);
   }else{ //else, we are an AP and wait for SIPI signal
     printf("\nCPU(0x%02x): AP, waiting for SIPI signal...", vcpu->id);
@@ -214,15 +221,23 @@ void allcpus_common_start(VCPU *vcpu){
 		//	vcpu->vmcs.guest_CS_base = (vcpu->sipivector * PAGE_SIZE_4K);
 		//}else
 		
-		svm_initialize_vmcb_csrip(vcpu, ((vcpu->sipivector * PAGE_SIZE_4K) >> 4),
+		g_isl->hvm_initialize_csrip(vcpu, ((vcpu->sipivector * PAGE_SIZE_4K) >> 4),
 					 (vcpu->sipivector * PAGE_SIZE_4K), 0x0ULL);
 	}
 #endif
 
 
   //start HVM
-  svm_start_hvm(vcpu);
+  g_isl->hvm_start(vcpu);
 
   printf("\nCPU(0x%02x): FATAL, should not be here. HALTING!", vcpu->id);
   HALT();
 }
+
+//---runtime exception handler--------------------------------------------------
+void runtime_exception_handler(u32 vector, struct regs *r){
+	//we just let the isolation layer handle it
+	//TODO: assert g_isl is valid
+	g_isl->runtime_exception_handler(vector, r);
+}
+

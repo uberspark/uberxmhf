@@ -34,13 +34,13 @@ emhf-sl
 7=..\sl\slheader.S
 [Selected Project Files]
 Main=
-Selected=..\sl\slsup.S
+Selected=..\sl\Makefile
 [..\Makefile]
-TopLine=33
-Caret=3,33
+TopLine=1
+Caret=1,1
 [..\sl\Makefile]
 TopLine=1
-Caret=33,5
+Caret=61,34
 [..\sl\slsup.S]
 TopLine=45
 Caret=11,50

@@ -182,6 +182,9 @@ extern u8 g_svm_iopm[]__attribute__(( section(".palign_data") ));
 //SVM MSR bitmap buffer
 extern u8 g_svm_msrpm[]__attribute__(( section(".palign_data") ));
 
+//isolation layer abstraction
+extern struct isolation_layer *g_isl __attribute__(( section(".data") ));;
+
 
 //function that initializes the runtime global variables
 void runtime_globals_init(void);

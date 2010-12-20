@@ -59,7 +59,7 @@
 		
 		pushl %eax
 		pushl	$0x&vector&
-		call	XtRtmExceptionHandler
+		call	runtime_exception_handler
 		addl  $0x08, %esp
 		
 		popl	%eax	
@@ -117,6 +117,7 @@ XtRtmEmitIdtStub 1f
 
 	.extern cstartup
 	.extern allcpus_common_start
+	.extern runtime_exception_handler
 	
 
 //------------------------------------------------------------------------------
