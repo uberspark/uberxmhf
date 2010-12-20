@@ -33,39 +33,53 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// apic_svm.c - APIC virtualization support
+// apic_vmx.c - APIC virtualization support for Intel cores
 // author: amit vasudevan (amitvasudevan@acm.org)
 #include <target.h>
 #include <globals.h>
 
 
 //the LAPIC register that is being accessed during emulation
-static u32 g_svm_lapic_reg __attribute__(( section(".data") )) = 0;
+static u32 g_vmx_lapic_reg __attribute__(( section(".data") )) = 0;
 
 //the LAPIC operation that is being performed during emulation
-static u32 g_svm_lapic_op __attribute__(( section(".data") )) = LAPIC_OP_RSVD;
+static u32 g_vmx_lapic_op __attribute__(( section(".data") )) = LAPIC_OP_RSVD;
 
 
-//--NPT manipulation routines---------------------------------------------------
-static void npt_changemapping(VCPU *vcpu, u32 dest_paddr, u32 new_paddr, u64 protflags){
-	pt_t pts;
-	u32 page;
-	//printf("\n%s: pts addr=0x%08x, dp=0x%08x, np=0x%08x", __FUNCTION__, vcpu->npt_vaddr_pts,
-  //  dest_paddr, new_paddr);
-  pts = (pt_t)vcpu->npt_vaddr_pts;
+//---hardware pagetable flush-all routine---------------------------------------
+static void emhf_hwpgtbl_flushall(VCPU *vcpu){
+  __vmx_invept(VMX_EPT_SINGLE_CONTEXT, 
+          (u64)vcpu->vmcs.control_EPT_pointer_full, 
+          0);
+  __vmx_invvpid(VMX_VPID_EXTENT_SINGLE_CONTEXT, 1, 0);
 
-	page=dest_paddr/PAGE_SIZE_4K;
-  //printf("\n  page=0x%08x", page);
-  pts[page] = pae_make_pte(new_paddr, protflags);
 }
 
-//------------------------------------------------------------------------------
-static inline void clgi(void){
-  __asm__ __volatile__ ("clgi\r\n");
+//---hardware pagetable protection manipulation routine-------------------------
+static void emhf_hwpgtbl_setprot(VCPU *vcpu, u64 gpa, u64 flags){
+  u32 pfn = (u32)gpa / PAGE_SIZE_4K;
+  u64 *pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
+  pt[pfn] &= ~(u64)7; //clear all previous flags
+  pt[pfn] |= flags; //set new flags
+  //flush the EPT mappings for new protections to take effect
+  emhf_hwpgtbl_flushall(vcpu);
 }
-static inline void stgi(void){
-  __asm__ __volatile__ ("stgi\r\n");
+
+static void emhf_hwpgtbl_setentry(VCPU *vcpu, u64 gpa, u64 value){
+  u32 pfn = (u32)gpa / PAGE_SIZE_4K;
+  u64 *pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
+  pt[pfn] = value; //set new value
+  //flush the EPT mappings for new protections to take effect
+  emhf_hwpgtbl_flushall(vcpu);
 }
+
+
+static u64 emhf_hwpgtbl_getprot(VCPU *vcpu, u64 gpa){
+  u32 pfn = (u32)gpa / PAGE_SIZE_4K;
+  u64 *pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
+  return (pt[pfn] & (u64)7) ;
+}
+
 
 //---checks if all logical cores have received SIPI
 //returns 1 if yes, 0 if no
@@ -86,7 +100,6 @@ static u32 have_all_cores_recievedSIPI(void){
   return 1;	//all logical cores have received SIPI
 }
 
-
 //---SIPI processing logic------------------------------------------------------
 //return 1 if lapic interception has to be discontinued, typically after
 //all aps have received their SIPI, else 0
@@ -100,7 +113,8 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
   
   dest_lapic_id= icr_high_value >> 24;
   
-  printf("\n%s: dest_lapic_id is 0x%02x", __FUNCTION__, dest_lapic_id);
+  printf("\nCPU(0x%02x): %s, dest_lapic_id is 0x%02x", 
+		vcpu->id, __FUNCTION__, dest_lapic_id);
   
   //find the vcpu entry of the core with dest_lapic_id
   {
@@ -116,8 +130,8 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
     ASSERT( dest_vcpu != (VCPU *)0 );
   }
 
-  printf("\nfound AP to pass SIPI to; id=0x%02x, vcpu=0x%08x",
-      dest_vcpu->id, (u32)dest_vcpu);  
+  printf("\nCPU(0x%02x): found AP to pass SIPI; id=0x%02x, vcpu=0x%08x",
+      vcpu->id, dest_vcpu->id, (u32)dest_vcpu);  
   
   
   //send the sipireceived flag to trigger the AP to start the HVM
@@ -136,102 +150,101 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
 }
 
 
-//---SVM APIC setup-------------------------------------------------------------
-void svm_apic_setup(VCPU *vcpu){
+//---VMX APIC setup-------------------------------------------------------------
+//this function sets up the EPT for the vcpu core to intercept LAPIC
+//accesses.
+//NOTE: this function MUST be called only from the BSP and the vcpu
+//passed in should also be that of the BSP
+void vmx_apic_setup(VCPU *vcpu){
   u32 eax, edx;
-  struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+
+	//we should only be called from the BSP
+	ASSERT( vmx_isbsp() == 1 );	
   
-  //read APIC base address from MSR
+  //clear virtual LAPIC page
+  memset((void *)&g_vmx_virtual_LAPIC_base, 0, PAGE_SIZE_4K);
+  
+  //read LAPIC base address from MSR
   rdmsr(MSR_APIC_BASE, &eax, &edx);
-  ASSERT( edx == 0 ); //APIC is below 4G
-  g_svm_lapic_base = eax & 0xFFFFF000UL;
-  printf("\nBSP(0x%02x): Local APIC base=0x%08x", vcpu->id, g_svm_lapic_base);
+  ASSERT( edx == 0 ); //APIC should be below 4G
+  g_vmx_lapic_base = eax & 0xFFFFF000UL;
+  //printf("\nBSP(0x%02x): LAPIC base=0x%08x", vcpu->id, vcpu->lapic_base);
   
-  //set physical 4K page of APIC base address to not-present
-  //this will cause NPF on access to the APIC page which is then
-  //handled by lapic_access_handler
-  npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, 0);
-  vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
+  //set physical 4K page of LAPIC base address to not-present
+  //this will cause EPT violation which is then
+  //handled by vmx_lapic_access_handler
+	emhf_hwpgtbl_setprot(vcpu, vcpu->lapic_base, 0);
 }
-
-
 
 
 //------------------------------------------------------------------------------
 //if there is a read request, store the register accessed
 //store request as READ
-//map npt entry of the physical LAPIC page with g_svm_lapic_base and single-step
+//map npt entry of the physical LAPIC page with lapic_base and single-step
 //if there is a write request, map npt entry of physical LAPIC
 //page with physical address of virtual_LAPIC page, store the
 //register accessed, store request as WRITE and single-step
 
-u32 svm_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
-  struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
-  
+u32 vmx_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
+	//printf("\nCPU(0x%02x): LAPIC: p=0x%08x, ecode=0x%08x", vcpu->id,
+	//		paddr, errorcode);
+
   //get LAPIC register being accessed
-  g_svm_lapic_reg = (paddr - g_svm_lapic_base);
+  g_vmx_lapic_reg = (paddr - g_vmx_lapic_base);
 
-  if(errorcode & PF_ERRORCODE_WRITE){
-    if(g_svm_lapic_reg == LAPIC_ICR_LOW || g_svm_lapic_reg == LAPIC_ICR_HIGH ){
-      g_svm_lapic_op = LAPIC_OP_WRITE;
+  if(errorcode & EPT_ERRORCODE_WRITE){
+    //printf("\nCPU(0x%02x): LAPIC[WRITE] reg=0x%08x", vcpu->id,
+		//	vcpu->lapic_reg);
 
-      //change LAPIC physical address NPT mapping to point to physical 
-      //address of virtual_LAPIC_base
-      //printf("\nvirtual_LAPIC_base, v=0x%08x, p=0x%08x",  
-      //  (u32)virtual_LAPIC_base, __hva2spa__((u32)virtual_LAPIC_base));
-      npt_changemapping(vcpu, g_svm_lapic_base, __hva2spa__((u32)g_svm_virtual_LAPIC_base), (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
-      vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
+		if(g_vmx_lapic_reg == LAPIC_ICR_LOW || g_vmx_lapic_reg == LAPIC_ICR_HIGH ){
+      g_vmx_lapic_op = LAPIC_OP_WRITE;
+
+      //change LAPIC physical address in EPT to point to physical address 
+			//of memregion_virtual_LAPIC
+			emhf_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
+					(u64)__hva2spa__((u32)&g_vmx_virtual_LAPIC_base) | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
 
     }else{
-      g_svm_lapic_op = LAPIC_OP_RSVD;
+      g_vmx_lapic_op = LAPIC_OP_RSVD;
 
-      //change LAPIC physical address NPT mapping to point to physical LAPIC
-      npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
-      vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
+      //change LAPIC physical address in EPT to point to physical LAPIC
+      emhf_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
+					(u64)g_vmx_lapic_base | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
     }    
-    
-    //setup #DB intercept in vmcb
-    vmcb->exception_intercepts |= (u32)EXCEPTION_INTERCEPT_DB;
-  
-    //set guest TF
-    vmcb->rflags |= (u64)EFLAGS_TF;
-  
-    clgi();
-    
   }else{
-    //printf("\nREAD from LAPIC register");
-    if(g_svm_lapic_reg == LAPIC_ICR_LOW || g_svm_lapic_reg == LAPIC_ICR_HIGH ){
-      g_svm_lapic_op = LAPIC_OP_READ;
+    //printf("\nCPU(0x%02x): LAPIC[READ] reg=0x%08x", vcpu->id,
+		//	vcpu->lapic_reg);
 
-      //change LAPIC physical address NPT mapping to point to physical 
-      //address of virtual_LAPIC_base
-      //printf("\nvirtual_LAPIC_base, v=0x%08x, p=0x%08x",  
-      //  (u32)virtual_LAPIC_base, __hva2spa__((u32)virtual_LAPIC_base));
-      npt_changemapping(vcpu, g_svm_lapic_base, __hva2spa__((u32)g_svm_virtual_LAPIC_base), (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
-      vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
+    if(g_vmx_lapic_reg == LAPIC_ICR_LOW || g_vmx_lapic_reg == LAPIC_ICR_HIGH ){
+      g_vmx_lapic_op = LAPIC_OP_READ;
+
+      //change LAPIC physical address in EPT to point to physical address 
+			//of memregion_virtual_LAPIC
+			emhf_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
+					(u64)__hva2spa__((u32)&g_vmx_virtual_LAPIC_base) | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
 
     }else{
+      g_vmx_lapic_op = LAPIC_OP_RSVD;
 
-      g_svm_lapic_op = LAPIC_OP_RSVD;
-
-      //change LAPIC physical address NPT mapping to point to physical LAPIC
-      npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
-      vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
+      //change LAPIC physical address in EPT to point to physical LAPIC
+      emhf_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
+					(u64)g_vmx_lapic_base | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
     }  
-
-    //setup #DB intercept in vmcb
-    vmcb->exception_intercepts |= (u32)EXCEPTION_INTERCEPT_DB;
-  
-    //set guest TF
-    vmcb->rflags |= (u64)EFLAGS_TF;
-
-    //disable interrupts on this CPU until we get control in 
-    //lapic_access_dbexception after a DB exception
-    clgi();
   }
-  
-}
 
+  //setup #DB intercept 
+	vcpu->vmcs.control_exception_bitmap |= (1UL << 1); //enable INT 1 intercept (#DB fault)
+  
+	//save guest IF and TF masks
+  vcpu->lapic_guest_eflags_tfifmask = (u32)vcpu->vmcs.guest_RFLAGS & ((u32)EFLAGS_IF | (u32)EFLAGS_TF);	
+
+  //set guest TF
+	vcpu->vmcs.guest_RFLAGS |= EFLAGS_TF;
+	
+  //disable interrupts by clearing guest IF on this CPU until we get 
+	//control in lapic_access_dbexception after a DB exception
+	vcpu->vmcs.guest_RFLAGS &= ~(EFLAGS_IF);
+}
 
 
 //------------------------------------------------------------------------------
@@ -241,32 +254,31 @@ u32 svm_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
 //if request was WRITE, we get the value from reading virtual_LAPIC_vaddr
 //to propagate we just write to the physical LAPIC
 
-void svm_lapic_access_dbexception(VCPU *vcpu, struct regs *r){
-  struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+void vmx_lapic_access_dbexception(VCPU *vcpu, struct regs *r){
   u32 delink_lapic_interception=0;
   
-  if(g_svm_lapic_op == LAPIC_OP_WRITE){
+  if(vcpu->lapic_op == LAPIC_OP_WRITE){
     u32 src_registeraddress, dst_registeraddress;
     u32 value_tobe_written;
     
-    ASSERT( (g_svm_lapic_reg == LAPIC_ICR_LOW) || (g_svm_lapic_reg == LAPIC_ICR_HIGH) );
+    ASSERT( (vcpu->lapic_reg == LAPIC_ICR_LOW) || (vcpu->lapic_reg == LAPIC_ICR_HIGH) );
    
-    src_registeraddress = (u32)g_svm_virtual_LAPIC_base + g_svm_lapic_reg;
-    dst_registeraddress = (u32)g_svm_lapic_base + g_svm_lapic_reg;
+    src_registeraddress = (u32)&g_vmx_virtual_LAPIC_base + vcpu->lapic_reg;
+    dst_registeraddress = (u32)g_vmx_lapic_base + g_vmx_lapic_reg;
     
     value_tobe_written= *((u32 *)src_registeraddress);
     
-    if(g_svm_lapic_reg == LAPIC_ICR_LOW){
+    if(g_vmx_lapic_reg == LAPIC_ICR_LOW){
       if ( (value_tobe_written & 0x00000F00) == 0x500){
         //this is an INIT IPI, we just void it
         printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) INIT IPI detected and skipped, value=0x%08x", 
-          (u16)vmcb->cs.sel, (u32)vmcb->rip, g_svm_lapic_reg, value_tobe_written);
+          (u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP, g_vmx_lapic_reg, value_tobe_written);
       }else if( (value_tobe_written & 0x00000F00) == 0x600 ){
         //this is a STARTUP IPI
-        u32 icr_value_high = *((u32 *)((u32)g_svm_virtual_LAPIC_base + (u32)LAPIC_ICR_HIGH));
+        u32 icr_value_high = *((u32 *)((u32)&g_vmx_virtual_LAPIC_base + (u32)LAPIC_ICR_HIGH));
         printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) STARTUP IPI detected, value=0x%08x", 
-          (u16)vmcb->cs.sel, (u32)vmcb->rip, g_svm_lapic_reg, value_tobe_written);
-        delink_lapic_interception=processSIPI(vcpu, value_tobe_written, icr_value_high);
+          (u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP, g_vmx_lapic_reg, value_tobe_written);        
+				delink_lapic_interception=processSIPI(vcpu, value_tobe_written, icr_value_high);
       }else{
         //neither an INIT or SIPI, just propagate this IPI to physical LAPIC
         *((u32 *)dst_registeraddress) = value_tobe_written;
@@ -275,46 +287,40 @@ void svm_lapic_access_dbexception(VCPU *vcpu, struct regs *r){
       *((u32 *)dst_registeraddress) = value_tobe_written;
     }
                 
-  }else if( g_svm_lapic_op == LAPIC_OP_READ){
+  }else if( g_vmx_lapic_op == LAPIC_OP_READ){
     u32 src_registeraddress;
     u32 value_read;
-    ASSERT( (g_svm_lapic_reg == LAPIC_ICR_LOW) || (g_svm_lapic_reg == LAPIC_ICR_HIGH) );
+    ASSERT( (g_vmx_lapic_reg == LAPIC_ICR_LOW) || (g_vmx_lapic_reg == LAPIC_ICR_HIGH) );
 
-    src_registeraddress = (u32)g_svm_virtual_LAPIC_base + g_svm_lapic_reg;
+    src_registeraddress = (u32)&g_vmx_virtual_LAPIC_base + g_vmx_lapic_reg;
    
     value_read = *((u32 *)src_registeraddress);
-    //printf("\n0x%04x:0x%08x -> (ICR=0x%08x read), value=0x%08x", 
-    //  (u16)vmcb->cs.sel, (u32)vmcb->rip, g_svm_lapic_reg, value_read);
   }
 
 fallthrough:  
-  //clear #DB intercept in VMCB
-  vmcb->exception_intercepts &= ~(u32)EXCEPTION_INTERCEPT_DB;
-  
-  //clear guest TF
-  vmcb->rflags &= ~(u64)EFLAGS_TF;
-  
-  
+  //clear #DB intercept 
+	vcpu->vmcs.control_exception_bitmap &= ~(1UL << 1); 
+
   //make LAPIC page inaccessible and flush TLB
   if(delink_lapic_interception){
     printf("\n%s: delinking LAPIC interception since all cores have SIPI", __FUNCTION__);
-    npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
-	  vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
+    emhf_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
+					(u64)g_vmx_lapic_base | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
   }else{
-    npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, 0);
-	  vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
+    emhf_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
+					(u64)g_vmx_lapic_base);			
 	}
-  
-  //enable interrupts on this CPU
-  stgi();
+
+  //restore guest IF and TF
+  vcpu->vmcs.guest_RFLAGS &= ~(EFLAGS_IF);
+  vcpu->vmcs.guest_RFLAGS &= ~(EFLAGS_TF);
+  vcpu->vmcs.guest_RFLAGS |= vcpu->lapic_guest_eflags_tfifmask;
 }
-
-
 
 
 //---apic_wakeupAPs-------------------------------------------------------------
 //wake up APs using the LAPIC by sending the INIT-SIPI-SIPI IPI sequence
-void svm_apic_wakeupAPs(void){
+void vmx_apic_wakeupAPs(void){
   u32 eax, edx;
   volatile u32 *icr;
   

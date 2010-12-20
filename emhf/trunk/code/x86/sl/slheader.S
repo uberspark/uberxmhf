@@ -214,18 +214,18 @@ sl_startnew:
 //MUST match that in include/target.h
 //this section is currently a pagesize in length and resides above
 //the 64K sl image
-.section .sl_params
+//.section .sl_params
 
-	.global slpb_buffer
-	slpb_buffer:
-	.long	SL_PARAMETER_BLOCK_MAGIC				//magic		
-	.long	0																//hashSL
-	.long 0																//errorHandler
-	.long 0																//isEarlyInit
-	.long 0																//numE820Entries
-	.fill	(SIZE_STRUCT_GRUBE820 * MAX_E820_ENTRIES), 1, 0	//grub E820 map buffer
-	.long	0																//numCPUEntries
-	.fill (SIZE_STRUCT_PCPU * MAX_PCPU_ENTRIES), 1, 0	//cpu table buffer
-	.long 0																//size of the runtime image		
-	.long 0																//guest OS boot module base
-	.long 0																//guest OS boot module size
+//	.global slpb_buffer
+//	slpb_buffer:
+//	.long	SL_PARAMETER_BLOCK_MAGIC				//magic		
+//	.long	0																//hashSL
+//	.long 0																//errorHandler
+//	.long 0																//isEarlyInit
+//	.long 0																//numE820Entries
+//	.fill	(SIZE_STRUCT_GRUBE820 * MAX_E820_ENTRIES), 1, 0	//grub E820 map buffer
+//	.long	0																//numCPUEntries
+//	.fill (SIZE_STRUCT_PCPU * MAX_PCPU_ENTRIES), 1, 0	//cpu table buffer
+//	.long 0																//size of the runtime image		
+//	.long 0																//guest OS boot module base
+//	.long 0																//guest OS boot module size

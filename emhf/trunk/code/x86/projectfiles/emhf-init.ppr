@@ -21,7 +21,6 @@ emhf-init
 		..\init\initsup.S
 		..\include\target.h
 		..\include\multiboot.h
-		..\include\globals.h
 		..\init\smp.c
 		..\include\processor.h
 [Open project files]
@@ -33,12 +32,11 @@ emhf-init
 5=..\include\multiboot.h
 6=..\include\target.h
 7=..\init\initsup.S
-8=..\include\globals.h
-9=..\include\processor.h
-10=..\init\smp.c
+8=..\include\processor.h
+9=..\init\smp.c
 [Selected Project Files]
 Main=
-Selected=..\init\Makefile
+Selected=..\init\init.c
 [..\Makefile]
 TopLine=1
 Caret=1,1
@@ -47,10 +45,10 @@ TopLine=1
 Caret=61,32
 [..\init\header.S]
 TopLine=8
-Caret=17,31
+Caret=27,22
 [..\init\init.c]
-TopLine=143
-Caret=3,170
+TopLine=9
+Caret=73,23
 [..\init\init.lds.S]
 TopLine=1
 Caret=15,8
@@ -61,11 +59,8 @@ Caret=1,1
 TopLine=153
 Caret=1,195
 [..\init\initsup.S]
-TopLine=91
-Caret=1,134
-[..\include\globals.h]
-TopLine=60
-Caret=1,92
+TopLine=92
+Caret=1,102
 [..\include\processor.h]
 TopLine=1
 Caret=28,15

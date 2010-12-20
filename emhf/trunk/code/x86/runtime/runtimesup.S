@@ -347,7 +347,7 @@ x_init_stack:
     movl $(g_midtable), %ebx
     xorl %ecx, %ecx
 getvcpuloop:
-    movl 0x0(%ebx, %ecx, SIZE_STRUCT_MIDTAB), %ebp  //ebp contains the lapic id
+    movl 0x0(%ebx, %ecx, 8), %ebp  //ebp contains the lapic id
     cmpl %eax, %ebp
     jz gotvcpu
     incl %ecx
@@ -356,7 +356,7 @@ getvcpuloop:
     //we should never get here, if so just halt
     hlt
 gotvcpu:
-   movl 0x4(%ebx, %ecx, SIZE_STRUCT_MIDTAB), %esi //esi contains vcpu pointer
+   movl 0x4(%ebx, %ecx, 8), %esi //esi contains vcpu pointer
    movl 0x0(%esi), %esp     //load stack for this CPU
    pushl %esi
    call allcpus_common_start

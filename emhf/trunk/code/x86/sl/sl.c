@@ -46,6 +46,11 @@ u32 sl_baseaddr=0;
 extern void XtLdrTransferControlToRtm(u32 gdtbase, u32 idtbase,
 	u32 entrypoint, u32 stacktop)__attribute__((cdecl)); 
 
+//this is the SL parameter block and is placed in a seperate section
+struct _sl_parameter_block slpb __attribute__(( section(".sl_params") )) = {
+	.magic = SL_PARAMETER_BLOCK_MAGIC,
+};
+
 
 //---runtime paging setup-------------------------------------------------------
 //physaddr and virtaddr are assumed to be 2M aligned
@@ -111,7 +116,7 @@ void runtime_setup_paging(u32 physaddr, u32 virtaddr, u32 totalsize){
 
 //we get here from slheader.S
 void slmain(u32 baseaddr){
-	SL_PARAMETER_BLOCK *slpb;
+	//SL_PARAMETER_BLOCK *slpb;
 	u32 runtime_physical_base;
 	u32 runtime_size_2Maligned;
 	
@@ -134,39 +139,39 @@ void slmain(u32 baseaddr){
 	printf("\nSL: at 0x%08x, starting...", sl_baseaddr);
 	
 	//deal with SL parameter block
-	slpb = (SL_PARAMETER_BLOCK *)slpb_buffer;
-	printf("\nSL: slpb at = 0x%08x", slpb);
-	ASSERT( (u32)slpb == 0x10000 );	//linker relocates sl image starting from 0, so
+	//slpb = (SL_PARAMETER_BLOCK *)slpb_buffer;
+	printf("\nSL: slpb at = 0x%08x", &slpb);
+	ASSERT( (u32)&slpb == 0x10000 );	//linker relocates sl image starting from 0, so
 																  //parameter block must be at offset 0x10000
-	ASSERT( slpb->magic == SL_PARAMETER_BLOCK_MAGIC);
+	ASSERT( slpb.magic == SL_PARAMETER_BLOCK_MAGIC);
 	
-	printf("\n	hashSL=0x%08x", slpb->hashSL);
-	printf("\n	errorHandler=0x%08x", slpb->errorHandler);
-	printf("\n	isEarlyInit=0x%08x", slpb->isEarlyInit);
-	printf("\n	numE820Entries=%u", slpb->numE820Entries);
-	printf("\n	e820map at 0x%08x", &slpb->e820map);
-	printf("\n	numCPUEntries=%u", slpb->numCPUEntries);
-	printf("\n	pcpus at 0x%08x", &slpb->pcpus);
-	printf("\n	runtime size= %u bytes", slpb->runtime_size);
+	printf("\n	hashSL=0x%08x", slpb.hashSL);
+	printf("\n	errorHandler=0x%08x", slpb.errorHandler);
+	printf("\n	isEarlyInit=0x%08x", slpb.isEarlyInit);
+	printf("\n	numE820Entries=%u", slpb.numE820Entries);
+	printf("\n	e820map at 0x%08x", &slpb.e820map);
+	printf("\n	numCPUEntries=%u", slpb.numCPUEntries);
+	printf("\n	pcpus at 0x%08x", &slpb.pcpus);
+	printf("\n	runtime size= %u bytes", slpb.runtime_size);
 	printf("\n	OS bootmodule at 0x%08x, size=%u bytes", 
-		slpb->runtime_osbootmodule_base, slpb->runtime_osbootmodule_size);
+		slpb.runtime_osbootmodule_base, slpb.runtime_osbootmodule_size);
 	
   //debug, dump E820 and MP table
  	printf("\n	e820map:\n");
   {
     u32 i;
-    for(i=0; i < slpb->numE820Entries; i++){
+    for(i=0; i < slpb.numE820Entries; i++){
       printf("\n		0x%08x%08x, size=0x%08x%08x (%u)", 
-          slpb->e820map[i].baseaddr_high, slpb->e820map[i].baseaddr_low,
-          slpb->e820map[i].length_high, slpb->e820map[i].length_low,
-          slpb->e820map[i].type);
+          slpb.e820map[i].baseaddr_high, slpb.e820map[i].baseaddr_low,
+          slpb.e820map[i].length_high, slpb.e820map[i].length_low,
+          slpb.e820map[i].type);
     }
   }
   printf("\n	pcpus:\n");
   {
     u32 i;
-    for(i=0; i < slpb->numCPUEntries; i++)
-      printf("\n		CPU #%u: bsp=%u, lapic_id=0x%02x", i, slpb->pcpus[i].isbsp, slpb->pcpus[i].lapic_id);
+    for(i=0; i < slpb.numCPUEntries; i++)
+      printf("\n		CPU #%u: bsp=%u, lapic_id=0x%02x", i, slpb.pcpus[i].isbsp, slpb.pcpus[i].lapic_id);
   }
 
 
@@ -177,7 +182,7 @@ void slmain(u32 baseaddr){
 	runtime_physical_base = sl_baseaddr + PAGE_SIZE_2M;	//base of SL + 2M
 	
 	//compute 2M aligned runtime size
-	runtime_size_2Maligned = PAGE_ALIGN_UP2M(slpb->runtime_size);
+	runtime_size_2Maligned = PAGE_ALIGN_UP2M(slpb.runtime_size);
 
 	printf("\nSL: runtime at 0x%08x (2M aligned size= %u bytes)", 
 			runtime_physical_base, runtime_size_2Maligned);
@@ -202,19 +207,19 @@ void slmain(u32 baseaddr){
     //store runtime physical and virtual base addresses along with size
   	rpb->XtVmmRuntimePhysBase = runtime_physical_base;
   	rpb->XtVmmRuntimeVirtBase = __TARGET_BASE;
-  	rpb->XtVmmRuntimeSize = slpb->runtime_size;
+  	rpb->XtVmmRuntimeSize = slpb.runtime_size;
 
 	  //store revised E820 map and number of entries
-	  memcpy((void *)((u32)rpb->XtVmmE820Buffer - __TARGET_BASE + PAGE_SIZE_2M), (void *)&slpb->e820map, (sizeof(GRUBE820) * slpb->numE820Entries));
-  	rpb->XtVmmE820NumEntries = slpb->numE820Entries; 
+	  memcpy((void *)((u32)rpb->XtVmmE820Buffer - __TARGET_BASE + PAGE_SIZE_2M), (void *)&slpb.e820map, (sizeof(GRUBE820) * slpb.numE820Entries));
+  	rpb->XtVmmE820NumEntries = slpb.numE820Entries; 
 
 		//store CPU table and number of CPUs
-    memcpy((void *)((u32)rpb->XtVmmMPCpuinfoBuffer - __TARGET_BASE + PAGE_SIZE_2M), (void *)&slpb->pcpus, (sizeof(PCPU) * slpb->numCPUEntries));
-  	rpb->XtVmmMPCpuinfoNumEntries = slpb->numCPUEntries; 
+    memcpy((void *)((u32)rpb->XtVmmMPCpuinfoBuffer - __TARGET_BASE + PAGE_SIZE_2M), (void *)&slpb.pcpus, (sizeof(PCPU) * slpb.numCPUEntries));
+  	rpb->XtVmmMPCpuinfoNumEntries = slpb.numCPUEntries; 
 
    	//setup guest OS boot module info in LPB	
-		rpb->XtGuestOSBootModuleBase=slpb->runtime_osbootmodule_base;
-		rpb->XtGuestOSBootModuleSize=slpb->runtime_osbootmodule_size;
+		rpb->XtGuestOSBootModuleBase=slpb.runtime_osbootmodule_base;
+		rpb->XtGuestOSBootModuleSize=slpb.runtime_osbootmodule_size;
 
 	 	//setup runtime IDT
 		{

@@ -55,154 +55,21 @@ GRUBE820 grube820list[MAX_E820_ENTRIES];
 u32 grube820list_numentries=0;        //actual number of e820 entries returned
                                   //by grub
 
-extern u32 __midtable[];
-MIDTAB *midtable = (MIDTAB *)__midtable;
+//master-id table which holds LAPIC ID to VCPU mapping for each physical core
+MIDTAB midtable[MAX_MIDTAB_ENTRIES] __attribute__(( section(".data") ));
+
+//number of physical cores in the system
 u32 midtable_numentries=0;
+
+//VCPU buffers for all cores
+VCPU vcpubuffers[MAX_VCPU_ENTRIES] __attribute__(( section(".data") ));
+
+//initial stacks for all cores
+u8 cpustacks[RUNTIME_STACK_SIZE * MAX_PCPU_ENTRIES] __attribute__(( section(".stack") ));
+
 
 extern init_core_lowlevel_setup(void);
 
-/*
-//---MP config table handling---------------------------------------------------
-void dealwithMP(void){
-  MPFP *mpfp;
-  MPCONFTABLE *mpctable;
-  
-  mpfp = MP_GetFPStructure();
-
-#ifdef __MP_VERSION__  
-  if(!mpfp){
-    printf("\nNo MP table, falling back to UP...");
-    pcpus[pcpus_numentries].lapic_id = 0x0;
-    pcpus[pcpus_numentries].lapic_ver = 0x0;
-    pcpus[pcpus_numentries].lapic_base = 0xFEE00000;
-    pcpus[pcpus_numentries].isbsp = 1;
-    pcpus_numentries++;
-    goto fallthrough;
-  }
-#else
-  printf("\nForcing UP...");
-  pcpus[pcpus_numentries].lapic_id = 0x0;
-  pcpus[pcpus_numentries].lapic_ver = 0x0;
-  pcpus[pcpus_numentries].lapic_base = 0xFEE00000;
-  pcpus[pcpus_numentries].isbsp = 1;
-  pcpus_numentries++;
-  goto fallthrough;
-#endif
-  printf("\nMP table found at: 0x%08x", (u32)mpfp);
-  printf("\nMP spec rev=0x%02x", mpfp->spec_rev);
-  printf("\nMP feature info1=0x%02x", mpfp->mpfeatureinfo1);
-  printf("\nMP feature info2=0x%02x", mpfp->mpfeatureinfo2);
-  printf("\nMP Configuration table at 0x%08x", mpfp->paddrpointer);
-  
-  mpctable = (MPCONFTABLE *)mpfp->paddrpointer;
-  ASSERT(mpctable->signature == MPCONFTABLE_SIGNATURE);
-  
-  {//debug
-    int i;
-    printf("\nOEM ID: ");
-    for(i=0; i < 8; i++)
-      printf("%c", mpctable->oemid[i]);
-    printf("\nProduct ID: ");
-    for(i=0; i < 12; i++)
-      printf("%c", mpctable->productid[i]);
-  }
-  
-  printf("\nEntry count=%u", mpctable->entrycount);
-  printf("\nLAPIC base=0x%08x", mpctable->lapicaddr);
-  
-  //now step through CPU entries in the MP-table to determine
-  //how many CPUs we have
-  {
-    int i;
-    u32 addrofnextentry= (u32)mpctable + sizeof(MPCONFTABLE);
-    
-    for(i=0; i < mpctable->entrycount; i++){
-      MPENTRYCPU *cpu = (MPENTRYCPU *)addrofnextentry;
-      if(cpu->entrytype != 0)
-        break;
-      
-      if(cpu->cpuflags & 0x1){
-        printf("\nCPU (0x%08x) #%u: lapic id=0x%02x, ver=0x%02x, cpusig=0x%08x", 
-          (u32)cpu, i, cpu->lapicid, cpu->lapicver, cpu->cpusig);
-        pcpus[pcpus_numentries].lapic_id = cpu->lapicid;
-        pcpus[pcpus_numentries].lapic_ver = cpu->lapicver;
-        pcpus[pcpus_numentries].lapic_base = mpctable->lapicaddr;
-        pcpus[pcpus_numentries].isbsp = cpu->cpuflags & 0x2;
-        pcpus_numentries++;
-      }
-            
-      addrofnextentry += sizeof(MPENTRYCPU);
-    }
-  }
-
-
-fallthrough:
-  return;  
-  //debug
-  {
-    u32 i;
-    printf("\nCPU table:");
-    for(i=0; i < pcpus_numentries; i++)
-      printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x", i, pcpus[i].isbsp, pcpus[i].lapic_id);
-  }
-}
-
-u32 _MPFPComputeChecksum(u32 spaddr, u32 size){
-  char *p;
-  char checksum=0;
-  u32 i;
-
-  p=(char *)spaddr;
-  
-  for(i=0; i< size; i++)
-    checksum+= (char)(*(p+i));
-  
-  return (u32)checksum;
-}
-
-
-//get the MP FP structure
-MPFP *MP_GetFPStructure(void){
-  u16 ebdaseg;
-  u32 ebdaphys;
-  u32 i, found=0;
-  MPFP *mpfp;
-  
-  //get EBDA segment from 040E:0000h in BIOS data area
-  ebdaseg= * ((u16 *)0x0000040E);
-  //convert it to its 32-bit physical address
-  ebdaphys=(u32)(ebdaseg * 16);
-  //search first 1KB of ebda for rsdp signature (4 bytes long)
-  for(i=0; i < (1024-4); i+=16){
-    mpfp=(MPFP *)(ebdaphys+i);
-    if(mpfp->signature == MPFP_SIGNATURE){
-      if(!_MPFPComputeChecksum((u32)mpfp, 16)){
-        found=1;
-        break;
-      }
-    }
-  }
-  
-  if(found)
-    return mpfp;
-  
-  //search within BIOS areas 0xE0000 to 0xFFFFF
-  for(i=0xE0000; i < (0xFFFFF-4); i+=16){
-    mpfp=(MPFP *)i;
-    if(mpfp->signature == MPFP_SIGNATURE){
-      if(!_MPFPComputeChecksum((u32)mpfp, 16)){
-        found=1;
-        break;
-      }
-    }
-  }
-
-  if(found)
-    return mpfp;
-  
-  return (MPFP *)0;  
-}
-*/
 
 //---MP config table handling---------------------------------------------------
 void dealwithMP(void){
@@ -432,23 +299,22 @@ void do_drtm(VCPU *vcpu, u32 slbase){
 
 void setupvcpus(u32 cpu_vendor, MIDTAB *midtable, u32 midtable_numentries){
   u32 i;
-  extern u32 __cpustacks[], __vcpubuffers[];
   VCPU *vcpu;
   
-  printf("\n%s: __cpustacks range 0x%08x-0x%08x in 0x%08x chunks",
-    __FUNCTION__, (u32)__cpustacks, (u32)__cpustacks + (RUNTIME_STACK_SIZE * MAX_VCPU_ENTRIES),
+  printf("\n%s: cpustacks range 0x%08x-0x%08x in 0x%08x chunks",
+    __FUNCTION__, (u32)cpustacks, (u32)cpustacks + (RUNTIME_STACK_SIZE * MAX_VCPU_ENTRIES),
         RUNTIME_STACK_SIZE);
-  printf("\n%s: __vcpubuffers range 0x%08x-0x%08x in 0x%08x chunks",
-    __FUNCTION__, (u32)__vcpubuffers, (u32)__vcpubuffers + (SIZE_STRUCT_VCPU * MAX_VCPU_ENTRIES),
+  printf("\n%s: vcpubuffers range 0x%08x-0x%08x in 0x%08x chunks",
+    __FUNCTION__, (u32)vcpubuffers, (u32)vcpubuffers + (SIZE_STRUCT_VCPU * MAX_VCPU_ENTRIES),
         SIZE_STRUCT_VCPU);
           
   for(i=0; i < midtable_numentries; i++){
-    vcpu = (VCPU *)((u32)__vcpubuffers + (u32)(i * SIZE_STRUCT_VCPU));
+    vcpu = (VCPU *)((u32)vcpubuffers + (u32)(i * SIZE_STRUCT_VCPU));
     memset((void *)vcpu, 0, sizeof(VCPU));
     
     vcpu->cpu_vendor = cpu_vendor;
     
-    vcpu->esp = ((u32)__cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;    
+    vcpu->esp = ((u32)cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;    
     vcpu->id = midtable[i].cpu_lapic_id;
 
     midtable[i].vcpu_vaddr_ptr = (u32)vcpu;

@@ -33,8 +33,8 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//islayersup.S
-//implements supporting low-level routines for isolation layer
+//islayersup_svm.S
+//implements supporting low-level routines for SVM isolation layer
 //author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <target.h>

@@ -72,7 +72,6 @@ halt:
 	jmp halt
 	
 	.section .stack
-	.global init_stack
 init_stack:
 	.fill	INIT_STACK_SIZE, 1, 0
 	

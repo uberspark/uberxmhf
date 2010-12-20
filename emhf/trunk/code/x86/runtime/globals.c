@@ -158,6 +158,23 @@ u8 g_svm_iopm[SIZEOF_IOPM_BITMAP]__attribute__(( section(".palign_data") ));
 u8 g_svm_msrpm[SIZEOF_MSRPM_BITMAP]__attribute__(( section(".palign_data") ));
 
 
+//------------------------------------------------------------------------------
+//VMX isolation layer specific runtime globals
+//these are global variables accessed across islayer_vmx.c, islayersup_vmx.S,
+//islayer_vmx_ug.c and apic_vmx.c
+
+//apic_vmx.c
+
+//the BSP LAPIC base address
+u32 g_vmx_lapic_base __attribute__(( section(".data") )) = 0;
+
+//4k buffer which is the virtual LAPIC page that guest reads and writes from/to
+//during INIT-SIPI-SIPI emulation
+u8 g_vmx_virtual_LAPIC_base[PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
+
+
+
+
 //isolation layer abstraction
 struct isolation_layer *g_isl __attribute__(( section(".data") ));
 

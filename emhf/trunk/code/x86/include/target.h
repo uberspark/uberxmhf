@@ -49,6 +49,7 @@
 #include <io.h>         //legacy I/O
 #include <apic.h>       //APIC
 #include <svm.h>        //SVM extensions
+#include <vmx.h>				//VMX extensions
 
 #include <pci.h>        //PCI bus glue
 
@@ -80,18 +81,17 @@
 
 #define MAX_E820_ENTRIES    (64)  //maximum E820 entries we support, 64 should
                                   //be enough
-#define SIZE_STRUCT_GRUBE820  (20)
+//#define SIZE_STRUCT_GRUBE820  (20)
 
-#define SIZE_STRUCT_PCPU  (16)
+//#define SIZE_STRUCT_PCPU  (16)
 #define MAX_PCPU_ENTRIES  (4)
 
 #define MPFP_SIGNATURE (0x5F504D5FUL) //"_MP_"
 #define MPCONFTABLE_SIGNATURE (0x504D4350UL)  //"PCMP"
 
-#define SIZE_STRUCT_MIDTAB  (8)
+//#define SIZE_STRUCT_MIDTAB  (8)
 #define MAX_MIDTAB_ENTRIES  (MAX_PCPU_ENTRIES)
 
-#define SIZE_STRUCT_VCPU    (52)
 #define MAX_VCPU_ENTRIES    (MAX_PCPU_ENTRIES)
 
 #define AP_BOOTSTRAP_CODE_SEG 0x1000
@@ -138,13 +138,18 @@ typedef struct {
 
 //the master-id table, which is used by the AP bootstrap code
 //to locate its own vcpu structure
-typedef struct {
+//NOTE: The size of this structure _MUST_ be _EXACTLY_EQUAL_ to 8 bytes
+//as it is made use of in low-level assembly language stubs
+typedef struct _midtab {
   u32 cpu_lapic_id;       //CPU LAPIC id (unique)
   u32 vcpu_vaddr_ptr;     //virt. addr. pointer to vcpu struct for this CPU
 } __attribute__((packed)) MIDTAB;
 
+#define SIZE_STRUCT_MIDTAB  (sizeof(struct _midtab))
+
+
 //the vcpu structure which holds the current state of a core
-typedef struct {
+typedef struct _vcpu {
   u32 esp;                //used to establish stack for the CPU
   u32 hsave_vaddr_ptr;    //VM_HSAVE area of the CPU
   u32 vmcb_vaddr_ptr;     //VMCB of the CPU
@@ -159,6 +164,9 @@ typedef struct {
 	u32 cpu_vendor;					//Intel or AMD
 	u32 isbsp;							//1 if this core is BSP else 0
 } __attribute__((packed)) VCPU;
+
+#define SIZE_STRUCT_VCPU    (sizeof(struct _vcpu))
+
 
 typedef struct {
   u32 signature;
@@ -203,12 +211,14 @@ typedef struct {
 
 
 
-typedef struct {
+typedef struct _pcpu {
   u32 lapic_id;
   u32 lapic_ver;
   u32 lapic_base;
   u32 isbsp;
 } __attribute__((packed)) PCPU;
+
+#define SIZE_STRUCT_PCPU  (sizeof(struct _pcpu))
 
 
 #define __pa(x) (x)
@@ -216,13 +226,15 @@ typedef struct {
 #define __hva2spa__(x) ((x) - __TARGET_BASE + rpb->XtVmmRuntimePhysBase)
 
 
-typedef struct {
+typedef struct _grube820 {
   u32 baseaddr_low;
   u32 baseaddr_high;
   u32 length_low;
   u32 length_high;
   u32 type;  
 } __attribute__((packed)) GRUBE820;
+
+#define SIZE_STRUCT_GRUBE820  (sizeof(struct _grube820))
 
 
 typedef struct {
@@ -235,7 +247,7 @@ typedef struct {
 
 
 //"sl" parameter block structure 
-typedef struct {
+typedef struct _sl_parameter_block {
 	u32 magic;	//magic identifier
 	u32 hashSL;	//hash of the secure loader
 	u32 errorHandler;	//error handler
@@ -330,6 +342,19 @@ void svm_lapic_access_dbexception(VCPU *vcpu, struct regs *r);
 void __svm_start_hvm(VCPU *vcpu, u32 vmcb_phys_addr);
 u32 svm_kernel_pt_walker(struct vmcb_struct *vmcb, u32 vaddr);
 void svm_apic_wakeupAPs(void);
+
+//VMX isolation layer interfaces
+void vmx_apic_setup(VCPU *vcpu);
+
+
+//other VMX isolation layer global functions
+u32 vmx_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode);
+void vmx_lapic_access_dbexception(VCPU *vcpu, struct regs *r);
+//void __svm_start_hvm(VCPU *vcpu, u32 vmcb_phys_addr);
+//u32 svm_kernel_pt_walker(struct vmcb_struct *vmcb, u32 vaddr);
+void vmx_apic_wakeupAPs(void);
+
+
 
 #endif
 
