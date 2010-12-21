@@ -114,11 +114,11 @@ XtRtmEmitIdtStub 1f
 	.extern g_cpumap	
 	.extern g_midtable
 	.extern g_midtable_numentries
+	.extern g_runtime_TSS
 
 	.extern cstartup
 	.extern allcpus_common_start
 	.extern runtime_exception_handler
-	
 
 //------------------------------------------------------------------------------
 //RUNTIME PARAMETER BLOCK DATA
@@ -162,7 +162,7 @@ _rpb:
 	.long 0                  //number of entries
 	.long g_cpumap		       //system CPU map
 	.long 0                  //number of entries
-
+	.long g_runtime_TSS			 //runtime TSS
 
 //------------------------------------------------------------------------------
 //DATA (LOCAL)
@@ -174,6 +174,7 @@ _rpb:
 	.long	x_gdt_start
 
 	.align	16
+	.global x_gdt_start
 	x_gdt_start:
 	.quad	0x0000000000000000	
 	.quad	0x00cf9a000000ffff	
@@ -186,6 +187,7 @@ _rpb:
 	.word x_idt_end - x_idt_start - 1
 	.long x_idt_start
 	.align 16
+	.global x_idt_start
 	x_idt_start:
 	.fill	8*32, 1, 0
 	x_idt_end:
@@ -308,7 +310,7 @@ x_init_stack:
       movl %ebx, %cr4
       
       movl %cr0, %eax
-      orl $0x80000000, %eax
+      orl $0x80000000, %eax	
       movl %eax, %cr0
 
       movl $_ap_pmode_entry_with_paging, %eax
@@ -329,6 +331,7 @@ x_init_stack:
     lgdt x_gdt
     lidt x_idt
     
+
     
     //get hold of local APIC id
     mov $(MSR_APIC_BASE), %ecx

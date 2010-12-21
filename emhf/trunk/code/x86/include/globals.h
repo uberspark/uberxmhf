@@ -42,7 +42,7 @@
 #define __GLOBALS_H__
 
 //system e820 map
-extern E820MAP g_e820map[] __attribute__(( section(".data") ));
+extern GRUBE820 g_e820map[] __attribute__(( section(".data") ));
 
 //SMP CPU map; lapic id, base, ver and bsp indication for each available core
 extern PCPU	g_cpumap[] __attribute__(( section(".data") ));
@@ -89,6 +89,10 @@ extern u8 _rpb[];
 
 //runtime parameter block pointer 
 extern RPB *rpb __attribute__(( section(".data") )); 
+
+//runtime TSS
+extern u8 g_runtime_TSS[] __attribute__(( section(".data") ));
+
 
 //defined in runtimesup.S(.text), this is the start of the real-mode AP
 //bootstrap code
@@ -196,6 +200,71 @@ extern u32 g_vmx_lapic_base __attribute__(( section(".data") ));
 //4k buffer which is the virtual LAPIC page that guest reads and writes from/to
 //during INIT-SIPI-SIPI emulation
 extern u8 g_vmx_virtual_LAPIC_base[] __attribute__(( section(".palign_data") ));
+
+//the quiesce counter, all CPUs except for the one requesting the
+//quiesce will increment this when they get their quiesce signal
+extern u32 g_vmx_quiesce_counter __attribute__(( section(".data") ));
+
+//SMP lock to access the above variable
+extern u32 g_vmx_lock_quiesce_counter __attribute__(( section(".data") )); 
+
+//resume counter to rally all CPUs after resumption from quiesce
+extern u32 g_vmx_quiesce_resume_counter __attribute__(( section(".data") ));
+
+//SMP lock to access the above variable
+extern u32 g_vmx_lock_quiesce_resume_counter __attribute__(( section(".data") )); 
+    
+//the "quiesce" variable, if 1, then we have a quiesce in process
+extern u32 g_vmx_quiesce __attribute__(( section(".data") ));      
+
+//SMP lock to access the above variable
+extern u32 g_vmx_lock_quiesce __attribute__(( section(".data") )); 
+    
+//resume signal, becomes 1 to signal resume after quiescing
+extern u32 g_vmx_quiesce_resume_signal __attribute__(( section(".data") ));  
+
+//SMP lock to access the above variable
+extern u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") )); 
+
+//VMX VMCS read-only field encodings
+extern struct _vmx_vmcsrofields_encodings g_vmx_vmcsrofields_encodings[] __attribute__(( section(".data") ));
+
+//count of VMX VMCS read-only fields
+extern unsigned int g_vmx_vmcsrofields_encodings_count __attribute__(( section(".data") ));
+
+//VMX VMCS read-write field encodings
+extern struct _vmx_vmcsrwfields_encodings g_vmx_vmcsrwfields_encodings[] __attribute__(( section(".data") ));
+
+//count of VMX VMCS read-write fields
+extern unsigned int g_vmx_vmcsrwfields_encodings_count __attribute__(( section(".data") ));
+
+//VMX VMXON buffers
+extern u8 g_vmx_vmxon_buffers[] __attribute__(( section(".palign_data") ));
+
+//VMX VMCS buffers
+extern u8 g_vmx_vmcs_buffers[] __attribute__(( section(".palign_data") ));
+		
+//VMX IO bitmap buffers
+extern u8 g_vmx_iobitmap_buffers[] __attribute__(( section(".palign_data") ));
+		
+//VMX guest and host MSR save area buffers
+extern u8 g_vmx_msr_area_host_buffers[] __attribute__(( section(".palign_data") ));
+extern u8 g_vmx_msr_area_guest_buffers[] __attribute__(( section(".palign_data") ));
+
+//VMX MSR bitmap buffers
+extern u8 g_vmx_msrbitmap_buffers[] __attribute__(( section(".palign_data") ));
+
+//VMX EPT PML4 table buffers
+extern u8 g_vmx_ept_pml4_table_buffers[] __attribute__(( section(".palign_data") ));		
+
+//VMX EPT PDP table buffers
+extern u8 g_vmx_ept_pdp_table_buffers[] __attribute__(( section(".palign_data") ));
+		
+//VMX EPT PD table buffers
+extern u8 g_vmx_ept_pd_table_buffers[] __attribute__(( section(".palign_data") ));
+
+//VMX EPT P table buffers
+extern u8 g_vmx_ept_p_table_buffers[] __attribute__(( section(".palign_data") ));
 
 
 

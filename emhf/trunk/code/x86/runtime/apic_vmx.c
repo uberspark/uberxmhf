@@ -45,6 +45,10 @@ static u32 g_vmx_lapic_reg __attribute__(( section(".data") )) = 0;
 //the LAPIC operation that is being performed during emulation
 static u32 g_vmx_lapic_op __attribute__(( section(".data") )) = LAPIC_OP_RSVD;
 
+//guest TF and IF bit values during LAPIC emulation
+static u32 g_vmx_lapic_guest_eflags_tfifmask __attribute__(( section(".data") )) = 0;	 
+
+
 
 //---hardware pagetable flush-all routine---------------------------------------
 static void emhf_hwpgtbl_flushall(VCPU *vcpu){
@@ -168,12 +172,12 @@ void vmx_apic_setup(VCPU *vcpu){
   rdmsr(MSR_APIC_BASE, &eax, &edx);
   ASSERT( edx == 0 ); //APIC should be below 4G
   g_vmx_lapic_base = eax & 0xFFFFF000UL;
-  //printf("\nBSP(0x%02x): LAPIC base=0x%08x", vcpu->id, vcpu->lapic_base);
+  //printf("\nBSP(0x%02x): LAPIC base=0x%08x", vcpu->id, g_vmx_lapic_base);
   
   //set physical 4K page of LAPIC base address to not-present
   //this will cause EPT violation which is then
   //handled by vmx_lapic_access_handler
-	emhf_hwpgtbl_setprot(vcpu, vcpu->lapic_base, 0);
+	emhf_hwpgtbl_setprot(vcpu, g_vmx_lapic_base, 0);
 }
 
 
@@ -194,7 +198,7 @@ u32 vmx_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
 
   if(errorcode & EPT_ERRORCODE_WRITE){
     //printf("\nCPU(0x%02x): LAPIC[WRITE] reg=0x%08x", vcpu->id,
-		//	vcpu->lapic_reg);
+		//	g_vmx_lapic_reg);
 
 		if(g_vmx_lapic_reg == LAPIC_ICR_LOW || g_vmx_lapic_reg == LAPIC_ICR_HIGH ){
       g_vmx_lapic_op = LAPIC_OP_WRITE;
@@ -213,7 +217,7 @@ u32 vmx_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
     }    
   }else{
     //printf("\nCPU(0x%02x): LAPIC[READ] reg=0x%08x", vcpu->id,
-		//	vcpu->lapic_reg);
+		//	g_vmx_lapic_reg);
 
     if(g_vmx_lapic_reg == LAPIC_ICR_LOW || g_vmx_lapic_reg == LAPIC_ICR_HIGH ){
       g_vmx_lapic_op = LAPIC_OP_READ;
@@ -236,7 +240,7 @@ u32 vmx_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
 	vcpu->vmcs.control_exception_bitmap |= (1UL << 1); //enable INT 1 intercept (#DB fault)
   
 	//save guest IF and TF masks
-  vcpu->lapic_guest_eflags_tfifmask = (u32)vcpu->vmcs.guest_RFLAGS & ((u32)EFLAGS_IF | (u32)EFLAGS_TF);	
+  g_vmx_lapic_guest_eflags_tfifmask = (u32)vcpu->vmcs.guest_RFLAGS & ((u32)EFLAGS_IF | (u32)EFLAGS_TF);	
 
   //set guest TF
 	vcpu->vmcs.guest_RFLAGS |= EFLAGS_TF;
@@ -257,13 +261,13 @@ u32 vmx_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
 void vmx_lapic_access_dbexception(VCPU *vcpu, struct regs *r){
   u32 delink_lapic_interception=0;
   
-  if(vcpu->lapic_op == LAPIC_OP_WRITE){
+  if(g_vmx_lapic_op == LAPIC_OP_WRITE){
     u32 src_registeraddress, dst_registeraddress;
     u32 value_tobe_written;
     
-    ASSERT( (vcpu->lapic_reg == LAPIC_ICR_LOW) || (vcpu->lapic_reg == LAPIC_ICR_HIGH) );
+    ASSERT( (g_vmx_lapic_reg == LAPIC_ICR_LOW) || (g_vmx_lapic_reg == LAPIC_ICR_HIGH) );
    
-    src_registeraddress = (u32)&g_vmx_virtual_LAPIC_base + vcpu->lapic_reg;
+    src_registeraddress = (u32)&g_vmx_virtual_LAPIC_base + g_vmx_lapic_reg;
     dst_registeraddress = (u32)g_vmx_lapic_base + g_vmx_lapic_reg;
     
     value_tobe_written= *((u32 *)src_registeraddress);
@@ -314,7 +318,7 @@ fallthrough:
   //restore guest IF and TF
   vcpu->vmcs.guest_RFLAGS &= ~(EFLAGS_IF);
   vcpu->vmcs.guest_RFLAGS &= ~(EFLAGS_TF);
-  vcpu->vmcs.guest_RFLAGS |= vcpu->lapic_guest_eflags_tfifmask;
+  vcpu->vmcs.guest_RFLAGS |= g_vmx_lapic_guest_eflags_tfifmask;
 }
 
 

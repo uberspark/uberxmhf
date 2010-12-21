@@ -78,6 +78,8 @@
 
 #define __CS 0x0008 /* Selector for GDT entry 1. RPL 0 */
 #define __DS 0x0010 /* Selector for GDT enry 0. RPL 0 */
+#define __TRSEL 0x0018  //selector for TSS
+
 
 #define MAX_E820_ENTRIES    (64)  //maximum E820 entries we support, 64 should
                                   //be enough
@@ -115,6 +117,10 @@
 #define LAPIC_OP_READ   (2)
 #define LAPIC_OP_WRITE  (1)
 
+//VMX runtime TSS size
+#define VMX_RUNTIME_TSS_SIZE    (4096)
+
+
 
 #ifndef __ASSEMBLY__
 
@@ -136,6 +142,8 @@ typedef struct {
 } __attribute__((packed)) INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE;
 
 
+
+
 //the master-id table, which is used by the AP bootstrap code
 //to locate its own vcpu structure
 //NOTE: The size of this structure _MUST_ be _EXACTLY_EQUAL_ to 8 bytes
@@ -148,24 +156,96 @@ typedef struct _midtab {
 #define SIZE_STRUCT_MIDTAB  (sizeof(struct _midtab))
 
 
+//MTRR memory type structure
+struct _memorytype {
+  u64 startaddr;
+  u64 endaddr;
+  u32 type;
+  u32 invalid;
+  u32 reserved[6];
+} __attribute__((packed));
+
+#define MAX_MEMORYTYPE_ENTRIES    96    //8*11 fixed MTRRs and 8 variable MTRRs
+#define MAX_FIXED_MEMORYTYPE_ENTRIES  88
+#define MAX_VARIABLE_MEMORYTYPE_ENTRIES 8
+
+//total number of FIXED and VARIABLE MTRRs on current x86 platforms
+#define NUM_MTRR_MSRS		29
+
+//structure which holds values of guest MTRRs (64-bit)
+struct _guestmtrrmsrs {
+	u32 lodword;
+	u32 hidword;
+} __attribute__((packed));
+
+//VMX MSR indices for the vcpu structure
+#define INDEX_IA32_VMX_BASIC_MSR            0x0
+#define INDEX_IA32_VMX_PINBASED_CTLS_MSR    0x1
+#define INDEX_IA32_VMX_PROCBASED_CTLS_MSR   0x2
+#define INDEX_IA32_VMX_EXIT_CTLS_MSR        0x3
+#define INDEX_IA32_VMX_ENTRY_CTLS_MSR       0x4
+#define INDEX_IA32_VMX_MISC_MSR       	    0x5
+#define INDEX_IA32_VMX_CR0_FIXED0_MSR       0x6
+#define INDEX_IA32_VMX_CR0_FIXED1_MSR       0x7
+#define INDEX_IA32_VMX_CR4_FIXED0_MSR       0x8
+#define INDEX_IA32_VMX_CR4_FIXED1_MSR       0x9
+#define INDEX_IA32_VMX_VMCS_ENUM_MSR        0xA
+#define INDEX_IA32_VMX_PROCBASED_CTLS2_MSR  0xB
+
+#define IA32_VMX_MSRCOUNT   								12
+
+
+
 //the vcpu structure which holds the current state of a core
 typedef struct _vcpu {
-  u32 esp;                //used to establish stack for the CPU
-  u32 hsave_vaddr_ptr;    //VM_HSAVE area of the CPU
-  u32 vmcb_vaddr_ptr;     //VMCB of the CPU
-  u32 npt_vaddr_ptr;      //NPT base of the CPU
+  //common fields	
+	u32 esp;                //used to establish stack for the CPU
   u32 sipi_page_vaddr;    //SIPI page of the CPU used for SIPI handling
-  u32 npt_asid;           //NPT ASID for this core
-  u32 npt_vaddr_pts;      //NPT page-tables for protection manipulation
   u32 id;                 //LAPIC id of the core
   u32 sipivector;         //SIPI vector 
   u32 sipireceived;       //SIPI received indicator, 1 if yes
   u32 nmiinhvm;           //this is 1 if there was a NMI when in HVM, else 0        
 	u32 cpu_vendor;					//Intel or AMD
 	u32 isbsp;							//1 if this core is BSP else 0
+	
+	//SVM specific fields
+  u32 hsave_vaddr_ptr;    //VM_HSAVE area of the CPU
+  u32 vmcb_vaddr_ptr;     //VMCB of the CPU
+  u32 npt_vaddr_ptr;      //NPT base of the CPU
+  u32 npt_asid;           //NPT ASID for this core
+  u32 npt_vaddr_pts;      //NPT page-tables for protection manipulation
+
+	//VMX specific fields
+  u64 vmx_msrs[IA32_VMX_MSRCOUNT];  //VMX msr values
+  u64 vmx_msr_efer;
+  u64 vmx_msr_efcr;
+  u32 vmx_vmxonregion_vaddr;    //virtual address of the vmxon region
+  u32 vmx_vmcs_vaddr;           //virtual address of the VMCS region
+  
+  u32 vmx_vaddr_iobitmap;		//virtual address of the I/O Bitmap area
+  u32 vmx_vaddr_msr_area_host;		//virtual address of the host MSR area
+  u32 vmx_vaddr_msr_area_guest;		//virtual address of the guest MSR area
+  u32 vmx_vaddr_msrbitmaps;				//virtual address of the MSR bitmap area
+  
+  u32 vmx_vaddr_ept_pml4_table;	//virtual address of EPT PML4 table
+  u32 vmx_vaddr_ept_pdp_table;	//virtual address of EPT PDP table
+  u32 vmx_vaddr_ept_pd_tables;	//virtual address of base of EPT PD tables
+  u32 vmx_vaddr_ept_p_tables;		//virtual address of base of EPT P tables
+  struct _memorytype vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
+  //guest MTRR shadow MSRs
+	struct _guestmtrrmsrs vmx_guestmtrrmsrs[NUM_MTRR_MSRS];
+
+  //guest state fields
+  u32 vmx_guest_currentstate;		//current operating mode of guest
+  u32 vmx_guest_nextstate;		  //next operating mode of guest
+	u32 vmx_guest_unrestricted;		//this is 1 if the CPU VMX implementation supports unrestricted guest execution
+  struct _vmx_vmcsfields vmcs;   //the VMCS fields
+
+
 } __attribute__((packed)) VCPU;
 
 #define SIZE_STRUCT_VCPU    (sizeof(struct _vcpu))
+
 
 
 typedef struct {
@@ -237,13 +317,13 @@ typedef struct _grube820 {
 #define SIZE_STRUCT_GRUBE820  (sizeof(struct _grube820))
 
 
-typedef struct {
+/*typedef struct {
   u32 baseaddr_low;
   u32 baseaddr_high;
   u32 length_low;
   u32 length_high;
   u32 type;  
-} __attribute__((packed)) E820MAP;
+} __attribute__((packed)) E820MAP;*/
 
 
 //"sl" parameter block structure 
@@ -296,6 +376,7 @@ typedef struct {
 	u32 XtVmmE820NumEntries;
 	u32 XtVmmMPCpuinfoBuffer;
 	u32 XtVmmMPCpuinfoNumEntries;
+	u32 XtVmmTSSBase;
 } __attribute__((packed)) RPB, *PRPB;
 
 
@@ -323,6 +404,7 @@ struct isolation_layer {
 
 
 extern struct isolation_layer g_isolation_layer_svm;
+extern struct isolation_layer g_isolation_layer_vmx;
 
 //SVM isolation layer interfaces
 void svm_initialize(VCPU *vcpu);
@@ -344,17 +426,28 @@ u32 svm_kernel_pt_walker(struct vmcb_struct *vmcb, u32 vaddr);
 void svm_apic_wakeupAPs(void);
 
 //VMX isolation layer interfaces
+void vmx_initialize(VCPU *vcpu);
+void vmx_runtime_exception_handler(u32 vector, struct regs *r);
+u32 vmx_isbsp(void);
+void vmx_wakeup_aps(void);
+void vmx_initialize_vmcs_csrip(VCPU *vcpu, u16 cs_selector, u32 cs_base, u64 rip);
 void vmx_apic_setup(VCPU *vcpu);
+void vmx_start_hvm(VCPU *vcpu);
+u32 vmx_intercept_handler(VCPU *vcpu, struct regs *r);
+void vmx_do_quiesce(VCPU *vcpu);
+void vmx_setupvcpus(u32 cpu_vendor);
 
 
 //other VMX isolation layer global functions
 u32 vmx_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode);
 void vmx_lapic_access_dbexception(VCPU *vcpu, struct regs *r);
-//void __svm_start_hvm(VCPU *vcpu, u32 vmcb_phys_addr);
+void __vmx_start_hvm(void);
 //u32 svm_kernel_pt_walker(struct vmcb_struct *vmcb, u32 vaddr);
 void vmx_apic_wakeupAPs(void);
-
-
+void vmx_initunrestrictedguestVMCS(VCPU *vcpu);
+u32 * vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r);
+void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gpr, u32 tofrom);
+void __vmx_loadTR(void);
 
 #endif
 

@@ -108,6 +108,15 @@ typedef struct {
   u16 isrHigh;
 } __attribute__ ((packed)) idtentry_t;
 
+typedef struct {
+  unsigned short limit0_15;
+  unsigned short baseAddr0_15;
+  unsigned char baseAddr16_23;
+  unsigned char attributes1;
+  unsigned char limit16_19attributes2;    
+  unsigned char baseAddr24_31;
+} __attribute__ ((packed)) TSSENTRY;
+
 
 #define get_eflags(x)  __asm__ __volatile__("pushfl ; popl %0 ":"=g" (x): /* no input */ :"memory")
 #define set_eflags(x) __asm__ __volatile__("pushl %0 ; popfl": /* no output */ :"g" (x):"memory", "cc")
@@ -183,6 +192,50 @@ static inline void write_cr4(unsigned long val){
 static inline void skinit(unsigned long eax) {
     __asm__("mov %0, %%eax": :"r" (eax));
     __asm__("skinit":);
+}
+
+
+//segment register access
+static inline u32 read_segreg_cs(void){
+  u32 __cs;
+  __asm__("mov %%es, %0 \r\n" :"=r" (__cs));
+  return __cs;
+}
+
+static inline u32 read_segreg_ds(void){
+  u32 __ds;
+  __asm__("mov %%ds, %0 \r\n" :"=r" (__ds));
+  return __ds;
+}
+
+static inline u32 read_segreg_es(void){
+  u32 __es;
+  __asm__("mov %%es, %0 \r\n" :"=r" (__es));
+  return __es;
+}
+
+static inline u32 read_segreg_fs(void){
+  u32 __fs;
+  __asm__("mov %%fs, %0 \r\n" :"=r" (__fs));
+  return __fs;
+}
+
+static inline u32 read_segreg_gs(void){
+  u32 __gs;
+  __asm__("mov %%gs, %0 \r\n" :"=r" (__gs));
+  return __gs;
+}
+
+static inline u32 read_segreg_ss(void){
+  u32 __ss;
+  __asm__("mov %%ss, %0 \r\n" :"=r" (__ss));
+  return __ss;
+}
+
+static inline u16 read_tr_sel(void){
+  u16 __trsel;
+  __asm__("str %0 \r\n" :"=r" (__trsel));
+  return __trsel;
 }
 
 

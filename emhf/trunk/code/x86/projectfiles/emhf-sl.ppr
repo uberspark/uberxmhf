@@ -23,6 +23,7 @@ emhf-sl
 		..\sl\sl.lds.S
 		..\include\paging.h
 		..\sl\slheader.S
+		..\include\processor.h
 [Open project files]
 0=..\Makefile
 1=..\sl\Makefile
@@ -32,9 +33,10 @@ emhf-sl
 5=..\include\target.h
 6=..\include\paging.h
 7=..\sl\slheader.S
+8=..\include\processor.h
 [Selected Project Files]
 Main=
-Selected=..\sl\Makefile
+Selected=..\sl\sl.c
 [..\Makefile]
 TopLine=1
 Caret=1,1
@@ -42,20 +44,23 @@ Caret=1,1
 TopLine=1
 Caret=61,34
 [..\sl\slsup.S]
-TopLine=45
-Caret=11,50
+TopLine=1
+Caret=11,6
 [..\sl\sl.c]
-TopLine=190
-Caret=1,215
+TopLine=188
+Caret=32,214
 [..\sl\sl.lds.S]
 TopLine=4
 Caret=18,31
 [..\include\target.h]
 TopLine=195
-Caret=50,236
+Caret=36,215
 [..\include\paging.h]
 TopLine=1
 Caret=1,1
 [..\sl\slheader.S]
-TopLine=89
-Caret=1,89
+TopLine=171
+Caret=22,182
+[..\include\processor.h]
+TopLine=1
+Caret=1,1

@@ -81,7 +81,7 @@ void cstartup(void){
 
 	//initialize isolation layer abstraction
   if(cpu_vendor == CPU_VENDOR_INTEL)
-  	g_isl = &g_isolation_layer_svm;
+  	g_isl = &g_isolation_layer_vmx;
 	else
 		g_isl = &g_isolation_layer_svm; 
 
@@ -138,7 +138,15 @@ void allcpus_common_start(VCPU *vcpu){
   //we start here with all CPUs executing common code, we 
   //will make BSP distinction based on isbsp macro which basically
   //reads the LAPIC MSR to see if it is the BSP. 
-	
+
+  //set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
+	{
+		u32 bcr0;
+		bcr0 = read_cr0();
+		bcr0 |= 0x20;
+		write_cr0(bcr0);
+	}
+
   //step:1 rally all APs up, make sure all of them started, this is
   //a task for the BSP
   if(g_isl->isbsp()){
@@ -168,6 +176,8 @@ void allcpus_common_start(VCPU *vcpu){
     //increment active CPUs
 		vcpu->isbsp=0;	//this core is a AP
 
+
+
     spin_lock(&g_lock_cpus_active);
     g_cpus_active++;
     spin_unlock(&g_lock_cpus_active);
@@ -177,10 +187,10 @@ void allcpus_common_start(VCPU *vcpu){
     printf("\nAP(0x%02x): My ESP is 0x%08x, proceeding...", vcpu->id, vcpu->esp);
   }
   
-	if(vcpu->cpu_vendor == CPU_VENDOR_INTEL){
-		printf("\nCPU(0x%02x): Intel integration still WiP, HALT!", vcpu->id);
-		HALT();
-	}
+	//if(vcpu->cpu_vendor == CPU_VENDOR_INTEL){
+	//	printf("\nCPU(0x%02x): Intel integration still WiP, HALT!", vcpu->id);
+	//	HALT();
+	//}
   
   //initialize isolation layer
 	g_isl->initialize(vcpu);
@@ -214,13 +224,7 @@ void allcpus_common_start(VCPU *vcpu){
     while(!vcpu->sipireceived);
     printf("\nCPU(0x%02x): SIPI signal received, vector=0x%02x", vcpu->id, vcpu->sipivector);
 
-		//if(vcpu->cpu_vendor == CPU_VENDOR_INTEL){
-		//	//update VMCS with startup CS:IP
- 		//	vcpu->vmcs.guest_RIP = 0x0ULL;
-		//	vcpu->vmcs.guest_CS_selector = (vcpu->sipivector * PAGE_SIZE_4K) >> 4;
-		//	vcpu->vmcs.guest_CS_base = (vcpu->sipivector * PAGE_SIZE_4K);
-		//}else
-		
+	
 		g_isl->hvm_initialize_csrip(vcpu, ((vcpu->sipivector * PAGE_SIZE_4K) >> 4),
 					 (vcpu->sipivector * PAGE_SIZE_4K), 0x0ULL);
 	}

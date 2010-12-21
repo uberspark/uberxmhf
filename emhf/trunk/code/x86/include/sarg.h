@@ -48,6 +48,10 @@ typedef void *va_list;
 
 #define	va_end(list) (void)0
 
+#define offsetof(type, member) ((unsigned int) \
+		((char *)&((type *) 0)->member - (char *)((type *) 0)))
+
+
 #endif //#ifndef __ASSEMBLY__
 
 #endif	/* _SARG_H */

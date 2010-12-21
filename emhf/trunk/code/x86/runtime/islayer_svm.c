@@ -260,7 +260,7 @@ static void _svm_handle_swint(struct vmcb_struct *vmcb, struct regs *r){
 				//printf("\nreturning for index=%u", r->ebx);
 				//printf("\nES=0x%04X, DI=0x%04X", vmcb->es.base, (u16)r->edi);
 				memcpy((void *)((u32)((vmcb->es.base)+(u16)r->edi)), (void *)&g_e820map[r->ebx],
-					sizeof(E820MAP));
+					sizeof(GRUBE820));
 				r->ebx=r->ebx+1;
 				
 				

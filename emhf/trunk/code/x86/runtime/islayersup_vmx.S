@@ -33,17 +33,17 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// islayer low-level support
+// islayer low-level support for VMX
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <target.h>
 
 
 //---globals referenced by this module------------------------------------------
-.extern isl_intercepthandler
-.extern midtable_numentries
-.extern __midtable
-
+.extern vmx_intercept_handler
+.extern g_midtable_numentries
+.extern g_midtable
+.extern x_gdt_start
 
 #define SAVEALL_GPRS \
         pushl	%edi	; \
@@ -67,8 +67,8 @@
 
 
 .section .text
-	.global __islayer_callback
-	__islayer_callback:
+	.global __vmx_callback
+	__vmx_callback:
        	//we get here due to ANY intecept within the HVM
       	//step-1: save all CPU GPRs
 	      SAVEALL_GPRS
@@ -81,10 +81,10 @@
         movl (%eax), %eax
         shr $24, %eax
 
-        movl midtable_numentries, %edx
+        movl g_midtable_numentries, %edx
     
         //get vcpu virtual address of this CPU/core
-        movl $(__midtable), %ebx
+        movl $(g_midtable), %ebx
         xorl %ecx, %ecx
         getvcpuloop:
           movl 0x0(%ebx, %ecx, 8), %ebp  //ebp contains the lapic id
@@ -104,7 +104,7 @@
       	//1st argument is vcpu followed by pointer to saved GPRs
 	     pushl %eax
 	     pushl %esi
-	     call isl_intercepthandler
+	     call vmx_intercept_handler
        addl $0x08, %esp
 
       //restore all CPU GPRs
@@ -120,8 +120,8 @@
   
    
 .section .text
-  .global startHVM_launch
-  startHVM_launch:
+  .global __vmx_start_hvm
+  __vmx_start_hvm:
    //real-mode setup just like the BIOS
    pushal
    
@@ -139,5 +139,26 @@
 	 popal
 	 ret
 
-   
+
+//---__vmx_loadTR---------------------------------------------------------------
+//loads TR on the core   
+.section .text
+  .global __vmx_loadTR
+  __vmx_loadTR:
+
+	pushal  
   
+	//load TR
+	//note: we MUST clear the TSS descriptor "busy" bit before issuing
+	//the LTR instruction on Intel cores, else we will #GPF.  
+	movl $(x_gdt_start), %edi
+	xorl %eax, %eax
+	movw $(__TRSEL), %ax
+	addl %eax, %edi				//%edi is pointer to TSS descriptor in GDT
+	addl $0x4, %edi				//%edi points to top 32-bits of 64-bit TSS desc.
+	lock andl $0xFFFF00FF, (%edi)
+	lock orl  $0x00008900, (%edi)  
+	ltr %ax								//load TR
+
+	popal
+	ret

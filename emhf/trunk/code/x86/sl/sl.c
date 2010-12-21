@@ -240,6 +240,24 @@ void slmain(u32 baseaddr){
 			printf("\nSL: setup runtime IDT.");
 		}
 
+		//setup runtime TSS
+		{
+			TSSENTRY *t;
+	  	u32 tss_base=(u32)rpb->XtVmmTSSBase;
+	  	u32 gdt_base= *(u32 *)(((u32)rpb->XtVmmGdt - __TARGET_BASE + PAGE_SIZE_2M)+2);
+	
+			//fix TSS descriptor, 18h
+			t= (TSSENTRY *)((u32)gdt_base + __TRSEL );
+		  t->attributes1= 0x89;
+		  t->limit16_19attributes2= 0x10;
+		  t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
+		  t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
+		  t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);      
+		  t->limit0_15=0x67;
+		}
+		printf("\nSL: setup runtime TSS.");	
+
+
 		//obtain runtime gdt, idt, entrypoint and stacktop values and patch
 		//entry point in XtLdrTransferControltoRtm
 		{
