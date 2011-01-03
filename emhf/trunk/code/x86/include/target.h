@@ -400,8 +400,6 @@ struct isolation_layer {
 }; 
 
 
-extern struct isolation_layer g_isolation_layer_svm;
-extern struct isolation_layer g_isolation_layer_vmx;
 
 //SVM isolation layer interfaces
 void svm_initialize(VCPU *vcpu);
@@ -445,6 +443,9 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu);
 u32 * vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r);
 void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gpr, u32 tofrom);
 void __vmx_loadTR(void);
+
+
+#include <globals.h>
 
 #endif
 

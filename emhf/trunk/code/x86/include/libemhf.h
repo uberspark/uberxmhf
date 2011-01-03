@@ -62,8 +62,19 @@ typedef struct {
   u32 runtimephysmembase;
 } __attribute__((packed)) APP_PARAM_BLOCK;
 
-#define SIZE_MAX_OPTIONAL_MODULE  (64*1024) //64K optional module buffer
-
+//generic EMHF library interface
+//note: VMX and SVM backends can have different implementations of these 
+//interfaces
+struct emhf_library {
+	void 	(*emhf_iopm_set_write)(VCPU *vcpu, u32 port, u32 size);
+	void 	(*emhf_msrpm_set_write)(VCPU *vcpu, u32 msr);
+	void 	(*emhf_hwpgtbl_flushall)(VCPU *vcpu);
+	void 	(*emhf_hwpgtbl_setprot)(VCPU *vcpu, u64 gpa, u64 flags);
+	u64 	(*emhf_hwpgtbl_getprot)(VCPU *vcpu, u64 gpa);
+	void 	(*emhf_hwpgtbl_setentry)(VCPU *vcpu, u64 gpa, u64 value);
+	u32 	(*emhf_guestpgtbl_walk)(VCPU *vcpu, u32 gva);
+	void 	(*emhf_reboot)(VCPU *vcpu);
+}; 
 
 //exported functions
 void emhf_iopm_set_write(VCPU *vcpu, u32 port, u32 size);

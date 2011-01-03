@@ -978,3 +978,70 @@ struct isolation_layer g_isolation_layer_svm = {
 	.do_quiesce = svm_do_quiesce,
 	.setupvcpus = svm_setupvcpus,
 };
+
+
+//==============================================================================
+//SVM EMHF library interface implementation
+
+
+//---IOPM Bitmap interface------------------------------------------------------
+static void _svm_lib_iopm_set_write(VCPU *vcpu, u32 port, u32 size){
+	printf("\n%s: not implemented, halting!", __FUNCTION__);
+	HALT();
+}
+
+//---MSRPM Bitmap interface------------------------------------------------------
+static void _svm_lib_msrpm_set_write(VCPU *vcpu, u32 msr){
+	printf("\n%s: not implemented, halting!", __FUNCTION__);
+	HALT();
+}
+
+//---hardware pagetable flush-all routine---------------------------------------
+static void _svm_lib_hwpgtbl_flushall(VCPU *vcpu){
+	printf("\n%s: not implemented, halting!", __FUNCTION__);
+	HALT();
+}
+
+//---hardware pagetable protection manipulation routine-------------------------
+static void _svm_lib_hwpgtbl_setprot(VCPU *vcpu, u64 gpa, u64 flags){
+	printf("\n%s: not implemented, halting!", __FUNCTION__);
+	HALT();
+}
+
+static void _svm_lib_hwpgtbl_setentry(VCPU *vcpu, u64 gpa, u64 value){
+	printf("\n%s: not implemented, halting!", __FUNCTION__);
+	HALT();
+}
+
+static u64 _svm_lib_hwpgtbl_getprot(VCPU *vcpu, u64 gpa){
+	printf("\n%s: not implemented, halting!", __FUNCTION__);
+	HALT();
+}
+
+//---guest page-table walker, returns guest physical address--------------------
+//note: returns 0xFFFFFFFF if there is no mapping
+static u32 _svm_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr){
+	printf("\n%s: not implemented, halting!", __FUNCTION__);
+	HALT();
+}
+
+
+//---reboot functionality-------------------------------------------------------
+static void _svm_lib_reboot(VCPU *vcpu){
+	printf("\n%s: not implemented, halting!", __FUNCTION__);
+	HALT();
+}
+
+
+struct emhf_library g_emhf_library_svm = {
+	.emhf_iopm_set_write = _svm_lib_iopm_set_write,
+	.emhf_msrpm_set_write = _svm_lib_msrpm_set_write,
+	.emhf_hwpgtbl_flushall = _svm_lib_hwpgtbl_flushall,
+	.emhf_hwpgtbl_setprot = _svm_lib_hwpgtbl_setprot,
+	.emhf_hwpgtbl_getprot = _svm_lib_hwpgtbl_getprot,
+	.emhf_guestpgtbl_walk = _svm_lib_guestpgtbl_walk,
+	.emhf_reboot = _svm_lib_reboot,
+};
+
+
+

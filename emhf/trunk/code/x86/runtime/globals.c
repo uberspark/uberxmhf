@@ -410,7 +410,10 @@ u8 g_vmx_ept_p_table_buffers[PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT
 
 
 //isolation layer abstraction
-struct isolation_layer *g_isl __attribute__(( section(".data") ));
+struct isolation_layer *g_isl __attribute__(( section(".data") )) = NULL;
+
+//EMHF library interface abstraction
+struct emhf_library *g_libemhf __attribute__(( section(".data") )) = NULL; 
 
 //------------------------------------------------------------------------------
 void runtime_globals_init(){

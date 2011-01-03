@@ -79,12 +79,15 @@ void cstartup(void){
 		}   	 	
   }
 
-	//initialize isolation layer abstraction
-  if(cpu_vendor == CPU_VENDOR_INTEL)
+	//initialize isolation layer and EMHF library interface abstraction
+  if(cpu_vendor == CPU_VENDOR_INTEL){
   	g_isl = &g_isolation_layer_vmx;
-	else
+		g_libemhf = &g_emhf_library_vmx;
+	}else{
 		g_isl = &g_isolation_layer_svm; 
-
+		g_libemhf = &g_emhf_library_vmx;
+	}
+	
   //debug, dump E820 and MP table
  	printf("\nNumber of E820 entries = %u", rpb->XtVmmE820NumEntries);
   {
