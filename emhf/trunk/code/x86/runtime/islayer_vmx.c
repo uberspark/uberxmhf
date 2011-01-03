@@ -409,8 +409,8 @@ static void _vmx_handle_intercept_ioportaccess(VCPU *vcpu, struct regs *r){
 
   //call our app handler, TODO: it should be possible for an app to
   //NOT want a callback by setting up some parameters during appmain
-  //app_ret_status=emhf_app_handleintercept_portaccess(vcpu, r, portnum, access_type, 
-  //        access_size);
+  app_ret_status=emhf_app_handleintercept_portaccess(vcpu, r, portnum, access_type, 
+          access_size);
 
   if(app_ret_status == APP_IOINTERCEPT_CHAIN){
    	if(access_type == IO_TYPE_OUT){
@@ -452,10 +452,8 @@ static void _vmx_handle_intercept_eptviolation(VCPU *vcpu, struct regs *r){
 	if(vmx_isbsp() && (gpa >= g_vmx_lapic_base) && (gpa < (g_vmx_lapic_base + PAGE_SIZE_4K)) ){
     vmx_lapic_access_handler(vcpu, gpa, errorcode);
   }else{ //no, pass it to emhf app  
-	  //emhf_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, gva,
-  	//  (errorcode & 7));
-  	printf("\nTODO: pass to emhf_app_handleintercept!");
-  	HALT();
+	  emhf_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, gva,
+  	  (errorcode & 7));
 	}		
 }
 
@@ -877,17 +875,17 @@ u32 vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			break;
 
     case VMEXIT_INIT:{
-      //emhf_app_handleshutdown(vcpu, r);      
+      emhf_app_handleshutdown(vcpu, r);      
       printf("\nCPU(0x%02x): warning, emhf_app_handleshutdown returned!", vcpu->id);
       HALT();
     }
     break;
 
     case VMEXIT_VMCALL:{
-      //if( emhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
+      if( emhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
 				printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", vcpu->id, r->eax);
-			//	HALT();
-			//}
+				HALT();
+			}
       vcpu->vmcs.guest_RIP += 3;
     }
     break;
@@ -901,7 +899,7 @@ u32 vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			
 			if(reason == TASK_SWITCH_GATE && type == INTR_TYPE_NMI){
 	      printf("\nCPU(0x%02x): NMI received (MP guest shutdown?)", vcpu->id);
-	      //emhf_app_handleshutdown(vcpu, r);      
+	      emhf_app_handleshutdown(vcpu, r);      
   	    printf("\nCPU(0x%02x): warning, emhf_app_handleshutdown returned!", vcpu->id);
     		printf("\nCPU(0x%02x): HALTING!", vcpu->id);
 	      HALT();

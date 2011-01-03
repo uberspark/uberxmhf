@@ -51,7 +51,7 @@ static u32 g_vmx_lapic_guest_eflags_tfifmask __attribute__(( section(".data") ))
 
 
 //---hardware pagetable flush-all routine---------------------------------------
-static void emhf_hwpgtbl_flushall(VCPU *vcpu){
+static void vmx_apic_hwpgtbl_flushall(VCPU *vcpu){
   __vmx_invept(VMX_EPT_SINGLE_CONTEXT, 
           (u64)vcpu->vmcs.control_EPT_pointer_full, 
           0);
@@ -60,25 +60,25 @@ static void emhf_hwpgtbl_flushall(VCPU *vcpu){
 }
 
 //---hardware pagetable protection manipulation routine-------------------------
-static void emhf_hwpgtbl_setprot(VCPU *vcpu, u64 gpa, u64 flags){
+static void vmx_apic_hwpgtbl_setprot(VCPU *vcpu, u64 gpa, u64 flags){
   u32 pfn = (u32)gpa / PAGE_SIZE_4K;
   u64 *pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
   pt[pfn] &= ~(u64)7; //clear all previous flags
   pt[pfn] |= flags; //set new flags
   //flush the EPT mappings for new protections to take effect
-  emhf_hwpgtbl_flushall(vcpu);
+  vmx_apic_hwpgtbl_flushall(vcpu);
 }
 
-static void emhf_hwpgtbl_setentry(VCPU *vcpu, u64 gpa, u64 value){
+static void vmx_apic_hwpgtbl_setentry(VCPU *vcpu, u64 gpa, u64 value){
   u32 pfn = (u32)gpa / PAGE_SIZE_4K;
   u64 *pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
   pt[pfn] = value; //set new value
   //flush the EPT mappings for new protections to take effect
-  emhf_hwpgtbl_flushall(vcpu);
+  vmx_apic_hwpgtbl_flushall(vcpu);
 }
 
 
-static u64 emhf_hwpgtbl_getprot(VCPU *vcpu, u64 gpa){
+static u64 vmx_apic_hwpgtbl_getprot(VCPU *vcpu, u64 gpa){
   u32 pfn = (u32)gpa / PAGE_SIZE_4K;
   u64 *pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
   return (pt[pfn] & (u64)7) ;
@@ -177,7 +177,7 @@ void vmx_apic_setup(VCPU *vcpu){
   //set physical 4K page of LAPIC base address to not-present
   //this will cause EPT violation which is then
   //handled by vmx_lapic_access_handler
-	emhf_hwpgtbl_setprot(vcpu, g_vmx_lapic_base, 0);
+	vmx_apic_hwpgtbl_setprot(vcpu, g_vmx_lapic_base, 0);
 }
 
 
@@ -205,14 +205,14 @@ u32 vmx_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
 
       //change LAPIC physical address in EPT to point to physical address 
 			//of memregion_virtual_LAPIC
-			emhf_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
+			vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
 					(u64)__hva2spa__((u32)&g_vmx_virtual_LAPIC_base) | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
 
     }else{
       g_vmx_lapic_op = LAPIC_OP_RSVD;
 
       //change LAPIC physical address in EPT to point to physical LAPIC
-      emhf_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
+      vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
 					(u64)g_vmx_lapic_base | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
     }    
   }else{
@@ -224,14 +224,14 @@ u32 vmx_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
 
       //change LAPIC physical address in EPT to point to physical address 
 			//of memregion_virtual_LAPIC
-			emhf_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
+			vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
 					(u64)__hva2spa__((u32)&g_vmx_virtual_LAPIC_base) | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
 
     }else{
       g_vmx_lapic_op = LAPIC_OP_RSVD;
 
       //change LAPIC physical address in EPT to point to physical LAPIC
-      emhf_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
+      vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
 					(u64)g_vmx_lapic_base | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
     }  
   }
@@ -308,10 +308,10 @@ fallthrough:
   //make LAPIC page inaccessible and flush TLB
   if(delink_lapic_interception){
     printf("\n%s: delinking LAPIC interception since all cores have SIPI", __FUNCTION__);
-    emhf_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
+    vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
 					(u64)g_vmx_lapic_base | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
   }else{
-    emhf_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
+    vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
 					(u64)g_vmx_lapic_base);			
 	}
 

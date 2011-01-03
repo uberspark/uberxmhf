@@ -379,10 +379,7 @@ typedef struct {
 	u32 XtVmmTSSBase;
 } __attribute__((packed)) RPB, *PRPB;
 
-
-#include <_libsechyp.h> //the SecHyp interface library
-
-
+#include <libemhf.h>	//EMHF application interface
 
 //generic isolation layer interface
 struct isolation_layer {

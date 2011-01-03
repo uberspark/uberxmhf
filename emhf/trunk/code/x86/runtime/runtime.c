@@ -187,19 +187,25 @@ void allcpus_common_start(VCPU *vcpu){
     printf("\nAP(0x%02x): My ESP is 0x%08x, proceeding...", vcpu->id, vcpu->esp);
   }
   
-	//if(vcpu->cpu_vendor == CPU_VENDOR_INTEL){
-	//	printf("\nCPU(0x%02x): Intel integration still WiP, HALT!", vcpu->id);
-	//	HALT();
-	//}
-  
   //initialize isolation layer
 	g_isl->initialize(vcpu);
 
-  //call app main
-  if(emhf_app_main(vcpu)){
-    printf("\nCPU(0x%02x): EMHF app. failed to initialize. HALT!", vcpu->id);
-    HALT();
-  }
+  //initialize application parameter block and call app main
+  {
+  	APP_PARAM_BLOCK appParamBlock;
+  	
+		appParamBlock.bootsector_ptr = (u32)rpb->XtGuestOSBootModuleBase;
+  	appParamBlock.bootsector_size = (u32)rpb->XtGuestOSBootModuleSize;
+  	appParamBlock.optionalmodule_ptr = (u32)rpb->XtGuestOSBootModuleBaseSup1;
+  	appParamBlock.optionalmodule_size = (u32)rpb->XtGuestOSBootModuleSizeSup1;
+ 		appParamBlock.runtimephysmembase = (u32)rpb->XtVmmRuntimePhysBase;  
+
+  	//call app main
+  	if(emhf_app_main(vcpu, &appParamBlock)){
+    	printf("\nCPU(0x%02x): EMHF app. failed to initialize. HALT!", vcpu->id);
+    	HALT();
+  	}
+	}   	
 
  	//increment app main success counter
 	spin_lock(&g_lock_appmain_success_counter);

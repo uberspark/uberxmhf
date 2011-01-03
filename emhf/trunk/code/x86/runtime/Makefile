@@ -3,7 +3,7 @@
 
 # source files
 AS_SOURCES = runtimesup.S 
-C_SOURCES = runtime.c globals.c libsechyp.c 
+C_SOURCES = runtime.c globals.c libemhf.c 
 
 AS_SOURCES += islayersup_svm.S 
 C_SOURCES += islayer_svm.c apic_svm.c  
