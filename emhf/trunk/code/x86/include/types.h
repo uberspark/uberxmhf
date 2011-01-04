@@ -78,6 +78,24 @@ typedef u64 uint64_t;
 typedef u32 paddr_t;
 typedef void * dma_addr_t;
 
+typedef unsigned int        uintptr_t;
+
 #endif /*ifndef __ASSEMBLY__*/
+
+/* from BSD's stdbool.h */
+#define	__bool_true_false_are_defined	1
+
+#ifndef __cplusplus
+
+#define	false	0
+#define	true	1
+
+#define	bool	_Bool
+#if __STDC_VERSION__ < 199901L && __GNUC__ < 3
+typedef	int	_Bool;
+#endif
+
+#endif /* !__cplusplus */
+
 
 #endif /* __TYPES_H_ */
