@@ -52,6 +52,8 @@ extern void printf(const char *format, ...)
 #define printf(format, args...) ((void)0)
 #endif
 
+void print_hex(const char *prefix, const void *prtptr, size_t size);
+
 #endif /* __ASSEMBLY__ */
 
 #endif /* __PRINT_H_ */
