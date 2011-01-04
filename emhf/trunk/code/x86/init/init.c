@@ -48,12 +48,12 @@ u32 isbsp(void);
 //---globals--------------------------------------------------------------------
 PCPU pcpus[MAX_PCPU_ENTRIES];
 u32 pcpus_numentries=0;
-u32 cpu_vendor;	//CPU_VENDOR_INTEL or CPU_VENDOR_AMD
-u32 hypervisor_image_baseaddress;	//2M aligned highest physical memory address
-						//where the hypervisor binary is relocated to
+u32 cpu_vendor;    //CPU_VENDOR_INTEL or CPU_VENDOR_AMD
+u32 hypervisor_image_baseaddress;    //2M aligned highest physical memory address
+//where the hypervisor binary is relocated to
 GRUBE820 grube820list[MAX_E820_ENTRIES];
 u32 grube820list_numentries=0;        //actual number of e820 entries returned
-                                  //by grub
+//by grub
 
 //master-id table which holds LAPIC ID to VCPU mapping for each physical core
 MIDTAB midtable[MAX_MIDTAB_ENTRIES] __attribute__(( section(".data") ));
@@ -73,181 +73,181 @@ extern init_core_lowlevel_setup(void);
 
 //---MP config table handling---------------------------------------------------
 void dealwithMP(void){
-	if(!smp_getinfo(&pcpus, &pcpus_numentries)){
-		printf("\nFatal error with SMP detection. Halting!");
-		HALT();
-	}
+    if(!smp_getinfo(&pcpus, &pcpus_numentries)){
+        printf("\nFatal error with SMP detection. Halting!");
+        HALT();
+    }
 }
 
 
 //---microsecond delay----------------------------------------------------------
 void udelay(u32 usecs){
-  u8 val;
-  u32 latchregval;  
+    u8 val;
+    u32 latchregval;  
 
-  //enable 8254 ch-2 counter
-  val = inb(0x61);
-  val &= 0x0d; //turn PC speaker off
-  val |= 0x01; //turn on ch-2
-  outb(val, 0x61);
+    //enable 8254 ch-2 counter
+    val = inb(0x61);
+    val &= 0x0d; //turn PC speaker off
+    val |= 0x01; //turn on ch-2
+    outb(val, 0x61);
   
-  //program ch-2 as one-shot
-  outb(0xB0, 0x43);
+    //program ch-2 as one-shot
+    outb(0xB0, 0x43);
   
-  //compute appropriate latch register value depending on usecs
-  latchregval = (1193182 * usecs) / 1000000;
+    //compute appropriate latch register value depending on usecs
+    latchregval = (1193182 * usecs) / 1000000;
 
-  //write latch register to ch-2
-  val = (u8)latchregval;
-  outb(val, 0x42);
-  val = (u8)((u32)latchregval >> (u32)8);
-  outb(val , 0x42);
+    //write latch register to ch-2
+    val = (u8)latchregval;
+    outb(val, 0x42);
+    val = (u8)((u32)latchregval >> (u32)8);
+    outb(val , 0x42);
   
-  //wait for countdown
-  while(!(inb(0x61) & 0x20));
+    //wait for countdown
+    while(!(inb(0x61) & 0x20));
   
-  //disable ch-2 counter
-  val = inb(0x61);
-  val &= 0x0c;
-  outb(val, 0x61);
+    //disable ch-2 counter
+    val = inb(0x61);
+    val &= 0x0c;
+    outb(val, 0x61);
 }
 
 
 //---INIT IPI routine-----------------------------------------------------------
 void send_init_ipi_to_all_APs(void) {
-  u32 eax, edx;
-  volatile u32 *icr;
+    u32 eax, edx;
+    volatile u32 *icr;
   
-  //read LAPIC base address from MSR
-  rdmsr(MSR_APIC_BASE, &eax, &edx);
-  ASSERT( edx == 0 ); //APIC is below 4G
-  printf("\nLAPIC base and status=0x%08x", eax);
+    //read LAPIC base address from MSR
+    rdmsr(MSR_APIC_BASE, &eax, &edx);
+    ASSERT( edx == 0 ); //APIC is below 4G
+    printf("\nLAPIC base and status=0x%08x", eax);
     
-  icr = (u32 *) (((u32)eax & 0xFFFFF000UL) + 0x300);
+    icr = (u32 *) (((u32)eax & 0xFFFFF000UL) + 0x300);
 
-  //send INIT
-  printf("\nSending INIT IPI to all APs...");
-  *icr = 0x000c4500UL;
-  udelay(10000);
-  //wait for command completion
-  {
-    u32 val;
-    do{
-      val = *icr;
-    }while( (val & 0x1000) );
-  }
-  printf("Done.");
+    //send INIT
+    printf("\nSending INIT IPI to all APs...");
+    *icr = 0x000c4500UL;
+    udelay(10000);
+    //wait for command completion
+    {
+        u32 val;
+        do{
+            val = *icr;
+        }while( (val & 0x1000) );
+    }
+    printf("Done.");
 }
 
 
 //---E820 parsing and handling--------------------------------------------------
 //runtimesize is assumed to be 2M aligned
 u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize){
-  //check if GRUB has a valid E820 map
-  if(!(mbi->flags & MBI_MEMMAP)){
-    printf("\n%s: FATAL error, no E820 map provided!", __FUNCTION__);
-    HALT();
-  }
+    //check if GRUB has a valid E820 map
+    if(!(mbi->flags & MBI_MEMMAP)){
+        printf("\n%s: FATAL error, no E820 map provided!", __FUNCTION__);
+        HALT();
+    }
   
-  //zero out grub e820 list
-  memset((void *)&grube820list, 0, sizeof(GRUBE820)*MAX_E820_ENTRIES);
+    //zero out grub e820 list
+    memset((void *)&grube820list, 0, sizeof(GRUBE820)*MAX_E820_ENTRIES);
   
-  //grab e820 list into grube820list
-  {
-    memory_map_t *mmap;
-    for ( mmap = (memory_map_t *) mbi->mmap_addr;
-          (unsigned long) mmap < mbi->mmap_addr + mbi->mmap_length;
-           mmap = (memory_map_t *) ((unsigned long) mmap
+    //grab e820 list into grube820list
+    {
+        memory_map_t *mmap;
+        for ( mmap = (memory_map_t *) mbi->mmap_addr;
+              (unsigned long) mmap < mbi->mmap_addr + mbi->mmap_length;
+              mmap = (memory_map_t *) ((unsigned long) mmap
                                        + mmap->size + sizeof (mmap->size))){
-      grube820list[grube820list_numentries].baseaddr_low = mmap->base_addr_low;
-      grube820list[grube820list_numentries].baseaddr_high = mmap->base_addr_high;
-      grube820list[grube820list_numentries].length_low = mmap->length_low;
-      grube820list[grube820list_numentries].length_high = mmap->length_high; 
-      grube820list[grube820list_numentries].type = mmap->type;
-      grube820list_numentries++;
+            grube820list[grube820list_numentries].baseaddr_low = mmap->base_addr_low;
+            grube820list[grube820list_numentries].baseaddr_high = mmap->base_addr_high;
+            grube820list[grube820list_numentries].length_low = mmap->length_low;
+            grube820list[grube820list_numentries].length_high = mmap->length_high; 
+            grube820list[grube820list_numentries].type = mmap->type;
+            grube820list_numentries++;
+        }
     }
-  }
 
-  //debug: print grube820list
-  {
-    u32 i;
-  	printf("\nOriginal E820 map follows:\n");
-	  for(i=0; i < grube820list_numentries; i++){
-      printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
-          grube820list[i].baseaddr_high, grube820list[i].baseaddr_low,
-          grube820list[i].length_high, grube820list[i].length_low,
-          grube820list[i].type);
+    //debug: print grube820list
+    {
+        u32 i;
+        printf("\nOriginal E820 map follows:\n");
+        for(i=0; i < grube820list_numentries; i++){
+            printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
+                   grube820list[i].baseaddr_high, grube820list[i].baseaddr_low,
+                   grube820list[i].length_high, grube820list[i].length_low,
+                   grube820list[i].type);
+        }
+  
     }
   
-  }
-  
-  //traverse e820 list backwards to find an entry with type=0x1 (free)
-  //with free amount of memory for runtime
-  {
-    u32 foundentry=0;
-    u32 runtimephysicalbase=0;
-    int i;
+    //traverse e820 list backwards to find an entry with type=0x1 (free)
+    //with free amount of memory for runtime
+    {
+        u32 foundentry=0;
+        u32 runtimephysicalbase=0;
+        int i;
      
-    //#define ADDR_4GB  (0xFFFFFFFFUL)
-    for(i= (int)(grube820list_numentries-1); i >=0; i--){
-      u32 baseaddr, size;
-      baseaddr = grube820list[i].baseaddr_low;
-      //size = PAGE_ALIGN_4K(grube820list[i].length_low);  
-      size = grube820list[i].length_low;
+        //#define ADDR_4GB  (0xFFFFFFFFUL)
+        for(i= (int)(grube820list_numentries-1); i >=0; i--){
+            u32 baseaddr, size;
+            baseaddr = grube820list[i].baseaddr_low;
+            //size = PAGE_ALIGN_4K(grube820list[i].length_low);  
+            size = grube820list[i].length_low;
     
-      if(grube820list[i].type == 0x1){ //free memory?
-        if(grube820list[i].baseaddr_high) //greater than 4GB? then skip
-          continue; 
+            if(grube820list[i].type == 0x1){ //free memory?
+                if(grube820list[i].baseaddr_high) //greater than 4GB? then skip
+                    continue; 
 
-        if(grube820list[i].length_high){
-          printf("\noops 64-bit length unhandled!");
-          HALT();
+                if(grube820list[i].length_high){
+                    printf("\noops 64-bit length unhandled!");
+                    HALT();
+                }
+      
+                runtimephysicalbase = PAGE_ALIGN_2M((u32)baseaddr + size) - runtimesize;
+
+                if( runtimephysicalbase >= baseaddr ){
+                    foundentry=1;
+                    break;
+                }
+            }
+        } 
+    
+        if(!foundentry){
+            printf("\nFatal: unable to find E820 memory for runtime!");
+            HALT();
         }
-      
-        runtimephysicalbase = PAGE_ALIGN_2M((u32)baseaddr + size) - runtimesize;
 
-        if( runtimephysicalbase >= baseaddr ){
-          foundentry=1;
-          break;
+        //entry number we need to split is indexed by i, we need to
+        //make place for 1 extra entry at position i
+        if(grube820list_numentries == MAX_E820_ENTRIES){
+            printf("\noops, exhausted max E820 entries!");
+            HALT();
         }
-      }
-    } 
-    
-    if(!foundentry){
-      printf("\nFatal: unable to find E820 memory for runtime!");
-      HALT();
-    }
 
-    //entry number we need to split is indexed by i, we need to
-    //make place for 1 extra entry at position i
-    if(grube820list_numentries == MAX_E820_ENTRIES){
-      printf("\noops, exhausted max E820 entries!");
-      HALT();
-    }
-
-    if(i == (int)(grube820list_numentries-1)){
-      //if this is the last entry, we dont need memmove
-      //deal with i and i+1
+        if(i == (int)(grube820list_numentries-1)){
+            //if this is the last entry, we dont need memmove
+            //deal with i and i+1
       
-    }else{
-      memmove( (void *)&grube820list[i+2], (void *)&grube820list[i+1], (grube820list_numentries-i-1)*sizeof(GRUBE820));
-      memset (&grube820list[i+1], 0, sizeof(GRUBE820));
-      //deal with i and i+1 
-      {
-        u32 sizetosplit= grube820list[i].length_low;
-        u32 newsizeofiplusone = grube820list[i].baseaddr_low + sizetosplit - runtimephysicalbase;
-        u32 newsizeofi = runtimephysicalbase - grube820list[i].baseaddr_low;
-        grube820list[i].length_low = newsizeofi;
-        grube820list[i+1].baseaddr_low = runtimephysicalbase;
-        grube820list[i+1].type = 0x2;// reserved
-        grube820list[i+1].length_low = newsizeofiplusone;
+        }else{
+            memmove( (void *)&grube820list[i+2], (void *)&grube820list[i+1], (grube820list_numentries-i-1)*sizeof(GRUBE820));
+            memset (&grube820list[i+1], 0, sizeof(GRUBE820));
+            //deal with i and i+1 
+            {
+                u32 sizetosplit= grube820list[i].length_low;
+                u32 newsizeofiplusone = grube820list[i].baseaddr_low + sizetosplit - runtimephysicalbase;
+                u32 newsizeofi = runtimephysicalbase - grube820list[i].baseaddr_low;
+                grube820list[i].length_low = newsizeofi;
+                grube820list[i+1].baseaddr_low = runtimephysicalbase;
+                grube820list[i+1].type = 0x2;// reserved
+                grube820list[i+1].length_low = newsizeofiplusone;
       
-      }
-    }
-    grube820list_numentries++;
+            }
+        }
+        grube820list_numentries++;
     
-    return runtimephysicalbase;
-  }
+        return runtimephysicalbase;
+    }
   
 }
 
@@ -258,316 +258,316 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize){
 //cpu_vendor = intel or amd
 //slbase= physical memory address of start of sl
 void do_drtm(VCPU *vcpu, u32 slbase){
-	#ifdef __MP_VERSION__  
-		//send INIT IPI to all APs 
-		send_init_ipi_to_all_APs();
-		printf("\nINIT(early): sent INIT IPI to APs");
-	#endif  
+#ifdef __MP_VERSION__  
+    //send INIT IPI to all APs 
+    send_init_ipi_to_all_APs();
+    printf("\nINIT(early): sent INIT IPI to APs");
+#endif  
 
-	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
-		//issue SKINIT
-  	//our secure loader is the first 64K of the hypervisor image
-  	printf("\nINIT(early): transferring control to SL...");
-		skinit((u32)slbase);
+    if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
+        //issue SKINIT
+        //our secure loader is the first 64K of the hypervisor image
+        printf("\nINIT(early): transferring control to SL...");
+        skinit((u32)slbase);
 
-	}else{
-		//TODO: issue GETSEC[SENTER], for now just transfer control via jump
-  	printf("\nINIT(early): transferring control to SL...");
-		{	
-			u32 entrypoint;
-			u16 offset;
-			offset = *((u16 *)slbase);
-			entrypoint = slbase + (u32)offset;
-			printf("\nINIT(early): SENTER stub, slbase=0x%08x, o=0x%04x, ep=0x%08x",
-				slbase, offset, entrypoint); 
-			__asm__ __volatile__("cli\r\n"
-													 "movl %0, %%eax\r\n"
-													 "movl %1, %%ebx\r\n"
-													 "call *%%ebx\r\n"	
-			  : //no outputs
-			  : "r"(slbase), "r"(entrypoint)
-			  : "eax", "ebx"
-			);
-		}
-		
-	 	printf("\nINIT(early): error(fatal), should never come here!");
-		HALT();
-	}	
+    }else{
+        //TODO: issue GETSEC[SENTER], for now just transfer control via jump
+        printf("\nINIT(early): transferring control to SL...");
+        {    
+            u32 entrypoint;
+            u16 offset;
+            offset = *((u16 *)slbase);
+            entrypoint = slbase + (u32)offset;
+            printf("\nINIT(early): SENTER stub, slbase=0x%08x, o=0x%04x, ep=0x%08x",
+                   slbase, offset, entrypoint); 
+            __asm__ __volatile__("cli\r\n"
+                                 "movl %0, %%eax\r\n"
+                                 "movl %1, %%ebx\r\n"
+                                 "call *%%ebx\r\n"    
+                                 : //no outputs
+                                 : "r"(slbase), "r"(entrypoint)
+                                 : "eax", "ebx"
+                                 );
+        }
+        
+        printf("\nINIT(early): error(fatal), should never come here!");
+        HALT();
+    }    
 
 }
 
 
 void setupvcpus(u32 cpu_vendor, MIDTAB *midtable, u32 midtable_numentries){
-  u32 i;
-  VCPU *vcpu;
+    u32 i;
+    VCPU *vcpu;
   
-  printf("\n%s: cpustacks range 0x%08x-0x%08x in 0x%08x chunks",
-    __FUNCTION__, (u32)cpustacks, (u32)cpustacks + (RUNTIME_STACK_SIZE * MAX_VCPU_ENTRIES),
-        RUNTIME_STACK_SIZE);
-  printf("\n%s: vcpubuffers range 0x%08x-0x%08x in 0x%08x chunks",
-    __FUNCTION__, (u32)vcpubuffers, (u32)vcpubuffers + (SIZE_STRUCT_VCPU * MAX_VCPU_ENTRIES),
-        SIZE_STRUCT_VCPU);
+    printf("\n%s: cpustacks range 0x%08x-0x%08x in 0x%08x chunks",
+           __FUNCTION__, (u32)cpustacks, (u32)cpustacks + (RUNTIME_STACK_SIZE * MAX_VCPU_ENTRIES),
+           RUNTIME_STACK_SIZE);
+    printf("\n%s: vcpubuffers range 0x%08x-0x%08x in 0x%08x chunks",
+           __FUNCTION__, (u32)vcpubuffers, (u32)vcpubuffers + (SIZE_STRUCT_VCPU * MAX_VCPU_ENTRIES),
+           SIZE_STRUCT_VCPU);
           
-  for(i=0; i < midtable_numentries; i++){
-    vcpu = (VCPU *)((u32)vcpubuffers + (u32)(i * SIZE_STRUCT_VCPU));
-    memset((void *)vcpu, 0, sizeof(VCPU));
+    for(i=0; i < midtable_numentries; i++){
+        vcpu = (VCPU *)((u32)vcpubuffers + (u32)(i * SIZE_STRUCT_VCPU));
+        memset((void *)vcpu, 0, sizeof(VCPU));
     
-    vcpu->cpu_vendor = cpu_vendor;
+        vcpu->cpu_vendor = cpu_vendor;
     
-    vcpu->esp = ((u32)cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;    
-    vcpu->id = midtable[i].cpu_lapic_id;
+        vcpu->esp = ((u32)cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;    
+        vcpu->id = midtable[i].cpu_lapic_id;
 
-    midtable[i].vcpu_vaddr_ptr = (u32)vcpu;
-    printf("\nCPU #%u: vcpu_vaddr_ptr=0x%08x, esp=0x%08x", i, midtable[i].vcpu_vaddr_ptr,
-      vcpu->esp);
-  }
+        midtable[i].vcpu_vaddr_ptr = (u32)vcpu;
+        printf("\nCPU #%u: vcpu_vaddr_ptr=0x%08x, esp=0x%08x", i, midtable[i].vcpu_vaddr_ptr,
+               vcpu->esp);
+    }
 }
 
 
 //---wakeupAPs------------------------------------------------------------------
 void wakeupAPs(void){
-  u32 eax, edx;
-  volatile u32 *icr;
+    u32 eax, edx;
+    volatile u32 *icr;
   
-  //read LAPIC base address from MSR
-  rdmsr(MSR_APIC_BASE, &eax, &edx);
-  ASSERT( edx == 0 ); //APIC is below 4G
-  //printf("\nLAPIC base and status=0x%08x", eax);
+    //read LAPIC base address from MSR
+    rdmsr(MSR_APIC_BASE, &eax, &edx);
+    ASSERT( edx == 0 ); //APIC is below 4G
+    //printf("\nLAPIC base and status=0x%08x", eax);
     
-  icr = (u32 *) (((u32)eax & 0xFFFFF000UL) + 0x300);
+    icr = (u32 *) (((u32)eax & 0xFFFFF000UL) + 0x300);
     
-  {
-    extern u32 _ap_bootstrap_start[], _ap_bootstrap_end[];
-    memcpy((void *)0x10000, (void *)_ap_bootstrap_start, (u32)_ap_bootstrap_end - (u32)_ap_bootstrap_start + 1);
-  }
+    {
+        extern u32 _ap_bootstrap_start[], _ap_bootstrap_end[];
+        memcpy((void *)0x10000, (void *)_ap_bootstrap_start, (u32)_ap_bootstrap_end - (u32)_ap_bootstrap_start + 1);
+    }
 
-  //our test code is at 1000:0000, we need to send 10 as vector
-  //send INIT
-  printf("\nSending INIT IPI to all APs...");
-  *icr = 0x000c4500UL;
-  udelay(10000);
-  //wait for command completion
-  {
-    u32 val;
-    do{
-      val = *icr;
-    }while( (val & 0x1000) );
-  }
-  printf("Done.");
-
-  //send SIPI (twice as per the MP protocol)
-  {
-    int i;
-    for(i=0; i < 2; i++){
-      printf("\nSending SIPI-%u...", i);
-      *icr = 0x000c4610UL;
-      udelay(200);
-        //wait for command completion
-        {
-          u32 val;
-          do{
+    //our test code is at 1000:0000, we need to send 10 as vector
+    //send INIT
+    printf("\nSending INIT IPI to all APs...");
+    *icr = 0x000c4500UL;
+    udelay(10000);
+    //wait for command completion
+    {
+        u32 val;
+        do{
             val = *icr;
-          }while( (val & 0x1000) );
+        }while( (val & 0x1000) );
+    }
+    printf("Done.");
+
+    //send SIPI (twice as per the MP protocol)
+    {
+        int i;
+        for(i=0; i < 2; i++){
+            printf("\nSending SIPI-%u...", i);
+            *icr = 0x000c4610UL;
+            udelay(200);
+            //wait for command completion
+            {
+                u32 val;
+                do{
+                    val = *icr;
+                }while( (val & 0x1000) );
+            }
+            printf("Done.");
         }
-        printf("Done.");
-      }
-  }    
+    }    
     
-  printf("\nAPs should be awake!");
+    printf("\nAPs should be awake!");
 }
 
 
 //---init main----------------------------------------------------------------
 void cstartup(multiboot_info_t *mbi){
-	module_t *mod_array;
-	u32 mods_count;
-	
-  //initialize debugging early on
-	#ifdef __DEBUG_SERIAL__		
-		init_uart();
-	#endif
+    module_t *mod_array;
+    u32 mods_count;
+    
+    //initialize debugging early on
+#ifdef __DEBUG_SERIAL__        
+    init_uart();
+#endif
 
-	#ifdef __DEBUG_VGA__
-		vgamem_clrscr();
-	#endif
+#ifdef __DEBUG_VGA__
+    vgamem_clrscr();
+#endif
 
-  mod_array = (module_t*)mbi->mods_addr;
-  mods_count = mbi->mods_count;
+    mod_array = (module_t*)mbi->mods_addr;
+    mods_count = mbi->mods_count;
 
-	printf("\nINIT(early): initializing, total modules=%u", mods_count);
-  //ASSERT(mods_count == 2);  //runtime and OS boot sector for the time-being
-
-
-	//check CPU type (Intel vs AMD)
-  {
-    u32 vendor_dword1, vendor_dword2, vendor_dword3;
-	  asm(	"xor	%%eax, %%eax \n"
-				  "cpuid \n"		
-				  "mov	%%ebx, %0 \n"
-				  "mov	%%edx, %1 \n"
-				  "mov	%%ecx, %2 \n"
-			     :	//no inputs
-					 : "m"(vendor_dword1), "m"(vendor_dword2), "m"(vendor_dword3)
-					 : "eax", "ebx", "ecx", "edx" );
-
-		if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
-				&& vendor_dword3 == AMD_STRING_DWORD3)
-			cpu_vendor = CPU_VENDOR_AMD;
-		else if(vendor_dword1 == INTEL_STRING_DWORD1 && vendor_dword2 == INTEL_STRING_DWORD2
-				&& vendor_dword3 == INTEL_STRING_DWORD3)
-   	 	cpu_vendor = CPU_VENDOR_INTEL;
-		else{
-			printf("\nINIT(early): error(fatal), unrecognized CPU! 0x%08x:0x%08x:0x%08x",
-				vendor_dword1, vendor_dword2, vendor_dword3);
-			HALT();
-		}   	 	
-  }
-
-	printf("\nINIT(early): detected an %s CPU", ((cpu_vendor == CPU_VENDOR_INTEL) ? "Intel" : "AMD"));
+    printf("\nINIT(early): initializing, total modules=%u", mods_count);
+    //ASSERT(mods_count == 2);  //runtime and OS boot sector for the time-being
 
 
-	//deal with MP and get CPU table
-  dealwithMP();
+    //check CPU type (Intel vs AMD)
+    {
+        u32 vendor_dword1, vendor_dword2, vendor_dword3;
+        asm(    "xor    %%eax, %%eax \n"
+                "cpuid \n"        
+                "mov    %%ebx, %0 \n"
+                "mov    %%edx, %1 \n"
+                "mov    %%ecx, %2 \n"
+                :    //no inputs
+                : "m"(vendor_dword1), "m"(vendor_dword2), "m"(vendor_dword3)
+                : "eax", "ebx", "ecx", "edx" );
 
-  //find highest 2MB aligned physical memory address that the hypervisor
-	//binary must be moved to 
-  hypervisor_image_baseaddress = dealwithE820(mbi, PAGE_ALIGN_UP2M((mod_array[0].mod_end - mod_array[0].mod_start))); 
+        if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
+           && vendor_dword3 == AMD_STRING_DWORD3)
+            cpu_vendor = CPU_VENDOR_AMD;
+        else if(vendor_dword1 == INTEL_STRING_DWORD1 && vendor_dword2 == INTEL_STRING_DWORD2
+                && vendor_dword3 == INTEL_STRING_DWORD3)
+            cpu_vendor = CPU_VENDOR_INTEL;
+        else{
+            printf("\nINIT(early): error(fatal), unrecognized CPU! 0x%08x:0x%08x:0x%08x",
+                   vendor_dword1, vendor_dword2, vendor_dword3);
+            HALT();
+        }            
+    }
 
-	//relocate the hypervisor binary to the above calculated address
-	memcpy((void*)hypervisor_image_baseaddress, (void*)mod_array[0].mod_start, (mod_array[0].mod_end - mod_array[0].mod_start));
+    printf("\nINIT(early): detected an %s CPU", ((cpu_vendor == CPU_VENDOR_INTEL) ? "Intel" : "AMD"));
 
-	//print out stats
-	printf("\nINIT(early): relocated hypervisor binary image to 0x%08x", hypervisor_image_baseaddress);
-	printf("\nINIT(early): 2M aligned size = 0x%08x", PAGE_ALIGN_UP2M((mod_array[0].mod_end - mod_array[0].mod_start)));
 
-	//fill in "sl" parameter block
-	{
-		//"sl" parameter block is at hypervisor_image_baseaddress + 0x10000
-		SL_PARAMETER_BLOCK *slpb = (SL_PARAMETER_BLOCK *)((u32)hypervisor_image_baseaddress + 0x10000);
-		ASSERT(slpb->magic == SL_PARAMETER_BLOCK_MAGIC);
-		slpb->hashSL = 0;
-		slpb->errorHandler = 0;
-		slpb->isEarlyInit = 1;	//this is an "early" init
-		slpb->numE820Entries = grube820list_numentries;
-		memcpy((void *)&slpb->e820map, (void *)&grube820list, (sizeof(GRUBE820) * grube820list_numentries)); 		
-		slpb->numCPUEntries = pcpus_numentries;
-		memcpy((void *)&slpb->pcpus, (void *)&pcpus, (sizeof(PCPU) * pcpus_numentries));
-		slpb->runtime_size = (mod_array[0].mod_end - mod_array[0].mod_start) - PAGE_SIZE_2M;  	
-		slpb->runtime_osbootmodule_base = mod_array[1].mod_start;
-		slpb->runtime_osbootmodule_size = (mod_array[1].mod_end - mod_array[1].mod_start); 
-	}
+    //deal with MP and get CPU table
+    dealwithMP();
 
-	//switch to MP mode
-	  //setup Master-ID Table (MIDTABLE)
-	  {
-  	  int i;
-    	for(i=0; i < (int)pcpus_numentries; i++){
-       midtable[midtable_numentries].cpu_lapic_id = pcpus[i].lapic_id;
-       midtable[midtable_numentries].vcpu_vaddr_ptr = 0;
-       midtable_numentries++;
-    	}
-  	}
+    //find highest 2MB aligned physical memory address that the hypervisor
+    //binary must be moved to 
+    hypervisor_image_baseaddress = dealwithE820(mbi, PAGE_ALIGN_UP2M((mod_array[0].mod_end - mod_array[0].mod_start))); 
 
-  	//setup vcpus
-  	setupvcpus(cpu_vendor, midtable, midtable_numentries);
-	
- 		//wakeup all APs
+    //relocate the hypervisor binary to the above calculated address
+    memcpy((void*)hypervisor_image_baseaddress, (void*)mod_array[0].mod_start, (mod_array[0].mod_end - mod_array[0].mod_start));
+
+    //print out stats
+    printf("\nINIT(early): relocated hypervisor binary image to 0x%08x", hypervisor_image_baseaddress);
+    printf("\nINIT(early): 2M aligned size = 0x%08x", PAGE_ALIGN_UP2M((mod_array[0].mod_end - mod_array[0].mod_start)));
+
+    //fill in "sl" parameter block
+    {
+        //"sl" parameter block is at hypervisor_image_baseaddress + 0x10000
+        SL_PARAMETER_BLOCK *slpb = (SL_PARAMETER_BLOCK *)((u32)hypervisor_image_baseaddress + 0x10000);
+        ASSERT(slpb->magic == SL_PARAMETER_BLOCK_MAGIC);
+        slpb->hashSL = 0;
+        slpb->errorHandler = 0;
+        slpb->isEarlyInit = 1;    //this is an "early" init
+        slpb->numE820Entries = grube820list_numentries;
+        memcpy((void *)&slpb->e820map, (void *)&grube820list, (sizeof(GRUBE820) * grube820list_numentries));         
+        slpb->numCPUEntries = pcpus_numentries;
+        memcpy((void *)&slpb->pcpus, (void *)&pcpus, (sizeof(PCPU) * pcpus_numentries));
+        slpb->runtime_size = (mod_array[0].mod_end - mod_array[0].mod_start) - PAGE_SIZE_2M;      
+        slpb->runtime_osbootmodule_base = mod_array[1].mod_start;
+        slpb->runtime_osbootmodule_size = (mod_array[1].mod_end - mod_array[1].mod_start); 
+    }
+
+    //switch to MP mode
+    //setup Master-ID Table (MIDTABLE)
+    {
+        int i;
+        for(i=0; i < (int)pcpus_numentries; i++){
+            midtable[midtable_numentries].cpu_lapic_id = pcpus[i].lapic_id;
+            midtable[midtable_numentries].vcpu_vaddr_ptr = 0;
+            midtable_numentries++;
+        }
+    }
+
+    //setup vcpus
+    setupvcpus(cpu_vendor, midtable, midtable_numentries);
+    
+    //wakeup all APs
     if(midtable_numentries > 1)
-			wakeupAPs();
+        wakeupAPs();
 
-		//fall through and enter mp_cstartup via init_core_lowlevel_setup
-		init_core_lowlevel_setup();
-		
-	 	printf("\nINIT(early): error(fatal), should never come here!");
-		HALT();
+    //fall through and enter mp_cstartup via init_core_lowlevel_setup
+    init_core_lowlevel_setup();
+        
+    printf("\nINIT(early): error(fatal), should never come here!");
+    HALT();
 }
 
 //---isbsp----------------------------------------------------------------------
 //returns 1 if the calling CPU is the BSP, else 0
 u32 isbsp(void){
-  u32 eax, edx;
-  //read LAPIC base address from MSR
-  rdmsr(MSR_APIC_BASE, &eax, &edx);
-  ASSERT( edx == 0 ); //APIC is below 4G
+    u32 eax, edx;
+    //read LAPIC base address from MSR
+    rdmsr(MSR_APIC_BASE, &eax, &edx);
+    ASSERT( edx == 0 ); //APIC is below 4G
   
-  if(eax & 0x100)
-    return 1;
-  else
-    return 0;
+    if(eax & 0x100)
+        return 1;
+    else
+        return 0;
 }
 
 
 //---CPUs must all have their microcode cleared for SKINIT to be successful-----
 void clearMicrocode(VCPU *vcpu){
-  u32 ucode_rev;
-  u32 dummy=0;
+    u32 ucode_rev;
+    u32 dummy=0;
 
-  // Current microcode patch level available via MSR read
-  rdmsr(MSR_AMD64_PATCH_LEVEL, &ucode_rev, &dummy);
-  printf("\nCPU(0x%02x): existing microcode version 0x%08x", vcpu->id, ucode_rev);
+    // Current microcode patch level available via MSR read
+    rdmsr(MSR_AMD64_PATCH_LEVEL, &ucode_rev, &dummy);
+    printf("\nCPU(0x%02x): existing microcode version 0x%08x", vcpu->id, ucode_rev);
     
-  if(ucode_rev != 0) {
-      wrmsr(MSR_AMD64_PATCH_CLEAR, dummy, dummy);
-      printf("\nCPU(0x%02x): microcode CLEARED", vcpu->id);
-  }
+    if(ucode_rev != 0) {
+        wrmsr(MSR_AMD64_PATCH_CLEAR, dummy, dummy);
+        printf("\nCPU(0x%02x): microcode CLEARED", vcpu->id);
+    }
 }
 
 
 u32 cpus_active=0; //number of CPUs that are awake, should be equal to
-                       //midtable_numentries -1 if all went well with the
-                       //MP startup protocol
+//midtable_numentries -1 if all went well with the
+//MP startup protocol
 u32 lock_cpus_active=1; //spinlock to access the above
 
 
 //------------------------------------------------------------------------------
 //all cores enter here 
 void mp_cstartup (VCPU *vcpu){
-	//sanity, we should be an Intel or AMD core
-	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_INTEL ||
-			vcpu->cpu_vendor == CPU_VENDOR_AMD);
+    //sanity, we should be an Intel or AMD core
+    ASSERT(vcpu->cpu_vendor == CPU_VENDOR_INTEL ||
+           vcpu->cpu_vendor == CPU_VENDOR_AMD);
 
-  if(isbsp()){
-		//clear microcode if AMD CPU
-		if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
-			printf("\nBSP(0x%02x): Clearing microcode...", vcpu->id);
-			clearMicrocode(vcpu);
-			printf("\nBSP(0x%02x): Microcode clear.", vcpu->id);
-		}
-		 
-    printf("\nBSP(0x%02x): Rallying APs...", vcpu->id);
+    if(isbsp()){
+        //clear microcode if AMD CPU
+        if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
+            printf("\nBSP(0x%02x): Clearing microcode...", vcpu->id);
+            clearMicrocode(vcpu);
+            printf("\nBSP(0x%02x): Microcode clear.", vcpu->id);
+        }
+         
+        printf("\nBSP(0x%02x): Rallying APs...", vcpu->id);
 
-    //increment a CPU to account for the BSP
-    spin_lock(&lock_cpus_active);
-    cpus_active++;
-    spin_unlock(&lock_cpus_active);
+        //increment a CPU to account for the BSP
+        spin_lock(&lock_cpus_active);
+        cpus_active++;
+        spin_unlock(&lock_cpus_active);
 
-    //wait for cpus_active to become midtable_numentries -1 to indicate
-    //that all APs have been successfully started
-    while(cpus_active < midtable_numentries);
+        //wait for cpus_active to become midtable_numentries -1 to indicate
+        //that all APs have been successfully started
+        while(cpus_active < midtable_numentries);
     
-    printf("\nBSP(0x%02x): APs ready, doing DRTM...", vcpu->id);
-    do_drtm(vcpu, hypervisor_image_baseaddress); // this function will not return
+        printf("\nBSP(0x%02x): APs ready, doing DRTM...", vcpu->id);
+        do_drtm(vcpu, hypervisor_image_baseaddress); // this function will not return
     
-    printf("\nBSP(0x%02x): FATAL, should never be here!", vcpu->id);
-    HALT();
+        printf("\nBSP(0x%02x): FATAL, should never be here!", vcpu->id);
+        HALT();
     
-  }else{
-    //clear microcode if AMD CPU
-		if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
-    	printf("\nAP(0x%02x): Clearing microcode...", vcpu->id);
-    	clearMicrocode(vcpu);
-    	printf("\nAP(0x%02x): Microcode clear.", vcpu->id);
-    }
+    }else{
+        //clear microcode if AMD CPU
+        if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
+            printf("\nAP(0x%02x): Clearing microcode...", vcpu->id);
+            clearMicrocode(vcpu);
+            printf("\nAP(0x%02x): Microcode clear.", vcpu->id);
+        }
     
-		//update the AP startup counter
-    spin_lock(&lock_cpus_active);
-    cpus_active++;
-    spin_unlock(&lock_cpus_active);
+        //update the AP startup counter
+        spin_lock(&lock_cpus_active);
+        cpus_active++;
+        spin_unlock(&lock_cpus_active);
 
-		printf("\nAP(0x%02x): Waiting for DRTM establishment...", vcpu->id);
+        printf("\nAP(0x%02x): Waiting for DRTM establishment...", vcpu->id);
  
-		HALT();               
-  }
+        HALT();               
+    }
 
 
 }
