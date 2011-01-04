@@ -255,7 +255,7 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize){
 
 /* Run tests to determine if platform supports TXT.  Note that this
  * enables SMX on the platform, but is safe to run more than once. */
-/* Based primarily on tboot's txt/verify.c */
+/* Based primarily on tboot-20101005's txt/verify.c */
 int txt_supports_txt(void) {
 
     u32 cpuid_ext_feat_info, dummy;
@@ -263,7 +263,7 @@ int txt_supports_txt(void) {
     capabilities_t cap;
 
     cpuid(1, &dummy, &dummy, &cpuid_ext_feat_info, &dummy);
-    feat_ctrl_msr = rdmsr64(MSR_EFCR); // tboot calls this MSR_IA32_FEATURE_CONTROL; linux source assigns that to same value as out MSR_EFCR (0x3a)
+    feat_ctrl_msr = rdmsr64(MSR_EFCR);
 
     /* Check for VMX support */
     if ( !(cpuid_ext_feat_info & CPUID_X86_FEATURE_VMX) ) {
