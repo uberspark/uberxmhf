@@ -3,7 +3,7 @@
 
 # source files
 AS_SOURCES = header.S initsup.S
-C_SOURCES = init.c smp.c
+C_SOURCES = init.c smp.c txt_heap.c txt_hash.c txt_acmod.c sha1.c
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
@@ -31,16 +31,11 @@ all: $(OBJECTS)
 	$(CC) -c $(ASFLAGS) -o $@ $<
 %.o: %.c $(I_SOURCES) Makefile ../Makefile	../../../Makefile
 	$(CC) -c $(CFLAGS) -o $@ $<
-  
+
 .PHONY: clean 
 clean: 
 	$(RM) -rf *.o
 	$(RM) -rf *.exe
 	$(RM) -rf *.bin
 	$(RM) -rf *.gz
-	
-  
-  
-  
 
-  
