@@ -89,6 +89,13 @@
 
 #define MSR_EFCR   0x0000003A	        // index for Extended Feature Control
 
+//#define MSR_IA32_FEATURE_CONTROL               0x03a tboot version trumped by our own
+#define IA32_FEATURE_CONTROL_MSR_LOCK                 0x1
+#define IA32_FEATURE_CONTROL_MSR_ENABLE_VMX_IN_SMX    0x2
+#define IA32_FEATURE_CONTROL_MSR_SENTER_PARAM_CTL     0x7f00
+#define IA32_FEATURE_CONTROL_MSR_ENABLE_SENTER        0x8000
+
+
 //MTRRs
 #define	IA32_MTRRCAP	0x000000fe
 #define IA32_MTRR_DEF_TYPE 	0x000002ff
@@ -146,6 +153,18 @@ static inline void wrmsr(u32 msr, u32 eax, u32 edx){
 	  : /* no outputs */
 	  :"c"(msr), "a"(eax), "d"(edx));
 }
+
+
+static inline u64 rdmsr64(uint32_t msr)
+{
+    u64 rv;
+
+    __asm__ __volatile__ ("rdmsr" : "=A" (rv) : "c" (msr));
+    return (rv);
+}
+
+
+
 #endif /* __ASSEMBLY__ */
 
 

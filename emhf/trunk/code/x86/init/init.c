@@ -38,6 +38,8 @@
 
 //---includes-------------------------------------------------------------------
 #include <target.h>
+#include "txt_config_regs.h" // Needed for Intel TXT
+#include "txt_smx.h" // Needed for GETSEC
 
 //---forward prototypes---------------------------------------------------------
 void cstartup(multiboot_info_t *mbi);
@@ -251,6 +253,128 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize){
   
 }
 
+/* Run tests to determine if platform supports TXT.  Note that this
+ * enables SMX on the platform, but is safe to run more than once. */
+/* Based primarily on tboot's txt/verify.c */
+int txt_supports_txt(void) {
+
+    u32 cpuid_ext_feat_info, dummy;
+    u64 feat_ctrl_msr;
+    capabilities_t cap;
+
+    cpuid(1, &dummy, &dummy, &cpuid_ext_feat_info, &dummy);
+    feat_ctrl_msr = rdmsr64(MSR_EFCR); // tboot calls this MSR_IA32_FEATURE_CONTROL; linux source assigns that to same value as out MSR_EFCR (0x3a)
+
+    /* Check for VMX support */
+    if ( !(cpuid_ext_feat_info & CPUID_X86_FEATURE_VMX) ) {
+        printf("ERR: CPU does not support VMX\n");
+        return 0;
+    }
+    printf("CPU is VMX-capable\n");
+    /* and that VMX is enabled in the feature control MSR */
+    if ( !(feat_ctrl_msr & IA32_FEATURE_CONTROL_MSR_ENABLE_VMX_IN_SMX) ) {
+        printf("ERR: VMXON disabled by feature control MSR (%llx)\n",
+               feat_ctrl_msr);
+        return 0;
+    }
+    
+    
+    /* Check that processor supports SMX instructions */
+    if ( !(cpuid_ext_feat_info & CPUID_X86_FEATURE_SMX) ) {
+        printf("ERR: CPU does not support SMX\n");
+        return 0;
+    }
+    printf("CPU is SMX-capable\n");
+    
+    /* and that SENTER (w/ full params) is enabled */
+    if ( !(feat_ctrl_msr & (IA32_FEATURE_CONTROL_MSR_ENABLE_SENTER |
+                            IA32_FEATURE_CONTROL_MSR_SENTER_PARAM_CTL)) ) {
+        printf("ERR: SENTER disabled by feature control MSR (%llx)\n",
+               feat_ctrl_msr);
+        return 0;
+    }
+    printf("SENTER should work.\n");
+
+    /* testing for chipset support requires enabling SMX on the processor */
+    write_cr4(read_cr4() | CR4_SMXE);
+    printf("SMX enabled in CR4\n");
+
+    /* Verify that an TXT-capable chipset is present and check that
+     * all needed SMX capabilities are supported. */
+
+    cap = (capabilities_t)__getsec_capabilities(0);
+    if(!cap.chipset_present) {
+        printf("ERR: TXT-capable chipset not present\n");
+        return 0;
+    }        
+    if (!(cap.senter && cap.sexit && cap.parameters && cap.smctrl &&
+          cap.wakeup)) {
+        printf("ERR: insufficient SMX capabilities (0x%08x)\n", cap._raw);
+        return 0;
+    }    
+    printf("TXT chipset and all needed capabilities (0x%08x) present\n", cap._raw);    
+    
+    return 1;    
+}
+
+/* Slowly building up primitive functions needed to do SENTER
+ * properly.  Testing them one at a time in here.  Goal is that this
+ * function is idempotent and side effect-free. */
+/* Some tboot-20101005 code from tboot/txt/errors.c */
+void txt_idempotent_tests(void) {
+    txt_errorcode_t err;
+    txt_ests_t ests;
+    txt_e2sts_t e2sts;
+    txt_errorcode_sw_t sw_err;
+    acmod_error_t acmod_err;
+
+    printf("\n****** Begin TXT Tests ******\n");
+
+    if(!txt_supports_txt()) {
+        printf("FATAL ERROR: TXT not suppported\n");
+        HALT();
+    }
+    
+    err = (txt_errorcode_t)read_pub_config_reg(TXTCR_ERRORCODE);
+    printf("TXT.ERRORCODE=%Lx\n", err._raw);
+
+    /* AC module error (don't know how to parse other errors) */
+    if ( err.valid ) {
+        if ( err.external == 0 )       /* processor error */
+            printf("\t processor error %x\n", (uint32_t)err.type);
+        else {                         /* external SW error */
+            sw_err._raw = err.type;
+            if ( sw_err.src == 1 )     /* unknown SW error */
+                printf("unknown SW error %x:%x\n", sw_err.err1, sw_err.err2);
+            else {                     /* ACM error */
+                acmod_err._raw = sw_err._raw;
+                printf("AC module error : acm_type=%x, progress=%02x, "
+                       "error=%x\n", acmod_err.acm_type, acmod_err.progress,
+                       acmod_err.error);
+                /* error = 0x0a, progress = 0x0d => error2 is a TPM error */
+                if ( acmod_err.error == 0x0a && acmod_err.progress == 0x0d )
+                    printf("TPM error code = %x\n", acmod_err.error2);
+            }
+        }
+    }
+
+    /*
+     * display LT.ESTS error
+     */
+    ests = (txt_ests_t)read_pub_config_reg(TXTCR_ESTS);
+    printf("LT.ESTS=%Lx\n", ests._raw);
+
+    /*
+     * display LT.E2STS error
+     * - only valid if LT.WAKE-ERROR.STS set in LT.STS reg
+     */
+    if ( ests.txt_wake_error_sts ) {
+        e2sts = (txt_e2sts_t)read_pub_config_reg(TXTCR_E2STS);
+        printf("LT.E2STS=%Lx\n", e2sts._raw);
+    }
+    
+    printf("******  End TXT Tests  ******\n");
+}
 
 //---do_drtm--------------------------------------------------------------------
 //this establishes a dynamic root of trust
@@ -272,6 +396,7 @@ void do_drtm(VCPU *vcpu, u32 slbase){
 
     }else{
         //TODO: issue GETSEC[SENTER], for now just transfer control via jump
+        txt_idempotent_tests();
         printf("\nINIT(early): transferring control to SL...");
         {    
             u32 entrypoint;

@@ -91,12 +91,16 @@
 #define CR4_OSFXSR		0x0200	/* enable fast FPU save and restore */
 #define CR4_OSXMMEXCPT	0x0400	/* enable unmasked SSE exceptions */
 #define CR4_VMXE		0x2000  /* enable VMX */
+#define CR4_SMXE		0x4000  /* enable SMX */
 
 //CPUID related
 #define EDX_PAE 6
 #define EDX_NX 20
 #define ECX_SVM 2
 #define EDX_NP 0
+
+#define CPUID_X86_FEATURE_VMX    (1<<5)
+#define CPUID_X86_FEATURE_SMX    (1<<6)
 
 
 #ifndef __ASSEMBLY__
