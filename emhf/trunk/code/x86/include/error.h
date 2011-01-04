@@ -45,6 +45,39 @@
 #define ASSERT(_p) { if ( !(_p) ) { printf("Assertion '%s' failed, line %d, file %s\n", #_p , __LINE__, __FILE__); HALT(); } }
 #define WARNING(_p) { if ( !(_p) ) { printf("Warning Assertion '%s' failed, line %d, file %s\n", #_p , __LINE__, __FILE__);} }
 
+/* Overflow functions from tboot-20101005/tboot/include/misc.h */
+
+/*
+ *  These three "plus overflow" functions take a "x" value
+ *    and add the "y" value to it and if the two values are
+ *    greater than the size of the variable type, they will
+ *    overflow the type and end up with a smaller value and
+ *    return TRUE - that they did overflow.  i.e.
+ *    x + y <= variable type maximum.
+ */
+static inline bool plus_overflow_u64(uint64_t x, uint64_t y)
+{
+    return ((((uint64_t)(~0)) - x) < y);
+}
+
+static inline bool plus_overflow_u32(uint32_t x, uint32_t y)
+{
+    return ((((uint32_t)(~0)) - x) < y);
+}
+
+/*
+ * This checks to see if two numbers multiplied together are larger
+ *   than the type that they are.  Returns TRUE if OVERFLOWING.
+ *   If the first parameter "x" is greater than zero and
+ *   if that is true, that the largest possible value 0xFFFFFFFF / "x"
+ *   is less than the second parameter "y".  If "y" is zero then
+ *   it will also fail because no unsigned number is less than zero.
+ */
+static inline bool multiply_overflow_u32(uint32_t x, uint32_t y)
+{
+    return (x > 0) ? ((((uint32_t)(~0))/x) < y) : false;
+}
+
 #endif /*__ASSEMBLY__*/
 
 #endif /* _ERROR_H */
