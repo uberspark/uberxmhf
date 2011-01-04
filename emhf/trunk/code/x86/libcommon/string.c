@@ -132,3 +132,16 @@ u32 strncmp(u8 * cs, u8 * ct, u32 count)
         return (u32)res;
 }
 
+#ifndef HAVE_MEMCMP
+int memcmp(const char *s1, const char *s2, size_t n) {
+	if (n != 0) {
+		const unsigned char *p1 = (const unsigned char *)s1,
+                      *p2 = (const unsigned char *)s2;
+		do {
+			if (*p1++ != *p2++)
+				return (*--p1 - *--p2);
+		} while (--n != 0);
+	}
+	return 0;
+}
+#endif /* HAVE_MEMCMP */

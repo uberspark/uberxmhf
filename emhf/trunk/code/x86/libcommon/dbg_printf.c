@@ -475,3 +475,17 @@ void printf(const char *fmt, ...)
     spin_unlock(&printf_lock);
 
 }
+
+/*
+ * if 'prefix' != NULL, print it before each line of hex string
+ */
+void print_hex(const char *prefix, const void *prtptr, size_t size)
+{
+    size_t i;
+    for ( i = 0; i < size; i++ ) {
+        if ( i % 16 == 0 && prefix != NULL )
+            printf("\n%s", prefix);
+        printf("%02x ", *(const uint8_t *)prtptr++);
+    }
+    printf("\n");
+}
