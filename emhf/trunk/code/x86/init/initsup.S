@@ -150,3 +150,21 @@ gotvcpu:
 	.quad	0x00cf92000000ffff	
 	.quad	0x0000000000000000	
 	init_gdt_end:
+
+
+
+// Three 4K pages to hold the "MLE page tables" for an Intel-specific
+// DRTM using GETSEC[SENTER].  See 2.2.4.1 in Intel MLE
+// Developer's Guide (Dec. 2009 revision).
+// These are populated in C-land.
+
+    .align 4096
+    .global _mle_page_table_start
+    _mle_page_table_start:
+    .fill 4096, 1, 0
+    .fill 4096, 1, 0
+    .fill 4096, 1, 0
+    .global _mle_page_table_end
+    _mle_page_table_end:
+
+              
