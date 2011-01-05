@@ -27,13 +27,13 @@
 	#MP/UP selection, y=Multiprocessor, n=Uniprocessor
   export MP_VERSION := y
 	#where you want loader and runtime binaries to go, defaults to current dir.
-	#export INSTALLDIR = $(CURDIR)
-	export INSTALLDIR = /cygdrive/z
+	export INSTALLDIR = $(CURDIR)/dist
+	#export INSTALLDIR = /cygdrive/x
   #misc. configuaration w.r.t serial debugging and NPT/EPT support
 	export NESTED_PAGING := y
   export DEBUG_SERIAL := y
   export DEBUG_SERIAL_PORT := 0x6080
-	# export DEBUG_SERIAL_PORT := 0x3f8
+  #export DEBUG_SERIAL_PORT := 0x3f8
 	export DEBUG_VGA	:= n
 
 #-----configuration that typically need not be touched
@@ -124,4 +124,7 @@ clean:
 	cd app && $(MAKE) -w clean
 	rm -rf $(APPOBJECTSDIR)
 	cd $(EMHFCOREDIR) && $(MAKE) -w clean
+
+pratt:
+	scp dist/* root@pratt:/boot
 
