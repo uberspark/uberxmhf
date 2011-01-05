@@ -138,6 +138,51 @@
 #define MTRR_TYPE_WB   0x6
 #define MTRR_TYPE_RESV  0x7
 
+/*
+ * from: @(#)specialreg.h     7.1 (Berkeley) 5/9/91
+ * $FreeBSD: src/sys/i386/include/specialreg.h,v 1.53.2.1.2.2 2009/11/06 17:09:04 attilio Exp $
+ */
+
+#define MSR_APICBASE                           0x01b
+#define MSR_IA32_FEATURE_CONTROL               0x03a
+#define MSR_IA32_SMM_MONITOR_CTL               0x09b
+#define MSR_MTRRcap                            0x0fe
+#define MSR_MCG_CAP                            0x179
+#define MSR_MCG_STATUS                         0x17a
+#define MSR_IA32_MISC_ENABLE                   0x1a0
+#define MSR_MTRRdefType                        0x2ff
+#define MSR_MC0_STATUS                         0x401
+#define MSR_IA32_VMX_BASIC_MSR                 0x480
+#define MSR_IA32_VMX_PINBASED_CTLS_MSR         0x481
+#define MSR_IA32_VMX_PROCBASED_CTLS_MSR        0x482
+#define MSR_IA32_VMX_EXIT_CTLS_MSR             0x483
+#define MSR_IA32_VMX_ENTRY_CTLS_MSR            0x484
+
+/*
+ * Constants related to MSR's.
+ */
+#define APICBASE_BSP                                  0x00000100
+
+#define MSR_IA32_SMM_MONITOR_CTL_VALID                1
+#define MSR_IA32_SMM_MONITOR_CTL_MSEG_BASE(x)         (x>>12)
+
+/* MSRs & bits used for VMX enabling */
+#define IA32_FEATURE_CONTROL_MSR_LOCK                 0x1
+#define IA32_FEATURE_CONTROL_MSR_ENABLE_VMX_IN_SMX    0x2
+#define IA32_FEATURE_CONTROL_MSR_SENTER_PARAM_CTL     0x7f00
+#define IA32_FEATURE_CONTROL_MSR_ENABLE_SENTER        0x8000
+
+/* AMD64 MSR's */
+#define MSR_EFER        0xc0000080      /* extended features */
+
+/* EFER bits */
+#define _EFER_LME     8               /* Long mode enable */
+
+#define MTRR_TYPE_UNCACHABLE     0
+#define MTRR_TYPE_WRTHROUGH      4
+#define MTRR_TYPE_WRBACK         6
+
+
 #ifndef __ASSEMBLY__
 static inline void rdmsr(u32 msr, u32 *eax, u32 *edx) __attribute__((always_inline));
 static inline void wrmsr(u32 msr, u32 eax, u32 edx) __attribute__((always_inline));
@@ -162,7 +207,6 @@ static inline u64 rdmsr64(uint32_t msr)
     __asm__ __volatile__ ("rdmsr" : "=A" (rv) : "c" (msr));
     return (rv);
 }
-
 
 
 #endif /* __ASSEMBLY__ */
