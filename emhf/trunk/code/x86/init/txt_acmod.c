@@ -197,7 +197,7 @@ void print_txt_caps(const char *prefix, txt_caps_t caps)
 }
 
 /* UUID helpers from tboot-20101005/include/uuid.h */
-static inline void print_uuid(const uuid_t *uuid)
+void print_uuid(const uuid_t *uuid)
 {
     printf("{0x%08x, 0x%04x, 0x%04x, 0x%04x,\n"
            "\t\t{0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x}}",
@@ -458,7 +458,6 @@ bool does_acmod_match_chipset(acm_hdr_t* hdr)
     return false;
 }
 
-#ifndef IS_INCLUDED
 acm_hdr_t *copy_sinit(acm_hdr_t *sinit)
 {
     void *sinit_region_base;
@@ -523,7 +522,6 @@ acm_hdr_t *copy_sinit(acm_hdr_t *sinit)
 
     return (acm_hdr_t *)sinit_region_base;
 }
-#endif    /* IS_INCLUDED */
 
 
 /*

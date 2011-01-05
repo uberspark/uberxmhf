@@ -156,6 +156,7 @@ typedef struct {
     acm_chipset_id_t   chipset_ids[];
 } acm_chipset_id_list_t;
 
+extern void print_uuid(const uuid_t *uuid);
 extern void print_txt_caps(const char *prefix, txt_caps_t caps);
 extern bool is_sinit_acmod(void *acmod_base, size_t acmod_size, bool quiet);
 extern bool does_acmod_match_chipset(acm_hdr_t* hdr);
@@ -163,7 +164,6 @@ extern acm_hdr_t *copy_sinit(acm_hdr_t *sinit);
 extern bool verify_acmod(acm_hdr_t *acm_hdr);
 extern uint32_t get_supported_os_sinit_data_ver(acm_hdr_t* hdr);
 extern uint32_t get_sinit_capabilities(acm_hdr_t* hdr);
-
 #endif /* __TXT_ACMOD_H__ */
 
 /*
