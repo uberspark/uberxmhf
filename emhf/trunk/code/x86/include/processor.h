@@ -140,6 +140,15 @@ typedef struct {
           :);			\
 })
 
+static inline uint64_t rdtsc64(void)
+{
+        uint64_t rv;
+
+        __asm__ __volatile__ ("rdtsc" : "=A" (rv));
+        return (rv);
+}
+
+
 /* Calls to read and write control registers */ 
 static inline unsigned long read_cr0(void){
   unsigned long __cr0;
