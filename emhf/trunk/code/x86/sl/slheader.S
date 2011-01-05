@@ -44,18 +44,31 @@
 //our C main
 .extern slmain
 
-//the start of SL is a special header that is required by SKINIT
-//we need to place this right at the start in our linker script
-//note: our sl is always padded to 64K in size regardless of the
-//actual size of the code and data. further the linker relocation
-//base for our sl is always zero.
+/* The start of the SL is a pair of special headers that are
+   required by AMD and Intel for SKINIT, and GETSEC[SENTER],
+   respectively.  AMD's header must come at the very start of
+   the SLB.  Intel's header can be elsewhere.  We place it
+   immediately following the AMD header.
+
+   These headers are placed at the very beginning of the SL (byte 0)
+   by our linker script.  Our SL is always padded to 64K in size
+   regardless of the actual size of the code or data.  The linker
+   relocation base for our SL is always 0.  The SL must be position-
+   independent. */
+              
 .section .sl_header
               
 	.global _sl_header
-	_sl_header:   
+	_sl_header:         // AMD-specific header format for Secure Loader Block (SLB)
 	.word _sl_start 	//SL entry point relative to header (bits 0-15)
 	.word 0xFFFF  		//SL size including the header (bits 16-32)
 									  //i.e, 0 through 65535 inclusive = 64K
+
+    .global _mle_header // Intel-specific header format for 
+    _mle_header:        // Measured Launched Environment (MLE)
+    // This will be memcpy()'d here by code in init/
+    .fill 512, 1, 0 // consume what should be ample space for the MLE header.
+                    // linker should give us the rest of a 4K page, but playing safe
 
 .section .text
               
