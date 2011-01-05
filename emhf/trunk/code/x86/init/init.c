@@ -47,6 +47,8 @@
 #include "txt_mtrrs.h"
 #include "txt_heap.h"
 
+#include "i5_i7_dual_sinit_18.h" // XXX TODO read this from MBI stuff
+
 //---forward prototypes---------------------------------------------------------
 void cstartup(multiboot_info_t *mbi);
 MPFP * MP_GetFPStructure(void);
@@ -262,7 +264,7 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize){
 /* Run tests to determine if platform supports TXT.  Note that this
  * enables SMX on the platform, but is safe to run more than once. */
 /* Based primarily on tboot-20101005's txt/verify.c */
-int txt_supports_txt(void) {
+bool txt_supports_txt(void) {
 
     u32 cpuid_ext_feat_info, dummy;
     u64 feat_ctrl_msr;
@@ -274,21 +276,21 @@ int txt_supports_txt(void) {
     /* Check for VMX support */
     if ( !(cpuid_ext_feat_info & CPUID_X86_FEATURE_VMX) ) {
         printf("ERR: CPU does not support VMX\n");
-        return 0;
+        return false;
     }
     printf("CPU is VMX-capable\n");
     /* and that VMX is enabled in the feature control MSR */
     if ( !(feat_ctrl_msr & IA32_FEATURE_CONTROL_MSR_ENABLE_VMX_IN_SMX) ) {
         printf("ERR: VMXON disabled by feature control MSR (%llx)\n",
                feat_ctrl_msr);
-        return 0;
+        return false;
     }
     
     
     /* Check that processor supports SMX instructions */
     if ( !(cpuid_ext_feat_info & CPUID_X86_FEATURE_SMX) ) {
         printf("ERR: CPU does not support SMX\n");
-        return 0;
+        return false;
     }
     printf("CPU is SMX-capable\n");
     
@@ -297,7 +299,7 @@ int txt_supports_txt(void) {
                             IA32_FEATURE_CONTROL_MSR_SENTER_PARAM_CTL)) ) {
         printf("ERR: SENTER disabled by feature control MSR (%llx)\n",
                feat_ctrl_msr);
-        return 0;
+        return false;
     }
     printf("SENTER should work.\n");
 
@@ -311,36 +313,59 @@ int txt_supports_txt(void) {
     cap = (capabilities_t)__getsec_capabilities(0);
     if(!cap.chipset_present) {
         printf("ERR: TXT-capable chipset not present\n");
-        return 0;
+        return false;
     }        
     if (!(cap.senter && cap.sexit && cap.parameters && cap.smctrl &&
           cap.wakeup)) {
         printf("ERR: insufficient SMX capabilities (0x%08x)\n", cap._raw);
-        return 0;
+        return false;
     }    
     printf("TXT chipset and all needed capabilities (0x%08x) present\n", cap._raw);    
     
-    return 1;    
+    return true;
 }
 
-/* Slowly building up primitive functions needed to do SENTER
- * properly.  Testing them one at a time in here.  Goal is that this
- * function is idempotent and side effect-free. */
+/* Inspired by tboot-20101005/tboot/txt/verify.c */
+tb_error_t txt_verify_platform(void)
+{
+    txt_heap_t *txt_heap;
+    tb_error_t err;
+    txt_ests_t ests;
+
+    printf("txt_verify_platform\n");
+    
+    /* check TXT supported */
+    if(!txt_supports_txt()) {
+        printf("FATAL ERROR: TXT not suppported\n");
+        HALT();
+    }    
+
+    /* check is TXT_RESET.STS is set, since if it is SENTER will fail */
+    ests = (txt_ests_t)read_pub_config_reg(TXTCR_ESTS);
+    if ( ests.txt_reset_sts ) {
+        printf("TXT_RESET.STS is set and SENTER is disabled (0x%02Lx)\n",
+               ests._raw);
+        return TB_ERR_SMX_NOT_SUPPORTED;
+    }
+
+    /* verify BIOS to OS data */
+    txt_heap = get_txt_heap();
+    if ( !verify_bios_data(txt_heap) )
+        return TB_ERR_FATAL;
+
+    return TB_ERR_NONE;
+}
+
+
+/* Read values in TXT status registers */
 /* Some tboot-20101005 code from tboot/txt/errors.c */
-void txt_idempotent_tests(void) {
+void txt_status_regs(void) {
     txt_errorcode_t err;
     txt_ests_t ests;
     txt_e2sts_t e2sts;
     txt_errorcode_sw_t sw_err;
     acmod_error_t acmod_err;
 
-    printf("\n****** Begin TXT Tests ******\n");
-
-    if(!txt_supports_txt()) {
-        printf("FATAL ERROR: TXT not suppported\n");
-        HALT();
-    }
-    
     err = (txt_errorcode_t)read_pub_config_reg(TXTCR_ERRORCODE);
     printf("TXT.ERRORCODE=%Lx\n", err._raw);
 
@@ -377,10 +402,38 @@ void txt_idempotent_tests(void) {
     if ( ests.txt_wake_error_sts ) {
         e2sts = (txt_e2sts_t)read_pub_config_reg(TXTCR_E2STS);
         printf("LT.E2STS=%Lx\n", e2sts._raw);
-    }
-    
-    printf("******  End TXT Tests  ******\n");
+    }    
 }
+
+/* Transfer control to the SL using GETSEC[SENTER] */
+/*///XXX TODO not fully functional yet. Expected flow:
+txt_prepare_cpu();
+txt_verify_platform();
+// Legacy USB?
+    // disable legacy USB #SMIs 
+    get_tboot_no_usb();
+    disable_smis();
+prepare_tpm();
+txt_launch_environment(mbi);*/
+
+bool txt_do_senter(void *phys_mle_start, size_t mle_size) {
+    tb_error_t err;
+
+    txt_status_regs();
+    
+    if((err = txt_verify_platform()) != TB_ERR_NONE) {
+        printf("ERROR: txt_verify_platform returned 0x%08x\n", (u32)err);
+        return false;
+    }
+    if(!txt_prepare_cpu()) {
+        printf("ERROR: txt_prepare_cpu failed.\n");
+        return false;
+    }
+    ///XXX TODO get addresses of SL, populate a mle_hdr_t
+    txt_launch_environment(i5_i7_dual_sinit_18, SINIT_HARDCODED_SIZE,
+                           phys_mle_start, mle_size);
+}
+
 
 //---do_drtm--------------------------------------------------------------------
 //this establishes a dynamic root of trust
@@ -402,7 +455,9 @@ void do_drtm(VCPU *vcpu, u32 slbase){
 
     }else{
         //TODO: issue GETSEC[SENTER], for now just transfer control via jump
-        txt_idempotent_tests();
+        printf("\n******  INIT(early): Begin TXT Stuff  ******\n");
+        //txt_do_senter((void*)slbase, 0x10000 /* XXX TODO stop hard-coding size*/);
+        printf("******  INIT(early): End TXT Stuff  ******\n");
         printf("\nINIT(early): transferring control to SL...");
         {    
             u32 entrypoint;

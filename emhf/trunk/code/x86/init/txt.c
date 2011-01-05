@@ -93,8 +93,6 @@
 #include "txt_mtrrs.h"
 #include "txt_heap.h"
 
-#include "i5_i7_dual_sinit_18.h" // XXX TODO read this from MBI stuff
-
 extern unsigned char _mle_page_table_start[]; // initsup.S
 extern unsigned char _mle_page_table_end[];   // initsup.S
 
@@ -333,7 +331,16 @@ bool txt_is_launched(void)
     return sts.senter_done_sts;
 }
 
-tb_error_t txt_launch_environment(void *sinit_ptr, u32 phys_mle_start, u32 mle_size)
+void delay(u64 cycles)
+{
+    uint64_t start = rdtsc64();
+    
+    while ( rdtsc64()-start < cycles ) ;
+}
+
+
+tb_error_t txt_launch_environment(void *sinit_ptr, size_t sinit_size,
+                                  void *phys_mle_start, size_t mle_size)
 {
     acm_hdr_t *sinit;
     void *mle_ptab_base;
@@ -343,7 +350,7 @@ tb_error_t txt_launch_environment(void *sinit_ptr, u32 phys_mle_start, u32 mle_s
     if(NULL == sinit_ptr) return TB_ERR_SINIT_NOT_PRESENT;
     else sinit = (acm_hdr_t*)sinit_ptr;
 
-    if(!check_sinit_module((void *)sinit, SINIT_HARDCODED_SIZE)) {
+    if(!check_sinit_module((void *)sinit, sinit_size)) {
         printf("check_sinit_module failed\n");
         return TB_ERR_SINIT_NOT_PRESENT;
     }
@@ -361,7 +368,7 @@ tb_error_t txt_launch_environment(void *sinit_ptr, u32 phys_mle_start, u32 mle_s
     print_mle_hdr(&g_mle_hdr);
 
     /* create MLE page table */
-    mle_ptab_base = build_mle_pagetable(phys_mle_start, mle_size);
+    mle_ptab_base = build_mle_pagetable((u32)phys_mle_start, mle_size);
     if ( mle_ptab_base == NULL )
         return TB_ERR_FATAL;
 
@@ -380,9 +387,8 @@ tb_error_t txt_launch_environment(void *sinit_ptr, u32 phys_mle_start, u32 mle_s
     ///XXX    return TB_ERR_FATAL;
 
     printf("executing GETSEC[SENTER]...\n");
-    /* (optionally) pause before executing GETSEC[SENTER] */
-/*     if ( g_vga_delay > 0 ) */
-/*         delay(g_vga_delay * 1000); */
+    /* pause before executing GETSEC[SENTER] */
+    delay(0x80000000);
     __getsec_senter((uint32_t)sinit, (sinit->size)*4);
     printf("ERROR--we should not get here!\n");
     return TB_ERR_FATAL;
@@ -395,10 +401,9 @@ bool txt_prepare_cpu(void)
     uint64_t mcg_cap, mcg_stat;
     getsec_parameters_t params;
     unsigned int i;
-    
+
     /* must be running at CPL 0 => this is implicit in even getting this far */
     /* since our bootstrap code loads a GDT, etc. */
-
     cr0 = read_cr0();
 
     /* must be in protected mode */
@@ -409,18 +414,18 @@ bool txt_prepare_cpu(void)
 
     /* cache must be enabled (CR0.CD = CR0.NW = 0) */
     if ( cr0 & CR0_CD ) {
-        printf("CR0.CD set\n");
+        printf("CR0.CD set; clearing it.\n");
         cr0 &= ~CR0_CD;
     }
     if ( cr0 & CR0_NW ) {
-        printf("CR0.NW set\n");
+        printf("CR0.NW set; clearing it.\n");
         cr0 &= ~CR0_NW;
     }
 
     /* native FPU error reporting must be enabled for proper */
     /* interaction behavior */
     if ( !(cr0 & CR0_NE) ) {
-        printf("CR0.NE not set\n");
+        printf("CR0.NE not set; setting it.\n");
         cr0 |= CR0_NE;
     }
 
@@ -429,7 +434,7 @@ bool txt_prepare_cpu(void)
     /* cannot be in virtual-8086 mode (EFLAGS.VM=1) */
     get_eflags(eflags);
     if ( eflags & EFLAGS_VM ) {
-        printf("EFLAGS.VM set\n");
+        printf("EFLAGS.VM set; clearing it.\n");
         set_eflags(eflags | ~EFLAGS_VM);
     }
 
