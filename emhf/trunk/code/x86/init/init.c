@@ -456,7 +456,7 @@ void do_drtm(VCPU *vcpu, u32 slbase){
     }else{
         //TODO: issue GETSEC[SENTER], for now just transfer control via jump
         printf("\n******  INIT(early): Begin TXT Stuff  ******\n");
-        //txt_do_senter((void*)slbase, 0x10000 /* XXX TODO stop hard-coding size*/);
+        //txt_do_senter((void*)(slbase+3*PAGE_SIZE_4K), 0x10000 /* XXX TODO stop hard-coding size*/);
         printf("******  INIT(early): End TXT Stuff  ******\n");
         printf("\nINIT(early): transferring control to SL...");
         {    

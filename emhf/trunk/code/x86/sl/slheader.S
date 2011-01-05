@@ -44,19 +44,24 @@
 //our C main
 .extern slmain
 
-/* The start of the SL is a pair of special headers that are
-   required by AMD and Intel for SKINIT, and GETSEC[SENTER],
-   respectively.  AMD's header must come at the very start of
-   the SLB.  Intel's header can be elsewhere.  We place it
-   immediately following the AMD header.
+/* The first 3 pages of the SL serve different purposes depending on
+   whether the system has an AMD or Intel CPU.  On an AMD system, the
+   first four bytes of the first page comprise the SLB Header.  The
+   remainder goes to waste (3*4K-4B).
 
-   These headers are placed at the very beginning of the SL (byte 0)
+   On Intel, these first three pages are used as the MLE Page Tables.
+   These are constructed in software with the txt.c:build_mle_pagetable()
+   function.  The AMD header will be clobbered in the process.
+
+   These 3 pages are placed at the very beginning of the SL (byte 0)
    by our linker script.  Our SL is always padded to 64K in size
    regardless of the actual size of the code or data.  The linker
    relocation base for our SL is always 0.  The SL must be position-
    independent. */
               
 .section .sl_header
+    .global _mle_page_table_start
+    _mle_page_table_start:
               
 	.global _sl_header
 	_sl_header:         // AMD-specific header format for Secure Loader Block (SLB)
@@ -64,11 +69,16 @@
 	.word 0xFFFF  		//SL size including the header (bits 16-32)
 									  //i.e, 0 through 65535 inclusive = 64K
 
-    .global _mle_header // Intel-specific header format for 
-    _mle_header:        // Measured Launched Environment (MLE)
-    // This will be memcpy()'d here by code in init/
-    .fill 512, 1, 0 // consume what should be ample space for the MLE header.
-                    // linker should give us the rest of a 4K page, but playing safe
+
+    // Three 4K pages to hold the "MLE page tables" for an Intel-specific
+    // DRTM using GETSEC[SENTER].  See 2.2.4.1 in Intel MLE
+    // Developer's Guide (Dec. 2009 revision).
+    .align 4096      // remainder of first page
+    .fill 4096, 1, 0 // second page
+    .fill 4096, 1, 0 // third page
+    .global _mle_page_table_end
+    _mle_page_table_end:
+
 
 .section .text
               

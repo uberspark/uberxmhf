@@ -93,9 +93,6 @@
 #include "txt_mtrrs.h"
 #include "txt_heap.h"
 
-extern unsigned char _mle_page_table_start[]; // initsup.S
-extern unsigned char _mle_page_table_end[];   // initsup.S
-
 bool get_parameters(getsec_parameters_t *params);
 
 /*
@@ -106,7 +103,7 @@ static mle_hdr_t g_mle_hdr = {
     uuid              :  MLE_HDR_UUID,
     length            :  sizeof(mle_hdr_t),
     version           :  MLE_HDR_VER,
-    entry_point       :  0x1000, // XXX TODO remove magic number
+    entry_point       :  (3*PAGE_SIZE_4K), // XXX TODO remove magic number
     first_valid_page  :  0,
     ///XXX I thnk these should be phys addres
     mle_start_off     :  0, // This might need to be 4K???
@@ -125,9 +122,6 @@ static void print_file_info(void)
     //printf("\t &_mle_start=%p\n", &_mle_start);
     //printf("\t &_mle_end=%p\n", &_mle_end);
     printf("\t &g_mle_hdr=%p\n", &g_mle_hdr);
-
-    printf("\t &_mle_page_table_start=%p\n", &_mle_page_table_start);
-    printf("\t &_mle_page_table_end=%p\n", &_mle_page_table_end);
 }
 
 static void print_mle_hdr(const mle_hdr_t *mle_hdr)
@@ -175,11 +169,13 @@ static void *build_mle_pagetable(uint32_t mle_start, uint32_t mle_size)
         return NULL;
     }
 
-    /* place ptab_base in data section of early init modules (see
-     * initsup.S) */
+    /* place ptab_base below MLE */
     ptab_size = 3 * PAGE_SIZE_4K;      /* pgdir ptr + pgdir + ptab = 3 */
-    ptab_base = (void *)(_mle_page_table_start);
-    memset(ptab_base, 0, ptab_size);
+    ptab_base = (void *)(mle_start - ptab_size);
+    
+    /* NB: This memset will clobber the AMD-specific SL header.  That
+     * is okay, as we are launching on an Intel TXT system. */
+    memset(ptab_base, 0, ptab_size); 
     printf("ptab_size=%x, ptab_base=%p\n", ptab_size, ptab_base);
 
     pg_dir_ptr_tab = ptab_base;
@@ -240,7 +236,8 @@ static bool check_sinit_module(void *base, size_t size)
 /*
  * sets up TXT heap
  */
-static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit)
+static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
+                                 void *phys_mle_start, size_t mle_size)
 {
     txt_heap_t *txt_heap;
     uint64_t *size;
@@ -283,11 +280,15 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit)
     /* this is linear addr (offset from MLE base) of mle header */
     os_sinit_data->mle_hdr_base = (uint64_t)(unsigned long)&g_mle_hdr;
     //- (uint64_t)(unsigned long)&_mle_start;
-    /* VT-d PMRs */ ///XXX
-    ///XXXif ( !get_ram_ranges(&min_lo_ram, &max_lo_ram, &min_hi_ram, &max_hi_ram) )
-    ///XXXreturn NULL;
-    ///XXXset_vtd_pmrs(os_sinit_data, min_lo_ram, max_lo_ram, min_hi_ram,
-    ///XXXmax_hi_ram);
+    /* VT-d PMRs */
+    /* Must protect MLE, o/w get: TXT.ERRORCODE=c0002871
+       AC module error : acm_type=1, progress=07, error=a
+       "page is not covered by DPR nor PMR regions" */
+    os_sinit_data->vtd_pmr_lo_base = (u64)PAGE_ALIGN_2M((u32)phys_mle_start);
+    os_sinit_data->vtd_pmr_lo_size = (u64)PAGE_ALIGN_UP2M(mle_size); // XXX Dangerous??? Does not precisely match SL size.  Goes well into hypervisor.  TODO: coordinate to DMA-protect hypervisor in one easy stroke. 2MB alignment required.
+    /* hi range is >4GB; unused for us */
+    os_sinit_data->vtd_pmr_hi_base = 0;
+    os_sinit_data->vtd_pmr_hi_size = 0;
 
     /* LCP owner policy data -- DELETED */
     
@@ -373,7 +374,8 @@ tb_error_t txt_launch_environment(void *sinit_ptr, size_t sinit_size,
         return TB_ERR_FATAL;
 
     /* initialize TXT heap */
-    txt_heap = init_txt_heap(mle_ptab_base, sinit);
+    txt_heap = init_txt_heap(mle_ptab_base, sinit,
+                             phys_mle_start, mle_size);
     if ( txt_heap == NULL )
         return TB_ERR_FATAL;
 
