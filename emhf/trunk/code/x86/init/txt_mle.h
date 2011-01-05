@@ -130,6 +130,39 @@ typedef struct {
 #define MLE_HDR_CAPS      0x00000007     /* rlp_wake_{getsec, monitor} = 1,
                                             ecx_pgtbl = 1 */
 
+/* from tboot-20101005/include/tb_error.h */
+typedef enum {
+    TB_ERR_NONE                = 0,         /* succeed */
+    TB_ERR_FIXED               = 1,         /* previous error has been fixed */
+
+    TB_ERR_GENERIC,                         /* non-fatal generic error */
+
+    TB_ERR_TPM_NOT_READY,                   /* tpm not ready */
+    TB_ERR_SMX_NOT_SUPPORTED,               /* smx not supported */
+    TB_ERR_VMX_NOT_SUPPORTED,               /* vmx not supported */
+    TB_ERR_TXT_NOT_SUPPORTED,               /* txt not supported */
+
+    TB_ERR_MODULE_VERIFICATION_FAILED,      /* module failed to verify against
+                                               policy */
+    TB_ERR_MODULES_NOT_IN_POLICY,           /* modules in mbi but not in
+                                               policy */
+    TB_ERR_POLICY_INVALID,                  /* policy is invalid */
+    TB_ERR_POLICY_NOT_PRESENT,              /* no policy in TPM NV */
+
+    TB_ERR_SINIT_NOT_PRESENT,               /* SINIT ACM not provided */
+    TB_ERR_ACMOD_VERIFY_FAILED,             /* verifying AC module failed */
+
+    TB_ERR_POST_LAUNCH_VERIFICATION,        /* verification of post-launch
+                                               failed */
+    TB_ERR_S3_INTEGRITY,                    /* creation or verification of
+                                               S3 integrity measurements
+                                               failed */
+
+    TB_ERR_FATAL,                           /* generic fatal error */
+    TB_ERR_MAX
+} tb_error_t;
+
+
 #endif      /* __MLE_H__ */
 
 
