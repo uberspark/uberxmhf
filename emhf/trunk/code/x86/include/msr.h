@@ -208,6 +208,10 @@ static inline u64 rdmsr64(uint32_t msr)
     return (rv);
 }
 
+static inline void wrmsr64(uint32_t msr, uint64_t newval)
+{
+    __asm__ __volatile__ ("wrmsr" : : "A" (newval), "c" (msr));
+}
 
 #endif /* __ASSEMBLY__ */
 

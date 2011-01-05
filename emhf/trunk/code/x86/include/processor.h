@@ -251,6 +251,34 @@ static inline u16 read_tr_sel(void){
   return __trsel;
 }
 
+static inline void wbinvd(void)
+{
+    __asm__ __volatile__ ("wbinvd");
+}
+
+static inline uint32_t bsrl(uint32_t mask)
+{
+    uint32_t   result;
+
+    __asm__ __volatile__ ("bsrl %1,%0" : "=r" (result) : "rm" (mask) : "cc");
+    return (result);
+}
+
+static inline int fls(int mask)
+{
+    return (mask == 0 ? mask : (int)bsrl((u32)mask) + 1);
+}
+
+static inline void disable_intr(void)
+{
+    __asm__ __volatile__ ("cli" : : : "memory");
+}
+
+static inline void enable_intr(void)
+{
+    __asm__ __volatile__ ("sti");
+}
+
 
 #endif
 
