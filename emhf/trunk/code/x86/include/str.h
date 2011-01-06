@@ -43,7 +43,7 @@ void *memmove(void *dst_void, const void *src_void, u32 length);
 char *strchr(const char *s, int c);
 u32 strnlen(const char * s, u32 count);
 void *memcpy(void * to, const void * from, u32 n);
-void *memset (void *str, int c, u32 len);
+void *memset (void *str, u32 c, u32 len);
 u32 strncmp(u8 * cs, u8 * ct, u32 count);
 int memcmp(const char *s1, const char *s2, size_t n);
 #endif/* __ASSEMBLY__ */

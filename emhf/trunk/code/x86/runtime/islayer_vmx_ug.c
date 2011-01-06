@@ -398,10 +398,10 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 			vcpu->vmcs.control_VMX_cpu_based |= (1 << 25); //enable use IO Bitmaps
 
  			//MSR bitmap support
-			memset( (void *)vcpu->vmx_vaddr_msrbitmaps, 0xFFFFFFFFUL, PAGE_SIZE_4K); //trap all MSR accesses
-			vcpu->vmcs.control_MSR_Bitmaps_address_full = (u32)__hva2spa__((u32)vcpu->vmx_vaddr_msrbitmaps);	 							
-			vcpu->vmcs.control_MSR_Bitmaps_address_high = 0;
-			vcpu->vmcs.control_VMX_cpu_based |= (1 << 28); //enable use MSR Bitmaps 
+			//memset( (void *)vcpu->vmx_vaddr_msrbitmaps, 0xFFFFFFFFUL, PAGE_SIZE_4K); //trap all MSR accesses
+			//vcpu->vmcs.control_MSR_Bitmaps_address_full = (u32)__hva2spa__((u32)vcpu->vmx_vaddr_msrbitmaps);	 							
+			//vcpu->vmcs.control_MSR_Bitmaps_address_high = 0;
+			//vcpu->vmcs.control_VMX_cpu_based |= (1 << 28); //enable use MSR Bitmaps 
 
 
 #if 1

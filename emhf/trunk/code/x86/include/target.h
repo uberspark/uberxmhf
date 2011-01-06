@@ -68,7 +68,6 @@
 //"sl" parameter block magic value
 #define SL_PARAMETER_BLOCK_MAGIC	0xDEADBEEF
 
-
 //"runtime" parameter block magic value
 #define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
 
@@ -80,6 +79,9 @@
 #define __DS 0x0010 /* Selector for GDT enry 0. RPL 0 */
 #define __TRSEL 0x0018  //selector for TSS
 
+
+//size of runtime IDT, 32 exception vectors each 8 bytes
+#define	SIZE_RUNTIME_IDT	(8*32)
 
 #define MAX_E820_ENTRIES    (64)  //maximum E820 entries we support, 64 should
                                   //be enough

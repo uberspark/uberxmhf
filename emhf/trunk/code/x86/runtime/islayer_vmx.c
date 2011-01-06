@@ -49,6 +49,7 @@
 //==============================================================================
 // static (local) function definitions
 //==============================================================================
+static void _vmx_lib_reboot(VCPU *vcpu);
 
 //---initVT: initializes CPU VT-------------------------------------------------
 static void _vmx_initVT(VCPU *vcpu){
@@ -534,6 +535,8 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 		}
 	}
 	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+	//printf("\nCPU(0x%02x): WRMSR end", vcpu->id);
+
 }
 
 //---intercept handler (RDMSR)--------------------------------------------------
@@ -586,6 +589,40 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 		case IA32_MTRR_PHYSMASK7:		r->edx = vcpu->vmx_guestmtrrmsrs[28].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[28].lodword;  break;	
 
 
+/*    case IA32_MTRRCAP: 					
+		case IA32_MTRR_DEF_TYPE: 		  
+		case IA32_MTRR_FIX64K_00000:
+		case IA32_MTRR_FIX16K_80000:	
+		case IA32_MTRR_FIX16K_A0000:	
+		case IA32_MTRR_FIX4K_C0000:			
+		case IA32_MTRR_FIX4K_C8000:			
+		case IA32_MTRR_FIX4K_D0000:			
+		case IA32_MTRR_FIX4K_D8000:			
+		case IA32_MTRR_FIX4K_E0000:			
+		case IA32_MTRR_FIX4K_E8000:			
+		case IA32_MTRR_FIX4K_F0000:			
+		case IA32_MTRR_FIX4K_F8000:			
+		case IA32_MTRR_PHYSBASE0:					
+		case IA32_MTRR_PHYSMASK0:					
+		case IA32_MTRR_PHYSBASE1:					
+		case IA32_MTRR_PHYSMASK1:					
+		case IA32_MTRR_PHYSBASE2:					
+		case IA32_MTRR_PHYSMASK2:					
+		case IA32_MTRR_PHYSBASE3:					
+		case IA32_MTRR_PHYSMASK3:					
+		case IA32_MTRR_PHYSBASE4:					
+		case IA32_MTRR_PHYSMASK4:					
+		case IA32_MTRR_PHYSBASE5:					
+		case IA32_MTRR_PHYSMASK5:					
+		case IA32_MTRR_PHYSBASE6:					
+		case IA32_MTRR_PHYSMASK6:					
+		case IA32_MTRR_PHYSBASE7:					
+		case IA32_MTRR_PHYSMASK7:			
+			_vmx_lib_reboot(vcpu);
+			//we never get here
+			printf("\nCPU(0x%02x): halting on RDMSR!");
+			HALT();
+	*/
 		default:{
 			asm volatile ("rdmsr\r\n"
           : "=a"(r->eax), "=d"(r->edx)
@@ -594,6 +631,8 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 		}
 	}
 	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+	//printf("\nCPU(0x%02x): RDMSR (0x%08x)=0x%08x%08x", vcpu->id, r->ecx, r->edx, r->eax);
+
 }
 
 //---intercept handler (CPUID)--------------------------------------------------
@@ -882,7 +921,7 @@ u32 vmx_intercept_handler(VCPU *vcpu, struct regs *r){
     break;
 
     case VMEXIT_VMCALL:{
-      if( emhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
+			if( emhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
 				printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", vcpu->id, r->eax);
 				HALT();
 			}
@@ -899,7 +938,7 @@ u32 vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			
 			if(reason == TASK_SWITCH_GATE && type == INTR_TYPE_NMI){
 	      printf("\nCPU(0x%02x): NMI received (MP guest shutdown?)", vcpu->id);
-	      emhf_app_handleshutdown(vcpu, r);      
+				emhf_app_handleshutdown(vcpu, r);      
   	    printf("\nCPU(0x%02x): warning, emhf_app_handleshutdown returned!", vcpu->id);
     		printf("\nCPU(0x%02x): HALTING!", vcpu->id);
 	      HALT();
@@ -1279,7 +1318,7 @@ static void _vmx_lib_reboot(VCPU *vcpu){
 	//step-2: zero out IDT
 	{
 		extern u32 x_idt_start[];
-		memset((void *)x_idt_start, 0, PAGE_SIZE_4K);
+		memset((void *)x_idt_start, 0, SIZE_RUNTIME_IDT);
 	}
 	
 	//step-3: execute ud2 instruction to generate triple fault

@@ -189,7 +189,7 @@ _rpb:
 	.align 16
 	.global x_idt_start
 	x_idt_start:
-	.fill	8*32, 1, 0
+	.fill	SIZE_RUNTIME_IDT, 1, 0
 	x_idt_end:
 	.align 16
 	x_idt_functionpointers:

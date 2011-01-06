@@ -101,11 +101,11 @@ void *memcpy(void * to, const void * from, u32 n){
   return (to);
 }
 
-void *memset (void *str, int c, u32 len){
-  register char *st = str;
+void *memset (void *str, u32 c, u32 len){
+  register u8 *st = str;
 
   while (len-- > 0)
-    *st++ = (char)c;
+    *st++ = (u8)c;
   return str;
 }
 
