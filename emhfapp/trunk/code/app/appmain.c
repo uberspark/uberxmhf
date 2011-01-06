@@ -48,6 +48,7 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 //returns APP_SUCCESS if we handled the hypercall else APP_ERROR
 u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 			u32 status=APP_SUCCESS;
+			printf("\nCPU(0x%02x): hypercall unhandled, simply returning!", vcpu->id);
 			return status;
 }
 
