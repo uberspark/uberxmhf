@@ -75,8 +75,6 @@
 #ifndef __MLE_H__
 #define __MLE_H__
 
-#define TEMPORARY_HARDCODED_MLE_SIZE 0x10000
-
 /*
  * SINIT/MLE capabilities
  */

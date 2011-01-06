@@ -84,7 +84,7 @@
     // Make room for MLE header at beginning
     .global _mle_hdr
     _mle_hdr:
-    .fill 512, 1, 0x90 ///XXX TODO just a guess; should really be sizeof(mle_hdr_t)
+    .fill TEMPORARY_MAX_MLE_HEADER_SIZE, 1, 0x90 ///XXX TODO just a guess; should really be sizeof(mle_hdr_t)
               
               
 	.global _sl_start

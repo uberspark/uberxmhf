@@ -103,10 +103,10 @@ static mle_hdr_t g_mle_hdr = {
     uuid              :  MLE_HDR_UUID,
     length            :  sizeof(mle_hdr_t),
     version           :  MLE_HDR_VER,
-    entry_point       :  512, // XXX TODO remove magic number (also in slheader.S)
+    entry_point       :  TEMPORARY_HARDCODED_MLE_ENTRYPOINT, // XXX TODO remove magic number
     first_valid_page  :  0,
     ///XXX I thnk these should be phys addres
-    mle_start_off     :  0, // This might need to be 12K???
+    mle_start_off     :  0, /* In MLE address space as accessed via MLE page tables */
     mle_end_off       :  TEMPORARY_HARDCODED_MLE_SIZE, // XXX TODO remove magic number
     capabilities      :  { MLE_HDR_CAPS },
     cmdline_start_off :  0,
@@ -133,15 +133,7 @@ static void print_mle_hdr(const mle_hdr_t *mle_hdr)
     print_txt_caps("\t ", mle_hdr->capabilities);
 }
 
-/* page dir/table entry is phys addr + P + R/W + PWT */
-#define PAGE_SHIFT       12                 /* LOG2(PAGE_SIZE) */
-#define PAGE_SIZE        (1 << PAGE_SHIFT)  /* bytes/page */
-/* PAGE_MASK is used to pass bits 12 and above. */
-#define PAGE_MASK        (~(PAGE_SIZE-1))
-#define MAKE_PDTE(addr)  (((uint64_t)(unsigned long)(addr) & PAGE_MASK) | 0x01)
-
-///XXX TODO update MAKE_PDTE to use our own PAGE_* macros
-//#define MAKE_PDTE(addr)  (PAGE_ALIGN_4K((u32)addr) | 0x01)
+#define MAKE_PDTE(addr)  (PAGE_ALIGN_4K((u32)addr) | 0x01)
 
 /* we assume/know that our image is <2MB and thus fits w/in a single */
 /* PT (512*4KB = 2MB) and thus fixed to 1 pg dir ptr and 1 pgdir and */
@@ -284,6 +276,7 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
     os_sinit_data->mle_ptab = (uint64_t)(unsigned long)ptab_base;
     os_sinit_data->mle_size = g_mle_hdr.mle_end_off - g_mle_hdr.mle_start_off;
     /* Copy populated MLE header into SL */
+    ASSERT(sizeof(mle_hdr_t) < TEMPORARY_MAX_MLE_HEADER_SIZE);
     memcpy(phys_mle_start, &g_mle_hdr, sizeof(mle_hdr_t));
     printf("Copied mle_hdr (0x%08x, 0x%x bytes) into SL (0x%08x)\n",
            (u32)&g_mle_hdr, sizeof(mle_hdr_t), (u32)phys_mle_start);
