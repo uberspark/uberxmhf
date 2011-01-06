@@ -103,11 +103,11 @@ static mle_hdr_t g_mle_hdr = {
     uuid              :  MLE_HDR_UUID,
     length            :  sizeof(mle_hdr_t),
     version           :  MLE_HDR_VER,
-    entry_point       :  (3*PAGE_SIZE_4K), // XXX TODO remove magic number
+    entry_point       :  512, // XXX TODO remove magic number (also in slheader.S)
     first_valid_page  :  0,
     ///XXX I thnk these should be phys addres
-    mle_start_off     :  0, // This might need to be 4K???
-    mle_end_off       :  0x10000, // XXX TODO remove magic number
+    mle_start_off     :  0, // This might need to be 12K???
+    mle_end_off       :  TEMPORARY_HARDCODED_MLE_SIZE, // XXX TODO remove magic number
     capabilities      :  { MLE_HDR_CAPS },
     cmdline_start_off :  0,
     cmdline_end_off   :  0,
@@ -117,10 +117,6 @@ static mle_hdr_t g_mle_hdr = {
 static void print_file_info(void)
 {
     printf("file addresses:\n");
-    //printf("\t &_start=%p\n", &_start);
-    //printf("\t &_end=%p\n", &_end);
-    //printf("\t &_mle_start=%p\n", &_mle_start);
-    //printf("\t &_mle_end=%p\n", &_mle_end);
     printf("\t &g_mle_hdr=%p\n", &g_mle_hdr);
 }
 
@@ -137,13 +133,15 @@ static void print_mle_hdr(const mle_hdr_t *mle_hdr)
     print_txt_caps("\t ", mle_hdr->capabilities);
 }
 
-/*
- * build_mle_pagetable()
- */
-
 /* page dir/table entry is phys addr + P + R/W + PWT */
-//#define MAKE_PDTE(addr)  (((uint64_t)(unsigned long)(addr) & PAGE_MASK) | 0x01)
-#define MAKE_PDTE(addr)  (PAGE_ALIGN_4K((u32)addr) | 0x01)
+#define PAGE_SHIFT       12                 /* LOG2(PAGE_SIZE) */
+#define PAGE_SIZE        (1 << PAGE_SHIFT)  /* bytes/page */
+/* PAGE_MASK is used to pass bits 12 and above. */
+#define PAGE_MASK        (~(PAGE_SIZE-1))
+#define MAKE_PDTE(addr)  (((uint64_t)(unsigned long)(addr) & PAGE_MASK) | 0x01)
+
+///XXX TODO update MAKE_PDTE to use our own PAGE_* macros
+//#define MAKE_PDTE(addr)  (PAGE_ALIGN_4K((u32)addr) | 0x01)
 
 /* we assume/know that our image is <2MB and thus fits w/in a single */
 /* PT (512*4KB = 2MB) and thus fixed to 1 pg dir ptr and 1 pgdir and */
@@ -185,13 +183,21 @@ static void *build_mle_pagetable(uint32_t mle_start, uint32_t mle_size)
     /* only use first entry in page dir ptr table */
     *(uint64_t *)pg_dir_ptr_tab = MAKE_PDTE(pg_dir);
 
+    printf("*(uint64_t *)pg_dir_ptr_tab = 0x%16llx\n",
+           *(uint64_t *)pg_dir_ptr_tab);
+
     /* only use first entry in page dir */
     *(uint64_t *)pg_dir = MAKE_PDTE(pg_tab);
+    printf("*(uint64_t *)pg_dir = 0x%16llx\n",
+           *(uint64_t *)pg_dir);
 
+    
     pte = pg_tab;
     mle_off = 0;
     do {
         *pte = MAKE_PDTE(mle_start + mle_off);
+        printf("pte = 0x%08x\n*pte = 0x%15llx\n",
+               (u32)pte, *pte);
 
         pte++;
         mle_off += PAGE_SIZE_4K;
@@ -277,8 +283,12 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
     /* this is phys addr */
     os_sinit_data->mle_ptab = (uint64_t)(unsigned long)ptab_base;
     os_sinit_data->mle_size = g_mle_hdr.mle_end_off - g_mle_hdr.mle_start_off;
-    /* this is linear addr (offset from MLE base) of mle header */
-    os_sinit_data->mle_hdr_base = (uint64_t)(unsigned long)&g_mle_hdr;
+    /* Copy populated MLE header into SL */
+    memcpy(phys_mle_start, &g_mle_hdr, sizeof(mle_hdr_t));
+    printf("Copied mle_hdr (0x%08x, 0x%x bytes) into SL (0x%08x)\n",
+           (u32)&g_mle_hdr, sizeof(mle_hdr_t), (u32)phys_mle_start);
+    /* this is linear addr (offset from MLE base) of mle header, in MLE page tables */
+    os_sinit_data->mle_hdr_base = 0;
     //- (uint64_t)(unsigned long)&_mle_start;
     /* VT-d PMRs */
     /* Must protect MLE, o/w get: TXT.ERRORCODE=c0002871

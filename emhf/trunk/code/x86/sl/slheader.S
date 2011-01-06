@@ -81,10 +81,15 @@
 
 
 .section .text
+    // Make room for MLE header at beginning
+    .global _mle_hdr
+    _mle_hdr:
+    .fill 512, 1, 0x90 ///XXX TODO just a guess; should really be sizeof(mle_hdr_t)
+              
               
 	.global _sl_start
 	_sl_start:	
-	
+//	1: jmp 1b
 	//save EAX, for AMD and the stub SENTER DRTM this contains the
 	//64K aligned physical memory address where the sl was loaded 
 	movl %eax, %ebp
