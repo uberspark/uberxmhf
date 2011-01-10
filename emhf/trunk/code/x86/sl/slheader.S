@@ -155,14 +155,15 @@ sl_cpu_common:
 		//grab offset of sl_gdt_start
 		movl $(sl_gdt_start), %ebx	
 	
-		//bits 0:16 of %eax = bits 16:23 of sl base address
-		//bits 24:31 of %eax = bits 24:31 of sl base address
-		movl %ebp, %eax
-		movl %ebp, %ecx
-		andl $0xFF000000, %eax
-		andl $0x00FF0000, %ecx
-		shrl $16, %ecx	
-		orl %ecx, %eax
+		movl %ebp, %eax          	//eax = sl base address
+		movl %ebp, %ecx						//ecx = sl base address
+		andl $0xFF000000, %eax		//eax = bits 24-31 of sl base address
+		andl $0x00FF0000, %ecx		//ecx = bits 16-23 of sl base address
+		shrl $16, %ecx						//bits 0-7 of ecx = bits 16-23 of sl base address	
+		orl %ecx, %eax						//bits 0-7 of eax = bits 16-23 of sl base address
+															//bits 24-31 of eax = bits 24-31 of sl base address
+															//eax is now in accordance with the high 32-bits
+															//of a segment descriptor 
 
 		//get high 32-bits of 64-bit GDT entry for selector 0x08 (code)
 		//and update it with the base address of the sl
