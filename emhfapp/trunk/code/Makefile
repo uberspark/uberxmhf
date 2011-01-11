@@ -128,3 +128,5 @@ clean:
 pratt:
 	scp dist/* root@pratt:/boot
 
+creeper:
+	scp dist/* root@creeper:/boot
