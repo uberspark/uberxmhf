@@ -238,11 +238,16 @@ static void print_acm_hdr(acm_hdr_t *hdr, const char *mod_name)
     printf("\t date: 0x%08x\n", hdr->date);
     printf("\t size*4: 0x%x (%u)\n", hdr->size*4, hdr->size*4);
     printf("\t code_control: 0x%x\n", hdr->code_control);
-    printf("\t entry point: 0x%08x:%08x\n", hdr->seg_sel,
+    printf("\t error_entry_point: 0x%x\n", hdr->error_entry_point);
+    printf("\t gdt_limit 0x%x, gdt_base 0x%x\n", hdr->gdt_limit,
+           hdr->gdt_base);
+    printf("\t entry point (seg_sel:entry_point): 0x%08x:%08x\n", hdr->seg_sel,
            hdr->entry_point);
-    printf("\t scratch_size: 0x%x (%u)\n", hdr->scratch_size,
+    printf("\t scratch_size: 0x%x (%u)", hdr->scratch_size,
            hdr->scratch_size);
 
+    /* GDT */
+    print_hex("\t\t SINIT GDT: ", (void *)((u32)hdr+hdr->gdt_base), hdr->gdt_limit);
     /* info table */
     printf("\t info_table:\n");
     info_table = get_acmod_info_table(hdr);
