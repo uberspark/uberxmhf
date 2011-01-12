@@ -1,0 +1,57 @@
+[Config]
+Compilator.SaveAll=0
+Compilator.Capture=0
+Compilator.HideOutput=0
+Compilator.LogType=0
+DefaultDir=E:\amit\external\hyp\emhfapp\trunk\code\emhfcore\x86
+DefaultCPIndex=0
+LogtoEnd=1
+DontOpen=0
+AbsolutePath=0
+FileFormat=1
+ProjectFilesOnly=0
+[Project tree]
+emhf-libcommon
+	+src
+		..\libcommon\dbg_vgamem.c
+		..\libcommon\dbg_uart.c
+		..\libcommon\dbg_printf.c
+		..\libcommon\string.c
+		..\libcommon\mpsup.S
+		..\libcommon\Makefile
+[Open project files]
+0=..\libcommon\Makefile
+1=..\libcommon\mpsup.S
+2=..\libcommon\string.c
+3=..\include\str.h
+4=..\libcommon\dbg_printf.c
+5=..\libcommon\dbg_uart.c
+6=..\libcommon\dbg_vgamem.c
+7=..\include\multiboot.h
+[Selected Project Files]
+Main=
+Selected=..\libcommon\dbg_printf.c
+[..\libcommon\Makefile]
+TopLine=1
+Caret=61,17
+[..\libcommon\mpsup.S]
+TopLine=1
+Caret=1,1
+[..\libcommon\string.c]
+TopLine=45
+Caret=16,73
+[..\include\str.h]
+TopLine=1
+Caret=29,11
+[..\libcommon\dbg_printf.c]
+TopLine=1
+Caret=1,1
+[..\libcommon\dbg_uart.c]
+TopLine=33
+Caret=1,33
+[..\libcommon\dbg_vgamem.c]
+TopLine=1
+Caret=1,1
+[..\include\multiboot.h]
+TopLine=1
+Caret=23,15

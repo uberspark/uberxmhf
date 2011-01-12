@@ -150,6 +150,7 @@ void send_init_ipi_to_all_APs(void) {
 }
 
 
+
 //---E820 parsing and handling--------------------------------------------------
 //runtimesize is assumed to be 2M aligned
 u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize){

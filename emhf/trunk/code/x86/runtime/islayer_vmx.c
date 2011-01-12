@@ -645,6 +645,122 @@ static void _vmx_handle_intercept_cpuid(VCPU *vcpu, struct regs *r){
 }
 
 
+#if defined (__E820_UG_TEST__)
+
+//---vmx int 15 hook enabling function------------------------------------------
+static void	_vmx_int15_initializehook(VCPU *vcpu){
+	//we should only be called from the BSP
+	ASSERT(vcpu->isbsp);
+	
+	{
+		u8 *bdamemory = (u8 *)0x4AC;				//use BDA reserved memory at 0040:00AC
+		u16 *ivt_int15 = (u16 *)(0x54);	//32-bit CS:IP for IVT INT 15 handler
+		
+		//printf("\nCPU(0x%02x): original BDA dump: %02x %02x %02x %02x %02x %02x %02x %02x", vcpu->id,
+		//	bdamemory[0], bdamemory[1], bdamemory[2], bdamemory[3], bdamemory[4],
+		//		bdamemory[5], bdamemory[6], bdamemory[7]);
+		
+		printf("\nCPU(0x%02x): original INT 15h handler at 0x%04x:0x%04x", vcpu->id,
+			ivt_int15[1], ivt_int15[0]);
+
+
+		memset(bdamemory, 0x0, 8);		//we need 8 bytes (4 for the VMCALL and 4 for
+																	//the original IVT INT 15h handler), zero them
+
+
+		//printf("\nCPU(0x%02x): BDA dump after clear: %02x %02x %02x %02x %02x %02x %02x %02x", vcpu->id,
+		//	bdamemory[0], bdamemory[1], bdamemory[2], bdamemory[3], bdamemory[4],
+		//		bdamemory[5], bdamemory[6], bdamemory[7]);
+
+
+		bdamemory[0]= 0x0f;						//implant VMCALL followed by IRET at 0040:04AC
+		bdamemory[1]= 0x01;
+		bdamemory[2]= 0xc1;																	
+		bdamemory[3]= 0xcf;
+		
+		*((u16 *)(&bdamemory[4])) = ivt_int15[0];	//original INT 15h IP
+		*((u16 *)(&bdamemory[6])) = ivt_int15[1];	//original INT 15h CS
+
+		//printf("\nCPU(0x%02x): BDA dump after hook implant: %02x %02x %02x %02x %02x %02x %02x %02x", vcpu->id,
+		//	bdamemory[0], bdamemory[1], bdamemory[2], bdamemory[3], bdamemory[4],
+		//		bdamemory[5], bdamemory[6], bdamemory[7]);
+
+		
+		ivt_int15[0]=0x00AC;
+		ivt_int15[1]=0x0040;					//point IVT INT15 handler to the VMCALL instruction
+		
+	}
+}
+
+//---vmx int 15 intercept handler-----------------------------------------------
+static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
+	u16 cs, ip;
+	u8 *bdamemory = (u8 *)0x4AC;
+	
+	//printf("\nCPU(0x%02x): BDA dump in intercept: %02x %02x %02x %02x %02x %02x %02x %02x", vcpu->id,
+	//		bdamemory[0], bdamemory[1], bdamemory[2], bdamemory[3], bdamemory[4],
+	//			bdamemory[5], bdamemory[6], bdamemory[7]);
+
+		
+	
+	if((u16)r->eax == 0xE820){
+		//AX=0xE820, EBX=continuation value, 0 for first call
+		//ES:DI pointer to buffer, ECX=buffer size, EDX='SMAP'
+		//return value, CF=0 indicated no error, EAX='SMAP'
+		//ES:DI left untouched, ECX=size returned, EBX=next continuation value
+		//EBX=0 if last descriptor
+		printf("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", vcpu->id, 
+		(u16)r->eax, r->edx, r->ebx, r->ecx, (u16)vcpu->vmcs.guest_ES_selector, (u16)r->edi);
+		
+		ASSERT(r->edx == 0x534D4150UL);  //'SMAP'
+			
+		if(r->ebx > rpb->XtVmmE820NumEntries){
+			printf("\ninvalid continuation value specified!");
+			HALT();				
+		}
+			
+		printf("\nINT15(E820): returning for index=%u", r->ebx);
+		memcpy((void *)((u32)((vcpu->vmcs.guest_ES_base)+(u16)r->edi)), (void *)&g_e820map[r->ebx],
+					sizeof(GRUBE820));
+		r->ebx=r->ebx+1;
+				
+				
+		r->eax=r->edx;
+		r->ecx=20;
+
+		if(r->ebx > rpb->XtVmmE820NumEntries){
+			u32 eflags;
+			r->ebx=0;	
+			eflags = (u32)vcpu->vmcs.guest_RFLAGS;
+			eflags |= EFLAGS_CF;
+			vcpu->vmcs.guest_RFLAGS = eflags;
+		}else{
+			u32 eflags;
+			eflags = (u32)vcpu->vmcs.guest_RFLAGS;
+			eflags &= ~(EFLAGS_CF);
+			vcpu->vmcs.guest_RFLAGS = eflags;
+		}
+
+	  //update RIP to point to the IRET instruction following VMCALL 
+	  vcpu->vmcs.guest_RIP += 3;
+	
+		return;
+	}
+	
+	
+	
+	ip = *((u16 *)((u32)bdamemory + 4));
+	cs = *((u16 *)((u32)bdamemory + 6));
+	
+	//printf("\nCPU(0x%02x): INT 15, transferring control to 0x%04x:0x%04x", vcpu->id,
+	//	cs, ip);
+		
+	vcpu->vmcs.guest_RIP = ip;
+	vcpu->vmcs.guest_CS_base = cs * 16;
+	vcpu->vmcs.guest_CS_selector = cs;		 
+}
+
+#endif
 
 //==============================================================================
 //isolation layer abstraction global functions
@@ -721,7 +837,18 @@ void vmx_initialize(VCPU *vcpu){
 		vcpu->vmx_guestmtrrmsrs[27].lodword = eax; vcpu->vmx_guestmtrrmsrs[27].hidword=edx;
 		rdmsr(IA32_MTRR_PHYSMASK7, &eax, &edx);
 		vcpu->vmx_guestmtrrmsrs[28].lodword = eax; vcpu->vmx_guestmtrrmsrs[28].hidword=edx;
-	}		
+	}
+	
+	#if defined (__E820_UG_TEST__)
+	//INT 15h E820 hook enablement for VMX unrestricted guest mode
+	//note: this only happens for the BSP
+	if(vcpu->isbsp){
+		printf("\nCPU(0x%02x, BSP): initializing INT 15 hook for UG mode...", vcpu->id);
+		_vmx_int15_initializehook(vcpu);
+	}
+	#endif	
+	
+			
 }
 
 //---generic exception handler--------------------------------------------------
@@ -921,11 +1048,27 @@ u32 vmx_intercept_handler(VCPU *vcpu, struct regs *r){
     break;
 
     case VMEXIT_VMCALL:{
-			if( emhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
-				printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", vcpu->id, r->eax);
-				HALT();
+			#if defined (__E820_UG_TEST__)
+			//check to see if this is a hypercall for INT 15h hooking
+			if(vcpu->vmcs.guest_CS_base == 0x00400 &&
+				vcpu->vmcs.guest_RIP == 0x00AC){
+				ASSERT(!(vcpu->vmcs.guest_CR0 & CR0_PE));
+				_vmx_int15_handleintercept(vcpu, r);	
+			}else{
+				if( emhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
+					printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", vcpu->id, r->eax);
+					HALT();
+				}
+      	vcpu->vmcs.guest_RIP += 3;
 			}
-      vcpu->vmcs.guest_RIP += 3;
+			#else
+				if( emhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
+					printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", vcpu->id, r->eax);
+					HALT();
+				}
+      	vcpu->vmcs.guest_RIP += 3;
+			
+			#endif
     }
     break;
 
