@@ -12,28 +12,29 @@
 # makefile is located
 
 #-----options that need tweaking w.r.t your development
-  
-	#your target name and version
+
+    #your target name and version
 	export TARGET = emhfapp
-  export TARGET_VERSION = 0
-  export TARGET_SUBVERSION = 1
-  
-	#h/w platform, current choices are svm (for AMD) and vmx (for Intel)
-	#export TARGET_HWPLATFORM := svm
-	
-	#h/w platform, current choices are x86
+    export TARGET_VERSION = 0
+    export TARGET_SUBVERSION = 1
+
+    #h/w platform, current choices are svm (for AMD) and vmx (for Intel)
+    #export TARGET_HWPLATFORM := svm
+
+    #h/w platform, current choices are x86
 	export TARGET_HWPLATFORM := x86
-	
-	#MP/UP selection, y=Multiprocessor, n=Uniprocessor
-  export MP_VERSION := y
-	#where you want loader and runtime binaries to go, defaults to current dir.
+    #Intel TXT / SENTER support, y=enabled, n=disabled
+    export DO_SENTER := n
+    #MP/UP selection, y=Multiprocessor, n=Uniprocessor
+    export MP_VERSION := y
+    #where you want loader and runtime binaries to go, defaults to current dir.
 	export INSTALLDIR = $(CURDIR)/dist
-	#export INSTALLDIR = /cygdrive/x
-  #misc. configuaration w.r.t serial debugging and NPT/EPT support
+    #export INSTALLDIR = /cygdrive/x
+    #misc. configuaration w.r.t serial debugging and NPT/EPT support
 	export NESTED_PAGING := y
-  export DEBUG_SERIAL := y
-  export DEBUG_SERIAL_PORT := 0x6080
-  #export DEBUG_SERIAL_PORT := 0x3f8
+    export DEBUG_SERIAL := y
+    export DEBUG_SERIAL_PORT := 0x6080
+    #export DEBUG_SERIAL_PORT := 0x3f8
 	export DEBUG_VGA	:= n
 
 #-----configuration that typically need not be touched
@@ -96,9 +97,10 @@
   ifeq ($(MP_VERSION), y)
   CFLAGS += -D__MP_VERSION__
   endif
+  ifeq ($(DO_SENTER), y)
+  CFLAGS += -D__DO_SENTER__
+  endif
 
-
-	
   ASFLAGS = $(CFLAGS) -D__ASSEMBLY__
 
   export CFLAGS
@@ -107,17 +109,17 @@
 #-----build rules 
 .PHONY: all
 all:
-  # make app components
+    # make app components
 	mkdir -p $(APPOBJECTSDIR)
 	cd app && $(MAKE) -w all
-  
-	# make emhf core components and generate loader and runtime	
+
+    # make emhf core components and generate loader and runtime	
 	cd $(EMHFCOREDIR) && $(MAKE) -w all
 
-	# copy the app loader and runtime binaries to installation location
+    # copy the app loader and runtime binaries to installation location
 	$(CP) $(EMHFCOREDIR)/init/init-$(TARGET_HWPLATFORM).bin $(INSTALLDIR)/init-$(TARGET_HWPLATFORM).bin
 	$(CP) $(EMHFCOREDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz $(INSTALLDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz
-	
+
 #------cleanup rules
 .PHONY: clean 
 clean: 
