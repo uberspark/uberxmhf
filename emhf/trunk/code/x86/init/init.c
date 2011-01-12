@@ -457,7 +457,6 @@ void do_drtm(VCPU *vcpu, u32 slbase){
 /* SENTER enabled based on Makefile for now, since hypervisor cannot
  * fully boot due to MP and MTRR issues. */        
 #ifdef __DO_SENTER__ 
-        //TODO: issue GETSEC[SENTER], for now just transfer control via jump
         printf("\n******  INIT(early): Begin TXT Stuff  ******\n");        
         txt_do_senter((void*)(slbase+3*PAGE_SIZE_4K), TEMPORARY_HARDCODED_MLE_SIZE);
         printf("\nINIT(early): error(fatal), should never come here!");
