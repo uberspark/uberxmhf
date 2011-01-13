@@ -335,118 +335,118 @@ static int get_region_type(const mtrr_state_t *saved_state,
 /*     return true; */
 /* } */
 
-/* bool validate_mtrrs(const mtrr_state_t *saved_state) */
-/* { */
-/*     mtrr_cap_t mtrr_cap; */
-/*     int ndx; */
+bool validate_mtrrs(const mtrr_state_t *saved_state)
+{
+    mtrr_cap_t mtrr_cap;
+    int ndx;
 
-/*     /\* check is meaningless if MTRRs were disabled *\/ */
-/*     if ( saved_state->mtrr_def_type.e == 0 ) */
-/*         return true; */
+    /* check is meaningless if MTRRs were disabled */
+    if ( saved_state->mtrr_def_type.e == 0 )
+        return true;
 
-/*     /\* number variable MTRRs *\/ */
-/*     mtrr_cap.raw = rdmsr64(MSR_MTRRcap); */
-/*     if ( mtrr_cap.vcnt < saved_state->num_var_mtrrs ) { */
-/*         printf("actual # var MTRRs (%d) < saved # (%d)\n", */
-/*                mtrr_cap.vcnt, saved_state->num_var_mtrrs); */
-/*         return false; */
-/*     } */
+    /* number variable MTRRs */
+    mtrr_cap.raw = rdmsr64(MSR_MTRRcap);
+    if ( mtrr_cap.vcnt < saved_state->num_var_mtrrs ) {
+        printf("actual # var MTRRs (%d) < saved # (%d)\n",
+               mtrr_cap.vcnt, saved_state->num_var_mtrrs);
+        return false;
+    }
 
-/*     /\* variable MTRRs describing non-contiguous memory regions *\/ */
-/*     /\* TBD: assert(MAXPHYADDR == 36); *\/ */
-/*     for ( ndx = 0; ndx < saved_state->num_var_mtrrs; ndx++ ) { */
-/*         uint64_t tb; */
+    /* variable MTRRs describing non-contiguous memory regions */
+    /* TBD: assert(MAXPHYADDR == 36); */
+    for ( ndx = 0; ndx < saved_state->num_var_mtrrs; ndx++ ) {
+        uint64_t tb;
 
-/*         if ( saved_state->mtrr_physmasks[ndx].v == 0 ) */
-/*             continue; */
+        if ( saved_state->mtrr_physmasks[ndx].v == 0 )
+            continue;
 
-/*         for ( tb = 0x1; tb != 0x1000000; tb = tb << 1 ) { */
-/*             if ( (tb & saved_state->mtrr_physmasks[ndx].mask) != 0 ) */
-/*                 break; */
-/*         } */
-/*         for ( ; tb != 0x1000000; tb = tb << 1 ) { */
-/*             if ( (tb & saved_state->mtrr_physmasks[ndx].mask) == 0 ) */
-/*                 break; */
-/*         } */
-/*         if ( tb != 0x1000000 ) { */
-/*             printf("var MTRRs with non-contiguous regions: " */
-/*                    "base=%06x, mask=%06x\n", */
-/*                    (unsigned int) saved_state->mtrr_physbases[ndx].base, */
-/*                    (unsigned int) saved_state->mtrr_physmasks[ndx].mask); */
-/*             print_mtrrs(saved_state); */
-/*             return false; */
-/*         } */
-/*     } */
+        for ( tb = 0x1; tb != 0x1000000; tb = tb << 1 ) {
+            if ( (tb & saved_state->mtrr_physmasks[ndx].mask) != 0 )
+                break;
+        }
+        for ( ; tb != 0x1000000; tb = tb << 1 ) {
+            if ( (tb & saved_state->mtrr_physmasks[ndx].mask) == 0 )
+                break;
+        }
+        if ( tb != 0x1000000 ) {
+            printf("var MTRRs with non-contiguous regions: "
+                   "base=%06x, mask=%06x\n",
+                   (unsigned int) saved_state->mtrr_physbases[ndx].base,
+                   (unsigned int) saved_state->mtrr_physmasks[ndx].mask);
+            print_mtrrs(saved_state);
+            return false;
+        }
+    }
 
-/*     /\* overlaping regions with invalid memory type combinations *\/ */
-/*     for ( ndx = 0; ndx < saved_state->num_var_mtrrs; ndx++ ) { */
-/*         int i; */
-/*         const mtrr_physbase_t *base_ndx = &saved_state->mtrr_physbases[ndx]; */
-/*         const mtrr_physmask_t *mask_ndx = &saved_state->mtrr_physmasks[ndx]; */
+    /* overlaping regions with invalid memory type combinations */
+    for ( ndx = 0; ndx < saved_state->num_var_mtrrs; ndx++ ) {
+        int i;
+        const mtrr_physbase_t *base_ndx = &saved_state->mtrr_physbases[ndx];
+        const mtrr_physmask_t *mask_ndx = &saved_state->mtrr_physmasks[ndx];
 
-/*         if ( mask_ndx->v == 0 ) */
-/*             continue; */
+        if ( mask_ndx->v == 0 )
+            continue;
 
-/*         for ( i = ndx + 1; i < saved_state->num_var_mtrrs; i++ ) { */
-/*             int j; */
-/*             const mtrr_physbase_t *base_i = &saved_state->mtrr_physbases[i]; */
-/*             const mtrr_physmask_t *mask_i = &saved_state->mtrr_physmasks[i]; */
+        for ( i = ndx + 1; i < saved_state->num_var_mtrrs; i++ ) {
+            int j;
+            const mtrr_physbase_t *base_i = &saved_state->mtrr_physbases[i];
+            const mtrr_physmask_t *mask_i = &saved_state->mtrr_physmasks[i];
 
-/*             if ( mask_i->v == 0 ) */
-/*                 continue; */
+            if ( mask_i->v == 0 )
+                continue;
 
-/*             if ( (base_ndx->base & mask_ndx->mask & mask_i->mask) */
-/*                     != (base_i->base & mask_i->mask) */
-/*                  && (base_i->base & mask_i->mask & mask_ndx->mask) */
-/*                     != (base_ndx->base & mask_ndx->mask) ) */
-/*                 continue; */
+            if ( (base_ndx->base & mask_ndx->mask & mask_i->mask)
+                    != (base_i->base & mask_i->mask)
+                 && (base_i->base & mask_i->mask & mask_ndx->mask)
+                    != (base_ndx->base & mask_ndx->mask) )
+                continue;
 
-/*             if ( base_ndx->type == base_i->type ) */
-/*                 continue; */
-/*             if ( base_ndx->type == MTRR_TYPE_UNCACHABLE */
-/*                  || base_i->type == MTRR_TYPE_UNCACHABLE ) */
-/*                 continue; */
-/*             if ( base_ndx->type == MTRR_TYPE_WRTHROUGH */
-/*                  && base_i->type == MTRR_TYPE_WRBACK ) */
-/*                 continue; */
-/*             if ( base_ndx->type == MTRR_TYPE_WRBACK */
-/*                  && base_i->type == MTRR_TYPE_WRTHROUGH ) */
-/*                 continue; */
+            if ( base_ndx->type == base_i->type )
+                continue;
+            if ( base_ndx->type == MTRR_TYPE_UNCACHABLE
+                 || base_i->type == MTRR_TYPE_UNCACHABLE )
+                continue;
+            if ( base_ndx->type == MTRR_TYPE_WRTHROUGH
+                 && base_i->type == MTRR_TYPE_WRBACK )
+                continue;
+            if ( base_ndx->type == MTRR_TYPE_WRBACK
+                 && base_i->type == MTRR_TYPE_WRTHROUGH )
+                continue;
 
-/*             /\* 2 overlapped regions have invalid mem type combination, *\/ */
-/*             /\* need to check whether there is a third region which has type *\/ */
-/*             /\* of UNCACHABLE and contains at least one of these two regions. *\/ */
-/*             /\* If there is, then the combination of these 3 region is valid *\/ */
-/*             for ( j = 0; j < saved_state->num_var_mtrrs; j++ ) { */
-/*                 const mtrr_physbase_t *base_j */
-/*                         = &saved_state->mtrr_physbases[j]; */
-/*                 const mtrr_physmask_t *mask_j */
-/*                         = &saved_state->mtrr_physmasks[j]; */
+            /* 2 overlapped regions have invalid mem type combination, */
+            /* need to check whether there is a third region which has type */
+            /* of UNCACHABLE and contains at least one of these two regions. */
+            /* If there is, then the combination of these 3 region is valid */
+            for ( j = 0; j < saved_state->num_var_mtrrs; j++ ) {
+                const mtrr_physbase_t *base_j
+                        = &saved_state->mtrr_physbases[j];
+                const mtrr_physmask_t *mask_j
+                        = &saved_state->mtrr_physmasks[j];
 
-/*                 if ( mask_j->v == 0 ) */
-/*                     continue; */
+                if ( mask_j->v == 0 )
+                    continue;
 
-/*                 if ( base_j->type != MTRR_TYPE_UNCACHABLE ) */
-/*                     continue; */
+                if ( base_j->type != MTRR_TYPE_UNCACHABLE )
+                    continue;
 
-/*                 if ( (base_ndx->base & mask_ndx->mask & mask_j->mask) */
-/*                         == (base_j->base & mask_j->mask) */
-/*                      && (mask_j->mask & ~mask_ndx->mask) == 0 ) */
-/*                     break; */
+                if ( (base_ndx->base & mask_ndx->mask & mask_j->mask)
+                        == (base_j->base & mask_j->mask)
+                     && (mask_j->mask & ~mask_ndx->mask) == 0 )
+                    break;
 
-/*                 if ( (base_i->base & mask_i->mask & mask_j->mask) */
-/*                         == (base_j->base & mask_j->mask) */
-/*                      && (mask_j->mask & ~mask_i->mask) == 0 ) */
-/*                     break; */
-/*             } */
-/*             if ( j < saved_state->num_var_mtrrs ) */
-/*                 continue; */
+                if ( (base_i->base & mask_i->mask & mask_j->mask)
+                        == (base_j->base & mask_j->mask)
+                     && (mask_j->mask & ~mask_i->mask) == 0 )
+                    break;
+            }
+            if ( j < saved_state->num_var_mtrrs )
+                continue;
 
-/*             printf("var MTRRs overlaping regions, invalid type combinations\n"); */
-/*             print_mtrrs(saved_state); */
-/*             return false; */
-/*         } */
-/*     } */
+            printf("var MTRRs overlaping regions, invalid type combinations\n");
+            print_mtrrs(saved_state);
+            return false;
+        }
+    }
 
 /*     if ( !validate_mmio_regions(saved_state) ) { */
 /*         printf("Some mmio region should be UC type\n"); */
@@ -454,9 +454,9 @@ static int get_region_type(const mtrr_state_t *saved_state,
 /*         return false; */
 /*     } */
 
-/*     print_mtrrs(saved_state); */
-/*     return true; */
-/* } */
+    print_mtrrs(saved_state);
+    return true;
+}
 
 void restore_mtrrs(mtrr_state_t *saved_state)
 {

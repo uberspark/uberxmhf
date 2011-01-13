@@ -142,14 +142,18 @@ void allcpus_common_start(VCPU *vcpu){
   //will make BSP distinction based on isbsp macro which basically
   //reads the LAPIC MSR to see if it is the BSP. 
 
-  //set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
-	{
+    if(vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+        //set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
 		u32 bcr0;
 		bcr0 = read_cr0();
 		bcr0 |= 0x20;
 		write_cr0(bcr0);
-	}
 
+/*         if(txt_is_launched()) { // did we run SENTER? TODO: ASSERT(txt_is_launched()); */
+/*             txt_validate_and_reload_mtrrs(); */
+/*         } */
+	}
+    
   //step:1 rally all APs up, make sure all of them started, this is
   //a task for the BSP
   if(g_isl->isbsp()){
