@@ -78,7 +78,8 @@
 
 #include <types.h>
 #include <str.h> // memcpy
-#include "sha1.h"
+
+#include <sha1.h>
 
 #define BIG_ENDIAN \
     (!(__x86_64__ || __i386__ || _M_IX86 || _M_X64 || __ARMEL__ || __MIPSEL__))

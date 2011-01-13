@@ -74,7 +74,7 @@
 
 #include <target.h>
 #include <str.h> // memcmp
-#include "sha1.h"
+#include <sha1.h>
 #include "txt_hash.h"
 
 /*
