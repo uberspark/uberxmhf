@@ -461,6 +461,13 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
 void restore_mtrrs(mtrr_state_t *saved_state)
 {
     int ndx;
+
+    if(NULL == saved_state) {
+        printf("\nFATAL ERROR: restore_mtrrs(): called with NULL\n");
+        HALT();
+    }
+
+    //print_mtrrs(saved_state);
         
     /* called by apply_policy() so use saved ptr */
     if ( saved_state == NULL )
