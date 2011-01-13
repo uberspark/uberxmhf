@@ -87,8 +87,11 @@ void runtime_setup_paging(u32 physaddr, u32 virtaddr, u32 totalsize){
       u32 offset = paddr - virtaddr;
       xpdt[i] = pae_make_pde_big((u64)physaddr+offset, flags);
     }else{
-      //unity map
-      if(paddr == 0xfee00000)
+        // Unity-map some MMIO regions with Page Cache disabled
+        // 0xfed00000 contains Intel TXT config regs & TPM MMIO
+        // 0xfee00000 contains APIC base
+      if(paddr == 0xfee00000 ||
+         paddr == 0xfed00000) 
         flags |= (u64)(_PAGE_PCD);
         
       xpdt[i] = pae_make_pde_big((u64)paddr, flags);
