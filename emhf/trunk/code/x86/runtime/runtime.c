@@ -40,6 +40,7 @@
 #include <target.h>
 #include <processor.h>
 #include <globals.h>
+#include <txt.h>
 
 //---runtime main---------------------------------------------------------------
 void cstartup(void){
@@ -149,9 +150,24 @@ void allcpus_common_start(VCPU *vcpu){
 		bcr0 |= 0x20;
 		write_cr0(bcr0);
 
-/*         if(txt_is_launched()) { // did we run SENTER? TODO: ASSERT(txt_is_launched()); */
-/*             txt_validate_and_reload_mtrrs(); */
-/*         } */
+        if(txt_is_launched()) { // did we run SENTER? TODO: ASSERT(txt_is_launched());
+            txt_heap_t *txt_heap;
+            os_mle_data_t *os_mle_data;
+            /* sl.c unity-maps 0xfed00000 for 2M so these should work fine */
+            txt_heap = get_txt_heap();
+            printf("\ntxt_heap = 0x%08x", (u32)txt_heap);
+            os_mle_data = get_os_mle_data_start(txt_heap);
+            printf("\nos_mle_data = 0x%08x", (u32)os_mle_data);
+            /* Just a sanity-check that the structure seems valid */
+            printf("\n\tversion = %d\n", os_mle_data->version);
+            /* restore pre-SENTER MTRRs that were overwritten for SINIT launch */
+            if(!validate_mtrrs(&(os_mle_data->saved_mtrr_state))) {
+                printf("\nSECURITY FAILURE: validate_mtrrs() failed.\n");
+                HALT();
+            }
+            printf("\nCPU(0x%02x): Restoring mtrrs...", vcpu->id);
+            restore_mtrrs(&(os_mle_data->saved_mtrr_state));
+        }
 	}
     
   //step:1 rally all APs up, make sure all of them started, this is
