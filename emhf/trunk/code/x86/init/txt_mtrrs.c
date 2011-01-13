@@ -155,6 +155,24 @@ bool set_mtrrs_for_acmod(acm_hdr_t *hdr)
     return true;
 }
 
+static void print_mtrrs(const mtrr_state_t *saved_state)
+{
+    int i;
+    
+    printf("mtrr_def_type: e = %d, fe = %d, type = %x\n",
+           saved_state->mtrr_def_type.e, saved_state->mtrr_def_type.fe,
+           saved_state->mtrr_def_type.type );
+    printf("mtrrs:\n");
+    printf("\t\tbase\tmask\ttype\tv\n");
+    for ( i = 0; i < saved_state->num_var_mtrrs; i++ ) {
+        printf("\t\t%6.6x\t%6.6x\t%2.2x\t%d\n",
+               saved_state->mtrr_physbases[i].base,
+               saved_state->mtrr_physmasks[i].mask,
+               saved_state->mtrr_physbases[i].type,
+               saved_state->mtrr_physmasks[i].v );
+    }
+}
+
 void save_mtrrs(mtrr_state_t *saved_state)
 {
     mtrr_cap_t mtrr_cap;
@@ -183,26 +201,11 @@ void save_mtrrs(mtrr_state_t *saved_state)
             rdmsr64(MTRR_PHYS_BASE0_MSR + ndx*2);
     }
 
+    print_mtrrs(saved_state);
+    
     g_saved_mtrrs = saved_state;
 }
 
-static void print_mtrrs(const mtrr_state_t *saved_state)
-{
-    int i;
-    
-    printf("mtrr_def_type: e = %d, fe = %d, type = %x\n",
-           saved_state->mtrr_def_type.e, saved_state->mtrr_def_type.fe,
-           saved_state->mtrr_def_type.type );
-    printf("mtrrs:\n");
-    printf("\t\tbase\tmask\ttype\tv\n");
-    for ( i = 0; i < saved_state->num_var_mtrrs; i++ ) {
-        printf("\t\t%6.6x\t%6.6x\t%2.2x\t%d\n",
-               saved_state->mtrr_physbases[i].base,
-               saved_state->mtrr_physmasks[i].mask,
-               saved_state->mtrr_physbases[i].type,
-               saved_state->mtrr_physmasks[i].v );
-    }
-}
 
 /* base should be 4k-bytes aligned, no invalid overlap combination */
 static int get_page_type(const mtrr_state_t *saved_state, uint32_t base)

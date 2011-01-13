@@ -384,9 +384,7 @@ tb_error_t txt_launch_environment(void *sinit_ptr, size_t sinit_size,
 
     /* save MTRRs before we alter them for SINIT launch */
     os_mle_data = get_os_mle_data_start(txt_heap);
-
-    ///XXX Will need to restore these prior to nested paging being setup in hypervisor runtime.
-    ///XXXsave_mtrrs(&(os_mle_data->saved_mtrr_state));
+    save_mtrrs(&(os_mle_data->saved_mtrr_state));
 
     /* set MTRRs properly for AC module (SINIT) */
     if ( !set_mtrrs_for_acmod(sinit) )
