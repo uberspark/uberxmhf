@@ -73,14 +73,7 @@
  */
 
 #include <target.h>
-#include "txt_config_regs.h"
-#include "txt_hash.h"
-
-/* XXX order is important for these; fix it */
-#include "txt_mle.h"
-#include "txt_acmod.h"
-#include "txt_mtrrs.h"
-#include "txt_heap.h"
+#include <txt.h>
 
 static inline void print_heap_hash(sha1_hash_t hash)
 {

@@ -75,16 +75,7 @@
 
 #include <target.h>
 #include <str.h>
-#include "txt_config_regs.h"
-#include "txt_smx.h"
-#include "txt_hash.h"
-
-/* XXX order is important for these; fix it */
-#include "txt_mle.h"
-#include "txt_acmod.h"
-#include "txt_mtrrs.h"
-#include "txt_heap.h"
-
+#include <txt.h>
 
 static acm_info_table_t *get_acmod_info_table(acm_hdr_t* hdr)
 {

@@ -38,14 +38,7 @@
 
 //---includes-------------------------------------------------------------------
 #include <target.h>
-#include "txt_config_regs.h" // Needed for Intel TXT
-#include "txt_smx.h" // Needed for GETSEC
-
-/* XXX order is important for these; fix it */
-#include "txt_mle.h"
-#include "txt_acmod.h"
-#include "txt_mtrrs.h"
-#include "txt_heap.h"
+#include <txt.h>
 
 #include "i5_i7_dual_sinit_18.h" // XXX TODO read this from MBI stuff
 

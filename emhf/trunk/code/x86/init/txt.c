@@ -83,15 +83,7 @@
 #include <target.h>
 #include <str.h>
 #include <paging.h>
-#include "txt_config_regs.h"
-#include "txt_smx.h"
-#include "txt_hash.h"
-
-/* XXX order is important for these; fix it */
-#include "txt_mle.h"
-#include "txt_acmod.h"
-#include "txt_mtrrs.h"
-#include "txt_heap.h"
+#include <txt.h>
 
 bool get_parameters(getsec_parameters_t *params);
 
@@ -323,16 +315,6 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
      */
 
     return txt_heap;
-}
-
-
-bool txt_is_launched(void)
-{
-    txt_sts_t sts;
-
-    sts._raw = read_pub_config_reg(TXTCR_STS);
-
-    return sts.senter_done_sts;
 }
 
 void delay(u64 cycles)

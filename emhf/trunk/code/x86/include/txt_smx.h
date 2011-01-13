@@ -184,6 +184,15 @@ static inline void __getsec_parameters(uint32_t index, int* param_type,
     if ( pecx != NULL )         *pecx = ecx;
 }
 
+static inline bool txt_is_launched(void)
+{
+    txt_sts_t sts;
+
+    sts._raw = read_pub_config_reg(TXTCR_STS);
+
+    return sts.senter_done_sts;
+}
+
 
 #endif /* __TXT_SMX_H__ */
 
