@@ -261,6 +261,7 @@ x_init_stack:
   .global _ap_bootstrap_start
   _ap_bootstrap_start:
     jmp ap_bootstrap_bypassdata
+    .global _ap_gdtdesc
     _ap_gdtdesc:
       .word _ap_gdt_end - _ap_gdt_start - 1
       .long _ap_gdt_start - _ap_bootstrap_start + 0x10000  
@@ -295,6 +296,7 @@ x_init_stack:
 
       jmpl $0x08, $(_ap_clear_pipe - _ap_bootstrap_start + (AP_BOOTSTRAP_CODE_SEG << 4))
     .code32
+    .global _ap_clear_pipe
     _ap_clear_pipe:
       movw $0x10, %ax
       movw %ax, %ds
