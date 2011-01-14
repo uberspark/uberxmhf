@@ -454,7 +454,7 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
 /*         return false; */
 /*     } */
 
-    print_mtrrs(saved_state);
+    //print_mtrrs(saved_state);
     return true;
 }
 
