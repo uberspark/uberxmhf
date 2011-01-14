@@ -130,7 +130,8 @@ void cstartup(void){
   {
 	 void _ap_pmode_entry_with_paging(void);
    printf("\nRelinquishing BSP thread and moving to common...");
-   _ap_pmode_entry_with_paging();
+   // Do some low-level init and then call allcpus_common_start() below
+   _ap_pmode_entry_with_paging(); 
    printf("\nBSP must never get here. HALT!");
    HALT();
   }
@@ -150,16 +151,62 @@ void allcpus_common_start(VCPU *vcpu){
 		bcr0 |= 0x20;
 		write_cr0(bcr0);
 
-        if(txt_is_launched()) { // did we run SENTER? TODO: ASSERT(txt_is_launched());
+        if(txt_is_launched()) { // did we run SENTER? TODO: ASSERT(txt_is_launched());        
             txt_heap_t *txt_heap;
             os_mle_data_t *os_mle_data;
+            mle_join_t *mle_join;
+            sinit_mle_data_t *sinit_mle_data;
+            os_sinit_data_t *os_sinit_data;
+
             /* sl.c unity-maps 0xfed00000 for 2M so these should work fine */
             txt_heap = get_txt_heap();
-            printf("\ntxt_heap = 0x%08x", (u32)txt_heap);
+            //printf("\ntxt_heap = 0x%08x", (u32)txt_heap);
             os_mle_data = get_os_mle_data_start(txt_heap);
-            printf("\nos_mle_data = 0x%08x", (u32)os_mle_data);
-            /* Just a sanity-check that the structure seems valid */
-            printf("\n\tversion = %d\n", os_mle_data->version);
+            //printf("\nos_mle_data = 0x%08x", (u32)os_mle_data);
+            sinit_mle_data = get_sinit_mle_data_start(txt_heap);
+            //printf("\nsinit_mle_data = 0x%08x", (u32)sinit_mle_data);
+            os_sinit_data = get_os_sinit_data_start(txt_heap);
+            //printf("\nos_sinit_data = 0x%08x", (u32)os_sinit_data);
+            
+            /* Start APs.  Choose wakeup mechanism based on
+             * capabilities used. MLE Dev Guide says MLEs should
+             * support both types of Wakeup mechanism. */
+
+            /* We are jumping straight into the 32-bit portion of the
+             * unity-mapped trampoline that starts at 64K
+             * physical. Without SENTER, or with AMD, APs start in
+             * 16-bit mode.  We get to skip that. */
+            if(g_isl->isbsp() && g_midtable_numentries > 1) { // XXX TODO Is this the right test to be performing?
+                u32 i;
+                printf("\nBSP(0x%02x): _mle_join_start = 0x%08x, _ap_bootstrap_start = 0x%08x",
+                        vcpu->id, (u32)_mle_join_start, (u32)_ap_bootstrap_start);
+
+                /* enable SMIs on BSP before waking APs (which will enable them on APs)
+                   because some SMM may take immediate SMI and hang if AP gets in first */
+                //printf("Enabling SMIs on BSP\n");
+                //__getsec_smctrl();
+                
+                /* MLE Join structure constructed in runtimesup.S. Debug print. */
+                mle_join = (mle_join_t*)((u32)_mle_join_start - (u32)_ap_bootstrap_start + 0x10000); // XXX magic number
+                printf("\nBSP(0x%02x): mle_join.gdt_limit = %x", vcpu->id, mle_join->gdt_limit);
+                printf("\nBSP(0x%02x): mle_join.gdt_base = %x", vcpu->id, mle_join->gdt_base);
+                printf("\nBSP(0x%02x): mle_join.seg_sel = %x", vcpu->id, mle_join->seg_sel);
+                printf("\nBSP(0x%02x): mle_join.entry_point = %x", vcpu->id, mle_join->entry_point);                
+
+                write_priv_config_reg(TXTCR_MLE_JOIN, (uint64_t)(unsigned long)mle_join);
+
+                if (os_sinit_data->capabilities.rlp_wake_monitor) {
+                    printf("\nBSP(0x%02x): joining RLPs to MLE with MONITOR wakeup", vcpu->id);
+                    printf("\nBSP(0x%02x): rlp_wakeup_addr = 0x%x", vcpu->id, sinit_mle_data->rlp_wakeup_addr);
+                    *((uint32_t *)(unsigned long)(sinit_mle_data->rlp_wakeup_addr)) = 0x01;
+                }
+                else {
+                    printf("\nBSP(0x%02x): joining RLPs to MLE with GETSEC[WAKEUP]", vcpu->id);
+                    __getsec_wakeup();
+                    printf("\nBSP(0x%02x): GETSEC[WAKEUP] completed", vcpu->id);
+                }
+            }
+
             /* restore pre-SENTER MTRRs that were overwritten for SINIT launch */
             if(!validate_mtrrs(&(os_mle_data->saved_mtrr_state))) {
                 printf("\nSECURITY FAILURE: validate_mtrrs() failed.\n");
