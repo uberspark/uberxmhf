@@ -102,13 +102,9 @@ extern u32 _ap_bootstrap_start[];
 //bootstrap code
 extern u32 _ap_bootstrap_end[];
 
-//defined in runtimesup.S(.text), this is the 32-bit entry point for
-//the AP bootstrap code
-extern u32 _ap_clear_pipe[];
-
-//defined in runtimesup.S(.text), this is the GDT pseudo-descriptor
-//for the AP bootstrap code
-extern u32 _ap_gdtdesc[];
+//defined in runtimesup.S(.text), this is the MLE Join stucture to
+//bring up the APs
+extern u32 _mle_join_start[];
 
 //the CR3 value to be loaded by the AP boot-strap code is placed in this
 //variable by the runtime before waking up the APs
