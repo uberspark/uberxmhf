@@ -51,6 +51,7 @@
 // static (local) function definitions
 //==============================================================================
 static void _vmx_lib_reboot(VCPU *vcpu);
+static u8 *_vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
 
 //---initVT: initializes CPU VT-------------------------------------------------
 static void _vmx_initVT(VCPU *vcpu){
@@ -654,7 +655,9 @@ static void	_vmx_int15_initializehook(VCPU *vcpu){
 	ASSERT(vcpu->isbsp);
 	
 	{
-		u8 *bdamemory = (u8 *)0x4AC;				//use BDA reserved memory at 0040:00AC
+		//u8 *bdamemory = (u8 *)0x4AC;				//use BDA reserved memory at 0040:00AC
+		u8 *bdamemory = (u8 *)0x9F000;				//use reserved memory at 9000:F000
+		
 		u16 *ivt_int15 = (u16 *)(0x54);	//32-bit CS:IP for IVT INT 15 handler
 		
 		//printf("\nCPU(0x%02x): original BDA dump: %02x %02x %02x %02x %02x %02x %02x %02x", vcpu->id,
@@ -687,8 +690,11 @@ static void	_vmx_int15_initializehook(VCPU *vcpu){
 		//		bdamemory[5], bdamemory[6], bdamemory[7]);
 
 		
-		ivt_int15[0]=0x00AC;
-		ivt_int15[1]=0x0040;					//point IVT INT15 handler to the VMCALL instruction
+		//ivt_int15[0]=0x00AC;
+		//ivt_int15[1]=0x0040;					//point IVT INT15 handler to the VMCALL instruction
+		ivt_int15[0]=0xF000;
+		ivt_int15[1]=0x9000;					//point IVT INT15 handler to the VMCALL instruction
+
 		
 	}
 }
@@ -696,13 +702,24 @@ static void	_vmx_int15_initializehook(VCPU *vcpu){
 //---vmx int 15 intercept handler-----------------------------------------------
 static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 	u16 cs, ip;
-	u8 *bdamemory = (u8 *)0x4AC;
+	//u8 *bdamemory = (u8 *)0x4AC;
+	u8 *bdamemory = (u8 *)0x9F000;
 	
 	//printf("\nCPU(0x%02x): BDA dump in intercept: %02x %02x %02x %02x %02x %02x %02x %02x", vcpu->id,
 	//		bdamemory[0], bdamemory[1], bdamemory[2], bdamemory[3], bdamemory[4],
 	//			bdamemory[5], bdamemory[6], bdamemory[7]);
 
-		
+	//if V86 mode translate the virtual address to physical address
+	if( (vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG) &&
+			(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM) ){
+		u8 *bdamemoryphysical;
+		bdamemoryphysical = (u8 *)_vmx_lib_guestpgtbl_walk(vcpu, (u32)bdamemory);
+		ASSERT( (u32)bdamemoryphysical != 0xFFFFFFFFUL );
+		printf("\nINT15 (E820): V86 mode, bdamemory translated from %08x to %08x",
+			(u32)bdamemory, (u32)bdamemoryphysical);
+		bdamemory = bdamemoryphysical; 		
+	}
+	
 	
 	if((u16)r->eax == 0xE820){
 		//AX=0xE820, EBX=continuation value, 0 for first call
@@ -713,37 +730,74 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		printf("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", vcpu->id, 
 		(u16)r->eax, r->edx, r->ebx, r->ecx, (u16)vcpu->vmcs.guest_ES_selector, (u16)r->edi);
 		
-		ASSERT(r->edx == 0x534D4150UL);  //'SMAP'
-			
-		if(r->ebx > rpb->XtVmmE820NumEntries){
-			printf("\ninvalid continuation value specified!");
-			HALT();				
-		}
+		ASSERT(r->edx == 0x534D4150UL);  //'SMAP' should be specified by guest
+		ASSERT(r->ebx < rpb->XtVmmE820NumEntries); //invalid continuation value specified by guest!
 			
 		printf("\nINT15(E820): returning for index=%u", r->ebx);
 		memcpy((void *)((u32)((vcpu->vmcs.guest_ES_base)+(u16)r->edi)), (void *)&g_e820map[r->ebx],
 					sizeof(GRUBE820));
-		r->ebx=r->ebx+1;
 				
 				
 		r->eax=r->edx;
 		r->ecx=20;
 
-		if(r->ebx > rpb->XtVmmE820NumEntries){
-			u32 eflags;
-			r->ebx=0;	
-			eflags = (u32)vcpu->vmcs.guest_RFLAGS;
-			eflags |= EFLAGS_CF;
-			vcpu->vmcs.guest_RFLAGS = eflags;
-		}else{
-			u32 eflags;
-			eflags = (u32)vcpu->vmcs.guest_RFLAGS;
-			eflags &= ~(EFLAGS_CF);
-			vcpu->vmcs.guest_RFLAGS = eflags;
+		//we need to update carry flag in the guest EFLAGS register
+		//however since INT 15 would have pushed the guest FLAGS on stack
+		//we cannot simply reflect the change by modifying vcpu->vmcs.guest_RFLAGS.
+		//instead we need to make the change to the pushed FLAGS register on
+		//the guest stack. the real-mode IRET frame looks like the following 
+		//when viewed at top of stack
+		//guest_ip		(16-bits)
+		//guest_cs		(16-bits)
+		//guest_flags (16-bits)
+		//...
+		
+		{
+			u16 guest_cs, guest_ip, guest_flags;
+			u16 *gueststackregion = (u16 *)( (u32)vcpu->vmcs.guest_SS_base + (u16)vcpu->vmcs.guest_RSP );
+		
+		
+			//if V86 mode translate the virtual address to physical address
+			if( (vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG) &&
+					(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM) ){
+				u8 *gueststackregionphysical = (u8 *)_vmx_lib_guestpgtbl_walk(vcpu, (u32)gueststackregion);
+				ASSERT( (u32)gueststackregionphysical != 0xFFFFFFFFUL );
+				printf("\nINT15 (E820): V86 mode, gueststackregion translated from %08x to %08x",
+					(u32)gueststackregion, (u32)gueststackregionphysical);
+				gueststackregion = (u16 *)gueststackregionphysical; 		
+			}
+		
+			
+			printf("\nINT15 (E820): guest_ss=%04x, sp=%04x, stackregion=%08x", (u16)vcpu->vmcs.guest_SS_selector,
+					(u16)vcpu->vmcs.guest_RSP, (u32)gueststackregion);
+			
+			guest_ip = gueststackregion[0];
+			guest_cs = gueststackregion[1];
+			guest_flags = gueststackregion[2];
+
+			printf("\nINT15 (E820): guest_flags=%04x, guest_cs=%04x, guest_ip=%04x",
+				guest_flags, guest_cs, guest_ip);
+		
+		
+			r->ebx=r->ebx+1;
+					
+			if(r->ebx > (rpb->XtVmmE820NumEntries-1) ){
+				//we have reached the last record, so set CF and make EBX=0
+				r->ebx=0;
+				guest_flags |= (u16)EFLAGS_CF;
+				gueststackregion[2] = guest_flags;
+			}else{
+				//we still have more records, so clear CF
+				guest_flags &= ~(u16)EFLAGS_CF;
+				gueststackregion[2] = guest_flags;
+			}
+		  
 		}
 
-	  //update RIP to point to the IRET instruction following VMCALL 
+
+ 	  //update RIP to execute the IRET following the VMCALL instruction
 	  vcpu->vmcs.guest_RIP += 3;
+
 	
 		return;
 	}
@@ -1053,9 +1107,13 @@ u32 vmx_intercept_handler(VCPU *vcpu, struct regs *r){
     case VMEXIT_VMCALL:{
 			#if defined (__E820_UG_TEST__)
 			//check to see if this is a hypercall for INT 15h hooking
-			if(vcpu->vmcs.guest_CS_base == 0x00400 &&
-				vcpu->vmcs.guest_RIP == 0x00AC){
-				ASSERT(!(vcpu->vmcs.guest_CR0 & CR0_PE));
+			if(vcpu->vmcs.guest_CS_base == 0x90000 &&
+				vcpu->vmcs.guest_RIP == 0xF000){
+				//assertions, we need to be either in real-mode or in protected
+				//mode with paging and EFLAGS.VM bit set (virtual-8086 mode)
+				ASSERT( !(vcpu->vmcs.guest_CR0 & CR0_PE)  ||
+					( (vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG) &&
+						(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM)  ) );
 				_vmx_int15_handleintercept(vcpu, r);	
 			}else{
 				if( emhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
@@ -1368,7 +1426,7 @@ static u64 _vmx_lib_hwpgtbl_getprot(VCPU *vcpu, u64 gpa){
 
 //---guest page-table walker, returns guest physical address--------------------
 //note: returns 0xFFFFFFFF if there is no mapping
-static u32 _vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr){
+static u8 * _vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr){
 
   if((u32)vcpu->vmcs.guest_CR4 & CR4_PAE ){
     //PAE paging used by guest
@@ -1412,7 +1470,7 @@ static u32 _vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr){
       paddr += (u64)offset;
     }
   
-    return (u32)paddr;
+    return (u8 *)(u32)paddr;
     
   }else{
     //non-PAE 2 level paging used by guest
@@ -1449,7 +1507,7 @@ static u32 _vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr){
       paddr += (u64)offset;
     }
   
-    return (u32)paddr;
+    return (u8 *)(u32)paddr;
   }
 }
 

@@ -142,6 +142,60 @@ void send_init_ipi_to_all_APs(void) {
     printf("Done.");
 }
 
+#if defined (__E820_UG_TEST__)
+/* HP 8540p (flutter) default BIOS E820 map
+0x0000000000000000, size=0x000000000009fc00 (1)
+0x000000000009fc00, size=0x0000000000000400 (2)
+0x00000000000ef000, size=0x0000000000011000 (2)
+0x0000000000100000, size=0x00000000bf0a7000 (1)
+0x00000000bf1a7000, size=0x000000000011b000 (2)
+0x00000000bf2c2000, size=0x0000000000100000 (4)
+0x00000000bf3c2000, size=0x000000000003d000 (3)
+0x00000000bf3ff000, size=0x0000000000001000 (1)
+0x00000000bf400000, size=0x0000000000400000 (2)
+0x00000000bf800000, size=0x0000000000800000 (2)
+0x00000000e0000000, size=0x0000000010000000 (2)
+0x00000000fec00000, size=0x0000000000001000 (2)
+0x00000000fed10000, size=0x0000000000004000 (2)
+0x00000000fed19000, size=0x0000000000001000 (2)
+0x00000000fed1b000, size=0x0000000000001000 (2)
+0x00000000fed1c000, size=0x0000000000004000 (2)
+0x00000000fee00000, size=0x0000000000001000 (2)
+0x00000000ffd00000, size=0x0000000000300000 (2)
+0x0000000100000000, size=0x0000000038000000 (1)
+*/
+
+
+//our hard-coded E820 map where we mark the region
+//from 9f000 to 100000 reserved 
+GRUBE820 hardcoded_e820list[] = {
+	{0x00000000, 0x00000000, 0x0009f000, 0x00000000, 0x1},
+	{0x0009f000, 0x00000000, 0x00050000, 0x00000000, 0x2},
+	{0x000ef000, 0x00000000, 0x00011000, 0x00000000, 0x2},
+	{0x00100000, 0x00000000, 0xbf0a7000, 0x00000000, 0x1},
+	{0xbf1a7000, 0x00000000, 0x11b000, 0x00000000, 0x2},
+	{0xbf2c2000, 0x00000000, 0x100000, 0x00000000, 0x4},
+	{0xbf3c2000, 0x00000000, 0x3d000, 0x00000000, 0x3},
+	{0xbf3ff000, 0x00000000, 0x1000, 0x00000000, 0x1},
+	{0xbf400000, 0x00000000, 0x400000, 0x00000000, 0x2},
+	{0xbf800000, 0x00000000, 0x800000, 0x00000000, 0x2},
+	{0xe0000000, 0x00000000, 0x10000000, 0x00000000, 0x2},
+	{0xfec00000, 0x00000000, 0x1000, 0x00000000, 0x2},
+	{0xfed10000, 0x00000000, 0x4000, 0x00000000, 0x2},
+	{0xfed19000, 0x00000000, 0x1000, 0x00000000, 0x2},
+	{0xfed1b000, 0x00000000, 0x1000, 0x00000000, 0x2},
+	{0xfed1c000, 0x00000000, 0x4000, 0x00000000, 0x2},
+	{0xfee00000, 0x00000000, 0x1000, 0x00000000, 0x2},
+	{0xffd00000, 0x00000000, 0x300000, 0x00000000, 0x2},
+	{0x00000000, 0x00000001, 0x38000000, 0x00000000, 0x1},
+};
+
+#define HARDCODED_E820LIST_NUMELEMENTS (sizeof(hardcoded_e820list)/sizeof(GRUBE820))
+
+
+
+#endif
+
 
 
 //---E820 parsing and handling--------------------------------------------------
@@ -155,7 +209,11 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize){
   
     //zero out grub e820 list
     memset((void *)&grube820list, 0, sizeof(GRUBE820)*MAX_E820_ENTRIES);
-  
+
+#if defined (__E820_UG_TEST__)
+		memcpy((void *)&grube820list, &hardcoded_e820list, sizeof(hardcoded_e820list));
+		grube820list_numentries = HARDCODED_E820LIST_NUMELEMENTS;
+#else  
     //grab e820 list into grube820list
     {
         memory_map_t *mmap;
@@ -171,6 +229,7 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize){
             grube820list_numentries++;
         }
     }
+#endif    
 
     //debug: print grube820list
     {

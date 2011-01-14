@@ -1020,7 +1020,7 @@ static u64 _svm_lib_hwpgtbl_getprot(VCPU *vcpu, u64 gpa){
 
 //---guest page-table walker, returns guest physical address--------------------
 //note: returns 0xFFFFFFFF if there is no mapping
-static u32 _svm_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr){
+static u8 * _svm_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr){
 	printf("\n%s: not implemented, halting!", __FUNCTION__);
 	HALT();
 }
