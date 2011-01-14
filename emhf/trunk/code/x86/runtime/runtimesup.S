@@ -261,7 +261,6 @@ x_init_stack:
   .global _ap_bootstrap_start
   _ap_bootstrap_start:
     jmp ap_bootstrap_bypassdata
-    .global _ap_gdtdesc
     _ap_gdtdesc:
       .word _ap_gdt_end - _ap_gdt_start - 1
       .long _ap_gdt_start - _ap_bootstrap_start + 0x10000  
@@ -274,10 +273,19 @@ x_init_stack:
     .align 16
     _ap_gdt_start:
       .quad 0x0000000000000000
-      .quad	0x00cf9a000000ffff	
-	    .quad	0x00cf92000000ffff
+      .quad 0x00cf9a000000ffff	
+      .quad 0x00cf92000000ffff
     _ap_gdt_end:
       .word 0
+    .align 16
+    .global _mle_join_start
+    _mle_join_start:
+    .long _ap_gdt_end - _ap_gdt_start - 1 // gdt_limit
+    .long _ap_gdt_start - _ap_bootstrap_start + 0x10000// gdt_base
+    .long 0x00000008 // CS
+    .long _ap_clear_pipe - _ap_bootstrap_start + 0x10000 // entry point
+    _mle_join_end:
+    .align 16
   ap_bootstrap_bypassdata:
       movw $0x1000, %ax
     	movw %ax, %ds
@@ -296,7 +304,6 @@ x_init_stack:
 
       jmpl $0x08, $(_ap_clear_pipe - _ap_bootstrap_start + (AP_BOOTSTRAP_CODE_SEG << 4))
     .code32
-    .global _ap_clear_pipe
     _ap_clear_pipe:
       movw $0x10, %ax
       movw %ax, %ds
