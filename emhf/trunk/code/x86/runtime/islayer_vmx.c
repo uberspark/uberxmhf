@@ -39,6 +39,7 @@
 
 #include <target.h>
 #include <globals.h>
+#include <txt.h>
 
 //==============================================================================
 // static (local) data
@@ -889,17 +890,19 @@ void vmx_wakeup_aps(void){
 	//step-1: setup AP boot-strap code at in the desired physical memory location 
 	//note that we need an address < 1MB since the APs are woken up in real-mode
 	//we choose 0x10000 physical or 0x1000:0x0000 logical
-  {
-    _ap_cr3_value = read_cr3();
-    _ap_cr4_value = read_cr4();
-    memcpy((void *)0x10000, (void *)_ap_bootstrap_start, (u32)_ap_bootstrap_end - (u32)_ap_bootstrap_start + 1);
-  }
+    {
+        _ap_cr3_value = read_cr3();
+        _ap_cr4_value = read_cr4();
+        memcpy((void *)0x10000, (void *)_ap_bootstrap_start, (u32)_ap_bootstrap_end - (u32)_ap_bootstrap_start + 1);
+    }
 	
-	//step-2: wake up the APs sending the INIT-SIPI-SIPI sequence as per the
-	//MP protocol. Use the APIC for IPI purposes.	
-  printf("\nBSP: Using APIC to awaken APs...");
-	vmx_apic_wakeupAPs();
-  printf("\nBSP: APs should be awake.");
+    //step-2: wake up the APs sending the INIT-SIPI-SIPI sequence as per the
+    //MP protocol. Use the APIC for IPI purposes.
+    if(!txt_is_launched()) { // XXX TODO: Do actual GETSEC[WAKEUP] in here?
+        printf("\nBSP: Using APIC to awaken APs...");
+        vmx_apic_wakeupAPs(); // apic_vmx.c
+        printf("\nBSP: APs should be awake.");
+    } /* else we need to do Intel TXT wakeup. */
 }
 
 //---hvm_initialize_csrip-------------------------------------------------------
