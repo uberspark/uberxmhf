@@ -64,81 +64,14 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
 	u32 i;
 
 #if defined(__MP_VERSION__)	
-	
-	//we first see if there is a MP table within the system
-	//if so, we simply grab all the info from there as per
-	//the intel MP spec.
-	//look at 1K at start of conventional mem.
-	//look at 1K at top of conventional mem
-	//look at 1K starting at EBDA and
-	//look at 64K starting at 0xF0000
-	
-	if( mp_scan_config(0x0, 0x400, &mpfp) ||
-			mp_scan_config(639 * 0x400, 0x400, &mpfp) ||
-			mp_scan_config(mp_getebda(), 0x400, &mpfp) ||					
-			mp_scan_config(0xF0000, 0x10000, &mpfp) ){
-
-	    printf("\nMP table found at: 0x%08x", (u32)mpfp);
-  		printf("\nMP spec rev=0x%02x", mpfp->spec_rev);
-  		printf("\nMP feature info1=0x%02x", mpfp->mpfeatureinfo1);
-  		printf("\nMP feature info2=0x%02x", mpfp->mpfeatureinfo2);
-  		printf("\nMP Configuration table at 0x%08x", mpfp->paddrpointer);
-  
-  		ASSERT( mpfp->paddrpointer != 0 );
-			mpctable = (MPCONFTABLE *)mpfp->paddrpointer;
-  		ASSERT(mpctable->signature == MPCONFTABLE_SIGNATURE);
-  
-		  {//debug
-		    int i;
-		    printf("\nOEM ID: ");
-		    for(i=0; i < 8; i++)
-		      printf("%c", mpctable->oemid[i]);
-		    printf("\nProduct ID: ");
-		    for(i=0; i < 12; i++)
-		      printf("%c", mpctable->productid[i]);
-		  }
-  
-		  printf("\nEntry count=%u", mpctable->entrycount);
-		  printf("\nLAPIC base=0x%08x", mpctable->lapicaddr);
-		  
-		  //now step through CPU entries in the MP-table to determine
-		  //how many CPUs we have
-		  *num_pcpus=0;
-		  		  
-			{
-		    int i;
-		    u32 addrofnextentry= (u32)mpctable + sizeof(MPCONFTABLE);
-		    
-		    for(i=0; i < mpctable->entrycount; i++){
-		      MPENTRYCPU *cpu = (MPENTRYCPU *)addrofnextentry;
-		      if(cpu->entrytype != 0)
-		        break;
-		      
-		      if(cpu->cpuflags & 0x1){
- 		        ASSERT( *num_pcpus < MAX_PCPU_ENTRIES);		        
-						printf("\nCPU (0x%08x) #%u: lapic id=0x%02x, ver=0x%02x, cpusig=0x%08x", 
-		          (u32)cpu, i, cpu->lapicid, cpu->lapicver, cpu->cpusig);
-		        pcpus[i].lapic_id = cpu->lapicid;
-		        pcpus[i].lapic_ver = cpu->lapicver;
-		        pcpus[i].lapic_base = mpctable->lapicaddr;
-		        pcpus[i].isbsp = cpu->cpuflags & 0x2;
-		        *num_pcpus = *num_pcpus + 1;
-		      }
-		            
-		      addrofnextentry += sizeof(MPENTRYCPU);
-		    }
-		  }
-			
-	
-			return 1;		
-	}
-	
+	//we scan ACPI MADT and then the MP configuration table if one is
+	//present, in that order!
 
 	//if we get here it means that we did not find a MP table, so
 	//we need to look at ACPI MADT. Logical cores on some machines
 	//(e.g HP8540p laptop with Core i5) are reported only using ACPI MADT
 	//and there is no MP structures on such systems!
-	printf("\nMP table not found, proceeding via ACPI...");
+	printf("\nFinding SMP info. via ACPI...");
 	rsdp=(ACPI_RSDP *)ACPIGetRSDP();
 	if(!rsdp){
 		printf("\nSystem is not ACPI Compliant, falling through...");
@@ -210,10 +143,79 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
 	
 
 fallthrough:	
+	//ok, ACPI detection failed proceed with MP table scan
+	//we simply grab all the info from there as per
+	//the intel MP spec.
+	//look at 1K at start of conventional mem.
+	//look at 1K at top of conventional mem
+	//look at 1K starting at EBDA and
+	//look at 64K starting at 0xF0000
+	
+	if( mp_scan_config(0x0, 0x400, &mpfp) ||
+			mp_scan_config(639 * 0x400, 0x400, &mpfp) ||
+			mp_scan_config(mp_getebda(), 0x400, &mpfp) ||					
+			mp_scan_config(0xF0000, 0x10000, &mpfp) ){
+
+	    printf("\nMP table found at: 0x%08x", (u32)mpfp);
+  		printf("\nMP spec rev=0x%02x", mpfp->spec_rev);
+  		printf("\nMP feature info1=0x%02x", mpfp->mpfeatureinfo1);
+  		printf("\nMP feature info2=0x%02x", mpfp->mpfeatureinfo2);
+  		printf("\nMP Configuration table at 0x%08x", mpfp->paddrpointer);
+  
+  		ASSERT( mpfp->paddrpointer != 0 );
+			mpctable = (MPCONFTABLE *)mpfp->paddrpointer;
+  		ASSERT(mpctable->signature == MPCONFTABLE_SIGNATURE);
+  
+		  {//debug
+		    int i;
+		    printf("\nOEM ID: ");
+		    for(i=0; i < 8; i++)
+		      printf("%c", mpctable->oemid[i]);
+		    printf("\nProduct ID: ");
+		    for(i=0; i < 12; i++)
+		      printf("%c", mpctable->productid[i]);
+		  }
+  
+		  printf("\nEntry count=%u", mpctable->entrycount);
+		  printf("\nLAPIC base=0x%08x", mpctable->lapicaddr);
+		  
+		  //now step through CPU entries in the MP-table to determine
+		  //how many CPUs we have
+		  *num_pcpus=0;
+		  		  
+			{
+		    int i;
+		    u32 addrofnextentry= (u32)mpctable + sizeof(MPCONFTABLE);
+		    
+		    for(i=0; i < mpctable->entrycount; i++){
+		      MPENTRYCPU *cpu = (MPENTRYCPU *)addrofnextentry;
+		      if(cpu->entrytype != 0)
+		        break;
+		      
+		      if(cpu->cpuflags & 0x1){
+ 		        ASSERT( *num_pcpus < MAX_PCPU_ENTRIES);		        
+						printf("\nCPU (0x%08x) #%u: lapic id=0x%02x, ver=0x%02x, cpusig=0x%08x", 
+		          (u32)cpu, i, cpu->lapicid, cpu->lapicver, cpu->cpusig);
+		        pcpus[i].lapic_id = cpu->lapicid;
+		        pcpus[i].lapic_ver = cpu->lapicver;
+		        pcpus[i].lapic_base = mpctable->lapicaddr;
+		        pcpus[i].isbsp = cpu->cpuflags & 0x2;
+		        *num_pcpus = *num_pcpus + 1;
+		      }
+		            
+		      addrofnextentry += sizeof(MPENTRYCPU);
+		    }
+		  }
+			
+	
+			return 1;		
+	}
+	
+
 #endif	//__MP_VERSION__
 
 	//fall back to UP
-  printf("\nNo MP table or ACPI MADT, forcing UP...");
+  printf("\nNo ACPI MADT or MP table, forcing UP...");
   *num_pcpus = 1;
   ASSERT( *num_pcpus <= MAX_PCPU_ENTRIES );
 	{
