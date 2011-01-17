@@ -647,18 +647,15 @@ static void _vmx_handle_intercept_cpuid(VCPU *vcpu, struct regs *r){
 }
 
 
-#if defined (__E820_UG_TEST__)
-
 //---vmx int 15 hook enabling function------------------------------------------
 static void	_vmx_int15_initializehook(VCPU *vcpu){
 	//we should only be called from the BSP
 	ASSERT(vcpu->isbsp);
 	
 	{
-		//u8 *bdamemory = (u8 *)0x4AC;				//use BDA reserved memory at 0040:00AC
-		u8 *bdamemory = (u8 *)0x9F000;				//use reserved memory at 9000:F000
+		u8 *bdamemory = (u8 *)0x4AC;				//use BDA reserved memory at 0040:00AC
 		
-		u16 *ivt_int15 = (u16 *)(0x54);	//32-bit CS:IP for IVT INT 15 handler
+		u16 *ivt_int15 = (u16 *)(0x54);			//32-bit CS:IP for IVT INT 15 handler
 		
 		//printf("\nCPU(0x%02x): original BDA dump: %02x %02x %02x %02x %02x %02x %02x %02x", vcpu->id,
 		//	bdamemory[0], bdamemory[1], bdamemory[2], bdamemory[3], bdamemory[4],
@@ -667,21 +664,21 @@ static void	_vmx_int15_initializehook(VCPU *vcpu){
 		printf("\nCPU(0x%02x): original INT 15h handler at 0x%04x:0x%04x", vcpu->id,
 			ivt_int15[1], ivt_int15[0]);
 
-
-		memset(bdamemory, 0x0, 8);		//we need 8 bytes (4 for the VMCALL and 4 for
-																	//the original IVT INT 15h handler), zero them
-
+		//we need 8 bytes (4 for the VMCALL followed by IRET and 4 for he original 
+		//IVT INT 15h handler address, zero them to start off
+		memset(bdamemory, 0x0, 8);		
 
 		//printf("\nCPU(0x%02x): BDA dump after clear: %02x %02x %02x %02x %02x %02x %02x %02x", vcpu->id,
 		//	bdamemory[0], bdamemory[1], bdamemory[2], bdamemory[3], bdamemory[4],
 		//		bdamemory[5], bdamemory[6], bdamemory[7]);
 
-
-		bdamemory[0]= 0x0f;						//implant VMCALL followed by IRET at 0040:04AC
+		//implant VMCALL followed by IRET at 0040:04AC
+		bdamemory[0]= 0x0f;	//VMCALL						
 		bdamemory[1]= 0x01;
 		bdamemory[2]= 0xc1;																	
-		bdamemory[3]= 0xcf;
+		bdamemory[3]= 0xcf;	//IRET
 		
+		//store original INT 15h handler CS:IP following VMCALL and IRET
 		*((u16 *)(&bdamemory[4])) = ivt_int15[0];	//original INT 15h IP
 		*((u16 *)(&bdamemory[6])) = ivt_int15[1];	//original INT 15h CS
 
@@ -689,27 +686,22 @@ static void	_vmx_int15_initializehook(VCPU *vcpu){
 		//	bdamemory[0], bdamemory[1], bdamemory[2], bdamemory[3], bdamemory[4],
 		//		bdamemory[5], bdamemory[6], bdamemory[7]);
 
-		
-		//ivt_int15[0]=0x00AC;
-		//ivt_int15[1]=0x0040;					//point IVT INT15 handler to the VMCALL instruction
-		ivt_int15[0]=0xF000;
-		ivt_int15[1]=0x9000;					//point IVT INT15 handler to the VMCALL instruction
-
-		
+		//point IVT INT15 handler to the VMCALL instruction
+		ivt_int15[0]=0x00AC;
+		ivt_int15[1]=0x0040;					
 	}
 }
 
 //---vmx int 15 intercept handler-----------------------------------------------
 static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 	u16 cs, ip;
-	//u8 *bdamemory = (u8 *)0x4AC;
-	u8 *bdamemory = (u8 *)0x9F000;
+	u8 *bdamemory = (u8 *)0x4AC;
 	
 	//printf("\nCPU(0x%02x): BDA dump in intercept: %02x %02x %02x %02x %02x %02x %02x %02x", vcpu->id,
 	//		bdamemory[0], bdamemory[1], bdamemory[2], bdamemory[3], bdamemory[4],
 	//			bdamemory[5], bdamemory[6], bdamemory[7]);
 
-	//if V86 mode translate the virtual address to physical address
+	//if in V86 mode translate the virtual address to physical address
 	if( (vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG) &&
 			(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM) ){
 		u8 *bdamemoryphysical;
@@ -720,7 +712,7 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		bdamemory = bdamemoryphysical; 		
 	}
 	
-	
+	//if E820 service then...
 	if((u16)r->eax == 0xE820){
 		//AX=0xE820, EBX=continuation value, 0 for first call
 		//ES:DI pointer to buffer, ECX=buffer size, EDX='SMAP'
@@ -733,13 +725,13 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		ASSERT(r->edx == 0x534D4150UL);  //'SMAP' should be specified by guest
 		ASSERT(r->ebx < rpb->XtVmmE820NumEntries); //invalid continuation value specified by guest!
 			
-		printf("\nINT15(E820): returning for index=%u", r->ebx);
+		//copy the e820 descriptor and return its size in ECX
 		memcpy((void *)((u32)((vcpu->vmcs.guest_ES_base)+(u16)r->edi)), (void *)&g_e820map[r->ebx],
 					sizeof(GRUBE820));
-				
-				
-		r->eax=r->edx;
 		r->ecx=20;
+
+		//set EAX to 'SMAP' as required by the service call				
+		r->eax=r->edx;
 
 		//we need to update carry flag in the guest EFLAGS register
 		//however since INT 15 would have pushed the guest FLAGS on stack
@@ -768,17 +760,18 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 			}
 		
 			
-			printf("\nINT15 (E820): guest_ss=%04x, sp=%04x, stackregion=%08x", (u16)vcpu->vmcs.guest_SS_selector,
-					(u16)vcpu->vmcs.guest_RSP, (u32)gueststackregion);
+			//printf("\nINT15 (E820): guest_ss=%04x, sp=%04x, stackregion=%08x", (u16)vcpu->vmcs.guest_SS_selector,
+			//		(u16)vcpu->vmcs.guest_RSP, (u32)gueststackregion);
 			
+			//get guest IP, CS and FLAGS from the IRET frame
 			guest_ip = gueststackregion[0];
 			guest_cs = gueststackregion[1];
 			guest_flags = gueststackregion[2];
 
-			printf("\nINT15 (E820): guest_flags=%04x, guest_cs=%04x, guest_ip=%04x",
-				guest_flags, guest_cs, guest_ip);
+			//printf("\nINT15 (E820): guest_flags=%04x, guest_cs=%04x, guest_ip=%04x",
+			//	guest_flags, guest_cs, guest_ip);
 		
-		
+			//increment e820 descriptor continuation value
 			r->ebx=r->ebx+1;
 					
 			if(r->ebx > (rpb->XtVmmE820NumEntries-1) ){
@@ -794,28 +787,30 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		  
 		}
 
-
  	  //update RIP to execute the IRET following the VMCALL instruction
+ 	  //effectively returning from the INT 15 call made by the guest
 	  vcpu->vmcs.guest_RIP += 3;
 
-	
 		return;
 	}
 	
 	
+	//ok, this is some other INT 15h service, so simply chain to the original
+	//INT 15h handler
 	
+	//get IP and CS of the original INT 15h handler
 	ip = *((u16 *)((u32)bdamemory + 4));
 	cs = *((u16 *)((u32)bdamemory + 6));
 	
 	//printf("\nCPU(0x%02x): INT 15, transferring control to 0x%04x:0x%04x", vcpu->id,
 	//	cs, ip);
 		
+	//update VMCS with the CS and IP and let go
 	vcpu->vmcs.guest_RIP = ip;
 	vcpu->vmcs.guest_CS_base = cs * 16;
 	vcpu->vmcs.guest_CS_selector = cs;		 
 }
 
-#endif
 
 //==============================================================================
 //isolation layer abstraction global functions
@@ -894,15 +889,12 @@ void vmx_initialize(VCPU *vcpu){
 		vcpu->vmx_guestmtrrmsrs[28].lodword = eax; vcpu->vmx_guestmtrrmsrs[28].hidword=edx;
 	}
 	
-	#if defined (__E820_UG_TEST__)
 	//INT 15h E820 hook enablement for VMX unrestricted guest mode
 	//note: this only happens for the BSP
 	if(vcpu->isbsp){
 		printf("\nCPU(0x%02x, BSP): initializing INT 15 hook for UG mode...", vcpu->id);
 		_vmx_int15_initializehook(vcpu);
 	}
-	#endif	
-	
 			
 }
 
@@ -1105,31 +1097,22 @@ u32 vmx_intercept_handler(VCPU *vcpu, struct regs *r){
     break;
 
     case VMEXIT_VMCALL:{
-			#if defined (__E820_UG_TEST__)
 			//check to see if this is a hypercall for INT 15h hooking
-			if(vcpu->vmcs.guest_CS_base == 0x90000 &&
-				vcpu->vmcs.guest_RIP == 0xF000){
+			if(vcpu->vmcs.guest_CS_base == (VMX_UG_E820HOOK_CS << 4) &&
+				vcpu->vmcs.guest_RIP == VMX_UG_E820HOOK_IP){
 				//assertions, we need to be either in real-mode or in protected
 				//mode with paging and EFLAGS.VM bit set (virtual-8086 mode)
 				ASSERT( !(vcpu->vmcs.guest_CR0 & CR0_PE)  ||
 					( (vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG) &&
 						(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM)  ) );
 				_vmx_int15_handleintercept(vcpu, r);	
-			}else{
+			}else{	//if not E820 hook, give app a chance to handle the hypercall
 				if( emhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
 					printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", vcpu->id, r->eax);
 					HALT();
 				}
       	vcpu->vmcs.guest_RIP += 3;
 			}
-			#else
-				if( emhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
-					printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", vcpu->id, r->eax);
-					HALT();
-				}
-      	vcpu->vmcs.guest_RIP += 3;
-			
-			#endif
     }
     break;
 

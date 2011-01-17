@@ -37,6 +37,8 @@ emhf-runtime
 		..\include\sarg.h
 		..\runtime\libemhf.c
 		..\include\libemhf.h
+		..\..\..\..\..\..\external\hyp\emhfapp\trunk\code\emhfcore\x86\runtime\islayer_svm.c
+		..\include\error.h
 [Open project files]
 0=..\Makefile
 1=..\runtime\Makefile
@@ -64,7 +66,7 @@ emhf-runtime
 23=..\..\..\..\..\..\external\hyp\emhfapp\trunk\code\emhfcore\x86\runtime\islayer_svm.c
 [Selected Project Files]
 Main=
-Selected=..\runtime\islayersup_vmx.S
+Selected=..\runtime\islayer_vmx.c
 [..\Makefile]
 TopLine=1
 Caret=1,1
@@ -84,8 +86,8 @@ Caret=25,157
 TopLine=1
 Caret=1,1
 [..\include\target.h]
-TopLine=31
-Caret=31,49
+TopLine=338
+Caret=1,367
 [..\runtime\globals.c]
 TopLine=347
 Caret=1,381
@@ -117,20 +119,20 @@ Caret=27,36
 TopLine=393
 Caret=8,412
 [..\runtime\islayer_vmx.c]
-TopLine=672
-Caret=62,675
+TopLine=710
+Caret=31,731
 [..\include\processor.h]
 TopLine=68
 Caret=1,84
 [..\runtime\islayer_svm.c]
 TopLine=971
-Caret=1,1013
+Caret=27,997
 [..\runtime\libemhf.c]
 TopLine=44
-Caret=3,56
+Caret=56,60
 [..\include\libemhf.h]
 TopLine=16
-Caret=1,43
+Caret=5,51
 [..\include\error.h]
 TopLine=1
 Caret=1,10

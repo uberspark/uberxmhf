@@ -19,6 +19,8 @@ emhf-libcommon
 		..\libcommon\string.c
 		..\libcommon\mpsup.S
 		..\libcommon\Makefile
+		..\include\multiboot.h
+		..\include\str.h
 [Open project files]
 0=..\libcommon\Makefile
 1=..\libcommon\mpsup.S

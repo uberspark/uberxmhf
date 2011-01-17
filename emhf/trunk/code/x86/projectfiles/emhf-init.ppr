@@ -36,7 +36,7 @@ emhf-init
 9=..\init\smp.c
 [Selected Project Files]
 Main=
-Selected=..\init\initsup.S
+Selected=..\init\init.c
 [..\Makefile]
 TopLine=1
 Caret=1,1
@@ -47,8 +47,8 @@ Caret=61,32
 TopLine=8
 Caret=27,22
 [..\init\init.c]
-TopLine=1
-Caret=1,1
+TopLine=134
+Caret=35,145
 [..\init\init.lds.S]
 TopLine=1
 Caret=15,8

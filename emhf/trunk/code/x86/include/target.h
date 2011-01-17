@@ -127,6 +127,13 @@
 #define TEMPORARY_HARDCODED_MLE_ENTRYPOINT TEMPORARY_MAX_MLE_HEADER_SIZE
 
 
+//VMX Unrestricted Guest (UG) E820 hook support
+//we currently use the BIOS data area (BDA) unused region
+//at 0x0040:0x00AC
+#define	VMX_UG_E820HOOK_CS				(0x0040)	
+#define	VMX_UG_E820HOOK_IP				(0x00AC)
+
+
 #ifndef __ASSEMBLY__
 
 
