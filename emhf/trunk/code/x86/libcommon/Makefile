@@ -3,7 +3,7 @@
 
 # source files
 AS_SOURCES =  mpsup.S
-C_SOURCES = string.c dbg_printf.c dbg_uart.c dbg_vgamem.c delay_pit.c sha1.c txt_mtrrs.c
+C_SOURCES = string.c dbg_printf.c dbg_uart.c dbg_vgamem.c delay_pit.c sha1.c txt_mtrrs.c tpm.c
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
