@@ -56,10 +56,18 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
 	MPCONFTABLE *mpctable;
 	
 	ACPI_RSDP *rsdp;
+
+#if 0
 	ACPI_XSDT *xsdt;
 	u32 n_xsdt_entries;
 	u64 *xsdtentrylist;
- 	ACPI_MADT *madt;
+#else
+	ACPI_RSDT	*rsdt;
+	u32 n_rsdt_entries;
+	u32 *rsdtentrylist;
+#endif 	
+	 
+  ACPI_MADT *madt;
 	u8 madt_found=0;
 	u32 i;
 
@@ -79,7 +87,8 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
 	}
 	
 	printf("\nACPI RSDP at 0x%08x", rsdp);
-	
+
+#if 0	
 	xsdt=(ACPI_XSDT *)(u32)rsdp->xsdtaddress;
 	n_xsdt_entries=(u32)((xsdt->length-sizeof(ACPI_XSDT))/8);
 
@@ -96,6 +105,26 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
     	break;
     }
 	}
+#else
+	rsdt=(ACPI_RSDT *)(u32)rsdp->rsdtaddress;
+	n_rsdt_entries=(u32)((rsdt->length-sizeof(ACPI_RSDT))/4);
+
+	printf("\nACPI RSDT at 0x%08x", rsdt);
+  printf("\n	len=0x%08x, headerlen=0x%08x, numentries=%u", 
+			rsdt->length, sizeof(ACPI_RSDT), n_rsdt_entries);
+  
+  rsdtentrylist=(u32 *) ( (u32)rsdt + sizeof(ACPI_RSDT) );
+
+	for(i=0; i< n_rsdt_entries; i++){
+    madt=(ACPI_MADT *)( (u32)rsdtentrylist[i]);
+    if(madt->signature == ACPI_MADT_SIGNATURE){
+    	madt_found=1;
+    	break;
+    }
+	}	
+
+#endif
+
 
 	if(!madt_found){
 		printf("\nACPI MADT not found, falling through...");

@@ -3,7 +3,7 @@ Compilator.SaveAll=0
 Compilator.Capture=0
 Compilator.HideOutput=0
 Compilator.LogType=0
-DefaultDir=E:\amit\external\hyp\emhfapp\trunk\code\emhfcore\x86
+DefaultDir=E:\amit\rpad\emhfapps\ea-mtrrtest\emhfcore\x86
 DefaultCPIndex=0
 LogtoEnd=1
 DontOpen=0
@@ -23,6 +23,7 @@ emhf-init
 		..\include\multiboot.h
 		..\init\smp.c
 		..\include\processor.h
+		..\include\acpi.h
 [Open project files]
 0=..\Makefile
 1=..\init\Makefile
@@ -34,21 +35,22 @@ emhf-init
 7=..\init\initsup.S
 8=..\include\processor.h
 9=..\init\smp.c
+10=..\include\acpi.h
 [Selected Project Files]
 Main=
-Selected=..\init\init.c
+Selected=..\include\acpi.h
 [..\Makefile]
 TopLine=1
 Caret=1,1
 [..\init\Makefile]
 TopLine=1
-Caret=61,32
+Caret=1,11
 [..\init\header.S]
 TopLine=8
 Caret=27,22
 [..\init\init.c]
-TopLine=134
-Caret=35,145
+TopLine=1
+Caret=1,1
 [..\init\init.lds.S]
 TopLine=1
 Caret=15,8
@@ -65,5 +67,8 @@ Caret=26,93
 TopLine=1
 Caret=28,15
 [..\init\smp.c]
-TopLine=1
-Caret=1,1
+TopLine=5
+Caret=17,16
+[..\include\acpi.h]
+TopLine=45
+Caret=1,73
