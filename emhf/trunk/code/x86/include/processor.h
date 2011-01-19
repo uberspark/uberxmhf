@@ -279,6 +279,10 @@ static inline void enable_intr(void)
     __asm__ __volatile__ ("sti");
 }
 
+static inline void cpu_relax(void)
+{
+    __asm__ __volatile__ ("pause");
+}
 
 #endif
 
