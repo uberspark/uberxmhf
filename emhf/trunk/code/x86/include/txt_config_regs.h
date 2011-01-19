@@ -234,19 +234,40 @@ typedef struct {
 
 /*
  * fns to read/write TXT config regs
+ *
+ * NOTE: MODIFIED TO ALWAYS USE %FS SEGMENT-OVERRIDE
  */
 
 static inline uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg)
 {
     /* these are MMIO so make sure compiler doesn't optimize */
-    return *(volatile uint64_t *)(unsigned long)(config_regs_base + reg);
+    //return *(volatile uint64_t *)(unsigned long)(config_regs_base +
+    //reg);
+      
+    u64 ret;
+    u32 addr = config_regs_base + reg;
+    __asm__ __volatile__("movl %%fs:(%%ebx), %%eax\r\n"
+                         "movl %%fs:4(%%ebx), %%edx\r\n"
+                         : "=A"(ret)
+                         : "b"(addr)
+                         );
+    return ret;
 }
 
 static inline void write_config_reg(uint32_t config_regs_base, uint32_t reg,
                                     uint64_t val)
 {
     /* these are MMIO so make sure compiler doesn't optimize */
-    *(volatile uint64_t *)(unsigned long)(config_regs_base + reg) = val;
+    //*(volatile uint64_t *)(unsigned long)(config_regs_base + reg) =
+    //val;
+    u32 addr = config_regs_base + reg;
+
+    __asm__ __volatile__("movl %%eax, %%fs:(%%ebx)\r\n"
+                         "movl %%edx, %%fs:4(%%ebx)\r\n"
+                         :
+                         : "A"(val), "b"(addr)
+                         );
+                                    
 }
 
 static inline uint64_t read_pub_config_reg(uint32_t reg)
