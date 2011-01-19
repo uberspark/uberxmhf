@@ -76,6 +76,28 @@
 #include <sha1.h>
 #include <tpm.h>
 
+
+/* TODO: Give these a more appropriate home */
+/* #define readb(va)       (*(volatile uint8_t *) (va)) */
+/* #define writeb(va, d)   (*(volatile uint8_t *) (va) = (d)) */
+
+static inline void writeb(u32 addr, u8 val) {
+    __asm__ __volatile__("movb %%al, %%fs:(%%ebx)\r\n"
+                         :
+                         : "b"(addr), "a"((u32)val)
+                         );
+}
+
+static inline u8 readb(u32 addr) {
+    u32 ret;
+    __asm__ __volatile("xor %%eax, %%eax\r\n"        
+                       "movb %%fs:(%%ebx), %%al\r\n"
+                       : "=a"(ret)
+                       : "b"(addr)
+                       );
+    return (u8)ret;        
+}
+
 /* un-comment to enable detailed command tracing */
 #define TPM_TRACE
 
@@ -211,7 +233,7 @@ static bool tpm_validate_locality(uint32_t locality)
     }
 
     if ( i <= 0 )
-        printf("TPM: tpm_validate_locality timeout\n");
+        printf("\nTPM: tpm_validate_locality timeout\n");
 
     return false;
 }
@@ -888,7 +910,7 @@ static bool hmac(const uint8_t key[HMAC_OUTPUT_SIZE], const uint8_t *msg,
     uint32_t i;
     SHA_CTX ctx;
 
-    COMPILE_TIME_ASSERT(HMAC_OUTPUT_SIZE <= HMAC_BLOCK_SIZE);
+    ASSERT(HMAC_OUTPUT_SIZE <= HMAC_BLOCK_SIZE);
 
     for ( i = 0; i < HMAC_BLOCK_SIZE; i++ ) {
         ipad[i] = 0x36;
@@ -2044,7 +2066,8 @@ uint32_t tpm_save_state(uint32_t locality)
             break;
 
         retries++;
-        delay(100);
+        ASSERT(false); // XXX need delay support
+        //delay(100);
     } while ( retries < MAX_SAVESTATE_RETRIES );
     if ( retries >= MAX_SAVESTATE_RETRIES )
         printf("TIMEOUT!");
