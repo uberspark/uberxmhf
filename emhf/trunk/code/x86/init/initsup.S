@@ -83,6 +83,8 @@
       movw %ax, %ds
       movw %ax, %es
       movw %ax, %ss
+      movw %ax, %fs
+      movw %ax, %gs
 
       movl $init_core_lowlevel_setup, %eax
       jmpl *%eax
