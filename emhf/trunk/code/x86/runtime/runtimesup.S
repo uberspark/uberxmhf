@@ -309,6 +309,8 @@ x_init_stack:
       movw %ax, %ds
       movw %ax, %es
       movw %ax, %ss
+      movw %ax, %fs
+      movw %ax, %gs
 
              
       movl $(_ap_cr3_value - _ap_bootstrap_start + (AP_BOOTSTRAP_CODE_SEG << 4)), %esi
