@@ -38,7 +38,8 @@
 //author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <target.h>
-
+#include <txt.h>
+#include <tpm.h>
 
 extern u32 slpb_buffer[];
 RPB * rpb;
@@ -89,10 +90,15 @@ void runtime_setup_paging(u32 physaddr, u32 virtaddr, u32 totalsize){
     }else{
         // Unity-map some MMIO regions with Page Cache disabled
         // 0xfed00000 contains Intel TXT config regs & TPM MMIO
-        // 0xfee00000 contains APIC base
+        // ...but 0xfec00000 is the closest 2M-aligned addr
+        // 0xfee00000 contains APIC base        
       if(paddr == 0xfee00000 ||
-         paddr == 0xfed00000) 
+         paddr == 0xfec00000) {
         flags |= (u64)(_PAGE_PCD);
+        //XXX TODO Error here because flags doesn't get "put back"
+        // after these two addresses?
+        printf("\nSL: updating flags for paddr 0x%08x", paddr);
+      }
         
       xpdt[i] = pae_make_pde_big((u64)paddr, flags);
     }
@@ -116,6 +122,68 @@ void runtime_setup_paging(u32 physaddr, u32 virtaddr, u32 totalsize){
 
 }
 
+/* XXX TODO Read PCR values and sanity-check that DRTM was successful
+ * (i.e., measurements match expectations), and integrity-check the
+ * runtime. */
+/* Note: calling this *before* paging is enabled is important. */
+bool sl_integrity_check(void) {
+    int ret;
+    u32 locality = 1; // valid: 1 or 2
+
+    tpm_pcr_value_t pcr17, pcr18;    
+
+    /* open TPM locality */
+    ASSERT(locality == 1 || locality == 2);
+    if(get_cpu_vendor() == CPU_VENDOR_INTEL) {
+        txt_didvid_t didvid;
+        txt_ver_fsbif_emif_t ver;
+        
+        /* display chipset fuse and device and vendor id info */
+        didvid._raw = read_pub_config_reg(TXTCR_DIDVID);
+        printf("\nSL: chipset ids: vendor: 0x%x, device: 0x%x, revision: 0x%x\n",
+               didvid.vendor_id, didvid.device_id, didvid.revision_id);
+        ver._raw = read_pub_config_reg(TXTCR_VER_FSBIF);
+        if ( (ver._raw & 0xffffffff) == 0xffffffff ||
+             (ver._raw & 0xffffffff) == 0x00 )         /* need to use VER.EMIF */
+            ver._raw = read_pub_config_reg(TXTCR_VER_EMIF);
+        printf("SL: chipset production fused: %x\n", ver.prod_fused );
+        
+        if(txt_is_launched()) {
+            write_priv_config_reg(locality == 1 ? TXTCR_CMD_OPEN_LOCALITY1
+                                  : TXTCR_CMD_OPEN_LOCALITY2, 0x01);
+            read_priv_config_reg(TXTCR_E2STS);   /* just a fence, so ignore return */
+        } else {
+            // XXX TODO: Open locality on AMD / non-TXT Intel boot
+            printf("TPM: ERROR: Locality opening UNIMPLEMENTED on Intel without SENTER\n");
+            return false;
+        }        
+    } else { /* AMD */
+        // XXX TODO: Open locality on AMD / non-TXT Intel boot
+        printf("TPM: ERROR: Locality opening UNIMPLEMENTED on AMD\n");
+        return false;
+    }
+    
+    if(!is_tpm_ready(locality)) {
+        printf("TPM: FAILED to open TPM locality %d\n", locality);
+        return false;
+    } 
+
+    printf("TPM: Opened TPM locality %d\n", locality);   
+    
+    if((ret = tpm_pcr_read(locality, 17, &pcr17)) != TPM_SUCCESS) {
+        printf("TPM: ERROR: tpm_pcr_read FAILED with error code 0x%08x\n", ret);
+        return false;
+    }
+    print_hex("PCR-17: ", &pcr17, sizeof(pcr17));
+
+    if((ret = tpm_pcr_read(locality, 18, &pcr18)) != TPM_SUCCESS) {
+        printf("TPM: ERROR: tpm_pcr_read FAILED with error code 0x%08x\n", ret);
+        return false;
+    }
+    print_hex("PCR-18: ", &pcr18, sizeof(pcr18));    
+
+    return true;    
+}
 
 //we get here from slheader.S
 void slmain(u32 baseaddr){
@@ -127,7 +195,7 @@ void slmain(u32 baseaddr){
 	u32 runtime_idt;
 	u32 runtime_entrypoint;
 	u32 runtime_topofstack;
-		
+
 	//initialize debugging early on
 	#ifdef __DEBUG_SERIAL__		
 		init_uart();
@@ -193,10 +261,17 @@ void slmain(u32 baseaddr){
 	//sanitize cache/MTRR/SMRAM (most important is to ensure that MTRRs 
 	//do not contain weird mappings)
 	//TODO
-	
+
+    /* Note: calling this *before* paging is enabled is important */
+    if(sl_integrity_check())
+        printf("\nsl_intergrity_check SUCCESS");
+    else
+        printf("\nsl_intergrity_check FAILURE");
+
+    
 	//setup DMA protection on runtime (secure loader is already DMA protected)
 	//TODO
-	
+    
 	//Measure runtime and sanity check if measurements were fine
 	//TODO
 	
@@ -205,7 +280,7 @@ void slmain(u32 baseaddr){
 	
 		//get a pointer to the runtime header
   	rpb=(RPB *)PAGE_SIZE_2M;	//runtime starts at offset 2M from sl base
-		ASSERT(rpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
+    ASSERT(rpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
 		
     //store runtime physical and virtual base addresses along with size
   	rpb->XtVmmRuntimePhysBase = runtime_physical_base;
@@ -279,7 +354,7 @@ void slmain(u32 baseaddr){
 		
 		//setup paging for runtime 
 		runtime_setup_paging(runtime_physical_base, __TARGET_BASE, runtime_size_2Maligned);
-		printf("\nSL: setup runtime paging.");	
+		printf("\nSL: setup runtime paging.");        
 
 	  //transfer control to runtime
 		XtLdrTransferControlToRtm(runtime_gdt, runtime_idt, 
