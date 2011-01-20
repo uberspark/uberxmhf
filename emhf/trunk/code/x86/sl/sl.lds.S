@@ -55,6 +55,10 @@ SECTIONS
     *(.data)
  		. = ALIGN(4096);    
   } =0x9090 
+  .bss : {
+    *(.bss)
+ 		. = ALIGN(4096);    
+  } =0x9090 
 
 	.sl_stack : {
 		*(.sl_stack)
