@@ -284,6 +284,23 @@ static inline void cpu_relax(void)
     __asm__ __volatile__ ("pause");
 }
 
+static inline u32 get_cpu_vendor(void) {
+    u32 dummy;
+    u32 vendor_dword1, vendor_dword2, vendor_dword3;
+    
+    cpuid(0, &dummy, &vendor_dword1, &vendor_dword3, &vendor_dword2);
+    if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
+       && vendor_dword3 == AMD_STRING_DWORD3)
+        return CPU_VENDOR_AMD;
+    else if(vendor_dword1 == INTEL_STRING_DWORD1 && vendor_dword2 == INTEL_STRING_DWORD2
+            && vendor_dword3 == INTEL_STRING_DWORD3)
+        return CPU_VENDOR_INTEL;
+    else
+        HALT();
+
+    return 0; /* never reached */
+}
+
 #endif
 
 #endif /* __PROCESSOR_H */
