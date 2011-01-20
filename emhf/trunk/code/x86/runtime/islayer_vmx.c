@@ -1090,6 +1090,7 @@ u32 vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			break;
 
     case VMEXIT_INIT:{
+        printf("\n***** VMEXIT_INIT emhf_app_handleshutdown\n");
       emhf_app_handleshutdown(vcpu, r);      
       printf("\nCPU(0x%02x): warning, emhf_app_handleshutdown returned!", vcpu->id);
       HALT();
@@ -1497,6 +1498,11 @@ static u8 * _vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr){
 
 //---reboot functionality-------------------------------------------------------
 static void _vmx_lib_reboot(VCPU *vcpu){
+
+    printf("\nHello from _vmx_lib_reboot\n");
+    if(txt_is_launched()) {
+        printf("\nI detect that we are in a TXT environment.  Doing special TXT reboot\n");
+    }
 
 	//step-1: shut VMX off, else CPU ignores INIT signal!
 	__asm__ __volatile__("vmxoff \r\n");
