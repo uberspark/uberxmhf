@@ -290,9 +290,8 @@ void allcpus_common_start(VCPU *vcpu){
 	}
 
 
-#if defined (__MP_VERSION__)  
 	//if we are the BSP setup SIPI intercept
-  if(vcpu->isbsp){
+  if(vcpu->isbsp && (g_midtable_numentries > 1)){
     g_isl->hvm_apic_setup(vcpu);
 		printf("\nCPU(0x%02x): BSP, setup SIPI interception.", vcpu->id);
   }else{ //else, we are an AP and wait for SIPI signal
@@ -304,7 +303,6 @@ void allcpus_common_start(VCPU *vcpu){
 		g_isl->hvm_initialize_csrip(vcpu, ((vcpu->sipivector * PAGE_SIZE_4K) >> 4),
 					 (vcpu->sipivector * PAGE_SIZE_4K), 0x0ULL);
 	}
-#endif
 
 
   //start HVM
