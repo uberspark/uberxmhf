@@ -3,7 +3,7 @@ Compilator.SaveAll=0
 Compilator.Capture=0
 Compilator.HideOutput=0
 Compilator.LogType=0
-DefaultDir=E:\amit\external\hyp\emhfapp\trunk\code\emhfcore\x86
+DefaultDir=E:\amit\rpad\emhfapps\ea-mtrrtest\emhfcore\x86
 DefaultCPIndex=0
 LogtoEnd=1
 DontOpen=0
@@ -21,6 +21,7 @@ emhf-libcommon
 		..\libcommon\Makefile
 		..\include\multiboot.h
 		..\include\str.h
+		..\libcommon\pci.c
 [Open project files]
 0=..\libcommon\Makefile
 1=..\libcommon\mpsup.S
@@ -30,9 +31,10 @@ emhf-libcommon
 5=..\libcommon\dbg_uart.c
 6=..\libcommon\dbg_vgamem.c
 7=..\include\multiboot.h
+8=..\libcommon\pci.c
 [Selected Project Files]
 Main=
-Selected=..\libcommon\dbg_printf.c
+Selected=..\libcommon\pci.c
 [..\libcommon\Makefile]
 TopLine=1
 Caret=61,17
@@ -57,3 +59,6 @@ Caret=1,1
 [..\include\multiboot.h]
 TopLine=1
 Caret=23,15
+[..\libcommon\pci.c]
+TopLine=1
+Caret=1,1
