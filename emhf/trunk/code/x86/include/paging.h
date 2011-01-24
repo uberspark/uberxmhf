@@ -59,12 +59,15 @@
 
 #define PAGE_SHIFT_4K 12
 #define PAGE_SHIFT_2M 21
+#define PAGE_SHIFT_4M 22
 
 #define PAGE_ALIGN_UP4K(size)	(((size) + PAGE_SIZE_4K - 1) & ~(PAGE_SIZE_4K - 1))
 #define PAGE_ALIGN_UP2M(size)	(((size) + PAGE_SIZE_2M - 1) & ~(PAGE_SIZE_2M - 1))
+#define PAGE_ALIGN_UP4M(size)	(((size) + PAGE_SIZE_4M - 1) & ~(PAGE_SIZE_4M - 1))
 
 #define PAGE_ALIGN_4K(size)	((size) & ~(PAGE_SIZE_4K - 1))
 #define PAGE_ALIGN_2M(size)	((size) & ~(PAGE_SIZE_2M - 1))
+#define PAGE_ALIGN_4M(size)	((size) & ~(PAGE_SIZE_4M - 1))
 
 // non-PAE mode specific definitions 
 #define NPAE_PTRS_PER_PDT       1024
