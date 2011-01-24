@@ -65,7 +65,7 @@ u32 svm_eap_initialize(void){
 
 	//step-1: we read capabilities pointer (PCI_CONF_HDR_IDX_CAPABILITIES_POINTER)
 	//in b:d.f 0:24.3. If its 0, then DEV support is not available
-		pci_type1_read(0, 24, 3, PCI_CONF_HDR_IDX_CAPABILITIES_POINTER, sizeof(u32), &mc_capabilities_pointer);
+		pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, PCI_CONF_HDR_IDX_CAPABILITIES_POINTER, sizeof(u32), &mc_capabilities_pointer);
 		if(mc_capabilities_pointer == 0)
 			return 0;	//DEV support unavailable
 	
@@ -76,7 +76,7 @@ u32 svm_eap_initialize(void){
 	  
 	  do{
 		  //get the ID of this capability block
-		  pci_type1_read(0, 24, 3, mc_caplist_nextptr, sizeof(u8), &mc_caplist_id);
+		  pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, mc_caplist_nextptr, sizeof(u8), &mc_caplist_id);
 		  
 			//check if this is a DEV capability ID block
 			if((u8)mc_caplist_id == PCI_CAPABILITIES_POINTER_ID_DEV){
@@ -85,7 +85,7 @@ u32 svm_eap_initialize(void){
 			}
 		  
 		  //get the index of the next capability block
-			pci_type1_read(0, 24, 3, mc_caplist_nextptr, sizeof(u8), &mc_caplist_nextptr);
+			pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, mc_caplist_nextptr, sizeof(u8), &mc_caplist_nextptr);
 		}while(mc_caplist_nextptr != 0);
 	
 
@@ -104,9 +104,9 @@ u32 svm_eap_initialize(void){
 		
 		
 		//print it out for now...
-		printf("\n%s: dev_hdr_reg at %02x:%02x.%1x(%04x)", __FUNCTION__, 0, 24, 3, dev_hdr_reg);
-		printf("\n%s: dev_fnidx_reg at %02x:%02x.%1x(%04x)", __FUNCTION__, 0, 24, 3, dev_fnidx_reg);
-		printf("\n%s: dev_data_reg at %02x:%02x.%1x(%04x)", __FUNCTION__, 0, 24, 3, dev_data_reg);
+		printf("\n%s: dev_hdr_reg at %02x:%02x.%1x(%04x)", __FUNCTION__, DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, dev_hdr_reg);
+		printf("\n%s: dev_fnidx_reg at %02x:%02x.%1x(%04x)", __FUNCTION__, DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, dev_fnidx_reg);
+		printf("\n%s: dev_data_reg at %02x:%02x.%1x(%04x)", __FUNCTION__, DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, dev_data_reg);
 		
 		return 1;  	
 }

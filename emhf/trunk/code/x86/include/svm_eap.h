@@ -39,7 +39,13 @@
 #ifndef __SVM_EAP_H__
 #define __SVM_EAP_H__
 
-
+//DEV is part of the Miscellaneous Configuration HT Device that is
+//guaranteed to be on bus 0, device 0x18 and function 3 (2.11 & 3.6, AMD BKDG)
+//XXX: what is not clear from the doc. is whether there could be multiple DEV
+//devices like on Intel platforms (VT-d DMAR).
+#define	DEV_PCI_BUS				0x0
+#define DEV_PCI_DEVICE		0x18
+#define DEV_PCI_FUNCTION	0x3
 
 #ifndef __ASSEMBLY__
 
