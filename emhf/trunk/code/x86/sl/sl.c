@@ -275,6 +275,15 @@ void slmain(u32 baseaddr){
 		//initialize PCI subsystem
 		pci_initialize();
 	
+		//initialize external access protection (DMA protection)
+		printf("\nSL: initializing DMA protection...");
+		if(get_cpu_vendor() == CPU_VENDOR_AMD){
+			if(!svm_eap_initialize()){
+				printf("\nSL: Unable to initialize SVM EAP (DEV). HALT!");
+				HALT();
+			}
+		}
+	
 	
 	}
     

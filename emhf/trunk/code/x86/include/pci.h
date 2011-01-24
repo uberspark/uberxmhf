@@ -72,6 +72,18 @@
 #define PCI_DEVICE_MAX			32
 #define	PCI_FUNCTION_MAX		8	
 
+//AMD PCI configuration space constants
+#define	PCI_VENDOR_ID_AMD										0x1022	//Vendor ID for AMD
+
+#define	PCI_DEVICE_ID_AMD_HT_CONFIGURATION	0x1200	//Device ID for AMD Hypertransport Configuration 
+#define	PCI_DEVICE_ID_AMD_ADDRESSMAP				0x1201	//Device ID for AMD Address Map
+#define PCI_DEVICE_ID_AMD_DRAMCONTROL				0x1202	//Device ID for AMD DRAM Controller
+#define PCI_DEVICE_ID_AMD_MISCCONTROL				0x1203	//Device ID for AMD Miscellaneous Control
+#define PCI_DEVICE_ID_AMD_LINKCONTROL				0x1204	//Device ID for AMD Link Control
+
+#define PCI_CAPABILITIES_POINTER_ID_DEV			0x0F	//PCI capability ID for SVM DEV
+
+
 #ifndef __ASSEMBLY__
 
 //PCI type-1 access address format
@@ -88,6 +100,8 @@ typedef union pci_config_reg_addr
     u32 enabled:1; 			//bit 31 address should be sent to config space 
   }fields;
 }  __attribute__ ((packed)) pci_config_reg_addr_t;
+
+
 
 //macro to encode a device and function into a 8-bit value
 #define PCI_DEVFN(device, function) ((((device) & 0x1f) << 3) | ((function) & 0x07))

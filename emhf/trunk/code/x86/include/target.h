@@ -53,6 +53,8 @@
 
 #include <pci.h>        //PCI bus glue
 
+#include <svm_eap.h>		//SVM DMA protection
+
 //language specifics
 #include <sarg.h>
 #include <str.h>

@@ -22,6 +22,9 @@ emhf-libcommon
 		..\include\multiboot.h
 		..\include\str.h
 		..\libcommon\pci.c
+		..\libcommon\svm_eap.c
+		..\include\pci.h
+		..\include\svm_eap.h
 [Open project files]
 0=..\libcommon\Makefile
 1=..\libcommon\mpsup.S
@@ -32,12 +35,15 @@ emhf-libcommon
 6=..\libcommon\dbg_vgamem.c
 7=..\include\multiboot.h
 8=..\libcommon\pci.c
+9=..\include\pci.h
+10=..\libcommon\svm_eap.c
+11=..\include\svm_eap.h
 [Selected Project Files]
 Main=
-Selected=..\libcommon\pci.c
+Selected=..\libcommon\Makefile
 [..\libcommon\Makefile]
 TopLine=1
-Caret=61,17
+Caret=111,6
 [..\libcommon\mpsup.S]
 TopLine=1
 Caret=1,1
@@ -60,5 +66,14 @@ Caret=1,1
 TopLine=1
 Caret=23,15
 [..\libcommon\pci.c]
+TopLine=89
+Caret=20,89
+[..\include\pci.h]
+TopLine=14
+Caret=40,49
+[..\libcommon\svm_eap.c]
 TopLine=1
-Caret=1,1
+Caret=17,34
+[..\include\svm_eap.h]
+TopLine=1
+Caret=1,8

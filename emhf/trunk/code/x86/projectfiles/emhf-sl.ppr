@@ -3,7 +3,7 @@ Compilator.SaveAll=0
 Compilator.Capture=0
 Compilator.HideOutput=0
 Compilator.LogType=0
-DefaultDir=E:\amit\external\hyp\emhfapp\trunk\code\emhfcore\x86
+DefaultDir=E:\amit\rpad\emhfapps\ea-mtrrtest\emhfcore\x86
 DefaultCPIndex=0
 LogtoEnd=1
 DontOpen=0
@@ -42,13 +42,13 @@ TopLine=1
 Caret=1,1
 [..\sl\Makefile]
 TopLine=1
-Caret=61,34
+Caret=62,1
 [..\sl\slsup.S]
 TopLine=1
 Caret=11,6
 [..\sl\sl.c]
-TopLine=188
-Caret=32,214
+TopLine=223
+Caret=55,240
 [..\sl\sl.lds.S]
 TopLine=4
 Caret=18,31
