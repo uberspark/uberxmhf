@@ -40,16 +40,14 @@
  * Edited for TrustVisor on EMHF by Zongwei Zhou
  */
 
-//#include  <target.h>
+#include  <target.h>
+//#include  <globals.h>
 #include  "./include/scode.h"
 #include  "./include/puttymem.h"
 #include "./include/tpm_sw.h"
 #include "./include/sha1.h"
 #include  "./include/rsa.h"
 #include  "./include/random.h"
-
-extern MIDTAB *midtable;
-extern u32 midtable_numentries;
 
 /* whitelist of all approved sensitive code regions */
 /* whitelist_max and *whitelist is set up by BSP, no need to apply lock
@@ -86,6 +84,39 @@ u8 hmackey[TPM_HMAC_KEY_LEN];
 rsa_context g_rsa;
 
 /* helper function */
+void __set_page_prot(u32 pfn, u8 *bit_vector){
+  u32 byte_offset, bit_offset;
+
+  byte_offset = pfn / 8;
+  bit_offset = pfn & 7;
+  bit_vector[byte_offset] |= (1 << bit_offset);
+
+  return;                        
+}
+
+void __clear_page_prot(u32 pfn, u8 *bit_vector){
+  u32 byte_offset, bit_offset;
+
+  byte_offset = pfn / 8;
+  bit_offset = pfn & 7;
+  bit_vector[byte_offset] &= ~(1 << bit_offset);
+
+  return;
+}
+
+u32 __test_page_prot(u32 pfn, u8 *bit_vector){
+  u32 byte_offset, bit_offset;
+
+  byte_offset = pfn / 8;
+  bit_offset = pfn & 7;
+  if (bit_vector[byte_offset] & (1 << bit_offset))
+    return 1;
+  else 
+    return 0;
+}
+
+
+
 /* set scode remapping protection for a page, pfn is the page frame number */
 #define set_page_scode_bitmap(pfn)	__set_page_prot(pfn, scode_pfn_bitmap)
 /* clear scode remapping protection for a page, pfn is the page frame number */
@@ -210,9 +241,9 @@ void init_scode(void)
 	/* init scode_curr struct
 	 * NOTE that cpu_lapic_id could be bigger than midtable_numentries */
 	max = 0;
-	for( inum=0 ; inum < midtable_numentries ; inum++ )  {
-		if ( midtable[inum].cpu_lapic_id > max)
-			max = midtable[inum].cpu_lapic_id;
+	for( inum=0 ; inum < g_midtable_numentries ; inum++ )  {
+		if ( g_midtable[inum].cpu_lapic_id > max)
+			max = g_midtable[inum].cpu_lapic_id;
 	}
 	scode_curr = (int *)vmalloc((max+1)<<2);
 	vmemset(scode_curr, 0xFF, ((max+1)<<2));
@@ -295,7 +326,7 @@ static inline u32 scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size)
 
 #ifdef __MP_VERSION__
 	/* not local CPU, set all mem sections unpresent */
-	for( k=0 ; k<midtable_numentries ; k++ )  {
+	for( k=0 ; k<g_midtable_numentries ; k++ )  {
 		tmpcpu = (VCPU *)getvcpu_by_midtab_id(k);
 		if (tmpcpu->id != vcpu->id) {
 			printf("[TV] scode registration on CPU %02x!\n", tmpcpu->id);
@@ -342,7 +373,7 @@ static inline void scode_clear_prot(VCPU * vcpu, u32 pte_page, u32 size)
 
 #ifdef __MP_VERSION__
 	/* not local CPU, set all mem sections unpresent */
-	for( k=0 ; k<midtable_numentries ; k++ )  {
+	for( k=0 ; k<g_midtable_numentries ; k++ )  {
 		tmpcpu = (VCPU *)getvcpu_by_midtab_id(k);
 		if (tmpcpu->id != vcpu->id) {
 			printf("[TV] scode unreg on CPU %02x!\n", tmpcpu->id);
@@ -470,7 +501,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	u32 inum;
 	struct scode_sections_struct * ginfo; 
 
-	struct vmcsfields * linux_vmcb = (struct vmcsfields *)(&(vcpu->vmcs));
+	struct _vmx_vmcsfields * linux_vmcb = (struct _vmx_vmcsfields *)(&(vcpu->vmcs));
 	u64 gcr3 = linux_vmcb->guest_CR3;
 
 	printf("\n[TV] ************************************\n");
@@ -568,7 +599,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 u32 scode_unregister(VCPU * vcpu, u32 gvaddr) 
 {
 	u32 i, j;
-	struct vmcsfields * linux_vmcb = (struct vmcsfields *)(&(vcpu->vmcs));
+	struct _vmx_vmcsfields * linux_vmcb = (struct _vmx_vmcsfields *)(&(vcpu->vmcs));
 	u64 gcr3 = linux_vmcb->guest_CR3;
 
 
@@ -657,7 +688,7 @@ void scode_expose_arch(VCPU *vcpu)
 	pt_t sp = (pt_t)(whitelist[curr].scode_page);
 	u32 gcr3_flag=0;
 
-	struct vmcsfields * linux_vmcb = (struct vmcsfields *)(&(vcpu->vmcs));
+	struct _vmx_vmcsfields * linux_vmcb = (struct _vmx_vmcsfields *)(&(vcpu->vmcs));
 	u32 is_pae = linux_vmcb->guest_CR4 & CR4_PAE;
 
 	/* alloc memory for page table entry holder */
@@ -735,7 +766,7 @@ void memcpy_guest_to_guest(VCPU * vcpu, u32 src, u32 dst, u32 len)
 	u8 *src_hvaddr, *dst_hvaddr;
 	u32 i;
 
-	struct vmcsfields * linux_vmcb = (struct vmcsfields *)(&(vcpu->vmcs));
+	struct _vmx_vmcsfields * linux_vmcb = (struct _vmx_vmcsfields *)(&(vcpu->vmcs));
 	u32 is_pae = linux_vmcb->guest_CR4 & CR4_PAE;
 
   	src_gpaddr = gpt_vaddr_to_paddr(vcpu, src);
@@ -766,7 +797,7 @@ u32 scode_marshall(VCPU * vcpu)
 	u32 grsp;
 	int curr=scode_curr[vcpu->id];
 
-	struct vmcsfields * linux_vmcb = (struct vmcsfields *)(&(vcpu->vmcs));
+	struct _vmx_vmcsfields * linux_vmcb = (struct _vmx_vmcsfields *)(&(vcpu->vmcs));
 
 	printf("[TV] marshalling scode parameters!\n");
 	if(whitelist[curr].gpm_num == 0)
@@ -867,7 +898,7 @@ u32 scode_switch_scode(VCPU * vcpu)
 {
 	u32 addr;
 	int curr=scode_curr[vcpu->id];
-	struct vmcsfields * linux_vmcb = (struct vmcsfields *)(&(vcpu->vmcs));
+	struct _vmx_vmcsfields * linux_vmcb = (struct _vmx_vmcsfields *)(&(vcpu->vmcs));
 
 	printf("\n[TV] ************************************\n");
 	printf("[TV] ********* switch to scode **********\n");
@@ -940,7 +971,7 @@ u32 scode_unmarshall(VCPU * vcpu)
 	u32 value;
 
 	int curr=scode_curr[vcpu->id];
-	struct vmcsfields * linux_vmcb = (struct vmcsfields *)(&(vcpu->vmcs));
+	struct _vmx_vmcsfields * linux_vmcb = (struct _vmx_vmcsfields *)(&(vcpu->vmcs));
 
 	printf("[TV] unmarshalling scode parameters!\n");
 	if (whitelist[curr].gpm_num == 0)
@@ -1006,7 +1037,7 @@ u32 scode_unmarshall(VCPU * vcpu)
 u32 scode_switch_regular(VCPU * vcpu)
 {
 	int curr=scode_curr[vcpu->id];
-	struct vmcsfields * linux_vmcb = (struct vmcsfields *)(&(vcpu->vmcs));
+	struct _vmx_vmcsfields * linux_vmcb = (struct _vmx_vmcsfields *)(&(vcpu->vmcs));
 
 	printf("\n[TV] ************************************\n");
 	printf("[TV] ***** switch to regular code  ******\n");
@@ -1042,7 +1073,7 @@ u32 scode_npf(VCPU * vcpu, u32 gpaddr, u32 errorcode)
 	int index = -1;
 
 	int * curr=&(scode_curr[vcpu->id]);
-	struct vmcsfields * linux_vmcb = (struct vmcsfields *)(&(vcpu->vmcs));
+	struct _vmx_vmcsfields * linux_vmcb = (struct _vmx_vmcsfields *)(&(vcpu->vmcs));
 	u64 gcr3 = (u64)linux_vmcb->guest_CR3;
 	u32 rip = (u32)linux_vmcb->guest_RIP;
 

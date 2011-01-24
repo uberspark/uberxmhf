@@ -78,15 +78,6 @@
 #define FALSE 0
 #endif
 
-#ifndef NULL
-#define NULL 0
-#endif
-
-#ifndef bool
-#define bool char
-#endif
-
-
 
 /***********************************************************************
  * Global Variable Declarations
@@ -104,69 +95,11 @@ extern Bitslot memContig[BITSET_SIZE];
 /***********************************************************************
  * Global Function Declarations 
  ***********************************************************************/
-
-void *static_malloc(unsigned int size);
-void static_free(void* target);
-int static_malloc_test(void); /* Controlled if #ifdef in malloc.c */
-
-/***********************************************************************
- * File-Local Function Declarations (even though they are visible
- * globally)
- ***********************************************************************/
-
 /* 
  * Initialize the memory regions
  */
 void static_malloc_init(void);
 
-/*
- * Find enough contiguous slots to allocate memory for this request 
- */
-int findFreeSlots(int numSlots);
-
-/*
- * Determines whether there are numSlots available starting at index
- */
-bool checkContigSlots(int index, int numSlots);
-
-/* 
- * Get the availability of memory slot i 
- */
-bool getSlotAvail(int i);
-
-/* 
- * Set the availability of memory slot i 
- */
-void setSlotAvail(int i, bool avail);
-
-/* 
- * Determine if this slot (slot i) is part of the previous slot
- */
-bool getSlotContig(int i);
-
-/* 
- * Adjust the continguity record of slot i
- */
-void setSlotContig(int i, bool contig);
-
-/*
- * Debug routine to display the bitmaps
- */
-void printAvail(void);
-void printContig(void);
-
-/* Test whether a particular bit is set */
-bool testBit(Bitset bits, int index); 
-
-/* Set the value of a particular bit */
-void setBit(Bitset bits, int index, bool val); 
-
-/* Determine if there are any empty bits in the slot for the index indicated */
-Bitslot testBitSlot(Bitset bits, int slotIndex);
-
-/* Set all of the bits in the bitset (also need the length of the bitset) */
-void bitsetSetAll(Bitset bits, int len); 
-
-/* Clear all of the bits in the bitset (also need the length of the bitset) */
-void bitsetClearAll(Bitset bits, int len);
-
+void *static_malloc(unsigned int size);
+void static_free(void* target);
+int static_malloc_test(void); /* Controlled if #ifdef in malloc.c */

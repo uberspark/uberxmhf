@@ -316,6 +316,7 @@ typedef struct _pcpu {
 #define __pa(x) (x)
 
 #define __hva2spa__(x) ((x) - __TARGET_BASE + rpb->XtVmmRuntimePhysBase)
+#define __spa2hva__(x) ((x) + __TARGET_BASE - rpb->XtVmmRuntimePhysBase)
 
 
 typedef struct _grube820 {

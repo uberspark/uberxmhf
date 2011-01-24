@@ -363,7 +363,7 @@ u32 guest_pt_walker_internal(VCPU *vcpu, u32 vaddr, u64 *pdp, u64 *pd, u64 *pt, 
 	u64 paddr;
 
 	/* get CR3 and CR4 */
-	struct vmcsfields * linux_vmcb = (struct vmcsfields *)(&(vcpu->vmcs));
+	struct _vmx_vmcsfields * linux_vmcb = (struct _vmx_vmcsfields *)(&(vcpu->vmcs));
 	u64 gcr3 = linux_vmcb->guest_CR3;
 	u32 is_pae = linux_vmcb->guest_CR4 & CR4_PAE;
 
@@ -479,7 +479,7 @@ u32 guest_pt_walker_internal(VCPU *vcpu, u32 vaddr, u64 *pdp, u64 *pd, u64 *pt, 
 int guest_pt_copy(VCPU *vcpu, u32 pte_page, u32 gvaddr, u32 size, int type) 
 {	
 	/* get CR3 and CR4 */
-	struct vmcsfields * linux_vmcb = (struct vmcsfields *)(&(vcpu->vmcs));
+	struct _vmx_vmcsfields * linux_vmcb = (struct _vmx_vmcsfields *)(&(vcpu->vmcs));
 	u64 gcr3 = linux_vmcb->guest_CR3;
 	u32 is_pae = linux_vmcb->guest_CR4 & CR4_PAE;
 
@@ -783,10 +783,10 @@ extern void copy_to_guest(VCPU * vcpu, u32 gvaddr, u8 *src, u32 len)
 
 void * __gpa2hva__(u32 gpaddr)
 {
-	if (gpaddr >= lpb->XtVmmRuntimePhysBase && gpaddr < lpb->XtVmmRuntimePhysBase+lpb->XtVmmRuntimeSize){
-		return (void *)(lpb->XtVmmRuntimeVirtBase+(gpaddr-lpb->XtVmmRuntimePhysBase));
-	} else if (gpaddr >= lpb->XtVmmRuntimeVirtBase && gpaddr < lpb->XtVmmRuntimeVirtBase+lpb->XtVmmRuntimeSize) {
-		return (void *)(lpb->XtVmmRuntimePhysBase+(gpaddr-lpb->XtVmmRuntimeVirtBase));
+	if (gpaddr >= rpb->XtVmmRuntimePhysBase && gpaddr < rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize){
+		return (void *)(rpb->XtVmmRuntimeVirtBase+(gpaddr-rpb->XtVmmRuntimePhysBase));
+	} else if (gpaddr >= rpb->XtVmmRuntimeVirtBase && gpaddr < rpb->XtVmmRuntimeVirtBase+rpb->XtVmmRuntimeSize) {
+		return (void *)(rpb->XtVmmRuntimePhysBase+(gpaddr-rpb->XtVmmRuntimeVirtBase));
 	} else {
 		return (void *)(gpaddr);
 	}

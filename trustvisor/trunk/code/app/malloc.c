@@ -63,6 +63,127 @@ Bitslot memAvail[BITSET_SIZE]  = {0};
 /* Index i is set to 1 if it was allocated along with the previous slot */
 Bitslot memContig[BITSET_SIZE] = {0};
 
+
+/***********************************************************************
+ * Bitset implementation
+ ***********************************************************************/
+
+/* Test whether a particular bit is set */
+bool testBit(Bitset bits, int index) {
+	/* Find the bucket that this index belongs to */
+	Bitslot slot = bits[(int) (index / (int) BITSET_SLOT_SIZE)];
+
+	/* Create a mask for the appropriate entry in the bucket */
+	Bitslot mask = 0x1 << (index % BITSET_SLOT_SIZE);
+
+	return (mask & slot) ? TRUE : FALSE;
+}
+
+/* Set the value of a particular bit */
+void setBit(Bitset bits, int index, bool val) {
+	/* Find the bucket that this index belongs to */
+	Bitslot* slot = bits + ((int) (index / (int) BITSET_SLOT_SIZE));
+
+	/* Create a mask for the appropriate entry in the bucket */
+	Bitslot mask = 0x1 << (index % BITSET_SLOT_SIZE);
+
+	if (val) {
+		/* Turn on the bit using 00..1..00*/
+		(*slot) = (*slot) | mask;
+	} else {
+		/* Turn off the bit using 11..0..11 */
+		(*slot) = (*slot) & (~mask);
+	}
+}
+
+/* Determine if there are any empty bits in the slot for the index indicated */
+Bitslot testBitSlot(Bitset bits, int slotIndex) {
+	return bits[(int) (slotIndex / (int) BITSET_SLOT_SIZE)];
+}
+
+/* Set all of the bits in the bitset (also need the length of the bitset) */
+void bitsetSetAll(Bitset bits, int len) {
+	int i;
+	for (i = 0; i < len; i++) {
+		bits[i] = BITSET_SLOT_ALL;
+	}
+}
+
+/* Clear all of the bits in the bitset (also need the length of the bitset) */
+void bitsetClearAll(Bitset bits, int len) {
+	int i;
+	for (i = 0; i < len; i++) {
+		bits[i] = 0;
+	}
+}
+
+
+
+
+/* 
+ * Get the availability of memory slot i 
+ */
+bool getSlotAvail(int i) {
+	return testBit(memAvail, i);
+}
+
+/* 
+ * Set the availability of memory slot i 
+ */
+void setSlotAvail(int i, bool avail) {
+	setBit(memAvail, i, avail);
+}
+
+/* 
+ * Determine if this slot (slot i) is part of the previous slot
+ */
+bool getSlotContig(int i) {
+	return testBit(memContig, i);
+}
+
+/* 
+ * Adjust the continguity record 
+ */
+void setSlotContig(int i, bool contig) {
+	setBit(memContig, i, contig);
+}
+
+/*
+ * Determines whether there are numSlots available starting at index
+ */
+bool checkContigSlots(int index, int numSlots) {
+	int stop = index + numSlots;
+	for (;index < stop; index++) {
+		if (!getSlotAvail(index)) {
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
+
+/*
+ * Find enough contiguous slots to allocate memory for this request 
+ */
+int findFreeSlots(int numSlots) 
+{
+	int index;
+	for (index = 0; index < TOTAL_SLOTS - numSlots + 1; index++) {
+		if (getSlotAvail(index)) {
+			if (numSlots == 1) { /* This is the easy case */
+				return index;
+			} else if (checkContigSlots(index + 1, numSlots - 1)) {
+				/* There are enough subsequent slots */
+				return index;
+			} else {
+				/* Not enough slots in a row.  Keep going */
+			}
+		}
+	} 
+	/* If we reach here, we failed to find enough contiguous slots */
+	return -1;
+}
+
+
 /* 
  * Returns a pointer to size bytes of memory or NULL if such a swath
  * is not available.  static_malloc_init() had better have been called
@@ -117,68 +238,7 @@ void static_malloc_init() {
 #endif
 }
 
-/*
- * Find enough contiguous slots to allocate memory for this request 
- */
-int findFreeSlots(int numSlots) 
-{
-	int index;
-	for (index = 0; index < TOTAL_SLOTS - numSlots + 1; index++) {
-		if (getSlotAvail(index)) {
-			if (numSlots == 1) { /* This is the easy case */
-				return index;
-			} else if (checkContigSlots(index + 1, numSlots - 1)) {
-				/* There are enough subsequent slots */
-				return index;
-			} else {
-				/* Not enough slots in a row.  Keep going */
-			}
-		}
-	} 
-	/* If we reach here, we failed to find enough contiguous slots */
-	return -1;
-}
 
-/*
- * Determines whether there are numSlots available starting at index
- */
-bool checkContigSlots(int index, int numSlots) {
-	int stop = index + numSlots;
-	for (;index < stop; index++) {
-		if (!getSlotAvail(index)) {
-			return FALSE;
-		}
-	}
-	return TRUE;
-}
-
-/* 
- * Get the availability of memory slot i 
- */
-bool getSlotAvail(int i) {
-	return testBit(memAvail, i);
-}
-
-/* 
- * Set the availability of memory slot i 
- */
-void setSlotAvail(int i, bool avail) {
-	setBit(memAvail, i, avail);
-}
-
-/* 
- * Determine if this slot (slot i) is part of the previous slot
- */
-bool getSlotContig(int i) {
-	return testBit(memContig, i);
-}
-
-/* 
- * Adjust the continguity record 
- */
-void setSlotContig(int i, bool contig) {
-	setBit(memContig, i, contig);
-}
 
 /* 
  * Return the pointer's memory chunk back to the general pool
@@ -248,58 +308,6 @@ void static_free(void* target) {
 
 
 
-/***********************************************************************
- * Bitset implementation
- ***********************************************************************/
-
-/* Test whether a particular bit is set */
-bool testBit(Bitset bits, int index) {
-	/* Find the bucket that this index belongs to */
-	Bitslot slot = bits[(int) (index / (int) BITSET_SLOT_SIZE)];
-
-	/* Create a mask for the appropriate entry in the bucket */
-	Bitslot mask = 0x1 << (index % BITSET_SLOT_SIZE);
-
-	return (mask & slot) ? TRUE : FALSE;
-}
-
-/* Set the value of a particular bit */
-void setBit(Bitset bits, int index, bool val) {
-	/* Find the bucket that this index belongs to */
-	Bitslot* slot = bits + ((int) (index / (int) BITSET_SLOT_SIZE));
-
-	/* Create a mask for the appropriate entry in the bucket */
-	Bitslot mask = 0x1 << (index % BITSET_SLOT_SIZE);
-
-	if (val) {
-		/* Turn on the bit using 00..1..00*/
-		(*slot) = (*slot) | mask;
-	} else {
-		/* Turn off the bit using 11..0..11 */
-		(*slot) = (*slot) & (~mask);
-	}
-}
-
-/* Determine if there are any empty bits in the slot for the index indicated */
-Bitslot testBitSlot(Bitset bits, int slotIndex) {
-	return bits[(int) (slotIndex / (int) BITSET_SLOT_SIZE)];
-}
-
-/* Set all of the bits in the bitset (also need the length of the bitset) */
-void bitsetSetAll(Bitset bits, int len) {
-	int i;
-	for (i = 0; i < len; i++) {
-		bits[i] = BITSET_SLOT_ALL;
-	}
-}
-
-/* Clear all of the bits in the bitset (also need the length of the bitset) */
-void bitsetClearAll(Bitset bits, int len) {
-	int i;
-	for (i = 0; i < len; i++) {
-		bits[i] = 0;
-	}
-}
 
 int static_malloc_test(void) {
     return 0;
