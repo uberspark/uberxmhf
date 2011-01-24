@@ -291,9 +291,11 @@ void allcpus_common_start(VCPU *vcpu){
 
 
 	//if we are the BSP setup SIPI intercept
-  if(vcpu->isbsp && (g_midtable_numentries > 1)){
-    g_isl->hvm_apic_setup(vcpu);
-		printf("\nCPU(0x%02x): BSP, setup SIPI interception.", vcpu->id);
+  if(vcpu->isbsp){
+		if(g_midtable_numentries > 1){
+    	g_isl->hvm_apic_setup(vcpu);
+			printf("\nCPU(0x%02x): BSP, setup SIPI interception.", vcpu->id);
+		}
   }else{ //else, we are an AP and wait for SIPI signal
     printf("\nCPU(0x%02x): AP, waiting for SIPI signal...", vcpu->id);
     while(!vcpu->sipireceived);
