@@ -84,8 +84,7 @@
 				4-7		reserved all set to 1s
 				
 	CFAh, 8-bit, r/w
-	bits	0-2		3-bit bus
-				3-7		ignored
+	bits	0-7 	8-bit bus
 				
 	the function and bus are sent out to PCI_CONFIG_ADDR_PORT and
 	PCI_CONFIG_FORWARD_PORT respectively as above, this is followed
@@ -140,6 +139,34 @@
 	
 	geronimo...
 */
+
+//==============================================================================
+//static (local) functions
+//==============================================================================
+
+//enumerates the PCI bus on the system
+static void _pci_enumeratebus(void){
+	u32 b, d, f;
+
+	//bus numbers range from 0-255, device from 0-31 and function from 0-7	
+	for(b=0; b < PCI_BUS_MAX; b++){
+		for(d=0; d < PCI_DEVICE_MAX; d++){
+			for(f=0; f < PCI_FUNCTION_MAX; f++){		
+				u32 vendor_id, device_id;
+				//read device and vendor ids, if no device then both will be 0xFFFF
+				pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_VENDOR_ID, sizeof(u16), &vendor_id);
+				pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_DEVICE_ID, sizeof(u16), &device_id);
+				if(vendor_id == 0xFFFF && device_id == 0xFFFF)
+					break;
+				
+				printf("\n	%02x:%02x.%1x -> vendor_id=%04x, device_id=%04x", b, d, f, vendor_id, device_id);						
+			}
+		}
+	}
+
+  	
+}
+
 
 //does a PCI type-1 read of PCI config space for a given bus, device, 
 //function and index
@@ -227,6 +254,12 @@ void pci_initialize(void){
 
   //restore previous value at PCI_CONFIG_ADDR_PORT
   outl(tmp, PCI_CONFIG_ADDR_PORT);
+
+	//say we are good to go and enumerate the PCI bus 
+	printf("\n%s: PCI type-1 access supported.", __FUNCTION__);
+	printf("\n%s: PCI bus enumeration follows:", __FUNCTION__);
+	_pci_enumeratebus();
+	printf("\n%s: Done with PCI bus enumeration.", __FUNCTION__);
 
 	return;
 }

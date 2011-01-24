@@ -270,7 +270,13 @@ void slmain(u32 baseaddr){
 
     
 	//setup DMA protection on runtime (secure loader is already DMA protected)
-	//TODO
+	//WIP
+	{
+		//initialize PCI subsystem
+		pci_initialize();
+	
+	
+	}
     
 	//Measure runtime and sanity check if measurements were fine
 	//TODO

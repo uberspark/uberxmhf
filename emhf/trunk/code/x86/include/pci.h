@@ -67,6 +67,11 @@
 #define PCI_COMMAND_FAST_BACK   	0x200   /* Enable back-to-back writes */
 #define PCI_COMMAND_INTX_DISABLE 	0x400 	/* INTx Emulation Disable */
 
+//maximum PCI bus, device and function numbers
+#define PCI_BUS_MAX					256
+#define PCI_DEVICE_MAX			32
+#define	PCI_FUNCTION_MAX		8	
+
 #ifndef __ASSEMBLY__
 
 //PCI type-1 access address format
