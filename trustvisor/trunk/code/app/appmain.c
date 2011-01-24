@@ -70,8 +70,9 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 	return APP_INIT_SUCCESS;  //successful
 }
 
-void emhf_app_handleintercept_vmcall(VCPU *vcpu, struct regs *r)
+u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 {
+	u32 status = APP_SUCCESS;
 	u32 cmd = (u32)r->eax;
 
 	switch (cmd)
@@ -188,10 +189,12 @@ void emhf_app_handleintercept_vmcall(VCPU *vcpu, struct regs *r)
 				break;
 			}
 		default:
-			printf("[TV] FATAL ERROR: Invalid vmmcall cmd (%d)\n", cmd);
-			HALT();
+			{
+				printf("[TV] FATAL ERROR: Invalid vmmcall cmd (%d)\n", cmd);
+				status = APP_ERROR;
+			}
 	}
-	return;
+	return status;
 }
 
 /* EPT violation handler */
