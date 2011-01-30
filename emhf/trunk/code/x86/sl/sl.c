@@ -211,7 +211,7 @@ void slmain(u32 baseaddr){
 	
 	//deal with SL parameter block
 	//slpb = (SL_PARAMETER_BLOCK *)slpb_buffer;
-	printf("\nSL: slpb at = 0x%08x", &slpb);
+	printf("\nSL: slpb at = 0x%08x", (u32)&slpb);
 	ASSERT( (u32)&slpb == 0x10000 );	//linker relocates sl image starting from 0, so
 																  //parameter block must be at offset 0x10000
 	ASSERT( slpb.magic == SL_PARAMETER_BLOCK_MAGIC);
@@ -220,9 +220,9 @@ void slmain(u32 baseaddr){
 	printf("\n	errorHandler=0x%08x", slpb.errorHandler);
 	printf("\n	isEarlyInit=0x%08x", slpb.isEarlyInit);
 	printf("\n	numE820Entries=%u", slpb.numE820Entries);
-	printf("\n	e820map at 0x%08x", &slpb.e820map);
+	printf("\n	e820map at 0x%08x", (u32)&slpb.e820map);
 	printf("\n	numCPUEntries=%u", slpb.numCPUEntries);
-	printf("\n	pcpus at 0x%08x", &slpb.pcpus);
+	printf("\n	pcpus at 0x%08x", (u32)&slpb.pcpus);
 	printf("\n	runtime size= %u bytes", slpb.runtime_size);
 	printf("\n	OS bootmodule at 0x%08x, size=%u bytes", 
 		slpb.runtime_osbootmodule_base, slpb.runtime_osbootmodule_size);
