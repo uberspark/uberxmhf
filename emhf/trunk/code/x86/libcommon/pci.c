@@ -248,7 +248,7 @@ void pci_initialize(void){
   //reading PCI_CONFIG_ADDR_PORT should return with bit 31 set
 	//if system supports type-1 access
   if (inl(PCI_CONFIG_ADDR_PORT) != 0x80000000) {
-  	printf("\n%s: system does not support type-1 access. HALT!");
+  	printf("\n%s: system does not support type-1 access. HALT!", __FUNCTION__);
 		HALT();	
   }
 
