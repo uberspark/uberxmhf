@@ -126,7 +126,8 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
   }else{
 		dest_vcpu->sipivector = (u8)icr_low_value;
   	dest_vcpu->sipireceived = 1;
-  	printf("\nCPU(0x%02x): Sent SIPI command to AP, should awaken it!");
+  	printf("\nCPU(0x%02x): Sent SIPI command to AP, should awaken it!",
+               vcpu->id);
   }
 
 	if(have_all_cores_recievedSIPI())
