@@ -86,7 +86,7 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
 		goto fallthrough;
 	}
 	
-	printf("\nACPI RSDP at 0x%08x", rsdp);
+	printf("\nACPI RSDP at 0x%08x", (u32)rsdp);
 
 #if 0	
 	xsdt=(ACPI_XSDT *)(u32)rsdp->xsdtaddress;
@@ -109,7 +109,7 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
 	rsdt=(ACPI_RSDT *)(u32)rsdp->rsdtaddress;
 	n_rsdt_entries=(u32)((rsdt->length-sizeof(ACPI_RSDT))/4);
 
-	printf("\nACPI RSDT at 0x%08x", rsdt);
+	printf("\nACPI RSDT at 0x%08x", (u32)rsdt);
   printf("\n	len=0x%08x, headerlen=0x%08x, numentries=%u", 
 			rsdt->length, sizeof(ACPI_RSDT), n_rsdt_entries);
   
@@ -131,7 +131,7 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
 		goto fallthrough;
 	}
 
-	printf("\nACPI MADT at 0x%08x", madt);
+	printf("\nACPI MADT at 0x%08x", (u32)madt);
 	printf("\n	len=0x%08x, record-length=%u bytes", madt->length,
 			madt->length - sizeof(ACPI_MADT));
 	
@@ -277,7 +277,7 @@ static u32 mp_scan_config(u32 base, u32 length, MPFP **mpfp){
   u32 mem;
 
   printf("\n%s: Finding MP table from 0x%08x for %u bytes",
-                        __FUNCTION__, bp, length);
+                        __FUNCTION__, (u32)bp, length);
 
   while (length > 0) {
      mpf = (MPFP *)bp;
@@ -288,7 +288,7 @@ static u32 mp_scan_config(u32 base, u32 length, MPFP **mpfp){
                      || (mpf->spec_rev == 4))) {
 
                         printf("\n%s: found SMP MP-table at 0x%08x",
-                               __FUNCTION__, mpf);
+                               __FUNCTION__, (u32)mpf);
 
 												*mpfp = mpf;
                         return 1;

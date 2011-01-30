@@ -623,7 +623,7 @@ void cstartup(multiboot_info_t *mbi){
 
     //print out stats
     printf("\nINIT(early): relocated hypervisor binary image to 0x%08x", hypervisor_image_baseaddress);
-    printf("\nINIT(early): 2M aligned size = 0x%08x", PAGE_ALIGN_UP2M((mod_array[0].mod_end - mod_array[0].mod_start)));
+    printf("\nINIT(early): 2M aligned size = 0x%08lx", PAGE_ALIGN_UP2M((mod_array[0].mod_end - mod_array[0].mod_start)));
 
     //fill in "sl" parameter block
     {
