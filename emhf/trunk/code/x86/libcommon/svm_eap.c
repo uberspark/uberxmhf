@@ -38,6 +38,14 @@
 
 #include <target.h>
 
+//static variables 
+//XXX - still need to decide if these have to be global or encapsulated
+//within VCPU or some other structure
+static	u32 dev_hdr_reg=0;		//DEV header register (32-bit)
+static 	u32 dev_fnidx_reg=0;	//DEV function/index register (32-bit)
+static	u32 dev_data_reg=0;		//DEV data register (32-bit)
+
+
 //initialize SVM EAP a.k.a DEV
 //returns 1 if all went well, else 0
 u32 svm_eap_initialize(void){
@@ -46,9 +54,6 @@ u32 svm_eap_initialize(void){
 	u32 mc_caplist_id;
 	u32 found_dev=0;
 	
-	u32 dev_hdr_reg=0;		//DEV header register (32-bit)
-	u32 dev_fnidx_reg=0;	//DEV function/index register (32-bit)
-	u32 dev_data_reg=0;		//DEV data register (32-bit)
 	
 	//we first need to detect the DEV capability block
 	//the DEV capability block is in the PCI configuration space 
@@ -110,4 +115,48 @@ u32 svm_eap_initialize(void){
 		
 		return 1;  	
 }
+
+//DEV "read" function
+//inputs: function (DEV function), index (DEV functions DEV_BASE_LO,
+//DEV_BASE_HI and DEV_MAP have multiple instances, the index selects
+//the appropriate instance in such cases; 0 for all other functions),
+u32 svm_eap_dev_read(u32 function, u32 index){
+	u32 value;
+
+	//sanity check on DEV registers
+	ASSERT(dev_hdr_reg != 0 && dev_fnidx_reg !=0 && dev_data_reg != 0);
+
+	//step-1: write function and index to dev_fnidx_reg
+	//format of dev_fnidx_reg is in AMD Dev. Vol2 (p. 407)
+	pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
+		dev_fnidx_reg, sizeof(u32), (u32)(((function & 0xff) << 8) + (index & 0xff)) );
+
+	//step-2: read 32-bit value from dev_data_reg
+	pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
+		dev_data_reg, sizeof(u32), &value);
+  
+  return value;
+}
+
+//DEV "write" function
+//inputs: function (DEV function), index (DEV functions DEV_BASE_LO,
+//DEV_BASE_HI and DEV_MAP have multiple instances, the index selects
+//the appropriate instance in such cases; 0 for all other functions),
+//and value (value to be written to the DEV function)
+void svm_eap_dev_write(u32 function, u32 index, u32 value){
+	
+	//sanity check on DEV registers
+	ASSERT(dev_hdr_reg != 0 && dev_fnidx_reg !=0 && dev_data_reg != 0);
+
+	//step-1: write function and index to dev_fnidx_reg
+	//format of dev_fnidx_reg is in AMD Dev. Vol2 (p. 407)
+	pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
+		dev_fnidx_reg, sizeof(u32), (u32)(((function & 0xff) << 8) + (index & 0xff)) );
+
+	//step-2: write 32-bit value to dev_data_reg
+	pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
+		dev_data_reg, sizeof(u32), value);
+}
+
+
 
