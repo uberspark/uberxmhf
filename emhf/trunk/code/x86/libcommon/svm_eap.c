@@ -120,7 +120,7 @@ u32 svm_eap_initialize(void){
 //inputs: function (DEV function), index (DEV functions DEV_BASE_LO,
 //DEV_BASE_HI and DEV_MAP have multiple instances, the index selects
 //the appropriate instance in such cases; 0 for all other functions),
-u32 svm_eap_dev_read(u32 function, u32 index){
+static u32 svm_eap_dev_read(u32 function, u32 index){
 	u32 value;
 
 	//sanity check on DEV registers
@@ -143,7 +143,7 @@ u32 svm_eap_dev_read(u32 function, u32 index){
 //DEV_BASE_HI and DEV_MAP have multiple instances, the index selects
 //the appropriate instance in such cases; 0 for all other functions),
 //and value (value to be written to the DEV function)
-void svm_eap_dev_write(u32 function, u32 index, u32 value){
+static void svm_eap_dev_write(u32 function, u32 index, u32 value){
 	
 	//sanity check on DEV registers
 	ASSERT(dev_hdr_reg != 0 && dev_fnidx_reg !=0 && dev_data_reg != 0);
@@ -156,6 +156,27 @@ void svm_eap_dev_write(u32 function, u32 index, u32 value){
 	//step-2: write 32-bit value to dev_data_reg
 	pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
 		dev_data_reg, sizeof(u32), value);
+}
+
+//------------------------------------------------------------------------------
+//SVM DEV function implementation
+
+//invalidate DEV cache
+void svm_eap_dev_invalidate_cache(void){
+  dev_cr_t dev_cr;
+
+  dev_cr.bytes = svm_eap_dev_read(DEV_CR, 0);	//read current DEV_CR value
+  dev_cr.fields.devinv = 1;										//clear DEV cache
+  dev_cr.fields.deven = 1;										//ensure DEV is enabled
+  svm_eap_dev_write(DEV_CR, 0, dev_cr.bytes);	//write modified DEV_CR to invalidate caches
+
+  //wait until DEV h/w completes invalidation, seems like this may
+  //not be fast enough for us to skip the wait!
+  do{
+		dev_cr.bytes = svm_eap_dev_read(DEV_CR, 0);	//read DEV_CR value
+	}while(dev_cr.fields.devinv == 1);	//h/w clears the devinv bit when done
+
+  return;
 }
 
 
