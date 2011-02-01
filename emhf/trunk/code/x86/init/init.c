@@ -434,6 +434,39 @@ bool txt_do_senter(void *phys_mle_start, size_t mle_size) {
                            phys_mle_start, mle_size);
 }
 
+static bool svm_verify_platform(void)
+{
+    uint32_t eax, edx, ebx, ecx;
+    uint64_t efer;
+
+    cpuid(0x80000001, &eax, &ebx, &ecx, &edx);
+    
+    if ((ecx & SVM_CPUID_FEATURE) == 0) {
+        printf("ERR: CPU does not support AMD SVM\n");
+        return false;
+    }
+
+    /* Check whether SVM feature is disabled in BIOS */
+    rdmsr(VM_CR_MSR, &eax, &edx);
+    if (eax & VM_CR_SVME_DISABLE) {
+        printf("ERR: AMD SVM Extension is disabled in BIOS\n");
+        return false;
+    }
+
+    /* Turn on SVM */
+    efer = rdmsr64(MSR_EFER);
+    wrmsr64(MSR_EFER, efer | (1<<EFER_SVME));
+    efer = rdmsr64(MSR_EFER);
+    if ((efer & (1<<EFER_SVME)) == 0) {
+        printf("ERR: Could not enable AMD SVM\n");
+        return false;
+    }
+
+    cpuid(0x8000000A, &eax, &ebx, &ecx, &edx);
+    printf("AMD SVM version %d enabled\n", eax & 0xff);
+
+    return true;
+}
 
 //---svm_platform_checks--------------------------------------------------------
 //attempt to detect if there is a platform issue that will prevent
@@ -483,7 +516,7 @@ static bool svm_prepare_cpu(void)
     }
     
     printf("no machine check errors\n");
-
+    
     /* clear microcode on all the APs */
 /*     if (!init_all_aps()) */
 /*         return false; */
@@ -511,9 +544,11 @@ void do_drtm(VCPU *vcpu, u32 slbase){
     //send INIT IPI to all APs 
     send_init_ipi_to_all_APs();
     printf("\nINIT(early): sent INIT IPI to APs");
-#endif  
+#endif
 
     if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
+        printf("\ncalling svm_verify_platform()...\n");
+        svm_verify_platform();
         printf("\ncalling svm_prepare_cpu()...\n");
         if(!svm_prepare_cpu()) {
             printf("\nINIT(early): ERROR: svm_prepare_cpu FAILED!\n");

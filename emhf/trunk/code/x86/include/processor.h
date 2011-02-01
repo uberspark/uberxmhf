@@ -99,6 +99,8 @@
 #define ECX_SVM 2
 #define EDX_NP 0
 
+#define SVM_CPUID_FEATURE       (1 << 2)
+
 #define CPUID_X86_FEATURE_VMX    (1<<5)
 #define CPUID_X86_FEATURE_SMX    (1<<6)
 
