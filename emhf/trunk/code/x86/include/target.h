@@ -392,6 +392,7 @@ typedef struct {
 	u32 XtVmmMPCpuinfoBuffer;
 	u32 XtVmmMPCpuinfoNumEntries;
 	u32 XtVmmTSSBase;
+	u32 RtmSVMDevBitmapBase;
 } __attribute__((packed)) RPB, *PRPB;
 
 #include <libemhf.h>	//EMHF application interface

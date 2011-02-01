@@ -115,6 +115,7 @@ XtRtmEmitIdtStub 1f
 	.extern g_midtable
 	.extern g_midtable_numentries
 	.extern g_runtime_TSS
+	.extern g_svm_dev_bitmap
 
 	.extern cstartup
 	.extern allcpus_common_start
@@ -163,6 +164,7 @@ _rpb:
 	.long g_cpumap		       //system CPU map
 	.long 0                  //number of entries
 	.long g_runtime_TSS			 //runtime TSS
+	.long	g_svm_dev_bitmap	 //runtime SVM DEV bitmap
 
 //------------------------------------------------------------------------------
 //DATA (LOCAL)

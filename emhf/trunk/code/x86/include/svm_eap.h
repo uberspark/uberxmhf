@@ -61,8 +61,17 @@
 
 #ifndef __ASSEMBLY__
 
+//SVM EAP container structure
+struct _svm_eap {
+	u32 dev_hdr_reg;			//DEV header register (32-bit)
+ 	u32 dev_fnidx_reg;		//DEV function/index register (32-bit)
+	u32 dev_data_reg;			//DEV data register (32-bit)
+	u32 dev_bitmap_vaddr;	//DEV bitmap virtual address
+};
+
+
 //DEV DEV_BASE_LO structure (p. 329, AMD BKDG)
-typedef union dev_base_low {
+typedef union dev_base_lo {
 	u32 bytes;
   struct{
     u32 valid:1; 			//1= DEV enabled, 0= DEV disabled
@@ -71,7 +80,7 @@ typedef union dev_base_low {
     u32 resv:5; 			//reserved
     u32 base_addr:20; //bits 12-31 of physical address of DEV table
   }fields;
-} __attribute__ ((packed)) dev_base_low_t;
+} __attribute__ ((packed)) dev_base_lo_t;
 
 //DEV DEV_BASE_HI structure (p. 330, AMD BKDG)
 typedef union dev_base_hi {
@@ -101,7 +110,7 @@ typedef union dev_cap{
   u32 bytes;
   struct{
     u32 rev:8; 		//DEV register set revision number (00h for current)
-    u32 n_dom:8; 	//number of protection domains implemented
+    u32 n_doms:8; 	//number of protection domains implemented
     u32 n_maps:8; //number of map registers implemented
     u32 resv:8; 	//reserved
   }fields;
@@ -173,8 +182,8 @@ typedef union dev_err_addr_hi {
 
 //initialize SVM EAP a.k.a DEV
 //returns 1 if all went well, else 0
-u32 svm_eap_initialize(void);
-
+//inputs: physical and virtual addresses of the DEV bitmap area
+u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr);
 
 
 

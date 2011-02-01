@@ -160,6 +160,9 @@ u8 g_svm_iopm[SIZEOF_IOPM_BITMAP]__attribute__(( section(".palign_data") ));
 //SVM MSR bitmap buffer
 u8 g_svm_msrpm[SIZEOF_MSRPM_BITMAP]__attribute__(( section(".palign_data") ));
 
+//SVM DEV bitmap buffer
+u8 g_svm_dev_bitmap[131072]__attribute__(( section(".palign_data") ));
+
 
 //------------------------------------------------------------------------------
 //VMX isolation layer specific runtime globals

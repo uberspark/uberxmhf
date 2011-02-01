@@ -276,6 +276,12 @@ void slmain(u32 baseaddr){
     else
         printf("\nsl_intergrity_check FAILURE");
 
+
+
+	//get a pointer to the runtime header
+ 	rpb=(RPB *)PAGE_SIZE_2M;	//runtime starts at offset 2M from sl base
+  ASSERT(rpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
+
     
 	//setup DMA protection on runtime (secure loader is already DMA protected)
 	//WIP
@@ -286,10 +292,21 @@ void slmain(u32 baseaddr){
 		//initialize external access protection (DMA protection)
 		printf("\nSL: initializing DMA protection...");
 		if(get_cpu_vendor() == CPU_VENDOR_AMD){
-			if(!svm_eap_initialize()){
+			u32 svm_eap_dev_bitmap_paddr, svm_eap_dev_bitmap_vaddr;
+			
+			svm_eap_dev_bitmap_paddr = runtime_physical_base + (u32)rpb->RtmSVMDevBitmapBase - __TARGET_BASE;
+			svm_eap_dev_bitmap_vaddr = PAGE_SIZE_2M + (u32)rpb->RtmSVMDevBitmapBase - __TARGET_BASE;
+			  
+			if(!svm_eap_initialize(svm_eap_dev_bitmap_paddr, svm_eap_dev_bitmap_vaddr)){
 				printf("\nSL: Unable to initialize SVM EAP (DEV). HALT!");
 				HALT();
 			}
+			
+			printf("\nSL: Initialized DEV.");
+			
+			svm_eap_dev_protect(runtime_physical_base, slpb.runtime_size);
+			printf("\nSL: Protected Runtime (%08x-%08x) using DEV.", runtime_physical_base,
+					runtime_physical_base + slpb.runtime_size);
 		}
 	
 	
@@ -301,9 +318,6 @@ void slmain(u32 baseaddr){
 	
 	//setup runtime image for startup
 	
-		//get a pointer to the runtime header
-  	rpb=(RPB *)PAGE_SIZE_2M;	//runtime starts at offset 2M from sl base
-    ASSERT(rpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
 		
     //store runtime physical and virtual base addresses along with size
   	rpb->XtVmmRuntimePhysBase = runtime_physical_base;

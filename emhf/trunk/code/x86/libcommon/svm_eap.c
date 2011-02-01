@@ -39,21 +39,37 @@
 #include <target.h>
 
 //static variables 
-//XXX - still need to decide if these have to be global or encapsulated
-//within VCPU or some other structure
-static	u32 dev_hdr_reg=0;		//DEV header register (32-bit)
-static 	u32 dev_fnidx_reg=0;	//DEV function/index register (32-bit)
-static	u32 dev_data_reg=0;		//DEV data register (32-bit)
+//SVM EAP container structure, contains the DEV registers and the DEV bitmap 
+static struct _svm_eap _svm_eap __attribute__(( section(".data") ));
+
+//SVM DEV Bitmap. Currently covers 0-4GB physical memory range. Should
+//be fine since our hypervisor is loaded within this range.
+//u8	dev_bitmap[131072];
+
+
+//forward declarations for some static (local) functions
+static void svm_eap_dev_write(u32 function, u32 index, u32 value);
+static u32 svm_eap_dev_read(u32 function, u32 index);
+
+
 
 
 //initialize SVM EAP a.k.a DEV
 //returns 1 if all went well, else 0
-u32 svm_eap_initialize(void){
+//inputs: physical and virtual addresses of the DEV bitmap area
+u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
 	u32 mc_capabilities_pointer;
 	u32 mc_caplist_nextptr;
 	u32 mc_caplist_id;
 	u32 found_dev=0;
 	
+	//clear the SVM EAP container structure members including the DEV
+	//bitmap
+	memset((void *)&_svm_eap, 0, sizeof(struct _svm_eap));
+
+	//ensure dev_bitmap_paddr is PAGE_ALIGNED
+	ASSERT( (dev_bitmap_paddr & 0xFFF) == 0 );
+
 	
 	//we first need to detect the DEV capability block
 	//the DEV capability block is in the PCI configuration space 
@@ -102,16 +118,80 @@ u32 svm_eap_initialize(void){
 		printf("\n%s: found DEV capability block at index %04x", __FUNCTION__, mc_caplist_nextptr);
 		
 		//now obtain the PCI configuration space indices for DEV header, fn/idx
-		//and data registers
-		dev_hdr_reg = mc_caplist_nextptr;
-		dev_fnidx_reg = dev_hdr_reg + sizeof(u32);
-		dev_data_reg = dev_hdr_reg + (2 * sizeof(u32));
+		//and data registers and store them in the SVM EAP container structure
+		_svm_eap.dev_hdr_reg = mc_caplist_nextptr;
+		_svm_eap.dev_fnidx_reg = mc_caplist_nextptr + sizeof(u32);
+		_svm_eap.dev_data_reg = mc_caplist_nextptr + (2 * sizeof(u32));
 		
 		
 		//print it out for now...
-		printf("\n%s: dev_hdr_reg at %02x:%02x.%1x(%04x)", __FUNCTION__, DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, dev_hdr_reg);
-		printf("\n%s: dev_fnidx_reg at %02x:%02x.%1x(%04x)", __FUNCTION__, DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, dev_fnidx_reg);
-		printf("\n%s: dev_data_reg at %02x:%02x.%1x(%04x)", __FUNCTION__, DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, dev_data_reg);
+		printf("\n%s: dev_hdr_reg at %02x:%02x.%1x(%04x)", __FUNCTION__, DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, _svm_eap.dev_hdr_reg);
+		printf("\n%s: dev_fnidx_reg at %02x:%02x.%1x(%04x)", __FUNCTION__, DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, _svm_eap.dev_fnidx_reg);
+		printf("\n%s: dev_data_reg at %02x:%02x.%1x(%04x)", __FUNCTION__, DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, _svm_eap.dev_data_reg);
+		
+		
+		//setup DEV
+		{
+			dev_cap_t dev_cap;
+  		dev_map_t dev_map;
+  		dev_base_lo_t dev_base_lo;
+  		dev_base_hi_t dev_base_hi;
+  		dev_cr_t dev_cr;
+  		u32 i;
+
+			//0. populate the DEV bitmap physical address in the EAP structure
+			_svm_eap.dev_bitmap_vaddr = dev_bitmap_vaddr;
+			printf("\n	DEV: bitmap at v:p addr %08x:%08x", _svm_eap.dev_bitmap_vaddr,
+					dev_bitmap_paddr);
+
+  		//1. read the DEV revision, and the number of maps and domains supported 
+  		dev_cap.bytes = svm_eap_dev_read(DEV_CAP, 0);
+  		printf("\n	DEV:rev=%u, n_doms=%u, n_maps=%u", dev_cap.fields.rev, dev_cap.fields.n_doms, dev_cap.fields.n_maps);
+  		
+			//2. disable all the DEV maps. AMD manuals do not mention anything about
+			//the reset state of the map registers
+  		dev_map.fields.valid0 = 0;
+  		dev_map.fields.valid1 = 0;
+  		for (i = 0; i < dev_cap.fields.n_maps; i++)
+    		svm_eap_dev_write(DEV_MAP, i, dev_map.bytes);
+			printf("\n	DEV: cleared map registers.");
+			
+			//3. set the DEV_BASE_HI and DEV_BASE_LO registers of domain 0 
+  		dev_base_hi.bytes = 0; //our DEV bitmap is within 4GB physical 
+		  svm_eap_dev_write(DEV_BASE_HI, 0, dev_base_hi.bytes);
+  		dev_base_lo.fields.valid = 1; 		//valid
+  		dev_base_lo.fields.protect = 0;		
+  		dev_base_lo.fields.size = 0;      //4GB
+  		dev_base_lo.fields.resv = 0;
+  		dev_base_lo.fields.base_addr = (u32)dev_bitmap_paddr >> 12;
+  		svm_eap_dev_write(DEV_BASE_LO, 0, dev_base_lo.bytes);
+  		printf("\n	DEV: set DEV_BASE_LO and DEV_BASE_HI.");
+
+			//4. invalidate the DEV_BASE_HIGH and DEV_BASE_LOW registers of all other
+   		//domains.
+		  dev_base_lo.fields.valid = 0;
+  		dev_base_lo.fields.base_addr = 0;
+  		for (i = 1; i < dev_cap.fields.n_doms; i ++){
+    		svm_eap_dev_write(DEV_BASE_HI, i, dev_base_hi.bytes);
+    		svm_eap_dev_write(DEV_BASE_LO, i, dev_base_lo.bytes);
+  		}
+      printf("\n	DEV: invalidated other domains.");
+      
+      
+      //5. enable DEV protections 
+  		dev_cr.fields.deven = 1;
+  		dev_cr.fields.iodis = 1;
+  		dev_cr.fields.mceen = 0;
+  		dev_cr.fields.devinv = 0;
+  		dev_cr.fields.sldev = 1; 
+  		dev_cr.fields.walkprobe = 0;
+  		dev_cr.fields.resv0 = 0;
+  		dev_cr.fields.resv1 = 0;
+  		svm_eap_dev_write(DEV_CR, 0, dev_cr.bytes);
+			printf("\n	DEV: enabled protections.");
+      	
+		}
+
 		
 		return 1;  	
 }
@@ -124,16 +204,16 @@ static u32 svm_eap_dev_read(u32 function, u32 index){
 	u32 value;
 
 	//sanity check on DEV registers
-	ASSERT(dev_hdr_reg != 0 && dev_fnidx_reg !=0 && dev_data_reg != 0);
+	ASSERT(_svm_eap.dev_hdr_reg != 0 && _svm_eap.dev_fnidx_reg !=0 && _svm_eap.dev_data_reg != 0);
 
 	//step-1: write function and index to dev_fnidx_reg
 	//format of dev_fnidx_reg is in AMD Dev. Vol2 (p. 407)
 	pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
-		dev_fnidx_reg, sizeof(u32), (u32)(((function & 0xff) << 8) + (index & 0xff)) );
+		_svm_eap.dev_fnidx_reg, sizeof(u32), (u32)(((function & 0xff) << 8) + (index & 0xff)) );
 
 	//step-2: read 32-bit value from dev_data_reg
 	pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
-		dev_data_reg, sizeof(u32), &value);
+		_svm_eap.dev_data_reg, sizeof(u32), &value);
   
   return value;
 }
@@ -146,16 +226,16 @@ static u32 svm_eap_dev_read(u32 function, u32 index){
 static void svm_eap_dev_write(u32 function, u32 index, u32 value){
 	
 	//sanity check on DEV registers
-	ASSERT(dev_hdr_reg != 0 && dev_fnidx_reg !=0 && dev_data_reg != 0);
+	ASSERT(_svm_eap.dev_hdr_reg != 0 && _svm_eap.dev_fnidx_reg !=0 && _svm_eap.dev_data_reg != 0);
 
 	//step-1: write function and index to dev_fnidx_reg
 	//format of dev_fnidx_reg is in AMD Dev. Vol2 (p. 407)
 	pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
-		dev_fnidx_reg, sizeof(u32), (u32)(((function & 0xff) << 8) + (index & 0xff)) );
+		_svm_eap.dev_fnidx_reg, sizeof(u32), (u32)(((function & 0xff) << 8) + (index & 0xff)) );
 
 	//step-2: write 32-bit value to dev_data_reg
 	pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
-		dev_data_reg, sizeof(u32), value);
+		_svm_eap.dev_data_reg, sizeof(u32), value);
 }
 
 //------------------------------------------------------------------------------
@@ -221,7 +301,7 @@ void svm_eap_dev_protect(u32 paddr, u32 size){
 	
 	//protect pages from paligned_paddr_start through paligned_paddr_end inclusive
 	for(i=paligned_paddr_start; i <= paligned_paddr_end; i+= PAGE_SIZE_4K){
-		svm_eap_dev_set_page_protection(i >> PAGE_SHIFT_4K, NULL);
+		svm_eap_dev_set_page_protection(i >> PAGE_SHIFT_4K, (u8 *)_svm_eap.dev_bitmap_vaddr);
 		svm_eap_dev_invalidate_cache();	//flush DEV cache
 	}
 }
@@ -239,7 +319,7 @@ void svm_eap_dev_unprotect(u32 paddr, u32 size){
 	
 	//protect pages from paligned_paddr_start through paligned_paddr_end inclusive
 	for(i=paligned_paddr_start; i <= paligned_paddr_end; i+= PAGE_SIZE_4K){
-		svm_eap_dev_clear_page_protection(i >> PAGE_SHIFT_4K, NULL);
+		svm_eap_dev_clear_page_protection(i >> PAGE_SHIFT_4K, (u8 *)_svm_eap.dev_bitmap_vaddr);
 		svm_eap_dev_invalidate_cache();	//flush DEV cache
 	}
 }
