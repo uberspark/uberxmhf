@@ -434,6 +434,8 @@ bool txt_do_senter(void *phys_mle_start, size_t mle_size) {
                            phys_mle_start, mle_size);
 }
 
+//---svm_verify_platform-------------------------------------------------------
+//do some basic checks on SVM platform to ensure DRTM should work as expected
 static bool svm_verify_platform(void)
 {
     uint32_t eax, edx, ebx, ecx;
@@ -517,15 +519,8 @@ static bool svm_prepare_cpu(void)
     
     printf("no machine check errors\n");
     
-    /* clear microcode on all the APs */
-/*     if (!init_all_aps()) */
-/*         return false; */
-/*     if (!clear_microcode()) */
-/*         return false; */
-
-    /* put all APs in INIT */
-/*     if (!init_all_aps()) */
-/*         return false; */
+    /* clear microcode on all the APs handled in mp_cstartup() */
+    /* put all APs in INIT handled in do_drtm() */
 
     /* all is well with the processor state */
     printf("CPU is ready for SKINIT\n");
@@ -547,15 +542,14 @@ void do_drtm(VCPU *vcpu, u32 slbase){
 #endif
 
     if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
-        printf("\ncalling svm_verify_platform()...\n");
-        svm_verify_platform();
-        printf("\ncalling svm_prepare_cpu()...\n");
+        if(!svm_verify_platform()) {
+            printf("\nINIT(early): ERROR: svm_verify_platform FAILED!\n");
+            HALT();
+        }
         if(!svm_prepare_cpu()) {
             printf("\nINIT(early): ERROR: svm_prepare_cpu FAILED!\n");
             HALT();
         }
-        printf("\nINIT(early): sending additional INIT IPI to APs");
-        send_init_ipi_to_all_APs();
         //issue SKINIT
         //our secure loader is the first 64K of the hypervisor image
         printf("\nINIT(early): transferring control to SL via SKINIT...");
@@ -678,6 +672,8 @@ void hashandprint(const char* prefix, const u8 *bytes, size_t len) {
     SHA_CTX ctx;
     u8 digest[SHA_DIGEST_LENGTH];
 
+    printf("\nhashandprint: processing 0x%08x bytes at addr 0x%08x", len, (u32)bytes);
+    
     SHA1_Init(&ctx);
     SHA1_Update(&ctx, bytes, len);
     SHA1_Final(digest, &ctx);
@@ -697,6 +693,35 @@ void hashandprint(const char* prefix, const u8 *bytes, size_t len) {
 
         print_hex("[AMD] Expected PCR-17: ", pcr17, SHA_DIGEST_LENGTH);
     }    
+}
+
+/* The TPM must be ready for the AMD CPU to send it commands at
+ * Locality 4 when executing SKINIT. Ideally all that is necessary is
+ * to deactivate_all_localities(), but some TPM's are still not
+ * sufficiently "awake" after that.  Thus, make sure it successfully
+ * responds to a command at some locality, *then*
+ * deactivate_all_localities().
+ */
+bool svm_prepare_tpm(void) {
+    uint32_t locality = EMHF_TPM_LOCALITY_PREF; /* target.h */
+    bool ret = true;
+    
+    printf("\nINIT:TPM: prepare_tpm starting.");
+    //dump_locality_access_regs();
+    deactivate_all_localities();
+    //dump_locality_access_regs();
+    
+    if(TPM_SUCCESS == tpm_wait_cmd_ready(locality)) {
+        printf("INIT:TPM: successfully opened in Locality %d.\n", locality);            
+    } else {
+        printf("INIT:TPM: ERROR: Locality %d could not be opened.\n", locality);
+        ret = false;
+    }
+    deactivate_all_localities();
+    //dump_locality_access_regs();
+    printf("\nINIT:TPM: prepare_tpm done.");
+
+    return ret;
 }
 
 //---init main----------------------------------------------------------------
@@ -759,14 +784,14 @@ void cstartup(multiboot_info_t *mbi){
 
     //relocate the hypervisor binary to the above calculated address
     memcpy((void*)hypervisor_image_baseaddress, (void*)mod_array[0].mod_start, sl_rt_size);
-    hashandprint("INIT(early): sha1(sl+runtime): ",
+    hashandprint("    INIT(early): sha1(sl+runtime): ",
                  (u8*)hypervisor_image_baseaddress, sl_rt_size);
 
     ASSERT(sl_rt_size > 0x20000); /* 128K */
     
-    hashandprint("INIT(early): sha1(64K sl): ",
+    hashandprint("    INIT(early): sha1(64K sl): ",
                  (u8*)hypervisor_image_baseaddress, 0x10000);
-    hashandprint("INIT(early): sha1(128K sl): ",
+    hashandprint("    INIT(early): sha1(128K sl): ",
                  (u8*)hypervisor_image_baseaddress, 0x20000);
 
     /* XXX TODO: Somehow ensure runtime for SL fits inside first 64K
@@ -835,7 +860,7 @@ u32 isbsp(void){
 
 
 //---CPUs must all have their microcode cleared for SKINIT to be successful-----
-void clearMicrocode(VCPU *vcpu){
+void svm_clear_microcode(VCPU *vcpu){
     u32 ucode_rev;
     u32 dummy=0;
 
@@ -867,12 +892,14 @@ void mp_cstartup (VCPU *vcpu){
         //clear microcode if AMD CPU
         if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
             printf("\nBSP(0x%02x): Clearing microcode...", vcpu->id);
-            clearMicrocode(vcpu);
+            svm_clear_microcode(vcpu);
             printf("\nBSP(0x%02x): Microcode clear.", vcpu->id);
 
-            deactivate_all_localities(); /* prepare TPM for DRTM */            
+            if(!svm_prepare_tpm()) {
+                printf("\nBSP(0x%02x): ERROR: svm_prepare_tpm FAILED.", vcpu->id);
+                // XXX TODO HALT();
+            }            
         }
-
          
         printf("\nBSP(0x%02x): Rallying APs...", vcpu->id);
 
@@ -898,7 +925,7 @@ void mp_cstartup (VCPU *vcpu){
         //clear microcode if AMD CPU
         if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
             printf("\nAP(0x%02x): Clearing microcode...", vcpu->id);
-            clearMicrocode(vcpu);
+            svm_clear_microcode(vcpu);
             printf("\nAP(0x%02x): Microcode clear.", vcpu->id);
         }
     

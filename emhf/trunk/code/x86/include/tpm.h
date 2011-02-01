@@ -86,6 +86,7 @@
 
 #define TPM_NR_LOCALITIES             5
 
+
 /*
  * return code:
  * The TPM has five types of return code. One indicates successful operation

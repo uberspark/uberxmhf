@@ -128,7 +128,7 @@ void runtime_setup_paging(u32 physaddr, u32 virtaddr, u32 totalsize){
 /* Note: calling this *before* paging is enabled is important. */
 bool sl_integrity_check(void) {
     int ret;
-    u32 locality = 1; // valid: 1 or 2
+    u32 locality = EMHF_TPM_LOCALITY_PREF; /* target.h */
 
     tpm_pcr_value_t pcr17, pcr18;    
 
@@ -159,9 +159,9 @@ bool sl_integrity_check(void) {
         }        
     } else { /* AMD or non-SENTER Intel */
         /* some systems leave locality 0 open for legacy software */
-        dump_locality_access_regs();
+        //dump_locality_access_regs();
         deactivate_all_localities();
-        dump_locality_access_regs();
+        //dump_locality_access_regs();
         
         if(TPM_SUCCESS == tpm_wait_cmd_ready(locality)) {
             printf("SL: TPM successfully opened in Locality %d.\n", locality);            
@@ -190,6 +190,9 @@ bool sl_integrity_check(void) {
     }
     print_hex("PCR-18: ", &pcr18, sizeof(pcr18));    
 
+    /* free TPM so that OS driver works as expected */
+    deactivate_all_localities();
+    
     return true;    
 }
 

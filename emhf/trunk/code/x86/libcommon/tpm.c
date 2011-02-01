@@ -99,7 +99,7 @@ static inline u8 readb(u32 addr) {
 }
 
 /* un-comment to enable detailed command tracing */
-#define TPM_TRACE
+#define noTPM_TRACE
 
 /* ~5 secs are required for Infineon that requires this, so leave some extra */
 #define MAX_SAVESTATE_RETRIES       60
