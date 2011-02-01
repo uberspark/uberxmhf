@@ -162,6 +162,7 @@
  * Constants related to MSR's.
  */
 #define APICBASE_BSP                                  0x00000100
+#define MSR_IA32_APICBASE_ENABLE                      (1<<11)
 
 #define MSR_IA32_SMM_MONITOR_CTL_VALID                1
 #define MSR_IA32_SMM_MONITOR_CTL_MSEG_BASE(x)         (x>>12)

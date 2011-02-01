@@ -238,6 +238,7 @@ static bool tpm_validate_locality(uint32_t locality)
     return false;
 }
 
+
 #define TIMEOUT_UNIT    (0x100000 / 330) /* ~1ms, 1 tpm r/w need > 330ns */
 #define TIMEOUT_A       750  /* 750ms */
 #define TIMEOUT_B       2000 /* 2s */
@@ -267,16 +268,48 @@ static tpm_timeout_t g_timeout = {TIMEOUT_A,
 #define TPM_RSP_READ_TIME_OUT           \
           (TIMEOUT_UNIT * g_timeout.timeout_d)  /* let it long enough */
 
-static uint32_t tpm_wait_cmd_ready(uint32_t locality)
+void dump_locality_access_regs(void) {
+    tpm_reg_access_t reg_acc;
+    uint32_t locality;
+
+    printf("\n%s():\n", __FUNCTION__);
+    for(locality=0; locality <= 3; locality++) {    
+        read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+        printf("  TPM: Locality %d Access reg content: 0x%02x\n",
+               locality, (uint32_t)reg_acc._raw[0]);
+        if ( reg_acc.tpm_reg_valid_sts == 0 ) {
+            printf("    TPM: Access reg not valid\n");
+        }
+    }
+}
+
+void deactivate_all_localities(void) {
+    tpm_reg_access_t reg_acc;
+    uint32_t locality;
+
+    printf("\nTPM: %s()\n", __FUNCTION__);
+    for(locality=0; locality <= 3; locality++) {    
+        reg_acc._raw[0] = 0;
+        reg_acc.active_locality = 1;
+        write_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+    }
+}
+
+uint32_t tpm_wait_cmd_ready(uint32_t locality)
 {
     uint32_t            i;
     tpm_reg_access_t    reg_acc;
     tpm_reg_sts_t       reg_sts;
 
+/*     //temporary debug prints */
+/*     dump_locality_access_regs(); */
+/*     deactivate_all_localities(); */
+/*     dump_locality_access_regs(); */
+
     /* ensure the contents of the ACCESS register are valid */
     read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
 #ifdef TPM_TRACE
-    printf("TPM: Access reg content: 0x%02x\n", (uint32_t)reg_acc._raw[0]);
+    printf("\nTPM: Access reg content: 0x%02x\n", (uint32_t)reg_acc._raw[0]);
 #endif
     if ( reg_acc.tpm_reg_valid_sts == 0 ) {
         printf("TPM: Access reg not valid\n");
@@ -299,7 +332,7 @@ static uint32_t tpm_wait_cmd_ready(uint32_t locality)
     } while ( i <= TPM_ACTIVE_LOCALITY_TIME_OUT);
 
     if ( i > TPM_ACTIVE_LOCALITY_TIME_OUT ) {
-        printf("TPM: access reg request use timeout\n");
+        printf("TPM: access reg request use timeout (i=%d)\n", i);
         return TPM_FAIL;
     }
 

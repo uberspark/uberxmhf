@@ -157,10 +157,18 @@ bool sl_integrity_check(void) {
             printf("TPM: ERROR: Locality opening UNIMPLEMENTED on Intel without SENTER\n");
             return false;
         }        
-    } else { /* AMD */
-        // XXX TODO: Open locality on AMD / non-TXT Intel boot
-        printf("TPM: ERROR: Locality opening UNIMPLEMENTED on AMD\n");
-        return false;
+    } else { /* AMD or non-SENTER Intel */
+        /* some systems leave locality 0 open for legacy software */
+        dump_locality_access_regs();
+        deactivate_all_localities();
+        dump_locality_access_regs();
+        
+        if(TPM_SUCCESS == tpm_wait_cmd_ready(locality)) {
+            printf("SL: TPM successfully opened in Locality %d.\n", locality);            
+        } else {
+            printf("SL: TPM ERROR: Locality %d could not be opened.\n", locality);
+            return false;
+        }
     }
     
     if(!is_tpm_ready(locality)) {

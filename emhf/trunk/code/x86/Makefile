@@ -19,6 +19,11 @@ all:
 
 	# concatenate sl image and runtime image 
 	$(CAT) ./sl/sl.bin ./runtime/runtime.bin > ./hypervisor.tmp.img
+	dd if=./hypervisor.tmp.img of=hypervisor.tmp-64K.img bs=1024 count=64
+	dd if=./hypervisor.tmp.img of=hypervisor.tmp-128K.img bs=1024 count=128
+	sha1sum hypervisor.tmp-64K.img
+	sha1sum hypervisor.tmp-128K.img
+	sha1sum hypervisor.tmp.img
 	gzip -c ./hypervisor.tmp.img > ./hypervisor-$(TARGET_HWPLATFORM).bin.gz
 	$(RM) -rf ./hypervisor.tmp.img 
 

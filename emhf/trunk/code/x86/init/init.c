@@ -39,6 +39,8 @@
 //---includes-------------------------------------------------------------------
 #include <target.h>
 #include <txt.h>
+#include <sha1.h>
+#include <tpm.h>
 
 #include "i5_i7_dual_sinit_18.h" // XXX TODO read this from MBI stuff
 
@@ -120,6 +122,7 @@ void udelay(u32 usecs){
 void send_init_ipi_to_all_APs(void) {
     u32 eax, edx;
     volatile u32 *icr;
+    u32 timeout = 0x01000000;
   
     //read LAPIC base address from MSR
     rdmsr(MSR_APIC_BASE, &eax, &edx);
@@ -137,9 +140,12 @@ void send_init_ipi_to_all_APs(void) {
         u32 val;
         do{
             val = *icr;
-        }while( (val & 0x1000) );
+        }while(--timeout > 0 && (val & 0x1000) );
     }
-    printf("Done.");
+    if(timeout == 0) {
+        printf("\nERROR: send_init_ipi_to_all_APs() TIMEOUT!\n");
+    }
+    printf("\nDone.\n");
 }
 
 
@@ -429,25 +435,97 @@ bool txt_do_senter(void *phys_mle_start, size_t mle_size) {
 }
 
 
+//---svm_platform_checks--------------------------------------------------------
+//attempt to detect if there is a platform issue that will prevent
+//successful invocation of skinit
+static bool svm_prepare_cpu(void)
+{
+    uint64_t mcg_cap, mcg_stat;
+    uint64_t apicbase;
+    uint32_t cr0;
+    u32 i, bound;
+
+    /* must be running at CPL 0 => this is implicit in even getting this far */
+    /* since our bootstrap code loads a GDT, etc. */
+
+    /* must be in protected mode */
+    cr0 = read_cr0();
+    if (!(cr0 & CR0_PE)) {
+        printf("ERR: not in protected mode\n");
+        return false;
+    }
+
+    /* make sure the APIC is enabled */
+    apicbase = rdmsr64(MSR_APIC_BASE);
+    if (!(apicbase & MSR_IA32_APICBASE_ENABLE)) {
+        printf("APIC disabled\n");
+        return false;
+    }
+
+    /* verify all machine check status registers are clear */
+
+    /* no machine check in progress (IA32_MCG_STATUS.MCIP=1) */
+    mcg_stat = rdmsr64(MSR_MCG_STATUS);
+    if (mcg_stat & 0x04) {
+        printf("machine check in progress\n");
+        return false;
+    }
+
+    /* all machine check regs are clear */
+    mcg_cap = rdmsr64(MSR_MCG_CAP);
+    bound = (u32)mcg_cap & 0x000000ff;
+    for (i = 0; i < bound; i++) {
+        mcg_stat = rdmsr64(MSR_MC0_STATUS + 4*i);               
+        if (mcg_stat & (1ULL << 63)) {
+            printf("MCG[%d] = %Lx ERROR\n", i, mcg_stat);
+            return false;
+        }
+    }
+    
+    printf("no machine check errors\n");
+
+    /* clear microcode on all the APs */
+/*     if (!init_all_aps()) */
+/*         return false; */
+/*     if (!clear_microcode()) */
+/*         return false; */
+
+    /* put all APs in INIT */
+/*     if (!init_all_aps()) */
+/*         return false; */
+
+    /* all is well with the processor state */
+    printf("CPU is ready for SKINIT\n");
+
+    return true;
+}
+
 //---do_drtm--------------------------------------------------------------------
 //this establishes a dynamic root of trust
 //inputs: 
 //cpu_vendor = intel or amd
 //slbase= physical memory address of start of sl
 void do_drtm(VCPU *vcpu, u32 slbase){
-#ifdef __MP_VERSION__  
+#ifdef __MP_VERSION__
+    ASSERT(vcpu->id == 0);
     //send INIT IPI to all APs 
     send_init_ipi_to_all_APs();
     printf("\nINIT(early): sent INIT IPI to APs");
 #endif  
 
     if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
+        printf("\ncalling svm_prepare_cpu()...\n");
+        if(!svm_prepare_cpu()) {
+            printf("\nINIT(early): ERROR: svm_prepare_cpu FAILED!\n");
+            HALT();
+        }
+        printf("\nINIT(early): sending additional INIT IPI to APs");
+        send_init_ipi_to_all_APs();
         //issue SKINIT
         //our secure loader is the first 64K of the hypervisor image
-        printf("\nINIT(early): transferring control to SL...");
+        printf("\nINIT(early): transferring control to SL via SKINIT...");
         skinit((u32)slbase);
-
-    }else{
+    } else {
 /* SENTER enabled based on Makefile for now, since hypervisor cannot
  * fully boot due to MP and MTRR issues. */        
 #ifdef __DO_SENTER__ 
@@ -477,7 +555,7 @@ void do_drtm(VCPU *vcpu, u32 slbase){
         
         printf("\nINIT(early): error(fatal), should never come here!");
         HALT();
-    }    
+    }
 
 }
 
@@ -561,11 +639,36 @@ void wakeupAPs(void){
     printf("\nAPs should be awake!");
 }
 
+void hashandprint(const char* prefix, const u8 *bytes, size_t len) {
+    SHA_CTX ctx;
+    u8 digest[SHA_DIGEST_LENGTH];
+
+    SHA1_Init(&ctx);
+    SHA1_Update(&ctx, bytes, len);
+    SHA1_Final(digest, &ctx);
+
+    print_hex(prefix, digest, SHA_DIGEST_LENGTH);
+
+    /* Simulate PCR 17 value on AMD processor */
+    if(len == 0x10000) {
+        u8 zeros[SHA_DIGEST_LENGTH];
+        u8 pcr17[SHA_DIGEST_LENGTH];
+        memset(zeros, 0, SHA_DIGEST_LENGTH);
+        
+        SHA1_Init(&ctx);
+        SHA1_Update(&ctx, zeros, SHA_DIGEST_LENGTH);
+        SHA1_Update(&ctx, digest, SHA_DIGEST_LENGTH);
+        SHA1_Final(pcr17, &ctx);
+
+        print_hex("[AMD] Expected PCR-17: ", pcr17, SHA_DIGEST_LENGTH);
+    }    
+}
 
 //---init main----------------------------------------------------------------
 void cstartup(multiboot_info_t *mbi){
     module_t *mod_array;
     u32 mods_count;
+    size_t sl_rt_size;
     
     //initialize debugging early on
 #ifdef __DEBUG_SERIAL__        
@@ -615,15 +718,29 @@ void cstartup(multiboot_info_t *mbi){
     dealwithMP();
 
     //find highest 2MB aligned physical memory address that the hypervisor
-    //binary must be moved to 
-    hypervisor_image_baseaddress = dealwithE820(mbi, PAGE_ALIGN_UP2M((mod_array[0].mod_end - mod_array[0].mod_start))); 
+    //binary must be moved to
+    sl_rt_size = mod_array[0].mod_end - mod_array[0].mod_start;
+    hypervisor_image_baseaddress = dealwithE820(mbi, PAGE_ALIGN_UP2M((sl_rt_size))); 
 
     //relocate the hypervisor binary to the above calculated address
-    memcpy((void*)hypervisor_image_baseaddress, (void*)mod_array[0].mod_start, (mod_array[0].mod_end - mod_array[0].mod_start));
+    memcpy((void*)hypervisor_image_baseaddress, (void*)mod_array[0].mod_start, sl_rt_size);
+    hashandprint("INIT(early): sha1(sl+runtime): ",
+                 (u8*)hypervisor_image_baseaddress, sl_rt_size);
 
+    ASSERT(sl_rt_size > 0x20000); /* 128K */
+    
+    hashandprint("INIT(early): sha1(64K sl): ",
+                 (u8*)hypervisor_image_baseaddress, 0x10000);
+    hashandprint("INIT(early): sha1(128K sl): ",
+                 (u8*)hypervisor_image_baseaddress, 0x20000);
+
+    /* XXX TODO: Somehow ensure runtime for SL fits inside first 64K
+       (that includes SL's runtime stack) */
+    
     //print out stats
     printf("\nINIT(early): relocated hypervisor binary image to 0x%08x", hypervisor_image_baseaddress);
     printf("\nINIT(early): 2M aligned size = 0x%08lx", PAGE_ALIGN_UP2M((mod_array[0].mod_end - mod_array[0].mod_start)));
+    printf("\nINIT(early): un-aligned size = 0x%08lx", mod_array[0].mod_end - mod_array[0].mod_start);
 
     //fill in "sl" parameter block
     {
@@ -717,7 +834,10 @@ void mp_cstartup (VCPU *vcpu){
             printf("\nBSP(0x%02x): Clearing microcode...", vcpu->id);
             clearMicrocode(vcpu);
             printf("\nBSP(0x%02x): Microcode clear.", vcpu->id);
+
+            deactivate_all_localities(); /* prepare TPM for DRTM */            
         }
+
          
         printf("\nBSP(0x%02x): Rallying APs...", vcpu->id);
 
@@ -729,7 +849,10 @@ void mp_cstartup (VCPU *vcpu){
         //wait for cpus_active to become midtable_numentries -1 to indicate
         //that all APs have been successfully started
         while(cpus_active < midtable_numentries);
-    
+
+
+        //put all APs in INIT state
+        
         printf("\nBSP(0x%02x): APs ready, doing DRTM...", vcpu->id);
         do_drtm(vcpu, hypervisor_image_baseaddress); // this function will not return
     
