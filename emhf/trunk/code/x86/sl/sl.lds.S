@@ -38,36 +38,51 @@ OUTPUT_ARCH(i386)
 
 ENTRY(_sl_start)
 
+/* Goal: constrain the size of the trusted portion of the SL to
+ * systems limit the Secure Loader Block to 64K max.  Intel permits a
+ * SLB, but we want to remain compatible with both.
+ */
+              
+MEMORY
+{
+  low  (rwxai) : ORIGIN = 0,   LENGTH = 64K
+  high (rwxai) : ORIGIN = 64K, LENGTH = 1984K /* balance of 2M total */ 
+}
+
+              
 SECTIONS
 {
-	. = 0x00000000;
-	.sl_header : {
-		*(.sl_header)
- 		. = ALIGN(4096);    
-	} = 0x9090
+  . = 0x00000000;
+  .sl_header : {
+    *(.sl_header)
+    . = ALIGN(4096);    
+  } >low
 
   .text : {
-  	*(.text)
- 		. = ALIGN(4096);    
-  } =0x9090 
+    *(.text)
+    . = ALIGN(4096);    
+  } >low
 
   .data : {
     *(.data)
- 		. = ALIGN(4096);    
-  } =0x9090 
+    . = ALIGN(4096);    
+  } >low
+
   .bss : {
     *(.bss)
- 		. = ALIGN(4096);    
-  } =0x9090 
+    . = ALIGN(4096);    
+  } >low
 
-	.sl_stack : {
-		*(.sl_stack)
- 		. = ALIGN(0x10000);    
-	} =0x9090
+  .sl_stack : {
+    *(.sl_stack)
+    . = ALIGN(0x10000);
+  } >low
 
- 	.sl_params : {
-		*(.sl_params)
- 		. = ALIGN(0x200000);    
-	} =0x9090
-
+  /* Content below is UNTRUSTED.
+   * SL *MUST* sanitize any data here prior to use!
+   */
+  .sl_untrusted_params : {
+    *(.sl_params)
+    . = ALIGN(0x200000);
+  } >high
 }

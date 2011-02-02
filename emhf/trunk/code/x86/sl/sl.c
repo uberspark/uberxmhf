@@ -64,7 +64,7 @@ extern void XtLdrTransferControlToRtm(u32 gdtbase, u32 idtbase,
 #endif /* ___SLABOVE64K_INTEGRITY_HASH___ */
 
 //this is the SL parameter block and is placed in a seperate section
-struct _sl_parameter_block slpb __attribute__(( section(".sl_params") )) = {
+struct _sl_parameter_block slpb __attribute__(( section(".sl_untrusted_params") )) = {
 	.magic = SL_PARAMETER_BLOCK_MAGIC,
 };
 
