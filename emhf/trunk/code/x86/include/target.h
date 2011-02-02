@@ -62,6 +62,7 @@
 
 //boot manager (multiboot)
 #include <multiboot.h>
+
 //------------------------------------------------------------------------------
 
 //preferred TPM locality to use for access inside hypervisor
@@ -344,6 +345,16 @@ typedef struct _grube820 {
   u32 type;  
 } __attribute__((packed)) E820MAP;*/
 
+
+#define BAD_INTEGRITY_HASH "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+
+//"golden" digest values injected using CFLAGS during build process
+//NOTE: NO WAY TO SELF-CHECK slbelow64K; JUST A SANITY-CHECK
+typedef struct _integrity_measurement_values {
+    u8 sha_slbelow64K[20]; // TODO: play nice with SHA_DIGEST_LENGTH in sha1.h
+    u8 sha_slabove64K[20];
+    u8 sha_runtime[20];
+} INTEGRITY_MEASUREMENT_VALUES;
 
 //"sl" parameter block structure 
 typedef struct _sl_parameter_block {

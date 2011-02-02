@@ -75,6 +75,25 @@ u8 cpustacks[RUNTIME_STACK_SIZE * MAX_PCPU_ENTRIES] __attribute__(( section(".st
 
 extern init_core_lowlevel_setup(void);
 
+/* Don't break the build if the Makefile fails to define these. */
+#ifndef ___RUNTIME_INTEGRITY_HASH___
+#define ___RUNTIME_INTEGRITY_HASH___ BAD_INTEGRITY_HASH
+#endif /*  ___RUNTIME_INTEGRITY_HASH___ */
+#ifndef ___SLABOVE64K_INTEGRITY_HASH___
+#define ___SLABOVE64K_INTEGRITY_HASH___ BAD_INTEGRITY_HASH
+#endif /*  ___SLABOVE64K_INTEGRITY_HASH___ */
+#ifndef ___SLBELOW64K_INTEGRITY_HASH___
+#define ___SLBELOW64K_INTEGRITY_HASH___ BAD_INTEGRITY_HASH
+#endif /*  ___SLBELOW64K_INTEGRITY_HASH___ */
+
+// we should get all of these from the build process, but don't forget
+// that here in 'init' these values are UNTRUSTED
+INTEGRITY_MEASUREMENT_VALUES g_init_gold /* __attribute__(( section("") )) */ = {
+    .sha_runtime = ___RUNTIME_INTEGRITY_HASH___,
+    .sha_slabove64K = ___SLABOVE64K_INTEGRITY_HASH___,
+    .sha_slbelow64K = ___SLBELOW64K_INTEGRITY_HASH___
+};
+
 
 //---MP config table handling---------------------------------------------------
 void dealwithMP(void){
@@ -784,18 +803,17 @@ void cstartup(multiboot_info_t *mbi){
 
     //relocate the hypervisor binary to the above calculated address
     memcpy((void*)hypervisor_image_baseaddress, (void*)mod_array[0].mod_start, sl_rt_size);
-    hashandprint("    INIT(early): sha1(sl+runtime): ",
-                 (u8*)hypervisor_image_baseaddress, sl_rt_size);
 
-    ASSERT(sl_rt_size > 0x20000); /* 128K */
-    
+    ASSERT(sl_rt_size > 0x200000); /* 2M */
+
+    hashandprint("    INIT(early): sha1(runtime): ",
+                 (u8*)hypervisor_image_baseaddress+0x200000, sl_rt_size-0x200000);
     hashandprint("    INIT(early): sha1(64K sl): ",
                  (u8*)hypervisor_image_baseaddress, 0x10000);
     hashandprint("    INIT(early): sha1(128K sl): ",
                  (u8*)hypervisor_image_baseaddress, 0x20000);
-
-    /* XXX TODO: Somehow ensure runtime for SL fits inside first 64K
-       (that includes SL's runtime stack) */
+    hashandprint("    INIT(early): sha1(2M sl): ",
+                 (u8*)hypervisor_image_baseaddress, 0x200000);
     
     //print out stats
     printf("\nINIT(early): relocated hypervisor binary image to 0x%08x", hypervisor_image_baseaddress);
