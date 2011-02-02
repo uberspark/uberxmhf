@@ -38,9 +38,10 @@ OUTPUT_ARCH(i386)
 
 ENTRY(_sl_start)
 
-/* Goal: constrain the size of the trusted portion of the SL to
- * systems limit the Secure Loader Block to 64K max.  Intel permits a
- * SLB, but we want to remain compatible with both.
+/* Goal: constrain the size of the trusted portion of the SL to 64K. AMD
+ * systems limit the Secure Loader Block to 64K max.  Intel permits a   
+ * larger MLE (their name for SLB), but we want to remain compatible
+ * with both.
  */
               
 MEMORY
