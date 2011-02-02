@@ -315,6 +315,10 @@ extern uint32_t tpm_save_state(uint32_t locality);
 extern uint32_t tpm_get_random(uint32_t locality, uint8_t *random_data,
                                uint32_t *data_size);
 
+
+/* misc utility functions; XXX TODO probably belong elsewhere */
+void hashandprint(const char* prefix, const u8 *bytes, size_t len);
+
 #endif   /* __TPM_H__ */
 
 /*

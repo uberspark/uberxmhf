@@ -141,19 +141,22 @@ void runtime_setup_paging(u32 physaddr, u32 virtaddr, u32 totalsize){
  * (i.e., measurements match expectations), and integrity-check the
  * runtime. */
 /* Note: calling this *before* paging is enabled is important. */
-bool sl_integrity_check(void) {
+bool sl_integrity_check(u8* runtime_base_addr, size_t runtime_len) {
     int ret;
     u32 locality = EMHF_TPM_LOCALITY_PREF; /* target.h */
 
     tpm_pcr_value_t pcr17, pcr18;    
 
-    print_hex("Golden Runtime SHA-1: ", g_sl_gold.sha_runtime, SHA_DIGEST_LENGTH);
+    print_hex("SL: Golden Runtime SHA-1: ", g_sl_gold.sha_runtime, SHA_DIGEST_LENGTH);
+
     
     /* open TPM locality */
     ASSERT(locality == 1 || locality == 2);
     if(get_cpu_vendor() == CPU_VENDOR_INTEL) {
         txt_didvid_t didvid;
         txt_ver_fsbif_emif_t ver;
+
+        printf("\nSL: Computed Runtime SHA-1: [DISABLED until MTRR's fixed (Jon)]");
         
         /* display chipset fuse and device and vendor id info */
         didvid._raw = read_pub_config_reg(TXTCR_DIDVID);
@@ -175,6 +178,9 @@ bool sl_integrity_check(void) {
             return false;
         }        
     } else { /* AMD or non-SENTER Intel */
+        hashandprint("SL: Computed Runtime SHA-1: ",
+                     runtime_base_addr, runtime_len); /* SLOW */
+        
         /* some systems leave locality 0 open for legacy software */
         //dump_locality_access_regs();
         deactivate_all_localities();
@@ -291,7 +297,7 @@ void slmain(u32 baseaddr){
 	//TODO
 
     /* Note: calling this *before* paging is enabled is important */
-    if(sl_integrity_check())
+    if(sl_integrity_check((u8*)PAGE_SIZE_2M, slpb.runtime_size)) // XXX base addr
         printf("\nsl_intergrity_check SUCCESS");
     else
         printf("\nsl_intergrity_check FAILURE");

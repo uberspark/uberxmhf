@@ -43,7 +43,11 @@ ENTRY(_sl_start)
  * larger MLE (their name for SLB), but we want to remain compatible
  * with both.
  */
-              
+
+/* Useful reference:
+ * http://docs.redhat.com/docs/en-US/Red_Hat_Enterprise_Linux/4/html/Using_ld_the_GNU_Linker/memory.html
+ */
+
 MEMORY
 {
   low  (rwxai) : ORIGIN = 0,   LENGTH = 64K

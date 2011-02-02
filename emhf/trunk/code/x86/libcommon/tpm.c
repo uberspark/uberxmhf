@@ -2180,6 +2180,36 @@ uint32_t tpm_get_random(uint32_t locality, uint8_t *random_data,
     return ret;
 }
 
+
+/* misc utility functions; probably belong elsewhere */
+void hashandprint(const char* prefix, const u8 *bytes, size_t len) {
+    SHA_CTX ctx;
+    u8 digest[SHA_DIGEST_LENGTH];
+
+    printf("\nhashandprint: processing 0x%08x bytes at addr 0x%08x", len, (u32)bytes);
+    
+    SHA1_Init(&ctx);
+    SHA1_Update(&ctx, bytes, len);
+    SHA1_Final(digest, &ctx);
+
+    print_hex(prefix, digest, SHA_DIGEST_LENGTH);
+
+    /* Simulate PCR 17 value on AMD processor */
+    if(len == 0x10000) {
+        u8 zeros[SHA_DIGEST_LENGTH];
+        u8 pcr17[SHA_DIGEST_LENGTH];
+        memset(zeros, 0, SHA_DIGEST_LENGTH);
+        
+        SHA1_Init(&ctx);
+        SHA1_Update(&ctx, zeros, SHA_DIGEST_LENGTH);
+        SHA1_Update(&ctx, digest, SHA_DIGEST_LENGTH);
+        SHA1_Final(pcr17, &ctx);
+
+        print_hex("[AMD] Expected PCR-17: ", pcr17, SHA_DIGEST_LENGTH);
+    }    
+}
+
+
 /*
  * Local variables:
  * mode: C

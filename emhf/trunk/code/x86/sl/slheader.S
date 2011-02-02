@@ -335,7 +335,7 @@ sl_startnew:
     movw %ax, %es
     movw %ax, %ss
 
-    // Load 4G flat selectors for FS and GS (why? do we actually use these?)
+    // Load 4G flat selectors for FS and GS (used for TPM and TXT reg access)
     movw $0x18, %ax
     movw %ax, %fs
     movw %ax, %gs

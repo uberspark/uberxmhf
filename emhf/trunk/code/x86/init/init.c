@@ -687,33 +687,6 @@ void wakeupAPs(void){
     printf("\nAPs should be awake!");
 }
 
-void hashandprint(const char* prefix, const u8 *bytes, size_t len) {
-    SHA_CTX ctx;
-    u8 digest[SHA_DIGEST_LENGTH];
-
-    printf("\nhashandprint: processing 0x%08x bytes at addr 0x%08x", len, (u32)bytes);
-    
-    SHA1_Init(&ctx);
-    SHA1_Update(&ctx, bytes, len);
-    SHA1_Final(digest, &ctx);
-
-    print_hex(prefix, digest, SHA_DIGEST_LENGTH);
-
-    /* Simulate PCR 17 value on AMD processor */
-    if(len == 0x10000) {
-        u8 zeros[SHA_DIGEST_LENGTH];
-        u8 pcr17[SHA_DIGEST_LENGTH];
-        memset(zeros, 0, SHA_DIGEST_LENGTH);
-        
-        SHA1_Init(&ctx);
-        SHA1_Update(&ctx, zeros, SHA_DIGEST_LENGTH);
-        SHA1_Update(&ctx, digest, SHA_DIGEST_LENGTH);
-        SHA1_Final(pcr17, &ctx);
-
-        print_hex("[AMD] Expected PCR-17: ", pcr17, SHA_DIGEST_LENGTH);
-    }    
-}
-
 /* The TPM must be ready for the AMD CPU to send it commands at
  * Locality 4 when executing SKINIT. Ideally all that is necessary is
  * to deactivate_all_localities(), but some TPM's are still not
@@ -806,14 +779,22 @@ void cstartup(multiboot_info_t *mbi){
 
     ASSERT(sl_rt_size > 0x200000); /* 2M */
 
-    hashandprint("    INIT(early): sha1(runtime): ",
+    /* runtime */
+    print_hex("    INIT(early) *UNTRUSTED* gold runtime: ",
+              g_init_gold.sha_runtime, SHA_DIGEST_LENGTH);
+    hashandprint("    INIT(early): *UNTRUSTED* comp runtime: ",
                  (u8*)hypervisor_image_baseaddress+0x200000, sl_rt_size-0x200000);
-    hashandprint("    INIT(early): sha1(64K sl): ",
+    /* SL low 64K */
+    print_hex("    INIT(early) *UNTRUSTED* gold SL low 64K: ",
+              g_init_gold.sha_slbelow64K, SHA_DIGEST_LENGTH);
+    hashandprint("    INIT(early): *UNTRUSTED* comp SL low 64K: ",
                  (u8*)hypervisor_image_baseaddress, 0x10000);
-    hashandprint("    INIT(early): sha1(128K sl): ",
-                 (u8*)hypervisor_image_baseaddress, 0x20000);
-    hashandprint("    INIT(early): sha1(2M sl): ",
-                 (u8*)hypervisor_image_baseaddress, 0x200000);
+    /* SL above 64K */
+    print_hex("    INIT(early) *UNTRUSTED* gold SL above 64K: ",
+              g_init_gold.sha_slabove64K, SHA_DIGEST_LENGTH);
+    hashandprint("    INIT(early): *UNTRUSTED* comp SL above 64K): ",
+                 (u8*)hypervisor_image_baseaddress+0x10000, 0x200000-0x10000);
+
     
     //print out stats
     printf("\nINIT(early): relocated hypervisor binary image to 0x%08x", hypervisor_image_baseaddress);
