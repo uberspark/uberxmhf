@@ -15,8 +15,10 @@ runtime: common
 
 sl: runtime common
 	#make sl
+	# Double-dollar-sign required to cause make to provide literal dollar sign to perl
+	# Objective: Create an escaped ASCII string containing the SHA-1 hash of the
+	# runtime and pass it to the SL's makefile
 	cd sl && $(MAKE) -w all RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum ./runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
-#	cd sl && $(MAKE) -w all RUNTIME_INTEGRITY_HASH=\""$(shell (../../../../../tools/build_integrity_automagic.pl `sha1sum ./runtime/runtime.bin`))"\"
 
 init: sl runtime common
 	#make init	
