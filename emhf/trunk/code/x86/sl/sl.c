@@ -40,6 +40,7 @@
 #include <target.h>
 #include <txt.h>
 #include <tpm.h>
+#include <sha1.h>
 
 extern u32 slpb_buffer[];
 RPB * rpb;
@@ -47,11 +48,35 @@ u32 sl_baseaddr=0;
 extern void XtLdrTransferControlToRtm(u32 gdtbase, u32 idtbase,
 	u32 entrypoint, u32 stacktop)__attribute__((cdecl)); 
 
+/* SHA-1 hash of runtime should be defined during build process.
+ * However, if it's not, don't fail.  Just proceed with all zeros.
+ * XXX TODO Disable proceeding with insecure hash value. */
+#ifndef ___RUNTIME_INTEGRITY_HASH___
+#define ___RUNTIME_INTEGRITY_HASH___ "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+#endif /*  ___RUNTIME_INTEGRITY_HASH___ */
+
+/* SHA-1 hash of upper portion of sl should be computed during build
+ * process. However, some type of binary modification of lower portion
+ * will be necessary.  XXX TODO Sigh. Grumble. Need to think more
+ * about this. */
+#ifndef ___SLABOVE64K_INTEGRITY_HASH___
+#define ___SLABOVE64K_INTEGRITY_HASH___ "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+#endif /* ___SLABOVE64K_INTEGRITY_HASH___ */
+
 //this is the SL parameter block and is placed in a seperate section
 struct _sl_parameter_block slpb __attribute__(( section(".sl_params") )) = {
 	.magic = SL_PARAMETER_BLOCK_MAGIC,
 };
 
+typedef struct _sl_integrity_golden_values {
+    u8 sha_slabove64K[SHA_DIGEST_LENGTH];
+    u8 sha_runtime[SHA_DIGEST_LENGTH];
+} _sl_integrity_golden_values_t;
+
+_sl_integrity_golden_values_t g_gold /* __attribute__(( section("") )) */ = {
+    .sha_slabove64K = ___SLABOVE64K_INTEGRITY_HASH___,
+    .sha_runtime = ___RUNTIME_INTEGRITY_HASH___
+};
 
 //---runtime paging setup-------------------------------------------------------
 //physaddr and virtaddr are assumed to be 2M aligned
@@ -132,6 +157,8 @@ bool sl_integrity_check(void) {
 
     tpm_pcr_value_t pcr17, pcr18;    
 
+    print_hex("Golden Runtime SHA-1: ", g_gold.sha_runtime, SHA_DIGEST_LENGTH);
+    
     /* open TPM locality */
     ASSERT(locality == 1 || locality == 2);
     if(get_cpu_vendor() == CPU_VENDOR_INTEL) {

@@ -21,6 +21,11 @@ I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 
 # CFLAGS += -fPIC
 
+# RUNTIME_INTEGRITY_HASH should be set by parent Makefile
+ifdef RUNTIME_INTEGRITY_HASH
+CFLAGS += -D___RUNTIME_INTEGRITY_HASH___=\"$(RUNTIME_INTEGRITY_HASH)\"
+endif
+
 # targets
 .PHONY: all
 all: $(OBJECTS)

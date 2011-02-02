@@ -3,19 +3,24 @@
 
 #-----build rules
 .PHONY: all
-all: 
-  
+all: common runtime sl init
+
+common:
 	#make libcommon first	
 	cd libcommon && $(MAKE) -w all
 
-	#make init	
-	cd init && $(MAKE) -w all
-
-	#make sl
-	cd sl && $(MAKE) -w all
-
+runtime: common
 	#make runtime
 	cd runtime && $(MAKE) -w all
+
+sl: runtime common
+	#make sl
+	cd sl && $(MAKE) -w all RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum ./runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
+#	cd sl && $(MAKE) -w all RUNTIME_INTEGRITY_HASH=\""$(shell (../../../../../tools/build_integrity_automagic.pl `sha1sum ./runtime/runtime.bin`))"\"
+
+init: sl runtime common
+	#make init	
+	cd init && $(MAKE) -w all
 
 	# concatenate sl image and runtime image 
 	$(CAT) ./sl/sl.bin ./runtime/runtime.bin > ./hypervisor.tmp.img
