@@ -220,7 +220,9 @@ bool sl_integrity_check(u8* runtime_base_addr, size_t runtime_len) {
 }
 
 //we get here from slheader.S
-void slmain(u32 baseaddr){
+// rdtsc_* are valid only if PERF_CRIT is not defined.  slheader.S
+// sets them to 0 otherwise.
+void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	//SL_PARAMETER_BLOCK *slpb;
 	u32 runtime_physical_base;
 	u32 runtime_size_2Maligned;
@@ -229,7 +231,7 @@ void slmain(u32 baseaddr){
 	u32 runtime_idt;
 	u32 runtime_entrypoint;
 	u32 runtime_topofstack;
-
+    
 	//initialize debugging early on
 	#ifdef __DEBUG_SERIAL__		
 		init_uart();
@@ -241,8 +243,8 @@ void slmain(u32 baseaddr){
 	
 	//initialze sl_baseaddr variable and print its value out
 	sl_baseaddr = baseaddr;
-	printf("\nSL: at 0x%08x, starting...", sl_baseaddr);
-	
+	printf("\nSL: at 0x%08x, starting...", sl_baseaddr);    
+    
 	//deal with SL parameter block
 	//slpb = (SL_PARAMETER_BLOCK *)slpb_buffer;
 	printf("\nSL: slpb at = 0x%08x", (u32)&slpb);
@@ -260,7 +262,13 @@ void slmain(u32 baseaddr){
 	printf("\n	runtime size= %u bytes", slpb.runtime_size);
 	printf("\n	OS bootmodule at 0x%08x, size=%u bytes", 
 		slpb.runtime_osbootmodule_base, slpb.runtime_osbootmodule_size);
-	
+
+    slpb.rdtsc_after_drtm = (u64)rdtsc_eax | ((u64)rdtsc_edx << 32);
+    printf("\nSL: RDTSC before_drtm 0x%llx, after_drtm 0x%llx",
+           slpb.rdtsc_before_drtm, slpb.rdtsc_after_drtm);
+    printf("\nSL: [PERF] RDTSC DRTM elapsed cycles: 0x%llx",
+           slpb.rdtsc_after_drtm - slpb.rdtsc_before_drtm);
+    
   //debug, dump E820 and MP table
  	printf("\n	e820map:\n");
   {

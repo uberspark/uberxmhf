@@ -72,6 +72,7 @@ VCPU vcpubuffers[MAX_VCPU_ENTRIES] __attribute__(( section(".data") ));
 //initial stacks for all cores
 u8 cpustacks[RUNTIME_STACK_SIZE * MAX_PCPU_ENTRIES] __attribute__(( section(".stack") ));
 
+SL_PARAMETER_BLOCK *slpb = NULL;
 
 extern init_core_lowlevel_setup(void);
 
@@ -572,6 +573,18 @@ void do_drtm(VCPU *vcpu, u32 slbase){
         //issue SKINIT
         //our secure loader is the first 64K of the hypervisor image
         printf("\nINIT(early): transferring control to SL via SKINIT...");
+#ifndef PERF_CRIT
+        if(NULL != slpb) {
+            __asm__ __volatile__ (
+                "cpuid\r\n"
+                "cpuid\r\n"
+                "cpuid\r\n"
+                "rdtsc\r\n"
+                : "=A"(slpb->rdtsc_before_drtm)
+                : /* no inputs */
+                : "ebx","ecx");
+        }
+#endif
         skinit((u32)slbase);
     } else {
 /* SENTER enabled based on Makefile for now, since hypervisor cannot
@@ -737,34 +750,10 @@ void cstartup(multiboot_info_t *mbi){
     printf("\nINIT(early): initializing, total modules=%u", mods_count);
     //ASSERT(mods_count == 2);  //runtime and OS boot sector for the time-being
 
-
     //check CPU type (Intel vs AMD)
-    {
-        u32 vendor_dword1, vendor_dword2, vendor_dword3;
-        asm(    "xor    %%eax, %%eax \n"
-                "cpuid \n"        
-                "mov    %%ebx, %0 \n"
-                "mov    %%edx, %1 \n"
-                "mov    %%ecx, %2 \n"
-                :    //no inputs
-                : "m"(vendor_dword1), "m"(vendor_dword2), "m"(vendor_dword3)
-                : "eax", "ebx", "ecx", "edx" );
-
-        if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
-           && vendor_dword3 == AMD_STRING_DWORD3)
-            cpu_vendor = CPU_VENDOR_AMD;
-        else if(vendor_dword1 == INTEL_STRING_DWORD1 && vendor_dword2 == INTEL_STRING_DWORD2
-                && vendor_dword3 == INTEL_STRING_DWORD3)
-            cpu_vendor = CPU_VENDOR_INTEL;
-        else{
-            printf("\nINIT(early): error(fatal), unrecognized CPU! 0x%08x:0x%08x:0x%08x",
-                   vendor_dword1, vendor_dword2, vendor_dword3);
-            HALT();
-        }            
-    }
+    cpu_vendor = get_cpu_vendor(); // HALT()'s if unrecognized
 
     printf("\nINIT(early): detected an %s CPU", ((cpu_vendor == CPU_VENDOR_INTEL) ? "Intel" : "AMD"));
-
 
     //deal with MP and get CPU table
     dealwithMP();
@@ -804,7 +793,7 @@ void cstartup(multiboot_info_t *mbi){
     //fill in "sl" parameter block
     {
         //"sl" parameter block is at hypervisor_image_baseaddress + 0x10000
-        SL_PARAMETER_BLOCK *slpb = (SL_PARAMETER_BLOCK *)((u32)hypervisor_image_baseaddress + 0x10000);
+        slpb = (SL_PARAMETER_BLOCK *)((u32)hypervisor_image_baseaddress + 0x10000);
         ASSERT(slpb->magic == SL_PARAMETER_BLOCK_MAGIC);
         slpb->hashSL = 0;
         slpb->errorHandler = 0;

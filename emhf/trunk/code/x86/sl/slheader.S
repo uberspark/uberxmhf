@@ -121,9 +121,18 @@
 ///---     pushl %esp
 ///---     pushl %ebp
 
+
+    //Get cycle count using rdtsc; useful to evaluate how long DRTM
+    //takes
+#ifndef PERF_CRIT
+    cpuid // Serializing instruction; causes more overhead :(
+    rdtsc
+    pushl %edx
+    pushl %eax
+#endif
     //save EAX, for AMD and the stub SENTER DRTM this contains the
     //64K aligned physical memory address where the sl was loaded
-//    movl %eax, %ebp
+    //    movl %eax, %ebp
     // AMD leaves base addr in EAX, but Intel does not.  Since both CS and SS
     // are valid, read and align EIP to discover base addr
 
@@ -329,20 +338,36 @@ sl_cpu_common:
 
     // We start here with our new GDT CS selector
 sl_startnew:
+#ifndef PERF_CRIT
+    // we are switching stacks so we need to save our performance
+    // measurements in registers and then push them onto the new stack              
+    popl %eax
+    popl %edx              
+#endif
+              
     // Load new segment selectors for DS, SS and ES
-    movw $0x10, %ax // XXX TODO Get rid of magic number
-    movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %ss
+    movw $0x10, %bx // XXX TODO Get rid of magic number
+    movw %bx, %ds
+    movw %bx, %es
+    movw %bx, %ss
 
     // Load 4G flat selectors for FS and GS (used for TPM and TXT reg access)
-    movw $0x18, %ax
-    movw %ax, %fs
-    movw %ax, %gs
+    movw $0x18, %bx
+    movw %bx, %fs
+    movw %bx, %gs
 
     // Setup ESP to top of 64K (it will already be there on AMD)
     movl $0x10000, %esp // XXX TODO Get rid of magic number
 
+#ifndef PERF_CRIT
+    // push measurements onto the new stack
+    pushl %edx
+    pushl %eax              
+#else
+    pushl $0x00000000
+    pushl $0x00000000
+#endif
+              
     pushl %ebp
     call slmain
 

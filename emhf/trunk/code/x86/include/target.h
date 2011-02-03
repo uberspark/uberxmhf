@@ -369,6 +369,9 @@ typedef struct _sl_parameter_block {
 	u32 runtime_size;			//size of the runtime image
 	u32 runtime_osbootmodule_base;	//guest OS bootmodule base
 	u32 runtime_osbootmodule_size;	//guest OS bootmodule size
+    // Performance measurements related to DRTM
+    u64 rdtsc_before_drtm;
+    u64 rdtsc_after_drtm;
 } __attribute__((packed)) SL_PARAMETER_BLOCK;
 
 
