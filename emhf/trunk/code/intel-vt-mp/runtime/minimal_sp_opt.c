@@ -329,7 +329,7 @@ u32 shadow_new_context(u32 guest_CR3){
 	context_list_index = vmlist[vm_index].number_of_contexts; 
 	context_list[context_list_index].context_guestcr3 = guest_cr3;
 	
-	//[opt1]: zero out all the page table for this new context
+	/*//[opt1]: zero out all the page table for this new context
 	{
     u32 num_pagedir_entries;
     u32 *pgdir =((u32 *)(context_list[context_list_index].__shadow_npae_pd_table)); 
@@ -338,7 +338,33 @@ u32 shadow_new_context(u32 guest_CR3){
     for (u32 i= 0; i < num_pagedir_entries; i++) {
       pgdir[i] = 0;
     }
-  }
+  }*/
+  
+  //[opt2]: scan all the guest paging entries and populate the shadow
+  {
+		u32 num_pagedir_entries;
+		num_pagedir_entries = GUEST_VIRTUALMEMORY_LIMIT / (4096*1023);
+		u32 *guest_pgdir = ((u32 *)(context_list[context_list_index].guest_CR3));	 
+		u32 *shadow_pgdir = ((u32 *)(context_list[context_list_index].__shadow_npae_pd_table)); 
+		u32 va=0;
+		
+    for (u32 i= 0; i < num_pagedir_entries; i++) {
+      guest_pde = guest_pgdir[i];
+      shadow_pde = shadow_pgdir[i];
+    	
+			u32 *guest_ptable = npae_get_paddr_from_pde(guest_pde);
+			u32 *shadow_ptable = npae_get_paddr_from_pde(shadow_pde);
+			for(u32 j=0; j < NPAE_PTRS_PER_PDT; j++){
+				va += PAGE_SIZE_4K;
+				guest_pte = guest_ptable[j];
+				shadow_pte = shadow_ptable[j];
+				shadow_updateshadowentries(va, guest_pde, guest_pte, shadow_pde, shadow_pte);
+			}
+    }
+	}
+  
+  //[opt2] make guest page tables in the shadow read-only
+  shadow_make_guest_pagetables_read_only(context_list[context_list_index].__shadow_npae_pd_table);
   
   //[opt1]: return the page directory of the new context
 	return contextlist[context_list_index].__shadow_npae_pd_table; 
