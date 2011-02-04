@@ -769,17 +769,17 @@ void cstartup(multiboot_info_t *mbi){
     ASSERT(sl_rt_size > 0x200000); /* 2M */
 
     /* runtime */
-    print_hex("    INIT(early) *UNTRUSTED* gold runtime: ",
+    print_hex("    INIT(early): *UNTRUSTED* gold runtime: ",
               g_init_gold.sha_runtime, SHA_DIGEST_LENGTH);
     hashandprint("    INIT(early): *UNTRUSTED* comp runtime: ",
                  (u8*)hypervisor_image_baseaddress+0x200000, sl_rt_size-0x200000);
     /* SL low 64K */
-    print_hex("    INIT(early) *UNTRUSTED* gold SL low 64K: ",
+    print_hex("    INIT(early): *UNTRUSTED* gold SL low 64K: ",
               g_init_gold.sha_slbelow64K, SHA_DIGEST_LENGTH);
     hashandprint("    INIT(early): *UNTRUSTED* comp SL low 64K: ",
                  (u8*)hypervisor_image_baseaddress, 0x10000);
     /* SL above 64K */
-    print_hex("    INIT(early) *UNTRUSTED* gold SL above 64K: ",
+    print_hex("    INIT(early): *UNTRUSTED* gold SL above 64K: ",
               g_init_gold.sha_slabove64K, SHA_DIGEST_LENGTH);
     hashandprint("    INIT(early): *UNTRUSTED* comp SL above 64K): ",
                  (u8*)hypervisor_image_baseaddress+0x10000, 0x200000-0x10000);
