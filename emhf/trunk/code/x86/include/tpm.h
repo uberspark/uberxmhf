@@ -121,8 +121,8 @@ extern bool release_locality(uint32_t locality);
 /* Moved here by Jon.  Non-TXT boots (e.g., AMD, debug Intel) need to
  * explicitly request access at the desired locality.  TXT does this
  * automatically. */
-void dump_locality_access_regs(void);
-void deactivate_all_localities(void);
+extern void dump_locality_access_regs(void);
+extern void deactivate_all_localities(void);
 extern uint32_t tpm_wait_cmd_ready(uint32_t locality);
 
 extern bool prepare_tpm(void);
@@ -317,7 +317,417 @@ extern uint32_t tpm_get_random(uint32_t locality, uint8_t *random_data,
 
 
 /* misc utility functions; XXX TODO probably belong elsewhere */
-void hashandprint(const char* prefix, const u8 *bytes, size_t len);
+extern void hashandprint(const char* prefix, const u8 *bytes, size_t len);
+
+
+/*********************************************************************
+ * Moved in from tboot's tpm.c; I think it belongs in a .h file. Also
+ * facilitates split into tpm.c and tpm_extra.c.
+ *********************************************************************/
+
+/* TODO: Give these a more appropriate home */
+/* #define readb(va)       (*(volatile uint8_t *) (va)) */
+/* #define writeb(va, d)   (*(volatile uint8_t *) (va) = (d)) */
+
+static inline void writeb(u32 addr, u8 val) {
+    __asm__ __volatile__("movb %%al, %%fs:(%%ebx)\r\n"
+                         :
+                         : "b"(addr), "a"((u32)val)
+                         );
+}
+
+static inline u8 readb(u32 addr) {
+    u32 ret;
+    __asm__ __volatile("xor %%eax, %%eax\r\n"        
+                       "movb %%fs:(%%ebx), %%al\r\n"
+                       : "=a"(ret)
+                       : "b"(addr)
+                       );
+    return (u8)ret;        
+}
+
+/* un-comment to enable detailed command tracing */
+#define noTPM_TRACE
+
+/* ~5 secs are required for Infineon that requires this, so leave some extra */
+#define MAX_SAVESTATE_RETRIES       60
+
+#define TPM_TAG_RQU_COMMAND         0x00C1
+#define TPM_TAG_RQU_AUTH1_COMMAND   0x00C2
+#define TPM_TAG_RQU_AUTH2_COMMAND   0x00C3
+#define TPM_ORD_PCR_EXTEND          0x00000014
+#define TPM_ORD_PCR_READ            0x00000015
+#define TPM_ORD_PCR_RESET           0x000000C8
+#define TPM_ORD_NV_READ_VALUE       0x000000CF
+#define TPM_ORD_NV_WRITE_VALUE      0x000000CD
+#define TPM_ORD_GET_CAPABILITY      0x00000065
+#define TPM_ORD_SEAL                0x00000017
+#define TPM_ORD_UNSEAL              0x00000018
+#define TPM_ORD_OSAP                0x0000000B
+#define TPM_ORD_OIAP                0x0000000A
+#define TPM_ORD_SAVE_STATE          0x00000098
+#define TPM_ORD_GET_RANDOM          0x00000046
+
+#define TPM_TAG_PCR_INFO_LONG       0x0006
+#define TPM_TAG_STORED_DATA12       0x0016
+
+/*
+ * TPM registers and data structures
+ *
+ * register values are offsets from each locality base
+ * see {read,write}_tpm_reg() for data struct format
+ */
+
+/* TPM_ACCESS_x */
+#define TPM_REG_ACCESS           0x00
+typedef union {
+    u8 _raw[1];                      /* 1-byte reg */
+    struct __attribute__ ((packed)) {
+        u8 tpm_establishment   : 1;  /* RO, 0=T/OS has been established
+                                        before */
+        u8 request_use         : 1;  /* RW, 1=locality is requesting TPM use */
+        u8 pending_request     : 1;  /* RO, 1=other locality is requesting
+                                        TPM usage */
+        u8 seize               : 1;  /* WO, 1=seize locality */
+        u8 been_seized         : 1;  /* RW, 1=locality seized while active */
+        u8 active_locality     : 1;  /* RW, 1=locality is active */
+        u8 reserved            : 1;
+        u8 tpm_reg_valid_sts   : 1;  /* RO, 1=other bits are valid */
+    };
+} tpm_reg_access_t;
+
+/* TPM_STS_x */
+#define TPM_REG_STS              0x18
+typedef union {
+    u8 _raw[3];                  /* 3-byte reg */
+    struct __attribute__ ((packed)) {
+        u8 reserved1       : 1;
+        u8 response_retry  : 1;  /* WO, 1=re-send response */
+        u8 reserved2       : 1;
+        u8 expect          : 1;  /* RO, 1=more data for command expected */
+        u8 data_avail      : 1;  /* RO, 0=no more data for response */
+        u8 tpm_go          : 1;  /* WO, 1=execute sent command */
+        u8 command_ready   : 1;  /* RW, 1=TPM ready to receive new cmd */
+        u8 sts_valid       : 1;  /* RO, 1=data_avail and expect bits are
+                                    valid */
+        u16 burst_count    : 16; /* RO, # read/writes bytes before wait */
+    };
+} tpm_reg_sts_t;
+
+/* TPM_DATA_FIFO_x */
+#define TPM_REG_DATA_FIFO        0x24
+typedef union {
+        uint8_t _raw[1];                      /* 1-byte reg */
+} tpm_reg_data_fifo_t;
+
+/*
+ * assumes that all reg types follow above format:
+ *   - packed
+ *   - member named '_raw' which is array whose size is that of data to read
+ */
+#define read_tpm_reg(locality, reg, pdata)      \
+    _read_tpm_reg(locality, reg, (pdata)->_raw, sizeof(*(pdata)))
+
+#define write_tpm_reg(locality, reg, pdata)     \
+    _write_tpm_reg(locality, reg, (pdata)->_raw, sizeof(*(pdata)))
+
+
+#define TIMEOUT_UNIT    (0x100000 / 330) /* ~1ms, 1 tpm r/w need > 330ns */
+#define TIMEOUT_A       750  /* 750ms */
+#define TIMEOUT_B       2000 /* 2s */
+#define TIMEOUT_C       750  /* 750ms */
+#define TIMEOUT_D       750  /* 750ms */
+
+typedef struct __attribute__ ((packed)) {
+    uint32_t timeout_a;
+    uint32_t timeout_b;
+    uint32_t timeout_c;
+    uint32_t timeout_d;
+} tpm_timeout_t;
+
+
+#define TPM_ACTIVE_LOCALITY_TIME_OUT    \
+          (TIMEOUT_UNIT * g_timeout.timeout_a)  /* according to spec */
+#define TPM_CMD_READY_TIME_OUT          \
+          (TIMEOUT_UNIT * g_timeout.timeout_b)  /* according to spec */
+#define TPM_CMD_WRITE_TIME_OUT          \
+          (TIMEOUT_UNIT * g_timeout.timeout_d)  /* let it long enough */
+#define TPM_DATA_AVAIL_TIME_OUT         \
+          (TIMEOUT_UNIT * g_timeout.timeout_c)  /* let it long enough */
+#define TPM_RSP_READ_TIME_OUT           \
+          (TIMEOUT_UNIT * g_timeout.timeout_d)  /* let it long enough */
+
+
+#define CMD_HEAD_SIZE           10
+#define RSP_HEAD_SIZE           10
+#define CMD_SIZE_OFFSET         2
+#define CMD_ORD_OFFSET          6
+#define RSP_SIZE_OFFSET         2
+#define RSP_RST_OFFSET          6
+
+
+#define WRAPPER_IN_BUF          (cmd_buf + CMD_HEAD_SIZE)
+#define WRAPPER_OUT_BUF         (rsp_buf + RSP_HEAD_SIZE)
+#define WRAPPER_IN_MAX_SIZE     (TPM_CMD_SIZE_MAX - CMD_HEAD_SIZE)
+#define WRAPPER_OUT_MAX_SIZE    (TPM_RSP_SIZE_MAX - RSP_HEAD_SIZE)
+
+typedef struct __attribute__ ((packed)) {
+    uint16_t    size_of_select;
+    uint8_t     pcr_select[3];
+} tpm_pcr_selection_t;
+
+
+#define TPM_CAP_VERSION_VAL 0x1A
+
+typedef uint16_t tpm_structure_tag_t;
+
+typedef struct __attribute__ ((packed)) {
+   uint8_t  major;
+   uint8_t  minor;
+   uint8_t  rev_major;
+   uint8_t  rev_minor;
+} tpm_version_t;
+
+typedef struct __attribute__ ((packed)) {
+    tpm_structure_tag_t tag;
+    tpm_version_t       version;
+    uint16_t            specLevel;
+    uint8_t             errataRev;
+    uint8_t             tpmVendorID[4];
+    uint16_t            vendorSpecificSize;
+    uint8_t             vendorSpecific[];
+} tpm_cap_version_info_t;
+
+
+#define HMAC_BLOCK_SIZE     64
+#define HMAC_OUTPUT_SIZE    20
+
+
+typedef uint16_t tpm_entity_type_t;
+typedef uint32_t tpm_authhandle_t;
+typedef struct __attribute__ ((packed)) {
+    uint8_t     nonce[20];
+} tpm_nonce_t;
+
+#define TPM_ET_SRK              0x0004
+#define TPM_KH_SRK              0x40000000
+
+typedef uint32_t tpm_key_handle_t;
+
+typedef tpm_digest_t tpm_composite_hash_t;
+typedef struct __attribute__ ((packed)) {
+    tpm_structure_tag_t         tag;
+    tpm_locality_selection_t    locality_at_creation;
+    tpm_locality_selection_t    locality_at_release;
+    tpm_pcr_selection_t         creation_pcr_selection;
+    tpm_pcr_selection_t         release_pcr_selection;
+    tpm_composite_hash_t        digest_at_creation;
+    tpm_composite_hash_t        digest_at_release;
+} tpm_pcr_info_long_t;
+
+typedef uint8_t tpm_authdata_t[20];
+typedef tpm_authdata_t tpm_encauth_t;
+
+typedef struct __attribute__ ((packed)) {
+    tpm_structure_tag_t         tag;
+    tpm_entity_type_t           et;
+    uint32_t                    seal_info_size;
+} tpm_stored_data12_header_t;
+
+typedef struct __attribute__ ((packed)) {
+    tpm_stored_data12_header_t  header;
+    uint32_t                    enc_data_size;
+    uint8_t                     enc_data[];
+} tpm_stored_data12_short_t;
+
+typedef struct __attribute__ ((packed)) {
+    tpm_stored_data12_header_t  header;
+    tpm_pcr_info_long_t         seal_info;
+    uint32_t                    enc_data_size;
+    uint8_t                     enc_data[];
+} tpm_stored_data12_t;
+
+#define UNLOAD_INTEGER(buf, offset, var) {\
+    reverse_copy(buf + offset, &(var), sizeof(var));\
+    offset += sizeof(var);\
+}
+
+#define UNLOAD_BLOB(buf, offset, blob, size) {\
+        memcpy(buf + offset, blob, size); \
+    offset += size;\
+}
+
+#define UNLOAD_BLOB_TYPE(buf, offset, blob) \
+    UNLOAD_BLOB(buf, offset, blob, sizeof(*(blob)))
+
+#define UNLOAD_PCR_SELECTION(buf, offset, sel) {\
+    UNLOAD_INTEGER(buf, offset, (sel)->size_of_select);\
+    UNLOAD_BLOB(buf, offset, (sel)->pcr_select, (sel)->size_of_select);\
+}
+
+#define UNLOAD_PCR_INFO_LONG(buf, offset, info) {\
+    UNLOAD_INTEGER(buf, offset, (info)->tag);\
+    UNLOAD_BLOB_TYPE(buf, offset, &(info)->locality_at_creation);\
+    UNLOAD_BLOB_TYPE(buf, offset, &(info)->locality_at_release);\
+    UNLOAD_PCR_SELECTION(buf, offset, &(info)->creation_pcr_selection);\
+    UNLOAD_PCR_SELECTION(buf, offset, &(info)->release_pcr_selection);\
+    UNLOAD_BLOB_TYPE(buf, offset, &(info)->digest_at_creation);\
+    UNLOAD_BLOB_TYPE(buf, offset, &(info)->digest_at_release);\
+}
+
+#define UNLOAD_STORED_DATA12(buf, offset, hdr) {\
+   UNLOAD_INTEGER(buf, offset, ((const tpm_stored_data12_header_t *)(hdr))->tag);\
+   UNLOAD_INTEGER(buf, offset, ((const tpm_stored_data12_header_t *)(hdr))->et);\
+   UNLOAD_INTEGER(buf, offset,\
+                  ((const tpm_stored_data12_header_t *)(hdr))->seal_info_size);\
+   if ( ((const tpm_stored_data12_header_t *)(hdr))->seal_info_size == 0 ) {\
+       UNLOAD_INTEGER(buf, offset,\
+                      ((const tpm_stored_data12_short_t *)hdr)->enc_data_size);\
+       UNLOAD_BLOB(buf, offset,\
+                   ((const tpm_stored_data12_short_t *)hdr)->enc_data,\
+                   ((const tpm_stored_data12_short_t *)hdr)->enc_data_size);\
+   }\
+   else {\
+       UNLOAD_PCR_INFO_LONG(buf, offset,\
+                            &((const tpm_stored_data12_t *)hdr)->seal_info);\
+       UNLOAD_INTEGER(buf, offset,\
+                      ((const tpm_stored_data12_t *)hdr)->enc_data_size);\
+       UNLOAD_BLOB(buf, offset,\
+                   ((const tpm_stored_data12_t *)hdr)->enc_data,\
+                   ((const tpm_stored_data12_t *)hdr)->enc_data_size);\
+   }\
+}
+
+#define LOAD_INTEGER(buf, offset, var) {\
+    reverse_copy(&(var), buf + offset, sizeof(var));\
+    offset += sizeof(var);\
+}
+
+#define LOAD_BLOB(buf, offset, blob, size) {\
+    memcpy(blob, buf + offset, size);\
+    offset += size;\
+}
+
+#define LOAD_BLOB_TYPE(buf, offset, blob) \
+    LOAD_BLOB(buf, offset, blob, sizeof(*(blob)))
+
+#define LOAD_PCR_SELECTION(buf, offset, sel) {\
+    LOAD_INTEGER(buf, offset, (sel)->size_of_select);\
+    LOAD_BLOB(buf, offset, (sel)->pcr_select, (sel)->size_of_select);\
+}
+
+#define LOAD_PCR_INFO_LONG(buf, offset, info) {\
+    LOAD_INTEGER(buf, offset, (info)->tag);\
+    LOAD_BLOB_TYPE(buf, offset, &(info)->locality_at_creation);\
+    LOAD_BLOB_TYPE(buf, offset, &(info)->locality_at_release);\
+    LOAD_PCR_SELECTION(buf, offset, &(info)->creation_pcr_selection);\
+    LOAD_PCR_SELECTION(buf, offset, &(info)->release_pcr_selection);\
+    LOAD_BLOB_TYPE(buf, offset, &(info)->digest_at_creation);\
+    LOAD_BLOB_TYPE(buf, offset, &(info)->digest_at_release);\
+}
+
+#define LOAD_STORED_DATA12(buf, offset, hdr) {\
+   LOAD_INTEGER(buf, offset, ((tpm_stored_data12_header_t *)(hdr))->tag);\
+   LOAD_INTEGER(buf, offset, ((tpm_stored_data12_header_t *)(hdr))->et);\
+   LOAD_INTEGER(buf, offset, \
+                ((tpm_stored_data12_header_t *)(hdr))->seal_info_size);\
+   if ( ((tpm_stored_data12_header_t *)(hdr))->seal_info_size == 0 ) {\
+       LOAD_INTEGER(buf, offset,\
+                    ((tpm_stored_data12_short_t *)hdr)->enc_data_size);\
+       LOAD_BLOB(buf, offset,\
+                 ((tpm_stored_data12_short_t *)hdr)->enc_data,\
+                 ((tpm_stored_data12_short_t *)hdr)->enc_data_size);\
+   }\
+   else {\
+       LOAD_PCR_INFO_LONG(buf, offset,\
+                          &((tpm_stored_data12_t *)hdr)->seal_info);\
+       LOAD_INTEGER(buf, offset,\
+                    ((tpm_stored_data12_t *)hdr)->enc_data_size);\
+       LOAD_BLOB(buf, offset,\
+                 ((tpm_stored_data12_t *)hdr)->enc_data,\
+                 ((tpm_stored_data12_t *)hdr)->enc_data_size);\
+   }\
+}
+
+
+#define XOR_BLOB_TYPE(data, pad) {\
+    uint32_t i;                                 \
+    for ( i = 0; i < sizeof(*(data)); i++ ) \
+        ((uint8_t *)data)[i] ^= ((uint8_t *)pad)[i % sizeof(*(pad))];\
+}
+
+
+typedef uint32_t tpm_capability_area_t;
+
+#define TPM_CAP_NV_INDEX    0x00000011
+
+
+typedef struct __attribute__ ((packed)) {
+    tpm_pcr_selection_t         pcr_selection;
+    tpm_locality_selection_t    locality_at_release;
+    tpm_composite_hash_t        digest_at_release;
+} tpm_pcr_info_short_t;
+
+typedef struct __attribute__ ((packed)) {
+    tpm_structure_tag_t tag;
+    uint32_t            attributes;
+} tpm_nv_attributes_t;
+
+typedef struct __attribute__ ((packed)) {
+    tpm_structure_tag_t     tag;
+    tpm_nv_index_t          nv_index;
+    tpm_pcr_info_short_t    pcr_info_read;
+    tpm_pcr_info_short_t    pcr_info_write;
+    tpm_nv_attributes_t     permission;
+    uint8_t                 b_read_st_clear;
+    uint8_t                 b_write_st_clear;
+    uint8_t                 b_write_define;
+    uint32_t                data_size;
+} tpm_nv_data_public_t;
+
+
+
+typedef struct __attribute__ ((packed)) {
+    tpm_structure_tag_t tag;
+    uint8_t disable;
+    uint8_t ownership;
+    uint8_t deactivated;
+    uint8_t read_pubek;
+    uint8_t disable_owner_clear;
+    uint8_t allow_maintenance;
+    uint8_t physical_presence_lifetime_lock;
+    uint8_t physical_presence_hw_enable;
+    uint8_t physical_presence_cmd_enable;
+    uint8_t cekp_used;
+    uint8_t tpm_post;
+    uint8_t tpm_post_lock;
+    uint8_t fips;
+    uint8_t operator;
+    uint8_t enable_revoke_ek;
+    uint8_t nv_locked;
+    uint8_t read_srk_pub;
+    uint8_t tpm_established;
+    uint8_t maintenance_done;
+    uint8_t disable_full_da_logic_info;
+} tpm_permanent_flags_t;
+
+typedef struct __attribute__ ((packed)) {
+    tpm_structure_tag_t tag;
+    uint8_t deactivated;
+    uint8_t disable_force_clear;
+    uint8_t physical_presence;
+    uint8_t phycical_presence_lock;
+    uint8_t b_global_lock;
+} tpm_stclear_flags_t;
+
+#define TPM_CAP_FLAG            0x00000004
+#define TPM_CAP_FLAG_PERMANENT  0x00000108
+#define TPM_CAP_FLAG_VOLATILE   0x00000109
+
+
+#define TPM_CAP_PROPERTY          0x00000005
+#define TPM_CAP_PROP_TIS_TIMEOUT  0x00000115
+
 
 #endif   /* __TPM_H__ */
 
