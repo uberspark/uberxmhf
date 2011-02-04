@@ -259,6 +259,20 @@ u32 shadow_alloc_pt(u32 gva, u32 guest_virtualmemory_limit){
   //sanity check
   //assert(guest_virtualmemory_limit > ptable_vabasepointedto);
 	
+  //if(guest_virtualmemory_limit - ptable_vabasepointedto > (PAGE_SIZE_4K * 1024) ) {
+    //we need to zero out the entire page-table
+  for (int i= 0; i < 1024; i++) {
+      ptable[i]= (u32) 0;
+  }
+  
+  
+/*   }else{ */
+/*     //we only need to zero out part of the page-table */
+/*     u32 indexuntil =  (guest_virtualmemory_limit - ptable_vabasepointedto) / PAGE_SIZE_4K; */
+/*     for (int i= 0; i < indexuntil; i++) { */
+/*       ptable[i]= (u32) 0; */
+/*     }			 */
+/*   } */
 
   //we need to zero out the entire page-table 
   // XXX COMMENTED THIS OUT AND VERIFICATION HOLDS 
