@@ -226,6 +226,42 @@ void shadow_updateshadowentries(u32 gva, u32 **sPDE, u32 **sPTE,
   }
 }
 
+//instruction emulator pseudo-code
+//returns 32-bit PDE and PTE entries that the guest is writing to its
+//page table
+void emulatewrite(u32 cr2, u32 **sPDE, u32 **sPTE, u32 *emulator_PDE, u32 *emulator_PTE){
+	u32 insn_opcode;	//instruction opcode
+	u32 insn_effective_operand;	//instruction effective operand value
+	
+	//decode the instruction at the current instruction pointer and store
+	//instruction opcode and effective operand
+	decode_instruction(get_csrip(), &insn_opcode, &insn_effective_operand); 
+
+	switch(insn_opcode){
+		//there can be three broad categories of writes, move, arithmetic operations
+		//(e.g., ADD, SUB etc.) or an XCHG
+		case MOVE_TO_MEM_OPCODE:
+		case ARITH_MEM_OPCODE:
+		case XCHG_MEM_OPCODE:
+    	//get hold of the PDE and/or the PTE value written by the guest
+			if(is_write_to_PDE(cr2, insn_effective_operand)){
+    		*emulator_PDE = insn_effective_operand;	//guest wrote to a PDE 
+    		*emulator_PTE = 0;    		
+    	}else{
+			 	*emulator_PTE = insn_effective_operand;	//guest wrote to a PTE
+			 	*emulator_PDE = get_guest_PDE_entry_for_PTE(*emulator_PTE);	//fetch the corresponding PDE	 	
+			} 
+			
+			//reflect the write to the guest page tables
+ 			propagate_write_to_guest(cr2, insn_effective_operand);
+
+		default:
+			printf("\nunhandled instruction category during emulation!");
+			HALT();			
+	}
+
+}
+
 
 u32 shadow_page_fault(u32 cr2, u32 error_code){
 
@@ -266,7 +302,7 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
 			emulatewrite(cr2, &emulator_PDE_value, &emulator_PTE_value)
 			
 			//update the shadow entry
-			shadow_updateshadowentries(cr2, &sPDE, &sPTE, emulator_PDE_value, emulator_PTR_value);
+			shadow_updateshadowentries(cr2, &sPDE, &sPTE, emulator_PDE_value, emulator_PTE_value);
 		
 		}else{
 			//this is a write-fault that the OS has to handle, pass it on...
