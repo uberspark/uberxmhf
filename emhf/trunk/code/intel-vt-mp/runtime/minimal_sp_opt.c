@@ -254,7 +254,24 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
       return VMX_EVENT_INJECT;
     }
   }else if (error_code & PFERR_WR_MASK){
-    return VMX_EVENT_INJECT;
+    //[opt2]: we have a write fault, check to see if the guest is 
+    //trying to modify its page-tables, if so we need to emulate the
+    //instruction and propagate the value to the shadow
+    if(is_write_to_guest_pagetable(gPDE, gPTE)){
+			u32 emulator_PDE_value;
+			u32 emulator_PTE_value;
+			//call the instruction emulator to emulate the instruction 
+			//doing the write, will return the 32-bit PDE value and/or the
+			//PTE value that the guest was trying to write
+			emulatewrite(cr2, &emulator_PDE_value, &emulator_PTE_value)
+			
+			//update the shadow entry
+			shadow_updateshadowentries(cr2, &sPDE, &sPTE, emulator_PDE_value, emulator_PTR_value);
+		
+		}else{
+			//this is a write-fault that the OS has to handle, pass it on...
+			return VMX_EVENT_INJECT;
+		}
 
   }else{
     return VMX_EVENT_INJECT;
