@@ -346,6 +346,25 @@ static inline u8 readb(u32 addr) {
     return (u8)ret;        
 }
 
+
+/*
+ * the following inline function reversely copy the bytes from 'in' to
+ * 'out', the byte number to copy is given in count.
+ */
+#define reverse_copy(out, in, count) \
+    _reverse_copy((uint8_t *)(out), (const uint8_t *)(in), count)
+
+static inline void _reverse_copy(uint8_t *out, const uint8_t *in, uint32_t count)
+{
+    uint32_t i;    
+    for ( i = 0; i < count; i++ )
+        out[i] = in[count - i - 1];
+}
+
+#define TPM_VALIDATE_LOCALITY_TIME_OUT  0x100
+
+
+
 /* un-comment to enable detailed command tracing */
 #define noTPM_TRACE
 
@@ -727,6 +746,20 @@ typedef struct __attribute__ ((packed)) {
 
 #define TPM_CAP_PROPERTY          0x00000005
 #define TPM_CAP_PROP_TIS_TIMEOUT  0x00000115
+
+
+
+/* Functions newly required to be extern since they can be referenced
+ * from tpm_extra.c as well. */
+extern uint32_t _tpm_submit_cmd(uint32_t locality, uint16_t tag, uint32_t cmd,
+                                uint32_t arg_size, uint32_t *out_size);
+
+extern uint32_t tpm_submit_cmd(uint32_t locality, uint32_t cmd,
+                               uint32_t arg_size, uint32_t *out_size);
+extern uint32_t tpm_get_capability(
+                  uint32_t locality, tpm_capability_area_t cap_area,
+                  uint32_t sub_cap_size, const uint8_t *sub_cap,
+                  uint32_t *resp_size, uint8_t *resp);
 
 
 #endif   /* __TPM_H__ */
