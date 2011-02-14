@@ -144,11 +144,13 @@ void runtime_setup_paging(u32 physaddr, u32 virtaddr, u32 totalsize){
 bool sl_integrity_check(u8* runtime_base_addr, size_t runtime_len) {
     int ret;
     u32 locality = EMHF_TPM_LOCALITY_PREF; /* target.h */
-
     tpm_pcr_value_t pcr17, pcr18;    
 
     print_hex("SL: Golden Runtime SHA-1: ", g_sl_gold.sha_runtime, SHA_DIGEST_LENGTH);
 
+    printf("\nSL: CR0 %08x, CD bit %d", read_cr0(), read_cr0() & CR0_CD);
+    hashandprint("SL: Computed Runtime SHA-1: ",
+                 runtime_base_addr, runtime_len);
     
     /* open TPM locality */
     ASSERT(locality == 1 || locality == 2);
@@ -156,8 +158,6 @@ bool sl_integrity_check(u8* runtime_base_addr, size_t runtime_len) {
         txt_didvid_t didvid;
         txt_ver_fsbif_emif_t ver;
 
-        printf("\nSL: Computed Runtime SHA-1: [DISABLED until MTRR's fixed (Jon)]");
-        
         /* display chipset fuse and device and vendor id info */
         didvid._raw = read_pub_config_reg(TXTCR_DIDVID);
         printf("\nSL: chipset ids: vendor: 0x%x, device: 0x%x, revision: 0x%x\n",
@@ -173,14 +173,10 @@ bool sl_integrity_check(u8* runtime_base_addr, size_t runtime_len) {
                                   : TXTCR_CMD_OPEN_LOCALITY2, 0x01);
             read_priv_config_reg(TXTCR_E2STS);   /* just a fence, so ignore return */
         } else {
-            // XXX TODO: Open locality on AMD / non-TXT Intel boot
             printf("TPM: ERROR: Locality opening UNIMPLEMENTED on Intel without SENTER\n");
             return false;
         }        
-    } else { /* AMD or non-SENTER Intel */
-        hashandprint("SL: Computed Runtime SHA-1: ",
-                     runtime_base_addr, runtime_len); /* SLOW */
-        
+    } else { /* AMD */        
         /* some systems leave locality 0 open for legacy software */
         //dump_locality_access_regs();
         deactivate_all_localities();
@@ -304,6 +300,25 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	//do not contain weird mappings)
 	//TODO
 
+    { /* Experimental MTRR restore */
+        txt_heap_t *txt_heap;
+        os_mle_data_t *os_mle_data;
+
+        /* sl.c unity-maps 0xfed00000 for 2M so these should work fine */
+        txt_heap = get_txt_heap();
+        printf("\nSL: txt_heap = 0x%08x", (u32)txt_heap);
+        /* compensate for special DS here in SL */
+        os_mle_data = get_os_mle_data_start((txt_heap_t*)((u32)txt_heap - sl_baseaddr));
+        printf("\nSL: os_mle_data = 0x%08x", (u32)os_mle_data);
+        /* restore pre-SENTER MTRRs that were overwritten for SINIT launch */
+        if(!validate_mtrrs(&(os_mle_data->saved_mtrr_state))) {
+            printf("\nSECURITY FAILURE: validate_mtrrs() failed.\n");
+            HALT();
+        }
+        printf("\nSL: Restoring mtrrs...");
+        restore_mtrrs(&(os_mle_data->saved_mtrr_state));
+    }
+    
     /* Note: calling this *before* paging is enabled is important */
     if(sl_integrity_check((u8*)PAGE_SIZE_2M, slpb.runtime_size)) // XXX base addr
         printf("\nsl_intergrity_check SUCCESS");

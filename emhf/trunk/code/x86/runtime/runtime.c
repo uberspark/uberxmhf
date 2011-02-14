@@ -208,6 +208,8 @@ void allcpus_common_start(VCPU *vcpu){
             }
 
             /* restore pre-SENTER MTRRs that were overwritten for SINIT launch */
+            /* NOTE: XXX TODO; BSP MTRRs ALREADY RESTORED IN SL; IS IT
+               DANGEROUS TO DO THIS TWICE? */
             if(!validate_mtrrs(&(os_mle_data->saved_mtrr_state))) {
                 printf("\nSECURITY FAILURE: validate_mtrrs() failed.\n");
                 HALT();
