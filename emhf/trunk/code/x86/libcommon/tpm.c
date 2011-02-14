@@ -950,14 +950,17 @@ uint32_t tpm_get_random(uint32_t locality, uint8_t *random_data,
 void hashandprint(const char* prefix, const u8 *bytes, size_t len) {
     SHA_CTX ctx;
     u8 digest[SHA_DIGEST_LENGTH];
+    u64 start, end;
 
     printf("\nhashandprint: processing 0x%08x bytes at addr 0x%08x", len, (u32)bytes);
     
+    start = rdtsc64();
     SHA1_Init(&ctx);
     SHA1_Update(&ctx, bytes, len);
     SHA1_Final(digest, &ctx);
-
+    end = rdtsc64();
     print_hex(prefix, digest, SHA_DIGEST_LENGTH);
+    printf("\n[PERF] hashandprint: elapsed CPU cycles 0x%016llx", end-start);    
 
     /* Simulate PCR 17 value on AMD processor */
     if(len == 0x10000) {
