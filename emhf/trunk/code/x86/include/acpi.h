@@ -202,6 +202,12 @@ typedef struct{
 //return 0 in case of error (ACPI RSDP not found)
 u32 acpi_getRSDP(ACPI_RSDP *rsdp);
 
+
+//TODO: move these into flat.c
+u8 flat_readu8(u32 addr);
+void flat_copy(u8 *dest, u8 *src, u32 size);
+
+
 #endif	//__ASSEMBLY__
 
 #endif //__ACPI_H__

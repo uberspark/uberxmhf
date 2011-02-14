@@ -348,9 +348,10 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		}
 	
 		//initialize external access protection (DMA protection)
-		printf("\nSL: initializing DMA protection...");
 		if(get_cpu_vendor() == CPU_VENDOR_AMD){
 			u32 svm_eap_dev_bitmap_paddr, svm_eap_dev_bitmap_vaddr;
+
+			printf("\nSL: initializing SVM DMA protection...");
 			
 			svm_eap_dev_bitmap_paddr = runtime_physical_base + (u32)rpb->RtmSVMDevBitmapBase - __TARGET_BASE;
 			svm_eap_dev_bitmap_vaddr = PAGE_SIZE_2M + (u32)rpb->RtmSVMDevBitmapBase - __TARGET_BASE;
@@ -360,13 +361,21 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 				HALT();
 			}
 			
-			printf("\nSL: Initialized DEV.");
+			printf("\nSL: Initialized SVM DEV.");
 			
 			svm_eap_dev_protect(runtime_physical_base, slpb.runtime_size);
 			printf("\nSL: Protected Runtime (%08x-%08x) using DEV.", runtime_physical_base,
 					runtime_physical_base + slpb.runtime_size);
+		}else{
+			printf("\nSL: initializing VMX DMA protection...");
+			
+			if(!vmx_eap_initialize()){
+				printf("\nSL: Unable to initialize VMX EAP (VT-d). HALT!");
+				HALT();
+			}
+		
+			printf("\nSL: Initialized VMX VT-d.");
 		}
-	
 	
 	}
     

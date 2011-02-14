@@ -45,7 +45,7 @@
 //and runtime
 //functions to read memory using flat selector to access ACPI related
 //data structures below SL base
-static u8 flat_readu8(u32 addr){
+u8 flat_readu8(u32 addr){
     u32 ret;
     __asm__ __volatile("xor %%eax, %%eax\r\n"        
                        "movl %%fs:(%%ebx), %%eax\r\n"
@@ -59,7 +59,7 @@ static u8 flat_readu8(u32 addr){
 //memory copy using FLAT addresses, dest is always assumed to be DS relative
 //(typically a variable) while src is assumed to be an absolute physical
 //memory address
-static void flat_copy(u8 *dest, u8 *src, u32 size){
+void flat_copy(u8 *dest, u8 *src, u32 size){
 	u32 i;
 	u8 val;
 	for(i=0; i < size; i++){
@@ -87,7 +87,8 @@ static u32 _acpi_computetablechecksum(u32 spaddr, u32 size){
 
 //------------------------------------------------------------------------------
 //get the physical address of the root system description pointer (rsdp)
-//return 0 in case of error (ACPI RSDP not found)
+//return 0 in case of error (ACPI RSDP not found) else the absolute physical
+//memory address of the RSDP
 u32 acpi_getRSDP(ACPI_RSDP *rsdp){
   u16 ebdaseg;
   u32 ebdaphys;
@@ -112,7 +113,7 @@ u32 acpi_getRSDP(ACPI_RSDP *rsdp){
 
 	//found RSDP?  
   if(found)
-    return 1;
+    return (u32)(ebdaphys+i);
   
   //nope, search within BIOS areas 0xE0000 to 0xFFFFF
   for(i=0xE0000; i < (0xFFFFF-8); i+=16){
@@ -127,7 +128,7 @@ u32 acpi_getRSDP(ACPI_RSDP *rsdp){
 
   //found RSDP?
   if(found)
-    return 1;
+    return i;
   
   //no RSDP, system is not ACPI compliant!
   return 0;  
