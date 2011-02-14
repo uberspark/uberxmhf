@@ -148,7 +148,7 @@ bool set_mtrrs_for_acmod(acm_hdr_t *hdr)
     return true;
 }
 
-static void print_mtrrs(const mtrr_state_t *saved_state)
+void print_mtrrs(const mtrr_state_t *saved_state)
 {
     int i;
     

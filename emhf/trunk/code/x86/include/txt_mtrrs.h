@@ -175,6 +175,7 @@ typedef struct {
 } mtrr_state_t;
 
 extern bool set_mtrrs_for_acmod(acm_hdr_t *hdr);
+extern void print_mtrrs(const mtrr_state_t *saved_state);
 extern void save_mtrrs(mtrr_state_t *saved_state);
 extern void set_all_mtrrs(bool enable);
 extern bool set_mem_type(void *base, uint32_t size, uint32_t mem_type);
