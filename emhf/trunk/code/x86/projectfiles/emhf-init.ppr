@@ -38,19 +38,19 @@ emhf-init
 10=..\include\acpi.h
 [Selected Project Files]
 Main=
-Selected=..\include\acpi.h
+Selected=..\init\init.c
 [..\Makefile]
 TopLine=1
 Caret=1,1
 [..\init\Makefile]
 TopLine=1
-Caret=1,11
+Caret=152,11
 [..\init\header.S]
 TopLine=8
 Caret=27,22
 [..\init\init.c]
-TopLine=1
-Caret=1,1
+TopLine=681
+Caret=21,712
 [..\init\init.lds.S]
 TopLine=1
 Caret=15,8
@@ -67,8 +67,8 @@ Caret=26,93
 TopLine=1
 Caret=28,15
 [..\init\smp.c]
-TopLine=5
-Caret=17,16
+TopLine=181
+Caret=15,192
 [..\include\acpi.h]
 TopLine=45
 Caret=1,73

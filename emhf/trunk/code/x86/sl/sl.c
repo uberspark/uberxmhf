@@ -323,6 +323,15 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		//initialize PCI subsystem
 		pci_initialize();
 	
+		//check ACPI subsystem
+		{
+			ACPI_RSDP rsdp;
+			if(!acpi_getRSDP(&rsdp)){
+				printf("\nSL: ACPI RSDP not found, Halting!");
+				HALT();
+			}
+		}
+	
 		//initialize external access protection (DMA protection)
 		printf("\nSL: initializing DMA protection...");
 		if(get_cpu_vendor() == CPU_VENDOR_AMD){

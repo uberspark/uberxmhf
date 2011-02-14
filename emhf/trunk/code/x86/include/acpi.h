@@ -43,15 +43,6 @@
 #define ACPI_FADT_SIGNATURE  (0x50434146)  //"FACP"
 #define ACPI_MADT_SIGNATURE	 (0x43495041)			//"APIC"
 
-//ACPI GAS, Generic Address Structure
-typedef struct {
-	u8 address_space_id;
-	u8 register_bit_width;
-	u8 register_bit_offset;
-	u8 access_size;
-	u64 address;
-} __attribute__ ((packed)) ACPI_GAS;
-
 #define ACPI_GAS_ASID_SYSMEMORY		0x0
 #define ACPI_GAS_ASID_SYSIO				0x1
 #define ACPI_GAS_ASID_PCI					0x2
@@ -64,6 +55,17 @@ typedef struct {
 #define ACPI_GAS_ACCESS_WORD			0x2
 #define ACPI_GAS_ACCESS_DWORD			0x3
 #define ACPI_GAS_ACCESS_QWORD			0x4
+
+#ifndef __ASSEMBLY__
+
+//ACPI GAS, Generic Address Structure
+typedef struct {
+	u8 address_space_id;
+	u8 register_bit_width;
+	u8 register_bit_offset;
+	u8 access_size;
+	u64 address;
+} __attribute__ ((packed)) ACPI_GAS;
 
 
 //ACPI RSDP structure
@@ -196,7 +198,10 @@ typedef struct{
 }__attribute__ ((packed)) ACPI_FADT;
 
 
-ACPI_RSDP *ACPIGetRSDP(void);
+//get the physical address of the root system description pointer (rsdp)
+//return 0 in case of error (ACPI RSDP not found)
+u32 acpi_getRSDP(ACPI_RSDP *rsdp);
 
+#endif	//__ASSEMBLY__
 
 #endif //__ACPI_H__

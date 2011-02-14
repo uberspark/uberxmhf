@@ -52,6 +52,7 @@
 #include <vmx.h>				//VMX extensions
 
 #include <pci.h>        //PCI bus glue
+#include <acpi.h>				//ACPI glue
 
 #include <svm_eap.h>		//SVM DMA protection
 

@@ -27,6 +27,8 @@ emhf-libcommon
 		..\include\svm_eap.h
 		..\include\paging.h
 		..\include\target.h
+		..\libcommon\tpm.c
+		..\include\acpi.h
 [Open project files]
 0=..\libcommon\Makefile
 1=..\libcommon\mpsup.S
@@ -42,9 +44,11 @@ emhf-libcommon
 11=..\include\svm_eap.h
 12=..\include\paging.h
 13=..\include\target.h
+14=..\libcommon\tpm.c
+15=..\include\acpi.h
 [Selected Project Files]
 Main=
-Selected=..\libcommon\svm_eap.c
+Selected=..\include\acpi.h
 [..\libcommon\Makefile]
 TopLine=1
 Caret=111,6
@@ -76,14 +80,20 @@ Caret=21,133
 TopLine=45
 Caret=40,49
 [..\libcommon\svm_eap.c]
-TopLine=69
-Caret=45,108
+TopLine=248
+Caret=1,291
 [..\include\svm_eap.h]
-TopLine=12
-Caret=53,34
+TopLine=114
+Caret=68,151
 [..\include\paging.h]
 TopLine=1
 Caret=1,1
 [..\include\target.h]
 TopLine=45
 Caret=1,45
+[..\libcommon\tpm.c]
+TopLine=47
+Caret=45,68
+[..\include\acpi.h]
+TopLine=1
+Caret=26,1
