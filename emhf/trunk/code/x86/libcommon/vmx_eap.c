@@ -42,9 +42,15 @@
 //maximum number of RSDT entries we support
 #define	ACPI_MAX_RSDT_ENTRIES		(256)
 
+//==============================================================================
+// local (static) variables and function definitions
+//==============================================================================
+
 //DMA Remapping Hardware Unit Definitions
 static VTD_DRHD vtd_drhd[VTD_MAX_DRHD];
 static u32 vtd_num_drhd=0;	//total number of DMAR h/w units
+
+
 
 //initialize VMX EAP a.k.a VT-d
 //returns 1 if all went well, else 0
