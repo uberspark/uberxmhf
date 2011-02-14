@@ -59,7 +59,6 @@ u32 vmx_eap_initialize(void){
 	u32 dmaraddrphys, remappingstructuresaddrphys;
 	
 	
-	printf("\n%s: starting...", __FUNCTION__);
 	//zero out rsdp and rsdt structures
 	memset(&rsdp, 0, sizeof(ACPI_RSDP));
 	memset(&rsdt, 0, sizeof(ACPI_RSDT));
@@ -85,7 +84,6 @@ u32 vmx_eap_initialize(void){
 
 	//find the VT-d DMAR table in the list (if any)
   for(i=0; i< num_rsdtentries; i++){
-    //dmar=(DMAR *)( (u32)vtd_xsdtentries[i]);
   	flat_copy((u8 *)&dmar, (u8 *)rsdtentries[i], sizeof(VTD_DMAR));  
     if(dmar.signature == VTD_DMAR_SIGNATURE){
       dmarfound=1;
@@ -100,21 +98,12 @@ u32 vmx_eap_initialize(void){
 	dmaraddrphys = rsdtentries[i]; //DMAR table physical memory address;
   printf("\n%s: DMAR at %08x", __FUNCTION__, dmaraddrphys);
   
-/*
-  if(vtd_dmar.flags & VTD_INTR_REMAP)
-    printf("\nPlatform supports interrupt remapping");
-  else
-    printf("\nPlafform DOES NOT support interrupt remapping");
-*/
-
   i=0;
   remappingstructuresaddrphys=dmaraddrphys+sizeof(VTD_DMAR);
   printf("\n%s: remapping structures at %08x", __FUNCTION__, remappingstructuresaddrphys);
   
   while(i < (dmar.length-sizeof(VTD_DMAR))){
     u16 type, length;
-    //type=* ((u16 *)(remappingstructuresaddrphys+i));
-    //length=* ((u16 *)(remappingstructuresaddrphys+i+2));
 		flat_copy((u8 *)&type, (u8 *)(remappingstructuresaddrphys+i), sizeof(u16));
 		flat_copy((u8 *)&length, (u8 *)(remappingstructuresaddrphys+i+sizeof(u16)), sizeof(u16));     
 
