@@ -299,7 +299,6 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	//sanitize cache/MTRR/SMRAM (most important is to ensure that MTRRs 
 	//do not contain weird mappings)
 	//TODO
-
     if(get_cpu_vendor() == CPU_VENDOR_INTEL) {
         txt_heap_t *txt_heap;
         os_mle_data_t *os_mle_data;

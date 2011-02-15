@@ -55,6 +55,49 @@ u8 flat_readu8(u32 addr){
     return (u8)ret;        
 }
 
+u32 flat_readu32(u32 addr){
+    u32 ret;
+    __asm__ __volatile("xor %%eax, %%eax\r\n"        
+                       "movl %%fs:(%%ebx), %%eax\r\n"
+                       : "=a"(ret)
+                       : "b"(addr)
+                       );
+    return ret;        
+}
+
+
+void flat_writeu32(u32 addr, u32 val) {
+    __asm__ __volatile__("movl %%eax, %%fs:(%%ebx)\r\n"
+                         :
+                         : "b"(addr), "a"((u32)val)
+                         );
+}
+
+u64 flat_readu64(u32 addr){
+    u32 highpart, lowpart;
+    __asm__ __volatile("xor %%eax, %%eax\r\n"        
+    									 "xor %%edx, %%edx\r\n"
+                       "movl %%fs:(%%ebx), %%eax\r\n"
+                       "movl %%fs:0x4(%%ebx), %%edx\r\n"
+                       : "=a"(lowpart), "=d"(highpart)
+                       : "b"(addr)
+                       );
+    return  ((u64)highpart << 32) | (u64)lowpart;        
+}
+
+void flat_writeu64(u32 addr, u64 val) {
+    u32 highpart, lowpart;
+    lowpart = (u32)val;
+    highpart = (u32)((u64)val >> 32);
+    
+		__asm__ __volatile__("movl %%eax, %%fs:(%%ebx)\r\n"
+												"movl %%edx, %%fs:0x4(%%ebx)\r\n"	
+                         :
+                         : "b"(addr), "a"(lowpart), "d"(highpart)
+                         );
+}
+
+
 
 //memory copy using FLAT addresses, dest is always assumed to be DS relative
 //(typically a variable) while src is assumed to be an absolute physical

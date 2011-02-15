@@ -50,6 +50,83 @@
 static VTD_DRHD vtd_drhd[VTD_MAX_DRHD];
 static u32 vtd_num_drhd=0;	//total number of DMAR h/w units
 
+//------------------------------------------------------------------------------
+//vt-d register access function
+static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
+  u32 regtype=VTD_REG_32BITS, regaddr=0;  
+
+	//obtain register type and base address
+  switch(reg){
+    //32-bit registers
+    case  VTD_VER_REG_OFF:
+    case  VTD_GCMD_REG_OFF:
+    case  VTD_GSTS_REG_OFF:
+    case  VTD_FSTS_REG_OFF:
+    case  VTD_FECTL_REG_OFF:
+    case  VTD_PMEN_REG_OFF:
+      regtype=VTD_REG_32BITS;
+      regaddr=dmardevice->regbaseaddr+reg;
+      break;
+    
+    //64-bit registers
+    case  VTD_CAP_REG_OFF:
+    case  VTD_ECAP_REG_OFF:
+    case  VTD_RTADDR_REG_OFF:
+    case  VTD_CCMD_REG_OFF:
+      regtype=VTD_REG_64BITS;
+      regaddr=dmardevice->regbaseaddr+reg;
+      break;
+      
+    case  VTD_IOTLB_REG_OFF:{
+      VTD_ECAP_REG  t_vtd_ecap_reg;
+      regtype=VTD_REG_64BITS;
+      _vtd_reg(dmardevice, VTD_REG_READ, VTD_ECAP_REG_OFF, (void *)&t_vtd_ecap_reg.value);
+      regaddr=dmardevice->regbaseaddr+(t_vtd_ecap_reg.bits.iro*16)+0x8;
+      break;
+    }
+      
+    case  VTD_IVA_REG_OFF:{
+      VTD_ECAP_REG  t_vtd_ecap_reg;
+      regtype=VTD_REG_64BITS;
+      _vtd_reg(dmardevice, VTD_REG_READ, VTD_ECAP_REG_OFF, (void *)&t_vtd_ecap_reg.value);
+      regaddr=dmardevice->regbaseaddr+(t_vtd_ecap_reg.bits.iro*16);
+      break;
+    }
+    
+    default:
+      printf("\n%s: Halt, Unsupported register=%08x", __FUNCTION__, reg);
+      HALT();
+      break;
+  }
+
+  //perform the actual read or write request
+	switch(regtype){
+    case VTD_REG_32BITS:{	//32-bit r/w
+      if(access == VTD_REG_READ)
+        *((u32 *)value)= flat_readu32(regaddr);
+      else
+        flat_writeu32(regaddr, *((u32 *)value));
+        
+      break;
+    }
+    
+    case VTD_REG_64BITS:{	//64-bit r/w
+      if(access == VTD_REG_READ)
+        *((u64 *)value)=flat_readu64(regaddr);
+      else
+        flat_writeu64(regaddr, *((u64 *)value));
+    
+      break;
+    }
+  
+    default:
+     printf("\n%s: Halt, Unsupported access width=%08x", __FUNCTION__, regtype);
+     HALT();
+  }
+
+  return;
+}
+
 
 
 //initialize VMX EAP a.k.a VT-d
@@ -129,6 +206,19 @@ u32 vmx_eap_initialize(void){
   }
   
   printf("\n%s: total DRHDs detected= %u units", __FUNCTION__, vtd_num_drhd);
+
+	//be a little verbose about what we found
+  printf("\n%s: DMAR Devices:");
+  for(i=0; i < vtd_num_drhd; i++){
+    VTD_CAP_REG cap;    
+    VTD_ECAP_REG ecap;
+    printf("\n	Device %u on PCI seg %04x; base=0x%016LX", i, 
+				vtd_drhd[i].pcisegment, vtd_drhd[i].regbaseaddr);
+    _vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_CAP_REG_OFF, (void *)&cap.value);
+    printf("\n		cap=0x%016LX", (u64)cap.value);
+    _vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_ECAP_REG_OFF, (void *)&ecap.value);
+    printf("\n		ecap=0x%016LX", (u64)ecap.value);
+  }
 
 	return 1;
 

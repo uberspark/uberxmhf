@@ -61,6 +61,16 @@
 																				//computed at runtime for a specified DMAR device
 
 
+//VT-d register access types (custom definitions)
+#define VTD_REG_READ  			0xaa				//read VTD register
+#define VTD_REG_WRITE 			0xbb				//write VTD register
+
+//Vt-d register access widths (custom definitions)
+#define VTD_REG_32BITS  		0x32ff
+#define VTD_REG_64BITS  		0x64ff
+
+
+
 #ifndef __ASSEMBLY__
 
 //Vt-d DMAR structure
