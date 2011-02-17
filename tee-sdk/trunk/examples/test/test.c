@@ -36,7 +36,6 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "scode.h"
 #include "pals.h"
 #include "layout.h"
 //#include  "config.h"
@@ -44,9 +43,11 @@
 #include  <errno.h>
 #include  <string.h>
 
-#include <trustzone.h>
-#include <tzdev_trustvisor.h>
+#include <tz.h>
 #include <marshal.h>
+
+#include <tv.h>
+#include <scode.h>
 
 /* int test_marshal() */
 /* { */
