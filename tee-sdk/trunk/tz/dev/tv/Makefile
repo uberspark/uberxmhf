@@ -5,13 +5,13 @@ SRCS = src/scode.c src/tv.c
 I_SOURCES = $(wildcard include/*.h) $(wildcard src/*.h) $(wildcard ../../include/*)
 OBJS = $(patsubst %.c, %.o, $(SRCS))
 
-all: dev.a
+all: dev.o
 
-dev.a: $(OBJS)
-	ar rcs $@ $(OBJS) $(OBJLIBS)		
+dev.o: $(OBJS)
+	$(LD) -r -o dev.o $(OBJS)
 
 %.o:%.c $(I_SOURCES)
 	$(CC) -c $(CFLAGS) -I../../include -Iinclude/ -o $@ $<
 
 clean:
-	$(RM) $(OBJS) dev.a
+	$(RM) $(OBJS) dev.o

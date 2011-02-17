@@ -1,16 +1,16 @@
 include ../Makefile.inc
 
 DIRS = tv
-OBJLIBS = $(patsubst %, %/dev.a, $(DIRS))
+OBJS = $(patsubst %, %/dev.o, $(DIRS))
 
-all: libdev.a
+all: dev.o
 
-libdev.a: $(OBJLIBS)
-	ar rcs $@ $(OBJLIBS)
+dev.o: $(OBJS)
+	$(LD) -r -o dev.o $(OBJS)
 
-%/dev.a:
+%/dev.o:
 	cd $(dir $@); $(MAKE) $(MFLAGS)
 
 clean:
-	-$(RM) libdev.a
+	-$(RM) dev.o
 	-for d in $(DIRS); do (cd $$d; $(MAKE) clean); done

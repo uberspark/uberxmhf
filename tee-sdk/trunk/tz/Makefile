@@ -7,19 +7,18 @@ include Makefile.inc
 # $< the name of the related file that caused the action.
 # $* the prefix shared by target and dependent files. 
 
-OBJLIBS = dev/libdev.a
-
 # object files
 SRCS = src/tz.c src/marshal.c
 I_SOURCES = $(wildcard include/*.h) $(wildcard src/*.h)
 OBJS = $(patsubst %.c, %.o, $(SRCS))
+OBJS += dev/dev.o
 
 all : libtz.a
 
-libtz.a: $(OBJS) $(OBJLIBS)
-	ar rcs $@ $(OBJS) $(OBJLIBS)
+libtz.a: $(OBJS)
+	ar rcs $@ $(OBJS)
 
-dev/libdev.a:
+dev/dev.o:
 	cd dev; $(MAKE) $(MFLAGS)
 
 clean:
