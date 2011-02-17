@@ -13,8 +13,8 @@ SECTIONS
 
     __scode_util_start = .;
     ___scode_util_start = .;
-    scode.o(.scode_util)
-    KEEP (scode.o(.scode_util))
+    *.o(.scode_util)
+    KEEP (*.o(.scode_util))
     . = ALIGN(0x1000);
     __scode_util_end = .;
     ___scode_util_end = .;
