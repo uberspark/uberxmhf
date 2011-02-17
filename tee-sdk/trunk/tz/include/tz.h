@@ -33,10 +33,10 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#ifndef TRUSTZONE_H
-#define TRUSTZONE_H
+#ifndef TZ_H
+#define TZ_H
 
-#include <scode.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
 

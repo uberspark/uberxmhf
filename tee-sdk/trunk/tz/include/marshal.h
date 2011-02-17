@@ -33,7 +33,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <trustzone.h>
+#include <tz.h>
 
 void
 TZIEncodeUint32(INOUT tzi_encode_buffer_t* psBuffer,

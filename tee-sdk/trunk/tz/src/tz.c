@@ -33,7 +33,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <trustzone.h>
+#include <tz.h>
 #include <marshal.h>
 
 #include <assert.h>

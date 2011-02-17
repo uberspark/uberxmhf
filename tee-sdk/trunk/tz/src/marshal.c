@@ -33,7 +33,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <trustzone.h>
+#include <tz.h>
 #include <marshal.h>
 
 #define BUFFER_HEAD(psB) ((tzi_encoded_t*)((uintptr_t)(psB)->pBuf + (psB)->uiOffset))

@@ -33,12 +33,14 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <tzdev_trustvisor.h>
+#include <tv.h>
 #include <marshal.h>
 
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+
+#include "scode.h"
 
 typedef struct tzi_session_ext_t {
   pal_fn_t pFn;
