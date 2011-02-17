@@ -1,0 +1,497 @@
+#include <trustzone.h>
+#include <marshal.h>
+
+#include <assert.h>
+#include <string.h>
+
+#define CBB_OF_DEVICE(d) ((d)->sImp.cbb)
+#define CBB_OF_SESSION(s) (CBB_OF_DEVICE((s)->sImp.psDevice))
+#define CBB_OF_OPERATION(o) (CBB_OF_SESSION((o)->sImp.psSession))
+
+tz_return_t
+TZDeviceOpen(IN void const *pkDeviceName,
+             IN void const *pkInit,
+             OUT tz_device_t *psDevice)
+{
+  int i;
+  tz_return_t rv;
+
+  /* default device. currently hard-coded.
+   * later consider taking an environment variable?
+   */
+  if (pkDeviceName == NULL) {
+    pkDeviceName = "trustvisor";
+  }
+
+  /* linear search for requested device name */
+  for(i=0; device_registry[i].name == NULL; i++) {
+    if (strcmp(pkDeviceName, device_registry[i].name) == 0) {
+      break;
+    }
+  }
+  if (device_registry[i].name == NULL) {
+    return TZ_ERROR_ILLEGAL_ARGUMENT;
+  }
+
+  rv = device_registry[i].cbb->deviceOpen(pkDeviceName, pkInit, psDevice);
+
+  if (rv == TZ_SUCCESS) {
+    *psDevice = (tz_device_t) {
+      .uiState = TZ_STATE_OPEN,
+      .sImp = {
+        .cbb = device_registry[i].cbb,
+        .uiSessionCount = 0,
+      },
+    };
+  } else {
+    *psDevice = (tz_device_t) {
+      .uiState = TZ_STATE_INVALID,
+    };
+  }
+
+  return rv;
+}
+
+tz_return_t
+TZDeviceClose(INOUT tz_device_t *psDevice)
+{
+  tz_return_t rv;
+  if (psDevice->uiState == TZ_STATE_INVALID) {
+    psDevice->uiState = TZ_STATE_UNDEFINED;
+
+    return TZ_SUCCESS;
+  } else if (psDevice->uiState != TZ_STATE_OPEN) {
+    return TZ_ERROR_UNDEFINED;
+  } else if (psDevice->sImp.uiSessionCount > 0) {
+    return TZ_ERROR_ILLEGAL_STATE;
+  }
+  
+  rv = psDevice->sImp.cbb->deviceClose(psDevice);
+  if (rv == TZ_SUCCESS) {
+    psDevice->uiState = TZ_STATE_UNDEFINED;
+  }
+  return rv;
+}
+
+tz_return_t
+TZOperationPrepareOpen(INOUT tz_device_t* psDevice,
+                       IN tz_uuid_t const * pksService,
+                       IN tz_login_t const * pksLogin,
+                       IN tz_timelimit_t const * pksTimeLimit,
+                       OUT tz_session_t* psSession,
+                       OUT tz_operation_t* psOperation)
+{
+  tz_return_t rv;
+  struct tzi_session_ext_t *session_ext;
+  struct tzi_operation_ext_t *operation_ext;
+  tzi_encode_buffer_t *psEncodeBuf;
+  uint32_t uiBufSize;
+
+  if (psDevice == NULL
+      || psDevice->uiState == TZ_STATE_INVALID
+      || pksService == NULL
+      || psSession == NULL
+      || psOperation == NULL) {
+    return TZ_ERROR_UNDEFINED;
+  }
+
+  rv = CBB_OF_DEVICE(psDevice)->operationPrepareOpen(psDevice,
+                                                     pksService,
+                                                     pksLogin,
+                                                     pksTimeLimit,
+                                                     &psEncodeBuf,
+                                                     &uiBufSize,
+                                                     &session_ext,
+                                                     &operation_ext);
+
+  if (rv == TZ_SUCCESS) {
+    *psSession = (tz_session_t) {
+      .uiState = TZ_STATE_INVALID,
+      .sImp = {
+        .psDevice = psDevice,
+        .uiOpenOps = 1,
+        .bManagerSession = false,
+        .psExt = session_ext,
+      }
+    };
+
+    assert(psEncodeBuf != NULL && uiBufSize >= sizeof(tzi_encode_buffer_t));
+    *psEncodeBuf = (tzi_encode_buffer_t) {
+      .uiRetVal = TZ_SUCCESS,
+      .uiSize = uiBufSize - sizeof(tzi_encode_buffer_t),
+      .uiOffset = 0,
+    };
+
+    *psOperation = (tz_operation_t) {
+      .uiState = TZ_STATE_ENCODE,
+      .sImp = {
+        .psSession = psSession,
+        .uiOpType = TZI_OPERATION_OPEN,
+        .psEncodeBuffer = psEncodeBuf,
+        .psExt = operation_ext,
+      }
+    };
+
+    psDevice->sImp.uiSessionCount++;
+  } else {
+    *psSession = (tz_session_t) {
+      .uiState = TZ_STATE_UNDEFINED
+    };
+    *psOperation = (tz_operation_t) {
+      .uiState = TZ_STATE_INVALID
+    };
+  }
+
+  return rv;
+}
+
+tz_return_t
+TZOperationPrepareInvoke(INOUT tz_session_t* psSession,
+                         uint32_t uiCommand,
+                         IN tz_timelimit_t const * pksTimeLimit,
+                         OUT tz_operation_t * psOperation)
+{
+  tz_return_t rv;
+  struct tzi_operation_ext_t *psOperationExt;
+  tzi_encode_buffer_t *psEncodeBuf;
+  uint32_t uiBufSize;
+
+  if (psSession == NULL
+      || psSession->uiState != TZ_STATE_OPEN
+      || psOperation == NULL) {
+    return TZ_ERROR_UNDEFINED;
+  }
+  
+  rv = CBB_OF_SESSION(psSession)->operationPrepareInvoke(psSession,
+                                                         uiCommand,
+                                                         pksTimeLimit,
+                                                         &psEncodeBuf,
+                                                         &uiBufSize,
+                                                         &psOperationExt);
+
+  if (rv == TZ_SUCCESS) {
+    psSession->sImp.uiOpenOps++;
+
+    assert(psEncodeBuf != NULL && uiBufSize >= sizeof(tzi_encode_buffer_t));
+    *psEncodeBuf = (tzi_encode_buffer_t) {
+      .uiRetVal = TZ_SUCCESS,
+      .uiSize = uiBufSize - sizeof(tzi_encode_buffer_t),
+      .uiOffset = 0,
+    };
+
+    *psOperation = (tz_operation_t) {
+      .uiState = TZ_STATE_ENCODE,
+      .sImp = {
+        .psSession = psSession,
+        .uiOpType = TZI_OPERATION_INVOKE,
+        .psEncodeBuffer = psEncodeBuf,
+        .psExt = psOperationExt,
+      }
+    };
+  } else {
+    *psOperation = (tz_operation_t) {
+      .uiState = TZ_STATE_INVALID
+    };
+  }
+
+  return rv;
+}
+
+tz_return_t
+TZOperationPrepareClose(INOUT tz_session_t* psSession,
+                        OUT tz_operation_t* psOperation)
+{
+  tz_return_t rv;
+  struct tzi_operation_ext_t *psOperationExt;
+  if (psSession == NULL
+      || psSession->uiState != TZ_STATE_OPEN
+      || psOperation == NULL) {
+    return TZ_ERROR_UNDEFINED;
+  }
+
+  rv = CBB_OF_SESSION(psSession)->operationPrepareClose(psSession, &psOperationExt);
+
+  if (rv == TZ_SUCCESS) {
+    psSession->sImp.uiOpenOps++;
+    psSession->uiState = TZ_STATE_CLOSING;
+
+    *psOperation = (tz_operation_t) {
+      .uiState = TZ_STATE_PERFORMABLE,
+      .sImp = {
+        .psSession = psSession,
+        .uiOpType = TZI_OPERATION_CLOSE,
+        .psExt = psOperationExt,
+      }
+    };
+  } else {
+    *psOperation = (tz_operation_t) {
+      .uiState = TZ_STATE_INVALID
+    };
+  }
+  return rv;
+}
+
+tz_return_t
+TZOperationPerform(INOUT tz_operation_t* psOperation,
+                   OUT tz_return_t* puiServiceReturn)
+{
+  tz_return_t rv;
+  if (psOperation == NULL
+      || !(psOperation->uiState == TZ_STATE_ENCODE
+           || psOperation->uiState == TZ_STATE_PERFORMABLE)/* TZ_STATE_PERFORMABLE may also be acceptable. 6.1.7 contradicts itself */
+      || (psOperation->sImp.uiOpType == TZI_OPERATION_CLOSE
+          && (psOperation->sImp.psSession->sImp.uiOpenOps > 1
+              || 0 /* FIXME check for open shared mem seg */))
+      || puiServiceReturn == NULL) {
+    return TZ_ERROR_UNDEFINED;
+  }
+
+  if (psOperation->sImp.psEncodeBuffer != NULL
+      && psOperation->sImp.psEncodeBuffer->uiRetVal != TZ_SUCCESS) {
+    *puiServiceReturn = TZ_ERROR_GENERIC;
+    psOperation->uiState = TZ_STATE_INVALID;
+    return psOperation->sImp.psEncodeBuffer->uiRetVal;
+  }
+
+  rv = CBB_OF_OPERATION(psOperation)->operationPerform(psOperation, puiServiceReturn);
+
+  if (psOperation->sImp.psEncodeBuffer != NULL
+      && psOperation->sImp.psEncodeBuffer->uiRetVal != TZ_SUCCESS) {
+    *puiServiceReturn = TZ_ERROR_GENERIC;
+    psOperation->uiState = TZ_STATE_INVALID;
+    return psOperation->sImp.psEncodeBuffer->uiRetVal;
+  }
+
+  switch (psOperation->sImp.uiOpType) {
+  case TZI_OPERATION_OPEN:
+    if (rv == TZ_SUCCESS) {
+      psOperation->sImp.psSession->uiState = TZ_STATE_OPEN;
+      psOperation->uiState = TZ_STATE_DECODE;
+      /* note that device session count was already incremented
+         in TZOperationPrepareOpen */
+    }
+    break;
+  case TZI_OPERATION_INVOKE:
+    if (rv == TZ_SUCCESS) {
+      *puiServiceReturn = TZ_SUCCESS; /* enforcing standard */
+      psOperation->uiState = TZ_STATE_DECODE;
+    } else if (rv == TZ_ERROR_SERVICE) {
+      psOperation->uiState = TZ_STATE_DECODE;
+    } else {
+      psOperation->uiState = TZ_STATE_INVALID;
+    }
+    break;
+  case TZI_OPERATION_CLOSE:
+    psOperation->uiState = TZ_STATE_INVALID;
+
+    /* session is considered closed regardless of rv */
+    psOperation->sImp.psSession->uiState = TZ_STATE_INVALID;
+    psOperation->sImp.psSession->sImp.psDevice->sImp.uiSessionCount--;
+    break;
+  default:
+    return TZ_ERROR_UNDEFINED;
+  }
+  return rv;
+}
+
+void
+TZOperationRelease(INOUT tz_operation_t* psOperation)
+{
+  if (psOperation == NULL
+      || !(psOperation->uiState == TZ_STATE_ENCODE
+           || psOperation->uiState == TZ_STATE_PERFORMABLE
+           || psOperation->uiState == TZ_STATE_DECODE
+           || psOperation->uiState == TZ_STATE_INVALID)) {
+    return; /* undefined behavior */
+  }
+
+  /* any cleanup should already be done when
+   * transition to TZ_STATE_INVALID occurred 
+   * FIXME- revisit this
+   */
+  if (psOperation->uiState == TZ_STATE_INVALID) {
+    return; /* no-op */
+  }
+
+  CBB_OF_OPERATION(psOperation)->operationRelease(psOperation);
+
+  /* unwind un-issued operations */
+  /* FIXME is the state TZ_STATE_ENCODE or TZ_STATE_PEFORMABLE
+     iff the operation is un-issued?
+  */
+  if((psOperation->uiState == TZ_STATE_ENCODE
+      || psOperation->uiState == TZ_STATE_PERFORMABLE)) {
+    switch (psOperation->sImp.uiOpType) {
+    case TZI_OPERATION_OPEN:
+      psOperation->sImp.psSession->sImp.psDevice->sImp.uiSessionCount--;
+      break;
+    case TZI_OPERATION_INVOKE:
+      break;
+    case TZI_OPERATION_CLOSE:
+      psOperation->sImp.psSession->uiState = TZ_STATE_OPEN;
+      break;
+    }
+  }
+  /* FIXME will need to clean up marshalling, shared mem, etc. */
+
+  psOperation->sImp.psSession->sImp.uiOpenOps--;
+}
+
+void
+TZEncodeUint32(INOUT tz_operation_t* psOperation,
+               uint32_t uiData)
+{
+  TZIEncodeUint32(psOperation->sImp.psEncodeBuffer,
+                  uiData);
+}
+uint32_t
+TZDecodeUint32(INOUT tz_operation_t* psOperation)
+{
+  return TZIDecodeUint32(psOperation->sImp.psEncodeBuffer);
+}
+
+
+void
+TZEncodeArray(INOUT tz_operation_t* psOperation,
+              IN void const * pkArray,
+              uint32_t uiLength)
+{
+  TZIEncodeArray(psOperation->sImp.psEncodeBuffer,
+                 pkArray,
+                 uiLength);
+}
+
+void* 
+TZEncodeArraySpace(INOUT tz_operation_t* psOperation,
+                   uint32_t uiLength)
+{
+  return TZIEncodeArraySpace(psOperation->sImp.psEncodeBuffer,
+                             uiLength);
+}
+
+void *
+TZDecodeArraySpace(INOUT tz_operation_t* psOperation,
+                   OUT uint32_t* puiLength)
+{
+  return TZIDecodeArraySpace(psOperation->sImp.psEncodeBuffer,
+                             puiLength);
+}
+
+tz_return_t
+TZDecodeGetError(INOUT tz_operation_t * psOperation)
+{
+  return TZIDecodeGetError(psOperation->sImp.psEncodeBuffer);
+}
+
+tz_return_t
+TZManagerOpen(INOUT tz_device_t* psDevice,
+              IN tz_login_t const * pksLogin,
+              OUT tz_session_t* psSession)
+{
+  tz_return_t rv;
+  struct tzi_session_ext_t* psExt;
+
+  if (psDevice == NULL
+      || psDevice->uiState != TZ_STATE_OPEN
+      || psSession == NULL) {
+    psSession->uiState = TZ_STATE_INVALID;
+    return TZ_ERROR_UNDEFINED;
+  }
+
+  rv = CBB_OF_DEVICE(psDevice)->managerOpen(psDevice, pksLogin, &psExt);
+
+  if (rv == TZ_SUCCESS) {
+    *psSession = (tz_session_t) {
+      .uiState = TZ_STATE_OPEN,
+      .sImp = {
+        .psDevice = psDevice,
+        .uiOpenOps = 0,
+        .bManagerSession = true,
+        .psExt = psExt,
+      }
+    };
+    psDevice->sImp.uiSessionCount++;
+  } else {
+    *psSession = (tz_session_t) {
+      .uiState = TZ_STATE_INVALID,
+    };
+  }
+
+  return rv;
+}
+
+tz_return_t
+TZManagerClose(INOUT tz_session_t* psSession)
+{
+  tz_return_t rv;
+
+  if (psSession == NULL) {
+    return TZ_ERROR_UNDEFINED;
+  }
+  if (!psSession->sImp.bManagerSession) {
+    /* session is not with Manager */
+    return TZ_ERROR_UNDEFINED;
+  }
+  if (psSession->uiState == TZ_STATE_INVALID) {
+    /* according to TZ spec- silently succeed */
+    return TZ_SUCCESS;
+  }
+  if (psSession->uiState != TZ_STATE_OPEN) {
+    return TZ_ERROR_UNDEFINED;
+  }
+
+  /* FIXME- according to spec, need to cancel any operations pending
+     on service manager. Should we do it at this layer by keeping
+     track of open operations on a session and here calling
+     TZOperationCancel on each one?
+  */
+
+  rv = CBB_OF_SESSION(psSession)->managerClose(psSession);
+
+  /* spec guarantees that session is closed when this function returns,
+     even if returning an error. Therefore unconditionally close:
+  */
+  psSession->sImp.psDevice->sImp.uiSessionCount--;
+  psSession->uiState = TZ_STATE_UNDEFINED;
+
+  return TZ_SUCCESS;
+}
+
+tz_return_t
+TZManagerDownloadService(INOUT tz_session_t* psSession,
+                         IN void const * kauiData,
+                         uint32_t uiLength,
+                         OUT tz_uuid_t* psServiceId)
+{
+  
+  /* ensure basic parameter validity */
+  {
+    if (psSession == NULL
+        || psSession->uiState == TZ_STATE_INVALID
+        || !psSession->sImp.bManagerSession
+        || kauiData == NULL) {
+      return TZ_ERROR_UNDEFINED;
+    }
+  }
+
+  return CBB_OF_SESSION(psSession)->downloadService(psSession,
+                                                    kauiData, uiLength,
+                                                    psServiceId);
+}
+
+tz_return_t
+TZManagerRemoveService(INOUT tz_session_t* psSession,
+                       IN tz_uuid_t const * pksService)
+{
+  /* ensure basic param validity */
+  {
+    if (psSession == NULL
+        || psSession->uiState == TZ_STATE_INVALID
+        || !psSession->sImp.bManagerSession
+        || pksService == NULL) {
+      return TZ_ERROR_UNDEFINED;
+    }
+  }
+
+  return CBB_OF_SESSION(psSession)->removeService(psSession, pksService);
+}
