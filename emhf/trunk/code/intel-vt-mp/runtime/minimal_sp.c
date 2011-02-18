@@ -185,7 +185,7 @@ void shadow_updateshadowentries(u32 gva, u32 **sPDE, u32 **sPTE,
 
 
 
-  index_pdt= (gva >> 22);
+  //index_pdt= (gva >> 22);
   index_pt  = ((gva & (u32)0x003FFFFF) >> 12);
 	
   if( **gPDE & _PAGE_PSE){	//4M page
