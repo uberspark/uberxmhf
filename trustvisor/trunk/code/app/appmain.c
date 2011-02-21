@@ -205,8 +205,9 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 	u32 ret;
 	printf("\nCPU(0x%02x): gva=0x%08x, gpa=0x%08x, code=0x%08x\n", vcpu->id,
 			(u32)gva, (u32)gpa, (u32)violationcode);
+	ASSERT(tv_ctx != 0);
 	//	printf("\nprot is: 0x%016llx", emhf_hwpgtbl_getprot(vcpu, gpa));
-	if ((ret = scode_npf(vcpu, gpa, (u32)violationcode)) != 0) {
+	if ((ret = tv_ctx->scode_npf(vcpu, gpa, (u32)violationcode)) != 0) {
 		printf("FATAL ERROR: Unexpected return value from page fault handling\n");
 		HALT();
 	}
