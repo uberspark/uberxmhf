@@ -301,6 +301,10 @@ u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 		u32 vtd_ret_paddr, u32 vtd_ret_vaddr,
 		u32 vtd_cet_paddr, u32 vtd_cet_vaddr);
 		
+//vt-d protect/unprotect a given region of memory, start_paddr is
+//assumed to be page aligned physical memory address
+void vmx_eap_vtd_protect(u32 start_paddr, u32 size);		
+		
 #endif //__ASSEMBLY__
 
 #endif //__VMX_EAP_H__

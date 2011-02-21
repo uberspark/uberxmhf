@@ -396,6 +396,18 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 			}
 		
 			printf("\nSL: Initialized VMX VT-d.");
+		
+			vmx_eap_vtd_protect(runtime_physical_base, slpb.runtime_size);
+			//hp8540p, test to see if VT-d DMA protection works.
+			//we just DMA protect the entire guest space. this results in a
+			//"disk error message" as expected since the boot sector tries to
+			//read the sectors using BIOS via DMA and the protections prevent it. 
+			//vmx_eap_vtd_protect(0x00000000, 0xBA600000); 
+			
+			printf("\nSL: Protected Runtime (%08x-%08x) using VT-d.", runtime_physical_base,
+					runtime_physical_base + slpb.runtime_size);
+
+		
 		}
 	
 	}

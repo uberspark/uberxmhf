@@ -50,6 +50,16 @@
 static VTD_DRHD vtd_drhd[VTD_MAX_DRHD];
 static u32 vtd_num_drhd=0;	//total number of DMAR h/w units
 
+//VT-d 3-level DMA protection page table data structure addresses
+static u32 l_vtd_pdpt_paddr=0;
+static u32 l_vtd_pdpt_vaddr=0;
+static u32 l_vtd_pdts_paddr=0;
+static u32 l_vtd_pdts_vaddr=0;
+static u32 l_vtd_pts_paddr=0;
+static u32 l_vtd_pts_vaddr=0;
+
+
+
 //------------------------------------------------------------------------------
 //setup VT-d DMA protection page tables
 static void _vtd_setuppagetables(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
@@ -69,6 +79,15 @@ static void _vtd_setuppagetables(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
   
   //ensure PDPT, PDTs and PTs are all page-aligned
   ASSERT( !(pdptphysaddr & 0x00000FFFUL) && !(pdtphysaddr & 0x00000FFFUL) && !((ptphysaddr & 0x00000FFFUL)) );
+
+	//initialize our local variables 
+	l_vtd_pdpt_paddr = vtd_pdpt_paddr;
+	l_vtd_pdpt_vaddr = vtd_pdpt_vaddr;
+	l_vtd_pdts_paddr = vtd_pdts_paddr;
+	l_vtd_pdts_vaddr = vtd_pdts_vaddr;
+	l_vtd_pts_paddr = vtd_pts_paddr;
+	l_vtd_pts_vaddr = vtd_pts_vaddr;
+	
   
   //setup pdpt, pdt and pt
   //initially set the entire 4GB as DMA read/write capable
@@ -459,6 +478,115 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
 
 }
 
+
+//------------------------------------------------------------------------------
+//vt-d invalidate cachess note: we do global invalidation currently
+static void _vtd_invalidatecaches(void){
+  u32 i;
+  VTD_CCMD_REG ccmd;
+  VTD_IOTLB_REG iotlb;
+  
+  
+  for(i=0; i < vtd_num_drhd; i++){
+    //1. invalidate CET cache
+  	//wait for context cache invalidation request to send
+    do{
+      _vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_CCMD_REG_OFF, (void *)&ccmd.value);
+    }while(ccmd.bits.icc);    
+
+		//initialize CCMD to perform a global invalidation       
+    ccmd.value=0;
+    ccmd.bits.cirg=1; //global invalidation
+    ccmd.bits.icc=1;  //invalidate context cache
+    
+    //perform the invalidation
+    _vtd_reg(&vtd_drhd[i], VTD_REG_WRITE, VTD_CCMD_REG_OFF, (void *)&ccmd.value);
+
+		//wait for context cache invalidation completion status
+    do{
+      _vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_CCMD_REG_OFF, (void *)&ccmd.value);
+    }while(ccmd.bits.icc);    
+
+		//if all went well CCMD CAIG = CCMD CIRG (i.e., actual = requested invalidation granularity)
+    if(ccmd.bits.caig != 0x1){
+      printf("\n	Invalidatation of CET failed. Halting! (%u)", ccmd.bits.caig);
+      HALT();
+    }
+
+		//2. invalidate IOTLB
+    //initialize IOTLB to perform a global invalidation
+		iotlb.value=0;
+    iotlb.bits.iirg=1; //global invalidation
+    iotlb.bits.ivt=1;	 //invalidate
+    
+    //perform the invalidation
+		_vtd_reg(&vtd_drhd[i], VTD_REG_WRITE, VTD_IOTLB_REG_OFF, (void *)&iotlb.value);
+    
+    //wait for the invalidation to complete
+    do{
+      _vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_IOTLB_REG_OFF, (void *)&iotlb.value);
+    }while(iotlb.bits.ivt);    
+    
+    //if all went well IOTLB IAIG = IOTLB IIRG (i.e., actual = requested invalidation granularity)
+		if(iotlb.bits.iaig != 0x1){
+      printf("\n	Invalidation of IOTLB failed. Halting! (%u)", iotlb.bits.iaig);
+      HALT();
+    }
+  }
+
+}
+
+
+//==============================================================================
+//global (exported) functions
+
+#define PAE_get_pdptindex(x) ((x) >> 30)
+#define PAE_get_pdtindex(x) (((x) << 2) >> 23)
+#define PAE_get_ptindex(x) ( ((x) << 11) >> 23 )
+#define PAE_get_pdtaddress(x) ( (u32) ( (u64)(x) & (u64)0x3FFFFFFFFFFFF000ULL ))
+#define PAE_get_ptaddress(x) ( (u32) ( (u64)(x) & (u64)0x3FFFFFFFFFFFF000ULL ))
+
+
+//------------------------------------------------------------------------------
+//vt-d protect/unprotect a given region of memory, start_paddr is
+//assumed to be page aligned physical memory address
+void vmx_eap_vtd_protect(u32 start_paddr, u32 size){
+  pdpt_t pdpt;
+  pdt_t pdt;
+  pt_t pt;
+  u32 vaddr, end_paddr;
+	u32 pdptindex, pdtindex, ptindex;
+  
+  //compute page aligned end
+  end_paddr = PAGE_ALIGN_4K(start_paddr + size);
+  
+  //sanity check
+  ASSERT( (l_vtd_pdpt_paddr != 0) && (l_vtd_pdpt_vaddr != 0) );
+  ASSERT( (l_vtd_pdts_paddr != 0) && (l_vtd_pdts_vaddr != 0) );
+  ASSERT( (l_vtd_pts_paddr != 0) && (l_vtd_pts_vaddr != 0) );
+  
+  for(vaddr=start_paddr; vaddr <= end_paddr; vaddr+=PAGE_SIZE_4K){
+  
+		//compute pdpt, pdt and pt indices
+  	pdptindex= PAE_get_pdptindex(vaddr);
+	  pdtindex= PAE_get_pdtindex(vaddr);
+	  ptindex=PAE_get_ptindex(vaddr);
+    
+    //get the page-table for this physical page
+	  pt=(pt_t) (l_vtd_pts_vaddr + (pdptindex * PAGE_SIZE_4K * 512)+ (pdtindex * PAGE_SIZE_4K));
+	  
+	  //protect the physical page
+    pt[ptindex] &= 0xFFFFFFFFFFFFFFFCULL;  
+  
+  }
+  
+  //flush the caches
+	_vtd_invalidatecaches();  
+}
+
+
+
+
 //initialize VMX EAP a.k.a VT-d
 //returns 1 if all went well, else 0
 u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
@@ -575,6 +703,11 @@ u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
   	printf("\n%s: initializing DRHD unit %u...", __FUNCTION__, i);
   	_vtd_drhd_initialize(&vtd_drhd[i], vtd_ret_paddr);
   }
+
+  //zap VT-d presence in ACPI table...
+	//TODO: we need to be a little elegant here. eventually need to setup 
+	//EPT/NPTs such that the DMAR pages are unmapped for the guest
+	flat_writeu32(dmaraddrphys, 0UL);
 
 
 	//success
