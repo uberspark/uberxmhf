@@ -248,7 +248,7 @@ void static_free(void* target) {
 
 #ifdef __MP_VERSION__
 	spin_lock(&lock_mem_info);
-	printf("got mem_info lock!\n");
+//	printf("got mem_info lock!\n");
 #endif
 	do {	
 /* #ifdef DEBUG_MEM */
@@ -268,7 +268,7 @@ void static_free(void* target) {
 /* #endif */
 #ifdef __MP_VERSION__
 	spin_unlock(&lock_mem_info);
-	printf("released mem_info lock!\n");
+//	printf("released mem_info lock!\n");
 #endif
 }
 
