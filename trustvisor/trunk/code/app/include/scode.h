@@ -69,6 +69,7 @@ struct trustvisor_context {
 
 	u32 (*scode_set_prot)(VCPU *vcpu, u32 pte_page, u32 size);
 	void (*scode_clear_prot)(VCPU * vcpu, u32 pte_page, u32 size);
+	u32 (*scode_switch_scode)(VCPU * vcpu);
 }
 
 struct trustvisor_context * tv_ctx=0;
