@@ -41,7 +41,7 @@
  */
 
 #include  <target.h>
-//#include  <globals.h>
+#include  <globals.h>
 #include  "./include/scode.h"
 #include  "./include/puttymem.h"
 #include "./include/tpm_sw.h"
@@ -327,7 +327,7 @@ static inline u32 scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size)
 #ifdef __MP_VERSION__
 	/* not local CPU, set all mem sections unpresent */
 	for( k=0 ; k<g_midtable_numentries ; k++ )  {
-		tmpcpu = (VCPU *)getvcpu_by_midtab_id(k);
+		tmpcpu = (VCPU *)(g_midtable[k].vcpu_vaddr_ptr);
 		if (tmpcpu->id != vcpu->id) {
 			printf("[TV] scode registration on CPU %02x!\n", tmpcpu->id);
 			for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)
@@ -374,7 +374,7 @@ static inline void scode_clear_prot(VCPU * vcpu, u32 pte_page, u32 size)
 #ifdef __MP_VERSION__
 	/* not local CPU, set all mem sections unpresent */
 	for( k=0 ; k<g_midtable_numentries ; k++ )  {
-		tmpcpu = (VCPU *)getvcpu_by_midtab_id(k);
+		tmpcpu = (VCPU *)(g_midtable[k].vcpu_vaddr_ptr);
 		if (tmpcpu->id != vcpu->id) {
 			printf("[TV] scode unreg on CPU %02x!\n", tmpcpu->id);
 			for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)

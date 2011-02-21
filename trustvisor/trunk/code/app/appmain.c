@@ -39,13 +39,14 @@
 
 //#include <target.h>
 #include  "./include/scode.h"
+#include  <globals.h>
 
 // a placeholder for now...
 u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 	printf("\nCPU(0x%02x): Hello world from sechyp app!", vcpu->id);
 
 #ifdef __MP_VERSION__
-	if (isbsp()) 
+	if (g_isl->isbsp()) 
 #endif
 	{
 		printf("[TV] CPU(0x%02x): init scode!\n", vcpu->id);
@@ -95,7 +96,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 
 #ifdef __MP_VERSION__
 				/* quiesce othe CPUs */
-				do_quiesce(vcpu);
+				g_isl->do_quiesce(vcpu);
 #endif
 
 				/* do atomic scode registration */
@@ -105,7 +106,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 
 #ifdef __MP_VERSION__
 				/* wake up other CPUs */
-				do_wakeup(vcpu);
+				g_isl->do_wakeup(vcpu);
 #endif
 				break;
 			}
@@ -119,7 +120,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 
 #ifdef __MP_VERSION__
 				/* quiesce othe CPUs */
-				do_quiesce(vcpu);
+				g_isl->do_quiesce(vcpu);
 #endif
 
 				/* do atomic scode unregistration */
@@ -129,7 +130,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 
 #ifdef __MP_VERSION__
 				/* wake up other CPUs */
-				do_wakeup(vcpu);
+				g_isl->do_wakeup(vcpu);
 #endif
 				break;
 			}

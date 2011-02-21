@@ -432,6 +432,7 @@ struct isolation_layer {
 	u32 	(*hvm_intercept_handler)(VCPU *vcpu, struct regs *r);
 	
 	void 	(*do_quiesce)(VCPU *vcpu);
+	void 	(*do_wakeup)(VCPU *vcpu);
 	void 	(*setupvcpus)(u32 cpu_vendor);
 }; 
 
@@ -447,6 +448,7 @@ void svm_apic_setup(VCPU *vcpu);
 void svm_start_hvm(VCPU *vcpu);
 u32 svm_intercept_handler(VCPU *vcpu, struct regs *r);
 void svm_do_quiesce(VCPU *vcpu);
+void svm_do_wakeup(VCPU *vcpu);
 void svm_setupvcpus(u32 cpu_vendor);
 
 //other SVM isolation layer global functions
@@ -466,6 +468,7 @@ void vmx_apic_setup(VCPU *vcpu);
 void vmx_start_hvm(VCPU *vcpu);
 u32 vmx_intercept_handler(VCPU *vcpu, struct regs *r);
 void vmx_do_quiesce(VCPU *vcpu);
+void vmx_do_wakeup(VCPU *vcpu);
 void vmx_setupvcpus(u32 cpu_vendor);
 
 

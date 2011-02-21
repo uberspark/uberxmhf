@@ -24,9 +24,9 @@
     #h/w platform, current choices are x86
 	export TARGET_HWPLATFORM := x86
     #Intel TXT / SENTER support, y=enabled, n=disabled
-    export DO_SENTER := n
+    export DO_SENTER := y
     #MP/UP selection, y=Multiprocessor, n=Uniprocessor
-    export MP_VERSION := n
+    export MP_VERSION := y
     #where you want loader and runtime binaries to go, defaults to current dir.
 	#export INSTALLDIR = $(CURDIR)/dist
     export INSTALLDIR = /home/jmmccune/export
@@ -36,6 +36,7 @@
     export DEBUG_SERIAL_PORT := 0x6080
     #export DEBUG_SERIAL_PORT := 0x3f8
 	export DEBUG_VGA	:= n
+export DO_HASHANDPRINT := n
 
 #-----configuration that typically need not be touched
   #ifeq ($(TARGET_HWPLATFORM), svm)
@@ -100,6 +101,10 @@
   ifeq ($(DO_SENTER), y)
   CFLAGS += -D__DO_SENTER__
   endif
+  ifeq ($(DO_HASHANDPRINT), y)
+  CFLAGS += -D__DO_HASHANDPRINT__
+  endif
+
 
   ASFLAGS = $(CFLAGS) -D__ASSEMBLY__
 

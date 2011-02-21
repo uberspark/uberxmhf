@@ -1203,9 +1203,11 @@ void vmx_do_quiesce(VCPU *vcpu){
         printf("\nCPU(0x%02x): waiting for other CPUs to respond...", vcpu->id);
         while(g_vmx_quiesce_counter < (g_midtable_numentries-1) );
         printf("\nCPU(0x%02x): all CPUs quiesced successfully.", vcpu->id);
-        
-        //perform operation now with all CPUs halted...
-        
+}
+
+/* do_quiesce and do_wakeup should be called in pairs
+ * the operations between do_quiesce and do_wakeup won't be influenced by other CPUs */
+void vmx_do_wakeup(VCPU *vcpu){
         //set resume signal to resume the cores that are quiesced
         //Note: we do not need a spinlock for this since we are in any
         //case the only core active until this point
@@ -1319,6 +1321,7 @@ struct isolation_layer g_isolation_layer_vmx = {
 	.hvm_start = vmx_start_hvm,
 	.hvm_intercept_handler = vmx_intercept_handler,
 	.do_quiesce = vmx_do_quiesce,
+	.do_wakeup = vmx_do_wakeup,
 	.setupvcpus = vmx_setupvcpus,
 };
 
