@@ -56,6 +56,20 @@
 #endif
 #endif 
 
+/* trustvisor context interface */
+struct trustvisor_context {
+	void (*nested_set_prot)(VCPU * vcpu, u64 gpaddr, int type);
+	void (*nested_clear_prot)(VCPU * vcpu, u64 gpaddr);
+	void (*nested_switch_scode)(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2);
+	void (*nested_switch_regular)(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2);
+	void (*nested_make_pt_accessible)(u32 gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_pal);
+	void (*nested_make_pt_unaccessible)(u32 gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_pal);
+	void (*nested_breakpde)(VCPU * vcpu, u32 nvaddr);
+	void (*nested_promote)(VCPU * vcpu, u32 pfn);
+}
+
+struct trustvisor_context * tv_ctx=0;
+
 /* 
  * definition for scode sections info 
  * */
@@ -171,12 +185,24 @@ enum VMMcmd
 	VMMCMD_TEST		=255,
 };
 
-/* nested paging handlers */
-void nested_set_prot(VCPU * vcpu, u64 gpaddr);
-void nested_clear_prot(VCPU * vcpu, u64 gpaddr);
+/* nested paging handlers (SVM) */
+void svm_nested_set_prot(VCPU * vcpu, u64 pfn, int type);
+void svm_nested_clear_prot(VCPU * vcpu, u64 pfn);
+void svm_nested_switch_scode(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2);
+void svm_nested_switch_regular(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2);
+void svm_nested_make_pt_accessible(u32 gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_nx);
+void svm_nested_make_pt_unaccessible(u32 gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_nx);
+void svm_nested_promote(VCPU * vcpu, u32 pfn);
+void svm_nested_breakpde(VCPU * vcpu, u32 nvaddr);
+
+/* nested paging handlers (vmx) */
+void vmx_nested_set_prot(VCPU * vcpu, u64 gpaddr, int type);
+void vmx_nested_clear_prot(VCPU * vcpu, u64 gpaddr);
 //void nested_promote(VCPU * vcpu, u32 pfn);
-void nested_switch_scode(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2);
-void nested_switch_regular(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2);
+void vmx_nested_switch_scode(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2);
+void vmx_nested_switch_regular(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2);
+void vmx_nested_make_pt_unaccessible(u32 gpaddr_list, u32 gpaddr_count, pdpt_t npdp, u32 is_pal);
+void vmx_nested_make_pt_accessible(u32 gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_pal);
 
 /* several help functions to access guest address space */
 u16 get_16bit_aligned_value_from_guest(VCPU * vcpu, u32 gvaddr);

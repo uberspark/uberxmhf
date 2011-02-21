@@ -49,6 +49,30 @@
 #include  "./include/rsa.h"
 #include  "./include/random.h"
 
+/* SVM trustvisor context */
+struct trustvisor_context svm_tv_ctx = {
+	.nested_set_prot = svm_nested_set_prot,
+	.nested_clear_prot = svm_nested_clear_prot,
+	.nested_switch_scode = svm_nested_switch_scode,
+	.nested_switch_regular = svm_nested_switch_regular,
+	.nested_make_pt_accessible = svm_nested_make_pt_accessible,
+	.nested_make_pt_unaccessible = svm_nested_make_pt_unaccessible,
+	.nested_breakpde = svm_nested_breakpde,
+	.nested_promote = svm_nested_promote,
+}
+
+/* VMX trustvisor context */
+struct trustvisor_context vmx_tv_ctx = {
+	.nested_set_prot = vmx_nested_set_prot,
+	.nested_clear_prot = vmx_nested_clear_prot,
+	.nested_switch_scode = vmx_nested_switch_scode,
+	.nested_switch_regular = vmx_nested_switch_regular,
+	.nested_make_pt_accessible = vmx_nested_make_pt_accessible,
+	.nested_make_pt_unaccessible = vmx_nested_make_pt_unaccessible,
+	.nested_breakpde = 0,
+	.nested_promote = 0,
+}
+
 /* whitelist of all approved sensitive code regions */
 /* whitelist_max and *whitelist is set up by BSP, no need to apply lock
  * whitelist_size will only be updated in scode_register() and scode_unreg(), no need to apply lock

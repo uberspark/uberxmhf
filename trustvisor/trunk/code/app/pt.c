@@ -109,6 +109,8 @@ void nested_breakpde(VCPU * vcpu, u32 nvaddr)
 #endif
 
 
+/* VMX related page table operations */
+
 /* **************************************
  * set up scode pages permission in EPT
  *
@@ -121,7 +123,7 @@ void nested_breakpde(VCPU * vcpu, u32 nvaddr)
  * SSTACK			RW					unpresent
  *
  * **************************************/
-void nested_set_prot(VCPU * vcpu, u64 gpaddr)
+void vmx_nested_set_prot(VCPU * vcpu, u64 gpaddr, int type)
 {
 	u64 newflags;
   	u64 *pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
@@ -144,7 +146,7 @@ void nested_set_prot(VCPU * vcpu, u64 gpaddr)
 	emhf_hwpgtbl_flushall(vcpu);
 }
 
-void nested_clear_prot(VCPU * vcpu, u64 gpaddr)
+void vmx_nested_clear_prot(VCPU * vcpu, u64 gpaddr)
 {	
 	u64 newflags;
   	u64 *pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
@@ -157,7 +159,7 @@ void nested_clear_prot(VCPU * vcpu, u64 gpaddr)
 	emhf_hwpgtbl_flushall(vcpu);
 }
 
-void nested_make_pt_accessible(u32 gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_pal)
+void vmx_nested_make_pt_accessible(u32 gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_pal)
 {	
 	pdt_t npd; 
 	pt_t npt; 
@@ -214,7 +216,7 @@ void nested_make_pt_accessible(u32 gpaddr_list, u32 gpaddr_count, u64 * npdp, u3
 	}
 }
 
-void nested_switch_scode(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2)
+void vmx_nested_switch_scode(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2)
 {
 	u64* npdp;
 	u64* npd; 
@@ -250,7 +252,7 @@ void nested_switch_scode(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32
 	emhf_hwpgtbl_flushall(vcpu);
 }
 
-void nested_make_pt_unaccessible(u32 gpaddr_list, u32 gpaddr_count, pdpt_t npdp, u32 is_pal)
+void vmx_nested_make_pt_unaccessible(u32 gpaddr_list, u32 gpaddr_count, pdpt_t npdp, u32 is_pal)
 {	
 	pdt_t npd; 
 	pt_t npt; 
@@ -305,7 +307,7 @@ void nested_make_pt_unaccessible(u32 gpaddr_list, u32 gpaddr_count, pdpt_t npdp,
 	}
 }
 
-void nested_switch_regular(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2)
+void vmx_nested_switch_regular(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2)
 {
 	pdpt_t npdp;
 	pdt_t npd; 
@@ -342,9 +344,369 @@ void nested_switch_regular(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u
 	emhf_hwpgtbl_flushall(vcpu);
 }
 
+/* SVM related page table operations */
+/* function to break a big page into small pages in nested page table
+*/
+void svm_nested_breakpde(VCPU * vcpu, u32 nvaddr)
+{
+	pdt_t npd;
+	pt_t npt;
+	u64 pd_entry;
+	u32 pdp_index, pd_index, pt_index;
+	u32 pd_base, pt_base;
+	u64 flags;
+	u32 i, tmp;
+
+	/* get fields from virtual addr */
+	pdp_index = pae_get_pdpt_index(nvaddr);
+	pd_index = pae_get_pdt_index(nvaddr);
+	pt_index = pae_get_pt_index(nvaddr);
+
+	/* get page table addresses from VCPU */
+	pd_base = vcpu->npt_vaddr_pdts;
+	pt_base = vcpu->npt_vaddr_pts;
+
+	npd = (pdt_t)(pd_base + (pdp_index << PAGE_SHIFT_4K));
+	pd_entry = npd[pd_index]; 
+
+	if (pd_entry & _PAGE_PSE)
+	{
+		npt = (pt_t)(pt_base + ((pdp_index * PAE_PTRS_PER_PDT + pd_index) << (PAGE_SHIFT_4K))); 
+		memset(npt, 0, PAGE_SIZE_4K);
+
+		tmp = __pa((u32)npt);
+		flags = pae_get_flags_from_pde(pd_entry); 
+		flags &= ~_PAGE_PSE;
+		npd[pd_index] = pae_make_pde((u64)tmp, flags); 
+
+		tmp = pae_get_addr_from_pde_big(pd_entry); 
+		for (i = 0; i < PAE_PTRS_PER_PT; i ++, tmp += PAGE_SIZE_4K)
+			npt[i] = pae_make_pte((u64)tmp, flags);
+	}
+
+	return;
+}
+
+void svm_nested_set_prot(VCPU * vcpu, u64 pfn, int type)
+{
+	pdpt_t npdp;
+	pdt_t npd; 
+	pt_t npt; 
+	u32 pdp_index, pd_index, pt_index;
+	u64 pdp_entry, pd_entry, pt_entry;
+	u64 tmp;
+	struct vmcb_struct * linux_vmcb;
+	u32 nvaddr = pfn << PAGE_SHIFT_4K;
+
+	/* get fields from virtual addr */
+	pdp_index = pae_get_pdpt_index(nvaddr);
+	pd_index = pae_get_pdt_index(nvaddr);
+	pt_index = pae_get_pt_index(nvaddr);
+
+	/* get page directory table base addr  from VCPU */
+	npdp = (pdpt_t)(vcpu->npt_vaddr_ptr);
+
+	pdp_entry = npdp[pdp_index];
+	tmp = pae_get_addr_from_pdpe(pdp_entry);
+	npd = (pdt_t)(u32)(u64)__spa2hva__((u32)tmp);
+
+	pd_entry = npd[pd_index]; 
+	if (pd_entry & _PAGE_PSE) {
+		/* break 2M large page into 4KB pages */
+		printf("[TV]   break 2M page vaddr %#x\n", nvaddr);
+		nested_breakpde(vcpu,nvaddr);
+
+		printf("[TV]   pde old %#llx, new %#llx\n", pd_entry, npd[pd_index]);
+		/* fetch new page directory entry */
+		pd_entry = npd[pd_index]; 
+	}
+
+	// now, we are dealing with 4KB page
+	tmp = pae_get_addr_from_pde(pd_entry);
+	npt = (pt_t)(u32)(u64)__spa2hva__((u32)tmp);  
+	pt_entry = npt[pt_index];
+
+	/* ********************************************************************
+	 * use NPT entry flag (unused1 bit and unused2 bit) to represent page type
+	 * unused1 == 1 and unused2 == 0	registered other type of SCODE 
+	 * unused1 == 1 and unused2 == 1	registered STEXT
+	 * unused1 == 0 			regular code 
+	 * *******************************************************************/
+	if (type == 3) {
+		pt_entry &= ~_PAGE_PRESENT;
+	} else {
+		pt_entry |= _PAGE_UNUSED1;
+		if ( type == 2 ) {
+			pt_entry |=  _PAGE_UNUSED2;
+		} else {
+			pt_entry &= ~_PAGE_UNUSED2;
+		}
+
+		/* use type to decide the R/W and U bit of nPTE */
+		if( type != 0 ) {
+			pt_entry &= ~_PAGE_RW;
+		}
+		if( type != 2 ) {
+			pt_entry &= ~_PAGE_USER;
+		} 
+	}
+
+	printf("[TV]   set prot: pfn %#x, pte old %#llx, pte new %#llx\n",pfn, npt[pt_index], pt_entry);
+	npt[pt_index] = pt_entry;
+
+	/* flush TLB */
+	linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
+	linux_vmcb->tlb_control=TLB_CONTROL_FLUSHALL;
+}
+
+void svm_nested_clear_prot(VCPU * vcpu, u64 pfn)
+{
+	pdpt_t npdp;
+	pdt_t npd; 
+	pt_t npt; 
+	u32 pdp_index, pd_index, pt_index;
+	u64 pdp_entry, pd_entry, pt_entry;
+	u64 tmp;
+	struct vmcb_struct * linux_vmcb;
+	u32 nvaddr = pfn << PAGE_SHIFT_4K;
+
+	/* get fields from virtual addr */
+	pdp_index = pae_get_pdpt_index(nvaddr);
+	pd_index = pae_get_pdt_index(nvaddr);
+	pt_index = pae_get_pt_index(nvaddr);
+
+	/* get page directory table base addr  from VCPU */
+	npdp = (pdpt_t)(vcpu->npt_vaddr_ptr);
+
+	pdp_entry = npdp[pdp_index];
+	tmp = pae_get_addr_from_pdpe(pdp_entry);
+	npd = (pdt_t)(u32)(u64)__spa2hva__((u32)tmp);
+
+	pd_entry = npd[pd_index]; 
+	// if its 0, that means its 4 KB page
+	// else, its 2MB pages 
+	if ( (pd_entry & _PAGE_PSE) == 0 ) {
+		/* get addr of page table from entry */
+		tmp = pae_get_addr_from_pde(pd_entry);
+		npt = (pt_t)(u32)(u64)__spa2hva__((u32)tmp);  
+		pt_entry = npt[pt_index];
+		pt_entry |= _PAGE_USER;
+		/* clear page flag (unused1 bit == 0) */ 
+		pt_entry &= ~_PAGE_UNUSED1;
+		pt_entry |= _PAGE_RW;
+		pt_entry |= _PAGE_PRESENT;
+		printf("[TV]   clear prot: pfn %#x, pte old %#llx, pte new %#llx\n", pfn, npt[pt_index], pt_entry);
+		npt[pt_index] = pt_entry;
+		/* flush TLB */
+		linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
+		linux_vmcb->tlb_control=TLB_CONTROL_FLUSHALL;
+	}
+	else { /* 2MB page */
+		printf("FATAL ERROR: should not clear protection on 2M large page, nvaddr %#x\n", nvaddr);
+		HALT();
+	}
+}
+
+void svm_nested_promote(VCPU * vcpu, u32 pfn)
+{
+	printf("[TV] (Disabled) promote 2M page pfn %#x\n", pfn);
+}
+
+void svm_nested_make_pt_accessible(u32 gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_nx)
+{	
+	pdt_t npd; 
+	pt_t npt; 
+	u32 pdp_index, pd_index, pt_index;
+	u64 pdp_entry, pd_entry, pt_entry;
+	u64 tmp;
+	u32 nvaddr;
+
+	u32 i, j;
+	for (i = 0; i < gpaddr_count; i ++)
+	{
+		nvaddr = *(((u64 *)gpaddr_list)+i);
+		printf("[TV]   set npt prot for gpaddr %#x, ", nvaddr);
+
+		/* get fields from virtual addr */
+		pdp_index = pae_get_pdpt_index(nvaddr);
+		pd_index = pae_get_pdt_index(nvaddr);
+		pt_index = pae_get_pt_index(nvaddr);
+
+		pdp_entry = npdp[pdp_index];
+		tmp = pae_get_addr_from_pdpe(pdp_entry);
+		npd = (pdt_t)(u32)(u64)__spa2hva__((u32)tmp);
+		pd_entry = npd[pd_index]; 
+//		printf("[TV]   pdp_entry %#llx, pd_entry %#llx!\n", pdp_entry, pd_entry);
+
+		// now, we are dealing with 4KB page
+		tmp = pae_get_addr_from_pde(pd_entry);
+		npt = (pt_t)(u32)(u64)__spa2hva__((u32)tmp);  
+
+		if (!(pd_entry & _PAGE_USER)) {
+			pd_entry |= _PAGE_USER;
+			npd[pd_index] = pd_entry;
+			for (j = 0; j < PAE_PTRS_PER_PT; j ++)
+			{
+				pt_entry = npt[j]; 
+				pt_entry &= ~_PAGE_USER; 
+				npt[j] = pt_entry;
+			}
+		}
+
+		pt_entry = npt[pt_index];
+		pt_entry |= _PAGE_USER;
+		if (is_nx)
+			pt_entry |= _PAGE_NX;
+		printf("pte old %#llx, new %#llx!\n", npt[pt_index], pt_entry);
+		npt[pt_index] = pt_entry;
+	}
+}
+
+void svm_nested_switch_scode(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2)
+{
+	pdpt_t npdp;
+	pdt_t npd; 
+	u64 pd_entry;
+	u32 pd_base;
+	struct vmcb_struct * linux_vmcb;
+	u32 i, j;
+
+	//printf("[TV] scode_page %#x, scode_size %#x!\n[TV] pte_page %#x, pte_size %#x!\n", pte_page, size, pte_page2, size2);
+
+	/* get page table addresses from VCPU */
+	npdp = (pdpt_t)(vcpu->npt_vaddr_ptr);
+	pd_base = vcpu->npt_vaddr_pdts;
+
+	//printf("[TV] pb_base is %#x!\n", (u32)pd_base);
+	/* first make all pd_entry unaccessible */
+	for (i = 0; i < PAE_PTRS_PER_PDPT; i ++)
+	{
+		npd = (pdt_t)(pd_base + (i << PAGE_SHIFT_4K));
+		for (j = 0; j < PAE_PTRS_PER_PDT; j ++)
+		{
+			pd_entry = npd[j]; 
+			pd_entry &= ~_PAGE_USER; 
+			npd[j] = pd_entry;
+		}
+	}
+	//printf("[TV] npdp is %#x!\n", (u32)npdp);
+
+	/* make PAL and its related PTE pages accessbile */
+	nested_make_pt_accessible(pte_page, size >> PAGE_SHIFT_4K, npdp, 0); 
+	nested_make_pt_accessible(pte_page2, size2 >> PAGE_SHIFT_4K, npdp, 1); 
+
+	/* flush TLB */
+	linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
+	linux_vmcb->tlb_control=TLB_CONTROL_FLUSHALL;
+}
+
+void svm_nested_make_pt_unaccessible(u32 gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_nx)
+{	
+	pdt_t npd; 
+	pt_t npt; 
+	u32 pdp_index, pd_index, pt_index;
+	u64 pdp_entry, pd_entry, pt_entry;
+	u64 tmp;
+	u32 nvaddr;
+	u32 i, j;
+
+	for (i = 0; i < gpaddr_count; i ++)
+	{
+		nvaddr = *(((u64 *)gpaddr_list)+i);
+		printf("[TV]   set npt prot for gpaddr %#x, ", nvaddr);
+
+		/* get fields from virtual addr */
+		pdp_index = pae_get_pdpt_index(nvaddr);
+		pd_index = pae_get_pdt_index(nvaddr);
+		pt_index = pae_get_pt_index(nvaddr);
+
+		pdp_entry = npdp[pdp_index];
+		tmp = pae_get_addr_from_pdpe(pdp_entry);
+		npd = (pdt_t)(u32)(u64)__spa2hva__((u32)tmp);
+		pd_entry = npd[pd_index]; 
+
+		// now, we are dealing with 4KB page
+		tmp = pae_get_addr_from_pde(pd_entry);
+		npt = (pt_t)(u32)(u64)__spa2hva__((u32)tmp);  
+
+	//	printf("[TV]   pdp_entry %#llx, pd_entry %#llx!\n", pdp_entry, pd_entry);
+		if (pd_entry & _PAGE_USER) {
+			pd_entry &= ~_PAGE_USER;
+			npd[pd_index] = pd_entry;
+
+			for (j = 0; j < PAE_PTRS_PER_PT; j ++){
+				pt_entry = npt[j]; 
+				if(!(pt_entry & _PAGE_UNUSED1))  {
+					pt_entry |= _PAGE_USER; 
+				}
+				if( (pt_entry & _PAGE_UNUSED1) && ((pt_entry & _PAGE_UNUSED2)))  {
+					pt_entry |= _PAGE_USER; 
+				}
+				npt[j] = pt_entry;
+			}
+		}
+
+		pt_entry = npt[pt_index];
+		if( !is_nx )  {
+			if((pt_entry & _PAGE_UNUSED1) && (!(pt_entry & _PAGE_UNUSED2)))  {
+				pt_entry &= ~_PAGE_USER; 
+			}
+		} else {
+			pt_entry &= ~_PAGE_NX;
+		}
+		printf("pte old %#llx, new %#llx!\n", npt[pt_index], pt_entry);
+		npt[pt_index] = pt_entry;
+	}
+}
+
+void svm_nested_switch_regular(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2)
+{
+	pdpt_t npdp;
+	pdt_t npd; 
+	u64 pd_entry;
+	u32 pd_base;
+	struct vmcb_struct * linux_vmcb;
+	u32 i, j;
+
+//	printf("[TV] scode_page %#x, scode_size %#x, pte_page %#x, pte_size %#x!\n", pte_page, size, pte_page2, size2);
+
+	/* get page table addresses from VCPU */
+	npdp = (pdpt_t)(vcpu->npt_vaddr_ptr);
+	pd_base = vcpu->npt_vaddr_pdts;
+
+//	printf("[TV] npdp is %#x!\n", (u32)npdp);
+
+	/* restore PAL protection (also don't compromise the protection of other PALs)*/
+	nested_make_pt_unaccessible(pte_page, size >> PAGE_SHIFT_4K, npdp, 0); 
+	nested_make_pt_unaccessible(pte_page2, size2 >> PAGE_SHIFT_4K, npdp, 1); 
+
+//	printf("[TV] pb_base is %#x!\n", (u32)pd_base);
+	/* make all pd_entry accessible */
+	for (i = 0; i < PAE_PTRS_PER_PDPT; i ++)
+	{
+		npd = (pdt_t)(pd_base + (i << PAGE_SHIFT_4K));
+		for (j = 0; j < PAE_PTRS_PER_PDT; j ++)
+		{
+			pd_entry = npd[j]; 
+			pd_entry |= _PAGE_USER; 
+			npd[j] = pd_entry;
+		}
+	}
+
+	/* flush TLB */
+	linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
+	linux_vmcb->tlb_control=TLB_CONTROL_FLUSHALL;
+}
+
+
+
 /* The following functions deal with guest space access. It doesn't need 
  * any specific nested paging support, just putting in this file for convenience
  */
+
+
+
+/* guest page table opeations (VMX and SVM) */
 
 /* guest page table walker. 
  * argument: vaddr - virtual address that needs to be translated
