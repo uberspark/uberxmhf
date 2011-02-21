@@ -295,8 +295,12 @@ typedef union {
 
 //initialize VMX EAP a.k.a VT-d
 //returns 1 if all went well, else 0
-u32 vmx_eap_initialize(void);
-
+u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
+		u32 vtd_pdts_paddr, u32 vtd_pdts_vaddr,
+		u32 vtd_pts_paddr, u32 vtd_pts_vaddr,
+		u32 vtd_ret_paddr, u32 vtd_ret_vaddr,
+		u32 vtd_cet_paddr, u32 vtd_cet_vaddr);
+		
 #endif //__ASSEMBLY__
 
 #endif //__VMX_EAP_H__

@@ -410,6 +410,23 @@ u8 g_vmx_ept_pd_table_buffers[PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * MAX_VCPU_ENTRIE
 //VMX EPT P table buffers
 u8 g_vmx_ept_p_table_buffers[PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
 
+//VMX VT-d page table buffers; we support a 3 level page-table walk, 
+//4kb pdpt, 4kb pdt and 4kb pt and each entry in pdpt, pdt and pt is 64-bits
+u8 g_vmx_vtd_pdp_table[PAGE_SIZE_4K] __attribute__(( section(".palign_data") )); 
+u8 g_vmx_vtd_pd_tables[PAGE_SIZE_4K * PAE_PTRS_PER_PDPT] __attribute__(( section(".palign_data") ));
+u8 g_vmx_vtd_p_tables[PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT] __attribute__(( section(".palign_data") ));
+
+//VMX VT-d Root Entry Table (RET)
+//the RET is 4kb, each root entry (RE) is 128-bits
+//this gives us 256 entries in the RET, each corresponding to a PCI bus num. (0-255)
+u8 g_vmx_vtd_ret[PAGE_SIZE_4K] __attribute__(( section(".palign_data") )); 
+
+//VMX VT-d Context Entry Table (CET)
+//each RE points to a context entry table (CET) of 4kb, each context entry (CE)
+//is 128-bits which gives us 256 entries in the CET, accounting for 32 devices
+//with 8 functions each as per the PCI spec.
+u8 g_vmx_vtd_cet[PAGE_SIZE_4K * PCI_BUS_MAX] __attribute__(( section(".palign_data") ));
+
 
 
 //isolation layer abstraction

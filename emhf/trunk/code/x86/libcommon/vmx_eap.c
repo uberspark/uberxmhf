@@ -51,6 +51,99 @@ static VTD_DRHD vtd_drhd[VTD_MAX_DRHD];
 static u32 vtd_num_drhd=0;	//total number of DMAR h/w units
 
 //------------------------------------------------------------------------------
+//setup VT-d DMA protection page tables
+static void _vtd_setuppagetables(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
+	u32 vtd_pdts_paddr, u32 vtd_pdts_vaddr,
+	u32 vtd_pts_paddr, u32 vtd_pts_vaddr){
+  
+	u32 pdptphysaddr, pdtphysaddr, ptphysaddr;
+  u32 i,j,k;
+  pdpt_t pdpt;
+  pdt_t pdt;
+  pt_t pt;
+  u32 physaddr=0;
+  
+  pdptphysaddr=vtd_pdpt_paddr;
+  pdtphysaddr=vtd_pdts_paddr;
+  ptphysaddr=vtd_pts_paddr;
+  
+  //ensure PDPT, PDTs and PTs are all page-aligned
+  ASSERT( !(pdptphysaddr & 0x00000FFFUL) && !(pdtphysaddr & 0x00000FFFUL) && !((ptphysaddr & 0x00000FFFUL)) );
+  
+  //setup pdpt, pdt and pt
+  //initially set the entire 4GB as DMA read/write capable
+  pdpt=(pdpt_t)vtd_pdpt_vaddr;
+  for(i=0; i< PAE_PTRS_PER_PDPT; i++){
+    pdpt[i]=(u64)(pdtphysaddr + (i * PAGE_SIZE_4K));  
+    pdpt[i] |= ((u64)_PAGE_PRESENT | (u64)_PAGE_RW);
+    
+    pdt=(pdt_t)(vtd_pdts_vaddr + (i * PAGE_SIZE_4K));
+    for(j=0; j < PAE_PTRS_PER_PDT; j++){
+      pdt[j]=(u64)(ptphysaddr + (i * PAGE_SIZE_4K * 512)+ (j * PAGE_SIZE_4K));
+      pdt[j] |= ((u64)_PAGE_PRESENT | (u64)_PAGE_RW);
+    
+      pt=(pt_t)(vtd_pts_vaddr + (i * PAGE_SIZE_4K * 512)+ (j * PAGE_SIZE_4K));
+      for(k=0; k < PAE_PTRS_PER_PT; k++){
+        pt[k]=(u64)physaddr;
+        pt[k] |= ((u64)_PAGE_PRESENT | (u64)_PAGE_RW);
+        physaddr+=PAGE_SIZE_4K;
+      }
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+//set VT-d RET and CET tables
+//we have 1 root entry table (RET) of 4kb, each root entry (RE) is 128-bits
+//which gives us 256 entries in the RET, each corresponding to a PCI bus num.
+//(0-255)
+//each RE points to a context entry table (CET) of 4kb, each context entry (CE)
+//is 128-bits which gives us 256 entries in the CET, accounting for 32 devices
+//with 8 functions each as per the PCI spec.
+//each CE points to a PDPT type paging structure. 
+//in our implementation, every CE will point to a single PDPT type paging
+//structure for the whole system
+static void _vtd_setupRETCET(u32 vtd_pdpt_paddr, 
+		u32 vtd_ret_paddr, u32 vtd_ret_vaddr,
+		u32 vtd_cet_paddr, u32 vtd_cet_vaddr){
+  
+	u32 retphysaddr, cetphysaddr;
+  u32 i, j;
+  u64 *value;
+  
+  retphysaddr=vtd_ret_paddr;
+  cetphysaddr=vtd_cet_paddr;
+
+	//sanity check that pdpt base address is page-aligned
+	ASSERT( !(vtd_pdpt_paddr & 0x00000FFFUL) );
+	
+  //initialize RET  
+  for(i=0; i < PCI_BUS_MAX; i++){
+    value=(u64 *)(vtd_ret_vaddr + (i * 16));
+    *(value+1)=(u64)0x0ULL;
+    *value=(u64) (cetphysaddr +(i * PAGE_SIZE_4K));
+    
+    //sanity check that CET is page aligned
+    ASSERT( !(*value & 0x0000000000000FFFULL) );
+
+		//set it to present
+    *value |= 0x1ULL;
+  }    
+
+  //initialize CET
+  for(i=0; i < PCI_BUS_MAX; i++){
+    for(j=0; j < PCI_BUS_MAX; j++){
+      value= (u64 *)(vtd_cet_vaddr + (i * PAGE_SIZE_4K) + (j * 16));
+      *(value+1)=(u64)0x0000000000000101ULL; //domain:1, aw=39 bits, 3 level pt
+      *value=vtd_pdpt_paddr;
+      *value |= 0x1ULL; //present, enable fault recording/processing, multilevel pt translation           
+    }
+  }
+
+}
+
+
+//------------------------------------------------------------------------------
 //vt-d register access function
 static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
   u32 regtype=VTD_REG_32BITS, regaddr=0;  
@@ -131,7 +224,12 @@ static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
 
 //initialize VMX EAP a.k.a VT-d
 //returns 1 if all went well, else 0
-u32 vmx_eap_initialize(void){
+u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
+		u32 vtd_pdts_paddr, u32 vtd_pdts_vaddr,
+		u32 vtd_pts_paddr, u32 vtd_pts_vaddr,
+		u32 vtd_ret_paddr, u32 vtd_ret_vaddr,
+		u32 vtd_cet_paddr, u32 vtd_cet_vaddr){
+
 	ACPI_RSDP rsdp;
 	ACPI_RSDT rsdt;
 	u32 num_rsdtentries;
@@ -219,6 +317,22 @@ u32 vmx_eap_initialize(void){
     _vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_ECAP_REG_OFF, (void *)&ecap.value);
     printf("\n		ecap=0x%016LX", (u64)ecap.value);
   }
+
+  //initialize VT-d page tables
+	_vtd_setuppagetables(vtd_pdpt_paddr, vtd_pdpt_vaddr,
+		vtd_pdts_paddr, vtd_pdts_vaddr,
+		vtd_pts_paddr, vtd_pts_vaddr);
+	printf("\n%s: setup VT-d page tables (pdpt=%08x, pdts=%08x, pts=%08x).", 
+		__FUNCTION__, vtd_pdpt_paddr, vtd_pdts_paddr, vtd_pts_paddr);	
+		
+	//initialize VT-d RET and CET
+	_vtd_setupRETCET(vtd_pdpt_paddr, 
+		vtd_ret_paddr, vtd_ret_vaddr,
+		vtd_cet_paddr, vtd_cet_vaddr);
+	printf("\n%s: setup VT-d RET (%08x) and CET (%08x).", 
+		__FUNCTION__, vtd_ret_paddr, vtd_cet_paddr);
+
+
 
 	return 1;
 

@@ -115,8 +115,15 @@ XtRtmEmitIdtStub 1f
 	.extern g_midtable
 	.extern g_midtable_numentries
 	.extern g_runtime_TSS
+	
 	.extern g_svm_dev_bitmap
 
+	.extern g_vmx_vtd_pdp_table
+	.extern g_vmx_vtd_pd_tables
+	.extern g_vmx_vtd_p_tables
+	.extern g_vmx_vtd_ret
+	.extern g_vmx_vtd_cet
+	
 	.extern cstartup
 	.extern allcpus_common_start
 	.extern runtime_exception_handler
@@ -165,6 +172,12 @@ _rpb:
 	.long 0                  //number of entries
 	.long g_runtime_TSS			 //runtime TSS
 	.long	g_svm_dev_bitmap	 //runtime SVM DEV bitmap
+	.long g_vmx_vtd_pdp_table	//runtime VMX(VT-d) DMA protection page-tables
+	.long g_vmx_vtd_pd_tables
+	.long g_vmx_vtd_p_tables
+	.long g_vmx_vtd_ret				//runtime VMX(VT-d) DMA protection Root Entry Table
+	.long g_vmx_vtd_cet				//runtime VMX(VT-d) DMA protection Context Entry Table 
+
 
 //------------------------------------------------------------------------------
 //DATA (LOCAL)

@@ -366,9 +366,31 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 			printf("\nSL: Protected Runtime (%08x-%08x) using DEV.", runtime_physical_base,
 					runtime_physical_base + slpb.runtime_size);
 		}else{
+			u32 vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr;
+			u32 vmx_eap_vtd_pdts_paddr, vmx_eap_vtd_pdts_vaddr;
+			u32 vmx_eap_vtd_pts_paddr, vmx_eap_vtd_pts_vaddr;
+			u32 vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr;
+			u32 vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr;
+			
 			printf("\nSL: initializing VMX DMA protection...");
 			
-			if(!vmx_eap_initialize()){
+			vmx_eap_vtd_pdpt_paddr = runtime_physical_base + (u32)rpb->RtmVMXVTdPdpt - __TARGET_BASE; 
+			vmx_eap_vtd_pdpt_vaddr = PAGE_SIZE_2M + (u32)rpb->RtmVMXVTdPdpt - __TARGET_BASE; 
+			vmx_eap_vtd_pdts_paddr = runtime_physical_base + (u32)rpb->RtmVMXVTdPdts - __TARGET_BASE; 
+			vmx_eap_vtd_pdts_vaddr = PAGE_SIZE_2M + (u32)rpb->RtmVMXVTdPdts - __TARGET_BASE;
+			vmx_eap_vtd_pts_paddr = runtime_physical_base + (u32)rpb->RtmVMXVTdPts - __TARGET_BASE; 
+			vmx_eap_vtd_pts_vaddr = PAGE_SIZE_2M + (u32)rpb->RtmVMXVTdPts - __TARGET_BASE; 
+			vmx_eap_vtd_ret_paddr = runtime_physical_base + (u32)rpb->RtmVMXVTdRET - __TARGET_BASE; 
+			vmx_eap_vtd_ret_vaddr = PAGE_SIZE_2M + (u32)rpb->RtmVMXVTdRET - __TARGET_BASE; 
+			vmx_eap_vtd_cet_paddr = runtime_physical_base + (u32)rpb->RtmVMXVTdCET - __TARGET_BASE; 
+			vmx_eap_vtd_cet_vaddr = PAGE_SIZE_2M + (u32)rpb->RtmVMXVTdCET - __TARGET_BASE; 
+			
+			if(!vmx_eap_initialize(vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr,
+					vmx_eap_vtd_pdts_paddr, vmx_eap_vtd_pdts_vaddr,
+					vmx_eap_vtd_pts_paddr, vmx_eap_vtd_pts_vaddr,
+					vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr,
+					vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr
+				)){
 				printf("\nSL: Unable to initialize VMX EAP (VT-d). HALT!");
 				HALT();
 			}
