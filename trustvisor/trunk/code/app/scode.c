@@ -240,9 +240,19 @@ u32 scode_measure(u8 * pcr, u32 pte_page, u32 size)
 }
 
 /* initialize all the scode related variables and buffers */
-void init_scode(void)
+void init_scode(VCPU * vcpu)
 {
 	u32 inum, max;
+	/* populate TrustVisor context acorrding to CPU vendor */
+	if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+		tv_ctx = (struct trustvisor_context *)&vmx_tv_ctx;
+	} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+		tv_ctx = (struct trustvisor_context *)&svm_tv_ctx;
+	} else {
+		printf("unknow cpu vendor type!\n");
+		HALT();
+	}
+
 	/* initialize heap memory */
 	mem_init();
 

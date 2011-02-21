@@ -225,7 +225,7 @@ void copy_from_guest(VCPU * vcpu, u8 *dst, u32 gvaddr, u32 len);
 void copy_to_guest(VCPU * vcpu, u32 gvaddr, u8 *src, u32 len);
 
 /* PAL operations */
-void init_scode(void);
+void init_scode(VCPU * vcpu);
 u32 scode_register(VCPU * vcpu, u32 scode_info, u32 scode_pm, u32 gventry);
 u32 scode_unregister(VCPU * vcpu, u32 gvaddr);
 u32 scode_npf(VCPU * vcpu, u32 gpaddr, u32 errorcode);

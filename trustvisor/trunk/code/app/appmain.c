@@ -50,7 +50,7 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 #endif
 	{
 		printf("[TV] CPU(0x%02x): init scode!\n", vcpu->id);
-		init_scode();
+		init_scode(vcpu);
 
 
 		//sanity checks
