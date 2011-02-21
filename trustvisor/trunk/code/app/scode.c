@@ -59,6 +59,9 @@ struct trustvisor_context svm_tv_ctx = {
 	.nested_make_pt_unaccessible = svm_nested_make_pt_unaccessible,
 	.nested_breakpde = svm_nested_breakpde,
 	.nested_promote = svm_nested_promote,
+
+	.scode_set_prot = svm_scode_set_prot,
+	.scode_clear_prot = svm_scode_clear_prot,
 }
 
 /* VMX trustvisor context */
@@ -71,6 +74,9 @@ struct trustvisor_context vmx_tv_ctx = {
 	.nested_make_pt_unaccessible = vmx_nested_make_pt_unaccessible,
 	.nested_breakpde = 0,
 	.nested_promote = 0,
+
+	.scode_set_prot = vmx_scode_set_prot,
+	.scode_clear_prot = vmx_scode_clear_prot,
 }
 
 /* whitelist of all approved sensitive code regions */
@@ -298,6 +304,8 @@ void init_scode(VCPU * vcpu)
 	printf("[TV] RSA key pair generated!\n");
 }
 
+/* VMX related SCODE routines */
+
 /* ************************************
  * set up scode pages permission
  *
@@ -310,7 +318,7 @@ void init_scode(VCPU * vcpu)
  * SSTACK			RW					unpresent
  *
  * **************************************/
-static inline u32 scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size)
+u32 vmx_scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size)
 {
 	u32 i; 
 	u32 pfn;
@@ -332,7 +340,7 @@ static inline u32 scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size)
 
 			/* XXX FIXME: temporary disable DEV setting here! */
 		//	set_page_dev_prot(pfn);
-			nested_set_prot(vcpu, pte_pages[i]);
+			tv_ctx->nested_set_prot(vcpu, pte_pages[i]);
 		}else
 		{
 			printf("[TV] Set scode page permission error! pfn %#x have already been registered!\n", pfn);
@@ -349,7 +357,7 @@ static inline u32 scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size)
 			pfn = pte_pages[i - 1] >> PAGE_SHIFT_4K;
 			/* XXX FIXME: temporary disable DEV setting here! */
 			//clear_page_dev_prot(pfn);
-			nested_clear_prot(vcpu, pte_pages[i-1]);
+			tv_ctx->nested_clear_prot(vcpu, pte_pages[i-1]);
 
 			clear_page_scode_bitmap(pfn);
 //			if (clear_page_scode_bitmap_2M(pfn) == 0)
@@ -369,7 +377,7 @@ static inline u32 scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size)
 				pfn = pte_pages[i] >> PAGE_SHIFT_4K;
 				/* XXX FIXME: temporary disable DEV setting here! */
 				//	set_page_dev_prot(pfn);
-				nested_set_prot(tmpcpu, pte_pages[i]);
+				tv_ctx->nested_set_prot(tmpcpu, pte_pages[i]);
 			}
 		}
 	}
@@ -378,7 +386,7 @@ static inline u32 scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size)
 	return 0;
 }
 
-static inline void scode_clear_prot(VCPU * vcpu, u32 pte_page, u32 size)
+void vmx_scode_clear_prot(VCPU * vcpu, u32 pte_page, u32 size)
 {
 	u32 i; 
 	u32 pfn;
@@ -1580,3 +1588,158 @@ u32 scode_rand(u64 gcr3, u32 buffer_addr, u32 numbytes_requested, u32 numbytes_a
    */
 
 #endif
+
+/* SVM related SCODE routines */
+
+
+/* ************************************
+ * set up scode pages permission (SVM)
+ * R 	-- 	read-only
+ * R/W	--	read, write
+ * NU	--	guest system cannot access
+ * U	--	guest system can access
+ *
+ * on local CPU:
+ * Section type		Permission
+ * SENTRY(SCODE) 	R NU
+ * STEXT			R U
+ * SDATA 			RW NU
+ * SPARAM			RW NU
+ * SSTACK			RW NU
+ *
+ * on other CPU:
+ * all sections		unpresent
+ * **************************************/
+u32 svm_scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size)
+{
+	u32 i; 
+	u32 pfn;
+	pt_t pte_pages = (pt_t)pte_page;
+	int type =0; 
+#ifdef __MP_VERSION__
+	u32 k;
+	VCPU * tmpcpu;
+#endif
+
+	/* set up page permission in local CPU */
+	printf("[TV] scode registration on local CPU %02x!\n", vcpu->id);
+	for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)
+	{
+		pfn = pte_pages[i] >> PAGE_SHIFT_4K;
+		/* **********************************
+		 * test page type
+		 * type == 1 	SCODE(SENTRY)
+		 * type == 2	STEXT
+		 * type == 0	SDATA, SPARAM, SSTACK
+		 * type == 3    all sections set to unpresent
+		 * **********************************/
+		if((pte_pages[i]) & 0x1)  {
+			type = 1;
+		} else if ((pte_pages[i]) & 0x4) {
+			type = 2;
+		} else {
+			type = 0;
+		}
+
+		//printf("[TV] set_prot(pte %#x, size %#x): page No.%d, pfn %#x\n", pte_page, size, i+1, pfn);
+		if (!test_page_scode_bitmap(pfn))
+		{
+			set_page_scode_bitmap(pfn);
+			set_page_scode_bitmap_2M(pfn);
+
+			/* XXX FIXME: temporary disable DEV setting here! */
+		//	set_page_dev_prot(pfn);
+			tv_ctx->nested_set_prot(vcpu, pfn, type);
+		}else
+		{
+			printf("[TV] Set scode page permission error! pfn %#x have already been registered!\n");
+			break;
+		}
+	}
+
+	/* exception detected above, need to recover the previous changes */
+	if (i < (size >> PAGE_SHIFT_4K))
+	{
+		printf("[TV] recover scode page permission!\n");
+		for (; i > 0; i --)
+		{
+			pfn = pte_pages[i - 1] >> PAGE_SHIFT_4K;
+
+			/* XXX FIXME: temporary disable DEV setting here! */
+			//clear_page_dev_prot(pfn);
+			tv_ctx->nested_clear_prot(vcpu, pfn);
+
+			clear_page_scode_bitmap(pfn);
+			if (clear_page_scode_bitmap_2M(pfn) == 0)
+				tv_ctx->nested_promote(vcpu, pfn);
+		}
+		return 1;
+	}
+
+#ifdef __MP_VERSION__
+	/* not local CPU, set all mem sections unpresent */
+	for( k=0 ; k<g_midtable_numentries ; k++ )  {
+		tmpcpu = (VCPU *)(g_midtable[k].vcpu_vaddr_ptr);
+		if (tmpcpu->id != vcpu->id) {
+			printf("[TV] scode registration on CPU %02x!\n", tmpcpu->id);
+			for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)
+			{
+				pfn = pte_pages[i] >> PAGE_SHIFT_4K;
+				/* XXX FIXME: temporary disable DEV setting here! */
+				//	set_page_dev_prot(pfn);
+				tv_ctx->nested_set_prot(tmpcpu, pfn, 3);
+			}
+		}
+	}
+#endif
+
+	return 0;
+}
+
+void svm_scode_clear_prot(VCPU * vcpu, u32 pte_page, u32 size)
+{
+	u32 i; 
+	u32 pfn;
+	pt_t pte_pages = (pt_t)pte_page;
+#ifdef __MP_VERSION__
+	u32 k;
+	VCPU * tmpcpu;
+#endif
+
+	/* set up page permission in local CPU */
+	printf("[TV] scode unreg on local CPU %02x!\n", vcpu->id);
+	for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)
+	{
+		pfn = pte_pages[i] >> PAGE_SHIFT_4K;
+		if (test_page_scode_bitmap(pfn))
+		{
+			printf("[TV] clear_prot(pte %#x, size %#x): page No.%d, pfn %#x\n", pte_page, size, i+1, pfn);
+			/* XXX FIXME: temporary disable DEV setting here! */
+			//clear_page_dev_prot(pfn);
+			tv_ctx->nested_clear_prot(vcpu, pfn);
+
+			clear_page_scode_bitmap(pfn);
+			if (clear_page_scode_bitmap_2M(pfn) == 0)
+				tv_ctx->nested_promote(vcpu, pfn);
+		}
+	}
+
+#ifdef __MP_VERSION__
+	/* not local CPU, set all mem sections unpresent */
+	for( k=0 ; k<g_midtable_numentries ; k++ )  {
+		tmpcpu = (VCPU *)(g_midtable[k].vcpu_vaddr_ptr);
+		if (tmpcpu->id != vcpu->id) {
+			printf("[TV] scode unreg on CPU %02x!\n", tmpcpu->id);
+			for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)
+			{
+				pfn = pte_pages[i] >> PAGE_SHIFT_4K;
+				/* XXX FIXME: temporary disable DEV setting here! */
+				//	set_page_dev_prot(pfn);
+				tv_ctx->nested_clear_prot(tmpcpu, pfn);
+			}
+		}
+	}
+#endif
+
+}
+

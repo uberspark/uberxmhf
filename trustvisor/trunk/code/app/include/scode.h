@@ -66,6 +66,9 @@ struct trustvisor_context {
 	void (*nested_make_pt_unaccessible)(u32 gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_pal);
 	void (*nested_breakpde)(VCPU * vcpu, u32 nvaddr);
 	void (*nested_promote)(VCPU * vcpu, u32 pfn);
+
+	u32 (*scode_set_prot)(VCPU *vcpu, u32 pte_page, u32 size);
+	void (*scode_clear_prot)(VCPU * vcpu, u32 pte_page, u32 size);
 }
 
 struct trustvisor_context * tv_ctx=0;
