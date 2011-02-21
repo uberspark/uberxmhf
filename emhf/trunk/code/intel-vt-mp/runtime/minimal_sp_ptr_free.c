@@ -34,9 +34,7 @@
  */
 
 //------------------------------------------------------------------------------
-// shadow_paging_npae.c
-//
-// intel vt-x hypervisor memory isolation using shadow paging (non-PAE mode)
+// minimal_sp_ptr_free.c modification by Jason Franklin
 //
 // author: amit vasudevan (amitvasudevan@acm.org)
 
@@ -50,7 +48,7 @@
 /*------------ Start for verification ------------*/
 
 #define GUEST_PHYSICALMEMORY_LIMIT	 (4096*2)  //4MB guest PA
-#define GUEST_VIRTUALMEMORY_LIMIT	 (4096*2)	//4GB guest VA 
+#define GUEST_VIRTUALMEMORY_LIMIT	 (4096*2)  //4GB guest VA 
 
 u32 s_pd_t[1024];
 u32 __shadow_npae_p_tables[1024];
@@ -100,11 +98,7 @@ void main() {
     }
   }
 }
-
 /* ------------ End for verification ------------ */
-
-
-
 
 
 u32 shadow_page_fault(u32 cr2, u32 error_code){
@@ -117,18 +111,20 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
   u32 gPDE = nondet_u32();
   u32 gPTE = nondet_u32();
 
+  /* Get indexes */
   index_pdt = (cr2 >> 22);
   index_pt  = ((cr2 & (u32)0x003FFFFF) >> 12);
   
+  /* Get page table */
   if( (s_pd_t[index_pdt] & _PAGE_PRESENT) && !(s_pd_t[index_pdt] & _PAGE_PSE)) {
     //this is a regular page directory entry, so get the page table
     s_pt = (npt_t)(u32)npae_get_addr_from_pde(s_pd_t[index_pdt]);
   }
 
-
+  /* Check error codes */
   if( !(error_code & PFERR_PRESENT_MASK) ){
 
-    /* Guest is present? */
+    /* Check if guest page directory and page table entries are valid */
     if  (((gPDE & _PAGE_PRESENT) && (gPDE & _PAGE_PSE ) ) || 
 	 ((gPDE & _PAGE_PRESENT) && (!(gPDE & _PAGE_PSE) ) && (gPTE & _PAGE_PRESENT))) {
 
@@ -141,6 +137,8 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
 	}
 
       }else{	//4K page table
+
+	/* Build page table entry */
 	flags=npae_get_flags_from_pde(gPDE);
 	paddr=npae_get_addr_from_pde(s_pd_t[index_pdt]);
 
@@ -151,7 +149,6 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
 	}else{
 	  __CPROVER_assume(0);	//HALT
 	}
-
       }
 
       return VMX_EVENT_CANCEL;
@@ -160,7 +157,6 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
     }
   }else if (error_code & PFERR_WR_MASK){
     return VMX_EVENT_INJECT;
-
   }else{
     return VMX_EVENT_INJECT;
   }
