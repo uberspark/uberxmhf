@@ -220,7 +220,244 @@ static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
   return;
 }
 
+//------------------------------------------------------------------------------
+//initialize a DRHD unit
+//note that the VT-d documentation does not describe the precise sequence of
+//steps that need to be followed to initialize a DRHD unit!. we use our
+//common sense instead...:p
+static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
+	VTD_GCMD_REG gcmd;
+  VTD_GSTS_REG gsts;
+  VTD_FECTL_REG fectl;
+  VTD_CAP_REG cap;
+  VTD_RTADDR_REG rtaddr;
+  VTD_CCMD_REG ccmd;
+  VTD_IOTLB_REG iotlb;
+  
+  //sanity check
+	ASSERT(drhd != NULL);
 
+
+	//1. verify required capabilities
+	//more specifically...
+	//	verify supported MGAW to ensure our host address width is supported (32-bits)
+  //	verify supported AGAW, must support 39-bits for 3 level page-table walk
+  //	verify max domain id support (we use domain 1)
+  printf("\n	Verifying required capabilities...");
+  {
+  	//read CAP register
+		_vtd_reg(drhd, VTD_REG_READ, VTD_CAP_REG_OFF, (void *)&cap.value);
+    
+    //if MGAW is less than 32-bits bail out
+		if(cap.bits.mgaw < 31){
+      printf("\n	GAW < 31 (%u) unsupported. Halting!", cap.bits.mgaw);
+      HALT();
+    }
+    
+    //we use 3 level page-tables, so AGAW must support 39-bits
+		if(!(cap.bits.sagaw & 0x2)){
+      printf("\n	AGAW does not support 3-level page-table. Halting!");
+      HALT();
+    }
+
+		//sanity check number of domains (if unsupported we bail out)
+    ASSERT(cap.bits.nd != 0x7);
+  }
+	printf("Done.");
+
+	  
+  //2. disable device
+  printf("\n	Disabling DRHD...");
+  {
+		gcmd.value=0;	//disable translation
+	  ASSERT( gcmd.bits.te == 0);	
+	  _vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
+	  _vtd_reg(drhd, VTD_REG_READ, VTD_GSTS_REG_OFF, (void *)&gsts.value);
+	    
+	  //translation enabled status must be cleared on success
+	  if(gsts.bits.tes){
+	    printf("\n	Disable op. failed. Halting!");
+	    HALT();
+	  }
+	}
+  printf("Done.");
+
+
+  //3. setup fault logging
+  printf("\n	Setting Fault-reporting to NON-INTERRUPT mode...");
+  {
+   	//read FECTL
+	  fectl.value=0;
+    _vtd_reg(drhd, VTD_REG_READ, VTD_FECTL_REG_OFF, (void *)&fectl.value);
+    
+		//set interrupt mask bit and write
+		fectl.bits.im=1;
+    _vtd_reg(drhd, VTD_REG_WRITE, VTD_FECTL_REG_OFF, (void *)&fectl.value);
+    
+		//check to see if the im bit actually stuck
+		_vtd_reg(drhd, VTD_REG_READ, VTD_FECTL_REG_OFF, (void *)&fectl.value);
+    
+    if(!fectl.bits.im){
+      printf("\n	Failed to set fault-reporting. Halting!");
+      HALT();
+    }
+  }
+  printf("Done.");
+
+	//4. setup RET (root-entry)
+  printf("\n	Setting up RET...");
+  {
+    //setup RTADDR with base of RET 
+		rtaddr.value=(u64)vtd_ret_paddr;
+    _vtd_reg(drhd, VTD_REG_WRITE, VTD_RTADDR_REG_OFF, (void *)&rtaddr.value);
+    
+    //read RTADDR and verify the base address
+		rtaddr.value=0;
+    _vtd_reg(drhd, VTD_REG_READ, VTD_RTADDR_REG_OFF, (void *)&rtaddr.value);
+    if(rtaddr.value != (u64)vtd_ret_paddr){
+      printf("\n	Failed to set RTADDR. Halting!");
+      HALT();
+    }
+    
+    //latch RET address by using GCMD.SRTP
+    gcmd.value=0;
+    gcmd.bits.srtp=1;
+    _vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
+    
+    //ensure the RET address was latched by the h/w
+		_vtd_reg(drhd, VTD_REG_READ, VTD_GSTS_REG_OFF, (void *)&gsts.value);
+    
+    if(!gsts.bits.rtps){
+      printf("\n	Failed to latch RTADDR. Halting!");
+      HALT();
+    }
+  }
+  printf("Done.");
+
+  //5. invalidate CET cache
+  printf("\n	Invalidating CET cache...");
+	{
+		//wait for context cache invalidation request to send
+    do{
+      _vtd_reg(drhd, VTD_REG_READ, VTD_CCMD_REG_OFF, (void *)&ccmd.value);
+    }while(ccmd.bits.icc);    
+
+		//initialize CCMD to perform a global invalidation       
+    ccmd.value=0;
+    ccmd.bits.cirg=1; //global invalidation
+    ccmd.bits.icc=1;  //invalidate context cache
+    
+    //perform the invalidation
+    _vtd_reg(drhd, VTD_REG_WRITE, VTD_CCMD_REG_OFF, (void *)&ccmd.value);
+
+		//wait for context cache invalidation completion status
+    do{
+      _vtd_reg(drhd, VTD_REG_READ, VTD_CCMD_REG_OFF, (void *)&ccmd.value);
+    }while(ccmd.bits.icc);    
+
+		//if all went well CCMD CAIG = CCMD CIRG (i.e., actual = requested invalidation granularity)
+    if(ccmd.bits.caig != 0x1){
+      printf("\n	Invalidatation of CET failed. Halting! (%u)", ccmd.bits.caig);
+      HALT();
+    }
+  }
+  printf("Done.");
+
+	//6. invalidate IOTLB
+  printf("\n	Invalidating IOTLB...");
+  {
+    //initialize IOTLB to perform a global invalidation
+		iotlb.value=0;
+    iotlb.bits.iirg=1; //global invalidation
+    iotlb.bits.ivt=1;	 //invalidate
+    
+    //perform the invalidation
+		_vtd_reg(drhd, VTD_REG_WRITE, VTD_IOTLB_REG_OFF, (void *)&iotlb.value);
+    
+    //wait for the invalidation to complete
+    do{
+      _vtd_reg(drhd, VTD_REG_READ, VTD_IOTLB_REG_OFF, (void *)&iotlb.value);
+    }while(iotlb.bits.ivt);    
+    
+    //if all went well IOTLB IAIG = IOTLB IIRG (i.e., actual = requested invalidation granularity)
+		if(iotlb.bits.iaig != 0x1){
+      printf("\n	Invalidation of IOTLB failed. Halting! (%u)", iotlb.bits.iaig);
+      HALT();
+    }
+  }
+	printf("Done.");
+
+	//7. disable options we dont support
+  printf("\n	Disabling unsupported options...");
+  {
+    //disable advanced fault logging (AFL)
+		gcmd.value=0;
+    gcmd.bits.eafl=0;
+    _vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
+    _vtd_reg(drhd, VTD_REG_WRITE, VTD_GSTS_REG_OFF, (void *)&gsts.value);
+    if(gsts.bits.afls){
+      printf("\n	Could not disable AFL. Halting!");
+      HALT();
+    }
+
+    //disabled queued invalidation (QI)
+    gcmd.value=0;
+    gcmd.bits.qie=0;
+    _vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
+    _vtd_reg(drhd, VTD_REG_WRITE, VTD_GSTS_REG_OFF, (void *)&gsts.value);
+    if(gsts.bits.qies){
+      printf("\n	Could not disable QI. Halting!");
+      HALT();
+    }
+    
+    //disable interrupt remapping (IR)
+    gcmd.value=0;
+    gcmd.bits.ire=0;
+    _vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
+    _vtd_reg(drhd, VTD_REG_WRITE, VTD_GSTS_REG_OFF, (void *)&gsts.value);
+    if(gsts.bits.ires){
+      printf("\n	Could not disable IR. Halting!");
+      HALT();
+    }
+	}
+	printf("Done.");
+	
+  //8. enable device
+  printf("\n	Enabling device...");
+  {
+      //enable translation
+			gcmd.value=0;
+      gcmd.bits.te=1;
+      _vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
+      
+			//wait for translation enabled status to go green...
+			_vtd_reg(drhd, VTD_REG_READ, VTD_GSTS_REG_OFF, (void *)&gsts.value);
+      while(!gsts.bits.tes){
+        _vtd_reg(drhd, VTD_REG_READ, VTD_GSTS_REG_OFF, (void *)&gsts.value);
+      }
+  }
+  printf("Done.");
+  
+  //9. disable protected memory regions (PMR) if available
+  printf("\n	Checking and disabling for PMR...");
+	{
+    VTD_PMEN_REG pmen;
+    _vtd_reg(drhd, VTD_REG_READ, VTD_CAP_REG_OFF, (void *)&cap.value);
+    
+    //PMR caps present, so disable it as we dont support that
+		if(cap.bits.plmr || cap.bits.phmr){
+      _vtd_reg(drhd, VTD_REG_READ, VTD_PMEN_REG_OFF, (void *)&pmen.value);
+      pmen.bits.epm=0;	//disable PMR
+      _vtd_reg(drhd, VTD_REG_WRITE, VTD_PMEN_REG_OFF, (void *)&pmen.value);
+      //wait for PMR disabled...
+			do{
+        _vtd_reg(drhd, VTD_REG_READ, VTD_PMEN_REG_OFF, (void *)&pmen.value);
+      }while(pmen.bits.prs);
+  	}
+	}
+	printf("Done.");
+
+}
 
 //initialize VMX EAP a.k.a VT-d
 //returns 1 if all went well, else 0
@@ -333,8 +570,15 @@ u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 		__FUNCTION__, vtd_ret_paddr, vtd_cet_paddr);
 
 
+ 	//initialize all DRHD units
+  for(i=0; i < vtd_num_drhd; i++){
+  	printf("\n%s: initializing DRHD unit %u...", __FUNCTION__, i);
+  	_vtd_drhd_initialize(&vtd_drhd[i], vtd_ret_paddr);
+  }
 
+
+	//success
+	printf("\n%s: success, leaving...", __FUNCTION__);
 	return 1;
-
 }
 
