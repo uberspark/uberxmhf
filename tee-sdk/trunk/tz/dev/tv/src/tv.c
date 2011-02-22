@@ -258,6 +258,23 @@ TVManagerRemoveService(INOUT tz_session_t* psSession,
   return TZ_SUCCESS;
 }
 
+tz_return_t TVsharedMemoryAllocate(INOUT tz_session_t* psSession,
+                                   INOUT tz_shared_memory_t* psSharedMem)
+{
+  return TZ_ERROR_NOT_IMPLEMENTED;
+}
+
+tz_return_t TVsharedMemoryRegister(INOUT tz_session_t* psSession,
+                                   INOUT tz_shared_memory_t* psSharedMem)
+{
+  return TZ_ERROR_NOT_IMPLEMENTED;
+}
+
+void TVsharedMemoryRelease(INOUT tz_shared_memory_t* psSharedMem)
+{
+  return;
+}
+
 tzi_device_cb_block_t tv_cb_block =
   { &TVDeviceOpen,
     &TVDeviceClose, 
@@ -270,5 +287,8 @@ tzi_device_cb_block_t tv_cb_block =
     &TVOperationPrepareClose,
     &TVOperationPerform,
     &TVOperationRelease,
+    &TVsharedMemoryAllocate,
+    &TVsharedMemoryRegister,
+    &TVsharedMemoryRelease,
   };
 
