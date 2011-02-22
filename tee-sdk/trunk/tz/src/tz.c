@@ -501,6 +501,60 @@ TZDecodeArraySpace(INOUT tz_operation_t* psOperation,
                              puiLength);
 }
 
+void
+TZEncodeMemoryReference(INOUT tz_operation_t* psOperation,
+                        INOUT tz_shared_memory_t* psSharedMem,
+                        uint32_t uiOffset,
+                        uint32_t uiLength,
+                        uint32_t uiFlags)
+{
+  uint32_t ptr_offset;
+  tz_return_t rv;
+
+  if (psOperation == NULL
+      || psOperation->uiState != TZ_STATE_ENCODE
+      || psSharedMem == NULL
+      || psSharedMem->uiState != TZ_STATE_OPEN) {
+    return; /* FIXME print warning? */
+  }
+
+  /* silently return if encoder is already in an error state */
+  if (psOperation->sImp.psEncodeBuffer->uiRetVal != TZ_SUCCESS) {
+    return;
+  }
+
+  /* check for encode_format errors, as per spec */
+  if ((uiOffset+uiLength) > psSharedMem->uiLength
+      || false /* FIXME check whether flags are a subset of the sharedmem flags */
+      || false) { /* FIXME check if offset to offset+length overlaps an already-encoded reference */
+    psOperation->sImp.psEncodeBuffer->uiRetVal = TZ_ERROR_ENCODE_FORMAT;
+    return;
+  }
+
+  /* encoder just needs address and length. returns offset (into the
+   * encode-buffer) of the encoded address so that device back-end can
+   * rewrite it if necessary. (address space of trusted environment
+   * may not be unity-mapped with address space of caller)
+   */
+  ptr_offset = TZIEncodeMemoryReference(psOperation->sImp.psEncodeBuffer,
+                                        psSharedMem->pBlock+uiOffset,
+                                        uiLength);
+
+  rv = CBB_OF_OPERATION(psOperation)->encodeMemoryReference(psOperation,
+                                                            psSharedMem,
+                                                            uiOffset,
+                                                            uiLength,
+                                                            uiFlags,
+                                                            ptr_offset);
+
+  if (rv != TZ_SUCCESS) {
+    psOperation->sImp.psEncodeBuffer->uiRetVal = rv;
+  } else {
+    /* FIXME record the reference */
+  }
+}
+
+
 tz_return_t
 TZDecodeGetError(INOUT tz_operation_t * psOperation)
 {
