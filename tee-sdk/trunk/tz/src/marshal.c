@@ -168,6 +168,37 @@ _TZIEncodeArraySpace(INOUT tzi_encode_buffer_t* psBuffer,
   return &((uint8_t*)(psBuffer->pBuf))[arrayStartOffset];
 }
 
+uint32_t
+TZIEncodeMemoryReference(INOUT tzi_encode_buffer_t* psBuffer,
+                         IN void* pMem,
+                         uint32_t Length)
+{
+  uint32_t sz =
+    sizeof(psBuffer->pBuf->uiType)
+    + sizeof(psBuffer->pBuf->sMem);
+  uint encodeOffset;
+
+  if (psBuffer->uiRetVal != TZ_SUCCESS) {
+    return 0;
+  }
+
+  if ((psBuffer->uiOffset + sz) > psBuffer->uiSize) {
+    psBuffer->uiRetVal = TZ_ERROR_ENCODE_MEMORY;
+    return 0;
+  }
+
+  encodeOffset = psBuffer->uiOffset + ((uintptr_t)(&BUFFER_HEAD(psBuffer)->sMem.pMem)
+                                       - (uintptr_t)(BUFFER_HEAD(psBuffer)));
+
+  BUFFER_HEAD(psBuffer)->uiType = TZI_ENCODED_MEM;
+  BUFFER_HEAD(psBuffer)->sMem.uiSize = Length;
+  BUFFER_HEAD(psBuffer)->sMem.pMem = pMem;
+  psBuffer->uiOffset += sz;
+
+  return encodeOffset;
+}
+
+
 __attribute__ ((section (".scode_util")))
 void *
 TZIDecodeArraySpace(INOUT tzi_encode_buffer_t* psBuffer,
