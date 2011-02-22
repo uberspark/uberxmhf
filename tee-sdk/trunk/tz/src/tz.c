@@ -290,7 +290,7 @@ TZOperationPerform(INOUT tz_operation_t* psOperation,
            || psOperation->uiState == TZ_STATE_PERFORMABLE)/* TZ_STATE_PERFORMABLE may also be acceptable. 6.1.7 contradicts itself */
       || (psOperation->sImp.uiOpType == TZI_OPERATION_CLOSE
           && (psOperation->sImp.psSession->sImp.uiOpenOps > 1
-              || 0 /* FIXME check for open shared mem seg */))
+              || psOperation->sImp.psSession->sImp.uiOpenSharedMem > 0))
       || puiServiceReturn == NULL) {
     return TZ_ERROR_UNDEFINED;
   }
@@ -420,6 +420,7 @@ TZSharedMemoryAllocate(INOUT tz_session_t* psSession,
     assert((uint32_t)(psSharedMem->pBlock) % 8 == 0); /* TZ spec requirement */
     psSharedMem->uiState = TZ_STATE_OPEN;
     psSharedMem->sImp.psSession = psSession;
+    psSession->sImp.uiOpenSharedMem++;
   } else {
     assert(psSharedMem->pBlock == NULL);
     psSharedMem->uiState = TZ_STATE_INVALID;
@@ -449,6 +450,7 @@ TZSharedMemoryRegister(INOUT tz_session_t* psSession,
 
   if(rv == TZ_SUCCESS) {
     psSharedMem->uiState = TZ_STATE_OPEN;
+    psSession->sImp.uiOpenSharedMem++;
   } else {
     psSharedMem->uiState = TZ_STATE_INVALID;
   }
@@ -465,10 +467,9 @@ TZSharedMemoryRelease(INOUT tz_shared_memory_t* psSharedMem)
     return;
   }
 
-  if (psSharedMem->uiState == TZ_STATE_INVALID) {
-    /* no-op */
-  } else {
+  if (psSharedMem->uiState != TZ_STATE_INVALID) {
     CBB_OF_SHAREDMEM(psSharedMem)->sharedMemoryRelease(psSharedMem);
+    psSharedMem->sImp.psSession->sImp.uiOpenSharedMem--;
   }
 
   psSharedMem->uiState = TZ_STATE_UNDEFINED;

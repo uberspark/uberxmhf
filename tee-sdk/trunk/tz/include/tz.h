@@ -177,6 +177,7 @@ typedef struct tz_session_t
     /* Implementation-defined. */
     tz_device_t* psDevice;
     uint32_t uiOpenOps;
+    uint32_t uiOpenSharedMem;
     bool bManagerSession;
     struct tzi_session_ext_t* psExt;
   } sImp;
