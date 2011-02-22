@@ -267,6 +267,19 @@ TZOperationPrepareClose(INOUT tz_session_t* psSession,
   return rv;
 }
 
+static void unreferenceSharedMemSubranges(INOUT tz_operation_t *psOperation)
+{
+  ll_t *refdSubranges=psOperation->sImp.psRefdSubranges;
+  tzi_shared_memory_subrange_t *subrange;
+  LL_FOR_EACH(refdSubranges, subrange) {
+    /* remove self from the shared memory's list of referencing
+       operations */
+    LL_dremove(&subrange->psSharedMem->sImp.psRefdOperations, psOperation);
+  }
+  LL_free(psOperation->sImp.psRefdSubranges);
+  psOperation->sImp.psRefdSubranges = NULL;
+}
+
 tz_return_t
 TZOperationPerform(INOUT tz_operation_t* psOperation,
                    OUT tz_return_t* puiServiceReturn)
@@ -291,13 +304,18 @@ TZOperationPerform(INOUT tz_operation_t* psOperation,
 
   rv = CBB_OF_OPERATION(psOperation)->operationPerform(psOperation, puiServiceReturn);
 
+  /* cf 6.2.4 */
+  unreferenceSharedMemSubranges(psOperation);
+
+  /* check for encoder errors caused by the service */
   if (psOperation->sImp.psEncodeBuffer != NULL
       && psOperation->sImp.psEncodeBuffer->uiRetVal != TZ_SUCCESS) {
     *puiServiceReturn = TZ_ERROR_GENERIC;
     psOperation->uiState = TZ_STATE_INVALID;
-    return psOperation->sImp.psEncodeBuffer->uiRetVal;
+    rv = psOperation->sImp.psEncodeBuffer->uiRetVal;
   }
 
+  /* enforce spec post-conditions */
   switch (psOperation->sImp.uiOpType) {
   case TZI_OPERATION_OPEN:
     if (rv == TZ_SUCCESS) {
@@ -340,6 +358,9 @@ TZOperationRelease(INOUT tz_operation_t* psOperation)
            || psOperation->uiState == TZ_STATE_INVALID)) {
     return; /* undefined behavior */
   }
+
+  /* cf 6.2.4 */
+  unreferenceSharedMemSubranges(psOperation);
 
   /* any cleanup should already be done when
    * transition to TZ_STATE_INVALID occurred 
@@ -439,7 +460,7 @@ void
 TZSharedMemoryRelease(INOUT tz_shared_memory_t* psSharedMem)
 {
   if (psSharedMem == NULL
-      || false) { /* FIXME check if block is still referenced by an operation */
+      || psSharedMem->sImp.psRefdOperations != NULL) {
     /* FIXME undefined behavior. print a warning? */
     return;
   }

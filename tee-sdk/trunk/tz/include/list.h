@@ -105,8 +105,27 @@ static void LL_free(ll_t *list)
 }
 
 /* for loop. on each iteration x is set to the current head item, l is set to the current tail */
-#define LL_FOR_EACH(l, x) for((x) = (l)->first ; (l) != NULL ; (x) = (l)->first, (l) = (l)->rest)
+#define LL_FOR_EACH(l, x) for((x) = ((l) == NULL) ? NULL : (l)->first ; (l) != NULL ; (l) = (l)->rest, (x) = (l) == NULL ? NULL : (l)->first)
 
+/* note that ptr is compared directly, not dereferenced. */
+static void LL_dremove(ll_t **list, void *x)
+{
+  ll_t *prev = NULL;
+  ll_t *curr = *list;
+  void *y;
 
+  LL_FOR_EACH(curr, y) {
+    if (y == x) {
+      if (prev != NULL) {
+        prev->rest = curr->rest;
+      } else {
+        *list = curr->rest;
+      }
+      free(curr);
+      return;
+    }
+    prev = curr;
+  }
+}
 
 #endif
