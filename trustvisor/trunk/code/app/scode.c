@@ -49,6 +49,8 @@
 #include  "./include/rsa.h"
 #include  "./include/random.h"
 
+struct trustvisor_context * tv_ctx = 0;
+
 /* SVM trustvisor context */
 struct trustvisor_context svm_tv_ctx = {
 	.nested_set_prot = svm_nested_set_prot,

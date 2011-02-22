@@ -245,8 +245,8 @@ void vmx_nested_switch_scode(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2,
 	//printf("[TV] npdp is %#x!\n", (u32)npdp);
 
 	/* make PAL and its related PTE pages accessbile */
-	nested_make_pt_accessible(pte_page, size >> PAGE_SHIFT_4K, npdp, 1); 
-	nested_make_pt_accessible(pte_page2, size2 >> PAGE_SHIFT_4K, npdp, 0); 
+	vmx_nested_make_pt_accessible(pte_page, size >> PAGE_SHIFT_4K, npdp, 1); 
+	vmx_nested_make_pt_accessible(pte_page2, size2 >> PAGE_SHIFT_4K, npdp, 0); 
 
 	/* flush TLB */
 	emhf_hwpgtbl_flushall(vcpu);
@@ -324,8 +324,8 @@ void vmx_nested_switch_regular(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page
 //	printf("[TV] npdp is %#x!\n", (u32)npdp);
 
 	/* restore PAL protection (also don't compromise the protection of other PALs)*/
-	nested_make_pt_unaccessible(pte_page, size >> PAGE_SHIFT_4K, npdp, 1); 
-	nested_make_pt_unaccessible(pte_page2, size2 >> PAGE_SHIFT_4K, npdp, 0); 
+	vmx_nested_make_pt_unaccessible(pte_page, size >> PAGE_SHIFT_4K, npdp, 1); 
+	vmx_nested_make_pt_unaccessible(pte_page2, size2 >> PAGE_SHIFT_4K, npdp, 0); 
 
 //	printf("[TV] pb_base is %#x!\n", (u32)pd_base);
 	/* make all pd_entry accessible */
@@ -414,7 +414,7 @@ void svm_nested_set_prot(VCPU * vcpu, u64 pfn, int type)
 	if (pd_entry & _PAGE_PSE) {
 		/* break 2M large page into 4KB pages */
 		printf("[TV]   break 2M page vaddr %#x\n", nvaddr);
-		nested_breakpde(vcpu,nvaddr);
+		svm_nested_breakpde(vcpu,nvaddr);
 
 		printf("[TV]   pde old %#llx, new %#llx\n", pd_entry, npd[pd_index]);
 		/* fetch new page directory entry */
@@ -592,8 +592,8 @@ void svm_nested_switch_scode(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2,
 	//printf("[TV] npdp is %#x!\n", (u32)npdp);
 
 	/* make PAL and its related PTE pages accessbile */
-	nested_make_pt_accessible(pte_page, size >> PAGE_SHIFT_4K, npdp, 0); 
-	nested_make_pt_accessible(pte_page2, size2 >> PAGE_SHIFT_4K, npdp, 1); 
+	svm_nested_make_pt_accessible(pte_page, size >> PAGE_SHIFT_4K, npdp, 0); 
+	svm_nested_make_pt_accessible(pte_page2, size2 >> PAGE_SHIFT_4K, npdp, 1); 
 
 	/* flush TLB */
 	linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
@@ -677,8 +677,8 @@ void svm_nested_switch_regular(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page
 //	printf("[TV] npdp is %#x!\n", (u32)npdp);
 
 	/* restore PAL protection (also don't compromise the protection of other PALs)*/
-	nested_make_pt_unaccessible(pte_page, size >> PAGE_SHIFT_4K, npdp, 0); 
-	nested_make_pt_unaccessible(pte_page2, size2 >> PAGE_SHIFT_4K, npdp, 1); 
+	svm_nested_make_pt_unaccessible(pte_page, size >> PAGE_SHIFT_4K, npdp, 0); 
+	svm_nested_make_pt_unaccessible(pte_page2, size2 >> PAGE_SHIFT_4K, npdp, 1); 
 
 //	printf("[TV] pb_base is %#x!\n", (u32)pd_base);
 	/* make all pd_entry accessible */

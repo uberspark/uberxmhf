@@ -41,6 +41,8 @@
 #include  "./include/scode.h"
 #include  <globals.h>
 
+extern struct trustvisor_context * tv_ctx;
+
 // a placeholder for now...
 u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 	printf("\nCPU(0x%02x): Hello world from sechyp app!", vcpu->id);
