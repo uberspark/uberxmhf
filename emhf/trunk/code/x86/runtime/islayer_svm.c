@@ -1063,6 +1063,7 @@ void svm_setupvcpus(u32 cpu_vendor){
       npt_pts_base = ((u32)g_svm_npt_pts_buffers + (i * (2048*4096)));
       _svm_nptinitialize(npt_pdpt_base, npt_pdts_base, npt_pts_base);
       vcpu->npt_vaddr_ptr = npt_pdpt_base;
+      vcpu->npt_vaddr_pdts = npt_pdts_base;
       vcpu->npt_vaddr_pts = npt_pts_base;
       vcpu->npt_asid = npt_current_asid;
       npt_current_asid++;
