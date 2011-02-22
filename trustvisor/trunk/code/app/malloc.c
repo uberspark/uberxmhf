@@ -198,7 +198,7 @@ void *static_malloc(unsigned int size) {
 
 #ifdef __MP_VERSION__
 	spin_lock(&lock_mem_info);
-	printf("got mem_info lock!\n");
+//	printf("got mem_info lock!\n");
 #endif
 	/* Find enough slots to satisfy the request */
 	freeIndex = findFreeSlots(numSlots);
@@ -221,7 +221,7 @@ void *static_malloc(unsigned int size) {
 	}
 #ifdef __MP_VERSION__
 	spin_unlock(&lock_mem_info);
-	printf("released mem_info lock!\n");
+//	printf("released mem_info lock!\n");
 #endif
 	/* Return memory pointer */
 	return (((unsigned char *)memBuffer) + freeIndex*MEMORY_SLOT_SIZE);

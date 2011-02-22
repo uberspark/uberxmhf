@@ -948,7 +948,6 @@ uint32_t tpm_get_random(uint32_t locality, uint8_t *random_data,
 
 /* misc utility functions; probably belong elsewhere */
 void hashandprint(const char* prefix, const u8 *bytes, size_t len) {
-#ifdef __DO_HASHANDPRINT__
     SHA_CTX ctx;
     u8 digest[SHA_DIGEST_LENGTH];
     u64 start, end;
@@ -976,7 +975,6 @@ void hashandprint(const char* prefix, const u8 *bytes, size_t len) {
 
         print_hex("[AMD] Expected PCR-17: ", pcr17, SHA_DIGEST_LENGTH);
     }    
-#endif
 }
 
 

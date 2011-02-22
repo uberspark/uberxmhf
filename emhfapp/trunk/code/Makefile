@@ -36,7 +36,6 @@
     export DEBUG_SERIAL_PORT := 0x6080
     #export DEBUG_SERIAL_PORT := 0x3f8
 	export DEBUG_VGA	:= n
-export DO_HASHANDPRINT  := n
 
 #-----configuration that typically need not be touched
   #ifeq ($(TARGET_HWPLATFORM), svm)
@@ -101,10 +100,6 @@ export DO_HASHANDPRINT  := n
   ifeq ($(DO_SENTER), y)
   CFLAGS += -D__DO_SENTER__
   endif
-  ifeq ($(DO_HASHANDPRINT), y)
-  CFLAGS += -D__DO_HASHANDPRINT__
-  endif
-
 
   ASFLAGS = $(CFLAGS) -D__ASSEMBLY__
 
