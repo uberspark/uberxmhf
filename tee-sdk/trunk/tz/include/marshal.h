@@ -53,6 +53,10 @@ uint32_t TZIEncodeMemoryReference(INOUT tzi_encode_buffer_t* psBuffer,
                                   IN void* pMem,
                                   uint32_t Length);
 
+void*
+TZIDecodeMemoryReference(INOUT tzi_encode_buffer_t* psBuffer,
+                         OUT uint32_t* puiLength);
+
 void *
 TZIDecodeArraySpace(INOUT tzi_encode_buffer_t* psBuffer,
                     OUT uint32_t* puiLength);

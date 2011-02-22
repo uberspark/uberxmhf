@@ -125,6 +125,7 @@ TZIDecodeUint32(INOUT tzi_encode_buffer_t* psBuffer)
   return rv;
 }
 
+
 __attribute__ ((section (".scode_util")))
 static void*
 _TZIEncodeArraySpace(INOUT tzi_encode_buffer_t* psBuffer,
@@ -197,6 +198,38 @@ TZIEncodeMemoryReference(INOUT tzi_encode_buffer_t* psBuffer,
 
   return encodeOffset;
 }
+
+__attribute__ ((section (".scode_util")))
+void*
+TZIDecodeMemoryReference(INOUT tzi_encode_buffer_t* psBuffer,
+                         OUT uint32_t* puiLength)
+{
+  void* rv;
+  uint32_t sz =
+    sizeof(psBuffer->pBuf->uiType)
+    + sizeof(psBuffer->pBuf->sMem);
+
+  if (psBuffer->uiRetVal != TZ_SUCCESS) {
+    return NULL;
+  }
+
+  if ((psBuffer->uiOffset + sz) > psBuffer->uiSizeUsed) {
+    psBuffer->uiRetVal = TZ_ERROR_DECODE_NO_DATA;
+    return NULL;
+  }
+
+  if (BUFFER_HEAD(psBuffer)->uiType != TZI_ENCODED_MEM) {
+    psBuffer->uiRetVal = TZ_ERROR_DECODE_TYPE;
+    return NULL;
+  }
+
+  rv = BUFFER_HEAD(psBuffer)->sMem.pMem;
+  *puiLength = BUFFER_HEAD(psBuffer)->sMem.uiSize;
+  psBuffer->uiOffset += sz;
+
+  return rv;
+}
+
 
 
 __attribute__ ((section (".scode_util")))
