@@ -229,6 +229,6 @@ u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
 
 void emhf_app_handleshutdown(VCPU *vcpu, struct regs *r)
 {
-	printf("\nCPU(0x%02x): Shutdown intercept feature unimplemented. Halting!", vcpu->id);
-	HALT();
+	printf("\nCPU(0x%02x): Shutdown intercept!", vcpu->id);
+	g_libemhf->emhf_reboot(vcpu);
 }
