@@ -233,6 +233,7 @@ typedef struct _vcpu {
   u32 hsave_vaddr_ptr;    //VM_HSAVE area of the CPU
   u32 vmcb_vaddr_ptr;     //VMCB of the CPU
   u32 npt_vaddr_ptr;      //NPT base of the CPU
+  u32 npt_vaddr_pdts;      
   u32 npt_asid;           //NPT ASID for this core
   u32 npt_vaddr_pts;      //NPT page-tables for protection manipulation
 

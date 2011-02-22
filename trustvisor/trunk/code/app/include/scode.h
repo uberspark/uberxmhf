@@ -72,7 +72,7 @@ struct trustvisor_context {
 	u32 (*scode_switch_scode)(VCPU * vcpu);
 	u32 (*scode_switch_regular)(VCPU * vcpu);
 	u32 (*scode_npf)(VCPU * vcpu, u32 gpaddr, u64 errorcode);
-}
+};
 
 struct trustvisor_context * tv_ctx=0;
 
@@ -204,7 +204,6 @@ void svm_nested_breakpde(VCPU * vcpu, u32 nvaddr);
 /* nested paging handlers (vmx) */
 void vmx_nested_set_prot(VCPU * vcpu, u64 gpaddr, int type);
 void vmx_nested_clear_prot(VCPU * vcpu, u64 gpaddr);
-//void nested_promote(VCPU * vcpu, u32 pfn);
 void vmx_nested_switch_scode(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2);
 void vmx_nested_switch_regular(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2);
 void vmx_nested_make_pt_unaccessible(u32 gpaddr_list, u32 gpaddr_count, pdpt_t npdp, u32 is_pal);
@@ -230,11 +229,24 @@ void * __gpa2hva__(u32 gpaddr);
 void copy_from_guest(VCPU * vcpu, u8 *dst, u32 gvaddr, u32 len);
 void copy_to_guest(VCPU * vcpu, u32 gvaddr, u8 *src, u32 len);
 
-/* PAL operations */
+/* PAL operations (VMX) */
+u32 vmx_scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size);
+void vmx_scode_clear_prot(VCPU * vcpu, u32 pte_page, u32 size);
+u32 vmx_scode_switch_scode(VCPU * vcpu);
+u32 vmx_scode_switch_regular(VCPU * vcpu);
+u32 vmx_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode);
+
+/* PAL operations (SVM) */
+u32 svm_scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size);
+void svm_scode_clear_prot(VCPU * vcpu, u32 pte_page, u32 size);
+u32 svm_scode_switch_scode(VCPU * vcpu);
+u32 svm_scode_switch_regular(VCPU * vcpu);
+u32 svm_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode);
+
+/* PAL operations (SVM and VMX) */
 void init_scode(VCPU * vcpu);
 u32 scode_register(VCPU * vcpu, u32 scode_info, u32 scode_pm, u32 gventry);
 u32 scode_unregister(VCPU * vcpu, u32 gvaddr);
-u32 scode_npf(VCPU * vcpu, u32 gpaddr, u32 errorcode);
 u32 scode_seal(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrhash_addr, u32 output_addr, u32 output_len_addr);
 u32 scode_unseal(VCPU * vcpu, u32 input_addr, u32 input_len, u32 output_addr, u32 output_len_addr);
 u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 out_len_addr);

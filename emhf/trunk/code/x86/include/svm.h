@@ -348,6 +348,8 @@ enum PFErrorcode
   PF_ERRORCODE_RSV       = 1 << 3,
   PF_ERRORCODE_INST      = 1 << 4,
 };
+#define  PF_ERRORCODE_TABLEWALK (((u64)1)<<33)
+#define  PF_ERRORCODE_FINALWALK (((u64)1)<<32)
 
 /* Definitions of segment state are borrowed by the generic HVM code. */
 

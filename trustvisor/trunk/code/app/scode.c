@@ -65,7 +65,7 @@ struct trustvisor_context svm_tv_ctx = {
 	.scode_switch_scode = svm_scode_switch_scode,
 	.scode_switch_regular = svm_scode_switch_regular,
 	.scode_npf = svm_scode_npf,
-}
+};
 
 /* VMX trustvisor context */
 struct trustvisor_context vmx_tv_ctx = {
@@ -83,7 +83,7 @@ struct trustvisor_context vmx_tv_ctx = {
 	.scode_switch_scode = vmx_scode_switch_scode,
 	.scode_switch_regular = vmx_scode_switch_regular,
 	.scode_npf = vmx_scode_npf,
-}
+};
 
 /* whitelist of all approved sensitive code regions */
 /* whitelist_max and *whitelist is set up by BSP, no need to apply lock
@@ -200,6 +200,8 @@ static inline u32 test_page_scode_bitmap_2M(u32 pfn)
 
 	return scode_pfn_bitmap_2M[index];
 }
+
+
 
 /* search scode in whitelist */
 int scode_in_list(u64 gcr3, u32 gvaddr)
@@ -346,7 +348,7 @@ u32 vmx_scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size)
 
 			/* XXX FIXME: temporary disable DEV setting here! */
 		//	set_page_dev_prot(pfn);
-			vmx_nested_set_prot(vcpu, pte_pages[i]);
+			vmx_nested_set_prot(vcpu, pte_pages[i], 0);
 		}else
 		{
 			printf("[TV] Set scode page permission error! pfn %#x have already been registered!\n", pfn);
@@ -383,7 +385,7 @@ u32 vmx_scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size)
 				pfn = pte_pages[i] >> PAGE_SHIFT_4K;
 				/* XXX FIXME: temporary disable DEV setting here! */
 				//	set_page_dev_prot(pfn);
-				vmx_nested_set_prot(tmpcpu, pte_pages[i]);
+				vmx_nested_set_prot(tmpcpu, pte_pages[i],0);
 			}
 		}
 	}
@@ -762,15 +764,15 @@ void scode_expose_arch(VCPU *vcpu)
 
 	if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
 		linux_vmcb = (struct _vmx_vmcsfields *)(&(vcpu->vmcs));
-		is_pae = ((struct _vmx_vmcsfields *)linux_vmcb)->guest_CR4 & CR$_PAE;
+		is_pae = ((struct _vmx_vmcsfields *)linux_vmcb)->guest_CR4 & CR4_PAE;
 		gdtr = ((struct _vmx_vmcsfields *)linux_vmcb)->guest_GDTR_base;
 	} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
 		linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
 		is_pae = ((struct vmcb_struct *)linux_vmcb)->cr4 & CR4_PAE;
-		gdtr = ((struct _vmx_vmcsfields *)linux_vmcb)->gdtr_base;
+		gdtr = ((struct _vmx_vmcsfields *)linux_vmcb)->guest_GDTR_base;
 	} else {
 		printf("unknown cpu vendor!\n");
-		return 1;
+		HALT();
 	}
 
 	/* alloc memory for page table entry holder */
@@ -853,13 +855,13 @@ void memcpy_guest_to_guest(VCPU * vcpu, u32 src, u32 dst, u32 len)
 
 	if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
 		linux_vmcb = (struct _vmx_vmcsfields *)(&(vcpu->vmcs));
-		is_pae = ((struct _vmx_vmcsfields *)linux_vmcb)->guest_CR4 & CR$_PAE;
+		is_pae = ((struct _vmx_vmcsfields *)linux_vmcb)->guest_CR4 & CR4_PAE;
 	} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
 		linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
 		is_pae = ((struct vmcb_struct *)linux_vmcb)->cr4 & CR4_PAE;
 	} else {
 		printf("unknown cpu vendor!\n");
-		return 1;
+		HALT();
 	}
 
 	src_gpaddr = gpt_vaddr_to_paddr(vcpu, src);
@@ -1180,7 +1182,7 @@ u32 vmx_scode_switch_regular(VCPU * vcpu)
 }
 
 /*  EPT violation handler */
-u32 vmx_scode_npf(VCPU * vcpu, u32 gpaddr, u32 errorcode)
+u32 vmx_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
 {
 	int index = -1;
 
