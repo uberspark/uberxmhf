@@ -105,6 +105,9 @@ typedef struct tzi_device_cb_block_t {
   tz_return_t (*operationPrepareClose)();
   tz_return_t (*operationPerform)();
   void (*operationRelease)();
+  tz_return_t (*sharedMemoryAllocate)();
+  tz_return_t (*sharedMemoryRegister)();
+  void (*sharedMemoryRelease)();
 } tzi_device_cb_block_t;
 
 typedef enum tzi_encoded_type_t {
@@ -209,6 +212,7 @@ typedef struct tz_shared_memory_t
   struct
   {
     /* Implementation-defined. */
+    tz_session_t *psSession;
   } sImp;
 } tz_shared_memory_t;
 

@@ -42,7 +42,7 @@
 #define CBB_OF_DEVICE(d) ((d)->sImp.cbb)
 #define CBB_OF_SESSION(s) (CBB_OF_DEVICE((s)->sImp.psDevice))
 #define CBB_OF_OPERATION(o) (CBB_OF_SESSION((o)->sImp.psSession))
-
+#define CBB_OF_SHAREDMEM(m) (CBB_OF_SESSION((m)->sImp.psSession))
 tz_return_t
 TZDeviceOpen(IN void const *pkDeviceName,
              IN void const *pkInit,
@@ -371,6 +371,95 @@ TZOperationRelease(INOUT tz_operation_t* psOperation)
 
   psOperation->sImp.psSession->sImp.uiOpenOps--;
 }
+
+static bool shared_memory_flags_is_valid(uint32_t flags)
+{
+  switch(flags) {
+  case TZ_MEM_SERVICE_RO:
+  case TZ_MEM_SERVICE_WO:
+  case TZ_MEM_SERVICE_RW:
+    return true;
+  default:
+    return false;
+  }
+}
+
+tz_return_t
+TZSharedMemoryAllocate(INOUT tz_session_t* psSession,
+                       INOUT tz_shared_memory_t* psSharedMem)
+{
+  tz_return_t rv;
+
+  if (psSession == NULL
+      || psSession->uiState != TZ_STATE_OPEN
+      || psSharedMem == NULL
+      || !shared_memory_flags_is_valid(psSharedMem->uiFlags)
+      || psSharedMem->uiLength == 0) {
+    return TZ_ERROR_UNDEFINED;
+  }
+
+  rv = CBB_OF_SESSION(psSession)->sharedMemoryAllocate(psSession,
+                                                       psSharedMem);
+
+  if(rv == TZ_SUCCESS) {
+    assert((uint32_t)(psSharedMem->pBlock) % 8 == 0); /* TZ spec requirement */
+    psSharedMem->uiState = TZ_STATE_OPEN;
+    psSharedMem->sImp.psSession = psSession;
+  } else {
+    assert(psSharedMem->pBlock == NULL);
+    psSharedMem->uiState = TZ_STATE_INVALID;
+    psSharedMem->sImp.psSession = NULL;
+  }
+
+  return rv;
+}
+
+tz_return_t
+TZSharedMemoryRegister(INOUT tz_session_t* psSession,
+                       INOUT tz_shared_memory_t* psSharedMem)
+{
+  tz_return_t rv;
+
+  if (psSession == NULL
+      || psSession->uiState != TZ_STATE_OPEN
+      || psSharedMem == NULL
+      || psSharedMem->pBlock == NULL
+      || !shared_memory_flags_is_valid(psSharedMem->uiFlags)
+      || psSharedMem->uiFlags == 0) {
+    return TZ_ERROR_UNDEFINED;
+  }
+
+  rv = CBB_OF_SESSION(psSession)->sharedMemoryRegister(psSession,
+                                                       psSharedMem);
+
+  if(rv == TZ_SUCCESS) {
+    psSharedMem->uiState = TZ_STATE_OPEN;
+  } else {
+    psSharedMem->uiState = TZ_STATE_INVALID;
+  }
+
+  return rv;
+}
+
+void
+TZSharedMemoryRelease(INOUT tz_shared_memory_t* psSharedMem)
+{
+  if (psSharedMem == NULL
+      || false) { /* FIXME check if block is still referenced by an operation */
+    /* FIXME undefined behavior. print a warning? */
+    return;
+  }
+
+  if (psSharedMem->uiState == TZ_STATE_INVALID) {
+    /* no-op */
+  } else {
+    CBB_OF_SHAREDMEM(psSharedMem)->sharedMemoryRelease(psSharedMem);
+  }
+
+  psSharedMem->uiState = TZ_STATE_UNDEFINED;
+  psSharedMem->pBlock = NULL; /* not required by spec, but good for debugging */
+}
+
 
 void
 TZEncodeUint32(INOUT tz_operation_t* psOperation,
