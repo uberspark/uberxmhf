@@ -372,16 +372,9 @@ TZOperationRelease(INOUT tz_operation_t* psOperation)
   psOperation->sImp.psSession->sImp.uiOpenOps--;
 }
 
-static bool shared_memory_flags_is_valid(uint32_t flags)
+static bool bits_are_subset_of(uint32_t child, uint32_t parent)
 {
-  switch(flags) {
-  case TZ_MEM_SERVICE_RO:
-  case TZ_MEM_SERVICE_WO:
-  case TZ_MEM_SERVICE_RW:
-    return true;
-  default:
-    return false;
-  }
+  return (child & ~parent == 0);
 }
 
 tz_return_t
@@ -393,7 +386,7 @@ TZSharedMemoryAllocate(INOUT tz_session_t* psSession,
   if (psSession == NULL
       || psSession->uiState != TZ_STATE_OPEN
       || psSharedMem == NULL
-      || !shared_memory_flags_is_valid(psSharedMem->uiFlags)
+      || !bits_are_subset_of(psSharedMem->uiFlags, TZ_MEM_SERVICE_RW)
       || psSharedMem->uiLength == 0) {
     return TZ_ERROR_UNDEFINED;
   }
@@ -525,7 +518,7 @@ TZEncodeMemoryReference(INOUT tz_operation_t* psOperation,
 
   /* check for encode_format errors, as per spec */
   if ((uiOffset+uiLength) > psSharedMem->uiLength
-      || false /* FIXME check whether flags are a subset of the sharedmem flags */
+      || bits_are_subset_of(uiFlags, psSharedMem->uiFlags)
       || false) { /* FIXME check if offset to offset+length overlaps an already-encoded reference */
     psOperation->sImp.psEncodeBuffer->uiRetVal = TZ_ERROR_ENCODE_FORMAT;
     return;

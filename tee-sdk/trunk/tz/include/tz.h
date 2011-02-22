@@ -328,11 +328,15 @@ enum {
 #endif
 
 /* 5.5.7 Shared memory flags */
-enum {
-  TZ_MEM_SERVICE_RO, /* Service can only read from the memory block. */
-  TZ_MEM_SERVICE_WO, /* Service can only write from the memory block. */
-  TZ_MEM_SERVICE_RW, /* Service can read and write from the memory block. */
-};
+/* enum { */
+/*   TZ_MEM_SERVICE_RO, /\* Service can only read from the memory block. *\/ */
+/*   TZ_MEM_SERVICE_WO, /\* Service can only write from the memory block. *\/ */
+/*   TZ_MEM_SERVICE_RW, /\* Service can read and write from the memory block. *\/ */
+/* }; */
+#define TZ_MEM_SERVICE_RO (1<<0) /* Service can only read from the memory block. */
+#define TZ_MEM_SERVICE_WO (1<<1) /* Service can only write from the memory block. */
+#define TZ_MEM_SERVICE_RW (TZ_MEM_SERVICE_RO | TZ_MEM_SERVICE_WO) /* Service can read and write from the memory block. */
+
 
 /* 5.5.8 Decode data types */
 enum {
