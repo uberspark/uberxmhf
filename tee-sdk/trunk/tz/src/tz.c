@@ -35,6 +35,7 @@
 
 #include <tz.h>
 #include <marshal.h>
+#include <list.h>
 
 #include <assert.h>
 #include <string.h>
@@ -374,7 +375,7 @@ TZOperationRelease(INOUT tz_operation_t* psOperation)
 
 static bool bits_are_subset_of(uint32_t child, uint32_t parent)
 {
-  return (child & ~parent == 0);
+  return ((child & ~parent) == 0);
 }
 
 tz_return_t
@@ -417,7 +418,7 @@ TZSharedMemoryRegister(INOUT tz_session_t* psSession,
       || psSession->uiState != TZ_STATE_OPEN
       || psSharedMem == NULL
       || psSharedMem->pBlock == NULL
-      || !shared_memory_flags_is_valid(psSharedMem->uiFlags)
+      || !bits_are_subset_of(psSharedMem->uiFlags, TZ_MEM_SERVICE_RW)
       || psSharedMem->uiFlags == 0) {
     return TZ_ERROR_UNDEFINED;
   }
@@ -494,6 +495,44 @@ TZDecodeArraySpace(INOUT tz_operation_t* psOperation,
                              puiLength);
 }
 
+static bool ranges_overlap(uint32_t start1, uint32_t length1,
+                           uint32_t start2, uint32_t length2)
+{
+  uint32_t end1 = start1+length1-1;
+  uint32_t end2 = start2+length2-1;
+
+  /* break into 3 cases: start2 is before, in, or after first range */
+  if (start2 < start1) {
+    /* before */
+    return (end2 >= start1);
+  } else if (start2 >= start1 && start2 <= end1) {
+    /* in */
+    return true;
+  } else {
+    /* after */
+    return false;
+  }
+}
+
+static bool range_already_referenced(IN tz_shared_memory_t *psSharedMem,
+                                     uint32_t uiOffset,
+                                     uint32_t uiLength)
+{
+  ll_t *ops_l = psSharedMem->sImp.psRefdOperations;
+  tz_operation_t *op = NULL;
+  LL_FOR_EACH(ops_l, op) {
+    ll_t *range_l = op->sImp.psRefdSubranges;
+    tzi_shared_memory_subrange_t *subrange = NULL;
+    LL_FOR_EACH(range_l, subrange) {
+      if (ranges_overlap(uiOffset, uiLength,
+                         subrange->uiOffset, subrange->uiLength)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 void
 TZEncodeMemoryReference(INOUT tz_operation_t* psOperation,
                         INOUT tz_shared_memory_t* psSharedMem,
@@ -501,8 +540,8 @@ TZEncodeMemoryReference(INOUT tz_operation_t* psOperation,
                         uint32_t uiLength,
                         uint32_t uiFlags)
 {
-  uint32_t ptr_offset;
-  tz_return_t rv;
+  uint32_t uiEncodeOffset;
+  tzi_shared_memory_subrange_t *psSubrange=NULL;
 
   if (psOperation == NULL
       || psOperation->uiState != TZ_STATE_ENCODE
@@ -511,15 +550,10 @@ TZEncodeMemoryReference(INOUT tz_operation_t* psOperation,
     return; /* FIXME print warning? */
   }
 
-  /* silently return if encoder is already in an error state */
-  if (psOperation->sImp.psEncodeBuffer->uiRetVal != TZ_SUCCESS) {
-    return;
-  }
-
   /* check for encode_format errors, as per spec */
   if ((uiOffset+uiLength) > psSharedMem->uiLength
-      || bits_are_subset_of(uiFlags, psSharedMem->uiFlags)
-      || false) { /* FIXME check if offset to offset+length overlaps an already-encoded reference */
+      || !bits_are_subset_of(uiFlags, psSharedMem->uiFlags)
+      || range_already_referenced(psSharedMem, uiOffset, uiLength)) {
     psOperation->sImp.psEncodeBuffer->uiRetVal = TZ_ERROR_ENCODE_FORMAT;
     return;
   }
@@ -529,21 +563,58 @@ TZEncodeMemoryReference(INOUT tz_operation_t* psOperation,
    * rewrite it if necessary. (address space of trusted environment
    * may not be unity-mapped with address space of caller)
    */
-  ptr_offset = TZIEncodeMemoryReference(psOperation->sImp.psEncodeBuffer,
-                                        psSharedMem->pBlock+uiOffset,
-                                        uiLength);
+  uiEncodeOffset = TZIEncodeMemoryReference(psOperation->sImp.psEncodeBuffer,
+                                            psSharedMem->pBlock+uiOffset,
+                                            uiLength);
 
-  rv = CBB_OF_OPERATION(psOperation)->encodeMemoryReference(psOperation,
-                                                            psSharedMem,
-                                                            uiOffset,
-                                                            uiLength,
-                                                            uiFlags,
-                                                            ptr_offset);
+  /* silently return if encoder is in an error state,
+     whether caused previously or just now */
+  if (psOperation->sImp.psEncodeBuffer->uiRetVal != TZ_SUCCESS) {
+    return;
+  }
 
-  if (rv != TZ_SUCCESS) {
-    psOperation->sImp.psEncodeBuffer->uiRetVal = rv;
-  } else {
-    /* FIXME record the reference */
+  /* malloc and init new subrange struct */
+  psSubrange = malloc(sizeof(*psSubrange));
+  if (psSubrange == NULL) {
+    /* using TZ_ERROR_MEMORY instead of TZ_ERROR_ENCODE_MEMORY, to
+       distinguish from case where encode buffer itself wasn't large
+       enough */
+    psOperation->sImp.psEncodeBuffer->uiRetVal = TZ_ERROR_MEMORY; 
+    return;
+  }
+  *psSubrange = (tzi_shared_memory_subrange_t) {
+    .psSharedMem = psSharedMem,
+    .uiOffset = uiOffset,
+    .uiLength = uiLength,
+    .uiFlags = uiFlags,
+    .uiEncodeOffset = uiEncodeOffset
+  };
+
+  /* add to operation's list of referenced subranges */
+  if (LL_dpush(&psOperation->sImp.psRefdSubranges, psSubrange) == NULL) {
+    psOperation->sImp.psEncodeBuffer->uiRetVal = TZ_ERROR_MEMORY; 
+    return;
+  }
+
+  /* add this operation to psSharedMem's list of referencing
+   * operations, if not already there. */
+  /* XXX horribly inefficient if we have a large number of
+     open operations referencing a psSharedMem */
+  {
+    ll_t *l = psSharedMem->sImp.psRefdOperations;
+    tz_operation_t *op = NULL;
+    LL_FOR_EACH(l, op) {
+      if (op == psOperation) {
+        break;
+      }
+    }
+    if (l == NULL) { /* not found */
+      if (LL_dpush(&psSharedMem->sImp.psRefdOperations,
+                   psOperation) == NULL) {
+        psOperation->sImp.psEncodeBuffer->uiRetVal = TZ_ERROR_MEMORY;
+        return;
+      }
+    }
   }
 }
 

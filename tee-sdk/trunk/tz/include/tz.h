@@ -108,7 +108,6 @@ typedef struct tzi_device_cb_block_t {
   tz_return_t (*sharedMemoryAllocate)();
   tz_return_t (*sharedMemoryRegister)();
   void (*sharedMemoryRelease)();
-  tz_return_t (*encodeMemoryReference)();
 } tzi_device_cb_block_t;
 
 typedef enum tzi_encoded_type_t {
@@ -189,6 +188,17 @@ typedef enum {
   TZI_OPERATION_CLOSE,
 } tzi_operation_t;
 
+/* used to keep track of referenced memory ranges in a
+   tz_shared_memory_t */
+typedef struct tzi_shared_memory_subrange_t
+{
+  struct tz_shared_memory_t *psSharedMem;
+  uint32_t uiOffset;
+  uint32_t uiLength;
+  uint32_t uiFlags;
+  uint32_t uiEncodeOffset;
+} tzi_shared_memory_subrange_t;
+
 /* 5.4.4 */
 typedef struct tz_operation_t
 {
@@ -200,6 +210,7 @@ typedef struct tz_operation_t
     tzi_operation_t uiOpType;
     tzi_encode_buffer_t *psEncodeBuffer;
     struct tzi_operation_ext_t* psExt;
+    struct ll_t* psRefdSubranges;
   } sImp;
 } tz_operation_t;
 
@@ -214,8 +225,10 @@ typedef struct tz_shared_memory_t
   {
     /* Implementation-defined. */
     tz_session_t *psSession;
+    struct ll_t* psRefdOperations;
   } sImp;
 } tz_shared_memory_t;
+
 
 /* [TZS] 5.5.2 */
 enum {
@@ -327,16 +340,9 @@ enum {
 /* TZ_LOGIN_ALL A utility constant indicating all available login types should be used. */
 #endif
 
-/* 5.5.7 Shared memory flags */
-/* enum { */
-/*   TZ_MEM_SERVICE_RO, /\* Service can only read from the memory block. *\/ */
-/*   TZ_MEM_SERVICE_WO, /\* Service can only write from the memory block. *\/ */
-/*   TZ_MEM_SERVICE_RW, /\* Service can read and write from the memory block. *\/ */
-/* }; */
 #define TZ_MEM_SERVICE_RO (1<<0) /* Service can only read from the memory block. */
 #define TZ_MEM_SERVICE_WO (1<<1) /* Service can only write from the memory block. */
 #define TZ_MEM_SERVICE_RW (TZ_MEM_SERVICE_RO | TZ_MEM_SERVICE_WO) /* Service can read and write from the memory block. */
-
 
 /* 5.5.8 Decode data types */
 enum {

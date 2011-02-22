@@ -56,16 +56,27 @@ static ll_t* LL_rest(ll_t *list)
   return list->rest;
 }
 
+/* note- allocates memory. will return null if allocation fails */
 __attribute__((unused))
-static ll_t* LL_push(void *first, ll_t *rest)
+static ll_t* LL_push(ll_t *list, void *first)
 {
   ll_t *rv = malloc(sizeof(ll_t));
-  *rv = (ll_t) {
-    .first = first,
-    .rest = rest
-  };
+  if (rv != NULL) {
+    *rv = (ll_t) {
+      .first = first,
+      .rest = list
+    };
+  }
 
   return rv;
+}
+
+/* destructive push. rewrite the list ptr to pt to the new head */
+__attribute__((unused))
+static ll_t* LL_dpush(ll_t **list, void *first)
+{
+  *list = LL_push(*list, first);
+  return *list;
 }
 
 __attribute__((unused))
