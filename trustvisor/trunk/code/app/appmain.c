@@ -74,9 +74,22 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 }
 
 u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
-{
+{	
+	struct vmcb_struct * linux_vmcb
+	u32 cmd;
+
 	u32 status = APP_SUCCESS;
-	u32 cmd = (u32)r->eax;
+
+	if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+		cmd = (u32)r->eax;
+		linux_vmcb = 0;
+	} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+		linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
+		cmd = (u32)linux_vmcb->rax;
+	} else {
+		printf("unknow cpu vendor type!\n");
+		HALT();
+	}
 
 	switch (cmd)
 	{

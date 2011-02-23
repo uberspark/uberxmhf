@@ -34,14 +34,14 @@
  */
 
 //------------------------------------------------------------------------------
-// minimal_sp_ptr_free.c modification by Jason Franklin
+// minimal_sp_ptr_free_norets.c modification by Jason Franklin
 //
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <types.h>
 #include <paging.h>
 #include <shadow_paging_npae.h>
-#include <vtx.h>
+//#include <vtx.h>
 
 
 
@@ -104,9 +104,8 @@ void main() {
 u32 shadow_page_fault(u32 cr2, u32 error_code){
 
   u32 index_pdt, index_pt; 
+  u32 flags, paddr;
   npt_t s_pt;
-  u32 flags;
-  u32 paddr;
 
   u32 gPDE = nondet_u32();
   u32 gPTE = nondet_u32();
@@ -117,49 +116,36 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
   
   /* Get page table */
   if( (s_pd_t[index_pdt] & _PAGE_PRESENT) && !(s_pd_t[index_pdt] & _PAGE_PSE)) {
-    //this is a regular page directory entry, so get the page table
+    //this is a non-PSE PDE, get the page table
     s_pt = (npt_t)(u32)npae_get_addr_from_pde(s_pd_t[index_pdt]);
   }
 
-  /* Check error codes */
-  if( !(error_code & PFERR_PRESENT_MASK) ){
+  /* page fault for page directory entry  */
+  if ((gPDE & _PAGE_PRESENT) && (gPDE & _PAGE_PSE )) {
 
-    /* Check if guest page directory and page table entries are valid */
-    if  (((gPDE & _PAGE_PRESENT) && (gPDE & _PAGE_PSE ) ) || 
-	 ((gPDE & _PAGE_PRESENT) && (!(gPDE & _PAGE_PSE) ) && (gPTE & _PAGE_PRESENT))) {
-
-      if(gPDE & _PAGE_PSE){	//4M page
-
-	if( npae_get_addr_from_pde(gPDE) + PAGE_SIZE_4M < GUEST_PHYSICALMEMORY_LIMIT){
-	  s_pd_t[index_pdt] = gPDE;
-	}else{
-	  __CPROVER_assume(0); // HALT
-	}
-
-      }else{	//4K page table
-
-	/* Build page table entry */
-	flags=npae_get_flags_from_pde(gPDE);
-	paddr=npae_get_addr_from_pde(s_pd_t[index_pdt]);
-
-	s_pd_t[index_pdt] = npae_make_pde(paddr, flags);
-			
-	if( npae_get_addr_from_pte(gPTE) + PAGE_SIZE_4K < GUEST_PHYSICALMEMORY_LIMIT){
-	  s_pt[index_pt] = gPTE; 
-	}else{
-	  __CPROVER_assume(0);	//HALT
-	}
+      if( npae_get_addr_from_pde(gPDE) + PAGE_SIZE_4M < GUEST_PHYSICALMEMORY_LIMIT){
+	s_pd_t[index_pdt] = gPDE;
+      }else{
+	__CPROVER_assume(0); // HALT
       }
-
-      return VMX_EVENT_CANCEL;
-    }else{
-      return VMX_EVENT_INJECT;
-    }
-  }else if (error_code & PFERR_WR_MASK){
-    return VMX_EVENT_INJECT;
-  }else{
-    return VMX_EVENT_INJECT;
   }
+
+  /* page fault for page table entry */
+  if ( (gPDE & _PAGE_PRESENT) && (!(gPDE & _PAGE_PSE) ) && (gPTE & _PAGE_PRESENT)) {
+    
+    flags=npae_get_flags_from_pde(gPDE);
+    paddr=npae_get_addr_from_pde(s_pd_t[index_pdt]);
+	
+    s_pd_t[index_pdt] = npae_make_pde(paddr, flags);
+    
+    if( npae_get_addr_from_pte(gPTE) + PAGE_SIZE_4K < GUEST_PHYSICALMEMORY_LIMIT){
+      s_pt[index_pt] = gPTE; 
+    }else{
+      __CPROVER_assume(0);	//HALT
+    }
+  }
+
+  //return VMX_EVENT_CANCEL;
 }
 
 
@@ -174,6 +160,7 @@ void shadow_invalidate_page(u32 address){
   u32 index_pdt = (address >> 22);
   u32 index_pt  = ((address & (u32)0x003FFFFF) >> 12);
   
+  /* Get page table */
   if( (s_pd_t[index_pdt] & _PAGE_PRESENT) && !(s_pd_t[index_pdt] & _PAGE_PSE)) {
     s_pt = (npt_t)(u32)npae_get_addr_from_pde(s_pd_t[index_pdt]);
   }
