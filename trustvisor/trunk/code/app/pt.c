@@ -302,8 +302,27 @@ void vmx_nested_switch_regular(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page
 
 
 /* ********************************* */
-/* VMX related EPT operations */
+/* SVM related EPT operations */
 /* ********************************* */
+
+/* ************************************
+ * set up scode pages permission (SVM)
+ * R 	-- 	read-only
+ * R/W	--	read, write
+ * NU	--	guest system cannot access
+ * U	--	guest system can access
+ *
+ * on local CPU:
+ * Section type		Permission
+ * SENTRY(SCODE) 	R NU
+ * STEXT			R U
+ * SDATA 			RW NU
+ * SPARAM			RW NU
+ * SSTACK			RW NU
+ *
+ * on other CPU:
+ * all sections		unpresent
+ * **************************************/
 
 void svm_nested_set_prot(VCPU * vcpu, u64 gpaddr, int type)
 {
@@ -312,7 +331,7 @@ void svm_nested_set_prot(VCPU * vcpu, u64 gpaddr, int type)
 	u64 pfn = gpaddr >> PAGE_SHIFT_4K;
 	u64 oldentry = pt[pfn];
 
-/* ********************************************************************
+	/* ********************************************************************
 	 * use NPT entry flag (unused1 bit and unused2 bit) to represent page type
 	 * unused1 == 1 and unused2 == 0	registered other type of SCODE 
 	 * unused1 == 1 and unused2 == 1	registered STEXT
@@ -320,21 +339,15 @@ void svm_nested_set_prot(VCPU * vcpu, u64 gpaddr, int type)
 	 * *******************************************************************/
 	if (type == 3) {
 		pt[pfn] = oldentry & (~_PAGE_PRESENT);
+	} else if ( type == 2 ) {
+		pt[pfn] = (oldentry | _PAGE_UNUSED1 | _PAGE_UNUSED2) & (~_PAGE_RW);
+	} else if (type == 1) {
+		pt[pfn] = (oldentry | _PAGE_UNUSED1) & (~_PAGE_UNUSED2) & (~_PAGE_RW) & (~_PAGE_USER);
+	} else if (type == 0) {
+		pt[pfn] = (oldentry | _PAGE_UNUSED1) & (~_PAGE_UNUSED2) & (~_PAGE_USER);
 	} else {
-		pt[pfn] = oldentry | _PAGE_UNUSED1;
-		if ( type == 2 ) {
-			pt[pfn] = oldentry | _PAGE_UNUSED2;
-		} else {
-			pt[pfn] = oldentry & (~_PAGE_UNUSED2);
-		}
-
-		/* use type to decide the R/W and U bit of nPTE */
-		if( type != 0 ) {
-			pt[pfn] = oldentry & (~_PAGE_RW);
-		}
-		if( type != 2 ) {
-			pt[pfn] = oldentry & (~_PAGE_USER);
-		} 
+		printf("error in set_prot, unknown memory type!\n");
+		HALT();
 	}
 
 	printf("[TV]   set prot: pfn %#x, pte old %#llx, pte new %#llx\n",pfn, oldentry, pt[pfn]);
@@ -344,7 +357,7 @@ void svm_nested_set_prot(VCPU * vcpu, u64 gpaddr, int type)
 	linux_vmcb->tlb_control=TLB_CONTROL_FLUSHALL;
 }
 
-void svm_nested_clear_prot(VCPU * vcpu, u64 pfn)
+void svm_nested_clear_prot(VCPU * vcpu, u64 gpaddr)
 {
 	struct vmcb_struct * linux_vmcb;
   	u64 *pt = (u64 *)vcpu->npt_vaddr_pts;

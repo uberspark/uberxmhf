@@ -468,7 +468,10 @@ static void _svm_handle_npf(VCPU *vcpu, struct regs *r){
     //  (u16)vmcb->cs.sel, (u32)vmcb->rip, gpa, errorcode);
     svm_lapic_access_handler(vcpu, gpa, errorcode);
     //HALT();
-  }  
+  } else {
+	// call EMHF app hook
+	emhf_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, 0, errorcode);
+  }
   
   return;
 }

@@ -26,15 +26,15 @@
     #Intel TXT / SENTER support, y=enabled, n=disabled
     export DO_SENTER := y
     #MP/UP selection, y=Multiprocessor, n=Uniprocessor
-    export MP_VERSION := y
+    export MP_VERSION := n
     #where you want loader and runtime binaries to go, defaults to current dir.
 	#export INSTALLDIR = $(CURDIR)/dist
-    export INSTALLDIR = /home/jmmccune/export
+    export INSTALLDIR = /home/zongweiz/export
     #misc. configuaration w.r.t serial debugging and NPT/EPT support
 	export NESTED_PAGING := y
     export DEBUG_SERIAL := y
-    export DEBUG_SERIAL_PORT := 0x6080
-    #export DEBUG_SERIAL_PORT := 0x3f8
+    #export DEBUG_SERIAL_PORT := 0x6080
+    export DEBUG_SERIAL_PORT := 0x3f8
 	export DEBUG_VGA	:= n
 
 #-----configuration that typically need not be touched
