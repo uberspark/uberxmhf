@@ -35,6 +35,11 @@
 
 /* nested_pt.c routines for handling nested page tables
  * Written for TrustVisor by Arvind Seshadri and Ning Qu
+ *
+ * Edited by Zongwei Zhou for EMHF/TrustVisor project
+ *
+ * EPT or NPT page table operations
+ * guest page table operations
  */
 #include <target.h>
 #include  "./include/scode.h"
@@ -58,58 +63,9 @@
  * it safe to always map only 4GB of guest physical address space?
  */
 
-/* XXX FIXME: temporarily disable big EPT pages */
-#if 0
-void nested_promote(VCPU * vcpu, u32 pfn)
-{
-	printf("[TV] (Disabled) promote 2M page pfn %#x\n", pfn);
-}
-
-/* function to break a big page into small pages in nested page table
-*/
-void nested_breakpde(VCPU * vcpu, u32 nvaddr)
-{
-	pdt_t npd;
-	pt_t npt;
-	u64 pd_entry;
-	u32 pdp_index, pd_index, pt_index;
-	u32 pd_base, pt_base;
-	u64 flags;
-	u32 i, tmp;
-
-	/* get fields from virtual addr */
-	pdp_index = pae_get_pdpt_index(nvaddr);
-	pd_index = pae_get_pdt_index(nvaddr);
-	pt_index = pae_get_pt_index(nvaddr);
-
-	/* get page table addresses from VCPU */
-	pd_base = vcpu->npt_vaddr_pdts;
-	pt_base = vcpu->npt_vaddr_pts;
-
-	npd = (pdt_t)(pd_base + (pdp_index << PAGE_SHIFT_4K));
-	pd_entry = npd[pd_index]; 
-
-	if (pd_entry & _PAGE_PSE)
-	{
-		npt = (pt_t)(pt_base + ((pdp_index * PAE_PTRS_PER_PDT + pd_index) << (PAGE_SHIFT_4K))); 
-		memset(npt, 0, PAGE_SIZE_4K);
-
-		tmp = __pa((u32)npt);
-		flags = pae_get_flags_from_pde(pd_entry); 
-		flags &= ~_PAGE_PSE;
-		npd[pd_index] = pae_make_pde((u64)tmp, flags); 
-
-		tmp = pae_get_addr_from_pde_big(pd_entry); 
-		for (i = 0; i < PAE_PTRS_PER_PT; i ++, tmp += PAGE_SIZE_4K)
-			npt[i] = pae_make_pte((u64)tmp, flags);
-	}
-
-	return;
-}
-#endif
-
-
-/* VMX related page table operations */
+/* ********************************* */
+/* VMX related NPT operations */
+/* ********************************* */
 
 /* **************************************
  * set up scode pages permission in EPT
@@ -125,7 +81,8 @@ void nested_breakpde(VCPU * vcpu, u32 nvaddr)
  * **************************************/
 void vmx_nested_set_prot(VCPU * vcpu, u64 gpaddr, int type)
 {
-	u64 newflags;
+	/* type is not used in vmx_nested_set_prot */
+
   	u64 *pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
 	u64 pfn = gpaddr >> PAGE_SHIFT_4K;
 	u64 oldentry = pt[pfn];
@@ -148,7 +105,6 @@ void vmx_nested_set_prot(VCPU * vcpu, u64 gpaddr, int type)
 
 void vmx_nested_clear_prot(VCPU * vcpu, u64 gpaddr)
 {	
-	u64 newflags;
   	u64 *pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
 	u64 pfn = gpaddr >> PAGE_SHIFT_4K;
 	u64 oldentry = pt[pfn];
@@ -344,115 +300,44 @@ void vmx_nested_switch_regular(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page
 	emhf_hwpgtbl_flushall(vcpu);
 }
 
-/* SVM related page table operations */
-/* function to break a big page into small pages in nested page table
-*/
-void svm_nested_breakpde(VCPU * vcpu, u32 nvaddr)
+
+/* ********************************* */
+/* VMX related EPT operations */
+/* ********************************* */
+
+void svm_nested_set_prot(VCPU * vcpu, u64 gpaddr, int type)
 {
-	pdt_t npd;
-	pt_t npt;
-	u64 pd_entry;
-	u32 pdp_index, pd_index, pt_index;
-	u32 pd_base, pt_base;
-	u64 flags;
-	u32 i, tmp;
-
-	/* get fields from virtual addr */
-	pdp_index = pae_get_pdpt_index(nvaddr);
-	pd_index = pae_get_pdt_index(nvaddr);
-	pt_index = pae_get_pt_index(nvaddr);
-
-	/* get page table addresses from VCPU */
-	pd_base = vcpu->npt_vaddr_pdts;
-	pt_base = vcpu->npt_vaddr_pts;
-
-	npd = (pdt_t)(pd_base + (pdp_index << PAGE_SHIFT_4K));
-	pd_entry = npd[pd_index]; 
-
-	if (pd_entry & _PAGE_PSE)
-	{
-		npt = (pt_t)(pt_base + ((pdp_index * PAE_PTRS_PER_PDT + pd_index) << (PAGE_SHIFT_4K))); 
-		memset(npt, 0, PAGE_SIZE_4K);
-
-		tmp = __pa((u32)npt);
-		flags = pae_get_flags_from_pde(pd_entry); 
-		flags &= ~_PAGE_PSE;
-		npd[pd_index] = pae_make_pde((u64)tmp, flags); 
-
-		tmp = pae_get_addr_from_pde_big(pd_entry); 
-		for (i = 0; i < PAE_PTRS_PER_PT; i ++, tmp += PAGE_SIZE_4K)
-			npt[i] = pae_make_pte((u64)tmp, flags);
-	}
-
-	return;
-}
-
-void svm_nested_set_prot(VCPU * vcpu, u64 pfn, int type)
-{
-	pdpt_t npdp;
-	pdt_t npd; 
-	pt_t npt; 
-	u32 pdp_index, pd_index, pt_index;
-	u64 pdp_entry, pd_entry, pt_entry;
-	u64 tmp;
 	struct vmcb_struct * linux_vmcb;
-	u32 nvaddr = pfn << PAGE_SHIFT_4K;
+  	u64 *pt = (u64 *)vcpu->npt_vaddr_pts;
+	u64 pfn = gpaddr >> PAGE_SHIFT_4K;
+	u64 oldentry = pt[pfn];
 
-	/* get fields from virtual addr */
-	pdp_index = pae_get_pdpt_index(nvaddr);
-	pd_index = pae_get_pdt_index(nvaddr);
-	pt_index = pae_get_pt_index(nvaddr);
-
-	/* get page directory table base addr  from VCPU */
-	npdp = (pdpt_t)(vcpu->npt_vaddr_ptr);
-
-	pdp_entry = npdp[pdp_index];
-	tmp = pae_get_addr_from_pdpe(pdp_entry);
-	npd = (pdt_t)(u32)(u64)__spa2hva__((u32)tmp);
-
-	pd_entry = npd[pd_index]; 
-	if (pd_entry & _PAGE_PSE) {
-		/* break 2M large page into 4KB pages */
-		printf("[TV]   break 2M page vaddr %#x\n", nvaddr);
-		svm_nested_breakpde(vcpu,nvaddr);
-
-		printf("[TV]   pde old %#llx, new %#llx\n", pd_entry, npd[pd_index]);
-		/* fetch new page directory entry */
-		pd_entry = npd[pd_index]; 
-	}
-
-	// now, we are dealing with 4KB page
-	tmp = pae_get_addr_from_pde(pd_entry);
-	npt = (pt_t)(u32)(u64)__spa2hva__((u32)tmp);  
-	pt_entry = npt[pt_index];
-
-	/* ********************************************************************
+/* ********************************************************************
 	 * use NPT entry flag (unused1 bit and unused2 bit) to represent page type
 	 * unused1 == 1 and unused2 == 0	registered other type of SCODE 
 	 * unused1 == 1 and unused2 == 1	registered STEXT
 	 * unused1 == 0 			regular code 
 	 * *******************************************************************/
 	if (type == 3) {
-		pt_entry &= ~_PAGE_PRESENT;
+		pt[pfn] = oldentry & (~_PAGE_PRESENT);
 	} else {
-		pt_entry |= _PAGE_UNUSED1;
+		pt[pfn] = oldentry | _PAGE_UNUSED1;
 		if ( type == 2 ) {
-			pt_entry |=  _PAGE_UNUSED2;
+			pt[pfn] = oldentry | _PAGE_UNUSED2;
 		} else {
-			pt_entry &= ~_PAGE_UNUSED2;
+			pt[pfn] = oldentry & (~_PAGE_UNUSED2);
 		}
 
 		/* use type to decide the R/W and U bit of nPTE */
 		if( type != 0 ) {
-			pt_entry &= ~_PAGE_RW;
+			pt[pfn] = oldentry & (~_PAGE_RW);
 		}
 		if( type != 2 ) {
-			pt_entry &= ~_PAGE_USER;
+			pt[pfn] = oldentry & (~_PAGE_USER);
 		} 
 	}
 
-	printf("[TV]   set prot: pfn %#x, pte old %#llx, pte new %#llx\n",pfn, npt[pt_index], pt_entry);
-	npt[pt_index] = pt_entry;
+	printf("[TV]   set prot: pfn %#x, pte old %#llx, pte new %#llx\n",pfn, oldentry, pt[pfn]);
 
 	/* flush TLB */
 	linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
@@ -461,55 +346,16 @@ void svm_nested_set_prot(VCPU * vcpu, u64 pfn, int type)
 
 void svm_nested_clear_prot(VCPU * vcpu, u64 pfn)
 {
-	pdpt_t npdp;
-	pdt_t npd; 
-	pt_t npt; 
-	u32 pdp_index, pd_index, pt_index;
-	u64 pdp_entry, pd_entry, pt_entry;
-	u64 tmp;
 	struct vmcb_struct * linux_vmcb;
-	u32 nvaddr = pfn << PAGE_SHIFT_4K;
+  	u64 *pt = (u64 *)vcpu->npt_vaddr_pts;
+	u64 pfn = gpaddr >> PAGE_SHIFT_4K;
+	u64 oldentry = pt[pfn];
+	pt[pfn] = (oldentry | _PAGE_USER | _PAGE_RW | _PAGE_PRESENT) & (~_PAGE_UNUSED1);
+	printf("[TV]   clear prot: pfn %#llx, pte old %#llx, pte new %#llx\n", pfn, oldentry, pt[pfn]);
 
-	/* get fields from virtual addr */
-	pdp_index = pae_get_pdpt_index(nvaddr);
-	pd_index = pae_get_pdt_index(nvaddr);
-	pt_index = pae_get_pt_index(nvaddr);
-
-	/* get page directory table base addr  from VCPU */
-	npdp = (pdpt_t)(vcpu->npt_vaddr_ptr);
-
-	pdp_entry = npdp[pdp_index];
-	tmp = pae_get_addr_from_pdpe(pdp_entry);
-	npd = (pdt_t)(u32)(u64)__spa2hva__((u32)tmp);
-
-	pd_entry = npd[pd_index]; 
-	// if its 0, that means its 4 KB page
-	// else, its 2MB pages 
-	if ( (pd_entry & _PAGE_PSE) == 0 ) {
-		/* get addr of page table from entry */
-		tmp = pae_get_addr_from_pde(pd_entry);
-		npt = (pt_t)(u32)(u64)__spa2hva__((u32)tmp);  
-		pt_entry = npt[pt_index];
-		pt_entry |= _PAGE_USER;
-		/* clear page flag (unused1 bit == 0) */ 
-		pt_entry &= ~_PAGE_UNUSED1;
-		pt_entry |= _PAGE_RW;
-		pt_entry |= _PAGE_PRESENT;
-		printf("[TV]   clear prot: pfn %#x, pte old %#llx, pte new %#llx\n", pfn, npt[pt_index], pt_entry);
-		npt[pt_index] = pt_entry;
-		/* flush TLB */
-		linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
-		linux_vmcb->tlb_control=TLB_CONTROL_FLUSHALL;
-	}
-	else { /* 2MB page */
-		printf("FATAL ERROR: should not clear protection on 2M large page, nvaddr %#x\n", nvaddr);
-		HALT();
-	}
-}
-
-void svm_nested_promote(VCPU * vcpu, u32 pfn)
-{
-	printf("[TV] (Disabled) promote 2M page pfn %#x\n", pfn);
+	/* flush TLB */
+	linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
+	linux_vmcb->tlb_control=TLB_CONTROL_FLUSHALL;
 }
 
 void svm_nested_make_pt_accessible(u32 gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_nx)
@@ -698,13 +544,60 @@ void svm_nested_switch_regular(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page
 	linux_vmcb->tlb_control=TLB_CONTROL_FLUSHALL;
 }
 
+///* function to break a big page into small pages in nested page table
+//*/
+//void svm_nested_breakpde(VCPU * vcpu, u32 nvaddr)
+//{
+//	pdt_t npd;
+//	pt_t npt;
+//	u64 pd_entry;
+//	u32 pdp_index, pd_index, pt_index;
+//	u32 pd_base, pt_base;
+//	u64 flags;
+//	u32 i, tmp;
+//
+//	/* get fields from virtual addr */
+//	pdp_index = pae_get_pdpt_index(nvaddr);
+//	pd_index = pae_get_pdt_index(nvaddr);
+//	pt_index = pae_get_pt_index(nvaddr);
+//
+//	/* get page table addresses from VCPU */
+//	pd_base = vcpu->npt_vaddr_pdts;
+//	pt_base = vcpu->npt_vaddr_pts;
+//
+//	npd = (pdt_t)(pd_base + (pdp_index << PAGE_SHIFT_4K));
+//	pd_entry = npd[pd_index]; 
+//
+//	if (pd_entry & _PAGE_PSE)
+//	{
+//		npt = (pt_t)(pt_base + ((pdp_index * PAE_PTRS_PER_PDT + pd_index) << (PAGE_SHIFT_4K))); 
+//		memset(npt, 0, PAGE_SIZE_4K);
+//
+//		tmp = __pa((u32)npt);
+//		flags = pae_get_flags_from_pde(pd_entry); 
+//		flags &= ~_PAGE_PSE;
+//		npd[pd_index] = pae_make_pde((u64)tmp, flags); 
+//
+//		tmp = pae_get_addr_from_pde_big(pd_entry); 
+//		for (i = 0; i < PAE_PTRS_PER_PT; i ++, tmp += PAGE_SIZE_4K)
+//			npt[i] = pae_make_pte((u64)tmp, flags);
+//	}
+//
+//	return;
+//}
+//void svm_nested_promote(VCPU * vcpu, u32 pfn)
+//{
+//	printf("[TV] (Disabled) promote 2M page pfn %#x\n", pfn);
+//}
+//
+
+
+
 
 
 /* The following functions deal with guest space access. It doesn't need 
  * any specific nested paging support, just putting in this file for convenience
  */
-
-
 
 /* guest page table opeations (VMX and SVM) */
 

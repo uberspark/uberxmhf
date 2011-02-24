@@ -59,8 +59,8 @@ struct trustvisor_context svm_tv_ctx = {
 	.nested_switch_regular = svm_nested_switch_regular,
 	.nested_make_pt_accessible = svm_nested_make_pt_accessible,
 	.nested_make_pt_unaccessible = svm_nested_make_pt_unaccessible,
-	.nested_breakpde = svm_nested_breakpde,
-	.nested_promote = svm_nested_promote,
+	//.nested_breakpde = svm_nested_breakpde,
+	//.nested_promote = svm_nested_promote,
 
 	.scode_set_prot = svm_scode_set_prot,
 	.scode_clear_prot = svm_scode_clear_prot,
@@ -77,8 +77,8 @@ struct trustvisor_context vmx_tv_ctx = {
 	.nested_switch_regular = vmx_nested_switch_regular,
 	.nested_make_pt_accessible = vmx_nested_make_pt_accessible,
 	.nested_make_pt_unaccessible = vmx_nested_make_pt_unaccessible,
-	.nested_breakpde = 0,
-	.nested_promote = 0,
+	//.nested_breakpde = 0,
+	//.nested_promote = 0,
 
 	.scode_set_prot = vmx_scode_set_prot,
 	.scode_clear_prot = vmx_scode_clear_prot,
@@ -1725,7 +1725,7 @@ u32 svm_scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size)
 
 			/* XXX FIXME: temporary disable DEV setting here! */
 		//	set_page_dev_prot(pfn);
-			svm_nested_set_prot(vcpu, pfn, type);
+			svm_nested_set_prot(vcpu, pte_pages[i], type);
 		}else
 		{
 			printf("[TV] Set scode page permission error! pfn %#x have already been registered!\n");
@@ -1743,11 +1743,11 @@ u32 svm_scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size)
 
 			/* XXX FIXME: temporary disable DEV setting here! */
 			//clear_page_dev_prot(pfn);
-			svm_nested_clear_prot(vcpu, pfn);
+			svm_nested_clear_prot(vcpu, pte_pages[i-1]);
 
 			clear_page_scode_bitmap(pfn);
-			if (clear_page_scode_bitmap_2M(pfn) == 0)
-				svm_nested_promote(vcpu, pfn);
+			//if (clear_page_scode_bitmap_2M(pfn) == 0)
+			//	svm_nested_promote(vcpu, pfn);
 		}
 		return 1;
 	}
@@ -1763,7 +1763,7 @@ u32 svm_scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size)
 				pfn = pte_pages[i] >> PAGE_SHIFT_4K;
 				/* XXX FIXME: temporary disable DEV setting here! */
 				//	set_page_dev_prot(pfn);
-				svm_nested_set_prot(tmpcpu, pfn, 3);
+				svm_nested_set_prot(tmpcpu, pte_pages[i], 3);
 			}
 		}
 	}
@@ -1792,11 +1792,11 @@ void svm_scode_clear_prot(VCPU * vcpu, u32 pte_page, u32 size)
 			printf("[TV] clear_prot(pte %#x, size %#x): page No.%d, pfn %#x\n", pte_page, size, i+1, pfn);
 			/* XXX FIXME: temporary disable DEV setting here! */
 			//clear_page_dev_prot(pfn);
-			svm_nested_clear_prot(vcpu, pfn);
+			svm_nested_clear_prot(vcpu, pte_pages[i]);
 
 			clear_page_scode_bitmap(pfn);
-			if (clear_page_scode_bitmap_2M(pfn) == 0)
-				svm_nested_promote(vcpu, pfn);
+		//	if (clear_page_scode_bitmap_2M(pfn) == 0)
+		//		svm_nested_promote(vcpu, pfn);
 		}
 	}
 
@@ -1811,7 +1811,7 @@ void svm_scode_clear_prot(VCPU * vcpu, u32 pte_page, u32 size)
 				pfn = pte_pages[i] >> PAGE_SHIFT_4K;
 				/* XXX FIXME: temporary disable DEV setting here! */
 				//	set_page_dev_prot(pfn);
-				svm_nested_clear_prot(tmpcpu, pfn);
+				svm_nested_clear_prot(tmpcpu, pte_pages[i]);
 			}
 		}
 	}
