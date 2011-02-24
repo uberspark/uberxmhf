@@ -75,7 +75,7 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 
 u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 {	
-	struct vmcb_struct * linux_vmcb
+	struct vmcb_struct * linux_vmcb;
 	u32 cmd;
 
 	u32 status = APP_SUCCESS;

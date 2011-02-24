@@ -261,8 +261,10 @@ void init_scode(VCPU * vcpu)
 	u32 inum, max;
 	/* populate TrustVisor context acorrding to CPU vendor */
 	if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+		printf("set up VMX context!\n");
 		tv_ctx = (struct trustvisor_context *)&vmx_tv_ctx;
 	} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+		printf("set up SVM context!\n");
 		tv_ctx = (struct trustvisor_context *)&svm_tv_ctx;
 	} else {
 		printf("unknow cpu vendor type!\n");
