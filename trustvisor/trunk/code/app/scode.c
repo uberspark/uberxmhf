@@ -738,13 +738,15 @@ int test_page_in_list(u64 * page_list, u64 page, u32 count)
 /* expose one page, helper function used by scode_expose_arch() */
 void expose_page (u64 * page_list, u64 page, u32 * count)
 {
-	if (!test_page_in_list(page_list, page, *count)) {
-		page_list[(*count)]=page;
-		*count = (*count)+1;
-		/* set up DEV vector to prevent DMA attack */
-		/* XXX FIXME: temporarily disable */
-		//set_page_dev_prot(pfn);
-		printf("[TV]   expose page %#llx \n", page);
+	if (page != 0xFFFFFFFF) {
+		if (!test_page_in_list(page_list, page, *count)) {
+			page_list[(*count)]=page;
+			*count = (*count)+1;
+			/* set up DEV vector to prevent DMA attack */
+			/* XXX FIXME: temporarily disable */
+			//set_page_dev_prot(pfn);
+			printf("[TV]   expose page %#llx \n", page);
+		}
 	}
 }
 
@@ -773,7 +775,7 @@ void scode_expose_arch(VCPU *vcpu)
 	} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
 		linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
 		is_pae = ((struct vmcb_struct *)linux_vmcb)->cr4 & CR4_PAE;
-		gdtr = ((struct _vmx_vmcsfields *)linux_vmcb)->guest_GDTR_base;
+		gdtr = ((struct vmcb_struct *)linux_vmcb)->gdtr.base;
 	} else {
 		printf("unknown cpu vendor!\n");
 		HALT();
@@ -808,11 +810,7 @@ void scode_expose_arch(VCPU *vcpu)
 				}
 
 				EXPOSE_PAGE(tmp_page[1]); 
-				/* if _PAGE_PSE, page size is 2MB, no pd page 
-				 * else, page size is 4KB, expose the pd page */
-				if( (tmp_page[2] != (u64)(0xFFFFFFFF))) { 
-					EXPOSE_PAGE(tmp_page[2]);
-				}
+				EXPOSE_PAGE(tmp_page[2]);
 			} else {
 				/* NPAE mode */
 				/* PD table has 1024 entries, which is two page */
@@ -838,12 +836,8 @@ void scode_expose_arch(VCPU *vcpu)
 	gpaddr = gpt_get_ptpages(vcpu, gdtr, NULL, &tmp_page[1], &tmp_page[2]);
 
 	EXPOSE_PAGE(gpaddr);
-
 	EXPOSE_PAGE(tmp_page[1]);
-	if( (tmp_page[2] != (u64)(0xFFFFFFFF))) { 
-		EXPOSE_PAGE(tmp_page[2]);
-	}
-
+	EXPOSE_PAGE(tmp_page[2]);
 
 	whitelist[curr].pte_size = pte_count << PAGE_SHIFT_4K;
 }

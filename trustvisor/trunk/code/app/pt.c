@@ -338,13 +338,13 @@ void svm_nested_set_prot(VCPU * vcpu, u64 gpaddr, int type)
 	 * unused1 == 0 			regular code 
 	 * *******************************************************************/
 	if (type == 3) {
-		pt[pfn] = oldentry & (~_PAGE_PRESENT);
+		pt[pfn] = oldentry & (~(u64)_PAGE_PRESENT);
 	} else if ( type == 2 ) {
-		pt[pfn] = (oldentry | _PAGE_UNUSED1 | _PAGE_UNUSED2) & (~_PAGE_RW);
+		pt[pfn] = (oldentry | (u64)_PAGE_UNUSED1 | (u64)_PAGE_UNUSED2) & (~(u64)_PAGE_RW);
 	} else if (type == 1) {
-		pt[pfn] = (oldentry | _PAGE_UNUSED1) & (~_PAGE_UNUSED2) & (~_PAGE_RW) & (~_PAGE_USER);
+		pt[pfn] = (oldentry | (u64)_PAGE_UNUSED1) & (~(u64)_PAGE_UNUSED2) & (~(u64)_PAGE_RW) & (~(u64)_PAGE_USER);
 	} else if (type == 0) {
-		pt[pfn] = (oldentry | _PAGE_UNUSED1) & (~_PAGE_UNUSED2) & (~_PAGE_USER);
+		pt[pfn] = (oldentry | (u64)_PAGE_UNUSED1) & (~(u64)_PAGE_UNUSED2) & (~(u64)_PAGE_USER);
 	} else {
 		printf("error in set_prot, unknown memory type!\n");
 		HALT();
@@ -363,7 +363,7 @@ void svm_nested_clear_prot(VCPU * vcpu, u64 gpaddr)
   	u64 *pt = (u64 *)vcpu->npt_vaddr_pts;
 	u64 pfn = gpaddr >> PAGE_SHIFT_4K;
 	u64 oldentry = pt[pfn];
-	pt[pfn] = (oldentry | _PAGE_USER | _PAGE_RW | _PAGE_PRESENT) & (~_PAGE_UNUSED1);
+	pt[pfn] = (oldentry | (u64)_PAGE_USER | (u64)_PAGE_RW | (u64)_PAGE_PRESENT) & (~(u64)_PAGE_UNUSED1);
 	printf("[TV]   clear prot: pfn %#llx, pte old %#llx, pte new %#llx\n", pfn, oldentry, pt[pfn]);
 
 	/* flush TLB */
