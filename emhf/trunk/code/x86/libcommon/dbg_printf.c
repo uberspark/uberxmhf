@@ -438,6 +438,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 
 volatile u32 printf_lock=1;
 
+#ifdef __DEBUG_SERIAL__
 void printf(const char *fmt, ...)
 {
     int    start_of_line = 1;
@@ -475,6 +476,7 @@ void printf(const char *fmt, ...)
     spin_unlock(&printf_lock);
 
 }
+#endif
 
 /*
  * if 'prefix' != NULL, print it before each line of hex string
