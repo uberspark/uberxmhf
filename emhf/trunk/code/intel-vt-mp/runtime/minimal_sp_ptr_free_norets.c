@@ -116,18 +116,17 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
   
   /* Get page table */
   if( (s_pd_t[index_pdt] & _PAGE_PRESENT) && !(s_pd_t[index_pdt] & _PAGE_PSE)) {
-    //this is a non-PSE PDE, get the page table
     s_pt = (npt_t)(u32)npae_get_addr_from_pde(s_pd_t[index_pdt]);
   }
 
   /* page fault for page directory entry  */
-  if ((gPDE & _PAGE_PRESENT) && (gPDE & _PAGE_PSE )) {
+  if ((gPDE & _PAGE_PRESENT) && (gPDE & _PAGE_PSE) ) {
 
-      if( npae_get_addr_from_pde(gPDE) + PAGE_SIZE_4M < GUEST_PHYSICALMEMORY_LIMIT){
-	s_pd_t[index_pdt] = gPDE;
-      }else{
-	__CPROVER_assume(0); // HALT
-      }
+    if( (npae_get_addr_from_pde(gPDE) + PAGE_SIZE_4M) < GUEST_PHYSICALMEMORY_LIMIT){
+      s_pd_t[index_pdt] = gPDE;
+    }else{
+      __CPROVER_assume(0); // HALT
+    }
   }
 
   /* page fault for page table entry */
@@ -138,13 +137,12 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
 	
     s_pd_t[index_pdt] = npae_make_pde(paddr, flags);
     
-    if( npae_get_addr_from_pte(gPTE) + PAGE_SIZE_4K < GUEST_PHYSICALMEMORY_LIMIT){
+    if( (npae_get_addr_from_pte(gPTE) + PAGE_SIZE_4K) < GUEST_PHYSICALMEMORY_LIMIT){
       s_pt[index_pt] = gPTE; 
     }else{
       __CPROVER_assume(0);	//HALT
     }
   }
-
   //return VMX_EVENT_CANCEL;
 }
 
@@ -160,30 +158,34 @@ void shadow_invalidate_page(u32 address){
   u32 index_pdt = (address >> 22);
   u32 index_pt  = ((address & (u32)0x003FFFFF) >> 12);
   
-  /* Get page table */
-  if( (s_pd_t[index_pdt] & _PAGE_PRESENT) && !(s_pd_t[index_pdt] & _PAGE_PSE)) {
+
+  if ((s_pd_t[index_pdt] & _PAGE_PRESENT) && 
+      (gPDE & _PAGE_PRESENT) &&     
+      (!(gPDE & _PAGE_PSE)) && 
+      (!(s_pd_t[index_pdt] & _PAGE_PSE)) )  {
     s_pt = (npt_t)(u32)npae_get_addr_from_pde(s_pd_t[index_pdt]);
+    s_pt[index_pt] = 0;
+
   }
 
-  if( !( s_pd_t[index_pdt] & _PAGE_PRESENT) )
-    return;
-	
-  if( !(gPDE & _PAGE_PRESENT) ){
-     s_pd_t[index_pdt] = 0;
-  }else{
-    if( ((gPDE & _PAGE_PSE) && !( s_pd_t[index_pdt] & _PAGE_PSE)) ||
-	(!(gPDE & _PAGE_PSE) && ( s_pd_t[index_pdt] & _PAGE_PSE)) ){
-      //mismatch in guest and shadow structures 4M vs 4K
-      s_pd_t[index_pdt] = 0;
-    }else{
-      //both guest and shadow are same structure
-      if(s_pt){
-	s_pt[index_pt] = 0;
-      }else{
-	s_pd_t[index_pdt] = 0;
-      }		
-    }
+
+  if( ((s_pd_t[index_pdt] & _PAGE_PRESENT) && (!(gPDE & _PAGE_PRESENT)) ) || 
+      
+      ((s_pd_t[index_pdt] & _PAGE_PRESENT) && (gPDE & _PAGE_PRESENT) &&     
+       ((gPDE & _PAGE_PSE) && !( s_pd_t[index_pdt] & _PAGE_PSE))) ||
+    
+      ((s_pd_t[index_pdt] & _PAGE_PRESENT) && (gPDE & _PAGE_PRESENT) &&     
+       (!(gPDE & _PAGE_PSE) && ( s_pd_t[index_pdt] & _PAGE_PSE))) ||
+      
+      ((s_pd_t[index_pdt] & _PAGE_PRESENT) && (gPDE & _PAGE_PRESENT) &&     
+       ((gPDE & _PAGE_PSE) && ( s_pd_t[index_pdt] & _PAGE_PSE))) 
+
+      ){
+
+    s_pd_t[index_pdt] = 0;
+
   }
+  
   return;
 }
 

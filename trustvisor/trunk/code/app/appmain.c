@@ -115,9 +115,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 #endif
 
 				/* do atomic scode registration */
-				if (scode_register(vcpu, scode_info, scode_pm, scode_en)) {
-					HALT();
-				}
+				r->eax = scode_register(vcpu, scode_info, scode_pm, scode_en);
 
 #ifdef __MP_VERSION__
 				/* wake up other CPUs */
@@ -139,9 +137,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 #endif
 
 				/* do atomic scode unregistration */
-				if (scode_unregister(vcpu, scode_gva)) {
-					HALT();
-				}
+				r->eax = scode_unregister(vcpu, scode_gva);
 
 #ifdef __MP_VERSION__
 				/* wake up other CPUs */
@@ -162,9 +158,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				out_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf);
 				out_len_addr = get_32bit_aligned_value_from_guest(vcpu,outbuf+4);
 
-				if(scode_seal(vcpu, data_addr, data_len, pcr_addr, out_addr, out_len_addr)) {
-					HALT();
-				}
+				r->eax = scode_seal(vcpu, data_addr, data_len, pcr_addr, out_addr, out_len_addr);
 
 				break;
 			}
@@ -180,9 +174,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				out_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf);
 				out_len_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf+4);
 
-				if(scode_unseal(vcpu, input_addr, in_len, out_addr, out_len_addr)) {
-					HALT();
-				}
+				r->eax = scode_unseal(vcpu, input_addr, in_len, out_addr, out_len_addr);
 
 				break;
 			}
@@ -198,9 +190,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				out_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf);
 				out_len_addr = get_32bit_aligned_value_from_guest(vcpu,outbuf+4);
 
-				if(scode_quote(vcpu,nonce_addr,tpmsel_addr,out_addr,out_len_addr)) {
-					HALT();
-				}
+				r->eax = scode_quote(vcpu,nonce_addr,tpmsel_addr,out_addr,out_len_addr);
 
 				break;
 			}
@@ -208,6 +198,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 			{
 				printf("[TV] FATAL ERROR: Invalid vmmcall cmd (%d)\n", cmd);
 				status = APP_ERROR;
+                                r->eax = 1;
 			}
 	}
 	return status;
