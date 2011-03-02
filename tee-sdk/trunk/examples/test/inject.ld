@@ -11,10 +11,13 @@ SECTIONS
     . = ALIGN(0x1000);
     __scode_end = .;
     ___scode_end = .;
+  }
 
+  .SCODE_UTIL ALIGN(0x1000):
+  {
     __scode_util_start = .;
     ___scode_util_start = .; 
-    *.o(.scode_util)
+    *(.scode_util)
     . = ALIGN(0x1000);
     __scode_util_end = .;
     ___scode_util_end = .;

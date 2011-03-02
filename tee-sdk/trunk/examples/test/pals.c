@@ -37,6 +37,7 @@
 #include  "pals.h"
 #include  "scode.h"
 
+#include <svcapi.h>
 #include <marshal.h>
 
 __attribute__ ((section (".scode")))

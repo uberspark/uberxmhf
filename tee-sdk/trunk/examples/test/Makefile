@@ -14,7 +14,7 @@ LINK_SCRIPT = inject.ld
 TESTS=-DTEST_VMMCALL -DTEST_WITHOUTPARAM -DTEST_PARAM -DTEST_SEAL -DTEST_QUOTE
 
 # for debug
-CFLAGS=-g $(TESTS) -DnotPERFCPIT -fno-stack-protector -fno-jump-tables -Wall -I../../tz/include -I../../tz/dev/tv/include
+CFLAGS=-g $(TESTS) -DnotPERFCPIT -fno-stack-protector -fno-jump-tables -Wall -I../../tz/include -I../../tz/dev/tv/include -I../../svcapi
 #CFLAGS+=-I/usr/include 
 # for run
 #CFLAGS=-O2 -DnotPERFCPIT -fno-stack-protector 
@@ -30,8 +30,8 @@ OBJS = test.o pals.o
 
 all: test
 
-test:$(OBJS) ../../tz/libtz.a
-	$(CC) $(CFLAGS) -T $(LINK_SCRIPT) $(OBJS) ../../tz/libtz.a -o $@
+test:$(OBJS) ../../tz/libtz.a ../../svcapi/libsvcapi.a
+	$(CC) -T $(LINK_SCRIPT) -o $@ $(OBJS) ../../svcapi/libsvcapi.a ../../tz/libtz.a 
 
 #.PHONY: all
 #all: $(OBJS)
