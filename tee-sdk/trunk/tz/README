@@ -1,0 +1,22 @@
+This is an implementation of ARM's [TrustZone] API. This API provides
+an abstract interface for applications to communicate with _services_
+running in a trusted execution environment. While the API shares its
+name with ARM's TrustZone technology, which can be used to _provide_ a
+trusted execution environment, it is not specific to that technology.
+
+[TrustZone]: http://www.arm.com/products/processors/technologies/trustzone.php
+
+To write an application utilizing this library, you should familiarize
+yourself with ARM's [Specification] of the TrustZone API. 
+
+[Specification]: TrustZone_API_3.0_Specification.pdf
+
+Files:
+
+  * [TrustZone_API_3.0_Specification.pdf](TrustZone_API_3.0_Specification.pdf)
+    The ARM TrustZone API, which this library (partially) implements.
+  * [Makefile](Makefile) A makefile to recursively build libtz.a
+  * [Makefile.inc](Makefile.inc) Common definitions used by the
+    recursive build.
+  * [src](src) Source code
+  * [include](include) Public header files
