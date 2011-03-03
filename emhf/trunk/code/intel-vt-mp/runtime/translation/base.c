@@ -132,7 +132,7 @@ void shadow_invalidate_page(u32 address){
 
   if ((s_pd_t[index_pdt] & _PAGE_PRESENT) && (gPDE & _PAGE_PRESENT) &&     
       (!(gPDE & _PAGE_PSE)) && (!(s_pd_t[index_pdt] & _PAGE_PSE)) )  {
-    s_pt = (npt_t)(u32)((u32)(s_pdt_t[index_pdt]) & (~((u32)PAGE_SIZE_4K - 1)));
+    s_pt = (npt_t)(u32)npae_get_addr_from_pde(s_pd_t[index_pdt]);
     s_pt[index_pt] = 0;
 
   }

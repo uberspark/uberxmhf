@@ -76,6 +76,7 @@ void runtime_setup_paging(u32 physaddr, u32 virtaddr, u32 totalsize){
 	u32 paddr=0, i, j, y;
 	u32 l_cr0, l_cr3, l_cr4;
 	u64 flags;
+	u64 newflags;
 	u32 runtime_image_offset = PAGE_SIZE_2M;
 	
 	xpdpt=(pdpt_t)((u32)rpb->XtVmmPdptBase - __TARGET_BASE + runtime_image_offset);
@@ -109,13 +110,13 @@ void runtime_setup_paging(u32 physaddr, u32 virtaddr, u32 totalsize){
         // 0xfee00000 contains APIC base        
       if(paddr == 0xfee00000 ||
          paddr == 0xfec00000) {
-        flags |= (u64)(_PAGE_PCD);
-        //XXX TODO Error here because flags doesn't get "put back"
-        // after these two addresses?
-        printf("\nSL: updating flags for paddr 0x%08x", paddr);
-      }
+        newflags = flags | (u64)(_PAGE_PCD);
+      } else {
+		newflags = flags;
+	  }
         
-      xpdt[i] = pae_make_pde_big((u64)paddr, flags);
+      printf("\nSL: updating flags for paddr 0x%08x", paddr);
+      xpdt[i] = pae_make_pde_big((u64)paddr, newflags);
     }
   }
 

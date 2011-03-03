@@ -33,106 +33,78 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//------------------------------------------------------------------------------
-// minimal_sp_ptr_free_norets.c modification by Jason Franklin
-// 
-// author: amit vasudevan (amitvasudevan@acm.org)
-
 #include <types.h>
 #include <paging.h>
 #include <shadow_paging_npae.h>
-//#include <vtx.h>
 
-/*------------ Start for verification ------------*/
 
 #define GUEST_PHYSICALMEMORY_LIMIT	 (4096*2)  //4MB guest PA
 #define GUEST_VIRTUALMEMORY_LIMIT	 (4096*2)  //4GB guest VA 
 
-u32 s_pd_t[1024];
-u32 __shadow_npae_p_tables[1024];
+ s_pd_t[1024];
+ __shadow_npae_p_tables[1024];
 
-u32 shadow_guest_CR3=0;
-
-u32 nondet_u32();
-int nondet_int();
-u32* nondet_u32_ptr();
-
-u32 shadow_new_context(u32 guest_CR3);
-void shadow_invalidate_page(u32 address);
-u32 shadow_page_fault(u32 cr2, u32 error_code);
-
-void main() {
-  /* Excluded */
-
-}
+ shadow_guest_CR3=0;
 
 
-u32 shadow_page_fault(u32 cr2, u32 error_code){
+ shadow_page_fault( cr2){
 
-  u32 index_pdt, index_pt; 
-  u32 flags, paddr;
-  npt_t s_pt;
+   index_pdt, index_pt; 
+   flags, paddr;
+    s_pt;
 
-  u32 gPDE = nondet_u32();
-  u32 gPTE = nondet_u32();
+   gPDE = nondet_();
+   gPTE = nondet_();
 
 
   index_pdt = (cr2 >> 22);
-  index_pt  = ((cr2 & (u32)0x003FFFFF) >> 12);
+  index_pt  = ((cr2 & 0x003FFFFF) >> 12);
 
   
   if( (s_pd_t[index_pdt] & _PAGE_PRESENT) && !(s_pd_t[index_pdt] & _PAGE_PSE)) {
-    s_pt = (npt_t)(u32)((u32)(s_pd_t[index_pdt]) & (~((u32)PAGE_SIZE_4K - 1)));
+    s_pt = ()((s_pd_t[index_pdt]) & (~(PAGE_SIZE_4K - 1)));
   }
 
 
-  /* page fault for page directory entry  */
+
   if ((gPDE & _PAGE_PRESENT) && (gPDE & _PAGE_PSE) ) {
 
-    if( (  ((u32)(gPDE) & (~((u32)PAGE_SIZE_4K - 1))) + PAGE_SIZE_4M) < GUEST_PHYSICALMEMORY_LIMIT){
+    if( (  ((gPDE) & (~(PAGE_SIZE_4K - 1))) + PAGE_SIZE_4M) < GUEST_PHYSICALMEMORY_LIMIT){
       s_pd_t[index_pdt] = gPDE;
     }
-
-/*  else{ */
-/*       __CPROVER_assume(0); // HALT */
-/*     } */
   }
 
 
-  /* page fault for page table entry */
+
   if ( (gPDE & _PAGE_PRESENT) && (!(gPDE & _PAGE_PSE) ) && (gPTE & _PAGE_PRESENT)) {
 
-    flags = ((u32)(gPDE) & ((u32)PAGE_SIZE_4K - 1));
-    paddr = ((u32)(s_pd_t[index_pdt]) & (~((u32)PAGE_SIZE_4K - 1)));
+    flags = ((gPDE) & (PAGE_SIZE_4K - 1));
+    paddr = ((s_pd_t[index_pdt]) & (~(PAGE_SIZE_4K - 1)));
 	
-    s_pd_t[index_pdt] = ((u32)(paddr) & (~(((u32)PAGE_SIZE_4K - 1)))) | (u32)(flags);
+    s_pd_t[index_pdt] = ((paddr) & (~((PAGE_SIZE_4K - 1)))) | (flags);
 
-    if( (((u32)(gPTE) & (~((u32)PAGE_SIZE_4K - 1))) + PAGE_SIZE_4K) < GUEST_PHYSICALMEMORY_LIMIT){
+    if( (((gPTE) & (~(PAGE_SIZE_4K - 1))) + PAGE_SIZE_4K) < GUEST_PHYSICALMEMORY_LIMIT){
       s_pt[index_pt] = gPTE; 
     }
-
-/*  else{ */
-/*       __CPROVER_assume(0);	//HALT */
-/*     } */
   }
 }
 
 
-//invalidate a shadow paging structure
-void shadow_invalidate_page(u32 address){
+
+shadow_invalidate_page( address){
   
-  npt_t s_pt;
+   s_pt;
 
-  u32 gPDE = nondet_u32();
-  u32 gPTE = nondet_u32();
+   gPDE = nondet_();
+   gPTE = nondet_();
 
-  u32 index_pdt = (address >> 22);
-  u32 index_pt  = ((address & (u32)0x003FFFFF) >> 12);
+   index_pdt = (address >> 22);
+   index_pt  = ((address & 0x003FFFFF) >> 12);
   
 
   if ((s_pd_t[index_pdt] & _PAGE_PRESENT) && (gPDE & _PAGE_PRESENT) &&     
       (!(gPDE & _PAGE_PSE)) && (!(s_pd_t[index_pdt] & _PAGE_PSE)) )  {
-    s_pt = (npt_t)(u32)((u32)(s_pdt_t[index_pdt]) & (~((u32)PAGE_SIZE_4K - 1)));
+    s_pt = ((s_pdt_t[index_pdt]) & (~(PAGE_SIZE_4K - 1)));
     s_pt[index_pt] = 0;
 
   }
@@ -150,17 +122,15 @@ void shadow_invalidate_page(u32 address){
 }
 
 
-//new context, CR3 load
-u32 shadow_new_context(u32 guest_CR3){
 
-  shadow_guest_CR3 = guest_CR3;
+shadow_new_context( guest_CR3 ){
 
-  u32 num_pagedir_entries = GUEST_VIRTUALMEMORY_LIMIT / (4096*1023);
+   shadow_guest_CR3 = guest_CR3;
+
+   num_pagedir_entries = GUEST_VIRTUALMEMORY_LIMIT / (4096*1023);
   
-  for (u32 i= 0; i < num_pagedir_entries; i++) {
+  for (i= 0; i < num_pagedir_entries; i++) {
     s_pd_t[i] = 0;
   }
-
-  //return (u32)s_pd_t; 
 }
 
