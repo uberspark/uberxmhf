@@ -216,6 +216,8 @@ static void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts
 			}
 		}
   }
+
+	/* TODO: mark all the physical pages of EMHF hyervisor not present */
 }
 
 

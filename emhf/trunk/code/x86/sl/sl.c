@@ -111,11 +111,10 @@ void runtime_setup_paging(u32 physaddr, u32 virtaddr, u32 totalsize){
       if(paddr == 0xfee00000 ||
          paddr == 0xfec00000) {
         newflags = flags | (u64)(_PAGE_PCD);
+        printf("\nSL: updating flags for paddr 0x%08x", paddr);
       } else {
 		newflags = flags;
 	  }
-        
-      printf("\nSL: updating flags for paddr 0x%08x", paddr);
       xpdt[i] = pae_make_pde_big((u64)paddr, newflags);
     }
   }
