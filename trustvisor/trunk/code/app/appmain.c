@@ -79,6 +79,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 	u32 cmd;
 
 	u32 status = APP_SUCCESS;
+	u32 ret = 0;
 
 	if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
 		cmd = (u32)r->eax;
@@ -96,6 +97,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 		case VMMCMD_TEST:
 			{
 				printf("\nCPU(0x%02x): Hello world from sechyp vmmcall handler!", vcpu->id);
+				ret = 0;
 				break;
 			}
 			/* register the scode */
@@ -115,7 +117,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 #endif
 
 				/* do atomic scode registration */
-				r->eax = scode_register(vcpu, scode_info, scode_pm, scode_en);
+				ret = scode_register(vcpu, scode_info, scode_pm, scode_en);
 
 #ifdef __MP_VERSION__
 				/* wake up other CPUs */
@@ -137,7 +139,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 #endif
 
 				/* do atomic scode unregistration */
-				r->eax = scode_unregister(vcpu, scode_gva);
+				ret = scode_unregister(vcpu, scode_gva);
 
 #ifdef __MP_VERSION__
 				/* wake up other CPUs */
@@ -158,7 +160,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				out_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf);
 				out_len_addr = get_32bit_aligned_value_from_guest(vcpu,outbuf+4);
 
-				r->eax = scode_seal(vcpu, data_addr, data_len, pcr_addr, out_addr, out_len_addr);
+				ret = scode_seal(vcpu, data_addr, data_len, pcr_addr, out_addr, out_len_addr);
 
 				break;
 			}
@@ -174,7 +176,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				out_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf);
 				out_len_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf+4);
 
-				r->eax = scode_unseal(vcpu, input_addr, in_len, out_addr, out_len_addr);
+				ret = scode_unseal(vcpu, input_addr, in_len, out_addr, out_len_addr);
 
 				break;
 			}
@@ -190,7 +192,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				out_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf);
 				out_len_addr = get_32bit_aligned_value_from_guest(vcpu,outbuf+4);
 
-				r->eax = scode_quote(vcpu,nonce_addr,tpmsel_addr,out_addr,out_len_addr);
+				ret = scode_quote(vcpu,nonce_addr,tpmsel_addr,out_addr,out_len_addr);
 
 				break;
 			}
@@ -198,8 +200,17 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 			{
 				printf("[TV] FATAL ERROR: Invalid vmmcall cmd (%d)\n", cmd);
 				status = APP_ERROR;
-                                r->eax = 1;
+				ret = 1;
 			}
+	}
+
+	if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+		r->eax = ret;
+	} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+		linux_vmcb->rax = ret;
+	} else {
+		printf("unknow cpu vendor type!\n");
+		HALT();
 	}
 	return status;
 }
