@@ -1,5 +1,8 @@
 # make these libraries are suitable for services to compile against
-AM_CFLAGS = $(SVC_CFLAGS)
+
+# FIXME hard-coding VMX for the moment. Need to make
+# this an autoconf test, or better yet a runtime check
+AM_CFLAGS = $(SVC_CFLAGS) -DIS_VMX
 
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(srcdir)/../include
 
