@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=gamt
+Comment=Intel AMT serial-over-lan client.
+Exec=gamt
+Terminal=false
+Type=Application
+Categories=GTK;System;Network;Utility;
+Icon=gnome-terminal

@@ -1,0 +1,93 @@
+.TH amttool 1 "(c) 2007,08 Gerd Hoffmann"
+.SH NAME
+amttool - remotely control Intel AMT managed machines.
+.SH SYNOPSIS
+.B amttool host [ command ] [ arg(s) ]
+.SH DESCRIPTION
+.B amttool
+is a perl script which speaks SOAP to Intel AMT managed machines.
+It can query informations about the machine in question and also
+send some commands for basic remote control.
+.P
+.B host
+is the hostname or IP address of the machine amttool should
+control.
+.B command
+is an optional command.
+.P
+You must set fill AMT_PASSWORD environment variable with the AMT
+password.
+.P
+For more inforamtions on Intel AMT check amt-howto(7).
+.SH COMMANDS
+.TP
+.B info
+gather information (default).
+.TP
+.B reset [ special ]
+reset machine, with optional special command (see section below).
+.TP
+.B powerup [ special ]
+turn on machine.
+.TP
+.B powerdown
+turn off machine.
+.TP
+.B powercycle [ special ]
+powercycle machine.
+.TP
+.B netinfo
+print network configuration (requires AMT 2.5+).
+.TP
+.B netconf if link [ ip mask gw [ dns1 [ dns2 ]]]
+configure network interface (requires AMT 2.5+).
+.B if
+is the interface handle,
+.B link
+the link policy.  If in doubt just feed in what the netinfo command
+prints.
+.B ip
+is the IPv4 address,
+.B mask
+the netmask,
+.B gw
+the default gateway,
+.B dns1
+and
+.B dns2
+are the DNS Servers.  If no IP configuration is specified the tool
+tries to configure the machine in shared mac address mode with dhcp,
+otherwise in separate mac address mode with static IP address.
+Default for dns1 is the gateway address, for dns2 it is 0.0.0.0.
+.SH SPECIAL COMMANDS
+Special commands can optionally be specified for reset, powerup and
+powercycle.  They change the default boot behavior of the machine.
+.TP
+.B bios
+Asks for the BIOS boot messages being redirected to serial-over-lan.
+.TP
+.B pxe
+Network boot via PXE.
+.TP
+.B hd
+Boot from local disk.
+.TP
+.B hdsafe
+Boot from local disk (safe mode).
+.TP
+.B cd
+Boot from CD/DVD.
+.TP
+.B diag
+Boot in diagnostics mode.
+.SH ENVIRONMENT
+.TP
+.B AMT_PASSWORD
+AMT password.
+.TP
+.B AMT_DEBUG
+Enable debug output.
+.SH SEE ALSO
+amtterm(1), gamt(1), amt-howto(7)
+.SH AUTHOR
+(c) 2007 Gerd Hoffmann <kraxel@redhat.com>

@@ -1,0 +1,48 @@
+.TH gamt 1 "(c) 2007 Gerd Hoffmann"
+.SH NAME
+gamt - Intel AMT serial-over-lan (sol) client.
+.SH SYNOPSIS
+.B gamt [ options ] [ host ]
+.SH DESCRIPTION
+.B gamt
+provides access to the serial-over-lan port of Intel AMT managed
+machines.
+.B host
+is the hostname or IP address of the machine gamt should connect
+to.
+.P
+For more inforamtions on Intel AMT check amt-howto(7).
+.SH OPTIONS
+.TP
+.B -h
+Display help text.
+.TP
+.B -u <user>
+Specify username, defaults to "admin".
+.TP
+.B -p <pass>
+Specify password.
+.B gamt
+will prompt you if unspecified.
+.TP
+.B -f <font>
+Specify terminal font, defaults to "monospace 12".
+.TP
+.B -c <color>
+Specify terminal text color, defaults to "gray".
+.TP
+.B -b <color>
+Specify terminal background color, defaults to "black".
+.P
+Font, colors can also be changed using menu options.  These settings
+are also written to the
+.B ~/.gamtrc
+config file, so they persistent.
+.SH ENVIRONMENT
+.TP
+.B AMT_PASSWORD
+Default value for the password.
+.SH SEE ALSO
+amtterm(1), amttool(1), amt-howto(7)
+.SH AUTHOR
+(c) 2007 Gerd Hoffmann <kraxel@redhat.com>

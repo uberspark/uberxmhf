@@ -1,0 +1,43 @@
+.TH amtterm 1 "(c) 2007 Gerd Hoffmann"
+.SH NAME
+amtterm - Intel AMT serial-over-lan (sol) client.
+.SH SYNOPSIS
+.B amtterm [ options ] host [ port ]
+.SH DESCRIPTION
+.B amtterm
+provides access to the serial-over-lan port of Intel AMT managed
+machines.
+.B host
+is the hostname or IP address of the machine amtterm should connect
+to.
+.B port
+is the tcp port to use and defaults to 16994 (standard AMT redirection
+port) if unspecified.
+.P
+For more inforamtions on Intel AMT check amt-howto(7).
+.SH OPTIONS
+.TP
+.B -h
+Display help text.
+.TP
+.B -v
+Be verbose (default).
+.TP
+.B -q
+Be quiet.
+.TP
+.B -u <user>
+Specify username, defaults to "admin".
+.TP
+.B -p <pass>
+Specify password.
+.B amtterm
+will prompt on the terminal if unspecified.
+.SH ENVIRONMENT
+.TP
+.B AMT_PASSWORD
+Default value for the password.
+.SH SEE ALSO
+gamt(1), amttool(1), amt-howto(7)
+.SH AUTHOR
+(c) 2007 Gerd Hoffmann <kraxel@redhat.com>
