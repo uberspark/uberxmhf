@@ -110,39 +110,6 @@ typedef struct tzi_device_cb_block_t {
   void (*sharedMemoryRelease)();
 } tzi_device_cb_block_t;
 
-typedef enum tzi_encoded_type_t {
-  TZI_ENCODED_UINT32,
-  TZI_ENCODED_ARRAY,
-  TZI_ENCODED_MEM,
-} tzi_encoded_type_t;
-
-typedef struct tzi_encoded_t {
-  tzi_encoded_type_t uiType;
-  union {
-    struct {
-      uint32_t uiValue;
-    } sUint32;
-    struct {
-      uint32_t uiSize;
-      uint8_t aData[]; /* there must be nothing after this union for
-                          this to work! */
-    } sArray;
-    struct {
-      uint32_t uiSize;
-      void *pMem;
-    } sMem;
-  };
-} tzi_encoded_t;
-
-typedef struct tzi_encode_buffer_t {
-  tz_return_t uiRetVal;
-  uint32_t uiSize;
-  uint32_t uiOffset;
-  uint32_t uiSizeUsed; /* only valid when decoding */
-  tzi_encoded_t pBuf[];/* CAUTION when adding members to this struct- 
-                          pBuf must be 8-byte aligned. */
-} tzi_encode_buffer_t;
-
 typedef struct tzi_device_registry_entry_t {
   const char* name;
   tzi_device_cb_block_t* cbb;
@@ -202,7 +169,7 @@ typedef struct tz_operation_t
     /* Implementation-defined. */
     tz_session_t *psSession;
     tzi_operation_t uiOpType;
-    tzi_encode_buffer_t *psEncodeBuffer;
+    struct tzi_encode_buffer_t *psEncodeBuffer;
     struct tzi_operation_ext_t* psExt;
     struct ll_t* psRefdSubranges;
   } sImp;
