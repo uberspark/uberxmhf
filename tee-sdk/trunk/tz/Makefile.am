@@ -1,4 +1,4 @@
-SUBDIRS = src include
+SUBDIRS = src include dev
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = tee-sdk-app.pc tee-sdk-svc.pc

@@ -20,11 +20,6 @@ AC_SUBST([SVC_LDFLAGS], ['-T ${svc_link_script}'])
 # use the designated linker script
 #svc_ldflags=-T $(SVC_LINK_SCRIPT)
 
-
-
-
-
-
-AC_CONFIG_FILES([Makefile src/Makefile include/Makefile tee-sdk-app.pc tee-sdk-svc.pc])
+AC_CONFIG_FILES([Makefile src/Makefile include/Makefile dev/Makefile dev/tv/Makefile dev/tv/src/Makefile tee-sdk-app.pc tee-sdk-svc.pc])
 AC_PROG_RANLIB
 AC_OUTPUT
