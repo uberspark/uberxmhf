@@ -60,6 +60,8 @@ tz_return_t TZIDeviceRegister(const char *name, tzi_device_cb_block_t* cbb)
   return TZ_SUCCESS;
 }
 
+extern void TVregister();
+
 tz_return_t
 TZDeviceOpen(IN void const *pkDeviceName,
              IN void const *pkInit,
@@ -67,6 +69,16 @@ TZDeviceOpen(IN void const *pkDeviceName,
 {
   int i;
   tz_return_t rv;
+  static bool initialized = false;
+
+  /* temporary (?) hack. attempted to get device backends to register
+     themselves with constructor functions, but they don't get linked
+     in unless we reference symbols from them here. So we might as well
+     just register them from here. */
+  if(!initialized) {
+    TVregister();
+    initialized = true;
+  }
 
   /* default device. currently hard-coded.
    * later consider taking an environment variable?

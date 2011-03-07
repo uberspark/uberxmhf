@@ -12,7 +12,7 @@ CPPFLAGS=$(TESTS)
 # Get compile and link flags to compile against tv's
 # app and svc back-ends. (the corresponding front-ends
 # will be pulled in implicitly)
-PKGCONFIG_DEPS=tee-sdk-svc-tv tee-sdk-app-tv
+PKGCONFIG_DEPS=tee-sdk-svc-tv tee-sdk-app
 PKG_CFLAGS=$(shell pkg-config --cflags $(PKGCONFIG_DEPS))
 PKG_LDFLAGS=$(shell pkg-config --libs --static $(PKGCONFIG_DEPS))
 
@@ -29,11 +29,13 @@ I_SOURCES = $(wildcard *.h)
 
 all: test
 
+# FIXME - the static libraries should be proper dependencies, not in
+# LDFLAGS. Using this rule with LDFLAGS coming last instead of first
+# as in Make's default implicit rule is a partial workaround.  i.e.,
+# we can link correctly, but Make won't know to rebuild if the
+# static lib dependencies change.
 test:$(OBJS)
 	$(CC) -o $@ $(OBJS) $(LDFLAGS) 
-
-%.o:%.c $(I_SOURCES)
-	$(CC) -c $(CFLAGS) -o $@ $<
 
 .PHONY: clean
 clean:

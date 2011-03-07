@@ -290,8 +290,7 @@ static tzi_device_cb_block_t tv_cb_block =
     &TVsharedMemoryRelease,
   };
 
-__attribute__((constructor))
-static void registerself()
+void TVregister()
 {
   TZIDeviceRegister("trustvisor", &tv_cb_block);
 }

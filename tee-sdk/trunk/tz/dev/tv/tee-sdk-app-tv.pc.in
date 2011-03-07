@@ -5,7 +5,7 @@ includedir=@includedir@
 
 Name: tee-sdk-app-tv
 Description: used for applications that talk to tee services
-Requires: tee-sdk-app
+Requires:
 Version: @PACKAGE_VERSION@
 Libs: -L${libdir}/tee-sdk -ltz-tv
 Cflags: -I${includedir}
