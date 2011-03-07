@@ -275,7 +275,7 @@ void TVsharedMemoryRelease(INOUT tz_shared_memory_t* psSharedMem)
   return;
 }
 
-tzi_device_cb_block_t tv_cb_block =
+static tzi_device_cb_block_t tv_cb_block =
   { &TVDeviceOpen,
     &TVDeviceClose, 
     &TVManagerOpen,
@@ -292,3 +292,8 @@ tzi_device_cb_block_t tv_cb_block =
     &TVsharedMemoryRelease,
   };
 
+__attribute__((constructor))
+static void registerself()
+{
+  TZIDeviceRegister("trustvisor", &tv_cb_block);
+}

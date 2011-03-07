@@ -148,13 +148,6 @@ typedef struct tzi_device_registry_entry_t {
   tzi_device_cb_block_t* cbb;
 } tzi_device_registry_entry_t;
 
-extern tzi_device_cb_block_t tv_cb_block;
-static const tzi_device_registry_entry_t device_registry[] =
-{
-  {"trustvisor", &tv_cb_block},
-  {NULL, NULL}, /* must be last */
-};
-  
 /* 5.4.2 */
 typedef struct tz_device_t
 {
@@ -356,6 +349,9 @@ enum {
 #define IN
 #define OUT
 #define INOUT
+
+/* used by device back-ends to register themselves */
+tz_return_t TZIDeviceRegister(const char *name, tzi_device_cb_block_t* cbb);
 
 /* 6.1.1 TZDeviceOpen */
 tz_return_t

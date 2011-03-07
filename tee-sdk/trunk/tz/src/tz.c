@@ -44,6 +44,22 @@
 #define CBB_OF_SESSION(s) (CBB_OF_DEVICE((s)->sImp.psDevice))
 #define CBB_OF_OPERATION(o) (CBB_OF_SESSION((o)->sImp.psSession))
 #define CBB_OF_SHAREDMEM(m) (CBB_OF_SESSION((m)->sImp.psSession))
+
+#define TZI_DEVICE_REGISTRY_MAX 10
+static size_t tzi_device_registry_count = 0;
+static tzi_device_registry_entry_t tzi_device_registry[TZI_DEVICE_REGISTRY_MAX];
+
+tz_return_t TZIDeviceRegister(const char *name, tzi_device_cb_block_t* cbb)
+{
+  if (tzi_device_registry_count >= TZI_DEVICE_REGISTRY_MAX) {
+    return TZ_ERROR_GENERIC;
+  }
+  tzi_device_registry[tzi_device_registry_count++] =
+    (tzi_device_registry_entry_t) {.name = name, .cbb = cbb};
+
+  return TZ_SUCCESS;
+}
+
 tz_return_t
 TZDeviceOpen(IN void const *pkDeviceName,
              IN void const *pkInit,
@@ -60,22 +76,22 @@ TZDeviceOpen(IN void const *pkDeviceName,
   }
 
   /* linear search for requested device name */
-  for(i=0; device_registry[i].name == NULL; i++) {
-    if (strcmp(pkDeviceName, device_registry[i].name) == 0) {
+  for(i=0; i < tzi_device_registry_count; i++) {
+    if (strcmp(pkDeviceName, tzi_device_registry[i].name) == 0) {
       break;
     }
   }
-  if (device_registry[i].name == NULL) {
+  if (i >= tzi_device_registry_count) {
     return TZ_ERROR_ILLEGAL_ARGUMENT;
   }
 
-  rv = device_registry[i].cbb->deviceOpen(pkDeviceName, pkInit, psDevice);
+  rv = tzi_device_registry[i].cbb->deviceOpen(pkDeviceName, pkInit, psDevice);
 
   if (rv == TZ_SUCCESS) {
     *psDevice = (tz_device_t) {
       .uiState = TZ_STATE_OPEN,
       .sImp = {
-        .cbb = device_registry[i].cbb,
+        .cbb = tzi_device_registry[i].cbb,
         .uiSessionCount = 0,
       },
     };
