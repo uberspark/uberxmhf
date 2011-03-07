@@ -291,6 +291,34 @@ void allcpus_common_start(VCPU *vcpu){
 		printf("\nCPU(0x%02x): All cores have successfully been through appmain.", vcpu->id);
 	}
 
+#if defined (__TEST_CPU_QUIESCE__)
+	//testing the CPU quiesce implementation
+  {
+		//increment cpu counter
+		spin_lock(&g_lock_quiesce_cpu_counter);
+  	g_quiesce_cpu_counter++;
+  	spin_unlock(&g_lock_quiesce_cpu_counter);
+		
+		//if we are an AP, wait for quiesce signal
+  	if(!vcpu->isbsp){
+			printf("\nCPU(%02x): __TEST_CPU_QUIESCE__, AP waiting for quiesce signal...", vcpu->id);
+  		//idle loop
+			while(1);
+		}
+	
+		//we are a BSP, check if all APs are in idle loop
+		printf("\nBSP:__TEST_CPU_QUIESCE__, rallying APs...");
+		while(g_quiesce_cpu_counter < g_midtable_numentries);
+		
+		printf("\nBSP:__TEST_CPU_QUIESCE__, sending quiesce request...");
+		g_isl->do_quiesce(vcpu);
+		printf("\nBSP: __TEST_CPU_QUIESCE__ atomic printf!");
+		printf("\nBSP:__TEST_CPU_QUIESCE__, sending awake request...");
+		g_isl->do_wakeup(vcpu);
+		printf("\nBSP: __TEST_CPU_QUIESCE__ ends");
+	}
+#endif
+
 
 	//if we are the BSP setup SIPI intercept
   if(vcpu->isbsp){
@@ -320,6 +348,7 @@ void allcpus_common_start(VCPU *vcpu){
 void runtime_exception_handler(u32 vector, struct regs *r){
 	//we just let the isolation layer handle it
 	//TODO: assert g_isl is valid
+	printf("\n%s: handing off exception...", __FUNCTION__);
 	g_isl->runtime_exception_handler(vector, r);
 }
 

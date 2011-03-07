@@ -42,13 +42,13 @@ TopLine=1
 Caret=1,1
 [..\sl\Makefile]
 TopLine=1
-Caret=146,11
+Caret=43,21
 [..\sl\slsup.S]
 TopLine=16
 Caret=1,59
 [..\sl\sl.c]
-TopLine=240
-Caret=2,281
+TopLine=334
+Caret=73,369
 [..\sl\sl.lds.S]
 TopLine=4
 Caret=18,31

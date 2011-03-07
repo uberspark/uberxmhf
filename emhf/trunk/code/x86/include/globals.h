@@ -117,6 +117,12 @@ extern u32 _ap_cr3_value;
 extern u32 _ap_cr4_value;
 
 
+#if defined (__TEST_CPU_QUIESCE__)
+	//queisce test global variables
+	//quiesce cpu counter and corresponding lock
+	extern u32 g_quiesce_cpu_counter __attribute__(( section(".data") ));
+	extern u32 g_lock_quiesce_cpu_counter __attribute__(( section(".data") ));
+#endif
 
 
 

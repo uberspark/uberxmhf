@@ -124,8 +124,8 @@ static VCPU *_svm_getvcpu(void){
 //---NMI processing routine-----------------------------------------------------
 static void _svm_processNMI(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *r){
   if( (!vcpu->nmiinhvm) && (!g_svm_quiesce) ){
-    printf("\nCPU(0x%02x): Spurious NMI within hypervisor. halt!", vcpu->id);
-    HALT();
+    printf("\nCPU(0x%02x): warning, ignoring spurious NMI within hypervisor!", vcpu->id);
+    return;
   }
 
   if(g_svm_quiesce){
@@ -167,14 +167,20 @@ static void _svm_processNMI(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *r
 
 //---quiescing implementation---------------------------------------------------
 static void _svm_send_quiesce_signal(VCPU *vcpu, struct vmcb_struct *vmcb){
-  u32 *icr_low = (u32 *)(0xFEE00000 + 0x300);
-  u32 *icr_high = (u32 *)(0xFEE00000 + 0x310);
+  volatile u32 *icr_low = (u32 *)(0xFEE00000 + 0x300);
+  volatile u32 *icr_high = (u32 *)(0xFEE00000 + 0x310);
   u32 icr_high_value= 0xFFUL << 24;
   u32 prev_icr_high_value;
-    
+
+	//printf("\n%s: starting...", __FUNCTION__);    
   prev_icr_high_value = *icr_high;
+  //printf("\n%s: prev_icr_high_value=%08x", __FUNCTION__, prev_icr_high_value);
   
+  //printf("\n%s: sending ICR high...", __FUNCTION__);
   *icr_high = icr_high_value;    //send to all but self
+  //printf("\ndone.");
+
+  //printf("\n%s: sending ICR low...", __FUNCTION__);
   *icr_low = 0x000C0400UL;      //send NMI        
   
   //restore icr high

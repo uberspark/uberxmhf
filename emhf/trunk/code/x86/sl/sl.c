@@ -108,14 +108,13 @@ void runtime_setup_paging(u32 physaddr, u32 virtaddr, u32 totalsize){
         // 0xfed00000 contains Intel TXT config regs & TPM MMIO
         // ...but 0xfec00000 is the closest 2M-aligned addr
         // 0xfee00000 contains APIC base        
-      if(paddr == 0xfee00000 ||
-         paddr == 0xfec00000) {
+      if(paddr == 0xfee00000 || paddr == 0xfec00000) {
         newflags = flags | (u64)(_PAGE_PCD);
         printf("\nSL: updating flags for paddr 0x%08x", paddr);
       } else {
-		newflags = flags;
-	  }
-      xpdt[i] = pae_make_pde_big((u64)paddr, newflags);
+				newflags = flags;
+	  	}
+	    xpdt[i] = pae_make_pde_big((u64)paddr, newflags);
     }
   }
 
@@ -325,7 +324,6 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
         printf("\nsl_intergrity_check FAILURE");
 
 
-
 	//get a pointer to the runtime header
  	rpb=(RPB *)PAGE_SIZE_2M;	//runtime starts at offset 2M from sl base
   ASSERT(rpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
@@ -438,14 +436,22 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 	 	//setup runtime IDT
 		{
-			u32 *fptr, idtbase;
+			u32 *fptr, idtbase_virt, idtbase_rel;
 			idtentry_t *idtentry;
 			u32 i;
-			
+
+			printf("\nSL: setting up runtime IDT...");
 			fptr=(u32 *)((u32)rpb->XtVmmIdtFunctionPointers - __TARGET_BASE + PAGE_SIZE_2M);
-			idtbase= *(u32 *)(((u32)rpb->XtVmmIdt - __TARGET_BASE + PAGE_SIZE_2M) + 2);
+			idtbase_virt= *(u32 *)(((u32)rpb->XtVmmIdt - __TARGET_BASE + PAGE_SIZE_2M) + 2);
+			idtbase_rel= idtbase_virt - __TARGET_BASE + PAGE_SIZE_2M; 
+			printf("\n	fptr at virt=%08x, rel=%08x", (u32)rpb->XtVmmIdtFunctionPointers,
+					(u32)fptr);
+			printf("\n	idtbase at virt=%08x, rel=%08x", (u32)idtbase_virt,
+					(u32)idtbase_rel);
+
 			for(i=0; i < rpb->XtVmmIdtEntries; i++){
-				idtentry_t *idtentry=(idtentry_t *)((u32)idtbase+ (i*8));
+				idtentry_t *idtentry=(idtentry_t *)((u32)idtbase_rel+ (i*8));
+				//printf("\n	%u: idtentry=%08x, fptr=%08x", i, (u32)idtentry, fptr[i]);
 				idtentry->isrLow= (u16)fptr[i];
 				idtentry->isrHigh= (u16) ( (u32)fptr[i] >> 16 );
 				idtentry->isrSelector = __CS;

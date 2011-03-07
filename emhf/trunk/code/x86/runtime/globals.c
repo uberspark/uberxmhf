@@ -90,6 +90,13 @@ RPB *rpb __attribute__(( section(".data") ));
 u8 g_runtime_TSS[PAGE_SIZE_4K] __attribute__(( section(".data") ));
 
 
+#if defined (__TEST_CPU_QUIESCE__)
+	//queisce test global variables
+	//quiesce cpu counter and corresponding lock
+	u32 g_quiesce_cpu_counter __attribute__(( section(".data") )) =0;
+	u32 g_lock_quiesce_cpu_counter __attribute__(( section(".data") )) =1;
+#endif
+
 //------------------------------------------------------------------------------
 //SVM isolation layer specific runtime globals
 //these are global variables accessed across islayer_svm.c, islayersup_svm.S and
