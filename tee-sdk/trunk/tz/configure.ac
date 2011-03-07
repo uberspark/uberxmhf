@@ -1,7 +1,30 @@
-AC_INIT([tz], [0.1], [jnewsome@cmu.edu])
+AC_INIT([tee-sdk], [0.1], [jnewsome@cmu.edu])
+AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([foreign -Wall -Werror])
 AC_PROG_CC
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile src/Makefile include/Makefile])
+
+#svc_mk=$srcdir/../conf/svc.mk
+#AC_SUBST([SVC_LINK_SCRIPT_SRC = $(srcdir)/conf/svc.ld
+#AC_DEFUN([SVC_LINK_SCRIPT], [${pkgdatadir}/svc.ld])
+AC_SUBST([pkgdatadir], ['${datadir}/AC_PACKAGE_NAME'])
+AC_SUBST([SVC_LINK_SCRIPT], ["${pkgdatadir}/svc.ld"])
+AC_SUBST([SVC_CFLAGS], ['-fno-jump-tables -fno-stack-protector'])
+AC_SUBST([SVC_LDFLAGS], ['-T ${svc_link_script}'])
+# prevent gcc from compiling switch statements as jump tables. can
+# probably get rid of this in the future by somehow ensuring that the
+# jump table data is also included in the svc memory areas
+#SVC_CFLAGS=-fno-jump-tables
+# Not sure whether this is necessary. Carried over from an old makefile
+#SVC_CFLAGS+=-fno-stack-protector
+# use the designated linker script
+#svc_ldflags=-T $(SVC_LINK_SCRIPT)
+
+
+
+
+
+
+AC_CONFIG_FILES([Makefile src/Makefile include/Makefile tee-sdk-app.pc tee-sdk-svc.pc])
 AC_PROG_RANLIB
 AC_OUTPUT

@@ -1,3 +1,7 @@
-lib_LIBRARIES = libtz.a
+# make this library suitable for services to compile against
+AM_CFLAGS = $(SVC_CFLAGS)
+
+AM_CPPFLAGS = -I$(top_srcdir)/include 
+
+pkglib_LIBRARIES = libtz.a
 libtz_a_SOURCES = marshal.c tz.c ../include/tzmarshal.h ../include/tz.h ../include/list.h
-AM_CFLAGS = -I$(srcdir)/../include
