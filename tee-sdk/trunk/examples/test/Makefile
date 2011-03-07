@@ -9,6 +9,9 @@ TESTS=-DTEST_VMMCALL -DTEST_WITHOUTPARAM -DTEST_PARAM -DTEST_SEAL -DTEST_QUOTE
 CFLAGS=-g -Wall
 CPPFLAGS=$(TESTS)
 
+# Get compile and link flags to compile against tv's
+# app and svc back-ends. (the corresponding front-ends
+# will be pulled in implicitly)
 PKGCONFIG_DEPS=tee-sdk-svc-tv tee-sdk-app-tv
 PKG_CFLAGS=$(shell pkg-config --cflags $(PKGCONFIG_DEPS))
 PKG_LDFLAGS=$(shell pkg-config --libs --static $(PKGCONFIG_DEPS))

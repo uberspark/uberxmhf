@@ -27,7 +27,6 @@ Device
     to communicate with _services_. This library supports multiple
     _device_ back-ends, abstracting them in such a way that most _client_
     code can be oblivious to which back-end is in use.
-  * [svcapi](svcapi) Runtime services to be used by _services_.
   * [ports](ports) Support libraries for _services_. These have been
     ported to run in a trusted environment provided by some _device_.
     i.e., they do not make system calls, and all dependencies should
@@ -35,6 +34,77 @@ Device
     as part of this package.
   * [examples](examples) Examples and tests.
   
+# Build and installation
+
+You will need to build and install in [tz](tz):
+
+  * cd tz
+  * run 'autoreconf -i', unless there's already a configure script
+  * ./configure
+  * make
+  * make install
+
+By default, everything will install into /usr/local. You can of course
+change this by passing --prefix=$tzinstallprefix to the configure
+script.
+
+# Compiling applications
+
+The previous step installs several libraries. There is a front-end
+library for applications (tee-sdk-app), a front-end library for
+services (tee-sdk-svc), and for each device there are application and
+service back-end libraries (tee-sdk-app-devname and
+tee-sdk-svc-devname). 
+
+We use [pkgconfig] to simplify management of these libraries.  The
+compile time flags needed to link against a package can be obtained
+using `pkg-config --cflags packagename`. The linking flags can be
+obtained using `pkg-config --libs --static packagename`. Note that we
+only support static linking for now. If you installed [tz](tz) to a
+non-standard location $tzinstallprefix, you may need to set
+PKG_CONFIG_LIBDIR to include $tzinstallprefix/lib/pkgconfig.
+
+[pkgconfig]: http://pkg-config.freedesktop.org/wiki/
+
+An application using the tee-sdk to communicate with a service running
+in a trusted environment must link against at least one application
+back-end. It is also permissable to link against multiple back-ends; a
+single application can communicate with services running on multiple
+devices. 
+
+# Compiling services
+
+Currently, all services must meet the following requirements:
+
+ * The entry point must be in section ".scode". E.g., use
+
+~~~ {.c}
+   __attribute__ ((section (".scode")))
+~~~
+
+ * All code to be executed as part of the service must be
+   in either section ".scode" or ".stext". Code in ".scode"
+   is unreadable to the guest operating system, so code that
+   should be executable both by a service and an application
+   should be put in ".stext".
+ * All data accessed by the service must be in section ".sdata".
+
+You must compile and link using exactly one service back-end
+package. At the time of this writing, there is only one anyways:
+'tee-sdk-svc-tv'. pkgconfig will automatically pull in the service
+front-end 'tee-sdk-svc' as a dependency. Using the compile and link
+flags from those packages is important not only to link against the
+corresponding libraries; they also reference compiler options to
+eliminate code-constructs that are unsupported inside services, and
+linker options to ensure the necessary layout in the final binary.
+
+# Compiling and running the test example
+
+After installation in [tz](tz), you should be able to compile and run
+the test example in [examples/test](examples/test). Remember to set
+the PKG_CONFIG_LIBDIR environment variable if you installed to a
+non-system directory.
+
 # Loading and unloading services
 
 Services are loaded and unloaded through the TrustZone service manager:
@@ -109,9 +179,6 @@ pages from application code and data, and that you must be able to identify
 the relevant memory ranges. This is most easily done by putting service
 code in separate object files or in separate sections, e.g.
 
-~~~ {.c}
- __attribute__ ((section (".scode")))
-~~~
 
 A linker script must then be used to ensure page-alignment, and to
 identify the beginning and end of the relevant sections. See
@@ -138,14 +205,16 @@ void pal_entry(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buff
 
 ## Clean API for developing services
 
-libsvcapi is a start, but is just a quick rip from trustvisor's code.
-The api is incomplete and has some serious issues (such as not
-providing a way for the caller to determine how much memory to
-allocate). Use this for now. It will most likely be replaced by
-something cleaner, but it should be straight-forward to keep old code
-from breaking by providing a compatibility layer if necessary.
+We need to define a common clean interface for the runtime that
+a device provides to a service. This is currently defined by
+svcapi.h, which is just a quick rip from trustvisor's code.
 
-## Better support for standalone service binaries
+## Support for standalone service binaries
+
+For the moment, services and the applications that interact with them
+are compiled into the same binary. Support for standalone service
+binaries will help decouple these. In the first iteration, these will
+probably have to be statically compiled position-independent binaries.
 
 The current API for loading services is trustvisor-specific, and
 requires that the service (PAL) and the application that invokes it
@@ -154,11 +223,13 @@ binary format for services, so that they may be compiled separately
 from the applications that use them. Ideally they will also be at least
 source-compatible with alternative devices; perhaps even binary-compatible.
 
-## Better build management
+## User-space device
 
-There are a number of interdependent libraries included here, each
-with their own ad-hoc configuration and build system. We should look
-into cleaning this up using e.g., autotools and libtool.
+It should be fairly straightforward to create a device that runs a
+service in user-space, while emulating both the functionality and
+limitations of a trusted environment. This would help a lot with
+debugging. A clean way to simulate this would be to fork a new process
+to run the service code, passing data through shared mmap regions.
 
 # Other resources
 
