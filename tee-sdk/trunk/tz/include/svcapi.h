@@ -33,6 +33,10 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#ifndef SVCAPI_H
+#define SVCAPI_H
+
+#include <stdint.h>
 #include <stdlib.h>
 
 /* typedef void (*svc_fn_t)(uint32_t uiCommand, */
@@ -86,3 +90,4 @@ int scode_quote(uint8_t *nonce,
                 uint32_t *tpmsel,
                 uint8_t *out,
                 size_t *out_len);
+#endif

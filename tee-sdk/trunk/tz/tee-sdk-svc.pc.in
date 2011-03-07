@@ -11,4 +11,4 @@ Description: library for interacting with tz services
 Requires:
 Version: @PACKAGE_VERSION@
 Libs: @SVC_LDFLAGS@
-Cflags: -I${includedir}
+Cflags: -I${includedir} @SVC_CFLAGS@

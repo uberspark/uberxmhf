@@ -36,7 +36,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <marshal.h>
+#include <tee-sdk/tzmarshal.h>
 
 typedef enum {
   PAL_WITHOUTPARAM,

@@ -42,11 +42,9 @@
 #include  <errno.h>
 #include  <string.h>
 
-#include <tz.h>
-#include <marshal.h>
-
-#include <tv.h>
-#include <scode.h>
+#include <tee-sdk/tv.h>
+#include <tee-sdk/tz.h>
+#include <tee-sdk/tzmarshal.h>
 
 /* int test_marshal() */
 /* { */

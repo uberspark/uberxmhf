@@ -36,6 +36,8 @@
 #ifndef TZMARSHAL_H
 #define TZMARSHAL_H
 
+#include "tz.h"
+
 typedef enum tzi_encoded_type_t {
   TZI_ENCODED_UINT32,
   TZI_ENCODED_ARRAY,
