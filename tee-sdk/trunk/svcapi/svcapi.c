@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-__attribute__ ((section (".scode_util")))
+__attribute__ ((section (".stext")))
 int scode_seal(uint8_t *pcrAtRelease_addr,
                void *in,
                size_t in_len,
@@ -21,7 +21,7 @@ int scode_seal(uint8_t *pcrAtRelease_addr,
   return ret;
 }
 
-__attribute__ ((section (".scode_util")))
+__attribute__ ((section (".stext")))
 int scode_unseal(void *in,
                  size_t in_len,
                  void *out,
@@ -38,7 +38,7 @@ int scode_unseal(void *in,
   return ret;
 }
 
-__attribute__ ((section (".scode_util")))
+__attribute__ ((section (".stext")))
 int scode_quote(uint8_t *nonce,
                 uint32_t *tpmsel,
                 uint8_t *out,

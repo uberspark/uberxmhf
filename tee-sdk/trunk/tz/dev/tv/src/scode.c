@@ -33,6 +33,8 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#include "sections.h"
+
 #include "scode.h"
 
 #include <assert.h>
@@ -191,8 +193,6 @@ void scode_sections_info_add(struct scode_sections_info *scode_info,
 
 /* FIXME- allocates memory. how to make sure it gets freed? */
 void scode_sections_info_init(struct scode_sections_info *scode_info,
-                              void *scode, size_t scode_len,
-                              void *sdata, size_t sdata_len,
                               size_t param_sz,
                               size_t stack_sz)
 {
@@ -202,15 +202,20 @@ void scode_sections_info_init(struct scode_sections_info *scode_info,
 
   scode_info->section_num = 0;
 
-  /* add code sections */
-  scode_sections_info_add(scode_info, SCODE_SECTION_TYPE_SCODE, scode, scode_len);
+  /* add scode section */
+  scode_sections_info_add(scode_info, SCODE_SECTION_TYPE_SCODE, &__scode_start,
+                          scode_ptr_diff(&__scode_end, &__scode_start));
 
-  /* FIXME- make util section optional? */
-  scode_sections_info_add(scode_info, SCODE_SECTION_TYPE_STEXT, &__scode_util_start,
-                          scode_ptr_diff(&__scode_util_end, &__scode_util_start));
+  /* add stext section */
+  if (&__stext_end != &__stext_start) {
+    scode_sections_info_add(scode_info, SCODE_SECTION_TYPE_STEXT, &__stext_start,
+                            scode_ptr_diff(&__stext_end, &__stext_start));
+  }
 
-  if (sdata != NULL) {
-    scode_sections_info_add(scode_info, SCODE_SECTION_TYPE_SDATA, sdata, sdata_len);
+  /* add sdata section */
+  if (&__sdata_end != &__sdata_start) {
+    scode_sections_info_add(scode_info, SCODE_SECTION_TYPE_SDATA, &__sdata_start,
+                            scode_ptr_diff(&__sdata_end, &__sdata_start));
   }
 
   /* allocate and add scratch memory areas */

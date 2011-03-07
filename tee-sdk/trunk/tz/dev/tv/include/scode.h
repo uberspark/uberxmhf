@@ -39,9 +39,6 @@
 #include <stdint.h>
 #include <stddef.h>
 
-/* defined for scode sections info */
-extern unsigned int __scode_util_start, __scode_util_end;
-
 /* FIXME: copied from paging.h in trustvisor. should use that directly */
 #define PAGE_SIZE 0x1000
 #define PAGE_SIZE_4K (1UL << 12)
@@ -114,8 +111,6 @@ size_t scode_ptr_diff(void *end, void *start);
  * for the parameters and stack.
  */
 void scode_sections_info_init(struct scode_sections_info *scode_info,
-                              void *scode, size_t scode_len,
-                              void *sdata, size_t sdata_len,
                               size_t param_sz,
                               size_t stack_sz);
 

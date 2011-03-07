@@ -55,7 +55,7 @@
    it's available to PALs.
    XXX better solution?
 */
-__attribute__ ((section (".scode_util")))
+__attribute__ ((section (".stext")))
 static void *memcpy(void *dest, const void *src, size_t n)
 {
   size_t i;
@@ -73,7 +73,7 @@ static void *memcpy(void *dest, const void *src, size_t n)
   return dest;
 }
 
-__attribute__ ((section (".scode_util")))
+__attribute__ ((section (".stext")))
 void
 TZIEncodeUint32(INOUT tzi_encode_buffer_t* psBuffer,
                 uint32_t uiData)
@@ -96,7 +96,7 @@ TZIEncodeUint32(INOUT tzi_encode_buffer_t* psBuffer,
   psBuffer->uiOffset += sz;
 }
 
-__attribute__ ((section (".scode_util")))
+__attribute__ ((section (".stext")))
 uint32_t
 TZIDecodeUint32(INOUT tzi_encode_buffer_t* psBuffer)
 {
@@ -126,7 +126,7 @@ TZIDecodeUint32(INOUT tzi_encode_buffer_t* psBuffer)
 }
 
 
-__attribute__ ((section (".scode_util")))
+__attribute__ ((section (".stext")))
 static void*
 _TZIEncodeArraySpace(INOUT tzi_encode_buffer_t* psBuffer,
                      uint32_t uiLength)
@@ -199,7 +199,7 @@ TZIEncodeMemoryReference(INOUT tzi_encode_buffer_t* psBuffer,
   return encodeOffset;
 }
 
-__attribute__ ((section (".scode_util")))
+__attribute__ ((section (".stext")))
 void*
 TZIDecodeMemoryReference(INOUT tzi_encode_buffer_t* psBuffer,
                          OUT uint32_t* puiLength)
@@ -232,7 +232,7 @@ TZIDecodeMemoryReference(INOUT tzi_encode_buffer_t* psBuffer,
 
 
 
-__attribute__ ((section (".scode_util")))
+__attribute__ ((section (".stext")))
 void *
 TZIDecodeArraySpace(INOUT tzi_encode_buffer_t* psBuffer,
                     OUT uint32_t* puiLength)
@@ -284,7 +284,7 @@ TZIDecodeArraySpace(INOUT tzi_encode_buffer_t* psBuffer,
   return &((uint8_t*)(psBuffer->pBuf))[arrayStartOffset];
 }
 
-__attribute__ ((section (".scode_util")))
+__attribute__ ((section (".stext")))
 void*
 TZIEncodeArraySpace(INOUT tzi_encode_buffer_t* psBuffer,
                     uint32_t uiLength)
@@ -304,7 +304,7 @@ TZIEncodeArraySpace(INOUT tzi_encode_buffer_t* psBuffer,
   return m;
 }
 
-__attribute__ ((section (".scode_util")))
+__attribute__ ((section (".stext")))
 void
 TZIEncodeArray(INOUT tzi_encode_buffer_t* psBuffer,
                IN void const * pkArray,
@@ -316,14 +316,14 @@ TZIEncodeArray(INOUT tzi_encode_buffer_t* psBuffer,
 
 }
 
-__attribute__ ((section (".scode_util")))
+__attribute__ ((section (".stext")))
 tz_return_t
 TZIDecodeGetError(INOUT tzi_encode_buffer_t* psBuffer)
 {
   return psBuffer->uiRetVal;
 }
 
-__attribute__ ((section (".scode_util")))
+__attribute__ ((section (".stext")))
 void
 TZIEncodeToDecode(INOUT tzi_encode_buffer_t* psBuffer)
 {
@@ -333,7 +333,7 @@ TZIEncodeToDecode(INOUT tzi_encode_buffer_t* psBuffer)
   psBuffer->uiOffset = 0;
 }
 
-__attribute__ ((section (".scode_util")))
+__attribute__ ((section (".stext")))
 void
 TZIEncodeBufInit(INOUT tzi_encode_buffer_t* psBuffer, uint32_t uiLength)
 {
@@ -345,7 +345,7 @@ TZIEncodeBufInit(INOUT tzi_encode_buffer_t* psBuffer, uint32_t uiLength)
   };
 }
 
-__attribute__ ((section (".scode_util")))
+__attribute__ ((section (".stext")))
 void
 TZIEncodeBufReInit(INOUT tzi_encode_buffer_t* psBuffer)
 {

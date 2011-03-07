@@ -37,7 +37,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "pals.h"
-#include "layout.h"
 //#include  "config.h"
 #include  <sys/mman.h>
 #include  <errno.h>
@@ -382,8 +381,6 @@ int main(void)
 
     /* prepare pal descriptor */
     scode_sections_info_init(&scode_info,
-                             &__scode_start, scode_ptr_diff(&__scode_end, &__scode_start),
-                             NULL, 0,
                              PAGE_SIZE, PAGE_SIZE);
     printf("scode sections:\n");
     scode_sections_info_print(&scode_info);

@@ -11,16 +11,26 @@ SECTIONS
     . = ALIGN(0x1000);
     __scode_end = .;
     ___scode_end = .;
-  }
-
-  .SCODE_UTIL ALIGN(0x1000):
-  {
-    __scode_util_start = .;
-    ___scode_util_start = .; 
-    *(.scode_util)
-    . = ALIGN(0x1000);
-    __scode_util_end = .;
-    ___scode_util_end = .;
   } =0x90909090 /* fill padding space with no-ops */
+
+  .STEXT ALIGN(0x1000):
+  {
+    __stext_start = .;
+    ___stext_start = .; 
+    *(.stext)
+    . = ALIGN(0x1000);
+    __stext_end = .;
+    ___stext_end = .;
+  } =0x90909090 /* fill padding space with no-ops */
+
+  .SDATA ALIGN(0x1000):
+  {
+    __sdata_start = .;
+    ___sdata_start = .; 
+    *(.sdata)
+    . = ALIGN(0x1000);
+    __sdata_end = .;
+    ___sdata_end = .;
+  } =0x00000000 /* fill padding space with zeros */
 }
 INSERT AFTER .text;

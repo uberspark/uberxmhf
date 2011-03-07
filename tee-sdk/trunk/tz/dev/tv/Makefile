@@ -11,7 +11,7 @@ dev.o: $(OBJS)
 	$(LD) -r -o dev.o $(OBJS)
 
 %.o:%.c $(I_SOURCES)
-	$(CC) -c $(CFLAGS) -I../../include -Iinclude/ -o $@ $<
+	$(CC) -c $(CFLAGS) -I../../include -Iinclude/ -I$(REL)/../svcapi -o $@ $<
 
 clean:
 	$(RM) $(OBJS) dev.o
