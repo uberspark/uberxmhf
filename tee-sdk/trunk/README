@@ -38,11 +38,13 @@ Device
 
 You will need to build and install in [tz](tz):
 
-  * cd tz
-  * run 'autoreconf -i', unless there's already a configure script
-  * ./configure
-  * make
-  * make install
+~~~ {.sh}
+cd tz
+autoreconf -i # Generates configure script
+./configure
+make
+sudo make install
+~~~
 
 By default, everything will install into /usr/local. You can of course
 change this by passing --prefix=$tzinstallprefix to the configure
