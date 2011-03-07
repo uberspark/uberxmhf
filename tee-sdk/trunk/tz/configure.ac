@@ -4,9 +4,10 @@ AM_INIT_AUTOMAKE([foreign -Wall -Werror])
 AC_PROG_CC
 AC_CONFIG_HEADERS([config.h])
 
+AC_SUBST([CFLAGS], ['-g -O0'])
+
 # install in-place by default
 #AC_PREFIX_DEFAULT([${top_srcdir}/_install])
-
 #svc_mk=$srcdir/../conf/svc.mk
 #AC_SUBST([SVC_LINK_SCRIPT_SRC = $(srcdir)/conf/svc.ld
 #AC_DEFUN([SVC_LINK_SCRIPT], [${pkgdatadir}/svc.ld])
