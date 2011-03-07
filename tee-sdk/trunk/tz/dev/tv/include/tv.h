@@ -48,12 +48,6 @@
 #define PAGE_ALIGN_UP4K(size)   (((size) + PAGE_SIZE_4K - 1) & ~(PAGE_SIZE_4K - 1))
 #define PAGE_ALIGN_4K(size)     ((size) & ~(PAGE_SIZE_4K - 1))
 
-#ifndef IS_VMX
-#define VMCALL "vmmcall\n\t"
-#else
-#define VMCALL "vmcall\n\t"
-#endif
-
 typedef void (*pal_fn_t)(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv);
 
 typedef struct {

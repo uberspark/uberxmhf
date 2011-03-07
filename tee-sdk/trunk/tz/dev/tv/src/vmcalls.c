@@ -39,6 +39,73 @@
 
 #include <stdint.h>
 
+/* XXX ripped from emhf's processor.h. use it directly? */
+
+#define CPU_VENDOR_INTEL 	0xAB
+#define CPU_VENDOR_AMD 		0xCD
+#define CPU_VENDOR_UNKNOWN      0x00
+
+#define AMD_STRING_DWORD1 0x68747541
+#define AMD_STRING_DWORD2 0x69746E65
+#define AMD_STRING_DWORD3 0x444D4163
+
+#define INTEL_STRING_DWORD1	0x756E6547
+#define INTEL_STRING_DWORD2	0x49656E69
+#define INTEL_STRING_DWORD3	0x6C65746E	
+#define cpuid(op, eax, ebx, ecx, edx)		\
+({						\
+  __asm__ __volatile__("cpuid"				\
+          :"=a"(*(eax)), "=b"(*(ebx)), "=c"(*(ecx)), "=d"(*(edx))	\
+          :"0"(op), "2" (0));			\
+})
+
+__attribute__ ((section (".stext")))
+static uint32_t get_cpu_vendor(void) {
+  uint32_t dummy;
+  uint32_t vendor_dword1, vendor_dword2, vendor_dword3;
+    
+  cpuid(0, &dummy, &vendor_dword1, &vendor_dword3, &vendor_dword2);
+  if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
+     && vendor_dword3 == AMD_STRING_DWORD3)
+    return CPU_VENDOR_AMD;
+  else if(vendor_dword1 == INTEL_STRING_DWORD1 && vendor_dword2 == INTEL_STRING_DWORD2
+          && vendor_dword3 == INTEL_STRING_DWORD3)
+    return CPU_VENDOR_INTEL;
+  else
+    return CPU_VENDOR_UNKNOWN;
+
+  return 0; /* never reached */
+}
+/* XXX end processor.h */
+
+__attribute__ ((section (".stext")))
+static int vmcall(uint32_t eax, uint32_t ecx, uint32_t edx,
+                  uint32_t esi, uint32_t edi)
+{
+  /* FIXME - should use a static bool to cache result.
+     However, this is tricky since we need to store in different
+     locations depending if we're executing inside a pal or not. */
+  switch(get_cpu_vendor()) {
+  case CPU_VENDOR_INTEL:
+    __asm__ __volatile__(
+                         "vmcall\n\t"
+                         :"=a"(eax)
+                         : "a"(eax), "c"(ecx), "d"(edx),
+                           "S"(esi), "D"(edi));
+    break;
+  case CPU_VENDOR_AMD:
+    __asm__ __volatile__(
+                         "vmmcall\n\t"
+                         :"=a"(eax)
+                         : "a"(eax), "c"(ecx), "d"(edx),
+                           "S"(esi), "D"(edi));
+    break;
+  default:
+    eax = -1;
+  }
+  return eax;
+}
+
 #ifndef IS_WINDOWS
 #include  <sys/mman.h>
 #include <sys/resource.h>
@@ -179,15 +246,14 @@ int scode_seal(uint8_t *pcrAtRelease_addr,
                void *out,
                size_t *out_len)
 {
-  int ret;
   unsigned int inbuf1[2]= {(unsigned int)in, (unsigned int)in_len};
   unsigned int outbuf1[2]= {(unsigned int)out, (unsigned int)out_len};
 
-  __asm__ __volatile__(
-                       VMCALL
-                       :"=a"(ret)
-                       : "a"(VMM_SEAL), "c"((unsigned int)inbuf1), "d"(pcrAtRelease_addr), "S"((unsigned int)outbuf1));
-  return ret;
+  return vmcall(VMM_SEAL,
+                (uint32_t)inbuf1,
+                (uint32_t)pcrAtRelease_addr,
+                (uint32_t)outbuf1,
+                0);
 }
 
 __attribute__ ((section (".stext")))
@@ -200,11 +266,11 @@ int scode_unseal(void *in,
   unsigned int inbuf2[2]= {(unsigned int)in, (unsigned int)in_len};
   unsigned int outbuf2[2]= {(unsigned int)out, (unsigned int)out_len};
 
-  __asm__ __volatile__(
-                       VMCALL
-                       :"=a"(ret)
-                       : "a"(VMM_UNSEAL), "c"((unsigned int)inbuf2), "d"((unsigned int)outbuf2));
-  return ret;
+  return vmcall(VMM_UNSEAL,
+                (uint32_t)inbuf2,
+                (uint32_t)outbuf2,
+                0,
+                0);
 }
 
 __attribute__ ((section (".stext")))
@@ -216,11 +282,11 @@ int scode_quote(uint8_t *nonce,
   int ret;
   unsigned int outbuf[2]= {(unsigned int)out, (unsigned int)out_len};
 
-  __asm__ __volatile__(
-                       VMCALL
-                       :"=a"(ret)
-                       : "a"(VMM_QUOTE), "S"(nonce), "c"(tpmsel), "d"((unsigned int)outbuf));
-  return ret;
+  return vmcall(VMM_QUOTE,
+                (uint32_t)tpmsel,
+                (uint32_t)outbuf,
+                (uint32_t)nonce,
+                0);
 }
 
 int scode_register(const struct scode_sections_info *pageinfo,
@@ -230,31 +296,25 @@ int scode_register(const struct scode_sections_info *pageinfo,
   int ret;
   lock_scode_pages(pageinfo);
 
-  __asm__ __volatile__(
-                       VMCALL
-                       :"=a"(ret)
-                       : "a"(VMM_REG), "c"((unsigned int)pageinfo), "S"((unsigned int)params), "D"((unsigned int)entry));
-
-  return ret;
+  return vmcall(VMM_REG,
+                (uint32_t)pageinfo,
+                0,
+                (uint32_t)params,
+                (uint32_t)entry);
 }
 
 int scode_unregister(void *entry)
 {
   int ret;
-  __asm__ __volatile__(
-                       VMCALL
-                       :"=a"(ret)
-                       : "a"(VMM_UNREG), "c"(entry));
-  return ret;
+  return vmcall(VMM_UNREG,
+                (uint32_t)entry,
+                0, 0, 0);
 }
 
 int scode_test(void)
 {
   int ret;
-  __asm__ __volatile__(
-                       VMCALL
-                       :"=a"(ret)
-                       : "a"(VMM_TEST));
-  return ret;
+  return vmcall(VMM_TEST,
+                0, 0, 0, 0);
 }
 
