@@ -27,8 +27,6 @@ I_SOURCES = $(wildcard *.h)
 all: test
 
 test:$(OBJS)
-	@echo $(PKG_CFLAGS)
-	@echo $(PKG_LDFLAGS)
 	$(CC) -o $@ $(OBJS) $(LDFLAGS) 
 
 %.o:%.c $(I_SOURCES)
