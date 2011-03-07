@@ -54,3 +54,38 @@ int scode_quote(uint8_t *nonce,
   return ret;
 }
 
+int scode_register(const struct scode_sections_info *pageinfo,
+                   const struct scode_params_info *params,
+                   const void *entry)
+{
+  int ret;
+  lock_scode_pages(pageinfo);
+
+  __asm__ __volatile__(
+                       VMCALL
+                       :"=a"(ret)
+                       : "a"(VMM_REG), "c"((unsigned int)pageinfo), "S"((unsigned int)params), "D"((unsigned int)entry));
+
+  return ret;
+}
+
+int scode_unregister(void *entry)
+{
+  int ret;
+  __asm__ __volatile__(
+                       VMCALL
+                       :"=a"(ret)
+                       : "a"(VMM_UNREG), "c"(entry));
+  return ret;
+}
+
+int scode_test(void)
+{
+  int ret;
+  __asm__ __volatile__(
+                       VMCALL
+                       :"=a"(ret)
+                       : "a"(VMM_TEST));
+  return ret;
+}
+

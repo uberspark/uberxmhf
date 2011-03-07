@@ -1,3 +1,8 @@
+/* typedef void (*svc_fn_t)(uint32_t uiCommand, */
+/*                          tzi_encode_buffer_t *psInBuf,  */
+/*                          tzi_encode_buffer_t *psOutBuf, */
+/*                          tz_return_t *puiRv); */
+
 /* Seal data under a pcr value.
  * pcrAtRelease_addr is the required value of pcr #FIXME the
  *   data to be unsealed.

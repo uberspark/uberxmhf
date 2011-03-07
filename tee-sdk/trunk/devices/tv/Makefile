@@ -1,4 +1,4 @@
-include Makefile.inc
+include svcmakefile.inc
 
 # test if we're on a vmx platform.
 # FIXME this is brittle, and assumes that the target
@@ -8,23 +8,21 @@ include Makefile.inc
 VMXTEST=$(shell egrep -q '^flags.*\bvmx\b' /proc/cpuinfo ; echo $$?)
 ifeq (0, $(VMXTEST))
   IS_VMX=-DIS_VMX
-  $(warning "is vmx")
 else ifeq (1, $(VMXTEST))
   IS_VMX=
-  $(warning "is not vmx")
 else
   $(error "couldn't determine if platform is vmx")
 endif
 
-INCLUDES=-I../tz/dev/tv/include/
+INCLUDES=-I ./common/ -I ../
 CFLAGS=$(IS_VMX) $(SVC_CFLAGS) -g $(INCLUDES)
 
-OBJS=svcapi.o
+OBJS=common/vmcalls.o
 
 all: libsvcapi.a
 
 libsvcapi.a: $(OBJS)
-	ar rcs $@ $<
+	$(AR) rcs $@ $<
 
 clean:
 	$(RM) libsvcapi.a $(OBJS)

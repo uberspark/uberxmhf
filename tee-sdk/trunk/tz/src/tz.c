@@ -34,7 +34,7 @@
  */
 
 #include <tz.h>
-#include <marshal.h>
+#include <tzmarshal.h>
 #include <list.h>
 
 #include <assert.h>

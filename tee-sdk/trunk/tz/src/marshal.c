@@ -34,7 +34,7 @@
  */
 
 #include <tz.h>
-#include <marshal.h>
+#include <tzmarshal.h>
 
 #define BUFFER_HEAD(psB) ((tzi_encoded_t*)((uintptr_t)(psB)->pBuf + (psB)->uiOffset))
 
