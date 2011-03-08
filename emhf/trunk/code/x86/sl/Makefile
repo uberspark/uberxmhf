@@ -29,10 +29,10 @@ endif
 # targets
 .PHONY: all
 all: $(OBJECTS)
-	$(LD) --oformat=pe-i386 --image-base=0x00000000 -T sl.lds.S -o sl.exe $(OBJECTS) $(OBJECTS_PRECOMPILED)
+	$(LD) -T sl.lds.S -o sl.exe $(OBJECTS) $(OBJECTS_PRECOMPILED)
 	$(CP) sl.exe sl_syms.exe
 	$(STRIP) -s sl.exe
-	$(OBJCOPY) --input-format=pe-i386 --output-format=binary sl.exe sl.bin
+	$(OBJCOPY) --output-format=binary sl.exe sl.bin
 
 %.o: %.S $(I_SOURCES) Makefile ../Makefile	../../../Makefile
 	$(CC) -c $(ASFLAGS) -o $@ $<

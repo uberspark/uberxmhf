@@ -33,7 +33,6 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-OUTPUT_FORMAT("pe-i386")
 OUTPUT_ARCH(i386)
 
 ENTRY(_sl_start)
@@ -65,12 +64,14 @@ SECTIONS
 
   .text : {
     *(.text)
-    . = ALIGN(4096);    
   } >low
 
   .data : {
     *(.data)
-    . = ALIGN(4096);    
+  } >low
+
+  .rodata : {
+    *(.rodata)
   } >low
 
   .bss : {
@@ -87,7 +88,9 @@ SECTIONS
    * SL *MUST* sanitize any data here prior to use!
    */
   .sl_untrusted_params : {
-    *(.sl_params)
+    *(.sl_untrusted_params)
+    *(.comment)
     . = ALIGN(0x200000);
   } >high
+
 }

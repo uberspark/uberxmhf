@@ -33,7 +33,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-OUTPUT_FORMAT("pe-i386")
+/*OUTPUT_FORMAT("pe-i386")*/
 OUTPUT_ARCH(i386)
 
 ENTRY(init_start)
@@ -53,6 +53,8 @@ SECTIONS
 
   .data : {
     *(.data)
+    *(.rodata)
+    *(.bss)
  		. = ALIGN(4096);    
   } =0x9090 
   
@@ -60,5 +62,9 @@ SECTIONS
 		*(.stack)
  		. = ALIGN(4096);    
 	} =0x9090
+
+        /DISCARD/ : {
+                *(.comment)
+        }
 
 }

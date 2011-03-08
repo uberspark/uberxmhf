@@ -32,21 +32,21 @@ I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 # targets
 .PHONY: all
 all: $(OBJECTS) 
-	$(LD) --oformat=pe-i386 --image-base=0xC0000000 -T runtime.lds.S -o runtime.exe $(OBJECTS) $(OBJECTS_PRECOMPILED)
+	$(LD) -T runtime.lds.S -o runtime.exe $(OBJECTS) $(OBJECTS_PRECOMPILED)
 	$(CP) runtime.exe runtime_syms.exe
 	$(STRIP) -s runtime.exe
-	$(OBJCOPY) --input-format=pe-i386 --output-format=binary runtime.exe runtime.bin
+	$(OBJCOPY) --output-format=binary runtime.exe runtime.bin
 
 %.o: %.S $(I_SOURCES) Makefile ../Makefile ../../../Makefile
 	$(CC) -c $(ASFLAGS) -o $@ $<
 %.o: %.c $(I_SOURCES) Makefile ../Makefile ../../../Makefile 
 	$(CC) -c $(CFLAGS) -o $@ $<
-    
+
 .PHONY: clean 
 clean: 
 	$(RM) -rf *.o
 	$(RM) -rf *.exe
 	$(RM) -rf *.bin
 	$(RM) -rf *.gz
-	
-  
+
+

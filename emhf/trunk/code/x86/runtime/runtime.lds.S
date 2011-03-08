@@ -33,7 +33,6 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-OUTPUT_FORMAT("pe-i386")
 OUTPUT_ARCH(i386)
 
 ENTRY(cstartup)
