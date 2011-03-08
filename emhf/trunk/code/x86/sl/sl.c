@@ -147,7 +147,7 @@ bool sl_integrity_check(u8* runtime_base_addr, size_t runtime_len) {
 
     print_hex("SL: Golden Runtime SHA-1: ", g_sl_gold.sha_runtime, SHA_DIGEST_LENGTH);
 
-    printf("\nSL: CR0 %08x, CD bit %d", read_cr0(), read_cr0() & CR0_CD);
+    printf("\nSL: CR0 %08lx, CD bit %ld", read_cr0(), read_cr0() & CR0_CD);
     hashandprint("SL: Computed Runtime SHA-1: ",
                  runtime_base_addr, runtime_len);
     

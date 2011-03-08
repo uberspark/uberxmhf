@@ -671,7 +671,7 @@ u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
   printf("\n%s: total DRHDs detected= %u units", __FUNCTION__, vtd_num_drhd);
 
 	//be a little verbose about what we found
-  printf("\n%s: DMAR Devices:");
+  printf("\n%s: DMAR Devices:", __FUNCTION__);
   for(i=0; i < vtd_num_drhd; i++){
     VTD_CAP_REG cap;    
     VTD_ECAP_REG ecap;
