@@ -266,6 +266,19 @@ typedef struct _vcpu {
 
 } __attribute__((packed)) VCPU;
 
+static u64 VCPU_gcr3(VCPU *vcpu)
+{
+  u64 gcr3 = 0;
+  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+    gcr3 = vcpu->vmcs.guest_CR3;
+  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+    gcr3 = ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->cr3;
+  } else {
+    /* assert false? */
+  }
+  return gcr3;
+}
+
 #define SIZE_STRUCT_VCPU    (sizeof(struct _vcpu))
 
 
