@@ -81,7 +81,7 @@
    relocation base for our SL is always 0.  The SL must be position-
    independent. */
 
-.section .sl_header
+.section .sl_header, "aw"
     .global _mle_page_table_start
     _mle_page_table_start:
 
