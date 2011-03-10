@@ -38,6 +38,12 @@ OUTPUT_ARCH(i386)
 
 ENTRY(init_start)
 
+MEMORY
+{
+  all (rwxai) : ORIGIN = 0x1E00000, LENGTH = 100M /* length is arbitrary */
+  unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
+}
+
 SECTIONS
 {
 	. = 0x1E00000;
@@ -66,5 +72,15 @@ SECTIONS
         /DISCARD/ : {
                 *(.comment)
         }
+
+  /* this is to cause the link to fail if there is
+   * anything we didn't explicitly place.
+   * when this does cause link to fail, temporarily comment
+   * this part out to see what sections end up in the output
+   * which are not handled above, and handle them.
+   */
+  .unaccounted : {
+    *(*)
+  } >unaccounted
 
 }

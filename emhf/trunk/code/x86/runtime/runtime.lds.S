@@ -37,6 +37,12 @@ OUTPUT_ARCH(i386)
 
 ENTRY(cstartup)
 
+MEMORY
+{
+  all (rwxai) : ORIGIN = 0xC0000000, LENGTH = 100M /* length is arbitrary */
+  unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
+}
+
 SECTIONS
 {
 	. = 0xC0000000;
@@ -49,6 +55,9 @@ SECTIONS
 
   .data : {
     *(.data)
+    *(.rodata)
+    *(.comment)
+    *(.bss)
  		. = ALIGN(4096);    
   } =0x9090 
 
@@ -61,5 +70,15 @@ SECTIONS
 		*(.stack)
  		. = ALIGN(4096);    
 	} =0x9090
+
+  /* this is to cause the link to fail if there is
+   * anything we didn't explicitly place.
+   * when this does cause link to fail, temporarily comment
+   * this part out to see what sections end up in the output
+   * which are not handled above, and handle them.
+   */
+  .unaccounted : {
+    *(*)
+  } >unaccounted
 
 }
