@@ -1189,7 +1189,7 @@ u32 vmx_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
 	u64 gcr3 = (u64)linux_vmcb->guest_CR3;
 	u32 rip = (u32)linux_vmcb->guest_RIP;
 
-	printf("[TV] CPU(%02x): nested page fault!(rip %#x, gcr3 %#llx, gpaddr %#x, errorcode %x)\n", vcpu->id, rip, gcr3, gpaddr, errorcode);
+	printf("[TV] CPU(%02x): nested page fault!(rip %#x, gcr3 %#llx, gpaddr %#x, errorcode %llx)\n", vcpu->id, rip, gcr3, gpaddr, errorcode);
 
 	index = scode_in_list(gcr3, rip);
 	if ((*curr == -1) && (index >= 0)) {
@@ -1722,7 +1722,7 @@ u32 svm_scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size)
 			svm_nested_set_prot(vcpu, pte_pages[i], type);
 		}else
 		{
-			printf("[TV] Set scode page permission error! pfn %#x have already been registered!\n");
+                  printf("[TV] Set scode page permission error! pfn %#x have already been registered!\n", pfn);
 			break;
 		}
 	}

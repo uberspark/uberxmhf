@@ -350,7 +350,7 @@ void svm_nested_set_prot(VCPU * vcpu, u64 gpaddr, int type)
 		HALT();
 	}
 
-	printf("[TV]   set prot: pfn %#x, pte old %#llx, pte new %#llx\n",pfn, oldentry, pt[pfn]);
+	printf("[TV]   set prot: pfn %#llx, pte old %#llx, pte new %#llx\n",pfn, oldentry, pt[pfn]);
 
 	/* flush TLB */
 	linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
