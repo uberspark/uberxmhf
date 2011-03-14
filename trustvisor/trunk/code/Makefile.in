@@ -29,13 +29,13 @@
     export MP_VERSION := n
     #where you want loader and runtime binaries to go, defaults to current dir.
 	#export INSTALLDIR = $(CURDIR)/dist
-    export INSTALLDIR = /home/zongweiz/export
+    export INSTALLDIR = @INSTALLDIR@
     #misc. configuaration w.r.t serial debugging and NPT/EPT support
 	export NESTED_PAGING := y
-    export DEBUG_SERIAL := y
-    #export DEBUG_SERIAL_PORT := 0x6080
-    export DEBUG_SERIAL_PORT := 0x3f8
-	export DEBUG_VGA	:= n
+    export DEBUG_SERIAL := @DEBUG_SERIAL@
+    export DEBUG_SERIAL_PORT := @DEBUG_SERIAL_PORT@
+
+	export DEBUG_VGA	:= @DEBUG_VGA@
 
 #-----configuration that typically need not be touched
   #ifeq ($(TARGET_HWPLATFORM), svm)
@@ -57,20 +57,20 @@
   export EMHFAPP = y
 
 #-----tools
-  export CC = gcc
-  export AS = as
-  export LD = ld
-  export OBJDUMP = objdump
-  export OBJCOPY = objcopy
-  export STRIP = strip
+  export CC = @CC@
+  export AS = @AS@
+  export LD = @LD@
+  export OBJDUMP = @OBJDUMP@
+  export OBJCOPY = @OBJCOPY@
+  export STRIP = @STRIP@
   export O_CC = /bin/gcc
-  export RM = rm 
-  export CP = cp
+  export RM = @RM@
+  export CP = @CP@
   export O_LD = /bin/ld
-  export TAR = tar
-  export SED = sed
-  export MKDIR = mkdir
-  export CAT = cat
+  export TAR = @TAR@
+  export SED = @SED@
+  export MKDIR = @MKDIR@
+  export CAT = @CAT@
 
 #-----basic flags for compiling
   CFLAGS = -fno-builtin -fno-common -fno-strict-aliasing -iwithprefix include
@@ -132,3 +132,13 @@ pratt:
 
 creeper:
 	scp dist/* root@creeper:/boot
+
+#-----autoconf rules
+Makefile: Makefile.in config.status
+	./config.status $@
+
+config.status: configure
+	./config.status --recheck
+
+configure: configure.ac
+	./autogen.sh
