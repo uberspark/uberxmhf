@@ -11,8 +11,8 @@ C_SOURCES = appmain.c scode.c puttymem.c \
 			malloc.c pt.c tpm_sw.c aes.c \
 			rsa.c bignum.c sha1.c random.c linuxrelc.c
 
-OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
-OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
+OBJECTS = $(patsubst %.S, $(APPOBJECTSDIR)/%.o, $(AS_SOURCES))
+OBJECTS += $(patsubst %.c, $(APPOBJECTSDIR)/%.o, $(C_SOURCES))
 
 I_SOURCES  =  $(wildcard $(EMHF_INCLUDEDIR)/*.h)
 I_SOURCES  +=  $(wildcard $(APP_INCLUDEDIR)/*.h)
@@ -21,15 +21,10 @@ I_SOURCES  +=  $(wildcard $(APP_INCLUDEDIR)/*.h)
 .PHONY: all
 all: $(OBJECTS)
 
-%.o: %.S $(I_SOURCES) Makefile ../Makefile
-	$(CC) -c $(ASFLAGS) -o $(APPOBJECTSDIR)/$@ $<
-%.o: %.c $(I_SOURCES) Makefile ../Makefile
-	$(CC) -c $(CFLAGS) -o $(APPOBJECTSDIR)/$@ $<
-  
+$(APPBOJECTSDIR)/%.o: %.S $(I_SOURCES) Makefile ../Makefile
+	$(CC) -c $(ASFLAGS) -o $@ $<
+$(APPOBJECTSDIR)/%.o: %.c $(I_SOURCES) Makefile ../Makefile
+	$(CC) -c $(CFLAGS) -o $@ $<
+
 .PHONY: clean 
 clean: 
-
-  
-  
-
-  
