@@ -40,7 +40,9 @@ endif
 
 # targets
 .PHONY: all
-all: $(OBJECTS)
+all: init-$(TARGET_HWPLATFORM).bin
+
+init-$(TARGET_HWPLATFORM).bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) init.lds.S
 	$(LD) -T init.lds.S -o init.exe $(OBJECTS) $(OBJECTS_PRECOMPILED)
 	$(CP) init.exe init_syms.exe
 	$(STRIP) -s init.exe

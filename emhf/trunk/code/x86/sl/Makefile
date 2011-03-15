@@ -28,7 +28,10 @@ endif
 
 # targets
 .PHONY: all
-all: $(OBJECTS)
+
+all: sl.bin
+
+sl.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) sl.lds.S
 	$(LD) -T sl.lds.S -o sl.exe $(OBJECTS) $(OBJECTS_PRECOMPILED)
 	$(CP) sl.exe sl_syms.exe
 	$(STRIP) -s sl.exe

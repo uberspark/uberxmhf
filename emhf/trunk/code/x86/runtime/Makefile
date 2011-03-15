@@ -31,7 +31,9 @@ I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 
 # targets
 .PHONY: all
-all: $(OBJECTS) 
+all: runtime.bin
+
+runtime.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) runtime.lds.S
 	$(LD) -T runtime.lds.S -o runtime.exe $(OBJECTS) $(OBJECTS_PRECOMPILED)
 	$(CP) runtime.exe runtime_syms.exe
 	$(STRIP) -s runtime.exe
