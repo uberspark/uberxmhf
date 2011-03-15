@@ -46,12 +46,12 @@
   #endif
 
   #ifeq ($(TARGET_HWPLATFORM), x86)
-  export EMHFCOREDIR := ./emhfcore/x86
+  export EMHFCOREDIR := $(realpath @EMHFCOREDIR@)
   #endif
 
-  export BASEDIR = $(CURDIR)
+  export BASEDIR = @abs_top_srcdir@
   export APPOBJECTSDIR = $(BASEDIR)/app/objects
-  export EMHF_INCLUDEDIR = $(BASEDIR)/$(EMHFCOREDIR)/include
+  export EMHF_INCLUDEDIR = $(EMHFCOREDIR)/include
   export INCLUDEDIR = $(EMHF_INCLUDEDIR)
   export APP_INCLUDEDIR = $(BASEDIR)/app/include
   export EMHFAPP = y

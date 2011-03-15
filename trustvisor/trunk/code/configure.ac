@@ -47,5 +47,16 @@ AS_IF([test "x${enable_debug_vga}" != "xno"],
       [DEBUG_VGA=y],
       [DEBUG_VGA=n])
 
+AC_SUBST([EMHFCOREDIR])
+AC_ARG_WITH([emhfcore],
+        AS_HELP_STRING([--with-emhfcore=@<:@path@:>@],
+                [path to emhfcore]),
+                , [with_emhfcore=./emhfcore/x86])
+# todo- maybe test here if configured path actually has emhfcore in it
+EMHFCOREDIR=$[]with_emhfcore
+# make absolute
+dnl AS_IF([test "x${EMHFCOREDIR:0:1}" != "x/"],
+dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$EMHFCOREDIR])
+
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
