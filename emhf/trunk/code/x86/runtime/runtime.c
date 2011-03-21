@@ -46,7 +46,7 @@
 void cstartup(void){
 	u32 cpu_vendor;
 
-	//initialize global runtime variables
+	//initialize global runtime variables including Runtime Parameter Block (rpb)
 	runtime_globals_init();
 
 	//setup debugging	
@@ -88,6 +88,37 @@ void cstartup(void){
 		g_isl = &g_isolation_layer_svm; 
 		g_libemhf = &g_emhf_library_vmx;
 	}
+
+#if defined (__WIP_DEV_BOOTSTRAP__)
+
+  //re-initialize DEV DMA protections
+	//the SL only ensures that portions
+  //of the DEV bitmap including the SL and the runtime are correct. It makes no
+  //assumptions about the status of other DEV bits, so we need to have a clean
+  //DEV bitmap re-initialization here 
+  if(cpu_vendor == CPU_VENDOR_AMD){
+		u32 svm_eap_dev_bitmap_paddr, svm_eap_dev_bitmap_vaddr;
+
+   	printf("\nRuntime: Re-initializing SVM DEV...");
+	
+		svm_eap_dev_bitmap_paddr = __hva2spa__((u32)&g_svm_dev_bitmap);
+		svm_eap_dev_bitmap_vaddr = (u32)&g_svm_dev_bitmap;
+			  
+		if(!svm_eap_initialize(svm_eap_dev_bitmap_paddr, svm_eap_dev_bitmap_vaddr)){
+			printf("\nRuntime: Unable to re-initialize SVM EAP (DEV). HALT!");
+			HALT();
+		}
+	
+		printf("\nRuntime: Re-initialized SVM DEV.");
+			
+		//protect SL and runtime memory regions
+		svm_eap_dev_protect(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimeSize+PAGE_SIZE_2M);
+		printf("\nRuntime: Protected SL and Runtime (%08x-%08x) using DEV.", 
+				rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M,
+			rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
+	}
+#endif
+
 	
   //debug, dump E820 and MP table
  	printf("\nNumber of E820 entries = %u", rpb->XtVmmE820NumEntries);
