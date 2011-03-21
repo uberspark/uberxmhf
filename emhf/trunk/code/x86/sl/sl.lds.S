@@ -80,6 +80,11 @@ SECTIONS
     . = ALIGN(4096);    
   } >low
 
+	/* protected DMA protection buffer for DMA protection boot-strapping */
+	.protdmabuffer : {
+		*(.protdmabuffer)
+	} >low
+
   .sl_stack : {
     *(.sl_stack)
     . = ALIGN(0x10000);

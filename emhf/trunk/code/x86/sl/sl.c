@@ -61,6 +61,11 @@ struct _sl_parameter_block slpb __attribute__(( section(".sl_untrusted_params") 
 	.magic = SL_PARAMETER_BLOCK_MAGIC,
 };
 
+#if defined (__WIP_DEV_BOOTSTRAP__)
+//protected DMA-protection buffer placed in seperate section ".protdmabuffer"
+u8 g_sl_protected_dmabuffer[PAGE_SIZE_4K] __attribute__(( section(".protdmabuffer") ));
+#endif
+
 //we only have confidence in the runtime's expected value here in the SL
 INTEGRITY_MEASUREMENT_VALUES g_sl_gold /* __attribute__(( section("") )) */ = {
     .sha_runtime = ___RUNTIME_INTEGRITY_HASH___,
@@ -346,23 +351,50 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	
 		//initialize external access protection (DMA protection)
 		if(get_cpu_vendor() == CPU_VENDOR_AMD){
-			u32 svm_eap_dev_bitmap_paddr, svm_eap_dev_bitmap_vaddr;
-
+			
 			printf("\nSL: initializing SVM DMA protection...");
 			
-			svm_eap_dev_bitmap_paddr = runtime_physical_base + (u32)rpb->RtmSVMDevBitmapBase - __TARGET_BASE;
-			svm_eap_dev_bitmap_vaddr = PAGE_SIZE_2M + (u32)rpb->RtmSVMDevBitmapBase - __TARGET_BASE;
+			#if defined (__WIP_DEV_BOOTSTRAP__)
+			{
+				u32 svm_eap_protected_buffer_paddr, svm_eap_protected_buffer_vaddr;
+
+        printf("\nSL: runtime_physical_base=%08x, runtime_size=%08x", 
+        	runtime_physical_base, slpb.runtime_size);
+
+				svm_eap_protected_buffer_paddr = sl_baseaddr + (u32)&g_sl_protected_dmabuffer;
+				svm_eap_protected_buffer_vaddr = (u32)&g_sl_protected_dmabuffer;
 			  
-			if(!svm_eap_initialize(svm_eap_dev_bitmap_paddr, svm_eap_dev_bitmap_vaddr)){
-				printf("\nSL: Unable to initialize SVM EAP (DEV). HALT!");
-				HALT();
+				if(!svm_eap_early_initialize(svm_eap_protected_buffer_paddr, svm_eap_protected_buffer_vaddr,
+					sl_baseaddr, (slpb.runtime_size + PAGE_SIZE_2M))){
+					printf("\nSL: Unable to initialize SVM EAP (DEV). HALT!");
+					HALT();
+				}
+
+				printf("\nSL: Initialized SVM DEV.");
+			
+				printf("\nSL: Protected Runtime (%08x-%08x) using DEV.", runtime_physical_base,
+						runtime_physical_base + slpb.runtime_size);
 			}
+			#else
+			{
+				u32 svm_eap_dev_bitmap_paddr, svm_eap_dev_bitmap_vaddr;
+
+				svm_eap_dev_bitmap_paddr = runtime_physical_base + (u32)rpb->RtmSVMDevBitmapBase - __TARGET_BASE;
+				svm_eap_dev_bitmap_vaddr = PAGE_SIZE_2M + (u32)rpb->RtmSVMDevBitmapBase - __TARGET_BASE;
+			  
+				if(!svm_eap_initialize(svm_eap_dev_bitmap_paddr, svm_eap_dev_bitmap_vaddr)){
+					printf("\nSL: Unable to initialize SVM EAP (DEV). HALT!");
+					HALT();
+				}
+	
+				printf("\nSL: Initialized SVM DEV.");
 			
-			printf("\nSL: Initialized SVM DEV.");
-			
-			svm_eap_dev_protect(runtime_physical_base, slpb.runtime_size);
-			printf("\nSL: Protected Runtime (%08x-%08x) using DEV.", runtime_physical_base,
+				svm_eap_dev_protect(runtime_physical_base, slpb.runtime_size);
+				printf("\nSL: Protected Runtime (%08x-%08x) using DEV.", runtime_physical_base,
 					runtime_physical_base + slpb.runtime_size);
+			}
+			#endif
+			
 		}else{
 			u32 vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr;
 			u32 vmx_eap_vtd_pdts_paddr, vmx_eap_vtd_pdts_vaddr;

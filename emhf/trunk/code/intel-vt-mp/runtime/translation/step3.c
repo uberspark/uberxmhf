@@ -33,6 +33,10 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+// Derived from step2.c by 
+// 1. Replacing bitwise operators with equivalent array operators
+//    not necessary PGCL has bitwise ops
+
 #include <types.h>
 #include <paging.h>
 #include <shadow_paging_npae.h>
@@ -107,7 +111,7 @@ shadow_invalidate_page( address){
       ((P[index_pdt].F[gPDE_PAGE_PRESENT]) && (P[index_pdt].F[gPDE_PAGE_PRESENT]) &&     
        ((P[index_pdt].F[gPDE_PAGE_PSE]) || ( P[index_pdt].F[gPDE_PAGE_PSE])))        ) {
 
-    P[index_pdt].F[gPDE] = 0;
+    P[index_pdt].F[sPDE] = 0;
   }
   
 }

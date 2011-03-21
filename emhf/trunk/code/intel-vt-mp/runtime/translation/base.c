@@ -35,7 +35,11 @@
 
 //------------------------------------------------------------------------------
 // minimal_sp_ptr_free_norets.c modification by Jason Franklin
-// 
+// Mods:
+// 1. Adversary non-det reductions
+// 2. Replaced pointers ops with equivalent array ops
+// 3. Removed returns
+// 4. Replaces halts with cprover assume false
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <types.h>

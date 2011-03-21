@@ -35,8 +35,8 @@ all: runtime.bin
 
 runtime.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) runtime.lds.S
 	$(LD) -T runtime.lds.S -o runtime.exe $(OBJECTS) $(OBJECTS_PRECOMPILED)
-	$(CP) runtime.exe runtime_syms.exe
-	$(STRIP) -s runtime.exe
+	## $(CP) runtime.exe runtime_syms.exe
+	## $(STRIP) -s runtime.exe
 	$(OBJCOPY) --output-format=binary runtime.exe runtime.bin
 
 %.o: %.S $(I_SOURCES) Makefile ../Makefile ../../../Makefile

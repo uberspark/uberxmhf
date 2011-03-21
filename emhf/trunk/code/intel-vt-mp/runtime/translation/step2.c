@@ -33,6 +33,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+// Dervied from step1.c by
+// 1. Replacing gPDE with P[index_pdt].F[gPDE] 
+// 2. Replacing gPTE with P[index_pdt].P[index_pt].F[gPTE]
+// 3. Replacing s_pd_t with P
+
 #include <types.h>
 #include <paging.h>
 #include <shadow_paging_npae.h>

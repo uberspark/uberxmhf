@@ -52,6 +52,81 @@ static void svm_eap_dev_write(u32 function, u32 index, u32 value);
 static u32 svm_eap_dev_read(u32 function, u32 index);
 
 
+#if defined (__WIP_DEV_BOOTSTRAP__)
+
+//------------------------------------------------------------------------------
+//early initialization of SVM EAP a.k.a DEV
+//returns 1 if all went well, else 0
+//inputs: physical and virtual addresses of a buffer that is
+//already DMA protected, starting address and size (in bytes) 
+//of the physical memory region to be DMA protected 
+//Note: this function exists since we need to bootstrap DEV
+//protections early on. We cannot afford to have the entire DEV bitmap
+//(128K) within the SL, so we use a DMA-protected buffer 
+//(capable of DMA protecting a contiguous physical memory range)
+//that lies within the initially DMA-protected SL region to protect 
+//the runtime physical memory.
+//The runtime then re-initializes DEV once it gets control after a 
+//successful integrity check.
+u32 svm_eap_early_initialize(u32 protected_buffer_paddr, 
+			u32 protected_buffer_vaddr, u32 memregion_paddr_start, 
+				u32 memregion_size){
+	u32 dev_bitmap_paddr = 0;
+		
+
+	printf("\n%s: protected buffer, paddr=%08x, vaddr=%08x", __FUNCTION__, 
+		protected_buffer_paddr, protected_buffer_vaddr);
+
+	//sanity check: the protected buffer MUST be page aligned
+	ASSERT( !(protected_buffer_paddr & 0x00000FFF) &&
+					!(protected_buffer_vaddr & 0x00000FFF) );	
+
+
+	//compute DEV bitmap base address depending on the physical base address
+	//of the protected buffer and the physical base address of the memory
+	//region
+	//Note: we assume the protected buffer size to be 4K on AMD 
+	//sanity check: memregion size cannot be greater than 128MB
+	ASSERT( memregion_size < (PAGE_SIZE_4K * 8 * PAGE_SIZE_4K) );
+	
+	{
+		u32 memregion_paligned_paddr_start;
+		u32 memregion_pfn=0;
+		u32 devbitmap_bytes_before=0;
+		
+		//compute page-aligned base address of memory region
+		memregion_paligned_paddr_start = PAGE_ALIGN_4K(memregion_paddr_start);
+		
+		//compute pfn of memregion
+		memregion_pfn = memregion_paligned_paddr_start / PAGE_SIZE_4K;
+			
+	  //thus, there are memregion_pfn pages that need to be accounted for
+	  //until we hit our protected buffer in the DEV bitmap
+	  //each page is 1 bit in the bitmap, so compute number of bytes of
+	  //DEV bitmap we need before our protected buffer
+	  devbitmap_bytes_before =  memregion_pfn / 8; //8-bits in a byte
+	  
+	  //the physical base address of the DEV bitmap will be our protected
+	  //buffer physical base minus devbitmap_bytes_before
+	  //Note: we dont care about other parts of the DEV bitmap except for
+	  //our protected buffer which is assumed to be protected...
+	  dev_bitmap_paddr = protected_buffer_paddr - devbitmap_bytes_before;
+	  printf("\nSL:%s dev_bitmap_paddr=%08x", __FUNCTION__, dev_bitmap_paddr);
+	  
+	  //sanity check: dev_bitmap_paddr MUST be page aligned
+	  ASSERT(!(dev_bitmap_paddr & 0x00000FFF));
+	  
+	  //now make sure the protected buffer (4K in our case) is set to all 1's
+		//effectively preventing DMA reads and writes from memregion_paligned_paddr_start
+		//to memregion_paligned_paddr_start + 128M
+		memset((void *)protected_buffer_vaddr, 0xFF, PAGE_SIZE_4K);
+	}
+	
+	
+	//setup DEV 
+	return svm_eap_initialize(dev_bitmap_paddr, dev_bitmap_paddr);
+}
+#endif
 
 
 //initialize SVM EAP a.k.a DEV

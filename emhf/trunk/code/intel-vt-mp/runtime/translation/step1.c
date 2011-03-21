@@ -33,6 +33,9 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+// Derived from base.c by 
+// 1. Removing all types 
+
 #include <types.h>
 #include <paging.h>
 #include <shadow_paging_npae.h>
@@ -47,7 +50,7 @@
  shadow_guest_CR3=0;
 
 
- shadow_page_fault( cr2){
+shadow_page_fault( cr2){
 
    index_pdt, index_pt; 
    flags, paddr;

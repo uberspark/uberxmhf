@@ -33,6 +33,10 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+//Derived from step3.c by
+// 1. Adding pseudocode advesary
+// 2. Inlining table entry creation and eliminating temp vars
+
 #include <types.h>
 #include <paging.h>
 #include <shadow_paging_npae.h>
@@ -78,7 +82,7 @@ shadow_page_fault(cr2){
   }
 
 
-  if ( (P[index_pdt].F[gPDE].F[_PAGE_PRESENT]) && 
+  if ( (P[index_pdt].F[gPDE_PAGE_PRESENT]) && 
        (!(P[index_pdt].F[gPDE_PAGE_PSE]) ) && 
        (P[index_pdt].P[index_pt].F[gPTE_PAGE_PRESENT])) {
 
@@ -112,7 +116,7 @@ shadow_invalidate_page( address){
       ((P[index_pdt].F[gPDE_PAGE_PRESENT]) && (P[index_pdt].F[gPDE_PAGE_PRESENT]) &&     
        ((P[index_pdt].F[gPDE_PAGE_PSE]) || ( P[index_pdt].F[gPDE_PAGE_PSE])))        ) {
 
-    P[index_pdt].F[gPDE] = 0;
+    P[index_pdt].F[sPDE] = 0;
   }
   
 }

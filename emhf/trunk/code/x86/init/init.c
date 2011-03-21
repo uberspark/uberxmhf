@@ -233,8 +233,16 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize){
                     printf("\noops 64-bit length unhandled!");
                     HALT();
                 }
-      
+
+			#if defined (__WIP_DEV_BOOTSTRAP__)
+				#define PAGE_ALIGN_128M(size)	((size) & ~((PAGE_SIZE_4K * 8 * PAGE_SIZE_4K) - 1))
+
+			 runtimephysicalbase = PAGE_ALIGN_128M((u32)baseaddr + size - runtimesize);
+			 printf("\n%s: runtimephysicalbase=%08x", __FUNCTION__, runtimephysicalbase);
+			
+			#else      
                 runtimephysicalbase = PAGE_ALIGN_2M((u32)baseaddr + size) - runtimesize;
+    	#endif
 
                 if( runtimephysicalbase >= baseaddr ){
                     foundentry=1;
