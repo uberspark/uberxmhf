@@ -372,23 +372,6 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 				printf("\nSL: Protected SL+Runtime (%08x-%08x) using DEV.", sl_baseaddr,
 						(slpb.runtime_size + PAGE_SIZE_2M));
 			}
-			/*{
-				u32 svm_eap_dev_bitmap_paddr, svm_eap_dev_bitmap_vaddr;
-
-				svm_eap_dev_bitmap_paddr = runtime_physical_base + (u32)rpb->RtmSVMDevBitmapBase - __TARGET_BASE;
-				svm_eap_dev_bitmap_vaddr = PAGE_SIZE_2M + (u32)rpb->RtmSVMDevBitmapBase - __TARGET_BASE;
-			  
-				if(!svm_eap_initialize(svm_eap_dev_bitmap_paddr, svm_eap_dev_bitmap_vaddr)){
-					printf("\nSL: Unable to initialize SVM EAP (DEV). HALT!");
-					HALT();
-				}
-	
-				printf("\nSL: Initialized SVM DEV.");
-			
-				svm_eap_dev_protect(runtime_physical_base, slpb.runtime_size);
-				printf("\nSL: Protected Runtime (%08x-%08x) using DEV.", runtime_physical_base,
-					runtime_physical_base + slpb.runtime_size);
-			}*/
 			
 		}else{
 			u32 vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr;
