@@ -89,7 +89,6 @@ void cstartup(void){
 		g_libemhf = &g_emhf_library_vmx;
 	}
 
-#if defined (__WIP_DEV_BOOTSTRAP__)
 
   //re-initialize DEV DMA protections
 	//the SL only ensures that portions
@@ -113,11 +112,10 @@ void cstartup(void){
 			
 		//protect SL and runtime memory regions
 		svm_eap_dev_protect(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimeSize+PAGE_SIZE_2M);
-		printf("\nRuntime: Protected SL and Runtime (%08x-%08x) using DEV.", 
+		printf("\nRuntime: Protected SL+Runtime (%08x-%08x) using DEV.", 
 				rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M,
 			rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
 	}
-#endif
 
 	
   //debug, dump E820 and MP table

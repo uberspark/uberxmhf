@@ -180,7 +180,6 @@ typedef union dev_err_addr_hi {
 } __attribute__((packed)) dev_err_addr_hi_t;
 
 
-#if defined (__WIP_DEV_BOOTSTRAP__)
 //early initialization of SVM EAP a.k.a DEV
 //returns 1 if all went well, else 0
 //inputs: physical and virtual addresses of a buffer that is
@@ -197,7 +196,6 @@ typedef union dev_err_addr_hi {
 u32 svm_eap_early_initialize(u32 protected_buffer_paddr, 
 			u32 protected_buffer_vaddr, u32 memregion_paddr_start, 
 				u32 memregion_size);
-#endif
 
 //initialize SVM EAP a.k.a DEV
 //returns 1 if all went well, else 0

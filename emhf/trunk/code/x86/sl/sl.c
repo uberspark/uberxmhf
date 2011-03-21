@@ -61,10 +61,8 @@ struct _sl_parameter_block slpb __attribute__(( section(".sl_untrusted_params") 
 	.magic = SL_PARAMETER_BLOCK_MAGIC,
 };
 
-#if defined (__WIP_DEV_BOOTSTRAP__)
 //protected DMA-protection buffer placed in seperate section ".protdmabuffer"
 u8 g_sl_protected_dmabuffer[PAGE_SIZE_4K] __attribute__(( section(".protdmabuffer") ));
-#endif
 
 //we only have confidence in the runtime's expected value here in the SL
 INTEGRITY_MEASUREMENT_VALUES g_sl_gold /* __attribute__(( section("") )) */ = {
@@ -354,7 +352,6 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 			
 			printf("\nSL: initializing SVM DMA protection...");
 			
-			#if defined (__WIP_DEV_BOOTSTRAP__)
 			{
 				u32 svm_eap_protected_buffer_paddr, svm_eap_protected_buffer_vaddr;
 
@@ -372,11 +369,10 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 				printf("\nSL: Initialized SVM DEV.");
 			
-				printf("\nSL: Protected Runtime (%08x-%08x) using DEV.", runtime_physical_base,
-						runtime_physical_base + slpb.runtime_size);
+				printf("\nSL: Protected SL+Runtime (%08x-%08x) using DEV.", sl_baseaddr,
+						(slpb.runtime_size + PAGE_SIZE_2M));
 			}
-			#else
-			{
+			/*{
 				u32 svm_eap_dev_bitmap_paddr, svm_eap_dev_bitmap_vaddr;
 
 				svm_eap_dev_bitmap_paddr = runtime_physical_base + (u32)rpb->RtmSVMDevBitmapBase - __TARGET_BASE;
@@ -392,8 +388,7 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 				svm_eap_dev_protect(runtime_physical_base, slpb.runtime_size);
 				printf("\nSL: Protected Runtime (%08x-%08x) using DEV.", runtime_physical_base,
 					runtime_physical_base + slpb.runtime_size);
-			}
-			#endif
+			}*/
 			
 		}else{
 			u32 vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr;

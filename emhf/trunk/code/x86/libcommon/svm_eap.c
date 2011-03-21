@@ -52,7 +52,6 @@ static void svm_eap_dev_write(u32 function, u32 index, u32 value);
 static u32 svm_eap_dev_read(u32 function, u32 index);
 
 
-#if defined (__WIP_DEV_BOOTSTRAP__)
 
 //------------------------------------------------------------------------------
 //early initialization of SVM EAP a.k.a DEV
@@ -126,7 +125,6 @@ u32 svm_eap_early_initialize(u32 protected_buffer_paddr,
 	//setup DEV 
 	return svm_eap_initialize(dev_bitmap_paddr, dev_bitmap_paddr);
 }
-#endif
 
 
 //initialize SVM EAP a.k.a DEV
