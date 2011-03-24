@@ -336,10 +336,8 @@ u32 vmx_scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size)
 	u32 pfn;
 	pt_t pte_pages = (pt_t)pte_page;
 	int type =0; 
-#ifdef __MP_VERSION__
 	u32 k;
 	VCPU * tmpcpu;
-#endif
 
 	printf("[TV] scode registration on local CPU %02x!\n", vcpu->id);
 	for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)
@@ -359,25 +357,13 @@ u32 vmx_scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size)
 
 		/* XXX FIXME: temporary disable DEV setting here! */
 		//	set_page_dev_prot(pfn);
-		vmx_nested_set_prot(vcpu, pte_pages[i], 0);
-	}
 
-#ifdef __MP_VERSION__
-	/* not local CPU, set all mem sections unpresent */
-	for( k=0 ; k<g_midtable_numentries ; k++ )  {
-		tmpcpu = (VCPU *)(g_midtable[k].vcpu_vaddr_ptr);
-		if (tmpcpu->id != vcpu->id) {
-			printf("[TV] scode registration on CPU %02x!\n", tmpcpu->id);
-			for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)
-			{
-				pfn = pte_pages[i] >> PAGE_SHIFT_4K;
-				/* XXX FIXME: temporary disable DEV setting here! */
-				//	set_page_dev_prot(pfn);
-				vmx_nested_set_prot(tmpcpu, pte_pages[i],0);
-			}
+		/* XXX FIXME: do we need to grab a lock? */
+		for(k=0; k<g_midtable_numentries; k++) {
+			tmpcpu = (VCPU *)(g_midtable[k].vcpu_vaddr_ptr);
+			vmx_nested_set_prot(tmpcpu, pte_pages[i],0);
 		}
 	}
-#endif
 
 	return 0;
 }
