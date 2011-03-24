@@ -345,37 +345,21 @@ u32 vmx_scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size)
 	for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)
 	{
 		pfn = pte_pages[i] >> PAGE_SHIFT_4K;
-		if (!test_page_scode_bitmap(pfn))
-		{
-			set_page_scode_bitmap(pfn);
-//			set_page_scode_bitmap_2M(pfn);
-
-			/* XXX FIXME: temporary disable DEV setting here! */
-		//	set_page_dev_prot(pfn);
-			vmx_nested_set_prot(vcpu, pte_pages[i], 0);
-		}else
-		{
+		if (test_page_scode_bitmap(pfn)) {
 			printf("[TV] Set scode page permission error! pfn %#x have already been registered!\n", pfn);
 			break;
 		}
 	}
 
-	/* exception detected above, need to recover the previous changes */
-	if (i < (size >> PAGE_SHIFT_4K))
+	for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)
 	{
-		printf("[TV] recover scode page permission!\n");
-		for (; i > 0; i --)
-		{
-			pfn = pte_pages[i - 1] >> PAGE_SHIFT_4K;
-			/* XXX FIXME: temporary disable DEV setting here! */
-			//clear_page_dev_prot(pfn);
-			vmx_nested_clear_prot(vcpu, pte_pages[i-1]);
+		pfn = pte_pages[i] >> PAGE_SHIFT_4K;
+		set_page_scode_bitmap(pfn);
+//			set_page_scode_bitmap_2M(pfn);
 
-			clear_page_scode_bitmap(pfn);
-//			if (clear_page_scode_bitmap_2M(pfn) == 0)
-//				nested_promote(vcpu, pfn);
-		}
-		return 1;
+		/* XXX FIXME: temporary disable DEV setting here! */
+		//	set_page_dev_prot(pfn);
+		vmx_nested_set_prot(vcpu, pte_pages[i], 0);
 	}
 
 #ifdef __MP_VERSION__

@@ -1,3 +1,0 @@
-#!/bin/bash
-
-./cbmc -I ../include --pointer-check --unwind 1025 shadow_paging_npae.c;
