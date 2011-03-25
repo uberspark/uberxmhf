@@ -471,11 +471,14 @@ int parse_memsect_info(VCPU * vcpu, whitelist_entry_t * wle, u32 gva_scode_info,
 	is_get_param=0;
 	is_get_stack=0;
 	for (i = 0; i < ps_scode_info->section_num; i++) {
+		size = ps_scode_info->ps_str[i].page_num;
 		type = ps_scode_info->ps_str[i].type;
 		start = ps_scode_info->ps_str[i].start_addr;
 		/* make sure the addr is 4kb page aligned */
-		start = start & ~0xFFF;
-		size = ps_scode_info->ps_str[i].page_num;
+		if(!is_page_4K_aligned(start)) {
+			printf("[TV] ERROR: Section %d start address %x is not 4K-aligned\n", i, start);
+			return 1;
+		}
 		switch ( type )  {
 			case SECTION_TYPE_PARAM :
 				{
