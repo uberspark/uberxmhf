@@ -131,9 +131,13 @@
 
 #ifndef __ASSEMBLY__
 
-typedef u64 *pdpt_t; 
-typedef u64 *pdt_t;
-typedef u64 *pt_t;
+typedef u64 pdpte_t;
+typedef u64 pdte_t;
+typedef u64 pte_t;
+
+typedef pdpte_t *pdpt_t;
+typedef pdte_t *pdt_t;
+typedef pte_t *pt_t;
 
 typedef u32 *npdt_t;
 typedef u32 *npt_t;
