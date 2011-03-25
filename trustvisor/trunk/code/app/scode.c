@@ -439,36 +439,43 @@ int parse_params_info(VCPU * vcpu, struct scode_params_info* pm_info, u32 pm_add
 	return 0;
 }
 
-
+int register_memsect_info(VCPU * vcpu, whitelist_entry_t * wle, u32 ps_addr)
+{
+}
 
 /* parse scode sections info (scode registration input) */
-int parse_memsect_info(VCPU * vcpu, whitelist_entry_t * wle, u32 ps_addr)
+int parse_memsect_info(VCPU * vcpu, whitelist_entry_t * wle, u32 gva_scode_info, struct scode_sections_info *ps_scode_info)
 {
-	int i, num, pnum, is_get_param, is_get_stack;
+	int i, pnum, is_get_param, is_get_stack;
 	int type, size;
 	unsigned int start;
-	u32 addr = ps_addr;
-	struct scode_sections_info * scode_info = &(wle->scode_info);
+	u32 gva_scode_info_offset = 0;
 
 	/* get parameter number */
-	num = scode_info->section_num = get_32bit_aligned_value_from_guest(vcpu, addr);
-	addr += 4;
-	printf("[TV] scode_info addr %x, # of section is %d\n", (int)(scode_info), num);
-	if( num > MAX_SECTION_NUM )  {
+	ps_scode_info->section_num = get_32bit_aligned_value_from_guest(vcpu, gva_scode_info);
+	gva_scode_info_offset += 4;
+	printf("[TV] scode_info addr %x, # of section is %d\n", gva_scode_info, ps_scode_info->section_num);
+
+	/* copy array of parameter descriptors */
+	if( ps_scode_info->section_num > MAX_SECTION_NUM )  {
 		printf("[TV] number of scode sections exceeds limit!\n");
 		return 1;
 	}
+	copy_from_guest(vcpu,
+									(u8*)&(ps_scode_info->ps_str[0]),
+									gva_scode_info+gva_scode_info_offset,
+									ps_scode_info->section_num*sizeof(ps_scode_info->ps_str[0]));
 
 	/* parse section type, start address and size */
 	pnum = 0;
 	is_get_param=0;
 	is_get_stack=0;
-	for (i = 0; i < num; i++) {
-		type = scode_info->ps_str[i].type = get_32bit_aligned_value_from_guest(vcpu, addr);
-		start = scode_info->ps_str[i].start_addr = get_32bit_aligned_value_from_guest(vcpu, addr+4);
+	for (i = 0; i < ps_scode_info->section_num; i++) {
+		type = ps_scode_info->ps_str[i].type;
+		start = ps_scode_info->ps_str[i].start_addr;
 		/* make sure the addr is 4kb page aligned */
 		start = start & ~0xFFF;
-		size = scode_info->ps_str[i].page_num = get_32bit_aligned_value_from_guest(vcpu, addr+8);
+		size = ps_scode_info->ps_str[i].page_num;
 		switch ( type )  {
 			case SECTION_TYPE_PARAM :
 				{
@@ -503,7 +510,6 @@ int parse_memsect_info(VCPU * vcpu, whitelist_entry_t * wle, u32 ps_addr)
 		}
 		pnum += size;
 		printf("[TV] section %d type %d addr %#x size %d\n",i+1, type, start, size);
-		addr += 12;
 	}
 
 	if (pnum > MAX_REGPAGES_NUM) {
@@ -569,7 +575,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	}
 	whitelist_new.gpm_num = whitelist_new.params_info.params_num;
 	/* parse scode sections */
-	if (parse_memsect_info(vcpu, &(whitelist_new), scode_info)) {
+	if (parse_memsect_info(vcpu, &(whitelist_new), scode_info, &(whitelist_new.scode_info))) {
 		printf("[TV] Registration Failed. Scode section info incorrect! \n");
 		return 1;
 	}
