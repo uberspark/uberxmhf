@@ -439,16 +439,8 @@ int parse_params_info(VCPU * vcpu, struct scode_params_info* pm_info, u32 pm_add
 	return 0;
 }
 
-int register_memsect_info(VCPU * vcpu, whitelist_entry_t * wle, u32 ps_addr)
+int memsect_info_copy_from_guest(VCPU * vcpu, struct scode_sections_info *ps_scode_info, u32 gva_scode_info)
 {
-}
-
-/* parse scode sections info (scode registration input) */
-int parse_memsect_info(VCPU * vcpu, whitelist_entry_t * wle, u32 gva_scode_info, struct scode_sections_info *ps_scode_info)
-{
-	int i, pnum, is_get_param, is_get_stack;
-	int type, size;
-	unsigned int start;
 	u32 gva_scode_info_offset = 0;
 
 	/* get parameter number */
@@ -465,6 +457,15 @@ int parse_memsect_info(VCPU * vcpu, whitelist_entry_t * wle, u32 gva_scode_info,
 									(u8*)&(ps_scode_info->ps_str[0]),
 									gva_scode_info+gva_scode_info_offset,
 									ps_scode_info->section_num*sizeof(ps_scode_info->ps_str[0]));
+	return 0;
+}
+
+/* parse scode sections info (scode registration input) */
+int memsect_info_register(VCPU * vcpu, struct scode_sections_info *ps_scode_info, whitelist_entry_t * wle)
+{
+	int i, pnum, is_get_param, is_get_stack;
+	int type, size;
+	unsigned int start;
 
 	/* parse section type, start address and size */
 	pnum = 0;
@@ -577,8 +578,9 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 		return 1;
 	}
 	whitelist_new.gpm_num = whitelist_new.params_info.params_num;
-	/* parse scode sections */
-	if (parse_memsect_info(vcpu, &(whitelist_new), scode_info, &(whitelist_new.scode_info))) {
+	/* register scode sections into whitelist entry */
+	if (memsect_info_copy_from_guest(vcpu, &(whitelist_new.scode_info), scode_info)
+			|| memsect_info_register(vcpu, &(whitelist_new.scode_info), &whitelist_new)) {
 		printf("[TV] Registration Failed. Scode section info incorrect! \n");
 		return 1;
 	}
