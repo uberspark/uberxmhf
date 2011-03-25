@@ -115,7 +115,7 @@ void vmx_nested_clear_prot(VCPU * vcpu, u64 gpaddr)
 	emhf_hwpgtbl_flushall(vcpu);
 }
 
-void vmx_nested_make_pt_accessible(u32 gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_pal)
+void vmx_nested_make_pt_accessible(pte_t *gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_pal)
 {	
 	pdt_t npd; 
 	pt_t npt; 
@@ -127,7 +127,7 @@ void vmx_nested_make_pt_accessible(u32 gpaddr_list, u32 gpaddr_count, u64 * npdp
 	u32 i, j;
 	for (i = 0; i < gpaddr_count; i ++)
 	{
-		nvaddr = *(((u64 *)gpaddr_list)+i);
+		nvaddr = gpaddr_list[i];
 		printf("[TV]   set npt prot for gpaddr %#x, ", nvaddr);
 
 		/* get fields from virtual addr */
@@ -172,7 +172,7 @@ void vmx_nested_make_pt_accessible(u32 gpaddr_list, u32 gpaddr_count, u64 * npdp
 	}
 }
 
-void vmx_nested_switch_scode(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2)
+void vmx_nested_switch_scode(VCPU * vcpu, pte_t* pte_pages, u32 size, u32 pte_page2, u32 size2)
 {
 	u64* npdp;
 	u64* npd; 
@@ -201,14 +201,14 @@ void vmx_nested_switch_scode(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2,
 	//printf("[TV] npdp is %#x!\n", (u32)npdp);
 
 	/* make PAL and its related PTE pages accessbile */
-	vmx_nested_make_pt_accessible(pte_page, size >> PAGE_SHIFT_4K, npdp, 1); 
-	vmx_nested_make_pt_accessible(pte_page2, size2 >> PAGE_SHIFT_4K, npdp, 0); 
+	vmx_nested_make_pt_accessible(pte_pages, size >> PAGE_SHIFT_4K, npdp, 1); 
+	vmx_nested_make_pt_accessible((pte_t*)pte_page2, size2 >> PAGE_SHIFT_4K, npdp, 0); 
 
 	/* flush TLB */
 	emhf_hwpgtbl_flushall(vcpu);
 }
 
-void vmx_nested_make_pt_unaccessible(u32 gpaddr_list, u32 gpaddr_count, pdpt_t npdp, u32 is_pal)
+void vmx_nested_make_pt_unaccessible(pte_t *gpaddr_list, u32 gpaddr_count, pdpt_t npdp, u32 is_pal)
 {	
 	pdt_t npd; 
 	pt_t npt; 
@@ -220,7 +220,7 @@ void vmx_nested_make_pt_unaccessible(u32 gpaddr_list, u32 gpaddr_count, pdpt_t n
 
 	for (i = 0; i < gpaddr_count; i ++)
 	{
-		nvaddr = *(((u64 *)gpaddr_list)+i);
+		nvaddr = gpaddr_list[i];
 		printf("[TV]   set npt prot for gpaddr %#x, ", nvaddr);
 
 		/* get fields from virtual addr */
@@ -263,7 +263,7 @@ void vmx_nested_make_pt_unaccessible(u32 gpaddr_list, u32 gpaddr_count, pdpt_t n
 	}
 }
 
-void vmx_nested_switch_regular(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2)
+void vmx_nested_switch_regular(VCPU * vcpu, pte_t *pte_pages, u32 size, u32 pte_page2, u32 size2)
 {
 	pdpt_t npdp;
 	pdt_t npd; 
@@ -280,8 +280,8 @@ void vmx_nested_switch_regular(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page
 //	printf("[TV] npdp is %#x!\n", (u32)npdp);
 
 	/* restore PAL protection (also don't compromise the protection of other PALs)*/
-	vmx_nested_make_pt_unaccessible(pte_page, size >> PAGE_SHIFT_4K, npdp, 1); 
-	vmx_nested_make_pt_unaccessible(pte_page2, size2 >> PAGE_SHIFT_4K, npdp, 0); 
+	vmx_nested_make_pt_unaccessible(pte_pages, size >> PAGE_SHIFT_4K, npdp, 1); 
+	vmx_nested_make_pt_unaccessible((pte_t*)pte_page2, size2 >> PAGE_SHIFT_4K, npdp, 0); 
 
 //	printf("[TV] pb_base is %#x!\n", (u32)pd_base);
 	/* make all pd_entry accessible */
@@ -371,7 +371,7 @@ void svm_nested_clear_prot(VCPU * vcpu, u64 gpaddr)
 	linux_vmcb->tlb_control=TLB_CONTROL_FLUSHALL;
 }
 
-void svm_nested_make_pt_accessible(u32 gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_nx)
+void svm_nested_make_pt_accessible(pte_t *gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_nx)
 {	
 	pdt_t npd; 
 	pt_t npt; 
@@ -383,7 +383,7 @@ void svm_nested_make_pt_accessible(u32 gpaddr_list, u32 gpaddr_count, u64 * npdp
 	u32 i, j;
 	for (i = 0; i < gpaddr_count; i ++)
 	{
-		nvaddr = *(((u64 *)gpaddr_list)+i);
+		nvaddr = gpaddr_list[i];
 		printf("[TV]   set npt prot for gpaddr %#x, ", nvaddr);
 
 		/* get fields from virtual addr */
@@ -421,7 +421,7 @@ void svm_nested_make_pt_accessible(u32 gpaddr_list, u32 gpaddr_count, u64 * npdp
 	}
 }
 
-void svm_nested_switch_scode(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2)
+void svm_nested_switch_scode(VCPU * vcpu, pte_t *pte_pages, u32 size, u32 pte_page2, u32 size2)
 {
 	pdpt_t npdp;
 	pdt_t npd; 
@@ -451,15 +451,15 @@ void svm_nested_switch_scode(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2,
 	//printf("[TV] npdp is %#x!\n", (u32)npdp);
 
 	/* make PAL and its related PTE pages accessbile */
-	svm_nested_make_pt_accessible(pte_page, size >> PAGE_SHIFT_4K, npdp, 0); 
-	svm_nested_make_pt_accessible(pte_page2, size2 >> PAGE_SHIFT_4K, npdp, 1); 
+	svm_nested_make_pt_accessible(pte_pages, size >> PAGE_SHIFT_4K, npdp, 0); 
+	svm_nested_make_pt_accessible((pte_t*)pte_page2, size2 >> PAGE_SHIFT_4K, npdp, 1); 
 
 	/* flush TLB */
 	linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
 	linux_vmcb->tlb_control=TLB_CONTROL_FLUSHALL;
 }
 
-void svm_nested_make_pt_unaccessible(u32 gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_nx)
+void svm_nested_make_pt_unaccessible(pte_t *gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_nx)
 {	
 	pdt_t npd; 
 	pt_t npt; 
@@ -518,7 +518,7 @@ void svm_nested_make_pt_unaccessible(u32 gpaddr_list, u32 gpaddr_count, u64 * np
 	}
 }
 
-void svm_nested_switch_regular(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2)
+void svm_nested_switch_regular(VCPU * vcpu, pte_t* pte_pages, u32 size, u32 pte_page2, u32 size2)
 {
 	pdpt_t npdp;
 	pdt_t npd; 
@@ -536,8 +536,8 @@ void svm_nested_switch_regular(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page
 //	printf("[TV] npdp is %#x!\n", (u32)npdp);
 
 	/* restore PAL protection (also don't compromise the protection of other PALs)*/
-	svm_nested_make_pt_unaccessible(pte_page, size >> PAGE_SHIFT_4K, npdp, 0); 
-	svm_nested_make_pt_unaccessible(pte_page2, size2 >> PAGE_SHIFT_4K, npdp, 1); 
+	svm_nested_make_pt_unaccessible(pte_pages, size >> PAGE_SHIFT_4K, npdp, 0); 
+	svm_nested_make_pt_unaccessible((pte_t*)pte_page2, size2 >> PAGE_SHIFT_4K, npdp, 1); 
 
 //	printf("[TV] pb_base is %#x!\n", (u32)pd_base);
 	/* make all pd_entry accessible */
@@ -757,7 +757,7 @@ u32 guest_pt_walker_internal(VCPU *vcpu, u32 vaddr, u64 *pdp, u64 *pd, u64 *pt, 
 /* function to copy the content of a range of page table entry into 
  * a buffer, which can be used by sensitive code handler
  */
-int guest_pt_copy(VCPU *vcpu, u32 pte_page, u32 gvaddr, u32 size, int type) 
+int guest_pt_copy(VCPU *vcpu, pte_t *dst_page, u32 gvaddr, u32 size, int type) 
 {	
 	void * linux_vmcb;
 	u32 is_pae;
@@ -783,7 +783,6 @@ int guest_pt_copy(VCPU *vcpu, u32 pte_page, u32 gvaddr, u32 size, int type)
 		pdt_t gpd; 
 		pt_t gpt; 
 		u64 pdp_entry, pd_entry;
-		pt_t dst_page = (pt_t)pte_page;
 		u32 vcurr, vend = gvaddr + size;
 		u32 paddr, index = 0;
 		u64 tmp, i;
@@ -851,7 +850,6 @@ int guest_pt_copy(VCPU *vcpu, u32 pte_page, u32 gvaddr, u32 size, int type)
 		npdt_t gpd; 
 		npt_t gpt; 
 		u64 pd_entry;
-		pt_t dst_page = (pt_t)pte_page;
 		u32 vcurr, vend = gvaddr + size;
 		u32 paddr, index = 0;
 		u64 tmp, i;

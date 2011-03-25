@@ -226,11 +226,10 @@ int scode_in_list(u64 gcr3, u32 gvaddr)
 	return -1;
 }
 
-u32 scode_measure(u8 * pcr, u32 pte_page, u32 size)
+u32 scode_measure(u8 * pcr, pte_t *pte_pages, u32 size)
 {
 	u32 i; 
 	u32 paddr;
-	pt_t pte_pages = (pt_t)pte_page;
 	sha1_context ctx;
 	u8 sha1sum[SHA1_CHECKSUM_LEN];
 
@@ -330,11 +329,10 @@ void init_scode(VCPU * vcpu)
  * SSTACK			RW					unpresent
  *
  * **************************************/
-u32 vmx_scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size)
+u32 vmx_scode_set_prot(VCPU *vcpu, pte_t *pte_pages, u32 size)
 {
 	u32 i; 
 	u32 pfn;
-	pt_t pte_pages = (pt_t)pte_page;
 	int type =0; 
 	u32 k;
 	VCPU * tmpcpu;
@@ -368,11 +366,10 @@ u32 vmx_scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size)
 	return 0;
 }
 
-void vmx_scode_clear_prot(VCPU * vcpu, u32 pte_page, u32 size)
+void vmx_scode_clear_prot(VCPU * vcpu, pte_t *pte_pages, u32 size)
 {
 	u32 i; 
 	u32 pfn;
-	pt_t pte_pages = (pt_t)pte_page;
 #ifdef __MP_VERSION__
 	u32 k;
 	VCPU * tmpcpu;
@@ -586,12 +583,12 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	}
 
 	/* register pages in each scode section */
-	whitelist_new.scode_page = (u32)((u64 *)vmalloc(MAX_REGPAGES_NUM<<3));
+	whitelist_new.scode_pages = (pte_t*)vmalloc(MAX_REGPAGES_NUM*sizeof(whitelist_new.scode_pages[0]));
 	whitelist_new.scode_size = 0;
 	for( i=0 ; i < (u32)(whitelist_new.scode_info.section_num) ; i++ )  {
 		ginfo = &(whitelist_new.scode_info.ps_str[i]);
-		if (guest_pt_copy(vcpu, whitelist_new.scode_page+((whitelist_new.scode_size)<<3), ginfo->start_addr, (ginfo->page_num)<<PAGE_SHIFT_4K, ginfo->type)) {
-			vfree((void *)(whitelist_new.scode_page));
+		if (guest_pt_copy(vcpu, &(whitelist_new.scode_pages[whitelist_new.scode_size]), ginfo->start_addr, (ginfo->page_num)<<PAGE_SHIFT_4K, ginfo->type)) {
+			vfree(whitelist_new.scode_pages);
 			printf("[TV] SECURITY: Registration Failed. Probably some page of sensitive code is not in memory yet\n");
 			return 1;
 		}
@@ -601,9 +598,9 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
 	/* set up scode pages permission (also flush TLB) */
 	/* CRITICAL SECTION in MP scenario: need to quiesce other CPUs or at least acquire spinlock */
-	if (tv_ctx->scode_set_prot(vcpu, whitelist_new.scode_page, whitelist_new.scode_size))
+	if (tv_ctx->scode_set_prot(vcpu, whitelist_new.scode_pages, whitelist_new.scode_size))
 	{
-		vfree((void *)(whitelist_new.scode_page));
+		vfree(whitelist_new.scode_pages);
 		printf("[TV] SECURITY: Registration Failed. Probably some page has already been used by other sensitive code.\n");
 		return 1;
 	}
@@ -612,10 +609,10 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	vmemset(whitelist_new.pcr, 0, TPM_PCR_SIZE*TPM_PCR_NUM); 
 
 	/* hash the entire SSCB code, and then extend the hash value into uTPM PCR[0] */
-	if (scode_measure(whitelist_new.pcr, whitelist_new.scode_page, whitelist_new.scode_size))
+	if (scode_measure(whitelist_new.pcr, whitelist_new.scode_pages, whitelist_new.scode_size))
 	{
-		tv_ctx->scode_clear_prot(vcpu, whitelist_new.scode_page, whitelist_new.scode_size);
-		vfree((void *)(whitelist_new.scode_page));
+		tv_ctx->scode_clear_prot(vcpu, whitelist_new.scode_pages, whitelist_new.scode_size);
+		vfree(whitelist_new.scode_pages);
 		printf("[TV] SECURITY: Registration Failed. sensitived code cannot be verified.\n");
 		return 1;
 	}
@@ -688,11 +685,11 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
 	 * vector 
 	 */
 	/* CRITICAL SECTION in MP scenario: need to quiesce other CPUs or at least acquire spinlock */
-	if (whitelist[i].scode_page)
+	if (whitelist[i].scode_pages)
 	{
-		tv_ctx->scode_clear_prot(vcpu, whitelist[i].scode_page, whitelist[i].scode_size);
-		vfree((void *)(whitelist[i].scode_page));
-		whitelist[i].scode_page = 0;
+		tv_ctx->scode_clear_prot(vcpu, whitelist[i].scode_pages, whitelist[i].scode_size);
+		vfree((void *)(whitelist[i].scode_pages));
+		whitelist[i].scode_pages = NULL;
 	}
 
 	/* delete entry from scode whitelist */
@@ -746,7 +743,7 @@ void scode_expose_arch(VCPU *vcpu)
 	u64 tmp_page[3];
 	u32 tmp_count=0;
 	int curr=scode_curr[vcpu->id];
-	pt_t sp = (pt_t)(whitelist[curr].scode_page);
+	pt_t sp = (pt_t)(whitelist[curr].scode_pages);
 	u32 gcr3_flag=0;
 
 	if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
@@ -1016,7 +1013,7 @@ u32 vmx_scode_switch_scode(VCPU * vcpu)
 
 	/* change NPT permission for all PTE pages and scode pages */
 	printf("[TV] change NPT permission to run PAL!\n"); 
-	vmx_nested_switch_scode(vcpu, whitelist[curr].scode_page, whitelist[curr].scode_size,
+	vmx_nested_switch_scode(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size,
 			(u32)whitelist[curr].pte_page, whitelist[curr].pte_size);
 		
 	/* disable interrupts */
@@ -1140,7 +1137,7 @@ u32 vmx_scode_switch_regular(VCPU * vcpu)
 	if (!scode_unmarshall(vcpu)){
 		/* clear the NPT permission setting in switching into scode */
 		printf("[TV] change NPT permission to exit PAL!\n"); 
-		vmx_nested_switch_regular(vcpu, whitelist[curr].scode_page, whitelist[curr].scode_size,
+		vmx_nested_switch_regular(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size,
 				(u32)whitelist[curr].pte_page, whitelist[curr].pte_size);
 		scode_unexpose_arch(vcpu);
 
@@ -1661,11 +1658,10 @@ u32 scode_rand(u64 gcr3, u32 buffer_addr, u32 numbytes_requested, u32 numbytes_a
  * on other CPU:
  * all sections		unpresent
  * **************************************/
-u32 svm_scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size)
+u32 svm_scode_set_prot(VCPU *vcpu, pte_t *pte_pages, u32 size)
 {
 	u32 i; 
 	u32 pfn;
-	pt_t pte_pages = (pt_t)pte_page;
 	int type =0; 
 #ifdef __MP_VERSION__
 	u32 k;
@@ -1747,11 +1743,10 @@ u32 svm_scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size)
 	return 0;
 }
 
-void svm_scode_clear_prot(VCPU * vcpu, u32 pte_page, u32 size)
+void svm_scode_clear_prot(VCPU * vcpu, pte_t *pte_pages, u32 size)
 {
 	u32 i; 
 	u32 pfn;
-	pt_t pte_pages = (pt_t)pte_page;
 #ifdef __MP_VERSION__
 	u32 k;
 	VCPU * tmpcpu;
@@ -1764,7 +1759,7 @@ void svm_scode_clear_prot(VCPU * vcpu, u32 pte_page, u32 size)
 		pfn = pte_pages[i] >> PAGE_SHIFT_4K;
 		if (test_page_scode_bitmap(pfn))
 		{
-			printf("[TV] clear_prot(pte %#x, size %#x): page No.%d, pfn %#x\n", pte_page, size, i+1, pfn);
+			printf("[TV] clear_prot(pte %#x, size %#x): page No.%d, pfn %#x\n", (u32)pte_pages, size, i+1, pfn);
 			/* XXX FIXME: temporary disable DEV setting here! */
 			//clear_page_dev_prot(pfn);
 			svm_nested_clear_prot(vcpu, pte_pages[i]);
@@ -1823,7 +1818,7 @@ u32 svm_scode_switch_scode(VCPU * vcpu)
 
 	/* change NPT permission for all PTE pages and scode pages */
 	printf("[TV] change NPT permission to run PAL!\n"); 
-	svm_nested_switch_scode(vcpu, whitelist[curr].scode_page, whitelist[curr].scode_size,
+	svm_nested_switch_scode(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size,
 			(u32)whitelist[curr].pte_page, whitelist[curr].pte_size);
 		
 	/* disable interrupts */
@@ -1857,7 +1852,7 @@ u32 svm_scode_switch_regular(VCPU * vcpu)
 	if (!scode_unmarshall(vcpu)){
 		/* clear the NPT permission setting in switching into scode */
 		printf("[TV] change NPT permission to exit PAL!\n"); 
-		svm_nested_switch_regular(vcpu, whitelist[curr].scode_page, whitelist[curr].scode_size,
+		svm_nested_switch_regular(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size,
 				(u32)whitelist[curr].pte_page, whitelist[curr].pte_size);
 		scode_unexpose_arch(vcpu);
 

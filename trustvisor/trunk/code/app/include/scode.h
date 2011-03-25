@@ -60,15 +60,15 @@
 struct trustvisor_context {
 	void (*nested_set_prot)(VCPU * vcpu, u64 gpaddr, int type);
 	void (*nested_clear_prot)(VCPU * vcpu, u64 gpaddr);
-	void (*nested_switch_scode)(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2);
-	void (*nested_switch_regular)(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2);
-	void (*nested_make_pt_accessible)(u32 gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_pal);
-	void (*nested_make_pt_unaccessible)(u32 gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_pal);
+	void (*nested_switch_scode)(VCPU * vcpu, pte_t *pte_pages, u32 size, u32 pte_page2, u32 size2);
+	void (*nested_switch_regular)(VCPU * vcpu, pte_t *pte_pages, u32 size, u32 pte_page2, u32 size2);
+	void (*nested_make_pt_accessible)(pte_t *gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_pal);
+	void (*nested_make_pt_unaccessible)(pte_t *gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_pal);
 //	void (*nested_breakpde)(VCPU * vcpu, u32 nvaddr);
 //	void (*nested_promote)(VCPU * vcpu, u32 pfn);
 
-	u32 (*scode_set_prot)(VCPU *vcpu, u32 pte_page, u32 size);
-	void (*scode_clear_prot)(VCPU * vcpu, u32 pte_page, u32 size);
+	u32 (*scode_set_prot)(VCPU *vcpu, pte_t *pte_pages, u32 size);
+	void (*scode_clear_prot)(VCPU * vcpu, pte_t *pte_pages, u32 size);
 	u32 (*scode_switch_scode)(VCPU * vcpu);
 	u32 (*scode_switch_regular)(VCPU * vcpu);
 	u32 (*scode_npf)(VCPU * vcpu, u32 gpaddr, u64 errorcode);
@@ -165,7 +165,7 @@ typedef struct whitelist_entry{
 
 	struct scode_sections_info scode_info; /* scode_info struct for registration function inpu */
 	struct scode_params_info params_info; /* param info struct */
-	u32 scode_page; /* holder for scode pages */
+	pte_t* scode_pages; /* registered pte's (copied from guest page tables and additional info added) */
 	u32 scode_size; /* scode size */
 
 	u32 pte_page;  /* holder for guest page table entry to access scode and GDT */
@@ -196,20 +196,20 @@ enum VMMcmd
 /* nested paging handlers (SVM) */
 void svm_nested_set_prot(VCPU * vcpu, u64 pfn, int type);
 void svm_nested_clear_prot(VCPU * vcpu, u64 pfn);
-void svm_nested_switch_scode(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2);
-void svm_nested_switch_regular(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2);
-void svm_nested_make_pt_accessible(u32 gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_nx);
-void svm_nested_make_pt_unaccessible(u32 gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_nx);
+void svm_nested_switch_scode(VCPU * vcpu, pte_t *pte_pages, u32 size, u32 pte_page2, u32 size2);
+void svm_nested_switch_regular(VCPU * vcpu, pte_t *pte_pages, u32 size, u32 pte_page2, u32 size2);
+void svm_nested_make_pt_accessible(pte_t *gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_nx);
+void svm_nested_make_pt_unaccessible(pte_t *gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_nx);
 //void svm_nested_promote(VCPU * vcpu, u32 pfn);
 //void svm_nested_breakpde(VCPU * vcpu, u32 nvaddr);
 
 /* nested paging handlers (vmx) */
 void vmx_nested_set_prot(VCPU * vcpu, u64 gpaddr, int type);
 void vmx_nested_clear_prot(VCPU * vcpu, u64 gpaddr);
-void vmx_nested_switch_scode(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2);
-void vmx_nested_switch_regular(VCPU * vcpu, u32 pte_page, u32 size, u32 pte_page2, u32 size2);
-void vmx_nested_make_pt_unaccessible(u32 gpaddr_list, u32 gpaddr_count, pdpt_t npdp, u32 is_pal);
-void vmx_nested_make_pt_accessible(u32 gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_pal);
+void vmx_nested_switch_scode(VCPU * vcpu, pte_t *pte_pages, u32 size, u32 pte_page2, u32 size2);
+void vmx_nested_switch_regular(VCPU * vcpu, pte_t *pte_page, u32 size, u32 pte_page2, u32 size2);
+void vmx_nested_make_pt_unaccessible(pte_t *gpaddr_list, u32 gpaddr_count, pdpt_t npdp, u32 is_pal);
+void vmx_nested_make_pt_accessible(pte_t *gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_pal);
 
 /* several help functions to access guest address space */
 u16 get_16bit_aligned_value_from_guest(VCPU * vcpu, u32 gvaddr);
@@ -217,7 +217,7 @@ u32 get_32bit_aligned_value_from_guest(VCPU * vcpu, u32 gvaddr);
 void put_32bit_aligned_value_to_guest(VCPU * vcpu, u32 gvaddr, u32 value);
 
 /* guest paging handlers */
-int guest_pt_copy(VCPU * vcpu, u32 pte_page, u32 gvaddr, u32 size, int type);
+int guest_pt_copy(VCPU * vcpu, pte_t *pte_page, u32 gvaddr, u32 size, int type);
 #define gpt_vaddr_to_paddr(vcpu, vaddr)	guest_pt_walker_internal(vcpu, vaddr, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
 #define  gpt_get_ptpages(vcpu, vaddr, pdp, pd, pt) guest_pt_walker_internal(vcpu, vaddr, pdp, pd, pt, NULL, NULL, NULL, NULL)
 #define  gpt_get_ptentries(vcpu, vaddr, pdpe, pde, pte, is_pae) guest_pt_walker_internal(vcpu, vaddr, NULL, NULL, NULL, pdpe, pde, pte, is_pae)
@@ -232,15 +232,15 @@ void copy_from_guest(VCPU * vcpu, u8 *dst, u32 gvaddr, u32 len);
 void copy_to_guest(VCPU * vcpu, u32 gvaddr, u8 *src, u32 len);
 
 /* PAL operations (VMX) */
-u32 vmx_scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size);
-void vmx_scode_clear_prot(VCPU * vcpu, u32 pte_page, u32 size);
+u32 vmx_scode_set_prot(VCPU *vcpu, pte_t *pte_pages, u32 size);
+void vmx_scode_clear_prot(VCPU * vcpu, pte_t *pte_pages, u32 size);
 u32 vmx_scode_switch_scode(VCPU * vcpu);
 u32 vmx_scode_switch_regular(VCPU * vcpu);
 u32 vmx_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode);
 
 /* PAL operations (SVM) */
-u32 svm_scode_set_prot(VCPU *vcpu, u32 pte_page, u32 size);
-void svm_scode_clear_prot(VCPU * vcpu, u32 pte_page, u32 size);
+u32 svm_scode_set_prot(VCPU *vcpu, pte_t *pte_pages, u32 size);
+void svm_scode_clear_prot(VCPU * vcpu, pte_t *pte_pages, u32 size);
 u32 svm_scode_switch_scode(VCPU * vcpu);
 u32 svm_scode_switch_regular(VCPU * vcpu);
 u32 svm_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode);
