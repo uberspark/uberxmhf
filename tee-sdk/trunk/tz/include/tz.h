@@ -187,6 +187,7 @@ typedef struct tz_shared_memory_t
     /* Implementation-defined. */
     tz_session_t *psSession;
     struct ll_t* psRefdOperations;
+    bool bAllocated; /* true if initd through TZSharedMemoryAllocate */
   } sImp;
 } tz_shared_memory_t;
 

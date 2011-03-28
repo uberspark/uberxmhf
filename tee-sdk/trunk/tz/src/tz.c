@@ -449,6 +449,7 @@ TZSharedMemoryAllocate(INOUT tz_session_t* psSession,
     psSharedMem->uiState = TZ_STATE_OPEN;
     psSharedMem->sImp.psSession = psSession;
     psSession->sImp.uiOpenSharedMem++;
+    psSharedMem->sImp.bAllocated = true;
   } else {
     assert(psSharedMem->pBlock == NULL);
     psSharedMem->uiState = TZ_STATE_INVALID;
@@ -478,6 +479,7 @@ TZSharedMemoryRegister(INOUT tz_session_t* psSession,
 
   if(rv == TZ_SUCCESS) {
     psSharedMem->uiState = TZ_STATE_OPEN;
+    psSharedMem->sImp.bAllocated = false;
     psSession->sImp.uiOpenSharedMem++;
   } else {
     psSharedMem->uiState = TZ_STATE_INVALID;

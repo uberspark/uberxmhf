@@ -48,6 +48,8 @@
 #define PAGE_ALIGN_UP4K(size)   (((size) + PAGE_SIZE_4K - 1) & ~(PAGE_SIZE_4K - 1))
 #define PAGE_ALIGN_4K(size)     ((size) & ~(PAGE_SIZE_4K - 1))
 
+#define PAGE_ALIGNED_4K(size) (PAGE_ALIGN_4K(size) == size)
+
 typedef void (*pal_fn_t)(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv);
 
 typedef struct {

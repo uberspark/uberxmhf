@@ -293,12 +293,20 @@ tz_return_t TVsharedMemoryAllocate(INOUT tz_session_t* psSession,
 tz_return_t TVsharedMemoryRegister(INOUT tz_session_t* psSession,
                                    INOUT tz_shared_memory_t* psSharedMem)
 {
-  return TZ_ERROR_NOT_IMPLEMENTED;
+  if (!PAGE_ALIGNED_4K((uintptr_t)psSharedMem->pBlock)
+      || !PAGE_ALIGNED_4K(psSharedMem->uiLength)) {
+    /* we only handle aligned regions right now */
+    return TZ_ERROR_ILLEGAL_ARGUMENT;
+  } else {
+    return TZ_SUCCESS;
+  }
 }
 
 void TVsharedMemoryRelease(INOUT tz_shared_memory_t* psSharedMem)
 {
-  free(psSharedMem->pBlock);
+  if(psSharedMem->sImp.bAllocated) {
+    free(psSharedMem->pBlock);
+  }
   psSharedMem->pBlock=NULL;
   return;
 }
