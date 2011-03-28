@@ -53,7 +53,7 @@ typedef struct tzi_operation_close_ext_t {
 } tzi_operation_close_ext_t;
 
 /* temporary hard-coded size of marshal buffer */
-#define MARSHAL_BUF_SIZE 1000
+#define MARSHAL_BUF_SIZE (1*PAGE_SIZE_4K)
 
 tz_return_t
 TVOperationPrepareOpen(INOUT tz_device_t* psDevice,
@@ -69,7 +69,7 @@ TVOperationPrepareOpen(INOUT tz_device_t* psDevice,
   /* XXX later we'll point to a page to be re-mapped instead of
      copied */
   *puiBufSize = MARSHAL_BUF_SIZE;
-  posix_memalign((void**)ppsBufData, 8, *puiBufSize);
+  posix_memalign((void**)ppsBufData, PAGE_SIZE_4K, *puiBufSize);
   *ppsSessionExt = malloc(sizeof(tzi_session_ext_t));
   *ppsOperationExt = NULL;
   if (*ppsBufData == NULL || *ppsSessionExt == NULL) {
@@ -106,6 +106,9 @@ TVOperationPerform(INOUT tz_operation_t* psOperation,
       TZIEncodeBufInit(psOutBuf, MARSHAL_BUF_SIZE);
 
       TZIEncodeToDecode(psInBuf);
+      if(scode_share(fn, psInBuf, MARSHAL_BUF_SIZE)) {
+        return TZ_ERROR_GENERIC;
+      }
       fn(uiCommand, psInBuf, psOutBuf, puiServiceReturn);
       TZIEncodeToDecode(psOutBuf);
 
@@ -137,7 +140,7 @@ TVOperationPrepareInvoke(INOUT tz_session_t* psSession,
  /* XXX later we'll point to a page to be re-mapped instead of
     copied */
   *puiBufSize = MARSHAL_BUF_SIZE;
-  posix_memalign((void**)ppsBufData, 8, *puiBufSize);
+  posix_memalign((void**)ppsBufData, PAGE_SIZE_4K, *puiBufSize);
   *ppsOperationExt = malloc(sizeof(tzi_operation_invoke_ext_t));
   if (*ppsBufData == NULL || *ppsOperationExt == NULL) {
     free(*ppsBufData);
@@ -216,9 +219,9 @@ TVManagerDownloadService(INOUT tz_session_t* psSession,
         {.type = SCODE_PARAM_TYPE_INTEGER,
          .size = sizeof(uint32_t)/sizeof(int)},
 
-        /* psInBuf */
-        {.type = SCODE_PARAM_TYPE_POINTER,
-         .size = MARSHAL_BUF_SIZE/sizeof(int)},
+        /* psInBuf. (pass a pointer to a shared region) */
+        {.type = SCODE_PARAM_TYPE_INTEGER,
+         .size = sizeof(uint32_t)/sizeof(int)},
 
         /* psOutBuf */
         {.type = SCODE_PARAM_TYPE_POINTER,

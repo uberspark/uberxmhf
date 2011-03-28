@@ -63,6 +63,7 @@ enum VMMcmd
     VMM_SEAL =3,
     VMM_UNSEAL =4,
     VMM_QUOTE =5,
+    VMM_SHARE =6,
     VMM_TEST = 255,
   };
 
@@ -154,6 +155,9 @@ int scode_register(const struct scode_sections_info *pageinfo,
  * Returns 0 on success, nonzero on failure.
  */
 int scode_unregister(void *entry);
+
+/* share a memory range with a PAL. */
+int scode_share(const void *entry, void *start, size_t len);
 
 /* Test for presence of TrustVisor.
  *

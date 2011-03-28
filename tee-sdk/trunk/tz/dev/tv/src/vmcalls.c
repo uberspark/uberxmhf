@@ -311,6 +311,16 @@ int scode_unregister(void *entry)
                 0, 0, 0);
 }
 
+int scode_share(const void *entry, void *start, size_t len)
+{
+  return vmcall(VMM_SHARE,
+                (uint32_t)entry,
+                (uint32_t)start,
+                (uint32_t)len,
+                0);
+}
+
+
 int scode_test(void)
 {
   int ret;
