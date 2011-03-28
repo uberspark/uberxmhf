@@ -35,6 +35,7 @@
 
 #include <tv.h>
 #include <tzmarshal.h>
+#include <list.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -81,6 +82,24 @@ TVOperationPrepareOpen(INOUT tz_device_t* psDevice,
   (*ppsSessionExt)->pFn = *((pal_fn_t*)pksService);
 
   return TZ_SUCCESS;
+}
+
+static int share_referenced_mem(pal_fn_t fn, ll_t* psRefdSubranges)
+{
+  tzi_shared_memory_subrange_t *subrange;
+
+  /* XXX we currently share the whole shared memory region, not just
+     the referenced subrange. */
+  /* XXX we currently do not enforce the specified permissions-
+     the service (pal) gets full access */
+  /* XXX need to make sure we don't try to share the same range twice */
+
+  LL_FOR_EACH(psRefdSubranges, subrange) {
+    if(scode_share(fn, subrange->psSharedMem->pBlock, subrange->psSharedMem->uiLength)) {
+      return 1;
+    }
+  }
+  return 0;
 }
 
 tz_return_t
@@ -263,7 +282,12 @@ TVManagerRemoveService(INOUT tz_session_t* psSession,
 tz_return_t TVsharedMemoryAllocate(INOUT tz_session_t* psSession,
                                    INOUT tz_shared_memory_t* psSharedMem)
 {
-  return TZ_ERROR_NOT_IMPLEMENTED;
+  if(posix_memalign(&psSharedMem->pBlock,
+                    PAGE_SIZE_4K,
+                    PAGE_ALIGN_UP4K(psSharedMem->uiLength))) {
+    return TZ_ERROR_MEMORY;
+  }
+  return TZ_SUCCESS;
 }
 
 tz_return_t TVsharedMemoryRegister(INOUT tz_session_t* psSession,
@@ -274,6 +298,8 @@ tz_return_t TVsharedMemoryRegister(INOUT tz_session_t* psSession,
 
 void TVsharedMemoryRelease(INOUT tz_shared_memory_t* psSharedMem)
 {
+  free(psSharedMem->pBlock);
+  psSharedMem->pBlock=NULL;
   return;
 }
 
