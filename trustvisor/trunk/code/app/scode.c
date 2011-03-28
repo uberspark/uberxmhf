@@ -203,7 +203,7 @@ static inline u32 test_page_scode_bitmap_2M(u32 pfn)
 	return scode_pfn_bitmap_2M[index];
 }
 
-
+void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* entry);
 
 /* search scode in whitelist */
 int scode_in_list(u64 gcr3, u32 gvaddr)
@@ -224,6 +224,19 @@ int scode_in_list(u64 gcr3, u32 gvaddr)
 	}
 	printf("[TV] no matching scode found for gvaddr %#x!\n", gvaddr);
 	return -1;
+}
+
+static whitelist_entry_t* find_scode_by_entry(u64 gcr3, u32 gv_entry)
+{
+	u32 i;
+
+	for (i = 0; i < whitelist_max; i ++)
+	{
+		/* find scode with correct cr3 and entry point */
+		if ((whitelist[i].gcr3 == gcr3) && (whitelist[i].entry_v == gv_entry))
+			return &whitelist[i];
+	}
+	return NULL;
 }
 
 u32 scode_measure(u8 * pcr, pte_t *pte_pages, u32 size)
@@ -1141,6 +1154,9 @@ u32 vmx_scode_switch_regular(VCPU * vcpu)
 				(u32)whitelist[curr].pte_page, whitelist[curr].pte_size);
 		scode_unexpose_arch(vcpu);
 
+		/* release shared pages */
+		scode_release_all_shared_pages(vcpu, &whitelist[curr]);
+
 		/* switch back to regular stack */
 		printf("[TV] switch from scode stack %#x back to regular stack %#x\n", (u32)linux_vmcb->guest_RSP, (u32)whitelist[curr].grsp);
 		linux_vmcb->guest_RSP = whitelist[curr].grsp;
@@ -1489,7 +1505,136 @@ u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 
 	return 0;
 }
 
+void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* entry)
+{
+	u32 i;
+	u32 shared_page_count=0;
+	const u32 scode_pages = entry->scode_size>>PAGE_SHIFT_4K;
+	u32 scode_pages_shared_start;
 
+	/* remove from section info, and count the number of shared pages */
+	for(i=(entry->scode_info.section_num-1);
+			entry->scode_info.ps_str[i].type == SECTION_TYPE_SHARED;
+			i--) {
+		entry->scode_info.section_num--;
+		shared_page_count += entry->scode_info.ps_str[i].page_num;
+	}
+	printf("scode_release_all_shared_pages: releasing %d shared pages\n",
+				 shared_page_count);
+	if(shared_page_count == 0) {
+		return;
+	}
+
+	ASSERT(scode_pages >= shared_page_count);
+	scode_pages_shared_start = scode_pages - shared_page_count;
+
+	/* exactly last shared_page_count pages of entry->scode_pages should be shared.
+		 check this assumption for debugging. */
+	ASSERT(scode_pages_shared_start == 0
+				 || (SCODE_PTE_TYPE_GET(entry->scode_pages[scode_pages_shared_start-1])
+						 != SECTION_TYPE_SHARED));
+	for(i=scode_pages_shared_start; i<scode_pages; i++) {
+		ASSERT(SCODE_PTE_TYPE_GET(entry->scode_pages[i]) == SECTION_TYPE_SHARED);
+	}
+
+	/* clear protections */
+	tv_ctx->scode_clear_prot(vcpu,
+													 &entry->scode_pages[scode_pages_shared_start],
+													 shared_page_count<<PAGE_SHIFT_4K);
+
+	/* remove from pte's */
+	entry->scode_size -= shared_page_count<<PAGE_SHIFT_4K;
+}
+
+u32 scode_share(VCPU * vcpu, u32 scode_entry, u32 gva_base, u32 gva_len)
+{
+	whitelist_entry_t* entry=NULL;
+	struct scode_sections_struct* section;
+	u32 gva_len_pages;
+
+	pte_t *new_scode_pages=NULL;
+	
+	/* for backout\error handling */
+	u32 section_num_added=0, scode_size_added=0;
+	bool did_set_prot=false;
+	u32 rv=0;
+
+	/* XXX locking? */
+
+	printf("[TV] scode_share: gva-base %08x, size %x", gva_base, gva_len);
+
+	if (!(entry = find_scode_by_entry(VCPU_gcr3(vcpu), scode_entry))) {
+		printf("[TV] scode_share: Invalid entry pt %x\n", scode_entry);
+		rv=1;
+		goto outerr;
+	}
+
+	if (!PAGE_ALIGNED_4K(gva_base) || !PAGE_ALIGNED_4K(gva_len)) {
+		printf("[TV] scode_share: addr %x or len %d not page aligned\n",
+					 gva_base, gva_len);
+		rv=1;
+		goto outerr;
+	}
+	gva_len_pages = gva_len >> PAGE_SHIFT_4K;
+
+	/* add the section entry info */
+	if (entry->scode_info.section_num >= MAX_SECTION_NUM) {
+		printf("[TV] scode_share: maximum number of sections %d exceeded\n", MAX_SECTION_NUM);
+		rv=2;
+		goto outerr;
+	}
+	entry->scode_info.ps_str[entry->scode_info.section_num] =
+		(struct scode_sections_struct)
+		{
+			.type = SECTION_TYPE_SHARED,
+			.start_addr = gva_base,
+			.page_num = gva_len_pages,
+		};
+	entry->scode_info.section_num++;
+	section_num_added++;
+
+	/* create pt entries */
+	{
+		u32 scode_num_pages = entry->scode_size >> PAGE_SHIFT_4K;
+		new_scode_pages = &entry->scode_pages[scode_num_pages];
+		if ((scode_num_pages+gva_len_pages) > MAX_REGPAGES_NUM) {
+			printf("[TV] scode_share registered-page-limit exceeded:"
+						 " reg'd:%d addtl:%d limit:%d",
+						 scode_num_pages, gva_len_pages, MAX_REGPAGES_NUM);
+		}
+		if (guest_pt_copy(vcpu,
+											new_scode_pages,
+											gva_base,
+											gva_len,
+											SECTION_TYPE_SHARED)) {
+			printf("[TV] scode_share registration Failed. Probably some pages not in memory yet\n");
+			rv=3;
+			goto outerr;
+		}
+		entry->scode_size += gva_len;
+		scode_size_added += gva_len;
+	}
+
+	/* set up protection of newly registered pt entries */
+	if(tv_ctx->scode_set_prot(vcpu, new_scode_pages, gva_len)) {
+		printf("[TV] SECURITY: Registration Failed. Probably some page has already been used by other sensitive code.\n");
+		rv=4;
+		goto outerr;
+	}
+	did_set_prot=true;
+
+  return rv;
+
+ outerr:
+	if (entry!=NULL) {
+		entry->scode_size -= scode_size_added;
+		entry->scode_info.section_num -= section_num_added;
+	}
+	if (did_set_prot) {
+		tv_ctx->scode_clear_prot(vcpu, new_scode_pages, gva_len_pages);
+	}
+	return rv;
+}
 
 #if 0
 /* functions for software tpm, by yanlinl at March 4, 2009 */
@@ -1680,12 +1825,21 @@ u32 svm_scode_set_prot(VCPU *vcpu, pte_t *pte_pages, u32 size)
 		 * type == 0	SDATA, SPARAM, SSTACK
 		 * type == 3    all sections set to unpresent
 		 * **********************************/
-		if((pte_pages[i]) & 0x1)  {
+		switch(SCODE_PTE_TYPE_GET(pte_pages[i])) {
+		case SECTION_TYPE_SCODE:
 			type = 1;
-		} else if ((pte_pages[i]) & 0x4) {
+			break;
+		case SECTION_TYPE_STEXT:
 			type = 2;
-		} else {
+			break;
+		case SECTION_TYPE_SDATA:
+		case SECTION_TYPE_PARAM:
+		case SECTION_TYPE_STACK:
+		case SECTION_TYPE_SHARED:
 			type = 0;
+			break;
+		default:
+			ASSERT(0);
 		}
 
 		//printf("[TV] set_prot(pte %#x, size %#x): page No.%d, pfn %#x\n", pte_page, size, i+1, pfn);
@@ -1855,6 +2009,9 @@ u32 svm_scode_switch_regular(VCPU * vcpu)
 		svm_nested_switch_regular(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size,
 				(u32)whitelist[curr].pte_page, whitelist[curr].pte_size);
 		scode_unexpose_arch(vcpu);
+
+		/* release shared pages */
+		scode_release_all_shared_pages(vcpu, &whitelist[curr]);
 
 		/* switch back to regular stack */
 		printf("[TV] switch from scode stack %#x back to regular stack %#x\n", (u32)linux_vmcb->rsp, (u32)whitelist[curr].grsp);

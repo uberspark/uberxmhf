@@ -94,6 +94,13 @@ extern struct trustvisor_context * tv_ctx;
 #define  SECTION_TYPE_STACK 4
 /* shared text segment: RWX \ RX - measured */
 #define  SECTION_TYPE_STEXT 5
+/* shared segment: RWX\np when pal is running, np\RWX otherwise */
+#define  SECTION_TYPE_SHARED 6
+
+/* bits 0 to 2 of stored pte's store the section type */
+#define SCODE_PTE_TYPE_MASK (0x7ull)
+#define SCODE_PTE_TYPE_GET(pte)    ((pte) & SCODE_PTE_TYPE_MASK)
+#define SCODE_PTE_TYPE_SET(pte, t) (((pte) & ~SCODE_PTE_TYPE_MASK) | t)
 
 struct scode_sections_struct{
 	int type;  
@@ -190,6 +197,7 @@ enum VMMcmd
 	VMMCMD_SEAL		=3,
 	VMMCMD_UNSEAL	=4,
 	VMMCMD_QUOTE	=5,
+	VMMCMD_SHARE	=6,
 	VMMCMD_TEST		=255,
 };
 
@@ -252,4 +260,5 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr);
 u32 scode_seal(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrhash_addr, u32 output_addr, u32 output_len_addr);
 u32 scode_unseal(VCPU * vcpu, u32 input_addr, u32 input_len, u32 output_addr, u32 output_len_addr);
 u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 out_len_addr);
+u32 scode_share(VCPU * vcpu, u32 scode_entry, u32 addr, u32 len);
 #endif /* __SCODE_H_ */

@@ -196,6 +196,18 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 
 				break;
 			}
+		case VMMCMD_SHARE:
+			{
+				u32 scode_entry, addr, len;
+
+				scode_entry = r->ecx;
+
+				addr = r->edx;
+				len = r->esi;
+
+				ret = scode_share(vcpu, scode_entry, addr, len);
+				break;
+			}
 		default:
 			{
 				printf("[TV] FATAL ERROR: Invalid vmmcall cmd (%d)\n", cmd);

@@ -87,15 +87,26 @@ void vmx_nested_set_prot(VCPU * vcpu, u64 gpaddr, int type)
 	u64 pfn = gpaddr >> PAGE_SHIFT_4K;
 	u64 oldentry = pt[pfn];
 
-	if(gpaddr & 0x1)  {
-		/* SENTRY pages */
-		pt[pfn] =  (oldentry & ~(u64)0x707) | (u64)0x500; 
-	} else if (gpaddr & 0x4) {
-		/* STEXT pages */
-		pt[pfn] =  (oldentry & ~(u64)0x707) | (u64)0x505; 
-	} else {
-		/* SDATA, SPARAM, SSTACK pages */
-		pt[pfn] =  (oldentry & ~(u64)0x707) | (u64)0x300; 
+	switch(SCODE_PTE_TYPE_GET(gpaddr)) {
+	case SECTION_TYPE_SCODE:
+		pt[pfn] =  (oldentry & ~(u64)0x707) | (u64)0x500;
+		break;
+	case SECTION_TYPE_STEXT:
+		pt[pfn] =  (oldentry & ~(u64)0x707) | (u64)0x505;
+		break;
+	case SECTION_TYPE_SDATA:
+	case SECTION_TYPE_PARAM:
+	case SECTION_TYPE_STACK:
+		pt[pfn] =  (oldentry & ~(u64)0x707) | (u64)0x300;
+		break;
+	case SECTION_TYPE_SHARED:
+		pt[pfn] =  (oldentry & ~(u64)0x707) | (u64)0x700;
+		/* shared segments are still inaccessible to non-pal while
+			 registered.  sharing happens by dynamically registering and
+			 unregistering these segments */
+		break;
+	default:
+		ASSERT(0);
 	}
 	printf("[TV]   set prot: pfn %#llx, pte old %#llx, pte new %#llx\n", pfn, oldentry, pt[pfn]);
 
@@ -777,22 +788,10 @@ int guest_pt_copy(VCPU *vcpu, pte_t *dst_page, u32 gvaddr, u32 size, int type)
 			? pae_get_addr_from_pte(pte)
 			: npae_get_addr_from_pte(pte);
 
-		/* use bit 0 of paddr to indicate the type of scode pages
-		 * if bit 0 == 1, this page is SENTRY page
-		 * if bit 1 == 1, this page is SDATA page
-		 * if bit 2 == 1, this page is STEXT page
-		 * otherwise, this page is R/W page. */
-		if( type == SECTION_TYPE_SCODE )  {
-			paddr+=1;
-		}
-		if( type == SECTION_TYPE_SDATA )  {
-			paddr+=2;
-		}
-		if( type == SECTION_TYPE_STEXT )  {
-			paddr+=4;
-		}
+		/* store section type */
+		paddr = SCODE_PTE_TYPE_SET(paddr, type);
 		dst_page[i] = paddr;
-		printf("[TV] gvaddr 0x%x, vend 0x%x, index %d, paddr %#x\n",
+		printf("[TV] copied pte: gvaddr 0x%x, vend 0x%x, index %d, paddr %#x\n",
 					 gvaddr, vend, i, paddr);
 	}
 	return 0;
