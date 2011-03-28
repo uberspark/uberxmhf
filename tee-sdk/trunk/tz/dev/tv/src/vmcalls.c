@@ -313,6 +313,17 @@ int scode_unregister(void *entry)
 
 int scode_share(const void *entry, void *start, size_t len)
 {
+  /* first try locking the pages into physical memory */
+  if(lock_range((void*)start, len)) {
+      printf("warning, couldn't lock shared section [%08x,%08x] into physical memory\n",
+             start, (uintptr_t)start+len);
+      printf("getting pages swapped in and hoping for the best...\n");
+  }
+  /* touch pages to help make sure. necessary in particular if locking
+     failed or we're on windows (where locking doesn't seem to ensure
+     the pages are initially mapped) */
+  scode_touch_range(start, len, true);
+
   return vmcall(VMM_SHARE,
                 (uint32_t)entry,
                 (uint32_t)start,
