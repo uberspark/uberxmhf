@@ -759,138 +759,56 @@ u32 guest_pt_walker_internal(VCPU *vcpu, u32 vaddr, u64 *pdp, u64 *pd, u64 *pt, 
  */
 int guest_pt_copy(VCPU *vcpu, pte_t *dst_page, u32 gvaddr, u32 size, int type) 
 {	
-	u32 is_pae = VCPU_gcr4(vcpu) & CR4_PAE;
-	u64 gcr3 = VCPU_gcr3(vcpu);
+	u32 vend = gvaddr+size;
+	pdte_t pde;
+	pte_t pte;
+	u32 i;
+	u32 paddr;
+	u32 is_pae;
 
-	if (is_pae)
-	{ 
-		u32 pdp_index, pd_index, pt_index;
-		pdpt_t gpdp; /* guest page directory */
-		pdt_t gpd; 
-		pt_t gpt; 
-		u64 pdp_entry, pd_entry;
-		u32 vcurr, vend = gvaddr + size;
-		u32 paddr, index = 0;
-		u64 tmp, i;
+	if (!PAGE_ALIGNED_4K(gvaddr) || !PAGE_ALIGNED_4K(size)) {
+		printf("[TV] guest_pt_copy given unaligned address %x or size %x\n",
+					 gvaddr, size);
+		return -1;
+	}
 
-		/* get fields from virtual addr */
-		pdp_index = pae_get_pdpt_index(gvaddr);
+	for(i=0; gvaddr < vend; gvaddr+=PAGE_SIZE_4K, i++) {
+		gpt_get_ptentries(vcpu,
+											gvaddr+(i<<PAGE_SHIFT_4K),
+											NULL, &pde, &pte, &is_pae);
 
-		while (gvaddr < vend)
-		{
-			vcurr = PAGE_ALIGN_2M(gvaddr + PAGE_SIZE_2M); 
-			if (vcurr > vend)
-				vcurr = vend;
-			else if (vcurr < vend)
-			{
-				printf("[TV] gvaddr 0x%x, vcurr 0x%x, vend 0x%x\n", gvaddr, vcurr, vend);
-				printf("WARNNING: sensitive code address is not in a single 2M page\n");
-			}
-
-			pd_index = pae_get_pdt_index(gvaddr);
-			pt_index = pae_get_pt_index(gvaddr);
-
-			tmp = pae_get_addr_from_32bit_cr3(gcr3);
-			gpdp = (pdpt_t)__gpa2hva__((u32)tmp); 
-			pdp_entry = gpdp[pdp_index];
-
-			tmp = pae_get_addr_from_pdpe(pdp_entry);
-			gpd = (pdt_t)__gpa2hva__((u32)tmp);
-			pd_entry = gpd[pd_index]; 
-
-			if ( (pd_entry & _PAGE_PSE) == 0 ) {
-				/* get addr of page table from entry */
-				paddr = pae_get_addr_from_pde(pd_entry);
-				gpt = (pt_t)__gpa2hva__(paddr);  
-				for (i = 0; gvaddr < vcurr; i ++, gvaddr += PAGE_SIZE_4K, index ++)
-				{
-					if (!(gpt[pt_index + i] & _PAGE_PRESENT))
-						return -1;
-					paddr = pae_get_addr_from_pte(gpt[pt_index + i]);
-					/* use bit 0 of paddr to indicate the type of scode pages
-					 * if bit 0 == 1, this page is SENTRY page
-					 * if bit 1 == 1, this page is SDATA page
-					 * if bit 2 == 1, this page is STEXT page
-					 * otherwise, this page is R/W page. */
-					if( type == SECTION_TYPE_SCODE )  {
-						paddr+=1;
-					}
-					if( type == SECTION_TYPE_SDATA )  {
-						paddr+=2;
-					}
-					if( type == SECTION_TYPE_STEXT )  {
-						paddr+=4;
-					}
-					dst_page[index] = (u64)paddr;
-					printf("[TV] gvaddr 0x%x, vcurr 0x%x, vend 0x%x, index %d, paddr %#x\n", gvaddr, vcurr, vend, index, paddr);
-				}
-			}
-			else { /* 2MB page */
-				printf("FATAL ERROR: currently we don't support big page for sensitive code because of the limitation of pte_page\n");
-				HALT();
-			}
+		if (pde & _PAGE_PSE) {
+			printf("[TV] guest_pt_copy: ERROR currently we don't support "
+						 "big page for sensitive code because of the limitation "
+						 "of pte_page\n");
+			return -2;
 		}
-	}else
-	{
-		u32 pd_index, pt_index;
-		npdt_t gpd; 
-		npt_t gpt; 
-		u64 pd_entry;
-		u32 vcurr, vend = gvaddr + size;
-		u32 paddr, index = 0;
-		u64 tmp, i;
-
-		/* get fields from virtual addr */
-		pd_index = npae_get_pdt_index(gvaddr);
-
-		while (gvaddr < vend)
-		{
-			vcurr = PAGE_ALIGN_4M(gvaddr + PAGE_SIZE_4M); 
-			if (vcurr > vend)
-				vcurr = vend;
-			else if (vcurr < vend)
-			{
-				printf("[TV] gvaddr 0x%x, vcurr 0x%x, vend 0x%x\n", gvaddr, vcurr, vend);
-				printf("WARNNING: sensitive code address is not in a single 2M page\n");
-			}
-
-			pt_index = npae_get_pt_index(gvaddr);
-
-			tmp = npae_get_addr_from_32bit_cr3(gcr3);
-			gpd = (npdt_t)__gpa2hva__((u32)tmp);
-			pd_entry = gpd[pd_index]; 
-
-			if ( (pd_entry & _PAGE_PSE) == 0 ) {
-				/* get addr of page table from entry */
-				paddr = npae_get_addr_from_pde(pd_entry);
-				gpt = (npt_t)__gpa2hva__(paddr);  
-				for (i = 0; gvaddr < vcurr; i ++, gvaddr += PAGE_SIZE_4K, index ++)
-				{
-					if (!(gpt[pt_index + i] & _PAGE_PRESENT))
-						return -1;
-					paddr = npae_get_addr_from_pte(gpt[pt_index + i]);
-					/* use bit 0 of paddr to indicate the type of scode pages
-					 * if bit 0 == 1, this page is SENTRY page
-					 * if bit 1 == 1, this page is SDATA page
-					 * if bit 2 == 1, this page is STEXT page
-					 * otherwise, this page is R/W page. */
-					if( type == SECTION_TYPE_SCODE )  {
-						paddr+=1;
-					}
-					if( type == SECTION_TYPE_SDATA )  {
-						paddr+=2;
-					}
-					if( type == SECTION_TYPE_STEXT )  {
-						paddr+=4;
-					}
-					dst_page[index] = (u64)paddr;
-				}
-			}
-			else { /* 4MB page */
-				printf("FATAL ERROR: currently we don't support big page for sensitive code because of the limitation of pte_page\n");
-				HALT();
-			}
+		if (!(pte & _PAGE_PRESENT)) {
+			printf("[TV] guest_pt_copy: ERROR "
+						 "Page at %x not present in guest page table\n", gvaddr);
+			return -1;
 		}
+		paddr = (is_pae)
+			? pae_get_addr_from_pte(pte)
+			: npae_get_addr_from_pte(pte);
+
+		/* use bit 0 of paddr to indicate the type of scode pages
+		 * if bit 0 == 1, this page is SENTRY page
+		 * if bit 1 == 1, this page is SDATA page
+		 * if bit 2 == 1, this page is STEXT page
+		 * otherwise, this page is R/W page. */
+		if( type == SECTION_TYPE_SCODE )  {
+			paddr+=1;
+		}
+		if( type == SECTION_TYPE_SDATA )  {
+			paddr+=2;
+		}
+		if( type == SECTION_TYPE_STEXT )  {
+			paddr+=4;
+		}
+		dst_page[i] = paddr;
+		printf("[TV] gvaddr 0x%x, vend 0x%x, index %d, paddr %#x\n",
+					 gvaddr, vend, i, paddr);
 	}
 	return 0;
 }
