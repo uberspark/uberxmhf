@@ -99,14 +99,15 @@ TVOperationPerform(INOUT tz_operation_t* psOperation,
       tzi_encode_buffer_t *psInBuf = psOperation->sImp.psEncodeBuffer;
       tzi_encode_buffer_t *psOutBuf = NULL;
 
-      posix_memalign((void**)&psOutBuf, 8, MARSHAL_BUF_SIZE);
+      posix_memalign((void**)&psOutBuf, PAGE_SIZE_4K, MARSHAL_BUF_SIZE);
       if(psOutBuf == NULL) {
         return TZ_ERROR_MEMORY;
       }
       TZIEncodeBufInit(psOutBuf, MARSHAL_BUF_SIZE);
 
       TZIEncodeToDecode(psInBuf);
-      if(scode_share(fn, psInBuf, MARSHAL_BUF_SIZE)) {
+      if(scode_share(fn, psInBuf, MARSHAL_BUF_SIZE)
+         || scode_share(fn, psOutBuf, MARSHAL_BUF_SIZE)) {
         return TZ_ERROR_GENERIC;
       }
       fn(uiCommand, psInBuf, psOutBuf, puiServiceReturn);
@@ -224,8 +225,8 @@ TVManagerDownloadService(INOUT tz_session_t* psSession,
          .size = sizeof(uint32_t)/sizeof(int)},
 
         /* psOutBuf */
-        {.type = SCODE_PARAM_TYPE_POINTER,
-         .size = MARSHAL_BUF_SIZE/sizeof(int)},
+        {.type = SCODE_PARAM_TYPE_INTEGER,
+         .size = sizeof(uint32_t)/sizeof(int)},
 
         /* puiRv */
         {.type = SCODE_PARAM_TYPE_POINTER,
