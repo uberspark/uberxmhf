@@ -630,23 +630,8 @@ u32 guest_pt_walker_internal(VCPU *vcpu, u32 vaddr, u64 *pdp, u64 *pd, u64 *pt, 
 	u32 pd_index, pt_index, offset;
 	u64 paddr;
 
-	void * linux_vmcb;
-	u32 is_pae;
-	u64 gcr3;
-
-	if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-		linux_vmcb = (struct _vmx_vmcsfields *)(&(vcpu->vmcs));
-		is_pae = ((struct _vmx_vmcsfields *)linux_vmcb)->guest_CR4 & CR4_PAE;
-		gcr3 = ((struct _vmx_vmcsfields *)linux_vmcb)->guest_CR3;
-	} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-		linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
-		gcr3 = ((struct vmcb_struct *)linux_vmcb)->cr3;
-		is_pae = ((struct vmcb_struct *)linux_vmcb)->cr4 & CR4_PAE;
-	} else {
-		printf("unknown cpu vendor!\n");
-		HALT();
-	}
-
+	const u32 is_pae = VCPU_gcr4(vcpu) & CR4_PAE;
+	const u64 gcr3 = VCPU_gcr3(vcpu);
 
 	/* intialize PT page phys addr to -1 */
 	if (pdp) *pdp = 0xFFFFFFFF;
