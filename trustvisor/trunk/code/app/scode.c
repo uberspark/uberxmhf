@@ -1860,7 +1860,7 @@ u32 svm_scode_set_prot(VCPU *vcpu, pte_t *pte_pages, u32 size)
 		if (!test_page_scode_bitmap(pfn))
 		{
 			set_page_scode_bitmap(pfn);
-			set_page_scode_bitmap_2M(pfn);
+			/* set_page_scode_bitmap_2M(pfn); */
 
 			/* XXX FIXME: temporary disable DEV setting here! */
 		//	set_page_dev_prot(pfn);
