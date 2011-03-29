@@ -1546,9 +1546,8 @@ void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* entry)
 	entry->scode_size -= shared_page_count<<PAGE_SHIFT_4K;
 }
 
-u32 scode_share(VCPU * vcpu, u32 scode_entry, u32 gva_base, u32 gva_len)
+u32 scode_share_range(VCPU * vcpu, whitelist_entry_t *entry, u32 gva_base, u32 gva_len)
 {
-	whitelist_entry_t* entry=NULL;
 	struct scode_sections_struct* section;
 	u32 gva_len_pages;
 
@@ -1562,12 +1561,6 @@ u32 scode_share(VCPU * vcpu, u32 scode_entry, u32 gva_base, u32 gva_len)
 	/* XXX locking? */
 
 	printf("[TV] scode_share: gva-base %08x, size %x", gva_base, gva_len);
-
-	if (!(entry = find_scode_by_entry(VCPU_gcr3(vcpu), scode_entry))) {
-		printf("[TV] scode_share: Invalid entry pt %x\n", scode_entry);
-		rv=1;
-		goto outerr;
-	}
 
 	if (!PAGE_ALIGNED_4K(gva_base) || !PAGE_ALIGNED_4K(gva_len)) {
 		printf("[TV] scode_share: addr %x or len %d not page aligned\n",
@@ -1634,6 +1627,27 @@ u32 scode_share(VCPU * vcpu, u32 scode_entry, u32 gva_base, u32 gva_len)
 		tv_ctx->scode_clear_prot(vcpu, new_scode_pages, gva_len_pages);
 	}
 	return rv;
+}
+
+u32 scode_share_ranges(VCPU * vcpu, u32 scode_entry, u32 gva_base[], u32 gva_len[], u32 count)
+{
+	u32 i;
+	whitelist_entry_t* entry;
+
+	if (!(entry = find_scode_by_entry(VCPU_gcr3(vcpu), scode_entry))) {
+		printf("[TV] scode_share: Invalid entry pt %x\n", scode_entry);
+		return 1;
+	}
+
+	for(i=0; i<count; i++) {
+		if(scode_share_range(vcpu, entry, gva_base[i], gva_len[i])) {
+			printf("[TV] scode_share_ranges releasing all shared pages\n");
+			scode_release_all_shared_pages(vcpu, entry);
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 #if 0

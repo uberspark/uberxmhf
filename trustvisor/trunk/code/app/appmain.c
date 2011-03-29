@@ -38,6 +38,7 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 //#include <target.h>
+#include  "./include/puttymem.h"
 #include  "./include/scode.h"
 #include  <globals.h>
 
@@ -198,14 +199,31 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 			}
 		case VMMCMD_SHARE:
 			{
-				u32 scode_entry, addr, len;
+				u32 scode_entry, addrs_gva, lens_gva, count;
+				u32 *addrs=NULL, *lens=NULL;
 
 				scode_entry = r->ecx;
 
-				addr = r->edx;
-				len = r->esi;
+				addrs_gva = r->edx;
+				lens_gva = r->esi;
+				count = r->edi;
 
-				ret = scode_share(vcpu, scode_entry, addr, len);
+				addrs = vnmalloc(count, sizeof(u32));
+				copy_from_guest(vcpu, (u8*)addrs, addrs_gva, sizeof(u32)*count);
+
+				lens = vnmalloc(count, sizeof(u32));
+				copy_from_guest(vcpu, (u8*)lens, lens_gva, sizeof(u32)*count);
+
+				if (lens && addrs) {
+					ret = scode_share_ranges(vcpu, scode_entry, addrs, lens, count);
+				} else {
+					printf("[TV] VMMCMD_SHARE: ERROR- couldn't allocate %d entries\n",
+								 count);
+					ret = -2;
+				}
+
+				vfree(addrs);
+				vfree(lens);
 				break;
 			}
 		default:
