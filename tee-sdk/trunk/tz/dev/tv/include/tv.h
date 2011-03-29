@@ -158,8 +158,8 @@ int scode_register(const struct scode_sections_info *pageinfo,
  */
 int scode_unregister(void *entry);
 
-/* share a memory range with a PAL. */
-int scode_share(const void *entry, void *start, size_t len);
+/* share memory ranges with a PAL. */
+int scode_share(const void *entry, void **start, size_t *len, size_t count);
 
 /* Test for presence of TrustVisor.
  *

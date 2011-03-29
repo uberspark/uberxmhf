@@ -40,6 +40,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <stdio.h>
 
 typedef struct tzi_session_ext_t {
   pal_fn_t pFn;
@@ -84,22 +85,47 @@ TVOperationPrepareOpen(INOUT tz_device_t* psDevice,
   return TZ_SUCCESS;
 }
 
-static int share_referenced_mem(pal_fn_t fn, ll_t* psRefdSubranges)
+static int share_referenced_mem(pal_fn_t fn, ll_t* psRefdSubranges, void* psOutBuf, void* psInBuf)
 {
   tzi_shared_memory_subrange_t *subrange;
+  size_t count;
+  void **addrs = NULL;
+  size_t *lens = NULL;
+  int i;
+  int rv=0;
 
-  /* XXX we currently share the whole shared memory region, not just
-     the referenced subrange. */
+  count=2; /* psOutBuf and psInBuf */
+  LL_FOR_EACH(psRefdSubranges, subrange) {
+    count++;
+  }
+
+  addrs = calloc(count, sizeof(void*));
+  lens = calloc(count, sizeof(size_t));
+  
+  addrs[0] = psOutBuf;
+  lens[0] = MARSHAL_BUF_SIZE;
+  addrs[1] = psInBuf;
+  lens[1] = MARSHAL_BUF_SIZE;
+
+  i=2;
+  LL_FOR_EACH(psRefdSubranges, subrange) {
+    addrs[i] = subrange->psSharedMem->pBlock + subrange->uiOffset;
+    lens[i] = subrange->uiLength;
+    if(!PAGE_ALIGNED_4K((uintptr_t)addrs[i]) || !PAGE_ALIGNED_4K(lens[i])) {
+      printf("Error: TV back-end currently only supports 4K-aligned shared memory subranges\n");
+      goto out;
+    }
+    i++;
+  }
+
+  rv = scode_share(fn, addrs, lens, count);
   /* XXX we currently do not enforce the specified permissions-
      the service (pal) gets full access */
-  /* XXX need to make sure we don't try to share the same range twice */
 
-  LL_FOR_EACH(psRefdSubranges, subrange) {
-    if(scode_share(fn, subrange->psSharedMem->pBlock, subrange->psSharedMem->uiLength)) {
-      return 1;
-    }
-  }
-  return 0;
+ out:
+  free(addrs);
+  free(lens);
+  return rv;
 }
 
 tz_return_t
@@ -125,8 +151,11 @@ TVOperationPerform(INOUT tz_operation_t* psOperation,
       TZIEncodeBufInit(psOutBuf, MARSHAL_BUF_SIZE);
 
       TZIEncodeToDecode(psInBuf);
-      if(scode_share(fn, psInBuf, MARSHAL_BUF_SIZE)
-         || scode_share(fn, psOutBuf, MARSHAL_BUF_SIZE)) {
+
+      if (share_referenced_mem(fn,
+                               psOperation->sImp.psRefdSubranges,
+                               psOutBuf,
+                               psInBuf)) {
         return TZ_ERROR_GENERIC;
       }
       fn(uiCommand, psInBuf, psOutBuf, puiServiceReturn);
