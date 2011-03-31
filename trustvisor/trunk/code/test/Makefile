@@ -1,21 +1,20 @@
 CFLAGS += -I${UNITYDIR}/src -DUNITY_SUPPORT_64
 CFLAGS := $(filter-out -nostdinc,${CFLAGS})
 
-all: do_pt
+all: do_pt do_hpt
 
 # FIXME should create separately compiled objects here, instead of in src dir
 #unity.o: ${UNITYDIR}/src/unity.c
 #pt.o: ../app/pt.c
 
-do_pt: pt
-	./pt
-
 pt: pt_runner.o pt.o ../app/pt.o ${UNITYDIR}/src/unity.o 
+hpt: hpt_runner.o ${UNITYDIR}/src/unity.o 
 
-pt_runner.c: pt.c
-	ruby ${UNITYDIR}/auto/generate_test_runner.rb pt.c pt_runner.c
+do_%: %
+	./$<
 
-
+%_runner.c: %.c
+	ruby ${UNITYDIR}/auto/generate_test_runner.rb $< $@
 
 
 
@@ -44,8 +43,11 @@ pt_runner.c: pt.c
 
 # $(APPBOJECTSDIR)/%.o: %.S $(I_SOURCES) Makefile ../Makefile
 # 	$(CC) -c $(ASFLAGS) -o $@ $<
-%.o: *%.c $(I_SOURCES) Makefile ../Makefile
+%.o: %.c $(I_SOURCES) Makefile ../Makefile
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-# .PHONY: clean 
-# clean: 
+.PHONY: clean 
+clean: 
+	$(RM) *.o
+	$(RM) *_runner.c
+	$(RM) ../*.o

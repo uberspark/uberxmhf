@@ -36,31 +36,23 @@
 #include "unity.h"
 
 #define __PRINT_H_ /* avoid indirectly including our print.h, which conflicts with libc stdio.h */
-#include "target.h"
+#include <target.h>
+#include <hpt.h>
 
 /* run time parameter block. we'll mock this up as needed */
 RPB __rpb;
 RPB *rpb = &__rpb;
 
+/* global CPU structs */
+VCPU g_vcpubuffers[0];
+
+#define BR64_GET(x64, name) BR64_GET_HL(x64, name##_HI, name##_LO)
+#define BR64_SET(x64, name, val) BR64_SET_HL(x64, name##_HI, name##_LO, val)
+
 /* do-nothing mock */
 void emhf_hwpgtbl_flushall(VCPU *vcpu)
 {
 }
-
-#define ZERO_HI(x, bits) ((x) << (bits) >> (bits))
-#define ZERO_LO(x, bits) ((x) >> (bits) << (bits))
-#define MASKRANGE64(hi,lo) ZERO_LO(ZERO_HI(0xffffffffffffffffull,		\
-																					 64-(hi)-1),							\
-																	 (lo))
-#define MASKRANGE32(hi,lo) ZERO_LO(ZERO_HI(0xfffffffful,						\
-																					 32-(hi)-1),							\
-																	 (lo))
-
-#define BR64_GET_HL(x64, hi, lo) (ZERO_HI(x64, 64-(hi)) >> (lo))
-#define BR64_SET_HL(x64, hi, lo, val) ((x64 & ~MASKRANGE64((hi), (lo))) | ((val) << (lo)))
-
-#define BR64_GET(x64, name) BR64_GET_HL(x64, name##_HI, name##_LO)
-#define BR64_SET(x64, name, val) BR64_SET_HL(x64, name##_HI, name##_LO, val)
 
 static u64 get_addr(u64 entry, u32 hi, u32 lo)
 {
@@ -287,7 +279,10 @@ void tearDown(void)
 void test_MASKRANGE64_all(void)
 {
 	/* TEST_ASSERT_EQUAL_HEX64(1ll, 1ll); */
-	TEST_ASSERT_EQUAL_HEX64(0x7fffffffffffffffull, MASKRANGE64(63, 0));
+	TEST_ASSERT_EQUAL_HEX64(0xffffffffffffffffull, MASKRANGE64(63, 0));
+	TEST_ASSERT_EQUAL_HEX64(0x7fffffffffffffffull, MASKRANGE64(62, 0));
+	TEST_ASSERT_EQUAL_HEX64(0x3ull, MASKRANGE64(1, 0));
+	TEST_ASSERT_EQUAL_HEX64(0x1ull, MASKRANGE64(0, 0));
 
 	/* ept_pdpte_t p; */
 	/* ept_pdpte_init(&p); */

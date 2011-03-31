@@ -56,28 +56,6 @@
 #endif
 #endif 
 
-/* trustvisor context interface */
-struct trustvisor_context {
-	void (*nested_set_prot)(VCPU * vcpu, u64 gpaddr, int type);
-	void (*nested_clear_prot)(VCPU * vcpu, u64 gpaddr);
-	void (*nested_switch_scode)(VCPU * vcpu, pte_t *pte_pages, u32 size, u32 pte_page2, u32 size2);
-	void (*nested_switch_regular)(VCPU * vcpu, pte_t *pte_pages, u32 size, u32 pte_page2, u32 size2);
-	void (*nested_make_pt_accessible)(pte_t *gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_pal);
-	void (*nested_make_pt_unaccessible)(pte_t *gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_pal);
-//	void (*nested_breakpde)(VCPU * vcpu, u32 nvaddr);
-//	void (*nested_promote)(VCPU * vcpu, u32 pfn);
-
-	u32 (*scode_set_prot)(VCPU *vcpu, pte_t *pte_pages, u32 size);
-	void (*scode_clear_prot)(VCPU * vcpu, pte_t *pte_pages, u32 size);
-	u32 (*scode_switch_scode)(VCPU * vcpu);
-	u32 (*scode_switch_regular)(VCPU * vcpu);
-	u32 (*scode_npf)(VCPU * vcpu, u32 gpaddr, u64 errorcode);
-};
-
-extern struct trustvisor_context * tv_ctx;
-
-
-
 /* 
  * definition for scode sections info 
  * */
@@ -201,23 +179,13 @@ enum VMMcmd
 	VMMCMD_TEST		=255,
 };
 
-/* nested paging handlers (SVM) */
-void svm_nested_set_prot(VCPU * vcpu, u64 pfn, int type);
-void svm_nested_clear_prot(VCPU * vcpu, u64 pfn);
-void svm_nested_switch_scode(VCPU * vcpu, pte_t *pte_pages, u32 size, u32 pte_page2, u32 size2);
-void svm_nested_switch_regular(VCPU * vcpu, pte_t *pte_pages, u32 size, u32 pte_page2, u32 size2);
-void svm_nested_make_pt_accessible(pte_t *gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_nx);
-void svm_nested_make_pt_unaccessible(pte_t *gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_nx);
-//void svm_nested_promote(VCPU * vcpu, u32 pfn);
-//void svm_nested_breakpde(VCPU * vcpu, u32 nvaddr);
-
-/* nested paging handlers (vmx) */
-void vmx_nested_set_prot(VCPU * vcpu, u64 gpaddr, int type);
-void vmx_nested_clear_prot(VCPU * vcpu, u64 gpaddr);
-void vmx_nested_switch_scode(VCPU * vcpu, pte_t *pte_pages, u32 size, u32 pte_page2, u32 size2);
-void vmx_nested_switch_regular(VCPU * vcpu, pte_t *pte_page, u32 size, u32 pte_page2, u32 size2);
-void vmx_nested_make_pt_unaccessible(pte_t *gpaddr_list, u32 gpaddr_count, pdpt_t npdp, u32 is_pal);
-void vmx_nested_make_pt_accessible(pte_t *gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_pal);
+/* nested paging handlers (hpt) */
+void hpt_nested_set_prot(VCPU * vcpu, u64 gpaddr, int type);
+void hpt_nested_clear_prot(VCPU * vcpu, u64 gpaddr);
+void hpt_nested_switch_scode(VCPU * vcpu, pte_t *pte_pages, u32 size, u32 pte_page2, u32 size2);
+void hpt_nested_switch_regular(VCPU * vcpu, pte_t *pte_page, u32 size, u32 pte_page2, u32 size2);
+void hpt_nested_make_pt_unaccessible(pte_t *gpaddr_list, u32 gpaddr_count, pdpt_t npdp, u32 is_pal);
+void hpt_nested_make_pt_accessible(pte_t *gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_pal);
 
 /* several help functions to access guest address space */
 u16 get_16bit_aligned_value_from_guest(VCPU * vcpu, u32 gvaddr);
@@ -239,21 +207,14 @@ void * __gpa2hva__(u32 gpaddr);
 void copy_from_guest(VCPU * vcpu, u8 *dst, u32 gvaddr, u32 len);
 void copy_to_guest(VCPU * vcpu, u32 gvaddr, u8 *src, u32 len);
 
-/* PAL operations (VMX) */
-u32 vmx_scode_set_prot(VCPU *vcpu, pte_t *pte_pages, u32 size);
-void vmx_scode_clear_prot(VCPU * vcpu, pte_t *pte_pages, u32 size);
-u32 vmx_scode_switch_scode(VCPU * vcpu);
-u32 vmx_scode_switch_regular(VCPU * vcpu);
-u32 vmx_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode);
+/* PAL operations (HPT) */
+u32 hpt_scode_set_prot(VCPU *vcpu, pte_t *pte_pages, u32 size);
+void hpt_scode_clear_prot(VCPU * vcpu, pte_t *pte_pages, u32 size);
+u32 hpt_scode_switch_scode(VCPU * vcpu);
+u32 hpt_scode_switch_regular(VCPU * vcpu);
+u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode);
 
-/* PAL operations (SVM) */
-u32 svm_scode_set_prot(VCPU *vcpu, pte_t *pte_pages, u32 size);
-void svm_scode_clear_prot(VCPU * vcpu, pte_t *pte_pages, u32 size);
-u32 svm_scode_switch_scode(VCPU * vcpu);
-u32 svm_scode_switch_regular(VCPU * vcpu);
-u32 svm_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode);
-
-/* PAL operations (SVM and VMX) */
+/* PAL operations */
 void init_scode(VCPU * vcpu);
 u32 scode_register(VCPU * vcpu, u32 scode_info, u32 scode_pm, u32 gventry);
 u32 scode_unregister(VCPU * vcpu, u32 gvaddr);

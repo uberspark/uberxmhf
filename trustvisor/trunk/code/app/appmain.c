@@ -42,8 +42,6 @@
 #include  "./include/scode.h"
 #include  <globals.h>
 
-extern struct trustvisor_context * tv_ctx;
-
 // a placeholder for now...
 u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 	printf("\nCPU(0x%02x): Hello world from sechyp app!", vcpu->id);
@@ -250,11 +248,10 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 		struct regs *r, u64 gpa, u64 gva, u64 violationcode)
 {
 	u32 ret;
-	printf("\nCPU(0x%02x): gva=0x%08x, gpa=0x%08x, code=0x%08x\n", vcpu->id,
-			(u32)gva, (u32)gpa, (u32)violationcode);
-	ASSERT(tv_ctx != 0);
+	printf("\nCPU(0x%02x): gva=0x%08x, gpa=0x%08x, code=0x%016llx\n", vcpu->id,
+			(u32)gva, (u32)gpa, violationcode);
 	//	printf("\nprot is: 0x%016llx", emhf_hwpgtbl_getprot(vcpu, gpa));
-	if ((ret = tv_ctx->scode_npf(vcpu, gpa, (u32)violationcode)) != 0) {
+	if ((ret = hpt_scode_npf(vcpu, gpa, violationcode)) != 0) {
 		printf("FATAL ERROR: Unexpected return value from page fault handling\n");
 		HALT();
 	}

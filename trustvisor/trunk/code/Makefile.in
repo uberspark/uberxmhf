@@ -132,6 +132,7 @@ clean:
 	cd app && $(MAKE) -w clean
 	rm -rf $(APPOBJECTSDIR)
 	cd $(EMHFCOREDIR) && $(MAKE) -w clean
+	cd test && $(MAKE) -w clean
 
 pratt:
 	scp dist/* root@pratt:/boot

@@ -49,44 +49,6 @@
 #include  "./include/rsa.h"
 #include  "./include/random.h"
 
-struct trustvisor_context * tv_ctx = 0;
-
-/* SVM trustvisor context */
-struct trustvisor_context svm_tv_ctx = {
-	.nested_set_prot = svm_nested_set_prot,
-	.nested_clear_prot = svm_nested_clear_prot,
-	.nested_switch_scode = svm_nested_switch_scode,
-	.nested_switch_regular = svm_nested_switch_regular,
-	.nested_make_pt_accessible = svm_nested_make_pt_accessible,
-	.nested_make_pt_unaccessible = svm_nested_make_pt_unaccessible,
-	//.nested_breakpde = svm_nested_breakpde,
-	//.nested_promote = svm_nested_promote,
-
-	.scode_set_prot = svm_scode_set_prot,
-	.scode_clear_prot = svm_scode_clear_prot,
-	.scode_switch_scode = svm_scode_switch_scode,
-	.scode_switch_regular = svm_scode_switch_regular,
-	.scode_npf = svm_scode_npf,
-};
-
-/* VMX trustvisor context */
-struct trustvisor_context vmx_tv_ctx = {
-	.nested_set_prot = vmx_nested_set_prot,
-	.nested_clear_prot = vmx_nested_clear_prot,
-	.nested_switch_scode = vmx_nested_switch_scode,
-	.nested_switch_regular = vmx_nested_switch_regular,
-	.nested_make_pt_accessible = vmx_nested_make_pt_accessible,
-	.nested_make_pt_unaccessible = vmx_nested_make_pt_unaccessible,
-	//.nested_breakpde = 0,
-	//.nested_promote = 0,
-
-	.scode_set_prot = vmx_scode_set_prot,
-	.scode_clear_prot = vmx_scode_clear_prot,
-	.scode_switch_scode = vmx_scode_switch_scode,
-	.scode_switch_regular = vmx_scode_switch_regular,
-	.scode_npf = vmx_scode_npf,
-};
-
 /* whitelist of all approved sensitive code regions */
 /* whitelist_max and *whitelist is set up by BSP, no need to apply lock
  * whitelist_size will only be updated in scode_register() and scode_unreg(), no need to apply lock
@@ -271,17 +233,6 @@ u32 scode_measure(u8 * pcr, pte_t *pte_pages, u32 size)
 void init_scode(VCPU * vcpu)
 {
 	u32 inum, max;
-	/* populate TrustVisor context acorrding to CPU vendor */
-	if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-		printf("set up VMX context!\n");
-		tv_ctx = (struct trustvisor_context *)&vmx_tv_ctx;
-	} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-		printf("set up SVM context!\n");
-		tv_ctx = (struct trustvisor_context *)&svm_tv_ctx;
-	} else {
-		printf("unknow cpu vendor type!\n");
-		HALT();
-	}
 
 	/* initialize heap memory */
 	mem_init();
@@ -328,7 +279,7 @@ void init_scode(VCPU * vcpu)
 	printf("[TV] RSA key pair generated!\n");
 }
 
-/* VMX related SCODE routines */
+/* HPT related SCODE routines */
 
 /* ************************************
  * set up scode pages permission
@@ -342,7 +293,7 @@ void init_scode(VCPU * vcpu)
  * SSTACK			RW					unpresent
  *
  * **************************************/
-u32 vmx_scode_set_prot(VCPU *vcpu, pte_t *pte_pages, u32 size)
+u32 hpt_scode_set_prot(VCPU *vcpu, pte_t *pte_pages, u32 size)
 {
 	u32 i; 
 	u32 pfn;
@@ -372,14 +323,14 @@ u32 vmx_scode_set_prot(VCPU *vcpu, pte_t *pte_pages, u32 size)
 		/* XXX FIXME: do we need to grab a lock? */
 		for(k=0; k<g_midtable_numentries; k++) {
 			tmpcpu = (VCPU *)(g_midtable[k].vcpu_vaddr_ptr);
-			vmx_nested_set_prot(tmpcpu, pte_pages[i],0);
+			hpt_nested_set_prot(tmpcpu, pte_pages[i],0);
 		}
 	}
 
 	return 0;
 }
 
-void vmx_scode_clear_prot(VCPU * vcpu, pte_t *pte_pages, u32 size)
+void hpt_scode_clear_prot(VCPU * vcpu, pte_t *pte_pages, u32 size)
 {
 	u32 i; 
 	u32 pfn;
@@ -397,7 +348,7 @@ void vmx_scode_clear_prot(VCPU * vcpu, pte_t *pte_pages, u32 size)
 		{
 			/* XXX FIXME: temporary disable DEV setting here! */
 			//clear_page_dev_prot(pfn);
-			vmx_nested_clear_prot(vcpu, pte_pages[i]);
+			hpt_nested_clear_prot(vcpu, pte_pages[i]);
 
 			clear_page_scode_bitmap(pfn);
 //			if (clear_page_scode_bitmap_2M(pfn) == 0)
@@ -416,7 +367,7 @@ void vmx_scode_clear_prot(VCPU * vcpu, pte_t *pte_pages, u32 size)
 				pfn = pte_pages[i] >> PAGE_SHIFT_4K;
 				/* XXX FIXME: temporary disable DEV setting here! */
 				//	set_page_dev_prot(pfn);
-				vmx_nested_clear_prot(tmpcpu, pte_pages[i]);
+				hpt_nested_clear_prot(tmpcpu, pte_pages[i]);
 			}
 		}
 	}
@@ -544,19 +495,9 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	u32 ret;
 	u32 inum;
 	struct scode_sections_struct * ginfo; 
-	void * linux_vmcb;
 	u64 gcr3;
 
-	if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-		linux_vmcb = (struct _vmx_vmcsfields *)(&(vcpu->vmcs));
-		gcr3 = ((struct _vmx_vmcsfields *)linux_vmcb)->guest_CR3;
-	} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-		linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
-		gcr3 = ((struct vmcb_struct *)linux_vmcb)->cr3;
-	} else {
-		printf("unknown cpu vendor!\n");
-		return 1;
-	}
+	gcr3 = VCPU_gcr3(vcpu);
 
 	printf("\n[TV] ************************************\n");
 	printf("[TV] ********** scode register **********\n");
@@ -611,7 +552,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
 	/* set up scode pages permission (also flush TLB) */
 	/* CRITICAL SECTION in MP scenario: need to quiesce other CPUs or at least acquire spinlock */
-	if (tv_ctx->scode_set_prot(vcpu, whitelist_new.scode_pages, whitelist_new.scode_size))
+	if (hpt_scode_set_prot(vcpu, whitelist_new.scode_pages, whitelist_new.scode_size))
 	{
 		vfree(whitelist_new.scode_pages);
 		printf("[TV] SECURITY: Registration Failed. Probably some page has already been used by other sensitive code.\n");
@@ -624,7 +565,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	/* hash the entire SSCB code, and then extend the hash value into uTPM PCR[0] */
 	if (scode_measure(whitelist_new.pcr, whitelist_new.scode_pages, whitelist_new.scode_size))
 	{
-		tv_ctx->scode_clear_prot(vcpu, whitelist_new.scode_pages, whitelist_new.scode_size);
+		hpt_scode_clear_prot(vcpu, whitelist_new.scode_pages, whitelist_new.scode_size);
 		vfree(whitelist_new.scode_pages);
 		printf("[TV] SECURITY: Registration Failed. sensitived code cannot be verified.\n");
 		return 1;
@@ -655,19 +596,9 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
 {
 	u32 i, j;
 
-	void * linux_vmcb;
 	u64 gcr3;
 
-	if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-		linux_vmcb = (struct _vmx_vmcsfields *)(&(vcpu->vmcs));
-		gcr3 = ((struct _vmx_vmcsfields *)linux_vmcb)->guest_CR3;
-	} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-		linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
-		gcr3 = ((struct vmcb_struct *)linux_vmcb)->cr3;
-	} else {
-		printf("unknown cpu vendor!\n");
-		return 1;
-	}
+	gcr3 = VCPU_gcr3(vcpu);
 
 	printf("\n[TV] ************************************\n");
 	printf("[TV] ********* scode unregister *********\n");
@@ -700,7 +631,7 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
 	/* CRITICAL SECTION in MP scenario: need to quiesce other CPUs or at least acquire spinlock */
 	if (whitelist[i].scode_pages)
 	{
-		tv_ctx->scode_clear_prot(vcpu, whitelist[i].scode_pages, whitelist[i].scode_size);
+		hpt_scode_clear_prot(vcpu, whitelist[i].scode_pages, whitelist[i].scode_size);
 		vfree((void *)(whitelist[i].scode_pages));
 		whitelist[i].scode_pages = NULL;
 	}
@@ -749,7 +680,6 @@ void scode_expose_arch(VCPU *vcpu)
 	u64 *pte_page;
 	u32 pte_count = 0;
 	u32 gpaddr = 0;
-	void * linux_vmcb;
 	u32 is_pae;
 	u32 gdtr;
 	struct scode_sections_struct * ginfo;
@@ -759,18 +689,8 @@ void scode_expose_arch(VCPU *vcpu)
 	pt_t sp = (pt_t)(whitelist[curr].scode_pages);
 	u32 gcr3_flag=0;
 
-	if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-		linux_vmcb = (struct _vmx_vmcsfields *)(&(vcpu->vmcs));
-		is_pae = ((struct _vmx_vmcsfields *)linux_vmcb)->guest_CR4 & CR4_PAE;
-		gdtr = ((struct _vmx_vmcsfields *)linux_vmcb)->guest_GDTR_base;
-	} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-		linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
-		is_pae = ((struct vmcb_struct *)linux_vmcb)->cr4 & CR4_PAE;
-		gdtr = ((struct vmcb_struct *)linux_vmcb)->gdtr.base;
-	} else {
-		printf("unknown cpu vendor!\n");
-		HALT();
-	}
+	is_pae = VCPU_gcr4(vcpu) & CR4_PAE;
+	gdtr = VCPU_gdtr_base(vcpu);
 
 	/* alloc memory for page table entry holder */
 	whitelist[curr].pte_page = (u32)((u64 *)vmalloc(MAX_REGPAGES_NUM<<5));
@@ -842,16 +762,7 @@ void memcpy_guest_to_guest(VCPU * vcpu, u32 src, u32 dst, u32 len)
 	void * linux_vmcb;
 	u32 is_pae;
 
-	if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-		linux_vmcb = (struct _vmx_vmcsfields *)(&(vcpu->vmcs));
-		is_pae = ((struct _vmx_vmcsfields *)linux_vmcb)->guest_CR4 & CR4_PAE;
-	} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-		linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
-		is_pae = ((struct vmcb_struct *)linux_vmcb)->cr4 & CR4_PAE;
-	} else {
-		printf("unknown cpu vendor!\n");
-		HALT();
-	}
+	is_pae = VCPU_gcr4(vcpu) & CR4_PAE;
 
 	src_gpaddr = gpt_vaddr_to_paddr(vcpu, src);
   	dst_gpaddr = gpt_vaddr_to_paddr(vcpu, dst);
@@ -879,19 +790,9 @@ u32 scode_marshall(VCPU * vcpu)
 	u32 pm_addr, pm_addr_base, pm_value, pm_tmp;  /*parameter stack base address*/
 	u32 pm_num, pm_type, pm_size, pm_size_sum; /*save pm information*/
 	u32 grsp;
-	void * linux_vmcb;
 	u32 is_pae;
 	u32 new_rsp;
 	int curr=scode_curr[vcpu->id];
-
-	if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-		linux_vmcb = (struct _vmx_vmcsfields *)(&(vcpu->vmcs));
-	} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-		linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
-	} else {
-		printf("unknown cpu vendor!\n");
-		return 1;
-	}
 
 	printf("[TV] marshalling scode parameters!\n");
 	if(whitelist[curr].gpm_num == 0)
@@ -978,16 +879,8 @@ u32 scode_marshall(VCPU * vcpu)
 				printf("[TV] Fail: unknown parameter %d type %d \n", pm_num, pm_type);
 				return 1;
 		}
-		if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-			new_rsp = ((struct _vmx_vmcsfields *)linux_vmcb)->guest_RSP - 4;
-			((struct _vmx_vmcsfields *)linux_vmcb)->guest_RSP = new_rsp;
-		} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-			new_rsp = ((struct vmcb_struct *)linux_vmcb)->rsp - 4;
-			((struct vmcb_struct *)linux_vmcb)->rsp = new_rsp;
-		} else {
-			printf("unknown cpu vendor!\n");
-			return 1;
-		}
+		new_rsp = VCPU_grsp(vcpu)-4;
+		VCPU_grsp_set(vcpu, new_rsp);
 		put_32bit_aligned_value_to_guest(vcpu, new_rsp, pm_tmp);
 	}
 	return 0;
@@ -996,27 +889,25 @@ u32 scode_marshall(VCPU * vcpu)
 
 
 //todo: switch from regular code to sensitive code
-u32 vmx_scode_switch_scode(VCPU * vcpu)
+u32 hpt_scode_switch_scode(VCPU * vcpu)
 {
 	u32 addr;
 	int curr=scode_curr[vcpu->id];
-
-	struct _vmx_vmcsfields * linux_vmcb = (struct _vmx_vmcsfields *)(&(vcpu->vmcs));
 
 	printf("\n[TV] ************************************\n");
 	printf("[TV] ********* switch to scode **********\n");
 	printf("[TV] ************************************\n");
 
 	/* save the guest stack pointer and set new stack pointer to scode stack */
-	printf("[TV] saved guest regular stack %#x, switch to sensitive code stack %#x\n", (u32)linux_vmcb->guest_RSP, whitelist[curr].gssp);
-	whitelist[curr].grsp = (u32)linux_vmcb->guest_RSP; 
-	linux_vmcb->guest_RSP = whitelist[curr].gssp; 
+	printf("[TV] saved guest regular stack %#x, switch to sensitive code stack %#x\n", (u32)VCPU_grsp(vcpu), whitelist[curr].gssp);
+	whitelist[curr].grsp = (u32)VCPU_grsp(vcpu);
+	VCPU_grsp_set(vcpu, whitelist[curr].gssp);
 
 	/* input parameter marshalling */
 	if (scode_marshall(vcpu)){
 		/* error in parameter marshalling */
 		/* restore regular code stack */
-		linux_vmcb->guest_RSP = whitelist[curr].grsp; 
+		VCPU_grsp_set(vcpu, whitelist[curr].grsp);
 		whitelist[curr].grsp = (u32)-1; 
 		return 1;
 	}
@@ -1026,24 +917,29 @@ u32 vmx_scode_switch_scode(VCPU * vcpu)
 
 	/* change NPT permission for all PTE pages and scode pages */
 	printf("[TV] change NPT permission to run PAL!\n"); 
-	vmx_nested_switch_scode(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size,
+	hpt_nested_switch_scode(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size,
 			(u32)whitelist[curr].pte_page, whitelist[curr].pte_size);
 		
 	/* disable interrupts */
-	linux_vmcb->guest_RFLAGS &= ~EFLAGS_IF;
+	VCPU_grflags_set(vcpu, VCPU_grflags(vcpu) & ~EFLAGS_IF);
 
-//	/* set the sensitive code to run in ring 3 */
-//	linux_vmcb->cpl = 3;
+	/* XXX FIXME- what's the right thing here? Keeping 'legacy' behavior
+		 of setting this flag for AMD only and doing nothing for INTEL for
+		 now */
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+		/* set the sensitive code to run in ring 3 */
+		((struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr))->cpl = 3;
+	}
 
 	/* write the return address to scode stack */
 	addr = get_32bit_aligned_value_from_guest(vcpu, (u32)whitelist[curr].grsp);
-	linux_vmcb->guest_RSP -= 4;
-	put_32bit_aligned_value_to_guest(vcpu, (u32)(linux_vmcb->guest_RSP), addr);
+	VCPU_grsp_set(vcpu, VCPU_grsp(vcpu)-4);
+	put_32bit_aligned_value_to_guest(vcpu, (u32)VCPU_grsp(vcpu), addr);
 	/* store the return address in whitelist structure */
 	whitelist[curr].return_v = addr;
 	printf("[TV] scode return vaddr is %#x\n", whitelist[curr].return_v);
 
-	printf("[TV] host stack pointer before running scode is %#x\n",(u32)linux_vmcb->guest_RSP);
+	printf("[TV] host stack pointer before running scode is %#x\n",(u32)VCPU_grsp(vcpu));
 	return 0;
 }
 
@@ -1074,7 +970,6 @@ u32 scode_unmarshall(VCPU * vcpu)
 	u32 value;
 
 	int curr=scode_curr[vcpu->id];
-	//struct _vmx_vmcsfields * linux_vmcb = (struct _vmx_vmcsfields *)(&(vcpu->vmcs));
 
 	printf("[TV] unmarshalling scode parameters!\n");
 	if (whitelist[curr].gpm_num == 0)
@@ -1137,10 +1032,9 @@ u32 scode_unmarshall(VCPU * vcpu)
 }
 
 //switch from sensitive code to regular code
-u32 vmx_scode_switch_regular(VCPU * vcpu)
+u32 hpt_scode_switch_regular(VCPU * vcpu)
 {
 	int curr=scode_curr[vcpu->id];
-	struct _vmx_vmcsfields * linux_vmcb = (struct _vmx_vmcsfields *)(&(vcpu->vmcs));
 
 	printf("\n[TV] ************************************\n");
 	printf("[TV] ***** switch to regular code  ******\n");
@@ -1150,7 +1044,7 @@ u32 vmx_scode_switch_regular(VCPU * vcpu)
 	if (!scode_unmarshall(vcpu)){
 		/* clear the NPT permission setting in switching into scode */
 		printf("[TV] change NPT permission to exit PAL!\n"); 
-		vmx_nested_switch_regular(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size,
+		hpt_nested_switch_regular(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size,
 				(u32)whitelist[curr].pte_page, whitelist[curr].pte_size);
 		scode_unexpose_arch(vcpu);
 
@@ -1158,98 +1052,102 @@ u32 vmx_scode_switch_regular(VCPU * vcpu)
 		scode_release_all_shared_pages(vcpu, &whitelist[curr]);
 
 		/* switch back to regular stack */
-		printf("[TV] switch from scode stack %#x back to regular stack %#x\n", (u32)linux_vmcb->guest_RSP, (u32)whitelist[curr].grsp);
-		linux_vmcb->guest_RSP = whitelist[curr].grsp;
-		linux_vmcb->guest_RSP += 4; 
+		printf("[TV] switch from scode stack %#x back to regular stack %#x\n", (u32)VCPU_grsp(vcpu), (u32)whitelist[curr].grsp);
+		VCPU_grsp_set(vcpu, whitelist[curr].grsp + 4);
 		whitelist[curr].grsp = (u32)-1;
 
 		/* enable interrupts */
-		linux_vmcb->guest_RFLAGS |= EFLAGS_IF;
+		VCPU_grflags_set(vcpu, VCPU_grflags(vcpu) | EFLAGS_IF);
 
-		printf("[TV] stack pointer before exiting scode is %#x\n",(u32)linux_vmcb->guest_RSP);
+		printf("[TV] stack pointer before exiting scode is %#x\n",(u32)VCPU_grsp(vcpu));
 		return 0;
 	}
 	/* error in scode unmarshalling */
 	return 1;
 }
 
+static bool hpt_error_wasInsnFetch(VCPU *vcpu, u64 errorcode)
+{
+	if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+		return (errorcode & EPT_ERRORCODE_EXEC);
+	} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+		return (errorcode & PF_ERRORCODE_INST);
+	} else {
+		ASSERT(0);
+	}
+}
+
 /*  EPT violation handler */
-u32 vmx_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
+u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
 {
 	int index = -1;
 
 	int * curr=&(scode_curr[vcpu->id]);
-	struct _vmx_vmcsfields * linux_vmcb = (struct _vmx_vmcsfields *)(&(vcpu->vmcs));
-	u64 gcr3 = (u64)linux_vmcb->guest_CR3;
-	u32 rip = (u32)linux_vmcb->guest_RIP;
+	u64 gcr3 = VCPU_gcr3(vcpu);
+	u32 rip = (u32)VCPU_grip(vcpu);
 
-	printf("[TV] CPU(%02x): nested page fault!(rip %#x, gcr3 %#llx, gpaddr %#x, errorcode %llx)\n", vcpu->id, rip, gcr3, gpaddr, errorcode);
+	printf("[TV] CPU(%02x): nested page fault!(rip %#x, gcr3 %#llx, gpaddr %#x, errorcode %llx)\n",
+				 vcpu->id, rip, gcr3, gpaddr, errorcode);
+
+	if(!hpt_error_wasInsnFetch(vcpu, errorcode)) {
+		/* data read or data write */
+		printf("[TV] SECURITY: nested page fault on non-instruction fetch.\n");
+		goto npf_error;
+	}
 
 	index = scode_in_list(gcr3, rip);
 	if ((*curr == -1) && (index >= 0)) {
 		/* regular code to sensitive code */
-		if ((errorcode & ((u32)EPT_ERRORCODE_EXEC)) && !(errorcode & ((u32)EPT_ERRORCODE_PRESENT))) {
-			/* instruction read */
-			*curr = index;
-			if ((whitelist[*curr].entry_v == rip) && (whitelist[*curr].entry_p == gpaddr)) { 
-				/* valid entry point, switch from regular code to sensitive code */
-#ifdef __MP_VERSION__
-				spin_lock(&(whitelist[*curr].pal_running_lock));
-				whitelist[*curr].pal_running_vcpu_id=vcpu->id;
-				printf("got pal_running lock!\n");
-#endif
-				if (vmx_scode_switch_scode(vcpu)) {
-					printf("[TV] error in switch to scode!\n");
-#ifdef __MP_VERSION__
-					spin_unlock(&(whitelist[*curr].pal_running_lock));
-					whitelist[*curr].pal_running_vcpu_id=-1;
-					printf("released pal_running lock!\n");
-#endif
 
-					goto npf_error;
-				}
-			} else {
-				printf("[TV] SECURITY: invalid scode entry point!\n");
-				goto npf_error;
-			}
-		} else {
-			printf("[TV] SECURITY: invalid access to scode mem region from regular code!\n");
+		*curr = index;
+		if (!((whitelist[*curr].entry_v == rip) && (whitelist[*curr].entry_p == gpaddr))) { 
+			printf("[TV] SECURITY: invalid scode entry point!\n");
+			goto npf_error;
+		}
+
+		/* valid entry point, switch from regular code to sensitive code */
+#ifdef __MP_VERSION__
+		spin_lock(&(whitelist[*curr].pal_running_lock));
+		whitelist[*curr].pal_running_vcpu_id=vcpu->id;
+		printf("got pal_running lock!\n");
+#endif
+		if (hpt_scode_switch_scode(vcpu)) {
+			printf("[TV] error in switch to scode!\n");
+#ifdef __MP_VERSION__
+			spin_unlock(&(whitelist[*curr].pal_running_lock));
+			whitelist[*curr].pal_running_vcpu_id=-1;
+			printf("released pal_running lock!\n");
+#endif
 			goto npf_error;
 		}
 	} else if ((*curr >=0) && (index < 0)) {
 		/* sensitive code to regular code */
-		if ((errorcode & ((u32)EPT_ERRORCODE_EXEC)) && !(errorcode & ((u32)EPT_ERRORCODE_PRESENT))) {
-			/* instruction read */
-			if (whitelist[*curr].return_v == rip) { 
-				/* valid return point, switch from sensitive code to regular code */
-				/* XXX FIXME: now return ponit is extracted from regular code stack, only support one scode function call */
-				if (vmx_scode_switch_regular(vcpu)) {
-					printf("[TV] error in switch to regular code!\n");
-#ifdef __MP_VERSION__
-					spin_unlock(&(whitelist[*curr].pal_running_lock));
-					whitelist[*curr].pal_running_vcpu_id=-1;
-					printf("released pal_running lock!\n");
-#endif
-					goto npf_error;
-				}
-#ifdef __MP_VERSION__
-				spin_unlock(&(whitelist[*curr].pal_running_lock));
-				whitelist[*curr].pal_running_vcpu_id=-1;
-				printf("released pal_running lock!\n");
-#endif
-				*curr = -1;
-			} else {
-				printf("[TV] SECURITY: invalid scode return point!\n");
-				goto npf_error;
-			}
-		} else { 
-			/* data read or data write */
-			printf("[TV] SECURITY: invalid access to regular mem region from scode!\n");
+
+		if (whitelist[*curr].return_v != rip) {
+			printf("[TV] SECURITY: invalid scode return point!\n");
 			goto npf_error;
-		} 
+		}
+		/* valid return point, switch from sensitive code to regular code */
+
+		/* XXX FIXME: now return ponit is extracted from regular code stack, only support one scode function call */
+		if (hpt_scode_switch_regular(vcpu)) {
+			printf("[TV] error in switch to regular code!\n");
+#ifdef __MP_VERSION__
+			spin_unlock(&(whitelist[*curr].pal_running_lock));
+			whitelist[*curr].pal_running_vcpu_id=-1;
+			printf("released pal_running lock!\n");
+#endif
+			goto npf_error;
+		}
+#ifdef __MP_VERSION__
+		spin_unlock(&(whitelist[*curr].pal_running_lock));
+		whitelist[*curr].pal_running_vcpu_id=-1;
+		printf("released pal_running lock!\n");
+#endif
+		*curr = -1;
 	} else if ((*curr >=0) && (index >= 0)) {
 		/* sensitive code to sensitive code */
-		if (*curr == index) 
+		if (*curr == index)
 			printf("[TV] SECURITY: incorrect scode EPT configuration!\n");
 		else
 			printf("[TV] SECURITY: invalid access to scode mem region from other scodes!\n"); 
@@ -1265,21 +1163,26 @@ u32 vmx_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
 		goto npf_error;
 	}
 
-    //linux_vmcb->eventinj.bytes = (u64)0;
+	/* no errors, pseodu page fault canceled by nested paging */
+	if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+		((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->eventinj.bytes = 0ull;
+	} /* FIXME - equivalent for intel? */
+
 	return 0;
 
-npf_error:
-#if 0
-	/* errors, inject segfault to guest */
-	linux_vmcb->eventinj.bytes=0;
-	linux_vmcb->eventinj.fields.vector=0xd;
-	linux_vmcb->eventinj.fields.vector=EVENTTYPE_EXCEPTION;
-	linux_vmcb->eventinj.fields.v=0x1;
-#endif
+ npf_error:
+	if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+		/* errors, inject segfault to guest */
+		struct vmcb_struct* vmcb = (struct vmcb_struct*)(vcpu->vmcb_vaddr_ptr);
+		vmcb->eventinj.bytes=0;
+		vmcb->eventinj.fields.vector=0xd;
+		vmcb->eventinj.fields.vector=EVENTTYPE_EXCEPTION;
+		vmcb->eventinj.fields.v=0x1;
+	} /* FIXME - equivalent for intel? */
+
 	*curr = -1;
 	return 1;
 }
-
 
 u32 scode_seal(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrAtRelease_addr, u32 output_addr, u32 output_len_addr)
 {
@@ -1538,7 +1441,7 @@ void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* entry)
 	}
 
 	/* clear protections */
-	tv_ctx->scode_clear_prot(vcpu,
+	hpt_scode_clear_prot(vcpu,
 													 &entry->scode_pages[scode_pages_shared_start],
 													 shared_page_count<<PAGE_SHIFT_4K);
 
@@ -1609,7 +1512,7 @@ u32 scode_share_range(VCPU * vcpu, whitelist_entry_t *entry, u32 gva_base, u32 g
 	}
 
 	/* set up protection of newly registered pt entries */
-	if(tv_ctx->scode_set_prot(vcpu, new_scode_pages, gva_len)) {
+	if(hpt_scode_set_prot(vcpu, new_scode_pages, gva_len)) {
 		printf("[TV] SECURITY: Registration Failed. Probably some page has already been used by other sensitive code.\n");
 		rv=4;
 		goto outerr;
@@ -1624,7 +1527,7 @@ u32 scode_share_range(VCPU * vcpu, whitelist_entry_t *entry, u32 gva_base, u32 g
 		entry->scode_info.section_num -= section_num_added;
 	}
 	if (did_set_prot) {
-		tv_ctx->scode_clear_prot(vcpu, new_scode_pages, gva_len_pages);
+		hpt_scode_clear_prot(vcpu, new_scode_pages, gva_len_pages);
 	}
 	return rv;
 }
@@ -1795,366 +1698,3 @@ u32 scode_rand(u64 gcr3, u32 buffer_addr, u32 numbytes_requested, u32 numbytes_a
    */
 
 #endif
-
-/* SVM related SCODE routines */
-
-
-/* ************************************
- * set up scode pages permission (SVM)
- * R 	-- 	read-only
- * R/W	--	read, write
- * NU	--	guest system cannot access
- * U	--	guest system can access
- *
- * on local CPU:
- * Section type		Permission
- * SENTRY(SCODE) 	R NU
- * STEXT			R U
- * SDATA 			RW NU
- * SPARAM			RW NU
- * SSTACK			RW NU
- *
- * on other CPU:
- * all sections		unpresent
- * **************************************/
-u32 svm_scode_set_prot(VCPU *vcpu, pte_t *pte_pages, u32 size)
-{
-	u32 i; 
-	u32 pfn;
-	int type =0; 
-#ifdef __MP_VERSION__
-	u32 k;
-	VCPU * tmpcpu;
-#endif
-
-	/* set up page permission in local CPU */
-	printf("[TV] scode registration on local CPU %02x!\n", vcpu->id);
-	for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)
-	{
-		pfn = pte_pages[i] >> PAGE_SHIFT_4K;
-		/* **********************************
-		 * test page type
-		 * type == 1 	SCODE(SENTRY)
-		 * type == 2	STEXT
-		 * type == 0	SDATA, SPARAM, SSTACK
-		 * type == 3    all sections set to unpresent
-		 * **********************************/
-		switch(SCODE_PTE_TYPE_GET(pte_pages[i])) {
-		case SECTION_TYPE_SCODE:
-			type = 1;
-			break;
-		case SECTION_TYPE_STEXT:
-			type = 2;
-			break;
-		case SECTION_TYPE_SDATA:
-		case SECTION_TYPE_PARAM:
-		case SECTION_TYPE_STACK:
-		case SECTION_TYPE_SHARED:
-			type = 0;
-			break;
-		default:
-			ASSERT(0);
-		}
-
-		//printf("[TV] set_prot(pte %#x, size %#x): page No.%d, pfn %#x\n", pte_page, size, i+1, pfn);
-		if (!test_page_scode_bitmap(pfn))
-		{
-			set_page_scode_bitmap(pfn);
-			/* set_page_scode_bitmap_2M(pfn); */
-
-			/* XXX FIXME: temporary disable DEV setting here! */
-		//	set_page_dev_prot(pfn);
-			svm_nested_set_prot(vcpu, pte_pages[i], type);
-		}else
-		{
-                  printf("[TV] Set scode page permission error! pfn %#x have already been registered!\n", pfn);
-			break;
-		}
-	}
-
-	/* exception detected above, need to recover the previous changes */
-	if (i < (size >> PAGE_SHIFT_4K))
-	{
-		printf("[TV] recover scode page permission!\n");
-		for (; i > 0; i --)
-		{
-			pfn = pte_pages[i - 1] >> PAGE_SHIFT_4K;
-
-			/* XXX FIXME: temporary disable DEV setting here! */
-			//clear_page_dev_prot(pfn);
-			svm_nested_clear_prot(vcpu, pte_pages[i-1]);
-
-			clear_page_scode_bitmap(pfn);
-			//if (clear_page_scode_bitmap_2M(pfn) == 0)
-			//	svm_nested_promote(vcpu, pfn);
-		}
-		return 1;
-	}
-
-#ifdef __MP_VERSION__
-	/* not local CPU, set all mem sections unpresent */
-	for( k=0 ; k<g_midtable_numentries ; k++ )  {
-		tmpcpu = (VCPU *)(g_midtable[k].vcpu_vaddr_ptr);
-		if (tmpcpu->id != vcpu->id) {
-			printf("[TV] scode registration on CPU %02x!\n", tmpcpu->id);
-			for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)
-			{
-				pfn = pte_pages[i] >> PAGE_SHIFT_4K;
-				/* XXX FIXME: temporary disable DEV setting here! */
-				//	set_page_dev_prot(pfn);
-				svm_nested_set_prot(tmpcpu, pte_pages[i], 3);
-			}
-		}
-	}
-#endif
-
-	return 0;
-}
-
-void svm_scode_clear_prot(VCPU * vcpu, pte_t *pte_pages, u32 size)
-{
-	u32 i; 
-	u32 pfn;
-#ifdef __MP_VERSION__
-	u32 k;
-	VCPU * tmpcpu;
-#endif
-
-	/* set up page permission in local CPU */
-	printf("[TV] scode unreg on local CPU %02x!\n", vcpu->id);
-	for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)
-	{
-		pfn = pte_pages[i] >> PAGE_SHIFT_4K;
-		if (test_page_scode_bitmap(pfn))
-		{
-			printf("[TV] clear_prot(pte %#x, size %#x): page No.%d, pfn %#x\n", (u32)pte_pages, size, i+1, pfn);
-			/* XXX FIXME: temporary disable DEV setting here! */
-			//clear_page_dev_prot(pfn);
-			svm_nested_clear_prot(vcpu, pte_pages[i]);
-
-			clear_page_scode_bitmap(pfn);
-		//	if (clear_page_scode_bitmap_2M(pfn) == 0)
-		//		svm_nested_promote(vcpu, pfn);
-		}
-	}
-
-#ifdef __MP_VERSION__
-	/* not local CPU, set all mem sections unpresent */
-	for( k=0 ; k<g_midtable_numentries ; k++ )  {
-		tmpcpu = (VCPU *)(g_midtable[k].vcpu_vaddr_ptr);
-		if (tmpcpu->id != vcpu->id) {
-			printf("[TV] scode unreg on CPU %02x!\n", tmpcpu->id);
-			for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)
-			{
-				pfn = pte_pages[i] >> PAGE_SHIFT_4K;
-				/* XXX FIXME: temporary disable DEV setting here! */
-				//	set_page_dev_prot(pfn);
-				svm_nested_clear_prot(tmpcpu, pte_pages[i]);
-			}
-		}
-	}
-#endif
-
-}
-
-u32 svm_scode_switch_scode(VCPU * vcpu)
-{
-	u32 addr;
-	int curr=scode_curr[vcpu->id];
-	struct vmcb_struct * linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
-
-	printf("\n[TV] ************************************\n");
-	printf("[TV] ********* switch to scode **********\n");
-	printf("[TV] ************************************\n");
-
-	/* save the guest stack pointer and set new stack pointer to scode stack */
-	printf("[TV] saved guest regular stack %#x, switch to sensitive code stack %#x\n", (u32)linux_vmcb->rsp, whitelist[curr].gssp);
-	whitelist[curr].grsp = (u32)linux_vmcb->rsp; 
-	linux_vmcb->rsp = whitelist[curr].gssp; 
-
-	/* input parameter marshalling */
-	if (scode_marshall(vcpu)){
-		/* error in parameter marshalling */
-		/* restore regular code stack */
-		linux_vmcb->rsp = whitelist[curr].grsp; 
-		whitelist[curr].grsp = (u32)-1; 
-		return 1;
-	}
-
-	/* find all PTE pages related to access scode and GDT */
-	scode_expose_arch(vcpu);
-
-	/* change NPT permission for all PTE pages and scode pages */
-	printf("[TV] change NPT permission to run PAL!\n"); 
-	svm_nested_switch_scode(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size,
-			(u32)whitelist[curr].pte_page, whitelist[curr].pte_size);
-		
-	/* disable interrupts */
-	linux_vmcb->rflags &= ~EFLAGS_IF;
-
-	/* set the sensitive code to run in ring 3 */
-	linux_vmcb->cpl = 3;
-
-	/* write the return address to scode stack */
-	addr = get_32bit_aligned_value_from_guest(vcpu, (u32)whitelist[curr].grsp);
-	linux_vmcb->rsp -= 4;
-	put_32bit_aligned_value_to_guest(vcpu, (u32)(linux_vmcb->rsp), addr);
-	/* store the return address in whitelist structure */
-	whitelist[curr].return_v = addr;
-	printf("[TV] scode return vaddr is %#x\n", whitelist[curr].return_v);
-
-	printf("[TV] host stack pointer before running scode is %#x\n",(u32)linux_vmcb->rsp);
-	return 0;
-}
-
-u32 svm_scode_switch_regular(VCPU * vcpu)
-{
-	int curr=scode_curr[vcpu->id];
-	struct vmcb_struct * linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
-
-	printf("\n[TV] ************************************\n");
-	printf("[TV] ***** switch to regular code  ******\n");
-	printf("[TV] ************************************\n");
-
-	/* marshalling parameters back to regular code */
-	if (!scode_unmarshall(vcpu)){
-		/* clear the NPT permission setting in switching into scode */
-		printf("[TV] change NPT permission to exit PAL!\n"); 
-		svm_nested_switch_regular(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size,
-				(u32)whitelist[curr].pte_page, whitelist[curr].pte_size);
-		scode_unexpose_arch(vcpu);
-
-		/* release shared pages */
-		scode_release_all_shared_pages(vcpu, &whitelist[curr]);
-
-		/* switch back to regular stack */
-		printf("[TV] switch from scode stack %#x back to regular stack %#x\n", (u32)linux_vmcb->rsp, (u32)whitelist[curr].grsp);
-		linux_vmcb->rsp = whitelist[curr].grsp;
-		linux_vmcb->rsp += 4; 
-		whitelist[curr].grsp = (u32)-1;
-
-		/* enable interrupts */
-		linux_vmcb->rflags |= EFLAGS_IF;
-
-		printf("[TV] stack pointer before exiting scode is %#x\n",(u32)linux_vmcb->rsp);
-		return 0;
-	}
-	/* error in scode unmarshalling */
-	return 1;
-}
-
-u32 svm_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
-{
-	int index = -1;
-
-	int * curr=&(scode_curr[vcpu->id]);
-	struct vmcb_struct * linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
-	u64 gcr3 = (u64)linux_vmcb->cr3;
-	u32 rip = (u32)linux_vmcb->rip;
-
-	printf("[TV] CPU(%02x): nested page fault!(rip %#x, gcr3 %#llx, gpaddr %#x, errorcode %#llx)\n", vcpu->id, rip, gcr3, gpaddr, errorcode);
-
-	if (!(errorcode & ((u64)PF_ERRORCODE_PRESENT))) {
-		/* nested page not present */
-		/* could be malicious apps or OS try to access memory range of trustvisor
-		 * or program try to access PAL in different CPU (no the CPU where the registration is done) 
-		 * */
-		printf("[TV] SECURITY: invalid access to the mem region of Trustvisor or registered scode!\n"); 
-		goto npf_error;
-	}
-
-	index = scode_in_list(gcr3, rip);
-	if ((*curr == -1) && (index >= 0)) {
-		/* regular code to sensitive code */
-		if ((errorcode & ((u64)PF_ERRORCODE_INST))) {
-			/* instruction read */
-			*curr = index;
-			if ((whitelist[*curr].entry_v == rip) && (whitelist[*curr].entry_p == gpaddr)) { 
-#ifdef __MP_VERSION__
-				spin_lock(&(whitelist[*curr].pal_running_lock));
-				whitelist[*curr].pal_running_vcpu_id=vcpu->id;
-				printf("got pal_running lock!\n");
-#endif
-
-				/* valid entry point, switch from regular code to sensitive code */
-				if (svm_scode_switch_scode(vcpu)) {
-					printf("[TV] error in switch to scode!\n");
-#ifdef __MP_VERSION__
-					spin_unlock(&(whitelist[*curr].pal_running_lock));
-					whitelist[*curr].pal_running_vcpu_id=-1;
-					printf("released pal_running lock!\n");
-#endif
-					goto npf_error;
-				}
-			} else {
-				printf("[TV] SECURITY: invalid scode entry point!\n");
-				goto npf_error;
-			}
-		} else {
-			printf("[TV] SECURITY: invalid access to scode mem region from regular code!\n");
-			goto npf_error;
-		}
-	} else if ((*curr >=0) && (index < 0)) {
-		/* sensitive code to regular code */
-		if ((errorcode & ((u64)PF_ERRORCODE_INST)) || ((errorcode & ((u64)PF_ERRORCODE_TABLEWALK)) || (errorcode & ((u64)PF_ERRORCODE_FINALWALK)))) {
-			/* instruction read or table walk */
-			if (whitelist[*curr].return_v == rip) { 
-				/* valid return point, switch from sensitive code to regular code */
-				/* XXX FIXME: now return ponit is extracted from regular code stack, only support one scode function call */
-				if (svm_scode_switch_regular(vcpu)) {
-					printf("[TV] error in switch to regular code!\n");
-#ifdef __MP_VERSION__
-					spin_unlock(&(whitelist[*curr].pal_running_lock));
-					whitelist[*curr].pal_running_vcpu_id=-1;
-					printf("released pal_running lock!\n");
-#endif
-
-					goto npf_error;
-				}
-#ifdef __MP_VERSION__
-				spin_unlock(&(whitelist[*curr].pal_running_lock));
-				whitelist[*curr].pal_running_vcpu_id=-1;
-				printf("released pal_running lock!\n");
-#endif
-				*curr = -1;
-			} else {
-				printf("[TV] SECURITY: invalid scode return point!\n");
-				goto npf_error;
-			}
-		} else { 
-			/* data read or data write */
-			printf("[TV] SECURITY: invalid access to regular mem region from scoe!\n");
-			goto npf_error;
-		} 
-	} else if ((*curr >=0) && (index >= 0)) {
-		/* sensitive code to sensitive code */
-		if (*curr == index) 
-			printf("[TV] SECURITY: incorrect scode NPT configuration!\n");
-		else
-			printf("[TV] SECURITY: invalid access to scode mem region from other scodes!\n"); 
-#ifdef __MP_VERSION__
-		spin_unlock(&(whitelist[*curr].pal_running_lock));
-		whitelist[*curr].pal_running_vcpu_id=-1;
-		printf("released pal_running lock!\n");
-#endif
-		goto npf_error;	
-	} else {
-		/* regular code to regular code */
-		printf("[TV] incorrect regular code NPT configuration!\n"); 
-		goto npf_error;
-	}
-
-    /* no errors, pseodu page fault canceled by nested paging */
-    linux_vmcb->eventinj.bytes = (u64)0;
-	return 0;
-
-npf_error:
-	/* errors, inject segfault to guest */
-	linux_vmcb->eventinj.bytes=0;
-	linux_vmcb->eventinj.fields.vector=0xd;
-	linux_vmcb->eventinj.fields.vector=EVENTTYPE_EXCEPTION;
-	linux_vmcb->eventinj.fields.v=0x1;
-	*curr = -1;
-	return 1;
-}
-
