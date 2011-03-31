@@ -58,5 +58,21 @@ EMHFCOREDIR=$[]with_emhfcore
 dnl AS_IF([test "x${EMHFCOREDIR:0:1}" != "x/"],
 dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$EMHFCOREDIR])
 
+AC_SUBST([CMOCKDIR])
+AC_ARG_WITH([cmock],
+        AS_HELP_STRING([--with-cmock=@<:@path@:>@],
+                [path to cmock]),
+                , [with_cmock=./vendor/cmock])
+CMOCKDIR=$[]with_cmock
+
+AC_SUBST([UNITYDIR])
+AC_ARG_WITH([unity],
+        AS_HELP_STRING([--with-unity=@<:@path@:>@],
+                [path to unity]),
+                , [with_unity=./vendor/cmock/vendor/unity])
+UNITYDIR=$[]with_unity
+
+
+
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

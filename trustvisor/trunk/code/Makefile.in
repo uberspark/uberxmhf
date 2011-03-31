@@ -120,8 +120,14 @@ all:
 	$(CP) $(EMHFCOREDIR)/init/init-$(TARGET_HWPLATFORM).bin $(INSTALLDIR)/init-$(TARGET_HWPLATFORM).bin
 	$(CP) $(EMHFCOREDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz $(INSTALLDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz
 
+#------test rules
+export CMOCKDIR:=$(realpath @CMOCKDIR@)
+export UNITYDIR:=$(realpath @UNITYDIR@)
+test:
+	cd test && $(MAKE) -w all
+
 #------cleanup rules
-.PHONY: clean 
+.PHONY: clean test
 clean: 
 	cd app && $(MAKE) -w clean
 	rm -rf $(APPOBJECTSDIR)
