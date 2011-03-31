@@ -86,7 +86,7 @@ void cstartup(void){
 		g_libemhf = &g_emhf_library_vmx;
 	}else{
 		g_isl = &g_isolation_layer_svm; 
-		g_libemhf = &g_emhf_library_vmx;
+		g_libemhf = &g_emhf_library_svm;
 	}
 
 

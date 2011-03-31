@@ -200,6 +200,7 @@ typedef struct {
   PF_ERRORCODE_INST      = 1 << 4,
 };*/
 
+/* cf. IA32_SDM_Vol3B table 24-7 */
 enum EPTViolationCode
 {
 	EPT_ERRORCODE_READ	   = 1 << 0,
@@ -208,14 +209,156 @@ enum EPTViolationCode
 	EPT_ERRORCODE_READABLE = 1 << 3,
 	EPT_ERRORCODE_WRITABLE = 1 << 4,
 	EPT_ERRORCODE_EXECABLE = 1 << 5,
-	EPT_ERRORCODE_VADDR_VALID = 1 << 6,
-	EPT_ERRORCODE_TABLEWALK= 1 << 7,
+	EPT_ERRORCODE_RESERVED = 1 << 6,
+	EPT_ERRORCODE_VADDR_VALID = 1 << 7,
+	EPT_ERRORCODE_TABLEWALK= 1 << 8,
 };
 #define  EPT_ERRORCODE_PRESENT ((EPT_ERRORCODE_READABLE)+(EPT_ERRORCODE_WRITABLE)+(EPT_ERRORCODE_EXECABLE))
 
 #define	EPT_PROT_READ		(1UL << 0)
 #define EPT_PROT_WRITE	(1UL << 1)
 #define EPT_PROT_EXEC		(1UL << 2)
+
+#define EPT_PML4_SIZE 512
+#define EPT_PDPT_SIZE 512
+#define EPT_PD_SIZE 512
+#define EPT_PT_SIZE 512
+
+/* max bits used in physical devices. processor-dependent. */
+#define M 47
+
+/* PML4E bit fields */
+#define EPT_PML4E_IGN0_HI 63
+#define EPT_PML4E_IGN0_LO 52
+#define EPT_PML4E_RSVD0_HI 51
+#define EPT_PML4E_RSVD0_LO M
+#define EPT_PML4E_PDPT_HI (M-1)
+#define EPT_PML4E_PDPT_LO 12
+#define EPT_PML4E_IGN1_HI 11
+#define EPT_PML4E_IGN1_LO 8
+#define EPT_PML4E_RSVD2_HI 7
+#define EPT_PML4E_RSVD2_LO 3
+#define EPT_PML4E_X_HI 2
+#define EPT_PML4E_X_LO 2
+#define EPT_PML4E_W_HI 1
+#define EPT_PML4E_W_LO 1
+#define EPT_PML4E_R_HI 0
+#define EPT_PML4E_R_LO 0
+#define EPT_PML4E_NP_HI 2 /* not-present */
+#define EPT_PML4E_NP_LO 0
+
+
+/* PDPTE bit fields */
+#define EPT_PDPTE_IGN0_HI 63
+#define EPT_PDPTE_IGN0_LO 52
+#define EPT_PDPTE_RSVD0_HI 51
+#define EPT_PDPTE_RSVD0_LO M
+/****** when ISPAGE==0 ********************/
+  #define EPT_PDPTE_PD_HI (M-1)
+  #define EPT_PDPTE_PD_LO 12
+/******* when ISPAGE==1********************/
+  #define EPT_PDPTE_PAGE_HI (M-1)
+  #define EPT_PDPTE_PAGE_LO 30
+  #define EPT_PDPTE_RSVD1_HI 29
+  #define EPT_PDPTE_RSVD1_LO 12
+/******************************************/
+#define EPT_PDPTE_IGN1_HI 11
+#define EPT_PDPTE_IGN1_LO 8
+#define EPT_PDPTE_ISPAGE_HI 7
+#define EPT_PDPTE_ISPAGE_LO 7
+/****** when ISPAGE==0 ********************/
+  #define EPT_PDPTE_RSVD2_HI 6
+  #define EPT_PDPTE_RSVD2_LO 3
+/****** when ISPAGE==1 ********************/
+  #define EPT_PDPTE_IPAT_HI 6
+  #define EPT_PDPTE_IPAT_LO 6
+  #define EPT_PDPTE_EPTMT_HI 5
+  #define EPT_PDPTE_EPTMT_LO 3
+/******************************************/
+#define EPT_PDPTE_X_HI 2
+#define EPT_PDPTE_X_LO 2
+#define EPT_PDPTE_W_HI 1
+#define EPT_PDPTE_W_LO 1
+#define EPT_PDPTE_R_HI 0
+#define EPT_PDPTE_R_LO 0
+#define EPT_PDPTE_NP_HI 2 /* not-present */
+#define EPT_PDPTE_NP_LO 0
+#define EPT_PDPTE_PROT_HI 2
+#define EPT_PDPTE_PROT_LO 0
+
+/* PDE bit fields */
+#define EPT_PDE_IGN0_HI 63
+#define EPT_PDE_IGN0_LO 52
+#define EPT_PDE_RSVD0_HI 51
+#define EPT_PDE_RSVD0_LO M
+/****** when ISPAGE==0 ********************/
+  #define EPT_PDE_PT_HI (M-1)
+  #define EPT_PDE_PT_LO 12
+/******* when ISPAGE==1********************/
+  #define EPT_PDE_PAGE_HI (M-1)
+  #define EPT_PDE_PAGE_LO 21
+  #define EPT_PDE_RSVD1_HI 20
+  #define EPT_PDE_RSVD1_LO 12
+/******************************************/
+#define EPT_PDE_IGN1_HI 11
+#define EPT_PDE_IGN1_LO 8
+#define EPT_PDE_ISPAGE_HI 7
+#define EPT_PDE_ISPAGE_LO 7
+/****** when ISPAGE==0 ********************/
+  #define EPT_PDE_RSVD2_HI 6
+  #define EPT_PDE_RSVD2_LO 3
+/****** when ISPAGE==1 ********************/
+  #define EPT_PDE_IPAT_HI 6
+  #define EPT_PDE_IPAT_LO 6
+  #define EPT_PDE_EPTMT_HI 5
+  #define EPT_PDE_EPTMT_LO 3
+/******************************************/
+#define EPT_PDE_X_HI 2
+#define EPT_PDE_X_LO 2
+#define EPT_PDE_W_HI 1
+#define EPT_PDE_W_LO 1
+#define EPT_PDE_R_HI 0
+#define EPT_PDE_R_LO 0
+#define EPT_PDE_NP_HI 2 /* not-present */
+#define EPT_PDE_NP_LO 0
+#define EPT_PDE_PROT_HI 2
+#define EPT_PDE_PROT_LO 0
+
+/* PTE bit fields */
+#define EPT_PTE_IGN0_HI 63
+#define EPT_PTE_IGN0_LO 52
+#define EPT_PTE_RSVD0_HI 51
+#define EPT_PTE_RSVD0_LO M
+#define EPT_PTE_PAGE_HI (M-1)
+#define EPT_PTE_PAGE_LO 12
+#define EPT_PTE_IGN1_HI 11
+#define EPT_PTE_IGN1_LO 7
+#define EPT_PTE_IPAT_HI 6
+#define EPT_PTE_IPAT_LO 6
+#define EPT_PTE_EPTMT_HI 5
+#define EPT_PTE_EPTMT_LO 3
+#define EPT_PTE_X_HI 2
+#define EPT_PTE_X_LO 2
+#define EPT_PTE_W_HI 1
+#define EPT_PTE_W_LO 1
+#define EPT_PTE_R_HI 0
+#define EPT_PTE_R_LO 0
+#define EPT_PTE_NP_HI 2 /* not-present */
+#define EPT_PTE_NP_LO 0
+#define EPT_PTE_PROT_HI 2
+#define EPT_PTE_PROT_LO 0
+
+/* guest physical address */
+#define EPT_GPA_PML4_I_HI 47
+#define EPT_GPA_PML4_I_LO 39
+#define EPT_GPA_PDPT_I_HI 38
+#define EPT_GPA_PDPT_I_LO 30
+#define EPT_GPA_PD_I_HI 29
+#define EPT_GPA_PD_I_LO 21
+#define EPT_GPA_PT_I_HI 20
+#define EPT_GPA_PT_I_LO 12
+#define EPT_GPA_OFFSET_HI 11
+#define EPT_GPA_OFFSET_LO 0
 
 enum {
 	TASK_SWITCH_CALL = 0,

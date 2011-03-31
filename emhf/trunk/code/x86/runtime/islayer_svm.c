@@ -1184,8 +1184,7 @@ static void _svm_lib_msrpm_set_write(VCPU *vcpu, u32 msr){
 
 //---hardware pagetable flush-all routine---------------------------------------
 static void _svm_lib_hwpgtbl_flushall(VCPU *vcpu){
-	printf("\n%s: not implemented, halting!", __FUNCTION__);
-	HALT();
+	((struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr))->tlb_control=TLB_CONTROL_FLUSHALL;
 }
 
 //---hardware pagetable protection manipulation routine-------------------------
