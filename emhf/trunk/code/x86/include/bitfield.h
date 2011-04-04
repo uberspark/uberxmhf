@@ -49,6 +49,9 @@
 #ifndef BITFIELD_H
 #define BITFIELD_H
 
+#include "error.h"
+#include "types.h"
+
 static inline u64 ZERO_HI(u64 x, int bits)
 {
   return ((x) << (bits) >> (bits));
