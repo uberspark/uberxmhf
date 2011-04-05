@@ -94,22 +94,25 @@ static void _vtd_setuppagetables(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
   pdpt=(pdpt_t)vtd_pdpt_vaddr;
   for(i=0; i< PAE_PTRS_PER_PDPT; i++){
     pdpt[i]=(u64)(pdtphysaddr + (i * PAGE_SIZE_4K));  
-    pdpt[i] |= ((u64)_PAGE_PRESENT | (u64)_PAGE_RW);
+    pdpt[i] |= ((u64)VTD_READ | (u64)VTD_WRITE);
     
     pdt=(pdt_t)(vtd_pdts_vaddr + (i * PAGE_SIZE_4K));
     for(j=0; j < PAE_PTRS_PER_PDT; j++){
       pdt[j]=(u64)(ptphysaddr + (i * PAGE_SIZE_4K * 512)+ (j * PAGE_SIZE_4K));
-      pdt[j] |= ((u64)_PAGE_PRESENT | (u64)_PAGE_RW);
+      pdt[j] |= ((u64)VTD_READ | (u64)VTD_WRITE);
     
       pt=(pt_t)(vtd_pts_vaddr + (i * PAGE_SIZE_4K * 512)+ (j * PAGE_SIZE_4K));
       for(k=0; k < PAE_PTRS_PER_PT; k++){
         pt[k]=(u64)physaddr;
-        pt[k] |= ((u64)_PAGE_PRESENT | (u64)_PAGE_RW);
+        pt[k] |= ((u64)VTD_READ | (u64)VTD_WRITE);
         physaddr+=PAGE_SIZE_4K;
       }
     }
   }
 }
+
+
+
 
 //------------------------------------------------------------------------------
 //set VT-d RET and CET tables
@@ -159,6 +162,34 @@ static void _vtd_setupRETCET(u32 vtd_pdpt_paddr,
     }
   }
 
+}
+
+
+
+//------------------------------------------------------------------------------
+//set VT-d RET and CET tables for VT-d bootstrapping
+//we have 1 root entry table (RET) of 4kb, each root entry (RE) is 128-bits
+//which gives us 256 entries in the RET, each corresponding to a PCI bus num.
+//(0-255)
+//each RE points to a context entry table (CET) of 4kb, each context entry (CE)
+//is 128-bits which gives us 256 entries in the CET, accounting for 32 devices
+//with 8 functions each as per the PCI spec.
+//each CE points to a PDPT type paging structure. 
+//we ensure that every entry in the RET is 0 which means that the DRHD will
+//not allow any DMA requests for PCI bus 0-255 (Sec 3.3.2, IVTD Spec. v1.2)
+//we zero out the CET just for sanity 
+static void _vtd_setupRETCET_bootstrap( 
+		u32 vtd_ret_paddr, u32 vtd_ret_vaddr,
+		u32 vtd_cet_paddr, u32 vtd_cet_vaddr){
+  
+	//sanity check that RET and CET are page-aligned
+	ASSERT( !(vtd_ret_paddr & 0x00000FFFUL) && !(vtd_cet_paddr & 0x00000FFFUL) );
+	
+	//zero out CET, we dont require it for bootstrapping
+	memset((void *)vtd_cet_vaddr, 0, PAGE_SIZE_4K);
+	
+	//zero out RET, effectively preventing DMA reads and writes in the system
+	memset((void *)vtd_ret_vaddr, 0, PAGE_SIZE_4K);
 }
 
 
@@ -281,6 +312,16 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
 
 		//sanity check number of domains (if unsupported we bail out)
     ASSERT(cap.bits.nd != 0x7);
+    
+    #if 0	//unfortunately this support is not mainstream yet, unsupported on HP8540p-corei5
+    //check for super-page support (at least 2M page mapping support)
+    printf("\n	SPS=%x", cap.bits.sps);
+		if(!(cap.bits.sps & 0x1)){
+			printf("\n	SPS does not support 2M page size. Halting!");
+			HALT();
+		}
+		#endif
+    
   }
 	printf("Done.");
 
@@ -576,7 +617,8 @@ void vmx_eap_vtd_protect(u32 start_paddr, u32 size){
 	  pt=(pt_t) (l_vtd_pts_vaddr + (pdptindex * PAGE_SIZE_4K * 512)+ (pdtindex * PAGE_SIZE_4K));
 	  
 	  //protect the physical page
-    pt[ptindex] &= 0xFFFFFFFFFFFFFFFCULL;  
+    //pt[ptindex] &= 0xFFFFFFFFFFFFFFFCULL;  
+  	pt[ptindex] &= ~((u64)VTD_READ | (u64)VTD_WRITE);
   
   }
   
@@ -589,11 +631,14 @@ void vmx_eap_vtd_protect(u32 start_paddr, u32 size){
 
 //initialize VMX EAP a.k.a VT-d
 //returns 1 if all went well, else 0
+//if input parameter bootstrap is 1 then we perform minimal translation
+//structure initialization, else we do the full DMA translation structure
+//initialization at a page-granularity
 u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 		u32 vtd_pdts_paddr, u32 vtd_pdts_vaddr,
 		u32 vtd_pts_paddr, u32 vtd_pts_vaddr,
 		u32 vtd_ret_paddr, u32 vtd_ret_vaddr,
-		u32 vtd_cet_paddr, u32 vtd_cet_vaddr){
+		u32 vtd_cet_paddr, u32 vtd_cet_vaddr, u32 isbootstrap){
 
 	ACPI_RSDP rsdp;
 	ACPI_RSDT rsdt;
@@ -683,20 +728,31 @@ u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
     printf("\n		ecap=0x%016LX", (u64)ecap.value);
   }
 
-  //initialize VT-d page tables
-	_vtd_setuppagetables(vtd_pdpt_paddr, vtd_pdpt_vaddr,
-		vtd_pdts_paddr, vtd_pdts_vaddr,
-		vtd_pts_paddr, vtd_pts_vaddr);
-	printf("\n%s: setup VT-d page tables (pdpt=%08x, pdts=%08x, pts=%08x).", 
-		__FUNCTION__, vtd_pdpt_paddr, vtd_pdts_paddr, vtd_pts_paddr);	
+
+  //initialize VT-d page tables (not done if we are bootstrapping)
+	if(!isbootstrap){
+		_vtd_setuppagetables(vtd_pdpt_paddr, vtd_pdpt_vaddr,
+			vtd_pdts_paddr, vtd_pdts_vaddr,
+			vtd_pts_paddr, vtd_pts_vaddr);
+		printf("\n%s: setup VT-d page tables (pdpt=%08x, pdts=%08x, pts=%08x).", 
+			__FUNCTION__, vtd_pdpt_paddr, vtd_pdts_paddr, vtd_pts_paddr);
+	}	
 		
 	//initialize VT-d RET and CET
-	_vtd_setupRETCET(vtd_pdpt_paddr, 
-		vtd_ret_paddr, vtd_ret_vaddr,
-		vtd_cet_paddr, vtd_cet_vaddr);
-	printf("\n%s: setup VT-d RET (%08x) and CET (%08x).", 
-		__FUNCTION__, vtd_ret_paddr, vtd_cet_paddr);
-
+	if(!isbootstrap){
+		_vtd_setupRETCET(vtd_pdpt_paddr, 
+			vtd_ret_paddr, vtd_ret_vaddr,
+			vtd_cet_paddr, vtd_cet_vaddr);
+		printf("\n%s: setup VT-d RET (%08x) and CET (%08x).", 
+			__FUNCTION__, vtd_ret_paddr, vtd_cet_paddr);
+	}else{
+		//bootstrapping
+		_vtd_setupRETCET_bootstrap(
+			vtd_ret_paddr, vtd_ret_vaddr,
+			vtd_cet_paddr, vtd_cet_vaddr);
+		printf("\n%s: setup VT-d RET (%08x) and CET (%08x) for bootstrap.", 
+			__FUNCTION__, vtd_ret_paddr, vtd_cet_paddr);
+	}
 
  	//initialize all DRHD units
   for(i=0; i < vtd_num_drhd; i++){
@@ -707,7 +763,8 @@ u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
   //zap VT-d presence in ACPI table...
 	//TODO: we need to be a little elegant here. eventually need to setup 
 	//EPT/NPTs such that the DMAR pages are unmapped for the guest
-	flat_writeu32(dmaraddrphys, 0UL);
+	if(!isbootstrap)
+		flat_writeu32(dmaraddrphys, 0UL);
 
 
 	//success

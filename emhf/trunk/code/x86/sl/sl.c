@@ -375,47 +375,29 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 			
 		}else{
 			u32 vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr;
-			u32 vmx_eap_vtd_pdts_paddr, vmx_eap_vtd_pdts_vaddr;
-			u32 vmx_eap_vtd_pts_paddr, vmx_eap_vtd_pts_vaddr;
 			u32 vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr;
 			u32 vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr;
 			
-			printf("\nSL: initializing VMX DMA protection...");
+			printf("\nSL: Bootstrapping VMX DMA protection...");
 			
-			vmx_eap_vtd_pdpt_paddr = runtime_physical_base + (u32)rpb->RtmVMXVTdPdpt - __TARGET_BASE; 
-			vmx_eap_vtd_pdpt_vaddr = PAGE_SIZE_2M + (u32)rpb->RtmVMXVTdPdpt - __TARGET_BASE; 
-			vmx_eap_vtd_pdts_paddr = runtime_physical_base + (u32)rpb->RtmVMXVTdPdts - __TARGET_BASE; 
-			vmx_eap_vtd_pdts_vaddr = PAGE_SIZE_2M + (u32)rpb->RtmVMXVTdPdts - __TARGET_BASE;
-			vmx_eap_vtd_pts_paddr = runtime_physical_base + (u32)rpb->RtmVMXVTdPts - __TARGET_BASE; 
-			vmx_eap_vtd_pts_vaddr = PAGE_SIZE_2M + (u32)rpb->RtmVMXVTdPts - __TARGET_BASE; 
-			vmx_eap_vtd_ret_paddr = runtime_physical_base + (u32)rpb->RtmVMXVTdRET - __TARGET_BASE; 
-			vmx_eap_vtd_ret_vaddr = PAGE_SIZE_2M + (u32)rpb->RtmVMXVTdRET - __TARGET_BASE; 
-			vmx_eap_vtd_cet_paddr = runtime_physical_base + (u32)rpb->RtmVMXVTdCET - __TARGET_BASE; 
-			vmx_eap_vtd_cet_vaddr = PAGE_SIZE_2M + (u32)rpb->RtmVMXVTdCET - __TARGET_BASE; 
+			//we use 3 pages from SL base + 1Meg for Vt-d bootstrapping
+			vmx_eap_vtd_pdpt_paddr = sl_baseaddr + 0x100000; 
+			vmx_eap_vtd_pdpt_vaddr = 0x100000; 
+			vmx_eap_vtd_ret_paddr = sl_baseaddr + 0x100000 + PAGE_SIZE_4K; 
+			vmx_eap_vtd_ret_vaddr = 0x100000 + PAGE_SIZE_4K; 
+			vmx_eap_vtd_cet_paddr = sl_baseaddr + 0x100000 + (2*PAGE_SIZE_4K); 
+			vmx_eap_vtd_cet_vaddr = 0x100000 + (2*PAGE_SIZE_4K); 
 			
 			if(!vmx_eap_initialize(vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr,
-					vmx_eap_vtd_pdts_paddr, vmx_eap_vtd_pdts_vaddr,
-					vmx_eap_vtd_pts_paddr, vmx_eap_vtd_pts_vaddr,
+					0, 0,
+					0, 0,
 					vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr,
-					vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr
-				)){
-				printf("\nSL: Unable to initialize VMX EAP (VT-d). HALT!");
+					vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr, 1)){
+				printf("\nSL: Unable to bootstrap VMX EAP (VT-d). HALT!");
 				HALT();
 			}
 		
-			printf("\nSL: Initialized VMX VT-d.");
-		
-			vmx_eap_vtd_protect(runtime_physical_base, slpb.runtime_size);
-			//hp8540p, test to see if VT-d DMA protection works.
-			//we just DMA protect the entire guest space. this results in a
-			//"disk error message" as expected since the boot sector tries to
-			//read the sectors using BIOS via DMA and the protections prevent it. 
-			//vmx_eap_vtd_protect(0x00000000, 0xBA600000); 
-			
-			printf("\nSL: Protected Runtime (%08x-%08x) using VT-d.", runtime_physical_base,
-					runtime_physical_base + slpb.runtime_size);
-
-		
+			printf("\nSL: Bootstrapped VMX VT-d, protected entire system memory.");
 		}
 	
 	}

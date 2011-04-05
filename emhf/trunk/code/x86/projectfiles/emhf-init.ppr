@@ -36,6 +36,7 @@ emhf-init
 8=..\include\processor.h
 9=..\init\smp.c
 10=..\include\acpi.h
+11=..\include\paging.h
 [Selected Project Files]
 Main=
 Selected=..\init\init.c
@@ -49,8 +50,8 @@ Caret=1,11
 TopLine=8
 Caret=27,22
 [..\init\init.c]
-TopLine=240
-Caret=39,262
+TopLine=89
+Caret=1,89
 [..\init\init.lds.S]
 TopLine=1
 Caret=15,8
@@ -72,3 +73,6 @@ Caret=1,103
 [..\include\acpi.h]
 TopLine=133
 Caret=2,161
+[..\include\paging.h]
+TopLine=1
+Caret=1,35

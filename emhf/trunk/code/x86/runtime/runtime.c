@@ -91,11 +91,12 @@ void cstartup(void){
 
 
   //re-initialize DEV DMA protections
-	//the SL only ensures that portions
-  //of the DEV bitmap including the SL and the runtime are correct. It makes no
-  //assumptions about the status of other DEV bits, so we need to have a clean
-  //DEV bitmap re-initialization here 
   if(cpu_vendor == CPU_VENDOR_AMD){
+		//the SL only ensures that portions
+	  //of the DEV bitmap including the SL and the runtime are correct. It makes no
+	  //assumptions about the status of other DEV bits, so we need to have a clean
+	  //DEV bitmap re-initialization here 
+
 		u32 svm_eap_dev_bitmap_paddr, svm_eap_dev_bitmap_vaddr;
 
    	printf("\nRuntime: Re-initializing SVM DEV...");
@@ -115,6 +116,52 @@ void cstartup(void){
 		printf("\nRuntime: Protected SL+Runtime (%08x-%08x) using DEV.", 
 				rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M,
 			rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
+	}else{
+			//Vt-d bootstrap has minimal DMA translation setup and protects entire
+			//system memory. Relax this by instantiating a complete DMA translation
+			//structure at a page granularity and protecting only the SL and Runtime
+			u32 vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr;
+			u32 vmx_eap_vtd_pdts_paddr, vmx_eap_vtd_pdts_vaddr;
+			u32 vmx_eap_vtd_pts_paddr, vmx_eap_vtd_pts_vaddr;
+			u32 vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr;
+			u32 vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr;
+
+			ASSERT(cpu_vendor == CPU_VENDOR_INTEL);
+			
+			printf("\nRuntime: Re-initializing VMX DMA protection...");
+			
+			vmx_eap_vtd_pdpt_paddr = __hva2spa__((u32)&g_vmx_vtd_pdp_table); 
+			vmx_eap_vtd_pdpt_vaddr = (u32)&g_vmx_vtd_pdp_table; 
+			vmx_eap_vtd_pdts_paddr = __hva2spa__((u32)&g_vmx_vtd_pd_tables); 
+			vmx_eap_vtd_pdts_vaddr = (u32)&g_vmx_vtd_pd_tables;
+			vmx_eap_vtd_pts_paddr = __hva2spa__((u32)&g_vmx_vtd_p_tables); 
+			vmx_eap_vtd_pts_vaddr = (u32)&g_vmx_vtd_p_tables; 
+			vmx_eap_vtd_ret_paddr = __hva2spa__((u32)&g_vmx_vtd_ret); 
+			vmx_eap_vtd_ret_vaddr = (u32)&g_vmx_vtd_ret;  
+			vmx_eap_vtd_cet_paddr = __hva2spa__((u32)&g_vmx_vtd_cet); 
+			vmx_eap_vtd_cet_vaddr = (u32)&g_vmx_vtd_cet; 
+			
+			if(!vmx_eap_initialize(vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr,
+					vmx_eap_vtd_pdts_paddr, vmx_eap_vtd_pdts_vaddr,
+					vmx_eap_vtd_pts_paddr, vmx_eap_vtd_pts_vaddr,
+					vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr,
+					vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr, 0)){
+				printf("\nRuntime: Unable to re-initialize VMX EAP (VT-d). HALT!");
+				HALT();
+			}
+		
+			printf("\nRuntime: Re-initialized VMX VT-d.");
+		
+			vmx_eap_vtd_protect(rpb->XtVmmRuntimePhysBase-PAGE_SIZE_2M, rpb->XtVmmRuntimeSize+PAGE_SIZE_2M);
+			//hp8540p, test to see if VT-d DMA protection works.
+			//we just DMA protect the entire guest space. this results in a
+			//"disk error message" as expected since the boot sector tries to
+			//read the sectors using BIOS via DMA and the protections prevent it. 
+			//vmx_eap_vtd_protect(0x00000000, 0xBA600000); 
+			
+			printf("\nRuntime: Protected SL+Runtime (%08x-%08x) using VT-d.", 
+							rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M,
+						rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
 	}
 
 	

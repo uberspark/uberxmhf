@@ -69,6 +69,10 @@
 #define VTD_REG_32BITS  		0x32ff
 #define VTD_REG_64BITS  		0x64ff
 
+//Vt-d page-table bits
+#define VTD_READ						0x1
+#define VTD_WRITE						0x2
+#define VTD_SUPERPAGE				(0x1UL << 7)
 
 
 #ifndef __ASSEMBLY__
@@ -299,7 +303,7 @@ u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 		u32 vtd_pdts_paddr, u32 vtd_pdts_vaddr,
 		u32 vtd_pts_paddr, u32 vtd_pts_vaddr,
 		u32 vtd_ret_paddr, u32 vtd_ret_vaddr,
-		u32 vtd_cet_paddr, u32 vtd_cet_vaddr);
+		u32 vtd_cet_paddr, u32 vtd_cet_vaddr, u32 isbootstrap);
 		
 //vt-d protect/unprotect a given region of memory, start_paddr is
 //assumed to be page aligned physical memory address

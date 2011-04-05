@@ -51,7 +51,7 @@ emhf-libcommon
 18=..\include\vmx_eap.h
 [Selected Project Files]
 Main=
-Selected=..\libcommon\vmx_eap.c
+Selected=..\libcommon\svm_eap.c
 [..\libcommon\Makefile]
 TopLine=1
 Caret=140,6
@@ -83,11 +83,11 @@ Caret=27,41
 TopLine=1
 Caret=39,28
 [..\libcommon\svm_eap.c]
-TopLine=1
-Caret=1,26
+TopLine=89
+Caret=1,104
 [..\include\svm_eap.h]
-TopLine=1
-Caret=1,28
+TopLine=136
+Caret=1,164
 [..\include\paging.h]
 TopLine=45
 Caret=1,45
