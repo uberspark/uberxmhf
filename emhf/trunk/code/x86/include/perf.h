@@ -33,6 +33,19 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+/* perf.h - profiling utility functions
+ * author - Jim Newsome (jnewsome@cmu.edu)
+ *
+ * Some utility functions for profiling. They are designed to be
+ * smp-safe - each running timer is cpu-specific.
+ *
+ * Call perf_ctr_init before using a perf_ctr_t.
+ * Call perf_ctr_timer_start before
+ *   perf_ctr_timer_record or perf_ctr_timer_discard.
+ * After calling perf_ctr_timer_start, be sure to call
+ *   perf_ctr_timer_record or perf_ctr_timer_discard before calling it again
+ */
+
 #ifndef PERF_H
 #define PERF_H
 
@@ -40,36 +53,89 @@
 #include <types.h>
 
 typedef struct perf_counter {
-  u64 start_time;
+  /* per-cpu */
+  u64 start_time[MAX_VCPU_ENTRIES];
+
+  /* protects all below */
+  u32 lock;
+
   u64 total_time;
   u64 count;
 } perf_ctr_t;
 
+/* call exactly once for a perf_ctr_t */
 static inline void perf_ctr_init(perf_ctr_t *p)
 {
-  p->start_time = 0;
+  u32 i;
+
+  for(i=0; i<MAX_VCPU_ENTRIES; i++) {
+    p->start_time[i] = 0;
+  }
+  p->lock = 1;
   p->total_time = 0;
   p->count = 0;
 }
 
-static inline void perf_ctr_timer_start(perf_ctr_t *p)
+/* ASSUMES no currently running timers in p. */
+static inline void perf_ctr_reset(perf_ctr_t *p)
 {
-  ASSERT(p->start_time == 0);
-  p->start_time = rdtsc64();
+  u32 i;
+  spin_lock(&(p->lock));
+  for(i=0; i<MAX_VCPU_ENTRIES; i++) {
+    ASSERT(p->start_time[i] == 0);
+  }
+  p->total_time = 0;
+  p->count = 0;
+  spin_unlock(&(p->lock));
 }
 
-static inline void perf_ctr_timer_record(perf_ctr_t *p)
+/* p must be initialized, and the specified timer not running */
+static inline void perf_ctr_timer_start(perf_ctr_t *p, u32 cpuid)
 {
-  ASSERT(p->start_time != 0);
-  p->total_time += rdtsc64() - p->start_time;
+  ASSERT(cpuid < MAX_VCPU_ENTRIES);
+  ASSERT(p->start_time[cpuid] == 0);
+
+  p->start_time[cpuid] = rdtsc64();
+}
+
+/* specified timer must be running */
+static inline void perf_ctr_timer_record(perf_ctr_t *p, u32 cpuid)
+{
+  ASSERT(cpuid < MAX_VCPU_ENTRIES);
+  ASSERT(p->start_time[cpuid] != 0);
+
+  spin_lock(&(p->lock));
+  p->total_time += rdtsc64() - p->start_time[cpuid];
   p->count++;
-  p->start_time = 0;
+  p->start_time[cpuid] = 0;
+  spin_unlock(&(p->lock));
 }
 
-static inline void perf_ctr_timer_discard(perf_ctr_t *p)
+/* specified timer must be running */
+static inline void perf_ctr_timer_discard(perf_ctr_t *p, u32 cpuid)
 {
-  ASSERT(p->start_time != 0);
-  p->start_time = 0;
+  ASSERT(cpuid < MAX_VCPU_ENTRIES);
+  ASSERT(p->start_time[cpuid] != 0);
+
+  p->start_time[cpuid] = 0;
+}
+
+static inline u64 perf_ctr_get_total_time(perf_ctr_t *p)
+{
+  u64 rv;
+  spin_lock(&(p->lock));
+  rv = p->total_time;
+  spin_unlock(&(p->lock));
+  return rv;
+}
+
+static inline u64 perf_ctr_get_count(perf_ctr_t *p)
+{
+  u64 rv;
+  spin_lock(&(p->lock));
+  rv = p->count;
+  spin_unlock(&(p->lock));
+  return rv;
 }
 
 #endif
