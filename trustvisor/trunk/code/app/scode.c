@@ -48,6 +48,7 @@
 #include "./include/sha1.h"
 #include  "./include/rsa.h"
 #include  "./include/random.h"
+#include <perf.h>
 
 /* whitelist of all approved sensitive code regions */
 /* whitelist_max and *whitelist is set up by BSP, no need to apply lock
@@ -64,6 +65,11 @@
 u32 * scode_whitelist;
 whitelist_entry_t *whitelist=NULL;
 u32 whitelist_size=0, whitelist_max=0;
+
+perf_ctr_t g_tv_perf_ctrs[TV_PERF_CTRS_COUNT];
+char *g_tv_perf_ctr_strings[] = {
+	"npf", "switch_scode", "switch_regular", "safemalloc"
+}; /* careful to keep this consistent with actual macros */
 
 /* This two bitmaps are only updated in scode_register() and scode_unreg(), no need to apply lock */
 /* bitmap of all physical page numer containing sensitive code */
@@ -233,6 +239,16 @@ u32 scode_measure(u8 * pcr, pte_t *pte_pages, u32 size)
 void init_scode(VCPU * vcpu)
 {
 	u32 inum, max;
+
+	/* initialize perf counters. this needs to happen before anythings gets profiled
+	 * to prevent deadlock.
+	 */
+	{
+		int j;
+		for(j=0; j<TV_PERF_CTRS_COUNT; j++) {
+			perf_ctr_init(&g_tv_perf_ctrs[j]);
+		}
+	}
 
 	/* initialize heap memory */
 	mem_init();
@@ -587,6 +603,16 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	whitelist_size ++;
 	vmemcpy(whitelist + i, &whitelist_new, sizeof(whitelist_entry_t));
 
+	/* 
+	 * reset performance counters
+	 */
+	{
+		int j;
+		for(j=0; j<TV_PERF_CTRS_COUNT; j++) {
+			perf_ctr_reset(&g_tv_perf_ctrs[j]);
+		}
+	}
+
 
 	return 0; 
 }
@@ -623,6 +649,18 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
 	{
 		dprintf(LOG_ERROR, "[TV] SECURITY: UnRegistration Failed. no matching sensitive code found\n");
 		return 1;
+	}
+
+	/* dump perf counters */
+	dprintf(LOG_PROFILE, "performance counters:\n");
+	{
+		int j;
+		for(j=0; j<TV_PERF_CTRS_COUNT; j++) {
+			dprintf(LOG_PROFILE, "  %s total: %Lu count: %Lu\n",
+							g_tv_perf_ctr_strings[j],
+							perf_ctr_get_total_time(&g_tv_perf_ctrs[j]),
+							perf_ctr_get_count(&g_tv_perf_ctrs[j]));
+		}
 	}
 
 	/* if we find one to remove, we also need to clear the physcial page number
@@ -894,6 +932,8 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 	u32 addr;
 	int curr=scode_curr[vcpu->id];
 
+	perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_SCODE], vcpu->id);
+
 	dprintf(LOG_TRACE, "\n[TV] ************************************\n");
 	dprintf(LOG_TRACE, "[TV] ********* switch to scode **********\n");
 	dprintf(LOG_TRACE, "[TV] ************************************\n");
@@ -940,6 +980,8 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 	dprintf(LOG_TRACE, "[TV] scode return vaddr is %#x\n", whitelist[curr].return_v);
 
 	dprintf(LOG_TRACE, "[TV] host stack pointer before running scode is %#x\n",(u32)VCPU_grsp(vcpu));
+
+	perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_SCODE], vcpu->id);
 	return 0;
 }
 
@@ -1036,6 +1078,8 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
 {
 	int curr=scode_curr[vcpu->id];
 
+	perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_REGULAR], vcpu->id);
+
 	dprintf(LOG_TRACE, "\n[TV] ************************************\n");
 	dprintf(LOG_TRACE, "[TV] ***** switch to regular code  ******\n");
 	dprintf(LOG_TRACE, "[TV] ************************************\n");
@@ -1060,6 +1104,9 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
 		VCPU_grflags_set(vcpu, VCPU_grflags(vcpu) | EFLAGS_IF);
 
 		dprintf(LOG_TRACE, "[TV] stack pointer before exiting scode is %#x\n",(u32)VCPU_grsp(vcpu));
+
+		perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_REGULAR], vcpu->id);
+
 		return 0;
 	}
 	/* error in scode unmarshalling */
@@ -1085,6 +1132,8 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
 	int * curr=&(scode_curr[vcpu->id]);
 	u64 gcr3 = VCPU_gcr3(vcpu);
 	u32 rip = (u32)VCPU_grip(vcpu);
+
+	perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_NPF], vcpu->id);
 
 	dprintf(LOG_TRACE, "[TV] CPU(%02x): nested page fault!(rip %#x, gcr3 %#llx, gpaddr %#x, errorcode %llx)\n",
 				 vcpu->id, rip, gcr3, gpaddr, errorcode);
@@ -1168,9 +1217,12 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
 		((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->eventinj.bytes = 0ull;
 	} /* FIXME - equivalent for intel? */
 
+	perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_NPF], vcpu->id);
 	return 0;
 
  npf_error:
+	perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_NPF], vcpu->id);
+
 	if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
 		/* errors, inject segfault to guest */
 		struct vmcb_struct* vmcb = (struct vmcb_struct*)(vcpu->vmcb_vaddr_ptr);

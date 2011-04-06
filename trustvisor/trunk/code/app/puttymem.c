@@ -39,6 +39,8 @@
 
 #include "./include/puttymem.h"
 #include  "./include/malloc.h"
+#include "scode.h"
+#include "perf.h"
 
 /* ----------------------------------------------------------------------
  * My own versions of malloc, realloc and free. Because I want
@@ -58,6 +60,7 @@ void mem_init(void){
 void *safemalloc(size_t n, size_t size)
 {
 	void *p;
+        perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_SAFEMALLOC], 0/*FIXME*/);
 
   //  struct st_timer_vars tv;
     //start_timer(&tv);
@@ -73,6 +76,8 @@ void *safemalloc(size_t n, size_t size)
 
    // stop_timer(&tv);
    // update_sum(&perf.sum_rsag_malloc, &tv);
+
+        perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_SAFEMALLOC], 0/*FIXME*/);
     
 	if (!p) {
 		return NULL;

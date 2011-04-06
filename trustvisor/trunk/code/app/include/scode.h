@@ -42,6 +42,7 @@
 #define __SCODE_H_
 
 #include  <target.h>
+#include <perf.h>
 //#include  <globals.h>
 //#include "tpm_sw.h"
 
@@ -133,6 +134,15 @@ struct scode_params_info{
 #define  MAX_SEALDATA_LEN 2048
 #define  SEALDATA_HEADER_LEN 48
 
+extern perf_ctr_t g_tv_perf_ctrs[];
+extern char *g_tv_perf_ctr_strings[];
+#define TV_PERF_CTR_NPF 0
+#define TV_PERF_CTR_SWITCH_SCODE 1
+#define TV_PERF_CTR_SWITCH_REGULAR 2
+#define TV_PERF_CTR_SAFEMALLOC 3
+/* insert new counters here, and update count below */
+#define TV_PERF_CTRS_COUNT 4
+
 /* scode state struct */
 typedef struct whitelist_entry{
 	u64 gcr3; 
@@ -162,6 +172,7 @@ typedef struct whitelist_entry{
 
 	/* software TPM related */
 	u8  pcr[TPM_PCR_SIZE*TPM_PCR_NUM];
+
 } __attribute__ ((packed)) whitelist_entry_t;
 
 
