@@ -47,7 +47,6 @@
 static int skip_atoi(const char **s);
 static char * number(char * buf, char * end, unsigned long long num, int base, int size, int precision, int type);
 int vsnprintf(char *buf, size_t size, const char *fmt, va_list args);
-void printf(const char *fmt, ...);
 
 char printk_prefix[16] = "";
 
@@ -476,7 +475,6 @@ void printf(const char *fmt, ...)
     spin_unlock(&printf_lock);
 
 }
-#endif
 
 /*
  * if 'prefix' != NULL, print it before each line of hex string
@@ -491,3 +489,5 @@ void print_hex(const char *prefix, const void *prtptr, size_t size)
     }
     printf("\n");
 }
+
+#endif

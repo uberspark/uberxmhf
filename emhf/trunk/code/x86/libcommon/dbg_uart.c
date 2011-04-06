@@ -107,6 +107,7 @@ inline u32 uart_tx_empty(void)
   return (x & LSR_THRE);
 }
 
+#ifdef __DEBUG_SERIAL__
 static void serial_putc(u32 x)
 {
 
@@ -116,6 +117,11 @@ static void serial_putc(u32 x)
 
   return;
 }
+#else
+static void serial_putc(u32 x)
+{
+}
+#endif
 
 /* print a newline-containing null-terminated string to the serial port */
 void putstr(const char *str)

@@ -48,11 +48,13 @@ void putstr(const char *str);
 #ifdef __DEBUG_SERIAL__
 extern void printf(const char *format, ...)
   __attribute__ ((format (printf, 1, 2)));
+void print_hex(const char *prefix, const void *prtptr, size_t size);
 #else
-#define printf(format, args...) ((void)0)
+#define printf(format, args...) while(0)
+#define print_hex(prefix, prtptr, size) while(0)
 #endif
 
-void print_hex(const char *prefix, const void *prtptr, size_t size);
+
 
 #endif /* __ASSEMBLY__ */
 
