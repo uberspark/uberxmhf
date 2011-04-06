@@ -45,12 +45,22 @@
 void init_uart(void);
 void putstr(const char *str);
 
+#define LOG_PROFILE (1<<0)
+#define LOG_TRACE   (1<<1)
+#define LOG_ERROR   (1<<2)
+
+#define ENABLED_LOG_TYPES (LOG_PROFILE|LOG_TRACE|LOG_ERROR)
+
 #ifdef __DEBUG_SERIAL__
 extern void printf(const char *format, ...)
   __attribute__ ((format (printf, 1, 2)));
+void dprintf(u32 log_type, const char *format, ...)
+  __attribute__ ((format (printf, 2, 3)));
 void print_hex(const char *prefix, const void *prtptr, size_t size);
+
 #else
 #define printf(format, args...) while(0)
+#define dprintf(format, args...) while(0)
 #define print_hex(prefix, prtptr, size) while(0)
 #endif
 

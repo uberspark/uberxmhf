@@ -438,17 +438,14 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 volatile u32 printf_lock=1;
 
 #ifdef __DEBUG_SERIAL__
-void printf(const char *fmt, ...)
+static void vprintf(const char *fmt, va_list args)
 {
     int    start_of_line = 1;
     char   _p_buf[1024];
 
-    va_list       args;
     char         *p, *q;
 
-    va_start(args, fmt);
     (void)vsnprintf(_p_buf, sizeof(_p_buf), fmt, args);
-    va_end(args);        
 
     spin_lock(&printf_lock);
 
@@ -473,7 +470,26 @@ void printf(const char *fmt, ...)
     }
 
     spin_unlock(&printf_lock);
+}
 
+void printf(const char *fmt, ...)
+{
+    va_list       args;
+
+    va_start(args, fmt);
+    vprintf(fmt, args);
+    va_end(args);        
+}
+
+void dprintf(u32 log_type, const char *fmt, ...)
+{
+    va_list       args;
+
+    if (log_type & ENABLED_LOG_TYPES) {
+      va_start(args, fmt);
+      vprintf(fmt, args);
+      va_end(args);
+    }
 }
 
 /*
