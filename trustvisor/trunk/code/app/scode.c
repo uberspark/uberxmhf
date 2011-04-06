@@ -133,7 +133,7 @@ static inline u32 set_page_scode_bitmap_2M(u32 pfn)
 		scode_pfn_bitmap_2M[index] ++;
 	else
 	{
-		printf("FATAL ERROR: exceed the limitation of 2M page\n");
+		dprintf(LOG_ERROR, "FATAL ERROR: exceed the limitation of 2M page\n");
 		HALT();
 	}
 
@@ -149,7 +149,7 @@ static inline u32 clear_page_scode_bitmap_2M(u32 pfn)
 		scode_pfn_bitmap_2M[index] --;
 	else
 	{
-		printf("FATAL ERROR: exceed the limitation of 2M page\n");
+		dprintf(LOG_ERROR, "FATAL ERROR: exceed the limitation of 2M page\n");
 		HALT();
 	}
 
@@ -178,13 +178,13 @@ int scode_in_list(u64 gcr3, u32 gvaddr)
 			for( j=0 ; j<(u32)(whitelist[i].scode_info.section_num) ; j++ )  {
 				if( (gvaddr >= whitelist[i].scode_info.ps_str[j].start_addr) &&
 						(gvaddr < ((whitelist[i].scode_info.ps_str[j].start_addr)+((whitelist[i].scode_info.ps_str[j].page_num)<<PAGE_SHIFT_4K)))  )  {
-					printf("[TV] find gvaddr %#x in scode %d section No.%d !\n", gvaddr, i, j+1);
+					dprintf(LOG_TRACE, "[TV] find gvaddr %#x in scode %d section No.%d !\n", gvaddr, i, j+1);
 					return i;
 				}
 			}
 		}
 	}
-	printf("[TV] no matching scode found for gvaddr %#x!\n", gvaddr);
+	dprintf(LOG_TRACE, "[TV] no matching scode found for gvaddr %#x!\n", gvaddr);
 	return -1;
 }
 
@@ -208,17 +208,17 @@ u32 scode_measure(u8 * pcr, pte_t *pte_pages, u32 size)
 	sha1_context ctx;
 	u8 sha1sum[SHA1_CHECKSUM_LEN];
 
-	printf("[TV] measure scode and extend uTPM PCR value!\n");
+	dprintf(LOG_TRACE, "[TV] measure scode and extend uTPM PCR value!\n");
 	sha1_starts(&ctx);
 	for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)
 	{
 		/* only measure SENTRY, STEXT, SDATA pages */
 		paddr = PAGE_ALIGN_4K(pte_pages[i]);
 		if((pte_pages[i] & 0x7)!=0)  {
-			printf("[TV]   measure scode page %d paddr %#x\n", i+1, paddr);
+			dprintf(LOG_TRACE, "[TV]   measure scode page %d paddr %#x\n", i+1, paddr);
 			sha1_update(&ctx, (u8 *)paddr, PAGE_SIZE_4K);
 		} else {
-			printf("[TV]   ignore scode page %d paddr %#x\n", i+1, paddr);
+			dprintf(LOG_TRACE, "[TV]   ignore scode page %d paddr %#x\n", i+1, paddr);
 		}
 	}
 	sha1_finish(&ctx, sha1sum);
@@ -238,11 +238,11 @@ void init_scode(VCPU * vcpu)
 	mem_init();
 
 	scode_whitelist = (unsigned int *)vmalloc(WHITELIST_LIMIT);
-	printf("[TV] alloc %dKB mem for scode_list at %x!\n", (WHITELIST_LIMIT/1024), (unsigned int)scode_whitelist);
+	dprintf(LOG_TRACE, "[TV] alloc %dKB mem for scode_list at %x!\n", (WHITELIST_LIMIT/1024), (unsigned int)scode_whitelist);
 	scode_pfn_bitmap = (unsigned char *)vmalloc(PFN_BITMAP_LIMIT);
-	printf("[TV] alloc %dKB mem for pfn_bitmap at %x!\n", (PFN_BITMAP_LIMIT/1024), (unsigned int)scode_pfn_bitmap);
+	dprintf(LOG_TRACE, "[TV] alloc %dKB mem for pfn_bitmap at %x!\n", (PFN_BITMAP_LIMIT/1024), (unsigned int)scode_pfn_bitmap);
 	scode_pfn_bitmap_2M = (unsigned short *)vmalloc(PFN_BITMAP_2M_LIMIT);
-	printf("[TV] alloc %dKB mem for pfn_bitmap_2M at %x!\n", (PFN_BITMAP_LIMIT/1024), (unsigned int)scode_pfn_bitmap_2M);
+	dprintf(LOG_TRACE, "[TV] alloc %dKB mem for pfn_bitmap_2M at %x!\n", (PFN_BITMAP_LIMIT/1024), (unsigned int)scode_pfn_bitmap_2M);
 
 	vmemset(scode_whitelist, 0, WHITELIST_LIMIT); 
 	vmemset(scode_pfn_bitmap, 0, PFN_BITMAP_LIMIT);
@@ -251,7 +251,7 @@ void init_scode(VCPU * vcpu)
 	whitelist = (whitelist_entry_t *)scode_whitelist;
 	whitelist_size = 0;
 	whitelist_max = WHITELIST_LIMIT / sizeof(whitelist_entry_t);
-	printf("[TV] whitelist max = %d!\n", whitelist_max);
+	dprintf(LOG_TRACE, "[TV] whitelist max = %d!\n", whitelist_max);
 
 	/* init scode_curr struct
 	 * NOTE that cpu_lapic_id could be bigger than midtable_numentries */
@@ -265,18 +265,18 @@ void init_scode(VCPU * vcpu)
 
 	/* init pseudo random number generator */
 	rand_init();
-	printf("[TV] PRNG init!\n");
+	dprintf(LOG_TRACE, "[TV] PRNG init!\n");
 
 	/* aeskey and hmac are identical for different PAL, so that we can seal data from one PAL to another PAL */
 	rand_bytes(aeskey, (TPM_AES_KEY_LEN>>3));
-	printf("[TV] AES key generated!\n");
+	dprintf(LOG_TRACE, "[TV] AES key generated!\n");
 	rand_bytes(hmackey, 20);
-	printf("[TV] HMAC key generated!\n");
+	dprintf(LOG_TRACE, "[TV] HMAC key generated!\n");
 
 	/* init RSA key required in uTPM Quote */
 	rsa_init(&g_rsa, RSA_PKCS_V15, RSA_SHA1);
 	rsa_gen_key(&g_rsa, (TPM_RSA_KEY_LEN<<3), 65537);
-	printf("[TV] RSA key pair generated!\n");
+	dprintf(LOG_TRACE, "[TV] RSA key pair generated!\n");
 }
 
 /* HPT related SCODE routines */
@@ -301,12 +301,12 @@ u32 hpt_scode_set_prot(VCPU *vcpu, pte_t *pte_pages, u32 size)
 	u32 k;
 	VCPU * tmpcpu;
 
-	printf("[TV] scode registration on local CPU %02x!\n", vcpu->id);
+	dprintf(LOG_TRACE, "[TV] scode registration on local CPU %02x!\n", vcpu->id);
 	for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)
 	{
 		pfn = pte_pages[i] >> PAGE_SHIFT_4K;
 		if (test_page_scode_bitmap(pfn)) {
-			printf("[TV] Set scode page permission error! pfn %#x have already been registered!\n", pfn);
+			dprintf(LOG_ERROR, "[TV] Set scode page permission error! pfn %#x have already been registered!\n", pfn);
 			break;
 		}
 	}
@@ -340,7 +340,7 @@ void hpt_scode_clear_prot(VCPU * vcpu, pte_t *pte_pages, u32 size)
 #endif
 
 	/* set up page permission in local CPU */
-	printf("[TV] scode unreg on local CPU %02x!\n", vcpu->id);
+	dprintf(LOG_TRACE, "[TV] scode unreg on local CPU %02x!\n", vcpu->id);
 	for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)
 	{
 		pfn = pte_pages[i] >> PAGE_SHIFT_4K;
@@ -361,7 +361,7 @@ void hpt_scode_clear_prot(VCPU * vcpu, pte_t *pte_pages, u32 size)
 	for( k=0 ; k<g_midtable_numentries ; k++ )  {
 		tmpcpu = (VCPU *)(g_midtable[k].vcpu_vaddr_ptr);
 		if (tmpcpu->id != vcpu->id) {
-			printf("[TV] scode unreg on CPU %02x!\n", tmpcpu->id);
+			dprintf(LOG_TRACE, "[TV] scode unreg on CPU %02x!\n", tmpcpu->id);
 			for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)
 			{
 				pfn = pte_pages[i] >> PAGE_SHIFT_4K;
@@ -384,9 +384,9 @@ int parse_params_info(VCPU * vcpu, struct scode_params_info* pm_info, u32 pm_add
 	/* get parameter number */
 	num = pm_info->params_num = get_32bit_aligned_value_from_guest(vcpu, addr);
 	addr += 4;
-	printf("[TV] pm_info %#x, # of paramters is %d\n", pm_addr, num);
+	dprintf(LOG_TRACE, "[TV] pm_info %#x, # of paramters is %d\n", pm_addr, num);
 	if (num > MAX_PARAMS_NUM) {
-		printf("[TV] number of scode sections exceeds limit!\n");
+		dprintf(LOG_ERROR, "[TV] number of scode sections exceeds limit!\n");
 		return 1;
 	}
 
@@ -394,7 +394,7 @@ int parse_params_info(VCPU * vcpu, struct scode_params_info* pm_info, u32 pm_add
 	{
 		pm_info->pm_str[i].type = get_32bit_aligned_value_from_guest(vcpu, addr);
 		pm_info->pm_str[i].size = get_32bit_aligned_value_from_guest(vcpu, addr+4);
-		printf("[TV] parameter %d type %d size %d\n", i+1, pm_info->pm_str[i].type, pm_info->pm_str[i].size);
+		dprintf(LOG_TRACE, "[TV] parameter %d type %d size %d\n", i+1, pm_info->pm_str[i].type, pm_info->pm_str[i].size);
 		addr += 8;
 	}
 	return 0;
@@ -407,11 +407,11 @@ int memsect_info_copy_from_guest(VCPU * vcpu, struct scode_sections_info *ps_sco
 	/* get parameter number */
 	ps_scode_info->section_num = get_32bit_aligned_value_from_guest(vcpu, gva_scode_info);
 	gva_scode_info_offset += 4;
-	printf("[TV] scode_info addr %x, # of section is %d\n", gva_scode_info, ps_scode_info->section_num);
+	dprintf(LOG_TRACE, "[TV] scode_info addr %x, # of section is %d\n", gva_scode_info, ps_scode_info->section_num);
 
 	/* copy array of parameter descriptors */
 	if( ps_scode_info->section_num > MAX_SECTION_NUM )  {
-		printf("[TV] number of scode sections exceeds limit!\n");
+		dprintf(LOG_ERROR, "[TV] number of scode sections exceeds limit!\n");
 		return 1;
 	}
 	copy_from_guest(vcpu,
@@ -438,7 +438,7 @@ int memsect_info_register(VCPU * vcpu, struct scode_sections_info *ps_scode_info
 		start = ps_scode_info->ps_str[i].start_addr;
 		/* make sure the addr is 4kb page aligned */
 		if(!is_page_4K_aligned(start)) {
-			printf("[TV] ERROR: Section %d start address %x is not 4K-aligned\n", i, start);
+			dprintf(LOG_ERROR, "[TV] ERROR: Section %d start address %x is not 4K-aligned\n", i, start);
 			return 1;
 		}
 		switch ( type )  {
@@ -450,7 +450,7 @@ int memsect_info_register(VCPU * vcpu, struct scode_sections_info *ps_scode_info
 						wle->gpmp=start+0x10;
 						is_get_param=1;
 						if (guest_pt_check_user_rw(vcpu, start, size)) {
-							printf("[TV] ERROR: SCODE_PARAM pages are not user writable!\n");
+							dprintf(LOG_ERROR, "[TV] ERROR: SCODE_PARAM pages are not user writable!\n");
 							return 1;
 						}
 					}
@@ -464,7 +464,7 @@ int memsect_info_register(VCPU * vcpu, struct scode_sections_info *ps_scode_info
 						wle->gssp=start+(size<<PAGE_SHIFT_4K)-0x10;
 						is_get_stack=1;
 						if (guest_pt_check_user_rw(vcpu, start, size)) {
-							printf("[TV] ERROR: SCODE_STACK pages are not user writable!\n");
+							dprintf(LOG_ERROR, "[TV] ERROR: SCODE_STACK pages are not user writable!\n");
 							return 1;
 						}
 					}
@@ -474,11 +474,11 @@ int memsect_info_register(VCPU * vcpu, struct scode_sections_info *ps_scode_info
 				break;
 		}
 		pnum += size;
-		printf("[TV] section %d type %d addr %#x size %d\n",i+1, type, start, size);
+		dprintf(LOG_TRACE, "[TV] section %d type %d addr %#x size %d\n",i+1, type, start, size);
 	}
 
 	if (pnum > MAX_REGPAGES_NUM) {
-		printf("[TV] number of scode pages exceeds limit!\n");
+		dprintf(LOG_ERROR, "[TV] number of scode pages exceeds limit!\n");
 		return 1;
 	}
 
@@ -499,17 +499,17 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
 	gcr3 = VCPU_gcr3(vcpu);
 
-	printf("\n[TV] ************************************\n");
-	printf("[TV] ********** scode register **********\n");
-	printf("[TV] ************************************\n");
+	dprintf(LOG_TRACE, "\n[TV] ************************************\n");
+	dprintf(LOG_TRACE, "[TV] ********** scode register **********\n");
+	dprintf(LOG_TRACE, "[TV] ************************************\n");
 
 	if (whitelist_size == whitelist_max)
 	{
-		printf("[TV] FATAL ERROR: too many registered scode, the limitation is %d\n", whitelist_max);
+		dprintf(LOG_ERROR, "[TV] FATAL ERROR: too many registered scode, the limitation is %d\n", whitelist_max);
 		return 1;
 	}
 
-	printf("[TV] CPU(0x%02x): add to whitelist,  scode_info %#x, scode_pm %#x, gventry %#x\n", vcpu->id, scode_info, scode_pm, gventry);
+	dprintf(LOG_TRACE, "[TV] CPU(0x%02x): add to whitelist,  scode_info %#x, scode_pm %#x, gventry %#x\n", vcpu->id, scode_info, scode_pm, gventry);
 
 	/* ATTN: we should assign a ID for each registered sensitive code
 	 * so we know what to verify each time
@@ -521,18 +521,18 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	/* store scode entry point */
 	whitelist_new.entry_v = gventry;
 	whitelist_new.entry_p = gpt_vaddr_to_paddr(vcpu, gventry); 
-	printf("[TV] CR3 value is %#llx, entry point vaddr is %#x, paddr is %#x\n", gcr3, whitelist_new.entry_v, whitelist_new.entry_p);
+	dprintf(LOG_TRACE, "[TV] CR3 value is %#llx, entry point vaddr is %#x, paddr is %#x\n", gcr3, whitelist_new.entry_v, whitelist_new.entry_p);
 
 	/* parse parameter structure */
 	if (parse_params_info(vcpu, &(whitelist_new.params_info), scode_pm)) {
-		printf("[TV] Registration Failed. Scode param info incorrect! \n");
+		dprintf(LOG_ERROR, "[TV] Registration Failed. Scode param info incorrect! \n");
 		return 1;
 	}
 	whitelist_new.gpm_num = whitelist_new.params_info.params_num;
 	/* register scode sections into whitelist entry */
 	if (memsect_info_copy_from_guest(vcpu, &(whitelist_new.scode_info), scode_info)
 			|| memsect_info_register(vcpu, &(whitelist_new.scode_info), &whitelist_new)) {
-		printf("[TV] Registration Failed. Scode section info incorrect! \n");
+		dprintf(LOG_ERROR, "[TV] Registration Failed. Scode section info incorrect! \n");
 		return 1;
 	}
 
@@ -543,7 +543,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 		ginfo = &(whitelist_new.scode_info.ps_str[i]);
 		if (guest_pt_copy(vcpu, &(whitelist_new.scode_pages[whitelist_new.scode_size]), ginfo->start_addr, (ginfo->page_num)<<PAGE_SHIFT_4K, ginfo->type)) {
 			vfree(whitelist_new.scode_pages);
-			printf("[TV] SECURITY: Registration Failed. Probably some page of sensitive code is not in memory yet\n");
+			dprintf(LOG_ERROR, "[TV] SECURITY: Registration Failed. Probably some page of sensitive code is not in memory yet\n");
 			return 1;
 		}
 		whitelist_new.scode_size += ginfo->page_num;
@@ -555,7 +555,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	if (hpt_scode_set_prot(vcpu, whitelist_new.scode_pages, whitelist_new.scode_size))
 	{
 		vfree(whitelist_new.scode_pages);
-		printf("[TV] SECURITY: Registration Failed. Probably some page has already been used by other sensitive code.\n");
+		dprintf(LOG_ERROR, "[TV] SECURITY: Registration Failed. Probably some page has already been used by other sensitive code.\n");
 		return 1;
 	}
 
@@ -567,7 +567,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	{
 		hpt_scode_clear_prot(vcpu, whitelist_new.scode_pages, whitelist_new.scode_size);
 		vfree(whitelist_new.scode_pages);
-		printf("[TV] SECURITY: Registration Failed. sensitived code cannot be verified.\n");
+		dprintf(LOG_ERROR, "[TV] SECURITY: Registration Failed. sensitived code cannot be verified.\n");
 		return 1;
 	}
 
@@ -581,7 +581,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	/* CRITICAL SECTION in MP scenario: need to quiesce other CPUs or at least acquire spinlock */
 	for (i = 0; (whitelist[i].gcr3!=0); i ++);
 	if (i >= whitelist_max) {
-		printf("[TV] FATAL ERROR: no room for new scode, the limitation is %d\n", whitelist_max);
+		dprintf(LOG_ERROR, "[TV] FATAL ERROR: no room for new scode, the limitation is %d\n", whitelist_max);
 		return 1;
 	}
 	whitelist_size ++;
@@ -600,17 +600,17 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
 
 	gcr3 = VCPU_gcr3(vcpu);
 
-	printf("\n[TV] ************************************\n");
-	printf("[TV] ********* scode unregister *********\n");
-	printf("[TV] ************************************\n");
+	dprintf(LOG_TRACE, "\n[TV] ************************************\n");
+	dprintf(LOG_TRACE, "[TV] ********* scode unregister *********\n");
+	dprintf(LOG_TRACE, "[TV] ************************************\n");
 
 	if (whitelist_size == 0)
 	{
-		printf("[TV] FATAL ERROR: no scode registered currently\n");
+		dprintf(LOG_ERROR, "[TV] FATAL ERROR: no scode registered currently\n");
 		return 1;
 	}
 
-	printf("[TV] CPU(%02x): remove from whitelist gcr3 %#llx, gvaddr %#x\n", vcpu->id, gcr3, gvaddr);
+	dprintf(LOG_TRACE, "[TV] CPU(%02x): remove from whitelist gcr3 %#llx, gvaddr %#x\n", vcpu->id, gcr3, gvaddr);
 
 	for (i = 0; i < whitelist_max; i ++)
 	{
@@ -621,7 +621,7 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
 
 	if (i >= whitelist_max) 
 	{
-		printf("[TV] SECURITY: UnRegistration Failed. no matching sensitive code found\n");
+		dprintf(LOG_ERROR, "[TV] SECURITY: UnRegistration Failed. no matching sensitive code found\n");
 		return 1;
 	}
 
@@ -667,7 +667,7 @@ void expose_page (u64 * page_list, u64 page, u32 * count)
 			/* set up DEV vector to prevent DMA attack */
 			/* XXX FIXME: temporarily disable */
 			//set_page_dev_prot(pfn);
-			printf("[TV]   expose page %#llx \n", page);
+			dprintf(LOG_TRACE, "[TV]   expose page %#llx \n", page);
 		}
 	}
 }
@@ -699,7 +699,7 @@ void scode_expose_arch(VCPU *vcpu)
 	/* get related page tables for scode */
 	/* Here we walk guest page table, and find out all the pdp,pd,pt entry
 	   that is necessary to translate gvaddr */
-	printf("[TV] expose SCODE related PTE pages\n");
+	dprintf(LOG_TRACE, "[TV] expose SCODE related PTE pages\n");
 	for( i=0 ; i < (u32)(whitelist[curr].scode_info.section_num) ; i++ )  {
 		ginfo = &(whitelist[curr].scode_info.ps_str[i]);
 		for( j=0 ; j<(u32)(ginfo->page_num); j++ )  {
@@ -707,7 +707,7 @@ void scode_expose_arch(VCPU *vcpu)
 
 			/* check gvaddr to gpaddr mapping */
 			if( gpaddr != (((u32)(*(sp+tmp_count+j)))&(~(0x7))))  {
-				printf("[TV] SECURITY: scode vaddr %x -> paddr %#llx mapping changed! invalide gpaddr is %x!\n", ginfo->start_addr+(j<<PAGE_SHIFT_4K), *(sp+tmp_count+j), gpaddr);
+				dprintf(LOG_ERROR, "[TV] SECURITY: scode vaddr %x -> paddr %#llx mapping changed! invalide gpaddr is %x!\n", ginfo->start_addr+(j<<PAGE_SHIFT_4K), *(sp+tmp_count+j), gpaddr);
 				vfree((void *)(whitelist[curr].pte_page));
 				HALT();
 			}
@@ -743,7 +743,7 @@ void scode_expose_arch(VCPU *vcpu)
 	/* GDP table can be fit into one page and already be noted down in the
 	   page table walking for scode, no need to do it again, 
 	   that is why we put NULL below, and take gpaddr instead(protect the page contains GDT table */ 
-	printf("[TV] expose GDT related PTE pages\n");
+	dprintf(LOG_TRACE, "[TV] expose GDT related PTE pages\n");
 	gpaddr = gpt_get_ptpages(vcpu, gdtr, NULL, &tmp_page[1], &tmp_page[2]);
 
 	EXPOSE_PAGE(gpaddr);
@@ -794,16 +794,16 @@ u32 scode_marshall(VCPU * vcpu)
 	u32 new_rsp;
 	int curr=scode_curr[vcpu->id];
 
-	printf("[TV] marshalling scode parameters!\n");
+	dprintf(LOG_TRACE, "[TV] marshalling scode parameters!\n");
 	if(whitelist[curr].gpm_num == 0)
 	{
-		printf("[TV] params number is 0. Return!\n");
+		dprintf(LOG_TRACE, "[TV] params number is 0. Return!\n");
 		return 0;
 	}
 
 	/* memory address for input parameter in sensitive code */
 	pm_addr_base = whitelist[curr].gpmp;
-	printf("[TV] parameter page base address is %#x\n", pm_addr_base);
+	dprintf(LOG_TRACE, "[TV] parameter page base address is %#x\n", pm_addr_base);
 
 	/* address for parameters in guest stack */
 	grsp = (u32)whitelist[curr].grsp + 4; /*the stack pointer of parameters in guest stack*/
@@ -813,11 +813,11 @@ u32 scode_marshall(VCPU * vcpu)
 	put_32bit_aligned_value_to_guest(vcpu, (u32)pm_addr, whitelist[curr].gpm_num);
 	pm_addr += 4;
 	pm_size_sum = 4; /*memory used in input pms section*/
-	printf("[TV] params number is %d\n", whitelist[curr].gpm_num);
+	dprintf(LOG_TRACE, "[TV] params number is %d\n", whitelist[curr].gpm_num);
 
 	if (whitelist[curr].gpm_num > MAX_PARAMS_NUM)
 	{
-		printf("[TV] Fail: param num is too big!\n");
+		dprintf(LOG_ERROR, "[TV] Fail: param num is too big!\n");
 		return 1;
 	}
 
@@ -833,7 +833,7 @@ u32 scode_marshall(VCPU * vcpu)
 
 		if (pm_size_sum > (whitelist[curr].gpm_size*PAGE_SIZE_4K))
 		{
-			printf("[TV] Fail: No enough space to save input params data!\n");
+			dprintf(LOG_ERROR, "[TV] Fail: No enough space to save input params data!\n");
 			return 1;
 		}
 
@@ -848,7 +848,7 @@ u32 scode_marshall(VCPU * vcpu)
 				{        
 					/* put the parameter value in sensitive code stack */
 					pm_tmp = pm_value;
-					printf("[TV]   PM %d is a integer (size %d, value %#x)\n", pm_num, pm_size, pm_value);
+					dprintf(LOG_TRACE, "[TV]   PM %d is a integer (size %d, value %#x)\n", pm_num, pm_size, pm_value);
 					break;
 				}
 			case PM_TYPE_POINTER: /* pointer */
@@ -857,13 +857,13 @@ u32 scode_marshall(VCPU * vcpu)
 					pm_size_sum += 4*pm_size;
 					if (pm_size_sum > (whitelist[curr].gpm_size*PAGE_SIZE_4K))
 					{
-						printf("[TV] Fail: No enough space to save input params data!\n");
+						dprintf(LOG_TRACE, "[TV] Fail: No enough space to save input params data!\n");
 						return 1;
 					}
 
 					/* make sure that this pointer point to mem regeion that can be r/w by user */
 					if (guest_pt_check_user_rw(vcpu, pm_value, (pm_value+pm_size*4-(pm_value & (~0xFFF)))/4096+1)) {
-						printf("[TV] Fail: input param data region is not user writable!\n");
+						dprintf(LOG_ERROR, "[TV] Fail: input param data region is not user writable!\n");
 						return 1;
 					}
 
@@ -871,12 +871,12 @@ u32 scode_marshall(VCPU * vcpu)
 
 					/* put pointer address in sensitive code stack*/
 					pm_tmp = pm_addr;
-					printf("[TV]   PM %d is a pointer (size %d, addr %#x)\n", pm_num, pm_size*4, pm_value);
+					dprintf(LOG_TRACE, "[TV]   PM %d is a pointer (size %d, addr %#x)\n", pm_num, pm_size*4, pm_value);
 					pm_addr += 4*pm_size;
 					break;
 				}
 			default: /* other */
-				printf("[TV] Fail: unknown parameter %d type %d \n", pm_num, pm_type);
+				dprintf(LOG_ERROR, "[TV] Fail: unknown parameter %d type %d \n", pm_num, pm_type);
 				return 1;
 		}
 		new_rsp = VCPU_grsp(vcpu)-4;
@@ -894,12 +894,12 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 	u32 addr;
 	int curr=scode_curr[vcpu->id];
 
-	printf("\n[TV] ************************************\n");
-	printf("[TV] ********* switch to scode **********\n");
-	printf("[TV] ************************************\n");
+	dprintf(LOG_TRACE, "\n[TV] ************************************\n");
+	dprintf(LOG_TRACE, "[TV] ********* switch to scode **********\n");
+	dprintf(LOG_TRACE, "[TV] ************************************\n");
 
 	/* save the guest stack pointer and set new stack pointer to scode stack */
-	printf("[TV] saved guest regular stack %#x, switch to sensitive code stack %#x\n", (u32)VCPU_grsp(vcpu), whitelist[curr].gssp);
+	dprintf(LOG_TRACE, "[TV] saved guest regular stack %#x, switch to sensitive code stack %#x\n", (u32)VCPU_grsp(vcpu), whitelist[curr].gssp);
 	whitelist[curr].grsp = (u32)VCPU_grsp(vcpu);
 	VCPU_grsp_set(vcpu, whitelist[curr].gssp);
 
@@ -916,7 +916,7 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 	scode_expose_arch(vcpu);
 
 	/* change NPT permission for all PTE pages and scode pages */
-	printf("[TV] change NPT permission to run PAL!\n"); 
+	dprintf(LOG_TRACE, "[TV] change NPT permission to run PAL!\n"); 
 	hpt_nested_switch_scode(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size,
 			(u32)whitelist[curr].pte_page, whitelist[curr].pte_size);
 		
@@ -937,9 +937,9 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 	put_32bit_aligned_value_to_guest(vcpu, (u32)VCPU_grsp(vcpu), addr);
 	/* store the return address in whitelist structure */
 	whitelist[curr].return_v = addr;
-	printf("[TV] scode return vaddr is %#x\n", whitelist[curr].return_v);
+	dprintf(LOG_TRACE, "[TV] scode return vaddr is %#x\n", whitelist[curr].return_v);
 
-	printf("[TV] host stack pointer before running scode is %#x\n",(u32)VCPU_grsp(vcpu));
+	dprintf(LOG_TRACE, "[TV] host stack pointer before running scode is %#x\n",(u32)VCPU_grsp(vcpu));
 	return 0;
 }
 
@@ -948,7 +948,7 @@ void scode_unexpose_arch(VCPU * vcpu)
 	u32 i;
 	int curr=scode_curr[vcpu->id];
 	u64 * page = (u64 *)(whitelist[curr].pte_page);
-	printf("[TV] unexpose SCODE and GDT related to PTE pages\n");
+	dprintf(LOG_TRACE, "[TV] unexpose SCODE and GDT related to PTE pages\n");
 	/* clear page bitmap set in scode_expose_arch() */
 	for (i=0; i<((whitelist[curr].pte_size)>>PAGE_SHIFT_4K);i++) {
 		clear_page_scode_bitmap(((page[i])>>PAGE_SHIFT_4K));
@@ -971,25 +971,25 @@ u32 scode_unmarshall(VCPU * vcpu)
 
 	int curr=scode_curr[vcpu->id];
 
-	printf("[TV] unmarshalling scode parameters!\n");
+	dprintf(LOG_TRACE, "[TV] unmarshalling scode parameters!\n");
 	if (whitelist[curr].gpm_num == 0)
 	{
-		printf("[TV] unmarshall pm numbuer is 0. Return!\n");
+		dprintf(LOG_TRACE, "[TV] unmarshall pm numbuer is 0. Return!\n");
 		return 0;
 	}
 
 	/* memory address for input parameter in sensitive code */
 	pm_addr_base = whitelist[curr].gpmp;
-	printf("[TV] parameter page base address is %#x\n", pm_addr_base);
+	dprintf(LOG_TRACE, "[TV] parameter page base address is %#x\n", pm_addr_base);
 
 	/* get params number */
 	pm_addr = pm_addr_base;
 	pm_num = get_32bit_aligned_value_from_guest(vcpu, (u32)pm_addr);
 	pm_addr += 4;
-	printf("[TV] params number is %d\n", pm_num);
+	dprintf(LOG_TRACE, "[TV] params number is %d\n", pm_num);
 	if (pm_num > MAX_PARAMS_NUM)
 	{
-		printf("[TV] Fail: parameter number too big!\n");
+		dprintf(LOG_ERROR, "[TV] Fail: parameter number too big!\n");
 		return 1;
 	}
 	/* begin to process the params*/
@@ -1005,7 +1005,7 @@ u32 scode_unmarshall(VCPU * vcpu)
 				{
 					/* don't need to put integer back to regular code stack */
 					pm_addr += 8; 
-					printf("[TV]   skip an integer parameter!\n"); 
+					dprintf(LOG_TRACE, "[TV]   skip an integer parameter!\n"); 
 					break;
 				}
 			case PM_TYPE_POINTER: /* pointer */
@@ -1015,7 +1015,7 @@ u32 scode_unmarshall(VCPU * vcpu)
 					pm_value = get_32bit_aligned_value_from_guest(vcpu, (u32)pm_addr+4);
 					pm_addr += 8;
 
-					printf("[TV]   PM %d is a pointer (size %d, addr %#x)\n", i,  pm_size*4, pm_value);
+					dprintf(LOG_TRACE, "[TV]   PM %d is a pointer (size %d, addr %#x)\n", i,  pm_size*4, pm_value);
 					/*copy data from guest space to sensitive code*/
 					memcpy_guest_to_guest(vcpu, pm_addr, pm_value, pm_size*4);
 					pm_addr += 4*pm_size;
@@ -1023,7 +1023,7 @@ u32 scode_unmarshall(VCPU * vcpu)
 				}
 
 			default: /* other */
-				printf("[TV] Fail: unknown parameter %d type %d \n", i, pm_type);
+				dprintf(LOG_ERROR, "[TV] Fail: unknown parameter %d type %d \n", i, pm_type);
 				return 1;
 		} // end switch
 
@@ -1036,14 +1036,14 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
 {
 	int curr=scode_curr[vcpu->id];
 
-	printf("\n[TV] ************************************\n");
-	printf("[TV] ***** switch to regular code  ******\n");
-	printf("[TV] ************************************\n");
+	dprintf(LOG_TRACE, "\n[TV] ************************************\n");
+	dprintf(LOG_TRACE, "[TV] ***** switch to regular code  ******\n");
+	dprintf(LOG_TRACE, "[TV] ************************************\n");
 
 	/* marshalling parameters back to regular code */
 	if (!scode_unmarshall(vcpu)){
 		/* clear the NPT permission setting in switching into scode */
-		printf("[TV] change NPT permission to exit PAL!\n"); 
+		dprintf(LOG_TRACE, "[TV] change NPT permission to exit PAL!\n"); 
 		hpt_nested_switch_regular(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size,
 				(u32)whitelist[curr].pte_page, whitelist[curr].pte_size);
 		scode_unexpose_arch(vcpu);
@@ -1052,14 +1052,14 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
 		scode_release_all_shared_pages(vcpu, &whitelist[curr]);
 
 		/* switch back to regular stack */
-		printf("[TV] switch from scode stack %#x back to regular stack %#x\n", (u32)VCPU_grsp(vcpu), (u32)whitelist[curr].grsp);
+		dprintf(LOG_TRACE, "[TV] switch from scode stack %#x back to regular stack %#x\n", (u32)VCPU_grsp(vcpu), (u32)whitelist[curr].grsp);
 		VCPU_grsp_set(vcpu, whitelist[curr].grsp + 4);
 		whitelist[curr].grsp = (u32)-1;
 
 		/* enable interrupts */
 		VCPU_grflags_set(vcpu, VCPU_grflags(vcpu) | EFLAGS_IF);
 
-		printf("[TV] stack pointer before exiting scode is %#x\n",(u32)VCPU_grsp(vcpu));
+		dprintf(LOG_TRACE, "[TV] stack pointer before exiting scode is %#x\n",(u32)VCPU_grsp(vcpu));
 		return 0;
 	}
 	/* error in scode unmarshalling */
@@ -1086,12 +1086,12 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
 	u64 gcr3 = VCPU_gcr3(vcpu);
 	u32 rip = (u32)VCPU_grip(vcpu);
 
-	printf("[TV] CPU(%02x): nested page fault!(rip %#x, gcr3 %#llx, gpaddr %#x, errorcode %llx)\n",
+	dprintf(LOG_TRACE, "[TV] CPU(%02x): nested page fault!(rip %#x, gcr3 %#llx, gpaddr %#x, errorcode %llx)\n",
 				 vcpu->id, rip, gcr3, gpaddr, errorcode);
 
 	if(!hpt_error_wasInsnFetch(vcpu, errorcode)) {
 		/* data read or data write */
-		printf("[TV] SECURITY: nested page fault on non-instruction fetch.\n");
+		dprintf(LOG_ERROR, "[TV] SECURITY: nested page fault on non-instruction fetch.\n");
 		goto npf_error;
 	}
 
@@ -1101,7 +1101,7 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
 
 		*curr = index;
 		if (!((whitelist[*curr].entry_v == rip) && (whitelist[*curr].entry_p == gpaddr))) { 
-			printf("[TV] SECURITY: invalid scode entry point!\n");
+			dprintf(LOG_ERROR, "[TV] SECURITY: invalid scode entry point!\n");
 			goto npf_error;
 		}
 
@@ -1109,14 +1109,14 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
 #ifdef __MP_VERSION__
 		spin_lock(&(whitelist[*curr].pal_running_lock));
 		whitelist[*curr].pal_running_vcpu_id=vcpu->id;
-		printf("got pal_running lock!\n");
+		dprintf(LOG_TRACE, "got pal_running lock!\n");
 #endif
 		if (hpt_scode_switch_scode(vcpu)) {
-			printf("[TV] error in switch to scode!\n");
+			dprintf(LOG_ERROR, "[TV] error in switch to scode!\n");
 #ifdef __MP_VERSION__
 			spin_unlock(&(whitelist[*curr].pal_running_lock));
 			whitelist[*curr].pal_running_vcpu_id=-1;
-			printf("released pal_running lock!\n");
+			dprintf(LOG_TRACE, "released pal_running lock!\n");
 #endif
 			goto npf_error;
 		}
@@ -1124,42 +1124,42 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
 		/* sensitive code to regular code */
 
 		if (whitelist[*curr].return_v != rip) {
-			printf("[TV] SECURITY: invalid scode return point!\n");
+			dprintf(LOG_ERROR, "[TV] SECURITY: invalid scode return point!\n");
 			goto npf_error;
 		}
 		/* valid return point, switch from sensitive code to regular code */
 
 		/* XXX FIXME: now return ponit is extracted from regular code stack, only support one scode function call */
 		if (hpt_scode_switch_regular(vcpu)) {
-			printf("[TV] error in switch to regular code!\n");
+			dprintf(LOG_ERROR, "[TV] error in switch to regular code!\n");
 #ifdef __MP_VERSION__
 			spin_unlock(&(whitelist[*curr].pal_running_lock));
 			whitelist[*curr].pal_running_vcpu_id=-1;
-			printf("released pal_running lock!\n");
+			dprintf(LOG_TRACE, "released pal_running lock!\n");
 #endif
 			goto npf_error;
 		}
 #ifdef __MP_VERSION__
 		spin_unlock(&(whitelist[*curr].pal_running_lock));
 		whitelist[*curr].pal_running_vcpu_id=-1;
-		printf("released pal_running lock!\n");
+		dprintf(LOG_TRACE, "released pal_running lock!\n");
 #endif
 		*curr = -1;
 	} else if ((*curr >=0) && (index >= 0)) {
 		/* sensitive code to sensitive code */
 		if (*curr == index)
-			printf("[TV] SECURITY: incorrect scode EPT configuration!\n");
+			dprintf(LOG_ERROR, "[TV] SECURITY: incorrect scode EPT configuration!\n");
 		else
-			printf("[TV] SECURITY: invalid access to scode mem region from other scodes!\n"); 
+			dprintf(LOG_ERROR, "[TV] SECURITY: invalid access to scode mem region from other scodes!\n"); 
 #ifdef __MP_VERSION__
 		spin_unlock(&(whitelist[*curr].pal_running_lock));
 		whitelist[*curr].pal_running_vcpu_id=-1;
-		printf("released pal_running lock!\n");
+		dprintf(LOG_TRACE, "released pal_running lock!\n");
 #endif
 		goto npf_error;	
 	} else {
 		/* regular code to regular code */
-		printf("[TV] incorrect regular code EPT configuration!\n"); 
+		dprintf(LOG_ERROR, "[TV] incorrect regular code EPT configuration!\n"); 
 		goto npf_error;
 	}
 
@@ -1193,18 +1193,18 @@ u32 scode_seal(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrAtRelease_addr
 	u8 indata[MAX_SEALDATA_LEN];  
 	u8 output[MAX_SEALDATA_LEN]; 
 
-	printf("\n[TV] ********** uTPM seal **********\n");
-	printf("[TV] input addr: %x, len %d, pcr addr: %x, output addr: %x!\n", input_addr, input_len, pcrAtRelease_addr, output_addr);
+	dprintf(LOG_TRACE, "\n[TV] ********** uTPM seal **********\n");
+	dprintf(LOG_TRACE, "[TV] input addr: %x, len %d, pcr addr: %x, output addr: %x!\n", input_addr, input_len, pcrAtRelease_addr, output_addr);
 	/* check input data length */
 	/* include seal data header and possible AES encryption padding */
 	if (input_len > (MAX_SEALDATA_LEN-SEALDATA_HEADER_LEN - 16) ) {
-		printf("[TV] Seal ERROR: input data length is too large, lenth %#x\n", input_len);
+		dprintf(LOG_ERROR, "[TV] Seal ERROR: input data length is too large, lenth %#x\n", input_len);
 		return 1;
 	}
 
 	/* make sure that this vmmcall can only be executed when a PAL is running */
 	if (scode_curr[vcpu->id]== -1) {
-		printf("[TV] Seal ERROR: no PAL is running!\n");
+		dprintf(LOG_ERROR, "[TV] Seal ERROR: no PAL is running!\n");
 		return 1;
 	}
 
@@ -1214,12 +1214,12 @@ u32 scode_seal(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrAtRelease_addr
 	copy_from_guest(vcpu, indata, input_addr, input_len);
 
 #if 0
-	printf("[TV] input len = %d!\n", input_len);
-	printf("[TV] input data is:");
+	dprintf(LOG_TRACE, "[TV] input len = %d!\n", input_len);
+	dprintf(LOG_TRACE, "[TV] input data is:");
 	for(i=0;i<input_len;i++) {
-		printf("%x ", indata[i]);
+		dprintf(LOG_TRACE, "%x ", indata[i]);
 	}
-	printf("[TV] \n");
+	dprintf(LOG_TRACE, "[TV] \n");
 #endif
 
 	if (pcrAtRelease_addr != 0) {
@@ -1229,33 +1229,33 @@ u32 scode_seal(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrAtRelease_addr
 	} else {
 		/* seal data to our own */
 		/* use current PAL's PCR value */
-		printf("[TV] get pcr from current PAL's softTPM!\n");
+		dprintf(LOG_TRACE, "[TV] get pcr from current PAL's softTPM!\n");
 		vmemcpy(pcr, whitelist[scode_curr[vcpu->id]].pcr, TPM_PCR_SIZE);
 	}
 
 #if 1
-	printf("[TV] pcr value is:");
+	dprintf(LOG_TRACE, "[TV] pcr value is:");
 	for(i=0;i<TPM_PCR_SIZE;i++) {
-		printf("%x ", pcr[i]);
+		dprintf(LOG_TRACE, "%x ", pcr[i]);
 	}
-	printf("\n");
+	dprintf(LOG_TRACE, "\n");
 #endif
 
 	/* seal */
 	stpm_seal(pcr, indata, input_len, output, &outlen, hmackey, aeskey);
 
 #if 1
-	printf("[TV] sealed data len = %d!\n", outlen);
-	printf("[TV] sealed data is: ");
+	dprintf(LOG_TRACE, "[TV] sealed data len = %d!\n", outlen);
+	dprintf(LOG_TRACE, "[TV] sealed data is: ");
 	for(i=0;i<outlen;i++) {
-		printf("%x ", output[i]);
+		dprintf(LOG_TRACE, "%x ", output[i]);
 	}
-	printf("\n");
+	dprintf(LOG_TRACE, "\n");
 #endif
 
 	/* check output data length */
 	if (outlen > MAX_SEALDATA_LEN) {
-		printf("[TV] Seal ERROR: output data length is too large, lenth %#x\n", outlen);
+		dprintf(LOG_ERROR, "[TV] Seal ERROR: output data length is too large, lenth %#x\n", outlen);
 		return 1;
 	}
 
@@ -1277,17 +1277,17 @@ u32 scode_unseal(VCPU * vcpu, u32 input_addr, u32 input_len, u32 output_addr, u3
 	u32 ret;
 	int index;
 
-	printf("\n[TV] ********** uTPM unseal **********\n");
-	printf("[TV] input addr: %x, len %d, output addr: %x!\n", input_addr, input_len, output_addr);
+	dprintf(LOG_TRACE, "\n[TV] ********** uTPM unseal **********\n");
+	dprintf(LOG_TRACE, "[TV] input addr: %x, len %d, output addr: %x!\n", input_addr, input_len, output_addr);
 	/* check input data length */
 	if (input_len > MAX_SEALDATA_LEN) {
-		printf("[TV] Unseal ERROR: input data length is too large, lenth %#x\n", input_len);
+		dprintf(LOG_ERROR, "[TV] Unseal ERROR: input data length is too large, lenth %#x\n", input_len);
 		return 1;
 	}
 
 	/* make sure that this vmmcall can only be executed when a PAL is running */
 	if (scode_curr[vcpu->id]== -1) {
-		printf("[TV] Seal ERROR: no PAL is running!\n");
+		dprintf(LOG_ERROR, "[TV] Seal ERROR: no PAL is running!\n");
 		return 1;
 	}
 
@@ -1297,32 +1297,32 @@ u32 scode_unseal(VCPU * vcpu, u32 input_addr, u32 input_len, u32 output_addr, u3
 	copy_from_guest(vcpu, indata, input_addr, input_len);
 
 #if 0
-	printf("[TV] input len = %d!\n", input_len);
-	printf("[TV] input data is:");
+	dprintf(LOG_TRACE, "[TV] input len = %d!\n", input_len);
+	dprintf(LOG_TRACE, "[TV] input data is:");
 	for(i=0;i<input_len;i++) {
-		printf("%x ", indata[i]);
+		dprintf(LOG_TRACE, "%x ", indata[i]);
 	}
-	printf("[TV] \n");
+	dprintf(LOG_TRACE, "[TV] \n");
 #endif
 
 	/* unseal */
 	if ((ret = stpm_unseal(whitelist[scode_curr[vcpu->id]].pcr, indata, input_len, outdata, &outlen, hmackey, aeskey))) {
-		printf("[TV] Unseal ERROR: stpm_unseal fail!\n");
+		dprintf(LOG_ERROR, "[TV] Unseal ERROR: stpm_unseal fail!\n");
 		return 1;
 	}
 
 #if 1
-	printf("[TV] unsealed data len = %d!\n", outlen);
-	printf("[TV] unsealed data is: ");
+	dprintf(LOG_TRACE, "[TV] unsealed data len = %d!\n", outlen);
+	dprintf(LOG_TRACE, "[TV] unsealed data is: ");
 	for(i=0;i<outlen;i++) {
-		printf("%x ", outdata[i]);
+		dprintf(LOG_TRACE, "%x ", outdata[i]);
 	}
-	printf("\n");
+	dprintf(LOG_TRACE, "\n");
 #endif
 
 	/* check output data length */
 	if (outlen > MAX_SEALDATA_LEN ) {
-		printf("[TV] Seal ERROR: output data length is too large, lenth %#x\n", outlen);
+		dprintf(LOG_ERROR, "[TV] Seal ERROR: output data length is too large, lenth %#x\n", outlen);
 		return 1;
 	}
 
@@ -1344,11 +1344,11 @@ u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 
 	int index;
 	u32 tpmsel_len;
 
-	printf("\n[TV] ********** uTPM Quote **********\n");
-	printf("[TV] nonce addr: %x, tpmsel addr: %x, output addr %x, outlen addr: %x!\n", nonce_addr, tpmsel_addr, out_addr, out_len_addr);
+	dprintf(LOG_TRACE, "\n[TV] ********** uTPM Quote **********\n");
+	dprintf(LOG_TRACE, "[TV] nonce addr: %x, tpmsel addr: %x, output addr %x, outlen addr: %x!\n", nonce_addr, tpmsel_addr, out_addr, out_len_addr);
 	/* make sure that this vmmcall can only be executed when a PAL is running */
 	if (scode_curr[vcpu->id]== -1) {
-		printf("[TV] Quote ERROR: no PAL is running!\n");
+		dprintf(LOG_ERROR, "[TV] Quote ERROR: no PAL is running!\n");
 		return 1;
 	}	
 
@@ -1357,16 +1357,16 @@ u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 
 	/* get TPM PCR selection from guest */
 	num = get_32bit_aligned_value_from_guest(vcpu, tpmsel_addr);
 	if (num > MAX_PCR_SEL_NUM) {
-		printf("[TV] Quote ERROR: select too many PCR!\n");
+		dprintf(LOG_ERROR, "[TV] Quote ERROR: select too many PCR!\n");
 		return 1;
 	}
 	tpmsel_len = 4+4*num;
-	printf("[TV] %d pcrs are selected!\n", num);
+	dprintf(LOG_TRACE, "[TV] %d pcrs are selected!\n", num);
 
 	copy_from_guest(vcpu, tpmsel, tpmsel_addr, tpmsel_len);
 	for( i=0 ; i< num ; i++ )  {
 		if (*(((u32 *)(tpmsel+4))+i) >= TPM_PCR_NUM) {
-			printf("[TV] Quote ERROR: bad format of TPM PCR num!\n");
+			dprintf(LOG_ERROR, "[TV] Quote ERROR: bad format of TPM PCR num!\n");
 			return 1;
 		}
 	}
@@ -1375,25 +1375,25 @@ u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 
 	copy_from_guest(vcpu, nonce, nonce_addr, TPM_NONCE_SIZE);
 
 #if 1
-	printf("[TV] external nonce is: ");
+	dprintf(LOG_TRACE, "[TV] external nonce is: ");
 	for(i=0;i<TPM_NONCE_SIZE;i++) {
-		printf("%x ", nonce[i]);
+		dprintf(LOG_TRACE, "%x ", nonce[i]);
 	}
-	printf("\n");
+	dprintf(LOG_TRACE, "\n");
 #endif
 
 	if ((ret = stpm_quote(nonce, outdata, &outlen, whitelist[scode_curr[vcpu->id]].pcr, tpmsel, tpmsel_len, (u8 *)(&g_rsa))) != 0) {
-		printf("[TV] quote ERROR: stpm_quote fail!\n");
+		dprintf(LOG_ERROR, "[TV] quote ERROR: stpm_quote fail!\n");
 		return 1;
 	}
 
 #if 0
-	printf("[TV] quote data len = %d!\n", outlen);
-	printf("[TV] quote data is: ");
+	dprintf(LOG_TRACE, "[TV] quote data len = %d!\n", outlen);
+	dprintf(LOG_TRACE, "[TV] quote data is: ");
 	for(i=0;i<outlen;i++) {
-		printf("%x ", outdata[i]);
+		dprintf(LOG_TRACE, "%x ", outdata[i]);
 	}
-	printf("\n");
+	dprintf(LOG_TRACE, "\n");
 #endif
 
 	/* copy output to guest */
@@ -1422,7 +1422,7 @@ void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* entry)
 		entry->scode_info.section_num--;
 		shared_page_count += entry->scode_info.ps_str[i].page_num;
 	}
-	printf("scode_release_all_shared_pages: releasing %d shared pages\n",
+	dprintf(LOG_TRACE, "scode_release_all_shared_pages: releasing %d shared pages\n",
 				 shared_page_count);
 	if(shared_page_count == 0) {
 		return;
@@ -1463,10 +1463,10 @@ u32 scode_share_range(VCPU * vcpu, whitelist_entry_t *entry, u32 gva_base, u32 g
 
 	/* XXX locking? */
 
-	printf("[TV] scode_share: gva-base %08x, size %x", gva_base, gva_len);
+	dprintf(LOG_TRACE, "[TV] scode_share: gva-base %08x, size %x", gva_base, gva_len);
 
 	if (!PAGE_ALIGNED_4K(gva_base) || !PAGE_ALIGNED_4K(gva_len)) {
-		printf("[TV] scode_share: addr %x or len %d not page aligned\n",
+		dprintf(LOG_ERROR, "[TV] scode_share: addr %x or len %d not page aligned\n",
 					 gva_base, gva_len);
 		rv=1;
 		goto outerr;
@@ -1475,7 +1475,7 @@ u32 scode_share_range(VCPU * vcpu, whitelist_entry_t *entry, u32 gva_base, u32 g
 
 	/* add the section entry info */
 	if (entry->scode_info.section_num >= MAX_SECTION_NUM) {
-		printf("[TV] scode_share: maximum number of sections %d exceeded\n", MAX_SECTION_NUM);
+		dprintf(LOG_ERROR, "[TV] scode_share: maximum number of sections %d exceeded\n", MAX_SECTION_NUM);
 		rv=2;
 		goto outerr;
 	}
@@ -1494,7 +1494,7 @@ u32 scode_share_range(VCPU * vcpu, whitelist_entry_t *entry, u32 gva_base, u32 g
 		u32 scode_num_pages = entry->scode_size >> PAGE_SHIFT_4K;
 		new_scode_pages = &entry->scode_pages[scode_num_pages];
 		if ((scode_num_pages+gva_len_pages) > MAX_REGPAGES_NUM) {
-			printf("[TV] scode_share registered-page-limit exceeded:"
+			dprintf(LOG_ERROR, "[TV] scode_share registered-page-limit exceeded:"
 						 " reg'd:%d addtl:%d limit:%d",
 						 scode_num_pages, gva_len_pages, MAX_REGPAGES_NUM);
 		}
@@ -1503,7 +1503,7 @@ u32 scode_share_range(VCPU * vcpu, whitelist_entry_t *entry, u32 gva_base, u32 g
 											gva_base,
 											gva_len,
 											SECTION_TYPE_SHARED)) {
-			printf("[TV] scode_share registration Failed. Probably some pages not in memory yet\n");
+			dprintf(LOG_ERROR, "[TV] scode_share registration Failed. Probably some pages not in memory yet\n");
 			rv=3;
 			goto outerr;
 		}
@@ -1513,7 +1513,7 @@ u32 scode_share_range(VCPU * vcpu, whitelist_entry_t *entry, u32 gva_base, u32 g
 
 	/* set up protection of newly registered pt entries */
 	if(hpt_scode_set_prot(vcpu, new_scode_pages, gva_len)) {
-		printf("[TV] SECURITY: Registration Failed. Probably some page has already been used by other sensitive code.\n");
+		dprintf(LOG_ERROR, "[TV] SECURITY: Registration Failed. Probably some page has already been used by other sensitive code.\n");
 		rv=4;
 		goto outerr;
 	}
@@ -1538,13 +1538,13 @@ u32 scode_share_ranges(VCPU * vcpu, u32 scode_entry, u32 gva_base[], u32 gva_len
 	whitelist_entry_t* entry;
 
 	if (!(entry = find_scode_by_entry(VCPU_gcr3(vcpu), scode_entry))) {
-		printf("[TV] scode_share: Invalid entry pt %x\n", scode_entry);
+		dprintf(LOG_ERROR, "[TV] scode_share: Invalid entry pt %x\n", scode_entry);
 		return 1;
 	}
 
 	for(i=0; i<count; i++) {
 		if(scode_share_range(vcpu, entry, gva_base[i], gva_len[i])) {
-			printf("[TV] scode_share_ranges releasing all shared pages\n");
+			dprintf(LOG_TRACE, "[TV] scode_share_ranges releasing all shared pages\n");
 			scode_release_all_shared_pages(vcpu, entry);
 			return 1;
 		}
@@ -1562,7 +1562,7 @@ u32 scode_pcrread(u64 gcr3, u32 gvaddr, u32 num)
 	int index;
 	u8 pcr[TPM_PCR_SIZE];
 
-	printf("[TV] PCRREAD cr3 %#x, gvaddr %#x\n", (u32)gcr3, gvaddr);
+	dprintf(LOG_ERROR, "[TV] PCRREAD cr3 %#x, gvaddr %#x\n", (u32)gcr3, gvaddr);
 	index = scode_in_list(gcr3, (u32)linux_vmcb->rip); 
 
 	if ((index >= 0) && (scode_curr >= 0))

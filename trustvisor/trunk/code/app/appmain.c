@@ -248,11 +248,11 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 		struct regs *r, u64 gpa, u64 gva, u64 violationcode)
 {
 	u32 ret;
-	printf("\nCPU(0x%02x): gva=0x%08x, gpa=0x%08x, code=0x%016llx\n", vcpu->id,
+	dprintf(LOG_TRACE, "\nCPU(0x%02x): gva=0x%08x, gpa=0x%08x, code=0x%016llx\n", vcpu->id,
 			(u32)gva, (u32)gpa, violationcode);
 	//	printf("\nprot is: 0x%016llx", emhf_hwpgtbl_getprot(vcpu, gpa));
 	if ((ret = hpt_scode_npf(vcpu, gpa, violationcode)) != 0) {
-		printf("FATAL ERROR: Unexpected return value from page fault handling\n");
+		dprintf(LOG_ERROR, "FATAL ERROR: Unexpected return value from page fault handling\n");
 		HALT();
 	}
 }
@@ -260,8 +260,8 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, 
 		u32 portnum, u32 access_type, u32 access_size)
 {
-	printf("\nCPU(0x%02x): Port access intercept feature unimplemented. Halting!", vcpu->id);
-	printf("\nCPU(0x%02x): portnum=0x%08x, access_type=0x%08x, access_size=0x%08x", vcpu->id,
+	dprintf(LOG_TRACE, "\nCPU(0x%02x): Port access intercept feature unimplemented. Halting!", vcpu->id);
+	dprintf(LOG_TRACE, "\nCPU(0x%02x): portnum=0x%08x, access_type=0x%08x, access_size=0x%08x", vcpu->id,
 			(u32)portnum, (u32)access_type, (u32)access_size);
 	HALT();
 	//return APP_IOINTERCEPT_SKIP;
@@ -271,6 +271,6 @@ u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
 
 void emhf_app_handleshutdown(VCPU *vcpu, struct regs *r)
 {
-	printf("\nCPU(0x%02x): Shutdown intercept!", vcpu->id);
+	dprintf(LOG_TRACE, "\nCPU(0x%02x): Shutdown intercept!", vcpu->id);
 	g_libemhf->emhf_reboot(vcpu);
 }

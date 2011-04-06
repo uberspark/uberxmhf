@@ -150,7 +150,7 @@ void hpt_nested_set_prot(VCPU * vcpu, u64 gpaddr, int type)
 	default:
 		ASSERT(0);
 	}
-	printf("[TV]   set prot: pfn %#llx, pte old %#llx, pte new %#llx\n", pfn, oldentry, pt[pfn]);
+	dprintf(LOG_TRACE, "[TV]   set prot: pfn %#llx, pte old %#llx, pte new %#llx\n", pfn, oldentry, pt[pfn]);
 
 	/* flush TLB */
 	emhf_hwpgtbl_flushall(vcpu);
@@ -163,7 +163,7 @@ void hpt_nested_clear_prot(VCPU * vcpu, u64 gpaddr)
 	u64 oldentry = pt[pfn];
 	pt[pfn] = hpt_setpalprot(vcpu->cpu_vendor, pt[pfn], HPT_PROTS_NONE);
 	pt[pfn] = hpt_setprot(vcpu->cpu_vendor, pt[pfn], HPT_PROTS_RWX);
-	printf("[TV]   clear prot: pfn %#llx, pte old %#llx, pte new %#llx\n", pfn, oldentry, pt[pfn]);
+	dprintf(LOG_TRACE, "[TV]   clear prot: pfn %#llx, pte old %#llx, pte new %#llx\n", pfn, oldentry, pt[pfn]);
 
 	/* flush TLB */
 	emhf_hwpgtbl_flushall(vcpu);
@@ -182,7 +182,7 @@ void hpt_nested_make_pt_accessible(pte_t *gpaddr_list, u32 gpaddr_count, u64 * n
 	for (i = 0; i < gpaddr_count; i ++)
 	{
 		nvaddr = gpaddr_list[i];
-		printf("[TV]   set npt prot for gpaddr %#x, ", nvaddr);
+		dprintf(LOG_TRACE, "[TV]   set npt prot for gpaddr %#x, ", nvaddr);
 
 		/* get fields from virtual addr */
 		pdp_index = pae_get_pdpt_index(nvaddr);
@@ -193,7 +193,7 @@ void hpt_nested_make_pt_accessible(pte_t *gpaddr_list, u32 gpaddr_count, u64 * n
 		tmp = pae_get_addr_from_pdpe(pdp_entry);
 		npd = (pdt_t)(u32)(u64)__spa2hva__((u32)tmp);
 		pd_entry = npd[pd_index]; 
-//		printf("[TV]   pdp_entry %#llx, pd_entry %#llx!\n", pdp_entry, pd_entry);
+//		dprintf(LOG_TRACE, "[TV]   pdp_entry %#llx, pd_entry %#llx!\n", pdp_entry, pd_entry);
 
 		// now, we are dealing with 4KB page
 		tmp = pae_get_addr_from_pde(pd_entry);
@@ -223,7 +223,7 @@ void hpt_nested_make_pt_accessible(pte_t *gpaddr_list, u32 gpaddr_count, u64 * n
 			/* GDT, scode related PTE, r/w */
 			pt_entry = hpt_setprot(CPU_VENDOR, pt_entry, HPT_PROTS_RW);
 		}
-		printf("pte old %#llx, new %#llx!\n", npt[pt_index], pt_entry);
+		dprintf(LOG_TRACE, "pte old %#llx, new %#llx!\n", npt[pt_index], pt_entry);
 		npt[pt_index] = pt_entry;
 	}
 }
@@ -236,13 +236,13 @@ void hpt_nested_switch_scode(VCPU * vcpu, pte_t* pte_pages, u32 size, u32 pte_pa
 	u32 pd_base;
 	u32 i, j;
 
-	//printf("[TV] scode_page %#x, scode_size %#x!\n[TV] pte_page %#x, pte_size %#x!\n", pte_page, size, pte_page2, size2);
+	//dprintf(LOG_TRACE, "[TV] scode_page %#x, scode_size %#x!\n[TV] pte_page %#x, pte_size %#x!\n", pte_page, size, pte_page2, size2);
 
 	/* get page table addresses from VCPU */
 	npdp = (u64 *)get_pml3es(vcpu);
 	pd_base = (u32)(void*)get_pml2es(vcpu);
 
-	//printf("[TV] pb_base is %#x!\n", (u32)pd_base);
+	//dprintf(LOG_TRACE, "[TV] pb_base is %#x!\n", (u32)pd_base);
 	/* first make all pd_entry unaccessible */
 	for (i = 0; i < PAE_PTRS_PER_PDPT; i ++)
 	{
@@ -254,7 +254,7 @@ void hpt_nested_switch_scode(VCPU * vcpu, pte_t* pte_pages, u32 size, u32 pte_pa
 			npd[j] = pd_entry;
 		}
 	}
-	//printf("[TV] npdp is %#x!\n", (u32)npdp);
+	//dprintf(LOG_TRACE, "[TV] npdp is %#x!\n", (u32)npdp);
 
 	/* make PAL and its related PTE pages accessbile */
 	hpt_nested_make_pt_accessible(pte_pages, size >> PAGE_SHIFT_4K, npdp, 1); 
@@ -277,7 +277,7 @@ void hpt_nested_make_pt_unaccessible(pte_t *gpaddr_list, u32 gpaddr_count, pdpt_
 	for (i = 0; i < gpaddr_count; i ++)
 	{
 		nvaddr = gpaddr_list[i];
-		printf("[TV]   set npt prot for gpaddr %#x, ", nvaddr);
+		dprintf(LOG_TRACE, "[TV]   set npt prot for gpaddr %#x, ", nvaddr);
 
 		/* get fields from virtual addr */
 		pdp_index = pae_get_pdpt_index(nvaddr);
@@ -293,7 +293,7 @@ void hpt_nested_make_pt_unaccessible(pte_t *gpaddr_list, u32 gpaddr_count, pdpt_
 		tmp = pae_get_addr_from_pde(pd_entry);
 		npt = (pt_t)(u32)(u64)__spa2hva__((u32)tmp);  
 
-	//	printf("[TV]   pdp_entry %#llx, pd_entry %#llx!\n", pdp_entry, pd_entry);
+	//	dprintf(LOG_TRACE, "[TV]   pdp_entry %#llx, pd_entry %#llx!\n", pdp_entry, pd_entry);
 		if (hpt_getprot(CPU_VENDOR, pd_entry)) {
 			pd_entry = hpt_setprot(CPU_VENDOR, pd_entry, HPT_PROTS_NONE);
 			npd[pd_index] = pd_entry;
@@ -314,7 +314,7 @@ void hpt_nested_make_pt_unaccessible(pte_t *gpaddr_list, u32 gpaddr_count, pdpt_
 			if (SCODE_PTE_TYPE_GET(nvaddr) != SECTION_TYPE_STEXT)
 				pt_entry = hpt_setprot(CPU_VENDOR, pt_entry, HPT_PROTS_NONE);
 		} 
-		printf("pte old %#llx, new %#llx!\n", npt[pt_index], pt_entry);
+		dprintf(LOG_TRACE, "pte old %#llx, new %#llx!\n", npt[pt_index], pt_entry);
 		npt[pt_index] = pt_entry;
 	}
 }
@@ -327,19 +327,19 @@ void hpt_nested_switch_regular(VCPU * vcpu, pte_t *pte_pages, u32 size, u32 pte_
 	u32 pd_base;
 	u32 i, j;
 
-//	printf("[TV] scode_page %#x, scode_size %#x, pte_page %#x, pte_size %#x!\n", pte_page, size, pte_page2, size2);
+//	dprintf(LOG_TRACE, "[TV] scode_page %#x, scode_size %#x, pte_page %#x, pte_size %#x!\n", pte_page, size, pte_page2, size2);
 
 	/* get page table addresses from VCPU */
 	npdp = get_pml3es(vcpu);
 	pd_base = (u32)(void*)get_pml2es(vcpu);
 
-//	printf("[TV] npdp is %#x!\n", (u32)npdp);
+//	dprintf(LOG_TRACE, "[TV] npdp is %#x!\n", (u32)npdp);
 
 	/* restore PAL protection (also don't compromise the protection of other PALs)*/
 	hpt_nested_make_pt_unaccessible(pte_pages, size >> PAGE_SHIFT_4K, npdp, 1); 
 	hpt_nested_make_pt_unaccessible((pte_t*)pte_page2, size2 >> PAGE_SHIFT_4K, npdp, 0); 
 
-//	printf("[TV] pb_base is %#x!\n", (u32)pd_base);
+//	dprintf(LOG_TRACE, "[TV] pb_base is %#x!\n", (u32)pd_base);
 	/* make all pd_entry accessible */
 	for (i = 0; i < PAE_PTRS_PER_PDPT; i ++)
 	{
@@ -400,7 +400,7 @@ void hpt_nested_switch_regular(VCPU * vcpu, pte_t *pte_pages, u32 size, u32 pte_
 //}
 //void svm_nested_promote(VCPU * vcpu, u32 pfn)
 //{
-//	printf("[TV] (Disabled) promote 2M page pfn %#x\n", pfn);
+//	dprintf(LOG_TRACE, "[TV] (Disabled) promote 2M page pfn %#x\n", pfn);
 //}
 //
 
@@ -552,7 +552,7 @@ int guest_pt_copy(VCPU *vcpu, pte_t *dst_page, u32 gvaddr, u32 size, int type)
 	u32 is_pae;
 
 	if (!PAGE_ALIGNED_4K(gvaddr) || !PAGE_ALIGNED_4K(size)) {
-		printf("[TV] guest_pt_copy given unaligned address %x or size %x\n",
+		dprintf(LOG_ERROR, "[TV] guest_pt_copy given unaligned address %x or size %x\n",
 					 gvaddr, size);
 		return -1;
 	}
@@ -563,13 +563,13 @@ int guest_pt_copy(VCPU *vcpu, pte_t *dst_page, u32 gvaddr, u32 size, int type)
 											NULL, &pde, &pte, &is_pae);
 
 		if (pde & _PAGE_PSE) {
-			printf("[TV] guest_pt_copy: ERROR currently we don't support "
+			dprintf(LOG_ERROR, "[TV] guest_pt_copy: ERROR currently we don't support "
 						 "big page for sensitive code because of the limitation "
 						 "of pte_page\n");
 			return -2;
 		}
 		if (!(pte & _PAGE_PRESENT)) {
-			printf("[TV] guest_pt_copy: ERROR "
+			dprintf(LOG_ERROR, "[TV] guest_pt_copy: ERROR "
 						 "Page at %x not present in guest page table\n", gvaddr);
 			return -1;
 		}
@@ -580,7 +580,7 @@ int guest_pt_copy(VCPU *vcpu, pte_t *dst_page, u32 gvaddr, u32 size, int type)
 		/* store section type */
 		paddr = SCODE_PTE_TYPE_SET(paddr, type);
 		dst_page[i] = paddr;
-		printf("[TV] copied pte: gvaddr 0x%x, vend 0x%x, index %d, paddr %#x\n",
+		dprintf(LOG_TRACE, "[TV] copied pte: gvaddr 0x%x, vend 0x%x, index %d, paddr %#x\n",
 					 gvaddr, vend, i, paddr);
 	}
 	return 0;
