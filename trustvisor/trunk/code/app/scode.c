@@ -932,7 +932,7 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 	u32 addr;
 	int curr=scode_curr[vcpu->id];
 
-	perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_SCODE], vcpu->id);
+	perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_SCODE], vcpu->idx);
 
 	dprintf(LOG_TRACE, "\n[TV] ************************************\n");
 	dprintf(LOG_TRACE, "[TV] ********* switch to scode **********\n");
@@ -981,7 +981,7 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 
 	dprintf(LOG_TRACE, "[TV] host stack pointer before running scode is %#x\n",(u32)VCPU_grsp(vcpu));
 
-	perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_SCODE], vcpu->id);
+	perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_SCODE], vcpu->idx);
 	return 0;
 }
 
@@ -1078,7 +1078,7 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
 {
 	int curr=scode_curr[vcpu->id];
 
-	perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_REGULAR], vcpu->id);
+	perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_REGULAR], vcpu->idx);
 
 	dprintf(LOG_TRACE, "\n[TV] ************************************\n");
 	dprintf(LOG_TRACE, "[TV] ***** switch to regular code  ******\n");
@@ -1105,7 +1105,7 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
 
 		dprintf(LOG_TRACE, "[TV] stack pointer before exiting scode is %#x\n",(u32)VCPU_grsp(vcpu));
 
-		perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_REGULAR], vcpu->id);
+		perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_REGULAR], vcpu->idx);
 
 		return 0;
 	}
@@ -1133,7 +1133,7 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
 	u64 gcr3 = VCPU_gcr3(vcpu);
 	u32 rip = (u32)VCPU_grip(vcpu);
 
-	perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_NPF], vcpu->id);
+	perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_NPF], vcpu->idx);
 
 	dprintf(LOG_TRACE, "[TV] CPU(%02x): nested page fault!(rip %#x, gcr3 %#llx, gpaddr %#x, errorcode %llx)\n",
 				 vcpu->id, rip, gcr3, gpaddr, errorcode);
@@ -1217,11 +1217,11 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
 		((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->eventinj.bytes = 0ull;
 	} /* FIXME - equivalent for intel? */
 
-	perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_NPF], vcpu->id);
+	perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_NPF], vcpu->idx);
 	return 0;
 
  npf_error:
-	perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_NPF], vcpu->id);
+	perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_NPF], vcpu->idx);
 
 	if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
 		/* errors, inject segfault to guest */
