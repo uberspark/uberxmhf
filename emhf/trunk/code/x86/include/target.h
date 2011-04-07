@@ -223,6 +223,7 @@ typedef struct _vcpu {
 	u32 esp;                //used to establish stack for the CPU
   u32 sipi_page_vaddr;    //SIPI page of the CPU used for SIPI handling
   u32 id;                 //LAPIC id of the core
+  u32 idx;                //this vcpu's index in the g_vcpubuffers array
   u32 sipivector;         //SIPI vector 
   u32 sipireceived;       //SIPI received indicator, 1 if yes
   u32 nmiinhvm;           //this is 1 if there was a NMI when in HVM, else 0        

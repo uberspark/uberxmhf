@@ -1081,6 +1081,7 @@ void svm_setupvcpus(u32 cpu_vendor){
     }
     
     vcpu->id = g_midtable[i].cpu_lapic_id;
+    vcpu->idx = i;
     vcpu->sipivector = 0;
     vcpu->sipireceived = 0;
 

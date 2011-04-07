@@ -1298,6 +1298,7 @@ void vmx_setupvcpus(u32 cpu_vendor){
 		
 		//other VCPU data such as LAPIC id, SIPI vector and receive indication
     vcpu->id = g_midtable[i].cpu_lapic_id;
+    vcpu->idx = i;
     vcpu->sipivector = 0;
     vcpu->sipireceived = 0;
 
