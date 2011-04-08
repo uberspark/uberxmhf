@@ -38,7 +38,7 @@
  */
 
 #include "./include/puttymem.h"
-#include  "./include/malloc.h"
+#include "tlsf.h"
 #include "scode.h"
 #include "perf.h"
 
@@ -53,8 +53,9 @@
  */
 
 /* int totalmem = 0; */
+static u8 memory_pool[PUTTYMEM_POOLSIZE];
 void mem_init(void){
-	static_malloc_init();
+  init_memory_pool(PUTTYMEM_POOLSIZE, memory_pool);
 }
 
 void *safemalloc(size_t n, size_t size)
@@ -71,7 +72,7 @@ void *safemalloc(size_t n, size_t size)
 		p = NULL;
 	} else {
 		size *= n;
-		p = static_malloc(size);
+		p = tlsf_malloc(size);
 	}
 
    // stop_timer(&tv);
@@ -88,7 +89,7 @@ void *safemalloc(size_t n, size_t size)
 void safefree(void *ptr)
 {
 	if (ptr) {
-		static_free(ptr);
+		tlsf_free(ptr);
 	}
 }
 

@@ -91,10 +91,8 @@
 #define USE_PRINTF      (1)
 #endif
 
-#include <string.h>
-
 #ifndef TLSF_USE_LOCKS
-#define	TLSF_USE_LOCKS 	(0)
+#define	TLSF_USE_LOCKS 	(1)
 #endif
 
 #ifndef TLSF_STATISTIC
@@ -111,7 +109,11 @@
 
 
 #if TLSF_USE_LOCKS
-#include "target.h"
+#define TLSF_MLOCK_T            int
+#define TLSF_CREATE_LOCK(l)     do { *(l)=1; } while(0)
+#define TLSF_DESTROY_LOCK(l)    do { } while(0)
+#define TLSF_ACQUIRE_LOCK(l)    spin_lock(l)
+#define TLSF_RELEASE_LOCK(l)    spin_unlock(l)
 #else
 #define TLSF_CREATE_LOCK(_unused_)   do{}while(0)
 #define TLSF_DESTROY_LOCK(_unused_)  do{}while(0) 
@@ -203,9 +205,9 @@
 #endif
 
 #ifdef USE_PRINTF
-#include <stdio.h>
-# define PRINT_MSG(fmt, args...) printf(fmt, ## args)
-# define ERROR_MSG(fmt, args...) printf(fmt, ## args)
+#include <print.h>
+# define PRINT_MSG(fmt, args...) dprintf(LOG_TRACE, fmt, ## args)
+# define ERROR_MSG(fmt, args...) dprintf(LOG_ERROR, fmt, ## args)
 #else
 # if !defined(PRINT_MSG)
 #  define PRINT_MSG(fmt, args...)

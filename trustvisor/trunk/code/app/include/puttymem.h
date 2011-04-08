@@ -41,6 +41,8 @@
 //#include "malloc.h"
 #include <types.h>
 
+#define PUTTYMEM_POOLSIZE (4*(1<<20))
+
 #define vmalloc(z) safemalloc(z,1)
 #define vnmalloc safemalloc
 #define vfree safefree
