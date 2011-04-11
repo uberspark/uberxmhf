@@ -135,6 +135,9 @@ void hpt_nested_set_prot(VCPU * vcpu, u64 gpaddr, int type)
 		pt[pfn] = hpt_setprot(vcpu->cpu_vendor, pt[pfn], HPT_PROTS_RX);
 		break;
 	case SECTION_TYPE_SDATA:
+		pt[pfn] = hpt_setpalprot(vcpu->cpu_vendor, pt[pfn], HPT_PROTS_RWX);
+		pt[pfn] = hpt_setprot(vcpu->cpu_vendor, pt[pfn], HPT_PROTS_NONE);
+		break;
 	case SECTION_TYPE_PARAM:
 	case SECTION_TYPE_STACK:
 		pt[pfn] = hpt_setpalprot(vcpu->cpu_vendor, pt[pfn], HPT_PROTS_RW);
