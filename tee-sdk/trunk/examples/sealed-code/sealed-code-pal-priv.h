@@ -36,7 +36,7 @@
 #ifndef SEALED_CODE_PAL_PRIV_H
 #define SEALED_CODE_PAL_PRIV_H
 
-#include <scode.h>
+#include <tee-sdk/tv.h>
 #include "sealed-code-pal.h"
 
 /* addresses of these will be set by linker */

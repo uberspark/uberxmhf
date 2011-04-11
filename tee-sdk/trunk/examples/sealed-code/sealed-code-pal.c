@@ -34,7 +34,7 @@
  */
 
 /* TV */
-#include <scode.h>
+#include <tee-sdk/tv.h>
 
 /* local */
 #include "sealed-code-pal-priv.h"

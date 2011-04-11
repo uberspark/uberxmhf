@@ -58,8 +58,6 @@ void scp_register(void)
 
   struct scode_sections_info scode_info;
   scode_sections_info_init(&scode_info,
-                           &__scode_start, scode_ptr_diff(&__scode_end, &__scode_start),
-                           &__sdata_start, scode_ptr_diff(&__sdata_end, &__sdata_start),
                            sizeof(struct scp_in_msg)+sizeof(struct scp_out_msg)+PAGE_SIZE /* XXX fudge factor */,
                            2*PAGE_SIZE);
   scode_sections_info_print(&scode_info);
