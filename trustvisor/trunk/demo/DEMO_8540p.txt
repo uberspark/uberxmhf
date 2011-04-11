@@ -1,0 +1,52 @@
+TrustVisor Demo
+
+DEMO machine: EliteBook 8540p
+	CMU name: beam
+	machine name: zongweiz-DEV
+
+1. set up Intel AMT serial output
+- AMT passwd is zzw8540@CMU
+- same passwd for BIOS setting
+- currently, AMT serial output works on wired LAN
+2. boot up demo machine
+- first boot "DEMO (TRUSTVISOR)" entry
+  you can see serial output of trustvisor booting
+- a second grub menu will be loaded,
+  then choose "DEMO (LINUX KERNEL)" entry
+  this will boot up linux kernel into VGA text mode
+3. login to user name "demo" using passwd "secmu2010"
+
+
+4. run SIMPLETEST program
+- the simpletest directory is under home directory
+- you can run "reg", "noparam", "param", "seal" and "quote"
+  test program and see serial output
+
+5. run TrustVisor-enabled SSL WEB SERVER
+- the newhttpd directory is under home directory
+- cd ~/newhttpd;
+- sudo ./runNewHttpd.sh single
+  run single process SSL web server
+  use "ab -n 1 -c 1 -f SSL3 https://127.0.0.1/" to launch SSL request
+  use "Ctrl + C" to kill web server process
+- sudo ./runNewHttpd.sh multi
+  run multiprocess SSL web server
+  use "ab -n 1 -c 1 -f SSL3 https://127.0.0.1/" to launch SSL request
+  find httpd parent process number #pnum using "ps"
+  use "sudo kill #pnum" to kill web server process
+
+NOTE:
+- Apache config files and SSL certificate are under /usr/local/apache2/conf
+  SSL config file are /usr/local/apache2/conf/extra/httpd-ssl.conf
+- SSL certificate (server.crt) are self-signed.
+  The comman name is https://127.0.0.1
+- If you want to setup SSL server on different url (e.g. https://192.168.1.11)
+  please change the servername in httpd.conf and httpd-ssl.conf
+  also generate a new SSL key and certificate using openssl
+  the cmd is "sudo openssl req -new -x509 -nodes -out server.crt -keyout server.key"
+
+6. run Jim's sealed-code test program
+    source code is under /hyp/tee-sdk/trunk/examples/sealed-code	
+	follow the README file to run the test program:
+    ./seal-code secret-fun.bin secret-fun.bin.sealed
+    ./load-code secret-fun.bin.sealed "input data"
