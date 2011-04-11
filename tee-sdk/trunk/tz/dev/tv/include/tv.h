@@ -110,7 +110,7 @@ struct scode_sections_info{
  * range. use this to make sure pages are present for trustvisor
  * (e.g., for pointer parameters before calling a pal function)
  */
-/* int scode_touch_range(void *ptr, size_t len, int do_write); */
+int scode_touch_range(void *ptr, size_t len, int do_write);
 
 /* convenience function for getting size of a section from end and start symbols */
 size_t scode_ptr_diff(void *end, void *start);

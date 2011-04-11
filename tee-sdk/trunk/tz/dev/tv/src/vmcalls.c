@@ -36,7 +36,7 @@
 #include <tv.h>
 
 #include "svcapi.h"
-
+#include <stdio.h>
 #include <stdint.h>
 
 /* XXX ripped from emhf's processor.h. use it directly? */
@@ -193,7 +193,7 @@ static int lock_range(void *ptr, size_t len)
 }
 #endif
 
-static int scode_touch_range(void *ptr, size_t len, int do_write)
+int scode_touch_range(void *ptr, size_t len, int do_write)
 {
   int i;
 
