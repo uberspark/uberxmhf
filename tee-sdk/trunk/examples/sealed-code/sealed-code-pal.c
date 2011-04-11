@@ -66,12 +66,21 @@ static int do_load(uint8_t *code, size_t code_len,
     return rv;
   }
 
-  /* XXX Check source of sealed data? unseal api doesn't currently allow this */
-
-  /* XXX make sure code pages are executable? */
-  /* XXX perhaps extend one of the PCRs first? */
+  /* TODO Check source of sealed data */
+  /* TODO extend PCR with loaded code */
 
   fn(params, params_len, output, output_len);
+
+/* change this to 1 modify the PAL to export the unsealed data */
+#if 0
+  {
+    int i;
+    for(i=0; i<unsealed_len; i++) {
+       output[i] = pal_static.unsealed[i];
+    }
+    *output_len = unsealed_len;
+  }
+#endif
 
   return 0;
 }

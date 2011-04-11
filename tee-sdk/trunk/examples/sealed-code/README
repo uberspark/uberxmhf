@@ -1,0 +1,55 @@
+This example demonstrates a sealed code pal. The code for the pal
+itself is in sealed-code-pal.c. The Makefile here creates two binaries
+that utilize this pal: seal-code takes executable code and seals it
+such that it may only be unsealed by the pal. load-code executes sealed
+code with a user-supplied parameter and returns the result.
+
+First, build load-code, seal-code, and 'secret-fun.bin':
+    make
+
+Seal secret-fun.bin:
+    ./seal-code secret-fun.bin secret-fun.bin.sealed
+
+At this point, you could delete the secret-fun sources and
+unsealed binaries, leaving you with only the sealed binary, which you will
+be able to execute using TrustVisor. However, you wouldn't be able to inspect
+the unencrypted code.
+
+Run the sealed code:
+    ./load-code secret-fun.bin.sealed "input data"
+
+The "secret function" increments each byte of the input, in this case giving:
+sealed function returned:
+joqvu!ebub
+
+*** Attacks ***
+
+* Tampering with the PAL
+You can try modifying the PAL to export the unsealed code. However,
+the code was sealed under the hash of the binary image of the
+original PAL. Changing the PAL will change this hash, and TrustVisor
+will refuse to unseal the code.
+    vi sealed-code-pal.c # In do_load, change '#if 0' to '#if 1'
+    make
+    ./load-code secret-fun.bin.sealed "input data"
+
+* Tampering with the sealed code
+You can also try modifying the sealed code. e.g.,:
+    echo "tampering" >> secret-fun.bin.sealed
+    ./load-code secret-fun.bin.sealed "input data"
+  
+Trustvisor performs an integrity check as part of the unsealing process,
+which will result in an error when trying to load the tampered code.
+
+* Debugging
+If you'd like, try using a debugger such as gdb on 'load-code'. You will
+be unable to step through execution of the unsealed code. In particular,
+control transfers to the PAL when the function scp_entry is called (e.g.
+by scp_run inside sealed-code-pal-interface.c). If you attempt to step
+into it using gdb, gdb will attempt to dynamically modify the code to 
+insert the breakpoint. Trustvisor will detect this attempted modification.
+Currently, trustvisor will respond by *halting the sytem*. Trustvisor will
+soon support other policies such as killing the PAL or the process in 
+case of such violations.
+
+
