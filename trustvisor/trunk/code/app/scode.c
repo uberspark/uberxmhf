@@ -218,13 +218,22 @@ u32 scode_measure(u8 * pcr, pte_t *pte_pages, u32 size)
 	sha1_starts(&ctx);
 	for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)
 	{
-		/* only measure SENTRY, STEXT, SDATA pages */
+		/* only measure SCODE, STEXT, SDATA pages */
 		paddr = PAGE_ALIGN_4K(pte_pages[i]);
-		if((pte_pages[i] & 0x7)!=0)  {
+		switch(SCODE_PTE_TYPE_GET(pte_pages[i])) {
+		case SECTION_TYPE_SCODE:
+		case SECTION_TYPE_STEXT:
+		case SECTION_TYPE_SDATA:
 			dprintf(LOG_TRACE, "[TV]   measure scode page %d paddr %#x\n", i+1, paddr);
 			sha1_update(&ctx, (u8 *)paddr, PAGE_SIZE_4K);
-		} else {
+			break;
+		case SECTION_TYPE_PARAM:
+		case SECTION_TYPE_STACK:
+		case SECTION_TYPE_SHARED:
 			dprintf(LOG_TRACE, "[TV]   ignore scode page %d paddr %#x\n", i+1, paddr);
+			break;
+		default:
+			ASSERT(0);
 		}
 	}
 	sha1_finish(&ctx, sha1sum);
