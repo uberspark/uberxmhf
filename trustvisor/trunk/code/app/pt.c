@@ -559,7 +559,7 @@ int guest_pt_copy(VCPU *vcpu, pte_t *dst_page, u32 gvaddr, u32 size, int type)
 
 	for(i=0; gvaddr < vend; gvaddr+=PAGE_SIZE_4K, i++) {
 		gpt_get_ptentries(vcpu,
-											gvaddr+(i<<PAGE_SHIFT_4K),
+											gvaddr,
 											NULL, &pde, &pte, &is_pae);
 
 		if (pde & _PAGE_PSE) {
