@@ -81,6 +81,7 @@ typedef hpt_pme_t* hpt_pm_t; /* page map (any level) */
 #define HPT_PML3_SIZE 512
 #define HPT_PML2_SIZE 512
 #define HPT_PML1_SIZE 512
+#define HPT_PM_SIZE 512
 
 /* Abstract protection flags. */
 #define HPT_PROT_READ (1<<0ull)
@@ -195,7 +196,7 @@ static inline u64 hpt_set_address(u32 cpu_vendor, hpt_pme_t entry, u64 hpa)
   return BR64_COPY_BITS_HL(entry, hpa, 51, 12, 0);
 }
 
-static inline int hpt_get_pm_idx(VCPU *vcpu, u64 gpa, int lvl)
+static inline int hpt_get_pm_idx(u32 cpu_vendor, u64 gpa, int lvl)
 {
 
   int lo;
