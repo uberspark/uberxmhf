@@ -36,6 +36,8 @@
 #include "unity.h"
 
 #define __PRINT_H_ /* avoid indirectly including our print.h, which conflicts with libc stdio.h */
+
+#define dprintf(...) while(0)
 #include <hpt.h>
 
 /* global CPU structs */
@@ -212,4 +214,51 @@ void test_hpt_getunused(void)
 
   TEST_ASSERT_EQUAL_HEX64(0x5, hpt_pme_getunused(HPT_TYPE_LONG, 1, 0x0000000000000a00ull, 2, 0));
   TEST_ASSERT_EQUAL_HEX64(0x5, hpt_pme_getunused(HPT_TYPE_LONG, 1, 0x0000000000000a00ull, 2, 0));
+}
+
+void test_pm_size(void)
+{
+  TEST_ASSERT_EQUAL_INT(4096, hpt_pm_size(HPT_TYPE_EPT, 1));
+  TEST_ASSERT_EQUAL_INT(4096, hpt_pm_size(HPT_TYPE_EPT, 2));
+  TEST_ASSERT_EQUAL_INT(4096, hpt_pm_size(HPT_TYPE_EPT, 3));
+  TEST_ASSERT_EQUAL_INT(4096, hpt_pm_size(HPT_TYPE_EPT, 4));
+}
+
+void test_pme_get_address(void)
+{
+  TEST_ASSERT_EQUAL_HEX64(0x000ffffffffff000ull, hpt_pme_get_address(HPT_TYPE_EPT, 1, 0xffffffffffffffffull));
+  TEST_ASSERT_EQUAL_HEX64(0x000ffffffffff000ull, hpt_pme_get_address(HPT_TYPE_EPT, 2, 0xffffffffffffffffull));
+  TEST_ASSERT_EQUAL_HEX64(0x000ffffffffff000ull, hpt_pme_get_address(HPT_TYPE_EPT, 3, 0xffffffffffffffffull));
+  TEST_ASSERT_EQUAL_HEX64(0x000ffffffffff000ull, hpt_pme_get_address(HPT_TYPE_EPT, 4, 0xffffffffffffffffull));
+
+  TEST_ASSERT_EQUAL_HEX64(0x000ffffffffff000ull, hpt_pme_get_address(HPT_TYPE_EPT, 4, 0x000ffffffffff000ull));
+  TEST_ASSERT_EQUAL_HEX64(0x000ffff0fffff000ull, hpt_pme_get_address(HPT_TYPE_EPT, 4, 0x000ffff0fffff000ull));
+}
+
+void test_pme_set_address(void)
+{
+  TEST_ASSERT_EQUAL_HEX64(0x000ffffffffff000ull, hpt_pme_set_address(HPT_TYPE_EPT, 1, 0x0ull, 0x000ffffffffff000ull));
+  TEST_ASSERT_EQUAL_HEX64(0x000ffffffffff000ull, hpt_pme_set_address(HPT_TYPE_EPT, 1, 0x0ull, 0xffffffffffffffffull));
+}
+
+void test_get_pm_idx(void)
+{
+  TEST_ASSERT_EQUAL_HEX64(0x1ff, hpt_get_pm_idx(HPT_TYPE_EPT, 1, 0x1ffull<<12));
+  TEST_ASSERT_EQUAL_HEX64(0x1ff, hpt_get_pm_idx(HPT_TYPE_EPT, 2, 0x1ffull<<12<<9));
+  TEST_ASSERT_EQUAL_HEX64(0x1ff, hpt_get_pm_idx(HPT_TYPE_EPT, 3, 0x1ffull<<12<<9<<9));
+  TEST_ASSERT_EQUAL_HEX64(0x1ff, hpt_get_pm_idx(HPT_TYPE_EPT, 4, 0x1ffull<<12<<9<<9<<9));
+}
+
+void test_get_pme_by_va(void)
+{
+  u64 pm[512] = { [0x100] = 0xdeadbeeff00dd00dull, [0x1ff] = 0xffffffffffffffffull };
+  TEST_ASSERT_EQUAL_HEX64(0xffffffffffffffffull, hpt_pm_get_pme_by_va(HPT_TYPE_EPT, 1, pm, 0x1ffull<<12));
+  TEST_ASSERT_EQUAL_HEX64(0xdeadbeeff00dd00dull, hpt_pm_get_pme_by_va(HPT_TYPE_EPT, 2, pm, 0x100ull<<12<<9));
+}
+
+void test_set_pme_by_va(void)
+{
+  u64 pm[512];
+  hpt_pm_set_pme_by_va(HPT_TYPE_EPT, 2, pm, 0x50ull<<12<<9, 0xdeadbeeff00dd00dull);
+  TEST_ASSERT_EQUAL_HEX64(pm[0x50], 0xdeadbeeff00dd00dull);
 }

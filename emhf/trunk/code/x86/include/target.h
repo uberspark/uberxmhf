@@ -308,6 +308,8 @@ static inline hpt_type_t VCPU_get_hpt_type(VCPU *vcpu)
     return HPT_TYPE_EPT;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     return HPT_TYPE_PAE;
+  } else {
+    ASSERT(0);
   }
 }
 
@@ -342,6 +344,7 @@ static inline hpt_pm_t VCPU_get_current_root_pm(VCPU *vcpu)
 static inline void VCPU_set_current_root_pm(VCPU *vcpu, hpt_pm_t root)
 {
   if (VCPU_get_hpt_type(vcpu) == HPT_TYPE_EPT) {
+    ASSERT(PAGE_ALIGNED_4K((uintptr_t)root));
     vcpu->vmcs.control_EPT_pointer_full = BR32_COPY_BITS_HL(vcpu->vmcs.control_EPT_pointer_full, hva2spa(root), 31, 12, 0);
   } else if (VCPU_get_hpt_type(vcpu) == HPT_TYPE_PAE) {
     ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3 = hpt_cr3_set_address(HPT_TYPE_PAE, ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3, hva2spa(root));

@@ -135,20 +135,20 @@ static inline size_t hpt_pm_size(hpt_type_t t, int lvl)
   return rv;
 }
 
-static inline size_t hpt_pme_size(hpt_type_t t, int lvl)
-{
-  HPT_UNUSED_ARGUMENT(lvl);
-  if(t == HPT_TYPE_EPT
-     || t == HPT_TYPE_PAE
-     || t == HPT_TYPE_LONG) {
-    return 8;
-  } else if (t == HPT_TYPE_NORM) {
-    return 4;
-  }
+/* static inline size_t hpt_pme_size(hpt_type_t t, int lvl) */
+/* { */
+/*   HPT_UNUSED_ARGUMENT(lvl); */
+/*   if(t == HPT_TYPE_EPT */
+/*      || t == HPT_TYPE_PAE */
+/*      || t == HPT_TYPE_LONG) { */
+/*     return 8; */
+/*   } else if (t == HPT_TYPE_NORM) { */
+/*     return 4; */
+/*   } */
 
-  ASSERT(0);
-  return 0;
-}
+/*   ASSERT(0); */
+/*   return 0; */
+/* } */
 
 /* HPT_<page table type>_<name>_L<applicable levels>_[M][P]_[LO|HI|BIT] */
 /* P if the mapping is valid for entries mapping a page.
@@ -771,11 +771,16 @@ hpt_pm_t hpt_walk_get_pm(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int *e
   ASSERT(lvl >= *end_lvl);
 
   while(lvl > *end_lvl) {
+    dprintf(LOG_TRACE, "hpt_walk_get_pm: pm:%x lvl:%d va:%x\n", pm, lvl, va);
+    print_hex("pm:", pm, 4096);
+
     if (!hpt_walk_next_lvl(ctx, &lvl, &pm, va)) {
       *end_lvl = lvl;
       return pm;
     }
   }
+  dprintf(LOG_TRACE, "hpt_walk_get_pm: pm:%x lvl:%d va:%x\n", pm, lvl, va);
+  print_hex("pm:", pm, 4096);
   return pm;
 }
 
@@ -800,6 +805,11 @@ hpt_pm_t hpt_walk_get_pm_alloc(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, 
   ASSERT(lvl >= *end_lvl);
   while(lvl > *end_lvl) {
     hpt_pme_t pme = hpt_pm_get_pme_by_va(ctx->t, lvl, pm, va);
+
+    dprintf(LOG_TRACE, "hpt_walk_get_pm_alloc: lvl:%d pm:%x end_lvl:%d va:%Lx\n",
+            lvl, (u32)pm, *end_lvl, va);
+    dprintf(LOG_TRACE, "hpt_walk_get_pm_alloc: pme:%Lx\n",
+            pme);
     if (hpt_pme_is_page(ctx->t, lvl, pme)) {
       *end_lvl = lvl;
       return pm;
@@ -808,15 +818,19 @@ hpt_pm_t hpt_walk_get_pm_alloc(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, 
       hpt_pm_t new_pm = ctx->gzp(ctx->gzp_ctx,
                                  HPT_PM_SIZE/*FIXME*/,
                                  hpt_pm_size(ctx->t, lvl-1));
+      dprintf(LOG_TRACE, "hpt_walk_get_pm_alloc: allocated pm at hva:%x spa:%Lx\n",
+              (u32)new_pm, ctx->ptr2pa(ctx->ptr2pa_ctx, new_pm));
       if(!new_pm) {
         return NULL;
       }
       pme = hpt_pme_set_address(ctx->t, lvl, pme, ctx->ptr2pa(ctx->ptr2pa_ctx, new_pm));
       pme = hpt_pme_setprot(ctx->t, lvl, pme, HPT_PROTS_RWX);
       hpt_pm_set_pme_by_va(ctx->t, lvl, pm, va, pme);
+      dprintf(LOG_TRACE, "hpt_walk_get_pm_alloc: inserted pme:%Lx\n", pme);
     }
     ASSERT(hpt_walk_next_lvl(ctx, &lvl, &pm, va));
   }
+  ASSERT(lvl==*end_lvl);
   return pm;
 }
 
@@ -828,11 +842,16 @@ static inline
 int hpt_walk_insert_pme_alloc(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int tgt_lvl, hpt_va_t va, hpt_pme_t pme)
 {
   int end_lvl=tgt_lvl;
+  dprintf(LOG_TRACE, "hpt_walk_insert_pme_alloc: lvl:%d pm:%x tgt_lvl:%d va:%Lx pme:%Lx",
+          lvl, (u32)pm, tgt_lvl, va, pme);
   pm = hpt_walk_get_pm_alloc(ctx, lvl, pm, &end_lvl, va);
+  dprintf(LOG_TRACE, "hpt_walk_insert_pme_alloc: got pm:%x end_lvl:%d\n",
+          (u32)pm, end_lvl);
+
   if(pm == NULL || tgt_lvl != end_lvl) {
     return 1;
   }
-  hpt_pm_set_pme_by_va(ctx->t, lvl, pm, va, pme);
+  hpt_pm_set_pme_by_va(ctx->t, tgt_lvl, pm, va, pme);
   return 0;
 }
 
