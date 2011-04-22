@@ -1,4 +1,4 @@
-CFLAGS += -I${UNITYDIR}/src -DUNITY_SUPPORT_64
+CFLAGS += -I${UNITYDIR}/src -DUNITY_SUPPORT_64 -g
 CFLAGS := $(filter-out -nostdinc,${CFLAGS})
 
 all: do_pt do_hpt
@@ -50,4 +50,4 @@ do_%: %
 clean: 
 	$(RM) *.o
 	$(RM) *_runner.c
-	$(RM) ../*.o
+	$(RM) ../app/*.o
