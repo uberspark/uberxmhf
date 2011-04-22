@@ -226,8 +226,6 @@ u32 stpm_quote(u8* externalnonce, u8* output, u32* outlen, u8 * pcr, u8 * tpmsel
 /* get random bytes from software TPM */
 u32 stpm_rand(u8* buffer, u32 numbytes)
 {
-	int numbytes;
-
 	numbytes = rand_bytes(buffer, numbytes);
 
 	return numbytes;

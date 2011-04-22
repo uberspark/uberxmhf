@@ -241,7 +241,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				ret = scode_pcrextend(vcpu, addr, len, num);
 				break;
 			}
-		case VMMCMD_PCREXT:
+		case VMMCMD_GENRAND:
 			{
 				u32 addr, len_addr;
 				addr = r->ecx;
