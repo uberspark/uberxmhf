@@ -62,7 +62,7 @@ void* pagelist_get_page(pagelist_t *pl)
   /* we'll handle allocating more on-demand later */
   ASSERT(pl->num_used < pl->num_allocd);
 
-  page = pl->page_base + (pl->num_allocd*PAGE_SIZE_4K);
+  page = pl->page_base + (pl->num_used*PAGE_SIZE_4K);
   pl->num_used++;
 
   return page;
