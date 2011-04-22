@@ -348,7 +348,7 @@ u32 hpt_scode_set_prot(VCPU *vcpu, pte_t *pte_pages, u32 size)
 		/* XXX FIXME: do we need to grab a lock? */
 		for(k=0; k<g_midtable_numentries; k++) {
 			tmpcpu = (VCPU *)(g_midtable[k].vcpu_vaddr_ptr);
-			hpt_nested_set_prot(tmpcpu, pte_pages[i],0);
+			hpt_nested_set_prot(tmpcpu, pte_pages[i]);
 		}
 	}
 

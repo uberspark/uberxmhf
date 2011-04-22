@@ -257,10 +257,8 @@ void hpt_switch_pmes(VCPU *vcpu, pagelist_t *pl, hpt_pml4_t reg_pml4, hpt_pml4_t
  * SSTACK			RW					unpresent
  *
  * **************************************/
-void hpt_nested_set_prot(VCPU * vcpu, u64 gpaddr, int type)
+void hpt_nested_set_prot(VCPU * vcpu, u64 gpaddr)
 {
-	/* type is not used in vmx_nested_set_prot */
-
 	u64 *pt = get_pml1es(vcpu);
 	u64 pfn = gpaddr >> PAGE_SHIFT_4K;
 	u64 oldentry = pt[pfn];

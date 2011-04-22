@@ -197,7 +197,7 @@ enum VMMcmd
 };
 
 /* nested paging handlers (hpt) */
-void hpt_nested_set_prot(VCPU * vcpu, u64 gpaddr, int type);
+void hpt_nested_set_prot(VCPU * vcpu, u64 gpaddr);
 void hpt_nested_clear_prot(VCPU * vcpu, u64 gpaddr);
 void hpt_nested_switch_scode(VCPU * vcpu, pte_t *pte_pages, u32 size, u32 pte_page2, u32 size2);
 void hpt_nested_switch_regular(VCPU * vcpu, pte_t *pte_page, u32 size, u32 pte_page2, u32 size2);
