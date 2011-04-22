@@ -53,18 +53,18 @@ void tearDown(void)
 
 #define maxu64 0xffffffffffffffffull
 
-void test_ZERO_HI(void)
+void test_ZERO_HI64(void)
 {
-  TEST_ASSERT_EQUAL_HEX64(maxu64, ZERO_HI(maxu64, 0));
-  TEST_ASSERT_EQUAL_HEX64(0x7fffffffffffffffull, ZERO_HI(maxu64, 1));
-  TEST_ASSERT_EQUAL_HEX64(0x1ull, ZERO_HI(maxu64, 63));
+  TEST_ASSERT_EQUAL_HEX64(maxu64, ZERO_HI64(maxu64, 0));
+  TEST_ASSERT_EQUAL_HEX64(0x7fffffffffffffffull, ZERO_HI64(maxu64, 1));
+  TEST_ASSERT_EQUAL_HEX64(0x1ull, ZERO_HI64(maxu64, 63));
 }
 
-void test_ZERO_LO(void)
+void test_ZERO_LO64(void)
 {
-  TEST_ASSERT_EQUAL_HEX64(maxu64, ZERO_LO(maxu64, 0));
-  TEST_ASSERT_EQUAL_HEX64(0xfffffffffffffffeull, ZERO_LO(maxu64, 1));
-  TEST_ASSERT_EQUAL_HEX64(0x8000000000000000ull, ZERO_LO(maxu64, 63));
+  TEST_ASSERT_EQUAL_HEX64(maxu64, ZERO_LO64(maxu64, 0));
+  TEST_ASSERT_EQUAL_HEX64(0xfffffffffffffffeull, ZERO_LO64(maxu64, 1));
+  TEST_ASSERT_EQUAL_HEX64(0x8000000000000000ull, ZERO_LO64(maxu64, 63));
 }
 
 void test_MASKRANGE64(void)
@@ -261,4 +261,10 @@ void test_set_pme_by_va(void)
   u64 pm[512];
   hpt_pm_set_pme_by_va(HPT_TYPE_EPT, 2, pm, 0x50ull<<12<<9, 0xdeadbeeff00dd00dull);
   TEST_ASSERT_EQUAL_HEX64(pm[0x50], 0xdeadbeeff00dd00dull);
+}
+
+void test_cr3_set_address(void)
+{
+  TEST_ASSERT_EQUAL_HEX64(0xffffffe0,
+                          hpt_cr3_set_address(HPT_TYPE_PAE, 0, 0xffffffff));
 }

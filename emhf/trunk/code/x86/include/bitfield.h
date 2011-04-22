@@ -52,27 +52,35 @@
 #include "error.h"
 #include "types.h"
 
-static inline u64 ZERO_HI(u64 x, int bits)
+static inline u64 ZERO_HI64(u64 x, int bits)
 {
   return ((x) << (bits) >> (bits));
 }
-static inline u64 ZERO_LO(u64 x, int bits)
+static inline u64 ZERO_LO64(u64 x, int bits)
+{
+  return ((x) >> (bits) << (bits));
+}
+static inline u32 ZERO_HI32(u32 x, int bits)
+{
+  return ((x) << (bits) >> (bits));
+}
+static inline u32 ZERO_LO32(u32 x, int bits)
 {
   return ((x) >> (bits) << (bits));
 }
 
 static inline u64 MASKRANGE64(int hi, int lo)
 {
-  return ZERO_LO(ZERO_HI(0xffffffffffffffffull,
+  return ZERO_LO64(ZERO_HI64(0xffffffffffffffffull,
                          64-(hi)-1),
                  (lo));
 }
 
 static inline u32 MASKRANGE32(int hi, int lo)
 {
-  return ZERO_LO(ZERO_HI(0xfffffffful,
-                         32-(hi)-1),
-                 (lo));
+  return ZERO_LO32(ZERO_HI32(0xfffffffful,
+                             32-(hi)-1),
+                   (lo));
 }
 
 static inline u64 MASKBIT64(int bit)
@@ -88,21 +96,21 @@ static inline u32 MASKBIT32(int bit)
 
 static inline u64 BR64_GET_HL(u64 x64, int hi, int lo)
 {
-  return ZERO_HI(x64, 63-(hi)) >> (lo);
+  return ZERO_HI64(x64, 63-(hi)) >> (lo);
 }
 static inline u64 BR32_GET_HL(u32 x32, int hi, int lo)
 {
-  return ZERO_HI(x32, 31-(hi)) >> (lo);
+  return ZERO_HI64(x32, 31-(hi)) >> (lo);
 }
 
 static inline u64 BR64_SET_HL(u64 x64, int hi, int lo, u64 val)
 {
-  ASSERT(ZERO_HI(val, 63-(hi-lo)) == val);
+  ASSERT(ZERO_HI64(val, 63-(hi-lo)) == val);
   return ((x64 & ~MASKRANGE64((hi), (lo))) | ((val) << (lo)));
 }
 static inline u32 BR32_SET_HL(u32 x32, int hi, int lo, u32 val)
 {
-  ASSERT(ZERO_HI(val, 31-(hi-lo)) == val);
+  ASSERT(ZERO_HI64(val, 31-(hi-lo)) == val);
   return ((x32 & ~MASKRANGE32((hi), (lo))) | ((val) << (lo)));
 }
 

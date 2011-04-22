@@ -273,8 +273,8 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 		struct regs *r, u64 gpa, u64 gva, u64 violationcode)
 {
 	u32 ret;
-	dprintf(LOG_TRACE, "\nCPU(0x%02x): gva=0x%08x, gpa=0x%08x, code=0x%016llx\n", vcpu->id,
-			(u32)gva, (u32)gpa, violationcode);
+	dprintf(LOG_TRACE, "\nCPU(0x%02x): gva=0x%08Lx, gpa=0x%08Lx, code=0x%016Lx\n", (int)vcpu->id,
+			gva, gpa, violationcode);
 	//	printf("\nprot is: 0x%016llx", emhf_hwpgtbl_getprot(vcpu, gpa));
 	if ((ret = hpt_scode_npf(vcpu, gpa, violationcode)) != 0) {
 		dprintf(LOG_ERROR, "FATAL ERROR: Unexpected return value from page fault handling\n");
