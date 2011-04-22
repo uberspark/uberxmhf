@@ -218,21 +218,18 @@ hpt_prot_t reg_prot_of_type(int type)
 	}
 }
 
-void hpt_switch_pme(VCPU *vcpu, pagelist_t *pl, hpt_pm_t reg_pm, hpt_pm_t pal_pm, int top_lvl, gpa_t gpa)
+void hpt_insert_pal_pme(VCPU *vcpu, pagelist_t *pl, hpt_pm_t pal_pm, int top_lvl, gpa_t gpa)
 {
 	hpt_pme_t *reg_pme, *pal_pme;
-	hpt_prot_t reg_prot, pal_prot;
+	hpt_prot_t pal_prot;
 	int type;
+	hpt_pml1e_t *reg_pml1es = get_pml1es(vcpu);
+	u64 pfn = gpa >> PAGE_SHIFT_4K;
+
+	reg_pme = &reg_pml1es[pfn];
+	dprintf(LOG_TRACE, "hpt_switch_pme: reg: %Lx\n", *reg_pme);
 
 	type = SCODE_PTE_TYPE_GET(gpa);
-
-	reg_prot = reg_prot_of_type(type);
-	reg_pme = hpt_get_pme(vcpu, reg_pm, top_lvl, 1, gpa);
-	dprintf(LOG_TRACE, "hpt_switch_pme: reg orig: %Lx\n", *reg_pme);
-	dprintf(LOG_TRACE, "hpt_switch_pme: reg new : %Lx\n",
-					hpt_setprot(vcpu->cpu_vendor, *reg_pme, reg_prot));
-	/* *reg_pme = hpt_setprot(vcpu->cpu_vendor, *reg_pme, reg_prot); */
-
 	pal_prot = pal_prot_of_type(type);
 	pal_pme = hpt_get_pme_alloc(vcpu, pl, pal_pm, top_lvl, 1, gpa);
 	*pal_pme = *reg_pme;
@@ -244,11 +241,11 @@ void hpt_switch_pme(VCPU *vcpu, pagelist_t *pl, hpt_pm_t reg_pm, hpt_pm_t pal_pm
 	dprintf(LOG_TRACE, "hpt_switch_pme: pal     : %Lx\n", *pal_pme);
 }
 
-void hpt_switch_pmes(VCPU *vcpu, pagelist_t *pl, hpt_pml4_t reg_pml4, hpt_pml4_t pal_pml4, gpa_t gpas[], size_t num_gpas)
+void hpt_insert_pal_pmes(VCPU *vcpu, pagelist_t *pl, hpt_pml4_t pal_pml4, gpa_t gpas[], size_t num_gpas)
 {
 	unsigned i;
 	for(i=0; i<num_gpas; i++) {
-		hpt_switch_pme(vcpu, pl, reg_pml4, pal_pml4, 4, gpas[i]);
+		hpt_insert_pal_pme(vcpu, pl, pal_pml4, 4, gpas[i]);
 	}
 }
 
