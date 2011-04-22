@@ -178,6 +178,8 @@ hpt_prot_t pal_prot_of_type(int type)
 		return HPT_PROTS_RX;
 		break;
 	case SECTION_TYPE_SDATA:
+		return HPT_PROTS_RWX;
+		break;
 	case SECTION_TYPE_PARAM:
 	case SECTION_TYPE_STACK:
 		return HPT_PROTS_RW;
@@ -200,6 +202,8 @@ hpt_prot_t reg_prot_of_type(int type)
 		return HPT_PROTS_RX;
 		break;
 	case SECTION_TYPE_SDATA:
+		return HPT_PROTS_NONE;
+		break;
 	case SECTION_TYPE_PARAM:
 	case SECTION_TYPE_STACK:
 		return HPT_PROTS_NONE;
