@@ -183,7 +183,7 @@ typedef struct whitelist_entry{
 	/* pal page tables */
 	pagelist_t pl;
 	hpt_walk_ctx_t hpt_nested_walk_ctx;
-	hpt_pm_t pal_pml4;
+	hpt_pm_t pal_hpt_root;
 } __attribute__ ((packed)) whitelist_entry_t;
 
 

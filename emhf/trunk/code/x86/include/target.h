@@ -302,24 +302,6 @@ static inline hpt_pme_t* VCPU_get_pml4(VCPU *vcpu)
   }
 }
 
-static inline hpt_pm_t VCPU_get_root_pm(VCPU *vcpu)
-{
-  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    return (hpt_pm_t)vcpu->vmx_vaddr_ept_pml4_table;
-  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    return (hpt_pme_t*)vcpu->npt_vaddr_ptr;
-  }
-}
-
-static inline int VCPU_get_root_pm_lvl(VCPU *vcpu)
-{
-  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    return 4;
-  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    return 3;
-  }
-}
-
 static inline hpt_type_t VCPU_get_hpt_type(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
@@ -329,27 +311,42 @@ static inline hpt_type_t VCPU_get_hpt_type(VCPU *vcpu)
   }
 }
 
-static inline spa_t VCPU_get_hcr3(VCPU *vcpu)
+static inline hpt_pm_t VCPU_get_default_root_pm(VCPU *vcpu)
 {
-  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    return vcpu->vmcs.control_EPT_pointer_full & MASKRANGE32(31, 12);
-  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    return ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3;
+  if (VCPU_get_hpt_type(vcpu) == HPT_TYPE_EPT) {
+    return (hpt_pm_t)vcpu->vmx_vaddr_ept_pml4_table;
+  } else if (VCPU_get_hpt_type(vcpu) == HPT_TYPE_PAE) {
+    return (hpt_pm_t)vcpu->npt_vaddr_ptr;
   } else {
-    ASSERT(false);
-    return 0;
+    ASSERT(0);
   }
 }
 
-static inline void VCPU_set_hcr3(VCPU *vcpu, spa_t hcr3)
+/* defined in global.h. can't just include globals.h because it
+   depends on this header */
+static inline spa_t hva2spa(hva_t x);
+static inline hva_t spa2hva(spa_t x);
+
+static inline hpt_pm_t VCPU_get_current_root_pm(VCPU *vcpu)
 {
-  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    vcpu->vmcs.control_EPT_pointer_full =
-      BR32_COPY_BITS_HL(vcpu->vmcs.control_EPT_pointer_full, hcr3, 31, 12, 0);
-  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3 = hcr3;
+  if (VCPU_get_hpt_type(vcpu) == HPT_TYPE_EPT) {
+    return spa2hva(BR32_COPY_BITS_HL(0, vcpu->vmcs.control_EPT_pointer_full, 31, 12, 0));
+  } else if (VCPU_get_hpt_type(vcpu) == HPT_TYPE_PAE) {
+    return spa2hva(hpt_cr3_get_address(HPT_TYPE_PAE,
+                                       ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3));
   } else {
-    ASSERT(false);
+    ASSERT(0);
+  }
+}
+
+static inline void VCPU_set_current_root_pm(VCPU *vcpu, hpt_pm_t root)
+{
+  if (VCPU_get_hpt_type(vcpu) == HPT_TYPE_EPT) {
+    vcpu->vmcs.control_EPT_pointer_full = BR32_COPY_BITS_HL(vcpu->vmcs.control_EPT_pointer_full, hva2spa(root), 31, 12, 0);
+  } else if (VCPU_get_hpt_type(vcpu) == HPT_TYPE_PAE) {
+    ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3 = hpt_cr3_set_address(HPT_TYPE_PAE, ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3, hva2spa(root));
+  } else {
+    ASSERT(0);
   }
 }
 

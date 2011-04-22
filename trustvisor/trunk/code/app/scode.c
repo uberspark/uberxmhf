@@ -630,9 +630,10 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	pagelist_init(&whitelist_new.pl);
 	whitelist_new.hpt_nested_walk_ctx = hpt_nested_walk_ctx;
 	whitelist_new.hpt_nested_walk_ctx.gzp_ctx = &whitelist_new.pl;
-	whitelist_new.pal_pml4 = pagelist_get_zeroedpage(&whitelist_new.pl);
+	whitelist_new.pal_hpt_root = pagelist_get_zeroedpage(&whitelist_new.pl);
 	hpt_insert_pal_pmes(vcpu, &whitelist_new.hpt_nested_walk_ctx,
-											whitelist_new.pal_pml4, 4,
+											whitelist_new.pal_hpt_root,
+											hpt_root_lvl(hpt_nested_walk_ctx.t),
 											whitelist_new.scode_pages,
 											whitelist_new.scode_size>>PAGE_SHIFT_4K);
 	/* register guest page table pages. TODO: clone guest page table
@@ -640,8 +641,10 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 		 tampered. */
 	scode_expose_arch(vcpu, &whitelist_new);
 	hpt_insert_pal_pmes(vcpu, &whitelist_new.hpt_nested_walk_ctx,
-											whitelist_new.pal_pml4, 4,
-											(pte_t*)whitelist_new.pte_page, whitelist_new.pte_size>>PAGE_SHIFT_4K);
+											whitelist_new.pal_hpt_root,
+											hpt_root_lvl(hpt_nested_walk_ctx.t),
+											whitelist_new.pte_page,
+											whitelist_new.pte_size>>PAGE_SHIFT_4K);
 	scode_unexpose_arch(vcpu, &whitelist_new);
 
 	/* initialize software TPM PCR */
@@ -1041,10 +1044,7 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 
 	/* change NPT permission for all PTE pages and scode pages */
 	dprintf(LOG_TRACE, "[TV] change NPT permission to run PAL!\n");
-	dprintf(LOG_TRACE, "hcr3: %Lx, pml4_hva: %x, pml4_spa: %Lx",
-					VCPU_get_hcr3(vcpu), VCPU_get_pml4(vcpu), hva2spa(VCPU_get_pml4(vcpu)));
-	ASSERT(VCPU_get_hcr3(vcpu) == hva2spa(VCPU_get_pml4(vcpu)));
-	VCPU_set_hcr3(vcpu, hva2spa(whitelist[curr].pal_pml4));
+	VCPU_set_current_root_pm(vcpu, whitelist[curr].pal_hpt_root);
 	/* hpt_nested_switch_scode(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size, */
 	/* 												whitelist[curr].pte_page, whitelist[curr].pte_size); */
 		
@@ -1175,7 +1175,7 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
 	if (!scode_unmarshall(vcpu)){
 		/* clear the NPT permission setting in switching into scode */
 		dprintf(LOG_TRACE, "[TV] change NPT permission to exit PAL!\n"); 
-		VCPU_set_hcr3(vcpu, hva2spa(VCPU_get_pml4(vcpu)));
+		VCPU_set_current_root_pm(vcpu, VCPU_get_default_root_pm(vcpu));
 		/* hpt_nested_switch_regular(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size, */
 		/* 													whitelist[curr].pte_page, whitelist[curr].pte_size); */
 		scode_unexpose_arch(vcpu, &whitelist[curr]);
