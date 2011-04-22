@@ -262,35 +262,17 @@ void hpt_nested_set_prot(VCPU * vcpu, u64 gpaddr)
 	u64 *pt = get_pml1es(vcpu);
 	u64 pfn = gpaddr >> PAGE_SHIFT_4K;
 	u64 oldentry = pt[pfn];
+	hpt_prot_t pal_prot, reg_prot;
+	int type;
 
-	switch(SCODE_PTE_TYPE_GET(gpaddr)) {
-	case SECTION_TYPE_SCODE:
-		pt[pfn] = hpt_setpalprot(vcpu->cpu_vendor, pt[pfn], HPT_PROTS_RX);
-		pt[pfn] = hpt_setprot(vcpu->cpu_vendor, pt[pfn], HPT_PROTS_NONE);
-		break;
-	case SECTION_TYPE_STEXT:
-		pt[pfn] = hpt_setpalprot(vcpu->cpu_vendor, pt[pfn], HPT_PROTS_RX);
-		pt[pfn] = hpt_setprot(vcpu->cpu_vendor, pt[pfn], HPT_PROTS_RX);
-		break;
-	case SECTION_TYPE_SDATA:
-		pt[pfn] = hpt_setpalprot(vcpu->cpu_vendor, pt[pfn], HPT_PROTS_RWX);
-		pt[pfn] = hpt_setprot(vcpu->cpu_vendor, pt[pfn], HPT_PROTS_NONE);
-		break;
-	case SECTION_TYPE_PARAM:
-	case SECTION_TYPE_STACK:
-		pt[pfn] = hpt_setpalprot(vcpu->cpu_vendor, pt[pfn], HPT_PROTS_RW);
-		pt[pfn] = hpt_setprot(vcpu->cpu_vendor, pt[pfn], HPT_PROTS_NONE);
-		break;
-	case SECTION_TYPE_SHARED:
-		pt[pfn] = hpt_setpalprot(vcpu->cpu_vendor, pt[pfn], HPT_PROTS_RWX);
-		pt[pfn] = hpt_setprot(vcpu->cpu_vendor, pt[pfn], HPT_PROTS_NONE);
-		/* shared segments are still inaccessible to non-pal while
-			 registered.  sharing happens by dynamically registering and
-			 unregistering these segments */
-		break;
-	default:
-		ASSERT(0);
-	}
+	type = SCODE_PTE_TYPE_GET(gpaddr);
+
+	pal_prot = pal_prot_of_type(type);
+	pt[pfn] = hpt_setpalprot(vcpu->cpu_vendor, pt[pfn], pal_prot);
+
+	reg_prot = reg_prot_of_type(type);
+	pt[pfn] = hpt_setprot(vcpu->cpu_vendor, pt[pfn], reg_prot);
+
 	dprintf(LOG_TRACE, "[TV]   set prot: pfn %#llx, pte old %#llx, pte new %#llx\n", pfn, oldentry, pt[pfn]);
 
 	/* flush TLB */
