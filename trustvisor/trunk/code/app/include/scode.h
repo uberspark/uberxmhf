@@ -43,6 +43,8 @@
 
 #include  <target.h>
 #include <perf.h>
+#include <pages.h>
+#include <hpt.h>
 //#include  <globals.h>
 //#include "tpm_sw.h"
 
@@ -176,6 +178,9 @@ typedef struct whitelist_entry{
 	/* software TPM related */
 	u8  pcr[TPM_PCR_SIZE*TPM_PCR_NUM];
 
+	/* pal page tables */
+	pagelist_t pl;
+	hpt_pml4_t pal_pml4;
 } __attribute__ ((packed)) whitelist_entry_t;
 
 
@@ -197,6 +202,7 @@ enum VMMcmd
 };
 
 /* nested paging handlers (hpt) */
+void hpt_switch_pmes(VCPU *vcpu, pagelist_t *pl, hpt_pml4_t reg_pml4, hpt_pml4_t pal_pml4, gpa_t gpas[], size_t num_gpas);
 void hpt_nested_set_prot(VCPU * vcpu, u64 gpaddr);
 void hpt_nested_clear_prot(VCPU * vcpu, u64 gpaddr);
 void hpt_nested_switch_scode(VCPU * vcpu, pte_t *pte_pages, u32 size, u32 pte_page2, u32 size2);

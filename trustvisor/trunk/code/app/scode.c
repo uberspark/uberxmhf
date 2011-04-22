@@ -575,6 +575,15 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	}
 	whitelist_new.scode_size = (whitelist_new.scode_size) << PAGE_SHIFT_4K;
 
+	/* set up pal's hardware page tables */
+	dprintf(LOG_TRACE, "[TV] hcr3: %Lx, vaddr: %x\n",
+					VCPU_get_hcr3(vcpu), spa2hva(VCPU_get_hcr3(vcpu)));
+	pagelist_init(&whitelist_new.pl);
+	whitelist_new.pal_pml4 = pagelist_get_zeroedpage(&whitelist_new.pl);
+	hpt_switch_pmes(vcpu, &whitelist_new.pl,
+									spa2hva(VCPU_get_hcr3(vcpu)), whitelist_new.pal_pml4,
+									whitelist_new.scode_pages, whitelist_new.scode_size>>PAGE_SHIFT_4K);
+
 	/* set up scode pages permission (also flush TLB) */
 	/* CRITICAL SECTION in MP scenario: need to quiesce other CPUs or at least acquire spinlock */
 	if (hpt_scode_set_prot(vcpu, whitelist_new.scode_pages, whitelist_new.scode_size))
@@ -688,6 +697,8 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
 	/* CRITICAL SECTION in MP scenario: need to quiesce other CPUs or at least acquire spinlock */
 	whitelist_size --;
 	whitelist[i].gcr3 = 0;
+
+	pagelist_free_all(&whitelist[i].pl);
 
 	return 0; 
 }

@@ -110,6 +110,7 @@ hpt_pme_t* hpt_pm_get_this_pme(const VCPU *vcpu,
 															 const hpt_pm_t pm, const int lvl, const gpa_t gpa)
 {
 	int pm_idx = hpt_get_pm_idx(vcpu->cpu_vendor, gpa, lvl);
+	dprintf(LOG_TRACE, "hpt_get_this_pme: gpa:%Lx, lvl:%d, idx:%x, pme:%Lx\n", gpa, lvl, pm_idx, pm[pm_idx]);
 	return &pm[pm_idx];
 }
 
@@ -134,8 +135,7 @@ hpt_pme_t* hpt_get_pme_alloc(VCPU *vcpu, pagelist_t *pl, hpt_pm_t pm, int start_
 
 		/* check whether next lvl is allocd */
 		if (!hpt_is_present(vcpu->cpu_vendor, *pme)) {
-			hpt_pm_t new_pm = pagelist_getpage(pl);
-			memset(new_pm, 0, HPT_PM_SIZE*sizeof(hpt_pme_t));
+			hpt_pm_t new_pm = pagelist_get_zeroedpage(pl);
 			*pme = hpt_set_address(vcpu->cpu_vendor, *pme, hva2spa(pm));
 			*pme = hpt_setprot(vcpu->cpu_vendor, *pme, HPT_PROTS_RWX);
 			/* XXX any other fields we need to set? */
@@ -153,6 +153,8 @@ hpt_pme_t* hpt_get_pme(VCPU *vcpu, hpt_pm_t pm, int start_lvl, int end_lvl, u64 
 	int lvl;
 	int pm_idx;
 	hpt_pme_t *pme = hpt_pm_get_this_pme(vcpu, pm, start_lvl, gpa);
+	dprintf(LOG_TRACE, "hpt_get_pme: gpa:%Lx, lvl:%d pme:%Lx\n", gpa, start_lvl, *pme);
+
 	ASSERT(start_lvl >= end_lvl);
 
 	if(start_lvl == end_lvl) {
@@ -226,22 +228,27 @@ void hpt_switch_pme(VCPU *vcpu, pagelist_t *pl, hpt_pm_t reg_pm, hpt_pm_t pal_pm
 
 	reg_prot = reg_prot_of_type(type);
 	reg_pme = hpt_get_pme(vcpu, reg_pm, top_lvl, 1, gpa);
-	*reg_pme = hpt_setprot(vcpu->cpu_vendor, *reg_pme, reg_prot);
+	dprintf(LOG_TRACE, "hpt_switch_pme: reg orig: %Lx\n", *reg_pme);
+	dprintf(LOG_TRACE, "hpt_switch_pme: reg new : %Lx\n",
+					hpt_setprot(vcpu->cpu_vendor, *reg_pme, reg_prot));
+	/* *reg_pme = hpt_setprot(vcpu->cpu_vendor, *reg_pme, reg_prot); */
 
 	pal_prot = pal_prot_of_type(type);
-	pal_pme = hpt_get_pme_alloc(vcpu, pl, reg_pm, top_lvl, 1, gpa);
+	pal_pme = hpt_get_pme_alloc(vcpu, pl, pal_pm, top_lvl, 1, gpa);
+	*pal_pme = *reg_pme;
+	*pal_pme = hpt_setprot(vcpu->cpu_vendor, *pal_pme, pal_prot);
 	*pal_pme = hpt_set_address(vcpu->cpu_vendor,
 														 *pal_pme,
 														 hpt_get_address(vcpu->cpu_vendor,
 																						 *reg_pme));
-	*pal_pme = hpt_setprot(vcpu->cpu_vendor, *pal_pme, pal_prot);
+	dprintf(LOG_TRACE, "hpt_switch_pme: pal     : %Lx\n", *pal_pme);
 }
 
 void hpt_switch_pmes(VCPU *vcpu, pagelist_t *pl, hpt_pml4_t reg_pml4, hpt_pml4_t pal_pml4, gpa_t gpas[], size_t num_gpas)
 {
 	unsigned i;
 	for(i=0; i<num_gpas; i++) {
-		hpt_switch_pme(vcpu, pl, pal_pml4, reg_pml4, gpas[i], 4);
+		hpt_switch_pme(vcpu, pl, reg_pml4, pal_pml4, 4, gpas[i]);
 	}
 }
 
