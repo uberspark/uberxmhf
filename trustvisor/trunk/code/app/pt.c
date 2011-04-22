@@ -101,6 +101,9 @@ hpt_pme_t* hpt_get_pme_alloc(VCPU *vcpu, pagelist_t *pl, hpt_pm_t pm, int start_
 	hpt_pme_t *pme = hpt_pm_get_this_pme(vcpu, pm, start_lvl, gpa);
 	ASSERT(start_lvl >= end_lvl);
 
+	dprintf(LOG_TRACE, "hpt_get_pme_alloc start:%d end:%d gpa:%Lx\n",
+					start_lvl, end_lvl, gpa);
+
 	if(start_lvl == end_lvl) {
 		return pme;
 	} else {
@@ -109,7 +112,7 @@ hpt_pme_t* hpt_get_pme_alloc(VCPU *vcpu, pagelist_t *pl, hpt_pm_t pm, int start_
 		/* check whether next lvl is allocd */
 		if (!hpt_is_present(vcpu->cpu_vendor, *pme)) {
 			hpt_pm_t new_pm = pagelist_get_zeroedpage(pl);
-			*pme = hpt_set_address(vcpu->cpu_vendor, *pme, hva2spa(pm));
+			*pme = hpt_set_address(vcpu->cpu_vendor, *pme, hva2spa(new_pm));
 			*pme = hpt_setprot(vcpu->cpu_vendor, *pme, HPT_PROTS_RWX);
 			/* XXX any other fields we need to set? */
 		}
