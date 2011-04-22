@@ -66,7 +66,6 @@
 #include <multiboot.h>
 
 //------------------------------------------------------------------------------
-
 //preferred TPM locality to use for access inside hypervisor
 //needs to be 2 or 1 (4 is hw-only, 3 is sinit-only on Intel)
 #define EMHF_TPM_LOCALITY_PREF 2
@@ -426,11 +425,6 @@ typedef struct _pcpu {
 } __attribute__((packed)) PCPU;
 
 #define SIZE_STRUCT_PCPU  (sizeof(struct _pcpu))
-
-typedef void* hva_t; /* hypervisor virtual address */
-typedef u64 spa_t; /* system physical address */
-typedef u32 gva_t; /* guest virtual address. we only support 32-bit guests */
-typedef u64 gpa_t; /* guest physical address. can be 64-bit with PAE */
 
 #define __pa(x) (x)
 
