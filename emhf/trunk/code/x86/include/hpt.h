@@ -74,6 +74,8 @@ typedef hpt_pml1e_t* hpt_pml1_t;
 
 typedef hpt_pme_t* hpt_pm_t; /* page map (any level) */
 
+typedef u64 hpt_prot_t;
+
 #define IS_INTEL(vcpu) (vcpu->cpu_vendor == CPU_VENDOR_INTEL)
 #define IS_AMD(vcpu) (vcpu->cpu_vendor == CPU_VENDOR_AMD)
 
@@ -100,7 +102,7 @@ typedef hpt_pme_t* hpt_pm_t; /* page map (any level) */
 #define MAX(x, y) (((y) > (x)) ? (y) : (x))
 #define MIN(x, y) (((y) < (x)) ? (y) : (x))
 
-static inline hpt_pme_t hpt_setprot(u32 cpu_vendor, hpt_pme_t entry, hpt_pme_t perms)
+static inline hpt_pme_t hpt_setprot(u32 cpu_vendor, hpt_pme_t entry, hpt_prot_t perms)
 {
   hpt_pme_t rv=0;
   if (cpu_vendor == CPU_VENDOR_INTEL) {
@@ -114,7 +116,7 @@ static inline hpt_pme_t hpt_setprot(u32 cpu_vendor, hpt_pme_t entry, hpt_pme_t p
   return rv;
 }
 
-static inline hpt_pme_t hpt_getprot(u32 cpu_vendor, hpt_pme_t entry)
+static inline hpt_prot_t hpt_getprot(u32 cpu_vendor, hpt_pme_t entry)
 {
   hpt_pme_t rv=0;
   if (cpu_vendor == CPU_VENDOR_INTEL) {

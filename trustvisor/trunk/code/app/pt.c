@@ -106,68 +106,138 @@ static inline hpt_pml3e_t* get_pml3es(VCPU *vcpu)
 /* HPT related NPT operations */
 /* ********************************* */
 
-void hpt_clone_pme(VCPU *vcpu, pagelist_t *pl, hpt_pm_t dst_top, hpt_pm_t src_top, int top_lvl, u64 gpa)
+hpt_pme_t* hpt_pm_get_this_pme(const VCPU *vcpu,
+															 const hpt_pm_t pm, const int lvl, const gpa_t gpa)
+{
+	int pm_idx = hpt_get_pm_idx(vcpu->cpu_vendor, gpa, lvl);
+	return &pm[pm_idx];
+}
+
+void hpt_pm_dec_lvl(const VCPU *vcpu, hpt_pm_t *pm, int *lvl, gpa_t gpa)
+{
+	hpt_pme_t *pme = hpt_pm_get_this_pme(vcpu, *pm, *lvl, gpa);
+	*pm = spa2hva((u32)hpt_get_address(vcpu->cpu_vendor, *pme));	
+	(*lvl)--;
+}
+
+hpt_pme_t* hpt_get_pme_alloc(VCPU *vcpu, pagelist_t *pl, hpt_pm_t pm, int start_lvl, int end_lvl, u64 gpa)
 {
 	int lvl;
-	hpt_pm_t dst_pm;
-	hpt_pm_t src_pm;
 	int pm_idx;
+	hpt_pme_t *pme = hpt_pm_get_this_pme(vcpu, pm, start_lvl, gpa);
+	ASSERT(start_lvl >= end_lvl);
 
-	/* iterate\recurse down until we reach level 1,
-	 * allocating tables as needed.
-	 */
-	for(lvl=top_lvl, dst_pm=dst_top, src_pm=src_top;
-			lvl > 1;
-			lvl--,
-				dst_pm = spa2hva((u32)hpt_get_address(vcpu->cpu_vendor, dst_pm[pm_idx])),
-				src_pm = spa2hva(hpt_get_address(vcpu->cpu_vendor, src_pm[pm_idx]))) {
-		pm_idx = hpt_get_pm_idx(vcpu->cpu_vendor, gpa, lvl);
-		ASSERT(!hpt_is_page(vcpu->cpu_vendor, src_pm[pm_idx], lvl));
-		ASSERT(hpt_is_present(vcpu->cpu_vendor, src_pm[pm_idx]));
-		if (!hpt_is_present(vcpu->cpu_vendor, dst_pm[pm_idx])) {
-			hpt_pm_t pm = pagelist_getpage(pl);
-			memset(pm, 0, HPT_PM_SIZE*sizeof(hpt_pme_t));
-			dst_pm[pm_idx] = hpt_set_address(vcpu->cpu_vendor, src_pm[pm_idx], hva2spa(pm));
+	if(start_lvl == end_lvl) {
+		return pme;
+	} else {
+		ASSERT(!hpt_is_page(vcpu->cpu_vendor, *pme, start_lvl));
+
+		/* check whether next lvl is allocd */
+		if (!hpt_is_present(vcpu->cpu_vendor, *pme)) {
+			hpt_pm_t new_pm = pagelist_getpage(pl);
+			memset(new_pm, 0, HPT_PM_SIZE*sizeof(hpt_pme_t));
+			*pme = hpt_set_address(vcpu->cpu_vendor, *pme, hva2spa(pm));
+			*pme = hpt_setprot(vcpu->cpu_vendor, *pme, HPT_PROTS_RWX);
+			/* XXX any other fields we need to set? */
 		}
+		return hpt_get_pme_alloc(vcpu, pl,
+														 spa2hva((u32)hpt_get_address(vcpu->cpu_vendor, *pme)),
+														 start_lvl-1,
+														 end_lvl,
+														 gpa);
 	}
-	ASSERT(lvl==1);
-	pm_idx = hpt_get_pm_idx(vcpu->cpu_vendor, gpa, 1);
+}
 
-	/* XXX check bitmap here? */
+hpt_pme_t* hpt_get_pme(VCPU *vcpu, hpt_pm_t pm, int start_lvl, int end_lvl, u64 gpa)
+{
+	int lvl;
+	int pm_idx;
+	hpt_pme_t *pme = hpt_pm_get_this_pme(vcpu, pm, start_lvl, gpa);
+	ASSERT(start_lvl >= end_lvl);
 
-	/* ew. this ought to be in a separate fn */
-	switch(SCODE_PTE_TYPE_GET(gpa)) {
+	if(start_lvl == end_lvl) {
+		return pme;
+	} else {
+		ASSERT(hpt_is_present(vcpu->cpu_vendor, *pme));
+		ASSERT(!hpt_is_page(vcpu->cpu_vendor, *pme, start_lvl));
+		return hpt_get_pme(vcpu,
+											 spa2hva((u32)hpt_get_address(vcpu->cpu_vendor, *pme)),
+											 start_lvl-1,
+											 end_lvl,
+											 gpa);
+	}
+}
+
+hpt_prot_t pal_prot_of_type(int type)
+{
+	switch(type) {
 	case SECTION_TYPE_SCODE:
-		dst_pm[pm_idx] = hpt_setprot(vcpu->cpu_vendor, dst_pm[pm_idx], HPT_PROTS_RX);
-		src_pm[pm_idx] = hpt_setprot(vcpu->cpu_vendor, src_pm[pm_idx], HPT_PROTS_NONE);
+		return HPT_PROTS_RX;
 		break;
 	case SECTION_TYPE_STEXT:
-		dst_pm[pm_idx] = hpt_setprot(vcpu->cpu_vendor, dst_pm[pm_idx], HPT_PROTS_RX);
-		src_pm[pm_idx] = hpt_setprot(vcpu->cpu_vendor, src_pm[pm_idx], HPT_PROTS_RX);
+		return HPT_PROTS_RX;
 		break;
 	case SECTION_TYPE_SDATA:
 	case SECTION_TYPE_PARAM:
 	case SECTION_TYPE_STACK:
-		dst_pm[pm_idx] = hpt_setprot(vcpu->cpu_vendor, dst_pm[pm_idx], HPT_PROTS_RW);
-		src_pm[pm_idx] = hpt_setprot(vcpu->cpu_vendor, src_pm[pm_idx], HPT_PROTS_NONE);
+		return HPT_PROTS_RW;
 		break;
 	case SECTION_TYPE_SHARED:
-		dst_pm[pm_idx] = hpt_setprot(vcpu->cpu_vendor, dst_pm[pm_idx], HPT_PROTS_RWX);
-		src_pm[pm_idx] = hpt_setprot(vcpu->cpu_vendor, src_pm[pm_idx], HPT_PROTS_NONE);
-		/* shared segments are still inaccessible to non-pal while
-			 registered.  sharing happens by dynamically registering and
-			 unregistering these segments */
+		return HPT_PROTS_RWX;
 		break;
 	default:
 		ASSERT(0);
 	}
 }
 
-void hpt_clone_pmes(VCPU *vcpu, pagelist_t *pl, hpt_pml4_t dstroot, hpt_pml4_t srcroot, u32 gpas[], size_t num_gpas)
+hpt_prot_t reg_prot_of_type(int type)
+{
+	switch(type) {
+	case SECTION_TYPE_SCODE:
+		return HPT_PROTS_NONE;
+		break;
+	case SECTION_TYPE_STEXT:
+		return HPT_PROTS_RX;
+		break;
+	case SECTION_TYPE_SDATA:
+	case SECTION_TYPE_PARAM:
+	case SECTION_TYPE_STACK:
+		return HPT_PROTS_NONE;
+		break;
+	case SECTION_TYPE_SHARED:
+		return HPT_PROTS_NONE;
+		break;
+	default:
+		ASSERT(0);
+	}
+}
+
+void hpt_switch_pme(VCPU *vcpu, pagelist_t *pl, hpt_pm_t reg_pm, hpt_pm_t pal_pm, int top_lvl, gpa_t gpa)
+{
+	hpt_pme_t *reg_pme, *pal_pme;
+	hpt_prot_t reg_prot, pal_prot;
+	int type;
+
+	type = SCODE_PTE_TYPE_GET(gpa);
+
+	reg_prot = reg_prot_of_type(type);
+	reg_pme = hpt_get_pme(vcpu, reg_pm, top_lvl, 1, gpa);
+	*reg_pme = hpt_setprot(vcpu->cpu_vendor, *reg_pme, reg_prot);
+
+	pal_prot = pal_prot_of_type(type);
+	pal_pme = hpt_get_pme_alloc(vcpu, pl, reg_pm, top_lvl, 1, gpa);
+	*pal_pme = hpt_set_address(vcpu->cpu_vendor,
+														 *pal_pme,
+														 hpt_get_address(vcpu->cpu_vendor,
+																						 *reg_pme));
+	*pal_pme = hpt_setprot(vcpu->cpu_vendor, *pal_pme, pal_prot);
+}
+
+void hpt_switch_pmes(VCPU *vcpu, pagelist_t *pl, hpt_pml4_t reg_pml4, hpt_pml4_t pal_pml4, gpa_t gpas[], size_t num_gpas)
 {
 	unsigned i;
 	for(i=0; i<num_gpas; i++) {
-		hpt_clone_pme(vcpu, pl, dstroot, srcroot, gpas[i], 4);
+		hpt_switch_pme(vcpu, pl, pal_pml4, reg_pml4, gpas[i], 4);
 	}
 }
 
