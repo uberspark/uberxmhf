@@ -8,8 +8,9 @@
 # source files
 AS_SOURCES = 
 C_SOURCES = appmain.c scode.c puttymem.c \
-			tlsf.c pt.c tpm_sw.c aes.c \
-			rsa.c bignum.c sha1.c random.c linuxrelc.c
+		tlsf.c pt.c tpm_sw.c aes.c \
+		rsa.c bignum.c sha1.c random.c linuxrelc.c \
+		pages.c
 
 OBJECTS = $(patsubst %.S, $(APPOBJECTSDIR)/%.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, $(APPOBJECTSDIR)/%.o, $(C_SOURCES))
