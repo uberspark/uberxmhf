@@ -337,9 +337,9 @@ static inline hpt_pa_t hpt_cr3_get_address(hpt_type_t t, u64 cr3)
 #define MAX(x, y) (((y) > (x)) ? (y) : (x))
 #define MIN(x, y) (((y) < (x)) ? (y) : (x))
 
-/* typedef enum { */
-/*   HPT_PMT_UC=0, HPT_PMT_WC=1, HPT_PMT_WT=4, HPT_PMT_WP=5, HPT_PMT_WB=6 */
-/* } hpt_pmt_t; */
+typedef enum {
+  HPT_PMT_UC=0, HPT_PMT_WC=1, HPT_PMT_WT=4, HPT_PMT_WP=5, HPT_PMT_WB=6
+} hpt_pmt_t;
 
 /* assumes lvl is valid for the given type */
 static inline bool hpt_prot_is_valid(hpt_type_t t, int lvl, hpt_prot_t perms)
@@ -704,30 +704,194 @@ static inline hpt_pme_t hpt_pme_set_address(hpt_type_t t, int lvl, hpt_pme_t ent
   }
 }
 
-/* static inline hpt_pmt_t hpt_get_pmt(hpt_type_t t, hpt_pme_t entry) */
-/* { */
-/*   hpt_pmt_t rv; */
-/*   if (t == HPT_TYPE_EPT) { */
-/*     rv = BR64_GET_HL(entry, 5, 3); */
-/*   } else if (t == HPT_TYPE_PAE || t == HPT_TYPE_LONG) { */
-/*     ASSERT(0); */
-/*   } else { */
-/*     ASSERT(0); */
-/*   } */
-/*   return rv; */
-/* } */
-/* static inline hpt_pmt_t hpt_set_pmt(hpt_type_t t, hpt_pme_t entry, hpt_pmt_t pmt) */
-/* { */
-/*   hpt_pmt_t rv; */
-/*   if (t == HPT_TYPE_EPT) { */
-/*     rv = BR64_SET_HL(entry, 5, 3, pmt); */
-/*   } else if (t == HPT_TYPE_PAE || t == HPT_TYPE_LONG) { */
-/*     ASSERT(0); */
-/*   } else { */
-/*     ASSERT(0); */
-/*   } */
-/*   return rv; */
-/* } */
+/* "internal". use hpt_pme_set_pmt instead */
+static inline hpt_pme_t hpt_pme_set_pat(hpt_type_t t, int lvl, hpt_pme_t pme, bool pat)
+{
+  hpt_pme_t rv;
+  if (t == HPT_TYPE_NORM) {
+    rv = pme;
+    if (hpt_pme_is_page(t, lvl, pme) && lvl==1) {
+      rv = BR64_SET_BIT(rv, HPT_NORM_PAT_L1_P_BIT, pat);
+    } else if (hpt_pme_is_page(t, lvl, pme) && lvl==2) {
+      rv = BR64_SET_BIT(rv, HPT_NORM_PAT_L2_P_BIT, pat);
+    } else {
+      ASSERT(!pat);
+    }
+  } else if (t== HPT_TYPE_PAE) {
+    rv = pme;
+    if (hpt_pme_is_page(t, lvl, pme) && lvl==1) {
+      rv = BR64_SET_BIT(rv, HPT_PAE_PAT_L1_P_BIT, pat);
+    } else if (hpt_pme_is_page(t, lvl, pme) && lvl==2) {
+      rv = BR64_SET_BIT(rv, HPT_PAE_PAT_L2_P_BIT, pat);
+    } else {
+      ASSERT(!pat);
+    }
+  } else if (t==HPT_TYPE_LONG) {
+    rv = pme;
+    if (hpt_pme_is_page(t, lvl, pme) && lvl==1) {
+      rv = BR64_SET_BIT(rv, HPT_LONG_PAT_L1_P_BIT, pat);
+    } else if (hpt_pme_is_page(t, lvl, pme) && (lvl==2||lvl==3)) {
+      rv = BR64_SET_BIT(rv, HPT_LONG_PAT_L32_P_BIT, pat);
+    } else {
+      ASSERT(!pat);
+    }
+  } else {
+    ASSERT(0);
+  }
+  return rv;
+}
+
+/* "internal". use hpt_pme_get_pmt instead */
+static inline bool hpt_pme_get_pat(hpt_type_t t, int lvl, hpt_pme_t pme)
+{
+  if (t == HPT_TYPE_NORM) {
+    if (hpt_pme_is_page(t, lvl, pme) && lvl==1) {
+      return BR64_GET_BIT(pme, HPT_NORM_PAT_L1_P_BIT);
+    } else if (hpt_pme_is_page(t, lvl, pme) && lvl==2) {
+      return BR64_GET_BIT(pme, HPT_NORM_PAT_L2_P_BIT);
+    } else {
+      return false;
+    }
+  } else if (t== HPT_TYPE_PAE) {
+    if (hpt_pme_is_page(t, lvl, pme) && lvl==1) {
+      return BR64_GET_BIT(pme, HPT_PAE_PAT_L1_P_BIT);
+    } else if (hpt_pme_is_page(t, lvl, pme) && lvl==2) {
+      return BR64_GET_BIT(pme, HPT_PAE_PAT_L2_P_BIT);
+    } else {
+      return false;
+    }
+  } else if (t==HPT_TYPE_LONG) {
+    if (hpt_pme_is_page(t, lvl, pme) && lvl==1) {
+      return BR64_GET_BIT(pme, HPT_LONG_PAT_L1_P_BIT);
+    } else if (hpt_pme_is_page(t, lvl, pme) && (lvl==2||lvl==3)) {
+      return BR64_GET_BIT(pme, HPT_LONG_PAT_L32_P_BIT);
+    } else {
+      return false;
+    }
+  } else {
+    ASSERT(0);
+  }
+  return pme;
+}
+
+/* "internal". use hpt_pme_get_pmt instead */
+static inline bool hpt_pme_get_pcd(hpt_type_t t, int lvl, hpt_pme_t pme)
+{
+  if (t == HPT_TYPE_NORM) {
+    return BR64_GET_BIT(pme, HPT_NORM_PCD_L21_MP_BIT);
+  } else if (t== HPT_TYPE_PAE) {
+    return BR64_GET_BIT(pme, HPT_PAE_PCD_L321_MP_BIT);
+  } else if (t==HPT_TYPE_LONG) {
+    return  BR64_GET_BIT(pme, HPT_LONG_PCD_L4321_MP_BIT);
+  } else {
+    ASSERT(0);
+  }
+}
+
+/* "internal". use hpt_pme_set_pmt instead */
+static inline hpt_pme_t hpt_pme_set_pcd(hpt_type_t t, int lvl, hpt_pme_t pme, bool pcd)
+{
+  if (t == HPT_TYPE_NORM) {
+    return BR64_SET_BIT(pme, HPT_NORM_PCD_L21_MP_BIT, pcd);
+  } else if (t== HPT_TYPE_PAE) {
+    return BR64_SET_BIT(pme, HPT_PAE_PCD_L321_MP_BIT, pcd);
+  } else if (t==HPT_TYPE_LONG) {
+    return  BR64_SET_BIT(pme, HPT_LONG_PCD_L4321_MP_BIT, pcd);
+  } else {
+    ASSERT(0);
+  }
+}
+
+/* "internal". use hpt_pme_get_pmt instead */
+static inline bool hpt_pme_get_pwt(hpt_type_t t, int lvl, hpt_pme_t pme)
+{
+  if (t == HPT_TYPE_NORM) {
+    return BR64_GET_BIT(pme, HPT_NORM_PWT_L21_MP_BIT);
+  } else if (t== HPT_TYPE_PAE) {
+    return BR64_GET_BIT(pme, HPT_PAE_PWT_L321_MP_BIT);
+  } else if (t==HPT_TYPE_LONG) {
+    return  BR64_GET_BIT(pme, HPT_LONG_PWT_L4321_MP_BIT);
+  } else {
+    ASSERT(0);
+  }
+}
+
+/* "internal". use hpt_pme_set_pmt instead */
+static inline hpt_pme_t hpt_pme_set_pwt(hpt_type_t t, int lvl, hpt_pme_t pme, bool pwt)
+{
+  if (t == HPT_TYPE_NORM) {
+    return BR64_SET_BIT(pme, HPT_NORM_PWT_L21_MP_BIT, pwt);
+  } else if (t== HPT_TYPE_PAE) {
+    return BR64_SET_BIT(pme, HPT_PAE_PWT_L321_MP_BIT, pwt);
+  } else if (t==HPT_TYPE_LONG) {
+    return  BR64_SET_BIT(pme, HPT_LONG_PWT_L4321_MP_BIT, pwt);
+  } else {
+    ASSERT(0);
+  }
+}
+
+/* Assumes PAT register has default values */
+static inline hpt_pmt_t hpt_pme_get_pmt(hpt_type_t t, int lvl, hpt_pme_t pme)
+{
+  hpt_pmt_t rv;
+  if (t == HPT_TYPE_EPT) {
+    ASSERT(lvl <= 3 && hpt_pme_is_page(t, lvl, pme));
+    rv = BR64_GET_HL(pme, HPT_EPT_MT_L321_P_HI, HPT_EPT_MT_L321_P_LO);
+  } else if (t == HPT_TYPE_PAE || t == HPT_TYPE_LONG || t == HPT_TYPE_NORM) {
+    bool pcd, pwt;
+    pcd = hpt_pme_get_pcd(t, lvl, pme);
+    pwt = hpt_pme_get_pwt(t, lvl, pme);
+    if (!pcd && !pwt) {
+      return HPT_PMT_WB;
+    } else if (!pcd && pwt) {
+      return HPT_PMT_WT;
+    } else if (pcd && !pwt) {
+      return HPT_PMT_WC; /* really UC- unless overriden by mtrr */
+    } else if (pcd && pwt) {
+      return HPT_PMT_UC;
+    }
+  } else {
+    ASSERT(0);
+  }
+  return rv;
+}
+
+/* Always clears PAT bit when applicable. */
+static inline hpt_pmt_t hpt_pme_set_pmt(hpt_type_t t, int lvl, hpt_pme_t pme, hpt_pmt_t pmt)
+{
+  hpt_pme_t rv;
+  if (t == HPT_TYPE_EPT) {
+    ASSERT(lvl <= 3 && hpt_pme_is_page(t, lvl, pme));
+    rv = BR64_SET_HL(pme, HPT_EPT_MT_L321_P_HI, HPT_EPT_MT_L321_P_LO, pmt);
+  } else if (t == HPT_TYPE_NORM || t == HPT_TYPE_PAE || t == HPT_TYPE_LONG) {
+    bool pat, pcd, pwt;
+    pat=0;
+    if (pmt == HPT_PMT_UC) {
+      pcd=1;
+      pwt=1;
+    } else if (pmt == HPT_PMT_WC) {
+      pcd=1;
+      pwt=0; /* this is actually 'UC-'. can be overriden to WC by setting MTRR */
+    } else if (pmt == HPT_PMT_WT) {
+      pcd=0;
+      pwt=1;
+    } else if (pmt == HPT_PMT_WP) {
+      ASSERT(0); /* can only get this by manipulating PAT register */
+    } else if (pmt == HPT_PMT_WB) {
+      pcd=0;
+      pwt=0;
+    } else {
+      ASSERT(0);
+    }
+    rv = pme;
+    rv = hpt_pme_set_pat(t, lvl, rv, pat);
+    rv = hpt_pme_set_pcd(t, lvl, rv, pcd);
+    rv = hpt_pme_set_pwt(t, lvl, rv, pwt);
+  } else {
+    ASSERT(0);
+  }
+  return rv;
+}
 
 static inline
 unsigned int hpt_get_pm_idx(hpt_type_t t, int lvl, hpt_va_t va)
