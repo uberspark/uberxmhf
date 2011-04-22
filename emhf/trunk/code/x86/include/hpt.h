@@ -91,19 +91,19 @@ typedef struct {
 /* page map sizes, in bytes. note that zero index is invalid. */
 static const u16 hpt_pm_sizes[HPT_TYPE_NUM][HPT_MAX_LEVEL+1] =
   {
-    { 0, HPT_PM_SIZE, HPT_PM_SIZE, 0, 0}, /* NORM */
-    { 0, HPT_PM_SIZE, HPT_PM_SIZE, 4*sizeof(hpt_pme_t), 0},  /* PAE */
-    { 0, HPT_PM_SIZE, HPT_PM_SIZE, HPT_PM_SIZE, HPT_PM_SIZE }, /* LONG */
-    { 0, HPT_PM_SIZE, HPT_PM_SIZE, HPT_PM_SIZE, HPT_PM_SIZE }, /* EPT */
+    [HPT_TYPE_NORM] = {0, HPT_PM_SIZE, HPT_PM_SIZE, 0, 0},
+    [HPT_TYPE_PAE]  = {0, HPT_PM_SIZE, HPT_PM_SIZE, 4*sizeof(hpt_pme_t), 0},
+    [HPT_TYPE_LONG] = {0, HPT_PM_SIZE, HPT_PM_SIZE, HPT_PM_SIZE, HPT_PM_SIZE },
+    [HPT_TYPE_EPT]  = {0, HPT_PM_SIZE, HPT_PM_SIZE, HPT_PM_SIZE, HPT_PM_SIZE },
   };
 
 /* page map sizes, in bytes. note that zero index is invalid. */
 static const u16 hpt_pm_alignments[HPT_TYPE_NUM][HPT_MAX_LEVEL+1] =
   {
-    { 0, HPT_PM_SIZE, HPT_PM_SIZE, 0, 0}, /* NORM */
-    { 0, HPT_PM_SIZE, HPT_PM_SIZE, 32/*FIXME*/, 0},  /* PAE */
-    { 0, HPT_PM_SIZE, HPT_PM_SIZE, HPT_PM_SIZE, 1 }, /* LONG */
-    { 0, HPT_PM_SIZE, HPT_PM_SIZE, HPT_PM_SIZE, HPT_PM_SIZE }, /* EPT */
+    [HPT_TYPE_NORM] = { 0, HPT_PM_SIZE, HPT_PM_SIZE, 0, 0},
+    [HPT_TYPE_PAE]  = { 0, HPT_PM_SIZE, HPT_PM_SIZE, 32, 0},
+    [HPT_TYPE_LONG] = { 0, HPT_PM_SIZE, HPT_PM_SIZE, HPT_PM_SIZE, 1 },
+    [HPT_TYPE_EPT]  = { 0, HPT_PM_SIZE, HPT_PM_SIZE, HPT_PM_SIZE, HPT_PM_SIZE },
   };
 
 /* high bit of va used to index into the page map of the given level.
@@ -112,18 +112,18 @@ static const u16 hpt_pm_alignments[HPT_TYPE_NUM][HPT_MAX_LEVEL+1] =
  */
 static const u8 hpt_va_idx_hi[HPT_TYPE_NUM][HPT_MAX_LEVEL+1] =
   {
-    { 11, 21, 31, 0, 0}, /* NORM */
-    { 11, 20, 29, 31, 0}, /* PAE */
-    { 11, 20, 29, 38, 47}, /* LONG */
-    { 11, 20, 29, 38, 47}, /* EPT */
+    [HPT_TYPE_NORM] = { 11, 21, 31, 0, 0},
+    [HPT_TYPE_PAE]  = { 11, 20, 29, 31, 0},
+    [HPT_TYPE_LONG] = { 11, 20, 29, 38, 47},
+    [HPT_TYPE_EPT]  = { 11, 20, 29, 38, 47},
   };
 
 static const u8 hpt_type_max_lvl[HPT_TYPE_NUM] =
   {
-    2, /* NORM */
-    3, /* PAE */
-    4, /* LONG */
-    4, /* EPT */
+    [HPT_TYPE_NORM] = 2,
+    [HPT_TYPE_PAE]  = 3,
+    [HPT_TYPE_LONG] = 4,
+    [HPT_TYPE_EPT]  = 4,
   };
 
 static inline size_t hpt_pm_size(hpt_type_t t, int lvl)
@@ -785,7 +785,7 @@ hpt_pm_t hpt_walk_get_pm_alloc(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, 
  * Will fail if one of the intermediate entries is a large page
  */
 static inline
-int pm_walk_insert_pme_alloc(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int tgt_lvl, hpt_va_t va, hpt_pme_t pme)
+int hpt_walk_insert_pme_alloc(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int tgt_lvl, hpt_va_t va, hpt_pme_t pme)
 {
   int end_lvl=tgt_lvl;
   pm = hpt_walk_get_pm_alloc(ctx, lvl, pm, &end_lvl, va);

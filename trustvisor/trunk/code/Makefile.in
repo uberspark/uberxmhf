@@ -80,7 +80,7 @@
   CFLAGS += -Wbad-function-cast -Wcast-qual -Wsign-compare 
   CFLAGS += -Waggregate-return
   CFLAGS += -Winline
-  CFLAGS += -m32 -march=k8 
+  CFLAGS += -m32 -march=k8
   CFLAGS += -nostdinc -pipe -I$(EMHF_INCLUDEDIR) -I$(APP_INCLUDEDIR)
 
 #-----generate compiler/assembler defines from configuration options selected

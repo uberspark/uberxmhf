@@ -182,7 +182,8 @@ typedef struct whitelist_entry{
 
 	/* pal page tables */
 	pagelist_t pl;
-	hpt_pml4_t pal_pml4;
+	hpt_walk_ctx_t hpt_nested_walk_ctx;
+	hpt_pm_t pal_pml4;
 } __attribute__ ((packed)) whitelist_entry_t;
 
 
@@ -203,8 +204,16 @@ enum VMMcmd
 	VMMCMD_TEST		=255,
 };
 
+/* template page table context */
+extern hpt_walk_ctx_t hpt_nested_walk_ctx;
+
 /* nested paging handlers (hpt) */
-void hpt_insert_pal_pmes(VCPU *vcpu, pagelist_t *pl, hpt_pml4_t pal_pml4, gpa_t gpas[], size_t num_gpas);
+void hpt_insert_pal_pmes(VCPU *vcpu,
+												 hpt_walk_ctx_t *walk_ctx,
+												 hpt_pm_t pal_pm,
+												 int pal_pm_lvl,
+												 gpa_t gpas[],
+												 size_t num_gpas);
 void hpt_nested_set_prot(VCPU * vcpu, u64 gpaddr);
 void hpt_nested_clear_prot(VCPU * vcpu, u64 gpaddr);
 void hpt_nested_switch_scode(VCPU * vcpu, pte_t *pte_pages, u32 size, pte_t *pte_page2, u32 size2);

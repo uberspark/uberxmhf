@@ -65,86 +65,19 @@
  * it safe to always map only 4GB of guest physical address space?
  */
 
-static inline hpt_pme_t hpt_setpalprot(u32 vendor, hpt_pme_t pme, hpt_pme_t prot)
+static inline hpt_pme_t hpt_pme_setpalprot(hpt_type_t t, int lvl, hpt_pme_t pme, hpt_prot_t prot)
 {
-	return hpt_setunused(vendor, pme, 2, 0, prot);
+	return hpt_pme_setunused(t, lvl, pme, 2, 0, prot);
 }
 
-static inline hpt_pme_t hpt_getpalprot(u32 vendor, hpt_pme_t pme)
+static inline hpt_prot_t hpt_pme_getpalprot(hpt_type_t t, int lvl, hpt_pme_t pme)
 {
-	return hpt_getunused(vendor, pme, 2, 0);
+	return hpt_pme_getunused(t, lvl, pme, 2, 0);
 }
 
 /* ********************************* */
 /* HPT related NPT operations */
 /* ********************************* */
-
-hpt_pme_t* hpt_pm_get_this_pme(const VCPU *vcpu,
-															 const hpt_pm_t pm, const int lvl, const gpa_t gpa)
-{
-	int pm_idx = hpt_get_pm_idx(vcpu->cpu_vendor, gpa, lvl);
-	dprintf(LOG_TRACE, "hpt_get_this_pme: gpa:%Lx, lvl:%d, idx:%x, pme:%Lx\n", gpa, lvl, pm_idx, pm[pm_idx]);
-	return &pm[pm_idx];
-}
-
-void hpt_pm_dec_lvl(const VCPU *vcpu, hpt_pm_t *pm, int *lvl, gpa_t gpa)
-{
-	hpt_pme_t *pme = hpt_pm_get_this_pme(vcpu, *pm, *lvl, gpa);
-	*pm = spa2hva((u32)hpt_get_address(vcpu->cpu_vendor, *pme));	
-	(*lvl)--;
-}
-
-hpt_pme_t* hpt_get_pme_alloc(VCPU *vcpu, pagelist_t *pl, hpt_pm_t pm, int start_lvl, int end_lvl, u64 gpa)
-{
-	int lvl;
-	int pm_idx;
-	hpt_pme_t *pme = hpt_pm_get_this_pme(vcpu, pm, start_lvl, gpa);
-	ASSERT(start_lvl >= end_lvl);
-
-	dprintf(LOG_TRACE, "hpt_get_pme_alloc start:%d end:%d gpa:%Lx\n",
-					start_lvl, end_lvl, gpa);
-
-	if(start_lvl == end_lvl) {
-		return pme;
-	} else {
-		ASSERT(!hpt_is_page(vcpu->cpu_vendor, *pme, start_lvl));
-
-		/* check whether next lvl is allocd */
-		if (!hpt_is_present(vcpu->cpu_vendor, *pme)) {
-			hpt_pm_t new_pm = pagelist_get_zeroedpage(pl);
-			*pme = hpt_set_address(vcpu->cpu_vendor, *pme, hva2spa(new_pm));
-			*pme = hpt_setprot(vcpu->cpu_vendor, *pme, HPT_PROTS_RWX);
-			/* XXX any other fields we need to set? */
-		}
-		return hpt_get_pme_alloc(vcpu, pl,
-														 spa2hva((u32)hpt_get_address(vcpu->cpu_vendor, *pme)),
-														 start_lvl-1,
-														 end_lvl,
-														 gpa);
-	}
-}
-
-hpt_pme_t* hpt_get_pme(VCPU *vcpu, hpt_pm_t pm, int start_lvl, int end_lvl, u64 gpa)
-{
-	int lvl;
-	int pm_idx;
-	hpt_pme_t *pme = hpt_pm_get_this_pme(vcpu, pm, start_lvl, gpa);
-	dprintf(LOG_TRACE, "hpt_get_pme: gpa:%Lx, lvl:%d pme:%Lx\n", gpa, start_lvl, *pme);
-
-	ASSERT(start_lvl >= end_lvl);
-
-	if(start_lvl == end_lvl) {
-		return pme;
-	} else {
-		ASSERT(hpt_is_present(vcpu->cpu_vendor, *pme));
-		ASSERT(!hpt_is_page(vcpu->cpu_vendor, *pme, start_lvl));
-		return hpt_get_pme(vcpu,
-											 spa2hva((u32)hpt_get_address(vcpu->cpu_vendor, *pme)),
-											 start_lvl-1,
-											 end_lvl,
-											 gpa);
-	}
-}
 
 hpt_prot_t pal_prot_of_type(int type)
 {
@@ -200,36 +133,44 @@ hpt_prot_t reg_prot_of_type(int type)
 	}
 }
 
-void hpt_insert_pal_pme(VCPU *vcpu, pagelist_t *pl, hpt_pm_t pal_pm, int top_lvl, gpa_t gpa)
+void hpt_insert_pal_pme(VCPU *vcpu, hpt_walk_ctx_t *walk_ctx, hpt_pm_t pal_pm, int top_lvl, gpa_t gpa)
 {
-	hpt_pme_t *reg_pme, *pal_pme;
+	hpt_pme_t reg_pme, pal_pme;
 	hpt_prot_t pal_prot;
 	int type;
-	hpt_pml1e_t *reg_pml1es = VCPU_get_pml1es(vcpu);
+	hpt_pme_t *reg_pml1es = VCPU_get_pml1es(vcpu);
 	u64 pfn = gpa >> PAGE_SHIFT_4K;
+	int pme_lvl;
 
 	dprintf(LOG_TRACE, "hpt_insert_pal_pme: gpa: %Lx\n", gpa);
 
-	reg_pme = &reg_pml1es[pfn];
-	dprintf(LOG_TRACE, "hpt_insert_pal_pme: reg: %Lx\n", *reg_pme);
+	reg_pme = reg_pml1es[pfn];
+	dprintf(LOG_TRACE, "hpt_insert_pal_pme: reg: %Lx\n", reg_pme);
 
 	type = SCODE_PTE_TYPE_GET(gpa);
 	pal_prot = pal_prot_of_type(type);
-	pal_pme = hpt_get_pme_alloc(vcpu, pl, pal_pm, top_lvl, 1, gpa);
-	*pal_pme = *reg_pme;
-	*pal_pme = hpt_setprot(vcpu->cpu_vendor, *pal_pme, pal_prot);
-	*pal_pme = hpt_set_address(vcpu->cpu_vendor,
-														 *pal_pme,
-														 hpt_get_address(vcpu->cpu_vendor,
-																						 *reg_pme));
-	dprintf(LOG_TRACE, "hpt_insert_pal_pme: pal: %Lx\n", *pal_pme);
+	
+	pal_pme = reg_pme;
+	pal_pme = hpt_pme_setprot(walk_ctx->t, 1, pal_pme, pal_prot);
+	ASSERT(!(hpt_walk_insert_pme_alloc(walk_ctx,
+																		 top_lvl,
+																		 pal_pm,
+																		 1,
+																		 gpa,
+																		 pal_pme)));
+	dprintf(LOG_TRACE, "hpt_insert_pal_pme: pal: %Lx\n", pal_pme);
 }
 
-void hpt_insert_pal_pmes(VCPU *vcpu, pagelist_t *pl, hpt_pml4_t pal_pml4, gpa_t gpas[], size_t num_gpas)
+void hpt_insert_pal_pmes(VCPU *vcpu,
+												 hpt_walk_ctx_t *walk_ctx,
+												 hpt_pm_t pal_pm,
+												 int pal_pm_lvl,
+												 gpa_t gpas[],
+												 size_t num_gpas)
 {
 	unsigned i;
 	for(i=0; i<num_gpas; i++) {
-		hpt_insert_pal_pme(vcpu, pl, pal_pml4, 4, gpas[i]);
+		hpt_insert_pal_pme(vcpu, walk_ctx, pal_pm, pal_pm_lvl, gpas[i]);
 	}
 }
 
@@ -256,10 +197,10 @@ void hpt_nested_set_prot(VCPU * vcpu, u64 gpaddr)
 	type = SCODE_PTE_TYPE_GET(gpaddr);
 
 	pal_prot = pal_prot_of_type(type);
-	pt[pfn] = hpt_setpalprot(vcpu->cpu_vendor, pt[pfn], pal_prot);
+	pt[pfn] = hpt_pme_setpalprot(hpt_nested_walk_ctx.t, 1, pt[pfn], pal_prot);
 
 	reg_prot = reg_prot_of_type(type);
-	pt[pfn] = hpt_setprot(vcpu->cpu_vendor, pt[pfn], reg_prot);
+	pt[pfn] = hpt_pme_setprot(hpt_nested_walk_ctx.t, 1, pt[pfn], reg_prot);
 
 	dprintf(LOG_TRACE, "[TV]   set prot: pfn %#llx, pte old %#llx, pte new %#llx\n", pfn, oldentry, pt[pfn]);
 
@@ -272,8 +213,8 @@ void hpt_nested_clear_prot(VCPU * vcpu, u64 gpaddr)
 	u64 *pt = VCPU_get_pml1es(vcpu);
 	u64 pfn = gpaddr >> PAGE_SHIFT_4K;
 	u64 oldentry = pt[pfn];
-	pt[pfn] = hpt_setpalprot(vcpu->cpu_vendor, pt[pfn], HPT_PROTS_NONE);
-	pt[pfn] = hpt_setprot(vcpu->cpu_vendor, pt[pfn], HPT_PROTS_RWX);
+	pt[pfn] = hpt_pme_setpalprot(hpt_nested_walk_ctx.t, 1, pt[pfn], HPT_PROTS_NONE);
+	pt[pfn] = hpt_pme_setprot(hpt_nested_walk_ctx.t, 1, pt[pfn], HPT_PROTS_RWX);
 	dprintf(LOG_TRACE, "[TV]   clear prot: pfn %#llx, pte old %#llx, pte new %#llx\n", pfn, oldentry, pt[pfn]);
 
 	/* flush TLB */
@@ -310,15 +251,15 @@ void hpt_nested_make_pt_accessible(pte_t *gpaddr_list, u32 gpaddr_count, u64 * n
 		tmp = pae_get_addr_from_pde(pd_entry);
 		npt = spa2hva(tmp);
 
-		if (!(hpt_getprot(CPU_VENDOR, pd_entry))) {
-			pd_entry = hpt_setprot(CPU_VENDOR, pd_entry, HPT_PROTS_RWX);
+		if (!(hpt_pme_getprot(hpt_nested_walk_ctx.t, 2, pd_entry))) {
+			pd_entry = hpt_pme_setprot(hpt_nested_walk_ctx.t, 2, pd_entry, HPT_PROTS_RWX);
 			npd[pd_index] = pd_entry;
 			for (j = 0; j < PAE_PTRS_PER_PT; j ++)
 			{
 				pt_entry = npt[j]; 
-				if (!(hpt_getpalprot(CPU_VENDOR, pt_entry))) {
+				if (!(hpt_pme_getpalprot(hpt_nested_walk_ctx.t, 1, pt_entry))) {
 					/* this entry hasn't been registered, set to unpresent */
-					pt_entry = hpt_setprot(CPU_VENDOR, pt_entry, HPT_PROTS_NONE);
+					pt_entry = hpt_pme_setprot(hpt_nested_walk_ctx.t, 1, pt_entry, HPT_PROTS_NONE);
 					npt[j] = pt_entry;
 				}
 			}
@@ -327,12 +268,13 @@ void hpt_nested_make_pt_accessible(pte_t *gpaddr_list, u32 gpaddr_count, u64 * n
 		pt_entry = npt[pt_index];
 		if (is_pal) {
 			/* scode mem region */
-			pt_entry = hpt_setprot(CPU_VENDOR,
-														 pt_entry,
-														 hpt_getpalprot(CPU_VENDOR, pt_entry));
+			pt_entry = hpt_pme_setprot(hpt_nested_walk_ctx.t,
+																 1,
+																 pt_entry,
+																 hpt_pme_getpalprot(hpt_nested_walk_ctx.t, 1, pt_entry));
 		} else {
 			/* GDT, scode related PTE, r/w */
-			pt_entry = hpt_setprot(CPU_VENDOR, pt_entry, HPT_PROTS_RW);
+			pt_entry = hpt_pme_setprot(hpt_nested_walk_ctx.t, 1, pt_entry, HPT_PROTS_RW);
 		}
 		dprintf(LOG_TRACE, "pte old %#llx, new %#llx!\n", npt[pt_index], pt_entry);
 		npt[pt_index] = pt_entry;
@@ -362,7 +304,7 @@ void hpt_nested_switch_scode(VCPU * vcpu, pte_t* pte_pages, u32 size, pte_t* pte
 		for (j = 0; j < PAE_PTRS_PER_PDT; j ++)
 		{
 			pd_entry = npd[j];
-			pd_entry = hpt_setprot(vcpu->cpu_vendor, pd_entry, HPT_PROTS_NONE);
+			pd_entry = hpt_pme_setprot(hpt_nested_walk_ctx.t, 2, pd_entry, HPT_PROTS_NONE);
 			npd[j] = pd_entry;
 		}
 	}
@@ -408,15 +350,15 @@ void hpt_nested_make_pt_unaccessible(pte_t *gpaddr_list, u32 gpaddr_count, pdpt_
 		npt = spa2hva(tmp);
 
 	//	dprintf(LOG_TRACE, "[TV]   pdp_entry %#llx, pd_entry %#llx!\n", pdp_entry, pd_entry);
-		if (hpt_getprot(CPU_VENDOR, pd_entry)) {
-			pd_entry = hpt_setprot(CPU_VENDOR, pd_entry, HPT_PROTS_NONE);
+		if (hpt_pme_getprot(hpt_nested_walk_ctx.t, 2, pd_entry)) {
+			pd_entry = hpt_pme_setprot(hpt_nested_walk_ctx.t, 2, pd_entry, HPT_PROTS_NONE);
 			npd[pd_index] = pd_entry;
 
 			for (j = 0; j < PAE_PTRS_PER_PT; j ++){
 				pt_entry = npt[j]; 
-				if (!(hpt_getpalprot(CPU_VENDOR, pt_entry))) {
+				if (!(hpt_pme_getpalprot(hpt_nested_walk_ctx.t, 1, pt_entry))) {
 					/* not registered entry, set to R/W/E */
-					pt_entry = hpt_setprot(CPU_VENDOR, pt_entry, HPT_PROTS_RWX);
+					pt_entry = hpt_pme_setprot(hpt_nested_walk_ctx.t, 1, pt_entry, HPT_PROTS_RWX);
 					npt[j] = pt_entry;
 				}
 			}
@@ -426,7 +368,7 @@ void hpt_nested_make_pt_unaccessible(pte_t *gpaddr_list, u32 gpaddr_count, pdpt_
 		if( is_pal )  {
 			/* scode mem region(except for STEXT sections), set to unpresent */
 			if (SCODE_PTE_TYPE_GET(nvaddr) != SECTION_TYPE_STEXT)
-				pt_entry = hpt_setprot(CPU_VENDOR, pt_entry, HPT_PROTS_NONE);
+				pt_entry = hpt_pme_setprot(hpt_nested_walk_ctx.t, 1, pt_entry, HPT_PROTS_NONE);
 		} 
 		dprintf(LOG_TRACE, "pte old %#llx, new %#llx!\n", npt[pt_index], pt_entry);
 		npt[pt_index] = pt_entry;
@@ -461,7 +403,7 @@ void hpt_nested_switch_regular(VCPU * vcpu, pte_t *pte_pages, u32 size, pte_t *p
 		for (j = 0; j < PAE_PTRS_PER_PDT; j ++)
 		{
 			pd_entry = npd[j]; 
-			pd_entry = hpt_setprot(vcpu->cpu_vendor, pd_entry, HPT_PROTS_RWX);
+			pd_entry = hpt_pme_setprot(hpt_nested_walk_ctx.t, 2, pd_entry, HPT_PROTS_RWX);
 			npd[j] = pd_entry;
 		}
 	}

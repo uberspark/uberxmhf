@@ -266,37 +266,37 @@ typedef struct _vcpu {
 
 } __attribute__((packed)) VCPU;
 
-static inline hpt_pml1e_t* VCPU_get_pml1es(VCPU *vcpu)
+static inline hpt_pme_t* VCPU_get_pml1es(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    return (hpt_pml1e_t*)vcpu->vmx_vaddr_ept_p_tables;
+    return (hpt_pme_t*)vcpu->vmx_vaddr_ept_p_tables;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    return (hpt_pml1e_t*)vcpu->npt_vaddr_pts;
+    return (hpt_pme_t*)vcpu->npt_vaddr_pts;
   }
 }
 
-static inline hpt_pml2e_t* VCPU_get_pml2es(VCPU *vcpu)
+static inline hpt_pme_t* VCPU_get_pml2es(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    return (hpt_pml2e_t*)vcpu->vmx_vaddr_ept_pd_tables;
+    return (hpt_pme_t*)vcpu->vmx_vaddr_ept_pd_tables;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    return (hpt_pml2e_t*)vcpu->npt_vaddr_pdts;
+    return (hpt_pme_t*)vcpu->npt_vaddr_pdts;
   }
 }
 
-static inline hpt_pml3e_t* VCPU_get_pml3es(VCPU *vcpu)
+static inline hpt_pme_t* VCPU_get_pml3es(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    return (hpt_pml3e_t*)vcpu->vmx_vaddr_ept_pdp_table;
+    return (hpt_pme_t*)vcpu->vmx_vaddr_ept_pdp_table;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    return (hpt_pml3e_t*)vcpu->npt_vaddr_ptr;
+    return (hpt_pme_t*)vcpu->npt_vaddr_ptr;
   }
 }
 
-static inline hpt_pml4_t* VCPU_get_pml4(VCPU *vcpu)
+static inline hpt_pme_t* VCPU_get_pml4(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    return (hpt_pml4_t*)vcpu->vmx_vaddr_ept_pml4_table;
+    return (hpt_pme_t*)vcpu->vmx_vaddr_ept_pml4_table;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     ASSERT(0);
   }

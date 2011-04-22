@@ -53,6 +53,8 @@
 static void scode_expose_arch(VCPU *vcpu, whitelist_entry_t *wle);
 static void scode_unexpose_arch(VCPU *vcpu, whitelist_entry_t *wle);
 
+hpt_walk_ctx_t hpt_nested_walk_ctx;
+
 /* whitelist of all approved sensitive code regions */
 /* whitelist_max and *whitelist is set up by BSP, no need to apply lock
  * whitelist_size will only be updated in scode_register() and scode_unreg(), no need to apply lock
@@ -247,6 +249,22 @@ u32 scode_measure(u8 * pcr, pte_t *pte_pages, u32 size)
 	return 0;
 }
 
+hpt_pa_t hpt_nested_ptr2pa(void *ctx, void *ptr)
+{
+	return hva2spa(ptr);
+}
+void* hpt_nested_pa2ptr(void *ctx, hpt_pa_t ptr)
+{
+	return spa2hva(ptr);
+}
+void* hpt_nested_get_zeroed_page(void *ctx, size_t alignment, size_t sz)
+{
+	pagelist_t *pl = ctx;
+	ASSERT(PAGE_SIZE_4K % alignment == 0);
+	ASSERT(sz <= PAGE_SIZE_4K);
+	return pagelist_get_zeroedpage(pl);
+}
+
 /* initialize all the scode related variables and buffers */
 void init_scode(VCPU * vcpu)
 {
@@ -260,6 +278,27 @@ void init_scode(VCPU * vcpu)
 		for(j=0; j<TV_PERF_CTRS_COUNT; j++) {
 			perf_ctr_init(&g_tv_perf_ctrs[j]);
 		}
+	}
+
+	/* set up page walk context */
+	{
+		hpt_type_t t;
+		if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+			t = HPT_TYPE_EPT;
+		} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+			t = HPT_TYPE_PAE;
+		} else {
+			ASSERT(0);
+		}
+		hpt_nested_walk_ctx.t = t;
+		hpt_nested_walk_ctx.t = t;
+		hpt_nested_walk_ctx.gzp = hpt_nested_get_zeroed_page;
+		hpt_nested_walk_ctx.gzp_ctx = NULL; /* we'll copy this struct for
+														each pal and give each it's own allocation
+														pool */
+		hpt_nested_walk_ctx.pa2ptr = hpt_nested_pa2ptr;
+		hpt_nested_walk_ctx.ptr2pa = hpt_nested_ptr2pa;
+		hpt_nested_walk_ctx.ptr2pa_ctx = NULL;
 	}
 
 	/* initialize heap memory */
@@ -589,16 +628,19 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
 	/* set up pal's hardware page tables */
 	pagelist_init(&whitelist_new.pl);
+	whitelist_new.hpt_nested_walk_ctx = hpt_nested_walk_ctx;
+	whitelist_new.hpt_nested_walk_ctx.gzp_ctx = &whitelist_new.pl;
 	whitelist_new.pal_pml4 = pagelist_get_zeroedpage(&whitelist_new.pl);
-	hpt_insert_pal_pmes(vcpu, &whitelist_new.pl,
-											whitelist_new.pal_pml4,
-											whitelist_new.scode_pages, whitelist_new.scode_size>>PAGE_SHIFT_4K);
+	hpt_insert_pal_pmes(vcpu, &whitelist_new.hpt_nested_walk_ctx,
+											whitelist_new.pal_pml4, 4,
+											whitelist_new.scode_pages,
+											whitelist_new.scode_size>>PAGE_SHIFT_4K);
 	/* register guest page table pages. TODO: clone guest page table
 		 instead of checking on every switch to ensure it hasn't been
 		 tampered. */
 	scode_expose_arch(vcpu, &whitelist_new);
-	hpt_insert_pal_pmes(vcpu, &whitelist_new.pl,
-											whitelist_new.pal_pml4,
+	hpt_insert_pal_pmes(vcpu, &whitelist_new.hpt_nested_walk_ctx,
+											whitelist_new.pal_pml4, 4,
 											(pte_t*)whitelist_new.pte_page, whitelist_new.pte_size>>PAGE_SHIFT_4K);
 	scode_unexpose_arch(vcpu, &whitelist_new);
 
