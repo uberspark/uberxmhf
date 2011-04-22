@@ -368,6 +368,18 @@ static inline u64 VCPU_gdtr_base(VCPU *vcpu)
   }
 }
 
+static inline size_t VCPU_gdtr_limit(VCPU *vcpu)
+{
+  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+    return ((struct _vmx_vmcsfields*)&(vcpu->vmcs))->guest_GDTR_limit;
+  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+    return ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->gdtr.limit;
+  } else {
+    ASSERT(false);
+    return 0;
+  }
+}
+
 static inline u64 VCPU_grflags(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
