@@ -181,7 +181,7 @@ typedef struct whitelist_entry{
 	u8  pcr[TPM_PCR_SIZE*TPM_PCR_NUM];
 
 	/* pal page tables */
-	pagelist_t pl;
+	pagelist_t *pl;
 	hpt_walk_ctx_t hpt_nested_walk_ctx;
 	hpt_pm_t pal_hpt_root;
 } __attribute__ ((packed)) whitelist_entry_t;
@@ -209,6 +209,12 @@ extern hpt_walk_ctx_t hpt_nested_walk_ctx;
 
 /* nested paging handlers (hpt) */
 void hpt_insert_pal_pmes(VCPU *vcpu,
+												 hpt_walk_ctx_t *walk_ctx,
+												 hpt_pm_t pal_pm,
+												 int pal_pm_lvl,
+												 gpa_t gpas[],
+												 size_t num_gpas);
+void hpt_remove_pal_pmes(VCPU *vcpu,
 												 hpt_walk_ctx_t *walk_ctx,
 												 hpt_pm_t pal_pm,
 												 int pal_pm_lvl,

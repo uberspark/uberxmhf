@@ -133,6 +133,31 @@ hpt_prot_t reg_prot_of_type(int type)
 	}
 }
 
+void hpt_remove_pal_pme(VCPU *vcpu, hpt_walk_ctx_t *walk_ctx, hpt_pm_t pal_pm, int top_lvl, gpa_t gpa)
+{
+	hpt_pme_t pal_pme;
+	int pal_pm_lvl=1;
+
+	pal_pm = hpt_walk_get_pm(walk_ctx, top_lvl, pal_pm, &pal_pm_lvl, gpa);
+	ASSERT(pal_pm != NULL);
+	pal_pme = hpt_pm_get_pme_by_va(walk_ctx->t, pal_pm_lvl, pal_pm, gpa);
+	pal_pme = hpt_pme_setprot(walk_ctx->t, pal_pm_lvl, pal_pme, HPT_PROTS_NONE);
+	hpt_pm_set_pme_by_va(walk_ctx->t, pal_pm_lvl, pal_pm, gpa, pal_pme);
+}
+
+void hpt_remove_pal_pmes(VCPU *vcpu,
+												 hpt_walk_ctx_t *walk_ctx,
+												 hpt_pm_t pal_pm,
+												 int pal_pm_lvl,
+												 gpa_t gpas[],
+												 size_t num_gpas)
+{
+	unsigned i;
+	for(i=0; i<num_gpas; i++) {
+		hpt_remove_pal_pme(vcpu, walk_ctx, pal_pm, pal_pm_lvl, gpas[i]);
+	}
+}
+
 void hpt_insert_pal_pme(VCPU *vcpu, hpt_walk_ctx_t *walk_ctx, hpt_pm_t pal_pm, int top_lvl, gpa_t gpa)
 {
 	hpt_pme_t reg_pme, pal_pme;

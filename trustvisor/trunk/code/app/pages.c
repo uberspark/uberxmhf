@@ -39,6 +39,7 @@
 #include <puttymem.h>
 #include <paging.h>
 #include <error.h>
+#include <print.h>
 
 void pagelist_init(pagelist_t *pl)
 {
@@ -58,6 +59,7 @@ void pagelist_init(pagelist_t *pl)
 void* pagelist_get_page(pagelist_t *pl)
 {
   void *page;
+  dprintf(LOG_TRACE, "pagelist_get_page: num_used:%d num_alocd:%d\n", pl->num_used, pl->num_allocd);
 
   /* we'll handle allocating more on-demand later */
   ASSERT(pl->num_used < pl->num_allocd);
