@@ -305,10 +305,6 @@ static inline hpt_pml4_t* VCPU_get_pml4(VCPU *vcpu)
 static inline spa_t VCPU_get_hcr3(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    dprintf(LOG_TRACE, "VCPU_get_hcr3: ept_pointer_full: %x",
-            vcpu->vmcs.control_EPT_pointer_full);
-    dprintf(LOG_TRACE, "VCPU_get_hcr3: ept_pointer_full masked: %x",
-            vcpu->vmcs.control_EPT_pointer_full & MASKRANGE32(31, 12));
     return vcpu->vmcs.control_EPT_pointer_full & MASKRANGE32(31, 12);
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     return ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3;

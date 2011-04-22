@@ -52,8 +52,19 @@
 #define HPT_H
 
 #include "bitfield.h"
-#include "target.h"
 #include "types.h"
+
+#define CPU_VENDOR_INTEL 0
+#define CPU_VENDOR_AMD 1
+
+#define PT_MAX_LEVELS 4
+
+typedef enum {
+  PT_TYPE_NORM,
+  PT_TYPE_PAE,
+  PT_TYPE_LONG,
+  PT_TYPE_EPT
+} pt_type_t;
 
 /* AMD and Intel disagree on the name of the 3rd level of paging
  * structures. We scrap the whole naming mess and retroactively follow
@@ -75,12 +86,15 @@ typedef hpt_pml1e_t* hpt_pml1_t;
 typedef hpt_pme_t* hpt_pm_t; /* page map (any level) */
 
 typedef u64 hpt_prot_t;
+typedef va_t u64;
+typedef pa_t u64;
 
-#define IS_INTEL(vcpu) (vcpu->cpu_vendor == CPU_VENDOR_INTEL)
-#define IS_AMD(vcpu) (vcpu->cpu_vendor == CPU_VENDOR_AMD)
-
-#define HPT_PML4_SIZE 512
-#define HPT_PML3_SIZE 512
+static inline size_t pt_pm_size(pt_type_t t, int lvl)
+{
+  
+}
+#define PT_PML4_SIZE 512
+#define PT_PML3_SIZE 512
 #define HPT_PML2_SIZE 512
 #define HPT_PML1_SIZE 512
 #define HPT_PM_SIZE 512
@@ -106,12 +120,12 @@ typedef enum {
   HPT_PMT_UC=0, HPT_PMT_WC=1, HPT_PMT_WT=4, HPT_PMT_WP=5, HPT_PMT_WB=6
 } hpt_pmt_t;
 
-static inline hpt_pme_t hpt_setprot(u32 cpu_vendor, hpt_pme_t entry, hpt_prot_t perms)
+static inline hpt_pme_t hpt_setprot(pt_type_t t, hpt_pme_t entry, hpt_prot_t perms)
 {
   hpt_pme_t rv=0;
-  if (cpu_vendor == CPU_VENDOR_INTEL) {
+  if (t == PT_TYPE_EPT) {
     rv = BR64_SET_HL(entry, 2, 0, perms);
-  } else if (cpu_vendor == CPU_VENDOR_AMD) {
+  } else if (t == PT_TYPE_LONG || t == PT_TYPE_PAE) {
     rv = BR64_SET_HL(entry, 1, 0, BR64_GET_HL(perms, 1, 0));
     rv = BR64_SET_BIT(rv, 63, BR64_GET_BIT(perms, 2) ? 0ull : 1ull);
   } else {
@@ -120,12 +134,13 @@ static inline hpt_pme_t hpt_setprot(u32 cpu_vendor, hpt_pme_t entry, hpt_prot_t 
   return rv;
 }
 
-static inline hpt_prot_t hpt_getprot(u32 cpu_vendor, hpt_pme_t entry)
+static inline hpt_prot_t hpt_getprot(pt_type_t t, hpt_pme_t entry)
 {
   hpt_pme_t rv=0;
-  if (cpu_vendor == CPU_VENDOR_INTEL) {
+
+  if (t == PT_TYPE_EPT) {
     rv = BR64_GET_HL(entry, 2, 0);
-  } else if (cpu_vendor == CPU_VENDOR_AMD) {
+  } else if (t == PT_TYPE_LONG || t == PT_TYPE_PAE) {
     rv = BR64_GET_HL(entry, 1, 0);
     rv = BR64_SET_BIT(rv, 2, BR64_GET_BIT(entry, 63) ? 0ull : 1ull);
   } else {
@@ -134,13 +149,12 @@ static inline hpt_prot_t hpt_getprot(u32 cpu_vendor, hpt_pme_t entry)
   return rv;
 }
 
-static inline hpt_pme_t hpt_setunused(u32 cpu_vendor, hpt_pme_t entry, int hi, int lo, hpt_pme_t val)
+static inline hpt_pme_t hpt_setunused(pt_type_t t, hpt_pme_t entry, int hi, int lo, hpt_pme_t val)
 {
   hpt_pme_t rv=entry;
   ASSERT(hi>lo);
 
-  ASSERT(cpu_vendor == CPU_VENDOR_INTEL
-         || cpu_vendor == CPU_VENDOR_AMD);
+  ASSERT(t == PT_TYPE_EPT || t == PT_TYPE_PAE || t == PT_TYPE_LONG);
 
   /* we map bits 2-0 to 11-9, which are unused in all
      levels of ept and npt */
@@ -162,9 +176,10 @@ static inline hpt_pme_t hpt_setunused(u32 cpu_vendor, hpt_pme_t entry, int hi, i
   return rv;
 }
 
-static inline hpt_pme_t hpt_getunused(u32 cpu_vendor, hpt_pme_t entry, int hi, int lo)
+static inline hpt_pme_t hpt_getunused(pt_type_t t, hpt_pme_t entry, int hi, int lo)
 {
   hpt_pme_t rv = 0ull;
+  ASSERT(t == PT_TYPE_EPT || t == PT_TYPE_PAE || t == PT_TYPE_LONG);
   ASSERT(hi>lo);
   ASSERT(hi <= 2); /* higher bits not yet implemented */
   
@@ -175,14 +190,16 @@ static inline hpt_pme_t hpt_getunused(u32 cpu_vendor, hpt_pme_t entry, int hi, i
   return rv;
 }
 
-static inline bool hpt_is_present(u32 cpu_vendor, hpt_pme_t entry)
+static inline bool hpt_is_present(pt_type_t t, hpt_pme_t entry)
 {
   /* a valid entry is present iff read access is enabled. */
-  return hpt_getprot(cpu_vendor, entry) & HPT_PROT_READ;
+  return hpt_getprot(t, entry) & HPT_PROT_READ;
 }
 
-static inline bool hpt_is_page(u32 cpu_vendor, hpt_pme_t entry, int lvl)
+static inline bool hpt_is_page(pt_type_t t, hpt_pme_t entry, int lvl)
 {
+  ASSERT(t == PT_TYPE_EPT || t == PT_TYPE_PAE || t == PT_TYPE_LONG);
+
   ASSERT(lvl >= 1 && lvl <= 4);
   return 
     lvl == 1 
@@ -190,35 +207,37 @@ static inline bool hpt_is_page(u32 cpu_vendor, hpt_pme_t entry, int lvl)
     || (lvl == 3) && BR64_GET_BIT(entry, 7);
 }
 
-static inline u64 hpt_get_address(u32 cpu_vendor, hpt_pme_t entry)
+static inline u64 hpt_get_address(pt_type_t t, hpt_pme_t entry)
 {
+  ASSERT(t == PT_TYPE_EPT || t == PT_TYPE_PAE || t == PT_TYPE_LONG);
   return BR64_COPY_BITS_HL(0, entry, 51, 12, 0);
 }
 
-static inline u64 hpt_set_address(u32 cpu_vendor, hpt_pme_t entry, u64 hpa)
+static inline u64 hpt_set_address(pt_type_t t, hpt_pme_t entry, u64 hpa)
 {
+  ASSERT(t == PT_TYPE_EPT || t == PT_TYPE_PAE || t == PT_TYPE_LONG);
   ASSERT((hpa & MASKRANGE64(11, 0)) == 0);
   return BR64_COPY_BITS_HL(entry, hpa, 51, 12, 0);
 }
 
-static inline hpt_pmt_t hpt_get_pmt(u32 cpu_vendor, hpt_pme_t entry)
+static inline hpt_pmt_t hpt_get_pmt(pt_type_t t, hpt_pme_t entry)
 {
   hpt_pmt_t rv;
-  if (cpu_vendor == CPU_VENDOR_INTEL) {
+  if (t == PT_TYPE_EPT) {
     rv = BR64_GET_HL(entry, 5, 3);
-  } else if (cpu_vendor == CPU_VENDOR_AMD) {
+  } else if (t == PT_TYPE_PAE || t == PT_TYPE_LONG) {
     ASSERT(0);
   } else {
     ASSERT(0);
   }
   return rv;
 }
-static inline hpt_pmt_t hpt_set_pmt(u32 cpu_vendor, hpt_pme_t entry, hpt_pmt_t pmt)
+static inline hpt_pmt_t hpt_set_pmt(pt_type_t t, hpt_pme_t entry, hpt_pmt_t pmt)
 {
   hpt_pmt_t rv;
-  if (cpu_vendor == CPU_VENDOR_INTEL) {
+  if (t == PT_TYPE_EPT) {
     rv = BR64_SET_HL(entry, 5, 3, pmt);
-  } else if (cpu_vendor == CPU_VENDOR_AMD) {
+  } else if (t == PT_TYPE_PAE || t == PT_TYPE_LONG) {
     ASSERT(0);
   } else {
     ASSERT(0);
@@ -226,17 +245,86 @@ static inline hpt_pmt_t hpt_set_pmt(u32 cpu_vendor, hpt_pme_t entry, hpt_pmt_t p
   return rv;
 }
 
-static inline int hpt_get_pm_idx(u32 cpu_vendor, u64 gpa, int lvl)
+static inline int hpt_get_pm_idx(pt_type_t t, u64 gpa, int lvl)
 {
 
   int lo;
   int hi;
-
+  ASSERT(t == PT_TYPE_EPT || t == PT_TYPE_PAE || t == PT_TYPE_LONG);
   ASSERT(lvl >= 1 && lvl <= 4);
   lo = (lvl-1)*9 + 12;
   hi = lo+8;
 
   return BR64_GET_HL(gpa, hi, lo);
 }
+
+hpt_pme_t* hpt_pm_get_this_pme(pt_type_t t,
+                               const hpt_pm_t pm, const int lvl, const va_t va)
+{
+  return &pm[hpt_get_pm_idx(t, va, lvl)];
+}
+
+hpt_pme_t pm_get_pme_by_idx(pt_type_t t, hpt_pm_t pm, int idx)
+{
+  if(t == PT_TYPE_EPT || t == PT_TYPE_PAE || t == PT_TYPE_LONG) {
+  }
+}
+
+typedef pa_t (*ptr2pa_t)(void *ctx, void *ptr);
+typedef void* (*aligned_allocator_t)(void *ctx, size_t alignment, size_t sz);
+typedef void* (*pa2ptr_t)(void *ctx, pa_t pa);
+                       
+hpt_pme_t* hpt_get_pme_alloc(pt_type_t t, VCPU *vcpu, pagelist_t *pl, hpt_pm_t pm, int start_lvl, int end_lvl, u64 gpa)p
+{
+  int lvl;
+  int pm_idx;
+  hpt_pme_t *pme = hpt_pm_get_this_pme(vcpu, pm, start_lvl, gpa);
+  ASSERT(start_lvl >= end_lvl);
+
+  dprintf(LOG_TRACE, "hpt_get_pme_alloc start:%d end:%d gpa:%Lx\n",
+          start_lvl, end_lvl, gpa);
+
+  if(start_lvl == end_lvl) {
+    return pme;
+  } else {
+    ASSERT(!hpt_is_page(vcpu->cpu_vendor, *pme, start_lvl));
+
+    /* check whether next lvl is allocd */
+    if (!hpt_is_present(vcpu->cpu_vendor, *pme)) {
+      hpt_pm_t new_pm = pagelist_get_zeroedpage(pl);
+      *pme = hpt_set_address(vcpu->cpu_vendor, *pme, hva2spa(new_pm));
+      *pme = hpt_setprot(vcpu->cpu_vendor, *pme, HPT_PROTS_RWX);
+      /* XXX any other fields we need to set? */
+    }
+    return hpt_get_pme_alloc(vcpu, pl,
+                             spa2hva((u32)hpt_get_address(vcpu->cpu_vendor, *pme)),
+                             start_lvl-1,
+                             end_lvl,
+                             gpa);
+  }
+}
+
+hpt_pme_t* hpt_get_pme(VCPU *vcpu, hpt_pm_t pm, int start_lvl, int end_lvl, u64 gpa)
+{
+  int lvl;
+  int pm_idx;
+  hpt_pme_t *pme = hpt_pm_get_this_pme(vcpu, pm, start_lvl, gpa);
+  dprintf(LOG_TRACE, "hpt_get_pme: gpa:%Lx, lvl:%d pme:%Lx\n", gpa, start_lvl, *pme);
+
+  ASSERT(start_lvl >= end_lvl);
+
+  if(start_lvl == end_lvl) {
+    return pme;
+  } else {
+    ASSERT(hpt_is_present(vcpu->cpu_vendor, *pme));
+    ASSERT(!hpt_is_page(vcpu->cpu_vendor, *pme, start_lvl));
+    return hpt_get_pme(vcpu,
+                       spa2hva((u32)hpt_get_address(vcpu->cpu_vendor, *pme)),
+                       start_lvl-1,
+                       end_lvl,
+                       gpa);
+  }
+}
+
 
 #endif

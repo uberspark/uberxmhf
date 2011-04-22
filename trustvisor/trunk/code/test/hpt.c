@@ -39,7 +39,7 @@
 #include <hpt.h>
 
 /* global CPU structs */
-VCPU g_vcpubuffers[0];
+/* VCPU g_vcpubuffers[0]; */
 
 void setUp(void)
 {
@@ -127,73 +127,73 @@ void test_hpt_setprot(void)
 
 void test_hpt_getprot_intel(void)
 {
-  TEST_ASSERT_EQUAL_HEX64(0x0, hpt_getprot(CPU_VENDOR_INTEL, 0xfffffffffffffff8ull));
+  TEST_ASSERT_EQUAL_HEX64(0x0, hpt_getprot(PT_TYPE_EPT, 0xfffffffffffffff8ull));
 
-  TEST_ASSERT_EQUAL_HEX64(HPT_PROTS_R, hpt_getprot(CPU_VENDOR_INTEL, 0xfffffffffffffff9ull));
-  TEST_ASSERT_EQUAL_HEX64(HPT_PROTS_W, hpt_getprot(CPU_VENDOR_INTEL, 0xfffffffffffffffaull));
-  TEST_ASSERT_EQUAL_HEX64(HPT_PROTS_X, hpt_getprot(CPU_VENDOR_INTEL, 0xfffffffffffffffcull));
+  TEST_ASSERT_EQUAL_HEX64(HPT_PROTS_R, hpt_getprot(PT_TYPE_EPT, 0xfffffffffffffff9ull));
+  TEST_ASSERT_EQUAL_HEX64(HPT_PROTS_W, hpt_getprot(PT_TYPE_EPT, 0xfffffffffffffffaull));
+  TEST_ASSERT_EQUAL_HEX64(HPT_PROTS_X, hpt_getprot(PT_TYPE_EPT, 0xfffffffffffffffcull));
 
-  TEST_ASSERT_EQUAL_HEX64(HPT_PROTS_RWX, hpt_getprot(CPU_VENDOR_INTEL, 0xffffffffffffffffull));
+  TEST_ASSERT_EQUAL_HEX64(HPT_PROTS_RWX, hpt_getprot(PT_TYPE_EPT, 0xffffffffffffffffull));
 }
 
 void test_hpt_getprot_amd(void)
 {
-  TEST_ASSERT_EQUAL_HEX64(0x0, hpt_getprot(CPU_VENDOR_AMD, 0xfffffffffffffffcull));
+  TEST_ASSERT_EQUAL_HEX64(0x0, hpt_getprot(PT_TYPE_LONG, 0xfffffffffffffffcull));
 
-  TEST_ASSERT_EQUAL_HEX64(HPT_PROTS_R, hpt_getprot(CPU_VENDOR_AMD, 0xfffffffffffffffdull));
-  TEST_ASSERT_EQUAL_HEX64(HPT_PROTS_W, hpt_getprot(CPU_VENDOR_AMD, 0xfffffffffffffffeull));
-  TEST_ASSERT_EQUAL_HEX64(HPT_PROTS_X, hpt_getprot(CPU_VENDOR_AMD, 0x7ffffffffffffffcull));
+  TEST_ASSERT_EQUAL_HEX64(HPT_PROTS_R, hpt_getprot(PT_TYPE_LONG, 0xfffffffffffffffdull));
+  TEST_ASSERT_EQUAL_HEX64(HPT_PROTS_W, hpt_getprot(PT_TYPE_LONG, 0xfffffffffffffffeull));
+  TEST_ASSERT_EQUAL_HEX64(HPT_PROTS_X, hpt_getprot(PT_TYPE_LONG, 0x7ffffffffffffffcull));
 
-  TEST_ASSERT_EQUAL_HEX64(HPT_PROTS_RWX, hpt_getprot(CPU_VENDOR_AMD, 0x7fffffffffffffffull));
+  TEST_ASSERT_EQUAL_HEX64(HPT_PROTS_RWX, hpt_getprot(PT_TYPE_LONG, 0x7fffffffffffffffull));
 }
 
 void test_hpt_setprot_amd(void)
 {
   /* none to none */
   TEST_ASSERT_EQUAL_HEX64(0x8000000000000000ull,
-                          hpt_setprot(CPU_VENDOR_AMD, 0x0ull, HPT_PROTS_NONE));
+                          hpt_setprot(PT_TYPE_LONG, 0x0ull, HPT_PROTS_NONE));
 
   /* none to one */
   TEST_ASSERT_EQUAL_HEX64(0x8000000000000001ull,
-                          hpt_setprot(CPU_VENDOR_AMD, 0x0ull, HPT_PROTS_R));
+                          hpt_setprot(PT_TYPE_LONG, 0x0ull, HPT_PROTS_R));
   TEST_ASSERT_EQUAL_HEX64(0x8000000000000002ull,
-                          hpt_setprot(CPU_VENDOR_AMD, 0x0ull, HPT_PROTS_W));
+                          hpt_setprot(PT_TYPE_LONG, 0x0ull, HPT_PROTS_W));
   TEST_ASSERT_EQUAL_HEX64(0x0000000000000000ull,
-                          hpt_setprot(CPU_VENDOR_AMD, 0x0ull, HPT_PROTS_X));
+                          hpt_setprot(PT_TYPE_LONG, 0x0ull, HPT_PROTS_X));
 
   /* none to all */
   TEST_ASSERT_EQUAL_HEX64(0x0000000000000003ull,
-                          hpt_setprot(CPU_VENDOR_AMD, 0x0ull, HPT_PROTS_RWX));
+                          hpt_setprot(PT_TYPE_LONG, 0x0ull, HPT_PROTS_RWX));
 
   /* none to none */
   TEST_ASSERT_EQUAL_HEX64(0xfffffffffffffffcull,
-                          hpt_setprot(CPU_VENDOR_AMD,
+                          hpt_setprot(PT_TYPE_LONG,
                                       0xfffffffffffffffcull,
                                       HPT_PROTS_NONE));
 
   /* none to one */
   TEST_ASSERT_EQUAL_HEX64(0xfffffffffffffffdull,
-                          hpt_setprot(CPU_VENDOR_AMD,
+                          hpt_setprot(PT_TYPE_LONG,
                                       0xfffffffffffffffcull,
                                       HPT_PROTS_R));
   TEST_ASSERT_EQUAL_HEX64(0xfffffffffffffffeull,
-                          hpt_setprot(CPU_VENDOR_AMD,
+                          hpt_setprot(PT_TYPE_LONG,
                                       0xfffffffffffffffcull,
                                       HPT_PROTS_W));
   TEST_ASSERT_EQUAL_HEX64(0x7ffffffffffffffcull,
-                          hpt_setprot(CPU_VENDOR_AMD,
+                          hpt_setprot(PT_TYPE_LONG,
                                       0xfffffffffffffffcull,
                                       HPT_PROTS_X));
 
   /* none to all */
   TEST_ASSERT_EQUAL_HEX64(0x7fffffffffffffffull,
-                          hpt_setprot(CPU_VENDOR_AMD,
+                          hpt_setprot(PT_TYPE_LONG,
                                       0xfffffffffffffffcull,
                                       HPT_PROTS_RWX));
 
   /* all to none */
   TEST_ASSERT_EQUAL_HEX64(0xfffffffffffffffcull,
-                          hpt_setprot(CPU_VENDOR_AMD,
+                          hpt_setprot(PT_TYPE_LONG,
                                       0x7ffffffffffffffcull,
                                       HPT_PROTS_NONE));
 
@@ -201,9 +201,9 @@ void test_hpt_setprot_amd(void)
 
 void test_hpt_getunused(void)
 {
-  TEST_ASSERT_EQUAL_HEX64(0x7, hpt_getunused(CPU_VENDOR_INTEL, 0x0000000000000e00ull, 2, 0));
-  TEST_ASSERT_EQUAL_HEX64(0x7, hpt_getunused(CPU_VENDOR_INTEL, 0xffffffffffffffffull, 2, 0));
+  TEST_ASSERT_EQUAL_HEX64(0x7, hpt_getunused(PT_TYPE_EPT, 0x0000000000000e00ull, 2, 0));
+  TEST_ASSERT_EQUAL_HEX64(0x7, hpt_getunused(PT_TYPE_EPT, 0xffffffffffffffffull, 2, 0));
 
-  TEST_ASSERT_EQUAL_HEX64(0x5, hpt_getunused(CPU_VENDOR_AMD, 0x0000000000000a00ull, 2, 0));
-  TEST_ASSERT_EQUAL_HEX64(0x5, hpt_getunused(CPU_VENDOR_AMD, 0x0000000000000a00ull, 2, 0));
+  TEST_ASSERT_EQUAL_HEX64(0x5, hpt_getunused(PT_TYPE_LONG, 0x0000000000000a00ull, 2, 0));
+  TEST_ASSERT_EQUAL_HEX64(0x5, hpt_getunused(PT_TYPE_LONG, 0x0000000000000a00ull, 2, 0));
 }
