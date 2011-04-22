@@ -315,4 +315,7 @@ extern struct emhf_library *g_libemhf __attribute__(( section(".data") ));
 //function that initializes the runtime global variables
 void runtime_globals_init(void);
 
+static inline spa_t hva2spa(hva_t x) { return (spa_t)(uintptr_t)x - __TARGET_BASE + rpb->XtVmmRuntimePhysBase; }
+static inline hva_t spa2hva(spa_t x) { return (hva_t)(uintptr_t)(x + __TARGET_BASE - rpb->XtVmmRuntimePhysBase); }
+
 #endif /* __GLOBALS_H__ */

@@ -427,6 +427,10 @@ typedef struct _pcpu {
 
 #define SIZE_STRUCT_PCPU  (sizeof(struct _pcpu))
 
+typedef void* hva_t; /* hypervisor virtual address */
+typedef u64 spa_t; /* system physical address */
+typedef u32 gva_t; /* guest virtual address. we only support 32-bit guests */
+typedef u64 gpa_t; /* guest physical address. can be 64-bit with PAE */
 
 #define __pa(x) (x)
 
