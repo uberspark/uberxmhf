@@ -322,7 +322,7 @@ static inline void VCPU_set_hcr3(VCPU *vcpu, spa_t hcr3)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     vcpu->vmcs.control_EPT_pointer_full =
-      BR32_COPY_HL(vcpu->vmcs.control_EPT_pointer_full, hcr3, 31, 13, 0);
+      BR32_COPY_BITS_HL(vcpu->vmcs.control_EPT_pointer_full, hcr3, 31, 12, 0);
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3 = hcr3;
   } else {
