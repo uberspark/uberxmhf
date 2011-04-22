@@ -140,8 +140,11 @@ extern char *g_tv_perf_ctr_strings[];
 #define TV_PERF_CTR_SWITCH_SCODE 1
 #define TV_PERF_CTR_SWITCH_REGULAR 2
 #define TV_PERF_CTR_SAFEMALLOC 3
+#define TV_PERF_CTR_MARSHALL 4
+#define	TV_PERF_CTR_EXPOSE_ARCH 5
+#define TV_PERF_CTR_NESTED_SWITCH_SCODE 6
 /* insert new counters here, and update count below */
-#define TV_PERF_CTRS_COUNT 4
+#define TV_PERF_CTRS_COUNT 7
 
 /* scode state struct */
 typedef struct whitelist_entry{

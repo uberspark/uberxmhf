@@ -68,7 +68,7 @@ u32 whitelist_size=0, whitelist_max=0;
 
 perf_ctr_t g_tv_perf_ctrs[TV_PERF_CTRS_COUNT];
 char *g_tv_perf_ctr_strings[] = {
-	"npf", "switch_scode", "switch_regular", "safemalloc"
+	"npf", "switch_scode", "switch_regular", "safemalloc", "marshall", "expose_arch", "nested_switch_scode"
 }; /* careful to keep this consistent with actual macros */
 
 /* This two bitmaps are only updated in scode_register() and scode_unreg(), no need to apply lock */
@@ -736,6 +736,8 @@ void scode_expose_arch(VCPU *vcpu)
 	pt_t sp = (pt_t)(whitelist[curr].scode_pages);
 	u32 gcr3_flag=0;
 
+	perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_EXPOSE_ARCH], vcpu->idx);
+
 	is_pae = VCPU_gcr4(vcpu) & CR4_PAE;
 	gdtr = VCPU_gdtr_base(vcpu);
 
@@ -798,6 +800,8 @@ void scode_expose_arch(VCPU *vcpu)
 	EXPOSE_PAGE(tmp_page[2]);
 
 	whitelist[curr].pte_size = pte_count << PAGE_SHIFT_4K;
+
+	perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_EXPOSE_ARCH], vcpu->idx);
 }
 
 void memcpy_guest_to_guest(VCPU * vcpu, u32 src, u32 dst, u32 len)
@@ -841,10 +845,13 @@ u32 scode_marshall(VCPU * vcpu)
 	u32 new_rsp;
 	int curr=scode_curr[vcpu->id];
 
+	perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_MARSHALL], vcpu->idx);
+
 	dprintf(LOG_TRACE, "[TV] marshalling scode parameters!\n");
 	if(whitelist[curr].gpm_num == 0)
 	{
 		dprintf(LOG_TRACE, "[TV] params number is 0. Return!\n");
+		perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_MARSHALL], vcpu->idx);
 		return 0;
 	}
 
@@ -865,6 +872,7 @@ u32 scode_marshall(VCPU * vcpu)
 	if (whitelist[curr].gpm_num > MAX_PARAMS_NUM)
 	{
 		dprintf(LOG_ERROR, "[TV] Fail: param num is too big!\n");
+		perf_ctr_timer_discard(&g_tv_perf_ctrs[TV_PERF_CTR_MARSHALL], vcpu->idx);
 		return 1;
 	}
 
@@ -881,6 +889,7 @@ u32 scode_marshall(VCPU * vcpu)
 		if (pm_size_sum > (whitelist[curr].gpm_size*PAGE_SIZE_4K))
 		{
 			dprintf(LOG_ERROR, "[TV] Fail: No enough space to save input params data!\n");
+			perf_ctr_timer_discard(&g_tv_perf_ctrs[TV_PERF_CTR_MARSHALL], vcpu->idx);
 			return 1;
 		}
 
@@ -923,6 +932,7 @@ u32 scode_marshall(VCPU * vcpu)
 					break;
 				}
 			default: /* other */
+				perf_ctr_timer_discard(&g_tv_perf_ctrs[TV_PERF_CTR_MARSHALL], vcpu->idx);
 				dprintf(LOG_ERROR, "[TV] Fail: unknown parameter %d type %d \n", pm_num, pm_type);
 				return 1;
 		}
@@ -930,6 +940,7 @@ u32 scode_marshall(VCPU * vcpu)
 		VCPU_grsp_set(vcpu, new_rsp);
 		put_32bit_aligned_value_to_guest(vcpu, new_rsp, pm_tmp);
 	}
+	perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_MARSHALL], vcpu->idx);
 	return 0;
 }
 

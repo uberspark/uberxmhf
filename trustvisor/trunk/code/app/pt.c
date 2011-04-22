@@ -239,6 +239,7 @@ void hpt_nested_switch_scode(VCPU * vcpu, pte_t* pte_pages, u32 size, u32 pte_pa
 	u32 pd_base;
 	u32 i, j;
 
+	perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_NESTED_SWITCH_SCODE], vcpu->idx);
 	//dprintf(LOG_TRACE, "[TV] scode_page %#x, scode_size %#x!\n[TV] pte_page %#x, pte_size %#x!\n", pte_page, size, pte_page2, size2);
 
 	/* get page table addresses from VCPU */
@@ -265,6 +266,8 @@ void hpt_nested_switch_scode(VCPU * vcpu, pte_t* pte_pages, u32 size, u32 pte_pa
 
 	/* flush TLB */
 	emhf_hwpgtbl_flushall(vcpu);
+
+	perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_NESTED_SWITCH_SCODE], vcpu->idx);
 }
 
 void hpt_nested_make_pt_unaccessible(pte_t *gpaddr_list, u32 gpaddr_count, pdpt_t npdp, u32 is_pal)
