@@ -183,8 +183,7 @@ static inline bool hpt_is_page(u32 cpu_vendor, hpt_pme_t entry, int lvl)
   return 
     lvl == 1 
     || (lvl == 2) && BR64_GET_BIT(entry, 7)
-    || (lvl == 3) && BR64_GET_BIT(entry, 7)
-    || (lvl == 4);
+    || (lvl == 3) && BR64_GET_BIT(entry, 7);
 }
 
 static inline u64 hpt_get_address(u32 cpu_vendor, hpt_pme_t entry)
