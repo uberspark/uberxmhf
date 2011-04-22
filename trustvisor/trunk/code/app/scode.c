@@ -671,6 +671,7 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
 							perf_ctr_get_count(&g_tv_perf_ctrs[j]));
 		}
 	}
+	dprintf(LOG_PROFILE, "total mem mallocd: %u\n", puttymem_get_used_size());
 
 	/* if we find one to remove, we also need to clear the physcial page number
 	 * vector 

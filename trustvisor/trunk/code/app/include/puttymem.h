@@ -55,6 +55,7 @@ void *safemalloc(size_t, size_t);
 void safefree(void *);
 
 void mem_init(void); 
+size_t puttymem_get_used_size(void);
 /*
  * Direct use of smalloc within the code should be avoided where
  * possible, in favour of these type-casting macros which ensure

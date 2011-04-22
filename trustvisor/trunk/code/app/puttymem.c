@@ -58,6 +58,11 @@ void mem_init(void){
   init_memory_pool(PUTTYMEM_POOLSIZE, memory_pool);
 }
 
+size_t puttymem_get_used_size(void)
+{
+  return get_used_size(memory_pool);
+}
+
 void *safemalloc(size_t n, size_t size)
 {
 	void *p;
