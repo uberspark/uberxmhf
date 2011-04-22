@@ -998,9 +998,13 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 	scode_expose_arch(vcpu, &whitelist[curr]);
 
 	/* change NPT permission for all PTE pages and scode pages */
-	dprintf(LOG_TRACE, "[TV] change NPT permission to run PAL!\n"); 
-	hpt_nested_switch_scode(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size,
-													whitelist[curr].pte_page, whitelist[curr].pte_size);
+	dprintf(LOG_TRACE, "[TV] change NPT permission to run PAL!\n");
+	dprintf(LOG_TRACE, "hcr3: %Lx, pml4_hva: %x, pml4_spa: %Lx",
+					VCPU_get_hcr3(vcpu), VCPU_get_pml4(vcpu), hva2spa(VCPU_get_pml4(vcpu)));
+	ASSERT(VCPU_get_hcr3(vcpu) == hva2spa(VCPU_get_pml4(vcpu)));
+	VCPU_set_hcr3(vcpu, hva2spa(whitelist[curr].pal_pml4));
+	/* hpt_nested_switch_scode(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size, */
+	/* 												whitelist[curr].pte_page, whitelist[curr].pte_size); */
 		
 	/* disable interrupts */
 	VCPU_grflags_set(vcpu, VCPU_grflags(vcpu) & ~EFLAGS_IF);
@@ -1129,8 +1133,9 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
 	if (!scode_unmarshall(vcpu)){
 		/* clear the NPT permission setting in switching into scode */
 		dprintf(LOG_TRACE, "[TV] change NPT permission to exit PAL!\n"); 
-		hpt_nested_switch_regular(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size,
-															whitelist[curr].pte_page, whitelist[curr].pte_size);
+		VCPU_set_hcr3(vcpu, hva2spa(VCPU_get_pml4(vcpu)));
+		/* hpt_nested_switch_regular(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size, */
+		/* 													whitelist[curr].pte_page, whitelist[curr].pte_size); */
 		scode_unexpose_arch(vcpu, &whitelist[curr]);
 
 		/* release shared pages */
