@@ -144,8 +144,7 @@
 
 #ifndef __ASSEMBLY__
 
-
-
+#include <bitfield.h> /* bit manipulation helpers */
 
 //same privilege level exception/interrupt stack frame
 typedef struct {
@@ -265,6 +264,34 @@ typedef struct _vcpu {
 
 
 } __attribute__((packed)) VCPU;
+
+static inline spa_t VCPU_get_hcr3(VCPU *vcpu)
+{
+  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+    dprintf(LOG_TRACE, "VCPU_get_hcr3: ept_pointer_full: %x",
+            vcpu->vmcs.control_EPT_pointer_full);
+    dprintf(LOG_TRACE, "VCPU_get_hcr3: ept_pointer_full masked: %x",
+            vcpu->vmcs.control_EPT_pointer_full & MASKRANGE32(31, 12));
+    return vcpu->vmcs.control_EPT_pointer_full & MASKRANGE32(31, 12);
+  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+    return ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3;
+  } else {
+    ASSERT(false);
+    return 0;
+  }
+}
+
+static inline void VCPU_set_hcr3(VCPU *vcpu, spa_t hcr3)
+{
+  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+    vcpu->vmcs.control_EPT_pointer_full =
+      BR32_COPY_HL(vcpu->vmcs.control_EPT_pointer_full, hcr3, 31, 13, 0);
+  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+    ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3 = hcr3;
+  } else {
+    ASSERT(false);
+  }
+}
 
 static inline u64 VCPU_gdtr_base(VCPU *vcpu)
 {
