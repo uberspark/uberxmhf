@@ -168,4 +168,44 @@ static inline hpt_pme_t hpt_getunused(u32 cpu_vendor, hpt_pme_t entry, int hi, i
   return rv;
 }
 
+static inline bool hpt_is_present(u32 cpu_vendor, hpt_pme_t entry)
+{
+  /* a valid entry is present iff read access is enabled. */
+  return hpt_getprot(cpu_vendor, entry) & HPT_PROT_READ;
+}
+
+static inline bool hpt_is_page(u32 cpu_vendor, hpt_pme_t entry, int lvl)
+{
+  ASSERT(lvl >= 1 && lvl <= 4);
+  return 
+    lvl == 1 
+    || (lvl == 2) && BR64_GET_BIT(entry, 7)
+    || (lvl == 3) && BR64_GET_BIT(entry, 7)
+    || (lvl == 4);
+}
+
+static inline u64 hpt_get_address(u32 cpu_vendor, hpt_pme_t entry)
+{
+  return BR64_COPY_BITS_HL(0, entry, 51, 12, 0);
+}
+
+static inline u64 hpt_set_address(u32 cpu_vendor, hpt_pme_t entry, u64 hpa)
+{
+  ASSERT((hpa & MASKRANGE64(11, 0)) == 0);
+  return BR64_COPY_BITS_HL(entry, hpa, 51, 12, 0);
+}
+
+static inline int hpt_get_pm_idx(VCPU *vcpu, u64 gpa, int lvl)
+{
+
+  int lo;
+  int hi;
+
+  ASSERT(lvl >= 1 && lvl <= 4);
+  lo = (lvl-1)*9 + 12;
+  hi = lo+8;
+
+  return BR64_GET_HL(gpa, hi, lo);
+}
+
 #endif
