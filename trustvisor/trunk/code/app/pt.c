@@ -194,13 +194,13 @@ void hpt_nested_make_pt_accessible(pte_t *gpaddr_list, u32 gpaddr_count, u64 * n
 
 		pdp_entry = npdp[pdp_index];
 		tmp = pae_get_addr_from_pdpe(pdp_entry);
-		npd = (pdt_t)(u32)(u64)__spa2hva__((u32)tmp);
+		npd = spa2hva(tmp);
 		pd_entry = npd[pd_index]; 
 //		dprintf(LOG_TRACE, "[TV]   pdp_entry %#llx, pd_entry %#llx!\n", pdp_entry, pd_entry);
 
 		// now, we are dealing with 4KB page
 		tmp = pae_get_addr_from_pde(pd_entry);
-		npt = (pt_t)(u32)(u64)__spa2hva__((u32)tmp);  
+		npt = spa2hva(tmp);
 
 		if (!(hpt_getprot(CPU_VENDOR, pd_entry))) {
 			pd_entry = hpt_setprot(CPU_VENDOR, pd_entry, HPT_PROTS_RWX);
@@ -292,12 +292,12 @@ void hpt_nested_make_pt_unaccessible(pte_t *gpaddr_list, u32 gpaddr_count, pdpt_
 
 		pdp_entry = npdp[pdp_index];
 		tmp = pae_get_addr_from_pdpe(pdp_entry);
-		npd = (pdt_t)(u32)(u64)__spa2hva__((u32)tmp);
+		npd = spa2hva(tmp);
 		pd_entry = npd[pd_index]; 
 
 		// now, we are dealing with 4KB page
 		tmp = pae_get_addr_from_pde(pd_entry);
-		npt = (pt_t)(u32)(u64)__spa2hva__((u32)tmp);  
+		npt = spa2hva(tmp);
 
 	//	dprintf(LOG_TRACE, "[TV]   pdp_entry %#llx, pd_entry %#llx!\n", pdp_entry, pd_entry);
 		if (hpt_getprot(CPU_VENDOR, pd_entry)) {
