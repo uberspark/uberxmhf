@@ -369,7 +369,7 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 				printf("\nSL: Initialized SVM DEV.");
 			
-				printf("\nSL: Protected SL+Runtime (%08x-%08x) using DEV.", sl_baseaddr,
+				printf("\nSL: Protected SL+Runtime (%08x-%08lx) using DEV.", sl_baseaddr,
 						(slpb.runtime_size + PAGE_SIZE_2M));
 			}
 			

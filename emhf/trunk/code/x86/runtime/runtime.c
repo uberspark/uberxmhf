@@ -113,7 +113,7 @@ void cstartup(void){
 			
 		//protect SL and runtime memory regions
 		svm_eap_dev_protect(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimeSize+PAGE_SIZE_2M);
-		printf("\nRuntime: Protected SL+Runtime (%08x-%08x) using DEV.", 
+		printf("\nRuntime: Protected SL+Runtime (%08lx-%08x) using DEV.", 
 				rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M,
 			rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
 	}else{
@@ -159,7 +159,7 @@ void cstartup(void){
 			//read the sectors using BIOS via DMA and the protections prevent it. 
 			//vmx_eap_vtd_protect(0x00000000, 0xBA600000); 
 			
-			printf("\nRuntime: Protected SL+Runtime (%08x-%08x) using VT-d.", 
+			printf("\nRuntime: Protected SL+Runtime (%08lx-%08x) using VT-d.", 
 							rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M,
 						rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
 	}
