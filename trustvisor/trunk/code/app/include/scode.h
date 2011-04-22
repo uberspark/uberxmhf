@@ -240,3 +240,8 @@ u32 scode_unseal(VCPU * vcpu, u32 input_addr, u32 input_len, u32 output_addr, u3
 u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 out_len_addr);
 u32 scode_share(VCPU * vcpu, u32 scode_entry, u32 addr, u32 len);
 #endif /* __SCODE_H_ */
+/* Local Variables: */
+/* mode:c           */
+/* indent-tabs-mode:'t */
+/* tab-width:2      */
+/* End:             */
