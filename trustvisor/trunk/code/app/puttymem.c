@@ -86,7 +86,8 @@ void *safemalloc(size_t n, size_t size)
         perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_SAFEMALLOC], 0/*FIXME*/);
     
 	if (!p) {
-		return NULL;
+	  dprintf(LOG_ERROR, "safemalloc: allocation of size %d failed.", size);
+	  return NULL;
 	}
 	return p;
 }
