@@ -102,6 +102,10 @@ typedef u64 hpt_prot_t;
 #define MAX(x, y) (((y) > (x)) ? (y) : (x))
 #define MIN(x, y) (((y) < (x)) ? (y) : (x))
 
+typedef enum {
+  HPT_PMT_UC=0, HPT_PMT_WC=1, HPT_PMT_WT=4, HPT_PMT_WP=5, HPT_PMT_WB=6
+} hpt_pmt_t;
+
 static inline hpt_pme_t hpt_setprot(u32 cpu_vendor, hpt_pme_t entry, hpt_prot_t perms)
 {
   hpt_pme_t rv=0;
@@ -195,6 +199,31 @@ static inline u64 hpt_set_address(u32 cpu_vendor, hpt_pme_t entry, u64 hpa)
 {
   ASSERT((hpa & MASKRANGE64(11, 0)) == 0);
   return BR64_COPY_BITS_HL(entry, hpa, 51, 12, 0);
+}
+
+static inline hpt_pmt_t hpt_get_pmt(u32 cpu_vendor, hpt_pme_t entry)
+{
+  hpt_pmt_t rv;
+  if (cpu_vendor == CPU_VENDOR_INTEL) {
+    rv = BR64_GET_HL(entry, 5, 3);
+  } else if (cpu_vendor == CPU_VENDOR_AMD) {
+    ASSERT(0);
+  } else {
+    ASSERT(0);
+  }
+  return rv;
+}
+static inline hpt_pmt_t hpt_set_pmt(u32 cpu_vendor, hpt_pme_t entry, hpt_pmt_t pmt)
+{
+  hpt_pmt_t rv;
+  if (cpu_vendor == CPU_VENDOR_INTEL) {
+    rv = BR64_SET_HL(entry, 5, 3, pmt);
+  } else if (cpu_vendor == CPU_VENDOR_AMD) {
+    ASSERT(0);
+  } else {
+    ASSERT(0);
+  }
+  return rv;
 }
 
 static inline int hpt_get_pm_idx(u32 cpu_vendor, u64 gpa, int lvl)
