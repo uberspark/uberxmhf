@@ -27,4 +27,5 @@ $(APPOBJECTSDIR)/%.o: %.c $(I_SOURCES) Makefile ../Makefile
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 .PHONY: clean 
-clean: 
+clean:
+	$(RM) $(OBJECTS)
