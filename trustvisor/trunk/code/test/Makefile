@@ -1,14 +1,17 @@
 CFLAGS += -I${UNITYDIR}/src -DUNITY_SUPPORT_64 -g
 CFLAGS := $(filter-out -nostdinc,${CFLAGS})
 
-all: do_pt do_hpt
+all: do_pt do_hpt do_pages
 
 # FIXME should create separately compiled objects here, instead of in src dir
 #unity.o: ${UNITYDIR}/src/unity.c
 #pt.o: ../app/pt.c
 
 pt: pt_runner.o pt.o ../app/pt.o ${UNITYDIR}/src/unity.o 
-hpt: hpt_runner.o ${UNITYDIR}/src/unity.o 
+hpt: hpt_runner.o hpt.o ${UNITYDIR}/src/unity.o
+
+pages: test_pages_runner.o test_pages.o ../app/pages.o ../app/puttymem.o ../app/tlsf.o ../emhfcore/x86/libcommon/mpsup.o ${UNITYDIR}/src/unity.o
+	$(CC) -o $@ $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS)
 
 do_%: %
 	./$<

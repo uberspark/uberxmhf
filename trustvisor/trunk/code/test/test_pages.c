@@ -33,44 +33,35 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include "pages.h"
+#include "unity.h"
 
-#include <types.h>
+#define __PRINT_H_ /* avoid indirectly including our print.h, which conflicts with libc stdio.h */
+#include <target.h>
 #include <puttymem.h>
-#include <paging.h>
-#include <error.h>
+#include <pages.h>
 
-void pagelist_init(pagelist_t *pl)
+/* run time parameter block. we'll mock this up as needed */
+/* RPB __rpb; */
+/* RPB *rpb = &__rpb; */
+
+/* /\* global CPU structs *\/ */
+/* VCPU g_vcpubuffers[0]; */
+
+static pagelist_t pl;
+
+void setUp(void)
 {
-  const int pages = 64;
-  pl->buf = vmalloc(pages*PAGE_SIZE_4K);
-  ASSERT(pl->buf != NULL);
-
-  pl->page_base = (void*)PAGE_ALIGN_UP4K((uintptr_t)pl->buf);
-  pl->num_allocd =
-    (pl->page_base == pl->buf)
-    ? pages
-    : pages-1;
- 
-  pl->num_used = 0;
+  mem_init();
+  pagelist_init(&pl);
 }
 
-void* pagelist_getpage(pagelist_t *pl)
+void tearDown(void)
 {
-  void *page;
-
-  /* we'll handle allocating more on-demand later */
-  ASSERT(pl->num_used < pl->num_allocd);
-
-  page = pl->page_base + (pl->num_allocd*PAGE_SIZE_4K);
-  pl->num_used++;
-
-  return page;
+  pagelist_free_all(&pl);
 }
 
-void pagelist_free_all(pagelist_t *pl)
+void test_foo(void)
 {
-  vfree(pl->buf);
-  pl->buf=NULL;
-  pl->num_allocd=0;
+  void *p = pagelist_getpage(&pl);
+  TEST_ASSERT(PAGE_ALIGNED_4K((uintptr_t)p));
 }

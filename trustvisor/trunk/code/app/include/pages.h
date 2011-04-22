@@ -36,8 +36,14 @@
 #ifndef PAGES_H
 #define PAGES_H
 
-struct pagelist_s;
-typedef struct pagelist_s pagelist_t;
+#include <types.h>
+
+typedef struct {
+  void *buf;
+  void *page_base;
+  size_t num_allocd;
+  size_t num_used;
+} pagelist_t;
 
 void pagelist_init(pagelist_t *pl);
 void* pagelist_getpage(pagelist_t *pl);
