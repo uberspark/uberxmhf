@@ -75,33 +75,6 @@ static inline hpt_pme_t hpt_getpalprot(u32 vendor, hpt_pme_t pme)
 	return hpt_getunused(vendor, pme, 2, 0);
 }
 
-static inline hpt_pml1e_t* get_pml1es(VCPU *vcpu)
-{
-	if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-		return (hpt_pml1e_t*)vcpu->vmx_vaddr_ept_p_tables;
-	} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-		return (hpt_pml1e_t*)vcpu->npt_vaddr_pts;
-	}
-}
-
-static inline hpt_pml2e_t* get_pml2es(VCPU *vcpu)
-{
-	if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-		return (hpt_pml2e_t*)vcpu->vmx_vaddr_ept_pd_tables;
-	} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-		return (hpt_pml2e_t*)vcpu->npt_vaddr_pdts;
-	}
-}
-
-static inline hpt_pml3e_t* get_pml3es(VCPU *vcpu)
-{
-	if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-		return (hpt_pml3e_t*)vcpu->vmx_vaddr_ept_pdp_table;
-	} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-		return (hpt_pml3e_t*)vcpu->npt_vaddr_ptr;
-	}
-}
-
 /* ********************************* */
 /* HPT related NPT operations */
 /* ********************************* */
@@ -229,7 +202,7 @@ void hpt_insert_pal_pme(VCPU *vcpu, pagelist_t *pl, hpt_pm_t pal_pm, int top_lvl
 	hpt_pme_t *reg_pme, *pal_pme;
 	hpt_prot_t pal_prot;
 	int type;
-	hpt_pml1e_t *reg_pml1es = get_pml1es(vcpu);
+	hpt_pml1e_t *reg_pml1es = VCPU_get_pml1es(vcpu);
 	u64 pfn = gpa >> PAGE_SHIFT_4K;
 
 	dprintf(LOG_TRACE, "hpt_insert_pal_pme: gpa: %Lx\n", gpa);
@@ -271,7 +244,7 @@ void hpt_insert_pal_pmes(VCPU *vcpu, pagelist_t *pl, hpt_pml4_t pal_pml4, gpa_t 
  * **************************************/
 void hpt_nested_set_prot(VCPU * vcpu, u64 gpaddr)
 {
-	u64 *pt = get_pml1es(vcpu);
+	u64 *pt = VCPU_get_pml1es(vcpu);
 	u64 pfn = gpaddr >> PAGE_SHIFT_4K;
 	u64 oldentry = pt[pfn];
 	hpt_prot_t pal_prot, reg_prot;
@@ -293,7 +266,7 @@ void hpt_nested_set_prot(VCPU * vcpu, u64 gpaddr)
 
 void hpt_nested_clear_prot(VCPU * vcpu, u64 gpaddr)
 {	
-	u64 *pt = get_pml1es(vcpu);
+	u64 *pt = VCPU_get_pml1es(vcpu);
 	u64 pfn = gpaddr >> PAGE_SHIFT_4K;
 	u64 oldentry = pt[pfn];
 	pt[pfn] = hpt_setpalprot(vcpu->cpu_vendor, pt[pfn], HPT_PROTS_NONE);
@@ -375,8 +348,8 @@ void hpt_nested_switch_scode(VCPU * vcpu, pte_t* pte_pages, u32 size, pte_t* pte
 	//dprintf(LOG_TRACE, "[TV] scode_page %#x, scode_size %#x!\n[TV] pte_page %#x, pte_size %#x!\n", pte_page, size, pte_page2, size2);
 
 	/* get page table addresses from VCPU */
-	npdp = (u64 *)get_pml3es(vcpu);
-	pd_base = (u32)(void*)get_pml2es(vcpu);
+	npdp = (u64 *)VCPU_get_pml3es(vcpu);
+	pd_base = (u32)(void*)VCPU_get_pml2es(vcpu);
 
 	//dprintf(LOG_TRACE, "[TV] pb_base is %#x!\n", (u32)pd_base);
 	/* first make all pd_entry unaccessible */
@@ -468,8 +441,8 @@ void hpt_nested_switch_regular(VCPU * vcpu, pte_t *pte_pages, u32 size, pte_t *p
 //	dprintf(LOG_TRACE, "[TV] scode_page %#x, scode_size %#x, pte_page %#x, pte_size %#x!\n", pte_page, size, pte_page2, size2);
 
 	/* get page table addresses from VCPU */
-	npdp = get_pml3es(vcpu);
-	pd_base = (u32)(void*)get_pml2es(vcpu);
+	npdp = VCPU_get_pml3es(vcpu);
+	pd_base = (u32)(void*)VCPU_get_pml2es(vcpu);
 
 //	dprintf(LOG_TRACE, "[TV] npdp is %#x!\n", (u32)npdp);
 
