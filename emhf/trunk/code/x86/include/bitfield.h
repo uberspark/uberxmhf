@@ -63,16 +63,28 @@ static inline u64 ZERO_LO(u64 x, int bits)
 
 static inline u64 MASKRANGE64(int hi, int lo)
 {
-  ZERO_LO(ZERO_HI(0xffffffffffffffffull,
-                  64-(hi)-1),
-          (lo));
+  return ZERO_LO(ZERO_HI(0xffffffffffffffffull,
+                         64-(hi)-1),
+                 (lo));
 }
+
 static inline u32 MASKRANGE32(int hi, int lo)
 {
   return ZERO_LO(ZERO_HI(0xfffffffful,
                          32-(hi)-1),
                  (lo));
 }
+
+static inline u64 MASKBIT64(int bit)
+{
+  return 1ull<<bit;
+}
+static inline u32 MASKBIT32(int bit)
+{
+  return 1ul<<bit;
+}
+
+
 
 static inline u64 BR64_GET_HL(u64 x64, int hi, int lo)
 {
@@ -97,15 +109,17 @@ static inline u32 BR32_SET_HL(u32 x32, int hi, int lo, u32 val)
 #define BR64_GET_BR(x64, name) BR64_GET_HL(x64, name##_HI, name##_LO)
 #define BR64_SET_BR(x64, name, val) BR64_SET_HL(x64, name##_HI, name##_LO, val)
 
-static inline u64 BR64_GET_BIT(u64 x64, int pos)
+static inline unsigned int BR64_GET_BIT(u64 x64, int pos)
 {
   return ((x64 & MASKRANGE64(pos, pos)) >> pos);
 }
-static inline u64 BR64_SET_BIT(u64 x64, int pos, u64 val)
+static inline u64 BR64_SET_BIT(u64 x64, int pos, bool val)
 {
-  return (x64 & ~(0x1ull<<pos) | (val<<pos));
+  u64 bit = val ? 1ull : 0ull;
+  return (x64 & ~(0x1ull<<pos) | (bit<<pos));
 }
 
+/* offset == (dst_hi-src_hi) == (dst_lo-src_lo) */
 static inline u64 BR64_COPY_BITS_HL(u64 dst, u64 src, int src_hi, int src_lo, int offset)
 {
   return BR64_SET_HL(dst,
@@ -114,6 +128,7 @@ static inline u64 BR64_COPY_BITS_HL(u64 dst, u64 src, int src_hi, int src_lo, in
                      BR64_GET_HL(src, src_hi, src_lo));
 }
 
+/* offset == (dst_hi-src_hi) == (dst_lo-src_lo) */
 static inline u32 BR32_COPY_BITS_HL(u32 dst, u32 src, int src_hi, int src_lo, int offset)
 {
   return BR32_SET_HL(dst,
