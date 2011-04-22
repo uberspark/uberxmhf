@@ -902,4 +902,8 @@ void * __gpa2hva__(u32 gpaddr)
 	}
 }
 
-
+/* Local Variables: */
+/* mode:c           */
+/* indent-tabs-mode:'t */
+/* tab-width:2      */
+/* End:             */

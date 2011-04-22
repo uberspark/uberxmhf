@@ -1731,3 +1731,9 @@ u32 scode_rand(VCPU * vcpu, u32 buffer_addr, u32 numbytes_addr)
 
 	return 0;
 }
+
+/* Local Variables: */
+/* mode:c           */
+/* indent-tabs-mode:'t */
+/* tab-width:2      */
+/* End:             */
