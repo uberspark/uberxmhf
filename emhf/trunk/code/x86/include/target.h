@@ -302,6 +302,33 @@ static inline hpt_pme_t* VCPU_get_pml4(VCPU *vcpu)
   }
 }
 
+static inline hpt_pm_t VCPU_get_root_pm(VCPU *vcpu)
+{
+  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+    return (hpt_pm_t)vcpu->vmx_vaddr_ept_pml4_table;
+  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+    return (hpt_pme_t*)vcpu->npt_vaddr_ptr;
+  }
+}
+
+static inline int VCPU_get_root_pm_lvl(VCPU *vcpu)
+{
+  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+    return 4;
+  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+    return 3;
+  }
+}
+
+static inline hpt_type_t VCPU_get_hpt_type(VCPU *vcpu)
+{
+  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+    return HPT_TYPE_EPT;
+  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+    return HPT_TYPE_PAE;
+  }
+}
+
 static inline spa_t VCPU_get_hcr3(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
