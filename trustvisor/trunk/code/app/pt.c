@@ -44,6 +44,7 @@
 #include <target.h>
 #include <hpt.h>
 #include  "./include/scode.h"
+#include <pages.h>
 
 /* set up initial nested page tables. we need 4K pages only for the
  * memory regions occupied by the main kernel. all other memory can be
@@ -104,6 +105,71 @@ static inline hpt_pml3e_t* get_pml3es(VCPU *vcpu)
 /* ********************************* */
 /* HPT related NPT operations */
 /* ********************************* */
+
+void hpt_clone_pme(VCPU *vcpu, pagelist_t *pl, hpt_pm_t dst_top, hpt_pm_t src_top, int top_lvl, u64 gpa)
+{
+	int lvl;
+	hpt_pm_t dst_pm;
+	hpt_pm_t src_pm;
+	int pm_idx;
+
+	/* iterate\recurse down until we reach level 1,
+	 * allocating tables as needed.
+	 */
+	for(lvl=top_lvl, dst_pm=dst_top, src_pm=src_top;
+			lvl > 1;
+			lvl--,
+				dst_pm = spa2hva((u32)hpt_get_address(vcpu->cpu_vendor, dst_pm[pm_idx])),
+				src_pm = spa2hva(hpt_get_address(vcpu->cpu_vendor, src_pm[pm_idx]))) {
+		pm_idx = hpt_get_pm_idx(vcpu->cpu_vendor, gpa, lvl);
+		ASSERT(!hpt_is_page(vcpu->cpu_vendor, src_pm[pm_idx], lvl));
+		ASSERT(hpt_is_present(vcpu->cpu_vendor, src_pm[pm_idx]));
+		if (!hpt_is_present(vcpu->cpu_vendor, dst_pm[pm_idx])) {
+			hpt_pm_t pm = pagelist_getpage(pl);
+			memset(pm, 0, HPT_PM_SIZE*sizeof(hpt_pme_t));
+			dst_pm[pm_idx] = hpt_set_address(vcpu->cpu_vendor, src_pm[pm_idx], hva2spa(pm));
+		}
+	}
+	ASSERT(lvl==1);
+	pm_idx = hpt_get_pm_idx(vcpu->cpu_vendor, gpa, 1);
+
+	/* XXX check bitmap here? */
+
+	/* ew. this ought to be in a separate fn */
+	switch(SCODE_PTE_TYPE_GET(gpa)) {
+	case SECTION_TYPE_SCODE:
+		dst_pm[pm_idx] = hpt_setprot(vcpu->cpu_vendor, dst_pm[pm_idx], HPT_PROTS_RX);
+		src_pm[pm_idx] = hpt_setprot(vcpu->cpu_vendor, src_pm[pm_idx], HPT_PROTS_NONE);
+		break;
+	case SECTION_TYPE_STEXT:
+		dst_pm[pm_idx] = hpt_setprot(vcpu->cpu_vendor, dst_pm[pm_idx], HPT_PROTS_RX);
+		src_pm[pm_idx] = hpt_setprot(vcpu->cpu_vendor, src_pm[pm_idx], HPT_PROTS_RX);
+		break;
+	case SECTION_TYPE_SDATA:
+	case SECTION_TYPE_PARAM:
+	case SECTION_TYPE_STACK:
+		dst_pm[pm_idx] = hpt_setprot(vcpu->cpu_vendor, dst_pm[pm_idx], HPT_PROTS_RW);
+		src_pm[pm_idx] = hpt_setprot(vcpu->cpu_vendor, src_pm[pm_idx], HPT_PROTS_NONE);
+		break;
+	case SECTION_TYPE_SHARED:
+		dst_pm[pm_idx] = hpt_setprot(vcpu->cpu_vendor, dst_pm[pm_idx], HPT_PROTS_RWX);
+		src_pm[pm_idx] = hpt_setprot(vcpu->cpu_vendor, src_pm[pm_idx], HPT_PROTS_NONE);
+		/* shared segments are still inaccessible to non-pal while
+			 registered.  sharing happens by dynamically registering and
+			 unregistering these segments */
+		break;
+	default:
+		ASSERT(0);
+	}
+}
+
+void hpt_clone_pmes(VCPU *vcpu, pagelist_t *pl, hpt_pml4_t dstroot, hpt_pml4_t srcroot, u32 gpas[], size_t num_gpas)
+{
+	unsigned i;
+	for(i=0; i<num_gpas; i++) {
+		hpt_clone_pme(vcpu, pl, dstroot, srcroot, gpas[i], 4);
+	}
+}
 
 /* **************************************
  * set up scode pages permission in EPT
