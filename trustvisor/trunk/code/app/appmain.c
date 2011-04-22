@@ -224,6 +224,31 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				vfree(lens);
 				break;
 			}
+		case VMMCMD_PCRREAD:
+			{
+				u32 addr, num;
+				addr = r->edx;
+				num = r->ecx;
+				ret = scode_pcrread(vcpu, addr, num);
+				break;
+			}
+		case VMMCMD_PCREXT:
+			{
+				u32 addr, len, num;
+				addr = r->edx;
+				len = r->esi;
+				num = r->ecx;
+				ret = scode_pcrextend(vcpu, addr, len, num);
+				break;
+			}
+		case VMMCMD_PCREXT:
+			{
+				u32 addr, len_addr;
+				addr = r->ecx;
+				len_addr = r->edx;
+				ret = scode_rand(vcpu, addr, len_addr);
+				break;
+			}
 		default:
 			{
 				printf("[TV] FATAL ERROR: Invalid vmmcall cmd (%d)\n", cmd);

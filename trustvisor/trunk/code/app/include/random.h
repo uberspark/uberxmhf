@@ -51,6 +51,6 @@ arc4_context;
 
 void rand_init (void);
 unsigned char rand_byte (void);
-void rand_bytes (unsigned char * out, int len);
+int rand_bytes (unsigned char * out, int len);
 
 

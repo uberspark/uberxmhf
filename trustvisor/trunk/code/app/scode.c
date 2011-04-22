@@ -1614,148 +1614,109 @@ u32 scode_share_ranges(VCPU * vcpu, u32 scode_entry, u32 gva_base[], u32 gva_len
 	return 0;
 }
 
-#if 0
-/* functions for software tpm, by yanlinl at March 4, 2009 */
-
-u32 scode_pcrread(u64 gcr3, u32 gvaddr, u32 num)
+u32 scode_pcrread(VCPU * vcpu, u32 gvaddr, u32 num)
 {
 	int i;
 	int index;
 	u8 pcr[TPM_PCR_SIZE];
 
-	dprintf(LOG_ERROR, "[TV] PCRREAD cr3 %#x, gvaddr %#x\n", (u32)gcr3, gvaddr);
-	index = scode_in_list(gcr3, (u32)linux_vmcb->rip); 
+	dprintf(LOG_TRACE, "\n[TV] ********** uTPM pcrread **********\n");
 
-	if ((index >= 0) && (scode_curr >= 0))
-	{
-		scode_curr = index;
-		stpm_pcrread(pcr, num);
-		printf("[TV] PCRREAD %d pcr value\n", num);
-		for ( i = 0; i < TPM_HASH_SIZE/4; i ++)
-		{
-			printf("[TV] PCRREAD %d %#x\n", num, ((u32 *)pcr)[i]);
-		}
-
-		copy_to_guest(gcr3, gvaddr, pcr, TPM_PCR_SIZE);
-	} else 
-	{
-		printf("[TV] PCR Read ERROR: cr3 %#x, gvaddr %#x, index %#x\n", (u32)gcr3, gvaddr, index);
+	/* make sure that this vmmcall can only be executed when a PAL is running */
+	if (scode_curr[vcpu->id]== -1) {
+		dprintf(LOG_ERROR, "[TV] PCRRead ERROR: no PAL is running!\n");
 		return 1;
-	}   
+	}
+
+	/* make sure requested PCR number is in reasonable range */
+	if (num >= TPM_PCR_NUM)
+	{
+		dprintf(LOG_ERROR, "[TV] PCRRead ERROR: pcr num %d not correct!\n", num);
+		return 1;
+	}
+
+	/* read pcr value */
+	stpm_pcrread(pcr, whitelist[scode_curr[vcpu->id]].pcr, num);
+
+	/* return pcr value to guest */
+	copy_to_guest(vcpu, gvaddr, pcr, TPM_PCR_SIZE);
 
 	return 0;
 }
 
 
-u32 scode_pcrextend(u64 gcr3, u32 gvaddr, u32 len, u32 num)
+u32 scode_pcrextend(VCPU * vcpu, u32 gvaddr, u32 len, u32 num)
 {
 	int index;
-	int data[2048]; /* the largest data size to extend pcr is 4k */
+	u8 data[MAX_TPM_EXTEND_DATA_LEN]; 
 	u8 hash[TPM_HASH_SIZE];
 
-	if (len > (2048))
-	{
-		printf("[TV] PCR extend ERROR: cr3 %#x, gvaddr %#x\n", (u32)gcr3, gvaddr);
-		printf("[TV] PCR extend ERROR: data size is too large\n");
+	dprintf(LOG_TRACE, "\n[TV] ********** uTPM pcrextend **********\n");
+
+	/* make sure that this vmmcall can only be executed when a PAL is running */
+	if (scode_curr[vcpu->id]== -1) {
+		dprintf(LOG_ERROR, "[TV] PCRExtend ERROR: no PAL is running!\n");
 		return 1;
 	}
 
-	/* get scode_curr */
-	printf("[TV] PCR extend cr3 %#x, gvaddr %#x, len %d, pcr num %d\n", (u32)gcr3, gvaddr, len, num);
-	index = scode_in_list(gcr3, (u32)linux_vmcb->rip);
-
-	if ((index >= 0) && (scode_curr >= 0))
+	/* make sure requested PCR number is in reasonable range */
+	if (num >= TPM_PCR_NUM)
 	{
-		scode_curr = index;
+		dprintf(LOG_ERROR, "[TV] PCRExtend ERROR: pcr num %d not correct!\n", num);
+		return 1;
 	}
-	else
+
+	/* make sure the extended data is not too big */
+	if (len > MAX_TPM_EXTEND_DATA_LEN)
 	{
-		printf("[TV] PCR extend ERROR: cr3 %#x, gvaddr %#x\n", (u32)gcr3, gvaddr);
-		printf("[TV] PCR extend ERROR: scode_curr error\n");
+		dprintf(LOG_ERROR, "[TV] PCRExtend ERROR: extend data len %d not correct!\n", len);
 		return 1;
 	}
 
 	/* get data from guest */
-	copy_from_guest((unsigned char *)data, gcr3, gvaddr, len);
-	printf("[TV] copy data from guest");
+	copy_from_guest(vcpu, (u8 *)data, gvaddr, len);
+
 	/* hash input data */
 	sha1_csum((unsigned char*)data, len, hash);
-	printf("[TV] PCR %d EXTEND, hash done!!", num);
+
 	/* extend pcr */
-	stpm_extend(hash, num);
-	printf("[TV] PCR %d extend finish\n", num); 
+	stpm_extend(hash, whitelist[scode_curr[vcpu->id]].pcr, num);
+
 	return 0;
 }
 
-
-
-u32 scode_rand(u64 gcr3, u32 buffer_addr, u32 numbytes_requested, u32 numbytes_addr)
+u32 scode_rand(VCPU * vcpu, u32 buffer_addr, u32 numbytes_addr)
 {
 	u32 ret;
-	int index;
-	u8 buffer[STPM_RANDOM_BUFFER_SIZE + STPM_RANDOM_BUFFER_SIZE]; // buffer to save the random data
+	u8 buffer[MAX_TPM_RAND_DATA_LEN]; 
 	u32 numbytes;
 
-	/* get scode_curr */
-	printf("[TV] PCR rand cr3 %#x, buffaddr %#x, numbytes %d\n", (u32)gcr3, buffer_addr, numbytes_requested);
-	index = scode_in_list(gcr3, (u32)linux_vmcb->rip);
-
-	if ((index >= 0) && (scode_curr >= 0))
-	{
-		scode_curr = index;
-	}
-	else
-	{
-		printf("[TV] GEN RANDOM ERROR: cr3 %#x, buff_addr %#x\n", (u32)gcr3, buffer_addr);
+	/* make sure that this vmmcall can only be executed when a PAL is running */
+	if (scode_curr[vcpu->id]== -1) {
+		dprintf(LOG_ERROR, "[TV] GenRandom ERROR: no PAL is running!\n");
 		return 1;
 	}
 
 	// get the byte number requested
-	numbytes = numbytes_requested;
-	ret = stpm_rand(buffer, numbytes);
-	if (ret != numbytes)
+	numbytes = get_32bit_aligned_value_from_guest(vcpu, numbytes_addr);
+	if (numbytes > MAX_TPM_RAND_DATA_LEN)
 	{
-		printf("[TV] utmp generate randon %d bytes, requested %d bytes\n", ret, numbytes);
+		dprintf(LOG_ERROR, "[TV] GenRandom ERROR: requested rand data len %d not correct!\n", numbytes);
+		return 1;
 	}
-	numbytes = ret;
 
-	printf("[TV] copy random data to guest\n");
+	ret = stpm_rand(buffer, numbytes);
+	if (ret == 0)
+	{
+		dprintf(LOG_ERROR, "[TV] GenRandom ERROR: rand byte error!");
+		return 1;
+	}
+
 	/* copy random data to guest */
-	copy_to_guest(gcr3, buffer_addr, buffer, numbytes);
-	printf("[TV] copy random data length to guest, %d bytes\n", numbytes);
+	copy_to_guest(vcpu, buffer_addr, buffer, ret);
+
 	/* copy data length to guest */
-	put_32bit_aligned_value_to_guest(gcr3, numbytes_addr, numbytes);
+	put_32bit_aligned_value_to_guest(vcpu, numbytes_addr, ret);
 
 	return 0;
 }
-
-/*
-   u32 scode_getpubkey(u64 gcr3, u32 gvaddr)
-   {
-   int i;
-   int index;
-   u8 aikdata[TPM_RSA_KEY_LEN];
-
-   printf("[TV] GetPubKey cr3 %#x, gvaddr %#x\n", (u32)gcr3, gvaddr);
-   index = scode_in_list(gcr3, (u32)linux_vmcb->rip);
-
-   if ((index >= 0) && (scode_curr >= 0))
-   {
-   scode_curr = index;
-
-   for ( i = 0; i < TPM_RSA_KEY_LEN; i ++)
-   {
-   aikdata[i] = ((u8*)g_rsa.N.p)[i];
-   }
-   copy_to_guest(gcr3, gvaddr, aikdata, TPM_RSA_KEY_LEN);
-   }else
-   {
-   printf("[TV] GetPubKey ERROR: cr3 %#x, gvaddr %#x, index %#x\n", (u32)gcr3, gvaddr, index);
-   return 1;
-   }
-
-   return 0;
-   }
-   */
-
-#endif

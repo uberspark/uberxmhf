@@ -150,13 +150,14 @@ inline unsigned char rand_byte (void)
 	return randbuf[randbuf_idx++];
 }
 
-void rand_bytes (unsigned char * out, int len)
+int rand_bytes (unsigned char * out, int len)
 {
 	int i, newlen;
 	unsigned char * tmp;
 	/* check maximum rand bytes per requeset (2^16) */
 	if (((len & 0xFFFF0000)>>16) != 0) {
 		printf("[TV] Rand ERROR: exceed max bytes per request!\n");
+		return 0;
 	}
 
 	if (len < (RANDOM_BUFFER_SIZE<<2)) {
@@ -178,6 +179,7 @@ void rand_bytes (unsigned char * out, int len)
 		vmemcpy(out, tmp, len);
 		vfree(tmp);
 	}
+	return len;
 }
 
 #endif
@@ -276,17 +278,19 @@ unsigned char rand_byte(void)
 	return randbuf[randbuf_idx++];
 }
 
-void rand_bytes (unsigned char * out, int len)
+int rand_bytes (unsigned char * out, int len)
 {
 	int i;
 	/* check maximum rand bytes per requeset (2^16) */
 	if (((len & 0xFFFF0000)>>16) != 0) {
 		printf("[TV] Rand ERROR: exceed max bytes per request!\n");
+		return 0;
 	}
 
 	for( i=0 ; i< len ; i++ )  {
 		out[i] = rand_byte();
 	}
+	return len;
 
 }
 #endif

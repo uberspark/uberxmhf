@@ -45,81 +45,38 @@
 #include  "./include/sha1.h"
 #include  "./include/puttymem.h"
 
-/*TPM functions */
-u32 TPM_PcrRead(u8* data, u8* pcr, u32 num)
-{  
-	if (num > (TPM_PCR_NUM - 1))
-	{
-		printf("SECURITY: pcr num %d is not correct!!!\n", num);
-		return 1;
-	}
-	vmemcpy(data, pcr + num*TPM_PCR_SIZE, TPM_PCR_SIZE);
-
-	return 0;
-}
-
-/* function TPM_PcrWrite is not defined in tpm.h */
-u32 TPM_PcrWrite(u8* data, u8* pcr, u32 num)
+/* software tpm pcr write (only called by stpm_extend) */
+u32 stpm_pcrwrite(u8* value, u8* pcr, u32 num)
 {
-	if (num > (TPM_PCR_NUM - 1))
-	{
-		printf("SECURITY: PCR num %d is too large\n", num);
-		return 1;
-	}
-	vmemcpy(pcr + num*TPM_PCR_SIZE, data, TPM_PCR_SIZE);
+	vmemcpy(pcr + num*TPM_PCR_SIZE, value, TPM_PCR_SIZE);
 	return 0;
 }
 
-/* Software TPM functions */
+/* software tpm pcr read */
 u32 stpm_pcrread(u8* value, u8* pcr, u32 num)
 { 
-
-	TPM_PcrRead(value, pcr, num);
-
+	vmemcpy(value, pcr + num*TPM_PCR_SIZE, TPM_PCR_SIZE);
 	return 0;
 }
 
+/* software tpm pcr extend */
 u32 stpm_extend(u8* hash, u8 * pcr, u32 num)
 {
 	u8 C1[TPM_HASH_SIZE + TPM_PCR_SIZE];
 	u8 H1[TPM_HASH_SIZE];
 	int i;
 
-	if (num > (TPM_PCR_NUM -1 ))
-	{
-		printf("[TV]    no PCR %d, PCR EXTEND fail!\n", num);
-		return 1;
-	}
-
 	/* read old PCR value */
-	TPM_PcrRead(C1, pcr, num);
-
-	printf("[TV]   old TPM PCR[%d] value: ", num);
-	for(i=0;i<TPM_HASH_SIZE;i++) {
-		printf("%x ", C1[i]);
-	}
-	printf("\n");
+	stpm_pcrread(C1, pcr, num);
 
 	/* append hash */
 	vmemcpy(C1+TPM_PCR_SIZE, hash, TPM_HASH_SIZE);
-
-	printf("[TV]   measurement is:");
-	for(i=0;i<TPM_HASH_SIZE;i++)  {
-		printf("%x ", hash[i]);
-	}
-	printf("\n");
 
 	/* calculate new PCR value */
 	sha1_csum(C1, TPM_HASH_SIZE + TPM_PCR_SIZE, H1);
 
 	/* write back */
-	TPM_PcrWrite(H1, pcr, num);
-
-	printf("[TV]   new TPM PCR[%d] value: ", num);
-	for(i=0;i<TPM_HASH_SIZE;i++) {
-		printf("%x ", H1[i]);
-	}
-	printf("\n");
+	stpm_pcrwrite(H1, pcr, num);
 
 	return 0;
 }
@@ -265,28 +222,14 @@ u32 stpm_quote(u8* externalnonce, u8* output, u32* outlen, u8 * pcr, u8 * tpmsel
 	return 0; 
 }
 
-#if 0
-/**
- *
- */
+
+/* get random bytes from software TPM */
 u32 stpm_rand(u8* buffer, u32 numbytes)
 {
-	if (scode_curr < 0)
-	{
-		printf("SECURITY: try to use software TPM outside sensitive code DETECTED !! (rip %#x)\n",
-				(u32)linux_vmcb->rip);
-		return 1;
-	}
+	int numbytes;
 
-	if(!whitelist[scode_curr].refillNo) { /* first one; initialize key */
-		arc4_setup(&(whitelist[scode_curr].arc4_ctx), whitelist[scode_curr].randKey, STPM_RANDOM_BUFFER_SIZE);
-	}
+	numbytes = rand_bytes(buffer, numbytes);
 
-	vmemset(buffer, 0, 128);
-	vmemcpy(buffer, &(whitelist[scode_curr].refillNo), sizeof(unsigned long long));
-	arc4_crypt(&(whitelist[scode_curr].arc4_ctx), buffer, numbytes);
-	whitelist[scode_curr].refillNo++;
 	return numbytes;
 }
-#endif
 
