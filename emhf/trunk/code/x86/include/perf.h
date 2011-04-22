@@ -49,8 +49,11 @@
 #ifndef PERF_H
 #define PERF_H
 
-#include <processor.h>
 #include <types.h>
+
+#ifdef __PROFILING__
+
+#include <processor.h>
 
 typedef struct perf_counter {
   /* per-cpu */
@@ -138,4 +141,21 @@ static inline u64 perf_ctr_get_count(perf_ctr_t *p)
   return rv;
 }
 
+#else /* __PROFILING__ */
+
+typedef struct perf_counter {
+} perf_ctr_t;
+
+/* call exactly once for a perf_ctr_t */
+#define perf_ctr_init(...) do { } while (0)
+#define perf_ctr_reset(...) do { } while (0)
+#define perf_ctr_timer_start(...) do { } while (0)
+#define perf_ctr_timer_record(...) do { } while (0)
+#define perf_ctr_timer_discard(...) do { } while (0)
+#define perf_ctr_get_total_time(...) 0ull
+#define perf_ctr_get_count(...) 0ull
+
+#endif /* __PROFILING__ */
+
 #endif
+
