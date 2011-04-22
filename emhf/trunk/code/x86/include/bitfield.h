@@ -78,11 +78,20 @@ static inline u64 BR64_GET_HL(u64 x64, int hi, int lo)
 {
   return ZERO_HI(x64, 63-(hi)) >> (lo);
 }
+static inline u64 BR32_GET_HL(u32 x32, int hi, int lo)
+{
+  return ZERO_HI(x32, 31-(hi)) >> (lo);
+}
 
 static inline u64 BR64_SET_HL(u64 x64, int hi, int lo, u64 val)
 {
   ASSERT(ZERO_HI(val, 63-(hi-lo)) == val);
   return ((x64 & ~MASKRANGE64((hi), (lo))) | ((val) << (lo)));
+}
+static inline u32 BR32_SET_HL(u32 x32, int hi, int lo, u32 val)
+{
+  ASSERT(ZERO_HI(val, 31-(hi-lo)) == val);
+  return ((x32 & ~MASKRANGE32((hi), (lo))) | ((val) << (lo)));
 }
 
 #define BR64_GET_BR(x64, name) BR64_GET_HL(x64, name##_HI, name##_LO)
@@ -103,6 +112,14 @@ static inline u64 BR64_COPY_BITS_HL(u64 dst, u64 src, int src_hi, int src_lo, in
                      (src_hi)+(offset),
                      (src_lo)+(offset),
                      BR64_GET_HL(src, src_hi, src_lo));
+}
+
+static inline u32 BR32_COPY_BITS_HL(u32 dst, u32 src, int src_hi, int src_lo, int offset)
+{
+  return BR32_SET_HL(dst,
+                     (src_hi)+(offset),
+                     (src_lo)+(offset),
+                     BR32_GET_HL(src, src_hi, src_lo));
 }
 
 #endif
