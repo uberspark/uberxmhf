@@ -386,6 +386,42 @@ static inline int hpt_root_lvl(hpt_type_t t)
   return hpt_type_max_lvl[t];
 }
 
+static inline hpt_pme_t hpt_pme_setuser(hpt_type_t t, int lvl, hpt_pme_t entry, bool user_accessible)
+{
+  if (t == HPT_TYPE_NORM) {
+    return BR64_SET_BIT(entry, HPT_NORM_US_L21_MP_BIT, user_accessible);
+  } else if (t == HPT_TYPE_PAE) {
+    if (lvl == 3) {
+      ASSERT(user_accessible);
+      return entry;
+    } else {
+      return BR64_SET_BIT(entry, HPT_PAE_US_L21_MP_BIT, user_accessible);
+    }
+  } else if (t == HPT_TYPE_LONG) {
+    return BR64_SET_BIT(entry, HPT_LONG_US_L4321_MP_BIT, user_accessible);
+  } else if (t == HPT_TYPE_EPT) {
+    ASSERT(user_accessible);
+    return entry;
+  }
+}
+
+static inline bool hpt_pme_getuser(hpt_type_t t, int lvl, hpt_pme_t entry)
+{
+  if (t == HPT_TYPE_NORM) {
+    return BR64_GET_BIT(entry, HPT_NORM_US_L21_MP_BIT);
+  } else if (t == HPT_TYPE_PAE) {
+    if (lvl == 3) {
+      return true;
+    } else {
+      return BR64_GET_BIT(entry, HPT_PAE_US_L21_MP_BIT);
+    }
+  } else if (t == HPT_TYPE_LONG) {
+    return BR64_GET_BIT(entry, HPT_LONG_US_L4321_MP_BIT);
+  } else if (t == HPT_TYPE_EPT) {
+    return true;
+  }
+}
+
 static inline hpt_pme_t hpt_pme_setprot(hpt_type_t t, int lvl, hpt_pme_t entry, hpt_prot_t perms)
 {
   hpt_pme_t rv=entry;
@@ -821,10 +857,7 @@ hpt_pm_t hpt_walk_get_pm_alloc(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, 
       }
       pme = hpt_pme_set_address(ctx->t, lvl, pme, ctx->ptr2pa(ctx->ptr2pa_ctx, new_pm));
       pme = hpt_pme_setprot(ctx->t, lvl, pme, HPT_PROTS_RWX);
-      /* XXX generalize this if it works */
-      if (ctx->t == HPT_TYPE_PAE && lvl != 3) {
-        pme = BR64_SET_BIT(pme, 2, 1); /* make user-accessible */
-      }
+      pme = hpt_pme_setuser(ctx->t, lvl, pme, true);
       hpt_pm_set_pme_by_va(ctx->t, lvl, pm, va, pme);
       dprintf(LOG_TRACE, "hpt_walk_get_pm_alloc: inserted pme:%Lx\n", pme);
     }
