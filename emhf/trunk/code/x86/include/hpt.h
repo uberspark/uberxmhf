@@ -772,16 +772,11 @@ hpt_pm_t hpt_walk_get_pm(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int *e
   ASSERT(lvl >= *end_lvl);
 
   while(lvl > *end_lvl) {
-    dprintf(LOG_TRACE, "hpt_walk_get_pm: pm:%x lvl:%d va:%x\n", pm, lvl, va);
-    print_hex("pm:", pm, 4096);
-
     if (!hpt_walk_next_lvl(ctx, &lvl, &pm, va)) {
       *end_lvl = lvl;
       return pm;
     }
   }
-  dprintf(LOG_TRACE, "hpt_walk_get_pm: pm:%x lvl:%d va:%x\n", pm, lvl, va);
-  print_hex("pm:", pm, 4096);
   return pm;
 }
 

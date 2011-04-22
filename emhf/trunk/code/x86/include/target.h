@@ -343,7 +343,6 @@ static inline hpt_pm_t VCPU_get_current_root_pm(VCPU *vcpu)
 
 static inline void VCPU_set_current_root_pm(VCPU *vcpu, hpt_pm_t root)
 {
-  dprintf(LOG_TRACE, "VCPU_set_current_root_pm: root %x\n", root);
   if (VCPU_get_hpt_type(vcpu) == HPT_TYPE_EPT) {
     ASSERT(PAGE_ALIGNED_4K((uintptr_t)root));
     vcpu->vmcs.control_EPT_pointer_full = BR32_COPY_BITS_HL(vcpu->vmcs.control_EPT_pointer_full, hva2spa(root), 31, 12, 0);
@@ -351,7 +350,6 @@ static inline void VCPU_set_current_root_pm(VCPU *vcpu, hpt_pm_t root)
     u64 oldcr3, newcr3;
     oldcr3 = ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3;
     newcr3 = hpt_cr3_set_address(HPT_TYPE_PAE, oldcr3, hva2spa(root));
-    dprintf(LOG_TRACE, "VCPU_set_current_root_pm: oldcr3:%Lx newcr3:%Lx\n", oldcr3, newcr3);
     ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3 = newcr3;
   } else {
     ASSERT(0);

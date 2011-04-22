@@ -1043,34 +1043,11 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 
 	/* change NPT permission for all PTE pages and scode pages */
 	dprintf(LOG_TRACE, "[TV] change NPT permission to run PAL!\n");
-	dprintf(LOG_TRACE, "pal root pm:%x reg root pm:%x\n",
-					whitelist[curr].pal_hpt_root,
-					VCPU_get_default_root_pm(vcpu));
-	dprintf(LOG_TRACE, "root ptr va before switch: %x\n", VCPU_get_current_root_pm(vcpu));
 	VCPU_set_current_root_pm(vcpu, whitelist[curr].pal_hpt_root);
-	dprintf(LOG_TRACE, "root ptr va after switch: %x\n", VCPU_get_current_root_pm(vcpu));
 	emhf_hwpgtbl_flushall(vcpu); /* XXX */
 
 	/* hpt_nested_switch_scode(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size, */
 	/* 												whitelist[curr].pte_page, whitelist[curr].pte_size); */
-	{
-		u8 *pm;
-		int lvl=1;
-		gpa_t gpa = whitelist[curr].scode_pages[0]; /* whitelist[curr].pte_page[0];*/
-		/* dprintf(LOG_TRACE, "EPTptr: %x\n", vcpu->vmcs.control_EPT_pointer_full); */
-		pm = VCPU_get_current_root_pm(vcpu);
-		dprintf(LOG_TRACE, "root ptr va: %x\n", pm);
-		dprintf(LOG_TRACE, "root page map:\n");
-		print_hex("pm-root:", pm, 4096);
-		dprintf(LOG_TRACE, "test walk of gpa %Lx:\n", gpa);
-		dprintf(LOG_TRACE, "pte for gpa %Lx is %Lx\n",
-						gpa,
-						hpt_walk_get_pme(&whitelist[curr].hpt_nested_walk_ctx,
-														 hpt_root_lvl(hpt_nested_walk_ctx.t),
-														 pm,
-														 &lvl,
-														 gpa));
-	}
 		
 	/* disable interrupts */
 	VCPU_grflags_set(vcpu, VCPU_grflags(vcpu) & ~EFLAGS_IF);
