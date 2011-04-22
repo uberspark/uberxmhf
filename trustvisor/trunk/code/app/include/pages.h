@@ -46,7 +46,8 @@ typedef struct {
 } pagelist_t;
 
 void pagelist_init(pagelist_t *pl);
-void* pagelist_getpage(pagelist_t *pl);
+void* pagelist_get_page(pagelist_t *pl);
+void* pagelist_get_zeroedpage(pagelist_t *pl);
 void pagelist_free_all(pagelist_t *pl);
 
 #endif

@@ -55,7 +55,7 @@ void pagelist_init(pagelist_t *pl)
   pl->num_used = 0;
 }
 
-void* pagelist_getpage(pagelist_t *pl)
+void* pagelist_get_page(pagelist_t *pl)
 {
   void *page;
 
@@ -65,6 +65,13 @@ void* pagelist_getpage(pagelist_t *pl)
   page = pl->page_base + (pl->num_allocd*PAGE_SIZE_4K);
   pl->num_used++;
 
+  return page;
+}
+
+void* pagelist_get_zeroedpage(pagelist_t *pl)
+{
+  void *page = pagelist_get_page(pl);
+  memset(page, 0, PAGE_SIZE_4K);
   return page;
 }
 
