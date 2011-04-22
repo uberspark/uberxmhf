@@ -77,6 +77,8 @@
 #define  SECTION_TYPE_STEXT 5
 /* shared segment: RWX\np when pal is running, np\RWX otherwise */
 #define  SECTION_TYPE_SHARED 6
+/* guest page tables. (temporarily) used internally */
+#define	 SECTION_TYPE_GUEST_PAGE_TABLES 7
 
 /* bits 0 to 2 of stored pte's store the section type */
 #define SCODE_PTE_TYPE_MASK (0x7ull)
@@ -168,7 +170,7 @@ typedef struct whitelist_entry{
 	pte_t* scode_pages; /* registered pte's (copied from guest page tables and additional info added) */
 	u32 scode_size; /* scode size */
 
-	u32 pte_page;  /* holder for guest page table entry to access scode and GDT */
+	pte_t * pte_page;  /* holder for guest page table entry to access scode and GDT */
 	u32 pte_size;	/* total size of all PTE pages */
 #ifdef __MP_VERSION__
 	u32 pal_running_lock; /* PAL running lock */
@@ -205,8 +207,8 @@ enum VMMcmd
 void hpt_insert_pal_pmes(VCPU *vcpu, pagelist_t *pl, hpt_pml4_t pal_pml4, gpa_t gpas[], size_t num_gpas);
 void hpt_nested_set_prot(VCPU * vcpu, u64 gpaddr);
 void hpt_nested_clear_prot(VCPU * vcpu, u64 gpaddr);
-void hpt_nested_switch_scode(VCPU * vcpu, pte_t *pte_pages, u32 size, u32 pte_page2, u32 size2);
-void hpt_nested_switch_regular(VCPU * vcpu, pte_t *pte_page, u32 size, u32 pte_page2, u32 size2);
+void hpt_nested_switch_scode(VCPU * vcpu, pte_t *pte_pages, u32 size, pte_t *pte_page2, u32 size2);
+void hpt_nested_switch_regular(VCPU * vcpu, pte_t *pte_page, u32 size, pte_t *pte_page2, u32 size2);
 void hpt_nested_make_pt_unaccessible(pte_t *gpaddr_list, u32 gpaddr_count, pdpt_t npdp, u32 is_pal);
 void hpt_nested_make_pt_accessible(pte_t *gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_pal);
 

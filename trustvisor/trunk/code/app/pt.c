@@ -189,6 +189,9 @@ hpt_prot_t pal_prot_of_type(int type)
 	case SECTION_TYPE_SHARED:
 		return HPT_PROTS_RWX;
 		break;
+	case SECTION_TYPE_GUEST_PAGE_TABLES:
+		return HPT_PROTS_RWX;
+		break;
 	default:
 		ASSERT(0);
 	}
@@ -213,6 +216,9 @@ hpt_prot_t reg_prot_of_type(int type)
 	case SECTION_TYPE_SHARED:
 		return HPT_PROTS_NONE;
 		break;
+	case SECTION_TYPE_GUEST_PAGE_TABLES:
+		return HPT_PROTS_RWX;
+		break;
 	default:
 		ASSERT(0);
 	}
@@ -226,8 +232,10 @@ void hpt_insert_pal_pme(VCPU *vcpu, pagelist_t *pl, hpt_pm_t pal_pm, int top_lvl
 	hpt_pml1e_t *reg_pml1es = get_pml1es(vcpu);
 	u64 pfn = gpa >> PAGE_SHIFT_4K;
 
+	dprintf(LOG_TRACE, "hpt_insert_pal_pme: gpa: %Lx\n", gpa);
+
 	reg_pme = &reg_pml1es[pfn];
-	dprintf(LOG_TRACE, "hpt_switch_pme: reg: %Lx\n", *reg_pme);
+	dprintf(LOG_TRACE, "hpt_insert_pal_pme: reg: %Lx\n", *reg_pme);
 
 	type = SCODE_PTE_TYPE_GET(gpa);
 	pal_prot = pal_prot_of_type(type);
@@ -238,7 +246,7 @@ void hpt_insert_pal_pme(VCPU *vcpu, pagelist_t *pl, hpt_pm_t pal_pm, int top_lvl
 														 *pal_pme,
 														 hpt_get_address(vcpu->cpu_vendor,
 																						 *reg_pme));
-	dprintf(LOG_TRACE, "hpt_switch_pme: pal     : %Lx\n", *pal_pme);
+	dprintf(LOG_TRACE, "hpt_insert_pal_pme: pal: %Lx\n", *pal_pme);
 }
 
 void hpt_insert_pal_pmes(VCPU *vcpu, pagelist_t *pl, hpt_pml4_t pal_pml4, gpa_t gpas[], size_t num_gpas)
@@ -355,7 +363,7 @@ void hpt_nested_make_pt_accessible(pte_t *gpaddr_list, u32 gpaddr_count, u64 * n
 	}
 }
 
-void hpt_nested_switch_scode(VCPU * vcpu, pte_t* pte_pages, u32 size, u32 pte_page2, u32 size2)
+void hpt_nested_switch_scode(VCPU * vcpu, pte_t* pte_pages, u32 size, pte_t* pte_page2, u32 size2)
 {
 	u64* npdp;
 	u64* npd; 
@@ -386,7 +394,7 @@ void hpt_nested_switch_scode(VCPU * vcpu, pte_t* pte_pages, u32 size, u32 pte_pa
 
 	/* make PAL and its related PTE pages accessbile */
 	hpt_nested_make_pt_accessible(pte_pages, size >> PAGE_SHIFT_4K, npdp, 1); 
-	hpt_nested_make_pt_accessible((pte_t*)pte_page2, size2 >> PAGE_SHIFT_4K, npdp, 0); 
+	hpt_nested_make_pt_accessible(pte_page2, size2 >> PAGE_SHIFT_4K, npdp, 0); 
 
 	/* flush TLB */
 	emhf_hwpgtbl_flushall(vcpu);
@@ -449,7 +457,7 @@ void hpt_nested_make_pt_unaccessible(pte_t *gpaddr_list, u32 gpaddr_count, pdpt_
 	}
 }
 
-void hpt_nested_switch_regular(VCPU * vcpu, pte_t *pte_pages, u32 size, u32 pte_page2, u32 size2)
+void hpt_nested_switch_regular(VCPU * vcpu, pte_t *pte_pages, u32 size, pte_t *pte_page2, u32 size2)
 {
 	pdpt_t npdp;
 	pdt_t npd; 
@@ -467,7 +475,7 @@ void hpt_nested_switch_regular(VCPU * vcpu, pte_t *pte_pages, u32 size, u32 pte_
 
 	/* restore PAL protection (also don't compromise the protection of other PALs)*/
 	hpt_nested_make_pt_unaccessible(pte_pages, size >> PAGE_SHIFT_4K, npdp, 1); 
-	hpt_nested_make_pt_unaccessible((pte_t*)pte_page2, size2 >> PAGE_SHIFT_4K, npdp, 0); 
+	hpt_nested_make_pt_unaccessible(pte_page2, size2 >> PAGE_SHIFT_4K, npdp, 0); 
 
 //	dprintf(LOG_TRACE, "[TV] pb_base is %#x!\n", (u32)pd_base);
 	/* make all pd_entry accessible */

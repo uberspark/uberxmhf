@@ -50,6 +50,9 @@
 #include  "./include/random.h"
 #include <perf.h>
 
+static void scode_expose_arch(VCPU *vcpu, whitelist_entry_t *wle);
+static void scode_unexpose_arch(VCPU *vcpu, whitelist_entry_t *wle);
+
 /* whitelist of all approved sensitive code regions */
 /* whitelist_max and *whitelist is set up by BSP, no need to apply lock
  * whitelist_size will only be updated in scode_register() and scode_unreg(), no need to apply lock
@@ -590,6 +593,14 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	hpt_insert_pal_pmes(vcpu, &whitelist_new.pl,
 											whitelist_new.pal_pml4,
 											whitelist_new.scode_pages, whitelist_new.scode_size>>PAGE_SHIFT_4K);
+	/* register guest page table pages. TODO: clone guest page table
+		 instead of checking on every switch to ensure it hasn't been
+		 tampered. */
+	scode_expose_arch(vcpu, &whitelist_new);
+	hpt_insert_pal_pmes(vcpu, &whitelist_new.pl,
+											whitelist_new.pal_pml4,
+											(pte_t*)whitelist_new.pte_page, whitelist_new.pte_size>>PAGE_SHIFT_4K);
+	scode_unexpose_arch(vcpu, &whitelist_new);
 
 	/* initialize software TPM PCR */
 	vmemset(whitelist_new.pcr, 0, TPM_PCR_SIZE*TPM_PCR_NUM); 
@@ -703,7 +714,7 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
 
 /* test if the page is already in page_list
  * in order to avoid redundency in expose_page() */
-int test_page_in_list(u64 * page_list, u64 page, u32 count)
+int test_page_in_list(pte_t * page_list, pte_t page, u32 count)
 {
 	u32 i;
 	for( i=0 ; i<count ; i++ )  {
@@ -715,35 +726,36 @@ int test_page_in_list(u64 * page_list, u64 page, u32 count)
 
 #define EXPOSE_PAGE(x) expose_page(pte_page,x, &pte_count)
 /* expose one page, helper function used by scode_expose_arch() */
-void expose_page (u64 * page_list, u64 page, u32 * count)
+void expose_page (pte_t *page_list, pte_t page, u32 * count)
 {
+	dprintf(LOG_TRACE, "[TV] expose page %#Lx \n", page);
 	if (page != 0xFFFFFFFF) {
+		page = SCODE_PTE_TYPE_SET(page, SECTION_TYPE_GUEST_PAGE_TABLES);
 		if (!test_page_in_list(page_list, page, *count)) {
 			page_list[(*count)]=page;
 			*count = (*count)+1;
 			/* set up DEV vector to prevent DMA attack */
 			/* XXX FIXME: temporarily disable */
 			//set_page_dev_prot(pfn);
-			dprintf(LOG_TRACE, "[TV]   expose page %#llx \n", page);
+			dprintf(LOG_TRACE, "[TV]   expose page %#Lx \n", page);
 		}
 	}
 }
 
 /* find all PTE entry pages that is related to access scode and GDT */
-void scode_expose_arch(VCPU *vcpu)
+static void scode_expose_arch(VCPU *vcpu, whitelist_entry_t *wle)
 {
-	u32 i;
-	u32 j;
-	u64 *pte_page;
+	int i;
+	int j;
+	pte_t *pte_page;
 	u32 pte_count = 0;
 	u32 gpaddr = 0;
 	u32 is_pae;
 	u32 gdtr;
 	struct scode_sections_struct * ginfo;
-	u64 tmp_page[3];
+	pte_t tmp_page[3];
 	u32 tmp_count=0;
-	int curr=scode_curr[vcpu->id];
-	pt_t sp = (pt_t)(whitelist[curr].scode_pages);
+	pte_t *sp = wle->scode_pages;
 	u32 gcr3_flag=0;
 
 	perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_EXPOSE_ARCH], vcpu->idx);
@@ -752,22 +764,22 @@ void scode_expose_arch(VCPU *vcpu)
 	gdtr = VCPU_gdtr_base(vcpu);
 
 	/* alloc memory for page table entry holder */
-	whitelist[curr].pte_page = (u32)((u64 *)vmalloc(MAX_REGPAGES_NUM<<5));
-	pte_page = (u64 *)(whitelist[curr].pte_page);
+	wle->pte_page = vmalloc(MAX_REGPAGES_NUM*sizeof(pte_t));
+	pte_page = wle->pte_page;
 
 	/* get related page tables for scode */
 	/* Here we walk guest page table, and find out all the pdp,pd,pt entry
 	   that is necessary to translate gvaddr */
 	dprintf(LOG_TRACE, "[TV] expose SCODE related PTE pages\n");
-	for( i=0 ; i < (u32)(whitelist[curr].scode_info.section_num) ; i++ )  {
-		ginfo = &(whitelist[curr].scode_info.ps_str[i]);
-		for( j=0 ; j<(u32)(ginfo->page_num); j++ )  {
-			gpaddr = gpt_get_ptpages(vcpu, ginfo->start_addr+(j<<PAGE_SHIFT_4K), tmp_page, &tmp_page[1], &tmp_page[2]);
+	for( i=0 ; i < wle->scode_info.section_num ; i++ )  {
+		ginfo = &(wle->scode_info.ps_str[i]);
+		for( j=0 ; j< ginfo->page_num; j++ )  {
+			gpaddr = gpt_get_ptpages(vcpu, ginfo->start_addr+(j<<PAGE_SHIFT_4K), &tmp_page[0], &tmp_page[1], &tmp_page[2]);
 
 			/* check gvaddr to gpaddr mapping */
-			if( gpaddr != (((u32)(*(sp+tmp_count+j)))&(~(0x7))))  {
-				dprintf(LOG_ERROR, "[TV] SECURITY: scode vaddr %x -> paddr %#llx mapping changed! invalide gpaddr is %x!\n", ginfo->start_addr+(j<<PAGE_SHIFT_4K), *(sp+tmp_count+j), gpaddr);
-				vfree((void *)(whitelist[curr].pte_page));
+			if( gpaddr != (sp[tmp_count+j] & ~0x7)) {
+				dprintf(LOG_ERROR, "[TV] SECURITY: scode vaddr %x -> paddr %#Lx mapping changed! invalide gpaddr is %x!\n", ginfo->start_addr+(j<<PAGE_SHIFT_4K), sp[tmp_count+j], gpaddr);
+				vfree(wle->pte_page);
 				HALT();
 			}
 
@@ -809,7 +821,7 @@ void scode_expose_arch(VCPU *vcpu)
 	EXPOSE_PAGE(tmp_page[1]);
 	EXPOSE_PAGE(tmp_page[2]);
 
-	whitelist[curr].pte_size = pte_count << PAGE_SHIFT_4K;
+	wle->pte_size = pte_count << PAGE_SHIFT_4K;
 
 	perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_EXPOSE_ARCH], vcpu->idx);
 }
@@ -983,12 +995,12 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 	}
 
 	/* find all PTE pages related to access scode and GDT */
-	scode_expose_arch(vcpu);
+	scode_expose_arch(vcpu, &whitelist[curr]);
 
 	/* change NPT permission for all PTE pages and scode pages */
 	dprintf(LOG_TRACE, "[TV] change NPT permission to run PAL!\n"); 
 	hpt_nested_switch_scode(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size,
-			(u32)whitelist[curr].pte_page, whitelist[curr].pte_size);
+													whitelist[curr].pte_page, whitelist[curr].pte_size);
 		
 	/* disable interrupts */
 	VCPU_grflags_set(vcpu, VCPU_grflags(vcpu) & ~EFLAGS_IF);
@@ -1015,14 +1027,13 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 	return 0;
 }
 
-void scode_unexpose_arch(VCPU * vcpu)
+static void scode_unexpose_arch(VCPU * vcpu, whitelist_entry_t *wle)
 {
 	u32 i;
-	int curr=scode_curr[vcpu->id];
-	u64 * page = (u64 *)(whitelist[curr].pte_page);
+	pte_t * page = wle->pte_page;
 	dprintf(LOG_TRACE, "[TV] unexpose SCODE and GDT related to PTE pages\n");
 	/* clear page bitmap set in scode_expose_arch() */
-	for (i=0; i<((whitelist[curr].pte_size)>>PAGE_SHIFT_4K);i++) {
+	for (i=0; i<((wle->pte_size)>>PAGE_SHIFT_4K);i++) {
 		clear_page_scode_bitmap(((page[i])>>PAGE_SHIFT_4K));
 		/* XXX FIXME: temporarily disable */
 	//	clear_page_dev_prot(((page[i])>>PAGE_SHIFT_4K));
@@ -1030,9 +1041,9 @@ void scode_unexpose_arch(VCPU * vcpu)
 
 	/* free pte_page to save heap space,
 	 * next expose will alloc a new pte_page */
-	vfree((void *)(whitelist[curr].pte_page));
-	whitelist[curr].pte_page = 0;
-	whitelist[curr].pte_size = 0;
+	vfree(wle->pte_page);
+	wle->pte_page = 0;
+	wle->pte_size = 0;
 }
 
 u32 scode_unmarshall(VCPU * vcpu)
@@ -1119,8 +1130,8 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
 		/* clear the NPT permission setting in switching into scode */
 		dprintf(LOG_TRACE, "[TV] change NPT permission to exit PAL!\n"); 
 		hpt_nested_switch_regular(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size,
-				(u32)whitelist[curr].pte_page, whitelist[curr].pte_size);
-		scode_unexpose_arch(vcpu);
+															whitelist[curr].pte_page, whitelist[curr].pte_size);
+		scode_unexpose_arch(vcpu, &whitelist[curr]);
 
 		/* release shared pages */
 		scode_release_all_shared_pages(vcpu, &whitelist[curr]);
