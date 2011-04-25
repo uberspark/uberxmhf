@@ -6,42 +6,48 @@
 # we first enter app and run the top-level makefile there
 #   - this will create app objs in app/objects/*
 # we then enter emhfcore and run the top-level makefile there
-#   - this will create loader.bin, runtime.bin.gz for the app
-#			depending on the h/w platform (AMD SVM vs Intel VMX) selected
+#   - this will create init and hypervisor binaries for the app
+#			depending on the h/w platform (x86) selected
 # we finally move the above two to the top-level directory where this
 # makefile is located
 
 #-----options that need tweaking w.r.t your development
-  
-	#your target name and version
-	export TARGET = lockdown
-  export TARGET_VERSION = 0
-  export TARGET_SUBVERSION = 3
-  
-	#h/w platform, current choices are svm (for AMD) and vmx (for Intel)
-	export TARGET_HWPLATFORM := vmx
-	
-	#MP/UP selection, y=Multiprocessor, n=Uniprocessor
-  export MP_VERSION := n
-	
-	#where you want loader and runtime binaries to go, defaults to current dir.
-	#export INSTALLDIR = $(CURDIR)
-	export INSTALLDIR = /cygdrive/z/
-  
-	#misc. configuaration w.r.t serial debugging, NPT/EPT support and
-	#unrestricted guest caps. (for Intel only)
+
+    #your target name and version
+	export TARGET = emhfapp
+    export TARGET_VERSION = 0
+    export TARGET_SUBVERSION = 1
+
+    #h/w platform, current choices are svm (for AMD) and vmx (for Intel)
+    #export TARGET_HWPLATFORM := svm
+
+    #h/w platform, current choices are x86
+	export TARGET_HWPLATFORM := x86
+    #Intel TXT / SENTER support, y=enabled, n=disabled
+    export DO_SENTER := y
+    #MP/UP selection, y=Multiprocessor, n=Uniprocessor
+    export MP_VERSION := n
+    #where you want loader and runtime binaries to go, defaults to current dir.
+	export INSTALLDIR = $(CURDIR)/dist
+    #export INSTALLDIR = /cygdrive/x
+    #misc. configuaration w.r.t serial debugging and NPT/EPT support
 	export NESTED_PAGING := y
-  export DEBUG_SERIAL := y
-  export DEBUG_VGA	:= n
-  export DISABLE_UG	:= n
-  
+    export DEBUG_SERIAL := y
+    export DEBUG_SERIAL_PORT := 0x6080
+    #export DEBUG_SERIAL_PORT := 0x3f8
+	export DEBUG_VGA	:= n
+
 #-----configuration that typically need not be touched
-  ifeq ($(TARGET_HWPLATFORM), svm)
-  export EMHFCOREDIR := ./emhfcore/amd-v-mp
-  endif
-  ifeq ($(TARGET_HWPLATFORM), vmx)
-  export EMHFCOREDIR := ./emhfcore/intel-vt-mp
-  endif
+  #ifeq ($(TARGET_HWPLATFORM), svm)
+  #export EMHFCOREDIR := ./emhfcore/amd-v-mp
+  #endif
+  #ifeq ($(TARGET_HWPLATFORM), vmx)
+  #export EMHFCOREDIR := ./emhfcore/intel-vt-mp
+  #endif
+
+  #ifeq ($(TARGET_HWPLATFORM), x86)
+  export EMHFCOREDIR := ./emhfcore/x86
+  #endif
 
   export BASEDIR = $(CURDIR)
   export APPOBJECTSDIR = $(BASEDIR)/app/objects
@@ -64,7 +70,7 @@
   export TAR = tar
   export SED = sed
   export MKDIR = mkdir
-  
+  export CAT = cat
 
 #-----basic flags for compiling
   CFLAGS = -fno-builtin -fno-common -fno-strict-aliasing -iwithprefix include
@@ -76,7 +82,6 @@
   CFLAGS += -Winline
   CFLAGS += -m32 -march=k8 
   CFLAGS += -nostdinc -pipe -I$(EMHF_INCLUDEDIR) -I$(APP_INCLUDEDIR)
-  # CFLAGS += -O2
 
 #-----generate compiler/assembler defines from configuration options selected
   ifeq ($(NESTED_PAGING), y)
@@ -84,17 +89,17 @@
   endif
   ifeq ($(DEBUG_SERIAL), y)
   CFLAGS += -D__DEBUG_SERIAL__
-  endif
+  CFLAGS += -DDEBUG_PORT=$(DEBUG_SERIAL_PORT)
+	endif
   ifeq ($(DEBUG_VGA), y)
   CFLAGS += -D__DEBUG_VGA__
   endif
   ifeq ($(MP_VERSION), y)
   CFLAGS += -D__MP_VERSION__
   endif
-  ifeq ($(DISABLE_UG), y)
-  CFLAGS += -D__DISABLE_UG__
+  ifeq ($(DO_SENTER), y)
+  CFLAGS += -D__DO_SENTER__
   endif
-
 
   ASFLAGS = $(CFLAGS) -D__ASSEMBLY__
 
@@ -104,17 +109,17 @@
 #-----build rules 
 .PHONY: all
 all:
-  # make app components
+    # make app components
 	mkdir -p $(APPOBJECTSDIR)
 	cd app && $(MAKE) -w all
-  
-	# make emhf core components and generate loader and runtime	
+
+    # make emhf core components and generate loader and runtime	
 	cd $(EMHFCOREDIR) && $(MAKE) -w all
 
-	# copy the app loader and runtime binaries to installation location
-	$(CP) $(EMHFCOREDIR)/loader/loader.bin $(INSTALLDIR)/$(TARGET)-loader-$(TARGET_HWPLATFORM).bin
-	$(CP) $(EMHFCOREDIR)/runtime/runtime.bin.gz $(INSTALLDIR)/$(TARGET)-runtime-$(TARGET_HWPLATFORM).bin.gz
-	
+    # copy the app loader and runtime binaries to installation location
+	$(CP) $(EMHFCOREDIR)/init/init-$(TARGET_HWPLATFORM).bin $(INSTALLDIR)/init-$(TARGET_HWPLATFORM).bin
+	$(CP) $(EMHFCOREDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz $(INSTALLDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz
+
 #------cleanup rules
 .PHONY: clean 
 clean: 
@@ -122,3 +127,8 @@ clean:
 	rm -rf $(APPOBJECTSDIR)
 	cd $(EMHFCOREDIR) && $(MAKE) -w clean
 
+pratt:
+	scp dist/* root@pratt:/boot
+
+creeper:
+	scp dist/* root@creeper:/boot
