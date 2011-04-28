@@ -47,6 +47,15 @@ AS_IF([test "x${enable_debug_vga}" != "xno"],
       [DEBUG_VGA=y],
       [DEBUG_VGA=n])
 
+AC_SUBST([MP_VERSION])
+AC_ARG_ENABLE([mp],
+        AS_HELP_STRING([--enable-mp@<:@=yes|no@:>@],
+                [enable multiprocessor]),
+                , [enable_mp=yes])
+AS_IF([test "x${enable_mp}" != "xno"],
+      [MP_VERSION=y],
+      [MP_VERSION=n])
+
 AC_SUBST([EMHFCOREDIR])
 AC_ARG_WITH([emhfcore],
         AS_HELP_STRING([--with-emhfcore=@<:@path@:>@],
