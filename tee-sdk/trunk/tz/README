@@ -22,5 +22,5 @@ Files:
   * [include](include) Public header files
 
 
-You want to run 'autoreconf -i` in Linux.
+See ../README for more thorough usage instructions
 
