@@ -20,3 +20,7 @@ Files:
     recursive build.
   * [src](src) Source code
   * [include](include) Public header files
+
+
+You want to run 'autoreconf -i` in Linux.
+

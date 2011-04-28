@@ -152,36 +152,6 @@ void shadow_get_shadowentry(u32 gva, u32 **pdt_entry, u32 **pt_entry){
   return;
 }
 
-//------------------------------------------------------------------------------
-//return pointers to  32-bit GUEST pde and pte for a given guest VA
-//an entry will be null (0) if not present or applicable
-/* void shadow_get_guestentry(u32 gva, u32 gCR3, u32 **pdt_entry, u32 **pt_entry){ */
-/*   u32 index_pdt, index_pt; */
-/*   //npdt_t g_pdt= (npdt_t)(u32)npae_get_addr_from_32bit_cr3(gCR3); */
-/*   npt_t g_pt; */
-/*   u32 g_pdt_entry, g_pt_entry; */
-	
-/*   index_pdt= (gva >> 22); */
-/*   index_pt  = ((gva & (u32)0x003FFFFF) >> 12); */
-	
-/*   *pdt_entry = *pt_entry = (u32 *)0;	//zero all */
-	
-/*   g_pdt_entry = __g_pdt[index_pdt]; */
-/*   *pdt_entry = (u32 *)&__g_pdt[index_pdt]; */
-
-/*   if( !(g_pdt_entry & _PAGE_PRESENT) ) */
-/*     return; */
-
-/*   if(g_pdt_entry & _PAGE_PSE) */
-/*     return; //this is a 4M page directory entry, so no pt present */
-		
-/*   //this is a regular page directory entry, so get the page table */
-/*   //g_pt = (npt_t)(u32)pae_get_addr_from_pde(g_pdt_entry); */
-	
-/*   *pt_entry = (u32 *)&__g_pt[index_pt]; */
-/*   return; */
-/* } */
-
 
 //allocate, zero and return the address of a page table
 u32 shadow_alloc_pt(u32 gva, u32 guest_virtualmemory_limit){

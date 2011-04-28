@@ -62,7 +62,38 @@ void shadow_invalidate_page(u32 address);
 u32 shadow_page_fault(u32 cr2, u32 error_code);
 
 void main() {
-  /* Excluded */
+  /* Initial Condition */
+  __CPROVER_assume(s_pd_t[0] == 0); // XXX define number of pages
+
+  //u32 *ptable = (u32 *)((u32)__shadow_npae_p_tables);
+  __CPROVER_assume(s_pd_t[0]==0);  // XXX define number of pages
+
+
+  /* Interface */
+  int choice = nondet_int();
+
+  if (choice == 0) {
+    //shadow_new_context(nondet_u32());
+  } else if (choice == 1) {
+    //shadow_invalidate_page(nondet_u32());
+  } else {
+    shadow_page_fault(nondet_u32(), nondet_u32());
+  }
+
+  /* VERIF Condition (ONLY checks 0 entries of pdt and pt) */
+  if( ( s_pd_t[0] & _PAGE_PRESENT) ) {
+    if ( s_pd_t[0] & _PAGE_PSE) {
+      assert(npae_get_addr_from_pde( s_pd_t[0] ) + PAGE_SIZE_4M < GUEST_PHYSICALMEMORY_LIMIT);
+    }else {
+      //this is a regular page directory entry, so get the page table
+      npt_t s_pt = (npt_t)(u32)npae_get_addr_from_pde( s_pd_t[0] );
+      u32 pt_entry = s_pt[0];
+      
+      if( (pt_entry & _PAGE_PRESENT) ) {
+	assert(npae_get_addr_from_pte(pt_entry) + PAGE_SIZE_4K < GUEST_PHYSICALMEMORY_LIMIT);
+      }
+    }
+  }
 
 }
 

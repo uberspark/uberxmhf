@@ -199,40 +199,58 @@ void shadow_get_shadowentry(u32 gva, u32 **pdt_entry, u32 **pt_entry){
 //set the ACCESSED bit
 //as we traverse the guest paging structures 
 void shadow_get_guestentry(u32 gva, u32 gCR3, u32 **pdt_entry, u32 **pt_entry){
+
   u32 index_pdt, index_pt; 
-  //npdt_t g_pdt=(npdt_t)gpa_to_hpa((u32)npae_get_addr_from_32bit_cr3(gCR3));
-  npdt_t g_pdt=(npdt_t)gpa_to_hpa((u32)npae_get_addr_from_32bit_cr3(gCR3));
   npt_t g_pt;
   u32 g_pdt_entry, g_pt_entry;
-	
-  index_pdt= (gva >> 22);
+  npdt_t g_pdt;
+
+  _Bool tx, ty, tz; // JDF indicator
+
+  tx = gCR3; 
+
+  gva = nondet_u32();
+  gCR3 = nondet_u32();
+  
+  g_pdt=(npdt_t)gpa_to_hpa((u32)npae_get_addr_from_32bit_cr3(gCR3));
+
+  index_pdt = (gva >> 22);
   index_pt  = ((gva & (u32)0x003FFFFF) >> 12);
 	
-  *pdt_entry = *pt_entry = (u32 *)0;	//zero all
-	
+  *pdt_entry = *pt_entry = (u32 *)0;
+
+  g_pdt[index_pdt] = nondet_u32(); // JDF
   g_pdt_entry = g_pdt[index_pdt];
+
   *pdt_entry = (u32 *)&g_pdt[index_pdt];
 
+  ty = g_pdt_entry; // JDF
+  //goto end;
 
   if( !(g_pdt_entry & _PAGE_PRESENT) )
-    return; 
+    return;
 
-  //set ACCESSED bit on this pdt entry
-  //g_pdt[index_pdt] |= _PAGE_ACCESSED;
+  g_pdt[index_pdt] |= _PAGE_ACCESSED;
 
   if(g_pdt_entry & _PAGE_PSE)
-    return; //this is a 4M page directory entry, so no pt present
+    return; // 4M pdt entry, no pt present
 		
-  //this is a regular page directory entry, so get the page table
   g_pt = (npt_t)gpa_to_hpa((u32)pae_get_addr_from_pde(g_pdt_entry));
 
-	
-  //set ACCESSED bit on this pt entry
-  //if(g_pt[index_pt] & _PAGE_PRESENT)
-  //	g_pt[index_pt] |= _PAGE_ACCESSED;
-	
-	
-  *pt_entry = (u32 *)&g_pt[index_pt]; 
+  if(g_pt[index_pt] & _PAGE_PRESENT)
+    g_pt[index_pt] |= _PAGE_ACCESSED;
+
+  g_pt[index_pt] = nondet_u32(); // JDF
+  g_pt_entry = g_pt[index_pt];
+  *pt_entry = (u32 *)&g_pt[index_pt];
+
+  tz = g_pt_entry; // JDF
+
+ end:
+  assert(tx);
+  assert(ty);
+  assert(tz);
+
   return;
 }
 

@@ -51,6 +51,7 @@
 #define GUEST_VIRTUALMEMORY_LIMIT	 (4096*2)  //4GB guest VA 
 
 u32 s_pd_t[1024];
+u32 global_s_pt[1];
 u32 __shadow_npae_p_tables[1024];
 
 u32 shadow_guest_CR3=0;
@@ -65,38 +66,59 @@ u32 shadow_page_fault(u32 cr2, u32 error_code);
 
 void main() {
 
-/*   /\* Initial Condition *\/ */
-/*   __CPROVER_assume(s_pd_t[0] == 0); // XXX define number of pages */
+  /* Initial Condition */
+  s_pd_t[0] = nondet_u32();
+  global_s_pt[0] = nondet_u32();
 
-/*   //u32 *ptable = (u32 *)((u32)__shadow_npae_p_tables); */
-/*   __CPROVER_assume(s_pd_t[0]==0);  // XXX define number of pages */
+  __CPROVER_assume(npae_get_addr_from_pde( s_pd_t[0] ) + PAGE_SIZE_4M < GUEST_PHYSICALMEMORY_LIMIT);
+  npt_t s_pt = global_s_pt;
+  u32 pt_entry = s_pt[0];
+  __CPROVER_assume(npae_get_addr_from_pte(pt_entry) + PAGE_SIZE_4K < GUEST_PHYSICALMEMORY_LIMIT);
 
+  /* if( ( s_pd_t[0] & _PAGE_PRESENT) ) { */
+  /*   if ( s_pd_t[0] & _PAGE_PSE) { */
+  /*     __CPROVER_assume(npae_get_addr_from_pde( s_pd_t[0] ) + PAGE_SIZE_4M < GUEST_PHYSICALMEMORY_LIMIT); */
 
-/*   /\* Interface *\/ */
-/*   int choice = nondet_int(); */
+  /*   }else { */
 
-/*   if (choice == 0) { */
-/*     shadow_new_context(nondet_u32()); */
-/*   } else if (choice == 1) { */
-/*     shadow_invalidate_page(nondet_u32()); */
-/*   } else { */
-/*     shadow_page_fault(nondet_u32(), nondet_u32()); */
-/*   } */
-
-/*   /\* VERIF Condition (ONLY checks 0 entries of pdt and pt) *\/ */
-/*   if( ( s_pd_t[0] & _PAGE_PRESENT) ) { */
-/*     if ( s_pd_t[0] & _PAGE_PSE) { */
-/*       assert(npae_get_addr_from_pde( s_pd_t[0] ) + PAGE_SIZE_4M < GUEST_PHYSICALMEMORY_LIMIT); */
-/*     }else { */
-/*       //this is a regular page directory entry, so get the page table */
-/*       npt_t s_pt = (npt_t)(u32)npae_get_addr_from_pde( s_pd_t[0] ); */
-/*       u32 pt_entry = s_pt[0];  */
+  /*     //npt_t s_pt = (npt_t)(u32)npae_get_addr_from_pde( s_pd_t[0] ); */
+  /*     npt_t s_pt = global_s_pt; */
+  /*     u32 pt_entry = s_pt[0]; */
       
-/*       if( (pt_entry & _PAGE_PRESENT) ) { */
-/* 	assert(npae_get_addr_from_pte(pt_entry) + PAGE_SIZE_4K < GUEST_PHYSICALMEMORY_LIMIT); */
-/*       } */
-/*     } */
-/*   } */
+  /*     if( (pt_entry & _PAGE_PRESENT) ) { */
+  /* 	__CPROVER_assume(npae_get_addr_from_pte(pt_entry) + PAGE_SIZE_4K < GUEST_PHYSICALMEMORY_LIMIT); */
+  /*     } */
+  /*   } */
+  /* } */
+  
+  /* Interface */
+  int choice = nondet_int();
+
+  if (choice == 0) {
+    //shadow_new_context(nondet_u32());
+  } else if (choice == 1) {
+    //shadow_invalidate_page(nondet_u32());
+  } else {
+    shadow_page_fault(nondet_u32(), nondet_u32());
+  }
+
+
+  /* VERIF Condition (ONLY checks 0 entries of pdt and pt) */
+  if( ( s_pd_t[0] & _PAGE_PRESENT) ) {
+    if ( s_pd_t[0] & _PAGE_PSE) {
+      assert(npae_get_addr_from_pde( s_pd_t[0] ) + PAGE_SIZE_4M < GUEST_PHYSICALMEMORY_LIMIT);
+    }else {
+      //this is a regular page directory entry, so get the page table
+      //npt_t s_pt = (npt_t)(u32)npae_get_addr_from_pde( s_pd_t[0] );
+      npt_t s_pt = global_s_pt;
+      u32 pt_entry = s_pt[0];
+
+      
+      if( (pt_entry & _PAGE_PRESENT) ) {
+	assert(npae_get_addr_from_pte(pt_entry) + PAGE_SIZE_4K < GUEST_PHYSICALMEMORY_LIMIT);
+      }
+    }
+  }
 }
 /* ------------ End for verification ------------ */
 
@@ -117,8 +139,8 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
   
   /* Get page table */
   if( (s_pd_t[index_pdt] & _PAGE_PRESENT) && !(s_pd_t[index_pdt] & _PAGE_PSE)) {
-    //this is a regular page directory entry, so get the page table
-    s_pt = (npt_t)(u32)npae_get_addr_from_pde(s_pd_t[index_pdt]);
+    s_pt = global_s_pt;
+    //s_pt = (npt_t)(u32)npae_get_addr_from_pde(s_pd_t[index_pdt]);
   }
 
   /* Check error codes */
@@ -130,7 +152,11 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
 
       if(gPDE & _PAGE_PSE){	//4M page
 
+#ifdef CORRECT
 	if( npae_get_addr_from_pde(gPDE) + PAGE_SIZE_4M < GUEST_PHYSICALMEMORY_LIMIT){
+#else 
+	if( npae_get_addr_from_pde(gPDE) < GUEST_PHYSICALMEMORY_LIMIT){
+#endif 	  
 	  s_pd_t[index_pdt] = gPDE;
 	}else{
 	  __CPROVER_assume(0); // HALT
@@ -143,8 +169,11 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
 	paddr=npae_get_addr_from_pde(s_pd_t[index_pdt]);
 
 	s_pd_t[index_pdt] = npae_make_pde(paddr, flags);
-			
+#ifdef CORRECT2	
 	if( npae_get_addr_from_pte(gPTE) + PAGE_SIZE_4K < GUEST_PHYSICALMEMORY_LIMIT){
+#else
+	if( npae_get_addr_from_pte(gPTE)  < GUEST_PHYSICALMEMORY_LIMIT){
+#endif
 	  s_pt[index_pt] = gPTE; 
 	}else{
 	  __CPROVER_assume(0);	//HALT
