@@ -41,8 +41,11 @@
 
 #include <target.h>
 #include <ctype.h>
+#include <print.h>
 
 #define EXPORT_SYMBOL(var)
+
+uint8_t g_log_targets=LOG_TARGET_NONE;
 
 static int skip_atoi(const char **s);
 static char * number(char * buf, char * end, unsigned long long num, int base, int size, int precision, int type);

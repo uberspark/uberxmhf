@@ -42,6 +42,7 @@
  */
 
 #include <target.h>
+#include <str.h>
 
 #define PORT DEBUG_PORT
 
@@ -69,6 +70,8 @@
 /* Modem Control Register */
 #define MCR_DTR         0x01    /* Data Terminal Ready  */
 #define MCR_RTS         0x02    /* Request to Send      */
+#define MCR_OUT2        0x08    /* OUT2: interrupt mask */
+#define MCR_LOOP        0x10    /* Enable loopback test mode */
 
 /* Line Status Register */
 #define LSR_THRE        0x20    /* Xmit hold reg empty  */
@@ -98,6 +101,125 @@ static struct {
   u8 stop_bits;
   u8 fifo;
 } uart_config = {115200, 8, PARITY_NONE, 1, 0};
+
+/* LCR value macro (from tboot/common/early_printk.c) */
+#define TARGET_LCR_VALUE(d, s, p) ((d - 5) | ((s - 1) << 2) | p)
+
+#define TARGET_BAUD      115200
+#define BAUD_AUTO ((unsigned int)(-1))
+
+/* from tboot/common/early_printk.c */
+typedef struct {
+    unsigned short io_base;
+    unsigned int   baud;
+    unsigned int   clock_hz;
+    unsigned char  lcr;
+} tboot_serial_t;
+
+/* from tboot/common/early_printk.c */
+static tboot_serial_t g_serial_vals = {
+    0x3f8,                              /* ttyS0 / COM1 */
+    TARGET_BAUD,
+    UART_CLOCK_HZ,
+    TARGET_LCR_VALUE(8, 1, PARITY_NONE) /* default 8n1 LCR */
+};
+
+
+static int check_existence(void)
+{
+    unsigned char status; 
+
+    /* Note really concerned with IER test */
+
+    /*
+     * Check to see if a UART is really there.
+     * Use loopback test mode.
+     */
+    outb(MCR_LOOP | 0x0A, g_serial_vals.io_base + MCR);
+    status = inb(g_serial_vals.io_base + MSR) & 0xF0;
+
+    return (status == 0x90);
+}
+
+/* from tboot/common/early_printk.c */
+/* 
+ * serial config parsing support ported from xen drivers/char/ns16550.c
+ * Copyright (c) 2003-2005, K A Fraser
+ */
+static unsigned char parse_parity_char(int c)
+{
+    switch ( c )
+    {
+    case 'n':
+        return PARITY_NONE;
+    case 'o': 
+        return PARITY_ODD;
+    case 'e': 
+        return PARITY_EVEN;
+    case 'm': 
+        return PARITY_MARK;
+    case 's': 
+        return PARITY_SPACE;
+    }
+    return 0;
+}
+
+/* from tboot/common/early_printk.c */
+static void early_serial_parse_port_config(const char *conf)
+{
+    unsigned char data_bits = 8, stop_bits = 1, parity;
+    unsigned int baud;
+
+    if ( strncmp(conf, "auto", 4) == 0 ) {
+        g_serial_vals.baud = BAUD_AUTO;
+        conf += 4;
+    }
+    else if ( (baud = (unsigned int)simple_strtoul(conf, &conf, 10))
+              != 0 )
+        g_serial_vals.baud = baud;
+
+    if ( *conf == '/' ) {
+        conf++;
+        g_serial_vals.clock_hz = simple_strtoul(conf, &conf, 0) << 4;
+    }
+
+    if ( *conf != ',' )
+        goto config_parsed;
+    conf++;
+
+    data_bits = (unsigned char)simple_strtoul(conf, &conf, 10);
+
+    parity = parse_parity_char(*conf);
+    if ( *conf != '\0' )
+        conf++;
+
+    stop_bits = (unsigned char)simple_strtoul(conf, &conf, 10);
+
+    g_serial_vals.lcr = TARGET_LCR_VALUE(data_bits, stop_bits, parity);
+
+    if ( *conf == ',' ) {
+        conf++;
+        g_serial_vals.io_base = (short)simple_strtoul(conf, &conf, 0);
+        /* no irq, tboot not expecting Rx */
+    }
+
+config_parsed:
+    /* Sanity checks - disable serial logging if input is invalid */
+    if ( (g_serial_vals.baud != BAUD_AUTO) &&
+         ((g_serial_vals.baud < 1200) || (g_serial_vals.baud > 115200)) )
+        g_log_targets &= ~LOG_TARGET_SERIAL;
+    if ( (data_bits < 5) || (data_bits > 8) )
+        g_log_targets &= ~LOG_TARGET_SERIAL;
+    if ( (stop_bits < 1) || (stop_bits > 2) )
+        g_log_targets &= ~LOG_TARGET_SERIAL;
+    if ( g_serial_vals.io_base == 0 )
+        g_log_targets &= ~LOG_TARGET_SERIAL;
+    if ( !check_existence() )
+        g_log_targets &= ~LOG_TARGET_SERIAL;
+}
+
+
+
 
 //static
 inline u32 uart_tx_empty(void)

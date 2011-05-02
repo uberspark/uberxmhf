@@ -749,6 +749,8 @@ void cstartup(multiboot_info_t *mbi){
     vgamem_clrscr();
 #endif
 
+    cmdline_parse(mbi->cmdline
+
     mod_array = (module_t*)mbi->mods_addr;
     mods_count = mbi->mods_count;
 

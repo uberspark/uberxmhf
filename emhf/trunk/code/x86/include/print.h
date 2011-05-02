@@ -42,6 +42,16 @@
 
 #ifndef __ASSEMBLY__
 
+#define LOG_LEVEL_NONE    0x00
+#define LOG_LEVEL_ALL     0xFF
+
+#define LOG_TARGET_NONE   0x00
+#define LOG_TARGET_VGA    0x01
+#define LOG_TARGET_SERIAL 0x02
+#define LOG_TARGET_MEMORY 0x04
+
+extern uint8_t g_log_targets;
+
 void init_uart(void);
 void putstr(const char *str);
 

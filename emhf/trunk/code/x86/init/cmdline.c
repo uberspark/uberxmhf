@@ -72,19 +72,18 @@
 #include <types.h>
 #include <str.h>
 #include <ctype.h>
+#include <print.h>
 /* #include <compiler.h> */
 /* #include <string2.h> */
 /* #include <misc.h> */
-/* #include <printk.h> */
 /* #include <stdbool.h> */
-/* #include <cmdline.h> */
-
+#include <cmdline.h>
 
 /*
  * copy of original command line
  * part of tboot measurement (hence in .text section)
  */
-/* char g_cmdline[CMDLINE_SIZE] = { 0 }; */
+char g_cmdline[CMDLINE_SIZE] = { 0 };
 
 #define ARRAY_SIZE(a)     (sizeof(a) / sizeof((a)[0]))
 
@@ -105,20 +104,13 @@ typedef struct {
 
 /* global option array for command line */
 static const cmdline_option_t g_tboot_cmdline_options[] = {
-    { "loglvl", "all" },     /* all|none */
+    /* { "loglvl", "all" },     /\* all|none *\/ */
     { "logging", "serial" }, /* vga,serial,memory|none */
     { "serial", "" },        /* <baud>[/<clock_hz>][,<DPS>[,<io-base>]] or
                                 auto[/<clock_hz>][,<DPS>[,<io-base>]]*/
     { NULL, NULL }
 };
 static char g_tboot_param_values[ARRAY_SIZE(g_tboot_cmdline_options)][MAX_VALUE_LEN];
-
-static const cmdline_option_t g_linux_cmdline_options[] = {
-    { "vga", "" },
-    { "mem", "" },
-    { NULL, NULL }
-};
-static char g_linux_param_values[ARRAY_SIZE(g_linux_cmdline_options)][MAX_VALUE_LEN];
 
 void print_tboot_values(void)
 {
@@ -201,10 +193,10 @@ static void cmdline_parse(char *cmdline, const cmdline_option_t *options,
     }
 }
 
-/* void tboot_parse_cmdline(void) */
-/* { */
-/*     cmdline_parse(g_cmdline, g_tboot_cmdline_options, g_tboot_param_values); */
-/* } */
+void tboot_parse_cmdline(void)
+{
+    cmdline_parse(g_cmdline, g_tboot_cmdline_options, g_tboot_param_values);
+}
 
 /* void linux_parse_cmdline(char *cmdline) */
 /* { */
@@ -222,58 +214,58 @@ static void cmdline_parse(char *cmdline, const cmdline_option_t *options,
 /*         g_log_level = TBOOT_LOG_LEVEL_NONE; /\* print nothing *\/ */
 /* } */
 
-/* void get_tboot_log_targets(void) */
-/* { */
-/*     const char *targets = get_option_val(g_tboot_cmdline_options, */
-/*                                          g_tboot_param_values, "logging"); */
+void get_tboot_log_targets(void)
+{
+    const char *targets = get_option_val(g_tboot_cmdline_options,
+                                         g_tboot_param_values, "logging");
 
-/*     /\* nothing set, leave defaults *\/ */
-/*     if ( targets == NULL || *targets == '\0' ) */
-/*         return; */
+    /* nothing set, leave defaults */
+    if ( targets == NULL || *targets == '\0' )
+        return;
 
-/*     /\* determine if no targets set explicitly *\/ */
-/*     if ( strcmp(targets, "none") == 0 ) { */
-/*         g_log_targets = TBOOT_LOG_TARGET_NONE; /\* print nothing *\/ */
-/*         return; */
-/*     } */
+    /* determine if no targets set explicitly */
+    if ( strcmp(targets, "none") == 0 ) {
+        g_log_targets = LOG_TARGET_NONE; /* print nothing */
+        return;
+    }
 
-/*     /\* else init to nothing and parse the possible targets *\/ */
-/*     g_log_targets = TBOOT_LOG_TARGET_NONE; */
+    /* else init to nothing and parse the possible targets */
+    g_log_targets = LOG_TARGET_NONE;
 
-/*     while ( *targets != '\0' ) { */
-/*         if ( strncmp(targets, "memory", 6) == 0 ) { */
-/*             g_log_targets |= TBOOT_LOG_TARGET_MEMORY; */
-/*             targets += 6; */
-/*         } */
-/*         else if ( strncmp(targets, "serial", 6) == 0 ) { */
-/*             g_log_targets |= TBOOT_LOG_TARGET_SERIAL; */
-/*             targets += 6; */
-/*         } */
-/*         else if ( strncmp(targets, "vga", 3) == 0 ) { */
-/*             g_log_targets |= TBOOT_LOG_TARGET_VGA; */
-/*             targets += 3; */
-/*         } */
-/*         else  */
-/*             break; /\* unrecognized, end loop *\/ */
+    while ( *targets != '\0' ) {
+        if ( strncmp(targets, "memory", 6) == 0 ) {
+            g_log_targets |= LOG_TARGET_MEMORY;
+            targets += 6;
+        }
+        else if ( strncmp(targets, "serial", 6) == 0 ) {
+            g_log_targets |= LOG_TARGET_SERIAL;
+            targets += 6;
+        }
+        else if ( strncmp(targets, "vga", 3) == 0 ) {
+            g_log_targets |= LOG_TARGET_VGA;
+            targets += 3;
+        }
+        else
+            break; /* unrecognized, end loop */
 
-/*         if ( *targets == ',' ) */
-/*             targets++; */
-/*         else */
-/*             break; /\* unrecognized, end loop *\/ */
-/*     } */
+        if ( *targets == ',' )
+            targets++;
+        else
+            break; /* unrecognized, end loop */
+    }
 
-/*     if ( g_log_targets & TBOOT_LOG_TARGET_SERIAL ) { */
-/*         const char *serial = get_option_val(g_tboot_cmdline_options, */
-/*                                             g_tboot_param_values, "serial"); */
+    if ( g_log_targets & LOG_TARGET_SERIAL ) {
+        const char *serial = get_option_val(g_tboot_cmdline_options,
+                                            g_tboot_param_values, "serial");
 
-/*         /\* nothing set, leave defaults *\/ */
-/*         if ( ( serial == NULL ) || ( *serial == '\0' ) ) */
-/*             return; */
+        /* nothing set, leave defaults */
+        if ( ( serial == NULL ) || ( *serial == '\0' ) )
+            return;
 
-/*         /\* call configuration parser in early serial code to do the rest *\/ */
-/*         early_serial_parse_port_config(serial); */
-/*     } */
-/* } */
+        /* call configuration parser in early serial code to do the rest */
+        early_serial_parse_port_config(serial);
+    }
+}
 
 /* bool get_linux_vga(int *vid_mode) */
 /* { */

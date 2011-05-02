@@ -189,6 +189,42 @@ size_t strlen(const char * s)
 	return sc - s;
 }
 
+/**
+ * simple_strtoul - convert a string to an unsigned long
+ * @cp: The start of the string
+ * @endp: A pointer to the end of the parsed string will be placed here
+ * @base: The number base to use
+ *
+ * from tboot/common/vsprintf.c
+ */
+unsigned long simple_strtoul(const char *cp, const char **endp,unsigned int base)
+{
+    unsigned long result = 0,value;
+
+    if (!base) {
+        base = 10;
+        if (*cp == '0') {
+            base = 8;
+            cp++;
+            if ((TOLOWER(*cp) == 'x') && isxdigit(cp[1])) {
+                cp++;
+                base = 16;
+            }
+        }
+    } else if (base == 16) {
+        if (cp[0] == '0' && TOLOWER(cp[1]) == 'x')
+            cp += 2;
+    }
+    while (isxdigit(*cp) &&
+           (value = isdigit(*cp) ? *cp-'0' : TOLOWER(*cp)-'a'+10) < base) {
+        result = result*base + value;
+        cp++;
+    }
+    if (endp)
+        *endp = cp;
+    return result;
+}
+
 #ifndef HAVE_MEMCMP
 int memcmp(const char *s1, const char *s2, size_t n) {
 	if (n != 0) {
