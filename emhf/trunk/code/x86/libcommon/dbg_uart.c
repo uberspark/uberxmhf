@@ -44,8 +44,7 @@
 #include <target.h>
 #include <str.h>
 #include <com.h>
-
-#define PORT DEBUG_PORT
+#include <cmdline.h>
 
 /* Register offsets */
 #define RBR             0x00    /* receive buffer       */
@@ -78,32 +77,17 @@
 #define LSR_THRE        0x20    /* Xmit hold reg empty  */
 #define LSR_TEMT        0x40    /* Xmitter empty        */
 
-/* These parity settings can be ORed directly into the LCR. */
-#define PARITY_NONE     (0<<3)
-#define PARITY_ODD      (1<<3)
-#define PARITY_EVEN     (3<<3)
-#define PARITY_MARK     (5<<3)
-#define PARITY_SPACE    (7<<3)
-
 /* Frequency of external clock source. This definition assumes PC platform. */
 #define UART_CLOCK_HZ   1843200
 
+/* Config parameters for serial port */
+uart_config_t g_uart_config = {115200, 8, PARITY_NONE, 1, 0, UART_CLOCK_HZ, DEBUG_PORT};
+
 #define UART_READ_REG(x) \
-    inb(PORT+(x));
+    inb(g_uart_config.port+(x));
 
 #define UART_WRITE_REG(x, y)                        \
-    outb((x), PORT+(y));
-
-/* Config parameters for serial port */
-static struct {
-  u32 baud;
-  u8 data_bits;
-  u8 parity;
-  u8 stop_bits;
-  u8 fifo;
-} uart_config = {115200, 8, PARITY_NONE, 1, 0};
-
-serial_port_t g_com_port;
+    outb((x), g_uart_config.port+(y));
 
 //static
 inline u32 uart_tx_empty(void)
@@ -151,7 +135,7 @@ void init_uart(void)
   u8 x;
 
   /* write divisor latch to set baud rate */
-  divisor = UART_CLOCK_HZ / (uart_config.baud * 16);
+  divisor = g_uart_config.clock_hz / (g_uart_config.baud * 16);
   UART_WRITE_REG(LCR_DLAB, LCR);
   UART_WRITE_REG((u8)divisor, DLL);
   UART_WRITE_REG((u8)(divisor >> 8), DLH);
@@ -165,12 +149,12 @@ void init_uart(void)
   /* Check if it a 16550 or higher UART. Otherwise we have no FIFOs */
   x = UART_READ_REG(IIR);
   if ( x == 0x0c)
-    uart_config.fifo = 1;
+    g_uart_config.fifo = 1;
 
   /* Set data format */
-  UART_WRITE_REG((u8)((uart_config.data_bits - 5) | 
-               ((uart_config.stop_bits - 1) << 2) |
-                      uart_config.parity), LCR);
+  UART_WRITE_REG((u8)((g_uart_config.data_bits - 5) | 
+               ((g_uart_config.stop_bits - 1) << 2) |
+                      g_uart_config.parity), LCR);
 
   /* Keep DTR and RTS high to keep remote happy */
   UART_WRITE_REG( MCR_DTR | MCR_RTS, MCR);

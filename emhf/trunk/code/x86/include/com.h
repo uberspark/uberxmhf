@@ -74,6 +74,8 @@
 #ifndef __COM_H__
 #define __COM_H__
 
+#include <types.h>
+
 /* 8250 registers #[0-6]. */
 
 #define	com_data	0	/* data register (R/W) */
@@ -288,6 +290,13 @@
 #define COM3_ADDR        0x3e8
 #define COM4_ADDR        0x2e8
 
+/* These parity settings can be ORed directly into the LCR. */
+#define PARITY_NONE     (0<<3)
+#define PARITY_ODD      (1<<3)
+#define PARITY_EVEN     (3<<3)
+#define PARITY_MARK     (5<<3)
+#define PARITY_SPACE    (7<<3)
+
 #define GET_LCR_DATABIT(x)  ({                              \
             typeof(x) val = 0;                              \
             val = (((x) == 5) ? LCR_5BITS : (val));         \
@@ -319,15 +328,26 @@ typedef struct {
     uint32_t func;
 } bdf_t;
 
+/* typedef struct { */
+/*     uint32_t comc_curspeed;  /\* baud rate *\/ */
+/*     uint32_t comc_clockhz;   /\* clock hz *\/ */
+/*     uint8_t  comc_fmt;       /\* lcr value *\/ */
+/*     uint32_t comc_port;      /\* serial port, COM[1|2|3|4] *\/  */
+/*     uint32_t comc_irq;       /\* irq *\/ */
+/*     bdf_t    comc_psbdf;     /\* PCI serial controller bdf *\/ */
+/*     bdf_t    comc_pbbdf;     /\* PCI bridge bdf *\/ */
+/* } serial_port_t; */
+
 typedef struct {
-    uint32_t comc_curspeed;  /* baud rate */
-    uint32_t comc_clockhz;   /* clock hz */
-    uint8_t  comc_fmt;       /* lcr value */
-    uint32_t comc_port;      /* serial port, COM[1|2|3|4] */ 
-    uint32_t comc_irq;       /* irq */
-    bdf_t    comc_psbdf;     /* PCI serial controller bdf */
-    bdf_t    comc_pbbdf;     /* PCI bridge bdf */
-} serial_port_t;
+    u32 baud;
+    u8 data_bits;
+    u8 parity;
+    u8 stop_bits;
+    u8 fifo;
+    u32 clock_hz;
+    u32 port;
+} uart_config_t;
+extern uart_config_t g_uart_config;
 
 extern void comc_init(void);
 extern void comc_puts(const char*, unsigned int);

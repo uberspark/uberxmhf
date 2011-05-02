@@ -743,6 +743,20 @@ void cstartup(multiboot_info_t *mbi){
     u32 mods_count;
     size_t sl_rt_size;
     
+    /* parse command line */
+    memset(g_cmdline, '\0', sizeof(g_cmdline));
+    strncpy(g_cmdline, (char*)mbi->cmdline, sizeof(g_cmdline)-1);
+    g_cmdline[sizeof(g_cmdline)-1] = '\0'; /* in case strncpy truncated */
+    tboot_parse_cmdline();
+
+    /* parse serial port params */
+    {
+      uart_config_t uart_config_backup = g_uart_config;
+      if(!get_tboot_serial()) {
+        g_uart_config = uart_config_backup;
+      }
+    }
+
     //initialize debugging early on
 #ifdef __DEBUG_SERIAL__        
     init_uart();
@@ -751,17 +765,6 @@ void cstartup(multiboot_info_t *mbi){
 #ifdef __DEBUG_VGA__
     vgamem_clrscr();
 #endif
-
-    memset(g_cmdline, '\0', sizeof(g_cmdline));
-    strncpy(g_cmdline, (char*)mbi->cmdline, sizeof(g_cmdline)-1);
-    g_cmdline[sizeof(g_cmdline)-1] = '\0'; /* in case strncpy truncated */
-    tboot_parse_cmdline();
-    if (get_tboot_serial()) {
-      printf("get_tboot_serial got serial port %d", g_com_port.comc_port);
-    } else {
-      printf("get_tboot_serial failed\n");
-    }
-
 
     mod_array = (module_t*)mbi->mods_addr;
     mods_count = mbi->mods_count;

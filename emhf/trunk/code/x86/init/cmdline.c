@@ -258,52 +258,51 @@ void get_tboot_log_targets(void)
     }
 }
 
-static bool parse_pci_bdf(const char **bdf, uint32_t *bus, uint32_t *slot,
-                          uint32_t *func)
-{
-    *bus = strtoul(*bdf, bdf, 16);
-    if ( **bdf != ':' )
-        return false;
-    (*bdf)++;
-    *slot = strtoul(*bdf, bdf, 16);
-    if ( **bdf != '.' )
-        return false;
-    (*bdf)++;
-    *func = strtoul(*bdf, bdf, 16);
+/* static bool parse_pci_bdf(const char **bdf, uint32_t *bus, uint32_t *slot, */
+/*                           uint32_t *func) */
+/* { */
+/*     *bus = strtoul(*bdf, bdf, 16); */
+/*     if ( **bdf != ':' ) */
+/*         return false; */
+/*     (*bdf)++; */
+/*     *slot = strtoul(*bdf, bdf, 16); */
+/*     if ( **bdf != '.' ) */
+/*         return false; */
+/*     (*bdf)++; */
+/*     *func = strtoul(*bdf, bdf, 16); */
 
-    return true;
-}
+/*     return true; */
+/* } */
 
-bool g_psbdf_enabled = false;
-static bool parse_com_psbdf(const char **bdf)
-{
-    g_psbdf_enabled = parse_pci_bdf(bdf,
-                  &g_com_port.comc_psbdf.bus,
-                  &g_com_port.comc_psbdf.slot,
-                  &g_com_port.comc_psbdf.func);
+/* bool g_psbdf_enabled = false; */
+/* static bool parse_com_psbdf(const char **bdf) */
+/* { */
+/*     g_psbdf_enabled = parse_pci_bdf(bdf, */
+/*                   &g_com_port.comc_psbdf.bus, */
+/*                   &g_com_port.comc_psbdf.slot, */
+/*                   &g_com_port.comc_psbdf.func); */
 
-    return g_psbdf_enabled;
-}
+/*     return g_psbdf_enabled; */
+/* } */
 
-bool g_pbbdf_enabled = false;
-static bool parse_com_pbbdf(const char **bdf)
-{
-    g_pbbdf_enabled = parse_pci_bdf(bdf,
-                  &g_com_port.comc_pbbdf.bus,
-                  &g_com_port.comc_pbbdf.slot,
-                  &g_com_port.comc_pbbdf.func);
+/* bool g_pbbdf_enabled = false; */
+/* static bool parse_com_pbbdf(const char **bdf) */
+/* { */
+/*     g_pbbdf_enabled = parse_pci_bdf(bdf, */
+/*                   &g_com_port.comc_pbbdf.bus, */
+/*                   &g_com_port.comc_pbbdf.slot, */
+/*                   &g_com_port.comc_pbbdf.func); */
 
-    return g_pbbdf_enabled;
-}
+/*     return g_pbbdf_enabled; */
+/* } */
 
 static bool parse_com_fmt(const char **fmt)
 {
     /* fmt:  <5|6|7|8><n|o|e|m|s><0|1> */
     /* default 8n1 */
-    uint8_t data_bits = 8;
-    uint8_t parity = 'n';
-    uint8_t stop_bits = 1;
-
+    /* uint8_t data_bits = 8; */
+    /* uint8_t parity = 'n'; */
+    /* uint8_t stop_bits = 1; */
 
     /* must specify all values */
     if ( strlen(*fmt) < 3 )
@@ -311,7 +310,7 @@ static bool parse_com_fmt(const char **fmt)
 
     /* data bits */
     if ( **fmt >= '5' && **fmt <= '8' )
-        data_bits = **fmt - '0';
+        g_uart_config.data_bits = **fmt - '0';
     else
         return false;
     (*fmt)++;
@@ -319,19 +318,26 @@ static bool parse_com_fmt(const char **fmt)
     /* parity */
     if ( **fmt == 'n' || **fmt == 'o' || **fmt == 'e' || **fmt == 'm' ||
          **fmt == 's' )
-        parity = **fmt;
+        g_uart_config.parity = 
+            (**fmt == 'n')
+            ? PARITY_NONE
+            : (**fmt == 'o')
+            ? PARITY_ODD
+            : (**fmt == 'e')
+            ? PARITY_EVEN
+            : (**fmt == 'm')
+            ? PARITY_MARK
+            : PARITY_SPACE;
     else
         return false;
     (*fmt)++;
 
     /* stop bits */
     if ( **fmt == '0' || **fmt == '1' )
-        stop_bits = **fmt - '0';
+        g_uart_config.stop_bits = **fmt - '0';
     else
         return false;
     (*fmt)++;
-
-    g_com_port.comc_fmt = GET_LCR_VALUE(data_bits, stop_bits, parity);
 
     return true;
 }
@@ -339,16 +345,16 @@ static bool parse_com_fmt(const char **fmt)
 static bool parse_serial_param(const char *com)
 {
     /* parse baud */
-    g_com_port.comc_curspeed = strtoul(com, &com, 10);
-    if ( (g_com_port.comc_curspeed < 1200) ||
-         (g_com_port.comc_curspeed > 115200) )
+    g_uart_config.baud = strtoul(com, &com, 10);
+    if ( (g_uart_config.baud < 1200) ||
+         (g_uart_config.baud > 115200) )
         return false;
 
     /* parse clock hz */
     if ( *com == '/' ) {
         ++com;
-        g_com_port.comc_clockhz = strtoul(com, &com, 0) << 4;
-        if ( g_com_port.comc_clockhz == 0 )
+        g_uart_config.clock_hz = strtoul(com, &com, 0) << 4;
+        if ( g_uart_config.clock_hz == 0 )
             return false;
     }
 
@@ -365,31 +371,36 @@ static bool parse_serial_param(const char *com)
     if ( *com != ',' )
         goto exit;
     ++com;
-    g_com_port.comc_port = strtoul(com, &com, 0);
-    if ( g_com_port.comc_port == 0 )
+    g_uart_config.port = strtoul(com, &com, 0);
+    if ( g_uart_config.port == 0 )
         return false;
+
+    /* we don't handle additional params */
+    if ( *com == ',' ) {
+        return false;
+    }
 
     /* parse irq */
-    if ( *com != ',' )
-        goto exit;
-    ++com;
-    g_com_port.comc_irq = strtoul(com, &com, 10);
-    if ( g_com_port.comc_irq == 0 )
-        return false;
+    /* if ( *com != ',' ) */
+    /*     goto exit; */
+    /* ++com; */
+    /* g_com_port.comc_irq = strtoul(com, &com, 10); */
+    /* if ( g_com_port.comc_irq == 0 ) */
+    /*     return false; */
 
-    /* parse PCI serial controller bdf */
-    if ( *com != ',' )
-        goto exit;
-    ++com;
-    if ( !parse_com_psbdf(&com) )
-        return false;
+    /* /\* parse PCI serial controller bdf *\/ */
+    /* if ( *com != ',' ) */
+    /*     goto exit; */
+    /* ++com; */
+    /* if ( !parse_com_psbdf(&com) ) */
+    /*     return false; */
 
-    /* parse PCI bridge bdf */
-    if ( *com != ',' )
-        goto exit;
-    ++com;
-    if ( !parse_com_pbbdf(&com) )
-        return false;
+    /* /\* parse PCI bridge bdf *\/ */
+    /* if ( *com != ',' ) */
+    /*     goto exit; */
+    /* ++com; */
+    /* if ( !parse_com_pbbdf(&com) ) */
+    /*     return false; */
 
  exit:
     return true;

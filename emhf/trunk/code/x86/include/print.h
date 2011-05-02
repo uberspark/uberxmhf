@@ -54,8 +54,6 @@
 extern uint8_t g_log_targets;
 extern uint8_t g_log_level;
 
-extern serial_port_t g_com_port;
-
 void init_uart(void);
 void putstr(const char *str);
 
