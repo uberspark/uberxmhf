@@ -46,6 +46,7 @@
 #define EXPORT_SYMBOL(var)
 
 uint8_t g_log_targets=LOG_TARGET_NONE;
+uint8_t g_log_level=LOG_LEVEL_NONE;
 
 static int skip_atoi(const char **s);
 static char * number(char * buf, char * end, unsigned long long num, int base, int size, int precision, int type);

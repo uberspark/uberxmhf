@@ -48,7 +48,7 @@ void *memcpy(void * to, const void * from, u32 n);
 void *memset (void *str, u32 c, u32 len);
 u32 strncmp(const u8 * cs, const u8 * ct, u32 count);
 int strcmp(const char * cs,const char * ct);
-size_t strncpy(char *dest, const char *src, size_t size);
+char *strncpy(char * dst, const char * src, size_t n);
 size_t strlen(const char * s);
 unsigned long simple_strtoul(const char *cp,const char **endp,unsigned int base);
 int memcmp(const char *s1, const char *s2, size_t n);

@@ -41,6 +41,7 @@
 #define print_string putstr
 
 #ifndef __ASSEMBLY__
+#include <com.h>
 
 #define LOG_LEVEL_NONE    0x00
 #define LOG_LEVEL_ALL     0xFF
@@ -51,6 +52,9 @@
 #define LOG_TARGET_MEMORY 0x04
 
 extern uint8_t g_log_targets;
+extern uint8_t g_log_level;
+
+extern serial_port_t g_com_port;
 
 void init_uart(void);
 void putstr(const char *str);

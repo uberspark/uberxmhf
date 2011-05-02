@@ -63,76 +63,32 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * From: @(#)strtoul.c	8.1 (Berkeley) 6/4/93
+ */
+/*
+ * From: FreeBSD sys/libkern/strncpy.c
  */
 
-/* $FreeBSD: src/sys/libkern/strtoul.c,v 1.6.32.1 2010/02/10 00:26:20 kensmith Exp $ */
-
-#include <ctype.h>
 #include <str.h>
-
-#ifndef ULONG_MAX
-#define ULONG_MAX     0xFFFFFFFFUL
-#endif
+#include <types.h>
 
 /*
- * Convert a string to an unsigned long integer.
- *
- * Ignores `locale' stuff.  Assumes that the upper and lower case
- * alphabets and digits are each contiguous.
+ * Copy src to dst, truncating or null-padding to always copy n bytes.
+ * Return dst.
  */
-unsigned long strtoul(const char *nptr, const char **endptr, int base)
+char *strncpy(char * dst, const char * src, size_t n)
 {
-	const char *s = nptr;
-	unsigned long acc;
-	unsigned char c;
-	unsigned long cutoff;
-	int neg = 0, any, cutlim;
+	if (n != 0) {
+		register char *d = dst;
+		register const char *s = src;
 
-	/*
-	 * See strtol for comments as to the logic used.
-	 */
-	do {
-		c = *s++;
-	} while (isspace(c));
-	if (c == '-') {
-		neg = 1;
-		c = *s++;
-	} else if (c == '+')
-		c = *s++;
-	if ((base == 0 || base == 16) &&
-	    c == '0' && (*s == 'x' || *s == 'X')) {
-		c = s[1];
-		s += 2;
-		base = 16;
+		do {
+			if ((*d++ = *s++) == 0) {
+				/* NUL pad the remaining n-1 bytes */
+				while (--n != 0)
+					*d++ = 0;
+				break;
+			}
+		} while (--n != 0);
 	}
-	if (base == 0)
-		base = c == '0' ? 8 : 10;
-	cutoff = (unsigned long)ULONG_MAX / (unsigned long)base;
-	cutlim = (unsigned long)ULONG_MAX % (unsigned long)base;
-	for (acc = 0, any = 0;; c = *s++) {
-		if (isdigit(c))
-			c -= '0';
-		else if (isalpha(c))
-			c -= isupper(c) ? 'A' - 10 : 'a' - 10;
-		else
-			break;
-		if (c >= base)
-			break;
-		if (any < 0 || acc > cutoff || (acc == cutoff && c > cutlim))
-			any = -1;
-		else {
-			any = 1;
-			acc *= base;
-			acc += c;
-		}
-	}
-	if (any < 0) {
-		acc = ULONG_MAX;
-	} else if (neg)
-		acc = -acc;
-	if (endptr != 0)
-		*((const char **)endptr) = any ? s - 1 : nptr;
-	return (acc);
+	return (dst);
 }
