@@ -41,6 +41,9 @@
 #include <txt.h>
 #include <sha1.h>
 #include <tpm.h>
+#include <str.h>
+#include <com.h>
+#include <cmdline.h>
 
 #include "i5_i7_dual_sinit_18.h" // XXX TODO read this from MBI stuff
 
@@ -748,6 +751,17 @@ void cstartup(multiboot_info_t *mbi){
 #ifdef __DEBUG_VGA__
     vgamem_clrscr();
 #endif
+
+    memset(g_cmdline, '\0', sizeof(g_cmdline));
+    strncpy(g_cmdline, (char*)mbi->cmdline, sizeof(g_cmdline)-1);
+    g_cmdline[sizeof(g_cmdline)-1] = '\0'; /* in case strncpy truncated */
+    tboot_parse_cmdline();
+    if (get_tboot_serial()) {
+      printf("get_tboot_serial got serial port %d", g_com_port.comc_port);
+    } else {
+      printf("get_tboot_serial failed\n");
+    }
+
 
     mod_array = (module_t*)mbi->mods_addr;
     mods_count = mbi->mods_count;
