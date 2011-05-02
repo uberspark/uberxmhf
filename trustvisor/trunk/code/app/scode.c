@@ -44,7 +44,7 @@
 #include  <globals.h>
 #include  "./include/scode.h"
 #include  "./include/puttymem.h"
-#include "./include/tpm_sw.h"
+#include "./include/utpm.h"
 #include "./include/sha1.h"
 #include  "./include/rsa.h"
 #include  "./include/random.h"

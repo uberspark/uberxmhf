@@ -33,13 +33,13 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* tpm_sw.c routines to handle all software TPM related functions
+/* utpm.c routines to handle all micro-TPM related functions
  * Written for TrustVisor by Ning Qu
- * Edited by Zongwei Zhou for EMHF project
+ * Edited by Zongwei Zhou, Jonathan McCune for EMHF project
  */
 
 #include  "./include/scode.h"
-#include  "./include/tpm_sw.h"
+#include  "./include/utpm.h"
 #include  "./include/aes.h"
 #include  "./include/rsa.h"
 #include  "./include/sha1.h"

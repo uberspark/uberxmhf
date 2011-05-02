@@ -41,23 +41,10 @@
 #ifndef __SCODE_H_
 #define __SCODE_H_
 
-#include  <target.h>
+#include <target.h>
 #include <perf.h>
 #include <pages.h>
 #include <hpt.h>
-//#include  <globals.h>
-//#include "tpm_sw.h"
-
-#if 0
-#include "rsa.h" // for global rsa key
-#include "arc4.h"  // for arc4_context in whitelist_entry, by yanlinl at Jul 28, 2009
-#include "tpm_sw.h"
-#include "params.h"
-
-#ifndef STPM_RANDOM_BUFFER_SIZE
-#define STPM_RANDOM_BUFFER_SIZE 128
-#endif
-#endif 
 
 /* 
  * definition for scode sections info 
