@@ -49,7 +49,10 @@
 #define _X	0x40	/* hex digit */
 #define _SP	0x80	/* hard space (0x20) */
 
-unsigned char _ctype[] = {
+/* FIXME- this should be in a C file so it doesn't get
+   stored multiple times.
+*/
+static unsigned char _ctype[] = {
 _C,_C,_C,_C,_C,_C,_C,_C,                        /* 0-7 */
 _C,_C|_S,_C|_S,_C|_S,_C|_S,_C|_S,_C,_C,         /* 8-15 */
 _C,_C,_C,_C,_C,_C,_C,_C,                        /* 16-23 */
