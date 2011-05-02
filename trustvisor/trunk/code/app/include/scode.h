@@ -178,7 +178,7 @@ typedef struct whitelist_entry{
 #endif
 
 	/* software TPM related */
-	u8  pcr[TPM_PCR_SIZE*TPM_PCR_NUM];
+	u8  pcr_bank[TPM_PCR_SIZE*TPM_PCR_NUM];
 
 	/* pal page tables */
 	pagelist_t *pl;

@@ -649,10 +649,10 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	scode_unexpose_arch(vcpu, &whitelist_new);
 
 	/* initialize software TPM PCR */
-	vmemset(whitelist_new.pcr, 0, TPM_PCR_SIZE*TPM_PCR_NUM); 
+	vmemset(whitelist_new.pcr_bank, 0, TPM_PCR_SIZE*TPM_PCR_NUM); 
 
 	/* hash the entire SSCB code, and then extend the hash value into uTPM PCR[0] */
-	if (scode_measure(whitelist_new.pcr, whitelist_new.scode_pages, whitelist_new.scode_size))
+	if (scode_measure(whitelist_new.pcr_bank, whitelist_new.scode_pages, whitelist_new.scode_size))
 	{
 		hpt_scode_clear_prot(vcpu, whitelist_new.scode_pages, whitelist_new.scode_size);
 		vfree(whitelist_new.scode_pages);
@@ -1375,7 +1375,7 @@ u32 scode_seal(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrAtRelease_addr
 		/* seal data to our own */
 		/* use current PAL's PCR value */
 		dprintf(LOG_TRACE, "[TV] get pcr from current PAL's softTPM!\n");
-		vmemcpy(pcr, whitelist[scode_curr[vcpu->id]].pcr, TPM_PCR_SIZE);
+		vmemcpy(pcr, whitelist[scode_curr[vcpu->id]].pcr_bank, TPM_PCR_SIZE);
 	}
 
 #if 1
@@ -1451,7 +1451,7 @@ u32 scode_unseal(VCPU * vcpu, u32 input_addr, u32 input_len, u32 output_addr, u3
 #endif
 
 	/* unseal */
-	if ((ret = stpm_unseal(whitelist[scode_curr[vcpu->id]].pcr, indata, input_len, outdata, &outlen, hmackey, aeskey))) {
+	if ((ret = stpm_unseal(whitelist[scode_curr[vcpu->id]].pcr_bank, indata, input_len, outdata, &outlen, hmackey, aeskey))) {
 		dprintf(LOG_ERROR, "[TV] Unseal ERROR: stpm_unseal fail!\n");
 		return 1;
 	}
@@ -1527,7 +1527,7 @@ u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 
 	dprintf(LOG_TRACE, "\n");
 #endif
 
-	if ((ret = stpm_quote(nonce, outdata, &outlen, whitelist[scode_curr[vcpu->id]].pcr, tpmsel, tpmsel_len, (u8 *)(&g_rsa))) != 0) {
+	if ((ret = stpm_quote(nonce, outdata, &outlen, whitelist[scode_curr[vcpu->id]].pcr_bank, tpmsel, tpmsel_len, (u8 *)(&g_rsa))) != 0) {
 		dprintf(LOG_ERROR, "[TV] quote ERROR: stpm_quote fail!\n");
 		return 1;
 	}
@@ -1748,7 +1748,7 @@ u32 scode_pcrread(VCPU * vcpu, u32 gvaddr, u32 num)
 	}
 
 	/* read pcr value */
-	stpm_pcrread(pcr, whitelist[scode_curr[vcpu->id]].pcr, num);
+	stpm_pcrread(pcr, whitelist[scode_curr[vcpu->id]].pcr_bank, num);
 
 	/* return pcr value to guest */
 	copy_to_guest(vcpu, gvaddr, pcr, TPM_PCR_SIZE);
@@ -1792,7 +1792,7 @@ u32 scode_pcrextend(VCPU * vcpu, u32 gvaddr, u32 len, u32 num)
 	sha1_csum((unsigned char*)data, len, hash);
 
 	/* extend pcr */
-	stpm_extend(hash, whitelist[scode_curr[vcpu->id]].pcr, num);
+	stpm_extend(hash, whitelist[scode_curr[vcpu->id]].pcr_bank, num);
 
 	return 0;
 }
