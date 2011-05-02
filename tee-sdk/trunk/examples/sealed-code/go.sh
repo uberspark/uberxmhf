@@ -4,6 +4,7 @@
 
 if [ ! -e ./seal-code ] ; then
     echo "You need to 'make' first!"
+    exit 1
 fi
 
 echo "************************************************"
