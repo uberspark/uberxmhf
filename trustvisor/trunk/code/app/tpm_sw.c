@@ -147,7 +147,7 @@ u32 stpm_seal(u8* pcrAtRelease, u8* input, u32 inlen, u8* output, u32* outlen, u
 	return 0;
 }
 
-u32 stpm_unseal(u8 * pcr, u8* input, u32 inlen, u8* output, u32* outlen, u8 * hmackey, u8 * aeskey)
+u32 stpm_unseal(u8 * pcr_bank, u8* input, u32 inlen, u8* output, u32* outlen, u8 * hmackey, u8 * aeskey)
 {
 	u32 len;
 	u8 hashdata[TPM_HASH_SIZE];
@@ -163,7 +163,11 @@ u32 stpm_unseal(u8 * pcr, u8* input, u32 inlen, u8* output, u32* outlen, u8 * hm
 	aes_crypt_cbc(&ctx, AES_DECRYPT, (s32)inlen, iv, input, output);
 
 	/* compare the current pcr (default pcr 0) with pcrHashAtRelease */
-	if(vmemcmp(output+TPM_CONFOUNDER_SIZE+TPM_HASH_SIZE, pcr, TPM_PCR_SIZE))
+    /* XXX TODO: this code implicitly uses PCR 0, and assumes that it
+     * is the first thing inside the pcr_bank.  This is a Bad Thing.
+     * Need to mature pcr_bank into an actual structure, teach
+     * seal/unseal about identifying which PCRs to seal to, etc. */
+	if(vmemcmp(output+TPM_CONFOUNDER_SIZE+TPM_HASH_SIZE, pcr_bank, TPM_PCR_SIZE))
 	{
 		printf("[TV] Unseal ERROR: wrong pcr value!\n");
 		printf("[TV] sealed pcr:");
@@ -172,7 +176,7 @@ u32 stpm_unseal(u8 * pcr, u8* input, u32 inlen, u8* output, u32* outlen, u8 * hm
 		}
 		printf("\n[TV] current pcr:");
 		for(i=0;i<TPM_PCR_SIZE;i++) {
-			printf("%x ",pcr[i]);
+			printf("%x ",pcr_bank[i]);
 		}
 		printf("\n");
 		return 1;
@@ -204,11 +208,11 @@ u32 stpm_unseal(u8 * pcr, u8* input, u32 inlen, u8* output, u32* outlen, u8 * hm
  * input: externalnonce, get from external server to avoid replay attack
  * output: quote result and data length
  */
-u32 stpm_quote(u8* externalnonce, u8* output, u32* outlen, u8 * pcr, u8 * tpmsel, u32 tpmsel_len, u8 * rsa )
+u32 stpm_quote(u8* externalnonce, u8* output, u32* outlen, u8* pcr_bank, u8* tpmsel, u32 tpmsel_len, u8* rsa )
 {
 	int ret;
 	u32 i, idx;
-	u8 * pdata;
+	u8* pdata;
 	u32 datalen;
 
 	/* construct TPM_QUOTE_INFO in output */
@@ -221,7 +225,7 @@ u32 stpm_quote(u8* externalnonce, u8* output, u32* outlen, u8 * pcr, u8 * tpmsel
 	pdata = output+datalen;
 	for( i=0 ; i<*((u32 *)tpmsel) ; i++ )  {
 		idx=*(((u32 *)tpmsel)+i+1);
-		vmemcpy(pdata+i*TPM_PCR_SIZE, pcr+idx*TPM_PCR_SIZE, TPM_PCR_SIZE);
+		vmemcpy(pdata+i*TPM_PCR_SIZE, pcr_bank+idx*TPM_PCR_SIZE, TPM_PCR_SIZE);
 		datalen += TPM_PCR_SIZE;
 	}
 	
