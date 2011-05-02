@@ -53,7 +53,6 @@
 /* constant value for TPM chip */
 #define TPM_RSA_KEY_LEN                256 /* RSA key size is 2048 bit */
 #define TPM_HASH_SIZE                  20
-#define TPM_NONCE_SIZE                 20
 
 #define  MAX_PCR_SEL_NUM 4
 #define  MAX_PCR_SEL_SIZE (4+4*MAX_PCR_SEL_NUM)
@@ -71,20 +70,33 @@
 #define UTPM_ERR_BAD_PARAM 1
 #define UTPM_ERR_PCR_OUT_OF_RANGE 2
 
-typedef struct tdTPM_NONCE{
-  u8 nonce[TPM_NONCE_SIZE];
-} TPM_NONCE;
+#define TPM_NUM_PCR 8 /* FIXME redundant with TPM_PCR_NUM in scode.h */
+typedef struct tdTPM_PCR_SELECTION { 
+    uint16_t sizeOfSelect;               /* The size in bytes of the pcrSelect structure */
+    u8 pcrSelect[TPM_NUM_PCR/8];         /* This SHALL be a bit map that indicates if a PCR
+                                            is active or not */
+} TPM_PCR_SELECTION; 
 
-/* Keys used in TPM */
-
-typedef struct tdTPM_COMPOSITE_HASH{
+typedef struct tdTPM_DIGEST{
   u8 value[TPM_HASH_SIZE];
-} TPM_COMPOSITE_HASH;
+} TPM_DIGEST;
 
-typedef struct tdTPM_PCR_INFO{
-  TPM_COMPOSITE_HASH digestAtRelease; 
-  TPM_COMPOSITE_HASH digestAtCreation;
-} TPM_PCR_INFO;
+typedef TPM_DIGEST TPM_COMPOSITE_HASH;
+
+typedef struct tdTPM_PCR_INFO { 
+    TPM_PCR_SELECTION pcrSelection;      /* This SHALL be the selection of PCRs to which the
+                                            data or key is bound. */
+    TPM_COMPOSITE_HASH digestAtRelease;  /* This SHALL be the digest of the PCR indices and
+                                            PCR values to verify when revealing Sealed Data
+                                            or using a key that was wrapped to PCRs.  NOTE:
+                                            This is passed in by the host, and used as
+                                            authorization to use the key */
+    TPM_COMPOSITE_HASH digestAtCreation; /* This SHALL be the composite digest value of the
+                                            PCR values, at the time when the sealing is
+                                            performed. NOTE: This is generated at key
+                                            creation, but is just informative to the host,
+                                            not used for authorization */
+} TPM_PCR_INFO; 
 
 typedef struct tdTPM_STRUCT_VER{
   u8 major;   /* 0x01 */
@@ -92,6 +104,11 @@ typedef struct tdTPM_STRUCT_VER{
   u8 revMajor; /* 0x00 */
   u8 revMinor; /* 0x00 */
 } TPM_STRUCT_VER;
+
+#define TPM_NONCE_SIZE 20
+typedef struct tdTPM_NONCE{
+  u8 nonce[TPM_NONCE_SIZE];
+} TPM_NONCE;
 
 typedef struct tdTPM_QUOTE_INFO{
   TPM_STRUCT_VER version;  /* must be 1.1.0.0 based on TPM part2 structure */
