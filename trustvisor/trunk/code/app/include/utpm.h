@@ -33,10 +33,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* Software TPM header file */
+/* Software micro-TPM header file */
 
-#ifndef _SW_TPM_H
-#define _SW_TPM_H
+#ifndef _UTPM_H_
+#define _UTPM_H_
+
 #include <types.h>
 
 /* TPM commands for trustvisor */
@@ -114,11 +115,12 @@ typedef struct tdTPM_STORED_DATA{
 } TPM_STORED_DATA;
 
 /* TPM functions  */
-u32 stpm_pcrread(u8* pcr_value, u8* pcr_bank, u32 pcr_num);
-u32 stpm_extend(u8* measurement, u8* pcr_bank, u32 pcr_num);
-u32 stpm_seal(u8* pcrAtRelease, u8* input, u32 inlen, u8* output, u32* outlen, u8* hmackey, u8* aeskey);
-u32 stpm_unseal(u8* pcr_bank, u8* input, u32 inlen, u8* output, u32* outlen, u8* hmackey, u8* aeskey);
-u32 stpm_quote(u8* externalnonce, u8* output, u32* outlen, u8* pcr_bank, u8* tpmsel, u32 tpmsel_len, u8* rsa );
-//u32 stpm_rand(u8* buffer, u32 numbytes);
-#endif
+u32 utpm_pcrread(u8* pcr_value, u8* pcr_bank, u32 pcr_num);
+u32 utpm_extend(u8* measurement, u8* pcr_bank, u32 pcr_num);
+u32 utpm_seal(u8* pcrAtRelease, u8* input, u32 inlen, u8* output, u32* outlen, u8* hmackey, u8* aeskey);
+u32 utpm_unseal(u8* pcr_bank, u8* input, u32 inlen, u8* output, u32* outlen, u8* hmackey, u8* aeskey);
+u32 utpm_quote(u8* externalnonce, u8* output, u32* outlen, u8* pcr_bank, u8* tpmsel, u32 tpmsel_len, u8* rsa );
+//u32 utpm_rand(u8* buffer, u32 numbytes);
+
+#endif /* _UTPM_H_ */
 

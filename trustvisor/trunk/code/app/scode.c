@@ -244,7 +244,7 @@ u32 scode_measure(u8 * pcr, pte_t *pte_pages, u32 size)
 	sha1_finish(&ctx, sha1sum);
 
 	/* extend pcr 0 */
-	stpm_extend(sha1sum, pcr, 0);
+	utpm_extend(sha1sum, pcr, 0);
 
 	return 0;
 }
@@ -1387,7 +1387,7 @@ u32 scode_seal(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrAtRelease_addr
 #endif
 
 	/* seal */
-	stpm_seal(pcr, indata, input_len, output, &outlen, hmackey, aeskey);
+	utpm_seal(pcr, indata, input_len, output, &outlen, hmackey, aeskey);
 
 #if 1
 	dprintf(LOG_TRACE, "[TV] sealed data len = %d!\n", outlen);
@@ -1451,8 +1451,8 @@ u32 scode_unseal(VCPU * vcpu, u32 input_addr, u32 input_len, u32 output_addr, u3
 #endif
 
 	/* unseal */
-	if ((ret = stpm_unseal(whitelist[scode_curr[vcpu->id]].pcr_bank, indata, input_len, outdata, &outlen, hmackey, aeskey))) {
-		dprintf(LOG_ERROR, "[TV] Unseal ERROR: stpm_unseal fail!\n");
+	if ((ret = utpm_unseal(whitelist[scode_curr[vcpu->id]].pcr_bank, indata, input_len, outdata, &outlen, hmackey, aeskey))) {
+		dprintf(LOG_ERROR, "[TV] Unseal ERROR: utpm_unseal fail!\n");
 		return 1;
 	}
 
@@ -1527,8 +1527,8 @@ u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 
 	dprintf(LOG_TRACE, "\n");
 #endif
 
-	if ((ret = stpm_quote(nonce, outdata, &outlen, whitelist[scode_curr[vcpu->id]].pcr_bank, tpmsel, tpmsel_len, (u8 *)(&g_rsa))) != 0) {
-		dprintf(LOG_ERROR, "[TV] quote ERROR: stpm_quote fail!\n");
+	if ((ret = utpm_quote(nonce, outdata, &outlen, whitelist[scode_curr[vcpu->id]].pcr_bank, tpmsel, tpmsel_len, (u8 *)(&g_rsa))) != 0) {
+		dprintf(LOG_ERROR, "[TV] quote ERROR: utpm_quote fail!\n");
 		return 1;
 	}
 
@@ -1748,7 +1748,7 @@ u32 scode_pcrread(VCPU * vcpu, u32 gvaddr, u32 num)
 	}
 
 	/* read pcr value */
-	stpm_pcrread(pcr, whitelist[scode_curr[vcpu->id]].pcr_bank, num);
+	utpm_pcrread(pcr, whitelist[scode_curr[vcpu->id]].pcr_bank, num);
 
 	/* return pcr value to guest */
 	copy_to_guest(vcpu, gvaddr, pcr, TPM_PCR_SIZE);
@@ -1792,7 +1792,7 @@ u32 scode_pcrextend(VCPU * vcpu, u32 gvaddr, u32 len, u32 num)
 	sha1_csum((unsigned char*)data, len, hash);
 
 	/* extend pcr */
-	stpm_extend(hash, whitelist[scode_curr[vcpu->id]].pcr_bank, num);
+	utpm_extend(hash, whitelist[scode_curr[vcpu->id]].pcr_bank, num);
 
 	return 0;
 }
@@ -1817,7 +1817,7 @@ u32 scode_rand(VCPU * vcpu, u32 buffer_addr, u32 numbytes_addr)
 		return 1;
 	}
 
-	ret = stpm_rand(buffer, numbytes);
+	ret = utpm_rand(buffer, numbytes);
 	if (ret == 0)
 	{
 		dprintf(LOG_ERROR, "[TV] GenRandom ERROR: rand byte error!");

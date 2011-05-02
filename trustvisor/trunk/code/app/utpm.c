@@ -45,8 +45,8 @@
 #include  "./include/sha1.h"
 #include  "./include/puttymem.h"
 
-/* software tpm pcr write (only called by stpm_extend) */
-static u32 stpm_internal_pcrwrite(u8* new_pcr_value, u8* pcr_bank, u32 pcr_num)
+/* software tpm pcr write (only called by utpm_extend) */
+static u32 utpm_internal_pcrwrite(u8* new_pcr_value, u8* pcr_bank, u32 pcr_num)
 {
     /* Internal function; param sanity-checking should already be
      * done. Use ASSERTs just to be safe. */
@@ -59,7 +59,7 @@ static u32 stpm_internal_pcrwrite(u8* new_pcr_value, u8* pcr_bank, u32 pcr_num)
 }
 
 /* software tpm pcr read */
-u32 stpm_pcrread(u8* pcr_value /* output */,
+u32 utpm_pcrread(u8* pcr_value /* output */,
                  u8* pcr_bank, u32 pcr_num) /* inputs */
 { 
     if(!pcr_value || !pcr_bank) { return UTPM_ERR_BAD_PARAM; }
@@ -70,7 +70,7 @@ u32 stpm_pcrread(u8* pcr_value /* output */,
 }
 
 /* software tpm pcr extend */
-u32 stpm_extend(u8* measurement, u8* pcr_bank, u32 pcr_num)
+u32 utpm_extend(u8* measurement, u8* pcr_bank, u32 pcr_num)
 {
 	u8 scratch[TPM_PCR_SIZE + TPM_HASH_SIZE];
 	u8 new_pcr_val[TPM_HASH_SIZE];
@@ -80,7 +80,7 @@ u32 stpm_extend(u8* measurement, u8* pcr_bank, u32 pcr_num)
     if(pcr_num >= TPM_PCR_NUM)    { return UTPM_ERR_PCR_OUT_OF_RANGE; }
     
 	/* read old PCR value */
-	if(UTPM_SUCCESS != (rv = stpm_pcrread(scratch, pcr_bank, pcr_num))) {
+	if(UTPM_SUCCESS != (rv = utpm_pcrread(scratch, pcr_bank, pcr_num))) {
         return rv;
     }
 
@@ -91,7 +91,7 @@ u32 stpm_extend(u8* measurement, u8* pcr_bank, u32 pcr_num)
 	sha1_csum(scratch, TPM_HASH_SIZE + TPM_PCR_SIZE, new_pcr_val);
 
 	/* write back. skip error check due to simplicity. */
-	stpm_internal_pcrwrite(new_pcr_val, pcr_bank, pcr_num);
+	utpm_internal_pcrwrite(new_pcr_val, pcr_bank, pcr_num);
 
 	return UTPM_SUCCESS;
 }
@@ -100,7 +100,7 @@ u32 stpm_extend(u8* measurement, u8* pcr_bank, u32 pcr_num)
 /* XXX TODO: "Sealing" should support binding to an arbitrary number
  * of uPCRs.  Where is the bit vector to select the uPCRs of
  * interest? */
-u32 stpm_seal(u8* pcrAtRelease, u8* input, u32 inlen, u8* output, u32* outlen, u8 * hmackey, u8 * aeskey)
+u32 utpm_seal(u8* pcrAtRelease, u8* input, u32 inlen, u8* output, u32* outlen, u8 * hmackey, u8 * aeskey)
 {
 	s32 len;
 	u32 outlen_beforepad;
@@ -147,7 +147,7 @@ u32 stpm_seal(u8* pcrAtRelease, u8* input, u32 inlen, u8* output, u32* outlen, u
 	return 0;
 }
 
-u32 stpm_unseal(u8 * pcr_bank, u8* input, u32 inlen, u8* output, u32* outlen, u8 * hmackey, u8 * aeskey)
+u32 utpm_unseal(u8 * pcr_bank, u8* input, u32 inlen, u8* output, u32* outlen, u8 * hmackey, u8 * aeskey)
 {
 	u32 len;
 	u8 hashdata[TPM_HASH_SIZE];
@@ -208,7 +208,7 @@ u32 stpm_unseal(u8 * pcr_bank, u8* input, u32 inlen, u8* output, u32* outlen, u8
  * input: externalnonce, get from external server to avoid replay attack
  * output: quote result and data length
  */
-u32 stpm_quote(u8* externalnonce, u8* output, u32* outlen, u8* pcr_bank, u8* tpmsel, u32 tpmsel_len, u8* rsa )
+u32 utpm_quote(u8* externalnonce, u8* output, u32* outlen, u8* pcr_bank, u8* tpmsel, u32 tpmsel_len, u8* rsa )
 {
 	int ret;
 	u32 i, idx;
@@ -247,7 +247,7 @@ u32 stpm_quote(u8* externalnonce, u8* output, u32* outlen, u8* pcr_bank, u8* tpm
 
 
 /* get random bytes from software TPM */
-u32 stpm_rand(u8* buffer, u32 numbytes)
+u32 utpm_rand(u8* buffer, u32 numbytes)
 {
 	numbytes = rand_bytes(buffer, numbytes);
 
