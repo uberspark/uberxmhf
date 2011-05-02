@@ -65,6 +65,11 @@
 
 #define  TPM_CONFOUNDER_SIZE 20
 
+/* Return codes for uTPM operations. */
+#define UTPM_SUCCESS 0
+#define UTPM_ERR_BAD_PARAM 1
+#define UTPM_ERR_PCR_OUT_OF_RANGE 2
+
 typedef struct tdTPM_NONCE{
   u8 nonce[TPM_NONCE_SIZE];
 } TPM_NONCE;
@@ -109,11 +114,11 @@ typedef struct tdTPM_STORED_DATA{
 } TPM_STORED_DATA;
 
 /* TPM functions  */
-u32 stpm_pcrread(u8* value, u8 * pcr, u32 num);
-u32 stpm_extend(u8* hash, u8 * pcr, u32 num);
-u32 stpm_seal(u8* pcrAtRelease, u8* input, u32 inlen, u8* output, u32* outlen, u8 * hmackey, u8 * aeskey);
-u32 stpm_unseal(u8* pcr, u8* input, u32 inlen, u8* output, u32* outlen, u8 * hmackey, u8 * aeskey);
-u32 stpm_quote(u8* externalnonce, u8* output, u32* outlen, u8 * pcr, u8 * tpmsel, u32 tpmsel_len, u8 * rsa );
+u32 stpm_pcrread(u8* pcr_value, u8* pcr_bank, u32 pcr_num);
+u32 stpm_extend(u8* measurement, u8* pcr_bank, u32 pcr_num);
+u32 stpm_seal(u8* pcrAtRelease, u8* input, u32 inlen, u8* output, u32* outlen, u8* hmackey, u8* aeskey);
+u32 stpm_unseal(u8* pcr, u8* input, u32 inlen, u8* output, u32* outlen, u8* hmackey, u8* aeskey);
+u32 stpm_quote(u8* externalnonce, u8* output, u32* outlen, u8* pcr, u8* tpmsel, u32 tpmsel_len, u8* rsa );
 //u32 stpm_rand(u8* buffer, u32 numbytes);
 #endif
 

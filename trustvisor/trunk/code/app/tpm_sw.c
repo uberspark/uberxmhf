@@ -46,41 +46,60 @@
 #include  "./include/puttymem.h"
 
 /* software tpm pcr write (only called by stpm_extend) */
-u32 stpm_pcrwrite(u8* value, u8* pcr, u32 num)
+static u32 stpm_internal_pcrwrite(u8* new_pcr_value, u8* pcr_bank, u32 pcr_num)
 {
-	vmemcpy(pcr + num*TPM_PCR_SIZE, value, TPM_PCR_SIZE);
-	return 0;
+    /* Internal function; param sanity-checking should already be
+     * done. Use ASSERTs just to be safe. */
+    ASSERT(new_pcr_value != NULL);
+    ASSERT(pcr_bank != NULL);
+    ASSERT(pcr_num < TPM_PCR_NUM);
+    
+	vmemcpy(pcr_bank + pcr_num*TPM_PCR_SIZE, new_pcr_value, TPM_PCR_SIZE);
+	return UTPM_SUCCESS;
 }
 
 /* software tpm pcr read */
-u32 stpm_pcrread(u8* value, u8* pcr, u32 num)
+u32 stpm_pcrread(u8* pcr_value /* output */,
+                 u8* pcr_bank, u32 pcr_num) /* inputs */
 { 
-	vmemcpy(value, pcr + num*TPM_PCR_SIZE, TPM_PCR_SIZE);
-	return 0;
+    if(!pcr_value || !pcr_bank) { return UTPM_ERR_BAD_PARAM; }
+    if(pcr_num >= TPM_PCR_NUM)  { return UTPM_ERR_PCR_OUT_OF_RANGE; }
+
+	vmemcpy(pcr_value, pcr_bank + pcr_num*TPM_PCR_SIZE, TPM_PCR_SIZE);
+	return UTPM_SUCCESS;
 }
 
 /* software tpm pcr extend */
-u32 stpm_extend(u8* hash, u8 * pcr, u32 num)
+u32 stpm_extend(u8* measurement, u8* pcr_bank, u32 pcr_num)
 {
-	u8 C1[TPM_HASH_SIZE + TPM_PCR_SIZE];
-	u8 H1[TPM_HASH_SIZE];
-	int i;
+	u8 scratch[TPM_PCR_SIZE + TPM_HASH_SIZE];
+	u8 new_pcr_val[TPM_HASH_SIZE];
+    u32 rv;
 
+    if(!measurement || !pcr_bank) { return UTPM_ERR_BAD_PARAM; }
+    if(pcr_num >= TPM_PCR_NUM)    { return UTPM_ERR_PCR_OUT_OF_RANGE; }
+    
 	/* read old PCR value */
-	stpm_pcrread(C1, pcr, num);
+	if(UTPM_SUCCESS != (rv = stpm_pcrread(scratch, pcr_bank, pcr_num))) {
+        return rv;
+    }
 
-	/* append hash */
-	vmemcpy(C1+TPM_PCR_SIZE, hash, TPM_HASH_SIZE);
+	/* append measurement */
+	vmemcpy(scratch+TPM_PCR_SIZE, measurement, TPM_HASH_SIZE);
 
 	/* calculate new PCR value */
-	sha1_csum(C1, TPM_HASH_SIZE + TPM_PCR_SIZE, H1);
+	sha1_csum(scratch, TPM_HASH_SIZE + TPM_PCR_SIZE, new_pcr_val);
 
-	/* write back */
-	stpm_pcrwrite(H1, pcr, num);
+	/* write back. skip error check due to simplicity. */
+	stpm_internal_pcrwrite(new_pcr_val, pcr_bank, pcr_num);
 
-	return 0;
+	return UTPM_SUCCESS;
 }
 
+
+/* XXX TODO: "Sealing" should support binding to an arbitrary number
+ * of uPCRs.  Where is the bit vector to select the uPCRs of
+ * interest? */
 u32 stpm_seal(u8* pcrAtRelease, u8* input, u32 inlen, u8* output, u32* outlen, u8 * hmackey, u8 * aeskey)
 {
 	s32 len;
