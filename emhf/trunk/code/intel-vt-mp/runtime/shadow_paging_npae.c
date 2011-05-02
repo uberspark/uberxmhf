@@ -205,9 +205,7 @@ void shadow_get_guestentry(u32 gva, u32 gCR3, u32 **pdt_entry, u32 **pt_entry){
   u32 g_pdt_entry, g_pt_entry;
   npdt_t g_pdt;
 
-  _Bool tx, ty, tz; // JDF indicator
-
-  tx = gCR3; 
+  _Bool ty0, ty1; // JDF 
 
   gva = nondet_u32();
   gCR3 = nondet_u32();
@@ -224,16 +222,17 @@ void shadow_get_guestentry(u32 gva, u32 gCR3, u32 **pdt_entry, u32 **pt_entry){
 
   *pdt_entry = (u32 *)&g_pdt[index_pdt];
 
-  ty = g_pdt_entry; // JDF
-  //goto end;
+  ty0 = g_pdt_entry; // JDF
+  assert(ty0);       // JDF
 
-  if( !(g_pdt_entry & _PAGE_PRESENT) )
-    return;
+  /* if( !(g_pdt_entry & _PAGE_PRESENT) ) { */
+  /*   return; */
+  /* } */
 
   g_pdt[index_pdt] |= _PAGE_ACCESSED;
 
-  if(g_pdt_entry & _PAGE_PSE)
-    return; // 4M pdt entry, no pt present
+  /* if(g_pdt_entry & _PAGE_PSE) */
+  /*   return; */
 		
   g_pt = (npt_t)gpa_to_hpa((u32)pae_get_addr_from_pde(g_pdt_entry));
 
@@ -244,12 +243,8 @@ void shadow_get_guestentry(u32 gva, u32 gCR3, u32 **pdt_entry, u32 **pt_entry){
   g_pt_entry = g_pt[index_pt];
   *pt_entry = (u32 *)&g_pt[index_pt];
 
-  tz = g_pt_entry; // JDF
-
- end:
-  assert(tx);
-  assert(ty);
-  assert(tz);
+  ty1 = g_pt_entry; // JDF
+  assert(ty1); // JDF
 
   return;
 }
