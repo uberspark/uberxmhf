@@ -109,8 +109,7 @@ void *memset (void *str, u32 c, u32 len){
   return str;
 }
 
-
-u32 strncmp(u8 * cs, u8 * ct, u32 count)
+u32 strncmp(const u8 * cs, const u8 * ct, u32 count)
 {
         int res;
         int d0, d1, d2;
@@ -130,6 +129,64 @@ u32 strncmp(u8 * cs, u8 * ct, u32 count)
                 :"1" (cs),"2" (ct),"3" (count)
                 :"memory");
         return (u32)res;
+}
+
+/**
+ * strcmp - Compare two strings
+ * @cs: One string
+ * @ct: Another string
+ *
+ * (from tboot/common/string.c) 
+ */
+int strcmp(const char * cs,const char * ct)
+{
+    register signed char __res;
+
+    while (1) {
+        if ((__res = *cs - *ct++) != 0 || !*cs++)
+            break;
+    }
+
+    return __res;
+}
+
+/**
+ * strncpy - Copy a %NUL terminated string into a sized buffer
+ * @dest: Where to copy the string to
+ * @src: Where to copy the string from
+ * @size: size of destination buffer
+ *
+ * Compatible with *BSD: the result is always a valid
+ * NUL-terminated string that fits in the buffer (unless,
+ * of course, the buffer size is zero). It does not pad
+ * out the result like strncpy() does.
+ *
+ * (from tboot/common/string.c) 
+ */
+size_t strncpy(char *dest, const char *src, size_t size)
+{
+	size_t ret = strlen(src);
+	if (size) {
+		size_t len = (ret >= size) ? size-1 : ret;
+		memcpy(dest, src, len);
+		dest[len] = '\0';
+	}
+	return ret;
+}
+
+/**
+ * strlen - Find the length of a null-terminated string
+ * @s: The string to be sized
+ *
+ * (from tboot/common/string.c)
+ */
+size_t strlen(const char * s)
+{
+	const char *sc;
+
+	for (sc = s; *sc != '\0'; ++sc)
+		/* nothing */;
+	return sc - s;
 }
 
 #ifndef HAVE_MEMCMP
