@@ -38,6 +38,8 @@
 #ifndef __STR_H__
 #define __STR_H__
 
+#include <types.h>
+
 #ifndef __ASSEMBLY__
 void *memmove(void *dst_void, const void *src_void, u32 length);
 char *strchr(const char *s, int c);
