@@ -68,24 +68,25 @@
  *
  */
 
-#include <config.h>
+/* #include <config.h> */
 #include <types.h>
+#include <str.h>
 #include <ctype.h>
-#include <compiler.h>
-#include <string2.h>
-#include <misc.h>
-#include <printk.h>
-#include <stdbool.h>
-#include <cmdline.h>
+/* #include <compiler.h> */
+/* #include <string2.h> */
+/* #include <misc.h> */
+/* #include <printk.h> */
+/* #include <stdbool.h> */
+/* #include <cmdline.h> */
 
 
 /*
  * copy of original command line
  * part of tboot measurement (hence in .text section)
  */
-__text char g_cmdline[CMDLINE_SIZE] = { 0 };
+/* char g_cmdline[CMDLINE_SIZE] = { 0 }; */
 
-
+#define ARRAY_SIZE(a)     (sizeof(a) / sizeof((a)[0]))
 
 /*Used for kernel command line parameter setup */
 typedef struct {
@@ -121,15 +122,17 @@ static char g_linux_param_values[ARRAY_SIZE(g_linux_cmdline_options)][MAX_VALUE_
 
 void print_tboot_values(void)
 {
-    for ( int i = 0; g_tboot_cmdline_options[i].name != NULL; i++ )
-        printk("val[%d]: %s\n", i, &(g_tboot_param_values[i][0]));
+    int i;
+    for ( i = 0; g_tboot_cmdline_options[i].name != NULL; i++ )
+        printf("val[%d]: %s\n", i, &(g_tboot_param_values[i][0]));
 }
 
 static const char* get_option_val(const cmdline_option_t *options,
                                   char vals[][MAX_VALUE_LEN],
                                   const char *opt_name)
 {
-    for ( int i = 0; options[i].name != NULL; i++ ) {
+    int i;
+    for ( i = 0; options[i].name != NULL; i++ ) {
         if ( strcmp(options[i].name, opt_name) == 0 )
             return vals[i];
     }
@@ -161,178 +164,184 @@ static void cmdline_parse(char *cmdline, const cmdline_option_t *options,
             break;
 
         /* find end of current option */
-        const char *opt_start = p;
-        const char *opt_end = strchr(opt_start, ' ');
-        if ( opt_end == NULL )
-            opt_end = opt_start + strlen(opt_start);
-        p = opt_end;
+        {
+            const char *opt_start = p;
+            const char *opt_end = strchr(opt_start, ' ');
+            if ( opt_end == NULL )
+                opt_end = opt_start + strlen(opt_start);
+            p = opt_end;
 
-        /* find value part; if no value found, use default and continue */
-        const char *val_start = strchr(opt_start, '=');
-        if ( val_start == NULL || val_start > opt_end )
-            continue;
-        val_start++;
+            /* find value part; if no value found, use default and continue */
+            {
+                const char *val_start = strchr(opt_start, '=');
+                unsigned int opt_name_size;
+                unsigned int copy_size;
+                if ( val_start == NULL || val_start > opt_end )
+                    continue;
+                val_start++;
 
-        unsigned int opt_name_size = val_start - opt_start - 1;
-        /* (+1 because we'll overwrite the last char with '\0' when we copy) */
-        unsigned int copy_size = opt_end - val_start + 1;
-        if ( copy_size > MAX_VALUE_LEN - 1 )
-            copy_size = MAX_VALUE_LEN - 1;
-        if ( opt_name_size == 0 || copy_size == 0 )
-            continue;
+                opt_name_size = val_start - opt_start - 1;
+                /* (+1 because we'll overwrite the last char with '\0' when we copy) */
+                copy_size = opt_end - val_start + 1;
+                if ( copy_size > MAX_VALUE_LEN - 1 )
+                    copy_size = MAX_VALUE_LEN - 1;
+                if ( opt_name_size == 0 || copy_size == 0 )
+                    continue;
 
-        /* value found, so copy it */
-        for ( i = 0; options[i].name != NULL; i++ ) {
-            if ( strncmp(options[i].name, opt_start, opt_name_size ) == 0 ) {
-                strncpy(vals[i], val_start, copy_size);
-                vals[i][copy_size] = '\0';
-                break;
+                /* value found, so copy it */
+                for ( i = 0; options[i].name != NULL; i++ ) {
+                    if ( strncmp(options[i].name, opt_start, opt_name_size ) == 0 ) {
+                        strncpy(vals[i], val_start, copy_size);
+                        vals[i][copy_size] = '\0';
+                        break;
+                    }
+                }
             }
         }
     }
 }
 
-void tboot_parse_cmdline(void)
-{
-    cmdline_parse(g_cmdline, g_tboot_cmdline_options, g_tboot_param_values);
-}
+/* void tboot_parse_cmdline(void) */
+/* { */
+/*     cmdline_parse(g_cmdline, g_tboot_cmdline_options, g_tboot_param_values); */
+/* } */
 
-void linux_parse_cmdline(char *cmdline)
-{
-    cmdline_parse(cmdline, g_linux_cmdline_options, g_linux_param_values);
-}
+/* void linux_parse_cmdline(char *cmdline) */
+/* { */
+/*     cmdline_parse(cmdline, g_linux_cmdline_options, g_linux_param_values); */
+/* } */
 
-void get_tboot_loglvl(void)
-{
-    const char *loglvl = get_option_val(g_tboot_cmdline_options,
-                                        g_tboot_param_values, "loglvl");
-    if ( loglvl == NULL )
-        return;
+/* void get_tboot_loglvl(void) */
+/* { */
+/*     const char *loglvl = get_option_val(g_tboot_cmdline_options, */
+/*                                         g_tboot_param_values, "loglvl"); */
+/*     if ( loglvl == NULL ) */
+/*         return; */
 
-    if ( strcmp(loglvl, "none") == 0 )
-        g_log_level = TBOOT_LOG_LEVEL_NONE; /* print nothing */
-}
+/*     if ( strcmp(loglvl, "none") == 0 ) */
+/*         g_log_level = TBOOT_LOG_LEVEL_NONE; /\* print nothing *\/ */
+/* } */
 
-void get_tboot_log_targets(void)
-{
-    const char *targets = get_option_val(g_tboot_cmdline_options,
-                                         g_tboot_param_values, "logging");
+/* void get_tboot_log_targets(void) */
+/* { */
+/*     const char *targets = get_option_val(g_tboot_cmdline_options, */
+/*                                          g_tboot_param_values, "logging"); */
 
-    /* nothing set, leave defaults */
-    if ( targets == NULL || *targets == '\0' )
-        return;
+/*     /\* nothing set, leave defaults *\/ */
+/*     if ( targets == NULL || *targets == '\0' ) */
+/*         return; */
 
-    /* determine if no targets set explicitly */
-    if ( strcmp(targets, "none") == 0 ) {
-        g_log_targets = TBOOT_LOG_TARGET_NONE; /* print nothing */
-        return;
-    }
+/*     /\* determine if no targets set explicitly *\/ */
+/*     if ( strcmp(targets, "none") == 0 ) { */
+/*         g_log_targets = TBOOT_LOG_TARGET_NONE; /\* print nothing *\/ */
+/*         return; */
+/*     } */
 
-    /* else init to nothing and parse the possible targets */
-    g_log_targets = TBOOT_LOG_TARGET_NONE;
+/*     /\* else init to nothing and parse the possible targets *\/ */
+/*     g_log_targets = TBOOT_LOG_TARGET_NONE; */
 
-    while ( *targets != '\0' ) {
-        if ( strncmp(targets, "memory", 6) == 0 ) {
-            g_log_targets |= TBOOT_LOG_TARGET_MEMORY;
-            targets += 6;
-        }
-        else if ( strncmp(targets, "serial", 6) == 0 ) {
-            g_log_targets |= TBOOT_LOG_TARGET_SERIAL;
-            targets += 6;
-        }
-        else if ( strncmp(targets, "vga", 3) == 0 ) {
-            g_log_targets |= TBOOT_LOG_TARGET_VGA;
-            targets += 3;
-        }
-        else 
-            break; /* unrecognized, end loop */
+/*     while ( *targets != '\0' ) { */
+/*         if ( strncmp(targets, "memory", 6) == 0 ) { */
+/*             g_log_targets |= TBOOT_LOG_TARGET_MEMORY; */
+/*             targets += 6; */
+/*         } */
+/*         else if ( strncmp(targets, "serial", 6) == 0 ) { */
+/*             g_log_targets |= TBOOT_LOG_TARGET_SERIAL; */
+/*             targets += 6; */
+/*         } */
+/*         else if ( strncmp(targets, "vga", 3) == 0 ) { */
+/*             g_log_targets |= TBOOT_LOG_TARGET_VGA; */
+/*             targets += 3; */
+/*         } */
+/*         else  */
+/*             break; /\* unrecognized, end loop *\/ */
 
-        if ( *targets == ',' )
-            targets++;
-        else
-            break; /* unrecognized, end loop */
-    }
+/*         if ( *targets == ',' ) */
+/*             targets++; */
+/*         else */
+/*             break; /\* unrecognized, end loop *\/ */
+/*     } */
 
-    if ( g_log_targets & TBOOT_LOG_TARGET_SERIAL ) {
-        const char *serial = get_option_val(g_tboot_cmdline_options,
-                                            g_tboot_param_values, "serial");
+/*     if ( g_log_targets & TBOOT_LOG_TARGET_SERIAL ) { */
+/*         const char *serial = get_option_val(g_tboot_cmdline_options, */
+/*                                             g_tboot_param_values, "serial"); */
 
-        /* nothing set, leave defaults */
-        if ( ( serial == NULL ) || ( *serial == '\0' ) )
-            return;
+/*         /\* nothing set, leave defaults *\/ */
+/*         if ( ( serial == NULL ) || ( *serial == '\0' ) ) */
+/*             return; */
 
-        /* call configuration parser in early serial code to do the rest */
-        early_serial_parse_port_config(serial);
-    }
-}
+/*         /\* call configuration parser in early serial code to do the rest *\/ */
+/*         early_serial_parse_port_config(serial); */
+/*     } */
+/* } */
 
-bool get_linux_vga(int *vid_mode)
-{
-    const char *vga = get_option_val(g_linux_cmdline_options,
-                                     g_linux_param_values, "vga");
-    if ( vga == NULL || vid_mode == NULL )
-        return false;
+/* bool get_linux_vga(int *vid_mode) */
+/* { */
+/*     const char *vga = get_option_val(g_linux_cmdline_options, */
+/*                                      g_linux_param_values, "vga"); */
+/*     if ( vga == NULL || vid_mode == NULL ) */
+/*         return false; */
 
-    if ( strcmp(vga, "normal") == 0 )
-        *vid_mode = 0xFFFF;
-    else if ( strcmp(vga, "ext") == 0 )
-        *vid_mode = 0xFFFE;
-    else if ( strcmp(vga, "ask") == 0 )
-        *vid_mode = 0xFFFD;
-    else
-        *vid_mode = simple_strtol(vga, NULL, 0);
+/*     if ( strcmp(vga, "normal") == 0 ) */
+/*         *vid_mode = 0xFFFF; */
+/*     else if ( strcmp(vga, "ext") == 0 ) */
+/*         *vid_mode = 0xFFFE; */
+/*     else if ( strcmp(vga, "ask") == 0 ) */
+/*         *vid_mode = 0xFFFD; */
+/*     else */
+/*         *vid_mode = simple_strtol(vga, NULL, 0); */
 
-    return true;
-}
+/*     return true; */
+/* } */
 
-bool get_linux_mem(uint64_t *max_mem)
-{
-    char *last = NULL;
-    const char *mem = get_option_val(g_linux_cmdline_options,
-                                     g_linux_param_values, "mem");
-    if ( mem == NULL || max_mem == NULL )
-        return false;
+/* bool get_linux_mem(uint64_t *max_mem) */
+/* { */
+/*     char *last = NULL; */
+/*     const char *mem = get_option_val(g_linux_cmdline_options, */
+/*                                      g_linux_param_values, "mem"); */
+/*     if ( mem == NULL || max_mem == NULL ) */
+/*         return false; */
 
-    *max_mem = simple_strtoul(mem, &last, 0);
-    if ( *max_mem == 0 )
-        return false;
+/*     *max_mem = simple_strtoul(mem, &last, 0); */
+/*     if ( *max_mem == 0 ) */
+/*         return false; */
 
-    if ( last == NULL )
-        return true;
+/*     if ( last == NULL ) */
+/*         return true; */
 
-    switch (*last) {
-        case 'G':
-        case 'g':
-            *max_mem = *max_mem << 30;
-            return true;
-        case 'M':
-        case 'm':
-            *max_mem = *max_mem << 20;
-            return true;
-        case 'K':
-        case 'k':
-            *max_mem = *max_mem << 10;
-            return true;
-    }
+/*     switch (*last) { */
+/*         case 'G': */
+/*         case 'g': */
+/*             *max_mem = *max_mem << 30; */
+/*             return true; */
+/*         case 'M': */
+/*         case 'm': */
+/*             *max_mem = *max_mem << 20; */
+/*             return true; */
+/*         case 'K': */
+/*         case 'k': */
+/*             *max_mem = *max_mem << 10; */
+/*             return true; */
+/*     } */
 
-    return true;
-}
+/*     return true; */
+/* } */
 
-const char *skip_filename(const char *cmdline)
-{
-    if ( cmdline == NULL || *cmdline == '\0' )
-        return cmdline;
+/* const char *skip_filename(const char *cmdline) */
+/* { */
+/*     if ( cmdline == NULL || *cmdline == '\0' ) */
+/*         return cmdline; */
 
-    /* strip leading spaces, file name, then any spaces until the next 
-     non-space char (e.g. "  /foo/bar   baz" -> "baz"; "/foo/bar" -> "")*/ 
-    while ( *cmdline != '\0' && isspace(*cmdline) )
-        cmdline++;
-    while ( *cmdline != '\0' && !isspace(*cmdline) )
-        cmdline++;
-    while ( *cmdline != '\0' && isspace(*cmdline) )
-        cmdline++;
-    return cmdline;
-}
+/*     /\* strip leading spaces, file name, then any spaces until the next  */
+/*      non-space char (e.g. "  /foo/bar   baz" -> "baz"; "/foo/bar" -> "")*\/  */
+/*     while ( *cmdline != '\0' && isspace(*cmdline) ) */
+/*         cmdline++; */
+/*     while ( *cmdline != '\0' && !isspace(*cmdline) ) */
+/*         cmdline++; */
+/*     while ( *cmdline != '\0' && isspace(*cmdline) ) */
+/*         cmdline++; */
+/*     return cmdline; */
+/* } */
 
 
 /*
