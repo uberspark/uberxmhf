@@ -46,7 +46,7 @@
 #include  "./include/puttymem.h"
 
 /* software tpm pcr write (only called by utpm_extend) */
-static u32 utpm_internal_pcrwrite(u8* new_pcr_value, u8* pcr_bank, u32 pcr_num)
+static TPM_RESULT utpm_internal_pcrwrite(u8* new_pcr_value, u8* pcr_bank, u32 pcr_num)
 {
     /* Internal function; param sanity-checking should already be
      * done. Use ASSERTs just to be safe. */
@@ -59,8 +59,8 @@ static u32 utpm_internal_pcrwrite(u8* new_pcr_value, u8* pcr_bank, u32 pcr_num)
 }
 
 /* software tpm pcr read */
-u32 utpm_pcrread(u8* pcr_value /* output */,
-                 u8* pcr_bank, u32 pcr_num) /* inputs */
+TPM_RESULT utpm_pcrread(u8* pcr_value /* output */,
+                        u8* pcr_bank, u32 pcr_num) /* inputs */
 { 
     if(!pcr_value || !pcr_bank) { return UTPM_ERR_BAD_PARAM; }
     if(pcr_num >= TPM_PCR_NUM)  { return UTPM_ERR_PCR_OUT_OF_RANGE; }
@@ -70,7 +70,7 @@ u32 utpm_pcrread(u8* pcr_value /* output */,
 }
 
 /* software tpm pcr extend */
-u32 utpm_extend(u8* measurement, u8* pcr_bank, u32 pcr_num)
+TPM_RESULT utpm_extend(u8* measurement, u8* pcr_bank, u32 pcr_num)
 {
 	u8 scratch[TPM_PCR_SIZE + TPM_HASH_SIZE];
 	u8 new_pcr_val[TPM_HASH_SIZE];
@@ -100,7 +100,7 @@ u32 utpm_extend(u8* measurement, u8* pcr_bank, u32 pcr_num)
 /* XXX TODO: "Sealing" should support binding to an arbitrary number
  * of uPCRs.  Where is the bit vector to select the uPCRs of
  * interest? */
-u32 utpm_seal(u8* pcrAtRelease, u8* input, u32 inlen, u8* output, u32* outlen, u8 * hmackey, u8 * aeskey)
+TPM_RESULT utpm_seal(u8* pcrAtRelease, u8* input, u32 inlen, u8* output, u32* outlen, u8 * hmackey, u8 * aeskey)
 {
 	s32 len;
 	u32 outlen_beforepad;
@@ -147,7 +147,7 @@ u32 utpm_seal(u8* pcrAtRelease, u8* input, u32 inlen, u8* output, u32* outlen, u
 	return 0;
 }
 
-u32 utpm_unseal(u8 * pcr_bank, u8* input, u32 inlen, u8* output, u32* outlen, u8 * hmackey, u8 * aeskey)
+TPM_RESULT utpm_unseal(u8 * pcr_bank, u8* input, u32 inlen, u8* output, u32* outlen, u8 * hmackey, u8 * aeskey)
 {
 	u32 len;
 	u8 hashdata[TPM_HASH_SIZE];
@@ -208,7 +208,7 @@ u32 utpm_unseal(u8 * pcr_bank, u8* input, u32 inlen, u8* output, u32* outlen, u8
  * input: externalnonce, get from external server to avoid replay attack
  * output: quote result and data length
  */
-u32 utpm_quote(u8* externalnonce, u8* output, u32* outlen, u8* pcr_bank, u8* tpmsel, u32 tpmsel_len, u8* rsa )
+TPM_RESULT utpm_quote(u8* externalnonce, u8* output, u32* outlen, u8* pcr_bank, u8* tpmsel, u32 tpmsel_len, u8* rsa )
 {
 	int ret;
 	u32 i, idx;
@@ -247,6 +247,8 @@ u32 utpm_quote(u8* externalnonce, u8* output, u32* outlen, u8* pcr_bank, u8* tpm
 
 
 /* get random bytes from software TPM */
+/* XXX TODO: Make this look like an actual TPM command (return value
+ * should simply be a status code) */
 u32 utpm_rand(u8* buffer, u32 numbytes)
 {
 	numbytes = rand_bytes(buffer, numbytes);

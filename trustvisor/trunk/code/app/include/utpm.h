@@ -70,6 +70,8 @@
 #define UTPM_ERR_BAD_PARAM 1
 #define UTPM_ERR_PCR_OUT_OF_RANGE 2
 
+typedef uint32_t TPM_RESULT;
+
 #define TPM_NUM_PCR 8 /* FIXME redundant with TPM_PCR_NUM in scode.h */
 typedef struct tdTPM_PCR_SELECTION { 
     uint16_t sizeOfSelect;               /* The size in bytes of the pcrSelect structure */
@@ -112,31 +114,31 @@ typedef struct tdTPM_NONCE{
 
 typedef struct tdTPM_QUOTE_INFO{
   TPM_STRUCT_VER version;  /* must be 1.1.0.0 based on TPM part2 structure */
-  u8 fixed[4];           /* this always be the string 'QUOT '*/
+  u8 fixed[4];           /* this always be the string 'QUOT'*/
   TPM_COMPOSITE_HASH digestValue; 
   TPM_NONCE externalData;
 } TPM_QUOTE_INFO;
 
-/* structure for storage */
+/* structure for storage */ /* XXX inconsistent with hardware TPM */
 typedef struct tdTPM_SEALED_DATA{
   /*TPM_HMAC hmac;*/ /* NOT SURE HMAC */
   u32 dataSize;        
   u8* data;        /*data to be sealed*/
 } TPM_SEALED_DATA;
 
-typedef struct tdTPM_STORED_DATA{
+typedef struct tdTPM_STORED_DATA{ /* XXX inconsistent with hardware TPM */
   u32 sealInfoSize;
-  TPM_PCR_INFO sealInfo;       /* s tructure of TPM_PCR_INFO */
+  TPM_PCR_INFO sealInfo;       /* structure of TPM_PCR_INFO */
   u32 encDataSize;
   u8* encData;  /* encrypted TPM_SEALED_DATA structure containg the confidential part of data*/
 } TPM_STORED_DATA;
 
 /* TPM functions  */
-u32 utpm_pcrread(u8* pcr_value, u8* pcr_bank, u32 pcr_num);
-u32 utpm_extend(u8* measurement, u8* pcr_bank, u32 pcr_num);
-u32 utpm_seal(u8* pcrAtRelease, u8* input, u32 inlen, u8* output, u32* outlen, u8* hmackey, u8* aeskey);
-u32 utpm_unseal(u8* pcr_bank, u8* input, u32 inlen, u8* output, u32* outlen, u8* hmackey, u8* aeskey);
-u32 utpm_quote(u8* externalnonce, u8* output, u32* outlen, u8* pcr_bank, u8* tpmsel, u32 tpmsel_len, u8* rsa );
+TPM_RESULT utpm_pcrread(u8* pcr_value, u8* pcr_bank, u32 pcr_num);
+TPM_RESULT utpm_extend(u8* measurement, u8* pcr_bank, u32 pcr_num);
+TPM_RESULT utpm_seal(u8* pcrAtRelease, u8* input, u32 inlen, u8* output, u32* outlen, u8* hmackey, u8* aeskey);
+TPM_RESULT utpm_unseal(u8* pcr_bank, u8* input, u32 inlen, u8* output, u32* outlen, u8* hmackey, u8* aeskey);
+TPM_RESULT utpm_quote(u8* externalnonce, u8* output, u32* outlen, u8* pcr_bank, u8* tpmsel, u32 tpmsel_len, u8* rsa );
 //u32 utpm_rand(u8* buffer, u32 numbytes);
 
 #endif /* _UTPM_H_ */
