@@ -90,4 +90,20 @@ int scode_quote(uint8_t *nonce,
                 uint32_t *tpmsel,
                 uint8_t *out,
                 size_t *out_len);
+/* Extend uTPM PCR 'idx' with new measurement 'meas'.
+ * 'meas' is assumed to be exactly 20 bytes.
+ *
+ * Returns 0 on success, nonzero on failure.
+ */
+int scode_pcr_extend(uint32_t idx,   /* in */
+                     uint8_t *meas); /* in */
+
+/* Read the value of uTPM PCR 'idx'
+ * 'val' is assumed to point to 20 bytes of
+ * available space.
+ *
+ * Returns 0 on success, nonzero on failure.
+ */
+int scode_pcr_read(uint32_t idx,  /* in */
+                   uint8_t* val); /* out */
 #endif

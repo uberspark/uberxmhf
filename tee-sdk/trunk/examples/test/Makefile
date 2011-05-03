@@ -4,7 +4,7 @@
 # $< the name of the related file that caused the action.
 # $* the prefix shared by target and dependent files. 
 
-TESTS=-DTEST_VMMCALL -DTEST_WITHOUTPARAM -DTEST_PARAM -DTEST_SEAL -DTEST_QUOTE
+TESTS=-DTEST_VMMCALL -DTEST_WITHOUTPARAM -DTEST_PARAM -DTEST_SEAL -DTEST_QUOTE -DTEST_PCR_EXTEND -DTEST_PCR_READ
 
 CFLAGS=-g -Wall
 CPPFLAGS=$(TESTS)

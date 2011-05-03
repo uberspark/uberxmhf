@@ -165,6 +165,8 @@ TVOperationPerform(INOUT tz_operation_t* psOperation,
       psOperation->sImp.psEncodeBuffer = psOutBuf;
 
       if (*puiServiceReturn != TZ_SUCCESS) {
+          printf("[tee-sdk] Failure in %s (*puiServiceReturn = 0x%08x) in %s:%d\n",
+                 __FUNCTION__, *puiServiceReturn, __FILE__, __LINE__);
         return TZ_ERROR_SERVICE;
       }
       return TZ_SUCCESS;

@@ -176,6 +176,60 @@ void pal_entry(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buff
       }
     }
     break;
+
+    case PAL_PCR_EXTEND:
+    {
+      uint8_t *measIn;
+      size_t measLen;
+      uint32_t idx;
+      *puiRv = TZ_SUCCESS;
+
+      idx = TZIDecodeUint32(psInBuf);
+      measIn = TZIDecodeArraySpace(psInBuf, &measLen);
+      if (TZIDecodeGetError(psInBuf) != TZ_SUCCESS) {
+        *puiRv = TZIDecodeGetError(psInBuf);
+        break;
+      }
+
+      if(measLen != 20 /* XXX */) {
+        *puiRv = TZ_ERROR_GENERIC;
+        break;
+      }
+
+      *puiRv = pal_pcr_extend(idx, measIn);
+      if (*puiRv != TZ_SUCCESS) {
+        break;
+      }
+    }
+    break;
+    
+    case PAL_PCR_READ:
+    {
+      uint8_t *valOut;
+      size_t valLen;
+      uint32_t idx;
+      *puiRv = TZ_SUCCESS;
+
+      idx = TZIDecodeUint32(psInBuf);
+
+      if (TZIDecodeGetError(psInBuf) != TZ_SUCCESS) {
+        *puiRv = TZIDecodeGetError(psInBuf);
+        break;
+      }
+
+      valLen = PCR_SIZE;
+      valOut = TZIEncodeArraySpace(psOutBuf, valLen);
+      if (valOut == NULL) {
+        *puiRv = TZ_ERROR_MEMORY;
+        break;
+      }
+
+      *puiRv = pal_pcr_read(idx, valOut);
+      if (*puiRv != TZ_SUCCESS) {
+        break;
+      }      
+    }
+    break;
   }
 
   return;
@@ -238,3 +292,34 @@ tz_return_t pal_quote(IN uint8_t *nonce, /* assumed to be TPM_NONCE_SIZE */
     return TZ_ERROR_GENERIC;
   }
 }
+
+__attribute__ ((section (".scode")))
+tz_return_t pal_pcr_extend(IN uint32_t idx,
+                           IN uint8_t *meas)
+{
+  if((idx >= NUM_PCRS) || (NULL == meas)) {
+    return TZ_ERROR_GENERIC;
+  }
+  
+  if(scode_pcr_extend(idx, meas) == 0) {
+    return TZ_SUCCESS;
+  } else {
+    return TZ_ERROR_GENERIC;
+  }
+}
+
+__attribute__ ((section (".scode")))
+tz_return_t pal_pcr_read(IN uint32_t idx,
+                        OUT uint8_t *val)
+{
+  if((idx >= NUM_PCRS) || (NULL == val)) {
+    return TZ_ERROR_GENERIC;
+  }
+
+  if(scode_pcr_read(idx, val) == 0) {
+    return TZ_SUCCESS;
+  } else {
+    return TZ_ERROR_GENERIC;
+  }
+}
+

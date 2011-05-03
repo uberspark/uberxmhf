@@ -346,6 +346,141 @@ int test_quote(tz_session_t *tzPalSession)
   return rv;
 }
 
+
+int test_pcr_extend(tz_session_t *tzPalSession)
+{
+  tz_return_t tzRet, serviceReturn;
+  tz_operation_t tzOp;
+  uint8_t *meas_ptr;
+  uint32_t pcr_idx = 3; /* arbitrary; eventually loop through them all */
+  int rv = 0;
+  uint32_t i;
+
+  printf("\nPCR_EXTEND\n");
+
+  /* prep operation */
+  tzRet = TZOperationPrepareInvoke(tzPalSession,
+                                   PAL_PCR_EXTEND,
+                                   NULL,
+                                   &tzOp);
+  assert(tzRet == TZ_SUCCESS);
+
+  /* encode PCR index */
+  TZEncodeUint32(&tzOp, pcr_idx);
+
+  /* Prepare space to put measurement */
+  meas_ptr = TZEncodeArraySpace(&tzOp, PCR_SIZE);
+  if (meas_ptr == NULL) {
+    rv = 1;
+    printf("Failure at %s:%d\n", __FILE__, __LINE__); 
+    printf("tzRet 0x%08x\n", tzRet);
+    goto out;
+
+  }
+  /* Fake the measurement */
+  for(i=0; i<PCR_SIZE; i++) {
+    meas_ptr[i] = (uint8_t)i;
+  }
+  
+  /* Call PAL */
+  tzRet = TZOperationPerform(&tzOp, &serviceReturn);
+  if (tzRet != TZ_SUCCESS) {
+    rv = 1;
+    printf("Failure at %s:%d\n", __FILE__, __LINE__); 
+    printf("tzRet 0x%08x\n", tzRet);
+    goto out;
+
+  }
+  
+  if (TZDecodeGetError(&tzOp) != TZ_SUCCESS) {
+    rv = 1;
+    printf("Failure at %s:%d\n", __FILE__, __LINE__); 
+    printf("tzRet 0x%08x\n", tzRet);
+    goto out;
+
+  }
+
+ out:
+  TZOperationRelease(&tzOp);
+
+  if(0 != rv) { printf("...FAILED rv %d\n", rv); }
+  return rv;  
+}
+
+int test_pcr_read_i(tz_session_t *tzPalSession, uint32_t pcr_idx)
+{
+  tz_return_t tzRet, serviceReturn;
+  tz_operation_t tzOp;
+  uint8_t *meas;
+  uint32_t measLen = 0;
+  int rv = 0;
+
+  /* prep operation */
+  tzRet = TZOperationPrepareInvoke(tzPalSession,
+                                   PAL_PCR_READ,
+                                   NULL,
+                                   &tzOp);
+  assert(tzRet == TZ_SUCCESS);
+
+  /* encode PCR index */
+  TZEncodeUint32(&tzOp, pcr_idx);
+  
+  /* Call PAL */
+  tzRet = TZOperationPerform(&tzOp, &serviceReturn);
+  if (tzRet != TZ_SUCCESS) {
+    rv = 1;
+    printf("Failure at %s:%d\n", __FILE__, __LINE__); 
+    printf("tzRet 0x%08x\n", tzRet);
+    goto out;
+
+  }
+
+  meas = TZDecodeArraySpace(&tzOp, &measLen);
+  if(meas == NULL || measLen != PCR_SIZE) {
+    rv = 1;
+    printf("Failure at %s:%d\n", __FILE__, __LINE__); 
+    printf("tzRet 0x%08x\n", tzRet);
+    goto out;
+
+  }
+
+  printf("PCR %d: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x "
+         "%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n",
+         pcr_idx,
+         meas[0], meas[1], meas[2], meas[3], meas[4],
+         meas[5], meas[6], meas[7], meas[8], meas[9],
+         meas[10], meas[11], meas[12], meas[13], meas[14],
+         meas[15], meas[16], meas[17], meas[18], meas[19]);         
+  
+  if (TZDecodeGetError(&tzOp) != TZ_SUCCESS) {
+    rv = 1;
+    printf("Failure at %s:%d\n", __FILE__, __LINE__); 
+    printf("tzRet 0x%08x\n", tzRet);
+    goto out;
+  }
+
+ out:
+  TZOperationRelease(&tzOp);
+
+  if(0 != rv) { printf("...FAILED rv %d\n", rv); }
+  return rv;  
+}
+
+int test_pcr_read(tz_session_t *tzPalSession)
+{
+  int i=0;
+  int rv;
+  
+  printf("\nPCR_READ\n");
+
+  for(i=0; i<NUM_PCRS; i++) {
+    rv = test_pcr_read_i(tzPalSession, i);
+    if(0 != rv) return rv;
+  }
+  return rv;
+}
+
+
 // function main
 // register some sensitive code and data in libfoo.so and call bar()
 int main(void)
@@ -430,6 +565,15 @@ int main(void)
   rv = test_quote(&tzPalSession) || rv;
 #endif
 
+#ifdef TEST_PCR_EXTEND
+  rv = test_pcr_extend(&tzPalSession) || rv;
+#endif
+
+#ifdef TEST_PCR_READ
+  rv = test_pcr_read(&tzPalSession) || rv;
+#endif
+
+  
   if (rv) {
     printf("FAIL with rv=%d\n", rv);
   } else {

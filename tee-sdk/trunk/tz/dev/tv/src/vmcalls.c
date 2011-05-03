@@ -289,6 +289,28 @@ int scode_quote(uint8_t *nonce,
                 0);
 }
 
+__attribute__ ((section (".stext")))
+int scode_pcr_extend(uint32_t idx,   /* in */
+                     uint8_t *meas) /* in */
+{
+  return vmcall(VMM_PCR_EXTEND,
+                (uint32_t)idx,
+                (uint32_t)meas,
+                0,
+                0);
+}
+
+__attribute__ ((section (".stext")))
+int scode_pcr_read(uint32_t idx, /* in */
+                   uint8_t *val) /* out */
+{
+  return vmcall(VMM_PCR_READ,
+                (uint32_t)idx,
+                (uint32_t)val,
+                0,
+                0);
+}
+
 int scode_register(const struct scode_sections_info *pageinfo,
                    const struct scode_params_info *params,
                    const void *entry)

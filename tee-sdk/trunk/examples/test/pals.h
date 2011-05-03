@@ -43,8 +43,14 @@ typedef enum {
   PAL_PARAM,
   PAL_SEAL,
   PAL_UNSEAL,
-  PAL_QUOTE
+  PAL_QUOTE,
+  PAL_PCR_READ,
+  PAL_PCR_EXTEND
 } PAL_CMD;
+
+/* TODO: Unify these with utpm.* in trustvisor/ */
+#define NUM_PCRS 8 
+#define PCR_SIZE 20
 
 void pal_entry(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv);
 void pal_withoutparam();
@@ -54,3 +60,7 @@ tz_return_t pal_unseal(uint8_t *input, uint8_t inputLen, uint8_t *output, size_t
 tz_return_t pal_quote(IN uint8_t *nonce, /* assumed to be TPM_NONCE_SIZE */
                       IN uint32_t *tpmsel, /* first element is how many other elements there are */
                       OUT uint8_t *quote, OUT size_t *quote_len);
+tz_return_t pal_pcr_extend(IN uint32_t idx,
+                           IN uint8_t *meas);
+tz_return_t pal_pcr_read(IN uint32_t idx,
+                        OUT uint8_t *val);
