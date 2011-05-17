@@ -580,6 +580,9 @@ typedef struct _sl_parameter_block {
     // Performance measurements related to DRTM
     u64 rdtsc_before_drtm;
     u64 rdtsc_after_drtm;
+
+    /* runtime options parsed in init and passed forward */
+    uart_config_t uart_config;
 } __attribute__((packed)) SL_PARAMETER_BLOCK;
 
 
@@ -624,6 +627,9 @@ typedef struct {
 	u32 RtmVMXVTdPts;
 	u32 RtmVMXVTdRET;
 	u32 RtmVMXVTdCET;
+
+        /* runtime options parsed in init and passed forward */
+        uart_config_t uart_config;
 } __attribute__((packed)) RPB, *PRPB;
 
 #include <libemhf.h>	//EMHF application interface

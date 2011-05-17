@@ -229,10 +229,14 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	u32 runtime_idt;
 	u32 runtime_entrypoint;
 	u32 runtime_topofstack;
-    
+
+	ASSERT( (u32)&slpb == 0x10000 ); //linker relocates sl image starting from 0, so
+                                         //parameter block must be at offset 0x10000    
+
 	//initialize debugging early on
-	#ifdef __DEBUG_SERIAL__		
-		init_uart();
+	#ifdef __DEBUG_SERIAL__
+        g_uart_config = slpb.uart_config;
+        init_uart();
 	#endif
 
 	#ifdef __DEBUG_VGA__
@@ -246,8 +250,7 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	//deal with SL parameter block
 	//slpb = (SL_PARAMETER_BLOCK *)slpb_buffer;
 	printf("\nSL: slpb at = 0x%08x", (u32)&slpb);
-	ASSERT( (u32)&slpb == 0x10000 );	//linker relocates sl image starting from 0, so
-																  //parameter block must be at offset 0x10000
+
 	ASSERT( slpb.magic == SL_PARAMETER_BLOCK_MAGIC);
 	
 	printf("\n	hashSL=0x%08x", slpb.hashSL);
@@ -425,6 +428,10 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
    	//setup guest OS boot module info in LPB	
 		rpb->XtGuestOSBootModuleBase=slpb.runtime_osbootmodule_base;
 		rpb->XtGuestOSBootModuleSize=slpb.runtime_osbootmodule_size;
+
+
+                /* pass command line configuration forward */
+                rpb->uart_config = g_uart_config;
 
 	 	//setup runtime IDT
 		{
