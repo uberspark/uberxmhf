@@ -33,6 +33,10 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+/* 
+ * Author - Jim Newsome (jnewsome@no-fuss.com)
+ */
+
 #ifndef SEALED_CODE_PAL_PRIV_H
 #define SEALED_CODE_PAL_PRIV_H
 

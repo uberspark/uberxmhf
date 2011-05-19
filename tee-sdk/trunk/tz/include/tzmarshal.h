@@ -33,6 +33,10 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+/* 
+ * Author - Jim Newsome (jnewsome@no-fuss.com)
+ */
+
 #ifndef TZMARSHAL_H
 #define TZMARSHAL_H
 
