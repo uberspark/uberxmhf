@@ -34,7 +34,7 @@
  */
 
 /* hpt.h - hypervisor page table abstraction
- * Copyright NoFuss Security, Inc.
+ * 
  * author - Jim Newsome (jnewsome@no-fuss.com)
  */
 
