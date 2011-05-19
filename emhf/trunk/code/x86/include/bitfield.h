@@ -34,7 +34,8 @@
  */
 
 /* bitfield.h - bitfield utility functions
- * author - Jim Newsome (jnewsome@cmu.edu)
+ * Copyright NoFuss Security, Inc.
+ * author - Jim Newsome (jnewsome@no-fuss.com)
  *
  * Some utility functions for manipulating bits within 32 bit and 64
  * bit unsigned ints. These functions tend to be a bit more verbose
