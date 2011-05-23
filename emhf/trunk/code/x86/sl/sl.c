@@ -365,7 +365,11 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 				svm_eap_protected_buffer_paddr = sl_baseaddr + (u32)&g_sl_protected_dmabuffer;
 				svm_eap_protected_buffer_vaddr = (u32)&g_sl_protected_dmabuffer;
-			  
+			
+				//sanity check: protected DEV buffer MUST be page-aligned
+				ASSERT(!(svm_eap_protected_buffer_paddr & 0x00000FFF));
+				ASSERT(!(svm_eap_protected_buffer_vaddr & 0x00000FFF));
+				
 			  if(!svm_eap_early_initialize(svm_eap_protected_buffer_paddr, svm_eap_protected_buffer_vaddr,
 					sl_baseaddr, (slpb.runtime_size + PAGE_SIZE_2M))){
 					printf("\nSL: Unable to initialize SVM EAP (DEV). HALT!");
