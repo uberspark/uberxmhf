@@ -62,7 +62,8 @@ struct _sl_parameter_block slpb __attribute__(( section(".sl_untrusted_params") 
 };
 
 //protected DMA-protection buffer placed in seperate section ".protdmabuffer"
-u8 g_sl_protected_dmabuffer[PAGE_SIZE_4K] __attribute__(( section(".protdmabuffer") ));
+//u8 g_sl_protected_dmabuffer[PAGE_SIZE_4K] __attribute__(( section(".protdmabuffer") ));
+extern u32 g_sl_protected_dmabuffer[];
 
 //we only have confidence in the runtime's expected value here in the SL
 INTEGRITY_MEASUREMENT_VALUES g_sl_gold /* __attribute__(( section("") )) */ = {
@@ -365,7 +366,7 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 				svm_eap_protected_buffer_paddr = sl_baseaddr + (u32)&g_sl_protected_dmabuffer;
 				svm_eap_protected_buffer_vaddr = (u32)&g_sl_protected_dmabuffer;
 			  
-				if(!svm_eap_early_initialize(svm_eap_protected_buffer_paddr, svm_eap_protected_buffer_vaddr,
+			  if(!svm_eap_early_initialize(svm_eap_protected_buffer_paddr, svm_eap_protected_buffer_vaddr,
 					sl_baseaddr, (slpb.runtime_size + PAGE_SIZE_2M))){
 					printf("\nSL: Unable to initialize SVM EAP (DEV). HALT!");
 					HALT();

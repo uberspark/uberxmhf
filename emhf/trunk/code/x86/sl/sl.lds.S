@@ -81,9 +81,9 @@ SECTIONS
   } >low
 
 	/* protected DMA protection buffer for DMA protection boot-strapping */
-	.protdmabuffer : {
+	/*.protdmabuffer : {
 		*(.protdmabuffer)
-	} >low
+	} >low*/
 
   .sl_stack : {
     *(.sl_stack)

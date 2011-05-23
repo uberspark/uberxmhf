@@ -84,7 +84,7 @@ u32 svm_eap_early_initialize(u32 protected_buffer_paddr,
 	//compute DEV bitmap base address depending on the physical base address
 	//of the protected buffer and the physical base address of the memory
 	//region
-	//Note: we assume the protected buffer size to be 4K on AMD 
+	//Note: we assume the protected buffer size to be 8K on AMD 
 	//sanity check: memregion size cannot be greater than 128MB
 	ASSERT( memregion_size < (PAGE_SIZE_4K * 8 * PAGE_SIZE_4K) );
 	

@@ -96,7 +96,10 @@
     // DRTM using GETSEC[SENTER].  See 2.2.4.1 in Intel MLE
     // Developer's Guide (Dec. 2009 revision).
     .align 4096      // remainder of first page
-    .fill 4096, 1, 0 // second page
+    
+    .global g_sl_protected_dmabuffer
+    g_sl_protected_dmabuffer:
+		.fill 4096, 1, 0 // second page
     .fill 4096, 1, 0 // third page
     .global _mle_page_table_end
     _mle_page_table_end:
