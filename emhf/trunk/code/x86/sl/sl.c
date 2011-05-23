@@ -349,7 +349,8 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 				HALT();
 			}
 		}
-	
+
+#if defined(__DMAPROT__)	
 		//initialize external access protection (DMA protection)
 		if(get_cpu_vendor() == CPU_VENDOR_AMD){
 			
@@ -404,6 +405,7 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		}
 	
 	}
+#endif //__DMAPROT__
     
 	//Measure runtime and sanity check if measurements were fine
 	//TODO
