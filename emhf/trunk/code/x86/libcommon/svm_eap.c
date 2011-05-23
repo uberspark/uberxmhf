@@ -92,6 +92,8 @@ u32 svm_eap_early_initialize(u32 protected_buffer_paddr,
 		u32 memregion_paligned_paddr_start;
 		u32 memregion_pfn=0;
 		u32 devbitmap_bytes_before=0;
+		u32 offset=0; //this is the offset of the memory page corresponding to SL physical base
+								  //within the 8K protected DEV buffer 
 		
 		//compute page-aligned base address of memory region
 		memregion_paligned_paddr_start = PAGE_ALIGN_4K(memregion_paddr_start);
@@ -112,13 +114,22 @@ u32 svm_eap_early_initialize(u32 protected_buffer_paddr,
 	  dev_bitmap_paddr = protected_buffer_paddr - devbitmap_bytes_before;
 	  printf("\nSL:%s dev_bitmap_paddr=%08x", __FUNCTION__, dev_bitmap_paddr);
 	  
+	  //DEV bitmap base MUST be page aligned, however dev_bitmap_paddr
+		//can violate this, so make sure we page align it and account for the
+		//"offset" within the 8K protected DEV buffer
+		if(dev_bitmap_paddr & 0x00000FFFUL){
+			offset = PAGE_SIZE_4K - (dev_bitmap_paddr & 0x00000FFFUL);	//offset is always less than 4K 
+	  	dev_bitmap_paddr += offset;	 //page-align dev_bitmap_paddr
+	  	printf("\nSL:%s dev_bitmap_paddr page-aligned to %08x", __FUNCTION__, dev_bitmap_paddr);
+	  }
+	  
 	  //sanity check: dev_bitmap_paddr MUST be page aligned
 	  ASSERT(!(dev_bitmap_paddr & 0x00000FFF));
 	  
 	  //now make sure the protected buffer (4K in our case) is set to all 1's
 		//effectively preventing DMA reads and writes from memregion_paligned_paddr_start
 		//to memregion_paligned_paddr_start + 128M
-		memset((void *)protected_buffer_vaddr, 0xFF, PAGE_SIZE_4K);
+		memset((void *)((u32)protected_buffer_vaddr+(u32)offset), 0xFF, PAGE_SIZE_4K);
 	}
 	
 	
