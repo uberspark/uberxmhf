@@ -90,7 +90,7 @@ void cstartup(void){
 		g_libemhf = &g_emhf_library_svm;
 	}
 
-
+#if defined (__DMAPROT__)
   //re-initialize DEV DMA protections
   if(cpu_vendor == CPU_VENDOR_AMD){
 		//the SL only ensures that portions
@@ -164,7 +164,8 @@ void cstartup(void){
 							rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M,
 						rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
 	}
-
+	
+#endif //__DMAPROT__
 	
   //debug, dump E820 and MP table
  	printf("\nNumber of E820 entries = %u", rpb->XtVmmE820NumEntries);

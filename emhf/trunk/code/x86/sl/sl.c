@@ -403,9 +403,9 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		
 			printf("\nSL: Bootstrapped VMX VT-d, protected entire system memory.");
 		}
+#endif //__DMAPROT__
 	
 	}
-#endif //__DMAPROT__
     
 	//Measure runtime and sanity check if measurements were fine
 	//TODO
