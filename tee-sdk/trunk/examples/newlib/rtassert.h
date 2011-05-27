@@ -41,7 +41,8 @@
 #define RTASSERT_H
 
 #ifndef RTA_PRINT
-#define RTA_PRINT(fmt, args...) fprintf(STDERR, fmt , ## args) /* the spaces are important */
+#include <stdio.h>
+#define RTA_PRINT(fmt, args...) fprintf(stderr, fmt , ## args) /* the spaces are important */
 #endif
 
 #ifndef RTA_EXIT
@@ -62,12 +63,13 @@
   if(_got != _expected) {                       \
     RTA_PRINT("unhandled run-time error."       \
               " expected %d got %d"             \
-              " at %s:%s",                      \
+              " at %s:%d",                      \
               _expected,                        \
               _got,                             \
               __FILE__,                         \
               __LINE__);                        \
     RTA_EXIT(1);                                \
+  }                                             \
   } while(0)
 
 #define rtassert_not(x) rtassert_eq(x, 0)

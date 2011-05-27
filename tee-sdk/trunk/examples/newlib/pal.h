@@ -33,34 +33,18 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#ifndef PAL_H
+#define PAL_H
+
 #include <stddef.h>
 #include <stdint.h>
 
 #include <tee-sdk/tzmarshal.h>
 
 typedef enum {
-  PAL_WITHOUTPARAM,
-  PAL_PARAM,
-  PAL_SEAL,
-  PAL_UNSEAL,
-  PAL_QUOTE,
-  PAL_PCR_READ,
-  PAL_PCR_EXTEND
+  PAL_HELLO,
 } PAL_CMD;
 
-/* TODO: Unify these with utpm.* in trustvisor/ */
-#define NUM_PCRS 8 
-#define PCR_SIZE 20
-
 void pal_entry(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv);
-void pal_withoutparam();
-uint32_t pal_param(uint32_t input);
-tz_return_t pal_seal(uint8_t *input, uint8_t inputLen, uint8_t *output, size_t *outputLen);
-tz_return_t pal_unseal(uint8_t *input, uint8_t inputLen, uint8_t *output, size_t *outputLen);
-tz_return_t pal_quote(IN uint8_t *nonce, /* assumed to be TPM_NONCE_SIZE */
-                      IN uint32_t *tpmsel, /* first element is how many other elements there are */
-                      OUT uint8_t *quote, OUT size_t *quote_len);
-tz_return_t pal_pcr_extend(IN uint32_t idx,
-                           IN uint8_t *meas);
-tz_return_t pal_pcr_read(IN uint32_t idx,
-                        OUT uint8_t *val);
+
+#endif
