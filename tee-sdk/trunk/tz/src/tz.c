@@ -348,6 +348,9 @@ TZOperationPerform(INOUT tz_operation_t* psOperation,
   }
 
   /* enforce spec post-conditions */
+  if (rv == TZ_SUCCESS) {
+    *puiServiceReturn = TZ_SUCCESS;
+  }
   switch (psOperation->sImp.uiOpType) {
   case TZI_OPERATION_OPEN:
     if (rv == TZ_SUCCESS) {
@@ -359,7 +362,6 @@ TZOperationPerform(INOUT tz_operation_t* psOperation,
     break;
   case TZI_OPERATION_INVOKE:
     if (rv == TZ_SUCCESS) {
-      *puiServiceReturn = TZ_SUCCESS; /* enforcing standard */
       psOperation->uiState = TZ_STATE_DECODE;
     } else if (rv == TZ_ERROR_SERVICE) {
       psOperation->uiState = TZ_STATE_DECODE;
