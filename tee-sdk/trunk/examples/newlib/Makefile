@@ -28,16 +28,17 @@ NEWLIB_LIBDIR=$(NEWLIB)/lib
 NEWLIB_INCDIR=$(NEWLIB)/include
 
 PAL_NAME=hellopal
-PAL_OBJS=pal.o
-# pal.o: pal.c
-# 	$(CC) $(CFLAGS) -I$(NEWLIB_INCDIR) -c -o $@ $<
-$(PAL_NAME): $(PAL_NAME).ld $(PAL_NAME).pal
-$(PAL_NAME).ld: pal-template.ld
-	sed 's/PAL_NAME/$(PAL_NAME)/g' pal-template.ld > $(PAL_NAME).ld
-$(PAL_NAME).pal: $(PAL_OBJS)
-	ld -nostdlib -d -o $@ -r $< $(LDLIBS) -L$(NEWLIB_LIBDIR) -lc -lnosys
-	objcopy -G $(PAL_NAME) $@
-LDFLAGS+=-T$(PAL_NAME).ld
+
+$(PAL_NAME).pal.o: hellopal.o pal-aux.o
+
+# working on generalizing this for unmodified inclusion in other makefiles
+%.pal.ld: pal-template.ld
+	sed 's/PAL_NAME/$*/g' pal-template.ld > $@
+%.pal.o: %.o
+	ld -nostdlib -d -o $@ -r $^ $(LDLIBS) -L$(NEWLIB_LIBDIR) -lc -lnosys
+	objcopy -G $* $@
+
+#LDFLAGS+=-T$(PAL_NAME).ld
 # XXX would be good to check for undefined symbols and warn\error 
 
 # FIXME - the static libraries should be proper dependencies, not in
@@ -45,8 +46,8 @@ LDFLAGS+=-T$(PAL_NAME).ld
 # as in Make's default implicit rule is a partial workaround.  i.e.,
 # we can link correctly, but Make won't know to rebuild if the
 # static lib dependencies change.
-hello:$(OBJS) $(PAL_NAME)
-	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS) 
+hello:$(OBJS) $(PAL_NAME).pal.o $(PAL_NAME).pal.ld
+	$(CC) -T$(PAL_NAME).pal.ld $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS) 
 
 .PHONY: clean
 clean:

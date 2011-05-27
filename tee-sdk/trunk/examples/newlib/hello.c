@@ -50,6 +50,10 @@
 
 #define rtassert_tzs(x) rtassert_eq(x, TZ_SUCCESS)
 
+/* int ezsetup_int(pal_fn_t pal_entry, */
+/*                 pal_name) */
+/* #define ezsetup(pal_name, param_sz, stack_sz) */
+
 static void setup(tz_device_t *tzDevice,
                   tz_session_t *tzPalSession,
                   tz_uuid_t *tzSvcId,
