@@ -39,6 +39,11 @@
 #include <tee-sdk/tzmarshal.h>
 #include <tee-sdk/svcapi.h>
 
+int puts(const char *s)
+{
+  return 0;
+}
+
 int printf(const char *format, ...)
 {
   return 0;
@@ -46,6 +51,7 @@ int printf(const char *format, ...)
 
 void hellopal(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
+  printf("test\n");
   *puiRv = TZ_SUCCESS;
   return;
 }
