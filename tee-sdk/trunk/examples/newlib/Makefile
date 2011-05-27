@@ -15,7 +15,7 @@ PKG_CFLAGS=$(shell pkg-config --cflags $(PKGCONFIG_DEPS))
 PKG_LDLIBS=$(shell pkg-config --libs --static $(PKGCONFIG_DEPS))
 
 CFLAGS+=$(PKG_CFLAGS)
-LDLIBS+=$(PKG_LDLIBS)
+LDLIBS+=$(filter-out -T%,$(PKG_LDLIBS)) # we're not using the global link script
 
 OBJS = hello.o
 
