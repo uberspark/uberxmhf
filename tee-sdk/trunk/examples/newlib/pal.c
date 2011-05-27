@@ -40,6 +40,8 @@
 #include <tee-sdk/tzmarshal.h>
 #include <tee-sdk/svcapi.h>
 
+char end[10*4096]; /* define the end of the data segment and some
+                      buffer spacefor libnosys's sbrk */
 
 void hellopal(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
