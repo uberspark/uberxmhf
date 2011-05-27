@@ -39,7 +39,7 @@ LDFLAGS+=-T$(PAL_NAME).ld
 # as in Make's default implicit rule is a partial workaround.  i.e.,
 # we can link correctly, but Make won't know to rebuild if the
 # static lib dependencies change.
-hello:$(OBJS) $(PAL_NAME).ld
+hello:$(OBJS) $(PAL_NAME)
 	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS) 
 
 .PHONY: clean
