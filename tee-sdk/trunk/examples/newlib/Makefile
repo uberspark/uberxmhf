@@ -4,8 +4,6 @@
 # $< the name of the related file that caused the action.
 # $* the prefix shared by target and dependent files. 
 
-TESTS=-DTEST_VMMCALL -DTEST_WITHOUTPARAM -DTEST_PARAM -DTEST_SEAL -DTEST_QUOTE -DTEST_PCR_EXTEND -DTEST_PCR_READ
-
 CFLAGS=-g -Wall
 CPPFLAGS=$(TESTS)
 
@@ -20,14 +18,14 @@ CFLAGS+=$(PKG_CFLAGS)
 LDFLAGS+=$(PKG_LDFLAGS)
 
 # source .c file
-SRCS = test.c pals.c 
+SRCS = pal.c hello-newlib.c
 
 # object files
 OBJS = $(patsubst %.c, %.o, $(SRCS))
 
 I_SOURCES = $(wildcard *.h)
 
-all: test
+all: hello-newlib
 
 # FIXME - the static libraries should be proper dependencies, not in
 # LDFLAGS. Using this rule with LDFLAGS coming last instead of first
