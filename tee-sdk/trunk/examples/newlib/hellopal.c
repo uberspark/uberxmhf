@@ -47,7 +47,8 @@ int test();
 
 void hellopal(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
-  printf("test %d\n", test());
+  printf("test\n");
+  test();
   *puiRv = TZ_SUCCESS;
   return;
 }

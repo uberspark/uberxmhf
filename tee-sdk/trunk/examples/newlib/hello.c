@@ -191,7 +191,11 @@ int main(void)
   tz_device_t tzDevice;
   tz_session_t tzPalSession;
   tz_uuid_t tzSvcId;
-  int rv;
+  int rv=0;
+
+  /* tz_return_t trv; */
+  /* hellopal(PAL_HELLO, NULL, NULL, &trv); */
+  /* printf("got trv=%d\n", trv); */
 
   setup(&tzDevice, &tzPalSession, &tzSvcId, hellopal);
   rv = call_pal(&tzPalSession);

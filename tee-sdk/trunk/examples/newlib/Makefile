@@ -29,6 +29,9 @@ NEWLIB_INCDIR=$(NEWLIB)/include
 
 PAL_NAME=hellopal
 
+hellopal.o: hellopal.c
+	$(CC) $(CFLAGS) -I$(NEWLIB_INCDIR) -c -o $@ $<
+
 $(PAL_NAME).pal.o: hellopal.o pal-aux.o
 
 # working on generalizing this for unmodified inclusion in other makefiles
