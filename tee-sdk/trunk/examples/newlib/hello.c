@@ -111,6 +111,35 @@ static void setup(tz_device_t *tzDevice,
   }
 }
 
+static int call_pal(tz_session_t *tzPalSession)
+{
+  tz_operation_t tzOp;
+  tz_return_t tzRet, serviceReturn;
+  int rv=0;
+
+  rtassert_tzs(
+               TZOperationPrepareInvoke(tzPalSession,
+                                        PAL_HELLO,
+                                        NULL,
+                                        &tzOp));
+
+  tzRet = TZOperationPerform(&tzOp, &serviceReturn);
+  if (tzRet != TZ_SUCCESS) {
+    if (tzRet == TZ_ERROR_SERVICE) {
+      printf("withoutparam pal returned error %d\n",
+             serviceReturn);
+      rv = 1;
+    } else {
+      printf("tz system returned error %d\n",
+             tzRet);
+      rv = 1;
+    }
+  }
+  TZOperationRelease(&tzOp);
+  
+  return rv;
+}
+
 static void teardown(tz_device_t *tzDevice, tz_session_t *tzPalSession, tz_uuid_t *tzSvcId)
 {
   /* close session */
@@ -158,45 +187,11 @@ int main(void)
   tz_device_t tzDevice;
   tz_session_t tzPalSession;
   tz_uuid_t tzSvcId;
+  int rv;
 
   setup(&tzDevice, &tzPalSession, &tzSvcId, pal_entry);
+  rv = call_pal(&tzPalSession);
   teardown(&tzDevice, &tzPalSession, &tzSvcId);
 
-/* #ifdef TEST_VMMCALL */
-/*   rv = test_vmcall() || rv; */
-/* #endif */
-
-/* #ifdef TEST_WITHOUTPARAM */
-/*   rv = test_withoutparam(&tzPalSession) || rv; */
-/* #endif */
-
-/* #ifdef TEST_PARAM */
-/*   rv = test_param(&tzPalSession) || rv; */
-/* #endif */
-
-/* #ifdef TEST_SEAL */
-/*   rv = test_seal(&tzPalSession) || rv; */
-/* #endif */
-
-/* #ifdef TEST_QUOTE */
-/*   rv = test_quote(&tzPalSession) || rv; */
-/* #endif */
-
-/* #ifdef TEST_PCR_EXTEND */
-/*   rv = test_pcr_extend(&tzPalSession) || rv; */
-/* #endif */
-
-/* #ifdef TEST_PCR_READ */
-/*   rv = test_pcr_read(&tzPalSession) || rv; */
-/* #endif */
-
-  
-/*   if (rv) { */
-/*     printf("FAIL with rv=%d\n", rv); */
-/*   } else { */
-/*     printf("SUCCESS with rv=%d\n", rv); */
-/*   } */
-
-
-  return 0;
+  return rv;
 } 
