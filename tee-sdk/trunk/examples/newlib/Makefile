@@ -18,14 +18,14 @@ CFLAGS+=$(PKG_CFLAGS)
 LDFLAGS+=$(PKG_LDFLAGS)
 
 # source .c file
-SRCS = pal.c hello-newlib.c
+SRCS = pal.c hello.c
 
 # object files
 OBJS = $(patsubst %.c, %.o, $(SRCS))
 
 I_SOURCES = $(wildcard *.h)
 
-all: hello-newlib
+all: hello
 
 # FIXME - the static libraries should be proper dependencies, not in
 # LDFLAGS. Using this rule with LDFLAGS coming last instead of first
