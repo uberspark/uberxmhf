@@ -32,7 +32,7 @@ all: hello-newlib
 # as in Make's default implicit rule is a partial workaround.  i.e.,
 # we can link correctly, but Make won't know to rebuild if the
 # static lib dependencies change.
-test:$(OBJS)
+hello-newlib:$(OBJS)
 	$(CC) -o $@ $(OBJS) $(LDFLAGS) 
 
 .PHONY: clean
