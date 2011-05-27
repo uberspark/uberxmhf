@@ -23,13 +23,19 @@ I_SOURCES = $(wildcard *.h)
 
 all: hello
 
+NEWLIB=../../ports/newlib/install/i586
+NEWLIB_LIBDIR=$(NEWLIB)/lib
+NEWLIB_INCDIR=$(NEWLIB)/include
+
 PAL_NAME=hellopal
 PAL_OBJS=pal.o
+# pal.o: pal.c
+# 	$(CC) $(CFLAGS) -I$(NEWLIB_INCDIR) -c -o $@ $<
 $(PAL_NAME): $(PAL_NAME).ld $(PAL_NAME).pal
 $(PAL_NAME).ld: pal-template.ld
 	sed 's/PAL_NAME/$(PAL_NAME)/g' pal-template.ld > $(PAL_NAME).ld
 $(PAL_NAME).pal: $(PAL_OBJS)
-	ld -o $@ -r $< $(LDLIBS)
+	ld -nostdlib -d -o $@ -r $< $(LDLIBS) -L$(NEWLIB_LIBDIR) -lc -lnosys
 	objcopy -G $(PAL_NAME) $@
 LDFLAGS+=-T$(PAL_NAME).ld
 # XXX would be good to check for undefined symbols and warn\error 

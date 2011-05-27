@@ -33,21 +33,13 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#include <stdio.h>
 #include <stdint.h>
 #include  "pal.h"
 
 #include <tee-sdk/tzmarshal.h>
 #include <tee-sdk/svcapi.h>
 
-int puts(const char *s)
-{
-  return 0;
-}
-
-int printf(const char *format, ...)
-{
-  return 0;
-}
 
 void hellopal(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
