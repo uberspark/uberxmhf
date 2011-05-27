@@ -189,7 +189,7 @@ int main(void)
   tz_uuid_t tzSvcId;
   int rv;
 
-  setup(&tzDevice, &tzPalSession, &tzSvcId, pal_entry);
+  setup(&tzDevice, &tzPalSession, &tzSvcId, hellopal);
   rv = call_pal(&tzPalSession);
   teardown(&tzDevice, &tzPalSession, &tzSvcId);
 

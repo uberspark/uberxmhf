@@ -45,6 +45,6 @@ typedef enum {
   PAL_HELLO,
 } PAL_CMD;
 
-void pal_entry(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv);
+void hellopal(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv);
 
 #endif
