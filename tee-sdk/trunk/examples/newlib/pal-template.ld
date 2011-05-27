@@ -27,7 +27,7 @@ SECTIONS
   {
     __sdata_start = .;
     ___sdata_start = .; 
-    PAL_NAME.pal(.rodata)
+    PAL_NAME.pal(.rodata*)
     PAL_NAME.pal(.data)
     PAL_NAME.pal(.bss)
     . = ALIGN(0x1000);
