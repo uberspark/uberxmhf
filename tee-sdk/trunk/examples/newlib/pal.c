@@ -39,6 +39,7 @@
 #include <tee-sdk/tzmarshal.h>
 #include <tee-sdk/svcapi.h>
 
+__attribute__ ((section (".scode")))
 void pal_entry(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
   *puiRv = TZ_SUCCESS;
