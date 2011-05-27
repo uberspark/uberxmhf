@@ -48,6 +48,8 @@
 
 #include "pal.h"
 
+#define rtassert_tzs(x) rtassert_eq(x, TZ_SUCCESS)
+
 static void setup(tz_device_t *tzDevice,
                   tz_session_t *tzPalSession,
                   tz_uuid_t *tzSvcId,
@@ -63,16 +65,16 @@ static void setup(tz_device_t *tzDevice,
       .pEntry = pal_entry,
     };
 
-  rtassert_eq(TZDeviceOpen(NULL, NULL, tzDevice),
-              TZ_SUCCESS);
+  rtassert_tzs(
+               TZDeviceOpen(NULL, NULL, tzDevice));
 
   /* download pal 'service' */  
   { 
     tz_session_t tzManagerSession;
 
     /* open session with device manager */
-    rtassert_eq(TZManagerOpen(tzDevice, NULL, &tzManagerSession),
-                TZ_SUCCESS);
+    rtassert_tzs(
+                 TZManagerOpen(tzDevice, NULL, &tzManagerSession));
 
     /* prepare pal descriptor */
     scode_sections_info_init(&scode_info,
@@ -81,37 +83,75 @@ static void setup(tz_device_t *tzDevice,
     scode_sections_info_print(&scode_info);
 
     /* download */
-    rtassert_eq(TZManagerDownloadService(&tzManagerSession,
-                                         &pal,
-                                         sizeof(pal),
-                                         tzSvcId),
-                TZ_SUCCESS);
+    rtassert_tzs(
+                 TZManagerDownloadService(&tzManagerSession,
+                                          &pal,
+                                          sizeof(pal),
+                                          tzSvcId));
 
     /* close session */
-    rtassert_eq(TZManagerClose(&tzManagerSession),
-                TZ_SUCCESS);
+    rtassert_tzs(
+                 TZManagerClose(&tzManagerSession));
   }
 
   /* now open a service handle to the pal */
   {
     tz_operation_t op;
     tz_return_t serviceReturn;
-    rtassert_eq(TZOperationPrepareOpen(tzDevice,
-                                       tzSvcId,
-                                       NULL, NULL,
-                                       tzPalSession,
-                                       &op),
-                TZ_SUCCESS);
-    rtassert_eq(TZOperationPerform(&op, &serviceReturn),
-                TZ_SUCCESS);
+    rtassert_tzs(
+                 TZOperationPrepareOpen(tzDevice,
+                                        tzSvcId,
+                                        NULL, NULL,
+                                        tzPalSession,
+                                        &op));
+    rtassert_tzs(
+                 TZOperationPerform(&op, &serviceReturn));
     assert(serviceReturn == TZ_SUCCESS); /* by spec, rv=TZ_SUCCESS implies serviceReturn==TZ_SUCCESS */
     TZOperationRelease(&op);
   }
 }
 
-/* static void teardown() */
-/* { */
-/* } */
+static void teardown(tz_device_t *tzDevice, tz_session_t *tzPalSession, tz_uuid_t *tzSvcId)
+{
+  /* close session */
+  {
+    tz_operation_t op;
+    tz_return_t serviceReturn;
+
+    rtassert_tzs(
+                 TZOperationPrepareClose(tzPalSession, &op));
+
+    rtassert_tzs(
+                 TZOperationPerform(&op, &serviceReturn));
+    assert(serviceReturn == TZ_SUCCESS); /* rv==TZ_SUCCESS implies serviceReturn==TZ_SUCCESS */
+
+    TZOperationRelease(&op);
+  }
+
+  /* unload pal */
+  {
+    tz_session_t tzManagerSession;
+
+    /* open session with device manager */
+    rtassert_tzs(
+                 TZManagerOpen(tzDevice, NULL, &tzManagerSession));
+
+    /* unload */
+    rtassert_tzs(
+                 TZManagerRemoveService(&tzManagerSession,
+                                        tzSvcId));
+
+    /* close session */
+    rtassert_tzs(
+                 TZManagerClose(&tzManagerSession));
+  }
+
+  /* close device */
+  {
+    rtassert_tzs(
+                 TZDeviceClose(tzDevice));
+  }
+}
 
 int main(void)
 {
@@ -120,6 +160,7 @@ int main(void)
   tz_uuid_t tzSvcId;
 
   setup(&tzDevice, &tzPalSession, &tzSvcId, pal_entry);
+  teardown(&tzDevice, &tzPalSession, &tzSvcId);
 
 /* #ifdef TEST_VMMCALL */
 /*   rv = test_vmcall() || rv; */
@@ -156,41 +197,6 @@ int main(void)
 /*     printf("SUCCESS with rv=%d\n", rv); */
 /*   } */
 
-/*   /\* close session *\/ */
-/*   { */
-/*     tz_operation_t op; */
-/*     tz_return_t serviceReturn; */
-/*     tzRet = TZOperationPrepareClose(&tzPalSession, */
-/*                                     &op); */
-/*     assert(tzRet == TZ_SUCCESS); */
-/*     tzRet = TZOperationPerform(&op, &serviceReturn); */
-/*     assert(tzRet == TZ_SUCCESS); /\* tzRet==TZ_SUCCESS implies serviceReturn==TZ_SUCCESS *\/ */
-/*     TZOperationRelease(&op); */
-/*   } */
-
-/*   /\* unload pal *\/ */
-/*   { */
-/*     tz_session_t tzManagerSession; */
-
-/*     /\* open session with device manager *\/ */
-/*     tzRet = TZManagerOpen(&tzDevice, NULL, &tzManagerSession); */
-/*     assert(tzRet == TZ_SUCCESS); */
-
-/*     /\* download *\/ */
-/*     tzRet = TZManagerRemoveService(&tzManagerSession, */
-/*                                    &tzSvcId); */
-/*     assert(tzRet == TZ_SUCCESS); */
-
-/*     /\* close session *\/ */
-/*     tzRet = TZManagerClose(&tzManagerSession); */
-/*     assert(tzRet == TZ_SUCCESS); */
-/*   } */
-
-/*   /\* close device *\/ */
-/*   { */
-/*     tzRet = TZDeviceClose(&tzDevice); */
-/*     assert(tzRet == TZ_SUCCESS); */
-/*   } */
 
   return 0;
 } 
