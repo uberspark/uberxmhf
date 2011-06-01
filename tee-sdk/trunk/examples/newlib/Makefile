@@ -28,15 +28,18 @@ NEWLIB_LIBDIR=$(NEWLIB)/lib
 NEWLIB_INCDIR=$(NEWLIB)/include
 ######
 
+PROG_NAME = hello
+PROG_OBJS = hello.o
+
+PAL_NAME=hellopal
+PAL_OBJS=hellopal.o pal-aux.o
+
 # regular program target
-all: hello
-OBJS = hello.o
+all: $(PROG_NAME)
 
 ### PAL rules
 
 # PAL target
-PAL_NAME=hellopal
-PAL_OBJS=hellopal.o pal-aux.o
 $(PAL_NAME).pal.o : $(PAL_OBJS)
 
 # extra flags for PAL
@@ -48,7 +51,6 @@ PAL_LDFLAGS+=-L$(NEWLIB_LIBDIR)
 PAL_LDLIBS+=-lc -lnosys
 
 ### regular program rules
-
 CFLAGS=-g -Wall
 
 # Get compile and link flags for app front-end with app-tv back-end
@@ -62,17 +64,17 @@ LDLIBS+=$(PKG_LDLIBS)
 
 # to link against a pal, add depenedencies for the object and linker
 # script, and add the linker script to the target's LDFLAGS.
-hello : $(PAL_NAME).pal.ld $(PAL_NAME).pal.o
-hello : LDLIBS+=-T$(PAL_NAME).pal.ld
+$(PROG_NAME) : $(PAL_NAME).pal.ld $(PAL_NAME).pal.o
+$(PROG_NAME) : LDLIBS+=-T$(PAL_NAME).pal.ld
 
 # need to explicitly give recipe to prevent make's default recipe from
 # adding the pal linker script and object dependencies to the cmd line.
 # The pal's palname.pal.o must *NOT* appear explicitly on the linker cmd line,
 # since the linker script already pulls it in. Multiple inclusion will result
 # in link failure or subtle errors later.
-hello: $(OBJS)
-	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
+$(PROG_NAME) : $(PROG_OBJS)
+	$(CC) $(LDFLAGS) -o $@ $(PROG_OBJS) $(LDLIBS)
 
 .PHONY: clean
 clean:
-	$(RM) .*.cmd *.o *.ko *~ -r .tmp* test test.D
+	$(RM) .*.cmd *.o *.ko *~ -r .tmp* $(PROG_NAME) $(PROG_OBJS)
