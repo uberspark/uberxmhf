@@ -8,7 +8,9 @@
 PAL_PKGCONFIG_DEPS=tee-sdk-svc tee-sdk-svc-tv
 PAL_CFLAGS=$(shell pkg-config --cflags $(PAL_PKGCONFIG_DEPS))
 PAL_LDFLAGS=-nostdlib -d -r
-PAL_LDLIBS=$(shell pkg-config --libs --static $(PAL_PKGCONFIG_DEPS))
+# XXX temporarily manually filtering out the old linker script here
+PAL_LDLIBS=$(filter-out -T%, \
+	$(shell pkg-config --libs --static $(PAL_PKGCONFIG_DEPS)))
 %.pal.o : LDLIBS = $(PAL_LDLIBS)
 %.pal.o : CFLAGS = $(PAL_CFLAGS)
 %.pal.o : LDFLAGS = $(PAL_LDFLAGS)
@@ -55,7 +57,7 @@ PKG_LDLIBS=$(shell pkg-config --libs --static $(PKGCONFIG_DEPS))
 
 # incorporate pkg-config variables
 CFLAGS+=$(PKG_CFLAGS)
-LDLIBS+=$(filter-out -T%,$(PKG_LDLIBS)) # we're not using the global link script
+LDLIBS+=$(PKG_LDLIBS)
 
 OBJS = hello.o
 hello: $(OBJS)
