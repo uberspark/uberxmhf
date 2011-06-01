@@ -11,11 +11,12 @@ AC_SUBST([CFLAGS], ['-g -O0'])
 #svc_mk=$srcdir/../conf/svc.mk
 #AC_SUBST([SVC_LINK_SCRIPT_SRC = $(srcdir)/conf/svc.ld
 #AC_DEFUN([SVC_LINK_SCRIPT], [${pkgdatadir}/svc.ld])
+AC_SUBST([datadir])
 AC_SUBST([pkgdatadir], ['${datadir}/AC_PACKAGE_NAME'])
 AC_SUBST([SVC_LINK_SCRIPT], ["${pkgdatadir}/svc.ld"])
 AC_SUBST([SVC_CFLAGS], ['-fno-jump-tables -fno-stack-protector'])
-AC_SUBST([SVC_LDFLAGS], ['-T${svc_link_script}'])
-#AC_SUBST([SVC_LDFLAGS], [''])
+#AC_SUBST([SVC_LDFLAGS], ['-T${svc_link_script}'])
+AC_SUBST([SVC_LDFLAGS], [''])
 # prevent gcc from compiling switch statements as jump tables. can
 # probably get rid of this in the future by somehow ensuring that the
 # jump table data is also included in the svc memory areas

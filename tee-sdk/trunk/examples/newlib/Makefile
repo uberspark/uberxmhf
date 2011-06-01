@@ -29,11 +29,13 @@ clean:
 	$(RM) .*.cmd *.o *.ko *~ -r .tmp* $(PROG_NAME) $(PROG_OBJS)
 .PHONY: clean all
 
+TEESDK_DATA_DIR=$(shell pkg-config --variable=pkgdatadir tee-sdk-app)
+
 # pkgconfig helpers
-include pkgconfig.mk
+include $(TEESDK_DATA_DIR)/pkgconfig.mk
 
 # rules for compiling pal intermediate objects
-include pal.mk
+include $(TEESDK_DATA_DIR)/pal.mk
 
 # rules for compiling a program PROG_NAME that uses one pal PAL_NAME
-include onepal.mk
+include $(TEESDK_DATA_DIR)/onepal.mk
