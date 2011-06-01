@@ -10,7 +10,7 @@ CPPFLAGS=$(TESTS)
 # Get compile and link flags to compile against tv's
 # app and svc back-ends. (the corresponding front-ends
 # will be pulled in implicitly)
-PKGCONFIG_DEPS=tee-sdk-svc-tv tee-sdk-app
+PKGCONFIG_DEPS=tee-sdk-app
 PKG_CFLAGS=$(shell pkg-config --cflags $(PKGCONFIG_DEPS))
 PKG_LDLIBS=$(shell pkg-config --libs --static $(PKGCONFIG_DEPS))
 
@@ -32,13 +32,20 @@ PAL_NAME=hellopal
 hellopal.o: hellopal.c
 	$(CC) $(CFLAGS) -I$(NEWLIB_INCDIR) -c -o $@ $<
 
-$(PAL_NAME).pal.o: hellopal.o pal-aux.o
+PAL_CFLAGS=$(CFLAGS) $(shell pkg-config --cflags tee-sdk-svc-tv) -I$(NEWLIB_INCDIR)
+PAL_LDFLAGS=-nostdlib -d -r -L$(NEWLIB_LIBDIR)
+PAL_LDLIBS=$(shell pkg-config --libs --static tee-sdk-svc-tv) -lc -lnosys
+
+$(PAL_NAME).pal.o : LDLIBS := $(PAL_LDLIBS)
+$(PAL_NAME).pal.o : CFLAGS := $(PAL_CFLAGS)
+$(PAL_NAME).pal.o : LDFLAGS := $(PAL_LDFLAGS)
+$(PAL_NAME).pal.o : hellopal.o pal-aux.o
 
 # working on generalizing this for unmodified inclusion in other makefiles
 %.pal.ld: pal-template.ld
 	sed 's/PAL_NAME/$*/g' pal-template.ld > $@
 %.pal.o: %.o
-	ld -nostdlib -d -o $@ -r $^ $(LDLIBS) -L$(NEWLIB_LIBDIR) -lc -lnosys
+	ld $(LDFLAGS) -o $@ $^ $(LDLIBS)
 	objcopy -G $* $@
 
 #LDFLAGS+=-T$(PAL_NAME).ld
