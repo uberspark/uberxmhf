@@ -14,7 +14,7 @@ $(PAL_NAME).pal.o : $(PAL_OBJS)
 
 # to link against a pal, add depenedencies for the object and linker
 # script, and add the linker script to the target's LDLIBS.
-$(PROG_NAME) : $(PAL_NAME).pal
+$(PROG_NAME) : $(PAL_NAME).pal.o $(PAL_NAME).pal.ld
 $(PROG_NAME) : LDLIBS+=-T$(PAL_NAME).pal.ld
 
 # need to explicitly give recipe to prevent make's default recipe from

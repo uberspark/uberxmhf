@@ -39,3 +39,4 @@ include $(TEESDK_DATA_DIR)/pal.mk
 
 # rules for compiling a program PROG_NAME that uses one pal PAL_NAME
 include $(TEESDK_DATA_DIR)/onepal.mk
+

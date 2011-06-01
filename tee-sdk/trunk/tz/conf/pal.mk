@@ -12,20 +12,12 @@ PAL_LDFLAGS+=-nostdlib
 # common symbols with the regular program.
 PAL_LDFLAGS+=-d
 
-# use the tee-sdk service front-end with the trustvisor back-end
-PAL_PKGCONFIG_DEPS+=tee-sdk-svc tee-sdk-svc-tv
-
 # get flags and libraries specified by pkgconfig
 PAL_CFLAGS+=$(call pkgconfig_cflags, $(PAL_PKGCONFIG_DEPS))
 # XXX temporarily manually filtering out the old linker script here
 PAL_LDFLAGS+=$(filter-out -T%, \
 	$(call pkgconfig_ldflags, $(PAL_PKGCONFIG_DEPS)))
 PAL_LDLIBS+=$(call pkgconfig_ldlibs, $(PAL_PKGCONFIG_DEPS))
-
-# .pal is a dummy file to be used as a dependency by the regular
-# program.
-%.pal : %.pal.o %.pal.ld
-	touch $@
 
 # use make's default recipes to build pal object files, but substitute
 # in pal-specific flags
@@ -34,8 +26,8 @@ PAL_LDLIBS+=$(call pkgconfig_ldlibs, $(PAL_PKGCONFIG_DEPS))
 %.pal.o : LDFLAGS = $(PAL_LDFLAGS)
 
 # generate a pal-specific linker script
-%.pal.ld: pal-template.ld
-	sed 's/PAL_NAME/$*/g' pal-template.ld > $@
+%.pal.ld :
+	sed 's/PAL_NAME/$*/g' $(TEESDK_DATA_DIR)/pal-template.ld > $@
 
 # create the pal object file. all symbols except for the entry-point
 # (which is assumed to match the %) are made private so as not to conflict
