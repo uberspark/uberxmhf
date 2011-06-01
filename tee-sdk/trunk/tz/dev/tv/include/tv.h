@@ -58,21 +58,6 @@ typedef struct {
   pal_fn_t pEntry;
 } tv_service_t;
 
-/* XXX uTPM should not be confounded with other operations */
-enum VMMcmd
-  {
-    VMM_REG = 1,
-    VMM_UNREG = 2,
-    VMM_SEAL =3,
-    VMM_UNSEAL =4,
-    VMM_QUOTE =5,
-    VMM_SHARE =6,
-    VMM_PCR_READ=7,
-    VMM_PCR_EXTEND=8,
-    VMM_GENRAND=0,
-    VMM_TEST = 255,
-  };
-
 enum scode_param_type
   {
     SCODE_PARAM_TYPE_INTEGER = 1,
