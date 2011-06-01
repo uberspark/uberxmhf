@@ -4,10 +4,11 @@
 # $< the name of the related file that caused the action.
 # $* the prefix shared by target and dependent files. 
 
-################## to go into global makefile
-PAL_CFLAGS=$(shell pkg-config --cflags tee-sdk-svc tee-sdk-svc-tv)
+################## generic pal-building rules
+PAL_PKGCONFIG_DEPS=tee-sdk-svc tee-sdk-svc-tv
+PAL_CFLAGS=$(shell pkg-config --cflags $(PAL_PKGCONFIG_DEPS))
 PAL_LDFLAGS=-nostdlib -d -r
-PAL_LDLIBS=$(shell pkg-config --libs --static tee-sdk-svc tee-sdk-svc-tv)
+PAL_LDLIBS=$(shell pkg-config --libs --static $(PAL_PKGCONFIG_DEPS))
 %.pal.o : LDLIBS = $(PAL_LDLIBS)
 %.pal.o : CFLAGS = $(PAL_CFLAGS)
 %.pal.o : LDFLAGS = $(PAL_LDFLAGS)
@@ -16,48 +17,53 @@ PAL_LDLIBS=$(shell pkg-config --libs --static tee-sdk-svc tee-sdk-svc-tv)
 %.pal.o: %.o
 	ld $(LDFLAGS) -o $@ $^ $(LDLIBS)
 	objcopy -G $* $@
+# XXX would be good to check for undefined symbols and warn\error 
 ################### end global makefile
+
+###### newlib paths. should make a pkg-config for this
+NEWLIB=../../ports/newlib/install/i586
+NEWLIB_LIBDIR=$(NEWLIB)/lib
+NEWLIB_INCDIR=$(NEWLIB)/include
+######
+
+# regular program target
+all: hello
+
+### PAL rules
+
+# PAL target
+PAL_NAME=hellopal
+PAL_OBJS=hellopal.o pal-aux.o
+$(PAL_NAME).pal.o : $(PAL_OBJS)
+
+# extra flags for PAL
+PAL_CFLAGS+=-g -Wall
+
+# link pal against newlib
+PAL_CFLAGS+=-I$(NEWLIB_INCDIR)
+PAL_LDFLAGS+=-L$(NEWLIB_LIBDIR)
+PAL_LDLIBS+=-lc -lnosys
+
+### regular program rules
 
 CFLAGS=-g -Wall
 
-# Get compile and link flags to compile against tv's
-# app back-end. (the corresponding front-end
-# will be pulled in implicitly)
+# Get compile and link flags for app front-end with app-tv back-end
 PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv
 PKG_CFLAGS=$(shell pkg-config --cflags $(PKGCONFIG_DEPS))
 PKG_LDLIBS=$(shell pkg-config --libs --static $(PKGCONFIG_DEPS))
 
+# incorporate pkg-config variables
 CFLAGS+=$(PKG_CFLAGS)
 LDLIBS+=$(filter-out -T%,$(PKG_LDLIBS)) # we're not using the global link script
 
-
-all: hello
 OBJS = hello.o
-I_SOURCES = $(wildcard *.h)
+hello: $(OBJS)
 
-NEWLIB=../../ports/newlib/install/i586
-NEWLIB_LIBDIR=$(NEWLIB)/lib
-NEWLIB_INCDIR=$(NEWLIB)/include
-
-PAL_NAME=hellopal
-
-PAL_CFLAGS+=-g -Wall
-PAL_CFLAGS+=-I$(NEWLIB_INCDIR)
-PAL_LDFLAGS+=-L$(NEWLIB_LIBDIR)
-PAL_LDLIBS+=-lc -lnosys
-$(PAL_NAME).pal.o : hellopal.o pal-aux.o
-
-
-#LDFLAGS+=-T$(PAL_NAME).ld
-# XXX would be good to check for undefined symbols and warn\error 
-
-# FIXME - the static libraries should be proper dependencies, not in
-# LDFLAGS. Using this rule with LDFLAGS coming last instead of first
-# as in Make's default implicit rule is a partial workaround.  i.e.,
-# we can link correctly, but Make won't know to rebuild if the
-# static lib dependencies change.
-hello:$(OBJS) $(PAL_NAME).pal.o $(PAL_NAME).pal.ld
-	$(CC) -T$(PAL_NAME).pal.ld $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS) 
+# to link against a pal, add depenedencies for the object and linker
+# script, and add the linker script to the target's LDFLAGS
+hello : $(PAL_NAME).pal.o $(PAL_NAME).pal.ld
+hello : LDFLAGS+=-T$(PAL_NAME).pal.ld
 
 .PHONY: clean
 clean:
