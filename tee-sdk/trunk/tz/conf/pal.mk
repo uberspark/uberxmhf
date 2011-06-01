@@ -1,17 +1,5 @@
 # generic pal-building rules. depends on pkgconfig.mk
 
-# Link the pal into a relocatable object file rather than a
-# stand-alone executable.
-PAL_LDFLAGS+=-r
-
-# don't use any standard libraries, which may make system calls or
-# otherwise be incompatible with the pal.
-PAL_LDFLAGS+=-nostdlib
-
-# force allocation of 'common' symbols. we don't want to share
-# common symbols with the regular program.
-PAL_LDFLAGS+=-d
-
 # get flags and libraries specified by pkgconfig
 PAL_CFLAGS+=$(call pkgconfig_cflags, $(PAL_PKGCONFIG_DEPS))
 # XXX temporarily manually filtering out the old linker script here
