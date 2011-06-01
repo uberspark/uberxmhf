@@ -30,6 +30,7 @@ NEWLIB_INCDIR=$(NEWLIB)/include
 
 # regular program target
 all: hello
+OBJS = hello.o
 
 ### PAL rules
 
@@ -59,13 +60,18 @@ PKG_LDLIBS=$(shell pkg-config --libs --static $(PKGCONFIG_DEPS))
 CFLAGS+=$(PKG_CFLAGS)
 LDLIBS+=$(PKG_LDLIBS)
 
-OBJS = hello.o
-hello: $(OBJS)
-
 # to link against a pal, add depenedencies for the object and linker
-# script, and add the linker script to the target's LDFLAGS
-hello : $(PAL_NAME).pal.o $(PAL_NAME).pal.ld
-hello : LDFLAGS+=-T$(PAL_NAME).pal.ld
+# script, and add the linker script to the target's LDFLAGS.
+hello : $(PAL_NAME).pal.ld $(PAL_NAME).pal.o
+hello : LDLIBS+=-T$(PAL_NAME).pal.ld
+
+# need to explicitly give recipe to prevent make's default recipe from
+# adding the pal linker script and object dependencies to the cmd line.
+# The pal's palname.pal.o must *NOT* appear explicitly on the linker cmd line,
+# since the linker script already pulls it in. Multiple inclusion will result
+# in link failure or subtle errors later.
+hello: $(OBJS)
+	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
 
 .PHONY: clean
 clean:
