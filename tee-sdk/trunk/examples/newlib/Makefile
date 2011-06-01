@@ -4,8 +4,6 @@
 # $< the name of the related file that caused the action.
 # $* the prefix shared by target and dependent files. 
 
-include pkgconfig.mk pal.mk
-
 PROG_NAME=hello
 PROG_OBJS=hello.o
 CFLAGS+=-g -Wall
@@ -14,16 +12,7 @@ PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv
 PAL_NAME=hellopal
 PAL_OBJS=hellopal.o pal-aux.o
 PAL_CFLAGS+=-g -Wall
-
-all: $(PROG_NAME)
-clean:
-	$(RM) .*.cmd *.o *.ko *~ -r .tmp* $(PROG_NAME) $(PROG_OBJS)
-.PHONY: clean all
-
-# grab pkgconfig_deps-related flags
-CFLAGS+=$(call pkgconfig_cflags, $(PKGCONFIG_DEPS))
-LDLIBS+=$(call pkgconfig_ldlibs, $(PKGCONFIG_DEPS))
-LDFLAGS+=$(call pkgconfig_ldflags, $(PKGCONFIG_DEPS))
+PAL_PKGCONFIG_DEPS=tee-sdk-svc tee-sdk-svc-tv
 
 # link pal against newlib
 ###### newlib paths. should make a pkg-config for this
@@ -35,22 +24,16 @@ PAL_CFLAGS+=-I$(NEWLIB_INCDIR)
 PAL_LDFLAGS+=-L$(NEWLIB_LIBDIR)
 PAL_LDLIBS+=-lc -lnosys
 
-######### generic rules for a program that uses one pal
-# "inputs": PAL_NAME, PAL_OBJS, PROG_NAME, PROG_OBJS
+all: $(PROG_NAME)
+clean:
+	$(RM) .*.cmd *.o *.ko *~ -r .tmp* $(PROG_NAME) $(PROG_OBJS)
+.PHONY: clean all
 
-# PAL target
-$(PAL_NAME).pal.o : $(PAL_OBJS)
+# pkgconfig helpers
+include pkgconfig.mk
 
-# to link against a pal, add depenedencies for the object and linker
-# script, and add the linker script to the target's LDLIBS.
-$(PROG_NAME) : $(PAL_NAME).pal
-$(PROG_NAME) : LDLIBS+=-T$(PAL_NAME).pal.ld
+# rules for compiling pal intermediate objects
+include pal.mk
 
-# need to explicitly give recipe to prevent make's default recipe from
-# adding the pal linker script and object dependencies to the cmd line.
-# The pal's palname.pal.o must *NOT* appear explicitly on the linker cmd line,
-# since the linker script already pulls it in. Multiple inclusion will result
-# in link failure or subtle errors later.
-$(PROG_NAME) : $(PROG_OBJS)
-	$(CC) $(LDFLAGS) -o $@ $(PROG_OBJS) $(LDLIBS)
-#########
+# rules for compiling a program PROG_NAME that uses one pal PAL_NAME
+include onepal.mk
