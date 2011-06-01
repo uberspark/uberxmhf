@@ -17,7 +17,6 @@ SECTIONS
   {
     __stext_start = .;
     ___stext_start = .; /* accomodate name mangling on windows */
-    PAL_NAME.pal.o(.text)
     . = ALIGN(0x1000);
     __stext_end = .;
     ___stext_end = .;
