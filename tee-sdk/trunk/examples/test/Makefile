@@ -6,37 +6,30 @@
 
 TESTS=-DTEST_VMMCALL -DTEST_WITHOUTPARAM -DTEST_PARAM -DTEST_SEAL -DTEST_QUOTE -DTEST_PCR_EXTEND -DTEST_PCR_READ
 
+PROG_NAME=test
 CFLAGS=-g -Wall
 CPPFLAGS=$(TESTS)
+PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv
+PROG_OBJS=test.o
 
-# Get compile and link flags to compile against tv's
-# app and svc back-ends. (the corresponding front-ends
-# will be pulled in implicitly)
-PKGCONFIG_DEPS=tee-sdk-svc-tv tee-sdk-app
-PKG_CFLAGS=$(shell pkg-config --cflags $(PKGCONFIG_DEPS))
-PKG_LDFLAGS=$(shell pkg-config --libs --static $(PKGCONFIG_DEPS))
+PAL_NAME=pals
+PAL_PKGCONFIG_DEPS=tee-sdk-svc tee-sdk-svc-tv
+PAL_OBJS=pals.o
 
-CFLAGS+=$(PKG_CFLAGS)
-LDFLAGS+=$(PKG_LDFLAGS)
-
-# source .c file
-SRCS = test.c pals.c 
-
-# object files
-OBJS = $(patsubst %.c, %.o, $(SRCS))
-
-I_SOURCES = $(wildcard *.h)
-
-all: test
-
-# FIXME - the static libraries should be proper dependencies, not in
-# LDFLAGS. Using this rule with LDFLAGS coming last instead of first
-# as in Make's default implicit rule is a partial workaround.  i.e.,
-# we can link correctly, but Make won't know to rebuild if the
-# static lib dependencies change.
-test:$(OBJS)
-	$(CC) -o $@ $(OBJS) $(LDFLAGS) 
+all: $(PROG_NAME)
 
 .PHONY: clean
 clean:
 	$(RM) .*.cmd *.o *.ko *~ -r .tmp* test test.D
+
+TEESDK_DATA_DIR=$(shell pkg-config --variable=pkgdatadir tee-sdk-app)
+
+# pkgconfig helpers
+include $(TEESDK_DATA_DIR)/pkgconfig.mk
+
+# rules for compiling pal intermediate objects
+include $(TEESDK_DATA_DIR)/pal.mk
+
+# rules for compiling a program PROG_NAME that uses one pal PAL_NAME
+include $(TEESDK_DATA_DIR)/onepal.mk
+

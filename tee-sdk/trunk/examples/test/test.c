@@ -494,7 +494,7 @@ int main(void)
     {
       .sPageInfo = &scode_info,
       .sParams = NULL, /* soon to be deprecated? */
-      .pEntry = pal_entry,
+      .pEntry = pals,
     };
   tz_uuid_t tzSvcId;
 
