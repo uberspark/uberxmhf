@@ -2,9 +2,7 @@
 
 # get flags and libraries specified by pkgconfig
 PAL_CFLAGS+=$(call pkgconfig_cflags, $(PAL_PKGCONFIG_DEPS))
-# XXX temporarily manually filtering out the old linker script here
-PAL_LDFLAGS+=$(filter-out -T%, \
-	$(call pkgconfig_ldflags, $(PAL_PKGCONFIG_DEPS)))
+PAL_LDFLAGS+=$(call pkgconfig_ldflags, $(PAL_PKGCONFIG_DEPS))
 PAL_LDLIBS+=$(call pkgconfig_ldlibs, $(PAL_PKGCONFIG_DEPS))
 
 # use make's default recipes to build pal object files, but substitute
