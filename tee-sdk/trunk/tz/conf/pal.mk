@@ -21,5 +21,5 @@ PAL_LDLIBS+=$(call pkgconfig_ldlibs, $(PAL_PKGCONFIG_DEPS))
 # can use different versions of libc)
 %.pal.o: %.o
 	ld $(LDFLAGS) -o $@ $^ $(LDLIBS)
-	objcopy -G $* $@
+	objcopy -G $(subst -,_,$*) $@
 	if test `nm -u $@ | wc -l` -ne 0 ; then echo "undefd symbols in $@:"; nm -u $@; rm $@; false; else true; fi
