@@ -90,8 +90,8 @@ static int do_load(uint8_t *code, size_t code_len,
 }
 
 __attribute__ ((section (".scode")))
-void scp_entry(struct scp_in_msg *in, size_t in_len,
-               struct scp_out_msg *out, size_t *out_len)
+void sealed_code_pal(struct scp_in_msg *in, size_t in_len,
+                     struct scp_out_msg *out, size_t *out_len)
 {
   if (in_len < sizeof(*in)) {
     out->status = -1;

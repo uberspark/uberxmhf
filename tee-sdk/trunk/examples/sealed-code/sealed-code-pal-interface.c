@@ -66,12 +66,12 @@ void scp_register(void)
                            2*PAGE_SIZE);
   scode_sections_info_print(&scode_info);
   fflush(NULL);
-  assert(!scode_register(&scode_info, &scp_params_info, scp_entry));
+  assert(!scode_register(&scode_info, &scp_params_info, sealed_code_pal));
 }
 
 void scp_unregister(void)
 {
-  scode_unregister(scp_entry);
+  scode_unregister(sealed_code_pal);
 }
 
 size_t scp_sealed_size_of_unsealed_size(size_t in)
@@ -102,7 +102,7 @@ int scp_seal(uint8_t *incode, size_t incode_len, uint8_t *outcode, size_t *outco
   in->m.seal.code_len = incode_len;
 
   scp_register();
-  scp_entry(in, sizeof(*in), out, &out_len);
+  sealed_code_pal(in, sizeof(*in), out, &out_len);
   scp_unregister();
 
   if(out->status != 0) {
@@ -146,7 +146,7 @@ int scp_run(uint8_t *incode, size_t incode_len,
   in->m.load.params_len = params_len;
 
   scp_register();
-  scp_entry(in, sizeof(*in), out, &out_len);
+  sealed_code_pal(in, sizeof(*in), out, &out_len);
   scp_unregister();
 
   if(out->status != 0) {
