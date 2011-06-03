@@ -442,7 +442,7 @@ void hpt_scode_clear_prot(VCPU * vcpu, pte_t *pte_pages, u32 size)
 }
 
 /* parse scode paramter info ( scode registration input) */
-int parse_params_info(VCPU * vcpu, struct tv_scode_params_info* pm_info, u32 pm_addr)
+int parse_params_info(VCPU * vcpu, struct tv_pal_params* pm_info, u32 pm_addr)
 {
 	u32 i, num;
 	u32 addr;
@@ -466,7 +466,7 @@ int parse_params_info(VCPU * vcpu, struct tv_scode_params_info* pm_info, u32 pm_
 	return 0;
 }
 
-int memsect_info_copy_from_guest(VCPU * vcpu, struct tv_scode_sections_info *ps_scode_info, u32 gva_scode_info)
+int memsect_info_copy_from_guest(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, u32 gva_scode_info)
 {
 	u32 gva_scode_info_offset = 0;
 
@@ -488,7 +488,7 @@ int memsect_info_copy_from_guest(VCPU * vcpu, struct tv_scode_sections_info *ps_
 }
 
 /* parse scode sections info (scode registration input) */
-int memsect_info_register(VCPU * vcpu, struct tv_scode_sections_info *ps_scode_info, whitelist_entry_t * wle)
+int memsect_info_register(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, whitelist_entry_t * wle)
 {
 	int i, pnum, is_get_param, is_get_stack;
 	int type, size;
