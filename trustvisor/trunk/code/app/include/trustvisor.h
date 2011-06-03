@@ -36,74 +36,72 @@
 #ifndef TRUSTVISOR_H
 #define TRUSTVISOR_H
 
-/* 
- * definition for scode sections info 
- * */
-enum tv_section_type
-  {
-    TV_SECTION_TYPE_SCODE = 1,
-    TV_SECTION_TYPE_SDATA = 2,
-    TV_SECTION_TYPE_PARAM = 3,
-    TV_SECTION_TYPE_STACK = 4,
-    TV_SECTION_TYPE_STEXT = 5,
-
-    /* internal */
-    TV_SECTION_TYPE_SHARED = 6,
-    TV_SECTION_TYPE_GUEST_PAGE_TABLES = 7
-  };
-
-/* 
- * definition for VMM call
- * */
-enum VMMcmd {
+/*
+ * Hyper-Call constants
+ */
+enum HCcmd {
   /* pal manipulation ops */
-  TV_VMMCMD_REG	=1,
-  TV_VMMCMD_UNREG	=2,
+  TV_HC_REG	=1,
+  TV_HC_UNREG	=2,
+  TV_HC_SHARE	=6,
 
   /* uTPM ops */
-  TV_VMMCMD_SEAL	=3,
-  TV_VMMCMD_UNSEAL	=4,
-  TV_VMMCMD_QUOTE	=5,
-  TV_VMMCMD_SHARE	=6,
-  TV_VMMCMD_PCRREAD	=7,
-  TV_VMMCMD_PCREXT	=8,
-  TV_VMMCMD_GENRAND	=9,
+  TV_HC_UTPM_SEAL	=3,
+  TV_HC_UTPM_UNSEAL	=4,
+  TV_HC_UTPM_QUOTE	=5,
+  TV_HC_UTPM_PCRREAD	=7,
+  TV_HC_UTPM_PCREXT	=8,
+  TV_HC_UTPM_GENRAND	=9,
 
   /* misc */
-  TV_VMMCMD_TEST		=255,
+  TV_HC_TEST		=255,
 };
 
-struct tv_scode_sections_struct{
-  enum tv_section_type type;
-  unsigned int start_addr;
-  int page_num; /* size of section in pages */
-};
+/*
+ * structs for pal-registration descriptor
+ */
 
-#define TV_MAX_SECTION_NUM 10  /* max sections that are allowed in scode registration */
-struct tv_scode_sections_info {
-  int section_num;
-  struct tv_scode_sections_struct ps_str[TV_MAX_SECTION_NUM];
-};
-
-/* 
- * definition for scode param info 
- * */
-/* parameter type */
-enum tv_scode_param_type
+enum tv_pal_section_type
   {
-    TV_PM_TYPE_INTEGER = 1,
-    TV_PM_TYPE_POINTER = 2
+    TV_PAL_SECTION_CODE = 1,
+    TV_PAL_SECTION_DATA = 2,
+    TV_PAL_SECTION_PARAM = 3,
+    TV_PAL_SECTION_STACK = 4,
+    TV_PAL_SECTION_SHARED_CODE = 5,
+
+    /* for internal use. */
+    TV_PAL_SECTION_SHARED = 6,
+    TV_PAL_SECTION_GUEST_PAGE_TABLES = 7
   };
 
-struct tv_scode_params_struct {
-  uint32_t type;  /* 1: integer ;  2:pointer*/
+struct tv_pal_section {
+  enum tv_pal_section_type type;
+  uint32_t start_addr;
+  uint32_t page_num; /* size of section in pages */
+};
+
+#define TV_MAX_SECTIONS 10  /* max sections that are allowed in pal registration */
+struct tv_pal_sections {
+  uint32_t num_sections;
+  struct tv_pal_section sections[TV_MAX_SECTIONS];
+};
+
+/* parameter type */
+enum tv_pal_param_type
+  {
+    TV_PAL_PM_INTEGER = 1,
+    TV_PAL_PM_POINTER = 2
+  };
+
+struct tv_pal_param {
+  enum tv_pal_param_type type;  /* 1: integer ;  2:pointer*/
   uint32_t size;
 };
 
-#define TV_MAX_PARAMS_NUM 10
-struct tv_scode_params_info {
-  uint32_t params_num;
-  struct tv_scode_params_struct pm_str[TV_MAX_PARAMS_NUM];
+#define TV_MAX_PARAMS 10
+struct tv_pal_params {
+  uint32_t num_params;
+  struct tv_pal_param params[TV_MAX_PARAMS_NUM];
 };
 
 #endif
