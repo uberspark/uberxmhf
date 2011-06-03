@@ -299,3 +299,9 @@ void emhf_app_handleshutdown(VCPU *vcpu, struct regs *r)
 	dprintf(LOG_TRACE, "\nCPU(0x%02x): Shutdown intercept!", vcpu->id);
 	g_libemhf->emhf_reboot(vcpu);
 }
+
+/* Local Variables: */
+/* mode:c           */
+/* indent-tabs-mode:'t */
+/* tab-width:2      */
+/* End:             */
