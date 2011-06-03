@@ -41,20 +41,20 @@
  */
 enum HCcmd {
   /* pal manipulation ops */
-  TV_HC_REG	=1,
-  TV_HC_UNREG	=2,
-  TV_HC_SHARE	=6,
+  TV_HC_REG     =1,
+  TV_HC_UNREG   =2,
+  TV_HC_SHARE   =6,
 
   /* uTPM ops */
-  TV_HC_UTPM_SEAL	=3,
-  TV_HC_UTPM_UNSEAL	=4,
-  TV_HC_UTPM_QUOTE	=5,
-  TV_HC_UTPM_PCRREAD	=7,
-  TV_HC_UTPM_PCREXT	=8,
-  TV_HC_UTPM_GENRAND	=9,
+  TV_HC_UTPM_SEAL       =3,
+  TV_HC_UTPM_UNSEAL     =4,
+  TV_HC_UTPM_QUOTE      =5,
+  TV_HC_UTPM_PCRREAD    =7,
+  TV_HC_UTPM_PCREXT     =8,
+  TV_HC_UTPM_GENRAND    =9,
 
   /* misc */
-  TV_HC_TEST		=255,
+  TV_HC_TEST            =255,
 };
 
 /*
