@@ -102,8 +102,8 @@ typedef struct whitelist_entry{
 	u32 gpm_size; /* guest parameter page number */
 	u32 gpm_num;  /* guest parameter number */
 
-	struct tv_scode_sections_info scode_info; /* scode_info struct for registration function inpu */
-	struct tv_scode_params_info params_info; /* param info struct */
+	struct tv_pal_sections scode_info; /* scode_info struct for registration function inpu */
+	struct tv_pal_params params_info; /* param info struct */
 	pte_t* scode_pages; /* registered pte's (copied from guest page tables and additional info added) */
 	u32 scode_size; /* scode size */
 

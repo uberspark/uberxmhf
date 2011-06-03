@@ -82,7 +82,7 @@ static inline hpt_prot_t hpt_pme_getpalprot(hpt_type_t t, int lvl, hpt_pme_t pme
 hpt_prot_t pal_prot_of_type(int type)
 {
 	switch(type) {
-	case TV_SECTION_TYPE_SCODE:
+	case TV_PAL_SECTION_CODE:
 		return HPT_PROTS_RX;
 		break;
 	case TV_SECTION_TYPE_STEXT:
@@ -109,7 +109,7 @@ hpt_prot_t pal_prot_of_type(int type)
 hpt_prot_t reg_prot_of_type(int type)
 {
 	switch(type) {
-	case TV_SECTION_TYPE_SCODE:
+	case TV_PAL_SECTION_CODE:
 		return HPT_PROTS_NONE;
 		break;
 	case TV_SECTION_TYPE_STEXT:

@@ -93,14 +93,14 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 
 	switch (cmd)
 	{
-		case TV_VMMCMD_TEST:
+		case TV_HC_TEST:
 			{
 				printf("\nCPU(0x%02x): Hello world from sechyp vmmcall handler!", vcpu->id);
 				ret = 0;
 				break;
 			}
 			/* register the scode */
-		case TV_VMMCMD_REG:
+		case TV_HC_REG:
 			{
 				u32 scode_info, scode_sp, scode_pm, scode_en;
 				/* sensitive code as guest virtual address in ecx */
@@ -126,7 +126,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 			}
 
 			/* unregister the scode */
-		case TV_VMMCMD_UNREG:
+		case TV_HC_UNREG:
 			{
 				u32 scode_gva;
 				/* sensitive code as guest virtual address in ecx */
@@ -147,7 +147,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				break;
 			}
 			/* seal data */
-		case TV_VMMCMD_SEAL:
+		case TV_HC_UTPM_SEAL:
 			{
 				u32 inbuf, outbuf, data_addr, data_len, pcr_addr, out_addr, out_len_addr;
 				inbuf = r->ecx;
@@ -164,7 +164,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				break;
 			}
 			/* unseal data */
-		case TV_VMMCMD_UNSEAL:
+		case TV_HC_UTPM_UNSEAL:
 			{
 				u32 inbuf, outbuf, input_addr, in_len, out_addr, out_len_addr;
 				inbuf = r->ecx;
@@ -179,7 +179,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 
 				break;
 			}
-		case TV_VMMCMD_QUOTE:
+		case TV_HC_UTPM_QUOTE:
 			{
 				u32 outbuf, nonce_addr, tpmsel_addr, out_addr, out_len_addr;
 				/* address of nonce to be sealed in esi*/
@@ -195,7 +195,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 
 				break;
 			}
-		case TV_VMMCMD_SHARE:
+		case TV_HC_SHARE:
 			{
 				u32 scode_entry, addrs_gva, lens_gva, count;
 				u32 *addrs=NULL, *lens=NULL;
@@ -224,7 +224,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				vfree(lens);
 				break;
 			}
-		case TV_VMMCMD_PCRREAD:
+		case TV_HC_UTPM_PCRREAD:
 			{
 				u32 addr, num;
 				addr = r->edx;
@@ -232,7 +232,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				ret = scode_pcrread(vcpu, addr, num);
 				break;
 			}
-		case TV_VMMCMD_PCREXT:
+		case TV_HC_UTPM_PCREXT:
 			{
 				u32 addr, len, num;
 				addr = r->edx;
@@ -241,7 +241,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				ret = scode_pcrextend(vcpu, addr, len, num);
 				break;
 			}
-		case TV_VMMCMD_GENRAND:
+		case TV_HC_UTPM_GENRAND:
 			{
 				u32 addr, len_addr;
 				addr = r->ecx;

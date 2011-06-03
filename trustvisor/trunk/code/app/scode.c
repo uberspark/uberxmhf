@@ -186,9 +186,9 @@ int scode_in_list(u64 gcr3, u32 gvaddr)
 	for (i = 0; i < whitelist_max; i ++)
 	{
 		if (gcr3 == whitelist[i].gcr3) {
-			for( j=0 ; j<(u32)(whitelist[i].scode_info.section_num) ; j++ )  {
-				if( (gvaddr >= whitelist[i].scode_info.ps_str[j].start_addr) &&
-						(gvaddr < ((whitelist[i].scode_info.ps_str[j].start_addr)+((whitelist[i].scode_info.ps_str[j].page_num)<<PAGE_SHIFT_4K)))  )  {
+			for( j=0 ; j<(u32)(whitelist[i].scode_info.num_sections) ; j++ )  {
+				if( (gvaddr >= whitelist[i].scode_info.sections[j].start_addr) &&
+						(gvaddr < ((whitelist[i].scode_info.sections[j].start_addr)+((whitelist[i].scode_info.sections[j].page_num)<<PAGE_SHIFT_4K)))  )  {
 					dprintf(LOG_TRACE, "[TV] find gvaddr %#x in scode %d section No.%d !\n", gvaddr, i, j+1);
 					return i;
 				}
@@ -226,7 +226,7 @@ u32 scode_measure(u8 * pcr, pte_t *pte_pages, u32 size)
 		/* only measure SCODE, STEXT, SDATA pages */
 		paddr = PAGE_ALIGN_4K(pte_pages[i]);
 		switch(SCODE_PTE_TYPE_GET(pte_pages[i])) {
-		case TV_SECTION_TYPE_SCODE:
+		case TV_PAL_SECTION_CODE:
 		case TV_SECTION_TYPE_STEXT:
 		case TV_SECTION_TYPE_SDATA:
 			dprintf(LOG_TRACE, "[TV]   measure scode page %d paddr %#x\n", i+1, paddr);

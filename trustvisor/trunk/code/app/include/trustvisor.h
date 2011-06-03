@@ -101,7 +101,7 @@ struct tv_pal_param {
 #define TV_MAX_PARAMS 10
 struct tv_pal_params {
   uint32_t num_params;
-  struct tv_pal_param params[TV_MAX_PARAMS_NUM];
+  struct tv_pal_param params[TV_MAX_PARAMS];
 };
 
 #endif
