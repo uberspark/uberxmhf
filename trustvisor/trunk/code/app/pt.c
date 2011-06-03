@@ -85,20 +85,20 @@ hpt_prot_t pal_prot_of_type(int type)
 	case TV_PAL_SECTION_CODE:
 		return HPT_PROTS_RX;
 		break;
-	case TV_SECTION_TYPE_STEXT:
+	case TV_PAL_SECTION_SHARED_CODE:
 		return HPT_PROTS_RX;
 		break;
-	case TV_SECTION_TYPE_SDATA:
+	case TV_PAL_SECTION_DATA:
 		return HPT_PROTS_RWX;
 		break;
-	case TV_SECTION_TYPE_PARAM:
-	case TV_SECTION_TYPE_STACK:
+	case TV_PAL_SECTION_PARAM:
+	case TV_PAL_SECTION_STACK:
 		return HPT_PROTS_RW;
 		break;
-	case TV_SECTION_TYPE_SHARED:
+	case TV_PAL_SECTION_SHARED:
 		return HPT_PROTS_RWX;
 		break;
-	case TV_SECTION_TYPE_GUEST_PAGE_TABLES:
+	case TV_PAL_SECTION_GUEST_PAGE_TABLES:
 		return HPT_PROTS_RWX;
 		break;
 	default:
@@ -112,20 +112,20 @@ hpt_prot_t reg_prot_of_type(int type)
 	case TV_PAL_SECTION_CODE:
 		return HPT_PROTS_NONE;
 		break;
-	case TV_SECTION_TYPE_STEXT:
+	case TV_PAL_SECTION_SHARED_CODE:
 		return HPT_PROTS_RX;
 		break;
-	case TV_SECTION_TYPE_SDATA:
+	case TV_PAL_SECTION_DATA:
 		return HPT_PROTS_NONE;
 		break;
-	case TV_SECTION_TYPE_PARAM:
-	case TV_SECTION_TYPE_STACK:
+	case TV_PAL_SECTION_PARAM:
+	case TV_PAL_SECTION_STACK:
 		return HPT_PROTS_NONE;
 		break;
-	case TV_SECTION_TYPE_SHARED:
+	case TV_PAL_SECTION_SHARED:
 		return HPT_PROTS_NONE;
 		break;
-	case TV_SECTION_TYPE_GUEST_PAGE_TABLES:
+	case TV_PAL_SECTION_GUEST_PAGE_TABLES:
 		return HPT_PROTS_RWX;
 		break;
 	default:
@@ -392,7 +392,7 @@ void hpt_nested_make_pt_unaccessible(pte_t *gpaddr_list, u32 gpaddr_count, pdpt_
 		pt_entry = npt[pt_index];
 		if( is_pal )  {
 			/* scode mem region(except for STEXT sections), set to unpresent */
-			if (SCODE_PTE_TYPE_GET(nvaddr) != TV_SECTION_TYPE_STEXT)
+			if (SCODE_PTE_TYPE_GET(nvaddr) != TV_PAL_SECTION_SHARED_CODE)
 				pt_entry = hpt_pme_setprot(hpt_nested_walk_ctx.t, 1, pt_entry, HPT_PROTS_NONE);
 		} 
 		dprintf(LOG_TRACE, "pte old %#llx, new %#llx!\n", npt[pt_index], pt_entry);
