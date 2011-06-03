@@ -4,6 +4,9 @@ AM_INIT_AUTOMAKE([foreign -Wall -Werror])
 AC_PROG_CC
 AC_CONFIG_HEADERS([config.h])
 
+PKG_PROG_PKG_CONFIG
+PKG_CHECK_MODULES([TRUSTVISOR], [trustvisor])
+
 AC_SUBST([CFLAGS], ['-g -O0'])
 
 # install in-place by default

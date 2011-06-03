@@ -1,6 +1,6 @@
 # make these libraries are suitable for services to compile against
 
-AM_CFLAGS = $(SVC_CFLAGS)
+AM_CFLAGS = $(SVC_CFLAGS) @TRUSTVISOR_CFLAGS@
 
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(srcdir)/../include
 

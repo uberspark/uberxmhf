@@ -36,6 +36,9 @@
 #ifndef VMCALLS_H
 #define VMCALLS_H
 
+#include <stdint.h>
+#include <trustvisor/trustvisor.h>
+
 /* XXX ripped from emhf's processor.h. use it directly? */
 
 #define CPU_VENDOR_INTEL 	0xAB

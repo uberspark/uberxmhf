@@ -141,7 +141,7 @@ int scode_touch_range(void *ptr, size_t len, int do_write)
 /* get scode pages into physical memory, and lock them there if possible.
  * TV won't cope if these pages are swapped out when a PAL executes.
  */
-static void lock_scode_pages(const struct scode_sections_info *scode_info)
+static void lock_scode_pages(const struct tv_scode_sections_info *scode_info)
 {
   int i;
 
@@ -161,20 +161,20 @@ static void lock_scode_pages(const struct scode_sections_info *scode_info)
      */
     scode_touch_range((void*)scode_info->ps_str[i].start_addr,
                       scode_info->ps_str[i].page_num*PAGE_SIZE,
-                      !(scode_info->ps_str[i].type == SCODE_SECTION_TYPE_SCODE
-                        || scode_info->ps_str[i].type == SCODE_SECTION_TYPE_STEXT));
+                      !(scode_info->ps_str[i].type == TV_SECTION_TYPE_SCODE
+                        || scode_info->ps_str[i].type == TV_SECTION_TYPE_STEXT));
 
   }
 }
 
-int scode_register(const struct scode_sections_info *pageinfo,
-                   const struct scode_params_info *params,
+int scode_register(const struct tv_scode_sections_info *pageinfo,
+                   const struct tv_scode_params_info *params,
                    const void *entry)
 {
   int ret;
   lock_scode_pages(pageinfo);
 
-  return vmcall(VMM_REG,
+  return vmcall(TV_VMMCMD_REG,
                 (uint32_t)pageinfo,
                 0,
                 (uint32_t)params,
@@ -184,7 +184,7 @@ int scode_register(const struct scode_sections_info *pageinfo,
 int scode_unregister(void *entry)
 {
   int ret;
-  return vmcall(VMM_UNREG,
+  return vmcall(TV_VMMCMD_UNREG,
                 (uint32_t)entry,
                 0, 0, 0);
 }
@@ -206,7 +206,7 @@ int scode_share(const void *entry, void **start, size_t *len, size_t count)
     scode_touch_range(start[i], len[i], true);
   }
 
-  return vmcall(VMM_SHARE,
+  return vmcall(TV_VMMCMD_SHARE,
                 (uint32_t)entry,
                 (uint32_t)start,
                 (uint32_t)len,
@@ -216,6 +216,6 @@ int scode_share(const void *entry, void **start, size_t *len, size_t count)
 int scode_test(void)
 {
   int ret;
-  return vmcall(VMM_TEST,
+  return vmcall(TV_VMMCMD_TEST,
                 0, 0, 0, 0);
 }

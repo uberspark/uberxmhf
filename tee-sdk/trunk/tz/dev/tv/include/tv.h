@@ -42,6 +42,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include <trustvisor/trustvisor.h>
+
 /* FIXME: copied from paging.h in trustvisor. should use that directly */
 #define PAGE_SIZE 0x1000
 #define PAGE_SIZE_4K (1UL << 12)
@@ -53,47 +55,10 @@
 typedef void (*pal_fn_t)(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv);
 
 typedef struct {
-  struct scode_sections_info *sPageInfo;
-  struct scode_params_info *sParams;
+  struct tv_scode_sections_info *sPageInfo;
+  struct tv_scode_params_info *sParams;
   pal_fn_t pEntry;
 } tv_service_t;
-
-enum scode_param_type
-  {
-    SCODE_PARAM_TYPE_INTEGER = 1,
-    SCODE_PARAM_TYPE_POINTER = 2
-  };
-
-struct scode_params_struct{
-  enum scode_param_type type;
-  size_t size; /* in int's */
-};
-
-#define SCODE_MAX_PARAMS_NUM 10
-struct scode_params_info{
-  int params_num;
-  struct scode_params_struct pm_str[SCODE_MAX_PARAMS_NUM];
-};
-
-enum scode_section_type
-  {
-    SCODE_SECTION_TYPE_SCODE = 1,
-    SCODE_SECTION_TYPE_SDATA = 2,
-    SCODE_SECTION_TYPE_PARAM = 3,
-    SCODE_SECTION_TYPE_STACK = 4,
-    SCODE_SECTION_TYPE_STEXT = 5
-  };
-struct scode_sections_struct{
-  enum scode_section_type type;
-  unsigned int start_addr;
-  int page_num; /* size of section in pages */
-};
-
-#define SCODE_MAX_SECTION_NUM 10  /* max sections that are allowed in scode registration */
-struct scode_sections_info{
-  int section_num;
-  struct scode_sections_struct ps_str[SCODE_MAX_SECTION_NUM];
-};
 
 /* read (and optionally write) to the memory pages in the specified
  * range. use this to make sure pages are present for trustvisor
@@ -107,19 +72,19 @@ size_t scode_ptr_diff(void *end, void *start);
 /* initialize an scode_sections_info struct, allocating page-aligned memory
  * for the parameters and stack.
  */
-void scode_sections_info_init(struct scode_sections_info *scode_info,
+void scode_sections_info_init(struct tv_scode_sections_info *scode_info,
                               size_t param_sz,
                               size_t stack_sz);
 
 /* add a section to an scode_sections_info struct.
  * The struct should have already been initialized.
  */
-void scode_sections_info_add(struct scode_sections_info *scode_info,
+void scode_sections_info_add(struct tv_scode_sections_info *scode_info,
                              int type,
                              void *start_addr, size_t len);
 
 /* Print scode_sections_info to stdout */
-void scode_sections_info_print(struct scode_sections_info *scode_info);
+void scode_sections_info_print(struct tv_scode_sections_info *scode_info);
 
 /* Register a PAL.
  * pageinfo describes the memory areas to be used by the PAL.
@@ -132,8 +97,8 @@ void scode_sections_info_print(struct scode_sections_info *scode_info);
  *
  * Returns 0 on success, nonzero on failure.
  */
-int scode_register(const struct scode_sections_info *pageinfo,
-                   const struct scode_params_info *params,
+int scode_register(const struct tv_scode_sections_info *pageinfo,
+                   const struct tv_scode_params_info *params,
                    const void *entry);
 
 /* Unregister a PAL.
