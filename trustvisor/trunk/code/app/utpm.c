@@ -46,7 +46,7 @@
 #include  "./include/puttymem.h"
 
 /* software tpm pcr write (only called by utpm_extend) */
-static TPM_RESULT utpm_internal_pcrwrite(u8* new_pcr_value, u8* pcr_bank, u32 pcr_num)
+static TPM_RESULT utpm_internal_pcrwrite(uint8_t* new_pcr_value, uint8_t* pcr_bank, uint32_t pcr_num)
 {
     /* Internal function; param sanity-checking should already be
      * done. Use ASSERTs just to be safe. */
@@ -59,8 +59,8 @@ static TPM_RESULT utpm_internal_pcrwrite(u8* new_pcr_value, u8* pcr_bank, u32 pc
 }
 
 /* software tpm pcr read */
-TPM_RESULT utpm_pcrread(u8* pcr_value /* output */,
-                        u8* pcr_bank, u32 pcr_num) /* inputs */
+TPM_RESULT utpm_pcrread(uint8_t* pcr_value /* output */,
+                        uint8_t* pcr_bank, uint32_t pcr_num) /* inputs */
 { 
     if(!pcr_value || !pcr_bank) { return UTPM_ERR_BAD_PARAM; }
     if(pcr_num >= TPM_PCR_NUM)  { return UTPM_ERR_PCR_OUT_OF_RANGE; }
@@ -70,11 +70,11 @@ TPM_RESULT utpm_pcrread(u8* pcr_value /* output */,
 }
 
 /* software tpm pcr extend */
-TPM_RESULT utpm_extend(u8* measurement, u8* pcr_bank, u32 pcr_num)
+TPM_RESULT utpm_extend(uint8_t* measurement, uint8_t* pcr_bank, uint32_t pcr_num)
 {
-	u8 scratch[TPM_PCR_SIZE + TPM_HASH_SIZE];
-	u8 new_pcr_val[TPM_HASH_SIZE];
-    u32 rv;
+	uint8_t scratch[TPM_PCR_SIZE + TPM_HASH_SIZE];
+	uint8_t new_pcr_val[TPM_HASH_SIZE];
+    uint32_t rv;
 
     if(!measurement || !pcr_bank) { return UTPM_ERR_BAD_PARAM; }
     if(pcr_num >= TPM_PCR_NUM)    { return UTPM_ERR_PCR_OUT_OF_RANGE; }
@@ -100,14 +100,14 @@ TPM_RESULT utpm_extend(u8* measurement, u8* pcr_bank, u32 pcr_num)
 /* XXX TODO: "Sealing" should support binding to an arbitrary number
  * of uPCRs.  Where is the bit vector to select the uPCRs of
  * interest? */
-TPM_RESULT utpm_seal(u8* pcrAtRelease, u8* input, u32 inlen, u8* output, u32* outlen, u8 * hmackey, u8 * aeskey)
+TPM_RESULT utpm_seal(uint8_t* pcrAtRelease, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen, uint8_t * hmackey, uint8_t * aeskey)
 {
 	s32 len;
-	u32 outlen_beforepad;
-	u8* pdata;
-	u8 iv[16]; 
-	u8 confounder[TPM_CONFOUNDER_SIZE];
-	u8 hashdata[TPM_HASH_SIZE];
+	uint32_t outlen_beforepad;
+	uint8_t* pdata;
+	uint8_t iv[16]; 
+	uint8_t confounder[TPM_CONFOUNDER_SIZE];
+	uint8_t hashdata[TPM_HASH_SIZE];
 	aes_context ctx;
 
 	/* IV can be 0 because we have confounder */
@@ -123,7 +123,7 @@ TPM_RESULT utpm_seal(u8* pcrAtRelease, u8* input, u32 inlen, u8* output, u32* ou
 	vmemset(output+TPM_CONFOUNDER_SIZE, 0, TPM_HASH_SIZE);
 	vmemcpy(output+TPM_CONFOUNDER_SIZE+TPM_HASH_SIZE, pcrAtRelease, TPM_PCR_SIZE); 
 	pdata = output + TPM_CONFOUNDER_SIZE + TPM_HASH_SIZE + TPM_PCR_SIZE;
-	*((u32 *)pdata) = inlen;
+	*((uint32_t *)pdata) = inlen;
 	vmemcpy(pdata + 4, input, inlen);
 
 	/* add padding */
@@ -147,12 +147,12 @@ TPM_RESULT utpm_seal(u8* pcrAtRelease, u8* input, u32 inlen, u8* output, u32* ou
 	return 0;
 }
 
-TPM_RESULT utpm_unseal(u8 * pcr_bank, u8* input, u32 inlen, u8* output, u32* outlen, u8 * hmackey, u8 * aeskey)
+TPM_RESULT utpm_unseal(uint8_t * pcr_bank, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen, uint8_t * hmackey, uint8_t * aeskey)
 {
-	u32 len;
-	u8 hashdata[TPM_HASH_SIZE];
-	u8 oldhmac[TPM_HASH_SIZE];
-	u8 iv[16];
+	uint32_t len;
+	uint8_t hashdata[TPM_HASH_SIZE];
+	uint8_t oldhmac[TPM_HASH_SIZE];
+	uint8_t iv[16];
 	aes_context ctx;
 	int i;
 
@@ -196,7 +196,7 @@ TPM_RESULT utpm_unseal(u8 * pcr_bank, u8* input, u32 inlen, u8* output, u32* out
 		return 1;
 	}
 
-	len = *((u32*)(output + TPM_CONFOUNDER_SIZE +TPM_PCR_SIZE + TPM_HASH_SIZE)); 
+	len = *((uint32_t*)(output + TPM_CONFOUNDER_SIZE +TPM_PCR_SIZE + TPM_HASH_SIZE)); 
 	vmemcpy(output, output + TPM_CONFOUNDER_SIZE + TPM_PCR_SIZE + TPM_HASH_SIZE + 4, len);
 	*outlen = len;
 
@@ -208,23 +208,23 @@ TPM_RESULT utpm_unseal(u8 * pcr_bank, u8* input, u32 inlen, u8* output, u32* out
  * input: externalnonce, get from external server to avoid replay attack
  * output: quote result and data length
  */
-TPM_RESULT utpm_quote(u8* externalnonce, u8* output, u32* outlen, u8* pcr_bank, u8* tpmsel, u32 tpmsel_len, u8* rsa )
+TPM_RESULT utpm_quote(uint8_t* externalnonce, uint8_t* output, uint32_t* outlen, uint8_t* pcr_bank, uint8_t* tpmsel, uint32_t tpmsel_len, uint8_t* rsa )
 {
 	int ret;
-	u32 i, idx;
-	u8* pdata;
-	u32 datalen;
+	uint32_t i, idx;
+	uint8_t* pdata;
+	uint32_t datalen;
 
 	/* construct TPM_QUOTE_INFO in output */
-	((u32 *)output)[0] = 0x00000101;  /* version information */
-	((u32 *)output)[1] = 0x544f5551; /* 'QUOTE' */
+	((uint32_t *)output)[0] = 0x00000101;  /* version information */
+	((uint32_t *)output)[1] = 0x544f5551; /* 'QUOTE' */
 
 	/* add TPM PCR information */
 	vmemcpy(output+8, tpmsel, tpmsel_len);
 	datalen = 8 + tpmsel_len;
 	pdata = output+datalen;
-	for( i=0 ; i<*((u32 *)tpmsel) ; i++ )  {
-		idx=*(((u32 *)tpmsel)+i+1);
+	for( i=0 ; i<*((uint32_t *)tpmsel) ; i++ )  {
+		idx=*(((uint32_t *)tpmsel)+i+1);
 		vmemcpy(pdata+i*TPM_PCR_SIZE, pcr_bank+idx*TPM_PCR_SIZE, TPM_PCR_SIZE);
 		datalen += TPM_PCR_SIZE;
 	}
@@ -249,7 +249,7 @@ TPM_RESULT utpm_quote(u8* externalnonce, u8* output, u32* outlen, u8* pcr_bank, 
 /* get random bytes from software TPM */
 /* XXX TODO: Make this look like an actual TPM command (return value
  * should simply be a status code) */
-u32 utpm_rand(u8* buffer, u32 numbytes)
+uint32_t utpm_rand(uint8_t* buffer, uint32_t numbytes)
 {
 	numbytes = rand_bytes(buffer, numbytes);
 
