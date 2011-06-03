@@ -36,22 +36,82 @@
 #ifndef VMCALLS_H
 #define VMCALLS_H
 
-#include <stdint.h>
+/* 
+ * definition for scode sections info 
+ * */
+#define MAX_SECTION_NUM 10 
+#define  MAX_REGPAGES_NUM 50
 
-/* XXX uTPM should not be confounded with other operations */
-enum VMMcmd
+enum scode_section_type
   {
-    VMM_REG = 1,
-    VMM_UNREG = 2,
-    VMM_SEAL =3,
-    VMM_UNSEAL =4,
-    VMM_QUOTE =5,
-    VMM_SHARE =6,
-    VMM_PCR_READ=7,
-    VMM_PCR_EXTEND=8,
-    VMM_GENRAND=0,
-    VMM_TEST = 255,
+    SECTION_TYPE_SCODE = 1,
+    SECTION_TYPE_SDATA = 2,
+    SECTION_TYPE_PARAM = 3,
+    SECTION_TYPE_STACK = 4,
+    SECTION_TYPE_STEXT = 5,
+
+    /* internal */
+    SECTION_TYPE_SHARED = 6,
+    SECTION_TYPE_GUEST_PAGE_TABLES = 7
   };
+
+/* 
+ * definition for VMM call
+ * */
+enum VMMcmd {
+  /* pal manipulation ops */
+  VMMCMD_REG	=1,
+  VMMCMD_UNREG	=2,
+
+  /* uTPM ops */
+  VMMCMD_SEAL	=3,
+  VMMCMD_UNSEAL	=4,
+  VMMCMD_QUOTE	=5,
+  VMMCMD_SHARE	=6,
+  VMMCMD_PCRREAD	=7,
+  VMMCMD_PCREXT	=8,
+  VMMCMD_GENRAND	=9,
+
+  /* misc */
+  VMMCMD_TEST		=255,
+};
+
+struct scode_sections_struct{
+  enum scode_section_type type;
+  unsigned int start_addr;
+  int page_num; /* size of section in pages */
+};
+
+#define SCODE_MAX_SECTION_NUM 10  /* max sections that are allowed in scode registration */
+struct scode_sections_info{
+  int section_num;
+  struct scode_sections_struct ps_str[SCODE_MAX_SECTION_NUM];
+};
+
+/* 
+ * definition for scode param info 
+ * */
+/* parameter type */
+enum scode_param_type
+  {
+    PM_TYPE_INTEGER = 1,
+    PM_TYPE_POINTER = 2
+  };
+/* #define PM_TYPE_INTEGER 1 /\* integer *\/ */
+/* #define PM_TYPE_POINTER 2 /\* pointer *\/ */
+
+
+struct scode_params_struct{
+  u32 type;  /* 1: integer ;  2:pointer*/
+  u32 size;
+};
+
+#define MAX_PARAMS_NUM 10
+struct scode_params_info{
+  u32 params_num;
+  struct scode_params_struct pm_str[MAX_PARAMS_NUM];
+};
+
 
 /* XXX ripped from emhf's processor.h. use it directly? */
 

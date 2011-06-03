@@ -46,63 +46,12 @@
 #include <pages.h>
 #include <hpt.h>
 
-/* 
- * definition for scode sections info 
- * */
-#define MAX_SECTION_NUM 10 
-#define  MAX_REGPAGES_NUM 50
-
-/* secure code: RWX for PAL, not-present for insecure app - measured */
-#define  SECTION_TYPE_SCODE 1
-/* static data: RW \ np - measured */
-#define  SECTION_TYPE_SDATA 2
-/* marshalled parameters: RW \ np - not measured */
-#define  SECTION_TYPE_PARAM 3
-/* PAL's stack: RW \ np - not measured */
-#define  SECTION_TYPE_STACK 4
-/* shared text segment: RWX \ RX - measured */
-#define  SECTION_TYPE_STEXT 5
-/* shared segment: RWX\np when pal is running, np\RWX otherwise */
-#define  SECTION_TYPE_SHARED 6
-/* guest page tables. (temporarily) used internally */
-#define	 SECTION_TYPE_GUEST_PAGE_TABLES 7
+#include <vmcalls.h>
 
 /* bits 0 to 2 of stored pte's store the section type */
 #define SCODE_PTE_TYPE_MASK (0x7ull)
 #define SCODE_PTE_TYPE_GET(pte)    ((pte) & SCODE_PTE_TYPE_MASK)
 #define SCODE_PTE_TYPE_SET(pte, t) (((pte) & ~SCODE_PTE_TYPE_MASK) | t)
-
-struct scode_sections_struct{
-	int type;  
-	unsigned int start_addr;
-	int page_num;
-};
-
-struct scode_sections_info{
-	int section_num;
-	struct scode_sections_struct ps_str[MAX_SECTION_NUM];
-};
-
-
-/* 
- * definition for scode param info 
- * */
-#define MAX_PARAMS_NUM 10
-
-/* parameter type */
-#define PM_TYPE_INTEGER 1 /* integer */
-#define PM_TYPE_POINTER 2 /* pointer */
-
-
-struct scode_params_struct{
-  u32 type;  /* 1: integer ;  2:pointer*/
-  u32 size;
-};
-
-struct scode_params_info{
-  u32 params_num;
-  struct scode_params_struct pm_str[MAX_PARAMS_NUM];
-};
 
 /* 
  * definition for scode whitelist 
@@ -113,7 +62,6 @@ struct scode_params_info{
 /* in order to support 4GB memory */
 #define  PFN_BITMAP_LIMIT 512*1024
 #define  PFN_BITMAP_2M_LIMIT 2*1024
-
 
 /* softTPM related definitions */
 #define TPM_PCR_SIZE                   20
@@ -173,23 +121,6 @@ typedef struct whitelist_entry{
 	hpt_pm_t pal_hpt_root;
 } __attribute__ ((packed)) whitelist_entry_t;
 
-
-/* 
- * definition for VMM call
- * */
-enum VMMcmd
-{
-	VMMCMD_REG		=1,
-	VMMCMD_UNREG	=2,
-	VMMCMD_SEAL		=3,
-	VMMCMD_UNSEAL	=4,
-	VMMCMD_QUOTE	=5,
-	VMMCMD_SHARE	=6,
-	VMMCMD_PCRREAD	=7,
-	VMMCMD_PCREXT	=8,
-	VMMCMD_GENRAND	=9,
-	VMMCMD_TEST		=255,
-};
 
 /* template page table context */
 extern hpt_walk_ctx_t hpt_nested_walk_ctx;
