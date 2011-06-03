@@ -448,19 +448,19 @@ int parse_params_info(VCPU * vcpu, struct tv_pal_params* pm_info, u32 pm_addr)
 	u32 addr;
 	addr = pm_addr;
 	/* get parameter number */
-	num = pm_info->params_num = get_32bit_aligned_value_from_guest(vcpu, addr);
+	num = pm_info->num_params = get_32bit_aligned_value_from_guest(vcpu, addr);
 	addr += 4;
 	dprintf(LOG_TRACE, "[TV] pm_info %#x, # of paramters is %d\n", pm_addr, num);
-	if (num > TV_MAX_PARAMS_NUM) {
+	if (num > TV_MAX_PARAMS) {
 		dprintf(LOG_ERROR, "[TV] number of scode sections exceeds limit!\n");
 		return 1;
 	}
 
 	for (i = 0; i < num; i++)
 	{
-		pm_info->pm_str[i].type = get_32bit_aligned_value_from_guest(vcpu, addr);
-		pm_info->pm_str[i].size = get_32bit_aligned_value_from_guest(vcpu, addr+4);
-		dprintf(LOG_TRACE, "[TV] parameter %d type %d size %d\n", i+1, pm_info->pm_str[i].type, pm_info->pm_str[i].size);
+		pm_info->params[i].type = get_32bit_aligned_value_from_guest(vcpu, addr);
+		pm_info->params[i].size = get_32bit_aligned_value_from_guest(vcpu, addr+4);
+		dprintf(LOG_TRACE, "[TV] parameter %d type %d size %d\n", i+1, pm_info->params[i].type, pm_info->params[i].size);
 		addr += 8;
 	}
 	return 0;
@@ -471,26 +471,27 @@ int memsect_info_copy_from_guest(VCPU * vcpu, struct tv_pal_sections *ps_scode_i
 	u32 gva_scode_info_offset = 0;
 
 	/* get parameter number */
-	ps_scode_info->section_num = get_32bit_aligned_value_from_guest(vcpu, gva_scode_info);
+	ps_scode_info->num_sections = get_32bit_aligned_value_from_guest(vcpu, gva_scode_info);
 	gva_scode_info_offset += 4;
-	dprintf(LOG_TRACE, "[TV] scode_info addr %x, # of section is %d\n", gva_scode_info, ps_scode_info->section_num);
+	dprintf(LOG_TRACE, "[TV] scode_info addr %x, # of section is %d\n", gva_scode_info, ps_scode_info->num_sections);
 
 	/* copy array of parameter descriptors */
-	if( ps_scode_info->section_num > TV_MAX_SECTION_NUM )  {
+	if( ps_scode_info->num_sections > TV_MAX_SECTIONS )  {
 		dprintf(LOG_ERROR, "[TV] number of scode sections exceeds limit!\n");
 		return 1;
 	}
 	copy_from_guest(vcpu,
-									(u8*)&(ps_scode_info->ps_str[0]),
+									(u8*)&(ps_scode_info->sections[0]),
 									gva_scode_info+gva_scode_info_offset,
-									ps_scode_info->section_num*sizeof(ps_scode_info->ps_str[0]));
+									ps_scode_info->num_sections*sizeof(ps_scode_info->sections[0]));
 	return 0;
 }
 
 /* parse scode sections info (scode registration input) */
 int memsect_info_register(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, whitelist_entry_t * wle)
 {
-	int i, pnum, is_get_param, is_get_stack;
+	unsigned int i;
+	int pnum, is_get_param, is_get_stack;
 	int type, size;
 	unsigned int start;
 
@@ -498,10 +499,10 @@ int memsect_info_register(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, wh
 	pnum = 0;
 	is_get_param=0;
 	is_get_stack=0;
-	for (i = 0; i < ps_scode_info->section_num; i++) {
-		size = ps_scode_info->ps_str[i].page_num;
-		type = ps_scode_info->ps_str[i].type;
-		start = ps_scode_info->ps_str[i].start_addr;
+	for (i = 0; i < ps_scode_info->num_sections; i++) {
+		size = ps_scode_info->sections[i].page_num;
+		type = ps_scode_info->sections[i].type;
+		start = ps_scode_info->sections[i].start_addr;
 		/* make sure the addr is 4kb page aligned */
 		if(!is_page_4K_aligned(start)) {
 			dprintf(LOG_ERROR, "[TV] ERROR: Section %d start address %x is not 4K-aligned\n", i, start);
@@ -560,7 +561,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	whitelist_entry_t whitelist_new;
 	u32 ret;
 	u32 inum;
-	struct tv_scode_sections_struct * ginfo; 
+	struct tv_pal_section * ginfo; 
 	u64 gcr3;
 
 	gcr3 = VCPU_gcr3(vcpu);
@@ -594,7 +595,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 		dprintf(LOG_ERROR, "[TV] Registration Failed. Scode param info incorrect! \n");
 		return 1;
 	}
-	whitelist_new.gpm_num = whitelist_new.params_info.params_num;
+	whitelist_new.gpm_num = whitelist_new.params_info.num_params;
 	/* register scode sections into whitelist entry */
 	if (memsect_info_copy_from_guest(vcpu, &(whitelist_new.scode_info), scode_info)
 			|| memsect_info_register(vcpu, &(whitelist_new.scode_info), &whitelist_new)) {
@@ -605,8 +606,8 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	/* register pages in each scode section */
 	whitelist_new.scode_pages = (pte_t*)vmalloc(MAX_REGPAGES_NUM*sizeof(whitelist_new.scode_pages[0]));
 	whitelist_new.scode_size = 0;
-	for( i=0 ; i < (u32)(whitelist_new.scode_info.section_num) ; i++ )  {
-		ginfo = &(whitelist_new.scode_info.ps_str[i]);
+	for( i=0 ; i < (u32)(whitelist_new.scode_info.num_sections) ; i++ )  {
+		ginfo = &(whitelist_new.scode_info.sections[i]);
 		if (guest_pt_copy(vcpu, &(whitelist_new.scode_pages[whitelist_new.scode_size]), ginfo->start_addr, (ginfo->page_num)<<PAGE_SHIFT_4K, ginfo->type)) {
 			vfree(whitelist_new.scode_pages);
 			dprintf(LOG_ERROR, "[TV] SECURITY: Registration Failed. Probably some page of sensitive code is not in memory yet\n");
@@ -792,14 +793,14 @@ void expose_page (pte_t *page_list, pte_t page, u32 * count)
 /* find all PTE entry pages that is related to access scode and GDT */
 static void scode_expose_arch(VCPU *vcpu, whitelist_entry_t *wle)
 {
-	int i;
-	int j;
+	unsigned int i;
+	unsigned int j;
 	pte_t *pte_page;
 	u32 pte_count = 0;
 	u32 gpaddr = 0;
 	u32 is_pae;
 	u32 gdtr;
-	struct tv_scode_sections_struct * ginfo;
+	struct tv_pal_section * ginfo;
 	pte_t tmp_page[3];
 	u32 tmp_count=0;
 	pte_t *sp = wle->scode_pages;
@@ -818,8 +819,8 @@ static void scode_expose_arch(VCPU *vcpu, whitelist_entry_t *wle)
 	/* Here we walk guest page table, and find out all the pdp,pd,pt entry
 	   that is necessary to translate gvaddr */
 	dprintf(LOG_TRACE, "[TV] expose SCODE related PTE pages\n");
-	for( i=0 ; i < wle->scode_info.section_num ; i++ )  {
-		ginfo = &(wle->scode_info.ps_str[i]);
+	for( i=0 ; i < wle->scode_info.num_sections ; i++ )  {
+		ginfo = &(wle->scode_info.sections[i]);
 		for( j=0 ; j< ginfo->page_num; j++ )  {
 			gpaddr = gpt_get_ptpages(vcpu, ginfo->start_addr+(j<<PAGE_SHIFT_4K), &tmp_page[0], &tmp_page[1], &tmp_page[2]);
 
@@ -938,7 +939,7 @@ u32 scode_marshall(VCPU * vcpu)
 	pm_size_sum = 4; /*memory used in input pms section*/
 	dprintf(LOG_TRACE, "[TV] params number is %d\n", whitelist[curr].gpm_num);
 
-	if (whitelist[curr].gpm_num > TV_MAX_PARAMS_NUM)
+	if (whitelist[curr].gpm_num > TV_MAX_PARAMS)
 	{
 		dprintf(LOG_ERROR, "[TV] Fail: param num is too big!\n");
 		perf_ctr_timer_discard(&g_tv_perf_ctrs[TV_PERF_CTR_MARSHALL], vcpu->idx);
@@ -949,8 +950,8 @@ u32 scode_marshall(VCPU * vcpu)
 	for (pm_num = whitelist[curr].gpm_num; pm_num > 0; pm_num--) /*the last parameter should be pushed in stack first*/
 	{
 		/* get param information*/
-		pm_type = whitelist[curr].params_info.pm_str[pm_num-1].type;
-		pm_size = whitelist[curr].params_info.pm_str[pm_num-1].size;
+		pm_type = whitelist[curr].params_info.params[pm_num-1].type;
+		pm_size = whitelist[curr].params_info.params[pm_num-1].size;
 		/* get param value from guest stack */
 		pm_value = get_32bit_aligned_value_from_guest(vcpu, grsp+(pm_num-1)*4);
 		pm_size_sum += 12;
@@ -969,14 +970,14 @@ u32 scode_marshall(VCPU * vcpu)
 		pm_addr += 12;
 		switch (pm_type)
 		{
-			case TV_PM_TYPE_INTEGER: /* integer */
+			case TV_PAL_PM_INTEGER: /* integer */
 				{        
 					/* put the parameter value in sensitive code stack */
 					pm_tmp = pm_value;
 					dprintf(LOG_TRACE, "[TV]   PM %d is a integer (size %d, value %#x)\n", pm_num, pm_size, pm_value);
 					break;
 				}
-			case TV_PM_TYPE_POINTER: /* pointer */
+			case TV_PAL_PM_POINTER: /* pointer */
 				{
 					/*copy data from guest space to sensitive code*/
 					pm_size_sum += 4*pm_size;
@@ -1120,7 +1121,7 @@ u32 scode_unmarshall(VCPU * vcpu)
 	pm_num = get_32bit_aligned_value_from_guest(vcpu, (u32)pm_addr);
 	pm_addr += 4;
 	dprintf(LOG_TRACE, "[TV] params number is %d\n", pm_num);
-	if (pm_num > TV_MAX_PARAMS_NUM)
+	if (pm_num > TV_MAX_PARAMS)
 	{
 		dprintf(LOG_ERROR, "[TV] Fail: parameter number too big!\n");
 		return 1;
@@ -1134,14 +1135,14 @@ u32 scode_unmarshall(VCPU * vcpu)
 
 		switch (pm_type)
 		{
-			case TV_PM_TYPE_INTEGER: /*integer*/
+			case TV_PAL_PM_INTEGER: /*integer*/
 				{
 					/* don't need to put integer back to regular code stack */
 					pm_addr += 8; 
 					dprintf(LOG_TRACE, "[TV]   skip an integer parameter!\n"); 
 					break;
 				}
-			case TV_PM_TYPE_POINTER: /* pointer */
+			case TV_PAL_PM_POINTER: /* pointer */
 				{
 					pm_size =  get_32bit_aligned_value_from_guest(vcpu, (u32)pm_addr);
 					/* get pointer adddress in regular code */
@@ -1561,11 +1562,11 @@ void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* entry)
 	u32 scode_pages_shared_start;
 
 	/* remove from section info, and count the number of shared pages */
-	for(i=(entry->scode_info.section_num-1);
-			entry->scode_info.ps_str[i].type == TV_PAL_SECTION_SHARED;
+	for(i=(entry->scode_info.num_sections-1);
+			entry->scode_info.sections[i].type == TV_PAL_SECTION_SHARED;
 			i--) {
-		entry->scode_info.section_num--;
-		shared_page_count += entry->scode_info.ps_str[i].page_num;
+		entry->scode_info.num_sections--;
+		shared_page_count += entry->scode_info.sections[i].page_num;
 	}
 	dprintf(LOG_TRACE, "scode_release_all_shared_pages: releasing %d shared pages\n",
 				 shared_page_count);
@@ -1631,19 +1632,19 @@ u32 scode_share_range(VCPU * vcpu, whitelist_entry_t *entry, u32 gva_base, u32 g
 	gva_len_pages = gva_len >> PAGE_SHIFT_4K;
 
 	/* add the section entry info */
-	if (entry->scode_info.section_num >= TV_MAX_SECTION_NUM) {
-		dprintf(LOG_ERROR, "[TV] scode_share: maximum number of sections %d exceeded\n", TV_MAX_SECTION_NUM);
+	if (entry->scode_info.num_sections >= TV_MAX_SECTIONS) {
+		dprintf(LOG_ERROR, "[TV] scode_share: maximum number of sections %d exceeded\n", TV_MAX_SECTIONS);
 		rv=2;
 		goto outerr;
 	}
-	entry->scode_info.ps_str[entry->scode_info.section_num] =
-		(struct tv_scode_sections_struct)
+	entry->scode_info.sections[entry->scode_info.num_sections] =
+		(struct tv_pal_section)
 		{
 			.type = TV_PAL_SECTION_SHARED,
 			.start_addr = gva_base,
 			.page_num = gva_len_pages,
 		};
-	entry->scode_info.section_num++;
+	entry->scode_info.num_sections++;
 	section_num_added++;
 
 	/* create pt entries */
@@ -1697,7 +1698,7 @@ u32 scode_share_range(VCPU * vcpu, whitelist_entry_t *entry, u32 gva_base, u32 g
  outerr:
 	if (entry!=NULL) {
 		entry->scode_size -= scode_size_added;
-		entry->scode_info.section_num -= section_num_added;
+		entry->scode_info.num_sections -= section_num_added;
 	}
 	if (did_set_prot) {
 		hpt_scode_clear_prot(vcpu, new_scode_pages, gva_len_pages);
