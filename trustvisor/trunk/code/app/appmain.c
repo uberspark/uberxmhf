@@ -147,7 +147,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				break;
 			}
 			/* seal data */
-		case TV_HC_UTPM_SEAL:
+		case TV_HC_UTPM_SEAL_DEPRECATED:
 			{
 				u32 inbuf, outbuf, data_addr, data_len, pcr_addr, out_addr, out_len_addr;
 				inbuf = r->ecx;
@@ -164,7 +164,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				break;
 			}
 			/* unseal data */
-		case TV_HC_UTPM_UNSEAL:
+		case TV_HC_UTPM_UNSEAL_DEPRECATED:
 			{
 				u32 inbuf, outbuf, input_addr, in_len, out_addr, out_len_addr;
 				inbuf = r->ecx;
