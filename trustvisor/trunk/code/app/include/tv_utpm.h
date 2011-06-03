@@ -42,7 +42,10 @@
 #ifndef _TV_UTPM_H_
 #define _TV_UTPM_H_
 
-#include <types.h>
+/* TODO: types.h lives in various places depending on where we are
+ * compiling. The current header must be included after the relevant
+ * types.h is included. Need to fix this elegantly. */
+/* #include <types.h> */
 
 /* FIXME: A lot of these values are also defined in the public header
  * files for a TSS.  We should consider leveraging those and changing
