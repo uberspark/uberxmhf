@@ -134,6 +134,7 @@ install:
 
 	install -d $(pkgincludedir)
 	install app/include/trustvisor.h $(pkgincludedir)
+	install app/include/tv_utpm.h $(pkgincludedir)
 
 #------test rules
 export CMOCKDIR:=$(realpath @CMOCKDIR@)
