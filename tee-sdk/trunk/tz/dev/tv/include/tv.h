@@ -55,8 +55,8 @@
 typedef void (*pal_fn_t)(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv);
 
 typedef struct {
-  struct tv_scode_sections_info *sPageInfo;
-  struct tv_scode_params_info *sParams;
+  struct tv_pal_sections *sPageInfo;
+  struct tv_pal_params *sParams;
   pal_fn_t pEntry;
 } tv_service_t;
 
@@ -72,19 +72,19 @@ size_t scode_ptr_diff(void *end, void *start);
 /* initialize an scode_sections_info struct, allocating page-aligned memory
  * for the parameters and stack.
  */
-void scode_sections_info_init(struct tv_scode_sections_info *scode_info,
+void scode_sections_info_init(struct tv_pal_sections *scode_info,
                               size_t param_sz,
                               size_t stack_sz);
 
 /* add a section to an scode_sections_info struct.
  * The struct should have already been initialized.
  */
-void scode_sections_info_add(struct tv_scode_sections_info *scode_info,
+void scode_sections_info_add(struct tv_pal_sections *scode_info,
                              int type,
                              void *start_addr, size_t len);
 
 /* Print scode_sections_info to stdout */
-void scode_sections_info_print(struct tv_scode_sections_info *scode_info);
+void scode_sections_info_print(struct tv_pal_sections *scode_info);
 
 /* Register a PAL.
  * pageinfo describes the memory areas to be used by the PAL.
@@ -97,8 +97,8 @@ void scode_sections_info_print(struct tv_scode_sections_info *scode_info);
  *
  * Returns 0 on success, nonzero on failure.
  */
-int scode_register(const struct tv_scode_sections_info *pageinfo,
-                   const struct tv_scode_params_info *params,
+int scode_register(const struct tv_pal_sections *pageinfo,
+                   const struct tv_pal_params *params,
                    const void *entry);
 
 /* Unregister a PAL.

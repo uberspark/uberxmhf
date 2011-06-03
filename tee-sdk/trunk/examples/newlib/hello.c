@@ -59,7 +59,7 @@ static void setup(tz_device_t *tzDevice,
                   tz_uuid_t *tzSvcId,
                   pal_fn_t pal_entry)
 {
-  struct tv_scode_sections_info scode_info;
+  struct tv_pal_sections scode_info;
   const size_t param_sz=PAGE_SIZE;
   const size_t stack_sz=PAGE_SIZE;
   tv_service_t pal = 

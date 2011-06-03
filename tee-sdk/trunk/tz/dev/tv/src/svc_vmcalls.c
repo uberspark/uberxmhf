@@ -46,7 +46,7 @@ int scode_seal(uint8_t *pcrAtRelease_addr,
   unsigned int inbuf1[2]= {(unsigned int)in, (unsigned int)in_len};
   unsigned int outbuf1[2]= {(unsigned int)out, (unsigned int)out_len};
 
-  return vmcall(TV_VMMCMD_SEAL,
+  return vmcall(TV_HC_UTPM_SEAL,
                 (uint32_t)inbuf1,
                 (uint32_t)pcrAtRelease_addr,
                 (uint32_t)outbuf1,
@@ -62,7 +62,7 @@ int scode_unseal(void *in,
   unsigned int inbuf2[2]= {(unsigned int)in, (unsigned int)in_len};
   unsigned int outbuf2[2]= {(unsigned int)out, (unsigned int)out_len};
 
-  return vmcall(TV_VMMCMD_UNSEAL,
+  return vmcall(TV_HC_UTPM_UNSEAL,
                 (uint32_t)inbuf2,
                 (uint32_t)outbuf2,
                 0,
@@ -77,7 +77,7 @@ int scode_quote(uint8_t *nonce,
   int ret;
   unsigned int outbuf[2]= {(unsigned int)out, (unsigned int)out_len};
 
-  return vmcall(TV_VMMCMD_QUOTE,
+  return vmcall(TV_HC_UTPM_QUOTE,
                 (uint32_t)tpmsel,
                 (uint32_t)outbuf,
                 (uint32_t)nonce,
@@ -87,7 +87,7 @@ int scode_quote(uint8_t *nonce,
 int scode_pcr_extend(uint32_t idx,   /* in */
                      uint8_t *meas) /* in */
 {
-  return vmcall(TV_VMMCMD_PCREXT,
+  return vmcall(TV_HC_UTPM_PCREXT,
                 (uint32_t)idx,
                 (uint32_t)meas,
                 0,
@@ -97,7 +97,7 @@ int scode_pcr_extend(uint32_t idx,   /* in */
 int scode_pcr_read(uint32_t idx, /* in */
                    uint8_t *val) /* out */
 {
-  return vmcall(TV_VMMCMD_PCRREAD,
+  return vmcall(TV_HC_UTPM_PCRREAD,
                 (uint32_t)idx,
                 (uint32_t)val,
                 0,

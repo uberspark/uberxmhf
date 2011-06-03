@@ -44,23 +44,23 @@
 #include <stdio.h>
 void scp_register(void)
 {
-  struct tv_scode_params_info scp_params_info =
+  struct tv_pal_params scp_params_info =
   {
-    .params_num = 4,
-    .pm_str =
+    .num_params = 4,
+    .params =
     {
-      {.type = TV_PM_TYPE_POINTER,
+      {.type = TV_PAL_PM_POINTER,
        .size = 1+sizeof(struct scp_in_msg)/(sizeof(int))}, /* FIXME rounding */
-      {.type = TV_PM_TYPE_INTEGER,
+      {.type = TV_PAL_PM_INTEGER,
        .size = 1},
-      {.type = TV_PM_TYPE_POINTER,
+      {.type = TV_PAL_PM_POINTER,
        .size = 1+sizeof(struct scp_out_msg)/(sizeof(int))}, /* FIXME rounding */
-      {.type = TV_PM_TYPE_POINTER,
+      {.type = TV_PAL_PM_POINTER,
        .size = 1},
     }
   };
 
-  struct tv_scode_sections_info scode_info;
+  struct tv_pal_sections scode_info;
   scode_sections_info_init(&scode_info,
                            sizeof(struct scp_in_msg)+sizeof(struct scp_out_msg)+PAGE_SIZE /* XXX fudge factor */,
                            2*PAGE_SIZE);

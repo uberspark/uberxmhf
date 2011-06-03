@@ -485,7 +485,7 @@ int test_pcr_read(tz_session_t *tzPalSession)
 // register some sensitive code and data in libfoo.so and call bar()
 int main(void)
 {
-  struct tv_scode_sections_info scode_info;
+  struct tv_pal_sections scode_info;
   int rv = 0;
   tz_return_t tzRet;
   tz_device_t tzDevice;

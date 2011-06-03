@@ -265,25 +265,25 @@ TVManagerDownloadService(INOUT tz_session_t* psSession,
   const tv_service_t *svc = (tv_service_t*) kauiData;
   int rv;
 
-  struct tv_scode_params_info params = 
+  struct tv_pal_params params = 
     { 
-      .params_num = 4,
-      .pm_str =
+      .num_params = 4,
+      .params =
       {
         /* uiCommand */
-        {.type = TV_PM_TYPE_INTEGER,
+        {.type = TV_PAL_PM_INTEGER,
          .size = sizeof(uint32_t)/sizeof(int)},
 
         /* psInBuf. (pass a pointer to a shared region) */
-        {.type = TV_PM_TYPE_INTEGER,
+        {.type = TV_PAL_PM_INTEGER,
          .size = sizeof(uint32_t)/sizeof(int)},
 
         /* psOutBuf */
-        {.type = TV_PM_TYPE_INTEGER,
+        {.type = TV_PAL_PM_INTEGER,
          .size = sizeof(uint32_t)/sizeof(int)},
 
         /* puiRv */
-        {.type = TV_PM_TYPE_POINTER,
+        {.type = TV_PAL_PM_POINTER,
          .size = sizeof(uint32_t)/sizeof(int)}
       }
     };
