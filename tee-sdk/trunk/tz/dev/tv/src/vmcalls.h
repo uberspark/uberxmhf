@@ -36,6 +36,27 @@
 #ifndef VMCALLS_H
 #define VMCALLS_H
 
+/* XXX ripped from emhf's processor.h. use it directly? */
+
+#define CPU_VENDOR_INTEL 	0xAB
+#define CPU_VENDOR_AMD 		0xCD
+#define CPU_VENDOR_UNKNOWN      0x00
+
+#define AMD_STRING_DWORD1 0x68747541
+#define AMD_STRING_DWORD2 0x69746E65
+#define AMD_STRING_DWORD3 0x444D4163
+
+#define INTEL_STRING_DWORD1	0x756E6547
+#define INTEL_STRING_DWORD2	0x49656E69
+#define INTEL_STRING_DWORD3	0x6C65746E	
+
+#define cpuid(op, eax, ebx, ecx, edx)		\
+({						\
+  __asm__ __volatile__("cpuid"				\
+          :"=a"(*(eax)), "=b"(*(ebx)), "=c"(*(ecx)), "=d"(*(edx))	\
+          :"0"(op), "2" (0));			\
+})
+
 static inline uint32_t get_cpu_vendor(void) {
   uint32_t dummy;
   uint32_t vendor_dword1, vendor_dword2, vendor_dword3;
