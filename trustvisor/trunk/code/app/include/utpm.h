@@ -68,10 +68,11 @@
 
 typedef uint32_t TPM_RESULT;
 
-#define TPM_NUM_PCR 8 /* FIXME redundant with TPM_PCR_NUM in scode.h */
+#define TPM_PCR_NUM                    8
+
 typedef struct tdTPM_PCR_SELECTION { 
     uint16_t sizeOfSelect;               /* The size in bytes of the pcrSelect structure */
-    uint8_t pcrSelect[TPM_NUM_PCR/8];         /* This SHALL be a bit map that indicates if a PCR
+    uint8_t pcrSelect[TPM_PCR_NUM/8];         /* This SHALL be a bit map that indicates if a PCR
                                             is active or not */
 } TPM_PCR_SELECTION; 
 
@@ -135,12 +136,17 @@ typedef struct utpm_master_state {
 } __attribute__ ((packed)) utpm_master_state_t;
 
 /* TPM functions  */
-TPM_RESULT utpm_pcrread(uint8_t* pcr_value, uint8_t* pcr_bank, uint32_t pcr_num);
-TPM_RESULT utpm_extend(uint8_t* measurement, uint8_t* pcr_bank, uint32_t pcr_num);
+TPM_RESULT utpm_pcrread(TPM_DIGEST* pcr_value,
+                        utpm_master_state_t *utpm, uint32_t pcr_num);
+TPM_RESULT utpm_extend(TPM_DIGEST *measurement, utpm_master_state_t *utpm, uint32_t pcr_num);
 TPM_RESULT utpm_seal(uint8_t* pcrAtRelease, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen, uint8_t* hmackey, uint8_t* aeskey);
-TPM_RESULT utpm_unseal(uint8_t* pcr_bank, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen, uint8_t* hmackey, uint8_t* aeskey);
-TPM_RESULT utpm_quote(uint8_t* externalnonce, uint8_t* output, uint32_t* outlen, uint8_t* pcr_bank, uint8_t* tpmsel, uint32_t tpmsel_len, uint8_t* rsa );
+TPM_RESULT utpm_unseal(utpm_master_state_t *utpm, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen, uint8_t* hmackey, uint8_t* aeskey);
+TPM_RESULT utpm_quote(uint8_t* externalnonce, uint8_t* output, uint32_t* outlen,
+                      utpm_master_state_t *utpm, uint8_t* tpmsel, uint32_t tpmsel_len, uint8_t* rsa );
 //uint32_t utpm_rand(uint8_t* buffer, uint32_t numbytes);
+
+/* internal use. */
+void utpm_init_internal(utpm_master_state_t *utpm);
 
 #endif /* _UTPM_H_ */
 

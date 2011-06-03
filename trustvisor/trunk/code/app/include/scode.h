@@ -47,6 +47,7 @@
 #include <hpt.h>
 
 #include <trustvisor.h>
+#include <utpm.h>
 
 #define MAX_REGPAGES_NUM 50
 
@@ -67,7 +68,6 @@
 
 /* softTPM related definitions */
 #define TPM_PCR_SIZE                   20
-#define TPM_PCR_NUM                    8
 #define TPM_AES_KEY_LEN                128 /* key size is 128 bit */
 #define TPM_HMAC_KEY_LEN               20
 
@@ -114,8 +114,8 @@ typedef struct whitelist_entry{
 	u32 pal_running_vcpu_id; /* the cpu that is running this PAL */
 #endif
 
-	/* software TPM related */
-	u8  pcr_bank[TPM_PCR_SIZE*TPM_PCR_NUM];
+	/* Micro-TPM related */
+  utpm_master_state_t utpm;
 
 	/* pal page tables */
 	pagelist_t *pl;

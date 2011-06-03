@@ -45,53 +45,42 @@
 #include  "./include/sha1.h"
 #include  "./include/puttymem.h"
 
-/* software tpm pcr write (only called by utpm_extend) */
-static TPM_RESULT utpm_internal_pcrwrite(uint8_t* new_pcr_value, uint8_t* pcr_bank, uint32_t pcr_num)
-{
-    /* Internal function; param sanity-checking should already be
-     * done. Use ASSERTs just to be safe. */
-    ASSERT(new_pcr_value != NULL);
-    ASSERT(pcr_bank != NULL);
-    ASSERT(pcr_num < TPM_PCR_NUM);
-    
-	vmemcpy(pcr_bank + pcr_num*TPM_PCR_SIZE, new_pcr_value, TPM_PCR_SIZE);
-	return UTPM_SUCCESS;
+void utpm_init_internal(utpm_master_state_t *utpm) {
+    if(NULL == utpm) return;
+
+    vmemset(utpm->pcr_bank, 0, TPM_PCR_SIZE*TPM_PCR_NUM); 
+
 }
 
 /* software tpm pcr read */
-TPM_RESULT utpm_pcrread(uint8_t* pcr_value /* output */,
-                        uint8_t* pcr_bank, uint32_t pcr_num) /* inputs */
+TPM_RESULT utpm_pcrread(TPM_DIGEST* pcr_value /* output */,
+                        utpm_master_state_t *utpm, uint32_t pcr_num) /* inputs */
 { 
-    if(!pcr_value || !pcr_bank) { return UTPM_ERR_BAD_PARAM; }
+    if(!pcr_value || !utpm) { return UTPM_ERR_BAD_PARAM; }
     if(pcr_num >= TPM_PCR_NUM)  { return UTPM_ERR_PCR_OUT_OF_RANGE; }
 
-	vmemcpy(pcr_value, pcr_bank + pcr_num*TPM_PCR_SIZE, TPM_PCR_SIZE);
+	vmemcpy(pcr_value->value, utpm->pcr_bank[pcr_num].value, TPM_PCR_SIZE);
 	return UTPM_SUCCESS;
 }
 
 /* software tpm pcr extend */
-TPM_RESULT utpm_extend(uint8_t* measurement, uint8_t* pcr_bank, uint32_t pcr_num)
+TPM_RESULT utpm_extend(TPM_DIGEST *measurement, utpm_master_state_t *utpm, uint32_t pcr_num)
 {
-	uint8_t scratch[TPM_PCR_SIZE + TPM_HASH_SIZE];
-	uint8_t new_pcr_val[TPM_HASH_SIZE];
+    TPM_DIGEST old_pcr_val;
+    TPM_DIGEST new_pcr_val;
     uint32_t rv;
+    sha1_context ctx;
 
-    if(!measurement || !pcr_bank) { return UTPM_ERR_BAD_PARAM; }
-    if(pcr_num >= TPM_PCR_NUM)    { return UTPM_ERR_PCR_OUT_OF_RANGE; }
-    
-	/* read old PCR value */
-	if(UTPM_SUCCESS != (rv = utpm_pcrread(scratch, pcr_bank, pcr_num))) {
-        return rv;
-    }
+    if(!measurement || !utpm) { return UTPM_ERR_BAD_PARAM; }
+    if(pcr_num >= TPM_PCR_NUM) { return UTPM_ERR_PCR_OUT_OF_RANGE; }
 
-	/* append measurement */
-	vmemcpy(scratch+TPM_PCR_SIZE, measurement, TPM_HASH_SIZE);
-
-	/* calculate new PCR value */
-	sha1_csum(scratch, TPM_HASH_SIZE + TPM_PCR_SIZE, new_pcr_val);
-
-	/* write back. skip error check due to simplicity. */
-	utpm_internal_pcrwrite(new_pcr_val, pcr_bank, pcr_num);
+    sha1_starts( &ctx );
+    /* existing PCR value */
+    sha1_update( &ctx, utpm->pcr_bank[pcr_num].value, TPM_HASH_SIZE);
+    /* new measurement */
+    sha1_update( &ctx, measurement->value, TPM_HASH_SIZE);
+    /* write new PCR value */
+    sha1_finish( &ctx, utpm->pcr_bank[pcr_num].value );
 
 	return UTPM_SUCCESS;
 }
@@ -147,7 +136,7 @@ TPM_RESULT utpm_seal(uint8_t* pcrAtRelease, uint8_t* input, uint32_t inlen, uint
 	return 0;
 }
 
-TPM_RESULT utpm_unseal(uint8_t * pcr_bank, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen, uint8_t * hmackey, uint8_t * aeskey)
+TPM_RESULT utpm_unseal(utpm_master_state_t *utpm, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen, uint8_t * hmackey, uint8_t * aeskey)
 {
 	uint32_t len;
 	uint8_t hashdata[TPM_HASH_SIZE];
@@ -167,7 +156,7 @@ TPM_RESULT utpm_unseal(uint8_t * pcr_bank, uint8_t* input, uint32_t inlen, uint8
      * is the first thing inside the pcr_bank.  This is a Bad Thing.
      * Need to mature pcr_bank into an actual structure, teach
      * seal/unseal about identifying which PCRs to seal to, etc. */
-	if(vmemcmp(output+TPM_CONFOUNDER_SIZE+TPM_HASH_SIZE, pcr_bank, TPM_PCR_SIZE))
+	if(vmemcmp(output+TPM_CONFOUNDER_SIZE+TPM_HASH_SIZE, utpm->pcr_bank[0].value, TPM_PCR_SIZE))
 	{
 		printf("[TV] Unseal ERROR: wrong pcr value!\n");
 		printf("[TV] sealed pcr:");
@@ -176,7 +165,7 @@ TPM_RESULT utpm_unseal(uint8_t * pcr_bank, uint8_t* input, uint32_t inlen, uint8
 		}
 		printf("\n[TV] current pcr:");
 		for(i=0;i<TPM_PCR_SIZE;i++) {
-			printf("%x ",pcr_bank[i]);
+			printf("%x ",utpm->pcr_bank[0].value[i]);
 		}
 		printf("\n");
 		return 1;
@@ -208,7 +197,8 @@ TPM_RESULT utpm_unseal(uint8_t * pcr_bank, uint8_t* input, uint32_t inlen, uint8
  * input: externalnonce, get from external server to avoid replay attack
  * output: quote result and data length
  */
-TPM_RESULT utpm_quote(uint8_t* externalnonce, uint8_t* output, uint32_t* outlen, uint8_t* pcr_bank, uint8_t* tpmsel, uint32_t tpmsel_len, uint8_t* rsa )
+TPM_RESULT utpm_quote(uint8_t* externalnonce, uint8_t* output, uint32_t* outlen,
+                      utpm_master_state_t *utpm, uint8_t* tpmsel, uint32_t tpmsel_len, uint8_t* rsa )
 {
 	int ret;
 	uint32_t i, idx;
@@ -225,7 +215,7 @@ TPM_RESULT utpm_quote(uint8_t* externalnonce, uint8_t* output, uint32_t* outlen,
 	pdata = output+datalen;
 	for( i=0 ; i<*((uint32_t *)tpmsel) ; i++ )  {
 		idx=*(((uint32_t *)tpmsel)+i+1);
-		vmemcpy(pdata+i*TPM_PCR_SIZE, pcr_bank+idx*TPM_PCR_SIZE, TPM_PCR_SIZE);
+		vmemcpy(pdata+i*TPM_PCR_SIZE, utpm->pcr_bank[idx].value, TPM_PCR_SIZE);
 		datalen += TPM_PCR_SIZE;
 	}
 	
