@@ -80,7 +80,7 @@
 int test_vmcall()
 {
   printf("VMMCALL\n");
-  scode_test();
+  tv_test();
   printf("VMMCALL returned\n");
   return 0;
 }
@@ -513,10 +513,10 @@ int main(void)
     assert(tzRet == TZ_SUCCESS);
 
     /* prepare pal descriptor */
-    scode_sections_info_init(&scode_info,
-                             PAGE_SIZE, PAGE_SIZE);
+    tv_pal_sections_init(&scode_info,
+                         PAGE_SIZE, PAGE_SIZE);
     printf("scode sections:\n");
-    scode_sections_info_print(&scode_info);
+    tv_pal_sections_print(&scode_info);
 
     /* download */
     tzRet = TZManagerDownloadService(&tzManagerSession,

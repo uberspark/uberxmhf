@@ -64,27 +64,27 @@ typedef struct {
  * range. use this to make sure pages are present for trustvisor
  * (e.g., for pointer parameters before calling a pal function)
  */
-int scode_touch_range(void *ptr, size_t len, int do_write);
+/* int scode_touch_range(void *ptr, size_t len, int do_write); */
 
 /* convenience function for getting size of a section from end and start symbols */
-size_t scode_ptr_diff(void *end, void *start);
+size_t tv_ptr_diff(void *end, void *start);
 
-/* initialize an scode_sections_info struct, allocating page-aligned memory
+/* initialize a tv_pal_sections struct, allocating page-aligned memory
  * for the parameters and stack.
  */
-void scode_sections_info_init(struct tv_pal_sections *scode_info,
-                              size_t param_sz,
-                              size_t stack_sz);
+void tv_pal_sections_init(struct tv_pal_sections *scode_info,
+                          size_t param_sz,
+                          size_t stack_sz);
 
 /* add a section to an scode_sections_info struct.
  * The struct should have already been initialized.
  */
-void scode_sections_info_add(struct tv_pal_sections *scode_info,
-                             int type,
-                             void *start_addr, size_t len);
+void tv_pal_sections_add(struct tv_pal_sections *scode_info,
+                         int type,
+                         void *start_addr, size_t len);
 
-/* Print scode_sections_info to stdout */
-void scode_sections_info_print(struct tv_pal_sections *scode_info);
+/* Print tv_pal_sections_info to stdout */
+void tv_pal_sections_print(struct tv_pal_sections *scode_info);
 
 /* Register a PAL.
  * pageinfo describes the memory areas to be used by the PAL.
@@ -97,28 +97,28 @@ void scode_sections_info_print(struct tv_pal_sections *scode_info);
  *
  * Returns 0 on success, nonzero on failure.
  */
-int scode_register(const struct tv_pal_sections *pageinfo,
-                   const struct tv_pal_params *params,
-                   const void *entry);
+int tv_pal_register(const struct tv_pal_sections *pageinfo,
+                    const struct tv_pal_params *params,
+                    const void *entry);
 
 /* Unregister a PAL.
  * entry is a pointer to a function previously registered
- *   with scode_register
+ *   with tv_pal_register
  *
  * After unregistration, calls to the given function
  * no longer take place in the secure environment.
  *
  * Returns 0 on success, nonzero on failure.
  */
-int scode_unregister(void *entry);
+int tv_pal_unregister(void *entry);
 
 /* share memory ranges with a PAL. */
-int scode_share(const void *entry, void **start, size_t *len, size_t count);
+int tv_pal_share(const void *entry, void **start, size_t *len, size_t count);
 
 /* Test for presence of TrustVisor.
  *
  * Returns 0 on success, nonzero on failure.
  */
-int scode_test(void);
+int tv_test(void);
 
 #endif

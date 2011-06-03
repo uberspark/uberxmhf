@@ -81,10 +81,10 @@ static void setup(tz_device_t *tzDevice,
                  TZManagerOpen(tzDevice, NULL, &tzManagerSession));
 
     /* prepare pal descriptor */
-    scode_sections_info_init(&scode_info,
-                             param_sz, stack_sz);
+    tv_pal_sections_init(&scode_info,
+                         param_sz, stack_sz);
     printf("scode sections:\n");
-    scode_sections_info_print(&scode_info);
+    tv_pal_sections_print(&scode_info);
 
     /* download */
     rtassert_tzs(

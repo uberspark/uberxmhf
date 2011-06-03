@@ -51,9 +51,9 @@ __attribute__ ((section (".scode")))
 static int do_seal(uint8_t *unsealed, size_t unsealed_len,
                    uint8_t *sealed, size_t *sealed_len)
 {
-  return scode_seal(NULL, /* use current PCR value */
-                    unsealed, unsealed_len,
-                    sealed, sealed_len);
+  return svc_utpm_seal(NULL, /* use current PCR value */
+                       unsealed, unsealed_len,
+                       sealed, sealed_len);
 }
 
 __attribute__ ((section (".scode")))
@@ -65,8 +65,8 @@ static int do_load(uint8_t *code, size_t code_len,
   scp_sealed_fn_t fn = (scp_sealed_fn_t)pal_static.unsealed;
   int rv;
   
-  if((rv = scode_unseal(code, code_len,
-                        pal_static.unsealed, &unsealed_len))) {
+  if((rv = svc_utpm_unseal(code, code_len,
+                           pal_static.unsealed, &unsealed_len))) {
     return rv;
   }
 

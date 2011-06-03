@@ -42,6 +42,21 @@
 #include <assert.h>
 #include "sealed-code-pal-priv.h"
 #include <stdio.h>
+
+static int touch_range(void *ptr, size_t len, int do_write)
+{
+  int i;
+
+  for(i=0; i<len; i+=PAGE_SIZE) {
+    volatile unsigned int *addr = (unsigned int*)(ptr + i);
+    volatile unsigned int data = *addr;
+    if(do_write) {
+      *addr = data;
+    }
+  }
+  return 0;
+}
+
 void scp_register(void)
 {
   struct tv_pal_params scp_params_info =
@@ -61,17 +76,17 @@ void scp_register(void)
   };
 
   struct tv_pal_sections scode_info;
-  scode_sections_info_init(&scode_info,
-                           sizeof(struct scp_in_msg)+sizeof(struct scp_out_msg)+PAGE_SIZE /* XXX fudge factor */,
-                           2*PAGE_SIZE);
-  scode_sections_info_print(&scode_info);
+  tv_pal_sections_init(&scode_info,
+                       sizeof(struct scp_in_msg)+sizeof(struct scp_out_msg)+PAGE_SIZE /* XXX fudge factor */,
+                       2*PAGE_SIZE);
+  tv_pal_sections_print(&scode_info);
   fflush(NULL);
-  assert(!scode_register(&scode_info, &scp_params_info, sealed_code_pal));
+  assert(!tv_pal_register(&scode_info, &scp_params_info, sealed_code_pal));
 }
 
 void scp_unregister(void)
 {
-  scode_unregister(sealed_code_pal);
+  tv_pal_unregister(sealed_code_pal);
 }
 
 size_t scp_sealed_size_of_unsealed_size(size_t in)
@@ -92,8 +107,8 @@ int scp_seal(uint8_t *incode, size_t incode_len, uint8_t *outcode, size_t *outco
      since we aren't necessarily writing to all of the
      pages inside.
   */
-  scode_touch_range(in, sizeof(*in), 1);
-  scode_touch_range(out, sizeof(*out), 1);
+  touch_range(in, sizeof(*in), 1);
+  touch_range(out, sizeof(*out), 1);
 
   in->command = SCP_SEAL;
 
@@ -132,8 +147,8 @@ int scp_run(uint8_t *incode, size_t incode_len,
      since we aren't necessarily writing to all of the
      pages inside.
   */
-  scode_touch_range(in, sizeof(*in), 1);
-  scode_touch_range(out, sizeof(*out), 1);
+  touch_range(in, sizeof(*in), 1);
+  touch_range(out, sizeof(*out), 1);
 
   in->command = SCP_LOAD;
 

@@ -124,7 +124,7 @@ static int lock_range(void *ptr, size_t len)
 }
 #endif
 
-int scode_touch_range(void *ptr, size_t len, int do_write)
+static int scode_touch_range(void *ptr, size_t len, int do_write)
 {
   int i;
 
@@ -167,9 +167,9 @@ static void lock_scode_pages(const struct tv_pal_sections *scode_info)
   }
 }
 
-int scode_register(const struct tv_pal_sections *pageinfo,
-                   const struct tv_pal_params *params,
-                   const void *entry)
+int tv_pal_register(const struct tv_pal_sections *pageinfo,
+                    const struct tv_pal_params *params,
+                    const void *entry)
 {
   int ret;
   lock_scode_pages(pageinfo);
@@ -181,7 +181,7 @@ int scode_register(const struct tv_pal_sections *pageinfo,
                 (uint32_t)entry);
 }
 
-int scode_unregister(void *entry)
+int tv_pal_unregister(void *entry)
 {
   int ret;
   return vmcall(TV_HC_UNREG,
@@ -189,7 +189,7 @@ int scode_unregister(void *entry)
                 0, 0, 0);
 }
 
-int scode_share(const void *entry, void **start, size_t *len, size_t count)
+int tv_pal_share(const void *entry, void **start, size_t *len, size_t count)
 {
   int i;
 
@@ -213,7 +213,7 @@ int scode_share(const void *entry, void **start, size_t *len, size_t count)
                 (uint32_t)count);
 }
 
-int scode_test(void)
+int tv_test(void)
 {
   int ret;
   return vmcall(TV_HC_TEST,

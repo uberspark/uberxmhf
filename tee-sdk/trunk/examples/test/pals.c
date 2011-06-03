@@ -254,7 +254,7 @@ uint32_t pal_param(uint32_t input)
 __attribute__ ((section (".scode")))
 tz_return_t pal_seal(uint8_t *input, uint8_t inputLen, uint8_t *output, size_t *outputLen)
 {
-  if (scode_seal(NULL, input, inputLen, output, outputLen) == 0) {
+  if (svc_utpm_seal(NULL, input, inputLen, output, outputLen) == 0) {
     return TZ_SUCCESS;
   } else {
     return TZ_ERROR_GENERIC;
@@ -264,7 +264,7 @@ tz_return_t pal_seal(uint8_t *input, uint8_t inputLen, uint8_t *output, size_t *
 __attribute__ ((section (".scode")))
 tz_return_t pal_unseal(uint8_t *input, uint8_t inputLen, uint8_t *output, size_t *outputLen)
 {
-  if (scode_unseal(input, inputLen, output, outputLen) == 0) {
+  if (svc_utpm_unseal(input, inputLen, output, outputLen) == 0) {
     return TZ_SUCCESS;
   } else {
     return TZ_ERROR_GENERIC;
@@ -286,7 +286,7 @@ tz_return_t pal_quote(IN uint8_t *nonce, /* assumed to be TPM_NONCE_SIZE */
   /*   nonce[i]=((char)i)+tpmsel[i%8]; */
   /* } */
 
-  if (!scode_quote(nonce, tpmsel, quote, quote_len)) {
+  if (!svc_utpm_quote(nonce, tpmsel, quote, quote_len)) {
     return TZ_SUCCESS;
   } else {
     return TZ_ERROR_GENERIC;
@@ -301,7 +301,7 @@ tz_return_t pal_pcr_extend(IN uint32_t idx,
     return TZ_ERROR_GENERIC;
   }
   
-  if(scode_pcr_extend(idx, meas) == 0) {
+  if(svc_utpm_pcr_extend(idx, meas) == 0) {
     return TZ_SUCCESS;
   } else {
     return TZ_ERROR_GENERIC;
@@ -316,7 +316,7 @@ tz_return_t pal_pcr_read(IN uint32_t idx,
     return TZ_ERROR_GENERIC;
   }
 
-  if(scode_pcr_read(idx, val) == 0) {
+  if(svc_utpm_pcr_read(idx, val) == 0) {
     return TZ_SUCCESS;
   } else {
     return TZ_ERROR_GENERIC;

@@ -37,11 +37,11 @@
 #include <stdint.h>
 #include <stddef.h>
 
-int scode_seal(uint8_t *pcrAtRelease_addr,
-               void *in,
-               size_t in_len,
-               void *out,
-               size_t *out_len)
+int svc_utpm_seal(uint8_t *pcrAtRelease_addr,
+                  void *in,
+                  size_t in_len,
+                  void *out,
+                  size_t *out_len)
 {
   unsigned int inbuf1[2]= {(unsigned int)in, (unsigned int)in_len};
   unsigned int outbuf1[2]= {(unsigned int)out, (unsigned int)out_len};
@@ -53,10 +53,10 @@ int scode_seal(uint8_t *pcrAtRelease_addr,
                 0);
 }
 
-int scode_unseal(void *in,
-                 size_t in_len,
-                 void *out,
-                 size_t *out_len)
+int svc_utpm_unseal(void *in,
+                    size_t in_len,
+                    void *out,
+                    size_t *out_len)
 {
   int ret;
   unsigned int inbuf2[2]= {(unsigned int)in, (unsigned int)in_len};
@@ -69,10 +69,10 @@ int scode_unseal(void *in,
                 0);
 }
 
-int scode_quote(uint8_t *nonce,
-                uint32_t *tpmsel,
-                uint8_t *out,
-                size_t *out_len)
+int svc_utpm_quote(uint8_t *nonce,
+                   uint32_t *tpmsel,
+                   uint8_t *out,
+                   size_t *out_len)
 {
   int ret;
   unsigned int outbuf[2]= {(unsigned int)out, (unsigned int)out_len};
@@ -84,8 +84,8 @@ int scode_quote(uint8_t *nonce,
                 0);
 }
 
-int scode_pcr_extend(uint32_t idx,   /* in */
-                     uint8_t *meas) /* in */
+int svc_utpm_pcr_extend(uint32_t idx,   /* in */
+                        uint8_t *meas) /* in */
 {
   return vmcall(TV_HC_UTPM_PCREXT,
                 (uint32_t)idx,
@@ -94,8 +94,8 @@ int scode_pcr_extend(uint32_t idx,   /* in */
                 0);
 }
 
-int scode_pcr_read(uint32_t idx, /* in */
-                   uint8_t *val) /* out */
+int svc_utpm_pcr_read(uint32_t idx, /* in */
+                      uint8_t *val) /* out */
 {
   return vmcall(TV_HC_UTPM_PCRREAD,
                 (uint32_t)idx,

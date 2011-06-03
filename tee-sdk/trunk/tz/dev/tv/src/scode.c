@@ -45,14 +45,14 @@
 
 #include <trustvisor/trustvisor.h>
 
-size_t scode_ptr_diff(void *end, void *start)
+size_t tv_ptr_diff(void *end, void *start)
 {
   return (uintptr_t)end - (uintptr_t)start;
 }
 
-void scode_sections_info_add(struct tv_pal_sections *scode_info,
-                             int type,
-                             void *start_addr, size_t len)
+void tv_pal_sections_add(struct tv_pal_sections *scode_info,
+                         int type,
+                         void *start_addr, size_t len)
 {
   int sections = scode_info->num_sections;
 
@@ -66,9 +66,9 @@ void scode_sections_info_add(struct tv_pal_sections *scode_info,
 }
 
 /* FIXME- allocates memory. how to make sure it gets freed? */
-void scode_sections_info_init(struct tv_pal_sections *scode_info,
-                              size_t param_sz,
-                              size_t stack_sz)
+void tv_pal_sections_init(struct tv_pal_sections *scode_info,
+                          size_t param_sz,
+                          size_t stack_sz)
 {
   uint8_t *mem = NULL;
   uint8_t *param_mem = NULL;
@@ -77,19 +77,19 @@ void scode_sections_info_init(struct tv_pal_sections *scode_info,
   scode_info->num_sections = 0;
 
   /* add scode section */
-  scode_sections_info_add(scode_info, TV_PAL_SECTION_CODE, &__scode_start,
-                          scode_ptr_diff(&__scode_end, &__scode_start));
+  tv_pal_sections_add(scode_info, TV_PAL_SECTION_CODE, &__scode_start,
+                      tv_ptr_diff(&__scode_end, &__scode_start));
 
   /* add stext section */
   if (&__stext_end != &__stext_start) {
-    scode_sections_info_add(scode_info, TV_PAL_SECTION_SHARED_CODE, &__stext_start,
-                            scode_ptr_diff(&__stext_end, &__stext_start));
+    tv_pal_sections_add(scode_info, TV_PAL_SECTION_SHARED_CODE, &__stext_start,
+                        tv_ptr_diff(&__stext_end, &__stext_start));
   }
 
   /* add sdata section */
   if (&__sdata_end != &__sdata_start) {
-    scode_sections_info_add(scode_info, TV_PAL_SECTION_DATA, &__sdata_start,
-                            scode_ptr_diff(&__sdata_end, &__sdata_start));
+    tv_pal_sections_add(scode_info, TV_PAL_SECTION_DATA, &__sdata_start,
+                        tv_ptr_diff(&__sdata_end, &__sdata_start));
   }
 
   /* allocate and add scratch memory areas */
@@ -104,11 +104,11 @@ void scode_sections_info_init(struct tv_pal_sections *scode_info,
   stack_mem = mem;
   param_mem = stack_mem+stack_sz;
 
-  scode_sections_info_add(scode_info, TV_PAL_SECTION_STACK, stack_mem, stack_sz);
-  scode_sections_info_add(scode_info, TV_PAL_SECTION_PARAM, param_mem, param_sz);
+  tv_pal_sections_add(scode_info, TV_PAL_SECTION_STACK, stack_mem, stack_sz);
+  tv_pal_sections_add(scode_info, TV_PAL_SECTION_PARAM, param_mem, param_sz);
 }
 
-void scode_sections_info_print(struct tv_pal_sections *scode_info)
+void tv_pal_sections_print(struct tv_pal_sections *scode_info)
 {
   int i;
   printf(".num_sections = %d\n", scode_info->num_sections);

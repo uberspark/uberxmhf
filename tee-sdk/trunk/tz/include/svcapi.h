@@ -56,11 +56,11 @@
  *
  * Returns 0 on success, nonzero on failure.
  */
-int scode_seal(uint8_t *pcrAtRelease_addr,
-               void *in,
-               size_t in_len,
-               void *out,
-               size_t *out_len);
+int svc_utpm_seal(uint8_t *pcrAtRelease_addr,
+                  void *in,
+                  size_t in_len,
+                  void *out,
+                  size_t *out_len);
 
 /* unseal data
  * in is a pointer to the data to be unsealed.
@@ -72,10 +72,10 @@ int scode_seal(uint8_t *pcrAtRelease_addr,
  *
  * Returns 0 on success, nonzero on failure.
  */
-int scode_unseal(void *in,
-                 size_t in_len,
-                 void *out,
-                 size_t *out_len);
+int svc_utpm_unseal(void *in,
+                    size_t in_len,
+                    void *out,
+                    size_t *out_len);
 
 /* generate a TPM quote (FIXME of...?)
  * nonce points to a nonce to be used FIXME: size?
@@ -86,17 +86,18 @@ int scode_unseal(void *in,
  *
  * Returns 0 on success, nonzero on failure.
  */
-int scode_quote(uint8_t *nonce,
-                uint32_t *tpmsel,
-                uint8_t *out,
-                size_t *out_len);
+int svc_utpm_quote(uint8_t *nonce,
+                   uint32_t *tpmsel,
+                   uint8_t *out,
+                   size_t *out_len);
+
 /* Extend uTPM PCR 'idx' with new measurement 'meas'.
  * 'meas' is assumed to be exactly 20 bytes.
  *
  * Returns 0 on success, nonzero on failure.
  */
-int scode_pcr_extend(uint32_t idx,   /* in */
-                     uint8_t *meas); /* in */
+int svc_utpm_pcr_extend(uint32_t idx,   /* in */
+                        uint8_t *meas); /* in */
 
 /* Read the value of uTPM PCR 'idx'
  * 'val' is assumed to point to 20 bytes of
@@ -104,6 +105,6 @@ int scode_pcr_extend(uint32_t idx,   /* in */
  *
  * Returns 0 on success, nonzero on failure.
  */
-int scode_pcr_read(uint32_t idx,  /* in */
-                   uint8_t* val); /* out */
+int svc_utpm_pcr_read(uint32_t idx,  /* in */
+                      uint8_t* val); /* out */
 #endif

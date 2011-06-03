@@ -122,7 +122,7 @@ static int share_referenced_mem(pal_fn_t fn, ll_t* psRefdSubranges, void* psOutB
     i++;
   }
 
-  rv = scode_share(fn, addrs, lens, count);
+  rv = tv_pal_share(fn, addrs, lens, count);
   /* XXX we currently do not enforce the specified permissions-
      the service (pal) gets full access */
 
@@ -287,9 +287,9 @@ TVManagerDownloadService(INOUT tz_session_t* psSession,
          .size = sizeof(uint32_t)/sizeof(int)}
       }
     };
-  rv = scode_register(svc->sPageInfo,
-                      &params,
-                      svc->pEntry);
+  rv = tv_pal_register(svc->sPageInfo,
+                       &params,
+                       svc->pEntry);
   if (rv != 0) {
     return TZ_ERROR_GENERIC;
   }
@@ -308,7 +308,7 @@ TVManagerRemoveService(INOUT tz_session_t* psSession,
                        IN tz_uuid_t const * pksService)
 {
   /* FIXME- need to make sure there's no open sessions */
-  if(scode_unregister(*((pal_fn_t*)(pksService))) != 0)
+  if(tv_pal_unregister(*((pal_fn_t*)(pksService))) != 0)
     return TZ_ERROR_GENERIC;
 
   return TZ_SUCCESS;
