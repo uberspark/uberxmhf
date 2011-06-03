@@ -96,13 +96,13 @@ enum tv_scode_param_type
   };
 
 struct tv_scode_params_struct {
-  u32 type;  /* 1: integer ;  2:pointer*/
-  u32 size;
+  uint32_t type;  /* 1: integer ;  2:pointer*/
+  uint32_t size;
 };
 
 #define TV_MAX_PARAMS_NUM 10
 struct tv_scode_params_info {
-  u32 params_num;
+  uint32_t params_num;
   struct tv_scode_params_struct pm_str[TV_MAX_PARAMS_NUM];
 };
 
