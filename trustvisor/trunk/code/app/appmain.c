@@ -166,9 +166,11 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 			/* unseal data */
 		case TV_HC_UTPM_UNSEAL:
             printf("[TV] NON-FATAL ERROR: TV_HC_UTPM_UNSEAL unimplemented.\n");
+            ret = 1;
             break;
 		case TV_HC_UTPM_SEAL:
             printf("[TV] NON-FATAL ERROR: TV_HC_UTPM_SEAL unimplemented.\n");
+            ret = 1;
             break;
 		case TV_HC_UTPM_UNSEAL_DEPRECATED:
 			{
@@ -186,6 +188,10 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				break;
 			}
 		case TV_HC_UTPM_QUOTE:
+            printf("[TV] NON-FATAL ERROR: TV_HC_UTPM_QUOTE unimplemented.\n");
+            ret = 1;
+            break;
+		case TV_HC_UTPM_QUOTE_DEPRECATED:
 			{
 				u32 outbuf, nonce_addr, tpmsel_addr, out_addr, out_len_addr;
 				/* address of nonce to be sealed in esi*/
