@@ -39,20 +39,17 @@
 /* 
  * definition for scode sections info 
  * */
-#define MAX_SECTION_NUM 10 
-#define MAX_REGPAGES_NUM 50
-
-enum scode_section_type
+enum tv_section_type
   {
-    SECTION_TYPE_SCODE = 1,
-    SECTION_TYPE_SDATA = 2,
-    SECTION_TYPE_PARAM = 3,
-    SECTION_TYPE_STACK = 4,
-    SECTION_TYPE_STEXT = 5,
+    TV_SECTION_TYPE_SCODE = 1,
+    TV_SECTION_TYPE_SDATA = 2,
+    TV_SECTION_TYPE_PARAM = 3,
+    TV_SECTION_TYPE_STACK = 4,
+    TV_SECTION_TYPE_STEXT = 5,
 
     /* internal */
-    SECTION_TYPE_SHARED = 6,
-    SECTION_TYPE_GUEST_PAGE_TABLES = 7
+    TV_SECTION_TYPE_SHARED = 6,
+    TV_SECTION_TYPE_GUEST_PAGE_TABLES = 7
   };
 
 /* 
@@ -60,56 +57,53 @@ enum scode_section_type
  * */
 enum VMMcmd {
   /* pal manipulation ops */
-  VMMCMD_REG	=1,
-  VMMCMD_UNREG	=2,
+  TV_VMMCMD_REG	=1,
+  TV_VMMCMD_UNREG	=2,
 
   /* uTPM ops */
-  VMMCMD_SEAL	=3,
-  VMMCMD_UNSEAL	=4,
-  VMMCMD_QUOTE	=5,
-  VMMCMD_SHARE	=6,
-  VMMCMD_PCRREAD	=7,
-  VMMCMD_PCREXT	=8,
-  VMMCMD_GENRAND	=9,
+  TV_VMMCMD_SEAL	=3,
+  TV_VMMCMD_UNSEAL	=4,
+  TV_VMMCMD_QUOTE	=5,
+  TV_VMMCMD_SHARE	=6,
+  TV_VMMCMD_PCRREAD	=7,
+  TV_VMMCMD_PCREXT	=8,
+  TV_VMMCMD_GENRAND	=9,
 
   /* misc */
-  VMMCMD_TEST		=255,
+  TV_VMMCMD_TEST		=255,
 };
 
-struct scode_sections_struct{
-  enum scode_section_type type;
+struct tv_scode_sections_struct{
+  enum tv_section_type type;
   unsigned int start_addr;
   int page_num; /* size of section in pages */
 };
 
-#define SCODE_MAX_SECTION_NUM 10  /* max sections that are allowed in scode registration */
-struct scode_sections_info{
+#define TV_MAX_SECTION_NUM 10  /* max sections that are allowed in scode registration */
+struct tv_scode_sections_info {
   int section_num;
-  struct scode_sections_struct ps_str[SCODE_MAX_SECTION_NUM];
+  struct tv_scode_sections_struct ps_str[TV_MAX_SECTION_NUM];
 };
 
 /* 
  * definition for scode param info 
  * */
 /* parameter type */
-enum scode_param_type
+enum tv_scode_param_type
   {
-    PM_TYPE_INTEGER = 1,
-    PM_TYPE_POINTER = 2
+    TV_PM_TYPE_INTEGER = 1,
+    TV_PM_TYPE_POINTER = 2
   };
-/* #define PM_TYPE_INTEGER 1 /\* integer *\/ */
-/* #define PM_TYPE_POINTER 2 /\* pointer *\/ */
 
-
-struct scode_params_struct{
+struct tv_scode_params_struct {
   u32 type;  /* 1: integer ;  2:pointer*/
   u32 size;
 };
 
-#define MAX_PARAMS_NUM 10
-struct scode_params_info{
+#define TV_MAX_PARAMS_NUM 10
+struct tv_scode_params_info {
   u32 params_num;
-  struct scode_params_struct pm_str[MAX_PARAMS_NUM];
+  struct tv_scode_params_struct pm_str[TV_MAX_PARAMS_NUM];
 };
 
 #endif
