@@ -33,14 +33,14 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#ifndef VMCALLS_H
-#define VMCALLS_H
+#ifndef TRUSTVISOR_H
+#define TRUSTVISOR_H
 
 /* 
  * definition for scode sections info 
  * */
 #define MAX_SECTION_NUM 10 
-#define  MAX_REGPAGES_NUM 50
+#define MAX_REGPAGES_NUM 50
 
 enum scode_section_type
   {

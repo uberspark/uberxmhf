@@ -46,7 +46,7 @@
 #include <pages.h>
 #include <hpt.h>
 
-#include <vmcalls.h>
+#include <trustvisor.h>
 
 /* bits 0 to 2 of stored pte's store the section type */
 #define SCODE_PTE_TYPE_MASK (0x7ull)
