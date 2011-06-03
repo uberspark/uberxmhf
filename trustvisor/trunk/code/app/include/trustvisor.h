@@ -41,20 +41,20 @@
  */
 enum HCcmd {
   /* pal manipulation ops */
-  TV_HC_REG     =1,
-  TV_HC_UNREG   =2,
-  TV_HC_SHARE   =6,
+  TV_HC_REG =1,
+  TV_HC_UNREG =2,
+  TV_HC_SHARE =6,
 
   /* uTPM ops */
-  TV_HC_UTPM_SEAL       =3,
-  TV_HC_UTPM_UNSEAL     =4,
-  TV_HC_UTPM_QUOTE      =5,
-  TV_HC_UTPM_PCRREAD    =7,
-  TV_HC_UTPM_PCREXT     =8,
-  TV_HC_UTPM_GENRAND    =9,
+  TV_HC_UTPM_SEAL =3,
+  TV_HC_UTPM_UNSEAL =4,
+  TV_HC_UTPM_QUOTE =5,
+  TV_HC_UTPM_PCRREAD =7,
+  TV_HC_UTPM_PCREXT  =8,
+  TV_HC_UTPM_GENRAND =9,
 
   /* misc */
-  TV_HC_TEST            =255,
+  TV_HC_TEST =255,
 };
 
 /*
@@ -63,15 +63,15 @@ enum HCcmd {
 
 enum tv_pal_section_type
   {
-    TV_PAL_SECTION_CODE = 1,
-    TV_PAL_SECTION_DATA = 2,
-    TV_PAL_SECTION_PARAM = 3,
-    TV_PAL_SECTION_STACK = 4,
-    TV_PAL_SECTION_SHARED_CODE = 5,
+    TV_PAL_SECTION_CODE =1,
+    TV_PAL_SECTION_DATA =2,
+    TV_PAL_SECTION_PARAM =3,
+    TV_PAL_SECTION_STACK =4,
+    TV_PAL_SECTION_SHARED_CODE =5,
 
     /* for internal use. */
-    TV_PAL_SECTION_SHARED = 6,
-    TV_PAL_SECTION_GUEST_PAGE_TABLES = 7
+    TV_PAL_SECTION_SHARED =6,
+    TV_PAL_SECTION_GUEST_PAGE_TABLES =7,
   };
 
 struct tv_pal_section {
@@ -89,8 +89,8 @@ struct tv_pal_sections {
 /* parameter type */
 enum tv_pal_param_type
   {
-    TV_PAL_PM_INTEGER = 1,
-    TV_PAL_PM_POINTER = 2
+    TV_PAL_PM_INTEGER =1,
+    TV_PAL_PM_POINTER =2,
   };
 
 struct tv_pal_param {
