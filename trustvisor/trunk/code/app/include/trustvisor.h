@@ -48,12 +48,13 @@ enum HCcmd {
   /* uTPM ops */
   TV_HC_UTPM_SEAL_DEPRECATED	=3,
   TV_HC_UTPM_UNSEAL_DEPRECATED =4,
-  TV_HC_UTPM_QUOTE =5,
+  TV_HC_UTPM_QUOTE_DEPRECATED =5,
   TV_HC_UTPM_PCRREAD =7,
   TV_HC_UTPM_PCREXT  =8,
   TV_HC_UTPM_GENRAND =9,
   TV_HC_UTPM_SEAL	=10,
   TV_HC_UTPM_UNSEAL	=11,
+  TV_HC_UTPM_QUOTE =12,
   /* Reserving up through 20 for more UTPM stuff; don't touch! */
   
   /* misc */
