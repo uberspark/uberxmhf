@@ -37,6 +37,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include <trustvisor/tv_utpm.h>
+
 int svc_utpm_seal(uint8_t *pcrAtRelease_addr,
                   void *in,
                   size_t in_len,
@@ -69,8 +71,8 @@ int svc_utpm_unseal(void *in,
                 0);
 }
 
-int svc_utpm_quote(uint8_t *nonce,
-                   uint32_t *tpmsel,
+int svc_utpm_quote(TPM_NONCE *nonce,
+                   TPM_PCR_SELECTION *tpmsel,
                    uint8_t *out,
                    size_t *out_len)
 {

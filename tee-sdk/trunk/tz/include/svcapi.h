@@ -39,6 +39,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <trustvisor/tv_utpm.h>
+
 /* typedef void (*svc_fn_t)(uint32_t uiCommand, */
 /*                          tzi_encode_buffer_t *psInBuf,  */
 /*                          tzi_encode_buffer_t *psOutBuf, */
@@ -86,8 +88,8 @@ int svc_utpm_unseal(void *in,
  *
  * Returns 0 on success, nonzero on failure.
  */
-int svc_utpm_quote(uint8_t *nonce,
-                   uint32_t *tpmsel,
+int svc_utpm_quote(TPM_NONCE *nonce,
+                   TPM_PCR_SELECTION *tpmsel,
                    uint8_t *out,
                    size_t *out_len);
 

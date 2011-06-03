@@ -39,6 +39,8 @@
 #include <tee-sdk/tzmarshal.h>
 #include <tee-sdk/svcapi.h>
 
+#include <trustvisor/tv_utpm.h>
+
 __attribute__ ((section (".scode")))
 void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
@@ -131,29 +133,26 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
 
   case PAL_QUOTE:
     {
-      uint8_t *nonce;
+      TPM_NONCE *nonce;
       uint32_t nonceLen;
-      uint32_t *tpmsel;
+      TPM_PCR_SELECTION *tpmsel;
       uint32_t tpmselLen;
       uint8_t *quote;
       uint32_t quoteLen = 800; /* FIXME should be TPM_QUOTE_SIZE, or dynamically check */;
       *puiRv = TZ_SUCCESS;
 
-      nonce = TZIDecodeArraySpace(psInBuf, &nonceLen);
-      tpmsel = TZIDecodeArraySpace(psInBuf, &tpmselLen);
+      nonce = (TPM_NONCE*)TZIDecodeArraySpace(psInBuf, &nonceLen);
+      tpmsel = (TPM_PCR_SELECTION*)TZIDecodeArraySpace(psInBuf, &tpmselLen);
       if (TZIDecodeGetError(psInBuf) != TZ_SUCCESS) {
         *puiRv = TZIDecodeGetError(psInBuf);
         break;
       }
 
-      /* decodearrayspace deals with size in bytes. convert to uint32_t.
-       * XXX write an API extension to deal with these situations?
-       */
-      if (tpmselLen % sizeof(uint32_t) != 0) {
+      if (tpmselLen != sizeof(TPM_PCR_SELECTION)
+          || nonceLen != sizeof(TPM_NONCE)) {
         *puiRv = TZ_ERROR_ENCODE_FORMAT;
         break;
       }
-      tpmselLen /= sizeof(uint32_t);
 
       quote = TZIEncodeArraySpace(psOutBuf, quoteLen);
       if (TZIDecodeGetError(psOutBuf) != TZ_SUCCESS) {
@@ -272,20 +271,10 @@ tz_return_t pal_unseal(uint8_t *input, uint8_t inputLen, uint8_t *output, size_t
 }
 
 __attribute__ ((section (".scode")))
-tz_return_t pal_quote(IN uint8_t *nonce, /* assumed to be TPM_NONCE_SIZE */
-                      IN uint32_t *tpmsel, /* first element is how many other elements there are */
+tz_return_t pal_quote(IN TPM_NONCE *nonce,
+                      IN TPM_PCR_SELECTION *tpmsel,
                       OUT uint8_t *quote, OUT size_t *quote_len) 
 {
-  /* int i; */
-  /* uint8_t nonce[20]; */
-  /* uint8_t tpmsel[8]; */
-  /* *((unsigned int *)tpmsel)=1; */
-  /* *((unsigned int *)(tpmsel+4))=0; */
-
-  /* for( i=0 ; i<20 ; i++ )  { */
-  /*   nonce[i]=((char)i)+tpmsel[i%8]; */
-  /* } */
-
   if (!svc_utpm_quote(nonce, tpmsel, quote, quote_len)) {
     return TZ_SUCCESS;
   } else {

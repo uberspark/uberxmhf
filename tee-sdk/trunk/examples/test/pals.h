@@ -38,6 +38,8 @@
 
 #include <tee-sdk/tzmarshal.h>
 
+#include <trustvisor/tv_utpm.h>
+
 typedef enum {
   PAL_WITHOUTPARAM,
   PAL_PARAM,
@@ -57,8 +59,8 @@ void pal_withoutparam();
 uint32_t pal_param(uint32_t input);
 tz_return_t pal_seal(uint8_t *input, uint8_t inputLen, uint8_t *output, size_t *outputLen);
 tz_return_t pal_unseal(uint8_t *input, uint8_t inputLen, uint8_t *output, size_t *outputLen);
-tz_return_t pal_quote(IN uint8_t *nonce, /* assumed to be TPM_NONCE_SIZE */
-                      IN uint32_t *tpmsel, /* first element is how many other elements there are */
+tz_return_t pal_quote(IN TPM_NONCE *nonce,
+                      IN TPM_PCR_SELECTION *tpmsel,
                       OUT uint8_t *quote, OUT size_t *quote_len);
 tz_return_t pal_pcr_extend(IN uint32_t idx,
                            IN uint8_t *meas);
