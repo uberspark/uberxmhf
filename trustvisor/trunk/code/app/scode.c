@@ -1388,7 +1388,7 @@ u32 scode_seal(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrAtRelease_addr
 #endif
 
 	/* seal */
-	utpm_seal(pcr, indata, input_len, output, &outlen, hmackey, aeskey);
+	utpm_seal_deprecated(pcr, indata, input_len, output, &outlen, hmackey, aeskey);
 
 #if 1
 	dprintf(LOG_TRACE, "[TV] sealed data len = %d!\n", outlen);
@@ -1452,7 +1452,7 @@ u32 scode_unseal(VCPU * vcpu, u32 input_addr, u32 input_len, u32 output_addr, u3
 #endif
 
 	/* unseal */
-	if ((ret = utpm_unseal(&whitelist[scode_curr[vcpu->id]].utpm, indata, input_len, outdata, &outlen, hmackey, aeskey))) {
+	if ((ret = utpm_unseal_deprecated(&whitelist[scode_curr[vcpu->id]].utpm, indata, input_len, outdata, &outlen, hmackey, aeskey))) {
 		dprintf(LOG_ERROR, "[TV] Unseal ERROR: utpm_unseal fail!\n");
 		return 1;
 	}
@@ -1528,7 +1528,7 @@ u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 
 	dprintf(LOG_TRACE, "\n");
 #endif
 
-	if ((ret = utpm_quote(nonce, outdata, &outlen, &whitelist[scode_curr[vcpu->id]].utpm, tpmsel, tpmsel_len, (u8 *)(&g_rsa))) != 0) {
+	if ((ret = utpm_quote_deprecated(nonce, outdata, &outlen, &whitelist[scode_curr[vcpu->id]].utpm, tpmsel, tpmsel_len, (u8 *)(&g_rsa))) != 0) {
 		dprintf(LOG_ERROR, "[TV] quote ERROR: utpm_quote fail!\n");
 		return 1;
 	}

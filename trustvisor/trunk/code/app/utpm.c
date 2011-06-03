@@ -89,7 +89,7 @@ TPM_RESULT utpm_extend(TPM_DIGEST *measurement, utpm_master_state_t *utpm, uint3
 /* XXX TODO: "Sealing" should support binding to an arbitrary number
  * of uPCRs.  Where is the bit vector to select the uPCRs of
  * interest? */
-TPM_RESULT utpm_seal(uint8_t* pcrAtRelease, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen, uint8_t * hmackey, uint8_t * aeskey)
+TPM_RESULT utpm_seal_deprecated(uint8_t* pcrAtRelease, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen, uint8_t * hmackey, uint8_t * aeskey)
 {
 	s32 len;
 	uint32_t outlen_beforepad;
@@ -136,7 +136,7 @@ TPM_RESULT utpm_seal(uint8_t* pcrAtRelease, uint8_t* input, uint32_t inlen, uint
 	return 0;
 }
 
-TPM_RESULT utpm_unseal(utpm_master_state_t *utpm, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen, uint8_t * hmackey, uint8_t * aeskey)
+TPM_RESULT utpm_unseal_deprecated(utpm_master_state_t *utpm, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen, uint8_t * hmackey, uint8_t * aeskey)
 {
 	uint32_t len;
 	uint8_t hashdata[TPM_HASH_SIZE];
@@ -197,7 +197,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm, uint8_t* input, uint32_t inlen
  * input: externalnonce, get from external server to avoid replay attack
  * output: quote result and data length
  */
-TPM_RESULT utpm_quote(uint8_t* externalnonce, uint8_t* output, uint32_t* outlen,
+TPM_RESULT utpm_quote_deprecated(uint8_t* externalnonce, uint8_t* output, uint32_t* outlen,
                       utpm_master_state_t *utpm, uint8_t* tpmsel, uint32_t tpmsel_len, uint8_t* rsa )
 {
 	int ret;
