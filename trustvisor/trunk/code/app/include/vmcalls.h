@@ -74,49 +74,4 @@ enum VMMcmd
           :"0"(op), "2" (0));			\
 })
 
-static inline uint32_t get_cpu_vendor(void) {
-  uint32_t dummy;
-  uint32_t vendor_dword1, vendor_dword2, vendor_dword3;
-    
-  cpuid(0, &dummy, &vendor_dword1, &vendor_dword3, &vendor_dword2);
-  if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
-     && vendor_dword3 == AMD_STRING_DWORD3)
-    return CPU_VENDOR_AMD;
-  else if(vendor_dword1 == INTEL_STRING_DWORD1 && vendor_dword2 == INTEL_STRING_DWORD2
-          && vendor_dword3 == INTEL_STRING_DWORD3)
-    return CPU_VENDOR_INTEL;
-  else
-    return CPU_VENDOR_UNKNOWN;
-
-  return 0; /* never reached */
-}
-/* XXX end processor.h */
-
-static inline int vmcall(uint32_t eax, uint32_t ecx, uint32_t edx,
-                         uint32_t esi, uint32_t edi)
-{
-  /* FIXME - should use a static bool to cache result.
-     However, this is tricky since we need to store in different
-     locations depending if we're executing inside a pal or not. */
-  switch(get_cpu_vendor()) {
-  case CPU_VENDOR_INTEL:
-    __asm__ __volatile__(
-                         "vmcall\n\t"
-                         :"=a"(eax)
-                         : "a"(eax), "c"(ecx), "d"(edx),
-                           "S"(esi), "D"(edi));
-    break;
-  case CPU_VENDOR_AMD:
-    __asm__ __volatile__(
-                         "vmmcall\n\t"
-                         :"=a"(eax)
-                         : "a"(eax), "c"(ecx), "d"(edx),
-                           "S"(esi), "D"(edi));
-    break;
-  default:
-    eax = -1;
-  }
-  return eax;
-}
-
 #endif
