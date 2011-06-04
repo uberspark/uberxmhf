@@ -46,6 +46,19 @@
 /*                          tzi_encode_buffer_t *psOutBuf, */
 /*                          tz_return_t *puiRv); */
 
+/* return micro-seconds elapsed from the beginning of the current
+ * epoch. when calculating a time interval from t0 to t1, the caller
+ * must check that epoch_nonce is identical for both calls. Otherwise
+ * the two times are not comparable. This could occur, for example,
+ * after a reboot for trusted execution environments without a
+ * trustworthy absolute time source.
+ *
+ * epoch_nonce : a unique identifier for the current epoch
+ * us          : microseconds elapsed since the current epoch
+ */
+int svc_time_elapsed_us(uint64_t *epoch_nonce, /* out */
+                        uint64_t *us); /* out */
+
 /* Seal data under a pcr value.
  * pcrAtRelease_addr is the required value of pcr #FIXME the
  *   data to be unsealed.
