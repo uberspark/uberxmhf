@@ -47,7 +47,8 @@ typedef enum {
   PAL_UNSEAL,
   PAL_QUOTE,
   PAL_PCR_READ,
-  PAL_PCR_EXTEND
+  PAL_PCR_EXTEND,
+  PAL_RAND
 } PAL_CMD;
 
 /* TODO: Unify these with utpm.* in trustvisor/ */
@@ -66,3 +67,5 @@ tz_return_t pal_pcr_extend(IN uint32_t idx,
                            IN uint8_t *meas);
 tz_return_t pal_pcr_read(IN uint32_t idx,
                         OUT uint8_t *val);
+tz_return_t pal_rand(IN size_t len,
+                     OUT uint8_t *bytes);

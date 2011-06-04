@@ -229,6 +229,26 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
       }      
     }
     break;
+
+  case PAL_RAND:
+    {
+      uint32_t len;
+      uint8_t *bytes;
+      len = TZIDecodeUint32(psInBuf);
+      if (TZIDecodeGetError(psInBuf)) {
+        *puiRv = TZIDecodeGetError(psInBuf);
+        break;
+      }
+
+      bytes = TZIEncodeArraySpace(psOutBuf, len);
+      if (bytes == NULL) {
+        *puiRv = TZ_ERROR_MEMORY;
+        break;
+      }
+
+      *puiRv = pal_rand(len, bytes);
+    }
+    break;
   }
 
   return;
@@ -312,3 +332,13 @@ tz_return_t pal_pcr_read(IN uint32_t idx,
   }
 }
 
+__attribute__ ((section (".scode")))
+tz_return_t pal_rand(IN size_t len,
+                     OUT uint8_t *bytes)
+{
+  if (svc_utpm_rand_block(bytes, len) == 0) {
+    return TZ_SUCCESS;
+  } else {
+    return TZ_ERROR_GENERIC;
+  }
+}
