@@ -480,6 +480,59 @@ int test_pcr_read(tz_session_t *tzPalSession)
   return rv;
 }
 
+int test_rand(tz_session_t *tzPalSession)
+{
+  tz_return_t tzRet, serviceReturn;
+  tz_operation_t tzOp;
+  int rv = 0;
+  const size_t req_bytes=4;
+  size_t got_bytes;
+  uint8_t *bytes;
+  int i;
+
+  printf("\nRAND\n");
+
+  /* prep operation */
+  tzRet = TZOperationPrepareInvoke(tzPalSession,
+                                   PAL_RAND,
+                                   NULL,
+                                   &tzOp);
+  assert(tzRet == TZ_SUCCESS);
+
+  TZEncodeUint32(&tzOp, req_bytes);
+
+  /* Call PAL */
+  tzRet = TZOperationPerform(&tzOp, &serviceReturn);
+  if (tzRet != TZ_SUCCESS) {
+    rv = 1;
+    printf("Failure at %s:%d\n", __FILE__, __LINE__);
+    printf("tzRet 0x%08x\n", tzRet);
+    goto out;
+  }
+  /* fetch result */
+  bytes = TZDecodeArraySpace(&tzOp, &got_bytes);
+  if (TZDecodeGetError(&tzOp) != TZ_SUCCESS
+      || bytes == NULL
+      || got_bytes != req_bytes) {
+    rv = 1;
+    printf("Failure at %s:%d\n", __FILE__, __LINE__);
+    printf("tzRet 0x%08x\n", tzRet);
+    goto out;
+  }
+
+  /* show result */
+  printf("Got random bytes: ");
+  for(i=0; i<got_bytes; i++) {
+    printf(" %02x", bytes[i]);
+  }
+  printf("\n");
+
+ out:
+  TZOperationRelease(&tzOp);
+
+  if(0 != rv) { printf("...FAILED rv %d\n", rv); }
+  return rv;
+}
 
 // function main
 // register some sensitive code and data in libfoo.so and call bar()
@@ -571,6 +624,10 @@ int main(void)
 
 #ifdef TEST_PCR_READ
   rv = test_pcr_read(&tzPalSession) || rv;
+#endif
+
+#ifdef TEST_RAND
+  rv = test_rand(&tzPalSession) || rv;
 #endif
 
   
