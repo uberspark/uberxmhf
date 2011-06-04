@@ -68,6 +68,7 @@ int svc_time_elapsed_us(uint64_t *epoch_nonce, /* out */
     initd=true;
   }
 
+  *epoch_nonce = our_epoch_nonce;
   /* FIXME : technically ought to serialize with, e.g. cpuid */
   *us = rdtsc64() / cycles_per_us;
 
