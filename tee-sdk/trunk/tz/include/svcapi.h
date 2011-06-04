@@ -122,4 +122,18 @@ int svc_utpm_pcr_extend(uint32_t idx,   /* in */
  */
 int svc_utpm_pcr_read(uint32_t idx,  /* in */
                       uint8_t* val); /* out */
+
+/* Request out_len secure-random bytes. The TEE will use some secure
+ * source of true entropy, either directly, or to seed a secure PRNG.
+ * The TEE may return fewer than the requested number of bytes if
+ * insufficient entropy is currently available.
+ *
+ * out     : random bytes
+ * out_len : in: the number of requested bytes,
+ *           out: the number of provided bytes
+ */
+int svc_utpm_rand(void *out, /* out */
+                  size_t *out_len); /* in,out */
+
+
 #endif
