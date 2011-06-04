@@ -111,5 +111,7 @@ int svc_utpm_rand(void *out, /* out */
 {
   return vmcall(TV_HC_UTPM_GENRAND,
                 (uint32_t)out,
-                (uint32_t)out_len);
+                (uint32_t)out_len,
+                0,
+                0);
 }

@@ -6,4 +6,4 @@ AM_CPPFLAGS = -I$(top_srcdir)/include -I$(srcdir)/../include
 
 pkglib_LIBRARIES = libtz-tv.a libsvc-tv.a
 libtz_tv_a_SOURCES = app_vmcalls.c scode.c tv.c
-libsvc_tv_a_SOURCES = svc_vmcalls.c
+libsvc_tv_a_SOURCES = svc_vmcalls.c svc.c
