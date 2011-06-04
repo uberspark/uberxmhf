@@ -105,3 +105,11 @@ int svc_utpm_pcr_read(uint32_t idx, /* in */
                 0,
                 0);
 }
+
+int svc_utpm_rand(void *out, /* out */
+                  size_t *out_len) /* in,out */
+{
+  return vmcall(TV_HC_UTPM_GENRAND,
+                (uint32_t)out,
+                (uint32_t)out_len);
+}
