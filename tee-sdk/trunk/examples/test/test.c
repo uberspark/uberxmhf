@@ -534,6 +534,100 @@ int test_rand(tz_session_t *tzPalSession)
   return rv;
 }
 
+static tz_return_t time_init(tz_session_t *tzPalSession)
+{
+  tz_return_t tzRet, serviceReturn;
+  tz_operation_t tzOp;
+
+  /* prep operation */
+  tzRet = TZOperationPrepareInvoke(tzPalSession,
+                                   PAL_TIME_INIT,
+                                   NULL,
+                                   &tzOp);
+  if (tzRet != TZ_SUCCESS) {
+    goto out;
+  }
+
+  /* Call PAL */
+  tzRet = TZOperationPerform(&tzOp, &serviceReturn);
+  if (tzRet != TZ_SUCCESS) {
+    printf("Failure at %s:%d\n", __FILE__, __LINE__);
+    printf("tzRet 0x%08x\n", tzRet);
+    goto out;
+  }
+
+ out:
+  TZOperationRelease(&tzOp);
+  return tzRet;
+}
+
+static tz_return_t time_elapsed(tz_session_t *tzPalSession, uint64_t *t)
+{
+  tz_return_t tzRet, serviceReturn;
+  tz_operation_t tzOp;
+
+  /* prep operation */
+  tzRet = TZOperationPrepareInvoke(tzPalSession,
+                                   PAL_TIME_ELAPSED,
+                                   NULL,
+                                   &tzOp);
+  if(tzRet != TZ_SUCCESS) {
+    goto out;
+  }
+
+  /* Call PAL */
+  tzRet = TZOperationPerform(&tzOp, &serviceReturn);
+  if (tzRet != TZ_SUCCESS) {
+    printf("Failure at %s:%d\n", __FILE__, __LINE__);
+    printf("tzRet 0x%08x\n", tzRet);
+    goto out;
+  }
+
+  *t = ((uint64_t)TZDecodeUint32(&tzOp)) << 32;
+  *t = *t | TZDecodeUint32(&tzOp);
+  tzRet = TZDecodeGetError(&tzOp);
+  if (tzRet != TZ_SUCCESS) {
+    printf("Failure at %s:%d\n", __FILE__, __LINE__);
+    printf("tzRet 0x%08x\n", tzRet);
+    goto out;
+  }
+
+ out:
+  TZOperationRelease(&tzOp);
+  return tzRet;
+}
+
+tz_return_t test_time(tz_session_t *tzPalSession)
+{
+  tz_return_t rv = TZ_SUCCESS;
+  uint64_t t0, t1;
+
+  printf("\nTIME\n");
+
+  printf("initializing time\n");
+  rv = time_init(tzPalSession);
+  if (rv != TZ_SUCCESS) {
+    return rv;
+  }
+
+  printf("fetching t0\n");
+  rv = time_elapsed(tzPalSession, &t0);
+  if (rv != TZ_SUCCESS) {
+    return rv;
+  }
+  printf("got t0=%llu\n", t0);
+
+  printf("fetching t1\n");
+  rv = time_elapsed(tzPalSession, &t1);
+  if (rv != TZ_SUCCESS) {
+    return rv;
+  }
+  printf("got t1=%llu\n", t1);
+  printf("dt=%llu\n", t1 - t0);
+
+  return TZ_SUCCESS;
+}
+
 // function main
 // register some sensitive code and data in libfoo.so and call bar()
 int main(void)
@@ -628,6 +722,10 @@ int main(void)
 
 #ifdef TEST_RAND
   rv = test_rand(&tzPalSession) || rv;
+#endif
+
+#ifdef TEST_TIME
+  rv = test_time(&tzPalSession) || rv;
 #endif
 
   
