@@ -327,7 +327,12 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
 
 	  
   //2. disable device
-  printf("\n	Disabling DRHD...");
+  /*disabling DRHD is optional as the steps below initialize required
+    registers irrespective of their reset state. however, some machines
+    e.g., HP 8100 and on Lenovo x201 (bug #116) actually freeze if we
+    try to disable DRHD. so we just omit this step*/
+	/*
+	printf("\n	Disabling DRHD...");
   {
 		gcmd.value=0;	//disable translation
 	  ASSERT( gcmd.bits.te == 0);	
@@ -341,7 +346,8 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
 	  }
 	}
   printf("Done.");
-
+  */
+  
 
   //3. setup fault logging
   printf("\n	Setting Fault-reporting to NON-INTERRUPT mode...");
@@ -499,7 +505,7 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
   printf("Done.");
   
   //9. disable protected memory regions (PMR) if available
-  printf("\n	Checking and disabling for PMR...");
+  printf("\n	Checking and disabling PMR...");
 	{
     VTD_PMEN_REG pmen;
     _vtd_reg(drhd, VTD_REG_READ, VTD_CAP_REG_OFF, (void *)&cap.value);
