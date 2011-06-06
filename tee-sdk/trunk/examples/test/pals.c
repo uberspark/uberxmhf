@@ -34,6 +34,7 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
 #include  "pals.h"
 
 #include <tee-sdk/tzmarshal.h>
@@ -249,8 +250,20 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
       *puiRv = pal_rand(len, bytes);
     }
     break;
-  }
 
+  case PAL_TIME_INIT:
+    *puiRv = pal_time_init();
+    break;
+
+  case PAL_TIME_ELAPSED:
+    {
+      uint64_t dt;
+      *puiRv = pal_time_elapsed(&dt);
+      TZIEncodeUint32(psOutBuf, (uint32_t)(dt>>32)); /* hi */
+      TZIEncodeUint32(psOutBuf, (uint32_t)dt); /* low */
+    }
+    break;
+  }
   return;
 }
 
@@ -341,4 +354,37 @@ tz_return_t pal_rand(IN size_t len,
   } else {
     return TZ_ERROR_GENERIC;
   }
+}
+
+static uint64_t t0;
+static uint64_t t0_nonce;
+static bool t0_initd=false;
+tz_return_t pal_time_init()
+{
+  if (svc_time_elapsed_us(&t0_nonce, &t0)) {
+    return TZ_ERROR_GENERIC;
+  }
+  t0_initd=true;
+}
+
+__attribute__ ((section (".scode")))
+tz_return_t pal_time_elapsed(OUT uint64_t *us)
+{
+  uint64_t t;
+  uint64_t t_nonce;
+
+  if (!t0_initd)
+    return TZ_ERROR_GENERIC;
+
+  if (svc_time_elapsed_us(&t_nonce, &t)) {
+    return TZ_ERROR_GENERIC;
+  }
+
+  if (t_nonce != t0_nonce) {
+    return TZ_ERROR_GENERIC;
+  }
+
+  *us = t - t0;
+
+  return TZ_SUCCESS;
 }
