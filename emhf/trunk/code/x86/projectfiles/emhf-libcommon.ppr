@@ -49,9 +49,10 @@ emhf-libcommon
 16=..\include\tpm.h
 17=..\libcommon\vmx_eap.c
 18=..\include\vmx_eap.h
+19=..\..\..\..\..\..\amit\rpad\emhfapps\ea-mtrrtest\emhfcore\x86\include\processor.h
 [Selected Project Files]
 Main=
-Selected=..\libcommon\svm_eap.c
+Selected=..\..\..\..\..\..\amit\rpad\emhfapps\ea-mtrrtest\emhfcore\x86\include\processor.h
 [..\libcommon\Makefile]
 TopLine=1
 Caret=140,6
@@ -83,8 +84,8 @@ Caret=27,41
 TopLine=1
 Caret=39,28
 [..\libcommon\svm_eap.c]
-TopLine=89
-Caret=1,104
+TopLine=58
+Caret=4,90
 [..\include\svm_eap.h]
 TopLine=136
 Caret=1,164
@@ -104,8 +105,11 @@ Caret=28,176
 TopLine=276
 Caret=1,303
 [..\libcommon\vmx_eap.c]
-TopLine=515
-Caret=33,542
+TopLine=272
+Caret=2,293
 [..\include\vmx_eap.h]
 TopLine=231
 Caret=53,271
+[..\..\..\..\..\..\amit\rpad\emhfapps\ea-mtrrtest\emhfcore\x86\include\processor.h]
+TopLine=73
+Caret=1,100
