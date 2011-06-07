@@ -1590,6 +1590,12 @@ u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 
 		return 1;
 	}
 
+	/* Some sanity-checking. TODO: replace with asserts & use tighter bound */
+	if(outlen > 2*TPM_QUOTE_SIZE) {
+			dprintf(LOG_ERROR, "[TV] ERROR: outlen (%d) > 2*TPM_QUOTE_SIZE\n", outlen);
+			return 1;
+	}
+	
 	dprintf(LOG_TRACE, "[TV] quote data len = %d!\n", outlen);
 #if 0
 	dprintf(LOG_TRACE, "[TV] quote data is: ");

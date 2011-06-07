@@ -212,13 +212,19 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
         return 1;
     }
 
-	dprintf(LOG_TRACE, "[TV] utpm_quote: externalnonce:\n    ", outlen);
+	dprintf(LOG_TRACE, "[TV] utpm_quote: externalnonce:\n    ", *outlen);
 	for(i=0; i<sizeof(TPM_NONCE); i++) {
 		dprintf(LOG_TRACE, "%x ", externalnonce->nonce[i]);
 	}
 	dprintf(LOG_TRACE, "\n");
     
     printf("[TV:UTPM] utpm_quote: inputs look sane but I'm UNIMPLEMENTED\n");
+
+    /* Populate with some dummy values to test marshalling, etc. */
+    *outlen = TPM_QUOTE_SIZE;
+    for(i=0; i<*outlen; i++) {
+        output[i] = (uint8_t)i;
+    }
     
     return 0;
 }
