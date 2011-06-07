@@ -329,6 +329,7 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
     }
 
     *outlen = required_output_size;
+    dprintf(LOG_TRACE, "required_output_size = *outlen = %d\n", *outlen);
     
     p = output;
     vmemcpy(p, tpm_pcr_composite, space_needed_for_composite);

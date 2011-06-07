@@ -1556,10 +1556,10 @@ u32 scode_quote_deprecated(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out
 
 u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 out_len_addr)
 {
-	u8 outdata[TPM_QUOTE_SIZE];
+  uint8_t *outdata=NULL;
 	TPM_NONCE nonce;
 	TPM_PCR_SELECTION tpmsel;
-	u32 outlen, ret;
+	u32 outlen, ret=0;
 	u32 i;
 	int index;
 
@@ -1570,7 +1570,8 @@ u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 
 	/* make sure that this vmmcall can only be executed when a PAL is running */
 	if (scode_curr[vcpu->id]== -1) {
 		dprintf(LOG_ERROR, "[TV] Quote ERROR: no PAL is running!\n");
-		return 1;
+		ret = 1;
+		goto out;
 	}	
 
 	/* XXX FIXME: check input data and output data are all in PAL's memory range */
@@ -1582,8 +1583,29 @@ u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 
 	/* FIXME: sizeof(TPM_PCR_SELECTION) may eventually change dynamically */
 	copy_from_guest(vcpu, (void*)&tpmsel, tpmsel_addr, sizeof(TPM_PCR_SELECTION));
 
+	/* Get size of guest's output buffer */
+	copy_from_guest(vcpu, (void*)&outlen, out_len_addr, sizeof(uint32_t));
+
+	dprintf(LOG_TRACE, "[TV] Guest provided output buffer of %d bytes\n", outlen);
+
+	/* FIXME: This is just a rough sanity check that catches some uninitialized variables. */
+	if(outlen > 5*TPM_QUOTE_SIZE) {
+			dprintf(LOG_ERROR, "[TV] ERROR: Guest-provided outlen value of %d seems ridiculous\n", outlen);
+			ret = 1;
+			goto out;
+	}
+	
+	/**
+	 * Allocate space to do internal processing
+	 */
+	if(NULL == (outdata = vmalloc(outlen))) {
+			dprintf(LOG_ERROR, "[TV] ERROR: vmalloc(%d) failed!\n", outlen);
+			ret = 1;
+			goto out;
+	}
+	
 	/* FIXME: Still want to return a modified "outlen" in case the input buffer was too small.
-	   I.e., this failed too aggressively. */
+	   I.e., this fails too aggressively. */
 	if ((ret = utpm_quote(&nonce, &tpmsel, outdata, &outlen, &whitelist[scode_curr[vcpu->id]].utpm,
 												(u8 *)(&g_rsa))) != 0) {
 		dprintf(LOG_ERROR, "[TV] ERROR: utpm_quote failed!\n");
@@ -1598,21 +1620,22 @@ u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 
 	}
 	
 	dprintf(LOG_TRACE, "[TV] quote data len = %d!\n", outlen);
-#if 0
-	dprintf(LOG_TRACE, "[TV] quote data is: ");
-	for(i=0;i<outlen;i++) {
-		dprintf(LOG_TRACE, "%x ", outdata[i]);
-	}
-	dprintf(LOG_TRACE, "\n");
-#endif
+	//print_hex("  QD: ", outdata, outlen);
 
 	/* copy quote output to guest */
 	copy_to_guest(vcpu, out_addr, outdata, outlen);
 
+	dprintf(LOG_TRACE, "[TV] scode_quote: Survived copy_to_guest of %d bytes\n", outlen);
+	
 	/* copy quote output length to guest */
 	put_32bit_aligned_value_to_guest(vcpu, out_len_addr, outlen);
+	dprintf(LOG_TRACE, "[TV] scode_quote: Survived put_32bit_aligned_value_to_guest\n");
+
+	out:
+
+	if(outdata) { vfree(outdata); outdata = NULL; }
 	
-	return 0;
+	return ret;
 }
 
 void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* entry)
