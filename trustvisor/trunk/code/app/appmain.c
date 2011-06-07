@@ -203,8 +203,6 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				ret = scode_quote(vcpu,nonce_addr,tpmsel_addr,out_addr,out_len_addr);
 
 				break;
-            ret = 1;
-            break;
 			}
 		case TV_HC_UTPM_QUOTE_DEPRECATED:
 			{
