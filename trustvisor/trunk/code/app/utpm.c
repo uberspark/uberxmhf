@@ -309,8 +309,11 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
     *((uint32_t*)quote_info.fixed) = 0x544f5551; 
     /* 3) SHA-1 hash of TPM_PCR_COMPOSITE */
     sha1_csum(tpm_pcr_composite, space_needed_for_composite, quote_info.digestValue.value);
+    print_hex(" COMPOSITE_HASH: ", quote_info.digestValue.value, TPM_HASH_SIZE);
     /* 4) external nonce */
     vmemcpy(quote_info.externalData.nonce, externalnonce->nonce, TPM_HASH_SIZE);
+
+    print_hex(" quote_info: ", (uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO));
 
     /**
      * Compute the signature and format the output buffer
@@ -345,7 +348,7 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
 		printf("[TV:UTPM] ERROR: tpm_pkcs1_sign FAILED\n");
 		goto out;
 	}
-
+    
     dprintf(LOG_TRACE, "[TV:UTPM] Success!\n");
     
   out:
