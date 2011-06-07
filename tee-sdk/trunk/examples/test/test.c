@@ -48,6 +48,21 @@
 
 #include <trustvisor/tv_utpm.h>
 
+/*
+ * if 'prefix' != NULL, print it before each line of hex string
+ */
+void print_hex(const char *prefix, const void *prtptr, size_t size)
+{
+    size_t i;
+    for ( i = 0; i < size; i++ ) {
+        if ( i % 16 == 0 && prefix != NULL )
+            printf("\n%s", prefix);
+        printf("%02x ", *(const uint8_t *)prtptr++);
+    }
+    printf("\n");
+}
+
+
 /* int test_marshal() */
 /* { */
 /*   tzi_encode_buffer_t *psEnc, *psEnc2; */
@@ -259,7 +274,7 @@ int test_quote(tz_session_t *tzPalSession)
 {
   TPM_NONCE *nonce;
   TPM_PCR_SELECTION *tpmsel;
-  uint32_t *quote;
+  uint8_t *quote;
   uint32_t quoteLen;
 
   tz_return_t tzRet, serviceReturn;
@@ -315,27 +330,31 @@ int test_quote(tz_session_t *tzPalSession)
     goto out;
   }
 
-  /* get actual quote len */
-  /* FIXME: this should be a fixed size */
-  quoteLen = TZDecodeUint32(&tz_quoteOp);
-
   if (TZDecodeGetError(&tz_quoteOp) != TZ_SUCCESS) {
     rv = 1;
     goto out;
   }
 
-  printf("quote[0] after PAL is %d!\n", quote[0]);
   printf("output len = %d!\n", quoteLen);
+
+  if(quoteLen > 2*TPM_QUOTE_SIZE) {
+      print_hex("  Q: ", quote, quoteLen);
+  } else {
+      printf("ERROR: quoteLen is not sane (%d). First 16 bytes of response:\n", quoteLen);
+      print_hex("  Q! ", quote, 16);
+  }
 
   if (quote[0] != 0x00000101
       || quote[1] != 0x544f5551) {
     printf("quote header error!\n");
-    return 1;
+    rv = 1;
+    goto out;
   }
   num = quote[2];
   if (num > 4) {
     printf("quote pcr sel error!\n");
-    return 1;
+    rv = 1;
+    goto out;
   }
   /* FIXME: code below makes my eyeballs bleed */
   pdata = ((uint8_t*)quote)+8+4+4*num;
