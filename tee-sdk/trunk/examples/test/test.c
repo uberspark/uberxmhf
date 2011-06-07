@@ -270,6 +270,10 @@ int test_seal(tz_session_t *tzPalSession)
   return rv;
 }
 
+int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uint32_t sig_len) {
+    return 0;
+}
+
 int test_quote(tz_session_t *tzPalSession)
 {
   TPM_NONCE *nonce;
@@ -348,7 +352,20 @@ int test_quote(tz_session_t *tzPalSession)
 
 
   /* TODO: Verify the signature in the Quote */
+  //[ TPM_PCR_COMPOSITE | sigSize | sig ]
+  uint32_t tpm_pcr_composite_size = quoteLen - TPM_RSA_KEY_LEN - sizeof(uint32_t);
+  uint32_t sigSize = *((uint32_t*)(quote+tpm_pcr_composite_size));
+  uint8_t* sig = quote + tpm_pcr_composite_size + sigSize;
+
+  printf("tpm_pcr_composite_size %d, sigSize %d\n",
+         tpm_pcr_composite_size, sigSize);
   
+  assert(sigSize == TPM_RSA_KEY_LEN);
+  
+  if((rv = verify_quote(quote, tpm_pcr_composite_size, sig, sigSize)) != 0) {
+      printf("verify_quote FAILED\n");
+      goto out;
+  }
 
  out:
   TZOperationRelease(&tz_quoteOp);
