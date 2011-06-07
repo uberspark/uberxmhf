@@ -42,6 +42,8 @@
 #include  <errno.h>
 #include  <string.h>
 
+#include <openssl/sha.h>
+
 #include <tee-sdk/tv.h>
 #include <tee-sdk/tz.h>
 #include <tee-sdk/tzmarshal.h>
@@ -270,7 +272,25 @@ int test_seal(tz_session_t *tzPalSession)
   return rv;
 }
 
-int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uint32_t sig_len) {
+int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uint32_t sig_len,
+                 TPM_NONCE *externalnonce) {
+    TPM_QUOTE_INFO quote_info;
+
+    /* 1) 1.1.0.0 for consistency w/ TPM 1.2 spec */
+    *((uint32_t*)&quote_info.version) = 0x00000101; 
+    /* 2) 'QUOT' */
+    *((uint32_t*)quote_info.fixed) = 0x544f5551; 
+
+    /* 3) SHA-1 hash of TPM_PCR_COMPOSITE */
+    SHA1(tpm_pcr_composite, tpc_len, quote_info.digestValue.value);
+
+    print_hex(" COMPOSITE_HASH: ", quote_info.digestValue.value, TPM_HASH_SIZE);
+    
+    /* 4) external nonce */
+    memcpy(quote_info.externalData.nonce, externalnonce->nonce, TPM_HASH_SIZE);
+
+    print_hex(" quote_info: ", (uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO));
+    
     return 0;
 }
 
@@ -362,7 +382,7 @@ int test_quote(tz_session_t *tzPalSession)
   
   assert(sigSize == TPM_RSA_KEY_LEN);
   
-  if((rv = verify_quote(quote, tpm_pcr_composite_size, sig, sigSize)) != 0) {
+  if((rv = verify_quote(quote, tpm_pcr_composite_size, sig, sigSize, nonce)) != 0) {
       printf("verify_quote FAILED\n");
       goto out;
   }
