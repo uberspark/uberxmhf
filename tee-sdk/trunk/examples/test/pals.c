@@ -191,7 +191,7 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
         break;
       }
 
-      if(measLen != 20 /* XXX */) {
+      if(measLen != TPM_HASH_SIZE) {
         *puiRv = TZ_ERROR_GENERIC;
         break;
       }
@@ -217,7 +217,7 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
         break;
       }
 
-      valLen = PCR_SIZE;
+      valLen = TPM_HASH_SIZE;
       valOut = TZIEncodeArraySpace(psOutBuf, valLen);
       if (valOut == NULL) {
         *puiRv = TZ_ERROR_MEMORY;
@@ -319,7 +319,7 @@ __attribute__ ((section (".scode")))
 tz_return_t pal_pcr_extend(IN uint32_t idx,
                            IN uint8_t *meas)
 {
-  if((idx >= NUM_PCRS) || (NULL == meas)) {
+  if((idx >= TPM_PCR_NUM) || (NULL == meas)) {
     return TZ_ERROR_GENERIC;
   }
   
@@ -334,7 +334,7 @@ __attribute__ ((section (".scode")))
 tz_return_t pal_pcr_read(IN uint32_t idx,
                         OUT uint8_t *val)
 {
-  if((idx >= NUM_PCRS) || (NULL == val)) {
+  if((idx >= TPM_PCR_NUM) || (NULL == val)) {
     return TZ_ERROR_GENERIC;
   }
 

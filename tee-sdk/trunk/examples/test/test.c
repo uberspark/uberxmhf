@@ -369,7 +369,7 @@ int test_pcr_extend(tz_session_t *tzPalSession)
   TZEncodeUint32(&tzOp, pcr_idx);
 
   /* Prepare space to put measurement */
-  meas_ptr = TZEncodeArraySpace(&tzOp, PCR_SIZE);
+  meas_ptr = TZEncodeArraySpace(&tzOp, TPM_HASH_SIZE);
   if (meas_ptr == NULL) {
     rv = 1;
     printf("Failure at %s:%d\n", __FILE__, __LINE__); 
@@ -378,7 +378,7 @@ int test_pcr_extend(tz_session_t *tzPalSession)
 
   }
   /* Fake the measurement */
-  for(i=0; i<PCR_SIZE; i++) {
+  for(i=0; i<TPM_HASH_SIZE; i++) {
     meas_ptr[i] = (uint8_t)i;
   }
   
@@ -436,7 +436,7 @@ int test_pcr_read_i(tz_session_t *tzPalSession, uint32_t pcr_idx)
   }
 
   meas = TZDecodeArraySpace(&tzOp, &measLen);
-  if(meas == NULL || measLen != PCR_SIZE) {
+  if(meas == NULL || measLen != TPM_HASH_SIZE) {
     rv = 1;
     printf("Failure at %s:%d\n", __FILE__, __LINE__); 
     printf("tzRet 0x%08x\n", tzRet);
@@ -473,7 +473,7 @@ int test_pcr_read(tz_session_t *tzPalSession)
   
   printf("\nPCR_READ\n");
 
-  for(i=0; i<NUM_PCRS; i++) {
+  for(i=0; i<TPM_PCR_NUM; i++) {
     rv = test_pcr_read_i(tzPalSession, i);
     if(0 != rv) return rv;
   }

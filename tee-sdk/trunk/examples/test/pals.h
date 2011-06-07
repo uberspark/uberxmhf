@@ -53,10 +53,6 @@ typedef enum {
   PAL_TIME_ELAPSED,
 } PAL_CMD;
 
-/* TODO: Unify these with utpm.* in trustvisor/ */
-#define NUM_PCRS 8 
-#define PCR_SIZE 20
-
 void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv);
 void pal_withoutparam();
 uint32_t pal_param(uint32_t input);
