@@ -188,9 +188,24 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				break;
 			}
 		case TV_HC_UTPM_QUOTE:
-            printf("[TV] NON-FATAL ERROR: TV_HC_UTPM_QUOTE unimplemented.\n");
+		  {
+				u32 outbuf, nonce_addr, tpmsel_addr, out_addr, out_len_addr;
+        printf("[TV] TV_HC_UTPM_QUOTE hypercall received.\n");
+				/* address of nonce to be sealed in esi*/
+				nonce_addr = r->esi;
+				/* tpm selection data address in ecx */
+				tpmsel_addr = r->ecx;
+
+				outbuf = r->edx;
+				out_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf);
+				out_len_addr = get_32bit_aligned_value_from_guest(vcpu,outbuf+4);
+
+				ret = scode_quote(vcpu,nonce_addr,tpmsel_addr,out_addr,out_len_addr);
+
+				break;
             ret = 1;
             break;
+			}
 		case TV_HC_UTPM_QUOTE_DEPRECATED:
 			{
 				u32 outbuf, nonce_addr, tpmsel_addr, out_addr, out_len_addr;

@@ -60,9 +60,9 @@ TPM_RESULT utpm_pcrread(TPM_DIGEST* pcr_value,
 TPM_RESULT utpm_extend(TPM_DIGEST *measurement, utpm_master_state_t *utpm, uint32_t pcr_num);
 TPM_RESULT utpm_seal(uint8_t* pcrAtRelease, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen, uint8_t* hmackey, uint8_t* aeskey);
 TPM_RESULT utpm_unseal(utpm_master_state_t *utpm, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen, uint8_t* hmackey, uint8_t* aeskey);
-TPM_RESULT utpm_quote(uint8_t* externalnonce, uint8_t* output, uint32_t* outlen,
-                      utpm_master_state_t *utpm, uint8_t* tpmsel, uint32_t tpmsel_len, uint8_t* rsa );
-
+TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hypercall inputs */
+                      uint8_t* output, uint32_t* outlen, /* hypercall outputs */
+                      utpm_master_state_t *utpm, uint8_t* rsa); /* TrustVisor inputs */
 
 /**
  * Keeping these around solely for the Apache SSL web server demo

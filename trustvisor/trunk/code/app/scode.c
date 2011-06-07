@@ -1490,7 +1490,7 @@ u32 scode_quote_deprecated(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out
 	int index;
 	u32 tpmsel_len;
 
-	dprintf(LOG_TRACE, "\n[TV] ********** uTPM Quote **********\n");
+	dprintf(LOG_TRACE, "\n[TV] ********** uTPM Quote [DEPRECATED] **********\n");
 	dprintf(LOG_TRACE, "[TV] nonce addr: %x, tpmsel addr: %x, output addr %x, outlen addr: %x!\n", nonce_addr, tpmsel_addr, out_addr, out_len_addr);
 	/* make sure that this vmmcall can only be executed when a PAL is running */
 	if (scode_curr[vcpu->id]== -1) {
@@ -1551,6 +1551,60 @@ u32 scode_quote_deprecated(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out
 
 	/* copy out length to guest */
 	put_32bit_aligned_value_to_guest(vcpu, out_len_addr, outlen);
+	return 0;
+}
+
+u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 out_len_addr)
+{
+	u8 outdata[TPM_QUOTE_SIZE];
+	TPM_NONCE nonce;
+	TPM_PCR_SELECTION tpmsel;
+	u32 outlen, ret;
+	u32 i;
+	int index;
+
+	dprintf(LOG_TRACE, "\n[TV] ********** uTPM Quote **********\n");
+	dprintf(LOG_TRACE, "[TV] nonce addr: %x, tpmsel addr: %x, output addr %x, outlen addr: %x!\n",
+					nonce_addr, tpmsel_addr, out_addr, out_len_addr);
+
+	/* make sure that this vmmcall can only be executed when a PAL is running */
+	if (scode_curr[vcpu->id]== -1) {
+		dprintf(LOG_ERROR, "[TV] Quote ERROR: no PAL is running!\n");
+		return 1;
+	}	
+
+	/* XXX FIXME: check input data and output data are all in PAL's memory range */
+
+	/* get external nonce from guest */
+	copy_from_guest(vcpu, (void*)&nonce, nonce_addr, sizeof(TPM_NONCE));
+
+	/* get TPM PCR selection from guest */
+	/* FIXME: sizeof(TPM_PCR_SELECTION) may eventually change dynamically */
+	copy_from_guest(vcpu, (void*)&tpmsel, tpmsel_addr, sizeof(TPM_PCR_SELECTION));
+
+	/* FIXME: Still want to return a modified "outlen" in case the input buffer was too small.
+	   I.e., this failed too aggressively. */
+	if ((ret = utpm_quote(&nonce, &tpmsel, outdata, &outlen, &whitelist[scode_curr[vcpu->id]].utpm,
+												(u8 *)(&g_rsa))) != 0) {
+		dprintf(LOG_ERROR, "[TV] ERROR: utpm_quote failed!\n");
+		return 1;
+	}
+
+	dprintf(LOG_TRACE, "[TV] quote data len = %d!\n", outlen);
+#if 0
+	dprintf(LOG_TRACE, "[TV] quote data is: ");
+	for(i=0;i<outlen;i++) {
+		dprintf(LOG_TRACE, "%x ", outdata[i]);
+	}
+	dprintf(LOG_TRACE, "\n");
+#endif
+
+	/* copy quote output to guest */
+	copy_to_guest(vcpu, out_addr, outdata, outlen);
+
+	/* copy quote output length to guest */
+	put_32bit_aligned_value_to_guest(vcpu, out_len_addr, outlen);
+	
 	return 0;
 }
 

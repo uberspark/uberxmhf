@@ -192,6 +192,37 @@ TPM_RESULT utpm_unseal_deprecated(utpm_master_state_t *utpm, uint8_t* input, uin
 	return 0;
 }
 
+/* Desired hypercall response-length semantics: Hypercall response length parameter is both an input and output parameter (i.e., pointer to a uint32_t).  Caller presets it to the size of its response buffer.  Hypercall resets it to the size of the true response if the hypercall succeeds (i.e., buffer is big enough), or to the required size if the hypercall fails because the response buffer is too small. */
+TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hypercall inputs */
+                      uint8_t* output, uint32_t* outlen, /* hypercall outputs */
+                      utpm_master_state_t *utpm, uint8_t* rsa) /* TrustVisor inputs */
+{
+    uint32_t i;
+    printf("[TV:UTPM] utpm_quote invoked\n");
+
+    if(!externalnonce || !tpmsel || !output || !outlen || !utpm || !rsa) {
+        printf("[TV:UTPM] ERROR: NULL function parameter!\n");
+        return 1;
+    }
+
+    if(*outlen < TPM_QUOTE_SIZE) {
+        printf("[TV:UTPM] *outlen (%d) too small; try again with at least TPM_QUOTE_SIZE bytes\n",
+               *outlen);
+        *outlen = TPM_QUOTE_SIZE;
+        return 1;
+    }
+
+	dprintf(LOG_TRACE, "[TV] utpm_quote: externalnonce:\n    ", outlen);
+	for(i=0; i<sizeof(TPM_NONCE); i++) {
+		dprintf(LOG_TRACE, "%x ", externalnonce->nonce[i]);
+	}
+	dprintf(LOG_TRACE, "\n");
+    
+    printf("[TV:UTPM] utpm_quote: inputs look sane but I'm UNIMPLEMENTED\n");
+    
+    return 0;
+}
+
 /*
  * todo: get TPM_QUOTE_INFO, then sign it
  * input: externalnonce, get from external server to avoid replay attack

@@ -181,6 +181,7 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr);
 u32 scode_seal(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrhash_addr, u32 output_addr, u32 output_len_addr);
 u32 scode_unseal(VCPU * vcpu, u32 input_addr, u32 input_len, u32 output_addr, u32 output_len_addr);
 u32 scode_quote_deprecated(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 out_len_addr);
+u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 out_len_addr);
 u32 scode_share(VCPU * vcpu, u32 scode_entry, u32 addr, u32 len);
 #endif /* __SCODE_H_ */
 /* Local Variables: */
