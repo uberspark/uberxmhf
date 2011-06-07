@@ -46,6 +46,8 @@
 #include <tee-sdk/tz.h>
 #include <tee-sdk/tzmarshal.h>
 
+#include <trustvisor/tv_utpm.h>
+
 /* int test_marshal() */
 /* { */
 /*   tzi_encode_buffer_t *psEnc, *psEnc2; */
@@ -255,10 +257,8 @@ int test_seal(tz_session_t *tzPalSession)
 
 int test_quote(tz_session_t *tzPalSession)
 {
-  uint8_t *nonce;
-  uint32_t nonceLen=20; /* from constant? */
-  uint32_t tpmsel[] = {1, 0}; /* 1 PCR, value 0 */
-  uint32_t tpmselLen=2;
+  TPM_NONCE *nonce;
+  TPM_PCR_SELECTION *tpmsel;
   uint32_t *quote;
   uint32_t quoteLen;
 
@@ -279,18 +279,28 @@ int test_quote(tz_session_t *tzPalSession)
   assert(tzRet == TZ_SUCCESS);
 
   /* setup nonce */
-  nonce = TZEncodeArraySpace(&tz_quoteOp, nonceLen);
+  nonce = TZEncodeArraySpace(&tz_quoteOp, sizeof(TPM_NONCE));
   if (nonce == NULL) {
     rv = 1;
     goto out;
   }
-  for(i=0; i<nonceLen; i++) {
-    nonce[i] = (uint8_t)i;
+  for(i=0; i<sizeof(TPM_NONCE); i++) {
+    nonce->nonce[i] = (uint8_t)i;
   }
 
   /* setup tpmsel */
-  TZEncodeArray(&tz_quoteOp, tpmsel, tpmselLen*sizeof(uint32_t));
-
+  tpmsel = TZEncodeArraySpace(&tz_quoteOp, sizeof(TPM_PCR_SELECTION));
+  if(tpmsel == NULL) {
+      rv = 1;
+      goto out;
+  }
+  /* select all PCRs for inclusion in test quote */
+  assert(8 == TPM_PCR_NUM); /* want this test to fail if uTPM's grow more uPCRs */
+  tpmsel->sizeOfSelect = 1; /* 1 byte to select 8 PCRs */
+  for(i=0; i<8; i++) {
+      utpm_pcr_select_i(tpmsel, i);
+  }
+  
   /* call pal */
   tzRet = TZOperationPerform(&tz_quoteOp, &serviceReturn);
   if (tzRet != TZ_SUCCESS) {
@@ -306,6 +316,7 @@ int test_quote(tz_session_t *tzPalSession)
   }
 
   /* get actual quote len */
+  /* FIXME: this should be a fixed size */
   quoteLen = TZDecodeUint32(&tz_quoteOp);
 
   if (TZDecodeGetError(&tz_quoteOp) != TZ_SUCCESS) {
@@ -326,6 +337,7 @@ int test_quote(tz_session_t *tzPalSession)
     printf("quote pcr sel error!\n");
     return 1;
   }
+  /* FIXME: code below makes my eyeballs bleed */
   pdata = ((uint8_t*)quote)+8+4+4*num;
   for( i=0 ; i<num ; i++ )  {
     printf("PCR[%d] = ", quote[3+i]);

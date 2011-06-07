@@ -142,6 +142,7 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
       uint32_t quoteLen = 800; /* FIXME should be TPM_QUOTE_SIZE, or dynamically check */;
       *puiRv = TZ_SUCCESS;
 
+      /* Decode input parameters from legacy userspace's test.c */
       nonce = (TPM_NONCE*)TZIDecodeArraySpace(psInBuf, &nonceLen);
       tpmsel = (TPM_PCR_SELECTION*)TZIDecodeArraySpace(psInBuf, &tpmselLen);
       if (TZIDecodeGetError(psInBuf) != TZ_SUCCESS) {
@@ -149,12 +150,14 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
         break;
       }
 
+      /* Sanity-check input parameters */
       if (tpmselLen != sizeof(TPM_PCR_SELECTION)
           || nonceLen != sizeof(TPM_NONCE)) {
         *puiRv = TZ_ERROR_ENCODE_FORMAT;
         break;
       }
 
+      /* Prepare the output buffer to hold the response back to userspace. */
       quote = TZIEncodeArraySpace(psOutBuf, quoteLen);
       if (TZIDecodeGetError(psOutBuf) != TZ_SUCCESS) {
         *puiRv = TZIDecodeGetError(psOutBuf);
@@ -164,16 +167,23 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
         break;
       }
 
+      /* Make the hypercall to invoke the uTPM operation */
       *puiRv = pal_quote(nonce, tpmsel, quote, &quoteLen);
       if (*puiRv != TZ_SUCCESS) {
         break;
       }
-
+      
+      /* Also encode the length of the result. */
       TZIEncodeUint32(psOutBuf, quoteLen);
       if (TZIDecodeGetError(psOutBuf) != TZ_SUCCESS) {
         *puiRv = TZIDecodeGetError(psOutBuf);
         break;
       }
+
+      /* XXX: What we really want is to invoke the hypercall in a preliminary way in accordance with desired hypercall response-length sematics. */
+
+      /* Desired hypercall response-length semantics: Hypercall response length parameter is both an input and output parameter (i.e., pointer to a uint32_t).  Caller presets it to the size of its response buffer.  Hypercall resets it to the size of the true response if the hypercall succeeds (i.e., buffer is big enough), or to the required size if the hypercall fails because the response buffer is too small. */
+      
     }
     break;
 
@@ -306,7 +316,7 @@ tz_return_t pal_unseal(uint8_t *input, uint8_t inputLen, uint8_t *output, size_t
 __attribute__ ((section (".scode")))
 tz_return_t pal_quote(IN TPM_NONCE *nonce,
                       IN TPM_PCR_SELECTION *tpmsel,
-                      OUT uint8_t *quote, OUT size_t *quote_len) 
+                      OUT uint8_t *quote, INOUT size_t *quote_len) 
 {
   if (!svc_utpm_quote(nonce, tpmsel, quote, quote_len)) {
     return TZ_SUCCESS;
