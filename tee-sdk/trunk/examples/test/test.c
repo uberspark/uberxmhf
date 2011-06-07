@@ -280,8 +280,7 @@ int test_quote(tz_session_t *tzPalSession)
   tz_return_t tzRet, serviceReturn;
   tz_operation_t tz_quoteOp;
   
-  unsigned char *pdata;
-  int num, i,j;
+  int i;
   int rv = 0;
   
   printf("\nQUOTE\n");
@@ -339,41 +338,17 @@ int test_quote(tz_session_t *tzPalSession)
     goto out;
   }
 
-  printf("output len = %d!\n", quoteLen);
-
   if(quoteLen <= TPM_MAX_QUOTE_LEN) {
       print_hex("  Q: ", quote, quoteLen);
   } else {
       printf("ERROR: quoteLen (%d) > TPM_MAX_QUOTE_LEN! First 16 bytes of response:\n", quoteLen);
       print_hex("  Q! ", quote, 16);
+      goto out;
   }
 
-  if (quote[0] != 0x00000101
-      || quote[1] != 0x544f5551) {
-    printf("quote header error!\n");
-    rv = 1;
-    goto out;
-  }
-  num = quote[2];
-  if (num > 4) {
-    printf("quote pcr sel error!\n");
-    rv = 1;
-    goto out;
-  }
-  /* FIXME: code below makes my eyeballs bleed */
-  pdata = ((uint8_t*)quote)+8+4+4*num;
-  for( i=0 ; i<num ; i++ )  {
-    printf("PCR[%d] = ", quote[3+i]);
-    for (j=0; j<20; j++) 
-      printf("%#x ", *(pdata+i*20+j));
-    printf("\n");
-  }
-  pdata = ((uint8_t*)quote)+8+4+24*num;
-  printf("nonce = ");
-  for( i=0 ; i<20 ; i++ )  
-    printf("%x ", *(pdata+i));
-  printf("\n");
 
+  /* TODO: Verify the signature in the Quote */
+  
 
  out:
   TZOperationRelease(&tz_quoteOp);
