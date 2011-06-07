@@ -9,7 +9,7 @@ TESTS=-DTEST_VMMCALL -DTEST_WITHOUTPARAM -DTEST_PARAM -DTEST_SEAL -DTEST_QUOTE -
 PROG_NAME=test
 CFLAGS=-g -Wall
 CPPFLAGS=$(TESTS)
-PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv
+PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv libssl libcrypto
 PROG_OBJS=test.o
 
 PAL_NAME=pals
