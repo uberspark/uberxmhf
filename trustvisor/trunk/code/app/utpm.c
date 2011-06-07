@@ -212,13 +212,20 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
         return 1;
     }
 
-	dprintf(LOG_TRACE, "[TV] utpm_quote: externalnonce:\n    ", *outlen);
+	dprintf(LOG_TRACE, "[TV:UTPM] utpm_quote: externalnonce:\n    ", *outlen);
 	for(i=0; i<sizeof(TPM_NONCE); i++) {
 		dprintf(LOG_TRACE, "%x ", externalnonce->nonce[i]);
 	}
 	dprintf(LOG_TRACE, "\n");
+
+    dprintf(LOG_TRACE, "[TV:UTPM] utpm_quote: tpmsel->sizeOfSelect %d\n", tpmsel->sizeOfSelect);
+    print_hex("   tpmsel->pcrSelect: ", tpmsel->pcrSelect, tpmsel->sizeOfSelect);
+    for(i=0; i<2*TPM_PCR_NUM; i++) {
+        dprintf(LOG_TRACE, "  uPCR-%d: %s\n", i,
+                utpm_pcr_is_selected(tpmsel, i) ? "included" : "excluded");
+    }
     
-    printf("[TV:UTPM] utpm_quote: inputs look sane but I'm UNIMPLEMENTED\n");
+    dprintf(LOG_TRACE, "[TV:UTPM] utpm_quote: inputs look sane but I'm UNIMPLEMENTED\n");
 
     /* Populate with some dummy values to test marshalling, etc. */
     *outlen = TPM_QUOTE_SIZE;

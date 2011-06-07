@@ -84,11 +84,20 @@ typedef struct tdTPM_PCR_SELECTION {
 static inline void utpm_pcr_select_i(TPM_PCR_SELECTION *tpmsel, uint32_t i) {
     /* TODO: fail loudly if any of these conditions do not hold */
     if(NULL == tpmsel) return;
-    if(i > TPM_PCR_NUM/8) return;
+    if(i >= TPM_PCR_NUM) return;    
     if(i/8 >= tpmsel->sizeOfSelect) return;
     
     /* Set the bit corresponding to PCR i */
-    tpmsel->pcrSelect[i/8] &= (1 << (i%8));
+    tpmsel->pcrSelect[i/8] |= (1 << (i%8));
+}
+
+static inline bool utpm_pcr_is_selected(TPM_PCR_SELECTION *tpmsel, uint32_t i) {
+    /* TODO: fail loudly if any of these conditions do not hold */
+    if(NULL == tpmsel) return false;
+    if(i >= TPM_PCR_NUM) return false;
+    if(i/8 >= tpmsel->sizeOfSelect) return false;
+
+    return (tpmsel->pcrSelect[i/8] & (1 << (i%8)));
 }
 
 typedef struct tdTPM_DIGEST{
