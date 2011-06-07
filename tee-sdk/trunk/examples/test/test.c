@@ -312,9 +312,9 @@ int test_quote(tz_session_t *tzPalSession)
   /* select all PCRs for inclusion in test quote */
   assert(8 == TPM_PCR_NUM); /* want this test to fail if uTPM's grow more uPCRs */
   tpmsel->sizeOfSelect = 1; /* 1 byte to select 8 PCRs */
-  for(i=0; i<8; i++) {
+  for(i=0; i<8; i+=2) {
       utpm_pcr_select_i(tpmsel, i);
-  }
+  }  
   
   /* call pal */
   tzRet = TZOperationPerform(&tz_quoteOp, &serviceReturn);
