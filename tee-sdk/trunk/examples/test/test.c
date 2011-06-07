@@ -275,7 +275,7 @@ int test_quote(tz_session_t *tzPalSession)
   TPM_NONCE *nonce;
   TPM_PCR_SELECTION *tpmsel;
   uint8_t *quote;
-  uint32_t quoteLen;
+  uint32_t quoteLen = TPM_MAX_QUOTE_LEN;
 
   tz_return_t tzRet, serviceReturn;
   tz_operation_t tz_quoteOp;
@@ -283,7 +283,7 @@ int test_quote(tz_session_t *tzPalSession)
   unsigned char *pdata;
   int num, i,j;
   int rv = 0;
-
+  
   printf("\nQUOTE\n");
 
   /* prep operation */
@@ -329,7 +329,11 @@ int test_quote(tz_session_t *tzPalSession)
     rv = 1;
     goto out;
   }
+  printf("max quoteLen = %d\n", quoteLen);
 
+  quoteLen = TZDecodeUint32(&tz_quoteOp);
+  printf("actual quoteLen = %d\n", quoteLen);
+  
   if (TZDecodeGetError(&tz_quoteOp) != TZ_SUCCESS) {
     rv = 1;
     goto out;
@@ -337,10 +341,10 @@ int test_quote(tz_session_t *tzPalSession)
 
   printf("output len = %d!\n", quoteLen);
 
-  if(quoteLen > 2*TPM_QUOTE_SIZE) {
+  if(quoteLen <= TPM_MAX_QUOTE_LEN) {
       print_hex("  Q: ", quote, quoteLen);
   } else {
-      printf("ERROR: quoteLen is not sane (%d). First 16 bytes of response:\n", quoteLen);
+      printf("ERROR: quoteLen (%d) > TPM_MAX_QUOTE_LEN! First 16 bytes of response:\n", quoteLen);
       print_hex("  Q! ", quote, 16);
   }
 
