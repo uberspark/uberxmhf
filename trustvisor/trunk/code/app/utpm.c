@@ -210,30 +210,24 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
                       uint8_t* output, uint32_t* outlen, /* hypercall outputs */
                       utpm_master_state_t *utpm, uint8_t* rsa) /* TrustVisor inputs */
 {
-    uint32_t i;
-    uint32_t num_pcrs_to_include_in_quote=0;
-    uint32_t space_needed_for_composite;
-    uint8_t *tpm_pcr_composite;
-    uint8_t *p;
+    TPM_RESULT rv = 0; /* success */
+    uint32_t i = 0;
+    uint32_t num_pcrs_to_include_in_quote = 0;
+    uint32_t space_needed_for_composite = 0;
+    uint8_t *tpm_pcr_composite = NULL;
+    uint8_t *p = NULL;
+    TPM_QUOTE_INFO quote_info;    
+    uint32_t required_output_size;
+
     printf("[TV:UTPM] utpm_quote invoked\n");
 
     if(!externalnonce || !tpmsel || !output || !outlen || !utpm || !rsa) {
         printf("[TV:UTPM] ERROR: NULL function parameter!\n");
-        return 1;
+        rv = 1; /* FIXME: Indicate invalid input parameter */
+        goto out;
     }
 
-    if(*outlen < TPM_QUOTE_SIZE) {
-        printf("[TV:UTPM] *outlen (%d) too small; try again with at least TPM_QUOTE_SIZE bytes\n",
-               *outlen);
-        *outlen = TPM_QUOTE_SIZE;
-        return 1;
-    }
-
-	dprintf(LOG_TRACE, "[TV:UTPM] utpm_quote: externalnonce:\n    ", *outlen);
-	for(i=0; i<sizeof(TPM_NONCE); i++) {
-		dprintf(LOG_TRACE, "%x ", externalnonce->nonce[i]);
-	}
-	dprintf(LOG_TRACE, "\n");
+    print_hex(" externalnonce: ", externalnonce->nonce, TPM_HASH_SIZE);
 
     dprintf(LOG_TRACE, "[TV:UTPM] utpm_quote: tpmsel->sizeOfSelect %d\n", tpmsel->sizeOfSelect);
     print_hex("   tpmsel->pcrSelect: ", tpmsel->pcrSelect, tpmsel->sizeOfSelect);
@@ -243,22 +237,14 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
         }
         dprintf(LOG_TRACE, "  uPCR-%d: %s\n", i,
                 utpm_pcr_is_selected(tpmsel, i) ? "included" : "excluded");
-    }
-    
-    dprintf(LOG_TRACE, "[TV:UTPM] utpm_quote: inputs look sane but I'm UNIMPLEMENTED\n");
-
-    /* Populate with some dummy values to test marshalling, etc. */
-    *outlen = TPM_QUOTE_SIZE;
-    for(i=0; i<*outlen; i++) {
-        output[i] = (uint8_t)i;
-    }
+    }    
 
     /**
      * Construct TPM_COMPOSITE structure that will summarize the relevant PCR values
      */
 
     /* Allocate space for the necessary number of uPCR values */
-    // TPM_COMPOSITE contains TPM_PCR_SELECTION + n*TPM_HASH_SIZE PCR values
+    // TPM_PCR_COMPOSITE contains TPM_PCR_SELECTION + n*TPM_HASH_SIZE PCR values
     
     /* struct TPM_PCR_COMPOSITE {
          TPM_PCR_SELECTION select;
@@ -286,7 +272,7 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
         return 1;
     }
 
-    // Populate TPM_COMPOSITE buffer
+    /** Populate TPM_COMPOSITE buffer **/
     p = tpm_pcr_composite;
     /* 1. TPM_PCR_COMPOSITE.select */ 
     vmemcpy(p, tpmsel, sizeof(tpmsel->sizeOfSelect) + tpmsel->sizeOfSelect);
@@ -307,17 +293,62 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
     if((uint32_t)p-(uint32_t)tpm_pcr_composite != space_needed_for_composite) {
         dprintf(LOG_ERROR, "[TV:UTPM] ERROR! (uint32_t)p-(uint32_t)tpm_pcr_composite "
                 "!= space_needed_for_composite\n");
+        rv = 1; /* FIXME: Indicate internal error */
         goto out;
     }
     
     print_hex(" TPM_PCR_COMPOSITE: ", tpm_pcr_composite, space_needed_for_composite);
     
     /**
-     * Construct TPM_QUOTE_INFO structure which will be signed and hashed
+     * Populate 4-element TPM_QUOTE_INFO structure which will be hashed and signed
      */
 
+    /* 1) 1.1.0.0 for consistency w/ TPM 1.2 spec */
+    *((uint32_t*)&quote_info.version) = 0x00000101; 
+    /* 2) 'QUOT' */
+    *((uint32_t*)quote_info.fixed) = 0x544f5551; 
+    /* 3) SHA-1 hash of TPM_PCR_COMPOSITE */
+    sha1_csum(tpm_pcr_composite, space_needed_for_composite, quote_info.digestValue.value);
+    /* 4) external nonce */
+    vmemcpy(quote_info.externalData.nonce, externalnonce->nonce, TPM_HASH_SIZE);
+
+    /**
+     * Compute the signature and format the output buffer
+     */
+
+    /* Output buffer: [ TPM_PCR_COMPOSITE | sigSize | sig ] */
+    required_output_size = space_needed_for_composite +
+        sizeof(uint32_t) + TPM_RSA_KEY_LEN;
+
+    if(required_output_size > *outlen) {
+        dprintf(LOG_ERROR, "ERROR: required_output_size (%d) > *outlen (%d)\n",
+                required_output_size, *outlen);
+        *outlen = required_output_size;
+        rv = 1; /* FIXME: Indicate insufficient output buffer size */
+        goto out;
+    }
+
+    *outlen = required_output_size;
+    
+    p = output;
+    vmemcpy(p, tpm_pcr_composite, space_needed_for_composite);
+    p += space_needed_for_composite;
+    *((uint32_t*)p) = TPM_RSA_KEY_LEN;
+    p += sizeof(uint32_t);
+    
+
+	if ((rv = tpm_pkcs1_sign((rsa_context *)rsa,
+                             sizeof(TPM_QUOTE_INFO),
+                             (uint8_t*)&quote_info,
+                             p)) != 0) {
+		printf("[TV:UTPM] ERROR: tpm_pkcs1_sign FAILED\n");
+		goto out;
+	}
+
+    dprintf(LOG_TRACE, "[TV:UTPM] Success!\n");
+    
   out:
-    vfree(tpm_pcr_composite); tpm_pcr_composite = NULL;
+    if(tpm_pcr_composite) { vfree(tpm_pcr_composite); tpm_pcr_composite = NULL; }
     
     return 0;
 }
