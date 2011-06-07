@@ -1480,7 +1480,7 @@ u32 scode_unseal(VCPU * vcpu, u32 input_addr, u32 input_len, u32 output_addr, u3
 	return 0;
 }
 
-u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 out_len_addr)
+u32 scode_quote_deprecated(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 out_len_addr)
 {
 	u8 outdata[TPM_QUOTE_SIZE];
 	u8 nonce[TPM_NONCE_SIZE];

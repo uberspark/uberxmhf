@@ -203,7 +203,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				out_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf);
 				out_len_addr = get_32bit_aligned_value_from_guest(vcpu,outbuf+4);
 
-				ret = scode_quote(vcpu,nonce_addr,tpmsel_addr,out_addr,out_len_addr);
+				ret = scode_quote_deprecated(vcpu,nonce_addr,tpmsel_addr,out_addr,out_len_addr);
 
 				break;
 			}
