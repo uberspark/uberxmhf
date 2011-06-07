@@ -81,6 +81,13 @@ typedef struct tdTPM_PCR_SELECTION {
                                             is active or not */
 } TPM_PCR_SELECTION; 
 
+#define TPM_MAX_QUOTE_LEN ( \
+    sizeof(TPM_PCR_SELECTION) + sizeof(uint32_t) \
+    + TPM_PCR_NUM*TPM_HASH_SIZE /* max size of TPM_PCR_COMPOSITE */ \
+    + sizeof(uint32_t)          /* sigSize */ \
+    + TPM_RSA_KEY_LEN)          /* sig */
+
+
 static inline void utpm_pcr_select_i(TPM_PCR_SELECTION *tpmsel, uint32_t i) {
     /* TODO: fail loudly if any of these conditions do not hold */
     if(NULL == tpmsel) return;
