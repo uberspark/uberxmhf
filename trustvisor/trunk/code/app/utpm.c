@@ -314,7 +314,7 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
     vmemcpy(quote_info.externalData.nonce, externalnonce->nonce, TPM_HASH_SIZE);
 
     print_hex(" quote_info: ", (uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO));
-
+    
     /**
      * Compute the signature and format the output buffer
      */
@@ -348,6 +348,21 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
 		printf("[TV:UTPM] ERROR: tpm_pkcs1_sign FAILED\n");
 		goto out;
 	}
+
+#if 0
+    { /* FIXME: Temporarily inserted code to verify our own signature
+       * to make sure it works! */
+        TPM_DIGEST tmp;
+        sha1_csum((uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO), tmp.value);
+        print_hex("sha1(quote_info): ", tmp.value, TPM_HASH_SIZE);
+        
+        printf("rsa_pkcs1_verify = %s\n",
+               rsa_pkcs1_verify((rsa_context *)rsa,
+                                RSA_PUBLIC, RSA_SHA1, 20,
+                                tmp.value, p) == 0 ? "SUCCESS" : "FAIL"
+               );               
+    }
+#endif /* if 0 */
     
     dprintf(LOG_TRACE, "[TV:UTPM] Success!\n");
     
