@@ -276,7 +276,8 @@ int test_id_getpub(tz_session_t *tzPalSession)
 {
   tz_return_t tzRet, serviceReturn;
   tz_operation_t tzOp;
-  uint8_t *rsaModulus;
+  uint8_t *rsaModulus = NULL;
+  uint32_t rsaModLen;
   uint32_t rv = 0;
   
   printf("ID_GETPUB\n");
@@ -288,15 +289,6 @@ int test_id_getpub(tz_session_t *tzPalSession)
                                    &tzOp);
   assert(tzRet == TZ_SUCCESS);
 
-  /* Prepare space to put RSA pubkey modulus */
-  rsaModulus = TZEncodeArraySpace(&tzOp, TPM_RSA_KEY_LEN);
-  if (rsaModulus == NULL) {
-    rv = 1;
-    printf("Failure at %s:%d\n", __FILE__, __LINE__); 
-    printf("tzRet 0x%08x\n", tzRet);
-    goto out;
-  }
-
   /* Call PAL */
   tzRet = TZOperationPerform(&tzOp, &serviceReturn);
   if (tzRet != TZ_SUCCESS) {
@@ -305,15 +297,17 @@ int test_id_getpub(tz_session_t *tzPalSession)
     printf("tzRet 0x%08x\n", tzRet);
     goto out;
   }
-  
-  if (TZDecodeGetError(&tzOp) != TZ_SUCCESS) {
+
+  /* read out RSA public key modulus */
+  rsaModulus = TZDecodeArraySpace(&tzOp, &rsaModLen);
+  if (rsaModulus == NULL) {
     rv = 1;
-    printf("Failure at %s:%d\n", __FILE__, __LINE__); 
-    printf("tzRet 0x%08x\n", tzRet);
     goto out;
   }
 
-  print_hex("  id_getpub: ", rsaModulus, TPM_RSA_KEY_LEN);
+  assert(rsaModLen == TPM_RSA_KEY_LEN);
+  
+  print_hex("  id_getpub: ", rsaModulus, rsaModLen);
   
  out:
   TZOperationRelease(&tzOp);
