@@ -1649,9 +1649,17 @@ uint32_t scode_utpm_id_getpub(VCPU * vcpu, uint32_t gvaddr)
 		return 1;
 	}
 
+	/* Must use MPI export function to get big endian N */
+	if(mpi_write_binary(&g_rsa.N, rsaModulus, TPM_RSA_KEY_LEN) != 0) {
+			dprintf(LOG_ERROR, "mpi_write_binary ERROR\n");
+			return 1;
+	}
+
+	//print_hex("  N  : ", rsaModulus, TPM_RSA_KEY_LEN);
+	
 	/* XXX TODO FIXME: RSA public identity key should be part of uTPM
 	 * structure and not a global variable here in scode.c */
-	copy_to_guest(vcpu, gvaddr, (uint8_t*)(g_rsa.N.p), TPM_RSA_KEY_LEN);
+	copy_to_guest(vcpu, gvaddr, rsaModulus, TPM_RSA_KEY_LEN);
 	
 	return 0;
 }
