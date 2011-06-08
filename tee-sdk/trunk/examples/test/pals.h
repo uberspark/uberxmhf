@@ -46,6 +46,7 @@ typedef enum {
   PAL_SEAL,
   PAL_UNSEAL,
   PAL_QUOTE,
+  PAL_ID_GETPUB,
   PAL_PCR_READ,
   PAL_PCR_EXTEND,
   PAL_RAND,
@@ -61,6 +62,7 @@ tz_return_t pal_unseal(uint8_t *input, uint8_t inputLen, uint8_t *output, size_t
 tz_return_t pal_quote(IN TPM_NONCE *nonce,
                       IN TPM_PCR_SELECTION *tpmsel,
                       OUT uint8_t *quote, OUT size_t *quote_len);
+tz_return_t pal_id_getpub(OUT uint8_t* rsaModulus);
 tz_return_t pal_pcr_extend(IN uint32_t idx,
                            IN uint8_t *meas);
 tz_return_t pal_pcr_read(IN uint32_t idx,

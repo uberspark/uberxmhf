@@ -185,6 +185,27 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
     }
     break;
 
+    case PAL_ID_GETPUB:
+    {
+      uint8_t *rsaModulus;
+      
+      /* Prepare the output buffer to hold the response back to userspace. */
+      rsaModulus = TZIEncodeArraySpace(psOutBuf, TPM_RSA_KEY_LEN);
+      if (TZIDecodeGetError(psOutBuf) != TZ_SUCCESS) {
+        *puiRv = TZIDecodeGetError(psOutBuf);
+        break;
+      } else if (rsaModulus == NULL) {
+        *puiRv = TZ_ERROR_GENERIC;
+        break;
+      }
+
+      *puiRv = pal_id_getpub(rsaModulus);
+      if (*puiRv != TZ_SUCCESS) {
+        break;
+      }      
+    }
+    break;
+    
     case PAL_PCR_EXTEND:
     {
       uint8_t *measIn;
@@ -321,6 +342,16 @@ tz_return_t pal_quote(IN TPM_NONCE *nonce,
   } else {
     return TZ_ERROR_GENERIC;
   }
+}
+
+__attribute__ ((section (".scode")))
+tz_return_t pal_id_getpub(OUT uint8_t* rsaModulus)
+{
+    if(!svc_utpm_id_getpub(rsaModulus)) {
+        return TZ_SUCCESS;
+    } else {
+        return TZ_ERROR_GENERIC;
+    }
 }
 
 __attribute__ ((section (".scode")))
