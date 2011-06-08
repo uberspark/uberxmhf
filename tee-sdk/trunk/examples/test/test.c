@@ -43,6 +43,8 @@
 #include  <string.h>
 
 #include <openssl/sha.h>
+#include <openssl/rsa.h>
+#include <openssl/engine.h>
 
 #include <tee-sdk/tv.h>
 #include <tee-sdk/tz.h>
@@ -272,7 +274,7 @@ int test_seal(tz_session_t *tzPalSession)
   return rv;
 }
 
-int test_id_getpub(tz_session_t *tzPalSession)
+int test_id_getpub(tz_session_t *tzPalSession, uint8_t *rsaMod)
 {
   tz_return_t tzRet, serviceReturn;
   tz_operation_t tzOp;
@@ -282,6 +284,8 @@ int test_id_getpub(tz_session_t *tzPalSession)
   
   printf("ID_GETPUB\n");
 
+  assert(NULL != rsaMod);
+  
   /* prep operation */
   tzRet = TZOperationPrepareInvoke(tzPalSession,
                                    PAL_ID_GETPUB,
@@ -306,8 +310,8 @@ int test_id_getpub(tz_session_t *tzPalSession)
   }
 
   assert(rsaModLen == TPM_RSA_KEY_LEN);
-  
-  print_hex("  id_getpub: ", rsaModulus, rsaModLen);
+
+  memcpy(rsaMod, rsaModulus, rsaModLen);
   
  out:
   TZOperationRelease(&tzOp);
@@ -316,9 +320,13 @@ int test_id_getpub(tz_session_t *tzPalSession)
   return rv;  
 }
 
-int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uint32_t sig_len,
+int verify_quote(tz_session_t *tzPalSession,
+                 uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uint32_t sig_len,
                  TPM_NONCE *externalnonce) {
     TPM_QUOTE_INFO quote_info;
+    uint8_t rsaMod[TPM_RSA_KEY_LEN];
+    RSA *rsa = NULL;
+    uint32_t rv=0;
 
     /* 1) 1.1.0.0 for consistency w/ TPM 1.2 spec */
     *((uint32_t*)&quote_info.version) = 0x00000101; 
@@ -334,6 +342,50 @@ int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uin
     memcpy(quote_info.externalData.nonce, externalnonce->nonce, TPM_HASH_SIZE);
 
     print_hex(" quote_info: ", (uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO));
+
+    uint8_t digestPrime[TPM_HASH_SIZE];
+    SHA1((uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO), digestPrime);
+    print_hex(" digestPrime: ", digestPrime, TPM_HASH_SIZE);
+    
+
+    /**
+     * Assemble the public key used to check the quote.
+     */
+    
+    test_id_getpub(tzPalSession, rsaMod);
+
+    print_hex("  rsaMod: ", rsaMod, TPM_RSA_KEY_LEN);
+
+    if(NULL == (rsa = RSA_new())) {
+        printf("ERROR: RSA_new() failed\n");
+        return 1;
+    }
+
+    /* N */
+    if(NULL == (rsa->n = BN_bin2bn(rsaMod, TPM_RSA_KEY_LEN, NULL))) {
+        printf("ERROR: BN_bin2bn() failed\n");
+        goto out;
+    }
+
+    /* E */
+    if(0 == BN_dec2bn(&rsa->e, "65537")) {
+        printf("ERROR: BN_dec2bn() failed\n");
+        goto out;
+    }        
+
+    /**
+     * Verify the signature!
+     *
+     int RSA_verify(int type, const unsigned char *m, unsigned int m_len,
+                    unsigned char *sigbuf, unsigned int siglen, RSA *rsa);
+    */
+    rv = RSA_verify(NID_sha1, digestPrime, TPM_HASH_SIZE, sig, sig_len, rsa);
+    printf("RSA_verify: %d\n", rv);
+    
+  out:
+    /* RSA_free() frees the RSA structure and its components. The key
+     * is erased before the memory is returned to the system. */
+    if(rsa) { RSA_free(rsa); rsa = NULL; }
     
     return 0;
 }
@@ -351,8 +403,6 @@ int test_quote(tz_session_t *tzPalSession)
   int i;
   int rv = 0;
 
-  test_id_getpub(tzPalSession);
-  
   printf("\nQUOTE\n");
 
   /* prep operation */
@@ -426,16 +476,15 @@ int test_quote(tz_session_t *tzPalSession)
   printf("tpm_pcr_composite_size %d, sigSize %d\n",
          tpm_pcr_composite_size, sigSize);
   
-  assert(sigSize == TPM_RSA_KEY_LEN);
-  
-  if((rv = verify_quote(quote, tpm_pcr_composite_size, sig, sigSize, nonce)) != 0) {
-      printf("verify_quote FAILED\n");
-      goto out;
-  }
+  assert(sigSize == TPM_RSA_KEY_LEN);  
 
  out:
   TZOperationRelease(&tz_quoteOp);
 
+  if((rv = verify_quote(tzPalSession, quote, tpm_pcr_composite_size, sig, sigSize, nonce)) != 0) {
+      printf("verify_quote FAILED\n");
+  }
+  
   return rv;
 }
 
