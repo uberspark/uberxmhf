@@ -98,6 +98,10 @@ static inline void utpm_pcr_select_i(TPM_PCR_SELECTION *tpmsel, uint32_t i) {
     tpmsel->pcrSelect[i/8] |= (1 << (i%8));
 }
 
+#ifndef bool
+#define bool char
+#endif
+
 static inline bool utpm_pcr_is_selected(TPM_PCR_SELECTION *tpmsel, uint32_t i) {
     /* TODO: fail loudly if any of these conditions do not hold */
     if(NULL == tpmsel) return false;

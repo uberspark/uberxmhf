@@ -204,6 +204,13 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 
 				break;
 			}
+    case TV_HC_UTPM_ID_GETPUB:
+		  {
+        u32 addr;
+				addr = r->ecx;
+				ret = scode_utpm_id_getpub(vcpu, addr);
+				break;
+			}
 		case TV_HC_UTPM_QUOTE_DEPRECATED:
 			{
 				u32 outbuf, nonce_addr, tpmsel_addr, out_addr, out_len_addr;

@@ -1638,6 +1638,25 @@ u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 
 	return ret;
 }
 
+uint32_t scode_utpm_id_getpub(VCPU * vcpu, uint32_t gvaddr)
+{
+  uint8_t rsaModulus[TPM_RSA_KEY_LEN];
+	dprintf(LOG_TRACE, "\n[TV] ********** uTPM id_getpub **********\n");
+
+	/* make sure that this vmmcall can only be executed when a PAL is running */
+	if (scode_curr[vcpu->id]== -1) {
+		dprintf(LOG_ERROR, "[TV] ID_GETPUB ERROR: no PAL is running!\n");
+		return 1;
+	}
+
+	/* XXX TODO FIXME: RSA public identity key should be part of uTPM
+	 * structure and not a global variable here in scode.c */
+	copy_to_guest(vcpu, gvaddr, (uint8_t*)(g_rsa.N.p), TPM_RSA_KEY_LEN);
+	
+	return 0;
+}
+
+
 void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* entry)
 {
 	u32 i;

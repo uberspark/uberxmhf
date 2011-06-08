@@ -55,6 +55,7 @@ enum HCcmd {
   TV_HC_UTPM_SEAL	=10,
   TV_HC_UTPM_UNSEAL	=11,
   TV_HC_UTPM_QUOTE =12,
+  TV_HC_UTPM_ID_GETPUB =13,
   /* Reserving up through 20 for more UTPM stuff; don't touch! */
   
   /* misc */
