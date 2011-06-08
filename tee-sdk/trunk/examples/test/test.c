@@ -42,8 +42,10 @@
 #include  <errno.h>
 #include  <string.h>
 
-#include <openssl/sha.h>
+#include <openssl/err.h>
+#include <openssl/evp.h>
 #include <openssl/rsa.h>
+#include <openssl/sha.h>
 #include <openssl/engine.h>
 
 #include <tee-sdk/tv.h>
@@ -320,13 +322,11 @@ int test_id_getpub(tz_session_t *tzPalSession, uint8_t *rsaMod)
   return rv;  
 }
 
-int verify_quote(tz_session_t *tzPalSession,
-                 uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uint32_t sig_len,
-                 TPM_NONCE *externalnonce) {
+int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uint32_t sig_len,
+                 TPM_NONCE *externalnonce, uint8_t* rsaMod) {
     TPM_QUOTE_INFO quote_info;
-    uint8_t rsaMod[TPM_RSA_KEY_LEN];
     RSA *rsa = NULL;
-    uint32_t rv=0;
+    int rv=0;
 
     /* 1) 1.1.0.0 for consistency w/ TPM 1.2 spec */
     *((uint32_t*)&quote_info.version) = 0x00000101; 
@@ -341,19 +341,11 @@ int verify_quote(tz_session_t *tzPalSession,
     /* 4) external nonce */
     memcpy(quote_info.externalData.nonce, externalnonce->nonce, TPM_HASH_SIZE);
 
-    print_hex(" quote_info: ", (uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO));
-
-    uint8_t digestPrime[TPM_HASH_SIZE];
-    SHA1((uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO), digestPrime);
-    print_hex(" digestPrime: ", digestPrime, TPM_HASH_SIZE);
-    
+    print_hex(" quote_info: ", (uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO));    
 
     /**
      * Assemble the public key used to check the quote.
-     */
-    
-    test_id_getpub(tzPalSession, rsaMod);
-
+     */    
     print_hex("  rsaMod: ", rsaMod, TPM_RSA_KEY_LEN);
 
     if(NULL == (rsa = RSA_new())) {
@@ -375,12 +367,21 @@ int verify_quote(tz_session_t *tzPalSession,
 
     /**
      * Verify the signature!
-     *
-     int RSA_verify(int type, const unsigned char *m, unsigned int m_len,
-                    unsigned char *sigbuf, unsigned int siglen, RSA *rsa);
-    */
-    rv = RSA_verify(NID_sha1, digestPrime, TPM_HASH_SIZE, sig, sig_len, rsa);
-    printf("RSA_verify: %d\n", rv);
+     */
+    
+    uint8_t digestPrime[TPM_HASH_SIZE];
+    SHA1((uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO), digestPrime);
+    print_hex(" digestPrime: ", digestPrime, TPM_HASH_SIZE);
+
+    if(1 != RSA_verify(NID_sha1, digestPrime, TPM_HASH_SIZE, sig, sig_len, rsa)) {
+        printf("ERROR: Quote verification FAILED!\n");
+        ERR_print_errors_fp(stdout);
+        rv = 1;
+        goto out;
+    } else {
+        printf("RSA_verify: SUCCESSfully verified quote\n");
+        rv = 0;
+    }
     
   out:
     /* RSA_free() frees the RSA structure and its components. The key
@@ -402,7 +403,18 @@ int test_quote(tz_session_t *tzPalSession)
   
   int i;
   int rv = 0;
+  
+  uint8_t rsaMod[TPM_RSA_KEY_LEN];
 
+  /**
+   * First get the public key that will eventually be used to verify the quote.
+   */
+  
+  if(0 != test_id_getpub(tzPalSession, rsaMod)) {
+      printf("test_id_getpub FAILED!\n");
+      goto out;
+  }
+  
   printf("\nQUOTE\n");
 
   /* prep operation */
@@ -471,19 +483,21 @@ int test_quote(tz_session_t *tzPalSession)
   //[ TPM_PCR_COMPOSITE | sigSize | sig ]
   uint32_t tpm_pcr_composite_size = quoteLen - TPM_RSA_KEY_LEN - sizeof(uint32_t);
   uint32_t sigSize = *((uint32_t*)(quote+tpm_pcr_composite_size));
-  uint8_t* sig = quote + tpm_pcr_composite_size + sigSize;
+  uint8_t* sig = quote + tpm_pcr_composite_size + sizeof(uint32_t);
 
   printf("tpm_pcr_composite_size %d, sigSize %d\n",
          tpm_pcr_composite_size, sigSize);
   
-  assert(sigSize == TPM_RSA_KEY_LEN);  
+  assert(sigSize == TPM_RSA_KEY_LEN);
 
- out:
-  TZOperationRelease(&tz_quoteOp);
-
-  if((rv = verify_quote(tzPalSession, quote, tpm_pcr_composite_size, sig, sigSize, nonce)) != 0) {
+  print_hex("  sig: ", sig, TPM_RSA_KEY_LEN);
+  
+  if((rv = verify_quote(quote, tpm_pcr_composite_size, sig, sigSize, nonce, rsaMod)) != 0) {
       printf("verify_quote FAILED\n");
   }
+
+  out:
+  TZOperationRelease(&tz_quoteOp);
   
   return rv;
 }
