@@ -314,6 +314,8 @@ int test_id_getpub(tz_session_t *tzPalSession, uint8_t *rsaMod)
   assert(rsaModLen == TPM_RSA_KEY_LEN);
 
   memcpy(rsaMod, rsaModulus, rsaModLen);
+
+  print_hex("  rsaMod: ", rsaMod, TPM_RSA_KEY_LEN);
   
  out:
   TZOperationRelease(&tzOp);
@@ -336,17 +338,18 @@ int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uin
     /* 3) SHA-1 hash of TPM_PCR_COMPOSITE */
     SHA1(tpm_pcr_composite, tpc_len, quote_info.digestValue.value);
 
-    print_hex(" COMPOSITE_HASH: ", quote_info.digestValue.value, TPM_HASH_SIZE);
+    print_hex("  tpm_pcr_composite: ", tpm_pcr_composite, tpc_len);
+    
+    print_hex("  COMPOSITE_HASH: ", quote_info.digestValue.value, TPM_HASH_SIZE);
     
     /* 4) external nonce */
     memcpy(quote_info.externalData.nonce, externalnonce->nonce, TPM_HASH_SIZE);
 
-    print_hex(" quote_info: ", (uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO));    
+    print_hex("  quote_info: ", (uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO));    
 
     /**
      * Assemble the public key used to check the quote.
      */    
-    print_hex("  rsaMod: ", rsaMod, TPM_RSA_KEY_LEN);
 
     if(NULL == (rsa = RSA_new())) {
         printf("ERROR: RSA_new() failed\n");
@@ -369,17 +372,17 @@ int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uin
      * Verify the signature!
      */
     
-    uint8_t digestPrime[TPM_HASH_SIZE];
-    SHA1((uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO), digestPrime);
-    print_hex(" digestPrime: ", digestPrime, TPM_HASH_SIZE);
+    uint8_t valData[TPM_HASH_SIZE];
+    SHA1((uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO), valData);
+    print_hex("  valData: ", valData, TPM_HASH_SIZE);
 
-    if(1 != RSA_verify(NID_sha1, digestPrime, TPM_HASH_SIZE, sig, sig_len, rsa)) {
+    if(1 != RSA_verify(NID_sha1, valData, TPM_HASH_SIZE, sig, sig_len, rsa)) {
         printf("ERROR: Quote verification FAILED!\n");
         ERR_print_errors_fp(stdout);
         rv = 1;
         goto out;
     } else {
-        printf("RSA_verify: SUCCESSfully verified quote\n");
+        printf("  RSA_verify: SUCCESSfully verified quote\n");
         rv = 0;
     }
     
@@ -460,10 +463,10 @@ int test_quote(tz_session_t *tzPalSession)
     rv = 1;
     goto out;
   }
-  printf("max quoteLen = %d\n", quoteLen);
+  printf("  max quoteLen = %d\n", quoteLen);
 
   quoteLen = TZDecodeUint32(&tz_quoteOp);
-  printf("actual quoteLen = %d\n", quoteLen);
+  printf("  actual quoteLen = %d\n", quoteLen);
   
   if (TZDecodeGetError(&tz_quoteOp) != TZ_SUCCESS) {
     rv = 1;
@@ -471,7 +474,7 @@ int test_quote(tz_session_t *tzPalSession)
   }
 
   if(quoteLen <= TPM_MAX_QUOTE_LEN) {
-      print_hex("  Q: ", quote, quoteLen);
+      //print_hex("  Q: ", quote, quoteLen);
   } else {
       printf("ERROR: quoteLen (%d) > TPM_MAX_QUOTE_LEN! First 16 bytes of response:\n", quoteLen);
       print_hex("  Q! ", quote, 16);
@@ -485,7 +488,7 @@ int test_quote(tz_session_t *tzPalSession)
   uint32_t sigSize = *((uint32_t*)(quote+tpm_pcr_composite_size));
   uint8_t* sig = quote + tpm_pcr_composite_size + sizeof(uint32_t);
 
-  printf("tpm_pcr_composite_size %d, sigSize %d\n",
+  printf("  tpm_pcr_composite_size %d, sigSize %d\n",
          tpm_pcr_composite_size, sigSize);
   
   assert(sigSize == TPM_RSA_KEY_LEN);
