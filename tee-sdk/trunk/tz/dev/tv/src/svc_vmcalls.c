@@ -35,6 +35,7 @@
 
 #include "vmcalls.h"
 #include <stdint.h>
+#include <stdbool.h>
 #include <stddef.h>
 
 #include <trustvisor/tv_utpm.h>

@@ -37,6 +37,8 @@
  * Author - Jim Newsome (jnewsome@no-fuss.com)
  */
 
+#include <stdbool.h>
+
 #include <tv.h>
 #include <tzmarshal.h>
 #include <list.h>

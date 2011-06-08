@@ -33,6 +33,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#include <stdbool.h>
 #include "sections.h"
 
 #include <tv.h>

@@ -34,6 +34,7 @@
  */
 
 #include <stdio.h>
+#include <stdbool.h>
 #include "vmcalls.h"
 #include <tv.h>
 
