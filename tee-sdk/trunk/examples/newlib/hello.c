@@ -165,19 +165,17 @@ static int call_pal(tz_session_t *tzPalSession)
  * Gracefully unload the linked PAL using the TZ interfaces, and tear
  * down the tzPalSession and tzDevice.
  */
-static void tv_tz_teardown(tz_device_t *tzDevice, tz_session_t *tzPalSession, tz_uuid_t *tzSvcId)
+static tz_return_t tv_tz_teardown(tz_device_t *tzDevice, tz_session_t *tzPalSession, tz_uuid_t *tzSvcId)
 {
+  tz_return_t rv = TZ_SUCCESS;
+
   /* close session */
   {
     tz_operation_t op;
     tz_return_t serviceReturn;
 
-    rtassert_tzs(
-                 TZOperationPrepareClose(tzPalSession, &op));
-
-    rtassert_tzs(
-                 TZOperationPerform(&op, &serviceReturn));
-    assert(serviceReturn == TZ_SUCCESS); /* rv==TZ_SUCCESS implies serviceReturn==TZ_SUCCESS */
+    rv = TZOperationPrepareClose(tzPalSession, &op) || rv;
+    rv = TZOperationPerform(&op, &serviceReturn) || rv;
 
     TZOperationRelease(&op);
   }
@@ -187,24 +185,19 @@ static void tv_tz_teardown(tz_device_t *tzDevice, tz_session_t *tzPalSession, tz
     tz_session_t tzManagerSession;
 
     /* open session with device manager */
-    rtassert_tzs(
-                 TZManagerOpen(tzDevice, NULL, &tzManagerSession));
+    rv = TZManagerOpen(tzDevice, NULL, &tzManagerSession) || rv;
 
     /* unload */
-    rtassert_tzs(
-                 TZManagerRemoveService(&tzManagerSession,
-                                        tzSvcId));
+    rv = TZManagerRemoveService(&tzManagerSession, tzSvcId) || rv;
 
     /* close session */
-    rtassert_tzs(
-                 TZManagerClose(&tzManagerSession));
+    rv = TZManagerClose(&tzManagerSession) || rv;
   }
 
   /* close device */
-  {
-    rtassert_tzs(
-                 TZDeviceClose(tzDevice));
-  }
+  rv = TZDeviceClose(tzDevice) || rv;
+
+  return rv;
 }
 
 int main(void)
