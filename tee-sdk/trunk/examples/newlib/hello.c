@@ -56,14 +56,15 @@
 /*                 pal_name) */
 /* #define ezsetup(pal_name, param_sz, stack_sz) */
 
-static void setup(tz_device_t *tzDevice,
-                  tz_session_t *tzPalSession,
-                  tz_uuid_t *tzSvcId,
-                  pal_fn_t pal_entry)
+static tz_return_t setup(tz_device_t *tzDevice,
+                         tz_session_t *tzPalSession,
+                         tz_uuid_t *tzSvcId,
+                         pal_fn_t pal_entry,
+                         size_t param_sz,
+                         size_t stack_sz)
 {
   struct tv_pal_sections scode_info;
-  const size_t param_sz=PAGE_SIZE;
-  const size_t stack_sz=PAGE_SIZE;
+  tz_return_t rv = TZ_SUCCESS;
   tv_service_t pal = 
     {
       .sPageInfo = &scode_info,
@@ -71,50 +72,64 @@ static void setup(tz_device_t *tzDevice,
       .pEntry = pal_entry,
     };
 
-  rtassert_tzs(
-               TZDeviceOpen(NULL, NULL, tzDevice));
+  rv = TZDeviceOpen(NULL, NULL, tzDevice);
+  if (rv != TZ_SUCCESS)
+    return rv;
 
   /* download pal 'service' */  
   { 
     tz_session_t tzManagerSession;
 
     /* open session with device manager */
-    rtassert_tzs(
-                 TZManagerOpen(tzDevice, NULL, &tzManagerSession));
+    rv = TZManagerOpen(tzDevice, NULL, &tzManagerSession);
+    if (rv != TZ_SUCCESS)
+      return rv;
 
     /* prepare pal descriptor */
     tv_pal_sections_init(&scode_info,
                          param_sz, stack_sz);
-    printf("scode sections:\n");
-    tv_pal_sections_print(&scode_info);
 
     /* download */
-    rtassert_tzs(
-                 TZManagerDownloadService(&tzManagerSession,
-                                          &pal,
-                                          sizeof(pal),
-                                          tzSvcId));
+    rv = TZManagerDownloadService(&tzManagerSession,
+                                  &pal,
+                                  sizeof(pal),
+                                  tzSvcId);
+    if (rv != TZ_SUCCESS) {
+      TZManagerClose(&tzManagerSession);
+      return rv;
+    }
 
     /* close session */
-    rtassert_tzs(
-                 TZManagerClose(&tzManagerSession));
+    rv = TZManagerClose(&tzManagerSession);
+    if (rv != TZ_SUCCESS)
+      return rv;
   }
 
   /* now open a service handle to the pal */
   {
     tz_operation_t op;
     tz_return_t serviceReturn;
-    rtassert_tzs(
-                 TZOperationPrepareOpen(tzDevice,
-                                        tzSvcId,
-                                        NULL, NULL,
-                                        tzPalSession,
-                                        &op));
-    rtassert_tzs(
-                 TZOperationPerform(&op, &serviceReturn));
-    assert(serviceReturn == TZ_SUCCESS); /* by spec, rv=TZ_SUCCESS implies serviceReturn==TZ_SUCCESS */
+    rv = TZOperationPrepareOpen(tzDevice,
+                                tzSvcId,
+                                NULL, NULL,
+                                tzPalSession,
+                                &op);
+    if (rv != TZ_SUCCESS) {
+      TZDeviceClose(tzDevice);
+      return rv;
+    }
+
+    rv = TZOperationPerform(&op, &serviceReturn);
+    if (rv != TZ_SUCCESS) {
+      TZOperationRelease(&op);
+      TZDeviceClose(tzDevice);
+      return rv;
+    }
+
     TZOperationRelease(&op);
   }
+
+  return rv;
 }
 
 static int call_pal(tz_session_t *tzPalSession)
@@ -199,7 +214,7 @@ int main(void)
   /* hellopal(PAL_HELLO, NULL, NULL, &trv); */
   /* printf("got trv=%d\n", trv); */
 
-  setup(&tzDevice, &tzPalSession, &tzSvcId, hellopal);
+  setup(&tzDevice, &tzPalSession, &tzSvcId, hellopal, PAGE_SIZE, PAGE_SIZE);
   rv = call_pal(&tzPalSession);
   teardown(&tzDevice, &tzPalSession, &tzSvcId);
 
