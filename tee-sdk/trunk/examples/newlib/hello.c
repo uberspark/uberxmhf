@@ -52,16 +52,16 @@
 
 #define rtassert_tzs(x) rtassert_eq(x, TZ_SUCCESS)
 
-/* int ezsetup_int(pal_fn_t pal_entry, */
-/*                 pal_name) */
-/* #define ezsetup(pal_name, param_sz, stack_sz) */
-
-static tz_return_t setup(tz_device_t *tzDevice,
-                         tz_session_t *tzPalSession,
-                         tz_uuid_t *tzSvcId,
-                         pal_fn_t pal_entry,
-                         size_t param_sz,
-                         size_t stack_sz)
+/** 
+ * Load the linked PAL using the TZ interfaces, and initialize the
+ * tzDevice, tzPalSession, and tzSvcId.
+ */
+static tz_return_t tv_tz_init(tz_device_t *tzDevice,
+                              tz_session_t *tzPalSession,
+                              tz_uuid_t *tzSvcId,
+                              pal_fn_t pal_entry,
+                              size_t param_sz,
+                              size_t stack_sz)
 {
   struct tv_pal_sections scode_info;
   tz_return_t rv = TZ_SUCCESS;
@@ -161,7 +161,11 @@ static int call_pal(tz_session_t *tzPalSession)
   return rv;
 }
 
-static void teardown(tz_device_t *tzDevice, tz_session_t *tzPalSession, tz_uuid_t *tzSvcId)
+/** 
+ * Gracefully unload the linked PAL using the TZ interfaces, and tear
+ * down the tzPalSession and tzDevice.
+ */
+static void tv_tz_teardown(tz_device_t *tzDevice, tz_session_t *tzPalSession, tz_uuid_t *tzSvcId)
 {
   /* close session */
   {
@@ -214,9 +218,9 @@ int main(void)
   /* hellopal(PAL_HELLO, NULL, NULL, &trv); */
   /* printf("got trv=%d\n", trv); */
 
-  setup(&tzDevice, &tzPalSession, &tzSvcId, hellopal, PAGE_SIZE, PAGE_SIZE);
+  tv_tz_init(&tzDevice, &tzPalSession, &tzSvcId, hellopal, PAGE_SIZE, PAGE_SIZE);
   rv = call_pal(&tzPalSession);
-  teardown(&tzDevice, &tzPalSession, &tzSvcId);
+  tv_tz_teardown(&tzDevice, &tzPalSession, &tzSvcId);
 
   return rv;
 } 
