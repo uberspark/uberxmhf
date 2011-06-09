@@ -39,6 +39,8 @@
 
 #include <stdio.h>
 #include <assert.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 #include <tee-sdk/tv.h>
 #include <tee-sdk/tz.h>
