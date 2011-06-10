@@ -191,6 +191,22 @@ int test_param(tz_session_t *tzPalSession)
   return rv;
 }
 
+/**
+ * Need some support for expected PCR digest values.  Let's test while
+ * including only a single PCR: #7. Its value is expected to be all
+ * zeros for unseal to succeed.
+ *
+ * PcrComposite that selects PCR #7 with expected contents all zeros:
+ * 01 00       // sizeOfSelect (little-endian)
+ * 80          // pcrSelection (bit vector)
+ * 00 00 00 14 // length of PCR values (little-endian)
+ * 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 // 20 bytes of zeros
+ *
+ * TPM_COMPOSITE_HASH (i.e., compute sha-1 over the above data):
+ * c6 08 a1 e6 eb 7d 0f 88 6b 15 75 6b 29 83 be d2 e5 86 19 cb 
+ */
+const uint8_t digestAtRelease[] = {0xc6, 0x08, 0xa1, 0xe6, 0xeb, 0x7d, 0x0f, 0x88, 0x6b, 0x15,
+                                  0x75, 0x6b, 0x29, 0x83, 0xbe, 0xd2, 0xe5, 0x86, 0x19, 0xcb};
 int test_seal(tz_session_t *tzPalSession)
 {
   int rv=0;
@@ -204,6 +220,9 @@ int test_seal(tz_session_t *tzPalSession)
   TPM_PCR_INFO pcrInfo;
 
   printf("\nSEAL\n");
+
+  printf("sizeof(TPM_PCR_INFO) %d, sizeof(TPM_PCR_SELECTION) %d\n",
+         sizeof(TPM_PCR_INFO), sizeof(TPM_PCR_SELECTION));
   tzRet = TZOperationPrepareInvoke(tzPalSession,
                                    PAL_SEAL,
                                    NULL,
@@ -217,14 +236,15 @@ int test_seal(tz_session_t *tzPalSession)
 
 
   memset(&pcrInfo, 0, sizeof(TPM_PCR_INFO));
-  utpm_pcr_select_i(&pcrInfo.pcrSelection, 0);
-  utpm_pcr_select_i(&pcrInfo.pcrSelection, 1);
-  utpm_pcr_select_i(&pcrInfo.pcrSelection, 2);
-  utpm_pcr_select_i(&pcrInfo.pcrSelection, 3);
-  utpm_pcr_select_i(&pcrInfo.pcrSelection, 4);
-  utpm_pcr_select_i(&pcrInfo.pcrSelection, 5);
-  utpm_pcr_select_i(&pcrInfo.pcrSelection, 6);
+  /* utpm_pcr_select_i(&pcrInfo.pcrSelection, 0); */
+  /* utpm_pcr_select_i(&pcrInfo.pcrSelection, 1); */
+  /* utpm_pcr_select_i(&pcrInfo.pcrSelection, 2); */
+  /* utpm_pcr_select_i(&pcrInfo.pcrSelection, 3); */
+  /* utpm_pcr_select_i(&pcrInfo.pcrSelection, 4); */
+  /* utpm_pcr_select_i(&pcrInfo.pcrSelection, 5); */
+  /* utpm_pcr_select_i(&pcrInfo.pcrSelection, 6); */
   utpm_pcr_select_i(&pcrInfo.pcrSelection, 7);
+  memcpy(pcrInfo.digestAtRelease.value, digestAtRelease, TPM_HASH_SIZE);
   print_hex("  pcrInfo: ", (uint8_t*)&pcrInfo, sizeof(TPM_PCR_INFO));
   TZEncodeArray(&tz_sealOp, &pcrInfo, sizeof(TPM_PCR_INFO));
   TZEncodeArray(&tz_sealOp, in, inLen);
@@ -278,8 +298,8 @@ int test_seal(tz_session_t *tzPalSession)
   if(inLen != unsealOutLen 
      || memcmp(in, unsealOut, inLen) != 0) {
     printf("error- unsealed data doesn't match\n");
-    printf("in (%d): %s", inLen, in);
-    printf("out (%d): %s", unsealOutLen, unsealOut);
+    printf("in (%d): %s\n", inLen, in);
+    printf("out (%d): %s\n", unsealOutLen, unsealOut);
     rv = 1;
     goto out;
   } else {
