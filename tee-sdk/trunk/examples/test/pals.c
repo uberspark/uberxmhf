@@ -70,9 +70,13 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
     {
       uint8_t *in, *out;
       size_t inLen, outLen;
-      TPM_PCR_INFO tpmPcrInfo;
+      TPM_PCR_INFO *tpmPcrInfo;
+      uint32_t tpmPcrInfoLen;
       uint32_t i;
       *puiRv = TZ_SUCCESS;
+
+      tpmPcrInfo = (TPM_PCR_INFO*)TZIDecodeArraySpace(psInBuf, &tpmPcrInfoLen);
+      //assert(tpmPcrInfoLen == sizeof(TPM_PCR_INFO));
       
       in = TZIDecodeArraySpace(psInBuf, &inLen);
       if (TZIDecodeGetError(psInBuf) != TZ_SUCCESS) {
@@ -87,12 +91,7 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
         break;
       }
 
-      for(i=0; i<sizeof(TPM_PCR_INFO); i++) { ((uint8_t*)(&tpmPcrInfo))[i] = 0; } /* TODO: memset */
-      /* select PCR 7 (current value of 0 is already correct, and its
-       * value doesn't change implicitly) */
-      utpm_pcr_select_i(&tpmPcrInfo.pcrSelection, 7);
-
-      *puiRv = pal_seal(&tpmPcrInfo, in, inLen, out, &outLen);
+      *puiRv = pal_seal(tpmPcrInfo, in, inLen, out, &outLen);
       if (*puiRv != TZ_SUCCESS) {
         break;
       }

@@ -201,6 +201,8 @@ int test_seal(tz_session_t *tzPalSession)
   char *sealOut, *unsealOut;
   uint32_t sealOutLen, unsealOutLen;
 
+  TPM_PCR_INFO pcrInfo;
+
   printf("\nSEAL\n");
   tzRet = TZOperationPrepareInvoke(tzPalSession,
                                    PAL_SEAL,
@@ -213,6 +215,18 @@ int test_seal(tz_session_t *tzPalSession)
                                    &tz_unsealOp);
   assert(tzRet == TZ_SUCCESS);
 
+
+  memset(&pcrInfo, 0, sizeof(TPM_PCR_INFO));
+  utpm_pcr_select_i(&pcrInfo.pcrSelection, 0);
+  utpm_pcr_select_i(&pcrInfo.pcrSelection, 1);
+  utpm_pcr_select_i(&pcrInfo.pcrSelection, 2);
+  utpm_pcr_select_i(&pcrInfo.pcrSelection, 3);
+  utpm_pcr_select_i(&pcrInfo.pcrSelection, 4);
+  utpm_pcr_select_i(&pcrInfo.pcrSelection, 5);
+  utpm_pcr_select_i(&pcrInfo.pcrSelection, 6);
+  utpm_pcr_select_i(&pcrInfo.pcrSelection, 7);
+  print_hex("  pcrInfo: ", (uint8_t*)&pcrInfo, sizeof(TPM_PCR_INFO));
+  TZEncodeArray(&tz_sealOp, &pcrInfo, sizeof(TPM_PCR_INFO));
   TZEncodeArray(&tz_sealOp, in, inLen);
   tzRet = TZOperationPerform(&tz_sealOp, &serviceReturn);
   sealOut = TZDecodeArraySpace(&tz_sealOp, &sealOutLen);
