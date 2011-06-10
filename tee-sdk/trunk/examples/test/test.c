@@ -199,7 +199,7 @@ int test_param(tz_session_t *tzPalSession)
  * PcrComposite that selects PCR #7 with expected contents all zeros:
  * 01 00       // sizeOfSelect (little-endian)
  * 80          // pcrSelection (bit vector)
- * 00 00 00 14 // length of PCR values (little-endian)
+ * 00 00 00 14 // length of PCR values (big-endian)
  * 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 // 20 bytes of zeros
  *
  * TPM_COMPOSITE_HASH (i.e., compute sha-1 over the above data):
