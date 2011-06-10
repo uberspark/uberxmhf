@@ -237,6 +237,42 @@ static uint32_t utpm_internal_allocate_and_populate_current_TpmPcrComposite(
     
 }
 
+/**
+ * TPM_PCR_COMPOSITE is created by reading the current value of the
+ * PCRs mentioned in TPM_PCR_SELECTION.
+ *
+ * It does not make sense to call this function if the
+ * TPM_PCR_SELECTION does not select anything.
+ */
+static TPM_RESULT utpm_internal_digest_current_TpmPcrComposite(
+    utpm_master_state_t *utpm,
+    TPM_PCR_SELECTION *pcrSelection,
+    TPM_COMPOSITE_HASH *digest)
+{
+    uint32_t space_needed_for_composite = 0;
+    uint8_t *tpm_pcr_composite = NULL;
+    uint32_t rv = 0;
+    
+    if(!utpm || !pcrSelection || !digest) { return 1; }
+
+    if(pcrSelection->sizeOfSelect < 1) { return 1; }
+    
+    rv = utpm_internal_allocate_and_populate_current_TpmPcrComposite(
+        utpm,
+        pcrSelection,
+        &tpm_pcr_composite,
+        &space_needed_for_composite);
+
+    if(0 != rv) { return 1; }
+
+    sha1_csum(tpm_pcr_composite, space_needed_for_composite, digest->value);    
+    
+    if(tpm_pcr_composite) { vfree(tpm_pcr_composite); tpm_pcr_composite = NULL; }
+
+    return rv;
+}
+
+
 #define TPM_AES_KEY_LEN_BYTES (TPM_AES_KEY_LEN/8)
 
 TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
@@ -249,9 +285,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 	uint32_t outlen_beforepad;
 	uint8_t* p;
 	uint8_t *iv;
-    uint8_t *currentPcrComposite = NULL;
     uint32_t bytes_consumed_by_pcrInfo;
-    uint32_t space_needed_for_composite;
 	aes_context ctx;
     TPM_PCR_INFO tpmPcrInfo_internal;
     uint8_t *plaintext = NULL;
@@ -287,23 +321,11 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
         if(0 != rv) { return 1; }
         
         /* 2. overwrite digestAtCreation based on current PCR contents */
-        rv = utpm_internal_allocate_and_populate_current_TpmPcrComposite(
+        rv = utpm_internal_digest_current_TpmPcrComposite(
             utpm,
             &tpmPcrInfo_internal.pcrSelection,
-            &currentPcrComposite,
-            &space_needed_for_composite);
-        if(rv != 0) {
-            dprintf(LOG_ERROR, "utpm_internal_allocate_and_populate_current_TpmPcrComposite FAILED\n");
-            return 1;
-        }
-        
-        /* 3. Hash down the composite sturcture into a TPM_COMPOSITE_HASH */
-        sha1_csum(currentPcrComposite,
-                  space_needed_for_composite,
-                  tpmPcrInfo_internal.digestAtCreation.value);
-        vfree(currentPcrComposite); currentPcrComposite = NULL;
-        space_needed_for_composite = 0;
-
+            &tpmPcrInfo_internal.digestAtCreation);
+        if(0 != rv) { return 1; }
     } else {
         tpmPcrInfo_internal.pcrSelection.sizeOfSelect = 0;
     }
