@@ -190,6 +190,8 @@ static uint32_t utpm_internal_allocate_and_populate_current_TpmCompositeHash(
     
 }
 
+#define TPM_AES_KEY_LEN_BYTES (TPM_AES_KEY_LEN/8)
+
 TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
                      TPM_PCR_INFO *tpmPcrInfo,
                      uint8_t* input, uint32_t inlen,
@@ -207,71 +209,92 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     TPM_DIGEST pcrInfoDigest;
     if(!utpm || !tpmPcrInfo || !input || !output || !outlen || !hmackey || !aeskey) { return 1; }
 
-    /**
-     * Part 1: Populate digestAtCreation
-     */
-    /* The caller does not provide the DigestAtCreation component of
-     * the tpmPcrInfo input parameter, so we must populate this
-     * component of the TPM_PCR_INFO structure ourselves,
-     * internally. */
-    /* 1. make our own TPM_PCR_INFO and copy caller-specified values */
-    vmemcpy((uint8_t*)&tpmPcrInfo_internal, tpmPcrInfo, sizeof(TPM_PCR_INFO));
-
-    /* 2. overwrite digestAtCreation based on current PCR contents */
-    rv = utpm_internal_allocate_and_populate_current_TpmCompositeHash(
-        utpm,
-        &tpmPcrInfo_internal.pcrSelection,
-        &currentPcrComposite,
-        &space_needed_for_composite);
-    if(rv != 0) {
-        dprintf(LOG_ERROR, "utpm_internal_allocate_and_populate_current_TpmCompositeHash FAILED\n");
-        return 1;
-    }
-                                                                      
-    sha1_csum(currentPcrComposite,
-             space_needed_for_composite,
-             tpmPcrInfo_internal.digestAtCreation.value);
-    vfree(currentPcrComposite); currentPcrComposite = NULL;
-    space_needed_for_composite = 0;
-
-    sha1_csum((uint8_t*)&tpmPcrInfo_internal, sizeof(TPM_PCR_INFO), pcrInfoDigest.value);
+    dprintf(LOG_TRACE, "[TV:utpm_seal] inlen %d, outlen %d\n", inlen, outlen);
+    print_hex("  [TV:utpm_seal] tpmPcrInfo: ", (uint8_t*)tpmPcrInfo, sizeof(TPM_PCR_INFO));
+    print_hex("  [TV:utpm_seal] input:      ", input, inlen);
+    print_hex("  [TV:utpm_seal] hmackey:    ", hmackey, TPM_HASH_SIZE); /* XXX SECURITY */
+    print_hex("  [TV:utpm_seal] aeskey:     ", aeskey, TPM_AES_KEY_LEN_BYTES); /* XXX SECURITY */
     
+    /**
+     * Part 1: Populate digestAtCreation (only for non-NULL tpmPcrInfo).
+     */
+    if(NULL != tpmPcrInfo) {
+        /* The caller does not provide the DigestAtCreation component of
+         * the tpmPcrInfo input parameter, so we must populate this
+         * component of the TPM_PCR_INFO structure ourselves,
+         * internally. */
+        /* 1. make our own TPM_PCR_INFO and copy caller-specified values */
+        vmemcpy((uint8_t*)&tpmPcrInfo_internal, tpmPcrInfo, sizeof(TPM_PCR_INFO));
+        
+        /* 2. overwrite digestAtCreation based on current PCR contents */
+        rv = utpm_internal_allocate_and_populate_current_TpmCompositeHash(
+            utpm,
+            &tpmPcrInfo_internal.pcrSelection,
+            &currentPcrComposite,
+            &space_needed_for_composite);
+        if(rv != 0) {
+            dprintf(LOG_ERROR, "utpm_internal_allocate_and_populate_current_TpmCompositeHash FAILED\n");
+            return 1;
+        }
+        
+        sha1_csum(currentPcrComposite,
+                  space_needed_for_composite,
+                  tpmPcrInfo_internal.digestAtCreation.value);
+        vfree(currentPcrComposite); currentPcrComposite = NULL;
+        space_needed_for_composite = 0;
+
+        /* 3. hash doen the TPM_PCR_INFO structure into a single digest */
+        sha1_csum((uint8_t*)&tpmPcrInfo_internal, sizeof(TPM_PCR_INFO), pcrInfoDigest.value);
+    } else {
+        /* Use digest of all 0's if no PCRs selected */
+        vmemset(pcrInfoDigest.value, 0, TPM_HASH_SIZE);
+    }
     /**
      * Part 2: Do the actual encryption
      */    
     p = iv = output;
 
 	/* get IV */
-	rand_bytes(iv, 16);
-    p += 16; /* IV */
+	rand_bytes(iv, TPM_AES_KEY_LEN_BYTES);
+    p += TPM_AES_KEY_LEN_BYTES; /* IV */
 
-	/* output = IV || AES-CBC(PCR Composite hash || input_len || input || PADDING) || HMAC( entire plaintext ) */
+    print_hex("  iv: ", iv, TPM_AES_KEY_LEN_BYTES);
+    
+	/* output = IV || AES-CBC(PCR Composite hash || input_len || input || PADDING) || HMAC( entire ciphertext including IV ) */
 	vmemcpy(p, pcrInfoDigest.value, TPM_HASH_SIZE); /* PCR Composite hash */
+    print_hex(" pcrInfoDigest.value: ", p, TPM_HASH_SIZE);
     p += TPM_HASH_SIZE;    
 	*((uint32_t *)p) = inlen; /* input_len */
+    print_hex(" inlen: ", p, sizeof(uint32_t));
     p += sizeof(uint32_t);
 	vmemcpy(p, input, inlen); /* actual input data */
+    print_hex(" input: ", p, inlen);
     p += inlen;
 
 	/* add padding */
-	outlen_beforepad = (uint32_t)p - (uint32_t)output - 16; /* skip iv */
+	outlen_beforepad = (uint32_t)p - (uint32_t)output;
 	if ((outlen_beforepad&0xF) != 0) {
-		*outlen = (outlen_beforepad+16)&(~0xF);
+		*outlen = (outlen_beforepad+TPM_AES_KEY_LEN_BYTES)&(~0xF);
 	} else {
 		*outlen = outlen_beforepad;
 	}
 	vmemset(p, 0, *outlen-outlen_beforepad);
+    print_hex("padding: ", p, *outlen-outlen_beforepad);
     p += *outlen-outlen_beforepad;
-
-	/* compute and append hmac */
-	sha1_hmac(hmackey, TPM_HASH_SIZE, output+16, *outlen, p);
-    p += TPM_HASH_SIZE;
 	
 	/* encrypt data using sealAesKey by AES-CBC mode */
 	aes_setkey_enc(&ctx, aeskey, TPM_AES_KEY_LEN);
-	aes_crypt_cbc(&ctx, AES_ENCRYPT, *outlen, iv, output+16, output+16);
+	aes_crypt_cbc(&ctx, AES_ENCRYPT, *outlen, iv, output, output);
 
-    *outlen += 16 + TPM_HASH_SIZE; /* IV and hmac */
+	/* compute and append hmac */
+	sha1_hmac(hmackey, TPM_HASH_SIZE, output, *outlen, p);
+    print_hex("hmac: ", p, TPM_HASH_SIZE);
+    p += TPM_HASH_SIZE;
+    
+    *outlen += TPM_HASH_SIZE; /* hmac */
+
+    dprintf(LOG_TRACE, "*outlen = %d\n", *outlen);
+    print_hex("ciphertext from utpm_seal: ", output, *outlen);
     
 	return rv;
 }

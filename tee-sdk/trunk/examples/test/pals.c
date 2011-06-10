@@ -70,22 +70,29 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
     {
       uint8_t *in, *out;
       size_t inLen, outLen;
+      TPM_PCR_INFO tpmPcrInfo;
+      uint32_t i;
       *puiRv = TZ_SUCCESS;
-
+      
       in = TZIDecodeArraySpace(psInBuf, &inLen);
       if (TZIDecodeGetError(psInBuf) != TZ_SUCCESS) {
         *puiRv = TZIDecodeGetError(psInBuf);
         break;
       }
 
-      outLen = inLen + 100; /* XXX guessing at seal overhead */
+      outLen = inLen + 100; /* XXX guessing at seal overhead (real overhead is sizeof(IV + HMAC)) */
       out = TZIEncodeArraySpace(psOutBuf, outLen);
       if (out == NULL) {
         *puiRv = TZ_ERROR_MEMORY;
         break;
       }
 
-      *puiRv = pal_seal(in, inLen, out, &outLen);
+      for(i=0; i<sizeof(TPM_PCR_INFO); i++) { ((uint8_t*)(&tpmPcrInfo))[i] = 0; } /* TODO: memset */
+      /* select PCR 7 (current value of 0 is already correct, and its
+       * value doesn't change implicitly) */
+      utpm_pcr_select_i(&tpmPcrInfo.pcrSelection, 7);
+
+      *puiRv = pal_seal(&tpmPcrInfo, in, inLen, out, &outLen);
       if (*puiRv != TZ_SUCCESS) {
         break;
       }
@@ -313,9 +320,9 @@ uint32_t pal_param(uint32_t input)
 }
 
 __attribute__ ((section (".scode")))
-tz_return_t pal_seal(uint8_t *input, uint8_t inputLen, uint8_t *output, size_t *outputLen)
+tz_return_t pal_seal(TPM_PCR_INFO *pcrInfo, uint8_t *input, uint32_t inputLen, uint8_t *output, size_t *outputLen)
 {
-  if (svc_utpm_seal(NULL, input, inputLen, output, outputLen) == 0) {
+  if (svc_utpm_seal(pcrInfo, input, inputLen, output, outputLen) == 0) {
     return TZ_SUCCESS;
   } else {
     return TZ_ERROR_GENERIC;

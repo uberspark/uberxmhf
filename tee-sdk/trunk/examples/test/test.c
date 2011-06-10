@@ -236,6 +236,8 @@ int test_seal(tz_session_t *tzPalSession)
     goto out;
   }
 
+  print_hex("sealed data:", sealOut, sealOutLen);
+  
   TZEncodeArray(&tz_unsealOp, sealOut, sealOutLen);
   tzRet = TZOperationPerform(&tz_unsealOp, &serviceReturn);
   unsealOut = TZDecodeArraySpace(&tz_unsealOp, &unsealOutLen);

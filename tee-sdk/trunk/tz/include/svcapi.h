@@ -59,10 +59,8 @@
 int svc_time_elapsed_us(uint64_t *epoch_nonce, /* out */
                         uint64_t *us); /* out */
 
-/* Seal data under a pcr value.
- * pcrAtRelease_addr is the required value of pcr #FIXME the
- *   data to be unsealed.
- * in points to the data to be sealed.
+/* Seal data, optionally controlled by PCR values.
+ * pcrInfo points to a TPM_PCR_INFO struct.
  * in_len is the size of the data to be sealed, in bytes
  * out is a pointer at which the sealed data will be stored
  * out_len will be set to the length of the sealed data
@@ -71,7 +69,7 @@ int svc_time_elapsed_us(uint64_t *epoch_nonce, /* out */
  *
  * Returns 0 on success, nonzero on failure.
  */
-int svc_utpm_seal(uint8_t *pcrAtRelease_addr,
+int svc_utpm_seal(TPM_PCR_INFO *pcrInfo,
                   void *in,
                   size_t in_len,
                   void *out,

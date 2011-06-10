@@ -57,7 +57,7 @@ typedef enum {
 void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv);
 void pal_withoutparam();
 uint32_t pal_param(uint32_t input);
-tz_return_t pal_seal(uint8_t *input, uint8_t inputLen, uint8_t *output, size_t *outputLen);
+tz_return_t pal_seal(TPM_PCR_INFO *pcrInfo, uint8_t *input, uint32_t inputLen, uint8_t *output, size_t *outputLen);
 tz_return_t pal_unseal(uint8_t *input, uint8_t inputLen, uint8_t *output, size_t *outputLen);
 tz_return_t pal_quote(IN TPM_NONCE *nonce,
                       IN TPM_PCR_SELECTION *tpmsel,

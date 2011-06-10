@@ -40,7 +40,7 @@
 
 #include <trustvisor/tv_utpm.h>
 
-int svc_utpm_seal(uint8_t *pcrAtRelease_addr,
+int svc_utpm_seal(TPM_PCR_INFO *pcrInfo,
                   void *in,
                   size_t in_len,
                   void *out,
@@ -49,9 +49,9 @@ int svc_utpm_seal(uint8_t *pcrAtRelease_addr,
   unsigned int inbuf1[2]= {(unsigned int)in, (unsigned int)in_len};
   unsigned int outbuf1[2]= {(unsigned int)out, (unsigned int)out_len};
 
-  return vmcall(TV_HC_UTPM_SEAL_DEPRECATED,
+  return vmcall(TV_HC_UTPM_SEAL,
                 (uint32_t)inbuf1,
-                (uint32_t)pcrAtRelease_addr,
+                (uint32_t)pcrInfo,
                 (uint32_t)outbuf1,
                 0);
 }
@@ -65,7 +65,7 @@ int svc_utpm_unseal(void *in,
   unsigned int inbuf2[2]= {(unsigned int)in, (unsigned int)in_len};
   unsigned int outbuf2[2]= {(unsigned int)out, (unsigned int)out_len};
 
-  return vmcall(TV_HC_UTPM_UNSEAL_DEPRECATED,
+  return vmcall(TV_HC_UTPM_UNSEAL,
                 (uint32_t)inbuf2,
                 (uint32_t)outbuf2,
                 0,
