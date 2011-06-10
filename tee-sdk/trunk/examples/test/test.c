@@ -207,7 +207,7 @@ int test_param(tz_session_t *tzPalSession)
  */
 const uint8_t digestAtRelease[] = {0xc6, 0x08, 0xa1, 0xe6, 0xeb, 0x7d, 0x0f, 0x88, 0x6b, 0x15,
                                   0x75, 0x6b, 0x29, 0x83, 0xbe, 0xd2, 0xe5, 0x86, 0x19, 0xcb};
-int test_seal(tz_session_t *tzPalSession)
+int test_seal2(tz_session_t *tzPalSession)
 {
   int rv=0;
   tz_return_t tzRet, serviceReturn;
@@ -221,9 +221,9 @@ int test_seal(tz_session_t *tzPalSession)
 
   TPM_PCR_INFO pcrInfo;
 
-  printf("\nSEAL\n");
+  printf("\nSEAL with PCRs\n");
 
-  printf("sizeof(TPM_PCR_INFO) %d, sizeof(TPM_PCR_SELECTION) %d\n",
+  printf("  sizeof(TPM_PCR_INFO) %d, sizeof(TPM_PCR_SELECTION) %d\n",
          sizeof(TPM_PCR_INFO), sizeof(TPM_PCR_SELECTION));
   tzRet = TZOperationPrepareInvoke(tzPalSession,
                                    PAL_SEAL,
@@ -272,7 +272,7 @@ int test_seal(tz_session_t *tzPalSession)
     goto out;
   }
 
-  print_hex("sealed data:", sealOut, sealOutLen);
+  print_hex("  sealed data: ", sealOut, sealOutLen);
   
   TZEncodeArray(&tz_unsealOp, sealOut, sealOutLen);
   tzRet = TZOperationPerform(&tz_unsealOp, &serviceReturn);
@@ -307,8 +307,8 @@ int test_seal(tz_session_t *tzPalSession)
     rv = 1;
     goto out;
   } else {
-    printf("Success: unsealed data matches input\n");
     print_hex("  digestAtCreation: ", digestAtCreationOut, digestAtCreationLen);
+    printf("Success: unsealed data matches input\n");
   }
 
  out:
@@ -316,6 +316,101 @@ int test_seal(tz_session_t *tzPalSession)
   TZOperationRelease(&tz_unsealOp);
   return rv;
 }
+
+/**
+ * Test Seal without PCR bindings.
+ */
+int test_seal(tz_session_t *tzPalSession)
+{
+  int rv=0;
+  tz_return_t tzRet, serviceReturn;
+  tz_operation_t tz_sealOp, tz_unsealOp;
+  char *in = "hello pal-ly boy";
+  uint32_t inLen = strlen(in)+1;
+  char *sealOut, *unsealOut;
+  uint32_t sealOutLen, unsealOutLen;
+  uint8_t *digestAtCreationOut;
+  uint32_t digestAtCreationLen;
+
+  TPM_PCR_INFO pcrInfo;
+
+  printf("\nSEAL withOUT PCRs\n");
+
+  tzRet = TZOperationPrepareInvoke(tzPalSession,
+                                   PAL_SEAL,
+                                   NULL,
+                                   &tz_sealOp);
+  assert(tzRet == TZ_SUCCESS);
+  tzRet = TZOperationPrepareInvoke(tzPalSession,
+                                   PAL_UNSEAL,
+                                   NULL,
+                                   &tz_unsealOp);
+  assert(tzRet == TZ_SUCCESS);
+
+  memset(&pcrInfo, 0, sizeof(TPM_PCR_INFO));
+
+  TZEncodeArray(&tz_sealOp, &pcrInfo, sizeof(TPM_PCR_INFO)); /* empty */
+  TZEncodeArray(&tz_sealOp, in, inLen);
+  
+  tzRet = TZOperationPerform(&tz_sealOp, &serviceReturn);
+  sealOut = TZDecodeArraySpace(&tz_sealOp, &sealOutLen);
+  sealOutLen = TZDecodeUint32(&tz_sealOp);
+  if (tzRet != TZ_SUCCESS) {
+      printf("SEAL Op FAILED\n");
+      rv = 1;
+      goto out;
+  }
+  if (TZDecodeGetError(&tz_sealOp)) {
+    printf("SEAL decoder returned error %d\n", TZDecodeGetError(&tz_sealOp));
+    rv = 1;
+    goto out;
+  }
+
+  print_hex("  sealed data: ", sealOut, sealOutLen);
+  
+  TZEncodeArray(&tz_unsealOp, sealOut, sealOutLen);
+  tzRet = TZOperationPerform(&tz_unsealOp, &serviceReturn);
+  unsealOut = TZDecodeArraySpace(&tz_unsealOp, &unsealOutLen);
+  digestAtCreationOut = TZDecodeArraySpace(&tz_unsealOp, &digestAtCreationLen);
+  unsealOutLen = TZDecodeUint32(&tz_unsealOp);  
+  
+  if (tzRet != TZ_SUCCESS) {
+    if (tzRet == TZ_ERROR_SERVICE) {
+      printf("UNSEAL pal returned error %d\n",
+             serviceReturn);
+      rv = 1;
+      goto out;
+    } else {
+      printf("tz system returned error %d\n",
+             tzRet);
+      rv = 1;
+      goto out;
+    }
+  }
+  if (TZDecodeGetError(&tz_sealOp)) {
+    printf("SEAL decoder returned error %d\n", TZDecodeGetError(&tz_sealOp));
+    rv = 1;
+    goto out;
+  }
+
+  if(inLen != unsealOutLen 
+     || memcmp(in, unsealOut, inLen) != 0) {
+    printf("error- unsealed data doesn't match\n");
+    printf("in (%d): %s\n", inLen, in);
+    printf("out (%d): %s\n", unsealOutLen, unsealOut);
+    rv = 1;
+    goto out;
+  } else {
+    print_hex("  digestAtCreation: ", digestAtCreationOut, digestAtCreationLen);
+    printf("Success: unsealed data matches input\n");
+  }
+
+ out:
+  TZOperationRelease(&tz_sealOp);
+  TZOperationRelease(&tz_unsealOp);
+  return rv;
+}
+
 
 int test_id_getpub(tz_session_t *tzPalSession, uint8_t *rsaMod)
 {
@@ -904,6 +999,7 @@ int main(void)
 #endif
 
 #ifdef TEST_SEAL
+  rv = test_seal2(&tzPalSession) || rv;
   rv = test_seal(&tzPalSession) || rv;
 #endif
 
