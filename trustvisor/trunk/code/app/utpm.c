@@ -115,22 +115,23 @@ static uint32_t utpm_internal_memcpy_TPM_PCR_INFO(
     rv = utpm_internal_memcpy_TPM_PCR_SELECTION(&pcrInfo->pcrSelection, dest, bytes_consumed);
     if(0 != rv) { return rv; }
     
-    /**
-     * If no destination buffer, then just return the required size in
-     * bytes_consumed.
-     */ 
-    if(NULL == dest) {
-        *bytes_consumed += 2*TPM_HASH_SIZE;
-        return 0;
+
+    if(pcrInfo->pcrSelection.sizeOfSelect > 0) {
+        /* If no destination buffer, then just return the required
+         * size in bytes_consumed. */ 
+        if(NULL == dest) {
+            *bytes_consumed += 2*TPM_HASH_SIZE;
+            return 0;
+        }
+        /* If we're still here, copy two TPM_COMPOSITE_HASH values to dest. */
+        else {            
+            vmemcpy(dest + *bytes_consumed, pcrInfo->digestAtRelease.value, TPM_HASH_SIZE);
+            *bytes_consumed += TPM_HASH_SIZE;
+            
+            vmemcpy(dest + *bytes_consumed, pcrInfo->digestAtCreation.value, TPM_HASH_SIZE);
+            *bytes_consumed += TPM_HASH_SIZE;
+        }
     }
-    
-    /* If we're still here, copy two TPM_COMPOSITE_HASH values to dest. */
-    vmemcpy(dest + *bytes_consumed, pcrInfo->digestAtRelease.value, TPM_HASH_SIZE);
-    *bytes_consumed += TPM_HASH_SIZE;
-
-    vmemcpy(dest + *bytes_consumed, pcrInfo->digestAtCreation.value, TPM_HASH_SIZE);
-    *bytes_consumed += TPM_HASH_SIZE;
-
     return 0;
 }
 
@@ -430,7 +431,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
     
 	/**
      * Recall from utpm_seal():
-     * output = IV || AES-CBC(TPM_PCR_SELECTION || PCR Composite hash || input_len || input || PADDING) || HMAC( entire ciphertext including IV )
+     * output = IV || AES-CBC(TPM_PCR_INFO || input_len || input || PADDING) || HMAC( entire ciphertext including IV )
      */
 
     /**
@@ -488,63 +489,67 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
     /* 3. Compare the COMPOSITE_HASH with the one in the ciphertext. */
 
     /* plaintext contains [ TPM_PCR_INFO | plaintextLen | plaintext ] */
-    {
-    uint8_t *p = output;
-    TPM_PCR_INFO unsealedPcrInfo;
-    uint32_t bytes_consumed_by_pcrInfo;
-    uint32_t space_needed_for_composite = 0;
-    uint8_t *currentPcrComposite = NULL;
-    TPM_COMPOSITE_HASH digestRightNow;
-    
-    /* 1. TPM_PCR_INFO */
-    rv = utpm_internal_memcpy_TPM_PCR_INFO((TPM_PCR_INFO*)p, (uint8_t*)&unsealedPcrInfo, &bytes_consumed_by_pcrInfo);
-    if(0 != rv) return rv;
-    p += bytes_consumed_by_pcrInfo;
-    print_hex("  unsealedPcrInfo: ", (uint8_t*)&unsealedPcrInfo, bytes_consumed_by_pcrInfo);
-    print_hex("  unsealedPcrInfo.digestAtRelease: ", (uint8_t*)&unsealedPcrInfo.digestAtRelease, TPM_HASH_SIZE);
+    { /* Separate logic for PCR checking since eventually it will
+       * likely be library functionality (TODO). */
+        uint8_t *p = output;
+        TPM_PCR_INFO unsealedPcrInfo;
+        uint32_t bytes_consumed_by_pcrInfo;
+        uint32_t space_needed_for_composite = 0;
+        uint8_t *currentPcrComposite = NULL;
+        TPM_COMPOSITE_HASH digestRightNow;
+        
+        /* 1. TPM_PCR_INFO */
+        rv = utpm_internal_memcpy_TPM_PCR_INFO((TPM_PCR_INFO*)p, (uint8_t*)&unsealedPcrInfo, &bytes_consumed_by_pcrInfo);
+        if(0 != rv) return rv;
+        p += bytes_consumed_by_pcrInfo;
+        print_hex("  unsealedPcrInfo: ", (uint8_t*)&unsealedPcrInfo, bytes_consumed_by_pcrInfo);
+        
+        /* 1a. Handle the simple case where no PCRs are involved */
+        if(bytes_consumed_by_pcrInfo <= sizeof(unsealedPcrInfo.pcrSelection.sizeOfSelect)) {
+            dprintf(LOG_TRACE, "  No PCRs selected.  No checking required.\n");
+            vmemset(digestAtCreation->value, 0, TPM_HASH_SIZE);
+        }
+        /* 1b. Verify that required PCR values match */
+        else {            
+            print_hex("  unsealedPcrInfo.digestAtRelease: ", (uint8_t*)&unsealedPcrInfo.digestAtRelease, TPM_HASH_SIZE);
+            
+            /* 2. Create current PCR Composite digest, for use in compairing against digestAtRelease */
+            rv = utpm_internal_allocate_and_populate_current_TpmPcrComposite(
+                utpm,
+                &unsealedPcrInfo.pcrSelection,
+                &currentPcrComposite,
+                &space_needed_for_composite);
+            if(rv != 0) {
+                dprintf(LOG_ERROR, "utpm_internal_allocate_and_populate_current_TpmPcrComposite FAILED\n");
+                return 1;
+            }            
+            print_hex("  current PcrComposite: ", currentPcrComposite, space_needed_for_composite);
+            
+            /* 3. Composite hash */
+            sha1_csum(currentPcrComposite, space_needed_for_composite, digestRightNow.value);
+            print_hex("  digestRightNow: ", digestRightNow.value, TPM_HASH_SIZE);
+            
+            if(0 != vmemcmp(digestRightNow.value, unsealedPcrInfo.digestAtRelease.value, TPM_HASH_SIZE)) {
+                dprintf(LOG_ERROR, "0 != vmemcmp(digestRightNow.value, unsealedPcrInfo.digestAtRelease.value, TPM_HASH_SIZE)\n");
+                rv = 1;
+                goto out;
+            }
+            
+            dprintf(LOG_TRACE, "[TV:UTPM_UNSEAL] digestAtRelase MATCH; Unseal ALLOWED!\n");
+            
+            vmemcpy(digestAtCreation->value, unsealedPcrInfo.digestAtCreation.value, TPM_HASH_SIZE);
+        }
+        /* 4. Reshuffle output buffer and strip padding so that only
+         * the user's plaintext is returned. Buffer's contents: [
+         * plaintextLen | plainText | padding ] */
 
-    /* 2. Create current PCR Composite digest, for use in compariing against digestAtRelease */
-    rv = utpm_internal_allocate_and_populate_current_TpmPcrComposite(
-        utpm,
-        &unsealedPcrInfo.pcrSelection,
-        &currentPcrComposite,
-        &space_needed_for_composite);
-    if(rv != 0) {
-        dprintf(LOG_ERROR, "utpm_internal_allocate_and_populate_current_TpmPcrComposite FAILED\n");
-        return 1;
-    }
-
-    print_hex("  current PcrComposite: ", currentPcrComposite, space_needed_for_composite);
-    
-    /* 3. Composite hash */
-    sha1_csum(currentPcrComposite, space_needed_for_composite, digestRightNow.value);
-    print_hex("  digestRightNow: ", digestRightNow.value, TPM_HASH_SIZE);
-
-    if(0 != vmemcmp(digestRightNow.value, unsealedPcrInfo.digestAtRelease.value, TPM_HASH_SIZE)) {
-        dprintf(LOG_ERROR, "0 != vmemcmp(digestRightNow.value, unsealedPcrInfo.digestAtRelease.value, TPM_HASH_SIZE)\n");
-        rv = 1;
-        goto out;
-    }
-
-    dprintf(LOG_TRACE, "[TV:UTPM_UNSEAL] digestAtRelase MATCH; Unseal ALLOWED!\n");
-
-    vmemcpy(digestAtCreation->value, unsealedPcrInfo.digestAtCreation.value, TPM_HASH_SIZE);
-    
-    /* 4. Reshuffle output buffer so that only the user's plaintext is returned */
-    *outlen -= bytes_consumed_by_pcrInfo;
-    if(*((uint32_t*)p) != *outlen - sizeof(uint32_t)) {
-        dprintf(LOG_ERROR, "[TV:UTPM_UNSEAL] *((uint32_t*)p) (%d) != *outlen - sizeof(uint32_t) (%d)\n",
-                *((uint32_t*)p), *outlen - sizeof(uint32_t));
-        rv = 1;
-        goto out;
-    }
-    p += sizeof(uint32_t);
-    *outlen -= sizeof(uint32_t);
-    vmemcpy(output, p, *outlen); /* XXX in-place safe? */
-    
-  out:
-    if(currentPcrComposite) { vfree(currentPcrComposite); currentPcrComposite = NULL; }
-    }
+        *outlen = *((uint32_t*)p);
+        p += sizeof(uint32_t);
+        vmemcpy(output, p, *outlen);
+        
+      out:
+        if(currentPcrComposite) { vfree(currentPcrComposite); currentPcrComposite = NULL; }
+    } /* END Separate logic for PCR checking. */
         
     return rv;    
 }
