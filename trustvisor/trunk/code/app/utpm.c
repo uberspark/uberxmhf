@@ -261,7 +261,15 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 
     print_hex("  iv: ", iv, TPM_AES_KEY_LEN_BYTES);
     
-	/* output = IV || AES-CBC(PCR Composite hash || input_len || input || PADDING) || HMAC( entire ciphertext including IV ) */
+	/* output = IV || AES-CBC(TPM_PCR_SELECTION || PCR Composite hash || input_len || input || PADDING) || HMAC( entire ciphertext including IV ) */
+    vmemcpy(p, &tpmPcrInfo_internal.pcrSelection,
+            sizeof(tpmPcrInfo_internal.pcrSelection.sizeOfSelect) + 
+            tpmPcrInfo_internal.pcrSelection.sizeOfSelect);
+    print_hex(" tpmPcrInfo_internal.pcrSelection: ", p,
+            sizeof(tpmPcrInfo_internal.pcrSelection.sizeOfSelect) + 
+            tpmPcrInfo_internal.pcrSelection.sizeOfSelect);
+    p += sizeof(tpmPcrInfo_internal.pcrSelection.sizeOfSelect) + 
+        tpmPcrInfo_internal.pcrSelection.sizeOfSelect;
 	vmemcpy(p, pcrInfoDigest.value, TPM_HASH_SIZE); /* PCR Composite hash */
     print_hex(" pcrInfoDigest.value: ", p, TPM_HASH_SIZE);
     p += TPM_HASH_SIZE;    
@@ -274,21 +282,23 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 
 	/* add padding */
 	outlen_beforepad = (uint32_t)p - (uint32_t)output;
-	if ((outlen_beforepad&0xF) != 0) {
-		*outlen = (outlen_beforepad+TPM_AES_KEY_LEN_BYTES)&(~0xF);
+	if ((outlen_beforepad & 0xF) != 0) {
+		*outlen = (outlen_beforepad + TPM_AES_KEY_LEN_BYTES) & (~0xF);
 	} else {
 		*outlen = outlen_beforepad;
 	}
 	vmemset(p, 0, *outlen-outlen_beforepad);
-    print_hex("padding: ", p, *outlen-outlen_beforepad);
-    p += *outlen-outlen_beforepad;
+    print_hex("padding: ", p, *outlen - outlen_beforepad);
+    p += *outlen - outlen_beforepad;
 	
 	/* encrypt data using sealAesKey by AES-CBC mode */
 	aes_setkey_enc(&ctx, aeskey, TPM_AES_KEY_LEN);
-    print_hex(" plaintext just prior to AES encrypt: ", output, *outlen);
-	aes_crypt_cbc(&ctx, AES_ENCRYPT, *outlen, iv, output, output);
+    print_hex(" plaintext (including IV) just prior to AES encrypt: ", output, *outlen);
+    p = output + TPM_AES_KEY_LEN_BYTES; /* skip IV */
+	aes_crypt_cbc(&ctx, AES_ENCRYPT, *outlen - TPM_AES_KEY_LEN_BYTES, iv, p, p);
 
 	/* compute and append hmac */
+    p = output + *outlen;
 	sha1_hmac(hmackey, TPM_HASH_SIZE, output, *outlen, p);
     print_hex("hmac: ", p, TPM_HASH_SIZE);
     p += TPM_HASH_SIZE;
@@ -318,7 +328,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
     
 	/**
      * Recall from utpm_seal():
-     * output = IV || AES-CBC(PCR Composite hash || input_len || input || PADDING) || HMAC( entire ciphertext including IV )
+     * output = IV || AES-CBC(TPM_PCR_SELECTION || PCR Composite hash || input_len || input || PADDING) || HMAC( entire ciphertext including IV )
      */
 
     /**
@@ -366,6 +376,16 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
 
     print_hex("  Unsealed plaintext: ", output, *outlen);
 
+
+    /**
+     * Step 3. Verify that PCR values match.
+     */
+
+    /* 1. Determine which PCRs were included */
+    /* 2. Create the TPM_PCR_COMPOSITE for those PCRs with their current values */
+    /* 3. Compare the COMPOSITE_HASH with the one in the ciphertext. */
+
+    
     dprintf(LOG_ERROR, "PCR check UNIMPLEMENTED\n");
     return 1;
     
