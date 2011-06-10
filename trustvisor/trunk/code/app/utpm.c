@@ -285,6 +285,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 	
 	/* encrypt data using sealAesKey by AES-CBC mode */
 	aes_setkey_enc(&ctx, aeskey, TPM_AES_KEY_LEN);
+    print_hex(" plaintext just prior to AES encrypt: ", output, *outlen);
 	aes_crypt_cbc(&ctx, AES_ENCRYPT, *outlen, iv, output, output);
 
 	/* compute and append hmac */
@@ -298,6 +299,78 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     print_hex("ciphertext from utpm_seal: ", output, *outlen);
     
 	return rv;
+}
+
+
+TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
+                       uint8_t* input, uint32_t inlen,
+                       uint8_t* output, uint32_t* outlen,
+                       uint8_t* hmackey, uint8_t* aeskey)
+{
+	uint32_t len;
+	uint8_t hashdata[TPM_HASH_SIZE];
+	uint8_t hmacCalculated[TPM_HASH_SIZE];
+	uint8_t iv[16];
+	aes_context ctx;
+	int i;
+
+    if(!utpm || !input || !output || !outlen || !hmackey || !aeskey) { return 1; }
+    
+	/**
+     * Recall from utpm_seal():
+     * output = IV || AES-CBC(PCR Composite hash || input_len || input || PADDING) || HMAC( entire ciphertext including IV )
+     */
+
+    /**
+     * Step 1: Verify HMAC.  This ensures the sealed ciphertext has
+     * not been modified and that it was sealed on this particular
+     * instance of TrustVisor.
+     */
+
+    /* Ciphertext (input) length should be a multiple of the AES block size + HMAC size */
+    if(0 != (inlen - TPM_HASH_SIZE) % TPM_AES_KEY_LEN_BYTES) {
+        dprintf(LOG_ERROR, "Unseal Input **Length FAILURE**: 0 != (inlen - TPM_HASH_SIZE) % TPM_AES_KEY_LEN_BYTES\n");
+        dprintf(LOG_ERROR, "inlen %d, TPM_HASH_SIZE %d, TPM_AES_KEY_LEN_BYTES %d\n",
+                inlen, TPM_HASH_SIZE, TPM_AES_KEY_LEN_BYTES);
+        return 1;
+    }
+
+    /* HMAC should be the last TPM_HASH_SIZE bytes of the
+     * input. Calculate its expected value based on the first (inlen -
+     * TPM_HASH_SIZE) bytes of the input and compare against provided
+     * value. */
+    sha1_hmac(hmackey, TPM_HASH_SIZE, input, inlen - TPM_HASH_SIZE, hmacCalculated);
+    if(vmemcmp(hmacCalculated, input + inlen - TPM_HASH_SIZE, TPM_HASH_SIZE)) {
+        dprintf(LOG_ERROR, "Unseal HMAC **INTEGRITY FAILURE**: vmemcmp(hmacCalculated, input + inlen - TPM_HASH_SIZE, TPM_HASH_SIZE)\n");
+        print_hex("  hmacCalculated: ", hmacCalculated, TPM_HASH_SIZE);
+        print_hex("  input + inlen - TPM_HASH_SIZE:" , input + inlen - TPM_HASH_SIZE, TPM_HASH_SIZE);
+        return 1;
+    }
+
+    /**
+     * Step 2. Decrypt data.  I cannot think of a reason why this
+     * could ever fail if the above HMAC check was successful.
+     */
+    
+    *outlen = inlen
+        - TPM_AES_KEY_LEN_BYTES /* iv */
+        - TPM_HASH_SIZE;        /* hmac */
+    
+	aes_setkey_dec(&ctx,aeskey, TPM_AES_KEY_LEN);
+	aes_crypt_cbc(&ctx, AES_DECRYPT,
+                  *outlen,
+                  input /* iv comes first */,
+                  input+TPM_AES_KEY_LEN_BYTES /* offset to ciphertext just beyond iv */,
+                  output);
+
+
+    print_hex("  Unsealed plaintext: ", output, *outlen);
+
+    dprintf(LOG_ERROR, "PCR check UNIMPLEMENTED\n");
+    return 1;
+    
+
+	//return 0;
 }
 
 

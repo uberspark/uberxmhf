@@ -1391,9 +1391,58 @@ uint32_t scode_seal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len, uint32
 	return rv;
 }
 
-uint32_t scode_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len, uint32_t output_addr, uint32_t output_len_addr) {
-		dprintf(LOG_ERROR, "[TV] scode_unseal: UNIMPLEMENTED\n");
+uint32_t scode_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
+											uint32_t output_addr, uint32_t output_len_addr)
+{
+	uint32_t i;
+	uint8_t indata[MAX_SEALDATA_LEN]; 
+	uint8_t outdata[MAX_SEALDATA_LEN];
+	uint32_t outlen;
+	uint32_t ret;
+	int index;
+
+	dprintf(LOG_TRACE, "\n[TV:scode] ********** uTPM unseal **********\n");
+	dprintf(LOG_TRACE, "[TV:scode] input addr: %x, len %d, output addr: %x!\n",
+					input_addr, input_len, output_addr);
+	/* check input data length */
+	if (input_len > MAX_SEALDATA_LEN) {
+		dprintf(LOG_ERROR, "[TV:scode] Unseal ERROR: input data length is too large, lenth %#x\n", input_len);
 		return 1;
+	}
+
+	/* make sure that this vmmcall can only be executed when a PAL is running */
+	if (scode_curr[vcpu->id]== -1) {
+		dprintf(LOG_ERROR, "[TV:scode] Seal ERROR: no PAL is running!\n");
+		return 1;
+	}
+
+	/* XXX FIXME: check input data and output data are all in PAL's memory range */
+
+	/* copy input data from guest */
+	copy_from_guest(vcpu, indata, input_addr, input_len);
+
+	print_hex("  [TV:scode] input data: ", indata, input_len);	
+
+	/* unseal */
+	if ((ret = utpm_unseal(&whitelist[scode_curr[vcpu->id]].utpm, indata, input_len, outdata, &outlen, hmackey, aeskey))) {
+		dprintf(LOG_ERROR, "[TV:scode] Unseal ERROR: utpm_unseal fail!\n");
+		return 1;
+	}
+
+	print_hex("  [TV:scode] output (unsealed) data: ", outdata, outlen);	
+
+	/* check output data length */
+	if (outlen > MAX_SEALDATA_LEN ) {
+		dprintf(LOG_ERROR, "[TV:scode] Unseal ERROR: output data length is too large, lenth %#x\n", outlen);
+		return 1;
+	}
+
+	/* copy output to guest */
+	copy_to_guest(vcpu, output_addr, outdata, outlen);
+
+	/* copy out length to guest */
+	put_32bit_aligned_value_to_guest(vcpu, output_len_addr, outlen);
+	return 0;
 }
 
 
@@ -1406,7 +1455,7 @@ u32 scode_seal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrAtR
 	u8 indata[MAX_SEALDATA_LEN];  
 	u8 output[MAX_SEALDATA_LEN]; 
 
-	dprintf(LOG_TRACE, "\n[TV] ********** uTPM seal **********\n");
+	dprintf(LOG_TRACE, "\n[TV] ********** uTPM seal DEPRECATED **********\n");
 	dprintf(LOG_TRACE, "[TV] input addr: %x, len %d, pcr addr: %x, output addr: %x!\n", input_addr, input_len, pcrAtRelease_addr, output_addr);
 	/* check input data length */
 	/* include seal data header and possible AES encryption padding */
@@ -1490,7 +1539,7 @@ u32 scode_unseal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 outp
 	u32 ret;
 	int index;
 
-	dprintf(LOG_TRACE, "\n[TV] ********** uTPM unseal **********\n");
+	dprintf(LOG_TRACE, "\n[TV] ********** uTPM unseal DEPRECATED **********\n");
 	dprintf(LOG_TRACE, "[TV] input addr: %x, len %d, output addr: %x!\n", input_addr, input_len, output_addr);
 	/* check input data length */
 	if (input_len > MAX_SEALDATA_LEN) {
