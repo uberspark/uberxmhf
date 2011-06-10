@@ -1332,6 +1332,71 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
 	return 1;
 }
 
+uint32_t scode_seal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len, uint32_t tpmPcrInfo_addr, uint32_t output_addr, uint32_t output_len_addr)
+{
+	uint8_t indata[MAX_SEALDATA_LEN];  
+	uint8_t output[MAX_SEALDATA_LEN]; 
+	uint32_t outlen;
+	uint32_t i, rv=0;
+
+	TPM_PCR_INFO tpmPcrInfo;
+	
+	dprintf(LOG_TRACE, "\n[TV] ********** uTPM seal **********\n");
+	dprintf(LOG_TRACE, "[TV] input addr: %x, len %d, pcr addr: %x, output addr: %x!\n", input_addr, input_len, tpmPcrInfo_addr, output_addr);
+
+	/**
+	 * check input data length
+	 */
+	/* include seal data header and possible AES encryption padding */
+	if (input_len > (MAX_SEALDATA_LEN - SEALDATA_HEADER_LEN - 16) ) {
+		dprintf(LOG_ERROR, "[TV] Seal ERROR: input data length is too large, lenth %#x\n", input_len);
+		return 1;
+	}
+
+	/* make sure that this vmmcall can only be executed when a PAL is running */
+	if (scode_curr[vcpu->id]== -1) {
+		dprintf(LOG_ERROR, "[TV] Seal ERROR: no PAL is running!\n");
+		return 1;
+	}
+
+	/* XXX FIXME: check input data and output data are all in PAL's memory range */
+
+	/* copy input data to host */
+	copy_from_guest(vcpu, indata, input_addr, input_len);
+	copy_from_guest(vcpu, (uint8_t*)&tpmPcrInfo, tpmPcrInfo_addr, sizeof(TPM_PCR_INFO));
+
+	dprintf(LOG_TRACE, "[TV] input len = %d!\n", input_len);
+	print_hex("  indata: ", indata, input_len);
+	print_hex("  tpmPcrInfo: ", (uint8_t*)&tpmPcrInfo, sizeof(TPM_PCR_INFO));
+
+
+	/* seal, verifying output is not too large */
+	rv = utpm_seal(&whitelist[scode_curr[vcpu->id]].utpm,
+								 &tpmPcrInfo,
+								 indata, input_len,
+								 output, &outlen,
+								 hmackey, aeskey);
+	if (rv != 0 || outlen > MAX_SEALDATA_LEN) {
+		dprintf(LOG_ERROR, "[TV] Seal ERROR: output data length is too large, lenth %#x\n", outlen);
+		return rv;
+	}
+	print_hex("  sealedData: ", output, outlen);
+
+	/*copy output to guest */
+	copy_to_guest(vcpu, output_addr, output, outlen);
+
+	/* copy out length to guest */
+	put_32bit_aligned_value_to_guest(vcpu, output_len_addr, outlen);
+
+	return rv;
+}
+
+uint32_t scode_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len, uint32_t output_addr, uint32_t output_len_addr) {
+		dprintf(LOG_ERROR, "[TV] scode_unseal: UNIMPLEMENTED\n");
+		return 1;
+}
+
+
 u32 scode_seal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrAtRelease_addr, u32 output_addr, u32 output_len_addr)
 {
 	unsigned int i;

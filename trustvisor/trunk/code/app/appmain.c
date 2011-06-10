@@ -165,13 +165,34 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 			}
 			/* unseal data */
 		case TV_HC_UTPM_UNSEAL:
-            printf("[TV] NON-FATAL ERROR: TV_HC_UTPM_UNSEAL unimplemented.\n");
-            ret = 1;
-            break;
+		  {
+				u32 inbuf, outbuf, input_addr, in_len, out_addr, out_len_addr;
+				inbuf = r->ecx;
+				outbuf = r->edx;
+
+				input_addr = get_32bit_aligned_value_from_guest(vcpu, inbuf);
+				in_len = get_32bit_aligned_value_from_guest(vcpu, inbuf+4);
+				out_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf);
+				out_len_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf+4);
+
+				ret = scode_unseal(vcpu, input_addr, in_len, out_addr, out_len_addr);
+			}
+      break;
 		case TV_HC_UTPM_SEAL:
-            printf("[TV] NON-FATAL ERROR: TV_HC_UTPM_SEAL unimplemented.\n");
-            ret = 1;
-            break;
+		  {
+				u32 inbuf, outbuf, data_addr, data_len, pcrinfo_addr, out_addr, out_len_addr;
+				inbuf = r->ecx;
+				outbuf = r->esi;
+				data_addr = get_32bit_aligned_value_from_guest(vcpu, inbuf); 
+				data_len = get_32bit_aligned_value_from_guest(vcpu, inbuf+4);
+				/* valid pcr value for unseal in edx */
+				pcrinfo_addr = r->edx;
+				out_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf);
+				out_len_addr = get_32bit_aligned_value_from_guest(vcpu,outbuf+4);
+
+				ret = scode_seal(vcpu, data_addr, data_len, pcrinfo_addr, out_addr, out_len_addr);
+			}
+			break;
 		case TV_HC_UTPM_UNSEAL_DEPRECATED:
 			{
 				u32 inbuf, outbuf, input_addr, in_len, out_addr, out_len_addr;

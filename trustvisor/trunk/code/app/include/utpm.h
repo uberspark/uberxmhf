@@ -58,8 +58,14 @@ typedef struct utpm_master_state {
 TPM_RESULT utpm_pcrread(TPM_DIGEST* pcr_value,
                         utpm_master_state_t *utpm, uint32_t pcr_num);
 TPM_RESULT utpm_extend(TPM_DIGEST *measurement, utpm_master_state_t *utpm, uint32_t pcr_num);
-TPM_RESULT utpm_seal(uint8_t* pcrAtRelease, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen, uint8_t* hmackey, uint8_t* aeskey);
+
+TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
+                     TPM_PCR_INFO *tpmPcrInfo,
+                     uint8_t* input, uint32_t inlen,
+                     uint8_t* output, uint32_t* outlen,
+                     uint8_t* hmackey, uint8_t* aeskey);
 TPM_RESULT utpm_unseal(utpm_master_state_t *utpm, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen, uint8_t* hmackey, uint8_t* aeskey);
+
 TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hypercall inputs */
                       uint8_t* output, uint32_t* outlen, /* hypercall outputs */
                       utpm_master_state_t *utpm, uint8_t* rsa); /* TrustVisor inputs */
