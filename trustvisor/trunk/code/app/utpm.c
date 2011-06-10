@@ -255,13 +255,14 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
      */    
     p = iv = output;
 
-	/* get IV */
+	/* 0. get IV */
 	rand_bytes(iv, TPM_AES_KEY_LEN_BYTES);
     p += TPM_AES_KEY_LEN_BYTES; /* IV */
 
     print_hex("  iv: ", iv, TPM_AES_KEY_LEN_BYTES);
     
 	/* output = IV || AES-CBC(TPM_PCR_SELECTION || PCR Composite hash || input_len || input || PADDING) || HMAC( entire ciphertext including IV ) */
+    /* 1. TPM_PCR_SELECTION */
     vmemcpy(p, &tpmPcrInfo_internal.pcrSelection,
             sizeof(tpmPcrInfo_internal.pcrSelection.sizeOfSelect) + 
             tpmPcrInfo_internal.pcrSelection.sizeOfSelect);
@@ -270,17 +271,20 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
             tpmPcrInfo_internal.pcrSelection.sizeOfSelect);
     p += sizeof(tpmPcrInfo_internal.pcrSelection.sizeOfSelect) + 
         tpmPcrInfo_internal.pcrSelection.sizeOfSelect;
-	vmemcpy(p, pcrInfoDigest.value, TPM_HASH_SIZE); /* PCR Composite hash */
+    /* 2. PCR Composite hash */
+	vmemcpy(p, pcrInfoDigest.value, TPM_HASH_SIZE); 
     print_hex(" pcrInfoDigest.value: ", p, TPM_HASH_SIZE);
     p += TPM_HASH_SIZE;    
-	*((uint32_t *)p) = inlen; /* input_len */
+    /* 3. input_len */
+	*((uint32_t *)p) = inlen; 
     print_hex(" inlen: ", p, sizeof(uint32_t));
     p += sizeof(uint32_t);
-	vmemcpy(p, input, inlen); /* actual input data */
+    /* 4. actual input data */
+	vmemcpy(p, input, inlen); 
     print_hex(" input: ", p, inlen);
     p += inlen;
 
-	/* add padding */
+	/* 5. add padding */
 	outlen_beforepad = (uint32_t)p - (uint32_t)output;
 	if ((outlen_beforepad & 0xF) != 0) {
 		*outlen = (outlen_beforepad + TPM_AES_KEY_LEN_BYTES) & (~0xF);
@@ -291,13 +295,13 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     print_hex("padding: ", p, *outlen - outlen_beforepad);
     p += *outlen - outlen_beforepad;
 	
-	/* encrypt data using sealAesKey by AES-CBC mode */
+	/* encrypt (1-5) data using sealAesKey by AES-CBC mode */
 	aes_setkey_enc(&ctx, aeskey, TPM_AES_KEY_LEN);
     print_hex(" plaintext (including IV) just prior to AES encrypt: ", output, *outlen);
     p = output + TPM_AES_KEY_LEN_BYTES; /* skip IV */
 	aes_crypt_cbc(&ctx, AES_ENCRYPT, *outlen - TPM_AES_KEY_LEN_BYTES, iv, p, p);
 
-	/* compute and append hmac */
+	/* 6. compute and append hmac */
     p = output + *outlen;
 	sha1_hmac(hmackey, TPM_HASH_SIZE, output, *outlen, p);
     print_hex("hmac: ", p, TPM_HASH_SIZE);
@@ -366,7 +370,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
         - TPM_AES_KEY_LEN_BYTES /* iv */
         - TPM_HASH_SIZE;        /* hmac */
     
-	aes_setkey_dec(&ctx,aeskey, TPM_AES_KEY_LEN);
+	aes_setkey_dec(&ctx, aeskey, TPM_AES_KEY_LEN);
 	aes_crypt_cbc(&ctx, AES_DECRYPT,
                   *outlen,
                   input /* iv comes first */,
