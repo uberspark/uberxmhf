@@ -85,6 +85,55 @@ TPM_RESULT utpm_extend(TPM_DIGEST *measurement, utpm_master_state_t *utpm, uint3
 	return UTPM_SUCCESS;
 }
 
+/* If no destination buffer is provided then just set the number of
+ * bytes that would be consumed.*/
+static uint32_t utpm_internal_memcpy_TPM_PCR_SELECTION(
+    TPM_PCR_SELECTION *pcrSelection, uint8_t *dest, uint32_t *bytes_consumed)
+{
+    if(!pcrSelection || !bytes_consumed) return 1;
+
+    *bytes_consumed = sizeof(pcrSelection->sizeOfSelect) + pcrSelection->sizeOfSelect;
+    
+    if(dest) {
+        vmemcpy(dest, pcrSelection, *bytes_consumed);
+    }
+
+    return 0; /* success */
+}
+
+/* If no destination buffer is provided then just set the number of
+ * bytes that would be consumed.*/
+static uint32_t utpm_internal_memcpy_TPM_PCR_INFO(
+    TPM_PCR_INFO *pcrInfo,
+    uint8_t *dest,
+    uint32_t *bytes_consumed)
+{
+    uint32_t rv;
+    
+    if(!pcrInfo || !bytes_consumed) { return 1; }
+
+    rv = utpm_internal_memcpy_TPM_PCR_SELECTION(&pcrInfo->pcrSelection, dest, bytes_consumed);
+    if(0 != rv) { return rv; }
+    
+    /**
+     * If no destination buffer, then just return the required size in
+     * bytes_consumed.
+     */ 
+    if(NULL == dest) {
+        *bytes_consumed += 2*TPM_HASH_SIZE;
+        return 0;
+    }
+    
+    /* If we're still here, copy two TPM_COMPOSITE_HASH values to dest. */
+    vmemcpy(dest + *bytes_consumed, pcrInfo->digestAtRelease.value, TPM_HASH_SIZE);
+    *bytes_consumed += TPM_HASH_SIZE;
+
+    vmemcpy(dest + *bytes_consumed, pcrInfo->digestAtCreation.value, TPM_HASH_SIZE);
+    *bytes_consumed += TPM_HASH_SIZE;
+
+    return 0;
+}
+
 /* FIXME: place this somewhere appropriate */
 static inline uint32_t ntohl(uint32_t in) {
     uint8_t *s = (uint8_t *)&in;
@@ -92,15 +141,15 @@ static inline uint32_t ntohl(uint32_t in) {
 }
 
 /**
- * Create the current TPM_COMPOSITE_DIGEST for uTPM PCR values
- * specified by tpmsel.
+ * Create the current TPM_PCR_COMPOSITE for uTPM PCR values
+ * specified by TPM_PCR_SELECTION.
  *
  * Caller must vfree *tpm_pcr_composite.
  */
 /**
  * TODO: Use this function to eliminate duplicated logic in utpm_quote().
  */
-static uint32_t utpm_internal_allocate_and_populate_current_TpmCompositeHash(
+static uint32_t utpm_internal_allocate_and_populate_current_TpmPcrComposite(
     utpm_master_state_t *utpm,
     TPM_PCR_SELECTION *tpmsel,
     uint8_t **tpm_pcr_composite,
@@ -229,13 +278,13 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
         vmemcpy((uint8_t*)&tpmPcrInfo_internal, tpmPcrInfo, sizeof(TPM_PCR_INFO));
         
         /* 2. overwrite digestAtCreation based on current PCR contents */
-        rv = utpm_internal_allocate_and_populate_current_TpmCompositeHash(
+        rv = utpm_internal_allocate_and_populate_current_TpmPcrComposite(
             utpm,
             &tpmPcrInfo_internal.pcrSelection,
             &currentPcrComposite,
             &space_needed_for_composite);
         if(rv != 0) {
-            dprintf(LOG_ERROR, "utpm_internal_allocate_and_populate_current_TpmCompositeHash FAILED\n");
+            dprintf(LOG_ERROR, "utpm_internal_allocate_and_populate_current_TpmPcrComposite FAILED\n");
             return 1;
         }
         
@@ -246,7 +295,9 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
         space_needed_for_composite = 0;
 
         /* 3. hash down the TPM_PCR_INFO structure into a single digest */
+        /* XXX NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO */
         sha1_csum((uint8_t*)&tpmPcrInfo_internal, sizeof(TPM_PCR_INFO), pcrInfoDigest.value);
+        /* Instead, we want to include the full tpmPcrInfo_internal struct */
     } else {
         /* Use digest of all 0's if no PCRs selected */
         vmemset(pcrInfoDigest.value, 0, TPM_HASH_SIZE);
@@ -271,7 +322,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 
     print_hex("  iv: ", iv, TPM_AES_KEY_LEN_BYTES);
     
-	/* output = IV || AES-CBC(TPM_PCR_SELECTION || PCR Composite hash || input_len || input || PADDING) || HMAC( entire ciphertext including IV ) */
+	/* output = IV || AES-CBC(TPM_PCR_SELECTION || PCR Composite (or 0x0000 if none selected) || input_len || input || PADDING) || HMAC( entire ciphertext including IV ) */
     /* 1. TPM_PCR_SELECTION */
     vmemcpy(p, &tpmPcrInfo_internal.pcrSelection,
             sizeof(tpmPcrInfo_internal.pcrSelection.sizeOfSelect) + 
@@ -418,13 +469,13 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
     print_hex("  pcrSelection: ", (uint8_t*)&pcrSelection, (uint32_t)p - (uint32_t)output);
 
     /* 2. PCR Composite */
-    rv = utpm_internal_allocate_and_populate_current_TpmCompositeHash(
+    rv = utpm_internal_allocate_and_populate_current_TpmPcrComposite(
         utpm,
         &pcrSelection,
         &currentPcrComposite,
         &space_needed_for_composite);
     if(rv != 0) {
-        dprintf(LOG_ERROR, "utpm_internal_allocate_and_populate_current_TpmCompositeHash FAILED\n");
+        dprintf(LOG_ERROR, "utpm_internal_allocate_and_populate_current_TpmPcrComposite FAILED\n");
         return 1;
     }
 
