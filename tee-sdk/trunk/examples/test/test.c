@@ -216,6 +216,8 @@ int test_seal(tz_session_t *tzPalSession)
   uint32_t inLen = strlen(in)+1;
   char *sealOut, *unsealOut;
   uint32_t sealOutLen, unsealOutLen;
+  uint8_t *digestAtCreationOut;
+  uint32_t digestAtCreationLen;
 
   TPM_PCR_INFO pcrInfo;
 
@@ -275,7 +277,9 @@ int test_seal(tz_session_t *tzPalSession)
   TZEncodeArray(&tz_unsealOp, sealOut, sealOutLen);
   tzRet = TZOperationPerform(&tz_unsealOp, &serviceReturn);
   unsealOut = TZDecodeArraySpace(&tz_unsealOp, &unsealOutLen);
-  unsealOutLen = TZDecodeUint32(&tz_unsealOp);
+  digestAtCreationOut = TZDecodeArraySpace(&tz_unsealOp, &digestAtCreationLen);
+  unsealOutLen = TZDecodeUint32(&tz_unsealOp);  
+  
   if (tzRet != TZ_SUCCESS) {
     if (tzRet == TZ_ERROR_SERVICE) {
       printf("UNSEAL pal returned error %d\n",
@@ -303,7 +307,8 @@ int test_seal(tz_session_t *tzPalSession)
     rv = 1;
     goto out;
   } else {
-    printf("unsealed data matches input\n");
+    printf("Success: unsealed data matches input\n");
+    print_hex("  digestAtCreation: ", digestAtCreationOut, digestAtCreationLen);
   }
 
  out:

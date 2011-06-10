@@ -71,7 +71,9 @@
 #define UTPM_ERR_BAD_PARAM 1
 #define UTPM_ERR_PCR_OUT_OF_RANGE 2
 
-typedef uint32_t TPM_RESULT;
+/* TODO: create an enum with meaningful errors that can be passed back
+ * to PAL authors. */
+typedef uint32_t TPM_RESULT; 
 
 #define TPM_PCR_NUM                    8
 

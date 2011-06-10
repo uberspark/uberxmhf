@@ -1392,7 +1392,8 @@ uint32_t scode_seal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len, uint32
 }
 
 uint32_t scode_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
-											uint32_t output_addr, uint32_t output_len_addr)
+											uint32_t output_addr, uint32_t output_len_addr,
+											uint32_t digestAtCreation_addr)
 {
 	uint32_t i;
 	uint8_t indata[MAX_SEALDATA_LEN]; 
@@ -1400,6 +1401,7 @@ uint32_t scode_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
 	uint32_t outlen;
 	uint32_t ret;
 	int index;
+	TPM_COMPOSITE_HASH digestAtCreation;
 
 	dprintf(LOG_TRACE, "\n[TV:scode] ********** uTPM unseal **********\n");
 	dprintf(LOG_TRACE, "[TV:scode] input addr: %x, len %d, output addr: %x!\n",
@@ -1424,7 +1426,9 @@ uint32_t scode_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
 	print_hex("  [TV:scode] input data: ", indata, input_len);	
 
 	/* unseal */
-	if ((ret = utpm_unseal(&whitelist[scode_curr[vcpu->id]].utpm, indata, input_len, outdata, &outlen, hmackey, aeskey))) {
+	if ((ret = utpm_unseal(&whitelist[scode_curr[vcpu->id]].utpm, indata, input_len,
+												 outdata, &outlen, &digestAtCreation,
+												 hmackey, aeskey))) {
 		dprintf(LOG_ERROR, "[TV:scode] Unseal ERROR: utpm_unseal fail!\n");
 		return 1;
 	}
@@ -1439,7 +1443,8 @@ uint32_t scode_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
 
 	/* copy output to guest */
 	copy_to_guest(vcpu, output_addr, outdata, outlen);
-
+	copy_to_guest(vcpu, digestAtCreation_addr, (uint8_t*)&digestAtCreation, TPM_HASH_SIZE);
+	
 	/* copy out length to guest */
 	put_32bit_aligned_value_to_guest(vcpu, output_len_addr, outlen);
 	return 0;

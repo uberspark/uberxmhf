@@ -107,7 +107,7 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
 
   case PAL_UNSEAL:
     {
-      uint8_t *in, *out;
+      uint8_t *in, *out, *digestAtCreation;
       size_t inLen, outLen;
       *puiRv = TZ_SUCCESS;
 
@@ -119,12 +119,13 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
 
       outLen = inLen + 100; /* XXX guessing at unseal overhead, though should actually be negative */
       out = TZIEncodeArraySpace(psOutBuf, outLen);
-      if (out == NULL) {
+      digestAtCreation = TZIEncodeArraySpace(psOutBuf, TPM_HASH_SIZE);
+      if (NULL == out || NULL == digestAtCreation) {
         *puiRv = TZ_ERROR_MEMORY;
         break;
       }
       
-      *puiRv = pal_unseal(in, inLen, out, &outLen);
+      *puiRv = pal_unseal(in, inLen, out, &outLen, digestAtCreation);
       if (*puiRv != TZ_SUCCESS) {
         break;
       }
@@ -329,9 +330,9 @@ tz_return_t pal_seal(TPM_PCR_INFO *pcrInfo, uint8_t *input, uint32_t inputLen, u
 }
 
 __attribute__ ((section (".scode")))
-tz_return_t pal_unseal(uint8_t *input, uint8_t inputLen, uint8_t *output, size_t *outputLen)
+tz_return_t pal_unseal(uint8_t *input, uint8_t inputLen, uint8_t *output, size_t *outputLen, uint8_t *digestAtCreation)
 {
-  if (svc_utpm_unseal(input, inputLen, output, outputLen) == 0) {
+    if (svc_utpm_unseal(input, inputLen, output, outputLen, digestAtCreation) == 0) {
     return TZ_SUCCESS;
   } else {
     return TZ_ERROR_GENERIC;

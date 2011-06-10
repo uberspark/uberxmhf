@@ -88,7 +88,8 @@ int svc_utpm_seal(TPM_PCR_INFO *pcrInfo,
 int svc_utpm_unseal(void *in,
                     size_t in_len,
                     void *out,
-                    size_t *out_len);
+                    size_t *out_len,
+                    void *digestAtCreation);
 
 /* generate a TPM quote (FIXME of...?)
  * nonce points to a nonce to be used FIXME: size?

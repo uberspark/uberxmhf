@@ -166,7 +166,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 			/* unseal data */
 		case TV_HC_UTPM_UNSEAL:
 		  {
-				u32 inbuf, outbuf, input_addr, in_len, out_addr, out_len_addr;
+				u32 inbuf, outbuf, input_addr, in_len, out_addr, out_len_addr, digestAtCreation_addr;
 				inbuf = r->ecx;
 				outbuf = r->edx;
 
@@ -174,8 +174,9 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				in_len = get_32bit_aligned_value_from_guest(vcpu, inbuf+4);
 				out_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf);
 				out_len_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf+4);
-
-				ret = scode_unseal(vcpu, input_addr, in_len, out_addr, out_len_addr);
+				digestAtCreation_addr = r->esi;				
+				
+				ret = scode_unseal(vcpu, input_addr, in_len, out_addr, out_len_addr, digestAtCreation_addr);
 			}
       break;
 		case TV_HC_UTPM_SEAL:

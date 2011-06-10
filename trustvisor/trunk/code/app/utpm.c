@@ -416,6 +416,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
                        uint8_t* input, uint32_t inlen,
                        uint8_t* output, uint32_t* outlen,
+                       TPM_COMPOSITE_HASH *digestAtCreation, /* out */
                        uint8_t* hmackey, uint8_t* aeskey)
 {
 	uint32_t len;
@@ -425,7 +426,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
 	aes_context ctx;
 	uint32_t i, rv;
 
-    if(!utpm || !input || !output || !outlen || !hmackey || !aeskey) { return 1; }
+    if(!utpm || !input || !output || !outlen || !digestAtCreation || !hmackey || !aeskey) { return 1; }
     
 	/**
      * Recall from utpm_seal():
@@ -527,6 +528,8 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
 
     dprintf(LOG_TRACE, "[TV:UTPM_UNSEAL] digestAtRelase MATCH; Unseal ALLOWED!\n");
 
+    vmemcpy(digestAtCreation->value, unsealedPcrInfo.digestAtCreation.value, TPM_HASH_SIZE);
+    
     /* 4. Reshuffle output buffer so that only the user's plaintext is returned */
     *outlen -= bytes_consumed_by_pcrInfo;
     if(*((uint32_t*)p) != *outlen - sizeof(uint32_t)) {

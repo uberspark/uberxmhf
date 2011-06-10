@@ -181,7 +181,9 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr);
 u32 scode_seal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrAtRelease_addr, u32 output_addr, u32 output_len_addr);
 u32 scode_unseal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 output_addr, u32 output_len_addr);
 uint32_t scode_seal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len, uint32_t tpmPcrInfo_addr, uint32_t output_addr, uint32_t output_len_addr);
-uint32_t scode_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len, uint32_t output_addr, uint32_t output_len_addr);
+uint32_t scode_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
+											uint32_t output_addr, uint32_t output_len_addr,
+											uint32_t digestAtCreation_addr);
 u32 scode_quote_deprecated(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 out_len_addr);
 u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 out_len_addr);
 uint32_t scode_utpm_id_getpub(VCPU * vcpu, uint32_t gvaddr);

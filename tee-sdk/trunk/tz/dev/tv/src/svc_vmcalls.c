@@ -59,17 +59,17 @@ int svc_utpm_seal(TPM_PCR_INFO *pcrInfo,
 int svc_utpm_unseal(void *in,
                     size_t in_len,
                     void *out,
-                    size_t *out_len)
+                    size_t *out_len,
+                    void *digestAtCreation) /* out */
 {
-  int ret;
   unsigned int inbuf2[2]= {(unsigned int)in, (unsigned int)in_len};
   unsigned int outbuf2[2]= {(unsigned int)out, (unsigned int)out_len};
-
-  return vmcall(TV_HC_UTPM_UNSEAL,
-                (uint32_t)inbuf2,
-                (uint32_t)outbuf2,
-                0,
-                0);
+  
+  return vmcall(TV_HC_UTPM_UNSEAL, /* eax */
+                (uint32_t)inbuf2,  /* ecx */
+                (uint32_t)outbuf2, /* edx */
+                digestAtCreation,  /* esi */
+                0);                /* edi */
 }
 
 int svc_utpm_quote(TPM_NONCE *nonce,
@@ -77,7 +77,6 @@ int svc_utpm_quote(TPM_NONCE *nonce,
                    uint8_t *out,
                    size_t *out_len)
 {
-  int ret;
   unsigned int outbuf[2]= {(unsigned int)out, (unsigned int)out_len};
 
   return vmcall(TV_HC_UTPM_QUOTE,
