@@ -92,9 +92,11 @@ static inline void utpm_pcr_select_i(TPM_PCR_SELECTION *tpmsel, uint32_t i) {
     /* TODO: fail loudly if any of these conditions do not hold */
     if(NULL == tpmsel) return;
     if(i >= TPM_PCR_NUM) return;    
-    if(i/8 >= tpmsel->sizeOfSelect) return;
+    /*if(i/8 >= tpmsel->sizeOfSelect) return; */ /* deprecated in favor of
+                                                  * auto-growing, as in the
+                                                  * next line. */
 
-    if(tpmsel->sizeOfSelect < i/8) { tpmsel->sizeOfSelect = i/8; } /* XXX not future-proof */
+    if(tpmsel->sizeOfSelect < i/8+1) { tpmsel->sizeOfSelect = i/8+1; } /* XXX not future-proof */
     /* Set the bit corresponding to PCR i */
     tpmsel->pcrSelect[i/8] |= (1 << (i%8));
 }
