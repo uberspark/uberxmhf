@@ -117,12 +117,12 @@ static uint32_t utpm_internal_allocate_and_populate_current_TpmCompositeHash(
 
     dprintf(LOG_TRACE, "[TV:UTPM] %s: tpmsel->sizeOfSelect %d\n",
             __FUNCTION__, tpmsel->sizeOfSelect);
-    print_hex("   tpmsel->pcrSelect: ", tpmsel->pcrSelect, tpmsel->sizeOfSelect);
+    print_hex("  tpmsel->pcrSelect: ", tpmsel->pcrSelect, tpmsel->sizeOfSelect);
     for(i=0; i<TPM_PCR_NUM; i++) {
         if(utpm_pcr_is_selected(tpmsel, i)) {
             num_pcrs_to_include++;
         }
-        dprintf(LOG_TRACE, "  uPCR-%d: %s\n", i,
+        dprintf(LOG_TRACE, "    uPCR-%d: %s\n", i,
                 utpm_pcr_is_selected(tpmsel, i) ? "included" : "excluded");
     }    
 
@@ -144,14 +144,14 @@ static uint32_t utpm_internal_allocate_and_populate_current_TpmCompositeHash(
         sizeof(uint32_t) +                                    /* TPM_PCR_COMPOSITE.valueSize */
         num_pcrs_to_include * TPM_HASH_SIZE;                  /* TPM_PCR_COMPOSITE.pcrValue[] */
 
-    dprintf(LOG_TRACE, "sizeof(tpmsel->sizeOfSelect) + tpmsel->sizeOfSelect = %d\n",
+    dprintf(LOG_TRACE, "  sizeof(tpmsel->sizeOfSelect) + tpmsel->sizeOfSelect = %d\n",
             sizeof(tpmsel->sizeOfSelect) + tpmsel->sizeOfSelect);
-    dprintf(LOG_TRACE, "sizeof(uint32_t)                                    = %d\n",
+    dprintf(LOG_TRACE, "  sizeof(uint32_t)                                    = %d\n",
             sizeof(uint32_t));
-    dprintf(LOG_TRACE, "num_pcrs_to_include * TPM_HASH_SIZE                 = %d\n",
+    dprintf(LOG_TRACE, "  num_pcrs_to_include * TPM_HASH_SIZE                 = %d\n",
             num_pcrs_to_include * TPM_HASH_SIZE);
-    dprintf(LOG_TRACE, "--------------------------------------------------------\n");
-    dprintf(LOG_TRACE, "*space_needed_for_composite                         = %d\n",
+    dprintf(LOG_TRACE, "  ---------------------------------------------------------\n");
+    dprintf(LOG_TRACE, "  *space_needed_for_composite                         = %d\n",
             *space_needed_for_composite);
     
     if(NULL == (*tpm_pcr_composite = vmalloc(*space_needed_for_composite))) {
@@ -171,7 +171,8 @@ static uint32_t utpm_internal_allocate_and_populate_current_TpmCompositeHash(
     for(i=0; i<TPM_PCR_NUM; i++) {
         if(utpm_pcr_is_selected(tpmsel, i)) {
             vmemcpy(p, utpm->pcr_bank[i].value, TPM_HASH_SIZE);
-            print_hex("     PCR: ", p, TPM_HASH_SIZE);
+            dprintf(LOG_TRACE, "  PCR-%d: ", i);
+            print_hex(NULL, p, TPM_HASH_SIZE);
             p += TPM_HASH_SIZE;
         }        
     }
