@@ -208,6 +208,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 	aes_context ctx;
     TPM_PCR_INFO tpmPcrInfo_internal;
     TPM_DIGEST pcrInfoDigest;
+    uint8_t *plaintext = NULL;
     if(!utpm || !tpmPcrInfo || !input || !output || !outlen || !hmackey || !aeskey) { return 1; }
 
     dprintf(LOG_TRACE, "[TV:utpm_seal] inlen %d, outlen %d\n", inlen, outlen);
@@ -252,11 +253,20 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     }
     /**
      * Part 2: Do the actual encryption
-     */    
-    p = iv = output;
+     */
+
+    plaintext = vmalloc(inlen + 100); /* XXX figure out actual required size */
+    // It's probably TPM_AES_KEY_LEN_BYTES + TPM_HASH_SIZE + sizeof(TPM_PCR_SELECTION)
+    if(NULL == plaintext) {
+        dprintf(LOG_ERROR, "ERROR: vmalloc FAILED\n");
+        return 1;
+    }
+    
+    p = iv = plaintext;
 
 	/* 0. get IV */
 	rand_bytes(iv, TPM_AES_KEY_LEN_BYTES);
+    vmemcpy(output, iv, TPM_AES_KEY_LEN_BYTES); /* Copy IV directly to output */
     p += TPM_AES_KEY_LEN_BYTES; /* IV */
 
     print_hex("  iv: ", iv, TPM_AES_KEY_LEN_BYTES);
@@ -285,7 +295,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     p += inlen;
 
 	/* 5. add padding */
-	outlen_beforepad = (uint32_t)p - (uint32_t)output;
+	outlen_beforepad = (uint32_t)p - (uint32_t)plaintext;
 	if ((outlen_beforepad & 0xF) != 0) {
 		*outlen = (outlen_beforepad + TPM_AES_KEY_LEN_BYTES) & (~0xF);
 	} else {
@@ -294,23 +304,27 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 	vmemset(p, 0, *outlen-outlen_beforepad);
     print_hex("padding: ", p, *outlen - outlen_beforepad);
     p += *outlen - outlen_beforepad;
-	
+    
 	/* encrypt (1-5) data using sealAesKey by AES-CBC mode */
 	aes_setkey_enc(&ctx, aeskey, TPM_AES_KEY_LEN);
-    print_hex(" plaintext (including IV) just prior to AES encrypt: ", output, *outlen);
-    p = output + TPM_AES_KEY_LEN_BYTES; /* skip IV */
-	aes_crypt_cbc(&ctx, AES_ENCRYPT, *outlen - TPM_AES_KEY_LEN_BYTES, iv, p, p);
+    print_hex(" plaintext (including IV) just prior to AES encrypt: ", plaintext, *outlen);
+	aes_crypt_cbc(&ctx, AES_ENCRYPT, *outlen - TPM_AES_KEY_LEN_BYTES,
+                  iv,
+                  plaintext + TPM_AES_KEY_LEN_BYTES, /* skip IV */
+                  output + TPM_AES_KEY_LEN_BYTES); /* don't clobber IV */
 
-	/* 6. compute and append hmac */
-    p = output + *outlen;
-	sha1_hmac(hmackey, TPM_HASH_SIZE, output, *outlen, p);
-    print_hex("hmac: ", p, TPM_HASH_SIZE);
-    p += TPM_HASH_SIZE;
+    print_hex(" freshly encrypted ciphertext: ", output, *outlen);
     
+	/* 6. compute and append hmac */
+    sha1_hmac(hmackey, TPM_HASH_SIZE, output, *outlen, output + *outlen);
+    print_hex("hmac: ", output + *outlen, TPM_HASH_SIZE);    
     *outlen += TPM_HASH_SIZE; /* hmac */
 
     dprintf(LOG_TRACE, "*outlen = %d\n", *outlen);
     print_hex("ciphertext from utpm_seal: ", output, *outlen);
+              
+    /* FIXME: zero memory before freeing? */
+    if(plaintext) { vfree(plaintext); plaintext = NULL; iv = NULL; } 
     
 	return rv;
 }
