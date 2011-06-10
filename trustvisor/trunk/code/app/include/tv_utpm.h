@@ -75,11 +75,13 @@ typedef uint32_t TPM_RESULT;
 
 #define TPM_PCR_NUM                    8
 
-typedef struct tdTPM_PCR_SELECTION { 
+struct tdTPM_PCR_SELECTION { 
     uint16_t sizeOfSelect;            /* The size in bytes of the pcrSelect structure */
     uint8_t pcrSelect[TPM_PCR_NUM/8]; /* This SHALL be a bit map that indicates if a PCR
                                             is active or not */
-} TPM_PCR_SELECTION; 
+} __attribute__((packed));
+
+typedef struct tdTPM_PCR_SELECTION TPM_PCR_SELECTION; 
 
 #define TPM_MAX_QUOTE_LEN ( \
     sizeof(TPM_PCR_SELECTION) + sizeof(uint32_t) \
