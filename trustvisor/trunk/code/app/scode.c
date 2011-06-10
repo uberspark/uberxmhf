@@ -90,6 +90,8 @@ int * scode_curr = NULL;
 
 /* keys for software TPM seal ,unseal and quote operations */
 /* only initialized during bootstrap time, no need to apply a lock on it */
+/* FIXME: put all of these keys into a struct so that all long-term
+ * secrets are well-identified and therefore easy to wipe, etc. */
 u8 aeskey[TPM_AES_KEY_LEN/8];
 u8 hmackey[TPM_HMAC_KEY_LEN];
 rsa_context g_rsa;
@@ -1330,7 +1332,7 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
 	return 1;
 }
 
-u32 scode_seal(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrAtRelease_addr, u32 output_addr, u32 output_len_addr)
+u32 scode_seal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrAtRelease_addr, u32 output_addr, u32 output_len_addr)
 {
 	unsigned int i;
 	int index;
@@ -1414,7 +1416,7 @@ u32 scode_seal(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrAtRelease_addr
 	return 0;
 }
 
-u32 scode_unseal(VCPU * vcpu, u32 input_addr, u32 input_len, u32 output_addr, u32 output_len_addr)
+u32 scode_unseal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 output_addr, u32 output_len_addr)
 {
 	unsigned int i;
 	u8 indata[MAX_SEALDATA_LEN]; 

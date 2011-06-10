@@ -159,7 +159,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				out_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf);
 				out_len_addr = get_32bit_aligned_value_from_guest(vcpu,outbuf+4);
 
-				ret = scode_seal(vcpu, data_addr, data_len, pcr_addr, out_addr, out_len_addr);
+				ret = scode_seal_deprecated(vcpu, data_addr, data_len, pcr_addr, out_addr, out_len_addr);
 
 				break;
 			}
@@ -183,7 +183,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				out_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf);
 				out_len_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf+4);
 
-				ret = scode_unseal(vcpu, input_addr, in_len, out_addr, out_len_addr);
+				ret = scode_unseal_deprecated(vcpu, input_addr, in_len, out_addr, out_len_addr);
 
 				break;
 			}
