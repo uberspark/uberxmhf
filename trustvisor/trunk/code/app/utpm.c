@@ -507,12 +507,23 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
     }
 
     dprintf(LOG_TRACE, "[TV:UTPM_UNSEAL] digestAtRelase MATCH; Unseal ALLOWED!\n");
+
+    /* 4. Reshuffle output buffer so that only the user's plaintext is returned */
+    *outlen -= bytes_consumed_by_pcrInfo;
+    if(*((uint32_t*)p) != *outlen - sizeof(uint32_t)) {
+        dprintf(LOG_ERROR, "[TV:UTPM_UNSEAL] *((uint32_t*)p) (%d) != *outlen - sizeof(uint32_t) (%d)\n",
+                *((uint32_t*)p), *outlen - sizeof(uint32_t));
+        rv = 1;
+        goto out;
+    }
+    p += sizeof(uint32_t);
+    *outlen -= sizeof(uint32_t);
+    vmemcpy(output, p, *outlen); /* XXX in-place safe? */
     
   out:
     if(currentPcrComposite) { vfree(currentPcrComposite); currentPcrComposite = NULL; }
     }
         
-    dprintf(LOG_ERROR, "ERROR: Unseal: Output memcpy UNIMPLEMENTED\n");
     return rv;    
 }
 
