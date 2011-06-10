@@ -146,9 +146,6 @@ static inline uint32_t ntohl(uint32_t in) {
  *
  * Caller must vfree *tpm_pcr_composite.
  */
-/**
- * TODO: Use this function to eliminate duplicated logic in utpm_quote().
- */
 static uint32_t utpm_internal_allocate_and_populate_current_TpmPcrComposite(
     utpm_master_state_t *utpm,
     TPM_PCR_SELECTION *tpmsel,
@@ -661,73 +658,12 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
 
     print_hex(" externalnonce: ", externalnonce->nonce, TPM_HASH_SIZE);
 
-    dprintf(LOG_TRACE, "[TV:UTPM] utpm_quote: tpmsel->sizeOfSelect %d\n", tpmsel->sizeOfSelect);
-    print_hex("   tpmsel->pcrSelect: ", tpmsel->pcrSelect, tpmsel->sizeOfSelect);
-    for(i=0; i<2*TPM_PCR_NUM; i++) {
-        if(utpm_pcr_is_selected(tpmsel, i)) {
-            num_pcrs_to_include_in_quote++;
-        }
-        dprintf(LOG_TRACE, "  uPCR-%d: %s\n", i,
-                utpm_pcr_is_selected(tpmsel, i) ? "included" : "excluded");
-    }    
-
-    /**
-     * Construct TPM_COMPOSITE structure that will summarize the relevant PCR values
-     */
-
-    /* Allocate space for the necessary number of uPCR values */
-    // TPM_PCR_COMPOSITE contains TPM_PCR_SELECTION + n*TPM_HASH_SIZE PCR values
-    
-    /* struct TPM_PCR_COMPOSITE {
-         TPM_PCR_SELECTION select;
-         uint32_t valueSize;
-         [size_is(valueSize)] TPM_PCRVALUE pcrValue[];
-       };
-    */
-    space_needed_for_composite =
-        sizeof(tpmsel->sizeOfSelect) + tpmsel->sizeOfSelect + /* TPM_PCR_COMPOSITE.select */
-        sizeof(uint32_t) +                                    /* TPM_PCR_COMPOSITE.valueSize */
-        num_pcrs_to_include_in_quote * TPM_HASH_SIZE;             /* TPM_PCR_COMPOSITE.pcrValue[] */
-
-    dprintf(LOG_TRACE, "sizeof(tpmsel->sizeOfSelect) + tpmsel->sizeOfSelect = %d\n",
-            sizeof(tpmsel->sizeOfSelect) + tpmsel->sizeOfSelect);
-    dprintf(LOG_TRACE, "sizeof(uint32_t)                                    = %d\n",
-            sizeof(uint32_t));
-    dprintf(LOG_TRACE, "num_pcrs_to_include_in_quote * TPM_HASH_SIZE        = %d\n",
-            num_pcrs_to_include_in_quote * TPM_HASH_SIZE);
-    dprintf(LOG_TRACE, "--------------------------------------------------------\n");
-    dprintf(LOG_TRACE, "space_needed_for_composite                          = %d\n",
-            space_needed_for_composite);
-    
-    if(NULL == (tpm_pcr_composite = vmalloc(space_needed_for_composite))) {
-        dprintf(LOG_ERROR, "[TV:UTPM] vmalloc(%d) failed!\n", space_needed_for_composite);
-        return 1;
-    }
-
-    /** Populate TPM_COMPOSITE buffer **/
-    p = tpm_pcr_composite;
-    /* 1. TPM_PCR_COMPOSITE.select */ 
-    vmemcpy(p, tpmsel, sizeof(tpmsel->sizeOfSelect) + tpmsel->sizeOfSelect);
-    p += sizeof(tpmsel->sizeOfSelect) + tpmsel->sizeOfSelect;
-    /* 2. TPM_PCR_COMPOSITE.valueSize (big endian # of bytes (not # of PCRs)) */
-    *((uint32_t*)p) = ntohl(num_pcrs_to_include_in_quote*TPM_HASH_SIZE);
-    p += sizeof(uint32_t);
-    /* 3. TPM_PCR_COMPOSITE.pcrValue[] */
-    for(i=0; i<TPM_PCR_NUM; i++) {
-        if(utpm_pcr_is_selected(tpmsel, i)) {
-            vmemcpy(p, utpm->pcr_bank[i].value, TPM_HASH_SIZE);
-            print_hex("     PCR: ", p, TPM_HASH_SIZE);
-            p += TPM_HASH_SIZE;
-        }        
-    }
-
-    /* TODO: Assert */
-    if((uint32_t)p-(uint32_t)tpm_pcr_composite != space_needed_for_composite) {
-        dprintf(LOG_ERROR, "[TV:UTPM] ERROR! (uint32_t)p-(uint32_t)tpm_pcr_composite "
-                "!= space_needed_for_composite\n");
-        rv = 1; /* FIXME: Indicate internal error */
-        goto out;
-    }
+    rv = utpm_internal_allocate_and_populate_current_TpmPcrComposite(
+        utpm,
+        tpmsel,
+        &tpm_pcr_composite,
+        &space_needed_for_composite);
+    if(0 != rv) { goto out; }
     
     print_hex(" TPM_PCR_COMPOSITE: ", tpm_pcr_composite, space_needed_for_composite);
     
