@@ -245,7 +245,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
         vfree(currentPcrComposite); currentPcrComposite = NULL;
         space_needed_for_composite = 0;
 
-        /* 3. hash doen the TPM_PCR_INFO structure into a single digest */
+        /* 3. hash down the TPM_PCR_INFO structure into a single digest */
         sha1_csum((uint8_t*)&tpmPcrInfo_internal, sizeof(TPM_PCR_INFO), pcrInfoDigest.value);
     } else {
         /* Use digest of all 0's if no PCRs selected */
@@ -340,7 +340,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
 	uint8_t hmacCalculated[TPM_HASH_SIZE];
 	uint8_t iv[16];
 	aes_context ctx;
-	int i;
+	uint32_t i, rv;
 
     if(!utpm || !input || !output || !outlen || !hmackey || !aeskey) { return 1; }
     
@@ -403,7 +403,39 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
     /* 2. Create the TPM_PCR_COMPOSITE for those PCRs with their current values */
     /* 3. Compare the COMPOSITE_HASH with the one in the ciphertext. */
 
+    /* plaintext contains [ TPM_PCR_SELECTION | TPM_COMPOSITE HASH | plaintextLen | plaintext ] */
+    {
+    uint8_t *p = output;
+    TPM_PCR_SELECTION pcrSelection;
+    uint32_t space_needed_for_composite = 0;
+    uint8_t *currentPcrComposite = NULL;
+    TPM_DIGEST pcrInfoDigest;
     
+    /* 1. TPM_PCR_SELECTION */
+    vmemcpy(&pcrSelection, output,
+            sizeof(pcrSelection.sizeOfSelect) + ((TPM_PCR_SELECTION*)p)->sizeOfSelect);
+    p += sizeof(pcrSelection.sizeOfSelect) + ((TPM_PCR_SELECTION*)p)->sizeOfSelect;    
+    print_hex("  pcrSelection: ", (uint8_t*)&pcrSelection, (uint32_t)p - (uint32_t)output);
+
+    /* 2. PCR Composite */
+    rv = utpm_internal_allocate_and_populate_current_TpmCompositeHash(
+        utpm,
+        &pcrSelection,
+        &currentPcrComposite,
+        &space_needed_for_composite);
+    if(rv != 0) {
+        dprintf(LOG_ERROR, "utpm_internal_allocate_and_populate_current_TpmCompositeHash FAILED\n");
+        return 1;
+    }
+
+    print_hex("  current PcrComposite: ", currentPcrComposite, space_needed_for_composite);
+    
+    /* 3. Composite hash */
+    //sha1_csum((uint8_t*)&tpmPcrInfo_internal, sizeof(TPM_PCR_INFO), pcrInfoDigest.value);
+
+    if(currentPcrComposite) { vfree(currentPcrComposite); currentPcrComposite = NULL; }
+    }
+        
     dprintf(LOG_ERROR, "PCR check UNIMPLEMENTED\n");
     return 1;
     
