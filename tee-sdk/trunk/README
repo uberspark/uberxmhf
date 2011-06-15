@@ -74,22 +74,7 @@ back-end. It is also permissable to link against multiple back-ends; a
 single application can communicate with services running on multiple
 devices. 
 
-# Compiling services
-
-Currently, all services must meet the following requirements:
-
- * The entry point must be in section ".scode". E.g., use
-
-~~~ {.c}
-   __attribute__ ((section (".scode")))
-~~~
-
- * All code to be executed as part of the service must be
-   in either section ".scode" or ".stext". Code in ".scode"
-   is unreadable to the guest operating system, so code that
-   should be executable both by a service and an application
-   should be put in ".stext".
- * All data accessed by the service must be in section ".sdata".
+# Compiling services (PALs)
 
 You must compile and link using exactly one service back-end
 package. At the time of this writing, there is only one anyways:
@@ -99,6 +84,38 @@ flags from those packages is important not only to link against the
 corresponding libraries; they also reference compiler options to
 eliminate code-constructs that are unsupported inside services, and
 linker options to ensure the necessary layout in the final binary.
+
+Services to be run under TrustVisor need to be compiled somewhat
+specially. A PAL is linked together into the same binary with the
+application that runs it. At run-time, the application registers the
+PAL with TrustVisor. Using the raw TrustVisor interfaces for PAL
+management, you'd need to keep track of which address ranges belong to
+PAL code, data, etc., and make sure those sections are page-aligned.
+Things can get tricky if you want some code to be accessible to both
+the PAL code and the application code, and trickier still if you want
+to use different implementations for the same function in PAL and
+application code (such as linking the PAL against a version of libc
+that doesn't make system calls while linking the regular code with the
+standard version of libc).
+
+The TEE-SDK has some tools to take care of these details for you. The
+basic approach is use _partial linking_ to link all PAL code into a
+single object file (.o), rewrite all symbols except for the PAL
+entry-point in that object file to be private, and then use a linker
+script to link this object file with the regular application while
+mapping the PAL's code and data to special page-aligned sections. The
+TrustVisor back-end provides simplified functions for registering a
+PAL that has been built and linked this way.
+
+The TEE-SDK includes pkg-config files that specify the necessary
+compilation and link flags, and Makefile snippets that can be included
+in your own Makefiles to automate most of the process. Pointing your
+makefile at those makefile snippets and\or pkg-config files (rather
+than copying and modifying a monolithic Makefile with these things
+hard-coded) will help keep your pal up to date as the build process
+evolves. See `examples/newlib/Makefile` for a good starting point of a
+Makefile that dynamically incorporates the TEE-SDK-provided Makefile
+snippets and pkg-config files.
 
 # Compiling and running the test example
 
@@ -156,6 +173,42 @@ Services are loaded and unloaded through the TrustZone service manager:
   assert(tzRet == TZ_SUCCESS);
 ~~~ 
 
+The TrustVisor back-end provides some convenience functions for an
+application to load an unload a single PAL:
+
+~~~ {.c}
+  tz_device_t tzDevice;
+  tz_session_t tzPalSession;
+  tz_uuid_t tzSvcId;
+  tz_return_t rv;
+  int rv=0;
+  
+  /* configurable options */
+  pal_fn_t *pal_fn = &pal_entry_point;
+  size_t param_size = PAGE_SIZE;
+  size_t stack_size = PAGE_SIZE;
+
+  /* register the pal */
+  rv = tv_tz_init(&tzDevice,
+                  &tzPalSession,
+                  &tzSvcId,
+                  pal_entry_point,
+                  param_size,
+                  stack_size);
+  assert(rv == TZ_SUCCESS);
+
+  /* do useful work with the pal */
+  /* .... */
+
+  /* register the pal */
+  rv = tv_tz_teardown(&tzDevice,
+                      &tzPalSession,
+                      &tzSvcId));
+  assert(rv == TZ_SUCCESS);
+} 
+
+~~~
+
 # Calling services
 
 Services are called through the TrustZone API. You must open a session
@@ -209,7 +262,7 @@ void pal_entry(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buff
 
 We need to define a common clean interface for the runtime that
 a device provides to a service. This is currently defined by
-svcapi.h, which is just a quick rip from trustvisor's code.
+svcapi.h.
 
 ## Support for standalone service binaries
 
