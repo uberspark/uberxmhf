@@ -676,6 +676,22 @@ TZEncodeMemoryReference(INOUT tz_operation_t* psOperation,
   }
 }
 
+tz_return_t
+vTZIEncodeFormat(INOUT tz_operation_t *psOperation, const char* str, va_list argp)
+{
+  return vTZIEncodeBufFormat(psOperation->sImp.psEncodeBuffer, str, argp);
+}
+
+tz_return_t
+TZIEncodeFormat(INOUT tz_operation_t *psOperation, const char* str, ...)
+{
+  tz_return_t rv;
+  va_list argp;
+  va_start(argp, str);
+  rv = vTZIEncodeFormat(psOperation, str, argp);
+  va_end(argp);
+  return rv;
+}
 
 tz_return_t
 TZDecodeGetError(INOUT tz_operation_t * psOperation)

@@ -43,6 +43,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdarg.h>
 
 /* implementation features.
  * define iff the implementation implements the corresponding feature.
@@ -422,6 +423,17 @@ TZEncodeMemoryReference(INOUT tz_operation_t* psOperation,
                         uint32_t uiLength,
                         uint32_t uiFlags);
 
+/* extension: encode multiple by format string */
+#define TZI_FMT_UINT32 "%u"
+#define TZI_FMT_STRING "%s"
+#define TZI_FMT_ARRAY "%p%u"
+#define TZI_FMT_ARRAY_SPACE "%-p%u"
+tz_return_t
+TZIEncodeFormat(INOUT tz_operation_t *psOperation, const char* str, ...)
+  __attribute__ ((format (printf, 2, 3)));
+
+tz_return_t
+vTZIEncodeFormat(INOUT tz_operation_t *psOperation, const char* str, va_list argp);
 
 /* 6.2.5 TZDecodeUint32 */
 uint32_t

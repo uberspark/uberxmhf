@@ -358,28 +358,77 @@ TZIEncodeBufReInit(INOUT tzi_encode_buffer_t* psBuffer)
   psBuffer->uiSizeUsed = 0;
 }
 
-void
-TZIEncodeMultiple(tzi_encode_buffer_t* psBuffer, ...)
+static int is_prefix(const char* prefix, const char* s)
 {
-  va_list argp;
-  va_start(argp, psBuffer);
-  vTZIEncodeMultiple(psBuffer, argp);
-}
+  int i=0;
 
-void
-vTZIEncodeMultiple(tzi_encode_buffer_t* psBuffer, va_list argp)
-{
-  int t;
+  while(1) {
+    if (prefix[i] == '\0')
+      return 1;
 
-  for(t=va_arg(argp, int); t!=TZI_MARSHAL_END; t=va_arg(argp, int)) {
-    switch (t) {
-    case TZI_MARSHAL_UINT32:
-      break;
-    case TZI_MARSHAL_ARRAY:
-      break;
-    case TZI_MARSHAL_ARRAYSPACE:
-      break;
-    default:
-    }
+    if (prefix[i] != s[i])
+      return 0;
+
+    i++;
   }
 }
+
+static size_t strlen(const char *s)
+{
+  int i =0;
+  while(s[i] != '\0')
+    i++;
+  return i;
+}
+
+tz_return_t
+vTZIEncodeBufFormat(tzi_encode_buffer_t* psBuffer, const char* str, va_list argp)
+{
+  int i;
+
+  while(1) {
+    if(str[0] == '\0') {
+      break;
+    }
+    if(str[0] != '%') {
+      str++;
+      continue;
+    }
+
+    if(is_prefix(TZI_FMT_UINT32, str)) {
+      str += strlen(TZI_FMT_UINT32);
+      TZIEncodeUint32(psBuffer, va_arg(argp, uint32_t));
+    } else if (is_prefix(TZI_FMT_STRING, str)) {
+      char *s = va_arg(argp, char*);
+      str += strlen(TZI_FMT_STRING);
+      TZIEncodeArray(psBuffer, s, strlen(s)+1);
+    } else if (is_prefix(TZI_FMT_ARRAY, str)) {
+      void *x = va_arg(argp, void*);
+      uint32_t sz = va_arg(argp, uint32_t);
+      str += strlen(TZI_FMT_ARRAY);
+
+      TZIEncodeArray(psBuffer, x, sz);
+    } else if (is_prefix(TZI_FMT_ARRAY_SPACE, str)) {
+      void **x = va_arg(argp, void**);
+      uint32_t sz = va_arg(argp, uint32_t);
+      str += strlen(TZI_FMT_ARRAY_SPACE);
+
+      *x = TZIEncodeArraySpace(psBuffer, sz);
+    } else {
+      return TZ_ERROR_ILLEGAL_ARGUMENT;
+    }
+  }
+  return TZIDecodeGetError(psBuffer);
+}
+
+tz_return_t
+TZIEncodeBufFormat(tzi_encode_buffer_t* psBuffer, const char* str, ...)
+{
+  tz_return_t rv;
+  va_list argp;
+  va_start(argp, str);
+  rv = vTZIEncodeBufFormat(psBuffer, str, argp);
+  va_end(argp);
+  return rv;
+}
+

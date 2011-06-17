@@ -40,6 +40,8 @@
 #ifndef TZMARSHAL_H
 #define TZMARSHAL_H
 
+#include <stdarg.h>
+
 #include "tz.h"
 
 typedef enum tzi_encoded_type_t {
@@ -112,5 +114,12 @@ TZIEncodeBufReInit(INOUT tzi_encode_buffer_t* psBuffer);
 
 tz_return_t
 TZIDecodeGetError(INOUT tzi_encode_buffer_t* psBuffer);
+
+tz_return_t
+vTZIEncodeBufFormat(tzi_encode_buffer_t* psBuffer, const char* str, va_list argp);
+
+tz_return_t
+TZIEncodeBufFormat(tzi_encode_buffer_t* psBuffer, const char* str, ...)
+  __attribute__ ((format (printf, 2, 3)));
 
 #endif
