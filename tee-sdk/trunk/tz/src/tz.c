@@ -677,35 +677,35 @@ TZEncodeMemoryReference(INOUT tz_operation_t* psOperation,
 }
 
 tz_return_t
-vTZIEncodeFormat(INOUT tz_operation_t *psOperation, const char* str, va_list argp)
+vTZIEncodeF(INOUT tz_operation_t *psOperation, const char* str, va_list argp)
 {
-  return vTZIEncodeBufFormat(psOperation->sImp.psEncodeBuffer, str, argp);
+  return vTZIEncodeBufF(psOperation->sImp.psEncodeBuffer, str, argp);
 }
 
 tz_return_t
-TZIEncodeFormat(INOUT tz_operation_t *psOperation, const char* str, ...)
+TZIEncodeF(INOUT tz_operation_t *psOperation, const char* str, ...)
 {
   tz_return_t rv;
   va_list argp;
   va_start(argp, str);
-  rv = vTZIEncodeFormat(psOperation, str, argp);
+  rv = vTZIEncodeF(psOperation, str, argp);
   va_end(argp);
   return rv;
 }
 
 tz_return_t
-vTZIDecodeFormat(INOUT tz_operation_t *psOperation, const char* str, va_list argp)
+vTZIDecodeF(INOUT tz_operation_t *psOperation, const char* str, va_list argp)
 {
-  return vTZIDecodeBufFormat(psOperation->sImp.psEncodeBuffer, str, argp);
+  return vTZIDecodeBufF(psOperation->sImp.psEncodeBuffer, str, argp);
 }
 
 tz_return_t
-TZIDecodeFormat(INOUT tz_operation_t *psOperation, const char* str, ...)
+TZIDecodeF(INOUT tz_operation_t *psOperation, const char* str, ...)
 {
   tz_return_t rv;
   va_list argp;
   va_start(argp, str);
-  rv = vTZIDecodeFormat(psOperation, str, argp);
+  rv = vTZIDecodeF(psOperation, str, argp);
   va_end(argp);
   return rv;
 }

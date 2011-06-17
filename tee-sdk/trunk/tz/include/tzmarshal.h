@@ -116,17 +116,17 @@ tz_return_t
 TZIDecodeGetError(INOUT tzi_encode_buffer_t* psBuffer);
 
 tz_return_t
-vTZIEncodeBufFormat(tzi_encode_buffer_t* psBuffer, const char* str, va_list argp);
+vTZIEncodeBufF(tzi_encode_buffer_t* psBuffer, const char* str, va_list argp);
 
 tz_return_t
-TZIEncodeBufFormat(tzi_encode_buffer_t* psBuffer, const char* str, ...)
+TZIEncodeBufF(tzi_encode_buffer_t* psBuffer, const char* str, ...)
   __attribute__ ((format (printf, 2, 3)));
 
 tz_return_t
-vTZIDecodeBufFormat(tzi_encode_buffer_t* psBuffer, const char* str, va_list argp);
+vTZIDecodeBufF(tzi_encode_buffer_t* psBuffer, const char* str, va_list argp);
 
 tz_return_t
-TZIDecodeBufFormat(tzi_encode_buffer_t* psBuffer, const char* str, ...)
+TZIDecodeBufF(tzi_encode_buffer_t* psBuffer, const char* str, ...)
   __attribute__ ((format (scanf, 2, 3)));
 
 #endif

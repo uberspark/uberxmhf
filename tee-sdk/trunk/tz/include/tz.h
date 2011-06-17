@@ -42,6 +42,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdarg.h>
 
@@ -424,26 +425,28 @@ TZEncodeMemoryReference(INOUT tz_operation_t* psOperation,
                         uint32_t uiFlags);
 
 /* extension: encode multiple by format string */
-#define TZI_EFMT_UINT32 "%u"
-#define TZI_EFMT_STRING "%s"
-#define TZI_EFMT_ARRAY "%p%u"
-#define TZI_EFMT_ARRAY_SPACE "%-p%u"
+#define TZI_EU32 PRIu32
+#define TZI_ESTR "s"
+#define TZI_EARR "p%"PRIu32
+#define TZI_EARRSPC "-p%"PRIu32
 tz_return_t
-TZIEncodeFormat(INOUT tz_operation_t *psOperation, const char* str, ...)
+TZIEncodeF(INOUT tz_operation_t *psOperation, const char* str, ...)
   __attribute__ ((format (printf, 2, 3)));
 
 tz_return_t
-vTZIEncodeFormat(INOUT tz_operation_t *psOperation, const char* str, va_list argp);
+vTZIEncodeF(INOUT tz_operation_t *psOperation, const char* str, va_list argp);
 tz_return_t
 
-#define TZI_DFMT_UINT32 "%u"
-#define TZI_DFMT_ARRAY_SPACE "%p%u"
-#define TZI_DFMT_ARRAY "%s%u"
-TZIDecodeFormat(INOUT tz_operation_t *psOperation, const char* str, ...)
+#define TZI_DU32 PRIu32
+#define TZI_DARRSPC "p%"PRIu32
+#define TZI_DARRSPC_NOLEN "p%*"PRIu32
+#define TZI_DARR "s%"PRIu32
+#define TZI_DARR_NOLEN "s%*"PRIu32
+TZIDecodeF(INOUT tz_operation_t *psOperation, const char* str, ...)
   __attribute__ ((format (scanf, 2, 3)));
 
 tz_return_t
-vTZIDecodeFormat(INOUT tz_operation_t *psOperation, const char* str, va_list argp);
+vTZIDecodeF(INOUT tz_operation_t *psOperation, const char* str, va_list argp);
 
 /* 6.2.5 TZDecodeUint32 */
 uint32_t

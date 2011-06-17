@@ -382,7 +382,7 @@ static size_t strlen(const char *s)
 }
 
 tz_return_t
-vTZIEncodeBufFormat(tzi_encode_buffer_t* psBuffer, const char* str, va_list argp)
+vTZIEncodeBufF(tzi_encode_buffer_t* psBuffer, const char* str, va_list argp)
 {
   int i;
 
@@ -394,24 +394,25 @@ vTZIEncodeBufFormat(tzi_encode_buffer_t* psBuffer, const char* str, va_list argp
       str++;
       continue;
     }
+    str++; /* skip the '%' */
 
-    if(is_prefix(TZI_EFMT_UINT32, str)) {
-      str += strlen(TZI_EFMT_UINT32);
+    if(is_prefix(TZI_EU32, str)) {
+      str += strlen(TZI_EU32);
       TZIEncodeUint32(psBuffer, va_arg(argp, uint32_t));
-    } else if (is_prefix(TZI_EFMT_STRING, str)) {
+    } else if (is_prefix(TZI_ESTR, str)) {
       char *s = va_arg(argp, char*);
-      str += strlen(TZI_EFMT_STRING);
+      str += strlen(TZI_ESTR);
       TZIEncodeArray(psBuffer, s, strlen(s)+1);
-    } else if (is_prefix(TZI_EFMT_ARRAY, str)) {
+    } else if (is_prefix(TZI_EARR, str)) {
       void *x = va_arg(argp, void*);
       uint32_t sz = va_arg(argp, uint32_t);
-      str += strlen(TZI_EFMT_ARRAY);
+      str += strlen(TZI_EARR);
 
       TZIEncodeArray(psBuffer, x, sz);
-    } else if (is_prefix(TZI_EFMT_ARRAY_SPACE, str)) {
+    } else if (is_prefix(TZI_EARRSPC, str)) {
       void **x = va_arg(argp, void**);
       uint32_t sz = va_arg(argp, uint32_t);
-      str += strlen(TZI_EFMT_ARRAY_SPACE);
+      str += strlen(TZI_EARRSPC);
 
       *x = TZIEncodeArraySpace(psBuffer, sz);
     } else {
@@ -422,12 +423,12 @@ vTZIEncodeBufFormat(tzi_encode_buffer_t* psBuffer, const char* str, va_list argp
 }
 
 tz_return_t
-TZIEncodeBufFormat(tzi_encode_buffer_t* psBuffer, const char* str, ...)
+TZIEncodeBufF(tzi_encode_buffer_t* psBuffer, const char* str, ...)
 {
   tz_return_t rv;
   va_list argp;
   va_start(argp, str);
-  rv = vTZIEncodeBufFormat(psBuffer, str, argp);
+  rv = vTZIEncodeBufF(psBuffer, str, argp);
   va_end(argp);
   return rv;
 }
@@ -453,7 +454,7 @@ static int is_prefix_ignore_splats(const char* prefix, const char* s)
 }
 
 tz_return_t
-vTZIDecodeBufFormat(tzi_encode_buffer_t* psBuffer, const char* str, va_list argp)
+vTZIDecodeBufF(tzi_encode_buffer_t* psBuffer, const char* str, va_list argp)
 {
   int i;
 
@@ -465,45 +466,46 @@ vTZIDecodeBufFormat(tzi_encode_buffer_t* psBuffer, const char* str, va_list argp
       str++;
       continue;
     }
+    str++; /* skip the '%' */
 
     /* we only decode array spaces and uint32's for now.  we *do*
        allow the '*' assignment-suppression character in the style of
        scanf. unfortunately that makes this code rather ugly and
        brittle, but hopefully makes client code a bit tidier. */
 
-    if(is_prefix_ignore_splats(TZI_DFMT_UINT32, str)) {
+    if(is_prefix_ignore_splats(TZI_DU32, str)) {
       uint32_t i;
       i = TZIDecodeUint32(psBuffer);
 
-      if (str[1] == '*') {
+      if (str[0] == '*') {
         str++;
       } else {
         uint32_t *pi = va_arg(argp, uint32_t*);
         *pi = i;
       }
-      str += strlen(TZI_DFMT_UINT32);
-    } else if (is_prefix_ignore_splats(TZI_DFMT_ARRAY_SPACE, str)) {
+      str += strlen(PRIu32);
+    } else if (is_prefix_ignore_splats(TZI_DARRSPC, str)) {
       void *x=NULL;
       uint32_t sz;
 
       x = TZIDecodeArraySpace(psBuffer, &sz);
 
-      if (str[1] == '*') {
+      if (str[0] == '*') {
         str++;
       } else {
         void **px = va_arg(argp, void**);
         *px = x;
       }
-      str+=2; /* should now point to next '%' */
+      str+=2; /* should now point after next '%' */
 
-      if (str[1] == '*') {
+      if (str[0] == '*') {
         str++;
       } else {
         uint32_t *psz = va_arg(argp, uint32_t*);
         *psz = sz;
       }
-      str+=2;
-    } else if (is_prefix_ignore_splats(TZI_DFMT_ARRAY, str)) {
+      str+=strlen(PRIu32);
+    } else if (is_prefix_ignore_splats(TZI_DARR, str)) {
       void *dst=NULL;
       void *src=NULL;
       uint32_t dst_sz, src_sz;
@@ -511,21 +513,21 @@ vTZIDecodeBufFormat(tzi_encode_buffer_t* psBuffer, const char* str, va_list argp
 
       src = TZIDecodeArraySpace(psBuffer, &src_sz);
 
-      if (str[1] == '*') {
+      if (str[0] == '*') {
         str++;
       } else {
         dst = va_arg(argp, void*);
       }
-      str+=2; /* should now point to next '%' */
+      str+=2; /* should now point after next '%' */
 
-      if (str[1] == '*') {
+      if (str[0] == '*') {
         str++;
       } else {
         pdst_sz = va_arg(argp, uint32_t*);
         dst_sz = *pdst_sz;
         *pdst_sz = src_sz;
       }
-      str+=2;
+      str+=strlen(PRIu32);
 
       if (dst) {
         if (!pdst_sz) {
@@ -546,12 +548,12 @@ vTZIDecodeBufFormat(tzi_encode_buffer_t* psBuffer, const char* str, va_list argp
 }
 
 tz_return_t
-TZIDecodeBufFormat(tzi_encode_buffer_t* psBuffer, const char* str, ...)
+TZIDecodeBufF(tzi_encode_buffer_t* psBuffer, const char* str, ...)
 {
   tz_return_t rv;
   va_list argp;
   va_start(argp, str);
-  rv = vTZIDecodeBufFormat(psBuffer, str, argp);
+  rv = vTZIDecodeBufF(psBuffer, str, argp);
   va_end(argp);
   return rv;
 }
