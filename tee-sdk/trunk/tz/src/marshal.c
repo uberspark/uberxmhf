@@ -357,3 +357,29 @@ TZIEncodeBufReInit(INOUT tzi_encode_buffer_t* psBuffer)
   psBuffer->uiOffset = 0;
   psBuffer->uiSizeUsed = 0;
 }
+
+void
+TZIEncodeMultiple(tzi_encode_buffer_t* psBuffer, ...)
+{
+  va_list argp;
+  va_start(argp, psBuffer);
+  vTZIEncodeMultiple(psBuffer, argp);
+}
+
+void
+vTZIEncodeMultiple(tzi_encode_buffer_t* psBuffer, va_list argp)
+{
+  int t;
+
+  for(t=va_arg(argp, int); t!=TZI_MARSHAL_END; t=va_arg(argp, int)) {
+    switch (t) {
+    case TZI_MARSHAL_UINT32:
+      break;
+    case TZI_MARSHAL_ARRAY:
+      break;
+    case TZI_MARSHAL_ARRAYSPACE:
+      break;
+    default:
+    }
+  }
+}
