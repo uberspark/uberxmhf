@@ -425,23 +425,42 @@ TZEncodeMemoryReference(INOUT tz_operation_t* psOperation,
                         uint32_t uiFlags);
 
 /* extension: encode multiple by format string */
-#define TZI_EU32 PRIu32
-#define TZI_ESTR "s"
-#define TZI_EARR "p%"PRIu32
-#define TZI_EARRSPC "-p%"PRIu32
+
+/*                                  expects        see                 */
+#define TZI_EU32 PRIu32          /* (u32)          TZEncodeUint32     */
+#define TZI_ESTR "s"             /* (char*)        TZEncodeArray      */
+/*                                  encodes as an array, up to and
+                                         including null terminator     */
+#define TZI_EARR "p%"PRIu32      /* (void*, u32)   TZEncodeArray      */
+#define TZI_EARRSPC "-p%"PRIu32  /* (void**, u32)  TZEncodeArraySpace */
+
+/* Convenience functions for encoding multiple parameters. Use the
+ * format-specifier macros TZI_E*
+ */
 tz_return_t
 TZIEncodeF(INOUT tz_operation_t *psOperation, const char* str, ...)
   __attribute__ ((format (printf, 2, 3)));
 
 tz_return_t
 vTZIEncodeF(INOUT tz_operation_t *psOperation, const char* str, va_list argp);
-tz_return_t
 
-#define TZI_DU32 PRIu32
-#define TZI_DARRSPC "p%"PRIu32
-#define TZI_DARRSPC_NOLEN "p%*"PRIu32
-#define TZI_DARR "s%"PRIu32
-#define TZI_DARR_NOLEN "s%*"PRIu32
+/*                                       expects        see                 */
+#define TZI_DU32 PRIu32               /* (u32*)         TZDecodeUint32     */
+#define TZI_DARRSPC "p%"PRIu32        /* (void**, u32*) TZDecodeArraySpace */
+#define TZI_DARRSPC_NOLEN "p%*"PRIu32 /* (void**)       TZDecodeArraySpace */
+#define TZI_DARR "s%"PRIu32           /* (void*, u32*)  TZDecodeArraySpace */
+/*                                       checks second parameter for
+                                         buffer size, copies into
+                                         buffer spec'd by first
+                                         parameter, and sets second
+                                         parameter to size of decoded
+                                         buffer */
+#define TZI_DARR_NOLEN "s%*"PRIu32    /* (void*)        TZI_DARR */
+
+/* Convenience functions for decoding multiple paramters. Use the
+ * format-specifier macros TZI_D*
+ */
+tz_return_t
 TZIDecodeF(INOUT tz_operation_t *psOperation, const char* str, ...)
   __attribute__ ((format (scanf, 2, 3)));
 
