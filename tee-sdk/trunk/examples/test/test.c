@@ -274,7 +274,8 @@ int test_seal2(tz_session_t *tzPalSession)
       goto out;
     }
   }
-  tzRet = TZIDecodeF(&tz_sealOp, "%p%*u %u",
+  tzRet = TZIDecodeF(&tz_sealOp,
+                     "%"TZI_DARRSPC_NOLEN "%"TZI_DU32,
                      &sealOut, /*skip*/
                      &sealOutLen);
   if (tzRet) {
