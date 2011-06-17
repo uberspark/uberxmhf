@@ -41,6 +41,7 @@
 #include  <sys/mman.h>
 #include  <errno.h>
 #include  <string.h>
+#include <inttypes.h>
 
 #include <openssl/err.h>
 #include <openssl/evp.h>
@@ -236,9 +237,10 @@ int test_seal2(tz_session_t *tzPalSession)
                                    &tz_unsealOp);
   assert(tzRet == TZ_SUCCESS);
 
-  tzRet = TZIEncodeFormat(&tz_sealOp, "%-p%u %s",
-                          &pcrInfo, sizeof(TPM_PCR_INFO),
-                          in);
+  tzRet = TZIEncodeF(&tz_sealOp,
+                     "%"TZI_EARRSPC "%"TZI_ESTR,
+                     &pcrInfo, sizeof(TPM_PCR_INFO),
+                     in);
   if (tzRet) {
     printf("SEAL encoder returned error %d\n", tzRet);
     rv=1;
@@ -272,9 +274,9 @@ int test_seal2(tz_session_t *tzPalSession)
       goto out;
     }
   }
-  tzRet = TZIDecodeFormat(&tz_sealOp, "%p%*u %u",
-                          &sealOut, /*skip*/
-                          &sealOutLen);
+  tzRet = TZIDecodeF(&tz_sealOp, "%p%*u %u",
+                     &sealOut, /*skip*/
+                     &sealOutLen);
   if (tzRet) {
     printf("SEAL decoder returned error %d\n", tzRet);
     rv = 1;
@@ -356,9 +358,10 @@ int test_seal(tz_session_t *tzPalSession)
                                    &tz_unsealOp);
   assert(tzRet == TZ_SUCCESS);
 
-  tzRet = TZIEncodeFormat(&tz_sealOp, "%-p%u %s",
-                          &pcrInfo, sizeof(TPM_PCR_INFO),
-                          in);
+  tzRet = TZIEncodeF(&tz_sealOp,
+                     "%"TZI_EARRSPC "%"TZI_ESTR,
+                     &pcrInfo, sizeof(TPM_PCR_INFO),
+                     in);
   if (tzRet) {
     printf("SEAL encoder returned error %d\n", tzRet);
     rv=1;
@@ -373,9 +376,10 @@ int test_seal(tz_session_t *tzPalSession)
       goto out;
   }
 
-  tzRet = TZIDecodeFormat(&tz_sealOp, "%p%*u %u",
-                          &sealOut, /* ignore */
-                          &sealOutLen);
+  tzRet = TZIDecodeF(&tz_sealOp,
+                     "%"TZI_DARRSPC_NOLEN "%"TZI_DU32,
+                     &sealOut,
+                     &sealOutLen);
   if (tzRet != TZ_SUCCESS) {
     printf("SEAL Op decode FAILED with %d\n", tzRet);
     rv = 1;
@@ -384,7 +388,7 @@ int test_seal(tz_session_t *tzPalSession)
 
   print_hex("  sealed data: ", sealOut, sealOutLen);
 
-  assert(!TZIEncodeFormat(&tz_unsealOp, "%p%u", sealOut, sealOutLen));
+  assert(!TZIEncodeF(&tz_unsealOp, "%"TZI_EARR, sealOut, sealOutLen));
   tzRet = TZOperationPerform(&tz_unsealOp, &serviceReturn);
 
   if (tzRet != TZ_SUCCESS) {
@@ -400,10 +404,11 @@ int test_seal(tz_session_t *tzPalSession)
       goto out;
     }
   }
-  tzRet = TZIDecodeFormat(&tz_unsealOp, "%p%*u %p%u %u",
-                          &unsealOut, /*ignore */
-                          &digestAtCreationOut, &digestAtCreationLen,
-                          &unsealOutLen);
+  tzRet = TZIDecodeF(&tz_unsealOp,
+                     "%"TZI_DARRSPC_NOLEN "%"TZI_DARRSPC "%"TZI_DU32,
+                     &unsealOut, /*ignore */
+                     &digestAtCreationOut, &digestAtCreationLen,
+                     &unsealOutLen);
   if (tzRet) {
     printf("UNSEAL decoder returned error %d\n", tzRet);
     rv = 1;
@@ -458,8 +463,8 @@ int test_id_getpub(tz_session_t *tzPalSession, uint8_t *rsaMod)
 
   /* read out RSA public key modulus */
   rsaModLen = TPM_RSA_KEY_LEN;
-  tzRet = TZIDecodeFormat(&tzOp, "%s%u",
-                          rsaMod, &rsaModLen);
+  tzRet = TZIDecodeF(&tzOp, "%"TZI_DARR,
+                     rsaMod, &rsaModLen);
   if (tzRet) {
     rv = 1;
     goto out;
@@ -581,9 +586,10 @@ int test_quote(tz_session_t *tzPalSession)
   assert(tzRet == TZ_SUCCESS);
 
   /* setup encoded space */
-  assert(!(TZIEncodeFormat(&tz_quoteOp, "%-p%u %-p%u",
-                           &nonce, sizeof(TPM_NONCE),
-                           &tpmsel, sizeof(TPM_PCR_SELECTION))));
+  assert(!(TZIEncodeF(&tz_quoteOp,
+                      "%"TZI_EARRSPC "%"TZI_EARRSPC,
+                      &nonce, sizeof(TPM_NONCE),
+                      &tpmsel, sizeof(TPM_PCR_SELECTION))));
   
   /* setup nonce */
   for(i=0; i<sizeof(TPM_NONCE); i++) {
@@ -606,9 +612,10 @@ int test_quote(tz_session_t *tzPalSession)
   }
   
   /* get quote */
-  tzRet = TZIDecodeFormat(&tz_quoteOp, "%p%u %u",
-                          &quote, &maxQuoteLen,
-                          &quoteLen);
+  tzRet = TZIDecodeF(&tz_quoteOp,
+                     "%"TZI_DARRSPC "%"TZI_DU32,
+                     &quote, &maxQuoteLen,
+                     &quoteLen);
   if (tzRet) {
     rv = 1;
     goto out;
@@ -667,9 +674,10 @@ int test_pcr_extend(tz_session_t *tzPalSession)
   assert(tzRet == TZ_SUCCESS);
 
   /* encode PCR index */
-  assert(!(TZIEncodeFormat(&tzOp, "%u %-p%u",
-                           pcr_idx,
-                           &meas_ptr, TPM_HASH_SIZE)));
+  assert(!(TZIEncodeF(&tzOp,
+                      "%"TZI_EU32 "%"TZI_EARRSPC,
+                      pcr_idx,
+                      &meas_ptr, TPM_HASH_SIZE)));
 
   /* Fake the measurement */
   for(i=0; i<TPM_HASH_SIZE; i++) {
@@ -717,7 +725,7 @@ int test_pcr_read_i(tz_session_t *tzPalSession, uint32_t pcr_idx)
   assert(tzRet == TZ_SUCCESS);
 
   /* encode PCR index */
-  assert(!(TZIEncodeFormat(&tzOp, "%u", pcr_idx)));
+  assert(!(TZIEncodeF(&tzOp, "%"TZI_EU32, pcr_idx)));
   
   /* Call PAL */
   tzRet = TZOperationPerform(&tzOp, &serviceReturn);
@@ -729,8 +737,8 @@ int test_pcr_read_i(tz_session_t *tzPalSession, uint32_t pcr_idx)
 
   }
 
-  if ((tzRet = TZIDecodeFormat(&tzOp, "%p%u",
-                               &meas, &measLen))
+  if ((tzRet = TZIDecodeF(&tzOp, "%"TZI_DARRSPC,
+                          &meas, &measLen))
       || measLen != TPM_HASH_SIZE) {
     rv = 1;
     printf("Failure at %s:%d\n", __FILE__, __LINE__); 
@@ -786,7 +794,7 @@ int test_rand(tz_session_t *tzPalSession)
                                    &tzOp);
   assert(tzRet == TZ_SUCCESS);
 
-  assert(!(TZIEncodeFormat(&tzOp, "%u", req_bytes)));
+  assert(!(TZIEncodeF(&tzOp, "%"TZI_EU32, req_bytes)));
 
   /* Call PAL */
   tzRet = TZOperationPerform(&tzOp, &serviceReturn);
@@ -798,7 +806,7 @@ int test_rand(tz_session_t *tzPalSession)
   }
   /* fetch result */
   
-  if ((tzRet = TZIDecodeFormat(&tzOp, "%p%u", &bytes, &got_bytes))
+  if ((tzRet = TZIDecodeF(&tzOp, "%"TZI_DARRSPC, &bytes, &got_bytes))
       || bytes == NULL
       || got_bytes != req_bytes) {
     rv = 1;
@@ -871,7 +879,7 @@ static tz_return_t time_elapsed(tz_session_t *tzPalSession, uint64_t *t)
     goto out;
   }
 
-  tzRet = TZIDecodeFormat(&tzOp, "%u %u", &t_hi, &t_lo);
+  tzRet = TZIDecodeF(&tzOp, "%"TZI_DU32 "%"TZI_DU32, &t_hi, &t_lo);
   *t = ((uint64_t)t_hi) << 32;
   *t = *t | t_lo;
 

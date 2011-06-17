@@ -57,12 +57,12 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
       uint32_t out;
       *puiRv = TZ_SUCCESS;
 
-      if (*puiRv = TZIDecodeBufFormat(psInBuf, "%u", &input))
+      if (*puiRv = TZIDecodeBufF(psInBuf, "%"TZI_DU32, &input))
         break;
 
       out = pal_param(input);
 
-      if (*puiRv = TZIEncodeBufFormat(psOutBuf, "%u", out))
+      if (*puiRv = TZIEncodeBufF(psOutBuf, "%"TZI_EU32, out))
         break;
     }
     break;
@@ -76,22 +76,23 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
       uint32_t i;
       *puiRv = TZ_SUCCESS;
 
-      if(*puiRv = TZIDecodeBufFormat(psInBuf, "%p%u %p%u",
-                                     &tpmPcrInfo, &tpmPcrInfoLen,
-                                     &in, &inLen))
+      if(*puiRv = TZIDecodeBufF(psInBuf,
+                                "%"TZI_DARRSPC "%"TZI_DARRSPC,
+                                &tpmPcrInfo, &tpmPcrInfoLen,
+                                &in, &inLen))
         break;
         
       outLen = inLen + 100; /* XXX guessing at seal overhead (real overhead is sizeof(IV + HMAC)) */
 
-      if(*puiRv = TZIEncodeBufFormat(psOutBuf, "%-p%u",
-                                     &out, outLen))
+      if(*puiRv = TZIEncodeBufF(psOutBuf, "%"TZI_EARRSPC,
+                                &out, outLen))
         break;
 
       if(*puiRv = pal_seal(tpmPcrInfo, in, inLen, out, &outLen))
         break;
 
       /* actual size of previous array */
-      if(*puiRv = TZIEncodeBufFormat(psOutBuf, "%u", outLen))
+      if(*puiRv = TZIEncodeBufF(psOutBuf, "%"TZI_EU32, outLen))
         break;
     }
     break;
@@ -102,22 +103,24 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
       size_t inLen, outLen;
       *puiRv = TZ_SUCCESS;
 
-      if(*puiRv = TZIDecodeBufFormat(psInBuf, "%p%u",
-                                     &in, &inLen))
+      if(*puiRv = TZIDecodeBufF(psInBuf,
+                                "%"TZI_DARRSPC,
+                                &in, &inLen))
         break;
 
       outLen = inLen + 100; /* XXX guessing at unseal overhead, though should actually be negative */
 
-      if(*puiRv = TZIEncodeBufFormat(psOutBuf, "%-p%u %-p%u",
-                                     &out, outLen,
-                                     &digestAtCreation, TPM_HASH_SIZE))
+      if(*puiRv = TZIEncodeBufF(psOutBuf,
+                                "%"TZI_EARRSPC "%"TZI_EARRSPC,
+                                &out, outLen,
+                                &digestAtCreation, TPM_HASH_SIZE))
         break;
       
       if(*puiRv = pal_unseal(in, inLen, out, &outLen, digestAtCreation))
         break;
 
       /* actual size of previous array */
-      if(*puiRv = TZIEncodeBufFormat(psOutBuf, "%u", outLen))
+      if(*puiRv = TZIEncodeBufF(psOutBuf, "%"TZI_EU32, outLen))
         break;
     }
     break;
@@ -135,9 +138,10 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
       *puiRv = TZ_SUCCESS;
 
       /* Decode input parameters from legacy userspace's test.c */
-      if(*puiRv = TZIDecodeBufFormat(psInBuf, "%p%u %p%u",
-                                     &nonce, &nonceLen,
-                                     &tpmsel, &tpmselLen))
+      if(*puiRv = TZIDecodeBufF(psInBuf,
+                                "%"TZI_DARRSPC "%"TZI_DARRSPC,
+                                &nonce, &nonceLen,
+                                &tpmsel, &tpmselLen))
         break;
 
       /* Sanity-check input parameters */
@@ -148,8 +152,9 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
       }
 
       /* Prepare the output buffer to hold the response back to userspace. */
-      if(*puiRv = TZIEncodeBufFormat(psOutBuf, "%-p%u",
-                                     &quote, maxQuoteLen))
+      if(*puiRv = TZIEncodeBufF(psOutBuf,
+                                "%"TZI_EARRSPC,
+                                &quote, maxQuoteLen))
         break;
                                      
       /* Make the hypercall to invoke the uTPM operation */
@@ -158,7 +163,7 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
         break;
 
       /* Also encode the actual length of the result */
-      if(*puiRv = TZIEncodeBufFormat(psOutBuf, "%u", actualQuoteLen))
+      if(*puiRv = TZIEncodeBufF(psOutBuf, "%"TZI_EU32, actualQuoteLen))
         break;
     }
     break;
@@ -168,8 +173,8 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
       uint8_t *rsaModulus;
       
       /* Prepare the output buffer to hold the response back to userspace. */
-      if(*puiRv = TZIEncodeBufFormat(psOutBuf, "%-p%u",
-                                     &rsaModulus, TPM_RSA_KEY_LEN))
+      if(*puiRv = TZIEncodeBufF(psOutBuf, "%"TZI_EARRSPC,
+                                &rsaModulus, TPM_RSA_KEY_LEN))
         break;
 
       if(*puiRv = pal_id_getpub(rsaModulus))
@@ -184,9 +189,10 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
       uint32_t idx;
       *puiRv = TZ_SUCCESS;
 
-      if(*puiRv = TZIDecodeBufFormat(psInBuf, "%u %p%u",
-                                     &idx,
-                                     &measIn, &measLen))
+      if(*puiRv = TZIDecodeBufF(psInBuf,
+                                "%"TZI_DU32 "%"TZI_DARRSPC,
+                                &idx,
+                                &measIn, &measLen))
         break;
 
       if(measLen != TPM_HASH_SIZE) {
@@ -205,11 +211,12 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
       uint32_t idx;
       *puiRv = TZ_SUCCESS;
 
-      if(*puiRv = TZIDecodeBufFormat(psInBuf, "%u", &idx))
+      if(*puiRv = TZIDecodeBufF(psInBuf, "%"TZI_DU32, &idx))
         break;
 
-      if(*puiRv = TZIEncodeBufFormat(psOutBuf, "%-p%u",
-                                     &valOut, TPM_HASH_SIZE))
+      if(*puiRv = TZIEncodeBufF(psOutBuf,
+                                "%"TZI_EARRSPC,
+                                &valOut, TPM_HASH_SIZE))
         break;
 
       if(*puiRv = pal_pcr_read(idx, valOut))
@@ -222,11 +229,11 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
       uint32_t len;
       uint8_t *bytes;
 
-      if(*puiRv = TZIDecodeBufFormat(psInBuf, "%u", &len))
+      if(*puiRv = TZIDecodeBufF(psInBuf, "%"TZI_DU32, &len))
         break;
 
-      if(*puiRv = TZIEncodeBufFormat(psOutBuf, "%-p%u",
-                                     &bytes, len))
+      if(*puiRv = TZIEncodeBufF(psOutBuf, "%"TZI_EARRSPC,
+                                &bytes, len))
         break;
       
       if(*puiRv = pal_rand(len, bytes))
@@ -248,8 +255,8 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
 
       dt_hi = (uint32_t)(dt>>32);
       dt_lo = (uint32_t)dt;
-      if(*puiRv = TZIEncodeBufFormat(psOutBuf, "%u %u",
-                                     dt_hi, dt_lo))
+      if(*puiRv = TZIEncodeBufF(psOutBuf, "%"TZI_EU32 "%"TZI_EU32,
+                                dt_hi, dt_lo))
         break;
     }
     break;
