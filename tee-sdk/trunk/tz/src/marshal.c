@@ -395,23 +395,23 @@ vTZIEncodeBufFormat(tzi_encode_buffer_t* psBuffer, const char* str, va_list argp
       continue;
     }
 
-    if(is_prefix(TZI_FMT_UINT32, str)) {
-      str += strlen(TZI_FMT_UINT32);
+    if(is_prefix(TZI_EFMT_UINT32, str)) {
+      str += strlen(TZI_EFMT_UINT32);
       TZIEncodeUint32(psBuffer, va_arg(argp, uint32_t));
-    } else if (is_prefix(TZI_FMT_STRING, str)) {
+    } else if (is_prefix(TZI_EFMT_STRING, str)) {
       char *s = va_arg(argp, char*);
-      str += strlen(TZI_FMT_STRING);
+      str += strlen(TZI_EFMT_STRING);
       TZIEncodeArray(psBuffer, s, strlen(s)+1);
-    } else if (is_prefix(TZI_FMT_ARRAY, str)) {
+    } else if (is_prefix(TZI_EFMT_ARRAY, str)) {
       void *x = va_arg(argp, void*);
       uint32_t sz = va_arg(argp, uint32_t);
-      str += strlen(TZI_FMT_ARRAY);
+      str += strlen(TZI_EFMT_ARRAY);
 
       TZIEncodeArray(psBuffer, x, sz);
-    } else if (is_prefix(TZI_FMT_ARRAY_SPACE, str)) {
+    } else if (is_prefix(TZI_EFMT_ARRAY_SPACE, str)) {
       void **x = va_arg(argp, void**);
       uint32_t sz = va_arg(argp, uint32_t);
-      str += strlen(TZI_FMT_ARRAY_SPACE);
+      str += strlen(TZI_EFMT_ARRAY_SPACE);
 
       *x = TZIEncodeArraySpace(psBuffer, sz);
     } else {
@@ -432,3 +432,126 @@ TZIEncodeBufFormat(tzi_encode_buffer_t* psBuffer, const char* str, ...)
   return rv;
 }
 
+static int is_prefix_ignore_splats(const char* prefix, const char* s)
+{
+  int i=0;
+
+  while(1) {
+    /* ignore splats. */
+    while(*s == '*')
+      s++;
+
+    if (*prefix == '\0')
+      return 1;
+
+    if (*prefix != *s)
+      return 0;
+
+    prefix++;
+    s++;
+  }
+}
+
+tz_return_t
+vTZIDecodeBufFormat(tzi_encode_buffer_t* psBuffer, const char* str, va_list argp)
+{
+  int i;
+
+  while(1) {
+    if(str[0] == '\0') {
+      break;
+    }
+    if(str[0] != '%') {
+      str++;
+      continue;
+    }
+
+    /* we only decode array spaces and uint32's for now.  we *do*
+       allow the '*' assignment-suppression character in the style of
+       scanf. unfortunately that makes this code rather ugly and
+       brittle, but hopefully makes client code a bit tidier. */
+
+    if(is_prefix_ignore_splats(TZI_DFMT_UINT32, str)) {
+      uint32_t i;
+      i = TZIDecodeUint32(psBuffer);
+
+      if (str[1] == '*') {
+        str++;
+      } else {
+        uint32_t *pi = va_arg(argp, uint32_t*);
+        *pi = i;
+      }
+      str += strlen(TZI_DFMT_UINT32);
+    } else if (is_prefix_ignore_splats(TZI_DFMT_ARRAY_SPACE, str)) {
+      void *x=NULL;
+      uint32_t sz;
+
+      x = TZIDecodeArraySpace(psBuffer, &sz);
+
+      if (str[1] == '*') {
+        str++;
+      } else {
+        void **px = va_arg(argp, void**);
+        *px = x;
+      }
+      str+=2; /* should now point to next '%' */
+
+      if (str[1] == '*') {
+        str++;
+      } else {
+        uint32_t *psz = va_arg(argp, uint32_t*);
+        *psz = sz;
+      }
+      str+=2;
+    } else if (is_prefix_ignore_splats(TZI_DFMT_ARRAY, str)) {
+      void *dst=NULL;
+      void *src=NULL;
+      uint32_t dst_sz, src_sz;
+      uint32_t *pdst_sz = NULL;
+
+      src = TZIDecodeArraySpace(psBuffer, &src_sz);
+
+      if (str[1] == '*') {
+        str++;
+      } else {
+        dst = va_arg(argp, void*);
+      }
+      str+=2; /* should now point to next '%' */
+
+      if (str[1] == '*') {
+        str++;
+      } else {
+        pdst_sz = va_arg(argp, uint32_t*);
+        dst_sz = *pdst_sz;
+        *pdst_sz = src_sz;
+      }
+      str+=2;
+
+      if (dst) {
+        if (!pdst_sz) {
+          /* illegal to request data copy without specifying destination
+             buffer size */
+          return TZ_ERROR_ILLEGAL_ARGUMENT;
+        }
+        if (dst_sz < src_sz) {
+          return TZ_ERROR_SHORT_BUFFER;
+        }
+        memcpy(dst, src, src_sz);
+      }
+    } else {
+      return TZ_ERROR_ILLEGAL_ARGUMENT;
+    }
+  }
+  return TZIDecodeGetError(psBuffer);
+}
+
+tz_return_t
+TZIDecodeBufFormat(tzi_encode_buffer_t* psBuffer, const char* str, ...)
+{
+  tz_return_t rv;
+  va_list argp;
+  va_start(argp, str);
+  rv = vTZIDecodeBufFormat(psBuffer, str, argp);
+  va_end(argp);
+  return rv;
+}

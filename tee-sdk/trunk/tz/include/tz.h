@@ -424,16 +424,26 @@ TZEncodeMemoryReference(INOUT tz_operation_t* psOperation,
                         uint32_t uiFlags);
 
 /* extension: encode multiple by format string */
-#define TZI_FMT_UINT32 "%u"
-#define TZI_FMT_STRING "%s"
-#define TZI_FMT_ARRAY "%p%u"
-#define TZI_FMT_ARRAY_SPACE "%-p%u"
+#define TZI_EFMT_UINT32 "%u"
+#define TZI_EFMT_STRING "%s"
+#define TZI_EFMT_ARRAY "%p%u"
+#define TZI_EFMT_ARRAY_SPACE "%-p%u"
 tz_return_t
 TZIEncodeFormat(INOUT tz_operation_t *psOperation, const char* str, ...)
   __attribute__ ((format (printf, 2, 3)));
 
 tz_return_t
 vTZIEncodeFormat(INOUT tz_operation_t *psOperation, const char* str, va_list argp);
+tz_return_t
+
+#define TZI_DFMT_UINT32 "%u"
+#define TZI_DFMT_ARRAY_SPACE "%p%u"
+#define TZI_DFMT_ARRAY "%s%u"
+TZIDecodeFormat(INOUT tz_operation_t *psOperation, const char* str, ...)
+  __attribute__ ((format (scanf, 2, 3)));
+
+tz_return_t
+vTZIDecodeFormat(INOUT tz_operation_t *psOperation, const char* str, va_list argp);
 
 /* 6.2.5 TZDecodeUint32 */
 uint32_t

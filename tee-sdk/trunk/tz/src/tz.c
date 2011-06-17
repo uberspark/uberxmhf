@@ -694,6 +694,23 @@ TZIEncodeFormat(INOUT tz_operation_t *psOperation, const char* str, ...)
 }
 
 tz_return_t
+vTZIDecodeFormat(INOUT tz_operation_t *psOperation, const char* str, va_list argp)
+{
+  return vTZIDecodeBufFormat(psOperation->sImp.psEncodeBuffer, str, argp);
+}
+
+tz_return_t
+TZIDecodeFormat(INOUT tz_operation_t *psOperation, const char* str, ...)
+{
+  tz_return_t rv;
+  va_list argp;
+  va_start(argp, str);
+  rv = vTZIDecodeFormat(psOperation, str, argp);
+  va_end(argp);
+  return rv;
+}
+
+tz_return_t
 TZDecodeGetError(INOUT tz_operation_t * psOperation)
 {
   return TZIDecodeGetError(psOperation->sImp.psEncodeBuffer);
