@@ -68,7 +68,7 @@ int svc_utpm_unseal(void *in,
   return vmcall(TV_HC_UTPM_UNSEAL, /* eax */
                 (uint32_t)inbuf2,  /* ecx */
                 (uint32_t)outbuf2, /* edx */
-                digestAtCreation,  /* esi */
+                (uint32_t)digestAtCreation,  /* esi */
                 0);                /* edi */
 }
 
