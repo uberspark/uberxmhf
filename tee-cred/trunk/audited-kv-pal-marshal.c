@@ -49,10 +49,6 @@ struct {
   };
 } pending_cmd;
 
-static void akvp_db_add_marshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
-{
-}
-
 void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
 /*   switch(uiCommand) { */

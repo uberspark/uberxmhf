@@ -36,6 +36,9 @@
 #include "audited-kv-pal.h"
 #include "audited-kv-pal-fns.h"
 
+#include <tz.h>
+#include <tzmarshal.h>
+
 #include <string.h>
 #include <malloc.h>
 #include <assert.h>
@@ -88,6 +91,28 @@ void akvp_db_add_release(void* vcont)
   FREE_AND_NULL(cont->key);
   FREE_AND_NULL(cont->val);
 }
+
+tz_return_t akvp_db_add_begin_marshal(char **audit_string,
+                                      void **vcont,
+                                      struct tzi_encode_buffer_t *psInBuf)
+{
+  char *key, *val;
+  size_t key_len, val_len;
+
+  key = TZIDecodeArraySpace(psInBuf, &key_len);
+  val = TZIDecodeArraySpace(psInBuf, &val_len);
+
+  if (TZIDecodeGetError(psInBuf)) {
+    return TZIDecodeGetError(psInBuf);
+  }
+  if (key[key_len-1] != '\0'
+      || val[val_len-1] != '\0') {
+    return TZ_ERROR_ILLEGAL_ARGUMENT;
+  }
+
+  return akvp_db_add_begin(audit_string, vcont, key, val);
+}
+
 
 tz_return_t akvp_db_add_begin(char **audit_string,
                               void **vcont,
