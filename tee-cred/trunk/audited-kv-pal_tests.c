@@ -154,3 +154,33 @@ void test_akvp_db_get_execute_empty_fails()
   TEST_ASSERT_EQUAL(AKV_ENOTFOUND, rv);
   akvp_db_get_release(cont);
 }
+
+void test_akvp_db_get_execute_existing_succeeds(void)
+{
+  char *audit_string;
+  void *cont;
+  void *val;
+  size_t val_len;
+
+  TEST_ASSERT(!akvp_db_add_begin(&audit_string,
+                                 &cont,
+                                 key1, key1_len,
+                                 val1, val1_len));
+  free(audit_string);
+  TEST_ASSERT(!akvp_db_add_execute(cont, psOutBuf));
+  akvp_db_add_release(cont);
+
+  TZIEncodeBufReInit(psOutBuf);
+  TEST_ASSERT(!akvp_db_get_begin(&audit_string,
+                                 &cont,
+                                 key1, key1_len));
+  free(audit_string);
+  TEST_ASSERT(!akvp_db_get_execute(cont, psOutBuf));
+  akvp_db_get_release(cont);
+
+  TZIEncodeToDecode(psOutBuf);
+  val = TZIDecodeArraySpace(psOutBuf, &val_len);
+  TEST_ASSERT_EQUAL(0, TZIDecodeGetError(psOutBuf));
+  TEST_ASSERT_EQUAL(val1_len, val_len);
+  TEST_ASSERT_EQUAL_STRING(val1, val);
+}

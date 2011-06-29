@@ -259,6 +259,9 @@ tz_return_t akvp_db_get_execute(void* vcont, struct tzi_encode_buffer_t *psOutBu
   }
 
   TZIEncodeArray(psOutBuf, val, val_len);
+  if(TZIDecodeGetError(psOutBuf)) {
+    return TZIDecodeGetError(psOutBuf);
+  }
   return rv;
 }
 
