@@ -86,9 +86,12 @@ int tcm_db_add(tcm_ctx_t* tcm_ctx,
                       epoch_nonce_len,
                       epoch_offset,
                       audit_string,
-                      audit_string_len)) {
+                      audit_string_len,
+                      NULL,
+                      NULL)) {
     return TCM_EAUDIT;
   }
   return 0;
 }
+
 
