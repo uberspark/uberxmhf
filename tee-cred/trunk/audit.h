@@ -36,12 +36,17 @@
 #ifndef AUDIT_H
 #define AUDIT_H
 
+#include <stdint.h>
+
 typedef struct {
 } audit_ctx_t;
 
-int audit_get_token(audit_ctx_t *audit_ctx,
-                    const void *msg, size_t msg_len,
-                    void *audit_token, size_t *audit_token_len);
+int audit_get_token(audit_ctx_t*    audit_ctx,
+                    const uint8_t*  epoch_nonce,
+                    size_t          epoch_nonce_len,
+                    uint64_t        epoch_offset,
+                    const char*     audit_string,
+                    size_t          audit_string_len);
 
 audit_ctx_t* test_audit_construct(void);
 
