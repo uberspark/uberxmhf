@@ -98,8 +98,7 @@ void akvp_db_add_release(void)
   db_add_saved.valid=false;
 }
 
-tz_return_t akvp_db_add_begin(char *audit_string,
-                              size_t *audit_string_sz,
+tz_return_t akvp_db_add_begin(char **audit_string,
                               const char* key,
                               const char* val)
 {
@@ -113,21 +112,12 @@ tz_return_t akvp_db_add_begin(char *audit_string,
     return TZ_ERROR_MEMORY;
   }
   
-  {
-    size_t bufsz=*audit_string_sz;
-    /* FIXME escape quotes, etc. */
-    *audit_string_sz = 0;
-    *audit_string_sz += snprintf(audit_string,
-                                 bufsz,
-                                 "ADD{key=\"%s\"}",
-                                 key);
-    *audit_string_sz += 1; /* null */
-    if(*audit_string_sz > bufsz) {
-      akvp_db_add_release();
-      return TZ_ERROR_SHORT_BUFFER;
-    }
+  *audit_string =
+    sprintf_mallocd("ADD{key=\"%s\"}", key);
+  if (*audit_string == NULL) {
+    akvp_db_add_release();
+    return TZ_ERROR_MEMORY;
   }
-  
 
   return TZ_SUCCESS;
 }

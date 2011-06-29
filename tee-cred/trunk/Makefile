@@ -35,7 +35,7 @@ PROGS+=audited-kv-pal_tests
 OBJS+=audited-kv-pal_runner.o audited-kv-pal_tests.o audited-kv-pal.o
 
 clean:
-	$(RM) $(PROGS) $(OBJS)
+	$(RM) $(PROGS) $(OBJS) mocks/*
 
 test : CFLAGS+=-I$(UNITYDIR)/src -DUNITY_SUPPORT_64
 # workaround to allow mocked header to include other tee-sdk headers

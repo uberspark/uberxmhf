@@ -36,7 +36,8 @@
 #ifndef AUDITED_KV_PAL_FNS_H
 #define AUDITED_KV_PAL_FNS_H
 
-tz_return_t akvp_db_add(uint8_t* key, size_t key_len,
-                        uint8_t* val, size_t val_len);
+tz_return_t akvp_db_add_begin(char **audit_string,
+                              const char* key,
+                              const char* val);
 
 #endif
