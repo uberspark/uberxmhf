@@ -112,10 +112,18 @@ will execute the command.
 audit-nonce, audit-string, time, etc., let's seal it for ourselves and
 make the calling program give it back to us when it wants to execute
 the command. we'll need the pcr-at-origin feature in seal to validate
-this data. XXX - nope, won't work. This would allow unlimited replay
-of a command within the audit-time-threshold. Let's just store the
-state inside the PAL instead. It can be non-reentrant for now. Later
-we can have the PAL store the state for several outstanding requests.
+this data. 
+
+XXX - nope, won't work. This would allow unlimited replay of a command
+within the audit-time-threshold. Let's just store the state inside the
+PAL instead. It can be non-reentrant for now. Later we can have the
+PAL store the state for several outstanding requests.
+
+We *could* only store the audit-nonces inside the PAL and have the
+regular program store the rest of the saved data for us. This would
+reduce the memory requirement inside the PAL, but wouldn't really
+simplify anything since we'd still need to keep track of pending
+audit-nonces inside the PAL.
 
 ## Human-readable vs compact command\audit strings
 
