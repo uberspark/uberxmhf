@@ -111,16 +111,29 @@ void test_tcm_db_add_null_val_error(void)
 
 void test_tcm_db_add_gets_audit_challenge(void)
 {
-  /* akv_begin_db_add_ExpectAndReturn(NULL, */
-  /*                                  NULL, */
-  /*                                  NULL, */
-  /*                                  NULL, */
-  /*                                  NULL, */
-  /*                                  NULL, */
-  /*                                  NULL, */
-  /*                                  NULL, */
-  /*                                  0); */
   akv_begin_db_add_IgnoreAndReturn(0);
+
+  tcm_db_add(&tcm_ctx, "key", "value");
+}
+
+void test_tcm_db_add_xxx(void)
+{
+  int akv_begin_db_add_cb(akv_ctx_t*  ctx,
+                          uint8_t*    epoch_nonce,
+                          size_t*     epoch_nonce_len,
+                          uint64_t*   epoch_offset,
+                          char*       audit_string,
+                          size_t*     audit_string_len,
+                          const char* key,
+                          const char* val,
+                          int num_calls
+                          )
+  {
+    TEST_ASSERT_EQUAL(0,1);
+    return 0;
+  }
+  
+  akv_begin_db_add_StubWithCallback(&akv_begin_db_add_cb);
 
   tcm_db_add(&tcm_ctx, "key", "value");
 }
