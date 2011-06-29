@@ -116,8 +116,11 @@ void test_tcm_db_add_gets_audit_challenge(void)
   tcm_db_add(&tcm_ctx, "key", "value");
 }
 
-void test_tcm_db_add_call_akv_nonnull(void)
+void test_tcm_db_add_call_akv_reasonable_params(void)
 {
+  const char *test_key = "key";
+  const char *test_val = "val";
+
   int akv_begin_db_add_cb(akv_ctx_t*  ctx,
                           uint8_t*    epoch_nonce,
                           size_t*     epoch_nonce_len,
@@ -129,19 +132,14 @@ void test_tcm_db_add_call_akv_nonnull(void)
                           int num_calls
                           )
   {
-    TEST_ASSERT_NOT_NULL(ctx);
-    TEST_ASSERT_NOT_NULL(epoch_nonce);
-    TEST_ASSERT_NOT_NULL(epoch_nonce_len);
-    TEST_ASSERT_NOT_NULL(epoch_offset);
-    TEST_ASSERT_NOT_NULL(audit_string);
-    TEST_ASSERT_NOT_NULL(audit_string_len);
-    TEST_ASSERT_NOT_NULL(key);
-    TEST_ASSERT_NOT_NULL(val);
+    TEST_ASSERT_EQUAL_PTR(&akv_ctx, ctx);
+    TEST_ASSERT_EQUAL_STRING(test_key, key);
+    TEST_ASSERT_EQUAL_STRING(test_val, val);
     return 0;
   }
   
   akv_begin_db_add_StubWithCallback(&akv_begin_db_add_cb);
 
-  tcm_db_add(&tcm_ctx, "key", "value");
+  tcm_db_add(&tcm_ctx, test_key, test_val);
 }
 
