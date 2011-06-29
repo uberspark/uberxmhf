@@ -40,8 +40,26 @@
 #include <tzmarshal.h>
 #include <string.h>
 
+typedef tz_return_t (audited_begin_fn)(char **, void **, struct tzi_encode_buffer_t *);
 typedef tz_return_t (audited_execute_fn)(void *, struct tzi_encode_buffer_t *);
 typedef void (audited_release_fn)(void *);
+/* typedef struct { */
+/*   audited_begin_fn *begin; */
+/*   audited_execute_fn *execute; */
+/*   audited_release_fn *release; */
+/* } audited_cmd_t; */
+/* audited_cmd_t audited_cmds[] = { */
+/*   [AKVP_DB_ADD] = { */
+/*     .begin=akvp_db_add_begin_marshal, */
+/*     .execute=akvp_db_add_execute, */
+/*     .release=akvp_db_add_release, */
+/*   }, */
+/*   [AKVP_DB_GET] = { */
+/*     .begin=akvp_db_get_begin_marshal, */
+/*     .execute=akvp_db_get_execute, */
+/*     .release=akvp_db_get_release, */
+/*   }, */
+/* }; */
 
 typedef struct {
   char *audit_string;
@@ -121,6 +139,7 @@ static int save_pending_cmd(char *audit_string, void *cont, audited_execute_fn e
   };
   return cmd_id;
 }
+
 
 void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
