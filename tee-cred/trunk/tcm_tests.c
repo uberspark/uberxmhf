@@ -115,7 +115,7 @@ void test_tcm_db_add_gets_audit_challenge(void)
 {
   akv_begin_db_add_IgnoreAndReturn(0);
   audit_get_token_IgnoreAndReturn(0);
-
+  akv_execute_audited_cmd_IgnoreAndReturn(0);
   tcm_db_add(&tcm_ctx, "key", "value");
 }
 
@@ -145,6 +145,7 @@ void test_tcm_db_add_call_akv_reasonable_params(void)
   
   akv_begin_db_add_StubWithCallback(&akv_begin_db_add_cb);
   audit_get_token_IgnoreAndReturn(0);
+  akv_execute_audited_cmd_IgnoreAndReturn(0);
 
   tcm_db_add(&tcm_ctx, test_key, test_val);
   TEST_ASSERT(callcount > 0);
@@ -213,6 +214,7 @@ void test_tcm_db_add_calls_audit_get_token_with_reasonable_param(void)
 
   akv_begin_db_add_StubWithCallback(&akv_begin_db_add_cb);
   audit_get_token_StubWithCallback(&audit_get_token_cb);
+  akv_execute_audited_cmd_IgnoreAndReturn(0);
 
   tcm_db_add(&tcm_ctx, "key", "value");
   TEST_ASSERT(akv_callcount > 0);
