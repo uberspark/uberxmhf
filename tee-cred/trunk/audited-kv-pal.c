@@ -168,7 +168,7 @@ tz_return_t akvp_db_add_begin(char **audit_string,
   return TZ_SUCCESS;
 }
 
-tz_return_t akvp_db_add_execute(void* vcont)
+tz_return_t akvp_db_add_execute(void* vcont, struct tzi_encode_buffer_t *psOutBuf)
 {
   akvp_db_add_cont_t *cont = (akvp_db_add_cont_t*)vcont;
   tz_return_t rv;
@@ -181,4 +181,68 @@ tz_return_t akvp_db_add_execute(void* vcont)
     : AKV_EKV;
 
   return rv;
+}
+
+typedef struct {
+  void *key;
+  size_t key_len;
+} akvp_db_get_cont_t;
+
+tz_return_t akvp_db_get_begin_marshal(char **audit_string,
+                                      void **vcont,
+                                      struct tzi_encode_buffer_t *psInBuf)
+{
+  void *key;
+  size_t key_len;
+
+  key = TZIDecodeArraySpace(psInBuf, &key_len);
+
+  if (TZIDecodeGetError(psInBuf)) {
+    return TZIDecodeGetError(psInBuf);
+  }
+
+  return akvp_db_get_begin(audit_string, vcont, key, key_len);
+}
+
+tz_return_t akvp_db_get_begin(char **audit_string,
+                              void **vcont,
+                              const void* key, size_t key_len)
+{
+  akvp_db_get_cont_t **pp_cont = ((akvp_db_get_cont_t**)vcont);
+  akvp_db_get_cont_t *cont;
+
+  *pp_cont = malloc(sizeof(**pp_cont));
+  if(!pp_cont) {
+    return TZ_ERROR_MEMORY;
+  }
+  cont = *pp_cont;
+
+  *cont = (akvp_db_get_cont_t) {
+    .key = malloc(key_len),
+    .key_len = key_len,
+  };
+  *audit_string = /* FIXME need to escape nulls and non-printables,
+                     and make sure null-terminated.
+                  */
+    sprintf_mallocd("GET{key=\"%s\"}", (char*)key);
+
+  if (!cont->key
+      || !*audit_string) {
+    FREE_AND_NULL(cont->key);
+    FREE_AND_NULL(cont);
+    FREE_AND_NULL(*audit_string);
+    return TZ_ERROR_MEMORY;
+  }
+
+  memcpy(cont->key, key, key_len);
+
+  return TZ_SUCCESS;
+}
+
+tz_return_t akvp_db_get_execute(void* vcont, struct tzi_encode_buffer_t *psOutBuf)
+{
+  return TZ_ERROR_NOT_IMPLEMENTED;
+}
+void akvp_db_get_release(void* vcont)
+{
 }

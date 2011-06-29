@@ -34,6 +34,7 @@
  */
 
 #include <string.h>
+#include <tzmarshal.h>
 
 #include <unity.h>
 #include "audited-kv-pal-fns.h"
@@ -44,9 +45,17 @@ static const size_t key1_len = 8;
 static const char * val1 = "value one";
 static const size_t val1_len = 10;
 
+static tzi_encode_buffer_t *psInBuf, *psOutBuf;
+
+
 void setUp(void)
 {
   akvp_init();
+  psInBuf = malloc(1000);
+  TZIEncodeBufInit(psInBuf, 1000);
+
+  psOutBuf = malloc(1000);
+  TZIEncodeBufInit(psOutBuf, 1000);
 }
 
 void tearDown(void)
@@ -83,7 +92,7 @@ void test_akvp_db_add_succeeds()
                          val1, val1_len);
   TEST_ASSERT(rv == TZ_SUCCESS);
 
-  rv = akvp_db_add_execute(cont);
+  rv = akvp_db_add_execute(cont, psOutBuf);
   TEST_ASSERT(!rv);
   akvp_db_add_release(cont);
 }
@@ -100,9 +109,9 @@ void test_akvp_db_add_duplicate_fails()
                          val1, val1_len);
   TEST_ASSERT(rv == TZ_SUCCESS);
 
-  rv = akvp_db_add_execute(cont);
+  rv = akvp_db_add_execute(cont, psOutBuf);
   TEST_ASSERT(!rv);
-  rv = akvp_db_add_execute(cont);
+  rv = akvp_db_add_execute(cont, psOutBuf);
   TEST_ASSERT_EQUAL(AKV_EEXISTS, rv);
   akvp_db_add_release(cont);
 }
