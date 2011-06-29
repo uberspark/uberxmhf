@@ -49,7 +49,7 @@ int tcm_init(tcm_handle_t* tcm_handle,
 
   tcm_handle->db = malloc(db_len);
   if (!tcm_handle->db) {
-    return -2;
+    return TCM_ERR_NOMEM;
   }
   memcpy(tcm_handle->db, db, db_len);
 
