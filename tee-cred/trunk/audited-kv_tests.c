@@ -33,38 +33,20 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#ifndef AUDITED_KV_H
-#define AUDITED_KV_H
+#include <unity.h>
 
-#include <stddef.h>
-#include <stdint.h>
+#include "audited-kv.h"
 
-#define AKV_EPOCH_NONCE_MAX 256 /* FIXME - should pull from svcapi.h */
-#define AKV_AUDIT_STRING_MAX 1000 /* FIXME - can we even specify this? */
+void setUp(void)
+{
 
-typedef struct {
-} akv_ctx_t;
+}
 
-int akv_execute_audited_cmd(akv_ctx_t* ctx,
-                            void* audit_token,
-                            size_t audit_token_len);
+void tearDown(void)
+{
 
-int akv_begin_db_add(akv_ctx_t*  ctx,
-                     uint8_t*    epoch_nonce,
-                     size_t*     epoch_nonce_len,
-                     uint64_t*   epoch_offset,
-                     char*       audit_string,
-                     size_t*     audit_string_len,
-                     const char* key,
-                     const char* val);
+}
 
-int akv_begin_db_get(akv_ctx_t*  ctx,
-                     uint8_t*    epoch_nonce,
-                     size_t*     epoch_nonce_len,
-                     uint64_t*   epoch_offset,
-                     char*       audit_string,
-                     size_t*     audit_string_len,
-                     const char* key,
-                     char*       val,
-                     int         val_len);
-#endif
+void test_null(void)
+{
+}

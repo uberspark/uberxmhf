@@ -7,7 +7,7 @@ CFLAGS=-Wall -g
 
 all : mocks test
 
-test : run_audit_tests run_tcm_tests
+test : run_audit_tests run_tcm_tests run_audited-kv_tests
 
 mocks : mocks/Mockaudited-kv.c mocks/Mockaudit.c
 
@@ -18,6 +18,10 @@ OBJS+=audit_runner.o audit_tests.o audit.o $(UNITYOBJ)
 tcm_tests : tcm_runner.o tcm_tests.o tcm.o mocks/Mockaudit.o mocks/Mockaudited-kv.o $(UNITYOBJ) $(CMOCKOBJ)
 PROGS+=tcm_tests
 OBJS+=tcm_runner.o tcm_tests.o tcm.o $(UNITYOBJ)
+
+audited-kv_tests : audited-kv_runner.o audited-kv_tests.o audited-kv.o $(UNITYOBJ) $(CMOCKOBJ)
+PROGS+=audited-kv_tests
+OBJS+=audited-kv_runner.o audited-kv_tests.o audited-kv.o $(UNITYOBJ) $(CMOCKOBJ)
 
 clean:
 	$(RM) $(PROGS) $(OBJS)
