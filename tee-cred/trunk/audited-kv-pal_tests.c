@@ -37,11 +37,12 @@
 
 #include <unity.h>
 #include "audited-kv-pal-fns.h"
+#include "audited-kv-errs.h"
 
-/* static const char * key1 = "key one"; */
-/* static const size_t key1_len = 8; */
-/* static const char * val1 = "value one"; */
-/* static const size_t val1_len = 10; */
+static const char * key1 = "key one";
+static const size_t key1_len = 8;
+static const char * val1 = "value one";
+static const size_t val1_len = 10;
 
 void setUp(void)
 {
@@ -50,23 +51,58 @@ void setUp(void)
 
 void tearDown(void)
 {
+  akvp_release();
 }
 
-void test_akvp_db_add_begin()
+void test_akvp_db_add_begin_gives_expected_audit_string()
 {
   char *audit_string;
   void *cont;
-  const char* key = "testkey";
-  const char* val = "testval";
   tz_return_t rv;
 
   rv = akvp_db_add_begin(&audit_string,
                          &cont,
-                         key, strlen(key),
-                         val, strlen(val));
+                         key1, key1_len,
+                         val1, val1_len);
   TEST_ASSERT(rv == TZ_SUCCESS);
   TEST_ASSERT_NOT_NULL(audit_string);
-  TEST_ASSERT_EQUAL_STRING("ADD{key=\"testkey\"}",
+  TEST_ASSERT_EQUAL_STRING("ADD{key=\"key one\"}",
                            audit_string);
+  akvp_db_add_release(cont);
+}
+
+void test_akvp_db_add_succeeds()
+{
+  char *audit_string;
+  void *cont;
+  tz_return_t rv;
+
+  rv = akvp_db_add_begin(&audit_string,
+                         &cont,
+                         key1, key1_len,
+                         val1, val1_len);
+  TEST_ASSERT(rv == TZ_SUCCESS);
+
+  rv = akvp_db_add_execute(cont);
+  TEST_ASSERT(!rv);
+  akvp_db_add_release(cont);
+}
+
+void test_akvp_db_add_duplicate_fails()
+{
+  char *audit_string;
+  void *cont;
+  tz_return_t rv;
+
+  rv = akvp_db_add_begin(&audit_string,
+                         &cont,
+                         key1, key1_len,
+                         val1, val1_len);
+  TEST_ASSERT(rv == TZ_SUCCESS);
+
+  rv = akvp_db_add_execute(cont);
+  TEST_ASSERT(!rv);
+  rv = akvp_db_add_execute(cont);
+  TEST_ASSERT_EQUAL(AKV_EEXISTS, rv);
   akvp_db_add_release(cont);
 }

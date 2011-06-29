@@ -45,5 +45,6 @@ tz_return_t akvp_db_add_begin(char **audit_string,
                               void **vcont,
                               const void* key, size_t key_len,
                               const void* val, size_t val_len);
+tz_return_t akvp_db_add_execute(void* vcont);
 void akvp_db_add_release(void* vcont);
 #endif
