@@ -88,6 +88,13 @@ int tcm_db_add(tcm_ctx_t* tcm_ctx,
                        val)) {
     return TCM_EAKV;
   }
+
+  audit_get_token(NULL,
+                  NULL,
+                  0,
+                  0,
+                  NULL,
+                  0);
   return 0;
 }
 

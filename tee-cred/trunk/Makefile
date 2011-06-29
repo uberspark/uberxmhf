@@ -3,7 +3,7 @@ CMOCKOBJ=$(CMOCKDIR)/src/cmock.o
 UNITYDIR=$(CMOCKDIR)/vendor/unity
 UNITYOBJ=$(UNITYDIR)/src/unity.o
 
-CFLAGS=-Wall
+CFLAGS=-Wall -g
 
 all : mocks test
 
