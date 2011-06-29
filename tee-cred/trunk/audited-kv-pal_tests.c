@@ -137,3 +137,20 @@ void test_akvp_db_get_begin_gives_expected_audit_string()
   free(audit_string);
   akvp_db_get_release(cont);
 }
+
+void test_akvp_db_get_execute_empty_fails()
+{
+  char *audit_string;
+  void *cont;
+  tz_return_t rv;
+
+  rv = akvp_db_get_begin(&audit_string,
+                         &cont,
+                         key1, key1_len);
+  free(audit_string);
+  TEST_ASSERT(rv == TZ_SUCCESS);
+
+  rv = akvp_db_get_execute(cont, psOutBuf);
+  TEST_ASSERT_EQUAL(AKV_ENOTFOUND, rv);
+  akvp_db_get_release(cont);
+}
