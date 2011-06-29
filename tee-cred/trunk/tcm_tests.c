@@ -272,3 +272,11 @@ void test_tcm_db_add_calls_akv_execute_with_audit_token(void)
   TEST_ASSERT(audit_callcount > 0);
   TEST_ASSERT(execute_callcount > 0);
 }
+
+void test_tcm_db_add_detects_execute_failure(void)
+{
+  akv_begin_db_add_IgnoreAndReturn(0);
+  audit_get_token_IgnoreAndReturn(0);
+  akv_execute_audited_cmd_IgnoreAndReturn(1);
+  TEST_ASSERT(tcm_db_add(&tcm_ctx, "key", "value"));
+}

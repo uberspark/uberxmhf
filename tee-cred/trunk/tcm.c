@@ -94,9 +94,11 @@ int tcm_db_add(tcm_ctx_t* tcm_ctx,
     return TCM_EAUDIT;
   }
 
-  akv_execute_audited_cmd(tcm_ctx->akv_ctx,
-                          audit_token,
-                          audit_token_len);
+  if (akv_execute_audited_cmd(tcm_ctx->akv_ctx,
+                              audit_token,
+                              audit_token_len)) {
+    return TCM_EAKV;
+  }
 
   return 0;
 }
