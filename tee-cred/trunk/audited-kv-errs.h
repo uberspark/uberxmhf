@@ -37,7 +37,7 @@
 #define AUDITED_KV_ERRS_H
 
 enum akvp_errs {
-  AKVP_ENONE=0,
+  AKV_ENONE=0,
 };
 
 #endif

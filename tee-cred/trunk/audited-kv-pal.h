@@ -36,6 +36,8 @@
 #ifndef AUDITED_KV_PAL
 #define AUDITED_KV_PAL
 
+#include "audited-kv-errs.h"
+
 enum akvp_cmds {
   AKVP_AUDIT_GET_NONCE, /* ()                -> random nonce */
   AKVP_AUDIT_EXECUTE,   /* random nonce, cmd -> f(cmd) */
@@ -54,11 +56,6 @@ enum akvp_cmds {
   AKVP_INIT,            /* audit-pubkey, password -> () */
 };
 
-int akvp_init(akvp_ctx_t*,
-              audit_ctx_t*,
-              const void *db,
-              size_t db_len);
-
-void akvp_release(akvp_ctx_t*);
+pal_fn_t audited_kv_pal;
 
 #endif

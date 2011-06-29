@@ -53,6 +53,7 @@ typedef struct {
 } akv_ctx_t;
 
 int akv_ctx_init(akv_ctx_t* ctx);
+int akv_ctx_release(akv_ctx_t* ctx);
 
 int akv_execute_audited_cmd(akv_ctx_t* ctx,
                             void* audit_token,
