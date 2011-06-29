@@ -23,7 +23,7 @@ clean:
 	$(RM) $(PROGS) $(OBJS)
 
 ### generic unity rules ###
-test : CFLAGS+=-I$(UNITYDIR)/src
+test : CFLAGS+=-I$(UNITYDIR)/src -DUNITY_SUPPORT_64
 run_%: %
 	./$<
 %_runner.c: %_tests.c

@@ -202,6 +202,7 @@ void test_tcm_db_add_calls_audit_get_token_with_reasonable_param(void)
     TEST_ASSERT_EQUAL_PTR(&g_audit_ctx, audit_ctx);
     TEST_ASSERT_EQUAL(test_epoch_nonce_len, epoch_nonce_len);
     TEST_ASSERT_EQUAL_MEMORY(test_epoch_nonce, epoch_nonce, test_epoch_nonce_len);
+    TEST_ASSERT_EQUAL_UINT64(test_epoch_offset, epoch_offset);
     return 0;
   }
 
