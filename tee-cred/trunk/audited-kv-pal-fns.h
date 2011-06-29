@@ -36,6 +36,8 @@
 #ifndef AUDITED_KV_PAL_FNS_H
 #define AUDITED_KV_PAL_FNS_H
 
+#include <tz.h>
+
 tz_return_t akvp_db_add_begin(char **audit_string,
                               const char* key,
                               const char* val);
