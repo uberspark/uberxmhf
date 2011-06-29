@@ -50,7 +50,9 @@ int audit_get_token(audit_ctx_t*    audit_ctx,
                     size_t          epoch_nonce_len,
                     uint64_t        epoch_offset,
                     const char*     audit_string,
-                    size_t          audit_string_len);
+                    size_t          audit_string_len,
+                    void*           audit_token,
+                    size_t*         audit_token_len);
 
 audit_ctx_t* test_audit_construct(void);
 
