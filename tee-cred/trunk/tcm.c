@@ -35,3 +35,16 @@
 
 #include "tcm.h"
 
+int tcm_init(tcm_handle_t* tcm_handle,
+             audit_handle_t* audit_handle,
+             const void *db,
+             size_t db_len)
+{
+  if (!tcm_handle) {
+    return -1;
+  }
+  tcm_handle->audit_handle = audit_handle;
+  tcm_handle->db = db;
+  tcm_handle->db_len = db_len;
+  return 0;
+}

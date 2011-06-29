@@ -60,7 +60,12 @@
 /*   TCP_INIT,            /\* audit-pubkey, password -> () *\/ */
 /* }; */
 
-typedef struct tcm_handle tcm_handle_t;
+typedef struct tcm_handle {
+  audit_handle_t* audit_handle;
+  void* db;
+  size_t db_len;
+} tcm_handle_t;
+
 
 int tcm_init(tcm_handle_t*,
              audit_handle_t*,

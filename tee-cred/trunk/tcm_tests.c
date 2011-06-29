@@ -34,6 +34,7 @@
  */
 
 #include "unity.h"
+#include "tcm.h"
 
 void setUp(void)
 {
@@ -43,6 +44,13 @@ void tearDown(void)
 {
 }
 
-void test_null(void)
+void test_tcm_init_null_handle_error(void)
 {
+  TEST_ASSERT_FALSE(!tcm_init(NULL, NULL, NULL, 0));
+}
+
+void test_tcm_init_null_params_ok(void)
+{
+  tcm_handle_t tcm_handle;
+  TEST_ASSERT(!tcm_init(&tcm_handle, NULL, NULL, 0));
 }
