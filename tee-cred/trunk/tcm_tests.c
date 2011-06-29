@@ -143,3 +143,9 @@ void test_tcm_db_add_call_akv_reasonable_params(void)
   tcm_db_add(&tcm_ctx, test_key, test_val);
 }
 
+void test_tcm_db_add_detects_akv_failure(void)
+{
+  akv_begin_db_add_IgnoreAndReturn(1);
+  TEST_ASSERT(tcm_db_add(&tcm_ctx, "key", "value"));
+}
+
