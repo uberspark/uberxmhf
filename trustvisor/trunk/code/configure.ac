@@ -71,14 +71,14 @@ AC_SUBST([CMOCKDIR])
 AC_ARG_WITH([cmock],
         AS_HELP_STRING([--with-cmock=@<:@path@:>@],
                 [path to cmock]),
-                , [with_cmock=./vendor/cmock])
+                , [with_cmock=../../../tools/cmock])
 CMOCKDIR=$[]with_cmock
 
 AC_SUBST([UNITYDIR])
 AC_ARG_WITH([unity],
         AS_HELP_STRING([--with-unity=@<:@path@:>@],
                 [path to unity]),
-                , [with_unity=./vendor/cmock/vendor/unity])
+                , [with_unity=../../../tools/cmock/vendor/unity])
 UNITYDIR=$[]with_unity
 
 AC_SUBST([prefix])
