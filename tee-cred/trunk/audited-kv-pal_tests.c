@@ -34,6 +34,7 @@
  */
 
 #include <unity.h>
+#include "audited-kv-pal-fns.h"
 
 void setUp(void)
 {
@@ -43,7 +44,17 @@ void tearDown(void)
 {
 }
 
-
-void testNull(void)
+void test_akvp_db_add_begin()
 {
+  char *audit_string;
+  const char* key = "testkey";
+  const char* val = "testval";
+  tz_return_t rv;
+
+  rv = akvp_db_add_begin(&audit_string,
+                         key, val);
+  TEST_ASSERT(rv == TZ_SUCCESS);
+  TEST_ASSERT_NOT_NULL(audit_string);
+  TEST_ASSERT_EQUAL_STRING("ADD{key=\"testkey\"}",
+                           audit_string);
 }
