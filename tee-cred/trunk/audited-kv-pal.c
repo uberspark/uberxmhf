@@ -39,6 +39,7 @@
 #include <string.h>
 #include <malloc.h>
 #include <assert.h>
+#include <stdarg.h>
 
 static void free_and_null(void **ptr)
 {
@@ -54,6 +55,29 @@ static char* strcpy_mallocd(const char *src)
     return NULL;
   }
   strcpy(rv, src);
+  return rv;
+}
+
+char* sprintf_mallocd(const char *format, ...)
+{
+  va_list argp1;
+  va_list argp2;
+  size_t sz, sz2;
+  char *rv=NULL;
+
+  va_start(argp1, format);
+  va_copy(argp2, argp1);
+
+  sz = 1+vsnprintf(NULL, 0, format, argp1);
+  rv = malloc(sz);
+  if (!rv)
+    goto out;
+  sz2 = vsnprintf(rv, sz, format, argp2);
+  assert(sz2 == (sz-1));
+
+ out:
+  va_end(argp1);
+  va_end(argp2);
   return rv;
 }
 
