@@ -186,6 +186,7 @@ void test_tcm_db_add_calls_audit_get_token_with_reasonable_param(void)
 
     assert(*audit_string_len >= test_audit_string_len);
     strcpy(audit_string, test_audit_string);
+    *audit_string_len=test_audit_string_len;
 
     return 0;
   }
@@ -203,6 +204,8 @@ void test_tcm_db_add_calls_audit_get_token_with_reasonable_param(void)
     TEST_ASSERT_EQUAL(test_epoch_nonce_len, epoch_nonce_len);
     TEST_ASSERT_EQUAL_MEMORY(test_epoch_nonce, epoch_nonce, test_epoch_nonce_len);
     TEST_ASSERT_EQUAL_UINT64(test_epoch_offset, epoch_offset);
+    TEST_ASSERT_EQUAL(test_audit_string_len, audit_string_len);
+    TEST_ASSERT_EQUAL_STRING(test_audit_string, audit_string);
     return 0;
   }
 

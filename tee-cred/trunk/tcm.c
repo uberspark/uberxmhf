@@ -85,8 +85,8 @@ int tcm_db_add(tcm_ctx_t* tcm_ctx,
                   epoch_nonce,
                   epoch_nonce_len,
                   epoch_offset,
-                  NULL,
-                  0);
+                  audit_string,
+                  audit_string_len);
   return 0;
 }
 
