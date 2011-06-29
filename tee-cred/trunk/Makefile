@@ -3,7 +3,7 @@ CMOCKOBJ=$(CMOCKDIR)/src/cmock.o
 UNITYDIR=$(CMOCKDIR)/vendor/unity
 UNITYOBJ=$(UNITYDIR)/src/unity.o
 
-CFLAGS=-Wall -g
+CFLAGS=-Wall -Werror -g
 
 TEESDK_DATA_DIR=$(shell pkg-config --variable=pkgdatadir tee-sdk-app)
 # pkgconfig helpers
@@ -14,21 +14,25 @@ TEESDK_PKGINCLUDE_DIR=$(shell pkg-config --variable=includedir tee-sdk-app)/tee-
 
 all : mocks test
 
-test : run_audit_tests run_tcm_tests run_audited-kv_tests
+test : run_audit_tests run_tcm_tests run_audited-kv_tests run_audited-kv-pal_tests
 
 mocks : mocks/Mockaudited-kv.c mocks/Mockaudit.c mocks/Mocktv.c
 
 audit_tests : audit_runner.o audit_tests.o audit.o $(UNITYOBJ)
 PROGS+=audit_tests
-OBJS+=audit_runner.o audit_tests.o audit.o $(UNITYOBJ)
+OBJS+=audit_runner.o audit_tests.o audit.o
 
 tcm_tests : tcm_runner.o tcm_tests.o tcm.o mocks/Mockaudit.o mocks/Mockaudited-kv.o $(UNITYOBJ) $(CMOCKOBJ)
 PROGS+=tcm_tests
-OBJS+=tcm_runner.o tcm_tests.o tcm.o $(UNITYOBJ)
+OBJS+=tcm_runner.o tcm_tests.o tcm.o
 
 audited-kv_tests : audited-kv_runner.o audited-kv_tests.o audited-kv.o mocks/Mocktv.o $(UNITYOBJ) $(CMOCKOBJ)
 PROGS+=audited-kv_tests
-OBJS+=audited-kv_runner.o audited-kv_tests.o audited-kv.o mocks/Mocktv.o $(UNITYOBJ) $(CMOCKOBJ)
+OBJS+=audited-kv_runner.o audited-kv_tests.o audited-kv.o mocks/Mocktv.o
+
+audited-kv-pal_tests : audited-kv-pal_runner.o audited-kv-pal_tests.o audited-kv-pal.o $(UNITYOBJ) $(CMOCKOBJ)
+PROGS+=audited-kv-pal_tests
+OBJS+=audited-kv-pal_runner.o audited-kv-pal_tests.o audited-kv-pal.o
 
 clean:
 	$(RM) $(PROGS) $(OBJS)

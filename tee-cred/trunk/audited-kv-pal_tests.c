@@ -33,33 +33,17 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#ifndef AUDITED_KV_PAL
-#define AUDITED_KV_PAL
+#include <unity.h>
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <tv.h>
+void setUp(void)
+{
+}
 
-#include "audited-kv-errs.h"
+void tearDown(void)
+{
+}
 
-enum akvp_cmds {
-  AKVP_AUDIT_GET_NONCE, /* ()                -> random nonce */
-  AKVP_AUDIT_EXECUTE,   /* random nonce, cmd -> f(cmd) */
 
-  AKVP_DB_ADD,          /* key, val          -> ()  */
-  AKVP_DB_GET,          /* key               -> val */
-  AKVP_DB_DEL,          /* key               -> () */
-  AKVP_DB_EXPORT,       /* ()                -> seal(db) */
-  AKVP_DB_IMPORT,       /* seal(db)          -> () */
-  AKVP_DB_MIGRATE,      /* dest-pubkey, cert-chain -> E(db) */
-  
-  AKVP_PW_LOCK,         /* ()                -> () */
-  AKVP_PW_UNLOCK,       /* password          -> () */
-  AKVP_PW_CHANGE,       /* oldpass, newpass  -> () */
-
-  AKVP_INIT,            /* audit-pubkey, password -> () */
-};
-
-pal_fn_t audited_kv_pal;
-
-#endif
+void testNull(void)
+{
+}

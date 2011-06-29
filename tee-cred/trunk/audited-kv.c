@@ -33,33 +33,45 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#ifndef AUDITED_KV_PAL
-#define AUDITED_KV_PAL
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <tv.h>
+#include <tee-sdk/tz.h>
+#include <tee-sdk/tv.h>
 
-#include "audited-kv-errs.h"
+#include "audited-kv.h"
+#include "audited-kv-pal.h"
 
-enum akvp_cmds {
-  AKVP_AUDIT_GET_NONCE, /* ()                -> random nonce */
-  AKVP_AUDIT_EXECUTE,   /* random nonce, cmd -> f(cmd) */
+int akv_ctx_init(akv_ctx_t* ctx)
+{
+  tz_return_t rv;
 
-  AKVP_DB_ADD,          /* key, val          -> ()  */
-  AKVP_DB_GET,          /* key               -> val */
-  AKVP_DB_DEL,          /* key               -> () */
-  AKVP_DB_EXPORT,       /* ()                -> seal(db) */
-  AKVP_DB_IMPORT,       /* seal(db)          -> () */
-  AKVP_DB_MIGRATE,      /* dest-pubkey, cert-chain -> E(db) */
-  
-  AKVP_PW_LOCK,         /* ()                -> () */
-  AKVP_PW_UNLOCK,       /* password          -> () */
-  AKVP_PW_CHANGE,       /* oldpass, newpass  -> () */
+  /* register pal */
+  rv = tv_tz_init(&ctx->tzDevice,
+                  &ctx->tzPalSession,
+                  &ctx->tzSvcId,
+                  audited_kv_pal,
+                  PAGE_SIZE,
+                  PAGE_SIZE);
 
-  AKVP_INIT,            /* audit-pubkey, password -> () */
-};
+  return rv;
+}
 
-pal_fn_t audited_kv_pal;
+int akv_ctx_release(akv_ctx_t* ctx)
+{
+  tz_return_t rv;
+  rv = tv_tz_teardown(&ctx->tzDevice,
+                      &ctx->tzPalSession,
+                      &ctx->tzSvcId);
+  return rv;
+}
 
-#endif
+int akv_begin_db_add(akv_ctx_t*  ctx,
+                     uint8_t*    epoch_nonce,
+                     size_t*     epoch_nonce_len,
+                     uint64_t*   epoch_offset,
+                     char*       audit_string,
+                     size_t*     audit_string_len,
+                     const char* key,
+                     const char* val)
+{
+  return 1;
+}
