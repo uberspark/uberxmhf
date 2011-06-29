@@ -14,7 +14,7 @@ TEESDK_PKGINCLUDE_DIR=$(shell pkg-config --variable=includedir tee-sdk-app)/tee-
 
 all : mocks test
 
-test : run_audit_tests run_tcm_tests run_audited-kv_tests run_audited-kv-pal_tests
+test : run_audit_tests run_tcm_tests run_audited-kv_tests run_audited-kv-pal_tests run_kv_tests
 
 mocks : mocks/Mockaudited-kv.c mocks/Mockaudit.c mocks/Mocktv.c
 
@@ -36,6 +36,9 @@ audited-kv-pal_tests : LDFLAGS += $(filter -L%, $(call pkgconfig_ldflags, tee-sd
 PROGS+=audited-kv-pal_tests
 OBJS+=audited-kv-pal_runner.o audited-kv-pal_tests.o audited-kv-pal.o
 
+kv_tests: kv_runner.o kv_tests.o kv.o $(UNITYOBJ) $(CMOCKOBJ)
+PROGS+=kv_tests
+OBJS+=kv_runner.o kv_tests.o kv.o
 
 clean:
 	$(RM) $(PROGS) $(OBJS) mocks/*
