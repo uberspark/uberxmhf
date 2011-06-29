@@ -41,14 +41,16 @@
 
 #define MAX_KEYS 100
 
+typedef struct {
+  void *key;
+  size_t key_len;
+  void *val;
+  size_t val_len;
+} kv_node;
+
 struct kv_ctx_s {
   size_t num_keys;
-  struct {
-    void *key;
-    size_t key_len;
-    void *val;
-    size_t val_len;
-  } data[MAX_KEYS];
+  kv_node data[MAX_KEYS];
 };
 
 kv_ctx_t* kv_ctx_new(void)
@@ -76,8 +78,12 @@ int kv_add(kv_ctx_t* ctx, const void *key, size_t key_len, const void *val, size
   if(ctx->num_keys >= MAX_KEYS) {
     return KV_EFULL;
   }
-  ctx->data[ctx->num_keys].key = malloc(key_len);
-  ctx->data[ctx->num_keys].val = malloc(val_len);
+  ctx->data[ctx->num_keys] = (kv_node) {
+      .key = malloc(key_len),
+      .key_len = key_len,
+      .val = malloc(val_len),
+      .val_len = val_len,
+  };
   if(!ctx->data[ctx->num_keys].key || !ctx->data[ctx->num_keys].val) {
     free(ctx->data[ctx->num_keys].key);
     free(ctx->data[ctx->num_keys].val);

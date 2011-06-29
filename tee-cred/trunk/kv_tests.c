@@ -37,14 +37,37 @@
 
 #include <unity.h>
 
+#include <string.h>
+
+static kv_ctx_t *kv_ctx=NULL;
+
 void setUp(void)
 {
+  kv_ctx=kv_ctx_new();
 }
 
 void tearDown(void)
 {
+  kv_ctx_del(kv_ctx);
 }
 
-void test_null(void)
+void test_add_to_empty_succeeds(void)
 {
+  char *key = "key";
+  size_t key_len = strlen(key)+1;
+  char *val = "val";
+  size_t val_len = strlen(val)+1;
+
+  TEST_ASSERT(!kv_add(kv_ctx, key, key_len, val, val_len));
+}
+
+void test_add_duplicate_fails(void)
+{
+  char *key = "key";
+  size_t key_len = strlen(key)+1;
+  char *val = "val";
+  size_t val_len = strlen(val)+1;
+
+  TEST_ASSERT(!kv_add(kv_ctx, key, key_len, val, val_len));
+  TEST_ASSERT_EQUAL(KV_EEXISTS, kv_add(kv_ctx, key, key_len, val, val_len));
 }
