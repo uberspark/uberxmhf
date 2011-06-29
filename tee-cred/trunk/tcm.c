@@ -91,6 +91,11 @@ int tcm_db_add(tcm_ctx_t* tcm_ctx,
                       NULL)) {
     return TCM_EAUDIT;
   }
+
+  akv_execute_audited_cmd(tcm_ctx->akv_ctx,
+                          NULL,
+                          0);
+
   return 0;
 }
 
