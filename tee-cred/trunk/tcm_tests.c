@@ -34,6 +34,8 @@
  */
 
 #include <unity.h>
+#include <string.h>
+#include <assert.h>
 
 #include "tcm.h"
 
@@ -154,7 +156,35 @@ void test_tcm_db_add_detects_akv_failure(void)
 
 void test_tcm_db_add_calls_audit_get_token_with_reasonable_param(void)
 {
-  int callcount=0;
+  uint8_t test_epoch_nonce[] = { 0xde, 0xad, 0xbe, 0xef };
+  size_t test_epoch_nonce_len = sizeof(test_epoch_nonce);
+  uint64_t test_epoch_offset = 0xfeedfeedfeedfeedULL;
+  const char *test_audit_string = "audit command string";
+  size_t test_audit_string_len = strlen(test_audit_string)+1;
+
+  int akv_callcount=0;
+  int akv_begin_db_add_cb(akv_ctx_t*  ctx,
+                          uint8_t*    epoch_nonce,
+                          size_t*     epoch_nonce_len,
+                          uint64_t*   epoch_offset,
+                          char*       audit_string,
+                          size_t*     audit_string_len,
+                          const char* key,
+                          const char* val,
+                          int num_calls
+                          ) {
+    akv_callcount++;
+
+    assert(*epoch_nonce_len >= test_epoch_nonce_len);
+    memcpy(epoch_nonce, test_epoch_nonce, test_epoch_nonce_len);
+    *epoch_nonce_len = test_epoch_nonce_len;
+
+    *epoch_offset = test_epoch_offset;
+
+    assert(*audit_string_len >= test_audit_string_len);
+    strcpy(audit_string, test_audit_string);
+  }
+  int audit_callcount=0;
   int audit_get_token_cb(audit_ctx_t*    audit_ctx,
                          const uint8_t*  epoch_nonce,
                          size_t          epoch_nonce_len,
@@ -163,10 +193,10 @@ void test_tcm_db_add_calls_audit_get_token_with_reasonable_param(void)
                          size_t          audit_string_len,
                          int             count)
   {
-    callcount++;
+    audit_callcount++;
     TEST_ASSERT_EQUAL_PTR(&g_audit_ctx, audit_ctx);
     return 0;
   }
-      
-  TEST_ASSERT(callcount > 0);
+  TEST_ASSERT(akv_callcount > 0);
+  TEST_ASSERT(audit_callcount > 0);
 }
