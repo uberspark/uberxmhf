@@ -36,41 +36,51 @@
 #include <malloc.h>
 #include <string.h>
 #include "tcm.h"
+#include "audited-kv.h"
 
-int tcm_init(tcm_handle_t* tcm_handle,
-             audit_handle_t* audit_handle,
+int tcm_init(tcm_ctx_t* tcm_ctx,
+             audit_ctx_t* audit_ctx,
              const void *db,
              size_t db_len)
 {
-  if (!tcm_handle) {
+  if (!tcm_ctx) {
     return TCM_EINVAL;
   }
-  tcm_handle->audit_handle = audit_handle;
+  tcm_ctx->audit_ctx = audit_ctx;
 
-  tcm_handle->db = malloc(db_len);
-  if (!tcm_handle->db) {
+  tcm_ctx->db = malloc(db_len);
+  if (!tcm_ctx->db) {
     return TCM_ENOMEM;
   }
-  memcpy(tcm_handle->db, db, db_len);
+  memcpy(tcm_ctx->db, db, db_len);
 
-  tcm_handle->db_len = db_len;
+  tcm_ctx->db_len = db_len;
   return 0;
 }
 
-void tcm_release(tcm_handle_t* tcm_handle)
+void tcm_release(tcm_ctx_t* tcm_ctx)
 {
-  if (tcm_handle) {
-    free(tcm_handle->db);
-    memset(tcm_handle, 0, sizeof(*tcm_handle));
+  if (tcm_ctx) {
+    free(tcm_ctx->db);
+    memset(tcm_ctx, 0, sizeof(*tcm_ctx));
   }
 }
 
-int tcm_db_add(struct tcm_handle* tcm_handle,
+int tcm_db_add(tcm_ctx_t* tcm_ctx,
                const char* key,
                const char* val)
 {
-  if (!tcm_handle || !key || !val)
+  if (!tcm_ctx || !key || !val)
     return TCM_EINVAL;
+
+  akv_begin_db_add(NULL,
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL);
   return 0;
 }
 

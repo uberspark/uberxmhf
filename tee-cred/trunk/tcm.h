@@ -48,29 +48,29 @@ enum {
   TCM_EEXISTS,
 };
 
-typedef struct tcm_handle {
-  audit_handle_t* audit_handle;
+typedef struct {
+  audit_ctx_t* audit_ctx;
   void* db;
   size_t db_len;
-} tcm_handle_t;
+} tcm_ctx_t;
 
-int tcm_init(tcm_handle_t*,
-             audit_handle_t*,
+int tcm_init(tcm_ctx_t*,
+             audit_ctx_t*,
              const void *db,
              size_t db_len);
 
-void tcm_release(tcm_handle_t*);
+void tcm_release(tcm_ctx_t*);
 
-int tcm_db_add(struct tcm_handle*,
+int tcm_db_add(tcm_ctx_t*,
                const char* key,
                const char* val);
 
-int tcm_db_get(struct tcm_handle*,
+int tcm_db_get(tcm_ctx_t*,
                const char* key,
                char* val,
                int val_len);
 
-/* int tcm_db_del(struct tcm_handle*, */
+/* int tcm_db_del(struct tcm_ctx*, */
 /*                const char* key); */
 
 

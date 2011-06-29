@@ -37,12 +37,12 @@
 #define AUDIT_H
 
 typedef struct {
-} audit_handle_t;
+} audit_ctx_t;
 
-int audit_get_token(audit_handle_t *audit_handle,
+int audit_get_token(audit_ctx_t *audit_ctx,
                     const void *msg, size_t msg_len,
                     void *audit_token, size_t *audit_token_len);
 
-audit_handle_t* test_audit_construct(void);
+audit_ctx_t* test_audit_construct(void);
 
 #endif

@@ -40,36 +40,36 @@
 #include "Mockaudited-kv.h"
 #include "Mockaudit.h"
 
-audit_handle_t audit_handle;
-tcm_handle_t tcm_handle;
+audit_ctx_t audit_ctx;
+tcm_ctx_t tcm_ctx;
 
 void setUp(void)
 {
-  tcm_init(&tcm_handle, &audit_handle, NULL, 0);
+  tcm_init(&tcm_ctx, &audit_ctx, NULL, 0);
 }
 
 void tearDown(void)
 {
-  tcm_release(&tcm_handle);
+  tcm_release(&tcm_ctx);
 }
 
-void test_tcm_init_null_handle_error(void)
+void test_tcm_init_null_ctx_error(void)
 {
   TEST_ASSERT_EQUAL(TCM_EINVAL, tcm_init(NULL, NULL, NULL, 0));
 }
 
 void test_tcm_init_null_params_ok(void)
 {
-  tcm_handle_t tcm_handle;
-  TEST_ASSERT_EQUAL(TCM_ENONE, tcm_init(&tcm_handle, NULL, NULL, 0));
+  tcm_ctx_t tcm_ctx;
+  TEST_ASSERT_EQUAL(TCM_ENONE, tcm_init(&tcm_ctx, NULL, NULL, 0));
 }
 
-void test_tcm_init_saves_audit_handle(void)
+void test_tcm_init_saves_audit_ctx(void)
 {
-  tcm_handle_t tcm_handle;
-  audit_handle_t audit_handle;
-  tcm_init(&tcm_handle, &audit_handle, NULL, 0);
-  TEST_ASSERT_EQUAL_PTR(&audit_handle, tcm_handle.audit_handle);
+  tcm_ctx_t tcm_ctx;
+  audit_ctx_t audit_ctx;
+  tcm_init(&tcm_ctx, &audit_ctx, NULL, 0);
+  TEST_ASSERT_EQUAL_PTR(&audit_ctx, tcm_ctx.audit_ctx);
 }
 
 void test_tcm_release_null_ok(void)
@@ -79,34 +79,50 @@ void test_tcm_release_null_ok(void)
 
 void test_tcm_release_uninitd_ok(void)
 {
-  tcm_handle_t tcm_handle;
-  tcm_release(&tcm_handle);
+  tcm_ctx_t tcm_ctx;
+  tcm_release(&tcm_ctx);
 }
 
 void test_tcm_release_initd_ok(void)
 {
-  tcm_handle_t tcm_handle;
-  tcm_init(&tcm_handle, NULL, NULL, 0);
-  tcm_release(&tcm_handle);
+  tcm_ctx_t tcm_ctx;
+  tcm_init(&tcm_ctx, NULL, NULL, 0);
+  tcm_release(&tcm_ctx);
 }
 
-void test_tcm_db_add_null_handle_error(void)
+void test_tcm_db_add_null_ctx_error(void)
 {
   TEST_ASSERT_EQUAL(TCM_EINVAL, tcm_db_add(NULL, NULL, NULL));
 }
 
 void test_tcm_db_add_null_key_error(void)
 {
-  TEST_ASSERT_EQUAL(TCM_EINVAL, tcm_db_add(&tcm_handle, NULL, "foo"));
+  TEST_ASSERT_EQUAL(TCM_EINVAL, tcm_db_add(&tcm_ctx, NULL, "foo"));
 }
 
 void test_tcm_db_add_null_val_error(void)
 {
-  TEST_ASSERT_EQUAL(TCM_EINVAL, tcm_db_add(&tcm_handle, "foo", NULL));
+  TEST_ASSERT_EQUAL(TCM_EINVAL, tcm_db_add(&tcm_ctx, "foo", NULL));
+}
+
+void test_tcm_db_add_gets_audit_challenge(void)
+{
+  /* akv_begin_db_add_ExpectAndReturn(NULL, */
+  /*                                  NULL, */
+  /*                                  NULL, */
+  /*                                  NULL, */
+  /*                                  NULL, */
+  /*                                  NULL, */
+  /*                                  NULL, */
+  /*                                  NULL, */
+  /*                                  0); */
+  akv_begin_db_add_IgnoreAndReturn(0);
+
+  tcm_db_add(&tcm_ctx, "key", "value");
 }
 
 /* void test_tcm_db_add_gets_audit_token(void) */
 /* { */
-/*   audit_get_token_ExpectAndReturn(&audit_handle, */
+/*   audit_get_token_ExpectAndReturn(&audit_ctx, */
 /*                                   "", 0, ); */
 /* } */
