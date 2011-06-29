@@ -40,13 +40,13 @@
 #include "Mockaudited-kv.h"
 #include "Mockaudit.h"
 
-audit_ctx_t audit_ctx;
+audit_ctx_t g_audit_ctx;
 tcm_ctx_t tcm_ctx;
 akv_ctx_t akv_ctx;
 
 void setUp(void)
 {
-  tcm_init(&tcm_ctx, &audit_ctx, &akv_ctx);
+  tcm_init(&tcm_ctx, &g_audit_ctx, &akv_ctx);
 }
 
 void tearDown(void)
@@ -63,7 +63,7 @@ void test_tcm_init_null_params_err(void)
 {
   tcm_ctx_t tcm_ctx;
   TEST_ASSERT_EQUAL(TCM_EINVAL, tcm_init(&tcm_ctx, NULL, NULL));
-  TEST_ASSERT_EQUAL(TCM_EINVAL, tcm_init(&tcm_ctx, &audit_ctx, NULL));
+  TEST_ASSERT_EQUAL(TCM_EINVAL, tcm_init(&tcm_ctx, &g_audit_ctx, NULL));
   TEST_ASSERT_EQUAL(TCM_EINVAL, tcm_init(&tcm_ctx, NULL, &akv_ctx));
 }
 
@@ -120,6 +120,7 @@ void test_tcm_db_add_call_akv_reasonable_params(void)
 {
   const char *test_key = "key";
   const char *test_val = "val";
+  int callcount=0;
 
   int akv_begin_db_add_cb(akv_ctx_t*  ctx,
                           uint8_t*    epoch_nonce,
@@ -132,6 +133,7 @@ void test_tcm_db_add_call_akv_reasonable_params(void)
                           int num_calls
                           )
   {
+    callcount++;
     TEST_ASSERT_EQUAL_PTR(&akv_ctx, ctx);
     TEST_ASSERT_EQUAL_STRING(test_key, key);
     TEST_ASSERT_EQUAL_STRING(test_val, val);
@@ -141,6 +143,7 @@ void test_tcm_db_add_call_akv_reasonable_params(void)
   akv_begin_db_add_StubWithCallback(&akv_begin_db_add_cb);
 
   tcm_db_add(&tcm_ctx, test_key, test_val);
+  TEST_ASSERT(callcount > 0);
 }
 
 void test_tcm_db_add_detects_akv_failure(void)
@@ -149,3 +152,21 @@ void test_tcm_db_add_detects_akv_failure(void)
   TEST_ASSERT(tcm_db_add(&tcm_ctx, "key", "value"));
 }
 
+void test_tcm_db_add_calls_audit_get_token_with_reasonable_param(void)
+{
+  int callcount=0;
+  int audit_get_token_cb(audit_ctx_t*    audit_ctx,
+                         const uint8_t*  epoch_nonce,
+                         size_t          epoch_nonce_len,
+                         uint64_t        epoch_offset,
+                         const char*     audit_string,
+                         size_t          audit_string_len,
+                         int             count)
+  {
+    callcount++;
+    TEST_ASSERT_EQUAL_PTR(&g_audit_ctx, audit_ctx);
+    return 0;
+  }
+      
+  TEST_ASSERT(callcount > 0);
+}
