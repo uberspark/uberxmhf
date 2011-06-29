@@ -91,8 +91,10 @@ _audit_ : handles communication with an audit-server. implemented as a
           module at compile time. The 'testing' version will probably
           just implement the audit server directly. Later versions will
           actually communicate with a remote server.
-_tee-cred-pal_ : A pal that protects the credentials. It provides basically
-          a key-value store. It requires audit-tokens for most commands.
+_audited-kv_ : Provides an audited key-value store. Mostly wrappers
+          around PAL code to deal with (un)registration and (un)marshalling.
+_audited-kv-pal_ : the PAL code that actually runs inside the TEE
+          to implement the audited key-value store.
 
 # Misc Notes
 
