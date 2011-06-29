@@ -33,43 +33,36 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-enum tee_cred_pal_cmds {
-  TCP_AUDIT_GET_NONCE, /* ()                -> random nonce */
-  TCP_AUDIT_EXECUTE,   /* random nonce, cmd -> f(cmd) */
+#ifndef AUDITED_KV_PAL
+#define AUDITED_KV_PAL
 
-  TCP_DB_ADD,          /* key, val          -> ()  */
-  TCP_DB_GET,          /* key               -> val */
-  TCP_DB_DEL,          /* key               -> () */
-  TCP_DB_EXPORT,       /* ()                -> seal(db) */
-  TCP_DB_IMPORT,       /* seal(db)          -> () */
-  TCP_DB_MIGRATE,      /* dest-pubkey, cert-chain -> E(db) */
+enum akvp_cmds {
+  AKVP_AUDIT_GET_NONCE, /* ()                -> random nonce */
+  AKVP_AUDIT_EXECUTE,   /* random nonce, cmd -> f(cmd) */
+
+  AKVP_DB_ADD,          /* key, val          -> ()  */
+  AKVP_DB_GET,          /* key               -> val */
+  AKVP_DB_DEL,          /* key               -> () */
+  AKVP_DB_EXPORT,       /* ()                -> seal(db) */
+  AKVP_DB_IMPORT,       /* seal(db)          -> () */
+  AKVP_DB_MIGRATE,      /* dest-pubkey, cert-chain -> E(db) */
   
-  TCP_PW_LOCK,         /* ()                -> () */
-  TCP_PW_UNLOCK,       /* password          -> () */
-  TCP_PW_CHANGE,       /* oldpass, newpass  -> () */
+  AKVP_PW_LOCK,         /* ()                -> () */
+  AKVP_PW_UNLOCK,       /* password          -> () */
+  AKVP_PW_CHANGE,       /* oldpass, newpass  -> () */
 
-  TCP_INIT,            /* audit-pubkey, password -> () */
+  AKVP_INIT,            /* audit-pubkey, password -> () */
 };
 
-enum {
-  TCP_ENONE=0,
-  TCP_EINVAL,
-  TCP_ENOMEM,
-  TCP_ENOTFOUND,
-  TCP_EEXISTS,
+enum akvp_errs{
+  AKVP_ENONE=0,
 };
 
-typedef struct tcp_ctx {
-  audit_ctx_t* audit_ctx;
-  void* db;
-  size_t db_len;
-} tcp_ctx_t;
+int akvp_init(akvp_ctx_t*,
+              audit_ctx_t*,
+              const void *db,
+              size_t db_len);
 
+void akvp_release(akvp_ctx_t*);
 
-int tcp_init(tcp_ctx_t*,
-             audit_ctx_t*,
-             const void *db,
-             size_t db_len);
-
-void tcp_release(tcp_ctx_t*);
-
+#endif
