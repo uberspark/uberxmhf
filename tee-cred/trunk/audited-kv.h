@@ -39,11 +39,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "audited-kv-errs.h"
+
 #define AKV_EPOCH_NONCE_MAX 256 /* FIXME - should pull from svcapi.h */
 #define AKV_AUDIT_STRING_MAX 1000 /* FIXME - can we even specify this? */
 
 typedef struct {
 } akv_ctx_t;
+
+int akv_ctx_init(akv_ctx_t* ctx);
 
 int akv_execute_audited_cmd(akv_ctx_t* ctx,
                             void* audit_token,
