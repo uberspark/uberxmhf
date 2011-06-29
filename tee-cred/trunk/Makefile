@@ -14,9 +14,9 @@ TEESDK_PKGINCLUDE_DIR=$(shell pkg-config --variable=includedir tee-sdk-app)/tee-
 
 all : mocks test
 
-test : run_audit_tests run_tcm_tests run_audited-kv_tests run_audited-kv-pal_tests run_kv_tests
+test : run_audit_tests run_tcm_tests run_audited-kv_tests run_audited-kv-pal_tests run_kv_tests run_audited-kv-pal-marshal_tests
 
-mocks : mocks/Mockaudited-kv.c mocks/Mockaudit.c mocks/Mocktv.c
+mocks : mocks/Mockaudited-kv.c mocks/Mockaudit.c mocks/Mocktv.c mocks/Mocksvcapi.c mocks/Mockaudited-kv-pal.o
 
 audit_tests : audit_runner.o audit_tests.o audit.o $(UNITYOBJ)
 PROGS+=audit_tests
@@ -26,7 +26,7 @@ tcm_tests : tcm_runner.o tcm_tests.o tcm.o mocks/Mockaudit.o mocks/Mockaudited-k
 PROGS+=tcm_tests
 OBJS+=tcm_runner.o tcm_tests.o tcm.o
 
-audited-kv_tests : audited-kv_runner.o audited-kv_tests.o audited-kv.o mocks/Mocktv.o $(UNITYOBJ) $(CMOCKOBJ)
+audited-kv_tests : audited-kv_runner.o audited-kv_tests.o audited-kv.o mocks/Mocktv.o mocks/Mockaudited-kv-pal.o $(UNITYOBJ) $(CMOCKOBJ)
 PROGS+=audited-kv_tests
 OBJS+=audited-kv_runner.o audited-kv_tests.o audited-kv.o mocks/Mocktv.o
 
@@ -39,6 +39,12 @@ OBJS+=audited-kv-pal_runner.o audited-kv-pal_tests.o audited-kv-pal.o kv.o
 kv_tests: kv_runner.o kv_tests.o kv.o $(UNITYOBJ) $(CMOCKOBJ)
 PROGS+=kv_tests
 OBJS+=kv_runner.o kv_tests.o kv.o
+
+audited-kv-pal-marshal_tests: audited-kv-pal-marshal_runner.o audited-kv-pal-marshal_tests.o audited-kv-pal-marshal.o audited-kv-pal.o kv.o mocks/Mocksvcapi.o $(UNITYOBJ) $(CMOCKOBJ)
+audited-kv-pal-marshal_tests : LDLIBS += $(call pkgconfig_ldlibs, tee-sdk-svc)
+audited-kv-pal-marshal_tests : LDFLAGS += $(filter -L%, $(call pkgconfig_ldflags, tee-sdk-svc))
+PROGS+=audited-kv-pal-marshal_tests
+OBJS+=audited-kv-pal-marshal_runner.o audited-kv-pal-marshal_tests.o audited-kv-pal-marshal.o
 
 clean:
 	$(RM) $(PROGS) $(OBJS) mocks/*
@@ -57,7 +63,10 @@ test : CFLAGS+=-I$(CMOCKDIR)/src -I. -I./mocks
 mocks/Mock%.c mocks/Mock%.h : %.h
 	ruby $(CMOCKDIR)/lib/cmock.rb -ocmockConfig.yml $^
 mocks/Mock%.o : mocks/Mock%.c
+mocks/Mock%.o : CFLAGS+=-I. -I$(CMOCKDIR)/src -I$(UNITYDIR)/src -I$(TEESDK_PKGINCLUDE_DIR)
 
 mocks/Mocktv.c : $(TEESDK_PKGINCLUDE_DIR)/tv.h
+	ruby $(CMOCKDIR)/lib/cmock.rb -ocmockConfig.yml $^
+mocks/Mocksvcapi.c : $(TEESDK_PKGINCLUDE_DIR)/svcapi.h
 	ruby $(CMOCKDIR)/lib/cmock.rb -ocmockConfig.yml $^
 

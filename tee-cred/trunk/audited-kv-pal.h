@@ -39,10 +39,15 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <tv.h>
+#include <tz.h>
+#include <tzmarshal.h>
 
 #include "audited-kv-errs.h"
 
 enum akvp_cmds {
+  AKVP_START_AUDITED_CMD,
+  AKVP_EXECUTE_AUDITED_CMD,
+
   AKVP_AUDIT_GET_NONCE, /* ()                -> random nonce */
   AKVP_AUDIT_EXECUTE,   /* random nonce, cmd -> f(cmd) */
 
@@ -60,6 +65,6 @@ enum akvp_cmds {
   AKVP_INIT,            /* audit-pubkey, password -> () */
 };
 
-pal_fn_t audited_kv_pal;
+void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv);
 
 #endif

@@ -36,14 +36,18 @@
 #include "audited-kv-pal.h"
 #include "audited-kv-pal-fns.h"
 
+#include <assert.h>
+#include <tzmarshal.h>
+#include <string.h>
+
 typedef tz_return_t (audited_execute_fn)(void *, struct tzi_encode_buffer_t *);
 typedef void (audited_release_fn)(void *);
 
 typedef struct {
   char *audit_string;
   void *cont;
-  audited_execute_fn execute_fn;
-  audited_release_fn release_fn;
+  audited_execute_fn *execute_fn;
+  audited_release_fn *release_fn;
   uint64_t epoch_nonce;
   uint64_t epoch_offset;
   void *audit_nonce;
@@ -62,27 +66,26 @@ static int get_free_pending_id()
   return 0;
 }
 
-static void release_pending_cmd_id(int i)
-{
-  pending_cmd_t *cmd;
-  /* FIXME: handle multiple pending cmds */
-  assert(i==0);
-  assert(num_pending == 1);
+/* static void release_pending_cmd_id(int i) */
+/* { */
+/*   pending_cmd_t *cmd; */
+/*   /\* FIXME: handle multiple pending cmds *\/ */
+/*   assert(i==0); */
+/*   assert(num_pending == 1); */
 
-  cmd = &pending_cmds[i];
-  free(cmd->audit_string);
-  if(cmd->release_fn && cmd->cont) {
-    cmd->release_fn(cmd->cont);
-  }
-  free(cmd->audit_nonce);
+/*   cmd = &pending_cmds[i]; */
+/*   free(cmd->audit_string); */
+/*   if(cmd->release_fn && cmd->cont) { */
+/*     cmd->release_fn(cmd->cont); */
+/*   } */
+/*   free(cmd->audit_nonce); */
 
-  num_pending--;
-}
+/*   num_pending--; */
+/* } */
 
 static int save_pending_cmd(char *audit_string, void *cont, audited_execute_fn execute_fn, audited_release_fn release_fn)
 {
   int cmd_id = get_free_pending_id();
-  pending_cmd_t *cmd = &pending_cmds[cmd_id];
   uint64_t epoch_nonce, epoch_offset;
   void *audit_nonce;
   size_t audit_nonce_len;
@@ -121,10 +124,10 @@ void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, str
       uint32_t audited_cmd = TZIDecodeUint32(psInBuf);
       char *audit_string=NULL;
       void *cont=NULL;
-      audited_execute_fn execute_fn=NULL;
-      audited_release_fn release_fn=NULL;
+      audited_execute_fn *execute_fn=NULL;
+      audited_release_fn *release_fn=NULL;
       int pending_cmd_id;
-      void *audit_nonce=NULL;
+      pending_cmd_t *pending_cmd=NULL;
 
       if(TZIDecodeGetError(psInBuf)) {
         *puiRv = TZIDecodeGetError(psInBuf);
@@ -133,12 +136,12 @@ void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, str
 
       switch(audited_cmd) {
       case AKVP_DB_ADD:
-        *puiRv = akvp_db_add_begin(&audit_string, cont, psInBuf);
+        *puiRv = akvp_db_add_begin_marshal(&audit_string, cont, psInBuf);
         execute_fn = akvp_db_add_execute;
         release_fn = akvp_db_add_release;
         break;
       case AKVP_DB_GET:
-        *puiRv = akvp_db_get_begin(&audit_string, cont, psInBuf);
+        *puiRv = akvp_db_get_begin_marshal(&audit_string, cont, psInBuf);
         execute_fn = akvp_db_get_execute;
         release_fn = akvp_db_get_release;
         break;

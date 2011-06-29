@@ -41,6 +41,9 @@
 void akvp_init(void);
 void akvp_release(void);
 
+tz_return_t akvp_db_add_begin_marshal(char **audit_string,
+                                      void **vcont,
+                                      struct tzi_encode_buffer_t *psInBuf);
 tz_return_t akvp_db_add_begin(char **audit_string,
                               void **vcont,
                               const void* key, size_t key_len,
