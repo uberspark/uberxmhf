@@ -98,7 +98,6 @@ tz_return_t akvp_db_add_begin(char **audit_string,
                               const char* key,
                               const char* val)
 {
-  return TZ_ERROR_NOT_IMPLEMENTED;
   assert(!db_add_saved.valid);
 
   db_add_saved.key = strcpy_mallocd(key);
@@ -125,4 +124,3 @@ tz_return_t akvp_db_add_execute(void)
   assert(db_add_saved.valid);
   return TZ_ERROR_NOT_IMPLEMENTED;
 }
-
