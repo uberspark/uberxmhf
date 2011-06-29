@@ -41,7 +41,7 @@
 #include <assert.h>
 #include <stdarg.h>
 
-#define free_and_null(x) do { free(x) ; x=NULL; } while(0)
+#define FREE_AND_NULL(x) do { free(x) ; x=NULL; } while(0)
 
 static char* strcpy_mallocd(const char *src)
 {
@@ -89,8 +89,8 @@ static struct {
 
 void akvp_db_add_release(void)
 {
-  free_and_null(db_add_saved.key);
-  free_and_null(db_add_saved.val);
+  FREE_AND_NULL(db_add_saved.key);
+  FREE_AND_NULL(db_add_saved.val);
   db_add_saved.valid=false;
 }
 
@@ -109,9 +109,9 @@ tz_return_t akvp_db_add_begin(char **audit_string,
   if (!db_add_saved.key
       || !db_add_saved.val
       || !*audit_string) {
-    free_and_null(db_add_saved.key);
-    free_and_null(db_add_saved.val);
-    free_and_null(*audit_string);
+    FREE_AND_NULL(db_add_saved.key);
+    FREE_AND_NULL(db_add_saved.val);
+    FREE_AND_NULL(*audit_string);
     return TZ_ERROR_MEMORY;
   }
 
