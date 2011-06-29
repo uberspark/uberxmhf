@@ -41,6 +41,7 @@ enum akvp_errs {
   AKV_EEXISTS,
   AKV_ENOTFOUND,
   AKV_EKV,
+  AKV_EBADAUDITEDCMD,
 };
 
 #endif

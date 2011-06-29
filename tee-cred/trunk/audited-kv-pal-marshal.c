@@ -36,208 +36,98 @@
 #include "audited-kv-pal.h"
 #include "audited-kv-pal-fns.h"
 
-#define AKVP_MAX_KEY_LEN 1000
-#define AKVP_MAX_VAL_LEN 1000
+typedef tz_return_t (audited_execute_fn)(void *, struct tzi_encode_buffer_t *);
+typedef void (audited_release_fn)(void *);
 
-struct {
-  uint32_t uiCommand;
-  union {
-    struct {
-      uint8_t key[AKVP_MAX_KEY_LEN];
-      uint8_t val[AKVP_MAX_VAL_LEN];
-    } db_add;
+typedef struct {
+  char *audit_string;
+  void *cont;
+  audited_execute_fn execute_fn;
+  audited_release_fn release_fn;
+  uint64_t epoch_nonce;
+  uint64_t epoch_offset;
+} pending_cmd_t;
+
+#define MAX_PENDING 100
+static pending_cmd_t pending_cmds[MAX_PENDING];
+static int num_pending=0;
+
+static int get_free_pending_id()
+{
+  /* FIXME: handle multiple pending cmds */
+  assert(num_pending == 0);
+  num_pending++;
+  return 0;
+}
+
+static void release_pending_id(int i)
+{
+  /* FIXME: handle multiple pending cmds */
+  assert(i==0);
+  assert(num_pending == 1);
+  num_pending--;
+}
+
+static int save_pending_cmd(char *audit_string, void *cont, audited_execute_fn execute_fn, audited_release_fn release_fn)
+{
+  int cmd_id = get_free_pending_id();
+  pending_cmd_t *cmd = &pending_cmds[cmd_id];
+  uint64_t epoch_nonce, epoch_offset;
+  int rv;
+
+  rv = svc_time_elapsed_us(&epoch_nonce, &epoch_offset);
+  if(rv) {
+    return -1;
+  }
+
+  pending_cmds[cmd_id] = (pending_cmd_t) {
+    .audit_string = audit_string,
+    .cont = cont,
+    .execute_fn = execute_fn,
+    .release_fn = release_fn,
+    .epoch_nonce = epoch_nonce,
+    .epoch_offset = epoch_offset,
   };
-} pending_cmd;
+  return cmd_id;
+}
 
 void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
-/*   switch(uiCommand) { */
-/*   case AKVP_DB_ADD: */
-/*     break; */
+  switch(uiCommand) {
+  case AKVP_START_AUDITED_CMD:
+    {
+      uint32_t audited_cmd = TZIDecodeUint32(psInBuf);
+      char *audit_string=NULL;
+      void *cont=NULL;
 
-/*   default: */
-/*     *puiRv = TZ_ERROR_NOT_IMPLEMENTED; */
-/*   } */
+      switch(audited_cmd) {
+      case AKVP_DB_ADD:
+        *puiRv = akvp_db_add_begin(&audit_string, cont, psInBuf);
+        break;
+      case AKVP_DB_GET:
+        *puiRv = akvp_db_get_begin(&audit_string, cont, psInBuf);
+        break;
+      default:
+        *puiRv = AKV_EBADAUDITEDCMD;
+        break;
+      }
 
-/*   case PAL_PARAM: */
-/*     { */
-/*       uint32_t input = TZIDecodeUint32(psInBuf); */
-/*       uint32_t out; */
-/*       *puiRv = TZ_SUCCESS; */
-
-/*       if (TZIDecodeGetError(psInBuf) != TZ_SUCCESS) { */
-/*         *puiRv = TZIDecodeGetError(psInBuf); */
-/*       } else { */
-/*         out = pal_param(input); */
-/*         TZIEncodeUint32(psOutBuf, out); */
-/*       } */
-/*     } */
-/*     break; */
-
-/*   case PAL_SEAL: */
-/*     { */
-/*       uint8_t *in, *out; */
-/*       size_t inLen, outLen; */
-/*       *puiRv = TZ_SUCCESS; */
-
-/*       in = TZIDecodeArraySpace(psInBuf, &inLen); */
-/*       if (TZIDecodeGetError(psInBuf) != TZ_SUCCESS) { */
-/*         *puiRv = TZIDecodeGetError(psInBuf); */
-/*         break; */
-/*       } */
-
-/*       outLen = inLen + 100; /\* XXX guessing at seal overhead *\/ */
-/*       out = TZIEncodeArraySpace(psOutBuf, outLen); */
-/*       if (out == NULL) { */
-/*         *puiRv = TZ_ERROR_MEMORY; */
-/*         break; */
-/*       } */
-
-/*       *puiRv = pal_seal(in, inLen, out, &outLen); */
-/*       if (*puiRv != TZ_SUCCESS) { */
-/*         break; */
-/*       } */
-
-/*       /\* actual size of previous array *\/ */
-/*       TZIEncodeUint32(psOutBuf, outLen); */
-/*       if (TZIDecodeGetError(psOutBuf) != TZ_SUCCESS) { */
-/*         *puiRv = TZIDecodeGetError(psOutBuf); */
-/*         break; */
-/*       } */
-/*     } */
-/*     break; */
-
-/*   case PAL_UNSEAL: */
-/*     { */
-/*       uint8_t *in, *out; */
-/*       size_t inLen, outLen; */
-/*       *puiRv = TZ_SUCCESS; */
-
-/*       in = TZIDecodeArraySpace(psInBuf, &inLen); */
-/*       if (TZIDecodeGetError(psInBuf) != TZ_SUCCESS) { */
-/*         *puiRv = TZIDecodeGetError(psInBuf); */
-/*         break; */
-/*       } */
-
-/*       outLen = inLen + 100; /\* XXX guessing at unseal overhead, though should actually be negative *\/ */
-/*       out = TZIEncodeArraySpace(psOutBuf, outLen); */
-/*       if (out == NULL) { */
-/*         *puiRv = TZ_ERROR_MEMORY; */
-/*         break; */
-/*       } */
-      
-/*       *puiRv = pal_unseal(in, inLen, out, &outLen); */
-/*       if (*puiRv != TZ_SUCCESS) { */
-/*         break; */
-/*       } */
-
-/*       /\* actual size of previous array *\/ */
-/*       TZIEncodeUint32(psOutBuf, outLen); */
-/*       if (TZIDecodeGetError(psOutBuf) != TZ_SUCCESS) { */
-/*         *puiRv = TZIDecodeGetError(psOutBuf); */
-/*         break; */
-/*       } */
-/*     } */
-/*     break; */
-
-/*   case PAL_QUOTE: */
-/*     { */
-/*       TPM_NONCE *nonce = NULL; */
-/*       uint32_t nonceLen = 0; */
-/*       TPM_PCR_SELECTION *tpmsel = NULL; */
-/*       uint32_t tpmselLen = 0; */
-/*       uint8_t *quote = NULL; */
-      
-/*       uint32_t maxQuoteLen = TPM_MAX_QUOTE_LEN; */
-/*       uint32_t actualQuoteLen = 0; */
-/*       *puiRv = TZ_SUCCESS; */
-
-/*       /\* Decode input parameters from legacy userspace's test.c *\/ */
-/*       nonce = (TPM_NONCE*)TZIDecodeArraySpace(psInBuf, &nonceLen); */
-/*       tpmsel = (TPM_PCR_SELECTION*)TZIDecodeArraySpace(psInBuf, &tpmselLen); */
-/*       if (TZIDecodeGetError(psInBuf) != TZ_SUCCESS) { */
-/*         *puiRv = TZIDecodeGetError(psInBuf); */
-/*         break; */
-/*       } */
-
-/*       /\* Sanity-check input parameters *\/ */
-/*       if (tpmselLen != sizeof(TPM_PCR_SELECTION) */
-/*           || nonceLen != sizeof(TPM_NONCE)) { */
-/*         *puiRv = TZ_ERROR_ENCODE_FORMAT; */
-/*         break; */
-/*       } */
-
-/*       /\* Prepare the output buffer to hold the response back to userspace. *\/ */
-/*       quote = TZIEncodeArraySpace(psOutBuf, maxQuoteLen); */
-/*       if (TZIDecodeGetError(psOutBuf) != TZ_SUCCESS) { */
-/*         *puiRv = TZIDecodeGetError(psOutBuf); */
-/*         break; */
-/*       } else if (quote == NULL) { */
-/*         *puiRv = TZ_ERROR_GENERIC; */
-/*         break; */
-/*       } */
-
-/*       /\* Make the hypercall to invoke the uTPM operation *\/ */
-/*       actualQuoteLen = maxQuoteLen; */
-/*       *puiRv = pal_quote(nonce, tpmsel, quote, &actualQuoteLen); */
-/*       if (*puiRv != TZ_SUCCESS) { */
-/*         break; */
-/*       } */
-      
-/*       /\* Also encode the actual length of the result *\/ */
-/*       TZIEncodeUint32(psOutBuf, actualQuoteLen); */
-/*       if (TZIDecodeGetError(psOutBuf) != TZ_SUCCESS) { */
-/*         *puiRv = TZIDecodeGetError(psOutBuf); */
-/*         break; */
-/*       }       */
-/*     } */
-/*     break; */
-
-/*     case PAL_ID_GETPUB: */
-/*     { */
-/*       uint8_t *rsaModulus; */
-      
-/*       /\* Prepare the output buffer to hold the response back to userspace. *\/ */
-/*       rsaModulus = TZIEncodeArraySpace(psOutBuf, TPM_RSA_KEY_LEN); */
-/*       if (TZIDecodeGetError(psOutBuf) != TZ_SUCCESS) { */
-/*         *puiRv = TZIDecodeGetError(psOutBuf); */
-/*         break; */
-/*       } else if (rsaModulus == NULL) { */
-/*         *puiRv = TZ_ERROR_GENERIC; */
-/*         break; */
-/*       } */
-
-/*       *puiRv = pal_id_getpub(rsaModulus); */
-/*       if (*puiRv != TZ_SUCCESS) { */
-/*         break; */
-/*       }       */
-/*     } */
-/*     break; */
-    
-/*     case PAL_PCR_EXTEND: */
-/*     { */
-/*       uint8_t *measIn; */
-/*       size_t measLen; */
-/*       uint32_t idx; */
-/*       *puiRv = TZ_SUCCESS; */
-
-/*       idx = TZIDecodeUint32(psInBuf); */
-/*       measIn = TZIDecodeArraySpace(psInBuf, &measLen); */
-/*       if (TZIDecodeGetError(psInBuf) != TZ_SUCCESS) { */
-/*         *puiRv = TZIDecodeGetError(psInBuf); */
-/*         break; */
-/*       } */
-
-/*       if(measLen != TPM_HASH_SIZE) { */
-/*         *puiRv = TZ_ERROR_GENERIC; */
-/*         break; */
-/*       } */
-
-/*       *puiRv = pal_pcr_extend(idx, measIn); */
-/*       if (*puiRv != TZ_SUCCESS) { */
-/*         break; */
-/*       } */
-/*     } */
-/*     break; */
-
-/* } */
+      if (*puiRv != TZ_SUCCESS) {
+        free(audit_string);
+        /* XXX release cont? */
+        return;
+      }
+      TZIEncodeArray(psOutBuf, audit_string, strlen(audit_string)+1);
+      free(audit_string);
+    }
+    break;
+  case AKVP_EXECUTE_AUDITED_CMD:
+    {
+      *puiRv = TZ_ERROR_NOT_IMPLEMENTED;
+    }
+    break;
+  default:
+    *puiRv = TZ_ERROR_NOT_IMPLEMENTED;
+    break;
+  }
+}
