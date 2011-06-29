@@ -35,6 +35,7 @@
 
 #include <unity.h>
 
+#include "Mocktv.h"
 #include "audited-kv.h"
 
 void setUp(void)
@@ -47,6 +48,20 @@ void tearDown(void)
 
 }
 
-void test_null(void)
+void test_init(void)
 {
+  akv_ctx_t ctx;
+
+  tv_tz_init_IgnoreAndReturn(0);
+  
+  TEST_ASSERT(!akv_ctx_init(&ctx));
+}
+
+void test_init_detects_err(void)
+{
+  akv_ctx_t ctx;
+
+  tv_tz_init_IgnoreAndReturn(1);
+  
+  TEST_ASSERT(akv_ctx_init(&ctx));
 }

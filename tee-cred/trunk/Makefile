@@ -33,8 +33,11 @@ OBJS+=audited-kv_runner.o audited-kv_tests.o audited-kv.o mocks/Mocktv.o $(UNITY
 clean:
 	$(RM) $(PROGS) $(OBJS)
 
-### generic unity rules ###
 test : CFLAGS+=-I$(UNITYDIR)/src -DUNITY_SUPPORT_64
+# workaround to allow mocked header to include other tee-sdk headers
+test : CFLAGS+=-I$(TEESDK_PKGINCLUDE_DIR)
+
+### generic unity rules ###
 run_%: %
 	./$<
 %_runner.c: %_tests.c
@@ -48,5 +51,3 @@ mocks/Mock%.o : mocks/Mock%.c
 mocks/Mocktv.c : $(TEESDK_PKGINCLUDE_DIR)/tv.h
 	ruby $(CMOCKDIR)/lib/cmock.rb -ocmockConfig.yml $^
 
-# workaround to allow mocked header to include other tee-sdk headers
-mocks/Mocktv.o : CFLAGS+=-I$(TEESDK_PKGINCLUDE_DIR)
