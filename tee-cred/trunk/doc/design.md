@@ -93,3 +93,44 @@ _audit_ : handles communication with an audit-server. implemented as a
           actually communicate with a remote server.
 _tee-cred-pal_ : A pal that protects the credentials. It provides basically
           a key-value store. It requires audit-tokens for most commands.
+
+# Misc Notes
+
+## Command string vs Audit string
+
+2010-06-08: actually, let's have the pal generate the command string
+and return it to the program. This avoids all the complexities and
+pitfalls of having the PAL try to parse an untrusted human-readable
+command string. Instead, think of this as an *audit string*; the
+program gives the PAL a command it would like to execute, and the PAL
+returns a string that the program must prove is audited before the PAL
+will execute the command.
+
+## Reentrancy
+
+2010-06-08: let's make the PAL reentrant. Instead of storing the
+audit-nonce, audit-string, time, etc., let's seal it for ourselves and
+make the calling program give it back to us when it wants to execute
+the command. we'll need the pcr-at-origin feature in seal to validate
+this data. XXX - nope, won't work. This would allow unlimited replay
+of a command within the audit-time-threshold. Let's just store the
+state inside the PAL instead. It can be non-reentrant for now. Later
+we can have the PAL store the state for several outstanding requests.
+
+## Human-readable vs compact command\audit strings
+
+In terms of efficiency, it might make more sense for the string sent
+to the audit-server to be in a "binary" format. Since the audit server
+is trusted, we can trust it to faithfully convert the binary format to
+a human-readable format.
+
+The down-side to this design is that the audit-server must then
+understand the binary format. I would prefer to keep the audit-server
+as generic as possible, so that it can support other pals using this
+auditable-command model without having to know anything about each
+one.
+
+We *could* have the audit server just return the opaque binary blob
+when audit logs are requested, and use local processing to convert it
+to human-readable format. This is a bit of a pain though, since you
+wouldn't be able to access the logs from just any machine.
