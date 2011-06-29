@@ -61,6 +61,8 @@ void setUp(void)
 void tearDown(void)
 {
   akvp_release();
+  free(psInBuf);
+  free(psOutBuf);
 }
 
 void test_akvp_db_add_begin_gives_expected_audit_string()
@@ -77,6 +79,7 @@ void test_akvp_db_add_begin_gives_expected_audit_string()
   TEST_ASSERT_NOT_NULL(audit_string);
   TEST_ASSERT_EQUAL_STRING("ADD{key=\"key one\"}",
                            audit_string);
+  free(audit_string);
   akvp_db_add_release(cont);
 }
 
@@ -91,6 +94,7 @@ void test_akvp_db_add_succeeds()
                          key1, key1_len,
                          val1, val1_len);
   TEST_ASSERT(rv == TZ_SUCCESS);
+  free(audit_string);
 
   rv = akvp_db_add_execute(cont, psOutBuf);
   TEST_ASSERT(!rv);
@@ -108,6 +112,7 @@ void test_akvp_db_add_duplicate_fails()
                          key1, key1_len,
                          val1, val1_len);
   TEST_ASSERT(rv == TZ_SUCCESS);
+  free(audit_string);
 
   rv = akvp_db_add_execute(cont, psOutBuf);
   TEST_ASSERT(!rv);

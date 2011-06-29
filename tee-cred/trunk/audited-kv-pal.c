@@ -107,6 +107,7 @@ void akvp_db_add_release(void* vcont)
   akvp_db_add_cont_t *cont = (akvp_db_add_cont_t*)vcont;
   FREE_AND_NULL(cont->key);
   FREE_AND_NULL(cont->val);
+  free(cont);
 }
 
 tz_return_t akvp_db_add_begin_marshal(char **audit_string,
@@ -245,4 +246,7 @@ tz_return_t akvp_db_get_execute(void* vcont, struct tzi_encode_buffer_t *psOutBu
 }
 void akvp_db_get_release(void* vcont)
 {
+  akvp_db_get_cont_t *cont = (akvp_db_get_cont_t*)vcont;
+  FREE_AND_NULL(cont->key);
+  free(cont);
 }
