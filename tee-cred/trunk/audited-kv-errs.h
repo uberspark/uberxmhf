@@ -38,6 +38,9 @@
 
 enum akvp_errs {
   AKV_ENONE=0,
+  AKV_EEXISTS,
+  AKV_ENOTFOUND,
+  AKV_EKV,
 };
 
 #endif

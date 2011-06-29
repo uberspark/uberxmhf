@@ -38,8 +38,14 @@
 #include <unity.h>
 #include "audited-kv-pal-fns.h"
 
+/* static const char * key1 = "key one"; */
+/* static const size_t key1_len = 8; */
+/* static const char * val1 = "value one"; */
+/* static const size_t val1_len = 10; */
+
 void setUp(void)
 {
+  akvp_init();
 }
 
 void tearDown(void)

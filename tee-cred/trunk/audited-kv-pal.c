@@ -66,6 +66,12 @@ void akvp_init(void)
   akv_ctx.kv_ctx = kv_ctx_new();
 }
 
+void akvp_release(void)
+{
+  kv_ctx_del(akv_ctx.kv_ctx);
+  akv_ctx.kv_ctx=NULL;
+}
+
 char* sprintf_mallocd(const char *format, ...)
 {
   va_list argp1;
@@ -90,8 +96,10 @@ char* sprintf_mallocd(const char *format, ...)
 }
 
 typedef struct {
-  char *key;
-  char *val;
+  void *key;
+  size_t key_len;
+  void *val;
+  size_t val_len;
 } akvp_db_add_cont_t;
 
 void akvp_db_add_release(void* vcont)
@@ -133,8 +141,12 @@ tz_return_t akvp_db_add_begin(char **audit_string,
   }
   cont = *pp_cont;
 
-  cont->key = malloc(key_len);
-  cont->val = malloc(val_len);
+  *cont = (akvp_db_add_cont_t) {
+    .key = malloc(key_len),
+    .key_len = key_len,
+    .val = malloc(val_len),
+    .val_len = val_len,
+  };
   *audit_string = /* FIXME need to escape nulls and non-printables,
                      and make sure null-terminated.
                   */
@@ -158,6 +170,15 @@ tz_return_t akvp_db_add_begin(char **audit_string,
 
 tz_return_t akvp_db_add_execute(void* vcont)
 {
-  /* akvp_db_add_cont_t *cont = (akvp_db_add_cont_t*)vcont; */
-  return TZ_ERROR_NOT_IMPLEMENTED;
+  akvp_db_add_cont_t *cont = (akvp_db_add_cont_t*)vcont;
+  tz_return_t rv;
+  int kv_rv;
+
+  kv_rv = kv_add(akv_ctx.kv_ctx, cont->key, cont->key_len, cont->val, cont->val_len);
+  rv =
+    (kv_rv == KV_ENONE) ? AKV_ENONE
+    : (kv_rv == KV_EEXISTS) ? AKV_EEXISTS
+    : AKV_EKV;
+
+  return rv;
 }

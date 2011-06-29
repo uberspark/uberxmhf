@@ -38,6 +38,9 @@
 
 #include <tz.h>
 
+void akvp_init(void);
+void akvp_release(void);
+
 tz_return_t akvp_db_add_begin(char **audit_string,
                               void **vcont,
                               const void* key, size_t key_len,
