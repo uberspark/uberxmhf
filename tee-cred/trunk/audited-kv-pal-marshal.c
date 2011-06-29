@@ -46,6 +46,8 @@ typedef struct {
   audited_release_fn release_fn;
   uint64_t epoch_nonce;
   uint64_t epoch_offset;
+  void *audit_nonce;
+  size_t audit_nonce_len;
 } pending_cmd_t;
 
 #define MAX_PENDING 100
@@ -60,11 +62,20 @@ static int get_free_pending_id()
   return 0;
 }
 
-static void release_pending_id(int i)
+static void release_pending_cmd_id(int i)
 {
+  pending_cmd_t *cmd;
   /* FIXME: handle multiple pending cmds */
   assert(i==0);
   assert(num_pending == 1);
+
+  cmd = &pending_cmds[i];
+  free(cmd->audit_string);
+  if(cmd->release_fn && cmd->cont) {
+    cmd->release_fn(cmd->cont);
+  }
+  free(cmd->audit_nonce);
+
   num_pending--;
 }
 
@@ -73,12 +84,21 @@ static int save_pending_cmd(char *audit_string, void *cont, audited_execute_fn e
   int cmd_id = get_free_pending_id();
   pending_cmd_t *cmd = &pending_cmds[cmd_id];
   uint64_t epoch_nonce, epoch_offset;
+  void *audit_nonce;
+  size_t audit_nonce_len;
   int rv;
 
   rv = svc_time_elapsed_us(&epoch_nonce, &epoch_offset);
   if(rv) {
     return -1;
   }
+
+  audit_nonce_len = 256;
+  audit_nonce = malloc(audit_nonce_len);
+  if(!audit_nonce) {
+    return -1;
+  }
+  rv = svc_utpm_rand_block(audit_nonce, audit_nonce_len);
 
   pending_cmds[cmd_id] = (pending_cmd_t) {
     .audit_string = audit_string,
@@ -87,6 +107,8 @@ static int save_pending_cmd(char *audit_string, void *cont, audited_execute_fn e
     .release_fn = release_fn,
     .epoch_nonce = epoch_nonce,
     .epoch_offset = epoch_offset,
+    .audit_nonce = audit_nonce,
+    .audit_nonce_len = audit_nonce_len,
   };
   return cmd_id;
 }
@@ -99,13 +121,26 @@ void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, str
       uint32_t audited_cmd = TZIDecodeUint32(psInBuf);
       char *audit_string=NULL;
       void *cont=NULL;
+      audited_execute_fn execute_fn=NULL;
+      audited_release_fn release_fn=NULL;
+      int pending_cmd_id;
+      void *audit_nonce=NULL;
+
+      if(TZIDecodeGetError(psInBuf)) {
+        *puiRv = TZIDecodeGetError(psInBuf);
+        return;
+      }
 
       switch(audited_cmd) {
       case AKVP_DB_ADD:
         *puiRv = akvp_db_add_begin(&audit_string, cont, psInBuf);
+        execute_fn = akvp_db_add_execute;
+        release_fn = akvp_db_add_release;
         break;
       case AKVP_DB_GET:
         *puiRv = akvp_db_get_begin(&audit_string, cont, psInBuf);
+        execute_fn = akvp_db_get_execute;
+        release_fn = akvp_db_get_release;
         break;
       default:
         *puiRv = AKV_EBADAUDITEDCMD;
@@ -114,11 +149,23 @@ void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, str
 
       if (*puiRv != TZ_SUCCESS) {
         free(audit_string);
+        if(release_fn && cont) {
+          release_fn(cont);
+        }
         /* XXX release cont? */
         return;
       }
+
+      /* returns:
+         uint32 pending command handle
+         array  audit-nonce (binary data)
+         array  audit-string (null-terminated string)
+      */
+      pending_cmd_id = save_pending_cmd(audit_string, cont, execute_fn, release_fn);
+      pending_cmd = &pending_cmds[pending_cmd_id];
+      TZIEncodeUint32(psOutBuf, pending_cmd_id);
+      TZIEncodeArray(psOutBuf, pending_cmd->audit_nonce, pending_cmd->audit_nonce_len);
       TZIEncodeArray(psOutBuf, audit_string, strlen(audit_string)+1);
-      free(audit_string);
     }
     break;
   case AKVP_EXECUTE_AUDITED_CMD:
