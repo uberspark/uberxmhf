@@ -52,7 +52,57 @@ P: if (gettime() - t < threshold
        t0=nil
        Execute(auditable-command-string)
 
+## V0.5: pal generates audit-string instead of parsing an untrusted auditable command string
+
+R->P cmd-id, cmd-params
+P: pending-cmd-handle = next-pending-cmd-handle++
+   pending-cmds[pending-cmd-handle] = {
+      pending-cmd-id = cmd-id
+      pending-cmd-params = cmd-params
+      audit-nonce = gen-non-repeating-nonce()
+      audit-string = gen-audit-string(cmd-id, cmd-params)
+      t0=gettime()
+   }
+P->R audit-nonce, audit-string, pending-cmd-handle
+R->A audit-nonce, audit-string
+A: record audit-nonce, audit-string, current-server-time, ...
+   audit-token=S_A(audit-nonce||audit-string)
+A->R audit-token
+R->P audit-token pending-cmd-handle
+P: if (gettime() - t < threshold
+       && Verify_A(audit-nonce||audit-string, audit-token))
+       audit-nonce=nil
+       t0=nil
+       Execute(pending-cmd-id, pending-cmd-params)
+       pending-cmd-id = nil
+       pending-cmd-params = nil
+
 ## V1, add authentication of PAL to audit server
+
+R->P cmd-id, cmd-params
+P: quote-cert-chain = svc-get-cert-chain()
+   pending-cmd-handle = next-pending-cmd-handle++
+   pending-cmds[pending-cmd-handle] = {
+      pending-cmd-id = cmd-id
+      pending-cmd-params = cmd-params
+      audit-nonce = gen-non-repeating-nonce()
+      audit-string = gen-audit-string(cmd-id, cmd-params)
+      t0=gettime()
+      quote = svc-gen-quote(pcrs=0, nonce=H(audit-nonce || audit-string || quote-cert-chain(?) || ?))
+   }
+P->R audit-nonce, audit-string, quote, quote-cert-chain, pending-cmd-handle
+R->A audit-nonce, audit-string, quote, quote-cert-chain
+A: record audit-nonce, audit-string, quote, quote-cert-chain, current-server-time, ...
+   audit-token=S_A(audit-nonce||audit-string)
+A->R audit-token
+R->P audit-token, pending-cmd-handle
+P: if (gettime() - t < threshold
+       && Verify_A(audit-nonce||audit-string, audit-token))
+       audit-nonce=nil
+       t0=nil
+       Execute(pending-cmd-id, pending-cmd-params)
+       pending-cmd-id = nil
+       pending-cmd-params = nil
 
 Having the PAL not authenticate itself presents a couple
 problems. Suppose that the audit server is a shared service. In that
