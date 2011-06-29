@@ -1,9 +1,11 @@
-CMOCKDIR=../../tools/cmock
+CMOCKDIR=../../../tools/cmock
 CMOCKOBJ=$(CMOCKDIR)/src/cmock.o
 UNITYDIR=$(CMOCKDIR)/vendor/unity
 UNITYOBJ=$(UNITYDIR)/src/unity.o
 
 CFLAGS=-Wall -Werror -g
+
+SRCDIR=..
 
 TEESDK_DATA_DIR=$(shell pkg-config --variable=pkgdatadir tee-sdk-app)
 # pkgconfig helpers
@@ -59,14 +61,16 @@ run_%: %
 %_runner.c: %_tests.c
 	ruby ${UNITYDIR}/auto/generate_test_runner.rb $< $@
 ### end generic unity rules ###
-test : CFLAGS+=-I$(CMOCKDIR)/src -I. -I./mocks
-mocks/Mock%.c mocks/Mock%.h : %.h
+test : CFLAGS+=-I$(CMOCKDIR)/src -I$(SRCDIR) -I./mocks
+mocks/Mock%.c mocks/Mock%.h : $(SRCDIR)/%.h
 	ruby $(CMOCKDIR)/lib/cmock.rb -ocmockConfig.yml $^
 mocks/Mock%.o : mocks/Mock%.c
-mocks/Mock%.o : CFLAGS+=-I. -I$(CMOCKDIR)/src -I$(UNITYDIR)/src -I$(TEESDK_PKGINCLUDE_DIR)
+mocks/Mock%.o : CFLAGS+=-I$(SRCDIR) -I$(CMOCKDIR)/src -I$(UNITYDIR)/src -I$(TEESDK_PKGINCLUDE_DIR)
 
 mocks/Mocktv.c : $(TEESDK_PKGINCLUDE_DIR)/tv.h
 	ruby $(CMOCKDIR)/lib/cmock.rb -ocmockConfig.yml $^
 mocks/Mocksvcapi.c : $(TEESDK_PKGINCLUDE_DIR)/svcapi.h
 	ruby $(CMOCKDIR)/lib/cmock.rb -ocmockConfig.yml $^
 
+%.o : $(SRCDIR)/%.c
+	$(CC) -c $(CPPFLAGS) $(CFLAGS) -o $@ $^
