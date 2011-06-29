@@ -33,8 +33,8 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#ifndef AUDITED_KV
-#define AUDITED_KV
+#ifndef AUDITED_KV_H
+#define AUDITED_KV_H
 
 int akv_execute_audited_cmd(akv_ctx_t* ctx,
                             void* audit_token,
