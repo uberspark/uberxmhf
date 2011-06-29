@@ -36,6 +36,11 @@
 #ifndef AUDITED_KV_H
 #define AUDITED_KV_H
 
+#include <stdint.h>
+
+typedef struct {
+} akv_ctx_t;
+
 int akv_execute_audited_cmd(akv_ctx_t* ctx,
                             void* audit_token,
                             size_t audit_token_len);
