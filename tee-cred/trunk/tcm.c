@@ -44,14 +44,10 @@ int tcm_init(tcm_ctx_t* tcm_ctx,
              audit_ctx_t* audit_ctx,
              akv_ctx_t* akv_ctx)
 {
-  if (!tcm_ctx) {
+  if (!tcm_ctx || !audit_ctx || !akv_ctx) {
     return TCM_EINVAL;
   }
   tcm_ctx->audit_ctx = audit_ctx;
-
-  if (!akv_ctx) {
-    return TCM_EINVAL;
-  }
   tcm_ctx->akv_ctx = akv_ctx;
 
   return 0;
