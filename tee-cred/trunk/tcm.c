@@ -78,14 +78,16 @@ int tcm_db_add(tcm_ctx_t* tcm_ctx,
   /*                  &audit_string_len, */
   /*                  key, */
   /*                  val); */
-  akv_begin_db_add(tcm_ctx->akv_ctx,
-                   1,
-                   1,
-                   1,
-                   1,
-                   1,
-                   key,
-                   val);
+  if (akv_begin_db_add(tcm_ctx->akv_ctx,
+                       1,
+                       1,
+                       1,
+                       1,
+                       1,
+                       key,
+                       val)) {
+    return TCM_EAKV;
+  }
   return 0;
 }
 
