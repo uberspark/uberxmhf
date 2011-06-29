@@ -51,6 +51,12 @@ void setUp(void)
   g_psOutBuf = malloc(4096);
   TZIEncodeBufInit(g_psInBuf, 4096);
   TZIEncodeBufInit(g_psOutBuf, 4096);
+
+  {
+    tz_return_t rv;
+    audited_kv_pal(AKVP_INIT, g_psInBuf, g_psOutBuf, &rv);
+    TEST_ASSERT_EQUAL(0, rv);
+  }
 }
 
 void tearDown(void)
@@ -59,7 +65,7 @@ void tearDown(void)
   free(g_psOutBuf);
 }
 
-void testAuditedAdd(void)
+void testAuditedAddSucceeds(void)
 {
   tz_return_t rv;
   int cmd_id;

@@ -63,6 +63,9 @@ static struct {
 
 void akvp_init(void)
 {
+  if(akv_ctx.kv_ctx) {
+    kv_ctx_del(akv_ctx.kv_ctx);
+  }
   akv_ctx.kv_ctx = kv_ctx_new();
 }
 

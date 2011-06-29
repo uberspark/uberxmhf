@@ -143,13 +143,17 @@ static int save_pending_cmd(char *audit_string, void *cont, audited_execute_fn e
 
 void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
-  static bool did_akvp_init = false;
-  if (!did_akvp_init) {
-    akvp_init();
-    did_akvp_init=true;
-  }
+  static bool did_init = false;
 
   switch(uiCommand) {
+  case AKVP_INIT:
+    {
+      akvp_init();
+      did_init=true;
+      *puiRv=0;
+    }
+    break;
+
   case AKVP_START_AUDITED_CMD:
     {
       uint32_t audited_cmd = TZIDecodeUint32(psInBuf);
@@ -159,6 +163,11 @@ void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, str
       audited_release_fn *release_fn=NULL;
       int pending_cmd_id;
       pending_cmd_t *pending_cmd=NULL;
+
+      if(!did_init) {
+        *puiRv = AKV_EBADSTATE;
+        return;
+      }
 
       if(TZIDecodeGetError(psInBuf)) {
         *puiRv = TZIDecodeGetError(psInBuf);
@@ -208,6 +217,11 @@ void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, str
       size_t audit_token_len;
       int cmd_id;
       pending_cmd_t *cmd;
+
+      if(!did_init) {
+        *puiRv = AKV_EBADSTATE;
+        return;
+      }
 
       cmd_id = TZIDecodeUint32(psInBuf);
       audit_token = TZIDecodeArraySpace(psInBuf, &audit_token_len);

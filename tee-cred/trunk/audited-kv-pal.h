@@ -45,8 +45,11 @@
 #include "audited-kv-errs.h"
 
 enum akvp_cmds {
+  AKVP_INIT,            /* audit-pubkey, password -> () */
   AKVP_START_AUDITED_CMD,
   AKVP_EXECUTE_AUDITED_CMD,
+
+
 
   AKVP_AUDIT_GET_NONCE, /* ()                -> random nonce */
   AKVP_AUDIT_EXECUTE,   /* random nonce, cmd -> f(cmd) */
@@ -62,7 +65,7 @@ enum akvp_cmds {
   AKVP_PW_UNLOCK,       /* password          -> () */
   AKVP_PW_CHANGE,       /* oldpass, newpass  -> () */
 
-  AKVP_INIT,            /* audit-pubkey, password -> () */
+
 };
 
 void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv);
