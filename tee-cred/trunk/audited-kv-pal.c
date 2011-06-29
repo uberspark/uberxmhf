@@ -46,16 +46,16 @@
 
 #define FREE_AND_NULL(x) do { free(x) ; x=NULL; } while(0)
 
-static char* strcpy_mallocd(const char *src)
-{
-  size_t len = strlen(src)+1;
-  char *rv = malloc(len);
-  if(!rv) {
-    return NULL;
-  }
-  strcpy(rv, src);
-  return rv;
-}
+/* static char* strcpy_mallocd(const char *src) */
+/* { */
+/*   size_t len = strlen(src)+1; */
+/*   char *rv = malloc(len); */
+/*   if(!rv) { */
+/*     return NULL; */
+/*   } */
+/*   strcpy(rv, src); */
+/*   return rv; */
+/* } */
 
 char* sprintf_mallocd(const char *format, ...)
 {
@@ -105,41 +105,44 @@ tz_return_t akvp_db_add_begin_marshal(char **audit_string,
   if (TZIDecodeGetError(psInBuf)) {
     return TZIDecodeGetError(psInBuf);
   }
-  if (key[key_len-1] != '\0'
-      || val[val_len-1] != '\0') {
-    return TZ_ERROR_ILLEGAL_ARGUMENT;
-  }
 
-  return akvp_db_add_begin(audit_string, vcont, key, val);
+  return akvp_db_add_begin(audit_string, vcont, key, key_len, val, val_len);
 }
 
 
 tz_return_t akvp_db_add_begin(char **audit_string,
                               void **vcont,
-                              const char* key,
-                              const char* val)
+                              const void* key, size_t key_len,
+                              const void* val, size_t val_len)
 {
-  akvp_db_add_cont_t **cont = (akvp_db_add_cont_t**)vcont;
+  akvp_db_add_cont_t **pp_cont = ((akvp_db_add_cont_t**)vcont);
+  akvp_db_add_cont_t *cont;
 
-  *cont = malloc(sizeof(**cont));
-  if(!*cont) {
+  *pp_cont = malloc(sizeof(**pp_cont));
+  if(!pp_cont) {
     return TZ_ERROR_MEMORY;
   }
+  cont = *pp_cont;
 
-  (*cont)->key = strcpy_mallocd(key);
-  (*cont)->val = strcpy_mallocd(val);
-  *audit_string =
-    sprintf_mallocd("ADD{key=\"%s\"}", key);
+  cont->key = malloc(key_len);
+  cont->val = malloc(val_len);
+  *audit_string = /* FIXME need to escape nulls and non-printables,
+                     and make sure null-terminated.
+                  */
+    sprintf_mallocd("ADD{key=\"%s\"}", (char*)key);
 
-  if (!(*cont)->key
-      || !(*cont)->val
+  if (!cont->key
+      || !cont->val
       || !*audit_string) {
-    FREE_AND_NULL((*cont)->key);
-    FREE_AND_NULL((*cont)->val);
-    FREE_AND_NULL(*cont);
+    FREE_AND_NULL(cont->key);
+    FREE_AND_NULL(cont->val);
+    FREE_AND_NULL(cont);
     FREE_AND_NULL(*audit_string);
     return TZ_ERROR_MEMORY;
   }
+
+  memcpy(cont->key, key, key_len);
+  memcpy(cont->val, val, val_len);
 
   return TZ_SUCCESS;
 }

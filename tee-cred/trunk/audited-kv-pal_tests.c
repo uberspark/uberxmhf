@@ -33,6 +33,8 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#include <string.h>
+
 #include <unity.h>
 #include "audited-kv-pal-fns.h"
 
@@ -54,7 +56,8 @@ void test_akvp_db_add_begin()
 
   rv = akvp_db_add_begin(&audit_string,
                          &cont,
-                         key, val);
+                         key, strlen(key),
+                         val, strlen(val));
   TEST_ASSERT(rv == TZ_SUCCESS);
   TEST_ASSERT_NOT_NULL(audit_string);
   TEST_ASSERT_EQUAL_STRING("ADD{key=\"testkey\"}",
