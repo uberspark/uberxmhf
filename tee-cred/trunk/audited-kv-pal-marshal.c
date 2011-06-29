@@ -124,6 +124,12 @@ static int save_pending_cmd(char *audit_string, void *cont, audited_execute_fn e
 
 void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
+  static bool did_akvp_init = false;
+  if (!did_akvp_init) {
+    akvp_init();
+    did_akvp_init=true;
+  }
+
   switch(uiCommand) {
   case AKVP_START_AUDITED_CMD:
     {
