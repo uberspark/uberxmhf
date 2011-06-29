@@ -70,26 +70,25 @@ void testAuditedAdd(void)
   uint8_t audit_token[] = {0xde, 0xad, 0xbe, 0xef};
 
   /* start audited 'add' */
-  TZIEncodeUint32(g_psInBuf, AKVP_DB_ADD);
-  TZIEncodeArray(g_psInBuf, key1, key1_len);
-  TZIEncodeArray(g_psInBuf, val1, val1_len);
-  TEST_ASSERT(!(TZIDecodeGetError(g_psInBuf)));
+  rv = TZIEncodeBufF(g_psInBuf,
+                     "%"TZI_EU32 "%"TZI_ESTR "%"TZI_ESTR,
+                     AKVP_DB_ADD, key1, val1);
+  TEST_ASSERT_EQUAL(0, rv);
 
   svc_time_elapsed_us_IgnoreAndReturn(0);
   svc_utpm_rand_block_IgnoreAndReturn(0);
 
   TZIEncodeToDecode(g_psInBuf);
   audited_kv_pal(AKVP_START_AUDITED_CMD, g_psInBuf, g_psOutBuf, &rv);
+  TEST_ASSERT_EQUAL(0, rv);
+
   TZIEncodeToDecode(g_psOutBuf);
-
-  TEST_ASSERT(!rv);
-  cmd_id = TZIDecodeUint32(g_psOutBuf);
-  audit_nonce = TZIDecodeArraySpace(g_psOutBuf, &audit_nonce_len);
-  audit_string = TZIDecodeArraySpace(g_psOutBuf, &audit_string_len);
-  TEST_ASSERT(!(TZIDecodeGetError(g_psOutBuf)));
-
-  TEST_ASSERT_NOT_NULL(audit_nonce);
-  TEST_ASSERT_NOT_NULL(audit_string);
+  rv = TZIDecodeBufF(g_psOutBuf,
+                     "%"TZI_DU32 "%"TZI_DARRSPC "%"TZI_DARRSPC,
+                     &cmd_id,
+                     &audit_nonce, &audit_nonce_len,
+                     &audit_string, &audit_string_len);
+  TEST_ASSERT_EQUAL(0, rv);
 
   TEST_ASSERT_EQUAL_STRING("ADD{key=\"key one\"}",
                            audit_string);
@@ -99,9 +98,11 @@ void testAuditedAdd(void)
   TZIEncodeBufReInit(g_psInBuf);
   TZIEncodeBufReInit(g_psOutBuf);
 
-  TZIEncodeUint32(g_psInBuf, cmd_id);
-  TZIEncodeArray(g_psInBuf, audit_token, sizeof(audit_token));
-  TEST_ASSERT(!(TZIDecodeGetError(g_psInBuf)));
+  rv = TZIEncodeBufF(g_psInBuf,
+                     "%"TZI_EU32 "%"TZI_EARR,
+                     cmd_id,
+                     audit_token, sizeof(audit_token));
+  TEST_ASSERT_EQUAL(0, rv);
 
   TZIEncodeToDecode(g_psInBuf);
   audited_kv_pal(AKVP_EXECUTE_AUDITED_CMD, g_psInBuf, g_psOutBuf, &rv);
