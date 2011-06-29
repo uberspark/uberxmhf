@@ -54,7 +54,7 @@ enum akvp_cmds {
   AKVP_INIT,            /* audit-pubkey, password -> () */
 };
 
-enum akvp_errs{
+enum akvp_errs {
   AKVP_ENONE=0,
 };
 

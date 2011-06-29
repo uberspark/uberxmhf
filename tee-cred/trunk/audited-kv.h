@@ -56,6 +56,6 @@ int akv_begin_db_get(akv_ctx_t*  ctx,
                      char*       audit_string,
                      size_t*     audit_string_len,
                      const char* key,
-                     char* val,
-                     int val_len);
+                     char*       val,
+                     int         val_len);
 #endif
