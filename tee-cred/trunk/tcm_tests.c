@@ -200,6 +200,7 @@ void test_tcm_db_add_calls_audit_get_token_with_reasonable_param(void)
   {
     audit_callcount++;
     TEST_ASSERT_EQUAL_PTR(&g_audit_ctx, audit_ctx);
+    TEST_ASSERT_EQUAL_MEMORY(test_epoch_nonce, epoch_nonce, test_epoch_nonce_len);
     return 0;
   }
 
