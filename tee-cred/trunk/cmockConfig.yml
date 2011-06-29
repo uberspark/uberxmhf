@@ -3,4 +3,3 @@
   :plugins:
     - :ignore
     - :callback
-  :ignore: :args_only
