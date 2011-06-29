@@ -116,7 +116,7 @@ void test_tcm_db_add_gets_audit_challenge(void)
   tcm_db_add(&tcm_ctx, "key", "value");
 }
 
-void test_tcm_db_add_xxx(void)
+void test_tcm_db_add_call_akv_nonnull(void)
 {
   int akv_begin_db_add_cb(akv_ctx_t*  ctx,
                           uint8_t*    epoch_nonce,
@@ -129,7 +129,14 @@ void test_tcm_db_add_xxx(void)
                           int num_calls
                           )
   {
-    TEST_ASSERT_EQUAL(0,1);
+    TEST_ASSERT_NOT_NULL(ctx);
+    TEST_ASSERT_NOT_NULL(epoch_nonce);
+    TEST_ASSERT_NOT_NULL(epoch_nonce_len);
+    TEST_ASSERT_NOT_NULL(epoch_offset);
+    TEST_ASSERT_NOT_NULL(audit_string);
+    TEST_ASSERT_NOT_NULL(audit_string_len);
+    TEST_ASSERT_NOT_NULL(key);
+    TEST_ASSERT_NOT_NULL(val);
     return 0;
   }
   
@@ -138,8 +145,3 @@ void test_tcm_db_add_xxx(void)
   tcm_db_add(&tcm_ctx, "key", "value");
 }
 
-/* void test_tcm_db_add_gets_audit_token(void) */
-/* { */
-/*   audit_get_token_ExpectAndReturn(&audit_ctx, */
-/*                                   "", 0, ); */
-/* } */

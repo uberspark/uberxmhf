@@ -70,14 +70,22 @@ int tcm_db_add(tcm_ctx_t* tcm_ctx,
   if (!tcm_ctx || !key || !val)
     return TCM_EINVAL;
 
-  akv_begin_db_add(tcm_ctx->akv_ctx,
-                   epoch_nonce,
-                   &epoch_nonce_len,
-                   &epoch_offset,
-                   audit_string,
-                   &audit_string_len,
-                   key,
-                   val);
+  /* akv_begin_db_add(tcm_ctx->akv_ctx, */
+  /*                  epoch_nonce, */
+  /*                  &epoch_nonce_len, */
+  /*                  &epoch_offset, */
+  /*                  audit_string, */
+  /*                  &audit_string_len, */
+  /*                  key, */
+  /*                  val); */
+  akv_begin_db_add(NULL,
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL,
+                   NULL);
   return 0;
 }
 
