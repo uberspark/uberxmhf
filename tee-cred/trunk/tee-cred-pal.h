@@ -50,3 +50,26 @@ enum tee_cred_pal_cmds {
 
   TCP_INIT,            /* audit-pubkey, password -> () */
 };
+
+enum {
+  TCP_ENONE=0,
+  TCP_EINVAL,
+  TCP_ENOMEM,
+  TCP_ENOTFOUND,
+  TCP_EEXISTS,
+};
+
+typedef struct tcp_ctx {
+  audit_ctx_t* audit_ctx;
+  void* db;
+  size_t db_len;
+} tcp_ctx_t;
+
+
+int tcp_init(tcp_ctx_t*,
+             audit_ctx_t*,
+             const void *db,
+             size_t db_len);
+
+void tcp_release(tcp_ctx_t*);
+
