@@ -35,6 +35,7 @@
 
 #include "audited-kv-pal.h"
 #include "audited-kv-pal-fns.h"
+#include "kv.h"
 
 #include <tz.h>
 #include <tzmarshal.h>
@@ -56,6 +57,14 @@
 /*   strcpy(rv, src); */
 /*   return rv; */
 /* } */
+static struct {
+  kv_ctx_t* kv_ctx;
+} akv_ctx;
+
+void akvp_init(void)
+{
+  akv_ctx.kv_ctx = kv_ctx_new();
+}
 
 char* sprintf_mallocd(const char *format, ...)
 {

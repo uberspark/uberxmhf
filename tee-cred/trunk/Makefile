@@ -30,11 +30,11 @@ audited-kv_tests : audited-kv_runner.o audited-kv_tests.o audited-kv.o mocks/Moc
 PROGS+=audited-kv_tests
 OBJS+=audited-kv_runner.o audited-kv_tests.o audited-kv.o mocks/Mocktv.o
 
-audited-kv-pal_tests : audited-kv-pal_runner.o audited-kv-pal_tests.o audited-kv-pal.o $(UNITYOBJ) $(CMOCKOBJ)
+audited-kv-pal_tests : audited-kv-pal_runner.o audited-kv-pal_tests.o audited-kv-pal.o kv.o $(UNITYOBJ) $(CMOCKOBJ)
 audited-kv-pal_tests : LDLIBS += $(call pkgconfig_ldlibs, tee-sdk-svc tee-sdk-svc-tv)
 audited-kv-pal_tests : LDFLAGS += $(filter -L%, $(call pkgconfig_ldflags, tee-sdk-svc tee-sdk-svc-tv))
 PROGS+=audited-kv-pal_tests
-OBJS+=audited-kv-pal_runner.o audited-kv-pal_tests.o audited-kv-pal.o
+OBJS+=audited-kv-pal_runner.o audited-kv-pal_tests.o audited-kv-pal.o kv.o
 
 kv_tests: kv_runner.o kv_tests.o kv.o $(UNITYOBJ) $(CMOCKOBJ)
 PROGS+=kv_tests
