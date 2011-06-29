@@ -3,3 +3,6 @@
   :plugins:
     - :ignore
     - :callback
+  :includes:
+    - "stdbool.h"
+    - "stdint.h"

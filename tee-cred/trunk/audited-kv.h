@@ -39,12 +39,17 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <tee-sdk/tz.h>
+
 #include "audited-kv-errs.h"
 
 #define AKV_EPOCH_NONCE_MAX 256 /* FIXME - should pull from svcapi.h */
 #define AKV_AUDIT_STRING_MAX 1000 /* FIXME - can we even specify this? */
 
 typedef struct {
+  tz_device_t   tzDevice;
+  tz_session_t  tzPalSession;
+  tz_uuid_t     tzSvcId;
 } akv_ctx_t;
 
 int akv_ctx_init(akv_ctx_t* ctx);
