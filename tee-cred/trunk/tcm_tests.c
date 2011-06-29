@@ -67,12 +67,13 @@ void test_tcm_init_null_params_err(void)
   TEST_ASSERT_EQUAL(TCM_EINVAL, tcm_init(&tcm_ctx, NULL, &akv_ctx));
 }
 
-void test_tcm_init_saves_audit_ctx(void)
+void test_tcm_init_saves_ctxts(void)
 {
   tcm_ctx_t tcm_ctx;
   audit_ctx_t audit_ctx;
-  tcm_init(&tcm_ctx, &audit_ctx, NULL);
+  tcm_init(&tcm_ctx, &audit_ctx, &akv_ctx);
   TEST_ASSERT_EQUAL_PTR(&audit_ctx, tcm_ctx.audit_ctx);
+  TEST_ASSERT_EQUAL_PTR(&akv_ctx, tcm_ctx.akv_ctx);
 }
 
 void test_tcm_release_null_ok(void)
