@@ -230,6 +230,8 @@ void test_tcm_db_add_detects_audit_failure(void)
 
 void test_tcm_db_add_calls_akv_execute_with_audit_token(void)
 {
+  const uint8_t test_audit_token[] = { 0xaa, 0xaa, 0xbb, 0xcc, 0xdd, 0xee };
+  const size_t test_audit_token_len = sizeof(test_audit_token);
   int audit_callcount=0;
   int audit_get_token_cb(audit_ctx_t*    audit_ctx,
                          const uint8_t*  epoch_nonce,
@@ -242,6 +244,9 @@ void test_tcm_db_add_calls_akv_execute_with_audit_token(void)
                          int             count)
   {
     audit_callcount++;
+    assert(*audit_token_len >= test_audit_token_len);
+    memcpy(audit_token, test_audit_token, test_audit_token_len);
+    *audit_token_len = test_audit_token_len;
     return 0;
   }
   int execute_callcount=0;
@@ -254,6 +259,8 @@ void test_tcm_db_add_calls_akv_execute_with_audit_token(void)
 
     TEST_ASSERT_NOT_NULL(ctx);
     TEST_ASSERT_NOT_NULL(audit_token);
+    TEST_ASSERT_EQUAL(test_audit_token_len, audit_token_len);
+    TEST_ASSERT_EQUAL_MEMORY(test_audit_token, audit_token, test_audit_token_len);
     return 0;
   }
 
