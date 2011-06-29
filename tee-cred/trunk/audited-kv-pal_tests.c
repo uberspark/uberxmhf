@@ -57,4 +57,5 @@ void test_akvp_db_add_begin()
   TEST_ASSERT_NOT_NULL(audit_string);
   TEST_ASSERT_EQUAL_STRING("ADD{key=\"testkey\"}",
                            audit_string);
+  akvp_db_add_release();
 }
