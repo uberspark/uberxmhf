@@ -40,6 +40,16 @@
 #include <string.h>
 
 static kv_ctx_t *kv_ctx=NULL;
+static const char * key1 = "key one";
+static const size_t key1_len = 8;
+static const char * val1 = "value one";
+static const size_t val1_len = 10;
+
+/* static const char * key2 = "key two"; */
+/* static const size_t key2_len = 8; */
+/* static const char * val2 = "value two"; */
+/* static const size_t val2_len = 10; */
+
 
 void setUp(void)
 {
@@ -53,29 +63,16 @@ void tearDown(void)
 
 void test_add_to_empty_succeeds(void)
 {
-  char *key = "key";
-  size_t key_len = strlen(key)+1;
-  char *val = "val";
-  size_t val_len = strlen(val)+1;
-
-  TEST_ASSERT(!kv_add(kv_ctx, key, key_len, val, val_len));
+  TEST_ASSERT(!kv_add(kv_ctx, key1, key1_len, val1, val1_len));
 }
 
 void test_add_duplicate_fails(void)
 {
-  char *key = "key";
-  size_t key_len = strlen(key)+1;
-  char *val = "val";
-  size_t val_len = strlen(val)+1;
-
-  TEST_ASSERT(!kv_add(kv_ctx, key, key_len, val, val_len));
-  TEST_ASSERT_EQUAL(KV_EEXISTS, kv_add(kv_ctx, key, key_len, val, val_len));
+  TEST_ASSERT(!kv_add(kv_ctx, key1, key1_len, val1, val1_len));
+  TEST_ASSERT_EQUAL(KV_EEXISTS, kv_add(kv_ctx, key1, key1_len, val1, val1_len));
 }
 
 void test_get_empty_fails(void)
 {
-  char *key = "key";
-  size_t key_len = strlen(key)+1;
-
-  TEST_ASSERT_EQUAL(KV_ENOTFOUND, kv_get(kv_ctx, key, key_len, NULL, NULL));
+  TEST_ASSERT_EQUAL(KV_ENOTFOUND, kv_get(kv_ctx, key1, key1_len, NULL, NULL));
 }
