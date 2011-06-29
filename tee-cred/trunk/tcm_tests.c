@@ -54,13 +54,13 @@ void tearDown(void)
 
 void test_tcm_init_null_handle_error(void)
 {
-  TEST_ASSERT_EQUAL(TCM_ERR_PARAM, tcm_init(NULL, NULL, NULL, 0));
+  TEST_ASSERT_EQUAL(TCM_EINVAL, tcm_init(NULL, NULL, NULL, 0));
 }
 
 void test_tcm_init_null_params_ok(void)
 {
   tcm_handle_t tcm_handle;
-  TEST_ASSERT_EQUAL(TCM_ERR_OK, tcm_init(&tcm_handle, NULL, NULL, 0));
+  TEST_ASSERT_EQUAL(TCM_ENONE, tcm_init(&tcm_handle, NULL, NULL, 0));
 }
 
 void test_tcm_init_saves_audit_handle(void)
@@ -91,17 +91,17 @@ void test_tcm_release_initd_ok(void)
 
 void test_tcm_db_add_null_handle_error(void)
 {
-  TEST_ASSERT_EQUAL(TCM_ERR_PARAM, tcm_db_add(NULL, NULL, NULL));
+  TEST_ASSERT_EQUAL(TCM_EINVAL, tcm_db_add(NULL, NULL, NULL));
 }
 
 void test_tcm_db_add_null_key_error(void)
 {
-  TEST_ASSERT_EQUAL(TCM_ERR_PARAM, tcm_db_add(&tcm_handle, NULL, "foo"));
+  TEST_ASSERT_EQUAL(TCM_EINVAL, tcm_db_add(&tcm_handle, NULL, "foo"));
 }
 
 void test_tcm_db_add_null_val_error(void)
 {
-  TEST_ASSERT_EQUAL(TCM_ERR_PARAM, tcm_db_add(&tcm_handle, "foo", NULL));
+  TEST_ASSERT_EQUAL(TCM_EINVAL, tcm_db_add(&tcm_handle, "foo", NULL));
 }
 
 /* void test_tcm_db_add_gets_audit_token(void) */

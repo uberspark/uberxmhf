@@ -43,13 +43,13 @@ int tcm_init(tcm_handle_t* tcm_handle,
              size_t db_len)
 {
   if (!tcm_handle) {
-    return TCM_ERR_PARAM;
+    return TCM_EINVAL;
   }
   tcm_handle->audit_handle = audit_handle;
 
   tcm_handle->db = malloc(db_len);
   if (!tcm_handle->db) {
-    return TCM_ERR_NOMEM;
+    return TCM_ENOMEM;
   }
   memcpy(tcm_handle->db, db, db_len);
 
@@ -70,7 +70,7 @@ int tcm_db_add(struct tcm_handle* tcm_handle,
                const char* val)
 {
   if (!tcm_handle || !key || !val)
-    return TCM_ERR_PARAM;
+    return TCM_EINVAL;
   return 0;
 }
 

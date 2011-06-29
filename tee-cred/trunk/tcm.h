@@ -61,11 +61,11 @@
 /* }; */
 
 enum {
-  TCM_ERR_OK=0,
-  TCM_ERR_PARAM,
-  TCM_ERR_NOMEM,
-  TCM_ERR_NOTFOUND,
-  TCM_ERR_EXISTS,
+  TCM_ENONE=0,
+  TCM_EINVAL,
+  TCM_ENOMEM,
+  TCM_ENOTFOUND,
+  TCM_EEXISTS,
 };
 
 typedef struct tcm_handle {
