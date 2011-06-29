@@ -242,7 +242,24 @@ tz_return_t akvp_db_get_begin(char **audit_string,
 
 tz_return_t akvp_db_get_execute(void* vcont, struct tzi_encode_buffer_t *psOutBuf)
 {
-  return TZ_ERROR_NOT_IMPLEMENTED;
+  int kv_rv;
+  akvp_db_get_cont_t *cont = (akvp_db_get_cont_t*)vcont;
+  const void *val;
+  size_t val_len;
+  tz_return_t rv;
+
+  kv_rv = kv_get(akv_ctx.kv_ctx, cont->key, cont->key_len, &val, &val_len);
+  rv =
+    (kv_rv == KV_ENONE) ? TZ_SUCCESS
+    : (kv_rv == KV_ENOTFOUND) ? AKV_ENOTFOUND
+    : AKV_EKV;
+
+  if (rv != TZ_SUCCESS) {
+    return rv;
+  }
+
+  TZIEncodeArray(psOutBuf, val, val_len);
+  return rv;
 }
 
 void akvp_db_get_release(void* vcont)
