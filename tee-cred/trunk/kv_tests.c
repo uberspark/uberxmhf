@@ -76,3 +76,14 @@ void test_get_empty_fails(void)
 {
   TEST_ASSERT_EQUAL(KV_ENOTFOUND, kv_get(kv_ctx, key1, key1_len, NULL, NULL));
 }
+
+void test_get_existing_works(void)
+{
+  const void *val;
+  size_t val_len;
+
+  TEST_ASSERT(!kv_add(kv_ctx, key1, key1_len, val1, val1_len));
+  TEST_ASSERT(!kv_get(kv_ctx, key1, key1_len, &val, &val_len));
+  TEST_ASSERT_EQUAL(val1_len, val_len);
+  TEST_ASSERT_EQUAL_STRING(val1, val);
+}

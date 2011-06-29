@@ -110,5 +110,9 @@ int kv_get(kv_ctx_t* ctx, const void *key, size_t key_len, const void **val, siz
       return KV_ENONE;
     }
   }
+  if (val)
+    *val = NULL;
+  if (val_len)
+    *val_len = 0;
   return KV_ENOTFOUND;
 }
