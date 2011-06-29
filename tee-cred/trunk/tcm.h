@@ -60,6 +60,11 @@
 /*   TCP_INIT,            /\* audit-pubkey, password -> () *\/ */
 /* }; */
 
+enum {
+  TCM_ERR_PARAM=1,
+  TCM_ERR_NOTFOUND,
+};
+
 typedef struct tcm_handle {
   audit_handle_t* audit_handle;
   void* db;
