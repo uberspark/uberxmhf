@@ -1,0 +1,5 @@
+---
+:cmock:
+  :plugins:
+    - :ignore
+    - :callback

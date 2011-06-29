@@ -36,7 +36,8 @@
 #include <unity.h>
 
 #include "tcm.h"
-#include "audit.h"
+
+#include "Mockaudit.h"
 
 audit_handle_t audit_handle;
 tcm_handle_t tcm_handle;
@@ -105,5 +106,6 @@ void test_tcm_db_add_null_val_error(void)
 
 /* void test_tcm_db_add_gets_audit_token(void) */
 /* { */
-/*   audit_get_token_ExpectAndReturn(); */
+/*   audit_get_token_ExpectAndReturn(&audit_handle, */
+/*                                   "", 0, ); */
 /* } */
