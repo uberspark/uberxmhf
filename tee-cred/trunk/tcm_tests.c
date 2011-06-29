@@ -251,6 +251,9 @@ void test_tcm_db_add_calls_akv_execute_with_audit_token(void)
                                  int        count)
   {
     execute_callcount++;
+
+    TEST_ASSERT_NOT_NULL(ctx);
+    TEST_ASSERT_NOT_NULL(audit_token);
     return 0;
   }
 
