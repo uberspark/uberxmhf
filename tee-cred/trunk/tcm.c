@@ -83,7 +83,7 @@ int tcm_db_add(tcm_ctx_t* tcm_ctx,
 
   audit_get_token(tcm_ctx->audit_ctx,
                   epoch_nonce,
-                  0,
+                  epoch_nonce_len,
                   0,
                   NULL,
                   0);
