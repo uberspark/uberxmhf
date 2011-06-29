@@ -37,6 +37,7 @@
 
 #include "tcm.h"
 
+#include "Mockaudited-kv.h"
 #include "Mockaudit.h"
 
 audit_handle_t audit_handle;

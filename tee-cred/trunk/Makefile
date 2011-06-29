@@ -5,15 +5,17 @@ UNITYOBJ=$(UNITYDIR)/src/unity.o
 
 CFLAGS=-Wall
 
-all : test
+all : mocks test
 
 test : run_audit_tests run_tcm_tests
+
+mocks : mocks/Mockaudited-kv.c mocks/Mockaudit.c
 
 audit_tests : audit_runner.o audit_tests.o audit.o $(UNITYOBJ)
 PROGS+=audit_tests
 OBJS+=audit_runner.o audit_tests.o audit.o $(UNITYOBJ)
 
-tcm_tests : tcm_runner.o tcm_tests.o tcm.o mocks/Mockaudit.o $(UNITYOBJ) $(CMOCKOBJ)
+tcm_tests : tcm_runner.o tcm_tests.o tcm.o mocks/Mockaudit.o mocks/Mockaudited-kv.o $(UNITYOBJ) $(CMOCKOBJ)
 PROGS+=tcm_tests
 OBJS+=tcm_runner.o tcm_tests.o tcm.o $(UNITYOBJ)
 
@@ -30,3 +32,4 @@ run_%: %
 test : CFLAGS+=-I$(CMOCKDIR)/src -I. -I./mocks
 mocks/Mock%.c mocks/Mock%.h : %.h
 	ruby $(CMOCKDIR)/lib/cmock.rb -ocmockConfig.yml $^
+mocks/Mock%.o : mocks/Mock%.c
