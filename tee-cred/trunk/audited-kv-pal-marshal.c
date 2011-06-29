@@ -142,12 +142,12 @@ void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, str
 
       switch(audited_cmd) {
       case AKVP_DB_ADD:
-        *puiRv = akvp_db_add_begin_marshal(&audit_string, cont, psInBuf);
+        *puiRv = akvp_db_add_begin_marshal(&audit_string, &cont, psInBuf);
         execute_fn = akvp_db_add_execute;
         release_fn = akvp_db_add_release;
         break;
       case AKVP_DB_GET:
-        *puiRv = akvp_db_get_begin_marshal(&audit_string, cont, psInBuf);
+        *puiRv = akvp_db_get_begin_marshal(&audit_string, &cont, psInBuf);
         execute_fn = akvp_db_get_execute;
         release_fn = akvp_db_get_release;
         break;
