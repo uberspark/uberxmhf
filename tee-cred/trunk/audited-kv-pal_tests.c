@@ -47,15 +47,17 @@ void tearDown(void)
 void test_akvp_db_add_begin()
 {
   char *audit_string;
+  void *cont;
   const char* key = "testkey";
   const char* val = "testval";
   tz_return_t rv;
 
   rv = akvp_db_add_begin(&audit_string,
+                         &cont,
                          key, val);
   TEST_ASSERT(rv == TZ_SUCCESS);
   TEST_ASSERT_NOT_NULL(audit_string);
   TEST_ASSERT_EQUAL_STRING("ADD{key=\"testkey\"}",
                            audit_string);
-  akvp_db_add_release();
+  akvp_db_add_release(cont);
 }

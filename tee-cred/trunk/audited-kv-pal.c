@@ -77,50 +77,50 @@ char* sprintf_mallocd(const char *format, ...)
   return rv;
 }
 
-static struct {
-  bool valid;
+typedef struct {
   char *key;
   char *val;
-} db_add_saved = {
-  .valid=false,
-  .key=NULL,
-  .val=NULL,
-};
+} akvp_db_add_cont_t;
 
-void akvp_db_add_release(void)
+void akvp_db_add_release(void* vcont)
 {
-  FREE_AND_NULL(db_add_saved.key);
-  FREE_AND_NULL(db_add_saved.val);
-  db_add_saved.valid=false;
+  akvp_db_add_cont_t *cont = (akvp_db_add_cont_t*)vcont;
+  FREE_AND_NULL(cont->key);
+  FREE_AND_NULL(cont->val);
 }
 
 tz_return_t akvp_db_add_begin(char **audit_string,
+                              void **vcont,
                               const char* key,
                               const char* val)
 {
-  assert(!db_add_saved.valid);
+  akvp_db_add_cont_t **cont = (akvp_db_add_cont_t**)vcont;
 
-  db_add_saved.key = strcpy_mallocd(key);
-  db_add_saved.val = strcpy_mallocd(val);
+  *cont = malloc(sizeof(**cont));
+  if(!*cont) {
+    return TZ_ERROR_MEMORY;
+  }
+
+  (*cont)->key = strcpy_mallocd(key);
+  (*cont)->val = strcpy_mallocd(val);
   *audit_string =
     sprintf_mallocd("ADD{key=\"%s\"}", key);
 
-  if (!db_add_saved.key
-      || !db_add_saved.val
+  if (!(*cont)->key
+      || !(*cont)->val
       || !*audit_string) {
-    FREE_AND_NULL(db_add_saved.key);
-    FREE_AND_NULL(db_add_saved.val);
+    FREE_AND_NULL((*cont)->key);
+    FREE_AND_NULL((*cont)->val);
+    FREE_AND_NULL(*cont);
     FREE_AND_NULL(*audit_string);
     return TZ_ERROR_MEMORY;
   }
 
-  db_add_saved.valid = true;
-
   return TZ_SUCCESS;
 }
 
-tz_return_t akvp_db_add_execute(void)
+tz_return_t akvp_db_add_execute(void* vcont)
 {
-  assert(db_add_saved.valid);
+  /* akvp_db_add_cont_t *cont = (akvp_db_add_cont_t*)vcont; */
   return TZ_ERROR_NOT_IMPLEMENTED;
 }
