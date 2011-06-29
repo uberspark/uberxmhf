@@ -71,3 +71,11 @@ void test_add_duplicate_fails(void)
   TEST_ASSERT(!kv_add(kv_ctx, key, key_len, val, val_len));
   TEST_ASSERT_EQUAL(KV_EEXISTS, kv_add(kv_ctx, key, key_len, val, val_len));
 }
+
+void test_get_empty_fails(void)
+{
+  char *key = "key";
+  size_t key_len = strlen(key)+1;
+
+  TEST_ASSERT_EQUAL(KV_ENOTFOUND, kv_get(kv_ctx, key, key_len, NULL, NULL));
+}
