@@ -36,7 +36,7 @@
 #include <stddef.h>
 #include "audit.h"
 
-audit_handle_t* test_audit_construct(void)
+audit_ctx_t* test_audit_construct(void)
 {
   return NULL;
 }

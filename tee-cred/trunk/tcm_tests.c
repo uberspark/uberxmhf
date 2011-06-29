@@ -42,10 +42,11 @@
 
 audit_ctx_t audit_ctx;
 tcm_ctx_t tcm_ctx;
+akv_ctx_t akv_ctx;
 
 void setUp(void)
 {
-  tcm_init(&tcm_ctx, &audit_ctx, NULL, 0);
+  tcm_init(&tcm_ctx, &audit_ctx, &akv_ctx);
 }
 
 void tearDown(void)
@@ -55,20 +56,22 @@ void tearDown(void)
 
 void test_tcm_init_null_ctx_error(void)
 {
-  TEST_ASSERT_EQUAL(TCM_EINVAL, tcm_init(NULL, NULL, NULL, 0));
+  TEST_ASSERT_EQUAL(TCM_EINVAL, tcm_init(NULL, NULL, NULL));
 }
 
-void test_tcm_init_null_params_ok(void)
+void test_tcm_init_null_params_err(void)
 {
   tcm_ctx_t tcm_ctx;
-  TEST_ASSERT_EQUAL(TCM_ENONE, tcm_init(&tcm_ctx, NULL, NULL, 0));
+  TEST_ASSERT_EQUAL(TCM_EINVAL, tcm_init(&tcm_ctx, NULL, NULL));
+  TEST_ASSERT_EQUAL(TCM_EINVAL, tcm_init(&tcm_ctx, &audit_ctx, NULL));
+  TEST_ASSERT_EQUAL(TCM_EINVAL, tcm_init(&tcm_ctx, NULL, &akv_ctx));
 }
 
 void test_tcm_init_saves_audit_ctx(void)
 {
   tcm_ctx_t tcm_ctx;
   audit_ctx_t audit_ctx;
-  tcm_init(&tcm_ctx, &audit_ctx, NULL, 0);
+  tcm_init(&tcm_ctx, &audit_ctx, NULL);
   TEST_ASSERT_EQUAL_PTR(&audit_ctx, tcm_ctx.audit_ctx);
 }
 
@@ -86,7 +89,7 @@ void test_tcm_release_uninitd_ok(void)
 void test_tcm_release_initd_ok(void)
 {
   tcm_ctx_t tcm_ctx;
-  tcm_init(&tcm_ctx, NULL, NULL, 0);
+  tcm_init(&tcm_ctx, NULL, NULL);
   tcm_release(&tcm_ctx);
 }
 
