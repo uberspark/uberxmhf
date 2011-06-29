@@ -76,8 +76,8 @@ int tcm_db_add(tcm_ctx_t* tcm_ctx,
                    &epoch_offset,
                    audit_string,
                    &audit_string_len,
-                   NULL,
-                   NULL);
+                   key,
+                   val);
   return 0;
 }
 
