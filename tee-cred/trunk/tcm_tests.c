@@ -33,14 +33,17 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include "unity.h"
-#include "tcm.h"
+#include <unity.h>
 
+#include "tcm.h"
+#include "audit.h"
+
+audit_handle_t audit_handle;
 tcm_handle_t tcm_handle;
 
 void setUp(void)
 {
-  tcm_init(&tcm_handle, NULL, NULL, 0);
+  tcm_init(&tcm_handle, &audit_handle, NULL, 0);
 }
 
 void tearDown(void)
@@ -57,6 +60,14 @@ void test_tcm_init_null_params_ok(void)
 {
   tcm_handle_t tcm_handle;
   TEST_ASSERT_EQUAL(TCM_ERR_OK, tcm_init(&tcm_handle, NULL, NULL, 0));
+}
+
+void test_tcm_init_saves_audit_handle(void)
+{
+  tcm_handle_t tcm_handle;
+  audit_handle_t audit_handle;
+  tcm_init(&tcm_handle, &audit_handle, NULL, 0);
+  TEST_ASSERT_EQUAL_PTR(&audit_handle, tcm_handle.audit_handle);
 }
 
 void test_tcm_release_null_ok(void)
@@ -92,8 +103,7 @@ void test_tcm_db_add_null_val_error(void)
   TEST_ASSERT_EQUAL(TCM_ERR_PARAM, tcm_db_add(&tcm_handle, "foo", NULL));
 }
 
-void test_tcm_db_add_existing_key_error(void)
-{
-  tcm_db_add(&tcm_handle, "foo", "bar");
-  TEST_ASSERT_EQUAL(TCM_ERR_EXISTS, tcm_db_add(&tcm_handle, "foo", "bar"));
-}
+/* void test_tcm_db_add_gets_audit_token(void) */
+/* { */
+/*   audit_get_token_ExpectAndReturn(); */
+/* } */

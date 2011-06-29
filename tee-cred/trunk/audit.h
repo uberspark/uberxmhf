@@ -33,10 +33,16 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-typedef struct audit_handle audit_handle_t;
+#ifndef AUDIT_H
+#define AUDIT_H
+
+typedef struct {
+} audit_handle_t;
 
 int audit_get_token(audit_handle_t *audit_handle,
                     const void *msg, size_t msg_len,
                     void *audit_token, size_t *audit_token_len);
 
 audit_handle_t* test_audit_construct(void);
+
+#endif
