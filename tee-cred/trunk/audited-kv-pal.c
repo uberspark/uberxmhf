@@ -244,6 +244,7 @@ tz_return_t akvp_db_get_execute(void* vcont, struct tzi_encode_buffer_t *psOutBu
 {
   return TZ_ERROR_NOT_IMPLEMENTED;
 }
+
 void akvp_db_get_release(void* vcont)
 {
   akvp_db_get_cont_t *cont = (akvp_db_get_cont_t*)vcont;

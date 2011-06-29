@@ -120,3 +120,20 @@ void test_akvp_db_add_duplicate_fails()
   TEST_ASSERT_EQUAL(AKV_EEXISTS, rv);
   akvp_db_add_release(cont);
 }
+
+void test_akvp_db_get_begin_gives_expected_audit_string()
+{
+  char *audit_string;
+  void *cont;
+  tz_return_t rv;
+
+  rv = akvp_db_get_begin(&audit_string,
+                         &cont,
+                         key1, key1_len);
+  TEST_ASSERT(rv == TZ_SUCCESS);
+  TEST_ASSERT_NOT_NULL(audit_string);
+  TEST_ASSERT_EQUAL_STRING("GET{key=\"key one\"}",
+                           audit_string);
+  free(audit_string);
+  akvp_db_get_release(cont);
+}
