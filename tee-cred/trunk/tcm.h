@@ -40,26 +40,6 @@
 
 #include "audit.h"
 
-
-
-/* enum tee_cred_pal_cmds { */
-/*   TCP_AUDIT_GET_NONCE, /\* ()                -> random nonce *\/ */
-/*   TCP_AUDIT_EXECUTE,   /\* random nonce, cmd -> f(cmd) *\/ */
-
-/*   TCP_DB_ADD,          /\* key, val          -> ()  *\/ */
-/*   TCP_DB_GET,          /\* key               -> val *\/ */
-/*   TCP_DB_DEL,          /\* key               -> () *\/ */
-/*   TCP_DB_EXPORT,       /\* ()                -> seal(db) *\/ */
-/*   TCP_DB_IMPORT,       /\* seal(db)          -> () *\/ */
-/*   TCP_DB_MIGRATE,      /\* dest-pubkey, cert-chain -> E(db) *\/ */
-  
-/*   TCP_PW_LOCK,         /\* ()                -> () *\/ */
-/*   TCP_PW_UNLOCK,       /\* password          -> () *\/ */
-/*   TCP_PW_CHANGE,       /\* oldpass, newpass  -> () *\/ */
-
-/*   TCP_INIT,            /\* audit-pubkey, password -> () *\/ */
-/* }; */
-
 enum {
   TCM_ENONE=0,
   TCM_EINVAL,
@@ -73,7 +53,6 @@ typedef struct tcm_handle {
   void* db;
   size_t db_len;
 } tcm_handle_t;
-
 
 int tcm_init(tcm_handle_t*,
              audit_handle_t*,
@@ -91,8 +70,8 @@ int tcm_db_get(struct tcm_handle*,
                char* val,
                int val_len);
 
-int tcm_db_del(struct tcm_handle*,
-               const char* key);
+/* int tcm_db_del(struct tcm_handle*, */
+/*                const char* key); */
 
 
 #endif
