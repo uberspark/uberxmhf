@@ -226,6 +226,18 @@ void test_tcm_db_add_detects_audit_failure(void)
 
 void test_tcm_db_add_calls_akv_execute_with_audit_token(void)
 {
+  int audit_callcount=0;
+  int audit_get_token_cb(audit_ctx_t*    audit_ctx,
+                         const uint8_t*  epoch_nonce,
+                         size_t          epoch_nonce_len,
+                         uint64_t        epoch_offset,
+                         const char*     audit_string,
+                         size_t          audit_string_len,
+                         int             count)
+  {
+    audit_callcount++;
+    return 0;
+  }
   int execute_callcount=0;
   int akv_execute_audited_cmd_cb(akv_ctx_t* ctx,
                                  void*      audit_token,
@@ -233,10 +245,14 @@ void test_tcm_db_add_calls_akv_execute_with_audit_token(void)
   {
     execute_callcount++;
   }
+
+
+
   akv_begin_db_add_IgnoreAndReturn(0);
-  audit_get_token_IgnoreAndReturn(0);
+  audit_get_token_StubWithCallback(&audit_get_token_cb);
   akv_execute_audited_cmd_StubWithCallback(&akv_execute_audited_cmd_cb);
 
   tcm_db_add(&tcm_ctx, "key", "value");
   TEST_ASSERT(execute_callcount > 0);
+  TEST_ASSERT(audit_callcount > 0);
 }
