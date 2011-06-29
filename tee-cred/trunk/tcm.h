@@ -39,6 +39,7 @@
 #include <stddef.h>
 
 #include "audit.h"
+#include "audited-kv.h"
 
 enum {
   TCM_ENONE=0,
@@ -50,14 +51,12 @@ enum {
 
 typedef struct {
   audit_ctx_t* audit_ctx;
-  void* db;
-  size_t db_len;
+  akv_ctx_t* akv_ctx;
 } tcm_ctx_t;
 
 int tcm_init(tcm_ctx_t*,
              audit_ctx_t*,
-             const void *db,
-             size_t db_len);
+             akv_ctx_t*);
 
 void tcm_release(tcm_ctx_t*);
 

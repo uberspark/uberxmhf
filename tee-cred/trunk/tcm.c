@@ -35,35 +35,30 @@
 
 #include <malloc.h>
 #include <string.h>
+
 #include "tcm.h"
 #include "audited-kv.h"
+#include "audit.h"
 
 int tcm_init(tcm_ctx_t* tcm_ctx,
              audit_ctx_t* audit_ctx,
-             const void *db,
-             size_t db_len)
+             akv_ctx_t* akv_ctx)
 {
   if (!tcm_ctx) {
     return TCM_EINVAL;
   }
   tcm_ctx->audit_ctx = audit_ctx;
 
-  tcm_ctx->db = malloc(db_len);
-  if (!tcm_ctx->db) {
-    return TCM_ENOMEM;
+  if (!akv_ctx) {
+    return TCM_EINVAL;
   }
-  memcpy(tcm_ctx->db, db, db_len);
+  tcm_ctx->akv_ctx = akv_ctx;
 
-  tcm_ctx->db_len = db_len;
   return 0;
 }
 
 void tcm_release(tcm_ctx_t* tcm_ctx)
 {
-  if (tcm_ctx) {
-    free(tcm_ctx->db);
-    memset(tcm_ctx, 0, sizeof(*tcm_ctx));
-  }
 }
 
 int tcm_db_add(tcm_ctx_t* tcm_ctx,
