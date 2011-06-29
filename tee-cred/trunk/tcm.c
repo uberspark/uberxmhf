@@ -81,12 +81,14 @@ int tcm_db_add(tcm_ctx_t* tcm_ctx,
     return TCM_EAKV;
   }
 
-  audit_get_token(tcm_ctx->audit_ctx,
-                  epoch_nonce,
-                  epoch_nonce_len,
-                  epoch_offset,
-                  audit_string,
-                  audit_string_len);
+  if (audit_get_token(tcm_ctx->audit_ctx,
+                      epoch_nonce,
+                      epoch_nonce_len,
+                      epoch_offset,
+                      audit_string,
+                      audit_string_len)) {
+    return TCM_EAUDIT;
+  }
   return 0;
 }
 

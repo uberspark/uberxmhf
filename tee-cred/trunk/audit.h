@@ -38,6 +38,10 @@
 
 #include <stdint.h>
 
+enum {
+  AUDIT_ENONE=0,
+};
+
 typedef struct {
 } audit_ctx_t;
 

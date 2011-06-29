@@ -48,6 +48,7 @@ enum {
   TCM_ENOTFOUND,
   TCM_EEXISTS,
   TCM_EAKV,
+  TCM_EAUDIT,
 };
 
 typedef struct {
