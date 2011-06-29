@@ -41,11 +41,7 @@
 #include <assert.h>
 #include <stdarg.h>
 
-static void free_and_null(void **ptr)
-{
-  free(*ptr);
-  *ptr = NULL;
-}
+#define free_and_null(x) do { free(x) ; x=NULL; } while(0)
 
 static char* strcpy_mallocd(const char *src)
 {
@@ -83,8 +79,8 @@ char* sprintf_mallocd(const char *format, ...)
 
 static struct {
   bool valid;
-  const char *key;
-  const char *val;
+  char *key;
+  char *val;
 } db_add_saved = {
   .valid=false,
   .key=NULL,
@@ -93,8 +89,8 @@ static struct {
 
 void akvp_db_add_release(void)
 {
-  free_and_null((void**)&db_add_saved.key);
-  free_and_null((void**)&db_add_saved.val);
+  free_and_null(db_add_saved.key);
+  free_and_null(db_add_saved.val);
   db_add_saved.valid=false;
 }
 
@@ -107,17 +103,19 @@ tz_return_t akvp_db_add_begin(char **audit_string,
 
   db_add_saved.key = strcpy_mallocd(key);
   db_add_saved.val = strcpy_mallocd(val);
-  if (!db_add_saved.key || !db_add_saved.val) {
-    akvp_db_add_release();
-    return TZ_ERROR_MEMORY;
-  }
-  
   *audit_string =
     sprintf_mallocd("ADD{key=\"%s\"}", key);
-  if (*audit_string == NULL) {
-    akvp_db_add_release();
+
+  if (!db_add_saved.key
+      || !db_add_saved.val
+      || !*audit_string) {
+    free_and_null(db_add_saved.key);
+    free_and_null(db_add_saved.val);
+    free_and_null(*audit_string);
     return TZ_ERROR_MEMORY;
   }
+
+  db_add_saved.valid = true;
 
   return TZ_SUCCESS;
 }
