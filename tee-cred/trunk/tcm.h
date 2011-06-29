@@ -65,6 +65,7 @@ enum {
   TCM_ERR_PARAM,
   TCM_ERR_NOMEM,
   TCM_ERR_NOTFOUND,
+  TCM_ERR_EXISTS,
 };
 
 typedef struct tcm_handle {

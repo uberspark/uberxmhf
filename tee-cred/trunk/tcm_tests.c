@@ -92,3 +92,8 @@ void test_tcm_db_add_null_val_error(void)
   TEST_ASSERT_EQUAL(TCM_ERR_PARAM, tcm_db_add(&tcm_handle, "foo", NULL));
 }
 
+void test_tcm_db_add_existing_key_error(void)
+{
+  tcm_db_add(&tcm_handle, "foo", "bar");
+  TEST_ASSERT_EQUAL(TCM_ERR_EXISTS, tcm_db_add(&tcm_handle, "foo", "bar"));
+}
