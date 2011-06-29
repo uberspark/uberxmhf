@@ -42,6 +42,7 @@ enum akvp_errs {
   AKV_ENOTFOUND,
   AKV_EKV,
   AKV_EBADAUDITEDCMD,
+  AKV_EBADCMDHANDLE,
 };
 
 #endif

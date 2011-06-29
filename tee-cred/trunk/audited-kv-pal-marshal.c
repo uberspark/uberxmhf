@@ -66,22 +66,28 @@ static int get_free_pending_id()
   return 0;
 }
 
-/* static void release_pending_cmd_id(int i) */
-/* { */
-/*   pending_cmd_t *cmd; */
-/*   /\* FIXME: handle multiple pending cmds *\/ */
-/*   assert(i==0); */
-/*   assert(num_pending == 1); */
+static void release_pending_cmd_id(int i)
+{
+  pending_cmd_t *cmd;
+  /* FIXME: handle multiple pending cmds */
+  assert(i==0);
+  assert(num_pending == 1);
 
-/*   cmd = &pending_cmds[i]; */
-/*   free(cmd->audit_string); */
-/*   if(cmd->release_fn && cmd->cont) { */
-/*     cmd->release_fn(cmd->cont); */
-/*   } */
-/*   free(cmd->audit_nonce); */
+  cmd = &pending_cmds[i];
+  free(cmd->audit_string);
+  if(cmd->release_fn && cmd->cont) {
+    cmd->release_fn(cmd->cont);
+  }
+  free(cmd->audit_nonce);
 
-/*   num_pending--; */
-/* } */
+  num_pending--;
+}
+
+static pending_cmd_t* pending_cmd_of_id(int i)
+{
+  assert(i == 0 && num_pending == 1);
+  return &pending_cmds[i];
+}
 
 static int save_pending_cmd(char *audit_string, void *cont, audited_execute_fn execute_fn, audited_release_fn release_fn)
 {
@@ -173,7 +179,30 @@ void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, str
     break;
   case AKVP_EXECUTE_AUDITED_CMD:
     {
-      *puiRv = TZ_ERROR_NOT_IMPLEMENTED;
+      void *audit_token;
+      size_t audit_token_len;
+      int cmd_id;
+      pending_cmd_t *cmd;
+
+      cmd_id = TZIDecodeUint32(psInBuf);
+      audit_token = TZIDecodeArraySpace(psInBuf, &audit_token_len);
+
+      if (TZIDecodeGetError(psInBuf)) {
+        *puiRv = TZIDecodeGetError(psInBuf);
+        return;
+      }
+
+      /* FIXME check audit token signature */
+      /* FIXME check time */
+
+      if (!(cmd = pending_cmd_of_id(cmd_id))) {
+        *puiRv = AKV_EBADCMDHANDLE;
+        return;
+      }
+
+      *puiRv = cmd->execute_fn(cmd->cont, psOutBuf);
+      release_pending_cmd_id(cmd_id);
+      return;
     }
     break;
   default:
