@@ -38,6 +38,8 @@
 
 #include <stdint.h>
 
+#define AUDIT_TOKEN_MAX 1000
+
 enum {
   AUDIT_ENONE=0,
 };

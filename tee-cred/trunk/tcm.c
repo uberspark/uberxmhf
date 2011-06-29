@@ -66,6 +66,8 @@ int tcm_db_add(tcm_ctx_t* tcm_ctx,
   uint64_t epoch_offset;
   char audit_string[AKV_AUDIT_STRING_MAX];
   size_t audit_string_len = sizeof(audit_string);
+  uint8_t audit_token[AUDIT_TOKEN_MAX];
+  size_t audit_token_len = sizeof(audit_token);
 
   if (!tcm_ctx || !key || !val)
     return TCM_EINVAL;
@@ -87,14 +89,14 @@ int tcm_db_add(tcm_ctx_t* tcm_ctx,
                       epoch_offset,
                       audit_string,
                       audit_string_len,
-                      NULL,
-                      NULL)) {
+                      audit_token,
+                      &audit_token_len)) {
     return TCM_EAUDIT;
   }
 
   akv_execute_audited_cmd(tcm_ctx->akv_ctx,
-                          NULL,
-                          0);
+                          audit_token,
+                          audit_token_len);
 
   return 0;
 }
