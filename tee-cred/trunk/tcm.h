@@ -72,6 +72,8 @@ int tcm_init(tcm_handle_t*,
              const void *db,
              size_t db_len);
 
+void tcm_release(tcm_handle_t*);
+
 int tcm_db_add(struct tcm_handle*,
                const char* key,
                const char* val);

@@ -36,12 +36,16 @@
 #include "unity.h"
 #include "tcm.h"
 
+tcm_handle_t tcm_handle;
+
 void setUp(void)
 {
+  tcm_init(&tcm_handle, NULL, NULL, 0);
 }
 
 void tearDown(void)
 {
+  tcm_release(&tcm_handle);
 }
 
 void test_tcm_init_null_handle_error(void)
@@ -53,4 +57,27 @@ void test_tcm_init_null_params_ok(void)
 {
   tcm_handle_t tcm_handle;
   TEST_ASSERT(!tcm_init(&tcm_handle, NULL, NULL, 0));
+}
+
+void test_tcm_release_null_ok(void)
+{
+  tcm_release(NULL);
+}
+
+void test_tcm_release_uninitd_ok(void)
+{
+  tcm_handle_t tcm_handle;
+  tcm_release(&tcm_handle);
+}
+
+void test_tcm_release_initd_ok(void)
+{
+  tcm_handle_t tcm_handle;
+  tcm_init(&tcm_handle, NULL, NULL, 0);
+  tcm_release(&tcm_handle);
+}
+
+void test_tcm_db_add_null_handle_error(void)
+{
+  TEST_ASSERT_FALSE(!tcm_db_add(NULL, NULL, NULL));
 }

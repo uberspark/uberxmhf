@@ -33,6 +33,8 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#include <malloc.h>
+#include <string.h>
 #include "tcm.h"
 
 int tcm_init(tcm_handle_t* tcm_handle,
@@ -44,7 +46,30 @@ int tcm_init(tcm_handle_t* tcm_handle,
     return -1;
   }
   tcm_handle->audit_handle = audit_handle;
-  tcm_handle->db = db;
+
+  tcm_handle->db = malloc(db_len);
+  if (!tcm_handle->db) {
+    return -2;
+  }
+  memcpy(tcm_handle->db, db, db_len);
+
   tcm_handle->db_len = db_len;
   return 0;
 }
+
+void tcm_release(tcm_handle_t* tcm_handle)
+{
+  if (tcm_handle) {
+    free(tcm_handle->db);
+    memset(tcm_handle, 0, sizeof(*tcm_handle));
+  }
+}
+
+int tcm_db_add(struct tcm_handle* tcm_handle,
+               const char* key,
+               const char* val)
+{
+  if (!tcm_handle)
+    return -1;
+}
+

@@ -2,6 +2,8 @@ CMOCKDIR=../../tools/cmock
 UNITYDIR=$(CMOCKDIR)/vendor/unity
 UNITYOBJ=$(UNITYDIR)/src/unity.o
 
+CFLAGS=-Wall
+
 all : test
 
 test : run_audit_tests run_tcm_tests
