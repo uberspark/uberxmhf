@@ -142,3 +142,25 @@ We *could* have the audit server just return the opaque binary blob
 when audit logs are requested, and use local processing to convert it
 to human-readable format. This is a bit of a pain though, since you
 wouldn't be able to access the logs from just any machine.
+
+## How large does the audit nonce need to be?
+
+The attacker model is that the malware-attacker has a set of
+audit-tokens for a command that was previously executed. The attacker
+wants to keep initiating that command with the PAL again until the PAL
+generates an audit-nonce matching one of the audit-tokens. This part
+seems like a birthday-attack, which implies we'd need something on the
+order or 256 bits for the audit nonce _if the pal generates the audit
+nonces uniformly at random_.
+
+On the other hand, the nonces do not really need to be random. They
+just need to not repeat. Can we do this by making them monotonic?
+
+I think we can do this by simply using the epoch-nonce + relative time
+obtained from the svcapi. In the current version of the protocol, we
+could set the audit-nonce to epoch-nonce||epoch-offset.
+
+It might make sense for this to be a "first class" concept
+though. i.e., this is more information that would be useful in the
+audit log. Therefore, we could actually _replace_ the audit-nonce with
+epoch-nonce and epoch-offset.
