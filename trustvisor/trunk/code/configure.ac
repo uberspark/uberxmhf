@@ -23,10 +23,6 @@ AC_CHECK_PROG([CAT], [cat], [cat])
 
 # user-defined options
 
-AC_ARG_VAR([INSTALLDIR], [where to put the final binaries])
-AC_SUBST([INSTALLDIR])
-AS_IF([test -z "$INSTALLDIR"], [INSTALLDIR=./dist])
-
 AC_SUBST([DEBUG_SERIAL])
 AC_SUBST([DEBUG_SERIAL_PORT])
 AC_ARG_ENABLE([debug_serial],

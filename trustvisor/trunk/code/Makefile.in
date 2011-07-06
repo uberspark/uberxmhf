@@ -27,9 +27,6 @@
     export DO_SENTER := y
     #MP/UP selection, y=Multiprocessor, n=Uniprocessor
     export MP_VERSION := @MP_VERSION@
-    #where you want loader and runtime binaries to go, defaults to current dir.
-	#export INSTALLDIR = $(CURDIR)/dist
-    export INSTALLDIR = @INSTALLDIR@
     #misc. configuaration w.r.t serial debugging and NPT/EPT support
 	export NESTED_PAGING := y
     export DEBUG_SERIAL := @DEBUG_SERIAL@
@@ -124,10 +121,6 @@ all:
     # make emhf core components and generate loader and runtime	
 	cd $(EMHFCOREDIR) && $(MAKE) -w all
 
-    # copy the app loader and runtime binaries to installation location
-	$(CP) $(EMHFCOREDIR)/init/init-$(TARGET_HWPLATFORM).bin $(INSTALLDIR)/init-$(TARGET_HWPLATFORM).bin
-	$(CP) $(EMHFCOREDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz $(INSTALLDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz
-
 # default target: headers and binaries
 install: install-dev install-bin
 
@@ -140,12 +133,12 @@ install-dev:
 	install app/include/trustvisor.h $(DESTDIR)$(pkgincludedir)
 	install app/include/tv_utpm.h $(DESTDIR)$(pkgincludedir)
 
-# install binaries
+# install loader and runtime binaries to installation location
 # TODO: make '/boot' configurable with ./configure
 install-bin:
 	install -d $(DESTDIR)/boot
-	install dist/hypervisor-x86.bin.gz $(DESTDIR)/boot
-	install dist/init-x86.bin $(DESTDIR)/boot
+	install $(EMHFCOREDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz $(DESTDIR)/boot
+	install $(EMHFCOREDIR)/init/init-$(TARGET_HWPLATFORM).bin $(DESTDIR)/boot
 
 #------test rules
 export CMOCKDIR:=$(realpath @CMOCKDIR@)
