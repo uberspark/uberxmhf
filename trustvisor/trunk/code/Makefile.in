@@ -154,12 +154,6 @@ clean:
 	cd $(EMHFCOREDIR) && $(MAKE) -w clean
 	cd test && $(MAKE) -w clean
 
-pratt:
-	scp dist/* root@pratt:/boot
-
-creeper:
-	scp dist/* root@creeper:/boot
-
 #-----autoconf rules
 Makefile: Makefile.in config.status
 	./config.status $@
