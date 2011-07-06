@@ -265,7 +265,7 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	printf("\n	OS bootmodule at 0x%08x, size=%u bytes", 
 		slpb.runtime_osbootmodule_base, slpb.runtime_osbootmodule_size);
 
-    /* slpb.rdtsc_after_drtm = (u64)rdtsc_eax | ((u64)rdtsc_edx << 32); */
+    slpb.rdtsc_after_drtm = (u64)rdtsc_eax | ((u64)rdtsc_edx << 32);
     /* printf("\nSL: RDTSC before_drtm 0x%llx, after_drtm 0x%llx", */
     /*        slpb.rdtsc_before_drtm, slpb.rdtsc_after_drtm); */
     /* printf("\nSL: [PERF] RDTSC DRTM elapsed cycles: 0x%llx", */
