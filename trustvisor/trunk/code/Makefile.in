@@ -127,7 +127,7 @@ install: install-dev install-bin
 # install headers
 install-dev:
 	install -d $(DESTDIR)$(pkgconfigdir)
-	install trustvisor.pc $(DESTDIR)$(pkgconfigdir)
+	install --mode=644 trustvisor.pc $(DESTDIR)$(pkgconfigdir)
 
 	install -d $(DESTDIR)$(pkgincludedir)
 	install app/include/trustvisor.h $(DESTDIR)$(pkgincludedir)
@@ -137,8 +137,8 @@ install-dev:
 # TODO: make '/boot' configurable with ./configure
 install-bin:
 	install -d $(DESTDIR)/boot
-	install $(EMHFCOREDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz $(DESTDIR)/boot
-	install $(EMHFCOREDIR)/init/init-$(TARGET_HWPLATFORM).bin $(DESTDIR)/boot
+	install --mode=644 $(EMHFCOREDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz $(DESTDIR)/boot
+	install --mode=644 $(EMHFCOREDIR)/init/init-$(TARGET_HWPLATFORM).bin $(DESTDIR)/boot
 
 #------test rules
 export CMOCKDIR:=$(realpath @CMOCKDIR@)
@@ -153,6 +153,8 @@ clean:
 	rm -rf $(APPOBJECTSDIR)
 	cd $(EMHFCOREDIR) && $(MAKE) -w clean
 	cd test && $(MAKE) -w clean
+	rm -f config.log
+	rm -f config.status
 
 #-----autoconf rules
 Makefile: Makefile.in config.status
