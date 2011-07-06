@@ -128,14 +128,24 @@ all:
 	$(CP) $(EMHFCOREDIR)/init/init-$(TARGET_HWPLATFORM).bin $(INSTALLDIR)/init-$(TARGET_HWPLATFORM).bin
 	$(CP) $(EMHFCOREDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz $(INSTALLDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz
 
-# install headers
-install:
-	install -d $(pkgconfigdir)
-	install trustvisor.pc $(pkgconfigdir)
+# default target: headers and binaries
+install: install-dev install-bin
 
-	install -d $(pkgincludedir)
-	install app/include/trustvisor.h $(pkgincludedir)
-	install app/include/tv_utpm.h $(pkgincludedir)
+# install headers
+install-dev:
+	install -d $(DESTDIR)$(pkgconfigdir)
+	install trustvisor.pc $(DESTDIR)$(pkgconfigdir)
+
+	install -d $(DESTDIR)$(pkgincludedir)
+	install app/include/trustvisor.h $(DESTDIR)$(pkgincludedir)
+	install app/include/tv_utpm.h $(DESTDIR)$(pkgincludedir)
+
+# install binaries
+# TODO: make '/boot' configurable with ./configure
+install-bin:
+	install -d $(DESTDIR)/boot
+	install dist/hypervisor-x86.bin.gz $(DESTDIR)/boot
+	install dist/init-x86.bin $(DESTDIR)/boot
 
 #------test rules
 export CMOCKDIR:=$(realpath @CMOCKDIR@)
