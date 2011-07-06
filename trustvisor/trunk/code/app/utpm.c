@@ -292,7 +292,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     uint8_t *plaintext = NULL;
     if(!utpm || !tpmPcrInfo || !input || !output || !outlen || !hmackey || !aeskey) { return 1; }
 
-    dprintf(LOG_TRACE, "[TV:utpm_seal] inlen %d, outlen %d\n", inlen, outlen);
+    dprintf(LOG_TRACE, "[TV:utpm_seal] inlen %u, outlen (junk expected) %u\n", inlen, *outlen);
     print_hex("  [TV:utpm_seal] tpmPcrInfo: ", (uint8_t*)tpmPcrInfo, sizeof(TPM_PCR_INFO));
     print_hex("  [TV:utpm_seal] input:      ", input, inlen);
     print_hex("  [TV:utpm_seal] hmackey:    ", hmackey, TPM_HASH_SIZE); /* XXX SECURITY */
@@ -442,7 +442,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
 
     /* Ciphertext (input) length should be a multiple of the AES block size + HMAC size */
     if(0 != (inlen - TPM_HASH_SIZE) % TPM_AES_KEY_LEN_BYTES) {
-        dprintf(LOG_ERROR, "Unseal Input **Length FAILURE**: 0 != (inlen - TPM_HASH_SIZE) % TPM_AES_KEY_LEN_BYTES\n");
+        dprintf(LOG_ERROR, "Unseal Input **Length FAILURE**: 0 != (inlen - TPM_HASH_SIZE) %% TPM_AES_KEY_LEN_BYTES\n");
         dprintf(LOG_ERROR, "inlen %d, TPM_HASH_SIZE %d, TPM_AES_KEY_LEN_BYTES %d\n",
                 inlen, TPM_HASH_SIZE, TPM_AES_KEY_LEN_BYTES);
         return 1;
