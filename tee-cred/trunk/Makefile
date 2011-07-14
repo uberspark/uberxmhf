@@ -4,10 +4,6 @@ test :
 	cd tests ; make
 .PHONY : test
 
-clean :
-	cd tests ; make clean
-.PHONY : clean
-
 PROG_NAME=main
 PROG_OBJS=audit.o audited-kv.o tcm.o
 CFLAGS+=-g -Wall -Werror
@@ -31,6 +27,7 @@ PAL_LDLIBS+=-lc -lnosys
 all: $(PROG_NAME)
 clean:
 	$(RM) .*.cmd *.o *.ko *~ -r .tmp* $(PROG_NAME) $(PROG_OBJS)
+	cd tests ; make clean
 .PHONY: clean all
 
 TEESDK_DATA_DIR=$(shell pkg-config --variable=pkgdatadir tee-sdk-app)
