@@ -38,13 +38,24 @@
 
 #include <stdint.h>
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+
 #define AUDIT_TOKEN_MAX 1000
 
 enum {
   AUDIT_ENONE=0,
+  AUDIT_ELOOKUP=1,
+  AUDIT_ESOCK=2,
+  AUDIT_ECONNECT=3,
+  AUDIT_ESEND=4,
+  AUDIT_ERECV=5,
 };
 
 typedef struct {
+  const char* hostname;
+  const char* svc;
 } audit_ctx_t;
 
 int audit_get_token(audit_ctx_t*    audit_ctx,
@@ -55,6 +66,5 @@ int audit_get_token(audit_ctx_t*    audit_ctx,
                     void*           audit_token,
                     size_t*         audit_token_len);
 
-audit_ctx_t* test_audit_construct(void);
-
+void audit_construct(audit_ctx_t *ctx, const char* hostname, const char* svc);
 #endif
