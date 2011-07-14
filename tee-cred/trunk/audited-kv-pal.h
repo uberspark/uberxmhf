@@ -38,9 +38,10 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <tv.h>
-#include <tz.h>
-#include <tzmarshal.h>
+
+#include <tee-sdk/tv.h>
+#include <tee-sdk/tz.h>
+#include <tee-sdk/tzmarshal.h>
 
 #include "audited-kv-errs.h"
 

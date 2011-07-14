@@ -38,7 +38,10 @@
 
 #include "tcm.h"
 #include "audited-kv.h"
+#include "audited-kv-pal.h"
 #include "audit.h"
+
+#include <tee-sdk/tv.h>
 
 int tcm_init(tcm_ctx_t* tcm_ctx,
              audit_ctx_t* audit_ctx,
@@ -61,22 +64,22 @@ int tcm_db_add(tcm_ctx_t* tcm_ctx,
                const char* key,
                const char* val)
 {
-  uint8_t epoch_nonce[AKV_EPOCH_NONCE_MAX];
-  size_t epoch_nonce_len = sizeof(epoch_nonce);
-  uint64_t epoch_offset;
-  char audit_string[AKV_AUDIT_STRING_MAX];
-  size_t audit_string_len = sizeof(audit_string);
+  const uint8_t *audit_nonce;
+  size_t audit_nonce_len;
+  const char *audit_string;
+  size_t audit_string_len;
   uint8_t audit_token[AUDIT_TOKEN_MAX];
   size_t audit_token_len = sizeof(audit_token);
+  uint32_t cmd_handle;
 
   if (!tcm_ctx || !key || !val)
     return TCM_EINVAL;
 
   if (akv_begin_db_add(tcm_ctx->akv_ctx,
-                       epoch_nonce,
-                       &epoch_nonce_len,
-                       &epoch_offset,
-                       audit_string,
+                       &cmd_handle,
+                       &audit_nonce,
+                       &audit_nonce_len,
+                       &audit_string,
                        &audit_string_len,
                        key,
                        val)) {
@@ -84,9 +87,8 @@ int tcm_db_add(tcm_ctx_t* tcm_ctx,
   }
 
   if (audit_get_token(tcm_ctx->audit_ctx,
-                      epoch_nonce,
-                      epoch_nonce_len,
-                      epoch_offset,
+                      audit_nonce,
+                      audit_nonce_len,
                       audit_string,
                       audit_string_len,
                       audit_token,
@@ -94,13 +96,37 @@ int tcm_db_add(tcm_ctx_t* tcm_ctx,
     return TCM_EAUDIT;
   }
 
-  if (akv_execute_audited_cmd(tcm_ctx->akv_ctx,
-                              audit_token,
-                              audit_token_len)) {
+  if (akv_execute_db_add(tcm_ctx->akv_ctx,
+                         cmd_handle,
+                         audit_token,
+                         audit_token_len)) {
     return TCM_EAKV;
   }
 
   return 0;
 }
 
+int main(void)
+{
+  tz_device_t tzDevice;
+  tz_session_t tzPalSession;
+  tz_uuid_t tzSvcId;
+  int rv=0;
 
+  /* tz_return_t trv; */
+  /* hellopal(PAL_HELLO, NULL, NULL, &trv); */
+  /* printf("got trv=%d\n", trv); */
+
+  tv_tz_init(&tzDevice,
+             &tzPalSession,
+             &tzSvcId,
+             &audited_kv_pal,
+             PAGE_SIZE,
+             PAGE_SIZE);
+
+  tv_tz_teardown(&tzDevice,
+                 &tzPalSession,
+                 &tzSvcId);
+
+  return rv;
+} 

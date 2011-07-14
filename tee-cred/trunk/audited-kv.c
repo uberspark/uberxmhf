@@ -64,14 +64,132 @@ int akv_ctx_release(akv_ctx_t* ctx)
   return rv;
 }
 
+tz_return_t
+TZIPrepareEncodeF(tz_session_t *psSession,
+                  tz_operation_t *psOp,
+                  uint32_t cmd,
+                  const char* str, ...)
+{
+  tz_return_t rv;
+  va_list argp;
+  va_start(argp, str);
+  rv = TZOperationPrepareInvoke(psSession,
+                                cmd,
+                                NULL,
+                                psOp);
+  if (rv) goto out;
+  rv = vTZIEncodeF(psOp, str, argp);
+ out:
+  va_end(argp);
+  return rv;
+}
+
+tz_return_t
+TZIExecuteDecodeF(tz_operation_t *psOp,
+                  tz_return_t *serviceReturn,
+                  const char* str,
+                  ...)
+{
+  tz_return_t rv;
+  va_list argp;
+  va_start(argp, str);
+
+  rv = TZOperationPerform(psOp, serviceReturn);
+  if (rv) goto out;
+  rv = vTZIDecodeF(psOp, str, argp);
+ out:
+  va_end(argp);
+  return rv;
+}
+
+tz_return_t start_audited_cmd_encode(tz_operation_t *psOp, uint32_t cmd)
+{
+  tz_return_t rv;
+  rv = TZIEncodeF(psOp, "%"TZI_EU32, cmd);
+  return rv;
+ }
+
+tz_return_t start_audited_cmd_decode(tz_operation_t *psOp,
+                                     uint32_t *pending_cmd,
+                                     void** audit_nonce, uint32_t *audit_nonce_len,
+                                     void** audit_string, uint32_t *audit_string_len)
+{
+  tz_return_t rv;
+  rv = TZIDecodeF(psOp,
+                  "%"TZI_DU32 "%"TZI_DARRSPC "%"TZI_DARRSPC,
+                  pending_cmd,
+                  audit_nonce, audit_nonce_len,
+                  audit_string, audit_string_len);
+  return rv;
+}
+
 int akv_begin_db_add(akv_ctx_t*  ctx,
-                     uint8_t*    epoch_nonce,
-                     size_t*     epoch_nonce_len,
-                     uint64_t*   epoch_offset,
-                     char*       audit_string,
-                     size_t*     audit_string_len,
+                     const uint32_t* pending_cmd,
+                     const uint8_t** audit_nonce,
+                     size_t*  audit_nonce_len,
+                     const char**   audit_string,
+                     size_t* audit_string_len,
                      const char* key,
                      const char* val)
 {
-  return 1;
+  tz_operation_t tzOp;
+  tz_return_t serviceReturn;
+  int rv=0;
+
+  rv = TZIPrepareEncodeF(&ctx->tzPalSession,
+                         &tzOp,
+                         AKVP_START_AUDITED_CMD,
+                         "%"TZI_EU32,
+                         AKVP_DB_ADD);
+  rv = TZIEncodeF(&tzOp,
+                  "%"TZI_ESTR "%"TZI_ESTR,
+                  key, val);
+  rv = TZIExecuteDecodeF(&tzOp,
+                         &serviceReturn,
+                         "%"TZI_DU32 "%"TZI_DARRSPC "%"TZI_DARRSPC,
+                         &pending_cmd,
+                         &audit_nonce, &audit_nonce_len,
+                         &audit_string, &audit_string_len);
+
+  if (rv != TZ_SUCCESS) {
+    if (rv == TZ_ERROR_SERVICE) {
+      rv = serviceReturn;
+    }
+    goto out;
+  }
+
+ out:
+  TZOperationRelease(&tzOp);
+  return rv;
+}
+
+int akv_execute_db_add(akv_ctx_t* ctx,
+                       uint32_t pending_cmd,
+                       const void* audit_token,
+                       size_t audit_token_len)
+{
+  tz_operation_t tzOp;
+  tz_return_t serviceReturn;
+  int rv=0;
+
+  rv = TZIPrepareEncodeF(&ctx->tzPalSession,
+                         &tzOp,
+                         AKVP_EXECUTE_AUDITED_CMD,
+                         "%"TZI_EU32 "%"TZI_EARR,
+                         pending_cmd,
+                         audit_token, audit_token_len);
+  rv = TZIExecuteDecodeF(&tzOp,
+                         &serviceReturn,
+                         "");
+
+  if (rv != TZ_SUCCESS) {
+    if (rv == TZ_ERROR_SERVICE) {
+      rv = serviceReturn;
+    }
+    goto out;
+  }
+
+ out:
+  TZOperationRelease(&tzOp);
+  return rv;
 }

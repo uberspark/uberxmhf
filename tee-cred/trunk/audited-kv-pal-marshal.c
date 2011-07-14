@@ -37,8 +37,9 @@
 #include "audited-kv-pal-fns.h"
 
 #include <assert.h>
-#include <tzmarshal.h>
 #include <string.h>
+
+#include <tee-sdk/tzmarshal.h>
 
 typedef tz_return_t (audited_begin_fn)(char **, void **, struct tzi_encode_buffer_t *);
 typedef tz_return_t (audited_execute_fn)(void *, struct tzi_encode_buffer_t *);
@@ -60,6 +61,9 @@ typedef void (audited_release_fn)(void *);
 /*     .release=akvp_db_get_release, */
 /*   }, */
 /* }; */
+
+char end[10*4096]; /* define the end of the data segment and some
+                      buffer spacefor libnosys's sbrk */
 
 typedef struct {
   char *audit_string;
@@ -214,7 +218,7 @@ void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, str
   case AKVP_EXECUTE_AUDITED_CMD:
     {
       void *audit_token;
-      size_t audit_token_len;
+      uint32_t audit_token_len;
       int cmd_id;
       pending_cmd_t *cmd;
 

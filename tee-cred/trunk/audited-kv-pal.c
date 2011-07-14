@@ -37,9 +37,10 @@
 #include "audited-kv-pal-fns.h"
 #include "kv.h"
 
-#include <tz.h>
-#include <tzmarshal.h>
+#include <tee-sdk/tz.h>
+#include <tee-sdk/tzmarshal.h>
 
+#include <stdio.h>
 #include <string.h>
 #include <malloc.h>
 #include <assert.h>
@@ -118,7 +119,7 @@ tz_return_t akvp_db_add_begin_marshal(char **audit_string,
                                       struct tzi_encode_buffer_t *psInBuf)
 {
   char *key, *val;
-  size_t key_len, val_len;
+  uint32_t key_len, val_len;
 
   key = TZIDecodeArraySpace(psInBuf, &key_len);
   val = TZIDecodeArraySpace(psInBuf, &val_len);
@@ -197,7 +198,7 @@ tz_return_t akvp_db_get_begin_marshal(char **audit_string,
                                       struct tzi_encode_buffer_t *psInBuf)
 {
   void *key;
-  size_t key_len;
+  uint32_t key_len;
 
   key = TZIDecodeArraySpace(psInBuf, &key_len);
 

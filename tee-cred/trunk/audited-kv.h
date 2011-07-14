@@ -56,17 +56,23 @@ int akv_ctx_init(akv_ctx_t* ctx);
 int akv_ctx_release(akv_ctx_t* ctx);
 
 int akv_execute_audited_cmd(akv_ctx_t* ctx,
-                            void* audit_token,
+                            uint32_t pending_cmd,
+                            const void* audit_token,
                             size_t audit_token_len);
 
 int akv_begin_db_add(akv_ctx_t*  ctx,
-                     uint8_t*    epoch_nonce,
-                     size_t*     epoch_nonce_len,
-                     uint64_t*   epoch_offset,
-                     char*       audit_string,
-                     size_t*     audit_string_len,
+                     const uint32_t* pending_cmd,
+                     const uint8_t** audit_nonce,
+                     size_t*  audit_nonce_len,
+                     const char**    audit_string,
+                     size_t*  audit_string_len,
                      const char* key,
                      const char* val);
+int akv_execute_db_add(akv_ctx_t* ctx,
+                       uint32_t pending_cmd,
+                       const void* audit_token,
+                       size_t audit_token_len);
+
 
 int akv_begin_db_get(akv_ctx_t*  ctx,
                      uint8_t*    epoch_nonce,

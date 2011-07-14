@@ -40,3 +40,14 @@ audit_ctx_t* test_audit_construct(void)
 {
   return NULL;
 }
+
+int audit_get_token(audit_ctx_t*    audit_ctx,
+                    const uint8_t*  audit_nonce,
+                    size_t          audit_nonce_len,
+                    const char*     audit_string,
+                    size_t          audit_string_len,
+                    void*           audit_token,
+                    size_t*         audit_token_len)
+{
+  return 0;
+}

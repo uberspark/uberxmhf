@@ -36,7 +36,7 @@
 #ifndef AUDITED_KV_PAL_FNS_H
 #define AUDITED_KV_PAL_FNS_H
 
-#include <tz.h>
+#include <tee-sdk/tz.h>
 
 void akvp_init(void);
 void akvp_release(void);
