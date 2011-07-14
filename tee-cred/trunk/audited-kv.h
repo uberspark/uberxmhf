@@ -51,25 +51,26 @@ typedef struct {
   tz_session_t  tzPalSession;
   tz_uuid_t     tzSvcId;
 } akv_ctx_t;
-
 int akv_ctx_init(akv_ctx_t* ctx);
 int akv_ctx_release(akv_ctx_t* ctx);
 
-int akv_execute_audited_cmd(akv_ctx_t* ctx,
-                            uint32_t pending_cmd,
-                            const void* audit_token,
-                            size_t audit_token_len);
+typedef struct {
+  const uint8_t* audit_nonce;
+  size_t audit_nonce_len;
+  const char* audit_string;
+  size_t audit_string_len;
 
-int akv_begin_db_add(akv_ctx_t*  ctx,
-                     const uint32_t* pending_cmd,
-                     const uint8_t** audit_nonce,
-                     size_t*  audit_nonce_len,
-                     const char**    audit_string,
-                     size_t*  audit_string_len,
+  akv_ctx_t* akv_ctx;
+  uint32_t cmd_id;
+  tz_operation_t tzStartOp;
+} akv_cmd_ctx_t;
+void akv_cmd_ctx_release(akv_cmd_ctx_t *ctx);
+
+int akv_db_add_begin(akv_ctx_t*  ctx,
+                     akv_cmd_ctx_t*  cmd_ctx,
                      const char* key,
                      const char* val);
-int akv_execute_db_add(akv_ctx_t* ctx,
-                       uint32_t pending_cmd,
+int akv_db_add_execute(akv_cmd_ctx_t* ctx,
                        const void* audit_token,
                        size_t audit_token_len);
 

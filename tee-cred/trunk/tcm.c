@@ -64,46 +64,44 @@ int tcm_db_add(tcm_ctx_t* tcm_ctx,
                const char* key,
                const char* val)
 {
-  const uint8_t *audit_nonce;
-  size_t audit_nonce_len;
-  const char *audit_string;
-  size_t audit_string_len;
+  akv_cmd_ctx_t akv_cmd_ctx;
   uint8_t audit_token[AUDIT_TOKEN_MAX];
   size_t audit_token_len = sizeof(audit_token);
-  uint32_t cmd_handle;
+  int rv = 0;
 
   if (!tcm_ctx || !key || !val)
     return TCM_EINVAL;
 
-  if (akv_begin_db_add(tcm_ctx->akv_ctx,
-                       &cmd_handle,
-                       &audit_nonce,
-                       &audit_nonce_len,
-                       &audit_string,
-                       &audit_string_len,
+  if (akv_db_add_begin(tcm_ctx->akv_ctx,
+                       &akv_cmd_ctx,
                        key,
                        val)) {
-    return TCM_EAKV;
+    rv= TCM_EAKV;
+    goto out;
   }
 
   if (audit_get_token(tcm_ctx->audit_ctx,
-                      audit_nonce,
-                      audit_nonce_len,
-                      audit_string,
-                      audit_string_len,
+                      akv_cmd_ctx.audit_nonce,
+                      akv_cmd_ctx.audit_nonce_len,
+                      akv_cmd_ctx.audit_string,
+                      akv_cmd_ctx.audit_string_len,
                       audit_token,
                       &audit_token_len)) {
-    return TCM_EAUDIT;
+    rv = TCM_EAUDIT;
+    goto out;
   }
 
-  if (akv_execute_db_add(tcm_ctx->akv_ctx,
-                         cmd_handle,
+  if (akv_db_add_execute(&akv_cmd_ctx,
                          audit_token,
                          audit_token_len)) {
-    return TCM_EAKV;
+    rv = TCM_EAKV;
+    goto out;
   }
 
-  return 0;
+ out:
+  akv_cmd_ctx_release(&akv_cmd_ctx);
+
+  return rv;
 }
 
 int main(void)

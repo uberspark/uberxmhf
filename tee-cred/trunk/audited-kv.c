@@ -123,48 +123,43 @@ tz_return_t start_audited_cmd_decode(tz_operation_t *psOp,
   return rv;
 }
 
-int akv_begin_db_add(akv_ctx_t*  ctx,
-                     const uint32_t* pending_cmd,
-                     const uint8_t** audit_nonce,
-                     size_t*  audit_nonce_len,
-                     const char**   audit_string,
-                     size_t* audit_string_len,
+void akv_cmd_ctx_release(akv_cmd_ctx_t *ctx)
+{
+  TZOperationRelease(&ctx->tzStartOp);
+}
+
+int akv_db_add_begin(akv_ctx_t*  ctx,
+                     akv_cmd_ctx_t* cmd_ctx,
                      const char* key,
                      const char* val)
 {
-  tz_operation_t tzOp;
   tz_return_t serviceReturn;
   int rv=0;
 
   rv = TZIPrepareEncodeF(&ctx->tzPalSession,
-                         &tzOp,
+                         &cmd_ctx->tzStartOp,
                          AKVP_START_AUDITED_CMD,
                          "%"TZI_EU32,
                          AKVP_DB_ADD);
-  rv = TZIEncodeF(&tzOp,
+  rv = TZIEncodeF(&cmd_ctx->tzStartOp,
                   "%"TZI_ESTR "%"TZI_ESTR,
                   key, val);
-  rv = TZIExecuteDecodeF(&tzOp,
+  rv = TZIExecuteDecodeF(&cmd_ctx->tzStartOp,
                          &serviceReturn,
                          "%"TZI_DU32 "%"TZI_DARRSPC "%"TZI_DARRSPC,
-                         &pending_cmd,
-                         &audit_nonce, &audit_nonce_len,
-                         &audit_string, &audit_string_len);
+                         &cmd_ctx->cmd_id,
+                         &cmd_ctx->audit_nonce, &cmd_ctx->audit_nonce_len,
+                         &cmd_ctx->audit_string, &cmd_ctx->audit_string_len);
 
   if (rv != TZ_SUCCESS) {
     if (rv == TZ_ERROR_SERVICE) {
       rv = serviceReturn;
     }
-    goto out;
   }
-
- out:
-  TZOperationRelease(&tzOp);
   return rv;
 }
 
-int akv_execute_db_add(akv_ctx_t* ctx,
-                       uint32_t pending_cmd,
+int akv_db_add_execute(akv_cmd_ctx_t* ctx,
                        const void* audit_token,
                        size_t audit_token_len)
 {
@@ -172,11 +167,11 @@ int akv_execute_db_add(akv_ctx_t* ctx,
   tz_return_t serviceReturn;
   int rv=0;
 
-  rv = TZIPrepareEncodeF(&ctx->tzPalSession,
+  rv = TZIPrepareEncodeF(&ctx->akv_ctx->tzPalSession,
                          &tzOp,
                          AKVP_EXECUTE_AUDITED_CMD,
                          "%"TZI_EU32 "%"TZI_EARR,
-                         pending_cmd,
+                         ctx->cmd_id,
                          audit_token, audit_token_len);
   rv = TZIExecuteDecodeF(&tzOp,
                          &serviceReturn,
