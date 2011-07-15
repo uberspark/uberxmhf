@@ -1409,6 +1409,12 @@ uint32_t scode_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
 	TPM_COMPOSITE_HASH digestAtCreation;
 
 	dprintf(LOG_TRACE, "\n[TV:scode] ********** uTPM unseal **********\n");
+
+	if(!vcpu || !input_addr || !output_addr || !output_len_addr || !digestAtCreation_addr) {
+		dprintf(LOG_ERROR, "[TV:scode] Unseal ERROR: !vcpu || !input_addr || !output_addr || !output_len_addr || !digestAtCreation_addr\n");
+		return 1;
+	}
+	
 	dprintf(LOG_TRACE, "[TV:scode] input addr: %x, len %d, output addr: %x!\n",
 					input_addr, input_len, output_addr);
 	/* check input data length */
