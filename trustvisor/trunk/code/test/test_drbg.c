@@ -92,7 +92,7 @@ static uint32_t hamming_weight(uint32_t i)
 /**
  * First test the 128-bit integer implementation's carry capabilities.
  */
-void test_add_INT128_carry(void) {
+void test_PRIMITIVE_add_INT128_carry(void) {
     INT128 i;
     i.high = 0;
     i.low = maxu64;
@@ -105,7 +105,7 @@ void test_add_INT128_carry(void) {
     TEST_ASSERT_EQUAL_HEX64(1, i.high);
 }
 
-void test_sub_INT128_carry(void) {
+void test_PRIMITIVE_sub_INT128_carry(void) {
     INT128 i, one;
     i.high = 1;
     i.low = 0;
@@ -119,9 +119,7 @@ void test_sub_INT128_carry(void) {
     TEST_ASSERT_EQUAL_HEX64(maxu64, i.low);
 }
 
-
-
-void test_hamming_weight(void) {
+void test_PRIMITIVE_hamming_weight(void) {
     TEST_ASSERT_EQUAL_INT(0, hamming_weight(0));
 
     TEST_ASSERT_EQUAL_INT(1, hamming_weight(128));
@@ -131,7 +129,11 @@ void test_hamming_weight(void) {
     TEST_ASSERT_EQUAL_INT(8, hamming_weight(255));
 }
 
-void test_drbg_ctr_MACROS(void) {
+/**
+ * drbg.c:Generate() assumes these macros are powers of 2 (i.e., have
+ * a hamming weight of 1).
+ */
+void test_ctr_drbg_MACROS_hamming_weight(void) {
     TEST_ASSERT_EQUAL_INT(1, hamming_weight(SECURITY_STRENGTH));    
     TEST_ASSERT_EQUAL_INT(1, hamming_weight(KEYLEN));    
     TEST_ASSERT_EQUAL_INT(1, hamming_weight(OUTLEN));    
