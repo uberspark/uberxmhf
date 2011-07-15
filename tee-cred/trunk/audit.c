@@ -46,6 +46,10 @@ void audit_ctx_init(audit_ctx_t *ctx, const char* hostname, const char* svc)
   return;
 }
 
+void audit_ctx_release(audit_ctx_t *ctx)
+{
+}
+
 static int audit_connect(audit_ctx_t* audit_ctx, int *sock)
 {
   int status=0;

@@ -67,4 +67,6 @@ int audit_get_token(audit_ctx_t*    audit_ctx,
                     size_t*         audit_token_len);
 
 void audit_ctx_init(audit_ctx_t *ctx, const char* hostname, const char* svc);
+void audit_ctx_release(audit_ctx_t *ctx);
+
 #endif

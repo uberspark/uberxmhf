@@ -56,7 +56,7 @@ int tcm_ctx_init(tcm_ctx_t* tcm_ctx,
   return 0;
 }
 
-void tcm_release(tcm_ctx_t* tcm_ctx)
+void tcm_ctx_release(tcm_ctx_t* tcm_ctx)
 {
 }
 
@@ -116,6 +116,7 @@ int main(int argc, char **argv)
   tcm_ctx_init(&tcm_ctx, &audit_ctx, &akv_ctx);
 
   akv_ctx_release(&akv_ctx);
-
+  audit_ctx_release(&audit_ctx);
+  tcm_ctx_release(&tcm_ctx);
   return rv;
 } 
