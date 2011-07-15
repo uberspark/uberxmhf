@@ -111,8 +111,8 @@ int main(int argc, char **argv)
   audit_ctx_t audit_ctx;
   akv_ctx_t akv_ctx;
 
-  akv_ctx_init(&akv_ctx);
   audit_ctx_init(&audit_ctx, argv[1], argv[2]);
+  akv_ctx_init(&akv_ctx);
   tcm_ctx_init(&tcm_ctx, &audit_ctx, &akv_ctx);
 
   akv_ctx_release(&akv_ctx);

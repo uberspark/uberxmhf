@@ -156,12 +156,20 @@ int audit_get_token(audit_ctx_t*    audit_ctx,
     goto close_sock;
   }
 
-  if(recvall(sock, &tmp_ui32, sizeof(tmp_ui32))
-     || recvall(sock, audit_token, tmp_ui32)) {
+  if(recvall(sock, &tmp_ui32, sizeof(tmp_ui32))) {
     status = AUDIT_ERECV;
     goto close_sock;
   }
+  if(tmp_ui32 > *audit_token_len) {
+    *audit_token_len = tmp_ui32;
+    status = AUDIT_ESHORT_BUFFER;
+    goto close_sock;
+  }
   *audit_token_len = tmp_ui32;
+  if(recvall(sock, audit_token, tmp_ui32)) {
+    status = AUDIT_ERECV;
+    goto close_sock;
+  }
 
  close_sock:
   close(sock);

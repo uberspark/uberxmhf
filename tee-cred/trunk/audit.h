@@ -51,6 +51,7 @@ enum {
   AUDIT_ECONNECT=3,
   AUDIT_ESEND=4,
   AUDIT_ERECV=5,
+  AUDIT_ESHORT_BUFFER=6,
 };
 
 typedef struct {
