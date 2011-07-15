@@ -57,9 +57,9 @@ do_buffer(NIST_CTR_DRBG* drbg, char* buffer, int length)
 {
 	nist_ctr_drbg_generate(drbg, buffer, length, NULL, 0);
 
-	printf("%d:\n", length);
-	nist_dump_hex(buffer, length);
-	printf("\n");
+	/* printf("%d:\n", length); */
+	/* nist_dump_hex(buffer, length); */
+	/* printf("\n"); */
 }
 
 void test_AES256_use_df_COUNT_0(void) {
@@ -95,18 +95,17 @@ void test_AES256_use_df_COUNT_0(void) {
     unsigned char INTERMEDIATE_ReturnedBits[] = "\x3f\x6d\xb5\x2d\xff\x53\xae\x68\xe9\x2a\xbc\xd8\x13\x1e\xf8\xbf";
     unsigned char EntropyInputReseed[] = "\xf9\xe6\x5e\x04\xd8\x56\xf3\xa9\xc4\x4a\x4c\xbd\xc1\xd0\x08\x46\xf5\x98\x3d\x77\x1c\x1b\x13\x7e\x4e\x0f\x9d\x8e\xf4\x09\xf9\x2e";
     unsigned char AdditionalInputReseed[] = "";
+    unsigned char AdditionalInput2[] = "";
     unsigned char ReturnedBits[] = "\xa0\x54\x30\x3d\x8a\x7e\xa9\x88\x9d\x90\x3e\x07\x7c\x6f\x21\x8f";
     
-    printf("NIST TEST VECTOR\n");
-
 	nist_ctr_initialize();
 
 	nist_ctr_drbg_instantiate(&drbg, EntropyInput, 32, Nonce, 16, NULL, 0);
     do_buffer(&drbg, buffer, 16);
     TEST_ASSERT_EQUAL_MEMORY(INTERMEDIATE_ReturnedBits, buffer, 16);
     
-    nist_dump_ctr_drbg(&drbg);
-    nist_dump_aes_ctx(&drbg.ctx);    
+    /* nist_dump_ctr_drbg(&drbg); */
+    /* nist_dump_aes_ctx(&drbg.ctx);     */
     
 	nist_ctr_drbg_reseed(&drbg, EntropyInputReseed, 32, NULL, 0);
     /* nist_dump_ctr_drbg(&drbg); */
