@@ -95,6 +95,11 @@ ctr_drbg_result_code_t Reseed(ctr_drbg_ctx *ctx) {
 
 #if 0    
     Get_256_Bits_Of_TPM_Entropy_Into_seed_material();
+#else
+    {
+        int i;
+        for(i=0; i<SEEDLEN/8; i++) seed_material[i] = (uint8_t)i;
+    }
 #endif
 
     return Reseed_internal(ctx, seed_material);
@@ -188,9 +193,6 @@ ctr_drbg_result_code_t Uninstantiate(ctr_drbg_ctx *ctx) {
 }
 
 /**/
-
-
-
 
 
 
