@@ -139,7 +139,7 @@ typedef enum {
 /*#define MAX_LENGTH SEEDLEN*/ /* unnecessary, since both are SEEDLEN */
 /*#define MAX_PERSONALIZATION_STRING_LENGTH SEEDLEN*/ /* optional (consider RSA modulus of EK?) */
 #define MAX_ADDITIONAL_INPUT_LENGTH SEEDLEN
-/* XXX pseudo-code differs from spec in NIST SP 90-800; going with
+/* XXX pseudo-code differs from spec in NIST SP 800-90; going with
    spec. can't see a reason that it matters whether requests are
    spread out or not */
 #define MAX_NUMBER_OF_BITS_PER_REQUEST 0x80000 /* 2^19 */ 
