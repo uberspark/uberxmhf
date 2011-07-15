@@ -57,11 +57,63 @@ do_buffer(NIST_CTR_DRBG* drbg, char* buffer, int length)
 {
 	nist_ctr_drbg_generate(drbg, buffer, length, NULL, 0);
 
-	/* printf("%d:\n", length); */
-	/* nist_dump_hex(buffer, length); */
-	/* printf("\n"); */
+	printf("%d: ", length);
+	nist_dump_hex(buffer, length);
+	printf("\n");
 }
 
+
+/**
+   [AES-256 use df]
+   [PredictionResistance = False]
+   [EntropyInputLen = 256]
+   [NonceLen = 128]
+   [PersonalizationStringLen = 0]
+   [AdditionalInputLen = 0]
+ */
+
+typedef struct {
+    unsigned char EntropyInput[32];
+    unsigned char Nonce[16];
+    unsigned char PersonalizationString[1];
+    unsigned char AdditionalInput[1];
+    unsigned char INTERMEDIATE_Key[32];
+    unsigned char INTERMEDIATE_V[16];
+    unsigned char INTERMEDIATE_ReturnedBits[16];
+    unsigned char EntropyInputReseed[32];
+    unsigned char AdditionalInputReseed[1];
+    unsigned char AdditionalInput2[1];
+    unsigned char ReturnedBits[16];
+} EntropyInputLen256NonceLen128PersonalizationStringLen0AdditionalInputLen0_t;
+
+#include "nist_test_vectors.h"
+
+void test_AES256_use_df_COUNT__struct(void) {
+	int i;
+	NIST_CTR_DRBG drbg;
+	char buffer[256];
+    EntropyInputLen256NonceLen128PersonalizationStringLen0AdditionalInputLen0_t *s[] = {
+        &count0, &count1, &count2, &count3, &count4, &count5, &count6, &count7, &count8, &count9, &count10, &count11, &count12, &count13, &count14
+    };
+
+    i=2;
+    
+	nist_ctr_initialize();
+
+	nist_ctr_drbg_instantiate(&drbg, s[i]->EntropyInput, sizeof(s[i]->EntropyInput), s[i]->Nonce, sizeof(s[i]->Nonce), NULL, 0);
+    do_buffer(&drbg, buffer, sizeof(s[i]->INTERMEDIATE_ReturnedBits));
+    TEST_ASSERT_EQUAL_MEMORY(s[i]->INTERMEDIATE_ReturnedBits, buffer, sizeof(s[i]->INTERMEDIATE_ReturnedBits));
+    
+	nist_ctr_drbg_reseed(&drbg, s[i]->EntropyInputReseed, sizeof(s[i]->EntropyInputReseed), NULL, 0);
+
+    do_buffer(&drbg, buffer, 16);
+    TEST_ASSERT_EQUAL_MEMORY(s[i]->ReturnedBits, buffer, sizeof(s[i]->ReturnedBits));
+}
+
+
+/**
+ * OLD STUFF BELOW
+ */
 void test_AES256_use_df_COUNT_0(void) {
 	int i;
 	NIST_CTR_DRBG drbg;
