@@ -52,17 +52,6 @@ void tearDown(void)
 {
 }
 
-void
-do_buffer(NIST_CTR_DRBG* drbg, char* buffer, int length)
-{
-	nist_ctr_drbg_generate(drbg, buffer, length, NULL, 0);
-
-	printf("%d: ", length);
-	nist_dump_hex(buffer, length);
-	printf("\n");
-}
-
-
 /**
    [AES-256 use df]
    [PredictionResistance = False]
@@ -88,7 +77,134 @@ typedef struct {
 
 #include "nist_test_vectors.h"
 
-void test_AES256_use_df_COUNT__struct(void) {
+void do_buffer(NIST_CTR_DRBG* drbg, char* buffer, int length)
+{
+	nist_ctr_drbg_generate(drbg, buffer, length, NULL, 0);
+
+	/* printf("%d: ", length); */
+	/* nist_dump_hex(buffer, length); */
+	/* printf("\n"); */
+}
+
+void do_initialize_instantiate_and_buffer(EntropyInputLen256NonceLen128PersonalizationStringLen0AdditionalInputLen0_t *s,
+                                          NIST_CTR_DRBG* drbg, char* buffer) {
+
+	nist_ctr_initialize();
+
+	nist_ctr_drbg_instantiate(drbg, s->EntropyInput, sizeof(s->EntropyInput), s->Nonce, sizeof(s->Nonce), NULL, 0);
+    do_buffer(drbg, buffer, sizeof(s->INTERMEDIATE_ReturnedBits));
+}
+
+void do_reseed_and_buffer(EntropyInputLen256NonceLen128PersonalizationStringLen0AdditionalInputLen0_t *s,
+                          NIST_CTR_DRBG* drbg, char* buffer) {
+
+	nist_ctr_drbg_reseed(drbg, s->EntropyInputReseed, sizeof(s->EntropyInputReseed), NULL, 0);
+
+    do_buffer(drbg, buffer, sizeof(s->ReturnedBits));
+}
+
+
+void test_AES256_use_df_EntropyInputLen256_NonceLen128_PersonalizationStringLen0_AdditionalInputLen0(void) {
+	NIST_CTR_DRBG drbg;
+	char buffer[256];
+    EntropyInputLen256NonceLen128PersonalizationStringLen0AdditionalInputLen0_t *s;
+
+    s = &count0;
+    do_initialize_instantiate_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->INTERMEDIATE_ReturnedBits, buffer, sizeof(s->INTERMEDIATE_ReturnedBits));
+    do_reseed_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->ReturnedBits, buffer, sizeof(s->ReturnedBits));
+
+    s = &count1;
+    do_initialize_instantiate_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->INTERMEDIATE_ReturnedBits, buffer, sizeof(s->INTERMEDIATE_ReturnedBits));
+    do_reseed_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->ReturnedBits, buffer, sizeof(s->ReturnedBits));
+
+    s = &count2;
+    do_initialize_instantiate_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->INTERMEDIATE_ReturnedBits, buffer, sizeof(s->INTERMEDIATE_ReturnedBits));
+    do_reseed_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->ReturnedBits, buffer, sizeof(s->ReturnedBits));
+
+    s = &count3;
+    do_initialize_instantiate_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->INTERMEDIATE_ReturnedBits, buffer, sizeof(s->INTERMEDIATE_ReturnedBits));
+    do_reseed_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->ReturnedBits, buffer, sizeof(s->ReturnedBits));
+
+    s = &count4;
+    do_initialize_instantiate_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->INTERMEDIATE_ReturnedBits, buffer, sizeof(s->INTERMEDIATE_ReturnedBits));
+    do_reseed_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->ReturnedBits, buffer, sizeof(s->ReturnedBits));
+
+    s = &count5;
+    do_initialize_instantiate_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->INTERMEDIATE_ReturnedBits, buffer, sizeof(s->INTERMEDIATE_ReturnedBits));
+    do_reseed_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->ReturnedBits, buffer, sizeof(s->ReturnedBits));
+
+    s = &count6;
+    do_initialize_instantiate_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->INTERMEDIATE_ReturnedBits, buffer, sizeof(s->INTERMEDIATE_ReturnedBits));
+    do_reseed_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->ReturnedBits, buffer, sizeof(s->ReturnedBits));
+
+    s = &count7;
+    do_initialize_instantiate_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->INTERMEDIATE_ReturnedBits, buffer, sizeof(s->INTERMEDIATE_ReturnedBits));
+    do_reseed_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->ReturnedBits, buffer, sizeof(s->ReturnedBits));
+
+    s = &count8;
+    do_initialize_instantiate_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->INTERMEDIATE_ReturnedBits, buffer, sizeof(s->INTERMEDIATE_ReturnedBits));
+    do_reseed_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->ReturnedBits, buffer, sizeof(s->ReturnedBits));
+
+    s = &count9;
+    do_initialize_instantiate_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->INTERMEDIATE_ReturnedBits, buffer, sizeof(s->INTERMEDIATE_ReturnedBits));
+    do_reseed_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->ReturnedBits, buffer, sizeof(s->ReturnedBits));
+
+    s = &count10;
+    do_initialize_instantiate_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->INTERMEDIATE_ReturnedBits, buffer, sizeof(s->INTERMEDIATE_ReturnedBits));
+    do_reseed_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->ReturnedBits, buffer, sizeof(s->ReturnedBits));
+
+    s = &count11;
+    do_initialize_instantiate_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->INTERMEDIATE_ReturnedBits, buffer, sizeof(s->INTERMEDIATE_ReturnedBits));
+    do_reseed_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->ReturnedBits, buffer, sizeof(s->ReturnedBits));
+
+    s = &count12;
+    do_initialize_instantiate_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->INTERMEDIATE_ReturnedBits, buffer, sizeof(s->INTERMEDIATE_ReturnedBits));
+    do_reseed_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->ReturnedBits, buffer, sizeof(s->ReturnedBits));
+
+    s = &count13;
+    do_initialize_instantiate_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->INTERMEDIATE_ReturnedBits, buffer, sizeof(s->INTERMEDIATE_ReturnedBits));
+    do_reseed_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->ReturnedBits, buffer, sizeof(s->ReturnedBits));
+
+    s = &count14;
+    do_initialize_instantiate_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->INTERMEDIATE_ReturnedBits, buffer, sizeof(s->INTERMEDIATE_ReturnedBits));
+    do_reseed_and_buffer(s, &drbg, buffer);
+    TEST_ASSERT_EQUAL_MEMORY(s->ReturnedBits, buffer, sizeof(s->ReturnedBits));
+}
+
+/**
+ * OLD STUFF BELOW
+ */
+
+void test_AES256_use_df__COUNT0(void) {
 	int i;
 	NIST_CTR_DRBG drbg;
 	char buffer[256];
@@ -110,10 +226,6 @@ void test_AES256_use_df_COUNT__struct(void) {
     TEST_ASSERT_EQUAL_MEMORY(s[i]->ReturnedBits, buffer, sizeof(s[i]->ReturnedBits));
 }
 
-
-/**
- * OLD STUFF BELOW
- */
 void test_AES256_use_df_COUNT_0(void) {
 	int i;
 	NIST_CTR_DRBG drbg;
