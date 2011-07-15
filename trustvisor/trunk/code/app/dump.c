@@ -49,9 +49,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <target.h>
 #include "nist_ctr_drbg.h"
-
-#include <stdio.h>
 
 void
 nist_dump_simple_hex(const void* data, int length)

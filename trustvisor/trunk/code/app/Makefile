@@ -10,7 +10,9 @@ AS_SOURCES =
 C_SOURCES = appmain.c scode.c puttymem.c \
 		tlsf.c pt.c utpm.c aes.c \
 		rsa.c bignum.c sha1.c random.c linuxrelc.c \
-		pages.c drbg.c
+		pages.c \
+		dump.c nist_ctr_drbg.c rijndael.c
+
 
 OBJECTS = $(patsubst %.S, $(APPOBJECTSDIR)/%.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, $(APPOBJECTSDIR)/%.o, $(C_SOURCES))
