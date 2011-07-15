@@ -156,7 +156,7 @@ ctr_drbg_result_code_t Generate(ctr_drbg_ctx *ctx, uint32_t requested_no_of_bits
     memset(additional_input, 0, SEEDLEN/8);
 
     /* 3. */
-    ASSERT(1 == hamming_weight(KEYLEN));
+    /* Automated tests ensure ASSERT(1 == hamming_weight(KEYLEN)); */
     temp_bits = requested_no_of_bits % KEYLEN ?
         requested_no_of_bits + KEYLEN & ~(KEYLEN-1)
         : requested_no_of_bits;

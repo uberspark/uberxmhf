@@ -84,32 +84,6 @@ static uint32_t hamming_weight(uint32_t i)
     return ((i + (i >> 4) & 0xF0F0F0F) * 0x1010101) >> 24;
 }
 
-
-/* return 'in' rounded up to the nearest bit_alignment-aligned
- * value. Example: round_up_align_bits (129, 7) will return 256. */
-static inline uint32_t round_up_align_bits(uint32_t in, uint32_t bits) {
-    uint32_t mask;
-    if(0 == (in % (1<<bits))) return in; /* nothing to do */
-
-    mask = (1 << bits) - 1;
-
-    return (in + (1<<bits)) & ~mask;
-}
-
-static inline uint32_t round_up_align_direct(uint32_t in, uint32_t maskplus1) {
-    uint32_t mask;
-    if(0 == (in % maskplus1)) return in; /* nothing to do */
-
-    if(1 != hamming_weight(maskplus1)) {
-        /* ERROR! This should never happen */
-        return 0; /* XXX should fail more catastrophically */
-    }
-    
-    mask = maskplus1 - 1;
-
-    return (in + maskplus1) & ~mask;    
-}
-
 /**
  * actual tests
  */
@@ -145,49 +119,7 @@ void test_sub_INT128_carry(void) {
     TEST_ASSERT_EQUAL_HEX64(maxu64, i.low);
 }
 
-void test_round_up_align_bits(void) {
-    uint32_t result;
 
-    /* do nothing cases */
-    result = round_up_align_bits(0, 7);
-    TEST_ASSERT_EQUAL_INT(0, result);
-    
-    result = round_up_align_bits(128, 7);    
-    TEST_ASSERT_EQUAL_INT(128, result);
-
-    /* close cases */
-    result = round_up_align_bits(1, 7);
-    TEST_ASSERT_EQUAL_INT(128, result);
-    
-    result = round_up_align_bits(129, 7);
-    TEST_ASSERT_EQUAL_INT(256, result);
-    
-    /* try another width */
-    result = round_up_align_bits(257, 8);    
-    TEST_ASSERT_EQUAL_INT(512, result);
-}
-
-void test_round_up_align_direct(void) {
-    uint32_t result;
-
-    /* do nothing cases */
-    result = round_up_align_direct(0, 128);
-    TEST_ASSERT_EQUAL_INT(0, result);
-    
-    result = round_up_align_direct(128, 128);    
-    TEST_ASSERT_EQUAL_INT(128, result);
-
-    /* close cases */
-    result = round_up_align_direct(1, 128);
-    TEST_ASSERT_EQUAL_INT(128, result);
-    
-    result = round_up_align_direct(129, 128);
-    TEST_ASSERT_EQUAL_INT(256, result);
-    
-    /* try another width */
-    result = round_up_align_direct(257, 256);    
-    TEST_ASSERT_EQUAL_INT(512, result);
-}
 
 void test_hamming_weight(void) {
     TEST_ASSERT_EQUAL_INT(0, hamming_weight(0));
@@ -230,6 +162,16 @@ void test_ctr_drbg_GENERIC(void) {
     rc = Generate(&ctx, KEYLEN_MISALIGNED_BITS_TO_GENERATE, buf);
     TEST_ASSERT_EQUAL_INT(CTR_DRBG_SUCCESS, rc);
     TEST_ASSERT_EQUAL_HEX64(3, ctx.reseed_counter);
+
+    /* Generate some bits; number of bits is a multiple of KEYLEN */
+    rc = Generate(&ctx, KEYLEN_ALIGNED_BITS_TO_GENERATE, buf);
+    TEST_ASSERT_EQUAL_INT(CTR_DRBG_SUCCESS, rc);
+    TEST_ASSERT_EQUAL_HEX64(4, ctx.reseed_counter);    
+
+    /* Generate some bits; number of bits is NOT a multiple of KEYLEN */
+    rc = Generate(&ctx, KEYLEN_MISALIGNED_BITS_TO_GENERATE, buf);
+    TEST_ASSERT_EQUAL_INT(CTR_DRBG_SUCCESS, rc);
+    TEST_ASSERT_EQUAL_HEX64(5, ctx.reseed_counter);
 }
 
 
