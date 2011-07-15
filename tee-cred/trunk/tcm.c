@@ -43,9 +43,9 @@
 
 #include <tee-sdk/tv.h>
 
-int tcm_init(tcm_ctx_t* tcm_ctx,
-             audit_ctx_t* audit_ctx,
-             akv_ctx_t* akv_ctx)
+int tcm_ctx_init(tcm_ctx_t* tcm_ctx,
+                 audit_ctx_t* audit_ctx,
+                 akv_ctx_t* akv_ctx)
 {
   if (!tcm_ctx || !audit_ctx || !akv_ctx) {
     return TCM_EINVAL;
@@ -113,7 +113,7 @@ int main(int argc, char **argv)
 
   akv_ctx_init(&akv_ctx);
   audit_ctx_init(&audit_ctx, argv[1], argv[2]);
-  tcm_init(&tcm_ctx, &audit_ctx, &akv_ctx);
+  tcm_ctx_init(&tcm_ctx, &audit_ctx, &akv_ctx);
 
   akv_ctx_release(&akv_ctx);
 
