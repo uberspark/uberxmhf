@@ -74,24 +74,177 @@ void tearDown(void)
 {
 }
 
-/* actual tests */
-
-#define maxu64 0xffffffffffffffffull
-
-void test_ZERO_HI64(void)
+/**
+ * Clever helpers
+ */
+static uint32_t hamming_weight(uint32_t i)
 {
-  TEST_ASSERT_EQUAL_HEX64(maxu64, ZERO_HI64(maxu64, 0));
-  TEST_ASSERT_EQUAL_HEX64(0x7fffffffffffffffull, ZERO_HI64(maxu64, 1));
-  TEST_ASSERT_EQUAL_HEX64(0x1ull, ZERO_HI64(maxu64, 63));
+    i = i - ((i >> 1) & 0x55555555);
+    i = (i & 0x33333333) + ((i >> 2) & 0x33333333);
+    return ((i + (i >> 4) & 0xF0F0F0F) * 0x1010101) >> 24;
 }
 
-void test_add1_INT128(void) {
+
+/* return 'in' rounded up to the nearest bit_alignment-aligned
+ * value. Example: round_up_align_bits (129, 7) will return 256. */
+static inline uint32_t round_up_align_bits(uint32_t in, uint32_t bits) {
+    uint32_t mask;
+    if(0 == (in % (1<<bits))) return in; /* nothing to do */
+
+    mask = (1 << bits) - 1;
+
+    return (in + (1<<bits)) & ~mask;
+}
+
+static inline uint32_t round_up_align_direct(uint32_t in, uint32_t maskplus1) {
+    uint32_t mask;
+    if(0 == (in % maskplus1)) return in; /* nothing to do */
+
+    if(1 != hamming_weight(maskplus1)) {
+        /* ERROR! This should never happen */
+        return 0; /* XXX should fail more catastrophically */
+    }
+    
+    mask = maskplus1 - 1;
+
+    return (in + maskplus1) & ~mask;    
+}
+
+/**
+ * actual tests
+ */
+#define maxu64 0xffffffffffffffffull
+
+/**
+ * First test the 128-bit integer implementation's carry capabilities.
+ */
+void test_add_INT128_carry(void) {
     INT128 i;
     i.high = 0;
     i.low = maxu64;
 
     TEST_ASSERT_EQUAL_HEX64(maxu64, i.low);
-    i.low++;
-    TEST_ASSERT_EQUAL_HEX64(maxu64, i.low);
 
+    add1_INT128(&i); /* should propagate carry to i.high */
+
+    TEST_ASSERT_EQUAL_HEX64(0, i.low);
+    TEST_ASSERT_EQUAL_HEX64(1, i.high);
 }
+
+void test_sub_INT128_carry(void) {
+    INT128 i, one;
+    i.high = 1;
+    i.low = 0;
+
+    one.high = 0;
+    one.low = 1;
+
+    sub_INT128(&i, &one);
+
+    TEST_ASSERT_EQUAL_HEX64(0, i.high);
+    TEST_ASSERT_EQUAL_HEX64(maxu64, i.low);
+}
+
+void test_round_up_align_bits(void) {
+    uint32_t result;
+
+    /* do nothing cases */
+    result = round_up_align_bits(0, 7);
+    TEST_ASSERT_EQUAL_INT(0, result);
+    
+    result = round_up_align_bits(128, 7);    
+    TEST_ASSERT_EQUAL_INT(128, result);
+
+    /* close cases */
+    result = round_up_align_bits(1, 7);
+    TEST_ASSERT_EQUAL_INT(128, result);
+    
+    result = round_up_align_bits(129, 7);
+    TEST_ASSERT_EQUAL_INT(256, result);
+    
+    /* try another width */
+    result = round_up_align_bits(257, 8);    
+    TEST_ASSERT_EQUAL_INT(512, result);
+}
+
+void test_round_up_align_direct(void) {
+    uint32_t result;
+
+    /* do nothing cases */
+    result = round_up_align_direct(0, 128);
+    TEST_ASSERT_EQUAL_INT(0, result);
+    
+    result = round_up_align_direct(128, 128);    
+    TEST_ASSERT_EQUAL_INT(128, result);
+
+    /* close cases */
+    result = round_up_align_direct(1, 128);
+    TEST_ASSERT_EQUAL_INT(128, result);
+    
+    result = round_up_align_direct(129, 128);
+    TEST_ASSERT_EQUAL_INT(256, result);
+    
+    /* try another width */
+    result = round_up_align_direct(257, 256);    
+    TEST_ASSERT_EQUAL_INT(512, result);
+}
+
+void test_hamming_weight(void) {
+    TEST_ASSERT_EQUAL_INT(0, hamming_weight(0));
+
+    TEST_ASSERT_EQUAL_INT(1, hamming_weight(128));
+
+    TEST_ASSERT_EQUAL_INT(7, hamming_weight(127));
+
+    TEST_ASSERT_EQUAL_INT(8, hamming_weight(255));
+}
+
+void test_drbg_ctr_MACROS(void) {
+    TEST_ASSERT_EQUAL_INT(1, hamming_weight(SECURITY_STRENGTH));    
+    TEST_ASSERT_EQUAL_INT(1, hamming_weight(KEYLEN));    
+    TEST_ASSERT_EQUAL_INT(1, hamming_weight(OUTLEN));    
+    TEST_ASSERT_EQUAL_INT(1, hamming_weight(SEEDLEN));    
+}
+
+#define KEYLEN_ALIGNED_BITS_TO_GENERATE (KEYLEN*20)
+#define KEYLEN_MISALIGNED_BITS_TO_GENERATE (KEYLEN_ALIGNED_BITS_TO_GENERATE+(KEYLEN/2))
+
+void test_ctr_drbg_GENERIC(void) {
+    ctr_drbg_ctx ctx;
+    ctr_drbg_result_code_t rc;
+    uint8_t buf[KEYLEN_MISALIGNED_BITS_TO_GENERATE/8];
+
+    /* Basic instantiation */
+    rc = Instantiate(&ctx);
+    TEST_ASSERT_EQUAL_INT(CTR_DRBG_SUCCESS, rc);
+
+    /* Reseed counter should be set to 1 during instantiate */
+    TEST_ASSERT_EQUAL_HEX64(1, ctx.reseed_counter);
+
+    /* Generate some bits; number of bits is a multiple of KEYLEN */
+    rc = Generate(&ctx, KEYLEN_ALIGNED_BITS_TO_GENERATE, buf);
+    TEST_ASSERT_EQUAL_INT(CTR_DRBG_SUCCESS, rc);
+    TEST_ASSERT_EQUAL_HEX64(2, ctx.reseed_counter);    
+
+    /* Generate some bits; number of bits is NOT a multiple of KEYLEN */
+    rc = Generate(&ctx, KEYLEN_MISALIGNED_BITS_TO_GENERATE, buf);
+    TEST_ASSERT_EQUAL_INT(CTR_DRBG_SUCCESS, rc);
+    TEST_ASSERT_EQUAL_HEX64(3, ctx.reseed_counter);
+}
+
+
+
+/* uint8_t r[100]; */
+/* ctr_drbg_ctx ctx; */
+/* int i; */
+
+/* Instantiate(&ctx); */
+/* printf("\nDRBG test:\n"); */
+/* for(i=0; i<5; i++) { */
+/*     Generate(&ctx, 100*8, r); */
+/*     printf("    %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n", */
+/*            r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8], r[9]); */
+/* } */
+/* Uninstantiate(&ctx); */
+
+      

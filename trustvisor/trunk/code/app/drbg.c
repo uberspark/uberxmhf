@@ -75,6 +75,7 @@ static ctr_drbg_result_code_t Update(ctr_drbg_ctx *ctx, uint8_t *provided_data /
     memcpy(&ctx->V, &temp2, sizeof(INT128)); /* 6. */
 
     /* 7. Implicit.  ctx is updated. */
+    return CTR_DRBG_SUCCESS;
 }
 
 static ctr_drbg_result_code_t Reseed_internal(ctr_drbg_ctx *ctx, uint8_t *seed_material /* always SEEDLEN */) {
@@ -86,6 +87,8 @@ static ctr_drbg_result_code_t Reseed_internal(ctr_drbg_ctx *ctx, uint8_t *seed_m
     if(CTR_DRBG_SUCCESS != rv) return rv;
 
     ctx->reseed_counter = 1;
+
+    return rv;
 }
 
 ctr_drbg_result_code_t Reseed(ctr_drbg_ctx *ctx) {
@@ -127,6 +130,7 @@ ctr_drbg_result_code_t Generate(ctr_drbg_ctx *ctx, uint32_t requested_no_of_bits
     ctr_drbg_result_code_t rv;
     uint8_t additional_input[SEEDLEN/8];
     uint8_t *temp;
+    uint32_t temp_bits;
     uint8_t *p;
     uint32_t bits_so_far;
     
@@ -152,7 +156,12 @@ ctr_drbg_result_code_t Generate(ctr_drbg_ctx *ctx, uint32_t requested_no_of_bits
     memset(additional_input, 0, SEEDLEN/8);
 
     /* 3. */
-    temp = (uint8_t*)vmalloc(requested_no_of_bits);
+    ASSERT(1 == hamming_weight(KEYLEN));
+    temp_bits = requested_no_of_bits % KEYLEN ?
+        requested_no_of_bits + KEYLEN & ~(KEYLEN-1)
+        : requested_no_of_bits;
+    
+    temp = (uint8_t*)vmalloc(temp_bits/8);
     if(NULL == temp) { return CTR_DRBG_ERROR; }
 
     /* 4. */
@@ -164,7 +173,8 @@ ctr_drbg_result_code_t Generate(ctr_drbg_ctx *ctx, uint32_t requested_no_of_bits
         aes_setkey_enc(&ctx->aes_ctx, (uint8_t*)&ctx->Key, KEYLEN);
         aes_crypt_ecb(&ctx->aes_ctx, AES_ENCRYPT, (uint8_t*)&ctx->V, (uint8_t*)p);
         /* 4.3 */
-        p += KEYLEN;
+        p += KEYLEN/8;
+        bits_so_far += KEYLEN;
     }
     /* 5. */
     memcpy(output, temp, requested_no_of_bits/8);    

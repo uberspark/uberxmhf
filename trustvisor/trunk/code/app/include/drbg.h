@@ -103,7 +103,6 @@ static inline void sub_INT128(INT128 *lhs, INT128 *rhs) {
     memcpy(lhs, &diff, sizeof(INT128));
 }
 
-
 /**
  * Design notes:
  *
