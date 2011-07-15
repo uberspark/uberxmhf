@@ -39,30 +39,8 @@
 
 #define dprintf(...) while(0)
 
-#define _PUTTYMEM_H_ /* avoid using puttymem */
-
 #include <com.h> /* required by target.h included from drbg.h FIXME */
-#include <drbg.h>
-
-/* replacements for puttymem */
-void *safemalloc(size_t size) {
-    unsigned u = malloc(size);
-    void *r = (void*)u;
-    return r;
-}
-
-void safefree(void *p) {
-    free(p);
-}
-
-void *vmemcpy(void *dest, const void *src, size_t n) {
-    return memcpy(dest, src, n);
-}
-
-void *vmemset(void *s, int c, size_t n) {
-    return memset(s, c, n);
-}
-
+#include <nist_ctr_drbg.h>
 
 
 /* standard unity constructions */
@@ -74,121 +52,124 @@ void tearDown(void)
 {
 }
 
-/**
- * Clever helpers
- */
-static uint32_t hamming_weight(uint32_t i)
+void
+do_buffer(NIST_CTR_DRBG* drbg, char* buffer, int length)
 {
-    i = i - ((i >> 1) & 0x55555555);
-    i = (i & 0x33333333) + ((i >> 2) & 0x33333333);
-    return ((i + (i >> 4) & 0xF0F0F0F) * 0x1010101) >> 24;
+	nist_ctr_drbg_generate(drbg, buffer, length, NULL, 0);
+
+	printf("%d:\n", length);
+	nist_dump_hex(buffer, length);
+	printf("\n");
 }
 
-/**
- * actual tests
- */
-#define maxu64 0xffffffffffffffffull
-
-/**
- * First test the 128-bit integer implementation's carry capabilities.
- */
-void test_PRIMITIVE_add_INT128_carry(void) {
-    INT128 i;
-    i.high = 0;
-    i.low = maxu64;
-
-    TEST_ASSERT_EQUAL_HEX64(maxu64, i.low);
-
-    add1_INT128(&i); /* should propagate carry to i.high */
-
-    TEST_ASSERT_EQUAL_HEX64(0, i.low);
-    TEST_ASSERT_EQUAL_HEX64(1, i.high);
-}
-
-void test_PRIMITIVE_sub_INT128_carry(void) {
-    INT128 i, one;
-    i.high = 1;
-    i.low = 0;
-
-    one.high = 0;
-    one.low = 1;
-
-    sub_INT128(&i, &one);
-
-    TEST_ASSERT_EQUAL_HEX64(0, i.high);
-    TEST_ASSERT_EQUAL_HEX64(maxu64, i.low);
-}
-
-void test_PRIMITIVE_hamming_weight(void) {
-    TEST_ASSERT_EQUAL_INT(0, hamming_weight(0));
-
-    TEST_ASSERT_EQUAL_INT(1, hamming_weight(128));
-
-    TEST_ASSERT_EQUAL_INT(7, hamming_weight(127));
-
-    TEST_ASSERT_EQUAL_INT(8, hamming_weight(255));
-}
-
-/**
- * drbg.c:Generate() assumes these macros are powers of 2 (i.e., have
- * a hamming weight of 1).
- */
-void test_ctr_drbg_MACROS_hamming_weight(void) {
-    TEST_ASSERT_EQUAL_INT(1, hamming_weight(SECURITY_STRENGTH));    
-    TEST_ASSERT_EQUAL_INT(1, hamming_weight(KEYLEN));    
-    TEST_ASSERT_EQUAL_INT(1, hamming_weight(OUTLEN));    
-    TEST_ASSERT_EQUAL_INT(1, hamming_weight(SEEDLEN));    
-}
-
-#define KEYLEN_ALIGNED_BITS_TO_GENERATE (KEYLEN*20)
-#define KEYLEN_MISALIGNED_BITS_TO_GENERATE (KEYLEN_ALIGNED_BITS_TO_GENERATE+(KEYLEN/2))
-
-void test_ctr_drbg_GENERIC(void) {
-    ctr_drbg_ctx ctx;
-    ctr_drbg_result_code_t rc;
-    uint8_t buf[KEYLEN_MISALIGNED_BITS_TO_GENERATE/8];
-
-    /* Basic instantiation */
-    rc = Instantiate(&ctx);
-    TEST_ASSERT_EQUAL_INT(CTR_DRBG_SUCCESS, rc);
-
-    /* Reseed counter should be set to 1 during instantiate */
-    TEST_ASSERT_EQUAL_HEX64(1, ctx.reseed_counter);
-
-    /* Generate some bits; number of bits is a multiple of KEYLEN */
-    rc = Generate(&ctx, KEYLEN_ALIGNED_BITS_TO_GENERATE, buf);
-    TEST_ASSERT_EQUAL_INT(CTR_DRBG_SUCCESS, rc);
-    TEST_ASSERT_EQUAL_HEX64(2, ctx.reseed_counter);    
-
-    /* Generate some bits; number of bits is NOT a multiple of KEYLEN */
-    rc = Generate(&ctx, KEYLEN_MISALIGNED_BITS_TO_GENERATE, buf);
-    TEST_ASSERT_EQUAL_INT(CTR_DRBG_SUCCESS, rc);
-    TEST_ASSERT_EQUAL_HEX64(3, ctx.reseed_counter);
-
-    /* Generate some bits; number of bits is a multiple of KEYLEN */
-    rc = Generate(&ctx, KEYLEN_ALIGNED_BITS_TO_GENERATE, buf);
-    TEST_ASSERT_EQUAL_INT(CTR_DRBG_SUCCESS, rc);
-    TEST_ASSERT_EQUAL_HEX64(4, ctx.reseed_counter);    
-
-    /* Generate some bits; number of bits is NOT a multiple of KEYLEN */
-    rc = Generate(&ctx, KEYLEN_MISALIGNED_BITS_TO_GENERATE, buf);
-    TEST_ASSERT_EQUAL_INT(CTR_DRBG_SUCCESS, rc);
-    TEST_ASSERT_EQUAL_HEX64(5, ctx.reseed_counter);
-}
-
-
-
-/* uint8_t r[100]; */
-/* ctr_drbg_ctx ctx; */
-/* int i; */
-
-/* Instantiate(&ctx); */
-/* printf("\nDRBG test:\n"); */
-/* for(i=0; i<5; i++) { */
-/*     Generate(&ctx, 100*8, r); */
-/*     printf("    %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n", */
-/*            r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8], r[9]); */
-/* } */
-/* Uninstantiate(&ctx); */
-
+void test_AES256_use_df_COUNT_0(void) {
+	int i;
+	NIST_CTR_DRBG drbg;
+	char buffer[256];
+    /*
+      [AES-256 use df]
+      [PredictionResistance = False]
+      [EntropyInputLen = 256]
+      [NonceLen = 128]
+      [PersonalizationStringLen = 0]
+      [AdditionalInputLen = 0]
       
+      COUNT = 0
+      EntropyInput = 5a194d5e2b31581454def675fb7958fec7db873e5689fc9d03217c68d8033820
+      Nonce = 1b54b8ff0642bff521f15c1c0b665f3f
+      PersonalizationString = 
+      AdditionalInput = 
+      INTERMEDIATE Key = b839fa3b11b77ac80f101e14afa7f85211048d745d8eaaa4bda9dca2a56259c1
+      INTERMEDIATE V = b0ee8dfa67ecfd5c8dca69adc0b75e8d
+      INTERMEDIATE ReturnedBits = 3f6db52dff53ae68e92abcd8131ef8bf
+      EntropyInputReseed = f9e65e04d856f3a9c44a4cbdc1d00846f5983d771c1b137e4e0f9d8ef409f92e
+      AdditionalInputReseed = 
+      AdditionalInput = 
+      ReturnedBits = a054303d8a7ea9889d903e077c6f218f
+    */
+    
+    unsigned char EntropyInput[] = {
+        0x5a, 0x19, 0x4d, 0x5e, 0x2b, 0x31, 0x58, 0x14,
+        0x54, 0xde, 0xf6, 0x75, 0xfb, 0x79, 0x58, 0xfe,
+        0xc7, 0xdb, 0x87, 0x3e, 0x56, 0x89, 0xfc, 0x9d,
+        0x03, 0x21, 0x7c, 0x68, 0xd8, 0x03, 0x38, 0x20
+    };
+    
+    unsigned char Nonce[] = {
+        0x1b, 0x54, 0xb8, 0xff, 0x06, 0x42, 0xbf, 0xf5,
+        0x21, 0xf1, 0x5c, 0x1c, 0x0b, 0x66, 0x5f, 0x3f
+    };
+    
+    unsigned char EntropyInputReseed[] = {
+        0xf9, 0xe6, 0x5e, 0x04, 0xd8, 0x56, 0xf3, 0xa9,
+        0xc4, 0x4a, 0x4c, 0xbd, 0xc1, 0xd0, 0x08, 0x46,
+        0xf5, 0x98, 0x3d, 0x77, 0x1c, 0x1b, 0x13, 0x7e,
+        0x4e, 0x0f, 0x9d, 0x8e, 0xf4, 0x09, 0xf9, 0x2e
+    };
+
+    unsigned char INTERMEDIATEReturnedBits[] = 
+        "\x3f\x6d\xb5\x2d\xff\x53\xae\x68\xe9\x2a\xbc\xd8\x13\x1e\xf8\xbf";
+    
+    unsigned char ReturnedBits[] =
+        "\xa0\x54\x30\x3d\x8a\x7e\xa9\x88\x9d\x90\x3e\x07\x7c\x6f\x21\x8f";
+    
+    
+    printf("NIST TEST VECTOR\n");
+
+	nist_ctr_initialize();
+
+	nist_ctr_drbg_instantiate(&drbg, EntropyInput, 32, Nonce, 16, NULL, 0);
+    do_buffer(&drbg, buffer, 16);
+    TEST_ASSERT_EQUAL_MEMORY(INTERMEDIATEReturnedBits, buffer, 16);
+    
+    nist_dump_ctr_drbg(&drbg);
+    nist_dump_aes_ctx(&drbg.ctx);    
+    
+	nist_ctr_drbg_reseed(&drbg, EntropyInputReseed, 32, NULL, 0);
+    /* nist_dump_ctr_drbg(&drbg); */
+    /* nist_dump_aes_ctx(&drbg.ctx); */
+
+    do_buffer(&drbg, buffer, 16);
+    TEST_ASSERT_EQUAL_MEMORY(ReturnedBits, buffer, 16);
+}
+
+
+
+/* #define KEYLEN_ALIGNED_BITS_TO_GENERATE (KEYLEN*20) */
+/* #define KEYLEN_MISALIGNED_BITS_TO_GENERATE (KEYLEN_ALIGNED_BITS_TO_GENERATE+(KEYLEN/2)) */
+
+/* void test_ctr_drbg_GENERIC(void) { */
+/*     ctr_drbg_ctx ctx; */
+/*     ctr_drbg_result_code_t rc; */
+/*     uint8_t buf[KEYLEN_MISALIGNED_BITS_TO_GENERATE/8]; */
+
+/*     /\* Basic instantiation *\/ */
+/*     rc = Instantiate(&ctx); */
+/*     TEST_ASSERT_EQUAL_INT(CTR_DRBG_SUCCESS, rc); */
+
+/*     /\* Reseed counter should be set to 1 during instantiate *\/ */
+/*     TEST_ASSERT_EQUAL_HEX64(1, ctx.reseed_counter); */
+
+/*     /\* Generate some bits; number of bits is a multiple of KEYLEN *\/ */
+/*     rc = Generate(&ctx, KEYLEN_ALIGNED_BITS_TO_GENERATE, buf); */
+/*     TEST_ASSERT_EQUAL_INT(CTR_DRBG_SUCCESS, rc); */
+/*     TEST_ASSERT_EQUAL_HEX64(2, ctx.reseed_counter);     */
+
+/*     /\* Generate some bits; number of bits is NOT a multiple of KEYLEN *\/ */
+/*     rc = Generate(&ctx, KEYLEN_MISALIGNED_BITS_TO_GENERATE, buf); */
+/*     TEST_ASSERT_EQUAL_INT(CTR_DRBG_SUCCESS, rc); */
+/*     TEST_ASSERT_EQUAL_HEX64(3, ctx.reseed_counter); */
+
+/*     /\* Generate some bits; number of bits is a multiple of KEYLEN *\/ */
+/*     rc = Generate(&ctx, KEYLEN_ALIGNED_BITS_TO_GENERATE, buf); */
+/*     TEST_ASSERT_EQUAL_INT(CTR_DRBG_SUCCESS, rc); */
+/*     TEST_ASSERT_EQUAL_HEX64(4, ctx.reseed_counter);     */
+
+/*     /\* Generate some bits; number of bits is NOT a multiple of KEYLEN *\/ */
+/*     rc = Generate(&ctx, KEYLEN_MISALIGNED_BITS_TO_GENERATE, buf); */
+/*     TEST_ASSERT_EQUAL_INT(CTR_DRBG_SUCCESS, rc); */
+/*     TEST_ASSERT_EQUAL_HEX64(5, ctx.reseed_counter); */
+/* } */
+
+
+

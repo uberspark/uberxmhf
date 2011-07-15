@@ -11,7 +11,7 @@ pt: pt_runner.o pt.o ../app/objects/pt.o ${UNITYDIR}/src/unity.o
 
 hpt: hpt_runner.o hpt.o ${UNITYDIR}/src/unity.o
 
-drbg: test_drbg_runner.o test_drbg.o ../app/objects/drbg.o ../app/objects/aes.o ${UNITYDIR}/src/unity.o 
+drbg: test_drbg_runner.o test_drbg.o ../app/objects/dump.o ../app/objects/rijndael.o ../app/objects/nist_ctr_drbg.o ${UNITYDIR}/src/unity.o 
 	$(CC) -o $@ $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS)
 
 pages: test_pages_runner.o test_pages.o ../app/pages.o ../app/puttymem.o ../app/tlsf.o ../emhfcore/x86/libcommon/mpsup.o ${UNITYDIR}/src/unity.o
