@@ -53,7 +53,14 @@ __attribute__ ((section (".scode")))
 static int do_seal(uint8_t *unsealed, size_t unsealed_len,
                    uint8_t *sealed, size_t *sealed_len)
 {
-  return svc_utpm_seal(NULL, /* use current PCR value */
+  TPM_PCR_INFO pcrInfo;
+  unsigned int i;
+
+  /*memset(&pcrInfo, 0, sizeof(pcrInfo));*/ /* no memset in here */
+
+  pcrInfo.pcrSelection.sizeOfSelect = 0; /* no PCRs */
+  
+  return svc_utpm_seal(&pcrInfo, 
                        unsealed, unsealed_len,
                        sealed, sealed_len);
 }
