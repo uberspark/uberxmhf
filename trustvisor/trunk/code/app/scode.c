@@ -1342,7 +1342,7 @@ uint32_t scode_seal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len, uint32
 	TPM_PCR_INFO tpmPcrInfo;
 	
 	dprintf(LOG_TRACE, "\n[TV] ********** uTPM seal **********\n");
-	dprintf(LOG_TRACE, "[TV] input addr: %x, len %d, pcr addr: %x, output addr: %x!\n", input_addr, input_len, tpmPcrInfo_addr, output_addr);
+	dprintf(LOG_TRACE, "[TV] input_addr: %x, input_len %d, tpmPcrInfo_addr: %x, output_addr: %x!\n", input_addr, input_len, tpmPcrInfo_addr, output_addr);
 
 	if(!vcpu || !input_addr || !tpmPcrInfo_addr || !output_addr || !output_len_addr) {
 		dprintf(LOG_ERROR, "[TV] Seal ERROR: !vcpu || !input_addr || !tpmPcrInfo_addr || !output_addr || !output_len_addr\n");
