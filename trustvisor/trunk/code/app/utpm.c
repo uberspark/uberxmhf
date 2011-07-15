@@ -290,9 +290,12 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 	aes_context ctx;
     TPM_PCR_INFO tpmPcrInfo_internal;
     uint8_t *plaintext = NULL;
-    if(!utpm || !tpmPcrInfo || !input || !output || !outlen || !hmackey || !aeskey) { return 1; }
+    if(!utpm || !tpmPcrInfo || !input || !output || !outlen || !hmackey || !aeskey) {
+		dprintf(LOG_ERROR, "[TV] utpm_seal ERROR: !utpm || !tpmPcrInfo || !input || !output || !outlen || !hmackey || !aeskey\n");
+        return 1;
+    }
 
-    dprintf(LOG_TRACE, "[TV:utpm_seal] inlen %u, outlen (junk expected) %u\n", inlen, *outlen);
+    dprintf(LOG_TRACE, "[TV:utpm_seal] inlen %u, outlen (junk expected) %u, tpmPcrInfo %p\n", inlen, *outlen, tpmPcrInfo);
     print_hex("  [TV:utpm_seal] tpmPcrInfo: ", (uint8_t*)tpmPcrInfo, sizeof(TPM_PCR_INFO));
     print_hex("  [TV:utpm_seal] input:      ", input, inlen);
     print_hex("  [TV:utpm_seal] hmackey:    ", hmackey, TPM_HASH_SIZE); /* XXX SECURITY */
