@@ -48,6 +48,10 @@
 #include <aes.h>
 #include <puttymem.h>
 
+/* awesome trick from http://www.jaggersoft.com/pubs/CVu11_3.html */
+#define COMPILE_TIME_ASSERT(pred)            \
+    switch(0){case 0:case pred:;}
+
 struct INT128_t {
     int64_t high;
     uint64_t low;

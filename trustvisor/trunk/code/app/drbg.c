@@ -65,6 +65,7 @@ static ctr_drbg_result_code_t Update(ctr_drbg_ctx *ctx, uint8_t *provided_data /
     /* 3. Unneeded. We have precisely 256 bits of temp. */
 
     /* 4. */
+    COMPILE_TIME_ASSERT(sizeof(INT128) == SEEDLEN/8/2);
     prov1 = (INT128*)provided_data;
     prov2 = (int128*)(provided_data + sizeof(INT128));
     xor_INT128(&temp1, prov1);
@@ -91,10 +92,12 @@ ctr_drbg_result_code_t Reseed(ctr_drbg_ctx *ctx) {
     uint8_t seed_material[SEEDLEN/8];
 
     if(!ctx) return CTR_DRBG_ERROR;
-    
-    Get_256_Bits_Of_TPM_Entropy_Into_seed_material();
 
-    return Reseed_internal(ctx, &seed_material);
+#if 0    
+    Get_256_Bits_Of_TPM_Entropy_Into_seed_material();
+#endif
+
+    return Reseed_internal(ctx, seed_material);
 }
 
 /* Makes calls to TPM to collect its own entropy. Security_Strength is
