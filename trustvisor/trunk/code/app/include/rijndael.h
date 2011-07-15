@@ -76,8 +76,8 @@
 typedef struct {
 	int	enc_only;		/* context contains only encrypt schedule */
 	int	Nr;			/* key-length-dependent number of rounds */
-	u32	ek[4*(AES_MAXROUNDS + 1)];	/* encrypt key schedule */
-	u32	dk[4*(AES_MAXROUNDS + 1)];	/* decrypt key schedule */
+	uint32_t	ek[4*(AES_MAXROUNDS + 1)];	/* encrypt key schedule */
+	uint32_t	dk[4*(AES_MAXROUNDS + 1)];	/* decrypt key schedule */
 } rijndael_ctx;
 
 /*int	 rijndael_set_key(rijndael_ctx *, const u_char *, int);

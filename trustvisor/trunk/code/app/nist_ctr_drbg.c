@@ -53,12 +53,17 @@
  * NIST SP 800-90 CTR_DRBG (Random Number Generator)
  */
 
+#include <target.h>
 #include "nist_ctr_drbg.h"
 
-#include <assert.h>
-#include <string.h>
-#include <stdio.h>
-#include <stddef.h>
+/* #include <assert.h> */
+/* #include <string.h> */
+/* #include <stdio.h> */
+/* #include <stddef.h> */
+
+#ifndef assert
+#define assert(x) ASSERT(x)
+#endif
 
 /*
  * NIST SP 800-90 March 2007
@@ -113,7 +118,8 @@ nist_increment_block(unsigned int* V)
 static void
 nist_ctr_drbg_bcc_update(const NIST_Key* ctx, const unsigned int* data, int n, unsigned int *chaining_value)
 {
-	int i, j;
+    int i;
+	unsigned j;
 	unsigned int input_block[NIST_BLOCK_OUTLEN_INTS];
 
 	/* [4] for i = 1 to n */
@@ -159,7 +165,7 @@ check_int_alignment(const void* p)
 	 * It would be great if "intptr_t" could be found in
 	 * some standard place.
 	 */
-	ptrdiff_t ip = (const char *)p - (const char *)0;
+	unsigned int ip = (unsigned int)((const char *)p - (const char *)0);
 
 	if (ip & (sizeof(int) - 1))
 		return 0;
@@ -338,9 +344,10 @@ nist_ctr_drbg_block_cipher_df(const char* input_string[], unsigned int L[],
 
 
 static int
-nist_ctr_drbg_block_cipher_df_initialize()
+nist_ctr_drbg_block_cipher_df_initialize(void)
 {
-	int i, err;
+    unsigned int i;
+	int err;
 	unsigned char K[NIST_BLOCK_KEYLEN_BYTES];
 	unsigned int IV[NIST_BLOCK_OUTLEN_INTS];
 
@@ -381,7 +388,7 @@ nist_ctr_drbg_block_cipher_df_initialize()
 static void
 nist_ctr_drbg_update(NIST_CTR_DRBG* drbg, const unsigned int* provided_data)
 {
-	int i;
+	unsigned int i;
 	unsigned int temp[NIST_BLOCK_SEEDLEN_INTS];
 	unsigned int* output_block;
 
@@ -462,7 +469,7 @@ nist_ctr_drbg_instantiate(NIST_CTR_DRBG* drbg,
 }
 
 static int
-nist_ctr_drbg_instantiate_initialize()
+nist_ctr_drbg_instantiate_initialize(void)
 {
 	int err;
 	unsigned char K[NIST_BLOCK_KEYLEN_BYTES];

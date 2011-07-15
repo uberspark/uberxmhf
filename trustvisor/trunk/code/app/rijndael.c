@@ -65,6 +65,8 @@
 //#include <sys/systm.h>
 typedef unsigned char u_char;
 
+#include <target.h>
+
 #include "rijndael.h"
 
 #undef FULL_UNROLL
