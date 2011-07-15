@@ -53,7 +53,7 @@
     switch(0){case 0:case pred:;}
 
 struct INT128_t {
-    int64_t high;
+    long long high;
     uint64_t low;
 } __attribute__ ((packed));
 typedef struct INT128_t INT128;

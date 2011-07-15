@@ -56,18 +56,18 @@ static ctr_drbg_result_code_t Update(ctr_drbg_ctx *ctx, uint8_t *provided_data /
     if(!ctx || !provided_data) return CTR_DRBG_ERROR;
 
     /* 2. While() loop will only iterate twice; unroll it */
-    aes_setkey_enc(&ctx->aes_ctx, &ctx->Key, KEYLEN);
+    aes_setkey_enc(&ctx->aes_ctx, (uint8_t*)&ctx->Key, KEYLEN);
     add1_INT128(&ctx->V); /* 2.1 */
-    aes_crypt_ecb(&ctx->aes_ctx, AES_ENCRYPT, &ctx->V, &temp1); /* 2.2 */
+    aes_crypt_ecb(&ctx->aes_ctx, AES_ENCRYPT, (uint8_t*)&ctx->V, (uint8_t*)&temp1); /* 2.2 */
     add1_INT128(&ctx->V); /* 2.1 */
-    aes_crypt_ecb(&ctx->aes_ctx, AES_ENCRYPT, &ctx->V, &temp2); /* 2.2 */
+    aes_crypt_ecb(&ctx->aes_ctx, AES_ENCRYPT, (uint8_t*)&ctx->V, (uint8_t*)&temp2); /* 2.2 */
 
     /* 3. Unneeded. We have precisely 256 bits of temp. */
 
     /* 4. */
     COMPILE_TIME_ASSERT(sizeof(INT128) == SEEDLEN/8/2);
     prov1 = (INT128*)provided_data;
-    prov2 = (int128*)(provided_data + sizeof(INT128));
+    prov2 = (INT128*)(provided_data + sizeof(INT128));
     xor_INT128(&temp1, prov1);
     xor_INT128(&temp2, prov2);
     
@@ -122,6 +122,8 @@ ctr_drbg_result_code_t Generate(ctr_drbg_ctx *ctx, uint32_t requested_no_of_bits
     ctr_drbg_result_code_t rv;
     uint8_t additional_input[SEEDLEN/8];
     uint8_t *temp;
+    uint8_t *p;
+    uint32_t bits_so_far;
     
     if(!ctx || !output || requested_no_of_bits < 1) { return CTR_DRBG_ERROR; }
 
@@ -145,23 +147,23 @@ ctr_drbg_result_code_t Generate(ctr_drbg_ctx *ctx, uint32_t requested_no_of_bits
     memset(additional_input, 0, SEEDLEN/8);
 
     /* 3. */
-    temp = malloc(requested_no_of_bits);
+    temp = (uint8_t*)vmalloc(requested_no_of_bits);
     if(NULL == temp) { return CTR_DRBG_ERROR; }
 
     /* 4. */
-    uint8_t *p = temp;
-    uint32_t bits_so_far = 0;
+    p = temp;
+    bits_so_far = 0;    
     while(bits_so_far < requested_no_of_bits) {
         add1_INT128(&ctx->V); /* 4.1 */
         /* 4.2 */
-        aes_setkey_enc(&ctx->aes_ctx, ctx->Key, KEYLEN);
-        aes_crypt_ecb(&ctx->aes_ctx, AES_ENCRYPT, &ctx->V, p); /* Key already part of aes_ctx */
+        aes_setkey_enc(&ctx->aes_ctx, (uint8_t*)&ctx->Key, KEYLEN);
+        aes_crypt_ecb(&ctx->aes_ctx, AES_ENCRYPT, (uint8_t*)&ctx->V, (uint8_t*)p);
         /* 4.3 */
         p += KEYLEN;
     }
     /* 5. */
     memcpy(output, temp, requested_no_of_bits/8);    
-    if(temp) { free(temp); temp = NULL; }
+    if(temp) { vfree(temp); temp = NULL; }
     
     Update(ctx, additional_input); /* 6. */
     ctx->reseed_counter++; /* 7. */
@@ -177,7 +179,9 @@ ctr_drbg_result_code_t Uninstantiate(ctr_drbg_ctx *ctx) {
     /* Clunky zeroization to prevent compiler from optimizing this
      * away. TODO: Verify that it works. */
 
-    for(i=0; i<sizeof(ctr_drbg_crx); i++)
+    p = (uint8_t*)ctx;
+    
+    for(i=0; i<sizeof(ctr_drbg_ctx); i++)
         ((unsigned char volatile *)p)[i] = 0;    
 
     return CTR_DRBG_SUCCESS;
