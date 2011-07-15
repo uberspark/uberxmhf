@@ -38,6 +38,9 @@
  * Edited by Zongwei Zhou
  */
 
+#ifndef _PUTTYMEM_H_
+#define _PUTTYMEM_H_
+
 //#include "malloc.h"
 #include <types.h>
 
@@ -88,3 +91,7 @@ char *vstrcat(char *s, char *append);
 char *vstrcat1(char *s, char append);
 //char *vstrstr (const char *str1, const char *str2);
 int vatoi(char *s);
+
+#endif /* _PUTTYMEM_H_ */
+
+
