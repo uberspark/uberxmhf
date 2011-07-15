@@ -112,7 +112,7 @@ int main(int argc, char **argv)
   akv_ctx_t akv_ctx;
 
   akv_ctx_init(&akv_ctx);
-  audit_construct(&audit_ctx, argv[1], argv[2]);
+  audit_ctx_init(&audit_ctx, argv[1], argv[2]);
   tcm_init(&tcm_ctx, &audit_ctx, &akv_ctx);
 
   akv_ctx_release(&akv_ctx);

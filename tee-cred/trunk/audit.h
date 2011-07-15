@@ -66,5 +66,5 @@ int audit_get_token(audit_ctx_t*    audit_ctx,
                     void*           audit_token,
                     size_t*         audit_token_len);
 
-void audit_construct(audit_ctx_t *ctx, const char* hostname, const char* svc);
+void audit_ctx_init(audit_ctx_t *ctx, const char* hostname, const char* svc);
 #endif

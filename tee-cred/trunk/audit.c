@@ -39,7 +39,7 @@
 
 #include "audit.h"
 
-void audit_construct(audit_ctx_t *ctx, const char* hostname, const char* svc)
+void audit_ctx_init(audit_ctx_t *ctx, const char* hostname, const char* svc)
 {
   ctx->hostname = hostname;
   ctx->svc = svc;
