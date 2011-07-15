@@ -104,27 +104,18 @@ int tcm_db_add(tcm_ctx_t* tcm_ctx,
   return rv;
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
-  tz_device_t tzDevice;
-  tz_session_t tzPalSession;
-  tz_uuid_t tzSvcId;
   int rv=0;
+  tcm_ctx_t tcm_ctx;
+  audit_ctx_t audit_ctx;
+  akv_ctx_t akv_ctx;
 
-  /* tz_return_t trv; */
-  /* hellopal(PAL_HELLO, NULL, NULL, &trv); */
-  /* printf("got trv=%d\n", trv); */
+  akv_ctx_init(&akv_ctx);
+  audit_construct(&audit_ctx, argv[1], argv[2]);
+  tcm_init(&tcm_ctx, &audit_ctx, &akv_ctx);
 
-  tv_tz_init(&tzDevice,
-             &tzPalSession,
-             &tzSvcId,
-             &audited_kv_pal,
-             PAGE_SIZE,
-             PAGE_SIZE);
-
-  tv_tz_teardown(&tzDevice,
-                 &tzPalSession,
-                 &tzSvcId);
+  akv_ctx_release(&akv_ctx);
 
   return rv;
 } 
