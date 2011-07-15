@@ -40,6 +40,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <stdbool.h>
 #include "sealed-code-pal-priv.h"
 #include <stdio.h>
 

@@ -37,6 +37,8 @@
  * Author - Jim Newsome (jnewsome@no-fuss.com)
  */
 
+#include <stdbool.h>
+
 /* TV */
 #include <tee-sdk/tv.h>
 
@@ -64,9 +66,11 @@ static int do_load(uint8_t *code, size_t code_len,
   size_t unsealed_len = sizeof(pal_static.unsealed);
   scp_sealed_fn_t fn = (scp_sealed_fn_t)pal_static.unsealed;
   int rv;
+  void *digestAtCreation;
   
   if((rv = svc_utpm_unseal(code, code_len,
-                           pal_static.unsealed, &unsealed_len))) {
+                           pal_static.unsealed, &unsealed_len,
+                           digestAtCreation))) {
     return rv;
   }
 
