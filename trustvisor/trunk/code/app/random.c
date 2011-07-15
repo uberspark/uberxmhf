@@ -85,6 +85,7 @@ void rand_update ( s8* data )
 	s8 newkey[KEY_LEN_BYTES];
 	s8 newv[OUT_LEN_BYTES];
 
+    /* JMM: Suspect BUG: missing V++ */
 	aes_crypt_ecb(&rand_ctx, AES_ENCRYPT, v, newkey );
 	rand_xor(newkey, data, KEY_LEN_BYTES);
 	rand_incre(v, OUT_LEN_BYTES);
