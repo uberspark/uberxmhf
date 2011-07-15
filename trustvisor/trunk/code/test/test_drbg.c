@@ -87,32 +87,15 @@ void test_AES256_use_df_COUNT_0(void) {
       AdditionalInput = 
       ReturnedBits = a054303d8a7ea9889d903e077c6f218f
     */
-    
-    unsigned char EntropyInput[] = {
-        0x5a, 0x19, 0x4d, 0x5e, 0x2b, 0x31, 0x58, 0x14,
-        0x54, 0xde, 0xf6, 0x75, 0xfb, 0x79, 0x58, 0xfe,
-        0xc7, 0xdb, 0x87, 0x3e, 0x56, 0x89, 0xfc, 0x9d,
-        0x03, 0x21, 0x7c, 0x68, 0xd8, 0x03, 0x38, 0x20
-    };
-    
-    unsigned char Nonce[] = {
-        0x1b, 0x54, 0xb8, 0xff, 0x06, 0x42, 0xbf, 0xf5,
-        0x21, 0xf1, 0x5c, 0x1c, 0x0b, 0x66, 0x5f, 0x3f
-    };
-    
-    unsigned char EntropyInputReseed[] = {
-        0xf9, 0xe6, 0x5e, 0x04, 0xd8, 0x56, 0xf3, 0xa9,
-        0xc4, 0x4a, 0x4c, 0xbd, 0xc1, 0xd0, 0x08, 0x46,
-        0xf5, 0x98, 0x3d, 0x77, 0x1c, 0x1b, 0x13, 0x7e,
-        0x4e, 0x0f, 0x9d, 0x8e, 0xf4, 0x09, 0xf9, 0x2e
-    };
-
-    unsigned char INTERMEDIATEReturnedBits[] = 
-        "\x3f\x6d\xb5\x2d\xff\x53\xae\x68\xe9\x2a\xbc\xd8\x13\x1e\xf8\xbf";
-    
-    unsigned char ReturnedBits[] =
-        "\xa0\x54\x30\x3d\x8a\x7e\xa9\x88\x9d\x90\x3e\x07\x7c\x6f\x21\x8f";
-    
+    unsigned char EntropyInput[] = "\x5a\x19\x4d\x5e\x2b\x31\x58\x14\x54\xde\xf6\x75\xfb\x79\x58\xfe\xc7\xdb\x87\x3e\x56\x89\xfc\x9d\x03\x21\x7c\x68\xd8\x03\x38\x20";
+    unsigned char Nonce[] = "\x1b\x54\xb8\xff\x06\x42\xbf\xf5\x21\xf1\x5c\x1c\x0b\x66\x5f\x3f";
+    unsigned char PersonalizationString[] = "";
+    unsigned char INTERMEDIATE_Key[] = "\xb8\x39\xfa\x3b\x11\xb7\x7a\xc8\x0f\x10\x1e\x14\xaf\xa7\xf8\x52\x11\x04\x8d\x74\x5d\x8e\xaa\xa4\xbd\xa9\xdc\xa2\xa5\x62\x59\xc1";
+    unsigned char INTERMEDIATE_V[] = "\xb0\xee\x8d\xfa\x67\xec\xfd\x5c\x8d\xca\x69\xad\xc0\xb7\x5e\x8d";
+    unsigned char INTERMEDIATE_ReturnedBits[] = "\x3f\x6d\xb5\x2d\xff\x53\xae\x68\xe9\x2a\xbc\xd8\x13\x1e\xf8\xbf";
+    unsigned char EntropyInputReseed[] = "\xf9\xe6\x5e\x04\xd8\x56\xf3\xa9\xc4\x4a\x4c\xbd\xc1\xd0\x08\x46\xf5\x98\x3d\x77\x1c\x1b\x13\x7e\x4e\x0f\x9d\x8e\xf4\x09\xf9\x2e";
+    unsigned char AdditionalInputReseed[] = "";
+    unsigned char ReturnedBits[] = "\xa0\x54\x30\x3d\x8a\x7e\xa9\x88\x9d\x90\x3e\x07\x7c\x6f\x21\x8f";
     
     printf("NIST TEST VECTOR\n");
 
@@ -120,7 +103,7 @@ void test_AES256_use_df_COUNT_0(void) {
 
 	nist_ctr_drbg_instantiate(&drbg, EntropyInput, 32, Nonce, 16, NULL, 0);
     do_buffer(&drbg, buffer, 16);
-    TEST_ASSERT_EQUAL_MEMORY(INTERMEDIATEReturnedBits, buffer, 16);
+    TEST_ASSERT_EQUAL_MEMORY(INTERMEDIATE_ReturnedBits, buffer, 16);
     
     nist_dump_ctr_drbg(&drbg);
     nist_dump_aes_ctx(&drbg.ctx);    
