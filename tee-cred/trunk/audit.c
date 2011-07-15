@@ -160,6 +160,7 @@ int audit_get_token(audit_ctx_t*    audit_ctx,
     status = AUDIT_ERECV;
     goto close_sock;
   }
+  tmp_ui32 = ntohl(tmp_ui32);
   if(tmp_ui32 > *audit_token_len) {
     *audit_token_len = tmp_ui32;
     status = AUDIT_ESHORT_BUFFER;
