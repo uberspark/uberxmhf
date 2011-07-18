@@ -36,6 +36,7 @@
 #ifndef _TPM_EMHF_H_
 #define _TPM_EMHF_H_
 
+int hwtpm_open_locality(int locality);
 
 #endif /* _TPM_EMHF_H_ */
 

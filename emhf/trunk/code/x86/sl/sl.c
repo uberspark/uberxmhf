@@ -40,6 +40,7 @@
 #include <target.h>
 #include <txt.h>
 #include <tpm.h>
+#include <tpm_emhf.h>
 #include <sha1.h>
 
 extern u32 slpb_buffer[];
@@ -153,52 +154,12 @@ bool sl_integrity_check(u8* runtime_base_addr, size_t runtime_len) {
 
     printf("\nSL: CR0 %08lx, CD bit %ld", read_cr0(), read_cr0() & CR0_CD);
     hashandprint("SL: Computed Runtime SHA-1: ",
-                 runtime_base_addr, runtime_len);
-    
-    /* open TPM locality */
-    ASSERT(locality == 1 || locality == 2);
-    if(get_cpu_vendor() == CPU_VENDOR_INTEL) {
-        txt_didvid_t didvid;
-        txt_ver_fsbif_emif_t ver;
+                 runtime_base_addr, runtime_len);    
 
-        /* display chipset fuse and device and vendor id info */
-        didvid._raw = read_pub_config_reg(TXTCR_DIDVID);
-        printf("\nSL: chipset ids: vendor: 0x%x, device: 0x%x, revision: 0x%x\n",
-               didvid.vendor_id, didvid.device_id, didvid.revision_id);
-        ver._raw = read_pub_config_reg(TXTCR_VER_FSBIF);
-        if ( (ver._raw & 0xffffffff) == 0xffffffff ||
-             (ver._raw & 0xffffffff) == 0x00 )         /* need to use VER.EMIF */
-            ver._raw = read_pub_config_reg(TXTCR_VER_EMIF);
-        printf("SL: chipset production fused: %x\n", ver.prod_fused );
-        
-        if(txt_is_launched()) {
-            write_priv_config_reg(locality == 1 ? TXTCR_CMD_OPEN_LOCALITY1
-                                  : TXTCR_CMD_OPEN_LOCALITY2, 0x01);
-            read_priv_config_reg(TXTCR_E2STS);   /* just a fence, so ignore return */
-        } else {
-            printf("TPM: ERROR: Locality opening UNIMPLEMENTED on Intel without SENTER\n");
-            return false;
-        }        
-    } else { /* AMD */        
-        /* some systems leave locality 0 open for legacy software */
-        //dump_locality_access_regs();
-        deactivate_all_localities();
-        //dump_locality_access_regs();
-        
-        if(TPM_SUCCESS == tpm_wait_cmd_ready(locality)) {
-            printf("SL: TPM successfully opened in Locality %d.\n", locality);            
-        } else {
-            printf("SL: TPM ERROR: Locality %d could not be opened.\n", locality);
-            return false;
-        }
-    }
-    
-    if(!is_tpm_ready(locality)) {
-        printf("TPM: FAILED to open TPM locality %d\n", locality);
+    if(hwtpm_open_locality(locality)) {
+        printf("SL: FAILED to open TPM locality %d\n", locality);
         return false;
-    } 
-
-    printf("TPM: Opened TPM locality %d\n", locality);   
+    }
     
     if((ret = tpm_pcr_read(locality, 17, &pcr17)) != TPM_SUCCESS) {
         printf("TPM: ERROR: tpm_pcr_read FAILED with error code 0x%08x\n", ret);
