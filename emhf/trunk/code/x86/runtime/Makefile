@@ -11,21 +11,25 @@ C_SOURCES += islayer_svm.c apic_svm.c
 AS_SOURCES += islayersup_vmx.S  
 C_SOURCES += apic_vmx.c islayer_vmx.c islayer_vmx_ug.c  
 
-
+# These are the core runtime objects
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
+# Also grab all the App's (e.g., TrustVisor's) object files
+OBJECTS_PRECOMPILED += $(wildcard $(APPOBJECTSDIR)/*.o)
 
-OBJECTS_PRECOMPILED = ../libcommon/mpsup.o ../libcommon/string.o ../libcommon/delay_pit.o ../libcommon/txt_mtrrs.o ../libcommon/pci.o ../libcommon/acpi.o  ../libcommon/svm_eap.o ../libcommon/vmx_eap.o
+# At the moment VGA debug output is borked, and doesn't play nice with serial, so disable it
+# TODO: Fix this.
+OBJECTS_PRECOMPILED += $(filter-out %dbg_vgamem.o,$(wildcard ../libcommon/*.o))
 
-ifeq ($(DEBUG_SERIAL), y)
-OBJECTS_PRECOMPILED += ../libcommon/dbg_printf.o ../libcommon/dbg_uart.o
-endif
-ifeq ($(DEBUG_VGA), y)
-OBJECTS_PRECOMPILED += ../libcommon/dbg_printf.o ../libcommon/dbg_vgamem.o
-endif
+#OBJECTS_PRECOMPILED = ../libcommon/mpsup.o ../libcommon/string.o ../libcommon/delay_pit.o ../libcommon/txt_mtrrs.o ../libcommon/pci.o ../libcommon/acpi.o  ../libcommon/svm_eap.o ../libcommon/vmx_eap.o
 
-OBJECTS_PRECOMPILED += $(wildcard $(APPOBJECTSDIR)/*.o) 
+#ifeq ($(DEBUG_SERIAL), y)
+#OBJECTS_PRECOMPILED += ../libcommon/dbg_printf.o ../libcommon/dbg_uart.o
+#endif
+#ifeq ($(DEBUG_VGA), y)
+#OBJECTS_PRECOMPILED += ../libcommon/dbg_printf.o ../libcommon/dbg_vgamem.o
+#endif
 
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 
