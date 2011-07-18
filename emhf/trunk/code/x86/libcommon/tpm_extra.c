@@ -77,6 +77,7 @@
 #include <target.h>
 #include <sha1.h>
 #include <tpm.h>
+#include <hmac.h>
 
 /* These go with _tpm_submit_cmd in tpm.c */
 extern uint8_t     cmd_buf[TPM_CMD_SIZE_MAX];
@@ -197,37 +198,6 @@ uint32_t tpm_nv_write_value(uint32_t locality, tpm_nv_index_t index,
     return ret;
 }
 
-static bool hmac(const uint8_t key[HMAC_OUTPUT_SIZE], const uint8_t *msg,
-                 uint32_t len, uint8_t md[HMAC_OUTPUT_SIZE])
-{
-    uint8_t ipad[HMAC_BLOCK_SIZE], opad[HMAC_BLOCK_SIZE];
-    uint32_t i;
-    SHA_CTX ctx;
-
-    ASSERT(HMAC_OUTPUT_SIZE <= HMAC_BLOCK_SIZE);
-
-    for ( i = 0; i < HMAC_BLOCK_SIZE; i++ ) {
-        ipad[i] = 0x36;
-        opad[i] = 0x5C;
-    }
-
-    for ( i = 0; i < HMAC_OUTPUT_SIZE; i++ ) {
-        ipad[i] ^= key[i];
-        opad[i] ^= key[i];
-    }
-
-    SHA1_Init(&ctx);
-    SHA1_Update(&ctx, ipad, HMAC_BLOCK_SIZE);
-    SHA1_Update(&ctx, msg, len);
-    SHA1_Final(md, &ctx);
-
-    SHA1_Init(&ctx);
-    SHA1_Update(&ctx, opad, HMAC_BLOCK_SIZE);
-    SHA1_Update(&ctx, md, HMAC_OUTPUT_SIZE);
-    SHA1_Final(md, &ctx);
-
-    return true;
-}
 
 static inline uint32_t tpm_submit_cmd_auth1(uint32_t locality, uint32_t cmd,
                                       uint32_t arg_size, uint32_t *out_size)
@@ -502,8 +472,8 @@ static uint32_t _tpm_wrap_seal(uint32_t locality,
     offset = 0;
     UNLOAD_BLOB_TYPE(WRAPPER_IN_BUF, offset, &even_osap);
     UNLOAD_BLOB_TYPE(WRAPPER_IN_BUF, offset, &odd_osap);
-    hmac((uint8_t *)&srk_authdata, WRAPPER_IN_BUF, offset,
-         (uint8_t *)&shared_secret);
+    HMAC_SHA1((uint8_t *)&srk_authdata, WRAPPER_IN_BUF, offset,
+              (uint8_t *)&shared_secret);
 
     /* generate ecrypted authdata for data
        enc_auth = XOR(authdata, sha1(shared_secret || last_even_nonce)) */
@@ -533,8 +503,8 @@ static uint32_t _tpm_wrap_seal(uint32_t locality,
     UNLOAD_BLOB_TYPE(WRAPPER_IN_BUF, offset, &nonce_even);
     UNLOAD_BLOB_TYPE(WRAPPER_IN_BUF, offset, &nonce_odd);
     UNLOAD_INTEGER(WRAPPER_IN_BUF, offset, cont_session);
-    hmac((uint8_t *)&shared_secret, WRAPPER_IN_BUF, offset,
-         (uint8_t *)&pub_auth);
+    HMAC_SHA1((uint8_t *)&shared_secret, WRAPPER_IN_BUF, offset,
+              (uint8_t *)&pub_auth);
 
     /* call the simple seal function */
     ret = _tpm_seal(locality, hkey, (const tpm_encauth_t *)&enc_auth,
@@ -577,8 +547,8 @@ static uint32_t _tpm_wrap_unseal(uint32_t locality, const uint8_t *in_data,
     offset = 0;
     UNLOAD_BLOB_TYPE(WRAPPER_IN_BUF, offset, &even_osap);
     UNLOAD_BLOB_TYPE(WRAPPER_IN_BUF, offset, &odd_osap);
-    hmac((uint8_t *)&srk_authdata, WRAPPER_IN_BUF, offset,
-         (uint8_t *)&shared_secret);
+    HMAC_SHA1((uint8_t *)&srk_authdata, WRAPPER_IN_BUF, offset,
+              (uint8_t *)&shared_secret);
 
     /* establish a oiap session */
     ret = tpm_oiap(locality, &hauth_d, &nonce_even_d);
@@ -600,8 +570,8 @@ static uint32_t _tpm_wrap_unseal(uint32_t locality, const uint8_t *in_data,
     UNLOAD_BLOB_TYPE(WRAPPER_IN_BUF, offset, &nonce_even);
     UNLOAD_BLOB_TYPE(WRAPPER_IN_BUF, offset, &nonce_odd);
     UNLOAD_INTEGER(WRAPPER_IN_BUF, offset, cont_session);
-    hmac((uint8_t *)&shared_secret, WRAPPER_IN_BUF, offset,
-         (uint8_t *)&pub_auth);
+    HMAC_SHA1((uint8_t *)&shared_secret, WRAPPER_IN_BUF, offset,
+              (uint8_t *)&pub_auth);
 
     /* authdata2 = hmac(key, in_param_digest || auth_params2) */
     offset = 0;
@@ -609,8 +579,8 @@ static uint32_t _tpm_wrap_unseal(uint32_t locality, const uint8_t *in_data,
     UNLOAD_BLOB_TYPE(WRAPPER_IN_BUF, offset, &nonce_even_d);
     UNLOAD_BLOB_TYPE(WRAPPER_IN_BUF, offset, &nonce_odd_d);
     UNLOAD_INTEGER(WRAPPER_IN_BUF, offset, cont_session_d);
-    hmac((uint8_t *)&blob_authdata, WRAPPER_IN_BUF, offset,
-         (uint8_t *)&pub_auth_d);
+    HMAC_SHA1((uint8_t *)&blob_authdata, WRAPPER_IN_BUF, offset,
+              (uint8_t *)&pub_auth_d);
 
     /* call the simple seal function */
     ret = _tpm_unseal(locality, hkey, in_data,
