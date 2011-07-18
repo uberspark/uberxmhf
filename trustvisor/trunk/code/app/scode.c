@@ -337,13 +337,12 @@ void init_scode(VCPU * vcpu)
 			dprintf(LOG_ERROR, "[TV] trustvisor_master_crypto_init() FAILED! SECURITY HALT!\n");
 			HALT();			
 	}
-	rand_init(); /* XXX INSECURE AND DEPRECATED XXX */
-	dprintf(LOG_TRACE, "[TV] PRNG init!\n");
+	dprintf(LOG_TRACE, "[TV] AES-256 CTR_DRBG PRNG successfully seeded with TPM RNG.\n");
 
 	/* aeskey and hmac are identical for different PAL, so that we can seal data from one PAL to another PAL */
-	rand_bytes(aeskey, (TPM_AES_KEY_LEN>>3));
+	rand_bytes_or_die(aeskey, (TPM_AES_KEY_LEN>>3));
 	dprintf(LOG_TRACE, "[TV] AES key generated!\n");
-	rand_bytes(hmackey, 20);
+	rand_bytes_or_die(hmackey, 20);
 	dprintf(LOG_TRACE, "[TV] HMAC key generated!\n");
 
 	/* init RSA key required in uTPM Quote */

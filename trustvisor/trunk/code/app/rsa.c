@@ -344,7 +344,7 @@ int rsa_pkcs1_encrypt( rsa_context *ctx,
 			while( nb_pad-- > 0 )
 			{
 				do {
-					*p = rand_byte();
+					*p = rand_byte_or_die();
 				} while( *p == 0 );
 				p++;
 			}

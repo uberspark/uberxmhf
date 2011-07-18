@@ -47,6 +47,7 @@
 #include <tpm.h>
 
 #include <nist_ctr_drbg.h>
+#include <random.h> 
 
 #include <crypto_init.h>
 
@@ -54,8 +55,8 @@
 #define COMPILE_TIME_ASSERT(pred) \
     switch(0){case 0:case pred:;}
 
-static NIST_CTR_DRBG g_drbg; /* SECURITY: this is very sensitive! */
-static bool g_master_crypto_init_completed = false;
+/* extern */ NIST_CTR_DRBG g_drbg; /* SECURITY: this is very sensitive! */
+/* extern */ bool g_master_crypto_init_completed = false;
 
 /* Don't want to get optimized out. */
 void zeroize(uint8_t* _p, unsigned int len) {    
@@ -124,6 +125,9 @@ int trustvisor_master_crypto_init(void) {
                               &Nonce, sizeof(Nonce), NULL, 0);
 
 		dprintf(LOG_TRACE, "\nmaster_crypto_init: PRNG seeded and instantiated.\n");
+
+
+		g_master_crypto_init_completed = true;
 
 		return 0;
 }

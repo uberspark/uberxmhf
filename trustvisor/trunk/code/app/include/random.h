@@ -33,24 +33,20 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//#define  USE_AES_CTR
-#define  USE_ARC4
+#ifndef _RANDOM_H_
+#define _RANDOM_H_
 
-#ifdef USE_ARC4
-/**
- * \brief          ARC4 context structure
- */
-typedef struct
-{
-    int m[256];         /*!< permutation table */
-    int x;              /*!< permutation index */
-    int y;              /*!< permutation index */
-}
-arc4_context;
-#endif
+#include <types.h>
+#include <nist_ctr_drbg.h>
 
-void rand_init (void);
-unsigned char rand_byte (void);
-int rand_bytes (unsigned char * out, int len);
+/* XXX FIXME: needs spinlock protection in MP mode */
+extern NIST_CTR_DRBG g_drbg; /* SECURITY: this is very sensitive! */
+extern bool g_master_crypto_init_completed;
 
+/* interface exposed to the rest of TrustVisor */
 
+uint8_t rand_byte_or_die(void);
+void rand_bytes_or_die(uint8_t *out, int len);
+int rand_bytes(uint8_t *out, int *len);
+
+#endif /* _RANDOM_H_ */

@@ -1778,7 +1778,7 @@ int mpi_is_prime( mpi *X)
         p = (unsigned char *) A.p;
         for( j = 0; j < A.n * ciL; j++ )
           //  *p++ = (unsigned char) f_rng( p_rng );
-	  		*p++ = rand_byte();
+	  		*p++ = rand_byte_or_die();
         j = mpi_msb( &A ) - mpi_msb( &W );
         MPI_CHK( mpi_shift_r( &A, j + 1 ) );
         A.p[0] |= 3;
@@ -1853,7 +1853,7 @@ int mpi_gen_prime( mpi *X, int nbits, int dh_flag)
     p = (unsigned char *) X->p;
     for( k = 0; k < X->n * ciL; k++ )
       // *p++ = (unsigned char) f_rng( p_rng );
-      *p++ = rand_byte();
+      *p++ = rand_byte_or_die();
     k = mpi_msb( X );
     if( k < nbits ) MPI_CHK( mpi_shift_l( X, nbits - k ) );
     if( k > nbits ) MPI_CHK( mpi_shift_r( X, k - nbits ) );
