@@ -472,7 +472,8 @@ static uint32_t _tpm_wrap_seal(uint32_t locality,
     offset = 0;
     UNLOAD_BLOB_TYPE(WRAPPER_IN_BUF, offset, &even_osap);
     UNLOAD_BLOB_TYPE(WRAPPER_IN_BUF, offset, &odd_osap);
-    HMAC_SHA1((uint8_t *)&srk_authdata, WRAPPER_IN_BUF, offset,
+    HMAC_SHA1((uint8_t *)&srk_authdata, SHA_DIGEST_LENGTH,
+              WRAPPER_IN_BUF, offset,
               (uint8_t *)&shared_secret);
 
     /* generate ecrypted authdata for data
@@ -503,7 +504,8 @@ static uint32_t _tpm_wrap_seal(uint32_t locality,
     UNLOAD_BLOB_TYPE(WRAPPER_IN_BUF, offset, &nonce_even);
     UNLOAD_BLOB_TYPE(WRAPPER_IN_BUF, offset, &nonce_odd);
     UNLOAD_INTEGER(WRAPPER_IN_BUF, offset, cont_session);
-    HMAC_SHA1((uint8_t *)&shared_secret, WRAPPER_IN_BUF, offset,
+    HMAC_SHA1((uint8_t *)&shared_secret, SHA_DIGEST_LENGTH,
+              WRAPPER_IN_BUF, offset,
               (uint8_t *)&pub_auth);
 
     /* call the simple seal function */
@@ -547,7 +549,8 @@ static uint32_t _tpm_wrap_unseal(uint32_t locality, const uint8_t *in_data,
     offset = 0;
     UNLOAD_BLOB_TYPE(WRAPPER_IN_BUF, offset, &even_osap);
     UNLOAD_BLOB_TYPE(WRAPPER_IN_BUF, offset, &odd_osap);
-    HMAC_SHA1((uint8_t *)&srk_authdata, WRAPPER_IN_BUF, offset,
+    HMAC_SHA1((uint8_t *)&srk_authdata, SHA_DIGEST_LENGTH,
+              WRAPPER_IN_BUF, offset,
               (uint8_t *)&shared_secret);
 
     /* establish a oiap session */
@@ -570,7 +573,8 @@ static uint32_t _tpm_wrap_unseal(uint32_t locality, const uint8_t *in_data,
     UNLOAD_BLOB_TYPE(WRAPPER_IN_BUF, offset, &nonce_even);
     UNLOAD_BLOB_TYPE(WRAPPER_IN_BUF, offset, &nonce_odd);
     UNLOAD_INTEGER(WRAPPER_IN_BUF, offset, cont_session);
-    HMAC_SHA1((uint8_t *)&shared_secret, WRAPPER_IN_BUF, offset,
+    HMAC_SHA1((uint8_t *)&shared_secret, SHA_DIGEST_LENGTH,
+              WRAPPER_IN_BUF, offset,
               (uint8_t *)&pub_auth);
 
     /* authdata2 = hmac(key, in_param_digest || auth_params2) */
@@ -579,7 +583,8 @@ static uint32_t _tpm_wrap_unseal(uint32_t locality, const uint8_t *in_data,
     UNLOAD_BLOB_TYPE(WRAPPER_IN_BUF, offset, &nonce_even_d);
     UNLOAD_BLOB_TYPE(WRAPPER_IN_BUF, offset, &nonce_odd_d);
     UNLOAD_INTEGER(WRAPPER_IN_BUF, offset, cont_session_d);
-    HMAC_SHA1((uint8_t *)&blob_authdata, WRAPPER_IN_BUF, offset,
+    HMAC_SHA1((uint8_t *)&blob_authdata, SHA_DIGEST_LENGTH,
+              WRAPPER_IN_BUF, offset,
               (uint8_t *)&pub_auth_d);
 
     /* call the simple seal function */

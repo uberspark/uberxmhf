@@ -65,7 +65,8 @@ typedef struct _HMAC_SHA1_CTX {
 void     HMAC_SHA1_Init(HMAC_SHA1_CTX *, const uint8_t *, unsigned int);
 void     HMAC_SHA1_Update(HMAC_SHA1_CTX *, const uint8_t *, unsigned int);
 void     HMAC_SHA1_Final(uint8_t [SHA_DIGEST_LENGTH], HMAC_SHA1_CTX *);
-void     HMAC_SHA1(const uint8_t key[SHA_DIGEST_LENGTH], const uint8_t *msg,
-                   uint32_t len, uint8_t md[SHA_DIGEST_LENGTH]);
+void     HMAC_SHA1(const uint8_t *key, uint32_t keylen,
+                   const uint8_t *msg, uint32_t len,
+                   uint8_t md[SHA_DIGEST_LENGTH]);
 
 #endif  /* _HMAC_H_ */

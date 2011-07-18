@@ -125,12 +125,13 @@ HMAC_SHA1_Final(uint8_t digest[SHA1_DIGEST_LENGTH], HMAC_SHA1_CTX *ctx)
 }
 
 void
-HMAC_SHA1(const uint8_t key[SHA_DIGEST_LENGTH], const uint8_t *msg,
-          uint32_t len, uint8_t md[SHA_DIGEST_LENGTH]) {
+HMAC_SHA1(const uint8_t *key, uint32_t keylen,
+          const uint8_t *msg, uint32_t len,
+          uint8_t md[SHA_DIGEST_LENGTH]) {
 
     HMAC_SHA1_CTX ctx;
 
-    HMAC_SHA1_Init(&ctx, key, SHA_DIGEST_LENGTH);
+    HMAC_SHA1_Init(&ctx, key, keylen);
     HMAC_SHA1_Update(&ctx, msg, len);
     HMAC_SHA1_Final(md, &ctx);
 }
