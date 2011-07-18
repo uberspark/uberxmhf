@@ -109,7 +109,7 @@ int rand_bytes(uint8_t *out, int *len) {
         return 1;
     }
 
-    dprintf(LOG_TRACE, "\nSuccessfully generated %d pseudo-random bytes\n", *len);
+    dprintf(LOG_TRACE, "\n[TV]Successfully generated %d pseudo-random bytes\n", *len);
 
     return 0;                              
 }

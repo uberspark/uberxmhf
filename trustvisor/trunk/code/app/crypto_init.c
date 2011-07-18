@@ -93,7 +93,7 @@ int get_hw_tpm_entropy(uint8_t* buf, unsigned int requested_len /* bytes */) {
 				return 1;
 		}
 
-		dprintf(LOG_TRACE, "\nSuccessfully received %d/%d bytes of entropy from HW TPM.\n",
+		dprintf(LOG_TRACE, "\n[TV] Successfully received %d/%d bytes of entropy from HW TPM.\n",
 						actual_len, requested_len);
 
 		/* We're now done with the TPM for a while. Make sure it is
@@ -124,7 +124,7 @@ int trustvisor_master_crypto_init(void) {
 		nist_ctr_drbg_instantiate(&g_drbg, EntropyInput, sizeof(EntropyInput),
                               &Nonce, sizeof(Nonce), NULL, 0);
 
-		dprintf(LOG_TRACE, "\nmaster_crypto_init: PRNG seeded and instantiated.\n");
+		dprintf(LOG_TRACE, "\n[TV] master_crypto_init: PRNG seeded and instantiated.\n");
 
 
 		g_master_crypto_init_completed = true;
