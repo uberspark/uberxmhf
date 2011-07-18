@@ -38,12 +38,13 @@
  * Edited by Zongwei Zhou, Jonathan McCune for EMHF project
  */
 
-#include  "./include/scode.h"
-#include  "./include/utpm.h"
-#include  "./include/aes.h"
-#include  "./include/rsa.h"
-#include  "./include/sha1.h"
-#include  "./include/puttymem.h"
+#include <scode.h>
+#include <utpm.h>
+#include <aes.h>
+#include <rsa.h>
+#include <sha1.h>
+#include <hmac.h>
+#include <puttymem.h>
 
 void utpm_init_internal(utpm_master_state_t *utpm) {
     if(NULL == utpm) return;
@@ -69,18 +70,18 @@ TPM_RESULT utpm_extend(TPM_DIGEST *measurement, utpm_master_state_t *utpm, uint3
     TPM_DIGEST old_pcr_val;
     TPM_DIGEST new_pcr_val;
     uint32_t rv;
-    sha1_context ctx;
+    SHA_CTX ctx;
 
     if(!measurement || !utpm) { return UTPM_ERR_BAD_PARAM; }
     if(pcr_num >= TPM_PCR_NUM) { return UTPM_ERR_PCR_OUT_OF_RANGE; }
 
-    sha1_starts( &ctx );
+    SHA1_Init( &ctx );
     /* existing PCR value */
-    sha1_update( &ctx, utpm->pcr_bank[pcr_num].value, TPM_HASH_SIZE);
+    SHA1_Update( &ctx, utpm->pcr_bank[pcr_num].value, TPM_HASH_SIZE);
     /* new measurement */
-    sha1_update( &ctx, measurement->value, TPM_HASH_SIZE);
+    SHA1_Update( &ctx, measurement->value, TPM_HASH_SIZE);
     /* write new PCR value */
-    sha1_finish( &ctx, utpm->pcr_bank[pcr_num].value );
+    SHA1_Final( utpm->pcr_bank[pcr_num].value, &ctx );
 
 	return UTPM_SUCCESS;
 }
@@ -156,7 +157,7 @@ static uint32_t utpm_internal_allocate_and_populate_current_TpmPcrComposite(
 {
     uint32_t rv = 0;
     uint32_t i;
-    sha1_context ctx;
+    SHA_CTX ctx;
     uint32_t num_pcrs_to_include = 0;
     uint8_t *p = NULL;
     
@@ -266,7 +267,7 @@ static TPM_RESULT utpm_internal_digest_current_TpmPcrComposite(
 
     if(0 != rv) { return 1; }
 
-    sha1_csum(tpm_pcr_composite, space_needed_for_composite, digest->value);    
+    sha1_buffer(tpm_pcr_composite, space_needed_for_composite, digest->value);    
     
     if(tpm_pcr_composite) { vfree(tpm_pcr_composite); tpm_pcr_composite = NULL; }
 
@@ -403,7 +404,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     print_hex(" freshly encrypted ciphertext: ", output, *outlen);
     
 	/* 5. compute and append hmac */
-    sha1_hmac(hmackey, TPM_HASH_SIZE, output, *outlen, output + *outlen);
+    HMAC_SHA1(hmackey, TPM_HASH_SIZE, output, *outlen, output + *outlen);
     print_hex("hmac: ", output + *outlen, TPM_HASH_SIZE);    
     *outlen += TPM_HASH_SIZE; /* hmac */
 
@@ -455,7 +456,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
      * input. Calculate its expected value based on the first (inlen -
      * TPM_HASH_SIZE) bytes of the input and compare against provided
      * value. */
-    sha1_hmac(hmackey, TPM_HASH_SIZE, input, inlen - TPM_HASH_SIZE, hmacCalculated);
+    HMAC_SHA1(hmackey, TPM_HASH_SIZE, input, inlen - TPM_HASH_SIZE, hmacCalculated);
     if(vmemcmp(hmacCalculated, input + inlen - TPM_HASH_SIZE, TPM_HASH_SIZE)) {
         dprintf(LOG_ERROR, "Unseal HMAC **INTEGRITY FAILURE**: vmemcmp(hmacCalculated, input + inlen - TPM_HASH_SIZE, TPM_HASH_SIZE)\n");
         print_hex("  hmacCalculated: ", hmacCalculated, TPM_HASH_SIZE);
@@ -529,7 +530,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
             print_hex("  current PcrComposite: ", currentPcrComposite, space_needed_for_composite);
             
             /* 3. Composite hash */
-            sha1_csum(currentPcrComposite, space_needed_for_composite, digestRightNow.value);
+            sha1_buffer(currentPcrComposite, space_needed_for_composite, digestRightNow.value);
             print_hex("  digestRightNow: ", digestRightNow.value, TPM_HASH_SIZE);
             
             if(0 != vmemcmp(digestRightNow.value, unsealedPcrInfo.digestAtRelease.value, TPM_HASH_SIZE)) {
@@ -595,7 +596,7 @@ TPM_RESULT utpm_seal_deprecated(uint8_t* pcrAtRelease, uint8_t* input, uint32_t 
 	vmemset(output+outlen_beforepad, 0, len-outlen_beforepad);
 
 	/* get HMAC of the entire message w/ zero HMAC field */
-	sha1_hmac(hmackey, 20, output, len, hashdata);
+	HMAC_SHA1(hmackey, 20, output, len, hashdata);
 	vmemcpy(output+TPM_CONFOUNDER_SIZE, hashdata, TPM_HASH_SIZE);
 	
 	/* encrypt data using sealAesKey by AES-CBC mode */
@@ -645,7 +646,7 @@ TPM_RESULT utpm_unseal_deprecated(utpm_master_state_t *utpm, uint8_t* input, uin
 
 	/* zero HMAC field, and recalculate hmac of the message */
 	vmemset(output+TPM_CONFOUNDER_SIZE, 0, TPM_HASH_SIZE);
-	sha1_hmac(hmackey, 20, output, inlen, hashdata);
+	HMAC_SHA1(hmackey, 20, output, inlen, hashdata);
 
 	/* compare the hmac */
 	if (vmemcmp(hashdata, oldhmac, TPM_HASH_SIZE))
@@ -709,7 +710,7 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
     /* 2) 'QUOT' */
     *((uint32_t*)quote_info.fixed) = 0x544f5551; 
     /* 3) SHA-1 hash of TPM_PCR_COMPOSITE */
-    sha1_csum(tpm_pcr_composite, space_needed_for_composite, quote_info.digestValue.value);
+    sha1_buffer(tpm_pcr_composite, space_needed_for_composite, quote_info.digestValue.value);
     print_hex(" COMPOSITE_HASH: ", quote_info.digestValue.value, TPM_HASH_SIZE);
     /* 4) external nonce */
     vmemcpy(quote_info.externalData.nonce, externalnonce->nonce, TPM_HASH_SIZE);
@@ -754,7 +755,7 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
     { /* FIXME: Temporarily inserted code to verify our own signature
        * to make sure it works! */
         TPM_DIGEST tmp;
-        sha1_csum((uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO), tmp.value);
+        sha1_buffer((uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO), tmp.value);
         print_hex("sha1(quote_info): ", tmp.value, TPM_HASH_SIZE);
         
         printf("rsa_pkcs1_verify = %s\n",

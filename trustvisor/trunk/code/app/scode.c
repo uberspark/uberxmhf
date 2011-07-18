@@ -45,7 +45,7 @@
 #include <scode.h>
 #include <puttymem.h>
 #include <utpm.h>
-#include "./include/sha1.h" /* XXX TODO: remove redundancy with libcommon */
+#include <sha1.h>
 #include <rsa.h>
 #include <random.h>
 #include <perf.h>
@@ -219,11 +219,11 @@ u32 scode_measure(utpm_master_state_t *utpm, pte_t *pte_pages, u32 size)
 {
 	u32 i; 
 	u32 paddr;
-	sha1_context ctx;
+	SHA_CTX ctx;
 	TPM_DIGEST sha1sum;
 
 	dprintf(LOG_TRACE, "[TV] measure scode and extend uTPM PCR value!\n");
-	sha1_starts(&ctx);
+	SHA1_Init(&ctx);
 	for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)
 	{
 		/* only measure SCODE, STEXT, SDATA pages */
@@ -233,7 +233,7 @@ u32 scode_measure(utpm_master_state_t *utpm, pte_t *pte_pages, u32 size)
 		case TV_PAL_SECTION_SHARED_CODE:
 		case TV_PAL_SECTION_DATA:
 			dprintf(LOG_TRACE, "[TV]   measure scode page %d paddr %#x\n", i+1, paddr);
-			sha1_update(&ctx, (u8 *)paddr, PAGE_SIZE_4K);
+			SHA1_Update(&ctx, (u8 *)paddr, PAGE_SIZE_4K);
 			break;
 		case TV_PAL_SECTION_PARAM:
 		case TV_PAL_SECTION_STACK:
@@ -244,7 +244,7 @@ u32 scode_measure(utpm_master_state_t *utpm, pte_t *pte_pages, u32 size)
 			ASSERT(0);
 		}
 	}
-	sha1_finish(&ctx, sha1sum.value);
+	SHA1_Final(sha1sum.value, &ctx);
 
 	/* extend pcr 0 */
 	utpm_extend(&sha1sum, utpm, 0);
@@ -2037,7 +2037,7 @@ u32 scode_pcrextend(VCPU * vcpu, u32 gvaddr, u32 len, u32 num)
 	copy_from_guest(vcpu, (u8 *)data, gvaddr, len);
 
 	/* hash input data */
-	sha1_csum((unsigned char*)data, len, hash.value);
+	sha1_buffer((unsigned char*)data, len, hash.value);
 
 	/* extend pcr */
 	utpm_extend(&hash, &whitelist[scode_curr[vcpu->id]].utpm, num);

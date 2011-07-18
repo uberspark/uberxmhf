@@ -59,12 +59,12 @@
  *  http://www.cacr.math.uwaterloo.ca/hac/about/chap8.pdf
  */
 
-#include  <target.h>
-#include  "./include/rsa.h"
-#include  "./include/bignum.h"
-#include  "./include/puttymem.h"
-#include "./include/sha1.h"
-#include "./include/random.h"
+#include <target.h>
+#include <rsa.h>
+#include <bignum.h>
+#include <puttymem.h>
+#include <sha1.h>
+#include <random.h>
 
 /*
  * Initialize an RSA context
@@ -625,7 +625,7 @@ int tpm_pkcs1_sign( rsa_context *ctx,
 		return 1;
 	}
 
-	sha1_csum(data_addr,datalen, hash);
+	sha1_buffer(data_addr,datalen, hash);
 
 	if( rsa_pkcs1_sign( ctx, RSA_PRIVATE, RSA_SHA1, 20,
 				hash, sig ) != 0 ){
