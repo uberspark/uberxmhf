@@ -18,18 +18,15 @@ OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 # Also grab all the App's (e.g., TrustVisor's) object files
 OBJECTS_PRECOMPILED += $(wildcard $(APPOBJECTSDIR)/*.o)
 
-# At the moment VGA debug output is borked, and doesn't play nice with serial, so disable it
-# TODO: Fix this.
+### Bring in libcommon/*.o so that App's (e.g., TrustVisor) can use them
+# WARNING: if both Serial & VGA are enabled, you actually get neither. 
+# TODO: Fix it.
+ifeq ($(DEBUG_SERIAL), y)
 OBJECTS_PRECOMPILED += $(filter-out %dbg_vgamem.o,$(wildcard ../libcommon/*.o))
-
-#OBJECTS_PRECOMPILED = ../libcommon/mpsup.o ../libcommon/string.o ../libcommon/delay_pit.o ../libcommon/txt_mtrrs.o ../libcommon/pci.o ../libcommon/acpi.o  ../libcommon/svm_eap.o ../libcommon/vmx_eap.o
-
-#ifeq ($(DEBUG_SERIAL), y)
-#OBJECTS_PRECOMPILED += ../libcommon/dbg_printf.o ../libcommon/dbg_uart.o
-#endif
-#ifeq ($(DEBUG_VGA), y)
-#OBJECTS_PRECOMPILED += ../libcommon/dbg_printf.o ../libcommon/dbg_vgamem.o
-#endif
+endif
+ifeq ($(DEBUG_VGA), y)
+OBJECTS_PRECOMPILED += $(filter-out %dbg_uart.o,$(wildcard ../libcommon/*.o))
+endif
 
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 
