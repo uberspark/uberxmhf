@@ -40,15 +40,16 @@
  * Edited for TrustVisor on EMHF by Zongwei Zhou
  */
 
-#include  <target.h>
-#include  <globals.h>
-#include  "./include/scode.h"
-#include  "./include/puttymem.h"
-#include "./include/utpm.h"
-#include "./include/sha1.h"
-#include  "./include/rsa.h"
-#include  "./include/random.h"
+#include <target.h>
+#include <globals.h>
+#include <scode.h>
+#include <puttymem.h>
+#include <utpm.h>
+#include "./include/sha1.h" /* XXX TODO: remove redundancy with libcommon */
+#include <rsa.h>
+#include <random.h>
 #include <perf.h>
+#include <crypto_init.h>
 
 static void scode_expose_arch(VCPU *vcpu, whitelist_entry_t *wle);
 static void scode_unexpose_arch(VCPU *vcpu, whitelist_entry_t *wle);
@@ -332,7 +333,11 @@ void init_scode(VCPU * vcpu)
 	vmemset(scode_curr, 0xFF, ((max+1)<<2));
 
 	/* init pseudo random number generator */
-	rand_init();
+	if(trustvisor_master_crypto_init()) {
+			dprintf(LOG_ERROR, "[TV] trustvisor_master_crypto_init() FAILED! SECURITY HALT!\n");
+			HALT();			
+	}
+	rand_init(); /* XXX INSECURE AND DEPRECATED XXX */
 	dprintf(LOG_TRACE, "[TV] PRNG init!\n");
 
 	/* aeskey and hmac are identical for different PAL, so that we can seal data from one PAL to another PAL */

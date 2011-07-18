@@ -75,14 +75,14 @@ int hwtpm_open_locality(int locality) {
         if ( (ver._raw & 0xffffffff) == 0xffffffff ||
              (ver._raw & 0xffffffff) == 0x00 )         /* need to use VER.EMIF */
             ver._raw = read_pub_config_reg(TXTCR_VER_EMIF);
-        printf("HWTPM: chipset production fused: %x\n", ver.prod_fused );
+        printf("\nHWTPM: chipset production fused: %x\n", ver.prod_fused );
         
         if(txt_is_launched()) {
             write_priv_config_reg(locality == 1 ? TXTCR_CMD_OPEN_LOCALITY1
                                   : TXTCR_CMD_OPEN_LOCALITY2, 0x01);
             read_priv_config_reg(TXTCR_E2STS);   /* just a fence, so ignore return */
         } else {
-            printf("HWTPM: ERROR: Locality opening UNIMPLEMENTED on Intel without SENTER\n");
+            printf("\nHWTPM: ERROR: Locality opening UNIMPLEMENTED on Intel without SENTER\n");
             return 1;
         }        
     } else { /* AMD */        
@@ -92,19 +92,19 @@ int hwtpm_open_locality(int locality) {
         //dump_locality_access_regs();
         
         if(TPM_SUCCESS == tpm_wait_cmd_ready(locality)) {
-            printf("HWTPM: TPM successfully opened in Locality %d.\n", locality);            
+            printf("\nHWTPM: TPM successfully opened in Locality %d.\n", locality);            
         } else {
-            printf("HWTPM: TPM ERROR: Locality %d could not be opened.\n", locality);
+            printf("\nHWTPM: TPM ERROR: Locality %d could not be opened.\n", locality);
             return 1;
         }
     }
     
     if(!is_tpm_ready(locality)) {
-        printf("HWTPM: FAILED to open TPM locality %d\n", locality);
+        printf("\nHWTPM: FAILED to open TPM locality %d\n", locality);
         return 1;
     } 
 
-    printf("HWTPM: Opened TPM locality %d\n", locality);
+    printf("\nHWTPM: Opened TPM locality %d\n", locality);
     return 0;    
 }
 

@@ -67,11 +67,39 @@ void zeroize(uint8_t* _p, unsigned int len) {
 		}
 }
 
+#define CRYPTO_INIT_LOCALITY 2
+
+/* If this function fails then our basic security assumptions are
+ * violated and TrustVisor should HALT! */
 /* returns 0 on success. */
-int get_hw_tpm_entropy(uint8_t* buf, unsigned int len) {
+int get_hw_tpm_entropy(uint8_t* buf, unsigned int requested_len /* bytes */) {
+		uint32_t rv;
+		unsigned int actual_len;
+		
     if(!buf) { return 1; }
 
-    
+		if(hwtpm_open_locality(CRYPTO_INIT_LOCALITY)) {
+				dprintf(LOG_ERROR, "\nFATAL ERROR: Could not access TPM to initialize PRNG.\n");
+				return 1;
+		}
+
+		actual_len = requested_len;
+		rv = tpm_get_random(CRYPTO_INIT_LOCALITY, buf, &actual_len);
+
+		if(actual_len != requested_len) {
+				dprintf(LOG_ERROR, "\nFATAL ERROR: Could not access TPM to initialize PRNG.\n");
+				/* TODO: Try a few more times before giving up. */
+				return 1;
+		}
+
+		dprintf(LOG_TRACE, "\nSuccessfully received %d/%d bytes of entropy from HW TPM.\n",
+						actual_len, requested_len);
+
+		/* We're now done with the TPM for a while. Make sure it is
+		 * available to the legacy OS. */
+		deactivate_all_localities();
+
+		return 0;
 }
 
 /* returns 0 on success. */
@@ -79,21 +107,25 @@ int get_hw_tpm_entropy(uint8_t* buf, unsigned int len) {
 int trustvisor_master_crypto_init(void) {
     uint8_t EntropyInput[CTR_DRBG_SEED_BITS/8];
     uint64_t Nonce;
-
-
     
     nist_ctr_initialize();
 
     /* Get CTR_DRBG_SEED_BITS of entropy from the hardware TPM */
+		if(get_hw_tpm_entropy(EntropyInput, CTR_DRBG_SEED_BITS/8)) {
+				dprintf(LOG_ERROR, "\nFATAL ERROR: Could not access TPM to initialize PRNG.\n");
+				HALT();
+		}
 
     /* Use rdtsc to get CTR_DRBG_NONCE_BITS of initialization nonce */
     COMPILE_TIME_ASSERT(CTR_DRBG_NONCE_BITS/8 == sizeof(Nonce));
     Nonce = rdtsc64();
 
-	nist_ctr_drbg_instantiate(&g_drbg, EntropyInput, sizeof(EntropyInput),
+		nist_ctr_drbg_instantiate(&g_drbg, EntropyInput, sizeof(EntropyInput),
                               &Nonce, sizeof(Nonce), NULL, 0);
 
-    
+		dprintf(LOG_TRACE, "\nmaster_crypto_init: PRNG seeded and instantiated.\n");
+
+		return 0;
 }
 
 /* Local Variables: */
