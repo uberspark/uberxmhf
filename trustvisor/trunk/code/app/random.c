@@ -41,11 +41,25 @@
  * Using Deterministic Random Bit Generators(Revised)"
  * */
 
-#include  <target.h>
-#include  "./include/aes.h"
-#include  "./include/scode.h"
-#include  "./include/puttymem.h"
-#include  "./include/random.h"
+#include <target.h>
+#include <aes.h>
+#include <scode.h>
+#include <puttymem.h>
+#include <random.h>
+
+#include <tpm.h> /* hardware TPM; from EMHF libcommon */
+
+/**
+ * returns 0 on success.
+ */
+int seed_prng_using_hw_tpm(void) {
+
+    /* make sure nobody else is using the TPM */
+    deactivate_all_localities();
+    
+    return 1;
+}
+
 
 #ifdef USE_AES_CRT
 #define  KEY_LEN_BYTES (TPM_AES_KEY_LEN>>3) 
