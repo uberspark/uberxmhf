@@ -50,7 +50,7 @@ u32 strncmp(const u8 * cs, const u8 * ct, u32 count);
 int strcmp(const char * cs,const char * ct);
 char *strncpy(char * dst, const char * src, size_t n);
 size_t strlen(const char * s);
-unsigned long simple_strtoul(const char *cp,const char **endp,unsigned int base);
+unsigned long strtoul(const char *cp,const char **endp, unsigned int base);
 int memcmp(const char *s1, const char *s2, size_t n);
 #endif/* __ASSEMBLY__ */
 

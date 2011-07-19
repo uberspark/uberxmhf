@@ -193,7 +193,9 @@ static inline bool txt_is_launched(void)
     return sts.senter_done_sts;
 }
 
-
+bool txt_prepare_cpu(void);
+tb_error_t txt_launch_environment(void *sinit_ptr, size_t sinit_size,
+                                  void *phys_mle_start, size_t mle_size);
 #endif /* __TXT_SMX_H__ */
 
 /*

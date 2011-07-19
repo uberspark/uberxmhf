@@ -40,11 +40,11 @@
 #define __UNI_TXT_
 
 #include <txt_config_regs.h>
-#include <txt_smx.h>
 #include <txt_hash.h>
 
 /* XXX TODO order is important for these; fix it */
 #include <txt_mle.h>
+#include <txt_smx.h>
 #include <txt_acmod.h> /* XXX TODO This is really only necessary in init/ */
 #include <txt_mtrrs.h>
 #include <txt_heap.h>
