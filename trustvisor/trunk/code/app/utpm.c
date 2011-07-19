@@ -812,7 +812,7 @@ TPM_RESULT utpm_quote_deprecated(uint8_t* externalnonce, uint8_t* output, uint32
 	/* sign the quoteInfo and add the signature to output 
 	 * get the outlen
 	 */
-	if (ret = tpm_pkcs1_sign((rsa_context *)rsa, datalen, output, (output + datalen)) != 0) {
+	if (0 != (ret = tpm_pkcs1_sign((rsa_context *)rsa, datalen, output, (output + datalen)))) {
 		printf("[TV] Quote ERROR: rsa sign fail\n");
 		return 1;
 	}

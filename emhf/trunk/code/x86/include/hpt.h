@@ -356,8 +356,8 @@ static inline bool hpt_prot_is_valid(hpt_type_t t, int lvl, hpt_prot_t perms)
     : (t == HPT_TYPE_PAE)
     ? ((perms == HPT_PROTS_NONE
         || perms == HPT_PROTS_RWX
-        || ((lvl != HPT_LVL_PDPT3) &&
-            (perms == HPT_PROTS_R)
+        || (((lvl != HPT_LVL_PDPT3) &&
+            (perms == HPT_PROTS_R))
             || (perms == HPT_PROTS_RX)
             || (perms == HPT_PROTS_RW))))
     : (t == HPT_TYPE_LONG)

@@ -125,7 +125,7 @@ static inline unsigned int BR64_GET_BIT(u64 x64, int pos)
 static inline u64 BR64_SET_BIT(u64 x64, int pos, bool val)
 {
   u64 bit = val ? 1ull : 0ull;
-  return (x64 & ~(0x1ull<<pos) | (bit<<pos));
+  return ((x64 & ~(0x1ull<<pos)) | (bit<<pos));
 }
 
 /* offset == (dst_hi-src_hi) == (dst_lo-src_lo) */

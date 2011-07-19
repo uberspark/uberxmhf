@@ -80,6 +80,7 @@
   CFLAGS = -fno-builtin -fno-common -fno-strict-aliasing -iwithprefix include
   CFLAGS += -fno-stack-protector
   CFLAGS += -Wimplicit-function-declaration
+  CFLAGS += -Wparentheses
   CFLAGS += -Wunused
   CFLAGS += -Wstrict-prototypes -Wdeclaration-after-statement 
   CFLAGS += -Werror -Wno-pointer-arith -Wextra -Wfloat-equal 
