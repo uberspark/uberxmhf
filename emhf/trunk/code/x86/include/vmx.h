@@ -630,7 +630,6 @@ static inline u32 __vmx_vmwrite(u32 encoding, u32 value){
 }
 
 static inline void __vmx_vmread(u32 encoding, u32 *value){
-  u32 eflags;
 	__asm__ __volatile__("vmread %%eax, %%ebx\n\t"
 	  : "=b"(*value)
 	  : "a"(encoding));

@@ -242,7 +242,7 @@ u32 svm_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
 //if request was WRITE, we get the value from reading virtual_LAPIC_vaddr
 //to propagate we just write to the physical LAPIC
 
-void svm_lapic_access_dbexception(VCPU *vcpu, struct regs *r){
+void svm_lapic_access_dbexception(VCPU *vcpu, struct regs __attribute__((unused)) *r){
   struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
   u32 delink_lapic_interception=0;
   
@@ -288,7 +288,7 @@ void svm_lapic_access_dbexception(VCPU *vcpu, struct regs *r){
     //  (u16)vmcb->cs.sel, (u32)vmcb->rip, g_svm_lapic_reg, value_read);
   }
 
-fallthrough:  
+//fallthrough:  
   //clear #DB intercept in VMCB
   vmcb->exception_intercepts &= ~(u32)EXCEPTION_INTERCEPT_DB;
   

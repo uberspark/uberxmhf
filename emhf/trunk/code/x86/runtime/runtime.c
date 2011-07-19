@@ -255,7 +255,6 @@ void allcpus_common_start(VCPU *vcpu){
              * physical. Without SENTER, or with AMD, APs start in
              * 16-bit mode.  We get to skip that. */
             if(g_isl->isbsp() && g_midtable_numentries > 1) { // XXX TODO Is this the right test to be performing?
-                u32 i;
                 printf("\nBSP(0x%02x): _mle_join_start = 0x%08x, _ap_bootstrap_start = 0x%08x",
                         vcpu->id, (u32)_mle_join_start, (u32)_ap_bootstrap_start);
 

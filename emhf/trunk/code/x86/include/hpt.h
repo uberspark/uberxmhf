@@ -776,7 +776,7 @@ static inline bool hpt_pme_get_pat(hpt_type_t t, int lvl, hpt_pme_t pme)
 }
 
 /* "internal". use hpt_pme_get_pmt instead */
-static inline bool hpt_pme_get_pcd(hpt_type_t t, int lvl, hpt_pme_t pme)
+static inline bool hpt_pme_get_pcd(hpt_type_t t, int __attribute__((unused)) lvl, hpt_pme_t pme)
 {
   if (t == HPT_TYPE_NORM) {
     return BR64_GET_BIT(pme, HPT_NORM_PCD_L21_MP_BIT);
@@ -790,7 +790,7 @@ static inline bool hpt_pme_get_pcd(hpt_type_t t, int lvl, hpt_pme_t pme)
 }
 
 /* "internal". use hpt_pme_set_pmt instead */
-static inline hpt_pme_t hpt_pme_set_pcd(hpt_type_t t, int lvl, hpt_pme_t pme, bool pcd)
+static inline hpt_pme_t hpt_pme_set_pcd(hpt_type_t t, int __attribute__((unused)) lvl, hpt_pme_t pme, bool pcd)
 {
   if (t == HPT_TYPE_NORM) {
     return BR64_SET_BIT(pme, HPT_NORM_PCD_L21_MP_BIT, pcd);
@@ -804,7 +804,7 @@ static inline hpt_pme_t hpt_pme_set_pcd(hpt_type_t t, int lvl, hpt_pme_t pme, bo
 }
 
 /* "internal". use hpt_pme_get_pmt instead */
-static inline bool hpt_pme_get_pwt(hpt_type_t t, int lvl, hpt_pme_t pme)
+static inline bool hpt_pme_get_pwt(hpt_type_t t, int __attribute__((unused)) lvl, hpt_pme_t pme)
 {
   if (t == HPT_TYPE_NORM) {
     return BR64_GET_BIT(pme, HPT_NORM_PWT_L21_MP_BIT);
@@ -818,7 +818,7 @@ static inline bool hpt_pme_get_pwt(hpt_type_t t, int lvl, hpt_pme_t pme)
 }
 
 /* "internal". use hpt_pme_set_pmt instead */
-static inline hpt_pme_t hpt_pme_set_pwt(hpt_type_t t, int lvl, hpt_pme_t pme, bool pwt)
+static inline hpt_pme_t hpt_pme_set_pwt(hpt_type_t t, int __attribute__((unused)) lvl, hpt_pme_t pme, bool pwt)
 {
   if (t == HPT_TYPE_NORM) {
     return BR64_SET_BIT(pme, HPT_NORM_PWT_L21_MP_BIT, pwt);

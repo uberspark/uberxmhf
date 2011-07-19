@@ -78,7 +78,7 @@ static void vmx_apic_hwpgtbl_setentry(VCPU *vcpu, u64 gpa, u64 value){
 }
 
 
-static u64 vmx_apic_hwpgtbl_getprot(VCPU *vcpu, u64 gpa){
+static u64 __attribute__((unused)) vmx_apic_hwpgtbl_getprot(VCPU *vcpu, u64 gpa){
   u32 pfn = (u32)gpa / PAGE_SIZE_4K;
   u64 *pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
   return (pt[pfn] & (u64)7) ;
@@ -259,7 +259,7 @@ u32 vmx_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
 //if request was WRITE, we get the value from reading virtual_LAPIC_vaddr
 //to propagate we just write to the physical LAPIC
 
-void vmx_lapic_access_dbexception(VCPU *vcpu, struct regs *r){
+void vmx_lapic_access_dbexception(VCPU *vcpu, struct regs __attribute__((unused)) *r){
   u32 delink_lapic_interception=0;
   
   if(g_vmx_lapic_op == LAPIC_OP_WRITE){
@@ -302,7 +302,7 @@ void vmx_lapic_access_dbexception(VCPU *vcpu, struct regs *r){
     value_read = *((u32 *)src_registeraddress);
   }
 
-fallthrough:  
+//fallthrough:  
   //clear #DB intercept 
 	vcpu->vmcs.control_exception_bitmap &= ~(1UL << 1); 
 

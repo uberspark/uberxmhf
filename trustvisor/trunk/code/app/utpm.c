@@ -68,9 +68,6 @@ TPM_RESULT utpm_pcrread(TPM_DIGEST* pcr_value /* output */,
 /* software tpm pcr extend */
 TPM_RESULT utpm_extend(TPM_DIGEST *measurement, utpm_master_state_t *utpm, uint32_t pcr_num)
 {
-    TPM_DIGEST old_pcr_val;
-    TPM_DIGEST new_pcr_val;
-    uint32_t rv;
     SHA_CTX ctx;
 
     if(!measurement || !utpm) { return UTPM_ERR_BAD_PARAM; }
@@ -158,7 +155,6 @@ static uint32_t utpm_internal_allocate_and_populate_current_TpmPcrComposite(
 {
     uint32_t rv = 0;
     uint32_t i;
-    SHA_CTX ctx;
     uint32_t num_pcrs_to_include = 0;
     uint8_t *p = NULL;
     
@@ -431,12 +427,9 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
                        TPM_COMPOSITE_HASH *digestAtCreation, /* out */
                        uint8_t* hmackey, uint8_t* aeskey)
 {
-	uint32_t len;
-	uint8_t hashdata[TPM_HASH_SIZE];
 	uint8_t hmacCalculated[TPM_HASH_SIZE];
-	uint8_t iv[16];
 	aes_context ctx;
-	uint32_t i, rv;
+	uint32_t rv;
 
     if(!utpm || !input || !output || !outlen || !digestAtCreation || !hmackey || !aeskey) { return 1; }
     
@@ -687,8 +680,6 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
                       utpm_master_state_t *utpm, uint8_t* rsa) /* TrustVisor inputs */
 {
     TPM_RESULT rv = 0; /* success */
-    uint32_t i = 0;
-    uint32_t num_pcrs_to_include_in_quote = 0;
     uint32_t space_needed_for_composite = 0;
     uint8_t *tpm_pcr_composite = NULL;
     uint8_t *p = NULL;

@@ -83,7 +83,7 @@ static u8 * _svm_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
 //==============================================================================
 
 //------------------------------------------------------------------------------
-static u8 _svm_guest_readcode_byte(struct vmcb_struct *vmcb, u32 addr){
+static u8 __attribute__((unused)) _svm_guest_readcode_byte(struct vmcb_struct *vmcb, u32 addr) {
 	u32 paddr;
 	
 	if((u32)vmcb->cr0 & CR0_PG)
@@ -122,7 +122,7 @@ static VCPU *_svm_getvcpu(void){
 }
 
 //---NMI processing routine-----------------------------------------------------
-static void _svm_processNMI(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *r){
+static void _svm_processNMI(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs __attribute__((unused)) *r){
   if( (!vcpu->nmiinhvm) && (!g_svm_quiesce) ){
     printf("\nCPU(0x%02x): warning, ignoring spurious NMI within hypervisor!", vcpu->id);
     return;
@@ -166,7 +166,7 @@ static void _svm_processNMI(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *r
 }
 
 //---quiescing implementation---------------------------------------------------
-static void _svm_send_quiesce_signal(VCPU *vcpu, struct vmcb_struct *vmcb){
+static void _svm_send_quiesce_signal(VCPU *vcpu, struct vmcb_struct __attribute__((unused)) *vmcb){
   volatile u32 *icr_low = (u32 *)(0xFEE00000 + 0x300);
   volatile u32 *icr_high = (u32 *)(0xFEE00000 + 0x310);
   u32 icr_high_value= 0xFFUL << 24;
@@ -193,7 +193,7 @@ static void _svm_send_quiesce_signal(VCPU *vcpu, struct vmcb_struct *vmcb){
 //---npt initialize-------------------------------------------------------------
 static void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts_base){
 	pdpt_t pdpt;
-	pdt_t pdts, pdt;
+	pdt_t pdt;
 	pt_t pt;
 	u32 paddr=0, i, j, k, y, z;
 	u64 flags;
@@ -489,7 +489,7 @@ static void _svm_handle_npf(VCPU *vcpu, struct regs *r){
 //---NMI handling---------------------------------------------------------------
 // note: we use NMI for core quiescing, we simply inject the others back
 // into the guest in the normal case
-static void _svm_handle_nmi(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *r){
+static void _svm_handle_nmi(VCPU *vcpu, struct vmcb_struct __attribute__((unused)) *vmcb, struct regs __attribute__((unused)) *r){
     //now we adopt a simple trick, this NMI is pending, the only
     //way we can dismiss it is if we set GIF=0 and make GIF=1 so that
     //the core thinks it must dispatch the pending NMI :p
@@ -502,9 +502,8 @@ static void _svm_handle_nmi(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *r
 }
 
 //---IO Intercept handling------------------------------------------------------
-static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *r){
+static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs __attribute__((unused)) *r){
   ioio_info_t ioinfo;
-  u32 ret, retvalue;
   
   ioinfo.bytes = vmcb->exitinfo1;
 
@@ -565,7 +564,6 @@ static void _svm_handle_msr(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *r
 static void _svm_initSVM(VCPU *vcpu){
   u32 eax, edx, ecx, ebx;
   u64 hsave_pa;
-  u32 i;
 
   //check if CPU supports SVM extensions 
   cpuid(0x80000001, &eax, &ebx, &ecx, &edx);
@@ -786,8 +784,8 @@ u32 svm_isbsp(void){
 //---generic exception handler--------------------------------------------------
 void svm_runtime_exception_handler(u32 vector, struct regs *r){
 	VCPU *vcpu = _svm_getvcpu();
-  INTR_SAMEPRIVILEGE_STACKFRAME_NOERRORCODE *noecode_sf= (INTR_SAMEPRIVILEGE_STACKFRAME_NOERRORCODE *)((u32)r->esp + (u32)0x0C);
-  INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE *ecode_sf= (INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE *)((u32)r->esp + (u32)0x0C);
+  /* INTR_SAMEPRIVILEGE_STACKFRAME_NOERRORCODE *noecode_sf= (INTR_SAMEPRIVILEGE_STACKFRAME_NOERRORCODE *)((u32)r->esp + (u32)0x0C); */
+  /* INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE *ecode_sf= (INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE *)((u32)r->esp + (u32)0x0C); */
 
   printf("\nCPU(0x%02x): XtRtmExceptionHandler: Exception=0x%08X", vcpu->id, vector);
   printf("\nCPU(0x%02x): ESP=0x%08x", vcpu->id, r->esp);
@@ -1172,13 +1170,13 @@ struct isolation_layer g_isolation_layer_svm = {
 
 
 //---IOPM Bitmap interface------------------------------------------------------
-static void _svm_lib_iopm_set_write(VCPU *vcpu, u32 port, u32 size){
+static void _svm_lib_iopm_set_write(VCPU __attribute__((unused)) *vcpu, u32 __attribute__((unused)) port, u32 __attribute__((unused)) size){
 	printf("\n%s: not implemented, halting!", __FUNCTION__);
 	HALT();
 }
 
 //---MSRPM Bitmap interface------------------------------------------------------
-static void _svm_lib_msrpm_set_write(VCPU *vcpu, u32 msr){
+static void _svm_lib_msrpm_set_write(VCPU __attribute__((unused)) *vcpu, u32 __attribute__((unused)) msr){
 	printf("\n%s: not implemented, halting!", __FUNCTION__);
 	HALT();
 }
@@ -1189,17 +1187,17 @@ static void _svm_lib_hwpgtbl_flushall(VCPU *vcpu){
 }
 
 //---hardware pagetable protection manipulation routine-------------------------
-static void _svm_lib_hwpgtbl_setprot(VCPU *vcpu, u64 gpa, u64 flags){
+static void _svm_lib_hwpgtbl_setprot(VCPU __attribute__((unused)) *vcpu, u64 __attribute__((unused)) gpa, u64 __attribute__((unused)) flags){
 	printf("\n%s: not implemented, halting!", __FUNCTION__);
 	HALT();
 }
 
-static void _svm_lib_hwpgtbl_setentry(VCPU *vcpu, u64 gpa, u64 value){
+static void __attribute__((unused)) _svm_lib_hwpgtbl_setentry(VCPU __attribute__((unused)) *vcpu, u64 __attribute__((unused)) gpa, u64 __attribute__((unused)) value){
 	printf("\n%s: not implemented, halting!", __FUNCTION__);
 	HALT();
 }
 
-static u64 _svm_lib_hwpgtbl_getprot(VCPU *vcpu, u64 gpa){
+static u64 _svm_lib_hwpgtbl_getprot(VCPU __attribute__((unused)) *vcpu, u64 __attribute__((unused)) gpa){
 	printf("\n%s: not implemented, halting!", __FUNCTION__);
 	HALT();
 }
@@ -1294,7 +1292,7 @@ static u8 * _svm_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr){
 
 
 //---reboot functionality-------------------------------------------------------
-static void _svm_lib_reboot(VCPU *vcpu){
+static void _svm_lib_reboot(VCPU __attribute__((unused)) *vcpu){
 	printf("\n%s: not implemented, halting!", __FUNCTION__);
 	HALT();
 }

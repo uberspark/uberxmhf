@@ -252,11 +252,11 @@ u32 scode_measure(utpm_master_state_t *utpm, pte_t *pte_pages, u32 size)
 	return 0;
 }
 
-hpt_pa_t hpt_nested_ptr2pa(void *ctx, void *ptr)
+hpt_pa_t hpt_nested_ptr2pa(void __attribute__((unused)) *ctx, void *ptr)
 {
 	return hva2spa(ptr);
 }
-void* hpt_nested_pa2ptr(void *ctx, hpt_pa_t ptr)
+void* hpt_nested_pa2ptr(void __attribute__((unused)) *ctx, hpt_pa_t ptr)
 {
 	return spa2hva(ptr);
 }
@@ -369,7 +369,6 @@ u32 hpt_scode_set_prot(VCPU *vcpu, pte_t *pte_pages, u32 size)
 {
 	u32 i; 
 	u32 pfn;
-	int type =0; 
 	u32 k;
 	VCPU * tmpcpu;
 
@@ -563,10 +562,8 @@ int memsect_info_register(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, wh
 u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry) 
 {
 
-	u32 i, j;
+  u32 i;
 	whitelist_entry_t whitelist_new;
-	u32 ret;
-	u32 inum;
 	struct tv_pal_section * ginfo; 
 	u64 gcr3;
 
@@ -700,7 +697,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 /* unregister scode in whitelist */
 u32 scode_unregister(VCPU * vcpu, u32 gvaddr) 
 {
-	u32 i, j;
+	u32 i;
 
 	u64 gcr3;
 
@@ -884,9 +881,7 @@ void memcpy_guest_to_guest(VCPU * vcpu, u32 src, u32 dst, u32 len)
 {
 	u32 src_gpaddr, dst_gpaddr;
 	u8 *src_hvaddr, *dst_hvaddr;
-	u32 i;
-
-	void * linux_vmcb;
+	//u32 i;
 	u32 is_pae;
 
 	is_pae = VCPU_gcr4(vcpu) & CR4_PAE;
@@ -917,7 +912,6 @@ u32 scode_marshall(VCPU * vcpu)
 	u32 pm_addr, pm_addr_base, pm_value, pm_tmp;  /*parameter stack base address*/
 	u32 pm_num, pm_type, pm_size, pm_size_sum; /*save pm information*/
 	u32 grsp;
-	u32 is_pae;
 	u32 new_rsp;
 	int curr=scode_curr[vcpu->id];
 
@@ -1084,7 +1078,7 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 	return 0;
 }
 
-static void scode_unexpose_arch(VCPU * vcpu, whitelist_entry_t *wle)
+static void scode_unexpose_arch(VCPU __attribute__((unused)) *vcpu, whitelist_entry_t *wle)
 {
 	u32 i;
 	pte_t * page = wle->pte_page;
@@ -1107,7 +1101,6 @@ u32 scode_unmarshall(VCPU * vcpu)
 {
 	u32 pm_addr_base, pm_addr;
 	u32 i, pm_num, pm_type, pm_size, pm_value;
-	u32 value;
 
 	int curr=scode_curr[vcpu->id];
 
@@ -1341,7 +1334,7 @@ uint32_t scode_seal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len, uint32
 	uint8_t indata[MAX_SEALDATA_LEN];  
 	uint8_t output[MAX_SEALDATA_LEN]; 
 	uint32_t outlen;
-	uint32_t i, rv=0;
+	uint32_t rv=0;
 
 	TPM_PCR_INFO tpmPcrInfo;
 	
@@ -1404,12 +1397,10 @@ uint32_t scode_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
 											uint32_t output_addr, uint32_t output_len_addr,
 											uint32_t digestAtCreation_addr)
 {
-	uint32_t i;
 	uint8_t indata[MAX_SEALDATA_LEN]; 
 	uint8_t outdata[MAX_SEALDATA_LEN];
 	uint32_t outlen;
 	uint32_t ret;
-	int index;
 	TPM_COMPOSITE_HASH digestAtCreation;
 
 	dprintf(LOG_TRACE, "\n[TV:scode] ********** uTPM unseal **********\n");
@@ -1469,7 +1460,6 @@ uint32_t scode_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
 u32 scode_seal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrAtRelease_addr, u32 output_addr, u32 output_len_addr)
 {
 	unsigned int i;
-	int index;
 	u32 outlen;
 	u8 pcr[TPM_PCR_SIZE];
 	u8 indata[MAX_SEALDATA_LEN];  
@@ -1557,7 +1547,6 @@ u32 scode_unseal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 outp
 	u8 outdata[MAX_SEALDATA_LEN];
 	u32 outlen;
 	u32 ret;
-	int index;
 
 	dprintf(LOG_TRACE, "\n[TV] ********** uTPM unseal DEPRECATED **********\n");
 	dprintf(LOG_TRACE, "[TV] input addr: %x, len %d, output addr: %x!\n", input_addr, input_len, output_addr);
@@ -1623,7 +1612,6 @@ u32 scode_quote_deprecated(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out
 	u8 tpmsel[MAX_PCR_SEL_SIZE];
 	u32 outlen, ret;
 	u32 i, num;
-	int index;
 	u32 tpmsel_len;
 
 	dprintf(LOG_TRACE, "\n[TV] ********** uTPM Quote [DEPRECATED] **********\n");
@@ -1696,8 +1684,6 @@ u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 
 	TPM_NONCE nonce;
 	TPM_PCR_SELECTION tpmsel;
 	u32 outlen, ret=0;
-	u32 i;
-	int index;
 
 	dprintf(LOG_TRACE, "\n[TV] ********** uTPM Quote **********\n");
 	dprintf(LOG_TRACE, "[TV] nonce addr: %x, tpmsel addr: %x, output addr %x, outlen addr: %x!\n",
@@ -1856,7 +1842,6 @@ void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* entry)
 
 u32 scode_share_range(VCPU * vcpu, whitelist_entry_t *entry, u32 gva_base, u32 gva_len)
 {
-	struct scode_sections_struct* section;
 	u32 gva_len_pages;
 
 	pte_t *new_scode_pages=NULL;
@@ -1976,8 +1961,6 @@ u32 scode_share_ranges(VCPU * vcpu, u32 scode_entry, u32 gva_base[], u32 gva_len
 
 u32 scode_pcrread(VCPU * vcpu, u32 gvaddr, u32 num)
 {
-	int i;
-	int index;
 	TPM_DIGEST pcr;
 
 	dprintf(LOG_TRACE, "\n[TV] ********** uTPM pcrread **********\n");
@@ -2007,7 +1990,6 @@ u32 scode_pcrread(VCPU * vcpu, u32 gvaddr, u32 num)
 
 u32 scode_pcrextend(VCPU * vcpu, u32 gvaddr, u32 len, u32 num)
 {
-	int index;
 	u8 data[MAX_TPM_EXTEND_DATA_LEN]; 
 	TPM_DIGEST hash;
 

@@ -212,7 +212,7 @@ static VCPU *_vmx_getvcpu(void){
 }
 
 //---NMI processing routine-----------------------------------------------------
-static void _vmx_processNMI(VCPU *vcpu, struct regs *r){
+static void _vmx_processNMI(VCPU *vcpu, struct regs __attribute__((unused)) *r){
   
 	if( (!vcpu->nmiinhvm) && (!g_vmx_quiesce) ){
     printf("\nCPU(0x%02x): Spurious NMI within hypervisor. halt!", vcpu->id);
@@ -901,8 +901,8 @@ void vmx_initialize(VCPU *vcpu){
 //---generic exception handler--------------------------------------------------
 void vmx_runtime_exception_handler(u32 vector, struct regs *r){
 	VCPU *vcpu = _vmx_getvcpu();
-  INTR_SAMEPRIVILEGE_STACKFRAME_NOERRORCODE *noecode_sf= (INTR_SAMEPRIVILEGE_STACKFRAME_NOERRORCODE *)((u32)r->esp + (u32)0x0C);
-  INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE *ecode_sf= (INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE *)((u32)r->esp + (u32)0x0C);
+  /* INTR_SAMEPRIVILEGE_STACKFRAME_NOERRORCODE *noecode_sf= (INTR_SAMEPRIVILEGE_STACKFRAME_NOERRORCODE *)((u32)r->esp + (u32)0x0C); */
+  /* INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE *ecode_sf= (INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE *)((u32)r->esp + (u32)0x0C); */
 
   printf("\nCPU(0x%02x): %s excp=0x%08x", vcpu->id, __FUNCTION__, vector);
   printf("\nCPU(0x%02x): %s ESP=0x%08x", vcpu->id, __FUNCTION__, r->esp);
@@ -1340,7 +1340,7 @@ static void _vmx_set_page_prot(u32 pfn, u8 *bit_vector){
   return;                        
 }
 
-static void _vmx_clear_page_prot(u32 pfn, u8 *bit_vector){
+static void __attribute__((unused)) _vmx_clear_page_prot(u32 pfn, u8 *bit_vector){
   u32 byte_offset, bit_offset;
 
   byte_offset = pfn / 8;
@@ -1350,7 +1350,7 @@ static void _vmx_clear_page_prot(u32 pfn, u8 *bit_vector){
   return;
 }
 
-static u32 _vmx_test_page_prot(u32 pfn, u8 *bit_vector){
+static u32 __attribute__((unused)) _vmx_test_page_prot(u32 pfn, u8 *bit_vector){
   u32 byte_offset, bit_offset;
 
   byte_offset = pfn / 8;
@@ -1370,7 +1370,7 @@ static void _vmx_lib_iopm_set_write(VCPU *vcpu, u32 port, u32 size){
 }
 
 //---MSRPM Bitmap interface------------------------------------------------------
-static void _vmx_lib_msrpm_set_write(VCPU *vcpu, u32 msr){
+static void _vmx_lib_msrpm_set_write(VCPU __attribute__((unused)) *vcpu, u32 __attribute__((unused)) msr){
   return;
 }
 
@@ -1395,7 +1395,7 @@ static void _vmx_lib_hwpgtbl_setprot(VCPU *vcpu, u64 gpa, u64 flags){
 	_vmx_lib_hwpgtbl_flushall(vcpu);
 }
 
-static void _vmx_lib_hwpgtbl_setentry(VCPU *vcpu, u64 gpa, u64 value){
+static void __attribute__((unused)) _vmx_lib_hwpgtbl_setentry(VCPU *vcpu, u64 gpa, u64 value){
   u32 pfn = (u32)gpa / PAGE_SIZE_4K;
   u64 *pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
 
@@ -1501,7 +1501,7 @@ static u8 * _vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr){
 
 
 //---reboot functionality-------------------------------------------------------
-static void _vmx_lib_reboot(VCPU *vcpu){
+static void _vmx_lib_reboot(VCPU __attribute__((unused)) *vcpu){
 
     printf("\nHello from _vmx_lib_reboot\n");
     if(txt_is_launched()) {

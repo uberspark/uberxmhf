@@ -598,8 +598,6 @@ static void _vtd_invalidatecaches(void){
 //vt-d protect/unprotect a given region of memory, start_paddr is
 //assumed to be page aligned physical memory address
 void vmx_eap_vtd_protect(u32 start_paddr, u32 size){
-  pdpt_t pdpt;
-  pdt_t pdt;
   pt_t pt;
   u32 vaddr, end_paddr;
 	u32 pdptindex, pdtindex, ptindex;

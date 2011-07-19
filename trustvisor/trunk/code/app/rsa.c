@@ -617,7 +617,6 @@ int tpm_pkcs1_sign( rsa_context *ctx,
 		unsigned char *sig )
 {
 	unsigned char hash[20];
-	int i;
 
 	if( rsa_check_pubkey(  ctx ) != 0 ||
 			rsa_check_privkey( ctx ) != 0 ) {

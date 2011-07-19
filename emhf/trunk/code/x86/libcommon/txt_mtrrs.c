@@ -199,7 +199,7 @@ void save_mtrrs(mtrr_state_t *saved_state)
     g_saved_mtrrs = saved_state;
 }
 
-
+#if 0 /* functions unused as of 2011-07-19 */
 /* base should be 4k-bytes aligned, no invalid overlap combination */
 static int get_page_type(const mtrr_state_t *saved_state, uint32_t base)
 {
@@ -261,6 +261,7 @@ static int get_region_type(const mtrr_state_t *saved_state,
 
     return type;
 }
+#endif
 
 /* static bool validate_mmio_regions(const mtrr_state_t *saved_state) */
 /* { */

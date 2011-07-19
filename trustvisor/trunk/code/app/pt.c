@@ -133,7 +133,7 @@ hpt_prot_t reg_prot_of_type(int type)
 	}
 }
 
-void hpt_remove_pal_pme(VCPU *vcpu, hpt_walk_ctx_t *walk_ctx, hpt_pm_t pal_pm, int top_lvl, gpa_t gpa)
+void hpt_remove_pal_pme(VCPU __attribute__((unused)) *vcpu, hpt_walk_ctx_t *walk_ctx, hpt_pm_t pal_pm, int top_lvl, gpa_t gpa)
 {
 	hpt_pme_t pal_pme;
 	int pal_pm_lvl=1;
@@ -165,7 +165,6 @@ void hpt_insert_pal_pme(VCPU *vcpu, hpt_walk_ctx_t *walk_ctx, hpt_pm_t pal_pm, i
 	int type;
 	hpt_pme_t *reg_pml1es = VCPU_get_pml1es(vcpu);
 	u64 pfn = gpa >> PAGE_SHIFT_4K;
-	int pme_lvl;
 
 	dprintf(LOG_TRACE, "hpt_insert_pal_pme: gpa: %Lx\n", gpa);
 

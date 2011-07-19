@@ -107,7 +107,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 			/* register the scode */
 		case TV_HC_REG:
 			{
-				u32 scode_info, scode_sp, scode_pm, scode_en;
+				u32 scode_info, /*scode_sp,*/ scode_pm, scode_en;
 				/* sensitive code as guest virtual address in ecx */
 				scode_info = r->ecx;
 				/* sensitive code params information addres in esi */
@@ -329,7 +329,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 
 /* EPT violation handler */
 u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
-		struct regs *r, u64 gpa, u64 gva, u64 violationcode)
+		struct regs __attribute__((unused)) *r, u64 gpa, u64 gva, u64 violationcode)
 {
 	u32 ret;
 	dprintf(LOG_TRACE, "\nCPU(0x%02x): gva=0x%08Lx, gpa=0x%08Lx, code=0x%016Lx\n", (int)vcpu->id,
@@ -341,7 +341,7 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 	}
 }
 
-u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, 
+u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs __attribute__((unused)) *r, 
 		u32 portnum, u32 access_type, u32 access_size)
 {
 	dprintf(LOG_TRACE, "\nCPU(0x%02x): Port access intercept feature unimplemented. Halting!", vcpu->id);
@@ -353,7 +353,7 @@ u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
 }
 
 
-void emhf_app_handleshutdown(VCPU *vcpu, struct regs *r)
+void emhf_app_handleshutdown(VCPU *vcpu, struct regs __attribute__((unused)) *r)
 {
 	dprintf(LOG_TRACE, "\nCPU(0x%02x): Shutdown intercept!", vcpu->id);
 	g_libemhf->emhf_reboot(vcpu);
