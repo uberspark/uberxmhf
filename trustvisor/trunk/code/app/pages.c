@@ -33,13 +33,13 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include "pages.h"
-
+#include <target.h>
 #include <types.h>
 #include <puttymem.h>
 #include <paging.h>
 #include <error.h>
 #include <print.h>
+#include <pages.h>
 
 void pagelist_init(pagelist_t *pl)
 {

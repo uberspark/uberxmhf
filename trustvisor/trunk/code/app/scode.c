@@ -2061,14 +2061,14 @@ u32 scode_rand(VCPU * vcpu, u32 buffer_addr, u32 numbytes_addr)
 	numbytes = get_32bit_aligned_value_from_guest(vcpu, numbytes_addr);
 	if (numbytes > MAX_TPM_RAND_DATA_LEN)
 	{
-		dprintf(LOG_ERROR, "[TV] GenRandom ERROR: requested rand data len %d not correct!\n", numbytes);
+		dprintf(LOG_ERROR, "[TV] GenRandom ERROR: requested rand data len %d too large!\n", numbytes);
 		return 1;
 	}
 
-	ret = utpm_rand(buffer, numbytes);
-	if (ret == 0)
-	{
-		dprintf(LOG_ERROR, "[TV] GenRandom ERROR: rand byte error!");
+	ret = utpm_rand(buffer, &numbytes);
+	if (ret != UTPM_SUCCESS) {
+		dprintf(LOG_ERROR, "[TV] GenRandom ERROR: rand byte error; numbytes=%d!",
+						numbytes);
 		return 1;
 	}
 

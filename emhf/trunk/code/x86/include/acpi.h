@@ -211,7 +211,6 @@ void flat_writeu64(u32 addr, u64 val);
 u64 flat_readu64(u32 addr);
 void flat_copy(u8 *dest, u8 *src, u32 size);
 
-
 #endif	//__ASSEMBLY__
 
 #endif //__ACPI_H__

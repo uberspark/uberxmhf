@@ -90,16 +90,16 @@ typedef union {
 } tb_hash_t;
 
 
-static inline const char *hash_alg_to_string(uint8_t hash_alg)
-{
-    if ( hash_alg == TB_HALG_SHA1 )
-        return "TB_HALG_SHA1";
-    else {
-        static char buf[32];
-        snprintf(buf, sizeof(buf), "unsupported (%u)", hash_alg);
-        return buf;
-    }
-}
+/* static inline const char *hash_alg_to_string(uint8_t hash_alg) */
+/* { */
+/*     if ( hash_alg == TB_HALG_SHA1 ) */
+/*         return "TB_HALG_SHA1"; */
+/*     else { */
+/*         static char buf[32]; */
+/*         snprintf(buf, sizeof(buf), "unsupported (%u)", hash_alg); */
+/*         return buf; */
+/*     } */
+/* } */
 
 
 static inline unsigned int get_hash_size(uint8_t hash_alg)

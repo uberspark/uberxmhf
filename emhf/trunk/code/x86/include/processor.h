@@ -303,6 +303,10 @@ static inline u32 get_cpu_vendor(void) {
     return 0; /* never reached */
 }
 
+void spin_lock(volatile u32 *);
+void spin_unlock(volatile u32 *);
+
+
 #endif
 
 #endif /* __PROCESSOR_H */

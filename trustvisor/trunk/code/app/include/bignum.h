@@ -411,6 +411,7 @@ int mpi_inv_mod( mpi *X, mpi *A, mpi *N );
  *                 XYSSL_ERR_MPI_NOT_ACCEPTABLE if X is not prime
  */
 int mpi_is_prime( mpi *X);
+#endif
 
 /**
  * \brief          Prime number generation
@@ -426,7 +427,6 @@ int mpi_is_prime( mpi *X);
  *                 XYSSL_ERR_MPI_BAD_INPUT_DATA if nbits is < 3
  */
 int mpi_gen_prime( mpi *X, int nbits, int dh_flag);
-#endif
 
 #ifdef __cplusplus
 }

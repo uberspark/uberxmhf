@@ -42,6 +42,11 @@
 #include  "./include/scode.h"
 #include  <globals.h>
 
+/* Declared in linuxrelc.c.  TODO: figure out an approriate header
+ * file for it. */
+void setuplinuxboot(VCPU *vcpu, u32 vmlinuz_base, u32 vmlinuz_size, 
+                    u32 initrd_base, u32 initrd_size);
+
 // a placeholder for now...
 u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 	printf("\nCPU(0x%02x): Hello world from sechyp app!", vcpu->id);

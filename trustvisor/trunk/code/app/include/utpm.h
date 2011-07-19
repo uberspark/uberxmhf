@@ -79,7 +79,7 @@ TPM_RESULT utpm_quote_deprecated(uint8_t* externalnonce, uint8_t* output, uint32
                       utpm_master_state_t *utpm, uint8_t* tpmsel, uint32_t tpmsel_len, uint8_t* rsa );
 
 
-//uint32_t utpm_rand(uint8_t* buffer, uint32_t numbytes);
+TPM_RESULT utpm_rand(uint8_t* buffer, uint32_t *numbytes);
 
 /* internal use. */
 void utpm_init_internal(utpm_master_state_t *utpm);

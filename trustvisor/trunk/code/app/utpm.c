@@ -45,6 +45,7 @@
 #include <sha1.h>
 #include <hmac.h>
 #include <puttymem.h>
+#include <random.h>
 
 void utpm_init_internal(utpm_master_state_t *utpm) {
     if(NULL == utpm) return;
@@ -291,6 +292,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 	aes_context ctx;
     TPM_PCR_INFO tpmPcrInfo_internal;
     uint8_t *plaintext = NULL;
+    uint32_t bytes_of_entropy = 0;
     if(!utpm || !tpmPcrInfo || !input || !output || !outlen || !hmackey || !aeskey) {
 		dprintf(LOG_ERROR, "[TV] utpm_seal ERROR: !utpm || !tpmPcrInfo || !input || !output || !outlen || !hmackey || !aeskey\n");
         return 1;
@@ -349,7 +351,12 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     p = iv = plaintext;
 
 	/* 0. get IV */
-	rand_bytes(iv, TPM_AES_KEY_LEN_BYTES);
+    bytes_of_entropy = TPM_AES_KEY_LEN_BYTES;
+	rand_bytes(iv, &bytes_of_entropy);
+    if(TPM_AES_KEY_LEN_BYTES != bytes_of_entropy) {
+        dprintf(LOG_ERROR, "ERROR: rand_bytes FAILED\n");
+        return UTPM_ERR_INSUFFICIENT_ENTROPY;
+    }
     vmemcpy(output, iv, TPM_AES_KEY_LEN_BYTES); /* Copy IV directly to output */
     p += TPM_AES_KEY_LEN_BYTES; /* IV */
 
@@ -568,13 +575,19 @@ TPM_RESULT utpm_seal_deprecated(uint8_t* pcrAtRelease, uint8_t* input, uint32_t 
 	uint8_t confounder[TPM_CONFOUNDER_SIZE];
 	uint8_t hashdata[TPM_HASH_SIZE];
 	aes_context ctx;
+    uint32_t confounder_size;
 
 	/* IV can be 0 because we have confounder */
 	vmemset(iv, 0, 16);
 
 	/* get a random confounder */
-	rand_bytes(confounder, TPM_CONFOUNDER_SIZE);
-
+    confounder_size = TPM_CONFOUNDER_SIZE;
+	rand_bytes(confounder, &confounder_size);
+    if(TPM_CONFOUNDER_SIZE != confounder_size) {
+		printf("[TV] Unseal ERROR: insufficient entropy!\n");
+        return UTPM_ERR_INSUFFICIENT_ENTROPY;
+    }
+    
 	/* output = 
 	 * AES-CBC(confounder || HMAC( entire message w/ zero HMAC field) || pcr || input_len || input || PADDING)
 	 * */
@@ -821,10 +834,16 @@ TPM_RESULT utpm_quote_deprecated(uint8_t* externalnonce, uint8_t* output, uint32
 /* get random bytes from software TPM */
 /* XXX TODO: Make this look like an actual TPM command (return value
  * should simply be a status code) */
-uint32_t utpm_rand(uint8_t* buffer, uint32_t numbytes)
+TPM_RESULT utpm_rand(uint8_t* buffer, uint32_t *numbytes)
 {
-	numbytes = rand_bytes(buffer, numbytes);
+    int rv;
+    
+	rv = rand_bytes(buffer, numbytes);
+    if(0 != rv) {
+		printf("[TV] ERROR: utpm_rand: insufficient entropy\n");
+        return UTPM_ERR_INSUFFICIENT_ENTROPY;
+    }
 
-	return numbytes;
+	return UTPM_SUCCESS;
 }
 

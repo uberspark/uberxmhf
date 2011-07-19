@@ -173,6 +173,9 @@ void hpt_scode_clear_prot(VCPU * vcpu, pte_t *pte_pages, u32 size);
 u32 hpt_scode_switch_scode(VCPU * vcpu);
 u32 hpt_scode_switch_regular(VCPU * vcpu);
 u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode);
+u32 scode_share(VCPU * vcpu, u32 scode_entry, u32 addr, u32 len);
+u32 scode_share_ranges(VCPU * vcpu, u32 scode_entry, u32 gva_base[], u32 gva_len[], u32 count);
+
 
 /* PAL operations */
 void init_scode(VCPU * vcpu);
@@ -187,7 +190,10 @@ uint32_t scode_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
 u32 scode_quote_deprecated(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 out_len_addr);
 u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 out_len_addr);
 uint32_t scode_utpm_id_getpub(VCPU * vcpu, uint32_t gvaddr);
-u32 scode_share(VCPU * vcpu, u32 scode_entry, u32 addr, u32 len);
+u32 scode_pcrread(VCPU * vcpu, u32 gvaddr, u32 num);
+u32 scode_pcrextend(VCPU * vcpu, u32 gvaddr, u32 len, u32 num);
+u32 scode_rand(VCPU * vcpu, u32 buffer_addr, u32 numbytes_addr);
+
 #endif /* __SCODE_H_ */
 /* Local Variables: */
 /* mode:c           */

@@ -70,6 +70,7 @@
 #define UTPM_SUCCESS 0
 #define UTPM_ERR_BAD_PARAM 1
 #define UTPM_ERR_PCR_OUT_OF_RANGE 2
+#define UTPM_ERR_INSUFFICIENT_ENTROPY 3
 
 /* TODO: create an enum with meaningful errors that can be passed back
  * to PAL authors. */

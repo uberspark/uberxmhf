@@ -144,6 +144,7 @@
 #include <sys/mman.h>
 #endif
 
+#include <target.h>
 #include "tlsf.h"
 
 #if !defined(__GNUC__)

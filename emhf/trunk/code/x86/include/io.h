@@ -77,6 +77,8 @@ static inline unsigned char inb (u32 port){
   return _v;
 }
 
+void udelay(u32 usecs);
+
 #endif /* __ASSEMBLY__ */
 
 #endif /* __IO_H_ */
