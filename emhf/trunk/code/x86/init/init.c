@@ -101,7 +101,7 @@ INTEGRITY_MEASUREMENT_VALUES g_init_gold /* __attribute__(( section("") )) */ = 
 
 //---MP config table handling---------------------------------------------------
 void dealwithMP(void){
-    if(!smp_getinfo(&pcpus, &pcpus_numentries)){
+    if(!smp_getinfo(pcpus, &pcpus_numentries)){
         printf("\nFatal error with SMP detection. Halting!");
         HALT();
     }
