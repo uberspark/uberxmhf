@@ -2073,10 +2073,10 @@ u32 scode_rand(VCPU * vcpu, u32 buffer_addr, u32 numbytes_addr)
 	}
 
 	/* copy random data to guest */
-	copy_to_guest(vcpu, buffer_addr, buffer, ret);
+	copy_to_guest(vcpu, buffer_addr, buffer, numbytes);
 
 	/* copy data length to guest */
-	put_32bit_aligned_value_to_guest(vcpu, numbytes_addr, ret);
+	put_32bit_aligned_value_to_guest(vcpu, numbytes_addr, numbytes);
 
 	return 0;
 }
