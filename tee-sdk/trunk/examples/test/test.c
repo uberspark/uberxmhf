@@ -781,7 +781,7 @@ int test_rand(tz_session_t *tzPalSession)
   tz_return_t tzRet, serviceReturn;
   tz_operation_t tzOp;
   int rv = 0;
-  const size_t req_bytes=4;
+  const size_t req_bytes=40;
   size_t got_bytes;
   uint8_t *bytes;
   int i;
