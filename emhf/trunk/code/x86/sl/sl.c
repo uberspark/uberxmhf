@@ -404,7 +404,6 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	 	//setup runtime IDT
 		{
 			u32 *fptr, idtbase_virt, idtbase_rel;
-			idtentry_t *idtentry;
 			u32 i;
 
 			printf("\nSL: setting up runtime IDT...");
