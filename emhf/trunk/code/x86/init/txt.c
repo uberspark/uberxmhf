@@ -235,7 +235,7 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
     uint64_t *size;
     os_mle_data_t *os_mle_data;
     os_sinit_data_t *os_sinit_data;
-    uint64_t min_lo_ram, max_lo_ram, min_hi_ram, max_hi_ram;
+    /* uint64_t min_lo_ram, max_lo_ram, min_hi_ram, max_hi_ram; */
     txt_caps_t sinit_caps;
     txt_caps_t caps_mask;
     

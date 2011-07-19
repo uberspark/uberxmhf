@@ -275,7 +275,6 @@ static int mp_checksum(unsigned char *mp, int len){
 static u32 mp_scan_config(u32 base, u32 length, MPFP **mpfp){
 	u32 *bp = (u32 *)base;
   MPFP *mpf;
-  u32 mem;
 
   printf("\n%s: Finding MP table from 0x%08x for %u bytes",
                         __FUNCTION__, (u32)bp, length);

@@ -357,7 +357,6 @@ bool txt_supports_txt(void) {
 tb_error_t txt_verify_platform(void)
 {
     txt_heap_t *txt_heap;
-    tb_error_t err;
     txt_ests_t ests;
 
     printf("txt_verify_platform\n");
