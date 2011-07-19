@@ -79,6 +79,7 @@
 #-----basic flags for compiling
   CFLAGS = -fno-builtin -fno-common -fno-strict-aliasing -iwithprefix include
   CFLAGS += -fno-stack-protector
+  CFLAGS += -Wimplicit-function-declaration
   CFLAGS += -Wstrict-prototypes -Wdeclaration-after-statement 
   CFLAGS += -Werror -Wno-pointer-arith -Wextra -Wfloat-equal 
   CFLAGS += -Wbad-function-cast -Wcast-qual -Wsign-compare 
