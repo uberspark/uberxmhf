@@ -273,6 +273,7 @@ static inline hpt_pme_t* VCPU_get_pml1es(VCPU *vcpu)
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     return (hpt_pme_t*)vcpu->npt_vaddr_pts;
   }
+  return NULL;
 }
 
 static inline hpt_pme_t* VCPU_get_pml2es(VCPU *vcpu)
@@ -282,6 +283,7 @@ static inline hpt_pme_t* VCPU_get_pml2es(VCPU *vcpu)
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     return (hpt_pme_t*)vcpu->npt_vaddr_pdts;
   }
+  return NULL;
 }
 
 static inline hpt_pme_t* VCPU_get_pml3es(VCPU *vcpu)
@@ -291,6 +293,7 @@ static inline hpt_pme_t* VCPU_get_pml3es(VCPU *vcpu)
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     return (hpt_pme_t*)vcpu->npt_vaddr_ptr;
   }
+  return NULL;
 }
 
 static inline hpt_pme_t* VCPU_get_pml4(VCPU *vcpu)
@@ -300,6 +303,7 @@ static inline hpt_pme_t* VCPU_get_pml4(VCPU *vcpu)
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     ASSERT(0);
   }
+  return NULL;
 }
 
 static inline hpt_type_t VCPU_get_hpt_type(VCPU *vcpu)
@@ -308,9 +312,10 @@ static inline hpt_type_t VCPU_get_hpt_type(VCPU *vcpu)
     return HPT_TYPE_EPT;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     return HPT_TYPE_PAE;
-  } else {
-    ASSERT(0);
   }
+
+  ASSERT(0);
+  return HPT_TYPE_INVALID;
 }
 
 static inline hpt_pm_t VCPU_get_default_root_pm(VCPU *vcpu)
@@ -319,9 +324,10 @@ static inline hpt_pm_t VCPU_get_default_root_pm(VCPU *vcpu)
     return (hpt_pm_t)vcpu->vmx_vaddr_ept_pml4_table;
   } else if (VCPU_get_hpt_type(vcpu) == HPT_TYPE_PAE) {
     return (hpt_pm_t)vcpu->npt_vaddr_ptr;
-  } else {
-    ASSERT(0);
   }
+
+  ASSERT(0);
+  return NULL;  
 }
 
 /* defined in global.h. can't just include globals.h because it

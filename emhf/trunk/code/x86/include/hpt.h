@@ -50,6 +50,7 @@ typedef enum {
   HPT_TYPE_LONG=2, /* AMD Long Mode */
   HPT_TYPE_EPT=3, /* Intel Extended Page Tables */
 
+  HPT_TYPE_INVALID=4, /* same number as below intentionally; saves memory in static arrays */
   HPT_TYPE_NUM=4 /* dummy entry. must be last */
 } hpt_type_t;
 
