@@ -339,6 +339,7 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 		dprintf(LOG_ERROR, "FATAL ERROR: Unexpected return value from page fault handling\n");
 		HALT();
 	}
+    return ret;
 }
 
 u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs __attribute__((unused)) *r, 
@@ -348,6 +349,7 @@ u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs __attribute__((u
 	dprintf(LOG_TRACE, "\nCPU(0x%02x): portnum=0x%08x, access_type=0x%08x, access_size=0x%08x", vcpu->id,
 			(u32)portnum, (u32)access_type, (u32)access_size);
 	HALT();
+    return 0; /* XXX DUMMY; keeps compiler happy */
 	//return APP_IOINTERCEPT_SKIP;
 	//return APP_IOINTERCEPT_CHAIN; //chain and do the required I/O    
 }

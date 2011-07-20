@@ -404,6 +404,7 @@ static inline hpt_pme_t hpt_pme_setuser(hpt_type_t t, int lvl, hpt_pme_t entry, 
     ASSERT(user_accessible);
     return entry;
   }
+  ASSERT(0); return 0; /* unreachable; appeases compiler */
 }
 
 static inline bool hpt_pme_getuser(hpt_type_t t, int lvl, hpt_pme_t entry)

@@ -1210,11 +1210,10 @@ static bool hpt_error_wasInsnFetch(VCPU *vcpu, u64 errorcode)
 {
 	if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
 		return (errorcode & EPT_ERRORCODE_EXEC);
-	} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-		return (errorcode & PF_ERRORCODE_INST);
-	} else {
+	} else if (vcpu->cpu_vendor != CPU_VENDOR_AMD) {
 		ASSERT(0);
-	}
+	}	
+	return (errorcode & PF_ERRORCODE_INST);
 }
 
 /*  EPT violation handler */

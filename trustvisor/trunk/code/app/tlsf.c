@@ -109,7 +109,7 @@
 
 
 #if TLSF_USE_LOCKS
-#define TLSF_MLOCK_T            int
+#define TLSF_MLOCK_T            u32_t
 #define TLSF_CREATE_LOCK(l)     do { *(l)=1; } while(0)
 #define TLSF_DESTROY_LOCK(l)    do { } while(0)
 #define TLSF_ACQUIRE_LOCK(l)    spin_lock(l)

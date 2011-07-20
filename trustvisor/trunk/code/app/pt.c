@@ -101,9 +101,8 @@ hpt_prot_t pal_prot_of_type(int type)
 	case TV_PAL_SECTION_GUEST_PAGE_TABLES:
 		return HPT_PROTS_RWX;
 		break;
-	default:
-		ASSERT(0);
 	}
+	ASSERT(0); return 0; /* unreachable; appeases compiler */
 }
 
 hpt_prot_t reg_prot_of_type(int type)
@@ -128,9 +127,8 @@ hpt_prot_t reg_prot_of_type(int type)
 	case TV_PAL_SECTION_GUEST_PAGE_TABLES:
 		return HPT_PROTS_RWX;
 		break;
-	default:
-		ASSERT(0);
 	}
+	ASSERT(0); return 0; /* unreachable; appeases compiler */
 }
 
 void hpt_remove_pal_pme(VCPU __attribute__((unused)) *vcpu, hpt_walk_ctx_t *walk_ctx, hpt_pm_t pal_pm, int top_lvl, gpa_t gpa)

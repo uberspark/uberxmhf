@@ -67,7 +67,7 @@ uint8_t rand_byte_or_die(void) {
  * Populates a buffer of pseudo-random bytes or HALT's the whole
  * system if they cannot be generated.
  */
-void rand_bytes_or_die(uint8_t *out, int len) {
+void rand_bytes_or_die(uint8_t *out, unsigned int len) {
     if(!g_master_crypto_init_completed) {
         dprintf(LOG_ERROR, "FATAL: !g_master_crypto_init_completed\n");
         HALT();
@@ -89,7 +89,7 @@ void rand_bytes_or_die(uint8_t *out, int len) {
  * on success, otherwise returns the number of bytes that were
  * actually available (and updates *len).
  */
-int rand_bytes(uint8_t *out, int *len) {
+int rand_bytes(uint8_t *out, unsigned int *len) {
     /* even here we do not want to tolerate failure to initialize */
     if(!g_master_crypto_init_completed) {
         dprintf(LOG_ERROR, "FATAL: !g_master_crypto_init_completed\n");

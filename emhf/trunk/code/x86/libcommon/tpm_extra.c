@@ -801,7 +801,7 @@ bool tpm_cmp_creation_pcrs(uint32_t pcr_nr_create,
     cre_composite = get_cre_pcr_composite(sealed_data);
     if ( cre_composite == NULL )
         return false;
-    if ( memcmp((uint8_t*)&composite, (uint8_t*)cre_composite, sizeof(composite)) ) {
+    if ( memcmp((char*)&composite, (char*)cre_composite, sizeof(composite)) ) {
         printf("TPM: Not equal to creation composition:\n");
         print_hex(NULL, (uint8_t *)&composite, sizeof(composite));
         print_hex(NULL, (uint8_t *)cre_composite, sizeof(composite));

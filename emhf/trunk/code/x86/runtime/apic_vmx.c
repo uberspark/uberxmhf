@@ -189,7 +189,7 @@ void vmx_apic_setup(VCPU *vcpu){
 //if there is a write request, map npt entry of physical LAPIC
 //page with physical address of virtual_LAPIC page, store the
 //register accessed, store request as WRITE and single-step
-
+//XXX TODO: return value currently meaningless
 u32 vmx_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
 	//printf("\nCPU(0x%02x): LAPIC: p=0x%08x, ecode=0x%08x", vcpu->id,
 	//		paddr, errorcode);
@@ -249,6 +249,8 @@ u32 vmx_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
   //disable interrupts by clearing guest IF on this CPU until we get 
 	//control in lapic_access_dbexception after a DB exception
 	vcpu->vmcs.guest_RFLAGS &= ~(EFLAGS_IF);
+
+    return 0; /* dummy; currently meaningless */
 }
 
 

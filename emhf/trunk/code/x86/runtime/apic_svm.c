@@ -165,7 +165,7 @@ void svm_apic_setup(VCPU *vcpu){
 //if there is a write request, map npt entry of physical LAPIC
 //page with physical address of virtual_LAPIC page, store the
 //register accessed, store request as WRITE and single-step
-
+// XXX TODO: return value currently meaningless
 u32 svm_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
   struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
   
@@ -230,7 +230,7 @@ u32 svm_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
     //lapic_access_dbexception after a DB exception
     clgi();
   }
-  
+  return 0; /* XXX TODO: dummy; currently meaningless */
 }
 
 

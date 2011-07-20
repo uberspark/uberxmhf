@@ -118,7 +118,7 @@ static VCPU *_svm_getvcpu(void){
   }
 
   printf("\n%s: fatal, unable to retrieve vcpu for id=0x%02x", __FUNCTION__, lapic_id);
-  HALT();
+  HALT(); return NULL; /* will never return presently */
 }
 
 //---NMI processing routine-----------------------------------------------------
@@ -1199,7 +1199,7 @@ static void __attribute__((unused)) _svm_lib_hwpgtbl_setentry(VCPU __attribute__
 
 static u64 _svm_lib_hwpgtbl_getprot(VCPU __attribute__((unused)) *vcpu, u64 __attribute__((unused)) gpa){
 	printf("\n%s: not implemented, halting!", __FUNCTION__);
-	HALT();
+	HALT(); return 0; /* dummy return; appeases compiler */
 }
 
 //---guest page-table walker, returns guest physical address--------------------

@@ -72,6 +72,8 @@ static u32 * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
     case 6: return ( (u32 *)&r->esi );
     case 7: return ( (u32 *)&r->edi );
   }
+
+  return NULL; /* unreachable */
 }
 
 

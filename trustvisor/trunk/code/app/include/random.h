@@ -46,7 +46,7 @@ extern bool g_master_crypto_init_completed;
 /* interface exposed to the rest of TrustVisor */
 
 uint8_t rand_byte_or_die(void);
-void rand_bytes_or_die(uint8_t *out, int len);
-int rand_bytes(uint8_t *out, int *len);
+void rand_bytes_or_die(uint8_t *out, unsigned int len);
+int rand_bytes(uint8_t *out, unsigned int *len);
 
 #endif /* _RANDOM_H_ */

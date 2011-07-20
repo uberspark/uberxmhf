@@ -62,7 +62,7 @@ static void _vmx_initVT(VCPU *vcpu){
 
   //step-1: check if intel CPU
   {
-    u8 cpu_oemid[12];
+    char cpu_oemid[12];
 	  asm(	"xor	%%eax, %%eax \n"
 				  "cpuid \n"		
 				  "mov	%%ebx, %0 \n"
@@ -70,7 +70,7 @@ static void _vmx_initVT(VCPU *vcpu){
 				  "mov	%%ecx, %2 \n"
 			     :: "m"(cpu_oemid[0]), "m"(cpu_oemid[4]), "m"(cpu_oemid[8]): "eax", "ebx", "ecx", "edx" );
 
-   	if ( strncmp( cpu_oemid, (u8 *)"GenuineIntel", 12 ) ){
+   	if ( strncmp( cpu_oemid, "GenuineIntel", 12 ) ){
    	  printf("\nCPU(0x%02x) is not an Intel CPU. Halting!", vcpu->id);
    	  HALT();
    	}
@@ -209,6 +209,7 @@ static VCPU *_vmx_getvcpu(void){
 
   printf("\n%s: fatal, unable to retrieve vcpu for id=0x%02x", __FUNCTION__, lapic_id);
   HALT();
+  return NULL; /* currently unreachable */
 }
 
 //---NMI processing routine-----------------------------------------------------
