@@ -46,7 +46,7 @@ char *strchr(const char *s, int c);
 u32 strnlen(const char * s, u32 count);
 void *memcpy(void * to, const void * from, u32 n);
 void *memset (void *str, u32 c, u32 len);
-u32 strncmp(const u8 * cs, const u8 * ct, u32 count);
+int strncmp(const char *s1, const char *s2, size_t n);
 int strcmp(const char * cs,const char * ct);
 char *strncpy(char * dst, const char * src, size_t n);
 size_t strlen(const char * s);

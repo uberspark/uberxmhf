@@ -109,28 +109,6 @@ void *memset (void *str, u32 c, u32 len){
   return str;
 }
 
-u32 strncmp(const u8 * cs, const u8 * ct, u32 count)
-{
-        int res;
-        int d0, d1, d2;
-        __asm__ __volatile__( "1:\tdecl %3\n\t"
-                "js 2f\n\t"
-                "lodsb\n\t"
-                "scasb\n\t"
-                "jne 3f\n\t" 
-                "testb %%al,%%al\n\t"
-                "jne 1b\n"
-                "2:\txorl %%eax,%%eax\n\t"
-                "jmp 4f\n"
-                "3:\tsbbl %%eax,%%eax\n\t"
-                "orb $1,%%al\n"
-                "4:"
-                :"=a" (res), "=&S" (d0), "=&D" (d1), "=&c" (d2)
-                :"1" (cs),"2" (ct),"3" (count)
-                :"memory");
-        return (u32)res;
-}
-
 #ifndef HAVE_MEMCMP
 int memcmp(const char *s1, const char *s2, size_t n) {
 	if (n != 0) {
