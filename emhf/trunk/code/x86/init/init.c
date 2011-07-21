@@ -464,6 +464,8 @@ bool txt_do_senter(void *phys_mle_start, size_t mle_size) {
 
     hashandprint("hard-coded i5_i7_dual_sinit_18",
                  i5_i7_dual_sinit_18, SINIT_HARDCODED_SIZE);
+    hashandprint("mbi module i5_i7_dual_sinit_18",
+                 g_sinit_module_ptr, g_sinit_module_size);
     
     ///XXX TODO get addresses of SL, populate a mle_hdr_t
     txt_launch_environment(i5_i7_dual_sinit_18, SINIT_HARDCODED_SIZE,
