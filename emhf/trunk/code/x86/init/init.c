@@ -77,6 +77,11 @@ u8 cpustacks[RUNTIME_STACK_SIZE * MAX_PCPU_ENTRIES] __attribute__(( section(".st
 
 SL_PARAMETER_BLOCK *slpb = NULL;
 
+/* TODO: refactor to eliminate a lot of these globals, or at least use
+ * static where appropriate */
+static u8 *g_sinit_module_ptr = NULL;
+static u32 g_sinit_module_size = 0;
+
 extern void init_core_lowlevel_setup(void);
 
 /* Don't break the build if the Makefile fails to define these. */
@@ -456,11 +461,49 @@ bool txt_do_senter(void *phys_mle_start, size_t mle_size) {
         printf("ERROR: txt_prepare_cpu failed.\n");
         return false;
     }
+
+    hashandprint("hard-coded i5_i7_dual_sinit_18",
+                 i5_i7_dual_sinit_18, SINIT_HARDCODED_SIZE);
+    
     ///XXX TODO get addresses of SL, populate a mle_hdr_t
     txt_launch_environment(i5_i7_dual_sinit_18, SINIT_HARDCODED_SIZE,
                            phys_mle_start, mle_size);
 
     return false; /* unreachable if launch is successful, thus should return failure */
+}
+
+/**
+ * Check each module to see if it is an SINIT module.  If it is, set
+ * the globals g_sinit_module_ptr and g_sinit_module_size to point to
+ * it.
+ *
+ * Returns true if an SINIT module was found, false otherwise.
+ */
+static bool txt_parse_sinit(module_t *mod_array, unsigned int mods_count) {
+    int i;
+    unsigned int bytes;
+
+    /* I can't think of a legitimate reason why this would ever be
+     * this large. */
+    if(mods_count > 10) {
+        return false;
+    }
+    
+    for(i=(int)mods_count-1; i >= 0; i--) {
+        bytes = mod_array[i].mod_end - mod_array[i].mod_start;
+        printf("Checking whether MBI module %i is SINIT...\n", i);
+        if(is_sinit_acmod((void*)mod_array[i].mod_start, bytes, false)) {
+            g_sinit_module_ptr = (u8*)mod_array[i].mod_start;
+            g_sinit_module_size = bytes;
+            printf("YES! SINIT found @ %p, %d bytes\n",
+                   g_sinit_module_ptr, g_sinit_module_size);
+            return true;
+        } else {
+            printf("no.\n");
+        }
+    }
+
+    return false;    
 }
 
 //---svm_verify_platform-------------------------------------------------------
@@ -745,13 +788,24 @@ void cstartup(multiboot_info_t *mbi){
     mods_count = mbi->mods_count;
 
     printf("\nINIT(early): initializing, total modules=%u", mods_count);
-    //ASSERT(mods_count == 2);  //runtime and OS boot sector for the time-being
 
     //check CPU type (Intel vs AMD)
-    cpu_vendor = get_cpu_vendor(); // HALT()'s if unrecognized
+    cpu_vendor = get_cpu_vendor_or_die(); // HALT()'s if unrecognized    
 
-    printf("\nINIT(early): detected an %s CPU", ((cpu_vendor == CPU_VENDOR_INTEL) ? "Intel" : "AMD"));
-
+    if(CPU_VENDOR_INTEL == cpu_vendor) {
+        printf("\nINIT(early): detected an Intel CPU");
+        
+        /* Intel systems require an SINIT module */
+        if(!txt_parse_sinit(mod_array, mods_count)) {
+            printf("\nINIT(early): FATAL ERROR: Intel CPU without SINIT module!\n");
+            HALT();
+        }            
+    } else if(CPU_VENDOR_AMD == cpu_vendor) {
+        printf("\nINIT(early): detected an AMD CPU");
+    } else {
+        printf("\nINIT(early): Dazed and confused: Unknown CPU vendor %d\n", cpu_vendor);
+    }
+    
     //deal with MP and get CPU table
     dealwithMP();
 
@@ -786,7 +840,7 @@ void cstartup(multiboot_info_t *mbi){
     printf("\nINIT(early): relocated hypervisor binary image to 0x%08x", hypervisor_image_baseaddress);
     printf("\nINIT(early): 2M aligned size = 0x%08lx", PAGE_ALIGN_UP2M((mod_array[0].mod_end - mod_array[0].mod_start)));
     printf("\nINIT(early): un-aligned size = 0x%08x", mod_array[0].mod_end - mod_array[0].mod_start);
-
+    
     //fill in "sl" parameter block
     {
         //"sl" parameter block is at hypervisor_image_baseaddress + 0x10000
@@ -805,7 +859,7 @@ void cstartup(multiboot_info_t *mbi){
 
         slpb->uart_config = g_uart_config;
     }
-
+   
     //switch to MP mode
     //setup Master-ID Table (MIDTABLE)
     {
