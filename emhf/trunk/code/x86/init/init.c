@@ -45,8 +45,6 @@
 #include <com.h>
 #include <cmdline.h>
 
-#include "i5_i7_dual_sinit_18.h" // XXX TODO read this from MBI stuff
-
 //---forward prototypes---------------------------------------------------------
 void cstartup(multiboot_info_t *mbi);
 MPFP * MP_GetFPStructure(void);
