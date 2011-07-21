@@ -49,14 +49,15 @@
  */
 uint8_t rand_byte_or_die(void) {
     uint8_t byte;
+    int rv;
     
     if(!g_master_crypto_init_completed) {
         dprintf(LOG_ERROR, "\nFATAL: !g_master_crypto_init_completed\n");
         HALT();
     }
 
-    if(nist_ctr_drbg_generate(&g_drbg, &byte, sizeof(byte), NULL, 0)) {
-        dprintf(LOG_ERROR, "\nFATAL: nist_ctr_drbg_generate() returned an error!\n");
+    if((rv = nist_ctr_drbg_generate(&g_drbg, &byte, sizeof(byte), NULL, 0))) {
+        dprintf(LOG_ERROR, "\nFATAL: %s: nist_ctr_drbg_generate() returned error %d!\n", __FUNCTION__, rv);
         HALT();
     }
 
@@ -68,6 +69,7 @@ uint8_t rand_byte_or_die(void) {
  * system if they cannot be generated.
  */
 void rand_bytes_or_die(uint8_t *out, unsigned int len) {
+    int rv;
     if(!g_master_crypto_init_completed) {
         dprintf(LOG_ERROR, "FATAL: !g_master_crypto_init_completed\n");
         HALT();
@@ -78,8 +80,8 @@ void rand_bytes_or_die(uint8_t *out, unsigned int len) {
         HALT();
     }
     
-    if(nist_ctr_drbg_generate(&g_drbg, out, len, NULL, 0)) {
-        dprintf(LOG_ERROR, "\nFATAL: nist_ctr_drbg_generate() returned an error!\n");
+    if((rv = nist_ctr_drbg_generate(&g_drbg, out, len, NULL, 0))) {
+        dprintf(LOG_ERROR, "\nFATAL: %s: nist_ctr_drbg_generate() returned error %d!\n", __FUNCTION__, rv);
         HALT();
     }
 }    
@@ -90,6 +92,7 @@ void rand_bytes_or_die(uint8_t *out, unsigned int len) {
  * actually available (and updates *len).
  */
 int rand_bytes(uint8_t *out, unsigned int *len) {
+    int rv;
     /* even here we do not want to tolerate failure to initialize */
     if(!g_master_crypto_init_completed) {
         dprintf(LOG_ERROR, "FATAL: !g_master_crypto_init_completed\n");
@@ -104,8 +107,8 @@ int rand_bytes(uint8_t *out, unsigned int *len) {
     /* at the present time this will either give all requested bytes
      * or fail completely.  no support for partial returns, though
      * that may one day be desirable. */
-    if(nist_ctr_drbg_generate(&g_drbg, out, *len, NULL, 0)) {
-        dprintf(LOG_ERROR, "\nERROR: nist_ctr_drbg_generate() returned an error!\n");
+    if((rv = nist_ctr_drbg_generate(&g_drbg, out, *len, NULL, 0))) {
+        dprintf(LOG_ERROR, "\nFATAL: %s: nist_ctr_drbg_generate() returned error %d!\n", __FUNCTION__, rv);
         return 1;
     }
 
