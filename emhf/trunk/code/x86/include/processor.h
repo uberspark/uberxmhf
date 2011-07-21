@@ -286,7 +286,7 @@ static inline void cpu_relax(void)
     __asm__ __volatile__ ("pause");
 }
 
-static inline u32 get_cpu_vendor(void) {
+static inline u32 get_cpu_vendor_or_die(void) {
     u32 dummy;
     u32 vendor_dword1, vendor_dword2, vendor_dword3;
     

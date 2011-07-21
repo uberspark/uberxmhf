@@ -266,7 +266,7 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	//sanitize cache/MTRR/SMRAM (most important is to ensure that MTRRs 
 	//do not contain weird mappings)
 	//TODO
-    if(get_cpu_vendor() == CPU_VENDOR_INTEL) {
+    if(get_cpu_vendor_or_die() == CPU_VENDOR_INTEL) {
         txt_heap_t *txt_heap;
         os_mle_data_t *os_mle_data;
 
@@ -314,7 +314,7 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 #if defined(__DMAPROT__)	
 		//initialize external access protection (DMA protection)
-		if(get_cpu_vendor() == CPU_VENDOR_AMD){
+		if(get_cpu_vendor_or_die() == CPU_VENDOR_AMD){
 			
 			printf("\nSL: initializing SVM DMA protection...");
 			

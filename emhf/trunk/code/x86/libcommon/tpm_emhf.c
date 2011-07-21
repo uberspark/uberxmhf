@@ -63,7 +63,7 @@ int hwtpm_open_locality(int locality) {
         return 1;
     }
 
-    if(get_cpu_vendor() == CPU_VENDOR_INTEL) {
+    if(get_cpu_vendor_or_die() == CPU_VENDOR_INTEL) {
         txt_didvid_t didvid;
         txt_ver_fsbif_emif_t ver;
 
