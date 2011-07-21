@@ -23,8 +23,6 @@
 
     #h/w platform, current choices are x86
 	export TARGET_HWPLATFORM := x86
-    #Intel TXT / SENTER support, y=enabled, n=disabled
-    export DO_SENTER := y
     #MP/UP selection, y=Multiprocessor, n=Uniprocessor
     export MP_VERSION := @MP_VERSION@
     #misc. configuaration w.r.t serial debugging and NPT/EPT support
@@ -105,9 +103,6 @@
   endif
   ifeq ($(MP_VERSION), y)
   CFLAGS += -D__MP_VERSION__
-  endif
-  ifeq ($(DO_SENTER), y)
-  CFLAGS += -D__DO_SENTER__
   endif
 
   ASFLAGS = $(CFLAGS) -D__ASSEMBLY__

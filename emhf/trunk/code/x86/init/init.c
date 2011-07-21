@@ -596,37 +596,11 @@ void do_drtm(VCPU *vcpu, u32 slbase){
 #endif
         skinit((u32)slbase);
     } else {
-/* SENTER enabled based on Makefile for now, since hypervisor cannot
- * fully boot due to MP and MTRR issues. */        
-#ifdef __DO_SENTER__ 
         printf("\n******  INIT(early): Begin TXT Stuff  ******\n");        
         txt_do_senter((void*)(slbase+3*PAGE_SIZE_4K), TEMPORARY_HARDCODED_MLE_SIZE);
         printf("\nINIT(early): error(fatal), should never come here!");
         HALT();
-#endif /* __DO_SENTER__ */
-        printf("\nINIT(early): SENTER disabled in Makefile.");
-        printf("\nINIT(early): transferring control to SL...");
-        {    
-            u32 entrypoint;
-            u16 offset;
-            offset = *((u16 *)slbase);
-            entrypoint = slbase + (u32)offset;
-            printf("\nINIT(early): SENTER stub, slbase=0x%08x, o=0x%04x, ep=0x%08x",
-                   slbase, offset, entrypoint); 
-            __asm__ __volatile__("cli\r\n"
-                                 "movl %0, %%eax\r\n"
-                                 "movl %1, %%ebx\r\n"
-                                 "call *%%ebx\r\n"    
-                                 : //no outputs
-                                 : "r"(slbase), "r"(entrypoint)
-                                 : "eax", "ebx"
-                                 );
-        }
-        
-        printf("\nINIT(early): error(fatal), should never come here!");
-        HALT();
     }
-
 }
 
 
