@@ -40,7 +40,7 @@
 #define CTR_DRBG_NONCE_BITS 64
 
 
-
+int get_hw_tpm_entropy(uint8_t* buf, unsigned int requested_len /* bytes */);
 int trustvisor_master_crypto_init(void);
 
 #endif /* _CRYPTO_INIT_H_ */

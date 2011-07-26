@@ -44,6 +44,37 @@
 #include <crypto_init.h>
 
 /**
+ * Reseed the CTR_DRBG if needed.  This function is structured to do
+ * nothing if a reseed is not required, to simplify the logic in the
+ * functions that actually service requests for random bytes.
+ *
+ * returns: 0 on success
+ */
+int reseed_ctr_drbg_using_tpm_entropy_if_needed(void) {
+    uint8_t EntropyInput[CTR_DRBG_SEED_BITS/8];
+
+    ASSERT(true == g_master_crypto_init_completed);
+    
+    if (g_drbg.reseed_counter < NIST_CTR_DRBG_RESEED_INTERVAL)
+        return 0; /* nothing to do */
+
+    dprintf(LOG_ERROR, "\n[TV] Low Entropy: Attemping TPM-based PRNG reseed.\n");    
+    
+    /* Get CTR_DRBG_SEED_BITS of entropy from the hardware TPM */
+    if(get_hw_tpm_entropy(EntropyInput, CTR_DRBG_SEED_BITS/8)) {
+        dprintf(LOG_ERROR, "\nFATAL ERROR: Could not access TPM to reseed PRNG.\n");
+        HALT();
+    }
+
+    nist_ctr_drbg_reseed(&g_drbg, EntropyInput, sizeof(EntropyInput), NULL, 0);
+    
+    dprintf(LOG_TRACE, "\n[TV] master_crypto_init: PRNG reseeded successfully.\n");
+
+    return 0;
+}
+
+
+/**
  * Returns a pseudo-random byte or HALT's the whole system if one
  * cannot be generated.
  */
@@ -56,6 +87,7 @@ uint8_t rand_byte_or_die(void) {
         HALT();
     }
 
+    reseed_ctr_drbg_using_tpm_entropy_if_needed();
     if((rv = nist_ctr_drbg_generate(&g_drbg, &byte, sizeof(byte), NULL, 0))) {
         dprintf(LOG_ERROR, "\nFATAL: %s: nist_ctr_drbg_generate() returned error %d!\n", __FUNCTION__, rv);
         HALT();
@@ -80,6 +112,7 @@ void rand_bytes_or_die(uint8_t *out, unsigned int len) {
         HALT();
     }
     
+    reseed_ctr_drbg_using_tpm_entropy_if_needed();
     if((rv = nist_ctr_drbg_generate(&g_drbg, out, len, NULL, 0))) {
         dprintf(LOG_ERROR, "\nFATAL: %s: nist_ctr_drbg_generate() returned error %d!\n", __FUNCTION__, rv);
         HALT();
@@ -107,6 +140,7 @@ int rand_bytes(uint8_t *out, unsigned int *len) {
     /* at the present time this will either give all requested bytes
      * or fail completely.  no support for partial returns, though
      * that may one day be desirable. */
+    reseed_ctr_drbg_using_tpm_entropy_if_needed();
     if((rv = nist_ctr_drbg_generate(&g_drbg, out, *len, NULL, 0))) {
         dprintf(LOG_ERROR, "\nFATAL: %s: nist_ctr_drbg_generate() returned error %d!\n", __FUNCTION__, rv);
         return 1;
