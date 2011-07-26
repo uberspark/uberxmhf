@@ -117,6 +117,7 @@ nist_dump_block_ctx(const NIST_Key* ctx);
 #define nist_zeroize(p, s) memset(p, 0, s)
 #else
 #define nist_zeroize(p, s) do { } while(0)
+#error "INSECURE WITHOUT ZEROIZE"
 #endif
 
 /*

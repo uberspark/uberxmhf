@@ -40,6 +40,7 @@
 #define dprintf(...) while(0)
 
 #include <com.h> /* required by target.h included from drbg.h FIXME */
+#include <target.h>
 #include <nist_ctr_drbg.h>
 
 
@@ -199,4 +200,22 @@ void test_AES256_use_df_EntropyInputLen256_NonceLen128_PersonalizationStringLen0
     do_reseed_and_buffer(s, &drbg, buffer);
     TEST_ASSERT_EQUAL_MEMORY(s->ReturnedBits, buffer, sizeof(s->ReturnedBits));
 }
+
+void test_uninstantiate_actually_zeros(void) {
+    NIST_CTR_DRBG drbg;
+    NIST_CTR_DRBG drbg0;
+
+    /* First give us a reference struct set to 0 ourselves, to compare against. */
+    memset(&drbg0, 0x00, sizeof(NIST_CTR_DRBG));
+    
+    /* Second set the DRBG struct to have all bits set. */
+    memset(&drbg, 0xff, sizeof(NIST_CTR_DRBG));
+
+    /* Third invoke the library's zeroize function */
+    nist_zeroize(&drbg, sizeof(NIST_CTR_DRBG));
+
+    /* Fourth check that it worked */
+    TEST_ASSERT_EQUAL_MEMORY(&drbg, &drbg0, sizeof(NIST_CTR_DRBG));
+}
+
 
