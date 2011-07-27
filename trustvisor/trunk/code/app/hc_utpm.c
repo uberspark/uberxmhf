@@ -34,7 +34,7 @@
  */
 
 /**
- * pal_utpm.c: Handle hypercalls from PALs that invoke uTPM operations.
+ * hc_utpm.c: Handle hypercalls from PALs that invoke uTPM operations.
  *
  * Intention is that TrustVisor needs to contain some "glue" code to
  * connect hypercalls from individual PALs to the uTPM implementation
@@ -42,7 +42,7 @@
  * should be sufficiently standalone as to eventually support
  * independent testing.
  *
- * Thus, the purpose of pal_utpm.[ch] is to be the plumbing that
+ * Thus, the purpose of hc_utpm.[ch] is to be the plumbing that
  * connects hypercalls in PALs to the right uTPM operation(s).
  *
  * author: Jon McCune, July 2011
@@ -51,14 +51,14 @@
 #include <target.h>
 #include <crypto_init.h>
 #include <utpm.h>
-#include <pal_utpm.h>
+#include <hc_utpm.h>
 #include <scode.h> /* copy_from_guest */
 #include <puttymem.h> /* vmalloc */
 #include <sha1.h>
 
 /**
- * FIXME: Ugly circular dependency.  pal_utpm.c doesn't work without
- * scode.h, and scode.c doesn't work without pal_utpm.h.  Figure out
+ * FIXME: Ugly circular dependency.  hc_utpm.c doesn't work without
+ * scode.h, and scode.c doesn't work without hc_utpm.h.  Figure out
  * the hierarchy of dependencies and refactor things more
  * intelligently.
  */

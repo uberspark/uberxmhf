@@ -45,7 +45,6 @@
 #include <scode.h>
 #include <puttymem.h>
 #include <utpm.h>
-#include <pal_utpm.h>
 #include <sha1.h>
 #include <rsa.h>
 #include <random.h>

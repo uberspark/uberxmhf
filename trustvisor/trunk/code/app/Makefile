@@ -8,7 +8,7 @@
 # source files
 AS_SOURCES = 
 C_SOURCES = appmain.c scode.c puttymem.c \
-		tlsf.c pt.c utpm.c pal_utpm.c aes.c \
+		tlsf.c pt.c utpm.c hc_utpm.c aes.c \
 		rsa.c bignum.c random.c linuxrelc.c \
 		pages.c \
 		dump.c nist_ctr_drbg.c rijndael.c \
