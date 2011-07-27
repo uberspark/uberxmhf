@@ -134,17 +134,19 @@ static int master_prng_init(void) {
 		if(get_hw_tpm_entropy(EntropyInput, CTR_DRBG_SEED_BITS/8)) {
 				dprintf(LOG_ERROR, "\nFATAL ERROR: Could not access TPM to initialize PRNG.\n");
 				HALT();
+				return 1;
 		}
 
     /* Use rdtsc to get CTR_DRBG_NONCE_BITS of initialization nonce */
     COMPILE_TIME_ASSERT(CTR_DRBG_NONCE_BITS/8 == sizeof(Nonce));
     Nonce = rdtsc64();
 
-		nist_ctr_drbg_instantiate(&g_drbg, EntropyInput, sizeof(EntropyInput),
-                              &Nonce, sizeof(Nonce), NULL, 0);
-
-		dprintf(LOG_TRACE, "\n[TV] trustvisor_master_crypto_init: "
-						"AES-256 CTR_DRBG PRNG successfully seeded with TPM RNG.\n");
+		if(0 != nist_ctr_drbg_instantiate(&g_drbg, EntropyInput, sizeof(EntropyInput),
+																			&Nonce, sizeof(Nonce), NULL, 0)) {
+				dprintf(LOG_ERROR, "\nFATAL ERROR: nist_ctr_drbg_instantiate FAILED.\n");
+				HALT();
+				return 1;
+		}				
 
 		return 0;
 }

@@ -53,7 +53,7 @@
 int reseed_ctr_drbg_using_tpm_entropy_if_needed(void) {
     uint8_t EntropyInput[CTR_DRBG_SEED_BITS/8];
 
-    ASSERT(true == g_master_crypto_init_completed);
+    ASSERT(true == g_master_prng_init_completed);
     
     if (g_drbg.reseed_counter < NIST_CTR_DRBG_RESEED_INTERVAL)
         return 0; /* nothing to do */
@@ -82,8 +82,8 @@ uint8_t rand_byte_or_die(void) {
     uint8_t byte;
     int rv;
     
-    if(!g_master_crypto_init_completed) {
-        dprintf(LOG_ERROR, "\nFATAL: !g_master_crypto_init_completed\n");
+    if(!g_master_prng_init_completed) {
+        dprintf(LOG_ERROR, "\nFATAL: !g_master_prng_init_completed\n");
         HALT();
     }
 
@@ -102,8 +102,8 @@ uint8_t rand_byte_or_die(void) {
  */
 void rand_bytes_or_die(uint8_t *out, unsigned int len) {
     int rv;
-    if(!g_master_crypto_init_completed) {
-        dprintf(LOG_ERROR, "FATAL: !g_master_crypto_init_completed\n");
+    if(!g_master_prng_init_completed) {
+        dprintf(LOG_ERROR, "FATAL: !g_master_prng_init_completed\n");
         HALT();
     }
 
@@ -127,8 +127,8 @@ void rand_bytes_or_die(uint8_t *out, unsigned int len) {
 int rand_bytes(uint8_t *out, unsigned int *len) {
     int rv;
     /* even here we do not want to tolerate failure to initialize */
-    if(!g_master_crypto_init_completed) {
-        dprintf(LOG_ERROR, "FATAL: !g_master_crypto_init_completed\n");
+    if(!g_master_prng_init_completed) {
+        dprintf(LOG_ERROR, "FATAL: !g_master_prng_init_completed\n");
         HALT();
     }
 
