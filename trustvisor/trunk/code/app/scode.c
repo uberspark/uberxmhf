@@ -93,8 +93,8 @@ int * scode_curr = NULL;
 /* only initialized during bootstrap time, no need to apply a lock on it */
 /* FIXME: put all of these keys into a struct so that all long-term
  * secrets are well-identified and therefore easy to wipe, etc. */
-u8 aeskey[TPM_AES_KEY_LEN/8];
-u8 hmackey[TPM_HMAC_KEY_LEN];
+u8 g_aeskey[TPM_AES_KEY_LEN/8];
+u8 g_hmackey[TPM_HMAC_KEY_LEN];
 rsa_context g_rsa;
 
 /* helper function */
@@ -339,10 +339,10 @@ void init_scode(VCPU * vcpu)
 	}
 	dprintf(LOG_TRACE, "[TV] AES-256 CTR_DRBG PRNG successfully seeded with TPM RNG.\n");
 
-	/* aeskey and hmac are identical for different PAL, so that we can seal data from one PAL to another PAL */
-	rand_bytes_or_die(aeskey, (TPM_AES_KEY_LEN>>3));
+	/* g_aeskey and hmac are identical for different PAL, so that we can seal data from one PAL to another PAL */
+	rand_bytes_or_die(g_aeskey, (TPM_AES_KEY_LEN>>3));
 	dprintf(LOG_TRACE, "[TV] AES key generated!\n");
-	rand_bytes_or_die(hmackey, 20);
+	rand_bytes_or_die(g_hmackey, 20);
 	dprintf(LOG_TRACE, "[TV] HMAC key generated!\n");
 
 	/* init RSA key required in uTPM Quote */
@@ -1376,7 +1376,7 @@ uint32_t scode_seal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len, uint32
 								 &tpmPcrInfo,
 								 indata, input_len,
 								 output, &outlen,
-								 hmackey, aeskey);
+								 g_hmackey, g_aeskey);
 	if (rv != 0 || outlen > MAX_SEALDATA_LEN) {
 		dprintf(LOG_ERROR, "[TV] Seal ERROR: output data length is too large, lenth %#x\n", outlen);
 		return rv;
@@ -1433,7 +1433,7 @@ uint32_t scode_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
 	/* unseal */
 	if ((ret = utpm_unseal(&whitelist[scode_curr[vcpu->id]].utpm, indata, input_len,
 												 outdata, &outlen, &digestAtCreation,
-												 hmackey, aeskey))) {
+												 g_hmackey, g_aeskey))) {
 		dprintf(LOG_ERROR, "[TV:scode] Unseal ERROR: utpm_unseal fail!\n");
 		return 1;
 	}
@@ -1513,7 +1513,7 @@ u32 scode_seal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrAtR
 #endif
 
 	/* seal */
-	utpm_seal_deprecated(pcr, indata, input_len, output, &outlen, hmackey, aeskey);
+	utpm_seal_deprecated(pcr, indata, input_len, output, &outlen, g_hmackey, g_aeskey);
 
 #if 1
 	dprintf(LOG_TRACE, "[TV] sealed data len = %d!\n", outlen);
@@ -1576,7 +1576,7 @@ u32 scode_unseal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 outp
 #endif
 
 	/* unseal */
-	if ((ret = utpm_unseal_deprecated(&whitelist[scode_curr[vcpu->id]].utpm, indata, input_len, outdata, &outlen, hmackey, aeskey))) {
+	if ((ret = utpm_unseal_deprecated(&whitelist[scode_curr[vcpu->id]].utpm, indata, input_len, outdata, &outlen, g_hmackey, g_aeskey))) {
 		dprintf(LOG_ERROR, "[TV] Unseal ERROR: utpm_unseal fail!\n");
 		return 1;
 	}
