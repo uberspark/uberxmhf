@@ -41,6 +41,7 @@
 #include <puttymem.h>
 #include <scode.h>
 #include <globals.h>
+#include <pal_utpm.h>
 
 /* Declared in linuxrelc.c.  TODO: figure out an approriate header
  * file for it. */

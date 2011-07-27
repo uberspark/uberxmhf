@@ -168,23 +168,9 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode);
 u32 scode_share(VCPU * vcpu, u32 scode_entry, u32 addr, u32 len);
 u32 scode_share_ranges(VCPU * vcpu, u32 scode_entry, u32 gva_base[], u32 gva_len[], u32 count);
 
-
-/* PAL operations */
-void init_scode(VCPU * vcpu);
 u32 scode_register(VCPU * vcpu, u32 scode_info, u32 scode_pm, u32 gventry);
 u32 scode_unregister(VCPU * vcpu, u32 gvaddr);
-u32 scode_seal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrAtRelease_addr, u32 output_addr, u32 output_len_addr);
-u32 scode_unseal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 output_addr, u32 output_len_addr);
-uint32_t scode_seal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len, uint32_t tpmPcrInfo_addr, uint32_t output_addr, uint32_t output_len_addr);
-uint32_t scode_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
-											uint32_t output_addr, uint32_t output_len_addr,
-											uint32_t digestAtCreation_addr);
-u32 scode_quote_deprecated(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 out_len_addr);
-u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 out_len_addr);
-uint32_t scode_utpm_id_getpub(VCPU * vcpu, uint32_t gvaddr);
-u32 scode_pcrread(VCPU * vcpu, u32 gvaddr, u32 num);
-u32 scode_pcrextend(VCPU * vcpu, u32 gvaddr, u32 len, u32 num);
-u32 scode_rand(VCPU * vcpu, u32 buffer_addr, u32 numbytes_addr);
+void init_scode(VCPU * vcpu);
 
 #endif /* __SCODE_H_ */
 /* Local Variables: */
