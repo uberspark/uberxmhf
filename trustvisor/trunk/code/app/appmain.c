@@ -165,7 +165,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				out_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf);
 				out_len_addr = get_32bit_aligned_value_from_guest(vcpu,outbuf+4);
 
-				ret = scode_seal_deprecated(vcpu, data_addr, data_len, pcr_addr, out_addr, out_len_addr);
+				ret = hc_utpm_seal_deprecated(vcpu, data_addr, data_len, pcr_addr, out_addr, out_len_addr);
 
 				break;
 			}
@@ -182,7 +182,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				out_len_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf+4);
 				digestAtCreation_addr = r->esi;				
 				
-				ret = scode_unseal(vcpu, input_addr, in_len, out_addr, out_len_addr, digestAtCreation_addr);
+				ret = hc_utpm_unseal(vcpu, input_addr, in_len, out_addr, out_len_addr, digestAtCreation_addr);
 			}
       break;
 		case TV_HC_UTPM_SEAL:
@@ -197,7 +197,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				out_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf);
 				out_len_addr = get_32bit_aligned_value_from_guest(vcpu,outbuf+4);
 
-				ret = scode_seal(vcpu, data_addr, data_len, pcrinfo_addr, out_addr, out_len_addr);
+				ret = hc_utpm_seal(vcpu, data_addr, data_len, pcrinfo_addr, out_addr, out_len_addr);
 			}
 			break;
 		case TV_HC_UTPM_UNSEAL_DEPRECATED:
@@ -211,7 +211,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				out_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf);
 				out_len_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf+4);
 
-				ret = scode_unseal_deprecated(vcpu, input_addr, in_len, out_addr, out_len_addr);
+				ret = hc_utpm_unseal_deprecated(vcpu, input_addr, in_len, out_addr, out_len_addr);
 
 				break;
 			}
@@ -228,7 +228,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				out_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf);
 				out_len_addr = get_32bit_aligned_value_from_guest(vcpu,outbuf+4);
 
-				ret = scode_quote(vcpu,nonce_addr,tpmsel_addr,out_addr,out_len_addr);
+				ret = hc_utpm_quote(vcpu,nonce_addr,tpmsel_addr,out_addr,out_len_addr);
 
 				break;
 			}
@@ -236,7 +236,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 		  {
         u32 addr;
 				addr = r->ecx;
-				ret = scode_utpm_id_getpub(vcpu, addr);
+				ret = hc_utpm_utpm_id_getpub(vcpu, addr);
 				break;
 			}
 		case TV_HC_UTPM_QUOTE_DEPRECATED:
@@ -251,7 +251,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				out_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf);
 				out_len_addr = get_32bit_aligned_value_from_guest(vcpu,outbuf+4);
 
-				ret = scode_quote_deprecated(vcpu,nonce_addr,tpmsel_addr,out_addr,out_len_addr);
+				ret = hc_utpm_quote_deprecated(vcpu,nonce_addr,tpmsel_addr,out_addr,out_len_addr);
 
 				break;
 			}
@@ -289,7 +289,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				u32 addr, num;
 				addr = r->edx;
 				num = r->ecx;
-				ret = scode_pcrread(vcpu, addr, num);
+				ret = hc_utpm_pcrread(vcpu, addr, num);
 				break;
 			}
 		case TV_HC_UTPM_PCREXT:
@@ -298,7 +298,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				addr = r->edx;
 				len = r->esi;
 				num = r->ecx;
-				ret = scode_pcrextend(vcpu, addr, len, num);
+				ret = hc_utpm_pcrextend(vcpu, addr, len, num);
 				break;
 			}
 		case TV_HC_UTPM_GENRAND:
@@ -306,7 +306,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				u32 addr, len_addr;
 				addr = r->ecx;
 				len_addr = r->edx;
-				ret = scode_rand(vcpu, addr, len_addr);
+				ret = hc_utpm_rand(vcpu, addr, len_addr);
 				break;
 			}
 		default:

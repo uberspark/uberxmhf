@@ -68,7 +68,7 @@
 extern int *scode_curr;
 extern whitelist_entry_t *whitelist;
 
-uint32_t scode_seal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len, uint32_t tpmPcrInfo_addr, uint32_t output_addr, uint32_t output_len_addr)
+uint32_t hc_utpm_seal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len, uint32_t tpmPcrInfo_addr, uint32_t output_addr, uint32_t output_len_addr)
 {
 	uint8_t indata[MAX_SEALDATA_LEN];  
 	uint8_t output[MAX_SEALDATA_LEN]; 
@@ -132,7 +132,7 @@ uint32_t scode_seal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len, uint32
 	return rv;
 }
 
-uint32_t scode_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
+uint32_t hc_utpm_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
 											uint32_t output_addr, uint32_t output_len_addr,
 											uint32_t digestAtCreation_addr)
 {
@@ -196,7 +196,7 @@ uint32_t scode_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
 }
 
 
-u32 scode_seal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrAtRelease_addr, u32 output_addr, u32 output_len_addr)
+u32 hc_utpm_seal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrAtRelease_addr, u32 output_addr, u32 output_len_addr)
 {
 	unsigned int i;
 	u32 outlen;
@@ -279,7 +279,7 @@ u32 scode_seal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrAtR
 	return 0;
 }
 
-u32 scode_unseal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 output_addr, u32 output_len_addr)
+u32 hc_utpm_unseal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 output_addr, u32 output_len_addr)
 {
 	unsigned int i;
 	u8 indata[MAX_SEALDATA_LEN]; 
@@ -344,7 +344,7 @@ u32 scode_unseal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 outp
 	return 0;
 }
 
-u32 scode_quote_deprecated(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 out_len_addr)
+u32 hc_utpm_quote_deprecated(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 out_len_addr)
 {
 	u8 outdata[TPM_QUOTE_SIZE];
 	u8 nonce[TPM_NONCE_SIZE];
@@ -417,7 +417,7 @@ u32 scode_quote_deprecated(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out
 	return 0;
 }
 
-u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 out_len_addr)
+u32 hc_utpm_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 out_len_addr)
 {
   uint8_t *outdata=NULL;
 	TPM_NONCE nonce;
@@ -486,11 +486,11 @@ u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 
 	/* copy quote output to guest */
 	copy_to_guest(vcpu, out_addr, outdata, outlen);
 
-	dprintf(LOG_TRACE, "[TV] scode_quote: Survived copy_to_guest of %d bytes\n", outlen);
+	dprintf(LOG_TRACE, "[TV] hc_utpm_quote: Survived copy_to_guest of %d bytes\n", outlen);
 	
 	/* copy quote output length to guest */
 	put_32bit_aligned_value_to_guest(vcpu, out_len_addr, outlen);
-	dprintf(LOG_TRACE, "[TV] scode_quote: Survived put_32bit_aligned_value_to_guest\n");
+	dprintf(LOG_TRACE, "[TV] hc_utpm_quote: Survived put_32bit_aligned_value_to_guest\n");
 
 	out:
 
@@ -499,7 +499,7 @@ u32 scode_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 
 	return ret;
 }
 
-uint32_t scode_utpm_id_getpub(VCPU * vcpu, uint32_t gvaddr)
+uint32_t hc_utpm_utpm_id_getpub(VCPU * vcpu, uint32_t gvaddr)
 {
   uint8_t rsaModulus[TPM_RSA_KEY_LEN];
 	dprintf(LOG_TRACE, "\n[TV] ********** uTPM id_getpub **********\n");
@@ -525,7 +525,7 @@ uint32_t scode_utpm_id_getpub(VCPU * vcpu, uint32_t gvaddr)
 	return 0;
 }
 
-u32 scode_pcrread(VCPU * vcpu, u32 gvaddr, u32 num)
+u32 hc_utpm_pcrread(VCPU * vcpu, u32 gvaddr, u32 num)
 {
 	TPM_DIGEST pcr;
 
@@ -554,7 +554,7 @@ u32 scode_pcrread(VCPU * vcpu, u32 gvaddr, u32 num)
 }
 
 
-u32 scode_pcrextend(VCPU * vcpu, u32 gvaddr, u32 len, u32 num)
+u32 hc_utpm_pcrextend(VCPU * vcpu, u32 gvaddr, u32 len, u32 num)
 {
 	u8 data[MAX_TPM_EXTEND_DATA_LEN]; 
 	TPM_DIGEST hash;
@@ -593,7 +593,7 @@ u32 scode_pcrextend(VCPU * vcpu, u32 gvaddr, u32 len, u32 num)
 	return 0;
 }
 
-u32 scode_rand(VCPU * vcpu, u32 buffer_addr, u32 numbytes_addr)
+u32 hc_utpm_rand(VCPU * vcpu, u32 buffer_addr, u32 numbytes_addr)
 {
 	u32 ret;
 	u8 buffer[MAX_TPM_RAND_DATA_LEN]; 
