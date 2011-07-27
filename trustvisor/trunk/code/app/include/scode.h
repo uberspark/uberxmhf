@@ -47,6 +47,7 @@
 #include <hpt.h>
 
 #include <trustvisor.h>
+#include <crypto_init.h>
 #include <utpm.h>
 
 #define MAX_REGPAGES_NUM 50
@@ -65,15 +66,6 @@
 /* in order to support 4GB memory */
 #define  PFN_BITMAP_LIMIT 512*1024
 #define  PFN_BITMAP_2M_LIMIT 2*1024
-
-/* softTPM related definitions */
-#define TPM_PCR_SIZE                   20
-#define TPM_AES_KEY_LEN                128 /* key size is 128 bit */
-#define TPM_HMAC_KEY_LEN               20
-
-/* max len of sealed data */
-#define  MAX_SEALDATA_LEN 2048
-#define  SEALDATA_HEADER_LEN 48
 
 extern perf_ctr_t g_tv_perf_ctrs[];
 extern char *g_tv_perf_ctr_strings[];

@@ -37,10 +37,10 @@
 // emhf application main module
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-//#include <target.h>
-#include  "./include/puttymem.h"
-#include  "./include/scode.h"
-#include  <globals.h>
+#include <target.h>
+#include <puttymem.h>
+#include <scode.h>
+#include <globals.h>
 
 /* Declared in linuxrelc.c.  TODO: figure out an approriate header
  * file for it. */

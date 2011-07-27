@@ -89,14 +89,6 @@ u16 * scode_pfn_bitmap_2M;
 /* each CPU has its own scode_curr value, no need to apply a lock on it */
 int * scode_curr = NULL;
 
-/* keys for software TPM seal ,unseal and quote operations */
-/* only initialized during bootstrap time, no need to apply a lock on it */
-/* FIXME: put all of these keys into a struct so that all long-term
- * secrets are well-identified and therefore easy to wipe, etc. */
-u8 g_aeskey[TPM_AES_KEY_LEN/8];
-u8 g_hmackey[TPM_HMAC_KEY_LEN];
-rsa_context g_rsa;
-
 /* helper function */
 void __set_page_prot(u32 pfn, u8 *bit_vector){
   u32 byte_offset, bit_offset;

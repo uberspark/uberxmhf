@@ -57,8 +57,21 @@
 #define COMPILE_TIME_ASSERT(pred) \
     switch(0){case 0:case pred:;}
 
-/* extern */ NIST_CTR_DRBG g_drbg; /* SECURITY: this is very sensitive! */
+
+/* SECURITY: these global variables are very sensitive! */
+/* FIXME: make them static (i.e., only inside this file) */
+
+/* keys for software TPM seal, unseal and quote operations */
+/* only initialized during bootstrap time, no need to apply a lock on it */
+/* FIXME: put all of these keys into a struct so that all long-term
+ * secrets are well-identified and therefore easy to wipe, etc. */
+/* extern */ u8 g_aeskey[TPM_AES_KEY_LEN/8];
+/* extern */ u8 g_hmackey[TPM_HMAC_KEY_LEN];
+/* extern */ rsa_context g_rsa;
+
+/* extern */ NIST_CTR_DRBG g_drbg; 
 /* extern */ bool g_master_crypto_init_completed = false;
+
 
 /* Don't want to get optimized out. */
 void zeroize(uint8_t* _p, unsigned int len) {    
