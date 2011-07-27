@@ -47,6 +47,7 @@
 #include <target.h>
 #include <tpm.h>
 #include <tpm_emhf.h> /* hwtpm_open_locality() */
+#include <tv_utpm.h>
 
 #include <nist_ctr_drbg.h>
 #include <random.h> 
@@ -69,8 +70,11 @@
 /* extern */ u8 g_hmackey[TPM_HMAC_KEY_LEN];
 /* extern */ rsa_context g_rsa;
 
-/* extern */ NIST_CTR_DRBG g_drbg; 
+/* extern */ bool g_master_prng_init_completed = false;
 /* extern */ bool g_master_crypto_init_completed = false;
+
+/* XXX FIXME: needs spinlock protection in MP mode */
+/* extern */ NIST_CTR_DRBG g_drbg; 
 
 
 /* Don't want to get optimized out. */
@@ -145,6 +149,29 @@ static int master_prng_init(void) {
 		return 0;
 }
 
+/* depends on PRNG already being initialized. */
+/* returns 0 on success. */
+static int trustvisor_long_term_secret_init(void) {
+
+	/* g_aeskey and hmac are identical for different PALs, so that we
+	 * can seal data from one PAL to another PAL */
+	rand_bytes_or_die(g_aeskey, (TPM_AES_KEY_LEN>>3));
+	dprintf(LOG_TRACE, "[TV] AES key generated!\n");
+	rand_bytes_or_die(g_hmackey, 20);
+	dprintf(LOG_TRACE, "[TV] HMAC key generated!\n");
+
+	/* init RSA key required in uTPM Quote */
+	/* FIXME: Having a single key here is a privacy-invading,
+	 * session-linkable, PAL-linkable hack to get things off the
+	 * ground. */
+	rsa_init(&g_rsa, RSA_PKCS_V15, RSA_SHA1);
+	if(0 != rsa_gen_key(&g_rsa, (TPM_RSA_KEY_LEN<<3), 65537)) {
+			return 1;
+	}
+	dprintf(LOG_TRACE, "[TV] RSA key pair generated!\n");
+
+	return 0;
+}
 
 /* returns 0 on success. */
 /* TODO: take ciphertext input, e.g., from a multiboot_t */
@@ -154,14 +181,22 @@ int trustvisor_master_crypto_init(void) {
 		/* PRNG */
 		if(0 != (rv = master_prng_init())) {
 				dprintf(LOG_ERROR, "\n[TV] trustvisor_master_crypto_init: "
-								"AES-256 CTR_DRBG PRNG init FAILED!!!!\n");
+								"AES-256 CTR_DRBG PRNG init FAILED with rv %d!!!!\n", rv);
 				return 1;				
 		}
+		
+		g_master_prng_init_completed = true;
 		
 		dprintf(LOG_TRACE, "\n[TV] trustvisor_master_crypto_init: "
 						"AES-256 CTR_DRBG PRNG successfully seeded with TPM RNG.\n");
 
+		if(0 != (rv = trustvisor_long_term_secret_init())) {
+				dprintf(LOG_ERROR, "\n[TV] trustvisor_long_term_secret_init FAILED with rv %d!!!!\n", rv);
+				return 1;
+		}
 
+		dprintf(LOG_TRACE, "\n[TV] trustvisor_master_crypto_init: "
+						"long term secrets initialized successfully.\n");
 		
 		g_master_crypto_init_completed = true;
 

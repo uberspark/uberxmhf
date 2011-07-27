@@ -37,6 +37,7 @@
 #define _CRYPTO_INIT_H_
 
 #include <rsa.h>
+#include <nist_ctr_drbg.h>
 
 #define CTR_DRBG_SEED_BITS 256
 #define CTR_DRBG_NONCE_BITS 64
@@ -54,6 +55,10 @@ extern u8 g_aeskey[TPM_AES_KEY_LEN/8];
 extern u8 g_hmackey[TPM_HMAC_KEY_LEN];
 extern rsa_context g_rsa;
 
+extern bool g_master_prng_init_completed;
+extern bool g_master_crypto_init_completed;
+
+extern NIST_CTR_DRBG g_drbg;
 
 int get_hw_tpm_entropy(uint8_t* buf, unsigned int requested_len /* bytes */);
 int trustvisor_master_crypto_init(void);

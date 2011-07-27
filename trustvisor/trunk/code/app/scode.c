@@ -324,23 +324,12 @@ void init_scode(VCPU * vcpu)
 	scode_curr = (int *)vmalloc((max+1)<<2);
 	vmemset(scode_curr, 0xFF, ((max+1)<<2));
 
-	/* init pseudo random number generator */
+	/* init PRNG and long-term crypto keys */
 	if(trustvisor_master_crypto_init()) {
 			dprintf(LOG_ERROR, "[TV] trustvisor_master_crypto_init() FAILED! SECURITY HALT!\n");
 			HALT();			
 	}
-	dprintf(LOG_TRACE, "[TV] AES-256 CTR_DRBG PRNG successfully seeded with TPM RNG.\n");
-
-	/* g_aeskey and hmac are identical for different PAL, so that we can seal data from one PAL to another PAL */
-	rand_bytes_or_die(g_aeskey, (TPM_AES_KEY_LEN>>3));
-	dprintf(LOG_TRACE, "[TV] AES key generated!\n");
-	rand_bytes_or_die(g_hmackey, 20);
-	dprintf(LOG_TRACE, "[TV] HMAC key generated!\n");
-
-	/* init RSA key required in uTPM Quote */
-	rsa_init(&g_rsa, RSA_PKCS_V15, RSA_SHA1);
-	rsa_gen_key(&g_rsa, (TPM_RSA_KEY_LEN<<3), 65537);
-	dprintf(LOG_TRACE, "[TV] RSA key pair generated!\n");
+	dprintf(LOG_TRACE, "[TV] trustvisor_master_crypto_init successful.\n");
 }
 
 /* HPT related SCODE routines */
