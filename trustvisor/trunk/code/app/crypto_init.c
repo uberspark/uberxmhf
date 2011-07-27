@@ -118,9 +118,9 @@ int get_hw_tpm_entropy(uint8_t* buf, unsigned int requested_len /* bytes */) {
 		return 0;
 }
 
+
 /* returns 0 on success. */
-/* TODO: take ciphertext input, e.g., from a multiboot_t */
-int trustvisor_master_crypto_init(void) {
+static int master_prng_init(void) {
     uint8_t EntropyInput[CTR_DRBG_SEED_BITS/8];
     uint64_t Nonce;
     
@@ -139,9 +139,30 @@ int trustvisor_master_crypto_init(void) {
 		nist_ctr_drbg_instantiate(&g_drbg, EntropyInput, sizeof(EntropyInput),
                               &Nonce, sizeof(Nonce), NULL, 0);
 
-		dprintf(LOG_TRACE, "\n[TV] master_crypto_init: PRNG seeded and instantiated.\n");
+		dprintf(LOG_TRACE, "\n[TV] trustvisor_master_crypto_init: "
+						"AES-256 CTR_DRBG PRNG successfully seeded with TPM RNG.\n");
+
+		return 0;
+}
 
 
+/* returns 0 on success. */
+/* TODO: take ciphertext input, e.g., from a multiboot_t */
+int trustvisor_master_crypto_init(void) {
+		int rv;
+
+		/* PRNG */
+		if(0 != (rv = master_prng_init())) {
+				dprintf(LOG_ERROR, "\n[TV] trustvisor_master_crypto_init: "
+								"AES-256 CTR_DRBG PRNG init FAILED!!!!\n");
+				return 1;				
+		}
+		
+		dprintf(LOG_TRACE, "\n[TV] trustvisor_master_crypto_init: "
+						"AES-256 CTR_DRBG PRNG successfully seeded with TPM RNG.\n");
+
+
+		
 		g_master_crypto_init_completed = true;
 
 		return 0;
