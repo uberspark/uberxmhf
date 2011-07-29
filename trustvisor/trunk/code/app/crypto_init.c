@@ -48,7 +48,7 @@
 #include <tpm.h>
 #include <tpm_emhf.h> /* hwtpm_open_locality() */
 #include <tv_utpm.h>
-
+#include <sha1.h>
 #include <nist_ctr_drbg.h>
 #include <random.h> 
 
@@ -98,11 +98,6 @@ int get_hw_tpm_entropy(uint8_t* buf, unsigned int requested_len /* bytes */) {
 		
     if(!buf) { return 1; }
 
-		if(hwtpm_open_locality(CRYPTO_INIT_LOCALITY)) {
-				dprintf(LOG_ERROR, "\nFATAL ERROR: Could not access TPM to initialize PRNG.\n");
-				return 1;
-		}
-
 		actual_len = requested_len;
 		rv = tpm_get_random(CRYPTO_INIT_LOCALITY, buf, &actual_len);
 
@@ -114,10 +109,6 @@ int get_hw_tpm_entropy(uint8_t* buf, unsigned int requested_len /* bytes */) {
 
 		dprintf(LOG_TRACE, "\n[TV] Successfully received %d/%d bytes of entropy from HW TPM.\n",
 						actual_len, requested_len);
-
-		/* We're now done with the TPM for a while. Make sure it is
-		 * available to the legacy OS. */
-		deactivate_all_localities();
 
 		return 0;
 }
@@ -151,6 +142,76 @@ static int master_prng_init(void) {
 		return 0;
 }
 
+
+/**
+ * Do a measurement of the "quick and dirty" RSA public key from the
+ * keypair used to sign uTPM quotes, effectively "bridging" trust from
+ * the hardware TPM to the software keys in TrustVisor.
+ *
+ * returns 0 on success.
+ */
+#define QND_BRIDGE_PUBKEY_PCR     19
+#define SERIAL_BUFSIZE (TPM_RSA_KEY_LEN + 2*sizeof(uint32_t))
+
+static int trustvisor_measure_qnd_bridge_signing_pubkey(rsa_context *rsa) {
+		int rv;
+		uint8_t serial_pubkey[SERIAL_BUFSIZE];
+		tpm_digest_t digest;
+		tpm_pcr_value_t pcr_out;
+		
+		if(NULL == rsa) {
+				dprintf(LOG_ERROR, "\nERROR: NULL rsa context.\n");
+				return 1;
+		}
+
+		/**
+		 * 1. Serialize RSA key into byte blob for purposes of measurement.
+		 */
+		/* len (4 bytes, big endian) | E (4 bytes, big endian) | N (XXX bytes, big endian)*/
+		memset(serial_pubkey, 0, SERIAL_BUFSIZE);
+		/* rsa->len */
+		*((uint32_t*)&serial_pubkey[0]) = NIST_HTONL(rsa->len);
+		/* rsa->E */
+		if(0 != mpi_write_binary(&rsa->E, &serial_pubkey[0]+sizeof(uint32_t), sizeof(uint32_t))) {
+				dprintf(LOG_ERROR, "\nERROR: mpi_write_binary FAILED with rsa->E.\n");
+				return 1;
+		}
+		/* rsa->N */
+		if(rsa->len != TPM_RSA_KEY_LEN) {
+				dprintf(LOG_ERROR, "\nERROR: rsa->len != TPM_RSA_KEY_LEN.\n");
+				return 1;
+		}
+		if(0 != mpi_write_binary(&rsa->N, &serial_pubkey[0]+2*sizeof(uint32_t), rsa->len)) {
+				dprintf(LOG_ERROR, "\nERROR: mpi_write_binary FAILED with rsa->N.\n");
+				return 1;
+		}
+		print_hex("Serialized RSA key: ", serial_pubkey, SERIAL_BUFSIZE);
+
+		/**
+		 * 2. Hash serialized RSA key.
+		 */
+		if(0 != sha1_buffer(serial_pubkey, SERIAL_BUFSIZE, digest.digest)) {
+				return 1;
+		}
+		print_hex("Hashed serialized RSA key: ", digest.digest, TPM_HASH_SIZE);
+		
+		/**
+		 * 3. Extend PCR with hash.
+		 */
+		rv = tpm_pcr_extend(CRYPTO_INIT_LOCALITY, QND_BRIDGE_PUBKEY_PCR,
+												&digest, &pcr_out);
+		if(0 != rv) {
+				dprintf(LOG_ERROR, "\nFATAL ERROR: Could not extend HW TPM PCR %d.\n", QND_BRIDGE_PUBKEY_PCR);
+				return rv;
+		}
+
+		dprintf(LOG_TRACE, "\n[TV] Successfully extended HW TPM PCR %d.\n", QND_BRIDGE_PUBKEY_PCR);
+		print_hex("New PCR value: ", pcr_out.digest, TPM_HASH_SIZE);
+
+		return 0;
+}
+
+
 /* depends on PRNG already being initialized. */
 /* returns 0 on success. */
 static int trustvisor_long_term_secret_init(void) {
@@ -180,11 +241,16 @@ static int trustvisor_long_term_secret_init(void) {
 int trustvisor_master_crypto_init(void) {
 		int rv;
 
+		if(0 != (rv = hwtpm_open_locality(CRYPTO_INIT_LOCALITY))) {
+				dprintf(LOG_ERROR, "\nFATAL ERROR: Could not access HW TPM.\n");
+				return rv; /* no need to deactivate */
+		}
+		
 		/* PRNG */
 		if(0 != (rv = master_prng_init())) {
 				dprintf(LOG_ERROR, "\n[TV] trustvisor_master_crypto_init: "
 								"AES-256 CTR_DRBG PRNG init FAILED with rv %d!!!!\n", rv);
-				return 1;				
+				goto out;
 		}
 		
 		g_master_prng_init_completed = true;
@@ -194,14 +260,25 @@ int trustvisor_master_crypto_init(void) {
 
 		if(0 != (rv = trustvisor_long_term_secret_init())) {
 				dprintf(LOG_ERROR, "\n[TV] trustvisor_long_term_secret_init FAILED with rv %d!!!!\n", rv);
-				return 1;
+				goto out;
 		}
 
 		dprintf(LOG_TRACE, "\n[TV] trustvisor_master_crypto_init: "
 						"long term secrets initialized successfully.\n");
+
+		/* prefer not to depend on the globals */
+		if(0 != (rv = trustvisor_measure_qnd_bridge_signing_pubkey(&g_rsa))) {
+				dprintf(LOG_ERROR, "\n[TV] trustvisor_long_term_secret_init FAILED with rv %d!!!!\n", rv);
+				goto out;
+		}
 		
 		g_master_crypto_init_completed = true;
 
+		/* We're now done with the TPM for a while. Make sure it is
+		 * available to the legacy OS. */
+	out:
+		deactivate_all_localities();
+		
 		return 0;
 }
 

@@ -207,6 +207,7 @@ static whitelist_entry_t* find_scode_by_entry(u64 gcr3, u32 gv_entry)
 	return NULL;
 }
 
+/* FIXME: should this be in crypto_init.c? */
 u32 scode_measure(utpm_master_state_t *utpm, pte_t *pte_pages, u32 size)
 {
 	u32 i; 
