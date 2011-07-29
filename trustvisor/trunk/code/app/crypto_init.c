@@ -107,7 +107,7 @@ int get_hw_tpm_entropy(uint8_t* buf, unsigned int requested_len /* bytes */) {
 				return 1;
 		}
 
-		dprintf(LOG_TRACE, "\n[TV] Successfully received %d/%d bytes of entropy from HW TPM.\n",
+		dprintf(LOG_TRACE, "\n[TV] Successfully received %d/%d bytes of entropy from HW TPM.",
 						actual_len, requested_len);
 
 		return 0;
@@ -185,7 +185,7 @@ static int trustvisor_measure_qnd_bridge_signing_pubkey(rsa_context *rsa) {
 				dprintf(LOG_ERROR, "\nERROR: mpi_write_binary FAILED with rsa->N.\n");
 				return 1;
 		}
-		print_hex("Serialized RSA key: ", serial_pubkey, SERIAL_BUFSIZE);
+		print_hex("[TV] Serialized RSA key: ", serial_pubkey, SERIAL_BUFSIZE);
 
 		/**
 		 * 2. Hash serialized RSA key.
@@ -206,7 +206,7 @@ static int trustvisor_measure_qnd_bridge_signing_pubkey(rsa_context *rsa) {
 		}
 
 		dprintf(LOG_TRACE, "\n[TV] Successfully extended HW TPM PCR %d.\n", QND_BRIDGE_PUBKEY_PCR);
-		print_hex("New PCR value: ", pcr_out.digest, TPM_HASH_SIZE);
+		print_hex("[TV] New PCR value: ", pcr_out.digest, TPM_HASH_SIZE);
 
 		return 0;
 }
@@ -219,9 +219,9 @@ static int trustvisor_long_term_secret_init(void) {
 	/* g_aeskey and hmac are identical for different PALs, so that we
 	 * can seal data from one PAL to another PAL */
 	rand_bytes_or_die(g_aeskey, (TPM_AES_KEY_LEN>>3));
-	dprintf(LOG_TRACE, "[TV] AES key generated!\n");
+	dprintf(LOG_TRACE, "\n[TV] AES key generated!");
 	rand_bytes_or_die(g_hmackey, 20);
-	dprintf(LOG_TRACE, "[TV] HMAC key generated!\n");
+	dprintf(LOG_TRACE, "\n[TV] HMAC key generated!");
 
 	/* init RSA key required in uTPM Quote */
 	/* FIXME: Having a single key here is a privacy-invading,
@@ -231,7 +231,7 @@ static int trustvisor_long_term_secret_init(void) {
 	if(0 != rsa_gen_key(&g_rsa, (TPM_RSA_KEY_LEN<<3), 65537)) {
 			return 1;
 	}
-	dprintf(LOG_TRACE, "[TV] RSA key pair generated!\n");
+	dprintf(LOG_TRACE, "\n[TV] RSA key pair generated!");
 
 	return 0;
 }
@@ -256,7 +256,7 @@ int trustvisor_master_crypto_init(void) {
 		g_master_prng_init_completed = true;
 		
 		dprintf(LOG_TRACE, "\n[TV] trustvisor_master_crypto_init: "
-						"AES-256 CTR_DRBG PRNG successfully seeded with TPM RNG.\n");
+						"AES-256 CTR_DRBG PRNG successfully seeded with TPM RNG.");
 
 		if(0 != (rv = trustvisor_long_term_secret_init())) {
 				dprintf(LOG_ERROR, "\n[TV] trustvisor_long_term_secret_init FAILED with rv %d!!!!\n", rv);
@@ -264,7 +264,7 @@ int trustvisor_master_crypto_init(void) {
 		}
 
 		dprintf(LOG_TRACE, "\n[TV] trustvisor_master_crypto_init: "
-						"long term secrets initialized successfully.\n");
+						"long term secrets initialized successfully.");
 
 		/* prefer not to depend on the globals */
 		if(0 != (rv = trustvisor_measure_qnd_bridge_signing_pubkey(&g_rsa))) {

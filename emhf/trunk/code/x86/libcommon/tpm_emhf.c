@@ -69,20 +69,20 @@ int hwtpm_open_locality(int locality) {
 
         /* display chipset fuse and device and vendor id info */
         didvid._raw = read_pub_config_reg(TXTCR_DIDVID);
-        printf("\nHWTPM: chipset ids: vendor: 0x%x, device: 0x%x, revision: 0x%x\n",
+        printf("\n[TV] HWTPM: chipset ids: vendor: 0x%x, device: 0x%x, revision: 0x%x",
                didvid.vendor_id, didvid.device_id, didvid.revision_id);
         ver._raw = read_pub_config_reg(TXTCR_VER_FSBIF);
         if ( (ver._raw & 0xffffffff) == 0xffffffff ||
              (ver._raw & 0xffffffff) == 0x00 )         /* need to use VER.EMIF */
             ver._raw = read_pub_config_reg(TXTCR_VER_EMIF);
-        printf("\nHWTPM: chipset production fused: %x\n", ver.prod_fused );
+        printf("\n[TV] HWTPM: chipset production fused: %x", ver.prod_fused );
         
         if(txt_is_launched()) {
             write_priv_config_reg(locality == 1 ? TXTCR_CMD_OPEN_LOCALITY1
                                   : TXTCR_CMD_OPEN_LOCALITY2, 0x01);
             read_priv_config_reg(TXTCR_E2STS);   /* just a fence, so ignore return */
         } else {
-            printf("\nHWTPM: ERROR: Locality opening UNIMPLEMENTED on Intel without SENTER\n");
+            printf("\n[TV] HWTPM: ERROR: Locality opening UNIMPLEMENTED on Intel without SENTER\n");
             return 1;
         }        
     } else { /* AMD */        
@@ -92,19 +92,19 @@ int hwtpm_open_locality(int locality) {
         //dump_locality_access_regs();
         
         if(TPM_SUCCESS == tpm_wait_cmd_ready(locality)) {
-            printf("\nHWTPM: TPM successfully opened in Locality %d.\n", locality);            
+            printf("\n[TV] HWTPM: TPM successfully opened in Locality %d.", locality);            
         } else {
-            printf("\nHWTPM: TPM ERROR: Locality %d could not be opened.\n", locality);
+            printf("\n[TV] HWTPM: TPM ERROR: Locality %d could not be opened.\n", locality);
             return 1;
         }
     }
     
     if(!is_tpm_ready(locality)) {
-        printf("\nHWTPM: FAILED to open TPM locality %d\n", locality);
+        printf("\n[TV] HWTPM: FAILED to open TPM locality %d\n", locality);
         return 1;
     } 
 
-    printf("\nHWTPM: Opened TPM locality %d\n", locality);
+    printf("\n[TV] HWTPM: Opened TPM locality %d", locality);
     return 0;    
 }
 
