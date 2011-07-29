@@ -169,8 +169,8 @@ int invoke_pal(tz_session_t *tzPalSession) {
   uint32_t maxQuoteLen = TPM_MAX_QUOTE_LEN;
   uint8_t *rsaMod = NULL;
   uint32_t rsaModLen = 0;
-  uint8_t *valData = NULL;
-  uint32_t valDataLen = 0;
+  uint8_t *pcrComp = NULL;
+  uint32_t pcrCompLen = 0;
   TPM_DIGEST *uPcr0;
   uint32_t uPcr0Len = 0;
   TPM_DIGEST *uPcr1;
@@ -231,7 +231,7 @@ int invoke_pal(tz_session_t *tzPalSession) {
                          &uPcr0, &uPcr0Len,
                          &uPcr1, &uPcr1Len,
                          &rsaMod, &rsaModLen,
-                         &valData, &valDataLen,
+                         &pcrComp, &pcrCompLen,
                          &quote, &maxQuoteLen,
                          &quoteLen))) {
       rv = 1;
@@ -252,6 +252,8 @@ int invoke_pal(tz_session_t *tzPalSession) {
       goto out;
   }
 
+  printf("  pcrCompLen = %d\n", pcrCompLen);
+  print_hex("  pcrComp: ", pcrComp, pcrCompLen);
 
   /* TODO: Verify the signature in the Quote */
   //[ TPM_PCR_COMPOSITE | sigSize | sig ]
@@ -266,7 +268,7 @@ int invoke_pal(tz_session_t *tzPalSession) {
 
   print_hex("  sig: ", sig, TPM_RSA_KEY_LEN);
   
-  if((rv = verify_quote(quote, tpm_pcr_composite_size, sig, sigSize, nonce, rsaMod)) != 0) {
+  if((rv = verify_quote(pcrComp, pcrCompLen, sig, sigSize, nonce, rsaMod)) != 0) {
       printf("verify_quote FAILED\n");
   }
 

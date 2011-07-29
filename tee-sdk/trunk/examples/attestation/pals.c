@@ -46,9 +46,10 @@
 __attribute__ ((section (".scode")))
 tz_return_t pal_quote(IN TPM_NONCE *nonce,
                       IN TPM_PCR_SELECTION *tpmsel,
-                      OUT uint8_t *quote, INOUT size_t *quote_len) 
+                      OUT uint8_t *quote, INOUT size_t *quote_len,
+                      OUT uint8_t *pcrComp, INOUT size_t *pcrCompLen) 
 {
-  if (!svc_utpm_quote(nonce, tpmsel, quote, quote_len)) {
+  if (!svc_utpm_quote(nonce, tpmsel, quote, quote_len, pcrComp, pcrCompLen)) {
     return TZ_SUCCESS;
   } else {
     return TZ_ERROR_GENERIC;
@@ -115,8 +116,8 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
     uint8_t *quote = NULL;      
     uint32_t maxQuoteLen = TPM_MAX_QUOTE_LEN;
     uint32_t actualQuoteLen = 0;
-    uint8_t *valData = NULL;
-    uint32_t valDataLen = 48; /* XXX */
+    uint8_t *pcrComp = NULL;
+    uint32_t pcrCompLen = 47; /* 3+4+20+20 XXX */
     TPM_DIGEST *uPcr0 = NULL;
     TPM_DIGEST *uPcr1 = NULL;
     uint8_t *rsaModulus = NULL;
@@ -145,7 +146,7 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
                                &uPcr0, sizeof(TPM_DIGEST),
                                &uPcr1, sizeof(TPM_DIGEST),
                                &rsaModulus, TPM_RSA_KEY_LEN,
-                               &valData, valDataLen, 
+                               &pcrComp, pcrCompLen, 
                                &quote, maxQuoteLen)))
         return;
 
@@ -167,14 +168,9 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
     /* Read the public key modulus for the keypair that signs the quote */
     if((*puiRv = pal_id_getpub(rsaModulus))) return;
 
-    /* Populate the valData that is hashed and signed by Quote */
-    /* XXX -- this is not yet implemented. */
-    { unsigned int i; for(i=0;i<valDataLen;i++) valData[i] = i; }
-    //memset(valData, 0xff, valDataLen);
-
     /* Request the actual uPCR quote from the uTPM */
     actualQuoteLen = maxQuoteLen;
-    if((*puiRv = pal_quote(nonce, tpmsel, quote, &actualQuoteLen))) return;
+    if((*puiRv = pal_quote(nonce, tpmsel, quote, &actualQuoteLen, pcrComp, &pcrCompLen))) return;
     
     /* Also encode the _actual_ length of the quote */
     if((*puiRv = TZIEncodeBufF(psOutBuf, "%"TZI_EU32, actualQuoteLen))) return;
