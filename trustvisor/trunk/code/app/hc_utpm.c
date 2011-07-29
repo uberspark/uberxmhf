@@ -417,16 +417,19 @@ u32 hc_utpm_quote_deprecated(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 o
 	return 0;
 }
 
-u32 hc_utpm_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u32 out_len_addr)
+u32 hc_utpm_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 sig_addr, u32 sig_len_addr,
+                  u32 pcrComp_addr, u32 pcrCompLen_addr)
 {
-  uint8_t *outdata=NULL;
+    uint8_t *sigdata=NULL;
 	TPM_NONCE nonce;
 	TPM_PCR_SELECTION tpmsel;
-	u32 outlen, ret=0;
+	u32 siglen, ret=0;
+    uint8_t *pcrComp = NULL;
+    uint32_t pcrCompLen = 0;
 
 	dprintf(LOG_TRACE, "\n[TV] ********** uTPM Quote **********\n");
-	dprintf(LOG_TRACE, "[TV] nonce addr: %x, tpmsel addr: %x, output addr %x, outlen addr: %x!\n",
-					nonce_addr, tpmsel_addr, out_addr, out_len_addr);
+	dprintf(LOG_TRACE, "[TV] nonce addr: %x, tpmsel addr: %x, sig_addr %x, sig_len_addr: %x!\n",
+					nonce_addr, tpmsel_addr, sig_addr, sig_len_addr);
 
 	/* make sure that this vmmcall can only be executed when a PAL is running */
 	if (scode_curr[vcpu->id]== -1) {
@@ -444,57 +447,73 @@ u32 hc_utpm_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 out_addr, u3
 	/* FIXME: sizeof(TPM_PCR_SELECTION) may eventually change dynamically */
 	copy_from_guest(vcpu, (void*)&tpmsel, tpmsel_addr, sizeof(TPM_PCR_SELECTION));
 
-	/* Get size of guest's output buffer */
-	copy_from_guest(vcpu, (void*)&outlen, out_len_addr, sizeof(uint32_t));
-
-	dprintf(LOG_TRACE, "[TV] Guest provided output buffer of %d bytes\n", outlen);
+	/* Get size of guest's sig buffer */
+	copy_from_guest(vcpu, (void*)&siglen, sig_len_addr, sizeof(uint32_t));
+	dprintf(LOG_TRACE, "[TV] Guest provided sig buffer of %d bytes\n", siglen);
 
 	/* FIXME: This is just a rough sanity check that catches some uninitialized variables. */
-	if(outlen > 5*TPM_QUOTE_SIZE) {
-			dprintf(LOG_ERROR, "[TV] ERROR: Guest-provided outlen value of %d seems ridiculous\n", outlen);
+	if(siglen > 5*TPM_QUOTE_SIZE) {
+			dprintf(LOG_ERROR, "[TV] ERROR: Guest-provided siglen value of %d seems ridiculous\n", siglen);
 			ret = 1;
 			goto out;
 	}
-	
+
+    /* Get size of guest's pcrComp buffer */
+	copy_from_guest(vcpu, (void*)&pcrCompLen, pcrCompLen_addr, sizeof(uint32_t));
+	dprintf(LOG_TRACE, "[TV] Guest provided pcrComp buffer of %d bytes\n", pcrCompLen);
+    
 	/**
 	 * Allocate space to do internal processing
 	 */
-	if(NULL == (outdata = vmalloc(outlen))) {
-			dprintf(LOG_ERROR, "[TV] ERROR: vmalloc(%d) failed!\n", outlen);
+	if(NULL == (sigdata = vmalloc(siglen))) {
+			dprintf(LOG_ERROR, "[TV] ERROR: vmalloc(%d) failed!\n", siglen);
 			ret = 1;
 			goto out;
 	}
-	
-	/* FIXME: Still want to return a modified "outlen" in case the input buffer was too small.
+
+    if(NULL == (pcrComp = vmalloc(pcrCompLen))) {
+			dprintf(LOG_ERROR, "[TV] ERROR: vmalloc(%d) failed!\n", siglen);
+			ret = 1;
+			goto out;
+    }
+
+    
+	/* FIXME: Still want to return a modified "siglen" in case the input buffer was too small.
 	   I.e., this fails too aggressively. */
-	if ((ret = utpm_quote(&nonce, &tpmsel, outdata, &outlen, &whitelist[scode_curr[vcpu->id]].utpm,
-												(u8 *)(&g_rsa))) != 0) {
+	if ((ret = utpm_quote(&nonce, &tpmsel, sigdata, &siglen,
+                          pcrComp, &pcrCompLen,
+                          &whitelist[scode_curr[vcpu->id]].utpm,
+                          (u8 *)(&g_rsa))) != 0) {
 		dprintf(LOG_ERROR, "[TV] ERROR: utpm_quote failed!\n");
 		return 1;
 	}
 
 	/* Some sanity-checking. TODO: replace with asserts & use tighter bound */
-	if(outlen > 2*TPM_QUOTE_SIZE) {
-			dprintf(LOG_ERROR, "[TV] ERROR: outlen (%d) > 2*TPM_QUOTE_SIZE\n", outlen);
-			outlen = TPM_QUOTE_SIZE; /* FIXME: We should return some kind of error code */
+	if(siglen > 2*TPM_QUOTE_SIZE) {
+			dprintf(LOG_ERROR, "[TV] ERROR: siglen (%d) > 2*TPM_QUOTE_SIZE\n", siglen);
+			siglen = TPM_QUOTE_SIZE; /* FIXME: We should return some kind of error code */
 			/* return 1; */ /* Don't return from here; it causes some kind of crash in the PAL */
 	}
 	
-	dprintf(LOG_TRACE, "[TV] quote data len = %d!\n", outlen);
-	//print_hex("  QD: ", outdata, outlen);
+	dprintf(LOG_TRACE, "[TV] quote sigdata len = %d!\n", siglen);
+	//print_hex("  QD: ", sigdata, siglen);
 
-	/* copy quote output to guest */
-	copy_to_guest(vcpu, out_addr, outdata, outlen);
+	/* copy quote sig to guest */
+	copy_to_guest(vcpu, sig_addr, sigdata, siglen);
 
-	dprintf(LOG_TRACE, "[TV] hc_utpm_quote: Survived copy_to_guest of %d bytes\n", outlen);
+    /* copy pcrComp to guest */
+	copy_to_guest(vcpu, pcrComp_addr, pcrComp, pcrCompLen);
+    
+    
+	dprintf(LOG_TRACE, "[TV] hc_utpm_quote: Survived copy_to_guest of %d bytes\n", siglen);
 	
-	/* copy quote output length to guest */
-	put_32bit_aligned_value_to_guest(vcpu, out_len_addr, outlen);
+	/* copy quote sig length to guest */
+	put_32bit_aligned_value_to_guest(vcpu, sig_len_addr, siglen);
 	dprintf(LOG_TRACE, "[TV] hc_utpm_quote: Survived put_32bit_aligned_value_to_guest\n");
 
 	out:
 
-	if(outdata) { vfree(outdata); outdata = NULL; }
+	if(sigdata) { vfree(sigdata); sigdata = NULL; }
 	
 	return ret;
 }

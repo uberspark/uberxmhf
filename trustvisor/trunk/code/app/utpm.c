@@ -677,6 +677,7 @@ TPM_RESULT utpm_unseal_deprecated(utpm_master_state_t *utpm, uint8_t* input, uin
  * buffer is too small. */
 TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hypercall inputs */
                       uint8_t* output, uint32_t* outlen, /* hypercall outputs */
+                      uint8_t* pcrComp, uint32_t* pcrCompLen,
                       utpm_master_state_t *utpm, uint8_t* rsa) /* TrustVisor inputs */
 {
     TPM_RESULT rv = 0; /* success */
@@ -688,7 +689,7 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
 
     printf("[TV:UTPM] utpm_quote invoked\n");
 
-    if(!externalnonce || !tpmsel || !output || !outlen || !utpm || !rsa) {
+    if(!externalnonce || !tpmsel || !output || !outlen || !pcrComp || !pcrCompLen || !utpm || !rsa) {
         printf("[TV:UTPM] ERROR: NULL function parameter!\n");
         rv = 1; /* FIXME: Indicate invalid input parameter */
         goto out;
@@ -704,6 +705,20 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
     if(0 != rv) { goto out; }
     
     print_hex(" TPM_PCR_COMPOSITE: ", tpm_pcr_composite, space_needed_for_composite);
+
+    /* Copy PCR Composite and len to the appropriate output buffer,
+     * checking for enough space */
+    if(space_needed_for_composite > *pcrCompLen) {
+        dprintf(LOG_ERROR, "ERROR: space_needed_for_composite (%d) > *pcrCompLen (%d)\n",
+                space_needed_for_composite, *pcrCompLen);
+        *pcrCompLen = space_needed_for_composite;
+        rv = 1; /* FIXME: Indicate insufficient pcrComp buffer size */
+        goto out;
+    }
+    /* FIXME: find a way to eliminate this extra copy; likely entails
+     * changes to:
+     * utpm_internal_allocate_and_populate_current_TpmPcrComposite */
+    vmemcpy(pcrComp, tpm_pcr_composite, *pcrCompLen);
     
     /**
      * Populate 4-element TPM_QUOTE_INFO structure which will be hashed and signed

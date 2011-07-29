@@ -100,10 +100,12 @@ int svc_utpm_unseal(void *in,
  *
  * Returns 0 on success, nonzero on failure.
  */
-int svc_utpm_quote(TPM_NONCE *nonce,
-                   TPM_PCR_SELECTION *tpmsel,
-                   uint8_t *out,
-                   size_t *out_len);
+int svc_utpm_quote(TPM_NONCE *nonce, /* in */
+                   TPM_PCR_SELECTION *tpmsel, /* in */
+                   uint8_t *sig,
+                   size_t *sigLen,
+                   uint8_t *pcrComposite,
+                   size_t *pcrCompositeLen);
 
 /* Extend uTPM PCR 'idx' with new measurement 'meas'.
  * 'meas' is assumed to be exactly 20 bytes.

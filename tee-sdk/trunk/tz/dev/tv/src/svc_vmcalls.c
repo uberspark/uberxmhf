@@ -74,16 +74,20 @@ int svc_utpm_unseal(void *in,
 
 int svc_utpm_quote(TPM_NONCE *nonce,
                    TPM_PCR_SELECTION *tpmsel,
-                   uint8_t *out,
-                   size_t *out_len)
+                   uint8_t *sig,
+                   size_t *sigLen,
+                   uint8_t *pcrComposite,
+                   size_t *pcrCompositeLen)
+                   
 {
-  unsigned int outbuf[2]= {(unsigned int)out, (unsigned int)out_len};
+    unsigned int sigbuf[2]= {(unsigned int)sig, (unsigned int)sigLen};
+    unsigned int pcrCompBuf[2] = {(unsigned int)pcrComposite, (unsigned int)pcrCompositeLen};
 
-  return vmcall(TV_HC_UTPM_QUOTE,
-                (uint32_t)tpmsel,
-                (uint32_t)outbuf,
-                (uint32_t)nonce,
-                0);
+    return vmcall(TV_HC_UTPM_QUOTE, /* eax */
+                  (uint32_t)tpmsel, /* ecx */
+                  (uint32_t)sigbuf, /* edx */
+                  (uint32_t)nonce, /* esi */
+                  (uint32_t)pcrCompBuf); /* edi */
 }
 
 int svc_utpm_pcr_extend(uint32_t idx,   /* in */

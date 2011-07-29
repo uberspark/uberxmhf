@@ -217,18 +217,25 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 			}
 		case TV_HC_UTPM_QUOTE:
 		  {
-				u32 outbuf, nonce_addr, tpmsel_addr, out_addr, out_len_addr;
+				u32 sigbuf, nonce_addr, tpmsel_addr, sig_addr, sig_len_addr,
+						pcrCompbuf, pcrComp_addr, pcrCompLen_addr;
         printf("[TV] TV_HC_UTPM_QUOTE hypercall received.\n");
 				/* address of nonce to be sealed in esi*/
 				nonce_addr = r->esi;
 				/* tpm selection data address in ecx */
 				tpmsel_addr = r->ecx;
 
-				outbuf = r->edx;
-				out_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf);
-				out_len_addr = get_32bit_aligned_value_from_guest(vcpu,outbuf+4);
+				/* signature buffer and its length in array */
+				sigbuf = r->edx;
+				sig_addr = get_32bit_aligned_value_from_guest(vcpu, sigbuf);
+				sig_len_addr = get_32bit_aligned_value_from_guest(vcpu,sigbuf+4);
 
-				ret = hc_utpm_quote(vcpu,nonce_addr,tpmsel_addr,out_addr,out_len_addr);
+				/* PCR Composite buffer and its length in array */
+				pcrCompbuf = r->edi;
+				pcrComp_addr = get_32bit_aligned_value_from_guest(vcpu, pcrCompbuf);
+				pcrCompLen_addr = get_32bit_aligned_value_from_guest(vcpu, pcrCompbuf+4);
+				
+				ret = hc_utpm_quote(vcpu, nonce_addr, tpmsel_addr, sig_addr, sig_len_addr, pcrComp_addr, pcrCompLen_addr);
 
 				break;
 			}
