@@ -683,9 +683,7 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
     TPM_RESULT rv = 0; /* success */
     uint32_t space_needed_for_composite = 0;
     uint8_t *tpm_pcr_composite = NULL;
-    uint8_t *p = NULL;
     TPM_QUOTE_INFO quote_info;    
-    uint32_t required_output_size;
 
     printf("[TV:UTPM] utpm_quote invoked\n");
 
@@ -740,50 +738,24 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
      * Compute the signature and format the output buffer
      */
 
-    /* Output buffer: [ TPM_PCR_COMPOSITE | sigSize | sig ] */
-    required_output_size = space_needed_for_composite +
-        sizeof(uint32_t) + TPM_RSA_KEY_LEN;
-
-    if(required_output_size > *outlen) {
-        dprintf(LOG_ERROR, "ERROR: required_output_size (%d) > *outlen (%d)\n",
-                required_output_size, *outlen);
-        *outlen = required_output_size;
+    if(TPM_RSA_KEY_LEN > *outlen) {
+        dprintf(LOG_ERROR, "ERROR: TPM_RSA_KEY_LEN (%d) > *outlen (%d)\n",
+                TPM_RSA_KEY_LEN, *outlen);
+        *outlen = TPM_RSA_KEY_LEN;
         rv = 1; /* FIXME: Indicate insufficient output buffer size */
         goto out;
     }
 
-    *outlen = required_output_size;
-    dprintf(LOG_TRACE, "required_output_size = *outlen = %d\n", *outlen);
-    
-    p = output;
-    vmemcpy(p, tpm_pcr_composite, space_needed_for_composite);
-    p += space_needed_for_composite;
-    *((uint32_t*)p) = TPM_RSA_KEY_LEN;
-    p += sizeof(uint32_t);
-    
+    *outlen = TPM_RSA_KEY_LEN;
+    dprintf(LOG_TRACE, "required output size = *outlen = %d\n", *outlen);
 
 	if ((rv = tpm_pkcs1_sign((rsa_context *)rsa,
                              sizeof(TPM_QUOTE_INFO),
                              (uint8_t*)&quote_info,
-                             p)) != 0) {
+                             output)) != 0) {
 		printf("[TV:UTPM] ERROR: tpm_pkcs1_sign FAILED\n");
 		goto out;
 	}
-
-#if 0
-    { /* FIXME: Temporarily inserted code to verify our own signature
-       * to make sure it works! */
-        TPM_DIGEST tmp;
-        sha1_buffer((uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO), tmp.value);
-        print_hex("sha1(quote_info): ", tmp.value, TPM_HASH_SIZE);
-        
-        printf("rsa_pkcs1_verify = %s\n",
-               rsa_pkcs1_verify((rsa_context *)rsa,
-                                RSA_PUBLIC, RSA_SHA1, 20,
-                                tmp.value, p) == 0 ? "SUCCESS" : "FAIL"
-               );               
-    }
-#endif /* if 0 */
     
     dprintf(LOG_TRACE, "[TV:UTPM] Success!\n");
     
