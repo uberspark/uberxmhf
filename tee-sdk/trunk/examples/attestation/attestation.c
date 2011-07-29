@@ -239,36 +239,18 @@ int invoke_pal(tz_session_t *tzPalSession) {
   }
 
   assert(uPcr0Len == sizeof(TPM_DIGEST) && uPcr1Len == sizeof(TPM_DIGEST));
-  assert(rsaModLen == TPM_RSA_KEY_LEN);
   
-  printf("  max quoteLen = %d\n", quoteLen);
   printf("  actual quoteLen = %d\n", quoteLen);
-
-  if(quoteLen <= TPM_MAX_QUOTE_LEN) {
-      print_hex("  Q: ", quote, quoteLen);
-  } else {
-      printf("ERROR: quoteLen (%d) > TPM_MAX_QUOTE_LEN! First 16 bytes of response:\n", quoteLen);
-      print_hex("  Q! ", quote, 16);
-      goto out;
-  }
+  assert(rsaModLen == TPM_RSA_KEY_LEN);
+  assert(quoteLen == TPM_RSA_KEY_LEN);
 
   printf("  pcrCompLen = %d\n", pcrCompLen);
   print_hex("  pcrComp: ", pcrComp, pcrCompLen);
 
-  /* TODO: Verify the signature in the Quote */
-  //[ TPM_PCR_COMPOSITE | sigSize | sig ]
-  uint32_t tpm_pcr_composite_size = quoteLen - TPM_RSA_KEY_LEN - sizeof(uint32_t);
-  uint32_t sigSize = *((uint32_t*)(quote+tpm_pcr_composite_size));
-  uint8_t* sig = quote + tpm_pcr_composite_size + sizeof(uint32_t);
-
-  printf("  tpm_pcr_composite_size %d, sigSize %d\n",
-         tpm_pcr_composite_size, sigSize);
+  /* Verify the signature in the Quote */
+  print_hex("  sig: ", quote, quoteLen);
   
-  assert(sigSize == TPM_RSA_KEY_LEN);
-
-  print_hex("  sig: ", sig, TPM_RSA_KEY_LEN);
-  
-  if((rv = verify_quote(pcrComp, pcrCompLen, sig, sigSize, nonce, rsaMod)) != 0) {
+  if((rv = verify_quote(pcrComp, pcrCompLen, quote, quoteLen, nonce, rsaMod)) != 0) {
       printf("verify_quote FAILED\n");
   }
 
