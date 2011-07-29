@@ -12,6 +12,7 @@ PROG_OBJS=attestation.o
 PAL_NAME=pals
 PAL_PKGCONFIG_DEPS=tee-sdk-svc tee-sdk-svc-tv
 PAL_OBJS=pals.o
+PAL_CFLAGS=-Wall -Wextra -Werror
 
 all: $(PROG_NAME)
 
