@@ -7,7 +7,7 @@
 TESTS=-DTEST_VMMCALL -DTEST_WITHOUTPARAM -DTEST_PARAM -DTEST_SEAL -DTEST_QUOTE -DTEST_PCR_EXTEND -DTEST_PCR_READ -DTEST_RAND -DTEST_TIME
 
 PROG_NAME=test
-CFLAGS=-g -Wall
+CFLAGS=-g -Wall -Wextra -Werror
 CPPFLAGS=$(TESTS)
 PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv libssl libcrypto
 PROG_OBJS=test.o
@@ -15,6 +15,7 @@ PROG_OBJS=test.o
 PAL_NAME=pals
 PAL_PKGCONFIG_DEPS=tee-sdk-svc tee-sdk-svc-tv
 PAL_OBJS=pals.o
+PAL_CFLAGS=-Wall -Wextra -Werror
 
 all: $(PROG_NAME)
 
