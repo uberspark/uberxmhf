@@ -124,11 +124,11 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
     *puiRv = TZ_SUCCESS;
 
     /* Decode input parameters from legacy userspace's test.c */
-    if(*puiRv = TZIDecodeBufF(psInBuf,
-                              "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DARRSPC,
-                              &nonce, &nonceLen,
-                              &tpmsel, &tpmselLen,
-                              &inpAscii, &inpAsciiLen))
+    if((*puiRv = TZIDecodeBufF(psInBuf,
+                               "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DARRSPC,
+                               &nonce, &nonceLen,
+                               &tpmsel, &tpmselLen,
+                               &inpAscii, &inpAsciiLen)))
         return;
     
     /* Sanity-check input parameters */
@@ -140,13 +140,13 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
     }
 
     /* Prepare the output buffer to hold the response back to userspace. */
-    if(*puiRv = TZIEncodeBufF(psOutBuf,
-                              "%"TZI_EARRSPC "%"TZI_EARRSPC "%"TZI_EARRSPC "%"TZI_EARRSPC "%"TZI_EARRSPC,
-                              &uPcr0, sizeof(TPM_DIGEST),
-                              &uPcr1, sizeof(TPM_DIGEST),
-                              &rsaModulus, TPM_RSA_KEY_LEN,
-                              &valData, valDataLen, 
-                              &quote, maxQuoteLen))
+    if((*puiRv = TZIEncodeBufF(psOutBuf,
+                               "%"TZI_EARRSPC "%"TZI_EARRSPC "%"TZI_EARRSPC "%"TZI_EARRSPC "%"TZI_EARRSPC,
+                               &uPcr0, sizeof(TPM_DIGEST),
+                               &uPcr1, sizeof(TPM_DIGEST),
+                               &rsaModulus, TPM_RSA_KEY_LEN,
+                               &valData, valDataLen, 
+                               &quote, maxQuoteLen)))
         return;
 
     
@@ -161,23 +161,23 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
     /*   if(*puiRv = pal_pcr_extend(idx, measIn)) */
           
     /* Read uPCR 0,1 */
-    if(*puiRv = pal_pcr_read(0, uPcr0->value)) return;
-    if(*puiRv = pal_pcr_read(1, uPcr1->value)) return;
+    if((*puiRv = pal_pcr_read(0, uPcr0->value))) return;
+    if((*puiRv = pal_pcr_read(1, uPcr1->value))) return;
 
     /* Read the public key modulus for the keypair that signs the quote */
-    if(*puiRv = pal_id_getpub(rsaModulus)) return;
+    if((*puiRv = pal_id_getpub(rsaModulus))) return;
 
     /* Populate the valData that is hashed and signed by Quote */
     /* XXX -- this is not yet implemented. */
-    { int i; for(i=0;i<valDataLen;i++) valData[i] = i; }
+    { unsigned int i; for(i=0;i<valDataLen;i++) valData[i] = i; }
     //memset(valData, 0xff, valDataLen);
 
     /* Request the actual uPCR quote from the uTPM */
     actualQuoteLen = maxQuoteLen;
-    if(*puiRv = pal_quote(nonce, tpmsel, quote, &actualQuoteLen)) return;
+    if((*puiRv = pal_quote(nonce, tpmsel, quote, &actualQuoteLen))) return;
     
     /* Also encode the _actual_ length of the quote */
-    if(*puiRv = TZIEncodeBufF(psOutBuf, "%"TZI_EU32, actualQuoteLen)) return;
+    if((*puiRv = TZIEncodeBufF(psOutBuf, "%"TZI_EU32, actualQuoteLen))) return;
 }
 
 

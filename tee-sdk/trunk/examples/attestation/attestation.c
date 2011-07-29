@@ -227,12 +227,12 @@ int invoke_pal(tz_session_t *tzPalSession) {
 
   /* get quote */
   if((tzRet = TZIDecodeF(&tz_quoteOp,
-                        "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DU32,
-                        &uPcr0, &uPcr0Len,
-                        &uPcr1, &uPcr1Len,
-                        &rsaMod, &rsaModLen,
-                        &valData, &valDataLen,
-                        &quote, &maxQuoteLen,
+                         "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DU32,
+                         &uPcr0, &uPcr0Len,
+                         &uPcr1, &uPcr1Len,
+                         &rsaMod, &rsaModLen,
+                         &valData, &valDataLen,
+                         &quote, &maxQuoteLen,
                          &quoteLen))) {
       rv = 1;
       goto out;
