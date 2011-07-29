@@ -144,7 +144,7 @@ int test_withoutparam(tz_session_t *tzPalSession)
 
 int test_param(tz_session_t *tzPalSession)
 {
-  int i;
+  unsigned int i;
   uint32_t output;
   tz_return_t tzRet;
   tz_operation_t tzOp;
@@ -559,11 +559,13 @@ int test_quote(tz_session_t *tzPalSession)
   uint8_t *quote;
   uint32_t quoteLen = TPM_MAX_QUOTE_LEN;
   uint32_t maxQuoteLen;
+  uint8_t *pcrComp = NULL;
+  uint32_t pcrCompLen = 0;
 
   tz_return_t tzRet, serviceReturn;
   tz_operation_t tz_quoteOp;
   
-  int i;
+  unsigned int i;
   int rv = 0;
   
   uint8_t rsaMod[TPM_RSA_KEY_LEN];
@@ -613,40 +615,24 @@ int test_quote(tz_session_t *tzPalSession)
   }
   
   /* get quote */
-  tzRet = TZIDecodeF(&tz_quoteOp,
-                     "%"TZI_DARRSPC "%"TZI_DU32,
-                     &quote, &maxQuoteLen,
-                     &quoteLen);
-  if (tzRet) {
-    rv = 1;
-    goto out;
+  if((tzRet = TZIDecodeF(&tz_quoteOp,
+                         "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DU32,
+                         &quote, &maxQuoteLen,
+                         &pcrComp, &pcrCompLen,
+                         &quoteLen))) {
+      rv = 1;
+      goto out;
   }
   printf("  max quoteLen = %d\n", quoteLen);
   printf("  actual quoteLen = %d\n", quoteLen);
 
-  if(quoteLen <= TPM_MAX_QUOTE_LEN) {
-      //print_hex("  Q: ", quote, quoteLen);
-  } else {
-      printf("ERROR: quoteLen (%d) > TPM_MAX_QUOTE_LEN! First 16 bytes of response:\n", quoteLen);
-      print_hex("  Q! ", quote, 16);
-      goto out;
-  }
+  printf("  pcrCompLen = %d\n", pcrCompLen);
+  print_hex("  pcrComp: ", pcrComp, pcrCompLen);  
 
-
-  /* TODO: Verify the signature in the Quote */
-  //[ TPM_PCR_COMPOSITE | sigSize | sig ]
-  uint32_t tpm_pcr_composite_size = quoteLen - TPM_RSA_KEY_LEN - sizeof(uint32_t);
-  uint32_t sigSize = *((uint32_t*)(quote+tpm_pcr_composite_size));
-  uint8_t* sig = quote + tpm_pcr_composite_size + sizeof(uint32_t);
-
-  printf("  tpm_pcr_composite_size %d, sigSize %d\n",
-         tpm_pcr_composite_size, sigSize);
+  /* Verify the signature in the Quote */
+  print_hex("  sig: ", quote, quoteLen);
   
-  assert(sigSize == TPM_RSA_KEY_LEN);
-
-  print_hex("  sig: ", sig, TPM_RSA_KEY_LEN);
-  
-  if((rv = verify_quote(quote, tpm_pcr_composite_size, sig, sigSize, nonce, rsaMod)) != 0) {
+  if((rv = verify_quote(pcrComp, pcrCompLen, quote, quoteLen, nonce, rsaMod)) != 0) {
       printf("verify_quote FAILED\n");
   }
 
@@ -784,7 +770,7 @@ int test_rand(tz_session_t *tzPalSession)
   const size_t req_bytes=40;
   size_t got_bytes;
   uint8_t *bytes;
-  int i;
+  unsigned int i;
 
   printf("\nRAND\n");
 
