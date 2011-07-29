@@ -37,34 +37,10 @@
 #include <stdint.h>
 
 #include <tee-sdk/tzmarshal.h>
-
 #include <trustvisor/tv_utpm.h>
 
 typedef enum {
-  PAL_WITHOUTPARAM,
-  PAL_PARAM,
-  PAL_SEAL,
-  PAL_UNSEAL,
   PAL_QUOTE,
-  PAL_ID_GETPUB,
-  PAL_PCR_READ,
-  PAL_PCR_EXTEND,
-  PAL_RAND,
-  PAL_TIME_INIT,
-  PAL_TIME_ELAPSED,
 } PAL_CMD;
 
 void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv);
-void pal_withoutparam();
-tz_return_t pal_quote(IN TPM_NONCE *nonce,
-                      IN TPM_PCR_SELECTION *tpmsel,
-                      OUT uint8_t *quote, OUT size_t *quote_len);
-tz_return_t pal_id_getpub(OUT uint8_t* rsaModulus);
-tz_return_t pal_pcr_extend(IN uint32_t idx,
-                           IN uint8_t *meas);
-tz_return_t pal_pcr_read(IN uint32_t idx,
-                        OUT uint8_t *val);
-tz_return_t pal_rand(IN size_t len,
-                     OUT uint8_t *bytes);
-tz_return_t pal_time_init();
-tz_return_t pal_time_elapsed(OUT uint64_t *us);

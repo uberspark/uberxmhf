@@ -42,152 +42,7 @@
 
 #include <trustvisor/tv_utpm.h>
 
-__attribute__ ((section (".scode")))
-void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
-{
-  switch(uiCommand) {
-
-  case PAL_QUOTE:
-    {
-      TPM_NONCE *nonce = NULL;
-      uint32_t nonceLen = 0;
-      TPM_PCR_SELECTION *tpmsel = NULL;
-      uint32_t tpmselLen = 0;
-      uint8_t *quote = NULL;
-      
-      uint32_t maxQuoteLen = TPM_MAX_QUOTE_LEN;
-      uint32_t actualQuoteLen = 0;
-      *puiRv = TZ_SUCCESS;
-
-      /* Decode input parameters from legacy userspace's test.c */
-      if(*puiRv = TZIDecodeBufF(psInBuf,
-                                "%"TZI_DARRSPC "%"TZI_DARRSPC,
-                                &nonce, &nonceLen,
-                                &tpmsel, &tpmselLen))
-        break;
-
-      /* Sanity-check input parameters */
-      if (tpmselLen != sizeof(TPM_PCR_SELECTION)
-          || nonceLen != sizeof(TPM_NONCE)) {
-        *puiRv = TZ_ERROR_ENCODE_FORMAT;
-        break;
-      }
-
-      /* Prepare the output buffer to hold the response back to userspace. */
-      if(*puiRv = TZIEncodeBufF(psOutBuf,
-                                "%"TZI_EARRSPC,
-                                &quote, maxQuoteLen))
-        break;
-                                     
-      /* Make the hypercall to invoke the uTPM operation */
-      actualQuoteLen = maxQuoteLen;
-      if(*puiRv = pal_quote(nonce, tpmsel, quote, &actualQuoteLen))
-        break;
-
-      /* Also encode the actual length of the result */
-      if(*puiRv = TZIEncodeBufF(psOutBuf, "%"TZI_EU32, actualQuoteLen))
-        break;
-    }
-    break;
-
-    case PAL_ID_GETPUB:
-    {
-      uint8_t *rsaModulus;
-      
-      /* Prepare the output buffer to hold the response back to userspace. */
-      if(*puiRv = TZIEncodeBufF(psOutBuf, "%"TZI_EARRSPC,
-                                &rsaModulus, TPM_RSA_KEY_LEN))
-        break;
-
-      if(*puiRv = pal_id_getpub(rsaModulus))
-        break;
-    }
-    break;
-    
-    case PAL_PCR_EXTEND:
-    {
-      uint8_t *measIn;
-      size_t measLen;
-      uint32_t idx;
-      *puiRv = TZ_SUCCESS;
-
-      if(*puiRv = TZIDecodeBufF(psInBuf,
-                                "%"TZI_DU32 "%"TZI_DARRSPC,
-                                &idx,
-                                &measIn, &measLen))
-        break;
-
-      if(measLen != TPM_HASH_SIZE) {
-        *puiRv = TZ_ERROR_GENERIC;
-        break;
-      }
-
-      if(*puiRv = pal_pcr_extend(idx, measIn))
-        break;
-    }
-    break;
-    
-    case PAL_PCR_READ:
-    {
-      uint8_t *valOut;
-      uint32_t idx;
-      *puiRv = TZ_SUCCESS;
-
-      if(*puiRv = TZIDecodeBufF(psInBuf, "%"TZI_DU32, &idx))
-        break;
-
-      if(*puiRv = TZIEncodeBufF(psOutBuf,
-                                "%"TZI_EARRSPC,
-                                &valOut, TPM_HASH_SIZE))
-        break;
-
-      if(*puiRv = pal_pcr_read(idx, valOut))
-        break;
-    }
-    break;
-
-  case PAL_RAND:
-    {
-      uint32_t len;
-      uint8_t *bytes;
-
-      if(*puiRv = TZIDecodeBufF(psInBuf, "%"TZI_DU32, &len))
-        break;
-
-      if(*puiRv = TZIEncodeBufF(psOutBuf, "%"TZI_EARRSPC,
-                                &bytes, len))
-        break;
-      
-      if(*puiRv = pal_rand(len, bytes))
-        break;
-    }
-    break;
-
-  case PAL_TIME_INIT:
-    *puiRv = pal_time_init();
-    break;
-
-  case PAL_TIME_ELAPSED:
-    {
-      uint64_t dt;
-      uint32_t dt_hi, dt_lo;
-
-      if(*puiRv = pal_time_elapsed(&dt))
-        break;
-
-      dt_hi = (uint32_t)(dt>>32);
-      dt_lo = (uint32_t)dt;
-      if(*puiRv = TZIEncodeBufF(psOutBuf, "%"TZI_EU32 "%"TZI_EU32,
-                                dt_hi, dt_lo))
-        break;
-    }
-    break;
-  }
-  return;
-}
-
-/* sensitive code  */
-
+/* sensitive code */
 __attribute__ ((section (".scode")))
 tz_return_t pal_quote(IN TPM_NONCE *nonce,
                       IN TPM_PCR_SELECTION *tpmsel,
@@ -241,45 +96,88 @@ tz_return_t pal_pcr_read(IN uint32_t idx,
 }
 
 __attribute__ ((section (".scode")))
-tz_return_t pal_rand(IN size_t len,
-                     OUT uint8_t *bytes)
+void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
-  if (svc_utpm_rand_block(bytes, len) == 0) {
-    return TZ_SUCCESS;
-  } else {
-    return TZ_ERROR_GENERIC;
-  }
+    /* We only know one command. */
+    if(PAL_QUOTE != uiCommand) {
+        return;
+    }
+
+    /* input parameters */
+    TPM_NONCE *nonce = NULL;
+    uint32_t nonceLen = 0;
+    TPM_PCR_SELECTION *tpmsel = NULL;
+    uint32_t tpmselLen = 0;
+    uint8_t *inpAscii = NULL;
+    uint32_t inpAsciiLen = 0;
+
+    /* output parameters */
+    uint8_t *quote = NULL;      
+    uint32_t maxQuoteLen = TPM_MAX_QUOTE_LEN;
+    uint32_t actualQuoteLen = 0;
+    uint8_t *valData = NULL;
+    uint32_t valDataLen = 48; /* XXX */
+    TPM_DIGEST *uPcr0 = NULL;
+    TPM_DIGEST *uPcr1 = NULL;
+    uint8_t *rsaModulus = NULL;
+
+    *puiRv = TZ_SUCCESS;
+
+    /* Decode input parameters from legacy userspace's test.c */
+    if(*puiRv = TZIDecodeBufF(psInBuf,
+                              "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DARRSPC,
+                              &nonce, &nonceLen,
+                              &tpmsel, &tpmselLen,
+                              &inpAscii, &inpAsciiLen))
+        return;
+    
+    /* Sanity-check input parameters */
+    if (tpmselLen != sizeof(TPM_PCR_SELECTION)
+        || nonceLen != sizeof(TPM_NONCE)
+        || inpAsciiLen < 1) {
+        *puiRv = TZ_ERROR_ENCODE_FORMAT;
+        return;
+    }
+
+    /* Prepare the output buffer to hold the response back to userspace. */
+    if(*puiRv = TZIEncodeBufF(psOutBuf,
+                              "%"TZI_EARRSPC "%"TZI_EARRSPC "%"TZI_EARRSPC "%"TZI_EARRSPC "%"TZI_EARRSPC,
+                              &uPcr0, sizeof(TPM_DIGEST),
+                              &uPcr1, sizeof(TPM_DIGEST),
+                              &rsaModulus, TPM_RSA_KEY_LEN,
+                              &valData, valDataLen, 
+                              &quote, maxQuoteLen))
+        return;
+
+    
+    
+    /**
+     * Make the hypercalls to invoke the uTPM operations
+     */
+
+    /* Extend uPCR 1 with input data */
+    /* XXX -- TODO: need SHA-1 to hash arbitrary-length input data */
+    /* if(inpAsciiLen */
+    /*   if(*puiRv = pal_pcr_extend(idx, measIn)) */
+          
+    /* Read uPCR 0,1 */
+    if(*puiRv = pal_pcr_read(0, uPcr0->value)) return;
+    if(*puiRv = pal_pcr_read(1, uPcr1->value)) return;
+
+    /* Read the public key modulus for the keypair that signs the quote */
+    if(*puiRv = pal_id_getpub(rsaModulus)) return;
+
+    /* Populate the valData that is hashed and signed by Quote */
+    /* XXX -- this is not yet implemented. */
+    { int i; for(i=0;i<valDataLen;i++) valData[i] = i; }
+    //memset(valData, 0xff, valDataLen);
+
+    /* Request the actual uPCR quote from the uTPM */
+    actualQuoteLen = maxQuoteLen;
+    if(*puiRv = pal_quote(nonce, tpmsel, quote, &actualQuoteLen)) return;
+    
+    /* Also encode the _actual_ length of the quote */
+    if(*puiRv = TZIEncodeBufF(psOutBuf, "%"TZI_EU32, actualQuoteLen)) return;
 }
 
-static uint64_t t0;
-static uint64_t t0_nonce;
-static bool t0_initd=false;
-tz_return_t pal_time_init()
-{
-  if (svc_time_elapsed_us(&t0_nonce, &t0)) {
-    return TZ_ERROR_GENERIC;
-  }
-  t0_initd=true;
-}
 
-__attribute__ ((section (".scode")))
-tz_return_t pal_time_elapsed(OUT uint64_t *us)
-{
-  uint64_t t;
-  uint64_t t_nonce;
-
-  if (!t0_initd)
-    return TZ_ERROR_GENERIC;
-
-  if (svc_time_elapsed_us(&t_nonce, &t)) {
-    return TZ_ERROR_GENERIC;
-  }
-
-  if (t_nonce != t0_nonce) {
-    return TZ_ERROR_GENERIC;
-  }
-
-  *us = t - t0;
-
-  return TZ_SUCCESS;
-}
