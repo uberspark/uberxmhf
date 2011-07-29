@@ -1,0 +1,11 @@
+Prerequisites:
+
+JSON library for data encoding / decoding
+TrouSerS / tpm-tools for interacting with TPM in untrusted world
+OpenSSL development for crypto and base64 encoding and decoding
+
+aptitude install libtspi-dev libtspi1 trousers tpm-tools libjson0-dbg libjson0-dev
+...and OpenSSL development packages
+
+Try prereqs.sh to see if the needed TrouSerS / TPM functionality is in place.
+
