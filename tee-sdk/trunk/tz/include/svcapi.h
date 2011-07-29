@@ -122,6 +122,14 @@ int svc_utpm_pcr_extend(uint32_t idx,   /* in */
 int svc_utpm_pcr_read(uint32_t idx,  /* in */
                       uint8_t* val); /* out */
 
+
+/* Read the RSA public key modulus that corresponds to the TrustVisor
+ * uTPM identity keypair that is used to sign quotes.
+ *
+ * Returns 0 on success, nonzero on failure.
+ */
+int svc_utpm_id_getpub(uint8_t *N); /* out */
+
 /* Request out_len secure-random bytes. The TEE will use some secure
  * source of true entropy, either directly, or to seed a secure PRNG.
  * The TEE may return fewer than the requested number of bytes if
