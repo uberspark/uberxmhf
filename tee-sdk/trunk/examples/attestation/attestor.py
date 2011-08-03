@@ -33,18 +33,20 @@ print >> sys.stderr, "aik_uuid_ascii", aik_uuid_ascii
 
 ### WARNING: This is currently extremely vulnerable to shell characters!
 ### TODO: regex to verify nothing but [0-9a-f]
-#tpm_createkey_exec = "tpm_createkey -N -u "+aik_uuid_ascii+" -B "+aik_uuid_ascii+".keyfile\n"
-tpm_createkey_exec = "echo Hello"
+tpm_createkey_exec = "tpm_createkey -N -u "+aik_uuid_ascii+" -B "+aik_uuid_ascii+".keyfile\n"
 print >> sys.stderr, "Subprocess: "+tpm_createkey_exec
 
 try:
     print >>sys.stderr, "Still here 1"
-    retcode = subprocess.check_call(tpm_createkey_exec, shell=True)
-    print >>sys.stderr, "Still here 2"
-    if retcode < 0:
-        print >>sys.stderr, "Child was terminated by signal", -retcode
+    proc = subprocess.Popen(tpm_createkey_exec, bufsize=0, shell=True, stderr=subprocess.STDOUT, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    print >>sys.stderr, "Still here 2a"
+    proc.wait()
+    stdout_value, stderr_value = proc.communicate()
+    print >>sys.stderr, "Still here 2b", stdout_value, stderr_value
+    if proc.returncode < 0:
+        print >>sys.stderr, "Child was terminated by signal", proc.returncode
     else:
-        print >>sys.stderr, "Child returned", retcode
+        print >>sys.stderr, "Child returned", proc.returncode
 except OSError, e:
     print >>sys.stderr, "Execution failed:", e
 
