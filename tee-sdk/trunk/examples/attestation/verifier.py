@@ -145,11 +145,26 @@ if tpm_quoteinfo.find(tpm_composite_hash) != 8:
     print >>sys.stderr, "ERROR: PCR values in tpm_composite_hash don't match tpm_quoteinfo"
     sys.exit(1)
 
+#####################################################################
+# Step 2: Verify that the PAL-provided public signing key was measured
+# into PCR-19.
+#
+# PCR-19 = SHA-1 ( 0x00^20 | SHA-1 ( pal_rsaMod ) )
+#####################################################################
+pcr19_hash_payload = binascii.unhexlify("0000000000000000000000000000000000000000")
+tv_serialized_rsa_prefix = binascii.unhexlify("0000010000010001") # len(N) | e
+pcr19_hash_payload += hashlib.sha1(tv_serialized_rsa_prefix + pal_rsaMod).digest()
+pcr19_computed_value = hashlib.sha1(pcr19_hash_payload).digest()
+
+if(tpm_pcr19.find(pcr19_computed_value) != 0):
+    print >>sys.stderr, "ERROR: PCR-19 does not match pal_rsaMod"
+    print >>sys.stderr, "pcr-19:", binascii.hexlify(tpm_pcr19)
+    print >>sys.stderr, "pal_rsaMod:", binascii.hexlify(pal_rsaMod)
+    sys.exit(1)
+
 print >>sys.stderr, "**************************************"
 print >>sys.stderr, "****** VERIFICATION SUCCESSFUL! ******"
 print >>sys.stderr, "**************************************"
-
-#tpm_nonce_bytes
 
 #
 

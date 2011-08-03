@@ -150,7 +150,7 @@ try:
         sys.exit(1)
     else:
         print >>sys.stderr, "Child completed successfully ( exit code", proc.returncode, ")"
-        #print >>sys.stderr, "Child output:\n",stdout_value
+        print >>sys.stderr, "Child output:\n",stderr_value
 except OSError, e:
     print >>sys.stderr, "Execution failed:", e
     sys.exit(1)
