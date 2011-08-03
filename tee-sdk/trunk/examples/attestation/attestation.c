@@ -59,7 +59,7 @@
 
 #include <trustvisor/tv_utpm.h>
 
-#include "json.h"
+#include "common.h"
 
 
 
