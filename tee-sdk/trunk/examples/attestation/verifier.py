@@ -83,25 +83,23 @@ pal_sig               = base64.b64decode(pal_output_dict["sig"])
 #tpm_sig was produced when the TPM signed tpm_quoteinfo with
 #tpm_pubkey's private counterpart
 
-# Assemble the public key using e = 0x10001
-n = M2Crypto.m2.bn_to_mpi(M2Crypto.m2.bin_to_bn(tpm_pubkey))
-e = M2Crypto.m2.bn_to_mpi(M2Crypto.m2.hex_to_bn("10001"))
-print >>sys.stderr, "e: ", binascii.hexlify(e)
-print >>sys.stderr, "n: ", binascii.hexlify(n)
-rsa = M2Crypto.RSA.new_pub_key((e, n))
+#print >>sys.stderr, "validate_aik_blob(tpm_pubkey):", common.validate_aik_blob(tpm_pubkey)
+
+if common.validate_aik_blob(tpm_pubkey) != True:
+    print >>sys.stderr, "ERROR: validate_aik_blob(tpm_pubkey) FAILED"
+    sys.exit(1)
+
+# Public key object used to verify the signature
+rsa = common.aik_blob_to_m2rsa(tpm_pubkey)
 
 # Hash the quoteinfo
 digest = hashlib.sha1(tpm_quoteinfo).digest()
-print >>sys.stderr, "digest: ", binascii.hexlify(digest)
+#print >>sys.stderr, "digest: ", binascii.hexlify(digest)
 
-print >>sys.stderr, "len tpm_sig, len tpm_pubkey", len(tpm_sig), len(tpm_pubkey)
-
-common.sayhi()
-
-if rsa.verify(digest, tpm_sig):
-  print 'Verified!'
-else:
-  print 'Failed!'
+# Check the actual signature
+if rsa.verify(digest, tpm_sig) != 1:
+    print >>sys.stderr, "RSA signature verification of TPM Quote FAILED!"
+    sys.exit(1)
 
 
 
@@ -114,6 +112,10 @@ else:
 # Step 1c: Verify quoteinfo contains a digest of PCRs 17, 18, 19
 #####################################################################
 
+
+print >>sys.stderr, "**************************************"
+print >>sys.stderr, "****** VERIFICATION SUCCESSFUL! ******"
+print >>sys.stderr, "**************************************"
 
 #tpm_nonce_bytes
 
