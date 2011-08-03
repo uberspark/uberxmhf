@@ -1,4 +1,4 @@
 #!/bin/bash
 
-socat exec:./verifier.py exec:./attestor.py
+socat exec:'python -u verifier.py' exec:'python -u attestor.py'
 
