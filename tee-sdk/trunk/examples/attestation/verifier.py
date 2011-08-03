@@ -76,9 +76,14 @@ pal_sig               = base64.b64decode(pal_output_dict["sig"])
 # XXX TODO: implement Privacy CA
 #####################################################################
 
+print >>sys.stderr, "Step 0: Check the AIK certificate "
+print >>sys.stderr, " XXX UNIMPLEMENTED XXX"
+
 #####################################################################
 # Step 1a: Verify TPM Quote (tpm_sig) using public AIK (tpm_pubkey)
 #####################################################################
+
+print >>sys.stderr, "Step 1a: Verifying TPM Quote RSA signature using public AIK "
 
 #tpm_sig was produced when the TPM signed tpm_quoteinfo with
 #tpm_pubkey's private counterpart
@@ -111,8 +116,10 @@ if rsa.verify(digest, tpm_sig) != 1:
 #   TPM_COMPOSITE_HASH digestValue;
 #   TPM_NONCE externalData;
 # }TPM_QUOTE_INFO;
-
 #####################################################################
+
+print >>sys.stderr, "Step 1b: Verifying QuoteInfo contains the right magic and our nonce"
+
 quote_magic8 = binascii.unhexlify("0101000051554f54")
 if(tpm_quoteinfo.find(quote_magic8) != 0):
     print >>sys.stderr, "ERROR: \"Quote Magic\" not found in TPM Quote_Info!!!"
@@ -137,6 +144,8 @@ if(tpm_quoteinfo.find(tpm_nonce_bytes) != 28):
 # } TPM_PCR_COMPOSITE;
 #####################################################################
 
+print >>sys.stderr, "Step 1c: Verifying QuoteInfo contains a digest of PCRs 17, 18, 19"
+
 tpm_pcr_selection = binascii.unhexlify("000300000e")
 valueSize = binascii.unhexlify("0000003c") # 3 PCRs = 3*0x14 = 0x3c
 tpm_pcr_composite = tpm_pcr_selection + valueSize + tpm_pcr17 + tpm_pcr18 + tpm_pcr19
@@ -152,6 +161,9 @@ if tpm_quoteinfo.find(tpm_composite_hash) != 8:
 #
 # PCR-19 = SHA-1 ( 0x00^20 | SHA-1 ( len(N) | E | pal_rsaMod ) )
 #####################################################################
+
+print >>sys.stderr, "Step 2: Verifying TrustVisor pubkey is measured into HW TPM PCR-19"
+
 pcr19_hash_payload = binascii.unhexlify("0000000000000000000000000000000000000000")
 tv_serialized_rsa_prefix = binascii.unhexlify("0000010000010001") # len(N) | E
 pcr19_hash_payload += hashlib.sha1(tv_serialized_rsa_prefix + pal_rsaMod).digest()
@@ -163,6 +175,9 @@ if(tpm_pcr19.find(pcr19_computed_value) != 0):
     print >>sys.stderr, "pal_rsaMod:", binascii.hexlify(pal_rsaMod)
     sys.exit(1)
 
+print >>sys.stderr, "  Verifying PCRs 17, 18 represent a known-good launch of TrustVisor"
+print >>sys.stderr, "  XXX UNIMPLEMENTED XXX"
+
 #####################################################################
 # Step 3a: Check the uTPM RSA signature 
 #
@@ -170,6 +185,9 @@ if(tpm_pcr19.find(pcr19_computed_value) != 0):
 # because we assemble the actual quoteinfo data structure from the
 # provided pal_tpm_pcr_composite
 #####################################################################
+
+print >>sys.stderr, "Step 3a: Verifying uTPM Quote RSA signature with TrustVisor pubkey"
+
 n = M2Crypto.m2.bn_to_mpi(M2Crypto.m2.bin_to_bn(pal_rsaMod))
 e = M2Crypto.m2.bn_to_mpi(M2Crypto.m2.hex_to_bn("10001"))
 #print >>sys.stderr, "e: ", binascii.hexlify(e)
@@ -178,6 +196,8 @@ rsa = M2Crypto.RSA.new_pub_key((e, n))
 
 # Assemble PAL QuoteInfo
 
+print >>sys.stderr, "  Verifying uTPM QuoteInfo contains our nonce"
+print >>sys.stderr, "  XXX UNIMPLEMENTED XXX"
 ### XXX TODO: Update ./attestation to actually take in the nonce to use
 ### Get rid of externalnonce; it's unnecessary
 pal_NONCE_HACK_XXX = binascii.unhexlify("000102030405060708090a0b0c0d0e0f10111213")
@@ -201,6 +221,11 @@ if rsa.verify(pal_quoteinfo_digest, pal_sig) != 1:
 #####################################################################
 # Step 4: Confirm the right magic ASCII string is represented in uPCR0
 #####################################################################
+
+print >>sys.stderr, "  Verifying uPCR 0 represents a known-good launch of our PAL"
+print >>sys.stderr, "  XXX UNIMPLEMENTED XXX"
+
+print >>sys.stderr, "Step 4: Verifying data measured into uPCR 1 by PAL is represented in uTPM Quote"
 
 pal_expected_input_data = "The quick brown fox jumped over the lazy dog!\0"
 pal_expected_input_data_digest = hashlib.sha1(pal_expected_input_data).digest()
