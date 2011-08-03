@@ -596,7 +596,7 @@ u32 hc_utpm_pcrextend(VCPU * vcpu, u32 idx, u32 meas_gvaddr)
 	copy_from_guest(vcpu, (u8 *)measurement.value, meas_gvaddr, TPM_HASH_SIZE);
 
 	/* extend pcr */
-    print_hex("[TV] PCRExtend data from guest: ", measurement.value, TPM_HASH_SIZE);    
+    //print_hex("[TV] PCRExtend data from guest: ", measurement.value, TPM_HASH_SIZE);    
 	utpm_extend(&measurement, &whitelist[scode_curr[vcpu->id]].utpm, idx);
 
 	return 0;

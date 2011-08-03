@@ -75,8 +75,8 @@ TPM_RESULT utpm_extend(TPM_DIGEST *measurement, utpm_master_state_t *utpm, uint3
 
     dprintf(LOG_TRACE, "utpm_extend: extending PCR %d", pcr_num);
 
-    print_hex("utpm_extend: PCR before: ", utpm->pcr_bank[pcr_num].value, TPM_HASH_SIZE);
-    print_hex("utpm_extend: measurement: ", measurement->value, TPM_HASH_SIZE);
+    //print_hex("utpm_extend: PCR before: ", utpm->pcr_bank[pcr_num].value, TPM_HASH_SIZE);
+    //print_hex("utpm_extend: measurement: ", measurement->value, TPM_HASH_SIZE);
 
     SHA1_Init( &ctx );
     /* existing PCR value */
@@ -86,7 +86,7 @@ TPM_RESULT utpm_extend(TPM_DIGEST *measurement, utpm_master_state_t *utpm, uint3
     /* write new PCR value */
     SHA1_Final( utpm->pcr_bank[pcr_num].value, &ctx );
 
-    print_hex("utpm_extend: PCR after: ", utpm->pcr_bank[pcr_num].value, TPM_HASH_SIZE);
+    //print_hex("utpm_extend: PCR after: ", utpm->pcr_bank[pcr_num].value, TPM_HASH_SIZE);
     
 	return UTPM_SUCCESS;
 }
