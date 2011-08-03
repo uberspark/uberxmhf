@@ -87,6 +87,7 @@ except OSError, e:
 #tpm_createkey -N -u $UUID -B $UUID.keyfile
 tpm_quote_exec = "tpm_quote -N -B "+aik_uuid_ascii+".keyfile -u "+aik_uuid_ascii+" -n "+tpm_nonce_ascii+" -p 17 -p 18 -p 19"
 print >> sys.stderr, "Subprocess: "+tpm_quote_exec
+stdout_value = "" # want to keep this in scope beyond 'try' block
 try:
     proc = subprocess.Popen(tpm_quote_exec, bufsize=0, shell=True, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
     proc.wait()
@@ -104,6 +105,30 @@ except OSError, e:
     sys.exit(1)
 
 
+#####################################################################
+# Now we must parse the output from tpm_quote
+# We are interested in 5 lines, each one of which begins with (in 
+# the given order):
+# pcr.17=
+# pcr.18=
+# pcr.19=
+# signature=
+# pubkey=
+#####################################################################
+# Multilne regex to grab everything in one go.
+# DOTALL lets . match newlines, ?P<> syntax names matches, and groupdict() builds python dict
+# which is trivially convertible to JSON for returning. :)
+m = re.match(r".*pcr\.17=(?P<pcr17>[0-9a-fA-F]+)"+
+             r".*pcr\.18=(?P<pcr18>[0-9a-fA-F]+)"+
+             r".*pcr\.19=(?P<pcr19>[0-9a-fA-F]+)"+
+             r".*signature=(?P<sig>[0-9a-fA-F]+)"+
+             r".*pubkey=(?P<pubkey>[0-9a-fA-F]+)", 
+             stdout_value, re.DOTALL)
+print >>sys.stderr, "m:", m.groupdict()
+#for line in stdout_value.splitlines():
+#    print >>sys.stderr, "line:", line
+    
+### TODO: Ensure that pubkey actually goes with the key generated with tpm_createkey above, and get a real certificate for it.
 
 ### Temporarily placate verifier.py since it expects some kind of response.
 print "attestor.py read ("+input.rstrip()+") and has printed it!\n";
