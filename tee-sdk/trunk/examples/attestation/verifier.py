@@ -101,17 +101,49 @@ if rsa.verify(digest, tpm_sig) != 1:
     print >>sys.stderr, "RSA signature verification of TPM Quote FAILED!"
     sys.exit(1)
 
-
-
+#####################################################################
+# Step 1b: Verify quoteinfo contains the right "magic" and the nonce
+# we originally sent.
+# 
+# typedef struct tdTPM_QUOTE_INFO{
+#   TPM_STRUCT_VER version;
+#   BYTE fixed[4];
+#   TPM_COMPOSITE_HASH digestValue;
+#   TPM_NONCE externalData;
+# }TPM_QUOTE_INFO;
 
 #####################################################################
-# Step 1b: Verify quoteinfo contains the nonce we originally sent
-#####################################################################
+if(tpm_quoteinfo.find(binascii.unhexlify("0101000051554f54")) != 0):
+    print >>sys.stderr, "ERROR: \"Quote Magic\" not found in TPM Quote_Info!!!"
+    sys.exit(1)
+
+if(tpm_quoteinfo.find(tpm_nonce_bytes) != 28):
+    print >>sys.stderr, "ERROR: Nonce not found in TPM Quote_Info!!!"
+    sys.exit(1)
 
 #####################################################################
 # Step 1c: Verify quoteinfo contains a digest of PCRs 17, 18, 19
+#
+# typedef struct tdTPM_PCR_SELECTION {
+#   UINT16 sizeOfSelect;
+#   [size_is(sizeOfSelect)] BYTE pcrSelect[];
+# } TPM_PCR_SELECTION;
+#
+# typedef struct tdTPM_PCR_COMPOSITE {
+#   TPM_PCR_SELECTION select;
+#   UINT32 valueSize;
+#   [size_is(valueSize)] TPM_PCRVALUE pcrValue[];
+# } TPM_PCR_COMPOSITE;
 #####################################################################
 
+tpm_pcr_selection = binascii.unhexlify("000300000e")
+valueSize = binascii.unhexlify("0000003c") # 3 PCRs = 3*0x14 = 0x3c
+tpm_pcr_composite = tpm_pcr_selection + valueSize + tpm_pcr17 + tpm_pcr18 + tpm_pcr19
+tpm_composite_hash = hashlib.sha1(tpm_pcr_composite).digest()
+
+if tpm_quoteinfo.find(tpm_composite_hash) != 8:
+    print >>sys.stderr, "ERROR: PCR values in tpm_composite_hash don't match tpm_quoteinfo"
+    sys.exit(1)
 
 print >>sys.stderr, "**************************************"
 print >>sys.stderr, "****** VERIFICATION SUCCESSFUL! ******"
