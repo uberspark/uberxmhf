@@ -1,7 +1,7 @@
 #!/usr/bin/python -u
 # -u     Force  stdin, stdout and stderr to be totally unbuffered. 
 
-import sys, json, base64, binascii, os, subprocess, signal
+import sys, json, base64, binascii, os, subprocess, signal, re
 
 #####################################################################
 # We expect a single line of ASCII input which is JSON containing two
@@ -20,9 +20,18 @@ print >> sys.stderr, "attestor.py decoded input:", noncesdict
 print >> sys.stderr, "attestor.py decoded input:", tpm_nonce_b64
 print >> sys.stderr, "attestor.py decoded input:", utpm_nonce_b64
 
-# Decode base64 encoding to binary and prepare to print as ASCII hex 
+# Decode base64 encoding to binary and prepare to reformat as ASCII hex 
 tpm_nonce_ascii = binascii.hexlify(binascii.a2b_base64(tpm_nonce_b64))
 print >> sys.stderr, "tpm_nonce_ascii",tpm_nonce_ascii
+
+#####################################################################
+# Before generating any quotes, we must have an AIK to use to sign
+# the hardware TPM's quote.  We create a new one here using
+# tpm_createkey from OpenPTS.  This is suboptimal, not the least
+# because of the LoadKeyByUUID bug mentioned below. Really we should
+# check for an existing AIK and use it if found, instead of creating
+# a new one every time.
+#####################################################################
 
 # Read one 16-byte UUID from /dev/urandom
 urand = open('/dev/urandom', 'rb')
@@ -31,37 +40,68 @@ urand.close()
 
 print >> sys.stderr, "aik_uuid_ascii", aik_uuid_ascii
 
-### WARNING: This is currently extremely vulnerable to shell characters!
-### TODO: regex to verify nothing but [0-9a-f]
+# Being conservative and ensuring no shell escapes, even though this comes straight from hexlify()
+filter = re.compile("[^0-9a-fA-F]")
+if filter.search(aik_uuid_ascii) != None:
+    print >> sys.stderr, "ERROR: tpm_uuid_ascii contains ILLEGAL characters:", aik_uuid_ascii
+    sys.exit(1)
+if filter.search(tpm_nonce_ascii) != None:
+    print >> sys.stderr, "ERROR: tpm_nonce_ascii contains ILLEGAL characters:", aik_nonce_ascii
+    sys.exit(1)
+# Using -B to write / read keyfile because LoadKeyByUUID fails otherwise.
+# I think this is a latent trousers or TPM bug.
+# TODO: work-around by breaking dependence on OpenPTS
 tpm_createkey_exec = "tpm_createkey -N -u "+aik_uuid_ascii+" -B "+aik_uuid_ascii+".keyfile\n"
 print >> sys.stderr, "Subprocess: "+tpm_createkey_exec
 
-#signal.signal(signal.SIGCHLD, signal.SIG_IGN)
+# If run in an environment where SIGCHLD is explicitly set to SIG_IGN, wait() will trigger an ECHILD exception.
+# See 'man wait' for details.  We avoid this by explicitly resetting SIGCHLD to the default signal handler.
 signal.signal(signal.SIGCHLD, signal.SIG_DFL)
 try:
-    print >>sys.stderr, "Still here 1"
     proc = subprocess.Popen(tpm_createkey_exec, bufsize=0, shell=True, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
-#    proc = subprocess.Popen(tpm_createkey_exec, bufsize=0, shell=True, close_fds=True)
-    print >>sys.stderr, "Still here 2a"
     proc.wait()
-    print >>sys.stderr, "Still here 2b"
     stdout_value, stderr_value = proc.communicate()
-    print >>sys.stderr, "Still here 2c", stdout_value, stderr_value
-    if proc.returncode < 0:
+    if proc.returncode != 0:
         print >>sys.stderr, "Child was terminated by signal", proc.returncode
+        print >>sys.stderr, "Child stderr: ", stderr_value
+        print >>sys.stderr, "Child stdout: ", stdout_value
+        sys.exit(1)
     else:
-        print >>sys.stderr, "Child returned", proc.returncode
+        print >>sys.stderr, "Child completed successfully ( exit code", proc.returncode, ")"
 except OSError, e:
     print >>sys.stderr, "Execution failed:", e
+    sys.exit(1)
 
-print >>sys.stderr, "Still here 3"
 
 
-# Using -B to write / read keyfile because LoadKeyByUUID fails otherwise
-# I think this is a latent trousers or TPM bug
+#####################################################################
+# Now generate the actual TPM Quote covering PCRs 17, 18, and 19.
+# 17: SINIT module on Intel systems, TrustVisor SL on AMD systems
+# 18: TrustVisor SL on Intel systems, unused on AMD systems
+# 19: TrustVisor runtime extends this with the public uTPM signing key
+#
+# Again we use a tool from OpenPTS.  Eventually we should build our
+# own tools.
+#####################################################################
 
 #tpm_createkey -N -u $UUID -B $UUID.keyfile
-#tpm_quote -N -B $UUID.keyfile -u $UUID -n $NONCE -p 17 -p 18 -p 19
+tpm_quote_exec = "tpm_quote -N -B "+aik_uuid_ascii+".keyfile -u "+aik_uuid_ascii+" -n "+tpm_nonce_ascii+" -p 17 -p 18 -p 19"
+print >> sys.stderr, "Subprocess: "+tpm_quote_exec
+try:
+    proc = subprocess.Popen(tpm_quote_exec, bufsize=0, shell=True, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
+    proc.wait()
+    stdout_value, stderr_value = proc.communicate()
+    if proc.returncode != 0:
+        print >>sys.stderr, "Child was terminated by signal", proc.returncode
+        print >>sys.stderr, "Child stderr: ", stderr_value
+        print >>sys.stderr, "Child stdout: ", stdout_value
+        sys.exit(1)
+    else:
+        print >>sys.stderr, "Child completed successfully ( exit code", proc.returncode, ")"
+        print >>sys.stderr, "Child output:\n",stdout_value
+except OSError, e:
+    print >>sys.stderr, "Execution failed:", e
+    sys.exit(1)
 
 
 
