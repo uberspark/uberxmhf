@@ -130,5 +130,30 @@ print >>sys.stderr, "m:", m.groupdict()
     
 ### TODO: Ensure that pubkey actually goes with the key generated with tpm_createkey above, and get a real certificate for it.
 
+
+
+#####################################################################
+# Now we will actually invoke the PAL and grab the uTPM quote output
+#####################################################################
+pal_exec = "./attestation"
+try:
+    proc = subprocess.Popen(pal_exec, bufsize=0, shell=True, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
+    proc.wait()
+    stdout_value, stderr_value = proc.communicate()
+    if proc.returncode != 0:
+        print >>sys.stderr, "Child was terminated by signal", proc.returncode
+        print >>sys.stderr, "Child stderr: ", stderr_value
+        print >>sys.stderr, "Child stdout: ", stdout_value
+        sys.exit(1)
+    else:
+        print >>sys.stderr, "Child completed successfully ( exit code", proc.returncode, ")"
+        print >>sys.stderr, "Child output:\n",stdout_value
+except OSError, e:
+    print >>sys.stderr, "Execution failed:", e
+    sys.exit(1)
+
+# stdout from pal_exec should already look like JSON
+print >>sys.stderr, "PAL output:", stdout_value
+
 ### Temporarily placate verifier.py since it expects some kind of response.
 print "attestor.py read ("+input.rstrip()+") and has printed it!\n";
