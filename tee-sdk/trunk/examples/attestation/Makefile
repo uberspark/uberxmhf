@@ -26,9 +26,13 @@ PAL_LDLIBS+=-lc -lnosys
 
 all: $(PROG_NAME)
 
+test:
+	cd tests && $(MAKE) -w all
+
 .PHONY: clean
 clean:
 	$(RM) .*.cmd *.o *.ko *~ -r .tmp* attestation attestation.D
+	cd tests && $(MAKE) -w clean
 
 TEESDK_DATA_DIR=$(shell pkg-config --variable=pkgdatadir tee-sdk-app)
 
