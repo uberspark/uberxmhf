@@ -7,7 +7,7 @@
 PROG_NAME=attestation
 CFLAGS=-g -Wall -Wextra -Werror
 PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv libssl libcrypto json
-PROG_OBJS=attestation.o
+PROG_OBJS=attestation.o json.o
 
 PAL_NAME=pals
 PAL_PKGCONFIG_DEPS=tee-sdk-svc tee-sdk-svc-tv

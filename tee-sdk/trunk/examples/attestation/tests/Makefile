@@ -6,13 +6,15 @@ UNITYOBJ=$(UNITYDIR)/src/unity.o
 CFLAGS += -I${UNITYDIR}/src -DUNITY_SUPPORT_64 -g
 CFLAGS := $(filter-out -nostdinc,${CFLAGS})
 
+LDFLAGS += -lssl -lcrypto -ljson
+
 all: do_json_memory_leaks
 
 # FIXME should create separately compiled objects here, instead of in src dir
 #unity.o: ${UNITYDIR}/src/unity.c
 #pt.o: ../app/pt.c
 
-json_memory_leaks: json_memory_leaks_runner.o json_memory_leaks.o ${UNITYDIR}/src/unity.o
+json_memory_leaks: json_memory_leaks_runner.o json_memory_leaks.o ../json.o ${UNITYDIR}/src/unity.o
 	$(CC) -o $@ $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS)
 
 do_%: %
