@@ -9,18 +9,18 @@ import sys, json, base64, binascii, os, subprocess, signal, re
 #####################################################################
 input = sys.stdin.readline()
 
-#print >> sys.stderr, "attestor.py read ("+input.rstrip()+")\n";
+#print >>sys.stderr, "attestor.py read ("+input.rstrip()+")\n";
 noncesdict = json.JSONDecoder().decode(input)['challenge']
 tpm_nonce_b64 = noncesdict['tpm_nonce']
 utpm_nonce_b64 = noncesdict['utpm_nonce']
 
-print >> sys.stderr, "attestor.py decoded input:", noncesdict
-#print >> sys.stderr, "attestor.py decoded input:", tpm_nonce_b64
-#print >> sys.stderr, "attestor.py decoded input:", utpm_nonce_b64
+print >>sys.stderr, "attestor.py decoded input:", noncesdict
+#print >>sys.stderr, "attestor.py decoded input:", tpm_nonce_b64
+#print >>sys.stderr, "attestor.py decoded input:", utpm_nonce_b64
 
 # Decode base64 encoding to binary and prepare to reformat as ASCII hex 
 tpm_nonce_ascii = binascii.hexlify(binascii.a2b_base64(tpm_nonce_b64))
-#print >> sys.stderr, "tpm_nonce_ascii",tpm_nonce_ascii
+#print >>sys.stderr, "tpm_nonce_ascii",tpm_nonce_ascii
 
 #####################################################################
 # Before generating any quotes, we must have an AIK to use to sign
@@ -36,21 +36,21 @@ urand = open('/dev/urandom', 'rb')
 aik_uuid_ascii = binascii.hexlify(urand.read(16))
 urand.close()
 
-#print >> sys.stderr, "aik_uuid_ascii", aik_uuid_ascii
+#print >>sys.stderr, "aik_uuid_ascii", aik_uuid_ascii
 
 # Being conservative and ensuring no shell escapes, even though this comes straight from hexlify()
 filter = re.compile("[^0-9a-fA-F]")
 if filter.search(aik_uuid_ascii) != None:
-    print >> sys.stderr, "ERROR: tpm_uuid_ascii contains ILLEGAL characters:", aik_uuid_ascii
+    print >>sys.stderr, "ERROR: tpm_uuid_ascii contains ILLEGAL characters:", aik_uuid_ascii
     sys.exit(1)
 if filter.search(tpm_nonce_ascii) != None:
-    print >> sys.stderr, "ERROR: tpm_nonce_ascii contains ILLEGAL characters:", aik_nonce_ascii
+    print >>sys.stderr, "ERROR: tpm_nonce_ascii contains ILLEGAL characters:", aik_nonce_ascii
     sys.exit(1)
 # Using -B to write / read keyfile because LoadKeyByUUID fails otherwise.
 # I think this is a latent trousers or TPM bug.
 # TODO: work-around by breaking dependence on OpenPTS
 tpm_createkey_exec = "tpm_createkey -N -u "+aik_uuid_ascii+" -B "+aik_uuid_ascii+".keyfile\n"
-print >> sys.stderr, "Subprocess: "+tpm_createkey_exec
+print >>sys.stderr, "Subprocess: "+tpm_createkey_exec
 
 # If run in an environment where SIGCHLD is explicitly set to SIG_IGN, wait() will trigger an ECHILD exception.
 # See 'man wait' for details.  We avoid this by explicitly resetting SIGCHLD to the default signal handler.
@@ -84,7 +84,7 @@ except OSError, e:
 
 #tpm_createkey -N -u $UUID -B $UUID.keyfile
 tpm_quote_exec = "tpm_quote -N -B "+aik_uuid_ascii+".keyfile -u "+aik_uuid_ascii+" -n "+tpm_nonce_ascii+" -p 17 -p 18 -p 19"
-print >> sys.stderr, "Subprocess: "+tpm_quote_exec
+print >>sys.stderr, "Subprocess: "+tpm_quote_exec
 stdout_value = "" # want to keep this in scope beyond 'try' block
 try:
     proc = subprocess.Popen(tpm_quote_exec, bufsize=0, shell=True, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
@@ -138,7 +138,7 @@ for item in tpm_output_dict:
 # Now we will actually invoke the PAL and grab the uTPM quote output
 #####################################################################
 pal_exec = "./attestation"
-print >> sys.stderr, "Subprocess: "+pal_exec
+print >>sys.stderr, "Subprocess: "+pal_exec
 try:
     proc = subprocess.Popen(pal_exec, bufsize=0, shell=True, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
     proc.wait()

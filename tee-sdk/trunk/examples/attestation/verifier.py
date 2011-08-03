@@ -12,29 +12,29 @@ utpm_nonce_bytes = urand.read(20)
 tpm_nonce_bytes = urand.read(20)
 urand.close()
 
-#print >> sys.stderr, "utpm_nonce b64:", base64.b64encode(utpm_nonce_bytes)
-#print >> sys.stderr, "tpm_nonce  b64:", base64.b64encode(tpm_nonce_bytes)
+#print >>sys.stderr, "utpm_nonce b64:", base64.b64encode(utpm_nonce_bytes)
+#print >>sys.stderr, "tpm_nonce  b64:", base64.b64encode(tpm_nonce_bytes)
 
 utpm_dict = {"utpm_nonce": base64.b64encode(utpm_nonce_bytes), "tpm_nonce": base64.b64encode(tpm_nonce_bytes)}
 
 print json.JSONEncoder().encode({"challenge": utpm_dict})
 
 response = sys.stdin.readline()
-print >> sys.stderr, "verifier.py got response (" + response.rstrip() + ")\n"
+print >>sys.stderr, "verifier.py got response (" + response.rstrip() + ")\n"
 
 response_dict = json.JSONDecoder().decode(response)
 
-#print >> sys.stderr, "response_dict:\n", response_dict
-#print >> sys.stderr, "response:\n", response_dict["response"]
-#print >> sys.stderr, "tpm_part:\n", response_dict["tpm_part"]
-#print >> sys.stderr, "pal_part:\n", response_dict["pal_part"]
+#print >>sys.stderr, "response_dict:\n", response_dict
+#print >>sys.stderr, "response:\n", response_dict["response"]
+#print >>sys.stderr, "tpm_part:\n", response_dict["tpm_part"]
+#print >>sys.stderr, "pal_part:\n", response_dict["pal_part"]
 
 
 #####################################################################
 # First make sure this is the expected "response" message
 #####################################################################
 if(response_dict["response"] != "tpm_and_utpm"):
-    print >> sys.stderr, "ERROR:",response_dict["response"]," != \"tpm_and_utpm\""
+    print >>sys.stderr, "ERROR:",response_dict["response"]," != \"tpm_and_utpm\""
     sys.exit(1)
 
 #####################################################################
