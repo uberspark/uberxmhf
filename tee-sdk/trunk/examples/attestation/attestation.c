@@ -70,6 +70,19 @@ void print_hex(const char *prefix, const void *prtptr, size_t size)
 }
 
 
+void print_hex2(const char *prefix, const void *prtptr, size_t size)
+{
+    size_t i;
+    if (prefix != NULL)
+        printf("%s=", prefix);
+    
+    for ( i = 0; i < size; i++ ) {
+        printf("%02x", *(const uint8_t *)prtptr++);
+    }
+    printf("\n");
+}
+
+
 int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uint32_t sig_len,
                  TPM_NONCE *externalnonce, uint8_t* rsaMod) {
     TPM_QUOTE_INFO quote_info;
@@ -84,15 +97,19 @@ int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uin
     /* 3) SHA-1 hash of TPM_PCR_COMPOSITE */
     SHA1(tpm_pcr_composite, tpc_len, quote_info.digestValue.value);
 
-    print_hex("  tpm_pcr_composite: ", tpm_pcr_composite, tpc_len);
-    
     print_hex("  COMPOSITE_HASH: ", quote_info.digestValue.value, TPM_HASH_SIZE);
     
     /* 4) external nonce */
     memcpy(quote_info.externalData.nonce, externalnonce->nonce, TPM_HASH_SIZE);
 
-    print_hex("  quote_info: ", (uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO));    
+    //print_hex("  quote_info: ", (uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO));    
 
+    /* Print all outputs useful to subsequent programs using print_hex2 */
+    print_hex2("tpm_pcr_composite", tpm_pcr_composite, tpc_len);    
+    print_hex2("sig", sig, sig_len);
+    print_hex2("externalnonce", externalnonce, TPM_HASH_SIZE);
+    print_hex2("rsaMod", rsaMod, TPM_RSA_KEY_LEN);
+    
     /**
      * Assemble the public key used to check the quote.
      */    
@@ -120,7 +137,7 @@ int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uin
     
     uint8_t valData[TPM_HASH_SIZE];
     SHA1((uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO), valData);
-    print_hex("  valData: ", valData, TPM_HASH_SIZE);
+    //print_hex("  valData: ", valData, TPM_HASH_SIZE);
 
     if(1 != RSA_verify(NID_sha1, valData, TPM_HASH_SIZE, sig, sig_len, rsa)) {
         printf("ERROR: Quote verification FAILED!\n");
@@ -239,10 +256,10 @@ int invoke_pal(tz_session_t *tzPalSession) {
   assert(quoteLen == TPM_RSA_KEY_LEN);
 
   printf("  pcrCompLen = %d\n", pcrCompLen);
-  print_hex("  pcrComp: ", pcrComp, pcrCompLen);
-
+  //print_hex("  pcrComp: ", pcrComp, pcrCompLen);
+  
   /* Verify the signature in the Quote */
-  print_hex("  sig: ", quote, quoteLen);
+  //print_hex("  sig: ", quote, quoteLen);
   
   if((rv = verify_quote(pcrComp, pcrCompLen, quote, quoteLen, nonce, rsaMod)) != 0) {
       printf("verify_quote FAILED\n");
@@ -322,9 +339,9 @@ int main(void)
   rv = invoke_pal(&tzPalSession) || rv;
   
   if (rv) {
-    printf("FAIL with rv=%d\n", rv);
+    printf("FAIL with rv = %d\n", rv);
   } else {
-    printf("SUCCESS with rv=%d\n", rv);
+    printf("SUCCESS with rv = %d\n", rv);
   }
 
   /* close session */
