@@ -88,19 +88,19 @@ int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uin
      */    
 
     if(NULL == (rsa = RSA_new())) {
-        printf("ERROR: RSA_new() failed\n");
+        fprintf(stderr, "ERROR: RSA_new() failed\n");
         return 1;
     }
 
     /* N */
     if(NULL == (rsa->n = BN_bin2bn(rsaMod, TPM_RSA_KEY_LEN, NULL))) {
-        printf("ERROR: BN_bin2bn() failed\n");
+        fprintf(stderr, "ERROR: BN_bin2bn() failed\n");
         goto out;
     }
 
     /* E */
     if(0 == BN_dec2bn(&rsa->e, "65537")) {
-        printf("ERROR: BN_dec2bn() failed\n");
+        fprintf(stderr, "ERROR: BN_dec2bn() failed\n");
         goto out;
     }        
 
@@ -113,12 +113,12 @@ int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uin
     //print_hex("  valData: ", valData, TPM_HASH_SIZE);
 
     if(1 != RSA_verify(NID_sha1, valData, TPM_HASH_SIZE, sig, sig_len, rsa)) {
-        printf("ERROR: Quote verification FAILED!\n");
+        fprintf(stderr, "ERROR: Quote verification FAILED!\n");
         ERR_print_errors_fp(stdout);
         rv = 1;
         goto out;
     } else {
-        printf("  RSA_verify: SUCCESSfully verified quote\n");
+        fprintf(stderr, "  RSA_verify: SUCCESSfully verified quote\n");
         rv = 0;
     }
     
@@ -224,11 +224,11 @@ int invoke_pal(tz_session_t *tzPalSession) {
       goto out;
   }
 
-  printf("  actual quoteLen = %d\n", quoteLen);
+  fprintf(stderr, "  actual quoteLen = %d\n", quoteLen);
   assert(rsaModLen == TPM_RSA_KEY_LEN);
   assert(quoteLen == TPM_RSA_KEY_LEN);
 
-  printf("  pcrCompLen = %d\n", pcrCompLen);
+  fprintf(stderr, "  pcrCompLen = %d\n", pcrCompLen);
   //print_hex("  pcrComp: ", pcrComp, pcrCompLen);
   
   /* Verify the signature in the Quote */
@@ -240,7 +240,7 @@ int invoke_pal(tz_session_t *tzPalSession) {
 
   /* For now, also check the signature locally (sanity check) */
   if((rv = verify_quote(pcrComp, pcrCompLen, quote, quoteLen, nonce, rsaMod)) != 0) {
-      printf("verify_quote FAILED\n");
+      fprintf(stderr, "verify_quote FAILED\n");
   }
 
   out:
@@ -284,8 +284,8 @@ int main(void)
     /* prepare pal descriptor */
     tv_pal_sections_init(&scode_info,
                          PAGE_SIZE, PAGE_SIZE);
-    printf("scode sections:\n");
-    tv_pal_sections_print(&scode_info);
+    //printf("scode sections:\n");
+    //tv_pal_sections_print(&scode_info);
 
     /* download */
     tzRet = TZManagerDownloadService(&tzManagerSession,
@@ -317,9 +317,9 @@ int main(void)
   rv = invoke_pal(&tzPalSession) || rv;
   
   if (rv) {
-    printf("FAIL with rv = %d\n", rv);
+    fprintf(stderr, "FAIL with rv = %d\n", rv);
   } else {
-    printf("SUCCESS with rv = %d\n", rv);
+    fprintf(stderr, "SUCCESS with rv = %d\n", rv);
   }
 
   /* close session */

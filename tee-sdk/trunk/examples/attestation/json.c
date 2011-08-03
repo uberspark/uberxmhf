@@ -65,10 +65,10 @@ void print_hex(const char *prefix, const void *prtptr, size_t size)
     size_t i;
     for ( i = 0; i < size; i++ ) {
         if ( i % 16 == 0 && prefix != NULL )
-            printf("\n%s", prefix);
-        printf("%02x ", *(const uint8_t *)prtptr++);
+            fprintf(stderr, "\n%s", prefix);
+        fprintf(stderr, "%02x ", *(const uint8_t *)prtptr++);
     }
-    printf("\n");
+    fprintf(stderr, "\n");
 }
 
 /* Thanks: http://www.ioncannon.net/programming/34/howto-base64-encode-with-cc-and-openssl/ */
@@ -134,7 +134,8 @@ int output_as_json(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, u
     json_object_object_add(jobj, "externalnonce", jexternalnonce);
     json_object_object_add(jobj, "rsaMod", jrsaMod);
 
-    printf("The json object created: %s\n", json_object_to_json_string(jobj));
+    fprintf(stderr, "The json object created: \n");
+    printf("%s\n", json_object_to_json_string(jobj));
     
     /* free malloc'd stuff */    
     if(tpm_pcr_composite_b64) { free(tpm_pcr_composite_b64); tpm_pcr_composite_b64 = NULL; }
