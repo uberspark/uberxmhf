@@ -4,8 +4,20 @@ JSON library for data encoding / decoding
 TrouSerS / tpm-tools for interacting with TPM in untrusted world
 OpenSSL development for crypto and base64 encoding and decoding
 
-aptitude install libtspi-dev libtspi1 trousers tpm-tools libjson0-dbg libjson0-dev
+aptitude install libtspi-dev libtspi1 trousers tpm-tools libjson0-dbg libjson0-dev python-json
 ...and OpenSSL development packages
+
+Also required is OpenPlatformTrustServices-tools-0.1.2, as it provides
+tpm_quote and tpm_createkey. See:
+REPO/tools/OpenPlatformTrustServices-tools-0.1.2.
 
 Try prereqs.sh to see if the needed TrouSerS / TPM functionality is in place.
 
+verifier.py: Runs on the "trusted" host and generates nonces (the
+  "challenges") for which the target host generates attestations (the
+  "quotes" from the PAL's uTPM and the host's TPM that comprise the
+  response).
+
+attestor.py: Runs on the "untrusted" host where TrustVisor is active
+  and manages collection and communication of the uTPM and TPM
+  attestations.
