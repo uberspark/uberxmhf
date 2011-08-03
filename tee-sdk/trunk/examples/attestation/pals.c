@@ -128,29 +128,28 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
     *puiRv = TZ_SUCCESS;
 
     /* Decode input parameters from legacy userspace's test.c */
-    if((*puiRv = TZIDecodeBufF(psInBuf,
-                               "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DARRSPC,
-                               &nonce, &nonceLen,
-                               &tpmsel, &tpmselLen,
-                               &inpAscii, &inpAsciiLen)))
-        return;
-    
+    nonce = TZIDecodeArraySpace(psInBuf, &nonceLen);
+    tpmsel = TZIDecodeArraySpace(psInBuf, &tpmselLen);
+    inpAscii = TZIDecodeArraySpace(psInBuf, &inpAsciiLen);
+
     /* Sanity-check input parameters */
-    if (tpmselLen != sizeof(TPM_PCR_SELECTION)
-        || nonceLen != sizeof(TPM_NONCE)
-        || inpAsciiLen < 1) {
+    if(!nonce || !tpmsel || !inpAscii
+       || tpmselLen != sizeof(TPM_PCR_SELECTION)
+       || nonceLen != sizeof(TPM_NONCE)
+       || inpAsciiLen < 1) {
         *puiRv = TZ_ERROR_ENCODE_FORMAT;
         return;
     }
 
     /* Prepare the output buffer to hold the response back to userspace. */
-    if((*puiRv = TZIEncodeBufF(psOutBuf,
-                               "%"TZI_EARRSPC "%"TZI_EARRSPC "%"TZI_EARRSPC,
-                               &rsaModulus, (uint32_t)TPM_RSA_KEY_LEN,
-                               &pcrComp, (uint32_t)pcrCompLen, 
-                               &quote, maxQuoteLen)))
-        return;
+    rsaModulus = TZIEncodeArraySpace(psOutBuf, TPM_RSA_KEY_LEN);
+    pcrComp = TZIEncodeArraySpace(psOutBuf, pcrCompLen);
+    quote = TZIEncodeArraySpace(psOutBuf, TPM_RSA_KEY_LEN);
 
+    if(!rsaModulus || !pcrComp || !quote) {
+        *puiRv = TZ_ERROR_ENCODE_FORMAT;
+        return;
+    }
     
     
     /**
@@ -169,7 +168,7 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
     if((*puiRv = pal_quote(nonce, tpmsel, quote, (size_t*)&actualQuoteLen, pcrComp, (size_t*)&pcrCompLen))) return;
     
     /* Also encode the _actual_ length of the quote */
-    if((*puiRv = TZIEncodeBufF(psOutBuf, "%"TZI_EU32, (uint32_t)actualQuoteLen))) return;
+    TZIEncodeUint32(psOutBuf, actualQuoteLen);
 }
 
 
