@@ -93,11 +93,11 @@ int svc_utpm_quote(TPM_NONCE *nonce,
 int svc_utpm_pcr_extend(uint32_t idx,   /* in */
                         uint8_t *meas) /* in */
 {
-  return vmcall(TV_HC_UTPM_PCREXT,
-                (uint32_t)idx,
-                (uint32_t)meas,
-                0,
-                0);
+    return vmcall(TV_HC_UTPM_PCREXT, /* eax */
+                  (uint32_t)idx,     /* ecx */
+                  (uint32_t)meas,    /* edx */
+                  0,
+                  0);
 }
 
 int svc_utpm_id_getpub(uint8_t *N) /* out */

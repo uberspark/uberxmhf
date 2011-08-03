@@ -167,7 +167,13 @@ int invoke_pal(tz_session_t *tzPalSession) {
   /* Verify the signature in the Quote */
   //print_hex("  sig: ", quote, quoteLen);
 
-  print_hex("  rsaMod: ", rsaMod, TPM_RSA_KEY_LEN);
+  print_hex("  palInpData: ", palInpData, strlen(PALINPDATA)+1);
+  {
+      uint8_t digest[20];
+      SHA1((uint8_t*)palInpData, strlen(PALINPDATA)+1, digest);
+      print_hex("  palInpData digest: ", digest, 20);
+  }
+  //print_hex("  rsaMod: ", rsaMod, TPM_RSA_KEY_LEN);
 
   /* Format attestation results for external verifier */
   output_as_json(pcrComp, pcrCompLen, quote, quoteLen, nonce, rsaMod);

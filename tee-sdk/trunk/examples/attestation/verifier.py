@@ -210,9 +210,9 @@ upcr1_extracted = pal_tpm_pcr_composite[27:] # tpm_pcr_selection(3) | valueSize(
 
 if upcr1_extracted.find(upcr1_computed) != 0:
     print >>sys.stderr, "ERROR: upcr1_extracted != upcr1_computed"
-    print >>sys.stderr, "pal_tpm_pcr_composite", binascii.hexlify(pal_tpm_pcr_composite)
-    print >>sys.stderr, "upcr1_computed", binascii.hexlify(upcr1_computed)
-    print >>sys.stderr, "upcr1_extracted", binascii.hexlify(upcr1_extracted)
+    print >>sys.stderr, "    pal_tpm_pcr_composite", binascii.hexlify(pal_tpm_pcr_composite)
+    print >>sys.stderr, "    upcr1_computed", binascii.hexlify(upcr1_computed)
+    print >>sys.stderr, "    upcr1_extracted", binascii.hexlify(upcr1_extracted)
     sys.exit(1)
 
 print >>sys.stderr, "**************************************"

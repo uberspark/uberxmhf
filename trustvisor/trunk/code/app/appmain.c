@@ -301,11 +301,10 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 			}
 		case TV_HC_UTPM_PCREXT:
 			{
-				u32 addr, len, num;
-				addr = r->edx;
-				len = r->esi;
-				num = r->ecx;
-				ret = hc_utpm_pcrextend(vcpu, addr, len, num);
+				u32 meas_addr, idx;
+				meas_addr = r->edx;
+				idx = r->ecx;
+				ret = hc_utpm_pcrextend(vcpu, idx, meas_addr);
 				break;
 			}
 		case TV_HC_UTPM_GENRAND:

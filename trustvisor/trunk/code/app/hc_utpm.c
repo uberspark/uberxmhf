@@ -573,10 +573,9 @@ u32 hc_utpm_pcrread(VCPU * vcpu, u32 gvaddr, u32 num)
 }
 
 
-u32 hc_utpm_pcrextend(VCPU * vcpu, u32 gvaddr, u32 len, u32 num)
+u32 hc_utpm_pcrextend(VCPU * vcpu, u32 idx, u32 meas_gvaddr)
 {
-	u8 data[MAX_TPM_EXTEND_DATA_LEN]; 
-	TPM_DIGEST hash;
+	TPM_DIGEST measurement;
 
 	dprintf(LOG_TRACE, "\n[TV] ********** uTPM pcrextend **********\n");
 
@@ -587,27 +586,18 @@ u32 hc_utpm_pcrextend(VCPU * vcpu, u32 gvaddr, u32 len, u32 num)
 	}
 
 	/* make sure requested PCR number is in reasonable range */
-	if (num >= TPM_PCR_NUM)
+	if (idx >= TPM_PCR_NUM)
 	{
-		dprintf(LOG_ERROR, "[TV] PCRExtend ERROR: pcr num %d not correct!\n", num);
-		return 1;
-	}
-
-	/* make sure the extended data is not too big */
-	if (len > MAX_TPM_EXTEND_DATA_LEN)
-	{
-		dprintf(LOG_ERROR, "[TV] PCRExtend ERROR: extend data len %d not correct!\n", len);
+		dprintf(LOG_ERROR, "[TV] PCRExtend ERROR: pcr idx %d not correct!\n", idx);
 		return 1;
 	}
 
 	/* get data from guest */
-	copy_from_guest(vcpu, (u8 *)data, gvaddr, len);
-
-	/* hash input data */
-	sha1_buffer((unsigned char*)data, len, hash.value);
+	copy_from_guest(vcpu, (u8 *)measurement.value, meas_gvaddr, TPM_HASH_SIZE);
 
 	/* extend pcr */
-	utpm_extend(&hash, &whitelist[scode_curr[vcpu->id]].utpm, num);
+    print_hex("[TV] PCRExtend data from guest: ", measurement.value, TPM_HASH_SIZE);    
+	utpm_extend(&measurement, &whitelist[scode_curr[vcpu->id]].utpm, idx);
 
 	return 0;
 }
