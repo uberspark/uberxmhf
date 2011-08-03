@@ -76,14 +76,28 @@
  * implemented by Jun-ichiro itojun Itoh <itojun@itojun.org>
  */
 
-#include <types.h>
-#include <str.h> // memcpy
+#include <stdint.h>
+#include <stdbool.h>
 
-#include <sha1.h>
+#include <tee-sdk/tzmarshal.h>
+#include <tee-sdk/svcapi.h>
 
-#define BIG_ENDIAN \
+#include "sha1.h"
+#include "pals.h"
+
+void *memset (void *str, uint32_t c, uint32_t len){
+  register uint8_t *st = str;
+
+  while (len-- > 0)
+    *st++ = (uint8_t)c;
+  return str;
+}
+
+#ifndef BIG_ENDIAN
+#define BIG_ENDIAN                                                      \
     (!(__x86_64__ || __i386__ || _M_IX86 || _M_X64 || __ARMEL__ || __MIPSEL__))
 #define LITTLE_ENDIAN   !BIG_ENDIAN
+#endif
 
 /* constant table */
 static uint32_t _K[] = { 0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xca62c1d6 };

@@ -35,14 +35,36 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include  "pals.h"
 
 #include <tee-sdk/tzmarshal.h>
 #include <tee-sdk/svcapi.h>
 
 #include <trustvisor/tv_utpm.h>
 
+#include "pals.h"
+#include "sha1.h"
+
 /* sensitive code */
+__attribute__ ((section (".scode")))
+/* from FreeBSD */
+void *memcpy(void * to, const void * from, uint32_t n) {
+  int d0, d1, d2;
+
+  __asm__ __volatile__(
+        "rep ; movsl\n\t"
+        "movl %4,%%ecx\n\t"
+        "andl $3,%%ecx\n\t"
+#if 1   /* want to pay 2 byte penalty for a chance to skip microcoded rep? */
+        "jz 1f\n\t"
+#endif
+        "rep ; movsb\n\t"
+        "1:"
+        : "=&c" (d0), "=&D" (d1), "=&S" (d2)
+        : "0" (n/4), "g" (n), "1" ((long) to), "2" ((long) from)
+        : "memory");
+  return (to);
+}
+
 __attribute__ ((section (".scode")))
 tz_return_t pal_quote(IN TPM_NONCE *nonce,
                       IN TPM_PCR_SELECTION *tpmsel,
