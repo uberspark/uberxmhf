@@ -113,7 +113,8 @@ if rsa.verify(digest, tpm_sig) != 1:
 # }TPM_QUOTE_INFO;
 
 #####################################################################
-if(tpm_quoteinfo.find(binascii.unhexlify("0101000051554f54")) != 0):
+quote_magic8 = binascii.unhexlify("0101000051554f54")
+if(tpm_quoteinfo.find(quote_magic8) != 0):
     print >>sys.stderr, "ERROR: \"Quote Magic\" not found in TPM Quote_Info!!!"
     sys.exit(1)
 
@@ -146,13 +147,13 @@ if tpm_quoteinfo.find(tpm_composite_hash) != 8:
     sys.exit(1)
 
 #####################################################################
-# Step 2: Verify that the PAL-provided public signing key was measured
-# into PCR-19.
+# Step 2: Verify that the PAL-provided public signing key was 
+# measured into PCR-19.
 #
-# PCR-19 = SHA-1 ( 0x00^20 | SHA-1 ( pal_rsaMod ) )
+# PCR-19 = SHA-1 ( 0x00^20 | SHA-1 ( len(N) | E | pal_rsaMod ) )
 #####################################################################
 pcr19_hash_payload = binascii.unhexlify("0000000000000000000000000000000000000000")
-tv_serialized_rsa_prefix = binascii.unhexlify("0000010000010001") # len(N) | e
+tv_serialized_rsa_prefix = binascii.unhexlify("0000010000010001") # len(N) | E
 pcr19_hash_payload += hashlib.sha1(tv_serialized_rsa_prefix + pal_rsaMod).digest()
 pcr19_computed_value = hashlib.sha1(pcr19_hash_payload).digest()
 
@@ -160,6 +161,58 @@ if(tpm_pcr19.find(pcr19_computed_value) != 0):
     print >>sys.stderr, "ERROR: PCR-19 does not match pal_rsaMod"
     print >>sys.stderr, "pcr-19:", binascii.hexlify(tpm_pcr19)
     print >>sys.stderr, "pal_rsaMod:", binascii.hexlify(pal_rsaMod)
+    sys.exit(1)
+
+#####################################################################
+# Step 3a: Check the uTPM RSA signature 
+#
+# Step 3b: Verify quoteinfo contains the right "magic" is implicit
+# because we assemble the actual quoteinfo data structure from the
+# provided pal_tpm_pcr_composite
+#####################################################################
+n = M2Crypto.m2.bn_to_mpi(M2Crypto.m2.bin_to_bn(pal_rsaMod))
+e = M2Crypto.m2.bn_to_mpi(M2Crypto.m2.hex_to_bn("10001"))
+#print >>sys.stderr, "e: ", binascii.hexlify(e)
+#print >>sys.stderr, "n: ", binascii.hexlify(n)
+rsa = M2Crypto.RSA.new_pub_key((e, n))
+
+# Assemble PAL QuoteInfo
+
+### XXX TODO: Update ./attestation to actually take in the nonce to use
+### Get rid of externalnonce; it's unnecessary
+pal_NONCE_HACK_XXX = binascii.unhexlify("000102030405060708090a0b0c0d0e0f10111213")
+
+pal_quoteinfo = quote_magic8 + hashlib.sha1(pal_tpm_pcr_composite).digest() + pal_NONCE_HACK_XXX # + utpm_nonce_bytes
+pal_quoteinfo_digest = hashlib.sha1(pal_quoteinfo).digest()
+
+#print >>sys.stderr, "PAL tpm_pcr_composite:", binascii.hexlify(pal_tpm_pcr_composite)
+#print >>sys.stderr, "PAL quoteinfo:", binascii.hexlify(pal_quoteinfo)
+#print >>sys.stderr, "PAL quoteinfo_digest:", binascii.hexlify(pal_quoteinfo_digest)
+
+if rsa.verify(pal_quoteinfo_digest, pal_sig) != 1:
+    print >>sys.stderr, "RSA signature verification of PAL's uTPM Quote FAILED!"
+    sys.exit(1)
+
+# pal_externalnonce     = base64.b64decode(pal_output_dict["externalnonce"])
+# pal_rsaMod            = base64.b64decode(pal_output_dict["rsaMod"])
+# pal_tpm_pcr_composite = base64.b64decode(pal_output_dict["tpm_pcr_composite"])
+# pal_sig               = base64.b64decode(pal_output_dict["sig"])
+
+#####################################################################
+# Step 4: Confirm the right magic ASCII string is represented in uPCR0
+#####################################################################
+
+pal_expected_input_data = "The quick brown fox jumped over the lazy dog!\0"
+pal_expected_input_data_digest = hashlib.sha1(pal_expected_input_data).digest()
+upcr1_hash_payload = binascii.unhexlify("0000000000000000000000000000000000000000") + pal_expected_input_data_digest
+upcr1_computed = hashlib.sha1(upcr1_hash_payload).digest()
+upcr1_extracted = pal_tpm_pcr_composite[27:] # tpm_pcr_selection(3) | valueSize(4) | uPcr0(20) | uPcr1(20)
+
+if upcr1_extracted.find(upcr1_computed) != 0:
+    print >>sys.stderr, "ERROR: upcr1_extracted != upcr1_computed"
+    print >>sys.stderr, "pal_tpm_pcr_composite", binascii.hexlify(pal_tpm_pcr_composite)
+    print >>sys.stderr, "upcr1_computed", binascii.hexlify(upcr1_computed)
+    print >>sys.stderr, "upcr1_extracted", binascii.hexlify(upcr1_extracted)
     sys.exit(1)
 
 print >>sys.stderr, "**************************************"
