@@ -9,20 +9,18 @@ import sys, json, base64, binascii, os, subprocess, signal, re
 #####################################################################
 input = sys.stdin.readline()
 
-
-print >> sys.stderr, "attestor.py read ("+input.rstrip()+")\n";
-
+#print >> sys.stderr, "attestor.py read ("+input.rstrip()+")\n";
 noncesdict = json.JSONDecoder().decode(input)['challenge']
 tpm_nonce_b64 = noncesdict['tpm_nonce']
 utpm_nonce_b64 = noncesdict['utpm_nonce']
 
 print >> sys.stderr, "attestor.py decoded input:", noncesdict
-print >> sys.stderr, "attestor.py decoded input:", tpm_nonce_b64
-print >> sys.stderr, "attestor.py decoded input:", utpm_nonce_b64
+#print >> sys.stderr, "attestor.py decoded input:", tpm_nonce_b64
+#print >> sys.stderr, "attestor.py decoded input:", utpm_nonce_b64
 
 # Decode base64 encoding to binary and prepare to reformat as ASCII hex 
 tpm_nonce_ascii = binascii.hexlify(binascii.a2b_base64(tpm_nonce_b64))
-print >> sys.stderr, "tpm_nonce_ascii",tpm_nonce_ascii
+#print >> sys.stderr, "tpm_nonce_ascii",tpm_nonce_ascii
 
 #####################################################################
 # Before generating any quotes, we must have an AIK to use to sign
@@ -38,7 +36,7 @@ urand = open('/dev/urandom', 'rb')
 aik_uuid_ascii = binascii.hexlify(urand.read(16))
 urand.close()
 
-print >> sys.stderr, "aik_uuid_ascii", aik_uuid_ascii
+#print >> sys.stderr, "aik_uuid_ascii", aik_uuid_ascii
 
 # Being conservative and ensuring no shell escapes, even though this comes straight from hexlify()
 filter = re.compile("[^0-9a-fA-F]")
@@ -99,7 +97,7 @@ try:
         sys.exit(1)
     else:
         print >>sys.stderr, "Child completed successfully ( exit code", proc.returncode, ")"
-        print >>sys.stderr, "Child output:\n",stdout_value
+        #print >>sys.stderr, "Child output:\n",stdout_value
 except OSError, e:
     print >>sys.stderr, "Execution failed:", e
     sys.exit(1)
@@ -126,7 +124,11 @@ m = re.match(r".*pcr\.17=(?P<pcr17>[0-9a-fA-F]+)"+
              r".*pubkey=(?P<pubkey>[0-9a-fA-F]+)", 
              stdout_value, re.DOTALL)
 tpm_output_dict = m.groupdict()
-print >>sys.stderr, "m:", tpm_output_dict
+#print >>sys.stderr, "m:", tpm_output_dict
+
+# Re-encode the ASCII hex as base64 (need to step through raw binary to get there)
+for item in tpm_output_dict:
+    tpm_output_dict[item] = binascii.b2a_base64(binascii.unhexlify(tpm_output_dict[item]))
     
 ### TODO: Ensure that pubkey actually goes with the key generated with
 ### tpm_createkey above, and get a real certificate for it.
@@ -135,6 +137,7 @@ print >>sys.stderr, "m:", tpm_output_dict
 # Now we will actually invoke the PAL and grab the uTPM quote output
 #####################################################################
 pal_exec = "./attestation"
+print >> sys.stderr, "Subprocess: "+pal_exec
 try:
     proc = subprocess.Popen(pal_exec, bufsize=0, shell=True, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
     proc.wait()
@@ -146,14 +149,14 @@ try:
         sys.exit(1)
     else:
         print >>sys.stderr, "Child completed successfully ( exit code", proc.returncode, ")"
-        print >>sys.stderr, "Child output:\n",stdout_value
+        #print >>sys.stderr, "Child output:\n",stdout_value
 except OSError, e:
     print >>sys.stderr, "Execution failed:", e
     sys.exit(1)
 
 # stdout from pal_exec should already look like JSON
 pal_output_dict = json.JSONDecoder().decode(stdout_value)
-print >>sys.stderr, "pal_output_dict:\n", pal_output_dict
+#print >>sys.stderr, "pal_output_dict:\n", pal_output_dict
 
 
 #####################################################################
@@ -165,11 +168,10 @@ print >>sys.stderr, "pal_output_dict:\n", pal_output_dict
 combined_dict = {"response": "tpm_and_utpm"}
 combined_dict["tpm_part"] = tpm_output_dict
 combined_dict["pal_part"] = pal_output_dict
-
-print >>sys.stderr, "combined_dict:\n", combined_dict
+#print >>sys.stderr, "combined_dict:\n", combined_dict
 
 combined_json = json.JSONEncoder().encode(combined_dict)
-print >>sys.stderr, "combined_json:\n", combined_json
+#print >>sys.stderr, "combined_json:\n", combined_json
 
 ### Send back the actual response
 print combined_json
