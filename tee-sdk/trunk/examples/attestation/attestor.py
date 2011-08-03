@@ -20,6 +20,7 @@ print >>sys.stderr, "attestor.py decoded input:", noncesdict
 
 # Decode base64 encoding to binary and prepare to reformat as ASCII hex 
 tpm_nonce_ascii = binascii.hexlify(binascii.a2b_base64(tpm_nonce_b64))
+utpm_nonce_ascii = binascii.hexlify(binascii.a2b_base64(utpm_nonce_b64))
 #print >>sys.stderr, "tpm_nonce_ascii",tpm_nonce_ascii
 
 #####################################################################
@@ -41,10 +42,13 @@ urand.close()
 # Being conservative and ensuring no shell escapes, even though this comes straight from hexlify()
 filter = re.compile("[^0-9a-fA-F]")
 if filter.search(aik_uuid_ascii) != None:
-    print >>sys.stderr, "ERROR: tpm_uuid_ascii contains ILLEGAL characters:", aik_uuid_ascii
+    print >>sys.stderr, "ERROR: aik_uuid_ascii contains ILLEGAL characters:", aik_uuid_ascii
     sys.exit(1)
 if filter.search(tpm_nonce_ascii) != None:
-    print >>sys.stderr, "ERROR: tpm_nonce_ascii contains ILLEGAL characters:", aik_nonce_ascii
+    print >>sys.stderr, "ERROR: tpm_nonce_ascii contains ILLEGAL characters:", tpm_nonce_ascii
+    sys.exit(1)
+if filter.search(utpm_nonce_ascii) != None:
+    print >>sys.stderr, "ERROR: utpm_nonce_ascii contains ILLEGAL characters:", utpm_nonce_ascii
     sys.exit(1)
 # Using -B to write / read keyfile because LoadKeyByUUID fails otherwise.
 # I think this is a latent trousers or TPM bug.
@@ -137,7 +141,7 @@ for item in tpm_output_dict:
 #####################################################################
 # Now we will actually invoke the PAL and grab the uTPM quote output
 #####################################################################
-pal_exec = "./attestation"
+pal_exec = "./attestation "+ utpm_nonce_ascii
 print >>sys.stderr, "Subprocess: "+pal_exec
 try:
     proc = subprocess.Popen(pal_exec, bufsize=0, shell=True, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)

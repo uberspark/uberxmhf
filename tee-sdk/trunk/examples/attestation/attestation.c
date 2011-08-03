@@ -77,10 +77,9 @@
  * 3. uTpmValDataSig
  */
 #define PALINPDATA "The quick brown fox jumped over the lazy dog!"
-int invoke_pal(tz_session_t *tzPalSession) {
-  /* PAL inputs; fixed to simplify testing. */
+int invoke_pal(tz_session_t *tzPalSession, const unsigned char* uTpmQuoteNonce) {
+  /* PAL input; fixed to simplify testing. */
   char *palInpData;
-  const char *uTpmQuoteNonce = "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13";
   TPM_NONCE *nonce;
   TPM_PCR_SELECTION *tpmsel;
 
@@ -189,11 +188,41 @@ int invoke_pal(tz_session_t *tzPalSession) {
   return rv;
 }
 
+void usage(const char *name) {
+    fprintf(stderr, "Usage: %s [20-byte uTPM quote nonce]\n", name);
+    fprintf(stderr, "Example: %s 000102030405060708090a0b0c0d0e0f10111213\n", name);
+    exit(1);
+}
+void validate_inputs_or_die(int argc, char *argv[]) {
+    if(argc < 2) {
+        usage(argv[0]);
+    }
+
+    if(strnlen(argv[1], 40) != 40) {
+        usage(argv[0]);
+    }
+
+    if(BN_hex2bn(NULL, argv[1]) != 40) {
+        usage(argv[0]);
+    }
+}
 
 // function main
 // register some sensitive code and data in libfoo.so and call bar()
-int main(void)
+int main(int argc, char *argv[])
 {
+  validate_inputs_or_die(argc, argv);
+  unsigned char utpm_quote_nonce[20];
+  {
+      BIGNUM *uqn = NULL;
+      BN_hex2bn(&uqn, argv[1]); // argv[1] checked by validate_inputs_or_die()
+      if(20 != BN_bn2bin(uqn, utpm_quote_nonce)) {
+          fprintf(stderr, "ERROR with utpm_quote_nonce\n");
+          usage(argv[0]); // exits
+      }
+      BN_free(uqn); uqn = NULL;
+  }
+  
   struct tv_pal_sections scode_info;
   int rv = 0;
   tz_return_t tzRet;
@@ -254,7 +283,7 @@ int main(void)
     TZOperationRelease(&op);
   }
 
-  rv = invoke_pal(&tzPalSession) || rv;
+  rv = invoke_pal(&tzPalSession, utpm_quote_nonce) || rv;
   
   if (rv) {
     fprintf(stderr, "FAIL with rv = %d\n", rv);

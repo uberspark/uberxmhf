@@ -195,14 +195,10 @@ e = M2Crypto.m2.bn_to_mpi(M2Crypto.m2.hex_to_bn("10001"))
 rsa = M2Crypto.RSA.new_pub_key((e, n))
 
 # Assemble PAL QuoteInfo
+print >>sys.stderr, "Step 3b: Verifying uTPM QuoteInfo contains our nonce"
 
-print >>sys.stderr, "  Verifying uTPM QuoteInfo contains our nonce"
-print >>sys.stderr, "  XXX UNIMPLEMENTED XXX"
-### XXX TODO: Update ./attestation to actually take in the nonce to use
 ### Get rid of externalnonce; it's unnecessary
-pal_NONCE_HACK_XXX = binascii.unhexlify("000102030405060708090a0b0c0d0e0f10111213")
-
-pal_quoteinfo = quote_magic8 + hashlib.sha1(pal_tpm_pcr_composite).digest() + pal_NONCE_HACK_XXX # + utpm_nonce_bytes
+pal_quoteinfo = quote_magic8 + hashlib.sha1(pal_tpm_pcr_composite).digest() + utpm_nonce_bytes
 pal_quoteinfo_digest = hashlib.sha1(pal_quoteinfo).digest()
 
 #print >>sys.stderr, "PAL tpm_pcr_composite:", binascii.hexlify(pal_tpm_pcr_composite)
