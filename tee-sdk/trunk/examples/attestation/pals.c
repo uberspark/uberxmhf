@@ -142,6 +142,9 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
     uint32_t pcrCompLen = 47; /* 3+4+20+20 XXX */
     uint8_t *rsaModulus = NULL;
 
+    /* massaged / computed */
+    TPM_DIGEST inpAsciiDigest;
+    
     *puiRv = TZ_SUCCESS;
 
     /* Decode input parameters from legacy userspace's test.c */
@@ -174,10 +177,9 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
      * Make the hypercalls to invoke the uTPM operations
      */
 
-    /* Extend uPCR 1 with input data */
-    /* XXX -- TODO: need SHA-1 to hash arbitrary-length input data */
-    /* if(inpAsciiLen */
-    /*   if(*puiRv = pal_pcr_extend(idx, measIn)) */          
+    /* Extend uPCR 1 with hash of input data */
+    sha1_buffer(inpAscii, inpAsciiLen, inpAsciiDigest.value);
+    if((*puiRv = pal_pcr_extend(1, inpAsciiDigest.value))) return;
 
     /* Read the public key modulus for the keypair that signs the quote */
     if((*puiRv = pal_id_getpub(rsaModulus))) return;
