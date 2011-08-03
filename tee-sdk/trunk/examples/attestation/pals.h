@@ -43,6 +43,4 @@ typedef enum {
   PAL_QUOTE,
 } PAL_CMD;
 
-void *memcpy(void * to, const void * from, uint32_t n);
-
 void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv);

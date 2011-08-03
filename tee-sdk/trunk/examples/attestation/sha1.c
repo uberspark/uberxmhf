@@ -78,20 +78,13 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include <tee-sdk/tzmarshal.h>
 #include <tee-sdk/svcapi.h>
 
 #include "sha1.h"
 #include "pals.h"
-
-void *memset (void *str, uint32_t c, uint32_t len){
-  register uint8_t *st = str;
-
-  while (len-- > 0)
-    *st++ = (uint8_t)c;
-  return str;
-}
 
 #ifndef BIG_ENDIAN
 #define BIG_ENDIAN                                                      \
