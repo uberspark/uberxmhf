@@ -1,7 +1,7 @@
 #!/usr/bin/python -u
 # -u     Force  stdin, stdout and stderr to be totally unbuffered. 
 
-import sys, json, base64, binascii, os, subprocess
+import sys, json, base64, binascii, os, subprocess, signal
 
 #####################################################################
 # We expect a single line of ASCII input which is JSON containing two
@@ -36,13 +36,17 @@ print >> sys.stderr, "aik_uuid_ascii", aik_uuid_ascii
 tpm_createkey_exec = "tpm_createkey -N -u "+aik_uuid_ascii+" -B "+aik_uuid_ascii+".keyfile\n"
 print >> sys.stderr, "Subprocess: "+tpm_createkey_exec
 
+#signal.signal(signal.SIGCHLD, signal.SIG_IGN)
+signal.signal(signal.SIGCHLD, signal.SIG_DFL)
 try:
     print >>sys.stderr, "Still here 1"
-    proc = subprocess.Popen(tpm_createkey_exec, bufsize=0, shell=True, stderr=subprocess.STDOUT, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    proc = subprocess.Popen(tpm_createkey_exec, bufsize=0, shell=True, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
+#    proc = subprocess.Popen(tpm_createkey_exec, bufsize=0, shell=True, close_fds=True)
     print >>sys.stderr, "Still here 2a"
     proc.wait()
+    print >>sys.stderr, "Still here 2b"
     stdout_value, stderr_value = proc.communicate()
-    print >>sys.stderr, "Still here 2b", stdout_value, stderr_value
+    print >>sys.stderr, "Still here 2c", stdout_value, stderr_value
     if proc.returncode < 0:
         print >>sys.stderr, "Child was terminated by signal", proc.returncode
     else:
