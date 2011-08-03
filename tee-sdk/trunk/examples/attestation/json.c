@@ -137,11 +137,82 @@ int output_as_json(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, u
     fprintf(stderr, "The json object created: \n");
     printf("%s\n", json_object_to_json_string(jobj));
     
-    /* free malloc'd stuff */    
-    if(tpm_pcr_composite_b64) { free(tpm_pcr_composite_b64); tpm_pcr_composite_b64 = NULL; }
-    if(sig_b64) { free(sig_b64); sig_b64 = NULL; }
-    if(externalnonce_b64) { free(externalnonce_b64); externalnonce_b64 = NULL; }
-    if(rsaMod_b64) { free(rsaMod_b64); rsaMod_b64 = NULL; }
+    /* free malloc'd stuff (I'm told free copes fine with a NULL pointer) */    
+    free(tpm_pcr_composite_b64); tpm_pcr_composite_b64 = NULL;
+    free(sig_b64); sig_b64 = NULL;
+    free(externalnonce_b64); externalnonce_b64 = NULL;
+    free(rsaMod_b64); rsaMod_b64 = NULL;
+
+    /* free json stuff */
+    json_object_put(jobj); /* recursively frees other objects */
+    
+    return 0;
+}
+
+int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uint32_t sig_len,
+                 TPM_NONCE *externalnonce, uint8_t* rsaMod) {
+    TPM_QUOTE_INFO quote_info;
+    RSA *rsa = NULL;
+    int rv=0;
+    
+    /* 1) 1.1.0.0 for consistency w/ TPM 1.2 spec */
+    *((uint32_t*)&quote_info.version) = 0x00000101; 
+    /* 2) 'QUOT' */
+    *((uint32_t*)quote_info.fixed) = 0x544f5551; 
+
+    /* 3) SHA-1 hash of TPM_PCR_COMPOSITE */
+    SHA1(tpm_pcr_composite, tpc_len, quote_info.digestValue.value);
+
+    print_hex("  COMPOSITE_HASH: ", quote_info.digestValue.value, TPM_HASH_SIZE);
+    
+    /* 4) external nonce */
+    memcpy(quote_info.externalData.nonce, externalnonce->nonce, TPM_HASH_SIZE);
+
+    //print_hex("  quote_info: ", (uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO));
+    
+    /**
+     * Assemble the public key used to check the quote.
+     */    
+
+    if(NULL == (rsa = RSA_new())) {
+        fprintf(stderr, "ERROR: RSA_new() failed\n");
+        return 1;
+    }
+
+    /* N */
+    if(NULL == (rsa->n = BN_bin2bn(rsaMod, TPM_RSA_KEY_LEN, NULL))) {
+        fprintf(stderr, "ERROR: BN_bin2bn() failed\n");
+        goto out;
+    }
+
+    /* E */
+    if(0 == BN_dec2bn(&rsa->e, "65537")) {
+        fprintf(stderr, "ERROR: BN_dec2bn() failed\n");
+        goto out;
+    }        
+
+    /**
+     * Verify the signature!
+     */
+    
+    uint8_t valData[TPM_HASH_SIZE];
+    SHA1((uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO), valData);
+    //print_hex("  valData: ", valData, TPM_HASH_SIZE);
+
+    if(1 != RSA_verify(NID_sha1, valData, TPM_HASH_SIZE, sig, sig_len, rsa)) {
+        fprintf(stderr, "ERROR: Quote verification FAILED!\n");
+        ERR_print_errors_fp(stdout);
+        rv = 1;
+        goto out;
+    } else {
+        fprintf(stderr, "  RSA_verify: SUCCESSfully verified quote\n");
+        rv = 0;
+    }
+    
+  out:
+    /* RSA_free() frees the RSA structure and its components. The key
+     * is erased before the memory is returned to the system. */
+    if(rsa) { RSA_free(rsa); rsa = NULL; }
     
     return 0;
 }
