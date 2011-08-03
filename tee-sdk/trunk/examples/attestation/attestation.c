@@ -144,16 +144,14 @@ int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uin
  * Invoke the PAL.
  *
  * The PAL expects as input:
- * 1. palInpData - an ASCII string that is its "input data"
- * 2. uTpmQuoteNonce - a 20-byte nonce for use in generating the uTPM quote
+ * 1. uTpmQuoteNonce - a 20-byte nonce for use in generating the uTPM quote
+ * 2. tpmsel - data structure that selects which uPCRs to include in the quote
+ * 3. palInpData - an ASCII string that is its "input data"
  *
  * The PAL produces an output containing:
- * 1. uTpmPubKeyE
- * 2. uTpmPubKeyN
- * 3. uTpmValData
- * 4. uTpmValDataSig
- * 5. uPcr0
- * 6. uPcr1
+ * 1. uTpmPubKeyN
+ * 2. pcrComp - PCR composite (tpmsel + length + actual PCR values)
+ * 3. uTpmValDataSig
  */
 #define PALINPDATA "The quick brown fox jumped over the lazy dog!"
 int invoke_pal(tz_session_t *tzPalSession) {
@@ -171,10 +169,10 @@ int invoke_pal(tz_session_t *tzPalSession) {
   uint32_t rsaModLen = 0;
   uint8_t *pcrComp = NULL;
   uint32_t pcrCompLen = 0;
-  TPM_DIGEST *uPcr0;
-  uint32_t uPcr0Len = 0;
-  TPM_DIGEST *uPcr1;
-  uint32_t uPcr1Len = 0;
+
+  /* massaged / computed */
+  //TPM_DIGEST uPcr0;
+  //TPM_DIGEST uPcr1;
 
   /* support */
   tz_return_t tzRet, serviceReturn;
@@ -227,9 +225,7 @@ int invoke_pal(tz_session_t *tzPalSession) {
 
   /* get quote */
   if((tzRet = TZIDecodeF(&tz_quoteOp,
-                         "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DU32,
-                         &uPcr0, &uPcr0Len,
-                         &uPcr1, &uPcr1Len,
+                         "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DU32,
                          &rsaMod, &rsaModLen,
                          &pcrComp, &pcrCompLen,
                          &quote, &maxQuoteLen,
@@ -238,8 +234,6 @@ int invoke_pal(tz_session_t *tzPalSession) {
       goto out;
   }
 
-  assert(uPcr0Len == sizeof(TPM_DIGEST) && uPcr1Len == sizeof(TPM_DIGEST));
-  
   printf("  actual quoteLen = %d\n", quoteLen);
   assert(rsaModLen == TPM_RSA_KEY_LEN);
   assert(quoteLen == TPM_RSA_KEY_LEN);

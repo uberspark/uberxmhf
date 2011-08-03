@@ -118,8 +118,6 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
     uint32_t actualQuoteLen = 0;
     uint8_t *pcrComp = NULL;
     uint32_t pcrCompLen = 47; /* 3+4+20+20 XXX */
-    TPM_DIGEST *uPcr0 = NULL;
-    TPM_DIGEST *uPcr1 = NULL;
     uint8_t *rsaModulus = NULL;
 
     *puiRv = TZ_SUCCESS;
@@ -142,9 +140,7 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
 
     /* Prepare the output buffer to hold the response back to userspace. */
     if((*puiRv = TZIEncodeBufF(psOutBuf,
-                               "%"TZI_EARRSPC "%"TZI_EARRSPC "%"TZI_EARRSPC "%"TZI_EARRSPC "%"TZI_EARRSPC,
-                               &uPcr0, sizeof(TPM_DIGEST),
-                               &uPcr1, sizeof(TPM_DIGEST),
+                               "%"TZI_EARRSPC "%"TZI_EARRSPC "%"TZI_EARRSPC,
                                &rsaModulus, TPM_RSA_KEY_LEN,
                                &pcrComp, pcrCompLen, 
                                &quote, maxQuoteLen)))
@@ -159,11 +155,7 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
     /* Extend uPCR 1 with input data */
     /* XXX -- TODO: need SHA-1 to hash arbitrary-length input data */
     /* if(inpAsciiLen */
-    /*   if(*puiRv = pal_pcr_extend(idx, measIn)) */
-          
-    /* Read uPCR 0,1 */
-    if((*puiRv = pal_pcr_read(0, uPcr0->value))) return;
-    if((*puiRv = pal_pcr_read(1, uPcr1->value))) return;
+    /*   if(*puiRv = pal_pcr_extend(idx, measIn)) */          
 
     /* Read the public key modulus for the keypair that signs the quote */
     if((*puiRv = pal_id_getpub(rsaModulus))) return;
