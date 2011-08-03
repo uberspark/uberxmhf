@@ -114,23 +114,22 @@ except OSError, e:
 # pcr.19=
 # signature=
 # pubkey=
+#
+# Multilne regex to grab everything in one go.  DOTALL lets . match
+# newlines, ?P<> syntax names matches, and groupdict() builds python
+# dict which is trivially convertible to JSON for returning. :)
 #####################################################################
-# Multilne regex to grab everything in one go.
-# DOTALL lets . match newlines, ?P<> syntax names matches, and groupdict() builds python dict
-# which is trivially convertible to JSON for returning. :)
 m = re.match(r".*pcr\.17=(?P<pcr17>[0-9a-fA-F]+)"+
              r".*pcr\.18=(?P<pcr18>[0-9a-fA-F]+)"+
              r".*pcr\.19=(?P<pcr19>[0-9a-fA-F]+)"+
              r".*signature=(?P<sig>[0-9a-fA-F]+)"+
              r".*pubkey=(?P<pubkey>[0-9a-fA-F]+)", 
              stdout_value, re.DOTALL)
-print >>sys.stderr, "m:", m.groupdict()
-#for line in stdout_value.splitlines():
-#    print >>sys.stderr, "line:", line
+tpm_output_dict = m.groupdict()
+print >>sys.stderr, "m:", tpm_output_dict
     
-### TODO: Ensure that pubkey actually goes with the key generated with tpm_createkey above, and get a real certificate for it.
-
-
+### TODO: Ensure that pubkey actually goes with the key generated with
+### tpm_createkey above, and get a real certificate for it.
 
 #####################################################################
 # Now we will actually invoke the PAL and grab the uTPM quote output
@@ -153,7 +152,24 @@ except OSError, e:
     sys.exit(1)
 
 # stdout from pal_exec should already look like JSON
-print >>sys.stderr, "PAL output:", stdout_value
+pal_output_dict = json.JSONDecoder().decode(stdout_value)
+print >>sys.stderr, "pal_output_dict:\n", pal_output_dict
 
-### Temporarily placate verifier.py since it expects some kind of response.
-print "attestor.py read ("+input.rstrip()+") and has printed it!\n";
+
+#####################################################################
+# Now we will combine both the TPM quote output and PAL uTPM quote
+# output and encode it all as one big JSON structure to send back to
+# verifier.py
+#####################################################################
+
+combined_dict = {"response": "tpm_and_utpm"}
+combined_dict["tpm_part"] = tpm_output_dict
+combined_dict["pal_part"] = pal_output_dict
+
+print >>sys.stderr, "combined_dict:\n", combined_dict
+
+combined_json = json.JSONEncoder().encode(combined_dict)
+print >>sys.stderr, "combined_json:\n", combined_json
+
+### Send back the actual response
+print combined_json
