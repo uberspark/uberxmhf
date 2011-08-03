@@ -120,6 +120,7 @@ except OSError, e:
 m = re.match(r".*pcr\.17=(?P<pcr17>[0-9a-fA-F]+)"+
              r".*pcr\.18=(?P<pcr18>[0-9a-fA-F]+)"+
              r".*pcr\.19=(?P<pcr19>[0-9a-fA-F]+)"+
+             r".*quoteinfo=(?P<quoteinfo>[0-9a-fA-F]+)"+
              r".*signature=(?P<sig>[0-9a-fA-F]+)"+
              r".*pubkey=(?P<pubkey>[0-9a-fA-F]+)", 
              stdout_value, re.DOTALL)
