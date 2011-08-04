@@ -7,6 +7,6 @@ CFLAGS=`pkg-config --cflags tee-sdk-svc tee-sdk-svc-tv`"-nostdinc -fno-builtin -
 PREFIX=`pwd`/install
 
 cd openssl-1.0.0d
-./Configure cc --prefix="$PREFIX" no-threads no-zlib no-shared no-sse2 no-dso no-hw $CFLAGS
+./Configure cc --prefix="$PREFIX" no-threads no-zlib no-shared no-sse2 no-dso no-hw no-ui $CFLAGS
 make
 make install
