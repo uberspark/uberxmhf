@@ -58,7 +58,8 @@ LIBRARIES = $(noinst_LIBRARIES)
 ARFLAGS = cru
 lib_a_AR = $(AR) $(ARFLAGS)
 lib_a_LIBADD =
-am_lib_a_OBJECTS = lib_a-dummysys.$(OBJEXT) lib_a-getuid.$(OBJEXT)
+am_lib_a_OBJECTS = lib_a-dummysys.$(OBJEXT) lib_a-getuid.$(OBJEXT) \
+	lib_a-poll.$(OBJEXT)
 lib_a_OBJECTS = $(am_lib_a_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp =
@@ -217,7 +218,7 @@ INCLUDES = $(NEWLIB_CFLAGS) $(CROSS_CFLAGS) $(TARGET_CFLAGS)
 SUBDIRS = net
 AM_CCASFLAGS = $(INCLUDES)
 noinst_LIBRARIES = lib.a
-lib_a_SOURCES = dummysys.c getuid.c
+lib_a_SOURCES = dummysys.c getuid.c poll.c
 lib_a_CCASFLAGS = $(AM_CCASFLAGS)
 lib_a_CFLAGS = $(AM_CFLAGS)
 SUBLIBS = net/lib.a
@@ -291,6 +292,12 @@ lib_a-getuid.o: getuid.c
 
 lib_a-getuid.obj: getuid.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_a_CFLAGS) $(CFLAGS) -c -o lib_a-getuid.obj `if test -f 'getuid.c'; then $(CYGPATH_W) 'getuid.c'; else $(CYGPATH_W) '$(srcdir)/getuid.c'; fi`
+
+lib_a-poll.o: poll.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_a_CFLAGS) $(CFLAGS) -c -o lib_a-poll.o `test -f 'poll.c' || echo '$(srcdir)/'`poll.c
+
+lib_a-poll.obj: poll.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_a_CFLAGS) $(CFLAGS) -c -o lib_a-poll.obj `if test -f 'poll.c'; then $(CYGPATH_W) 'poll.c'; else $(CYGPATH_W) '$(srcdir)/poll.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
