@@ -22,7 +22,7 @@ tz_autoreconf:
 
 tz_host: tz_autoreconf
 	cd tz && \
-	mkdir build-host && \
+	mkdir -p build-host && \
 	cd build-host && \
 	../configure --prefix=$(PREFIX) && \
 	make && \
@@ -31,7 +31,7 @@ tz_host: tz_autoreconf
 tz_cross: tz_autoreconf toolchain newlib
 	export PATH=$(PREFIX)/bin:$(PATH) && \
 	cd tz && \
-	mkdir build-cross && \
+	mkdir -p build-cross && \
 	cd build-cross && \
 	../configure --prefix=$(SYSROOT)/usr --host=$(HOST) --build=$(BUILD) && \
 	make && \
