@@ -25,7 +25,7 @@ endif # USE_LIBTOOL
 include $(srcdir)/../../../../Makefile.shared
 
 install-data-local:
-$(mkinstalldirs) $(DESTDIR)$(tooldir)/include/netinet; \
+	$(mkinstalldirs) $(DESTDIR)$(tooldir)/include/netinet; \
 	for i in $(srcdir)/../include/netinet/*.h; do \
 	  $(INSTALL_DATA) $$i $(DESTDIR)$(tooldir)/include/netinet/`basename $$i`; \
 	done; \
