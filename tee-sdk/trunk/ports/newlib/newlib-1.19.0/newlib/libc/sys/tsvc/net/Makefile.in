@@ -57,12 +57,12 @@ LIBRARIES = $(noinst_LIBRARIES)
 ARFLAGS = cru
 lib_a_AR = $(AR) $(ARFLAGS)
 lib_a_LIBADD =
-am__objects_1 = lib_a-netdb.$(OBJEXT)
+am__objects_1 = lib_a-netdb.$(OBJEXT) lib_a-socket.$(OBJEXT)
 @USE_LIBTOOL_FALSE@am_lib_a_OBJECTS = $(am__objects_1)
 lib_a_OBJECTS = $(am_lib_a_OBJECTS)
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libnet_la_LIBADD =
-am__objects_2 = libnet_la-netdb.lo
+am__objects_2 = libnet_la-netdb.lo libnet_la-socket.lo
 @USE_LIBTOOL_TRUE@am_libnet_la_OBJECTS = $(am__objects_2)
 libnet_la_OBJECTS = $(am_libnet_la_OBJECTS)
 libnet_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -212,7 +212,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = cygnus
 INCLUDES = -I$(srcdir)/../include -I$(srcdir)/.. $(NEWLIB_CFLAGS) $(CROSS_CFLAGS) $(TARGET_CFLAGS)
-GENERAL_SOURCES = netdb.c
+GENERAL_SOURCES = netdb.c socket.c
 
 #ELIX_4_SOURCES =
 libnet_la_LDFLAGS = 
@@ -298,8 +298,17 @@ lib_a-netdb.o: netdb.c
 lib_a-netdb.obj: netdb.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_a_CFLAGS) $(CFLAGS) -c -o lib_a-netdb.obj `if test -f 'netdb.c'; then $(CYGPATH_W) 'netdb.c'; else $(CYGPATH_W) '$(srcdir)/netdb.c'; fi`
 
+lib_a-socket.o: socket.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_a_CFLAGS) $(CFLAGS) -c -o lib_a-socket.o `test -f 'socket.c' || echo '$(srcdir)/'`socket.c
+
+lib_a-socket.obj: socket.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_a_CFLAGS) $(CFLAGS) -c -o lib_a-socket.obj `if test -f 'socket.c'; then $(CYGPATH_W) 'socket.c'; else $(CYGPATH_W) '$(srcdir)/socket.c'; fi`
+
 libnet_la-netdb.lo: netdb.c
 	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-netdb.lo `test -f 'netdb.c' || echo '$(srcdir)/'`netdb.c
+
+libnet_la-socket.lo: socket.c
+	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnet_la_CFLAGS) $(CFLAGS) -c -o libnet_la-socket.lo `test -f 'socket.c' || echo '$(srcdir)/'`socket.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
