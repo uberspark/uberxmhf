@@ -4,7 +4,7 @@ AUTOMAKE_OPTIONS = cygnus
 
 INCLUDES = -I$(srcdir)/../include -I$(srcdir)/.. $(NEWLIB_CFLAGS) $(CROSS_CFLAGS) $(TARGET_CFLAGS)
 
-GENERAL_SOURCES = netdb.c
+GENERAL_SOURCES = netdb.c socket.c
 
 #ELIX_4_SOURCES =
 
