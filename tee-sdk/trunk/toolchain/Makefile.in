@@ -8,6 +8,8 @@ bindir=@bindir@
 
 UTILS=strip ranlib objdump nm ld as ar cc pkg-config
 
+all:
+
 install:
 	for UTIL in $(UTILS) ; do \
 		$(INSTALL) $$UTIL $(bindir)/$(ARCH)-$(OS)-$$UTIL ; \
