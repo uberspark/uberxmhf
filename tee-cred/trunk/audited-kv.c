@@ -42,7 +42,8 @@
 
 int akv_ctx_init(akv_ctx_t* ctx)
 {
-  tz_return_t rv;
+  tz_return_t rv, serviceRv;
+  tz_operation_t op;
 
   /* register pal */
   rv = tv_tz_init(&ctx->tzDevice,
@@ -51,7 +52,17 @@ int akv_ctx_init(akv_ctx_t* ctx)
                   audited_kv_pal,
                   PAGE_SIZE,
                   PAGE_SIZE);
+  if (rv) return rv;
 
+  /* call init */
+  rv = TZOperationPrepareInvoke(&ctx->tzPalSession,
+                                AKVP_INIT,
+                                NULL,
+                                &op);
+  if (rv) return rv;
+  rv = TZOperationPerform(&op, &serviceRv);
+  if (rv == TZ_ERROR_SERVICE)
+    rv = serviceRv;
   return rv;
 }
 
