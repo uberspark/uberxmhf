@@ -31,7 +31,7 @@ LDFLAGS="$LDFLAGS -L"'$prefix'"/$ARCH-$OS/usr/local/lib -L"'$prefix'"/$ARCH-$OS/
 LDFLAGS="$LDFLAGS -L$CCLIB"
 
 AC_SUBST([LDLIBS])
-LDLIBS="-lc -lnosys"
+LDLIBS="-lgcc -lc -lnosys"
 
 AC_SUBST([CCINC], [`$CC --print-file-name=include`])
 

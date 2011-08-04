@@ -7,5 +7,5 @@ Name: tee-sdk-svc-tv
 Description: used for applications that talk to tee services
 Requires:
 Version: @PACKAGE_VERSION@
-Libs: -L${libdir}/tee-sdk -lsvc-tv -lgcc
+Libs: -L${libdir}/tee-sdk -lsvc-tv
 Cflags: -I${includedir}
