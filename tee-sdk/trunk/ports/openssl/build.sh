@@ -1,6 +1,6 @@
 #!/bin/sh
 
-NEWLIBINC=`pwd`/../newlib/install/i586/include
+NEWLIBINC=`pwd`/../newlib/install/i586-tsvc/include
 
 CFLAGS=`pkg-config --cflags tee-sdk-svc tee-sdk-svc-tv`"-fno-builtin -I$NEWLIBINC"
 PREFIX=`pwd`/install
