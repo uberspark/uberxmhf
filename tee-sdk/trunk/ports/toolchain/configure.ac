@@ -29,6 +29,9 @@ LDFLAGS="$LDFLAGS -nostdlib"
 LDFLAGS="$LDFLAGS -L"'$prefix'"/$ARCH-$OS/usr/local/lib -L"'$prefix'"/$ARCH-$OS/usr/lib -L"'$prefix'"/$ARCH-$OS/lib"
 LDFLAGS="$LDFLAGS -L$CCLIB"
 
+AC_SUBST([LDLIBS])
+LDLIBS="-lc -lnosys"
+
 AC_SUBST([CCINC], [`$CC --print-file-name=include`])
 
 AC_SUBST([CFLAGS])
@@ -45,7 +48,7 @@ CFLAGS="$CFLAGS -fno-stack-protector" # stack protector results in unresolved sy
 # wrapper that has the appropriate linker flags. Since we can't do that,
 # we need to also pass the linker flags to the compiler for when the
 # compiler is used as a wrapper to the linker.
-CFLAGS="$CFLAGS $LDFLAGS"
+#CFLAGS="$CFLAGS $LDFLAGS"
 
 AC_CHECK_PROG([RM], [rm -f], [rm -f])
 AC_CHECK_PROG([CP], [cp], [cp])
