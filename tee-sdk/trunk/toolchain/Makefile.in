@@ -11,7 +11,7 @@ all:
 
 install:
 	for UTIL in $(UTILS) ; do \
-		$(INSTALL) $$UTIL $(bindir)/$(HOST)-$$UTIL ; \
+		$(INSTALL) -D $$UTIL $(bindir)/$(HOST)-$$UTIL ; \
 	done
 	ln -fs $(bindir)/$(HOST)-cc $(bindir)/$(HOST)-gcc
 
