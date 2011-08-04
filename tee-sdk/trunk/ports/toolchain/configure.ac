@@ -21,6 +21,14 @@ AC_PATH_PROG([OBJDUMP], [objdump], [objdump])
 AC_PATH_PROG([RANLIB], [ranlib], [ranlib])
 AC_PATH_PROG([STRIP], [strip], [strip])
 
+AC_SUBST([CCLIB], [`$CC --print-file-name=`])
+
+AC_SUBST([LDFLAGS])
+LDFLAGS=""
+LDFLAGS="$LDFLAGS -nostdlib"
+LDFLAGS="$LDFLAGS -L"'$prefix'"/$ARCH-$OS/usr/local/lib -L"'$prefix'"/$ARCH-$OS/usr/lib -L"'$prefix'"/$ARCH-$OS/lib"
+LDFLAGS="$LDFLAGS -L$CCLIB"
+
 AC_SUBST([CCINC], [`$CC --print-file-name=include`])
 
 AC_SUBST([CFLAGS])
@@ -31,6 +39,13 @@ CFLAGS="$CFLAGS -I"'$prefix'"/$ARCH-$OS/usr/local/include -I"'$prefix'"/$ARCH-$O
 #CFLAGS="$CFLAGS --sysroot=$prefix" # would replace the above nastiness, but unfortunately ld is not built to support it on ubuntu
 CFLAGS="$CFLAGS -fno-jump-tables" # sometimes conflicts with PAL memory protections. may no longer be needed
 CFLAGS="$CFLAGS -fno-stack-protector" # stack protector results in unresolved symbols
+
+# unfortunately there's no command-line option to the compiler to specify
+# which linker to use, in which case we could just point it to our linker
+# wrapper that has the appropriate linker flags. Since we can't do that,
+# we need to also pass the linker flags to the compiler for when the
+# compiler is used as a wrapper to the linker.
+CFLAGS="$CFLAGS $LDFLAGS"
 
 AC_CHECK_PROG([RM], [rm -f], [rm -f])
 AC_CHECK_PROG([CP], [cp], [cp])

@@ -1,4 +1,6 @@
 #!/bin/sh
 LD="@LD@"
+prefix="@prefix@"
+LDFLAGS="@LDFLAGS@"
 
-exec $LD "$@"
+exec $LD $LDFLAGS "$@"
