@@ -38,7 +38,7 @@
 #include "vmcalls.h"
 #include <tv.h>
 
-#ifndef IS_WINDOWS
+#if HAVE_SYS_MMAN_H
 #include  <sys/mman.h>
 #include <sys/resource.h>
 #include  <errno.h>
@@ -48,7 +48,7 @@
 #include <windows.h>
 #endif
 
-#ifndef IS_WINDOWS
+#if HAVE_SYS_MMAN_H
 static int lock_range(void *ptr, size_t len)
 {
   ptr = (void*)PAGE_ALIGN_4K((uintptr_t)ptr);
@@ -87,7 +87,7 @@ static int lock_range(void *ptr, size_t len)
     return -4;
   }
 }
-#else
+#elif IS_WINDOWS
 /* mlock always returns an error on cygwin, and get\setrlimit doesn't
    support RLIMIT_MEMLOCK. Instead we use the native windows API
    VirtualLock. Unfortunately this API only guarantees that the pages
@@ -122,6 +122,11 @@ static int lock_range(void *ptr, size_t len)
   }
 
   return 0;
+}
+#else
+static int lock_range(void *ptr, size_t len)
+{
+  return -1;
 }
 #endif
 
