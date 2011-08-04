@@ -426,7 +426,7 @@ case "${host}" in
 	sys_dir=sysvi386
 	unix_dir=unix
 	;;
-  i[34567]86-tsvc*)
+  i[34567]86-*-tsvc*)
         syscall_dir=syscalls
         # sys_dir=linux ?
         ;;
