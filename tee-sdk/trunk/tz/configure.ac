@@ -2,7 +2,7 @@ AC_INIT([tee-sdk], [0.1], [jnewsome@cmu.edu])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([foreign -Wall -Werror])
 AC_PROG_CC
-AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_HEADERS([include/config.h])
 
 PKG_PROG_PKG_CONFIG
 PKG_CHECK_MODULES([TRUSTVISOR], [trustvisor])
@@ -28,7 +28,6 @@ AC_SUBST([SVC_LINK_SCRIPT], ["${pkgdatadir}/svc.ld"])
 #svc_ldflags=-T $(SVC_LINK_SCRIPT)
 
 AC_CHECK_HEADERS([sys/mman.h])
-AC_CONFIG_HEADERS([include/config.h])
 AC_CONFIG_FILES([Makefile src/Makefile include/Makefile dev/Makefile dev/tv/Makefile dev/tv/src/Makefile tee-sdk-app.pc tee-sdk-svc.pc dev/tv/tee-sdk-svc-tv.pc dev/tv/tee-sdk-app-tv.pc dev/tv/include/Makefile])
 AC_PROG_RANLIB
 AC_OUTPUT
