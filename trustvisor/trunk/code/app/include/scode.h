@@ -50,7 +50,7 @@
 #include <crypto_init.h>
 #include <utpm.h>
 
-#define MAX_REGPAGES_NUM 50
+#define MAX_REGPAGES_NUM 300
 
 /* bits 0 to 2 of stored pte's store the section type */
 #define SCODE_PTE_TYPE_MASK (0x7ull)
