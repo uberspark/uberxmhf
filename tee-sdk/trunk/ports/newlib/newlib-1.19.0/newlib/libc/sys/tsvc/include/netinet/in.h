@@ -97,7 +97,7 @@ const struct in6_addr in6addr_loopback;
 struct ipv6_mreq {
   struct in6_addr  ipv6mr_multiaddr;  /* IPv6 multicast address.  */
   unsigned         ipv6mr_interface;  /* Interface index.  */
-}
+};
 
 /* The <netinet/in.h> header shall define the following macros for use
    as values of the level argument of getsockopt() and
