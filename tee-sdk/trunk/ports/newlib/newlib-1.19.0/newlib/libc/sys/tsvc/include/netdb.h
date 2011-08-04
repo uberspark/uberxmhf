@@ -6,6 +6,7 @@
 #define _NETDB_H
 
 #include <inttypes.h>
+#include <netinet/in.h>
 
 /* The <netdb.h> header may make available the type in_port_t and the
    type in_addr_t as defined in the description of <netinet/in.h>. */
