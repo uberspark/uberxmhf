@@ -12,5 +12,5 @@ install:
 	for UTIL in $(UTILS) ; do \
 		$(INSTALL) $$UTIL $(bindir)/$(ARCH)-$(OS)-$$UTIL ; \
 	done
-	ln -s $(bindir)/$(ARCH)-$(OS)-cc $(bindir)/$(ARCH)-$(OS)-gcc
+	ln -fs $(bindir)/$(ARCH)-$(OS)-cc $(bindir)/$(ARCH)-$(OS)-gcc
 
