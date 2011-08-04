@@ -130,16 +130,13 @@ struct addrinfo {
 #define EAI_MEMORY 5 /* There was a memory allocation failure. */
 #define EAI_NONAME 6 /* The name does not resolve for the supplied
                       parameters. */
-#define NI_NAMEREQD 7 /* is set and the host's name cannot be located,
-                       or both nodename and servname were null. */
-
-#define EAI_SERVICE 8 /* The service passed was not recognized for the
+#define EAI_SERVICE 7 /* The service passed was not recognized for the
                          specified socket type. */
-#define EAI_SOCKTYPE 9 /* The intended socket type was not
+#define EAI_SOCKTYPE 8 /* The intended socket type was not
                           recognized. */
-#define EAI_SYSTEM 10 /* A system error occurred. The error code can
+#define EAI_SYSTEM 9 /* A system error occurred. The error code can
                          be found in errno. */
-#define EAI_OVERFLOW 11 /* An argument buffer overflowed. */
+#define EAI_OVERFLOW 10 /* An argument buffer overflowed. */
 
 /* The following are declared as functions, and may also be defined as
    macros: */
