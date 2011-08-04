@@ -14,7 +14,10 @@ typedef unsigned long int socklen_t;
 
 /* The <sys/socket.h> header shall define the unsigned integer type
    sa_family_t. */
-typedef unsigned int sa_family_t;
+#ifndef _SA_FAMILY_T_DECLARED
+typedef	unsigned int sa_family_t;
+#define	_SA_FAMILY_T_DECLARED
+#endif
 
 /* The <sys/socket.h> header shall define the sockaddr structure that
    includes at least the following members: */
