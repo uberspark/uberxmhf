@@ -16,7 +16,10 @@ newlib: toolchain
 	cd ports/newlib; \
 	PREFIX=$(PREFIX) HOST=$(HOST) ./build.sh
 
-tz_host:
+tz_autoreconf:
+	cd tz; autoreconf -i
+
+tz_host: tz_autoreconf
 	cd tz; \
 	mkdir build-host; \
 	cd build-host; \
@@ -24,7 +27,7 @@ tz_host:
 	make; \
 	sudo make install
 
-tz_cross: toolchain newlib
+tz_cross: tz_autoreconf toolchain newlib
 	cd tz; \
 	mkdir build-cross; \
 	cd build-cross; \
