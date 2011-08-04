@@ -5,6 +5,10 @@
 #ifndef _ARPA_INET_H
 #define _ARPA_INET_H
 
+/* The uint32_t and uint16_t types shall be defined as described in
+   <inttypes.h>. */
+#include <inttypes.h>
+
 /* The in_port_t and in_addr_t types shall be defined as described in
    <netinet/in.h>. */
 /* The in_addr structure shall be defined as described in
@@ -21,10 +25,6 @@ uint32_t htonl(uint32_t);
 uint16_t htons(uint16_t);
 uint32_t ntohl(uint32_t);
 uint16_t ntohs(uint16_t);
-
-/* The uint32_t and uint16_t types shall be defined as described in
-   <inttypes.h>. */
-#include <inttypes.h>
 
 /* The following shall be declared as functions and may also be
    defined as macros. Function prototypes shall be provided. */
