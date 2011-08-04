@@ -4,7 +4,7 @@ prefix="@prefix@"
 LDFLAGS="@LDFLAGS@"
 LDLIBS="@LDLIBS@"
 
-for ARG in $@ do
+for ARG in $@ ; do
   if [ x"$ARG" == x"-nostdlib" ] || [ x"$ARG" == x"-nodefaultlibs" ] ; then
       LDLIBS=""
   fi
