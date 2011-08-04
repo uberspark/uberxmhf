@@ -1,8 +1,28 @@
 AC_INIT([tsvc-toolchain], [0.1])
 
-AC_SUBST([ARCH], ['i586'])
-AC_SUBST([OS], ['tsvc'])
-AC_SUBST([SYSROOT], ['$prefix'/$ARCH-$OS])
+if test -z ${ARCH}
+then
+        ARCH=i586
+fi
+AC_SUBST([ARCH])
+
+if test -z ${OS}
+then
+        OS=tsvc
+fi
+AC_SUBST([OS])
+
+if test -z ${HOST}
+then
+        HOST="${ARCH}-${OS}"
+fi
+AC_SUBST([HOST])
+
+if test -z ${SYSROOT}
+then
+        SYSROOT='$prefix'/${HOST}
+fi
+AC_SUBST([SYSROOT])
 
 #AC_SUBST([prefix], [/usr/local])
 #AC_SUBST([exec_prefix], [$prefix/$ARCH-$OS/bin]) # wrappers get installed here
@@ -27,7 +47,7 @@ AC_SUBST([CCLIB], [`$CC --print-file-name=`])
 AC_SUBST([LDFLAGS])
 LDFLAGS=""
 LDFLAGS="$LDFLAGS -nostdlib"
-LDFLAGS="$LDFLAGS -L"'$prefix'"/$ARCH-$OS/usr/local/lib -L"'$prefix'"/$ARCH-$OS/usr/lib -L"'$prefix'"/$ARCH-$OS/lib"
+LDFLAGS="$LDFLAGS -L"'$prefix'"/$HOST/usr/local/lib -L"'$prefix'"/$HOST/usr/lib -L"'$prefix'"/$HOST/lib"
 LDFLAGS="$LDFLAGS -L$CCLIB"
 
 AC_SUBST([LDLIBS])
@@ -39,7 +59,7 @@ AC_SUBST([CFLAGS])
 CFLAGS="-march=$ARCH"
 CFLAGS="$CFLAGS -nostdinc" # drop default include directories
 CFLAGS="$CFLAGS -isystem $CCINC -isystem $CCINC-fixed" # add back compiler-include directories
-CFLAGS="$CFLAGS -I"'$prefix'"/$ARCH-$OS/usr/local/include -I"'$prefix'"/$ARCH-$OS/usr/include -I"'$prefix'"/$ARCH-$OS/include"
+CFLAGS="$CFLAGS -I"'$prefix'"/$HOST/usr/local/include -I"'$prefix'"/$HOST/usr/include -I"'$prefix'"/$HOST/include"
 #CFLAGS="$CFLAGS --sysroot=$prefix" # would replace the above nastiness, but unfortunately ld is not built to support it on ubuntu
 CFLAGS="$CFLAGS -fno-jump-tables" # sometimes conflicts with PAL memory protections. may no longer be needed
 CFLAGS="$CFLAGS -fno-stack-protector" # stack protector results in unresolved symbols
