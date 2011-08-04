@@ -428,7 +428,8 @@ case "${host}" in
 	;;
   i[34567]86-*-tsvc*)
         syscall_dir=syscalls
-        # sys_dir=linux ?
+        sys_dir=tsvc
+        have_crt0="no"
         ;;
   i[34567]86-pc-linux-*)
 	sys_dir=linux
