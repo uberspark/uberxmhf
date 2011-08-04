@@ -12,6 +12,9 @@ CPPFLAGS=$(TESTS)
 PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv libssl libcrypto
 PROG_OBJS=test.o
 
+PAL_CC=i586-tsvc-cc
+PAL_SYSROOT=/usr/local/i586-tsvc
+PAL_PKG_CONFIG_PATH=$(PAL_SYSROOT)/usr/local/lib/pkgconfig:$(PAL_SYSROOT)/usr/lib/pkgconfig
 PAL_NAME=pals
 PAL_PKGCONFIG_DEPS=tee-sdk-svc tee-sdk-svc-tv
 PAL_OBJS=pals.o
