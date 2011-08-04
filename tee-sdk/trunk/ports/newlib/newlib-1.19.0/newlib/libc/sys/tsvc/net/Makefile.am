@@ -29,10 +29,10 @@ install-data-local:
 	for i in $(srcdir)/../include/net/*.h; do \
 	  $(INSTALL_DATA) $$i $(DESTDIR)$(tooldir)/include/net/`basename $$i`; \
 	done;
-# $(mkinstalldirs) $(DESTDIR)$(tooldir)/include/arpa; \
-# for i in $(srcdir)/../include/arpa/*.h; do \
-#   $(INSTALL_DATA) $$i $(DESTDIR)$(tooldir)/include/arpa/`basename $$i`; \
-# done;
+	$(mkinstalldirs) $(DESTDIR)$(tooldir)/include/arpa; \
+	for i in $(srcdir)/../include/arpa/*.h; do \
+	  $(INSTALL_DATA) $$i $(DESTDIR)$(tooldir)/include/arpa/`basename $$i`; \
+	done;
 # $(mkinstalldirs) $(DESTDIR)$(tooldir)/include/netinet; \
 # for i in $(srcdir)/../include/netinet/*.h; do \
 #   $(INSTALL_DATA) $$i $(DESTDIR)$(tooldir)/include/netinet/`basename $$i`; \
