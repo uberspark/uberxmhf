@@ -2,7 +2,8 @@
 
 NEWLIBINC=`pwd`/../newlib/install/i586-tsvc/include
 
-CFLAGS=`pkg-config --cflags tee-sdk-svc tee-sdk-svc-tv`"-fno-builtin -I$NEWLIBINC"
+CCINC=`gcc --print-file-name=include`
+CFLAGS=`pkg-config --cflags tee-sdk-svc tee-sdk-svc-tv`"-nostdinc -fno-builtin -I$NEWLIBINC -I$CCINC"
 PREFIX=`pwd`/install
 
 cd openssl-1.0.0d
