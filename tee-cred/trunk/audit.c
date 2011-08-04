@@ -39,11 +39,11 @@
 
 #include "audit.h"
 
-void audit_ctx_init(audit_ctx_t *ctx, const char* hostname, const char* svc)
+int audit_ctx_init(audit_ctx_t *ctx, const char* hostname, const char* svc)
 {
   ctx->hostname = hostname;
   ctx->svc = svc;
-  return;
+  return 0;
 }
 
 void audit_ctx_release(audit_ctx_t *ctx)

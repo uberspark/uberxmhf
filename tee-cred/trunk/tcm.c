@@ -154,16 +154,33 @@ int main(int argc, char **argv)
   const char* pem_pub_key_file = argv[3];
   char *pem_pub_key = read_file(pem_pub_key_file);
 
-  audit_ctx_init(&audit_ctx, server, port);
-  akv_ctx_init(&akv_ctx, pem_pub_key);
-  tcm_ctx_init(&tcm_ctx, &audit_ctx, &akv_ctx);
+  rv = audit_ctx_init(&audit_ctx, server, port);
+  if (rv) {
+    printf("audit_ctx_init failed with rv %d\n", rv);
+    goto out1;
+  }
+
+  rv = akv_ctx_init(&akv_ctx, pem_pub_key);
+  if (rv) {
+    printf("akv_ctx_init failed with rv %d\n", rv);
+    goto out2;
+  }
+
+  rv = tcm_ctx_init(&tcm_ctx, &audit_ctx, &akv_ctx);
+  if (rv) {
+    printf("tcm_ctx_init failed with rv %d\n", rv);
+    goto out3;
+  }
 
   tcm_db_add(&tcm_ctx,
              "key",
              "val");
-  
-  akv_ctx_release(&akv_ctx);
-  audit_ctx_release(&audit_ctx);
+
   tcm_ctx_release(&tcm_ctx);
+ out3:
+  akv_ctx_release(&akv_ctx);
+ out2:
+  audit_ctx_release(&audit_ctx);
+ out1:
   return rv;
 } 
