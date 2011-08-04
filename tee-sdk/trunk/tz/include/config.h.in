@@ -1,0 +1,6 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#undef HAVE_SYS_MMAN_H
+
+#endif

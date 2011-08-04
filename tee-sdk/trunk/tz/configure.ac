@@ -37,6 +37,8 @@ AC_SUBST([SVC_LDFLAGS], ['-r -nostdlib -d'])
 # use the designated linker script
 #svc_ldflags=-T $(SVC_LINK_SCRIPT)
 
+AC_CHECK_HEADERS([sys/mman.h])
+AC_CONFIG_HEADERS([include/config.h])
 AC_CONFIG_FILES([Makefile src/Makefile include/Makefile dev/Makefile dev/tv/Makefile dev/tv/src/Makefile tee-sdk-app.pc tee-sdk-svc.pc dev/tv/tee-sdk-svc-tv.pc dev/tv/tee-sdk-app-tv.pc dev/tv/include/Makefile])
 AC_PROG_RANLIB
 AC_OUTPUT
