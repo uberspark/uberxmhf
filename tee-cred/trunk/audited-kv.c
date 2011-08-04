@@ -40,7 +40,7 @@
 #include "audited-kv.h"
 #include "audited-kv-pal.h"
 
-int akv_ctx_init(akv_ctx_t* ctx)
+int akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem)
 {
   tz_return_t rv, serviceRv;
   tz_operation_t op;
@@ -60,6 +60,10 @@ int akv_ctx_init(akv_ctx_t* ctx)
                                 NULL,
                                 &op);
   if (rv) return rv;
+
+  rv = TZIEncodeF(&op, "%"TZI_ESTR, priv_key_pem);
+  if (rv) return rv;
+
   rv = TZOperationPerform(&op, &serviceRv);
   if (rv == TZ_ERROR_SERVICE)
     rv = serviceRv;

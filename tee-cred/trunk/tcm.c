@@ -35,6 +35,8 @@
 
 #include <malloc.h>
 #include <string.h>
+#include <stdio.h>
+#include <sys/stat.h>
 
 #include "tcm.h"
 #include "audited-kv.h"
@@ -104,15 +106,56 @@ int tcm_db_add(tcm_ctx_t* tcm_ctx,
   return rv;
 }
 
+char* read_file(const char *path)
+{
+  struct stat s;
+  size_t toread;
+  size_t numread=0;
+  FILE *f=NULL;
+  char *rv=NULL;
+
+  if (stat(path, &s)) {
+    return NULL;
+  }
+
+  toread = s.st_size;
+
+  rv = malloc(toread+1);
+  if(rv == NULL) {
+    return NULL;
+  }
+
+  f = fopen(path, "r");
+  if(f == NULL) {
+    return NULL;
+  }
+
+  while(toread > 0) {
+    size_t cnt = fread(&rv[numread], 1, toread, f);
+    if (cnt == 0) {
+      free(rv);
+      return(NULL);
+    }
+    toread -= cnt;
+    numread += cnt;
+  }
+  rv[toread] = '\0';
+  return rv;
+}
+
 int main(int argc, char **argv)
 {
   int rv=0;
   tcm_ctx_t tcm_ctx;
   audit_ctx_t audit_ctx;
   akv_ctx_t akv_ctx;
+  const char* server = argv[1];
+  const char* port = argv[2];
+  const char* pem_pub_key_file = argv[3];
+  char *pem_pub_key = read_file(pem_pub_key_file);
 
-  audit_ctx_init(&audit_ctx, argv[1], argv[2]);
-  akv_ctx_init(&akv_ctx);
+  audit_ctx_init(&audit_ctx, server, port);
+  akv_ctx_init(&akv_ctx, pem_pub_key);
   tcm_ctx_init(&tcm_ctx, &audit_ctx, &akv_ctx);
 
   tcm_db_add(&tcm_ctx,

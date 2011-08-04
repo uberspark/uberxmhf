@@ -51,7 +51,7 @@ typedef struct {
   tz_session_t  tzPalSession;
   tz_uuid_t     tzSvcId;
 } akv_ctx_t;
-int akv_ctx_init(akv_ctx_t* ctx);
+int akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem);
 int akv_ctx_release(akv_ctx_t* ctx);
 
 typedef struct {

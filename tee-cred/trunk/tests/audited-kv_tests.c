@@ -46,7 +46,8 @@ void setUp(void)
   tv_tz_init_IgnoreAndReturn(0);
   TZOperationPrepareInvoke_IgnoreAndReturn(0);
   TZOperationPerform_IgnoreAndReturn(0);
-  akv_ctx_init(&g_ctx);
+  TZIEncodeF_IgnoreAndReturn(0);
+  akv_ctx_init(&g_ctx, "keyfile");
 }
 
 void tearDown(void)
@@ -62,8 +63,9 @@ void test_init(void)
   tv_tz_init_IgnoreAndReturn(0);
   TZOperationPrepareInvoke_IgnoreAndReturn(0);
   TZOperationPerform_IgnoreAndReturn(0);
-  
-  TEST_ASSERT(!akv_ctx_init(&ctx));
+  TZIEncodeF_IgnoreAndReturn(0);
+
+  TEST_ASSERT(!akv_ctx_init(&ctx, "keyfile"));
 }
 
 void test_init_detects_err(void)
@@ -72,14 +74,14 @@ void test_init_detects_err(void)
 
   tv_tz_init_IgnoreAndReturn(1);
   
-  TEST_ASSERT(akv_ctx_init(&ctx));
+  TEST_ASSERT(akv_ctx_init(&ctx, "keyfile"));
 }
 
 void test_release(void)
 {
   akv_ctx_t ctx;
   tv_tz_init_IgnoreAndReturn(0);
-  akv_ctx_init(&ctx);
+  akv_ctx_init(&ctx, "keyfile");
 
   tv_tz_teardown_IgnoreAndReturn(0);
   TEST_ASSERT(!akv_ctx_release(&ctx));
@@ -89,7 +91,7 @@ void test_release_detects_err(void)
 {
   akv_ctx_t ctx;
   tv_tz_init_IgnoreAndReturn(0);
-  akv_ctx_init(&ctx);
+  akv_ctx_init(&ctx, "keyfile");
 
   tv_tz_teardown_IgnoreAndReturn(1);
   TEST_ASSERT(akv_ctx_release(&ctx));
