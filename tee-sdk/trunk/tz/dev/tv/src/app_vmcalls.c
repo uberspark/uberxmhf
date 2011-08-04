@@ -35,8 +35,11 @@
 
 #include <stdio.h>
 #include <stdbool.h>
-#include "vmcalls.h"
+
 #include <tv.h>
+
+#include "vmcalls.h"
+#include "config.h"
 
 #if HAVE_SYS_MMAN_H
 #include  <sys/mman.h>
