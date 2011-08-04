@@ -1,5 +1,9 @@
 # generic pal-building rules. depends on pkgconfig.mk
 
+PAL_CC ?= i586-tsvc-cc
+PAL_LD ?= i586-tsvc-ld
+PAL_PKG_CONFIG ?= i586-tsvc-pkg-config
+
 %.pal.o : PKG_CONFIG_PATH = $(PAL_PKG_CONFIG_PATH)
 %.pal.o : CC=$(PAL_CC)
 
@@ -13,7 +17,7 @@ PAL_LDLIBS+=$(call pkgconfig_ldlibs, $(PAL_PKGCONFIG_DEPS))
 %.pal.o : LDLIBS = $(PAL_LDLIBS)
 %.pal.o : CFLAGS = $(PAL_CFLAGS)
 %.pal.o : LDFLAGS = $(PAL_LDFLAGS)
-
+%.pal.o : PKG_CONFIG = $(PAL_PKG_CONFIG)
 
 # generate a pal-specific linker script
 %.pal.ld :
