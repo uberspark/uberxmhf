@@ -64,6 +64,14 @@ int akv_ctx_release(akv_ctx_t* ctx)
   return rv;
 }
 
+
+
+tz_return_t
+TZIPrepareEncodeF(tz_session_t *psSession,
+                  tz_operation_t *psOp,
+                  uint32_t cmd,
+                  const char* str, ...)
+  __attribute__ ((format (printf, 4, 5)));
 tz_return_t
 TZIPrepareEncodeF(tz_session_t *psSession,
                   tz_operation_t *psOp,
@@ -84,6 +92,12 @@ TZIPrepareEncodeF(tz_session_t *psSession,
   return rv;
 }
 
+tz_return_t
+TZIExecuteDecodeF(tz_operation_t *psOp,
+                  tz_return_t *serviceReturn,
+                  const char* str,
+                  ...)
+  __attribute__ ((format (scanf, 3, 4)));
 tz_return_t
 TZIExecuteDecodeF(tz_operation_t *psOp,
                   tz_return_t *serviceReturn,
@@ -173,9 +187,8 @@ int akv_db_add_execute(akv_cmd_ctx_t* ctx,
                          "%"TZI_EU32 "%"TZI_EARR,
                          ctx->cmd_id,
                          audit_token, audit_token_len);
-  rv = TZIExecuteDecodeF(&tzOp,
-                         &serviceReturn,
-                         "");
+  rv = TZOperationPerform(&tzOp,
+                          &serviceReturn);
 
   if (rv != TZ_SUCCESS) {
     if (rv == TZ_ERROR_SERVICE) {

@@ -115,6 +115,10 @@ int main(int argc, char **argv)
   akv_ctx_init(&akv_ctx);
   tcm_ctx_init(&tcm_ctx, &audit_ctx, &akv_ctx);
 
+  tcm_db_add(&tcm_ctx,
+             "key",
+             "val");
+  
   akv_ctx_release(&akv_ctx);
   audit_ctx_release(&audit_ctx);
   tcm_ctx_release(&tcm_ctx);
