@@ -23,8 +23,8 @@ lib.a: $(lib_a_OBJECTS)
 	cd tmp; \
 	for i in $(SUBLIBS); do \
 	  $(AR) x ../$$i; \
-	done; \
-	$(AR) $(AR_FLAGS) ../$@ *.o
+	done;
+	$(AR) $(AR_FLAGS) $@ tmp/*.o $(lib_a_OBJECTS)
 	$(RANLIB) $@
 	rm -rf tmp
 

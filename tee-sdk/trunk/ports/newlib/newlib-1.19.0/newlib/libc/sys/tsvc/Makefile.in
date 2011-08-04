@@ -58,7 +58,7 @@ LIBRARIES = $(noinst_LIBRARIES)
 ARFLAGS = cru
 lib_a_AR = $(AR) $(ARFLAGS)
 lib_a_LIBADD =
-am_lib_a_OBJECTS = lib_a-dummysys.$(OBJEXT)
+am_lib_a_OBJECTS = lib_a-dummysys.$(OBJEXT) lib_a-getuid.$(OBJEXT)
 lib_a_OBJECTS = $(am_lib_a_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp =
@@ -217,7 +217,7 @@ INCLUDES = $(NEWLIB_CFLAGS) $(CROSS_CFLAGS) $(TARGET_CFLAGS)
 SUBDIRS = net
 AM_CCASFLAGS = $(INCLUDES)
 noinst_LIBRARIES = lib.a
-lib_a_SOURCES = dummysys.c
+lib_a_SOURCES = dummysys.c getuid.c
 lib_a_CCASFLAGS = $(AM_CCASFLAGS)
 lib_a_CFLAGS = $(AM_CFLAGS)
 SUBLIBS = net/lib.a
@@ -285,6 +285,12 @@ lib_a-dummysys.o: dummysys.c
 
 lib_a-dummysys.obj: dummysys.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_a_CFLAGS) $(CFLAGS) -c -o lib_a-dummysys.obj `if test -f 'dummysys.c'; then $(CYGPATH_W) 'dummysys.c'; else $(CYGPATH_W) '$(srcdir)/dummysys.c'; fi`
+
+lib_a-getuid.o: getuid.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_a_CFLAGS) $(CFLAGS) -c -o lib_a-getuid.o `test -f 'getuid.c' || echo '$(srcdir)/'`getuid.c
+
+lib_a-getuid.obj: getuid.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_a_CFLAGS) $(CFLAGS) -c -o lib_a-getuid.obj `if test -f 'getuid.c'; then $(CYGPATH_W) 'getuid.c'; else $(CYGPATH_W) '$(srcdir)/getuid.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -557,8 +563,8 @@ lib.a: $(lib_a_OBJECTS)
 	cd tmp; \
 	for i in $(SUBLIBS); do \
 	  $(AR) x ../$$i; \
-	done; \
-	$(AR) $(AR_FLAGS) ../$@ *.o
+	done;
+	$(AR) $(AR_FLAGS) $@ tmp/*.o $(lib_a_OBJECTS)
 	$(RANLIB) $@
 	rm -rf tmp
 
