@@ -3,6 +3,8 @@ CC="@CC@"
 CCINC="@CCINC@"
 ARCH="@ARCH@"
 OS="@OS@"
+prefix="@prefix@"
 CFLAGS="@CFLAGS@"
+
 
 exec $CC $CFLAGS "$@"
