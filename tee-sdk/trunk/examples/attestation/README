@@ -21,3 +21,13 @@ verifier.py: Runs on the "trusted" host and generates nonces (the
 attestor.py: Runs on the "untrusted" host where TrustVisor is active
   and manages collection and communication of the uTPM and TPM
   attestations.
+
+
+Lots of issues remain:
+1. consistent message encoding
+2. consistent JSON hierarchy
+3. better error handling
+4. using functions to clean up the current straight-line code and make it more readable
+5. actually getting a certificate for an AIK
+6. supporting a single long-lived AIK
+7. break dependency on OpenPTS's tpm_createkey and tpm_quote, since they're buggy
