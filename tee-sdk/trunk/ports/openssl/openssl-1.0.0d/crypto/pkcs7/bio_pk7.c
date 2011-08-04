@@ -57,7 +57,7 @@
 #include <openssl/bio.h>
 
 #ifndef OPENSSL_SYSNAME_NETWARE
-#include <memory.h>
+/* #include <memory.h> */
 #endif
 #include <stdio.h>
 
