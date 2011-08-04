@@ -24,7 +24,6 @@ then
 fi
 AC_SUBST([SYSROOT])
 
-#AC_SUBST([prefix], [/usr/local])
 #AC_SUBST([exec_prefix], [$prefix/$ARCH-$OS/bin]) # wrappers get installed here
 #AC_SUBST([datadir])
 #AC_SUBST([libdir])
