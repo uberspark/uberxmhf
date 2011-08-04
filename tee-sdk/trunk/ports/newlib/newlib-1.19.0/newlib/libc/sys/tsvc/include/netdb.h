@@ -1,4 +1,4 @@
-/* adapted from the unix specification
+/* adapted from IEEE Std 1003.1
    http://pubs.opengroup.org/onlinepubs/009695399/basedefs/netdb.h.html
    */
 
@@ -162,4 +162,14 @@ void             setprotoent(int stayopen);
 void             setservent(int stayopen);
 
 /* Inclusion of the <netdb.h> header may also make visible all symbols from <netinet/in.h> and <inttypes.h>. */
+
+/**** Not part of IEEE Std 1003.1 standard, but present in bsd
+      implementation and depended upon by some clients ****/
+
+/*
+ * Constants for getnameinfo()
+ */
+#define	NI_MAXHOST	1025
+#define	NI_MAXSERV	32
+
 #endif
