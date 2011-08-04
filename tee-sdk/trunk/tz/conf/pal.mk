@@ -1,5 +1,7 @@
 # generic pal-building rules. depends on pkgconfig.mk
 
+%.pal.o : PKG_CONFIG_PATH = $(PAL_PKG_CONFIG_PATH)
+
 # get flags and libraries specified by pkgconfig
 PAL_CFLAGS+=$(call pkgconfig_cflags, $(PAL_PKGCONFIG_DEPS))
 PAL_LDFLAGS+=$(call pkgconfig_ldflags, $(PAL_PKGCONFIG_DEPS))
@@ -10,6 +12,7 @@ PAL_LDLIBS+=$(call pkgconfig_ldlibs, $(PAL_PKGCONFIG_DEPS))
 %.pal.o : LDLIBS = $(PAL_LDLIBS)
 %.pal.o : CFLAGS = $(PAL_CFLAGS)
 %.pal.o : LDFLAGS = $(PAL_LDFLAGS)
+
 
 # generate a pal-specific linker script
 %.pal.ld :
