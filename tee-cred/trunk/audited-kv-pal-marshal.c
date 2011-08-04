@@ -152,7 +152,19 @@ void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, str
   switch(uiCommand) {
   case AKVP_INIT:
     {
-      akvp_init();
+      const char *audit_pub_pem;
+      uint32_t audit_pub_len;
+
+      if (TZIDecodeBufF(psInBuf, "%"TZI_DARRSPC, &audit_pub_pem, &audit_pub_len)) {
+        *puiRv=AKV_EDECODE;
+        break;
+      }
+      if (audit_pub_pem[audit_pub_len-1] != '\0') {
+        *puiRv=AKV_EPARAM;
+        break;
+      }
+
+      akvp_init(audit_pub_pem);
       did_init=true;
       *puiRv=0;
     }

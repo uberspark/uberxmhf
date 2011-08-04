@@ -14,6 +14,9 @@ PAL_OBJS=audited-kv-pal.o audited-kv-pal-marshal.o kv.o
 PAL_CFLAGS+=-g -Wall -Werror
 PAL_PKGCONFIG_DEPS=tee-sdk-svc tee-sdk-svc-tv
 
+# link pal against openssl
+PAL_LDLIBS+=-lcrypto
+
 # link pal against newlib
 ###### newlib paths. should make a pkg-config for this
 NEWLIB=../../tee-sdk/trunk/ports/newlib/install/i586

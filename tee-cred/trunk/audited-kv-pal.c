@@ -33,18 +33,24 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include "audited-kv-pal.h"
-#include "audited-kv-pal-fns.h"
-#include "kv.h"
-
-#include <tee-sdk/tz.h>
-#include <tee-sdk/tzmarshal.h>
-
 #include <stdio.h>
 #include <string.h>
 #include <malloc.h>
 #include <assert.h>
 #include <stdarg.h>
+
+#include <tee-sdk/tz.h>
+#include <tee-sdk/tzmarshal.h>
+
+#include <openssl/bio.h>
+#include <openssl/pem.h>
+#include <openssl/rsa.h>
+#include <openssl/engine.h>
+
+#include "audited-kv-pal.h"
+#include "audited-kv-pal-fns.h"
+#include "kv.h"
+
 
 #define FREE_AND_NULL(x) do { free(x) ; x=NULL; } while(0)
 
@@ -60,14 +66,21 @@
 /* } */
 static struct {
   kv_ctx_t* kv_ctx;
+  RSA* audit_pub_key;
 } akv_ctx;
 
-void akvp_init(void)
+void akvp_init(const char* audit_server_pub_pem)
 {
+  BIO *mem;
+
   if(akv_ctx.kv_ctx) {
     kv_ctx_del(akv_ctx.kv_ctx);
   }
   akv_ctx.kv_ctx = kv_ctx_new();
+  
+  mem = BIO_new_mem_buf((char*)audit_server_pub_pem, -1);
+  akv_ctx.audit_pub_key =
+    PEM_read_bio_RSA_PUBKEY(mem, NULL, NULL, NULL);
 }
 
 void akvp_release(void)

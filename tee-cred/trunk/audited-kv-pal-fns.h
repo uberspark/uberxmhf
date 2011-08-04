@@ -38,7 +38,7 @@
 
 #include <tee-sdk/tz.h>
 
-void akvp_init(void);
+void akvp_init(const char*);
 void akvp_release(void);
 
 tz_return_t akvp_db_add_begin_marshal(char **audit_string,
