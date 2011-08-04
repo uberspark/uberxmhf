@@ -15,11 +15,14 @@ PAL_CFLAGS+=-g -Wall -Werror
 PAL_PKGCONFIG_DEPS=tee-sdk-svc tee-sdk-svc-tv
 
 # link pal against openssl
+OPENSSL=../../tee-sdk/trunk/ports/openssl/install
+PAL_CFLAGS+=-I$(OPENSSL)/include
+PAL_LDFLAGS+=-L$(OPENSSL)/lib
 PAL_LDLIBS+=-lcrypto
 
 # link pal against newlib
 ###### newlib paths. should make a pkg-config for this
-NEWLIB=../../tee-sdk/trunk/ports/newlib/install/i586
+NEWLIB=../../tee-sdk/trunk/ports/newlib/install/i586-tsvc
 NEWLIB_LIBDIR=$(NEWLIB)/lib
 NEWLIB_INCDIR=$(NEWLIB)/include
 ######
