@@ -35,6 +35,7 @@
 
 #include <unity.h>
 
+#include "Mocktz.h"
 #include "Mocktv.h"
 #include "audited-kv.h"
 
@@ -43,6 +44,8 @@ akv_ctx_t g_ctx;
 void setUp(void)
 {
   tv_tz_init_IgnoreAndReturn(0);
+  TZOperationPrepareInvoke_IgnoreAndReturn(0);
+  TZOperationPerform_IgnoreAndReturn(0);
   akv_ctx_init(&g_ctx);
 }
 
@@ -57,6 +60,8 @@ void test_init(void)
   akv_ctx_t ctx;
 
   tv_tz_init_IgnoreAndReturn(0);
+  TZOperationPrepareInvoke_IgnoreAndReturn(0);
+  TZOperationPerform_IgnoreAndReturn(0);
   
   TEST_ASSERT(!akv_ctx_init(&ctx));
 }

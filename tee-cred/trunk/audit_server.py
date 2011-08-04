@@ -26,7 +26,7 @@ def read_audit_string(conn):
 def gen_audit_token(audit_nonce, audit_string):
     return "audit token!"
 
-def send_audit_token(audit_token):
+def send_audit_token(conn, audit_token):
     l = struct.pack("!I", len(audit_token))
     conn.send(l)
     conn.send(audit_token)
@@ -43,8 +43,9 @@ def main():
 
         audit_nonce = read_audit_nonce(conn)
         audit_string = read_audit_string(conn)
+        print "got " + audit_nonce + ", " + audit_string
         audit_token = gen_audit_token(audit_nonce, audit_string)
-        send_audit_token(audit_token)
+        send_audit_token(conn, audit_token)
 
 if __name__ == '__main__':
     main()
