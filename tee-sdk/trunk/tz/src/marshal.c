@@ -181,7 +181,7 @@ TZIEncodeMemoryReference(INOUT tzi_encode_buffer_t* psBuffer,
   uint32_t sz =
     sizeof(psBuffer->pBuf->uiType)
     + sizeof(psBuffer->pBuf->sMem);
-  uint encodeOffset;
+  uint32_t encodeOffset;
 
   if (psBuffer->uiRetVal != TZ_SUCCESS) {
     return 0;
