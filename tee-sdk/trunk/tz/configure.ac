@@ -17,7 +17,6 @@ AC_SUBST([CFLAGS], ['-g -O0'])
 AC_SUBST([datadir])
 AC_SUBST([pkgdatadir], ['${datadir}/AC_PACKAGE_NAME'])
 AC_SUBST([SVC_LINK_SCRIPT], ["${pkgdatadir}/svc.ld"])
-AC_SUBST([SVC_CFLAGS], ['-fno-jump-tables -fno-stack-protector'])
 
 # -r to link the pal into a relocatable object file rather than a
 #    stand-alone executable.
