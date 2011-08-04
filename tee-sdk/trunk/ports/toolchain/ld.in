@@ -1,3 +1,4 @@
 #!/bin/sh
+LD="@LD@"
 
-exec ld $@
+exec $LD "$@"
