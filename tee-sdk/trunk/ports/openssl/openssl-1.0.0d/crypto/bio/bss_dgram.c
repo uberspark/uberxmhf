@@ -810,7 +810,6 @@ int BIO_dgram_non_fatal_error(int err)
 		}
 	return(0);
 	}
-#endif
 
 static void get_current_time(struct timeval *t)
 	{
@@ -828,3 +827,5 @@ static void get_current_time(struct timeval *t)
 	gettimeofday(t, NULL);
 #endif
 	}
+
+#endif
