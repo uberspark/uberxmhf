@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 
+import sys
 import socket
 import struct
+
+from M2Crypto import RSA
+import hashlib
 
 PORT=9001
 HOST=""
@@ -23,8 +27,12 @@ def read_audit_string(conn):
     l = struct.unpack("!I", conn.recv(4))[0]
     return recvall(conn, l)
 
-def gen_audit_token(audit_nonce, audit_string):
-    return "audit token!"
+def gen_audit_token(privkey, audit_nonce, audit_string):
+    h = hashlib.sha256()
+    h.update(audit_nonce)
+    h.update(audit_string)
+    s = privkey.sign(h.digest(), algo='sha256')
+    return s
 
 def send_audit_token(conn, audit_token):
     l = struct.pack("!I", len(audit_token))
@@ -32,7 +40,7 @@ def send_audit_token(conn, audit_token):
     conn.send(audit_token)
     return
 
-def main():
+def main(privkey):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind((HOST, PORT))
@@ -44,8 +52,9 @@ def main():
         audit_nonce = read_audit_nonce(conn)
         audit_string = read_audit_string(conn)
         print "got " + audit_nonce + ", " + audit_string
-        audit_token = gen_audit_token(audit_nonce, audit_string)
+        audit_token = gen_audit_token(privkey, audit_nonce, audit_string)
         send_audit_token(conn, audit_token)
 
 if __name__ == '__main__':
-    main()
+    privkey = RSA.load_key(sys.argv[1])
+    main(privkey)
