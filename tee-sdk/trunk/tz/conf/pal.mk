@@ -1,6 +1,7 @@
 # generic pal-building rules. depends on pkgconfig.mk
 
 %.pal.o : PKG_CONFIG_PATH = $(PAL_PKG_CONFIG_PATH)
+%.pal.o : CC=$(PAL_CC)
 
 # get flags and libraries specified by pkgconfig
 PAL_CFLAGS+=$(call pkgconfig_cflags, $(PAL_PKGCONFIG_DEPS))
