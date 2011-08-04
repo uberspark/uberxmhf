@@ -12,11 +12,15 @@ typedef unsigned char speed_t;
 # define NCCS 13
 
 struct termios {
-	tcflag_t	c_iflag;
-	tcflag_t	c_oflag;
-	tcflag_t	c_cflag;
-	tcflag_t	c_lflag;
-	cc_t		c_cc[NCCS];
+  tcflag_t	c_iflag;
+  tcflag_t	c_oflag;
+  tcflag_t	c_cflag;
+  tcflag_t	c_lflag;
+  cc_t		c_cc[NCCS];
+
+  /* implementation-specific */
+  speed_t         c_ispeed;
+  speed_t         c_ospeed;
 };
 
 /* The <termios.h> header shall define the following symbolic
@@ -178,7 +182,7 @@ int     tcdrain(int);
 int     tcflow(int, int);
 int     tcflush(int, int);
 int     tcgetattr(int, struct termios *);
-pid_t   tcgetsid(int);
+/* pid_t   tcgetsid(int); XXX */
 int     tcsendbreak(int, int);
 int     tcsetattr(int, int, const struct termios *);
 
