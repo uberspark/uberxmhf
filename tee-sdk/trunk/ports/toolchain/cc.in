@@ -1,0 +1,8 @@
+#!/bin/sh
+CC=@CC@
+CCINC=@CCINC@
+ARCH=@ARCH@
+OS=@OS@
+CFLAGS=@CFLAGS@
+
+exec cc $CFLAGS $@
