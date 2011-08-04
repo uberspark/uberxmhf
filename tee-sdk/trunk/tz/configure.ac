@@ -18,15 +18,6 @@ AC_SUBST([datadir])
 AC_SUBST([pkgdatadir], ['${datadir}/AC_PACKAGE_NAME'])
 AC_SUBST([SVC_LINK_SCRIPT], ["${pkgdatadir}/svc.ld"])
 
-# -r to link the pal into a relocatable object file rather than a
-#    stand-alone executable.
-# -nostdlib to avoid linking a pal against any standard libraries,
-#    which may make system calls or
-#    otherwise be incompatible with the pal.
-# -d to force allocation of 'common' symbols. we don't want the pal to share
-#    common symbols with the regular program.
-AC_SUBST([SVC_LDFLAGS], ['-r -nostdlib -d'])
-
 # prevent gcc from compiling switch statements as jump tables. can
 # probably get rid of this in the future by somehow ensuring that the
 # jump table data is also included in the svc memory areas

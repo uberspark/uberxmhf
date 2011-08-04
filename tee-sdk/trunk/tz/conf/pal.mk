@@ -23,7 +23,8 @@ PAL_LDLIBS+=$(call pkgconfig_ldlibs, $(PAL_PKGCONFIG_DEPS))
 # (which is assumed to match the %) are made private so as not to conflict
 # with the regular program's symbols (e.g., so the pal and regular program
 # can use different versions of libc)
+# -r to create a relocatable output, -d to force allocation of 'common' symbols
 %.pal.o: %.o
-	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	$(CC) -r -d $(LDFLAGS) -o $@ $^ $(LDLIBS)
 	objcopy -G $(subst -,_,$*) $@
 	if test `nm -u $@ | wc -l` -ne 0 ; then echo "undefd symbols in $@:"; nm -u $@; rm $@; false; else true; fi
