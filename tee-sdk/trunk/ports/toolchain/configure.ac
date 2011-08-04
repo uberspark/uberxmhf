@@ -2,7 +2,7 @@ AC_INIT([tsvc-toolchain], [0.1])
 
 AC_SUBST([ARCH], ['i586'])
 AC_SUBST([OS], ['tsvc'])
-#AC_SUBST([SYSROOT], [$prefix/$ARCH-$OS])
+AC_SUBST([SYSROOT], ['$prefix'/$ARCH-$OS])
 
 #AC_SUBST([prefix], [/usr/local])
 #AC_SUBST([exec_prefix], [$prefix/$ARCH-$OS/bin]) # wrappers get installed here
@@ -20,6 +20,7 @@ AC_PATH_PROG([NM], [nm], [nm])
 AC_PATH_PROG([OBJDUMP], [objdump], [objdump])
 AC_PATH_PROG([RANLIB], [ranlib], [ranlib])
 AC_PATH_PROG([STRIP], [strip], [strip])
+AC_PATH_PROG([PKG_CONFIG], [pkg-config], [pkg-config])
 
 AC_SUBST([CCLIB], [`$CC --print-file-name=`])
 
@@ -57,6 +58,6 @@ AC_CHECK_PROG([CAT], [cat], [cat])
 AC_CHECK_PROG([INSTALL], [install], [install])
 
 AC_CONFIG_FILES([
-  ar as cc ld nm objdump ranlib strip Makefile
+  ar as cc ld nm objdump ranlib strip pkg-config Makefile
 ])
 AC_OUTPUT

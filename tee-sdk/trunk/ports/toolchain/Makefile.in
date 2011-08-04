@@ -6,7 +6,7 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 bindir=@bindir@
 
-UTILS=strip ranlib objdump nm ld as ar cc
+UTILS=strip ranlib objdump nm ld as ar cc pkg-config
 
 install:
 	for UTIL in $(UTILS) ; do \
