@@ -33,13 +33,13 @@ tz_cross: tz_autoreconf toolchain newlib
 	cd tz && \
 	mkdir build-cross && \
 	cd build-cross && \
-	../configure --prefix=$(PREFIX)/$(HOST)/usr --host=$(HOST) --build=$(BUILD) && \
+	../configure --prefix=$(SYSROOT)/usr --host=$(HOST) --build=$(BUILD) && \
 	make && \
 	sudo make install
 
 openssl: toolchain newlib
 	export PATH=$(PREFIX)/bin:$(PATH) && \
 	cd ports/openssl && \
-	PREFIX=$(PREFIX)/$(HOST)/usr HOST=$(HOST) PATH=$(PREFIX)/bin:$(PATH) ./build.sh
+	PREFIX=$(SYSROOT)/usr HOST=$(HOST) ./build.sh
 
 .PHONY: toolchain newlib openssl tz_host tz_cross tz_autoreconf

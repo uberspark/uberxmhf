@@ -1,3 +1,54 @@
+# Quick Start
+
+Optionally, choose a PREFIX where you will install various utilities,
+libraries, and headers. The default PREFIX is /usr/local.
+
+Optionally, choose a host-name to use for PAL code. The default HOST
+is i586-tsvc.
+
+Optionally, choose a SYSROOT, where libraries to be linked against PAL
+code will be installed. The default is $(PREFIX)/$(HOST)
+
+Ensure that the trustvisor headers are installed for both the host and
+the cross-development SYSROOT.
+
+~~~ {.sh}
+cd $(TRUSTVISOR_CODE_DIR)
+./configure --prefix=$(SYSROOT)/usr
+make install-dev
+./configure --prefix=$(PREFIX)
+make install-dev
+~~~
+
+Run 'make' in the same directory as this README. If you would like to
+override the default paths, specify your overrides as parameters to make:
+
+~~~ {.sh}
+make PREFIX=$(PREFIX) HOST=$(HOST) SYSROOT=$(SYSROOT)
+~~~
+
+Of course, you may install each component individually, if you prefer,
+either by specifying a target to 'make', or by manually performing the
+steps in the corresponding 'make' recipe. At the time of this writing,
+the components installed by make are:
+
+* toolchain : these are wrappers to utilities such as gcc, with names
+  like i586-tsvc-gcc. They mostly serve to override the system paths
+  with paths in $(SYSROOT).
+
+* newlib : this is an implementation of libc targeted for
+  PALs. Functions that don't involve IO should work as expected. IO
+  functions currently fail gracefully. The toolchain i586-tsvc-gcc
+  will link against this library by default, unless -nostdlib is used.
+
+* tz : This implements the TrustZone API for managing and
+  communicating with services (pals) running the trusted execution
+  environment (trustvisor).
+
+* openssl : This is the well-known openssl library, ported for use
+  with pals. It is not installed by default, but can be installed with
+  'make openssl'
+
 # Overview
 
 This is the Trusted-Execution-Environment Software-Development-Kit
