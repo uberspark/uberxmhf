@@ -14,16 +14,6 @@ PAL_OBJS=hellopal.o pal-aux.o
 PAL_CFLAGS+=-g -Wall
 PAL_PKGCONFIG_DEPS=tee-sdk-svc tee-sdk-svc-tv
 
-# link pal against newlib
-###### newlib paths. should make a pkg-config for this
-NEWLIB=../../ports/newlib/install/i586
-NEWLIB_LIBDIR=$(NEWLIB)/lib
-NEWLIB_INCDIR=$(NEWLIB)/include
-######
-PAL_CFLAGS+=-I$(NEWLIB_INCDIR)
-PAL_LDFLAGS+=-L$(NEWLIB_LIBDIR)
-PAL_LDLIBS+=-lc -lnosys
-
 all: $(PROG_NAME)
 clean:
 	$(RM) .*.cmd *.o *.ko *~ -r .tmp* $(PROG_NAME) $(PROG_OBJS)
