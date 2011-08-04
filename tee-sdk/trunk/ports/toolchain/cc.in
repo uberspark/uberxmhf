@@ -9,7 +9,7 @@ LDFLAGS="@LDFLAGS@"
 LDLIBS="@LDLIBS@"
 
 for ARG in $@ ; do
-  if [ x"$ARG" == x"-nostdlib" ] || [ x"$ARG" == x"-nodefaultlibs" ] ; then
+  if [ x"$ARG" = x"-nostdlib" ] || [ x"$ARG" = x"-nodefaultlibs" ] ; then
       LDLIBS=""
   fi
 done
