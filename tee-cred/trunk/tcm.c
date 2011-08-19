@@ -172,9 +172,10 @@ int main(int argc, char **argv)
     goto out3;
   }
 
-  tcm_db_add(&tcm_ctx,
-             "key",
-             "val");
+  rv = tcm_db_add(&tcm_ctx,
+                  "key",
+                  "val");
+  printf("tcm_db_add returned %d\n", rv);
 
   tcm_ctx_release(&tcm_ctx);
  out3:
