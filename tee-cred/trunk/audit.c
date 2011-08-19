@@ -151,7 +151,7 @@ int audit_get_token(audit_ctx_t*    audit_ctx,
 
   tmp_ui32 = htonl(audit_string_len);
   if (sendall(sock, &tmp_ui32, sizeof(tmp_ui32))
-      || sendall(sock, audit_string, audit_string_len)) {
+      || sendall(sock, audit_string, audit_string_len-1)) { /* don't send null  byte */
     status = AUDIT_ESEND;
     goto close_sock;
   }

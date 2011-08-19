@@ -36,6 +36,7 @@
 #include <assert.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include <tee-sdk/svcapi.h>
 
@@ -43,6 +44,7 @@
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
 #include <openssl/engine.h>
+#include <openssl/sha.h>
 
 #include "audited.h"
 
@@ -128,4 +130,46 @@ int audited_save_pending_cmd(char *audit_string, void *cont, audited_execute_fn 
   return cmd_id;
 }
 
+audited_err_t audited_check_cmd_auth(audited_pending_cmd_t *cmd, const void* audit_token, size_t audit_token_len)
+{
+  uint64_t epoch_nonce, epoch_offset;
+  int svc_rv;
+  audited_err_t rv;
+  SHA256_CTX sha256_ctx;
+  uint8_t digest[SHA256_DIGEST_LENGTH];
 
+  /* check time first, in case signature verification time is significant */
+  svc_rv = svc_time_elapsed_us(&epoch_nonce, &epoch_offset);
+  if(svc_rv 
+     || epoch_nonce != cmd->epoch_nonce
+     || (epoch_offset - cmd->epoch_offset) > AUDITED_TIMEOUT_US) {
+    rv = AUDITED_ETIMEOUT;
+    goto out;
+  }
+
+  /* check signature */
+
+  /* compute digest of expected message */
+  if (!SHA256_Init(&sha256_ctx)
+      || !SHA256_Update(&sha256_ctx,
+                        cmd->audit_nonce,
+                        cmd->audit_nonce_len)
+      || !SHA256_Update(&sha256_ctx,
+                        cmd->audit_string,
+                        strlen(cmd->audit_string)) /* null not included */
+      || !SHA256_Final(&digest[0], &sha256_ctx)) {
+    ERR_print_errors_fp(stderr);
+    rv = AUDITED_ECRYPTO;
+    goto out;
+  }
+  if(!RSA_verify(NID_sha256,
+                 digest, SHA256_DIGEST_LENGTH,
+                 (unsigned char*)audit_token, audit_token_len,
+                 audit_pub_key)) {
+    rv = AUDITED_EBADSIG;
+    goto out;
+  }
+
+ out:
+  return AUDITED_ENONE;
+}

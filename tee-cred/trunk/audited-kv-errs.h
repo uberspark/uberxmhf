@@ -51,6 +51,7 @@ typedef enum {
   AKV_EBADCMD,
   AKV_ENOMEM,
   AKV_EAUDITED,
+  AKV_EBADAUTH,
 } akv_err_t;
 
 #endif

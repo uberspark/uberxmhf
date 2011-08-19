@@ -165,12 +165,17 @@ void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, str
         return;
       }
 
-      /* FIXME check audit token signature */
-      /* FIXME check time */
-
       if (!(cmd = audited_pending_cmd_of_id(cmd_id))) {
         *puiRv = AKV_EBADCMDHANDLE;
         return;
+      }
+
+      /* FIXME check audit token signature */
+      /* FIXME check time */
+      if (audited_check_cmd_auth(cmd,
+                                 audit_token,
+                                 audit_token_len)) {
+        *puiRv = AKV_EBADAUTH;
       }
 
       *puiRv = cmd->execute_fn(cmd->cont, psOutBuf);

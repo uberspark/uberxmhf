@@ -41,6 +41,10 @@
 typedef enum {
   AUDITED_ENONE=0,
   AUDITED_EBADKEY=1,
+  AUDITED_ETIMEOUT=2,
+  AUDITED_EBADSIG=3,
+  AUDITED_ENOMEM=4,
+  AUDITED_ECRYPTO=5,
 } audited_err_t;
 
 
@@ -60,10 +64,12 @@ typedef struct {
 } audited_pending_cmd_t;
 
 #define AUDITED_MAX_PENDING 100
+#define AUDITED_TIMEOUT_US (5ull*60ull*1000000ull)
 
 audited_err_t audited_init(const char* audit_server_pub_pem);
 void audited_release_pending_cmd_id(int i);
 audited_pending_cmd_t* audited_pending_cmd_of_id(int i);
 int audited_save_pending_cmd(char *audit_string, void *cont, audited_execute_fn execute_fn, audited_release_fn release_fn);
+audited_err_t audited_check_cmd_auth(audited_pending_cmd_t *cmd, const void* audit_token, size_t audit_token_len);
 
 #endif
