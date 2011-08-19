@@ -45,6 +45,7 @@ int akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem)
 {
   tz_return_t rv, serviceRv;
   tz_operation_t op;
+  bool registered_pal=false;
 
   /* register pal */
   rv = tv_tz_init(&ctx->tzDevice,
@@ -54,20 +55,31 @@ int akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem)
                   PAGE_SIZE,
                   10*PAGE_SIZE);
   if (rv) return rv;
+  registered_pal=true;
 
   /* call init */
   rv = TZOperationPrepareInvoke(&ctx->tzPalSession,
                                 AKVP_INIT,
                                 NULL,
                                 &op);
-  if (rv) return rv;
+  if (rv) {
+    goto out;
+  }
 
   rv = TZIEncodeF(&op, "%"TZI_ESTR, priv_key_pem);
-  if (rv) return rv;
+  if (rv) goto out;
 
   rv = TZOperationPerform(&op, &serviceRv);
   if (rv == TZ_ERROR_SERVICE)
     rv = serviceRv;
+
+ out:
+  if (rv && registered_pal) {
+    tv_tz_teardown(&ctx->tzDevice,
+                   &ctx->tzPalSession,
+                   &ctx->tzSvcId);
+  }
+
   return rv;
 }
 
