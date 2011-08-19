@@ -69,7 +69,7 @@ static struct {
   RSA* audit_pub_key;
 } akv_ctx;
 
-void akvp_init(const char* audit_server_pub_pem)
+tz_return_t akvp_init(const char* audit_server_pub_pem)
 {
   BIO *mem;
 
@@ -81,6 +81,11 @@ void akvp_init(const char* audit_server_pub_pem)
   mem = BIO_new_mem_buf((char*)audit_server_pub_pem, -1);
   akv_ctx.audit_pub_key =
     PEM_read_bio_RSA_PUBKEY(mem, NULL, NULL, NULL);
+  if (!akv_ctx.audit_pub_key) {
+    ERR_print_errors_fp(stderr);
+    return AKV_EBADKEY;
+  }
+  return AKV_ENONE;
 }
 
 void akvp_release(void)

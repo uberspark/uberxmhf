@@ -164,9 +164,9 @@ void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, str
         break;
       }
 
-      akvp_init(audit_pub_pem);
-      did_init=true;
-      *puiRv=0;
+      *puiRv = akvp_init(audit_pub_pem);
+      if(*puiRv == AKV_ENONE)
+        did_init=true;
     }
     break;
 

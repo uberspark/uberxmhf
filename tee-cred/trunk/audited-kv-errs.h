@@ -46,6 +46,7 @@ enum akvp_errs {
   AKV_EBADSTATE,
   AKV_EDECODE, /* TZ Decoder returned an error */
   AKV_EPARAM, /* illegal params */
+  AKV_EBADKEY,
 };
 
 #endif
