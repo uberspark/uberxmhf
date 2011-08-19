@@ -52,7 +52,7 @@ int akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem)
                   &ctx->tzSvcId,
                   audited_kv_pal,
                   PAGE_SIZE,
-                  PAGE_SIZE);
+                  10*PAGE_SIZE);
   if (rv) return rv;
 
   /* call init */
