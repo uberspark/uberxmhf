@@ -134,7 +134,7 @@ audited_err_t audited_check_cmd_auth(audited_pending_cmd_t *cmd, const void* aud
 {
   uint64_t epoch_nonce, epoch_offset;
   int svc_rv;
-  audited_err_t rv;
+  audited_err_t rv=AUDITED_ENONE;
   SHA256_CTX sha256_ctx;
   uint8_t digest[SHA256_DIGEST_LENGTH];
 
@@ -171,5 +171,5 @@ audited_err_t audited_check_cmd_auth(audited_pending_cmd_t *cmd, const void* aud
   }
 
  out:
-  return AUDITED_ENONE;
+  return rv;
 }
