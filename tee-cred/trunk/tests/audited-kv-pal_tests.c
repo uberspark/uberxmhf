@@ -45,22 +45,25 @@ static const size_t key1_len = 8;
 static const char * val1 = "value one";
 static const size_t val1_len = 10;
 static const char * audit_pub = 
-  "-----BEGIN PUBLIC KEY-----"
-  "MIIBIDANBgkqhkiG9w0BAQEFAAOCAQ0AMIIBCAKCAQEAtZi3Nsijw8LOFW6oTu5O"
-  "5/QKno3Z5c55iFrsmz8Y2Dy5pMyKDOmhNPbDO0EwZBPb66U9PgkPSdlihlh3DNEo"
-  "14xRA+rrhMqCFGVK86OzCv+tOlw0KbMXaZoYdJHkRSw4bVbIVVhYozJjcVRoaP2v"
-  "ed5x+KqX8mIxDg+jgg9Tb5z4GIJ9wcr2lOOY0GmSinItFAnyckSOJ0xqddmqWTmO"
-  "OvV05RdxykPgI7MR+7X3guTy3hpvA4N08dFOS3Hq7RM9tR5c2DEWRaFceW2YqKkU"
-  "3F5ODi/PefYVc0Y2YFUdmawJsqFlotfVd5JuKAGK3GzERKXJ3q4aTUn22qaU+EOX"
-  "TwIBAw=="
-  "-----END PUBLIC KEY-----";
+  "-----BEGIN PUBLIC KEY-----\n"
+  "MIIBIDANBgkqhkiG9w0BAQEFAAOCAQ0AMIIBCAKCAQEAtZi3Nsijw8LOFW6oTu5O\n"
+  "5/QKno3Z5c55iFrsmz8Y2Dy5pMyKDOmhNPbDO0EwZBPb66U9PgkPSdlihlh3DNEo\n"
+  "14xRA+rrhMqCFGVK86OzCv+tOlw0KbMXaZoYdJHkRSw4bVbIVVhYozJjcVRoaP2v\n"
+  "ed5x+KqX8mIxDg+jgg9Tb5z4GIJ9wcr2lOOY0GmSinItFAnyckSOJ0xqddmqWTmO\n"
+  "OvV05RdxykPgI7MR+7X3guTy3hpvA4N08dFOS3Hq7RM9tR5c2DEWRaFceW2YqKkU\n"
+  "3F5ODi/PefYVc0Y2YFUdmawJsqFlotfVd5JuKAGK3GzERKXJ3q4aTUn22qaU+EOX\n"
+  "TwIBAw==\n"
+  "-----END PUBLIC KEY-----\n";
 
 static tzi_encode_buffer_t *psInBuf, *psOutBuf;
 
 
 void setUp(void)
 {
-  akvp_init(audit_pub);
+  tz_return_t rv;
+  rv = akvp_init(audit_pub);
+  TEST_ASSERT(!rv);
+
   psInBuf = malloc(1000);
   TZIEncodeBufInit(psInBuf, 1000);
 
