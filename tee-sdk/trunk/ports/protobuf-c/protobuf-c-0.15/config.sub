@@ -1416,6 +1416,9 @@ case $os in
 	-dicos*)
 		os=-dicos
 		;;
+	-tsvc*)
+		os=-tsvc
+		;;
 	-none)
 		;;
 	*)
