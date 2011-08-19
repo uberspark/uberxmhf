@@ -139,7 +139,7 @@ char* read_file(const char *path)
     toread -= cnt;
     numread += cnt;
   }
-  rv[toread] = '\0';
+  rv[numread] = '\0';
   return rv;
 }
 
