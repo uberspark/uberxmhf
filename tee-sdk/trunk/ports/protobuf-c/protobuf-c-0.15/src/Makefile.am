@@ -26,10 +26,10 @@ protobufcincludedir = $(includedir)/google/protobuf-c
 EXTRA_DIST = CMakeLists.txt test/CMakeLists.txt
 
 libprotobuf_c_la_SOURCES = \
-google/protobuf-c/protobuf-c-dispatch.c \
 google/protobuf-c/protobuf-c-data-buffer.c \
-google/protobuf-c/protobuf-c-rpc.c \
 google/protobuf-c/protobuf-c.c
+# google/protobuf-c/protobuf-c-rpc.c
+# google/protobuf-c/protobuf-c-dispatch.c
 
 # ah, -no-undefined, goofball windows hack.
 # the documentation for this is rather confusing to me,
@@ -60,6 +60,6 @@ google/protobuf-c/gsklistmacros.h
 
 protobufcinclude_HEADERS = \
 google/protobuf-c/protobuf-c.h \
-google/protobuf-c/protobuf-c-private.h \
-google/protobuf-c/protobuf-c-dispatch.h \
-google/protobuf-c/protobuf-c-rpc.h
+google/protobuf-c/protobuf-c-private.h
+#google/protobuf-c/protobuf-c-dispatch.h
+#google/protobuf-c/protobuf-c-rpc.h
