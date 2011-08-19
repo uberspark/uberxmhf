@@ -44,7 +44,7 @@ kv_tests: kv_runner.o kv_tests.o kv.o $(UNITYOBJ) $(CMOCKOBJ)
 PROGS+=kv_tests
 OBJS+=kv_runner.o kv_tests.o kv.o
 
-audited-kv-pal-marshal_tests: audited-kv-pal-marshal_runner.o audited-kv-pal-marshal_tests.o audited-kv-pal-marshal.o audited-kv-pal.o kv.o mocks/Mocksvcapi.o $(UNITYOBJ) $(CMOCKOBJ)
+audited-kv-pal-marshal_tests: audited-kv-pal-marshal_runner.o audited-kv-pal-marshal_tests.o audited-kv-pal-marshal.o audited-kv-pal.o kv.o audited.o mocks/Mocksvcapi.o $(UNITYOBJ) $(CMOCKOBJ)
 audited-kv-pal-marshal_tests : LDLIBS += $(call pkgconfig_ldlibs, tee-sdk-svc) -lcrypto
 audited-kv-pal-marshal_tests : LDFLAGS += $(filter -L%, $(call pkgconfig_ldflags, tee-sdk-svc))
 PROGS+=audited-kv-pal-marshal_tests

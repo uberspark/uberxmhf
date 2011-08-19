@@ -41,9 +41,8 @@
 
 #include <tee-sdk/tzmarshal.h>
 
-typedef int (audited_begin_fn)(char **, void **, struct tzi_encode_buffer_t *);
-typedef int (audited_execute_fn)(void *, struct tzi_encode_buffer_t *);
-typedef void (audited_release_fn)(void *);
+#include "audited.h"
+
 /* typedef struct { */
 /*   audited_begin_fn *begin; */
 /*   audited_execute_fn *execute; */
@@ -64,86 +63,6 @@ typedef void (audited_release_fn)(void *);
 
 char end[10*4096]; /* define the end of the data segment and some
                       buffer spacefor libnosys's sbrk */
-
-typedef struct {
-  char *audit_string;
-  void *cont;
-  audited_execute_fn *execute_fn;
-  audited_release_fn *release_fn;
-  uint64_t epoch_nonce;
-  uint64_t epoch_offset;
-  void *audit_nonce;
-  size_t audit_nonce_len;
-} pending_cmd_t;
-
-#define MAX_PENDING 100
-static pending_cmd_t pending_cmds[MAX_PENDING];
-static int num_pending=0;
-
-static int get_free_pending_id()
-{
-  /* FIXME: handle multiple pending cmds */
-  assert(num_pending == 0);
-  num_pending++;
-  return 0;
-}
-
-static void release_pending_cmd_id(int i)
-{
-  pending_cmd_t *cmd;
-  /* FIXME: handle multiple pending cmds */
-  assert(i==0);
-  assert(num_pending == 1);
-
-  cmd = &pending_cmds[i];
-  free(cmd->audit_string);
-  if(cmd->release_fn && cmd->cont) {
-    cmd->release_fn(cmd->cont);
-  }
-  free(cmd->audit_nonce);
-
-  num_pending--;
-}
-
-static pending_cmd_t* pending_cmd_of_id(int i)
-{
-  assert(i == 0 && num_pending == 1);
-  return &pending_cmds[i];
-}
-
-static int save_pending_cmd(char *audit_string, void *cont, audited_execute_fn execute_fn, audited_release_fn release_fn)
-{
-  int cmd_id = get_free_pending_id();
-  uint64_t epoch_nonce, epoch_offset;
-  void *audit_nonce;
-  size_t audit_nonce_len;
-  int rv;
-
-  rv = svc_time_elapsed_us(&epoch_nonce, &epoch_offset);
-  if(rv) {
-    return -1;
-  }
-
-  audit_nonce_len = 256;
-  audit_nonce = malloc(audit_nonce_len);
-  if(!audit_nonce) {
-    return -1;
-  }
-  rv = svc_utpm_rand_block(audit_nonce, audit_nonce_len);
-
-  pending_cmds[cmd_id] = (pending_cmd_t) {
-    .audit_string = audit_string,
-    .cont = cont,
-    .execute_fn = execute_fn,
-    .release_fn = release_fn,
-    .epoch_nonce = epoch_nonce,
-    .epoch_offset = epoch_offset,
-    .audit_nonce = audit_nonce,
-    .audit_nonce_len = audit_nonce_len,
-  };
-  return cmd_id;
-}
-
 
 void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
@@ -221,7 +140,7 @@ void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, str
          array  audit-string (null-terminated string)
       */
       pending_cmd_id = save_pending_cmd(audit_string, cont, execute_fn, release_fn);
-      pending_cmd = &pending_cmds[pending_cmd_id];
+      pending_cmd = pending_cmd_of_id(pending_cmd_id);
       TZIEncodeUint32(psOutBuf, pending_cmd_id);
       TZIEncodeArray(psOutBuf, pending_cmd->audit_nonce, pending_cmd->audit_nonce_len);
       TZIEncodeArray(psOutBuf, audit_string, strlen(audit_string)+1);
