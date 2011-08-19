@@ -33,6 +33,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#include <string.h>
 
 #include <tee-sdk/tz.h>
 #include <tee-sdk/tv.h>
@@ -164,6 +165,9 @@ int akv_db_add_begin(akv_ctx_t*  ctx,
 {
   tz_return_t serviceReturn;
   int rv=0;
+
+  memset(cmd_ctx, 0, sizeof(*cmd_ctx));
+  cmd_ctx->akv_ctx = ctx;
 
   rv = TZIPrepareEncodeF(&ctx->tzPalSession,
                          &cmd_ctx->tzStartOp,
