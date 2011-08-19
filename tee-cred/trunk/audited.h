@@ -51,12 +51,12 @@ typedef struct {
   uint64_t epoch_offset;
   void *audit_nonce;
   size_t audit_nonce_len;
-} pending_cmd_t;
+} audited_pending_cmd_t;
 
-#define MAX_PENDING 100
+#define AUDITED_MAX_PENDING 100
 
-void release_pending_cmd_id(int i);
-pending_cmd_t* pending_cmd_of_id(int i);
-int save_pending_cmd(char *audit_string, void *cont, audited_execute_fn execute_fn, audited_release_fn release_fn);
+void audited_release_pending_cmd_id(int i);
+audited_pending_cmd_t* audited_pending_cmd_of_id(int i);
+int audited_save_pending_cmd(char *audit_string, void *cont, audited_execute_fn execute_fn, audited_release_fn release_fn);
 
 #endif

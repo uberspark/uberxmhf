@@ -41,7 +41,7 @@
 
 #include "audited.h"
 
-static pending_cmd_t pending_cmds[MAX_PENDING];
+static audited_pending_cmd_t pending_cmds[AUDITED_MAX_PENDING];
 static int num_pending=0;
 
 static int get_free_pending_id()
@@ -52,9 +52,9 @@ static int get_free_pending_id()
   return 0;
 }
 
-void release_pending_cmd_id(int i)
+void audited_release_pending_cmd_id(int i)
 {
-  pending_cmd_t *cmd;
+  audited_pending_cmd_t *cmd;
   /* FIXME: handle multiple pending cmds */
   assert(i==0);
   assert(num_pending == 1);
@@ -69,13 +69,13 @@ void release_pending_cmd_id(int i)
   num_pending--;
 }
 
-pending_cmd_t* pending_cmd_of_id(int i)
+audited_pending_cmd_t* audited_pending_cmd_of_id(int i)
 {
   assert(i == 0 && num_pending == 1);
   return &pending_cmds[i];
 }
 
-int save_pending_cmd(char *audit_string, void *cont, audited_execute_fn execute_fn, audited_release_fn release_fn)
+int audited_save_pending_cmd(char *audit_string, void *cont, audited_execute_fn execute_fn, audited_release_fn release_fn)
 {
   int cmd_id = get_free_pending_id();
   uint64_t epoch_nonce, epoch_offset;
@@ -95,7 +95,7 @@ int save_pending_cmd(char *audit_string, void *cont, audited_execute_fn execute_
   }
   rv = svc_utpm_rand_block(audit_nonce, audit_nonce_len);
 
-  pending_cmds[cmd_id] = (pending_cmd_t) {
+  pending_cmds[cmd_id] = (audited_pending_cmd_t) {
     .audit_string = audit_string,
     .cont = cont,
     .execute_fn = execute_fn,

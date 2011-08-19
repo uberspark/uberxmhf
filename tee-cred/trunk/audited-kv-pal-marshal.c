@@ -97,7 +97,7 @@ void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, str
       audited_execute_fn *execute_fn=NULL;
       audited_release_fn *release_fn=NULL;
       int pending_cmd_id;
-      pending_cmd_t *pending_cmd=NULL;
+      audited_pending_cmd_t *pending_cmd=NULL;
 
       if(!did_init) {
         *puiRv = AKV_EBADSTATE;
@@ -139,8 +139,8 @@ void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, str
          array  audit-nonce (binary data)
          array  audit-string (null-terminated string)
       */
-      pending_cmd_id = save_pending_cmd(audit_string, cont, execute_fn, release_fn);
-      pending_cmd = pending_cmd_of_id(pending_cmd_id);
+      pending_cmd_id = audited_save_pending_cmd(audit_string, cont, execute_fn, release_fn);
+      pending_cmd = audited_pending_cmd_of_id(pending_cmd_id);
       TZIEncodeUint32(psOutBuf, pending_cmd_id);
       TZIEncodeArray(psOutBuf, pending_cmd->audit_nonce, pending_cmd->audit_nonce_len);
       TZIEncodeArray(psOutBuf, audit_string, strlen(audit_string)+1);
@@ -151,7 +151,7 @@ void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, str
       void *audit_token;
       uint32_t audit_token_len;
       int cmd_id;
-      pending_cmd_t *cmd;
+      audited_pending_cmd_t *cmd;
 
       if(!did_init) {
         *puiRv = AKV_EBADSTATE;
@@ -169,13 +169,13 @@ void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, str
       /* FIXME check audit token signature */
       /* FIXME check time */
 
-      if (!(cmd = pending_cmd_of_id(cmd_id))) {
+      if (!(cmd = audited_pending_cmd_of_id(cmd_id))) {
         *puiRv = AKV_EBADCMDHANDLE;
         return;
       }
 
       *puiRv = cmd->execute_fn(cmd->cont, psOutBuf);
-      release_pending_cmd_id(cmd_id);
+      audited_release_pending_cmd_id(cmd_id);
       return;
     }
     break;
