@@ -43,7 +43,7 @@
 
 void pagelist_init(pagelist_t *pl)
 {
-  const int pages = 64;
+  const int pages = 128;
   pl->buf = vmalloc(pages*PAGE_SIZE_4K);
   ASSERT(pl->buf != NULL);
 
