@@ -37,26 +37,27 @@
 #define AUDITED_KV_PAL_FNS_H
 
 #include <tee-sdk/tz.h>
+#include "audited-kv-errs.h"
 
-tz_return_t akvp_init(const char*);
+akv_err_t akvp_init(const char*);
 void akvp_release(void);
 
-tz_return_t akvp_db_add_begin_marshal(char **audit_string,
-                                      void **vcont,
-                                      struct tzi_encode_buffer_t *psInBuf);
-tz_return_t akvp_db_add_begin(char **audit_string,
+int akvp_db_add_begin_marshal(char **audit_string,
                               void **vcont,
-                              const void* key, size_t key_len,
-                              const void* val, size_t val_len);
-tz_return_t akvp_db_add_execute(void* vcont, struct tzi_encode_buffer_t *psOutBuf);
+                              struct tzi_encode_buffer_t *psInBuf);
+akv_err_t akvp_db_add_begin(char **audit_string,
+                            void **vcont,
+                            const void* key, size_t key_len,
+                            const void* val, size_t val_len);
+int akvp_db_add_execute(void* vcont, struct tzi_encode_buffer_t *psOutBuf);
 void akvp_db_add_release(void* vcont);
 
-tz_return_t akvp_db_get_begin_marshal(char **audit_string,
-                                      void **vcont,
-                                      struct tzi_encode_buffer_t *psInBuf);
-tz_return_t akvp_db_get_begin(char **audit_string,
+int akvp_db_get_begin_marshal(char **audit_string,
                               void **vcont,
-                              const void* key, size_t key_len);
-tz_return_t akvp_db_get_execute(void* vcont, struct tzi_encode_buffer_t *psOutBuf);
+                              struct tzi_encode_buffer_t *psInBuf);
+akv_err_t akvp_db_get_begin(char **audit_string,
+                            void **vcont,
+                            const void* key, size_t key_len);
+int akvp_db_get_execute(void* vcont, struct tzi_encode_buffer_t *psOutBuf);
 void akvp_db_get_release(void* vcont);
 #endif

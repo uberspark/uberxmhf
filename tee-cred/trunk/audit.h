@@ -44,7 +44,7 @@
 
 #define AUDIT_TOKEN_MAX 1000
 
-enum {
+typedef enum {
   AUDIT_ENONE=0,
   AUDIT_ELOOKUP=1,
   AUDIT_ESOCK=2,
@@ -52,7 +52,7 @@ enum {
   AUDIT_ESEND=4,
   AUDIT_ERECV=5,
   AUDIT_ESHORT_BUFFER=6,
-};
+} audit_err_t;
 
 typedef struct {
   const char* hostname;

@@ -41,8 +41,8 @@
 
 #include <tee-sdk/tzmarshal.h>
 
-typedef tz_return_t (audited_begin_fn)(char **, void **, struct tzi_encode_buffer_t *);
-typedef tz_return_t (audited_execute_fn)(void *, struct tzi_encode_buffer_t *);
+typedef int (audited_begin_fn)(char **, void **, struct tzi_encode_buffer_t *);
+typedef int (audited_execute_fn)(void *, struct tzi_encode_buffer_t *);
 typedef void (audited_release_fn)(void *);
 /* typedef struct { */
 /*   audited_begin_fn *begin; */
@@ -186,7 +186,7 @@ void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, str
       }
 
       if(TZIDecodeGetError(psInBuf)) {
-        *puiRv = TZIDecodeGetError(psInBuf);
+        *puiRv = AKV_EDECODE;
         return;
       }
 
@@ -243,7 +243,7 @@ void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, str
       audit_token = TZIDecodeArraySpace(psInBuf, &audit_token_len);
 
       if (TZIDecodeGetError(psInBuf)) {
-        *puiRv = TZIDecodeGetError(psInBuf);
+        *puiRv = AKV_EDECODE;
         return;
       }
 
@@ -261,7 +261,7 @@ void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, str
     }
     break;
   default:
-    *puiRv = TZ_ERROR_NOT_IMPLEMENTED;
+    *puiRv = AKV_EBADCMD;
     break;
   }
 }

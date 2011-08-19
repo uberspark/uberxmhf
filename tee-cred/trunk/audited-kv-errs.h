@@ -36,7 +36,7 @@
 #ifndef AUDITED_KV_ERRS_H
 #define AUDITED_KV_ERRS_H
 
-enum akvp_errs {
+typedef enum {
   AKV_ENONE=0,
   AKV_EEXISTS,
   AKV_ENOTFOUND,
@@ -45,8 +45,11 @@ enum akvp_errs {
   AKV_EBADCMDHANDLE,
   AKV_EBADSTATE,
   AKV_EDECODE, /* TZ Decoder returned an error */
+  AKV_EENCODE, /* TZ Encoder returned an error */
   AKV_EPARAM, /* illegal params */
   AKV_EBADKEY,
-};
+  AKV_EBADCMD,
+  AKV_ENOMEM,
+} akv_err_t;
 
 #endif

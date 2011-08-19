@@ -41,7 +41,7 @@
 #include "audit.h"
 #include "audited-kv.h"
 
-enum {
+typedef enum {
   TCM_ENONE=0,
   TCM_EINVAL,
   TCM_ENOMEM,
@@ -49,7 +49,7 @@ enum {
   TCM_EEXISTS,
   TCM_EAKV,
   TCM_EAUDIT,
-};
+} tcm_err_t;
 
 typedef struct {
   audit_ctx_t* audit_ctx;
@@ -62,9 +62,9 @@ int tcm_init(tcm_ctx_t*,
 
 void tcm_release(tcm_ctx_t*);
 
-int tcm_db_add(tcm_ctx_t*,
-               const char* key,
-               const char* val);
+tcm_err_t tcm_db_add(tcm_ctx_t*,
+                     const char* key,
+                     const char* val);
 
 int tcm_db_get(tcm_ctx_t*,
                const char* key,

@@ -69,7 +69,7 @@ static struct {
   RSA* audit_pub_key;
 } akv_ctx;
 
-tz_return_t akvp_init(const char* audit_server_pub_pem)
+akv_err_t akvp_init(const char* audit_server_pub_pem)
 {
   BIO *mem;
 
@@ -132,9 +132,9 @@ void akvp_db_add_release(void* vcont)
   free(cont);
 }
 
-tz_return_t akvp_db_add_begin_marshal(char **audit_string,
-                                      void **vcont,
-                                      struct tzi_encode_buffer_t *psInBuf)
+int akvp_db_add_begin_marshal(char **audit_string,
+                              void **vcont,
+                              struct tzi_encode_buffer_t *psInBuf)
 {
   char *key, *val;
   uint32_t key_len, val_len;
@@ -143,24 +143,24 @@ tz_return_t akvp_db_add_begin_marshal(char **audit_string,
   val = TZIDecodeArraySpace(psInBuf, &val_len);
 
   if (TZIDecodeGetError(psInBuf)) {
-    return TZIDecodeGetError(psInBuf);
+    return AKV_EDECODE;
   }
 
   return akvp_db_add_begin(audit_string, vcont, key, key_len, val, val_len);
 }
 
 
-tz_return_t akvp_db_add_begin(char **audit_string,
-                              void **vcont,
-                              const void* key, size_t key_len,
-                              const void* val, size_t val_len)
+akv_err_t akvp_db_add_begin(char **audit_string,
+                            void **vcont,
+                            const void* key, size_t key_len,
+                            const void* val, size_t val_len)
 {
   akvp_db_add_cont_t **pp_cont = ((akvp_db_add_cont_t**)vcont);
   akvp_db_add_cont_t *cont;
 
   *pp_cont = malloc(sizeof(**pp_cont));
   if(!pp_cont) {
-    return TZ_ERROR_MEMORY;
+    return AKV_ENOMEM;
   }
   cont = *pp_cont;
 
@@ -182,28 +182,28 @@ tz_return_t akvp_db_add_begin(char **audit_string,
     FREE_AND_NULL(cont->val);
     FREE_AND_NULL(cont);
     FREE_AND_NULL(*audit_string);
-    return TZ_ERROR_MEMORY;
+    return AKV_ENOMEM;
   }
 
   memcpy(cont->key, key, key_len);
   memcpy(cont->val, val, val_len);
 
-  return TZ_SUCCESS;
+  return AKV_ENONE;
 }
 
-tz_return_t akvp_db_add_execute(void* vcont, struct tzi_encode_buffer_t *psOutBuf)
+int akvp_db_add_execute(void* vcont, struct tzi_encode_buffer_t *psOutBuf)
 {
   akvp_db_add_cont_t *cont = (akvp_db_add_cont_t*)vcont;
-  tz_return_t rv;
-  int kv_rv;
+  akv_err_t akv_err;
+  kv_err_t kv_err;
 
-  kv_rv = kv_add(akv_ctx.kv_ctx, cont->key, cont->key_len, cont->val, cont->val_len);
-  rv =
-    (kv_rv == KV_ENONE) ? AKV_ENONE
-    : (kv_rv == KV_EEXISTS) ? AKV_EEXISTS
+  kv_err = kv_add(akv_ctx.kv_ctx, cont->key, cont->key_len, cont->val, cont->val_len);
+  akv_err =
+    (kv_err == KV_ENONE) ? AKV_ENONE
+    : (kv_err == KV_EEXISTS) ? AKV_EEXISTS
     : AKV_EKV;
 
-  return rv;
+  return akv_err;
 }
 
 typedef struct {
@@ -211,9 +211,9 @@ typedef struct {
   size_t key_len;
 } akvp_db_get_cont_t;
 
-tz_return_t akvp_db_get_begin_marshal(char **audit_string,
-                                      void **vcont,
-                                      struct tzi_encode_buffer_t *psInBuf)
+int akvp_db_get_begin_marshal(char **audit_string,
+                              void **vcont,
+                              struct tzi_encode_buffer_t *psInBuf)
 {
   void *key;
   uint32_t key_len;
@@ -221,22 +221,22 @@ tz_return_t akvp_db_get_begin_marshal(char **audit_string,
   key = TZIDecodeArraySpace(psInBuf, &key_len);
 
   if (TZIDecodeGetError(psInBuf)) {
-    return TZIDecodeGetError(psInBuf);
+    return AKV_EDECODE;
   }
 
   return akvp_db_get_begin(audit_string, vcont, key, key_len);
 }
 
-tz_return_t akvp_db_get_begin(char **audit_string,
-                              void **vcont,
-                              const void* key, size_t key_len)
+akv_err_t akvp_db_get_begin(char **audit_string,
+                            void **vcont,
+                            const void* key, size_t key_len)
 {
   akvp_db_get_cont_t **pp_cont = ((akvp_db_get_cont_t**)vcont);
   akvp_db_get_cont_t *cont;
 
   *pp_cont = malloc(sizeof(**pp_cont));
   if(!pp_cont) {
-    return TZ_ERROR_MEMORY;
+    return AKV_ENOMEM;
   }
   cont = *pp_cont;
 
@@ -254,37 +254,37 @@ tz_return_t akvp_db_get_begin(char **audit_string,
     FREE_AND_NULL(cont->key);
     FREE_AND_NULL(cont);
     FREE_AND_NULL(*audit_string);
-    return TZ_ERROR_MEMORY;
+    return AKV_ENOMEM;
   }
 
   memcpy(cont->key, key, key_len);
 
-  return TZ_SUCCESS;
+  return AKV_ENONE;
 }
 
-tz_return_t akvp_db_get_execute(void* vcont, struct tzi_encode_buffer_t *psOutBuf)
+int akvp_db_get_execute(void* vcont, struct tzi_encode_buffer_t *psOutBuf)
 {
-  int kv_rv;
+  kv_err_t kv_err;
   akvp_db_get_cont_t *cont = (akvp_db_get_cont_t*)vcont;
   const void *val;
   size_t val_len;
-  tz_return_t rv;
+  akv_err_t akv_err;
 
-  kv_rv = kv_get(akv_ctx.kv_ctx, cont->key, cont->key_len, &val, &val_len);
-  rv =
-    (kv_rv == KV_ENONE) ? TZ_SUCCESS
-    : (kv_rv == KV_ENOTFOUND) ? AKV_ENOTFOUND
+  kv_err = kv_get(akv_ctx.kv_ctx, cont->key, cont->key_len, &val, &val_len);
+  akv_err =
+    (kv_err == KV_ENONE) ? AKV_ENONE
+    : (kv_err == KV_ENOTFOUND) ? AKV_ENOTFOUND
     : AKV_EKV;
 
-  if (rv != TZ_SUCCESS) {
-    return rv;
+  if (akv_err) {
+    return akv_err;
   }
 
   TZIEncodeArray(psOutBuf, val, val_len);
   if(TZIDecodeGetError(psOutBuf)) {
-    return TZIDecodeGetError(psOutBuf);
+    return AKV_EENCODE;
   }
-  return rv;
+  return akv_err;
 }
 
 void akvp_db_get_release(void* vcont)

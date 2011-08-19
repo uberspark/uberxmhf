@@ -41,13 +41,13 @@
 struct kv_ctx_s;
 typedef struct kv_ctx_s kv_ctx_t;
 
-enum {
+typedef enum {
   KV_ENONE=0,
   KV_ENOTFOUND,
   KV_EEXISTS,
   KV_EFULL,
   KV_ENOMEM,
-};
+} kv_err_t;
 
 kv_ctx_t* kv_ctx_new(void);
 void kv_ctx_del(kv_ctx_t*);

@@ -45,9 +45,9 @@
 
 #include <tee-sdk/tv.h>
 
-int tcm_ctx_init(tcm_ctx_t* tcm_ctx,
-                 audit_ctx_t* audit_ctx,
-                 akv_ctx_t* akv_ctx)
+tcm_err_t tcm_ctx_init(tcm_ctx_t* tcm_ctx,
+                       audit_ctx_t* audit_ctx,
+                       akv_ctx_t* akv_ctx)
 {
   if (!tcm_ctx || !audit_ctx || !akv_ctx) {
     return TCM_EINVAL;
@@ -62,11 +62,13 @@ void tcm_ctx_release(tcm_ctx_t* tcm_ctx)
 {
 }
 
-int tcm_db_add(tcm_ctx_t* tcm_ctx,
-               const char* key,
-               const char* val)
+tcm_err_t tcm_db_add(tcm_ctx_t* tcm_ctx,
+                     const char* key,
+                     const char* val)
 {
   akv_cmd_ctx_t akv_cmd_ctx;
+  akv_err_t akv_err;
+  audit_err_t audit_err;
   uint8_t audit_token[AUDIT_TOKEN_MAX];
   size_t audit_token_len = sizeof(audit_token);
   int rv = 0;
@@ -74,35 +76,37 @@ int tcm_db_add(tcm_ctx_t* tcm_ctx,
   if (!tcm_ctx || !key || !val)
     return TCM_EINVAL;
 
-  if (akv_db_add_begin(tcm_ctx->akv_ctx,
-                       &akv_cmd_ctx,
-                       key,
-                       val)) {
+  akv_err = akv_db_add_begin(tcm_ctx->akv_ctx,
+                             &akv_cmd_ctx,
+                             key,
+                             val);
+  if (akv_err) {
     rv= TCM_EAKV;
-    goto out;
+    goto cleanup_none;
   }
 
-  if (audit_get_token(tcm_ctx->audit_ctx,
-                      akv_cmd_ctx.audit_nonce,
-                      akv_cmd_ctx.audit_nonce_len,
-                      akv_cmd_ctx.audit_string,
-                      akv_cmd_ctx.audit_string_len,
-                      audit_token,
-                      &audit_token_len)) {
+  audit_err = audit_get_token(tcm_ctx->audit_ctx,
+                              akv_cmd_ctx.audit_nonce,
+                              akv_cmd_ctx.audit_nonce_len,
+                              akv_cmd_ctx.audit_string,
+                              akv_cmd_ctx.audit_string_len,
+                              audit_token,
+                              &audit_token_len);
+  if (audit_err) {
     rv = TCM_EAUDIT;
-    goto out;
+    goto cleanup_cmd;
   }
 
   if (akv_db_add_execute(&akv_cmd_ctx,
                          audit_token,
                          audit_token_len)) {
     rv = TCM_EAKV;
-    goto out;
+    goto cleanup_cmd;
   }
 
- out:
+ cleanup_cmd:
   akv_cmd_ctx_release(&akv_cmd_ctx);
-
+ cleanup_none:
   return rv;
 }
 
@@ -146,6 +150,10 @@ char* read_file(const char *path)
 int main(int argc, char **argv)
 {
   int rv=0;
+  audit_err_t audit_err;
+  akv_err_t akv_err;
+  tcm_err_t tcm_err;
+  
   tcm_ctx_t tcm_ctx;
   audit_ctx_t audit_ctx;
   akv_ctx_t akv_ctx;
@@ -154,34 +162,42 @@ int main(int argc, char **argv)
   const char* pem_pub_key_file = argv[3];
   char *pem_pub_key = read_file(pem_pub_key_file);
 
-  rv = audit_ctx_init(&audit_ctx, server, port);
-  if (rv) {
-    printf("audit_ctx_init failed with rv %d\n", rv);
-    goto out1;
+  audit_err = audit_ctx_init(&audit_ctx, server, port);
+  if (audit_err) {
+    rv = 1;
+    printf("audit_ctx_init failed with rv %d\n", audit_err);
+    goto cleanup_none;
   }
 
-  rv = akv_ctx_init(&akv_ctx, pem_pub_key);
-  if (rv) {
-    printf("akv_ctx_init failed with rv %d\n", rv);
-    goto out2;
+  akv_err = akv_ctx_init(&akv_ctx, pem_pub_key);
+  if (akv_err) {
+    rv = 2;
+    printf("akv_ctx_init failed with rv %d\n", akv_err);
+    goto cleanup_audit;
   }
 
-  rv = tcm_ctx_init(&tcm_ctx, &audit_ctx, &akv_ctx);
-  if (rv) {
-    printf("tcm_ctx_init failed with rv %d\n", rv);
-    goto out3;
+  tcm_err = tcm_ctx_init(&tcm_ctx, &audit_ctx, &akv_ctx);
+  if (tcm_err) {
+    rv = 3;
+    printf("tcm_ctx_init failed with rv %d\n", tcm_err);
+    goto cleanup_akv;
   }
 
-  rv = tcm_db_add(&tcm_ctx,
-                  "key",
-                  "val");
-  printf("tcm_db_add returned %d\n", rv);
+  tcm_err = tcm_db_add(&tcm_ctx,
+                       "key",
+                       "val");
+  if (tcm_err) {
+    rv = 4;
+    printf("tcm_db_add failed with %d\n", tcm_err);
+    goto cleanup_tcm;
+  }
 
+ cleanup_tcm:
   tcm_ctx_release(&tcm_ctx);
- out3:
+ cleanup_akv:
   akv_ctx_release(&akv_ctx);
- out2:
+ cleanup_audit:
   audit_ctx_release(&audit_ctx);
- out1:
+ cleanup_none:
   return rv;
 } 
