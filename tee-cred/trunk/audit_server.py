@@ -53,6 +53,12 @@ def main(privkey):
         audit_string = read_audit_string(conn)
         print "got " + audit_nonce.__repr__() + ", " + audit_string.__repr__()
         audit_token = gen_audit_token(privkey, audit_nonce, audit_string)
+
+        # TEMP intentionally give invalid sig
+        # audit_token = list(audit_token)
+        # audit_token[-1] = chr(ord(audit_token[-1]) + 1)
+        # audit_token = ''.join(audit_token)
+
         send_audit_token(conn, audit_token)
 
 if __name__ == '__main__':
