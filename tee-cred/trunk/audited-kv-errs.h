@@ -50,6 +50,7 @@ typedef enum {
   AKV_EBADKEY,
   AKV_EBADCMD,
   AKV_ENOMEM,
+  AKV_EAUDITED,
 } akv_err_t;
 
 #endif

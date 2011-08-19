@@ -38,6 +38,12 @@
 
 #include <tee-sdk/tzmarshal.h>
 
+typedef enum {
+  AUDITED_ENONE=0,
+  AUDITED_EBADKEY=1,
+} audited_err_t;
+
+
 typedef int (audited_begin_fn)(char **, void **, struct tzi_encode_buffer_t *);
 typedef int (audited_execute_fn)(void *, struct tzi_encode_buffer_t *);
 typedef void (audited_release_fn)(void *);
@@ -55,6 +61,7 @@ typedef struct {
 
 #define AUDITED_MAX_PENDING 100
 
+audited_err_t audited_init(const char* audit_server_pub_pem);
 void audited_release_pending_cmd_id(int i);
 audited_pending_cmd_t* audited_pending_cmd_of_id(int i);
 int audited_save_pending_cmd(char *audit_string, void *cont, audited_execute_fn execute_fn, audited_release_fn release_fn);

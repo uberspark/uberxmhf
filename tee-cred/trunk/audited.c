@@ -39,10 +39,16 @@
 
 #include <tee-sdk/svcapi.h>
 
+#include <openssl/bio.h>
+#include <openssl/pem.h>
+#include <openssl/rsa.h>
+#include <openssl/engine.h>
+
 #include "audited.h"
 
 static audited_pending_cmd_t pending_cmds[AUDITED_MAX_PENDING];
 static int num_pending=0;
+static RSA* audit_pub_key=NULL;
 
 static int get_free_pending_id()
 {
@@ -50,6 +56,20 @@ static int get_free_pending_id()
   assert(num_pending == 0);
   num_pending++;
   return 0;
+}
+
+audited_err_t audited_init(const char* audit_server_pub_pem)
+{
+  BIO *mem;
+
+  mem = BIO_new_mem_buf((char*)audit_server_pub_pem, -1);
+  audit_pub_key =
+    PEM_read_bio_RSA_PUBKEY(mem, NULL, NULL, NULL);
+  if (!audit_pub_key) {
+    ERR_print_errors_fp(stderr);
+    return AUDITED_EBADKEY;
+  }
+  return AUDITED_ENONE;
 }
 
 void audited_release_pending_cmd_id(int i)

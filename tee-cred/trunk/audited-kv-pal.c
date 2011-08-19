@@ -42,17 +42,41 @@
 #include <tee-sdk/tz.h>
 #include <tee-sdk/tzmarshal.h>
 
-#include <openssl/bio.h>
-#include <openssl/pem.h>
-#include <openssl/rsa.h>
-#include <openssl/engine.h>
-
+#include "audited.h"
 #include "audited-kv-pal.h"
 #include "audited-kv-pal-fns.h"
 #include "kv.h"
 
 
 #define FREE_AND_NULL(x) do { free(x) ; x=NULL; } while(0)
+
+static int remap_err(int in, int default_val, ...)
+{
+  va_list ap;
+  int from, to;
+  
+  /* 0 always maps to 0 */
+  if(in == 0) return 0;
+
+  va_start(ap, default_val);
+  while(1) {
+    /* keep going until we get to '0' sentinel */
+    from = va_arg(ap, int);
+    if(!from) break;
+    to = va_arg(ap, int);
+    if(!to) break;
+
+    /* match: remap to 'to' */
+    if (from==in) {
+      va_end(ap);
+      return to;
+    }
+  }
+  va_end(ap);
+
+  /* no match: return default */
+  return default_val;
+}
 
 /* static char* strcpy_mallocd(const char *src) */
 /* { */
@@ -66,26 +90,24 @@
 /* } */
 static struct {
   kv_ctx_t* kv_ctx;
-  RSA* audit_pub_key;
 } akv_ctx;
 
-akv_err_t akvp_init(const char* audit_server_pub_pem)
+akv_err_t akvp_init(const char* audit_pub_pem)
 {
-  BIO *mem;
+  audited_err_t audited_err;
+  akv_err_t rv;
 
   if(akv_ctx.kv_ctx) {
     kv_ctx_del(akv_ctx.kv_ctx);
   }
   akv_ctx.kv_ctx = kv_ctx_new();
-  
-  mem = BIO_new_mem_buf((char*)audit_server_pub_pem, -1);
-  akv_ctx.audit_pub_key =
-    PEM_read_bio_RSA_PUBKEY(mem, NULL, NULL, NULL);
-  if (!akv_ctx.audit_pub_key) {
-    ERR_print_errors_fp(stderr);
-    return AKV_EBADKEY;
-  }
-  return AKV_ENONE;
+
+  audited_err = audited_init(audit_pub_pem);
+  rv = remap_err(audited_err, AKV_EAUDITED,
+                 AUDITED_EBADKEY, AKV_EBADKEY,
+                 0,0);
+
+  return rv;
 }
 
 void akvp_release(void)

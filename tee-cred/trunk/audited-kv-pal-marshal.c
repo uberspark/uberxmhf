@@ -33,14 +33,13 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include "audited-kv-pal.h"
-#include "audited-kv-pal-fns.h"
-
 #include <assert.h>
 #include <string.h>
 
 #include <tee-sdk/tzmarshal.h>
 
+#include "audited-kv-pal.h"
+#include "audited-kv-pal-fns.h"
 #include "audited.h"
 
 /* typedef struct { */
@@ -82,7 +81,7 @@ void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, str
         *puiRv=AKV_EPARAM;
         break;
       }
-
+      
       *puiRv = akvp_init(audit_pub_pem);
       if(*puiRv == AKV_ENONE)
         did_init=true;
