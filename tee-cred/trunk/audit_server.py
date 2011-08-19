@@ -51,7 +51,7 @@ def main(privkey):
 
         audit_nonce = read_audit_nonce(conn)
         audit_string = read_audit_string(conn)
-        print "got " + audit_nonce + ", " + audit_string
+        print "got " + audit_nonce.__repr__() + ", " + audit_string.__repr__()
         audit_token = gen_audit_token(privkey, audit_nonce, audit_string)
         send_audit_token(conn, audit_token)
 
