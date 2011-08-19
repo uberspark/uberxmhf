@@ -146,12 +146,14 @@ test:
 	cd test && $(MAKE) -w all
 
 #------cleanup rules
-.PHONY: clean test
+.PHONY: clean distclean test
 clean: 
 	cd app && $(MAKE) -w clean
 	rm -rf $(APPOBJECTSDIR)
 	cd $(EMHFCOREDIR) && $(MAKE) -w clean
 	cd test && $(MAKE) -w clean
+
+distclean:
 	rm -f config.log
 	rm -f config.status
 
