@@ -67,13 +67,34 @@ static int nv_read(void) {
     return 0; /* TODO: check for failures */
 }
 
+static int nv_write(void) {
+    uint32_t rv=0, i;
+    tpm_nv_index_t idx = TRUSTVISOR_NV_INDEX;
+    uint8_t data[64];
+    uint32_t data_size = 64;
+    uint32_t locality = 2;
+
+    for(i=0; i<data_size; i++) data[i] = i; /* something recognizable */
+    
+    rv = tpm_nv_write_value(locality, idx, 0, data, data_size);
+
+    dprintf(LOG_TRACE, "\n[TV] tpm_nv_write_value returned %d.", rv);
+
+    return 0; /* TODO: check for failures */
+}
+
+
 int trustvisor_nv_init(void) {
   uint32_t rv = 0;
   dprintf(LOG_TRACE, "\n[TV] trustvisor_nv_init started.");
 
-  /* First try to write the value */
+  /* Do an initial read */
+  rv = nv_read();
 
-  /* then try to read the value */
+  /* then try to write the value */
+  rv = nv_write();
+
+  /* then try to read the new value */
   rv = nv_read();
   
   return rv;
