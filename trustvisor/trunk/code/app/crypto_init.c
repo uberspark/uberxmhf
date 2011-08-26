@@ -53,6 +53,7 @@
 #include <random.h> 
 
 #include <crypto_init.h>
+#include <nv.h>
 
 /* awesome trick from http://www.jaggersoft.com/pubs/CVu11_3.html */
 #define COMPILE_TIME_ASSERT(pred) \
@@ -269,6 +270,11 @@ int trustvisor_master_crypto_init(void) {
 		/* prefer not to depend on the globals */
 		if(0 != (rv = trustvisor_measure_qnd_bridge_signing_pubkey(&g_rsa))) {
 				dprintf(LOG_ERROR, "\n[TV] trustvisor_long_term_secret_init FAILED with rv %d!!!!\n", rv);
+				goto out;
+		}
+
+		if(0 != (rv = trustvisor_nv_init())) {
+				dprintf(LOG_ERROR, "\n[TV] trustvisor_nv_init FAILED with rv %d!!!!\n", rv);
 				goto out;
 		}
 		

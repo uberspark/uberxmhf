@@ -12,7 +12,7 @@ C_SOURCES = appmain.c scode.c puttymem.c \
 		rsa.c bignum.c random.c linuxrelc.c \
 		pages.c \
 		dump.c nist_ctr_drbg.c rijndael.c \
-		crypto_init.c
+		crypto_init.c nv.c
 
 
 OBJECTS = $(patsubst %.S, $(APPOBJECTSDIR)/%.o, $(AS_SOURCES))
