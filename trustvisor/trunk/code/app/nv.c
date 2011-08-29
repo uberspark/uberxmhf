@@ -59,14 +59,12 @@ static int validate_mss_nv_region(unsigned int locality,
                                   unsigned int expected_size) {
     int rv = 0;
     unsigned int actual_size = 0;
-
-		if(locality == 1000 || idx == 1000) return 1; /* junk */
-		
-    /* if(0 != (rv = tpm_get_nvindex_size(locality, idx, &actual_size))) { */
-    /*     dprintf(LOG_ERROR, "\n[TV] %s: tpm_get_nvindex_size returned an ERROR!", */
-    /*             __FUNCTION__); */
-    /*     return rv; */
-    /* } */
+    
+    if(0 != (rv = tpm_get_nvindex_size(locality, idx, &actual_size))) {
+        dprintf(LOG_ERROR, "[TV] %s: tpm_get_nvindex_size returned an ERROR!",
+                __FUNCTION__);
+        return rv;
+    }
 
     if(actual_size != expected_size) {
         dprintf(LOG_ERROR, "\n[TV] ERROR: %s: actual_size (%d) != expected_size (%d)!",
@@ -105,9 +103,7 @@ static int _trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
     if(0 != (rv = validate_mss_nv_region(locality, idx, mss_size))) {
         dprintf(LOG_ERROR, "\n\n[TV] %s: ERROR: validate_mss_nv_region FAILED\n",
                 __FUNCTION__);
-        //return rv;
-        dprintf(LOG_ERROR, "\n\n[TV] %s: Don't care; continuing anyways\n",
-                __FUNCTION__);
+        return rv;
     }
 
     if(0 != (rv = tpm_nv_read_value(locality, idx, 0, mss, &actual_size))) {
@@ -150,24 +146,6 @@ static int _trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
     return rv;
 }
 
-
-static int nv_read(tpm_nv_index_t idx) {
-    uint32_t rv;
-    uint8_t data[20];
-    uint32_t data_size = 20;
-    uint32_t locality = 2;
-
-    memset(data, 0xee, data_size); /* something recognizable if read fails */
-    
-    rv = tpm_nv_read_value(locality, idx, 0, data, &data_size);
-
-    dprintf(LOG_TRACE, "\n[TV] tpm_nv_read_value returned %d.", rv);
-
-    print_hex("data from NV: ", data, data_size);
-
-    return 0; /* TODO: check for failures */
-}
-
 int trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
                           uint8_t *mss, unsigned int mss_size) {
   int rv;
@@ -177,9 +155,6 @@ int trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
 
 	dprintf(LOG_TRACE, "\n[TV] %s: locality %d, idx 0x%08x, mss@%p, mss_size %d",
 					__FUNCTION__, locality, idx, mss, mss_size);
-	
-	nv_read(0x00011337); /* hack */
-	nv_read(0x00015217); /* hack */
 	
   rv = _trustvisor_nv_get_mss(locality, idx, mss, mss_size);
   if(0 == rv) {
