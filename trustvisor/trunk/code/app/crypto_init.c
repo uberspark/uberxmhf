@@ -49,6 +49,7 @@
 #include <tpm_emhf.h> /* hwtpm_open_locality() */
 #include <tv_utpm.h>
 #include <sha1.h>
+#include <hmac.h>
 #include <nist_ctr_drbg.h>
 #include <random.h> 
 
@@ -212,18 +213,55 @@ static int trustvisor_measure_qnd_bridge_signing_pubkey(rsa_context *rsa) {
 		return 0;
 }
 
-
+/* involves accessing TPM NV RAM. */
 /* depends on PRNG already being initialized. */
 /* returns 0 on success. */
 static int trustvisor_long_term_secret_init(void) {
+  int rv = 0;
+	uint8_t mss[HW_TPM_MASTER_SEALING_SECRET_SIZE];
+	/* The actual AES key is smaller than this, so we need a temporary
+	 * buffer. */
+	uint8_t aeskey_temp[HW_TPM_MASTER_SEALING_SECRET_SIZE];
+	const uint8_t sealingaes[10] = {0x73, 0x65, 0x61, 0x6c, 0x69, 0x6e,
+																	0x67, 0x61, 0x65, 0x73};
+	const uint8_t sealinghmac[11] = {0x73, 0x65, 0x61, 0x6c, 0x69, 0x6e,
+																	 0x67,	0x68, 0x6d, 0x61, 0x63};
+	
+  ASSERT(true == g_master_prng_init_completed);
 
-	/* g_aeskey and hmac are identical for different PALs, so that we
-	 * can seal data from one PAL to another PAL */
-	rand_bytes_or_die(g_aeskey, (TPM_AES_KEY_LEN>>3));
-	dprintf(LOG_TRACE, "\n[TV] AES key generated!");
-	rand_bytes_or_die(g_hmackey, 20);
-	dprintf(LOG_TRACE, "\n[TV] HMAC key generated!");
+	rv = trustvisor_nv_get_mss(CRYPTO_INIT_LOCALITY,
+														 HW_TPM_MASTER_SEALING_SECRET_INDEX,
+														 mss,
+														 HW_TPM_MASTER_SEALING_SECRET_SIZE);
+	if(0 != rv) {
+			dprintf(LOG_ERROR, "\nFATAL ERROR: %s FAILED (%d).\n",
+							__FUNCTION__, rv);
+			return rv;			
+	}
 
+	ASSERT(HW_TPM_MASTER_SEALING_SECRET_SIZE == SHA1_RESULTLEN);
+	/* g_aeskey and g_hmackey are identical for different PALs, so that
+	 * we can seal data from one PAL to another PAL */
+	HMAC_SHA1(mss, HW_TPM_MASTER_SEALING_SECRET_SIZE,
+						sealingaes, sizeof(sealingaes),
+						g_hmackey);
+	HMAC_SHA1(mss, HW_TPM_MASTER_SEALING_SECRET_SIZE,
+						sealinghmac, sizeof(sealinghmac),
+						aeskey_temp);
+	ASSERT(TPM_AES_KEY_LEN>>3 < HW_TPM_MASTER_SEALING_SECRET_SIZE);
+	memcpy(g_aeskey, aeskey_temp, TPM_AES_KEY_LEN>>3);
+	memset(aeskey_temp, 0, HW_TPM_MASTER_SEALING_SECRET_SIZE);
+	
+	dprintf(LOG_TRACE, "\n[TV] Sealing AES key generated!");
+	dprintf(LOG_TRACE, "\n[TV] Sealing HMAC key generated!");
+
+	/* SECURITY: Delete these print_hex()'s ASAP! */
+	print_hex("XXX mss:       ", mss, 20);
+	print_hex("XXX g_aeskey:  ", g_aeskey, (TPM_AES_KEY_LEN>>3));
+	print_hex("XXX g_hmackey: ", g_hmackey, 20);
+
+	memset(mss, 0, HW_TPM_MASTER_SEALING_SECRET_SIZE);
+	
 	/* init RSA key required in uTPM Quote */
 	/* FIXME: Having a single key here is a privacy-invading,
 	 * session-linkable, PAL-linkable hack to get things off the
@@ -257,7 +295,7 @@ int trustvisor_master_crypto_init(void) {
 		g_master_prng_init_completed = true;
 		
 		dprintf(LOG_TRACE, "\n[TV] trustvisor_master_crypto_init: "
-						"AES-256 CTR_DRBG PRNG successfully seeded with TPM RNG.");
+						"AES-256 CTR_DRBG PRNG successfully seeded with TPM RNG.\n");
 
 		if(0 != (rv = trustvisor_long_term_secret_init())) {
 				dprintf(LOG_ERROR, "\n[TV] trustvisor_long_term_secret_init FAILED with rv %d!!!!\n", rv);
@@ -270,11 +308,6 @@ int trustvisor_master_crypto_init(void) {
 		/* prefer not to depend on the globals */
 		if(0 != (rv = trustvisor_measure_qnd_bridge_signing_pubkey(&g_rsa))) {
 				dprintf(LOG_ERROR, "\n[TV] trustvisor_long_term_secret_init FAILED with rv %d!!!!\n", rv);
-				goto out;
-		}
-
-		if(0 != (rv = trustvisor_nv_init())) {
-				dprintf(LOG_ERROR, "\n[TV] trustvisor_nv_init FAILED with rv %d!!!!\n", rv);
 				goto out;
 		}
 		

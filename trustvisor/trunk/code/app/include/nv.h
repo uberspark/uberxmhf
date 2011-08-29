@@ -36,7 +36,14 @@
 #ifndef _NV_H_
 #define _NV_H_
 
-int trustvisor_nv_init(void);
+/* TODO: Make the index a boot-time parameter with a sane default */
+#define HW_TPM_MASTER_SEALING_SECRET_INDEX 0x00015213
+#define HW_TPM_MASTER_SEALING_SECRET_SIZE 20
+/* TODO: Make this a build-time config option */
+#define HALT_UPON_NV_PROBLEM 0
+
+int trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
+                          uint8_t *mss, unsigned int mss_size);
 
 #endif /* _NV_H_ */
 

@@ -43,61 +43,145 @@
 #include <tpm_emhf.h> /* hwtpm_open_locality() */
 #include <tv_utpm.h>
 #include <sha1.h>
-
+#include <random.h> /* rand_bytes_or_die() */
 #include <nv.h>
 
-/* TODO: Make this configurable on the command line with a sane default. */
-#define TRUSTVISOR_NV_INDEX 0x00011337
-
-static int nv_read(void) {
-    uint32_t rv;
-    tpm_nv_index_t idx = TRUSTVISOR_NV_INDEX;
-    uint8_t data[64];
-    uint32_t data_size = 64;
-    uint32_t locality = 2;
-
-    memset(data, 0xee, data_size); /* something recognizable if read fails */
+/**
+ * Checks that supplied index is defined, is of the appropriate size,
+ * and has appropriate access restrictions in place.  Those are PCRs
+ * 17 and 18, and accessible for reading and writing exclusively from
+ * locality 2.
+ *
+ * returns 0 on success.
+ */
+static int validate_mss_nv_region(unsigned int locality,
+                                  tpm_nv_index_t idx,
+                                  unsigned int expected_size) {
+    int rv = 0;
+    unsigned int actual_size = 0;
     
-    rv = tpm_nv_read_value(locality, idx, 0, data, &data_size);
+    if(0 != (rv = tpm_get_nvindex_size(locality, idx, &actual_size))) {
+        dprintf(LOG_ERROR, "[TV] %s: tpm_get_nvindex_size returned an ERROR!",
+                __FUNCTION__);
+        return rv;
+    }
 
-    dprintf(LOG_TRACE, "\n[TV] tpm_nv_read_value returned %d.", rv);
+    if(actual_size != expected_size) {
+        dprintf(LOG_ERROR, "\n[TV] ERROR: %s: actual_size (%d) != expected_size (%d)!",
+                __FUNCTION__, actual_size, expected_size);
+        return 1;
+    }
 
-    print_hex("data from NV: ", data, data_size);
-
-    return 0; /* TODO: check for failures */
-}
-
-static int nv_write(void) {
-    uint32_t rv=0, i;
-    tpm_nv_index_t idx = TRUSTVISOR_NV_INDEX;
-    uint8_t data[64];
-    uint32_t data_size = 64;
-    uint32_t locality = 2;
-
-    for(i=0; i<data_size; i++) data[i] = i; /* something recognizable */
+    /* XXX TODO XXX: Check ACL on NV Region! */
+    dprintf(LOG_ERROR, "\n\n[TV] %s: XXX -- NV REGION ACCESS CONTROL CHECK UNIMPLEMENTED -- XXX\n"
+            "Micro-TPM SEALED STORAGE MAY NOT BE SECURE\n\n",
+            __FUNCTION__);
     
-    rv = tpm_nv_write_value(locality, idx, 0, data, data_size);
-
-    dprintf(LOG_TRACE, "\n[TV] tpm_nv_write_value returned %d.", rv);
-
-    return 0; /* TODO: check for failures */
+    return rv;
 }
 
 
-int trustvisor_nv_init(void) {
-  uint32_t rv = 0;
-  dprintf(LOG_TRACE, "\n[TV] trustvisor_nv_init started.");
+/**
+ * Take appropriate action to initialize the Micro-TPM's sealed
+ * storage facility by populating the MasterSealingSecret based on the
+ * contents of the hardware TPM's NVRAM.
+ *
+ * jtt nv_definespace --index 0x00015213 --size 20 -o tpm -e ASCII \
+ * -p 17,18 -w --permission 0x00000000 --writelocality 2 \
+ * --readlocality 2
+ *
+ * returns 0 on success.
+ */
 
-  /* Do an initial read */
-  rv = nv_read();
+static int _trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
+                                  uint8_t *mss, unsigned int mss_size) {
+    int rv;
+    unsigned int i;
+    unsigned int actual_size = mss_size;
+    bool first_boot;
 
-  /* then try to write the value */
-  rv = nv_write();
+    if(0 != (rv = validate_mss_nv_region(locality, idx, mss_size))) {
+        dprintf(LOG_ERROR, "\n\n[TV] %s: ERROR: validate_mss_nv_region FAILED\n",
+                __FUNCTION__);
+        return rv;
+    }
 
-  /* then try to read the new value */
-  rv = nv_read();
+    if(0 != (rv = tpm_nv_read_value(locality, idx, 0, mss, &actual_size))) {
+        dprintf(LOG_ERROR, "[TV] %s: tpm_nv_read_value FAILED! with error %d\n",
+                __FUNCTION__, rv);
+        return rv;
+    }
+
+    if(actual_size != mss_size) {
+        dprintf(LOG_ERROR, "[TV] %s: NVRAM read size %d != MSS expected size %d\n",
+                __FUNCTION__, actual_size, mss_size);
+        return 1;
+    }
+
+    /**
+     * Check whether the read bytes are all 0xff.  If so, we assume
+     * "first-boot" and initialize the contents of NV.
+     */
+    first_boot = true;
+    for(i=0; i<actual_size; i++) {
+        if(mss[i] != 0xff) {
+            first_boot = false;
+            break;
+        }
+    }
+
+    /* TODO: Get random bytes directly from TPM instead of using PRNG
+      (for additional simplicitly / less dependence on PRNG
+      security) */
+    if(first_boot) {
+        dprintf(LOG_TRACE, "[TV] %s: first_boot detected!", __FUNCTION__);
+        rand_bytes_or_die(mss, mss_size); /* "or_die" is VERY important! */
+        if(0 != (rv = tpm_nv_write_value(locality, idx, 0, mss, mss_size))) {
+            dprintf(LOG_ERROR, "[TV] %s: ERROR: Unable to write new MSS to TPM NVRAM (%d)!\n",
+                    __FUNCTION__, rv);
+            return rv;
+        }
+    }
+    
+    return rv;
+}
+
+int trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
+                          uint8_t *mss, unsigned int mss_size) {
+  int rv;
+
+  ASSERT(NULL != mss);
+  ASSERT(mss_size >= 20); /* Sanity-check security level wrt SHA-1 */
   
-  return rv;
+  rv = _trustvisor_nv_get_mss(locality, idx, mss, mss_size);
+  if(0 == rv) {
+      return rv; /* Success. */
+  }
+
+  /**
+   * Something went wrong in the optimistic attempt to read /
+   * initialize the MSS.  If configured conservatively, halt now!
+   */
+  if(HALT_UPON_NV_PROBLEM) {
+    dprintf(LOG_ERROR, "[TV] %s MasterSealingSeed initialization FAILED! SECURITY HALT!\n",
+            __FUNCTION__);
+    HALT();
+  }
+
+  /**
+   * If we're still here, then we're configured to attempt to run in a
+   * degraded "ephemeral" mode where there is no long-term (across
+   * reboots) sealing support.  Complain loudly.  We will still halt
+   * if random keys are not available.
+   */
+  dprintf(LOG_ERROR, "[TV] %s MasterSealingSeed initialization FAILED!\n"
+          "Continuing to operate in degraded mode. EMPHEMERAL SEALING ONLY!\n",
+          __FUNCTION__);
+  rand_bytes_or_die(mss, mss_size);
+  
+  /* XXX TODO: Eliminate degraded mode once we are sufficiently robust
+     to support development and testing without it. */
+  return 0;  
 }
 
 /* Local Variables: */
