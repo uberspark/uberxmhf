@@ -1189,9 +1189,13 @@ int main(void)
 #ifdef TEST_SEAL
   rv = test_seal2(&tzPalSession) || rv;
   rv = test_seal(&tzPalSession) || rv;
+#endif
+
+#ifdef TEST_LTSEAL
   rv = test_longterm_seal(&tzPalSession) || rv;
 #endif
 
+  
 #ifdef TEST_QUOTE
   rv = test_quote(&tzPalSession) || rv;
 #endif
