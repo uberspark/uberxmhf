@@ -482,6 +482,204 @@ int test_id_getpub(tz_session_t *tzPalSession, uint8_t *rsaMod)
   return rv;  
 }
 
+
+/* Read entire file into a newly-allocated buffer. */
+/* Returns positive integer representing number of bytes read, or
+ * negative value on error.  Don't care about size 0 files. */
+static long slurp_file(const char *filename, unsigned char **buf) {
+    if(!filename || !buf) return -1;
+
+    FILE *fh = fopen(filename, "rb");
+    if(NULL == fh) return -2;
+
+    /* how big is the file? */
+    fseek(fh, 0L, SEEK_END);
+    long s = ftell(fh);
+    rewind(fh);
+
+    /* get some space for its bytes */
+    *buf = malloc(s);
+    if(NULL == *buf) {
+        fclose(fh); fh = NULL;
+        return -3;
+    }
+
+    fread(*buf, s, 1, fh);
+    fclose(fh); fh = NULL;
+
+    printf("  slurp_file successfully read %ld bytes from %s\n",
+           s, filename);
+    
+    return s;
+}
+
+/* Create a file (clobbering any existing file) and write the contents
+ * of 'bytes' to it. Returns the number of bytes written on success,
+ * or a negative value on error. */
+static long puke_file(const char *filename, const unsigned char
+                      *bytes, long len) {
+    if(!filename || !bytes || len < 1) return -1;
+
+    FILE *fh = fopen(filename, "wb");
+    if(NULL == fh) return -2;
+
+    if(fwrite(bytes, len, 1, fh) != 1) return -3;
+    fclose(fh); fh = NULL;
+
+    printf("  puke_file successfully wrote %ld bytes to %s\n",
+           len, filename);
+    
+    return len;
+}
+
+#define LT_SEAL_FILENAME "sealed.dat"
+
+int just_seal(tz_session_t *tzPalSession) {
+  int rv=0;
+  tz_return_t tzRet, serviceReturn;
+  tz_operation_t tz_sealOp;
+  char *in = "hello pal-ly boy";
+  unsigned char *sealOut;
+  uint32_t sealOutLen;
+
+  TPM_PCR_INFO *pcrInfo=NULL;
+
+  printf("\nLong-Term SEAL withOUT PCRs\n");
+
+  tzRet = TZOperationPrepareInvoke(tzPalSession,
+                                   PAL_SEAL,
+                                   NULL,
+                                   &tz_sealOp);
+  assert(tzRet == TZ_SUCCESS);
+
+  tzRet = TZIEncodeF(&tz_sealOp,
+                     "%"TZI_EARRSPC "%"TZI_ESTR,
+                     &pcrInfo, sizeof(TPM_PCR_INFO),
+                     in);
+  if (tzRet) {
+    printf("SEAL encoder returned error %d\n", tzRet);
+    rv=1;
+    goto out;
+  }
+  memset(pcrInfo, 0, sizeof(TPM_PCR_INFO));
+
+  tzRet = TZOperationPerform(&tz_sealOp, &serviceReturn);
+  if (tzRet != TZ_SUCCESS) {
+      printf("SEAL Op FAILED\n");
+      rv = 1;
+      goto out;
+  }
+
+  tzRet = TZIDecodeF(&tz_sealOp,
+                     "%"TZI_DARRSPC_NOLEN "%"TZI_DU32,
+                     &sealOut,
+                     &sealOutLen);
+  if (tzRet != TZ_SUCCESS) {
+    printf("SEAL Op decode FAILED with %d\n", tzRet);
+    rv = 1;
+    goto out;
+  }
+
+  print_hex("  sealed data: ", sealOut, sealOutLen);
+  if((rv = puke_file(LT_SEAL_FILENAME, sealOut, sealOutLen)) < 0) {
+      printf("puke_file() FAILED with rv %d\n", rv);
+      rv = 1;
+      goto out;
+  } else {
+      rv = 0;
+  }
+
+ out:
+  TZOperationRelease(&tz_sealOp);
+  return rv;
+
+}
+
+int just_unseal(tz_session_t *tzPalSession) {
+  int rv=0;
+  tz_return_t tzRet, serviceReturn;
+  tz_operation_t tz_unsealOp;
+  unsigned char *sealOut, *unsealOut;
+  long sealOutLen, unsealOutLen;
+  uint8_t *digestAtCreationOut;
+  uint32_t digestAtCreationLen;
+
+  printf("\nLong-Term UnSEAL withOUT PCRs\n");
+
+  tzRet = TZOperationPrepareInvoke(tzPalSession,
+                                   PAL_UNSEAL,
+                                   NULL,
+                                   &tz_unsealOp);
+  assert(tzRet == TZ_SUCCESS);
+
+  sealOutLen = slurp_file(LT_SEAL_FILENAME, &sealOut);
+  if(sealOutLen < 0) {
+      printf("slurp_file() FAILED\n");
+      rv = 1;
+      goto out;
+  }
+  
+  print_hex("  sealed data: ", sealOut, sealOutLen);
+
+  assert(!TZIEncodeF(&tz_unsealOp, "%"TZI_EARR, sealOut, (uint32_t)sealOutLen));
+  tzRet = TZOperationPerform(&tz_unsealOp, &serviceReturn);
+
+  if (tzRet != TZ_SUCCESS) {
+    if (tzRet == TZ_ERROR_SERVICE) {
+      printf("UNSEAL pal returned error %d\n",
+             serviceReturn);
+      rv = 1;
+      goto out;
+    } else {
+      printf("tz system returned error %d\n",
+             tzRet);
+      rv = 1;
+      goto out;
+    }
+  }
+  tzRet = TZIDecodeF(&tz_unsealOp,
+                     "%"TZI_DARRSPC_NOLEN "%"TZI_DARRSPC "%"TZI_DU32,
+                     &unsealOut, /*ignore */
+                     &digestAtCreationOut, &digestAtCreationLen,
+                     (uint32_t*)&unsealOutLen);
+  if (tzRet) {
+    printf("UNSEAL decoder returned error %d\n", tzRet);
+    rv = 1;
+    goto out;
+  }
+
+  printf("  out (%ld): %s\n", unsealOutLen, unsealOut);
+  print_hex("  digestAtCreation: ", digestAtCreationOut, digestAtCreationLen);
+
+ out:
+  if(NULL != sealOut) { free(sealOut); sealOut = NULL; }
+  TZOperationRelease(&tz_unsealOp);
+  return rv;
+
+}
+
+/**
+ * Test LONG-TERM Seal (i.e., persistent TrustVisor sealing keys). If
+ * file LT_SEAL_FILENAME exists, it is assumed to be ciphertext and an
+ * attempt to is made to unseal it.  If it does not exist, then some
+ * plaintext is sealed and the resulting ciphertext is written to that
+ * file.  To fully exercise this, the program must be run twice.  This
+ * is because a proper test is impossible with a reboot (or at least a
+ * hypervisor reload someday down the road).
+ */
+int test_longterm_seal(tz_session_t *tzPalSession)
+{
+    unsigned char *buf = NULL;
+    /* Sloppy; wastes a read of the file if it already exists. */
+    if(slurp_file(LT_SEAL_FILENAME, &buf) > 0) {
+        /* File does exist. */
+        free(buf); buf = NULL;
+        return just_unseal(tzPalSession);
+    }
+
+    return just_seal(tzPalSession);      
+}
+
 int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uint32_t sig_len,
                  TPM_NONCE *externalnonce, uint8_t* rsaMod) {
     TPM_QUOTE_INFO quote_info;
@@ -991,6 +1189,7 @@ int main(void)
 #ifdef TEST_SEAL
   rv = test_seal2(&tzPalSession) || rv;
   rv = test_seal(&tzPalSession) || rv;
+  rv = test_longterm_seal(&tzPalSession) || rv;
 #endif
 
 #ifdef TEST_QUOTE
