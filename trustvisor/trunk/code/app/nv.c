@@ -61,7 +61,7 @@ static int validate_mss_nv_region(unsigned int locality,
     unsigned int actual_size = 0;
     
     if(0 != (rv = tpm_get_nvindex_size(locality, idx, &actual_size))) {
-        dprintf(LOG_ERROR, "[TV] %s: tpm_get_nvindex_size returned an ERROR!",
+        dprintf(LOG_ERROR, "\n[TV] %s: tpm_get_nvindex_size returned an ERROR!",
                 __FUNCTION__);
         return rv;
     }
@@ -107,13 +107,13 @@ static int _trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
     }
 
     if(0 != (rv = tpm_nv_read_value(locality, idx, 0, mss, &actual_size))) {
-        dprintf(LOG_ERROR, "[TV] %s: tpm_nv_read_value FAILED! with error %d\n",
+        dprintf(LOG_ERROR, "\n[TV] %s: tpm_nv_read_value FAILED! with error %d\n",
                 __FUNCTION__, rv);
         return rv;
     }
 
     if(actual_size != mss_size) {
-        dprintf(LOG_ERROR, "[TV] %s: NVRAM read size %d != MSS expected size %d\n",
+        dprintf(LOG_ERROR, "\n[TV] %s: NVRAM read size %d != MSS expected size %d\n",
                 __FUNCTION__, actual_size, mss_size);
         return 1;
     }
@@ -134,13 +134,16 @@ static int _trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
       (for additional simplicitly / less dependence on PRNG
       security) */
     if(first_boot) {
-        dprintf(LOG_TRACE, "[TV] %s: first_boot detected!", __FUNCTION__);
+        dprintf(LOG_TRACE, "\n[TV] %s: first_boot detected!", __FUNCTION__);
         rand_bytes_or_die(mss, mss_size); /* "or_die" is VERY important! */
         if(0 != (rv = tpm_nv_write_value(locality, idx, 0, mss, mss_size))) {
-            dprintf(LOG_ERROR, "[TV] %s: ERROR: Unable to write new MSS to TPM NVRAM (%d)!\n",
+            dprintf(LOG_ERROR, "\n[TV] %s: ERROR: Unable to write new MSS to TPM NVRAM (%d)!\n",
                     __FUNCTION__, rv);
             return rv;
         }
+    } else {
+      dprintf(LOG_TRACE, "\n[TV] %s: MSS successfully read from TPM NVRAM",
+              __FUNCTION__);
     }
     
     return rv;
@@ -153,9 +156,9 @@ int trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
   ASSERT(NULL != mss);
   ASSERT(mss_size >= 20); /* Sanity-check security level wrt SHA-1 */
 
-	dprintf(LOG_TRACE, "\n[TV] %s: locality %d, idx 0x%08x, mss@%p, mss_size %d",
-					__FUNCTION__, locality, idx, mss, mss_size);
-	
+  dprintf(LOG_TRACE, "\n[TV] %s: locality %d, idx 0x%08x, mss@%p, mss_size %d",
+          __FUNCTION__, locality, idx, mss, mss_size);
+  
   rv = _trustvisor_nv_get_mss(locality, idx, mss, mss_size);
   if(0 == rv) {
       return rv; /* Success. */
@@ -166,7 +169,7 @@ int trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
    * initialize the MSS.  If configured conservatively, halt now!
    */
   if(HALT_UPON_NV_PROBLEM) {
-    dprintf(LOG_ERROR, "[TV] %s MasterSealingSeed initialization FAILED! SECURITY HALT!\n",
+    dprintf(LOG_ERROR, "\n[TV] %s MasterSealingSeed initialization FAILED! SECURITY HALT!\n",
             __FUNCTION__);
     HALT();
   }
@@ -177,7 +180,7 @@ int trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
    * reboots) sealing support.  Complain loudly.  We will still halt
    * if random keys are not available.
    */
-  dprintf(LOG_ERROR, "[TV] %s MasterSealingSeed initialization FAILED!\n"
+  dprintf(LOG_ERROR, "\n[TV] %s MasterSealingSeed initialization FAILED!\n"
           "Continuing to operate in degraded mode. EMPHEMERAL SEALING ONLY!\n",
           __FUNCTION__);
   rand_bytes_or_die(mss, mss_size);

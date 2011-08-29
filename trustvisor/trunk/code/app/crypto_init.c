@@ -252,13 +252,13 @@ static int trustvisor_long_term_secret_init(void) {
 	memcpy(g_aeskey, aeskey_temp, TPM_AES_KEY_LEN>>3);
 	memset(aeskey_temp, 0, HW_TPM_MASTER_SEALING_SECRET_SIZE);
 	
-	dprintf(LOG_TRACE, "\n[TV] Sealing AES key generated!");
-	dprintf(LOG_TRACE, "\n[TV] Sealing HMAC key generated!");
+	dprintf(LOG_TRACE, "\n[TV] Sealing AES key derived from MSS.");
+	dprintf(LOG_TRACE, "\n[TV] Sealing HMAC key derived from MSS.");
 
-	/* SECURITY: Delete these print_hex()'s ASAP! */
-	print_hex("XXX mss:       ", mss, 20);
-	print_hex("XXX g_aeskey:  ", g_aeskey, (TPM_AES_KEY_LEN>>3));
-	print_hex("XXX g_hmackey: ", g_hmackey, 20);
+	/* /\* SECURITY: Delete these print_hex()'s ASAP! *\/ */
+	/* print_hex("XXX mss:       ", mss, 20); */
+	/* print_hex("XXX g_aeskey:  ", g_aeskey, (TPM_AES_KEY_LEN>>3)); */
+	/* print_hex("XXX g_hmackey: ", g_hmackey, 20); */
 
 	memset(mss, 0, HW_TPM_MASTER_SEALING_SECRET_SIZE);
 	
@@ -295,7 +295,7 @@ int trustvisor_master_crypto_init(void) {
 		g_master_prng_init_completed = true;
 		
 		dprintf(LOG_TRACE, "\n[TV] trustvisor_master_crypto_init: "
-						"AES-256 CTR_DRBG PRNG successfully seeded with TPM RNG.\n");
+						"AES-256 CTR_DRBG PRNG successfully seeded with TPM RNG.");
 
 		if(0 != (rv = trustvisor_long_term_secret_init())) {
 				dprintf(LOG_ERROR, "\n[TV] trustvisor_long_term_secret_init FAILED with rv %d!!!!\n", rv);
