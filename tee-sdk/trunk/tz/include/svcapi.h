@@ -154,5 +154,30 @@ int svc_utpm_rand(void *out, /* out */
 int svc_utpm_rand_block(void *out, /* out */
                         size_t out_len); /* in */
 
+/* Get the size of the TrustVisor-internal Hardware TPM NVRAM space
+ * dedicated to providing rollback resistance for a privileged NV
+ * Multiplexor PAL (NvMuxPal).
+ *
+ * size : the number of bytes that fit in the relevant NVRAM index.
+ */
+int svc_tpmnvram_getsize(size_t *size); /* out */
+
+/* Get the bytes stored in the TrustVisor-internal Hardware TPM NVRAM
+ * space dedicated to providing rollback resistance for a privileged
+ * NV Multiplexor PAL (NvMuxPal).
+ *
+ * out : a buffer to hold the contents from NVRAM; had better be big
+ * enough.
+ */
+int svc_tpmnvram_readall(uint8_t *out); /* out */
+
+/* Write the provided bytes into the TrustVisor-internal Hardware TPM NVRAM
+ * space dedicated to providing rollback resistance for a privileged
+ * NV Multiplexor PAL (NvMuxPal).
+ *
+ * in : a buffer holding the data to write into NVRAM; had better be
+ * big enough.
+ */
+int svc_tpmnvram_writeall(uint8_t *in); /* in */
 
 #endif

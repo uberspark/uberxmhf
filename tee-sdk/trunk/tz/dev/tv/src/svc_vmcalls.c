@@ -38,6 +38,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include <trustvisor/trustvisor.h>
 #include <trustvisor/tv_utpm.h>
 
 int svc_utpm_seal(TPM_PCR_INFO *pcrInfo,
@@ -127,4 +128,28 @@ int svc_utpm_rand(void *out, /* out */
                 (uint32_t)out_len,
                 0,
                 0);
+}
+
+int svc_tpmnvram_getsize(size_t *size) { /* out */
+  return vmcall(TV_HC_TPMNVRAM_GETSIZE, /* eax */
+                (uint32_t)size, /* ecx */
+                0,
+                0,
+                0);                  
+}
+
+int svc_tpmnvram_readall(uint8_t *out) { /* out */
+  return vmcall(TV_HC_TPMNVRAM_GETSIZE, /* eax */
+                (uint32_t)out, /* ecx */
+                0,
+                0,
+                0);                  
+}
+
+int svc_tpmnvram_writeall(uint8_t *in) { /* in */
+  return vmcall(TV_HC_TPMNVRAM_GETSIZE, /* eax */
+                (uint32_t)in, /* ecx */
+                0,
+                0,
+                0);                  
 }
