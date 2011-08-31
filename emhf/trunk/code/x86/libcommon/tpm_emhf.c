@@ -57,7 +57,7 @@
  *
  * Returns 0 on success.
  */
-int hwtpm_open_locality(int locality) {
+unsigned int hwtpm_open_locality(int locality) {
     /* We expect locality 1 or 2 */
     if(locality < 1 || locality > 2) {
         return 1;
