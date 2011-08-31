@@ -281,6 +281,9 @@ uint32_t hc_tpmnvram_getsize(VCPU* vcpu, uint32_t size_addr) {
 
 uint32_t hc_tpmnvram_readall(VCPU* vcpu, uint32_t out_addr) {
     uint32_t rv = 0;
+		uint32_t data_size;
+		uint8_t data[HW_TPM_ROLLBACK_PROT_SIZE];
+		
     dprintf(LOG_TRACE, "\n[TV] Entered %s", __FUNCTION__);
 
 		/* Make sure the asking PAL is authorized */
@@ -290,13 +293,48 @@ uint32_t hc_tpmnvram_readall(VCPU* vcpu, uint32_t out_addr) {
         return 1;
     }
 
+		/* Open TPM */
+		/* TODO: Make sure this plays nice with guest OS */
+		if(0 != (rv = hwtpm_open_locality(TRUSTVISOR_HWTPM_NV_LOCALITY))) {
+				dprintf(LOG_ERROR, "\nFATAL ERROR: Could not access HW TPM.\n");
+				return 1; /* no need to deactivate */
+		}
+
+		/* Make the actual TPM call */
+		
+    if(0 != (rv = tpm_nv_read_value(TRUSTVISOR_HWTPM_NV_LOCALITY,
+																		HW_TPM_ROLLBACK_PROT_INDEX, 0,
+																		data,
+																		&data_size))) {
+        dprintf(LOG_ERROR, "\n[TV] %s: tpm_get_nvindex_size returned"
+								" ERROR %d!", __FUNCTION__, rv);
+        rv = 1; /* failed. */
+    }
+
+		if(HW_TPM_ROLLBACK_PROT_SIZE != data_size) {
+        dprintf(LOG_ERROR, "\n[TV] %s: HW_TPM_ROLLBACK_PROT_SIZE (%d) !="
+								" data_size (%d)", __FUNCTION__,
+								HW_TPM_ROLLBACK_PROT_SIZE, data_size);
+				rv = 1;
+		}
+		
+		/* Close TPM */
+		deactivate_all_localities();
+
+		if(0 == rv) { /* if no errors... */
+				/* copy output to guest */
+				copy_to_guest(vcpu, out_addr, data, HW_TPM_ROLLBACK_PROT_SIZE);				
+		}
+		
 		return rv;
 }
 
 uint32_t hc_tpmnvram_writeall(VCPU* vcpu, uint32_t in_addr) {
     uint32_t rv = 0;
+		uint8_t data[HW_TPM_ROLLBACK_PROT_SIZE];
+		
     dprintf(LOG_TRACE, "\n[TV] Entered %s", __FUNCTION__);
-    
+
 		/* Make sure the asking PAL is authorized */
     if(0 != (rv = authenticate_nv_mux_pal(vcpu))) {
         dprintf(LOG_ERROR, "\n[TV] %s: ERROR: authenticate_nv_mux_pal"
@@ -304,6 +342,29 @@ uint32_t hc_tpmnvram_writeall(VCPU* vcpu, uint32_t in_addr) {
         return 1;
     }
 
+		/* Open TPM */
+		/* TODO: Make sure this plays nice with guest OS */
+		if(0 != (rv = hwtpm_open_locality(TRUSTVISOR_HWTPM_NV_LOCALITY))) {
+				dprintf(LOG_ERROR, "\nFATAL ERROR: Could not access HW TPM.\n");
+				return 1; /* no need to deactivate */
+		}
+
+		/* copy input data to host */
+		copy_from_guest(vcpu, data, in_addr, HW_TPM_ROLLBACK_PROT_SIZE);		
+		
+		/* Make the actual TPM call */		
+    if(0 != (rv = tpm_nv_write_value(TRUSTVISOR_HWTPM_NV_LOCALITY,
+																		 HW_TPM_ROLLBACK_PROT_INDEX, 0,
+																		 data,
+																		 HW_TPM_ROLLBACK_PROT_SIZE))) {
+        dprintf(LOG_ERROR, "\n[TV] %s: tpm_get_nvindex_size returned"
+								" ERROR %d!", __FUNCTION__, rv);
+        rv = 1; /* failed. */
+    }
+
+		/* Close TPM */
+		deactivate_all_localities();
+		
 		return rv;
 }
 

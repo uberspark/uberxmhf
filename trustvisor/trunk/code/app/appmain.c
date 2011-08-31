@@ -328,14 +328,16 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
         {
 						u32 out_addr;
 						printf("[TV] TV_HC_TPMNVRAM_READALL invoked.\n");
-						read_out = r->ecx;
+						out_addr = r->ecx;
+						ret = hc_tpmnvram_readall(vcpu, out_addr);
 						break;
         }
     case TV_HC_TPMNVRAM_WRITEALL:
         {
 						u32 in_addr;
 						printf("[TV] TV_HC_TPMNVRAM_WRITEALL invoked.\n");
-						write_in = r->ecx;
+						in_addr = r->ecx;
+						ret = hc_tpmnvram_writeall(vcpu, in_addr);
 						break;
         }
 		default:

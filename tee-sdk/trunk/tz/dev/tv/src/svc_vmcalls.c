@@ -139,7 +139,7 @@ int svc_tpmnvram_getsize(size_t *size) { /* out */
 }
 
 int svc_tpmnvram_readall(uint8_t *out) { /* out */
-  return vmcall(TV_HC_TPMNVRAM_GETSIZE, /* eax */
+  return vmcall(TV_HC_TPMNVRAM_READALL, /* eax */
                 (uint32_t)out, /* ecx */
                 0,
                 0,
@@ -147,7 +147,7 @@ int svc_tpmnvram_readall(uint8_t *out) { /* out */
 }
 
 int svc_tpmnvram_writeall(uint8_t *in) { /* in */
-  return vmcall(TV_HC_TPMNVRAM_GETSIZE, /* eax */
+  return vmcall(TV_HC_TPMNVRAM_WRITEALL, /* eax */
                 (uint32_t)in, /* ecx */
                 0,
                 0,

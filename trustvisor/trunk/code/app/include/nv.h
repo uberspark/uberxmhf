@@ -52,6 +52,8 @@ int trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
                           uint8_t *mss, unsigned int mss_size);
 
 uint32_t hc_tpmnvram_getsize(VCPU* vcpu, uint32_t size_addr);
+uint32_t hc_tpmnvram_readall(VCPU* vcpu, uint32_t out_addr);
+uint32_t hc_tpmnvram_writeall(VCPU* vcpu, uint32_t in_addr);
 
 #endif /* _NV_H_ */
 

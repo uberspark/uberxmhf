@@ -1162,8 +1162,9 @@ tz_return_t test_nv_rollback(tz_session_t *tzPalSession) {
       goto out;
   }
 
-  printf("len = %d\n", len);
+  printf("  len = %d\n", len);
   print_hex("  old NV value: ", old, len);
+  print_hex("  new NV value: ", new, len);
   
  out:
   TZOperationRelease(&tzOp);
