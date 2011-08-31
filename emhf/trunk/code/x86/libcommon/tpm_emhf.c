@@ -55,6 +55,8 @@
  * and post-DRTM, and (TODO) play nice with an OS driver that already
  * has the TPM open at a lesser Locality.
  *
+ * Also needs to be "thread safe"!!!
+ *
  * Returns 0 on success.
  */
 unsigned int hwtpm_open_locality(int locality) {

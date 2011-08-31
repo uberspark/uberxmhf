@@ -42,6 +42,7 @@
 #include <scode.h>
 #include <globals.h>
 #include <hc_utpm.h>
+#include <nv.h>
 
 /* Declared in linuxrelc.c.  TODO: figure out an approriate header
  * file for it. */
@@ -315,18 +316,21 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				ret = hc_utpm_rand(vcpu, addr, len_addr);
 				break;
 			}
-        case TV_HC_TPMNVRAM_GETSIZE:
-            {
+    case TV_HC_TPMNVRAM_GETSIZE:
+		  {
+				u32 size_addr;
+				size_addr = r->ecx;
+				ret = hc_tpmnvram_getsize(vcpu, size_addr);
 				break;
-            }
-        case TV_HC_TPMNVRAM_READALL:
-            {
-				break;
-            }
-        case TV_HC_TPMNVRAM_WRITEALL:
-            {
-				break;
-            }
+			}
+    case TV_HC_TPMNVRAM_READALL:
+        {
+						break;
+        }
+    case TV_HC_TPMNVRAM_WRITEALL:
+        {
+						break;
+        }
 		default:
 			{
 				printf("[TV] FATAL ERROR: Invalid vmmcall cmd (%d)\n", cmd);

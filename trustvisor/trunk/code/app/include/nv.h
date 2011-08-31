@@ -42,8 +42,16 @@
 /* TODO: Make this a build-time config option */
 #define HALT_UPON_NV_PROBLEM 0
 
+/* Use Locality 2 for hardware TPM operations involving NV RAM */
+#define TRUSTVISOR_HWTPM_NV_LOCALITY 2
+
+#define HW_TPM_ROLLBACK_PROT_INDEX 0x00014E56 /* "NV" */
+#define HW_TPM_ROLLBACK_PROT_SIZE 32 /* SHA-256 */
+
 int trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
                           uint8_t *mss, unsigned int mss_size);
+
+uint32_t hc_tpmnvram_getsize(VCPU* vcpu, uint32_t size_addr);
 
 #endif /* _NV_H_ */
 

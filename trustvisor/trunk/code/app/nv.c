@@ -39,12 +39,16 @@
 #include <error.h> /* HALT() */
 #include <processor.h> /* rdtsc64() */
 #include <target.h>
-#include <tpm.h>
+#include <tpm.h> /* tpm_nv_*() */
 #include <tpm_emhf.h> /* hwtpm_open_locality() */
-#include <tv_utpm.h>
-#include <sha1.h>
+#include <scode.h> /* copy_from_guest */
 #include <random.h> /* rand_bytes_or_die() */
 #include <nv.h>
+
+/* defined in scode.c */
+/* TODO: more elegant organization of these data structures */
+extern int *scode_curr;
+extern whitelist_entry_t *whitelist;
 
 /**
  * Checks that supplied index is defined, is of the appropriate size,
@@ -188,6 +192,116 @@ int trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
   /* XXX TODO: Eliminate degraded mode once we are sufficiently robust
      to support development and testing without it. */
   return 0;  
+}
+
+
+/**
+ * **********************************************************
+ * NV functions specific to Rollback Resistance follow.
+ *
+ * This includes functions that handle hypercalls.
+ *
+ * jtt nv_definespace --index 0x00014e56 --size 32 \
+ *     -o tpm -e ASCII \
+ *     -p 11,12 \
+ *     -w --permission 0x00000000 --writelocality 2 --readlocality 2
+ *
+ * **********************************************************
+ */
+
+/**
+ * Only one PAL on the entire system is granted privileges to
+ * {getsize|readall|writeall} the actual hardware TPM NV Index
+ * dedicated to rollback resistance.  This is the NVRAM Multiplexor
+ * PAL, or NvMuxPal.
+ *
+ * The purpose of this function is to make sure that a PAL that is
+ * trying to make one of those hypercalls is actually the PAL that is
+ * authorized to do so.
+ *
+ * TODO: ACTUALLY CHECK THIS!
+ *
+ * Returns: 0 on success, non-zero otherwise.
+ * TODO: Define some more meaningful failure codes.
+ */
+static uint32_t authenticate_nv_mux_pal(VCPU *vcpu) {
+  dprintf(LOG_TRACE, "\n[TV] Entered %s", __FUNCTION__);
+
+  /* make sure that this vmmcall can only be executed when a PAL is
+	 * running */
+  if (scode_curr[vcpu->id]== -1) {
+    dprintf(LOG_ERROR, "\n[TV] GenRandom ERROR: no PAL is running!\n");
+    return 1;
+  }
+    
+	dprintf(LOG_ERROR, "\n[TV] SECURITY: XXX NvMuxPal Authentication"
+					" UNIMPLEMENTED XXX");
+
+	return 0; /* XXX Actual check unimplemented XXX */
+}
+
+uint32_t hc_tpmnvram_getsize(VCPU* vcpu, uint32_t size_addr) {
+    uint32_t rv = 0;
+		uint32_t actual_size;
+		
+    dprintf(LOG_TRACE, "\n[TV] Entered %s", __FUNCTION__);
+
+		/* Make sure the asking PAL is authorized */
+    if(0 != (rv = authenticate_nv_mux_pal(vcpu))) {
+        dprintf(LOG_ERROR, "\n[TV] %s: ERROR: authenticate_nv_mux_pal"
+                " FAILED with error code %d", __FUNCTION__, rv);
+        return 1;
+    }
+
+		/* Open TPM */
+		/* TODO: Make sure this plays nice with guest OS */
+		if(0 != (rv = hwtpm_open_locality(TRUSTVISOR_HWTPM_NV_LOCALITY))) {
+				dprintf(LOG_ERROR, "\nFATAL ERROR: Could not access HW TPM.\n");
+				return 1; /* no need to deactivate */
+		}
+
+		/* Make the actual TPM call */
+    if(0 != (rv = tpm_get_nvindex_size(TRUSTVISOR_HWTPM_NV_LOCALITY,
+																				HW_TPM_ROLLBACK_PROT_INDEX, &actual_size))) {
+        dprintf(LOG_ERROR, "\n[TV] %s: tpm_get_nvindex_size returned"
+								" ERROR %d!", __FUNCTION__, rv);
+        rv = 1; /* failed. */
+    }
+
+		/* Close TPM */
+		deactivate_all_localities();
+
+		dprintf(LOG_TRACE, "\n[TV] HW_TPM_ROLLBACK_PROT_INDEX 0x%08x size"
+						" = %d", HW_TPM_ROLLBACK_PROT_INDEX, actual_size);
+						
+		put_32bit_aligned_value_to_guest(vcpu, size_addr, actual_size);		
+
+		return rv;
+}
+uint32_t hc_tpmnvram_readall(VCPU* vcpu) {
+    uint32_t rv = 0;
+    dprintf(LOG_TRACE, "\n[TV] Entered %s", __FUNCTION__);
+
+    if(0 != (rv = authenticate_nv_mux_pal(vcpu))) {
+        dprintf(LOG_ERROR, "\n[TV] %s: ERROR: authenticate_nv_mux_pal"
+                " FAILED with error code %d", __FUNCTION__, rv);
+        return 1;
+    }
+
+		return rv;
+}
+
+uint32_t hc_tpmnvram_writeall(VCPU* vcpu) {
+    uint32_t rv = 0;
+    dprintf(LOG_TRACE, "\n[TV] Entered %s", __FUNCTION__);
+    
+    if(0 != (rv = authenticate_nv_mux_pal(vcpu))) {
+        dprintf(LOG_ERROR, "\n[TV] %s: ERROR: authenticate_nv_mux_pal"
+                " FAILED with error code %d", __FUNCTION__, rv);
+        return 1;
+    }
+
+		return rv;
 }
 
 /* Local Variables: */
