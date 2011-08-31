@@ -69,18 +69,10 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD: releng/8.2/sys/crypto/sha2/sha2.c 163602 2006-10-22 02:19:33Z kevlo $");
-
-#include <sys/types.h>
-#include <sys/time.h>
-#ifdef _KERNEL
-#include <sys/systm.h>
-#else
-#include <string.h>
-#endif
-#include <machine/endian.h>
-#include <crypto/sha2/sha2.h>
+#include <types.h>
+#include <str.h> // memcpy
+#include <error.h> // HALT
+#include <sha2.h>
 
 /*
  * ASSERT NOTE:
@@ -102,10 +94,7 @@ __FBSDID("$FreeBSD: releng/8.2/sys/crypto/sha2/sha2.c 163602 2006-10-22 02:19:33
  *
  */
 
-#if defined(__bsdi__) || defined(__FreeBSD__)
-#define assert(x)
-#endif
-
+#define assert(x) { if(x) HALT(); }
 
 /*** SHA-256/384/512 Machine Architecture Definitions *****************/
 /*
@@ -135,9 +124,23 @@ __FBSDID("$FreeBSD: releng/8.2/sys/crypto/sha2/sha2.c 163602 2006-10-22 02:19:33
  * <machine/endian.h> where the appropriate definitions are actually
  * made).
  */
+
+/* Inspired by the macros in sha1.[ch] */
+#define LITTLE_ENDIAN 1234
+#define BIG_ENDIAN    4321
+
+#if (!(__x86_64__ || __i386__ || _M_IX86 || _M_X64 || __ARMEL__ || __MIPSEL__))
+#define BYTE_ORDER BIG_ENDIAN
+#else
+#define BYTE_ORDER LITTLE_ENDIAN
+#endif
+
 #if !defined(BYTE_ORDER) || (BYTE_ORDER != LITTLE_ENDIAN && BYTE_ORDER != BIG_ENDIAN)
 #error Define BYTE_ORDER to be equal to either LITTLE_ENDIAN or BIG_ENDIAN
 #endif
+
+#define bzero(buf, len) memset(buf, 0, len)
+#define bcopy(src, dst, len) memcpy(dst, src, len)
 
 /*
  * Define the followingsha2_* types to types of the correct length on
@@ -153,7 +156,7 @@ __FBSDID("$FreeBSD: releng/8.2/sys/crypto/sha2/sha2.c 163602 2006-10-22 02:19:33
  * Thank you, Jun-ichiro itojun Hagino, for suggesting using u_intXX_t
  * types and pointing out recent ANSI C support for uintXX_t in inttypes.h.
  */
-#if 0 /*def SHA2_USE_INTTYPES_H*/
+#if 1 /*def SHA2_USE_INTTYPES_H*/
 
 typedef uint8_t  sha2_byte;     /* Exactly 1 byte */
 typedef uint32_t sha2_word32;   /* Exactly 4 bytes */

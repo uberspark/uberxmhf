@@ -117,7 +117,7 @@ typedef unsigned long long u_int64_t;   /* 8-bytes (64-bits) */
  *
  *   cc -DSHA2_USE_INTTYPES_H ...
  */
-#if 0 /*def SHA2_USE_INTTYPES_H*/
+#if 1 /*def SHA2_USE_INTTYPES_H*/
 
 typedef struct _SHA256_CTX {
         uint32_t        state[8];
