@@ -1110,6 +1110,69 @@ tz_return_t test_time(tz_session_t *tzPalSession)
   return TZ_SUCCESS;
 }
 
+tz_return_t test_nv_rollback(tz_session_t *tzPalSession) {
+  tz_return_t tzRet, serviceReturn;
+  tz_operation_t tzOp;
+  uint8_t *new;
+  uint8_t *old;
+  int rv = 0;
+  uint32_t i, len = 32; /* XXX get this from somewhere (sizeof sha-256) */
+
+  printf("NV_ROLLBACK\n");
+
+  /* prep operation */
+  tzRet = TZOperationPrepareInvoke(tzPalSession,
+                                   PAL_NV_ROLLBACK,
+                                   NULL,
+                                   &tzOp);
+  assert(tzRet == TZ_SUCCESS);
+
+  /* encode new value */
+  assert(!(TZIEncodeF(&tzOp,
+                      "%"TZI_EARRSPC,
+                      &new, len)));
+
+  /* Fake the new history summary */
+  for(i=0; i<len; i++) {
+    new[i] = (uint8_t)i;
+  }
+  
+  /* Call PAL */
+  tzRet = TZOperationPerform(&tzOp, &serviceReturn);
+  if (tzRet != TZ_SUCCESS) {
+    rv = 1;
+    printf("Failure at %s:%d\n", __FILE__, __LINE__); 
+    printf("tzRet 0x%08x\n", tzRet);
+    goto out;
+
+  }
+  
+  if (TZDecodeGetError(&tzOp) != TZ_SUCCESS) {
+    rv = 1;
+    printf("Failure at %s:%d\n", __FILE__, __LINE__); 
+    printf("tzRet 0x%08x\n", tzRet);
+    goto out;
+
+  }
+
+  if((tzRet = TZIDecodeF(&tzOp,
+                         "%"TZI_DARRSPC,
+                         &old, &len))) {
+      rv = 1;
+      goto out;
+  }
+
+  printf("len = %d\n", len);
+  print_hex("  old NV value: ", old, len);
+  
+ out:
+  TZOperationRelease(&tzOp);
+
+  if(0 != rv) { printf("...FAILED rv %d\n", rv); }
+  return rv;  
+
+}
+
 // function main
 // register some sensitive code and data in libfoo.so and call bar()
 int main(void)
@@ -1216,6 +1279,9 @@ int main(void)
   rv = test_time(&tzPalSession) || rv;
 #endif
 
+#ifdef TEST_NV_ROLLBACK
+  rv = test_nv_rollback(&tzPalSession) || rv;
+#endif
   
   if (rv) {
     printf("FAIL with rv=%d\n", rv);

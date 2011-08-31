@@ -52,6 +52,7 @@ typedef enum {
   PAL_RAND,
   PAL_TIME_INIT,
   PAL_TIME_ELAPSED,
+  PAL_NV_ROLLBACK,
 } PAL_CMD;
 
 void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv);
@@ -72,3 +73,6 @@ tz_return_t pal_rand(IN size_t len,
                      OUT uint8_t *bytes);
 tz_return_t pal_time_init();
 tz_return_t pal_time_elapsed(OUT uint64_t *us);
+tz_return_t pal_nv_rollback(IN uint8_t *newval,
+                            OUT uint32_t *nv_size,
+                            OUT uint8_t *oldval);

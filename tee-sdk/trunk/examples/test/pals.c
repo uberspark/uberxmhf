@@ -280,6 +280,25 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
         break;
     }
     break;
+  case PAL_NV_ROLLBACK:
+    {
+      uint8_t *old;
+      uint8_t *new;        
+      uint32_t len = 32; /* XXX bad magic XXX */
+      
+      if((*puiRv = TZIEncodeBufF(psOutBuf, "%"TZI_EARRSPC,
+                                 &old, len)))
+          break;
+
+      if((*puiRv = TZIDecodeBufF(psInBuf,
+                                 "%"TZI_DARRSPC,
+                                 &new, &len)))
+          break;      
+
+      if((*puiRv = pal_nv_rollback(new, &len, old)))
+          break;
+    }
+    break;
   }
   return;
 }
@@ -416,4 +435,28 @@ tz_return_t pal_time_elapsed(OUT uint64_t *us)
   *us = t - t0;
 
   return TZ_SUCCESS;
+}
+
+__attribute__ ((section (".scode")))
+tz_return_t pal_nv_rollback(IN uint8_t *newval,
+                            OUT uint32_t *nv_size,
+                            OUT uint8_t *oldval)
+{
+    size_t size;
+
+    if(svc_tpmnvram_getsize(&size)) {
+        return TZ_ERROR_GENERIC;
+    }
+
+    *nv_size = (uint32_t)size;
+    
+    if(svc_tpmnvram_readall(oldval)) {
+        return TZ_ERROR_GENERIC;
+    }
+
+    if(svc_tpmnvram_writeall(newval)) {
+        return TZ_ERROR_GENERIC;
+    }
+    
+    return TZ_SUCCESS;
 }
