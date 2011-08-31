@@ -57,6 +57,11 @@ enum HCcmd {
   TV_HC_UTPM_QUOTE =12,
   TV_HC_UTPM_ID_GETPUB =13,
   /* Reserving up through 20 for more UTPM stuff; don't touch! */
+
+  /* This is a privileged command; only a special PAL can use it */
+  TV_HC_TPMNVRAM_GETSIZE = 21,
+  TV_HC_TPMNVRAM_READALL = 22,
+  TV_HC_TPMNVRAM_WRITEALL = 23,
   
   /* misc */
   TV_HC_TEST =255,

@@ -315,6 +315,18 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				ret = hc_utpm_rand(vcpu, addr, len_addr);
 				break;
 			}
+        case TV_HC_TPMNVRAM_GETSIZE:
+            {
+				break;
+            }
+        case TV_HC_TPMNVRAM_READALL:
+            {
+				break;
+            }
+        case TV_HC_TPMNVRAM_WRITEALL:
+            {
+				break;
+            }
 		default:
 			{
 				printf("[TV] FATAL ERROR: Invalid vmmcall cmd (%d)\n", cmd);
