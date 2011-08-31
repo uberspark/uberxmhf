@@ -234,7 +234,7 @@ static uint32_t authenticate_nv_mux_pal(VCPU *vcpu) {
     return 1;
   }
     
-	dprintf(LOG_ERROR, "\n[TV] SECURITY: XXX NvMuxPal Authentication"
+	dprintf(LOG_ERROR, "\n[TV] SECURITY VULNERABILITY: XXX NvMuxPal Authentication"
 					" UNIMPLEMENTED XXX");
 
 	return 0; /* XXX Actual check unimplemented XXX */
@@ -278,10 +278,12 @@ uint32_t hc_tpmnvram_getsize(VCPU* vcpu, uint32_t size_addr) {
 
 		return rv;
 }
-uint32_t hc_tpmnvram_readall(VCPU* vcpu) {
+
+uint32_t hc_tpmnvram_readall(VCPU* vcpu, uint32_t out_addr) {
     uint32_t rv = 0;
     dprintf(LOG_TRACE, "\n[TV] Entered %s", __FUNCTION__);
 
+		/* Make sure the asking PAL is authorized */
     if(0 != (rv = authenticate_nv_mux_pal(vcpu))) {
         dprintf(LOG_ERROR, "\n[TV] %s: ERROR: authenticate_nv_mux_pal"
                 " FAILED with error code %d", __FUNCTION__, rv);
@@ -291,10 +293,11 @@ uint32_t hc_tpmnvram_readall(VCPU* vcpu) {
 		return rv;
 }
 
-uint32_t hc_tpmnvram_writeall(VCPU* vcpu) {
+uint32_t hc_tpmnvram_writeall(VCPU* vcpu, uint32_t in_addr) {
     uint32_t rv = 0;
     dprintf(LOG_TRACE, "\n[TV] Entered %s", __FUNCTION__);
     
+		/* Make sure the asking PAL is authorized */
     if(0 != (rv = authenticate_nv_mux_pal(vcpu))) {
         dprintf(LOG_ERROR, "\n[TV] %s: ERROR: authenticate_nv_mux_pal"
                 " FAILED with error code %d", __FUNCTION__, rv);

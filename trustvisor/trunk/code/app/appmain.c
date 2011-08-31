@@ -319,16 +319,23 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
     case TV_HC_TPMNVRAM_GETSIZE:
 		  {
 				u32 size_addr;
+				printf("[TV] TV_HC_TPMNVRAM_GETSIZE invoked.\n");
 				size_addr = r->ecx;
 				ret = hc_tpmnvram_getsize(vcpu, size_addr);
 				break;
 			}
     case TV_HC_TPMNVRAM_READALL:
         {
+						u32 out_addr;
+						printf("[TV] TV_HC_TPMNVRAM_READALL invoked.\n");
+						read_out = r->ecx;
 						break;
         }
     case TV_HC_TPMNVRAM_WRITEALL:
         {
+						u32 in_addr;
+						printf("[TV] TV_HC_TPMNVRAM_WRITEALL invoked.\n");
+						write_in = r->ecx;
 						break;
         }
 		default:
