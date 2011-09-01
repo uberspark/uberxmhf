@@ -81,7 +81,7 @@ runtime: common
 app: runtime common
 	#make EMHFapp
 	mkdir -p $(APPOBJECTSDIR)
-	cd ../app && $(MAKE) -w all
+	cd $(BASEDIR)/app && $(MAKE) -w all
 
 sl: runtime common app
 	#make sl
@@ -113,6 +113,6 @@ clean:
 	cd sl && $(MAKE) -w clean
 	cd init && $(MAKE) -w clean
 	cd libcommon && $(MAKE) -w clean
-	cd ../app && $(MAKE) -w clean
+	cd $(BASEDIR)/app && $(MAKE) -w clean
 	rm -rf $(APPOBJECTSDIR)
 
