@@ -42,23 +42,25 @@
 #include "audited-kv-pal-fns.h"
 #include "audited.h"
 
-/* typedef struct { */
-/*   audited_begin_fn *begin; */
-/*   audited_execute_fn *execute; */
-/*   audited_release_fn *release; */
-/* } audited_cmd_t; */
-/* audited_cmd_t audited_cmds[] = { */
-/*   [AKVP_DB_ADD] = { */
-/*     .begin=akvp_db_add_begin_marshal, */
-/*     .execute=akvp_db_add_execute, */
-/*     .release=akvp_db_add_release, */
-/*   }, */
-/*   [AKVP_DB_GET] = { */
-/*     .begin=akvp_db_get_begin_marshal, */
-/*     .execute=akvp_db_get_execute, */
-/*     .release=akvp_db_get_release, */
-/*   }, */
-/* }; */
+typedef struct {
+  audited_begin_fn *begin;
+  audited_execute_fn *execute;
+  audited_release_fn *release;
+} audited_cmd_t;
+
+audited_cmd_t audited_cmds[] = {
+  [AKVP_DB_ADD] = {
+    .begin=akvp_db_add_begin_marshal,
+    .execute=akvp_db_add_execute,
+    .release=akvp_db_add_release,
+  },
+  [AKVP_DB_GET] = {
+    .begin=akvp_db_get_begin_marshal,
+    .execute=akvp_db_get_execute,
+    .release=akvp_db_get_release,
+  },
+};
+size_t audited_cmds_num = sizeof(audited_cmds)/sizeof(audited_cmd_t);
 
 char end[10*4096]; /* define the end of the data segment and some
                       buffer spacefor libnosys's sbrk */
@@ -136,21 +138,15 @@ akv_err_t akvp_audited_start_unmarshal(struct tzi_encode_buffer_t *psInBuf, stru
     goto out;
   }
 
-  switch(audited_cmd) {
-  case AKVP_DB_ADD:
-    rv = akvp_db_add_begin_marshal(&audit_string, &cont, psInBuf);
-    execute_fn = akvp_db_add_execute;
-    release_fn = akvp_db_add_release;
-    break;
-  case AKVP_DB_GET:
-    rv = akvp_db_get_begin_marshal(&audit_string, &cont, psInBuf);
-    execute_fn = akvp_db_get_execute;
-    release_fn = akvp_db_get_release;
-    break;
-  default:
+  if (audited_cmd >= audited_cmds_num
+      || !audited_cmds[audited_cmd].begin) {
     rv = AKV_EBADAUDITEDCMD;
-    break;
+    goto out;
   }
+
+  rv = audited_cmds[audited_cmd].begin(&audit_string, &cont, psInBuf);
+  execute_fn = audited_cmds[audited_cmd].execute;
+  release_fn = audited_cmds[audited_cmd].release;
 
   if (rv != TZ_SUCCESS) {
     free(audit_string);
