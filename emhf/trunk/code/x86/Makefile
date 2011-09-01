@@ -1,6 +1,9 @@
 # top-level makefile for emhf x86 platform 
 # author: amit vasudevan (amitvasudevan@acm.org)
 
+#-----build configuration
+
+
 #-----build rules
 .PHONY: all
 all: common runtime sl init hypervisor-$(TARGET_HWPLATFORM).bin.gz
