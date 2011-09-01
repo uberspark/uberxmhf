@@ -584,6 +584,30 @@ typedef struct __attribute__ ((packed)) {
     UNLOAD_BLOB(buf, offset, (sel)->pcr_select, (sel)->size_of_select);\
 }
 
+#define UNLOAD_PCR_INFO_SHORT(buf, offset, info) {\
+    UNLOAD_PCR_SELECTION(buf, offset, &(info)->pcr_selection);\
+    UNLOAD_BLOB_TYPE(buf, offset, &(info)->locality_at_release);\
+    UNLOAD_BLOB_TYPE(buf, offset, &(info)->digest_at_release);\
+}
+
+#define UNLOAD_NV_ATTRIBUTES(buf, offset, attr) {\
+    UNLOAD_INTEGER(buf, offset, (attr)->tag);\
+    UNLOAD_INTEGER(buf, offset, (attr)->attributes);\
+}
+
+/* Single-byte values do not require reverse_copy(endianness n/a) */
+#define UNLOAD_NV_DATA_PUBLIC(buf, offset, pub) {\
+    UNLOAD_INTEGER(buf, offset, (pub)->tag);\
+    UNLOAD_INTEGER(buf, offset, (pub)->nv_index);\
+    UNLOAD_PCR_INFO_SHORT(buf, offset, &(pub)->pcr_info_read);\
+    UNLOAD_PCR_INFO_SHORT(buf, offset, &(pub)->pcr_info_write);\
+    UNLOAD_NV_ATTRIBUTES(buf, offset, &(pub)->permission);\
+    (pub)->b_read_st_clear = *(buf + offset); offset += 1;\
+    (pub)->b_write_st_clear = *(buf + offset); offset += 1;\
+    (pub)->b_write_define = *(buf + offset); offset += 1;\
+    UNLOAD_INTEGER(buf, offset, (pub)->data_size);\
+}
+
 #define UNLOAD_PCR_INFO_LONG(buf, offset, info) {\
     UNLOAD_INTEGER(buf, offset, (info)->tag);\
     UNLOAD_BLOB_TYPE(buf, offset, &(info)->locality_at_creation);\
