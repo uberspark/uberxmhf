@@ -36,7 +36,7 @@
 #ifndef TZE_H
 #define TZE_H
 
-#include <tz.h>
+#include "tz.h"
 
 typedef struct {
   tz_device_t tzDevice;
