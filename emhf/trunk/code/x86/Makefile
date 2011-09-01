@@ -32,6 +32,34 @@
 	CFLAGS += -mno-pclmul -mno-sse4a -mno-sse5 -mno-3dnow -mno-popcnt -mno-abm
 	CFLAGS += -nostdinc -pipe -I$(EMHF_INCLUDEDIR) -I$(APP_INCLUDEDIR)
 
+	#-----generate compiler/assembler defines from configuration options selected
+	ifeq ($(NESTED_PAGING), y)
+		CFLAGS += -D__NESTED_PAGING__
+	endif
+	ifeq ($(DEBUG_SERIAL), y)
+		CFLAGS += -D__DEBUG_SERIAL__
+		CFLAGS += -DDEBUG_PORT=$(DEBUG_SERIAL_PORT)
+	endif
+	ifeq ($(DEBUG_VGA), y)
+		CFLAGS += -D__DEBUG_VGA__
+	endif
+	ifeq ($(MP_VERSION), y)
+		CFLAGS += -D__MP_VERSION__
+	endif
+	
+	CFLAGS += -D__DO_SENTER__
+	
+	ifeq ($(DMAPROT), y)
+		CFLAGS += -D__DMAPROT__	
+	endif
+	ifeq ($(E820_UG_TEST), y)
+		CFLAGS += -D__E820_UG_TEST__
+	endif
+	ifeq ($(TEST_CPU_QUIESCE), y)
+		CFLAGS += -D__TEST_CPU_QUIESCE__
+	endif
+
+	#-----export CFLAGS and ASFLAGS
 	ASFLAGS = $(CFLAGS) -D__ASSEMBLY__
 
 	export CFLAGS
