@@ -18,6 +18,25 @@
 	export MKDIR = mkdir
 	export CAT = cat
 
+	#-----basic flags for compiling and assembling
+	CFLAGS = -fno-builtin -fno-common -fno-strict-aliasing -iwithprefix include
+	CFLAGS += -fno-stack-protector
+	CFLAGS += -Wstrict-prototypes -Wdeclaration-after-statement 
+	CFLAGS += -Werror -Wno-pointer-arith -Wextra -Wfloat-equal 
+	CFLAGS += -Wbad-function-cast -Wcast-qual -Wsign-compare 
+	CFLAGS += -Waggregate-return
+	CFLAGS += -Winline
+	CFLAGS += -m32 -march=k8 
+	CFLAGS += -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-ssse3 
+	CFLAGS += -mno-sse4.1 -mno-sse4.2 -mno-sse4 -mno-avx -mno-aes 
+	CFLAGS += -mno-pclmul -mno-sse4a -mno-sse5 -mno-3dnow -mno-popcnt -mno-abm
+	CFLAGS += -nostdinc -pipe -I$(EMHF_INCLUDEDIR) -I$(APP_INCLUDEDIR)
+
+	ASFLAGS = $(CFLAGS) -D__ASSEMBLY__
+
+	export CFLAGS
+	export ASFLAGS
+
 
 #-----build rules
 .PHONY: all
