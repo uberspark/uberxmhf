@@ -130,7 +130,7 @@ typedef struct tz_device_t
   {
     /* Implementation-defined. */
     const tzi_device_cb_block_t *cbb;
-
+    struct tzi_device_ext_t* psExt;
     uint32_t uiSessionCount;
   } sImp;
 } tz_device_t;
