@@ -79,20 +79,16 @@ void test_init_detects_err(void)
 
 void test_release(void)
 {
-  akv_ctx_t ctx;
-  tv_tz_init_IgnoreAndReturn(0);
-  akv_ctx_init(&ctx, "keyfile");
-
   tv_tz_teardown_IgnoreAndReturn(0);
-  TEST_ASSERT(!akv_ctx_release(&ctx));
+  TEST_ASSERT(!akv_ctx_release(&g_ctx));
 }
 
 void test_release_detects_err(void)
 {
-  akv_ctx_t ctx;
-  tv_tz_init_IgnoreAndReturn(0);
-  akv_ctx_init(&ctx, "keyfile");
-
   tv_tz_teardown_IgnoreAndReturn(1);
-  TEST_ASSERT(akv_ctx_release(&ctx));
+  TEST_ASSERT(akv_ctx_release(&g_ctx));
+}
+
+void test_add_succeeds(void)
+{
 }

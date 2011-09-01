@@ -40,14 +40,19 @@
 /* required by audited module */
 audited_cmd_t audited_cmds[] = {
   [AKVP_DB_ADD] = {
-    .begin=akvp_db_add_begin_marshal,
+    .decode_req=akvp_db_add_begin_decode_req,
+    .audit_string=akvp_db_add_audit_string,
     .execute=akvp_db_add_execute,
-    .release=akvp_db_add_release,
+    .encode_res_maxlen=akvp_db_add_encode_res_maxlen,
+    .encode_res=akvp_db_add_encode_res,
+    .release_req=akvp_db_add_release_req,
+    .release_res=akvp_db_add_release_res,
   },
   [AKVP_DB_GET] = {
-    .begin=akvp_db_get_begin_marshal,
-    .execute=akvp_db_get_execute,
-    .release=akvp_db_get_release,
+    .decode_req=NULL,
+    .audit_string=NULL,
+    .execute=NULL,
+    .release_req=akvp_db_get_release,
   },
 };
 size_t audited_cmds_num = sizeof(audited_cmds)/sizeof(audited_cmd_t);

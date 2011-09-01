@@ -144,85 +144,79 @@ char* sprintf_mallocd(const char *format, ...)
   return rv;
 }
 
-typedef struct {
-  void *key;
-  size_t key_len;
-  void *val;
-  size_t val_len;
-} akvp_db_add_cont_t;
-
-void akvp_db_add_release(void* vcont)
+void akvp_db_add_release_req(void* vreq)
 {
-  akvp_db_add_cont_t *cont = (akvp_db_add_cont_t*)vcont;
-  FREE_AND_NULL(cont->key);
-  FREE_AND_NULL(cont->val);
-  free(cont);
+  akvp_db_add_req_t *req = (akvp_db_add_req_t*)vreq;
+  FREE_AND_NULL(req->key);
+  FREE_AND_NULL(req->val);
+  free(req);
 }
 
-int akvp_db_add_begin_marshal(char **audit_string,
-                              void **vcont,
-                              struct tzi_encode_buffer_t *psInBuf)
+int akvp_db_add_begin_decode_req(void **vcont,
+                                 void *inbuf,
+                                 size_t inbuf_len)
 {
+  struct tzi_encode_buffer_t *psInBuf = (struct tzi_encode_buffer_t*)inbuf;
   char *key, *val;
   uint32_t key_len, val_len;
 
-  key = TZIDecodeArraySpace(psInBuf, &key_len);
-  val = TZIDecodeArraySpace(psInBuf, &val_len);
+  {
+    key = TZIDecodeArraySpace(psInBuf, &key_len);
+    val = TZIDecodeArraySpace(psInBuf, &val_len);
 
-  if (TZIDecodeGetError(psInBuf)) {
-    return AKV_EDECODE;
+    if (TZIDecodeGetError(psInBuf)) {
+      return AKV_EDECODE;
+    }
   }
 
-  return akvp_db_add_begin(audit_string, vcont, key, key_len, val, val_len);
-}
+  {
+    akvp_db_add_req_t **pp_cont = ((akvp_db_add_req_t**)vcont);
 
+    *pp_cont = malloc(sizeof(**pp_cont));
+    if(!pp_cont) {
+      return AKV_ENOMEM;
+    }
 
-akv_err_t akvp_db_add_begin(char **audit_string,
-                            void **vcont,
-                            const void* key, size_t key_len,
-                            const void* val, size_t val_len)
-{
-  akvp_db_add_cont_t **pp_cont = ((akvp_db_add_cont_t**)vcont);
-  akvp_db_add_cont_t *cont;
+    **pp_cont = (akvp_db_add_req_t) {
+      .key = malloc(key_len),
+      .key_len = key_len,
+      .val = malloc(val_len),
+      .val_len = val_len,
+    };
 
-  *pp_cont = malloc(sizeof(**pp_cont));
-  if(!pp_cont) {
-    return AKV_ENOMEM;
+    if (!(*pp_cont)->key
+        || !(*pp_cont)->val) {
+      FREE_AND_NULL((*pp_cont)->key);
+      FREE_AND_NULL((*pp_cont)->val);
+      FREE_AND_NULL(*pp_cont);
+      return AKV_ENOMEM;
+    }
+    memcpy((*pp_cont)->key, key, key_len);
+    memcpy((*pp_cont)->val, val, val_len);
   }
-  cont = *pp_cont;
-
-  *cont = (akvp_db_add_cont_t) {
-    .key = malloc(key_len),
-    .key_len = key_len,
-    .val = malloc(val_len),
-    .val_len = val_len,
-  };
-  *audit_string = /* FIXME need to escape nulls and non-printables,
-                     and make sure null-terminated.
-                  */
-    sprintf_mallocd("ADD{key=\"%s\"}", (char*)key);
-
-  if (!cont->key
-      || !cont->val
-      || !*audit_string) {
-    FREE_AND_NULL(cont->key);
-    FREE_AND_NULL(cont->val);
-    FREE_AND_NULL(cont);
-    FREE_AND_NULL(*audit_string);
-    return AKV_ENOMEM;
-  }
-
-  memcpy(cont->key, key, key_len);
-  memcpy(cont->val, val, val_len);
 
   return AKV_ENONE;
 }
 
-int akvp_db_add_execute(void* vcont, struct tzi_encode_buffer_t *psOutBuf)
+int akvp_db_add_audit_string(void *vreq,
+                             char **audit_string)
 {
-  akvp_db_add_cont_t *cont = (akvp_db_add_cont_t*)vcont;
+  akvp_db_add_req_t *cont = (akvp_db_add_req_t*)vreq;
+  *audit_string = /* FIXME need to escape nulls and non-printables,
+                     and make sure null-terminated.
+                  */
+    sprintf_mallocd("ADD{key=\"%s\"}", cont->key);
+
+  return AKV_ENONE;
+}
+
+int akvp_db_add_execute(void* vreq, void **vres)
+{
+  akvp_db_add_req_t *cont = (akvp_db_add_req_t*)vreq;
   akv_err_t akv_err;
   kv_err_t kv_err;
+
+  *vres = NULL;
 
   kv_err = kv_add(akv_ctx.kv_ctx, cont->key, cont->key_len, cont->val, cont->val_len);
   akv_err =
@@ -231,6 +225,20 @@ int akvp_db_add_execute(void* vcont, struct tzi_encode_buffer_t *psOutBuf)
     : AKV_EKV;
 
   return akv_err;
+}
+
+size_t akvp_db_add_encode_res_maxlen(void* vres)
+{
+  return 0;
+}
+
+void akvp_db_add_release_res(void* vres)
+{
+}
+
+int akvp_db_add_encode_res(void *vres, void** buf, size_t* buf_len)
+{
+  return 0;
 }
 
 typedef struct {
@@ -320,3 +328,4 @@ void akvp_db_get_release(void* vcont)
   FREE_AND_NULL(cont->key);
   free(cont);
 }
+

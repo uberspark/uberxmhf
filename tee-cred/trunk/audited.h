@@ -49,28 +49,36 @@ typedef enum {
   AUDITED_EBADSTATE=7,
   AUDITED_EBADCMDHANDLE=8,
   AUDITED_EDECODE=9,
+  AUDITED_EAUDITSTRING=10,
+  AUDITED_ESAVE=11,
 } audited_err_t;
 
-
-typedef int (audited_begin_fn)(char **, void **, struct tzi_encode_buffer_t *);
-typedef int (audited_execute_fn)(void *, struct tzi_encode_buffer_t *);
-typedef void (audited_release_fn)(void *);
+typedef int (audited_decode_req_fn)(void **, void *, size_t);
+typedef int (audited_audit_string_fn)(void *, char **);
+typedef int (audited_execute_fn)(void *, void **);
+typedef size_t (audited_encode_res_maxlen_fn)(void *);
+typedef int (audited_encode_res_fn)(void *, void**, size_t*);
+typedef void (audited_release_req_fn)(void *);
+typedef void (audited_release_res_fn)(void *);
 
 typedef struct {
-  audited_begin_fn *begin;
+  audited_decode_req_fn *decode_req;
+  audited_audit_string_fn *audit_string;
   audited_execute_fn *execute;
-  audited_release_fn *release;
+  audited_encode_res_maxlen_fn *encode_res_maxlen;
+  audited_encode_res_fn *encode_res;
+  audited_release_req_fn *release_req;
+  audited_release_res_fn *release_res;
 } audited_cmd_t;
 
 typedef struct {
   char *audit_string;
-  void *cont;
-  audited_execute_fn *execute_fn;
-  audited_release_fn *release_fn;
+  void *req;
   uint64_t epoch_nonce;
   uint64_t epoch_offset;
   void *audit_nonce;
   size_t audit_nonce_len;
+  audited_cmd_t *fns;
 } audited_pending_cmd_t;
 
 #define AUDITED_MAX_PENDING 100
@@ -83,7 +91,7 @@ extern size_t audited_cmds_num;
 audited_err_t audited_init(const char* audit_server_pub_pem);
 void audited_release_pending_cmd_id(int i);
 audited_pending_cmd_t* audited_pending_cmd_of_id(int i);
-int audited_save_pending_cmd(char *audit_string, void *cont, audited_execute_fn execute_fn, audited_release_fn release_fn);
+int audited_save_pending_cmd(audited_cmd_t *fns, void *req, char *audit_string);
 audited_err_t audited_check_cmd_auth(audited_pending_cmd_t *cmd, const void* audit_token, size_t audit_token_len);
 
 audited_err_t audited_start_cmd(uint32_t audited_cmd,

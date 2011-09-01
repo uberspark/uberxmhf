@@ -109,6 +109,9 @@ audited_err_t akvp_audited_start_unmarshal(struct tzi_encode_buffer_t *psInBuf, 
                          &audit_string,
                          &audit_nonce,
                          &audit_nonce_len);
+  if (rv) {
+    goto out;
+  }
 
   TZIEncodeUint32(psOutBuf, pending_cmd_id);
   TZIEncodeArray(psOutBuf, audit_nonce, audit_nonce_len);

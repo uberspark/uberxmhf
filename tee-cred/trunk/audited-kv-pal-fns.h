@@ -42,15 +42,24 @@
 akv_err_t akvp_init(const char*);
 void akvp_release(void);
 
-int akvp_db_add_begin_marshal(char **audit_string,
-                              void **vcont,
-                              struct tzi_encode_buffer_t *psInBuf);
-akv_err_t akvp_db_add_begin(char **audit_string,
-                            void **vcont,
-                            const void* key, size_t key_len,
-                            const void* val, size_t val_len);
-int akvp_db_add_execute(void* vcont, struct tzi_encode_buffer_t *psOutBuf);
-void akvp_db_add_release(void* vcont);
+typedef struct {
+  void *key;
+  size_t key_len;
+  void *val;
+  size_t val_len;
+} akvp_db_add_req_t;
+int akvp_db_add_begin_decode_req(void **req,
+                                 void *inbuf,
+                                 size_t inbuf_len);
+akv_err_t akvp_db_add_begin(void *req,
+                            char **audit_string);
+int akvp_db_add_execute(void* vreq, void **vres);
+void akvp_db_add_release_req(void* req);
+int akvp_db_add_audit_string(void *vreq,
+                             char **audit_string);
+size_t akvp_db_add_encode_res_maxlen(void* vres);
+void akvp_db_add_release_res(void* vres);
+int akvp_db_add_encode_res(void *vres, void** buf, size_t* buf_len);
 
 int akvp_db_get_begin_marshal(char **audit_string,
                               void **vcont,

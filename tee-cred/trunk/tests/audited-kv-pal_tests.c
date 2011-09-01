@@ -44,6 +44,8 @@ static const char * key1 = "key one";
 static const size_t key1_len = 8;
 static const char * val1 = "value one";
 static const size_t val1_len = 10;
+static akvp_db_add_req_t req;
+
 static const char * audit_pub = 
   "-----BEGIN PUBLIC KEY-----\n"
   "MIIBIDANBgkqhkiG9w0BAQEFAAOCAQ0AMIIBCAKCAQEAtZi3Nsijw8LOFW6oTu5O\n"
@@ -69,6 +71,15 @@ void setUp(void)
 
   psOutBuf = malloc(1000);
   TZIEncodeBufInit(psOutBuf, 1000);
+
+  req =
+    (akvp_db_add_req_t) {
+    .key = (char*)key1,
+    .key_len = key1_len,
+    .val = (char*)val1,
+    .val_len = val1_len,
+  };
+
 }
 
 void tearDown(void)
@@ -81,57 +92,38 @@ void tearDown(void)
 void test_akvp_db_add_begin_gives_expected_audit_string()
 {
   char *audit_string;
-  void *cont;
   tz_return_t rv;
-
-  rv = akvp_db_add_begin(&audit_string,
-                         &cont,
-                         key1, key1_len,
-                         val1, val1_len);
+  rv = akvp_db_add_audit_string(&req,
+                                &audit_string);
   TEST_ASSERT(rv == TZ_SUCCESS);
   TEST_ASSERT_NOT_NULL(audit_string);
   TEST_ASSERT_EQUAL_STRING("ADD{key=\"key one\"}",
                            audit_string);
   free(audit_string);
-  akvp_db_add_release(cont);
 }
 
 void test_akvp_db_add_succeeds()
 {
-  char *audit_string;
-  void *cont;
+  void *res;
   tz_return_t rv;
 
-  rv = akvp_db_add_begin(&audit_string,
-                         &cont,
-                         key1, key1_len,
-                         val1, val1_len);
+  rv = akvp_db_add_execute(&req, &res);
   TEST_ASSERT(rv == TZ_SUCCESS);
-  free(audit_string);
-
-  rv = akvp_db_add_execute(cont, psOutBuf);
-  TEST_ASSERT(!rv);
-  akvp_db_add_release(cont);
+  akvp_db_add_release_res(res);
 }
 
 void test_akvp_db_add_duplicate_fails()
 {
-  char *audit_string;
-  void *cont;
+  void *res;
   tz_return_t rv;
 
-  rv = akvp_db_add_begin(&audit_string,
-                         &cont,
-                         key1, key1_len,
-                         val1, val1_len);
+  rv = akvp_db_add_execute(&req, &res);
   TEST_ASSERT(rv == TZ_SUCCESS);
-  free(audit_string);
+  akvp_db_add_release_res(res);
 
-  rv = akvp_db_add_execute(cont, psOutBuf);
-  TEST_ASSERT(!rv);
-  rv = akvp_db_add_execute(cont, psOutBuf);
-  TEST_ASSERT_EQUAL(AKV_EEXISTS, rv);
-  akvp_db_add_release(cont);
+  rv = akvp_db_add_execute(&req, &res);
+  TEST_ASSERT(rv);
+  akvp_db_add_release_res(res);
 }
 
 void test_akvp_db_get_begin_gives_expected_audit_string()
@@ -174,16 +166,11 @@ void test_akvp_db_get_execute_existing_succeeds(void)
   void *cont;
   void *val;
   size_t val_len;
+  void *add_res;
 
-  TEST_ASSERT(!akvp_db_add_begin(&audit_string,
-                                 &cont,
-                                 key1, key1_len,
-                                 val1, val1_len));
-  free(audit_string);
-  TEST_ASSERT(!akvp_db_add_execute(cont, psOutBuf));
-  akvp_db_add_release(cont);
+  TEST_ASSERT(!akvp_db_add_execute(&req, &add_res));
+  akvp_db_add_release_res(add_res);
 
-  TZIEncodeBufReInit(psOutBuf);
   TEST_ASSERT(!akvp_db_get_begin(&audit_string,
                                  &cont,
                                  key1, key1_len));

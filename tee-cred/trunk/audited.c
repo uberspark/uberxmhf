@@ -86,8 +86,8 @@ void audited_release_pending_cmd_id(int i)
 
   cmd = &pending_cmds[i];
   free(cmd->audit_string);
-  if(cmd->release_fn && cmd->cont) {
-    cmd->release_fn(cmd->cont);
+  if(cmd->fns && cmd->fns->release_req && cmd->req) {
+    cmd->fns->release_req(cmd->req);
   }
   free(cmd->audit_nonce);
 
@@ -100,13 +100,16 @@ audited_pending_cmd_t* audited_pending_cmd_of_id(int i)
   return &pending_cmds[i];
 }
 
-int audited_save_pending_cmd(char *audit_string, void *cont, audited_execute_fn execute_fn, audited_release_fn release_fn)
+int audited_save_pending_cmd(audited_cmd_t *fns, void *req, char *audit_string)
 {
   int cmd_id = get_free_pending_id();
   uint64_t epoch_nonce, epoch_offset;
   void *audit_nonce;
   size_t audit_nonce_len;
   int rv;
+
+  assert(fns);
+  assert(audit_string);
 
   rv = svc_time_elapsed_us(&epoch_nonce, &epoch_offset);
   if(rv) {
@@ -122,9 +125,8 @@ int audited_save_pending_cmd(char *audit_string, void *cont, audited_execute_fn 
 
   pending_cmds[cmd_id] = (audited_pending_cmd_t) {
     .audit_string = audit_string,
-    .cont = cont,
-    .execute_fn = execute_fn,
-    .release_fn = release_fn,
+    .req = req,
+    .fns = fns,
     .epoch_nonce = epoch_nonce,
     .epoch_offset = epoch_offset,
     .audit_nonce = audit_nonce,
@@ -185,40 +187,59 @@ audited_err_t audited_start_cmd(uint32_t audited_cmd,
                                 uint32_t *audit_nonce_len)
 {
   audited_err_t rv;
-  void *cont=NULL;
-  audited_pending_cmd_t *pending_cmd=NULL;
-  audited_execute_fn *execute_fn=NULL;
-  audited_release_fn *release_fn=NULL;
+  void *req=NULL;
+  audited_cmd_t *fns=NULL;
+
+  *audit_string=NULL;
+  *audit_nonce=NULL;
 
   if(!did_init) {
     rv = AUDITED_EBADSTATE;
     goto out;
   }
 
-  if (audited_cmd >= audited_cmds_num
-      || !audited_cmds[audited_cmd].begin) {
+  if (audited_cmd >= audited_cmds_num) {
     rv = AUDITED_EBADAUDITEDCMD;
     goto out;
   }
+  fns = &audited_cmds[audited_cmd];
+  assert(fns);
 
-  rv = audited_cmds[audited_cmd].begin(audit_string, &cont, psInBuf);
-  execute_fn = audited_cmds[audited_cmd].execute;
-  release_fn = audited_cmds[audited_cmd].release;
-
-  if (rv) {
-    free(audit_string);
-    if(release_fn && cont) {
-      release_fn(cont);
-    }
+  assert(fns->decode_req);
+  rv = fns->decode_req(&req, psInBuf, psInBuf->uiSize + sizeof(tzi_encode_buffer_t));
+  if (!rv) {
+    rv = AUDITED_EDECODE;
     goto out;
   }
 
-  *pending_cmd_id = audited_save_pending_cmd(*audit_string, cont, execute_fn, release_fn);
-  pending_cmd = audited_pending_cmd_of_id(*pending_cmd_id);
-  *audit_nonce = pending_cmd->audit_nonce;
-  *audit_nonce_len = pending_cmd->audit_nonce_len;
+  assert(fns->audit_string);
+  rv = fns->audit_string(req, audit_string);
+  if (rv) {
+    rv = AUDITED_EAUDITSTRING;
+    goto out;
+  }
 
- out:  
+  *pending_cmd_id = audited_save_pending_cmd(fns, req, *audit_string);
+  if (*pending_cmd_id < 0) {
+    rv = AUDITED_ESAVE;
+    goto out;
+  }
+
+  *audit_string = pending_cmds[*pending_cmd_id].audit_string;
+  *audit_nonce = pending_cmds[*pending_cmd_id].audit_nonce;
+  *audit_nonce_len = pending_cmds[*pending_cmd_id].audit_nonce_len;
+
+ out:
+  if (rv) {
+    free(*audit_string);
+    *audit_string=NULL;
+    free(*audit_nonce);
+    *audit_nonce=NULL;
+    if(fns && fns->release_req && req) {
+      fns->release_req(req);
+    }
+    req = NULL;
+  }
   return rv;
 }
 
@@ -229,6 +250,9 @@ audited_err_t audited_execute_cmd(uint32_t cmd_id,
 {
   audited_err_t rv;
   audited_pending_cmd_t *cmd;
+  void *res=NULL;
+  void *outbuf;
+  size_t outbuf_len;
 
   if(!did_init) {
     rv = AUDITED_EBADSTATE;
@@ -247,7 +271,17 @@ audited_err_t audited_execute_cmd(uint32_t cmd_id,
     goto out;
   }
 
-  rv = cmd->execute_fn(cmd->cont, psOutBuf);
+  assert(cmd->fns);
+
+  assert(cmd->fns->execute);
+  rv = cmd->fns->execute(cmd->req, res);
+
+  assert(cmd->fns->encode_res_maxlen);
+  outbuf_len = cmd->fns->encode_res_maxlen(res);
+  outbuf = TZIEncodeArraySpace(psOutBuf, outbuf_len);
+  assert(cmd->fns->encode_res);
+  rv = cmd->fns->encode_res(res, outbuf, &outbuf_len);
+
   audited_release_pending_cmd_id(cmd_id);
 
  out:
