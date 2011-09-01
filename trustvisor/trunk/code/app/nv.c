@@ -131,9 +131,9 @@ static int validate_nv_access_controls(unsigned int locality,
  *
  * returns 0 on success.
  */
-static int validate_mss_nv_region(unsigned int locality,
-                                  tpm_nv_index_t idx,
-                                  unsigned int expected_size) {
+int validate_trustvisor_nv_region(unsigned int locality,
+																	tpm_nv_index_t idx,
+																	unsigned int expected_size) {
     int rv = 0;
     unsigned int actual_size = 0;
     
@@ -179,8 +179,8 @@ static int _trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
     unsigned int actual_size = mss_size;
     bool first_boot;
 
-    if(0 != (rv = validate_mss_nv_region(locality, idx, mss_size))) {
-        dprintf(LOG_ERROR, "\n\n[TV] %s: ERROR: validate_mss_nv_region FAILED\n",
+    if(0 != (rv = validate_trustvisor_nv_region(locality, idx, mss_size))) {
+        dprintf(LOG_ERROR, "\n\n[TV] %s: ERROR: validate_trustvisor_nv_region FAILED\n",
                 __FUNCTION__);
         return rv;
     }
@@ -309,8 +309,13 @@ static uint32_t authenticate_nv_mux_pal(VCPU *vcpu) {
     return 1;
   }
     
-	dprintf(LOG_ERROR, "\n[TV] SECURITY VULNERABILITY: XXX NvMuxPal Authentication"
-					" UNIMPLEMENTED XXX");
+	dprintf(LOG_ERROR, "\n[TV] %s: \n\n"
+					"VULNERABILITY:VULNERABILITY:VULNERABILITY:VULNERABILITY\n"
+					"   NvMuxPal Authentication Unimplemented!!!\n"
+					"   Any PAL can manipulate sensitive NV areas!!!\n"
+					"   Continuing anyways...\n"
+					"VULNERABILITY:VULNERABILITY:VULNERABILITY:VULNERABILITY\n\n",
+					__FUNCTION__);
 
 	return 0; /* XXX Actual check unimplemented XXX */
 }

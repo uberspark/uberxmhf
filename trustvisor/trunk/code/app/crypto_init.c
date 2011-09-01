@@ -297,6 +297,7 @@ int trustvisor_master_crypto_init(void) {
 		dprintf(LOG_TRACE, "\n[TV] trustvisor_master_crypto_init: "
 						"AES-256 CTR_DRBG PRNG successfully seeded with TPM RNG.");
 
+		/* NV space used to support Micro-TPM Long-Term sealing */
 		if(0 != (rv = trustvisor_long_term_secret_init())) {
 				dprintf(LOG_ERROR, "\n[TV] trustvisor_long_term_secret_init FAILED with rv %d!!!!\n", rv);
 				goto out;
@@ -305,6 +306,26 @@ int trustvisor_master_crypto_init(void) {
 		dprintf(LOG_TRACE, "\n[TV] trustvisor_master_crypto_init: "
 						"long term secrets initialized successfully.");
 
+		/* Confirm that the NV space that will be used for anti-rollback
+			 by the NvMuxPal has appropriate controls in place. */
+		if(0 != (rv = validate_trustvisor_nv_region(
+								 TRUSTVISOR_HWTPM_NV_LOCALITY,
+								 HW_TPM_ROLLBACK_PROT_INDEX,
+								 HW_TPM_ROLLBACK_PROT_SIZE))) {
+				dprintf(LOG_ERROR, "\n[TV] %s: ERROR: "
+								" validate_trustvisor_nv_region(%d, 0x%08x, %d)"
+								" FAILED with rv %d\n",	__FUNCTION__,
+								TRUSTVISOR_HWTPM_NV_LOCALITY,
+								HW_TPM_ROLLBACK_PROT_INDEX,
+								HW_TPM_ROLLBACK_PROT_SIZE,
+								rv);
+				goto out;
+		}
+
+		dprintf(LOG_TRACE, "\n[TV] %s: NvMuxPal anti-rollback NV Region"
+						"Access Controls validated successfully.", __FUNCTION__);
+
+		/* Identity key used to sign Micro-TPM Quotes */
 		/* prefer not to depend on the globals */
 		if(0 != (rv = trustvisor_measure_qnd_bridge_signing_pubkey(&g_rsa))) {
 				dprintf(LOG_ERROR, "\n[TV] trustvisor_long_term_secret_init FAILED with rv %d!!!!\n", rv);

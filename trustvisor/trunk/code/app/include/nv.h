@@ -36,6 +36,10 @@
 #ifndef _NV_H_
 #define _NV_H_
 
+/* Currently this file depends on tpm.h having been included earlier
+ * (for tpm_nv_index_t).  Given that there are also such dependencies
+ * for uint32_t, VCPU, etc., I choose to do nothing in here. */
+
 /* TODO: Make the index a boot-time parameter with a sane default */
 #define HW_TPM_MASTER_SEALING_SECRET_INDEX 0x00015213
 #define HW_TPM_MASTER_SEALING_SECRET_SIZE 20
@@ -47,6 +51,10 @@
 
 #define HW_TPM_ROLLBACK_PROT_INDEX 0x00014E56 /* "NV" */
 #define HW_TPM_ROLLBACK_PROT_SIZE 32 /* SHA-256 */
+
+int validate_trustvisor_nv_region(unsigned int locality,
+                                  tpm_nv_index_t idx,
+                                  unsigned int expected_size);
 
 int trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
                           uint8_t *mss, unsigned int mss_size);
