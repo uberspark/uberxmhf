@@ -68,7 +68,12 @@
 
 #-----build rules
 .PHONY: all
-all: common runtime app sl init hypervisor-$(TARGET_HWPLATFORM).bin.gz
+all: app common runtime sl init hypervisor-$(TARGET_HWPLATFORM).bin.gz
+
+app: 
+	#make EMHFapp
+	mkdir -p $(APPOBJECTSDIR)
+	cd $(BASEDIR)/app && $(MAKE) -w all
 
 common:
 	#make libcommon first	
@@ -77,11 +82,6 @@ common:
 runtime: common
 	#make runtime
 	cd runtime && $(MAKE) -w all
-
-app: runtime common
-	#make EMHFapp
-	mkdir -p $(APPOBJECTSDIR)
-	cd $(BASEDIR)/app && $(MAKE) -w all
 
 sl: runtime common app
 	#make sl
@@ -105,6 +105,10 @@ hypervisor-$(TARGET_HWPLATFORM).bin.gz: sl/sl.bin runtime/runtime.bin
 	$(CAT) ./sl/sl.bin ./runtime/runtime.bin > ./hypervisor.tmp.img
 	gzip -c ./hypervisor.tmp.img > ./hypervisor-$(TARGET_HWPLATFORM).bin.gz
 	$(RM) -rf ./hypervisor.tmp.img 
+	# install loader and runtime images to INSTALLDIR
+	$(CP) $(EMHFCOREDIR)/init/init-$(TARGET_HWPLATFORM).bin $(INSTALLDIR)/$(TARGET)-init-$(TARGET_HWPLATFORM).bin
+	$(CP) $(EMHFCOREDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz $(INSTALLDIR)/$(TARGET)-hypervisor-$(TARGET_HWPLATFORM).bin.gz
+
 
 # cleanup rules
 .PHONY: clean 
