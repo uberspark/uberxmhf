@@ -73,6 +73,25 @@ INTEGRITY_MEASUREMENT_VALUES g_sl_gold /* __attribute__(( section("") )) */ = {
     .sha_slbelow64K = BAD_INTEGRITY_HASH
 };
 
+#define SERIAL_BASE 0x3f8
+void raw_serial_init(void){
+    // enable DLAB and set baudrate 115200
+    outb(SERIAL_BASE+0x3, 0x80);
+    outb(SERIAL_BASE+0x0, 0x01);
+    outb(SERIAL_BASE+0x1, 0x00);
+    // disable DLAB and set 8N1
+    outb(SERIAL_BASE+0x3, 0x03);
+    // reset IRQ register
+    outb(SERIAL_BASE+0x1, 0x00);
+    // enable fifo, flush buffer, enable fifo
+    outb(SERIAL_BASE+0x2, 0x01);
+    outb(SERIAL_BASE+0x2, 0x07);
+    outb(SERIAL_BASE+0x2, 0x01);
+    // set RTS,DTR
+    outb(SERIAL_BASE+0x4, 0x03);
+}
+
+
 //---runtime paging setup-------------------------------------------------------
 //physaddr and virtaddr are assumed to be 2M aligned
 void runtime_setup_paging(u32 physaddr, u32 virtaddr, u32 totalsize){
@@ -206,6 +225,7 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	#endif
 
 	#ifdef __INIT_LATE__
+		raw_serial_init();
 		printf("\nSL (init-late): starting...");
 		HALT();
 	#endif
@@ -478,3 +498,4 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		printf("\nSL: Fatal, should never be here!");
 		HALT();
 } 
+
