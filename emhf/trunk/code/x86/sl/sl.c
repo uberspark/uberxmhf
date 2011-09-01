@@ -204,6 +204,11 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	#ifdef __DEBUG_VGA__
 		vgamem_clrscr();
 	#endif
+
+	#ifdef __INIT_LATE__
+		printf("\nSL (init-late): starting...");
+		HALT();
+	#endif
 	
 	//initialze sl_baseaddr variable and print its value out
 	sl_baseaddr = baseaddr;

@@ -1,6 +1,10 @@
 # top-level makefile for emhf x86 platform 
 # author: amit vasudevan (amitvasudevan@acm.org)
 
+# late initialization support (experimental)
+	export INIT_LATE := y
+	
+
 #-----build configuration
 	#-----tools
 	export CC = gcc
@@ -58,6 +62,12 @@
 	ifeq ($(TEST_CPU_QUIESCE), y)
 		CFLAGS += -D__TEST_CPU_QUIESCE__
 	endif
+
+	# late initialization support (experimental)
+	ifeq ($(INIT_LATE), y)
+		CFLAGS += -D__INIT_LATE__
+	endif
+	
 
 	#-----export CFLAGS and ASFLAGS
 	ASFLAGS = $(CFLAGS) -D__ASSEMBLY__
