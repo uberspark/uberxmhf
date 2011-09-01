@@ -74,6 +74,7 @@ TZDeviceOpen(IN void const *pkDeviceName,
   int i;
   tz_return_t rv;
   static bool initialized = false;
+  struct tzi_device_ext_t *psExt;
 
   /* temporary (?) hack. attempted to get device backends to register
      themselves with constructor functions, but they don't get linked
@@ -101,7 +102,7 @@ TZDeviceOpen(IN void const *pkDeviceName,
     return TZ_ERROR_ILLEGAL_ARGUMENT;
   }
 
-  rv = tzi_device_registry[i].cbb->deviceOpen(pkDeviceName, pkInit, psDevice);
+  rv = tzi_device_registry[i].cbb->deviceOpen(pkDeviceName, pkInit, psDevice, &psExt);
 
   if (rv == TZ_SUCCESS) {
     *psDevice = (tz_device_t) {
@@ -109,6 +110,7 @@ TZDeviceOpen(IN void const *pkDeviceName,
       .sImp = {
         .cbb = tzi_device_registry[i].cbb,
         .uiSessionCount = 0,
+        .psExt = psExt,
       },
     };
   } else {

@@ -237,7 +237,8 @@ TVOperationRelease(INOUT tz_operation_t* psOperation)
 tz_return_t
 TVDeviceOpen(IN void const *pkDeviceName,
              IN void const *pkInit,
-             OUT tz_device_t *psDevice)
+             OUT tz_device_t *psDevice,
+             OUT tzi_device_ext_t **psExt)
 {
   const tv_device_open_options_t *options;
   const tv_device_open_options_t default_options =
@@ -250,12 +251,12 @@ TVDeviceOpen(IN void const *pkDeviceName,
     options = &default_options;
   }
 
-  psDevice->sImp.psExt = malloc(sizeof(tzi_device_ext_t));
-  if (!psDevice->sImp.psExt) {
+  *psExt = malloc(sizeof(tzi_device_ext_t));
+  if (!*psExt) {
     return TZ_ERROR_MEMORY;
   }
 
-  psDevice->sImp.psExt->userspace_only = options->userspace_only;
+  (*psExt)->userspace_only = options->userspace_only;
 
   assert(!strcmp(pkDeviceName, "trustvisor"));
 
