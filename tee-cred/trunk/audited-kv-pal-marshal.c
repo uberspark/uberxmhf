@@ -63,127 +63,155 @@
 char end[10*4096]; /* define the end of the data segment and some
                       buffer spacefor libnosys's sbrk */
 
+static bool did_init = false;
+
+static akv_err_t akvp_init_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf);
+static akv_err_t akvp_audited_start_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf);
+static akv_err_t akvp_audited_execute_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf);
+
 void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
-  static bool did_init = false;
-
   switch(uiCommand) {
   case AKVP_INIT:
-    {
-      const char *audit_pub_pem;
-      uint32_t audit_pub_len;
-
-      if (TZIDecodeBufF(psInBuf, "%"TZI_DARRSPC, &audit_pub_pem, &audit_pub_len)) {
-        *puiRv=AKV_EDECODE;
-        break;
-      }
-      if (audit_pub_pem[audit_pub_len-1] != '\0') {
-        *puiRv=AKV_EPARAM;
-        break;
-      }
-      
-      *puiRv = akvp_init(audit_pub_pem);
-      if(*puiRv == AKV_ENONE)
-        did_init=true;
-    }
+    *puiRv = akvp_init_unmarshal(psInBuf, psOutBuf);
     break;
 
   case AKVP_START_AUDITED_CMD:
-    {
-      uint32_t audited_cmd = TZIDecodeUint32(psInBuf);
-      char *audit_string=NULL;
-      void *cont=NULL;
-      audited_execute_fn *execute_fn=NULL;
-      audited_release_fn *release_fn=NULL;
-      int pending_cmd_id;
-      audited_pending_cmd_t *pending_cmd=NULL;
-
-      if(!did_init) {
-        *puiRv = AKV_EBADSTATE;
-        return;
-      }
-
-      if(TZIDecodeGetError(psInBuf)) {
-        *puiRv = AKV_EDECODE;
-        return;
-      }
-
-      switch(audited_cmd) {
-      case AKVP_DB_ADD:
-        *puiRv = akvp_db_add_begin_marshal(&audit_string, &cont, psInBuf);
-        execute_fn = akvp_db_add_execute;
-        release_fn = akvp_db_add_release;
-        break;
-      case AKVP_DB_GET:
-        *puiRv = akvp_db_get_begin_marshal(&audit_string, &cont, psInBuf);
-        execute_fn = akvp_db_get_execute;
-        release_fn = akvp_db_get_release;
-        break;
-      default:
-        *puiRv = AKV_EBADAUDITEDCMD;
-        break;
-      }
-
-      if (*puiRv != TZ_SUCCESS) {
-        free(audit_string);
-        if(release_fn && cont) {
-          release_fn(cont);
-        }
-        /* XXX release cont? */
-        return;
-      }
-
-      /* returns:
-         uint32 pending command handle
-         array  audit-nonce (binary data)
-         array  audit-string (null-terminated string)
-      */
-      pending_cmd_id = audited_save_pending_cmd(audit_string, cont, execute_fn, release_fn);
-      pending_cmd = audited_pending_cmd_of_id(pending_cmd_id);
-      TZIEncodeUint32(psOutBuf, pending_cmd_id);
-      TZIEncodeArray(psOutBuf, pending_cmd->audit_nonce, pending_cmd->audit_nonce_len);
-      TZIEncodeArray(psOutBuf, audit_string, strlen(audit_string)+1);
-    }
+    *puiRv = akvp_audited_start_unmarshal(psInBuf, psOutBuf);
     break;
+
   case AKVP_EXECUTE_AUDITED_CMD:
-    {
-      void *audit_token;
-      uint32_t audit_token_len;
-      int cmd_id;
-      audited_pending_cmd_t *cmd;
-
-      if(!did_init) {
-        *puiRv = AKV_EBADSTATE;
-        return;
-      }
-
-      cmd_id = TZIDecodeUint32(psInBuf);
-      audit_token = TZIDecodeArraySpace(psInBuf, &audit_token_len);
-
-      if (TZIDecodeGetError(psInBuf)) {
-        *puiRv = AKV_EDECODE;
-        return;
-      }
-
-      if (!(cmd = audited_pending_cmd_of_id(cmd_id))) {
-        *puiRv = AKV_EBADCMDHANDLE;
-        return;
-      }
-
-      if (audited_check_cmd_auth(cmd,
-                                 audit_token,
-                                 audit_token_len)) {
-        *puiRv = AKV_EBADAUTH;
-        return;
-      }
-
-      *puiRv = cmd->execute_fn(cmd->cont, psOutBuf);
-      audited_release_pending_cmd_id(cmd_id);
-      return;
-    }
+    *puiRv = akvp_audited_execute_unmarshal(psInBuf, psOutBuf);
     break;
   default:
     *puiRv = AKV_EBADCMD;
     break;
   }
+}
+
+akv_err_t akvp_init_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf)
+{
+  const char *audit_pub_pem;
+  uint32_t audit_pub_len;
+  akv_err_t rv;
+
+  if (TZIDecodeBufF(psInBuf, "%"TZI_DARRSPC, &audit_pub_pem, &audit_pub_len)) {
+    rv=AKV_EDECODE;
+    goto out;
+  }
+
+  if (audit_pub_pem[audit_pub_len-1] != '\0') {
+    rv=AKV_EPARAM;
+    goto out;
+  }
+      
+  rv = akvp_init(audit_pub_pem);
+
+  if(rv == AKV_ENONE)
+    did_init=true;
+ out:
+  return rv;
+}
+
+akv_err_t akvp_audited_start_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf)
+{
+  uint32_t audited_cmd;
+  char *audit_string=NULL;
+  void *cont=NULL;
+  audited_execute_fn *execute_fn=NULL;
+  audited_release_fn *release_fn=NULL;
+  int pending_cmd_id;
+  audited_pending_cmd_t *pending_cmd=NULL;
+  akv_err_t rv;
+
+  if(!did_init) {
+    rv = AKV_EBADSTATE;
+    goto out;
+  }
+
+  audited_cmd = TZIDecodeUint32(psInBuf);
+
+  if(TZIDecodeGetError(psInBuf)) {
+    rv = AKV_EDECODE;
+    goto out;
+  }
+
+  switch(audited_cmd) {
+  case AKVP_DB_ADD:
+    rv = akvp_db_add_begin_marshal(&audit_string, &cont, psInBuf);
+    execute_fn = akvp_db_add_execute;
+    release_fn = akvp_db_add_release;
+    break;
+  case AKVP_DB_GET:
+    rv = akvp_db_get_begin_marshal(&audit_string, &cont, psInBuf);
+    execute_fn = akvp_db_get_execute;
+    release_fn = akvp_db_get_release;
+    break;
+  default:
+    rv = AKV_EBADAUDITEDCMD;
+    break;
+  }
+
+  if (rv != TZ_SUCCESS) {
+    free(audit_string);
+    if(release_fn && cont) {
+      release_fn(cont);
+    }
+    /* XXX release cont? */
+    goto out;
+  }
+
+  /* returns:
+     uint32 pending command handle
+     array  audit-nonce (binary data)
+     array  audit-string (null-terminated string)
+  */
+  pending_cmd_id = audited_save_pending_cmd(audit_string, cont, execute_fn, release_fn);
+  pending_cmd = audited_pending_cmd_of_id(pending_cmd_id);
+  TZIEncodeUint32(psOutBuf, pending_cmd_id);
+  TZIEncodeArray(psOutBuf, pending_cmd->audit_nonce, pending_cmd->audit_nonce_len);
+  TZIEncodeArray(psOutBuf, audit_string, strlen(audit_string)+1);
+
+ out:
+  return rv;
+}
+
+akv_err_t akvp_audited_execute_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf)
+{
+  void *audit_token;
+  uint32_t audit_token_len;
+  int cmd_id;
+  audited_pending_cmd_t *cmd;
+  akv_err_t rv;
+
+  if(!did_init) {
+    rv = AKV_EBADSTATE;
+    goto out;
+  }
+
+  cmd_id = TZIDecodeUint32(psInBuf);
+  audit_token = TZIDecodeArraySpace(psInBuf, &audit_token_len);
+
+  if (TZIDecodeGetError(psInBuf)) {
+    rv = AKV_EDECODE;
+    goto out;
+  }
+
+  if (!(cmd = audited_pending_cmd_of_id(cmd_id))) {
+    rv = AKV_EBADCMDHANDLE;
+    goto out;
+  }
+
+  if (audited_check_cmd_auth(cmd,
+                             audit_token,
+                             audit_token_len)) {
+    rv = AKV_EBADAUTH;
+    goto out;
+  }
+
+  rv = cmd->execute_fn(cmd->cont, psOutBuf);
+
+  audited_release_pending_cmd_id(cmd_id);
+ out:
+  return rv;
 }
