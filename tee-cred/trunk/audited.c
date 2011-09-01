@@ -207,7 +207,7 @@ audited_err_t audited_start_cmd(uint32_t audited_cmd,
 
   assert(fns->decode_req);
   rv = fns->decode_req(&req, psInBuf, psInBuf->uiSize + sizeof(tzi_encode_buffer_t));
-  if (!rv) {
+  if (rv) {
     rv = AUDITED_EDECODE;
     goto out;
   }
@@ -274,7 +274,7 @@ audited_err_t audited_execute_cmd(uint32_t cmd_id,
   assert(cmd->fns);
 
   assert(cmd->fns->execute);
-  rv = cmd->fns->execute(cmd->req, res);
+  rv = cmd->fns->execute(cmd->req, &res);
 
   assert(cmd->fns->encode_res_maxlen);
   outbuf_len = cmd->fns->encode_res_maxlen(res);
