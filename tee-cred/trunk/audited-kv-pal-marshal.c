@@ -42,8 +42,8 @@
 #include "audited.h"
 
 static akv_err_t akvp_init_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf);
-static akv_err_t akvp_audited_start_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf);
-static akv_err_t akvp_audited_execute_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf);
+static audited_err_t akvp_audited_start_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf);
+static audited_err_t akvp_audited_execute_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf);
 
 void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
@@ -87,19 +87,19 @@ akv_err_t akvp_init_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_en
   return rv;
 }
 
-akv_err_t akvp_audited_start_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf)
+audited_err_t akvp_audited_start_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf)
 {
   uint32_t audited_cmd;
   char *audit_string=NULL;
   uint32_t pending_cmd_id;
-  akv_err_t rv;
+  audited_err_t rv;
   void *audit_nonce;
   uint32_t audit_nonce_len;
 
   audited_cmd = TZIDecodeUint32(psInBuf);
 
   if(TZIDecodeGetError(psInBuf)) {
-    rv = AKV_EDECODE;
+    rv = AUDITED_EDECODE;
     goto out;
   }
 
@@ -118,17 +118,17 @@ akv_err_t akvp_audited_start_unmarshal(struct tzi_encode_buffer_t *psInBuf, stru
   return rv;
 }
 
-akv_err_t akvp_audited_execute_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf)
+audited_err_t akvp_audited_execute_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf)
 {
   void *audit_token;
   uint32_t audit_token_len;
   uint32_t cmd_id;
-  akv_err_t rv;
+  audited_err_t rv;
 
   cmd_id = TZIDecodeUint32(psInBuf);
   audit_token = TZIDecodeArraySpace(psInBuf, &audit_token_len);
   if (TZIDecodeGetError(psInBuf)) {
-    rv = AKV_EDECODE;
+    rv = AUDITED_EDECODE;
     goto out;
   }
 
