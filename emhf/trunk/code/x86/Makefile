@@ -68,7 +68,7 @@
 
 #-----build rules
 .PHONY: all
-all: app common runtime sl init init-late hypervisor-$(TARGET_HWPLATFORM).bin.gz
+all: app common runtime sl init hypervisor-$(TARGET_HWPLATFORM).bin.gz
 
 app: 
 	#make EMHFapp
@@ -98,10 +98,6 @@ init: sl runtime common app
 		SLBELOW64K_INTEGRITY_HASH=\""$(shell ( dd if=./sl/sl.bin bs=1024 count=64 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
 		SLABOVE64K_INTEGRITY_HASH=\""$(shell ( dd if=./sl/sl.bin bs=1024 skip=64 count=1984 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
 
-init-late: sl runtime common app
-	#make late initialization, currently defaults to linux os support
-	cd ./init-late/os/linux && $(MAKE)
-
 sl/sl.bin: sl
 runtime/runtime.bin: runtime
 hypervisor-$(TARGET_HWPLATFORM).bin.gz: sl/sl.bin runtime/runtime.bin
@@ -112,7 +108,13 @@ hypervisor-$(TARGET_HWPLATFORM).bin.gz: sl/sl.bin runtime/runtime.bin
 	# install loader and runtime images to INSTALLDIR
 	$(CP) ./init/init-$(TARGET_HWPLATFORM).bin $(INSTALLDIR)/$(TARGET)-init-$(TARGET_HWPLATFORM).bin
 	$(CP) ./hypervisor-$(TARGET_HWPLATFORM).bin.gz $(INSTALLDIR)/$(TARGET)-hypervisor-$(TARGET_HWPLATFORM).bin.gz
-	#TODO: do this only if we are interested in a dynamic launch; also needs OS selection via configuration option
+
+# late initialization support
+.PHONY: init-late
+init-late: sl runtime common app
+	#make late initialization, currently defaults to linux os support
+	cd ./init-late/os/linux && $(MAKE)
+	#TODO: needs OS selection via configuration option
 	$(CP) ./init-late/os/linux/emhfil.ko $(INSTALLDIR)/emhfil.ko
 	$(CP) ./init-late/os/linux/emhfil.sh $(INSTALLDIR)/emhfil.sh
 	
