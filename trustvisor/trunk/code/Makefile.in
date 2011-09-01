@@ -24,7 +24,10 @@
     #MP/UP selection, y=Multiprocessor, n=Uniprocessor
     export MP_VERSION := @MP_VERSION@
 
-    #where you want loader and runtime binaries to go, defaults to current dir.
+    #where you want loader and runtime binaries to go, defaults to
+    #current dir. Note that this is used by the emhfcore to decide
+    #where to put the files that result from the build process.
+    #A better name might be BUILDTARGETDIR or similar.
 	export INSTALLDIR = $(CURDIR)
 
     #misc. configuaration w.r.t serial debugging and NPT/EPT support
@@ -137,8 +140,13 @@ install-dev:
 # TODO: make '/boot' configurable with ./configure
 install-bin:
 	install -d $(DESTDIR)/boot
-	install --mode=644 $(EMHFCOREDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz $(DESTDIR)/boot
-	install --mode=644 $(EMHFCOREDIR)/init/init-$(TARGET_HWPLATFORM).bin $(DESTDIR)/boot
+	#install --mode=644 $(INSTALLDIR)/$(TARGET)-hypervisor-$(TARGET_HWPLATFORM).bin.gz $(DESTDIR)/boot
+	#install --mode=644 $(INSTALLDIR)/$(TARGET)-init-$(TARGET_HWPLATFORM).bin $(DESTDIR)/boot
+	# NOTE: Getting rid of TARGET prefix on hypervisor and init
+	# because it will break the grub config on all of our test machines
+	# right now.
+	install --mode=644 $(INSTALLDIR)/$(TARGET)-hypervisor-$(TARGET_HWPLATFORM).bin.gz $(DESTDIR)/boot/hypervisor-$(TARGET_HWPLATFORM).bin.gz
+	install --mode=644 $(INSTALLDIR)/$(TARGET)-init-$(TARGET_HWPLATFORM).bin $(DESTDIR)/boot/init-$(TARGET_HWPLATFORM).bin
 
 #------test rules
 export CMOCKDIR:=$(realpath @CMOCKDIR@)
