@@ -113,4 +113,6 @@ clean:
 	cd sl && $(MAKE) -w clean
 	cd init && $(MAKE) -w clean
 	cd libcommon && $(MAKE) -w clean
-	
+	cd ../app && $(MAKE) -w clean
+	rm -rf $(APPOBJECTSDIR)
+
