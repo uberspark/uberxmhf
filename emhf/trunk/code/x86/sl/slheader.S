@@ -362,6 +362,20 @@ sl_startnew:
     // Setup ESP to top of 64K (it will already be there on AMD)
     movl $0x10000, %esp // XXX TODO Get rid of magic number
 
+#ifdef __INIT_LATE__
+    //setup 115200,8n1 on ttyS0 
+    call raw_serial_init
+    mov $0x3fd, %edx // control register for com1
+1:  in (%dx), %al    // read status into AL
+    test $0x20, %al  // check for ready
+    je 1b            // keep trying
+    mov $0x3f8, %edx // data register for com1
+    mov $0x40, %al   // output an @ character
+    out %al, (%dx)
+	hlt
+#endif
+
+
 #ifndef PERF_CRIT
     // push measurements onto the new stack
     pushl %edx
