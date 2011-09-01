@@ -68,7 +68,7 @@
 
 #-----build rules
 .PHONY: all
-all: app common runtime sl init hypervisor-$(TARGET_HWPLATFORM).bin.gz
+all: app common runtime sl init init-late hypervisor-$(TARGET_HWPLATFORM).bin.gz
 
 app: 
 	#make EMHFapp
@@ -97,6 +97,10 @@ init: sl runtime common app
 		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum ./runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
 		SLBELOW64K_INTEGRITY_HASH=\""$(shell ( dd if=./sl/sl.bin bs=1024 count=64 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
 		SLABOVE64K_INTEGRITY_HASH=\""$(shell ( dd if=./sl/sl.bin bs=1024 skip=64 count=1984 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
+
+init-late: sl runtime common app
+	#make late initialization, currently defaults to linux os support
+	cd ./init-late/os/linux && $(MAKE)
 
 sl/sl.bin: sl
 runtime/runtime.bin: runtime
