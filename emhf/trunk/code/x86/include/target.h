@@ -345,6 +345,7 @@ static inline hpt_pm_t VCPU_get_current_root_pm(VCPU *vcpu)
   } else {
     ASSERT(0);
   }
+  ASSERT(0); return (hpt_pm_t)0; /* unreachable; appeases compiler */  
 }
 
 static inline void VCPU_set_current_root_pm(VCPU *vcpu, hpt_pm_t root)

@@ -331,6 +331,7 @@ static inline hpt_pa_t hpt_cr3_get_address(hpt_type_t t, u64 cr3)
   } else {
     ASSERT(0);
   }
+  ASSERT(0); return (hpt_pa_t)0; /* unreachable; appeases compiler */
 }
 
 #define HPT_CR4_PAE_BIT 5
@@ -423,6 +424,7 @@ static inline bool hpt_pme_getuser(hpt_type_t t, int lvl, hpt_pme_t entry)
   } else if (t == HPT_TYPE_EPT) {
     return true;
   }
+  ASSERT(0); return false; /* unreachable; appeases compiler */
 }
 
 static inline hpt_pme_t hpt_pme_setprot(hpt_type_t t, int lvl, hpt_pme_t entry, hpt_prot_t perms)
@@ -789,6 +791,7 @@ static inline bool hpt_pme_get_pcd(hpt_type_t t, int __attribute__((unused)) lvl
   } else {
     ASSERT(0);
   }
+  ASSERT(0); return false; /* unreachable; appeases compiler */  
 }
 
 /* "internal". use hpt_pme_set_pmt instead */
@@ -803,6 +806,7 @@ static inline hpt_pme_t hpt_pme_set_pcd(hpt_type_t t, int __attribute__((unused)
   } else {
     ASSERT(0);
   }
+  ASSERT(0); return (hpt_pme_t)0; /* unreachable; appeases compiler */  
 }
 
 /* "internal". use hpt_pme_get_pmt instead */
@@ -817,6 +821,7 @@ static inline bool hpt_pme_get_pwt(hpt_type_t t, int __attribute__((unused)) lvl
   } else {
     ASSERT(0);
   }
+  ASSERT(0); return false; /* unreachable; appeases compiler */  
 }
 
 /* "internal". use hpt_pme_set_pmt instead */
@@ -831,6 +836,7 @@ static inline hpt_pme_t hpt_pme_set_pwt(hpt_type_t t, int __attribute__((unused)
   } else {
     ASSERT(0);
   }
+  ASSERT(0); return (hpt_pme_t)0; /* unreachable; appeases compiler */  
 }
 
 /* Assumes PAT register has default values */
