@@ -5,7 +5,7 @@
 #-----options that need tweaking w.r.t your "hyperapp"
   
 	#your target name and version
-	export TARGET = ea-mtrrtest
+	export TARGET = targetapp
 	export TARGET_VERSION = 0
 	export TARGET_SUBVERSION = 1
   
@@ -17,7 +17,6 @@
 	
 	#where you want loader and runtime binaries to go, defaults to current dir.
 	export INSTALLDIR = $(CURDIR)
-	# /share/mnt-emhf-init-late
   
 	#misc. configuaration w.r.t serial debugging and NPT/EPT support
 	export NESTED_PAGING := y
@@ -54,7 +53,7 @@ all:
 
 	cd $(EMHFCOREDIR) && $(MAKE) -w all
 
-#------late initialization support
+#------late initialization support (experimental)
 .PHONY: init-late
 init-late:
 	# support linux OS for now
