@@ -65,7 +65,8 @@
 
 	# late initialization support (experimental)
 	ifeq ($(INIT_LATE), y)
-		CFLAGS += -D__INIT_LATE__
+		CFLAGS += -D__INIT_LATE__ 
+		CFLAGS += -DPERF_CRIT
 	endif
 	
 
