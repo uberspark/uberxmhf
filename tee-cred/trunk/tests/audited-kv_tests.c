@@ -35,24 +35,22 @@
 
 #include <unity.h>
 
-#include "Mocktz.h"
 #include "Mocktv.h"
 #include "audited-kv.h"
 
 akv_ctx_t g_ctx;
+/* static const char * key1 = "key one"; */
+/* static const char * val1 = "value one"; */
 
 void setUp(void)
 {
-  tv_tz_init_IgnoreAndReturn(0);
-  TZOperationPrepareInvoke_IgnoreAndReturn(0);
-  TZOperationPerform_IgnoreAndReturn(0);
-  TZIEncodeF_IgnoreAndReturn(0);
+  tv_pal_sections_init_Ignore();
+  tv_pal_register_IgnoreAndReturn(0);
   akv_ctx_init(&g_ctx, "keyfile");
 }
 
 void tearDown(void)
 {
-  tv_tz_teardown_IgnoreAndReturn(0);
   akv_ctx_release(&g_ctx);
 }
 
@@ -60,11 +58,8 @@ void test_init(void)
 {
   akv_ctx_t ctx;
 
-  tv_tz_init_IgnoreAndReturn(0);
-  TZOperationPrepareInvoke_IgnoreAndReturn(0);
-  TZOperationPerform_IgnoreAndReturn(0);
-  TZIEncodeF_IgnoreAndReturn(0);
-
+  tv_pal_sections_init_Ignore();
+  tv_pal_register_IgnoreAndReturn(0);
   TEST_ASSERT(!akv_ctx_init(&ctx, "keyfile"));
 }
 
@@ -72,23 +67,22 @@ void test_init_detects_err(void)
 {
   akv_ctx_t ctx;
 
-  tv_tz_init_IgnoreAndReturn(1);
-  
   TEST_ASSERT(akv_ctx_init(&ctx, "keyfile"));
 }
 
 void test_release(void)
 {
-  tv_tz_teardown_IgnoreAndReturn(0);
   TEST_ASSERT(!akv_ctx_release(&g_ctx));
 }
 
 void test_release_detects_err(void)
 {
-  tv_tz_teardown_IgnoreAndReturn(1);
   TEST_ASSERT(akv_ctx_release(&g_ctx));
 }
 
-void test_add_succeeds(void)
-{
-}
+/* void test_add_succeeds(void) */
+/* { */
+/*   akv_cmd_ctx_t akv_cmd_ctx; */
+/*   int rv; */
+/*   rv = akv_db_add_begin(&g_ctx, &akv_cmd_ctx, key1, val1); */
+/* } */

@@ -3,7 +3,7 @@ CMOCKOBJ=$(CMOCKDIR)/src/cmock.o
 UNITYDIR=$(CMOCKDIR)/vendor/unity
 UNITYOBJ=$(UNITYDIR)/src/unity.o
 
-CFLAGS=-Wall -Werror -g
+CFLAGS=-Wall -Werror -g -DUSERSPACE_ONLY=1
 
 SRCDIR=..
 
@@ -16,7 +16,7 @@ TEESDK_PKGINCLUDE_DIR=$(shell pkg-config --variable=includedir tee-sdk-app)/tee-
 
 all : mocks test
 
-test : run_audit_tests run_audited-kv-pal_tests run_kv_tests run_audited-kv-pal-marshal_tests run_audited-kv_tests 
+test : run_audit_tests run_audited-kv-pal_tests run_kv_tests run_audited-kv-pal-marshal_tests
 
 mocks : mocks/Mockaudited-kv.c mocks/Mockaudit.c mocks/Mocktv.c mocks/Mocktz.c mocks/Mocksvcapi.c mocks/Mockaudited-kv-pal.o
 
@@ -28,11 +28,11 @@ OBJS+=audit_runner.o audit_tests.o audit.o
 # PROGS+=tcm_tests
 # OBJS+=tcm_runner.o tcm_tests.o tcm.o
 
-audited-kv_tests : audited-kv_runner.o audited-kv_tests.o audited-kv.o mocks/Mocktz.o mocks/Mocktv.o mocks/Mockaudited-kv-pal.o $(UNITYOBJ) $(CMOCKOBJ)
-audited-kv_tests : LDLIBS += $(call pkgconfig_ldlibs, tee-sdk-app tee-sdk-app-tv)
-audited-kv_tests : LDFLAGS += $(filter -L%, $(call pkgconfig_ldflags, tee-sdk-app tee-sdk-app-tv))
-PROGS+=audited-kv_tests
-OBJS+=audited-kv_runner.o audited-kv_tests.o audited-kv.o mocks/Mocktz.o mocks/Mocktv.o
+# audited-kv_tests : audited-kv_runner.o audited-kv_tests.o audited-kv.o audited-kv-pal.o $(UNITYOBJ) $(CMOCKOBJ)
+# audited-kv_tests : LDLIBS += $(call pkgconfig_ldlibs, tee-sdk-app tee-sdk-app-tv)
+# audited-kv_tests : LDFLAGS += $(filter -L%, $(call pkgconfig_ldflags, tee-sdk-app tee-sdk-app-tv))
+# PROGS+=audited-kv_tests
+# OBJS+=audited-kv_runner.o audited-kv_tests.o audited-kv.o mocks/Mocktv.o
 
 audited-kv-pal_tests : audited-kv-pal_runner.o audited-kv-pal_tests.o audited-kv-pal.o kv.o audited.o audited-kv-pal-globals.o $(UNITYOBJ) $(CMOCKOBJ)
 audited-kv-pal_tests : LDLIBS += $(call pkgconfig_ldlibs, tee-sdk-svc tee-sdk-svc-tv) -lcrypto
