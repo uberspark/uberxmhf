@@ -120,6 +120,7 @@ clean:
 	cd runtime && $(MAKE) -w clean
 	cd sl && $(MAKE) -w clean
 	cd init && $(MAKE) -w clean
+	cd ./init-late/os/linux && $(MAKE) clean
 	cd libcommon && $(MAKE) -w clean
 	cd $(BASEDIR)/app && $(MAKE) -w clean
 	rm -rf $(APPOBJECTSDIR)
