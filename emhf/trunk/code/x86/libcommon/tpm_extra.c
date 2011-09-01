@@ -940,9 +940,7 @@ extern uint32_t tpm_get_nv_data_public(uint32_t locality,
     }
 
     offset = 0;
-    /* XXX: Create a "LOAD equivalent.  Functionally equivalent but
-    the "Load" variants can make effective use of const. */
-    UNLOAD_NV_DATA_PUBLIC(resp, offset, pub);
+    LOAD_NV_DATA_PUBLIC(resp, offset, pub);
 
     print_hex("  NV pub: ", pub, resp_size);
 

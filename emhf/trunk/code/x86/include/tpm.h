@@ -602,9 +602,9 @@ typedef struct __attribute__ ((packed)) {
     UNLOAD_PCR_INFO_SHORT(buf, offset, &(pub)->pcr_info_read);\
     UNLOAD_PCR_INFO_SHORT(buf, offset, &(pub)->pcr_info_write);\
     UNLOAD_NV_ATTRIBUTES(buf, offset, &(pub)->permission);\
-    (pub)->b_read_st_clear = *(buf + offset); offset += 1;\
-    (pub)->b_write_st_clear = *(buf + offset); offset += 1;\
-    (pub)->b_write_define = *(buf + offset); offset += 1;\
+    *(buf + offset) = (pub)->b_read_st_clear; offset += 1;\
+    *(buf + offset) = (pub)->b_write_st_clear; offset += 1;\
+    *(buf + offset) = (pub)->b_write_define; offset += 1;\
     UNLOAD_INTEGER(buf, offset, (pub)->data_size);\
 }
 
@@ -657,6 +657,30 @@ typedef struct __attribute__ ((packed)) {
 #define LOAD_PCR_SELECTION(buf, offset, sel) {\
     LOAD_INTEGER(buf, offset, (sel)->size_of_select);\
     LOAD_BLOB(buf, offset, (sel)->pcr_select, (sel)->size_of_select);\
+}
+
+#define LOAD_PCR_INFO_SHORT(buf, offset, info) {\
+    LOAD_PCR_SELECTION(buf, offset, &(info)->pcr_selection);\
+    LOAD_BLOB_TYPE(buf, offset, &(info)->locality_at_release);\
+    LOAD_BLOB_TYPE(buf, offset, &(info)->digest_at_release);\
+}
+
+#define LOAD_NV_ATTRIBUTES(buf, offset, attr) {\
+    LOAD_INTEGER(buf, offset, (attr)->tag);\
+    LOAD_INTEGER(buf, offset, (attr)->attributes);\
+}
+
+/* Single-byte values do not require reverse_copy(endianness n/a) */
+#define LOAD_NV_DATA_PUBLIC(buf, offset, pub) {\
+    LOAD_INTEGER(buf, offset, (pub)->tag);\
+    LOAD_INTEGER(buf, offset, (pub)->nv_index);\
+    LOAD_PCR_INFO_SHORT(buf, offset, &(pub)->pcr_info_read);\
+    LOAD_PCR_INFO_SHORT(buf, offset, &(pub)->pcr_info_write);\
+    LOAD_NV_ATTRIBUTES(buf, offset, &(pub)->permission);\
+    (pub)->b_read_st_clear = *(buf + offset); offset += 1;\
+    (pub)->b_write_st_clear = *(buf + offset); offset += 1;\
+    (pub)->b_write_define = *(buf + offset); offset += 1;\
+    LOAD_INTEGER(buf, offset, (pub)->data_size);\
 }
 
 #define LOAD_PCR_INFO_LONG(buf, offset, info) {\
