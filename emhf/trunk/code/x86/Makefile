@@ -68,7 +68,7 @@
 
 #-----build rules
 .PHONY: all
-all: common runtime sl init hypervisor-$(TARGET_HWPLATFORM).bin.gz
+all: common runtime app sl init hypervisor-$(TARGET_HWPLATFORM).bin.gz
 
 common:
 	#make libcommon first	
@@ -78,7 +78,12 @@ runtime: common
 	#make runtime
 	cd runtime && $(MAKE) -w all
 
-sl: runtime common
+app: runtime common
+	#make EMHFapp
+	mkdir -p $(APPOBJECTSDIR)
+	cd ../app && $(MAKE) -w all
+
+sl: runtime common app
 	#make sl
 	# Double-dollar-sign required to cause make to provide literal dollar sign to perl
 	# Objective: Create an escaped ASCII string containing the SHA-1 hash of the
@@ -86,7 +91,7 @@ sl: runtime common
 	cd sl && $(MAKE) -w all \
 		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum ./runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
 
-init: sl runtime common
+init: sl runtime common app
 	#make init	
 	cd init && $(MAKE) -w all \
 		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum ./runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
