@@ -90,11 +90,11 @@ common:
 	#make libcommon first	
 	cd libcommon && $(MAKE) -w all
 
-runtime: common
+runtime: common app
 	#make runtime
 	cd runtime && $(MAKE) -w all
 
-sl: runtime common app
+sl: runtime 
 	#make sl
 	# Double-dollar-sign required to cause make to provide literal dollar sign to perl
 	# Objective: Create an escaped ASCII string containing the SHA-1 hash of the
@@ -111,7 +111,7 @@ init: sl runtime common app
 
 sl/sl.bin: sl
 runtime/runtime.bin: runtime
-hypervisor-$(TARGET_HWPLATFORM).bin.gz: sl/sl.bin runtime/runtime.bin
+hypervisor-$(TARGET_HWPLATFORM).bin.gz: sl/sl.bin runtime/runtime.bin init
 	# concatenate sl image and runtime image 
 	$(CAT) ./sl/sl.bin ./runtime/runtime.bin > ./hypervisor.tmp.img
 	gzip -c ./hypervisor.tmp.img > ./hypervisor-$(TARGET_HWPLATFORM).bin.gz
@@ -122,7 +122,7 @@ hypervisor-$(TARGET_HWPLATFORM).bin.gz: sl/sl.bin runtime/runtime.bin
 
 # late initialization support
 .PHONY: init-late
-init-late: sl runtime common app
+init-late: hypervisor-$(TARGET_HWPLATFORM).bin.gz
 	#make late initialization, currently defaults to linux os support
 	cd ./init-late/os/linux && $(MAKE)
 	#TODO: needs OS selection via configuration option
