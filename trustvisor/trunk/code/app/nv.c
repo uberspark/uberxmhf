@@ -51,6 +51,79 @@ extern int *scode_curr;
 extern whitelist_entry_t *whitelist;
 
 /**
+ * XXX REDUNDANT; identical logic exists in tv_utpm.h.  TODO:
+ * Consolidate.
+ */
+static inline bool pcr_is_selected(tpm_pcr_selection_t *tpmsel, uint32_t i) {
+    ASSERT(NULL != tpmsel);
+		
+    if(i/8 >= tpmsel->size_of_select) return false;
+
+    return (tpmsel->pcr_select[i/8] & (1 << (i%8)));
+}
+
+/**
+ * Ensure that the provided NV index is access controlled based on
+ * Locality 2 and PCRs 17 and 18.  FIXME: PCR access control is almost
+ * certainly not this simple!
+ *
+ * Returns: 0 on success.
+ */
+static int validate_nv_access_controls(unsigned int locality,
+																			 tpm_nv_index_t idx) {
+		tpm_nv_data_public_t pub;
+		int rv = 0;
+
+		/* Basic sanity-check to protect logic below; we really don't ever
+		 * expect anything outside of 1--3, and we will probably only ever
+		 * use 2. */
+		ASSERT(locality <= 4);
+		
+		if(0 != (rv = tpm_get_nv_data_public(locality, idx, &pub))) {
+        dprintf(LOG_ERROR, "\n[TV] %s: tpm_get_nv_data_public()"
+								" returned ERROR %d!", __FUNCTION__, rv);
+				return rv;
+		}
+
+		/* Confirm a single EXCLUSIVE locality for both reading and writing. */
+		if((1<<locality != pub.pcr_info_read.locality_at_release) ||
+			 (1<<locality != pub.pcr_info_write.locality_at_release)) {
+        dprintf(LOG_ERROR, "\n[TV] %s: locality %d !="
+								" locality_at_release", __FUNCTION__, locality);
+				return 1;
+		}
+
+		/* Confirm MANDATORY PCRs included. */
+#define MANDATORY_PCR_A 11 /* XXX 17 */
+#define MANDATORY_PCR_B 12 /* XXX 18 */
+		dprintf(LOG_ERROR, "\n[TV] %s: \n\n"
+						"VULNERABILITY:VULNERABILITY:VULNERABILITY:VULNERABILITY\n"
+						"   MANDATORY_PCR_x set to unsafe value!!! Proper code\n"
+						"   measurement UNIMPLEMENTED for NV index 0x%08x!\n"
+						"   Continuing anyways...\n"
+						"VULNERABILITY:VULNERABILITY:VULNERABILITY:VULNERABILITY\n\n",
+						__FUNCTION__, idx);
+
+		if(!pcr_is_selected(&pub.pcr_info_read.pcr_selection, MANDATORY_PCR_A) ||
+			 !pcr_is_selected(&pub.pcr_info_read.pcr_selection, MANDATORY_PCR_B) ||
+			 !pcr_is_selected(&pub.pcr_info_write.pcr_selection, MANDATORY_PCR_A) ||
+			 !pcr_is_selected(&pub.pcr_info_write.pcr_selection, MANDATORY_PCR_B)) {
+        dprintf(LOG_ERROR, "\n[TV] %s: ERROR: MANDATORY PCRs NOT FOUND in PCR"
+								" Selection for NV index 0x%08x", __FUNCTION__, idx);
+				return 1;
+		}
+
+		print_hex("    Read digest_at_release:  ",
+							pub.pcr_info_read.digest_at_release.digest,
+							sizeof(pub.pcr_info_read.digest_at_release));
+		print_hex("    Write digest_at_release: ",
+							pub.pcr_info_write.digest_at_release.digest,
+							sizeof(pub.pcr_info_write.digest_at_release));
+
+		return rv;
+}
+
+/**
  * Checks that supplied index is defined, is of the appropriate size,
  * and has appropriate access restrictions in place.  Those are PCRs
  * 17 and 18, and accessible for reading and writing exclusively from
@@ -76,10 +149,12 @@ static int validate_mss_nv_region(unsigned int locality,
         return 1;
     }
 
-    /* XXX TODO XXX: Check ACL on NV Region! */
-    dprintf(LOG_ERROR, "\n\n[TV] %s: XXX -- NV REGION ACCESS CONTROL CHECK UNIMPLEMENTED -- XXX\n"
-            "Micro-TPM SEALED STORAGE MAY NOT BE SECURE\n\n",
-            __FUNCTION__);
+		if(0 != (rv = validate_nv_access_controls(locality, idx))) {		
+				dprintf(LOG_ERROR, "\n\n[TV] %s: SECURITY ERROR: NV REGION"
+								" ACCESS CONTROL CHECK FAILED for index 0x%08x\n",
+								__FUNCTION__, idx);
+				return rv;
+		}
     
     return rv;
 }
