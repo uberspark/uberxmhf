@@ -112,7 +112,10 @@ hypervisor-$(TARGET_HWPLATFORM).bin.gz: sl/sl.bin runtime/runtime.bin
 	# install loader and runtime images to INSTALLDIR
 	$(CP) ./init/init-$(TARGET_HWPLATFORM).bin $(INSTALLDIR)/$(TARGET)-init-$(TARGET_HWPLATFORM).bin
 	$(CP) ./hypervisor-$(TARGET_HWPLATFORM).bin.gz $(INSTALLDIR)/$(TARGET)-hypervisor-$(TARGET_HWPLATFORM).bin.gz
-
+	#TODO: do this only if we are interested in a dynamic launch; also needs OS selection via configuration option
+	$(CP) ./init-late/os/linux/emhfil.ko $(INSTALLDIR)/emhfil.ko
+	$(CP) ./init-late/os/linux/emhfil.sh $(INSTALLDIR)/emhfil.sh
+	
 
 # cleanup rules
 .PHONY: clean 
