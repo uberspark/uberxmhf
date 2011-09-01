@@ -60,6 +60,10 @@ typedef struct tzi_operation_invoke_ext_t {
 typedef struct tzi_operation_close_ext_t {
 } tzi_operation_close_ext_t;
 
+typedef struct tzi_device_ext_t {
+  bool userspace_only;
+} tzi_device_ext_t;
+
 /* temporary hard-coded size of marshal buffer */
 #define MARSHAL_BUF_SIZE (1*PAGE_SIZE_4K)
 
@@ -91,7 +95,7 @@ TVOperationPrepareOpen(INOUT tz_device_t* psDevice,
   return TZ_SUCCESS;
 }
 
-static int share_referenced_mem(pal_fn_t fn, ll_t* psRefdSubranges, void* psOutBuf, void* psInBuf)
+static int share_referenced_mem(pal_fn_t fn, ll_t* psRefdSubranges, void* psOutBuf, void* psInBuf, bool userspace_only)
 {
   tzi_shared_memory_subrange_t *subrange;
   size_t count;
@@ -124,7 +128,9 @@ static int share_referenced_mem(pal_fn_t fn, ll_t* psRefdSubranges, void* psOutB
     i++;
   }
 
-  rv = tv_pal_share(fn, addrs, lens, count);
+  if(!userspace_only)
+    rv = tv_pal_share(fn, addrs, lens, count);
+
   /* XXX we currently do not enforce the specified permissions-
      the service (pal) gets full access */
 
@@ -161,7 +167,8 @@ TVOperationPerform(INOUT tz_operation_t* psOperation,
       if (share_referenced_mem(fn,
                                psOperation->sImp.psRefdSubranges,
                                psOutBuf,
-                               psInBuf)) {
+                               psInBuf,
+                               psOperation->sImp.psSession->sImp.psDevice->sImp.psExt->userspace_only)) {
         return TZ_ERROR_GENERIC;
       }
       fn(uiCommand, psInBuf, psOutBuf, puiServiceReturn);
@@ -232,7 +239,25 @@ TVDeviceOpen(IN void const *pkDeviceName,
              IN void const *pkInit,
              OUT tz_device_t *psDevice)
 {
-  assert(strcmp(pkDeviceName, "trustvisor") == 0);
+  const tv_device_open_options_t *options;
+  const tv_device_open_options_t default_options =
+    (tv_device_open_options_t) {
+    .userspace_only = false,
+  };
+  if (pkInit) {
+    options = (const tv_device_open_options_t*)pkInit;
+  } else {
+    options = &default_options;
+  }
+
+  psDevice->sImp.psExt = malloc(sizeof(tzi_device_ext_t));
+  if (!psDevice->sImp.psExt) {
+    return TZ_ERROR_MEMORY;
+  }
+
+  psDevice->sImp.psExt->userspace_only = options->userspace_only;
+
+  assert(!strcmp(pkDeviceName, "trustvisor"));
 
   return TZ_SUCCESS;
 }
@@ -289,11 +314,15 @@ TVManagerDownloadService(INOUT tz_session_t* psSession,
          .size = sizeof(uint32_t)/sizeof(int)}
       }
     };
-  rv = tv_pal_register(svc->sPageInfo,
-                       &params,
-                       svc->pEntry);
-  if (rv != 0) {
-    return TZ_ERROR_GENERIC;
+
+  if (!psSession->sImp.psDevice->sImp.psExt->userspace_only) {
+    rv = tv_pal_register(svc->sPageInfo,
+                         &params,
+                         svc->pEntry);
+  
+    if (rv != 0) {
+      return TZ_ERROR_GENERIC;
+    }
   }
 
   /* for now we just shove the function ptr into
@@ -309,9 +338,11 @@ tz_return_t
 TVManagerRemoveService(INOUT tz_session_t* psSession,
                        IN tz_uuid_t const * pksService)
 {
-  /* FIXME- need to make sure there's no open sessions */
-  if(tv_pal_unregister(*((pal_fn_t*)(pksService))) != 0)
-    return TZ_ERROR_GENERIC;
+  if (!psSession->sImp.psDevice->sImp.psExt->userspace_only) {
+    /* FIXME- need to make sure there's no open sessions */
+    if(tv_pal_unregister(*((pal_fn_t*)(pksService))) != 0)
+      return TZ_ERROR_GENERIC;
+  }
 
   return TZ_SUCCESS;
 }

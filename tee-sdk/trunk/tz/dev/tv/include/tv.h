@@ -60,6 +60,10 @@ typedef struct {
   pal_fn_t pEntry;
 } tv_service_t;
 
+typedef struct {
+  bool userspace_only;
+} tv_device_open_options_t;
+
 /* read (and optionally write) to the memory pages in the specified
  * range. use this to make sure pages are present for trustvisor
  * (e.g., for pointer parameters before calling a pal function)
