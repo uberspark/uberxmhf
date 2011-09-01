@@ -32,4 +32,4 @@ $(APPOBJECTSDIR)/%.o: %.c $(I_SOURCES) Makefile ../Makefile
 
 .PHONY: clean 
 clean:
-	$(RM) $(OBJECTS)
+	$(RM) -f $(OBJECTS)

@@ -14,39 +14,33 @@
 #-----options that need tweaking w.r.t your development
 
     #your target name and version
-	export TARGET = emhfapp
+    export TARGET = trustvisor
     export TARGET_VERSION = 0
     export TARGET_SUBVERSION = 1
 
-    #h/w platform, current choices are svm (for AMD) and vmx (for Intel)
-    #export TARGET_HWPLATFORM := svm
-
     #h/w platform, current choices are x86
 	export TARGET_HWPLATFORM := x86
+
     #MP/UP selection, y=Multiprocessor, n=Uniprocessor
     export MP_VERSION := @MP_VERSION@
+
+    #where you want loader and runtime binaries to go, defaults to current dir.
+	export INSTALLDIR = $(CURDIR)
+
     #misc. configuaration w.r.t serial debugging and NPT/EPT support
 	export NESTED_PAGING := y
     export DEBUG_SERIAL := @DEBUG_SERIAL@
     export DEBUG_SERIAL_PORT := @DEBUG_SERIAL_PORT@
-
 	export DEBUG_VGA	:= @DEBUG_VGA@
 
 #-----configuration that typically need not be touched
-  #ifeq ($(TARGET_HWPLATFORM), svm)
-  #export EMHFCOREDIR := ./emhfcore/amd-v-mp
-  #endif
-  #ifeq ($(TARGET_HWPLATFORM), vmx)
-  #export EMHFCOREDIR := ./emhfcore/intel-vt-mp
-  #endif
-
-  #ifeq ($(TARGET_HWPLATFORM), x86)
-  export EMHFCOREDIR := $(realpath @EMHFCOREDIR@)
-  #endif
+  ifeq ($(TARGET_HWPLATFORM), x86)
+  export EMHFCOREDIR := ./emhfcore/x86
+  endif
 
   export BASEDIR = @abs_top_srcdir@
   export APPOBJECTSDIR = $(BASEDIR)/app/objects
-  export EMHF_INCLUDEDIR = $(EMHFCOREDIR)/include
+  export EMHF_INCLUDEDIR = $(BASEDIR)/$(EMHFCOREDIR)/include
   export INCLUDEDIR = $(EMHF_INCLUDEDIR)
   export APP_INCLUDEDIR = $(BASEDIR)/app/include
   export EMHFAPP = y
@@ -120,6 +114,13 @@ all:
     # make emhf core components and generate loader and runtime	
 	cd $(EMHFCOREDIR) && $(MAKE) -w all
 
+#------late initialization support (experimental)
+.PHONY: init-late
+init-late:
+    # support linux OS for now
+	cd $(EMHFCOREDIR) && $(MAKE) -w init-late
+
+
 # default target: headers and binaries
 install: install-dev install-bin
 
@@ -152,6 +153,8 @@ clean:
 	rm -rf $(APPOBJECTSDIR)
 	cd $(EMHFCOREDIR) && $(MAKE) -w clean
 	cd test && $(MAKE) -w clean
+	rm -f *.bin
+	rm -f *.bin.gz
 
 distclean:
 	rm -f config.log
