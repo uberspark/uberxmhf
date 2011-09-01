@@ -373,6 +373,7 @@ sl_startnew:
     mov $0x40, %al   // output an @ character
     out %al, (%dx)
 	hlt
+	
 #endif
 
 
