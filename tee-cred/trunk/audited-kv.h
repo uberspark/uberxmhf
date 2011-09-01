@@ -40,6 +40,7 @@
 #include <stdint.h>
 
 #include <tee-sdk/tz.h>
+#include <tee-sdk/tze.h>
 
 #include "audited-kv-errs.h"
 
@@ -47,9 +48,7 @@
 #define AKV_AUDIT_STRING_MAX 1000 /* FIXME - can we even specify this? */
 
 typedef struct {
-  tz_device_t   tzDevice;
-  tz_session_t  tzPalSession;
-  tz_uuid_t     tzSvcId;
+  tze_dev_svc_sess_t tz_sess;
 } akv_ctx_t;
 int akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem);
 int akv_ctx_release(akv_ctx_t* ctx);

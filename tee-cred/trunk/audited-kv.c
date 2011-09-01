@@ -35,11 +35,17 @@
 
 #include <string.h>
 
+#include <tee-sdk/tze.h>
 #include <tee-sdk/tz.h>
 #include <tee-sdk/tv.h>
 
 #include "audited-kv.h"
 #include "audited-kv-pal.h"
+
+/* set to enable userspace mode for testing */
+#ifndef USERSPACE_ONLY
+#define USERSPACE_ONLY 0
+#endif
 
 int akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem)
 {
@@ -48,17 +54,33 @@ int akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem)
   bool registered_pal=false;
 
   /* register pal */
-  rv = tv_tz_init(&ctx->tzDevice,
-                  &ctx->tzPalSession,
-                  &ctx->tzSvcId,
-                  audited_kv_pal,
-                  PAGE_SIZE,
-                  10*PAGE_SIZE);
-  if (rv) return rv;
-  registered_pal=true;
+  {
+    tv_device_open_options_t tv_dev_options =
+      (tv_device_open_options_t) {
+      .userspace_only = USERSPACE_ONLY,
+    };
+    tze_svc_load_and_open_options_t load_options =
+      (tze_svc_load_and_open_options_t) {
+      .pkDeviceInit = &tv_dev_options,
+    };
+    struct tv_pal_sections scode_info;
+    tv_service_t pal = 
+      {
+        .sPageInfo = &scode_info,
+        .pEntry = audited_kv_pal,
+      };
+    tv_pal_sections_init(&scode_info,
+                         PAGE_SIZE, 10*PAGE_SIZE);
+    rv = TZESvcLoadAndOpen(&ctx->tz_sess,
+                           &pal,
+                           sizeof(pal),
+                           &load_options);
+    if (rv) return rv;
+    registered_pal=true;
+  }
 
   /* call init */
-  rv = TZOperationPrepareInvoke(&ctx->tzPalSession,
+  rv = TZOperationPrepareInvoke(&ctx->tz_sess.tzSession,
                                 AKVP_INIT,
                                 NULL,
                                 &op);
@@ -75,9 +97,7 @@ int akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem)
 
  out:
   if (rv && registered_pal) {
-    tv_tz_teardown(&ctx->tzDevice,
-                   &ctx->tzPalSession,
-                   &ctx->tzSvcId);
+    TZEClose(&ctx->tz_sess);
   }
 
   return rv;
@@ -86,9 +106,7 @@ int akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem)
 int akv_ctx_release(akv_ctx_t* ctx)
 {
   tz_return_t rv;
-  rv = tv_tz_teardown(&ctx->tzDevice,
-                      &ctx->tzPalSession,
-                      &ctx->tzSvcId);
+  rv = TZEClose(&ctx->tz_sess);
   return rv;
 }
 
@@ -181,7 +199,7 @@ int akv_db_add_begin(akv_ctx_t*  ctx,
   memset(cmd_ctx, 0, sizeof(*cmd_ctx));
   cmd_ctx->akv_ctx = ctx;
 
-  rv = TZIPrepareEncodeF(&ctx->tzPalSession,
+  rv = TZIPrepareEncodeF(&ctx->tz_sess.tzSession,
                          &cmd_ctx->tzStartOp,
                          AKVP_START_AUDITED_CMD,
                          "%"TZI_EU32,
@@ -212,7 +230,7 @@ int akv_db_add_execute(akv_cmd_ctx_t* ctx,
   tz_return_t serviceReturn;
   int rv=0;
 
-  rv = TZIPrepareEncodeF(&ctx->akv_ctx->tzPalSession,
+  rv = TZIPrepareEncodeF(&ctx->akv_ctx->tz_sess.tzSession,
                          &tzOp,
                          AKVP_EXECUTE_AUDITED_CMD,
                          "%"TZI_EU32 "%"TZI_EARR,

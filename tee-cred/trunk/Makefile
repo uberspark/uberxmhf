@@ -7,12 +7,15 @@ test :
 PROG_NAME=main
 PROG_OBJS=audit.o audited-kv.o tcm.o
 CFLAGS+=-g -Wall -Werror
+# CFLAGS+=-DUSERSPACE_ONLY=1
 PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv
 
+PAL_BACKEND=tee-sdk-svc-tv
+# PAL_BACKEND=tee-sdk-svc-null
 PAL_NAME=audited-kv-pal
 PAL_OBJS=audited-kv-pal.o audited-kv-pal-marshal.o kv.o audited.o audited-kv-pal-globals.o
 PAL_CFLAGS+=-g -Wall -Werror
-PAL_PKGCONFIG_DEPS=tee-sdk-svc tee-sdk-svc-tv libcrypto
+PAL_PKGCONFIG_DEPS=tee-sdk-svc $(PAL_BACKEND) libcrypto
 
 all: $(PROG_NAME)
 clean:
