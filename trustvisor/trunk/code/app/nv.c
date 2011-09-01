@@ -52,8 +52,8 @@ extern whitelist_entry_t *whitelist;
 
 
 /**
- * XXX REDUNDANT; identical logic exists in tv_utpm.h and in
- * bitvector.h.
+ * XXX REDUNDANT; identical logic exists in tv_utpm.h. Useful
+ * primitives may exist in bitfield.h.
  *
  * TODO: Consolidate.
  */

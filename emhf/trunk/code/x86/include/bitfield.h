@@ -128,6 +128,16 @@ static inline u64 BR64_SET_BIT(u64 x64, int pos, bool val)
   return ((x64 & ~(0x1ull<<pos)) | (bit<<pos));
 }
 
+static inline unsigned int BR32_GET_BIT(u32 x32, int pos)
+{
+  return ((x32 & MASKRANGE32(pos, pos)) >> pos);
+}
+static inline u32 BR32_SET_BIT(u32 x32, int pos, bool val)
+{
+  u32 bit = val ? 1ul : 0ul;
+  return ((x32 & ~(0x1ul<<pos)) | (bit<<pos));
+}
+
 /* offset == (dst_hi-src_hi) == (dst_lo-src_lo) */
 static inline u64 BR64_COPY_BITS_HL(u64 dst, u64 src, int src_hi, int src_lo, int offset)
 {
