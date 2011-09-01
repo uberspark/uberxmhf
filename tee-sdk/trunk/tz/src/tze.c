@@ -103,3 +103,38 @@ tz_return_t TZESvcLoadAndOpen(tze_dev_svc_sess_t *sess,
   return TZ_SUCCESS;
 }
 
+
+tz_return_t TZEClose(tze_dev_svc_sess_t *sess)
+{
+  tz_return_t rv = TZ_SUCCESS;
+
+  /* close session */
+  {
+    tz_operation_t op;
+    tz_return_t serviceReturn;
+
+    rv = rv ?: TZOperationPrepareClose(&sess->tzSession, &op);
+    rv = rv ?: TZOperationPerform(&op, &serviceReturn);
+
+    TZOperationRelease(&op);
+  }
+
+  /* unload pal */
+  {
+    tz_session_t tzManagerSession;
+
+    /* open session with device manager */
+    rv = rv ?: TZManagerOpen(&sess->tzDevice, NULL, &tzManagerSession);
+
+    /* unload */
+    rv = rv ?: TZManagerRemoveService(&tzManagerSession, &sess->tzSvcId);
+
+    /* close session */
+    rv = rv ?: TZManagerClose(&tzManagerSession);
+  }
+
+  /* close device */
+  rv = rv ?: TZDeviceClose(&sess->tzDevice);
+
+  return rv;
+}

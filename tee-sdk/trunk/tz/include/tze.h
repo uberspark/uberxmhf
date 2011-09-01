@@ -33,6 +33,9 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#ifndef TZE_H
+#define TZE_H
+
 #include <tz.h>
 
 typedef struct {
@@ -53,3 +56,7 @@ tz_return_t TZESvcLoadAndOpen(tze_dev_svc_sess_t *sess,
                               const void *kauiSvcData,
                               uint32_t uiSvcDataLength,
                               const tze_svc_load_and_open_options_t *options);
+
+tz_return_t TZEClose(tze_dev_svc_sess_t *sess);
+
+#endif
