@@ -52,6 +52,8 @@ static audited_pending_cmd_t pending_cmds[AUDITED_MAX_PENDING];
 static int num_pending=0;
 static RSA* audit_pub_key=NULL;
 
+static bool did_init=false;
+
 static int get_free_pending_id()
 {
   /* FIXME: handle multiple pending cmds */
@@ -71,6 +73,7 @@ audited_err_t audited_init(const char* audit_server_pub_pem)
     ERR_print_errors_fp(stderr);
     return AUDITED_EBADKEY;
   }
+  did_init=true;
   return AUDITED_ENONE;
 }
 
@@ -169,6 +172,83 @@ audited_err_t audited_check_cmd_auth(audited_pending_cmd_t *cmd, const void* aud
     rv = AUDITED_EBADSIG;
     goto out;
   }
+
+ out:
+  return rv;
+}
+
+audited_err_t audited_start_cmd(uint32_t audited_cmd,
+                                tzi_encode_buffer_t *psInBuf,
+                                uint32_t *pending_cmd_id,
+                                char **audit_string,
+                                void **audit_nonce,
+                                uint32_t *audit_nonce_len)
+{
+  audited_err_t rv;
+  void *cont=NULL;
+  audited_pending_cmd_t *pending_cmd=NULL;
+  audited_execute_fn *execute_fn=NULL;
+  audited_release_fn *release_fn=NULL;
+
+  if(!did_init) {
+    rv = AUDITED_EBADSTATE;
+    goto out;
+  }
+
+  if (audited_cmd >= audited_cmds_num
+      || !audited_cmds[audited_cmd].begin) {
+    rv = AUDITED_EBADAUDITEDCMD;
+    goto out;
+  }
+
+  rv = audited_cmds[audited_cmd].begin(audit_string, &cont, psInBuf);
+  execute_fn = audited_cmds[audited_cmd].execute;
+  release_fn = audited_cmds[audited_cmd].release;
+
+  if (rv) {
+    free(audit_string);
+    if(release_fn && cont) {
+      release_fn(cont);
+    }
+    goto out;
+  }
+
+  *pending_cmd_id = audited_save_pending_cmd(*audit_string, cont, execute_fn, release_fn);
+  pending_cmd = audited_pending_cmd_of_id(*pending_cmd_id);
+  *audit_nonce = pending_cmd->audit_nonce;
+  *audit_nonce_len = pending_cmd->audit_nonce_len;
+
+ out:  
+  return rv;
+}
+
+audited_err_t audited_execute_cmd(uint32_t cmd_id,
+                                  void *audit_token,
+                                  size_t audit_token_len,
+                                  tzi_encode_buffer_t *psOutBuf)
+{
+  audited_err_t rv;
+  audited_pending_cmd_t *cmd;
+
+  if(!did_init) {
+    rv = AUDITED_EBADSTATE;
+    goto out;
+  }
+
+  if (!(cmd = audited_pending_cmd_of_id(cmd_id))) {
+    rv = AUDITED_EBADCMDHANDLE;
+    goto out;
+  }
+
+  rv = audited_check_cmd_auth(cmd,
+                              audit_token,
+                              audit_token_len);
+  if (rv) {
+    goto out;
+  }
+
+  rv = cmd->execute_fn(cmd->cont, psOutBuf);
+  audited_release_pending_cmd_id(cmd_id);
 
  out:
   return rv;

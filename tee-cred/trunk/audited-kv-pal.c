@@ -49,6 +49,7 @@
 
 
 #define FREE_AND_NULL(x) do { free(x) ; x=NULL; } while(0)
+static bool did_init = false;
 
 static int remap_err(int in, int default_val, ...)
 {
@@ -106,6 +107,10 @@ akv_err_t akvp_init(const char* audit_pub_pem)
   rv = remap_err(audited_err, AKV_EAUDITED,
                  AUDITED_EBADKEY, AKV_EBADKEY,
                  0,0);
+
+  if(!rv) {
+    did_init = true;
+  }
 
   return rv;
 }

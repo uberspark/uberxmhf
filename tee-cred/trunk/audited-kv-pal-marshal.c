@@ -33,7 +33,6 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <assert.h>
 #include <string.h>
 
 #include <tee-sdk/tzmarshal.h>
@@ -41,31 +40,6 @@
 #include "audited-kv-pal.h"
 #include "audited-kv-pal-fns.h"
 #include "audited.h"
-
-typedef struct {
-  audited_begin_fn *begin;
-  audited_execute_fn *execute;
-  audited_release_fn *release;
-} audited_cmd_t;
-
-audited_cmd_t audited_cmds[] = {
-  [AKVP_DB_ADD] = {
-    .begin=akvp_db_add_begin_marshal,
-    .execute=akvp_db_add_execute,
-    .release=akvp_db_add_release,
-  },
-  [AKVP_DB_GET] = {
-    .begin=akvp_db_get_begin_marshal,
-    .execute=akvp_db_get_execute,
-    .release=akvp_db_get_release,
-  },
-};
-size_t audited_cmds_num = sizeof(audited_cmds)/sizeof(audited_cmd_t);
-
-char end[10*4096]; /* define the end of the data segment and some
-                      buffer spacefor libnosys's sbrk */
-
-static bool did_init = false;
 
 static akv_err_t akvp_init_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf);
 static akv_err_t akvp_audited_start_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf);
@@ -109,8 +83,6 @@ akv_err_t akvp_init_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_en
       
   rv = akvp_init(audit_pub_pem);
 
-  if(rv == AKV_ENONE)
-    did_init=true;
  out:
   return rv;
 }
@@ -119,17 +91,10 @@ akv_err_t akvp_audited_start_unmarshal(struct tzi_encode_buffer_t *psInBuf, stru
 {
   uint32_t audited_cmd;
   char *audit_string=NULL;
-  void *cont=NULL;
-  audited_execute_fn *execute_fn=NULL;
-  audited_release_fn *release_fn=NULL;
-  int pending_cmd_id;
-  audited_pending_cmd_t *pending_cmd=NULL;
+  uint32_t pending_cmd_id;
   akv_err_t rv;
-
-  if(!did_init) {
-    rv = AKV_EBADSTATE;
-    goto out;
-  }
+  void *audit_nonce;
+  uint32_t audit_nonce_len;
 
   audited_cmd = TZIDecodeUint32(psInBuf);
 
@@ -138,34 +103,15 @@ akv_err_t akvp_audited_start_unmarshal(struct tzi_encode_buffer_t *psInBuf, stru
     goto out;
   }
 
-  if (audited_cmd >= audited_cmds_num
-      || !audited_cmds[audited_cmd].begin) {
-    rv = AKV_EBADAUDITEDCMD;
-    goto out;
-  }
+  rv = audited_start_cmd(audited_cmd,
+                         psInBuf,
+                         &pending_cmd_id,
+                         &audit_string,
+                         &audit_nonce,
+                         &audit_nonce_len);
 
-  rv = audited_cmds[audited_cmd].begin(&audit_string, &cont, psInBuf);
-  execute_fn = audited_cmds[audited_cmd].execute;
-  release_fn = audited_cmds[audited_cmd].release;
-
-  if (rv != TZ_SUCCESS) {
-    free(audit_string);
-    if(release_fn && cont) {
-      release_fn(cont);
-    }
-    /* XXX release cont? */
-    goto out;
-  }
-
-  /* returns:
-     uint32 pending command handle
-     array  audit-nonce (binary data)
-     array  audit-string (null-terminated string)
-  */
-  pending_cmd_id = audited_save_pending_cmd(audit_string, cont, execute_fn, release_fn);
-  pending_cmd = audited_pending_cmd_of_id(pending_cmd_id);
   TZIEncodeUint32(psOutBuf, pending_cmd_id);
-  TZIEncodeArray(psOutBuf, pending_cmd->audit_nonce, pending_cmd->audit_nonce_len);
+  TZIEncodeArray(psOutBuf, audit_nonce, audit_nonce_len);
   TZIEncodeArray(psOutBuf, audit_string, strlen(audit_string)+1);
 
  out:
@@ -176,38 +122,18 @@ akv_err_t akvp_audited_execute_unmarshal(struct tzi_encode_buffer_t *psInBuf, st
 {
   void *audit_token;
   uint32_t audit_token_len;
-  int cmd_id;
-  audited_pending_cmd_t *cmd;
+  uint32_t cmd_id;
   akv_err_t rv;
-
-  if(!did_init) {
-    rv = AKV_EBADSTATE;
-    goto out;
-  }
 
   cmd_id = TZIDecodeUint32(psInBuf);
   audit_token = TZIDecodeArraySpace(psInBuf, &audit_token_len);
-
   if (TZIDecodeGetError(psInBuf)) {
     rv = AKV_EDECODE;
     goto out;
   }
 
-  if (!(cmd = audited_pending_cmd_of_id(cmd_id))) {
-    rv = AKV_EBADCMDHANDLE;
-    goto out;
-  }
+  rv = audited_execute_cmd(cmd_id, audit_token, audit_token_len, psOutBuf);
 
-  if (audited_check_cmd_auth(cmd,
-                             audit_token,
-                             audit_token_len)) {
-    rv = AKV_EBADAUTH;
-    goto out;
-  }
-
-  rv = cmd->execute_fn(cmd->cont, psOutBuf);
-
-  audited_release_pending_cmd_id(cmd_id);
  out:
   return rv;
 }

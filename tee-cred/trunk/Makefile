@@ -10,7 +10,7 @@ CFLAGS+=-g -Wall -Werror
 PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv
 
 PAL_NAME=audited-kv-pal
-PAL_OBJS=audited-kv-pal.o audited-kv-pal-marshal.o kv.o audited.o
+PAL_OBJS=audited-kv-pal.o audited-kv-pal-marshal.o kv.o audited.o audited-kv-pal-globals.o
 PAL_CFLAGS+=-g -Wall -Werror
 PAL_PKGCONFIG_DEPS=tee-sdk-svc tee-sdk-svc-tv libcrypto
 

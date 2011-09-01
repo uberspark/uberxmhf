@@ -45,12 +45,21 @@ typedef enum {
   AUDITED_EBADSIG=3,
   AUDITED_ENOMEM=4,
   AUDITED_ECRYPTO=5,
+  AUDITED_EBADAUDITEDCMD=6,
+  AUDITED_EBADSTATE=7,
+  AUDITED_EBADCMDHANDLE=8,
 } audited_err_t;
 
 
 typedef int (audited_begin_fn)(char **, void **, struct tzi_encode_buffer_t *);
 typedef int (audited_execute_fn)(void *, struct tzi_encode_buffer_t *);
 typedef void (audited_release_fn)(void *);
+
+typedef struct {
+  audited_begin_fn *begin;
+  audited_execute_fn *execute;
+  audited_release_fn *release;
+} audited_cmd_t;
 
 typedef struct {
   char *audit_string;
@@ -66,10 +75,25 @@ typedef struct {
 #define AUDITED_MAX_PENDING 100
 #define AUDITED_TIMEOUT_US (5ull*60ull*1000000ull)
 
+/* to be supplied by module user */
+extern audited_cmd_t audited_cmds[];
+extern size_t audited_cmds_num;
+
 audited_err_t audited_init(const char* audit_server_pub_pem);
 void audited_release_pending_cmd_id(int i);
 audited_pending_cmd_t* audited_pending_cmd_of_id(int i);
 int audited_save_pending_cmd(char *audit_string, void *cont, audited_execute_fn execute_fn, audited_release_fn release_fn);
 audited_err_t audited_check_cmd_auth(audited_pending_cmd_t *cmd, const void* audit_token, size_t audit_token_len);
+
+audited_err_t audited_start_cmd(uint32_t audited_cmd,
+                                tzi_encode_buffer_t *psInBuf,
+                                uint32_t *pending_cmd_id,
+                                char **audit_string,
+                                void **audit_nonce,
+                                uint32_t *audit_nonce_len);
+audited_err_t audited_execute_cmd(uint32_t cmd_id,
+                                  void *audit_token,
+                                  size_t audit_token_len,
+                                  tzi_encode_buffer_t *psOutBuf);
 
 #endif
