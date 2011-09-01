@@ -942,7 +942,7 @@ extern uint32_t tpm_get_nv_data_public(uint32_t locality,
     offset = 0;
     LOAD_NV_DATA_PUBLIC(resp, offset, pub);
 
-    print_hex("  NV pub: ", pub, resp_size);
+    /*print_hex("  NV pub: ", pub, resp_size);*/
 
     return ret;
 }

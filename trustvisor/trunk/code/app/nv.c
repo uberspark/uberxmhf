@@ -50,9 +50,12 @@
 extern int *scode_curr;
 extern whitelist_entry_t *whitelist;
 
+
 /**
- * XXX REDUNDANT; identical logic exists in tv_utpm.h.  TODO:
- * Consolidate.
+ * XXX REDUNDANT; identical logic exists in tv_utpm.h and in
+ * bitvector.h.
+ *
+ * TODO: Consolidate.
  */
 static inline bool pcr_is_selected(tpm_pcr_selection_t *tpmsel, uint32_t i) {
     ASSERT(NULL != tpmsel);
@@ -60,6 +63,55 @@ static inline bool pcr_is_selected(tpm_pcr_selection_t *tpmsel, uint32_t i) {
     if(i/8 >= tpmsel->size_of_select) return false;
 
     return (tpmsel->pcr_select[i/8] & (1 << (i%8)));
+}
+
+static void dump_pcr_info_short(tpm_pcr_info_short_t *info) {
+		unsigned int i;
+		ASSERT(NULL != info);
+
+		/* pcr_selection */
+		dprintf(LOG_TRACE, "\n    selected PCRs      ");
+		for(i=0; i<24; i++) {
+				if(pcr_is_selected(&info->pcr_selection, i)) {
+						dprintf(LOG_TRACE, "%d, ", i);						
+				}
+		}
+
+		/* locality_at_release */
+		dprintf(LOG_TRACE, "\n    localityAtRelease  ");
+		for(i=0; i<=4; i++) {
+				if(1<<i & info->locality_at_release) {
+						dprintf(LOG_TRACE, "%d, ", i);
+				}
+		}
+		/* digest_at_release */
+		print_hex("    digestAtRelease    ",
+							info->digest_at_release.digest,
+							sizeof(info->digest_at_release));
+}
+
+static void dump_nv_data_public(tpm_nv_data_public_t *pub) {
+		ASSERT(NULL != pub);
+
+		dprintf(LOG_TRACE, "\n  nvIndex              "
+						"0x%08x", pub->nv_index);
+
+		/* pcrInfoRead, pcrInfoWrite */
+		dprintf(LOG_TRACE, "\n  pcrInfoRead:         ");
+		dump_pcr_info_short(&pub->pcr_info_read);
+		dprintf(LOG_TRACE, "  pcrInfoWrite:        ");
+		dump_pcr_info_short(&pub->pcr_info_write);
+
+		dprintf(LOG_TRACE, "  permission           0x%08x",	pub->permission.attributes);
+
+		dprintf(LOG_TRACE, "\n  bReadSTClear         %s",
+						pub->b_read_st_clear ? "true" : "false");
+		dprintf(LOG_TRACE, "\n  bWriteSTClear        %s",
+						pub->b_write_st_clear ? "true" : "false");
+		dprintf(LOG_TRACE, "\n  bWriteDefine         %s",
+						pub->b_write_define ? "true" : "false");
+
+		dprintf(LOG_TRACE, "\n  data_size            %d",	pub->data_size);
 }
 
 /**
@@ -85,6 +137,8 @@ static int validate_nv_access_controls(unsigned int locality,
 				return rv;
 		}
 
+		dump_nv_data_public(&pub);
+		
 		/* Confirm a single EXCLUSIVE locality for both reading and writing. */
 		if((1<<locality != pub.pcr_info_read.locality_at_release) ||
 			 (1<<locality != pub.pcr_info_write.locality_at_release)) {
@@ -112,13 +166,6 @@ static int validate_nv_access_controls(unsigned int locality,
 								" Selection for NV index 0x%08x", __FUNCTION__, idx);
 				return 1;
 		}
-
-		print_hex("    Read digest_at_release:  ",
-							pub.pcr_info_read.digest_at_release.digest,
-							sizeof(pub.pcr_info_read.digest_at_release));
-		print_hex("    Write digest_at_release: ",
-							pub.pcr_info_write.digest_at_release.digest,
-							sizeof(pub.pcr_info_write.digest_at_release));
 
 		return rv;
 }

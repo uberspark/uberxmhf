@@ -323,7 +323,7 @@ int trustvisor_master_crypto_init(void) {
 		}
 
 		dprintf(LOG_TRACE, "\n[TV] %s: NvMuxPal anti-rollback NV Region"
-						"Access Controls validated successfully.", __FUNCTION__);
+						"\n     Access Controls validated successfully.", __FUNCTION__);
 
 		/* Identity key used to sign Micro-TPM Quotes */
 		/* prefer not to depend on the globals */
