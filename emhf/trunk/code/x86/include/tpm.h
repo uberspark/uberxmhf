@@ -772,6 +772,15 @@ typedef struct __attribute__ ((packed)) {
 #define TPM_CAP_PROP_TIS_TIMEOUT  0x00000115
 
 
+/*
+ * tpm_get_nv_data_public uses TPM_GETCAPABILITY cmd to get the public
+ * data associated with the NV given index.
+ *
+ * return       : TPM_SUCCESS for success, error code defined as TPM_xxx
+ */
+extern uint32_t tpm_get_nv_data_public(uint32_t locality,
+                                       tpm_nv_index_t index,
+                                       tpm_nv_data_public_t *pub);
 
 /* Functions newly required to be extern since they can be referenced
  * from tpm_extra.c as well. */

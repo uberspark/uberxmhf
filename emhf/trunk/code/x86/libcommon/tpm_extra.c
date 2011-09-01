@@ -878,6 +878,77 @@ uint32_t tpm_get_nvindex_size(uint32_t locality,
     return ret;
 }
 
+extern uint32_t tpm_get_nv_data_public(uint32_t locality,
+                                       tpm_nv_index_t index,
+                                       tpm_nv_data_public_t *pub)
+{
+    uint32_t ret, offset, resp_size;
+    uint8_t sub_cap[sizeof(index)];
+    uint8_t resp[sizeof(tpm_nv_data_public_t)];
+    tpm_nv_index_t idx;
+
+    if ( pub == NULL ) {
+        printf("TPM: tpm_get_nvindex_size() bad parameter\n");
+        return TPM_BAD_PARAMETER;
+    }
+
+    offset = 0;
+    UNLOAD_INTEGER(sub_cap, offset, index);
+
+    resp_size = sizeof(resp);
+    ret = tpm_get_capability(locality, TPM_CAP_NV_INDEX, sizeof(sub_cap),
+                             sub_cap, &resp_size, resp);
+
+#ifdef TPM_TRACE
+    printf("TPM: get nv_data_public, return value = %08X\n", ret);
+#endif
+    if ( ret != TPM_SUCCESS ) {
+        printf("TPM: fail to get public data of 0x%08X in TPM NV\n", index);
+        return ret;
+    }
+
+#ifdef TPM_TRACE
+    {
+        printf("TPM: ");
+        print_hex(NULL, resp, resp_size);
+    }
+#endif
+
+    /* check size */
+    if ( resp_size == 0 ) {
+        printf("TPM: Index 0x%08X does not exist\n", index);
+        return TPM_BADINDEX;
+    }
+
+    /* check index */
+    offset = sizeof(tpm_structure_tag_t);
+    LOAD_INTEGER(resp, offset, idx);
+#ifdef TPM_TRACE
+    printf("TPM: get index value = %08X\n", idx);
+#endif
+
+    if ( idx != index ) {
+        printf("TPM: Index 0x%08X is not the one expected 0x%08X\n",
+               idx, index);
+        return TPM_BADINDEX;
+    }
+
+    if ( resp_size != sizeof(resp) ) {
+        printf("TPM: public data size of Index 0x%08X responsed incorrect\n",
+               index);
+        return TPM_FAIL;
+    }
+
+    offset = 0;
+    /* XXX: Create a "LOAD equivalent.  Functionally equivalent but
+    the "Load" variants can make effective use of const. */
+    UNLOAD_NV_DATA_PUBLIC(resp, offset, pub);
+
+    print_hex("  NV pub: ", pub, resp_size);
+
+    return ret;
+}
+
 
 uint32_t tpm_save_state(uint32_t locality)
 {
