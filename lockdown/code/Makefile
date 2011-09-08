@@ -14,22 +14,19 @@
 #-----options that need tweaking w.r.t your development
 
     #your target name and version
-	export TARGET = emhfapp
+		export TARGET = emhfapp-lockdown
     export TARGET_VERSION = 0
-    export TARGET_SUBVERSION = 1
-
-    #h/w platform, current choices are svm (for AMD) and vmx (for Intel)
-    #export TARGET_HWPLATFORM := svm
+    export TARGET_SUBVERSION = 2
 
     #h/w platform, current choices are x86
-	export TARGET_HWPLATFORM := x86
+		export TARGET_HWPLATFORM := x86
     #Intel TXT / SENTER support, y=enabled, n=disabled
     export DO_SENTER := y
     #MP/UP selection, y=Multiprocessor, n=Uniprocessor
     export MP_VERSION := n
     #where you want loader and runtime binaries to go, defaults to current dir.
-	export INSTALLDIR = $(CURDIR)/dist
-    #export INSTALLDIR = /cygdrive/x
+		#export INSTALLDIR = $(CURDIR)/dist
+    export INSTALLDIR = /cygdrive/x
     #misc. configuaration w.r.t serial debugging and NPT/EPT support
 	export NESTED_PAGING := y
     export DEBUG_SERIAL := y
