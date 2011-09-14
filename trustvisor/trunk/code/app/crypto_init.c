@@ -234,9 +234,9 @@ static int trustvisor_long_term_secret_init(void) {
 														 mss,
 														 HW_TPM_MASTER_SEALING_SECRET_SIZE);
 	if(0 != rv) {
-			dprintf(LOG_ERROR, "\nFATAL ERROR: %s FAILED (%d).\n",
-							__FUNCTION__, rv);
-			return rv;			
+        dprintf(LOG_ERROR, "\nFATAL ERROR: %s FAILED (%d).\n",
+                __FUNCTION__, rv);
+        goto out;
 	}
 
 	ASSERT(HW_TPM_MASTER_SEALING_SECRET_SIZE == SHA1_RESULTLEN);
@@ -261,7 +261,8 @@ static int trustvisor_long_term_secret_init(void) {
 	/* print_hex("XXX g_hmackey: ", g_hmackey, 20); */
 
 	memset(mss, 0, HW_TPM_MASTER_SEALING_SECRET_SIZE);
-	
+    
+  out:	
 	/* init RSA key required in uTPM Quote */
 	/* FIXME: Having a single key here is a privacy-invading,
 	 * session-linkable, PAL-linkable hack to get things off the
@@ -272,7 +273,13 @@ static int trustvisor_long_term_secret_init(void) {
 	}
 	dprintf(LOG_TRACE, "\n[TV] RSA key pair generated!");
 
-	return 0;
+    /* Measure the Identity key used to sign Micro-TPM Quotes. */
+    /* prefer not to depend on the globals */
+    if(0 != (rv = trustvisor_measure_qnd_bridge_signing_pubkey(&g_rsa))) {
+        dprintf(LOG_ERROR, "\n[TV] trustvisor_long_term_secret_init FAILED with rv %d!!!!\n", rv);
+    }
+
+	return rv;
 }
 
 /* returns 0 on success. */
@@ -296,7 +303,7 @@ int trustvisor_master_crypto_init(void) {
 		
 		dprintf(LOG_TRACE, "\n[TV] trustvisor_master_crypto_init: "
 						"AES-256 CTR_DRBG PRNG successfully seeded with TPM RNG.");
-
+        
 		/* NV space used to support Micro-TPM Long-Term sealing */
 		if(0 != (rv = trustvisor_long_term_secret_init())) {
 				dprintf(LOG_ERROR, "\n[TV] trustvisor_long_term_secret_init FAILED with rv %d!!!!\n", rv);
@@ -324,13 +331,6 @@ int trustvisor_master_crypto_init(void) {
 
 		dprintf(LOG_TRACE, "\n[TV] %s: NvMuxPal anti-rollback NV Region"
 						"\n     Access Controls validated successfully.", __FUNCTION__);
-
-		/* Identity key used to sign Micro-TPM Quotes */
-		/* prefer not to depend on the globals */
-		if(0 != (rv = trustvisor_measure_qnd_bridge_signing_pubkey(&g_rsa))) {
-				dprintf(LOG_ERROR, "\n[TV] trustvisor_long_term_secret_init FAILED with rv %d!!!!\n", rv);
-				goto out;
-		}
 		
 		g_master_crypto_init_completed = true;
 
