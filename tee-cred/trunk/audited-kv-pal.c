@@ -195,7 +195,7 @@ int akvp_db_add_execute(void* vreq, void **vres)
   return akv_err;
 }
 
-size_t akvp_db_add_encode_res_maxlen(void* vres)
+size_t akvp_db_add_encode_res_len(void* vres)
 {
   return 0;
 }
@@ -204,7 +204,7 @@ void akvp_db_add_release_res(void* vres)
 {
 }
 
-int akvp_db_add_encode_res(void *vres, void** buf, size_t* buf_len)
+int akvp_db_add_encode_res(void *vres, void* buf)
 {
   return 0;
 }

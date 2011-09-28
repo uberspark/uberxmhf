@@ -276,11 +276,11 @@ audited_err_t audited_execute_cmd(uint32_t cmd_id,
   assert(cmd->fns->execute);
   rv = cmd->fns->execute(cmd->req, &res);
 
-  assert(cmd->fns->encode_res_maxlen);
-  outbuf_len = cmd->fns->encode_res_maxlen(res);
+  assert(cmd->fns->encode_res_len);
+  outbuf_len = cmd->fns->encode_res_len(res);
   outbuf = TZIEncodeArraySpace(psOutBuf, outbuf_len);
   assert(cmd->fns->encode_res);
-  rv = cmd->fns->encode_res(res, outbuf, &outbuf_len);
+  rv = cmd->fns->encode_res(res, outbuf);
 
   audited_release_pending_cmd_id(cmd_id);
 

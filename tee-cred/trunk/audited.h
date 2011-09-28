@@ -56,8 +56,8 @@ typedef enum {
 typedef int (audited_decode_req_fn)(void **, void *, size_t);
 typedef int (audited_audit_string_fn)(void *, char **);
 typedef int (audited_execute_fn)(void *, void **);
-typedef size_t (audited_encode_res_maxlen_fn)(void *);
-typedef int (audited_encode_res_fn)(void *, void**, size_t*);
+typedef size_t (audited_encode_res_len_fn)(void*);
+typedef int (audited_encode_res_fn)(void *, void*);
 typedef void (audited_release_req_fn)(void *);
 typedef void (audited_release_res_fn)(void *);
 
@@ -65,7 +65,7 @@ typedef struct {
   audited_decode_req_fn *decode_req;
   audited_audit_string_fn *audit_string;
   audited_execute_fn *execute;
-  audited_encode_res_maxlen_fn *encode_res_maxlen;
+  audited_encode_res_len_fn *encode_res_len;
   audited_encode_res_fn *encode_res;
   audited_release_req_fn *release_req;
   audited_release_res_fn *release_res;

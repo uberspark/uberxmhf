@@ -51,9 +51,9 @@ int akvp_db_add_execute(void* vreq, void **vres);
 void akvp_db_add_release_req(void* req);
 int akvp_db_add_audit_string(void *vreq,
                              char **audit_string);
-size_t akvp_db_add_encode_res_maxlen(void* vres);
+size_t akvp_db_add_encode_res_len(void* vres);
 void akvp_db_add_release_res(void* vres);
-int akvp_db_add_encode_res(void *vres, void** buf, size_t* buf_len);
+int akvp_db_add_encode_res(void *vres, void* buf);
 
 int akvp_db_get_begin_marshal(char **audit_string,
                               void **vcont,
