@@ -33,6 +33,8 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#include <tee-sdk/tzmarshal.h>
+
 #include "tze-pb.h"
 
 /* XXX consider following TZ convention of returning void and setting
@@ -46,11 +48,16 @@ tz_return_t TZIDecodeProtobuf(tzi_encode_buffer_t *tz_buf,
   void *pb_packed;
   uint32_t pb_packed_len;
 
+  if(TZIDecodeGetError(tz_buf)) {
+    goto out;
+  }
+
   *pb_msg=NULL;
 
   pb_packed = TZIDecodeArraySpace(tz_buf, &pb_packed_len);
   if(!pb_packed) {
-    return TZIDecodeGetError(tz_buf);
+    assert(TZIDecodeGetError(tz_buf) != 0);
+    goto out;
   }
 
   *pb_msg = protobuf_c_message_unpack(pb_desc,
@@ -58,9 +65,13 @@ tz_return_t TZIDecodeProtobuf(tzi_encode_buffer_t *tz_buf,
                                       pb_packed_len,
                                       pb_packed);
   if(!*pb_msg) {
-    return TZ_ERROR_ENCODE_FORMAT; /* add custom error instead? */
+    /* add custom error instead? */
+    tz_buf->uiRetVal = TZ_ERROR_ENCODE_FORMAT;
+    goto out; 
   }
-  return TZ_SUCCESS;
+
+ out:
+  return TZIDecodeGetError(tz_buf);
 }
 
 tz_return_t TZIEncodeProtobuf(tzi_encode_buffer_t *tz_buf,
@@ -71,18 +82,26 @@ tz_return_t TZIEncodeProtobuf(tzi_encode_buffer_t *tz_buf,
   uint32_t pb_packed_len;
   uint32_t pb_packed_len2;
 
+  if(TZIDecodeGetError(tz_buf)) {
+    goto out;
+  }
+
   pb_packed_len = protobuf_c_message_get_packed_size(pb_msg);
 
   pb_packed = TZIEncodeArraySpace(tz_buf, pb_packed_len);
   if(!pb_packed) {
+    assert(TZIDecodeGetError(tz_buf) != 0);
     return TZIDecodeGetError(tz_buf);
   }
 
   pb_packed_len2 = protobuf_c_message_pack(pb_msg, pb_packed);
   if(pb_packed_len2 != pb_packed_len) {
-    return TZ_ERROR_ENCODE_FORMAT; /* add custom error? */
+    /* add custom error instead? */
+    tz_buf->uiRetVal = TZ_ERROR_ENCODE_FORMAT;
+    goto out; 
   }
 
-  return TZ_SUCCESS;
+ out:
+  return TZIDecodeGetError(tz_buf);
 }
 
