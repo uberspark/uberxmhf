@@ -44,14 +44,14 @@ tz_return_t audited_invoke(tz_session_t *session,
                            ProtobufCMessage **res,
                            uint32_t *svc_err)
 {
-  return tze_pb_invoke(audited_protos,
-                       AKVP_NUM,
+  return TZEDispatchProtobuf(audited_protos,
+                             AKVP_NUM,
 
-                       session,
-                       uiCommand,
-                       req,
-                       res,
-                       svc_err);
+                             session,
+                             uiCommand,
+                             req,
+                             res,
+                             svc_err);
 }
 
 tz_return_t audited_invoke_start(tz_session_t *session,

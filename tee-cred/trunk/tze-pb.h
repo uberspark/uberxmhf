@@ -89,16 +89,16 @@ tz_return_t TZEDispatchImpProtobufMsgs(const tze_pb_proto_t protos[],
                                        ProtobufCMessage **res,
                                        tz_return_t *puiRv);
 
-
 /* call protobuf_c_message_free_unpacked on returned *res (if not
    NULL) */
-tz_return_t tze_pb_invoke(const tze_pb_proto_t protos[],
-                          uint32_t num_svcs,
-                          tz_session_t *session,
-                          uint32_t uiCommand,
-                          const ProtobufCMessage *req,
-                          ProtobufCMessage **res,
-                          uint32_t *svc_err);
+tz_return_t TZEDispatchProtobuf(const tze_pb_proto_t protos[],
+                                uint32_t num_svcs,
+
+                                tz_session_t *session,
+                                uint32_t uiCommand,
+                                const ProtobufCMessage *req,
+                                ProtobufCMessage **res,
+                                tz_return_t *puiRv);
 
 
 #endif

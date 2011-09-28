@@ -98,15 +98,14 @@ tz_return_t TZEEncodeProtobuf(tz_operation_t* psOperation,
   return TZDecodeGetError(psOperation);
 }
                   
+tz_return_t TZEDispatchProtobuf(const tze_pb_proto_t protos[],
+                                uint32_t num_svcs,
 
-tz_return_t tze_pb_invoke(const tze_pb_proto_t protos[],
-                          uint32_t num_svcs,
-
-                          tz_session_t *session,
-                          uint32_t uiCommand,
-                          const ProtobufCMessage *req,
-                          ProtobufCMessage **res,
-                          uint32_t *svc_err)
+                                tz_session_t *session,
+                                uint32_t uiCommand,
+                                const ProtobufCMessage *req,
+                                ProtobufCMessage **res,
+                                tz_return_t *puiRv)
 {
   tz_return_t tzerr=0;
   tz_operation_t op;
@@ -126,7 +125,7 @@ tz_return_t tze_pb_invoke(const tze_pb_proto_t protos[],
     goto out;
   }
 
-  tzerr = TZOperationPerform(&op, svc_err);
+  tzerr = TZOperationPerform(&op, puiRv);
   if (tzerr) {
     goto out;
   }
