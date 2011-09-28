@@ -23,7 +23,15 @@ proto-gend/akvp.pb-c-reg.o : proto-gend/akvp.pb-c.c
 	$(CC) $(CPPCFLAGS) $(CFLAGS) -c $^ -o $@
 
 PROG_NAME=main
-PROG_OBJS=audit.o audited-kv.o tcm.o tze-pb-reg.o audited-kv-pal-protos.o proto-gend/db.pb-c-reg.o proto-gend/audited.pb-c-reg.o proto-gend/akvp.pb-c-reg.o
+PROG_OBJS= \
+	audit.o \
+	audited-kv.o \
+	tcm.o \
+	tze-pb-reg.o \
+	audited-kv-pal-protos.o \
+	proto-gend/db.pb-c-reg.o \
+	proto-gend/audited.pb-c-reg.o \
+	proto-gend/akvp.pb-c-reg.o
 CFLAGS+=-g -Wall -Werror
 LDFLAGS+=--static
 CFLAGS+=-DUSERSPACE_ONLY=1
@@ -32,7 +40,18 @@ PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv libprotobuf-c
 #PAL_BACKEND=tee-sdk-svc-tv
 PAL_BACKEND=tee-sdk-svc-null
 PAL_NAME=audited-kv-pal
-PAL_OBJS=audited-kv-pal.o audited-kv-pal-marshal.o kv.o audited.o audited-kv-pal-globals.o audited-kv-pal-protos.o tze-pb-svc.o tze-pb-marshal.o proto-gend/db.pb-c.o proto-gend/audited.pb-c.o proto-gend/akvp.pb-c.o
+PAL_OBJS= \
+	audited-kv-pal.o \
+	audited-kv-pal-marshal.o \
+	kv.o \
+	audited.o \
+	audited-kv-pal-globals.o \
+	audited-kv-pal-protos.o \
+	tze-pb-svc.o \
+	tze-pb-marshal.o \
+	proto-gend/db.pb-c.o \
+	proto-gend/audited.pb-c.o \
+	proto-gend/akvp.pb-c.o
 PAL_CFLAGS+=-g -Wall -Werror
 PAL_PKGCONFIG_DEPS=tee-sdk-svc $(PAL_BACKEND) libcrypto libprotobuf-c
 
