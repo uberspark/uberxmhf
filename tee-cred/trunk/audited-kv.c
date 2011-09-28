@@ -186,9 +186,9 @@ akv_err_t akv_db_add_begin(akv_ctx_t*  ctx,
 {
   akv_err_t rv=0;
   Db__AddReq add_req;
-  void *add_req_packed=NULL;
-  uint32_t add_req_packed_len;
   Audited__StartRes *start_res=NULL;
+  tze_pb_err_t tze_pb_err;
+  audited_err_t audited_err;
 
   /* FIXME- is there a way to avoid having to cast
      away the const here? */
@@ -200,40 +200,18 @@ akv_err_t akv_db_add_begin(akv_ctx_t*  ctx,
       .len = strlen(val),
     }
   };
-  add_req_packed_len = db__add_req__get_packed_size(&add_req);
-  add_req_packed=malloc(add_req_packed_len);
-  if(!add_req_packed) {
-    rv = AKV_ENOMEM;
+
+  tze_pb_err = audited_invoke_start(&ctx->tz_sess.tzSession,
+                                    KV_ADD,
+                                    (ProtobufCMessage*)&add_req,
+                                    &start_res,
+                                    &audited_err);
+  if (audited_err) {
+    rv = AKV_EAUDITED | (audited_err << 8);
     goto out;
-  }
-  db__add_req__pack(&add_req, add_req_packed);
-
-  *cmd_ctx = (akv_cmd_ctx_t)
-    { .akv_ctx = ctx };
-
-  {
-    Audited__StartReq start_req = {
-      .base = PROTOBUF_C_MESSAGE_INIT (&audited__start_req__descriptor),
-      .cmd = KV_ADD,
-      .cmd_input = (ProtobufCBinaryData) {
-        .data = add_req_packed,
-        .len = add_req_packed_len,
-      }
-    };
-    tze_pb_err_t tze_pb_err;
-    audited_err_t audited_err;
-    tze_pb_err = audited_invoke(&ctx->tz_sess.tzSession,
-                                AKVP_START_AUDITED_CMD,
-                                (ProtobufCMessage*)&start_req,
-                                (ProtobufCMessage**)&start_res,
-                                &audited_err);
-    if (audited_err) {
-      rv = AKV_EAUDITED | (audited_err << 8);
-      goto out;
-    } else if (tze_pb_err) {
-      rv = AKV_EPB | (tze_pb_err << 8);
-      goto out;
-    }
+  } else if (tze_pb_err) {
+    rv = AKV_EPB | (tze_pb_err << 8);
+    goto out;
   }
 
   *cmd_ctx = (akv_cmd_ctx_t)

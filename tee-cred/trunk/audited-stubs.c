@@ -33,8 +33,10 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#include <stdlib.h>
 #include "audited-stubs.h"
 #include "audited-kv-pal.h"
+#include "proto-gend/audited.pb-c.h"
 
 tze_pb_err_t audited_invoke(tz_session_t *session,
                             uint32_t uiCommand,
@@ -50,4 +52,41 @@ tze_pb_err_t audited_invoke(tz_session_t *session,
                        req,
                        res,
                        svc_err);
+}
+
+tze_pb_err_t audited_invoke_start(tz_session_t *session,
+                                  uint32_t audited_cmd,
+                                  const ProtobufCMessage *audited_req,
+                                  Audited__StartRes **start_res,
+                                  uint32_t *audited_err)
+{
+  Audited__StartReq start_req;
+  size_t audited_req_packed_len;
+  void *audited_req_packed=NULL;
+  tze_pb_err_t rv;
+
+  audited_req_packed_len = protobuf_c_message_get_packed_size(audited_req);
+  audited_req_packed = malloc(audited_req_packed_len);
+  if(!audited_req_packed) {
+    abort();
+  }
+  protobuf_c_message_pack(audited_req, audited_req_packed);
+
+  start_req = (Audited__StartReq) {
+    .base = PROTOBUF_C_MESSAGE_INIT (&audited__start_req__descriptor),
+    .cmd = audited_cmd,
+    .cmd_input = (ProtobufCBinaryData) {
+      .data = audited_req_packed,
+      .len = audited_req_packed_len,
+    }
+  };
+
+  rv = audited_invoke(session,
+                      AKVP_START_AUDITED_CMD,
+                      (ProtobufCMessage*)&start_req,
+                      (ProtobufCMessage**)start_res,
+                      audited_err);
+
+  free(audited_req_packed);
+  return rv;
 }
