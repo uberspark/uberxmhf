@@ -40,8 +40,10 @@
 #include "audited-kv-errs.h"
 #include "proto-gend/audited.pb-c.h"
 #include "proto-gend/db.pb-c.h"
+#include "proto-gend/akvp.pb-c.h"
 
-akv_err_t akvp_init(const Audited__InitReq *req, Audited__InitRes *res);
+akv_err_t akvp_init(const Akvp__InitReq *req,
+                    Akvp__InitRes *res);
 
 void akvp_release(void);
 

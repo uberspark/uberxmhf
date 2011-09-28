@@ -52,33 +52,33 @@
 #define FREE_AND_NULL(x) do { free(x) ; x=NULL; } while(0)
 static bool did_init = false;
 
-static int remap_err(int in, int default_val, ...)
-{
-  va_list ap;
-  int from, to;
+/* static int remap_err(int in, int default_val, ...) */
+/* { */
+/*   va_list ap; */
+/*   int from, to; */
   
-  /* 0 always maps to 0 */
-  if(in == 0) return 0;
+/*   /\* 0 always maps to 0 *\/ */
+/*   if(in == 0) return 0; */
 
-  va_start(ap, default_val);
-  while(1) {
-    /* keep going until we get to '0' sentinel */
-    from = va_arg(ap, int);
-    if(!from) break;
-    to = va_arg(ap, int);
-    if(!to) break;
+/*   va_start(ap, default_val); */
+/*   while(1) { */
+/*     /\* keep going until we get to '0' sentinel *\/ */
+/*     from = va_arg(ap, int); */
+/*     if(!from) break; */
+/*     to = va_arg(ap, int); */
+/*     if(!to) break; */
 
-    /* match: remap to 'to' */
-    if (from==in) {
-      va_end(ap);
-      return to;
-    }
-  }
-  va_end(ap);
+/*     /\* match: remap to 'to' *\/ */
+/*     if (from==in) { */
+/*       va_end(ap); */
+/*       return to; */
+/*     } */
+/*   } */
+/*   va_end(ap); */
 
-  /* no match: return default */
-  return default_val;
-}
+/*   /\* no match: return default *\/ */
+/*   return default_val; */
+/* } */
 
 /* static char* strcpy_mallocd(const char *src) */
 /* { */
@@ -94,7 +94,7 @@ static struct {
   kv_ctx_t* kv_ctx;
 } akv_ctx;
 
-akv_err_t akvp_init(const Audited__InitReq *req, Audited__InitRes *res)
+akv_err_t akvp_init(const Akvp__InitReq *req, Akvp__InitRes *res)
 {
   audited_err_t audited_err;
   akv_err_t rv;
@@ -104,10 +104,10 @@ akv_err_t akvp_init(const Audited__InitReq *req, Audited__InitRes *res)
   }
   akv_ctx.kv_ctx = kv_ctx_new();
 
-  audited_err = audited_init(req->audit_pub_pem);
-  rv = remap_err(audited_err, AKV_EAUDITED,
-                 AUDITED_EBADKEY, AKV_EBADKEY,
-                 0,0);
+  audited_err = audited_init(req->audit_init_req->audit_pub_pem);
+  if (audited_err) {
+    rv = AKV_EAUDITED | (audited_err << 8);
+  }
 
   if(!rv) {
     did_init = true;

@@ -35,10 +35,11 @@
 
 #include "audited-kv-pal.h"
 #include "proto-gend/audited.pb-c.h"
-const tze_pb_proto_t audited_protos[] = {
+#include "proto-gend/akvp.pb-c.h"
+const tze_pb_proto_t akvp_protos[] = {
   [AKVP_INIT] = {
-    .req_descriptor = &audited__init_req__descriptor,
-    .res_descriptor = &audited__init_res__descriptor,
+    .req_descriptor = &akvp__init_req__descriptor,
+    .res_descriptor = &akvp__init_res__descriptor,
   },
   [AKVP_START_AUDITED_CMD] = {
     .req_descriptor = &audited__start_req__descriptor,

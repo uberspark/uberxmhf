@@ -51,8 +51,8 @@
 typedef struct {
   tze_dev_svc_sess_t tz_sess;
 } akv_ctx_t;
-int akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem);
-int akv_ctx_release(akv_ctx_t* ctx);
+akv_err_t akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem);
+akv_err_t akv_ctx_release(akv_ctx_t* ctx);
 
 typedef struct {
   Audited__StartRes *audited;

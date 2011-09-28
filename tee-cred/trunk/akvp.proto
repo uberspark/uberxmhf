@@ -1,0 +1,24 @@
+package akvp;
+import "audited.proto";
+import "db.proto";
+
+message InitReq {
+  required audited.InitReq audit_init_req = 1;
+  required db.InitReq db_init_req = 2;
+}
+message InitRes {
+}
+
+message StartAuditedReq {
+  required audited.StartReq audited_start_req = 1;
+}
+message StartAuditedRes {
+  required audited.StartRes audited_start_res = 1;
+}
+
+message ExecuteAuditedReq {
+  required audited.ExecuteReq audited_execute_req = 1;
+}
+message ExecuteAuditedRes {
+  required audited.ExecuteRes audited_execute_res = 1;
+}

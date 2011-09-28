@@ -69,8 +69,7 @@ enum akvp_cmds {
   /* AKVP_PW_CHANGE,       /\* oldpass, newpass  -> () *\/ */
 /* }; */
 
-
-extern const tze_pb_proto_t audited_protos[];
+extern const tze_pb_proto_t akvp_protos[];
 
 void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv);
 

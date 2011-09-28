@@ -91,16 +91,30 @@ tz_return_t TZEDispatchImpProtobufMsgs(const tze_pb_proto_t protos[],
                                        ProtobufCMessage **res,
                                        tz_return_t *puiRv)
 {
+  return TZEExecuteProtobufFn(protos[uiCommand].res_descriptor,
+                              imps[uiCommand].execute,
+                              req,
+                              res,
+                              puiRv);
+}
+
+tz_return_t TZEExecuteProtobufFn(const ProtobufCMessageDescriptor *res_descr,
+                                 tze_pb_execute_fn *exec,
+
+                                 const ProtobufCMessage *req,
+                                 ProtobufCMessage **res,
+                                 tz_return_t *puiRv)
+{
   tz_return_t err=0;
 
-  *res = malloc(protos[uiCommand].res_descriptor->sizeof_message);
+  *res = malloc(res_descr->sizeof_message);
   if(!*res) {
     err = TZ_ERROR_MEMORY;
     goto out;
   }
-  protobuf_c_message_init(protos[uiCommand].res_descriptor, *res);
+  protobuf_c_message_init(res_descr, *res);
 
-  *puiRv = imps[uiCommand].execute(req, *res);
+  *puiRv = exec(req, *res);
   if (*puiRv) {
     /* Note that we interpret non-zero puiRv to mean there is no
        encodable result. In case the invoked function wants to return

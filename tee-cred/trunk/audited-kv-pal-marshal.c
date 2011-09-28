@@ -47,7 +47,7 @@
 /* would be nice to extend protoc compiler to auto-generate this file
    this from service description */
 
-static const tze_pb_imp_t audited_imps[] = {
+static const tze_pb_imp_t akvp_imps[] = {
   [AKVP_INIT] = {
     .execute=(tze_pb_execute_fn*)akvp_init,
     .release_res=NULL,
@@ -65,8 +65,8 @@ static const tze_pb_imp_t audited_imps[] = {
 void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
   tz_return_t rv;
-  rv = TZEDispatchImpProtobuf(audited_protos,
-                              audited_imps,
+  rv = TZEDispatchImpProtobuf(akvp_protos,
+                              akvp_imps,
                               AKVP_NUM, 
 
                               uiCommand,

@@ -47,16 +47,34 @@
 
 #include "proto-gend/db.pb-c.h"
 #include "proto-gend/audited.pb-c.h"
+#include "proto-gend/akvp.pb-c.h"
 
 /* set to enable userspace mode for testing */
 #ifndef USERSPACE_ONLY
 #define USERSPACE_ONLY 0
 #endif
 
-int akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem)
+static tz_return_t akvp_invoke(akv_ctx_t* ctx,
+                               uint32_t uiCommand,
+                               const ProtobufCMessage *req,
+                               ProtobufCMessage **res,
+                               tz_return_t *svc_err)
 {
-  tz_return_t rv;
+  return TZEDispatchProtobuf(akvp_protos,
+                             AKVP_NUM,
+
+                             &ctx->tz_sess.tzSession,
+                             uiCommand,
+                             req,
+                             res,
+                             svc_err);
+}
+
+akv_err_t akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem)
+{
+  tz_return_t tzrv;
   bool registered_pal=false;
+  akv_err_t rv;
 
   /* register pal */
   {
@@ -73,32 +91,42 @@ int akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem)
     };
     tv_pal_sections_init(&scode_info,
                          PAGE_SIZE, 10*PAGE_SIZE);
-    rv = TZESvcLoadAndOpen(&ctx->tz_sess,
-                           &pal,
-                           sizeof(pal),
-                           &load_options);
-    if (rv) return rv;
+    tzrv = TZESvcLoadAndOpen(&ctx->tz_sess,
+                             &pal,
+                             sizeof(pal),
+                             &load_options);
+    if (tzrv) {
+      return AKV_ETZ | (tzrv << 8);
+    }
     registered_pal=true;
   }
 
   /* call init */
   {
-    Audited__InitReq req = {
+    Audited__InitReq audited_init_req = {
       .base = PROTOBUF_C_MESSAGE_INIT (&audited__init_req__descriptor),
       .audit_pub_pem = (char*)priv_key_pem,
     };
-    Audited__InitRes *res;
-    tz_return_t pb_err;
-    pb_err = audited_invoke(&ctx->tz_sess.tzSession,
-                            AKVP_INIT,
-                            (ProtobufCMessage*)&req,
-                            (ProtobufCMessage**)&res,
-                            &rv);
+    Db__InitReq db_init_req = {
+      .base = PROTOBUF_C_MESSAGE_INIT (&db__init_req__descriptor),
+    };
+    Akvp__InitReq req = {
+      .base = PROTOBUF_C_MESSAGE_INIT (&akvp__init_req__descriptor),
+      .audit_init_req = &audited_init_req,
+      .db_init_req = &db_init_req,
+    };
+    
+    Akvp__InitRes *res;
+    tzrv = akvp_invoke(ctx,
+                       AKVP_INIT,
+                       (ProtobufCMessage*)&req,
+                       (ProtobufCMessage**)&res,
+                       &rv);
     if (res) {
-      audited__init_res__free_unpacked(res, NULL);
+      akvp__init_res__free_unpacked(res, NULL);
     }
-    if (pb_err) {
-      rv = AUDITED_EPB_ERR | (pb_err << 8);
+    if (tzrv) {
+      rv = AKV_ETZ | (tzrv << 8);
       goto out;
     }
   }
@@ -111,11 +139,15 @@ int akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem)
   return rv;
 }
 
-int akv_ctx_release(akv_ctx_t* ctx)
+akv_err_t akv_ctx_release(akv_ctx_t* ctx)
 {
-  tz_return_t rv;
-  rv = TZEClose(&ctx->tz_sess);
-  return rv;
+  tz_return_t tzrv;
+  tzrv = TZEClose(&ctx->tz_sess);
+  if (tzrv) {
+    return AKV_ETZ | (tzrv << 8);
+  } else {
+    return 0;
+  }
 }
 
 void akv_cmd_ctx_release(akv_cmd_ctx_t *ctx)
@@ -126,21 +158,52 @@ void akv_cmd_ctx_release(akv_cmd_ctx_t *ctx)
   }
 }
 
-static akv_err_t akv_invoke_start(akv_ctx_t* ctx,
-                                  akv_cmd_ctx_t* cmd_ctx,
-                                  uint32_t audited_cmd,
-                                  const ProtobufCMessage *audited_req)
+void protobuf_c_malloc_and_pack(const ProtobufCMessage *msg,
+                                void **buf,
+                                size_t *len)
+{
+  size_t len2;
+  *len = protobuf_c_message_get_packed_size(msg);
+  *buf = malloc(*len);
+  if(!*buf) {
+    return;
+  }
+  len2 = protobuf_c_message_pack(msg, *buf);
+  if (len2 != *len) {
+    free(*buf);
+    *buf=NULL;
+    return;
+  }
+}
+
+static akv_err_t akv_start_audited(akv_ctx_t* ctx,
+                                   akv_cmd_ctx_t* cmd_ctx,
+                                   uint32_t audited_cmd,
+                                   const ProtobufCMessage *audited_req)
 {
   akv_err_t rv=0;
   tz_return_t tzrv;
   audited_err_t audited_err;
   Audited__StartRes *start_res=NULL;
+  Audited__StartReq start_req;
+
+  start_req = (Audited__StartReq) {
+    .base=PROTOBUF_C_MESSAGE_INIT (&audited__start_req__descriptor),
+    .cmd=audited_cmd,
+  };
+  protobuf_c_malloc_and_pack(audited_req,
+                             (void**)&start_req.cmd_input.data,
+                             &start_req.cmd_input.len);
+  if(!start_req.cmd_input.data) {
+    rv = AKV_ENOMEM;
+    goto out;
+  }
   
-  tzrv = audited_invoke_start(&ctx->tz_sess.tzSession,
-                              audited_cmd,
-                              audited_req,
-                              &start_res,
-                              &audited_err);
+  tzrv = akvp_invoke(ctx,
+                     AKVP_START_AUDITED_CMD,
+                     (ProtobufCMessage*)&start_req,
+                     (ProtobufCMessage**)&start_res,
+                     (tz_return_t*)&audited_err);
   if (tzrv) {
     rv = AKV_ETZ | (tzrv << 8);
     goto out;
@@ -155,50 +218,64 @@ static akv_err_t akv_invoke_start(akv_ctx_t* ctx,
     };
 
  out:
+  free(start_req.cmd_input.data);
+  start_req.cmd_input.data=NULL;
+  /* Note we *don't* free start_res, since it's held in cmd_ctx */
   return rv;
 }
 
-static akv_err_t akv_execute(akv_cmd_ctx_t* ctx,
-                             const void* audit_token,
-                             size_t audit_token_len,
-                             const ProtobufCMessageDescriptor* desc,
-                             ProtobufCMessage** res)
+static akv_err_t akv_execute_audited(akv_cmd_ctx_t* ctx,
+                                     const void* audit_token,
+                                     size_t audit_token_len,
+                                     const ProtobufCMessageDescriptor* res_desc,
+                                     ProtobufCMessage** res,
+                                     tz_return_t *audited_fn_err)
 {
   tz_return_t tzrv;
   audited_err_t audited_err;
   Audited__ExecuteRes *exec_res=NULL;
+  Audited__ExecuteReq exec_req;
   akv_err_t rv=0;
 
   *res=NULL;
 
-  tzrv = audited_invoke_execute(&ctx->akv_ctx->tz_sess.tzSession,
-                                ctx->audited->res->pending_cmd_id,
-                                audit_token,
-                                audit_token_len,
-                                &audited_err,
-                                &exec_res);
+  exec_req = (Audited__ExecuteReq) {
+    .base = PROTOBUF_C_MESSAGE_INIT (&audited__execute_req__descriptor),
+    .pending_cmd_id = ctx->audited->res->pending_cmd_id,
+    .audit_token = (ProtobufCBinaryData) {
+      .data = (void*)audit_token,
+      .len = audit_token_len,
+    }
+  };
+
+  tzrv = akvp_invoke(ctx->akv_ctx,
+                     AKVP_EXECUTE_AUDITED_CMD,
+                     (ProtobufCMessage*)&exec_req,
+                     (ProtobufCMessage**)&exec_res,
+                     (tz_return_t*)&audited_err);
 
   if (audited_err) {
     rv = AKV_EAUDITED | (audited_err << 8);
     goto out;
   } else if (tzrv) {
-    rv = AKV_EPB | (tzrv << 8);
+    rv = AKV_ETZ | (tzrv << 8);
     goto out;
   }
 
   assert(exec_res);
+  *audited_fn_err = exec_res->svc_err;
   if (exec_res->svc_err) {
     rv = exec_res->svc_err;
     goto out;
   }
 
   assert(exec_res->has_cmd_output);
-  *res = protobuf_c_message_unpack(desc,
+  *res = protobuf_c_message_unpack(res_desc,
                                    NULL,
                                    exec_res->cmd_output.len,
                                    exec_res->cmd_output.data);
   if(!res) {
-    rv = AKV_EDECODE;
+    rv = AKV_EPB;
     goto out;
   }
 
@@ -231,10 +308,10 @@ akv_err_t akv_db_add_begin(akv_ctx_t*  ctx,
     }
   };
 
-  rv = akv_invoke_start(ctx,
-                        cmd_ctx,
-                        KV_ADD,
-                        (ProtobufCMessage*)&add_req);
+  rv = akv_start_audited(ctx,
+                         cmd_ctx,
+                         KV_ADD,
+                         (ProtobufCMessage*)&add_req);
   return rv;
 }
 
@@ -245,13 +322,23 @@ akv_err_t akv_db_add_execute(akv_cmd_ctx_t* ctx,
 {
   akv_err_t rv=0;
   Db__AddRes *add_res=NULL;
+  kv_err_t kv_err;
 
-  rv = akv_execute(ctx,
-                   audit_token,
-                   audit_token_len,
-                   &db__add_res__descriptor,
-                   (ProtobufCMessage**)&add_res);
+  rv = akv_execute_audited(ctx,
+                           audit_token,
+                           audit_token_len,
+                           &db__add_res__descriptor,
+                           (ProtobufCMessage**)&add_res,
+                           (tz_return_t*)&kv_err);
+  if (rv) {
+    goto out;
+  }
+  if (kv_err) {
+    rv = AKV_EKV | (kv_err << 8);
+    goto out;
+  }
 
+  out:
   if(add_res) {
     db__add_res__free_unpacked(add_res, NULL);
   }
@@ -273,10 +360,10 @@ akv_err_t akv_db_get_begin(akv_ctx_t*  ctx,
     .key = (char*)key,
   };
 
-  rv = akv_invoke_start(ctx,
-                        cmd_ctx,
-                        KV_GET,
-                        (ProtobufCMessage*)&get_req);
+  rv = akv_start_audited(ctx,
+                         cmd_ctx,
+                         KV_GET,
+                         (ProtobufCMessage*)&get_req);
 
   return rv;
 }
@@ -289,21 +376,35 @@ akv_err_t akv_db_get_execute(akv_cmd_ctx_t* ctx,
 {
   Db__GetRes *get_res=NULL;
   akv_err_t rv=0;
+  kv_err_t kv_err;
 
-  rv = akv_execute(ctx,
-                   audit_token,
-                   audit_token_len,
-                   &db__get_res__descriptor,
-                   (ProtobufCMessage**)&get_res);
+  *val=NULL;
 
-  *val_len = get_res->val.len;
-  *val = malloc(*val_len);
-  if(!*val) {
-    abort();
+  rv = akv_execute_audited(ctx,
+                           audit_token,
+                           audit_token_len,
+                           &db__get_res__descriptor,
+                           (ProtobufCMessage**)&get_res,
+                           (tz_return_t*)&kv_err);
+
+  if (rv) {
+    goto out;
   }
-  memcpy(*val, get_res->val.data, *val_len);
+  if (kv_err) {
+    rv = AKV_EKV | (kv_err << 8);
+    goto out;
+  }
 
-  db__get_res__free_unpacked(get_res, NULL);
+  /* stealing reference from unpacked message.
+     assuming default (system) allocator */
+  *val_len = get_res->val.len;
+  *val = get_res->val.data;
+  get_res->val.data=NULL;
+
+ out:
+  if(get_res) {
+    db__get_res__free_unpacked(get_res, NULL);
+  }
     
   return rv;
 }

@@ -41,7 +41,7 @@
 #include <tee-sdk/tzmarshal.h>
 #include <google/protobuf-c/protobuf-c.h>
 
-typedef int (tze_pb_execute_fn)(const ProtobufCMessage *, ProtobufCMessage *);
+typedef uint32_t (tze_pb_execute_fn)(const ProtobufCMessage *, ProtobufCMessage *);
 typedef void (tze_pb_release_res_fn)(ProtobufCMessage *);
 
 typedef struct {
@@ -78,6 +78,12 @@ tz_return_t TZEDispatchImpProtobuf(const tze_pb_proto_t protos[],
                                    struct tzi_encode_buffer_t *psInBuf,
                                    struct tzi_encode_buffer_t *psOutBuf,
                                    tz_return_t *puiRv);
+tz_return_t TZEExecuteProtobufFn(const ProtobufCMessageDescriptor *res_descr,
+                                 tze_pb_execute_fn *exec,
+
+                                 const ProtobufCMessage *req,
+                                 ProtobufCMessage **res,
+                                 tz_return_t *puiRv);
 
 /* *res is malloc'd and must be freed */
 tz_return_t TZEDispatchImpProtobufMsgs(const tze_pb_proto_t protos[],

@@ -37,9 +37,6 @@
 
 #include "tze-pb.h"
 
-/* XXX consider following TZ convention of returning void and setting
-   the encoder error-state? */
-
 tz_return_t TZIDecodeProtobuf(tzi_encode_buffer_t *tz_buf,
                               const ProtobufCMessageDescriptor *pb_desc,
                               ProtobufCAllocator *pb_alloc,
