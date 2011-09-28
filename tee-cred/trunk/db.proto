@@ -1,14 +1,15 @@
 package db;
 message AddReq {
   required string key = 1;
-  required string val = 2;
+  required bytes val = 2;
 }
 message AddRes {
+  optional string err = 1;
 }
 
 message GetReq {
   required string key = 1;
 }
 message GetRes {
-  required string val = 1;
+  required bytes val = 1;
 }

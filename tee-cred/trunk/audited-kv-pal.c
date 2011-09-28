@@ -186,7 +186,7 @@ int akvp_db_add_execute(void* vreq, void **vres)
 
   *vres = NULL;
 
-  kv_err = kv_add(akv_ctx.kv_ctx, req->key, strlen(req->key), req->val, strlen(req->val));
+  kv_err = kv_add(akv_ctx.kv_ctx, req->key, strlen(req->key), req->val.data, req->val.len);
   akv_err =
     (kv_err == KV_ENONE) ? AKV_ENONE
     : (kv_err == KV_EEXISTS) ? AKV_EEXISTS

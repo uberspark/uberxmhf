@@ -204,7 +204,8 @@ int akv_db_add_begin(akv_ctx_t*  ctx,
   /* FIXME- is there a way to avoid having to cast
      away the const here? */
   req.key = (char*)key;
-  req.val = (char*)val;
+  req.val.data = (void*)val;
+  req.val.len = strlen(val);
 
   memset(cmd_ctx, 0, sizeof(*cmd_ctx));
   cmd_ctx->akv_ctx = ctx;
