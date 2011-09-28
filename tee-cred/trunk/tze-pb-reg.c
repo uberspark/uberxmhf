@@ -110,10 +110,6 @@ tz_return_t tze_pb_invoke(const tze_pb_proto_t protos[],
 {
   tz_return_t tzerr=0;
   tz_operation_t op;
-  void *res_packed;
-  uint32_t res_packed_len;
-  uint32_t req_packed_len;
-  void *req_packed;
 
   *res=NULL;
 
@@ -125,30 +121,23 @@ tz_return_t tze_pb_invoke(const tze_pb_proto_t protos[],
     goto out;
   }
 
-  req_packed_len = protobuf_c_message_get_packed_size(req);
-  req_packed = TZEncodeArraySpace(&op, req_packed_len);
-  if (!req_packed) {
-    tzerr = TZDecodeGetError(&op);
+  tzerr = TZEEncodeProtobuf(&op, req);
+  if (tzerr) {
     goto out;
   }
-
-  protobuf_c_message_pack(req, req_packed);
 
   tzerr = TZOperationPerform(&op, svc_err);
   if (tzerr) {
     goto out;
   }
 
-  res_packed = TZDecodeArraySpace(&op, &res_packed_len);
-  if (!res_packed) {
-    tzerr = TZDecodeGetError(&op);
+  tzerr = TZEDecodeProtobuf(&op,
+                            protos[uiCommand].res_descriptor,
+                            NULL,
+                            res);
+  if (tzerr) {
     goto out;
   }
-
-  *res = protobuf_c_message_unpack(protos[uiCommand].res_descriptor,
-                                   NULL,
-                                   res_packed_len,
-                                   res_packed);
 
  out:
   TZOperationRelease(&op);
