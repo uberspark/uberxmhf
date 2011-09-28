@@ -95,15 +95,5 @@ audited_err_t audited_start_cmd(const Audited__StartReq *startreq,
 audited_err_t audited_execute_cmd(const Audited__ExecuteReq *exec_req,
                                   Audited__ExecuteRes *exec_res);
 void audited_execute_cmd_release_res(Audited__ExecuteRes *exec_res);
-/* audited_err_t audited_start_cmd(uint32_t audited_cmd, */
-/*                                 tzi_encode_buffer_t *psInBuf, */
-/*                                 uint32_t *pending_cmd_id, */
-/*                                 char **audit_string, */
-/*                                 void **audit_nonce, */
-/*                                 uint32_t *audit_nonce_len); */
-/* audited_err_t audited_execute_cmd(uint32_t cmd_id, */
-/*                                   void *audit_token, */
-/*                                   size_t audit_token_len, */
-/*                                   tzi_encode_buffer_t *psOutBuf); */
 
 #endif
