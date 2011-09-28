@@ -179,32 +179,19 @@ void akv_cmd_ctx_release(akv_cmd_ctx_t *ctx)
   }
 }
 
-akv_err_t akv_db_add_begin(akv_ctx_t*  ctx,
-                           akv_cmd_ctx_t* cmd_ctx,
-                           const char* key,
-                           const void* val,
-                           size_t val_len)
+static akv_err_t akv_invoke_start(akv_ctx_t* ctx,
+                                  akv_cmd_ctx_t* cmd_ctx,
+                                  uint32_t audited_cmd,
+                                  const ProtobufCMessage *audited_req)
 {
   akv_err_t rv=0;
-  Db__AddReq add_req;
-  Audited__StartRes *start_res=NULL;
   tze_pb_err_t tze_pb_err;
   audited_err_t audited_err;
-
-  /* FIXME- is there a way to avoid having to cast
-     away the const here? */
-  add_req = (Db__AddReq) {
-    .base = PROTOBUF_C_MESSAGE_INIT (&db__add_req__descriptor),
-    .key = (char*)key,
-    .val = (ProtobufCBinaryData) {
-      .data = (void*)val,
-      .len = val_len,
-    }
-  };
-
+  Audited__StartRes *start_res=NULL;
+  
   tze_pb_err = audited_invoke_start(&ctx->tz_sess.tzSession,
-                                    KV_ADD,
-                                    (ProtobufCMessage*)&add_req,
+                                    audited_cmd,
+                                    audited_req,
                                     &start_res,
                                     &audited_err);
   if (audited_err) {
@@ -221,6 +208,33 @@ akv_err_t akv_db_add_begin(akv_ctx_t*  ctx,
     };
 
  out:
+  return rv;
+}
+
+akv_err_t akv_db_add_begin(akv_ctx_t*  ctx,
+                           akv_cmd_ctx_t* cmd_ctx,
+                           const char* key,
+                           const void* val,
+                           size_t val_len)
+{
+  akv_err_t rv=0;
+  Db__AddReq add_req;
+
+  /* FIXME- is there a way to avoid having to cast
+     away the const here? */
+  add_req = (Db__AddReq) {
+    .base = PROTOBUF_C_MESSAGE_INIT (&db__add_req__descriptor),
+    .key = (char*)key,
+    .val = (ProtobufCBinaryData) {
+      .data = (void*)val,
+      .len = val_len,
+    }
+  };
+
+  rv = akv_invoke_start(ctx,
+                        cmd_ctx,
+                        KV_ADD,
+                        (ProtobufCMessage*)&add_req);
   return rv;
 }
 
@@ -269,9 +283,6 @@ akv_err_t akv_db_get_begin(akv_ctx_t*  ctx,
 {
   akv_err_t rv=0;
   Db__GetReq get_req;
-  Audited__StartRes *start_res=NULL;
-  tze_pb_err_t tze_pb_err;
-  audited_err_t audited_err;
 
   /* FIXME- is there a way to avoid having to cast
      away the const here? */
@@ -280,25 +291,11 @@ akv_err_t akv_db_get_begin(akv_ctx_t*  ctx,
     .key = (char*)key,
   };
 
-  tze_pb_err = audited_invoke_start(&ctx->tz_sess.tzSession,
-                                    KV_GET,
-                                    (ProtobufCMessage*)&get_req,
-                                    &start_res,
-                                    &audited_err);
-  if (audited_err) {
-    rv = AKV_EAUDITED | (audited_err << 8);
-    goto out;
-  } else if (tze_pb_err) {
-    rv = AKV_EPB | (tze_pb_err << 8);
-    goto out;
-  }
+  rv = akv_invoke_start(ctx,
+                        cmd_ctx,
+                        KV_GET,
+                        (ProtobufCMessage*)&get_req);
 
-  *cmd_ctx = (akv_cmd_ctx_t)
-    { .akv_ctx = ctx,
-      .audited = start_res,
-    };
-
- out:
   return rv;
 }
 
