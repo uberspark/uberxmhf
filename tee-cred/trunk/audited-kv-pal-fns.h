@@ -42,12 +42,6 @@
 akv_err_t akvp_init(const char*);
 void akvp_release(void);
 
-typedef struct {
-  void *key;
-  size_t key_len;
-  void *val;
-  size_t val_len;
-} akvp_db_add_req_t;
 int akvp_db_add_begin_decode_req(void **req,
                                  void *inbuf,
                                  size_t inbuf_len);

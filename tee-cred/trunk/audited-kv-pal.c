@@ -46,7 +46,7 @@
 #include "audited-kv-pal.h"
 #include "audited-kv-pal-fns.h"
 #include "kv.h"
-
+#include "proto-gend/db.pb-c.h"
 
 #define FREE_AND_NULL(x) do { free(x) ; x=NULL; } while(0)
 static bool did_init = false;
@@ -146,79 +146,47 @@ char* sprintf_mallocd(const char *format, ...)
 
 void akvp_db_add_release_req(void* vreq)
 {
-  akvp_db_add_req_t *req = (akvp_db_add_req_t*)vreq;
-  FREE_AND_NULL(req->key);
-  FREE_AND_NULL(req->val);
-  free(req);
+  db__add_req__free_unpacked(vreq, NULL);
 }
 
 int akvp_db_add_begin_decode_req(void **vcont,
                                  void *inbuf,
                                  size_t inbuf_len)
 {
-  struct tzi_encode_buffer_t *psInBuf = (struct tzi_encode_buffer_t*)inbuf;
-  char *key, *val;
-  uint32_t key_len, val_len;
+  Db__AddReq *req=NULL;
+  void *inbuf_proto;
+  uint32_t inbuf_proto_len;
+  inbuf_proto = TZIDecodeArraySpace(inbuf, &inbuf_proto_len);
 
-  {
-    key = TZIDecodeArraySpace(psInBuf, &key_len);
-    val = TZIDecodeArraySpace(psInBuf, &val_len);
-
-    if (TZIDecodeGetError(psInBuf)) {
-      return AKV_EDECODE;
-    }
-  }
-
-  {
-    akvp_db_add_req_t **pp_cont = ((akvp_db_add_req_t**)vcont);
-
-    *pp_cont = malloc(sizeof(**pp_cont));
-    if(!pp_cont) {
-      return AKV_ENOMEM;
-    }
-
-    **pp_cont = (akvp_db_add_req_t) {
-      .key = malloc(key_len),
-      .key_len = key_len,
-      .val = malloc(val_len),
-      .val_len = val_len,
-    };
-
-    if (!(*pp_cont)->key
-        || !(*pp_cont)->val) {
-      FREE_AND_NULL((*pp_cont)->key);
-      FREE_AND_NULL((*pp_cont)->val);
-      FREE_AND_NULL(*pp_cont);
-      return AKV_ENOMEM;
-    }
-    memcpy((*pp_cont)->key, key, key_len);
-    memcpy((*pp_cont)->val, val, val_len);
-  }
-
-  return AKV_ENONE;
+  req = db__add_req__unpack(NULL, inbuf_proto_len, inbuf_proto);
+  *vcont=req;
+  if(req)
+    return 0;
+  else
+    return AKV_EDECODE;
 }
 
 int akvp_db_add_audit_string(void *vreq,
                              char **audit_string)
 {
-  akvp_db_add_req_t *cont = (akvp_db_add_req_t*)vreq;
+  Db__AddReq *req = (Db__AddReq*)vreq;
   *audit_string = /* FIXME need to escape nulls and non-printables,
                      and make sure null-terminated.
                   */
-    sprintf_mallocd("ADD{key=\"%s\"}", cont->key);
+    sprintf_mallocd("ADD{key=\"%s\"}", req->key);
 
   return AKV_ENONE;
 }
 
 int akvp_db_add_execute(void* vreq, void **vres)
 {
-  akvp_db_add_req_t *cont = (akvp_db_add_req_t*)vreq;
+  Db__AddReq *req = (Db__AddReq*)vreq;
   akv_err_t akv_err;
   kv_err_t kv_err;
 
   *vres = NULL;
 
-  kv_err = kv_add(akv_ctx.kv_ctx, cont->key, cont->key_len, cont->val, cont->val_len);
+  kv_err = kv_add(akv_ctx.kv_ctx, req->key, strlen(req->key), req->val, strlen(req->val));
   akv_err =
     (kv_err == KV_ENONE) ? AKV_ENONE
     : (kv_err == KV_EEXISTS) ? AKV_EEXISTS

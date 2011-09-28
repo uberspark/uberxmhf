@@ -1,0 +1,14 @@
+package db;
+message AddReq {
+  required string key = 1;
+  required string val = 2;
+}
+message AddRes {
+}
+
+message GetReq {
+  required string key = 1;
+}
+message GetRes {
+  required string val = 1;
+}

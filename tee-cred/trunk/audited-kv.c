@@ -42,6 +42,8 @@
 #include "audited-kv.h"
 #include "audited-kv-pal.h"
 
+#include "proto-gend/db.pb-c.h"
+
 /* set to enable userspace mode for testing */
 #ifndef USERSPACE_ONLY
 #define USERSPACE_ONLY 0
@@ -195,6 +197,14 @@ int akv_db_add_begin(akv_ctx_t*  ctx,
 {
   tz_return_t serviceReturn;
   int rv=0;
+  Db__AddReq req = DB__ADD_REQ__INIT;
+  uint32_t len;
+  void *buf;
+
+  /* FIXME- is there a way to avoid having to cast
+     away the const here? */
+  req.key = (char*)key;
+  req.val = (char*)val;
 
   memset(cmd_ctx, 0, sizeof(*cmd_ctx));
   cmd_ctx->akv_ctx = ctx;
@@ -204,9 +214,14 @@ int akv_db_add_begin(akv_ctx_t*  ctx,
                          AKVP_START_AUDITED_CMD,
                          "%"TZI_EU32,
                          AKVP_DB_ADD);
-  rv = TZIEncodeF(&cmd_ctx->tzStartOp,
-                  "%"TZI_ESTR "%"TZI_ESTR,
-                  key, val);
+
+  len = db__add_req__get_packed_size(&req);
+  buf = TZEncodeArraySpace(&cmd_ctx->tzStartOp, len);
+  db__add_req__pack(&req, buf);
+  /* rv = TZIEncodeF(&cmd_ctx->tzStartOp, */
+  /*                 "%"TZI_ESTR "%"TZI_ESTR, */
+  /*                 key, val); */
+
   rv = TZIExecuteDecodeF(&cmd_ctx->tzStartOp,
                          &serviceReturn,
                          "%"TZI_DU32 "%"TZI_DARRSPC "%"TZI_DARRSPC,
