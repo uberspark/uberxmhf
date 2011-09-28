@@ -82,7 +82,7 @@ tcm_err_t tcm_db_add(tcm_ctx_t* tcm_ctx,
                              val,
                              strlen(val)+1);
   if (akv_err) {
-    rv= TCM_EAKV;
+    rv= TCM_EAKV | (akv_err << 8);
     goto cleanup_none;
   }
 
@@ -94,14 +94,15 @@ tcm_err_t tcm_db_add(tcm_ctx_t* tcm_ctx,
                               audit_token,
                               &audit_token_len);
   if (audit_err) {
-    rv = TCM_EAUDIT;
+    rv = TCM_EAUDIT | (audit_err << 8);
     goto cleanup_cmd;
   }
 
-  if (akv_db_add_execute(&akv_cmd_ctx,
-                         audit_token,
-                         audit_token_len)) {
-    rv = TCM_EAKV;
+  akv_err = akv_db_add_execute(&akv_cmd_ctx,
+                               audit_token,
+                               audit_token_len);
+  if (akv_err) {
+    rv = TCM_EAKV | (akv_err << 8);
     goto cleanup_cmd;
   }
 
@@ -130,7 +131,7 @@ tcm_err_t tcm_db_get(tcm_ctx_t* tcm_ctx,
                              &akv_cmd_ctx,
                              key);
   if (akv_err) {
-    rv= TCM_EAKV;
+    rv= TCM_EAKV | (akv_err << 8);
     goto cleanup_none;
   }
 
@@ -142,16 +143,17 @@ tcm_err_t tcm_db_get(tcm_ctx_t* tcm_ctx,
                               audit_token,
                               &audit_token_len);
   if (audit_err) {
-    rv = TCM_EAUDIT;
+    rv = TCM_EAUDIT | (audit_err << 8);
     goto cleanup_cmd;
   }
 
-  if (akv_db_get_execute(&akv_cmd_ctx,
-                         audit_token,
-                         audit_token_len,
-                         (void**)val,
-                         &val_len)) {
-    rv = TCM_EAKV;
+  akv_err = akv_db_get_execute(&akv_cmd_ctx,
+                               audit_token,
+                               audit_token_len,
+                               (void**)val,
+                               &val_len);
+  if (akv_err) {
+    rv = TCM_EAKV | (akv_err << 8);
     goto cleanup_cmd;
   }
 
@@ -216,21 +218,21 @@ int main(int argc, char **argv)
   audit_err = audit_ctx_init(&audit_ctx, server, port);
   if (audit_err) {
     rv = 1;
-    printf("audit_ctx_init failed with rv %d\n", audit_err);
+    printf("audit_ctx_init failed with rv 0x%x\n", audit_err);
     goto cleanup_none;
   }
 
   akv_err = akv_ctx_init(&akv_ctx, pem_pub_key);
   if (akv_err) {
     rv = 2;
-    printf("akv_ctx_init failed with rv %d\n", akv_err);
+    printf("akv_ctx_init failed with rv 0x%x\n", akv_err);
     goto cleanup_audit;
   }
 
   tcm_err = tcm_ctx_init(&tcm_ctx, &audit_ctx, &akv_ctx);
   if (tcm_err) {
     rv = 3;
-    printf("tcm_ctx_init failed with rv %d\n", tcm_err);
+    printf("tcm_ctx_init failed with rv 0x%x\n", tcm_err);
     goto cleanup_akv;
   }
 
@@ -239,18 +241,18 @@ int main(int argc, char **argv)
                        "val");
   if (tcm_err) {
     rv = 4;
-    printf("tcm_db_add failed with %d\n", tcm_err);
+    printf("tcm_db_add failed with 0x%x\n", tcm_err);
     goto cleanup_tcm;
   }
 
   {
     char *val;
     tcm_err = tcm_db_get(&tcm_ctx,
-                         "key",
+                         "key2",
                          &val);
     if (tcm_err) {
       rv = 4;
-      printf("tcm_db_add failed with %d\n", tcm_err);
+      printf("tcm_db_add failed with 0x%x\n", tcm_err);
       goto cleanup_tcm;
     }
     printf("retrieved val:%s\n", val);
