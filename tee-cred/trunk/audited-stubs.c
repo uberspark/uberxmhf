@@ -90,3 +90,29 @@ tze_pb_err_t audited_invoke_start(tz_session_t *session,
   free(audited_req_packed);
   return rv;
 }
+
+tze_pb_err_t audited_invoke_execute(tz_session_t *session,
+                                    uint32_t pending_cmd_id,
+                                    const void* audit_token,
+                                    size_t audit_token_len,
+                                    uint32_t *audited_err,
+                                    Audited__ExecuteRes **res)
+{
+  Audited__ExecuteReq req = (Audited__ExecuteReq) {
+    .base = PROTOBUF_C_MESSAGE_INIT (&audited__execute_req__descriptor),
+    .pending_cmd_id = pending_cmd_id,
+    .audit_token = (ProtobufCBinaryData) {
+      .data = (void*)audit_token,
+      .len = audit_token_len,
+    },
+  };
+  tze_pb_err_t rv;
+
+  rv = audited_invoke(session,
+                      AKVP_EXECUTE_AUDITED_CMD,
+                      (ProtobufCMessage*)&req,
+                      (ProtobufCMessage**)res,
+                      audited_err);
+
+  return rv;
+}

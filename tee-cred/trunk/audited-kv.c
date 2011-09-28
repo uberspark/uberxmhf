@@ -227,24 +227,18 @@ akv_err_t akv_db_add_execute(akv_cmd_ctx_t* ctx,
                              const void* audit_token,
                              size_t audit_token_len)
 {
-  akv_err_t rv=0;
   tze_pb_err_t tze_pb_err;
   audited_err_t audited_err;
   Audited__ExecuteRes *res=NULL;
-  Audited__ExecuteReq req = (Audited__ExecuteReq) {
-    .base = PROTOBUF_C_MESSAGE_INIT (&audited__execute_req__descriptor),
-    .pending_cmd_id = ctx->audited->res->pending_cmd_id,
-    .audit_token = (ProtobufCBinaryData) {
-      .data = (void*)audit_token,
-      .len = audit_token_len,
-    }
-  };
+  akv_err_t rv=0;
 
-  tze_pb_err = audited_invoke(&ctx->akv_ctx->tz_sess.tzSession,
-                              AKVP_EXECUTE_AUDITED_CMD,
-                              (ProtobufCMessage*)&req,
-                              (ProtobufCMessage**)&res,
-                              &audited_err);
+  tze_pb_err = audited_invoke_execute(&ctx->akv_ctx->tz_sess.tzSession,
+                                      ctx->audited->res->pending_cmd_id,
+                                      audit_token,
+                                      audit_token_len,
+                                      &audited_err,
+                                      &res);
+
   if (audited_err) {
     rv = AKV_EAUDITED | (audited_err << 8);
     goto out;
@@ -253,10 +247,11 @@ akv_err_t akv_db_add_execute(akv_cmd_ctx_t* ctx,
     goto out;
   }
 
+ out:
   if(res) {
     audited__execute_res__free_unpacked(res, NULL);
     res=NULL;
   }
- out:
+
   return rv;
 }

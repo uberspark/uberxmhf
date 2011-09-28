@@ -46,3 +46,9 @@ tze_pb_err_t audited_invoke_start(tz_session_t *session,
                                   const ProtobufCMessage *audited_req,
                                   Audited__StartRes **start_res,
                                   uint32_t *audited_err);
+tze_pb_err_t audited_invoke_execute(tz_session_t *session,
+                                    uint32_t pending_cmd_id,
+                                    const void* audit_token,
+                                    size_t audit_token_len,
+                                    uint32_t *audited_err,
+                                    Audited__ExecuteRes **res);
