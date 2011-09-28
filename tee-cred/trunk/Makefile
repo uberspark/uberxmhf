@@ -1,4 +1,4 @@
-all : test
+all : main
 
 test :
 	cd tests ; make

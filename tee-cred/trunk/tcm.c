@@ -248,7 +248,7 @@ int main(int argc, char **argv)
   {
     char *val;
     tcm_err = tcm_db_get(&tcm_ctx,
-                         "key2",
+                         "key",
                          &val);
     if (tcm_err) {
       rv = 4;
