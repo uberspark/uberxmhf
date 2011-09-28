@@ -38,20 +38,21 @@
 
 typedef enum {
   AKV_ENONE=0,
-  AKV_EEXISTS,
-  AKV_ENOTFOUND,
-  AKV_EKV,
-  AKV_EBADAUDITEDCMD,
-  AKV_EBADCMDHANDLE,
-  AKV_EBADSTATE,
-  AKV_EDECODE, /* TZ Decoder returned an error */
-  AKV_EENCODE, /* TZ Encoder returned an error */
-  AKV_EPARAM, /* illegal params */
-  AKV_EBADKEY,
-  AKV_EBADCMD,
-  AKV_ENOMEM,
-  AKV_EAUDITED,
-  AKV_EBADAUTH,
+  AKV_EEXISTS=1,
+  AKV_ENOTFOUND=2,
+  AKV_EKV=3,
+  AKV_EBADAUDITEDCMD=4,
+  AKV_EBADCMDHANDLE=5,
+  AKV_EBADSTATE=6,
+  AKV_EDECODE=7, /* TZ Decoder returned an error */
+  AKV_EENCODE=8, /* TZ Encoder returned an error */
+  AKV_EPARAM=9, /* illegal params */
+  AKV_EBADKEY=10,
+  AKV_EBADCMD=11,
+  AKV_ENOMEM=12,
+  AKV_EAUDITED=13,
+  AKV_EPB=14,
+  AKV_EBADAUTH=15,
 } akv_err_t;
 
 #endif

@@ -4,7 +4,6 @@ message AddReq {
   required bytes val = 2;
 }
 message AddRes {
-  optional string err = 1;
 }
 
 message GetReq {

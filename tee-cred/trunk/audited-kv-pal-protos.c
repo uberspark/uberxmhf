@@ -33,50 +33,20 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#ifndef AUDITED_KV_H
-#define AUDITED_KV_H
-
-#include <stddef.h>
-#include <stdint.h>
-
-#include <tee-sdk/tz.h>
-#include <tee-sdk/tze.h>
-
+#include "audited-kv-pal.h"
 #include "proto-gend/audited.pb-c.h"
-#include "audited-kv-errs.h"
+const tze_pb_proto_t audited_protos[] = {
+  [AKVP_INIT] = {
+    .req_descriptor = &audited__init_req__descriptor,
+    .res_descriptor = &audited__init_res__descriptor,
+  },
+  [AKVP_START_AUDITED_CMD] = {
+    .req_descriptor = &audited__start_req__descriptor,
+    .res_descriptor = &audited__start_res__descriptor,
+  },
+  [AKVP_EXECUTE_AUDITED_CMD] = {
+    .req_descriptor = &audited__execute_req__descriptor,
+    .res_descriptor = &audited__execute_res__descriptor,
+  },
+};
 
-#define AKV_EPOCH_NONCE_MAX 256 /* FIXME - should pull from svcapi.h */
-#define AKV_AUDIT_STRING_MAX 1000 /* FIXME - can we even specify this? */
-
-typedef struct {
-  tze_dev_svc_sess_t tz_sess;
-} akv_ctx_t;
-int akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem);
-int akv_ctx_release(akv_ctx_t* ctx);
-
-typedef struct {
-  Audited__StartRes *audited;
-
-  akv_ctx_t* akv_ctx;
-} akv_cmd_ctx_t;
-void akv_cmd_ctx_release(akv_cmd_ctx_t *ctx);
-
-akv_err_t akv_db_add_begin(akv_ctx_t*  ctx,
-                           akv_cmd_ctx_t*  cmd_ctx,
-                           const char* key,
-                           const char* val);
-akv_err_t akv_db_add_execute(akv_cmd_ctx_t* ctx,
-                             const void* audit_token,
-                             size_t audit_token_len);
-
-
-int akv_begin_db_get(akv_ctx_t*  ctx,
-                     uint8_t*    epoch_nonce,
-                     size_t*     epoch_nonce_len,
-                     uint64_t*   epoch_offset,
-                     char*       audit_string,
-                     size_t*     audit_string_len,
-                     const char* key,
-                     char*       val,
-                     int         val_len);
-#endif

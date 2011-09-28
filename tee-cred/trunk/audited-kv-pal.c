@@ -47,6 +47,7 @@
 #include "audited-kv-pal-fns.h"
 #include "kv.h"
 #include "proto-gend/db.pb-c.h"
+#include "proto-gend/audited.pb-c.h"
 
 #define FREE_AND_NULL(x) do { free(x) ; x=NULL; } while(0)
 static bool did_init = false;
@@ -93,7 +94,7 @@ static struct {
   kv_ctx_t* kv_ctx;
 } akv_ctx;
 
-akv_err_t akvp_init(const char* audit_pub_pem)
+akv_err_t akvp_init(const Audited__InitReq *req, Audited__InitRes *res)
 {
   audited_err_t audited_err;
   akv_err_t rv;
@@ -103,7 +104,7 @@ akv_err_t akvp_init(const char* audit_pub_pem)
   }
   akv_ctx.kv_ctx = kv_ctx_new();
 
-  audited_err = audited_init(audit_pub_pem);
+  audited_err = audited_init(req->audit_pub_pem);
   rv = remap_err(audited_err, AKV_EAUDITED,
                  AUDITED_EBADKEY, AKV_EBADKEY,
                  0,0);
@@ -154,11 +155,8 @@ int akvp_db_add_begin_decode_req(void **vcont,
                                  size_t inbuf_len)
 {
   Db__AddReq *req=NULL;
-  void *inbuf_proto;
-  uint32_t inbuf_proto_len;
-  inbuf_proto = TZIDecodeArraySpace(inbuf, &inbuf_proto_len);
 
-  req = db__add_req__unpack(NULL, inbuf_proto_len, inbuf_proto);
+  req = db__add_req__unpack(NULL, inbuf_len, inbuf);
   *vcont=req;
   if(req)
     return 0;
@@ -214,11 +212,8 @@ int akvp_db_get_decode_req(void **vcont,
                            size_t inbuf_len)
 {
   Db__GetReq *req=NULL;
-  void *inbuf_proto;
-  uint32_t inbuf_proto_len;
-  inbuf_proto = TZIDecodeArraySpace(inbuf, &inbuf_proto_len);
 
-  req = db__get_req__unpack(NULL, inbuf_proto_len, inbuf_proto);
+  req = db__get_req__unpack(NULL, inbuf_len, inbuf);
   *vcont=req;
   if(req)
     return 0;

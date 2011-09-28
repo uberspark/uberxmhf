@@ -38,8 +38,10 @@
 
 #include <tee-sdk/tz.h>
 #include "audited-kv-errs.h"
+#include "proto-gend/audited.pb-c.h"
 
-akv_err_t akvp_init(const char*);
+akv_err_t akvp_init(const Audited__InitReq *req, Audited__InitRes *res);
+
 void akvp_release(void);
 
 int akvp_db_add_begin_decode_req(void **req,

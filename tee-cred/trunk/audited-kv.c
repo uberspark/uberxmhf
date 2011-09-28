@@ -39,10 +39,14 @@
 #include <tee-sdk/tz.h>
 #include <tee-sdk/tv.h>
 
+#include "kv.h"
+#include "audited.h"
+#include "audited-stubs.h"
 #include "audited-kv.h"
 #include "audited-kv-pal.h"
 
 #include "proto-gend/db.pb-c.h"
+#include "proto-gend/audited.pb-c.h"
 
 /* set to enable userspace mode for testing */
 #ifndef USERSPACE_ONLY
@@ -51,8 +55,7 @@
 
 int akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem)
 {
-  tz_return_t rv, serviceRv;
-  tz_operation_t op;
+  tz_return_t rv;
   bool registered_pal=false;
 
   /* register pal */
@@ -82,20 +85,26 @@ int akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem)
   }
 
   /* call init */
-  rv = TZOperationPrepareInvoke(&ctx->tz_sess.tzSession,
-                                AKVP_INIT,
-                                NULL,
-                                &op);
-  if (rv) {
-    goto out;
+  {
+    Audited__InitReq req = {
+      .base = PROTOBUF_C_MESSAGE_INIT (&audited__init_req__descriptor),
+      .audit_pub_pem = (char*)priv_key_pem,
+    };
+    Audited__InitRes *res;
+    tze_pb_err_t pb_err;
+    pb_err = audited_invoke(&ctx->tz_sess.tzSession,
+                            AKVP_INIT,
+                            (ProtobufCMessage*)&req,
+                            (ProtobufCMessage**)&res,
+                            &rv);
+    if (res) {
+      audited__init_res__free_unpacked(res, NULL);
+    }
+    if (pb_err) {
+      rv = AUDITED_EPB_ERR | (pb_err << 8);
+      goto out;
+    }
   }
-
-  rv = TZIEncodeF(&op, "%"TZI_ESTR, priv_key_pem);
-  if (rv) goto out;
-
-  rv = TZOperationPerform(&op, &serviceRv);
-  if (rv == TZ_ERROR_SERVICE)
-    rv = serviceRv;
 
  out:
   if (rv && registered_pal) {
@@ -112,157 +121,164 @@ int akv_ctx_release(akv_ctx_t* ctx)
   return rv;
 }
 
+/* tz_return_t */
+/* TZIPrepareEncodeF(tz_session_t *psSession, */
+/*                   tz_operation_t *psOp, */
+/*                   uint32_t cmd, */
+/*                   const char* str, ...) */
+/*   __attribute__ ((format (printf, 4, 5))); */
+/* tz_return_t */
+/* TZIPrepareEncodeF(tz_session_t *psSession, */
+/*                   tz_operation_t *psOp, */
+/*                   uint32_t cmd, */
+/*                   const char* str, ...) */
+/* { */
+/*   tz_return_t rv; */
+/*   va_list argp; */
+/*   va_start(argp, str); */
+/*   rv = TZOperationPrepareInvoke(psSession, */
+/*                                 cmd, */
+/*                                 NULL, */
+/*                                 psOp); */
+/*   if (rv) goto out; */
+/*   rv = vTZIEncodeF(psOp, str, argp); */
+/*  out: */
+/*   va_end(argp); */
+/*   return rv; */
+/* } */
 
+/* tz_return_t */
+/* TZIExecuteDecodeF(tz_operation_t *psOp, */
+/*                   tz_return_t *serviceReturn, */
+/*                   const char* str, */
+/*                   ...) */
+/*   __attribute__ ((format (scanf, 3, 4))); */
+/* tz_return_t */
+/* TZIExecuteDecodeF(tz_operation_t *psOp, */
+/*                   tz_return_t *serviceReturn, */
+/*                   const char* str, */
+/*                   ...) */
+/* { */
+/*   tz_return_t rv; */
+/*   va_list argp; */
+/*   va_start(argp, str); */
 
-tz_return_t
-TZIPrepareEncodeF(tz_session_t *psSession,
-                  tz_operation_t *psOp,
-                  uint32_t cmd,
-                  const char* str, ...)
-  __attribute__ ((format (printf, 4, 5)));
-tz_return_t
-TZIPrepareEncodeF(tz_session_t *psSession,
-                  tz_operation_t *psOp,
-                  uint32_t cmd,
-                  const char* str, ...)
-{
-  tz_return_t rv;
-  va_list argp;
-  va_start(argp, str);
-  rv = TZOperationPrepareInvoke(psSession,
-                                cmd,
-                                NULL,
-                                psOp);
-  if (rv) goto out;
-  rv = vTZIEncodeF(psOp, str, argp);
- out:
-  va_end(argp);
-  return rv;
-}
-
-tz_return_t
-TZIExecuteDecodeF(tz_operation_t *psOp,
-                  tz_return_t *serviceReturn,
-                  const char* str,
-                  ...)
-  __attribute__ ((format (scanf, 3, 4)));
-tz_return_t
-TZIExecuteDecodeF(tz_operation_t *psOp,
-                  tz_return_t *serviceReturn,
-                  const char* str,
-                  ...)
-{
-  tz_return_t rv;
-  va_list argp;
-  va_start(argp, str);
-
-  rv = TZOperationPerform(psOp, serviceReturn);
-  if (rv) goto out;
-  rv = vTZIDecodeF(psOp, str, argp);
- out:
-  va_end(argp);
-  return rv;
-}
-
-tz_return_t start_audited_cmd_encode(tz_operation_t *psOp, uint32_t cmd)
-{
-  tz_return_t rv;
-  rv = TZIEncodeF(psOp, "%"TZI_EU32, cmd);
-  return rv;
- }
-
-tz_return_t start_audited_cmd_decode(tz_operation_t *psOp,
-                                     uint32_t *pending_cmd,
-                                     void** audit_nonce, uint32_t *audit_nonce_len,
-                                     void** audit_string, uint32_t *audit_string_len)
-{
-  tz_return_t rv;
-  rv = TZIDecodeF(psOp,
-                  "%"TZI_DU32 "%"TZI_DARRSPC "%"TZI_DARRSPC,
-                  pending_cmd,
-                  audit_nonce, audit_nonce_len,
-                  audit_string, audit_string_len);
-  return rv;
-}
+/*   rv = TZOperationPerform(psOp, serviceReturn); */
+/*   if (rv) goto out; */
+/*   rv = vTZIDecodeF(psOp, str, argp); */
+/*  out: */
+/*   va_end(argp); */
+/*   return rv; */
+/* } */
 
 void akv_cmd_ctx_release(akv_cmd_ctx_t *ctx)
 {
-  TZOperationRelease(&ctx->tzStartOp);
+  if (ctx->audited) {
+    audited__start_res__free_unpacked(ctx->audited, NULL);
+    ctx->audited=NULL;
+  }
 }
 
-int akv_db_add_begin(akv_ctx_t*  ctx,
-                     akv_cmd_ctx_t* cmd_ctx,
-                     const char* key,
-                     const char* val)
+akv_err_t akv_db_add_begin(akv_ctx_t*  ctx,
+                           akv_cmd_ctx_t* cmd_ctx,
+                           const char* key,
+                           const char* val)
 {
-  tz_return_t serviceReturn;
-  int rv=0;
-  Db__AddReq req = DB__ADD_REQ__INIT;
-  uint32_t len;
-  void *buf;
+  akv_err_t rv=0;
+  Db__AddReq add_req;
+  void *add_req_packed=NULL;
+  uint32_t add_req_packed_len;
+  Audited__StartRes *start_res=NULL;
 
   /* FIXME- is there a way to avoid having to cast
      away the const here? */
-  req.key = (char*)key;
-  req.val.data = (void*)val;
-  req.val.len = strlen(val);
+  add_req = (Db__AddReq) {
+    .base = PROTOBUF_C_MESSAGE_INIT (&db__add_req__descriptor),
+    .key = (char*)key,
+    .val = (ProtobufCBinaryData) {
+      .data = (void*)val,
+      .len = strlen(val),
+    }
+  };
+  add_req_packed_len = db__add_req__get_packed_size(&add_req);
+  add_req_packed=malloc(add_req_packed_len);
+  if(!add_req_packed) {
+    rv = AKV_ENOMEM;
+    goto out;
+  }
+  db__add_req__pack(&add_req, add_req_packed);
 
-  memset(cmd_ctx, 0, sizeof(*cmd_ctx));
-  cmd_ctx->akv_ctx = ctx;
+  *cmd_ctx = (akv_cmd_ctx_t)
+    { .akv_ctx = ctx };
 
-  rv = TZIPrepareEncodeF(&ctx->tz_sess.tzSession,
-                         &cmd_ctx->tzStartOp,
-                         AKVP_START_AUDITED_CMD,
-                         "%"TZI_EU32,
-                         AKVP_DB_ADD);
-
-  len = db__add_req__get_packed_size(&req);
-  buf = TZEncodeArraySpace(&cmd_ctx->tzStartOp, len);
-  db__add_req__pack(&req, buf);
-  /* rv = TZIEncodeF(&cmd_ctx->tzStartOp, */
-  /*                 "%"TZI_ESTR "%"TZI_ESTR, */
-  /*                 key, val); */
-
-  rv = TZIExecuteDecodeF(&cmd_ctx->tzStartOp,
-                         &serviceReturn,
-                         "%"TZI_DU32 "%"TZI_DARRSPC "%"TZI_DARRSPC,
-                         &cmd_ctx->cmd_id,
-                         &cmd_ctx->audit_nonce, &cmd_ctx->audit_nonce_len,
-                         &cmd_ctx->audit_string, &cmd_ctx->audit_string_len);
-
-  if (rv != TZ_SUCCESS) {
-    if (rv == TZ_ERROR_SERVICE) {
-      rv = serviceReturn;
+  {
+    Audited__StartReq start_req = {
+      .base = PROTOBUF_C_MESSAGE_INIT (&audited__start_req__descriptor),
+      .cmd = KV_ADD,
+      .cmd_input = (ProtobufCBinaryData) {
+        .data = add_req_packed,
+        .len = add_req_packed_len,
+      }
+    };
+    tze_pb_err_t tze_pb_err;
+    audited_err_t audited_err;
+    tze_pb_err = audited_invoke(&ctx->tz_sess.tzSession,
+                                AKVP_START_AUDITED_CMD,
+                                (ProtobufCMessage*)&start_req,
+                                (ProtobufCMessage**)&start_res,
+                                &audited_err);
+    if (audited_err) {
+      rv = AKV_EAUDITED | (audited_err << 8);
+      goto out;
+    } else if (tze_pb_err) {
+      rv = AKV_EPB | (tze_pb_err << 8);
+      goto out;
     }
   }
+
+  *cmd_ctx = (akv_cmd_ctx_t)
+    { .akv_ctx = ctx,
+      .audited = start_res,
+    };
+
+ out:
   return rv;
 }
 
-int akv_db_add_execute(akv_cmd_ctx_t* ctx,
-                       const void* audit_token,
-                       size_t audit_token_len)
+akv_err_t akv_db_add_execute(akv_cmd_ctx_t* ctx,
+                             const void* audit_token,
+                             size_t audit_token_len)
 {
-  tz_operation_t tzOp;
-  tz_return_t serviceReturn;
-  int rv=0;
-
-  rv = TZIPrepareEncodeF(&ctx->akv_ctx->tz_sess.tzSession,
-                         &tzOp,
-                         AKVP_EXECUTE_AUDITED_CMD,
-                         "%"TZI_EU32 "%"TZI_EARR,
-                         ctx->cmd_id,
-                         audit_token, audit_token_len);
-  rv = TZOperationPerform(&tzOp,
-                          &serviceReturn);
-
-  if (rv != TZ_SUCCESS) {
-    if (rv == TZ_ERROR_SERVICE) {
-      rv = serviceReturn;
+  akv_err_t rv=0;
+  tze_pb_err_t tze_pb_err;
+  audited_err_t audited_err;
+  Audited__ExecuteRes *res=NULL;
+  Audited__ExecuteReq req = (Audited__ExecuteReq) {
+    .base = PROTOBUF_C_MESSAGE_INIT (&audited__execute_req__descriptor),
+    .pending_cmd_id = ctx->audited->res->pending_cmd_id,
+    .audit_token = (ProtobufCBinaryData) {
+      .data = (void*)audit_token,
+      .len = audit_token_len,
     }
+  };
+
+  tze_pb_err = audited_invoke(&ctx->akv_ctx->tz_sess.tzSession,
+                              AKVP_EXECUTE_AUDITED_CMD,
+                              (ProtobufCMessage*)&req,
+                              (ProtobufCMessage**)&res,
+                              &audited_err);
+  if (audited_err) {
+    rv = AKV_EAUDITED | (audited_err << 8);
+    goto out;
+  } else if (tze_pb_err) {
+    rv = AKV_EPB | (tze_pb_err << 8);
     goto out;
   }
 
+  if(res) {
+    audited__execute_res__free_unpacked(res, NULL);
+    res=NULL;
+  }
  out:
-  TZOperationRelease(&tzOp);
   return rv;
 }

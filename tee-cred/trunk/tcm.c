@@ -86,10 +86,10 @@ tcm_err_t tcm_db_add(tcm_ctx_t* tcm_ctx,
   }
 
   audit_err = audit_get_token(tcm_ctx->audit_ctx,
-                              akv_cmd_ctx.audit_nonce,
-                              akv_cmd_ctx.audit_nonce_len,
-                              akv_cmd_ctx.audit_string,
-                              akv_cmd_ctx.audit_string_len,
+                              akv_cmd_ctx.audited->res->audit_nonce.data,
+                              akv_cmd_ctx.audited->res->audit_nonce.len,
+                              akv_cmd_ctx.audited->res->audit_string,
+                              strlen(akv_cmd_ctx.audited->res->audit_string),
                               audit_token,
                               &audit_token_len);
   if (audit_err) {

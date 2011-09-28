@@ -37,106 +37,38 @@
 
 #include <tee-sdk/tzmarshal.h>
 
+#include <google/protobuf-c/protobuf-c.h>
+
+#include "proto-gend/audited.pb-c.h"
 #include "audited-kv-pal.h"
 #include "audited-kv-pal-fns.h"
 #include "audited.h"
 
-static akv_err_t akvp_init_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf);
-static audited_err_t akvp_audited_start_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf);
-static audited_err_t akvp_audited_execute_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf);
+/* would be nice to extend protoc compiler to auto-generate this file
+   this from service description */
+
+static const tze_pb_imp_t audited_imps[] = {
+  [AKVP_INIT] = {
+    .execute=(tze_pb_execute_fn*)akvp_init,
+    .release_res=NULL,
+  },
+  [AKVP_START_AUDITED_CMD] = {
+    .execute=(tze_pb_execute_fn*)audited_start_cmd,
+    .release_res=NULL,
+  },
+  [AKVP_EXECUTE_AUDITED_CMD] = {
+    .execute=(tze_pb_execute_fn*)audited_execute_cmd,
+    .release_res=(tze_pb_release_res_fn*)audited_execute_cmd_release_res,
+  },
+};
 
 void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
-  switch(uiCommand) {
-  case AKVP_INIT:
-    *puiRv = akvp_init_unmarshal(psInBuf, psOutBuf);
-    break;
+  *puiRv = tze_pb_svc(audited_protos,
+                      audited_imps,
+                      AKVP_NUM, 
 
-  case AKVP_START_AUDITED_CMD:
-    *puiRv = akvp_audited_start_unmarshal(psInBuf, psOutBuf);
-    break;
-
-  case AKVP_EXECUTE_AUDITED_CMD:
-    *puiRv = akvp_audited_execute_unmarshal(psInBuf, psOutBuf);
-    break;
-  default:
-    *puiRv = AKV_EBADCMD;
-    break;
-  }
-}
-
-akv_err_t akvp_init_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf)
-{
-  const char *audit_pub_pem;
-  uint32_t audit_pub_len;
-  akv_err_t rv;
-
-  if (TZIDecodeBufF(psInBuf, "%"TZI_DARRSPC, &audit_pub_pem, &audit_pub_len)) {
-    rv=AKV_EDECODE;
-    goto out;
-  }
-
-  if (audit_pub_pem[audit_pub_len-1] != '\0') {
-    rv=AKV_EPARAM;
-    goto out;
-  }
-      
-  rv = akvp_init(audit_pub_pem);
-
- out:
-  return rv;
-}
-
-audited_err_t akvp_audited_start_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf)
-{
-  uint32_t audited_cmd;
-  char *audit_string=NULL;
-  uint32_t pending_cmd_id;
-  audited_err_t rv;
-  void *audit_nonce;
-  uint32_t audit_nonce_len;
-
-  audited_cmd = TZIDecodeUint32(psInBuf);
-
-  if(TZIDecodeGetError(psInBuf)) {
-    rv = AUDITED_EDECODE;
-    goto out;
-  }
-
-  rv = audited_start_cmd(audited_cmd,
-                         psInBuf,
-                         &pending_cmd_id,
-                         &audit_string,
-                         &audit_nonce,
-                         &audit_nonce_len);
-  if (rv) {
-    goto out;
-  }
-
-  TZIEncodeUint32(psOutBuf, pending_cmd_id);
-  TZIEncodeArray(psOutBuf, audit_nonce, audit_nonce_len);
-  TZIEncodeArray(psOutBuf, audit_string, strlen(audit_string)+1);
-
- out:
-  return rv;
-}
-
-audited_err_t akvp_audited_execute_unmarshal(struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf)
-{
-  void *audit_token;
-  uint32_t audit_token_len;
-  uint32_t cmd_id;
-  audited_err_t rv;
-
-  cmd_id = TZIDecodeUint32(psInBuf);
-  audit_token = TZIDecodeArraySpace(psInBuf, &audit_token_len);
-  if (TZIDecodeGetError(psInBuf)) {
-    rv = AUDITED_EDECODE;
-    goto out;
-  }
-
-  rv = audited_execute_cmd(cmd_id, audit_token, audit_token_len, psOutBuf);
-
- out:
-  return rv;
+                      uiCommand,
+                      psInBuf,
+                      psOutBuf);
 }

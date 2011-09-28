@@ -37,6 +37,7 @@
 #define AUDITED_H
 
 #include <tee-sdk/tzmarshal.h>
+#include "proto-gend/audited.pb-c.h"
 
 typedef enum {
   AUDITED_ENONE=0,
@@ -51,6 +52,8 @@ typedef enum {
   AUDITED_EDECODE=9,
   AUDITED_EAUDITSTRING=10,
   AUDITED_ESAVE=11,
+
+  AUDITED_EPB_ERR=12,
 } audited_err_t;
 
 typedef int (audited_decode_req_fn)(void **, void *, size_t);
@@ -94,15 +97,20 @@ audited_pending_cmd_t* audited_pending_cmd_of_id(int i);
 int audited_save_pending_cmd(audited_cmd_t *fns, void *req, char *audit_string);
 audited_err_t audited_check_cmd_auth(audited_pending_cmd_t *cmd, const void* audit_token, size_t audit_token_len);
 
-audited_err_t audited_start_cmd(uint32_t audited_cmd,
-                                tzi_encode_buffer_t *psInBuf,
-                                uint32_t *pending_cmd_id,
-                                char **audit_string,
-                                void **audit_nonce,
-                                uint32_t *audit_nonce_len);
-audited_err_t audited_execute_cmd(uint32_t cmd_id,
-                                  void *audit_token,
-                                  size_t audit_token_len,
-                                  tzi_encode_buffer_t *psOutBuf);
+audited_err_t audited_start_cmd(const Audited__StartReq *startreq,
+                                Audited__StartRes *startres);
+audited_err_t audited_execute_cmd(const Audited__ExecuteReq *exec_req,
+                                  Audited__ExecuteRes *exec_res);
+void audited_execute_cmd_release_res(Audited__ExecuteRes *exec_res);
+/* audited_err_t audited_start_cmd(uint32_t audited_cmd, */
+/*                                 tzi_encode_buffer_t *psInBuf, */
+/*                                 uint32_t *pending_cmd_id, */
+/*                                 char **audit_string, */
+/*                                 void **audit_nonce, */
+/*                                 uint32_t *audit_nonce_len); */
+/* audited_err_t audited_execute_cmd(uint32_t cmd_id, */
+/*                                   void *audit_token, */
+/*                                   size_t audit_token_len, */
+/*                                   tzi_encode_buffer_t *psOutBuf); */
 
 #endif

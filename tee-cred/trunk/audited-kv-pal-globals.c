@@ -36,10 +36,11 @@
 #include "audited-kv-pal-fns.h"
 #include "audited-kv-pal.h"
 #include "audited.h"
+#include "kv.h"
 
 /* required by audited module */
 audited_cmd_t audited_cmds[] = {
-  [AKVP_DB_ADD] = {
+  [KV_ADD] = {
     .decode_req=akvp_db_add_begin_decode_req,
     .audit_string=akvp_db_add_audit_string,
     .execute=akvp_db_add_execute,
@@ -48,7 +49,7 @@ audited_cmd_t audited_cmds[] = {
     .release_req=akvp_db_add_release_req,
     .release_res=akvp_db_add_release_res,
   },
-  [AKVP_DB_GET] = {
+  [KV_GET] = {
     .decode_req=akvp_db_get_decode_req,
     .audit_string=akvp_db_get_audit_string,
     .execute=akvp_db_get_execute,

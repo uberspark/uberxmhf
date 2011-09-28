@@ -1,0 +1,35 @@
+package audited;
+
+message InitReq {
+  required string audit_pub_pem = 1;
+}
+message InitRes {
+}
+
+message StartReq {
+  required uint32 cmd = 1;
+  required bytes cmd_input = 2;
+}
+message StartRes {
+  required uint32 svc_err = 1;
+  message Res {
+    required uint32 pending_cmd_id = 1;
+    required bytes audit_nonce = 2;
+    required string audit_string = 3;
+  };
+  optional Res res = 2;
+}
+
+message ExecuteReq {
+  required uint32 pending_cmd_id = 1;
+  required bytes audit_token = 2;
+}
+message ExecuteRes {
+  required uint32 svc_err = 1;
+  optional bytes cmd_output = 2;
+}
+
+service AuditService {
+  rpc Start (StartReq) returns (StartRes);
+  rpc Execute (ExecuteReq) returns (ExecuteRes);
+}

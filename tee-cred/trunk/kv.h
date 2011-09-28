@@ -41,6 +41,12 @@
 struct kv_ctx_s;
 typedef struct kv_ctx_s kv_ctx_t;
 
+enum kv_cmds {
+  KV_ADD,
+  KV_GET,
+};
+
+
 typedef enum {
   KV_ENONE=0,
   KV_ENOTFOUND,

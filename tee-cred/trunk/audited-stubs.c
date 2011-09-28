@@ -33,45 +33,21 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#ifndef AUDITED_KV_PAL
-#define AUDITED_KV_PAL
+#include "audited-stubs.h"
+#include "audited-kv-pal.h"
 
-#include <stdint.h>
-#include <stdbool.h>
+tze_pb_err_t audited_invoke(tz_session_t *session,
+                            uint32_t uiCommand,
+                            const ProtobufCMessage *req,
+                            ProtobufCMessage **res,
+                            uint32_t *svc_err)
+{
+  return tze_pb_invoke(audited_protos,
+                       AKVP_NUM,
 
-#include <tee-sdk/tv.h>
-#include <tee-sdk/tz.h>
-#include <tee-sdk/tzmarshal.h>
-
-#include "tze-pb.h"
-
-#include "audited-kv-errs.h"
-
-enum akvp_cmds {
-  AKVP_INIT=0,            /* audit-pubkey, password -> () */
-  AKVP_START_AUDITED_CMD=1,
-  AKVP_EXECUTE_AUDITED_CMD=2,
-
-  AKVP_NUM=3,
-};
-  /* AKVP_AUDIT_GET_NONCE, /\* ()                -> random nonce *\/ */
-  /* AKVP_AUDIT_EXECUTE,   /\* random nonce, cmd -> f(cmd) *\/ */
-
-  /* AKVP_DB_ADD,          /\* key, val          -> ()  *\/ */
-  /* AKVP_DB_GET,          /\* key               -> val *\/ */
-  /* AKVP_DB_DEL,          /\* key               -> () *\/ */
-  /* AKVP_DB_EXPORT,       /\* ()                -> seal(db) *\/ */
-  /* AKVP_DB_IMPORT,       /\* seal(db)          -> () *\/ */
-  /* AKVP_DB_MIGRATE,      /\* dest-pubkey, cert-chain -> E(db) *\/ */
-  
-  /* AKVP_PW_LOCK,         /\* ()                -> () *\/ */
-  /* AKVP_PW_UNLOCK,       /\* password          -> () *\/ */
-  /* AKVP_PW_CHANGE,       /\* oldpass, newpass  -> () *\/ */
-/* }; */
-
-
-extern const tze_pb_proto_t audited_protos[];
-
-void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv);
-
-#endif
+                       session,
+                       uiCommand,
+                       req,
+                       res,
+                       svc_err);
+}

@@ -46,6 +46,7 @@
 #include <openssl/engine.h>
 #include <openssl/sha.h>
 
+#include "proto-gend/audited.pb-c.h"
 #include "audited.h"
 
 static audited_pending_cmd_t pending_cmds[AUDITED_MAX_PENDING];
@@ -179,111 +180,139 @@ audited_err_t audited_check_cmd_auth(audited_pending_cmd_t *cmd, const void* aud
   return rv;
 }
 
-audited_err_t audited_start_cmd(uint32_t audited_cmd,
-                                tzi_encode_buffer_t *psInBuf,
-                                uint32_t *pending_cmd_id,
-                                char **audit_string,
-                                void **audit_nonce,
-                                uint32_t *audit_nonce_len)
+audited_err_t audited_start_cmd(const Audited__StartReq *startreq,
+                                Audited__StartRes *startres)
 {
-  audited_err_t rv;
+  audited_err_t rv=0;
   void *req=NULL;
   audited_cmd_t *fns=NULL;
-
-  *audit_string=NULL;
-  *audit_nonce=NULL;
+  char *audit_string=NULL;
+  uint32_t pending_cmd_id;
+  bool saved_pending_cmd=false;
 
   if(!did_init) {
     rv = AUDITED_EBADSTATE;
     goto out;
   }
 
-  if (audited_cmd >= audited_cmds_num) {
+  if (startreq->cmd >= audited_cmds_num) {
     rv = AUDITED_EBADAUDITEDCMD;
     goto out;
   }
-  fns = &audited_cmds[audited_cmd];
+  fns = &audited_cmds[startreq->cmd];
   assert(fns);
 
   assert(fns->decode_req);
-  rv = fns->decode_req(&req, psInBuf, psInBuf->uiSize + sizeof(tzi_encode_buffer_t));
-  if (rv) {
-    rv = AUDITED_EDECODE;
+  startres->svc_err = fns->decode_req(&req,
+                                      startreq->cmd_input.data,
+                                      startreq->cmd_input.len);
+  if (startres->svc_err) {
     goto out;
   }
 
   assert(fns->audit_string);
-  rv = fns->audit_string(req, audit_string);
+  startres->svc_err = fns->audit_string(req,
+                                        &audit_string);
   if (rv) {
-    rv = AUDITED_EAUDITSTRING;
     goto out;
   }
 
-  *pending_cmd_id = audited_save_pending_cmd(fns, req, *audit_string);
-  if (*pending_cmd_id < 0) {
+  pending_cmd_id = audited_save_pending_cmd(fns, req, audit_string);
+  if (pending_cmd_id < 0) {
     rv = AUDITED_ESAVE;
     goto out;
   }
+  saved_pending_cmd=true;
 
-  *audit_string = pending_cmds[*pending_cmd_id].audit_string;
-  *audit_nonce = pending_cmds[*pending_cmd_id].audit_nonce;
-  *audit_nonce_len = pending_cmds[*pending_cmd_id].audit_nonce_len;
+  startres->res = malloc(sizeof(Audited__StartRes__Res));
+  if(!startres->res) {
+    rv = AUDITED_ENOMEM;
+    goto out;
+  }
+  *(startres->res) = (Audited__StartRes__Res)
+    {
+      .base = PROTOBUF_C_MESSAGE_INIT (&audited__start_res__res__descriptor),
+      .pending_cmd_id = pending_cmd_id,
+      .audit_nonce.data = pending_cmds[pending_cmd_id].audit_nonce,
+      .audit_nonce.len = pending_cmds[pending_cmd_id].audit_nonce_len,
+      .audit_string = audit_string,
+    };
 
  out:
-  if (rv) {
-    free(*audit_string);
-    *audit_string=NULL;
-    free(*audit_nonce);
-    *audit_nonce=NULL;
-    if(fns && fns->release_req && req) {
-      fns->release_req(req);
+  if (rv || startres->svc_err) {
+    if (saved_pending_cmd) {
+      audited_release_pending_cmd_id(pending_cmd_id);
+    } else {
+      free(audit_string);
+      if(fns && fns->release_req && req) {
+        fns->release_req(req);
+      }
     }
-    req = NULL;
+    free(startres->res);
+    startres->res=NULL;
   }
   return rv;
 }
 
-audited_err_t audited_execute_cmd(uint32_t cmd_id,
-                                  void *audit_token,
-                                  size_t audit_token_len,
-                                  tzi_encode_buffer_t *psOutBuf)
+audited_err_t audited_execute_cmd(const Audited__ExecuteReq *exec_req,
+                                  Audited__ExecuteRes *exec_res)
 {
   audited_err_t rv;
   audited_pending_cmd_t *cmd;
   void *res=NULL;
-  void *outbuf;
-  size_t outbuf_len;
 
   if(!did_init) {
     rv = AUDITED_EBADSTATE;
     goto out;
   }
 
-  if (!(cmd = audited_pending_cmd_of_id(cmd_id))) {
+  if (!(cmd = audited_pending_cmd_of_id(exec_req->pending_cmd_id))) {
     rv = AUDITED_EBADCMDHANDLE;
     goto out;
   }
 
   rv = audited_check_cmd_auth(cmd,
-                              audit_token,
-                              audit_token_len);
+                              exec_req->audit_token.data,
+                              exec_req->audit_token.len);
   if (rv) {
-    goto out;
+    goto out_release_pending_cmd;
   }
 
   assert(cmd->fns);
 
   assert(cmd->fns->execute);
-  rv = cmd->fns->execute(cmd->req, &res);
+  exec_res->svc_err = cmd->fns->execute(cmd->req, &res);
+  if(exec_res->svc_err) {
+    goto out_release_pending_cmd;
+  }
 
   assert(cmd->fns->encode_res_len);
-  outbuf_len = cmd->fns->encode_res_len(res);
-  outbuf = TZIEncodeArraySpace(psOutBuf, outbuf_len);
+  exec_res->cmd_output.len = cmd->fns->encode_res_len(res);
+  exec_res->cmd_output.data = malloc(exec_res->cmd_output.len);
+  if(!exec_res->cmd_output.data) {
+    rv = AUDITED_ENOMEM;
+    goto out_release_pending_cmd;
+  }
   assert(cmd->fns->encode_res);
-  rv = cmd->fns->encode_res(res, outbuf);
+  exec_res->svc_err = cmd->fns->encode_res(res, exec_res->cmd_output.data);
+  if(exec_res->svc_err) {
+    goto out_release_pending_cmd;
+  }
+  exec_res->has_cmd_output=true;
 
-  audited_release_pending_cmd_id(cmd_id);
+ out_release_pending_cmd:
+  audited_release_pending_cmd_id(exec_req->pending_cmd_id);
 
+  if(res) {
+    cmd->fns->release_res(res);
+    res=NULL;
+  }
  out:
   return rv;
 }
+void audited_execute_cmd_release_res(Audited__ExecuteRes *exec_res)
+{
+  free(exec_res->cmd_output.data);
+  exec_res->cmd_output.data=NULL;
+}
+
