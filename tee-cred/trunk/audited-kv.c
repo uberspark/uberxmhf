@@ -60,20 +60,17 @@ int akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem)
 
   /* register pal */
   {
-    tv_device_open_options_t tv_dev_options =
-      (tv_device_open_options_t) {
+    tv_device_open_options_t tv_dev_options = {
       .userspace_only = USERSPACE_ONLY,
     };
-    tze_svc_load_and_open_options_t load_options =
-      (tze_svc_load_and_open_options_t) {
+    tze_svc_load_and_open_options_t load_options = {
       .pkDeviceInit = &tv_dev_options,
     };
     struct tv_pal_sections scode_info;
-    tv_service_t pal = 
-      {
-        .sPageInfo = &scode_info,
-        .pEntry = audited_kv_pal,
-      };
+    tv_service_t pal = {
+      .sPageInfo = &scode_info,
+      .pEntry = audited_kv_pal,
+    };
     tv_pal_sections_init(&scode_info,
                          PAGE_SIZE, 10*PAGE_SIZE);
     rv = TZESvcLoadAndOpen(&ctx->tz_sess,
