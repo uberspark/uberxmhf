@@ -36,19 +36,19 @@
 #include "tze-pb.h"
 #include "proto-gend/audited.pb-c.h"
 
-tze_pb_err_t audited_invoke(tz_session_t *session,
+tz_return_t audited_invoke(tz_session_t *session,
                             uint32_t uiCommand,
                             const ProtobufCMessage *req,
                             ProtobufCMessage **res,
                             uint32_t *svc_err);
-tze_pb_err_t audited_invoke_start(tz_session_t *session,
-                                  uint32_t audited_cmd,
-                                  const ProtobufCMessage *audited_req,
-                                  Audited__StartRes **start_res,
-                                  uint32_t *audited_err);
-tze_pb_err_t audited_invoke_execute(tz_session_t *session,
-                                    uint32_t pending_cmd_id,
-                                    const void* audit_token,
-                                    size_t audit_token_len,
-                                    uint32_t *audited_err,
-                                    Audited__ExecuteRes **res);
+tz_return_t audited_invoke_start(tz_session_t *session,
+                                 uint32_t audited_cmd,
+                                 const ProtobufCMessage *audited_req,
+                                 Audited__StartRes **start_res,
+                                 uint32_t *audited_err);
+tz_return_t audited_invoke_execute(tz_session_t *session,
+                                   uint32_t pending_cmd_id,
+                                   const void* audit_token,
+                                   size_t audit_token_len,
+                                   uint32_t *audited_err,
+                                   Audited__ExecuteRes **res);

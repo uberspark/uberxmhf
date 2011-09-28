@@ -38,11 +38,11 @@
 #include "audited-kv-pal.h"
 #include "proto-gend/audited.pb-c.h"
 
-tze_pb_err_t audited_invoke(tz_session_t *session,
-                            uint32_t uiCommand,
-                            const ProtobufCMessage *req,
-                            ProtobufCMessage **res,
-                            uint32_t *svc_err)
+tz_return_t audited_invoke(tz_session_t *session,
+                           uint32_t uiCommand,
+                           const ProtobufCMessage *req,
+                           ProtobufCMessage **res,
+                           uint32_t *svc_err)
 {
   return tze_pb_invoke(audited_protos,
                        AKVP_NUM,
@@ -54,16 +54,16 @@ tze_pb_err_t audited_invoke(tz_session_t *session,
                        svc_err);
 }
 
-tze_pb_err_t audited_invoke_start(tz_session_t *session,
-                                  uint32_t audited_cmd,
-                                  const ProtobufCMessage *audited_req,
-                                  Audited__StartRes **start_res,
-                                  uint32_t *audited_err)
+tz_return_t audited_invoke_start(tz_session_t *session,
+                                 uint32_t audited_cmd,
+                                 const ProtobufCMessage *audited_req,
+                                 Audited__StartRes **start_res,
+                                 uint32_t *audited_err)
 {
   Audited__StartReq start_req;
   size_t audited_req_packed_len;
   void *audited_req_packed=NULL;
-  tze_pb_err_t rv;
+  tz_return_t rv;
 
   audited_req_packed_len = protobuf_c_message_get_packed_size(audited_req);
   audited_req_packed = malloc(audited_req_packed_len);
@@ -91,12 +91,12 @@ tze_pb_err_t audited_invoke_start(tz_session_t *session,
   return rv;
 }
 
-tze_pb_err_t audited_invoke_execute(tz_session_t *session,
-                                    uint32_t pending_cmd_id,
-                                    const void* audit_token,
-                                    size_t audit_token_len,
-                                    uint32_t *audited_err,
-                                    Audited__ExecuteRes **res)
+tz_return_t audited_invoke_execute(tz_session_t *session,
+                                   uint32_t pending_cmd_id,
+                                   const void* audit_token,
+                                   size_t audit_token_len,
+                                   uint32_t *audited_err,
+                                   Audited__ExecuteRes **res)
 {
   Audited__ExecuteReq req = (Audited__ExecuteReq) {
     .base = PROTOBUF_C_MESSAGE_INIT (&audited__execute_req__descriptor),
@@ -106,7 +106,7 @@ tze_pb_err_t audited_invoke_execute(tz_session_t *session,
       .len = audit_token_len,
     },
   };
-  tze_pb_err_t rv;
+  tz_return_t rv;
 
   rv = audited_invoke(session,
                       AKVP_EXECUTE_AUDITED_CMD,

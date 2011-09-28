@@ -88,7 +88,7 @@ int akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem)
       .audit_pub_pem = (char*)priv_key_pem,
     };
     Audited__InitRes *res;
-    tze_pb_err_t pb_err;
+    tz_return_t pb_err;
     pb_err = audited_invoke(&ctx->tz_sess.tzSession,
                             AKVP_INIT,
                             (ProtobufCMessage*)&req,
@@ -132,20 +132,20 @@ static akv_err_t akv_invoke_start(akv_ctx_t* ctx,
                                   const ProtobufCMessage *audited_req)
 {
   akv_err_t rv=0;
-  tze_pb_err_t tze_pb_err;
+  tz_return_t tzrv;
   audited_err_t audited_err;
   Audited__StartRes *start_res=NULL;
   
-  tze_pb_err = audited_invoke_start(&ctx->tz_sess.tzSession,
-                                    audited_cmd,
-                                    audited_req,
-                                    &start_res,
-                                    &audited_err);
-  if (audited_err) {
-    rv = AKV_EAUDITED | (audited_err << 8);
+  tzrv = audited_invoke_start(&ctx->tz_sess.tzSession,
+                              audited_cmd,
+                              audited_req,
+                              &start_res,
+                              &audited_err);
+  if (tzrv) {
+    rv = AKV_ETZ | (tzrv << 8);
     goto out;
-  } else if (tze_pb_err) {
-    rv = AKV_EPB | (tze_pb_err << 8);
+  } else if (audited_err) {
+    rv = AKV_EAUDITED | (audited_err << 8);
     goto out;
   }
 
@@ -164,25 +164,25 @@ static akv_err_t akv_execute(akv_cmd_ctx_t* ctx,
                              const ProtobufCMessageDescriptor* desc,
                              ProtobufCMessage** res)
 {
-  tze_pb_err_t tze_pb_err;
+  tz_return_t tzrv;
   audited_err_t audited_err;
   Audited__ExecuteRes *exec_res=NULL;
   akv_err_t rv=0;
 
   *res=NULL;
 
-  tze_pb_err = audited_invoke_execute(&ctx->akv_ctx->tz_sess.tzSession,
-                                      ctx->audited->res->pending_cmd_id,
-                                      audit_token,
-                                      audit_token_len,
-                                      &audited_err,
-                                      &exec_res);
+  tzrv = audited_invoke_execute(&ctx->akv_ctx->tz_sess.tzSession,
+                                ctx->audited->res->pending_cmd_id,
+                                audit_token,
+                                audit_token_len,
+                                &audited_err,
+                                &exec_res);
 
   if (audited_err) {
     rv = AKV_EAUDITED | (audited_err << 8);
     goto out;
-  } else if (tze_pb_err) {
-    rv = AKV_EPB | (tze_pb_err << 8);
+  } else if (tzrv) {
+    rv = AKV_EPB | (tzrv << 8);
     goto out;
   }
 

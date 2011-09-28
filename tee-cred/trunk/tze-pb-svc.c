@@ -37,78 +37,129 @@
 #include <tee-sdk/tzmarshal.h>
 #include "tze-pb.h"
 
-tze_pb_err_t tze_pb_svc(const tze_pb_proto_t protos[],
-                        const tze_pb_imp_t imps[],
-                        uint32_t num_svcs, 
-                        uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf)
+/* XXX consider following TZ convention of returning void and setting
+   the encoder error-state? */
+
+tz_return_t TZIDecodeProtobuf(tzi_encode_buffer_t *tz_buf,
+                              const ProtobufCMessageDescriptor *pb_desc,
+                              ProtobufCAllocator *pb_alloc,
+                              ProtobufCMessage **pb_msg)
+                              
 {
-  void *req_packed;
-  uint32_t req_packed_len;
+  void *pb_packed;
+  uint32_t pb_packed_len;
+
+  *pb_msg=NULL;
+
+  pb_packed = TZIDecodeArraySpace(tz_buf, &pb_packed_len);
+  if(!pb_packed) {
+    return TZIDecodeGetError(tz_buf);
+  }
+
+  *pb_msg = protobuf_c_message_unpack(pb_desc,
+                                      pb_alloc,
+                                      pb_packed_len,
+                                      pb_packed);
+  if(!*pb_msg) {
+    return TZ_ERROR_ENCODE_FORMAT; /* add custom error instead? */
+  }
+  return TZ_SUCCESS;
+}
+
+tz_return_t TZIEncodeProtobuf(tzi_encode_buffer_t *tz_buf,
+                              const ProtobufCMessage *pb_msg)
+                              
+{
+  void *pb_packed;
+  uint32_t pb_packed_len;
+  uint32_t pb_packed_len2;
+
+  pb_packed_len = protobuf_c_message_get_packed_size(pb_msg);
+
+  pb_packed = TZIEncodeArraySpace(tz_buf, pb_packed_len);
+  if(!pb_packed) {
+    return TZIDecodeGetError(tz_buf);
+  }
+
+  pb_packed_len2 = protobuf_c_message_pack(pb_msg, pb_packed);
+  if(pb_packed_len2 != pb_packed_len) {
+    return TZ_ERROR_ENCODE_FORMAT; /* add custom error? */
+  }
+
+  return TZ_SUCCESS;
+}
+
+tz_return_t TZEDispatchImpProtobuf(const tze_pb_proto_t protos[],
+                                   const tze_pb_imp_t imps[],
+                                   uint32_t num_svcs,
+
+                                   uint32_t uiCommand,
+                                   struct tzi_encode_buffer_t *psInBuf,
+                                   struct tzi_encode_buffer_t *psOutBuf,
+                                   tz_return_t *puiRv)
+{
   ProtobufCMessage *req=NULL, *res=NULL;
-  void *res_packed;
-  uint32_t res_packed_len;
-  tze_pb_err_t err = 0;
-  tz_return_t tzerr;
+  tz_return_t tzerr=0;
 
-  req_packed = TZIDecodeArraySpace(psInBuf, &req_packed_len);
-  if(!req_packed) {
-    tzerr = TZIDecodeGetError(psInBuf);
-    err = TZE_PB_ETZ | (tzerr << 8);
-    goto out;
+  if (protos[uiCommand].req_descriptor) {
+    tzerr = TZIDecodeProtobuf(psInBuf,
+                              protos[uiCommand].req_descriptor,
+                              NULL,
+                              &req);
+    if(tzerr) {
+      goto out;
+    }
   }
 
-  req = protobuf_c_message_unpack(protos[uiCommand].req_descriptor, NULL, req_packed_len, req_packed);
-  if(!req) {
-    err = TZE_PB_EPB;
-    goto out;
-  }
-
-  err = tze_pb_svc_msgs(protos, imps, num_svcs, 
-                        uiCommand, req, &res);
-  if(err) {
+  tzerr = TZEDispatchImpProtobufMsgs(protos, imps, num_svcs, 
+                                     uiCommand, req, &res, puiRv);
+  if(tzerr || *puiRv) {
+    assert(!res);
     goto free_unpacked_req;
   }
 
-  res_packed_len = protobuf_c_message_get_packed_size(res);
-  res_packed = TZIEncodeArraySpace(psOutBuf, res_packed_len);
-  if(!res_packed) {
-    tzerr = TZIDecodeGetError(psOutBuf);
-    err = TZE_PB_ETZ | (tzerr << 8);
+  tzerr = TZIEncodeProtobuf(psOutBuf, res);
+  if(tzerr) {
     goto free_res;
   }
-  protobuf_c_message_pack(res, res_packed);
   
  free_res:
   if(imps[uiCommand].release_res) {
     imps[uiCommand].release_res(res);
   }
- free_unpacked_req:
   free(res);
+ free_unpacked_req:
   protobuf_c_message_free_unpacked(req, NULL);
  out:
-  return err;
+  return tzerr;
 }
 
-tze_pb_err_t tze_pb_svc_msgs(const tze_pb_proto_t protos[],
-                             const tze_pb_imp_t imps[],
-                             uint32_t num_svcs, 
-                             uint32_t uiCommand,
-                             const ProtobufCMessage *req,
-                             ProtobufCMessage **res)
+tz_return_t TZEDispatchImpProtobufMsgs(const tze_pb_proto_t protos[],
+                                       const tze_pb_imp_t imps[],
+                                       uint32_t num_svcs,
+
+                                       uint32_t uiCommand,
+                                       const ProtobufCMessage *req,
+                                       ProtobufCMessage **res,
+                                       tz_return_t *puiRv)
 {
-  tze_pb_err_t err = 0;
-  uint32_t invoke_err;
+  tz_return_t err=0;
 
   *res = malloc(protos[uiCommand].res_descriptor->sizeof_message);
   if(!*res) {
-    err = TZE_PB_ENOMEM;
+    err = TZ_ERROR_MEMORY;
     goto out;
   }
   protobuf_c_message_init(protos[uiCommand].res_descriptor, *res);
 
-  invoke_err = imps[uiCommand].execute(req, *res);
-  if (invoke_err) {
-    err = TZE_PB_EINVOKE | (invoke_err << 8);
+  *puiRv = imps[uiCommand].execute(req, *res);
+  if (*puiRv) {
+    /* Note that we interpret non-zero puiRv to mean there is no
+       encodable result. In case the invoked function wants to return
+       an error and additional information, puiRv should be 0, and the
+       error + addtl info should be encoded in 'res' */
+    free(*res);
+    *res=NULL;
   }
   
  out:

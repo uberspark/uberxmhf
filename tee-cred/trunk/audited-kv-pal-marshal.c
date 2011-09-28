@@ -64,11 +64,16 @@ static const tze_pb_imp_t audited_imps[] = {
 
 void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
-  *puiRv = tze_pb_svc(audited_protos,
-                      audited_imps,
-                      AKVP_NUM, 
+  tz_return_t rv;
+  rv = TZEDispatchImpProtobuf(audited_protos,
+                              audited_imps,
+                              AKVP_NUM, 
 
-                      uiCommand,
-                      psInBuf,
-                      psOutBuf);
+                              uiCommand,
+                              psInBuf,
+                              psOutBuf,
+                              puiRv);
+  if (rv) {
+    *puiRv = AKV_ETZ | (rv << 8);
+  }
 }

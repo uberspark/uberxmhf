@@ -41,13 +41,6 @@
 #include <tee-sdk/tzmarshal.h>
 #include <google/protobuf-c/protobuf-c.h>
 
-typedef enum {
-  TZE_PB_ETZ=1, /* TZ error is shifted on */
-  TZE_PB_EPB=2,
-  TZE_PB_EINVOKE=3, /* invoke error is shifted on */
-  TZE_PB_ENOMEM=4,
-} tze_pb_err_t;
-
 typedef int (tze_pb_execute_fn)(const ProtobufCMessage *, ProtobufCMessage *);
 typedef void (tze_pb_release_res_fn)(ProtobufCMessage *);
 
@@ -62,30 +55,35 @@ typedef struct {
   const ProtobufCMessageDescriptor *err_descriptor;
 } tze_pb_proto_t;
 
-tze_pb_err_t tze_pb_svc(const tze_pb_proto_t protos[],
-                        const tze_pb_imp_t imps[],
-                        uint32_t num_svcs, 
-                        uint32_t uiCommand,
-                        struct tzi_encode_buffer_t *psInBuf,
-                        struct tzi_encode_buffer_t *psOutBuf);
+tz_return_t TZEDispatchImpProtobuf(const tze_pb_proto_t protos[],
+                                   const tze_pb_imp_t imps[],
+                                   uint32_t num_svcs,
+
+                                   uint32_t uiCommand,
+                                   struct tzi_encode_buffer_t *psInBuf,
+                                   struct tzi_encode_buffer_t *psOutBuf,
+                                   tz_return_t *puiRv);
 
 /* *res is malloc'd and must be freed */
-tze_pb_err_t tze_pb_svc_msgs(const tze_pb_proto_t protos[],
-                             const tze_pb_imp_t imps[],
-                             uint32_t num_svcs, 
-                             uint32_t uiCommand,
-                             const ProtobufCMessage *req,
-                             ProtobufCMessage **res);
+tz_return_t TZEDispatchImpProtobufMsgs(const tze_pb_proto_t protos[],
+                                       const tze_pb_imp_t imps[],
+                                       uint32_t num_svcs,
+
+                                       uint32_t uiCommand,
+                                       const ProtobufCMessage *req,
+                                       ProtobufCMessage **res,
+                                       tz_return_t *puiRv);
+
 
 /* call protobuf_c_message_free_unpacked on returned *res (if not
    NULL) */
-tze_pb_err_t tze_pb_invoke(const tze_pb_proto_t protos[],
-                           uint32_t num_svcs,
-                           tz_session_t *session,
-                           uint32_t uiCommand,
-                           const ProtobufCMessage *req,
-                           ProtobufCMessage **res,
-                           uint32_t *svc_err);
+tz_return_t tze_pb_invoke(const tze_pb_proto_t protos[],
+                          uint32_t num_svcs,
+                          tz_session_t *session,
+                          uint32_t uiCommand,
+                          const ProtobufCMessage *req,
+                          ProtobufCMessage **res,
+                          uint32_t *svc_err);
 
 
 #endif

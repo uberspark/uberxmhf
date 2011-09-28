@@ -37,23 +37,22 @@
 #include <tee-sdk/tz.h>
 #include "tze-pb.h"
 
-tze_pb_err_t tze_pb_invoke(const tze_pb_proto_t protos[],
-                           uint32_t num_svcs,
-                           tz_session_t *session,
-                           uint32_t uiCommand,
-                           const ProtobufCMessage *req,
-                           ProtobufCMessage **res,
-                           uint32_t *svc_err)
+tz_return_t tze_pb_invoke(const tze_pb_proto_t protos[],
+                          uint32_t num_svcs,
+
+                          tz_session_t *session,
+                          uint32_t uiCommand,
+                          const ProtobufCMessage *req,
+                          ProtobufCMessage **res,
+                          uint32_t *svc_err)
 {
-  tz_return_t tzerr;
+  tz_return_t tzerr=0;
   tz_operation_t op;
   void *res_packed;
   uint32_t res_packed_len;
-  tze_pb_err_t err=0;
   uint32_t req_packed_len;
   void *req_packed;
 
-  err=0;
   *res=NULL;
 
   tzerr = TZOperationPrepareInvoke(session,
@@ -61,7 +60,6 @@ tze_pb_err_t tze_pb_invoke(const tze_pb_proto_t protos[],
                                    NULL,
                                    &op);
   if (tzerr) {
-    err = TZE_PB_ETZ | (tzerr << 8);
     goto out;
   }
 
@@ -69,35 +67,19 @@ tze_pb_err_t tze_pb_invoke(const tze_pb_proto_t protos[],
   req_packed = TZEncodeArraySpace(&op, req_packed_len);
   if (!req_packed) {
     tzerr = TZDecodeGetError(&op);
-    err = TZE_PB_ETZ | (tzerr << 8);
+    goto out;
   }
 
   protobuf_c_message_pack(req, req_packed);
 
   tzerr = TZOperationPerform(&op, svc_err);
   if (tzerr) {
-    if (tzerr != TZ_ERROR_SERVICE) {
-      err = TZE_PB_ETZ | (tzerr << 8);
-    } else {
-      /* attempt to decode error message, preserving the returned
-         'err' */
-      if (protos[uiCommand].err_descriptor) {
-        res_packed = TZDecodeArraySpace(&op, &res_packed_len);
-        if(res_packed) {
-          *res = protobuf_c_message_unpack(protos[uiCommand].err_descriptor,
-                                           NULL,
-                                           res_packed_len,
-                                           res_packed);
-        }
-      }
-    }
     goto out;
   }
 
   res_packed = TZDecodeArraySpace(&op, &res_packed_len);
   if (!res_packed) {
     tzerr = TZDecodeGetError(&op);
-    err = TZE_PB_ETZ | (tzerr << 8);
     goto out;
   }
 
@@ -108,5 +90,5 @@ tze_pb_err_t tze_pb_invoke(const tze_pb_proto_t protos[],
 
  out:
   TZOperationRelease(&op);
-  return err;
+  return tzerr;
 }
