@@ -37,6 +37,68 @@
 #include <tee-sdk/tz.h>
 #include "tze-pb.h"
 
+tz_return_t TZEDecodeProtobuf(tz_operation_t *psOperation,
+                              const ProtobufCMessageDescriptor *pb_desc,
+                              ProtobufCAllocator *pb_alloc,
+                              ProtobufCMessage **pb_msg)
+{
+  void *pb_packed;
+  uint32_t pb_packed_len;
+
+  if(TZDecodeGetError(psOperation)) {
+    goto out;
+  }
+
+  *pb_msg=NULL;
+
+  pb_packed = TZDecodeArraySpace(psOperation, &pb_packed_len);
+  if(!pb_packed) {
+    assert(TZDecodeGetError(psOperation));
+    goto out;
+  }
+
+  *pb_msg = protobuf_c_message_unpack(pb_desc,
+                                      pb_alloc,
+                                      pb_packed_len,
+                                      pb_packed);
+  if(!*pb_msg) {
+    /* add custom error instead? */
+    psOperation->sImp.psEncodeBuffer->uiRetVal = TZ_ERROR_ENCODE_FORMAT;
+    goto out; 
+  }
+
+ out:
+  return TZDecodeGetError(psOperation);
+}
+
+tz_return_t TZEEncodeProtobuf(tz_operation_t* psOperation,
+                              const ProtobufCMessage *pb_msg)
+{
+  uint32_t pb_buf_len, pb_buf_len2;
+  void *pb_buf;
+
+  if (TZDecodeGetError(psOperation)) {
+    goto out;
+  }
+
+  pb_buf_len = protobuf_c_message_get_packed_size(pb_msg);
+  pb_buf = TZEncodeArraySpace(psOperation, pb_buf_len);
+  if (!pb_buf) {
+    assert(TZDecodeGetError(psOperation));
+    goto out;
+  }
+
+  pb_buf_len2 = protobuf_c_message_pack(pb_msg, pb_buf);
+  if (pb_buf_len2 != pb_buf_len) {
+    psOperation->sImp.psEncodeBuffer->uiRetVal = TZ_ERROR_ENCODE_FORMAT;
+    goto out;
+  }
+
+ out:
+  return TZDecodeGetError(psOperation);
+}
+                  
+
 tz_return_t tze_pb_invoke(const tze_pb_proto_t protos[],
                           uint32_t num_svcs,
 

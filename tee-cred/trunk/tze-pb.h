@@ -56,12 +56,19 @@ typedef struct {
 } tze_pb_proto_t;
 
 /* errors are set in tz_buf's state, and returned for convenience */
+tz_return_t TZEEncodeProtobuf(tz_operation_t* psOperation,
+                              const ProtobufCMessage *pb_msg);
+tz_return_t TZEDecodeProtobuf(tz_operation_t *psOperation,
+                              const ProtobufCMessageDescriptor *pb_desc,
+                              ProtobufCAllocator *pb_alloc,
+                              ProtobufCMessage **pb_msg);
+
+tz_return_t TZIEncodeProtobuf(tzi_encode_buffer_t *tz_buf,
+                              const ProtobufCMessage *pb_msg);
 tz_return_t TZIDecodeProtobuf(tzi_encode_buffer_t *tz_buf,
                               const ProtobufCMessageDescriptor *pb_desc,
                               ProtobufCAllocator *pb_alloc,
                               ProtobufCMessage **pb_msg);
-tz_return_t TZIEncodeProtobuf(tzi_encode_buffer_t *tz_buf,
-                              const ProtobufCMessage *pb_msg);
 
 tz_return_t TZEDispatchImpProtobuf(const tze_pb_proto_t protos[],
                                    const tze_pb_imp_t imps[],
