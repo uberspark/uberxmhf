@@ -39,33 +39,18 @@
 #include <tee-sdk/tz.h>
 #include "audited-kv-errs.h"
 #include "proto-gend/audited.pb-c.h"
+#include "proto-gend/db.pb-c.h"
 
 akv_err_t akvp_init(const Audited__InitReq *req, Audited__InitRes *res);
 
 void akvp_release(void);
 
-int akvp_db_add_begin_decode_req(void **req,
-                                 void *inbuf,
-                                 size_t inbuf_len);
-akv_err_t akvp_db_add_begin(void *req,
-                            char **audit_string);
-int akvp_db_add_execute(void* vreq, void **vres);
-void akvp_db_add_release_req(void* req);
-int akvp_db_add_audit_string(void *vreq,
+akv_err_t akvp_db_add_audit_string(Db__AddReq *req,
                              char **audit_string);
-size_t akvp_db_add_encode_res_len(void* vres);
-void akvp_db_add_release_res(void* vres);
-int akvp_db_add_encode_res(void *vres, void* buf);
+akv_err_t akvp_db_add_execute(const Db__AddReq* req, const Db__AddRes *res);
 
-int akvp_db_get_decode_req(void **req,
-                           void *inbuf,
-                           size_t inbuf_len);
-int akvp_db_get_execute(void* vreq, void **vres);
-void akvp_db_get_release_req(void* req);
-int akvp_db_get_audit_string(void *vreq,
+akv_err_t akvp_db_get_audit_string(Db__GetReq *req,
                              char **audit_string);
-size_t akvp_db_get_encode_res_len(void* vres);
-void akvp_db_get_release_res(void* vres);
-int akvp_db_get_encode_res(void *vres, void* buf);
+akv_err_t akvp_db_get_execute(const Db__GetReq* req, Db__GetRes *res);
 
 #endif

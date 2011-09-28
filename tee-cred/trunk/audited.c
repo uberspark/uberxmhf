@@ -87,8 +87,8 @@ void audited_release_pending_cmd_id(int i)
 
   cmd = &pending_cmds[i];
   free(cmd->audit_string);
-  if(cmd->fns && cmd->fns->release_req && cmd->req) {
-    cmd->fns->release_req(cmd->req);
+  if(cmd->fns && cmd->req) {
+    protobuf_c_message_free_unpacked(cmd->req, NULL);
   }
   free(cmd->audit_nonce);
 
@@ -184,8 +184,8 @@ audited_err_t audited_start_cmd(const Audited__StartReq *startreq,
                                 Audited__StartRes *startres)
 {
   audited_err_t rv=0;
-  void *req=NULL;
-  audited_cmd_t *fns=NULL;
+  ProtobufCMessage *req=NULL;
+  audited_cmd_t *cmd_desc=NULL;
   char *audit_string=NULL;
   uint32_t pending_cmd_id;
   bool saved_pending_cmd=false;
@@ -199,25 +199,25 @@ audited_err_t audited_start_cmd(const Audited__StartReq *startreq,
     rv = AUDITED_EBADAUDITEDCMD;
     goto out;
   }
-  fns = &audited_cmds[startreq->cmd];
-  assert(fns);
+  cmd_desc = &audited_cmds[startreq->cmd];
+  assert(cmd_desc);
 
-  assert(fns->decode_req);
-  startres->svc_err = fns->decode_req(&req,
-                                      startreq->cmd_input.data,
-                                      startreq->cmd_input.len);
+  req = protobuf_c_message_unpack(cmd_desc->req_descriptor,
+                                  NULL,
+                                  startreq->cmd_input.len,
+                                  startreq->cmd_input.data);
+  if (!req) {
+    rv = AUDITED_EDECODE;
+    goto out;
+  }
+  assert(cmd_desc->audit_string);
+  startres->svc_err = cmd_desc->audit_string(req,
+                                             &audit_string);
   if (startres->svc_err) {
     goto out;
   }
 
-  assert(fns->audit_string);
-  startres->svc_err = fns->audit_string(req,
-                                        &audit_string);
-  if (rv) {
-    goto out;
-  }
-
-  pending_cmd_id = audited_save_pending_cmd(fns, req, audit_string);
+  pending_cmd_id = audited_save_pending_cmd(cmd_desc, req, audit_string);
   if (pending_cmd_id < 0) {
     rv = AUDITED_ESAVE;
     goto out;
@@ -244,8 +244,8 @@ audited_err_t audited_start_cmd(const Audited__StartReq *startreq,
       audited_release_pending_cmd_id(pending_cmd_id);
     } else {
       free(audit_string);
-      if(fns && fns->release_req && req) {
-        fns->release_req(req);
+      if(req) {
+        protobuf_c_message_free_unpacked(req, NULL);
       }
     }
     free(startres->res);
@@ -259,7 +259,7 @@ audited_err_t audited_execute_cmd(const Audited__ExecuteReq *exec_req,
 {
   audited_err_t rv;
   audited_pending_cmd_t *cmd;
-  void *res=NULL;
+  ProtobufCMessage *res=NULL;
 
   if(!did_init) {
     rv = AUDITED_EBADSTATE;
@@ -279,37 +279,43 @@ audited_err_t audited_execute_cmd(const Audited__ExecuteReq *exec_req,
   }
 
   assert(cmd->fns);
-
   assert(cmd->fns->execute);
-  exec_res->svc_err = cmd->fns->execute(cmd->req, &res);
-  if(exec_res->svc_err) {
-    goto out_release_pending_cmd;
-  }
+  assert(cmd->fns->res_descriptor);
 
-  assert(cmd->fns->encode_res_len);
-  exec_res->cmd_output.len = cmd->fns->encode_res_len(res);
-  exec_res->cmd_output.data = malloc(exec_res->cmd_output.len);
-  if(!exec_res->cmd_output.data) {
+  res = malloc(cmd->fns->res_descriptor->sizeof_message);
+  if(!res) {
     rv = AUDITED_ENOMEM;
     goto out_release_pending_cmd;
   }
-  assert(cmd->fns->encode_res);
-  exec_res->svc_err = cmd->fns->encode_res(res, exec_res->cmd_output.data);
+  protobuf_c_message_init(cmd->fns->res_descriptor, res);
+
+  exec_res->svc_err = cmd->fns->execute(cmd->req, res);
   if(exec_res->svc_err) {
-    goto out_release_pending_cmd;
+    goto out_free_res;
   }
+
+  exec_res->cmd_output.len = protobuf_c_message_get_packed_size(res);
+  exec_res->cmd_output.data = malloc(exec_res->cmd_output.len);
+  if(!exec_res->cmd_output.data) {
+    rv = AUDITED_ENOMEM;
+    goto out_release_res;
+  }
+  protobuf_c_message_pack(res, exec_res->cmd_output.data);
   exec_res->has_cmd_output=true;
 
+ out_release_res:
+  if (cmd->fns->release_res) {
+    cmd->fns->release_res(res);
+  }
+ out_free_res:
+  free(res);
+  res=NULL;
  out_release_pending_cmd:
   audited_release_pending_cmd_id(exec_req->pending_cmd_id);
-
-  if(res) {
-    cmd->fns->release_res(res);
-    res=NULL;
-  }
  out:
   return rv;
 }
+
 void audited_execute_cmd_release_res(Audited__ExecuteRes *exec_res)
 {
   free(exec_res->cmd_output.data);

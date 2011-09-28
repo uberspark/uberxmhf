@@ -37,6 +37,7 @@
 #define AUDITED_H
 
 #include <tee-sdk/tzmarshal.h>
+#include "tze-pb.h"
 #include "proto-gend/audited.pb-c.h"
 
 typedef enum {
@@ -56,22 +57,14 @@ typedef enum {
   AUDITED_EPB_ERR=12,
 } audited_err_t;
 
-typedef int (audited_decode_req_fn)(void **, void *, size_t);
 typedef int (audited_audit_string_fn)(void *, char **);
-typedef int (audited_execute_fn)(void *, void **);
-typedef size_t (audited_encode_res_len_fn)(void*);
-typedef int (audited_encode_res_fn)(void *, void*);
-typedef void (audited_release_req_fn)(void *);
-typedef void (audited_release_res_fn)(void *);
 
 typedef struct {
-  audited_decode_req_fn *decode_req;
+  const ProtobufCMessageDescriptor *req_descriptor;
+  const ProtobufCMessageDescriptor *res_descriptor;
+  tze_pb_execute_fn *execute;
+  tze_pb_release_res_fn *release_res;
   audited_audit_string_fn *audit_string;
-  audited_execute_fn *execute;
-  audited_encode_res_len_fn *encode_res_len;
-  audited_encode_res_fn *encode_res;
-  audited_release_req_fn *release_req;
-  audited_release_res_fn *release_res;
 } audited_cmd_t;
 
 typedef struct {

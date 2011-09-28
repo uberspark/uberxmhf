@@ -41,22 +41,18 @@
 /* required by audited module */
 audited_cmd_t audited_cmds[] = {
   [KV_ADD] = {
-    .decode_req=akvp_db_add_begin_decode_req,
-    .audit_string=akvp_db_add_audit_string,
-    .execute=akvp_db_add_execute,
-    .encode_res_len=akvp_db_add_encode_res_len,
-    .encode_res=akvp_db_add_encode_res,
-    .release_req=akvp_db_add_release_req,
-    .release_res=akvp_db_add_release_res,
+    .req_descriptor = &db__add_req__descriptor,
+    .res_descriptor = &db__add_res__descriptor,
+    .execute = (tze_pb_execute_fn*)akvp_db_add_execute,
+    .release_res = NULL,
+    .audit_string = (audited_audit_string_fn*)akvp_db_add_audit_string,
   },
   [KV_GET] = {
-    .decode_req=akvp_db_get_decode_req,
-    .audit_string=akvp_db_get_audit_string,
-    .execute=akvp_db_get_execute,
-    .encode_res_len=akvp_db_get_encode_res_len,
-    .encode_res=akvp_db_get_encode_res,
-    .release_req=akvp_db_get_release_req,
-    .release_res=akvp_db_get_release_res,
+    .req_descriptor = &db__get_req__descriptor,
+    .res_descriptor = &db__get_res__descriptor,
+    .execute = (tze_pb_execute_fn*)akvp_db_get_execute,
+    .release_res = NULL,
+    .audit_string = (audited_audit_string_fn*)akvp_db_get_audit_string,
   },
 };
 size_t audited_cmds_num = sizeof(audited_cmds)/sizeof(audited_cmd_t);

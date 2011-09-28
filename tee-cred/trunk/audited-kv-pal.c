@@ -145,29 +145,9 @@ char* sprintf_mallocd(const char *format, ...)
   return rv;
 }
 
-void akvp_db_add_release_req(void* vreq)
-{
-  db__add_req__free_unpacked(vreq, NULL);
-}
-
-int akvp_db_add_begin_decode_req(void **vcont,
-                                 void *inbuf,
-                                 size_t inbuf_len)
-{
-  Db__AddReq *req=NULL;
-
-  req = db__add_req__unpack(NULL, inbuf_len, inbuf);
-  *vcont=req;
-  if(req)
-    return 0;
-  else
-    return AKV_EDECODE;
-}
-
-int akvp_db_add_audit_string(void *vreq,
+akv_err_t akvp_db_add_audit_string(Db__AddReq *req,
                              char **audit_string)
 {
-  Db__AddReq *req = (Db__AddReq*)vreq;
   *audit_string = /* FIXME need to escape nulls and non-printables,
                      and make sure null-terminated.
                   */
@@ -176,13 +156,10 @@ int akvp_db_add_audit_string(void *vreq,
   return AKV_ENONE;
 }
 
-int akvp_db_add_execute(void* vreq, void **vres)
+akv_err_t akvp_db_add_execute(const Db__AddReq* req, const Db__AddRes *res)
 {
-  Db__AddReq *req = (Db__AddReq*)vreq;
   akv_err_t akv_err;
   kv_err_t kv_err;
-
-  *vres = NULL;
 
   kv_err = kv_add(akv_ctx.kv_ctx, req->key, strlen(req->key), req->val.data, req->val.len);
   akv_err =
@@ -193,43 +170,9 @@ int akvp_db_add_execute(void* vreq, void **vres)
   return akv_err;
 }
 
-size_t akvp_db_add_encode_res_len(void* vres)
-{
-  return 0;
-}
-
-void akvp_db_add_release_res(void* vres)
-{
-}
-
-int akvp_db_add_encode_res(void *vres, void* buf)
-{
-  return 0;
-}
-
-int akvp_db_get_decode_req(void **vcont,
-                           void *inbuf,
-                           size_t inbuf_len)
-{
-  Db__GetReq *req=NULL;
-
-  req = db__get_req__unpack(NULL, inbuf_len, inbuf);
-  *vcont=req;
-  if(req)
-    return 0;
-  else
-    return AKV_EDECODE;
-}
-
-void akvp_db_get_release_req(void* vreq)
-{
-  db__get_req__free_unpacked(vreq, NULL);
-}
-
-int akvp_db_get_audit_string(void *vreq,
+akv_err_t akvp_db_get_audit_string(Db__GetReq *req,
                              char **audit_string)
 {
-  Db__GetReq *req = (Db__GetReq*)vreq;
   *audit_string = /* FIXME need to escape nulls and non-printables,
                      and make sure null-terminated.
                   */
@@ -238,18 +181,10 @@ int akvp_db_get_audit_string(void *vreq,
   return AKV_ENONE;
 }
 
-int akvp_db_get_execute(void* vreq, void **vres)
+akv_err_t akvp_db_get_execute(const Db__GetReq* req, Db__GetRes *res)
 {
-  Db__GetReq *req = (Db__GetReq*)vreq;
-  Db__GetRes *res=NULL;
   akv_err_t akv_err;
   kv_err_t kv_err;
-
-  res=malloc(sizeof(*res));
-  *vres = res;
-  if(!res) {
-    return AKV_ENOMEM;
-  }
 
   kv_err = kv_get(akv_ctx.kv_ctx,
                   req->key,
@@ -262,24 +197,4 @@ int akvp_db_get_execute(void* vreq, void **vres)
     : AKV_EKV;
 
   return akv_err;
-}
-
-size_t akvp_db_get_encode_res_len(void* vres)
-{
-  Db__GetRes *res = (Db__GetRes*)vres;
-  return db__get_res__get_packed_size(res);
-}
-
-void akvp_db_get_release_res(void* vres)
-{
-  Db__GetRes *res = (Db__GetRes*)vres;
-  /* embedded buffer doesn't get freed - belongs to db */
-  free(res);
-}
-
-int akvp_db_get_encode_res(void *vres, void *buf)
-{
-  Db__GetRes *res = (Db__GetRes*)vres;
-  db__get_res__pack(res, buf);
-  return 0;
 }
