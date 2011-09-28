@@ -27,7 +27,7 @@ PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv libprotobuf-c
 #PAL_BACKEND=tee-sdk-svc-tv
 PAL_BACKEND=tee-sdk-svc-null
 PAL_NAME=audited-kv-pal
-PAL_OBJS=audited-kv-pal.o audited-kv-pal-marshal.o kv.o audited.o audited-kv-pal-globals.o audited-kv-pal-protos.o tze-pb-svc.o proto-gend/db.pb-c.o proto-gend/audited.pb-c.o
+PAL_OBJS=audited-kv-pal.o audited-kv-pal-marshal.o kv.o audited.o audited-kv-pal-globals.o audited-kv-pal-protos.o tze-pb-svc.o tze-pb-marshal.o proto-gend/db.pb-c.o proto-gend/audited.pb-c.o
 PAL_CFLAGS+=-g -Wall -Werror
 PAL_PKGCONFIG_DEPS=tee-sdk-svc $(PAL_BACKEND) libcrypto libprotobuf-c
 

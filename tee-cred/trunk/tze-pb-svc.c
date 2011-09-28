@@ -37,58 +37,6 @@
 #include <tee-sdk/tzmarshal.h>
 #include "tze-pb.h"
 
-/* XXX consider following TZ convention of returning void and setting
-   the encoder error-state? */
-
-tz_return_t TZIDecodeProtobuf(tzi_encode_buffer_t *tz_buf,
-                              const ProtobufCMessageDescriptor *pb_desc,
-                              ProtobufCAllocator *pb_alloc,
-                              ProtobufCMessage **pb_msg)
-                              
-{
-  void *pb_packed;
-  uint32_t pb_packed_len;
-
-  *pb_msg=NULL;
-
-  pb_packed = TZIDecodeArraySpace(tz_buf, &pb_packed_len);
-  if(!pb_packed) {
-    return TZIDecodeGetError(tz_buf);
-  }
-
-  *pb_msg = protobuf_c_message_unpack(pb_desc,
-                                      pb_alloc,
-                                      pb_packed_len,
-                                      pb_packed);
-  if(!*pb_msg) {
-    return TZ_ERROR_ENCODE_FORMAT; /* add custom error instead? */
-  }
-  return TZ_SUCCESS;
-}
-
-tz_return_t TZIEncodeProtobuf(tzi_encode_buffer_t *tz_buf,
-                              const ProtobufCMessage *pb_msg)
-                              
-{
-  void *pb_packed;
-  uint32_t pb_packed_len;
-  uint32_t pb_packed_len2;
-
-  pb_packed_len = protobuf_c_message_get_packed_size(pb_msg);
-
-  pb_packed = TZIEncodeArraySpace(tz_buf, pb_packed_len);
-  if(!pb_packed) {
-    return TZIDecodeGetError(tz_buf);
-  }
-
-  pb_packed_len2 = protobuf_c_message_pack(pb_msg, pb_packed);
-  if(pb_packed_len2 != pb_packed_len) {
-    return TZ_ERROR_ENCODE_FORMAT; /* add custom error? */
-  }
-
-  return TZ_SUCCESS;
-}
-
 tz_return_t TZEDispatchImpProtobuf(const tze_pb_proto_t protos[],
                                    const tze_pb_imp_t imps[],
                                    uint32_t num_svcs,

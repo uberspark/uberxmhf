@@ -55,6 +55,14 @@ typedef struct {
   const ProtobufCMessageDescriptor *err_descriptor;
 } tze_pb_proto_t;
 
+tz_return_t TZIDecodeProtobuf(tzi_encode_buffer_t *tz_buf,
+                              const ProtobufCMessageDescriptor *pb_desc,
+                              ProtobufCAllocator *pb_alloc,
+                              ProtobufCMessage **pb_msg);
+tz_return_t TZIEncodeProtobuf(tzi_encode_buffer_t *tz_buf,
+                              const ProtobufCMessage *pb_msg);
+
+
 tz_return_t TZEDispatchImpProtobuf(const tze_pb_proto_t protos[],
                                    const tze_pb_imp_t imps[],
                                    uint32_t num_svcs,
