@@ -49,10 +49,13 @@ audited_cmd_t audited_cmds[] = {
     .release_res=akvp_db_add_release_res,
   },
   [AKVP_DB_GET] = {
-    .decode_req=NULL,
-    .audit_string=NULL,
-    .execute=NULL,
-    .release_req=akvp_db_get_release,
+    .decode_req=akvp_db_get_decode_req,
+    .audit_string=akvp_db_get_audit_string,
+    .execute=akvp_db_get_execute,
+    .encode_res_len=akvp_db_get_encode_res_len,
+    .encode_res=akvp_db_get_encode_res,
+    .release_req=akvp_db_get_release_req,
+    .release_res=akvp_db_get_release_res,
   },
 };
 size_t audited_cmds_num = sizeof(audited_cmds)/sizeof(audited_cmd_t);

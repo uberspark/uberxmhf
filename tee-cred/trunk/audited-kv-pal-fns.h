@@ -55,12 +55,15 @@ size_t akvp_db_add_encode_res_len(void* vres);
 void akvp_db_add_release_res(void* vres);
 int akvp_db_add_encode_res(void *vres, void* buf);
 
-int akvp_db_get_begin_marshal(char **audit_string,
-                              void **vcont,
-                              struct tzi_encode_buffer_t *psInBuf);
-akv_err_t akvp_db_get_begin(char **audit_string,
-                            void **vcont,
-                            const void* key, size_t key_len);
-int akvp_db_get_execute(void* vcont, struct tzi_encode_buffer_t *psOutBuf);
-void akvp_db_get_release(void* vcont);
+int akvp_db_get_decode_req(void **req,
+                           void *inbuf,
+                           size_t inbuf_len);
+int akvp_db_get_execute(void* vreq, void **vres);
+void akvp_db_get_release_req(void* req);
+int akvp_db_get_audit_string(void *vreq,
+                             char **audit_string);
+size_t akvp_db_get_encode_res_len(void* vres);
+void akvp_db_get_release_res(void* vres);
+int akvp_db_get_encode_res(void *vres, void* buf);
+
 #endif

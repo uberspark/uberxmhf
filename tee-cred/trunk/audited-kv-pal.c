@@ -209,91 +209,82 @@ int akvp_db_add_encode_res(void *vres, void* buf)
   return 0;
 }
 
-typedef struct {
-  void *key;
-  size_t key_len;
-} akvp_db_get_cont_t;
-
-int akvp_db_get_begin_marshal(char **audit_string,
-                              void **vcont,
-                              struct tzi_encode_buffer_t *psInBuf)
+int akvp_db_get_decode_req(void **vcont,
+                           void *inbuf,
+                           size_t inbuf_len)
 {
-  void *key;
-  uint32_t key_len;
+  Db__GetReq *req=NULL;
+  void *inbuf_proto;
+  uint32_t inbuf_proto_len;
+  inbuf_proto = TZIDecodeArraySpace(inbuf, &inbuf_proto_len);
 
-  key = TZIDecodeArraySpace(psInBuf, &key_len);
-
-  if (TZIDecodeGetError(psInBuf)) {
+  req = db__get_req__unpack(NULL, inbuf_proto_len, inbuf_proto);
+  *vcont=req;
+  if(req)
+    return 0;
+  else
     return AKV_EDECODE;
-  }
-
-  return akvp_db_get_begin(audit_string, vcont, key, key_len);
 }
 
-akv_err_t akvp_db_get_begin(char **audit_string,
-                            void **vcont,
-                            const void* key, size_t key_len)
+void akvp_db_get_release_req(void* vreq)
 {
-  akvp_db_get_cont_t **pp_cont = ((akvp_db_get_cont_t**)vcont);
-  akvp_db_get_cont_t *cont;
+  db__get_req__free_unpacked(vreq, NULL);
+}
 
-  *pp_cont = malloc(sizeof(**pp_cont));
-  if(!pp_cont) {
-    return AKV_ENOMEM;
-  }
-  cont = *pp_cont;
-
-  *cont = (akvp_db_get_cont_t) {
-    .key = malloc(key_len),
-    .key_len = key_len,
-  };
+int akvp_db_get_audit_string(void *vreq,
+                             char **audit_string)
+{
+  Db__GetReq *req = (Db__GetReq*)vreq;
   *audit_string = /* FIXME need to escape nulls and non-printables,
                      and make sure null-terminated.
                   */
-    sprintf_mallocd("GET{key=\"%s\"}", (char*)key);
-
-  if (!cont->key
-      || !*audit_string) {
-    FREE_AND_NULL(cont->key);
-    FREE_AND_NULL(cont);
-    FREE_AND_NULL(*audit_string);
-    return AKV_ENOMEM;
-  }
-
-  memcpy(cont->key, key, key_len);
+    sprintf_mallocd("GET{key=\"%s\"}", req->key);
 
   return AKV_ENONE;
 }
 
-int akvp_db_get_execute(void* vcont, struct tzi_encode_buffer_t *psOutBuf)
+int akvp_db_get_execute(void* vreq, void **vres)
 {
-  kv_err_t kv_err;
-  akvp_db_get_cont_t *cont = (akvp_db_get_cont_t*)vcont;
-  const void *val;
-  size_t val_len;
+  Db__GetReq *req = (Db__GetReq*)vreq;
+  Db__GetRes *res=NULL;
   akv_err_t akv_err;
+  kv_err_t kv_err;
 
-  kv_err = kv_get(akv_ctx.kv_ctx, cont->key, cont->key_len, &val, &val_len);
+  res=malloc(sizeof(*res));
+  *vres = res;
+  if(!res) {
+    return AKV_ENOMEM;
+  }
+
+  kv_err = kv_get(akv_ctx.kv_ctx,
+                  req->key,
+                  strlen(req->key),
+                  (const void **)(&res->val.data),
+                  &res->val.len);
   akv_err =
     (kv_err == KV_ENONE) ? AKV_ENONE
     : (kv_err == KV_ENOTFOUND) ? AKV_ENOTFOUND
     : AKV_EKV;
 
-  if (akv_err) {
-    return akv_err;
-  }
-
-  TZIEncodeArray(psOutBuf, val, val_len);
-  if(TZIDecodeGetError(psOutBuf)) {
-    return AKV_EENCODE;
-  }
   return akv_err;
 }
 
-void akvp_db_get_release(void* vcont)
+size_t akvp_db_get_encode_res_len(void* vres)
 {
-  akvp_db_get_cont_t *cont = (akvp_db_get_cont_t*)vcont;
-  FREE_AND_NULL(cont->key);
-  free(cont);
+  Db__GetRes *res = (Db__GetRes*)vres;
+  return db__get_res__get_packed_size(res);
 }
 
+void akvp_db_get_release_res(void* vres)
+{
+  Db__GetRes *res = (Db__GetRes*)vres;
+  /* embedded buffer doesn't get freed - belongs to db */
+  free(res);
+}
+
+int akvp_db_get_encode_res(void *vres, void *buf)
+{
+  Db__GetRes *res = (Db__GetRes*)vres;
+  db__get_res__pack(res, buf);
+  return 0;
+}
