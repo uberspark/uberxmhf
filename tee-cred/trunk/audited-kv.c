@@ -118,56 +118,6 @@ int akv_ctx_release(akv_ctx_t* ctx)
   return rv;
 }
 
-/* tz_return_t */
-/* TZIPrepareEncodeF(tz_session_t *psSession, */
-/*                   tz_operation_t *psOp, */
-/*                   uint32_t cmd, */
-/*                   const char* str, ...) */
-/*   __attribute__ ((format (printf, 4, 5))); */
-/* tz_return_t */
-/* TZIPrepareEncodeF(tz_session_t *psSession, */
-/*                   tz_operation_t *psOp, */
-/*                   uint32_t cmd, */
-/*                   const char* str, ...) */
-/* { */
-/*   tz_return_t rv; */
-/*   va_list argp; */
-/*   va_start(argp, str); */
-/*   rv = TZOperationPrepareInvoke(psSession, */
-/*                                 cmd, */
-/*                                 NULL, */
-/*                                 psOp); */
-/*   if (rv) goto out; */
-/*   rv = vTZIEncodeF(psOp, str, argp); */
-/*  out: */
-/*   va_end(argp); */
-/*   return rv; */
-/* } */
-
-/* tz_return_t */
-/* TZIExecuteDecodeF(tz_operation_t *psOp, */
-/*                   tz_return_t *serviceReturn, */
-/*                   const char* str, */
-/*                   ...) */
-/*   __attribute__ ((format (scanf, 3, 4))); */
-/* tz_return_t */
-/* TZIExecuteDecodeF(tz_operation_t *psOp, */
-/*                   tz_return_t *serviceReturn, */
-/*                   const char* str, */
-/*                   ...) */
-/* { */
-/*   tz_return_t rv; */
-/*   va_list argp; */
-/*   va_start(argp, str); */
-
-/*   rv = TZOperationPerform(psOp, serviceReturn); */
-/*   if (rv) goto out; */
-/*   rv = vTZIDecodeF(psOp, str, argp); */
-/*  out: */
-/*   va_end(argp); */
-/*   return rv; */
-/* } */
-
 void akv_cmd_ctx_release(akv_cmd_ctx_t *ctx)
 {
   if (ctx->audited) {
