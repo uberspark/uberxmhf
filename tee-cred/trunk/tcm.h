@@ -65,11 +65,9 @@ void tcm_release(tcm_ctx_t*);
 tcm_err_t tcm_db_add(tcm_ctx_t*,
                      const char* key,
                      const char* val);
-
-int tcm_db_get(tcm_ctx_t*,
-               const char* key,
-               char* val,
-               int val_len);
+tcm_err_t tcm_db_get(tcm_ctx_t* tcm_ctx,
+                     const char* key,
+                     char** val);
 
 /* int tcm_db_del(struct tcm_ctx*, */
 /*                const char* key); */

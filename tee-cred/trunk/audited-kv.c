@@ -182,7 +182,8 @@ void akv_cmd_ctx_release(akv_cmd_ctx_t *ctx)
 akv_err_t akv_db_add_begin(akv_ctx_t*  ctx,
                            akv_cmd_ctx_t* cmd_ctx,
                            const char* key,
-                           const char* val)
+                           const void* val,
+                           size_t val_len)
 {
   akv_err_t rv=0;
   Db__AddReq add_req;
@@ -197,7 +198,7 @@ akv_err_t akv_db_add_begin(akv_ctx_t*  ctx,
     .key = (char*)key,
     .val = (ProtobufCBinaryData) {
       .data = (void*)val,
-      .len = strlen(val),
+      .len = val_len,
     }
   };
 
@@ -247,6 +248,111 @@ akv_err_t akv_db_add_execute(akv_cmd_ctx_t* ctx,
     goto out;
   }
 
+  assert(res);
+  if (res->svc_err) {
+    rv = res->svc_err;
+    goto out;
+  }
+
+ out:
+  if(res) {
+    audited__execute_res__free_unpacked(res, NULL);
+    res=NULL;
+  }
+
+  return rv;
+}
+
+akv_err_t akv_db_get_begin(akv_ctx_t*  ctx,
+                           akv_cmd_ctx_t* cmd_ctx,
+                           const char* key)
+{
+  akv_err_t rv=0;
+  Db__GetReq get_req;
+  Audited__StartRes *start_res=NULL;
+  tze_pb_err_t tze_pb_err;
+  audited_err_t audited_err;
+
+  /* FIXME- is there a way to avoid having to cast
+     away the const here? */
+  get_req = (Db__GetReq) {
+    .base = PROTOBUF_C_MESSAGE_INIT (&db__get_req__descriptor),
+    .key = (char*)key,
+  };
+
+  tze_pb_err = audited_invoke_start(&ctx->tz_sess.tzSession,
+                                    KV_GET,
+                                    (ProtobufCMessage*)&get_req,
+                                    &start_res,
+                                    &audited_err);
+  if (audited_err) {
+    rv = AKV_EAUDITED | (audited_err << 8);
+    goto out;
+  } else if (tze_pb_err) {
+    rv = AKV_EPB | (tze_pb_err << 8);
+    goto out;
+  }
+
+  *cmd_ctx = (akv_cmd_ctx_t)
+    { .akv_ctx = ctx,
+      .audited = start_res,
+    };
+
+ out:
+  return rv;
+}
+
+akv_err_t akv_db_get_execute(akv_cmd_ctx_t* ctx,
+                             const void* audit_token,
+                             size_t audit_token_len,
+                             void **val,
+                             size_t *val_len)
+{
+  tze_pb_err_t tze_pb_err;
+  audited_err_t audited_err;
+  Audited__ExecuteRes *res=NULL;
+  akv_err_t rv=0;
+
+  tze_pb_err = audited_invoke_execute(&ctx->akv_ctx->tz_sess.tzSession,
+                                      ctx->audited->res->pending_cmd_id,
+                                      audit_token,
+                                      audit_token_len,
+                                      &audited_err,
+                                      &res);
+
+  if (audited_err) {
+    rv = AKV_EAUDITED | (audited_err << 8);
+    goto out;
+  } else if (tze_pb_err) {
+    rv = AKV_EPB | (tze_pb_err << 8);
+    goto out;
+  }
+
+  assert(res);
+  if (res->svc_err) {
+    rv = res->svc_err;
+    goto out;
+  }
+
+  {
+    Db__GetRes *get_res=NULL;
+
+    assert(res->has_cmd_output);
+    get_res = db__get_res__unpack(NULL, res->cmd_output.len, res->cmd_output.data);
+    if(!get_res) {
+      rv = AKV_EDECODE;
+      goto out;
+    }
+    *val_len = get_res->val.len;
+    *val = malloc(*val_len);
+    if(!*val) {
+      abort();
+    }
+    memcpy(*val, get_res->val.data, *val_len);
+
+    db__get_res__free_unpacked(get_res, NULL);
+  }
+    
  out:
   if(res) {
     audited__execute_res__free_unpacked(res, NULL);

@@ -64,19 +64,20 @@ void akv_cmd_ctx_release(akv_cmd_ctx_t *ctx);
 akv_err_t akv_db_add_begin(akv_ctx_t*  ctx,
                            akv_cmd_ctx_t*  cmd_ctx,
                            const char* key,
-                           const char* val);
+                           const void* val,
+                           size_t val_len);
 akv_err_t akv_db_add_execute(akv_cmd_ctx_t* ctx,
                              const void* audit_token,
                              size_t audit_token_len);
 
+akv_err_t akv_db_get_begin(akv_ctx_t*  ctx,
+                           akv_cmd_ctx_t* cmd_ctx,
+                           const char* key);
+akv_err_t akv_db_get_execute(akv_cmd_ctx_t* ctx,
+                             const void* audit_token,
+                             size_t audit_token_len,
+                             void **val,
+                             size_t *val_len);
 
-int akv_begin_db_get(akv_ctx_t*  ctx,
-                     uint8_t*    epoch_nonce,
-                     size_t*     epoch_nonce_len,
-                     uint64_t*   epoch_offset,
-                     char*       audit_string,
-                     size_t*     audit_string_len,
-                     const char* key,
-                     char*       val,
-                     int         val_len);
+
 #endif

@@ -79,7 +79,8 @@ tcm_err_t tcm_db_add(tcm_ctx_t* tcm_ctx,
   akv_err = akv_db_add_begin(tcm_ctx->akv_ctx,
                              &akv_cmd_ctx,
                              key,
-                             val);
+                             val,
+                             strlen(val)+1);
   if (akv_err) {
     rv= TCM_EAKV;
     goto cleanup_none;
@@ -100,6 +101,56 @@ tcm_err_t tcm_db_add(tcm_ctx_t* tcm_ctx,
   if (akv_db_add_execute(&akv_cmd_ctx,
                          audit_token,
                          audit_token_len)) {
+    rv = TCM_EAKV;
+    goto cleanup_cmd;
+  }
+
+ cleanup_cmd:
+  akv_cmd_ctx_release(&akv_cmd_ctx);
+ cleanup_none:
+  return rv;
+}
+
+tcm_err_t tcm_db_get(tcm_ctx_t* tcm_ctx,
+                     const char* key,
+                     char** val)
+{
+  akv_cmd_ctx_t akv_cmd_ctx;
+  akv_err_t akv_err;
+  audit_err_t audit_err;
+  uint8_t audit_token[AUDIT_TOKEN_MAX];
+  size_t audit_token_len = sizeof(audit_token);
+  int rv = 0;
+  size_t val_len;
+
+  if (!tcm_ctx || !key || !val)
+    return TCM_EINVAL;
+
+  akv_err = akv_db_get_begin(tcm_ctx->akv_ctx,
+                             &akv_cmd_ctx,
+                             key);
+  if (akv_err) {
+    rv= TCM_EAKV;
+    goto cleanup_none;
+  }
+
+  audit_err = audit_get_token(tcm_ctx->audit_ctx,
+                              akv_cmd_ctx.audited->res->audit_nonce.data,
+                              akv_cmd_ctx.audited->res->audit_nonce.len,
+                              akv_cmd_ctx.audited->res->audit_string,
+                              strlen(akv_cmd_ctx.audited->res->audit_string),
+                              audit_token,
+                              &audit_token_len);
+  if (audit_err) {
+    rv = TCM_EAUDIT;
+    goto cleanup_cmd;
+  }
+
+  if (akv_db_get_execute(&akv_cmd_ctx,
+                         audit_token,
+                         audit_token_len,
+                         (void**)val,
+                         &val_len)) {
     rv = TCM_EAKV;
     goto cleanup_cmd;
   }
@@ -190,6 +241,21 @@ int main(int argc, char **argv)
     rv = 4;
     printf("tcm_db_add failed with %d\n", tcm_err);
     goto cleanup_tcm;
+  }
+
+  {
+    char *val;
+    tcm_err = tcm_db_get(&tcm_ctx,
+                         "key",
+                         &val);
+    if (tcm_err) {
+      rv = 4;
+      printf("tcm_db_add failed with %d\n", tcm_err);
+      goto cleanup_tcm;
+    }
+    printf("retrieved val:%s\n", val);
+    free(val);
+    val=NULL;
   }
 
  cleanup_tcm:
