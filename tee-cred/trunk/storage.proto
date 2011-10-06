@@ -2,7 +2,7 @@ package AkvpStorage;
 
 message Everything
 {
-//  bytes sealed_master_secret=;
+  required bytes sealed_master_secret=1;
 //  bytes mac_of_header=;
   required Header header=3;
 //  MacdEncdEntry macd_encd_entries=;

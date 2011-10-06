@@ -54,6 +54,7 @@ typedef enum {
   AKV_EPB=14,
   AKV_EBADAUTH=15,
   AKV_ETZ=16, /* TZ error shifted on */
+  AKV_ESVC=17,
 } akv_err_t;
 
 #endif

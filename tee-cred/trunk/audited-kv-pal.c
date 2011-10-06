@@ -97,7 +97,8 @@ akv_ctx_t akv_ctx;
 akv_err_t akvp_init(const Akvp__InitReq *req, Akvp__InitRes *res)
 {
   audited_err_t audited_err;
-  akv_err_t rv;
+  akv_err_t rv=0;
+  int svcapirv;
 
   if(akv_ctx.kv_ctx) {
     kv_ctx_del(akv_ctx.kv_ctx);
@@ -107,12 +108,31 @@ akv_err_t akvp_init(const Akvp__InitReq *req, Akvp__InitRes *res)
   audited_err = audited_init(req->audit_init_req->audit_pub_pem);
   if (audited_err) {
     rv = AKV_EAUDITED | (audited_err << 8);
+    goto out;
+  }
+
+  if(akv_ctx.master_secret) {
+    free(akv_ctx.master_secret);
+    akv_ctx.master_secret=NULL;
+  }
+  akv_ctx.master_secret = malloc(akv_ctx.master_secret_len);
+  if(!akv_ctx.master_secret) {
+    rv = AKV_ENOMEM;
+    goto out;
+  }
+  akv_ctx.master_secret_len = AKVP_MASTER_SECRET_LEN;
+  svcapirv = svc_utpm_rand_block(akv_ctx.master_secret,
+                                 akv_ctx.master_secret_len);
+  if (svcapirv) {
+    rv = AKV_ESVC | (svcapirv << 8);
+    goto out;
   }
 
   if(!rv) {
     did_init = true;
   }
 
+ out:
   return rv;
 }
 
