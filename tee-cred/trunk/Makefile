@@ -13,6 +13,9 @@ proto-gend/audited.pb-c.c proto-gend/audited.pb-c.h : audited.proto
 proto-gend/akvp.pb-c.c proto-gend/akvp.pb-c.h : akvp.proto
 	protoc-c --c_out=proto-gend akvp.proto
 
+proto-gend/storage.pb-c.c proto-gend/storage.pb-c.h : storage.proto
+	protoc-c --c_out=proto-gend storage.proto
+
 # create a separate object file for the reg program
 # XXX not sure why I need to re-specify the recipe
 proto-gend/db.pb-c-reg.o : proto-gend/db.pb-c.c
@@ -20,6 +23,8 @@ proto-gend/db.pb-c-reg.o : proto-gend/db.pb-c.c
 proto-gend/audited.pb-c-reg.o : proto-gend/audited.pb-c.c
 	$(CC) $(CPPCFLAGS) $(CFLAGS) -c $^ -o $@
 proto-gend/akvp.pb-c-reg.o : proto-gend/akvp.pb-c.c
+	$(CC) $(CPPCFLAGS) $(CFLAGS) -c $^ -o $@
+proto-gend/storage.pb-c-reg.o : proto-gend/storage.pb-c.c
 	$(CC) $(CPPCFLAGS) $(CFLAGS) -c $^ -o $@
 
 PROG_NAME=main
@@ -51,7 +56,8 @@ PAL_OBJS= \
 	tze-pb-marshal.o \
 	proto-gend/db.pb-c.o \
 	proto-gend/audited.pb-c.o \
-	proto-gend/akvp.pb-c.o
+	proto-gend/akvp.pb-c.o \
+	proto-gend/storage.pb-c.o
 PAL_CFLAGS+=-g -Wall -Werror
 PAL_PKGCONFIG_DEPS=tee-sdk-svc $(PAL_BACKEND) libcrypto libprotobuf-c
 

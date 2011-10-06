@@ -2,32 +2,24 @@ package AkvpStorage;
 
 message Everything
 {
-  required bytes sealed_master_secret=;
-  required bytes mac_of_header=;
-  required Header header=;
-  repeated MacdEncdEntry macd_encd_entries=;
+//  bytes sealed_master_secret=;
+//  bytes mac_of_header=;
+  required Header header=3;
+//  MacdEncdEntry macd_encd_entries=;
 }
 
 message Header
 {
-  bytes sealed_private_key=;
-  bytes public_key=;
-  bytes sealed_master_symmetric_secret=;
-  string audit_pub_key_pem=;
+//  bytes sealed_private_key=;
+//  bytes public_key=;
+//  bytes sealed_master_symmetric_secret=;
+  required string audit_pub_key_pem=4;
 }
 
 message MacdEncdEntry
 {
-  string key=1;
-  bytes salt=;
-  bytes mac=;
-  bytes encd_entry=;
+  required string key=1;
+  required bytes salt=2;
+  required bytes mac=3;
+  required bytes encd_entry=4;
 }
-
-message Entry
-{
-  string key=1;
-
-  bytes encrypted_val=;
-}
-
