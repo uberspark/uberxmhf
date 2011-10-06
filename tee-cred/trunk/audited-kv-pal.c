@@ -115,12 +115,12 @@ akv_err_t akvp_init(const Akvp__InitReq *req, Akvp__InitRes *res)
     free(akv_ctx.master_secret);
     akv_ctx.master_secret=NULL;
   }
+  akv_ctx.master_secret_len = AKVP_MASTER_SECRET_LEN;
   akv_ctx.master_secret = malloc(akv_ctx.master_secret_len);
   if(!akv_ctx.master_secret) {
     rv = AKV_ENOMEM;
     goto out;
   }
-  akv_ctx.master_secret_len = AKVP_MASTER_SECRET_LEN;
   svcapirv = svc_utpm_rand_block(akv_ctx.master_secret,
                                  akv_ctx.master_secret_len);
   if (svcapirv) {
