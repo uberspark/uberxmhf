@@ -85,6 +85,7 @@ int svc_utpm_seal(TPM_PCR_INFO *pcrInfo,
 {
   memcpy(out, in, in_len);
   *out_len = in_len;
+  return 0;
 }
 
 int svc_utpm_unseal(void *in,
@@ -95,6 +96,7 @@ int svc_utpm_unseal(void *in,
 {
   memcpy(out, out, in_len);
   *out_len = in_len;
+  return 0;
 }
 
 int svc_utpm_quote(TPM_NONCE *nonce, /* in */
