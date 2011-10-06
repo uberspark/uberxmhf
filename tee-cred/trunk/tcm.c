@@ -260,6 +260,19 @@ int main(int argc, char **argv)
     val=NULL;
   }
 
+  {
+    akv_err_t akv_err;
+    akv_err = akv_export(tcm_ctx.akv_ctx,
+                         NULL,
+                         NULL);
+    if (akv_err) {
+      rv=5;
+      printf("akv_export failed with 0x%x\n", akv_err);
+      goto cleanup_tcm;
+    }
+  }
+    
+
  cleanup_tcm:
   tcm_ctx_release(&tcm_ctx);
  cleanup_akv:

@@ -33,6 +33,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#include <stdio.h>
 #include <string.h>
 
 #include <tee-sdk/tze.h>
@@ -48,6 +49,7 @@
 #include "proto-gend/db.pb-c.h"
 #include "proto-gend/audited.pb-c.h"
 #include "proto-gend/akvp.pb-c.h"
+#include "proto-gend/storage.pb-c.h"
 
 /* set to enable userspace mode for testing */
 #ifndef USERSPACE_ONLY
@@ -284,6 +286,34 @@ static akv_err_t akv_execute_audited(akv_cmd_ctx_t* ctx,
     protobuf_c_message_free_unpacked((ProtobufCMessage*)exec_res, NULL);
   }
 
+  return rv;
+}
+
+akv_err_t akv_export(akv_ctx_t* ctx,
+                     char **data,
+                     size_t *data_len)
+{
+  tz_return_t tzrv;
+  AkvpStorage__Everything *res=NULL;
+  akv_err_t svcerr, rv=0;
+
+  tzrv = akvp_invoke(ctx,
+                     AKVP_EXPORT,
+                     NULL,
+                     (ProtobufCMessage**)&res,
+                     (tz_return_t*)&svcerr);
+  if(tzrv) {
+    rv = AKV_ETZ | (tzrv << 8);
+    goto out;
+  }
+  if(svcerr) {
+    rv = svcerr;
+    goto out;
+  }
+
+  printf("audit pem: %s\n", res->header->audit_pub_key_pem);
+
+ out:
   return rv;
 }
 
