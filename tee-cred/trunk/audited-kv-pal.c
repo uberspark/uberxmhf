@@ -42,6 +42,7 @@
 #include <tee-sdk/tz.h>
 #include <tee-sdk/tzmarshal.h>
 
+#include "audited-kv-pal-int.h"
 #include "audited.h"
 #include "audited-kv-pal.h"
 #include "audited-kv-pal-fns.h"
@@ -90,9 +91,8 @@ static bool did_init = false;
 /*   strcpy(rv, src); */
 /*   return rv; */
 /* } */
-static struct {
-  kv_ctx_t* kv_ctx;
-} akv_ctx;
+
+akv_ctx_t akv_ctx;
 
 akv_err_t akvp_init(const Akvp__InitReq *req, Akvp__InitRes *res)
 {
