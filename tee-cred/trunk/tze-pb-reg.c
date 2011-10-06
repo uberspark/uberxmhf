@@ -120,9 +120,11 @@ tz_return_t TZEDispatchProtobuf(const tze_pb_proto_t protos[],
     goto out;
   }
 
-  tzerr = TZEEncodeProtobuf(&op, req);
-  if (tzerr) {
-    goto out;
+  if(protos[uiCommand].req_descriptor) {
+    tzerr = TZEEncodeProtobuf(&op, req);
+    if (tzerr) {
+      goto out;
+    }
   }
 
   tzerr = TZOperationPerform(&op, puiRv);
@@ -130,10 +132,12 @@ tz_return_t TZEDispatchProtobuf(const tze_pb_proto_t protos[],
     goto out;
   }
 
-  tzerr = TZEDecodeProtobuf(&op,
-                            protos[uiCommand].res_descriptor,
-                            NULL,
-                            res);
+  if(protos[uiCommand].res_descriptor) {
+    tzerr = TZEDecodeProtobuf(&op,
+                              protos[uiCommand].res_descriptor,
+                              NULL,
+                              res);
+  }
   if (tzerr) {
     goto out;
   }
