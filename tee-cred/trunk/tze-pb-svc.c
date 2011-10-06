@@ -66,9 +66,11 @@ tz_return_t TZEDispatchImpProtobuf(const tze_pb_proto_t protos[],
     goto free_unpacked_req;
   }
 
-  tzerr = TZIEncodeProtobuf(psOutBuf, res);
-  if(tzerr) {
-    goto free_res;
+  if (protos[uiCommand].res_descriptor) {
+    tzerr = TZIEncodeProtobuf(psOutBuf, res);
+    if(tzerr) {
+      goto free_res;
+    }
   }
   
  free_res:
@@ -77,7 +79,9 @@ tz_return_t TZEDispatchImpProtobuf(const tze_pb_proto_t protos[],
   }
   free(res);
  free_unpacked_req:
-  protobuf_c_message_free_unpacked(req, NULL);
+  if(req) {
+    protobuf_c_message_free_unpacked(req, NULL);
+  }
  out:
   return tzerr;
 }
