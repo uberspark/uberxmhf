@@ -54,6 +54,7 @@ PAL_OBJS= \
 	audited-kv-pal-protos.o \
 	tze-pb-svc.o \
 	tze-pb-marshal.o \
+	audited-kv-pal-storage.o \
 	proto-gend/db.pb-c.o \
 	proto-gend/audited.pb-c.o \
 	proto-gend/akvp.pb-c.o \
