@@ -128,11 +128,13 @@ akv_err_t akvp_init_priv(const char *audit_pub_pem)
     goto out;
   }
 
+ out:
   if(!rv) {
     did_init = true;
+  } else {
+    did_init = false;
   }
 
- out:
   return rv;
 }
 
