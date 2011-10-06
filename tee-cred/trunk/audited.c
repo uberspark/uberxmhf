@@ -94,6 +94,12 @@ audited_err_t audited_init(const char* audit_server_pub_pem)
 {
   audited_err_t rv=0;
   BIO *mem;
+  did_init=false;
+
+  if(audit_pub_key) {
+    RSA_free(audit_pub_key);
+    audit_pub_key=NULL;
+  }
 
   mem = BIO_new_mem_buf((char*)audit_server_pub_pem, -1);
   if(!mem) {
