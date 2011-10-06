@@ -41,7 +41,7 @@
 
 #include "kv.h"
 
-#define AKVP_MASTER_SECRET_LEN 256
+#define AKVP_MASTER_SECRET_LEN (256/8)
 
 /* consider putting into a private header file, or refactoring to take
    context as a parameter instead of using a global context */
