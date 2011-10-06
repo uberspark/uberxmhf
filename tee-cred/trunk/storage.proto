@@ -5,7 +5,7 @@ message Everything
   required bytes sealed_master_secret=;
   required bytes mac_of_header=;
   required Header header=;
-  repeated MacdEntry macd_entries=;
+  repeated MacdEncdEntry macd_encd_entries=;
 }
 
 message Header
@@ -16,17 +16,18 @@ message Header
   string audit_pub_key_pem=;
 }
 
-message MacdEntry
+message MacdEncdEntry
 {
-  /* no need for salt, since Entry has a salt inside it? */
+  string key=1;
+  bytes salt=;
   bytes mac=;
-  Entry entry=;
+  bytes encd_entry=;
 }
 
 message Entry
 {
   string key=1;
-  bytes salt=;
+
   bytes encrypted_val=;
 }
 
