@@ -150,7 +150,7 @@ _audited-kv-pal_ : the PAL code that actually runs inside the TEE
 
 ## Command string vs Audit string
 
-2010-06-08: actually, let's have the pal generate the command string
+2011-06-08: actually, let's have the pal generate the command string
 and return it to the program. This avoids all the complexities and
 pitfalls of having the PAL try to parse an untrusted human-readable
 command string. Instead, think of this as an *audit string*; the
@@ -160,7 +160,7 @@ will execute the command.
 
 ## Reentrancy
 
-2010-06-08: let's make the PAL reentrant. Instead of storing the
+2011-06-08: let's make the PAL reentrant. Instead of storing the
 audit-nonce, audit-string, time, etc., let's seal it for ourselves and
 make the calling program give it back to us when it wants to execute
 the command. we'll need the pcr-at-origin feature in seal to validate
