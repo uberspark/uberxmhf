@@ -166,8 +166,7 @@ akv_err_t akvp_import(const AkvpStorage__Everything *req, void *res)
     free(akv_ctx.master_secret);
     akv_ctx.master_secret=NULL;
   }
-  akv_ctx.master_secret_len = AKVP_MASTER_SECRET_LEN;
-  akv_ctx.master_secret = malloc(akv_ctx.master_secret_len);
+  akv_ctx.master_secret = malloc(req->sealed_master_secret.len);
   if(!akv_ctx.master_secret) {
     rv = AKV_ENOMEM;
     goto out;
