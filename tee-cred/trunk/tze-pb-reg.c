@@ -110,7 +110,9 @@ tz_return_t TZEDispatchProtobuf(const tze_pb_proto_t protos[],
   tz_return_t tzerr=0;
   tz_operation_t op;
 
-  *res=NULL;
+  if(res) {
+    *res=NULL;
+  }
 
   tzerr = TZOperationPrepareInvoke(session,
                                    uiCommand,

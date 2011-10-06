@@ -56,6 +56,9 @@ akv_err_t akv_ctx_release(akv_ctx_t* ctx);
 akv_err_t akv_export(akv_ctx_t* ctx,
                      uint8_t **data,
                      size_t *data_len);
+akv_err_t akv_import(akv_ctx_t* ctx,
+                     uint8_t *data,
+                     size_t data_len);
 
 typedef struct {
   Audited__StartRes *audited;

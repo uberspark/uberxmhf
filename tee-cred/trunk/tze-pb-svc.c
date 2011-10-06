@@ -111,15 +111,22 @@ tz_return_t TZEExecuteProtobufFn(const ProtobufCMessageDescriptor *res_descr,
 {
   tz_return_t err=0;
 
-  *res = malloc(res_descr->sizeof_message);
-  if(!*res) {
-    err = TZ_ERROR_MEMORY;
-    goto out;
+  if(res_descr && res) {
+    *res = malloc(res_descr->sizeof_message);
+    if(!*res) {
+      err = TZ_ERROR_MEMORY;
+      goto out;
+    }
+    protobuf_c_message_init(res_descr, *res);
   }
-  protobuf_c_message_init(res_descr, *res);
 
-  *puiRv = exec(req, *res);
-  if (*puiRv) {
+  if(res_descr) {
+    *puiRv = exec(req, *res);
+  } else {
+    *puiRv = exec(req, NULL);
+  }
+
+  if (*puiRv && res) {
     /* Note that we interpret non-zero puiRv to mean there is no
        encodable result. In case the invoked function wants to return
        an error and additional information, puiRv should be 0, and the

@@ -73,9 +73,22 @@ static akv_err_t composite_hash_of_current_pcrs(TPM_DIGEST *composite_hash,
   int i;
   uint8_t pcr[TPM_HASH_SIZE];
   int svcrv;
+  uint32_t sizeof_pcrs;
+  uint32_t sizeof_pcrs_be;
 
   SHA1_Init(&sha_ctx);
   SHA1_Update(&sha_ctx, pcr_selection, sizeof(*pcr_selection));
+
+  for(i=0; i<TPM_PCR_NUM; i++) {
+    if(utpm_pcr_is_selected(pcr_selection, i)) {
+      sizeof_pcrs += TPM_HASH_SIZE;
+    }
+  }
+  assert((sizeof_pcrs & 0xff) == sizeof_pcrs);
+  sizeof_pcrs_be = sizeof_pcrs << 24; /* XXX quick and dirty
+                                         conversion to big endian */
+  SHA1_Update(&sha_ctx, &sizeof_pcrs_be, sizeof(sizeof_pcrs_be));
+  
   for(i=0; i<TPM_PCR_NUM; i++) {
     if(utpm_pcr_is_selected(pcr_selection, i)) {
       svcrv = svc_utpm_pcr_read(i, &pcr[0]);

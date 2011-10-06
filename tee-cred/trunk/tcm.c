@@ -163,7 +163,7 @@ tcm_err_t tcm_db_get(tcm_ctx_t* tcm_ctx,
   return rv;
 }
 
-char* read_file(const char *path)
+void* read_file(const char *path, size_t *len)
 {
   struct stat s;
   size_t toread;
@@ -182,7 +182,7 @@ char* read_file(const char *path)
     return NULL;
   }
 
-  f = fopen(path, "r");
+  f = fopen(path, "rb");
   if(f == NULL) {
     return NULL;
   }
@@ -197,6 +197,11 @@ char* read_file(const char *path)
     numread += cnt;
   }
   rv[numread] = '\0';
+
+  if(len) {
+    *len=numread;
+  }
+
   return rv;
 }
 
@@ -235,7 +240,7 @@ int main(int argc, char **argv)
   const char* server = argv[1];
   const char* port = argv[2];
   const char* pem_pub_key_file = argv[3];
-  char *pem_pub_key = read_file(pem_pub_key_file);
+  char *pem_pub_key = read_file(pem_pub_key_file, NULL);
 
   audit_err = audit_ctx_init(&audit_ctx, server, port);
   if (audit_err) {
@@ -296,7 +301,22 @@ int main(int argc, char **argv)
     }
     write_file("db", data, len);
   }
-    
+
+  {
+    akv_err_t akv_err;
+    uint8_t *data;
+    size_t len;
+
+    data = read_file("db", &len);
+    akv_err = akv_import(tcm_ctx.akv_ctx,
+                         data,
+                         len);
+    if (akv_err) {
+      rv=6;
+      printf("akv_import failed with 0x%x\n", akv_err);
+      goto cleanup_tcm;
+    }
+  }
 
  cleanup_tcm:
   tcm_ctx_release(&tcm_ctx);

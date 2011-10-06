@@ -310,6 +310,7 @@ akv_err_t akv_export(akv_ctx_t* ctx,
     goto out;
   }
 
+  /* XXX redundantly unpacked in akvp_invoke and repacked here */
   *data_len = akvp_storage__everything__get_packed_size(res);
   *data = malloc(*data_len);
   if (!*data) {
@@ -322,6 +323,43 @@ akv_err_t akv_export(akv_ctx_t* ctx,
   return rv;
 }
 
+akv_err_t akv_import(akv_ctx_t* ctx,
+                     uint8_t *data,
+                     size_t data_len)
+{
+  tz_return_t tzrv;
+  AkvpStorage__Everything *req=NULL;
+  akv_err_t svcerr, rv=0;
+
+  /* XXX redundantly packing here just to be packed again in
+     akvp_invoke */
+  req = akvp_storage__everything__unpack(NULL, data_len, data);
+  if(!req) {
+    rv = AKV_EDECODE;
+    goto out;
+  }
+
+  tzrv = akvp_invoke(ctx,
+                     AKVP_IMPORT,
+                     (ProtobufCMessage*)req,
+                     NULL,
+                     (tz_return_t*)&svcerr);
+  if(tzrv) {
+    rv = AKV_ETZ | (tzrv << 8);
+    goto out;
+  }
+  if(svcerr) {
+    rv = svcerr;
+    goto out;
+  }
+
+ out:
+  if(req) {
+    akvp_storage__everything__free_unpacked(req, NULL);
+    req=NULL;
+  }
+  return rv;
+}
 
 akv_err_t akv_db_add_begin(akv_ctx_t*  ctx,
                            akv_cmd_ctx_t* cmd_ctx,
