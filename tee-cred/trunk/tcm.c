@@ -200,6 +200,28 @@ char* read_file(const char *path)
   return rv;
 }
 
+int write_file(const char *path, uint8_t *data, size_t towrite)
+{
+  FILE *f=NULL;
+  size_t numwritten=0;
+
+  f = fopen(path, "wb");
+  if (!f) {
+    return 1;
+  }
+
+  while(towrite > 0) {
+    size_t cnt = fwrite(&data[numwritten], 1, towrite, f);
+    if (cnt == 0) {
+      return 1;
+    }
+    towrite -= cnt;
+    numwritten += cnt;
+  }
+  fflush(f);
+  return 0;
+}
+
 int main(int argc, char **argv)
 {
   int rv=0;
@@ -262,14 +284,17 @@ int main(int argc, char **argv)
 
   {
     akv_err_t akv_err;
+    uint8_t *data;
+    size_t len;
     akv_err = akv_export(tcm_ctx.akv_ctx,
-                         NULL,
-                         NULL);
+                         &data,
+                         &len);
     if (akv_err) {
       rv=5;
       printf("akv_export failed with 0x%x\n", akv_err);
       goto cleanup_tcm;
     }
+    write_file("db", data, len);
   }
     
 

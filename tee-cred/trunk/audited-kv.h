@@ -54,7 +54,7 @@ typedef struct {
 akv_err_t akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem);
 akv_err_t akv_ctx_release(akv_ctx_t* ctx);
 akv_err_t akv_export(akv_ctx_t* ctx,
-                     char **data,
+                     uint8_t **data,
                      size_t *data_len);
 
 typedef struct {

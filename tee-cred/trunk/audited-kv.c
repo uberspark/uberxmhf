@@ -290,7 +290,7 @@ static akv_err_t akv_execute_audited(akv_cmd_ctx_t* ctx,
 }
 
 akv_err_t akv_export(akv_ctx_t* ctx,
-                     char **data,
+                     uint8_t **data,
                      size_t *data_len)
 {
   tz_return_t tzrv;
@@ -312,6 +312,14 @@ akv_err_t akv_export(akv_ctx_t* ctx,
   }
 
   printf("audit pem: %s\n", res->header->audit_pub_key_pem);
+
+  *data_len = akvp_storage__everything__get_packed_size(res);
+  *data = malloc(*data_len);
+  if (!*data) {
+    rv = AKV_ENOMEM;
+    goto out;
+  }
+  akvp_storage__everything__pack(res, *data);
 
  out:
   return rv;
