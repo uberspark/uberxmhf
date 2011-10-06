@@ -1,7 +1,7 @@
 srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
 VPATH=$(srcdir)
 
-all : main
+all : depend main
 
 pal-build/audited-kv-pal.pal.o :
 	cd pal-build ; make audited-kv-pal.pal.o
@@ -10,17 +10,8 @@ test :
 	cd tests ; make
 .PHONY : test
 
-proto-gend/db.pb-c.c proto-gend/db.pb-c.h : db.proto
-	protoc-c --c_out=proto-gend db.proto
-
-proto-gend/audited.pb-c.c proto-gend/audited.pb-c.h : audited.proto
-	protoc-c --c_out=proto-gend audited.proto
-
-proto-gend/akvp.pb-c.c proto-gend/akvp.pb-c.h : akvp.proto
-	protoc-c --c_out=proto-gend akvp.proto
-
-proto-gend/storage.pb-c.c proto-gend/storage.pb-c.h : storage.proto
-	protoc-c --c_out=proto-gend storage.proto
+proto-gend/%.pb-c.c proto-genc/%.pb-c.h : %.proto
+	protoc-c --c_out=proto-gend $^
 
 PROG_NAME=main
 PAL_NAME=audited-kv-pal
@@ -34,6 +25,7 @@ PROG_OBJS= \
 	proto-gend/audited.pb-c.o \
 	proto-gend/akvp.pb-c.o \
 	proto-gend/storage.pb-c.o
+SRCS=$(patsubst %.o,%.c,$(PROG_OBJS))
 CFLAGS+=-g -Wall -Werror
 LDFLAGS+=--static
 CFLAGS+=-DUSERSPACE_ONLY=1
@@ -47,16 +39,22 @@ LDLIBS+=-T$(PAL_NAME).pal.ld
 $(PAL_NAME).pal.ld :
 	sed 's/PAL_NAME/pal-build\/$(PAL_NAME)/g' $(TEESDK_DATA_DIR)/pal-template.ld > $@
 
-$(PROG_NAME) : $(PROG_OBJS) $(PAL_NAME).pal.ld
+$(PROG_NAME) : $(PROG_OBJS) $(PAL_NAME).pal.ld pal-build/audited-kv-pal.pal.o
 	$(CC) $(LDFLAGS) -o $@ $(PROG_OBJS) $(LDLIBS)
 
 all: $(PROG_NAME)
 
 clean:
-	$(RM) .*.cmd *.o *.ko *~ -r .tmp* $(PROG_NAME) $(PROG_OBJS)
+	$(RM) .*.cmd *.o *.ko *~ -r .tmp* $(PROG_NAME) $(PROG_OBJS) .depend
 	cd tests ; make clean
 	cd pal-build ; make clean
 .PHONY: clean all
+
+depend: .depend
+.depend: $(SRCS)
+	rm -f ./.depend
+	$(CC) $(CFLAGS) -MM $^ >> ./.depend;
+include .depend
 
 TEESDK_DATA_DIR=$(shell pkg-config --variable=pkgdatadir tee-sdk-app)
 
