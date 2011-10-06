@@ -1,0 +1,32 @@
+package AkvpStorage;
+
+message Everything
+{
+  required bytes sealed_master_secret=;
+  required bytes mac_of_header=;
+  required Header header=;
+  repeated MacdEntry macd_entries=;
+}
+
+message Header
+{
+  bytes sealed_private_key=;
+  bytes public_key=;
+  bytes sealed_master_symmetric_secret=;
+  string audit_pub_key_pem=;
+}
+
+message MacdEntry
+{
+  /* no need for salt, since Entry has a salt inside it? */
+  bytes mac=;
+  Entry entry=;
+}
+
+message Entry
+{
+  string key=1;
+  bytes salt=;
+  bytes encrypted_val=;
+}
+
