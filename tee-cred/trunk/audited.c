@@ -142,7 +142,7 @@ audited_err_t audited_get_audit_server_pub_pem(char **audit_pub_key_pem)
   }
   
   /*  1 for success or 0 for failure */
-  cryptorv = PEM_write_bio_RSAPublicKey(bio, audit_pub_key);
+  cryptorv = PEM_write_bio_RSA_PUBKEY(bio, audit_pub_key);
   if(!cryptorv) {
     rv=AUDITED_ECRYPTO;
     goto free_bio;
