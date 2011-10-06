@@ -63,19 +63,93 @@ static int get_free_pending_id()
   return 0;
 }
 
+static void clone_mem_bio(BIO *bio, void **buf, size_t *buflen)
+{
+  char *internal_buf;
+  size_t len;
+
+  *buf=NULL;
+
+  len = BIO_get_mem_data(bio, &internal_buf);
+  if (!internal_buf) {
+    return;
+  }
+
+  if(buflen) {
+    *buflen=len;
+  }
+
+  *buf = malloc(*buflen);
+  if(!*buf) {
+    return;
+  }
+
+  memcpy(*buf, internal_buf, len);
+  return;
+}
+
 audited_err_t audited_init(const char* audit_server_pub_pem)
 {
+  audited_err_t rv=0;
   BIO *mem;
 
   mem = BIO_new_mem_buf((char*)audit_server_pub_pem, -1);
+  if(!mem) {
+    rv=AUDITED_ECRYPTO;
+    goto out;
+  }
+
   audit_pub_key =
     PEM_read_bio_RSA_PUBKEY(mem, NULL, NULL, NULL);
   if (!audit_pub_key) {
     ERR_print_errors_fp(stderr);
-    return AUDITED_EBADKEY;
+    rv=AUDITED_EBADKEY;
+    goto free_bio;
   }
+
   did_init=true;
+
+ free_bio:
+  /* this does *not* free the underlying char* in this case, because
+     BIO_new_mem_buf creates a read-only BIO */
+  BIO_vfree(mem);
+ out:
   return AUDITED_ENONE;
+}
+
+/* returned pointer is mallocd */
+audited_err_t audited_get_audit_server_pub_pem(char **audit_pub_key_pem)
+{
+  BIO *bio;
+  audited_err_t rv=0;
+  int cryptorv;
+
+  *audit_pub_key_pem=NULL;
+
+  bio = BIO_new(BIO_s_mem());
+  if (!bio) {
+    rv=AUDITED_ECRYPTO;
+    goto out;
+  }
+  
+  /*  1 for success or 0 for failure */
+  cryptorv = PEM_write_bio_RSAPublicKey(bio, audit_pub_key);
+  if(!cryptorv) {
+    rv=AUDITED_ECRYPTO;
+    goto free_bio;
+  }
+
+  /* copy to a plain old mallocd buffer, so that caller can free it */
+  clone_mem_bio(bio, (void**)audit_pub_key_pem, NULL);
+  if(!audit_pub_key_pem) {
+    rv=AUDITED_ECRYPTO;
+    goto free_bio;
+  }
+
+ free_bio:
+  BIO_vfree(bio);
+ out:
+  return rv;
 }
 
 void audited_release_pending_cmd_id(int i)

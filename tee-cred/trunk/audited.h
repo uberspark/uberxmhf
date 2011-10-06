@@ -85,6 +85,7 @@ extern audited_cmd_t audited_cmds[];
 extern size_t audited_cmds_num;
 
 audited_err_t audited_init(const char* audit_server_pub_pem);
+audited_err_t audited_get_audit_server_pub_pem(char **audit_pub_key_pem);
 void audited_release_pending_cmd_id(int i);
 audited_pending_cmd_t* audited_pending_cmd_of_id(int i);
 int audited_save_pending_cmd(audited_cmd_t *fns, void *req, char *audit_string);
