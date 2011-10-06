@@ -208,16 +208,16 @@ akv_err_t akvp_init_priv(const char *audit_pub_pem, void *master_secret, size_t 
     }
   }
 
-  rv = akvp_set_master_secret(master_secret, master_secret_len);
-  if(rv) {
-    goto out;
-  }
-
   akv_ctx = (akv_ctx_t) {
     .master_secret = master_secret,
     .master_secret_len = master_secret_len,
     .kv_ctx = kv_ctx,
   };
+
+  rv = akvp_set_master_secret(master_secret, master_secret_len);
+  if(rv) {
+    goto out;
+  }
 
  out:
   if(!rv) {

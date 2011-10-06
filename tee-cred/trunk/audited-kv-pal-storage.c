@@ -247,6 +247,7 @@ akv_err_t akvp_import(const AkvpStorage__Everything *req, void *res)
     rv= AKV_ESVC | (svcrv << 8);
     goto out;
   }
+  /* XXX check digest_at_creation */
 
   rv = akvp_init_priv(req->header->audit_pub_key_pem,
                       master_secret,
