@@ -118,6 +118,7 @@ int svc_utpm_pcr_read(uint32_t idx,
                       uint8_t* val)
 {
   memset(val, 0, 20);
+  return 0;
 }
 
 int svc_utpm_id_getpub(uint8_t *N)
