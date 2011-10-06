@@ -79,7 +79,9 @@ static void clone_mem_bio(BIO *bio, void **buf, size_t *buflen)
     *buflen=len;
   }
 
-  *buf = malloc(*buflen);
+  *buf = malloc(len+1); /* always allocate an extra space for a null
+                           character, but leave it to caller to
+                           actually set it if needed */
   if(!*buf) {
     return;
   }
@@ -123,6 +125,7 @@ audited_err_t audited_get_audit_server_pub_pem(char **audit_pub_key_pem)
   BIO *bio;
   audited_err_t rv=0;
   int cryptorv;
+  size_t len;
 
   *audit_pub_key_pem=NULL;
 
@@ -140,11 +143,12 @@ audited_err_t audited_get_audit_server_pub_pem(char **audit_pub_key_pem)
   }
 
   /* copy to a plain old mallocd buffer, so that caller can free it */
-  clone_mem_bio(bio, (void**)audit_pub_key_pem, NULL);
+  clone_mem_bio(bio, (void**)audit_pub_key_pem, &len);
   if(!audit_pub_key_pem) {
     rv=AUDITED_ECRYPTO;
     goto free_bio;
   }
+  (*audit_pub_key_pem)[len] = '\0';
 
  free_bio:
   BIO_vfree(bio);
