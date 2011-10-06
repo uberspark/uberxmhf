@@ -122,7 +122,7 @@ audited_err_t audited_init(const char* audit_server_pub_pem)
      BIO_new_mem_buf creates a read-only BIO */
   BIO_vfree(mem);
  out:
-  return AUDITED_ENONE;
+  return rv;
 }
 
 /* returned pointer is mallocd */
