@@ -63,7 +63,7 @@ static akv_err_t export_header(AkvpStorage__Header *h)
   return rv;
 }
 
-static akv_err_t composite_hash_of_current_pcrs(TPM_DIGEST *composite_hash,
+static akv_err_t composite_hash_of_current_pcrs(TPM_COMPOSITE_HASH *composite_hash,
                                                 TPM_PCR_SELECTION *pcr_selection) /* FIXME: should be
                                                                                      const. need fo fix
                                                                                      utpm_pcr_is_selected
@@ -159,6 +159,11 @@ akv_err_t akvp_export(const void *req, AkvpStorage__Everything *res)
  out:
   return rv;
 }
+void akvp_export_release_res(AkvpStorage__Everything *res)
+{
+  akvp_storage__header__free_unpacked(res->header, NULL);
+  free(res->sealed_master_secret.data);
+}
 
 akv_err_t akvp_import(const AkvpStorage__Everything *req, void *res)
 {
@@ -194,7 +199,3 @@ akv_err_t akvp_import(const AkvpStorage__Everything *req, void *res)
   return rv;
 }
 
-void akvp_export_release_res(AkvpStorage__Everything *res)
-{
-  akvp_storage__everything__free_unpacked(res, NULL);
-}
