@@ -39,6 +39,9 @@
 #include <assert.h>
 #include <stdarg.h>
 
+#include <openssl/sha.h>
+#include <openssl/hmac.h>
+
 #include <tee-sdk/tz.h>
 #include <tee-sdk/tzmarshal.h>
 
@@ -114,6 +117,65 @@ static void akvp_uninit()
   };
 }
 
+static akv_err_t derive_from_master(void *dst,
+                                    size_t dst_len,
+                                    const void *master_secret,
+                                    size_t master_secret_len,
+                                    const char *name)
+{
+  akv_err_t rv=0;
+  uint8_t md[SHA256_DIGEST_LENGTH];
+  size_t md_len=SHA256_DIGEST_LENGTH;
+  uint8_t *md_res;
+
+  md_res = HMAC(EVP_sha256(),
+                master_secret, master_secret_len,
+                (uint8_t*)name, strlen(name),
+                md, &md_len);
+  if(!md_res) {
+    rv = AKV_ECRYPTO;
+    goto out;
+  }
+
+  if(dst_len > SHA256_DIGEST_LENGTH) {
+    rv = AKV_EPARAM;
+    goto out;
+  }
+
+  memcpy(dst, md_res, dst_len);
+
+ out:
+  return rv;
+}
+
+akv_err_t akvp_set_master_secret(void *master_secret, size_t master_secret_len)
+{
+  akv_err_t rv=0;
+
+  /* reset hmac_key */
+  {
+    if(akv_ctx.hmac_key) {
+      free(akv_ctx.hmac_key);
+      akv_ctx.hmac_key=NULL;
+    }
+    akv_ctx.hmac_key=malloc(AKVP_HMAC_KEY_LEN);
+    if(!akv_ctx.hmac_key) {
+      rv = AKV_ENOMEM;
+      goto out;
+    }
+    akv_ctx.hmac_key_len=AKVP_HMAC_KEY_LEN;
+    rv = derive_from_master(akv_ctx.hmac_key, akv_ctx.hmac_key_len,
+                            master_secret, master_secret_len,
+                            "HMAC");
+    if(!rv) {
+      goto out;
+    }
+  }
+
+ out:
+  return rv;
+}
+
 akv_err_t akvp_init_priv(const char *audit_pub_pem, void *master_secret, size_t master_secret_len)
 {
   audited_err_t audited_err;
@@ -144,6 +206,11 @@ akv_err_t akvp_init_priv(const char *audit_pub_pem, void *master_secret, size_t 
       rv = AKV_ESVC | (svcapirv << 8);
       goto out;
     }
+  }
+
+  rv = akvp_set_master_secret(master_secret, master_secret_len);
+  if(rv) {
+    goto out;
   }
 
   akv_ctx = (akv_ctx_t) {

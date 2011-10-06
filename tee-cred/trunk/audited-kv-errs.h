@@ -55,6 +55,8 @@ typedef enum {
   AKV_EBADAUTH=15,
   AKV_ETZ=16, /* TZ error shifted on */
   AKV_ESVC=17,
+  AKV_ECRYPTO=18,
+  AKV_EBADMAC=19,
 } akv_err_t;
 
 #endif

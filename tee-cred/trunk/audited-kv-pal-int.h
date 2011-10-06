@@ -43,6 +43,8 @@
 #include "audited-kv-errs.h"
 
 #define AKVP_MASTER_SECRET_LEN (256/8)
+#define AKVP_HMAC_KEY_LEN (256/8)
+#define AKVP_AES_KEY_LEN (128/8)
 
 /* consider putting into a private header file, or refactoring to take
    context as a parameter instead of using a global context */

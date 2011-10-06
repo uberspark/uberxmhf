@@ -35,12 +35,49 @@
 
 #include <google/protobuf-c/protobuf-c.h>
 #include <openssl/sha.h>
+#include <openssl/hmac.h>
 
 #include <string.h>
 
 #include "audited-kv-pal-int.h"
 #include "audited.h"
 #include "audited-kv-pal-storage.h"
+
+static akv_err_t compute_header_mac(const AkvpStorage__Header *h,
+                                    uint8_t *md,
+                                    size_t *md_len)
+{
+  HMAC_CTX ctx;
+  int cryptorv;
+  akv_err_t rv=0;
+
+  HMAC_CTX_init(&ctx);
+  cryptorv = HMAC_Init_ex(&ctx,
+                          akv_ctx.hmac_key, akv_ctx.hmac_key_len,
+                          EVP_sha256(), NULL);
+  if(!cryptorv) {
+    rv = AKV_ECRYPTO;
+    goto out;
+  }
+
+  cryptorv = HMAC_Update(&ctx, (uint8_t*)h->audit_pub_key_pem, strlen(h->audit_pub_key_pem));
+  if(!cryptorv) {
+    rv = AKV_ECRYPTO;
+    goto cleanup_ctx;
+  }
+
+  cryptorv = HMAC_Final(&ctx, md, md_len);
+  if(!cryptorv) {
+    rv = AKV_ECRYPTO;
+    goto cleanup_ctx;
+  }
+
+ cleanup_ctx:
+  HMAC_CTX_cleanup(&ctx);
+ out:
+  return rv;
+}
+                                    
 
 static akv_err_t export_header(AkvpStorage__Header *h)
 {
@@ -109,6 +146,8 @@ akv_err_t akvp_export(const void *req, AkvpStorage__Everything *res)
   AkvpStorage__Header *header;
   size_t sealed_master_secret_len=akv_ctx.master_secret_len+100;
   void *sealed_master_secret;
+  uint8_t *header_mac=NULL;
+  size_t header_mac_len=SHA256_DIGEST_LENGTH;
 
   {
     TPM_PCR_INFO pcr_info;
@@ -147,6 +186,20 @@ akv_err_t akvp_export(const void *req, AkvpStorage__Everything *res)
   }
 
   rv = export_header(header);
+  if(rv) {
+    goto out;
+  }
+
+  header_mac=malloc(header_mac_len);
+  if(!header_mac) {
+    rv = AKV_ENOMEM;
+    goto out;
+  }
+  rv = compute_header_mac(header, header_mac, &header_mac_len);
+  if(rv) {
+    goto out;
+  }
+
   *res = (AkvpStorage__Everything) {
     .base =  PROTOBUF_C_MESSAGE_INIT (&akvp_storage__everything__descriptor),
     .sealed_master_secret = {
@@ -154,6 +207,10 @@ akv_err_t akvp_export(const void *req, AkvpStorage__Everything *res)
       .len=sealed_master_secret_len,
     },
     .header = header,
+    .mac_of_header = {
+      .data=header_mac,
+      .len=header_mac_len,
+    },
   };
 
  out:
@@ -163,6 +220,7 @@ void akvp_export_release_res(AkvpStorage__Everything *res)
 {
   akvp_storage__header__free_unpacked(res->header, NULL);
   free(res->sealed_master_secret.data);
+  free(res->mac_of_header.data);
 }
 
 akv_err_t akvp_import(const AkvpStorage__Everything *req, void *res)
@@ -172,6 +230,8 @@ akv_err_t akvp_import(const AkvpStorage__Everything *req, void *res)
   TPM_DIGEST digest_at_creation;
   void *master_secret;
   size_t master_secret_len;
+  uint8_t header_mac[SHA256_DIGEST_LENGTH];
+  size_t header_mac_len=SHA256_DIGEST_LENGTH;
 
   master_secret = malloc(req->sealed_master_secret.len);
   if(!master_secret) {
@@ -192,6 +252,16 @@ akv_err_t akvp_import(const AkvpStorage__Everything *req, void *res)
                       master_secret,
                       master_secret_len);
   if(rv) {
+    goto out;
+  }
+
+  /* FIXME: should do this before full initialization, above */
+  rv = compute_header_mac(req->header, header_mac, &header_mac_len);
+  if(rv) {
+    goto out;
+  }
+  if(memcmp(header_mac, req->mac_of_header.data, header_mac_len)) {
+    rv = AKV_EBADMAC;
     goto out;
   }
 
