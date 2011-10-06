@@ -41,4 +41,6 @@
 
 akv_err_t akvp_export(const void *req, AkvpStorage__Everything *res);
 void akvp_export_release_res(AkvpStorage__Everything *res);
+
+akv_err_t akvp_import(const AkvpStorage__Everything *req, void *res);
 #endif

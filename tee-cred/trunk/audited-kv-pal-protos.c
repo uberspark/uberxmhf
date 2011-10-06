@@ -54,5 +54,9 @@ const tze_pb_proto_t akvp_protos[] = {
     .req_descriptor = NULL,
     .res_descriptor = &akvp_storage__everything__descriptor,
   },
+  [AKVP_IMPORT] = {
+    .req_descriptor = &akvp_storage__everything__descriptor,
+    .res_descriptor = NULL,
+  },
 };
 

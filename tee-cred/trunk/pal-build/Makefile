@@ -7,8 +7,8 @@ vpath %.c $(srcdir)/..
 
 all : depend audited-kv-pal.pal.o
 
-#PAL_BACKEND=tee-sdk-svc-tv
-PAL_BACKEND=tee-sdk-svc-null
+PAL_BACKEND=tee-sdk-svc-tv
+#PAL_BACKEND=tee-sdk-svc-null
 PAL_NAME=audited-kv-pal
 PAL_OBJS= \
 	audited-kv-pal.o \

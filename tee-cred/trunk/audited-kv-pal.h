@@ -52,8 +52,9 @@ enum akvp_cmds {
   AKVP_START_AUDITED_CMD=1,
   AKVP_EXECUTE_AUDITED_CMD=2,
   AKVP_EXPORT=3,
+  AKVP_IMPORT=4,
 
-  AKVP_NUM=4,
+  AKVP_NUM=5,
 };
   /* AKVP_AUDIT_GET_NONCE, /\* ()                -> random nonce *\/ */
   /* AKVP_AUDIT_EXECUTE,   /\* random nonce, cmd -> f(cmd) *\/ */

@@ -65,6 +65,10 @@ static const tze_pb_imp_t akvp_imps[] = {
     .execute=(tze_pb_execute_fn*)akvp_export,
     .release_res=(tze_pb_release_res_fn*)akvp_export_release_res,
   },
+  [AKVP_IMPORT] = {
+    .execute=(tze_pb_execute_fn*)akvp_import,
+    .release_res=NULL,
+  },
 };
 
 void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)

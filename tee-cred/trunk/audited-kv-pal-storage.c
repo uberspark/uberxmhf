@@ -63,11 +63,11 @@ static akv_err_t export_header(AkvpStorage__Header *h)
   return rv;
 }
 
-akv_err_t composite_hash_of_current_pcrs(TPM_DIGEST *composite_hash,
-                                         TPM_PCR_SELECTION *pcr_selection) /* FIXME: should be
-                                                                              const. need fo fix
-                                                                              utpm_pcr_is_selected
-                                                                              in tv_utpm.h */
+static akv_err_t composite_hash_of_current_pcrs(TPM_DIGEST *composite_hash,
+                                                TPM_PCR_SELECTION *pcr_selection) /* FIXME: should be
+                                                                                     const. need fo fix
+                                                                                     utpm_pcr_is_selected
+                                                                                     in tv_utpm.h */
 {
   SHA_CTX sha_ctx;
   int i;
@@ -138,6 +138,36 @@ akv_err_t akvp_export(const void *req, AkvpStorage__Everything *res)
     },
     .header = header,
   };
+
+ out:
+  return rv;
+}
+
+akv_err_t akvp_import(const AkvpStorage__Everything *req, void *res)
+{
+  uint32_t svcrv;
+  akv_err_t rv=0;
+  TPM_DIGEST digest_at_creation;
+
+  if(akv_ctx.master_secret) {
+    free(akv_ctx.master_secret);
+    akv_ctx.master_secret=NULL;
+  }
+  akv_ctx.master_secret_len = AKVP_MASTER_SECRET_LEN;
+  akv_ctx.master_secret = malloc(akv_ctx.master_secret_len);
+  if(!akv_ctx.master_secret) {
+    rv = AKV_ENOMEM;
+    goto out;
+  }
+  svcrv = svc_utpm_unseal(req->sealed_master_secret.data,
+                          req->sealed_master_secret.len,
+                          akv_ctx.master_secret,
+                          &akv_ctx.master_secret_len,
+                          &digest_at_creation);
+  if(svcrv) {
+    rv= AKV_ESVC | (svcrv << 8);
+    goto out;
+  }
 
  out:
   return rv;
