@@ -40,6 +40,7 @@
 #include <openssl/aes.h>
 
 #include "kv.h"
+#include "audited-kv-errs.h"
 
 #define AKVP_MASTER_SECRET_LEN (256/8)
 
@@ -54,5 +55,7 @@ typedef struct {
   size_t hmac_key_len;
 } akv_ctx_t;
 extern akv_ctx_t akv_ctx;
+
+akv_err_t akvp_init_priv(const char *audit_pub_pem, void *master_secret, size_t master_secret_len);
 
 #endif

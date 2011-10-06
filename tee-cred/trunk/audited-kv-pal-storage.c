@@ -134,6 +134,10 @@ akv_err_t akvp_export(const void *req, AkvpStorage__Everything *res)
                           akv_ctx.master_secret_len,
                           sealed_master_secret,
                           &sealed_master_secret_len);
+    if(svcrv) {
+      rv = AKV_ESVC | (svcrv << 8);
+      goto out;
+    }
   }
 
   header=malloc(sizeof(*header));
@@ -161,23 +165,28 @@ akv_err_t akvp_import(const AkvpStorage__Everything *req, void *res)
   uint32_t svcrv;
   akv_err_t rv=0;
   TPM_DIGEST digest_at_creation;
+  void *master_secret;
+  size_t master_secret_len;
 
-  if(akv_ctx.master_secret) {
-    free(akv_ctx.master_secret);
-    akv_ctx.master_secret=NULL;
-  }
-  akv_ctx.master_secret = malloc(req->sealed_master_secret.len);
-  if(!akv_ctx.master_secret) {
+  master_secret = malloc(req->sealed_master_secret.len);
+  if(!master_secret) {
     rv = AKV_ENOMEM;
     goto out;
   }
   svcrv = svc_utpm_unseal(req->sealed_master_secret.data,
                           req->sealed_master_secret.len,
-                          akv_ctx.master_secret,
-                          &akv_ctx.master_secret_len,
+                          master_secret,
+                          &master_secret_len,
                           &digest_at_creation);
   if(svcrv) {
     rv= AKV_ESVC | (svcrv << 8);
+    goto out;
+  }
+
+  rv = akvp_init_priv(req->header->audit_pub_key_pem,
+                      master_secret,
+                      master_secret_len);
+  if(rv) {
     goto out;
   }
 
