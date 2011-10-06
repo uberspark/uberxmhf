@@ -94,7 +94,7 @@ akv_err_t akvp_export(const void *req, AkvpStorage__Everything *res)
 {
   akv_err_t rv=0;
   AkvpStorage__Header *header;
-  size_t sealed_master_secret_len=akv_ctx.master_secret_len+(256/8+128/8);
+  size_t sealed_master_secret_len=akv_ctx.master_secret_len+100;
   void *sealed_master_secret;
 
   {
