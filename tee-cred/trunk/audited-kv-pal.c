@@ -96,6 +96,8 @@ akv_ctx_t akv_ctx;
 
 static void akvp_uninit()
 {
+  did_init = false;
+
   if(akv_ctx.kv_ctx) {
     kv_ctx_del(akv_ctx.kv_ctx);
     akv_ctx.kv_ctx=NULL;
