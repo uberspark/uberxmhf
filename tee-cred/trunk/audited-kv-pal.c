@@ -94,7 +94,7 @@ static bool did_init = false;
 
 akv_ctx_t akv_ctx;
 
-akv_err_t akvp_init(const Akvp__InitReq *req, Akvp__InitRes *res)
+akv_err_t akvp_init_priv(const char *audit_pub_pem)
 {
   audited_err_t audited_err;
   akv_err_t rv=0;
@@ -105,7 +105,7 @@ akv_err_t akvp_init(const Akvp__InitReq *req, Akvp__InitRes *res)
   }
   akv_ctx.kv_ctx = kv_ctx_new();
 
-  audited_err = audited_init(req->audit_init_req->audit_pub_pem);
+  audited_err = audited_init(audit_pub_pem);
   if (audited_err) {
     rv = AKV_EAUDITED | (audited_err << 8);
     goto out;
@@ -134,6 +134,11 @@ akv_err_t akvp_init(const Akvp__InitReq *req, Akvp__InitRes *res)
 
  out:
   return rv;
+}
+
+akv_err_t akvp_init(const Akvp__InitReq *req, Akvp__InitRes *res)
+{
+  return akvp_init_priv(req->audit_init_req->audit_pub_pem);
 }
 
 void akvp_release(void)
