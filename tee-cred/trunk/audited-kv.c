@@ -75,7 +75,7 @@ akv_err_t akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem)
 {
   tz_return_t tzrv;
   bool registered_pal=false;
-  akv_err_t rv;
+  akv_err_t rv=0;
 
   /* register pal */
   {
