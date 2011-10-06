@@ -94,7 +94,7 @@ int svc_utpm_unseal(void *in,
                     size_t *out_len,
                     void *digestAtCreation)
 {
-  memcpy(out, out, in_len);
+  memcpy(out, in, in_len);
   *out_len = in_len;
   return 0;
 }
