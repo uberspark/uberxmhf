@@ -71,6 +71,10 @@ akv_err_t akvp_export(const void *req, AkvpStorage__Everything *res)
   }
 
   rv = export_header(header);
+  *res = (AkvpStorage__Everything) {
+    .base =  PROTOBUF_C_MESSAGE_INIT (&akvp_storage__everything__descriptor),
+    .header = header,
+  };
 
  out:
   return rv;
