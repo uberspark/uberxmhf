@@ -28,7 +28,7 @@ PROG_OBJS= \
 SRCS=$(patsubst %.o,%.c,$(PROG_OBJS))
 CFLAGS+=-g -Wall -Werror
 LDFLAGS+=--static
-#CFLAGS+=-DUSERSPACE_ONLY=1
+CFLAGS+=-DUSERSPACE_ONLY=1
 PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv libprotobuf-c
 CFLAGS+=$(call pkgconfig_cflags, $(PKGCONFIG_DEPS))
 LDLIBS+=$(call pkgconfig_ldlibs, $(PKGCONFIG_DEPS))
