@@ -94,16 +94,36 @@ static bool did_init = false;
 
 akv_ctx_t akv_ctx;
 
+static void akvp_uninit()
+{
+  if(akv_ctx.kv_ctx) {
+    kv_ctx_del(akv_ctx.kv_ctx);
+    akv_ctx.kv_ctx=NULL;
+  }
+
+  if(akv_ctx.master_secret) {
+    free(akv_ctx.master_secret);
+    akv_ctx.master_secret=NULL;
+  }
+
+  /* XXX uninit audit module? */
+
+  akv_ctx = (akv_ctx_t) {
+  };
+}
+
 akv_err_t akvp_init_priv(const char *audit_pub_pem)
 {
   audited_err_t audited_err;
   akv_err_t rv=0;
   int svcapirv;
+  kv_ctx_t *kv_ctx=NULL;
+  void *master_secret;
+  size_t master_secret_len;
 
-  if(akv_ctx.kv_ctx) {
-    kv_ctx_del(akv_ctx.kv_ctx);
-  }
-  akv_ctx.kv_ctx = kv_ctx_new();
+  akvp_uninit();
+
+  kv_ctx = kv_ctx_new();
 
   audited_err = audited_init(audit_pub_pem);
   if (audited_err) {
@@ -111,22 +131,24 @@ akv_err_t akvp_init_priv(const char *audit_pub_pem)
     goto out;
   }
 
-  if(akv_ctx.master_secret) {
-    free(akv_ctx.master_secret);
-    akv_ctx.master_secret=NULL;
-  }
-  akv_ctx.master_secret_len = AKVP_MASTER_SECRET_LEN;
-  akv_ctx.master_secret = malloc(akv_ctx.master_secret_len);
-  if(!akv_ctx.master_secret) {
+  master_secret_len = AKVP_MASTER_SECRET_LEN;
+  master_secret = malloc(master_secret_len);
+  if(!master_secret) {
     rv = AKV_ENOMEM;
     goto out;
   }
-  svcapirv = svc_utpm_rand_block(akv_ctx.master_secret,
-                                 akv_ctx.master_secret_len);
+  svcapirv = svc_utpm_rand_block(master_secret,
+                                 master_secret_len);
   if (svcapirv) {
     rv = AKV_ESVC | (svcapirv << 8);
     goto out;
   }
+
+  akv_ctx = (akv_ctx_t) {
+    .master_secret = master_secret,
+    .master_secret_len = master_secret_len,
+    .kv_ctx = kv_ctx,
+  };
 
  out:
   if(!rv) {
