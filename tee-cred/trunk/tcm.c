@@ -263,30 +263,6 @@ int main(int argc, char **argv)
     goto cleanup_akv;
   }
 
-  tcm_err = tcm_db_add(&tcm_ctx,
-                       "key",
-                       "val");
-  if (tcm_err) {
-    rv = 4;
-    printf("tcm_db_add failed with 0x%x\n", tcm_err);
-    goto cleanup_tcm;
-  }
-
-  {
-    char *val;
-    tcm_err = tcm_db_get(&tcm_ctx,
-                         "key",
-                         &val);
-    if (tcm_err) {
-      rv = 4;
-      printf("tcm_db_add failed with 0x%x\n", tcm_err);
-      goto cleanup_tcm;
-    }
-    printf("retrieved val:%s\n", val);
-    free(val);
-    val=NULL;
-  }
-
   {
     akv_err_t akv_err;
     uint8_t *data;
@@ -316,6 +292,30 @@ int main(int argc, char **argv)
       printf("akv_import failed with 0x%x\n", akv_err);
       goto cleanup_tcm;
     }
+  }
+
+  tcm_err = tcm_db_add(&tcm_ctx,
+                       "key",
+                       "val");
+  if (tcm_err) {
+    rv = 4;
+    printf("tcm_db_add failed with 0x%x\n", tcm_err);
+    goto cleanup_tcm;
+  }
+
+  {
+    char *val;
+    tcm_err = tcm_db_get(&tcm_ctx,
+                         "key",
+                         &val);
+    if (tcm_err) {
+      rv = 4;
+      printf("tcm_db_add failed with 0x%x\n", tcm_err);
+      goto cleanup_tcm;
+    }
+    printf("retrieved val:%s\n", val);
+    free(val);
+    val=NULL;
   }
 
  cleanup_tcm:
