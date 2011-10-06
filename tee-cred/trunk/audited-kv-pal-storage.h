@@ -33,50 +33,12 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <google/protobuf-c/protobuf-c.h>
+#ifndef AUDITED_KV_PAL_STORAGE_H
+#define AUDITED_KV_PAL_STORAGE_H
 
-#include "audited.h"
-#include "audited-kv-pal-storage.h"
+#include "audited-kv-pal.h"
+#include "proto-gend/storage.pb-c.h"
 
-static akv_err_t export_header(AkvpStorage__Header *h)
-{
-  akv_err_t rv=0;
-  audited_err_t audited_err;
-  char *audit_pub_key_pem;
-
-  audited_err = audited_get_audit_server_pub_pem(&audit_pub_key_pem);
-  if(audited_err) {
-    rv=AKV_EAUDITED | (audited_err << 8);
-    goto out;
-  }
-
-  *h = (AkvpStorage__Header) {
-    .base = PROTOBUF_C_MESSAGE_INIT (&akvp_storage__header__descriptor),
-    .audit_pub_key_pem = audit_pub_key_pem,
-  };
-
- out:
-  return rv;
-}
-
-akv_err_t akvp_export(const void *req, AkvpStorage__Everything *res)
-{
-  akv_err_t rv=0;
-  AkvpStorage__Header *header;
-
-  header=malloc(sizeof(*header));
-  if(!header) {
-    rv=AKV_ENOMEM;
-    goto out;
-  }
-
-  rv = export_header(header);
-
- out:
-  return rv;
-}
-
-void akvp_export_release_res(AkvpStorage__Everything *res)
-{
-  akvp_storage__everything__free_unpacked(res, NULL);
-}
+akv_err_t akvp_export(const void *req, AkvpStorage__Everything *res);
+void akvp_export_release_res(AkvpStorage__Everything *res);
+#endif

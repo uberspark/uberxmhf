@@ -51,8 +51,9 @@ enum akvp_cmds {
   AKVP_INIT=0,            /* audit-pubkey, password -> () */
   AKVP_START_AUDITED_CMD=1,
   AKVP_EXECUTE_AUDITED_CMD=2,
+  AKVP_EXPORT=3,
 
-  AKVP_NUM=3,
+  AKVP_NUM=4,
 };
   /* AKVP_AUDIT_GET_NONCE, /\* ()                -> random nonce *\/ */
   /* AKVP_AUDIT_EXECUTE,   /\* random nonce, cmd -> f(cmd) *\/ */

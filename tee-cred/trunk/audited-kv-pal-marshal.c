@@ -42,6 +42,7 @@
 #include "proto-gend/audited.pb-c.h"
 #include "audited-kv-pal.h"
 #include "audited-kv-pal-fns.h"
+#include "audited-kv-pal-storage.h"
 #include "audited.h"
 
 /* would be nice to extend protoc compiler to auto-generate this file
@@ -59,6 +60,10 @@ static const tze_pb_imp_t akvp_imps[] = {
   [AKVP_EXECUTE_AUDITED_CMD] = {
     .execute=(tze_pb_execute_fn*)audited_execute_cmd,
     .release_res=(tze_pb_release_res_fn*)audited_execute_cmd_release_res,
+  },
+  [AKVP_EXPORT] = {
+    .execute=(tze_pb_execute_fn*)akvp_export,
+    .release_res=(tze_pb_release_res_fn*)akvp_export_release_res,
   },
 };
 

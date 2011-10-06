@@ -36,6 +36,7 @@
 #include "audited-kv-pal.h"
 #include "proto-gend/audited.pb-c.h"
 #include "proto-gend/akvp.pb-c.h"
+#include "proto-gend/storage.pb-c.h"
 const tze_pb_proto_t akvp_protos[] = {
   [AKVP_INIT] = {
     .req_descriptor = &akvp__init_req__descriptor,
@@ -48,6 +49,10 @@ const tze_pb_proto_t akvp_protos[] = {
   [AKVP_EXECUTE_AUDITED_CMD] = {
     .req_descriptor = &audited__execute_req__descriptor,
     .res_descriptor = &audited__execute_res__descriptor,
+  },
+  [AKVP_EXPORT] = {
+    .req_descriptor = NULL,
+    .res_descriptor = &akvp_storage__everything__descriptor,
   },
 };
 
