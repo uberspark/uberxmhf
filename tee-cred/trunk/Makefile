@@ -10,7 +10,7 @@ test :
 	cd tests ; make
 .PHONY : test
 
-proto-gend/%.pb-c.c proto-genc/%.pb-c.h : %.proto
+proto-gend/%.pb-c.c proto-gend/%.pb-c.h : %.proto
 	protoc-c --c_out=proto-gend $^
 
 PROG_NAME=main
