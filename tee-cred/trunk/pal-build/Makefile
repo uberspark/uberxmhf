@@ -5,7 +5,7 @@ VPATH=$(srcdir)
 # object files, which must be compiled separately for the pal
 vpath %.c $(srcdir)/..
 
-all : audited-kv-pal.pal.o
+all : depend audited-kv-pal.pal.o
 
 #PAL_BACKEND=tee-sdk-svc-tv
 PAL_BACKEND=tee-sdk-svc-null
@@ -24,12 +24,19 @@ PAL_OBJS= \
 	proto-gend/audited.pb-c.o \
 	proto-gend/akvp.pb-c.o \
 	proto-gend/storage.pb-c.o
+SRCS=$(patsubst %.o,%.c,$(PAL_OBJS))
 
 #PAL_OBJS=$(addprefix pal-build/, $(PAL_OBJS_BARE))
 PAL_CFLAGS+=-g -Wall -Werror
 PAL_PKGCONFIG_DEPS=tee-sdk-svc $(PAL_BACKEND) libcrypto libprotobuf-c
 
 TEESDK_DATA_DIR=$(shell pkg-config --variable=pkgdatadir tee-sdk-app)
+
+depend: .depend
+.depend: $(SRCS)
+	rm -f ./.depend
+	$(CC) $(CFLAGS) -MM $^ >> ./.depend;
+include .depend
 
 clean:
 	$(RM) $(PAL_OBJS) audited-kv-pal.pal.o

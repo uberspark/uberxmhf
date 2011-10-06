@@ -3,8 +3,8 @@ VPATH=$(srcdir)
 
 all : depend main
 
-pal-build/audited-kv-pal.pal.o :
-	cd pal-build ; make audited-kv-pal.pal.o
+FORCE:
+.PHONY : FORCE
 
 test :
 	cd tests ; make
@@ -35,11 +35,12 @@ LDLIBS+=$(call pkgconfig_ldlibs, $(PKGCONFIG_DEPS))
 LDFLAGS+=$(call pkgconfig_ldflags, $(PKGCONFIG_DEPS))
 LDLIBS+=-T$(PAL_NAME).pal.ld
 
-# generate a pal-specific linker script
+pal-build/$(PAL_NAME).pal.o : FORCE
+	cd pal-build ; make $(PAL_NAME).pal.o
 $(PAL_NAME).pal.ld :
 	sed 's/PAL_NAME/pal-build\/$(PAL_NAME)/g' $(TEESDK_DATA_DIR)/pal-template.ld > $@
 
-$(PROG_NAME) : $(PROG_OBJS) $(PAL_NAME).pal.ld pal-build/audited-kv-pal.pal.o
+$(PROG_NAME) : $(PROG_OBJS) $(PAL_NAME).pal.ld pal-build/$(PAL_NAME).pal.o
 	$(CC) $(LDFLAGS) -o $@ $(PROG_OBJS) $(LDLIBS)
 
 all: $(PROG_NAME)
