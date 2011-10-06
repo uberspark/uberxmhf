@@ -33,7 +33,6 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <stdio.h>
 #include <string.h>
 
 #include <tee-sdk/tze.h>
@@ -310,8 +309,6 @@ akv_err_t akv_export(akv_ctx_t* ctx,
     rv = svcerr;
     goto out;
   }
-
-  printf("audit pem: %s\n", res->header->audit_pub_key_pem);
 
   *data_len = akvp_storage__everything__get_packed_size(res);
   *data = malloc(*data_len);
