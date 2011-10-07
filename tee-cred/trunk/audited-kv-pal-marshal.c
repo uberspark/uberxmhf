@@ -34,6 +34,7 @@
  */
 
 #include <string.h>
+#include <tsvc.h>
 
 #include <tee-sdk/tzmarshal.h>
 
@@ -70,6 +71,31 @@ static const tze_pb_imp_t akvp_imps[] = {
     .release_res=NULL,
   },
 };
+
+static void akvp_get_stderr_unmarshal(struct tzi_encode_buffer_t *psOutBuf);
+char* akvp_get_stderr(size_t *len);
+void akvp_get_stderr_unmarshal(struct tzi_encode_buffer_t *psOutBuf)
+{
+  char *s=NULL;
+  size_t len;
+
+  s = akvp_get_stderr(&len);
+
+  TZIEncodeArray(psOutBuf, s, len);
+
+  free(s);
+}
+
+char* akvp_get_stderr(size_t *len)
+{
+  char *rv = malloc(4096);
+  if(!rv) {
+    return NULL;
+  }
+  *len = tsvc_read_stderr(rv, 4095);
+  rv[*len] = '\0';
+  return rv;
+}
 
 void audited_kv_pal(uint32_t uiCommand, struct tzi_encode_buffer_t *psInBuf, struct tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
