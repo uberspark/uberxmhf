@@ -39,6 +39,8 @@
 #include <tee-sdk/tz.h>
 #include <tee-sdk/tv.h>
 
+#include "dbg.h"
+
 #include "kv.h"
 #include "audited.h"
 #include "audited-stubs.h"
@@ -108,9 +110,9 @@ akv_err_t akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem)
                              &pal,
                              sizeof(pal),
                              &load_options);
-    if (tzrv) {
-      return AKV_ETZ | (tzrv << 8);
-    }
+    CHECK_RV(tzrv,
+             AKV_ETZ|(tzrv<<8),
+             "TZESvcLoadAndOpen");
     registered_pal=true;
   }
 
@@ -138,10 +140,9 @@ akv_err_t akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem)
     if (res) {
       akvp__init_res__free_unpacked(res, NULL);
     }
-    if (tzrv) {
-      rv = AKV_ETZ | (tzrv << 8);
-      goto out;
-    }
+    CHECK_2RV(tzrv, AKV_ETZ | (tzrv << 8),
+              rv, rv,
+              "akvp_invoke(AKVP_INIT)");
   }
 
  out:
@@ -176,16 +177,21 @@ void protobuf_c_malloc_and_pack(const ProtobufCMessage *msg,
                                 size_t *len)
 {
   size_t len2;
+  int rv=0;
+
   *len = protobuf_c_message_get_packed_size(msg);
   *buf = malloc(*len);
-  if(!*buf) {
-    return;
-  }
+  CHECK_MEM(*buf, 1);
+        
   len2 = protobuf_c_message_pack(msg, *buf);
-  if (len2 != *len) {
+  CHECK(len2 == *len,
+        2,
+        "protobuf_c_message_pack");
+
+ out:
+  if(rv && *buf) {
     free(*buf);
     *buf=NULL;
-    return;
   }
 }
 
@@ -207,23 +213,18 @@ static akv_err_t akv_start_audited(akv_ctx_t* ctx,
   protobuf_c_malloc_and_pack(audited_req,
                              (void**)&start_req.cmd_input.data,
                              &start_req.cmd_input.len);
-  if(!start_req.cmd_input.data) {
-    rv = AKV_ENOMEM;
-    goto out;
-  }
+  CHECK(start_req.cmd_input.data,
+        AKV_EPB,
+        "protobuf_c_malloc_and_pack");
   
   tzrv = akvp_invoke(ctx,
                      AKVP_START_AUDITED_CMD,
                      (ProtobufCMessage*)&start_req,
                      (ProtobufCMessage**)&start_res,
                      (tz_return_t*)&audited_err);
-  if (tzrv) {
-    rv = AKV_ETZ | (tzrv << 8);
-    goto out;
-  } else if (audited_err) {
-    rv = AKV_EAUDITED | (audited_err << 8);
-    goto out;
-  }
+  CHECK_2RV(tzrv, AKV_ETZ | (tzrv << 8),
+            audited_err, AKV_EAUDITED | (audited_err << 8),
+            "akvp_invoke AKVP_START_AUDITED_CMD");
 
   *cmd_ctx = (akv_cmd_ctx_t)
     { .akv_ctx = ctx,
@@ -266,31 +267,19 @@ static akv_err_t akv_execute_audited(akv_cmd_ctx_t* ctx,
                      (ProtobufCMessage*)&exec_req,
                      (ProtobufCMessage**)&exec_res,
                      (tz_return_t*)&audited_err);
+  CHECK_3RV(tzrv, AKV_ETZ | (tzrv << 8),
+            audited_err, AKV_EAUDITED | (audited_err << 8),
+            exec_res->svc_err, exec_res->svc_err,
+            "akvp_invoke(AKVP_EXECUTE_AUDITED_CMD)");
 
-  if (audited_err) {
-    rv = AKV_EAUDITED | (audited_err << 8);
-    goto out;
-  } else if (tzrv) {
-    rv = AKV_ETZ | (tzrv << 8);
-    goto out;
-  }
-
-  assert(exec_res);
   *audited_fn_err = exec_res->svc_err;
-  if (exec_res->svc_err) {
-    rv = exec_res->svc_err;
-    goto out;
-  }
 
   assert(exec_res->has_cmd_output);
   *res = protobuf_c_message_unpack(res_desc,
                                    NULL,
                                    exec_res->cmd_output.len,
                                    exec_res->cmd_output.data);
-  if(!res) {
-    rv = AKV_EPB;
-    goto out;
-  }
+  CHECK(res, AKV_EPB, "protobuf_c_message_unpack");
 
  out:
   if(exec_res) {
@@ -313,22 +302,15 @@ akv_err_t akv_export(akv_ctx_t* ctx,
                      NULL,
                      (ProtobufCMessage**)&res,
                      (tz_return_t*)&svcerr);
-  if(tzrv) {
-    rv = AKV_ETZ | (tzrv << 8);
-    goto out;
-  }
-  if(svcerr) {
-    rv = svcerr;
-    goto out;
-  }
+  CHECK_2RV(tzrv, AKV_ETZ | (tzrv << 8),
+            svcerr, svcerr,
+            "akvp_invoke(AKVP_EXPORT)");
 
   /* XXX redundantly unpacked in akvp_invoke and repacked here */
   *data_len = akvp_storage__everything__get_packed_size(res);
   *data = malloc(*data_len);
-  if (!*data) {
-    rv = AKV_ENOMEM;
-    goto out;
-  }
+  CHECK_MEM(*data, AKV_ENOMEM);
+
   akvp_storage__everything__pack(res, *data);
 
  out:
@@ -356,14 +338,9 @@ akv_err_t akv_import(akv_ctx_t* ctx,
                      (ProtobufCMessage*)req,
                      NULL,
                      (tz_return_t*)&svcerr);
-  if(tzrv) {
-    rv = AKV_ETZ | (tzrv << 8);
-    goto out;
-  }
-  if(svcerr) {
-    rv = svcerr;
-    goto out;
-  }
+  CHECK_2RV(tzrv, AKV_ETZ | (tzrv << 8),
+            svcerr, svcerr,
+            "akvp_invoke(AKVP_IMPORT)");
 
  out:
   if(req) {
@@ -379,7 +356,6 @@ akv_err_t akv_db_add_begin(akv_ctx_t*  ctx,
                            const void* val,
                            size_t val_len)
 {
-  akv_err_t rv=0;
   Db__AddReq add_req;
 
   /* FIXME- is there a way to avoid having to cast
@@ -393,11 +369,10 @@ akv_err_t akv_db_add_begin(akv_ctx_t*  ctx,
     }
   };
 
-  rv = akv_start_audited(ctx,
-                         cmd_ctx,
-                         KV_ADD,
-                         (ProtobufCMessage*)&add_req);
-  return rv;
+  return akv_start_audited(ctx,
+                           cmd_ctx,
+                           KV_ADD,
+                           (ProtobufCMessage*)&add_req);
 }
 
 
@@ -415,13 +390,9 @@ akv_err_t akv_db_add_execute(akv_cmd_ctx_t* ctx,
                            &db__add_res__descriptor,
                            (ProtobufCMessage**)&add_res,
                            (tz_return_t*)&kv_err);
-  if (rv) {
-    goto out;
-  }
-  if (kv_err) {
-    rv = AKV_EKV | (kv_err << 8);
-    goto out;
-  }
+  CHECK_2RV(rv, rv,
+            kv_err, AKV_EKV | (kv_err << 8),
+            "akv_execute_audited");
 
   out:
   if(add_res) {
@@ -435,7 +406,6 @@ akv_err_t akv_db_get_begin(akv_ctx_t*  ctx,
                            akv_cmd_ctx_t* cmd_ctx,
                            const char* key)
 {
-  akv_err_t rv=0;
   Db__GetReq get_req;
 
   /* FIXME- is there a way to avoid having to cast
@@ -445,12 +415,10 @@ akv_err_t akv_db_get_begin(akv_ctx_t*  ctx,
     .key = (char*)key,
   };
 
-  rv = akv_start_audited(ctx,
-                         cmd_ctx,
-                         KV_GET,
-                         (ProtobufCMessage*)&get_req);
-
-  return rv;
+  return akv_start_audited(ctx,
+                           cmd_ctx,
+                           KV_GET,
+                           (ProtobufCMessage*)&get_req);
 }
 
 akv_err_t akv_db_get_execute(akv_cmd_ctx_t* ctx,
@@ -471,14 +439,9 @@ akv_err_t akv_db_get_execute(akv_cmd_ctx_t* ctx,
                            &db__get_res__descriptor,
                            (ProtobufCMessage**)&get_res,
                            (tz_return_t*)&kv_err);
-
-  if (rv) {
-    goto out;
-  }
-  if (kv_err) {
-    rv = AKV_EKV | (kv_err << 8);
-    goto out;
-  }
+  CHECK_2RV(rv, rv,
+            kv_err, AKV_EKV | (kv_err << 8),
+            "akv_execute_audited");
 
   /* stealing reference from unpacked message.
      assuming default (system) allocator */
