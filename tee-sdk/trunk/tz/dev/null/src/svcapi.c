@@ -100,8 +100,10 @@ int svc_utpm_unseal(void *in,
   memcpy(digestAtCreation,
          &info_at_creation->digestAtCreation,
          sizeof(TPM_COMPOSITE_HASH));
-  memcpy(out, in+sizeof(TPM_PCR_INFO), in_len);
+
   *out_len = in_len-sizeof(TPM_PCR_INFO);
+  memcpy(out, in+sizeof(TPM_PCR_INFO), *out_len);
+
   return 0;
 }
 
