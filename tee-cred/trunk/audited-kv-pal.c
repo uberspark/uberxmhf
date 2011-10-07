@@ -57,34 +57,6 @@
 #define FREE_AND_NULL(x) do { free(x) ; x=NULL; } while(0)
 static bool did_init = false;
 
-/* static int remap_err(int in, int default_val, ...) */
-/* { */
-/*   va_list ap; */
-/*   int from, to; */
-  
-/*   /\* 0 always maps to 0 *\/ */
-/*   if(in == 0) return 0; */
-
-/*   va_start(ap, default_val); */
-/*   while(1) { */
-/*     /\* keep going until we get to '0' sentinel *\/ */
-/*     from = va_arg(ap, int); */
-/*     if(!from) break; */
-/*     to = va_arg(ap, int); */
-/*     if(!to) break; */
-
-/*     /\* match: remap to 'to' *\/ */
-/*     if (from==in) { */
-/*       va_end(ap); */
-/*       return to; */
-/*     } */
-/*   } */
-/*   va_end(ap); */
-
-/*   /\* no match: return default *\/ */
-/*   return default_val; */
-/* } */
-
 /* static char* strcpy_mallocd(const char *src) */
 /* { */
 /*   size_t len = strlen(src)+1; */
