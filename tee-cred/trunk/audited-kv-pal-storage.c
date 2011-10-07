@@ -162,7 +162,7 @@ akv_err_t akvp_export(const void *req, AkvpStorage__Everything *res)
     /* real uTPM ignores digestAtCreation, but null-backend
        for debugging will use this.
     */
-    /* pcr_info.digestAtCreation = pcr_info.digestAtRelease; */
+    pcr_info.digestAtCreation = pcr_info.digestAtRelease;
 
     sealed_master_secret=malloc(sealed_master_secret_len);
     CHECK_MEM(sealed_master_secret, AKV_ENOMEM);
