@@ -54,13 +54,20 @@
 #define clean_errno() (errno == 0 ? "None" : strerror(errno))
    
 #define log_err(M, ...) fprintf(stderr, "[ERROR] (%s:%d: errno: %s) " M "\n", __FILE__, __LINE__, clean_errno(), ##__VA_ARGS__) 
+#define log_err_rv(M, RV, ...) fprintf(stderr, "[ERROR] (%s:%d: rv: 0x%x) " M "\n", __FILE__, __LINE__, RV, ##__VA_ARGS__) 
    
 #define log_warn(M, ...) fprintf(stderr, "[WARN] (%s:%d: errno: %s) " M "\n", __FILE__, __LINE__, clean_errno(), ##__VA_ARGS__) 
    
 #define log_info(M, ...) fprintf(stderr, "[INFO] (%s:%d) " M "\n", __FILE__, __LINE__, ##__VA_ARGS__) 
   
 #define check(A, M, ...) if(!(A)) { log_err(M, ##__VA_ARGS__); errno=0; goto error; } 
-  
+
+#define CHECK(A, NEWRV, M, ...) if(!(A)) { log_err(M, ##__VA_ARGS__); rv=(NEWRV); goto out; } 
+#define CHECK_MEM(A, NEWRV) if(!(A)) { log_err("Out of memory."); rv=(NEWRV); goto out; } 
+#define CHECK_RV(RV, NEWRV, M, ...) if((RV)) { log_err_rv(M, RV, ##__VA_ARGS__); rv=(NEWRV); goto out; } 
+#define CHECK_2RV(RV, NEWRV, RV2, NEWRV2, M, ...) CHECK_RV(RV, NEWRV, M " (RV1)", ##__VA_ARGS__); CHECK_RV(RV2, NEWRV2, M " (RV2)", ##__VA_ARGS__)
+#define CHECK_3RV(RV, NEWRV, RV2, NEWRV2, RV3, NEWRV3, M, ...) CHECK_2RV(RV, NEWRV, RV2, NEWRV2, M, ##__VA_ARGS__); CHECK_RV(RV3, NEWRV3, M " (RV3)", ##__VA_ARGS__)
+
 #define sentinel(M, ...)  { log_err(M, ##__VA_ARGS__); errno=0; goto error; } 
   
 #define check_mem(A) check((A), "Out of memory.")
