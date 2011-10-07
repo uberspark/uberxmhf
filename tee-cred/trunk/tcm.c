@@ -310,7 +310,7 @@ int main(int argc, char **argv)
                          &val);
     if (tcm_err) {
       rv = 4;
-      printf("tcm_db_add failed with 0x%x\n", tcm_err);
+      printf("tcm_db_get failed with 0x%x\n", tcm_err);
       goto cleanup_tcm;
     }
     printf("retrieved val:%s\n", val);
