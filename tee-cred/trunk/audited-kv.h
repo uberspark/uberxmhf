@@ -61,7 +61,7 @@ akv_err_t akv_import(akv_ctx_t* ctx,
                      size_t data_len);
 
 typedef struct {
-  Audited__StartRes *audited;
+  Audited__StartRes__Res *audited;
 
   akv_ctx_t* akv_ctx;
 } akv_cmd_ctx_t;

@@ -167,7 +167,7 @@ akv_err_t akv_ctx_release(akv_ctx_t* ctx)
 void akv_cmd_ctx_release(akv_cmd_ctx_t *ctx)
 {
   if (ctx->audited) {
-    audited__start_res__free_unpacked(ctx->audited, NULL);
+    protobuf_c_message_free_unpacked((ProtobufCMessage*)ctx->audited, NULL);
     ctx->audited=NULL;
   }
 }
@@ -222,19 +222,22 @@ static akv_err_t akv_start_audited(akv_ctx_t* ctx,
                      (ProtobufCMessage*)&start_req,
                      (ProtobufCMessage**)&start_res,
                      (tz_return_t*)&audited_err);
-  CHECK_2RV(tzrv, AKV_ETZ | (tzrv << 8),
+  CHECK_3RV(tzrv, AKV_ETZ | (tzrv << 8),
             audited_err, AKV_EAUDITED | (audited_err << 8),
+            start_res->svc_err, start_res->svc_err, /* XXX assumes all audited cb's return akv_err_t's */
             "akvp_invoke AKVP_START_AUDITED_CMD");
 
   *cmd_ctx = (akv_cmd_ctx_t)
     { .akv_ctx = ctx,
-      .audited = start_res,
+      .audited = start_res->res,
     };
+  start_res->res=NULL;
 
  out:
   free(start_req.cmd_input.data);
   start_req.cmd_input.data=NULL;
-  /* Note we *don't* free start_res, since it's held in cmd_ctx */
+
+  protobuf_c_message_free_unpacked((ProtobufCMessage*)start_res, NULL);
   return rv;
 }
 
@@ -255,7 +258,7 @@ static akv_err_t akv_execute_audited(akv_cmd_ctx_t* ctx,
 
   exec_req = (Audited__ExecuteReq) {
     .base = PROTOBUF_C_MESSAGE_INIT (&audited__execute_req__descriptor),
-    .pending_cmd_id = ctx->audited->res->pending_cmd_id,
+    .pending_cmd_id = ctx->audited->pending_cmd_id,
     .audit_token = (ProtobufCBinaryData) {
       .data = (void*)audit_token,
       .len = audit_token_len,

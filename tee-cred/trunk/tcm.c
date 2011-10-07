@@ -84,12 +84,13 @@ tcm_err_t tcm_db_add(tcm_ctx_t* tcm_ctx,
                              strlen(val)+1);
   CHECK_RV(akv_err, TCM_EAKV | (akv_err << 8),
            "akv_db_add_begin");
+  cmd_initd=true;
 
   audit_err = audit_get_token(tcm_ctx->audit_ctx,
-                              akv_cmd_ctx.audited->res->audit_nonce.data,
-                              akv_cmd_ctx.audited->res->audit_nonce.len,
-                              akv_cmd_ctx.audited->res->audit_string,
-                              strlen(akv_cmd_ctx.audited->res->audit_string),
+                              akv_cmd_ctx.audited->audit_nonce.data,
+                              akv_cmd_ctx.audited->audit_nonce.len,
+                              akv_cmd_ctx.audited->audit_string,
+                              strlen(akv_cmd_ctx.audited->audit_string),
                               audit_token,
                               &audit_token_len);
   CHECK_RV(audit_err, TCM_EAUDIT | (audit_err << 8),
@@ -126,12 +127,13 @@ tcm_err_t tcm_db_get(tcm_ctx_t* tcm_ctx,
                              key);
   CHECK_RV(akv_err, TCM_EAKV | (akv_err << 8),
            "akv_db_get_begin");
+  cmd_initd=true;
 
   audit_err = audit_get_token(tcm_ctx->audit_ctx,
-                              akv_cmd_ctx.audited->res->audit_nonce.data,
-                              akv_cmd_ctx.audited->res->audit_nonce.len,
-                              akv_cmd_ctx.audited->res->audit_string,
-                              strlen(akv_cmd_ctx.audited->res->audit_string),
+                              akv_cmd_ctx.audited->audit_nonce.data,
+                              akv_cmd_ctx.audited->audit_nonce.len,
+                              akv_cmd_ctx.audited->audit_string,
+                              strlen(akv_cmd_ctx.audited->audit_string),
                               audit_token,
                               &audit_token_len);
   CHECK_RV(audit_err, TCM_EAUDIT | (audit_err << 8),
