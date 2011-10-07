@@ -45,6 +45,10 @@
 #include <errno.h> 
 #include <string.h>
   
+#define MAP1(x, f1, t1, d) (((x)==(f1)) ? (t1) : (d))
+#define MAP2(x, f1, t1, f2, t2, d) MAP1(x, f1, t1, (((x)==(f2)) ? (t2) : (d)))
+#define MAP3(x, f1, t1, f2, t2, f3, t3, d) MAP2(x, f1, t1, f2, t2, (((x)==(f3)) ? (t3) : (d)))
+
 #ifdef NDEBUG
 #define debug(M, ...)
 #else 
