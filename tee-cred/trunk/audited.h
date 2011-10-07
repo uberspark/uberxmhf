@@ -55,6 +55,7 @@ typedef enum {
   AUDITED_ESAVE=11,
 
   AUDITED_EPB_ERR=12,
+  AUDITED_ESVC=13,
 } audited_err_t;
 
 typedef int (audited_audit_string_fn)(void *, char **);

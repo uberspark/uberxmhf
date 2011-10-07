@@ -46,6 +46,7 @@
 #include <openssl/engine.h>
 #include <openssl/sha.h>
 
+#include "dbg.h"
 #include "proto-gend/audited.pb-c.h"
 #include "audited.h"
 
@@ -93,7 +94,7 @@ static void clone_mem_bio(BIO *bio, void **buf, size_t *buflen)
 audited_err_t audited_init(const char* audit_server_pub_pem)
 {
   audited_err_t rv=0;
-  BIO *mem;
+  BIO *mem=NULL;
   did_init=false;
 
   if(audit_pub_key) {
@@ -102,63 +103,51 @@ audited_err_t audited_init(const char* audit_server_pub_pem)
   }
 
   mem = BIO_new_mem_buf((char*)audit_server_pub_pem, -1);
-  if(!mem) {
-    rv=AUDITED_ECRYPTO;
-    goto out;
-  }
+  CHECK(mem, AUDITED_ECRYPTO, "BIO_new_mem_buf");
 
   audit_pub_key =
     PEM_read_bio_RSA_PUBKEY(mem, NULL, NULL, NULL);
-  if (!audit_pub_key) {
-    ERR_print_errors_fp(stderr);
-    rv=AUDITED_EBADKEY;
-    goto free_bio;
-  }
+  CHECK(audit_pub_key, AUDITED_EBADKEY,
+        "PEM_read_bio_RSA_PUBKEY(%s)", audit_server_pub_pem);
+  /* ERR_print_errors_fp(stderr); */
 
   did_init=true;
 
- free_bio:
-  /* this does *not* free the underlying char* in this case, because
-     BIO_new_mem_buf creates a read-only BIO */
-  BIO_vfree(mem);
  out:
+  if(mem) {
+    BIO_vfree(mem);
+    mem=NULL;
+  }
   return rv;
 }
 
 /* returned pointer is mallocd */
 audited_err_t audited_get_audit_server_pub_pem(char **audit_pub_key_pem)
 {
-  BIO *bio;
+  BIO *bio=NULL;
   audited_err_t rv=0;
   int cryptorv;
   size_t len;
 
-  *audit_pub_key_pem=NULL;
-
   bio = BIO_new(BIO_s_mem());
-  if (!bio) {
-    rv=AUDITED_ECRYPTO;
-    goto out;
-  }
+  CHECK(bio, AUDITED_ECRYPTO, "BIO_new");
   
-  /*  1 for success or 0 for failure */
   cryptorv = PEM_write_bio_RSA_PUBKEY(bio, audit_pub_key);
-  if(!cryptorv) {
-    rv=AUDITED_ECRYPTO;
-    goto free_bio;
-  }
+  CHECK(cryptorv, AUDITED_ECRYPTO, "PEM_write_bio_RSA_PUBKEY");
 
   /* copy to a plain old mallocd buffer, so that caller can free it */
   clone_mem_bio(bio, (void**)audit_pub_key_pem, &len);
-  if(!audit_pub_key_pem) {
-    rv=AUDITED_ECRYPTO;
-    goto free_bio;
-  }
+  CHECK(*audit_pub_key_pem, AUDITED_ECRYPTO, "clone_mem_bio");
   (*audit_pub_key_pem)[len] = '\0';
 
- free_bio:
-  BIO_vfree(bio);
  out:
+  if(bio) {
+    BIO_vfree(bio);
+    bio=NULL;
+  }
+  if(rv) {
+    *audit_pub_key_pem=NULL;
+  }
   return rv;
 }
 
@@ -197,16 +186,13 @@ int audited_save_pending_cmd(audited_cmd_t *fns, void *req, char *audit_string)
   assert(audit_string);
 
   rv = svc_time_elapsed_us(&epoch_nonce, &epoch_offset);
-  if(rv) {
-    return -1;
-  }
+  CHECK_RV(rv, -1, "svc_time_elapsed_us");
 
   audit_nonce_len = 256;
   audit_nonce = malloc(audit_nonce_len);
-  if(!audit_nonce) {
-    return -1;
-  }
+  CHECK_MEM(audit_nonce, -1);
   rv = svc_utpm_rand_block(audit_nonce, audit_nonce_len);
+  CHECK_RV(rv, -1, "svc_utpm_rand_block");
 
   pending_cmds[cmd_id] = (audited_pending_cmd_t) {
     .audit_string = audit_string,
@@ -217,6 +203,8 @@ int audited_save_pending_cmd(audited_cmd_t *fns, void *req, char *audit_string)
     .audit_nonce = audit_nonce,
     .audit_nonce_len = audit_nonce_len,
   };
+
+ out:
   return cmd_id;
 }
 
@@ -224,14 +212,15 @@ audited_err_t audited_check_cmd_auth(audited_pending_cmd_t *cmd, const void* aud
 {
   uint64_t epoch_nonce, epoch_offset;
   int svc_rv;
+  int crypto_rv;
   audited_err_t rv=AUDITED_ENONE;
   SHA256_CTX sha256_ctx;
   uint8_t digest[SHA256_DIGEST_LENGTH];
 
   /* check time first, in case signature verification time is significant */
   svc_rv = svc_time_elapsed_us(&epoch_nonce, &epoch_offset);
-  if(svc_rv 
-     || epoch_nonce != cmd->epoch_nonce
+  CHECK_RV(svc_rv, AUDITED_ESVC | (svc_rv<<8), "svc_time_elapsed_us");
+  if(epoch_nonce != cmd->epoch_nonce
      || (epoch_offset - cmd->epoch_offset) > AUDITED_TIMEOUT_US) {
     rv = AUDITED_ETIMEOUT;
     goto out;
@@ -240,25 +229,27 @@ audited_err_t audited_check_cmd_auth(audited_pending_cmd_t *cmd, const void* aud
   /* check signature */
 
   /* compute digest of expected message */
-  if (!SHA256_Init(&sha256_ctx)
-      || !SHA256_Update(&sha256_ctx,
-                        cmd->audit_nonce,
-                        cmd->audit_nonce_len)
-      || !SHA256_Update(&sha256_ctx,
-                        cmd->audit_string,
-                        strlen(cmd->audit_string)) /* null not included */
-      || !SHA256_Final(&digest[0], &sha256_ctx)) {
-    ERR_print_errors_fp(stderr);
-    rv = AUDITED_ECRYPTO;
-    goto out;
-  }
-  if(!RSA_verify(NID_sha256,
-                 digest, SHA256_DIGEST_LENGTH,
-                 (unsigned char*)audit_token, audit_token_len,
-                 audit_pub_key)) {
-    rv = AUDITED_EBADSIG;
-    goto out;
-  }
+  crypto_rv = SHA256_Init(&sha256_ctx);
+  CHECK(crypto_rv, AUDITED_ECRYPTO, "SHA256_Init");
+
+  crypto_rv = SHA256_Update(&sha256_ctx,
+                            cmd->audit_nonce,
+                            cmd->audit_nonce_len);
+  CHECK(crypto_rv, AUDITED_ECRYPTO, "SHA256_Update");
+
+  crypto_rv = SHA256_Update(&sha256_ctx,
+                            cmd->audit_string,
+                            strlen(cmd->audit_string)); /* null not included */
+  CHECK(crypto_rv, AUDITED_ECRYPTO, "SHA256_Update");
+
+  crypto_rv = SHA256_Final(&digest[0], &sha256_ctx);
+  CHECK(crypto_rv, AUDITED_ECRYPTO, "SHA256_Final");
+  
+  crypto_rv = RSA_verify(NID_sha256,
+                         digest, SHA256_DIGEST_LENGTH,
+                         (unsigned char*)audit_token, audit_token_len,
+                         audit_pub_key);
+  CHECK(crypto_rv, AUDITED_EBADSIG, "RSA_verify");
 
  out:
   return rv;
@@ -290,29 +281,20 @@ audited_err_t audited_start_cmd(const Audited__StartReq *startreq,
                                   NULL,
                                   startreq->cmd_input.len,
                                   startreq->cmd_input.data);
-  if (!req) {
-    rv = AUDITED_EDECODE;
-    goto out;
-  }
+  CHECK(req, AUDITED_EDECODE, "protobuf_c_message_unpack");
+
   assert(cmd_desc->audit_string);
   startres->svc_err = cmd_desc->audit_string(req,
                                              &audit_string);
-  if (startres->svc_err) {
-    goto out;
-  }
+  CHECK_RV((unsigned int)startres->svc_err, rv, "audit_string()");
 
   pending_cmd_id = audited_save_pending_cmd(cmd_desc, req, audit_string);
-  if (pending_cmd_id < 0) {
-    rv = AUDITED_ESAVE;
-    goto out;
-  }
+  CHECK(pending_cmd_id >= 0, AUDITED_ESAVE, "audited_save_pending_cmd");
   saved_pending_cmd=true;
 
   startres->res = malloc(sizeof(Audited__StartRes__Res));
-  if(!startres->res) {
-    rv = AUDITED_ENOMEM;
-    goto out;
-  }
+  CHECK_MEM(startres->res, AUDITED_ENOMEM);
+
   *(startres->res) = (Audited__StartRes__Res)
     {
       .base = PROTOBUF_C_MESSAGE_INIT (&audited__start_res__res__descriptor),
@@ -342,61 +324,51 @@ audited_err_t audited_execute_cmd(const Audited__ExecuteReq *exec_req,
                                   Audited__ExecuteRes *exec_res)
 {
   audited_err_t rv;
-  audited_pending_cmd_t *cmd;
+  audited_pending_cmd_t *cmd=NULL;
   ProtobufCMessage *res=NULL;
+  bool got_res=false;
 
   if(!did_init) {
     rv = AUDITED_EBADSTATE;
     goto out;
   }
 
-  if (!(cmd = audited_pending_cmd_of_id(exec_req->pending_cmd_id))) {
-    rv = AUDITED_EBADCMDHANDLE;
-    goto out;
-  }
+  cmd = audited_pending_cmd_of_id(exec_req->pending_cmd_id);
+  CHECK(cmd >= 0, AUDITED_EBADCMDHANDLE,
+        "audited_pending_cmd_of_id(%d)", (unsigned int)exec_req->pending_cmd_id);
 
   rv = audited_check_cmd_auth(cmd,
                               exec_req->audit_token.data,
                               exec_req->audit_token.len);
-  if (rv) {
-    goto out_release_pending_cmd;
-  }
+  CHECK_RV(rv, rv, "audited_check_cmd_auth");
 
   assert(cmd->fns);
   assert(cmd->fns->execute);
   assert(cmd->fns->res_descriptor);
 
   res = malloc(cmd->fns->res_descriptor->sizeof_message);
-  if(!res) {
-    rv = AUDITED_ENOMEM;
-    goto out_release_pending_cmd;
-  }
+  CHECK_MEM(res, AUDITED_ENOMEM);
   protobuf_c_message_init(cmd->fns->res_descriptor, res);
 
   exec_res->svc_err = cmd->fns->execute(cmd->req, res);
-  if(exec_res->svc_err) {
-    goto out_free_res;
-  }
+  CHECK_RV((unsigned int)exec_res->svc_err, rv, "execute()");
+  got_res=true;
 
   exec_res->cmd_output.len = protobuf_c_message_get_packed_size(res);
   exec_res->cmd_output.data = malloc(exec_res->cmd_output.len);
-  if(!exec_res->cmd_output.data) {
-    rv = AUDITED_ENOMEM;
-    goto out_release_res;
-  }
+  CHECK_MEM(exec_res->cmd_output.data, AUDITED_ENOMEM);
   protobuf_c_message_pack(res, exec_res->cmd_output.data);
   exec_res->has_cmd_output=true;
 
- out_release_res:
-  if (cmd->fns->release_res) {
+ out:
+  if (got_res && cmd->fns->release_res) {
     cmd->fns->release_res(res);
   }
- out_free_res:
-  free(res);
-  res=NULL;
- out_release_pending_cmd:
+  if (res) {
+    free(res);
+    res=NULL;
+  }
   audited_release_pending_cmd_id(exec_req->pending_cmd_id);
- out:
   return rv;
 }
 
