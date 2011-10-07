@@ -57,6 +57,7 @@ typedef enum {
   AKV_ESVC=17,
   AKV_ECRYPTO=18,
   AKV_EBADMAC=19,
+  AKV_EBADDIGESTATCREATION=20,
 } akv_err_t;
 
 #endif

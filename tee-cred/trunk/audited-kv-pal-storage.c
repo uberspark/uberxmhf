@@ -159,6 +159,11 @@ akv_err_t akvp_export(const void *req, AkvpStorage__Everything *res)
                                         &pcr_info.pcrSelection);
     CHECK_RV(rv, rv, "composite_hash_of_current_pcrs");
     
+    /* real uTPM ignores digestAtCreation, but null-backend
+       for debugging will use this.
+    */
+    /* pcr_info.digestAtCreation = pcr_info.digestAtRelease; */
+
     sealed_master_secret=malloc(sealed_master_secret_len);
     CHECK_MEM(sealed_master_secret, AKV_ENOMEM);
 
@@ -225,7 +230,28 @@ akv_err_t akvp_import(const AkvpStorage__Everything *req, void *res)
                           &digest_at_creation);
   CHECK_RV(svcrv, AKV_ESVC | (svcrv << 8), "svc_utpm_unseal");
 
-  /* XXX check digest_at_creation */
+  /* check digest_at_creation
+   * for now we just compare to our own current PCRs. eventually we'll
+   * want to add more flexibility.
+  */
+  {
+    TPM_DIGEST digest_now;
+    TPM_PCR_SELECTION pcr_selection;
+
+    /* select pcr0 */
+    memset(&pcr_selection, 0, sizeof(pcr_selection));
+    utpm_pcr_select_i(&pcr_selection, 0);
+
+    rv = composite_hash_of_current_pcrs(&digest_now,
+                                        &pcr_selection);
+    CHECK_RV(rv, rv, "composite_hash_of_current_pcrs");
+
+    if(memcmp(&digest_now, &digest_at_creation, sizeof(TPM_DIGEST))) {
+      log_err("digest_at_creation doesn't match current PCRs");
+      rv = AKV_EBADDIGESTATCREATION;
+      goto out;
+    }
+  }
 
   rv = akvp_init_priv(req->header->audit_pub_key_pem,
                       master_secret,
