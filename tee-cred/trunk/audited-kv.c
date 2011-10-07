@@ -55,20 +55,32 @@
 #define USERSPACE_ONLY 0
 #endif
 
+/* Wrapper around TZEDispatchProtobuf that substitutes in our protos.
+ * ALSO changes return-semantics. in case of TZ_ERROR_SERVICE, rv is
+ * 0. this makes error-handling cleaner. e.g.,
+ * if (rv) handle_rv(rv); else if (svc_err) handle_svc_err(svc_err);
+ * instead of:
+ * if (rv) { if (rv==TZ_ERROR_SERVICE) handle_svc_err(svc_err); else handle_rv(rv); }
+ */
 static tz_return_t akvp_invoke(akv_ctx_t* ctx,
                                uint32_t uiCommand,
                                const ProtobufCMessage *req,
                                ProtobufCMessage **res,
                                tz_return_t *svc_err)
 {
-  return TZEDispatchProtobuf(akvp_protos,
-                             AKVP_NUM,
+  tz_return_t rv;
+  rv = TZEDispatchProtobuf(akvp_protos,
+                           AKVP_NUM,
 
-                             &ctx->tz_sess.tzSession,
-                             uiCommand,
-                             req,
-                             res,
-                             svc_err);
+                           &ctx->tz_sess.tzSession,
+                           uiCommand,
+                           req,
+                           res,
+                           svc_err);
+  if (rv == TZ_ERROR_SERVICE) {
+    rv=0;
+  }
+  return rv;
 }
 
 akv_err_t akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem)
