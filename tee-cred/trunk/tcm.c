@@ -68,6 +68,7 @@ tcm_err_t tcm_db_add(tcm_ctx_t* tcm_ctx,
                      const char* val)
 {
   akv_cmd_ctx_t akv_cmd_ctx;
+  bool cmd_initd=false;
   akv_err_t akv_err;
   audit_err_t audit_err;
   uint8_t audit_token[AUDIT_TOKEN_MAX];
@@ -103,7 +104,9 @@ tcm_err_t tcm_db_add(tcm_ctx_t* tcm_ctx,
            "akv_db_add_execute");
 
  out:
-  akv_cmd_ctx_release(&akv_cmd_ctx);
+  if(cmd_initd) {
+    akv_cmd_ctx_release(&akv_cmd_ctx);
+  }
   return rv;
 }
 
@@ -112,6 +115,7 @@ tcm_err_t tcm_db_get(tcm_ctx_t* tcm_ctx,
                      char** val)
 {
   akv_cmd_ctx_t akv_cmd_ctx;
+  bool cmd_initd=false;
   akv_err_t akv_err;
   audit_err_t audit_err;
   uint8_t audit_token[AUDIT_TOKEN_MAX];
@@ -148,7 +152,9 @@ tcm_err_t tcm_db_get(tcm_ctx_t* tcm_ctx,
            "akv_db_get_execute");
 
  out:
-  akv_cmd_ctx_release(&akv_cmd_ctx);
+  if(cmd_initd) {
+    akv_cmd_ctx_release(&akv_cmd_ctx);
+  }
   return rv;
 }
 
