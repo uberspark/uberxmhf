@@ -37,9 +37,10 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "dbg.h"
 #include "audit.h"
 
-int audit_ctx_init(audit_ctx_t *ctx, const char* hostname, const char* svc)
+audit_err_t audit_ctx_init(audit_ctx_t *ctx, const char* hostname, const char* svc)
 {
   ctx->hostname = hostname;
   ctx->svc = svc;
@@ -50,10 +51,13 @@ void audit_ctx_release(audit_ctx_t *ctx)
 {
 }
 
-static int audit_connect(audit_ctx_t* audit_ctx, int *sock)
+static audit_err_t audit_connect(audit_ctx_t* audit_ctx, int *sock)
 {
-  int status=0;
-  struct addrinfo *servinfo;  // will point to the results
+  audit_err_t rv=0;
+  int err;
+  struct addrinfo *servinfo=NULL;  // will point to the results
+
+  *sock=-1;
 
   {
     struct addrinfo hints;
@@ -62,34 +66,26 @@ static int audit_connect(audit_ctx_t* audit_ctx, int *sock)
     hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
 
     // get ready to connect
-    status = getaddrinfo(audit_ctx->hostname, audit_ctx->svc, &hints, &servinfo);
-    if(status) {
-      status = AUDIT_ELOOKUP;
-      goto out;
-    }
+    err = getaddrinfo(audit_ctx->hostname, audit_ctx->svc, &hints, &servinfo);
+    CHECK(!err, AUDIT_ELOOKUP, "getaddrinfo(%s)", audit_ctx->hostname);
   }
 
-  {
-    *sock = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
-    if(*sock < 0) {
-      status = AUDIT_ESOCK;
-      goto free_addr;
-    }
-  }
+  *sock = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
+  CHECK(*sock >= 0, AUDIT_ESOCK, "socket()");
 
-  {
-    status = connect(*sock, servinfo->ai_addr, servinfo->ai_addrlen);
-    if(status) {
-      status = AUDIT_ECONNECT;
-      close(*sock);
-      goto free_addr;
-    }
-  }
+  err = connect(*sock, servinfo->ai_addr, servinfo->ai_addrlen);
+  CHECK(!err, AUDIT_ECONNECT, "connect(%s)", audit_ctx->hostname);
 
- free_addr:
-  freeaddrinfo(servinfo);
  out:
-  return status;
+  if(servinfo) {
+    freeaddrinfo(servinfo);
+    servinfo=NULL;
+  }
+  if(rv && *sock >= 0) {
+    close(*sock);
+    *sock=-1;
+  }
+  return rv;
 }
 
 static int sendall(int s, const void *buf, size_t len)
@@ -97,15 +93,17 @@ static int sendall(int s, const void *buf, size_t len)
   int total = 0;        // how many bytes we've sent
   int bytesleft = len; // how many we have left to send
   int n;
+  int rv=0;
 
   while(total < len) {
     n = send(s, buf+total, bytesleft, 0);
-    if (n == -1) { break; }
+    CHECK(n>=0, -1, "send");
     total += n;
     bytesleft -= n;
   }
 
-  return n==-1?-1:0; // return -1 on failure, 0 on success
+ out:
+  return rv;
 } 
 
 static int recvall(int s, void *buf, size_t len)
@@ -113,66 +111,66 @@ static int recvall(int s, void *buf, size_t len)
   int total = 0;        // how many bytes we've recvd
   int bytesleft = len; // how many we have left to recv
   int n;
+  int rv=0;
 
   while(total < len) {
     n = recv(s, buf+total, bytesleft, 0);
-    if (n == -1) { break; }
+    CHECK(n>=0, -1, "recv");
     total += n;
     bytesleft -= n;
   }
 
+ out:
   return n==-1?-1:0; // return -1 on failure, 0 on success
 } 
 
 
-int audit_get_token(audit_ctx_t*    audit_ctx,
-                    const uint8_t*  audit_nonce,
-                    size_t          audit_nonce_len,
-                    const char*     audit_string,
-                    size_t          audit_string_len,
-                    void*           audit_token,
-                    size_t*         audit_token_len)
+audit_err_t audit_get_token(audit_ctx_t*    audit_ctx,
+                            const uint8_t*  audit_nonce,
+                            size_t          audit_nonce_len,
+                            const char*     audit_string,
+                            size_t          audit_string_len,
+                            void*           audit_token,
+                            size_t*         audit_token_len)
 {
-  int sock;
+  int sock=-1;
   int status=0;
   uint32_t tmp_ui32;
+  audit_err_t rv=0;
 
-  status = audit_connect(audit_ctx, &sock);
-  if(status) {
-    return status;
-  }
+  rv = audit_connect(audit_ctx, &sock);
+  CHECK_RV(rv, rv, "audit_connect");
 
   tmp_ui32 = htonl(audit_nonce_len);
-  if (sendall(sock, &tmp_ui32, sizeof(tmp_ui32))
-      || sendall(sock, audit_nonce, audit_nonce_len)) {
-    status = AUDIT_ESEND;
-    goto close_sock;
-  }
+  rv = sendall(sock, &tmp_ui32, sizeof(tmp_ui32));
+  CHECK_RV(rv, AUDIT_ESEND, "sendall");
+  rv = sendall(sock, audit_nonce, audit_nonce_len);
+  CHECK_RV(rv, AUDIT_ESEND, "sendall");
 
   tmp_ui32 = htonl(audit_string_len);
-  if (sendall(sock, &tmp_ui32, sizeof(tmp_ui32))
-      || sendall(sock, audit_string, audit_string_len)) {
-    status = AUDIT_ESEND;
-    goto close_sock;
-  }
+  rv = sendall(sock, &tmp_ui32, sizeof(tmp_ui32));
+  CHECK_RV(rv, AUDIT_ESEND, "sendall");
+  rv = sendall(sock, audit_string, audit_string_len);
+  CHECK_RV(rv, AUDIT_ESEND, "sendall");
 
-  if(recvall(sock, &tmp_ui32, sizeof(tmp_ui32))) {
-    status = AUDIT_ERECV;
-    goto close_sock;
-  }
+  rv = recvall(sock, &tmp_ui32, sizeof(tmp_ui32));
+  CHECK_RV(rv, AUDIT_ERECV, "recvall");
+
   tmp_ui32 = ntohl(tmp_ui32);
   if(tmp_ui32 > *audit_token_len) {
     *audit_token_len = tmp_ui32;
     status = AUDIT_ESHORT_BUFFER;
-    goto close_sock;
-  }
-  *audit_token_len = tmp_ui32;
-  if(recvall(sock, audit_token, tmp_ui32)) {
-    status = AUDIT_ERECV;
-    goto close_sock;
+    goto out;
   }
 
- close_sock:
-  close(sock);
-  return status;
+  *audit_token_len = tmp_ui32;
+  rv = recvall(sock, audit_token, tmp_ui32);
+  CHECK_RV(rv, AUDIT_ERECV, "recvall");
+
+ out:
+  if(sock >= 0) {
+    close(sock);
+    sock=-1;
+  }
+  return rv;
 }

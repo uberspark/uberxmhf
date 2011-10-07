@@ -59,15 +59,15 @@ typedef struct {
   const char* svc;
 } audit_ctx_t;
 
-int audit_get_token(audit_ctx_t*    audit_ctx,
-                    const uint8_t*  audit_nonce,
-                    size_t          audit_nonce_len,
-                    const char*     audit_string,
-                    size_t          audit_string_len,
-                    void*           audit_token,
-                    size_t*         audit_token_len);
+audit_err_t audit_get_token(audit_ctx_t*    audit_ctx,
+                            const uint8_t*  audit_nonce,
+                            size_t          audit_nonce_len,
+                            const char*     audit_string,
+                            size_t          audit_string_len,
+                            void*           audit_token,
+                            size_t*         audit_token_len);
 
-int audit_ctx_init(audit_ctx_t *ctx, const char* hostname, const char* svc);
+audit_err_t audit_ctx_init(audit_ctx_t *ctx, const char* hostname, const char* svc);
 void audit_ctx_release(audit_ctx_t *ctx);
 
 #endif
