@@ -45,6 +45,7 @@
 #include <tee-sdk/tz.h>
 #include <tee-sdk/tzmarshal.h>
 
+#include "dbg.h"
 #include "audited-kv-pal-int.h"
 #include "audited.h"
 #include "audited-kv-pal.h"
@@ -128,19 +129,19 @@ static akv_err_t derive_from_master(void *dst,
   size_t md_len=SHA256_DIGEST_LENGTH;
   uint8_t *md_res;
 
+  CHECK(dst_len <= sizeof(md),
+        AKV_EPARAM,
+        "Asked for %d, can only provide %d bytes",
+        dst_len,
+        sizeof(md));
+
   md_res = HMAC(EVP_sha256(),
                 master_secret, master_secret_len,
                 (uint8_t*)name, strlen(name),
                 md, &md_len);
-  if(!md_res) {
-    rv = AKV_ECRYPTO;
-    goto out;
-  }
-
-  if(dst_len > SHA256_DIGEST_LENGTH) {
-    rv = AKV_EPARAM;
-    goto out;
-  }
+  CHECK(md_res && md_len==sizeof(md),
+        AKV_ECRYPTO,
+        "HMAC");
 
   memcpy(dst, md_res, dst_len);
 
@@ -159,17 +160,13 @@ akv_err_t akvp_set_master_secret(void *master_secret, size_t master_secret_len)
       akv_ctx.hmac_key=NULL;
     }
     akv_ctx.hmac_key=malloc(AKVP_HMAC_KEY_LEN);
-    if(!akv_ctx.hmac_key) {
-      rv = AKV_ENOMEM;
-      goto out;
-    }
+    CHECK_MEM(akv_ctx.hmac_key, AKV_ENOMEM);
+
     akv_ctx.hmac_key_len=AKVP_HMAC_KEY_LEN;
     rv = derive_from_master(akv_ctx.hmac_key, akv_ctx.hmac_key_len,
                             master_secret, master_secret_len,
                             "HMAC");
-    if(!rv) {
-      goto out;
-    }
+    CHECK_RV(rv, rv, "derive_from_master(HMAC)");
   }
 
  out:
@@ -188,24 +185,18 @@ akv_err_t akvp_init_priv(const char *audit_pub_pem, void *master_secret, size_t 
   kv_ctx = kv_ctx_new();
 
   audited_err = audited_init(audit_pub_pem);
-  if (audited_err) {
-    rv = AKV_EAUDITED | (audited_err << 8);
-    goto out;
-  }
+  CHECK_RV(audited_err, AKV_EAUDITED | (audited_err << 8),
+           "audited_init");
 
   if(!master_secret) {
     master_secret_len = AKVP_MASTER_SECRET_LEN;
     master_secret = malloc(master_secret_len);
-    if(!master_secret) {
-      rv = AKV_ENOMEM;
-      goto out;
-    }
+    CHECK_MEM(master_secret, AKV_ENOMEM);
+
     svcapirv = svc_utpm_rand_block(master_secret,
                                    master_secret_len);
-    if (svcapirv) {
-      rv = AKV_ESVC | (svcapirv << 8);
-      goto out;
-    }
+    CHECK(!svcapirv, AKV_ESVC | (svcapirv << 8),
+          "svc_utpm_rand_block");
   }
 
   akv_ctx = (akv_ctx_t) {
@@ -215,9 +206,7 @@ akv_err_t akvp_init_priv(const char *audit_pub_pem, void *master_secret, size_t 
   };
 
   rv = akvp_set_master_secret(master_secret, master_secret_len);
-  if(rv) {
-    goto out;
-  }
+  CHECK_RV(rv, rv, "akvp_set_master_secret");
 
  out:
   if(!rv) {
@@ -252,8 +241,8 @@ char* sprintf_mallocd(const char *format, ...)
 
   sz = 1+vsnprintf(NULL, 0, format, argp1);
   rv = malloc(sz);
-  if (!rv)
-    goto out;
+  CHECK_MEM(rv, NULL);
+
   sz2 = vsnprintf(rv, sz, format, argp2);
   assert(sz2 == (sz-1));
 
@@ -276,16 +265,17 @@ akv_err_t akvp_db_add_audit_string(Db__AddReq *req,
 
 akv_err_t akvp_db_add_execute(const Db__AddReq* req, const Db__AddRes *res)
 {
-  akv_err_t akv_err;
+  akv_err_t rv=0;
   kv_err_t kv_err;
 
   kv_err = kv_add(akv_ctx.kv_ctx, req->key, strlen(req->key), req->val.data, req->val.len);
-  akv_err =
-    (kv_err == KV_ENONE) ? AKV_ENONE
-    : (kv_err == KV_EEXISTS) ? AKV_EEXISTS
-    : AKV_EKV;
+  CHECK_RV(kv_err, MAP1(kv_err,
+                        KV_EEXISTS, AKV_EEXISTS,
+                        AKV_EKV | (kv_err << 8)),
+           "kv_add");
 
-  return akv_err;
+ out:
+  return rv;
 }
 
 akv_err_t akvp_db_get_audit_string(Db__GetReq *req,
@@ -301,7 +291,7 @@ akv_err_t akvp_db_get_audit_string(Db__GetReq *req,
 
 akv_err_t akvp_db_get_execute(const Db__GetReq* req, Db__GetRes *res)
 {
-  akv_err_t akv_err;
+  akv_err_t rv=0;
   kv_err_t kv_err;
 
   kv_err = kv_get(akv_ctx.kv_ctx,
@@ -309,10 +299,11 @@ akv_err_t akvp_db_get_execute(const Db__GetReq* req, Db__GetRes *res)
                   strlen(req->key),
                   (const void **)(&res->val.data),
                   &res->val.len);
-  akv_err =
-    (kv_err == KV_ENONE) ? AKV_ENONE
-    : (kv_err == KV_ENOTFOUND) ? AKV_ENOTFOUND
-    : AKV_EKV;
+  CHECK_RV(kv_err, MAP1(kv_err,
+                        KV_ENOTFOUND, AKV_ENOTFOUND,
+                        AKV_EKV | (kv_err << 8)),
+           "kv_get");
 
-  return akv_err;
+ out:
+  return rv;
 }
