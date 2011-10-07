@@ -34,8 +34,20 @@
  */
 
 /* move into tee-sdk when stable */
+#include <tsvc.h>
 #include <tee-sdk/tzmarshal.h>
 #include "tze-pb.h"
+
+static void* get_stderr(size_t *len)
+{
+  char *rv = malloc(4096);
+  if(!rv) {
+    return NULL;
+  }
+  *len = tsvc_read_stderr(rv, 4095);
+  rv[*len] = '\0';
+  return rv;
+}
 
 tz_return_t TZEDispatchImpProtobuf(const tze_pb_proto_t protos[],
                                    const tze_pb_imp_t imps[],
@@ -61,6 +73,15 @@ tz_return_t TZEDispatchImpProtobuf(const tze_pb_proto_t protos[],
 
   tzerr = TZEDispatchImpProtobufMsgs(protos, imps, num_svcs, 
                                      uiCommand, req, &res, puiRv);
+  {
+    /* XXX Temp. this should be an independent layer */
+    size_t len;
+    void *buf;
+    buf = get_stderr(&len);
+    TZIEncodeArray(psOutBuf, buf, len);
+    free(buf);
+  }
+
   if(tzerr || *puiRv) {
     assert(!res);
     goto free_unpacked_req;

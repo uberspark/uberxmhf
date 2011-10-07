@@ -34,6 +34,7 @@
  */
 
 /* move into tee-sdk when stable */
+#include <unistd.h>
 #include <tee-sdk/tz.h>
 #include "tze-pb.h"
 
@@ -130,6 +131,20 @@ tz_return_t TZEDispatchProtobuf(const tze_pb_proto_t protos[],
   }
 
   tzerr = TZOperationPerform(&op, puiRv);
+  { /* XXX TEMP. this should be an independent layer */
+    void *buf=NULL;
+    size_t len;
+    buf = TZDecodeArraySpace(&op, &len);
+    if(buf) {
+      while(len) {
+        size_t n;
+        n = write(2, buf, len);
+        if (n <= 0)
+          break;
+        len-=n;
+      }
+    }
+  }
   if (tzerr) {
     goto out;
   }
