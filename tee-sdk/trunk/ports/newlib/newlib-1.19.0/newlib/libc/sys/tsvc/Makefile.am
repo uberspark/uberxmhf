@@ -4,7 +4,7 @@ AUTOMAKE_OPTIONS = cygnus
 
 INCLUDES = $(NEWLIB_CFLAGS) $(CROSS_CFLAGS) $(TARGET_CFLAGS)
 
-SUBDIRS = net
+SUBDIRS = net gloss
 
 AM_CCASFLAGS = $(INCLUDES)
 
@@ -14,7 +14,7 @@ lib_a_SOURCES = dummysys.c getuid.c poll.c termios.c
 lib_a_CCASFLAGS = $(AM_CCASFLAGS)
 lib_a_CFLAGS = $(AM_CFLAGS)
 
-SUBLIBS = net/lib.a
+SUBLIBS = net/lib.a gloss/lib.a
 
 lib.a: $(lib_a_OBJECTS)
 	rm -f $@

@@ -21,5 +21,5 @@ AC_LIBTOOL_WIN32_DLL
 AM_PROG_LIBTOOL
 fi
 
-AC_CONFIG_FILES([Makefile net/Makefile])
+AC_CONFIG_FILES([Makefile net/Makefile gloss/Makefile])
 AC_OUTPUT
