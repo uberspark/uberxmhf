@@ -38,6 +38,7 @@
 #include <stdio.h>
 #include <sys/stat.h>
 
+#include "dbg.h"
 #include "tcm.h"
 #include "audited-kv.h"
 #include "audited-kv-pal.h"
@@ -81,10 +82,8 @@ tcm_err_t tcm_db_add(tcm_ctx_t* tcm_ctx,
                              key,
                              val,
                              strlen(val)+1);
-  if (akv_err) {
-    rv= TCM_EAKV | (akv_err << 8);
-    goto cleanup_none;
-  }
+  CHECK_RV(akv_err, TCM_EAKV | (akv_err << 8),
+           "akv_db_add_begin");
 
   audit_err = audit_get_token(tcm_ctx->audit_ctx,
                               akv_cmd_ctx.audited->res->audit_nonce.data,
@@ -93,22 +92,17 @@ tcm_err_t tcm_db_add(tcm_ctx_t* tcm_ctx,
                               strlen(akv_cmd_ctx.audited->res->audit_string),
                               audit_token,
                               &audit_token_len);
-  if (audit_err) {
-    rv = TCM_EAUDIT | (audit_err << 8);
-    goto cleanup_cmd;
-  }
+  CHECK_RV(audit_err, TCM_EAUDIT | (audit_err << 8),
+           "audit_get_token");
 
   akv_err = akv_db_add_execute(&akv_cmd_ctx,
                                audit_token,
                                audit_token_len);
-  if (akv_err) {
-    rv = TCM_EAKV | (akv_err << 8);
-    goto cleanup_cmd;
-  }
+  CHECK_RV(akv_err, TCM_EAKV | (akv_err << 8),
+           "akv_db_add_execute");
 
- cleanup_cmd:
+ out:
   akv_cmd_ctx_release(&akv_cmd_ctx);
- cleanup_none:
   return rv;
 }
 
@@ -130,10 +124,8 @@ tcm_err_t tcm_db_get(tcm_ctx_t* tcm_ctx,
   akv_err = akv_db_get_begin(tcm_ctx->akv_ctx,
                              &akv_cmd_ctx,
                              key);
-  if (akv_err) {
-    rv= TCM_EAKV | (akv_err << 8);
-    goto cleanup_none;
-  }
+  CHECK_RV(akv_err, TCM_EAKV | (akv_err << 8),
+           "akv_db_get_begin");
 
   audit_err = audit_get_token(tcm_ctx->audit_ctx,
                               akv_cmd_ctx.audited->res->audit_nonce.data,
@@ -142,24 +134,19 @@ tcm_err_t tcm_db_get(tcm_ctx_t* tcm_ctx,
                               strlen(akv_cmd_ctx.audited->res->audit_string),
                               audit_token,
                               &audit_token_len);
-  if (audit_err) {
-    rv = TCM_EAUDIT | (audit_err << 8);
-    goto cleanup_cmd;
-  }
+  CHECK_RV(audit_err, TCM_EAUDIT | (audit_err << 8),
+           "audit_get_token");
 
   akv_err = akv_db_get_execute(&akv_cmd_ctx,
                                audit_token,
                                audit_token_len,
                                (void**)val,
                                &val_len);
-  if (akv_err) {
-    rv = TCM_EAKV | (akv_err << 8);
-    goto cleanup_cmd;
-  }
+  CHECK_RV(akv_err, TCM_EAKV | (akv_err << 8),
+           "akv_db_get_execute");
 
- cleanup_cmd:
+ out:
   akv_cmd_ctx_release(&akv_cmd_ctx);
- cleanup_none:
   return rv;
 }
 
@@ -170,29 +157,22 @@ void* read_file(const char *path, size_t *len)
   size_t numread=0;
   FILE *f=NULL;
   char *rv=NULL;
+  int err;
 
-  if (stat(path, &s)) {
-    return NULL;
-  }
+  err=stat(path, &s);
+  CHECK(!err, NULL, "stat(%s)", path);
 
   toread = s.st_size;
 
   rv = malloc(toread+1);
-  if(rv == NULL) {
-    return NULL;
-  }
+  CHECK_MEM(rv, NULL);
 
   f = fopen(path, "rb");
-  if(f == NULL) {
-    return NULL;
-  }
+  CHECK(f, NULL, "fopen(%s)", path);
 
   while(toread > 0) {
     size_t cnt = fread(&rv[numread], 1, toread, f);
-    if (cnt == 0) {
-      free(rv);
-      return(NULL);
-    }
+    CHECK(cnt, rv, "fread");
     toread -= cnt;
     numread += cnt;
   }
@@ -202,6 +182,20 @@ void* read_file(const char *path, size_t *len)
     *len=numread;
   }
 
+ out:
+  if(f) {
+    err=fclose(f);
+    f=NULL;
+    CHECK(!err, rv, "fclose"); /* caution: potential backwards
+                                  goto. ew. also, we don't change rv,
+                                  since if we already successfully
+                                  read the data, failing fclose
+                                  doesn't matter*/
+  }
+  if(toread > 0) {
+    free(rv);
+    rv=NULL;
+  }
   return rv;
 }
 
@@ -209,22 +203,27 @@ int write_file(const char *path, uint8_t *data, size_t towrite)
 {
   FILE *f=NULL;
   size_t numwritten=0;
+  int rv;
 
   f = fopen(path, "wb");
-  if (!f) {
-    return 1;
-  }
+  CHECK(f, 1, "fopen(%s)", path);
 
   while(towrite > 0) {
     size_t cnt = fwrite(&data[numwritten], 1, towrite, f);
-    if (cnt == 0) {
-      return 1;
-    }
+    CHECK(cnt, 1, "fwrite");
     towrite -= cnt;
     numwritten += cnt;
   }
+
   fflush(f);
-  return 0;
+
+ out:
+  if(f) {
+    rv = fclose(f);
+    f=NULL;
+    CHECK(!rv, rv, "fclose"); /* caution: potential backwards goto*/
+  }
+  return rv;
 }
 
 int main(int argc, char **argv)
