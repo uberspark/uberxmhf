@@ -83,8 +83,9 @@ int svc_utpm_seal(TPM_PCR_INFO *pcrInfo,
                   void *out,
                   size_t *out_len)
 {
-  memcpy(out, in, in_len);
-  *out_len = in_len;
+  memcpy(out, pcrInfo, sizeof(*pcrInfo));
+  memcpy(out+sizeof(*pcrInfo), in, in_len);
+  *out_len = in_len+sizeof(*pcrInfo);
   return 0;
 }
 
@@ -94,8 +95,13 @@ int svc_utpm_unseal(void *in,
                     size_t *out_len,
                     void *digestAtCreation)
 {
-  memcpy(out, in, in_len);
-  *out_len = in_len;
+  TPM_PCR_INFO *info_at_creation = (TPM_PCR_INFO*)in;
+
+  memcpy(digestAtCreation,
+         &info_at_creation->digestAtCreation,
+         sizeof(TPM_COMPOSITE_HASH));
+  memcpy(out, in+sizeof(TPM_PCR_INFO), in_len);
+  *out_len = in_len-sizeof(TPM_PCR_INFO);
   return 0;
 }
 
