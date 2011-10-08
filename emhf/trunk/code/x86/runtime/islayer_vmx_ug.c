@@ -359,7 +359,6 @@ static void _vmx_setupEPT(VCPU *vcpu){
 		}
 	}
 
-	/* TODO: mark all the physical pages of EMHF hyervisor not present */
 }
 
 
