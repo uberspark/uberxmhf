@@ -422,21 +422,22 @@ void allcpus_common_start(VCPU *vcpu){
 	}
 #endif
 
-
-	//if we are the BSP setup SIPI intercept
-  if(vcpu->isbsp){
-		if(g_midtable_numentries > 1){
-    	g_isl->hvm_apic_setup(vcpu);
-			printf("\nCPU(0x%02x): BSP, setup SIPI interception.", vcpu->id);
-		}
-  }else{ //else, we are an AP and wait for SIPI signal
-    printf("\nCPU(0x%02x): AP, waiting for SIPI signal...", vcpu->id);
-    while(!vcpu->sipireceived);
-    printf("\nCPU(0x%02x): SIPI signal received, vector=0x%02x", vcpu->id, vcpu->sipivector);
-
+	//do SIPI interception only if we start "early"
+	if(rpb->isEarlyInit){
+		//if we are the BSP setup SIPI intercept
+		if(vcpu->isbsp){
+			if(g_midtable_numentries > 1){
+				g_isl->hvm_apic_setup(vcpu);
+				printf("\nCPU(0x%02x): BSP, setup SIPI interception.", vcpu->id);
+			}
+		}else{ //else, we are an AP and wait for SIPI signal
+			printf("\nCPU(0x%02x): AP, waiting for SIPI signal...", vcpu->id);
+			while(!vcpu->sipireceived);
+			printf("\nCPU(0x%02x): SIPI signal received, vector=0x%02x", vcpu->id, vcpu->sipivector);
 	
-		g_isl->hvm_initialize_csrip(vcpu, ((vcpu->sipivector * PAGE_SIZE_4K) >> 4),
-					 (vcpu->sipivector * PAGE_SIZE_4K), 0x0ULL);
+			g_isl->hvm_initialize_csrip(vcpu, ((vcpu->sipivector * PAGE_SIZE_4K) >> 4),
+				 (vcpu->sipivector * PAGE_SIZE_4K), 0x0ULL);
+		}
 	}
 
 
