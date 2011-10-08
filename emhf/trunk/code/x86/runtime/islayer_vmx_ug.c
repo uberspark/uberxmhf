@@ -352,8 +352,9 @@ void _vmx_setupEPT(VCPU *vcpu){
 					(paddr < (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) )
 					p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) | (u64)0x0 ;	//not-present
 				else*/
-					p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) | (u64)0x7 ;	//present
-				
+					//p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) | (u64)0x7 ;	//present
+					p_table[k] = (u64) (paddr)  | ((u64)0x6 << 3) | (u64)0x7 ;	//present
+					
 				paddr += PAGE_SIZE_4K;
 			}
 		}
