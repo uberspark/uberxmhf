@@ -37,7 +37,6 @@
 // authors: amit vasudevan (amitvasudevan@acm.org) and jonmccune@cmu.edu
 
 #include <target.h>
-#include <msr.h>
 #include <svm.h>
 #include <processor.h>
 

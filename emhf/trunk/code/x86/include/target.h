@@ -47,9 +47,9 @@
 #include <_error.h>      //error handling and assertions
 
 #include <processor.h>  //CPU
-#include <msr.h>        //model specific registers
+#include <_msr.h>        //model specific registers
 #include <paging.h>     //MMU
-#include <io.h>         //legacy I/O
+#include <_io.h>         //legacy I/O
 #include <_apic.h>       //APIC
 #include <svm.h>        //SVM extensions
 #include <vmx.h>				//VMX extensions
@@ -66,7 +66,7 @@
 #include <_div64.h>
 
 //boot manager (multiboot)
-#include <multiboot.h>
+#include <_multiboot.h>
 
 
 #include <_hmac.h>
@@ -495,7 +495,7 @@ typedef struct {
 	u32 isEarlyInit;					//1 for an "early init" else 0 (late-init)
 } __attribute__((packed)) RPB, *PRPB;
 
-#include <libemhf.h>	//EMHF application interface
+#include <_libemhf.h>	//EMHF application interface
 
 
 //----------------------------------------------------------------------
