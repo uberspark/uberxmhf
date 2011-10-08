@@ -50,3 +50,13 @@ void emhf_memprot_initialize(VCPU *vcpu){
 		printf("\nCPU(0x%02x): Activated VMX EPTs.", vcpu->id);
 	}
 }
+
+// get level-1 page map address
+inline hpt_pme_t* emhf_memprot_get_lvl1_pagemap_address(VCPU *vcpu){
+	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+
+	if (vcpu->cpu_vendor == CPU_VENDOR_AMD)
+		return (hpt_pme_t*)vcpu->npt_vaddr_pts;
+	else //CPU_VENDOR_INTEL
+		return (hpt_pme_t*)vcpu->vmx_vaddr_ept_p_tables;
+}
