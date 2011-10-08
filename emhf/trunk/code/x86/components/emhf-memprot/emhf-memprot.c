@@ -33,18 +33,14 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF memory protection component 
-// declarations
+// EMHF memory protection component
+// implementation
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __EMHF_MEMPROT_H__
-#define __EMHF_MEMPROT_H__
+#include <target.h>
 
-
-#ifndef __ASSEMBLY__
-
-void emhf_memprot_initialize(VCPU *vcpu);
-
-#endif	//__ASSEMBLY__
-
-#endif //__EMHF_MEMPROT_H__
+// initialize memory protection structures for a given core (vcpu)
+void emhf_memprot_initialize(VCPU *vcpu){
+	
+	
+}
