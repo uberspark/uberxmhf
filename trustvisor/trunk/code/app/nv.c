@@ -36,8 +36,6 @@
 #include <target.h>
 #include <stdbool.h>
 
-#include <tpm.h> /* tpm_nv_*() */
-#include <tpm_emhf.h> /* hwtpm_open_locality() */
 #include <scode.h> /* copy_from_guest */
 #include <random.h> /* rand_bytes_or_die() */
 #include <nv.h>

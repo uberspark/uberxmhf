@@ -41,7 +41,6 @@
 #include <puttymem.h>
 #include <scode.h>
 #include <hc_utpm.h>
-#include <tpm.h>
 #include <nv.h>
 
 /* Declared in linuxrelc.c.  TODO: figure out an approriate header

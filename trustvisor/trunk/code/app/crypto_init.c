@@ -42,8 +42,6 @@
 #include <target.h>
 #include <stdbool.h>
 
-#include <tpm.h>
-#include <tpm_emhf.h> /* hwtpm_open_locality() */
 #include <tv_utpm.h>
 #include <nist_ctr_drbg.h>
 #include <random.h> 
