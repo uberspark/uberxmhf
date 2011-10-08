@@ -42,8 +42,6 @@
 #include <target.h>
 #include <stdbool.h>
 
-#include <types.h> /* u32, ... */
-#include <target.h>
 #include <tpm.h>
 #include <tpm_emhf.h> /* hwtpm_open_locality() */
 #include <tv_utpm.h>

@@ -36,7 +36,7 @@
 #ifndef PAGES_H
 #define PAGES_H
 
-#include <types.h>
+#include <target.h>
 
 typedef struct {
   void *buf;

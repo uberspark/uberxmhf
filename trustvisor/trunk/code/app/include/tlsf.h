@@ -54,7 +54,7 @@
 #ifndef _TLSF_H_
 #define _TLSF_H_
 
-#include <types.h>
+#include <target.h>
 
 extern size_t init_memory_pool(size_t, void *);
 extern size_t get_used_size(void *);

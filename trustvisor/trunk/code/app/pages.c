@@ -34,7 +34,6 @@
  */
 
 #include <target.h>
-#include <types.h>
 #include <puttymem.h>
 #include <pages.h>
 

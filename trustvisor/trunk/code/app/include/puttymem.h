@@ -42,7 +42,7 @@
 #define _PUTTYMEM_H_
 
 //#include "malloc.h"
-#include <types.h>
+#include <target.h>
 
 #define PUTTYMEM_POOLSIZE (4*(1<<20))
 
