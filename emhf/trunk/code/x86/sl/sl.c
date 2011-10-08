@@ -166,7 +166,7 @@ void runtime_setup_paging(u32 physaddr, u32 virtaddr, u32 totalsize){
 
 
   //disable caching 
-  l_cr0 |= (u32)CR0_CD;
+  //l_cr0 |= (u32)CR0_CD;
   
   //enable paging
   l_cr0 |= (u32)0x80000000;
