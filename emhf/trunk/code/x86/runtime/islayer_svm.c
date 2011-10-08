@@ -189,6 +189,7 @@ static void _svm_send_quiesce_signal(VCPU *vcpu, struct vmcb_struct __attribute_
   printf("\nCPU(0x%02x): NMIs fired!", vcpu->id);
 }
 
+/*
 
 //---npt initialize-------------------------------------------------------------
 void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts_base){
@@ -232,7 +233,7 @@ void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts_base){
 		}
 	}
 	
-}
+} */
 
 
 //---svm int 15 hook enabling function------------------------------------------
