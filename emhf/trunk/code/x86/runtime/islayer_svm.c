@@ -197,31 +197,31 @@ static void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts
 	pt_t pt;
 	u32 paddr=0, i, j, k, y, z;
 	u64 flags;
-	
+
 	printf("\n%s: pdpt=0x%08x, pdts=0x%08x, pts=0x%08x",
-    __FUNCTION__, npt_pdpt_base, npt_pdts_base, npt_pts_base);
-	
+	__FUNCTION__, npt_pdpt_base, npt_pdts_base, npt_pts_base);
+
 	pdpt=(pdpt_t)npt_pdpt_base;
 
-  for(i = 0; i < PAE_PTRS_PER_PDPT; i++){
-    y = (u32)__hva2spa__((u32)npt_pdts_base + (i << PAGE_SHIFT_4K));
-    flags = (u64)(_PAGE_PRESENT);
+	for(i = 0; i < PAE_PTRS_PER_PDPT; i++){
+		y = (u32)__hva2spa__((u32)npt_pdts_base + (i << PAGE_SHIFT_4K));
+		flags = (u64)(_PAGE_PRESENT);
 		pdpt[i] = pae_make_pdpe((u64)y, flags);
-    pdt=(pdt_t)((u32)npt_pdts_base + (i << PAGE_SHIFT_4K));
-	       	
+		pdt=(pdt_t)((u32)npt_pdts_base + (i << PAGE_SHIFT_4K));
+			
 		for(j=0; j < PAE_PTRS_PER_PDT; j++){
 			z=(u32)__hva2spa__((u32)npt_pts_base + ((i * PAE_PTRS_PER_PDT + j) << (PAGE_SHIFT_4K)));
-		  flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
+			flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
 			pdt[j] = pae_make_pde((u64)z, flags);
 			pt=(pt_t)((u32)npt_pts_base + ((i * PAE_PTRS_PER_PDT + j) << (PAGE_SHIFT_4K)));
 			
 			for(k=0; k < PAE_PTRS_PER_PT; k++){
-        flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
-        pt[k] = pae_make_pte((u64)paddr, flags);
+				flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
+				pt[k] = pae_make_pte((u64)paddr, flags);
 				paddr+= PAGE_SIZE_4K;
 			}
 		}
-  }
+	}
 
 	/* TODO: mark all the physical pages of EMHF hyervisor not present */
 }
