@@ -247,6 +247,8 @@ void sha1_loop(struct sha1_ctxt *ctxt,const uint8_t *input,size_t len)
 
     off = 0;
 
+	printf("\n%s: entering", __FUNCTION__);
+
     while (off < len) {
         gapstart = COUNT % 64;
         gaplen = 64 - gapstart;
@@ -259,7 +261,10 @@ void sha1_loop(struct sha1_ctxt *ctxt,const uint8_t *input,size_t len)
         if (COUNT % 64 == 0)
             sha1_step(ctxt);
         off += copysiz;
+        printf("\n%s: off=%u, len=%u", __FUNCTION__, off, len);
     }
+    printf("\n%s: exiting", __FUNCTION__);
+
 }
 
 void sha1_result(struct sha1_ctxt *ctxt,unsigned char *digest0)
