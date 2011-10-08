@@ -77,7 +77,6 @@
 #include <target.h>
 #include <sha1.h>
 #include <tpm.h>
-#include <hmac.h>
 
 /* These go with _tpm_submit_cmd in tpm.c */
 extern uint8_t     cmd_buf[TPM_CMD_SIZE_MAX];

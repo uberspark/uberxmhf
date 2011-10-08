@@ -69,6 +69,8 @@
 #include <multiboot.h>
 
 
+#include <_hmac.h>
+
 //------------------------------------------------------------------------------
 //preferred TPM locality to use for access inside hypervisor
 //needs to be 2 or 1 (4 is hw-only, 3 is sinit-only on Intel)

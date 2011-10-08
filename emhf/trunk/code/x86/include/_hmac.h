@@ -54,6 +54,8 @@
 #ifndef _HMAC_H_
 #define _HMAC_H_
 
+#ifndef __ASSEMBLY__
+
 #include <sha1.h>
 
 typedef struct _HMAC_SHA1_CTX {
@@ -68,5 +70,6 @@ void     HMAC_SHA1_Final(uint8_t [SHA_DIGEST_LENGTH], HMAC_SHA1_CTX *);
 void     HMAC_SHA1(const uint8_t *key, uint32_t keylen,
                    const uint8_t *msg, uint32_t len,
                    uint8_t md[SHA_DIGEST_LENGTH]);
+#endif //__ASSEMBLY__
 
 #endif  /* _HMAC_H_ */

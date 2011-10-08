@@ -62,7 +62,6 @@
 
 #include <target.h>
 #include <sha1.h>
-#include <hmac.h>
 
 #define SHA1_BLOCK_LENGTH 64
 #define SHA1_DIGEST_LENGTH 20
