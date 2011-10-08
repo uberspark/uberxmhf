@@ -63,7 +63,7 @@
 //language specifics
 #include <sarg.h>
 #include <str.h>
-#include <div64.h>
+#include <_div64.h>
 
 //boot manager (multiboot)
 #include <multiboot.h>
