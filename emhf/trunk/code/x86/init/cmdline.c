@@ -71,7 +71,6 @@
 #include <target.h> 
 #include <types.h>
 /* #include <stdbool.h> */
-#include <ctype.h>
 /* #include <compiler.h> */
 #include <str.h>
 /* #include <misc.h> */

@@ -40,7 +40,6 @@
 // for SecHyp
 
 #include <target.h>
-#include <ctype.h>
 #include <print.h>
 
 #define EXPORT_SYMBOL(var)

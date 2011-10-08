@@ -40,6 +40,7 @@
 
 //---includes for the target----------------------------------------------------
 #include <types.h>      //always comes first
+#include <_ctype.h>		//the ctype variable definition for debug printf
 #include <_com.h>		//serial UART as debugging backend
 #include <print.h>      //early chance to disable/enable debug printfs
 #include <_cmdline.h>	//GRUB command line handling functions
