@@ -353,7 +353,12 @@ void _vmx_setupEPT(VCPU *vcpu){
 					p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) | (u64)0x0 ;	//not-present
 				else*/
 					//p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) | (u64)0x7 ;	//present
-					p_table[k] = (u64) (paddr)  | (0x1ULL << 6) | ((u64)0x6 << 3) | (u64)0x7 ;	//present
+				
+				//p_table[k] = (u64) (paddr)  | (0x1ULL << 6) | ((u64)0x6 << 3) | (u64)0x7 ;	//present
+				if(memorytype == MTRR_TYPE_UC)
+					p_table[k] = (u64) (paddr)  | (0x1ULL << 6) | ((u64)MTRR_TYPE_UC << 3) | (u64)0x7 ;	//present
+				else
+					p_table[k] = (u64) (paddr)  | ((u64)MTRR_TYPE_WB << 3) | (u64)0x7 ;	//present
 					
 				paddr += PAGE_SIZE_4K;
 			}
