@@ -354,7 +354,7 @@ static void _vmx_setupEPT(VCPU *vcpu){
 				else
 					p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) | (u64)0x7 ;	//present
 				
-				paddr += 4096;
+				paddr += PAGE_SIZE_4K;
 			}
 		}
 	}
