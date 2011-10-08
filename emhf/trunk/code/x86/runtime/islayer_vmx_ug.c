@@ -76,7 +76,8 @@ static u32 * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
   return NULL; /* unreachable */
 }
 
-
+/*
+ //extracted to memory protection component
 //---gather memory types for system physical memory------------------------------
 void _vmx_gathermemorytypes(VCPU *vcpu){
  	u32 eax, ebx, ecx, edx;
@@ -263,19 +264,19 @@ void _vmx_gathermemorytypes(VCPU *vcpu){
 }
 
 //---get memory type for a given physical page address--------------------------
-/*
-11.11.4.1 MTRR Precedences
-  0. if MTRRs are not enabled --> MTRR_TYPE_UC
-  if enabled then
-     if physaddr < 1MB use fixed MTRR ranges return type
-     else if within a valid variable range MTRR then
-        if a single match, return type
-        if two or more and one is UC, return UC
-        if two or more and WB and WT, return WT
-        else invalid combination
-     else
-        return default memory type
-*/
+//
+//11.11.4.1 MTRR Precedences
+//  0. if MTRRs are not enabled --> MTRR_TYPE_UC
+//  if enabled then
+     //if physaddr < 1MB use fixed MTRR ranges return type
+     //else if within a valid variable range MTRR then
+        //if a single match, return type
+        //if two or more and one is UC, return UC
+        //if two or more and WB and WT, return WT
+        //else invalid combination
+     //else
+       // return default memory type
+//
 static u32 _vmx_getmemorytypeforphysicalpage(VCPU *vcpu, u64 pagebaseaddr){
  int i;
  u32 prev_type= MTRR_TYPE_RESV; 
@@ -360,7 +361,7 @@ void _vmx_setupEPT(VCPU *vcpu){
 	}
 
 }
-
+*/
 
 
 //--initunrestrictedguestVMCS: initializes VMCS for unrestricted guest ---------
