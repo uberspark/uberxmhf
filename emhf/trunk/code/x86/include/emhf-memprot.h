@@ -43,7 +43,10 @@
 
 #ifndef __ASSEMBLY__
 
+//initialize memory protection for a core
 void emhf_memprot_initialize(VCPU *vcpu);
+void emhf_memprot_arch_vmx_initialize(VCPU *vcpu);	//intel VMX arch. backend
+void emhf_memprot_arch_svm_initialize(VCPU *vcpu);	//amd SVM arch. backend
 
 #endif	//__ASSEMBLY__
 

@@ -52,5 +52,4 @@ void emhf_memprot_arch_vmx_initialize(VCPU *vcpu){
 	vcpu->vmcs.control_EPT_pointer_full = __hva2spa__((u32)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E; //page walk of 4 and WB memory
 	vcpu->vmcs.control_VMX_cpu_based &= ~(1 << 15); //disable CR3 load exiting
 	vcpu->vmcs.control_VMX_cpu_based &= ~(1 << 16); //disable CR3 store exiting
-	printf("\nCPU(0x%02x): Activated VMX EPTs.", vcpu->id);
 }

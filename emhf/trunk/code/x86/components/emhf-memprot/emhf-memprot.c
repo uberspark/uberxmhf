@@ -43,23 +43,10 @@
 void emhf_memprot_initialize(VCPU *vcpu){
 	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
-		struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
-		_svm_nptinitialize(vcpu->npt_vaddr_ptr, 
-			vcpu->npt_vaddr_pdts, vcpu->npt_vaddr_pts);
-		vmcb->h_cr3 = __hva2spa__(vcpu->npt_vaddr_ptr);
-		vmcb->np_enable |= (1ULL << NP_ENABLE);
-		vmcb->guest_asid = vcpu->npt_asid;
+		emhf_memprot_arch_svm_initialize(vcpu);
 		printf("\nCPU(0x%02x): Activated SVM NPTs.", vcpu->id);
 	}else{	//CPU_VENDOR_INTEL
-		_vmx_gathermemorytypes(vcpu);
-		_vmx_setupEPT(vcpu);
-		vcpu->vmcs.control_VMX_seccpu_based |= (1 << 1); //enable EPT
-		vcpu->vmcs.control_VMX_seccpu_based |= (1 << 5); //enable VPID
-		vcpu->vmcs.control_vpid = 1; //VPID=0 is reserved for hypervisor
-		vcpu->vmcs.control_EPT_pointer_high = 0;
-		vcpu->vmcs.control_EPT_pointer_full = __hva2spa__((u32)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E; //page walk of 4 and WB memory
-		vcpu->vmcs.control_VMX_cpu_based &= ~(1 << 15); //disable CR3 load exiting
-		vcpu->vmcs.control_VMX_cpu_based &= ~(1 << 16); //disable CR3 store exiting
+		emhf_memprot_arch_vmx_initialize(vcpu);
 		printf("\nCPU(0x%02x): Activated VMX EPTs.", vcpu->id);
 	}
 }

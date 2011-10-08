@@ -49,5 +49,4 @@ void emhf_memprot_arch_svm_initialize(VCPU *vcpu){
 	vmcb->h_cr3 = __hva2spa__(vcpu->npt_vaddr_ptr);
 	vmcb->np_enable |= (1ULL << NP_ENABLE);
 	vmcb->guest_asid = vcpu->npt_asid;
-	printf("\nCPU(0x%02x): Activated SVM NPTs.", vcpu->id);
 }
