@@ -506,6 +506,14 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		//tell runtime if we started "early" or "late"
 		rpb->isEarlyInit = slpb.isEarlyInit;
 		
+		/*//debug dump uart_config field
+	    printf("\nrpb->uart_config.port = %x", rpb->uart_config.port);
+		printf("\nrpb->uart_config.clock_hz = %u", rpb->uart_config.clock_hz);
+		printf("\nrpb->uart_config.baud = %u", rpb->uart_config.baud);
+		printf("\nrpb->uart_config.data_bits, parity, stop_bits, fifo = %x %x %x %x", 
+			rpb->uart_config.data_bits, rpb->uart_config.parity, rpb->uart_config.stop_bits, rpb->uart_config.fifo);*/
+
+		
 		//setup paging for runtime 
 		runtime_setup_paging(runtime_physical_base, __TARGET_BASE, runtime_size_2Maligned);
 		printf("\nSL: setup runtime paging.");        

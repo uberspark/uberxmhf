@@ -50,7 +50,7 @@ void cstartup(void){
 	runtime_globals_init();
 
 	//setup debugging	
-#ifdef __DEBUG_SERIAL__
+/*#ifdef __DEBUG_SERIAL__
     printf("\nrpb->uart_config.port = %x", rpb->uart_config.port);
     printf("\nrpb->uart_config.clock_hz = %u", rpb->uart_config.clock_hz);
     printf("\nrpb->uart_config.baud = %u", rpb->uart_config.baud);
@@ -59,7 +59,7 @@ void cstartup(void){
     rpb->uart_config.fifo=0;
     g_uart_config = rpb->uart_config;
 	init_uart();
-#endif
+#endif*/
 	printf("\nruntime initializing...");
 
 	//check CPU type (Intel vs AMD)
