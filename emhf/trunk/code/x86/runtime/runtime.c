@@ -440,7 +440,11 @@ void allcpus_common_start(VCPU *vcpu){
 		}
 	}
 
-
+	if(!rpb->isEarlyInit){
+		printf("\nCPU(0x%02x): Late-initialization, WiP, HALT!", vcpu->id);
+		HALT();
+	}
+  
   //start HVM
   g_isl->hvm_start(vcpu);
 
