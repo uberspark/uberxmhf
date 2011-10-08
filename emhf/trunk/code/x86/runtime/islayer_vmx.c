@@ -37,7 +37,7 @@
 // islayer_vmx.c - VMX isolation layer implementation
 // author: amit vasudevan (amitvasudevan@acm.org) 
 
-#include <target.h>
+#include <emhf.h> 
 
 //==============================================================================
 // static (local) data

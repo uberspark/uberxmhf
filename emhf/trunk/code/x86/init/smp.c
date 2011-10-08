@@ -39,7 +39,7 @@
 //returns the number of cores/CPUs as well as their LAPIC id,
 //version, base and BSP indications
 //author: amit vasudevan (amitvasudevan@acm.org)
-#include <target.h>
+#include <emhf.h> 
 
 //forward prototypes
 static int mp_checksum(unsigned char *mp, int len);

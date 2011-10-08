@@ -74,7 +74,7 @@
  * "Extra" functions unnecessary in SL denoted as such.
  */
 
-#include <target.h>
+#include <emhf.h> 
 
 /* These go with _tpm_submit_cmd in tpm.c */
 extern uint8_t     cmd_buf[TPM_CMD_SIZE_MAX];

@@ -76,7 +76,7 @@
  * implemented by Jun-ichiro itojun Itoh <itojun@itojun.org>
  */
 
-#include <target.h>
+#include <emhf.h> 
 
 #define BIG_ENDIAN \
     (!(__x86_64__ || __i386__ || _M_IX86 || _M_X64 || __ARMEL__ || __MIPSEL__))

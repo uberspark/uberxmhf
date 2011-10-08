@@ -68,8 +68,7 @@
  * From: FreeBSD sys/libkern/strcmp.c
  */
 
-#include <target.h>
-
+#include <emhf.h> 
 /*
  * Compare strings.
  */

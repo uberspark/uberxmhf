@@ -72,7 +72,7 @@
  * Modified for EMHF by jonmccune@cmu.edu, 2011.01.05
  */
 
-#include <target.h>
+#include <emhf.h> 
 
 #define MTRR_TYPE_MIXED         -1
 #define MMIO_APIC_BASE          0xFEE00000

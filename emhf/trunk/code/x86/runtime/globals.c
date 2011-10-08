@@ -37,7 +37,7 @@
 //author: amit vasudevan (amitvasudevan@acm.org)
 //global declarations and definitions for the runtime
 
-#include <target.h>
+#include <emhf.h> 
 
 //system e820 map
 GRUBE820 g_e820map[MAX_E820_ENTRIES] __attribute__(( section(".data") ));

@@ -39,7 +39,7 @@
 // modified extensively by Amit Vasudevan (amitvasudevan@acm.org)
 // for SecHyp
 
-#include <target.h>
+#include <emhf.h> 
 
 #define EXPORT_SYMBOL(var)
 

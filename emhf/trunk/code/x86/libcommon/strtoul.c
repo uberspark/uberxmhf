@@ -69,7 +69,7 @@
 
 /* $FreeBSD: src/sys/libkern/strtoul.c,v 1.6.32.1 2010/02/10 00:26:20 kensmith Exp $ */
 
-#include <target.h>
+#include <emhf.h> 
 
 #ifndef ULONG_MAX
 #define ULONG_MAX     0xFFFFFFFFUL

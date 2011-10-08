@@ -36,7 +36,7 @@
 // multi-processor support routines
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <target.h>
+#include <emhf.h> 
 
 //---spinlock/unlock------------------------------------------------------------
 .section .text

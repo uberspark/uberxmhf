@@ -37,7 +37,7 @@
 // implementation
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <target.h>
+#include <emhf.h> 
 
 // initialize memory protection structures for a given core (vcpu)
 void emhf_memprot_initialize(VCPU *vcpu){

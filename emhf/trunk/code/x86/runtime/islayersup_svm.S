@@ -37,7 +37,7 @@
 //implements supporting low-level routines for SVM isolation layer
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <target.h>
+#include <emhf.h> 
 
 #define SAVEALL_GPRS \
         pushl	%edi	; \

@@ -37,7 +37,7 @@
 // VMX external access protection (DMA protection)
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <target.h>
+#include <emhf.h> 
 
 //maximum number of RSDT entries we support
 #define	ACPI_MAX_RSDT_ENTRIES		(256)

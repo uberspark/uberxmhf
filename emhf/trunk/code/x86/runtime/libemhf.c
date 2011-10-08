@@ -37,8 +37,7 @@
 //author: amit vasudevan (amitvasudevan@acm.org)
 
 //---includes-------------------------------------------------------------------
-#include <target.h>
-
+#include <emhf.h> 
 
 //==============================================================================
 //exported interfaces

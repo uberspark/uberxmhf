@@ -74,8 +74,7 @@
  * "Extra" functions unnecessary in SL denoted as such.
  */
 
-#include <target.h>
-
+#include <emhf.h> 
 
 
 

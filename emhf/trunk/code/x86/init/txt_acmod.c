@@ -73,7 +73,7 @@
  * Modified for EMHF by jonmccune@cmu.edu, 2011.01.04
  */
 
-#include <target.h>
+#include <emhf.h> 
 
 static acm_info_table_t *get_acmod_info_table(acm_hdr_t* hdr)
 {

@@ -33,7 +33,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <target.h>
+#include <emhf.h> 
 
 #define COLS     80
 #define ROWS     25

@@ -38,7 +38,7 @@
 //	glue code
 //  author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <target.h>
+#include <emhf.h> 
 
 //------------------------------------------------------------------------------
 //TODO: move these into flat.c for unified FLAT memory accesses from both SL

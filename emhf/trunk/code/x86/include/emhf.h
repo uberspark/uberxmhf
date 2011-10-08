@@ -38,8 +38,8 @@
 // headers
 //author: amit vasudevan (amitvasudevan@acm.org)
 //
-#ifndef __TARGET_H_
-#define __TARGET_H_
+#ifndef __EMHF_H_
+#define __EMHF_H_
 
 //---includes for the target----------------------------------------------------
 #include <_types.h>      //always comes first
@@ -764,4 +764,4 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus);
 
 #endif
 
-#endif /* __TARGET_H_ */
+#endif /* __EMHF_H_ */

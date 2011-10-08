@@ -36,7 +36,7 @@
 // svm_eap.c - SVM External Access Protection (a.k.a. DEV) implementation
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <target.h>
+#include <emhf.h> 
 
 //static variables 
 //SVM EAP container structure, contains the DEV registers and the DEV bitmap 

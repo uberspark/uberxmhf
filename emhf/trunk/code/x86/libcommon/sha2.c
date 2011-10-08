@@ -69,8 +69,7 @@
  * SUCH DAMAGE.
  */
 
-#include <target.h>
-
+#include <emhf.h> 
 /*
  * ASSERT NOTE:
  * Some sanity checking code is included using assert().  On my FreeBSD

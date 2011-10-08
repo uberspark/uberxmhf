@@ -37,7 +37,7 @@
 // AMD SVM arch. backend implementation
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <target.h>
+#include <emhf.h> 
 
 //----------------------------------------------------------------------
 // local (static) support function forward declarations

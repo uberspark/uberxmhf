@@ -46,7 +46,7 @@
  * Author: Jonathan McCune
  */
 
-#include <target.h>
+#include <emhf.h> 
 
 /* Open TPM Locality 'locality'.  Cope with AMD and Intel CPUs, pre-
  * and post-DRTM, and (TODO) play nice with an OS driver that already

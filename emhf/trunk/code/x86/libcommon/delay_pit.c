@@ -41,7 +41,7 @@
 // be called when a guest OS has been booted up on the physical PIT without
 // saving/restoring the PIT registers
 
-#include <target.h>
+#include <emhf.h> 
 
 //---microsecond delay----------------------------------------------------------
 void udelay(u32 usecs){

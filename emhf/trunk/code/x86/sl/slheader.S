@@ -36,8 +36,7 @@
 // secure loader support routines
 // authors: amit vasudevan (amitvasudevan@acm.org) and jonmccune@cmu.edu
 
-#include <target.h>
-
+#include <emhf.h> 
 
 ///--- ALL COMMENTS BEGINNING WITH ///--- ARE RELATED TO JON'S
 ///--- EFFORTS TO DEBUG SENTER SUPPORT.  LEAVING THEM IN FOR NOW.

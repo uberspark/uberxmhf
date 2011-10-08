@@ -36,7 +36,7 @@
 // secure loader low-level support routines
 // authors: amit vasudevan (amitvasudevan@acm.org)
 
-#include <target.h>
+#include <emhf.h> 
 
 .section .text
 //------------------------------------------------------------------------------	

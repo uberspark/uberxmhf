@@ -72,7 +72,7 @@
  * Modified for EMHF by jonmccune@cmu.edu, 2011.01.04
  */
 
-#include <target.h>
+#include <emhf.h> 
 
 /*
  * are_hashes_equal

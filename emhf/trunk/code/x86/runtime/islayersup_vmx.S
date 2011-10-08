@@ -36,8 +36,7 @@
 // islayer low-level support for VMX
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <target.h>
-
+#include <emhf.h> 
 
 //---globals referenced by this module------------------------------------------
 .extern vmx_intercept_handler

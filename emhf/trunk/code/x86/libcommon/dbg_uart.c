@@ -41,7 +41,7 @@
  * Written by Arvind Seshadri
  */
 
-#include <target.h>
+#include <emhf.h> 
 
 /* Register offsets */
 #define RBR             0x00    /* receive buffer       */

@@ -37,7 +37,7 @@
 //secure loader implementation
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <target.h>
+#include <emhf.h> 
 
 extern u32 slpb_buffer[];
 RPB * rpb;

@@ -36,7 +36,7 @@
 // init low-level support routines
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <target.h>
+#include <emhf.h> 
 
 .extern midtable_numentries
 .extern mp_cstartup
