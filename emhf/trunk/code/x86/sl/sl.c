@@ -38,7 +38,6 @@
 //author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <target.h>
-#include <txt.h>
 #include <tpm.h>
 #include <tpm_emhf.h>
 

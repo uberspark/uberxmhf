@@ -43,6 +43,7 @@
 #include <_ctype.h>		//the ctype variable definition for debug printf
 #include <_com.h>		//serial UART as debugging backend
 #include <_print.h>      //early chance to disable/enable debug printfs
+#include <_multiboot.h>  //boot manager (multiboot)
 #include <_cmdline.h>	//GRUB command line handling functions
 #include <_error.h>      //error handling and assertions
 
@@ -53,6 +54,7 @@
 #include <_apic.h>       //APIC
 #include <_svm.h>        //SVM extensions
 #include <_vmx.h>				//VMX extensions
+#include <_txt.h>		//Trusted eXecution Technology (SENTER support)
 
 #include <_pci.h>        //PCI bus glue
 #include <_acpi.h>				//ACPI glue
@@ -65,14 +67,12 @@
 #include <_str.h>
 #include <_div64.h>
 
-//boot manager (multiboot)
-#include <_multiboot.h>
-
 
 #include <_perf.h>			//performance measurement routines
 #include <_sha1.h>			//Secure Hash Algorithm (SHA-1)
 #include <_sha2.h>			//SHA-256/384/512
 #include <_hmac.h>			//Hashed Message Authentication Code
+
 
 //------------------------------------------------------------------------------
 //preferred TPM locality to use for access inside hypervisor

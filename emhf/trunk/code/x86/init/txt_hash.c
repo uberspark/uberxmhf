@@ -73,7 +73,6 @@
  */
 
 #include <target.h>
-#include <txt.h>
 
 /*
  * are_hashes_equal

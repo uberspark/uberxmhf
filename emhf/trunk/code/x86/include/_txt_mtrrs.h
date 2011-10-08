@@ -78,7 +78,7 @@
 /* XXX TODO eliminate this dependency.  txt_heap.h is also dependent
  * on the current file.  tboot code has the ugly structure.  we should
  * do better. */
-#include "txt_acmod.h"
+#include "_txt_acmod.h"
 
 enum fix_mtrr_t {
     MTRR_FIX64K_00000 = 0x250,

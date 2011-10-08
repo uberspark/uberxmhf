@@ -47,7 +47,6 @@
  */
 
 #include <target.h>
-#include <txt.h>
 #include <tpm.h> /* generic (tboot-inspired) TPM functions */
 #include <tpm_emhf.h> /* EMHF-specific TPM functions */
 

@@ -73,7 +73,6 @@
  */
 
 #include <target.h>
-#include <txt.h>
 
 #define MTRR_TYPE_MIXED         -1
 #define MMIO_APIC_BASE          0xFEE00000

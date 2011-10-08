@@ -39,14 +39,18 @@
 #ifndef __UNI_TXT_
 #define __UNI_TXT_
 
-#include <txt_config_regs.h>
-#include <txt_hash.h>
+#ifndef __ASSEMBLY__
+
+#include <_txt_config_regs.h>
+#include <_txt_hash.h>
 
 /* XXX TODO order is important for these; fix it */
-#include <txt_mle.h>
-#include <txt_smx.h>
-#include <txt_acmod.h> /* XXX TODO This is really only necessary in init/ */
-#include <txt_mtrrs.h>
-#include <txt_heap.h>
+#include <_txt_mle.h>
+#include <_txt_smx.h>
+#include <_txt_acmod.h> /* XXX TODO This is really only necessary in init/ */
+#include <_txt_mtrrs.h>
+#include <_txt_heap.h>
+
+#endif //__ASSEMBLY__
 
 #endif /* __UNI_TXT_ */

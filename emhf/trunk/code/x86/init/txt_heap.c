@@ -73,7 +73,6 @@
  */
 
 #include <target.h>
-#include <txt.h>
 
 static inline void print_heap_hash(sha1_hash_t hash)
 {
