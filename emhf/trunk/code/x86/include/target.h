@@ -592,7 +592,7 @@ typedef struct _sl_parameter_block {
     uart_config_t uart_config;
 } __attribute__((packed)) SL_PARAMETER_BLOCK;
 
-
+//NOTE: The declaration here _MUST_ match definition of RPB in runtimesup.S	
 typedef struct {
 	u32 magic;
 	u32 XtVmmEntryPoint;

@@ -131,7 +131,7 @@ XtRtmEmitIdtStub 1f
 //------------------------------------------------------------------------------
 //RUNTIME PARAMETER BLOCK DATA
 //------------------------------------------------------------------------------
-	
+//NOTE: The definition here _MUST_ match declaration of RPB in target.h	
 	.section .s_rpb
 	.global _rpb
 _rpb:
