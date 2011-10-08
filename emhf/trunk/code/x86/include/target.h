@@ -42,19 +42,19 @@
 #include <types.h>      //always comes first
 #include <_ctype.h>		//the ctype variable definition for debug printf
 #include <_com.h>		//serial UART as debugging backend
-#include <print.h>      //early chance to disable/enable debug printfs
+#include <_print.h>      //early chance to disable/enable debug printfs
 #include <_cmdline.h>	//GRUB command line handling functions
 #include <_error.h>      //error handling and assertions
 
-#include <processor.h>  //CPU
+#include <_processor.h>  //CPU
 #include <_msr.h>        //model specific registers
-#include <paging.h>     //MMU
+#include <_paging.h>     //MMU
 #include <_io.h>         //legacy I/O
 #include <_apic.h>       //APIC
 #include <svm.h>        //SVM extensions
 #include <vmx.h>				//VMX extensions
 
-#include <pci.h>        //PCI bus glue
+#include <_pci.h>        //PCI bus glue
 #include <_acpi.h>				//ACPI glue
 
 #include <svm_eap.h>		//SVM DMA protection
@@ -70,6 +70,7 @@
 
 
 #include <_hmac.h>
+#include <_perf.h>			//performance measurement routines
 
 //------------------------------------------------------------------------------
 //preferred TPM locality to use for access inside hypervisor

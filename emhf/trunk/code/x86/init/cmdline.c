@@ -74,7 +74,6 @@
 /* #include <compiler.h> */
 #include <str.h>
 /* #include <misc.h> */
-#include <print.h>
 
 #define ARRAY_SIZE(a)     (sizeof(a) / sizeof((a)[0]))
 

@@ -50,11 +50,10 @@
 #ifndef PERF_H
 #define PERF_H
 
-#include <types.h>
+#ifndef __ASSEMBLY__
+
 
 #ifdef __PROFILING__
-
-#include <processor.h>
 
 typedef struct perf_counter {
   /* per-cpu */
@@ -145,6 +144,7 @@ static inline u64 perf_ctr_get_count(perf_ctr_t *p)
 #else /* __PROFILING__ */
 
 typedef struct perf_counter {
+	u32 placeholder;
 } perf_ctr_t;
 
 /* call exactly once for a perf_ctr_t */
@@ -156,7 +156,13 @@ typedef struct perf_counter {
 #define perf_ctr_get_total_time(...) 0ull
 #define perf_ctr_get_count(...) 0ull
 
+
+
 #endif /* __PROFILING__ */
+
+
+#endif //__ASSEMBLY__
+
 
 #endif
 

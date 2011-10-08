@@ -82,7 +82,6 @@
 
 #include <target.h>
 #include <str.h>
-#include <paging.h>
 #include <txt.h>
 
 extern SL_PARAMETER_BLOCK *slpb; /* Ugh; ugly global from init.c */

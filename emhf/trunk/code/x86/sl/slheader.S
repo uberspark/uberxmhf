@@ -38,7 +38,6 @@
 
 #include <target.h>
 #include <svm.h>
-#include <processor.h>
 
 
 ///--- ALL COMMENTS BEGINNING WITH ///--- ARE RELATED TO JON'S
