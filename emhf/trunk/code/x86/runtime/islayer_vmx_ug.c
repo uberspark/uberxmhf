@@ -343,7 +343,17 @@ static void _vmx_setupEPT(VCPU *vcpu){
 			
 			for(k=0; k < 512; k++){
 				u32 memorytype = _vmx_getmemorytypeforphysicalpage(vcpu, (u64)paddr);
-				p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) | (u64)0x7 ;
+				//the EMHF memory region includes the secure loader +
+				//the runtime (core + app). this runs from 
+				//(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M) with a size
+				//of (rpb->XtVmmRuntimeSize+PAGE_SIZE_2M)
+				//make EMHF physical pages inaccessible
+				if( (paddr >= (rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M)) &&
+					(paddr < (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) )
+					p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) | (u64)0x0 ;	//not-present
+				else
+					p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) | (u64)0x7 ;	//rwx
+				
 				paddr += 4096;
 			}
 		}
