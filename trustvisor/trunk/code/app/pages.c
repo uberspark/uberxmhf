@@ -37,7 +37,6 @@
 #include <types.h>
 #include <puttymem.h>
 #include <paging.h>
-#include <error.h>
 #include <print.h>
 #include <pages.h>
 
