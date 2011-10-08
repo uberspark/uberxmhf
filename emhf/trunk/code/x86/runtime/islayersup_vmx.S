@@ -120,24 +120,52 @@
   
    
 .section .text
-  .global __vmx_start_hvm
-  __vmx_start_hvm:
-   //real-mode setup just like the BIOS
-   pushal
+
+//----------------------------------------------------------------------
+// start HVM on a given physical core
+// on success: this function will not return
+// on failure: 1 if a valid error code is present, 0 if no error code, 
+// 2 if invalid error info. (should never happen)
+//----------------------------------------------------------------------
+	.global __vmx_start_hvm
+	__vmx_start_hvm:
+	
+	//save GPRs
+	pushal
    
-   movl $0x0, %eax
-   movl $0x0, %ebx
-	 movl $0x0, %ecx
-   movl $0x80, %edx
-	 movl $0x0, %ebp
-	 movl $0x0, %esi
-	 movl $0x0, %edi
+	//real-mode setup just like the BIOS
+	movl $0x0, %eax
+	movl $0x0, %ebx
+	movl $0x0, %ecx
+	movl $0x80, %edx
+	movl $0x0, %ebp
+	movl $0x0, %esi
+	movl $0x0, %edi
+
+	//attempt to instantiate the HVM
+	vmlaunch
 	 
-	 vmlaunch
-	 
-	 //if we get here then some error happened during the launch
-	 popal
-	 ret
+	//if we get here then some error happened during the launch
+	
+	//restore stack frame for a return from this procedure
+	popal	
+
+	//there are two possible causes of failure, VMFailInvalid or
+	//VMFailValid (VM instruction error field contains the error code)
+	//check which happened and return appropriate value in eax 
+	jc __vmx_start_hvm_failinvalid
+	
+	jnz	__vmx_start_hvm_undefinedimplementation	
+	movl $0x1, %eax
+	ret					//return 1 as we have error code
+
+__vmx_start_hvm_undefinedimplementation:
+	movl $0x2, %eax		//violation of VMLAUNCH specs., handle it anyways
+	ret
+
+__vmx_start_hvm_failinvalid:
+	xorl %eax, %eax		//return 0 as we have no error code available
+	ret
 
 
 //---__vmx_loadTR---------------------------------------------------------------
