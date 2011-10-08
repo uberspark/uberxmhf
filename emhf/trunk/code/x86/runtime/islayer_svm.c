@@ -225,7 +225,7 @@ static void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts
 					(paddr < (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) )
 					flags = 0;	//not-present
 				else
-					flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
+					flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);	//present
 				pt[k] = pae_make_pte((u64)paddr, flags);
 				paddr+= PAGE_SIZE_4K;
 			}
