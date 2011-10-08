@@ -230,7 +230,7 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	//initialze sl_baseaddr variable and print its value out
 	sl_baseaddr = baseaddr;
 	
-	if(slpb->isEarlyInit)
+	if(slpb.isEarlyInit)
 		printf("\nSL(early-init): at 0x%08x, starting...", sl_baseaddr);    
     else
 		printf("\nSL(late-init): at 0x%08x, starting...", sl_baseaddr);
@@ -488,7 +488,7 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		runtime_setup_paging(runtime_physical_base, __TARGET_BASE, runtime_size_2Maligned);
 		printf("\nSL: setup runtime paging.");        
 
-		if(!slpb->isEarlyInit){
+		if(!slpb.isEarlyInit){
 				printf("\nSL(late-init): still WiP, impressed that we got this far :>");
 				HALT();
 		}
