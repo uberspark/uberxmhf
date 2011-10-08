@@ -72,6 +72,9 @@
 #define __CMDLINE_H__
 
 #define CMDLINE_SIZE   512
+
+#ifndef __ASSEMBLY__
+
 extern char g_cmdline[CMDLINE_SIZE];
 
 
@@ -81,16 +84,8 @@ extern void get_tboot_log_targets(void);
 extern bool get_tboot_serial(void);
 extern void get_tboot_baud(void);
 extern void get_tboot_fmt(void);
-/* extern void get_tboot_vga_delay(void); */
-/* extern void get_tboot_no_usb(void); */
 
-/* for parse cmdline of linux kernel, say vga and mem */
-/* extern void linux_parse_cmdline(char *cmdline); */
-/* extern bool get_linux_vga(int *vid_mode); */
-/* extern bool get_linux_mem(uint64_t *initrd_max_mem); */
-
-/* extern const char *skip_filename(const char *cmdline); */
-
+#endif // __ASSEMBLY__
 
 #endif    /* __CMDLINE_H__ */
 

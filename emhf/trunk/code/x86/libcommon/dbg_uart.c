@@ -43,8 +43,6 @@
 
 #include <target.h>
 #include <str.h>
-#include <com.h>
-#include <cmdline.h>
 
 /* Register offsets */
 #define RBR             0x00    /* receive buffer       */

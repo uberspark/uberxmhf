@@ -68,7 +68,7 @@
  *
  */
 
-/* #include <config.h> */
+#include <target.h> 
 #include <types.h>
 /* #include <stdbool.h> */
 #include <ctype.h>
@@ -76,7 +76,6 @@
 #include <str.h>
 /* #include <misc.h> */
 #include <print.h>
-#include <cmdline.h>
 
 #define ARRAY_SIZE(a)     (sizeof(a) / sizeof((a)[0]))
 

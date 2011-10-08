@@ -42,8 +42,6 @@
 #include <sha1.h>
 #include <tpm.h>
 #include <str.h>
-#include <com.h>
-#include <cmdline.h>
 
 //---forward prototypes---------------------------------------------------------
 void cstartup(multiboot_info_t *mbi);

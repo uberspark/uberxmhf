@@ -41,7 +41,6 @@
 #define print_string putstr
 
 #ifndef __ASSEMBLY__
-#include <com.h>
 
 #define LOG_LEVEL_NONE    0x00
 #define LOG_LEVEL_ALL     0xFF

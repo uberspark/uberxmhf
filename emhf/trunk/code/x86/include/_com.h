@@ -74,8 +74,6 @@
 #ifndef __COM_H__
 #define __COM_H__
 
-#include <types.h>
-
 /* 8250 registers #[0-6]. */
 
 #define	com_data	0	/* data register (R/W) */
@@ -297,6 +295,9 @@
 #define PARITY_MARK     (5<<3)
 #define PARITY_SPACE    (7<<3)
 
+#ifndef __ASSEMBLY__
+
+
 #define GET_LCR_DATABIT(x)  ({                              \
             typeof(x) val = 0;                              \
             val = (((x) == 5) ? LCR_5BITS : (val));         \
@@ -351,6 +352,9 @@ extern uart_config_t g_uart_config;
 
 extern void comc_init(void);
 extern void comc_puts(const char*, unsigned int);
+
+#endif // __ASSEMBLY__
+
 
 #endif /* __COM_H__ */
 
