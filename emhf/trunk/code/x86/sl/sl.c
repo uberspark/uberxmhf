@@ -224,19 +224,14 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		vgamem_clrscr();
 	#endif
 	
+	//dump SL parameter block address
+	printf("\nSL: slpb at = 0x%08x", (u32)&slpb);
 
-	#ifdef __INIT_LATE__		
-		printf("\nSL (init-late): starting...");
-		HALT();
-	#endif
-	
 	//initialze sl_baseaddr variable and print its value out
 	sl_baseaddr = baseaddr;
+	
 	printf("\nSL: at 0x%08x, starting...", sl_baseaddr);    
     
-	//deal with SL parameter block
-	//slpb = (SL_PARAMETER_BLOCK *)slpb_buffer;
-	printf("\nSL: slpb at = 0x%08x", (u32)&slpb);
 
 	ASSERT( slpb.magic == SL_PARAMETER_BLOCK_MAGIC);
 	
