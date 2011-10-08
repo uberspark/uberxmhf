@@ -146,7 +146,7 @@
 #ifndef __ASSEMBLY__
 
 #include <bitfield.h> /* bit manipulation helpers */
-#include <hpt.h> /* hardware page table types */
+//#include <hpt.h> /* hardware page table types */
 
 //same privilege level exception/interrupt stack frame
 typedef struct {
@@ -331,6 +331,174 @@ static inline hpt_pme_t* VCPU_get_pml4(VCPU *vcpu)
 #define VCPU_get_pml4 emhf_memprot_get_lvl4_pagemap_address
 
 
+#define SIZE_STRUCT_VCPU    (sizeof(struct _vcpu))
+
+
+
+typedef struct {
+  u32 signature;
+  u32 paddrpointer;
+  u8 length;
+  u8 spec_rev;
+  u8 checksum;
+  u8 mpfeatureinfo1;
+  u8 mpfeatureinfo2;
+  u8 mpfeatureinfo3;
+  u8 mpfeatureinfo4;
+  u8 mpfeatureinfo5;
+} __attribute__ ((packed)) MPFP;
+
+
+typedef struct{
+  u32 signature;
+  u16 length;
+  u8 spec_rev;
+  u8 checksum;
+  u8 oemid[8];
+  u8 productid[12];
+  u32 oemtableptr;
+  u16 oemtablesize;
+  u16 entrycount;
+  u32 lapicaddr;
+  u16 exttablelength;
+  u16 exttablechecksum;
+} __attribute__ ((packed)) MPCONFTABLE;
+
+typedef struct {
+  u8 entrytype;
+  u8 lapicid;
+  u8 lapicver;
+  u8 cpuflags;
+  u32 cpusig;
+  u32 featureflags;
+  u32 res0;
+  u32 res1;
+} __attribute__ ((packed)) MPENTRYCPU;
+
+
+
+
+typedef struct _pcpu {
+  u32 lapic_id;
+  u32 lapic_ver;
+  u32 lapic_base;
+  u32 isbsp;
+} __attribute__((packed)) PCPU;
+
+#define SIZE_STRUCT_PCPU  (sizeof(struct _pcpu))
+
+#define __pa(x) (x)
+
+#define __hva2spa__(x) ((x) - __TARGET_BASE + rpb->XtVmmRuntimePhysBase)
+#define __spa2hva__(x) ((x) + __TARGET_BASE - rpb->XtVmmRuntimePhysBase)
+
+
+typedef struct _grube820 {
+  u32 baseaddr_low;
+  u32 baseaddr_high;
+  u32 length_low;
+  u32 length_high;
+  u32 type;  
+} __attribute__((packed)) GRUBE820;
+
+#define SIZE_STRUCT_GRUBE820  (sizeof(struct _grube820))
+
+
+/*typedef struct {
+  u32 baseaddr_low;
+  u32 baseaddr_high;
+  u32 length_low;
+  u32 length_high;
+  u32 type;  
+} __attribute__((packed)) E820MAP;*/
+
+
+#define BAD_INTEGRITY_HASH "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+
+//"golden" digest values injected using CFLAGS during build process
+//NOTE: NO WAY TO SELF-CHECK slbelow64K; JUST A SANITY-CHECK
+typedef struct _integrity_measurement_values {
+    u8 sha_slbelow64K[20]; // TODO: play nice with SHA_DIGEST_LENGTH in sha1.h
+    u8 sha_slabove64K[20];
+    u8 sha_runtime[20];
+} INTEGRITY_MEASUREMENT_VALUES;
+
+//"sl" parameter block structure 
+typedef struct _sl_parameter_block {
+	u32 magic;	//magic identifier
+	u32 hashSL;	//hash of the secure loader
+	u32 errorHandler;	//error handler
+	u32 isEarlyInit;	//"early" or "late" init
+	u32 numE820Entries;		//number of E820 entries
+	GRUBE820 e820map[MAX_E820_ENTRIES];	//E820 memory-map buffer
+	u32 numCPUEntries;	//number of cores
+	PCPU pcpus[MAX_PCPU_ENTRIES];	//CPU table buffer
+	u32 runtime_size;			//size of the runtime image
+	u32 runtime_osbootmodule_base;	//guest OS bootmodule base
+	u32 runtime_osbootmodule_size;	//guest OS bootmodule size
+    // Performance measurements related to DRTM
+    u64 rdtsc_before_drtm;
+    u64 rdtsc_after_drtm;
+
+    /* runtime options parsed in init and passed forward */
+    uart_config_t uart_config;
+} __attribute__((packed)) SL_PARAMETER_BLOCK;
+
+//NOTE: The declaration here _MUST_ match definition of RPB in runtimesup.S	
+typedef struct {
+	u32 magic;
+	u32 XtVmmEntryPoint;
+	u32 XtVmmPdptBase;
+	u32 XtVmmPdtsBase;
+	u32 XtVmmNpdtBase;
+	u32 XtVmmNestedNpdtBase;
+	u32 XtGuestOSBootModuleBase;
+	u32 XtGuestOSBootModuleSize;
+	u32 XtGuestOSBootModuleBaseSup1;
+	u32 XtGuestOSBootModuleSizeSup1;
+	u32 XtVmmStackBase;
+	u32 XtVmmStackSize;
+	u32 XtVmmGdt;
+	u32 XtVmmNetworkAdapterStructureBase;
+	u32 XtVmmHsaveBase;
+	u32 XtVmmVMCBBase;
+	u32 XtVmmIopmBase;
+	u32 XtVmmNestedPdptBase;
+	u32 XtVmmNestedPdtsBase;
+	u32 XtVmmNestedPtsBase;
+	u32 XtVmmIdt;
+	u32 XtVmmIdtFunctionPointers;
+	u32 XtVmmIdtEntries;
+	u32 XtVmmE1000DescBase;
+	u32 XtVmmE1000HeaderBase;
+	u32 XtVmmE1000BodyBase;
+	u32 XtVmmRuntimePhysBase;
+	u32 XtVmmRuntimeVirtBase;
+	u32 XtVmmRuntimeSize;
+	u32 XtVmmE820Buffer;
+	u32 XtVmmE820NumEntries;
+	u32 XtVmmMPCpuinfoBuffer;
+	u32 XtVmmMPCpuinfoNumEntries;
+	u32 XtVmmTSSBase;
+	u32 RtmSVMDevBitmapBase;
+	u32 RtmVMXVTdPdpt;
+	u32 RtmVMXVTdPdts;
+	u32 RtmVMXVTdPts;
+	u32 RtmVMXVTdRET;
+	u32 RtmVMXVTdCET;
+    uart_config_t uart_config;	        /* runtime options parsed in init and passed forward */
+	u32 isEarlyInit;					//1 for an "early init" else 0 (late-init)
+} __attribute__((packed)) RPB, *PRPB;
+
+#include <libemhf.h>	//EMHF application interface
+
+
+//----------------------------------------------------------------------
+// component headers
+#include <emhf-memprot.h>	//EMHF memory protection component
+
+
+
 static inline hpt_type_t VCPU_get_hpt_type(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
@@ -504,172 +672,6 @@ static inline u64 VCPU_gcr4(VCPU *vcpu)
     return 0;
   }
 }
-#define SIZE_STRUCT_VCPU    (sizeof(struct _vcpu))
-
-
-
-typedef struct {
-  u32 signature;
-  u32 paddrpointer;
-  u8 length;
-  u8 spec_rev;
-  u8 checksum;
-  u8 mpfeatureinfo1;
-  u8 mpfeatureinfo2;
-  u8 mpfeatureinfo3;
-  u8 mpfeatureinfo4;
-  u8 mpfeatureinfo5;
-} __attribute__ ((packed)) MPFP;
-
-
-typedef struct{
-  u32 signature;
-  u16 length;
-  u8 spec_rev;
-  u8 checksum;
-  u8 oemid[8];
-  u8 productid[12];
-  u32 oemtableptr;
-  u16 oemtablesize;
-  u16 entrycount;
-  u32 lapicaddr;
-  u16 exttablelength;
-  u16 exttablechecksum;
-} __attribute__ ((packed)) MPCONFTABLE;
-
-typedef struct {
-  u8 entrytype;
-  u8 lapicid;
-  u8 lapicver;
-  u8 cpuflags;
-  u32 cpusig;
-  u32 featureflags;
-  u32 res0;
-  u32 res1;
-} __attribute__ ((packed)) MPENTRYCPU;
-
-
-
-
-typedef struct _pcpu {
-  u32 lapic_id;
-  u32 lapic_ver;
-  u32 lapic_base;
-  u32 isbsp;
-} __attribute__((packed)) PCPU;
-
-#define SIZE_STRUCT_PCPU  (sizeof(struct _pcpu))
-
-#define __pa(x) (x)
-
-#define __hva2spa__(x) ((x) - __TARGET_BASE + rpb->XtVmmRuntimePhysBase)
-#define __spa2hva__(x) ((x) + __TARGET_BASE - rpb->XtVmmRuntimePhysBase)
-
-
-typedef struct _grube820 {
-  u32 baseaddr_low;
-  u32 baseaddr_high;
-  u32 length_low;
-  u32 length_high;
-  u32 type;  
-} __attribute__((packed)) GRUBE820;
-
-#define SIZE_STRUCT_GRUBE820  (sizeof(struct _grube820))
-
-
-/*typedef struct {
-  u32 baseaddr_low;
-  u32 baseaddr_high;
-  u32 length_low;
-  u32 length_high;
-  u32 type;  
-} __attribute__((packed)) E820MAP;*/
-
-
-#define BAD_INTEGRITY_HASH "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-
-//"golden" digest values injected using CFLAGS during build process
-//NOTE: NO WAY TO SELF-CHECK slbelow64K; JUST A SANITY-CHECK
-typedef struct _integrity_measurement_values {
-    u8 sha_slbelow64K[20]; // TODO: play nice with SHA_DIGEST_LENGTH in sha1.h
-    u8 sha_slabove64K[20];
-    u8 sha_runtime[20];
-} INTEGRITY_MEASUREMENT_VALUES;
-
-//"sl" parameter block structure 
-typedef struct _sl_parameter_block {
-	u32 magic;	//magic identifier
-	u32 hashSL;	//hash of the secure loader
-	u32 errorHandler;	//error handler
-	u32 isEarlyInit;	//"early" or "late" init
-	u32 numE820Entries;		//number of E820 entries
-	GRUBE820 e820map[MAX_E820_ENTRIES];	//E820 memory-map buffer
-	u32 numCPUEntries;	//number of cores
-	PCPU pcpus[MAX_PCPU_ENTRIES];	//CPU table buffer
-	u32 runtime_size;			//size of the runtime image
-	u32 runtime_osbootmodule_base;	//guest OS bootmodule base
-	u32 runtime_osbootmodule_size;	//guest OS bootmodule size
-    // Performance measurements related to DRTM
-    u64 rdtsc_before_drtm;
-    u64 rdtsc_after_drtm;
-
-    /* runtime options parsed in init and passed forward */
-    uart_config_t uart_config;
-} __attribute__((packed)) SL_PARAMETER_BLOCK;
-
-//NOTE: The declaration here _MUST_ match definition of RPB in runtimesup.S	
-typedef struct {
-	u32 magic;
-	u32 XtVmmEntryPoint;
-	u32 XtVmmPdptBase;
-	u32 XtVmmPdtsBase;
-	u32 XtVmmNpdtBase;
-	u32 XtVmmNestedNpdtBase;
-	u32 XtGuestOSBootModuleBase;
-	u32 XtGuestOSBootModuleSize;
-	u32 XtGuestOSBootModuleBaseSup1;
-	u32 XtGuestOSBootModuleSizeSup1;
-	u32 XtVmmStackBase;
-	u32 XtVmmStackSize;
-	u32 XtVmmGdt;
-	u32 XtVmmNetworkAdapterStructureBase;
-	u32 XtVmmHsaveBase;
-	u32 XtVmmVMCBBase;
-	u32 XtVmmIopmBase;
-	u32 XtVmmNestedPdptBase;
-	u32 XtVmmNestedPdtsBase;
-	u32 XtVmmNestedPtsBase;
-	u32 XtVmmIdt;
-	u32 XtVmmIdtFunctionPointers;
-	u32 XtVmmIdtEntries;
-	u32 XtVmmE1000DescBase;
-	u32 XtVmmE1000HeaderBase;
-	u32 XtVmmE1000BodyBase;
-	u32 XtVmmRuntimePhysBase;
-	u32 XtVmmRuntimeVirtBase;
-	u32 XtVmmRuntimeSize;
-	u32 XtVmmE820Buffer;
-	u32 XtVmmE820NumEntries;
-	u32 XtVmmMPCpuinfoBuffer;
-	u32 XtVmmMPCpuinfoNumEntries;
-	u32 XtVmmTSSBase;
-	u32 RtmSVMDevBitmapBase;
-	u32 RtmVMXVTdPdpt;
-	u32 RtmVMXVTdPdts;
-	u32 RtmVMXVTdPts;
-	u32 RtmVMXVTdRET;
-	u32 RtmVMXVTdCET;
-    uart_config_t uart_config;	        /* runtime options parsed in init and passed forward */
-	u32 isEarlyInit;					//1 for an "early init" else 0 (late-init)
-} __attribute__((packed)) RPB, *PRPB;
-
-#include <libemhf.h>	//EMHF application interface
-
-
-//----------------------------------------------------------------------
-// component headers
-#include <emhf-memprot.h>	//EMHF memory protection component
-
 
 
 
