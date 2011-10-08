@@ -60,6 +60,13 @@ inline hpt_pme_t* emhf_memprot_get_lvl3_pagemap_address(VCPU *vcpu);
 //get level-4 page map address
 inline hpt_pme_t* emhf_memprot_get_lvl4_pagemap_address(VCPU *vcpu);
 
+//set protection for a given page map entry
+inline hpt_pme_t hpt_pme_setprot(hpt_type_t t, int lvl, hpt_pme_t entry, hpt_prot_t perms);
+
+//get protection for a given page map entry
+inline hpt_prot_t hpt_pme_getprot(hpt_type_t t, int lvl, hpt_pme_t entry);
+
+
 #endif	//__ASSEMBLY__
 
 #endif //__EMHF_MEMPROT_H__

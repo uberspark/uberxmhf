@@ -427,6 +427,9 @@ static inline bool hpt_pme_getuser(hpt_type_t t, int lvl, hpt_pme_t entry)
   ASSERT(0); return false; /* unreachable; appeases compiler */
 }
 
+/*
+ //extracted to memory protection component 
+
 static inline hpt_pme_t hpt_pme_setprot(hpt_type_t t, int lvl, hpt_pme_t entry, hpt_prot_t perms)
 {
   hpt_pme_t rv=entry;
@@ -491,7 +494,7 @@ static inline hpt_prot_t hpt_pme_getprot(hpt_type_t t, int lvl, hpt_pme_t entry)
   rv = rv | (x ? HPT_PROT_EXEC_MASK : 0);
 
   return rv;
-}
+}*/
 
 static inline hpt_pme_t hpt_pme_setunused(hpt_type_t t, int lvl, hpt_pme_t entry, int hi, int lo, hpt_pme_t val)
 {
