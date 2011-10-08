@@ -381,9 +381,12 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
 			case 0:	//no error code, VMCS pointer is invalid
 			    printf("\nCPU(0x%02x): VMLAUNCH error; VMCS pointer invalid?. HALT!", vcpu->id);
 				break;
-			case 1: //error code available, so dump it
-			    printf("\nCPU(0x%02x): VMLAUNCH error; code=0x%x. HALT!", vcpu->id, vcpu->vmcs.info_vminstr_error);
+			case 1:{//error code available, so dump it
+				u32 code=5;
+				_vmx_vmread(0x4400, &code);
+			    printf("\nCPU(0x%02x): VMLAUNCH error; code=0x%x. HALT!", vcpu->id, code);
 				break;
+			}
 	}
     HALT();
   }
