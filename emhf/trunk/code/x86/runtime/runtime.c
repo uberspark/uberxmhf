@@ -56,7 +56,7 @@ void cstartup(void){
     printf("\nrpb->uart_config.baud = %u", rpb->uart_config.baud);
     printf("\nrpb->uart_config.data_bits, parity, stop_bits, fifo = %x %x %x %x", 
 		rpb->uart_config.data_bits, rpb->uart_config.parity, rpb->uart_config.stop_bits, rpb->uart_config.fifo);
-    
+    rpb->uart_config.fifo=0;
     g_uart_config = rpb->uart_config;
 	init_uart();
 #endif
