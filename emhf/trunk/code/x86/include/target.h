@@ -699,7 +699,7 @@ void vmx_setupvcpus(u32 cpu_vendor);
 //other VMX isolation layer global functions
 u32 vmx_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode);
 void vmx_lapic_access_dbexception(VCPU *vcpu, struct regs *r);
-void __vmx_start_hvm(void);
+u32 __vmx_start_hvm(void);
 //u32 svm_kernel_pt_walker(struct vmcb_struct *vmcb, u32 vaddr);
 void vmx_apic_wakeupAPs(void);
 void vmx_initunrestrictedguestVMCS(VCPU *vcpu);
