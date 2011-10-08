@@ -38,7 +38,6 @@
 // author: amit vasudevan (amitvasudevan@acm.org) 
 
 #include <target.h>
-#include <globals.h>
 #include <txt.h>
 
 //==============================================================================

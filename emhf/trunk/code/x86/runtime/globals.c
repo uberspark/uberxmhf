@@ -38,7 +38,6 @@
 //global declarations and definitions for the runtime
 
 #include <target.h>
-#include <globals.h>
 
 //system e820 map
 GRUBE820 g_e820map[MAX_E820_ENTRIES] __attribute__(( section(".data") ));

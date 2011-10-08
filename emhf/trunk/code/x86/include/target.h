@@ -748,7 +748,7 @@ void __vmx_loadTR(void);
 u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus);
 
 
-#include <globals.h>
+#include <_globals.h>
 
 #endif
 

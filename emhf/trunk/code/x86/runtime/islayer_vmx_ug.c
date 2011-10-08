@@ -40,7 +40,6 @@
 // author: amit vasudevan (amitvasudevan@acm.org) 
 
 #include <target.h>
-#include <globals.h>
 
 //---globals referenced by this module------------------------------------------
 extern u32 x_gdt_start[], x_idt_start[]; //runtimesup.S

@@ -36,7 +36,6 @@
 // apic_vmx.c - APIC virtualization support for Intel cores
 // author: amit vasudevan (amitvasudevan@acm.org)
 #include <target.h>
-#include <globals.h>
 
 
 //the LAPIC register that is being accessed during emulation

@@ -37,7 +37,6 @@
 // author: amit vasudevan (amitvasudevan@acm.org) and ning qu (qning@cmu.edu)
 // modified extensively for EMHF by amit vasudevan
 #include <target.h>
-#include <globals.h>
 
 //---notes
 // CLGI/STGI

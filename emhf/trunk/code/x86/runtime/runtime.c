@@ -39,7 +39,6 @@
 //---includes-------------------------------------------------------------------
 #include <target.h>
 #include <processor.h>
-#include <globals.h>
 #include <txt.h>
 
 //---runtime main---------------------------------------------------------------
