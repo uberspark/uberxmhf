@@ -331,7 +331,8 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 	//get a pointer to the runtime header
  	rpb=(RPB *)PAGE_SIZE_2M;	//runtime starts at offset 2M from sl base
-  ASSERT(rpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
+	printf("\nSL: RPB, magic=0x%08x", rpb->magic);
+	ASSERT(rpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
 
     
 	//setup DMA protection on runtime (secure loader is already DMA protected)
