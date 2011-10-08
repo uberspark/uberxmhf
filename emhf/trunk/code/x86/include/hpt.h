@@ -499,8 +499,8 @@ static inline hpt_prot_t hpt_pme_getprot(hpt_type_t t, int lvl, hpt_pme_t entry)
 //XXX: TODO we need to get rid of these equates. leave them in here
 //for the time being until we get a concrete interface list for
 //emhf-memprot component
-#define hpt_pme_setprot emhf_memprot_pagemapentry_setprot
-#define hpt_pme_getprot emhf_memprot_pagemapentry_getprot
+//#define hpt_pme_setprot emhf_memprot_pagemapentry_setprot
+//#define hpt_pme_getprot emhf_memprot_pagemapentry_getprot
 
 
 static inline hpt_pme_t hpt_pme_setunused(hpt_type_t t, int lvl, hpt_pme_t entry, int hi, int lo, hpt_pme_t val)
