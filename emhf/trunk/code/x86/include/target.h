@@ -65,6 +65,10 @@
 //boot manager (multiboot)
 #include <multiboot.h>
 
+//----------------------------------------------------------------------
+// component headers
+#include <emhf-memprot.h>	//EMHF memory protection component
+
 //------------------------------------------------------------------------------
 //preferred TPM locality to use for access inside hypervisor
 //needs to be 2 or 1 (4 is hw-only, 3 is sinit-only on Intel)
