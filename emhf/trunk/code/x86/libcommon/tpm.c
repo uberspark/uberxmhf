@@ -955,15 +955,15 @@ void hashandprint(const char* prefix, const u8 *bytes, size_t len) {
     printf("\nhashandprint: processing 0x%08x bytes at addr 0x%08x", len, (u32)bytes);
     
     start = rdtsc64();
-    printf("\n%s (%u)", __FUNCTION__, __LINE__);
+    //printf("\n%s (%u)", __FUNCTION__, __LINE__);
     SHA1_Init(&ctx);
-    printf("\n%s (%u)", __FUNCTION__, __LINE__);
+    //printf("\n%s (%u)", __FUNCTION__, __LINE__);
     SHA1_Update(&ctx, bytes, len);
-    printf("\n%s (%u)", __FUNCTION__, __LINE__);
+    //printf("\n%s (%u)", __FUNCTION__, __LINE__);
     SHA1_Final(digest, &ctx);
-    printf("\n%s (%u)", __FUNCTION__, __LINE__);
+    //printf("\n%s (%u)", __FUNCTION__, __LINE__);
     end = rdtsc64();
-    printf("\n%s (%u)", __FUNCTION__, __LINE__);
+    //printf("\n%s (%u)", __FUNCTION__, __LINE__);
     print_hex(prefix, digest, SHA_DIGEST_LENGTH);
     printf("\n[PERF] hashandprint: elapsed CPU cycles 0x%016llx", end-start);    
 
