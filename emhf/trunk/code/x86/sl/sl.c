@@ -109,7 +109,7 @@ void runtime_setup_paging(u32 physaddr, u32 virtaddr, u32 totalsize){
 	xpdpt=(pdpt_t)((u32)rpb->XtVmmPdptBase - __TARGET_BASE + runtime_image_offset);
 	xpdt=(pdt_t)((u32)rpb->XtVmmPdtsBase  - __TARGET_BASE + runtime_image_offset);
 	
-	//printf("\npa xpdpt=0x%08x, xpdt=0x%08x", (u32)xpdpt, (u32)xpdt);
+	printf("\n	pa xpdpt=0x%08x, xpdt=0x%08x", (u32)xpdpt, (u32)xpdt);
 	
   flags = (u64)(_PAGE_PRESENT);
   //init pdpt
