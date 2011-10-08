@@ -39,7 +39,6 @@
 #ifndef __ERROR_H_
 #define __ERROR_H_
 
-#include "types.h"
 
 #ifndef __ASSEMBLY__
 
