@@ -103,6 +103,9 @@ void runtime_setup_paging(u32 physaddr, u32 virtaddr, u32 totalsize){
 	u64 newflags;
 	u32 runtime_image_offset = PAGE_SIZE_2M;
 	
+	printf("\nSL (%s): physaddr=%08x, virtaddr=%08x, totalsize=%08x",
+		__FUNCTION__, physaddr, virtaddr, totalsize);
+	
 	xpdpt=(pdpt_t)((u32)rpb->XtVmmPdptBase - __TARGET_BASE + runtime_image_offset);
 	xpdt=(pdt_t)((u32)rpb->XtVmmPdtsBase  - __TARGET_BASE + runtime_image_offset);
 	
