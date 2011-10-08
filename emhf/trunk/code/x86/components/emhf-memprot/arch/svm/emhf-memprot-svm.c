@@ -39,6 +39,13 @@
 
 #include <target.h>
 
+//----------------------------------------------------------------------
+// local (static) support function forward declarations
+static void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts_base);
+
+//======================================================================
+// global interfaces (functions) exported by this component
+
 // initialize memory protection structures for a given core (vcpu)
 void emhf_memprot_arch_svm_initialize(VCPU *vcpu){
 	struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
@@ -49,4 +56,50 @@ void emhf_memprot_arch_svm_initialize(VCPU *vcpu){
 	vmcb->h_cr3 = __hva2spa__(vcpu->npt_vaddr_ptr);
 	vmcb->np_enable |= (1ULL << NP_ENABLE);
 	vmcb->guest_asid = vcpu->npt_asid;
+}
+
+//----------------------------------------------------------------------
+// local (static) support functions follow
+//---npt initialize-------------------------------------------------------------
+static void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts_base){
+	pdpt_t pdpt;
+	pdt_t pdt;
+	pt_t pt;
+	u32 paddr=0, i, j, k, y, z;
+	u64 flags;
+
+	printf("\n%s: pdpt=0x%08x, pdts=0x%08x, pts=0x%08x",
+	__FUNCTION__, npt_pdpt_base, npt_pdts_base, npt_pts_base);
+
+	pdpt=(pdpt_t)npt_pdpt_base;
+
+	for(i = 0; i < PAE_PTRS_PER_PDPT; i++){
+		y = (u32)__hva2spa__((u32)npt_pdts_base + (i << PAGE_SHIFT_4K));
+		flags = (u64)(_PAGE_PRESENT);
+		pdpt[i] = pae_make_pdpe((u64)y, flags);
+		pdt=(pdt_t)((u32)npt_pdts_base + (i << PAGE_SHIFT_4K));
+			
+		for(j=0; j < PAE_PTRS_PER_PDT; j++){
+			z=(u32)__hva2spa__((u32)npt_pts_base + ((i * PAE_PTRS_PER_PDT + j) << (PAGE_SHIFT_4K)));
+			flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
+			pdt[j] = pae_make_pde((u64)z, flags);
+			pt=(pt_t)((u32)npt_pts_base + ((i * PAE_PTRS_PER_PDT + j) << (PAGE_SHIFT_4K)));
+			
+			for(k=0; k < PAE_PTRS_PER_PT; k++){
+				//the EMHF memory region includes the secure loader +
+				//the runtime (core + app). this runs from 
+				//(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M) with a size
+				//of (rpb->XtVmmRuntimeSize+PAGE_SIZE_2M)
+				//make EMHF physical pages inaccessible
+				if( (paddr >= (rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M)) &&
+					(paddr < (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) )
+					flags = 0;	//not-present
+				else
+					flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);	//present
+				pt[k] = pae_make_pte((u64)paddr, flags);
+				paddr+= PAGE_SIZE_4K;
+			}
+		}
+	}
+	
 }
