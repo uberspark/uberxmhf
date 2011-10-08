@@ -51,7 +51,7 @@ void cstartup(void){
 
 	//setup debugging	
 #ifdef __DEBUG_SERIAL__
-        g_uart_config = rpb->uart_config;
+    g_uart_config = rpb->uart_config;
 	init_uart();
 #endif
 	printf("\nruntime initializing...");

@@ -502,12 +502,15 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 			*patchloc = runtime_entrypoint;
 		}
 		
+		
+		//tell runtime if we started "early" or "late"
+		rpb->isEarlyInit = slpb.isEarlyInit;
+		
 		//setup paging for runtime 
 		runtime_setup_paging(runtime_physical_base, __TARGET_BASE, runtime_size_2Maligned);
 		printf("\nSL: setup runtime paging.");        
 
-		//tell runtime if we started "early" or "late"
-		rpb->isEarlyInit = slpb.isEarlyInit;
+		
 		
 		/*if(!slpb.isEarlyInit){
 				printf("\nSL(late-init): still WiP, impressed that we got this far :>");
