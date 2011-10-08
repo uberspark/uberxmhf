@@ -439,8 +439,8 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		rpb->XtGuestOSBootModuleSize=slpb.runtime_osbootmodule_size;
 
 
-                /* pass command line configuration forward */
-                rpb->uart_config = g_uart_config;
+        /* pass command line configuration forward */
+        rpb->uart_config = g_uart_config;
 
 	 	//setup runtime IDT
 		{
