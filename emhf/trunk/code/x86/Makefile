@@ -2,7 +2,7 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # late initialization support (experimental)
-	export INIT_LATE := y
+	export INIT_LATE := n
 
 # DMA protection support
 	export DMAPROT := n
