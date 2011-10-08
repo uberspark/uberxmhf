@@ -283,7 +283,9 @@ typedef struct _vcpu {
 //description. For now, lets not break anything...
 #define VCPU_get_pml1es emhf_memprot_get_lvl1_pagemap_address
 
-static inline hpt_pme_t* VCPU_get_pml2es(VCPU *vcpu)
+/*
+  //extracted to memory protection component 
+ static inline hpt_pme_t* VCPU_get_pml2es(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     return (hpt_pme_t*)vcpu->vmx_vaddr_ept_pd_tables;
@@ -291,7 +293,12 @@ static inline hpt_pme_t* VCPU_get_pml2es(VCPU *vcpu)
     return (hpt_pme_t*)vcpu->npt_vaddr_pdts;
   }
   return NULL;
-}
+}*/
+
+//XXX: TODO, remove these equates once we have a stable interface
+//description. For now, lets not break anything...
+#define VCPU_get_pml2es emhf_memprot_get_lvl2_pagemap_address
+
 
 static inline hpt_pme_t* VCPU_get_pml3es(VCPU *vcpu)
 {

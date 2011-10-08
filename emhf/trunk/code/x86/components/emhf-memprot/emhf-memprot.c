@@ -60,3 +60,13 @@ inline hpt_pme_t* emhf_memprot_get_lvl1_pagemap_address(VCPU *vcpu){
 	else //CPU_VENDOR_INTEL
 		return (hpt_pme_t*)vcpu->vmx_vaddr_ept_p_tables;
 }
+
+//get level-2 page map address
+inline hpt_pme_t* emhf_memprot_get_lvl2_pagemap_address(VCPU *vcpu){
+	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+
+	if (vcpu->cpu_vendor == CPU_VENDOR_AMD)
+		return (hpt_pme_t*)vcpu->npt_vaddr_pdts;
+	else //CPU_VENDOR_INTEL
+		return (hpt_pme_t*)vcpu->vmx_vaddr_ept_pd_tables;
+}

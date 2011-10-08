@@ -51,6 +51,9 @@ void emhf_memprot_arch_svm_initialize(VCPU *vcpu);	//amd SVM arch. backend
 // get level-1 page map address
 inline hpt_pme_t* emhf_memprot_get_lvl1_pagemap_address(VCPU *vcpu);
 
+//get level-2 page map address
+inline hpt_pme_t* emhf_memprot_get_lvl2_pagemap_address(VCPU *vcpu);
+
 #endif	//__ASSEMBLY__
 
 #endif //__EMHF_MEMPROT_H__
