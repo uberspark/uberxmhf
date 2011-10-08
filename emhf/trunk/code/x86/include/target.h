@@ -47,7 +47,7 @@
 #include <msr.h>        //model specific registers
 #include <paging.h>     //MMU
 #include <io.h>         //legacy I/O
-#include <apic.h>       //APIC
+#include <_apic.h>       //APIC
 #include <svm.h>        //SVM extensions
 #include <vmx.h>				//VMX extensions
 
