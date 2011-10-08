@@ -178,6 +178,7 @@ _rpb:
 	.long g_vmx_vtd_ret				//runtime VMX(VT-d) DMA protection Root Entry Table
 	.long g_vmx_vtd_cet				//runtime VMX(VT-d) DMA protection Context Entry Table 
 	.long 0, 0, 0, 0				//32 bytes for field uart_config of type uart_config_t 
+	.long 1							//isEarlyInit, 1 = early init, 0 = late init (default to early init)
 
 //------------------------------------------------------------------------------
 //DATA (LOCAL)

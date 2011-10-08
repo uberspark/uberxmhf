@@ -634,9 +634,8 @@ typedef struct {
 	u32 RtmVMXVTdPts;
 	u32 RtmVMXVTdRET;
 	u32 RtmVMXVTdCET;
-
-        /* runtime options parsed in init and passed forward */
-        uart_config_t uart_config;
+    uart_config_t uart_config;	        /* runtime options parsed in init and passed forward */
+	u32 isEarlyInit;					//1 for an "early init" else 0 (late-init)
 } __attribute__((packed)) RPB, *PRPB;
 
 #include <libemhf.h>	//EMHF application interface
