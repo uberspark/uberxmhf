@@ -333,15 +333,15 @@ static void _vmx_setupEPT(VCPU *vcpu){
 
 	pdp_table = (u64 *)vcpu->vmx_vaddr_ept_pdp_table;
 		
-	for(i=0; i < 4; i++){
-		pdp_table[i] = (u64) ( __hva2spa__((u32)vcpu->vmx_vaddr_ept_pd_tables + (4096 * i)) | 0x7 );
-		pd_table = (u64 *)  ((u32)vcpu->vmx_vaddr_ept_pd_tables + (4096 * i)) ;
+	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+		pdp_table[i] = (u64) ( __hva2spa__((u32)vcpu->vmx_vaddr_ept_pd_tables + (PAGE_SIZE_4K * i)) | 0x7 );
+		pd_table = (u64 *)  ((u32)vcpu->vmx_vaddr_ept_pd_tables + (PAGE_SIZE_4K * i)) ;
 		
-		for(j=0; j < 512; j++){
-			pd_table[j] = (u64) ( __hva2spa__((u32)vcpu->vmx_vaddr_ept_p_tables + (4096 * ((i*512)+j))) | 0x7 );
-			p_table = (u64 *)  ((u32)vcpu->vmx_vaddr_ept_p_tables + (4096 * ((i*512)+j))) ;
+		for(j=0; j < PAE_PTRS_PER_PDT; j++){
+			pd_table[j] = (u64) ( __hva2spa__((u32)vcpu->vmx_vaddr_ept_p_tables + (PAGE_SIZE_4K * ((i*PAE_PTRS_PER_PDT)+j))) | 0x7 );
+			p_table = (u64 *)  ((u32)vcpu->vmx_vaddr_ept_p_tables + (PAGE_SIZE_4K * ((i*PAE_PTRS_PER_PDT)+j))) ;
 			
-			for(k=0; k < 512; k++){
+			for(k=0; k < PAE_PTRS_PER_PT; k++){
 				u32 memorytype = _vmx_getmemorytypeforphysicalpage(vcpu, (u64)paddr);
 				//the EMHF memory region includes the secure loader +
 				//the runtime (core + app). this runs from 
