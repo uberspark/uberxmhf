@@ -82,12 +82,16 @@
 
 #-----build rules
 .PHONY: all
-all: app common runtime sl init hypervisor-$(TARGET_HWPLATFORM).bin.gz
+all: app components common runtime sl init hypervisor-$(TARGET_HWPLATFORM).bin.gz
 
 app: 
 	#make EMHFapp
 	mkdir -p $(APPOBJECTSDIR)
 	cd $(BASEDIR)/app && $(MAKE) -w all
+
+components:
+	#EMHF memory protection component
+	cd components/emhf-memprot && $(MAKE) -w all
 
 common:
 	#make libcommon first	

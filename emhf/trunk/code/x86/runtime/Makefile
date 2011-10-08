@@ -28,6 +28,9 @@ ifeq ($(DEBUG_VGA), y)
 OBJECTS_PRECOMPILED += $(filter-out %dbg_uart.o,$(wildcard ../libcommon/*.o))
 endif
 
+# tie components used by the runtime
+OBJECTS_PRECOMPILED += ../components/emhf-memprot/emhf-memprot.o
+
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 
 # targets
