@@ -736,11 +736,13 @@ static void _svm_initVMCB(VCPU *vcpu){
 					  GENERAL2_INTERCEPT_SKINIT |
 					  GENERAL2_INTERCEPT_ICEBP);
 
+/*
+	//extracted --> memory protection component
 	vmcb->h_cr3 = __hva2spa__(vcpu->npt_vaddr_ptr);
   vmcb->np_enable |= (1ULL << NP_ENABLE);
 	vmcb->guest_asid = vcpu->npt_asid;
 	printf("\nCPU(0x%02x): Activated NPTs.", vcpu->id);
-
+*/
 
 	//INT 15h E820 hook enablement for VMX unrestricted guest mode
 	//note: this only happens for the BSP
