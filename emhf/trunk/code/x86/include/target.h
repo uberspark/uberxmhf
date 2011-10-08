@@ -65,9 +65,6 @@
 //boot manager (multiboot)
 #include <multiboot.h>
 
-//----------------------------------------------------------------------
-// component headers
-#include <emhf-memprot.h>	//EMHF memory protection component
 
 //------------------------------------------------------------------------------
 //preferred TPM locality to use for access inside hypervisor
@@ -643,6 +640,14 @@ typedef struct {
 } __attribute__((packed)) RPB, *PRPB;
 
 #include <libemhf.h>	//EMHF application interface
+
+
+//----------------------------------------------------------------------
+// component headers
+#include <emhf-memprot.h>	//EMHF memory protection component
+
+
+
 
 //generic isolation layer interface
 struct isolation_layer {
