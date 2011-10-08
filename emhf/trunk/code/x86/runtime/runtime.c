@@ -343,8 +343,12 @@ void allcpus_common_start(VCPU *vcpu){
 	{
 			ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 			if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
+				struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
 				_svm_nptinitialize(vcpu->npt_vaddr_ptr, 
 					vcpu->npt_vaddr_pdts, vcpu->npt_vaddr_pts);
+				vmcb->h_cr3 = __hva2spa__(vcpu->npt_vaddr_ptr);
+				vmcb->np_enable |= (1ULL << NP_ENABLE);
+				vmcb->guest_asid = vcpu->npt_asid;
 			}else{	//CPU_VENDOR_INTEL
 				_vmx_gathermemorytypes(vcpu);
 				_vmx_setupEPT(vcpu);
