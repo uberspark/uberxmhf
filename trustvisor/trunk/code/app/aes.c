@@ -62,7 +62,8 @@
 /* AES source code
  * Edited by Zongwei Zhou for EMHF project */
 
-#include  <target.h>
+#include <emhf.h> 
+
 #include "./include/aes.h"
 #include "./include/puttymem.h"
 

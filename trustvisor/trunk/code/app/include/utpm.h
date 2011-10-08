@@ -38,7 +38,7 @@
 #ifndef _UTPM_H_
 #define _UTPM_H_
 
-#include <target.h>
+#include <emhf.h> 
 
 /* uTPM-specific types and structs common to svcapi and TV internals */
 #include <tv_utpm.h> 

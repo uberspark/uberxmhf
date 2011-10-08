@@ -59,7 +59,8 @@
  *  http://www.cacr.math.uwaterloo.ca/hac/about/chap8.pdf
  */
 
-#include <target.h>
+#include <emhf.h> 
+
 #include <rsa.h>
 #include <bignum.h>
 #include <puttymem.h>

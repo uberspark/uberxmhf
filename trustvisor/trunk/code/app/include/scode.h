@@ -41,9 +41,9 @@
 #ifndef __SCODE_H_
 #define __SCODE_H_
 
-#include <target.h>
+#include <emhf.h> 
+
 #include <pages.h>
-//#include <hpt.h>
 
 #include <trustvisor.h>
 #include <crypto_init.h>

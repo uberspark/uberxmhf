@@ -48,7 +48,8 @@
  * author: Jon McCune, July 2011
  */
 
-#include <target.h>
+#include <emhf.h> 
+
 #include <crypto_init.h>
 #include <utpm.h>
 #include <hc_utpm.h>

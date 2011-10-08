@@ -37,7 +37,8 @@
 // emhf application main module
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <target.h>
+#include <emhf.h> 
+
 #include <puttymem.h>
 #include <scode.h>
 #include <hc_utpm.h>

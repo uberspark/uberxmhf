@@ -38,7 +38,8 @@
  * Edited by Zongwei Zhou, Jonathan McCune for EMHF project
  */
 
-#include <target.h>
+#include <emhf.h> 
+
 #include <scode.h>
 #include <utpm.h>
 #include <aes.h>

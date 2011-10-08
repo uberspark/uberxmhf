@@ -49,7 +49,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <target.h>
+#include <emhf.h> 
+
 #include "nist_ctr_drbg.h"
 
 void

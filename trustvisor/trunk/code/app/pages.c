@@ -33,7 +33,8 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <target.h>
+#include <emhf.h> 
+
 #include <puttymem.h>
 #include <pages.h>
 

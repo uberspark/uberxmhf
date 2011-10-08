@@ -39,7 +39,8 @@
  * TODO: Support re-seeding.
  */
 
-#include <target.h>
+#include <emhf.h> 
+
 #include <random.h>
 #include <crypto_init.h>
 

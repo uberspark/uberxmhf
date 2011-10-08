@@ -40,7 +40,8 @@
  * Edited for TrustVisor on EMHF by Zongwei Zhou
  */
 
-#include <target.h>
+#include <emhf.h> 
+
 #include <scode.h>
 #include <puttymem.h>
 #include <utpm.h>

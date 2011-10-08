@@ -60,7 +60,8 @@
  *  http://math.libtomcrypt.com/files/tommath.pdf
  */
 
-#include  <target.h>
+#include <emhf.h> 
+
 #include  "./include/puttymem.h"
 #include "./include/bignum.h"
 #include "./include/bn_mul.h"

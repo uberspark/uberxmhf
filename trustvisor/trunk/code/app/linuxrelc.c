@@ -37,7 +37,7 @@
 // linux kernel/initrd relocate and bootstrap
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <target.h>
+#include <emhf.h> 
 
 /*
 	grub_debug

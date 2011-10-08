@@ -33,7 +33,8 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <target.h>
+#include <emhf.h> 
+
 #include <stdbool.h>
 
 #include <scode.h> /* copy_from_guest */

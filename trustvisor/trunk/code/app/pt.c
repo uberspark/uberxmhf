@@ -41,8 +41,8 @@
  * EPT or NPT page table operations
  * guest page table operations
  */
-#include <target.h>
-//#include <hpt.h>
+#include <emhf.h> 
+
 #include  "./include/scode.h"
 #include <pages.h>
 

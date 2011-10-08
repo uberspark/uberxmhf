@@ -36,7 +36,7 @@
 #ifndef _RANDOM_H_
 #define _RANDOM_H_
 
-#include <target.h>
+#include <emhf.h> 
 
 /* interface exposed to the rest of TrustVisor */
 uint8_t rand_byte_or_die(void);

@@ -65,7 +65,7 @@
 //#include <sys/systm.h>
 typedef unsigned char u_char;
 
-#include <target.h>
+#include <emhf.h> 
 
 #include "rijndael.h"
 
