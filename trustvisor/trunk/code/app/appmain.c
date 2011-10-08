@@ -40,7 +40,6 @@
 #include <target.h>
 #include <puttymem.h>
 #include <scode.h>
-#include <globals.h>
 #include <hc_utpm.h>
 #include <tpm.h>
 #include <nv.h>

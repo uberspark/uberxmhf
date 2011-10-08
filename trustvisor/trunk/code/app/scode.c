@@ -41,7 +41,6 @@
  */
 
 #include <target.h>
-#include <globals.h>
 #include <scode.h>
 #include <puttymem.h>
 #include <utpm.h>
