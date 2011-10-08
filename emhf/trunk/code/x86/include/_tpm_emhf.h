@@ -36,7 +36,11 @@
 #ifndef _TPM_EMHF_H_
 #define _TPM_EMHF_H_
 
+#ifndef __ASSEMBLY__
+
 unsigned int hwtpm_open_locality(int locality);
+
+#endif // __ASSEMBLY__
 
 #endif /* _TPM_EMHF_H_ */
 

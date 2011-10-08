@@ -47,8 +47,6 @@
  */
 
 #include <target.h>
-#include <tpm.h> /* generic (tboot-inspired) TPM functions */
-#include <tpm_emhf.h> /* EMHF-specific TPM functions */
 
 /* Open TPM Locality 'locality'.  Cope with AMD and Intel CPUs, pre-
  * and post-DRTM, and (TODO) play nice with an OS driver that already

@@ -38,7 +38,6 @@
 
 //---includes-------------------------------------------------------------------
 #include <target.h>
-#include <tpm.h>
 
 //---forward prototypes---------------------------------------------------------
 void cstartup(multiboot_info_t *mbi);

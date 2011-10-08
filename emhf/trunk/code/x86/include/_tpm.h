@@ -71,6 +71,7 @@
 #ifndef __TPM_H__
 #define __TPM_H__
 
+
 #define TPM_LOCALITY_BASE             0xfed40000
 #define NR_TPM_LOCALITY_PAGES         ((TPM_LOCALITY_1 - TPM_LOCALITY_0) >> \
                                        PAGE_SHIFT)
@@ -115,6 +116,8 @@
 #define TPM_READ_ONLY           (TPM_BASE + 62)
 #define TPM_NOT_FULLWRITE       (TPM_BASE + 70)
 #define TPM_RETRY               (TPM_BASE + TPM_NON_FATAL)
+
+#ifndef __ASSEMBLY__
 
 extern bool release_locality(uint32_t locality);
 
@@ -817,6 +820,8 @@ extern uint32_t tpm_get_capability(
                   uint32_t locality, tpm_capability_area_t cap_area,
                   uint32_t sub_cap_size, const uint8_t *sub_cap,
                   uint32_t *resp_size, uint8_t *resp);
+
+#endif // __ASSEMBLY__
 
 
 #endif   /* __TPM_H__ */

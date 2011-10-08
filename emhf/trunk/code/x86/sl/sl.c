@@ -38,8 +38,6 @@
 //author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <target.h>
-#include <tpm.h>
-#include <tpm_emhf.h>
 
 extern u32 slpb_buffer[];
 RPB * rpb;

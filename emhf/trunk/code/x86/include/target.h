@@ -62,6 +62,9 @@
 #include <_svm_eap.h>		//SVM DMA protection
 #include <_vmx_eap.h>		//VMX DMA protection
 
+#include <_tpm.h>			//generic TPM functions
+#include <_tpm_emhf.h>		//EMHF-specific TPM functions
+
 //language specifics
 #include <_sarg.h>
 #include <_str.h>
@@ -72,6 +75,7 @@
 #include <_sha1.h>			//Secure Hash Algorithm (SHA-1)
 #include <_sha2.h>			//SHA-256/384/512
 #include <_hmac.h>			//Hashed Message Authentication Code
+
 
 
 //------------------------------------------------------------------------------
