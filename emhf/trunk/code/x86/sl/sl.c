@@ -142,21 +142,31 @@ void runtime_setup_paging(u32 physaddr, u32 virtaddr, u32 totalsize){
     }
   }
 
-	//setup cr4
+  printf("\nSL: preparing to turn on paging..");
+  
+  //setup cr4
   l_cr4 = CR4_PSE | CR4_PAE;
   write_cr4(l_cr4);
+  printf("\nSL: setup CR4.");
   
   //setup cr0
 	l_cr0 = 0x00000015; // ET, EM, PE
   write_cr0(l_cr0);
+  printf("\nSL: setup CR0.");
 
   //set up cr3
   l_cr3 = __pa((u32)sl_baseaddr + (u32)xpdpt);
+  printf("\nSL: CR3=0x%08x", l_cr3);
+
 	write_cr3(l_cr3);
+  printf("\nSL: setup CR3.");
+
   
   //enable paging
   l_cr0 |= (u32)0x80000000;
-	write_cr0(l_cr0);
+  write_cr0(l_cr0);
+  printf("\nSL: paging enabled successfully.");
+
 
 }
 
