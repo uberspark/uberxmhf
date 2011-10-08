@@ -49,7 +49,6 @@
 #include <tpm_emhf.h> /* hwtpm_open_locality() */
 #include <tv_utpm.h>
 #include <sha1.h>
-#include <hmac.h>
 #include <nist_ctr_drbg.h>
 #include <random.h> 
 

@@ -38,12 +38,12 @@
  * Edited by Zongwei Zhou, Jonathan McCune for EMHF project
  */
 
+#include <target.h>
 #include <scode.h>
 #include <utpm.h>
 #include <aes.h>
 #include <rsa.h>
 #include <sha1.h>
-#include <hmac.h>
 #include <puttymem.h>
 #include <random.h>
 
