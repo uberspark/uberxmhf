@@ -52,13 +52,13 @@
 #include <_io.h>         //legacy I/O
 #include <_apic.h>       //APIC
 #include <_svm.h>        //SVM extensions
-#include <vmx.h>				//VMX extensions
+#include <_vmx.h>				//VMX extensions
 
 #include <_pci.h>        //PCI bus glue
 #include <_acpi.h>				//ACPI glue
 
 #include <_svm_eap.h>		//SVM DMA protection
-#include <vmx_eap.h>		//VMX DMA protection
+#include <_vmx_eap.h>		//VMX DMA protection
 
 //language specifics
 #include <_sarg.h>
