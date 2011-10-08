@@ -74,7 +74,6 @@
  */
 
 #include <target.h>
-#include <str.h>
 #include <txt.h>
 
 static acm_info_table_t *get_acmod_info_table(acm_hdr_t* hdr)

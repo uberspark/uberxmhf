@@ -67,8 +67,7 @@
  * From: OpenBSD sys/libkern/strcmp.c
  */
 
-
-#include <str.h>
+#include <target.h>
 
 int
 strncmp(const char *s1, const char *s2, size_t n)

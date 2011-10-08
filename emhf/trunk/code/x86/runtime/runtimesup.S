@@ -37,7 +37,6 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <target.h>
-#include <svm.h>
 
 .altmacro
 .macro XtRtmEmitIdtStub vector

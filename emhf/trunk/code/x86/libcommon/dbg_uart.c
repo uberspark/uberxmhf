@@ -42,7 +42,6 @@
  */
 
 #include <target.h>
-#include <str.h>
 
 /* Register offsets */
 #define RBR             0x00    /* receive buffer       */

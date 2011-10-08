@@ -70,9 +70,6 @@
  */
 
 #include <target.h>
-#include <types.h>
-#include <str.h> // memcpy
-#include <sha2.h>
 
 /*
  * ASSERT NOTE:

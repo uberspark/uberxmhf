@@ -77,6 +77,8 @@
 #ifndef __SHA1_H__
 #define __SHA1_H__
 
+#ifndef __ASSEMBLY__
+
 struct sha1_ctxt {
     union {
         uint8_t b8[20];
@@ -108,5 +110,8 @@ typedef struct sha1_ctxt SHA_CTX;
 
 int sha1_buffer(const unsigned char *buffer, size_t len,
                 unsigned char md[SHA_DIGEST_LENGTH]);
+
+
+#endif // __ASSEMBLY__
 
 #endif /* __SHA1_H__ */

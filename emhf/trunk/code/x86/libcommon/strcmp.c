@@ -68,7 +68,7 @@
  * From: FreeBSD sys/libkern/strcmp.c
  */
 
-#include <str.h>
+#include <target.h>
 
 /*
  * Compare strings.

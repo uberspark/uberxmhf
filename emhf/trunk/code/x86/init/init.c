@@ -39,9 +39,7 @@
 //---includes-------------------------------------------------------------------
 #include <target.h>
 #include <txt.h>
-#include <sha1.h>
 #include <tpm.h>
-#include <str.h>
 
 //---forward prototypes---------------------------------------------------------
 void cstartup(multiboot_info_t *mbi);

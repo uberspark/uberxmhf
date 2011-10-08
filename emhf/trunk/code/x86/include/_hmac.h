@@ -56,8 +56,6 @@
 
 #ifndef __ASSEMBLY__
 
-#include <sha1.h>
-
 typedef struct _HMAC_SHA1_CTX {
         SHA_CTX        ctx;
         uint8_t        key[SHA_DIGEST_LENGTH];

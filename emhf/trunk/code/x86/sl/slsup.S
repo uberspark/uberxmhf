@@ -37,7 +37,6 @@
 // authors: amit vasudevan (amitvasudevan@acm.org)
 
 #include <target.h>
-#include <svm.h>
 
 .section .text
 //------------------------------------------------------------------------------	

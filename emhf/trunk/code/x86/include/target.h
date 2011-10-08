@@ -51,26 +51,28 @@
 #include <_paging.h>     //MMU
 #include <_io.h>         //legacy I/O
 #include <_apic.h>       //APIC
-#include <svm.h>        //SVM extensions
+#include <_svm.h>        //SVM extensions
 #include <vmx.h>				//VMX extensions
 
 #include <_pci.h>        //PCI bus glue
 #include <_acpi.h>				//ACPI glue
 
-#include <svm_eap.h>		//SVM DMA protection
+#include <_svm_eap.h>		//SVM DMA protection
 #include <vmx_eap.h>		//VMX DMA protection
 
 //language specifics
-#include <sarg.h>
-#include <str.h>
+#include <_sarg.h>
+#include <_str.h>
 #include <_div64.h>
 
 //boot manager (multiboot)
 #include <_multiboot.h>
 
 
-#include <_hmac.h>
 #include <_perf.h>			//performance measurement routines
+#include <_sha1.h>			//Secure Hash Algorithm (SHA-1)
+#include <_sha2.h>			//SHA-256/384/512
+#include <_hmac.h>			//Hashed Message Authentication Code
 
 //------------------------------------------------------------------------------
 //preferred TPM locality to use for access inside hypervisor

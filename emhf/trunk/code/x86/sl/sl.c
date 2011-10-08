@@ -41,7 +41,6 @@
 #include <txt.h>
 #include <tpm.h>
 #include <tpm_emhf.h>
-#include <sha1.h>
 
 extern u32 slpb_buffer[];
 RPB * rpb;

@@ -37,7 +37,6 @@
 // authors: amit vasudevan (amitvasudevan@acm.org) and jonmccune@cmu.edu
 
 #include <target.h>
-#include <svm.h>
 
 
 ///--- ALL COMMENTS BEGINNING WITH ///--- ARE RELATED TO JON'S

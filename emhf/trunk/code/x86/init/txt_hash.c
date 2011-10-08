@@ -73,8 +73,6 @@
  */
 
 #include <target.h>
-#include <str.h> // memcmp
-#include <sha1.h>
 #include <txt.h>
 
 /*

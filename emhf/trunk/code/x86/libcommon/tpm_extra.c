@@ -75,7 +75,6 @@
  */
 
 #include <target.h>
-#include <sha1.h>
 #include <tpm.h>
 
 /* These go with _tpm_submit_cmd in tpm.c */
