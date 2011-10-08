@@ -140,6 +140,7 @@ init-late: hypervisor-$(TARGET_HWPLATFORM).bin.gz
 # cleanup rules
 .PHONY: clean 
 clean: 
+	cd components/emhf-memprot && $(MAKE) -w clean
 	cd runtime && $(MAKE) -w clean
 	cd sl && $(MAKE) -w clean
 	cd init && $(MAKE) -w clean
