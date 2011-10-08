@@ -36,8 +36,6 @@
 #include <target.h>
 #include <types.h>
 #include <puttymem.h>
-#include <paging.h>
-#include <print.h>
 #include <pages.h>
 
 void pagelist_init(pagelist_t *pl)

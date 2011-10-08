@@ -37,7 +37,6 @@
 #include <stdbool.h>
 
 #include <types.h> /* u32, ... */
-#include <processor.h> /* rdtsc64() */
 #include <target.h>
 #include <tpm.h> /* tpm_nv_*() */
 #include <tpm_emhf.h> /* hwtpm_open_locality() */

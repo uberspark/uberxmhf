@@ -40,7 +40,6 @@
 #include "./include/puttymem.h"
 #include "tlsf.h"
 #include "scode.h"
-#include "perf.h"
 
 /* ----------------------------------------------------------------------
  * My own versions of malloc, realloc and free. Because I want

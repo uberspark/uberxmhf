@@ -206,7 +206,6 @@
 #endif
 
 #ifdef USE_PRINTF
-#include <print.h>
 # define PRINT_MSG(fmt, args...) dprintf(LOG_TRACE, fmt, ## args)
 # define ERROR_MSG(fmt, args...) dprintf(LOG_ERROR, fmt, ## args)
 #else

@@ -42,7 +42,6 @@
 #define __SCODE_H_
 
 #include <target.h>
-#include <perf.h>
 #include <pages.h>
 //#include <hpt.h>
 
