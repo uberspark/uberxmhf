@@ -42,7 +42,7 @@
  * guest page table operations
  */
 #include <target.h>
-#include <hpt.h>
+//#include <hpt.h>
 #include  "./include/scode.h"
 #include <pages.h>
 

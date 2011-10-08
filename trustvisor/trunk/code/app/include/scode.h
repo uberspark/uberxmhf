@@ -44,7 +44,7 @@
 #include <target.h>
 #include <perf.h>
 #include <pages.h>
-#include <hpt.h>
+//#include <hpt.h>
 
 #include <trustvisor.h>
 #include <crypto_init.h>
