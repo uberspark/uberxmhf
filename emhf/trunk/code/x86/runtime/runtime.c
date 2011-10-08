@@ -339,6 +339,12 @@ void allcpus_common_start(VCPU *vcpu){
   //initialize isolation layer
 	g_isl->initialize(vcpu);
 
+	//initialize memory protection for this core
+	{
+		
+	}
+
+
   //initialize application parameter block and call app main
   {
   	APP_PARAM_BLOCK appParamBlock;
