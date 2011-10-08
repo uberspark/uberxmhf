@@ -81,3 +81,9 @@ inline hpt_pme_t* emhf_memprot_get_lvl3_pagemap_address(VCPU *vcpu){
 		return (hpt_pme_t*)vcpu->vmx_vaddr_ept_pdp_table;
 }
 
+//get level-4 page map address
+inline hpt_pme_t* emhf_memprot_get_lvl4_pagemap_address(VCPU *vcpu){
+	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_INTEL);	//we don;t have a level-4 pagemap for AMD
+
+    return (hpt_pme_t*)vcpu->vmx_vaddr_ept_pml4_table;
+}

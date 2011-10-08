@@ -314,7 +314,8 @@ static inline hpt_pme_t* VCPU_get_pml3es(VCPU *vcpu)
 //description. For now, lets not break anything...
 #define VCPU_get_pml3es emhf_memprot_get_lvl3_pagemap_address
 
-
+/*
+//extracted to memory protection component
 static inline hpt_pme_t* VCPU_get_pml4(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
@@ -324,6 +325,11 @@ static inline hpt_pme_t* VCPU_get_pml4(VCPU *vcpu)
   }
   return NULL;
 }
+*/
+//XXX: TODO, remove these equates once we have a stable interface
+//description. For now, lets not break anything...
+#define VCPU_get_pml4 emhf_memprot_get_lvl4_pagemap_address
+
 
 static inline hpt_type_t VCPU_get_hpt_type(VCPU *vcpu)
 {

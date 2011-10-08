@@ -57,6 +57,8 @@ inline hpt_pme_t* emhf_memprot_get_lvl2_pagemap_address(VCPU *vcpu);
 //get level-3 page map address
 inline hpt_pme_t* emhf_memprot_get_lvl3_pagemap_address(VCPU *vcpu);
 
+//get level-4 page map address
+inline hpt_pme_t* emhf_memprot_get_lvl4_pagemap_address(VCPU *vcpu);
 
 #endif	//__ASSEMBLY__
 
