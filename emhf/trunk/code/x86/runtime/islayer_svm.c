@@ -216,14 +216,22 @@ static void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts
 			pt=(pt_t)((u32)npt_pts_base + ((i * PAE_PTRS_PER_PDT + j) << (PAGE_SHIFT_4K)));
 			
 			for(k=0; k < PAE_PTRS_PER_PT; k++){
-				flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
+				//the EMHF memory region includes the secure loader +
+				//the runtime (core + app). this runs from 
+				//(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M) with a size
+				//of (rpb->XtVmmRuntimeSize+PAGE_SIZE_2M)
+				//make EMHF physical pages inaccessible
+				if( (paddr >= (rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M)) &&
+					(paddr < (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) )
+					flags = 0;	//not-present
+				else
+					flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
 				pt[k] = pae_make_pte((u64)paddr, flags);
 				paddr+= PAGE_SIZE_4K;
 			}
 		}
 	}
-
-	/* TODO: mark all the physical pages of EMHF hyervisor not present */
+	
 }
 
 
