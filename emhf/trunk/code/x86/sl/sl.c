@@ -309,11 +309,12 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
     }
     
     /* Note: calling this *before* paging is enabled is important */
+#if 0
     if(sl_integrity_check((u8*)PAGE_SIZE_2M, slpb.runtime_size)) // XXX base addr
         printf("\nsl_intergrity_check SUCCESS");
     else
         printf("\nsl_intergrity_check FAILURE");
-
+#endif
 
 	//get a pointer to the runtime header
  	rpb=(RPB *)PAGE_SIZE_2M;	//runtime starts at offset 2M from sl base
