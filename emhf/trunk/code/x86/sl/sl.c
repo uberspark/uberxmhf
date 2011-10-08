@@ -509,10 +509,10 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		//tell runtime if we started "early" or "late"
 		rpb->isEarlyInit = slpb.isEarlyInit;
 		
-		if(!slpb.isEarlyInit){
+		/*if(!slpb.isEarlyInit){
 				printf("\nSL(late-init): still WiP, impressed that we got this far :>");
 				HALT();
-		}
+		}*/
 
 	  //transfer control to runtime
 		XtLdrTransferControlToRtm(runtime_gdt, runtime_idt, 
