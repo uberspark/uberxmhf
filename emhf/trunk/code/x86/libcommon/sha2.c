@@ -69,9 +69,9 @@
  * SUCH DAMAGE.
  */
 
+#include <target.h>
 #include <types.h>
 #include <str.h> // memcpy
-#include <error.h> // HALT
 #include <sha2.h>
 
 /*
