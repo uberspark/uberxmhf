@@ -145,7 +145,7 @@
 
 #ifndef __ASSEMBLY__
 
-#include <bitfield.h> /* bit manipulation helpers */
+#include <_bitfield.h> /* bit manipulation helpers */
 //#include <hpt.h> /* hardware page table types */
 
 //same privilege level exception/interrupt stack frame
