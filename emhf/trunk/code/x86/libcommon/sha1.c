@@ -261,7 +261,9 @@ void sha1_loop(struct sha1_ctxt *ctxt,const uint8_t *input,size_t len)
         if (COUNT % 64 == 0)
             sha1_step(ctxt);
         off += copysiz;
-        printf("\n%s: off=%u, len=%u", __FUNCTION__, off, len);
+        if(off % 0x100000)
+             printf("\n%s: off=%u, len=%u", __FUNCTION__, off, len);
+
     }
     printf("\n%s: exiting", __FUNCTION__);
 
