@@ -536,7 +536,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 
 
  //extracted --> memory protection component 
- #if defined (__NESTED_PAGING__)
+ /*#if defined (__NESTED_PAGING__)
       //setup EPT
       _vmx_gathermemorytypes(vcpu);
       _vmx_setupEPT(vcpu);
@@ -547,7 +547,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
  			vcpu->vmcs.control_EPT_pointer_full = __hva2spa__((u32)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E; //page walk of 4 and WB memory
 			vcpu->vmcs.control_VMX_cpu_based &= ~(1 << 15); //disable CR3 load exiting
 			vcpu->vmcs.control_VMX_cpu_based &= ~(1 << 16); //disable CR3 store exiting
-#endif
+#endif*/
 
 			//setup unrestricted guest
 			vcpu->vmcs.control_VMX_seccpu_based |= (1 << 7); //enable unrestricted guest
