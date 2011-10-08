@@ -89,7 +89,7 @@ inline hpt_pme_t* emhf_memprot_get_lvl4_pagemap_address(VCPU *vcpu){
 }
 
 //set protection for a given page map entry
-inline hpt_pme_t hpt_pme_setprot(hpt_type_t t, int lvl, hpt_pme_t entry, hpt_prot_t perms){
+inline hpt_pme_t emhf_memprot_pagemapentry_setprot(hpt_type_t t, int lvl, hpt_pme_t entry, hpt_prot_t perms){
 	hpt_pme_t rv=entry;
 	ASSERT(hpt_lvl_is_valid(t, lvl));
 	ASSERT(hpt_prot_is_valid(t, lvl, perms));
@@ -117,7 +117,7 @@ inline hpt_pme_t hpt_pme_setprot(hpt_type_t t, int lvl, hpt_pme_t entry, hpt_pro
 }
 
 //get protection for a given page map entry
-inline hpt_prot_t hpt_pme_getprot(hpt_type_t t, int lvl, hpt_pme_t entry){
+inline hpt_prot_t emhf_memprot_pagemapentry_getprot(hpt_type_t t, int lvl, hpt_pme_t entry){
 	hpt_prot_t rv=HPT_PROTS_NONE;
 	bool r,w,x;
 	ASSERT(hpt_lvl_is_valid(t, lvl));
