@@ -230,8 +230,11 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	//initialze sl_baseaddr variable and print its value out
 	sl_baseaddr = baseaddr;
 	
-	printf("\nSL: at 0x%08x, starting...", sl_baseaddr);    
-    
+	if(slpb->isEarlyInit)
+		printf("\nSL(early-init): at 0x%08x, starting...", sl_baseaddr);    
+    else
+		printf("\nSL(late-init): at 0x%08x, starting...", sl_baseaddr);
+		
 
 	ASSERT( slpb.magic == SL_PARAMETER_BLOCK_MAGIC);
 	
