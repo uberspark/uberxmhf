@@ -43,8 +43,8 @@
 
 #ifndef __ASSEMBLY__
 
-#include "bitfield.h"
-#include "types.h"
+//#include "bitfield.h"
+//#include "types.h"
 
 typedef enum {
   HPT_TYPE_NORM=0, /* x86 'normal'\legacy */
