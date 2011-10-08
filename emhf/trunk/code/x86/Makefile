@@ -5,7 +5,7 @@
 	export INIT_LATE := y
 
 # DMA protection support
-	export DMAPROT := y
+	export DMAPROT := n
 	
 
 #-----build configuration
