@@ -191,7 +191,7 @@ static void _svm_send_quiesce_signal(VCPU *vcpu, struct vmcb_struct __attribute_
 
 
 //---npt initialize-------------------------------------------------------------
-static void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts_base){
+void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts_base){
 	pdpt_t pdpt;
 	pdt_t pdt;
 	pt_t pt;
