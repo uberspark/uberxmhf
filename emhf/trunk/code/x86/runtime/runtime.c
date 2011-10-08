@@ -342,7 +342,7 @@ void allcpus_common_start(VCPU *vcpu){
 	//initialize memory protection for this core
 	{
 			ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-			if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
+			if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ //tested 
 				struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
 				_svm_nptinitialize(vcpu->npt_vaddr_ptr, 
 					vcpu->npt_vaddr_pdts, vcpu->npt_vaddr_pts);
