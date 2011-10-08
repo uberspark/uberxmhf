@@ -44,7 +44,6 @@
 #include <scode.h>
 #include <puttymem.h>
 #include <utpm.h>
-#include <sha1.h>
 #include <rsa.h>
 #include <random.h>
 #include <crypto_init.h>

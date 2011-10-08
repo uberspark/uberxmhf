@@ -43,7 +43,6 @@
 #include <utpm.h>
 #include <aes.h>
 #include <rsa.h>
-#include <sha1.h>
 #include <puttymem.h>
 #include <random.h>
 
