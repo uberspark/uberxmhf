@@ -40,7 +40,6 @@
 //version, base and BSP indications
 //author: amit vasudevan (amitvasudevan@acm.org)
 #include <target.h>
-#include <acpi.h>
 
 //forward prototypes
 static int mp_checksum(unsigned char *mp, int len);
