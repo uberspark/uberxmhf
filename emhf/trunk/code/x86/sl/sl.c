@@ -216,12 +216,8 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 	//initialize debugging early on
 	#ifdef __DEBUG_SERIAL__
-		//#ifdef __INIT_LATE__
-		//	raw_serial_init();
-		//#else
 			g_uart_config = slpb.uart_config;
 			init_uart();
-		//#endif
 	#endif
 
 	#ifdef __DEBUG_VGA__
