@@ -371,8 +371,9 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
   ASSERT( vcpu->vmcs.guest_VMCS_link_pointer_full == 0xFFFFFFFFUL );
 
   {
-    __vmx_start_hvm();
-    printf("\nCPU(0x%02x): Error in VMLAUNCH. HALT!", vcpu->id);
+    u32 errorcode;
+    errorcode=__vmx_start_hvm();
+    printf("\nCPU(0x%02x): Error in VMLAUNCH (%u). HALT!", vcpu->id, errorcode);
     HALT();
   }
 
