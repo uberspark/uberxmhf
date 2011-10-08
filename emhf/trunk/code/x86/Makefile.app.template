@@ -24,9 +24,6 @@
 	export DEBUG_SERIAL_PORT := 0x3f8
 	export DEBUG_VGA	:= n
 	
-	#DMA protection support
-	export DMAPROT := y
-	
 	#tests
 	export	TEST_CPU_QUIESCE := n
 	

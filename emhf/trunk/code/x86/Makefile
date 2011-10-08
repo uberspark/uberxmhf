@@ -3,6 +3,9 @@
 
 # late initialization support (experimental)
 	export INIT_LATE := y
+
+# DMA protection support
+	export DMAPROT := y
 	
 
 #-----build configuration
