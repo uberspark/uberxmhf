@@ -321,16 +321,16 @@ static u32 _vmx_getmemorytypeforphysicalpage(VCPU *vcpu, u64 pagebaseaddr){
 
 //---setup EPT for VMX----------------------------------------------------------
 static void _vmx_setupEPT(VCPU *vcpu){
-  //step-1: tie in EPT PML4 structures
+	//step-1: tie in EPT PML4 structures
 	//note: the default memory type (usually WB) should be determined using 
 	//IA32_MTRR_DEF_TYPE_MSR. If MTRR's are not enabled (really?)
 	//then all default memory is type UC (uncacheable)
-  u64 *pml4_table, *pdp_table, *pd_table, *p_table;
+	u64 *pml4_table, *pdp_table, *pd_table, *p_table;
 	u32 i, j, k, paddr=0;
-	
+
 	pml4_table = (u64 *)vcpu->vmx_vaddr_ept_pml4_table;
 	pml4_table[0] = (u64) (__hva2spa__((u32)vcpu->vmx_vaddr_ept_pdp_table) | 0x7); 
-	
+
 	pdp_table = (u64 *)vcpu->vmx_vaddr_ept_pdp_table;
 		
 	for(i=0; i < 4; i++){
@@ -342,9 +342,9 @@ static void _vmx_setupEPT(VCPU *vcpu){
 			p_table = (u64 *)  ((u32)vcpu->vmx_vaddr_ept_p_tables + (4096 * ((i*512)+j))) ;
 			
 			for(k=0; k < 512; k++){
- 	 		 u32 memorytype = _vmx_getmemorytypeforphysicalpage(vcpu, (u64)paddr);
-       p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) | (u64)0x7 ;
-			 paddr += 4096;
+				u32 memorytype = _vmx_getmemorytypeforphysicalpage(vcpu, (u64)paddr);
+				p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) | (u64)0x7 ;
+				paddr += 4096;
 			}
 		}
 	}
