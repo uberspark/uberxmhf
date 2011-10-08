@@ -30,6 +30,9 @@ endif
 
 # tie components used by the runtime
 OBJECTS_PRECOMPILED += ../components/emhf-memprot/emhf-memprot.o
+OBJECTS_PRECOMPILED += ../components/emhf-memprot/arch/vmx/emhf-memprot-vmx.o
+OBJECTS_PRECOMPILED += ../components/emhf-memprot/arch/svm/emhf-memprot-svm.o
+
 
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 

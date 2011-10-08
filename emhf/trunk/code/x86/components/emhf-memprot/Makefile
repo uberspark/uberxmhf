@@ -4,6 +4,9 @@
 # source files
 AS_SOURCES =  
 C_SOURCES = emhf-memprot.c
+C_SOURCES += ./arch/vmx/emhf-memprot-vmx.c
+C_SOURCES += ./arch/vmx/emhf-memprot-svm.c
+
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
@@ -22,6 +25,8 @@ all: $(OBJECTS)
 .PHONY: clean 
 clean: 
 	$(RM) -rf *.o
+	$(RM) -rf ./arch/vmx/*.o
+	$(RM) -rf ./arch/svm/*.o
  
   
   
