@@ -51,6 +51,12 @@ void cstartup(void){
 
 	//setup debugging	
 #ifdef __DEBUG_SERIAL__
+    printf("\nrpb->uart_config.port = %x", rpb->uart_config.port);
+    printf("\nrpb->uart_config.clock_hz = %u", rpb->uart_config.clock_hz);
+    printf("\nrpb->uart_config.baud = %u", rpb->uart_config.baud);
+    printf("\nrpb->uart_config.data_bits, parity, stop_bits, fifo = %x %x %x %x", 
+		rpb->uart_config.data_bits, rpb->uart_config.parity, rpb->uart_config.stop_bits, rpb->uart_config.fifo);
+    
     g_uart_config = rpb->uart_config;
 	init_uart();
 #endif
