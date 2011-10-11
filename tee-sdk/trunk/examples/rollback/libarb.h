@@ -43,6 +43,34 @@
 #ifndef _LIBARB_H_
 #define _LIBARB_H_
 
+/* Starting point poached from audited-kv-errs.h. TODO: Centralize
+ * some kinds of error codes, especially those TZ-related. */
+typedef enum {
+  ARB_ENONE=0,
+  ARB_EEXISTS=1,
+  ARB_ENOTFOUND=2,
+  ARB_EKV=3,
+  ARB_EBADAUDITEDCMD=4,
+  ARB_EBADCMDHANDLE=5,
+  ARB_EBADSTATE=6,
+  ARB_EDECODE=7, /* TZ Decoder returned an error */
+  ARB_EENCODE=8, /* TZ Encoder returned an error */
+  ARB_EPARAM=9, /* illegal params */
+  ARB_EBADKEY=10,
+  ARB_EBADCMD=11,
+  ARB_ENOMEM=12,
+  ARB_EAUDITED=13,
+  ARB_EPB=14,
+  ARB_EBADAUTH=15,
+  ARB_ETZ=16, /* TZ error shifted on */
+} arb_err_t;
+
+
+arb_err_t arb_initialize_internal_state();
+arb_err_t arb_execute_request();
+
+
+
 
 #endif _LIBARB_H_
 

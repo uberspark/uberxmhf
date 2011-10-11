@@ -47,7 +47,7 @@
 #include <openssl/sha.h>
 #include <openssl/engine.h>
 
-#include "pals.h"
+#include "pals.h" /* TODO: fix dependencies so this can go last */
 
 #include <tee-sdk/tv.h>
 #include <tee-sdk/tz.h>

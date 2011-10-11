@@ -43,9 +43,28 @@
 
 #include  "pals.h"
 
+/* TODO: rename this to something better, e.g., pal_entry. */
 void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
+
+	/**
+	 * AntiRollBack initialize / execute.
+	 */
+		
+    
   switch(uiCommand) {
+		
+	case PAL_ARB_INITIALIZE:
+		/**
+		 * This command tells the PAL to wipe any previously existing
+		 * state and initialize both its own state and the
+		 * AntiRollBack-specific internal state.  CAUTION: You can lose
+		 * your data by calling this carelessly.
+		 */
+	{
+		
+		break;
+	}
   case PAL_SEAL:
     {
       uint8_t *in, *out;
@@ -159,7 +178,7 @@ tz_return_t pal_nv_rollback(IN uint8_t *newval,
                             OUT uint32_t *nv_size,
                             OUT uint8_t *oldval)
 {
-    size_t size;
+	size_t size;
 
     if(svc_tpmnvram_getsize(&size)) {
         return TZ_ERROR_GENERIC;
@@ -177,3 +196,11 @@ tz_return_t pal_nv_rollback(IN uint8_t *newval,
     
     return TZ_SUCCESS;
 }
+
+
+/* Local Variables: */
+/* mode:c           */
+/* indent-tabs-mode:'t */
+/* tab-width:2      */
+/* c-basic-offset: 2 */
+/* End:             */

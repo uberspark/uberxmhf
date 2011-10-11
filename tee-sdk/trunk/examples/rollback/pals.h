@@ -40,29 +40,54 @@
 
 #include <trustvisor/tv_utpm.h>
 
+#include "libarb.h" /* TODO: sane dependency strategy */
+
 #ifndef _PALS_H_
 #define _PALS_H_
 
 typedef enum {
-  PAL_WITHOUTPARAM,
-  PAL_PARAM,
-  PAL_SEAL,
-  PAL_UNSEAL,
-  PAL_QUOTE,
-  PAL_ID_GETPUB,
-  PAL_PCR_READ,
-  PAL_PCR_EXTEND,
-  PAL_RAND,
-  PAL_TIME_INIT,
-  PAL_TIME_ELAPSED,
-  PAL_NV_ROLLBACK,
+  PAL_ARB_INITIALIZE,
+  PAL_ARB_INCREMENT,
 } PAL_CMD;
 
+/* Really simple state for demonstration purposes. */
+typedef struct {
+    uint64_t counter;
+} pal_state_t;
+
+/* Incoming request (from the above ENUM) */
+typedef struct {
+    uint32_t cmd;
+} pal_request_t;
+
+
+/* PAL entry point */
 void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv);
 tz_return_t pal_seal(TPM_PCR_INFO *pcrInfo, uint8_t *input, uint32_t inputLen, uint8_t *output, size_t *outputLen);
 tz_return_t pal_unseal(uint8_t *input, uint8_t inputLen, uint8_t *output, size_t *outputLen, uint8_t *digestAtCreation);
 tz_return_t pal_nv_rollback(IN uint8_t *newval,
                             OUT uint32_t *nv_size,
                             OUT uint8_t *oldval);
+
+
+/* To avoid malloc(), just use a single global PAL state, statically allocated. */
+extern pal_state_t g_pal_state;
+
+/**
+ * Basic interface to be amenable to AntiRollBack protections (4
+ * functions).
+ */
+arb_err_t pal_arb_serialize_state(IN const pal_state_t *state,
+                                  OUT uint8_t *serialized_state,
+                                  OUT uint32_t *serialized_state_len);
+
+arb_err_t pal_arb_deserialize_state(IN const uint8_t *serialized_state,
+                                    IN const uint32_t serialized_state_len,
+                                    OUT pal_state_t *state);
+
+arb_err_t pal_arb_initialize_state(OUT pal_state_t *state);
+
+arb_err_t pal_arb_advance_state(IN const pal_request_t *request,
+                                INOUT pal_state_t *state);
 
 #endif /* _PALS_H_ */

@@ -44,6 +44,15 @@
 #ifndef _LIBARBTOOLS_H_
 #define _LIBARBTOOLS_H_
 
+/* There is no explicit NVRAM location; this is hard-coded into
+ * TrustVisor. Just use the relevant NV hypercalls. */
+
+/* Latest state snapshot. This is just an opaque byte array. */
+
+/* Handle. Irrelevant within a single application. It is presently the
+ * application's responsibility to write things to disk as necessary. */
+
+/* Request */
 
 #endif _LIBARBTOOLS_H_
 
