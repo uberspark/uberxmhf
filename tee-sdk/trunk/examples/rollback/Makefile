@@ -8,7 +8,7 @@
 PROG_NAME=main
 CFLAGS=-g -Wall -Wextra -Werror
 PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv libssl libcrypto
-PROG_OBJS=main.o
+PROG_OBJS=main.o libarbtools.o
 
 PAL_NAME=pals
 PAL_PKGCONFIG_DEPS=tee-sdk-svc tee-sdk-svc-tv

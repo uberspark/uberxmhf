@@ -54,7 +54,16 @@
 
 /* Request */
 
-#endif _LIBARBTOOLS_H_
+#define SNAPSHOT_FILENAME "snapshot.bin"
+
+void print_hex(const char *prefix, const void *prtptr, size_t size);
+long slurp_file(const char *filename, unsigned char **buf);
+long puke_file(const char *filename, const unsigned char
+							 *bytes, long len);
+void dump_stderr_from_pal(tz_operation_t *tzOp);
+
+
+#endif /* _LIBARBTOOLS_H_ */
 
 /* Local Variables: */
 /* mode:c           */
