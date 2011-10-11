@@ -98,8 +98,7 @@ static arb_err_t serialize_and_seal(const arb_internal_state_t *state,
 /**
  * TODO: Flesh out with full PRNG.  Initialize with uTPM entropy.
  */
-arb_err_t arb_initialize_internal_state(arb_internal_state_t *state,
-																				uint8_t *new_snapshot,
+arb_err_t arb_initialize_internal_state(uint8_t *new_snapshot,
 																				size_t *new_snapshot_len) {
   unsigned int i;
   size_t size;
@@ -109,14 +108,14 @@ arb_err_t arb_initialize_internal_state(arb_internal_state_t *state,
 	/* Just compute how much space is needed for the new
 	 * snapshot. Doesn't depend on 'state' right now but could in the
 	 * future. */
-	if(!new_snapshot && state && new_snapshot_len) {
+	if(!new_snapshot && new_snapshot_len) {
 		pal_arb_serialize_state(NULL, new_snapshot_len); /* XXX ignoring return */
 		*new_snapshot_len += sizeof(arb_internal_state_t);
 		*new_snapshot_len += UTPM_SEALING_OVERHEAD;
 		return ARB_ENONE;
 	}
 
-	if(!state || !new_snapshot || !new_snapshot_len) {
+	if(!new_snapshot || !new_snapshot_len) {
 		return ARB_EPARAM;
 	}
 	
@@ -124,8 +123,8 @@ arb_err_t arb_initialize_internal_state(arb_internal_state_t *state,
 	 * Seed PRNG.
 	 */
   if(svc_utpm_rand_block(
-       (uint8_t*)&state->dummy_prng_state,
-       sizeof(state->dummy_prng_state))
+       (uint8_t*)&g_arb_internal_state.dummy_prng_state,
+       sizeof(g_arb_internal_state.dummy_prng_state))
      != 0) {
     return ARB_ETZ; /* TODO: collect TZ error and "shift it on" */
   }
@@ -133,8 +132,8 @@ arb_err_t arb_initialize_internal_state(arb_internal_state_t *state,
 	/**
 	 * Set HistorySummary_0 = 0
 	 */
-  for(i=0; i<sizeof(state->history_summary); i++) {
-    state->history_summary[i] = 0;
+  for(i=0; i<sizeof(g_arb_internal_state.history_summary); i++) {
+    g_arb_internal_state.history_summary[i] = 0;
   }
 
   /* Zeroize HistorySummary in NVRAM */
@@ -162,7 +161,7 @@ arb_err_t arb_initialize_internal_state(arb_internal_state_t *state,
 	rv = pal_arb_initialize_state();
 	if(ARB_ENONE != rv) { return rv; }
 
-	rv = serialize_and_seal(state, new_snapshot, new_snapshot_len);
+	rv = serialize_and_seal(&g_arb_internal_state, new_snapshot, new_snapshot_len);
 	
   return rv;
 }
