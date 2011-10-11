@@ -70,7 +70,7 @@ static bool did_init = false;
 
 akv_ctx_t akv_ctx;
 
-static void akvp_uninit()
+void akvp_uninit()
 {
   did_init = false;
 

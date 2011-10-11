@@ -44,7 +44,9 @@
 #include "audited.h"
 #include "audited-kv-pal-storage.h"
 
-static akv_err_t compute_header_mac(const AkvpStorage__Header *h,
+static akv_err_t compute_header_mac(void *hmac_key,
+                                    size_t hmac_key_len,
+                                    const AkvpStorage__Header *h,
                                     uint8_t *md,
                                     size_t *md_len)
 {
@@ -55,7 +57,7 @@ static akv_err_t compute_header_mac(const AkvpStorage__Header *h,
   HMAC_CTX_init(&ctx);
 
   cryptorv = HMAC_Init_ex(&ctx,
-                          akv_ctx.hmac_key, akv_ctx.hmac_key_len,
+                          hmac_key, hmac_key_len,
                           EVP_sha256(), NULL);
   CHECK(cryptorv, AKV_ECRYPTO, "HMAC_Init_ex");
 
@@ -184,7 +186,9 @@ akv_err_t akvp_export(const void *req, AkvpStorage__Everything *res)
   header_mac = malloc(header_mac_len);
   CHECK_MEM(header_mac, AKV_ENOMEM);
 
-  rv = compute_header_mac(header, header_mac, &header_mac_len);
+  rv = compute_header_mac(akv_ctx.hmac_key, akv_ctx.hmac_key_len,
+                          header,
+                          header_mac, &header_mac_len);
   CHECK_RV(rv, rv, "compute_header_mac");
 
   *res = (AkvpStorage__Everything) {
@@ -259,7 +263,9 @@ akv_err_t akvp_import(const AkvpStorage__Everything *req, void *res)
   CHECK_RV(rv, rv, "akvp_init_priv");
 
   /* FIXME: should do this before full initialization, above */
-  rv = compute_header_mac(req->header, header_mac, &header_mac_len);
+  rv = compute_header_mac(akv_ctx.hmac_key, akv_ctx.hmac_key_len,
+                          req->header,
+                          header_mac, &header_mac_len);
   CHECK_RV(rv, rv, "compute_header_mac");
 
   if(memcmp(header_mac, req->mac_of_header.data, header_mac_len)) {
@@ -268,6 +274,10 @@ akv_err_t akvp_import(const AkvpStorage__Everything *req, void *res)
   }
 
  out:
+  /* in case of any sort of failure, invalidate akvp global state */
+  if(rv==1) {
+    akvp_uninit();
+  }
   return rv;
 }
 
