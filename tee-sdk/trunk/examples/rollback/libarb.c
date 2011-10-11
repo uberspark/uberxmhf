@@ -49,10 +49,6 @@
  * variables, and those that do not.
  */
 
-/* Guessing at seal overhead. TODO: Enhance UTPM to be able to
- * definitively return how much overhead there is. */
-#define UTPM_SEALING_OVERHEAD 100 
-
 #define MAX_NV_SIZE (5*SHA_DIGEST_LENGTH)
 
 arb_internal_state_t g_arb_internal_state;
@@ -80,7 +76,8 @@ static arb_err_t serialize_and_seal(const arb_internal_state_t *state,
 	if(ARB_ENONE != rv) { return rv; } /* Not sure how to deal with this
 																			* one cleanly */
 	size += sizeof(arb_internal_state_t);
-	size += UTPM_SEALING_OVERHEAD; /* XXX */
+	/* Now calculate how much space utpm_seal will consume given size inputs */
+	*new_snapshot_len = utpm_seal_output_size(size, /* XXX */false);
 	/* seal size bytes from g_hideous_buffer into new_snapshot */
 	/* XXX Don't select any PCRs for now! */
 	for(i=0;i<sizeof(TPM_PCR_INFO);i++) {
@@ -110,7 +107,7 @@ arb_err_t arb_initialize_internal_state(uint8_t *new_snapshot,
 	if(!new_snapshot && new_snapshot_len) {
 		pal_arb_serialize_state(NULL, new_snapshot_len); /* XXX ignoring return */
 		*new_snapshot_len += sizeof(arb_internal_state_t);
-		*new_snapshot_len += UTPM_SEALING_OVERHEAD;
+		*new_snapshot_len = utpm_seal_output_size(*new_snapshot_len, /* XXX use PCRs! */false);
 		return ARB_ENONE;
 	}
 
