@@ -325,6 +325,21 @@ int main(int argc, char **argv)
     val=NULL;
   }
 
+  {
+    akv_err_t akv_err;
+    uint8_t *data;
+    size_t len;
+    akv_err = akv_export(tcm_ctx.akv_ctx,
+                         &data,
+                         &len);
+    if (akv_err) {
+      rv=5;
+      printf("akv_export failed with 0x%x\n", akv_err);
+      goto cleanup_tcm;
+    }
+    write_file("db", data, len);
+  }
+
  cleanup_tcm:
   tcm_ctx_release(&tcm_ctx);
  cleanup_akv:
