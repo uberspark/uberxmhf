@@ -52,12 +52,79 @@
 #include "libarb.h" /* for arb_err_t */
 #include "libarbtools.h"
 
+/**
+ * Extremely redundant with respect to increment_counter().
+ * TODO: Tighten everything up.
+ */
 tz_return_t attempt_recovery(tz_session_t *tzPalSession) {
-    if(NULL == tzPalSession) {
-        return ARB_EPARAM;
-    }
+  tz_return_t tzRet, serviceReturn;
+  tz_operation_t tzOp;
+  void *counter, *old_snapshot, *new_snapshot;
+  int rv = 0;
+  size_t counter_len, old_snapshot_len, new_snapshot_len;
+  pal_request_t *req;
 
-    return ARB_ENONE;
+  printf("PAL_ARB_ATTEMPT_RECOVERY\n");
+
+  /* prep operation */
+  /* No files to write out prior to recovery */
+  tzRet = TZOperationPrepareInvoke(tzPalSession,
+                                   PAL_ARB_ATTEMPT_RECOVERY,
+                                   NULL,
+                                   &tzOp);
+  assert(tzRet == TZ_SUCCESS);
+
+  assert(sizeof(pal_request_t) == slurp_file(LAST_REQUEST_FILENAME, (void**)&req));
+  old_snapshot_len = slurp_file(LAST_SNAPSHOT_FILENAME, &old_snapshot);
+  assert(old_snapshot_len > 0);
+
+  /* 'EARR' means array already allocated.  use EARRSPC to encode
+   * "array space"! */
+  assert(!TZIEncodeF(&tzOp,
+                     "%"TZI_EARR "%"TZI_EARR,
+                     req, sizeof(pal_request_t),
+                     old_snapshot, old_snapshot_len));
+
+  /* Call PAL */
+  tzRet = TZOperationPerform(&tzOp, &serviceReturn);
+  if (tzRet != TZ_SUCCESS) {
+    rv = 1;
+    printf("%s:%d: tzRet 0x%08x\n", __FILE__, __LINE__, tzRet);
+    goto out;
+  }
+
+  tzRet = TZIDecodeF(&tzOp,
+                     "%"TZI_DARRSPC "%"TZI_DARRSPC,
+                     &counter, &counter_len,
+                     &new_snapshot, &new_snapshot_len);
+  if (tzRet) {
+    printf("Output decoder returned error %d\n", tzRet);
+    rv = 1;
+    goto out;
+  }
+
+  print_hex("       counter: ", counter, counter_len);
+  print_hex("  new_snapshot: ", new_snapshot, new_snapshot_len);
+
+  puke_file(THIS_SNAPSHOT_FILENAME, new_snapshot, new_snapshot_len);
+
+  /* Now rename THIS* to LAST* */
+  if(0 != rename(THIS_SNAPSHOT_FILENAME, LAST_SNAPSHOT_FILENAME)) {
+      perror("Renaming snapshot from this to last!");
+      exit(1);
+  }
+  if(0 != rename(THIS_REQUEST_FILENAME, LAST_REQUEST_FILENAME)) {
+      perror("Renaming request from this to last!");
+      exit(1);
+  }  
+
+ out:
+  if(old_snapshot) { free(old_snapshot); old_snapshot = NULL; }
+  dump_stderr_from_pal(&tzOp);
+  TZOperationRelease(&tzOp);
+
+  if(0 != rv) { printf("...FAILED rv %d\n", rv); }
+  return rv;
 }
 
 tz_return_t increment_counter(tz_session_t *tzPalSession) {
@@ -84,7 +151,10 @@ tz_return_t increment_counter(tz_session_t *tzPalSession) {
 
   /* 'EARR' means array already allocated.  use EARRSPC to encode
    * "array space"! */
-  assert(!TZIEncodeF(&tzOp, "%"TZI_EARR, old_snapshot, old_snapshot_len));
+  assert(!TZIEncodeF(&tzOp,
+                     "%"TZI_EARR "%"TZI_EARR,
+                     &req, sizeof(pal_request_t),
+                     old_snapshot, old_snapshot_len));
 
   /* Call PAL */
   tzRet = TZOperationPerform(&tzOp, &serviceReturn);
@@ -330,3 +400,9 @@ int main(int argc, char *argv[])
 
   return rv;
 } 
+
+/* Local Variables: */
+/* mode:c           */
+/* indent-tabs-mode:'t */
+/* tab-width:2      */
+/* End:             */
