@@ -43,6 +43,11 @@
 
 #include "libarb.h"
 
+/**
+ * TODO: Split this into two C files: those that need to touch global
+ * variables, and those that do not.
+ */
+
 /* Guessing at seal overhead. TODO: Enhance UTPM to be able to
  * definitively return how much overhead there is. */
 #define UTPM_SEALING_OVERHEAD 100 

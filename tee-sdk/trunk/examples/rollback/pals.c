@@ -46,6 +46,12 @@
 #include "sha1.h"
 
 /**
+ * TODO: Split this into three C files: PAL-specific that need to
+ * touch global variables, PAL-specific that do not, and
+ * AntiRollBack-specifc.
+ */
+
+/**
  * This global variable is needed to isolate PAL-specific state data
  * structures from the general-purpose libarb.  This could probably be
  * cleaned up through the use of function pointers or perhaps just a
