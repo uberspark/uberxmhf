@@ -85,7 +85,8 @@ static arb_err_t serialize_and_seal(const arb_internal_state_t *state,
 		((uint8_t*)&tpmPcrInfo)[i] = 0;
 	}
 
-	log_hex("arb_internal_state_t || pal_state_t: ", buf, size);
+	log_hex("serialize_and_seal [arb_internal|pal]_state_t: ",
+					buf, size);
 	if(0 != svc_utpm_seal(&tpmPcrInfo, buf, size, new_snapshot, new_snapshot_len)) {
 		return ARB_EBADCMD;
 	}
@@ -160,7 +161,6 @@ arb_err_t arb_initialize_internal_state(uint8_t *new_snapshot,
 	rv = pal_arb_initialize_state();
 	if(ARB_ENONE != rv) { return rv; }
 
-	log_hex("g_arb_internal_state: ", &g_arb_internal_state, sizeof(arb_internal_state_t));
 	rv = serialize_and_seal(&g_arb_internal_state, new_snapshot, new_snapshot_len);
 	
   return rv;
@@ -299,7 +299,6 @@ arb_err_t arb_execute_request(const uint8_t *request,
 {
   size_t size;
   uint8_t nvbuf[MAX_NV_SIZE];
-  unsigned int i;
 	arb_err_t rv;
 	static uint8_t buf[4096];
 
@@ -341,15 +340,15 @@ arb_err_t arb_execute_request(const uint8_t *request,
 		return ARB_EUNSEALFAILED;
 	}
 
+	log_hex("unsealed buf: ", buf, size);
+	
 	/**
 	 * Now that we have unsealed, we may have sensitive data in memory.
 	 * Be responsible: Zero things upon failure, etc.
 	 */	
 
 	/* First comes arb_internal_state_t; copy it */
-  for(i=0; i<sizeof(arb_internal_state_t); i++) {
-    *((uint8_t*)&g_arb_internal_state) = buf[i];
-  }
+	memcpy(&g_arb_internal_state, buf, sizeof(arb_internal_state_t));
 
 	log_hex("g_arb_internal_state: ", &g_arb_internal_state,
 					sizeof(arb_internal_state_t));
