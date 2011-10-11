@@ -576,6 +576,59 @@ tz_return_t test_nv_rollback(tz_session_t *tzPalSession) {
 
 }
 
+#define SNAPSHOT_FILENAME "snapshot.bin"
+
+tz_return_t increment_counter(tz_session_t *tzPalSession) {
+  tz_return_t tzRet, serviceReturn;
+  tz_operation_t tzOp;
+  uint8_t *counter, *old_snapshot, *new_snapshot;
+  int rv = 0;
+  uint32_t counter_len, old_snapshot_len, new_snapshot_len;
+
+  printf("PAL_ARB_INCREMENT\n");
+
+  /* prep operation */
+  tzRet = TZOperationPrepareInvoke(tzPalSession,
+                                   PAL_ARB_INCREMENT,
+                                   NULL,
+                                   &tzOp);
+  assert(tzRet == TZ_SUCCESS);
+
+  old_snapshot_len = slurp_file(SNAPSHOT_FILENAME, &old_snapshot);
+  assert(old_snapshot_len > 0);
+
+  assert(!TZIEncodeF(&tzOp, "%"TZI_EARR, old_snapshot, old_snapshot_len));
+
+  /* Call PAL */
+  tzRet = TZOperationPerform(&tzOp, &serviceReturn);
+  if (tzRet != TZ_SUCCESS) {
+    rv = 1;
+    printf("Failure at %s:%d\n", __FILE__, __LINE__);
+    printf("tzRet 0x%08x\n", tzRet);
+    goto out;
+
+  }
+
+  tzRet = TZIDecodeF(&tzOp,
+                     "%"TZI_DARRSPC "%"TZI_DARRSPC,
+                     &counter, &counter_len,
+                     &new_snapshot, &new_snapshot_len);
+  if (tzRet) {
+    printf("UNSEAL decoder returned error %d\n", tzRet);
+    rv = 1;
+    goto out;
+  }
+
+  print_hex("       counter: ", counter, counter_len);
+  print_hex("  new_snapshot: ", new_snapshot, new_snapshot_len);
+
+ out:
+  TZOperationRelease(&tzOp);
+
+  if(0 != rv) { printf("...FAILED rv %d\n", rv); }
+  return rv;
+}
+
 tz_return_t initialize_counter(tz_session_t *tzPalSession) {
   tz_return_t tzRet, serviceReturn;
   tz_operation_t tzOp;
@@ -622,14 +675,13 @@ tz_return_t initialize_counter(tz_session_t *tzPalSession) {
   print_hex("  counter value: ", counter, counter_len);
   print_hex("  snapshot:      ", snapshot, snapshot_len);
 
-  puke_file("snapshot.bin", snapshot, snapshot_len);
+  puke_file(SNAPSHOT_FILENAME, snapshot, snapshot_len);
   
  out:
   TZOperationRelease(&tzOp);
 
   if(0 != rv) { printf("...FAILED rv %d\n", rv); }
-  return rv;  
-
+  return rv;
 }
 
 
@@ -714,8 +766,10 @@ int main(int argc, char *argv[])
 
   switch(cmd) {
       case PAL_ARB_INITIALIZE:
+          rv = initialize_counter(&tzPalSession) || rv;
           break;
       case PAL_ARB_INCREMENT:
+          rv = increment_counter(&tzPalSession) || rv;
           break;
       case PAL_TEST:
       default:
