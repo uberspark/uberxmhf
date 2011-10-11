@@ -80,7 +80,7 @@ arb_err_t arb_initialize_internal_state() {
   }
 
   if(size < SHA_DIGEST_LENGTH || size > MAX_NV_SIZE) {
-    return E_NOMEM;
+    return ARB_ENOMEM;
   }  
 
   for(i=0; i<size; i++) {
@@ -144,6 +144,56 @@ static bool arb_is_replay_needed(uint8_t alleged_history_summary[ARB_HIST_SUM_LE
 }
 
 /**
+ * This function is called to update NVRAM in preparation to execute
+ * the latest request.
+ */
+static arb_err_t arb_update_history_summary(const uint8_t *request,
+                                            uint32_t request_len) {
+  unsigned int i;
+  size_t size;
+  uint8_t nvbuf[MAX_NV_SIZE];
+  SHA_CTX ctx;
+  
+  if(svc_tpmnvram_getsize(&size)) {
+    return (TZ_ERROR_GENERIC << 8) | ARB_ETZ;
+  }
+
+  if(size > MAX_NV_SIZE) {
+    return ARB_ENOMEM;
+  }
+
+  /**
+   * Sanity check: current history summary should match current NVRAM
+   * value.
+   */
+  
+  if(svc_tpmnvram_readall(nvbuf)) {
+    return (TZ_ERROR_GENERIC << 8) | ARB_ETZ;
+  }
+
+  if(!compare(g_arb_internal_state.history_summary, nvbuf,
+              ARB_HIST_SUM_LEN)) {
+    /* This is FATAL and should never happen; it should be an ASSERT!!! */
+    return ARB_EBADSTATE;
+  }
+
+  /**
+   * Okay, now actually update the value in NVRAM.
+   */
+  
+  SHA1_INIT(&ctx);
+  SHA1_Update(&ctx, g_arb_internal_state.history_summary, ARB_HIST_SUM_LEN);
+  SHA1_Update(&ctx, request, request_len);
+  SHA1_Final(nvbuf, &ctx);
+  
+  if(svc_tpmnvram_writeall(nvbuf)) {
+    return (TZ_ERROR_GENERIC << 8) | ARB_ETZ;
+  }
+
+  return ARB_ENONE;
+}
+
+/**
  * Confirm that we are presently in a valid state, and then advance
  * history summary based on new request.  Actual "work" of
  * application-specific request details are handled by the PAL, not
@@ -187,6 +237,8 @@ arb_err_t arb_execute_request(uint8_t *request,
   for(i=0; i<sizeof(arb_internal_state_t); i++) {
     *((uint8_t*)&g_arb_internal_state) = snapshot[i];
   }  
+
+  /* XXX TODO Deserialize previous PAL-specific state */
   
   /**
    * 2. Validate History Summary.
@@ -220,7 +272,14 @@ arb_err_t arb_execute_request(uint8_t *request,
   if(arb_is_history_summary_current(g_arb_internal_state.historysummary,
                                     nvbuf)) {
     /* We're good!  Go ahead and start the new transaction. */
-    
+    // 1. Update history summary (in g_arb_internal_state and NVRAM)
+    rv = arb_update_history_summary(request, request_len);
+    /* XXXXXX Error check rv */
+    // 2. Do the actual transaction
+    rv = pal_arb_advance_state(request, request_len);
+    /* XXXXXX Error check rv */
+    rv = pal_arb_serialize_state(serialized_state, serialized_state_len); /* XXX malloc()??? */
+    /* XXXXXX Error check rv */
   }
   /* Check for case (2) */
   else if(arb_is_replay_needed(
@@ -230,7 +289,10 @@ arb_err_t arb_execute_request(uint8_t *request,
          nvbuf)) {
     /* Something went wrong last time, but we have what it takes to
      * recover. We must start recovery now. */
-    
+    // 1. Don't update history summary since it was updated at the
+    //    beginning of the previous, failed transaction.
+    // 2. Do the actual transaction
+    return pal_arb_advance_state(request, request_len);    
   }
   /* We're WEDGED.  Lame!!! */
   else {

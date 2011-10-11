@@ -85,6 +85,21 @@ arb_err_t arb_execute_request(uint8_t *request,
                               uint32_t snapshot_len);
 
 
+/**
+ * PALs that wish to be amenable to AntiRollBack protections MUST
+ * implement these 4 functions.
+ */
+arb_err_t pal_arb_serialize_state(OUT uint8_t *serialized_state,
+                                  OUT uint32_t *serialized_state_len);
+
+arb_err_t pal_arb_deserialize_state(IN const uint8_t *serialized_state,
+                                    IN const uint32_t serialized_state_len);
+
+arb_err_t pal_arb_initialize_state();
+
+arb_err_t pal_arb_advance_state(IN const pal_request_t *request,
+                                IN uint32_t request_len);
+
 
 
 #endif _LIBARB_H_

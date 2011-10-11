@@ -45,10 +45,16 @@
 #include "pals.h"
 #include "sha1.h"
 
+/**
+ * This global variable is needed to isolate PAL-specific state data
+ * structures from the general-purpose libarb.  This could probably be
+ * cleaned up through the use of function pointers or perhaps just a
+ * better design (time will tell).
+ */
 pal_state_t g_pal_state; /* pals.h */
 
-arb_err_t pal_arb_serialize_state(IN const pal_state_t *state,
-                                  OUT uint8_t *serialized_state,
+/* Move state from global variable into serialized buffer */
+arb_err_t pal_arb_serialize_state(OUT uint8_t *serialized_state,
                                   OUT uint32_t *serialized_state_len) {
 	unsigned int i;
 	
@@ -69,13 +75,13 @@ arb_err_t pal_arb_serialize_state(IN const pal_state_t *state,
 	return ARB_ENONE;
 }
 
+/* Move state from serialized buffer into global variable */
 arb_err_t pal_arb_deserialize_state(IN const uint8_t *serialized_state,
-                                    IN const uint32_t serialized_state_len,
-                                    OUT pal_state_t *state) {
+                                    IN const uint32_t serialized_state_len) {
 	unsigned int i;
 	
 	/* State should have already been allocated by the caller. */
-	if(!serialized_state || !serialized_state_len || !state) {
+	if(!serialized_state || !serialized_state_len) {
 		return ARB_EPARAM;
 	}
 
@@ -84,26 +90,22 @@ arb_err_t pal_arb_deserialize_state(IN const uint8_t *serialized_state,
 	}
 
 	for(i=0; i<serialized_state_len; i++) {
-		((uint8_t*)state)[i] = serialized_state[i];
+		((uint8_t*)&g_pal_state)[i] = serialized_state[i];
 	}
 
 	return ARB_ENONE;	
 }
 
-arb_err_t pal_arb_initialize_state(INOUT pal_state_t *state)
+arb_err_t pal_arb_initialize_state()
 {
-	if(!state) {
-		return ARB_EPARAM;
-	}
-
 	/* Initialization is extremely trivial here. */
-	state->counter = 0;
+	g_pal_state.counter = 0;
 
 	return ARB_ENONE;
 }
 
 arb_err_t pal_arb_advance_state(IN const pal_request_t *request,
-                                INOUT pal_state_t *state)
+                                IN uint32_t request_len)
 {
 	if(!request || !state) {
 		return ARB_EPARAM;

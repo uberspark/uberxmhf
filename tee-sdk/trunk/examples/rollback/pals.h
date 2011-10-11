@@ -73,21 +73,5 @@ tz_return_t pal_nv_rollback(IN uint8_t *newval,
 /* To avoid malloc(), just use a single global PAL state, statically allocated. */
 extern pal_state_t g_pal_state;
 
-/**
- * Basic interface to be amenable to AntiRollBack protections (4
- * functions).
- */
-arb_err_t pal_arb_serialize_state(IN const pal_state_t *state,
-                                  OUT uint8_t *serialized_state,
-                                  INOUT uint32_t *serialized_state_len);
-
-arb_err_t pal_arb_deserialize_state(IN const uint8_t *serialized_state,
-                                    IN const uint32_t serialized_state_len,
-                                    OUT pal_state_t *state);
-
-arb_err_t pal_arb_initialize_state(INOUT pal_state_t *state);
-
-arb_err_t pal_arb_advance_state(IN const pal_request_t *request,
-                                INOUT pal_state_t *state);
 
 #endif /* _PALS_H_ */
