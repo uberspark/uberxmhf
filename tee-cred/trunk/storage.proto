@@ -17,8 +17,8 @@ message Header
 
 message MacdEncdEntry
 {
-  required string key=1;
-  required bytes hmac=2;
+  required bytes hmac=1;
+  required string key=2;
   required bytes ivec=3;
   required bytes encd_val=4;
 }
