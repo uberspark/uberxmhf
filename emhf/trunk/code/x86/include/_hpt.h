@@ -41,8 +41,8 @@
 #ifndef HPT_H
 #define HPT_H
 
-#include "bitfield.h"
-#include "types.h"
+#include "_types.h"
+#include "_bitfield.h"
 
 typedef enum {
   HPT_TYPE_NORM=0, /* x86 'normal'\legacy */
@@ -427,9 +427,6 @@ static inline bool hpt_pme_getuser(hpt_type_t t, int lvl, hpt_pme_t entry)
   ASSERT(0); return false; /* unreachable; appeases compiler */
 }
 
-/*
- //extracted to memory protection component 
-
 static inline hpt_pme_t hpt_pme_setprot(hpt_type_t t, int lvl, hpt_pme_t entry, hpt_prot_t perms)
 {
   hpt_pme_t rv=entry;
@@ -494,7 +491,7 @@ static inline hpt_prot_t hpt_pme_getprot(hpt_type_t t, int lvl, hpt_pme_t entry)
   rv = rv | (x ? HPT_PROT_EXEC_MASK : 0);
 
   return rv;
-}*/
+}
 
 //XXX: TODO we need to get rid of these equates. leave them in here
 //for the time being until we get a concrete interface list for
