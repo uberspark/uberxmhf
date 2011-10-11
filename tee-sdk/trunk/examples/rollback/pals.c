@@ -282,12 +282,6 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
 		pal_request_t *req;
 		size_t dummy_req_len;
 
-		/* XXX redundant with existing TZ command for now, but more
-		 * complex "trusted modules" may take as input more complex
-		 * requests. */
-		pal_request_t request;
-		request.cmd = PAL_ARB_INCREMENT;
-
 		if((*puiRv = TZIDecodeBufF(psInBuf,
                                "%"TZI_DARRSPC "%"TZI_DARRSPC,
                                &req, (uint32_t*)&dummy_req_len,
@@ -314,7 +308,7 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
 
 
 		rv = arb_execute_request((uiCommand == PAL_ARB_ATTEMPT_RECOVERY),
-														 (const uint8_t*)&request, sizeof(request),
+														 (const uint8_t*)req, sizeof(pal_request_t),
 														 old_snapshot, old_snapshot_len,
 														 new_snapshot, &new_snapshot_len);
 		
