@@ -134,6 +134,19 @@ arb_err_t arb_initialize_internal_state(arb_internal_state_t *state,
 	if(ARB_ENONE != rv) { return rv; } /* Not sure how to deal with this
 																			* one cleanly */
 	size += sizeof(arb_internal_state_t);
+
+
+	/* seal size bytes from g_hideous_buffer into new_snapshot */
+	TPM_PCR_INFO tpmPcrInfo;
+	tpmPcrInfo.pcrSelection.sizeOfSelect = TPM_PCR_NUM/8;
+	tpmPcrInfo.pcrSelection.pcrSelect[0] = 0; /* XXX Don't select anything for now! */
+	for(i=0;i<TPM_HASH_SIZE;i++) {
+		tpmPcrInfo.pcrSelection.digestAtRelease.value[i] = 0;
+	}
+
+	if(0 != svc_utpm_seal(&tpmPcrInfo, g_hideous_buffer, size, new_snapshot, new_snapshot_len)) {
+		return ARB_EBADCMD;
+	}
 	
   return ARB_ENONE;
 }
