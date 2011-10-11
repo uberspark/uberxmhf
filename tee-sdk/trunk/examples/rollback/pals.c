@@ -174,8 +174,12 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
 		/* This is ARB-specific. Calling with NULL assigns
 		 * new_snapshot_len amount of space needed. */
 		rv = arb_initialize_internal_state(NULL, &new_snapshot_len);		
-		if(ARB_ENONE != rv) { break; }
-		
+		if(ARB_ENONE != rv) {
+			*puiRv = TZ_ERROR_SERVICE;
+			/* TODO: Also assign rv somewhere! */
+			break;
+		}
+
 		/* Make room for outputs */
 		if((*puiRv = TZIEncodeBufF(psOutBuf, "%"TZI_EARRSPC "%"TZI_EARRSPC,
 															 &counter, (uint32_t)counter_len,
@@ -187,16 +191,75 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
 		 * arb_initialize_internal_state() subsequently calls the
 		 * PAL-specific state initialization function(s). */
 		rv = arb_initialize_internal_state(new_snapshot, &new_snapshot_len);
-		if(ARB_ENONE != rv) { break; }
+		if(ARB_ENONE != rv) {
+			*puiRv = TZ_ERROR_SERVICE;
+			/* TODO: Also assign rv somewhere! */
+			break;
+		}
 
 		/* Now that an initial state is defined, prepare the cleartext
 		 * outputs (in this case, just the counter value) */
 		for(i=0; i<sizeof(pal_state_t); i++) {
-			counter[i] = ((uint8_t*)&g_pal_state)[i];
+			counter[i] = ((uint8_t*)&g_pal_state.counter)[i];
 		}
-		
+
 		break;
 	}
+  case PAL_ARB_INCREMENT:
+		/**
+		 * This command tells the PAL to increment its internal counter.
+		 */
+	{
+		size_t old_snapshot_len;
+		uint8_t* old_snapshot;
+		size_t counter_len;
+		uint8_t* counter;
+		size_t new_snapshot_len;
+		uint8_t* new_snapshot;
+		arb_err_t rv;
+		unsigned int i;
+
+		/* XXX redundant with existing TZ command for now, but more
+		 * complex "trusted modules" may take as input more complex
+		 * requests. */
+		pal_request_t request;
+		request.cmd = PAL_ARB_INCREMENT;
+
+		if((*puiRv = TZIDecodeBufF(psInBuf,
+															 "%"TZI_DARRSPC,
+															 &old_snapshot, (uint32_t*)&old_snapshot_len)))
+			break;
+
+		/* Make room for outputs. */
+		counter_len = sizeof(pal_state_t);
+		/* XXX Unsafe assumption that state size never changes!!! */
+		new_snapshot_len = old_snapshot_len;
+
+		if((*puiRv = TZIEncodeBufF(psOutBuf, "%"TZI_EARRSPC "%"TZI_EARRSPC,
+															 &counter, (uint32_t)counter_len,
+															 &new_snapshot, (uint32_t)new_snapshot_len))) {
+			break;
+		}
+
+
+		rv = arb_execute_request((const uint8_t*)&request, sizeof(request),
+														 old_snapshot, old_snapshot_len,
+														 new_snapshot, &new_snapshot_len);
+		if(ARB_ENONE != rv) {
+			*puiRv = TZ_ERROR_SERVICE;
+			/* TODO: Also assign rv somewhere! */
+			break;
+		}
+
+		/* Prepare the cleartext outputs (in this case, just the counter
+		 * value) */
+		for(i=0; i<sizeof(pal_state_t); i++) {
+			counter[i] = ((uint8_t*)&g_pal_state.counter)[i];
+		}
+
+		break;
+	}
+
   case PAL_SEAL:
     {
       uint8_t *in, *out;

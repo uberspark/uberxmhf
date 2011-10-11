@@ -291,7 +291,7 @@ static arb_err_t arb_update_history_summary(const uint8_t *request, /* in */
  * Definitely not ready for really important data yet.
  */
 arb_err_t arb_execute_request(const uint8_t *request,
-                              const size_t request_len,
+                              size_t request_len,
                               /*const*/ uint8_t *old_snapshot,
                               size_t old_snapshot_len,
 															uint8_t *new_snapshot, /* pre-allocated, OUT*/
