@@ -79,10 +79,12 @@ typedef struct {
 
 
 arb_err_t arb_initialize_internal_state();
-arb_err_t arb_execute_request(uint8_t *request,
-                              uint32_t request_len,
-                              uint8_t *snapshot,
-                              uint32_t snapshot_len);
+arb_err_t arb_execute_request(const uint8_t *request,
+                              const uint32_t request_len,
+                              const uint8_t *old_snapshot,
+                              const uint32_t old_snapshot_len,
+															uint8_t *new_snapshot,
+															uint32_t *new_snapshot_len);
 
 
 /**
@@ -90,19 +92,19 @@ arb_err_t arb_execute_request(uint8_t *request,
  * implement these 4 functions.
  */
 arb_err_t pal_arb_serialize_state(OUT uint8_t *serialized_state,
-                                  OUT uint32_t *serialized_state_len);
+                                  OUT size_t *serialized_state_len);
 
 arb_err_t pal_arb_deserialize_state(IN const uint8_t *serialized_state,
-                                    IN const uint32_t serialized_state_len);
+                                    IN const size_t serialized_state_len);
 
-arb_err_t pal_arb_initialize_state();
+arb_err_t pal_arb_initialize_state(void);
 
-arb_err_t pal_arb_advance_state(IN const pal_request_t *request,
-                                IN uint32_t request_len);
+arb_err_t pal_arb_advance_state(IN const uint8_t *request,
+                                IN size_t request_len);
 
 
 
-#endif _LIBARB_H_
+#endif /* _LIBARB_H_ */
 
 
 /* Local Variables: */

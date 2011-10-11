@@ -41,6 +41,7 @@
 
 #include <trustvisor/tv_utpm.h>
 
+#include "sha1.h"
 #include "libarb.h"
 
 /**
@@ -64,7 +65,7 @@ uint8_t g_hideous_buffer[4096];
  */
 arb_err_t arb_initialize_internal_state(arb_internal_state_t *state,
 																				uint8_t *new_snapshot,
-																				uint32_t *new_snapshot_len) {
+																				size_t *new_snapshot_len) {
   unsigned int i;
   size_t size;
   uint8_t nvbuf[MAX_NV_SIZE];
@@ -141,7 +142,7 @@ arb_err_t arb_initialize_internal_state(arb_internal_state_t *state,
 	tpmPcrInfo.pcrSelection.sizeOfSelect = TPM_PCR_NUM/8;
 	tpmPcrInfo.pcrSelection.pcrSelect[0] = 0; /* XXX Don't select anything for now! */
 	for(i=0;i<TPM_HASH_SIZE;i++) {
-		tpmPcrInfo.pcrSelection.digestAtRelease.value[i] = 0;
+		tpmPcrInfo.digestAtRelease.value[i] = 0;
 	}
 
 	if(0 != svc_utpm_seal(&tpmPcrInfo, g_hideous_buffer, size, new_snapshot, new_snapshot_len)) {
@@ -180,17 +181,17 @@ static bool arb_is_history_summary_current(uint8_t alleged_history_summary[ARB_H
  * Returns: true if replay is needed to recover from crash. false
  * otherwise.
  */
-static bool arb_is_replay_needed(uint8_t alleged_history_summary[ARB_HIST_SUM_LEN],
-                                 uint8_t request,
-                                 uint32_t request_len,
-                                 uint8_t nvram[ARB_HIST_SUM_LEN]) {
+static bool arb_is_replay_needed(const uint8_t alleged_history_summary[ARB_HIST_SUM_LEN],
+                                 const uint8_t *request,
+                                 size_t request_len,
+                                 const uint8_t nvram[ARB_HIST_SUM_LEN]) {
   SHA_CTX ctx;
   uint8_t digest[SHA_DIGEST_LENGTH];
 
   /* TODO: Enable this check! */
   /* ASSERT(SHA_DIGEST_LENGTH == ARB_HIST_SUM_LEN); */
   
-  SHA1_INIT(&ctx);
+  SHA1_Init(&ctx);
   SHA1_Update(&ctx, alleged_history_summary, ARB_HIST_SUM_LEN);
   SHA1_Update(&ctx, request, request_len);
   SHA1_Final(digest, &ctx);
@@ -206,7 +207,6 @@ static arb_err_t arb_update_history_summary(const uint8_t *request, /* in */
                                             uint32_t request_len, /* in */
 																						uint8_t history_summary[ARB_HIST_SUM_LEN]) /* out */
 {
-  unsigned int i;
   size_t size;
   uint8_t nvbuf[MAX_NV_SIZE];
   SHA_CTX ctx;
@@ -245,7 +245,7 @@ static arb_err_t arb_update_history_summary(const uint8_t *request, /* in */
    * Okay, now actually update the value in NVRAM.
    */
   
-  SHA1_INIT(&ctx);
+  SHA1_Init(&ctx);
   SHA1_Update(&ctx, history_summary, ARB_HIST_SUM_LEN);
   SHA1_Update(&ctx, request, request_len);
   SHA1_Final(nvbuf, &ctx);
@@ -288,8 +288,9 @@ arb_err_t arb_execute_request(const uint8_t *request,
   unsigned int i;
 	arb_err_t rv;
   
-  if(!request || !snapshot ||
-     request_len < sizeof(int)
+  if(!request || request_len < sizeof(int) ||
+		 !old_snapshot || old_snapshot_len < sizeof(int) ||
+		 !new_snapshot
      /* snapshot_len checked below */
      ) {
     return ARB_EPARAM;
@@ -308,15 +309,15 @@ arb_err_t arb_execute_request(const uint8_t *request,
    * arb_internal_state_t.
    */
   
-  if(snapshot_len < sizeof(arb_internal_state_t)) {
+  if(old_snapshot_len < sizeof(arb_internal_state_t)) {
     return ARB_EPARAM;
   }
 
   /* XXX TODO Seal / Unseal the state! Skipping for now to get basic
    * operation stood up so we can test as we go. */
   for(i=0; i<sizeof(arb_internal_state_t); i++) {
-    *((uint8_t*)&g_arb_internal_state) = snapshot[i];
-  }  
+    *((uint8_t*)&g_arb_internal_state) = old_snapshot[i];
+  }
 
   /* XXX TODO Deserialize previous PAL-specific state */
   

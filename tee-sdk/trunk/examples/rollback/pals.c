@@ -64,7 +64,7 @@ pal_state_t g_pal_state; /* pals.h */
  * how much space would have been needed. serialized_state should
  * already point to enough space. */
 arb_err_t pal_arb_serialize_state(OUT uint8_t *serialized_state,
-                                  OUT uint32_t *serialized_state_len) {
+                                  OUT size_t *serialized_state_len) {
 	unsigned int i;
 
 	/* Answer a length-only request if one is given. */
@@ -82,7 +82,7 @@ arb_err_t pal_arb_serialize_state(OUT uint8_t *serialized_state,
 	*serialized_state_len = sizeof(pal_state_t);
 
 	for(i=0; i<*serialized_state_len; i++) {
-		serialized_state[i] = ((uint8_t*)state)[i];
+		serialized_state[i] = ((uint8_t*)&g_pal_state)[i];
 	}
 
 	return ARB_ENONE;
@@ -90,7 +90,7 @@ arb_err_t pal_arb_serialize_state(OUT uint8_t *serialized_state,
 
 /* Move state from serialized buffer into global variable */
 arb_err_t pal_arb_deserialize_state(IN const uint8_t *serialized_state,
-                                    IN const uint32_t serialized_state_len) {
+                                    IN const size_t serialized_state_len) {
 	unsigned int i;
 	
 	/* State should have already been allocated by the caller. */
@@ -117,16 +117,16 @@ arb_err_t pal_arb_initialize_state()
 	return ARB_ENONE;
 }
 
-arb_err_t pal_arb_advance_state(IN const pal_request_t *request,
-                                IN uint32_t request_len)
+arb_err_t pal_arb_advance_state(IN const uint8_t *request,
+                                IN size_t request_len)
 {
-	if(!request || !state) {
+	if(!request || request_len < sizeof(int)) {
 		return ARB_EPARAM;
 	}
 
-	switch(request->cmd) {
+	switch(((pal_request_t*)request)->cmd) {
 			case PAL_ARB_INCREMENT:
-				state->counter++;
+				g_pal_state.counter++;
 				break;
 			default:
 				return ARB_EBADCMDHANDLE;

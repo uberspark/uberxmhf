@@ -40,14 +40,15 @@
 
 #include <trustvisor/tv_utpm.h>
 
-#include "libarb.h" /* TODO: sane dependency strategy */
-
 #ifndef _PALS_H_
 #define _PALS_H_
 
 typedef enum {
   PAL_ARB_INITIALIZE,
   PAL_ARB_INCREMENT,
+  PAL_NV_ROLLBACK,
+  PAL_UNSEAL,
+  PAL_SEAL,
 } PAL_CMD;
 
 /* Really simple state for demonstration purposes. */
