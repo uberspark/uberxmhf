@@ -41,12 +41,6 @@
 #include <string.h>
 #include <inttypes.h>
 
-#include <openssl/err.h>
-#include <openssl/evp.h>
-#include <openssl/rsa.h>
-#include <openssl/sha.h>
-#include <openssl/engine.h>
-
 #include "pals.h" /* TODO: fix dependencies so this can go last */
 
 #include <tee-sdk/tv.h>
@@ -55,25 +49,37 @@
 
 #include <trustvisor/tv_utpm.h>
 
+#include "libarb.h" /* for arb_err_t */
 #include "libarbtools.h"
+
+tz_return_t attempt_recovery(tz_session_t *tzPalSession) {
+    if(NULL == tzPalSession) {
+        return ARB_EPARAM;
+    }
+
+    return ARB_ENONE;
+}
 
 tz_return_t increment_counter(tz_session_t *tzPalSession) {
   tz_return_t tzRet, serviceReturn;
   tz_operation_t tzOp;
-  uint8_t *counter, *old_snapshot, *new_snapshot;
+  void *counter, *old_snapshot, *new_snapshot;
   int rv = 0;
-  uint32_t counter_len, old_snapshot_len, new_snapshot_len;
+  size_t counter_len, old_snapshot_len, new_snapshot_len;
+  pal_request_t req;
 
   printf("PAL_ARB_INCREMENT\n");
 
   /* prep operation */
+  req.cmd = PAL_ARB_INCREMENT;
+  puke_file(THIS_REQUEST_FILENAME, &req, sizeof(pal_request_t));
   tzRet = TZOperationPrepareInvoke(tzPalSession,
-                                   PAL_ARB_INCREMENT,
+                                   req.cmd,
                                    NULL,
                                    &tzOp);
   assert(tzRet == TZ_SUCCESS);
 
-  old_snapshot_len = slurp_file(SNAPSHOT_FILENAME, &old_snapshot);
+  old_snapshot_len = slurp_file(LAST_SNAPSHOT_FILENAME, &old_snapshot);
   assert(old_snapshot_len > 0);
 
   /* 'EARR' means array already allocated.  use EARRSPC to encode
@@ -84,8 +90,7 @@ tz_return_t increment_counter(tz_session_t *tzPalSession) {
   tzRet = TZOperationPerform(&tzOp, &serviceReturn);
   if (tzRet != TZ_SUCCESS) {
     rv = 1;
-    printf("Failure at %s:%d\n", __FILE__, __LINE__);
-    printf("tzRet 0x%08x\n", tzRet);
+    printf("%s:%d: tzRet 0x%08x\n", __FILE__, __LINE__, tzRet);
     goto out;
 
   }
@@ -95,7 +100,7 @@ tz_return_t increment_counter(tz_session_t *tzPalSession) {
                      &counter, &counter_len,
                      &new_snapshot, &new_snapshot_len);
   if (tzRet) {
-    printf("UNSEAL decoder returned error %d\n", tzRet);
+    printf("Output decoder returned error %d\n", tzRet);
     rv = 1;
     goto out;
   }
@@ -103,7 +108,17 @@ tz_return_t increment_counter(tz_session_t *tzPalSession) {
   print_hex("       counter: ", counter, counter_len);
   print_hex("  new_snapshot: ", new_snapshot, new_snapshot_len);
 
-  puke_file(SNAPSHOT_FILENAME, new_snapshot, new_snapshot_len);
+  puke_file(THIS_SNAPSHOT_FILENAME, new_snapshot, new_snapshot_len);
+
+  /* Now rename THIS* to LAST* */
+  if(0 != rename(THIS_SNAPSHOT_FILENAME, LAST_SNAPSHOT_FILENAME)) {
+      perror("Renaming snapshot from this to last!");
+      exit(1);
+  }
+  if(0 != rename(THIS_REQUEST_FILENAME, LAST_REQUEST_FILENAME)) {
+      perror("Renaming request from this to last!");
+      exit(1);
+  }  
 
  out:
   if(old_snapshot) { free(old_snapshot); old_snapshot = NULL; }
@@ -119,13 +134,16 @@ tz_return_t initialize_counter(tz_session_t *tzPalSession) {
   tz_operation_t tzOp;
   uint8_t *counter, *snapshot;
   int rv = 0;
-  uint32_t counter_len, snapshot_len;
+  size_t counter_len, snapshot_len;
+  pal_request_t req;
 
   printf("PAL_ARB_INITIALIZE\n");
 
   /* prep operation */
+  req.cmd = PAL_ARB_INITIALIZE;
+  puke_file(LAST_REQUEST_FILENAME, &req, sizeof(pal_request_t));
   tzRet = TZOperationPrepareInvoke(tzPalSession,
-                                   PAL_ARB_INITIALIZE,
+                                   req.cmd,
                                    NULL,
                                    &tzOp);
   assert(tzRet == TZ_SUCCESS);
@@ -160,7 +178,7 @@ tz_return_t initialize_counter(tz_session_t *tzPalSession) {
   print_hex("  counter value: ", counter, counter_len);
   print_hex("  snapshot:      ", snapshot, snapshot_len);
 
-  puke_file(SNAPSHOT_FILENAME, snapshot, snapshot_len);
+  puke_file(LAST_SNAPSHOT_FILENAME, snapshot, snapshot_len);
   
  out:
   dump_stderr_from_pal(&tzOp);
@@ -201,6 +219,8 @@ int main(int argc, char *argv[])
   } else {
       /* Assume test */
       cmd = PAL_TEST;
+      printf("Test Unimplemented.\n");
+      exit(1);
   }
   
   /* open isolated execution environment device */
@@ -252,10 +272,13 @@ int main(int argc, char *argv[])
 
   switch(cmd) {
       case PAL_ARB_INITIALIZE:
-          rv = initialize_counter(&tzPalSession) || rv;
+          rv = initialize_counter(&tzPalSession);
           break;
       case PAL_ARB_INCREMENT:
-          rv = increment_counter(&tzPalSession) || rv;
+          rv = increment_counter(&tzPalSession);
+          if(ARB_ERECOVERYNEEDED == rv) {
+              rv = attempt_recovery(&tzPalSession);
+          }
           break;
       case PAL_TEST:
       default:

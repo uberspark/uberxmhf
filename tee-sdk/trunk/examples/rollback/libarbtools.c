@@ -65,7 +65,7 @@ void print_hex(const char *prefix, const void *prtptr, size_t size)
 /* Read entire file into a newly-allocated buffer. */
 /* Returns positive integer representing number of bytes read, or
  * negative value on error.  Don't care about size 0 files. */
-long slurp_file(const char *filename, unsigned char **buf) {
+long slurp_file(const char *filename, void **buf) {
     if(!filename || !buf) return -1;
 
     FILE *fh = fopen(filename, "rb");
@@ -95,8 +95,7 @@ long slurp_file(const char *filename, unsigned char **buf) {
 /* Create a file (clobbering any existing file) and write the contents
  * of 'bytes' to it. Returns the number of bytes written on success,
  * or a negative value on error. */
-long puke_file(const char *filename, const unsigned char
-                      *bytes, long len) {
+long puke_file(const char *filename, const void *bytes, long len) {
     if(!filename || !bytes || len < 1) return -1;
 
     FILE *fh = fopen(filename, "wb");

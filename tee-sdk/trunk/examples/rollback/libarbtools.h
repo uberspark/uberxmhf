@@ -54,12 +54,14 @@
 
 /* Request */
 
-#define SNAPSHOT_FILENAME "snapshot.bin"
+#define LAST_SNAPSHOT_FILENAME "last-snapshot.bin"
+#define THIS_SNAPSHOT_FILENAME "this-snapshot.bin"
+#define LAST_REQUEST_FILENAME "last-request.bin"
+#define THIS_REQUEST_FILENAME "this-request.bin"
 
 void print_hex(const char *prefix, const void *prtptr, size_t size);
-long slurp_file(const char *filename, unsigned char **buf);
-long puke_file(const char *filename, const unsigned char
-							 *bytes, long len);
+long slurp_file(const char *filename, void **buf);
+long puke_file(const char *filename, const void *bytes, long len);
 void dump_stderr_from_pal(tz_operation_t *tzOp);
 
 
