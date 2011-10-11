@@ -53,20 +53,27 @@
  */
 pal_state_t g_pal_state; /* pals.h */
 
-/* Move state from global variable into serialized buffer */
+/* Move state from global variable into serialized buffer. If
+ * destination buffer is NULL, just populate the _len parameter with
+ * how much space would have been needed. serialized_state should
+ * already point to enough space. */
 arb_err_t pal_arb_serialize_state(OUT uint8_t *serialized_state,
                                   OUT uint32_t *serialized_state_len) {
 	unsigned int i;
+
+	/* Answer a length-only request if one is given. */
+	if(!serialized_state && serialized_state_len) {
+		*serialized_state_len = sizeof(pal_state_t);
+		return ARB_ENONE;
+	}
 	
-	/* serialized_state should have already been allocated by the
-	 * caller. */
-	if(!serialized_state || !serialized_state_len || !state) {
+	/* Otherwise, normal request. "serialized_state" should have already
+	 * been allocated by the caller. */
+	if(!serialized_state || !serialized_state_len) {
 		return ARB_EPARAM;
 	}
 
-	if(*serialized_state_len != sizeof(pal_state_t)) {
-		return ARB_EBADSTATE;
-	}
+	*serialized_state_len = sizeof(pal_state_t);
 
 	for(i=0; i<*serialized_state_len; i++) {
 		serialized_state[i] = ((uint8_t*)state)[i];

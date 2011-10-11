@@ -43,19 +43,42 @@
 
 #include "libarb.h"
 
+/* Guessing at seal overhead. TODO: Enhance UTPM to be able to
+ * definitively return how much overhead there is. */
+#define UTPM_SEALING_OVERHEAD 100 
+
 #define MAX_NV_SIZE (5*SHA_DIGEST_LENGTH)
 
 arb_internal_state_t g_arb_internal_state;
 
+/* Use hideous global buffer to avoid malloc() */
+uint8_t g_hideous_buffer[4096];
+
 /**
  * TODO: Flesh out with full PRNG.  Initialize with uTPM entropy.
  */
-arb_err_t arb_initialize_internal_state(arb_internal_state_t *state) {
+arb_err_t arb_initialize_internal_state(arb_internal_state_t *state,
+																				uint8_t *new_snapshot,
+																				uint32_t *new_snapshot_len) {
   unsigned int i;
   size_t size;
   uint8_t nvbuf[MAX_NV_SIZE];
 	arb_err_t rv;
 
+	/* Just compute how much space is needed for the new
+	 * snapshot. Doesn't depend on 'state' right now but could in the
+	 * future. */
+	if(!new_snapshot && state && new_snapshot_len) {
+		pal_arb_serialize_state(NULL, new_snapshot_len); /* XXX ignoring return */
+		*new_snapshot_len += sizeof(arb_internal_state_t);
+		*new_snapshot_len += UTPM_SEALING_OVERHEAD;
+		return ARB_ENONE;
+	}
+
+	if(!state || !new_snapshot || !new_snapshot_len) {
+		return ARB_EPARAM;
+	}
+	
 	/**
 	 * Seed PRNG.
 	 */
@@ -98,7 +121,14 @@ arb_err_t arb_initialize_internal_state(arb_internal_state_t *state) {
 	rv = pal_arb_initialize_state();
 	if(ARB_ENONE != rv) { return rv; }
 
-	
+	for(i=0; i<sizeof(arb_internal_state_t); i++) {
+		g_hideous_buffer[i] = ((uint8_t*)state)[i];
+	}
+	rv = pal_arb_serialize_state(g_hideous_buffer + sizeof(arb_internal_state_t),
+															 &size);
+	if(ARB_ENONE != rv) { return rv; } /* Not sure how to deal with this
+																			* one cleanly */
+	size += sizeof(arb_internal_state_t);
 	
   return ARB_ENONE;
 }
