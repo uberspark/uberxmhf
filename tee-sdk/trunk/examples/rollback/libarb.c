@@ -56,9 +56,6 @@
 
 arb_internal_state_t g_arb_internal_state;
 
-/* Use hideous global buffer to avoid malloc() */
-uint8_t g_hideous_buffer[4096];
-
 /**
  * (1) serialize both our state and the PAL's state and (2) seal
  * them.
@@ -70,25 +67,26 @@ static arb_err_t serialize_and_seal(const arb_internal_state_t *state,
 	TPM_PCR_INFO tpmPcrInfo;
 	arb_err_t rv;
 	size_t size;
+	static uint8_t buf[1024]; /* XXX */
 	
 	for(i=0; i<sizeof(arb_internal_state_t); i++) {
-		g_hideous_buffer[i] = ((uint8_t*)state)[i];
+		buf[i] = ((uint8_t*)state)[i];
 	}
-	rv = pal_arb_serialize_state(g_hideous_buffer + sizeof(arb_internal_state_t),
+	rv = pal_arb_serialize_state(buf + sizeof(arb_internal_state_t),
 															 &size);
 	if(ARB_ENONE != rv) { return rv; } /* Not sure how to deal with this
 																			* one cleanly */
 	size += sizeof(arb_internal_state_t);
 	/* Now calculate how much space utpm_seal will consume given size inputs */
 	*new_snapshot_len = utpm_seal_output_size(size, /* XXX */false);
-	/* seal size bytes from g_hideous_buffer into new_snapshot */
+	/* seal size bytes from buf into new_snapshot */
 	/* XXX Don't select any PCRs for now! */
 	for(i=0;i<sizeof(TPM_PCR_INFO);i++) {
 		((uint8_t*)&tpmPcrInfo)[i] = 0;
 	}
 
-	log_hex("arb_internal_state_t || pal_state_t: ", g_hideous_buffer, size);
-	if(0 != svc_utpm_seal(&tpmPcrInfo, g_hideous_buffer, size, new_snapshot, new_snapshot_len)) {
+	log_hex("arb_internal_state_t || pal_state_t: ", buf, size);
+	if(0 != svc_utpm_seal(&tpmPcrInfo, buf, size, new_snapshot, new_snapshot_len)) {
 		return ARB_EBADCMD;
 	}
 
@@ -303,6 +301,8 @@ arb_err_t arb_execute_request(const uint8_t *request,
   uint8_t nvbuf[MAX_NV_SIZE];
   unsigned int i;
 	arb_err_t rv;
+	static uint8_t buf[4096];
+
   
   if(!request || request_len < sizeof(int) ||
 		 !old_snapshot || old_snapshot_len < sizeof(int) ||
@@ -335,7 +335,7 @@ arb_err_t arb_execute_request(const uint8_t *request,
 
 	TPM_DIGEST digestAtCreation;
 	if(0 != svc_utpm_unseal(old_snapshot, old_snapshot_len,
-													g_hideous_buffer, &size,
+													buf, &size,
 													(uint8_t*)&digestAtCreation)) {
 		log_err("svc_utpm_unseal FAILED");
 		return ARB_EUNSEALFAILED;
@@ -348,7 +348,7 @@ arb_err_t arb_execute_request(const uint8_t *request,
 
 	/* First comes arb_internal_state_t; copy it */
   for(i=0; i<sizeof(arb_internal_state_t); i++) {
-    *((uint8_t*)&g_arb_internal_state) = g_hideous_buffer[i];
+    *((uint8_t*)&g_arb_internal_state) = buf[i];
   }
 
 	log_hex("g_arb_internal_state: ", &g_arb_internal_state,
@@ -415,7 +415,7 @@ arb_err_t arb_execute_request(const uint8_t *request,
 	 * state, and seal it up for outputting.
 	 */
 
-	rv = pal_arb_deserialize_state(g_hideous_buffer+sizeof(arb_internal_state_t), size);
+	rv = pal_arb_deserialize_state(buf+sizeof(arb_internal_state_t), size);
 	if(ARB_ENONE != rv) {
 		log_err("pal_arb_deserialize_state() failed with rv %d", rv);
 		return rv;
