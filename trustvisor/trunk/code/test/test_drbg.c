@@ -39,8 +39,7 @@
 
 #define dprintf(...) while(0)
 
-#include <com.h> /* required by target.h included from drbg.h FIXME */
-#include <target.h>
+#include <emhf.h>
 #include <nist_ctr_drbg.h>
 
 

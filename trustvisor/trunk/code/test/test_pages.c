@@ -36,7 +36,7 @@
 #include "unity.h"
 
 #define __PRINT_H_ /* avoid indirectly including our print.h, which conflicts with libc stdio.h */
-#include <target.h>
+#include <emhf.h>
 #include <puttymem.h>
 #include <pages.h>
 

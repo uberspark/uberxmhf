@@ -38,7 +38,7 @@
 #define __PRINT_H_ /* avoid indirectly including our print.h, which conflicts with libc stdio.h */
 
 #define dprintf(...) while(0)
-#include <hpt.h>
+#include <emhf.h>
 
 /* global CPU structs */
 /* VCPU g_vcpubuffers[0]; */
