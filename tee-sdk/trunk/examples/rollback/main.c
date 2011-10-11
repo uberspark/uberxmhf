@@ -597,6 +597,8 @@ tz_return_t increment_counter(tz_session_t *tzPalSession) {
   old_snapshot_len = slurp_file(SNAPSHOT_FILENAME, &old_snapshot);
   assert(old_snapshot_len > 0);
 
+  /* 'EARR' means array already allocated.  use EARRSPC to encode
+   * "array space"! */
   assert(!TZIEncodeF(&tzOp, "%"TZI_EARR, old_snapshot, old_snapshot_len));
 
   /* Call PAL */
@@ -623,6 +625,7 @@ tz_return_t increment_counter(tz_session_t *tzPalSession) {
   print_hex("  new_snapshot: ", new_snapshot, new_snapshot_len);
 
  out:
+  if(old_snapshot) { free(old_snapshot); old_snapshot = NULL; }
   TZOperationRelease(&tzOp);
 
   if(0 != rv) { printf("...FAILED rv %d\n", rv); }
