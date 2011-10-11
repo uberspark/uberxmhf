@@ -33,9 +33,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
 
+#include <tsvc.h> /* newlib */
 #include <tee-sdk/tzmarshal.h>
 #include <tee-sdk/svcapi.h>
 
@@ -58,6 +60,18 @@
  * better design (time will tell).
  */
 pal_state_t g_pal_state; /* pals.h */
+
+char end[10*4096]; /* shenanigans to provide a heap (libnosys's sbrk) */
+static void* get_stderr(size_t *len)
+{
+  char *rv = malloc(4096);
+  if(!rv) {
+    return NULL;
+  }
+  *len = tsvc_read_stderr(rv, 4095);
+  rv[*len] = '\0';
+  return rv;
+}
 
 /* Move state from global variable into serialized buffer. If
  * destination buffer is NULL, just populate the _len parameter with
@@ -191,6 +205,17 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
 		 * arb_initialize_internal_state() subsequently calls the
 		 * PAL-specific state initialization function(s). */
 		rv = arb_initialize_internal_state(new_snapshot, &new_snapshot_len);
+
+		{ /* Get stderr before terminating */
+			fprintf(stderr, "really?\n");
+			/* XXX Temp. this should be an independent layer */
+			size_t len;
+			void *buf;
+			buf = get_stderr(&len);
+			TZIEncodeArray(psOutBuf, buf, len);
+			free(buf);
+		}
+		
 		if(ARB_ENONE != rv) {
 			*puiRv = TZ_ERROR_SERVICE;
 			/* TODO: Also assign rv somewhere! */
@@ -245,6 +270,16 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
 		rv = arb_execute_request((const uint8_t*)&request, sizeof(request),
 														 old_snapshot, old_snapshot_len,
 														 new_snapshot, &new_snapshot_len);
+		{ /* Get stderr before terminating */
+			fprintf(stderr, "really?\n");
+			/* XXX Temp. this should be an independent layer */
+			size_t len;
+			void *buf;
+			buf = get_stderr(&len);
+			TZIEncodeArray(psOutBuf, buf, len);
+			free(buf);
+		}
+		
 		if(ARB_ENONE != rv) {
 			*puiRv = TZ_ERROR_SERVICE;
 			/* TODO: Also assign rv somewhere! */

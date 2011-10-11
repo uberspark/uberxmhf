@@ -581,9 +581,9 @@ tz_return_t test_nv_rollback(tz_session_t *tzPalSession) {
 tz_return_t increment_counter(tz_session_t *tzPalSession) {
   tz_return_t tzRet, serviceReturn;
   tz_operation_t tzOp;
-  uint8_t *counter, *old_snapshot, *new_snapshot;
+  uint8_t *counter, *old_snapshot, *new_snapshot, *stderr_buf;
   int rv = 0;
-  uint32_t counter_len, old_snapshot_len, new_snapshot_len;
+  uint32_t counter_len, old_snapshot_len, new_snapshot_len, stderr_buf_len;
 
   printf("PAL_ARB_INCREMENT\n");
 
@@ -612,9 +612,10 @@ tz_return_t increment_counter(tz_session_t *tzPalSession) {
   }
 
   tzRet = TZIDecodeF(&tzOp,
-                     "%"TZI_DARRSPC "%"TZI_DARRSPC,
+                     "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DARRSPC,
                      &counter, &counter_len,
-                     &new_snapshot, &new_snapshot_len);
+                     &new_snapshot, &new_snapshot_len,                     
+                     &stderr_buf, &stderr_buf_len);
   if (tzRet) {
     printf("UNSEAL decoder returned error %d\n", tzRet);
     rv = 1;
@@ -623,6 +624,7 @@ tz_return_t increment_counter(tz_session_t *tzPalSession) {
 
   print_hex("       counter: ", counter, counter_len);
   print_hex("  new_snapshot: ", new_snapshot, new_snapshot_len);
+  print_hex("    stderr_buf: ", stderr_buf, stderr_buf_len);
 
  out:
   if(old_snapshot) { free(old_snapshot); old_snapshot = NULL; }
@@ -635,9 +637,9 @@ tz_return_t increment_counter(tz_session_t *tzPalSession) {
 tz_return_t initialize_counter(tz_session_t *tzPalSession) {
   tz_return_t tzRet, serviceReturn;
   tz_operation_t tzOp;
-  uint8_t *counter, *snapshot;
+  uint8_t *counter, *snapshot, *stderr_buf;
   int rv = 0;
-  uint32_t counter_len, snapshot_len;
+  uint32_t counter_len, snapshot_len, stderr_buf_len;
 
   printf("PAL_ARB_INITIALIZE\n");
 
@@ -667,9 +669,10 @@ tz_return_t initialize_counter(tz_session_t *tzPalSession) {
   }
 
   if((tzRet = TZIDecodeF(&tzOp,
-                         "%"TZI_DARRSPC "%"TZI_DARRSPC,
+                         "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DARRSPC,
                          &counter, &counter_len,
-                         &snapshot, &snapshot_len))) {
+                         &snapshot, &snapshot_len,
+                         &stderr_buf, &stderr_buf_len))) {
       rv = 1;
       goto out;
   }
@@ -677,6 +680,9 @@ tz_return_t initialize_counter(tz_session_t *tzPalSession) {
   printf("  counter_len = %d, snapshot_len = %d\n", counter_len, snapshot_len);
   print_hex("  counter value: ", counter, counter_len);
   print_hex("  snapshot:      ", snapshot, snapshot_len);
+
+  stderr_buf[stderr_buf_len-1] = '\0'; /* XXX clobbers last character */
+  printf("stderr_buf:\n%s\n", stderr_buf);
 
   puke_file(SNAPSHOT_FILENAME, snapshot, snapshot_len);
   
