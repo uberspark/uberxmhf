@@ -36,11 +36,9 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "pals.h"
-//#include  "config.h"
-#include  <sys/mman.h>
-#include  <errno.h>
-#include  <string.h>
+#include <sys/mman.h>
+#include <errno.h>
+#include <string.h>
 #include <inttypes.h>
 
 #include <openssl/err.h>
@@ -48,6 +46,8 @@
 #include <openssl/rsa.h>
 #include <openssl/sha.h>
 #include <openssl/engine.h>
+
+#include "pals.h"
 
 #include <tee-sdk/tv.h>
 #include <tee-sdk/tz.h>

@@ -35,12 +35,13 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include  "pals.h"
 
 #include <tee-sdk/tzmarshal.h>
 #include <tee-sdk/svcapi.h>
 
 #include <trustvisor/tv_utpm.h>
+
+#include  "pals.h"
 
 void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
