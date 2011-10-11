@@ -77,5 +77,17 @@
 #define check_mem(A) check((A), "Out of memory.")
    
 #define check_debug(A, M, ...) if(!(A)) { debug(M, ##__VA_ARGS__); errno=0; goto error; } 
-  
+
+static inline void log_hex(const char *prefix, const void *prtptr, size_t size)
+{
+    size_t i;
+    for ( i = 0; i < size; i++ ) {
+        if ( i % 16 == 0 && prefix != NULL )
+            fprintf(stderr, "%s[HEX] %s", i == 0 ? "" : "\n", prefix);
+        fprintf(stderr, "%02x ", *(const uint8_t *)prtptr++);
+    }
+    fprintf(stderr, "\n");
+}
+    
+
 #endif
