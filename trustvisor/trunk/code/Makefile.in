@@ -149,8 +149,6 @@ install-bin:
 	install --mode=644 $(INSTALLDIR)/$(TARGET)-init-$(TARGET_HWPLATFORM).bin $(DESTDIR)/boot/init-$(TARGET_HWPLATFORM).bin
 
 #------test rules
-export CMOCKDIR:=$(realpath @CMOCKDIR@)
-export UNITYDIR:=$(realpath @UNITYDIR@)
 test:
 	cd test && $(MAKE) -w all
 

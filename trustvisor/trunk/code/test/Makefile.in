@@ -1,3 +1,6 @@
+CMOCKDIR:=$(realpath ../@CMOCKDIR@)
+UNITYDIR:=$(realpath ../@UNITYDIR@)
+
 CFLAGS += -I${UNITYDIR}/src -DUNITY_SUPPORT_64 -g
 CFLAGS := $(filter-out -nostdinc,${CFLAGS})
 
