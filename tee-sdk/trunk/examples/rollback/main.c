@@ -189,6 +189,8 @@ tz_return_t increment_counter(tz_session_t *tzPalSession) {
   print_hex("       counter: ", counter, counter_len);
   print_hex("  new_snapshot: ", new_snapshot, new_snapshot_len);
 
+  puke_file(SNAPSHOT_FILENAME, new_snapshot, new_snapshot_len);
+
  out:
   if(old_snapshot) { free(old_snapshot); old_snapshot = NULL; }
   dump_stderr_from_pal(&tzOp);

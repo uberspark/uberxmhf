@@ -223,7 +223,9 @@ static arb_err_t arb_update_history_summary(const uint8_t *request, /* in */
   }
 
   if(0 != memcmp(history_summary, nvbuf, ARB_HIST_SUM_LEN)) {
-    /* This is FATAL and should never happen; it should be an ASSERT!!! */
+    /* This is FATAL and should never happen; it should be an
+     * ASSERT!!! The legitimate need for recovery should have been
+     * discovered prior to a call to this function. */
 		log_err("FATAL: 0 != memcmp(history_summary, nvbuf, ARB_HIST_SUM_LEN)");
     return ARB_EBADSTATE;
   }
@@ -240,6 +242,11 @@ static arb_err_t arb_update_history_summary(const uint8_t *request, /* in */
   if(svc_tpmnvram_writeall(nvbuf)) {
     return (TZ_ERROR_GENERIC << 8) | ARB_ETZ;
   }
+
+  /**
+   * And if successful, update the history_summary in our own state.
+   */
+  memcpy(history_summary, nvbuf, ARB_HIST_SUM_LEN);
 
   return ARB_ENONE;
 }
