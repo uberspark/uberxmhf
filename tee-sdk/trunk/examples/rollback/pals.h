@@ -40,6 +40,9 @@
 
 #include <trustvisor/tv_utpm.h>
 
+#ifndef _PALS_H_
+#define _PALS_H_
+
 typedef enum {
   PAL_WITHOUTPARAM,
   PAL_PARAM,
@@ -61,3 +64,5 @@ tz_return_t pal_unseal(uint8_t *input, uint8_t inputLen, uint8_t *output, size_t
 tz_return_t pal_nv_rollback(IN uint8_t *newval,
                             OUT uint32_t *nv_size,
                             OUT uint8_t *oldval);
+
+#endif /* _PALS_H_ */
