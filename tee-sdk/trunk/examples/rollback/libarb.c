@@ -393,7 +393,9 @@ arb_err_t arb_execute_request(bool attempt_recovery,
 			 * recover. Just let the transaction run again. */
 			log_info("History summary determined to be valid but stale.");
 			log_info("Re-executing previous transaction with identical inputs.");
-			; /* Nothing to do here. Let execution fall through. */
+			/* Update history_summary in g_arb_internal_state to match that
+			 * already in NVRAM */
+			memcpy(g_arb_internal_state.history_summary, nvbuf, ARB_HIST_SUM_LEN);
 		} else {
 			log_err("History summary INVALID. Recovery impossible! State is WEDGED! Aieeee!");
 			return ARB_EWEDGED;
