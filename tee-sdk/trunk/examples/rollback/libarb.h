@@ -43,6 +43,8 @@
 #ifndef _LIBARB_H_
 #define _LIBARB_H_
 
+#include "sha1.h"
+
 /* Starting point poached from audited-kv-errs.h. TODO: Centralize
  * some kinds of error codes, especially those TZ-related. */
 typedef enum {
@@ -65,9 +67,15 @@ typedef enum {
   ARB_ETZ=16, /* TZ error shifted on */
 } arb_err_t;
 
+#define ARB_SYM_KEY_SIZE (256/8) /* bytes */
+typedef struct {
+    uint32_t dummy_prng_state; /* FIXME: implement an actual PRNG */
+    uint8_t symmetric_key[ARB_SYM_KEY_SIZE];
+} arb_internal_state_t;
 
 arb_err_t arb_initialize_internal_state();
-arb_err_t arb_execute_request();
+arb_err_t arb_execute_request(uint8_t req_hash[SHA_DIGEST_LENGTH],
+                              uint8_t history_summary[SHA_DIGEST_LENGTH]);
 
 
 

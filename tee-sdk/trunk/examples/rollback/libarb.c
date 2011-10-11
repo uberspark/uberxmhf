@@ -33,3 +33,44 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#include <stdint.h>
+#include <stdbool.h>
+
+#include <tee-sdk/tzmarshal.h>
+#include <tee-sdk/svcapi.h>
+
+#include <trustvisor/tv_utpm.h>
+
+#include "libarb.h"
+
+arb_internal_state_t g_arb_internal_state;
+
+/**
+ * TODO: Flesh out with full PRNG.  Initialize with uTPM entropy.
+ */
+arb_err_t arb_initialize_internal_state() {
+  if(svc_utpm_rand_block(
+       (uint8_t*)&g_arb_internal_state.dummy_prng_state,
+       sizeof(g_arb_internal_state.dummy_prng_state))
+     != 0) {
+    return ARB_ETZ; /* TODO: collect TZ error and "shift it on" */
+  }
+
+  if(svc_utpm_rand_block(
+       (uint8_t*)&g_arb_internal_state.symmetric_key,
+       sizeof(g_arb_internal_state.symmetric_key))
+     != 0) {
+    return ARB_ETZ; /* TODO: collect TZ error and "shift it on" */
+  }
+    
+  return ARB_ENONE;
+}
+
+
+/* Local Variables: */
+/* mode:c           */
+/* indent-tabs-mode:'t */
+/* tab-width:2      */
+/* c-basic-offset: 2 */
+/* End:             */
+

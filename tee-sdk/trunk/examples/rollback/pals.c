@@ -45,6 +45,8 @@
 #include "pals.h"
 #include "sha1.h"
 
+pal_state_t g_pal_state; /* pals.h */
+
 arb_err_t pal_arb_serialize_state(IN const pal_state_t *state,
                                   OUT uint8_t *serialized_state,
                                   INOUT uint32_t *serialized_state_len) {

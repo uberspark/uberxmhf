@@ -79,13 +79,13 @@ extern pal_state_t g_pal_state;
  */
 arb_err_t pal_arb_serialize_state(IN const pal_state_t *state,
                                   OUT uint8_t *serialized_state,
-                                  OUT uint32_t *serialized_state_len);
+                                  INOUT uint32_t *serialized_state_len);
 
 arb_err_t pal_arb_deserialize_state(IN const uint8_t *serialized_state,
                                     IN const uint32_t serialized_state_len,
                                     OUT pal_state_t *state);
 
-arb_err_t pal_arb_initialize_state(OUT pal_state_t *state);
+arb_err_t pal_arb_initialize_state(INOUT pal_state_t *state);
 
 arb_err_t pal_arb_advance_state(IN const pal_request_t *request,
                                 INOUT pal_state_t *state);
