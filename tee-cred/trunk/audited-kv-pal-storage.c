@@ -322,9 +322,19 @@ akv_err_t akvp_export(const void *req, AkvpStorage__Everything *res)
 }
 void akvp_export_release_res(AkvpStorage__Everything *res)
 {
+  int i;
   akvp_storage__header__free_unpacked(res->header, NULL);
   free(res->sealed_master_secret.data);
   free(res->mac_of_header.data);
+
+  for(i=0; i<res->n_macd_encd_entries; i++) {
+    free(res->macd_encd_entries[i]->key);
+    free(res->macd_encd_entries[i]->hmac.data);
+    free(res->macd_encd_entries[i]->ivec.data);
+    free(res->macd_encd_entries[i]->encd_val.data);
+    free(res->macd_encd_entries[i]);
+    res->macd_encd_entries[i]=NULL;
+  }
 }
 
 akv_err_t akvp_import(const AkvpStorage__Everything *req, void *res)
