@@ -45,6 +45,7 @@
 
 #include "sha1.h"
 #include "libarb.h"
+#include "dbg.h"
 
 /**
  * TODO: Split this into two C files: those that need to touch global
@@ -86,6 +87,7 @@ static arb_err_t serialize_and_seal(const arb_internal_state_t *state,
 		((uint8_t*)&tpmPcrInfo)[i] = 0;
 	}
 
+	log_hex("arb_internal_state_t || pal_state_t: ", g_hideous_buffer, size);
 	if(0 != svc_utpm_seal(&tpmPcrInfo, g_hideous_buffer, size, new_snapshot, new_snapshot_len)) {
 		return ARB_EBADCMD;
 	}
@@ -138,7 +140,8 @@ arb_err_t arb_initialize_internal_state(uint8_t *new_snapshot,
   if(svc_tpmnvram_getsize(&size)) {
     return (TZ_ERROR_GENERIC << 8) | ARB_ETZ;
   }
-
+	log_info("svc_tpmnvram_getsize() says size = %d", size);
+	
   if(size < SHA_DIGEST_LENGTH || size > MAX_NV_SIZE) {
     return ARB_ENOMEM;
   }  
@@ -159,6 +162,7 @@ arb_err_t arb_initialize_internal_state(uint8_t *new_snapshot,
 	rv = pal_arb_initialize_state();
 	if(ARB_ENONE != rv) { return rv; }
 
+	log_hex("g_arb_internal_state: ", &g_arb_internal_state, sizeof(arb_internal_state_t));
 	rv = serialize_and_seal(&g_arb_internal_state, new_snapshot, new_snapshot_len);
 	
   return rv;
@@ -333,6 +337,7 @@ arb_err_t arb_execute_request(const uint8_t *request,
 	if(0 != svc_utpm_unseal(old_snapshot, old_snapshot_len,
 													g_hideous_buffer, &size,
 													(uint8_t*)&digestAtCreation)) {
+		log_err("svc_utpm_unseal FAILED");
 		return ARB_EUNSEALFAILED;
 	}
 
@@ -345,7 +350,10 @@ arb_err_t arb_execute_request(const uint8_t *request,
   for(i=0; i<sizeof(arb_internal_state_t); i++) {
     *((uint8_t*)&g_arb_internal_state) = g_hideous_buffer[i];
   }
-  
+
+	log_hex("g_arb_internal_state: ", &g_arb_internal_state,
+					sizeof(arb_internal_state_t));
+	
   /**
    * 2. Validate History Summary.
    *
@@ -367,10 +375,12 @@ arb_err_t arb_execute_request(const uint8_t *request,
 
 
   if(svc_tpmnvram_getsize(&size)) {
+		log_err("svc_tpmnvram_getsize FAILED");
     return (TZ_ERROR_GENERIC << 8) | ARB_ETZ;
   }
 
   if(svc_tpmnvram_readall(nvbuf)) {
+		log_err("svc_tpmnvram_readall FAILED");
     return (TZ_ERROR_GENERIC << 8) | ARB_ETZ;
   }
   
@@ -378,6 +388,7 @@ arb_err_t arb_execute_request(const uint8_t *request,
   if(arb_is_history_summary_current(g_arb_internal_state.history_summary,
                                     nvbuf)) {
     /* We're good! Update history summary (in g_arb_internal_state and NVRAM) */
+		log_info("History summary determined to be current");
     rv = arb_update_history_summary(request, request_len, g_arb_internal_state.history_summary);
     if(ARB_ENONE != rv) { return rv; }
   }
@@ -389,11 +400,13 @@ arb_err_t arb_execute_request(const uint8_t *request,
          nvbuf)) {
     /* Something went wrong last time, but we appear to have what it takes to
      * recover. Just let the transaction run again. */
+		log_info("History summary determined to be valid but stale.\n"
+						 "Re-executing previous transaction with identical inputs.");
 		; // Nothing to do here.
   }
   /* We're WEDGED.  Lame!!! */
   else {
-		fprintf(stderr, "WEDGED!\n");
+		log_err("History summary INVALID.  State is WEDGED! Aieeee!");
     return ARB_EWEDGED;
   }
 
@@ -403,13 +416,24 @@ arb_err_t arb_execute_request(const uint8_t *request,
 	 */
 
 	rv = pal_arb_deserialize_state(g_hideous_buffer+sizeof(arb_internal_state_t), size);
-	if(ARB_ENONE != rv) { return rv; }	
+	if(ARB_ENONE != rv) {
+		log_err("pal_arb_deserialize_state() failed with rv %d", rv);
+		return rv;
+	}
 	
 	rv = pal_arb_advance_state(request, request_len);
-	if(ARB_ENONE != rv) { return rv; }
+	if(ARB_ENONE != rv) {
+		log_err("pal_arb_advance_state() failed with rv %d", rv);
+		return rv;
+	}
 
 	rv = serialize_and_seal(&g_arb_internal_state, new_snapshot, new_snapshot_len);
-	if(ARB_ENONE != rv) { return rv; }
+	if(ARB_ENONE != rv) {
+		log_err("serialize_and_seal() failed with rv %d", rv);
+		return rv;
+	}
+
+	log_info("%s: Success!", __FUNCTION__);
 	
   return ARB_ENONE;
 }

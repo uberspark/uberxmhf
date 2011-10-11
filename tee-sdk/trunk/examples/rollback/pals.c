@@ -142,11 +142,15 @@ arb_err_t pal_arb_deserialize_state(IN const uint8_t *serialized_state,
 	unsigned int i;
 	
 	/* State should have already been allocated by the caller. */
-	if(!serialized_state || !serialized_state_len) {
+	if(!serialized_state || serialized_state_len < 1) {
+		log_err("!serialized_state || serialized_state_len < 1");
 		return ARB_EPARAM;
 	}
 
 	if(serialized_state_len != sizeof(pal_state_t)) {
+		log_err("serialized_state_len(%d) != sizeof(pal_state_t)(%d)",
+						serialized_state_len, sizeof(pal_state_t));
+		log_hex("serialized_state: ", serialized_state, serialized_state_len);
 		return ARB_EBADSTATE;
 	}
 
@@ -154,6 +158,7 @@ arb_err_t pal_arb_deserialize_state(IN const uint8_t *serialized_state,
 		((uint8_t*)&g_pal_state)[i] = serialized_state[i];
 	}
 
+	log_info("%s: Success!", __FUNCTION__);
 	return ARB_ENONE;	
 }
 
