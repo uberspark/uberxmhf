@@ -49,6 +49,7 @@ typedef enum {
   PAL_NV_ROLLBACK,
   PAL_UNSEAL,
   PAL_SEAL,
+  PAL_TEST,
 } PAL_CMD;
 
 /* Really simple state for demonstration purposes. */

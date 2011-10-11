@@ -576,12 +576,6 @@ tz_return_t test_nv_rollback(tz_session_t *tzPalSession) {
 
 }
 
-typedef enum {
-    CTR_INIT=0,
-    CTR_ADVANCE,
-    CTR_TEST
-} command_t;
-
 // function main
 // register some sensitive code and data in libfoo.so and call bar()
 int main(int argc, char *argv[])
@@ -598,20 +592,20 @@ int main(int argc, char *argv[])
       .pEntry = pals,
     };
   tz_uuid_t tzSvcId;
-  command_t cmd;
-
+  PAL_CMD cmd;
+  
   if(argc < 2) {
       printf("Usage: %s [-initialize] [-advance] [-test]\n", argv[0]);
       exit(1);
   }
   
   if(!strncmp(argv[1], "-advance", 20)) {
-      cmd = CTR_ADVANCE;
+      cmd = PAL_ARB_INCREMENT;
   } else if(!strncmp(argv[1], "-initialize", 20)) {
-      cmd = CTR_INIT;
+      cmd = PAL_ARB_INITIALIZE;
   } else {
       /* Assume test */
-      cmd = CTR_TEST;
+      cmd = PAL_TEST;
   }
   
   /* open isolated execution environment device */
@@ -662,11 +656,11 @@ int main(int argc, char *argv[])
   }
 
   switch(cmd) {
-      case CTR_INIT:
+      case PAL_ARB_INITIALIZE:
           break;
-      case CTR_ADVANCE:
+      case PAL_ARB_INCREMENT:
           break;
-      case CTR_TEST:
+      case PAL_TEST:
       default:
           rv = test_seal2(&tzPalSession) || rv;
           rv = test_seal(&tzPalSession) || rv;
