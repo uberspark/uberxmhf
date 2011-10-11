@@ -99,7 +99,7 @@ static void append_stderr(tzi_encode_buffer_t *psOutBuf)
  */
 static void append_only_stderr(tzi_encode_buffer_t *psOutBuf) 
 {
-	log_err("Internal failure! Above stderr output should aid in diagnosis\n");
+	log_err("Internal failure! Above stderr output should aid in diagnosis");
 
 	/* Clobber any previously buffered outputs */
 	TZIEncodeBufReInit(psOutBuf);
@@ -241,7 +241,7 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
 		rv = arb_initialize_internal_state(new_snapshot, &new_snapshot_len);
 		
 		if(ARB_ENONE != rv) {
-			log_err("arb_initialize_internal_state() failed with rv %d\n", rv);
+			log_err("arb_initialize_internal_state() failed with rv %d", rv);
 			*puiRv = rv;
 			append_only_stderr(psOutBuf);
 			break;
@@ -253,7 +253,7 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
 			counter[i] = ((uint8_t*)&g_pal_state.counter)[i];
 		}
 
-		log_info("PAL_ARB_INITIALIZE completed successfully\n");
+		log_info("PAL_ARB_INITIALIZE completed successfully");
 		append_stderr(psOutBuf);
 
 		break;
@@ -300,7 +300,7 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
 														 new_snapshot, &new_snapshot_len);
 		
 		if(ARB_ENONE != rv) {
-			log_err("arb_execute_request() failed with rv %d\n", rv);
+			log_err("arb_execute_request() failed with rv %d", rv);
 			*puiRv = rv;
 			append_only_stderr(psOutBuf);
 			break;
@@ -312,7 +312,7 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
 			counter[i] = ((uint8_t*)&g_pal_state.counter)[i];
 		}
 
-		log_info("PAL_ARB_INCREMENT completed successfully\n");
+		log_info("PAL_ARB_INCREMENT completed successfully");
 		append_stderr(psOutBuf);
 
 		break;

@@ -578,12 +578,34 @@ tz_return_t test_nv_rollback(tz_session_t *tzPalSession) {
 
 #define SNAPSHOT_FILENAME "snapshot.bin"
 
+static void dump_stderr_from_pal(tz_operation_t *tzOp) {
+  tz_return_t tzRet;
+  uint8_t *stderr_buf;
+  size_t stderr_buf_len;
+  char last;
+
+  tzRet = TZIDecodeF(tzOp,
+                     "%"TZI_DARRSPC,
+                     &stderr_buf, &stderr_buf_len);
+  if (tzRet) {
+    printf("[ERROR] PAL's stderr unavailable. tzRet = %d\n", tzRet);
+    return;
+  }
+
+  /* Take care to NULL-terminate the string */
+  last = stderr_buf[stderr_buf_len-1];
+  stderr_buf[stderr_buf_len-1] = '\0'; 
+  printf("********************* BEGIN PAL's STDERR ****************************************\n");
+  printf("%s%c%s", stderr_buf, last, last == '\n' ? "" : "\n");
+  printf("********************* END PAL's STDERR ******************************************\n");
+}
+
 tz_return_t increment_counter(tz_session_t *tzPalSession) {
   tz_return_t tzRet, serviceReturn;
   tz_operation_t tzOp;
-  uint8_t *counter, *old_snapshot, *new_snapshot, *stderr_buf;
+  uint8_t *counter, *old_snapshot, *new_snapshot;
   int rv = 0;
-  uint32_t counter_len, old_snapshot_len, new_snapshot_len, stderr_buf_len;
+  uint32_t counter_len, old_snapshot_len, new_snapshot_len;
 
   printf("PAL_ARB_INCREMENT\n");
 
@@ -612,10 +634,9 @@ tz_return_t increment_counter(tz_session_t *tzPalSession) {
   }
 
   tzRet = TZIDecodeF(&tzOp,
-                     "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DARRSPC,
+                     "%"TZI_DARRSPC "%"TZI_DARRSPC,
                      &counter, &counter_len,
-                     &new_snapshot, &new_snapshot_len,                     
-                     &stderr_buf, &stderr_buf_len);
+                     &new_snapshot, &new_snapshot_len);
   if (tzRet) {
     printf("UNSEAL decoder returned error %d\n", tzRet);
     rv = 1;
@@ -625,11 +646,9 @@ tz_return_t increment_counter(tz_session_t *tzPalSession) {
   print_hex("       counter: ", counter, counter_len);
   print_hex("  new_snapshot: ", new_snapshot, new_snapshot_len);
 
-  stderr_buf[stderr_buf_len-1] = '\0'; /* XXX clobbers last character */
-  printf("stderr_buf:\n%s\n", stderr_buf);
-
  out:
   if(old_snapshot) { free(old_snapshot); old_snapshot = NULL; }
+  dump_stderr_from_pal(&tzOp);
   TZOperationRelease(&tzOp);
 
   if(0 != rv) { printf("...FAILED rv %d\n", rv); }
@@ -639,9 +658,9 @@ tz_return_t increment_counter(tz_session_t *tzPalSession) {
 tz_return_t initialize_counter(tz_session_t *tzPalSession) {
   tz_return_t tzRet, serviceReturn;
   tz_operation_t tzOp;
-  uint8_t *counter, *snapshot, *stderr_buf;
+  uint8_t *counter, *snapshot;
   int rv = 0;
-  uint32_t counter_len, snapshot_len, stderr_buf_len;
+  uint32_t counter_len, snapshot_len;
 
   printf("PAL_ARB_INITIALIZE\n");
 
@@ -671,10 +690,9 @@ tz_return_t initialize_counter(tz_session_t *tzPalSession) {
   }
 
   if((tzRet = TZIDecodeF(&tzOp,
-                         "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DARRSPC,
+                         "%"TZI_DARRSPC "%"TZI_DARRSPC,
                          &counter, &counter_len,
-                         &snapshot, &snapshot_len,
-                         &stderr_buf, &stderr_buf_len))) {
+                         &snapshot, &snapshot_len))) {
       rv = 1;
       goto out;
   }
@@ -683,12 +701,10 @@ tz_return_t initialize_counter(tz_session_t *tzPalSession) {
   print_hex("  counter value: ", counter, counter_len);
   print_hex("  snapshot:      ", snapshot, snapshot_len);
 
-  stderr_buf[stderr_buf_len-1] = '\0'; /* XXX clobbers last character */
-  printf("stderr_buf:\n%s\n", stderr_buf);
-
   puke_file(SNAPSHOT_FILENAME, snapshot, snapshot_len);
   
  out:
+  dump_stderr_from_pal(&tzOp);
   TZOperationRelease(&tzOp);
 
   if(0 != rv) { printf("...FAILED rv %d\n", rv); }
