@@ -576,6 +576,63 @@ tz_return_t test_nv_rollback(tz_session_t *tzPalSession) {
 
 }
 
+tz_return_t initialize_counter(tz_session_t *tzPalSession) {
+  tz_return_t tzRet, serviceReturn;
+  tz_operation_t tzOp;
+  uint8_t *counter, *snapshot;
+  int rv = 0;
+  uint32_t counter_len, snapshot_len;
+
+  printf("PAL_ARB_INITIALIZE\n");
+
+  /* prep operation */
+  tzRet = TZOperationPrepareInvoke(tzPalSession,
+                                   PAL_ARB_INITIALIZE,
+                                   NULL,
+                                   &tzOp);
+  assert(tzRet == TZ_SUCCESS);
+  
+  /* Call PAL */
+  tzRet = TZOperationPerform(&tzOp, &serviceReturn);
+  if (tzRet != TZ_SUCCESS) {
+    rv = 1;
+    printf("Failure at %s:%d\n", __FILE__, __LINE__); 
+    printf("tzRet 0x%08x\n", tzRet);
+    goto out;
+
+  }
+  
+  if (TZDecodeGetError(&tzOp) != TZ_SUCCESS) {
+    rv = 1;
+    printf("Failure at %s:%d\n", __FILE__, __LINE__); 
+    printf("tzRet 0x%08x\n", tzRet);
+    goto out;
+
+  }
+
+  if((tzRet = TZIDecodeF(&tzOp,
+                         "%"TZI_DARRSPC "%"TZI_DARRSPC,
+                         &counter, &counter_len,
+                         &snapshot, &snapshot_len))) {
+      rv = 1;
+      goto out;
+  }
+
+  printf("  counter_len = %d, snapshot_len = %d\n", counter_len, snapshot_len);
+  print_hex("  counter value: ", counter, counter_len);
+  print_hex("  snapshot:      ", snapshot, snapshot_len);
+
+  puke_file("snapshot.bin", snapshot, snapshot_len);
+  
+ out:
+  TZOperationRelease(&tzOp);
+
+  if(0 != rv) { printf("...FAILED rv %d\n", rv); }
+  return rv;  
+
+}
+
+
 // function main
 // register some sensitive code and data in libfoo.so and call bar()
 int main(int argc, char *argv[])

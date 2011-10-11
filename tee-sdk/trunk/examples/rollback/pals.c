@@ -152,9 +152,17 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
 		 * This command tells the PAL to wipe any previously existing
 		 * state and initialize both its own state and the
 		 * AntiRollBack-specific internal state.  CAUTION: You can lose
-		 * your data by calling this carelessly.
+		 * your data by calling this carelessly.  There are no other
+		 * inputs. An initial counter value and a state snapshot will be
+		 * output.
 		 */
 	{
+		size_t counter_len;
+		uint8_t* counter;
+		size_t new_snapshot_len;
+		uint8_t* new_snapshot;
+
+
 		
 		break;
 	}
