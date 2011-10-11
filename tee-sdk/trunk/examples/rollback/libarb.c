@@ -50,28 +50,27 @@ arb_internal_state_t g_arb_internal_state;
 /**
  * TODO: Flesh out with full PRNG.  Initialize with uTPM entropy.
  */
-arb_err_t arb_initialize_internal_state() {
+arb_err_t arb_initialize_internal_state(arb_internal_state_t *state) {
   unsigned int i;
   size_t size;
   uint8_t nvbuf[MAX_NV_SIZE];
-  
+	arb_err_t rv;
+
+	/**
+	 * Seed PRNG.
+	 */
   if(svc_utpm_rand_block(
-       (uint8_t*)&g_arb_internal_state.dummy_prng_state,
-       sizeof(g_arb_internal_state.dummy_prng_state))
+       (uint8_t*)&state->dummy_prng_state,
+       sizeof(state->dummy_prng_state))
      != 0) {
     return ARB_ETZ; /* TODO: collect TZ error and "shift it on" */
   }
 
-  /* if(svc_utpm_rand_block( */
-  /*      (uint8_t*)&g_arb_internal_state.symmetric_key, */
-  /*      sizeof(g_arb_internal_state.symmetric_key)) */
-  /*    != 0) { */
-  /*   return ARB_ETZ; /\* TODO: collect TZ error and "shift it on" *\/ */
-  /* } */
-
-  /* HistorySummary_0 = 0 */
-  for(i=0; i<sizeof(g_arb_internal_state.history_summary); i++) {
-    g_arb_internal_state.history_summary[i] = 0;
+	/**
+	 * Set HistorySummary_0 = 0
+	 */
+  for(i=0; i<sizeof(state->history_summary); i++) {
+    state->history_summary[i] = 0;
   }
 
   /* Zeroize HistorySummary in NVRAM */
@@ -91,8 +90,16 @@ arb_err_t arb_initialize_internal_state() {
     return (TZ_ERROR_GENERIC << 8) | ARB_ETZ;
   }
 
-  /* We made it! */
-  
+  /**
+	 * Now (1) initialize the PAL's state, (2) serialize both our state
+	 * and the PAL's state, (3) seal them, and (4) output it.
+	 */
+
+	rv = pal_arb_initialize_state();
+	if(ARB_ENONE != rv) { return rv; }
+
+	
+	
   return ARB_ENONE;
 }
 
@@ -147,13 +154,22 @@ static bool arb_is_replay_needed(uint8_t alleged_history_summary[ARB_HIST_SUM_LE
  * This function is called to update NVRAM in preparation to execute
  * the latest request.
  */
-static arb_err_t arb_update_history_summary(const uint8_t *request,
-                                            uint32_t request_len) {
+static arb_err_t arb_update_history_summary(const uint8_t *request, /* in */
+                                            uint32_t request_len, /* in */
+																						uint8_t history_summary[ARB_HIST_SUM_LEN]) /* out */
+{
   unsigned int i;
   size_t size;
   uint8_t nvbuf[MAX_NV_SIZE];
   SHA_CTX ctx;
-  
+
+	/* Sanity-check inputs */
+	if(!request || request_len < sizeof(int)) {
+		return ARB_EPARAM;
+	}
+
+	/* Make sure we have a big enough buffer (trying to survive without
+	 * malloc) */
   if(svc_tpmnvram_getsize(&size)) {
     return (TZ_ERROR_GENERIC << 8) | ARB_ETZ;
   }
@@ -171,7 +187,7 @@ static arb_err_t arb_update_history_summary(const uint8_t *request,
     return (TZ_ERROR_GENERIC << 8) | ARB_ETZ;
   }
 
-  if(!compare(g_arb_internal_state.history_summary, nvbuf,
+  if(!compare(history_summary, nvbuf,
               ARB_HIST_SUM_LEN)) {
     /* This is FATAL and should never happen; it should be an ASSERT!!! */
     return ARB_EBADSTATE;
@@ -182,7 +198,7 @@ static arb_err_t arb_update_history_summary(const uint8_t *request,
    */
   
   SHA1_INIT(&ctx);
-  SHA1_Update(&ctx, g_arb_internal_state.history_summary, ARB_HIST_SUM_LEN);
+  SHA1_Update(&ctx, history_summary, ARB_HIST_SUM_LEN);
   SHA1_Update(&ctx, request, request_len);
   SHA1_Final(nvbuf, &ctx);
   
@@ -198,15 +214,31 @@ static arb_err_t arb_update_history_summary(const uint8_t *request,
  * history summary based on new request.  Actual "work" of
  * application-specific request details are handled by the PAL, not
  * here in libarb.
+ *
+ * "request" is PAL-specific and here we only treat it as an opaque
+ * byte string.
+ *
+ * "old_snapshot" is the sealed, serialized state of both libarb and
+ * the PAL itself from the previous run.
+ *
+ * "new_snapshot" is preallocated space (maximum possible size in
+ * *new_snapshot_len) to store the new state snapshot.
+ *
+ * Not much in the way of failure handling.  Pretty much just bails
+ * out with an error code if anything doesn't go perfectly.
+ * Definitely not ready for really important data yet.
  */
-arb_err_t arb_execute_request(uint8_t *request,
-                              uint32_t request_len,
-                              uint8_t *snapshot,
-                              uint32_t snapshot_len)
+arb_err_t arb_execute_request(const uint8_t *request,
+                              const uint32_t request_len,
+                              const uint8_t *old_snapshot,
+                              const uint32_t old_snapshot_len,
+															uint8_t *new_snapshot, /* pre-allocated, OUT*/
+															uint32_t *new_snapshot_len) /* IN / OUT */
 {
   size_t size;
   uint8_t nvbuf[MAX_NV_SIZE];
   unsigned int i;
+	arb_err_t rv;
   
   if(!request || !snapshot ||
      request_len < sizeof(int)
@@ -269,17 +301,17 @@ arb_err_t arb_execute_request(uint8_t *request,
   }
   
   /* Check for case (1) */
-  if(arb_is_history_summary_current(g_arb_internal_state.historysummary,
+  if(arb_is_history_summary_current(g_arb_internal_state.history_summary,
                                     nvbuf)) {
     /* We're good!  Go ahead and start the new transaction. */
     // 1. Update history summary (in g_arb_internal_state and NVRAM)
-    rv = arb_update_history_summary(request, request_len);
-    /* XXXXXX Error check rv */
+    rv = arb_update_history_summary(request, request_len, g_arb_internal_state.history_summary);
+    if(ARB_ENONE != rv) { return rv; }
     // 2. Do the actual transaction
     rv = pal_arb_advance_state(request, request_len);
-    /* XXXXXX Error check rv */
+    if(ARB_ENONE != rv) { return rv; }
     rv = pal_arb_serialize_state(serialized_state, serialized_state_len); /* XXX malloc()??? */
-    /* XXXXXX Error check rv */
+    if(ARB_ENONE != rv) { return rv; }
   }
   /* Check for case (2) */
   else if(arb_is_replay_needed(
@@ -292,7 +324,10 @@ arb_err_t arb_execute_request(uint8_t *request,
     // 1. Don't update history summary since it was updated at the
     //    beginning of the previous, failed transaction.
     // 2. Do the actual transaction
-    return pal_arb_advance_state(request, request_len);    
+    rv = pal_arb_advance_state(request, request_len);
+    if(ARB_ENONE != rv) { return rv; }
+    rv = pal_arb_serialize_state(serialized_state, serialized_state_len); /* XXX malloc()??? */
+    if(ARB_ENONE != rv) { return rv; }
   }
   /* We're WEDGED.  Lame!!! */
   else {
