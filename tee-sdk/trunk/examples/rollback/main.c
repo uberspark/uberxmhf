@@ -707,11 +707,11 @@ int main(int argc, char *argv[])
   PAL_CMD cmd;
   
   if(argc < 2) {
-      printf("Usage: %s [-initialize] [-advance] [-test]\n", argv[0]);
+      printf("Usage: %s [-initialize] [-increment] [-test]\n", argv[0]);
       exit(1);
   }
   
-  if(!strncmp(argv[1], "-advance", 20)) {
+  if(!strncmp(argv[1], "-increment", 20)) {
       cmd = PAL_ARB_INCREMENT;
   } else if(!strncmp(argv[1], "-initialize", 20)) {
       cmd = PAL_ARB_INITIALIZE;
