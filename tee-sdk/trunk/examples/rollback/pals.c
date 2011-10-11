@@ -42,7 +42,6 @@
 
 #include <trustvisor/tv_utpm.h>
 
-__attribute__ ((section (".scode")))
 void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
   switch(uiCommand) {
@@ -136,7 +135,6 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
 }
 
 /* sensitive code  */
-__attribute__ ((section (".scode")))
 tz_return_t pal_seal(TPM_PCR_INFO *pcrInfo, uint8_t *input, uint32_t inputLen, uint8_t *output, size_t *outputLen)
 {
   if (svc_utpm_seal(pcrInfo, input, inputLen, output, outputLen) == 0) {
@@ -146,7 +144,6 @@ tz_return_t pal_seal(TPM_PCR_INFO *pcrInfo, uint8_t *input, uint32_t inputLen, u
   }
 }
 
-__attribute__ ((section (".scode")))
 tz_return_t pal_unseal(uint8_t *input, uint8_t inputLen, uint8_t *output, size_t *outputLen, uint8_t *digestAtCreation)
 {
     if (svc_utpm_unseal(input, inputLen, output, outputLen, digestAtCreation) == 0) {
@@ -157,7 +154,6 @@ tz_return_t pal_unseal(uint8_t *input, uint8_t inputLen, uint8_t *output, size_t
 }
 
 
-__attribute__ ((section (".scode")))
 tz_return_t pal_nv_rollback(IN uint8_t *newval,
                             OUT uint32_t *nv_size,
                             OUT uint8_t *oldval)
