@@ -776,10 +776,10 @@ int main(int argc, char *argv[])
           break;
       case PAL_TEST:
       default:
-          rv = test_seal2(&tzPalSession) || rv;
-          rv = test_seal(&tzPalSession) || rv;
+          //rv = test_seal2(&tzPalSession) || rv;
+          //rv = test_seal(&tzPalSession) || rv;
           rv = test_longterm_seal(&tzPalSession) || rv;
-          rv = test_nv_rollback(&tzPalSession) || rv;
+          //rv = test_nv_rollback(&tzPalSession) || rv;
           break;
   }
   

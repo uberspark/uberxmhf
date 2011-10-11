@@ -80,12 +80,11 @@ static arb_err_t serialize_and_seal(const arb_internal_state_t *state,
 	if(ARB_ENONE != rv) { return rv; } /* Not sure how to deal with this
 																			* one cleanly */
 	size += sizeof(arb_internal_state_t);
-
+	size += UTPM_SEALING_OVERHEAD; /* XXX */
 	/* seal size bytes from g_hideous_buffer into new_snapshot */
-	tpmPcrInfo.pcrSelection.sizeOfSelect = TPM_PCR_NUM/8;
-	tpmPcrInfo.pcrSelection.pcrSelect[0] = 0; /* XXX Don't select anything for now! */
-	for(i=0;i<TPM_HASH_SIZE;i++) {
-		tpmPcrInfo.digestAtRelease.value[i] = 0;
+	/* XXX Don't select any PCRs for now! */
+	for(i=0;i<sizeof(TPM_PCR_INFO);i++) {
+		((uint8_t*)&tpmPcrInfo)[i] = 0;
 	}
 
 	if(0 != svc_utpm_seal(&tpmPcrInfo, g_hideous_buffer, size, new_snapshot, new_snapshot_len)) {
