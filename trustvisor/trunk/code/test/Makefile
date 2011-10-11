@@ -9,7 +9,8 @@ all: do_hpt do_drbg # do_pages do_pt
 
 pt: pt_runner.o pt.o ../app/objects/pt.o ${UNITYDIR}/src/unity.o 
 
-hpt: hpt_runner.o hpt.o ${UNITYDIR}/src/unity.o
+#hpt: hpt_runner.o hpt.o ${UNITYDIR}/src/unity.o
+hpt: hpt_runner.o hpt.o ../emhfcore/x86/components/emhf-memprot/emhf-memprot.o ../emhfcore/x86/components/emhf-memprot/arch/svm/emhf-memprot-svm.o ../emhfcore/x86/components/emhf-memprot/arch/vmx/emhf-memprot-vmx.o ${UNITYDIR}/src/unity.o
 
 drbg: test_drbg_runner.o test_drbg.o ../app/objects/dump.o ../app/objects/rijndael.o ../app/objects/nist_ctr_drbg.o ${UNITYDIR}/src/unity.o 
 	$(CC) -o $@ $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS)
