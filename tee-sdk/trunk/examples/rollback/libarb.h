@@ -65,17 +65,24 @@ typedef enum {
   ARB_EPB=14,
   ARB_EBADAUTH=15,
   ARB_ETZ=16, /* TZ error shifted on */
+  ARB_EWEDGED=17, /* Unrecoverable state error! */
 } arb_err_t;
 
 #define ARB_SYM_KEY_SIZE (256/8) /* bytes */
+#define ARB_HIST_SUM_LEN SHA_DIGEST_LENGTH
 typedef struct {
     uint32_t dummy_prng_state; /* FIXME: implement an actual PRNG */
-    uint8_t symmetric_key[ARB_SYM_KEY_SIZE];
+    /* uint8_t symmetric_key[ARB_SYM_KEY_SIZE]; */
+    uint8_t history_summary[ARB_HIST_SUM_LEN]; /* TODO: Algorithm agility */
 } arb_internal_state_t;
 
+
+
 arb_err_t arb_initialize_internal_state();
-arb_err_t arb_execute_request(uint8_t req_hash[SHA_DIGEST_LENGTH],
-                              uint8_t history_summary[SHA_DIGEST_LENGTH]);
+arb_err_t arb_execute_request(uint8_t *request,
+                              uint32_t request_len,
+                              uint8_t *snapshot,
+                              uint32_t snapshot_len);
 
 
 

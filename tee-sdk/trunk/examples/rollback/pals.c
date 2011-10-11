@@ -49,7 +49,7 @@ pal_state_t g_pal_state; /* pals.h */
 
 arb_err_t pal_arb_serialize_state(IN const pal_state_t *state,
                                   OUT uint8_t *serialized_state,
-                                  INOUT uint32_t *serialized_state_len) {
+                                  OUT uint32_t *serialized_state_len) {
 	unsigned int i;
 	
 	/* serialized_state should have already been allocated by the

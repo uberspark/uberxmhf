@@ -37,3 +37,9 @@ Initially, we will not leverage JSON, Google Protocol Buffers, or
 other "nice" data structuring formats.  Ultimately, we will use
 something like this.
 
+In memoir paper, State Snapshot (Fig. 3) contains a freshness tag and
+authenticator, where the freshness tag is not encrypted, and the
+authenticator is distinct from the encrypted state.  Here in
+TrustVisor, we have high-performance sealing, so we can omit the
+authenticator and just include the freshness tag in the encrypted
+state data.
