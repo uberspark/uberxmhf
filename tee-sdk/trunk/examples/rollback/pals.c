@@ -46,6 +46,7 @@
 #include "libarb.h"
 #include "pals.h"
 #include "sha1.h"
+#include "dbg.h"
 
 /**
  * TODO: Split this into three C files: PAL-specific that need to
@@ -71,6 +72,39 @@ static void* get_stderr(size_t *len)
   *len = tsvc_read_stderr(rv, 4095);
   rv[*len] = '\0';
   return rv;
+}
+
+static void append_stderr(tzi_encode_buffer_t *psOutBuf) 
+{
+	size_t len;
+	void *buf;
+
+	buf = get_stderr(&len);
+	if(NULL != buf) {
+		/* If len is too long, too bad. */
+		TZIEncodeArray(psOutBuf, buf, len);
+	}
+	free(buf);
+}
+
+/**
+ * Convention: When something fails, clobber the other output
+ * parameters and only output stderr.
+ *
+ * TODO: Refactor if this capability becomes built-in to tee-sdk or
+ * similar.
+ *
+ * Returns: nothing.  We're in an error situation, there is nowhere
+ * else for return values to go.
+ */
+static void append_only_stderr(tzi_encode_buffer_t *psOutBuf) 
+{
+	log_err("Internal failure! Above stderr output should aid in diagnosis\n");
+
+	/* Clobber any previously buffered outputs */
+	TZIEncodeBufReInit(psOutBuf);
+
+	append_stderr(psOutBuf);
 }
 
 /* Move state from global variable into serialized buffer. If
@@ -205,28 +239,22 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
 		 * arb_initialize_internal_state() subsequently calls the
 		 * PAL-specific state initialization function(s). */
 		rv = arb_initialize_internal_state(new_snapshot, &new_snapshot_len);
-
-		{ /* Get stderr before terminating */
-			fprintf(stderr, "really?\n");
-			/* XXX Temp. this should be an independent layer */
-			size_t len;
-			void *buf;
-			buf = get_stderr(&len);
-			TZIEncodeArray(psOutBuf, buf, len);
-			free(buf);
-		}
 		
 		if(ARB_ENONE != rv) {
-			*puiRv = TZ_ERROR_SERVICE;
-			/* TODO: Also assign rv somewhere! */
+			log_err("arb_initialize_internal_state() failed with rv %d\n", rv);
+			*puiRv = rv;
+			append_only_stderr(psOutBuf);
 			break;
 		}
-
+		
 		/* Now that an initial state is defined, prepare the cleartext
 		 * outputs (in this case, just the counter value) */
 		for(i=0; i<sizeof(pal_state_t); i++) {
 			counter[i] = ((uint8_t*)&g_pal_state.counter)[i];
 		}
+
+		log_info("PAL_ARB_INITIALIZE completed successfully\n");
+		append_stderr(psOutBuf);
 
 		break;
 	}
@@ -270,19 +298,11 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
 		rv = arb_execute_request((const uint8_t*)&request, sizeof(request),
 														 old_snapshot, old_snapshot_len,
 														 new_snapshot, &new_snapshot_len);
-		{ /* Get stderr before terminating */
-			fprintf(stderr, "really?\n");
-			/* XXX Temp. this should be an independent layer */
-			size_t len;
-			void *buf;
-			buf = get_stderr(&len);
-			TZIEncodeArray(psOutBuf, buf, len);
-			free(buf);
-		}
 		
 		if(ARB_ENONE != rv) {
-			*puiRv = TZ_ERROR_SERVICE;
-			/* TODO: Also assign rv somewhere! */
+			log_err("arb_execute_request() failed with rv %d\n", rv);
+			*puiRv = rv;
+			append_only_stderr(psOutBuf);
 			break;
 		}
 
@@ -291,6 +311,9 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
 		for(i=0; i<sizeof(pal_state_t); i++) {
 			counter[i] = ((uint8_t*)&g_pal_state.counter)[i];
 		}
+
+		log_info("PAL_ARB_INCREMENT completed successfully\n");
+		append_stderr(psOutBuf);
 
 		break;
 	}
