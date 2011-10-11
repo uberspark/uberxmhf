@@ -263,7 +263,10 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
 
 		break;
 	}
+	/* Handle both of these here since the only real difference is wrt a
+	 * boolean passed to arb_execute_request */
   case PAL_ARB_INCREMENT:
+  case PAL_ARB_ATTEMPT_RECOVERY:
 		/**
 		 * This command tells the PAL to increment its internal counter.
 		 */
@@ -300,7 +303,8 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
 		}
 
 
-		rv = arb_execute_request((const uint8_t*)&request, sizeof(request),
+		rv = arb_execute_request((uiCommand == PAL_ARB_ATTEMPT_RECOVERY),
+														 (const uint8_t*)&request, sizeof(request),
 														 old_snapshot, old_snapshot_len,
 														 new_snapshot, &new_snapshot_len);
 		

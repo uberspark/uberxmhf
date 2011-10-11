@@ -48,7 +48,7 @@
 /* Starting point poached from audited-kv-errs.h. TODO: Centralize
  * some kinds of error codes, especially those TZ-related. */
 typedef enum {
-  ARB_ENONE=0,
+  ARB_ENONE=0,	
   ARB_EEXISTS=1,
   ARB_ENOTFOUND=2,
   ARB_EKV=3,
@@ -67,6 +67,7 @@ typedef enum {
   ARB_ETZ=16, /* TZ error shifted on */
   ARB_EWEDGED=17, /* Unrecoverable state error! */
 	ARB_EUNSEALFAILED=18,
+	ARB_ERECOVERYNEEDED=19,
 } arb_err_t;
 
 #define ARB_SYM_KEY_SIZE (256/8) /* bytes */
@@ -80,7 +81,8 @@ typedef struct {
 
 
 arb_err_t arb_initialize_internal_state();
-arb_err_t arb_execute_request(const uint8_t *request,
+arb_err_t arb_execute_request(bool attempt_recovery,
+															const uint8_t *request,
                               const size_t request_len,
                               /*const*/ uint8_t *old_snapshot,
                               size_t old_snapshot_len,

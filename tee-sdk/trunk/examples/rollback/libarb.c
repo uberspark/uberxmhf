@@ -263,7 +263,8 @@ static arb_err_t arb_update_history_summary(const uint8_t *request, /* in */
  * out with an error code if anything doesn't go perfectly.
  * Definitely not ready for really important data yet.
  */
-arb_err_t arb_execute_request(const uint8_t *request,
+arb_err_t arb_execute_request(bool attempt_recovery,
+															const uint8_t *request,
                               size_t request_len,
                               /*const*/ uint8_t *old_snapshot,
                               size_t old_snapshot_len,
@@ -273,9 +274,9 @@ arb_err_t arb_execute_request(const uint8_t *request,
   size_t size;
   uint8_t nvbuf[MAX_NV_SIZE];
 	arb_err_t rv;
+	TPM_DIGEST digestAtCreation;
 	static uint8_t buf[4096];
 
-  
   if(!request || request_len < sizeof(int) ||
 		 !old_snapshot || old_snapshot_len < sizeof(int) ||
 		 !new_snapshot
@@ -305,7 +306,6 @@ arb_err_t arb_execute_request(const uint8_t *request,
     return ARB_EPARAM;
   }
 
-	TPM_DIGEST digestAtCreation;
 	if(0 != svc_utpm_unseal(old_snapshot, old_snapshot_len,
 													buf, &size,
 													(uint8_t*)&digestAtCreation)) {
@@ -343,8 +343,11 @@ arb_err_t arb_execute_request(const uint8_t *request,
    *
    * (WEDGE) If the above cases do not hold, we are under attack or
    * wedged in an "impossible" state.  Give up.
+	 *
+	 * Depending on whether we are in (1) or (2), the provided request
+	 * will be either new or re-submitted during a recovery attempt.
+	 * The boolean attempt_recovery indicates which case we are in.
    */
-
 
   if(svc_tpmnvram_getsize(&size)) {
 		log_err("svc_tpmnvram_getsize FAILED");
@@ -356,31 +359,39 @@ arb_err_t arb_execute_request(const uint8_t *request,
     return (TZ_ERROR_GENERIC << 8) | ARB_ETZ;
   }
   
-  /* Check for case (1) */
-  if(0 == memcmp(g_arb_internal_state.history_summary,
-								 nvbuf, ARB_HIST_SUM_LEN)) {
-    /* We're good! Update history summary (in g_arb_internal_state and NVRAM) */
-		log_info("History summary determined to be current");
-    rv = arb_update_history_summary(request, request_len, g_arb_internal_state.history_summary);
-    if(ARB_ENONE != rv) { return rv; }
+  /* Validate case (1) */
+	if(!attempt_recovery) {
+		if(0 == memcmp(g_arb_internal_state.history_summary,
+									 nvbuf, ARB_HIST_SUM_LEN)) {
+			/* We're good! Update history summary (in g_arb_internal_state and NVRAM) */
+			log_info("History summary determined to be current");
+			rv = arb_update_history_summary(request, request_len, g_arb_internal_state.history_summary);
+			if(ARB_ENONE != rv) {
+				log_err("arb_update_history_summary() failed rv = %d", rv);
+				return rv;
+			}
+		} else {
+			log_info("Recovery needed.  New transaction aborted.");
+			return ARB_ERECOVERYNEEDED;
+		}
   }
   /* Check for case (2) */
-  else if(arb_is_replay_needed(
+  else { /* attempt_recovery = true; */
+		if(arb_is_replay_needed(
          g_arb_internal_state.history_summary,
          request,
          request_len,
          nvbuf)) {
-    /* Something went wrong last time, but we appear to have what it takes to
-     * recover. Just let the transaction run again. */
-		log_info("History summary determined to be valid but stale.\n"
-						 "Re-executing previous transaction with identical inputs.");
-		; // Nothing to do here.
-  }
-  /* We're WEDGED.  Lame!!! */
-  else {
-		log_err("History summary INVALID.  State is WEDGED! Aieeee!");
-    return ARB_EWEDGED;
-  }
+			/* Something went wrong last time, but we appear to have what it takes to
+			 * recover. Just let the transaction run again. */
+			log_info("History summary determined to be valid but stale.");
+			log_info("Re-executing previous transaction with identical inputs.");
+			; /* Nothing to do here. Let execution fall through. */
+		} else {
+			log_err("History summary INVALID. Recovery impossible! State is WEDGED! Aieeee!");
+			return ARB_EWEDGED;
+		}
+	}
 
 	/**
 	 * If we're still here, time to run the transaction, serialize PAL
