@@ -5,21 +5,20 @@ message Everything
   required bytes sealed_master_secret=1;
   required bytes mac_of_header=2;
   required Header header=3;
-//  MacdEncdEntry macd_encd_entries=;
+  repeated MacdEncdEntry macd_encd_entries=4;
 }
 
 message Header
 {
 //  bytes sealed_private_key=;
 //  bytes public_key=;
-//  bytes sealed_master_symmetric_secret=;
   required string audit_pub_key_pem=4;
 }
 
 message MacdEncdEntry
 {
   required string key=1;
-  required bytes salt=2;
-  required bytes mac=3;
-  required bytes encd_entry=4;
+  required bytes hmac=2;
+  required bytes ivec=3;
+  required bytes encd_val=4;
 }

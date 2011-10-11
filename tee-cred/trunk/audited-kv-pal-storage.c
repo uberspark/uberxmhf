@@ -36,6 +36,7 @@
 #include <google/protobuf-c/protobuf-c.h>
 #include <openssl/sha.h>
 #include <openssl/hmac.h>
+#include <openssl/aes.h>
 
 #include <string.h>
 
@@ -43,6 +44,89 @@
 #include "audited-kv-pal-int.h"
 #include "audited.h"
 #include "audited-kv-pal-storage.h"
+#include "kv.h"
+
+/* static */ unsigned int align_up(unsigned int val, unsigned int align)
+{
+  return ((val-1) & ~(align-1)) + align;
+}
+
+/* static */ akv_err_t export_entry(AkvpStorage__MacdEncdEntry *out,
+                                    const char *key, size_t key_len,
+                                    const uint8_t *val,
+                                    size_t val_len)
+{
+  akv_err_t rv=0;
+  unsigned int svcerr;
+
+  *out = (AkvpStorage__MacdEncdEntry) {
+    .base = PROTOBUF_C_MESSAGE_INIT (&akvp_storage__macd_encd_entry__descriptor),
+  };
+
+  { /* key */
+    out->key=malloc(key_len+1);
+    CHECK_MEM(out->key, AKV_ENOMEM);
+    memcpy(out->key, key, key_len);
+    ((char*)out->key)[key_len]='\0';
+  }
+
+  { /* ivec, encd_val */
+    uint8_t ecount_buf[AES_BLOCK_SIZE];
+    uint8_t ivec[AES_BLOCK_SIZE];
+    unsigned int num=0;
+    out->ivec.len=AES_BLOCK_SIZE;
+    out->ivec.data=malloc(out->ivec.len);
+    CHECK_MEM(out->ivec.data, AKV_ENOMEM);
+    svcerr = svc_utpm_rand_block(out->ivec.data, out->ivec.len);
+    CHECK_RV(svcerr, AKV_ESVC|svcerr<<8, "svc_utpm_rand_block");
+
+    /* ivec gets updates on encrypt, so we need to make a copy */
+    memcpy(ivec, out->ivec.data, AES_BLOCK_SIZE);
+
+    out->encd_val.len = val_len;/* ctr-mode doesn't need padding. XXX
+                                   consider padding so as not to leak
+                                   length of plain-text */
+    out->encd_val.data = malloc(out->encd_val.len); 
+    CHECK_MEM(out->encd_val.data, AKV_ENOMEM);
+    memset(ecount_buf, 0, sizeof(ecount_buf));
+    AES_ctr128_encrypt(val, out->encd_val.data,
+                       val_len, &akv_ctx.aes_ctr_key,
+                       ivec,
+                       ecount_buf,
+                       &num);
+    
+  }
+
+  { /* hmac */
+    HMAC_CTX ctx;
+    int cryptorv;
+
+    out->hmac.len=SHA256_DIGEST_LENGTH;
+    out->hmac.data=malloc(out->hmac.len);
+    CHECK_MEM(out->hmac.data, AKV_ENOMEM);
+         
+    HMAC_CTX_init(&ctx);
+
+    cryptorv = HMAC_Init_ex(&ctx,
+                            akv_ctx.hmac_key,
+                            akv_ctx.hmac_key_len,
+                            EVP_sha256(), NULL);
+    CHECK(cryptorv, AKV_ECRYPTO, "HMAC_Init_ex");
+
+    cryptorv = HMAC_Update(&ctx, (uint8_t*)out->key, key_len);
+    CHECK(cryptorv, AKV_ECRYPTO, "HMAC_Update");
+    cryptorv = HMAC_Update(&ctx, out->ivec.data, out->ivec.len);
+    CHECK(cryptorv, AKV_ECRYPTO, "HMAC_Update");
+    cryptorv = HMAC_Update(&ctx, out->encd_val.data, out->encd_val.len);
+    CHECK(cryptorv, AKV_ECRYPTO, "HMAC_Update");
+    
+    cryptorv = HMAC_Final(&ctx, out->hmac.data, &out->hmac.len);
+    CHECK(cryptorv, AKV_ECRYPTO, "HMAC_Final");
+  }
+
+ out:
+  return rv;
+}
 
 static akv_err_t compute_header_mac(void *hmac_key,
                                     size_t hmac_key_len,
@@ -147,8 +231,10 @@ akv_err_t akvp_export(const void *req, AkvpStorage__Everything *res)
   void *sealed_master_secret;
   uint8_t *header_mac=NULL;
   size_t header_mac_len=SHA256_DIGEST_LENGTH;
+  size_t num_entries;
+  AkvpStorage__MacdEncdEntry **entries;
 
-  {
+  { /* seal master secret */
     TPM_PCR_INFO pcr_info;
     int svcrv;
 
@@ -177,19 +263,44 @@ akv_err_t akvp_export(const void *req, AkvpStorage__Everything *res)
     CHECK_RV(svcrv, AKV_ESVC | (svcrv << 8), "svc_utpm_seal");
   }
 
-  header=malloc(sizeof(*header));
-  CHECK_MEM(header, AKV_ENOMEM);
+  { /* export and hmac header */
+    header=malloc(sizeof(*header));
+    CHECK_MEM(header, AKV_ENOMEM);
 
-  rv = export_header(header);
-  CHECK_RV(rv, rv, "export_header");
+    rv = export_header(header);
+    CHECK_RV(rv, rv, "export_header");
 
-  header_mac = malloc(header_mac_len);
-  CHECK_MEM(header_mac, AKV_ENOMEM);
+    header_mac = malloc(header_mac_len);
+    CHECK_MEM(header_mac, AKV_ENOMEM);
 
-  rv = compute_header_mac(akv_ctx.hmac_key, akv_ctx.hmac_key_len,
-                          header,
-                          header_mac, &header_mac_len);
-  CHECK_RV(rv, rv, "compute_header_mac");
+    rv = compute_header_mac(akv_ctx.hmac_key, akv_ctx.hmac_key_len,
+                            header,
+                            header_mac, &header_mac_len);
+    CHECK_RV(rv, rv, "compute_header_mac");
+  }
+
+  { /* export entries */
+    kv_it_t it;
+    const void *key, *val;
+    size_t key_len, val_len;
+    int i;
+      
+    num_entries = kv_count(akv_ctx.kv_ctx);
+    entries = malloc(sizeof(*entries)*num_entries);
+    CHECK_MEM(entries, AKV_ENOMEM);
+
+    kv_iterate(akv_ctx.kv_ctx, &it);
+    for(i=0; i<num_entries; i++) {
+      kv_it_next(&it, &key, &key_len, &val, &val_len);
+      assert(key && val);
+
+      entries[i] = malloc(sizeof(*entries[i]));
+      CHECK_MEM(entries[i], AKV_ENOMEM);
+
+      rv = export_entry(entries[i], key, key_len, val, val_len);
+      CHECK_RV(rv, rv, "export_entry");
+    }
+  }
 
   *res = (AkvpStorage__Everything) {
     .base =  PROTOBUF_C_MESSAGE_INIT (&akvp_storage__everything__descriptor),
@@ -202,6 +313,8 @@ akv_err_t akvp_export(const void *req, AkvpStorage__Everything *res)
       .data=header_mac,
       .len=header_mac_len,
     },
+    .n_macd_encd_entries = num_entries,
+    .macd_encd_entries = entries,
   };
 
  out:
