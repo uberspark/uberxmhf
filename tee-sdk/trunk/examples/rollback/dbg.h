@@ -78,6 +78,10 @@
    
 #define check_debug(A, M, ...) if(!(A)) { debug(M, ##__VA_ARGS__); errno=0; goto error; } 
 
+/* awesome trick from http://www.jaggersoft.com/pubs/CVu11_3.html */
+#define COMPILE_TIME_ASSERT(pred) \
+    switch(0){case 0:case pred:;}
+
 static inline void log_hex(const char *prefix, const void *prtptr, size_t size)
 {
     size_t i;
@@ -88,6 +92,5 @@ static inline void log_hex(const char *prefix, const void *prtptr, size_t size)
     }
     fprintf(stderr, "\n");
 }
-    
 
 #endif

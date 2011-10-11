@@ -158,7 +158,7 @@ arb_err_t arb_initialize_internal_state(uint8_t *new_snapshot,
 }
 
 /**
- * Assumption: arb_is_snapshot_current() already returned false.
+ * Assumption: history summary already determined not to be current.
  *
  * Returns: true if replay is needed to recover from crash. false
  * otherwise.
@@ -170,13 +170,18 @@ static bool arb_is_replay_needed(const uint8_t alleged_history_summary[ARB_HIST_
   SHA_CTX ctx;
   uint8_t digest[SHA_DIGEST_LENGTH];
 
-  /* TODO: Enable this check! */
-  /* ASSERT(SHA_DIGEST_LENGTH == ARB_HIST_SUM_LEN); */
-  
+  COMPILE_TIME_ASSERT(SHA_DIGEST_LENGTH == ARB_HIST_SUM_LEN);
+
+	log_hex("alleged_history_summary: ", alleged_history_summary, ARB_HIST_SUM_LEN);
+	log_hex("request:                 ", request, request_len);
+
   SHA1_Init(&ctx);
   SHA1_Update(&ctx, alleged_history_summary, ARB_HIST_SUM_LEN);
   SHA1_Update(&ctx, request, request_len);
   SHA1_Final(digest, &ctx);
+
+	log_hex("digest: ", digest, SHA_DIGEST_LENGTH);
+	log_hex("nvram:  ", nvram, ARB_HIST_SUM_LEN);
 
   return 0 == memcmp(digest, nvram, ARB_HIST_SUM_LEN);
 }
