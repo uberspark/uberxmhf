@@ -52,6 +52,8 @@
 #include "libarb.h" /* for arb_err_t */
 #include "libarbtools.h"
 
+bool g_fake_crash = false;
+
 /**
  * Extremely redundant with respect to increment_counter().
  * TODO: Tighten everything up.
@@ -108,15 +110,11 @@ tz_return_t attempt_recovery(tz_session_t *tzPalSession) {
 
   puke_file(THIS_SNAPSHOT_FILENAME, new_snapshot, new_snapshot_len);
 
-  /* Now rename THIS* to LAST* */
+  /* No need to rename request, just snapshot */
   if(0 != rename(THIS_SNAPSHOT_FILENAME, LAST_SNAPSHOT_FILENAME)) {
       perror("Renaming snapshot from this to last!");
       exit(1);
   }
-  if(0 != rename(THIS_REQUEST_FILENAME, LAST_REQUEST_FILENAME)) {
-      perror("Renaming request from this to last!");
-      exit(1);
-  }  
 
  out:
   if(old_snapshot) { free(old_snapshot); old_snapshot = NULL; }
@@ -159,7 +157,7 @@ tz_return_t increment_counter(tz_session_t *tzPalSession) {
   /* Call PAL */
   tzRet = TZOperationPerform(&tzOp, &serviceReturn);
   if (tzRet != TZ_SUCCESS) {
-    rv = 1;
+    rv = tzRet;
     printf("%s:%d: tzRet 0x%08x\n", __FILE__, __LINE__, tzRet);
     goto out;
 
@@ -171,30 +169,46 @@ tz_return_t increment_counter(tz_session_t *tzPalSession) {
                      &new_snapshot, &new_snapshot_len);
   if (tzRet) {
     printf("Output decoder returned error %d\n", tzRet);
-    rv = 1;
+    rv = tzRet;
     goto out;
   }
 
   print_hex("       counter: ", counter, counter_len);
   print_hex("  new_snapshot: ", new_snapshot, new_snapshot_len);
 
-  puke_file(THIS_SNAPSHOT_FILENAME, new_snapshot, new_snapshot_len);
 
-  /* Now rename THIS* to LAST* */
-  if(0 != rename(THIS_SNAPSHOT_FILENAME, LAST_SNAPSHOT_FILENAME)) {
-      perror("Renaming snapshot from this to last!");
-      exit(1);
+  /* Support a "fake crash" to test recovery. */
+  if(!g_fake_crash) {
+      puke_file(THIS_SNAPSHOT_FILENAME, new_snapshot, new_snapshot_len);
+
+      /* Now rename THIS* to LAST* */
+      if(0 != rename(THIS_SNAPSHOT_FILENAME, LAST_SNAPSHOT_FILENAME)) {
+          perror("Renaming snapshot from this to last!");
+          exit(1);
+      }
+      if(0 != rename(THIS_REQUEST_FILENAME, LAST_REQUEST_FILENAME)) {
+          perror("Renaming request from this to last!");
+          exit(1);
+      }
+  } else {
+      printf("**********************************************\n");
+      printf("*** Faking a crash. Not updating snapshot! ***\n");
+      printf("**********************************************\n");
   }
-  if(0 != rename(THIS_REQUEST_FILENAME, LAST_REQUEST_FILENAME)) {
-      perror("Renaming request from this to last!");
-      exit(1);
-  }  
 
  out:
   if(old_snapshot) { free(old_snapshot); old_snapshot = NULL; }
   dump_stderr_from_pal(&tzOp);
   TZOperationRelease(&tzOp);
 
+  if(TZ_ERROR_SERVICE == rv && ARB_ERECOVERYNEEDED == serviceReturn) {
+      printf("***************************************************\n");
+      printf("increment_counter() failed with ARB_ERECOVERYNEEDED\n");
+      printf("ATTEMPTING RECOVERY!\n");
+      printf("***************************************************\n");
+      rv = attempt_recovery(tzPalSession);
+  }
+  
   if(0 != rv) { printf("...FAILED rv %d\n", rv); }
   return rv;
 }
@@ -278,7 +292,7 @@ int main(int argc, char *argv[])
   PAL_CMD cmd;
   
   if(argc < 2) {
-      printf("Usage: %s [-initialize] [-increment] [-test]\n", argv[0]);
+      printf("Usage: %s [-initialize][-increment][-test] [-fakecrash]\n", argv[0]);
       exit(1);
   }
   
@@ -291,6 +305,10 @@ int main(int argc, char *argv[])
       cmd = PAL_TEST;
       printf("Test Unimplemented.\n");
       exit(1);
+  }
+
+  if(argc > 2 && !strncmp(argv[2], "-fakecrash", 20)) {
+      g_fake_crash = true;
   }
   
   /* open isolated execution environment device */
@@ -346,9 +364,6 @@ int main(int argc, char *argv[])
           break;
       case PAL_ARB_INCREMENT:
           rv = increment_counter(&tzPalSession);
-          if(ARB_ERECOVERYNEEDED == rv) {
-              rv = attempt_recovery(&tzPalSession);
-          }
           break;
       case PAL_TEST:
       default:
