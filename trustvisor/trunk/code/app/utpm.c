@@ -281,6 +281,58 @@ static TPM_RESULT utpm_internal_digest_current_TpmPcrComposite(
 
 #define TPM_AES_KEY_LEN_BYTES (TPM_AES_KEY_LEN/8)
 
+/**
+ * Return the amount of space overhead (in bytes) expected when
+ * 'inlen' bytes of plaintext are sealed to the PCRs specified in
+ * 'tpmsel'.
+ *
+ * NOTE: This _must_ remain consistent with the logic in utpm_seal()
+ * below.
+ * 
+ * TODO: Refactor utpm_seal() to have a size-only operating mode
+ * (i.e., when certain input parameters are NULL).  It will be
+ * reasonable to change this function into a wrapper to call
+ * utpm_seal() with NULL buffers once that refactoring is complete.
+ */
+unsigned int utpm_seal_overhead(unsigned int inlen, const TPM_PCR_SELECTION *tpmsel) {
+    unsigned int size = 0;
+
+    if(!tpmsel) { return 0; }
+
+    /**
+     * 6 Contributors:
+     * 0. IV for symmetric encryption
+     * 1. TPM_PCR_SELECTION (two cases: 0 PCRs, 1+ PCRs)
+     * 2. input_len
+     * 3. input itself
+     * 4. pad out to symmetric encryption block size
+     * 5. SHA1-HMAC
+     */
+
+    /* 0 */
+    size += TPM_AES_KEY_LEN_BYTES;
+    /* 1 */
+    if(tpmsel->sizeOfSelect == 0) {
+        size += sizeof(tpmsel->sizeOfSelect);
+    } else {
+        size += sizeof(TPM_PCR_INFO);
+    }
+    /* 2 */
+    size += sizeof(uint32_t);
+    /* 3 */
+    size += inlen;
+    /* 4 */
+	if ((size & 0xF) != 0) {
+        unsigned int pad = 0;
+		pad = (size + TPM_AES_KEY_LEN_BYTES) & (~0xF);
+        size += pad;
+	}
+    /* 5 */    
+    size += TPM_HASH_SIZE;
+
+    return size;
+}
+
 TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
                      TPM_PCR_INFO *tpmPcrInfo,
                      uint8_t* input, uint32_t inlen,
@@ -308,7 +360,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     print_hex("  [TV:utpm_seal] aeskey:     ", aeskey, TPM_AES_KEY_LEN_BYTES); /* XXX SECURITY */
     
     /**
-     * Part 1: Populate digestAtCreation (only for non-NULL tpmPcrInfo).
+     * Part 1: Populate digestAtCreation (only for tpmPcrInfo that selects 1+ PCRs).
      */
     if(0 != tpmPcrInfo->pcrSelection.sizeOfSelect) {
         /* The caller does not provide the DigestAtCreation component of
@@ -420,7 +472,13 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 
     dprintf(LOG_TRACE, "*outlen = %d\n", *outlen);
     print_hex("ciphertext from utpm_seal: ", output, *outlen);
-              
+
+    /* Sanity checking output size */
+    if(*outlen != utpm_seal_overhead(inlen, &tpmPcrInfo_internal.pcrSelection)) {
+        dprintf(LOG_ERROR, "\n\nERROR!!! *outlen(%d) != utpm_seal_overhead(%d)\n\n", *outlen,
+                utpm_seal_overhead(inlen, &tpmPcrInfo_internal.pcrSelection));
+    } 
+
     /* SECURITY: zero memory before freeing? */
     if(plaintext) { vfree(plaintext); plaintext = NULL; iv = NULL; } 
     
