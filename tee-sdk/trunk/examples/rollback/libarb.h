@@ -33,3 +33,22 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+/**
+ * AntiRollBack (ARB) Tools - Trusted portion.
+ *
+ * These library calls are used within a PAL to achieve crash
+ * resilience and anti-rollback of PAL state.
+ */
+
+#ifndef _LIBARB_H_
+#define _LIBARB_H_
+
+
+#endif _LIBARB_H_
+
+
+/* Local Variables: */
+/* mode:c           */
+/* indent-tabs-mode:'t */
+/* tab-width:2      */
+/* End:             */

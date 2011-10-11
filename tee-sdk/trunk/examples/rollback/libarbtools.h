@@ -33,3 +33,22 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+/**
+ * AntiRollBack (ARB) Tools - Untrusted portion.
+ *
+ * These library calls are used by the untrusted portion of
+ * applications that cooperate to achieve crash resilience and
+ * anti-rollback of PAL state.
+ */
+
+#ifndef _LIBARBTOOLS_H_
+#define _LIBARBTOOLS_H_
+
+
+#endif _LIBARBTOOLS_H_
+
+/* Local Variables: */
+/* mode:c           */
+/* indent-tabs-mode:'t */
+/* tab-width:2      */
+/* End:             */
