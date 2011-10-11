@@ -135,8 +135,6 @@ arb_err_t pal_arb_advance_state(IN const uint8_t *request,
 	return ARB_ENONE;
 }
 
-
-
 /* TODO: rename this to something better, e.g., pal_entry. */
 void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
@@ -161,8 +159,41 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
 		uint8_t* counter;
 		size_t new_snapshot_len;
 		uint8_t* new_snapshot;
+		arb_err_t rv;
+		unsigned int i;
 
 
+		/**
+		 * Calculate size of outputs
+		 */
+
+		/* This is PAL-specific, so it's fine to figure it out right
+		 * here. */
+		counter_len = sizeof(pal_state_t);
+		
+		/* This is ARB-specific. Calling with NULL assigns
+		 * new_snapshot_len amount of space needed. */
+		rv = arb_initialize_internal_state(NULL, &new_snapshot_len);		
+		if(ARB_ENONE != rv) { break; }
+		
+		/* Make room for outputs */
+		if((*puiRv = TZIEncodeBufF(psOutBuf, "%"TZI_EARRSPC "%"TZI_EARRSPC,
+															 &counter, (uint32_t)counter_len,
+															 &new_snapshot, (uint32_t)new_snapshot_len))) {
+			break;
+		}
+
+		/* Now that buffers are allocated, call for real. Note that
+		 * arb_initialize_internal_state() subsequently calls the
+		 * PAL-specific state initialization function(s). */
+		rv = arb_initialize_internal_state(new_snapshot, &new_snapshot_len);
+		if(ARB_ENONE != rv) { break; }
+
+		/* Now that an initial state is defined, prepare the cleartext
+		 * outputs (in this case, just the counter value) */
+		for(i=0; i<sizeof(pal_state_t); i++) {
+			counter[i] = ((uint8_t*)&g_pal_state)[i];
+		}
 		
 		break;
 	}
