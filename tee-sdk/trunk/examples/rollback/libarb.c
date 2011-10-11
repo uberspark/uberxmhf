@@ -158,16 +158,6 @@ arb_err_t arb_initialize_internal_state(uint8_t *new_snapshot,
 }
 
 /**
- * Returns: true if current snapshot matches history_summary. false
- * otherwise.
- */
- 
-static bool arb_is_history_summary_current(uint8_t alleged_history_summary[ARB_HIST_SUM_LEN],
-                                           uint8_t nvram[ARB_HIST_SUM_LEN]) {
-  return 0 == memcmp(alleged_history_summary, nvram, ARB_HIST_SUM_LEN);
-}
-
-/**
  * Assumption: arb_is_snapshot_current() already returned false.
  *
  * Returns: true if replay is needed to recover from crash. false
@@ -362,8 +352,8 @@ arb_err_t arb_execute_request(const uint8_t *request,
   }
   
   /* Check for case (1) */
-  if(arb_is_history_summary_current(g_arb_internal_state.history_summary,
-                                    nvbuf)) {
+  if(0 == memcmp(g_arb_internal_state.history_summary,
+								 nvbuf, ARB_HIST_SUM_LEN)) {
     /* We're good! Update history summary (in g_arb_internal_state and NVRAM) */
 		log_info("History summary determined to be current");
     rv = arb_update_history_summary(request, request_len, g_arb_internal_state.history_summary);
