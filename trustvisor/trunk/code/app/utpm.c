@@ -294,8 +294,10 @@ static TPM_RESULT utpm_internal_digest_current_TpmPcrComposite(
  * reasonable to change this function into a wrapper to call
  * utpm_seal() with NULL buffers once that refactoring is complete.
  */
+#define ALIGN_UP(n, boundary)	(((n)+((boundary)-1))&(~((boundary)-1)))
+
 unsigned int utpm_seal_overhead(unsigned int inlen, const TPM_PCR_SELECTION *tpmsel) {
-    unsigned int size = 0;
+    unsigned int pad, size = 0;
 
     if(!tpmsel) { return 0; }
 
@@ -322,11 +324,8 @@ unsigned int utpm_seal_overhead(unsigned int inlen, const TPM_PCR_SELECTION *tpm
     /* 3 */
     size += inlen;
     /* 4 */
-	if ((size & 0xF) != 0) {
-        unsigned int pad = 0;
-		pad = (size + TPM_AES_KEY_LEN_BYTES) & (~0xF);
-        size += pad;
-	}
+    pad = ALIGN_UP(size, TPM_AES_KEY_LEN_BYTES) - size;
+    size += pad;
     /* 5 */    
     size += TPM_HASH_SIZE;
 
