@@ -624,7 +624,9 @@ tz_return_t increment_counter(tz_session_t *tzPalSession) {
 
   print_hex("       counter: ", counter, counter_len);
   print_hex("  new_snapshot: ", new_snapshot, new_snapshot_len);
-  print_hex("    stderr_buf: ", stderr_buf, stderr_buf_len);
+
+  stderr_buf[stderr_buf_len-1] = '\0'; /* XXX clobbers last character */
+  printf("stderr_buf:\n%s\n", stderr_buf);
 
  out:
   if(old_snapshot) { free(old_snapshot); old_snapshot = NULL; }

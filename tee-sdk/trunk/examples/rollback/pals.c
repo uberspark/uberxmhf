@@ -241,7 +241,7 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
 		uint8_t* counter;
 		size_t new_snapshot_len;
 		uint8_t* new_snapshot;
-		arb_err_t rv;
+		arb_err_t rv = ARB_ENONE;
 		unsigned int i;
 
 		/* XXX redundant with existing TZ command for now, but more

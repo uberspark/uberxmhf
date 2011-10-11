@@ -33,9 +33,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
 
+#include <tsvc.h>
 #include <tee-sdk/tzmarshal.h>
 #include <tee-sdk/svcapi.h>
 
@@ -391,6 +393,7 @@ arb_err_t arb_execute_request(const uint8_t *request,
   }
   /* We're WEDGED.  Lame!!! */
   else {
+		fprintf(stderr, "WEDGED!\n");
     return ARB_EWEDGED;
   }
 
