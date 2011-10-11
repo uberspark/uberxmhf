@@ -32,3 +32,8 @@ This initial implementation will be rife with responsibilities that
 the developer must meet to ensure the desired security properties.
 Ultimately we hope to structure the code such that shooting oneself in
 the foot becomes challenging.
+
+Initially, we will not leverage JSON, Google Protocol Buffers, or
+other "nice" data structuring formats.  Ultimately, we will use
+something like this.
+
