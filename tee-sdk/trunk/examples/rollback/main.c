@@ -576,9 +576,15 @@ tz_return_t test_nv_rollback(tz_session_t *tzPalSession) {
 
 }
 
+typedef enum {
+    CTR_INIT=0,
+    CTR_ADVANCE,
+    CTR_TEST
+} command_t;
+
 // function main
 // register some sensitive code and data in libfoo.so and call bar()
-int main(void)
+int main(int argc, char *argv[])
 {
   struct tv_pal_sections scode_info;
   int rv = 0;
@@ -592,7 +598,22 @@ int main(void)
       .pEntry = pals,
     };
   tz_uuid_t tzSvcId;
+  command_t cmd;
 
+  if(argc < 2) {
+      printf("Usage: %s [-initialize] [-advance] [-test]\n", argv[0]);
+      exit(1);
+  }
+  
+  if(!strncmp(argv[1], "-advance", 20)) {
+      cmd = CTR_ADVANCE;
+  } else if(!strncmp(argv[1], "-initialize", 20)) {
+      cmd = CTR_INIT;
+  } else {
+      /* Assume test */
+      cmd = CTR_TEST;
+  }
+  
   /* open isolated execution environment device */
   {
     tzRet = TZDeviceOpen(NULL, NULL, &tzDevice);
@@ -640,10 +661,19 @@ int main(void)
     TZOperationRelease(&op);
   }
 
-  rv = test_seal2(&tzPalSession) || rv;
-  rv = test_seal(&tzPalSession) || rv;
-  rv = test_longterm_seal(&tzPalSession) || rv;
-  rv = test_nv_rollback(&tzPalSession) || rv;
+  switch(cmd) {
+      case CTR_INIT:
+          break;
+      case CTR_ADVANCE:
+          break;
+      case CTR_TEST:
+      default:
+          rv = test_seal2(&tzPalSession) || rv;
+          rv = test_seal(&tzPalSession) || rv;
+          rv = test_longterm_seal(&tzPalSession) || rv;
+          rv = test_nv_rollback(&tzPalSession) || rv;
+          break;
+  }
   
   if (rv) {
     printf("FAIL with rv=%d\n", rv);
