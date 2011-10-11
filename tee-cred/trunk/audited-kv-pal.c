@@ -141,6 +141,20 @@ akv_err_t akvp_set_master_secret(void *master_secret, size_t master_secret_len)
     CHECK_RV(rv, rv, "derive_from_master(HMAC)");
   }
 
+  /* reset aes key */
+  {
+    uint8_t secret[AKVP_AES_KEY_LEN];
+    int cryptorv;
+    rv = derive_from_master(secret, sizeof(secret),
+                            master_secret, master_secret_len,
+                            "AES_CTR_KEY");
+    CHECK_RV(rv, rv, "derive_from_master(AES_CTR_KEY)");
+
+    cryptorv = AES_set_encrypt_key(secret, sizeof(secret)*8,
+                                   &akv_ctx.aes_ctr_key);
+    CHECK_RV(cryptorv, AKV_ECRYPTO, "AES_set_encrypt_key");
+  }
+
  out:
   return rv;
 }

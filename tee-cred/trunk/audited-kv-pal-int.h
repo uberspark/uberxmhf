@@ -52,7 +52,7 @@ typedef struct {
   kv_ctx_t* kv_ctx;
   void *master_secret;
   size_t master_secret_len;
-  AES_KEY *aes_key;
+  AES_KEY aes_ctr_key;
   void *hmac_key;
   size_t hmac_key_len;
 } akv_ctx_t;
