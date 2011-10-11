@@ -51,10 +51,10 @@
   return ((val-1) & ~(align-1)) + align;
 }
 
-/* static */ akv_err_t export_entry(AkvpStorage__MacdEncdEntry *out,
-                                    const char *key, size_t key_len,
-                                    const uint8_t *val,
-                                    size_t val_len)
+static akv_err_t export_entry(AkvpStorage__MacdEncdEntry *out,
+                              const char *key, size_t key_len,
+                              const uint8_t *val,
+                              size_t val_len)
 {
   akv_err_t rv=0;
   unsigned int svcerr;
