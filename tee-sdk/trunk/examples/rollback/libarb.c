@@ -415,7 +415,7 @@ arb_err_t arb_execute_request(const uint8_t *request,
 	 * state, and seal it up for outputting.
 	 */
 
-	rv = pal_arb_deserialize_state(buf+sizeof(arb_internal_state_t), size);
+	rv = pal_arb_deserialize_state(buf+sizeof(arb_internal_state_t), size-sizeof(arb_internal_state_t));
 	if(ARB_ENONE != rv) {
 		log_err("pal_arb_deserialize_state() failed with rv %d", rv);
 		return rv;
