@@ -419,9 +419,9 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     print_hex("ciphertext from utpm_seal: ", output, *outlen);
 
     /* Sanity checking output size */
-    if(*outlen != utpm_seal_output_size(inlen, &tpmPcrInfo_internal.pcrSelection)) {
+    if(*outlen != utpm_seal_output_size(inlen, false)) {
         dprintf(LOG_ERROR, "\n\nERROR!!! *outlen(%d) != utpm_seal_output_size(%d)\n\n", *outlen,
-                utpm_seal_output_size(inlen, &tpmPcrInfo_internal.pcrSelection));
+                utpm_seal_output_size(inlen, false));
     } 
 
     /* SECURITY: zero memory before freeing? */
