@@ -63,15 +63,12 @@ arb_internal_state_t g_arb_internal_state;
 static arb_err_t serialize_and_seal(const arb_internal_state_t *state,
 																		uint8_t *new_snapshot,
 																		size_t *new_snapshot_len) {
-	unsigned int i;
 	TPM_PCR_INFO tpmPcrInfo;
 	arb_err_t rv;
 	size_t size;
 	static uint8_t buf[1024]; /* XXX */
-	
-	for(i=0; i<sizeof(arb_internal_state_t); i++) {
-		buf[i] = ((uint8_t*)state)[i];
-	}
+
+	memcpy(buf, state, sizeof(arb_internal_state_t));
 	rv = pal_arb_serialize_state(buf + sizeof(arb_internal_state_t),
 															 &size);
 	if(ARB_ENONE != rv) { return rv; } /* Not sure how to deal with this
@@ -81,9 +78,7 @@ static arb_err_t serialize_and_seal(const arb_internal_state_t *state,
 	*new_snapshot_len = utpm_seal_output_size(size, /* XXX */false);
 	/* seal size bytes from buf into new_snapshot */
 	/* XXX Don't select any PCRs for now! */
-	for(i=0;i<sizeof(TPM_PCR_INFO);i++) {
-		((uint8_t*)&tpmPcrInfo)[i] = 0;
-	}
+	memset(&tpmPcrInfo, 0, sizeof(TPM_PCR_INFO));
 
 	log_hex("serialize_and_seal [arb_internal|pal]_state_t: ",
 					buf, size);
@@ -99,7 +94,6 @@ static arb_err_t serialize_and_seal(const arb_internal_state_t *state,
  */
 arb_err_t arb_initialize_internal_state(uint8_t *new_snapshot,
 																				size_t *new_snapshot_len) {
-  unsigned int i;
   size_t size;
   uint8_t nvbuf[MAX_NV_SIZE];
 	arb_err_t rv;
@@ -131,9 +125,8 @@ arb_err_t arb_initialize_internal_state(uint8_t *new_snapshot,
 	/**
 	 * Set HistorySummary_0 = 0
 	 */
-  for(i=0; i<sizeof(g_arb_internal_state.history_summary); i++) {
-    g_arb_internal_state.history_summary[i] = 0;
-  }
+	memset(&g_arb_internal_state.history_summary, 0,
+				 sizeof(g_arb_internal_state.history_summary));
 
   /* Zeroize HistorySummary in NVRAM */
   if(svc_tpmnvram_getsize(&size)) {
@@ -145,9 +138,7 @@ arb_err_t arb_initialize_internal_state(uint8_t *new_snapshot,
     return ARB_ENOMEM;
   }  
 
-  for(i=0; i<size; i++) {
-    nvbuf[i] = 0; 
-  }
+	memset(nvbuf, 0, size);
   
   if(svc_tpmnvram_writeall(nvbuf)) {
     return (TZ_ERROR_GENERIC << 8) | ARB_ETZ;
@@ -167,26 +158,13 @@ arb_err_t arb_initialize_internal_state(uint8_t *new_snapshot,
 }
 
 /**
- * TODO: Get sane string.h functions in here somehow.
- */
-static bool compare(const uint8_t* a, const uint8_t* b, size_t size) {
-  size_t i;
-  for(i=0; i<size; i++) {
-    if(a[i] != b[i]) {
-      return false;
-    }
-  }
-  return true;
-}
-
-/**
  * Returns: true if current snapshot matches history_summary. false
  * otherwise.
  */
  
 static bool arb_is_history_summary_current(uint8_t alleged_history_summary[ARB_HIST_SUM_LEN],
                                            uint8_t nvram[ARB_HIST_SUM_LEN]) {
-  return compare(alleged_history_summary, nvram, ARB_HIST_SUM_LEN);
+  return 0 == memcmp(alleged_history_summary, nvram, ARB_HIST_SUM_LEN);
 }
 
 /**
@@ -210,7 +188,7 @@ static bool arb_is_replay_needed(const uint8_t alleged_history_summary[ARB_HIST_
   SHA1_Update(&ctx, request, request_len);
   SHA1_Final(digest, &ctx);
 
-  return compare(digest, nvram, ARB_HIST_SUM_LEN);
+  return 0 == memcmp(digest, nvram, ARB_HIST_SUM_LEN);
 }
 
 /**
@@ -249,9 +227,9 @@ static arb_err_t arb_update_history_summary(const uint8_t *request, /* in */
     return (TZ_ERROR_GENERIC << 8) | ARB_ETZ;
   }
 
-  if(!compare(history_summary, nvbuf,
-              ARB_HIST_SUM_LEN)) {
+  if(0 != memcmp(history_summary, nvbuf, ARB_HIST_SUM_LEN)) {
     /* This is FATAL and should never happen; it should be an ASSERT!!! */
+		log_err("FATAL: 0 != memcmp(history_summary, nvbuf, ARB_HIST_SUM_LEN)");
     return ARB_EBADSTATE;
   }
 
