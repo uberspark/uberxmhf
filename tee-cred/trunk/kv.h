@@ -41,6 +41,12 @@
 struct kv_ctx_s;
 typedef struct kv_ctx_s kv_ctx_t;
 
+typedef struct {
+  /** private **/
+  kv_ctx_t *ctx;
+  size_t i;
+} kv_it_t;
+
 enum kv_cmds {
   KV_ADD,
   KV_GET,
@@ -58,6 +64,10 @@ typedef enum {
 kv_ctx_t* kv_ctx_new(void);
 void kv_ctx_del(kv_ctx_t*);
 
+void kv_iterate(kv_ctx_t* ctx, kv_it_t* it);
+void kv_it_next(kv_it_t *it, const void **key, size_t *key_len, const void **val, size_t *val_len);
+
+size_t kv_count(kv_ctx_t* ctx);
 int kv_add(kv_ctx_t* ctx, const void *key, size_t key_len, const void *val, size_t val_len);
 int kv_get(kv_ctx_t* ctx, const void *key, size_t key_len, const void **val, size_t *val_len);
 int kv_del(kv_ctx_t* ctx, const void *key, size_t key_len);

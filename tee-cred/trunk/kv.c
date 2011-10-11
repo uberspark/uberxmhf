@@ -116,3 +116,27 @@ int kv_get(kv_ctx_t* ctx, const void *key, size_t key_len, const void **val, siz
     *val_len = 0;
   return KV_ENOTFOUND;
 }
+
+size_t kv_count(kv_ctx_t* ctx)
+{
+  return ctx->num_keys;
+}
+
+void kv_iterate(kv_ctx_t* ctx, kv_it_t* it)
+{
+  it->ctx = ctx;
+  it->i=0;
+}
+
+void kv_it_next(kv_it_t *it, const void **key, size_t *key_len, const void **val, size_t *val_len)
+{
+  if (it->i >= it->ctx->num_keys) {
+    *key=NULL;
+    *val=NULL;
+    return;
+  }
+  *key = it->ctx->data[it->i].key;
+  *key_len = it->ctx->data[it->i].key_len;
+  *val = it->ctx->data[it->i].val;
+  *val_len = it->ctx->data[it->i].val_len;
+}
