@@ -61,6 +61,41 @@ arb_internal_state_t g_arb_internal_state;
 uint8_t g_hideous_buffer[4096];
 
 /**
+ * (1) serialize both our state and the PAL's state and (2) seal
+ * them.
+ */
+static arb_err_t serialize_and_seal(const arb_internal_state_t *state,
+																		uint8_t *new_snapshot,
+																		size_t *new_snapshot_len) {
+	unsigned int i;
+	TPM_PCR_INFO tpmPcrInfo;
+	arb_err_t rv;
+	size_t size;
+	
+	for(i=0; i<sizeof(arb_internal_state_t); i++) {
+		g_hideous_buffer[i] = ((uint8_t*)state)[i];
+	}
+	rv = pal_arb_serialize_state(g_hideous_buffer + sizeof(arb_internal_state_t),
+															 &size);
+	if(ARB_ENONE != rv) { return rv; } /* Not sure how to deal with this
+																			* one cleanly */
+	size += sizeof(arb_internal_state_t);
+
+	/* seal size bytes from g_hideous_buffer into new_snapshot */
+	tpmPcrInfo.pcrSelection.sizeOfSelect = TPM_PCR_NUM/8;
+	tpmPcrInfo.pcrSelection.pcrSelect[0] = 0; /* XXX Don't select anything for now! */
+	for(i=0;i<TPM_HASH_SIZE;i++) {
+		tpmPcrInfo.digestAtRelease.value[i] = 0;
+	}
+
+	if(0 != svc_utpm_seal(&tpmPcrInfo, g_hideous_buffer, size, new_snapshot, new_snapshot_len)) {
+		return ARB_EBADCMD;
+	}
+
+	return rv;
+}
+
+/**
  * TODO: Flesh out with full PRNG.  Initialize with uTPM entropy.
  */
 arb_err_t arb_initialize_internal_state(arb_internal_state_t *state,
@@ -127,29 +162,9 @@ arb_err_t arb_initialize_internal_state(arb_internal_state_t *state,
 	rv = pal_arb_initialize_state();
 	if(ARB_ENONE != rv) { return rv; }
 
-	for(i=0; i<sizeof(arb_internal_state_t); i++) {
-		g_hideous_buffer[i] = ((uint8_t*)state)[i];
-	}
-	rv = pal_arb_serialize_state(g_hideous_buffer + sizeof(arb_internal_state_t),
-															 &size);
-	if(ARB_ENONE != rv) { return rv; } /* Not sure how to deal with this
-																			* one cleanly */
-	size += sizeof(arb_internal_state_t);
-
-
-	/* seal size bytes from g_hideous_buffer into new_snapshot */
-	TPM_PCR_INFO tpmPcrInfo;
-	tpmPcrInfo.pcrSelection.sizeOfSelect = TPM_PCR_NUM/8;
-	tpmPcrInfo.pcrSelection.pcrSelect[0] = 0; /* XXX Don't select anything for now! */
-	for(i=0;i<TPM_HASH_SIZE;i++) {
-		tpmPcrInfo.digestAtRelease.value[i] = 0;
-	}
-
-	if(0 != svc_utpm_seal(&tpmPcrInfo, g_hideous_buffer, size, new_snapshot, new_snapshot_len)) {
-		return ARB_EBADCMD;
-	}
+	rv = serialize_and_seal(state, new_snapshot, new_snapshot_len);
 	
-  return ARB_ENONE;
+  return rv;
 }
 
 /**
@@ -277,11 +292,11 @@ static arb_err_t arb_update_history_summary(const uint8_t *request, /* in */
  * Definitely not ready for really important data yet.
  */
 arb_err_t arb_execute_request(const uint8_t *request,
-                              const uint32_t request_len,
-                              const uint8_t *old_snapshot,
-                              const uint32_t old_snapshot_len,
+                              const size_t request_len,
+                              /*const*/ uint8_t *old_snapshot,
+                              size_t old_snapshot_len,
 															uint8_t *new_snapshot, /* pre-allocated, OUT*/
-															uint32_t *new_snapshot_len) /* IN / OUT */
+															size_t *new_snapshot_len) /* IN / OUT */
 {
   size_t size;
   uint8_t nvbuf[MAX_NV_SIZE];
@@ -302,24 +317,37 @@ arb_err_t arb_execute_request(const uint8_t *request,
    * If the snapshot was manipulated, it will not unseal properly.  If
    * it unseals, it was a previous snapshot created by this PAL.  We
    * do _not_ yet know if it is fresh.
+	 *
+	 * Snapshot = svc_utpm_seal(arb_internal_state_t||serialized_pal_state)
    */
 
   /* XXX TODO Optimize the common case when we don't have to seal /
-   * unseal every request. For now, we assume snapshot is an encrypted
-   * arb_internal_state_t.
-   */
+   * unseal every request. */
   
+	/* TODO: Tighten this bound to detect more errors.  Also check that
+	 * data is not insanely huge. Might even be able to use lack of any
+	 * UTPM_SEALING_OVERHEAD to indicate whether sealing is
+	 * necessary??? */
   if(old_snapshot_len < sizeof(arb_internal_state_t)) {
     return ARB_EPARAM;
   }
 
-  /* XXX TODO Seal / Unseal the state! Skipping for now to get basic
-   * operation stood up so we can test as we go. */
-  for(i=0; i<sizeof(arb_internal_state_t); i++) {
-    *((uint8_t*)&g_arb_internal_state) = old_snapshot[i];
-  }
+	TPM_DIGEST digestAtCreation;
+	if(0 != svc_utpm_unseal(old_snapshot, old_snapshot_len,
+													g_hideous_buffer, &size,
+													(uint8_t*)&digestAtCreation)) {
+		return ARB_EUNSEALFAILED;
+	}
 
-  /* XXX TODO Deserialize previous PAL-specific state */
+	/**
+	 * Now that we have unsealed, we may have sensitive data in memory.
+	 * Be responsible: Zero things upon failure, etc.
+	 */	
+
+	/* First comes arb_internal_state_t; copy it */
+  for(i=0; i<sizeof(arb_internal_state_t); i++) {
+    *((uint8_t*)&g_arb_internal_state) = g_hideous_buffer[i];
+  }
   
   /**
    * 2. Validate History Summary.
@@ -352,14 +380,8 @@ arb_err_t arb_execute_request(const uint8_t *request,
   /* Check for case (1) */
   if(arb_is_history_summary_current(g_arb_internal_state.history_summary,
                                     nvbuf)) {
-    /* We're good!  Go ahead and start the new transaction. */
-    // 1. Update history summary (in g_arb_internal_state and NVRAM)
+    /* We're good! Update history summary (in g_arb_internal_state and NVRAM) */
     rv = arb_update_history_summary(request, request_len, g_arb_internal_state.history_summary);
-    if(ARB_ENONE != rv) { return rv; }
-    // 2. Do the actual transaction
-    rv = pal_arb_advance_state(request, request_len);
-    if(ARB_ENONE != rv) { return rv; }
-    rv = pal_arb_serialize_state(serialized_state, serialized_state_len); /* XXX malloc()??? */
     if(ARB_ENONE != rv) { return rv; }
   }
   /* Check for case (2) */
@@ -368,22 +390,29 @@ arb_err_t arb_execute_request(const uint8_t *request,
          request,
          request_len,
          nvbuf)) {
-    /* Something went wrong last time, but we have what it takes to
-     * recover. We must start recovery now. */
-    // 1. Don't update history summary since it was updated at the
-    //    beginning of the previous, failed transaction.
-    // 2. Do the actual transaction
-    rv = pal_arb_advance_state(request, request_len);
-    if(ARB_ENONE != rv) { return rv; }
-    rv = pal_arb_serialize_state(serialized_state, serialized_state_len); /* XXX malloc()??? */
-    if(ARB_ENONE != rv) { return rv; }
+    /* Something went wrong last time, but we appear to have what it takes to
+     * recover. Just let the transaction run again. */
+		; // Nothing to do here.
   }
   /* We're WEDGED.  Lame!!! */
   else {
     return ARB_EWEDGED;
   }
-  
-  
+
+	/**
+	 * If we're still here, time to run the transaction, serialize PAL
+	 * state, and seal it up for outputting.
+	 */
+
+	rv = pal_arb_deserialize_state(g_hideous_buffer+sizeof(arb_internal_state_t), size);
+	if(ARB_ENONE != rv) { return rv; }	
+	
+	rv = pal_arb_advance_state(request, request_len);
+	if(ARB_ENONE != rv) { return rv; }
+
+	rv = serialize_and_seal(&g_arb_internal_state, new_snapshot, new_snapshot_len);
+	if(ARB_ENONE != rv) { return rv; }
+	
   return ARB_ENONE;
 }
 

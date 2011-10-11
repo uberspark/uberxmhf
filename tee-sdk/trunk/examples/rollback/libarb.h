@@ -66,6 +66,7 @@ typedef enum {
   ARB_EBADAUTH=15,
   ARB_ETZ=16, /* TZ error shifted on */
   ARB_EWEDGED=17, /* Unrecoverable state error! */
+	ARB_EUNSEALFAILED=18,
 } arb_err_t;
 
 #define ARB_SYM_KEY_SIZE (256/8) /* bytes */
@@ -80,11 +81,11 @@ typedef struct {
 
 arb_err_t arb_initialize_internal_state();
 arb_err_t arb_execute_request(const uint8_t *request,
-                              const uint32_t request_len,
-                              const uint8_t *old_snapshot,
-                              const uint32_t old_snapshot_len,
+                              const size_t request_len,
+                              /*const*/ uint8_t *old_snapshot,
+                              size_t old_snapshot_len,
 															uint8_t *new_snapshot,
-															uint32_t *new_snapshot_len);
+															size_t *new_snapshot_len);
 
 
 /**
