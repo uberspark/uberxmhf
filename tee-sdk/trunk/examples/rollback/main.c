@@ -187,6 +187,8 @@ tz_return_t increment_counter(tz_session_t *tzPalSession) {
           perror("Renaming snapshot from this to last!");
           exit(1);
       }
+      /* No need for LAST_REQUEST, but keeping it anyways. See
+       * discussion in libarbtools.h */
       if(0 != rename(THIS_REQUEST_FILENAME, LAST_REQUEST_FILENAME)) {
           perror("Renaming request from this to last!");
           exit(1);
@@ -226,7 +228,7 @@ tz_return_t initialize_counter(tz_session_t *tzPalSession) {
 
   /* prep operation */
   req.cmd = PAL_ARB_INITIALIZE;
-  puke_file(LAST_REQUEST_FILENAME, &req, sizeof(pal_request_t));
+  puke_file(THIS_REQUEST_FILENAME, &req, sizeof(pal_request_t));
   tzRet = TZOperationPrepareInvoke(tzPalSession,
                                    req.cmd,
                                    NULL,

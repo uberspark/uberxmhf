@@ -56,6 +56,11 @@
 
 #define LAST_SNAPSHOT_FILENAME "last-snapshot.bin"
 #define THIS_SNAPSHOT_FILENAME "this-snapshot.bin"
+/* There is no reason to keep track of the "last request" since by
+ * definition it would only be needed if there is a crash, and if
+ * there is a crash then this-request.bin would never have gotten
+ * renamed. Keeping it around for now as it may be useful as a form of
+ * debug output. */
 #define LAST_REQUEST_FILENAME "last-request.bin"
 #define THIS_REQUEST_FILENAME "this-request.bin"
 
