@@ -45,9 +45,6 @@
 #include "proto-gend/audited.pb-c.h"
 #include "audited-kv-errs.h"
 
-#define AKV_EPOCH_NONCE_MAX 256 /* FIXME - should pull from svcapi.h */
-#define AKV_AUDIT_STRING_MAX 1000 /* FIXME - can we even specify this? */
-
 typedef struct {
   tze_dev_svc_sess_t tz_sess;
 } akv_ctx_t;
