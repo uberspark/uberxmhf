@@ -145,6 +145,64 @@ static akv_err_t export_entry(AkvpStorage__MacdEncdEntry *out,
   return rv;
 }
 
+static akv_err_t import_entry(const AkvpStorage__MacdEncdEntry *entry)
+{
+  akv_err_t rv=0;
+  uint8_t *val=NULL;
+  size_t val_len;
+
+  { /* verify hmac */
+    uint8_t hmac[SHA256_DIGEST_LENGTH];
+
+    rv = sha256_hmac_MacdEncdEntry(entry, hmac, sizeof(hmac));
+    CHECK_RV(rv, rv, "sha256_hmac_MacdEncdEntry");
+
+    CHECK(!memcmp(hmac, entry->hmac.data, sizeof(hmac)),
+          AKV_EBADMAC,
+          "Bad hmac for entry %s", entry->key);
+  }
+
+  { /* decrypt */
+    uint8_t ecount_buf[AES_BLOCK_SIZE];
+    uint8_t ivec[AES_BLOCK_SIZE];
+    unsigned int num=0;
+
+    /* ivec gets updates on encrypt, so we need to make a copy */
+    CHECK(entry->ivec.len == sizeof(ivec),
+          AKV_EPARAM,
+          "Bad ivec length for entry %s", entry->key);
+    memcpy(ivec, entry->ivec.data, sizeof(ivec));
+
+    val_len = entry->encd_val.len; /* plaintext is same size */
+    val=malloc(val_len); 
+    CHECK_MEM(val, AKV_ENOMEM);
+    
+    memset(ecount_buf, 0, sizeof(ecount_buf));
+    AES_ctr128_encrypt(entry->encd_val.data, val,
+                       val_len,
+                       &akv_ctx.aes_ctr_key,
+                       ivec,
+                       ecount_buf,
+                       &num);
+  }
+
+  { /* insert */
+    kv_err_t kv_err;
+    kv_err = kv_add(akv_ctx.kv_ctx,
+                    entry->key, strlen(entry->key),
+                    val, val_len);
+    CHECK_RV(kv_err, MAP1(kv_err,
+                          KV_EEXISTS, AKV_EEXISTS,
+                          AKV_EKV | (kv_err << 8)),
+             "kv_add %s", entry->key);
+  }
+
+ out:
+  free(val);
+  val=NULL;
+  return rv;
+}
+
 static akv_err_t compute_header_mac(void *hmac_key,
                                     size_t hmac_key_len,
                                     const AkvpStorage__Header *h,
@@ -411,6 +469,14 @@ akv_err_t akvp_import(const AkvpStorage__Everything *req, void *res)
   if(memcmp(header_mac, req->mac_of_header.data, header_mac_len)) {
     rv = AKV_EBADMAC;
     goto out;
+  }
+
+  { /* import entries */
+    int i;
+    for(i=0; i<req->n_macd_encd_entries; i++) {
+      rv = import_entry(req->macd_encd_entries[i]);
+      CHECK_RV(rv, rv, "import_entry");
+    }
   }
 
  out:
