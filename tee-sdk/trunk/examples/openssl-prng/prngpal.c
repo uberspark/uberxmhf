@@ -38,11 +38,14 @@
 #include <string.h>
 #include  "pal.h"
 
+#include <tsvc.h> /* newlib, stderr */
 #include <tee-sdk/tzmarshal.h>
 #include <tee-sdk/svcapi.h>
 #include <trustvisor/tv_utpm.h> /* svc_utpm_rand_block */
 
 #include <openssl/hmac.h>
+#include <openssl/rand.h>
+#include <openssl/err.h>
 
 char end[10*4096]; /* define the end of the data segment and some
                       buffer spacefor libnosys's sbrk */
@@ -75,6 +78,22 @@ int test()
   return 5;
 }
 
+#define NUMRAND 256
+static void dorand(void) {
+    uint8_t bytes[NUMRAND];
+    int rv;
+    unsigned int i;
+
+    rv = RAND_bytes(bytes, NUMRAND);
+
+    if(1 == rv) { /* success */
+        for(i = 0; i < NUMRAND; i++) fprintf(stderr, "%02x", bytes[i]);
+        fprintf(stderr, "\n");
+    } else {
+        fprintf(stderr, "dorand ERROR: %ld\n", ERR_get_error());
+    }
+}
+
 static void dohmac(void)
     {
     HMAC_CTX ctx;
@@ -104,6 +123,7 @@ void prngpal(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer
   fprintf(stderr, "test, %d\n", 5);
   test();
   dohmac();
+  dorand();
 
   if (svc_utpm_rand_block(bytes, len) != 0) {
     *puiRv = TZ_ERROR_GENERIC;
