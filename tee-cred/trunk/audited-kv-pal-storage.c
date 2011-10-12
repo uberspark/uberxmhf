@@ -51,6 +51,40 @@
   return ((val-1) & ~(align-1)) + align;
 }
 
+static akv_err_t sha256_hmac_MacdEncdEntry(const AkvpStorage__MacdEncdEntry *entry,
+                                           uint8_t *hmac,
+                                           size_t hmac_len)
+{ /* hmac */
+  HMAC_CTX ctx;
+  int cryptorv;
+  akv_err_t rv=0;
+
+  assert(hmac_len==SHA256_DIGEST_LENGTH);
+
+  HMAC_CTX_init(&ctx);
+
+  cryptorv = HMAC_Init_ex(&ctx,
+                          akv_ctx.hmac_key,
+                          akv_ctx.hmac_key_len,
+                          EVP_sha256(), NULL);
+  CHECK(cryptorv, AKV_ECRYPTO, "HMAC_Init_ex");
+
+  cryptorv = HMAC_Update(&ctx, (uint8_t*)entry->key, strlen(entry->key));
+  CHECK(cryptorv, AKV_ECRYPTO, "HMAC_Update");
+  cryptorv = HMAC_Update(&ctx, entry->ivec.data, entry->ivec.len);
+  CHECK(cryptorv, AKV_ECRYPTO, "HMAC_Update");
+  cryptorv = HMAC_Update(&ctx, entry->encd_val.data, entry->encd_val.len);
+  CHECK(cryptorv, AKV_ECRYPTO, "HMAC_Update");
+    
+  cryptorv = HMAC_Final(&ctx, hmac, &hmac_len);
+  CHECK(cryptorv, AKV_ECRYPTO, "HMAC_Final");
+  assert(hmac_len==SHA256_DIGEST_LENGTH);
+
+ out:
+  return rv;
+}
+
+
 static akv_err_t export_entry(AkvpStorage__MacdEncdEntry *out,
                               const char *key, size_t key_len,
                               const uint8_t *val,
@@ -98,30 +132,13 @@ static akv_err_t export_entry(AkvpStorage__MacdEncdEntry *out,
   }
 
   { /* hmac */
-    HMAC_CTX ctx;
-    int cryptorv;
-
     out->hmac.len=SHA256_DIGEST_LENGTH;
     out->hmac.data=malloc(out->hmac.len);
     CHECK_MEM(out->hmac.data, AKV_ENOMEM);
-         
-    HMAC_CTX_init(&ctx);
-
-    cryptorv = HMAC_Init_ex(&ctx,
-                            akv_ctx.hmac_key,
-                            akv_ctx.hmac_key_len,
-                            EVP_sha256(), NULL);
-    CHECK(cryptorv, AKV_ECRYPTO, "HMAC_Init_ex");
-
-    cryptorv = HMAC_Update(&ctx, (uint8_t*)out->key, key_len);
-    CHECK(cryptorv, AKV_ECRYPTO, "HMAC_Update");
-    cryptorv = HMAC_Update(&ctx, out->ivec.data, out->ivec.len);
-    CHECK(cryptorv, AKV_ECRYPTO, "HMAC_Update");
-    cryptorv = HMAC_Update(&ctx, out->encd_val.data, out->encd_val.len);
-    CHECK(cryptorv, AKV_ECRYPTO, "HMAC_Update");
-    
-    cryptorv = HMAC_Final(&ctx, out->hmac.data, &out->hmac.len);
-    CHECK(cryptorv, AKV_ECRYPTO, "HMAC_Final");
+    rv = sha256_hmac_MacdEncdEntry(out,
+                                   out->hmac.data,
+                                   out->hmac.len);
+    CHECK_RV(rv, rv, "sha256_hmac_MacdEncdEntry");
   }
 
  out:
