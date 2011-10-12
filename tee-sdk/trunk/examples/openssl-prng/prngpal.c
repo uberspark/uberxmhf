@@ -86,12 +86,14 @@ static void dorand(void) {
 
     rv = RAND_bytes(bytes, NUMRAND);
 
-    if(1 == rv) { /* success */
-        for(i = 0; i < NUMRAND; i++) fprintf(stderr, "%02x", bytes[i]);
-        fprintf(stderr, "\n");
-    } else {
-        fprintf(stderr, "dorand ERROR: %ld\n", ERR_get_error());
-    }
+    fprintf(stderr, "RAND_bytes rv %d\n", rv);
+    
+    /* if(1 == rv) { /\* success *\/ */
+    /*     for(i = 0; i < NUMRAND; i++) fprintf(stderr, "%02x", bytes[i]); */
+    /*     fprintf(stderr, "\n"); */
+    /* } else { */
+    /*     fprintf(stderr, "dorand ERROR: %ld\n", ERR_get_error()); */
+    /* } */
 }
 
 static void dohmac(void)
