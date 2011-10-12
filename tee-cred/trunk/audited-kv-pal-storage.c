@@ -481,7 +481,7 @@ akv_err_t akvp_import(const AkvpStorage__Everything *req, void *res)
 
  out:
   /* in case of any sort of failure, invalidate akvp global state */
-  if(rv==1) {
+  if(rv) {
     akvp_uninit();
   }
   return rv;
