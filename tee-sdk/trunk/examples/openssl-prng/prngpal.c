@@ -35,10 +35,14 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include  "pal.h"
 
 #include <tee-sdk/tzmarshal.h>
 #include <tee-sdk/svcapi.h>
+#include <trustvisor/tv_utpm.h> /* svc_utpm_rand_block */
+
+#include <openssl/hmac.h>
 
 char end[10*4096]; /* define the end of the data segment and some
                       buffer spacefor libnosys's sbrk */
@@ -48,10 +52,39 @@ int test()
   return 5;
 }
 
+static void dohmac(void)
+    {
+    HMAC_CTX ctx;
+    unsigned char hmac_value[EVP_MAX_MD_SIZE];
+    unsigned int hmac_len, i;
+    char key[16] = "etaonrishdlcupfm";
+    unsigned char buf[256];
+    /* Generate digest of input stream */ 
+    HMAC_Init(&ctx, key, sizeof(key), EVP_sha1());
+    memcpy(buf, "abcdefghijklmnopqrstuvwxyz", 26);
+    HMAC_Update(&ctx, buf, 26);
+    HMAC_Final(&ctx, hmac_value, &hmac_len);
+    HMAC_cleanup(&ctx);
+    
+    for(i = 0; i < hmac_len; i++) fprintf(stderr, "%02x", hmac_value[i]);
+    fprintf(stderr, "\n");
+    return;
+}
+
 void prngpal(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
-  printf("test, %d\n", 5);
-  test();
+  int len = 10;
+  uint8_t *bytes[10];
+
   *puiRv = TZ_SUCCESS;
+  
+  fprintf(stderr, "test, %d\n", 5);
+  test();
+  dohmac();
+
+  if (svc_utpm_rand_block(bytes, len) != 0) {
+    *puiRv = TZ_ERROR_GENERIC;
+  }
+
   return;
 }
