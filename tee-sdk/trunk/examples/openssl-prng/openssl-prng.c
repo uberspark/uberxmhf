@@ -52,6 +52,28 @@
 
 #define rtassert_tzs(x) rtassert_eq(x, TZ_SUCCESS)
 
+void dump_stderr_from_pal(tz_operation_t *tzOp) {
+  tz_return_t tzRet;
+  uint8_t *stderr_buf;
+  size_t stderr_buf_len;
+  char last;
+
+  tzRet = TZIDecodeF(tzOp,
+                     "%"TZI_DARRSPC,
+                     &stderr_buf, &stderr_buf_len);
+  if (tzRet) {
+    printf("[ERROR] PAL's stderr unavailable. tzRet = %d\n", tzRet);
+    return;
+  }
+
+  /* Take care to NULL-terminate the string */
+  last = stderr_buf[stderr_buf_len-1];
+  stderr_buf[stderr_buf_len-1] = '\0'; 
+  printf("********************* BEGIN PAL's STDERR ****************************************\n");
+  printf("%s%c%s", stderr_buf, last, last == '\n' ? "" : "\n");
+  printf("********************* END PAL's STDERR ******************************************\n");
+}
+
 static int call_pal(tz_session_t *tzPalSession)
 {
   tz_operation_t tzOp;
@@ -76,6 +98,7 @@ static int call_pal(tz_session_t *tzPalSession)
       rv = 1;
     }
   }
+  dump_stderr_from_pal(&tzOp);
   TZOperationRelease(&tzOp);
   
   return rv;
