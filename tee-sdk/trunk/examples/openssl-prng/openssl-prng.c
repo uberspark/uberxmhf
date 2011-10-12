@@ -34,7 +34,7 @@
  */
 
 /* 
- * Author - Jim Newsome (jnewsome@no-fuss.com)
+ * Author - Jon McCune (jon@no-fuss.com)
  */
 
 #include <stdio.h>
