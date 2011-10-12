@@ -76,7 +76,8 @@ tz_return_t attempt_recovery(tz_session_t *tzPalSession) {
                                    &tzOp);
   assert(tzRet == TZ_SUCCESS);
 
-  assert(sizeof(pal_request_t) == slurp_file(LAST_REQUEST_FILENAME, (void**)&req));
+  assert(sizeof(pal_request_t) == slurp_file(THIS_REQUEST_FILENAME, (void**)&req));
+  print_hex("  req: ", req, sizeof(pal_request_t));
   old_snapshot_len = slurp_file(LAST_SNAPSHOT_FILENAME, &old_snapshot);
   assert(old_snapshot_len > 0);
 
