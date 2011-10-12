@@ -43,3 +43,9 @@ authenticator is distinct from the encrypted state.  Here in
 TrustVisor, we have high-performance sealing, so we can omit the
 authenticator and just include the freshness tag in the encrypted
 state data.
+
+******************************************************************
+
+This implementation is now stale.  Further development will proceed as
+a component of tee-sdk.  This implementation will be kept around for
+reference, testing, etc.
