@@ -46,6 +46,29 @@
 
 char end[10*4096]; /* define the end of the data segment and some
                       buffer spacefor libnosys's sbrk */
+static void* get_stderr(size_t *len)
+{
+  char *rv = malloc(4096);
+  if(!rv) {
+    return NULL;
+  }
+  *len = tsvc_read_stderr(rv, 4095);
+  rv[*len] = '\0';
+  return rv;
+}
+
+static void append_stderr(tzi_encode_buffer_t *psOutBuf) 
+{
+	size_t len;
+	void *buf;
+
+	buf = get_stderr(&len);
+	if(NULL != buf) {
+		/* If len is too long, too bad. */
+		TZIEncodeArray(psOutBuf, buf, len);
+	}
+	free(buf);
+}
 
 int test()
 {
@@ -85,6 +108,8 @@ void prngpal(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer
   if (svc_utpm_rand_block(bytes, len) != 0) {
     *puiRv = TZ_ERROR_GENERIC;
   }
+
+  append_stderr(psOutBuf);  
 
   return;
 }
