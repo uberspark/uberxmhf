@@ -1,14 +1,13 @@
 srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
 VPATH=$(srcdir)
 
-all : depend main
+all : depend main FORCE
 
 FORCE:
 .PHONY : FORCE
 
-test :
+test : FORCE
 	cd tests ; make
-.PHONY : test
 
 proto-gend/%.pb-c.c proto-gend/%.pb-c.h : %.proto
 	protoc-c --c_out=proto-gend $^
@@ -25,40 +24,70 @@ PROG_OBJS= \
 	proto-gend/audited.pb-c.o \
 	proto-gend/akvp.pb-c.o \
 	proto-gend/storage.pb-c.o
-SRCS=$(patsubst %.o,%.c,$(PROG_OBJS))
 CFLAGS+=-g -Wall -Werror
 LDFLAGS+=--static
 CFLAGS+=-DUSERSPACE_ONLY=1
 PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv libprotobuf-c
-CFLAGS+=$(call pkgconfig_cflags, $(PKGCONFIG_DEPS))
-LDLIBS+=$(call pkgconfig_ldlibs, $(PKGCONFIG_DEPS))
-LDFLAGS+=$(call pkgconfig_ldflags, $(PKGCONFIG_DEPS))
-LDLIBS+=-T$(PAL_NAME).pal.ld
 
-pal-build/$(PAL_NAME).pal.o : FORCE
-	cd pal-build ; make $(PAL_NAME).pal.o
-$(PAL_NAME).pal.ld :
-	sed 's/PAL_NAME/pal-build\/$(PAL_NAME)/g' $(TEESDK_DATA_DIR)/pal-template.ld > $@
+#PAL_BACKEND=tee-sdk-svc-tv
+PAL_BACKEND=tee-sdk-svc-null
+PAL_NAME=audited-kv-pal
+PAL_OBJS_BARE= \
+	audited-kv-pal.o \
+	audited-kv-pal-marshal.o \
+	kv.o \
+	audited.o \
+	audited-kv-pal-globals.o \
+	audited-kv-pal-protos.o \
+	tze-pb-svc.o \
+	tze-pb-marshal.o \
+	audited-kv-pal-storage.o \
+	proto-gend/db.pb-c.o \
+	proto-gend/audited.pb-c.o \
+	proto-gend/akvp.pb-c.o \
+	proto-gend/storage.pb-c.o
+PAL_OBJS=$(addprefix pal-build/, $(PAL_OBJS_BARE))
+PAL_CFLAGS+=-g -Wall -Werror
 
-$(PROG_NAME) : $(PROG_OBJS) $(PAL_NAME).pal.ld pal-build/$(PAL_NAME).pal.o
-	$(CC) $(LDFLAGS) -o $@ $(PROG_OBJS) $(LDLIBS)
+pal-build/%.o : %.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+
+%.pal.o: pal-build/%.o
+	$(CC) -r -d $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	objcopy -G $(subst -,_,$*) $@
+	if test `nm -u $@ | wc -l` -ne 0 ; then echo "undefd symbols in $@:"; nm -u $@; rm $@; false; else true; fi
+
+PAL_PKGCONFIG_DEPS=tee-sdk-svc $(PAL_BACKEND) libcrypto libprotobuf-c
+
+TEESDK_DATA_DIR=$(shell pkg-config --variable=pkgdatadir tee-sdk-app)
 
 all: $(PROG_NAME)
 
 clean:
-	$(RM) .*.cmd *.o *.ko *~ -r .tmp* $(PROG_NAME) $(PROG_OBJS) .depend
+	$(RM) .*.cmd *.o *.ko *~ -r .tmp* $(PROG_NAME) $(PROG_OBJS) $(PAL_OBJS) .depend .paldepend proto-gend/*.pb-c.[ch]
 	cd tests ; make clean
-	cd pal-build ; make clean
 .PHONY: clean all
 
+SRCS=$(patsubst %.o,%.c,$(PROG_OBJS))
 depend: .depend
 .depend: $(SRCS)
-	rm -f ./.depend
-	$(CC) $(CFLAGS) -MM $^ >> ./.depend;
+	$(CC) $(CFLAGS) -MM $(SRCS) > $@ ; if [ $$? -ne 0 ] ; then rm $@ ; fi
 include .depend
+
+PAL_SRCS=$(patsubst %.o,%.c,$(PAL_OBJS_BARE))
+paldepend: .paldepend
+.paldepend: $(PAL_SRCS)
+	$(PAL_CC) $(CFLAGS) -MM $(PAL_SRCS) > $@ ; if [ $$? -ne 0 ] ; then rm $@ ; fi
+include .paldepend
 
 TEESDK_DATA_DIR=$(shell pkg-config --variable=pkgdatadir tee-sdk-app)
 
 # pkgconfig helpers
 include $(TEESDK_DATA_DIR)/pkgconfig.mk
+
+# rules for compiling pal intermediate objects
+include $(TEESDK_DATA_DIR)/pal.mk
+
+# rules for compiling a program PROG_NAME that uses one pal PAL_NAME
+include $(TEESDK_DATA_DIR)/onepal.mk
 
