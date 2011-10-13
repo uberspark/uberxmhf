@@ -6,7 +6,7 @@
 
 # DMA protection support
 	export DMAPROT := y
-	
+
 
 #-----build configuration
 	#-----tools
@@ -53,9 +53,9 @@
 	ifeq ($(MP_VERSION), y)
 		CFLAGS += -D__MP_VERSION__
 	endif
-	
+
 	CFLAGS += -D__DO_SENTER__
-	
+
 	ifeq ($(DMAPROT), y)
 		CFLAGS += -D__DMAPROT__	
 	endif
@@ -71,7 +71,7 @@
 		CFLAGS += -D__INIT_LATE__ 
 		CFLAGS += -DPERF_CRIT
 	endif
-	
+
 
 	#-----export CFLAGS and ASFLAGS
 	ASFLAGS = $(CFLAGS) -D__ASSEMBLY__
@@ -96,6 +96,7 @@ components:
 common:
 	#make libcommon first	
 	cd libcommon && $(MAKE) -w all
+	make -C ../libemhfutil
 
 runtime: common app
 	#make runtime
@@ -135,7 +136,7 @@ init-late: hypervisor-$(TARGET_HWPLATFORM).bin.gz
 	#TODO: needs OS selection via configuration option
 	$(CP) ./init-late/os/linux/emhfil.ko $(INSTALLDIR)/emhfil.ko
 	$(CP) ./init-late/os/linux/emhfil.sh $(INSTALLDIR)/emhfil.sh
-	
+
 
 # cleanup rules
 .PHONY: clean 
@@ -146,6 +147,7 @@ clean:
 	cd init && $(MAKE) -w clean
 	cd ./init-late/os/linux && $(MAKE) clean
 	cd libcommon && $(MAKE) -w clean
+	make -C ../libemhfutil clean
 	cd $(BASEDIR)/app && $(MAKE) -w clean
 	rm -rf $(APPOBJECTSDIR)
 

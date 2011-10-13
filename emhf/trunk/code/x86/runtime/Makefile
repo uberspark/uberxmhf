@@ -18,6 +18,9 @@ OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 # Also grab all the App's (e.g., TrustVisor's) object files
 OBJECTS_PRECOMPILED += $(wildcard $(APPOBJECTSDIR)/*.o)
 
+### Bring in libemhfutil
+OBJECTS_PRECOMPILED += $(wildcard $(EMHFUTIL_OBJECTSDIR)/*.o)
+
 ### Bring in libcommon/*.o so that App's (e.g., TrustVisor) can use them
 # WARNING: if both Serial & VGA are enabled, you actually get neither. 
 # TODO: Fix it.
