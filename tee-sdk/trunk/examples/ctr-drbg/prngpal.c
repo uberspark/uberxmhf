@@ -141,6 +141,7 @@ void prngpal(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer
   uint8_t *serialized_drbg;
   uint8_t byte;
   int rv;
+  unsigned int i;
 
   *puiRv = TZ_SUCCESS;
   
@@ -158,7 +159,7 @@ void prngpal(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer
       goto out;
   }
 
-  log_hex("serialized drbg state: ", serialize_drbg, len);
+  log_hex("serialized drbg state: ", serialized_drbg, len);
 
   if(0 != deserialize_drbg(serialized_drbg, len, &drbg)) {
       log_err("deserialize_drbg FAILED!!!");
@@ -166,14 +167,15 @@ void prngpal(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer
       goto out;
   }
 
-  if((rv = nist_ctr_drbg_generate(&drbg, &byte, sizeof(byte), NULL, 0))) {
-      log_err("FATAL: nist_ctr_drbg_generate() returned error %d!\n", rv);
-      *puiRv = TZ_ERROR_SECURITY;
-      goto out;
+  for(i=0; i<10; i++) {
+      if((rv = nist_ctr_drbg_generate(&drbg, &byte, sizeof(byte), NULL, 0))) {
+          log_err("FATAL: nist_ctr_drbg_generate() returned error %d!\n", rv);
+          *puiRv = TZ_ERROR_SECURITY;
+          goto out;
+      }
+      
+      log_info("Got a random byte! %02x", byte);
   }
-
-  log_info("Got a random byte! %02x\n", byte);
-
   free(serialized_drbg); serialized_drbg = NULL;  
       
   out:
