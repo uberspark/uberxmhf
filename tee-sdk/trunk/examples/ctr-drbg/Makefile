@@ -4,15 +4,19 @@
 # $< the name of the related file that caused the action.
 # $* the prefix shared by target and dependent files. 
 
+# TODO: Teach LIBEMHFUTIL to install into some system-wide location?
+LIBEMHFUTIL=../../../../emhf/trunk/code/libemhfutil
+
 PROG_NAME=ctr-drbg
 PROG_OBJS=ctr-drbg.o
 CFLAGS+=-g -Wall
 PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv
 
 PAL_NAME=prngpal
-PAL_OBJS=prngpal.o
+PAL_OBJS=prngpal.o $(LIBEMHFUTIL)/nist_ctr_drbg.o $(LIBEMHFUTIL)/rijndael.o
 PAL_CFLAGS+=-g -Wall
-PAL_PKGCONFIG_DEPS=tee-sdk-svc tee-sdk-svc-tv libcrypto
+PAL_CFLAGS += -I$(LIBEMHFUTIL)/include
+PAL_PKGCONFIG_DEPS=tee-sdk-svc tee-sdk-svc-tv
 
 all: $(PROG_NAME)
 clean:
