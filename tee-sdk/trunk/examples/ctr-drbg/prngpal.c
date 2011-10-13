@@ -82,6 +82,28 @@ int test()
   return 5;
 }
 
+static int serialize_drbg(const NIST_CTR_DRBG *drbg, uint8_t **buf, size_t *len) {
+    if(!drbg || !buf || !len) { return 1; }
+
+    *len = sizeof(NIST_CTR_DRBG);
+    *buf = malloc(*len);
+    if(!*buf) { return 1; }
+
+    memcpy(*buf, drbg, *len);
+
+    log_info("serialize_ctrdrbg SUCCESS");
+    return 0;
+}
+
+static int deserialize_drbg(const uint8_t *buf, size_t len, NIST_CTR_DRBG *drbg) {
+    if(!drbg || !buf || len != sizeof(NIST_CTR_DRBG)) { return 1; }
+
+    memcpy(drbg, buf, len);
+
+    log_info("deserialize_ctrdrbg SUCCESS");
+    return 0;
+}
+
 /* returns 0 on success. */
 static int initialize_ctrdrbg(NIST_CTR_DRBG *drbg) {
     uint8_t EntropyInput[CTR_DRBG_SEED_BITS/8];
@@ -113,12 +135,15 @@ static int initialize_ctrdrbg(NIST_CTR_DRBG *drbg) {
         return 1;
     }				
 
+    log_info("initialize_ctrdrbg SUCCESS");
     return rv;
 }
 
 void prngpal(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
   NIST_CTR_DRBG drbg;
+  size_t len;
+  uint8_t *serialized_drbg;
 
   *puiRv = TZ_SUCCESS;
   
@@ -128,8 +153,18 @@ void prngpal(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer
   if(0 != initialize_ctrdrbg(&drbg)) {
       fprintf(stderr, "initialize_ctrdrbg FAILED!\n");
       *puiRv = TZ_ERROR_SECURITY;
+      goto out;
   }  
 
+  if(0 != serialize_drbg(&drbg, &serialized_drbg, &len)) {
+      log_err("serialize_drbg FAILED!!!");
+      *puiRv = TZ_ERROR_SECURITY;
+      goto out;
+  }
+
+  nist_ctr_drbg_destroy(&drbg);
+      
+  out:
   append_stderr(psOutBuf);  
 
   return;
