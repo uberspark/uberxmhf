@@ -13,7 +13,9 @@ CFLAGS+=-g -Wall
 PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv
 
 PAL_NAME=prngpal
-PAL_OBJS=prngpal.o $(LIBEMHFUTIL)/nist_ctr_drbg.o $(LIBEMHFUTIL)/rijndael.o
+PAL_OBJS=prngpal.o 
+# Linker should drop unused object files
+PAL_OBJS += $(wildcard $(LIBEMHFUTIL)/*.o)
 PAL_CFLAGS+=-g -Wall
 PAL_CFLAGS += -I$(LIBEMHFUTIL)/include
 PAL_PKGCONFIG_DEPS=tee-sdk-svc tee-sdk-svc-tv
