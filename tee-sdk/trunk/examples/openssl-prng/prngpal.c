@@ -46,6 +46,7 @@
 #include <openssl/hmac.h>
 #include <openssl/rand.h>
 #include <openssl/err.h>
+#include <openssl/engine.h> /* TODO: uTPM-based Engine PRNG? */
 
 char end[10*4096]; /* define the end of the data segment and some
                       buffer spacefor libnosys's sbrk */
@@ -88,12 +89,12 @@ static void dorand(void) {
 
     fprintf(stderr, "RAND_bytes rv %d\n", rv);
     
-    /* if(1 == rv) { /\* success *\/ */
-    /*     for(i = 0; i < NUMRAND; i++) fprintf(stderr, "%02x", bytes[i]); */
-    /*     fprintf(stderr, "\n"); */
-    /* } else { */
-    /*     fprintf(stderr, "dorand ERROR: %ld\n", ERR_get_error()); */
-    /* } */
+    if(1 == rv) { /* success */
+        for(i = 0; i < NUMRAND; i++) fprintf(stderr, "%02x", bytes[i]);
+        fprintf(stderr, "\n");
+    } else {
+        fprintf(stderr, "dorand ERROR: %ld\n", ERR_get_error());
+    }
 }
 
 static void dohmac(void)
