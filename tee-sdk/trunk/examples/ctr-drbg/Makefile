@@ -5,6 +5,7 @@
 # $* the prefix shared by target and dependent files. 
 
 # TODO: Teach LIBEMHFUTIL to install into some system-wide location?
+# FIXME: This will not build the libemhfutil objects; they must already exist
 LIBEMHFUTIL=../../../../emhf/trunk/code/libemhfutil
 
 PROG_NAME=ctr-drbg
