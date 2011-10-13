@@ -45,6 +45,12 @@
 
 #include <nist_ctr_drbg.h>
 
+#include "dbg.h"
+
+/* DRBG parameters */
+#define CTR_DRBG_SEED_BITS 256
+#define CTR_DRBG_NONCE_BITS 64
+
 char end[10*4096]; /* define the end of the data segment and some
                       buffer spacefor libnosys's sbrk */
 static void* get_stderr(size_t *len)
@@ -76,20 +82,53 @@ int test()
   return 5;
 }
 
+/* returns 0 on success. */
+static int initialize_ctrdrbg(NIST_CTR_DRBG *drbg) {
+    uint8_t EntropyInput[CTR_DRBG_SEED_BITS/8];
+    uint64_t Nonce;
+    int rv = 0;
+
+    if(!drbg) { return 1; }
+    
+    /* Perform deterministic initialization (e.g., expand AES key
+     * schedule) */
+    nist_ctr_initialize();
+
+    /* Get CTR_DRBG_SEED_BITS of entropy from the MicroTPM */
+    if (0 != (rv = svc_utpm_rand_block(EntropyInput, CTR_DRBG_SEED_BITS/8))) {
+        fprintf(stderr, "ERROR %d from svc_utpm_rand_block for entropy input\n", rv);
+        return rv;
+    }    
+
+    /* Also use MicroTPM to get CTR_DRBG_NONCE_BITS of initialization nonce */
+    COMPILE_TIME_ASSERT(CTR_DRBG_NONCE_BITS/8 == sizeof(Nonce));
+    if (0 != (rv = svc_utpm_rand_block(EntropyInput, CTR_DRBG_NONCE_BITS/8))) {
+        fprintf(stderr, "ERROR %d from svc_utpm_rand_block for nonce\n", rv);
+        return rv;
+    }    
+
+    if(0 != nist_ctr_drbg_instantiate(drbg, EntropyInput, sizeof(EntropyInput),
+                                      &Nonce, sizeof(Nonce), NULL, 0)) {
+        fprintf(stderr, "\nFATAL ERROR: nist_ctr_drbg_instantiate FAILED.\n");
+        return 1;
+    }				
+
+    return rv;
+}
 
 void prngpal(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 {
-  int len = 10;
-  uint8_t *bytes[10];
+  NIST_CTR_DRBG drbg;
 
   *puiRv = TZ_SUCCESS;
   
   fprintf(stderr, "test, %d\n", 5);
   test();
 
-  if (svc_utpm_rand_block(bytes, len) != 0) {
-    *puiRv = TZ_ERROR_GENERIC;
-  }
+  if(0 != initialize_ctrdrbg(&drbg)) {
+      fprintf(stderr, "initialize_ctrdrbg FAILED!\n");
+      *puiRv = TZ_ERROR_SECURITY;
+  }  
 
   append_stderr(psOutBuf);  
 
