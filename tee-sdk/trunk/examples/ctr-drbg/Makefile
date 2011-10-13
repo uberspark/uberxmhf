@@ -4,8 +4,8 @@
 # $< the name of the related file that caused the action.
 # $* the prefix shared by target and dependent files. 
 
-PROG_NAME=openssl-prng
-PROG_OBJS=openssl-prng.o
+PROG_NAME=ctr-drbg
+PROG_OBJS=ctr-drbg.o
 CFLAGS+=-g -Wall
 PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv
 
