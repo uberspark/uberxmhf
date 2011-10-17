@@ -341,11 +341,6 @@ int main_old(int argc, char **argv)
 } 
 
 #include <gtk/gtk.h>
-/* static void hello( GtkWidget *widget, */
-/*                    gpointer   data ) */
-/* { */
-/*   g_print ("Hello World\n"); */
-/* } */
 
 int tcm_gtk_main (int argc, char **argv, tcm_ctx_t *tcm_ctx);
 int main (int argc, char **argv)
@@ -367,8 +362,6 @@ int main (int argc, char **argv)
   CHECK(pem_pub_key, 1,
         "read_file %s", pem_pub_key_file);
 
-  /* XXX try import */
-
   audit_err = audit_ctx_init(&audit_ctx, server, port);
   CHECK_RV(audit_err, audit_err, "audit_ctx_init");
 
@@ -377,6 +370,23 @@ int main (int argc, char **argv)
 
   tcm_err = tcm_ctx_init(&tcm_ctx, &audit_ctx, &akv_ctx);
   CHECK_RV(tcm_err, tcm_err, "tcm_ctx_init");
+
+  if (g_file_test("db", G_FILE_TEST_IS_REGULAR)) {
+    /* import */
+    akv_err_t akv_err;
+    uint8_t *data;
+    size_t len;
+
+    data = read_file("db", &len);
+    akv_err = akv_import(tcm_ctx.akv_ctx,
+                         data,
+                         len);
+    if (akv_err) {
+      rv=6;
+      printf("akv_import failed with 0x%x\n", akv_err);
+      goto out;
+    }
+  }
 
   tcm_gtk_main(argc, argv, &tcm_ctx);
 
@@ -401,7 +411,6 @@ static void insert_sorted( box_and_labels_t *bl,
   GtkWidget *label;
   int pos;
 
-  g_print ("Hello World\n");
   expander = gtk_expander_new (key);
 
   /* get sorted position */
