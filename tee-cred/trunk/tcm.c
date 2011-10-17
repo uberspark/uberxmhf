@@ -498,7 +498,14 @@ static void insert_sorted( tcm_ctx_t *tcm_ctx,
   GtkWidget *button;
   int pos;
 
-  expander = gtk_expander_new (key);
+  {
+    GtkWidget *label;
+    expander = gtk_expander_new (key);
+    label = gtk_expander_get_label_widget(GTK_EXPANDER(expander));
+    gtk_label_set_line_wrap(GTK_LABEL(label), true);
+    gtk_widget_set_size_request(label, 200, -1);
+  }
+    
 
   /* get sorted position */
   bl->keys = g_list_insert_sorted(bl->keys,
@@ -623,7 +630,7 @@ int tcm_gtk_main (int argc, char **argv, tcm_ctx_t *tcm_ctx)
   { /* window */
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title (GTK_WINDOW (window), "TEE-Cred");
-    gtk_window_set_default_size (GTK_WINDOW (window), 300, 600);
+    gtk_window_set_default_size (GTK_WINDOW (window), 200, 600);
     g_signal_connect (window, "destroy",
                       G_CALLBACK (gtk_main_quit), NULL);
     g_signal_connect (window, "delete-event",
@@ -640,7 +647,7 @@ int tcm_gtk_main (int argc, char **argv, tcm_ctx_t *tcm_ctx)
   { /* scrolled */
     scrolled = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (scrolled),
-                                   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+                                   GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
     gtk_container_add(GTK_CONTAINER (vbox_window), scrolled);
   }
 
@@ -649,7 +656,7 @@ int tcm_gtk_main (int argc, char **argv, tcm_ctx_t *tcm_ctx)
     gtk_box_set_homogeneous (GTK_BOX(vbox_keys), FALSE);
     gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW (scrolled),
                                           vbox_keys);
-    /* gtk_container_add (GTK_CONTAINER (scrolled), vbox_keys); */
+    /* gtk_container_add (GTK_CONTAINER (vbox_window), vbox_keys); */
   }
   box_and_labels = (box_and_labels_t) {
     .box = GTK_BOX(vbox_keys),
