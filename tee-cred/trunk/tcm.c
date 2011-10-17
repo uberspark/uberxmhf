@@ -687,6 +687,7 @@ int tcm_gtk_main (int argc, char **argv, tcm_ctx_t *tcm_ctx)
   /* } */
 
   { /* add-button */
+    GtkWidget *hbox;
     add_button_handler_ctx = (add_button_handler_ctx_t) {
       .bl = &box_and_labels,
       .tcm_ctx = tcm_ctx,
@@ -695,8 +696,15 @@ int tcm_gtk_main (int argc, char **argv, tcm_ctx_t *tcm_ctx)
     g_signal_connect_swapped (button, "clicked",
                               G_CALLBACK (add_button_handler),
                               &add_button_handler_ctx);
+
+    /* pack into an hbox with a blank label to keep from expanding.
+       XXX better way? */
+    hbox = gtk_hbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX (hbox), button, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX (hbox), gtk_label_new(""), TRUE, TRUE, 0);
+
     gtk_box_pack_end (GTK_BOX (vbox),
-                      button,
+                      hbox,
                       FALSE, FALSE, 0);
   }
 
