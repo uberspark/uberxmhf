@@ -9,8 +9,10 @@ FORCE:
 test : FORCE
 	cd tests ; make
 
-proto-gend/%.pb-c.c proto-gend/%.pb-c.h : %.proto
-	protoc-c --c_out=proto-gend $^
+$(CURDIR)/proto-gend:
+	mkdir -p proto-gend
+proto-gend/%.pb-c.c proto-gend/%.pb-c.h : %.proto $(CURDIR)/proto-gend
+	protoc-c --c_out=proto-gend --proto_path=$(srcdir) $<
 
 PROG_NAME=main
 PAL_NAME=audited-kv-pal
@@ -24,7 +26,7 @@ PROG_OBJS= \
 	proto-gend/audited.pb-c.o \
 	proto-gend/akvp.pb-c.o \
 	proto-gend/storage.pb-c.o
-CFLAGS+=-g -Wall -Werror
+CFLAGS+=-g -Wall -Werror -I.
 LDFLAGS+=--static
 CFLAGS+=-DUSERSPACE_ONLY=1
 PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv libprotobuf-c
@@ -47,9 +49,11 @@ PAL_OBJS_BARE= \
 	proto-gend/akvp.pb-c.o \
 	proto-gend/storage.pb-c.o
 PAL_OBJS=$(addprefix pal-build/, $(PAL_OBJS_BARE))
-PAL_CFLAGS+=-g -Wall -Werror
+PAL_CFLAGS+=-g -Wall -Werror -I.
 
-pal-build/%.o : %.c
+$(CURDIR)/pal-build:
+	mkdir -p pal-build/proto-gend
+pal-build/%.o : %.c $(CURDIR)/pal-build
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 %.pal.o: pal-build/%.o
