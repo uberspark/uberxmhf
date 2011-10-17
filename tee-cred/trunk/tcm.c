@@ -430,7 +430,21 @@ int main (int argc, char **argv)
 
   tcm_gtk_main(argc, argv, &tcm_ctx);
 
-  /* XXX export */
+  /* export */
+  {
+    akv_err_t akv_err;
+    uint8_t *data;
+    size_t len;
+    akv_err = akv_export(tcm_ctx.akv_ctx,
+                         &data,
+                         &len);
+    if (akv_err) {
+      rv=5;
+      printf("akv_export failed with 0x%x\n", akv_err);
+      goto out;
+    }
+    write_file("db", data, len);
+  }
 
  out:
   /* FIXME cleanup */
