@@ -623,6 +623,7 @@ int tcm_gtk_main (int argc, char **argv, tcm_ctx_t *tcm_ctx)
   { /* window */
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title (GTK_WINDOW (window), "TEE-Cred");
+    gtk_window_set_default_size (GTK_WINDOW (window), 300, 600);
     g_signal_connect (window, "destroy",
                       G_CALLBACK (gtk_main_quit), NULL);
     g_signal_connect (window, "delete-event",
