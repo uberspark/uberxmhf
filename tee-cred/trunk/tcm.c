@@ -461,12 +461,41 @@ typedef struct {
   box_and_labels_t *bl;
 } add_button_handler_ctx_t;
 
+
+typedef struct {
+  tcm_ctx_t *tcm_ctx;
+  gchar *key;
+} copy_button_handler_ctx_t;
+
+static void copy_button_handler(copy_button_handler_ctx_t *ctx)
+{
+  char *val=NULL;
+  GtkClipboard *clipboard;
+  {
+    tcm_err_t tcm_err;
+    tcm_err = tcm_db_get(ctx->tcm_ctx,
+                         ctx->key,
+                         &val);
+    if (tcm_err) {
+      g_warning("tcm_db_get failed with 0x%x\n", tcm_err);
+      goto out;
+    }
+  }
+
+  clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+  gtk_clipboard_set_text(clipboard, val, strlen(val));
+  gtk_clipboard_store(clipboard);
+ out:
+  free(val);
+}
+
 /* consumes key */
-static void insert_sorted( box_and_labels_t *bl,
+static void insert_sorted( tcm_ctx_t *tcm_ctx,
+                           box_and_labels_t *bl,
                            gchar *key)
 {
   GtkWidget *expander;
-  GtkWidget *label;
+  GtkWidget *button;
   int pos;
 
   expander = gtk_expander_new (key);
@@ -487,10 +516,21 @@ static void insert_sorted( box_and_labels_t *bl,
                          pos);
 
   /* add expander contents */
-  label = gtk_label_new ("placeholder");
-  gtk_label_set_selectable (GTK_LABEL(label), TRUE);
-  gtk_container_add (GTK_CONTAINER (expander), label);
-
+  {
+    copy_button_handler_ctx_t *copy_ctx;
+    copy_ctx = g_malloc(sizeof(*copy_ctx));
+    *copy_ctx = (copy_button_handler_ctx_t) {
+      .tcm_ctx = tcm_ctx,
+      .key = g_strdup(key),
+    };
+      
+    button = gtk_button_new_with_label("Copy");
+    g_signal_connect_swapped (button, "clicked",
+                              G_CALLBACK (copy_button_handler),
+                              copy_ctx);
+  }
+  
+  gtk_container_add (GTK_CONTAINER (expander), button);
 
   gtk_widget_show_all(expander);
 }
@@ -559,7 +599,7 @@ static void add_button_handler(add_button_handler_ctx_t *ctx)
         g_warning("tcm_db_add for key %s failed with tcm_err error 0x%x",
                   key, tcm_err);
       } else {
-        insert_sorted(ctx->bl, g_strdup(key));
+        insert_sorted(ctx->tcm_ctx, ctx->bl, g_strdup(key));
       }
     }
   }
@@ -611,7 +651,8 @@ int tcm_gtk_main (int argc, char **argv, tcm_ctx_t *tcm_ctx)
     CHECK_RV(tcm_err, 1, "tcm_db_keys");
 
     for(i=0; i<keys_len; i++) {
-      insert_sorted(&box_and_labels,
+      insert_sorted(tcm_ctx,
+                    &box_and_labels,
                     g_strdup(keys[i])); /* duping here using gtk's
                                            allocation, so that gtk can
                                            later free it properly */
