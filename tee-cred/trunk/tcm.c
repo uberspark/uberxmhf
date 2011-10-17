@@ -685,20 +685,6 @@ int tcm_gtk_main (int argc, char **argv, tcm_ctx_t *tcm_ctx)
     free(keys);
   }
 
-  /* /\* expanders *\/ */
-  /* for(i=0; i< sizeof(keys)/sizeof(keys[0]); i++) {  */
-  /*   GtkWidget *expander; */
-  /*   GtkWidget *label; */
-  /*   expander = gtk_expander_new (keys[i]); */
-  /*   gtk_box_pack_start (GTK_BOX (vbox), */
-  /*                       expander, */
-  /*                       FALSE, FALSE, 0); */
-
-  /*   label = gtk_label_new ("labeeeel"); */
-  /*   gtk_label_set_selectable (GTK_LABEL(label), TRUE); */
-  /*   gtk_container_add (GTK_CONTAINER (expander), label); */
-  /* } */
-
   { /* add-button */
     add_button_handler_ctx = (add_button_handler_ctx_t) {
       .bl = &box_and_labels,
