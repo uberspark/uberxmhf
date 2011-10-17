@@ -391,8 +391,14 @@ int main (int argc, char **argv)
   tcm_err_t tcm_err;
   
   tcm_ctx_t tcm_ctx;
+  bool tcm_ctx_initd=false;
+
   audit_ctx_t audit_ctx;
+  bool audit_ctx_initd=false;
+
   akv_ctx_t akv_ctx;
+  bool akv_ctx_initd=false;
+
   const char* server = argv[1];
   const char* port = argv[2];
   const char* pem_pub_key_file = argv[3];
@@ -404,12 +410,15 @@ int main (int argc, char **argv)
 
   audit_err = audit_ctx_init(&audit_ctx, server, port);
   CHECK_RV(audit_err, audit_err, "audit_ctx_init");
+  audit_ctx_initd=true;
 
   akv_err = akv_ctx_init(&akv_ctx, pem_pub_key);
   CHECK_RV(akv_err, akv_err, "akv_ctx_init");
+  akv_ctx_initd=true;
 
   tcm_err = tcm_ctx_init(&tcm_ctx, &audit_ctx, &akv_ctx);
   CHECK_RV(tcm_err, tcm_err, "tcm_ctx_init");
+  tcm_ctx_initd=true;
 
   if (g_file_test("db", G_FILE_TEST_IS_REGULAR)) {
     /* import */
@@ -447,7 +456,15 @@ int main (int argc, char **argv)
   }
 
  out:
-  /* FIXME cleanup */
+  if (tcm_ctx_initd) {
+    tcm_ctx_release(&tcm_ctx);
+  }
+  if (akv_ctx_initd) {
+    akv_ctx_release(&akv_ctx);
+  }
+  if (audit_ctx_initd) {
+    audit_ctx_release(&audit_ctx);
+  }
   return rv;
 }
 
