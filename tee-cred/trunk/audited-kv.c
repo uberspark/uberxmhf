@@ -85,7 +85,7 @@ static tz_return_t akvp_invoke(akv_ctx_t* ctx,
   return rv;
 }
 
-akv_err_t akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem)
+akv_err_t akv_ctx_init(akv_ctx_t* ctx)
 {
   tz_return_t tzrv;
   bool registered_pal=false;
@@ -116,40 +116,45 @@ akv_err_t akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem)
     registered_pal=true;
   }
 
-  /* call init */
-  {
-    Audited__InitReq audited_init_req = {
-      .base = PROTOBUF_C_MESSAGE_INIT (&audited__init_req__descriptor),
-      .audit_pub_pem = (char*)priv_key_pem,
-    };
-    Db__InitReq db_init_req = {
-      .base = PROTOBUF_C_MESSAGE_INIT (&db__init_req__descriptor),
-    };
-    Akvp__InitReq req = {
-      .base = PROTOBUF_C_MESSAGE_INIT (&akvp__init_req__descriptor),
-      .audit_init_req = &audited_init_req,
-      .db_init_req = &db_init_req,
-    };
-    
-    Akvp__InitRes *res;
-    tzrv = akvp_invoke(ctx,
-                       AKVP_INIT,
-                       (ProtobufCMessage*)&req,
-                       (ProtobufCMessage**)&res,
-                       &rv);
-    if (res) {
-      akvp__init_res__free_unpacked(res, NULL);
-    }
-    CHECK_2RV(tzrv, AKV_ETZ | (tzrv << 8),
-              rv, rv,
-              "akvp_invoke(AKVP_INIT)");
-  }
-
  out:
   if (rv && registered_pal) {
     TZEClose(&ctx->tz_sess);
   }
 
+  return rv;
+}
+
+akv_err_t akv_new(akv_ctx_t* ctx, const char* priv_key_pem)
+{
+  akv_err_t rv=0;
+  tz_return_t tzrv;
+
+  Audited__InitReq audited_init_req = {
+    .base = PROTOBUF_C_MESSAGE_INIT (&audited__init_req__descriptor),
+    .audit_pub_pem = (char*)priv_key_pem,
+  };
+  Db__InitReq db_init_req = {
+    .base = PROTOBUF_C_MESSAGE_INIT (&db__init_req__descriptor),
+  };
+  Akvp__InitReq req = {
+    .base = PROTOBUF_C_MESSAGE_INIT (&akvp__init_req__descriptor),
+    .audit_init_req = &audited_init_req,
+    .db_init_req = &db_init_req,
+  };
+    
+  Akvp__InitRes *res;
+  tzrv = akvp_invoke(ctx,
+                     AKVP_INIT,
+                     (ProtobufCMessage*)&req,
+                     (ProtobufCMessage**)&res,
+                     &rv);
+  if (res) {
+    akvp__init_res__free_unpacked(res, NULL);
+  }
+  CHECK_2RV(tzrv, AKV_ETZ | (tzrv << 8),
+            rv, rv,
+            "akvp_invoke(AKVP_INIT)");
+ out:
   return rv;
 }
 

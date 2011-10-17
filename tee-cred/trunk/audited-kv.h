@@ -48,8 +48,9 @@
 typedef struct {
   tze_dev_svc_sess_t tz_sess;
 } akv_ctx_t;
-akv_err_t akv_ctx_init(akv_ctx_t* ctx, const char* priv_key_pem);
+akv_err_t akv_ctx_init(akv_ctx_t* ctx);
 akv_err_t akv_ctx_release(akv_ctx_t* ctx);
+akv_err_t akv_new(akv_ctx_t* ctx, const char* priv_key_pem);
 akv_err_t akv_export(akv_ctx_t* ctx,
                      uint8_t **data,
                      size_t *data_len);

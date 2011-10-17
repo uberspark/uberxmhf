@@ -64,6 +64,21 @@ void tcm_ctx_release(tcm_ctx_t* tcm_ctx)
 {
 }
 
+tcm_err_t tcm_new(tcm_ctx_t* tcm_ctx,
+                  const char* audit_server_pub_pem)
+{
+  akv_err_t akv_err;
+  tcm_err_t rv=0;
+
+  akv_err = akv_new(tcm_ctx->akv_ctx,
+                    audit_server_pub_pem);
+  CHECK_RV(akv_err, TCM_EAKV | (akv_err << 8),
+           "tcm_new");
+
+ out:
+  return rv;
+}
+
 tcm_err_t tcm_db_add(tcm_ctx_t* tcm_ctx,
                      const char* key,
                      const char* val)
@@ -300,7 +315,7 @@ int main_old(int argc, char **argv)
     goto cleanup_none;
   }
 
-  akv_err = akv_ctx_init(&akv_ctx, pem_pub_key);
+  akv_err = akv_ctx_init(&akv_ctx);
   if (akv_err) {
     rv = 2;
     printf("akv_ctx_init failed with rv 0x%x\n", akv_err);
@@ -402,17 +417,12 @@ int main (int argc, char **argv)
   const char* server = argv[1];
   const char* port = argv[2];
   const char* pem_pub_key_file = argv[3];
-  char *pem_pub_key;
-
-  pem_pub_key = read_file(pem_pub_key_file, NULL);
-  CHECK(pem_pub_key, 1,
-        "read_file %s", pem_pub_key_file);
 
   audit_err = audit_ctx_init(&audit_ctx, server, port);
   CHECK_RV(audit_err, audit_err, "audit_ctx_init");
   audit_ctx_initd=true;
 
-  akv_err = akv_ctx_init(&akv_ctx, pem_pub_key);
+  akv_err = akv_ctx_init(&akv_ctx);
   CHECK_RV(akv_err, akv_err, "akv_ctx_init");
   akv_ctx_initd=true;
 
@@ -435,6 +445,18 @@ int main (int argc, char **argv)
       printf("akv_import failed with 0x%x\n", akv_err);
       goto out;
     }
+  } else {
+    tcm_err_t tcm_err;
+    char *pem_pub_key;
+
+    pem_pub_key = read_file(pem_pub_key_file, NULL);
+    CHECK(pem_pub_key, 1,
+          "read_file %s", pem_pub_key_file);
+
+
+    tcm_err = tcm_new(&tcm_ctx,
+                      pem_pub_key);
+    CHECK_RV(akv_err, 8, "tcm_new");
   }
 
   tcm_gtk_main(argc, argv, &tcm_ctx);
