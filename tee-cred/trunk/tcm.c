@@ -234,7 +234,7 @@ int write_file(const char *path, uint8_t *data, size_t towrite)
   return rv;
 }
 
-int main(int argc, char **argv)
+int main_old(int argc, char **argv)
 {
   int rv=0;
   audit_err_t audit_err;
@@ -339,3 +339,17 @@ int main(int argc, char **argv)
  cleanup_none:
   return rv;
 } 
+
+#include <gtk/gtk.h>
+
+int main (int argc, char **argv)
+{
+  GtkWidget *window;
+
+  gtk_init (&argc, &argv);
+  window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
+  gtk_widget_show (window);
+  gtk_main ();
+  return 0;
+}

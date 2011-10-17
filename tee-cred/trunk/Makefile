@@ -33,9 +33,9 @@ PROG_OBJS= \
 	proto-gend/akvp.pb-c.o \
 	proto-gend/storage.pb-c.o
 CFLAGS+=-g -Wall -Werror -I.
-LDFLAGS+=--static
+#LDFLAGS+=--static
 CFLAGS+=-DUSERSPACE_ONLY=1
-PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv libprotobuf-c
+PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv libprotobuf-c gtk+-2.0
 
 #PAL_BACKEND=tee-sdk-svc-tv
 PAL_BACKEND=tee-sdk-svc-null
