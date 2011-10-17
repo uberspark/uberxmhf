@@ -613,7 +613,7 @@ int tcm_gtk_main (int argc, char **argv, tcm_ctx_t *tcm_ctx)
   GtkWidget *window;
   GtkWidget *scrolled;
   GtkWidget *button;
-  GtkWidget *vbox;
+  GtkWidget *vbox_keys, *vbox_window;
   int rv=0;
   box_and_labels_t box_and_labels;
   add_button_handler_ctx_t add_button_handler_ctx;
@@ -630,23 +630,28 @@ int tcm_gtk_main (int argc, char **argv, tcm_ctx_t *tcm_ctx)
     gtk_container_set_border_width (GTK_CONTAINER (window), 10);
   }
 
+  { /* vbox-window */
+    vbox_window = gtk_vbox_new (FALSE, 0);
+    gtk_box_set_homogeneous (GTK_BOX(vbox_window), FALSE);
+    gtk_container_add(GTK_CONTAINER(window), vbox_window);
+  }
+
   { /* scrolled */
     scrolled = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (scrolled),
                                    GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-    gtk_container_add(GTK_CONTAINER (window), scrolled);
-                                   
+    gtk_container_add(GTK_CONTAINER (vbox_window), scrolled);
   }
 
   { /* vbox */
-    vbox = gtk_vbox_new (TRUE, 5);
-    gtk_box_set_homogeneous (GTK_BOX(vbox), FALSE);
+    vbox_keys = gtk_vbox_new (TRUE, 5);
+    gtk_box_set_homogeneous (GTK_BOX(vbox_keys), FALSE);
     gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW (scrolled),
-                                          vbox);
-    /* gtk_container_add (GTK_CONTAINER (scrolled), vbox); */
+                                          vbox_keys);
+    /* gtk_container_add (GTK_CONTAINER (scrolled), vbox_keys); */
   }
   box_and_labels = (box_and_labels_t) {
-    .box = GTK_BOX(vbox),
+    .box = GTK_BOX(vbox_keys),
     .keys = NULL,
   };
 
@@ -687,7 +692,6 @@ int tcm_gtk_main (int argc, char **argv, tcm_ctx_t *tcm_ctx)
   /* } */
 
   { /* add-button */
-    GtkWidget *hbox;
     add_button_handler_ctx = (add_button_handler_ctx_t) {
       .bl = &box_and_labels,
       .tcm_ctx = tcm_ctx,
@@ -697,14 +701,8 @@ int tcm_gtk_main (int argc, char **argv, tcm_ctx_t *tcm_ctx)
                               G_CALLBACK (add_button_handler),
                               &add_button_handler_ctx);
 
-    /* pack into an hbox with a blank label to keep from expanding.
-       XXX better way? */
-    hbox = gtk_hbox_new(FALSE, 0);
-    gtk_box_pack_start(GTK_BOX (hbox), button, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX (hbox), gtk_label_new(""), TRUE, TRUE, 0);
-
-    gtk_box_pack_end (GTK_BOX (vbox),
-                      hbox,
+    gtk_box_pack_end (GTK_BOX (vbox_window),
+                      button,
                       FALSE, FALSE, 0);
   }
 
