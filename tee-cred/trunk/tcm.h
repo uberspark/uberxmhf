@@ -43,12 +43,13 @@
 
 typedef enum {
   TCM_ENONE=0,
-  TCM_EINVAL,
-  TCM_ENOMEM,
-  TCM_ENOTFOUND,
-  TCM_EEXISTS,
-  TCM_EAKV,
-  TCM_EAUDIT,
+  TCM_EINVAL=1,
+  TCM_ENOMEM=2,
+  TCM_ENOTFOUND=3,
+  TCM_EEXISTS=4,
+  TCM_EAKV=5,
+  TCM_EAUDIT=6,
+  TCM_EPB=7,
 } tcm_err_t;
 
 typedef struct {

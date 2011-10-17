@@ -43,6 +43,7 @@
 #include "audited-kv.h"
 #include "audited-kv-pal.h"
 #include "audit.h"
+#include "proto-gend/storage.pb-c.h"
 
 #include <tee-sdk/tv.h>
 
@@ -154,6 +155,45 @@ tcm_err_t tcm_db_get(tcm_ctx_t* tcm_ctx,
  out:
   if(cmd_initd) {
     akv_cmd_ctx_release(&akv_cmd_ctx);
+  }
+  return rv;
+}
+
+/* returns mallocd array of mallocd strings */
+tcm_err_t tcm_db_keys(tcm_ctx_t* tcm_ctx,
+                      char*** keys,
+                      size_t *keys_len)
+{
+  akv_err_t akv_err;
+  uint8_t *data=NULL;
+  size_t len;
+  tcm_err_t rv=0;
+  AkvpStorage__Everything *everything=NULL;
+  int i;
+
+  /* XXX using a full export just to grab the keys.
+     also, adding another layer of redundant unpacking
+     of the export structure */
+
+  akv_err = akv_export(tcm_ctx->akv_ctx,
+                       &data,
+                       &len);
+  CHECK_RV(akv_err, TCM_EAKV|(akv_err<<8), "akv_export");
+
+  everything = akvp_storage__everything__unpack(NULL, len, data);
+  CHECK(everything, TCM_EPB, "Akvp_Storage__unpack");
+
+  *keys_len = everything->n_macd_encd_entries;
+  *keys = malloc(sizeof(*keys) * *keys_len);
+  CHECK_MEM(*keys, TCM_ENOMEM);
+  for(i=0; i< *keys_len; i++) {
+    (*keys)[i] = strdup(everything->macd_encd_entries[i]->key);
+  }
+
+out:
+  free(data);
+  if(everything) {
+    akvp_storage__everything__free_unpacked(everything, NULL);
   }
   return rv;
 }
@@ -402,10 +442,9 @@ typedef struct {
   GList *keys;
 } box_and_labels_t;
 
-/* consumes key and value */
+/* consumes key */
 static void insert_sorted( box_and_labels_t *bl,
-                           gchar *key,
-                           gchar *value)
+                           gchar *key)
 {
   GtkWidget *expander;
   GtkWidget *label;
@@ -429,7 +468,7 @@ static void insert_sorted( box_and_labels_t *bl,
                          pos);
 
   /* add expander contents */
-  label = gtk_label_new (value);
+  label = gtk_label_new ("placeholder");
   gtk_label_set_selectable (GTK_LABEL(label), TRUE);
   gtk_container_add (GTK_CONTAINER (expander), label);
 
@@ -492,7 +531,7 @@ static void add_button_handler(box_and_labels_t *bl)
       goto out;
     }
 
-    insert_sorted(bl, g_strdup(key), g_strdup(val));
+    insert_sorted(bl, g_strdup(key));
   }
 
  out:
@@ -528,6 +567,27 @@ int tcm_gtk_main (int argc, char **argv, tcm_ctx_t *tcm_ctx)
     .box = GTK_BOX(vbox),
     .keys = NULL,
   };
+
+  {
+    char** keys;
+    size_t keys_len;
+    int i;
+    tcm_err_t tcm_err;
+
+    tcm_err = tcm_db_keys(tcm_ctx,
+                          &keys,
+                          &keys_len);
+    CHECK_RV(tcm_err, 1, "tcm_db_keys");
+
+    for(i=0; i<keys_len; i++) {
+      insert_sorted(&box_and_labels,
+                    g_strdup(keys[i])); /* duping here using gtk's
+                                           allocation, so that gtk can
+                                           later free it properly */
+      free(keys[i]);
+    }
+    free(keys);
+  }
 
   /* /\* expanders *\/ */
   /* for(i=0; i< sizeof(keys)/sizeof(keys[0]); i++) {  */
