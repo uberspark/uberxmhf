@@ -71,13 +71,13 @@ clean:
 SRCS=$(patsubst %.o,%.c,$(PROG_OBJS))
 depend: .depend
 .depend: $(SRCS)
-	$(CC) $(CFLAGS) -MM $(SRCS) > $@ ; if [ $$? -ne 0 ] ; then rm $@ ; fi
+	$(CC) $(CFLAGS) -MM $^ > $@ ; if [ $$? -ne 0 ] ; then rm $@ ; fi
 include .depend
 
 PAL_SRCS=$(patsubst %.o,%.c,$(PAL_OBJS_BARE))
 paldepend: .paldepend
 .paldepend: $(PAL_SRCS)
-	$(PAL_CC) $(CFLAGS) -MM $(PAL_SRCS) > $@ ; if [ $$? -ne 0 ] ; then rm $@ ; fi
+	$(PAL_CC) $(CFLAGS) -MM $^ > $@ ; if [ $$? -ne 0 ] ; then rm $@ ; fi
 include .paldepend
 
 TEESDK_DATA_DIR=$(shell pkg-config --variable=pkgdatadir tee-sdk-app)
