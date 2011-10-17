@@ -74,7 +74,9 @@ static audit_err_t audit_connect(audit_ctx_t* audit_ctx, int *sock)
   CHECK(*sock >= 0, AUDIT_ESOCK, "socket()");
 
   err = connect(*sock, servinfo->ai_addr, servinfo->ai_addrlen);
-  CHECK(!err, AUDIT_ECONNECT, "connect(%s)", audit_ctx->hostname);
+  CHECK(!err, AUDIT_ECONNECT, "connect(%s:%s)",
+        audit_ctx->hostname,
+        audit_ctx->svc);
 
  out:
   if(servinfo) {

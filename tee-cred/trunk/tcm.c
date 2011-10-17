@@ -442,6 +442,11 @@ typedef struct {
   GList *keys;
 } box_and_labels_t;
 
+typedef struct {
+  tcm_ctx_t *tcm_ctx;
+  box_and_labels_t *bl;
+} add_button_handler_ctx_t;
+
 /* consumes key */
 static void insert_sorted( box_and_labels_t *bl,
                            gchar *key)
@@ -476,7 +481,7 @@ static void insert_sorted( box_and_labels_t *bl,
   gtk_widget_show_all(expander);
 }
 
-static void add_button_handler(box_and_labels_t *bl)
+static void add_button_handler(add_button_handler_ctx_t *ctx)
 {
   GtkWidget *dialog;
   GtkWidget *table;
@@ -531,7 +536,18 @@ static void add_button_handler(box_and_labels_t *bl)
       goto out;
     }
 
-    insert_sorted(bl, g_strdup(key));
+    { /* finally, actually add the key-value and update display */
+      tcm_err_t tcm_err;
+      tcm_err = tcm_db_add(ctx->tcm_ctx,
+                           key,
+                           val);
+      if (tcm_err) {
+        g_warning("tcm_db_add for key %s failed with tcm_err error 0x%x",
+                  key, tcm_err);
+      } else {
+        insert_sorted(ctx->bl, g_strdup(key));
+      }
+    }
   }
 
  out:
@@ -545,6 +561,7 @@ int tcm_gtk_main (int argc, char **argv, tcm_ctx_t *tcm_ctx)
   GtkWidget *vbox;
   int rv=0;
   box_and_labels_t box_and_labels;
+  add_button_handler_ctx_t add_button_handler_ctx;
 
   gtk_init (&argc, &argv);
 
@@ -604,10 +621,14 @@ int tcm_gtk_main (int argc, char **argv, tcm_ctx_t *tcm_ctx)
   /* } */
 
   { /* add-button */
+    add_button_handler_ctx = (add_button_handler_ctx_t) {
+      .bl = &box_and_labels,
+      .tcm_ctx = tcm_ctx,
+    };
     button = gtk_button_new_from_stock (GTK_STOCK_ADD);
     g_signal_connect_swapped (button, "clicked",
                               G_CALLBACK (add_button_handler),
-                              &box_and_labels);
+                              &add_button_handler_ctx);
     gtk_box_pack_end (GTK_BOX (vbox),
                       button,
                       FALSE, FALSE, 0);
