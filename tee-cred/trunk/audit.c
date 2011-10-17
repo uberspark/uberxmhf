@@ -40,7 +40,8 @@
 #include "dbg.h"
 #include "audit.h"
 
-audit_err_t audit_ctx_init(audit_ctx_t *ctx, const char* hostname, const char* svc)
+audit_err_t audit_ctx_init(audit_ctx_t *ctx,
+ const char* hostname, const char* svc)
 {
   ctx->hostname = hostname;
   ctx->svc = svc;
@@ -55,7 +56,7 @@ static audit_err_t audit_connect(audit_ctx_t* audit_ctx, int *sock)
 {
   audit_err_t rv=0;
   int err;
-  struct addrinfo *servinfo=NULL;  // will point to the results
+  struct addrinfo *servinfo, *servinfo_list=NULL;  // will point to the results
 
   *sock=-1;
 
@@ -66,21 +67,29 @@ static audit_err_t audit_connect(audit_ctx_t* audit_ctx, int *sock)
     hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
 
     // get ready to connect
-    err = getaddrinfo(audit_ctx->hostname, audit_ctx->svc, &hints, &servinfo);
+    err = getaddrinfo(audit_ctx->hostname, audit_ctx->svc, &hints, &servinfo_list);
     CHECK(!err, AUDIT_ELOOKUP, "getaddrinfo(%s)", audit_ctx->hostname);
   }
 
-  *sock = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
-  CHECK(*sock >= 0, AUDIT_ESOCK, "socket()");
+  servinfo=servinfo_list;
+  for(servinfo=servinfo_list; servinfo; servinfo = servinfo->ai_next) {
+    *sock = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
+    CHECK(*sock >= 0, AUDIT_ESOCK, "socket()");
 
-  err = connect(*sock, servinfo->ai_addr, servinfo->ai_addrlen);
-  CHECK(!err, AUDIT_ECONNECT, "connect(%s:%s)",
+    err = connect(*sock, servinfo->ai_addr, servinfo->ai_addrlen);
+    if (err) {
+      close(*sock);
+      *sock=-1;
+    }
+  }
+  CHECK(*sock >= 0,
+        AUDIT_ECONNECT, "couldn't connect to (%s:%s)",
         audit_ctx->hostname,
         audit_ctx->svc);
 
  out:
   if(servinfo) {
-    freeaddrinfo(servinfo);
+    freeaddrinfo(servinfo_list);
     servinfo=NULL;
   }
   if(rv && *sock >= 0) {
