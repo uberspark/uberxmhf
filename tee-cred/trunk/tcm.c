@@ -247,7 +247,11 @@ int main(int argc, char **argv)
   const char* server = argv[1];
   const char* port = argv[2];
   const char* pem_pub_key_file = argv[3];
-  char *pem_pub_key = read_file(pem_pub_key_file, NULL);
+  char *pem_pub_key;
+
+  pem_pub_key = read_file(pem_pub_key_file, NULL);
+  CHECK(pem_pub_key, 1,
+        "read_file %s", pem_pub_key_file);
 
   audit_err = audit_ctx_init(&audit_ctx, server, port);
   if (audit_err) {
@@ -331,6 +335,7 @@ int main(int argc, char **argv)
   akv_ctx_release(&akv_ctx);
  cleanup_audit:
   audit_ctx_release(&audit_ctx);
+ out:
  cleanup_none:
   return rv;
 } 
