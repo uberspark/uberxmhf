@@ -611,6 +611,7 @@ static void add_button_handler(add_button_handler_ctx_t *ctx)
 int tcm_gtk_main (int argc, char **argv, tcm_ctx_t *tcm_ctx)
 {
   GtkWidget *window;
+  GtkWidget *scrolled;
   GtkWidget *button;
   GtkWidget *vbox;
   int rv=0;
@@ -629,10 +630,20 @@ int tcm_gtk_main (int argc, char **argv, tcm_ctx_t *tcm_ctx)
     gtk_container_set_border_width (GTK_CONTAINER (window), 10);
   }
 
+  { /* scrolled */
+    scrolled = gtk_scrolled_window_new(NULL, NULL);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (scrolled),
+                                   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+    gtk_container_add(GTK_CONTAINER (window), scrolled);
+                                   
+  }
+
   { /* vbox */
     vbox = gtk_vbox_new (TRUE, 5);
     gtk_box_set_homogeneous (GTK_BOX(vbox), FALSE);
-    gtk_container_add (GTK_CONTAINER (window), vbox);
+    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW (scrolled),
+                                          vbox);
+    /* gtk_container_add (GTK_CONTAINER (scrolled), vbox); */
   }
   box_and_labels = (box_and_labels_t) {
     .box = GTK_BOX(vbox),
