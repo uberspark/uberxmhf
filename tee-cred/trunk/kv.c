@@ -139,4 +139,5 @@ void kv_it_next(kv_it_t *it, const void **key, size_t *key_len, const void **val
   *key_len = it->ctx->data[it->i].key_len;
   *val = it->ctx->data[it->i].val;
   *val_len = it->ctx->data[it->i].val_len;
+  it->i++;
 }
