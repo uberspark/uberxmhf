@@ -9,9 +9,15 @@ FORCE:
 test : FORCE
 	cd tests ; make
 
-$(CURDIR)/proto-gend:
-	mkdir -p proto-gend
-proto-gend/%.pb-c.c proto-gend/%.pb-c.h : %.proto $(CURDIR)/proto-gend
+# trick for creating object directories without having
+# a dependency on the directory itself (which is modified every
+# time a file is created inside it)
+%/.d:
+	mkdir -p $(@D)
+	touch $@
+.PRECIOUS: %/.d
+
+proto-gend/%.pb-c.c proto-gend/%.pb-c.h : %.proto $(CURDIR)/proto-gend/.d
 	protoc-c --c_out=proto-gend --proto_path=$(srcdir) $<
 
 PROG_NAME=main
@@ -51,9 +57,7 @@ PAL_OBJS_BARE= \
 PAL_OBJS=$(addprefix pal-build/, $(PAL_OBJS_BARE))
 PAL_CFLAGS+=-g -Wall -Werror -I.
 
-$(CURDIR)/pal-build:
-	mkdir -p pal-build/proto-gend
-pal-build/%.o : %.c $(CURDIR)/pal-build
+pal-build/%.o : %.c $(CURDIR)/pal-build/proto-gend/.d
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 %.pal.o: pal-build/%.o
