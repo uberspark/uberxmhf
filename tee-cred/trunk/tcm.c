@@ -341,15 +341,213 @@ int main_old(int argc, char **argv)
 } 
 
 #include <gtk/gtk.h>
+/* static void hello( GtkWidget *widget, */
+/*                    gpointer   data ) */
+/* { */
+/*   g_print ("Hello World\n"); */
+/* } */
 
+int tcm_gtk_main (int argc, char **argv, tcm_ctx_t *tcm_ctx);
 int main (int argc, char **argv)
 {
+  int rv=0;
+  audit_err_t audit_err;
+  akv_err_t akv_err;
+  tcm_err_t tcm_err;
+  
+  tcm_ctx_t tcm_ctx;
+  audit_ctx_t audit_ctx;
+  akv_ctx_t akv_ctx;
+  const char* server = argv[1];
+  const char* port = argv[2];
+  const char* pem_pub_key_file = argv[3];
+  char *pem_pub_key;
+
+  pem_pub_key = read_file(pem_pub_key_file, NULL);
+  CHECK(pem_pub_key, 1,
+        "read_file %s", pem_pub_key_file);
+
+  /* XXX try import */
+
+  audit_err = audit_ctx_init(&audit_ctx, server, port);
+  CHECK_RV(audit_err, audit_err, "audit_ctx_init");
+
+  akv_err = akv_ctx_init(&akv_ctx, pem_pub_key);
+  CHECK_RV(akv_err, akv_err, "akv_ctx_init");
+
+  tcm_err = tcm_ctx_init(&tcm_ctx, &audit_ctx, &akv_ctx);
+  CHECK_RV(tcm_err, tcm_err, "tcm_ctx_init");
+
+  tcm_gtk_main(argc, argv, &tcm_ctx);
+
+  /* XXX export */
+
+ out:
+  /* FIXME cleanup */
+  return rv;
+}
+
+typedef struct {
+  GtkBox *box;
+  GList *keys;
+} box_and_labels_t;
+
+/* consumes key and value */
+static void insert_sorted( box_and_labels_t *bl,
+                           gchar *key,
+                           gchar *value)
+{
+  GtkWidget *expander;
+  GtkWidget *label;
+  int pos;
+
+  g_print ("Hello World\n");
+  expander = gtk_expander_new (key);
+
+  /* get sorted position */
+  bl->keys = g_list_insert_sorted(bl->keys,
+                                  key,
+                                  (GCompareFunc)g_strcmp0);
+  pos = g_list_index(bl->keys, key);
+  assert(pos >= 0);
+
+  /* create and insert expander */
+  gtk_box_pack_start (bl->box,
+                      expander,
+                      FALSE, FALSE, 0);
+  gtk_box_reorder_child (bl->box,
+                         expander,
+                         pos);
+
+  /* add expander contents */
+  label = gtk_label_new (value);
+  gtk_label_set_selectable (GTK_LABEL(label), TRUE);
+  gtk_container_add (GTK_CONTAINER (expander), label);
+
+
+  gtk_widget_show_all(expander);
+}
+
+static void add_button_handler(box_and_labels_t *bl)
+{
+  GtkWidget *dialog;
+  GtkWidget *table;
+  GtkWidget *keyEntry, *valEntry;
+
+  dialog = gtk_dialog_new_with_buttons("Add a secret", NULL,
+                                       GTK_DIALOG_MODAL,
+                                       GTK_STOCK_ADD, GTK_RESPONSE_OK,
+                                       GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                       NULL);
+  table = gtk_table_new(2, 2, FALSE);
+  gtk_box_pack_start_defaults (GTK_BOX (GTK_DIALOG (dialog)->vbox), table);
+  
+  gtk_table_attach(GTK_TABLE(table),
+                   gtk_label_new("Key"),
+                   0, 1, 0, 1,
+                   GTK_SHRINK | GTK_FILL,
+                   GTK_SHRINK | GTK_FILL,
+                   0, 0);
+  keyEntry = gtk_entry_new();
+  gtk_table_attach(GTK_TABLE(table),
+                   keyEntry,
+                   1, 2, 0, 1,
+                   GTK_SHRINK | GTK_FILL,
+                   GTK_SHRINK | GTK_FILL,
+                   0, 0);
+
+  gtk_table_attach(GTK_TABLE(table),
+                   gtk_label_new("Value"),
+                   0, 1, 1, 2,
+                   GTK_SHRINK | GTK_FILL,
+                   GTK_SHRINK | GTK_FILL,
+                   0, 0);
+  valEntry = gtk_entry_new();
+  gtk_table_attach(GTK_TABLE(table),
+                   valEntry,
+                   1, 2, 1, 2,
+                   GTK_SHRINK | GTK_FILL,
+                   GTK_SHRINK | GTK_FILL,
+                   0, 0);
+
+  gtk_widget_show_all(dialog);
+
+  if(gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
+    const gchar *key, *val;
+    key = gtk_entry_get_text(GTK_ENTRY(keyEntry));
+    val = gtk_entry_get_text(GTK_ENTRY(valEntry));
+
+    if(!key || !strlen(key)
+       || !val || !strlen(val)) {
+      g_warning("NULL key or val");
+      goto out;
+    }
+
+    insert_sorted(bl, g_strdup(key), g_strdup(val));
+  }
+
+ out:
+  gtk_widget_destroy(dialog);
+}
+
+int tcm_gtk_main (int argc, char **argv, tcm_ctx_t *tcm_ctx)
+{
   GtkWidget *window;
+  GtkWidget *button;
+  GtkWidget *vbox;
+  int rv=0;
+  box_and_labels_t box_and_labels;
 
   gtk_init (&argc, &argv);
-  window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
-  gtk_widget_show (window);
+
+  { /* window */
+    window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_title (GTK_WINDOW (window), "TEE-Cred");
+    g_signal_connect (window, "destroy",
+                      G_CALLBACK (gtk_main_quit), NULL);
+    g_signal_connect (window, "delete-event",
+                      G_CALLBACK (gtk_main_quit), NULL);
+    gtk_container_set_border_width (GTK_CONTAINER (window), 10);
+  }
+
+  { /* vbox */
+    vbox = gtk_vbox_new (TRUE, 5);
+    gtk_box_set_homogeneous (GTK_BOX(vbox), FALSE);
+    gtk_container_add (GTK_CONTAINER (window), vbox);
+  }
+  box_and_labels = (box_and_labels_t) {
+    .box = GTK_BOX(vbox),
+    .keys = NULL,
+  };
+
+  /* /\* expanders *\/ */
+  /* for(i=0; i< sizeof(keys)/sizeof(keys[0]); i++) {  */
+  /*   GtkWidget *expander; */
+  /*   GtkWidget *label; */
+  /*   expander = gtk_expander_new (keys[i]); */
+  /*   gtk_box_pack_start (GTK_BOX (vbox), */
+  /*                       expander, */
+  /*                       FALSE, FALSE, 0); */
+
+  /*   label = gtk_label_new ("labeeeel"); */
+  /*   gtk_label_set_selectable (GTK_LABEL(label), TRUE); */
+  /*   gtk_container_add (GTK_CONTAINER (expander), label); */
+  /* } */
+
+  { /* add-button */
+    button = gtk_button_new_from_stock (GTK_STOCK_ADD);
+    g_signal_connect_swapped (button, "clicked",
+                              G_CALLBACK (add_button_handler),
+                              &box_and_labels);
+    gtk_box_pack_end (GTK_BOX (vbox),
+                      button,
+                      FALSE, FALSE, 0);
+  }
+
+  gtk_widget_show_all (window);
   gtk_main ();
-  return 0;
+
+  goto out;
+ out:
+  return rv;
 }
