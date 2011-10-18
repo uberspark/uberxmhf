@@ -66,7 +66,6 @@ hpt_walk_ctx_t hpt_nested_walk_ctx;
  * which means there is no possibility that multiple CPU will run a same PAL simultaneously,
  * thus no need to apply lock to whitelist entry.
  * */
-u32 * scode_whitelist;
 whitelist_entry_t *whitelist=NULL;
 u32 whitelist_size=0, whitelist_max=0;
 
@@ -297,18 +296,17 @@ void init_scode(VCPU * vcpu)
 	/* initialize heap memory */
 	mem_init();
 
-	scode_whitelist = (unsigned int *)vmalloc(WHITELIST_LIMIT);
-	dprintf(LOG_TRACE, "[TV] alloc %dKB mem for scode_list at %x!\n", (WHITELIST_LIMIT/1024), (unsigned int)scode_whitelist);
+	whitelist = vmalloc(WHITELIST_LIMIT);
+	dprintf(LOG_TRACE, "[TV] alloc %dKB mem for scode_list at %x!\n", (WHITELIST_LIMIT/1024), (unsigned int)whitelist);
 	scode_pfn_bitmap = (unsigned char *)vmalloc(PFN_BITMAP_LIMIT);
 	dprintf(LOG_TRACE, "[TV] alloc %dKB mem for pfn_bitmap at %x!\n", (PFN_BITMAP_LIMIT/1024), (unsigned int)scode_pfn_bitmap);
 	scode_pfn_bitmap_2M = (unsigned short *)vmalloc(PFN_BITMAP_2M_LIMIT);
 	dprintf(LOG_TRACE, "[TV] alloc %dKB mem for pfn_bitmap_2M at %x!\n", (PFN_BITMAP_LIMIT/1024), (unsigned int)scode_pfn_bitmap_2M);
 
-	vmemset(scode_whitelist, 0, WHITELIST_LIMIT); 
+	vmemset(whitelist, 0, WHITELIST_LIMIT); 
 	vmemset(scode_pfn_bitmap, 0, PFN_BITMAP_LIMIT);
 	vmemset(scode_pfn_bitmap_2M, 0, PFN_BITMAP_2M_LIMIT);
 
-	whitelist = (whitelist_entry_t *)scode_whitelist;
 	whitelist_size = 0;
 	whitelist_max = WHITELIST_LIMIT / sizeof(whitelist_entry_t);
 	dprintf(LOG_TRACE, "[TV] whitelist max = %d!\n", whitelist_max);
