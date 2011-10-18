@@ -67,7 +67,7 @@ hpt_walk_ctx_t hpt_nested_walk_ctx;
  * thus no need to apply lock to whitelist entry.
  * */
 whitelist_entry_t *whitelist=NULL;
-u32 whitelist_size=0, whitelist_max=0;
+size_t whitelist_size=0, whitelist_max=0;
 
 perf_ctr_t g_tv_perf_ctrs[TV_PERF_CTRS_COUNT];
 char *g_tv_perf_ctr_strings[] = {
