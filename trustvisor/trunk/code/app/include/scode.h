@@ -125,12 +125,12 @@ void hpt_insert_pal_pmes(VCPU *vcpu,
 												 int pal_pm_lvl,
 												 gpa_t gpas[],
 												 size_t num_gpas);
-void hpt_remove_pal_pmes(VCPU *vcpu,
-												 hpt_walk_ctx_t *walk_ctx,
-												 hpt_pm_t pal_pm,
-												 int pal_pm_lvl,
-												 gpa_t gpas[],
-												 size_t num_gpas);
+void hpt_walk_set_prots(hpt_walk_ctx_t *walk_ctx,
+												hpt_pm_t pm,
+												int pm_lvl,
+												gpa_t gpas[],
+												size_t num_gpas,
+												hpt_prot_t prot);
 void hpt_nested_set_prot(VCPU * vcpu, u64 gpaddr);
 void hpt_nested_clear_prot(VCPU * vcpu, u64 gpaddr);
 void hpt_nested_switch_scode(VCPU * vcpu, pte_t *pte_pages, u32 size, pte_t *pte_page2, u32 size2);

@@ -1345,12 +1345,13 @@ void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* entry)
 											 shared_page_count<<PAGE_SHIFT_4K);
 
 	/* remove from pal's page tables */
-	hpt_remove_pal_pmes(vcpu,
-											&entry->hpt_nested_walk_ctx,
-											entry->pal_hpt_root,
-											hpt_root_lvl(entry->hpt_nested_walk_ctx.t),
-											&entry->scode_pages[scode_pages_shared_start],
-											shared_page_count);
+	hpt_walk_set_prots(&entry->hpt_nested_walk_ctx,
+										 entry->pal_hpt_root,
+										 hpt_root_lvl(entry->hpt_nested_walk_ctx.t),
+										 &entry->scode_pages[scode_pages_shared_start],
+										 shared_page_count,
+										 HPT_PROTS_NONE);
+
 	/* XXX Should also revoke access to corresponding guest page table
 	 * pages. Not doing it for now since won't normally hurt anything,
 	 * and likely to rewrite handling of guest page tables soon.
