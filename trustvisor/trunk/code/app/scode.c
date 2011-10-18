@@ -173,7 +173,7 @@ void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* entry);
 /* search scode in whitelist */
 int scode_in_list(u64 gcr3, u32 gvaddr)
 {
-	u32 i, j;
+	size_t i, j;
 
 	for (i = 0; i < whitelist_max; i ++)
 	{
@@ -193,7 +193,7 @@ int scode_in_list(u64 gcr3, u32 gvaddr)
 
 static whitelist_entry_t* find_scode_by_entry(u64 gcr3, u32 gv_entry)
 {
-	u32 i;
+	size_t i;
 
 	for (i = 0; i < whitelist_max; i ++)
 	{
@@ -207,7 +207,7 @@ static whitelist_entry_t* find_scode_by_entry(u64 gcr3, u32 gv_entry)
 /* FIXME: should this be in crypto_init.c? */
 u32 scode_measure(utpm_master_state_t *utpm, pte_t *pte_pages, u32 size)
 {
-	u32 i; 
+	size_t i; 
 	u32 paddr;
 	SHA_CTX ctx;
 	TPM_DIGEST sha1sum;
@@ -261,7 +261,7 @@ void* hpt_nested_get_zeroed_page(void *ctx, size_t alignment, size_t sz)
 /* initialize all the scode related variables and buffers */
 void init_scode(VCPU * vcpu)
 {
-	u32 inum, max;
+	size_t inum, max;
 
 	/* initialize perf counters. this needs to happen before anythings gets profiled
 	 * to prevent deadlock.
@@ -345,7 +345,7 @@ void init_scode(VCPU * vcpu)
  * **************************************/
 u32 hpt_scode_set_prot(VCPU *vcpu, pte_t *pte_pages, u32 size)
 {
-	u32 i; 
+	size_t i; 
 	u32 pfn;
 	u32 k;
 	VCPU * tmpcpu;
@@ -381,10 +381,10 @@ u32 hpt_scode_set_prot(VCPU *vcpu, pte_t *pte_pages, u32 size)
 
 void hpt_scode_clear_prot(VCPU * vcpu, pte_t *pte_pages, u32 size)
 {
-	u32 i; 
+	size_t i; 
 	u32 pfn;
 #ifdef __MP_VERSION__
-	u32 k;
+	size_t k;
 	VCPU * tmpcpu;
 #endif
 
@@ -427,7 +427,7 @@ void hpt_scode_clear_prot(VCPU * vcpu, pte_t *pte_pages, u32 size)
 /* parse scode paramter info ( scode registration input) */
 int parse_params_info(VCPU * vcpu, struct tv_pal_params* pm_info, u32 pm_addr)
 {
-	u32 i, num;
+	size_t i, num;
 	u32 addr;
 	addr = pm_addr;
 	/* get parameter number */
@@ -451,7 +451,7 @@ int parse_params_info(VCPU * vcpu, struct tv_pal_params* pm_info, u32 pm_addr)
 
 int memsect_info_copy_from_guest(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, u32 gva_scode_info)
 {
-	u32 gva_scode_info_offset = 0;
+	size_t gva_scode_info_offset = 0;
 
 	/* get parameter number */
 	ps_scode_info->num_sections = get_32bit_aligned_value_from_guest(vcpu, gva_scode_info);
@@ -473,7 +473,7 @@ int memsect_info_copy_from_guest(VCPU * vcpu, struct tv_pal_sections *ps_scode_i
 /* parse scode sections info (scode registration input) */
 int memsect_info_register(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, whitelist_entry_t * wle)
 {
-	unsigned int i;
+	size_t i;
 	int pnum, is_get_param, is_get_stack;
 	int type, size;
 	unsigned int start;
@@ -540,7 +540,7 @@ int memsect_info_register(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, wh
 u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry) 
 {
 
-  u32 i;
+  size_t i;
 	whitelist_entry_t whitelist_new;
 	struct tv_pal_section * ginfo; 
 	u64 gcr3;
@@ -675,7 +675,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 /* unregister scode in whitelist */
 u32 scode_unregister(VCPU * vcpu, u32 gvaddr) 
 {
-	u32 i;
+	size_t i;
 
 	u64 gcr3;
 
@@ -745,7 +745,7 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
  * in order to avoid redundency in expose_page() */
 int test_page_in_list(pte_t * page_list, pte_t page, u32 count)
 {
-	u32 i;
+	size_t i;
 	for( i=0 ; i<count ; i++ )  {
 		if (page_list[i]==page)
 			return 1;
@@ -774,8 +774,8 @@ void expose_page (pte_t *page_list, pte_t page, u32 * count)
 /* find all PTE entry pages that is related to access scode and GDT */
 static void scode_expose_arch(VCPU *vcpu, whitelist_entry_t *wle)
 {
-	unsigned int i;
-	unsigned int j;
+	size_t i;
+	size_t j;
 	pte_t *pte_page;
 	u32 pte_count = 0;
 	u32 gpaddr = 0;
@@ -1058,7 +1058,7 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 
 static void scode_unexpose_arch(VCPU __attribute__((unused)) *vcpu, whitelist_entry_t *wle)
 {
-	u32 i;
+	size_t i;
 	pte_t * page = wle->pte_page;
 	dprintf(LOG_TRACE, "[TV] unexpose SCODE and GDT related to PTE pages\n");
 	/* clear page bitmap set in scode_expose_arch() */
@@ -1078,7 +1078,8 @@ static void scode_unexpose_arch(VCPU __attribute__((unused)) *vcpu, whitelist_en
 u32 scode_unmarshall(VCPU * vcpu)
 {
 	u32 pm_addr_base, pm_addr;
-	u32 i, pm_num, pm_type, pm_size, pm_value;
+	size_t i;
+	u32 pm_num, pm_type, pm_size, pm_value;
 
 	int curr=scode_curr[vcpu->id];
 
@@ -1308,7 +1309,7 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
 
 void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* entry)
 {
-	u32 i;
+	size_t i;
 	u32 shared_page_count=0;
 	const u32 scode_pages = entry->scode_size>>PAGE_SHIFT_4K;
 	u32 scode_pages_shared_start;
@@ -1459,7 +1460,7 @@ u32 scode_share_range(VCPU * vcpu, whitelist_entry_t *entry, u32 gva_base, u32 g
 
 u32 scode_share_ranges(VCPU * vcpu, u32 scode_entry, u32 gva_base[], u32 gva_len[], u32 count)
 {
-	u32 i;
+	size_t i;
 	whitelist_entry_t* entry;
 
 	if (!(entry = find_scode_by_entry(VCPU_gcr3(vcpu), scode_entry))) {
