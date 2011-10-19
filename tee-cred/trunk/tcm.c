@@ -557,8 +557,8 @@ static void insert_sorted( tcm_ctx_t *tcm_ctx,
     gtk_widget_style_get_property(expander, "expander-size", &expander_size);
     gtk_widget_style_get_property(expander, "expander-spacing", &expander_spacing);
     margin = g_value_get_int(&expander_size)
-      + g_value_get_int(&expander_spacing)
-      + 5; /* fudge-factor */
+      + 2*g_value_get_int(&expander_spacing)
+      + 5; /* XXX fudge factor */
     label = gtk_expander_get_label_widget(GTK_EXPANDER(expander));
     gtk_label_set_line_wrap(GTK_LABEL(label), true);
     gtk_widget_set_size_request(label, 200, -1);
