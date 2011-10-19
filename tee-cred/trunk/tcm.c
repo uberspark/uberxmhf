@@ -561,6 +561,7 @@ static void insert_sorted( tcm_ctx_t *tcm_ctx,
       + 5; /* XXX fudge factor */
     label = gtk_expander_get_label_widget(GTK_EXPANDER(expander));
     gtk_label_set_line_wrap(GTK_LABEL(label), true);
+    gtk_label_set_line_wrap_mode(GTK_LABEL(label), PANGO_WRAP_WORD_CHAR);
     gtk_widget_set_size_request(label, 200, -1);
     g_signal_connect(expander, "activate",
                      G_CALLBACK(unexpand_other), &expanded_expander);
