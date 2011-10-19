@@ -528,11 +528,20 @@ static void copy_button_handler(copy_button_handler_ctx_t *ctx)
   free(val);
 }
 
+static void unexpand_other(GtkWidget *self, GtkWidget **expanded)
+{
+  if (*expanded) {
+    gtk_expander_set_expanded(GTK_EXPANDER(*expanded), false);
+  }
+  *expanded = self;
+}
+
 /* consumes key */
 static void insert_sorted( tcm_ctx_t *tcm_ctx,
                            box_and_labels_t *bl,
                            gchar *key)
 {
+  static GtkWidget *expanded_expander=NULL;
   GtkWidget *expander;
   GtkWidget *button;
   int pos;
@@ -543,6 +552,8 @@ static void insert_sorted( tcm_ctx_t *tcm_ctx,
     label = gtk_expander_get_label_widget(GTK_EXPANDER(expander));
     gtk_label_set_line_wrap(GTK_LABEL(label), true);
     gtk_widget_set_size_request(label, 200, -1);
+    g_signal_connect(expander, "activate",
+                     G_CALLBACK(unexpand_other), &expanded_expander);
   }
     
 
