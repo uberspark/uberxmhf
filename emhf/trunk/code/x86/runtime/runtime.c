@@ -52,7 +52,8 @@ void cstartup(void){
            (in particular using AMT SOL) */
         
     g_uart_config = rpb->uart_config;
-	init_uart();
+    g_uart_config.fifo = 0; /* FIXME: work-around for issue #43 */
+    init_uart();
     printf("\nrpb->uart_config.port = %x", rpb->uart_config.port);
     printf("\nrpb->uart_config.clock_hz = %u", rpb->uart_config.clock_hz);
     printf("\nrpb->uart_config.baud = %u", rpb->uart_config.baud);
