@@ -543,19 +543,28 @@ static void insert_sorted( tcm_ctx_t *tcm_ctx,
 {
   static GtkWidget *expanded_expander=NULL;
   GtkWidget *expander;
-  GtkWidget *button;
+  GtkWidget *alignment;
   int pos;
+  gint margin=0;
 
-  {
+  { /* create expander */
     GtkWidget *label;
+    GValue expander_size = {};
+    GValue expander_spacing = {};
     expander = gtk_expander_new (key);
+    g_value_init(&expander_size, G_TYPE_INT);
+    g_value_init(&expander_spacing, G_TYPE_INT);
+    gtk_widget_style_get_property(expander, "expander-size", &expander_size);
+    gtk_widget_style_get_property(expander, "expander-spacing", &expander_spacing);
+    margin = g_value_get_int(&expander_size)
+      + g_value_get_int(&expander_spacing)
+      + 5; /* fudge-factor */
     label = gtk_expander_get_label_widget(GTK_EXPANDER(expander));
     gtk_label_set_line_wrap(GTK_LABEL(label), true);
     gtk_widget_set_size_request(label, 200, -1);
     g_signal_connect(expander, "activate",
                      G_CALLBACK(unexpand_other), &expanded_expander);
   }
-    
 
   /* get sorted position */
   bl->keys = g_list_insert_sorted(bl->keys,
@@ -564,7 +573,7 @@ static void insert_sorted( tcm_ctx_t *tcm_ctx,
   pos = g_list_index(bl->keys, key);
   assert(pos >= 0);
 
-  /* create and insert expander */
+  /* insert expander into sorted position */
   gtk_box_pack_start (bl->box,
                       expander,
                       FALSE, FALSE, 0);
@@ -574,6 +583,12 @@ static void insert_sorted( tcm_ctx_t *tcm_ctx,
 
   /* add expander contents */
   {
+    GtkWidget *button;
+
+    alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),
+                              0, 0, margin, 0);
+
     copy_button_handler_ctx_t *copy_ctx;
     copy_ctx = g_malloc(sizeof(*copy_ctx));
     *copy_ctx = (copy_button_handler_ctx_t) {
@@ -585,9 +600,10 @@ static void insert_sorted( tcm_ctx_t *tcm_ctx,
     g_signal_connect_swapped (button, "clicked",
                               G_CALLBACK (copy_button_handler),
                               copy_ctx);
+    gtk_container_add (GTK_CONTAINER(alignment),button);
   }
   
-  gtk_container_add (GTK_CONTAINER (expander), button);
+  gtk_container_add (GTK_CONTAINER (expander), alignment);
 
   gtk_widget_show_all(expander);
 }
