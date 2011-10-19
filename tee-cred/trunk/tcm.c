@@ -530,7 +530,7 @@ static void copy_button_handler(copy_button_handler_ctx_t *ctx)
 
 static void unexpand_other(GtkWidget *self, GtkWidget **expanded)
 {
-  if (*expanded) {
+  if (*expanded && (self != *expanded)) {
     gtk_expander_set_expanded(GTK_EXPANDER(*expanded), false);
   }
   *expanded = self;
