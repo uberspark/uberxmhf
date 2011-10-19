@@ -596,7 +596,7 @@ static void insert_sorted( tcm_ctx_t *tcm_ctx,
       .key = g_strdup(key),
     };
       
-    button = gtk_button_new_with_label("Copy");
+    button = gtk_button_new_with_label("Copy Password");
     g_signal_connect_swapped (button, "clicked",
                               G_CALLBACK (copy_button_handler),
                               copy_ctx);
@@ -623,7 +623,7 @@ static void add_button_handler(add_button_handler_ctx_t *ctx)
   gtk_box_pack_start_defaults (GTK_BOX (GTK_DIALOG (dialog)->vbox), table);
   
   gtk_table_attach(GTK_TABLE(table),
-                   gtk_label_new("Key"),
+                   gtk_label_new("Web Site"),
                    0, 1, 0, 1,
                    GTK_SHRINK | GTK_FILL,
                    GTK_SHRINK | GTK_FILL,
@@ -637,7 +637,7 @@ static void add_button_handler(add_button_handler_ctx_t *ctx)
                    0, 0);
 
   gtk_table_attach(GTK_TABLE(table),
-                   gtk_label_new("Value"),
+                   gtk_label_new("Password"),
                    0, 1, 1, 2,
                    GTK_SHRINK | GTK_FILL,
                    GTK_SHRINK | GTK_FILL,
