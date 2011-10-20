@@ -149,3 +149,49 @@ int svc_utpm_rand_block(void *out, /* out */
   memset(out, 0, out_len);
   return 0;
 }
+
+/**
+ * Semantics for "fake" NVRAM: Persist what is written for the life of
+ * a service invocation, but do not actually persist to disk.
+ *
+ * TODO: Wire it up to the logic currently residing in
+ * ~hyp/trustvisor/trunk/code/app/hc_utpm.c
+ */
+
+#define FAKE_NVRAM_SIZE 32
+uint8_t g_fake_nvram[FAKE_NVRAM_SIZE];
+
+int svc_tpmnvram_getsize(size_t *size) { /* out */
+  if(NULL == size) {
+      return -1;
+  }
+  *size = FAKE_NVRAM_SIZE;
+
+  return 0;
+}
+
+int svc_tpmnvram_readall(uint8_t *out) { /* out */
+  if(NULL == out) {
+      return -1;
+  }
+
+  memcpy(out, g_fake_nvram, FAKE_NVRAM_SIZE);
+
+  return 0;
+}
+
+int svc_tpmnvram_writeall(uint8_t *in) { /* in */
+  if(NULL == in) {
+      return -1;
+  }
+
+  memcpy(g_fake_nvram, in, FAKE_NVRAM_SIZE);
+  
+  return 0;                  
+}
+
+/* Local Variables: */
+/* mode:c           */
+/* indent-tabs-mode:'t */
+/* tab-width:2      */
+/* End:             */
