@@ -51,6 +51,7 @@
 
 #include <tee-sdk/tv.h>
 #include <tee-sdk/tz.h>
+#include <tee-sdk/tze.h>
 #include <tee-sdk/tzmarshal.h>
 
 #include <trustvisor/tv_utpm.h>
@@ -1174,114 +1175,99 @@ tz_return_t test_nv_rollback(tz_session_t *tzPalSession) {
 
 }
 
+tz_return_t init_tz_sess(tze_dev_svc_sess_t* tz_sess)
+{
+  tz_return_t rv;
+  bool registered_pal=false;
+
+  /* register pal */
+  {
+    tv_device_open_options_t tv_dev_options = {
+      .userspace_only = USERSPACE_ONLY,
+    };
+    tze_svc_load_and_open_options_t load_options = {
+      .pkDeviceInit = &tv_dev_options,
+    };
+    struct tv_pal_sections scode_info;
+    tv_service_t pal = {
+      .sPageInfo = &scode_info,
+      .pEntry = pals,
+    };
+    tv_pal_sections_init(&scode_info,
+                         PAGE_SIZE, 10*PAGE_SIZE);
+    rv = TZESvcLoadAndOpen(tz_sess,
+                           &pal,
+                           sizeof(pal),
+                           &load_options);
+    if(TZ_SUCCESS != rv) {
+        printf("Failure in TZESvcLoadAndOpen: %d\n", rv);
+        goto out;
+    }
+    registered_pal=true;
+  }
+
+ out:
+  if (rv && registered_pal) {
+    TZEClose(tz_sess);
+  }
+
+  return rv;
+}
+
+
 // function main
 // register some sensitive code and data in libfoo.so and call bar()
 int main(void)
 {
-  struct tv_pal_sections scode_info;
   int rv = 0;
-  tz_return_t tzRet;
-  tz_device_t tzDevice;
-  tz_session_t tzPalSession;
-  tv_service_t pal = 
-    {
-      .sPageInfo = &scode_info,
-      .sParams = NULL, /* soon to be deprecated? */
-      .pEntry = pals,
-    };
-  tz_uuid_t tzSvcId;
+  tze_dev_svc_sess_t tz_sess;
 
-  /* open isolated execution environment device */
-  {
-    tzRet = TZDeviceOpen(NULL, NULL, &tzDevice);
-    assert(tzRet == TZ_SUCCESS);
-  }
-
-  /* download pal 'service' */  
-  { 
-    tz_session_t tzManagerSession;
-
-    /* open session with device manager */
-    tzRet = TZManagerOpen(&tzDevice, NULL, &tzManagerSession);
-    assert(tzRet == TZ_SUCCESS);
-
-    /* prepare pal descriptor */
-    tv_pal_sections_init(&scode_info,
-                         PAGE_SIZE, PAGE_SIZE);
-    printf("scode sections:\n");
-    tv_pal_sections_print(&scode_info);
-
-    /* download */
-    tzRet = TZManagerDownloadService(&tzManagerSession,
-                                     &pal,
-                                     sizeof(pal),
-                                     &tzSvcId);
-    assert(tzRet == TZ_SUCCESS);
-
-    /* close session */
-    tzRet = TZManagerClose(&tzManagerSession);
-    assert(tzRet == TZ_SUCCESS);
-  }
-
-  /* now open a service handle to the pal */
-  {
-    tz_operation_t op;
-    tz_return_t serviceReturn;
-    tzRet = TZOperationPrepareOpen(&tzDevice,
-                                   &tzSvcId,
-                                   NULL, NULL,
-                                   &tzPalSession,
-                                   &op);
-    assert(tzRet == TZ_SUCCESS);
-    tzRet = TZOperationPerform(&op, &serviceReturn);
-    assert(tzRet == TZ_SUCCESS); /* tzRet==TZ_SUCCESS implies serviceReturn==TZ_SUCCESS */
-    TZOperationRelease(&op);
-  }
-
+  assert(TZ_SUCCESS == init_tz_sess(&tz_sess));
+  
 #ifdef TEST_VMMCALL
   rv = test_vmcall() || rv;
 #endif
 
 #ifdef TEST_WITHOUTPARAM
-  rv = test_withoutparam(&tzPalSession) || rv;
+  rv = test_withoutparam(&tz_sess.tzSession) || rv;
 #endif
 
 #ifdef TEST_PARAM
-  rv = test_param(&tzPalSession) || rv;
+  rv = test_param(&tz_sess.tzSession) || rv;
 #endif
 
 #ifdef TEST_SEAL
-  rv = test_seal2(&tzPalSession) || rv;
-  rv = test_seal(&tzPalSession) || rv;
+  rv = test_seal2(&tz_sess.tzSession) || rv;
+  rv = test_seal(&tz_sess.tzSession) || rv;
 #endif
 
 #ifdef TEST_LTSEAL
-  rv = test_longterm_seal(&tzPalSession) || rv;
+  rv = test_longterm_seal(&tz_sess.tzSession) || rv;
 #endif
 
   
 #ifdef TEST_QUOTE
-  rv = test_quote(&tzPalSession) || rv;
+  rv = test_quote(&tz_sess.tzSession) || rv;
 #endif
 
 #ifdef TEST_PCR_EXTEND
-  rv = test_pcr_extend(&tzPalSession) || rv;
+  rv = test_pcr_extend(&tz_sess.tzSession) || rv;
 #endif
 
 #ifdef TEST_PCR_READ
-  rv = test_pcr_read(&tzPalSession) || rv;
+  rv = test_pcr_read(&tz_sess.tzSession) || rv;
 #endif
 
 #ifdef TEST_RAND
-  rv = test_rand(&tzPalSession) || rv;
+  rv = test_rand(&tz_sess.tzSession) || rv;
 #endif
 
 #ifdef TEST_TIME
-  rv = test_time(&tzPalSession) || rv;
+  rv = test_time(&tz_sess.tzSession) || rv;
 #endif
 
 #ifdef TEST_NV_ROLLBACK
-  rv = test_nv_rollback(&tzPalSession) || rv;
+  rv = test_nv_rollback(&tz_sess.tzSession) || rv;
 #endif
   
   if (rv) {
@@ -1290,41 +1276,7 @@ int main(void)
     printf("SUCCESS with rv=%d\n", rv);
   }
 
-  /* close session */
-  {
-    tz_operation_t op;
-    tz_return_t serviceReturn;
-    tzRet = TZOperationPrepareClose(&tzPalSession,
-                                    &op);
-    assert(tzRet == TZ_SUCCESS);
-    tzRet = TZOperationPerform(&op, &serviceReturn);
-    assert(tzRet == TZ_SUCCESS); /* tzRet==TZ_SUCCESS implies serviceReturn==TZ_SUCCESS */
-    TZOperationRelease(&op);
-  }
-
-  /* unload pal */
-  {
-    tz_session_t tzManagerSession;
-
-    /* open session with device manager */
-    tzRet = TZManagerOpen(&tzDevice, NULL, &tzManagerSession);
-    assert(tzRet == TZ_SUCCESS);
-
-    /* download */
-    tzRet = TZManagerRemoveService(&tzManagerSession,
-                                   &tzSvcId);
-    assert(tzRet == TZ_SUCCESS);
-
-    /* close session */
-    tzRet = TZManagerClose(&tzManagerSession);
-    assert(tzRet == TZ_SUCCESS);
-  }
-
-  /* close device */
-  {
-    tzRet = TZDeviceClose(&tzDevice);
-    assert(tzRet == TZ_SUCCESS);
-  }
+  rv = TZEClose(&tz_sess) || rv;  
 
   return rv;
 } 

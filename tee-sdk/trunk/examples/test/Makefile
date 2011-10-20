@@ -7,14 +7,26 @@
 #TESTS=-DTEST_VMMCALL -DTEST_WITHOUTPARAM -DTEST_PARAM -DTEST_SEAL -DTEST_LTSEAL -DTEST_QUOTE -DTEST_PCR_EXTEND -DTEST_PCR_READ -DTEST_RAND -DTEST_TIME -DTEST_NV_ROLLBACK
 TESTS=-DTEST_NV_ROLLBACK
 
+# Set to 1 to use 'null' backend and test in userspace
+# Set to 0 to use TrustVisor backend and run 'for real'
+DO_USERSPACE_ONLY=1
+
 PROG_NAME=test
 CFLAGS=-g -Wall -Wextra -Werror
+CFLAGS+=-DUSERSPACE_ONLY=$(DO_USERSPACE_ONLY)
 CPPFLAGS=$(TESTS)
 PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv libssl libcrypto
 PROG_OBJS=test.o
 
+# Set the backend appropriately based on desire for userspace testing
+ifeq ($(DO_USERSPACE_ONLY), 1)
+	PAL_BACKEND=tee-sdk-svc-null
+else
+	PAL_BACKEND=tee-sdk-svc-tv
+endif
+
 PAL_NAME=pals
-PAL_PKGCONFIG_DEPS=tee-sdk-svc tee-sdk-svc-tv
+PAL_PKGCONFIG_DEPS=tee-sdk-svc $(PAL_BACKEND)
 PAL_OBJS=pals.o
 PAL_CFLAGS=-Wall -Wextra -Werror
 
