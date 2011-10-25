@@ -7,6 +7,9 @@ I_SOURCES =  $(wildcard *.h)
 
 CFLAGS += -I../app/include -I../emhfcore/x86/include -I../emhfcore/libemhfutil/include -I. -nostdinc
 
+# In the future hopefully there will be a more suitable place
+# to put this than APPOBJECTSDIR. Path of least resistance for
+# now, especially in the face of major EMHF build refactoring
 THE_ARCHIVE = $(APPOBJECTSDIR)/tv_utpm.a
 
 # targets
