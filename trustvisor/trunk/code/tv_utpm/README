@@ -2,6 +2,8 @@ This directory contains the core implementation of the "MicroTPM" as proposed
 for TrustVisor.  It is intended to be independent of TrustVisor, and equally
 amenable to testing entirely within userspace from a suitable test harness.
 
+Building: this code currently gets build from the normal TrustVisor build process.
+
 ../app/hc_utpm.c and ../app/include/hc_utpm.h are the TrustVisor-specific code
 that binds this MicroTPM implementation into the hypervisor itself.
 
