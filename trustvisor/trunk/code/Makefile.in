@@ -98,7 +98,7 @@
   CFLAGS += -mno-sse2
   CFLAGS += -nostdinc -pipe -I$(EMHF_INCLUDEDIR) -I$(APP_INCLUDEDIR) -I$(EMHFUTIL_INCLUDEDIR)
 
-  CFLAGS += -I$(BASEDIR)/tv_utpm
+  CFLAGS += $(foreach dir,$(SUBDIRS),-I$(BASEDIR)/$(dir))
 
 #-----generate compiler/assembler defines from configuration options selected
   ifeq ($(NESTED_PAGING), y)
