@@ -36,6 +36,13 @@
     export DEBUG_SERIAL_PORT := @DEBUG_SERIAL_PORT@
 	export DEBUG_VGA	:= @DEBUG_VGA@
 
+#-----configuration for subdirectories containing "library-able"
+#-----functionality that TrustVisor uses, but that may also be
+#-----useful elsewhere.
+
+  # list of subdirectories containing (relatively) stand-alone library code
+  export SUBDIRS := tv_utpm
+
 #-----configuration that typically need not be touched
   ifeq ($(TARGET_HWPLATFORM), x86)
   export EMHFCOREDIR := ./emhfcore/x86
@@ -113,13 +120,20 @@
 
 #-----build rules 
 .PHONY: all
-all:
+all: subdirs
     # make app components
 	mkdir -p $(APPOBJECTSDIR)
 	cd app && $(MAKE) -w all
 
     # make emhf core components and generate loader and runtime	
 	cd $(EMHFCOREDIR) && $(MAKE) -w all
+
+.PHONY: subdirs
+subdirs: $(SUBDIRS)
+	@for i in $(SUBDIRS); \
+	do \
+		(cd $$i && echo "Making all in $$i..." && $(MAKE) -w all) || exit 1; \
+	done;
 
 #------late initialization support (experimental)
 .PHONY: init-late
@@ -165,6 +179,10 @@ clean:
 	cd test && $(MAKE) -w clean
 	rm -f *.bin
 	rm -f *.bin.gz
+	@for i in $(SUBDIRS) ;\
+        do \
+                (cd $$i && echo "making clean in $$i..." && $(MAKE) clean) || exit 1; \
+	done;
 
 distclean:
 	rm -f config.log

@@ -34,7 +34,7 @@
  */
 
 
-/* 
+/* Copyright 2011, NoFuss Security, Inc.
  * Author - Jim Newsome (jnewsome@no-fuss.com)
  */
 
