@@ -51,7 +51,7 @@
 #include <emhf.h> 
 
 #include <crypto_init.h>
-#include <utpm.h>
+#include <tv_utpm.h> /* formerly utpm.h */
 #include <hc_utpm.h>
 #include <scode.h> /* copy_from_guest */
 #include <puttymem.h> /* vmalloc */

@@ -41,7 +41,7 @@
 #include <emhf.h> 
 
 #include <scode.h>
-#include <utpm.h>
+#include <tv_utpm.h> /* formerly utpm.h */
 #include <aes.h>
 #include <rsa.h>
 #include <puttymem.h>

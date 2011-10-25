@@ -47,7 +47,7 @@
 
 #include <trustvisor.h>
 #include <crypto_init.h>
-#include <utpm.h>
+#include <tv_utpm.h> /* formerly utpm.h */
 
 #define MAX_REGPAGES_NUM 300
 
