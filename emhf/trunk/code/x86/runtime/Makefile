@@ -17,6 +17,7 @@ OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
 # Also grab all the App's (e.g., TrustVisor's) object files
 OBJECTS_PRECOMPILED += $(wildcard $(APPOBJECTSDIR)/*.o)
+OBJECTS_PRECOMPILED += $(wildcard $(APPOBJECTSDIR)/*.a)
 
 ### Bring in libemhfutil
 OBJECTS_PRECOMPILED += $(wildcard $(EMHFUTIL_OBJECTSDIR)/*.o)
