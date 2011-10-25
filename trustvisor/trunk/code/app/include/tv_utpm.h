@@ -42,10 +42,11 @@
 #ifndef _TV_UTPM_H_
 #define _TV_UTPM_H_
 
-/* TODO: types.h lives in various places depending on where we are
- * compiling. The current header must be included after the relevant
- * types.h is included. Need to fix this elegantly. */
-/* #include <types.h> */
+/* Intentionally not including basic types such as uintXX_t, since the
+ * headers that provide these may vary across hypervisor-internal
+ * environments and test userspace builds.  Whatever code consumes
+ * this header is expected to have included the appropriate basic
+ * types already. */
 
 /* FIXME: A lot of these values are also defined in the public header
  * files for a TSS.  We should consider leveraging those and changing
@@ -209,6 +210,55 @@ typedef struct tdTPM_QUOTE_INFO{
   TPM_NONCE externalData;
 } TPM_QUOTE_INFO;
 
+/**
+ * Everything below is specific to the internals of a MicroTPM
+ * implementation, and as such is _not_ required by your average PAL
+ * author or tee-sdk's svcapi.
+ *
+ * TODO: Refactor this file into something more sensible.
+ */
+
+typedef struct tdTPM_STORED_DATA{ /* XXX inconsistent with hardware TPM */
+  uint32_t sealInfoSize;
+  TPM_PCR_INFO sealInfo;       /* structure of TPM_PCR_INFO */
+  uint32_t encDataSize;
+  uint8_t* encData;  /* encrypted TPM_SEALED_DATA structure containg the confidential part of data*/
+} TPM_STORED_DATA;
+
+typedef struct utpm_master_state {
+	TPM_DIGEST pcr_bank[TPM_PCR_NUM];
+} __attribute__ ((packed)) utpm_master_state_t;
+
+/* TPM functions  */
+TPM_RESULT utpm_pcrread(TPM_DIGEST* pcr_value,
+                        utpm_master_state_t *utpm, uint32_t pcr_num);
+TPM_RESULT utpm_extend(TPM_DIGEST *measurement, utpm_master_state_t *utpm, uint32_t pcr_num);
+
+TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
+                     TPM_PCR_INFO *tpmPcrInfo,
+                     uint8_t* input, uint32_t inlen,
+                     uint8_t* output, uint32_t* outlen,
+                     uint8_t* hmackey, uint8_t* aeskey);
+TPM_RESULT utpm_unseal(utpm_master_state_t *utpm, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen, TPM_COMPOSITE_HASH *digestAtCreation, uint8_t* hmackey, uint8_t* aeskey);
+
+TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hypercall inputs */
+                      uint8_t* output, uint32_t* outlen, /* hypercall outputs */
+                      uint8_t* pcrComp, uint32_t* pcrCompLen,                      
+                      utpm_master_state_t *utpm, uint8_t* rsa); /* TrustVisor inputs */
+
+/**
+ * Keeping these around solely for the Apache SSL web server demo
+ */
+TPM_RESULT utpm_seal_deprecated(uint8_t* pcrAtRelease, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen, uint8_t* hmackey, uint8_t* aeskey);
+TPM_RESULT utpm_unseal_deprecated(utpm_master_state_t *utpm, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen, uint8_t* hmackey, uint8_t* aeskey);
+TPM_RESULT utpm_quote_deprecated(uint8_t* externalnonce, uint8_t* output, uint32_t* outlen,
+                      utpm_master_state_t *utpm, uint8_t* tpmsel, uint32_t tpmsel_len, uint8_t* rsa );
+
+
+TPM_RESULT utpm_rand(uint8_t* buffer, uint32_t *numbytes);
+
+/* internal use. */
+void utpm_init_internal(utpm_master_state_t *utpm);
 
 
 #endif /* _TV_UTPM_H_ */
