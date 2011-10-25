@@ -38,7 +38,11 @@
 #ifndef _UTPM_H_
 #define _UTPM_H_
 
-#include <emhf.h> 
+/* Intentionally not including basic types such as uintXX_t, since the
+ * headers that provide these may vary across hypervisor-internal
+ * environments and test userspace builds.  Whatever code consumes
+ * this header is expected to have included the appropriate basic
+ * types already. */
 
 /* uTPM-specific types and structs common to svcapi and TV internals */
 #include <tv_utpm.h> 
