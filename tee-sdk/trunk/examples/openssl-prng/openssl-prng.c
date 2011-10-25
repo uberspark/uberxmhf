@@ -33,7 +33,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* Copyright 2011, NoFuss Security, Inc.
+/* 
  * Author - Jon McCune (jon@no-fuss.com)
  */
 

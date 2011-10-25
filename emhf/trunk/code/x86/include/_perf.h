@@ -34,7 +34,7 @@
  */
 
 /* perf.h - profiling utility functions
- * Copyright 2011, NoFuss Security, Inc.
+ * 
  * author - Jim Newsome (jnewsome@no-fuss.com)
  *
  * Some utility functions for profiling. They are designed to be
