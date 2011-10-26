@@ -139,7 +139,7 @@ static void _vmx_initVT(VCPU *vcpu){
 	  //step-5:enter VMX root operation using VMXON
 	  {
 	  	u32 retval=0;
-	  	u64 vmxonregion_paddr = __hva2spa__(vcpu->vmx_vmxonregion_vaddr);
+	  	u64 vmxonregion_paddr = __hva2spa__((void*)vcpu->vmx_vmxonregion_vaddr);
 	    //set VMCS rev id
 	  	*((u32 *)vcpu->vmx_vmxonregion_vaddr) = (u32)vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
 	    
@@ -982,7 +982,7 @@ void vmx_initialize_vmcs_csrip(VCPU *vcpu, u16 cs_selector, u32 cs_base,
 void vmx_start_hvm(VCPU *vcpu){
     printf("\nCPU(0x%02x): Starting HVM using CS:EIP=0x%04x:0x%08x...", vcpu->id,
 			(u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP);
-    _vmx_start_hvm(vcpu, __hva2spa__(vcpu->vmx_vmcs_vaddr));
+    _vmx_start_hvm(vcpu, __hva2spa__((void*)vcpu->vmx_vmcs_vaddr));
  		//we never get here, if we do, we just return and our caller is responsible
  		//for halting the core as something really bad happened!
 }

@@ -108,7 +108,7 @@ void cstartup(void){
 
    	printf("\nRuntime: Re-initializing SVM DEV...");
 	
-		svm_eap_dev_bitmap_paddr = __hva2spa__((u32)&g_svm_dev_bitmap);
+		svm_eap_dev_bitmap_paddr = __hva2spa__(&g_svm_dev_bitmap);
 		svm_eap_dev_bitmap_vaddr = (u32)&g_svm_dev_bitmap;
 			  
 		if(!svm_eap_initialize(svm_eap_dev_bitmap_paddr, svm_eap_dev_bitmap_vaddr)){
@@ -137,15 +137,15 @@ void cstartup(void){
 			
 			printf("\nRuntime: Re-initializing VMX DMA protection...");
 			
-			vmx_eap_vtd_pdpt_paddr = __hva2spa__((u32)&g_vmx_vtd_pdp_table); 
+			vmx_eap_vtd_pdpt_paddr = __hva2spa__(&g_vmx_vtd_pdp_table); 
 			vmx_eap_vtd_pdpt_vaddr = (u32)&g_vmx_vtd_pdp_table; 
-			vmx_eap_vtd_pdts_paddr = __hva2spa__((u32)&g_vmx_vtd_pd_tables); 
+			vmx_eap_vtd_pdts_paddr = __hva2spa__(&g_vmx_vtd_pd_tables); 
 			vmx_eap_vtd_pdts_vaddr = (u32)&g_vmx_vtd_pd_tables;
-			vmx_eap_vtd_pts_paddr = __hva2spa__((u32)&g_vmx_vtd_p_tables); 
+			vmx_eap_vtd_pts_paddr = __hva2spa__(&g_vmx_vtd_p_tables); 
 			vmx_eap_vtd_pts_vaddr = (u32)&g_vmx_vtd_p_tables; 
-			vmx_eap_vtd_ret_paddr = __hva2spa__((u32)&g_vmx_vtd_ret); 
+			vmx_eap_vtd_ret_paddr = __hva2spa__(&g_vmx_vtd_ret); 
 			vmx_eap_vtd_ret_vaddr = (u32)&g_vmx_vtd_ret;  
-			vmx_eap_vtd_cet_paddr = __hva2spa__((u32)&g_vmx_vtd_cet); 
+			vmx_eap_vtd_cet_paddr = __hva2spa__(&g_vmx_vtd_cet); 
 			vmx_eap_vtd_cet_vaddr = (u32)&g_vmx_vtd_cet; 
 			
 			if(!vmx_eap_initialize(vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr,

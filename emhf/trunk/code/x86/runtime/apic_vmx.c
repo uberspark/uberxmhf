@@ -205,7 +205,7 @@ u32 vmx_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
       //change LAPIC physical address in EPT to point to physical address 
 			//of memregion_virtual_LAPIC
 			vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
-					(u64)__hva2spa__((u32)&g_vmx_virtual_LAPIC_base) | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
+					(u64)__hva2spa__(&g_vmx_virtual_LAPIC_base) | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
 
     }else{
       g_vmx_lapic_op = LAPIC_OP_RSVD;
@@ -224,7 +224,7 @@ u32 vmx_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
       //change LAPIC physical address in EPT to point to physical address 
 			//of memregion_virtual_LAPIC
 			vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
-					(u64)__hva2spa__((u32)&g_vmx_virtual_LAPIC_base) | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
+					(u64)__hva2spa__(&g_vmx_virtual_LAPIC_base) | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
 
     }else{
       g_vmx_lapic_op = LAPIC_OP_RSVD;

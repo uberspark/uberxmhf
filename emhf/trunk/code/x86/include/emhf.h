@@ -402,12 +402,6 @@ typedef struct _pcpu {
 
 #define SIZE_STRUCT_PCPU  (sizeof(struct _pcpu))
 
-#define __pa(x) (x)
-
-#define __hva2spa__(x) ((x) - __TARGET_BASE + rpb->XtVmmRuntimePhysBase)
-#define __spa2hva__(x) ((x) + __TARGET_BASE - rpb->XtVmmRuntimePhysBase)
-
-
 typedef struct _grube820 {
   u32 baseaddr_low;
   u32 baseaddr_high;
@@ -546,6 +540,10 @@ static inline spa_t gpa2spa(gpa_t gpa);
 static inline gpa_t spa2gpa(spa_t spa);
 static inline void* gpa2hva(gpa_t gpa);
 static inline gpa_t hva2gpa(hva_t hva);
+
+#define __pa(x) (x)
+#define __hva2spa__(x) (hva2spa(x))
+#define __spa2hva__(x) (spa2hva(x))
 
 static inline hpt_pm_t VCPU_get_current_root_pm(VCPU *vcpu)
 {

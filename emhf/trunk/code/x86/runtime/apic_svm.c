@@ -177,8 +177,8 @@ u32 svm_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
       //change LAPIC physical address NPT mapping to point to physical 
       //address of virtual_LAPIC_base
       //printf("\nvirtual_LAPIC_base, v=0x%08x, p=0x%08x",  
-      //  (u32)virtual_LAPIC_base, __hva2spa__((u32)virtual_LAPIC_base));
-      npt_changemapping(vcpu, g_svm_lapic_base, __hva2spa__((u32)g_svm_virtual_LAPIC_base), (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+      //  (u32)virtual_LAPIC_base, __hva2spa__(virtual_LAPIC_base));
+      npt_changemapping(vcpu, g_svm_lapic_base, __hva2spa__(g_svm_virtual_LAPIC_base), (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
       vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
 
     }else{
@@ -205,8 +205,8 @@ u32 svm_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
       //change LAPIC physical address NPT mapping to point to physical 
       //address of virtual_LAPIC_base
       //printf("\nvirtual_LAPIC_base, v=0x%08x, p=0x%08x",  
-      //  (u32)virtual_LAPIC_base, __hva2spa__((u32)virtual_LAPIC_base));
-      npt_changemapping(vcpu, g_svm_lapic_base, __hva2spa__((u32)g_svm_virtual_LAPIC_base), (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+      //  (u32)virtual_LAPIC_base, __hva2spa__(virtual_LAPIC_base));
+      npt_changemapping(vcpu, g_svm_lapic_base, __hva2spa__(g_svm_virtual_LAPIC_base), (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
       vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
 
     }else{

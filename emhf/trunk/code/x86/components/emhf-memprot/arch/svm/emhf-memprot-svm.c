@@ -53,7 +53,7 @@ void emhf_memprot_arch_svm_initialize(VCPU *vcpu){
 	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD);
 	
 	_svm_nptinitialize(vcpu->npt_vaddr_ptr, vcpu->npt_vaddr_pdts, vcpu->npt_vaddr_pts);
-	vmcb->h_cr3 = __hva2spa__(vcpu->npt_vaddr_ptr);
+	vmcb->h_cr3 = __hva2spa__((void*)vcpu->npt_vaddr_ptr);
 	vmcb->np_enable |= (1ULL << NP_ENABLE);
 	vmcb->guest_asid = vcpu->npt_asid;
 }
@@ -74,13 +74,13 @@ static void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts
 	pdpt=(pdpt_t)npt_pdpt_base;
 
 	for(i = 0; i < PAE_PTRS_PER_PDPT; i++){
-		y = (u32)__hva2spa__((u32)npt_pdts_base + (i << PAGE_SHIFT_4K));
+		y = (u32)__hva2spa__((void*)(npt_pdts_base + (i << PAGE_SHIFT_4K)));
 		flags = (u64)(_PAGE_PRESENT);
 		pdpt[i] = pae_make_pdpe((u64)y, flags);
 		pdt=(pdt_t)((u32)npt_pdts_base + (i << PAGE_SHIFT_4K));
 			
 		for(j=0; j < PAE_PTRS_PER_PDT; j++){
-			z=(u32)__hva2spa__((u32)npt_pts_base + ((i * PAE_PTRS_PER_PDT + j) << (PAGE_SHIFT_4K)));
+			z=(u32)__hva2spa__((void*)(npt_pts_base + ((i * PAE_PTRS_PER_PDT + j) << (PAGE_SHIFT_4K))));
 			flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
 			pdt[j] = pae_make_pde((u64)z, flags);
 			pt=(pt_t)((u32)npt_pts_base + ((i * PAE_PTRS_PER_PDT + j) << (PAGE_SHIFT_4K)));
