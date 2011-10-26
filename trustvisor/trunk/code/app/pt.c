@@ -549,13 +549,13 @@ u32 guest_pt_walker_internal(VCPU *vcpu, u32 vaddr, u64 *pdp, u64 *pd, u64 *pt, 
 		//tmp is phy addr of page dir
 		tmp = pae_get_addr_from_32bit_cr3(gcr3);
 		if (pdp) *pdp = tmp;
-		gpdp = (pdpt_t)__gpa2hva__((u32)tmp); 
+		gpdp = (pdpt_t)gpa2hva((u32)tmp); 
 		pdp_entry = gpdp[pdp_index];
 		if (pdpe) *pdpe = pdp_entry;
 
 		tmp = pae_get_addr_from_pdpe(pdp_entry);
 		if (pd) *pd = tmp;
-		gpd = (pdt_t)__gpa2hva__((u32)tmp);
+		gpd = (pdt_t)gpa2hva((u32)tmp);
 		pd_entry = gpd[pd_index]; 
 		if (pde) *pde = pd_entry;
 
@@ -565,7 +565,7 @@ u32 guest_pt_walker_internal(VCPU *vcpu, u32 vaddr, u64 *pdp, u64 *pd, u64 *pt, 
 			/* get addr of page table from entry */
 			tmp = pae_get_addr_from_pde(pd_entry);
 			if (pt) *pt = tmp;
-			gpt = (pt_t)__gpa2hva__((u32)tmp);  
+			gpt = (pt_t)gpa2hva((u32)tmp);  
 			pt_entry  = gpt[pt_index];
 			if (pte) *pte = pt_entry;
 			/* find physical page base addr from page table entry */
@@ -592,7 +592,7 @@ u32 guest_pt_walker_internal(VCPU *vcpu, u32 vaddr, u64 *pdp, u64 *pd, u64 *pt, 
 		tmp = npae_get_addr_from_32bit_cr3(gcr3);
 		/* to be compitable with the code for PAE mode */
 		if (pdp) *pdp = tmp;
-		gpd = (npdt_t)__gpa2hva__((u32)tmp); 
+		gpd = (npdt_t)gpa2hva((u32)tmp); 
 
 		/* find entry from kernel page dir */
 		pd_entry = gpd[pd_index];
@@ -605,7 +605,7 @@ u32 guest_pt_walker_internal(VCPU *vcpu, u32 vaddr, u64 *pdp, u64 *pd, u64 *pt, 
 			tmp = (u32)npae_get_addr_from_pde(pd_entry);
 			/* to be compitable with the code for PAE mode */
 			if (pd) *pd = tmp;
-			gpt = (npt_t)__gpa2hva__((u32)tmp);  
+			gpt = (npt_t)gpa2hva((u32)tmp);  
 			pt_entry  = gpt[pt_index];
 			if (pte) *pte = pt_entry;
 			/* find physical page base addr from page table entry */
@@ -715,7 +715,7 @@ extern u16 get_16bit_aligned_value_from_guest(VCPU * vcpu, u32 gvaddr)
   u32 gpaddr;
   
   gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr);
-  return *((u16 *)__gpa2hva__(gpaddr));
+  return *((u16 *)gpa2hva(gpaddr));
 }
 
 extern u32 get_32bit_aligned_value_from_guest(VCPU * vcpu, u32 gvaddr)
@@ -723,7 +723,7 @@ extern u32 get_32bit_aligned_value_from_guest(VCPU * vcpu, u32 gvaddr)
   u32 gpaddr;
   
   gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr);
-  return *((u32 *)__gpa2hva__(gpaddr));
+  return *((u32 *)gpa2hva(gpaddr));
 }
 
 extern void put_32bit_aligned_value_to_guest(VCPU * vcpu, u32 gvaddr, u32 value)
@@ -731,7 +731,7 @@ extern void put_32bit_aligned_value_to_guest(VCPU * vcpu, u32 gvaddr, u32 value)
   u32 gpaddr;
   
   gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr);
-  *((u32 *)__gpa2hva__(gpaddr)) = value;
+  *((u32 *)gpa2hva(gpaddr)) = value;
 }
 
 extern void copy_from_guest(VCPU * vcpu, u8 *dst,u32 gvaddr, u32 len)
@@ -752,7 +752,7 @@ extern void copy_from_guest(VCPU * vcpu, u8 *dst,u32 gvaddr, u32 len)
       if (!SAME_PAGE_NPAE(gvprev, gvaddr))
         gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr);
 
-      *dst = *((u8 *)__gpa2hva__(gpaddr));
+      *dst = *((u8 *)gpa2hva(gpaddr));
       gvprev = gvaddr;
     }
   }
@@ -764,7 +764,7 @@ extern void copy_from_guest(VCPU * vcpu, u8 *dst,u32 gvaddr, u32 len)
       if (!SAME_PAGE_NPAE(gvprev, gvaddr))
         gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr);
 
-      *(u32 *)dst = *((u32 *)__gpa2hva__(gpaddr));
+      *(u32 *)dst = *((u32 *)gpa2hva(gpaddr));
       gvprev = gvaddr;
     }
   }
@@ -775,7 +775,7 @@ extern void copy_from_guest(VCPU * vcpu, u8 *dst,u32 gvaddr, u32 len)
       if (!SAME_PAGE_NPAE(gvprev, gvaddr))
         gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr);
 
-      *dst = *((u8 *)__gpa2hva__(gpaddr));
+      *dst = *((u8 *)gpa2hva(gpaddr));
       gvprev = gvaddr;
     }
   }
@@ -800,7 +800,7 @@ extern void copy_to_guest(VCPU * vcpu, u32 gvaddr, u8 *src, u32 len)
       if (!SAME_PAGE_NPAE(gvprev, gvaddr))
         gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr);
 
-      *((u8 *)__gpa2hva__(gpaddr)) = *src;
+      *((u8 *)gpa2hva(gpaddr)) = *src;
       gvprev = gvaddr;
     }
   }
@@ -812,7 +812,7 @@ extern void copy_to_guest(VCPU * vcpu, u32 gvaddr, u8 *src, u32 len)
       if (!SAME_PAGE_NPAE(gvprev, gvaddr))
         gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr);
 
-      *((u32 *)__gpa2hva__(gpaddr)) = *(u32 *)src;
+      *((u32 *)gpa2hva(gpaddr)) = *(u32 *)src;
       gvprev = gvaddr;
     }
   }
@@ -823,22 +823,11 @@ extern void copy_to_guest(VCPU * vcpu, u32 gvaddr, u8 *src, u32 len)
       if (!SAME_PAGE_NPAE(gvprev, gvaddr))
         gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr);
 
-      *((u8 *)__gpa2hva__(gpaddr)) = *src;
+      *((u8 *)gpa2hva(gpaddr)) = *src;
       gvprev = gvaddr;
     }
   }
   return;
-}
-
-void * __gpa2hva__(u32 gpaddr)
-{
-	if (gpaddr >= rpb->XtVmmRuntimePhysBase && gpaddr < rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize){
-		return (void *)(rpb->XtVmmRuntimeVirtBase+(gpaddr-rpb->XtVmmRuntimePhysBase));
-	} else if (gpaddr >= rpb->XtVmmRuntimeVirtBase && gpaddr < rpb->XtVmmRuntimeVirtBase+rpb->XtVmmRuntimeSize) {
-		return (void *)(rpb->XtVmmRuntimePhysBase+(gpaddr-rpb->XtVmmRuntimeVirtBase));
-	} else {
-		return (void *)(gpaddr);
-	}
 }
 
 /* Local Variables: */

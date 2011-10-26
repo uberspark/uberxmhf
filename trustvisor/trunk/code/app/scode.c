@@ -875,8 +875,8 @@ void memcpy_guest_to_guest(VCPU * vcpu, u32 src, u32 dst, u32 len)
 //		ASSERT (SAME_PAGE_NPAE(src_gpaddr, src_gpaddr+len));
 //		ASSERT (SAME_PAGE_NPAE(dst_gpaddr, dst_gpaddr+len));
 //	}
-	src_hvaddr = (u8 *)(__gpa2hva__(src_gpaddr));
-	dst_hvaddr = (u8 *)(__gpa2hva__(dst_gpaddr));
+	src_hvaddr = (u8 *)(gpa2hva(src_gpaddr));
+	dst_hvaddr = (u8 *)(gpa2hva(dst_gpaddr));
 	//printf("[TV]   PM string value is:");
 	//for( i=0 ; i<len ; i++ )  {
 	//	printf("%x ", *(src_hvaddr+i));
