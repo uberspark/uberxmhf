@@ -540,8 +540,12 @@ static inline hpt_pm_t VCPU_get_default_root_pm(VCPU *vcpu)
 
 /* defined in global.h. can't just include globals.h because it
    depends on this header */
-static inline spa_t hva2spa(hva_t x);
-static inline hva_t spa2hva(spa_t x);
+static inline void* spa2hva(spa_t spa);
+static inline spa_t hva2spa(void *hva);
+static inline spa_t gpa2spa(gpa_t gpa);
+static inline gpa_t spa2gpa(spa_t spa);
+static inline void* gpa2hva(gpa_t gpa);
+static inline gpa_t hva2gpa(hva_t hva);
 
 static inline hpt_pm_t VCPU_get_current_root_pm(VCPU *vcpu)
 {

@@ -315,7 +315,34 @@ extern struct emhf_library *g_libemhf __attribute__(( section(".data") ));
 //function that initializes the runtime global variables
 void runtime_globals_init(void);
 
-static inline spa_t hva2spa(hva_t x) { return (spa_t)(uintptr_t)x - __TARGET_BASE + rpb->XtVmmRuntimePhysBase; }
-static inline hva_t spa2hva(spa_t x) { return (hva_t)(uintptr_t)(x + __TARGET_BASE - rpb->XtVmmRuntimePhysBase); }
+/* XXX use __TARGET_BASE instead of rpb->XtVmmRuntimeVirtBase? */
+static inline void * spa2hva(spa_t spa)
+{
+  if (spa >= rpb->XtVmmRuntimePhysBase && spa < rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize){
+    return (void *)(uintptr_t)(spa + (rpb->XtVmmRuntimeVirtBase - rpb->XtVmmRuntimePhysBase)); 
+  } else if (spa >= rpb->XtVmmRuntimeVirtBase && spa < rpb->XtVmmRuntimeVirtBase+rpb->XtVmmRuntimeSize) {
+    return (void *)(uintptr_t)(spa + (rpb->XtVmmRuntimePhysBase - rpb->XtVmmRuntimeVirtBase));
+  } else {
+    return (void *)(uintptr_t)(spa);
+  }
+}
+
+/* XXX use __TARGET_BASE instead of rpb->XtVmmRuntimeVirtBase? */
+static inline spa_t hva2spa(void *hva)
+{
+  uintptr_t hva_ui = (uintptr_t)hva;
+  if (hva_ui >= rpb->XtVmmRuntimePhysBase && hva_ui < rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize){
+    return (spa_t)(hva_ui - (rpb->XtVmmRuntimePhysBase - rpb->XtVmmRuntimeVirtBase));
+  } else if (hva_ui >= rpb->XtVmmRuntimeVirtBase && hva_ui < rpb->XtVmmRuntimeVirtBase+rpb->XtVmmRuntimeSize) {
+    return (spa_t)(hva_ui - (rpb->XtVmmRuntimeVirtBase - rpb->XtVmmRuntimePhysBase));
+  } else {
+    return (spa_t)(hva_ui);
+  }
+}
+
+static inline spa_t gpa2spa(gpa_t gpa) { return gpa; }
+static inline gpa_t spa2gpa(spa_t spa) { return spa; }
+static inline void* gpa2hva(gpa_t gpa) { return spa2hva(gpa2spa(gpa)); }
+static inline gpa_t hva2gpa(hva_t hva) { return spa2gpa(hva2spa(hva)); }
 
 #endif /* __GLOBALS_H__ */
