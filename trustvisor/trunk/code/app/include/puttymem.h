@@ -59,14 +59,6 @@ void safefree(void *);
 
 void mem_init(void); 
 size_t puttymem_get_used_size(void);
-/*
- * Direct use of smalloc within the code should be avoided where
- * possible, in favour of these type-casting macros which ensure
- * you don't mistakenly allocate enough space for one sort of
- * structure and assign it to a different sort of pointer.
- */
-#define vnew(type) ((type *)vnmalloc(1, sizeof(type)))
-#define vnewn(n, type) ((type *)vnmalloc((n), sizeof(type)))
 
 /***********************************************************************
  * Replacements for string.h (see man pages for details)
