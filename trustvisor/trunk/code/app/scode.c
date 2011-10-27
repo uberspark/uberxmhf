@@ -43,7 +43,7 @@
 #include <emhf.h> 
 
 #include <scode.h>
-#include <heap.h>
+#include <malloc.h>
 #include <tv_utpm.h> /* formerly utpm.h */
 #include <rsa.h>
 #include <random.h>

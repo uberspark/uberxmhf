@@ -7,7 +7,7 @@
 
 # source files
 AS_SOURCES = 
-C_SOURCES = appmain.c scode.c heap.c \
+C_SOURCES = appmain.c scode.c malloc.c \
 		tlsf.c pt.c hc_utpm.c aes.c \
 		rsa.c bignum.c random.c linuxrelc.c \
 		pages.c \

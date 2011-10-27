@@ -62,7 +62,7 @@
 
 #include <emhf.h> 
 
-#include <heap.h>
+#include <malloc.h>
 #include <bignum.h>
 #include <bn_mul.h>
 #include <random.h>

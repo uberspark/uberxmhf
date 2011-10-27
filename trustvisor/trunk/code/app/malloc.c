@@ -43,7 +43,7 @@
  */
 #include <tlsf.h>
 #include <scode.h> /* only for perf ctr stuff */
-#include <heap.h>
+#include <malloc.h>
 
 static u8 memory_pool[HEAPMEM_POOLSIZE];
 void mem_init(void){

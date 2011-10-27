@@ -44,7 +44,7 @@
 #include <tv_utpm.h> /* formerly utpm.h */
 #include <aes.h>
 #include <rsa.h>
-#include <heap.h>
+#include <malloc.h>
 #include <random.h>
 
 /* keys for software TPM seal, unseal and quote operations */
