@@ -47,7 +47,34 @@
 #include <puttymem.h>
 #include <random.h>
 
-void utpm_init_internal(utpm_master_state_t *utpm) {
+
+uint8_t g_aeskey[TPM_AES_KEY_LEN_BYTES];
+uint8_t g_hmackey[TPM_HMAC_KEY_LEN];
+rsa_context *g_rsa = NULL;
+
+/**
+ * This function is expected to only be called once during the life of
+ * anything that uses this uTPM implementation.  This function will
+ * need significant modification if we ever decide to support
+ * arbitrarily many signing keys for uTPM instances.
+ */
+TPM_RESULT utpm_init_master_entropy(uint8_t *aeskey,
+                                    uint8_t *hmackey,
+                                    rsa_context *rsa) {
+    if(!aeskey || !hmackey || !rsa) {
+        dprintf(LOG_ERROR, "[TV:UTPM] AHHHHHHHHH!!!!! MASSIVE SECURITY ERROR: "
+                "!aeskey || !hmackey || !rsa\n");
+        return UTPM_ERR_INSUFFICIENT_ENTROPY;
+        
+    }
+    memcpy(g_aeskey, aeskey, TPM_AES_KEY_LEN_BYTES);
+    memcpy(g_hmackey, hmackey, TPM_HMAC_KEY_LEN);
+    g_rsa = rsa; /* TODO: Free this ever? */
+
+    return UTPM_SUCCESS;
+}
+
+void utpm_init_instance(utpm_master_state_t *utpm) {
     if(NULL == utpm) return;
 
     vmemset(utpm->pcr_bank, 0, TPM_PCR_SIZE*TPM_PCR_NUM); 
@@ -281,8 +308,7 @@ static TPM_RESULT utpm_internal_digest_current_TpmPcrComposite(
 TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
                      TPM_PCR_INFO *tpmPcrInfo,
                      uint8_t* input, uint32_t inlen,
-                     uint8_t* output, uint32_t* outlen,
-                     uint8_t* hmackey, uint8_t* aeskey)
+                     uint8_t* output, uint32_t* outlen)
 {
     uint32_t rv = 0;
 	uint32_t outlen_beforepad;
@@ -293,16 +319,16 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     TPM_PCR_INFO tpmPcrInfo_internal;
     uint8_t *plaintext = NULL;
     uint32_t bytes_of_entropy = 0;
-    if(!utpm || !tpmPcrInfo || !input || !output || !outlen || !hmackey || !aeskey) {
-		dprintf(LOG_ERROR, "[TV] utpm_seal ERROR: !utpm || !tpmPcrInfo || !input || !output || !outlen || !hmackey || !aeskey\n");
+    if(!utpm || !tpmPcrInfo || !input || !output || !outlen) {
+		dprintf(LOG_ERROR, "[TV] utpm_seal ERROR: !utpm || !tpmPcrInfo || !input || !output || !outlen\n");
         return 1;
     }
 
     dprintf(LOG_TRACE, "[TV:utpm_seal] inlen %u, outlen (junk expected) %u, tpmPcrInfo %p\n", inlen, *outlen, tpmPcrInfo);
     print_hex("  [TV:utpm_seal] tpmPcrInfo: ", (uint8_t*)tpmPcrInfo, sizeof(TPM_PCR_INFO));
     print_hex("  [TV:utpm_seal] input:      ", input, inlen);
-    print_hex("  [TV:utpm_seal] hmackey:    ", hmackey, TPM_HASH_SIZE); /* XXX SECURITY */
-    print_hex("  [TV:utpm_seal] aeskey:     ", aeskey, TPM_AES_KEY_LEN_BYTES); /* XXX SECURITY */
+    print_hex("  [TV:utpm_seal] g_hmackey:    ", g_hmackey, TPM_HASH_SIZE); /* XXX SECURITY */
+    print_hex("  [TV:utpm_seal] g_aeskey:     ", g_aeskey, TPM_AES_KEY_LEN_BYTES); /* XXX SECURITY */
     
     /**
      * Part 1: Populate digestAtCreation (only for tpmPcrInfo that selects 1+ PCRs).
@@ -400,8 +426,8 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     print_hex("padding: ", p, *outlen - outlen_beforepad);
     p += *outlen - outlen_beforepad;
     
-	/* encrypt (1-4) data using sealAesKey by AES-CBC mode */
-	aes_setkey_enc(&ctx, aeskey, TPM_AES_KEY_LEN);
+	/* encrypt (1-4) data using g_aeskey in AES-CBC mode */
+	aes_setkey_enc(&ctx, g_aeskey, TPM_AES_KEY_LEN);
     print_hex(" plaintext (including IV) just prior to AES encrypt: ", plaintext, *outlen);
 	aes_crypt_cbc(&ctx, AES_ENCRYPT, *outlen - TPM_AES_KEY_LEN_BYTES,
                   iv,
@@ -411,7 +437,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     print_hex(" freshly encrypted ciphertext: ", output, *outlen);
     
 	/* 5. compute and append hmac */
-    HMAC_SHA1(hmackey, TPM_HASH_SIZE, output, *outlen, output + *outlen);
+    HMAC_SHA1(g_hmackey, TPM_HASH_SIZE, output, *outlen, output + *outlen);
     print_hex("hmac: ", output + *outlen, TPM_HASH_SIZE);    
     *outlen += TPM_HASH_SIZE; /* hmac */
 
@@ -434,14 +460,13 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
                        uint8_t* input, uint32_t inlen,
                        uint8_t* output, uint32_t* outlen,
-                       TPM_COMPOSITE_HASH *digestAtCreation, /* out */
-                       uint8_t* hmackey, uint8_t* aeskey)
+                       TPM_COMPOSITE_HASH *digestAtCreation) /* out */
 {
 	uint8_t hmacCalculated[TPM_HASH_SIZE];
 	aes_context ctx;
 	uint32_t rv;
 
-    if(!utpm || !input || !output || !outlen || !digestAtCreation || !hmackey || !aeskey) { return 1; }
+    if(!utpm || !input || !output || !outlen || !digestAtCreation) { return 1; }
     
 	/**
      * Recall from utpm_seal():
@@ -466,7 +491,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
      * input. Calculate its expected value based on the first (inlen -
      * TPM_HASH_SIZE) bytes of the input and compare against provided
      * value. */
-    HMAC_SHA1(hmackey, TPM_HASH_SIZE, input, inlen - TPM_HASH_SIZE, hmacCalculated);
+    HMAC_SHA1(g_hmackey, TPM_HASH_SIZE, input, inlen - TPM_HASH_SIZE, hmacCalculated);
     if(vmemcmp(hmacCalculated, input + inlen - TPM_HASH_SIZE, TPM_HASH_SIZE)) {
         dprintf(LOG_ERROR, "Unseal HMAC **INTEGRITY FAILURE**: vmemcmp(hmacCalculated, input + inlen - TPM_HASH_SIZE, TPM_HASH_SIZE)\n");
         print_hex("  hmacCalculated: ", hmacCalculated, TPM_HASH_SIZE);
@@ -483,7 +508,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
         - TPM_AES_KEY_LEN_BYTES /* iv */
         - TPM_HASH_SIZE;        /* hmac */
     
-	aes_setkey_dec(&ctx, aeskey, TPM_AES_KEY_LEN);
+	aes_setkey_dec(&ctx, g_aeskey, TPM_AES_KEY_LEN);
 	aes_crypt_cbc(&ctx, AES_DECRYPT,
                   *outlen,
                   input /* iv comes first */,
@@ -569,7 +594,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
 }
 
 
-TPM_RESULT utpm_seal_deprecated(uint8_t* pcrAtRelease, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen, uint8_t * hmackey, uint8_t * aeskey)
+TPM_RESULT utpm_seal_deprecated(uint8_t* pcrAtRelease, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen)
 {
 	s32 len;
 	uint32_t outlen_beforepad;
@@ -612,17 +637,17 @@ TPM_RESULT utpm_seal_deprecated(uint8_t* pcrAtRelease, uint8_t* input, uint32_t 
 	vmemset(output+outlen_beforepad, 0, len-outlen_beforepad);
 
 	/* get HMAC of the entire message w/ zero HMAC field */
-	HMAC_SHA1(hmackey, 20, output, len, hashdata);
+	HMAC_SHA1(g_hmackey, 20, output, len, hashdata);
 	vmemcpy(output+TPM_CONFOUNDER_SIZE, hashdata, TPM_HASH_SIZE);
 	
 	/* encrypt data using sealAesKey by AES-CBC mode */
-	aes_setkey_enc(&ctx, aeskey, TPM_AES_KEY_LEN);
+	aes_setkey_enc(&ctx, g_aeskey, TPM_AES_KEY_LEN);
 	aes_crypt_cbc(&ctx, AES_ENCRYPT, len, iv, output, output); 
 
 	return 0;
 }
 
-TPM_RESULT utpm_unseal_deprecated(utpm_master_state_t *utpm, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen, uint8_t * hmackey, uint8_t * aeskey)
+TPM_RESULT utpm_unseal_deprecated(utpm_master_state_t *utpm, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen)
 {
 	uint32_t len;
 	uint8_t hashdata[TPM_HASH_SIZE];
@@ -634,7 +659,7 @@ TPM_RESULT utpm_unseal_deprecated(utpm_master_state_t *utpm, uint8_t* input, uin
 	vmemset(iv, 0, 16);
 
 	/* decrypt data */
-	aes_setkey_dec(&ctx,aeskey, TPM_AES_KEY_LEN);
+	aes_setkey_dec(&ctx,g_aeskey, TPM_AES_KEY_LEN);
 	aes_crypt_cbc(&ctx, AES_DECRYPT, (s32)inlen, iv, input, output);
 
 	/* compare the current pcr (default pcr 0) with pcrHashAtRelease */
@@ -662,7 +687,7 @@ TPM_RESULT utpm_unseal_deprecated(utpm_master_state_t *utpm, uint8_t* input, uin
 
 	/* zero HMAC field, and recalculate hmac of the message */
 	vmemset(output+TPM_CONFOUNDER_SIZE, 0, TPM_HASH_SIZE);
-	HMAC_SHA1(hmackey, 20, output, inlen, hashdata);
+	HMAC_SHA1(g_hmackey, 20, output, inlen, hashdata);
 
 	/* compare the hmac */
 	if (vmemcmp(hashdata, oldhmac, TPM_HASH_SIZE))

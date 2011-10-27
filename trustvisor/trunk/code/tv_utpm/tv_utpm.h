@@ -73,6 +73,15 @@
 #define UTPM_ERR_PCR_OUT_OF_RANGE 2
 #define UTPM_ERR_INSUFFICIENT_ENTROPY 3
 
+/* MicroTPM related definitions */
+#define TPM_PCR_SIZE                   20
+#define TPM_AES_KEY_LEN                128 /* key size is 128 bit */
+#define TPM_HMAC_KEY_LEN               20
+
+/* max len of sealed data */
+#define  MAX_SEALDATA_LEN 2048
+#define  SEALDATA_HEADER_LEN 48
+
 /* TODO: create an enum with meaningful errors that can be passed back
  * to PAL authors. */
 typedef uint32_t TPM_RESULT; 
@@ -237,9 +246,8 @@ TPM_RESULT utpm_extend(TPM_DIGEST *measurement, utpm_master_state_t *utpm, uint3
 TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
                      TPM_PCR_INFO *tpmPcrInfo,
                      uint8_t* input, uint32_t inlen,
-                     uint8_t* output, uint32_t* outlen,
-                     uint8_t* hmackey, uint8_t* aeskey);
-TPM_RESULT utpm_unseal(utpm_master_state_t *utpm, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen, TPM_COMPOSITE_HASH *digestAtCreation, uint8_t* hmackey, uint8_t* aeskey);
+                     uint8_t* output, uint32_t* outlen);
+TPM_RESULT utpm_unseal(utpm_master_state_t *utpm, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen, TPM_COMPOSITE_HASH *digestAtCreation);
 
 TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hypercall inputs */
                       uint8_t* output, uint32_t* outlen, /* hypercall outputs */
@@ -249,17 +257,18 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
 /**
  * Keeping these around solely for the Apache SSL web server demo
  */
-TPM_RESULT utpm_seal_deprecated(uint8_t* pcrAtRelease, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen, uint8_t* hmackey, uint8_t* aeskey);
-TPM_RESULT utpm_unseal_deprecated(utpm_master_state_t *utpm, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen, uint8_t* hmackey, uint8_t* aeskey);
+TPM_RESULT utpm_seal_deprecated(uint8_t* pcrAtRelease, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen);
+TPM_RESULT utpm_unseal_deprecated(utpm_master_state_t *utpm, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen);
 TPM_RESULT utpm_quote_deprecated(uint8_t* externalnonce, uint8_t* output, uint32_t* outlen,
                       utpm_master_state_t *utpm, uint8_t* tpmsel, uint32_t tpmsel_len, uint8_t* rsa );
 
 
 TPM_RESULT utpm_rand(uint8_t* buffer, uint32_t *numbytes);
 
-/* internal use. */
-void utpm_init_internal(utpm_master_state_t *utpm);
-
+void utpm_init_instance(utpm_master_state_t *utpm);
+TPM_RESULT utpm_init_master_entropy(uint8_t *aeskey,
+                                    uint8_t *hmackey,
+                                    rsa_context *rsa);
 
 #endif /* _TV_UTPM_H_ */
 

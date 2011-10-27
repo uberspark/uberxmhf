@@ -42,19 +42,6 @@
 #define CTR_DRBG_SEED_BITS 256
 #define CTR_DRBG_NONCE_BITS 64
 
-/* softTPM related definitions */
-#define TPM_PCR_SIZE                   20
-#define TPM_AES_KEY_LEN                128 /* key size is 128 bit */
-#define TPM_HMAC_KEY_LEN               20
-
-/* max len of sealed data */
-#define  MAX_SEALDATA_LEN 2048
-#define  SEALDATA_HEADER_LEN 48
-
-extern u8 g_aeskey[TPM_AES_KEY_LEN/8];
-extern u8 g_hmackey[TPM_HMAC_KEY_LEN];
-extern rsa_context g_rsa;
-
 extern bool g_master_prng_init_completed;
 extern bool g_master_crypto_init_completed;
 
