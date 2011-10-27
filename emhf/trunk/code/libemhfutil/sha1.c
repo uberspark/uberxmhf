@@ -76,6 +76,10 @@
  * implemented by Jun-ichiro itojun Itoh <itojun@itojun.org>
  */
 
+/**
+ * FIXME: This is an awful hack.  Update to use libc #include's once
+ * libemhfc exists.
+ */
 #ifndef uint8_t
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;

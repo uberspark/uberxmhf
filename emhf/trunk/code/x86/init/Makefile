@@ -10,6 +10,9 @@ OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
 OBJECTS_PRECOMPILED = ../libcommon/mpsup.o ../libcommon/string.o ../libcommon/txt_mtrrs.o ../libcommon/pci.o ../libcommon/acpi.o ../libcommon/svm_eap.o ../libcommon/tpm.o ../libcommon/vmx_eap.o ../libcommon/strncpy.o ../libcommon/strlen.o ../libcommon/strcmp.o ../libcommon/strtoul.o ../libcommon/strncmp.o
 
+# FIXME: This is a hack.  During build-process refactoring, do
+# something more sensible to pickup all in-tree library
+# subdirectories.
 OBJECTS_PRECOMPILED += ../../libemhfutil/sha1.o
 CFLAGS += -I../../libemhfutil/include
 
