@@ -65,7 +65,7 @@ rsa_context g_rsa;
  */
 TPM_RESULT utpm_init_master_entropy(uint8_t *aeskey,
                                     uint8_t *hmackey,
-                                    rsa_context *rsa) {
+                                    void /*rsa_context*/ *rsa) {
     if(!aeskey || !hmackey || !rsa) {
         dprintf(LOG_ERROR, "[TV:UTPM] AHHHHHHHHH!!!!! MASSIVE SECURITY ERROR: "
                 "!aeskey || !hmackey || !rsa\n");

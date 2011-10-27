@@ -42,7 +42,11 @@
 #ifndef _TV_UTPM_H_
 #define _TV_UTPM_H_
 
-#include <rsa.h>
+/**
+ * FIXME: Once libemhfcrypto exists, it may be reasonable to depend on
+ * rsa.h in here.  For now, it's not.
+ */
+//#include <rsa.h>
 
 /* Intentionally not including basic types such as uintXX_t, since the
  * headers that provide these may vary across hypervisor-internal
@@ -268,9 +272,14 @@ TPM_RESULT utpm_rand(uint8_t* buffer, uint32_t *numbytes);
 
 TPM_RESULT utpm_id_getpub(uint8_t *N, uint32_t *len);
 void utpm_init_instance(utpm_master_state_t *utpm);
+
+/**
+ * FIXME: Once libemhfcrypto exists, it may be reasonable to depend on
+ * rsa.h in here.  For now, it's not.
+ */
 TPM_RESULT utpm_init_master_entropy(uint8_t *aeskey,
                                     uint8_t *hmackey,
-                                    rsa_context *rsa);
+                                    void /*rsa_context*/ *rsa);
 
 #endif /* _TV_UTPM_H_ */
 
