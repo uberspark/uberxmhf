@@ -36,7 +36,6 @@
 #ifndef _CRYPTO_INIT_H_
 #define _CRYPTO_INIT_H_
 
-#include <rsa.h>
 #include <nist_ctr_drbg.h>
 
 #define CTR_DRBG_SEED_BITS 256
