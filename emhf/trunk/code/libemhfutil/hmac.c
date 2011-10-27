@@ -60,7 +60,16 @@
  * Modified for EMHF. Jonathan McCune.
  */
 
-#include <emhf.h> 
+#ifndef uint8_t
+typedef unsigned char uint8_t;
+typedef unsigned short uint16_t;
+typedef unsigned int uint32_t;
+typedef unsigned long long uint64_t;
+typedef unsigned long size_t;
+#endif
+
+#include <sha1.h>
+#include <hmac.h> 
 
 #define SHA1_BLOCK_LENGTH 64
 #define SHA1_DIGEST_LENGTH 20
