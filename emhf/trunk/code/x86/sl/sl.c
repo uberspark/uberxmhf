@@ -87,58 +87,62 @@ void raw_serial_init(void){
     outb(SERIAL_BASE+0x4, 0x03);
 }
 
+/* hypervisor (runtime) virtual address to sl-address. */
+static void* hva2sla(uintptr_t x) {
+  return (void*)(x - __TARGET_BASE + PAGE_SIZE_2M);
+}
+
+/* sl-address to system-physical-address */
+u64 sla2spa(void* x) {
+  return (u64)(uintptr_t)(x) + sl_baseaddr;
+}
 
 //---runtime paging setup-------------------------------------------------------
 //physaddr and virtaddr are assumed to be 2M aligned
-void runtime_setup_paging(u32 physaddr, u32 virtaddr, u32 totalsize){
-	pdpt_t xpdpt;
-	pdt_t xpdt;
-	u32 paddr=0, i, j, y;
-	u32 l_cr0, l_cr3, l_cr4;
-	u64 flags;
-	u64 newflags;
-	u32 runtime_image_offset = PAGE_SIZE_2M;
+void runtime_setup_paging(u32 runtime_spa, u32 runtime_sva, u32 totalsize){
+  pdpt_t xpdpt;
+  pdt_t xpdt;
+  u32 hva=0, i;
+  u32 l_cr0, l_cr3, l_cr4;
+  u64 default_flags;
+  u32 runtime_image_offset = PAGE_SIZE_2M;
 	
-	printf("\nSL (%s): physaddr=%08x, virtaddr=%08x, totalsize=%08x",
-		__FUNCTION__, physaddr, virtaddr, totalsize);
+  printf("\nSL (%s): runtime_spa=%08x, runtime_sva=%08x, totalsize=%08x",
+         __FUNCTION__, runtime_spa, runtime_sva, totalsize);
 	
-	xpdpt=(pdpt_t)((u32)rpb->XtVmmPdptBase - __TARGET_BASE + runtime_image_offset);
-	xpdt=(pdt_t)((u32)rpb->XtVmmPdtsBase  - __TARGET_BASE + runtime_image_offset);
+  xpdpt= hva2sla(rpb->XtVmmPdptBase);
+  xpdt = hva2sla(rpb->XtVmmPdtsBase);
 	
-	printf("\n	pa xpdpt=0x%08x, xpdt=0x%08x", (u32)xpdpt, (u32)xpdt);
+  printf("\n	pa xpdpt=0x%p, xpdt=0x%p", xpdpt, xpdt);
 	
-  flags = (u64)(_PAGE_PRESENT);
+  default_flags = (u64)(_PAGE_PRESENT);
+
   //init pdpt
-  for(i = 0; i < PAE_PTRS_PER_PDPT; i++){
-    y = (u32)__pa((u32)sl_baseaddr + (u32)xpdt + (i << PAGE_SHIFT_4K));
-    xpdpt[i] = pae_make_pdpe((u64)y, flags);
+  for(i = 0; i < PAE_PTRS_PER_PDPT; i++) {
+    u64 pdt_spa = sla2spa(xpdt) + (i << PAGE_SHIFT_4K);
+    xpdpt[i] = pae_make_pdpe(pdt_spa, default_flags);
   }
  
- 	//init pdts with unity mappings
-  j  = ADDR_4GB >> (PAE_PDT_SHIFT);
-  flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE);
-  for(i = 0, paddr = 0; i < j; i ++, paddr += PAGE_SIZE_2M){
-    if(paddr >= physaddr && paddr < (physaddr+totalsize)){
-      //map this virtual address to physical memory occupied by runtime virtual range
-      u32 offset = paddr - physaddr;
-      xpdt[i] = pae_make_pde_big((u64)virtaddr+offset, flags);
-    }else if(paddr >= virtaddr && paddr < (virtaddr+totalsize)){
-      //map this virtual addr to runtime physical addr
-      u32 offset = paddr - virtaddr;
-      xpdt[i] = pae_make_pde_big((u64)physaddr+offset, flags);
-    }else{
-        // Unity-map some MMIO regions with Page Cache disabled
-        // 0xfed00000 contains Intel TXT config regs & TPM MMIO
-        // ...but 0xfec00000 is the closest 2M-aligned addr
-        // 0xfee00000 contains APIC base        
-      if(paddr == 0xfee00000 || paddr == 0xfec00000) {
-        newflags = flags | (u64)(_PAGE_PCD);
-        printf("\nSL: updating flags for paddr 0x%08x", paddr);
-      } else {
-				newflags = flags;
-	  	}
-	    xpdt[i] = pae_make_pde_big((u64)paddr, newflags);
+  //init pdts with unity mappings
+  default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE);
+  for(i = 0, hva = 0;
+      i < (ADDR_4GB >> (PAE_PDT_SHIFT));
+      i ++, hva += PAGE_SIZE_2M) {
+    u64 spa = hva2spa((void*)hva);
+    u64 flags = default_flags;
+
+    if(spa == 0xfee00000 || spa == 0xfec00000) {
+      /* Unity-map some MMIO regions with Page Cache disabled 
+       * 0xfed00000 contains Intel TXT config regs & TPM MMIO 
+       * ...but 0xfec00000 is the closest 2M-aligned addr 
+       * 0xfee00000 contains APIC base 
+       */
+      ASSERT(hva==spa); /* expecting these to be unity-mapped */
+      flags |= (u64)(_PAGE_PCD);
+      printf("\nSL: updating flags for hva 0x%08x", hva);
     }
+
+    xpdt[i] = pae_make_pde_big(spa, flags);
   }
 
   printf("\nSL: preparing to turn on paging..");
@@ -154,12 +158,11 @@ void runtime_setup_paging(u32 physaddr, u32 virtaddr, u32 totalsize){
   printf("\nSL: setup CR0.");
 
   //set up cr3
-  l_cr3 = __pa((u32)sl_baseaddr + (u32)xpdpt);
+  l_cr3 = sla2spa(xpdpt);
   printf("\nSL: CR3=0x%08x", l_cr3);
 
-	write_cr3(l_cr3);
+  write_cr3(l_cr3);
   printf("\nSL: setup CR3.");
-
 
   //disable caching 
   //l_cr0 |= (u32)CR0_CD;
@@ -168,8 +171,6 @@ void runtime_setup_paging(u32 physaddr, u32 virtaddr, u32 totalsize){
   l_cr0 |= (u32)0x80000000;
   write_cr0(l_cr0);
   printf("\nSL: paging enabled successfully.");
-
-
 }
 
 /* XXX TODO Read PCR values and sanity-check that DRTM was successful
@@ -423,11 +424,11 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
   	rpb->XtVmmRuntimeSize = slpb.runtime_size;
 
 	  //store revised E820 map and number of entries
-	  memcpy((void *)((u32)rpb->XtVmmE820Buffer - __TARGET_BASE + PAGE_SIZE_2M), (void *)&slpb.e820map, (sizeof(GRUBE820) * slpb.numE820Entries));
+	  memcpy(hva2sla(rpb->XtVmmE820Buffer), (void *)&slpb.e820map, (sizeof(GRUBE820) * slpb.numE820Entries));
   	rpb->XtVmmE820NumEntries = slpb.numE820Entries; 
 
 		//store CPU table and number of CPUs
-    memcpy((void *)((u32)rpb->XtVmmMPCpuinfoBuffer - __TARGET_BASE + PAGE_SIZE_2M), (void *)&slpb.pcpus, (sizeof(PCPU) * slpb.numCPUEntries));
+    memcpy(hva2sla(rpb->XtVmmMPCpuinfoBuffer), (void *)&slpb.pcpus, (sizeof(PCPU) * slpb.numCPUEntries));
   	rpb->XtVmmMPCpuinfoNumEntries = slpb.numCPUEntries; 
 
    	//setup guest OS boot module info in LPB	
@@ -444,9 +445,9 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 			u32 i;
 
 			printf("\nSL: setting up runtime IDT...");
-			fptr=(u32 *)((u32)rpb->XtVmmIdtFunctionPointers - __TARGET_BASE + PAGE_SIZE_2M);
-			idtbase_virt= *(u32 *)(((u32)rpb->XtVmmIdt - __TARGET_BASE + PAGE_SIZE_2M) + 2);
-			idtbase_rel= idtbase_virt - __TARGET_BASE + PAGE_SIZE_2M; 
+			fptr=hva2sla(rpb->XtVmmIdtFunctionPointers);
+			idtbase_virt= *(u32 *)(hva2sla(rpb->XtVmmIdt + 2));
+			idtbase_rel= (uintptr_t)(hva2sla(idtbase_virt));
 			printf("\n	fptr at virt=%08x, rel=%08x", (u32)rpb->XtVmmIdtFunctionPointers,
 					(u32)fptr);
 			printf("\n	idtbase at virt=%08x, rel=%08x", (u32)idtbase_virt,
@@ -468,7 +469,7 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		{
 			TSSENTRY *t;
 	  	u32 tss_base=(u32)rpb->XtVmmTSSBase;
-	  	u32 gdt_base= *(u32 *)(((u32)rpb->XtVmmGdt - __TARGET_BASE + PAGE_SIZE_2M)+2);
+	  	u32 gdt_base= *(u32 *)(hva2sla(rpb->XtVmmGdt + 2));
 	
 			//fix TSS descriptor, 18h
 			t= (TSSENTRY *)((u32)gdt_base + __TRSEL );
