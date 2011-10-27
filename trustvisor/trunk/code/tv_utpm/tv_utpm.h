@@ -42,6 +42,8 @@
 #ifndef _TV_UTPM_H_
 #define _TV_UTPM_H_
 
+#include <rsa.h>
+
 /* Intentionally not including basic types such as uintXX_t, since the
  * headers that provide these may vary across hypervisor-internal
  * environments and test userspace builds.  Whatever code consumes
