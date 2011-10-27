@@ -2,8 +2,8 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files
-AS_SOURCES = 
-C_SOURCES = nist_ctr_drbg.c rijndael.c
+AS_SOURCES = $(wildcard *.S)
+C_SOURCES = $(wildcard *.c)
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))

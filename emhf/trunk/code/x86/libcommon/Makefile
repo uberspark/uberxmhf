@@ -3,7 +3,7 @@
 
 # source files
 AS_SOURCES =  mpsup.S
-C_SOURCES = string.c dbg_printf.c dbg_vgamem.c delay_pit.c sha1.c hmac.c sha2.c txt_mtrrs.c tpm.c tpm_extra.c tpm_emhf.c pci.c acpi.c svm_eap.c vmx_eap.c strtoul.c strncpy.c strlen.c strcmp.c strncmp.c
+C_SOURCES = string.c dbg_printf.c dbg_vgamem.c delay_pit.c txt_mtrrs.c tpm.c tpm_extra.c tpm_emhf.c pci.c acpi.c svm_eap.c vmx_eap.c strtoul.c strncpy.c strlen.c strcmp.c strncmp.c
 
 ifeq ($(DEBUG_SERIAL), y)
 C_SOURCES += dbg_uart.c
@@ -13,6 +13,8 @@ OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
+
+CFLAGS += -I../../libemhfutil/include
 
 # targets
 .PHONY: all
@@ -26,8 +28,3 @@ all: $(OBJECTS)
 .PHONY: clean 
 clean: 
 	$(RM) -rf *.o
- 
-  
-  
-
-  
