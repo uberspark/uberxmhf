@@ -64,7 +64,7 @@
 #include <rsa.h>
 #include <bignum.h>
 #include <random.h>
-
+#include <sha1.h> /* sha1_buffer */
 /*
  * Initialize an RSA context
  * call before any other operations

@@ -48,6 +48,7 @@
 #include <rsa.h>
 #include <random.h>
 #include <crypto_init.h>
+#include <sha1.h>
 
 static void scode_expose_arch(VCPU *vcpu, whitelist_entry_t *wle);
 static void scode_unexpose_arch(VCPU *vcpu, whitelist_entry_t *wle);

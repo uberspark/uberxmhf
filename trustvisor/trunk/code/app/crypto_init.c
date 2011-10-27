@@ -49,6 +49,8 @@
 
 #include <crypto_init.h>
 #include <nv.h>
+#include <sha1.h>
+#include <hmac.h>
 
 /* awesome trick from http://www.jaggersoft.com/pubs/CVu11_3.html */
 #define COMPILE_TIME_ASSERT(pred) \

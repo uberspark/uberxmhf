@@ -46,6 +46,8 @@
 #include <rsa.h>
 #include <malloc.h>
 #include <random.h>
+#include <sha1.h>
+#include <hmac.h>
 
 /* keys for software TPM seal, unseal and quote operations */
 /* SECURITY: these global variables are very sensitive! */
