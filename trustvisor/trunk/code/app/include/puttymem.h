@@ -63,26 +63,23 @@ size_t puttymem_get_used_size(void);
 /***********************************************************************
  * Replacements for string.h (see man pages for details)
  ***********************************************************************/
-void * vmemset(void *b, int c, size_t len); 
-void * vmemcpy(void *dst, const void *src, size_t len); 
-void * vmemmove(void *dst, const void *src, size_t len); 
-int vmemcmp(const void *b1, const void *b2, size_t len);
+#define vmemset memset
+#define vmemcpy memcpy
+#define vmemmove memmove
+#define vmemcmp memcmp
 
-#define vstrncmp(s1, s2, size) vmemcmp(s1, s2, size)
-size_t vstrcpy(char *dst, char *src);
-size_t vstrlen(const char *s);
-size_t vstrnlen(const char *s, size_t maxlen);
+#define vstrncmp strncmp
+#define vstrcpy strcpy
+#define vstrlen strlen
+#define vstrnlen strnlen
 
-#define vstpncpy(dst, src, n) vsimple_stpncpy(dst, src, n) 
+#define vstpncpy stpncpy
 
-char *vsimple_stpncpy (char *dst, const char *src, size_t n);
 
-#define vstrcspn(s, rej) vsimple_strcspn(s, rej)
-size_t vsimple_strcspn (const char *s, const char *rej);
-char *vstrcat(char *s, char *append);
-char *vstrcat1(char *s, char append);
-//char *vstrstr (const char *str1, const char *str2);
-int vatoi(char *s);
+#define vstrcspn strcspn
+#define vstrcat strcat
+#define vstrcat1 strcat1
+#define vatoi atoi
 
 #endif /* _PUTTYMEM_H_ */
 
