@@ -843,6 +843,25 @@ TPM_RESULT utpm_quote_deprecated(uint8_t* externalnonce, uint8_t* output, uint32
 	return 0; 
 }
 
+TPM_RESULT utpm_id_getpub(uint8_t *N, uint32_t *len) {
+    if(!len) { return UTPM_ERR_BAD_PARAM; }
+
+    *len = TPM_RSA_KEY_LEN;
+    if(!N) {
+        /* treat as an inquiry into how many bytes are needed */
+        return UTPM_SUCCESS;
+    }
+
+    /* assume N is big enough and do the work */
+	/* Must use MPI export function to get big endian N */
+	if(mpi_write_binary(&g_rsa->N, N, TPM_RSA_KEY_LEN) != 0) {
+        dprintf(LOG_ERROR, "mpi_write_binary ERROR\n");
+        return UTPM_ERR_BAD_PARAM;
+	}
+    
+    return UTPM_SUCCESS;
+}
+
 
 /* get random bytes from software TPM */
 /* XXX TODO: Make this look like an actual TPM command (return value

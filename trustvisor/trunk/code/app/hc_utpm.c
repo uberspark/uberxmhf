@@ -389,7 +389,7 @@ u32 hc_utpm_quote_deprecated(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 o
 	dprintf(LOG_TRACE, "\n");
 #endif
 
-	if ((ret = utpm_quote_deprecated(nonce, outdata, &outlen, &whitelist[scode_curr[vcpu->id]].utpm, tpmsel, tpmsel_len, (u8 *)(&g_rsa))) != 0) {
+	if((ret = utpm_quote_deprecated(nonce, outdata, &outlen, &whitelist[scode_curr[vcpu->id]].utpm, tpmsel, tpmsel_len)) != 0) {
 		dprintf(LOG_ERROR, "[TV] quote ERROR: utpm_quote fail!\n");
 		return 1;
 	}
@@ -480,8 +480,7 @@ u32 hc_utpm_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 sig_addr, u3
 	   I.e., this fails too aggressively. */
 	if ((ret = utpm_quote(&nonce, &tpmsel, sigdata, &siglen,
                           pcrComp, &pcrCompLen,
-                          &whitelist[scode_curr[vcpu->id]].utpm,
-                          (u8 *)(&g_rsa))) != 0) {
+                          &whitelist[scode_curr[vcpu->id]].utpm)) != 0) {
 		dprintf(LOG_ERROR, "[TV] ERROR: utpm_quote failed!\n");
 		return 1;
 	}
@@ -518,6 +517,7 @@ u32 hc_utpm_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 sig_addr, u3
 
 uint32_t hc_utpm_utpm_id_getpub(VCPU * vcpu, uint32_t gvaddr)
 {
+  uint32_t len;
   uint8_t rsaModulus[TPM_RSA_KEY_LEN];
 	dprintf(LOG_TRACE, "\n[TV] ********** uTPM id_getpub **********\n");
 
@@ -527,16 +527,18 @@ uint32_t hc_utpm_utpm_id_getpub(VCPU * vcpu, uint32_t gvaddr)
 		return 1;
 	}
 
-	/* Must use MPI export function to get big endian N */
-	if(mpi_write_binary(&g_rsa.N, rsaModulus, TPM_RSA_KEY_LEN) != 0) {
-			dprintf(LOG_ERROR, "mpi_write_binary ERROR\n");
-			return 1;
+    if(UTPM_SUCCESS != utpm_id_getpub(NULL, &len)) {
+        return 1;
+    }
+
+    if(len > TPM_RSA_KEY_LEN) { return 1; }
+
+    if(UTPM_SUCCESS != utpm_id_getpub(rsaModulus, &len)) {    
+        dprintf(LOG_ERROR, "utpm_id_getpub ERROR\n");
+        return 1;
 	}
 
 	//print_hex("  N  : ", rsaModulus, TPM_RSA_KEY_LEN);
-	
-	/* XXX TODO FIXME: RSA public identity key should be part of uTPM
-	 * structure and not a global variable here in scode.c */
 	copy_to_guest(vcpu, gvaddr, rsaModulus, TPM_RSA_KEY_LEN);
 	
 	return 0;
