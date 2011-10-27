@@ -28,3 +28,9 @@ clean:
 	$(RM) -f $(OBJECTS)
 	$(RM) -f $(THE_ARCHIVE)
 
+
+.PHONY: install
+install:
+	install -d /usr/local/lib/pkgconfig
+	install --mode=644 tv_utpm.pc /usr/local/lib/pkgconfig
+	install --mode=644 $(THE_ARCHIVE) /usr/local/lib/

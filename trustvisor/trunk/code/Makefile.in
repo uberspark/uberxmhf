@@ -156,6 +156,11 @@ install-dev:
 	install app/include/trustvisor.h $(DESTDIR)$(pkgincludedir)
 	install tv_utpm/tv_utpm.h $(DESTDIR)$(pkgincludedir)
 
+	@for i in $(SUBDIRS); \
+	do \
+		(cd $$i && echo "Making install in $$i..." && $(MAKE) -w install) || exit 1; \
+	done;
+
 # install loader and runtime binaries to installation location
 # TODO: make '/boot' configurable with ./configure
 install-bin:
