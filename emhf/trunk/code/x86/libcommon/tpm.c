@@ -75,7 +75,7 @@
  */
 
 #include <emhf.h> 
-
+#include <sha1.h>
 
 
 static void _read_tpm_reg(int locality, u32 reg, u8 *_raw, size_t size)

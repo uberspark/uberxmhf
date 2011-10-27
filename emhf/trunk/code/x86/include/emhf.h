@@ -73,13 +73,7 @@
 #include <_str.h>
 #include <_div64.h>
 
-
 #include <_perf.h>			//performance measurement routines
-#include <_sha1.h>			//Secure Hash Algorithm (SHA-1)
-#include <_sha2.h>			//SHA-256/384/512
-#include <_hmac.h>			//Hashed Message Authentication Code
-
-
 
 //------------------------------------------------------------------------------
 //preferred TPM locality to use for access inside hypervisor

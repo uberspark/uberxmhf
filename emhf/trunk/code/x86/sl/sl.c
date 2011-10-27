@@ -38,6 +38,7 @@
 //author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <emhf.h> 
+#include <sha1.h>
 
 extern u32 slpb_buffer[];
 RPB * rpb;

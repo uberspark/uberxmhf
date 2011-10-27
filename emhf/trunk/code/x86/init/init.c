@@ -38,6 +38,7 @@
 
 //---includes-------------------------------------------------------------------
 #include <emhf.h> 
+#include <sha1.h>
 
 //---forward prototypes---------------------------------------------------------
 void cstartup(multiboot_info_t *mbi);
