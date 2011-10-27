@@ -100,7 +100,7 @@ components:
 common:
 	#make libcommon first	
 	cd libcommon && $(MAKE) -w all
-	make -C ../libemhfutil
+	cd ../libemhfutil && $(MAKE) -w all
 
 .PHONY: runtime
 runtime: common app
@@ -154,7 +154,7 @@ clean:
 	cd init && $(MAKE) -w clean
 	cd ./init-late/os/linux && $(MAKE) clean
 	cd libcommon && $(MAKE) -w clean
-	make -C ../libemhfutil clean
+	cd ../libemhfutil && $(MAKE) -w clean
 	cd $(BASEDIR)/app && $(MAKE) -w clean
 	rm -rf $(APPOBJECTSDIR)
 
