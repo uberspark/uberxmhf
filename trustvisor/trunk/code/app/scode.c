@@ -631,7 +631,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	scode_unexpose_arch(vcpu, &whitelist_new);
 
 	/* initialize Micro-TPM instance */
-	utpm_init_internal(&whitelist_new.utpm);
+	utpm_init_instance(&whitelist_new.utpm);
 
 	/* hash the entire SSCB code, and then extend the hash value into uTPM PCR[0] */
 	if (scode_measure(&whitelist_new.utpm, whitelist_new.scode_pages, whitelist_new.scode_size))
