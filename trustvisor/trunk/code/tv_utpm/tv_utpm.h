@@ -78,7 +78,7 @@
 /* MicroTPM related definitions */
 #define TPM_PCR_SIZE                   20
 #define TPM_AES_KEY_LEN                128 /* key size is 128 bit */
-#define TPM_AES_KEY_LEN_BYTES (TPM_AES_KEY_LEN*8)
+#define TPM_AES_KEY_LEN_BYTES (TPM_AES_KEY_LEN/8)
 #define TPM_HMAC_KEY_LEN               20
 
 /* max len of sealed data */
