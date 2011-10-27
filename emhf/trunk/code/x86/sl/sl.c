@@ -122,7 +122,12 @@ void runtime_setup_paging(u32 runtime_spa, u32 runtime_sva, u32 totalsize){
     u64 pdt_spa = sla2spa(xpdt) + (i << PAGE_SHIFT_4K);
     xpdpt[i] = pae_make_pdpe(pdt_spa, default_flags);
   }
- 
+
+  /* we don't cope if the hypervisor virtual location overlaps with
+     its physical location. See bug #145. */
+  ASSERT(!(runtime_sva - runtime_spa) < totalsize);
+  ASSERT(!(runtime_spa - runtime_sva) < totalsize);
+
   //init pdts with unity mappings
   default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE);
   for(i = 0, hva = 0;
