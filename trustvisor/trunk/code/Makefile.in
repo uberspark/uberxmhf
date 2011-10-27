@@ -59,12 +59,12 @@
   export APP_INCLUDEDIR = $(BASEDIR)/app/include
   export EMHFAPP = y
 
-  prefix=@prefix@
-  exec_prefix=@exec_prefix@
-  libdir=@libdir@
-  includedir=@includedir@
-  pkgconfigdir=@pkgconfigdir@
-  pkgincludedir=@pkgincludedir@
+  export prefix=@prefix@
+  export exec_prefix=@exec_prefix@
+  export libdir=@libdir@
+  export includedir=@includedir@
+  export pkgconfigdir=@pkgconfigdir@
+  export pkgincludedir=@pkgincludedir@
 
 #-----tools
   export CC = @CC@

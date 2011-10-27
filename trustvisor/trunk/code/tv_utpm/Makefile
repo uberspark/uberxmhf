@@ -31,6 +31,6 @@ clean:
 
 .PHONY: install
 install:
-	install -d /usr/local/lib/pkgconfig
-	install --mode=644 tv_utpm.pc /usr/local/lib/pkgconfig
-	install --mode=644 $(THE_ARCHIVE) /usr/local/lib/
+	install -d $(DESTDIR)$(pkgconfigdir)
+	install --mode=644 tv_utpm.pc $(DESTDIR)$(pkgconfigdir)
+	install --mode=644 $(THE_ARCHIVE) $(DESTDIR)$(libdir)
