@@ -37,9 +37,9 @@
  * Platform-independent routines shared between all PuTTY programs.
  */
 
-#include "./include/puttymem.h"
-#include "tlsf.h"
-#include "scode.h"
+#include <puttymem.h>
+#include <tlsf.h>
+#include <scode.h> /* perf ctr stuff */
 
 /* ----------------------------------------------------------------------
  * My own versions of malloc, realloc and free. Because I want

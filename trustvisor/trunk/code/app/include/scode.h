@@ -66,6 +66,7 @@
 #define  PFN_BITMAP_LIMIT 512*1024
 #define  PFN_BITMAP_2M_LIMIT 2*1024
 
+/* TODO: separate perf ctrs from scode.* */
 extern perf_ctr_t g_tv_perf_ctrs[];
 extern char *g_tv_perf_ctr_strings[];
 #define TV_PERF_CTR_NPF 0

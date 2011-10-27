@@ -33,15 +33,10 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/*
- * PuTTY memory-handling header.
- * Edited by Zongwei Zhou
- */
-
 #ifndef _PUTTYMEM_H_
 #define _PUTTYMEM_H_
 
-//#include "malloc.h"
+//#include <malloc.h>
 #include <emhf.h> 
 
 #define PUTTYMEM_POOLSIZE (4*(1<<20))
@@ -50,16 +45,11 @@
 #define vnmalloc safemalloc
 #define vfree safefree
 
-#ifndef INT_MAX
-#define INT_MAX 0x7FFFFFFF
-#endif
-
 void *safemalloc(size_t, size_t);
 void safefree(void *);
 
 void mem_init(void); 
 size_t puttymem_get_used_size(void);
 
-#endif /* _PUTTYMEM_H_ */
-
+#endif
 
