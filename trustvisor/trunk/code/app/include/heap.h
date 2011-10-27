@@ -36,13 +36,10 @@
 #ifndef _HEAPMEM_H_
 #define _HEAPMEM_H_
 
-//#include <malloc.h>
-#include <emhf.h> 
-
 #define HEAPMEM_POOLSIZE (4*(1<<20))
 
-#define vmalloc(z) safemalloc(z,1)
-#define vfree safefree
+#define malloc(z) safemalloc(z,1)
+#define free safefree
 
 void *safemalloc(size_t, size_t);
 void safefree(void *);

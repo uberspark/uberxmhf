@@ -108,7 +108,7 @@ void mpi_free(mpi *X){
   if( X->p != NULL )
     {
       memset( X->p, 0, X->n * ciL );
-      vfree( X->p );                                                                                                                                   
+      free( X->p );                                                                                                                                   
     }
 
   memset( X, 0, sizeof( mpi ) );
@@ -151,7 +151,7 @@ int mpi_grow( mpi *X, int nblimbs )
 
     if( X->n < nblimbs )
     {
-        if( ( p = (t_int *) vmalloc( nblimbs * ciL ) ) == NULL )
+        if( ( p = (t_int *) malloc( nblimbs * ciL ) ) == NULL )
             return( 1 );
 
         memset( p, 0, nblimbs * ciL );
@@ -160,7 +160,7 @@ int mpi_grow( mpi *X, int nblimbs )
         {
             memcpy( p, X->p, X->n * ciL );
             memset( X->p, 0, X->n * ciL );
-            vfree( X->p );
+            free( X->p );
         }
 
         X->n = nblimbs;

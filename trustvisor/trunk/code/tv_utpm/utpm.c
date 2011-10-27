@@ -193,7 +193,7 @@ static inline uint32_t ntohl(uint32_t in) {
  * Create the current TPM_PCR_COMPOSITE for uTPM PCR values
  * specified by TPM_PCR_SELECTION.
  *
- * Caller must vfree *tpm_pcr_composite.
+ * Caller must free *tpm_pcr_composite.
  */
 static uint32_t utpm_internal_allocate_and_populate_current_TpmPcrComposite(
     utpm_master_state_t *utpm,
@@ -248,8 +248,8 @@ static uint32_t utpm_internal_allocate_and_populate_current_TpmPcrComposite(
     dprintf(LOG_TRACE, "  *space_needed_for_composite                         = %d\n",
             *space_needed_for_composite);
     
-    if(NULL == (*tpm_pcr_composite = vmalloc(*space_needed_for_composite))) {
-        dprintf(LOG_ERROR, "[TV:UTPM] vmalloc(%d) failed!\n", *space_needed_for_composite);
+    if(NULL == (*tpm_pcr_composite = malloc(*space_needed_for_composite))) {
+        dprintf(LOG_ERROR, "[TV:UTPM] malloc(%d) failed!\n", *space_needed_for_composite);
         return 1;
     }
 
@@ -315,7 +315,7 @@ static TPM_RESULT utpm_internal_digest_current_TpmPcrComposite(
 
     sha1_buffer(tpm_pcr_composite, space_needed_for_composite, digest->value);    
     
-    if(tpm_pcr_composite) { vfree(tpm_pcr_composite); tpm_pcr_composite = NULL; }
+    if(tpm_pcr_composite) { free(tpm_pcr_composite); tpm_pcr_composite = NULL; }
 
     return rv;
 }
@@ -382,10 +382,10 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
      * Part 2: Do the actual encryption
      */
 
-    plaintext = vmalloc(inlen + 100); /* XXX figure out actual required size */
+    plaintext = malloc(inlen + 100); /* XXX figure out actual required size */
     // It's probably TPM_AES_KEY_LEN_BYTES + TPM_HASH_SIZE + sizeof(TPM_PCR_INFO)
     if(NULL == plaintext) {
-        dprintf(LOG_ERROR, "ERROR: vmalloc FAILED\n");
+        dprintf(LOG_ERROR, "ERROR: malloc FAILED\n");
         return 1;
     }
     
@@ -466,7 +466,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     } 
 
     /* SECURITY: zero memory before freeing? */
-    if(plaintext) { vfree(plaintext); plaintext = NULL; iv = NULL; } 
+    if(plaintext) { free(plaintext); plaintext = NULL; iv = NULL; } 
     
 	return rv;
 }
@@ -602,7 +602,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
         memcpy(output, p, *outlen);
         
       out:
-        if(currentPcrComposite) { vfree(currentPcrComposite); currentPcrComposite = NULL; }
+        if(currentPcrComposite) { free(currentPcrComposite); currentPcrComposite = NULL; }
     } /* END Separate logic for PCR checking. */
         
     return rv;    
@@ -810,7 +810,7 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
     dprintf(LOG_TRACE, "[TV:UTPM] Success!\n");
     
   out:
-    if(tpm_pcr_composite) { vfree(tpm_pcr_composite); tpm_pcr_composite = NULL; }
+    if(tpm_pcr_composite) { free(tpm_pcr_composite); tpm_pcr_composite = NULL; }
     
     return 0;
 }

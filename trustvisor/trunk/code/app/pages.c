@@ -41,7 +41,7 @@
 void pagelist_init(pagelist_t *pl)
 {
   const int pages = 128;
-  pl->buf = vmalloc(pages*PAGE_SIZE_4K);
+  pl->buf = malloc(pages*PAGE_SIZE_4K);
   ASSERT(pl->buf != NULL);
 
   pl->page_base = (void*)PAGE_ALIGN_UP4K((uintptr_t)pl->buf);
@@ -76,7 +76,7 @@ void* pagelist_get_zeroedpage(pagelist_t *pl)
 
 void pagelist_free_all(pagelist_t *pl)
 {
-  vfree(pl->buf);
+  free(pl->buf);
   pl->buf=NULL;
   pl->num_allocd=0;
 }

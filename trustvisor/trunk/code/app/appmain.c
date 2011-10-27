@@ -274,10 +274,10 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				lens_gva = r->esi;
 				count = r->edi;
 
-				addrs = vmalloc(count * sizeof(u32));
+				addrs = malloc(count * sizeof(u32));
 				copy_from_guest(vcpu, (u8*)addrs, addrs_gva, sizeof(u32)*count);
 
-				lens = vmalloc(count * sizeof(u32));
+				lens = malloc(count * sizeof(u32));
 				copy_from_guest(vcpu, (u8*)lens, lens_gva, sizeof(u32)*count);
 
 				if (lens && addrs) {
@@ -288,8 +288,8 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 					ret = -2;
 				}
 
-				vfree(addrs);
-				vfree(lens);
+				free(addrs);
+				free(lens);
 				break;
 			}
 		case TV_HC_UTPM_PCRREAD:

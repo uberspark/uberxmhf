@@ -54,7 +54,7 @@
 #include <tv_utpm.h> /* formerly utpm.h */
 #include <hc_utpm.h>
 #include <scode.h> /* copy_from_guest */
-#include <heap.h> /* vmalloc */
+#include <heap.h> /* malloc */
 
 /**
  * FIXME: Ugly circular dependency.  hc_utpm.c doesn't work without
@@ -471,14 +471,14 @@ u32 hc_utpm_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 sig_addr, u3
 	/**
 	 * Allocate space to do internal processing
 	 */
-	if(NULL == (sigdata = vmalloc(siglen))) {
-			dprintf(LOG_ERROR, "[TV] ERROR: vmalloc(%d) failed!\n", siglen);
+	if(NULL == (sigdata = malloc(siglen))) {
+			dprintf(LOG_ERROR, "[TV] ERROR: malloc(%d) failed!\n", siglen);
 			ret = 1;
 			goto out;
 	}
 
-    if(NULL == (pcrComp = vmalloc(pcrCompLen))) {
-			dprintf(LOG_ERROR, "[TV] ERROR: vmalloc(%d) failed!\n", siglen);
+    if(NULL == (pcrComp = malloc(pcrCompLen))) {
+			dprintf(LOG_ERROR, "[TV] ERROR: malloc(%d) failed!\n", siglen);
 			ret = 1;
 			goto out;
     }
@@ -518,7 +518,7 @@ u32 hc_utpm_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 sig_addr, u3
 
 	out:
 
-	if(sigdata) { vfree(sigdata); sigdata = NULL; }
+	if(sigdata) { free(sigdata); sigdata = NULL; }
 	
 	return ret;
 }

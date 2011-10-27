@@ -296,11 +296,11 @@ void init_scode(VCPU * vcpu)
 	/* initialize heap memory */
 	mem_init();
 
-	whitelist = vmalloc(WHITELIST_LIMIT);
+	whitelist = malloc(WHITELIST_LIMIT);
 	dprintf(LOG_TRACE, "[TV] alloc %dKB mem for scode_list at %x!\n", (WHITELIST_LIMIT/1024), (unsigned int)whitelist);
-	scode_pfn_bitmap = (unsigned char *)vmalloc(PFN_BITMAP_LIMIT);
+	scode_pfn_bitmap = (unsigned char *)malloc(PFN_BITMAP_LIMIT);
 	dprintf(LOG_TRACE, "[TV] alloc %dKB mem for pfn_bitmap at %x!\n", (PFN_BITMAP_LIMIT/1024), (unsigned int)scode_pfn_bitmap);
-	scode_pfn_bitmap_2M = (unsigned short *)vmalloc(PFN_BITMAP_2M_LIMIT);
+	scode_pfn_bitmap_2M = (unsigned short *)malloc(PFN_BITMAP_2M_LIMIT);
 	dprintf(LOG_TRACE, "[TV] alloc %dKB mem for pfn_bitmap_2M at %x!\n", (PFN_BITMAP_LIMIT/1024), (unsigned int)scode_pfn_bitmap_2M);
 
 	memset(whitelist, 0, WHITELIST_LIMIT); 
@@ -318,7 +318,7 @@ void init_scode(VCPU * vcpu)
 		if ( g_midtable[inum].cpu_lapic_id > max)
 			max = g_midtable[inum].cpu_lapic_id;
 	}
-	scode_curr = (int *)vmalloc((max+1)<<2);
+	scode_curr = (int *)malloc((max+1)<<2);
 	memset(scode_curr, 0xFF, ((max+1)<<2));
 
 	/* init PRNG and long-term crypto keys */
@@ -585,12 +585,12 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	}
 
 	/* register pages in each scode section */
-	whitelist_new.scode_pages = (pte_t*)vmalloc(MAX_REGPAGES_NUM*sizeof(whitelist_new.scode_pages[0]));
+	whitelist_new.scode_pages = (pte_t*)malloc(MAX_REGPAGES_NUM*sizeof(whitelist_new.scode_pages[0]));
 	whitelist_new.scode_size = 0;
 	for( i=0 ; i < (u32)(whitelist_new.scode_info.num_sections) ; i++ )  {
 		ginfo = &(whitelist_new.scode_info.sections[i]);
 		if (guest_pt_copy(vcpu, &(whitelist_new.scode_pages[whitelist_new.scode_size]), ginfo->start_addr, (ginfo->page_num)<<PAGE_SHIFT_4K, ginfo->type)) {
-			vfree(whitelist_new.scode_pages);
+			free(whitelist_new.scode_pages);
 			dprintf(LOG_ERROR, "[TV] SECURITY: Registration Failed. Probably some page of sensitive code is not in memory yet\n");
 			return 1;
 		}
@@ -602,14 +602,14 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	/* CRITICAL SECTION in MP scenario: need to quiesce other CPUs or at least acquire spinlock */
 	if (hpt_scode_set_prot(vcpu, whitelist_new.scode_pages, whitelist_new.scode_size))
 	{
-		vfree(whitelist_new.scode_pages);
+		free(whitelist_new.scode_pages);
 		dprintf(LOG_ERROR, "[TV] SECURITY: Registration Failed. Probably some page has already been used by other sensitive code.\n");
 		return 1;
 	}
 
 	/* initialize pal's hardware page tables */
 	whitelist_new.hpt_nested_walk_ctx = hpt_nested_walk_ctx; /* copy from template */
-	whitelist_new.pl = vmalloc(sizeof(pagelist_t));
+	whitelist_new.pl = malloc(sizeof(pagelist_t));
 	pagelist_init(whitelist_new.pl);
 	whitelist_new.hpt_nested_walk_ctx.gzp_ctx = whitelist_new.pl; /* assign page allocator */
 	whitelist_new.pal_hpt_root = pagelist_get_zeroedpage(whitelist_new.pl);
@@ -637,7 +637,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	if (scode_measure(&whitelist_new.utpm, whitelist_new.scode_pages, whitelist_new.scode_size))
 	{
 		hpt_scode_clear_prot(vcpu, whitelist_new.scode_pages, whitelist_new.scode_size);
-		vfree(whitelist_new.scode_pages);
+		free(whitelist_new.scode_pages);
 		dprintf(LOG_ERROR, "[TV] SECURITY: Registration Failed. sensitived code cannot be verified.\n");
 		return 1;
 	}
@@ -726,7 +726,7 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
 	if (whitelist[i].scode_pages)
 	{
 		hpt_scode_clear_prot(vcpu, whitelist[i].scode_pages, whitelist[i].scode_size);
-		vfree((void *)(whitelist[i].scode_pages));
+		free((void *)(whitelist[i].scode_pages));
 		whitelist[i].scode_pages = NULL;
 	}
 
@@ -736,7 +736,7 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
 	whitelist[i].gcr3 = 0;
 
 	pagelist_free_all(whitelist[i].pl);
-	vfree(whitelist[i].pl);
+	free(whitelist[i].pl);
 
 	return 0; 
 }
@@ -793,7 +793,7 @@ static void scode_expose_arch(VCPU *vcpu, whitelist_entry_t *wle)
 	gdtr = VCPU_gdtr_base(vcpu);
 
 	/* alloc memory for page table entry holder */
-	wle->pte_page = vmalloc(MAX_REGPAGES_NUM*sizeof(pte_t));
+	wle->pte_page = malloc(MAX_REGPAGES_NUM*sizeof(pte_t));
 	pte_page = wle->pte_page;
 
 	/* get related page tables for scode */
@@ -808,7 +808,7 @@ static void scode_expose_arch(VCPU *vcpu, whitelist_entry_t *wle)
 			/* check gvaddr to gpaddr mapping */
 			if( gpaddr != (sp[tmp_count+j] & ~0x7)) {
 				dprintf(LOG_ERROR, "[TV] SECURITY: scode vaddr %x -> paddr %#Lx mapping changed! invalide gpaddr is %x!\n", ginfo->start_addr+(j<<PAGE_SHIFT_4K), sp[tmp_count+j], gpaddr);
-				vfree(wle->pte_page);
+				free(wle->pte_page);
 				HALT();
 			}
 
@@ -1070,7 +1070,7 @@ static void scode_unexpose_arch(VCPU __attribute__((unused)) *vcpu, whitelist_en
 
 	/* free pte_page to save heap space,
 	 * next expose will alloc a new pte_page */
-	vfree(wle->pte_page);
+	free(wle->pte_page);
 	wle->pte_page = 0;
 	wle->pte_size = 0;
 }

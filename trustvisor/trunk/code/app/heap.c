@@ -41,9 +41,9 @@
  * TODO: Move this functionality into libemhfc once it exists, and
  * name it consistently with libc, i.e., malloc.[ch].
  */
-#include <heap.h>
 #include <tlsf.h>
 #include <scode.h> /* only for perf ctr stuff */
+#include <heap.h>
 
 static u8 memory_pool[HEAPMEM_POOLSIZE];
 void mem_init(void){
