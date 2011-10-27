@@ -60,23 +60,6 @@ void safefree(void *);
 void mem_init(void); 
 size_t puttymem_get_used_size(void);
 
-/***********************************************************************
- * Replacements for string.h (see man pages for details)
- ***********************************************************************/
-#define vmemset  memset
-#define vmemcpy  memcpy
-#define vmemmove memmove
-#define vmemcmp  memcmp
-#define vstrncmp strncmp
-#define vstrcpy  strcpy
-#define vstrlen  strlen
-#define vstrnlen strnlen
-#define vstpncpy stpncpy
-#define vstrcspn strcspn
-#define vstrcat  strcat
-#define vstrcat1 strcat1
-#define vatoi    atoi
-
 #endif /* _PUTTYMEM_H_ */
 
 
