@@ -254,7 +254,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm, uint8_t* input, uint32_t inlen
 TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hypercall inputs */
                       uint8_t* output, uint32_t* outlen, /* hypercall outputs */
                       uint8_t* pcrComp, uint32_t* pcrCompLen,                      
-                      utpm_master_state_t *utpm, uint8_t* rsa); /* TrustVisor inputs */
+                      utpm_master_state_t *utpm); /* TrustVisor inputs */
 
 /**
  * Keeping these around solely for the Apache SSL web server demo
@@ -262,7 +262,7 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
 TPM_RESULT utpm_seal_deprecated(uint8_t* pcrAtRelease, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen);
 TPM_RESULT utpm_unseal_deprecated(utpm_master_state_t *utpm, uint8_t* input, uint32_t inlen, uint8_t* output, uint32_t* outlen);
 TPM_RESULT utpm_quote_deprecated(uint8_t* externalnonce, uint8_t* output, uint32_t* outlen,
-                      utpm_master_state_t *utpm, uint8_t* tpmsel, uint32_t tpmsel_len, uint8_t* rsa );
+                      utpm_master_state_t *utpm, uint8_t* tpmsel, uint32_t tpmsel_len);
 
 
 TPM_RESULT utpm_rand(uint8_t* buffer, uint32_t *numbytes);

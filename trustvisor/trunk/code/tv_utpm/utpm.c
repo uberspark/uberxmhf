@@ -713,7 +713,7 @@ TPM_RESULT utpm_unseal_deprecated(utpm_master_state_t *utpm, uint8_t* input, uin
 TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hypercall inputs */
                       uint8_t* output, uint32_t* outlen, /* hypercall outputs */
                       uint8_t* pcrComp, uint32_t* pcrCompLen,
-                      utpm_master_state_t *utpm, uint8_t* rsa) /* TrustVisor inputs */
+                      utpm_master_state_t *utpm) /* TrustVisor inputs */
 {
     TPM_RESULT rv = 0; /* success */
     uint32_t space_needed_for_composite = 0;
@@ -722,7 +722,7 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
 
     printf("[TV:UTPM] utpm_quote invoked\n");
 
-    if(!externalnonce || !tpmsel || !output || !outlen || !pcrComp || !pcrCompLen || !utpm || !rsa) {
+    if(!externalnonce || !tpmsel || !output || !outlen || !pcrComp || !pcrCompLen || !utpm) {
         printf("[TV:UTPM] ERROR: NULL function parameter!\n");
         rv = 1; /* FIXME: Indicate invalid input parameter */
         goto out;
@@ -784,7 +784,7 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
     *outlen = TPM_RSA_KEY_LEN;
     dprintf(LOG_TRACE, "required output size = *outlen = %d\n", *outlen);
 
-	if ((rv = tpm_pkcs1_sign((rsa_context *)rsa,
+	if ((rv = tpm_pkcs1_sign(g_rsa,
                              sizeof(TPM_QUOTE_INFO),
                              (uint8_t*)&quote_info,
                              output)) != 0) {
@@ -806,7 +806,7 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
  * output: quote result and data length
  */
 TPM_RESULT utpm_quote_deprecated(uint8_t* externalnonce, uint8_t* output, uint32_t* outlen,
-                      utpm_master_state_t *utpm, uint8_t* tpmsel, uint32_t tpmsel_len, uint8_t* rsa )
+                      utpm_master_state_t *utpm, uint8_t* tpmsel, uint32_t tpmsel_len)
 {
 	int ret;
 	uint32_t i, idx;
@@ -834,7 +834,7 @@ TPM_RESULT utpm_quote_deprecated(uint8_t* externalnonce, uint8_t* output, uint32
 	/* sign the quoteInfo and add the signature to output 
 	 * get the outlen
 	 */
-	if (0 != (ret = tpm_pkcs1_sign((rsa_context *)rsa, datalen, output, (output + datalen)))) {
+	if (0 != (ret = tpm_pkcs1_sign(g_rsa, datalen, output, (output + datalen)))) {
 		printf("[TV] Quote ERROR: rsa sign fail\n");
 		return 1;
 	}
