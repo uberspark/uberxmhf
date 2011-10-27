@@ -315,28 +315,32 @@ extern struct emhf_library *g_libemhf __attribute__(( section(".data") ));
 //function that initializes the runtime global variables
 void runtime_globals_init(void);
 
-/* XXX use __TARGET_BASE instead of rpb->XtVmmRuntimeVirtBase? */
-static inline void * spa2hva(spa_t spa)
-{
-  if (spa >= rpb->XtVmmRuntimePhysBase && spa < rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize){
-    return (void *)(uintptr_t)(spa + (rpb->XtVmmRuntimeVirtBase - rpb->XtVmmRuntimePhysBase)); 
-  } else if (spa >= rpb->XtVmmRuntimeVirtBase && spa < rpb->XtVmmRuntimeVirtBase+rpb->XtVmmRuntimeSize) {
-    return (void *)(uintptr_t)(spa + (rpb->XtVmmRuntimePhysBase - rpb->XtVmmRuntimeVirtBase));
-  } else {
-    return (void *)(uintptr_t)(spa);
-  }
-}
-
-/* XXX use __TARGET_BASE instead of rpb->XtVmmRuntimeVirtBase? */
+/* hypervisor-virtual-address to system-physical-address. this fn is
+ * used when creating the hypervisor's page tables, and hence
+ * represents ground truth (assuming they haven't since been modified)
+ */
 static inline spa_t hva2spa(void *hva)
 {
   uintptr_t hva_ui = (uintptr_t)hva;
+  uintptr_t offset = rpb->XtVmmRuntimeVirtBase - rpb->XtVmmRuntimePhysBase;
   if (hva_ui >= rpb->XtVmmRuntimePhysBase && hva_ui < rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize){
-    return (spa_t)(hva_ui - (rpb->XtVmmRuntimePhysBase - rpb->XtVmmRuntimeVirtBase));
+    return hva_ui + offset;
   } else if (hva_ui >= rpb->XtVmmRuntimeVirtBase && hva_ui < rpb->XtVmmRuntimeVirtBase+rpb->XtVmmRuntimeSize) {
-    return (spa_t)(hva_ui - (rpb->XtVmmRuntimeVirtBase - rpb->XtVmmRuntimePhysBase));
+    return hva_ui - offset;
   } else {
-    return (spa_t)(hva_ui);
+    return hva_ui;
+  }
+}
+
+static inline void * spa2hva(spa_t spa)
+{
+  uintptr_t offset = rpb->XtVmmRuntimeVirtBase - rpb->XtVmmRuntimePhysBase;
+  if (spa >= rpb->XtVmmRuntimePhysBase && spa < rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize){
+    return (void *)(uintptr_t)(spa + offset);
+  } else if (spa >= rpb->XtVmmRuntimeVirtBase && spa < rpb->XtVmmRuntimeVirtBase+rpb->XtVmmRuntimeSize) {
+    return (void *)(uintptr_t)(spa - offset);
+  } else {
+    return (void *)(uintptr_t)(spa);
   }
 }
 
