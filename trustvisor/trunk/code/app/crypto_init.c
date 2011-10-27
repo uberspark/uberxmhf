@@ -242,7 +242,7 @@ static int trustvisor_long_term_secret_init(void) {
 	HMAC_SHA1(mss, HW_TPM_MASTER_SEALING_SECRET_SIZE,
 						sealinghmac, sizeof(sealinghmac),
 						aeskey_temp);
-	ASSERT(TPM_AES_KEY_LEN>>3 < HW_TPM_MASTER_SEALING_SECRET_SIZE);
+	ASSERT(TPM_AES_KEY_LEN_BYTES < HW_TPM_MASTER_SEALING_SECRET_SIZE);
 	memcpy(g_aeskey, aeskey_temp, TPM_AES_KEY_LEN>>3);
 	memset(aeskey_temp, 0, HW_TPM_MASTER_SEALING_SECRET_SIZE);
 	
