@@ -115,8 +115,7 @@ uint32_t hc_utpm_seal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len, uint
 	rv = utpm_seal(&whitelist[scode_curr[vcpu->id]].utpm,
 								 &tpmPcrInfo,
 								 indata, input_len,
-								 output, &outlen,
-								 g_hmackey, g_aeskey);
+								 output, &outlen);
 	if (rv != 0 || outlen > MAX_SEALDATA_LEN) {
 		dprintf(LOG_ERROR, "[TV] Seal ERROR: output data length is too large, lenth %#x\n", outlen);
 		return rv;
@@ -172,8 +171,7 @@ uint32_t hc_utpm_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
 
 	/* unseal */
 	if ((ret = utpm_unseal(&whitelist[scode_curr[vcpu->id]].utpm, indata, input_len,
-												 outdata, &outlen, &digestAtCreation,
-												 g_hmackey, g_aeskey))) {
+												 outdata, &outlen, &digestAtCreation))) {
 		dprintf(LOG_ERROR, "[TV:scode] Unseal ERROR: utpm_unseal fail!\n");
 		return 1;
 	}
@@ -253,7 +251,7 @@ u32 hc_utpm_seal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrA
 #endif
 
 	/* seal */
-	utpm_seal_deprecated(pcr, indata, input_len, output, &outlen, g_hmackey, g_aeskey);
+	utpm_seal_deprecated(pcr, indata, input_len, output, &outlen);
 
 #if 1
 	dprintf(LOG_TRACE, "[TV] sealed data len = %d!\n", outlen);
@@ -316,7 +314,7 @@ u32 hc_utpm_unseal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 ou
 #endif
 
 	/* unseal */
-	if ((ret = utpm_unseal_deprecated(&whitelist[scode_curr[vcpu->id]].utpm, indata, input_len, outdata, &outlen, g_hmackey, g_aeskey))) {
+	if ((ret = utpm_unseal_deprecated(&whitelist[scode_curr[vcpu->id]].utpm, indata, input_len, outdata, &outlen))) {
 		dprintf(LOG_ERROR, "[TV] Unseal ERROR: utpm_unseal fail!\n");
 		return 1;
 	}
