@@ -63,7 +63,6 @@
 
 #include <rsa.h>
 #include <bignum.h>
-#include <malloc.h>
 #include <random.h>
 
 /*

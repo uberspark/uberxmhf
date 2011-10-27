@@ -63,7 +63,6 @@
  * Edited by Zongwei Zhou for EMHF project */
 
 #include <emhf.h> 
-#include <malloc.h>
 #include <aes.h>
 
 /*
