@@ -39,7 +39,7 @@
 
 #include <emhf.h> 
 
-#include <puttymem.h>
+#include <heap.h>
 #include <scode.h>
 #include <hc_utpm.h>
 #include <nv.h>

@@ -62,10 +62,10 @@
 
 #include <emhf.h> 
 
-#include  "./include/puttymem.h"
-#include "./include/bignum.h"
-#include "./include/bn_mul.h"
-#include "./include/random.h"
+#include <heap.h>
+#include <bignum.h>
+#include <bn_mul.h>
+#include <random.h>
 
 #define ciL    ((int) sizeof(t_int))    /* chars in limb  */
 #define biL    (ciL << 3)               /* bits  in limb  */

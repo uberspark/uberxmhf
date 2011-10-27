@@ -54,7 +54,7 @@
 #include <tv_utpm.h> /* formerly utpm.h */
 #include <hc_utpm.h>
 #include <scode.h> /* copy_from_guest */
-#include <puttymem.h> /* vmalloc */
+#include <heap.h> /* vmalloc */
 
 /**
  * FIXME: Ugly circular dependency.  hc_utpm.c doesn't work without

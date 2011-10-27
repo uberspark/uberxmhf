@@ -33,13 +33,13 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#ifndef _PUTTYMEM_H_
-#define _PUTTYMEM_H_
+#ifndef _HEAPMEM_H_
+#define _HEAPMEM_H_
 
 //#include <malloc.h>
 #include <emhf.h> 
 
-#define PUTTYMEM_POOLSIZE (4*(1<<20))
+#define HEAPMEM_POOLSIZE (4*(1<<20))
 
 #define vmalloc(z) safemalloc(z,1)
 #define vfree safefree
@@ -48,7 +48,7 @@ void *safemalloc(size_t, size_t);
 void safefree(void *);
 
 void mem_init(void); 
-size_t puttymem_get_used_size(void);
+size_t heapmem_get_used_size(void);
 
 #endif
 

@@ -63,9 +63,8 @@
  * Edited by Zongwei Zhou for EMHF project */
 
 #include <emhf.h> 
-
-#include "./include/aes.h"
-#include "./include/puttymem.h"
+#include <heap.h>
+#include <aes.h>
 
 /*
  * 32-bit integer manipulation macros (little endian)

@@ -35,7 +35,7 @@
 
 #include <emhf.h> 
 
-#include <puttymem.h>
+#include <heap.h>
 #include <pages.h>
 
 void pagelist_init(pagelist_t *pl)

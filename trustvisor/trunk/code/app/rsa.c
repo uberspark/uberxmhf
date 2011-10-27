@@ -63,7 +63,7 @@
 
 #include <rsa.h>
 #include <bignum.h>
-#include <puttymem.h>
+#include <heap.h>
 #include <random.h>
 
 /*
