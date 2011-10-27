@@ -274,10 +274,10 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				lens_gva = r->esi;
 				count = r->edi;
 
-				addrs = vnmalloc(count, sizeof(u32));
+				addrs = vmalloc(count * sizeof(u32));
 				copy_from_guest(vcpu, (u8*)addrs, addrs_gva, sizeof(u32)*count);
 
-				lens = vnmalloc(count, sizeof(u32));
+				lens = vmalloc(count * sizeof(u32));
 				copy_from_guest(vcpu, (u8*)lens, lens_gva, sizeof(u32)*count);
 
 				if (lens && addrs) {
