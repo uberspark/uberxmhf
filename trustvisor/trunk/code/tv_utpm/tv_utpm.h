@@ -78,6 +78,7 @@
 /* MicroTPM related definitions */
 #define TPM_PCR_SIZE                   20
 #define TPM_AES_KEY_LEN                128 /* key size is 128 bit */
+#define TPM_AES_KEY_LEN_BYTES (TPM_AES_KEY_LEN*8)
 #define TPM_HMAC_KEY_LEN               20
 
 /* max len of sealed data */
@@ -147,8 +148,6 @@ typedef struct tdTPM_PCR_INFO {
                                             creation, but is just informative to the host,
                                             not used for authorization */
 } TPM_PCR_INFO; 
-
-#define TPM_AES_KEY_LEN_BYTES 16 /* XXX Make consistent with crypto_init.h */
 
 /**
  * Return the amount of space overhead (in bytes) expected when
