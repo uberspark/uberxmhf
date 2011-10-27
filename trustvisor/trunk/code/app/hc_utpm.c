@@ -350,6 +350,8 @@ u32 hc_utpm_quote_deprecated(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 o
 	u32 outlen, ret;
 	u32 i, num;
 	u32 tpmsel_len;
+    uint32_t rsaLen;
+    uint8_t rsaModulus[TPM_RSA_KEY_LEN];
 
 	dprintf(LOG_TRACE, "\n[TV] ********** uTPM Quote [DEPRECATED] **********\n");
 	dprintf(LOG_TRACE, "[TV] nonce addr: %x, tpmsel addr: %x, output addr %x, outlen addr: %x!\n", nonce_addr, tpmsel_addr, out_addr, out_len_addr);
@@ -405,9 +407,15 @@ u32 hc_utpm_quote_deprecated(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 o
 
 	/* copy output to guest */
 	copy_to_guest(vcpu, out_addr, outdata, outlen);
+    
+    if(UTPM_SUCCESS != utpm_id_getpub(rsaModulus, &rsaLen)) {
+        return 1;
+    }
 
+    if(rsaLen > TPM_RSA_KEY_LEN) { return 1; }
+    
 	/* copy public key to guest */
-	copy_to_guest(vcpu, out_addr + outlen, (u8 *)(g_rsa.N.p), TPM_RSA_KEY_LEN);
+	copy_to_guest(vcpu, out_addr + outlen, rsaModulus, TPM_RSA_KEY_LEN);
 	outlen += TPM_RSA_KEY_LEN;
 
 	/* copy out length to guest */
