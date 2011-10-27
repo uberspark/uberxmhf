@@ -560,14 +560,14 @@ int rsa_pkcs1_verify( rsa_context *ctx,
 		c = p[13];
 		p[13] = 0;
 
-		if( vmemcmp( p, ASN1_HASH_MDX, 18 ) != 0 )
+		if( memcmp( p, ASN1_HASH_MDX, 18 ) != 0 )
 			return( XYSSL_ERR_RSA_VERIFY_FAILED );
 
 		if( ( c == 2 && hash_id == RSA_MD2 ) ||
 				( c == 4 && hash_id == RSA_MD4 ) ||
 				( c == 5 && hash_id == RSA_MD5 ) )
 		{
-			if( vmemcmp( p + 18, hash, 16 ) == 0 ) 
+			if( memcmp( p + 18, hash, 16 ) == 0 ) 
 				return( 0 );
 			else
 				return( XYSSL_ERR_RSA_VERIFY_FAILED );
@@ -576,8 +576,8 @@ int rsa_pkcs1_verify( rsa_context *ctx,
 
 	if( len == 35 && hash_id == RSA_SHA1 )
 	{
-		if( vmemcmp( p, ASN1_HASH_SHA1, 15 ) == 0 &&
-				vmemcmp( p + 15, hash, 20 ) == 0 )
+		if( memcmp( p, ASN1_HASH_SHA1, 15 ) == 0 &&
+				memcmp( p + 15, hash, 20 ) == 0 )
 			return( 0 );
 		else
 			return( XYSSL_ERR_RSA_VERIFY_FAILED );
@@ -585,7 +585,7 @@ int rsa_pkcs1_verify( rsa_context *ctx,
 
 	if( len == hashlen && hash_id == RSA_RAW )
 	{
-		if( vmemcmp( p, hash, hashlen ) == 0 )
+		if( memcmp( p, hash, hashlen ) == 0 )
 			return( 0 );
 		else
 			return( XYSSL_ERR_RSA_VERIFY_FAILED );

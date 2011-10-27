@@ -239,7 +239,7 @@ u32 hc_utpm_seal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrA
 		/* seal data to our own */
 		/* use current PAL's PCR value */
 		dprintf(LOG_TRACE, "[TV] get pcr from current PAL's softTPM!\n");
-		vmemcpy(pcr, whitelist[scode_curr[vcpu->id]].utpm.pcr_bank, TPM_PCR_SIZE);
+		memcpy(pcr, whitelist[scode_curr[vcpu->id]].utpm.pcr_bank, TPM_PCR_SIZE);
 	}
 
 #if 1

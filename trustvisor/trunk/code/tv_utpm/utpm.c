@@ -92,7 +92,7 @@ TPM_RESULT utpm_init_master_entropy(uint8_t *aeskey,
 void utpm_init_instance(utpm_master_state_t *utpm) {
     if(NULL == utpm) return;
 
-    vmemset(utpm->pcr_bank, 0, TPM_PCR_SIZE*TPM_PCR_NUM); 
+    memset(utpm->pcr_bank, 0, TPM_PCR_SIZE*TPM_PCR_NUM); 
 
 }
 
@@ -103,7 +103,7 @@ TPM_RESULT utpm_pcrread(TPM_DIGEST* pcr_value /* output */,
     if(!pcr_value || !utpm) { return UTPM_ERR_BAD_PARAM; }
     if(pcr_num >= TPM_PCR_NUM)  { return UTPM_ERR_PCR_OUT_OF_RANGE; }
 
-	vmemcpy(pcr_value->value, utpm->pcr_bank[pcr_num].value, TPM_PCR_SIZE);
+	memcpy(pcr_value->value, utpm->pcr_bank[pcr_num].value, TPM_PCR_SIZE);
 	return UTPM_SUCCESS;
 }
 
@@ -143,7 +143,7 @@ static uint32_t utpm_internal_memcpy_TPM_PCR_SELECTION(
     *bytes_consumed = sizeof(pcrSelection->sizeOfSelect) + pcrSelection->sizeOfSelect;
     
     if(dest) {
-        vmemcpy(dest, pcrSelection, *bytes_consumed);
+        memcpy(dest, pcrSelection, *bytes_consumed);
     }
 
     return 0; /* success */
@@ -173,10 +173,10 @@ static uint32_t utpm_internal_memcpy_TPM_PCR_INFO(
         }
         /* If we're still here, copy two TPM_COMPOSITE_HASH values to dest. */
         else {            
-            vmemcpy(dest + *bytes_consumed, pcrInfo->digestAtRelease.value, TPM_HASH_SIZE);
+            memcpy(dest + *bytes_consumed, pcrInfo->digestAtRelease.value, TPM_HASH_SIZE);
             *bytes_consumed += TPM_HASH_SIZE;
             
-            vmemcpy(dest + *bytes_consumed, pcrInfo->digestAtCreation.value, TPM_HASH_SIZE);
+            memcpy(dest + *bytes_consumed, pcrInfo->digestAtCreation.value, TPM_HASH_SIZE);
             *bytes_consumed += TPM_HASH_SIZE;
         }
     }
@@ -256,7 +256,7 @@ static uint32_t utpm_internal_allocate_and_populate_current_TpmPcrComposite(
     /** Populate TPM_COMPOSITE buffer **/
     p = *tpm_pcr_composite;
     /* 1. TPM_PCR_COMPOSITE.select */ 
-    vmemcpy(p, tpmsel, sizeof(tpmsel->sizeOfSelect) + tpmsel->sizeOfSelect);
+    memcpy(p, tpmsel, sizeof(tpmsel->sizeOfSelect) + tpmsel->sizeOfSelect);
     p += sizeof(tpmsel->sizeOfSelect) + tpmsel->sizeOfSelect;
     /* 2. TPM_PCR_COMPOSITE.valueSize (big endian # of bytes (not # of PCRs)) */
     *((uint32_t*)p) = ntohl(num_pcrs_to_include*TPM_HASH_SIZE);
@@ -264,7 +264,7 @@ static uint32_t utpm_internal_allocate_and_populate_current_TpmPcrComposite(
     /* 3. TPM_PCR_COMPOSITE.pcrValue[] */
     for(i=0; i<TPM_PCR_NUM; i++) {
         if(utpm_pcr_is_selected(tpmsel, i)) {
-            vmemcpy(p, utpm->pcr_bank[i].value, TPM_HASH_SIZE);
+            memcpy(p, utpm->pcr_bank[i].value, TPM_HASH_SIZE);
             dprintf(LOG_TRACE, "  PCR-%d: ", i);
             print_hex(NULL, p, TPM_HASH_SIZE);
             p += TPM_HASH_SIZE;
@@ -398,7 +398,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
         dprintf(LOG_ERROR, "ERROR: rand_bytes FAILED\n");
         return UTPM_ERR_INSUFFICIENT_ENTROPY;
     }
-    vmemcpy(output, iv, TPM_AES_KEY_LEN_BYTES); /* Copy IV directly to output */
+    memcpy(output, iv, TPM_AES_KEY_LEN_BYTES); /* Copy IV directly to output */
     p += TPM_AES_KEY_LEN_BYTES; /* IV */
 
     print_hex("  iv: ", iv, TPM_AES_KEY_LEN_BYTES);
@@ -406,7 +406,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 	/* output = IV || AES-CBC(TPM_PCR_INFO (or 0x0000 if none selected) || input_len || input || PADDING) || HMAC( entire ciphertext including IV ) */
     /* 1a. TPM_PCR_SELECTION with 0 PCRs selected */
     if(0 == tpmPcrInfo_internal.pcrSelection.sizeOfSelect) { /* no PCRs selected */
-        vmemcpy(p, &tpmPcrInfo_internal.pcrSelection.sizeOfSelect,
+        memcpy(p, &tpmPcrInfo_internal.pcrSelection.sizeOfSelect,
                 sizeof(tpmPcrInfo_internal.pcrSelection.sizeOfSelect));
         print_hex(" tpmPcrInfo_internal.pcrSelection.sizeOfSelect: ", p,
                   sizeof(tpmPcrInfo_internal.pcrSelection.sizeOfSelect));
@@ -426,7 +426,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     print_hex(" inlen: ", p, sizeof(uint32_t));
     p += sizeof(uint32_t);
     /* 3. actual input data */
-	vmemcpy(p, input, inlen); 
+	memcpy(p, input, inlen); 
     print_hex(" input: ", p, inlen);
     p += inlen;
 
@@ -437,7 +437,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 	} else {
 		*outlen = outlen_beforepad;
 	}
-	vmemset(p, 0, *outlen-outlen_beforepad);
+	memset(p, 0, *outlen-outlen_beforepad);
     print_hex("padding: ", p, *outlen - outlen_beforepad);
     p += *outlen - outlen_beforepad;
     
@@ -507,8 +507,8 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
      * TPM_HASH_SIZE) bytes of the input and compare against provided
      * value. */
     HMAC_SHA1(g_hmackey, TPM_HASH_SIZE, input, inlen - TPM_HASH_SIZE, hmacCalculated);
-    if(vmemcmp(hmacCalculated, input + inlen - TPM_HASH_SIZE, TPM_HASH_SIZE)) {
-        dprintf(LOG_ERROR, "Unseal HMAC **INTEGRITY FAILURE**: vmemcmp(hmacCalculated, input + inlen - TPM_HASH_SIZE, TPM_HASH_SIZE)\n");
+    if(memcmp(hmacCalculated, input + inlen - TPM_HASH_SIZE, TPM_HASH_SIZE)) {
+        dprintf(LOG_ERROR, "Unseal HMAC **INTEGRITY FAILURE**: memcmp(hmacCalculated, input + inlen - TPM_HASH_SIZE, TPM_HASH_SIZE)\n");
         print_hex("  hmacCalculated: ", hmacCalculated, TPM_HASH_SIZE);
         print_hex("  input + inlen - TPM_HASH_SIZE:" , input + inlen - TPM_HASH_SIZE, TPM_HASH_SIZE);
         return 1;
@@ -561,7 +561,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
         /* 1a. Handle the simple case where no PCRs are involved */
         if(bytes_consumed_by_pcrInfo <= sizeof(unsealedPcrInfo.pcrSelection.sizeOfSelect)) {
             dprintf(LOG_TRACE, "  No PCRs selected.  No checking required.\n");
-            vmemset(digestAtCreation->value, 0, TPM_HASH_SIZE);
+            memset(digestAtCreation->value, 0, TPM_HASH_SIZE);
         }
         /* 1b. Verify that required PCR values match */
         else {            
@@ -583,15 +583,15 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
             sha1_buffer(currentPcrComposite, space_needed_for_composite, digestRightNow.value);
             print_hex("  digestRightNow: ", digestRightNow.value, TPM_HASH_SIZE);
             
-            if(0 != vmemcmp(digestRightNow.value, unsealedPcrInfo.digestAtRelease.value, TPM_HASH_SIZE)) {
-                dprintf(LOG_ERROR, "0 != vmemcmp(digestRightNow.value, unsealedPcrInfo.digestAtRelease.value, TPM_HASH_SIZE)\n");
+            if(0 != memcmp(digestRightNow.value, unsealedPcrInfo.digestAtRelease.value, TPM_HASH_SIZE)) {
+                dprintf(LOG_ERROR, "0 != memcmp(digestRightNow.value, unsealedPcrInfo.digestAtRelease.value, TPM_HASH_SIZE)\n");
                 rv = 1;
                 goto out;
             }
             
             dprintf(LOG_TRACE, "[TV:UTPM_UNSEAL] digestAtRelase MATCH; Unseal ALLOWED!\n");
             
-            vmemcpy(digestAtCreation->value, unsealedPcrInfo.digestAtCreation.value, TPM_HASH_SIZE);
+            memcpy(digestAtCreation->value, unsealedPcrInfo.digestAtCreation.value, TPM_HASH_SIZE);
         }
         /* 4. Reshuffle output buffer and strip padding so that only
          * the user's plaintext is returned. Buffer's contents: [
@@ -599,7 +599,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
 
         *outlen = *((uint32_t*)p);
         p += sizeof(uint32_t);
-        vmemcpy(output, p, *outlen);
+        memcpy(output, p, *outlen);
         
       out:
         if(currentPcrComposite) { vfree(currentPcrComposite); currentPcrComposite = NULL; }
@@ -621,7 +621,7 @@ TPM_RESULT utpm_seal_deprecated(uint8_t* pcrAtRelease, uint8_t* input, uint32_t 
     uint32_t confounder_size;
 
 	/* IV can be 0 because we have confounder */
-	vmemset(iv, 0, 16);
+	memset(iv, 0, 16);
 
 	/* get a random confounder */
     confounder_size = TPM_CONFOUNDER_SIZE;
@@ -634,12 +634,12 @@ TPM_RESULT utpm_seal_deprecated(uint8_t* pcrAtRelease, uint8_t* input, uint32_t 
 	/* output = 
 	 * AES-CBC(confounder || HMAC( entire message w/ zero HMAC field) || pcr || input_len || input || PADDING)
 	 * */
-	vmemcpy(output, confounder, TPM_CONFOUNDER_SIZE);
-	vmemset(output+TPM_CONFOUNDER_SIZE, 0, TPM_HASH_SIZE);
-	vmemcpy(output+TPM_CONFOUNDER_SIZE+TPM_HASH_SIZE, pcrAtRelease, TPM_PCR_SIZE); 
+	memcpy(output, confounder, TPM_CONFOUNDER_SIZE);
+	memset(output+TPM_CONFOUNDER_SIZE, 0, TPM_HASH_SIZE);
+	memcpy(output+TPM_CONFOUNDER_SIZE+TPM_HASH_SIZE, pcrAtRelease, TPM_PCR_SIZE); 
 	pdata = output + TPM_CONFOUNDER_SIZE + TPM_HASH_SIZE + TPM_PCR_SIZE;
 	*((uint32_t *)pdata) = inlen;
-	vmemcpy(pdata + 4, input, inlen);
+	memcpy(pdata + 4, input, inlen);
 
 	/* add padding */
 	outlen_beforepad = TPM_CONFOUNDER_SIZE + TPM_PCR_SIZE + TPM_HASH_SIZE + 4 + inlen ;
@@ -649,11 +649,11 @@ TPM_RESULT utpm_seal_deprecated(uint8_t* pcrAtRelease, uint8_t* input, uint32_t 
 		*outlen = outlen_beforepad;
 	}
 	len = (s32)(*outlen);
-	vmemset(output+outlen_beforepad, 0, len-outlen_beforepad);
+	memset(output+outlen_beforepad, 0, len-outlen_beforepad);
 
 	/* get HMAC of the entire message w/ zero HMAC field */
 	HMAC_SHA1(g_hmackey, 20, output, len, hashdata);
-	vmemcpy(output+TPM_CONFOUNDER_SIZE, hashdata, TPM_HASH_SIZE);
+	memcpy(output+TPM_CONFOUNDER_SIZE, hashdata, TPM_HASH_SIZE);
 	
 	/* encrypt data using sealAesKey by AES-CBC mode */
 	aes_setkey_enc(&ctx, g_aeskey, TPM_AES_KEY_LEN);
@@ -671,7 +671,7 @@ TPM_RESULT utpm_unseal_deprecated(utpm_master_state_t *utpm, uint8_t* input, uin
 	aes_context ctx;
 	int i;
 
-	vmemset(iv, 0, 16);
+	memset(iv, 0, 16);
 
 	/* decrypt data */
 	aes_setkey_dec(&ctx,g_aeskey, TPM_AES_KEY_LEN);
@@ -682,7 +682,7 @@ TPM_RESULT utpm_unseal_deprecated(utpm_master_state_t *utpm, uint8_t* input, uin
      * is the first thing inside the pcr_bank.  This is a Bad Thing.
      * Need to mature pcr_bank into an actual structure, teach
      * seal/unseal about identifying which PCRs to seal to, etc. */
-	if(vmemcmp(output+TPM_CONFOUNDER_SIZE+TPM_HASH_SIZE, utpm->pcr_bank[0].value, TPM_PCR_SIZE))
+	if(memcmp(output+TPM_CONFOUNDER_SIZE+TPM_HASH_SIZE, utpm->pcr_bank[0].value, TPM_PCR_SIZE))
 	{
 		printf("[TV] Unseal ERROR: wrong pcr value!\n");
 		printf("[TV] sealed pcr:");
@@ -698,21 +698,21 @@ TPM_RESULT utpm_unseal_deprecated(utpm_master_state_t *utpm, uint8_t* input, uin
 	}
 
 	/* copy hmac */ 
-	vmemcpy(oldhmac, output+TPM_CONFOUNDER_SIZE, TPM_HASH_SIZE);
+	memcpy(oldhmac, output+TPM_CONFOUNDER_SIZE, TPM_HASH_SIZE);
 
 	/* zero HMAC field, and recalculate hmac of the message */
-	vmemset(output+TPM_CONFOUNDER_SIZE, 0, TPM_HASH_SIZE);
+	memset(output+TPM_CONFOUNDER_SIZE, 0, TPM_HASH_SIZE);
 	HMAC_SHA1(g_hmackey, 20, output, inlen, hashdata);
 
 	/* compare the hmac */
-	if (vmemcmp(hashdata, oldhmac, TPM_HASH_SIZE))
+	if (memcmp(hashdata, oldhmac, TPM_HASH_SIZE))
 	{
 		printf("[TV] Unseal ERROR: HMAC check fail\n");
 		return 1;
 	}
 
 	len = *((uint32_t*)(output + TPM_CONFOUNDER_SIZE +TPM_PCR_SIZE + TPM_HASH_SIZE)); 
-	vmemcpy(output, output + TPM_CONFOUNDER_SIZE + TPM_PCR_SIZE + TPM_HASH_SIZE + 4, len);
+	memcpy(output, output + TPM_CONFOUNDER_SIZE + TPM_PCR_SIZE + TPM_HASH_SIZE + 4, len);
 	*outlen = len;
 
 	return 0;
@@ -766,7 +766,7 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
     /* FIXME: find a way to eliminate this extra copy; likely entails
      * changes to:
      * utpm_internal_allocate_and_populate_current_TpmPcrComposite */
-    vmemcpy(pcrComp, tpm_pcr_composite, *pcrCompLen);
+    memcpy(pcrComp, tpm_pcr_composite, *pcrCompLen);
     
     /**
      * Populate 4-element TPM_QUOTE_INFO structure which will be hashed and signed
@@ -780,7 +780,7 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
     sha1_buffer(tpm_pcr_composite, space_needed_for_composite, quote_info.digestValue.value);
     print_hex(" COMPOSITE_HASH: ", quote_info.digestValue.value, TPM_HASH_SIZE);
     /* 4) external nonce */
-    vmemcpy(quote_info.externalData.nonce, externalnonce->nonce, TPM_HASH_SIZE);
+    memcpy(quote_info.externalData.nonce, externalnonce->nonce, TPM_HASH_SIZE);
 
     print_hex(" quote_info: ", (uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO));
     
@@ -833,17 +833,17 @@ TPM_RESULT utpm_quote_deprecated(uint8_t* externalnonce, uint8_t* output, uint32
 	((uint32_t *)output)[1] = 0x544f5551; /* 'QUOTE' */
 
 	/* add TPM PCR information */
-	vmemcpy(output+8, tpmsel, tpmsel_len);
+	memcpy(output+8, tpmsel, tpmsel_len);
 	datalen = 8 + tpmsel_len;
 	pdata = output+datalen;
 	for( i=0 ; i<*((uint32_t *)tpmsel) ; i++ )  {
 		idx=*(((uint32_t *)tpmsel)+i+1);
-		vmemcpy(pdata+i*TPM_PCR_SIZE, utpm->pcr_bank[idx].value, TPM_PCR_SIZE);
+		memcpy(pdata+i*TPM_PCR_SIZE, utpm->pcr_bank[idx].value, TPM_PCR_SIZE);
 		datalen += TPM_PCR_SIZE;
 	}
 	
 	/* add nonce */
-	vmemcpy(output + datalen, externalnonce, TPM_NONCE_SIZE); 
+	memcpy(output + datalen, externalnonce, TPM_NONCE_SIZE); 
 	datalen += TPM_NONCE_SIZE;
 
 	/* sign the quoteInfo and add the signature to output 

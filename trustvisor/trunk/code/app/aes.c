@@ -618,7 +618,7 @@ void aes_setkey_dec( aes_context *ctx, unsigned char *key, int keysize )
     *RK++ = *SK++;
     *RK++ = *SK++;
 
-    vmemset(&cty, 0, sizeof( aes_context ) );
+    memset(&cty, 0, sizeof( aes_context ) );
 }
 
 #define AES_FROUND(X0,X1,X2,X3,Y0,Y1,Y2,Y3)     \
@@ -785,13 +785,13 @@ void aes_crypt_cbc( aes_context *ctx,
     {
         while( length > 0 )
         {
-            vmemcpy(temp, input, 16);
+            memcpy(temp, input, 16);
             aes_crypt_ecb( ctx, mode, input, output );
 
             for( i = 0; i < 16; i++ )
                 output[i] = (unsigned char)( output[i] ^ iv[i] );
 
-            vmemcpy( iv, temp, 16 );
+            memcpy( iv, temp, 16 );
 
             input  += 16;
             output += 16;
@@ -806,7 +806,7 @@ void aes_crypt_cbc( aes_context *ctx,
                 output[i] = (unsigned char)( input[i] ^ iv[i] );
 
             aes_crypt_ecb( ctx, mode, output, output );
-            vmemcpy(iv, output, 16);
+            memcpy(iv, output, 16);
 
             input  += 16;
             output += 16;

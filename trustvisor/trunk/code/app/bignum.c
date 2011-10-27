@@ -301,12 +301,12 @@ int mpi_read_string( mpi *X, int radix, char *s )
 
     if( radix == 16 )
     {
-        n = BITS_TO_LIMBS( vstrlen( s ) << 2 );
+        n = BITS_TO_LIMBS( strlen( s ) << 2 );
 
         MPI_CHK( mpi_grow( X, n ) );
         MPI_CHK( mpi_lset( X, 0 ) );
 
-        for( i = vstrlen( s ) - 1, j = 0; i >= 0; i--, j++ )
+        for( i = strlen( s ) - 1, j = 0; i >= 0; i--, j++ )
         {
             if( i == 0 && s[i] == '-' )
             {
@@ -322,7 +322,7 @@ int mpi_read_string( mpi *X, int radix, char *s )
     {
         MPI_CHK( mpi_lset( X, 0 ) );
 
-        for( i = 0; i < (int) vstrlen( s ); i++ )
+        for( i = 0; i < (int) strlen( s ); i++ )
         {
             if( i == 0 && s[i] == '-' )
             {

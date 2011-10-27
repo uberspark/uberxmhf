@@ -303,9 +303,9 @@ void init_scode(VCPU * vcpu)
 	scode_pfn_bitmap_2M = (unsigned short *)vmalloc(PFN_BITMAP_2M_LIMIT);
 	dprintf(LOG_TRACE, "[TV] alloc %dKB mem for pfn_bitmap_2M at %x!\n", (PFN_BITMAP_LIMIT/1024), (unsigned int)scode_pfn_bitmap_2M);
 
-	vmemset(whitelist, 0, WHITELIST_LIMIT); 
-	vmemset(scode_pfn_bitmap, 0, PFN_BITMAP_LIMIT);
-	vmemset(scode_pfn_bitmap_2M, 0, PFN_BITMAP_2M_LIMIT);
+	memset(whitelist, 0, WHITELIST_LIMIT); 
+	memset(scode_pfn_bitmap, 0, PFN_BITMAP_LIMIT);
+	memset(scode_pfn_bitmap_2M, 0, PFN_BITMAP_2M_LIMIT);
 
 	whitelist_size = 0;
 	whitelist_max = WHITELIST_LIMIT / sizeof(whitelist_entry_t);
@@ -319,7 +319,7 @@ void init_scode(VCPU * vcpu)
 			max = g_midtable[inum].cpu_lapic_id;
 	}
 	scode_curr = (int *)vmalloc((max+1)<<2);
-	vmemset(scode_curr, 0xFF, ((max+1)<<2));
+	memset(scode_curr, 0xFF, ((max+1)<<2));
 
 	/* init PRNG and long-term crypto keys */
 	if(trustvisor_master_crypto_init()) {
@@ -656,7 +656,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 		return 1;
 	}
 	whitelist_size ++;
-	vmemcpy(whitelist + i, &whitelist_new, sizeof(whitelist_entry_t));
+	memcpy(whitelist + i, &whitelist_new, sizeof(whitelist_entry_t));
 
 	/* 
 	 * reset performance counters
@@ -882,7 +882,7 @@ void memcpy_guest_to_guest(VCPU * vcpu, u32 src, u32 dst, u32 len)
 	//	printf("%x ", *(src_hvaddr+i));
 	//}
 	//printf("!\n");
-	vmemcpy(dst_hvaddr, src_hvaddr, len);
+	memcpy(dst_hvaddr, src_hvaddr, len);
 }
 
 u32 scode_marshall(VCPU * vcpu)
