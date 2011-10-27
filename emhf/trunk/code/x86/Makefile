@@ -84,24 +84,29 @@
 .PHONY: all
 all: app components common runtime sl init hypervisor-$(TARGET_HWPLATFORM).bin.gz
 
+.PHONY: app
 app: 
 	#make EMHFapp
 	mkdir -p $(APPOBJECTSDIR)
 	cd $(BASEDIR)/app && $(MAKE) -w all
 
+.PHONY: components
 components:
 	#EMHF memory protection component
 	cd components/emhf-memprot && $(MAKE) -w all
 
+.PHONY: common
 common:
 	#make libcommon first	
 	cd libcommon && $(MAKE) -w all
 	make -C ../libemhfutil
 
+.PHONY: runtime
 runtime: common app
 	#make runtime
 	cd runtime && $(MAKE) -w all
 
+.PHONY: sl
 sl: runtime 
 	#make sl
 	# Double-dollar-sign required to cause make to provide literal dollar sign to perl
@@ -110,6 +115,7 @@ sl: runtime
 	cd sl && $(MAKE) -w all \
 		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum ./runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
 
+.PHONY: init
 init: sl runtime common app
 	#make init	
 	cd init && $(MAKE) -w all \
