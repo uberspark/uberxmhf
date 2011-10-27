@@ -38,11 +38,8 @@
 
 #define HEAPMEM_POOLSIZE (4*(1<<20))
 
-#define malloc(z) safemalloc(z,1)
-#define free safefree
-
-void *safemalloc(size_t, size_t);
-void safefree(void *);
+void *malloc(size_t);
+void free(void *);
 
 void mem_init(void); 
 size_t heapmem_get_used_size(void);

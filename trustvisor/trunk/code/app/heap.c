@@ -55,28 +55,23 @@ size_t heapmem_get_used_size(void)
   return get_used_size(memory_pool);
 }
 
-void *safemalloc(size_t n, size_t size)
+void *malloc(size_t size)
 {
 	void *p;
     perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_SAFEMALLOC], 0/*FIXME*/);
 
-	if (n > INT_MAX / size) {
-		p = NULL;
-	} else {
-		size *= n;
-		p = tlsf_malloc(size);
-	}
+    p = tlsf_malloc(size);
 
     perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_SAFEMALLOC], 0/*FIXME*/);
     
 	if (!p) {
-        dprintf(LOG_ERROR, "safemalloc: allocation of size %d failed.", size);
-        return NULL;
+        dprintf(LOG_ERROR, "malloc: allocation of size %d failed.", size);
 	}
+
 	return p;
 }
 
-void safefree(void *ptr)
+void free(void *ptr)
 {
 	if (ptr) {
 		tlsf_free(ptr);
