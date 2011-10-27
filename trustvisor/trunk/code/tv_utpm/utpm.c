@@ -47,10 +47,13 @@
 #include <puttymem.h>
 #include <random.h>
 
-
+/* keys for software TPM seal, unseal and quote operations */
+/* SECURITY: these global variables are very sensitive! */
+/* FIXME: put all of these keys into a struct so that all long-term
+ * secrets are well-identified and therefore easy to wipe, etc. */
 uint8_t g_aeskey[TPM_AES_KEY_LEN_BYTES];
 uint8_t g_hmackey[TPM_HMAC_KEY_LEN];
-rsa_context *g_rsa = NULL;
+rsa_context g_rsa;
 
 /**
  * This function is expected to only be called once during the life of
@@ -69,7 +72,19 @@ TPM_RESULT utpm_init_master_entropy(uint8_t *aeskey,
     }
     memcpy(g_aeskey, aeskey, TPM_AES_KEY_LEN_BYTES);
     memcpy(g_hmackey, hmackey, TPM_HMAC_KEY_LEN);
-    g_rsa = rsa; /* TODO: Free this ever? */
+    /* Note: This is intentionally a shallow copy.  The rsa_context
+     * likely contains data structures allocated on the heap.  This
+     * strucure is never freed during the life of the system, and is a
+     * memory leak in principle, but irrelevant in practice since
+     * there is currently no reason to ever free it.
+     *
+     * TODO: zero & free this before any dynamic unloading of the
+     * hypervisor.
+     *
+     * NB: userspace testing of this uTPM may reveal the leak and lead
+     * to earlier implementation of some kind of free()ing behavior.
+     */
+    memcpy(&g_rsa, rsa, sizeof(rsa_context));
 
     return UTPM_SUCCESS;
 }
@@ -784,7 +799,7 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
     *outlen = TPM_RSA_KEY_LEN;
     dprintf(LOG_TRACE, "required output size = *outlen = %d\n", *outlen);
 
-	if ((rv = tpm_pkcs1_sign(g_rsa,
+	if ((rv = tpm_pkcs1_sign(&g_rsa,
                              sizeof(TPM_QUOTE_INFO),
                              (uint8_t*)&quote_info,
                              output)) != 0) {
@@ -834,7 +849,7 @@ TPM_RESULT utpm_quote_deprecated(uint8_t* externalnonce, uint8_t* output, uint32
 	/* sign the quoteInfo and add the signature to output 
 	 * get the outlen
 	 */
-	if (0 != (ret = tpm_pkcs1_sign(g_rsa, datalen, output, (output + datalen)))) {
+	if (0 != (ret = tpm_pkcs1_sign(&g_rsa, datalen, output, (output + datalen)))) {
 		printf("[TV] Quote ERROR: rsa sign fail\n");
 		return 1;
 	}
@@ -854,7 +869,7 @@ TPM_RESULT utpm_id_getpub(uint8_t *N, uint32_t *len) {
 
     /* assume N is big enough and do the work */
 	/* Must use MPI export function to get big endian N */
-	if(mpi_write_binary(&g_rsa->N, N, TPM_RSA_KEY_LEN) != 0) {
+	if(mpi_write_binary(&g_rsa.N, N, TPM_RSA_KEY_LEN) != 0) {
         dprintf(LOG_ERROR, "mpi_write_binary ERROR\n");
         return UTPM_ERR_BAD_PARAM;
 	}

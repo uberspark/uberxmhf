@@ -54,24 +54,12 @@
 #define COMPILE_TIME_ASSERT(pred) \
     switch(0){case 0:case pred:;}
 
-
-/* SECURITY: these global variables are very sensitive! */
 /* FIXME: make them static (i.e., only inside this file) */
-
-/* keys for software TPM seal, unseal and quote operations */
-/* only initialized during bootstrap time, no need to apply a lock on it */
-/* FIXME: put all of these keys into a struct so that all long-term
- * secrets are well-identified and therefore easy to wipe, etc. */
-/* extern */ u8 g_aeskey[TPM_AES_KEY_LEN/8];
-/* extern */ u8 g_hmackey[TPM_HMAC_KEY_LEN];
-/* extern */ rsa_context g_rsa;
-
 /* extern */ bool g_master_prng_init_completed = false;
 /* extern */ bool g_master_crypto_init_completed = false;
 
 /* XXX FIXME: needs spinlock protection in MP mode */
 /* extern */ NIST_CTR_DRBG g_drbg; 
-
 
 /* Don't want to get optimized out. */
 void zeroize(uint8_t* _p, unsigned int len) {    
@@ -216,10 +204,12 @@ static int trustvisor_long_term_secret_init(void) {
 	/* The actual AES key is smaller than this, so we need a temporary
 	 * buffer. */
 	uint8_t aeskey_temp[HW_TPM_MASTER_SEALING_SECRET_SIZE];
+	uint8_t hmackey_temp[HW_TPM_MASTER_SEALING_SECRET_SIZE];
 	const uint8_t sealingaes[10] = {0x73, 0x65, 0x61, 0x6c, 0x69, 0x6e,
 																	0x67, 0x61, 0x65, 0x73};
 	const uint8_t sealinghmac[11] = {0x73, 0x65, 0x61, 0x6c, 0x69, 0x6e,
 																	 0x67,	0x68, 0x6d, 0x61, 0x63};
+    rsa_context rsa;
 	
   ASSERT(true == g_master_prng_init_completed);
 
@@ -230,21 +220,27 @@ static int trustvisor_long_term_secret_init(void) {
 	if(0 != rv) {
         dprintf(LOG_ERROR, "\nFATAL ERROR: %s FAILED (%d).\n",
                 __FUNCTION__, rv);
-        goto out;
+        /* TODO: Support degraded operation during development. */
+        /* XXX SECURITY XXX: continuing anyways for now */
+        //ASSERT(false);
+		dprintf(LOG_ERROR, "\n[TV] %s: \n\n"
+						"VULNERABILITY:VULNERABILITY:VULNERABILITY:VULNERABILITY\n"
+						"   Reading / initializing master sealing secret FAILED!!\n"
+						"   Continuing anyways...\n"
+						"VULNERABILITY:VULNERABILITY:VULNERABILITY:VULNERABILITY\n\n",
+                __FUNCTION__);
 	}
 
-	ASSERT(HW_TPM_MASTER_SEALING_SECRET_SIZE == SHA1_RESULTLEN);
-	/* g_aeskey and g_hmackey are identical for different PALs, so that
-	 * we can seal data from one PAL to another PAL */
+	COMPILE_TIME_ASSERT(HW_TPM_MASTER_SEALING_SECRET_SIZE == SHA1_RESULTLEN);
+
+    /* Derive encryption and MAC keys for sealed storage */
 	HMAC_SHA1(mss, HW_TPM_MASTER_SEALING_SECRET_SIZE,
 						sealingaes, sizeof(sealingaes),
-						g_hmackey);
+						hmackey_temp);
 	HMAC_SHA1(mss, HW_TPM_MASTER_SEALING_SECRET_SIZE,
 						sealinghmac, sizeof(sealinghmac),
 						aeskey_temp);
-	ASSERT(TPM_AES_KEY_LEN_BYTES < HW_TPM_MASTER_SEALING_SECRET_SIZE);
-	memcpy(g_aeskey, aeskey_temp, TPM_AES_KEY_LEN>>3);
-	memset(aeskey_temp, 0, HW_TPM_MASTER_SEALING_SECRET_SIZE);
+	ASSERT(TPM_AES_KEY_LEN_BYTES <= HW_TPM_MASTER_SEALING_SECRET_SIZE);
 	
 	dprintf(LOG_TRACE, "\n[TV] Sealing AES key derived from MSS.");
 	dprintf(LOG_TRACE, "\n[TV] Sealing HMAC key derived from MSS.");
@@ -254,24 +250,45 @@ static int trustvisor_long_term_secret_init(void) {
 	/* print_hex("XXX g_aeskey:  ", g_aeskey, (TPM_AES_KEY_LEN>>3)); */
 	/* print_hex("XXX g_hmackey: ", g_hmackey, 20); */
 
-	memset(mss, 0, HW_TPM_MASTER_SEALING_SECRET_SIZE);
     
-  out:	
-	/* init RSA key required in uTPM Quote */
+	/* Initialize RSA key required in uTPM Quote */
 	/* FIXME: Having a single key here is a privacy-invading,
 	 * session-linkable, PAL-linkable hack to get things off the
 	 * ground. */
-	rsa_init(&g_rsa, RSA_PKCS_V15, RSA_SHA1);
-	if(0 != rsa_gen_key(&g_rsa, (TPM_RSA_KEY_LEN<<3), 65537)) {
-			return 1;
+	dprintf(LOG_TRACE, "\n[TV] Generating RSA keypair...");
+	rsa_init(&rsa, RSA_PKCS_V15, RSA_SHA1);
+	if(0 != rsa_gen_key(&rsa, (TPM_RSA_KEY_LEN<<3), 65537)) {
+        dprintf(LOG_ERROR, "FAILED!!!!! System halted.");
+        /* This is unrecoverable! */
+        HALT();
+        /* If someday, somebody decides to keep things going during
+        development or debugging, don't forget that we MUST zero
+        sensitive keys upon failure. */
+        rv = 1;
+        goto cleanup;
 	}
 	dprintf(LOG_TRACE, "\n[TV] RSA key pair generated!");
 
+    if(UTPM_SUCCESS != utpm_init_master_entropy(aeskey_temp, hmackey_temp, &rsa)) {
+        dprintf(LOG_ERROR, "utpm_init_master_entropy() FAILED!!!!! System halted.");
+        HALT();
+        /* same story as above. */
+        rv = 1;
+        goto cleanup;
+    }
+
+  cleanup:
+	memset(mss, 0, HW_TPM_MASTER_SEALING_SECRET_SIZE);
+	memset(aeskey_temp, 0, HW_TPM_MASTER_SEALING_SECRET_SIZE);
+	memset(hmackey_temp, 0, HW_TPM_MASTER_SEALING_SECRET_SIZE);
     /* Measure the Identity key used to sign Micro-TPM Quotes. */
     /* prefer not to depend on the globals */
-    if(0 != (rv = trustvisor_measure_qnd_bridge_signing_pubkey(&g_rsa))) {
+    if(0 != (rv = trustvisor_measure_qnd_bridge_signing_pubkey(&rsa))) {
         dprintf(LOG_ERROR, "\n[TV] trustvisor_long_term_secret_init FAILED with rv %d!!!!\n", rv);
     }
+    /* Intentionally not a proper free. Responsibility for this
+     * structure has been transferred to the utpm implementation. */
+    memset(&rsa, 0, sizeof(rsa_context));
 
 	return rv;
 }
