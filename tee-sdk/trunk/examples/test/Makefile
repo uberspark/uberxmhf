@@ -4,12 +4,12 @@
 # $< the name of the related file that caused the action.
 # $* the prefix shared by target and dependent files. 
 
-#TESTS=-DTEST_VMMCALL -DTEST_WITHOUTPARAM -DTEST_PARAM -DTEST_SEAL -DTEST_LTSEAL -DTEST_QUOTE -DTEST_PCR_EXTEND -DTEST_PCR_READ -DTEST_RAND -DTEST_TIME -DTEST_NV_ROLLBACK
-TESTS=-DTEST_NV_ROLLBACK
+TESTS=-DTEST_VMMCALL -DTEST_WITHOUTPARAM -DTEST_PARAM -DTEST_SEAL -DTEST_LTSEAL -DTEST_QUOTE -DTEST_PCR_EXTEND -DTEST_PCR_READ -DTEST_RAND -DTEST_TIME -DTEST_NV_ROLLBACK
+#TESTS=-DTEST_NV_ROLLBACK
 
 # Set to 1 to use 'null' backend and test in userspace
 # Set to 0 to use TrustVisor backend and run 'for real'
-DO_USERSPACE_ONLY=1
+DO_USERSPACE_ONLY=0
 
 PROG_NAME=test
 CFLAGS=-g -Wall -Wextra -Werror
@@ -30,7 +30,8 @@ PAL_PKGCONFIG_DEPS=tee-sdk-svc $(PAL_BACKEND)
 PAL_OBJS=pals.o
 PAL_CFLAGS=-Wall -Wextra -Werror
 
-all: $(PROG_NAME)
+.PHONY: all
+all: $(PROG_NAME) Makefile
 
 .PHONY: clean
 clean:
