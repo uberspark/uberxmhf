@@ -169,7 +169,11 @@ inline hpt_prot_t emhf_memprot_pagemapentry_getprot(hpt_type_t t, int lvl, hpt_p
 
 //----------------------------------------------------------------------
 //verification driver function
-
+//invoked using:
+//cbmc emhf-memprot.c 
+//-I<emhfcore>/trunk/code/x86/include -D__EMHF_VERIFICATION__ -D__NESTED_PAGING__ 
+//--bounds-check --pointer-check
+//where <emhfcore> is where the emhf repo is checked out
 void main() {
 
 }
