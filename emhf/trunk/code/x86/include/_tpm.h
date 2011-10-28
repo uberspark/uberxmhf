@@ -75,7 +75,7 @@
 #define TPM_LOCALITY_BASE             0xfed40000
 #define NR_TPM_LOCALITY_PAGES         ((TPM_LOCALITY_1 - TPM_LOCALITY_0) >> \
                                        PAGE_SHIFT)
-
+	
 #define TPM_LOCALITY_0                TPM_LOCALITY_BASE
 #define TPM_LOCALITY_1                (TPM_LOCALITY_BASE | 0x1000)
 #define TPM_LOCALITY_2                (TPM_LOCALITY_BASE | 0x2000)
@@ -332,6 +332,7 @@ extern void hashandprint(const char* prefix, const u8 *bytes, size_t len);
 /* #define readb(va)       (*(volatile uint8_t *) (va)) */
 /* #define writeb(va, d)   (*(volatile uint8_t *) (va) = (d)) */
 
+#ifndef __EMHF_VERIFICATION__
 static inline void writeb(u32 addr, u8 val) {
     __asm__ __volatile__("movb %%al, %%fs:(%%ebx)\r\n"
                          :
@@ -348,7 +349,7 @@ static inline u8 readb(u32 addr) {
                        );
     return (u8)ret;        
 }
-
+#endif	//__EMHF_VERIFICATION__
 
 /*
  * the following inline function reversely copy the bytes from 'in' to
