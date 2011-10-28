@@ -42,6 +42,8 @@
 // initialize memory protection structures for a given core (vcpu)
 void emhf_memprot_initialize(VCPU *vcpu){
 	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+
+/*
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
 		emhf_memprot_arch_svm_initialize(vcpu);
 		printf("\nCPU(0x%02x): Activated SVM NPTs.", vcpu->id);
@@ -49,43 +51,53 @@ void emhf_memprot_initialize(VCPU *vcpu){
 		emhf_memprot_arch_vmx_initialize(vcpu);
 		printf("\nCPU(0x%02x): Activated VMX EPTs.", vcpu->id);
 	}
+*/
+
 }
 
 // get level-1 page map address
 inline hpt_pme_t* emhf_memprot_get_lvl1_pagemap_address(VCPU *vcpu){
 	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
-	if (vcpu->cpu_vendor == CPU_VENDOR_AMD)
+/*	if (vcpu->cpu_vendor == CPU_VENDOR_AMD)
 		return (hpt_pme_t*)vcpu->npt_vaddr_pts;
 	else //CPU_VENDOR_INTEL
 		return (hpt_pme_t*)vcpu->vmx_vaddr_ept_p_tables;
+*/
+
+	return (hpt_pme_t*)0;
 }
 
 //get level-2 page map address
 inline hpt_pme_t* emhf_memprot_get_lvl2_pagemap_address(VCPU *vcpu){
 	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
-	if (vcpu->cpu_vendor == CPU_VENDOR_AMD)
+/*	if (vcpu->cpu_vendor == CPU_VENDOR_AMD)
 		return (hpt_pme_t*)vcpu->npt_vaddr_pdts;
 	else //CPU_VENDOR_INTEL
 		return (hpt_pme_t*)vcpu->vmx_vaddr_ept_pd_tables;
+*/
+	return (hpt_pme_t*)0;
 }
 
 //get level-3 page map address
 inline hpt_pme_t* emhf_memprot_get_lvl3_pagemap_address(VCPU *vcpu){
 	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
-	if (vcpu->cpu_vendor == CPU_VENDOR_AMD)
+/*	if (vcpu->cpu_vendor == CPU_VENDOR_AMD)
 		return (hpt_pme_t*)vcpu->npt_vaddr_ptr;
 	else //CPU_VENDOR_INTEL
-		return (hpt_pme_t*)vcpu->vmx_vaddr_ept_pdp_table;
+		return (hpt_pme_t*)vcpu->vmx_vaddr_ept_pdp_table;*/
+		
+	return (hpt_pme_t*)0;
 }
 
 //get level-4 page map address
 inline hpt_pme_t* emhf_memprot_get_lvl4_pagemap_address(VCPU *vcpu){
 	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_INTEL);	//we don;t have a level-4 pagemap for AMD
 
-    return (hpt_pme_t*)vcpu->vmx_vaddr_ept_pml4_table;
+    /*return (hpt_pme_t*)vcpu->vmx_vaddr_ept_pml4_table;*/
+    return (hpt_pme_t*)0;
 }
 
 //set protection for a given page map entry
@@ -94,7 +106,7 @@ inline hpt_pme_t emhf_memprot_pagemapentry_setprot(hpt_type_t t, int lvl, hpt_pm
 	ASSERT(hpt_lvl_is_valid(t, lvl));
 	ASSERT(hpt_prot_is_valid(t, lvl, perms));
 
-	if (t == HPT_TYPE_NORM) {
+	/*if (t == HPT_TYPE_NORM) {
 		rv = BR64_SET_BIT(rv, HPT_NORM_P_L21_MP_BIT, perms & HPT_PROT_READ_MASK);
 		rv = BR64_SET_BIT(rv, HPT_NORM_RW_L21_MP_BIT, perms & HPT_PROT_WRITE_MASK);
 	} else if (t == HPT_TYPE_PAE) {
@@ -111,7 +123,7 @@ inline hpt_pme_t emhf_memprot_pagemapentry_setprot(hpt_type_t t, int lvl, hpt_pm
 		rv = BR64_SET_BR(rv, HPT_EPT_PROT_L4321_MP, perms);
 	} else {
 		ASSERT(0);
-	}
+	}*/
 
 	return rv;	
 }
@@ -119,10 +131,10 @@ inline hpt_pme_t emhf_memprot_pagemapentry_setprot(hpt_type_t t, int lvl, hpt_pm
 //get protection for a given page map entry
 inline hpt_prot_t emhf_memprot_pagemapentry_getprot(hpt_type_t t, int lvl, hpt_pme_t entry){
 	hpt_prot_t rv=HPT_PROTS_NONE;
-	bool r,w,x;
+	//bool r,w,x;
 	ASSERT(hpt_lvl_is_valid(t, lvl));
 
-	if (t == HPT_TYPE_NORM) {
+	/*if (t == HPT_TYPE_NORM) {
 		r= entry & MASKBIT64(HPT_NORM_P_L21_MP_BIT);
 		w= entry & MASKBIT64(HPT_NORM_RW_L21_MP_BIT);
 		x= r;
@@ -150,7 +162,7 @@ inline hpt_prot_t emhf_memprot_pagemapentry_getprot(hpt_type_t t, int lvl, hpt_p
 	rv = HPT_PROTS_NONE;
 	rv = rv | (r ? HPT_PROT_READ_MASK : 0);
 	rv = rv | (w ? HPT_PROT_WRITE_MASK : 0);
-	rv = rv | (x ? HPT_PROT_EXEC_MASK : 0);
+	rv = rv | (x ? HPT_PROT_EXEC_MASK : 0);*/
 
 	return rv;
 }
