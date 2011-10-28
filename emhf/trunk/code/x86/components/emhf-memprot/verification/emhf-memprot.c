@@ -41,6 +41,9 @@
 
 #define	CONST_LVL1_PAGEMAP_ADDRESS	0x00400000
 
+#define CONST_EMHF_START_ADDRESS	0x00200000
+#define CONST_EMHF_END_ADDRESS		0x00800000
+
 // initialize memory protection structures for a given core (vcpu)
 void emhf_memprot_initialize(VCPU *vcpu){
 	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
@@ -180,7 +183,8 @@ void main() {
 	VCPU vcpu;
 	u32 gpa=0, pfn;
 	u64 *pt = emhf_memprot_get_lvl1_pagemap_address(&vcpu);
-	
+
+	assert( !(gpa >= CONST_EMHF_START_ADDRESS && gpa < CONST_EMHF_END_ADDRESS) );
 	pfn = gpa >> 12;
 	//emhf_memprot_pagemapentry_setprot needs to return a non-NULL
 	//value else cbmc barfs:
@@ -188,7 +192,7 @@ void main() {
 	//file emhf-memprot.c line 148 function main
 	//dereference failure: NULL plus offset pointer
 	// !(SAME-OBJECT(pt, NULL))
-
+	
 	pt[pfn] = emhf_memprot_pagemapentry_setprot(HPT_TYPE_PAE, 1, pt[pfn], HPT_PROTS_R);
 }
 //----------------------------------------------------------------------
