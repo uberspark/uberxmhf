@@ -39,6 +39,8 @@
 
 #include <emhf.h> 
 
+#define	CONST_LVL1_PAGEMAP_ADDRESS	0x00400000
+
 // initialize memory protection structures for a given core (vcpu)
 void emhf_memprot_initialize(VCPU *vcpu){
 	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
@@ -65,7 +67,7 @@ inline hpt_pme_t* emhf_memprot_get_lvl1_pagemap_address(VCPU *vcpu){
 		return (hpt_pme_t*)vcpu->vmx_vaddr_ept_p_tables;
 */
 
-	return (hpt_pme_t*)0;
+	return (hpt_pme_t*)CONST_LVL1_PAGEMAP_ADDRESS;
 }
 
 //get level-2 page map address
