@@ -166,3 +166,11 @@ inline hpt_prot_t emhf_memprot_pagemapentry_getprot(hpt_type_t t, int lvl, hpt_p
 
 	return rv;
 }
+
+//----------------------------------------------------------------------
+//verification driver function
+
+void main() {
+
+}
+//----------------------------------------------------------------------
