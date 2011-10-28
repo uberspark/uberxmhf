@@ -180,6 +180,13 @@ void main() {
 	u64 *pt = emhf_memprot_get_lvl1_pagemap_address(&vcpu);
 	
 	pfn = gpa >> 12;
+	//emhf_memprot_pagemapentry_setprot needs to return a non-NULL
+	//value else cbmc barfs:
+	//Violated property:
+	//file emhf-memprot.c line 148 function main
+	//dereference failure: NULL plus offset pointer
+	// !(SAME-OBJECT(pt, NULL))
+
 	pt[pfn] = emhf_memprot_pagemapentry_setprot(HPT_TYPE_PAE, 1, pt[pfn], HPT_PROTS_R);
 }
 //----------------------------------------------------------------------
