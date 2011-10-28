@@ -175,6 +175,11 @@ inline hpt_prot_t emhf_memprot_pagemapentry_getprot(hpt_type_t t, int lvl, hpt_p
 //--bounds-check --pointer-check
 //where <emhfcore> is where the emhf repo is checked out
 void main() {
-
+	VCPU vcpu;
+	u32 gpa=0, pfn;
+	u64 *pt = emhf_memprot_get_lvl1_pagemap_address(&vcpu);
+	
+	pfn = gpa >> 12;
+	pt[pfn] = emhf_memprot_pagemapentry_setprot(HPT_TYPE_PAE, 1, pt[pfn], HPT_PROTS_R);
 }
 //----------------------------------------------------------------------
