@@ -8,7 +8,7 @@ C_SOURCES = sl.c
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
-OBJECTS_PRECOMPILED = ../libcommon/mpsup.o ../libcommon/string.o ../libcommon/tpm.o ../libcommon/tpm_emhf.o ../libcommon/pci.o ../libcommon/acpi.o ../libcommon/svm_eap.o ../libcommon/vmx_eap.o ../libcommon/txt_mtrrs.o
+OBJECTS_PRECOMPILED = ../libcommon/mpsup.o ../libcommon/tpm.o ../libcommon/tpm_emhf.o ../libcommon/pci.o ../libcommon/acpi.o ../libcommon/svm_eap.o ../libcommon/vmx_eap.o ../libcommon/txt_mtrrs.o ../../libemhfc/libemhfc.a
 
 # FIXME: This is a hack.  During build-process refactoring, do
 # something more sensible to pickup all in-tree library

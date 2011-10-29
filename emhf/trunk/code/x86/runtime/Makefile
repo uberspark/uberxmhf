@@ -21,6 +21,7 @@ OBJECTS_PRECOMPILED += $(wildcard $(APPOBJECTSDIR)/*.a)
 
 ### Bring in libemhfutil
 OBJECTS_PRECOMPILED += $(wildcard $(EMHFUTIL_OBJECTSDIR)/*.o)
+OBJECTS_PRECOMPILED += $(EMHFUTIL_OBJECTSDIR)/../libemhfc/libemhfc.a
 
 ### Bring in libcommon/*.o so that App's (e.g., TrustVisor) can use them
 # WARNING: if both Serial & VGA are enabled, you actually get neither. 
