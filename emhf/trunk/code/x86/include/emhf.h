@@ -42,10 +42,12 @@
 #define __EMHF_H_
 
 //---includes for the target----------------------------------------------------
+#ifndef __ASSEMBLY__
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
+#endif /* __ASSEMBLY__ */
 #include <_types.h>      //needs to die!!!
 #include <_ctype.h>		//the ctype variable definition for debug printf
 #include <_com.h>		//serial UART as debugging backend
