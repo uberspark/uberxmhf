@@ -71,12 +71,12 @@
  * $FreeBSD: stable/8/sys/i386/include/_types.h 199583 2009-11-20 15:27:52Z jhb $
  */
 
+/**
+ * Modified for EMHF to remove cdefs.h requirement.
+ */
+
 #ifndef _MACHINE__TYPES_H_
 #define _MACHINE__TYPES_H_
-
-#ifndef _SYS_CDEFS_H_
-#error this file needs sys/cdefs.h as a prerequisite
-#endif
 
 #define __NO_STRICT_ALIGNMENT
 
@@ -90,20 +90,10 @@ typedef unsigned short          __uint16_t;
 typedef int                     __int32_t;
 typedef unsigned int            __uint32_t;
 
-#if defined(lint)
 /* LONGLONG */
 typedef long long               __int64_t;
 /* LONGLONG */
 typedef unsigned long long      __uint64_t;
-#elif defined(__GNUCLIKE_ATTRIBUTE_MODE_DI)
-typedef int __attribute__((__mode__(__DI__)))           __int64_t;
-typedef unsigned int __attribute__((__mode__(__DI__)))  __uint64_t;
-#else
-/* LONGLONG */
-typedef long long               __int64_t;
-/* LONGLONG */
-typedef unsigned long long      __uint64_t;
-#endif
 
 /*
  * Standard type definitions.
@@ -142,28 +132,7 @@ typedef __uint16_t      __uint_least16_t;
 typedef __uint32_t      __uint_least32_t;
 typedef __uint64_t      __uint_least64_t;
 typedef __uint32_t      __u_register_t;
-typedef __uint32_t      __vm_offset_t;
-typedef __int64_t       __vm_ooffset_t;
-#ifdef PAE
-typedef __uint64_t      __vm_paddr_t;
-#else
-typedef __uint32_t      __vm_paddr_t;
-#endif
-typedef __uint64_t      __vm_pindex_t;
-typedef __uint32_t      __vm_size_t;
 
-/*
- * Unusual type definitions.
- */
-#ifdef __GNUCLIKE_BUILTIN_VARARGS
-typedef __builtin_va_list       __va_list;      /* internally known to gcc */
-#else
-typedef char *                  __va_list;
-#endif /* __GNUCLIKE_BUILTIN_VARARGS */
-#if defined(__GNUC_VA_LIST_COMPATIBILITY) && !defined(__GNUC_VA_LIST) \
-    && !defined(__NO_GNUC_VA_LIST)
-#define __GNUC_VA_LIST
-typedef __va_list               __gnuc_va_list; /* compatibility w/GNU headers*/
-#endif
+/* varargs stuff removed */
 
 #endif /* !_MACHINE__TYPES_H_ */

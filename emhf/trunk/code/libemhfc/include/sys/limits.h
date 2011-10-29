@@ -65,15 +65,13 @@
  * $FreeBSD: stable/8/sys/i386/include/limits.h 199583 2009-11-20 15:27:52Z jhb $
  */
 
+/**
+  * Modified for EMHF.
+  */
+
 #ifndef _MACHINE_LIMITS_H_
 #define _MACHINE_LIMITS_H_
 
-#include <sys/cdefs.h>
-
-#ifdef __CC_SUPPORTS_WARNING
-#warning "machine/limits.h is deprecated.  Include sys/limits.h instead."
-#endif
-
-#include <sys/limits.h>
+#include <sys/i386_limits.h>
 
 #endif /* !_MACHINE_LIMITS_H_ */
