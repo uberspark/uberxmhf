@@ -10,7 +10,7 @@ OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 
-CFLAGS += -I./include
+CFLAGS += -I./include -I../libemhfc/include
 
 # targets
 .PHONY: all

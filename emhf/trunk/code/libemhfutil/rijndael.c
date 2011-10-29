@@ -63,7 +63,6 @@
 
 //#include <sys/param.h>
 //#include <sys/systm.h>
-typedef unsigned char u_char;
 
 #include <emhf.h> 
 
