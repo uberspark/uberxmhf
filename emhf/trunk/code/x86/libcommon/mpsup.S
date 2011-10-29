@@ -36,7 +36,8 @@
 // multi-processor support routines
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <emhf.h> 
+//Appears to be no reason to include this header here? -Jon
+//#include <emhf.h> 
 
 //---spinlock/unlock------------------------------------------------------------
 .section .text
