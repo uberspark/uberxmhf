@@ -50,7 +50,7 @@
 #ifndef BITFIELD_H
 #define BITFIELD_H
 
-#include "_types.h"
+#include <stdint.h>
 #include "_error.h"
 
 static inline u64 ZERO_HI64(u64 x, int bits)

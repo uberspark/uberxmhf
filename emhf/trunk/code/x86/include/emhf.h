@@ -45,7 +45,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
-//#include <_types.h>      //always comes first
+#include <string.h>
+#include <_types.h>      //needs to die!!!
 #include <_ctype.h>		//the ctype variable definition for debug printf
 #include <_com.h>		//serial UART as debugging backend
 #include <_print.h>      //early chance to disable/enable debug printfs
@@ -73,7 +74,7 @@
 
 //language specifics
 #include <_sarg.h>
-#include <_str.h>
+//#include <_str.h>
 #include <_div64.h>
 
 #include <_perf.h>			//performance measurement routines
