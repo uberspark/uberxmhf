@@ -61,13 +61,15 @@
  * $FreeBSD: stable/8/sys/sys/stdint.h 199583 2009-11-20 15:27:52Z jhb $
  */
 
+/**
+ * Modified for EMHF.
+ */
+
 #ifndef _SYS_STDINT_H_
 #define _SYS_STDINT_H_
 
-#include <sys/cdefs.h>
-#include <sys/_types.h>
-
-#include <machine/_stdint.h>
+#include <sys/i386_types.h>
+#include <sys/i386_stdint.h>
 
 #ifndef _INT8_T_DECLARED
 typedef __int8_t                int8_t;

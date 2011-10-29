@@ -61,12 +61,15 @@
  * $FreeBSD: stable/8/sys/sys/endian.h 199583 2009-11-20 15:27:52Z jhb $
  */
 
+/**
+ * Modified for EMHF.
+ */
+
 #ifndef _SYS_ENDIAN_H_
 #define _SYS_ENDIAN_H_
 
-#include <sys/cdefs.h>
-#include <sys/_types.h>
-#include <machine/endian.h>
+#include <sys/i386_types.h>
+#include <sys/endian.h>
 
 #ifndef _UINT16_T_DECLARED
 typedef __uint16_t      uint16_t;

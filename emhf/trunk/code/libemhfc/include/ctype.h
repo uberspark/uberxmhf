@@ -69,10 +69,12 @@
  * $FreeBSD: stable/8/sys/sys/ctype.h 199583 2009-11-20 15:27:52Z jhb $
  */
 
+/**
+ * Modified for EMHF.
+ */
+
 #ifndef _SYS_CTYPE_H_
 #define _SYS_CTYPE_H_
-
-#ifdef _KERNEL
 
 #define isspace(c)      ((c) == ' ' || ((c) >= '\t' && (c) <= '\r'))
 #define isascii(c)      (((c) & ~0x7f) == 0)
@@ -88,5 +90,4 @@
 #define toupper(c)      ((c) - 0x20 * (((c) >= 'a') && ((c) <= 'z')))
 #define tolower(c)      ((c) + 0x20 * (((c) >= 'A') && ((c) <= 'Z')))
 
-#endif
 #endif /* !_SYS_CTYPE_H_ */

@@ -64,9 +64,8 @@
 #ifndef _SYS_STDDEF_H_
 #define _SYS_STDDEF_H_
 
-#include <sys/cdefs.h>
 #include <sys/_null.h>
-#include <machine/_types.h>
+#include <sys/i386_types.h>
 
 typedef __ptrdiff_t     ptrdiff_t;
 

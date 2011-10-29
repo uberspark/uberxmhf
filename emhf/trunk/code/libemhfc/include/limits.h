@@ -64,11 +64,14 @@
  * $FreeBSD: stable/8/sys/sys/limits.h 219757 2011-03-18 22:35:48Z jilles $
  */
 
+/**
+ * Modified for EMHF.
+ */
+
 #ifndef _SYS_LIMITS_H_
 #define _SYS_LIMITS_H_
 
-#include <sys/cdefs.h>
-#include <machine/_limits.h>
+#include <sys/i386_limits.h>
 
 #define CHAR_BIT        __CHAR_BIT      /* number of bits in a char */
 

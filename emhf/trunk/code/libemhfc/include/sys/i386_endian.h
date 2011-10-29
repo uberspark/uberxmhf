@@ -65,11 +65,14 @@
  * $FreeBSD: stable/8/sys/i386/include/endian.h 199583 2009-11-20 15:27:52Z jhb $
  */
 
+/**
+ * Modified for EMHF.
+ */
+
 #ifndef _MACHINE_ENDIAN_H_
 #define _MACHINE_ENDIAN_H_
 
-#include <sys/cdefs.h>
-#include <sys/_types.h>
+#include <sys/i386_types.h>
 
 #ifdef __cplusplus
 extern "C" {
