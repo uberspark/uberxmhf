@@ -65,7 +65,7 @@
  * From: FreeBSD sys/libkern/strlen.c
  */
 
-#include <emhf.h> 
+#include <string.h> 
 
 size_t strlen(str)
 	const char *str;

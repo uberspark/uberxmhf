@@ -33,11 +33,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//str.h - string functions
-//author: amit vasudevan (amitvasudevan@acm.org)
-#ifndef __STR_H__
-#define __STR_H__
-
+/**
+ * libc string functions for use in a stand-alone environment
+ */
+#ifndef __EMHF_STRING_H__
+#define __EMHF_STRING_H__
 
 #ifndef __ASSEMBLY__
 void *memmove(void *dst_void, const void *src_void, u32 length);
@@ -53,4 +53,4 @@ unsigned long strtoul(const char *cp,const char **endp, unsigned int base);
 int memcmp(const void *b1, const void *b2, size_t len);
 #endif/* __ASSEMBLY__ */
 
-#endif /* __STR_H__ */
+#endif /* __EMHF_STRING_H__ */
