@@ -16,7 +16,6 @@ THE_ARCHIVE = libemhfc.a
 all: $(THE_ARCHIVE)
 
 $(THE_ARCHIVE): $(OBJECTS)
-	mkdir -p $(APPOBJECTSDIR)
 	$(AR) -rcs $(THE_ARCHIVE) $(OBJECTS)
 
 %.o: %.c $(C_SOURCES) $(I_SOURCES) Makefile ../Makefile
