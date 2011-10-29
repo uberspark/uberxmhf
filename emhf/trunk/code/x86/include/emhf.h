@@ -42,7 +42,8 @@
 #define __EMHF_H_
 
 //---includes for the target----------------------------------------------------
-#include <_types.h>      //always comes first
+#include <stdint.h>
+//#include <_types.h>      //always comes first
 #include <_ctype.h>		//the ctype variable definition for debug printf
 #include <_com.h>		//serial UART as debugging backend
 #include <_print.h>      //early chance to disable/enable debug printfs

@@ -49,12 +49,14 @@
   endif
 
   export EMHFUTILDIR := ./emhfcore/libemhfutil
+  export EMHFCDIR := ./emhfcore/libemhfc
 
   export BASEDIR = @abs_top_srcdir@
   export APPOBJECTSDIR = $(BASEDIR)/app/objects
   export EMHF_INCLUDEDIR = $(BASEDIR)/$(EMHFCOREDIR)/include
   export EMHFUTIL_OBJECTSDIR = $(BASEDIR)/$(EMHFUTILDIR)
   export EMHFUTIL_INCLUDEDIR = $(BASEDIR)/$(EMHFUTILDIR)/include
+  export EMHFC_INCLUDEDIR = $(BASEDIR)/$(EMHFCDIR)/include
   export INCLUDEDIR = $(EMHF_INCLUDEDIR)
   export APP_INCLUDEDIR = $(BASEDIR)/app/include
   export EMHFAPP = y
@@ -96,7 +98,7 @@
   CFLAGS += -Winline
   CFLAGS += -m32 -march=k8
   CFLAGS += -mno-sse2
-  CFLAGS += -nostdinc -pipe -I$(EMHF_INCLUDEDIR) -I$(APP_INCLUDEDIR) -I$(EMHFUTIL_INCLUDEDIR)
+  CFLAGS += -nostdinc -pipe -I$(EMHF_INCLUDEDIR) -I$(APP_INCLUDEDIR) -I$(EMHFUTIL_INCLUDEDIR) -I$(EMHFC_INCLUDEDIR)
 
   CFLAGS += $(foreach dir,$(SUBDIRS),-I$(BASEDIR)/$(dir))
 
