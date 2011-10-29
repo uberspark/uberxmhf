@@ -68,6 +68,7 @@
  * From: FreeBSD sys/libkern/strncpy.c
  */
 
+#include <stdint.h>
 #include <string.h> 
 /*
  * Copy src to dst, truncating or null-padding to always copy n bytes.

@@ -33,6 +33,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#include <stdint.h>
 #include <string.h> 
 
 void *memmove(void *dst_void, const void *src_void, u32 length){

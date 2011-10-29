@@ -69,6 +69,7 @@
 
 /* $FreeBSD: src/sys/libkern/strtoul.c,v 1.6.32.1 2010/02/10 00:26:20 kensmith Exp $ */
 
+#include <stdint.h>
 #include <string.h> 
 
 #ifndef ULONG_MAX

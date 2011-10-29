@@ -137,6 +137,16 @@ typedef __uintptr_t     uintptr_t;
 #define _INTPTR_T_DECLARED
 #endif
 
+#ifndef _SIZE_T_DECLARED
+typedef __size_t        size_t;
+#define _SIZE_T_DECLARED
+#endif
+
+typedef uint8_t         u8;
+typedef uint16_t        u16;
+typedef uint32_t        u32;
+typedef uint64_t        u64;
+
 typedef __uint8_t       u_int8_t;       /* unsigned integrals (deprecated) */
 typedef __uint16_t      u_int16_t;
 typedef __uint32_t      u_int32_t;

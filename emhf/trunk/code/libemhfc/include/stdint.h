@@ -70,6 +70,7 @@
 
 #include <sys/i386_types.h>
 #include <sys/i386_stdint.h>
+#include <sys/types.h>
 
 #ifndef _INT8_T_DECLARED
 typedef __int8_t                int8_t;
