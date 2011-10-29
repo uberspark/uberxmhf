@@ -43,6 +43,8 @@
 
 //---includes for the target----------------------------------------------------
 #include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
 //#include <_types.h>      //always comes first
 #include <_ctype.h>		//the ctype variable definition for debug printf
 #include <_com.h>		//serial UART as debugging backend

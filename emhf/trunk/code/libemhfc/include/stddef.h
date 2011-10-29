@@ -69,6 +69,9 @@
 
 typedef __ptrdiff_t     ptrdiff_t;
 
+/* extracted from cdefs.h */
+#define __offsetof(type, field) ((size_t)(&((type *)0)->field))
+
 #define offsetof(type, field)   __offsetof(type, field)
 
 #endif /* !_SYS_STDDEF_H_ */
