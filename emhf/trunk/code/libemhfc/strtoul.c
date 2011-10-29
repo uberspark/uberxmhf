@@ -71,6 +71,7 @@
 
 #include <stdint.h>
 #include <string.h> 
+#include <ctype.h>
 
 #ifndef ULONG_MAX
 #define ULONG_MAX     0xFFFFFFFFUL
