@@ -38,6 +38,19 @@
 #define __PRINT_H_ /* avoid indirectly including our print.h, which conflicts with libc stdio.h */
 
 #define dprintf(...) while(0)
+
+#include <inttypes.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
+
+#ifndef u32
+typedef uint8_t u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
+#endif
+
 #include <_hpt.h>
 
 /* global CPU structs */
