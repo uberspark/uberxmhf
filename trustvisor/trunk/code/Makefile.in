@@ -129,22 +129,12 @@ all: subdirs
 	mkdir -p $(APPOBJECTSDIR)
 	cd app && $(MAKE) -w all
 
-    # make emhf core components and generate loader and runtime	
-	cd $(EMHFCOREDIR) && $(MAKE) -w all
-
 .PHONY: subdirs
 subdirs: $(SUBDIRS)
 	@for i in $(SUBDIRS); \
 	do \
 		(cd $$i && echo "Making all in $$i..." && $(MAKE) -w all) || exit 1; \
 	done;
-
-#------late initialization support (experimental)
-.PHONY: init-late
-init-late:
-    # support linux OS for now
-	cd $(EMHFCOREDIR) && $(MAKE) -w init-late
-
 
 # default target: headers and binaries
 install: install-dev install-bin
