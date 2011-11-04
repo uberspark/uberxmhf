@@ -37,6 +37,14 @@ $(THE_ARCHIVE): $(OBJECTS)
 %.o: %.c $(I_SOURCES) Makefile ../Makefile ../../../Makefile
 	$(CC) -c $(CFLAGS) -o $@ $<
 
+.PHONY: install-bin
+	# Nothing to do
+
+.PHONY: install-dev
+install-dev:
+	install -d $(DESTDIR)/$(includedir)/trustvisor
+	install --mode=644 include/tv_utpm.h $(DESTDIR)/$(includedir)/trustvisor
+
 .PHONY: clean 
 clean: 
 	$(RM) $(OBJECTS) $(THE_ARCHIVE)
