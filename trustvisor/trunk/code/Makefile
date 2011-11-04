@@ -41,29 +41,6 @@
   export APP_INCLUDEDIR = $(BASEDIR)/app/include
   export EMHFAPP = y
 
-  export prefix=/usr/local
-  export exec_prefix=${prefix}
-  export libdir=${exec_prefix}/lib
-  export includedir=${prefix}/include
-  export pkgconfigdir=${libdir}/pkgconfig
-  export pkgincludedir=${includedir}/trustvisor
-
-#-----tools
-  export CC = gcc
-  export AS = as
-  export LD = ld
-  export OBJDUMP = objdump
-  export OBJCOPY = objcopy
-  export STRIP = strip
-  export O_CC = /bin/gcc
-  export RM = rm -f
-  export CP = cp
-  export O_LD = /bin/ld
-  export TAR = tar
-  export SED = sed
-  export MKDIR = mkdir
-  export CAT = cat
-
 #-----basic flags for compiling
   CFLAGS = -fno-builtin -fno-common -fno-strict-aliasing -iwithprefix include
   CFLAGS += -fno-stack-protector
