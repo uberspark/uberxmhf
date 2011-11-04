@@ -64,9 +64,10 @@
 //#include <sys/param.h>
 //#include <sys/systm.h>
 
-#include <emhf.h> 
+#include <stdint.h>
+#include <string.h>
 
-#include "rijndael.h"
+#include <rijndael.h>
 
 #undef FULL_UNROLL
 

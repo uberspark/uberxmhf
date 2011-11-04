@@ -53,9 +53,9 @@
  * NIST SP 800-90 CTR_DRBG (Random Number Generator)
  */
 
-#include <emhf.h> 
-
-#include "nist_ctr_drbg.h"
+#include <stdint.h> 
+#include <string.h> 
+#include <nist_ctr_drbg.h>
 
 /* #include <assert.h> */
 /* #include <string.h> */

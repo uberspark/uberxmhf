@@ -70,23 +70,15 @@
  */
 
 /**
- * FIXME: This is an awful hack.  Update to use libc #include's once
- * libemhfc exists.
+ * FIXME: This is an awful hack.  Do proper failure handling.
  */
-#ifndef uint8_t
-typedef unsigned char uint8_t;
-typedef unsigned short uint16_t;
-typedef unsigned int uint32_t;
-typedef unsigned long long uint64_t;
-typedef unsigned char u_int8_t;
-typedef unsigned short u_int16_t;
-typedef unsigned int u_int32_t;
-typedef unsigned long long u_int64_t;
-typedef unsigned long size_t;
-#define NULL 0
+#ifndef HALT
 #define HALT() do { int dummy=0; } while(0);
 #endif
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
 #include <sha2.h> 
 /*
  * ASSERT NOTE:
