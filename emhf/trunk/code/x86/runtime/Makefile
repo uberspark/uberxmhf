@@ -15,14 +15,6 @@ C_SOURCES += apic_vmx.c islayer_vmx.c islayer_vmx_ug.c
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
-# Also grab all the App's (e.g., TrustVisor's) object files
-OBJECTS_PRECOMPILED += $(wildcard $(APPOBJECTSDIR)/*.o)
-OBJECTS_PRECOMPILED += $(wildcard $(APPOBJECTSDIR)/*.a)
-
-### Bring in libemhfutil
-OBJECTS_PRECOMPILED += $(wildcard $(EMHFUTIL_OBJECTSDIR)/*.o)
-OBJECTS_PRECOMPILED += $(EMHFUTIL_OBJECTSDIR)/../libemhfc/libemhfc.a
-
 ### Bring in libcommon/*.o so that App's (e.g., TrustVisor) can use them
 # WARNING: if both Serial & VGA are enabled, you actually get neither. 
 # TODO: Fix it.
@@ -46,7 +38,7 @@ I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 all: runtime.bin
 
 runtime.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) runtime.lds.S
-	$(LD) -T runtime.lds.S -o runtime.exe $(OBJECTS) $(OBJECTS_PRECOMPILED)
+	$(LD) -T runtime.lds.S -o runtime.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) $(ADDL_LIBS)
 	$(OBJCOPY) --output-format=binary runtime.exe runtime.bin
 
 %.o: %.S $(I_SOURCES) Makefile ../Makefile ../../../Makefile
