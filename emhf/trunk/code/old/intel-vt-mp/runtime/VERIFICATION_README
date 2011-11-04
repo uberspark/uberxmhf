@@ -1,0 +1,7 @@
+You must run define CORRECT and CORRECT2 to get a successful
+verification of VERIFIED_minimal_sp_ptr_free.c. 
+
+Execute:
+./cbmc -I ../include -DCORRECT -DCORRECT VERIFIED_minimal_sp_ptr_free.c
+
+or find the bugs by removing undefining either.
