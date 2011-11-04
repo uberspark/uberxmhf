@@ -1,5 +1,5 @@
-CMOCKDIR:=$(realpath ../@CMOCKDIR@)
-UNITYDIR:=$(realpath ../@UNITYDIR@)
+CMOCKDIR:=$(realpath ../../../../tools/cmock)
+UNITYDIR:=$(realpath ../../../../tools/cmock/vendor/unity)
 EMHFROOT:=$(CURDIR)/../../../../emhf/trunk/code
 
 CFLAGS := -I${UNITYDIR}/src -DUNITY_SUPPORT_64 -g
