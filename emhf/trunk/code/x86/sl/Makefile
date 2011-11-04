@@ -8,13 +8,9 @@ C_SOURCES = sl.c
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
-OBJECTS_PRECOMPILED = ../libcommon/mpsup.o ../libcommon/tpm.o ../libcommon/tpm_emhf.o ../libcommon/pci.o ../libcommon/acpi.o ../libcommon/svm_eap.o ../libcommon/vmx_eap.o ../libcommon/txt_mtrrs.o ../../libemhfc/libemhfc.a
+OBJECTS_PRECOMPILED = ../libcommon/mpsup.o ../libcommon/tpm.o ../libcommon/tpm_emhf.o ../libcommon/pci.o ../libcommon/acpi.o ../libcommon/svm_eap.o ../libcommon/vmx_eap.o ../libcommon/txt_mtrrs.o
 
-# FIXME: This is a hack.  During build-process refactoring, do
-# something more sensible to pickup all in-tree library
-# subdirectories.
-OBJECTS_PRECOMPILED += ../../libemhfutil/sha1.o
-CFLAGS += -I../../libemhfutil/include
+CFLAGS += $(ADDL_INCLUDES)
 
 ifeq ($(DEBUG_SERIAL), y)
 OBJECTS_PRECOMPILED += ../libcommon/dbg_printf.o ../libcommon/dbg_uart.o
@@ -38,7 +34,7 @@ endif
 all: sl.bin
 
 sl.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) sl.lds.S
-	$(LD) -T sl.lds.S -o sl.exe $(OBJECTS) $(OBJECTS_PRECOMPILED)
+	$(LD) -T sl.lds.S -o sl.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) $(ADDL_LIBS)
 	$(CP) sl.exe sl_syms.exe
 	$(STRIP) -s sl.exe
 	$(OBJCOPY) --output-format=binary sl.exe sl.bin
