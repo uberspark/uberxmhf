@@ -22,8 +22,6 @@ $(THE_ARCHIVE): $(OBJECTS)
 clean:
 	$(RM) $(OBJECTS) $(THE_ARCHIVE)
 
-.PHONY: install
-install:
-	install -d $(DESTDIR)$(pkgconfigdir)
-	install --mode=644 tv_utpm.pc $(DESTDIR)$(pkgconfigdir)
-	install --mode=644 $(THE_ARCHIVE) $(DESTDIR)$(libdir)
+.PHONY: install-dev
+install-dev:
+	# Nothing to do here

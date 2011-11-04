@@ -138,3 +138,7 @@ clean:
 	cd libcommon && $(MAKE) -w clean
 	rm -rf $(APPOBJECTSDIR)
 
+.PHONY: install-dev
+install-dev:
+	# Nothing to do here
+

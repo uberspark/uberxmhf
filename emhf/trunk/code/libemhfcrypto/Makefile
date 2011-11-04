@@ -40,3 +40,7 @@ $(THE_ARCHIVE): $(OBJECTS)
 .PHONY: clean 
 clean: 
 	$(RM) $(OBJECTS) $(THE_ARCHIVE)
+
+.PHONY: install-dev
+install-dev:
+	# Nothing to do here
