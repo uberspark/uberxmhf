@@ -11,6 +11,8 @@ export APP_ROOT := ../../../trustvisor/trunk/code
 # 'make install-dev' is handled indepdendently
 export APP_ARCHIVE := $(APP_ROOT)/trustvisor_app.a
 
+export ADDL_INCLUDES := -I$(APP_ROOT)/app/include $(foreach dir,$(SUBDIRS),-I$(CURDIR)/$(dir)/include)
+
 
 .PHONY: all
 all: $(APP_ARCHIVE) subdirs
