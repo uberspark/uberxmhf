@@ -295,7 +295,7 @@ static int mpi_get_digit( t_int *d, int radix, char c )
 
 /*
  * Import from an ASCII string
- */
+ *//*
 int mpi_read_string( mpi *X, int radix, char *s )
 {
     int ret, i, j, n;
@@ -349,7 +349,7 @@ cleanup:
     mpi_free( &T);
 
     return( ret );
-}
+}*/
 
 /* /\* */
 /*  * Helper to write the digits high-order first */
