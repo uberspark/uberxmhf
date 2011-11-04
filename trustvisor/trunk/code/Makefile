@@ -22,7 +22,7 @@
 	export TARGET_HWPLATFORM := x86
 
     #MP/UP selection, y=Multiprocessor, n=Uniprocessor
-    export MP_VERSION := @MP_VERSION@
+    export MP_VERSION := y
 
     #where you want loader and runtime binaries to go, defaults to
     #current dir. Note that this is used by the emhfcore to decide
@@ -32,9 +32,9 @@
 
     #misc. configuaration w.r.t serial debugging and NPT/EPT support
 	export NESTED_PAGING := y
-    export DEBUG_SERIAL := @DEBUG_SERIAL@
-    export DEBUG_SERIAL_PORT := @DEBUG_SERIAL_PORT@
-	export DEBUG_VGA	:= @DEBUG_VGA@
+    export DEBUG_SERIAL := y
+    export DEBUG_SERIAL_PORT := 0x3f8
+	export DEBUG_VGA	:= n
 
 #-----configuration for subdirectories containing "library-able"
 #-----functionality that TrustVisor uses, but that may also be
@@ -52,7 +52,7 @@
   export EMHFCRYPTODIR := $(EMHFROOTDIR)/libemhfcrypto
   export TV_UTPMDIR := $(EMHFROOTDIR)/libtv_utpm
 
-  export BASEDIR = @abs_top_srcdir@
+  export BASEDIR = /home/jmmccune/work/hyp.git/trustvisor/trunk/code
   export APPOBJECTSDIR = $(BASEDIR)/app/objects
   export EMHF_INCLUDEDIR = $(BASEDIR)/$(EMHFCOREDIR)/include
   export EMHFUTIL_INCLUDEDIR = $(BASEDIR)/$(EMHFUTILDIR)/include
@@ -63,28 +63,28 @@
   export APP_INCLUDEDIR = $(BASEDIR)/app/include
   export EMHFAPP = y
 
-  export prefix=@prefix@
-  export exec_prefix=@exec_prefix@
-  export libdir=@libdir@
-  export includedir=@includedir@
-  export pkgconfigdir=@pkgconfigdir@
-  export pkgincludedir=@pkgincludedir@
+  export prefix=/usr/local
+  export exec_prefix=${prefix}
+  export libdir=${exec_prefix}/lib
+  export includedir=${prefix}/include
+  export pkgconfigdir=${libdir}/pkgconfig
+  export pkgincludedir=${includedir}/trustvisor
 
 #-----tools
-  export CC = @CC@
-  export AS = @AS@
-  export LD = @LD@
-  export OBJDUMP = @OBJDUMP@
-  export OBJCOPY = @OBJCOPY@
-  export STRIP = @STRIP@
+  export CC = gcc
+  export AS = as
+  export LD = ld
+  export OBJDUMP = objdump
+  export OBJCOPY = objcopy
+  export STRIP = strip
   export O_CC = /bin/gcc
-  export RM = @RM@
-  export CP = @CP@
+  export RM = rm -f
+  export CP = cp
   export O_LD = /bin/ld
-  export TAR = @TAR@
-  export SED = @SED@
-  export MKDIR = @MKDIR@
-  export CAT = @CAT@
+  export TAR = tar
+  export SED = sed
+  export MKDIR = mkdir
+  export CAT = cat
 
 #-----basic flags for compiling
   CFLAGS = -fno-builtin -fno-common -fno-strict-aliasing -iwithprefix include
