@@ -120,7 +120,7 @@ sl: runtime
 		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum ./runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
 
 .PHONY: init
-init: sl runtime common app
+init: sl runtime common
 	#make init	
 	cd init && $(MAKE) -w all \
 		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum ./runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
