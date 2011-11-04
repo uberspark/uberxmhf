@@ -7,11 +7,16 @@ LIBDIRS = libemhfc libemhfutil
 SUBDIRS = $(LIBDIRS) x86
 
 # TODO: Control this via configure
-export APP_ROOT := ../../../trustvisor/trunk/code
+export APP_ROOT := $(CURDIR)/../../../trustvisor/trunk/code
 # The APP_ARCHIVE is what MUST contain ALL of the App's binary code
 # 'make install-dev' is handled indepdendently
-export APP_ARCHIVE := $(APP_ROOT)/trustvisor_app.a
-export ADDL_LIBS := $(foreach lib,$(LIBDIRS),$(CURDIR)/$(lib)/$(lib).a)
+export APP_ARCHIVE := $(APP_ROOT)/app_trustvisor.a
+# These are subdieectories underneath APP_ROOT that will produce a self-named .a file
+# TODO: Find a way to make this more App-agnostic
+export APP_LIBDIRS := tv_utpm
+
+export ADDL_LIBS := $(foreach lib,$(LIBDIRS),$(CURDIR)/$(lib)/$(lib).a) \
+	$(foreach lib,$(APP_LIBDIRS),$(APP_ROOT)/$(lib)/$(lib).a)
 
 export ADDL_INCLUDES := -I$(APP_ROOT)/app/include $(foreach dir,$(SUBDIRS),-I$(CURDIR)/$(dir)/include)
 
