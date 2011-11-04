@@ -20,9 +20,7 @@ $(THE_ARCHIVE): $(OBJECTS)
 
 .PHONY: clean
 clean:
-	$(RM) $(OBJECTS)
-	$(RM) $(THE_ARCHIVE)
-
+	$(RM) $(OBJECTS) $(THE_ARCHIVE)
 
 .PHONY: install
 install:

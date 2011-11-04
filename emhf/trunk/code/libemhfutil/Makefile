@@ -28,4 +28,4 @@ $(THE_ARCHIVE): $(OBJECTS)
 
 .PHONY: clean 
 clean: 
-	$(RM) -rf *.o $(THE_ARCHIVE)
+	$(RM) $(OBJECTS) $(THE_ARCHIVE)
