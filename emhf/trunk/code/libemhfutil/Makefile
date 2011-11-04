@@ -12,9 +12,14 @@ I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 
 CFLAGS += -nostdinc -I./include -I../libemhfc/include
 
+THE_ARCHIVE = libemhfutil.a
+
 # targets
 .PHONY: all
-all: $(OBJECTS) 
+all: $(THE_ARCHIVE)
+
+$(THE_ARCHIVE): $(OBJECTS)
+	$(AR) -rcs $(THE_ARCHIVE) $(OBJECTS)
 
 %.o: %.S $(I_SOURCES) Makefile ../Makefile ../../../Makefile 
 	$(CC) -c $(ASFLAGS) -o $@ $<
@@ -23,4 +28,4 @@ all: $(OBJECTS)
 
 .PHONY: clean 
 clean: 
-	$(RM) -rf *.o
+	$(RM) -rf *.o $(THE_ARCHIVE)

@@ -6,9 +6,6 @@ I_SOURCES =  $(wildcard ./include/*.h)
 
 CFLAGS += -I./include -nostdinc
 
-# In the future hopefully there will be a more suitable place
-# to put this than APPOBJECTSDIR. Path of least resistance for
-# now, especially in the face of major EMHF build refactoring
 THE_ARCHIVE = libemhfc.a
 
 # targets
@@ -23,8 +20,8 @@ $(THE_ARCHIVE): $(OBJECTS)
 
 .PHONY: clean
 clean:
-	$(RM) -f $(OBJECTS)
-	$(RM) -f $(THE_ARCHIVE)
+	$(RM) $(OBJECTS)
+	$(RM) $(THE_ARCHIVE)
 
 
 .PHONY: install
