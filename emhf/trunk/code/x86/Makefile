@@ -83,13 +83,7 @@
 
 #-----build rules
 .PHONY: all
-all: app components common runtime sl init hypervisor-$(TARGET_HWPLATFORM).bin.gz
-
-.PHONY: app
-app: 
-	#make EMHFapp
-	mkdir -p $(APPOBJECTSDIR)
-	cd $(BASEDIR)/app && $(MAKE) -w all
+all: $(APP_ARCHIVE) components common runtime sl init hypervisor-$(TARGET_HWPLATFORM).bin.gz
 
 .PHONY: components
 components:
@@ -155,8 +149,5 @@ clean:
 	cd init && $(MAKE) -w clean
 	cd ./init-late/os/linux && $(MAKE) clean
 	cd libcommon && $(MAKE) -w clean
-	cd ../libemhfutil && $(MAKE) -w clean
-	cd ../libemhfc && $(MAKE) -w clean
-	cd $(BASEDIR)/app && $(MAKE) -w clean
 	rm -rf $(APPOBJECTSDIR)
 
