@@ -1,24 +1,7 @@
 export TARGET = trustvisor
-
 export TARGET_HWPLATFORM := x86
-
-#where you want loader and runtime binaries to go, defaults to
-#current dir. Note that this is used by the emhfcore to decide
-#where to put the files that result from the build process.
-#A better name might be BUILDTARGETDIR or similar.
-export INSTALLDIR = $(CURDIR)
-
-#misc. configuaration w.r.t serial debugging and NPT/EPT support
 export NESTED_PAGING := y
-export DEBUG_SERIAL := y
-export DEBUG_SERIAL_PORT := 0x3f8
-export DEBUG_VGA	:= n
 
-#-----configuration for subdirectories containing "library-able"
-#-----functionality that TrustVisor uses, but that may also be
-#-----useful elsewhere.
-
-#-----configuration that typically need not be touched
 # TODO: THESE SHOULD BE PASSED IN FROM THE CORE BUILD OR SET USING ./configure
 ifeq ($(TARGET_HWPLATFORM), x86)
 export EMHFROOTDIR := ../../../emhf/trunk/code
