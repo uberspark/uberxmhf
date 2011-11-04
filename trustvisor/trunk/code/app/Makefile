@@ -6,7 +6,7 @@
 #
 
 # TODO: Control via configuration
-THE_ARCHIVE = ../app_trustvisor.a
+THE_ARCHIVE = trustvisor.a
 
 # source files
 AS_SOURCES = 
@@ -39,4 +39,4 @@ $(APPOBJECTSDIR)/%.o: %.c $(I_SOURCES) Makefile ../Makefile
 
 .PHONY: clean 
 clean:
-	$(RM) -f $(OBJECTS)
+	$(RM) -f $(OBJECTS) $(THE_ARCHIVE)
