@@ -12,28 +12,8 @@
 # TODO: Control these with autoconf
 	export DMAPROT := y
 	export NESTED_PAGING := y
-	export DEBUG_SERIAL := y
-	export DEBUG_SERIAL_PORT := 0x3f8
-	export MP_VERSION := y
-
 
 #-----build configuration
-	#-----tools
-	export CC = gcc
-	export AS = as
-	export LD = ld
-	export OBJDUMP = objdump
-	export OBJCOPY = objcopy
-	export STRIP = strip
-	export O_CC = /bin/gcc
-	export RM = rm 
-	export CP = cp
-	export O_LD = /bin/ld
-	export TAR = tar
-	export SED = sed
-	export MKDIR = mkdir
-	export CAT = cat
-
 	#-----basic flags for compiling and assembling
 	CFLAGS = -fno-builtin -fno-common -fno-strict-aliasing -iwithprefix include
 	CFLAGS += -fno-stack-protector
