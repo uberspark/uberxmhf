@@ -83,7 +83,7 @@
 
 #-----build rules
 .PHONY: all
-all: $(APP_ARCHIVE) components common runtime sl init hypervisor-$(TARGET_HWPLATFORM).bin.gz
+all: components common runtime sl init hypervisor-$(TARGET_HWPLATFORM).bin.gz
 
 .PHONY: components
 components:
