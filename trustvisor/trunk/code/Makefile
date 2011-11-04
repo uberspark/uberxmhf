@@ -1,10 +1,8 @@
-export EMHFROOTDIR := ../../../emhf/trunk/code
-export EMHFCOREDIR := $(EMHFROOTDIR)/x86
+export EMHFCOREDIR := $(CURDIR)/../../../emhf/trunk/code/$(EMHFROOTDIR)/x86
+export EMHF_INCLUDEDIR = $(EMHFCOREDIR)/include
 
-export APPOBJECTSDIR = $(CURDIR)/app/objects
-export EMHF_INCLUDEDIR = $(CURDIR)/$(EMHFCOREDIR)/include
-export INCLUDEDIR = $(EMHF_INCLUDEDIR)
 export APP_INCLUDEDIR = $(CURDIR)/app/include
+export APPOBJECTSDIR = $(CURDIR)/app/objects
 
 #-----basic flags for compiling
 CFLAGS = -fno-builtin -fno-common -fno-strict-aliasing -iwithprefix include
