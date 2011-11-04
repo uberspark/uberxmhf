@@ -58,8 +58,8 @@ install-dev:
 	install -d $(DESTDIR)$(pkgconfigdir)
 	install --mode=644 trustvisor.pc $(DESTDIR)$(pkgconfigdir)
 
-	install -d $(DESTDIR)$(pkgincludedir)
-	install app/include/trustvisor.h $(DESTDIR)$(pkgincludedir)
+	install -d $(DESTDIR)$(includedir)/trustvisor
+	install app/include/trustvisor.h $(DESTDIR)$(includedir)/trustvisor
 
 .PHONY: test
 test:
