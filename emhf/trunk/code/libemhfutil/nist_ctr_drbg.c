@@ -63,7 +63,10 @@
 /* #include <stddef.h> */
 
 #ifndef assert
-#define assert(x) ASSERT(x)
+/**
+ * AHH! FIXME: TODO: Come up with systematic assert() handling. XXX
+ */
+#define assert(x) { if(!(x)) { __asm__ __volatile__ ("hlt\r\n"); } }
 #endif
 
 /*
