@@ -38,7 +38,7 @@ I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 all: runtime.bin
 
 runtime.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) runtime.lds.S
-	$(LD) -T runtime.lds.S -o runtime.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(ADDL_LIBS) $(APP_ARCHIVE)
+	$(LD) -T runtime.lds.S -o runtime.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(ADDL_LIBS)
 	$(OBJCOPY) --output-format=binary runtime.exe runtime.bin
 
 %.o: %.S $(I_SOURCES) Makefile ../Makefile ../../../Makefile
