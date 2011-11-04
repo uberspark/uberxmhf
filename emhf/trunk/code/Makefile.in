@@ -12,7 +12,7 @@ export HYPOUTDIR = $(CURDIR)
 # TODO: Consider automating discovery of subdirs (presence of Makefile*?)
 # E.g., have a target architecure and include that version of the core
 LIBDIRS = libemhfc libemhfutil libtv_utpm libemhfcrypto
-SUBDIRS = $(LIBDIRS) x86
+SUBDIRS = $(LIBDIRS) $(TARGET_HWPLATFORM)
 
 # TODO: Control this via configure
 export APP_ROOT := $(CURDIR)/../../../trustvisor/trunk/code
@@ -60,7 +60,7 @@ export CAT = @CAT@
 
 
 .PHONY: all
-all: $(APP_ARCHIVE) subdirs
+all: $(APP_ARCHIVE) subdirs init-late
 
 $(APP_ARCHIVE):
 	cd $(APP_ROOT) && $(MAKE) -w all
@@ -71,6 +71,10 @@ subdirs: $(SUBDIRS)
 	do \
 		(cd $$i && echo "Making all in $$i..." && $(MAKE) -w all) || exit 1; \
 	done;
+
+.PHONY: init-late
+init-late: $(APP_ARCHIVE) subdirs
+	cd $(TARGET_HWPLATFORM) && make -w init-late
 
 .PHONY: install
 install: install-dev install-bin

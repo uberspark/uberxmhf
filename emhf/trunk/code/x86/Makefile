@@ -108,7 +108,7 @@ init: sl runtime common
 
 sl/sl.bin: sl
 runtime/runtime.bin: runtime
-hypervisor-$(TARGET_HWPLATFORM).bin.gz: sl/sl.bin runtime/runtime.bin init
+hypervisor-$(TARGET_HWPLATFORM).bin.gz: sl/sl.bin runtime/runtime.bin init/init-$(TARGET_HWPLATFORM).bin
 	# concatenate sl image and runtime image 
 	$(CAT) ./sl/sl.bin ./runtime/runtime.bin > ./hypervisor.tmp.img
 	gzip -c ./hypervisor.tmp.img > ./hypervisor-$(TARGET_HWPLATFORM).bin.gz
