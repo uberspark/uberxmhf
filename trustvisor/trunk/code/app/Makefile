@@ -1,10 +1,3 @@
-#-------------------------------------------------------------------------------
-# app top-level makefile for apps based on emhf
-# author: Zongwei Zhou (zongweiz@andrew.cmu.edu) 
-
-# app-specific configuration options
-#
-
 # TODO: Control via configuration
 THE_ARCHIVE = ../app_trustvisor.a
 
