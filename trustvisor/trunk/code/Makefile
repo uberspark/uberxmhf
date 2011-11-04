@@ -154,11 +154,12 @@ install-bin:
 	install --mode=644 $(INSTALLDIR)/$(TARGET)-init-$(TARGET_HWPLATFORM).bin $(DESTDIR)/boot/init-$(TARGET_HWPLATFORM).bin
 
 #------test rules
+.PHONY: test
 test:
 	cd test && $(MAKE) -w all
 
 #------cleanup rules
-.PHONY: clean distclean test
+.PHONY: clean
 clean: 
 	cd app && $(MAKE) -w clean
 	rm -rf $(APPOBJECTSDIR) app_trustvisor.a
@@ -166,16 +167,3 @@ clean:
 	rm -f *.bin
 	rm -f *.bin.gz
 
-distclean:
-	rm -f config.log
-	rm -f config.status
-
-#-----autoconf rules
-Makefile: Makefile.in config.status
-	./config.status $@
-
-config.status: configure
-	./config.status --recheck
-
-configure: configure.ac
-	./autogen.sh
