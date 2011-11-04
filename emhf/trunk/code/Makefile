@@ -3,13 +3,15 @@
 
 # TODO: Consider automating discovery of subdirs (presence of Makefile*?)
 # E.g., have a target architecure and include that version of the core
-SUBDIRS = libemhfc libemhfutil x86
+LIBDIRS = libemhfc libemhfutil
+SUBDIRS = $(LIBDIRS) x86
 
 # TODO: Control this via configure
 export APP_ROOT := ../../../trustvisor/trunk/code
 # The APP_ARCHIVE is what MUST contain ALL of the App's binary code
 # 'make install-dev' is handled indepdendently
 export APP_ARCHIVE := $(APP_ROOT)/trustvisor_app.a
+export ADDL_LIBS := $(foreach lib,$(LIBDIRS),$(CURDIR)/$(lib)/$(lib).a)
 
 export ADDL_INCLUDES := -I$(APP_ROOT)/app/include $(foreach dir,$(SUBDIRS),-I$(CURDIR)/$(dir)/include)
 
