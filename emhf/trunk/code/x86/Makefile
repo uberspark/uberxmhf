@@ -90,7 +90,6 @@
 	export CFLAGS
 	export ASFLAGS
 
-
 #-----build rules
 .PHONY: all
 all: components common runtime sl init hypervisor-$(TARGET_HWPLATFORM).bin.gz
@@ -135,8 +134,8 @@ hypervisor-$(TARGET_HWPLATFORM).bin.gz: sl/sl.bin runtime/runtime.bin init
 	gzip -c ./hypervisor.tmp.img > ./hypervisor-$(TARGET_HWPLATFORM).bin.gz
 	$(RM) -rf ./hypervisor.tmp.img 
 	# install loader and runtime images to INSTALLDIR
-	$(CP) ./init/init-$(TARGET_HWPLATFORM).bin $(INSTALLDIR)/$(TARGET)-init-$(TARGET_HWPLATFORM).bin
-	$(CP) ./hypervisor-$(TARGET_HWPLATFORM).bin.gz $(INSTALLDIR)/$(TARGET)-hypervisor-$(TARGET_HWPLATFORM).bin.gz
+	$(CP) ./init/init-$(TARGET_HWPLATFORM).bin $(HYPOUTDIR)/init-$(TARGET_HWPLATFORM).bin
+	$(CP) ./hypervisor-$(TARGET_HWPLATFORM).bin.gz $(HYPOUTDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz
 
 # late initialization support
 .PHONY: init-late
@@ -144,8 +143,8 @@ init-late: hypervisor-$(TARGET_HWPLATFORM).bin.gz
 	#make late initialization, currently defaults to linux os support
 	cd ./init-late/os/linux && $(MAKE)
 	#TODO: needs OS selection via configuration option
-	$(CP) ./init-late/os/linux/emhfil.ko $(INSTALLDIR)/emhfil.ko
-	$(CP) ./init-late/os/linux/emhfil.sh $(INSTALLDIR)/emhfil.sh
+	$(CP) ./init-late/os/linux/emhfil.ko $(HYPOUTDIR)/emhfil.ko
+	$(CP) ./init-late/os/linux/emhfil.sh $(HYPOUTDIR)/emhfil.sh
 
 
 # cleanup rules

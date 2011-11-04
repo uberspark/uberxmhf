@@ -1,6 +1,12 @@
 # Rootest Makefile for EMHF and an App
 # Builds a bunch of subdirectories here, and then builds the app
 
+#h/w platform, current choices are x86
+export TARGET_HWPLATFORM := x86
+
+#where you want loader and runtime binaries to go
+export HYPOUTDIR = $(CURDIR)
+
 # TODO: Consider automating discovery of subdirs (presence of Makefile*?)
 # E.g., have a target architecure and include that version of the core
 LIBDIRS = libemhfc libemhfutil
