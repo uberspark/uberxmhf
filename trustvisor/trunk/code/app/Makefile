@@ -5,7 +5,8 @@
 # app-specific configuration options
 #
 
-THE_ARCHIVE = $(APPOBJECTSDIR)/app_trustvisor.a
+# TODO: Control via configuration
+THE_ARCHIVE = ../app_trustvisor.a
 
 # source files
 AS_SOURCES = 
