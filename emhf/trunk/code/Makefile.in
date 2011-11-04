@@ -70,14 +70,6 @@ subdirs: $(SUBDIRS)
 		(cd $$i && echo "Making all in $$i..." && $(MAKE) -w all) || exit 1; \
 	done;
 
-.PHONY: clean
-clean:
-	cd $(APP_ROOT) && $(MAKE) -w clean
-	@for i in $(SUBDIRS) ;\
-	do \
-		(cd $$i && echo "making clean in $$i..." && $(MAKE) -w clean) || exit 1; \
-	done;
-
 .PHONY: install
 install: install-dev install-bin
 
@@ -97,4 +89,25 @@ install-dev:
 .PHONY: test
 test:
 	cd $(APP_ROOT) && $(MAKE) -w test
+
+.PHONY: clean distclean
+clean:
+	cd $(APP_ROOT) && $(MAKE) -w clean
+	@for i in $(SUBDIRS) ;\
+	do \
+		(cd $$i && echo "making clean in $$i..." && $(MAKE) -w clean) || exit 1; \
+	done;
+
+distclean: clean
+	$(RM) config.log config.status
+
+#-----autoconf rules
+Makefile: Makefile.in config.status
+	./config.status $@
+
+config.status: configure
+	./config.status --recheck
+
+configure: configure.ac
+	./autogen.sh
 
