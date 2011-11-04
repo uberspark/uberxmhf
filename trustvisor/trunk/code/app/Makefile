@@ -6,7 +6,7 @@
 #
 
 # TODO: Control via configuration
-THE_ARCHIVE = trustvisor.a
+THE_ARCHIVE = ../app_trustvisor.a
 
 # source files
 AS_SOURCES = 

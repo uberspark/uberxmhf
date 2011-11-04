@@ -130,7 +130,6 @@ all: subdirs
     # make app components
 	mkdir -p $(APPOBJECTSDIR)
 	cd app && $(MAKE) -w all
-	$(AR) rcs app_trustvisor.a app/trustvisor.a tv_utpm/tv_utpm.a
 
 .PHONY: subdirs
 subdirs: $(SUBDIRS)
