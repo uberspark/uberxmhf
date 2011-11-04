@@ -5,6 +5,8 @@
 # app-specific configuration options
 #
 
+THE_ARCHIVE = $(APPOBJECTSDIR)/app_trustvisor.a
+
 # source files
 AS_SOURCES = 
 C_SOURCES = appmain.c scode.c malloc.c \
@@ -23,7 +25,11 @@ I_SOURCES  +=  $(wildcard $(APP_INCLUDEDIR)/*.h)
 
 # targets
 .PHONY: all
-all: $(OBJECTS)
+all: $(THE_ARCHIVE)
+
+$(THE_ARCHIVE): $(OBJECTS)
+	mkdir -p $(APPOBJECTSDIR)
+	$(AR) -rcs $(THE_ARCHIVE) $(OBJECTS)
 
 $(APPBOJECTSDIR)/%.o: %.S $(I_SOURCES) Makefile ../Makefile
 	$(CC) -c $(ASFLAGS) -o $@ $<
