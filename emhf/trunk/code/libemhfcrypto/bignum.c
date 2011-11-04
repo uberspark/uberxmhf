@@ -60,12 +60,20 @@
  *  http://math.libtomcrypt.com/files/tommath.pdf
  */
 
-#include <emhf.h> 
 
-#include <malloc.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 #include <bignum.h>
 #include <bn_mul.h>
-#include <random.h>
+
+//#include <malloc.h>
+void *malloc(size_t);
+void free(void *);
+
+//#include <random.h>
+uint8_t rand_byte_or_die(void);
 
 #define ciL    ((int) sizeof(t_int))    /* chars in limb  */
 #define biL    (ciL << 3)               /* bits  in limb  */

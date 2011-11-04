@@ -62,7 +62,8 @@
 /* AES source code
  * Edited by Zongwei Zhou for EMHF project */
 
-#include <emhf.h> 
+#include <stddef.h> 
+#include <stdint.h> 
 #include <aes.h>
 
 /*

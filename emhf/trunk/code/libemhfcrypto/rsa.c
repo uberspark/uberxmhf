@@ -59,12 +59,17 @@
  *  http://www.cacr.math.uwaterloo.ca/hac/about/chap8.pdf
  */
 
-#include <emhf.h> 
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
 
 #include <rsa.h>
 #include <bignum.h>
-#include <random.h>
 #include <sha1.h> /* sha1_buffer */
+
+//#include <random.h>
+uint8_t rand_byte_or_die(void);
+
 /*
  * Initialize an RSA context
  * call before any other operations
