@@ -57,3 +57,9 @@ install-dev:
 	do \
 		(cd $$i && echo "making install-dev in $$i..." && $(MAKE) -w install-dev) || exit 1; \
 	done;
+
+# Currently the only tests we have are in the TrustVisor tree
+.PHONY: test
+test:
+	cd $(APP_ROOT) && $(MAKE) -w test
+
