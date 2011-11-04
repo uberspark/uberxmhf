@@ -38,16 +38,23 @@
  * Edited by Zongwei Zhou, Jonathan McCune for EMHF project
  */
 
-#include <emhf.h> 
+#include <stdint.h>
+#include <stddef.h>
+#include <string.h>
+#include <stdbool.h>
 
-#include <scode.h>
-#include <tv_utpm.h> /* formerly utpm.h */
+#include <tv_utpm.h> 
 #include <aes.h>
 #include <rsa.h>
-#include <malloc.h>
-#include <random.h>
 #include <sha1.h>
 #include <hmac.h>
+
+//#include <malloc.h>
+void *malloc(size_t);
+void free(void *);
+
+//#include <random.h>
+uint8_t rand_byte_or_die(void);
 
 /* keys for software TPM seal, unseal and quote operations */
 /* SECURITY: these global variables are very sensitive! */
