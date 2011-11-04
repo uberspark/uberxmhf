@@ -49,12 +49,18 @@
 #include <sha1.h>
 #include <hmac.h>
 
+/* TODO: Fix this hack! */
 //#include <malloc.h>
 void *malloc(size_t);
 void free(void *);
 
 //#include <random.h>
 uint8_t rand_byte_or_die(void);
+
+/* TODO: Fix this hack! */
+#define LOG_PROFILE (1<<0)
+#define LOG_TRACE   (1<<1)
+#define LOG_ERROR   (1<<2)
 
 /* keys for software TPM seal, unseal and quote operations */
 /* SECURITY: these global variables are very sensitive! */
