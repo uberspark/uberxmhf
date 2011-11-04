@@ -104,8 +104,6 @@ components:
 common:
 	#make libcommon first	
 	cd libcommon && $(MAKE) -w all
-	cd ../libemhfutil && $(MAKE) -w all
-	cd ../libemhfc && $(MAKE) -w all
 
 .PHONY: runtime
 runtime: common app
