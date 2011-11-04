@@ -1,28 +1,6 @@
-#-------------------------------------------------------------------------------
-# top-level makefile for apps based on emhf
-# author: amit vasudevan (amitvasudevan@acm.org)
-
-# the build process goes like this:
-# we first enter app and run the top-level makefile there
-#   - this will create app objs in app/objects/*
-# we then enter emhfcore and run the top-level makefile there
-#   - this will create init and hypervisor binaries for the app
-#			depending on the h/w platform (x86) selected
-# we finally move the above two to the top-level directory where this
-# makefile is located
-
-#-----options that need tweaking w.r.t your development
-
-    #your target name and version
     export TARGET = trustvisor
-    export TARGET_VERSION = 0
-    export TARGET_SUBVERSION = 1
 
-    #h/w platform, current choices are x86
 	export TARGET_HWPLATFORM := x86
-
-    #MP/UP selection, y=Multiprocessor, n=Uniprocessor
-    export MP_VERSION := y
 
     #where you want loader and runtime binaries to go, defaults to
     #current dir. Note that this is used by the emhfcore to decide
@@ -123,17 +101,20 @@
   export CFLAGS
   export ASFLAGS
 
-#-----build rules 
 .PHONY: all
 all:
-    # make app components
+	# make app components
 	mkdir -p $(APPOBJECTSDIR)
 	cd app && $(MAKE) -w all
 
-# default target: headers and binaries
-install: install-dev install-bin
+# There is no binary installation; only the EMHF core
+# produces a complete binary of some sort.  All libraries
+# are at the root level as well.
+.PHONY: install
+install: install-dev
 
-# install headers
+# install development components
+.PHONY: install-dev
 install-dev:
 	install -d $(DESTDIR)$(pkgconfigdir)
 	install --mode=644 trustvisor.pc $(DESTDIR)$(pkgconfigdir)
@@ -141,24 +122,10 @@ install-dev:
 	install -d $(DESTDIR)$(pkgincludedir)
 	install app/include/trustvisor.h $(DESTDIR)$(pkgincludedir)
 
-# install loader and runtime binaries to installation location
-# TODO: make '/boot' configurable with ./configure
-install-bin:
-	install -d $(DESTDIR)/boot
-	#install --mode=644 $(INSTALLDIR)/$(TARGET)-hypervisor-$(TARGET_HWPLATFORM).bin.gz $(DESTDIR)/boot
-	#install --mode=644 $(INSTALLDIR)/$(TARGET)-init-$(TARGET_HWPLATFORM).bin $(DESTDIR)/boot
-	# NOTE: Getting rid of TARGET prefix on hypervisor and init
-	# because it will break the grub config on all of our test machines
-	# right now.
-	install --mode=644 $(INSTALLDIR)/$(TARGET)-hypervisor-$(TARGET_HWPLATFORM).bin.gz $(DESTDIR)/boot/hypervisor-$(TARGET_HWPLATFORM).bin.gz
-	install --mode=644 $(INSTALLDIR)/$(TARGET)-init-$(TARGET_HWPLATFORM).bin $(DESTDIR)/boot/init-$(TARGET_HWPLATFORM).bin
-
-#------test rules
 .PHONY: test
 test:
 	cd test && $(MAKE) -w all
 
-#------cleanup rules
 .PHONY: clean
 clean: 
 	cd app && $(MAKE) -w clean
