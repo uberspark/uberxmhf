@@ -1,8 +1,10 @@
 # Rootest Makefile for EMHF and an App
 # Builds a bunch of subdirectories here, and then builds the app
 
-#h/w platform, current choices are x86
+# Options that aspire to be automatically controlled, but are currently
+# basically required and everything breaks without them. FIXME!
 export TARGET_HWPLATFORM := x86
+export NESTED_PAGING := y
 
 #where you want loader and runtime binaries to go
 export HYPOUTDIR = $(CURDIR)
