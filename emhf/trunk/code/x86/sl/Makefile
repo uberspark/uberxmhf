@@ -10,6 +10,7 @@ OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
 OBJECTS_PRECOMPILED = ../libcommon/mpsup.o ../libcommon/tpm.o ../libcommon/tpm_emhf.o ../libcommon/pci.o ../libcommon/acpi.o ../libcommon/svm_eap.o ../libcommon/vmx_eap.o ../libcommon/txt_mtrrs.o
 
+# FIXME: ADDL_INCLUDES is overly general; sl/ doesn't need all of them
 CFLAGS += $(ADDL_INCLUDES)
 
 ifeq ($(DEBUG_SERIAL), y)
@@ -33,6 +34,7 @@ endif
 
 all: sl.bin
 
+# FIXME: ADDL_LIBS is overly general; sl/ doesn't need all of them
 sl.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) sl.lds.S
 	$(LD) -T sl.lds.S -o sl.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) $(ADDL_LIBS)
 	$(CP) sl.exe sl_syms.exe

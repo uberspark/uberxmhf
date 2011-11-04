@@ -8,13 +8,10 @@ C_SOURCES = init.c smp.c txt_heap.c txt_hash.c txt_acmod.c txt.c cmdline.c
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
-OBJECTS_PRECOMPILED = ../libcommon/mpsup.o ../libcommon/txt_mtrrs.o ../libcommon/pci.o ../libcommon/acpi.o ../libcommon/svm_eap.o ../libcommon/tpm.o ../libcommon/vmx_eap.o ../../libemhfc/libemhfc.a
+OBJECTS_PRECOMPILED = ../libcommon/mpsup.o ../libcommon/txt_mtrrs.o ../libcommon/pci.o ../libcommon/acpi.o ../libcommon/svm_eap.o ../libcommon/tpm.o ../libcommon/vmx_eap.o
 
-# FIXME: This is a hack.  During build-process refactoring, do
-# something more sensible to pickup all in-tree library
-# subdirectories.
-OBJECTS_PRECOMPILED += ../../libemhfutil/sha1.o
-CFLAGS += -I../../libemhfutil/include
+# FIXME: This is overly general; init/ doesn't need all of these
+CFLAGS += $(ADDL_INCLUDES)
 
 ifeq ($(DEBUG_SERIAL), y)
 OBJECTS_PRECOMPILED += ../libcommon/dbg_printf.o ../libcommon/dbg_uart.o
@@ -48,8 +45,9 @@ endif
 .PHONY: all
 all: init-$(TARGET_HWPLATFORM).bin
 
+# FIXME: ADDL_LIBS is overly general; init/ doesn't need all of them
 init-$(TARGET_HWPLATFORM).bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) init.lds.S
-	$(LD) -T init.lds.S -o init.exe $(OBJECTS) $(OBJECTS_PRECOMPILED)
+	$(LD) -T init.lds.S -o init.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) $(ADDL_LIBS)
 	$(CP) init.exe init_syms.exe
 	$(STRIP) -s init.exe
 	$(OBJCOPY) --output-format=binary init.exe init-$(TARGET_HWPLATFORM).bin
