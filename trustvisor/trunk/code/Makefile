@@ -1,5 +1,3 @@
-export NESTED_PAGING := y
-
 export EMHFROOTDIR := ../../../emhf/trunk/code
 export EMHFCOREDIR := $(EMHFROOTDIR)/x86
 
@@ -7,7 +5,6 @@ export APPOBJECTSDIR = $(CURDIR)/app/objects
 export EMHF_INCLUDEDIR = $(CURDIR)/$(EMHFCOREDIR)/include
 export INCLUDEDIR = $(EMHF_INCLUDEDIR)
 export APP_INCLUDEDIR = $(CURDIR)/app/include
-export EMHFAPP = y
 
 #-----basic flags for compiling
 CFLAGS = -fno-builtin -fno-common -fno-strict-aliasing -iwithprefix include
