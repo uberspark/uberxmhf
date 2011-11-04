@@ -10,13 +10,7 @@ THE_ARCHIVE = ../app_trustvisor.a
 
 # source files
 AS_SOURCES = 
-C_SOURCES = appmain.c scode.c malloc.c \
-		tlsf.c pt.c hc_utpm.c aes.c \
-		rsa.c bignum.c random.c linuxrelc.c \
-		pages.c \
-		dump.c \
-		crypto_init.c nv.c
-
+C_SOURCES = $(wildcard *.c)
 
 OBJECTS = $(patsubst %.S, $(APPOBJECTSDIR)/%.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, $(APPOBJECTSDIR)/%.o, $(C_SOURCES))
