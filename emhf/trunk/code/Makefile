@@ -9,7 +9,7 @@ export HYPOUTDIR = $(CURDIR)
 
 # TODO: Consider automating discovery of subdirs (presence of Makefile*?)
 # E.g., have a target architecure and include that version of the core
-LIBDIRS = libemhfc libemhfutil
+LIBDIRS = libemhfc libemhfutil libemhfcrypto
 SUBDIRS = $(LIBDIRS) x86
 
 # TODO: Control this via configure

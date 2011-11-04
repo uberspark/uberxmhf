@@ -40,9 +40,6 @@
 #-----functionality that TrustVisor uses, but that may also be
 #-----useful elsewhere.
 
-  # list of subdirectories containing (relatively) stand-alone library code
-  export SUBDIRS := tv_utpm
-
 #-----configuration that typically need not be touched
 # TODO: THESE SHOULD BE PASSED IN FROM THE CORE BUILD OR SET USING ./configure
   ifeq ($(TARGET_HWPLATFORM), x86)
@@ -52,13 +49,16 @@
 
   export EMHFUTILDIR := $(EMHFROOTDIR)/libemhfutil
   export EMHFCDIR := $(EMHFROOTDIR)/libemhfc
+  export EMHFCRYPTODIR := $(EMHFROOTDIR)/libemhfcrypto
+  export TV_UTPMDIR := $(EMHFROOTDIR)/libtv_utpm
 
   export BASEDIR = @abs_top_srcdir@
   export APPOBJECTSDIR = $(BASEDIR)/app/objects
   export EMHF_INCLUDEDIR = $(BASEDIR)/$(EMHFCOREDIR)/include
-  export EMHFUTIL_OBJECTSDIR = $(BASEDIR)/$(EMHFUTILDIR)
   export EMHFUTIL_INCLUDEDIR = $(BASEDIR)/$(EMHFUTILDIR)/include
   export EMHFC_INCLUDEDIR = $(BASEDIR)/$(EMHFCDIR)/include
+  export EMHFCRYPTO_INCLUDEDIR = $(BASEDIR)/$(EMHFCRYPTODIR)/include
+  export TV_UTPM_INCLUDEDIR = $(BASEDIR)/$(TV_UTPMDIR)/include
   export INCLUDEDIR = $(EMHF_INCLUDEDIR)
   export APP_INCLUDEDIR = $(BASEDIR)/app/include
   export EMHFAPP = y
@@ -100,9 +100,8 @@
   CFLAGS += -Winline
   CFLAGS += -m32 -march=k8
   CFLAGS += -mno-sse2
-  CFLAGS += -nostdinc -pipe -I$(EMHF_INCLUDEDIR) -I$(APP_INCLUDEDIR) -I$(EMHFUTIL_INCLUDEDIR) -I$(EMHFC_INCLUDEDIR)
-
-  CFLAGS += $(foreach dir,$(SUBDIRS),-I$(BASEDIR)/$(dir))
+  CFLAGS += -nostdinc -pipe -I$(EMHF_INCLUDEDIR) -I$(APP_INCLUDEDIR) -I$(EMHFUTIL_INCLUDEDIR) -I$(EMHFC_INCLUDEDIR) -I$(EMHFCRYPTO_INCLUDEDIR)
+  CFLAGS += -I$(TV_UTPM_INCLUDEDIR)
 
 #-----generate compiler/assembler defines from configuration options selected
   ifeq ($(NESTED_PAGING), y)
@@ -126,17 +125,10 @@
 
 #-----build rules 
 .PHONY: all
-all: subdirs
+all:
     # make app components
 	mkdir -p $(APPOBJECTSDIR)
 	cd app && $(MAKE) -w all
-
-.PHONY: subdirs
-subdirs: $(SUBDIRS)
-	@for i in $(SUBDIRS); \
-	do \
-		(cd $$i && echo "Making all in $$i..." && $(MAKE) -w all) || exit 1; \
-	done;
 
 # default target: headers and binaries
 install: install-dev install-bin
@@ -148,12 +140,6 @@ install-dev:
 
 	install -d $(DESTDIR)$(pkgincludedir)
 	install app/include/trustvisor.h $(DESTDIR)$(pkgincludedir)
-	install tv_utpm/tv_utpm.h $(DESTDIR)$(pkgincludedir)
-
-	@for i in $(SUBDIRS); \
-	do \
-		(cd $$i && echo "Making install in $$i..." && $(MAKE) -w install) || exit 1; \
-	done;
 
 # install loader and runtime binaries to installation location
 # TODO: make '/boot' configurable with ./configure
@@ -179,10 +165,6 @@ clean:
 	cd test && $(MAKE) -w clean
 	rm -f *.bin
 	rm -f *.bin.gz
-	@for i in $(SUBDIRS) ;\
-        do \
-                (cd $$i && echo "making clean in $$i..." && $(MAKE) clean) || exit 1; \
-	done;
 
 distclean:
 	rm -f config.log
