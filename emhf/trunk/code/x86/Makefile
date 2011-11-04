@@ -1,11 +1,20 @@
 # top-level makefile for emhf x86 platform 
 # author: amit vasudevan (amitvasudevan@acm.org)
 
-# late initialization support (experimental)
+# experimental support
 	export INIT_LATE := n
+	export E820_UG_TEST := n
+	export TEST_CPU_QUIESCE := n
 
-# DMA protection support
+# relatively stable support
+# TODO: FIXME: Build breaks with some combinations of these options.
+# They aren't really "options" anymore
+# TODO: Control these with autoconf
 	export DMAPROT := y
+	export NESTED_PAGING := y
+	export DEBUG_SERIAL := y
+	export DEBUG_SERIAL_PORT := 0x3f8
+	export MP_VERSION := y
 
 
 #-----build configuration
