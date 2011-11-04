@@ -8,20 +8,10 @@ export EMHFROOTDIR := ../../../emhf/trunk/code
 export EMHFCOREDIR := $(EMHFROOTDIR)/x86
 endif
 
-export EMHFUTILDIR := $(EMHFROOTDIR)/libemhfutil
-export EMHFCDIR := $(EMHFROOTDIR)/libemhfc
-export EMHFCRYPTODIR := $(EMHFROOTDIR)/libemhfcrypto
-export TV_UTPMDIR := $(EMHFROOTDIR)/libtv_utpm
-
-export BASEDIR = /home/jmmccune/work/hyp.git/trustvisor/trunk/code
-export APPOBJECTSDIR = $(BASEDIR)/app/objects
-export EMHF_INCLUDEDIR = $(BASEDIR)/$(EMHFCOREDIR)/include
-export EMHFUTIL_INCLUDEDIR = $(BASEDIR)/$(EMHFUTILDIR)/include
-export EMHFC_INCLUDEDIR = $(BASEDIR)/$(EMHFCDIR)/include
-export EMHFCRYPTO_INCLUDEDIR = $(BASEDIR)/$(EMHFCRYPTODIR)/include
-export TV_UTPM_INCLUDEDIR = $(BASEDIR)/$(TV_UTPMDIR)/include
+export APPOBJECTSDIR = $(CURDIR)/app/objects
+export EMHF_INCLUDEDIR = $(CURDIR)/$(EMHFCOREDIR)/include
 export INCLUDEDIR = $(EMHF_INCLUDEDIR)
-export APP_INCLUDEDIR = $(BASEDIR)/app/include
+export APP_INCLUDEDIR = $(CURDIR)/app/include
 export EMHFAPP = y
 
 #-----basic flags for compiling
@@ -38,8 +28,7 @@ CFLAGS += -Waggregate-return
 CFLAGS += -Winline
 CFLAGS += -m32 -march=k8
 CFLAGS += -mno-sse2
-CFLAGS += -nostdinc -pipe -I$(EMHF_INCLUDEDIR) -I$(APP_INCLUDEDIR) -I$(EMHFUTIL_INCLUDEDIR) -I$(EMHFC_INCLUDEDIR) -I$(EMHFCRYPTO_INCLUDEDIR)
-CFLAGS += -I$(TV_UTPM_INCLUDEDIR)
+CFLAGS += -nostdinc -pipe -I$(EMHF_INCLUDEDIR) -I$(APP_INCLUDEDIR) $(ADDL_INCLUDES)
 
 #-----generate compiler/assembler defines from configuration options selected
 ifeq ($(NESTED_PAGING), y)
