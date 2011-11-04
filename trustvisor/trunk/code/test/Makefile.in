@@ -1,8 +1,11 @@
 CMOCKDIR:=$(realpath ../@CMOCKDIR@)
 UNITYDIR:=$(realpath ../@UNITYDIR@)
+EMHFROOT:=$(CURDIR)/../../../../emhf/trunk/code
 
-CFLAGS += -I${UNITYDIR}/src -DUNITY_SUPPORT_64 -g
+CFLAGS := -I${UNITYDIR}/src -DUNITY_SUPPORT_64 -g
 CFLAGS := $(filter-out -nostdinc,${CFLAGS})
+CFLAGS += -I$(EMHFROOT)/libemhfutil/include
+CFLAGS += -I$(EMHFROOT)/x86/include
 
 all: do_hpt do_drbg # do_pages do_pt
 
@@ -14,8 +17,8 @@ pt: pt_runner.o pt.o ../app/objects/pt.o ${UNITYDIR}/src/unity.o
 
 hpt: hpt_runner.o hpt.o ${UNITYDIR}/src/unity.o
 
-drbg: test_drbg_runner.o test_drbg.o ../app/objects/dump.o ../emhfcore/libemhfutil/rijndael.o ../emhfcore/libemhfutil/nist_ctr_drbg.o ${UNITYDIR}/src/unity.o 
-	$(CC) -o $@ $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS)
+drbg: test_drbg_runner.o test_drbg.o ../app/objects/dump.o ${UNITYDIR}/src/unity.o 
+	$(CC) -o $@ $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS) $(EMHFROOT)/libemhfutil/libemhfutil.a
 
 pages: test_pages_runner.o test_pages.o ../app/pages.o ../app/puttymem.o ../app/tlsf.o ../emhfcore/x86/libcommon/mpsup.o ${UNITYDIR}/src/unity.o
 	$(CC) -o $@ $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS)
@@ -60,4 +63,3 @@ do_%: %
 clean: 
 	$(RM) *.o
 	$(RM) *_runner.c
-	$(RM) ../app/*.o
