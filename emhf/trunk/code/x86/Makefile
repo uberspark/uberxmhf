@@ -106,7 +106,7 @@ common:
 	cd libcommon && $(MAKE) -w all
 
 .PHONY: runtime
-runtime: common app
+runtime: common
 	#make runtime
 	cd runtime && $(MAKE) -w all
 
