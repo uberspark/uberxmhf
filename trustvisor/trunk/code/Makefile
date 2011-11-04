@@ -1,12 +1,7 @@
-export TARGET = trustvisor
-export TARGET_HWPLATFORM := x86
 export NESTED_PAGING := y
 
-# TODO: THESE SHOULD BE PASSED IN FROM THE CORE BUILD OR SET USING ./configure
-ifeq ($(TARGET_HWPLATFORM), x86)
 export EMHFROOTDIR := ../../../emhf/trunk/code
 export EMHFCOREDIR := $(EMHFROOTDIR)/x86
-endif
 
 export APPOBJECTSDIR = $(CURDIR)/app/objects
 export EMHF_INCLUDEDIR = $(CURDIR)/$(EMHFCOREDIR)/include
