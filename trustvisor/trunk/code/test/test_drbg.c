@@ -39,7 +39,9 @@
 
 #define dprintf(...) while(0)
 
-#include <emhf.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <string.h>
 #include <nist_ctr_drbg.h>
 
 
