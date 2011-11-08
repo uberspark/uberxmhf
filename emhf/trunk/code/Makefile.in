@@ -1,6 +1,11 @@
 # Rootest Makefile for EMHF and an App
 # Builds a bunch of subdirectories here, and then builds the app
 
+# define EMHF root directory and EMHF core include directory for
+# apps
+export EMHF_ROOT := $(CURDIR)
+export EMHF_INCLUDE := $(CURDIR)/x86/include
+
 # Options that aspire to be automatically controlled, but are currently
 # basically required and everything breaks without them. FIXME!
 export TARGET_HWPLATFORM := x86
