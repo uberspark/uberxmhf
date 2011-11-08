@@ -8,7 +8,7 @@ C_SOURCES = $(wildcard *.c)
 OBJECTS = $(patsubst %.S, $(APPOBJECTSDIR)/%.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, $(APPOBJECTSDIR)/%.o, $(C_SOURCES))
 
-I_SOURCES  =  $(wildcard $(EMHF_INCLUDEDIR)/*.h)
+I_SOURCES  =  $(wildcard $(EMHF_INCLUDE)/*.h)
 I_SOURCES  +=  $(wildcard $(APP_INCLUDEDIR)/*.h)
 
 # targets
