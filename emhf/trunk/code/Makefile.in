@@ -15,7 +15,8 @@ LIBDIRS = libemhfc libemhfutil libtv_utpm libemhfcrypto
 SUBDIRS = $(LIBDIRS) $(TARGET_HWPLATFORM)
 
 # TODO: Control this via configure
-export APP_ROOT := $(CURDIR)/../../../trustvisor/trunk/code
+# export APP_ROOT := $(CURDIR)/../../../trustvisor/trunk/code
+export APP_ROOT := @APP_ROOT@
 # The APP_ARCHIVE is what MUST contain ALL of the App's binary code
 # 'make install-dev' is handled indepdendently
 export APP_ARCHIVE := $(APP_ROOT)/app_trustvisor.a

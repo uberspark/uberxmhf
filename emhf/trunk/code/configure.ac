@@ -52,6 +52,18 @@ AS_IF([test "x${enable_mp}" != "xno"],
       [MP_VERSION=y],
       [MP_VERSION=n])
 
+# EMHF app root directory
+AC_SUBST([APP_ROOT])
+AC_ARG_WITH([approot],
+        AS_HELP_STRING([--with-approot=@<:@path@:>@],
+                [path to EMHF app source directory]),
+                , [with_approot=./app])
+APP_ROOT=$[]with_approot
+# make absolute
+dnl AS_IF([test "x${APP_ROOT:0:1}" != "x/"],
+dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$APP_ROOT])
+
+
 AC_SUBST([EMHFCOREDIR])
 AC_ARG_WITH([emhfcore],
         AS_HELP_STRING([--with-emhfcore=@<:@path@:>@],
