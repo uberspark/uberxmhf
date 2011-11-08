@@ -6,6 +6,10 @@
 export EMHF_ROOT := $(CURDIR)
 export EMHF_INCLUDE := $(CURDIR)/x86/include
 
+# define CMOCK and UNITY for app unit test support
+export CMOCKDIR := @CMOCKDIR@
+export UNITYDIR := @UNITYDIR@
+
 # Options that aspire to be automatically controlled, but are currently
 # basically required and everything breaks without them. FIXME!
 export TARGET_HWPLATFORM := x86
