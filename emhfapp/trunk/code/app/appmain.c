@@ -41,6 +41,7 @@
 
 // application main
 u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
+  (void)apb;	//unused
   printf("\nCPU(0x%02x): Hello world from sechyp app!", vcpu->id);
   return APP_INIT_SUCCESS;  //successful
 }
@@ -48,6 +49,7 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 //returns APP_SUCCESS if we handled the hypercall else APP_ERROR
 u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 			u32 status=APP_SUCCESS;
+			(void)r; //unused
 			printf("\nCPU(0x%02x): hypercall unhandled, simply returning!", vcpu->id);
 			return status;
 }
@@ -55,6 +57,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 //handles EMHF shutdown callback
 //note: should not return
 void emhf_app_handleshutdown(VCPU *vcpu, struct regs *r){
+	(void)r; //unused
 	emhf_reboot(vcpu);				
 }
 
@@ -63,8 +66,14 @@ void emhf_app_handleshutdown(VCPU *vcpu, struct regs *r){
 u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
       struct regs *r,
       u64 gpa, u64 gva, u64 violationcode){
-
 	u32 status = APP_SUCCESS;
+
+	(void)vcpu; //unused
+	(void)r; //unused
+	(void)gpa; //unused
+	(void)gva; //unused
+	(void)violationcode; //unused
+
 	return status;
 }
 
@@ -73,5 +82,11 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 //returns either APP_IOINTERCEPT_SKIP or APP_IOINTERCEPT_CHAIN
 u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, 
   u32 portnum, u32 access_type, u32 access_size){
+	(void)vcpu; //unused
+	(void)r; //unused
+	(void)portnum; //unused
+	(void)access_type; //unused
+	(void)access_size; //unused
+
  	return APP_IOINTERCEPT_CHAIN;
 }
