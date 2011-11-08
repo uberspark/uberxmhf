@@ -1,5 +1,5 @@
-export EMHFCOREDIR := $(CURDIR)/../../../emhf/trunk/code/$(EMHFROOTDIR)/x86
-export EMHF_INCLUDEDIR = $(EMHFCOREDIR)/include
+# export EMHFCOREDIR := $(CURDIR)/../../../emhf/trunk/code/$(EMHFROOTDIR)/x86
+# export EMHF_INCLUDEDIR = $(EMHFCOREDIR)/include
 
 export APP_INCLUDEDIR = $(CURDIR)/app/include
 export APPOBJECTSDIR = $(CURDIR)/app/objects
@@ -18,7 +18,8 @@ CFLAGS += -Waggregate-return
 CFLAGS += -Winline
 CFLAGS += -m32 -march=k8
 CFLAGS += -mno-sse2
-CFLAGS += -nostdinc -pipe -I$(EMHF_INCLUDEDIR) -I$(APP_INCLUDEDIR) $(ADDL_INCLUDES)
+# CFLAGS += -nostdinc -pipe -I$(EMHF_INCLUDEDIR) -I$(APP_INCLUDEDIR) $(ADDL_INCLUDES)
+CFLAGS += -nostdinc -pipe -I$(EMHF_INCLUDE) -I$(APP_INCLUDEDIR) $(ADDL_INCLUDES)
 
 #-----generate compiler/assembler defines from configuration options selected
 ifeq ($(NESTED_PAGING), y)
