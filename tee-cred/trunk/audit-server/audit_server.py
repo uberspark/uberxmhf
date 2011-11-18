@@ -41,17 +41,21 @@ def send_audit_token(conn, audit_token):
     return
 
 def main(privkey):
+    import datetime
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind((HOST, PORT))
     s.listen(1)
     while True:
         conn, addr = s.accept()
-        print 'connected by', addr
+        now = datetime.datetime.now()
+        print now.__str__().split('.')[0]
+        print '  From  : ', addr[0]
 
         audit_nonce = read_audit_nonce(conn)
         audit_string = read_audit_string(conn)
-        print "got " + audit_nonce.__repr__() + ", " + audit_string.__repr__()
+        # print "got " + audit_nonce.__repr__() + ", " + audit_string.__repr__()
+        print "  Action: " + audit_string.__repr__()
         audit_token = gen_audit_token(privkey, audit_nonce, audit_string)
 
         # TEMP intentionally give invalid sig
