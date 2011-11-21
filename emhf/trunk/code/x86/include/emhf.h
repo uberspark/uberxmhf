@@ -447,6 +447,24 @@ typedef struct {
 
 
 //----------------------------------------------------------------------
+// host to guest, guest to host VA to PA helpers
+// XXX: should belong in the "platform" component
+/* defined in global.h. can't just include globals.h because it
+   depends on this header */
+static inline void* spa2hva(spa_t spa);
+static inline spa_t hva2spa(void *hva);
+static inline spa_t gpa2spa(gpa_t gpa);
+static inline gpa_t spa2gpa(spa_t spa);
+static inline void* gpa2hva(gpa_t gpa);
+static inline gpa_t hva2gpa(hva_t hva);
+
+#define __pa(x) (x)
+#define __hva2spa__(x) (hva2spa(x))
+#define __spa2hva__(x) (spa2hva(x))
+//----------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------
 // memory protection and platform specific EMHFapp interfaces
 // XXX: move these into appropriate components and document
 
@@ -470,18 +488,6 @@ static inline hpt_pm_t VCPU_get_default_root_pm(VCPU *vcpu)
   return NULL;  
 }
 
-/* defined in global.h. can't just include globals.h because it
-   depends on this header */
-static inline void* spa2hva(spa_t spa);
-static inline spa_t hva2spa(void *hva);
-static inline spa_t gpa2spa(gpa_t gpa);
-static inline gpa_t spa2gpa(spa_t spa);
-static inline void* gpa2hva(gpa_t gpa);
-static inline gpa_t hva2gpa(hva_t hva);
-
-#define __pa(x) (x)
-#define __hva2spa__(x) (hva2spa(x))
-#define __spa2hva__(x) (spa2hva(x))
 
 static inline hpt_pm_t VCPU_get_current_root_pm(VCPU *vcpu)
 {
