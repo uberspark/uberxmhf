@@ -33,7 +33,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* hpt_emhf.h - HPT abstraction customizations for EMHF
+/* hpt_emhf.h - HPT abstraction target interface for EMHF
  * author - amit vasudevan (amitvasudevan@acm.org)
  */
 
