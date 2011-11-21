@@ -42,6 +42,7 @@
 //---globals referenced by this module------------------------------------------
 .extern g_midtable_numentries
 .extern g_midtable
+.extern emhf_parteventhub_entry_x86svm
 
 #define SAVEALL_GPRS \
         pushl	%edi	; \
@@ -91,53 +92,11 @@ __svm_resume_hvm:
   vmrun
 	//clgi
 	//stgi
+
+	//invoke EMHF partition event-hub entry-point
+	call emhf_parteventhub_entry_x86svm
 	
-	//we get here due to ANY intecept within the HVM
-	//step-1: save all CPU GPRs
-	SAVEALL_GPRS
-	
-        /*//get hold of local APIC id
-        mov $(MSR_APIC_BASE), %ecx
-        rdmsr
-        andl $0xFFFFF000, %eax
-        addl $0x20, %eax
-        movl (%eax), %eax
-        shr $24, %eax
-
-    
-        //get vcpu virtual address of this CPU/core
-        movl g_midtable_numentries, %edx
-        movl $(g_midtable), %ebx
-
-        xorl %ecx, %ecx
-        getvcpuloop:
-          movl 0x0(%ebx, %ecx, 8), %ebp  //ebp contains the lapic id
-          cmpl %eax, %ebp
-          jz gotvcpu
-          incl %ecx
-          cmpl %edx, %ecx
-          jb getvcpuloop
-          //we should never get here, if so just halt
-          hlt
-        gotvcpu:
-          movl 0x4(%ebx, %ecx, 8), %esi //esi contains vcpu pointer*/
-
-	//get hold of pointer to saved GPR on stack
-	movl %esp, %eax
-	
-	//XX: get vcpu
-	movl 32(%esp), %esi
-	
-   	//1st argument is vcpu followed by pointer to saved GPRs
-    pushl %eax
-    pushl %esi
-	call svm_intercept_handler
-    addl $0x08, %esp
-
-  //restore all CPU GPRs, will also resture eax=phys. addr of vmcb
-  RESTOREALL_GPRS
-
-  //resume HVM
-  jmp __svm_resume_hvm
+	//resume HVM
+	jmp __svm_resume_hvm
   
 	

@@ -2,7 +2,7 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files
-AS_SOURCES =  
+AS_SOURCES = ./arch/x86/svm/peh-x86svm-entry.S 
 C_SOURCES = 
 
 

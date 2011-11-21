@@ -78,6 +78,8 @@ all: components common runtime sl init hypervisor-$(TARGET_HWPLATFORM).bin.gz
 components:
 	#EMHF memory protection component
 	cd components/emhf-memprot && $(MAKE) -w all
+	#EMHF partition event-hub component
+	cd components/emhf-parteventhub && $(MAKE) -w all
 
 .PHONY: common
 common:
@@ -131,6 +133,8 @@ init-late: hypervisor-$(TARGET_HWPLATFORM).bin.gz
 .PHONY: clean 
 clean: 
 	cd components/emhf-memprot && $(MAKE) -w clean
+	cd components/emhf-parteventhub && $(MAKE) -w clean
+	
 	cd runtime && $(MAKE) -w clean
 	cd sl && $(MAKE) -w clean
 	cd init && $(MAKE) -w clean
