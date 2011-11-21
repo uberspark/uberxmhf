@@ -478,33 +478,6 @@ static inline gpa_t hva2gpa(hva_t hva);
 
 
 
-static inline hpt_pm_t VCPU_get_current_root_pm(VCPU *vcpu)
-{
-  if (VCPU_get_hpt_type(vcpu) == HPT_TYPE_EPT) {
-    return spa2hva(BR32_COPY_BITS_HL(0, vcpu->vmcs.control_EPT_pointer_full, 31, 12, 0));
-  } else if (VCPU_get_hpt_type(vcpu) == HPT_TYPE_PAE) {
-    return spa2hva(hpt_cr3_get_address(HPT_TYPE_PAE,
-                                       ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3));
-  } else {
-    ASSERT(0);
-  }
-  ASSERT(0); return (hpt_pm_t)0; /* unreachable; appeases compiler */  
-}
-
-static inline void VCPU_set_current_root_pm(VCPU *vcpu, hpt_pm_t root)
-{
-  if (VCPU_get_hpt_type(vcpu) == HPT_TYPE_EPT) {
-    ASSERT(PAGE_ALIGNED_4K((uintptr_t)root));
-    vcpu->vmcs.control_EPT_pointer_full = BR32_COPY_BITS_HL(vcpu->vmcs.control_EPT_pointer_full, hva2spa(root), 31, 12, 0);
-  } else if (VCPU_get_hpt_type(vcpu) == HPT_TYPE_PAE) {
-    u64 oldcr3, newcr3;
-    oldcr3 = ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3;
-    newcr3 = hpt_cr3_set_address(HPT_TYPE_PAE, oldcr3, hva2spa(root));
-    ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3 = newcr3;
-  } else {
-    ASSERT(0);
-  }
-}
 
 static inline u64 VCPU_gdtr_base(VCPU *vcpu)
 {
