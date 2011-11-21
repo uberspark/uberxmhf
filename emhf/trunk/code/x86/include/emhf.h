@@ -457,17 +457,6 @@ typedef struct {
 #define VCPU_get_pml4 emhf_memprot_get_lvl4_pagemap_address*/
 
 
-static inline hpt_type_t VCPU_get_hpt_type(VCPU *vcpu)
-{
-  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    return HPT_TYPE_EPT;
-  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    return HPT_TYPE_PAE;
-  }
-
-  ASSERT(0);
-  return HPT_TYPE_INVALID;
-}
 
 static inline hpt_pm_t VCPU_get_default_root_pm(VCPU *vcpu)
 {

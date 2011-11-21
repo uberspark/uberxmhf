@@ -64,6 +64,18 @@ static inline hpt_pme_t* VCPU_get_pml4(VCPU *vcpu){
 	return (hpt_pme_t *)emhf_memprot_get_lvl4_pagemap_address(vcpu);
 }
 
+static inline hpt_type_t VCPU_get_hpt_type(VCPU *vcpu)
+{
+  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+    return HPT_TYPE_EPT;
+  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+    return HPT_TYPE_PAE;
+  }
+
+  ASSERT(0);
+  return HPT_TYPE_INVALID;
+}
+
 
 #endif //__ASSEMBLY__
 
