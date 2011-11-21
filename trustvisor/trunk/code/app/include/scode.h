@@ -49,6 +49,9 @@
 #include <crypto_init.h>
 #include <tv_utpm.h> /* formerly utpm.h */
 
+#include <hpt.h>
+#include <hpt_emhf.h>	/* from libemhfutil */
+
 #define MAX_REGPAGES_NUM 300
 
 /* bits 0 to 2 of stored pte's store the section type */
