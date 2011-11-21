@@ -41,8 +41,8 @@
 #ifndef HPT_H
 #define HPT_H
 
-#include "_types.h"
-#include "_bitfield.h"
+//#include "_types.h"
+#include "bitfield.h"
 
 typedef enum {
   HPT_TYPE_NORM=0, /* x86 'normal'\legacy */
