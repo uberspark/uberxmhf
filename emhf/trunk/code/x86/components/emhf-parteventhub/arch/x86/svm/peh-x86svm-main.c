@@ -99,6 +99,48 @@ static void _svm_handle_msr(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *r
 }
 
 
+//invoked on a nested page-fault 
+//struct regs *r -> guest OS GPR state
+//win_vmcb	-> rest of the guest OS state
+//win_vmcb->exitinfo1 = error code similar to PF
+//win_vmcb->exitinfo2 = faulting guest OS physical address
+static void _svm_handle_npf(VCPU *vcpu, struct regs *r){
+  struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+  u32 gpa = vmcb->exitinfo2;
+  u32 errorcode = vmcb->exitinfo1;
+  
+  if(gpa >= g_svm_lapic_base && gpa < (g_svm_lapic_base + PAGE_SIZE_4K)){
+    //LAPIC access, xfer control to apropriate handler
+    //printf("\n0x%04x:0x%08x -> LAPIC access, gpa=0x%08x, errorcode=0x%08x", 
+    //  (u16)vmcb->cs.sel, (u32)vmcb->rip, gpa, errorcode);
+    ASSERT( svm_isbsp() == 1); //only BSP gets a NPF during LAPIC SIPI detection
+    svm_lapic_access_handler(vcpu, gpa, errorcode);
+    //HALT();
+  } else {
+	// call EMHF app hook
+	emhf_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, 0, errorcode);
+  }
+  
+  return;
+}
+
+
+//---NMI handling---------------------------------------------------------------
+// note: we use NMI for core quiescing, we simply inject the others back
+// into the guest in the normal case
+static void _svm_handle_nmi(VCPU *vcpu, struct vmcb_struct __attribute__((unused)) *vmcb, struct regs __attribute__((unused)) *r){
+    //now we adopt a simple trick, this NMI is pending, the only
+    //way we can dismiss it is if we set GIF=0 and make GIF=1 so that
+    //the core thinks it must dispatch the pending NMI :p
+    //set nmiinhvm to 1 since this NMI was when the core was in HVM 
+    vcpu->nmiinhvm=1;
+    __asm__ __volatile__("clgi\r\n");
+    __asm__ __volatile__("stgi\r\n"); //at this point we get control in
+                                      //our exception handler which handles the rest
+    printf("\nCPU(0x%02x): resuming guest...", vcpu->id);
+}
+
+
 //---SVM intercept handler hub--------------------------------------------------
 u32 svm_intercept_handler(VCPU *vcpu, struct regs *r){
   struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;

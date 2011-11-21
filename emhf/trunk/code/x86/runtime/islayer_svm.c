@@ -468,30 +468,6 @@ static void _svm_handle_swint(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs 
 	return;
 }*/	
 
-//invoked on a nested page-fault 
-//struct regs *r -> guest OS GPR state
-//win_vmcb	-> rest of the guest OS state
-//win_vmcb->exitinfo1 = error code similar to PF
-//win_vmcb->exitinfo2 = faulting guest OS physical address
-static void _svm_handle_npf(VCPU *vcpu, struct regs *r){
-  struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
-  u32 gpa = vmcb->exitinfo2;
-  u32 errorcode = vmcb->exitinfo1;
-  
-  if(gpa >= g_svm_lapic_base && gpa < (g_svm_lapic_base + PAGE_SIZE_4K)){
-    //LAPIC access, xfer control to apropriate handler
-    //printf("\n0x%04x:0x%08x -> LAPIC access, gpa=0x%08x, errorcode=0x%08x", 
-    //  (u16)vmcb->cs.sel, (u32)vmcb->rip, gpa, errorcode);
-    ASSERT( svm_isbsp() == 1); //only BSP gets a NPF during LAPIC SIPI detection
-    svm_lapic_access_handler(vcpu, gpa, errorcode);
-    //HALT();
-  } else {
-	// call EMHF app hook
-	emhf_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, 0, errorcode);
-  }
-  
-  return;
-}
 
 
 //---NMI handling---------------------------------------------------------------
