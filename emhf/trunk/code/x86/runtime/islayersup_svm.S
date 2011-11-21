@@ -96,7 +96,7 @@ __svm_resume_hvm:
 	//step-1: save all CPU GPRs
 	SAVEALL_GPRS
 	
-/*        //get hold of local APIC id
+        //get hold of local APIC id
         mov $(MSR_APIC_BASE), %ecx
         rdmsr
         andl $0xFFFFF000, %eax
@@ -120,7 +120,7 @@ __svm_resume_hvm:
           //we should never get here, if so just halt
           hlt
         gotvcpu:
-          movl 0x4(%ebx, %ecx, 8), %esi //esi contains vcpu pointer*/
+          movl 0x4(%ebx, %ecx, 8), %esi //esi contains vcpu pointer
 
 	//get hold of pointer to saved GPR on stack
 	movl %esp, %eax
