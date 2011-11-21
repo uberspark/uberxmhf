@@ -38,8 +38,6 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 #include <emhf.h> 
 
-//XXX: FIX this
-extern u8 * _svm_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
 
 //---IO Intercept handling------------------------------------------------------
 static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs __attribute__((unused)) *r){
@@ -266,7 +264,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 
 
 //---SVM intercept handler hub--------------------------------------------------
-u32 svm_intercept_handler(VCPU *vcpu, struct regs *r){
+u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
   struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
   
   vmcb->tlb_control = TLB_CONTROL_NOTHING;

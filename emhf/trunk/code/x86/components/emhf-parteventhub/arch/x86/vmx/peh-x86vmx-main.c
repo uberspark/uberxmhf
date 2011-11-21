@@ -38,11 +38,6 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 #include <emhf.h> 
 
-//XXX: FIX this
-extern u8 * _vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
-extern void _vmx_putVMCS(VCPU *vcpu);
-extern void _vmx_getVMCS(VCPU *vcpu);
-extern void _vmx_dumpVMCS(VCPU *vcpu);
 
 //---NMI processing routine-----------------------------------------------------
 void _vmx_processNMI(VCPU *vcpu, struct regs __attribute__((unused)) *r){
@@ -461,7 +456,7 @@ static void _vmx_handle_intercept_ioportaccess(VCPU *vcpu, struct regs *r){
 
 
 //---hvm_intercept_handler------------------------------------------------------
-u32 vmx_intercept_handler(VCPU *vcpu, struct regs *r){
+u32 emhf_parteventhub_intercept_handler_x86vmx(VCPU *vcpu, struct regs *r){
   //read VMCS from physical CPU/core
 	_vmx_getVMCS(vcpu);
 
