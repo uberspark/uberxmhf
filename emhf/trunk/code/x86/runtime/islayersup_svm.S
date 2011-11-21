@@ -74,6 +74,9 @@ __svm_start_hvm:
   movl 0x4(%esp), %ebx  //ebx = vcpu vaddr of current CPU
   movl 0x8(%esp), %eax  //eax = vmcb phys. addr of current CPU
 
+	//XX: save vcpu vaddr
+	pushl %ebx
+
   //real-mode setup just like the BIOS
   movl $0x0, %ebx
 	movl $0x0, %ecx
@@ -93,9 +96,7 @@ __svm_resume_hvm:
 	//step-1: save all CPU GPRs
 	SAVEALL_GPRS
 	
-	//XXX: add LAPIC core id detection and vcpu fetching code
-
-        //get hold of local APIC id
+/*        //get hold of local APIC id
         mov $(MSR_APIC_BASE), %ecx
         rdmsr
         andl $0xFFFFF000, %eax
@@ -119,10 +120,13 @@ __svm_resume_hvm:
           //we should never get here, if so just halt
           hlt
         gotvcpu:
-          movl 0x4(%ebx, %ecx, 8), %esi //esi contains vcpu pointer
+          movl 0x4(%ebx, %ecx, 8), %esi //esi contains vcpu pointer*/
 
 	//get hold of pointer to saved GPR on stack
 	movl %esp, %eax
+	
+	//XX: get vcpu
+	movl 32(%esp), %esi
 	
    	//1st argument is vcpu followed by pointer to saved GPRs
     pushl %eax
