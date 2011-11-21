@@ -75,7 +75,7 @@ static void _svm_handle_msr(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *r
 
 static void _svm_initSVM(VCPU *vcpu);
 static void _svm_initVMCB(VCPU *vcpu);*/
-static u8 * _svm_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
+u8 * _svm_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
 
 //==============================================================================
 //static (local) function definitions
@@ -910,7 +910,7 @@ static u64 _svm_lib_hwpgtbl_getprot(VCPU __attribute__((unused)) *vcpu, u64 __at
 
 //---guest page-table walker, returns guest physical address--------------------
 //note: returns 0xFFFFFFFF if there is no mapping
-static u8 * _svm_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr){
+u8 * _svm_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr){
 	struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
 
   if((u32)vmcb->cr4 & CR4_PAE ){

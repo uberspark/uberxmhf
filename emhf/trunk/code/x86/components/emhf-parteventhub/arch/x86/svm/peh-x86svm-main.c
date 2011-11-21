@@ -38,6 +38,9 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 #include <emhf.h> 
 
+//XXX: FIX this
+extern u8 * _svm_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
+
 //---IO Intercept handling------------------------------------------------------
 static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs __attribute__((unused)) *r){
   ioio_info_t ioinfo;
