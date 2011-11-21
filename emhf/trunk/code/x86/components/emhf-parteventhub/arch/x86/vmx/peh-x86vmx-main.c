@@ -38,6 +38,9 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 #include <emhf.h> 
 
+//XXX: FIX this
+extern u8 * _vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
+
 //---intercept handler (CPUID)--------------------------------------------------
 static void _vmx_handle_intercept_cpuid(VCPU *vcpu, struct regs *r){
 	//printf("\nCPU(0x%02x): CPUID", vcpu->id);

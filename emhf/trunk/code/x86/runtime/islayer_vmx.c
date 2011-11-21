@@ -49,7 +49,7 @@
 // static (local) function definitions
 //==============================================================================
 static void _vmx_lib_reboot(VCPU *vcpu);
-static u8 *_vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
+u8 *_vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
 
 //---initVT: initializes CPU VT-------------------------------------------------
 static void _vmx_initVT(VCPU *vcpu){
@@ -858,7 +858,7 @@ static u64 _vmx_lib_hwpgtbl_getprot(VCPU *vcpu, u64 gpa){
 
 //---guest page-table walker, returns guest physical address--------------------
 //note: returns 0xFFFFFFFF if there is no mapping
-static u8 * _vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr){
+u8 * _vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr){
 
   if((u32)vcpu->vmcs.guest_CR4 & CR4_PAE ){
     //PAE paging used by guest
