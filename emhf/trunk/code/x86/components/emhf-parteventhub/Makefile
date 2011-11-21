@@ -3,6 +3,8 @@
 
 # source files
 AS_SOURCES = ./arch/x86/svm/peh-x86svm-entry.S 
+AS_SOURCES += ./arch/x86/vmx/peh-x86vmx-entry.S 
+
 C_SOURCES = 
 
 
