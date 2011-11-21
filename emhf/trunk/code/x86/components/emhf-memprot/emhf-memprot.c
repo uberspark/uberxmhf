@@ -88,6 +88,7 @@ inline hpt_pme_t* emhf_memprot_get_lvl4_pagemap_address(VCPU *vcpu){
     return (hpt_pme_t*)vcpu->vmx_vaddr_ept_pml4_table;
 }
 
+/*
 //set protection for a given page map entry
 inline hpt_pme_t emhf_memprot_pagemapentry_setprot(hpt_type_t t, int lvl, hpt_pme_t entry, hpt_prot_t perms){
 	hpt_pme_t rv=entry;
@@ -153,4 +154,4 @@ inline hpt_prot_t emhf_memprot_pagemapentry_getprot(hpt_type_t t, int lvl, hpt_p
 	rv = rv | (x ? HPT_PROT_EXEC_MASK : 0);
 
 	return rv;
-}
+}*/
