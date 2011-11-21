@@ -36,6 +36,10 @@
 /* hpt.h - hypervisor page table abstraction
  * 
  * author - Jim Newsome (jnewsome@no-fuss.com)
+ *
+ * note: the HPT abstraction requires certain target interfaces to
+ * be defined by a "provider". EMHF specific target interface
+ * definitions live in hpt_emhf.h
  */
 
 #ifndef HPT_H
