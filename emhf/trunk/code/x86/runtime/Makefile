@@ -31,6 +31,7 @@ OBJECTS_PRECOMPILED += ../components/emhf-memprot/arch/vmx/emhf-memprot-vmx.o
 OBJECTS_PRECOMPILED += ../components/emhf-memprot/arch/svm/emhf-memprot-svm.o
 
 OBJECTS_PRECOMPILED += ../components/emhf-parteventhub/arch/x86/svm/peh-x86svm-entry.o
+OBJECTS_PRECOMPILED += ../components/emhf-parteventhub/arch/x86/svm/peh-x86svm-main.o
 OBJECTS_PRECOMPILED += ../components/emhf-parteventhub/arch/x86/vmx/peh-x86vmx-entry.o
 
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
