@@ -49,22 +49,22 @@ void emhf_memprot_arch_vmx_initialize(VCPU *vcpu);	//intel VMX arch. backend
 void emhf_memprot_arch_svm_initialize(VCPU *vcpu);	//amd SVM arch. backend
 
 // get level-1 page map address
-u32 emhf_memprot_get_lvl1_pagemap_address(VCPU *vcpu);
+u64 * emhf_memprot_get_lvl1_pagemap_address(VCPU *vcpu);
 
 //get level-2 page map address
-u32 emhf_memprot_get_lvl2_pagemap_address(VCPU *vcpu);
+u64 * emhf_memprot_get_lvl2_pagemap_address(VCPU *vcpu);
 
 //get level-3 page map address
-u32 emhf_memprot_get_lvl3_pagemap_address(VCPU *vcpu);
+u64 * emhf_memprot_get_lvl3_pagemap_address(VCPU *vcpu);
 
 //get level-4 page map address
-u32 emhf_memprot_get_lvl4_pagemap_address(VCPU *vcpu);
+u64 * emhf_memprot_get_lvl4_pagemap_address(VCPU *vcpu);
 
 //get default root page map address
-u32 emhf_memprot_get_default_root_pagemap_address(VCPU *vcpu);
+void * emhf_memprot_get_default_root_pagemap_address(VCPU *vcpu);
 
 //get current root page map address
-u32 emhf_memprot_get_current_root_pagemap_address(VCPU *vcpu);
+void * emhf_memprot_get_current_root_pagemap_address(VCPU *vcpu);
 
 //set current root page map address
 void emhf_memprot_set_current_root_pagemap_address(VCPU *vcpu, u32 root);
