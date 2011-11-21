@@ -450,25 +450,6 @@ typedef struct {
 // memory protection and platform specific EMHFapp interfaces
 // XXX: move these into appropriate components and document
 
-static inline hpt_pme_t* VCPU_get_pml1es(VCPU *vcpu){
-	return (hpt_pme_t *)emhf_memprot_get_lvl1_pagemap_address(vcpu);
-
-}
-
-static inline hpt_pme_t* VCPU_get_pml2es(VCPU *vcpu){
-	return (hpt_pme_t *)emhf_memprot_get_lvl2_pagemap_address(vcpu);
-
-}
-
-static inline hpt_pme_t* VCPU_get_pml3es(VCPU *vcpu){
-	return (hpt_pme_t *)emhf_memprot_get_lvl3_pagemap_address(vcpu);
-	
-	
-}
-
-static inline hpt_pme_t* VCPU_get_pml4(VCPU *vcpu){
-	return (hpt_pme_t *)emhf_memprot_get_lvl4_pagemap_address(vcpu);
-}
 
 /*#define VCPU_get_pml1es emhf_memprot_get_lvl1_pagemap_address
 #define VCPU_get_pml2es emhf_memprot_get_lvl2_pagemap_address
