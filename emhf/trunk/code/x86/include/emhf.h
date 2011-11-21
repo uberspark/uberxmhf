@@ -476,17 +476,6 @@ static inline gpa_t hva2gpa(hva_t hva);
 
 
 
-static inline hpt_pm_t VCPU_get_default_root_pm(VCPU *vcpu)
-{
-  if (VCPU_get_hpt_type(vcpu) == HPT_TYPE_EPT) {
-    return (hpt_pm_t)vcpu->vmx_vaddr_ept_pml4_table;
-  } else if (VCPU_get_hpt_type(vcpu) == HPT_TYPE_PAE) {
-    return (hpt_pm_t)vcpu->npt_vaddr_ptr;
-  }
-
-  ASSERT(0);
-  return NULL;  
-}
 
 
 static inline hpt_pm_t VCPU_get_current_root_pm(VCPU *vcpu)

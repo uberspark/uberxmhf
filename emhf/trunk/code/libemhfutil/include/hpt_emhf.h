@@ -76,6 +76,11 @@ static inline hpt_type_t VCPU_get_hpt_type(VCPU *vcpu)
   return HPT_TYPE_INVALID;
 }
 
+static inline hpt_pm_t VCPU_get_default_root_pm(VCPU *vcpu)
+{
+  return (hpt_pm_t)emhf_memprot_get_default_root_pagemap_address(vcpu);
+}
+
 
 #endif //__ASSEMBLY__
 
