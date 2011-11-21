@@ -210,49 +210,6 @@ static VCPU *_vmx_getvcpu(void){
   return NULL; /* currently unreachable */
 }
 
-//---NMI processing routine-----------------------------------------------------
-static void _vmx_processNMI(VCPU *vcpu, struct regs __attribute__((unused)) *r){
-  
-	if( (!vcpu->nmiinhvm) && (!g_vmx_quiesce) ){
-    printf("\nCPU(0x%02x): Spurious NMI within hypervisor. halt!", vcpu->id);
-    HALT();
-  }
-
-	if(g_vmx_quiesce){
-    //ok this NMI is because of g_vmx_quiesce. note: g_vmx_quiesce can be 1 and
-    //this could be a NMI for the guest. we have no way of distinguising
-    //this. however, since g_vmx_quiesce=1, we can handle this NMI as a quiesce NMI
-    //and rely on the platform h/w to reissue the NMI later
-    printf("\nCPU(0x%02x): NMI for core quiesce", vcpu->id);
-    printf("\nCPU(0x%02x): CS:EIP=0x%04x:0x%08x", vcpu->id, (u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP);
-  
-    printf("\nCPU(0x%02x): quiesced, updating counter. awaiting EOQ...", vcpu->id);
-    spin_lock(&g_vmx_lock_quiesce_counter);
-    g_vmx_quiesce_counter++;
-    spin_unlock(&g_vmx_lock_quiesce_counter);
-    
-    while(!g_vmx_quiesce_resume_signal);
-    printf("\nCPU(0x%02x): EOQ received, resuming...", vcpu->id);
-    
-    spin_lock(&g_vmx_lock_quiesce_resume_counter);
-    g_vmx_quiesce_resume_counter++;
-    spin_unlock(&g_vmx_lock_quiesce_resume_counter);
-    
-    //printf("\nCPU(0x%08x): Halting!", vcpu->id);
-    //HALT();
-    
-  }else{
-    //we are not in quiesce, so simply inject this NMI back to guest
-    ASSERT( vcpu->nmiinhvm == 1 );
-    printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
-		vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
-					vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
-			     INTR_TYPE_NMI |
-			     INTR_INFO_VALID_MASK;
-  }
-  
-  
-}
 
 
 //---putVMCS--------------------------------------------------------------------
