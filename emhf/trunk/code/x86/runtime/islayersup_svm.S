@@ -132,11 +132,11 @@ __svm_resume_hvm:
 	//get hold of pointer to saved GPR on stack
 	movl %esp, %eax
 	
-	//1st argument is vcpu followed by pointer to saved GPRs
-	pushl %eax
-	pushl %ebx
+   	//1st argument is vcpu followed by pointer to saved GPRs
+    pushl %eax
+    pushl %esi
 	call svm_intercept_handler
-  addl $0x08, %esp
+    addl $0x08, %esp
 
   //restore all CPU GPRs, will also resture eax=phys. addr of vmcb
   RESTOREALL_GPRS
