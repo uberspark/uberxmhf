@@ -40,9 +40,12 @@
 
 //XXX: FIX this
 extern u8 * _vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
+extern void _vmx_putVMCS(VCPU *vcpu);
+extern void _vmx_getVMCS(VCPU *vcpu);
+extern void _vmx_dumpVMCS(VCPU *vcpu);
 
 //---NMI processing routine-----------------------------------------------------
-static void _vmx_processNMI(VCPU *vcpu, struct regs __attribute__((unused)) *r){
+void _vmx_processNMI(VCPU *vcpu, struct regs __attribute__((unused)) *r){
   
 	if( (!vcpu->nmiinhvm) && (!g_vmx_quiesce) ){
     printf("\nCPU(0x%02x): Spurious NMI within hypervisor. halt!", vcpu->id);
