@@ -93,6 +93,15 @@ __svm_resume_hvm:
 	SAVEALL_GPRS
 	
 	//XXX: add LAPIC core id detection and vcpu fetching code
+
+        //get hold of local APIC id
+        mov $(MSR_APIC_BASE), %ecx
+        rdmsr
+        andl $0xFFFFF000, %eax
+        addl $0x20, %eax
+        movl (%eax), %eax
+        shr $24, %eax
+
 	
 	//XXX: remove
 	//get a hold of vcpu into ebx
