@@ -38,6 +38,135 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 #include <emhf.h> 
 
+//---intercept handler (CPUID)--------------------------------------------------
+static void _vmx_handle_intercept_cpuid(VCPU *vcpu, struct regs *r){
+	//printf("\nCPU(0x%02x): CPUID", vcpu->id);
+	asm volatile ("cpuid\r\n"
+          :"=a"(r->eax), "=b"(r->ebx), "=c"(r->ecx), "=d"(r->edx)
+          :"a"(r->eax), "c" (r->ecx));
+	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+}
+
+//---vmx int 15 intercept handler-----------------------------------------------
+static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
+	u16 cs, ip;
+	u8 *bdamemory = (u8 *)0x4AC;
+	
+	//printf("\nCPU(0x%02x): BDA dump in intercept: %02x %02x %02x %02x %02x %02x %02x %02x", vcpu->id,
+	//		bdamemory[0], bdamemory[1], bdamemory[2], bdamemory[3], bdamemory[4],
+	//			bdamemory[5], bdamemory[6], bdamemory[7]);
+
+	//if in V86 mode translate the virtual address to physical address
+	if( (vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG) &&
+			(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM) ){
+		u8 *bdamemoryphysical;
+		bdamemoryphysical = (u8 *)_vmx_lib_guestpgtbl_walk(vcpu, (u32)bdamemory);
+		ASSERT( (u32)bdamemoryphysical != 0xFFFFFFFFUL );
+		printf("\nINT15 (E820): V86 mode, bdamemory translated from %08x to %08x",
+			(u32)bdamemory, (u32)bdamemoryphysical);
+		bdamemory = bdamemoryphysical; 		
+	}
+	
+	//if E820 service then...
+	if((u16)r->eax == 0xE820){
+		//AX=0xE820, EBX=continuation value, 0 for first call
+		//ES:DI pointer to buffer, ECX=buffer size, EDX='SMAP'
+		//return value, CF=0 indicated no error, EAX='SMAP'
+		//ES:DI left untouched, ECX=size returned, EBX=next continuation value
+		//EBX=0 if last descriptor
+		printf("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", vcpu->id, 
+		(u16)r->eax, r->edx, r->ebx, r->ecx, (u16)vcpu->vmcs.guest_ES_selector, (u16)r->edi);
+		
+		ASSERT(r->edx == 0x534D4150UL);  //'SMAP' should be specified by guest
+		ASSERT(r->ebx < rpb->XtVmmE820NumEntries); //invalid continuation value specified by guest!
+			
+		//copy the e820 descriptor and return its size in ECX
+		memcpy((void *)((u32)((vcpu->vmcs.guest_ES_base)+(u16)r->edi)), (void *)&g_e820map[r->ebx],
+					sizeof(GRUBE820));
+		r->ecx=20;
+
+		//set EAX to 'SMAP' as required by the service call				
+		r->eax=r->edx;
+
+		//we need to update carry flag in the guest EFLAGS register
+		//however since INT 15 would have pushed the guest FLAGS on stack
+		//we cannot simply reflect the change by modifying vcpu->vmcs.guest_RFLAGS.
+		//instead we need to make the change to the pushed FLAGS register on
+		//the guest stack. the real-mode IRET frame looks like the following 
+		//when viewed at top of stack
+		//guest_ip		(16-bits)
+		//guest_cs		(16-bits)
+		//guest_flags (16-bits)
+		//...
+		
+		{
+			u16 guest_cs, guest_ip, guest_flags;
+			u16 *gueststackregion = (u16 *)( (u32)vcpu->vmcs.guest_SS_base + (u16)vcpu->vmcs.guest_RSP );
+		
+		
+			//if V86 mode translate the virtual address to physical address
+			if( (vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG) &&
+					(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM) ){
+				u8 *gueststackregionphysical = (u8 *)_vmx_lib_guestpgtbl_walk(vcpu, (u32)gueststackregion);
+				ASSERT( (u32)gueststackregionphysical != 0xFFFFFFFFUL );
+				printf("\nINT15 (E820): V86 mode, gueststackregion translated from %08x to %08x",
+					(u32)gueststackregion, (u32)gueststackregionphysical);
+				gueststackregion = (u16 *)gueststackregionphysical; 		
+			}
+		
+			
+			//printf("\nINT15 (E820): guest_ss=%04x, sp=%04x, stackregion=%08x", (u16)vcpu->vmcs.guest_SS_selector,
+			//		(u16)vcpu->vmcs.guest_RSP, (u32)gueststackregion);
+			
+			//get guest IP, CS and FLAGS from the IRET frame
+			guest_ip = gueststackregion[0];
+			guest_cs = gueststackregion[1];
+			guest_flags = gueststackregion[2];
+
+			//printf("\nINT15 (E820): guest_flags=%04x, guest_cs=%04x, guest_ip=%04x",
+			//	guest_flags, guest_cs, guest_ip);
+		
+			//increment e820 descriptor continuation value
+			r->ebx=r->ebx+1;
+					
+			if(r->ebx > (rpb->XtVmmE820NumEntries-1) ){
+				//we have reached the last record, so set CF and make EBX=0
+				r->ebx=0;
+				guest_flags |= (u16)EFLAGS_CF;
+				gueststackregion[2] = guest_flags;
+			}else{
+				//we still have more records, so clear CF
+				guest_flags &= ~(u16)EFLAGS_CF;
+				gueststackregion[2] = guest_flags;
+			}
+		  
+		}
+
+ 	  //update RIP to execute the IRET following the VMCALL instruction
+ 	  //effectively returning from the INT 15 call made by the guest
+	  vcpu->vmcs.guest_RIP += 3;
+
+		return;
+	}
+	
+	
+	//ok, this is some other INT 15h service, so simply chain to the original
+	//INT 15h handler
+	
+	//get IP and CS of the original INT 15h handler
+	ip = *((u16 *)((u32)bdamemory + 4));
+	cs = *((u16 *)((u32)bdamemory + 6));
+	
+	//printf("\nCPU(0x%02x): INT 15, transferring control to 0x%04x:0x%04x", vcpu->id,
+	//	cs, ip);
+		
+	//update VMCS with the CS and IP and let go
+	vcpu->vmcs.guest_RIP = ip;
+	vcpu->vmcs.guest_CS_base = cs * 16;
+	vcpu->vmcs.guest_CS_selector = cs;		 
+}
+
+
 //------------------------------------------------------------------------------
 // guest MSR r/w intercept handling
 // HAL invokes NT kernel via SYSENTER if CPU supports it. However,
