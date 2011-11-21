@@ -282,68 +282,6 @@ typedef struct _vcpu {
 
 } __attribute__((packed)) VCPU;
 
-/*
- //extracted to memory protection component 
- static inline hpt_pme_t* VCPU_get_pml1es(VCPU *vcpu)
-{
-  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    return (hpt_pme_t*)vcpu->vmx_vaddr_ept_p_tables;
-  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    return (hpt_pme_t*)vcpu->npt_vaddr_pts;
-  }
-  return NULL;
-}*/
-
-//XXX: TODO, remove these equates once we have a stable interface
-//description. For now, lets not break anything...
-#define VCPU_get_pml1es emhf_memprot_get_lvl1_pagemap_address
-
-/*
-  //extracted to memory protection component 
- static inline hpt_pme_t* VCPU_get_pml2es(VCPU *vcpu)
-{
-  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    return (hpt_pme_t*)vcpu->vmx_vaddr_ept_pd_tables;
-  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    return (hpt_pme_t*)vcpu->npt_vaddr_pdts;
-  }
-  return NULL;
-}*/
-
-//XXX: TODO, remove these equates once we have a stable interface
-//description. For now, lets not break anything...
-#define VCPU_get_pml2es emhf_memprot_get_lvl2_pagemap_address
-
-/*
-//extracted to memory protection component
-static inline hpt_pme_t* VCPU_get_pml3es(VCPU *vcpu)
-{
-  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    return (hpt_pme_t*)vcpu->vmx_vaddr_ept_pdp_table;
-  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    return (hpt_pme_t*)vcpu->npt_vaddr_ptr;
-  }
-  return NULL;
-}*/
-//XXX: TODO, remove these equates once we have a stable interface
-//description. For now, lets not break anything...
-#define VCPU_get_pml3es emhf_memprot_get_lvl3_pagemap_address
-
-/*
-//extracted to memory protection component
-static inline hpt_pme_t* VCPU_get_pml4(VCPU *vcpu)
-{
-  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    return (hpt_pme_t*)vcpu->vmx_vaddr_ept_pml4_table;
-  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    ASSERT(0);
-  }
-  return NULL;
-}
-*/
-//XXX: TODO, remove these equates once we have a stable interface
-//description. For now, lets not break anything...
-#define VCPU_get_pml4 emhf_memprot_get_lvl4_pagemap_address
 
 
 #define SIZE_STRUCT_VCPU    (sizeof(struct _vcpu))
@@ -511,6 +449,14 @@ typedef struct {
 //----------------------------------------------------------------------
 // memory protection and platform specific EMHFapp interfaces
 // XXX: move these into appropriate components and document
+
+//XXX: TODO, remove these equates once we have a stable interface
+//description. For now, lets not break anything...
+#define VCPU_get_pml1es emhf_memprot_get_lvl1_pagemap_address
+#define VCPU_get_pml2es emhf_memprot_get_lvl2_pagemap_address
+#define VCPU_get_pml3es emhf_memprot_get_lvl3_pagemap_address
+#define VCPU_get_pml4 emhf_memprot_get_lvl4_pagemap_address
+
 
 static inline hpt_type_t VCPU_get_hpt_type(VCPU *vcpu)
 {
