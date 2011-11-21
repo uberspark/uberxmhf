@@ -509,64 +509,7 @@ static void _svm_handle_nmi(VCPU *vcpu, struct vmcb_struct __attribute__((unused
     printf("\nCPU(0x%02x): resuming guest...", vcpu->id);
 }
 
-//---IO Intercept handling------------------------------------------------------
-static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs __attribute__((unused)) *r){
-  ioio_info_t ioinfo;
   
-  ioinfo.bytes = vmcb->exitinfo1;
-
-  if (ioinfo.fields.rep || ioinfo.fields.str){
-    printf("\nCPU(0x%02x): Fatal, unsupported batch I/O ops!", vcpu->id);
-    HALT();
-  }
-
-  //handle IO intercept, IO can either be skipped for the guest
-  // or can be chained back
-  //printf("\nCPU(0x%02x): IO Intercept, port=0x%04x, type=%u", vcpu->id, 
-  //    ioinfo.fields.port, ioinfo.fields.type);
-  
-  //for now we just chain
-	if (ioinfo.fields.type){
-    // IN 
-    if (ioinfo.fields.sz8)
-      *(u8 *)&vmcb->rax = inb(ioinfo.fields.port);
-    if (ioinfo.fields.sz16)
-      *(u16 *)&vmcb->rax = inw(ioinfo.fields.port);
-    if (ioinfo.fields.sz32) 
-       *(u32 *)&vmcb->rax = inl(ioinfo.fields.port);
-  }else{
-    // OUT 
-    if (ioinfo.fields.sz8)
-      outb((u8)vmcb->rax, ioinfo.fields.port);
-    if (ioinfo.fields.sz16)
-      outw((u16)vmcb->rax, ioinfo.fields.port);
-    if (ioinfo.fields.sz32) 
-      outl((u32)vmcb->rax, ioinfo.fields.port);
-  }
-  
-  // exitinfo2 stores the rip of instruction following the IN/OUT 
-  vmcb->rip = vmcb->exitinfo2;
-}
-  
-//---MSR intercept handling-----------------------------------------------------
-static void _svm_handle_msr(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *r){
-  ASSERT( (vmcb->exitinfo1 == 0) || (vmcb->exitinfo1 == 1) );
-  printf("\nCPU(0x%02x): MSR intercept, type=%u, MSR=0x%08x", vcpu->id,
-    (u32)vmcb->exitinfo1, r->ecx);
-  switch(vmcb->exitinfo1){
-    case 0:{  //RDMSR with MSR in ECX
-      rdmsr(r->ecx, &r->eax, &r->edx);        
-    }
-    break;
-    
-    case 1:{  //WRMSR with MSR in ECX
-      wrmsr(r->ecx, r->eax, r->edx);
-    }
-    break;
-  }  
-
-  vmcb->rip += 2; 
-}
 
 //---init SVM-------------------------------------------------------------------
 static void _svm_initSVM(VCPU *vcpu){

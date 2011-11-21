@@ -78,6 +78,27 @@ static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs _
 }
 
 
+//---MSR intercept handling-----------------------------------------------------
+static void _svm_handle_msr(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *r){
+  ASSERT( (vmcb->exitinfo1 == 0) || (vmcb->exitinfo1 == 1) );
+  printf("\nCPU(0x%02x): MSR intercept, type=%u, MSR=0x%08x", vcpu->id,
+    (u32)vmcb->exitinfo1, r->ecx);
+  switch(vmcb->exitinfo1){
+    case 0:{  //RDMSR with MSR in ECX
+      rdmsr(r->ecx, &r->eax, &r->edx);        
+    }
+    break;
+    
+    case 1:{  //WRMSR with MSR in ECX
+      wrmsr(r->ecx, r->eax, r->edx);
+    }
+    break;
+  }  
+
+  vmcb->rip += 2; 
+}
+
+
 //---SVM intercept handler hub--------------------------------------------------
 u32 svm_intercept_handler(VCPU *vcpu, struct regs *r){
   struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
