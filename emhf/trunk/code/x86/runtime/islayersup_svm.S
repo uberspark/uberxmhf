@@ -74,9 +74,6 @@ __svm_start_hvm:
   movl 0x4(%esp), %ebx  //ebx = vcpu vaddr of current CPU
   movl 0x8(%esp), %eax  //eax = vmcb phys. addr of current CPU
 
-	//XXX: remove
-  pushl %ebx            //save vcpu vaddr on top of stack
-  
   //real-mode setup just like the BIOS
   movl $0x0, %ebx
 	movl $0x0, %ecx
@@ -124,11 +121,6 @@ __svm_resume_hvm:
         gotvcpu:
           movl 0x4(%ebx, %ecx, 8), %esi //esi contains vcpu pointer
 
-	
-	//XXX: remove
-	//get a hold of vcpu into ebx
-	movl 32(%esp), %ebx
-	
 	//get hold of pointer to saved GPR on stack
 	movl %esp, %eax
 	
