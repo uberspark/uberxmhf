@@ -60,8 +60,15 @@ u32 emhf_memprot_get_lvl3_pagemap_address(VCPU *vcpu);
 //get level-4 page map address
 u32 emhf_memprot_get_lvl4_pagemap_address(VCPU *vcpu);
 
-//get default root page map
+//get default root page map address
 u32 emhf_memprot_get_default_root_pagemap_address(VCPU *vcpu);
+
+//get current root page map address
+u32 emhf_memprot_get_current_root_pagemap_address(VCPU *vcpu);
+
+//set current root page map address
+void emhf_memprot_set_current_root_pagemap_address(VCPU *vcpu, u32 root);
+
 	
 
 #endif	//__ASSEMBLY__
