@@ -38,6 +38,53 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 #include <emhf.h> 
 
+//---intercept handler (I/O port access)----------------------------------------
+static void _vmx_handle_intercept_ioportaccess(VCPU *vcpu, struct regs *r){
+  u32 access_size, access_type, portnum, stringio;
+	u32 app_ret_status = APP_IOINTERCEPT_CHAIN;
+	
+  access_size = (u32)vcpu->vmcs.info_exit_qualification & 0x00000007UL;
+	access_type = ((u32)vcpu->vmcs.info_exit_qualification & 0x00000008UL) >> 3;
+	portnum =  ((u32)vcpu->vmcs.info_exit_qualification & 0xFFFF0000UL) >> 16;
+	stringio = ((u32)vcpu->vmcs.info_exit_qualification & 0x00000010UL) >> 4;
+	
+  ASSERT(!stringio);	//we dont handle string IO intercepts
+
+  //call our app handler, TODO: it should be possible for an app to
+  //NOT want a callback by setting up some parameters during appmain
+  app_ret_status=emhf_app_handleintercept_portaccess(vcpu, r, portnum, access_type, 
+          access_size);
+
+  if(app_ret_status == APP_IOINTERCEPT_CHAIN){
+   	if(access_type == IO_TYPE_OUT){
+  		if( access_size== IO_SIZE_BYTE)
+  				outb((u8)r->eax, portnum);
+  		else if (access_size == IO_SIZE_WORD)
+  				outw((u16)r->eax, portnum);
+  		else if (access_size == IO_SIZE_DWORD)
+  				outl((u32)r->eax, portnum);	
+  	}else{
+  		if( access_size== IO_SIZE_BYTE){
+  				r->eax &= 0xFFFFFF00UL;	//clear lower 8 bits
+  				r->eax |= (u8)inb(portnum);
+  		}else if (access_size == IO_SIZE_WORD){
+  				r->eax &= 0xFFFF0000UL;	//clear lower 16 bits
+  				r->eax |= (u16)inw(portnum);
+  		}else if (access_size == IO_SIZE_DWORD){
+  				r->eax = (u32)inl(portnum);	
+  		}
+  	}
+  	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+
+  }else{
+    //skip the IO instruction, app has taken care of it
+  	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+  }
+
+	return;
+}
+
+
 //---hvm_intercept_handler------------------------------------------------------
 u32 vmx_intercept_handler(VCPU *vcpu, struct regs *r){
   //read VMCS from physical CPU/core
