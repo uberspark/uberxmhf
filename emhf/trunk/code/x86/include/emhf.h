@@ -508,6 +508,10 @@ typedef struct {
 #include <emhf-parteventhub.h>	//EMHF partition event-hub component
 
 
+//----------------------------------------------------------------------
+// memory protection and platform specific EMHFapp interfaces
+// XXX: move these into appropriate components and document
+
 static inline hpt_type_t VCPU_get_hpt_type(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
@@ -690,7 +694,7 @@ static inline u64 VCPU_gcr4(VCPU *vcpu)
   }
 }
 
-
+//----------------------------------------------------------------------
 
 //generic isolation layer interface
 struct isolation_layer {
