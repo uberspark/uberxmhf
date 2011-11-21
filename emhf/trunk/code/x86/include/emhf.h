@@ -505,7 +505,7 @@ typedef struct {
 //----------------------------------------------------------------------
 // component headers
 #include <emhf-memprot.h>	//EMHF memory protection component
-
+#include <emhf-parteventhub.h>	//EMHF partition event-hub component
 
 
 static inline hpt_type_t VCPU_get_hpt_type(VCPU *vcpu)
