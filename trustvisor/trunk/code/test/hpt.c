@@ -51,7 +51,8 @@ typedef uint32_t u32;
 typedef uint64_t u64;
 #endif
 
-#include <_hpt.h>
+#include <hpt.h>
+
 
 /* global CPU structs */
 /* VCPU g_vcpubuffers[0]; */
