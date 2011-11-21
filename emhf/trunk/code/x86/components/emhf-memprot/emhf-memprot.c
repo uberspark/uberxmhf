@@ -88,6 +88,17 @@ u32 emhf_memprot_get_lvl4_pagemap_address(VCPU *vcpu){
     return (hpt_pme_t*)vcpu->vmx_vaddr_ept_pml4_table;
 }
 
+//get default root page map
+u32 emhf_memprot_get_default_root_pagemap_address(VCPU *vcpu){
+  ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
+		return (u32)vcpu->npt_vaddr_ptr;
+	else //CPU_VENDOR_INTEL
+		return (u32)vcpu->vmx_vaddr_ept_pml4_table;
+} 
+
+
 /*
 //set protection for a given page map entry
 inline hpt_pme_t emhf_memprot_pagemapentry_setprot(hpt_type_t t, int lvl, hpt_pme_t entry, hpt_prot_t perms){

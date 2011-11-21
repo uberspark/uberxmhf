@@ -60,12 +60,9 @@ u32 emhf_memprot_get_lvl3_pagemap_address(VCPU *vcpu);
 //get level-4 page map address
 u32 emhf_memprot_get_lvl4_pagemap_address(VCPU *vcpu);
 
-/*//set protection for a given page map entry
-inline hpt_pme_t emhf_memprot_pagemapentry_setprot(hpt_type_t t, int lvl, hpt_pme_t entry, hpt_prot_t perms);
-
-//get protection for a given page map entry
-inline hpt_prot_t emhf_memprot_pagemapentry_getprot(hpt_type_t t, int lvl, hpt_pme_t entry);
-*/
+//get default root page map
+u32 emhf_memprot_get_default_root_pagemap_address(VCPU *vcpu);
+	
 
 #endif	//__ASSEMBLY__
 
