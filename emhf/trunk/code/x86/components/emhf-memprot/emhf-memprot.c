@@ -52,7 +52,7 @@ void emhf_memprot_initialize(VCPU *vcpu){
 }
 
 // get level-1 page map address
-inline hpt_pme_t* emhf_memprot_get_lvl1_pagemap_address(VCPU *vcpu){
+u32 emhf_memprot_get_lvl1_pagemap_address(VCPU *vcpu){
 	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
 	if (vcpu->cpu_vendor == CPU_VENDOR_AMD)
@@ -62,7 +62,7 @@ inline hpt_pme_t* emhf_memprot_get_lvl1_pagemap_address(VCPU *vcpu){
 }
 
 //get level-2 page map address
-inline hpt_pme_t* emhf_memprot_get_lvl2_pagemap_address(VCPU *vcpu){
+u32 emhf_memprot_get_lvl2_pagemap_address(VCPU *vcpu){
 	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
 	if (vcpu->cpu_vendor == CPU_VENDOR_AMD)
@@ -72,7 +72,7 @@ inline hpt_pme_t* emhf_memprot_get_lvl2_pagemap_address(VCPU *vcpu){
 }
 
 //get level-3 page map address
-inline hpt_pme_t* emhf_memprot_get_lvl3_pagemap_address(VCPU *vcpu){
+u32 emhf_memprot_get_lvl3_pagemap_address(VCPU *vcpu){
 	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
 	if (vcpu->cpu_vendor == CPU_VENDOR_AMD)
@@ -82,7 +82,7 @@ inline hpt_pme_t* emhf_memprot_get_lvl3_pagemap_address(VCPU *vcpu){
 }
 
 //get level-4 page map address
-inline hpt_pme_t* emhf_memprot_get_lvl4_pagemap_address(VCPU *vcpu){
+u32 emhf_memprot_get_lvl4_pagemap_address(VCPU *vcpu){
 	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_INTEL);	//we don;t have a level-4 pagemap for AMD
 
     return (hpt_pme_t*)vcpu->vmx_vaddr_ept_pml4_table;
