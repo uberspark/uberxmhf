@@ -6,6 +6,7 @@ AS_SOURCES = ./arch/x86/svm/peh-x86svm-entry.S
 AS_SOURCES += ./arch/x86/vmx/peh-x86vmx-entry.S 
 
 C_SOURCES = ./arch/x86/svm/peh-x86svm-main.c 
+C_SOURCES += ./arch/x86/vmx/peh-x86vmx-main.c 
 
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
