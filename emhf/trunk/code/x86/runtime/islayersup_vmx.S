@@ -38,34 +38,9 @@
 
 #include <emhf.h> 
 
-//---globals referenced by this module------------------------------------------
-.extern vmx_intercept_handler
-.extern g_midtable_numentries
-.extern g_midtable
+//---globals and externs referenced by this module------------------------------------------
 .extern x_gdt_start
-
-#define SAVEALL_GPRS \
-        pushl	%edi	; \
-        pushl	%esi	; \
-				pushl	%ebp	; \
-				pushl	%esp    ; \
-        pushl	%ebx	; \
-        pushl	%edx	; \
-        pushl	%ecx	; \
-        pushl	%eax	; 
-	
-#define RESTOREALL_GPRS \
-				popl	%eax	; \
-        popl	%ecx	; \
-        popl	%edx	; \
-        popl	%ebx	; \
-				popl	%esp	; \
-        popl	%ebp	; \
-        popl	%esi	; \
-        popl	%edi	; 
-
-
-   
+  
 .section .text
 
 //----------------------------------------------------------------------
