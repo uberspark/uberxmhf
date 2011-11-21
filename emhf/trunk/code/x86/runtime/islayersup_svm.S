@@ -39,6 +39,10 @@
 
 #include <emhf.h> 
 
+//---globals referenced by this module------------------------------------------
+.extern g_midtable_numentries
+.extern g_midtable
+
 #define SAVEALL_GPRS \
         pushl	%edi	; \
         pushl	%esi	; \
@@ -101,6 +105,24 @@ __svm_resume_hvm:
         addl $0x20, %eax
         movl (%eax), %eax
         shr $24, %eax
+
+    
+        //get vcpu virtual address of this CPU/core
+        movl g_midtable_numentries, %edx
+        movl $(g_midtable), %ebx
+
+        xorl %ecx, %ecx
+        getvcpuloop:
+          movl 0x0(%ebx, %ecx, 8), %ebp  //ebp contains the lapic id
+          cmpl %eax, %ebp
+          jz gotvcpu
+          incl %ecx
+          cmpl %edx, %ecx
+          jb getvcpuloop
+          //we should never get here, if so just halt
+          hlt
+        gotvcpu:
+          movl 0x4(%ebx, %ecx, 8), %esi //esi contains vcpu pointer
 
 	
 	//XXX: remove
