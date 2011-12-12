@@ -99,13 +99,13 @@ void * emhf_memprot_get_default_root_pagemap_address(VCPU *vcpu){
 } 
 
 //get current root page map address
-void * emhf_memprot_get_current_root_pagemap_address(VCPU *vcpu){
+u64 emhf_memprot_get_current_root_pagemap_address(VCPU *vcpu){
   ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
   
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-		return (void *) (u32)((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3;
+		return (u64) (u32)((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3;
 	else //CPU_VENDOR_INTEL
-		return (void *) (u32)vcpu->vmcs.control_EPT_pointer_full;
+		return (u64) (u32)vcpu->vmcs.control_EPT_pointer_full;
 }
 
 //set current root page map address
