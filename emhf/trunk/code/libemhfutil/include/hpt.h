@@ -344,16 +344,27 @@ static inline hpt_pa_t hpt_cr3_get_address(hpt_type_t t, u64 cr3)
   ASSERT(0); return (hpt_pa_t)0; /* unreachable; appeases compiler */
 }
 
+#define HPT_EPTP_MBZ63_H 63
+#define HPT_EPTP_MBZ63_L HPT_EPT_MAXPHYADDR
+#define HPT_EPTP_PML4_HI (HPT_EPT_MAXPHYADDR-1)
+#define HPT_EPTP_PML4_LO 12
+#define HPT_EPTP_MBZ11_HI 11
+#define HPT_EPTP_MBZ11_LO 6
+#define HPT_EPTP_PWLM1_HI 5
+#define HPT_EPTP_PWLM1_LO 3
+#define HPT_EPTP_PSMT_HI 2
+#define HPT_EPTP_PSMT_LO 0
+
 static inline u64 hpt_eptp_set_address(hpt_type_t t, u64 eptp, hpt_pa_t a)
 {
   ASSERT(t == HPT_TYPE_EPT);
-  return BR64_COPY_BITS_HL(eptp, a, HPT_EPT_MAXPHYADDR-1, 12, 0);
+  return BR64_COPY_BITS_HL(eptp, a, HPT_EPTP_PML4_HI, HPT_EPTP_PML4_LO, 0);
 }
 
 static inline hpt_pa_t hpt_eptp_get_address(hpt_type_t t, u64 eptp)
 {
   ASSERT(t == HPT_TYPE_EPT);
-  return BR64_COPY_BITS_HL(0, eptp, HPT_EPT_MAXPHYADDR-1, 12, 0);
+  return BR64_COPY_BITS_HL(0, eptp, HPT_EPTP_PML4_HI, HPT_EPTP_PML4_LO, 0);
 }
 
 #define HPT_CR4_PAE_BIT 5
