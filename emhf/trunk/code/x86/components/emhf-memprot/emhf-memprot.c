@@ -109,7 +109,7 @@ spa_t emhf_memprot_get_current_root_pagemap_address(VCPU *vcpu){
 }
 
 //set current root page map address
-void emhf_memprot_set_current_root_pagemap_address(VCPU *vcpu, u32 root){
+void emhf_memprot_set_current_root_pagemap_address(VCPU *vcpu, spa_t root){
   ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
   
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)

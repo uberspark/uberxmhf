@@ -67,7 +67,7 @@ void * emhf_memprot_get_default_root_pagemap_address(VCPU *vcpu);
 spa_t emhf_memprot_get_current_root_pagemap_address(VCPU *vcpu);
 
 //set current root page map address
-void emhf_memprot_set_current_root_pagemap_address(VCPU *vcpu, u32 root);
+void emhf_memprot_set_current_root_pagemap_address(VCPU *vcpu, spa_t root);
 
 	
 
