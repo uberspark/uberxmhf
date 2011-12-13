@@ -88,17 +88,7 @@ static inline hpt_pm_t VCPU_get_current_root_pm(VCPU *vcpu)
 
 static inline void VCPU_set_current_root_pm(VCPU *vcpu, hpt_pm_t root)
 {
-  if (VCPU_get_hpt_type(vcpu) == HPT_TYPE_EPT) {
-    ASSERT(PAGE_ALIGNED_4K((uintptr_t)root));
-    emhf_memprot_set_current_root_pagemap_address(vcpu, BR32_COPY_BITS_HL(vcpu->vmcs.control_EPT_pointer_full, hva2spa(root), 31, 12, 0) );
-  } else if (VCPU_get_hpt_type(vcpu) == HPT_TYPE_PAE) {
-    u64 oldcr3, newcr3;
-    oldcr3 = emhf_memprot_get_current_root_pagemap_address(vcpu);
-    newcr3 = hpt_cr3_set_address(HPT_TYPE_PAE, oldcr3, hva2spa(root));
-    emhf_memprot_set_current_root_pagemap_address(vcpu, newcr3);
-  } else {
-    ASSERT(0);
-  }
+  emhf_memprot_set_current_root_pagemap_address(vcpu, hva2spa(root));
 }
 
 
