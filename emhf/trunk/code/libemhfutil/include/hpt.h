@@ -344,6 +344,18 @@ static inline hpt_pa_t hpt_cr3_get_address(hpt_type_t t, u64 cr3)
   ASSERT(0); return (hpt_pa_t)0; /* unreachable; appeases compiler */
 }
 
+static inline u64 hpt_eptp_set_address(hpt_type_t t, u64 eptp, hpt_pa_t a)
+{
+  ASSERT(t == HPT_TYPE_EPT);
+  return BR64_COPY_BITS_HL(eptp, a, HPT_EPT_MAXPHYADDR-1, 12, 0);
+}
+
+static inline hpt_pa_t hpt_eptp_get_address(hpt_type_t t, u64 eptp)
+{
+  ASSERT(t == HPT_TYPE_EPT);
+  return BR64_COPY_BITS_HL(0, eptp, HPT_EPT_MAXPHYADDR-1, 12, 0);
+}
+
 #define HPT_CR4_PAE_BIT 5
 #define HPT_CR4_PSE_BIT 4
 
