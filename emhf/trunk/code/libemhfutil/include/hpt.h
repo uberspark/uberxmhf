@@ -250,9 +250,15 @@ static inline size_t hpt_pm_size(hpt_type_t t, int lvl)
 #define HPT_LONG_RW_L4321_MP_BIT 1 /* 0:read-only 1:read\write */
 #define HPT_LONG_P_L4321_MP_BIT 0 /* present */
 
+#define HPT_EPT_MAXPHYADDR 52 /* FIXME, should find this dynamically
+                                 using cpuid, cf Intel manual 3A
+                                 4.1.4. using the max value of 52,
+                                 which could cause trouble if the
+                                 reserved bitfield above MAXPHYADDR
+                                 gets used for anything. */
 #define HPT_EPT_AVL63_L4321_MP_HI 63
 #define HPT_EPT_AVL52_L4321_MP_LO 52
-#define HPT_EPT_ADDR_L4321_MP_HI 51
+#define HPT_EPT_ADDR_L4321_MP_HI (HPT_EPT_MAXPHYADDR-1)
 #define HPT_EPT_ADDR_L4321_MP_LO 12
 #define HPT_EPT_AVL11_L4321_MP_HI 11
 #define HPT_EPT_AVL11_L4321_MP_LO 8
