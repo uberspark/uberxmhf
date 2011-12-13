@@ -38,6 +38,7 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <emhf.h> 
+#include <hpt.h>
 
 // initialize memory protection structures for a given core (vcpu)
 void emhf_memprot_initialize(VCPU *vcpu){
@@ -103,9 +104,10 @@ spa_t emhf_memprot_get_current_root_pagemap_address(VCPU *vcpu){
   ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
   
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-		return ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3;
+          return hpt_cr3_get_address(HPT_TYPE_PAE,
+                                     ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3);
 	else //CPU_VENDOR_INTEL
-		return vcpu->vmcs.control_EPT_pointer_full;
+          return BR64_COPY_BITS_HL(0, vcpu->vmcs.control_EPT_pointer_full, 31, 12, 0);
 }
 
 //set current root page map address

@@ -83,15 +83,7 @@ static inline hpt_pm_t VCPU_get_default_root_pm(VCPU *vcpu)
 
 static inline hpt_pm_t VCPU_get_current_root_pm(VCPU *vcpu)
 {
-  if (VCPU_get_hpt_type(vcpu) == HPT_TYPE_EPT) {
-    return spa2hva(BR32_COPY_BITS_HL(0, emhf_memprot_get_current_root_pagemap_address(vcpu), 31, 12, 0));
-  } else if (VCPU_get_hpt_type(vcpu) == HPT_TYPE_PAE) {
-    return spa2hva(hpt_cr3_get_address(HPT_TYPE_PAE,
-                                       emhf_memprot_get_current_root_pagemap_address(vcpu) ));
-  } else {
-    ASSERT(0);
-  }
-  ASSERT(0); return (hpt_pm_t)0; /* unreachable; appeases compiler */  
+  return spa2hva(emhf_memprot_get_current_root_pagemap_address(vcpu));
 }
 
 static inline void VCPU_set_current_root_pm(VCPU *vcpu, hpt_pm_t root)
