@@ -61,7 +61,7 @@ u64 * emhf_memprot_get_lvl3_pagemap_address(VCPU *vcpu);
 u64 * emhf_memprot_get_lvl4_pagemap_address(VCPU *vcpu);
 
 //get default root page map address
-void * emhf_memprot_get_default_root_pagemap_address(VCPU *vcpu);
+u64 * emhf_memprot_get_default_root_pagemap_address(VCPU *vcpu);
 
 //get current root page map address
 spa_t emhf_memprot_get_current_root_pagemap_address(VCPU *vcpu);

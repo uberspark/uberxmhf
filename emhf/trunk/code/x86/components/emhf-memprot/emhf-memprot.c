@@ -90,13 +90,13 @@ u64 * emhf_memprot_get_lvl4_pagemap_address(VCPU *vcpu){
 }
 
 //get default root page map address
-void * emhf_memprot_get_default_root_pagemap_address(VCPU *vcpu){
+u64 * emhf_memprot_get_default_root_pagemap_address(VCPU *vcpu){
   ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-		return (void *)vcpu->npt_vaddr_ptr;
+		return (u64*)vcpu->npt_vaddr_ptr;
 	else //CPU_VENDOR_INTEL
-		return (void *)vcpu->vmx_vaddr_ept_pml4_table;
+		return (u64*)vcpu->vmx_vaddr_ept_pml4_table;
 } 
 
 //get current root page map address
