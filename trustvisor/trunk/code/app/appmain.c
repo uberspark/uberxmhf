@@ -119,7 +119,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 
 #ifdef __MP_VERSION__
 				/* quiesce othe CPUs */
-				g_isl->do_quiesce(vcpu);
+				emhf_smpguest_quiesce(vcpu);
 #endif
 
 				/* do atomic scode registration */
@@ -127,7 +127,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 
 #ifdef __MP_VERSION__
 				/* wake up other CPUs */
-				g_isl->do_wakeup(vcpu);
+				emhf_smpguest_endquiesce(vcpu);
 #endif
 				break;
 			}
@@ -141,7 +141,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 
 #ifdef __MP_VERSION__
 				/* quiesce othe CPUs */
-				g_isl->do_quiesce(vcpu);
+				emhf_smpguest_quiesce(vcpu);
 #endif
 
 				/* do atomic scode unregistration */
@@ -149,7 +149,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 
 #ifdef __MP_VERSION__
 				/* wake up other CPUs */
-				g_isl->do_wakeup(vcpu);
+				emhf_smpguest_endquiesce(vcpu);
 #endif
 				break;
 			}
