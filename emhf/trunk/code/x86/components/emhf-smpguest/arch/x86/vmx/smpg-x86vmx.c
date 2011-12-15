@@ -159,7 +159,7 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
 //accesses.
 //NOTE: this function MUST be called only from the BSP and the vcpu
 //passed in should also be that of the BSP
-void vmx_apic_setup(VCPU *vcpu){
+void emhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu){
   u32 eax, edx;
 
 	//we should only be called from the BSP
@@ -189,7 +189,7 @@ void vmx_apic_setup(VCPU *vcpu){
 //page with physical address of virtual_LAPIC page, store the
 //register accessed, store request as WRITE and single-step
 //XXX TODO: return value currently meaningless
-u32 vmx_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
+u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode){
 	//printf("\nCPU(0x%02x): LAPIC: p=0x%08x, ecode=0x%08x", vcpu->id,
 	//		paddr, errorcode);
 
@@ -260,7 +260,7 @@ u32 vmx_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
 //if request was WRITE, we get the value from reading virtual_LAPIC_vaddr
 //to propagate we just write to the physical LAPIC
 
-void vmx_lapic_access_dbexception(VCPU *vcpu, struct regs __attribute__((unused)) *r){
+void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs *r){
   u32 delink_lapic_interception=0;
   
   if(g_vmx_lapic_op == LAPIC_OP_WRITE){

@@ -59,6 +59,13 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
 	struct regs *r);
 u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode);
 
+//x86 VMX backends
+void emhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu);
+void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, 
+	struct regs *r);
+u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode);
+
+
 
 #endif	//__ASSEMBLY__
 
