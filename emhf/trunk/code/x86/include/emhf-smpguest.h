@@ -46,7 +46,16 @@
 //initialize SMP guest logic
 void emhf_smpguest_initialize(VCPU *vcpu);
 
+//handle LAPIC access #DB (single-step) exception event
+void emhf_smpguest_eventhandler_dbexception(VCPU *vcpu, 
+	struct regs *r);
+
+
+//x86 SVM backends
 void emhf_smpguest_arch_x86svm_initialize(VCPU *vcpu);
+void emhf_smpguest_arch_x86svm_lapicaccess_dbexception(VCPU *vcpu, 
+	struct regs *r);
+
 
 #endif	//__ASSEMBLY__
 

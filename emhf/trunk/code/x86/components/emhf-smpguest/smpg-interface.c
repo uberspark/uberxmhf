@@ -55,3 +55,10 @@ void emhf_smpguest_initialize(VCPU *vcpu){
 	
 }
 
+//handle LAPIC access #DB (single-step) exception event
+void emhf_smpguest_eventhandler_dbexception(VCPU *vcpu, 
+	struct regs *r){
+		
+		
+}
+

@@ -295,7 +295,8 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
 
  		case VMEXIT_EXCEPTION_DB:{
      ASSERT(svm_isbsp() == 1); //LAPIC SIPI detection only happens on BSP
-     svm_lapic_access_dbexception(vcpu, r);
+     //svm_lapic_access_dbexception(vcpu, r);
+     emhf_smpguest_eventhandler_dbexception(vcpu, r);
      }
      break;
 
