@@ -710,7 +710,11 @@ void vmx_setupvcpus(u32 cpu_vendor){
   }
 }
 
-
+static void vmx_apic_setup(VCPU *vcpu){
+		printf("\n%s: REFACTORED, SHOULD NEVER BE HERE", __FUNCTION__);
+		HALT();
+	
+}
 
 //------------------------------------------------------------------------------
 struct isolation_layer g_isolation_layer_vmx = {
