@@ -384,6 +384,46 @@ void emhf_smpguest_arch_x86svm_endquiesce(VCPU *vcpu){
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
 void emhf_smpguest_arch_x86svm_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
+  struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+	
+  if( (!vcpu->nmiinhvm) && (!g_svm_quiesce) ){
+    printf("\nCPU(0x%02x): warning, ignoring spurious NMI within hypervisor!", vcpu->id);
+    return;
+  }
 
-
+  if(g_svm_quiesce){
+    //ok this NMI is because of g_svm_quiesce. note: g_svm_quiesce can be 1 and
+    //this could be a NMI for the guest. we have no way of distinguising
+    //this. however, since g_svm_quiesce=1, we can handle this NMI as a g_svm_quiesce NMI
+    //and rely on the platform h/w to reissue the NMI later
+    printf("\nCPU(0x%02x): NMI for core g_svm_quiesce", vcpu->id);
+    printf("\nCPU(0x%02x): CS:EIP=0x%04x:0x%08x", vcpu->id, (u16)vmcb->cs.sel, (u32)vmcb->rip);
+  
+    printf("\nCPU(0x%02x): quiesced, updating counter. awaiting EOQ...", vcpu->id);
+    spin_lock(&g_svm_lock_quiesce_counter);
+    g_svm_quiesce_counter++;
+    spin_unlock(&g_svm_lock_quiesce_counter);
+    
+    while(!g_svm_quiesce_resume_signal);
+    printf("\nCPU(0x%02x): EOQ received, resuming...", vcpu->id);
+    
+    spin_lock(&g_svm_lock_quiesce_resume_counter);
+    g_svm_quiesce_resume_counter++;
+    spin_unlock(&g_svm_lock_quiesce_resume_counter);
+    
+    //printf("\nCPU(0x%08x): Halting!", vcpu->id);
+    //HALT();
+    
+  }else{
+    //we are not in quiesce, so simply inject this NMI back to guest
+    ASSERT( vcpu->nmiinhvm == 1 );
+    printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
+    vmcb->eventinj.fields.vector=0;
+    vmcb->eventinj.fields.type = EVENTTYPE_NMI;
+    vmcb->eventinj.fields.ev=0;
+    vmcb->eventinj.fields.v=1;
+    vmcb->eventinj.fields.errorcode=0;
+  }
+  
+  vcpu->nmiinhvm=0;
 }
