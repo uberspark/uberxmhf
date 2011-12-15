@@ -46,6 +46,7 @@
 //initialize SMP guest logic
 void emhf_smpguest_initialize(VCPU *vcpu);
 
+void emhf_smpguest_arch_x86svm_initialize(VCPU *vcpu);
 
 #endif	//__ASSEMBLY__
 

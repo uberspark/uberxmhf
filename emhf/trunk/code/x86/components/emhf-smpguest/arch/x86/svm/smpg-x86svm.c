@@ -38,3 +38,20 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 #include <emhf.h> 
 
+
+void emhf_smpguest_arch_x86svm_initialize(VCPU *vcpu){
+  u32 eax, edx;
+  struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+  
+  //read APIC base address from MSR
+  rdmsr(MSR_APIC_BASE, &eax, &edx);
+  ASSERT( edx == 0 ); //APIC is below 4G
+  g_svm_lapic_base = eax & 0xFFFFF000UL;
+  printf("\nBSP(0x%02x): Local APIC base=0x%08x", vcpu->id, g_svm_lapic_base);
+  
+  //set physical 4K page of APIC base address to not-present
+  //this will cause NPF on access to the APIC page which is then
+  //handled by lapic_access_handler
+  npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, 0);
+  vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
+}

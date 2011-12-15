@@ -134,7 +134,7 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
 		return 0;	//some cores are still to receive SIPI, continue LAPIC interception  
 }
 
-
+/* refactor
 //---SVM APIC setup-------------------------------------------------------------
 void svm_apic_setup(VCPU *vcpu){
   u32 eax, edx;
@@ -152,7 +152,7 @@ void svm_apic_setup(VCPU *vcpu){
   npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, 0);
   vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
 }
-
+*/
 
 
 
