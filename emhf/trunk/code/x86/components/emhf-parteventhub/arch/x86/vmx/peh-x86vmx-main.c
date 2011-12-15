@@ -38,7 +38,7 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 #include <emhf.h> 
 
-
+/*
 //---NMI processing routine-----------------------------------------------------
 void _vmx_processNMI(VCPU *vcpu, struct regs __attribute__((unused)) *r){
   
@@ -81,7 +81,7 @@ void _vmx_processNMI(VCPU *vcpu, struct regs __attribute__((unused)) *r){
   }
   
   
-}
+}*/
 
 
 //---intercept handler (CPUID)--------------------------------------------------
@@ -504,7 +504,8 @@ u32 emhf_parteventhub_intercept_handler_x86vmx(VCPU *vcpu, struct regs *r){
 				
 				case 0x02:	//NMI
 					vcpu->nmiinhvm=1;	//this NMI occured when the core was in guest (HVM)
-					_vmx_processNMI(vcpu, r);
+					//_vmx_processNMI(vcpu, r);
+					emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(vcpu, r);
 					vcpu->nmiinhvm=0;
 					break;
 				
