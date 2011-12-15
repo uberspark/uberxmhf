@@ -380,7 +380,7 @@ void allcpus_common_start(VCPU *vcpu){
 #define __TEST_CPU_QUIESCE__	1
 #if defined (__TEST_CPU_QUIESCE__)
 	//testing the CPU quiesce implementation
-  {
+  if(g_midtable_numentries > 1) {
 		u32 test_quiesce_cpu_counter=0;
 		u32 lock_test_quiesce_cpu_counter = 1;
 		
@@ -388,6 +388,7 @@ void allcpus_common_start(VCPU *vcpu){
 		spin_lock(&lock_test_quiesce_cpu_counter);
 		test_quiesce_cpu_counter++;
 		spin_unlock(&lock_test_quiesce_cpu_counter);
+		printf("\nCPU(%02x): __TEST_CPU_QUIESCE__, counter=%u", vcpu->id, test_quiesce_cpu_counter);
 		
 		//if we are an AP, wait for quiesce signal
 		//this acts like a dummy SMP guest doing some processing on other APs while BSP
@@ -398,6 +399,7 @@ void allcpus_common_start(VCPU *vcpu){
 			spin_lock(&lock_test_quiesce_cpu_counter);
 			test_quiesce_cpu_counter++;
 			spin_unlock(&lock_test_quiesce_cpu_counter);
+			printf("\nCPU(%02x): __TEST_CPU_QUIESCE__, counter=%u", vcpu->id, test_quiesce_cpu_counter);
 			//idle loop
 			while(1);
 		}
