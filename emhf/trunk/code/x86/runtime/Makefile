@@ -35,6 +35,10 @@ OBJECTS_PRECOMPILED += ../components/emhf-parteventhub/arch/x86/svm/peh-x86svm-m
 OBJECTS_PRECOMPILED += ../components/emhf-parteventhub/arch/x86/vmx/peh-x86vmx-entry.o
 OBJECTS_PRECOMPILED += ../components/emhf-parteventhub/arch/x86/vmx/peh-x86vmx-main.o
 
+OBJECTS_PRECOMPILED += ../components/emhf-smpguest/smpg-interface.o
+OBJECTS_PRECOMPILED += ../components/emhf-smpguest/arch/x86/svm/smpg-x86svm.o
+
+
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 
 # targets

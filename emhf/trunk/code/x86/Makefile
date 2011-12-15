@@ -80,6 +80,8 @@ components:
 	cd components/emhf-memprot && $(MAKE) -w all
 	#EMHF partition event-hub component
 	cd components/emhf-parteventhub && $(MAKE) -w all
+	#EMHF SMP guest component
+	cd components/emhf-smpguest && $(MAKE) -w all
 
 .PHONY: common
 common:
