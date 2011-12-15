@@ -410,7 +410,9 @@ void allcpus_common_start(VCPU *vcpu){
 		//if we are the BSP setup SIPI intercept
 		if(vcpu->isbsp){
 			if(g_midtable_numentries > 1){
-				g_isl->hvm_apic_setup(vcpu);
+				//g_isl->hvm_apic_setup(vcpu);
+				//initialize SMP guest component
+				emhf_smpguest_initialize(vcpu);
 				printf("\nCPU(0x%02x): BSP, setup SIPI interception.", vcpu->id);
 			}
 		}else{ //else, we are an AP and wait for SIPI signal
