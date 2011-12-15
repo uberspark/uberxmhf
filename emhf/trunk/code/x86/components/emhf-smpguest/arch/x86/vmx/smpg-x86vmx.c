@@ -154,6 +154,24 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
 }
 
 
+static void _vmx_send_quiesce_signal(VCPU *vcpu){
+  u32 *icr_low = (u32 *)(0xFEE00000 + 0x300);
+  u32 *icr_high = (u32 *)(0xFEE00000 + 0x310);
+  u32 icr_high_value= 0xFFUL << 24;
+  u32 prev_icr_high_value;
+    
+  prev_icr_high_value = *icr_high;
+  
+  *icr_high = icr_high_value;    //send to all but self
+  *icr_low = 0x000C0400UL;      //send NMI        
+  
+  //restore icr high
+  *icr_high = prev_icr_high_value;
+    
+  printf("\nCPU(0x%02x): NMIs fired!", vcpu->id);
+}
+
+
 //---VMX APIC setup-------------------------------------------------------------
 //this function sets up the EPT for the vcpu core to intercept LAPIC
 //accesses.

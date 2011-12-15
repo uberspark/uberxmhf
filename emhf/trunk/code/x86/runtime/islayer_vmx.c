@@ -350,7 +350,7 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
 }
 
 
-//---quiescing implementation---------------------------------------------------
+/*//---quiescing implementation---------------------------------------------------
 static void _vmx_send_quiesce_signal(VCPU *vcpu){
   u32 *icr_low = (u32 *)(0xFEE00000 + 0x300);
   u32 *icr_high = (u32 *)(0xFEE00000 + 0x310);
@@ -366,7 +366,7 @@ static void _vmx_send_quiesce_signal(VCPU *vcpu){
   *icr_high = prev_icr_high_value;
     
   printf("\nCPU(0x%02x): NMIs fired!", vcpu->id);
-}
+}*/
 
 
 
