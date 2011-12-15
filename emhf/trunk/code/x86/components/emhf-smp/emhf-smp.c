@@ -39,3 +39,14 @@
 
 #include <emhf.h> 
 
+// we implement the smp component in a way that the runtime
+// component calls into one of the exported interfaces in the event
+// it wishes to initialize multiple cores. this helps us to detach
+// this component entirely in the uniprocessor case
+
+// functions exported
+// 1. g_isl->wakeup_aps(); //runtime
+// 2. g_isl->hvm_apic_setup(vcpu); //runtime
+// 3. vmx/svm_lapic_access_handler(vcpu, gpa, errorcode); //eventhub
+// 4. vmx/svm_lapic_access_dbexception(vcpu, r); //eventhub
+
