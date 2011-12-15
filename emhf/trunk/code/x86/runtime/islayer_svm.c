@@ -587,7 +587,8 @@ void svm_runtime_exception_handler(u32 vector, struct regs *r){
   printf("\nCPU(0x%02x): XtRtmExceptionHandler: Exception=0x%08X", vcpu->id, vector);
   printf("\nCPU(0x%02x): ESP=0x%08x", vcpu->id, r->esp);
   if(vector == 0x2){
-    _svm_processNMI(vcpu, (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr, r);
+    //_svm_processNMI(vcpu, (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr, r);
+    emhf_smpguest_eventhandler_nmiexception(vcpu, r);
     return;
   }	
 }
