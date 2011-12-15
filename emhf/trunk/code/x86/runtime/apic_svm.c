@@ -37,6 +37,7 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 #include <emhf.h> 
 
+/*
 //the LAPIC register that is being accessed during emulation
 static u32 g_svm_lapic_reg __attribute__(( section(".data") )) = 0;
 
@@ -132,7 +133,7 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
 		return 1;	//all cores have received SIPI, we can discontinue LAPIC interception
 	else
 		return 0;	//some cores are still to receive SIPI, continue LAPIC interception  
-}
+}*/
 
 /* refactor
 //---SVM APIC setup-------------------------------------------------------------
@@ -155,7 +156,7 @@ void svm_apic_setup(VCPU *vcpu){
 */
 
 
-
+/*
 //------------------------------------------------------------------------------
 //if there is a read request, store the register accessed
 //store request as READ
@@ -228,7 +229,7 @@ u32 svm_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
     //lapic_access_dbexception after a DB exception
     clgi();
   }
-  return 0; /* XXX TODO: dummy; currently meaningless */
+  return 0; // XXX TODO: dummy; currently meaningless 
 }
 
 
@@ -306,7 +307,7 @@ void svm_lapic_access_dbexception(VCPU *vcpu, struct regs __attribute__((unused)
   
   //enable interrupts on this CPU
   stgi();
-}
+}*/
 
 
 
