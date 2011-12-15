@@ -881,11 +881,11 @@ struct isolation_layer g_isolation_layer_svm = {
 	.isbsp = svm_isbsp,
 	.wakeup_aps = svm_wakeup_aps,
 	.hvm_initialize_csrip = svm_initialize_vmcb_csrip,
-	.hvm_apic_setup = svm_apic_setup,
+	//.hvm_apic_setup = svm_apic_setup,
 	.hvm_start = svm_start_hvm,
 	.hvm_intercept_handler = emhf_parteventhub_intercept_handler_x86svm,
-	.do_quiesce = svm_do_quiesce,
-	.do_wakeup = svm_do_wakeup,
+	//.do_quiesce = svm_do_quiesce,
+	//.do_wakeup = svm_do_wakeup,
 	.setupvcpus = svm_setupvcpus,
 };
 

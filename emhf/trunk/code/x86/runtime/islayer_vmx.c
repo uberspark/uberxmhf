@@ -737,11 +737,11 @@ struct isolation_layer g_isolation_layer_vmx = {
 	.isbsp = vmx_isbsp,
 	.wakeup_aps = vmx_wakeup_aps,
 	.hvm_initialize_csrip = vmx_initialize_vmcs_csrip,
-	.hvm_apic_setup = vmx_apic_setup,
+	//.hvm_apic_setup = vmx_apic_setup,
 	.hvm_start = vmx_start_hvm,
 	.hvm_intercept_handler = emhf_parteventhub_intercept_handler_x86vmx,
-	.do_quiesce = vmx_do_quiesce,
-	.do_wakeup = vmx_do_wakeup,
+	//.do_quiesce = vmx_do_quiesce,
+	//.do_wakeup = vmx_do_wakeup,
 	.setupvcpus = vmx_setupvcpus,
 };
 
