@@ -120,6 +120,7 @@ static VCPU *_svm_getvcpu(void){
   HALT(); return NULL; /* will never return presently */
 }
 
+/*
 //---NMI processing routine-----------------------------------------------------
 static void _svm_processNMI(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs __attribute__((unused)) *r){
   if( (!vcpu->nmiinhvm) && (!g_svm_quiesce) ){
@@ -162,7 +163,7 @@ static void _svm_processNMI(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs __
   }
   
   vcpu->nmiinhvm=0;
-}
+}*/
 
 //---quiescing implementation---------------------------------------------------
 /*static void _svm_send_quiesce_signal(VCPU *vcpu, struct vmcb_struct __attribute__((unused)) *vmcb){

@@ -382,3 +382,8 @@ void emhf_smpguest_arch_x86svm_endquiesce(VCPU *vcpu){
         spin_unlock(&g_svm_lock_quiesce);
 }
 
+//quiescing handler for #NMI (non-maskable interrupt) exception event
+void emhf_smpguest_arch_x86svm_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
+
+
+}
