@@ -309,3 +309,9 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
   stgi();
 }
 
+//quiesce interface to switch all guest cores into hypervisor mode
+void emhf_smpguest_arch_x86svm_quiesce(VCPU *vcpu){
+
+
+
+}

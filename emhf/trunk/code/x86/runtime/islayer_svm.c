@@ -591,7 +591,7 @@ void svm_runtime_exception_handler(u32 vector, struct regs *r){
   }	
 }
 
-//---quiesce interface to halt all cores----------------------------------------
+/*//---quiesce interface to halt all cores----------------------------------------
 void svm_do_quiesce(VCPU *vcpu){
         struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
         
@@ -612,6 +612,11 @@ void svm_do_quiesce(VCPU *vcpu){
         printf("\nCPU(0x%02x): waiting for other CPUs to respond...", vcpu->id);
         while(g_svm_quiesce_counter < (g_midtable_numentries-1) );
         printf("\nCPU(0x%02x): all CPUs quiesced successfully.", vcpu->id);
+}*/
+
+static void svm_do_quiesce(VCPU *vcpu){
+		printf("\n%s: REFACTORED, WE SHOULD NEVER BE HERE", __FUNCTION__);
+		HALT();
 }
 
 /* do_quiesce and do_wakeup should be called in pairs
