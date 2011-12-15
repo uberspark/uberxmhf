@@ -51,8 +51,14 @@
 
 //initialize SMP guest logic
 void emhf_smpguest_initialize(VCPU *vcpu){
-	
-	
+	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
+		emhf_smpguest_arch_x86svm_initialize(vcpu);
+		printf("\nCPU(0x%02x): setup x86svm SMP guest capabilities", vcpu->id);
+	}else{	//CPU_VENDOR_INTEL
+		//emhf_smpguest_arch_x86vmx_initialize(vcpu);
+		//printf("\nCPU(0x%02x): setup x86vmx SMP guest capabilities", vcpu->id);
+	}
 }
 
 //handle LAPIC access #DB (single-step) exception event
