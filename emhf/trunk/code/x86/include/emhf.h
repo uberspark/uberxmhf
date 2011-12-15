@@ -628,7 +628,7 @@ void svm_initialize_vmcb_csrip(VCPU *vcpu, u16 cs_selector, u32 cs_base, u64 rip
 //void svm_apic_setup(VCPU *vcpu);
 void svm_start_hvm(VCPU *vcpu);
 u32 svm_intercept_handler(VCPU *vcpu, struct regs *r);
-void svm_do_quiesce(VCPU *vcpu);
+//void svm_do_quiesce(VCPU *vcpu);
 void svm_do_wakeup(VCPU *vcpu);
 void svm_setupvcpus(u32 cpu_vendor);
 
