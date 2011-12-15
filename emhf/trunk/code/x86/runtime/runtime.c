@@ -397,11 +397,14 @@ void allcpus_common_start(VCPU *vcpu){
 		while(g_quiesce_cpu_counter < g_midtable_numentries);
 		
 		printf("\nBSP:__TEST_CPU_QUIESCE__, sending quiesce request...");
-		g_isl->do_quiesce(vcpu);
+		//g_isl->do_quiesce(vcpu);
+		emhf_smpguest_quiesce(vcpu);
 		printf("\nBSP: __TEST_CPU_QUIESCE__ atomic printf!");
 		printf("\nBSP:__TEST_CPU_QUIESCE__, sending awake request...");
-		g_isl->do_wakeup(vcpu);
+		//g_isl->do_wakeup(vcpu);
+		emhf_smpguest_endquiesce(vcpu);
 		printf("\nBSP: __TEST_CPU_QUIESCE__ ends");
+		HALT();
 	}
 #endif
 
