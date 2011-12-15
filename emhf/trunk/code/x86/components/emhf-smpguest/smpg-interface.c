@@ -33,20 +33,18 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF symmetric multiprocessor (smp) component
+// EMHF symmetric multiprocessor (SMP) guest component
 // implementation
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <emhf.h> 
 
-// we implement the smp component in a way that the runtime
-// component calls into one of the exported interfaces in the event
-// it wishes to initialize multiple cores. this helps us to detach
-// this component entirely in the uniprocessor case
+// we implement the smp guest component in a way that if
+// we run a uniprocessor guest then we can safely do away
+// with this component
 
 // functions exported
-// 1. g_isl->wakeup_aps(); //runtime
-// 2. g_isl->hvm_apic_setup(vcpu); //runtime
-// 3. vmx/svm_lapic_access_handler(vcpu, gpa, errorcode); //eventhub
-// 4. vmx/svm_lapic_access_dbexception(vcpu, r); //eventhub
+// 1. g_isl->hvm_apic_setup(vcpu); //runtime
+// 2. vmx/svm_lapic_access_handler(vcpu, gpa, errorcode); //eventhub
+// 3. vmx/svm_lapic_access_dbexception(vcpu, r); //eventhub
 
