@@ -53,6 +53,16 @@ void emhf_smpguest_eventhandler_dbexception(VCPU *vcpu,
 //handle LAPIC access #NPF (nested page fault) event
 void emhf_smpguest_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 gpa, u32 errorcode);
 
+//quiesce interface to switch all guest cores into hypervisor mode
+void emhf_smpguest_quiesce(VCPU *vcpu);
+
+//endquiesce interface to resume all guest cores after a quiesce
+void emhf_smpguest_endquiesce(VCPU *vcpu);
+
+//quiescing handler for #NMI (non-maskable interrupt) exception event
+void emhf_smpguest_eventhandler_nmiexception(VCPU *vcpu, struct regs *r);
+
+
 //x86 SVM backends
 void emhf_smpguest_arch_x86svm_initialize(VCPU *vcpu);
 void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, 
