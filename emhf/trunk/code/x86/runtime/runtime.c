@@ -382,11 +382,12 @@ void allcpus_common_start(VCPU *vcpu){
 	//testing the CPU quiesce implementation
   {
 		u32 test_quiesce_cpu_counter=0;
+		u32 lock_test_quiesce_cpu_counter = 1;
 		
 		//increment cpu counter
-		spin_lock(&g_lock_quiesce_cpu_counter);
+		spin_lock(&lock_test_quiesce_cpu_counter);
 		test_quiesce_cpu_counter++;
-		spin_unlock(&g_lock_quiesce_cpu_counter);
+		spin_unlock(&lock_test_quiesce_cpu_counter);
 		
 		//if we are an AP, wait for quiesce signal
 		//this acts like a dummy SMP guest doing some processing on other APs while BSP
@@ -394,9 +395,9 @@ void allcpus_common_start(VCPU *vcpu){
 		if(!vcpu->isbsp){
 			printf("\nCPU(%02x): __TEST_CPU_QUIESCE__, AP waiting for quiesce signal...", vcpu->id);
 			//increment cpu counter
-			spin_lock(&g_lock_quiesce_cpu_counter);
+			spin_lock(&lock_test_quiesce_cpu_counter);
 			test_quiesce_cpu_counter++;
-			spin_unlock(&g_lock_quiesce_cpu_counter);
+			spin_unlock(&lock_test_quiesce_cpu_counter);
 			//idle loop
 			while(1);
 		}
