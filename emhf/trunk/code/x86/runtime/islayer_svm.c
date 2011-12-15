@@ -619,9 +619,14 @@ static void svm_do_quiesce(VCPU *vcpu){
 		HALT();
 }
 
+static void svm_do_wakeup(VCPU *vcpu){
+		printf("\n%s: REFACTORED, WE SHOULD NEVER BE HERE", __FUNCTION__);
+		HALT();
+}
+
 /* do_quiesce and do_wakeup should be called in pairs
  * the operations between do_quiesce and do_wakeup won't be influenced by other CPUs */
-void svm_do_wakeup(VCPU *vcpu){
+/*void svm_do_wakeup(VCPU *vcpu){
         //set resume signal to resume the cores that are quiesced
         //Note: we do not need a spinlock for this since we are in any
         //case the only core active until this point
@@ -646,7 +651,7 @@ void svm_do_wakeup(VCPU *vcpu){
         
         //printf("\nCPU(0x%02x): Halting!", vcpu->id);
         //HALT();
-}
+}*/
 
 //---guest kernel page-table walker---------------------------------------------
 u32 svm_kernel_pt_walker(struct vmcb_struct *vmcb, u32 vaddr){
