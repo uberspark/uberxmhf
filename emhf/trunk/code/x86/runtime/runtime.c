@@ -39,6 +39,12 @@
 //---includes-------------------------------------------------------------------
 #include <emhf.h> 
 
+#define __TEST_CPU_QUIESCE__	1
+#if defined (__TEST_CPU_QUIESCE__)
+u32 test_quiesce_cpu_counter __attribute__(( section(".data") )) =0;
+u32 lock_test_quiesce_cpu_counter __attribute__(( section(".data") )) = 1;
+#endif //__TEST_CPU_QUIESCE__		
+
 //---runtime main---------------------------------------------------------------
 void cstartup(void){
 	u32 cpu_vendor;
@@ -377,18 +383,9 @@ void allcpus_common_start(VCPU *vcpu){
 		printf("\nCPU(0x%02x): All cores have successfully been through appmain.", vcpu->id);
 	}
 
-#define __TEST_CPU_QUIESCE__	1
 #if defined (__TEST_CPU_QUIESCE__)
 	//testing the CPU quiesce implementation
   if(g_midtable_numentries > 1) {
-		static u32 test_quiesce_cpu_counter=0;
-		static u32 lock_test_quiesce_cpu_counter = 1;
-		
-		//increment cpu counter
-		spin_lock(&lock_test_quiesce_cpu_counter);
-		test_quiesce_cpu_counter++;
-		spin_unlock(&lock_test_quiesce_cpu_counter);
-		printf("\nCPU(%02x): __TEST_CPU_QUIESCE__, counter=%u", vcpu->id, test_quiesce_cpu_counter);
 		
 		//if we are an AP, wait for quiesce signal
 		//this acts like a dummy SMP guest doing some processing on other APs while BSP
@@ -402,6 +399,12 @@ void allcpus_common_start(VCPU *vcpu){
 			printf("\nCPU(%02x): __TEST_CPU_QUIESCE__, counter=%u", vcpu->id, test_quiesce_cpu_counter);
 			//idle loop
 			while(1);
+		}else{ //this is the BSP
+			//increment cpu counter
+			spin_lock(&lock_test_quiesce_cpu_counter);
+			test_quiesce_cpu_counter++;
+			spin_unlock(&lock_test_quiesce_cpu_counter);
+			printf("\nBSP(%02x): __TEST_CPU_QUIESCE__, counter=%u", vcpu->id, test_quiesce_cpu_counter);
 		}
 	
 		//we are a BSP, check if all APs are in idle loop
