@@ -648,7 +648,7 @@ void vmx_initialize_vmcs_csrip(VCPU *vcpu, u16 cs_selector, u32 cs_base, u64 rip
 //void vmx_apic_setup(VCPU *vcpu);
 void vmx_start_hvm(VCPU *vcpu);
 u32 vmx_intercept_handler(VCPU *vcpu, struct regs *r);
-void vmx_do_quiesce(VCPU *vcpu);
+//void vmx_do_quiesce(VCPU *vcpu);
 void vmx_do_wakeup(VCPU *vcpu);
 void vmx_setupvcpus(u32 cpu_vendor);
 
