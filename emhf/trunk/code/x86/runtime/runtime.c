@@ -39,7 +39,7 @@
 //---includes-------------------------------------------------------------------
 #include <emhf.h> 
 
-#define __TEST_CPU_QUIESCE__	1
+//#define __TEST_CPU_QUIESCE__	1
 #if defined (__TEST_CPU_QUIESCE__)
 u32 test_quiesce_cpu_counter __attribute__(( section(".data") )) =0;
 u32 lock_test_quiesce_cpu_counter __attribute__(( section(".data") )) = 1;
