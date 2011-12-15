@@ -377,24 +377,33 @@ void allcpus_common_start(VCPU *vcpu){
 		printf("\nCPU(0x%02x): All cores have successfully been through appmain.", vcpu->id);
 	}
 
+#define __TEST_CPU_QUIESCE__	1
 #if defined (__TEST_CPU_QUIESCE__)
 	//testing the CPU quiesce implementation
   {
+		u32 test_quiesce_cpu_counter=0;
+		
 		//increment cpu counter
 		spin_lock(&g_lock_quiesce_cpu_counter);
-  	g_quiesce_cpu_counter++;
-  	spin_unlock(&g_lock_quiesce_cpu_counter);
+		test_quiesce_cpu_counter++;
+		spin_unlock(&g_lock_quiesce_cpu_counter);
 		
 		//if we are an AP, wait for quiesce signal
-  	if(!vcpu->isbsp){
+		//this acts like a dummy SMP guest doing some processing on other APs while BSP
+		//enters the hypervisor core
+		if(!vcpu->isbsp){
 			printf("\nCPU(%02x): __TEST_CPU_QUIESCE__, AP waiting for quiesce signal...", vcpu->id);
-  		//idle loop
+			//increment cpu counter
+			spin_lock(&g_lock_quiesce_cpu_counter);
+			test_quiesce_cpu_counter++;
+			spin_unlock(&g_lock_quiesce_cpu_counter);
+			//idle loop
 			while(1);
 		}
 	
 		//we are a BSP, check if all APs are in idle loop
 		printf("\nBSP:__TEST_CPU_QUIESCE__, rallying APs...");
-		while(g_quiesce_cpu_counter < g_midtable_numentries);
+		while(test_quiesce_cpu_counter < g_midtable_numentries);
 		
 		printf("\nBSP:__TEST_CPU_QUIESCE__, sending quiesce request...");
 		//g_isl->do_quiesce(vcpu);
