@@ -586,7 +586,7 @@ void vmx_start_hvm(VCPU *vcpu){
 
 
 //---do_quiesce-----------------------------------------------------------------
-void vmx_do_quiesce(VCPU *vcpu){
+/*void vmx_do_quiesce(VCPU *vcpu){
         printf("\nCPU(0x%02x): got quiesce signal...", vcpu->id);
         //grab hold of quiesce lock
         spin_lock(&g_vmx_lock_quiesce);
@@ -604,6 +604,12 @@ void vmx_do_quiesce(VCPU *vcpu){
         printf("\nCPU(0x%02x): waiting for other CPUs to respond...", vcpu->id);
         while(g_vmx_quiesce_counter < (g_midtable_numentries-1) );
         printf("\nCPU(0x%02x): all CPUs quiesced successfully.", vcpu->id);
+}*/
+
+static void vmx_do_quiesce(VCPU *vcpu){
+		printf("\n%s: REFACTORED, WE SHOULD NEVER BE HERE", __FUNCTION__);
+		HALT();
+	
 }
 
 /* do_quiesce and do_wakeup should be called in pairs
