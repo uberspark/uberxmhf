@@ -305,6 +305,11 @@ void allcpus_common_start(VCPU *vcpu){
             }
             printf("\nCPU(0x%02x): Restoring mtrrs...", vcpu->id);
             restore_mtrrs(&(os_mle_data->saved_mtrr_state));
+        
+			//if(!g_isl->isbsp()){
+			//	printf("Enabling SMIs on AP(0x%02x)\n", vcpu->id);
+            //    __getsec_smctrl();
+			//}
         }
 	}
     
@@ -392,6 +397,7 @@ void allcpus_common_start(VCPU *vcpu){
 		//enters the hypervisor core
 		if(!vcpu->isbsp){
 			printf("\nCPU(%02x): __TEST_CPU_QUIESCE__, AP waiting for quiesce signal...", vcpu->id);
+			//__asm__ __volatile__("int $0x02\r\n");
 			//increment cpu counter
 			spin_lock(&lock_test_quiesce_cpu_counter);
 			test_quiesce_cpu_counter++;

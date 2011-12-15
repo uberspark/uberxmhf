@@ -155,20 +155,30 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
 
 
 static void _vmx_send_quiesce_signal(VCPU *vcpu){
-  u32 *icr_low = (u32 *)(0xFEE00000 + 0x300);
-  u32 *icr_high = (u32 *)(0xFEE00000 + 0x310);
+  volatile u32 *icr_low = (u32 *)(0xFEE00000 + 0x300);
+  volatile u32 *icr_high = (u32 *)(0xFEE00000 + 0x310);
   u32 icr_high_value= 0xFFUL << 24;
   u32 prev_icr_high_value;
+  u32 delivered;
     
   prev_icr_high_value = *icr_high;
   
   *icr_high = icr_high_value;    //send to all but self
   *icr_low = 0x000C0400UL;      //send NMI        
+  //*icr_low = 0x00004400UL;      //send NMI        
+  
+  //check if IPI has been delivered successfully
+  printf("\n%s: CPU(0x%02x): firing NMIs...", __FUNCTION__, vcpu->id);
+  do{
+	delivered = *icr_high;
+	delivered &= 0x00001000;
+  }while(delivered);
+  
   
   //restore icr high
   *icr_high = prev_icr_high_value;
     
-  printf("\nCPU(0x%02x): NMIs fired!", vcpu->id);
+  printf("\n%s: CPU(0x%02x): NMIs fired!", __FUNCTION__, vcpu->id);
 }
 
 
