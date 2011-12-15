@@ -56,8 +56,8 @@ void emhf_smpguest_initialize(VCPU *vcpu){
 		emhf_smpguest_arch_x86svm_initialize(vcpu);
 		printf("\nCPU(0x%02x): setup x86svm SMP guest capabilities", vcpu->id);
 	}else{	//CPU_VENDOR_INTEL
-		//emhf_smpguest_arch_x86vmx_initialize(vcpu);
-		//printf("\nCPU(0x%02x): setup x86vmx SMP guest capabilities", vcpu->id);
+		emhf_smpguest_arch_x86vmx_initialize(vcpu);
+		printf("\nCPU(0x%02x): setup x86vmx SMP guest capabilities", vcpu->id);
 	}
 }
 
@@ -68,7 +68,7 @@ void emhf_smpguest_eventhandler_dbexception(VCPU *vcpu,
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
 		emhf_smpguest_arch_x86svm_eventhandler_dbexception(vcpu, r);
 	}else{	//CPU_VENDOR_INTEL
-		//emhf_smpguest_arch_x86vmx_eventhandler_dbexception(vcpu, r);
+		emhf_smpguest_arch_x86vmx_eventhandler_dbexception(vcpu, r);
 	}
 }
 
@@ -78,7 +78,7 @@ ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTE
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
 		emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
 	}else{	//CPU_VENDOR_INTEL
-		//emhf_smpguest_arch_x86vmx_eventhandler_dbexception(vcpu, r);
+		emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
 	}	
 	
 }
