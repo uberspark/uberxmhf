@@ -364,3 +364,26 @@ void emhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
 	
 }
 
+void emhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
+        //set resume signal to resume the cores that are quiesced
+        //Note: we do not need a spinlock for this since we are in any
+        //case the only core active until this point
+        g_vmx_quiesce_resume_counter=0;
+        printf("\nCPU(0x%02x): waiting for other CPUs to resume...", vcpu->id);
+        g_vmx_quiesce_resume_signal=1;
+        
+        while(g_vmx_quiesce_resume_counter < (g_midtable_numentries-1) );
+
+        g_vmx_quiesce=0;  // we are out of quiesce at this point
+
+        printf("\nCPU(0x%02x): all CPUs resumed successfully.", vcpu->id);
+        
+        //reset resume signal
+        spin_lock(&g_vmx_lock_quiesce_resume_signal);
+        g_vmx_quiesce_resume_signal=0;
+        spin_unlock(&g_vmx_lock_quiesce_resume_signal);
+                
+        //release quiesce lock
+        printf("\nCPU(0x%02x): releasing quiesce lock.", vcpu->id);
+        spin_unlock(&g_vmx_lock_quiesce);
+}        

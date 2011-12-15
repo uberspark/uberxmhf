@@ -612,9 +612,16 @@ static void vmx_do_quiesce(VCPU *vcpu){
 	
 }
 
+static void vmx_do_wakeup(VCPU *vcpu){
+		printf("\n%s: REFACTORED, WE SHOULD NEVER BE HERE", __FUNCTION__);
+		HALT();
+	
+}
+
+
 /* do_quiesce and do_wakeup should be called in pairs
  * the operations between do_quiesce and do_wakeup won't be influenced by other CPUs */
-void vmx_do_wakeup(VCPU *vcpu){
+/*void vmx_do_wakeup(VCPU *vcpu){
         //set resume signal to resume the cores that are quiesced
         //Note: we do not need a spinlock for this since we are in any
         //case the only core active until this point
@@ -639,7 +646,7 @@ void vmx_do_wakeup(VCPU *vcpu){
         
         //printf("\nCPU(0x%02x): Halting!", vcpu->id);
         //HALT();
-}
+}*/
 
 //---setupvcpus-----------------------------------------------------------------
 void vmx_setupvcpus(u32 cpu_vendor){
