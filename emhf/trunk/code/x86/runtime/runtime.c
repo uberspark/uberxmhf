@@ -381,8 +381,8 @@ void allcpus_common_start(VCPU *vcpu){
 #if defined (__TEST_CPU_QUIESCE__)
 	//testing the CPU quiesce implementation
   if(g_midtable_numentries > 1) {
-		u32 test_quiesce_cpu_counter=0;
-		u32 lock_test_quiesce_cpu_counter = 1;
+		static u32 test_quiesce_cpu_counter=0;
+		static u32 lock_test_quiesce_cpu_counter = 1;
 		
 		//increment cpu counter
 		spin_lock(&lock_test_quiesce_cpu_counter);
