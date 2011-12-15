@@ -854,6 +854,13 @@ void svm_start_hvm(VCPU *vcpu){
  		//for halting the core as something really bad happened!
 }
 
+static void svm_apic_setup(VCPU *vcpu){
+		printf("\nREFACTORED COMPONENT, SHOULD NEVER BE HERE");
+		HALT();
+	
+}
+
+
 
 //------------------------------------------------------------------------------
 struct isolation_layer g_isolation_layer_svm = {
