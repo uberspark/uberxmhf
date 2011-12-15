@@ -115,7 +115,8 @@ static void _svm_handle_npf(VCPU *vcpu, struct regs *r){
     //printf("\n0x%04x:0x%08x -> LAPIC access, gpa=0x%08x, errorcode=0x%08x", 
     //  (u16)vmcb->cs.sel, (u32)vmcb->rip, gpa, errorcode);
     ASSERT( svm_isbsp() == 1); //only BSP gets a NPF during LAPIC SIPI detection
-    svm_lapic_access_handler(vcpu, gpa, errorcode);
+    //svm_lapic_access_handler(vcpu, gpa, errorcode);
+    emhf_smpguest_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
     //HALT();
   } else {
 	// call EMHF app hook

@@ -164,7 +164,7 @@ void emhf_smpguest_arch_x86svm_initialize(VCPU *vcpu){
 //page with physical address of virtual_LAPIC page, store the
 //register accessed, store request as WRITE and single-step
 // XXX TODO: return value currently meaningless
-u32 svm_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
+u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode){
   struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
   
   //get LAPIC register being accessed

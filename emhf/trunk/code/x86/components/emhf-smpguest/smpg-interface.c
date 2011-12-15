@@ -72,3 +72,13 @@ void emhf_smpguest_eventhandler_dbexception(VCPU *vcpu,
 	}
 }
 
+//handle LAPIC access #NPF (nested page fault) event
+void emhf_smpguest_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 gpa, u32 errorcode){
+ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
+		emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
+	}else{	//CPU_VENDOR_INTEL
+		//emhf_smpguest_arch_x86vmx_eventhandler_dbexception(vcpu, r);
+	}	
+	
+}
