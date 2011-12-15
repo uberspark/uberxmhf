@@ -93,3 +93,14 @@ void emhf_smpguest_quiesce(VCPU *vcpu){
 	}	
 }
 
+//endquiesce interface to resume all guest cores after a quiesce
+void emhf_smpguest_endquiesce(VCPU *vcpu){
+	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
+		emhf_smpguest_arch_x86svm_endquiesce(vcpu);
+	}else{	//CPU_VENDOR_INTEL
+		emhf_smpguest_arch_x86vmx_endquiesce(vcpu);
+	}		
+}
+
+
