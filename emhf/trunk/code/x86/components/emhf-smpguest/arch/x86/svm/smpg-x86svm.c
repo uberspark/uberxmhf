@@ -311,7 +311,23 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
 
 //quiesce interface to switch all guest cores into hypervisor mode
 void emhf_smpguest_arch_x86svm_quiesce(VCPU *vcpu){
+	struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+        
+	printf("\nCPU(0x%02x): got quiesce signal...", vcpu->id);
+    //grab hold of quiesce lock
+    spin_lock(&g_svm_lock_quiesce);
+    printf("\nCPU(0x%02x): grabbed quiesce lock.", vcpu->id);
 
-
-
+    spin_lock(&g_svm_lock_quiesce_counter);
+    g_svm_quiesce_counter=0;
+    spin_unlock(&g_svm_lock_quiesce_counter);
+        
+    //send all the other CPUs the quiesce signal
+    g_svm_quiesce=1;  //we are now processing quiesce
+    _svm_send_quiesce_signal(vcpu, vmcb);
+        
+    //wait for all the remaining CPUs to quiesce
+    printf("\nCPU(0x%02x): waiting for other CPUs to respond...", vcpu->id);
+    while(g_svm_quiesce_counter < (g_midtable_numentries-1) );
+    printf("\nCPU(0x%02x): all CPUs quiesced successfully.", vcpu->id);
 }
