@@ -517,7 +517,8 @@ void vmx_runtime_exception_handler(u32 vector, struct regs *r){
   printf("\nCPU(0x%02x): %s ESP=0x%08x", vcpu->id, __FUNCTION__, r->esp);
   
 	if(vector == NMI_VECTOR){
-    _vmx_processNMI(vcpu, r);
+    //_vmx_processNMI(vcpu, r);
+    emhf_smpguest_eventhandler_nmiexception(vcpu, r);
     return;
   }	
 }
