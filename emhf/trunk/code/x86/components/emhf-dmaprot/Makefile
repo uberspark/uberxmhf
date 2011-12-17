@@ -4,7 +4,7 @@
 # source files
 AS_SOURCES =  
 C_SOURCES = dmap-interface.c
-C_SOURCES += ./arch/svm/dmap-x86svm.c
+C_SOURCES += ./arch/x86/svm/dmap-x86svm.c
 
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
