@@ -5,6 +5,7 @@
 AS_SOURCES =  
 C_SOURCES = dmap-interface.c
 C_SOURCES += ./arch/x86/svm/dmap-x86svm.c
+C_SOURCES += ./arch/x86/vmx/dmap-x86vmx.c
 
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
@@ -27,7 +28,8 @@ all: $(OBJECTS)
 .PHONY: clean 
 clean: 
 	$(RM) -rf *.o
-	$(RM) -rf ./arch/svm/*.o
+	$(RM) -rf ./arch/x86/svm/*.o
+	$(RM) -rf ./arch/x86/vmx/*.o
  
   
   
