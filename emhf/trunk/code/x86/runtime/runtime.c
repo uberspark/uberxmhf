@@ -126,6 +126,12 @@ void cstartup(void){
 				HALT();
 			}
 
+
+			//protect SL and runtime memory regions
+			emhf_dmaprot_protect(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimeSize+PAGE_SIZE_2M);
+			printf("\nRuntime: Protected SL+Runtime (%08lx-%08x) from DMA.", 
+				rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M,
+				rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
 	}
 
 
