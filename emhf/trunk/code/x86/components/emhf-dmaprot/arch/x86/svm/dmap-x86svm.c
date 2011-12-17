@@ -423,7 +423,7 @@ u32 emhf_dmaprot_arch_x86svm_earlyinitialize(u64 protectedbuffer_paddr,
 	//sanity check: protected DEV buffer MUST be page-aligned
 	ASSERT(!(protectedbuffer_paddr & 0x00000FFF));
 	ASSERT(!(protectedbuffer_vaddr & 0x00000FFF));
-	ASSERT(protectedbuffer_size == (PAGE_SIZE_4K * 2));
+	ASSERT(protectedbuffer_size >= (PAGE_SIZE_4K * 2));
 	
 	printf("\nSL: initializing SVM DMA protection...");
 
