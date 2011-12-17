@@ -119,6 +119,13 @@ void cstartup(void){
 					+ (PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT) + PAGE_SIZE_4K +
 					(PAGE_SIZE_4K * PCI_BUS_MAX);
 			}
+	
+			printf("\nRuntime: Re-initializing DMA protection...");
+			if(!emhf_dmaprot_initialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size)){
+				printf("\nRuntime: Unable to re-initialize DMA protection. HALT!");
+				HALT();
+			}
+
 	}
 
 
