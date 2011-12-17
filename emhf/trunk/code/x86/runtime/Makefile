@@ -39,6 +39,9 @@ OBJECTS_PRECOMPILED += ../components/emhf-smpguest/smpg-interface.o
 OBJECTS_PRECOMPILED += ../components/emhf-smpguest/arch/x86/svm/smpg-x86svm.o
 OBJECTS_PRECOMPILED += ../components/emhf-smpguest/arch/x86/vmx/smpg-x86vmx.o
 
+OBJECTS_PRECOMPILED += ../components/emhf-dmaprot/dmap-interface.o
+OBJECTS_PRECOMPILED += ../components/emhf-dmaprot/arch/x86/svm/dmap-x86svm.o
+
 
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 
