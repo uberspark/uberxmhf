@@ -103,7 +103,27 @@ void cstartup(void){
 	}
 
 #if defined (__DMAPROT__)
-  //re-initialize DEV DMA protections
+	{
+			u64 protectedbuffer_paddr;
+			u32 protectedbuffer_vaddr;
+			u32 protectedbuffer_size;
+			
+			if(cpu_vendor == CPU_VENDOR_AMD){
+				protectedbuffer_paddr = __hva2spa__(&g_svm_dev_bitmap);
+				protectedbuffer_vaddr = (u32)&g_svm_dev_bitmap;
+				protectedbuffer_size = sizeof(g_svm_dev_bitmap); //131072 bytes
+			}else{	//CPU_VENDOR_INTEL
+				protectedbuffer_paddr = ;
+				protectedbuffer_vaddr = ;
+				protectedbuffer_size = ;
+			}
+			
+		
+		
+	}
+
+
+/*  //re-initialize DEV DMA protections
   if(cpu_vendor == CPU_VENDOR_AMD){
 		//the SL only ensures that portions
 	  //of the DEV bitmap including the SL and the runtime are correct. It makes no
@@ -175,7 +195,7 @@ void cstartup(void){
 			printf("\nRuntime: Protected SL+Runtime (%08lx-%08x) using VT-d.", 
 							rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M,
 						rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
-	}
+	}*/
 	
 #endif //__DMAPROT__
 	
