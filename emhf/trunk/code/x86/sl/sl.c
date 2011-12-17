@@ -379,6 +379,8 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 			memregionbase_paddr = sl_baseaddr;
 			memregion_size = (slpb.runtime_size + PAGE_SIZE_2M);
+
+			printf("\nSL: Initializing DMA protections...");
 			
 			if(!emhf_dmaprot_earlyinitialize(protectedbuffer_paddr,
 				protectedbuffer_vaddr, protectedbuffer_size,
