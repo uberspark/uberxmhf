@@ -49,6 +49,12 @@ u32 emhf_dmaprot_earlyinitialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
 	u64 memregionbase_paddr, u32 memregion_size);
 
+//"normal" DMA protection initialization to setup required
+//structures for DMA protection
+//return 1 on success 0 on failure
+u32 emhf_dmaprot_initialize(u64 protectedbuffer_paddr,
+	u32 protectedbuffer_vaddr, u32 protectedbuffer_size);
+
 
 //x86 SVM backend
 u32 emhf_dmaprot_arch_x86svm_earlyinitialize(u64 protectedbuffer_paddr,

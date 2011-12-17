@@ -430,3 +430,12 @@ u32 emhf_dmaprot_arch_x86svm_earlyinitialize(u64 protectedbuffer_paddr,
 	return svm_eap_early_initialize(protectedbuffer_paddr, protectedbuffer_vaddr,
 					memregionbase_paddr, memregion_size);
 }
+
+//"normal" DMA protection initialization to setup required
+//structures for DMA protection
+//return 1 on success 0 on failure
+u32 emhf_dmaprot_arch_x86svm_initialize(u64 protectedbuffer_paddr,
+	u32 protectedbuffer_vaddr, u32 protectedbuffer_size){
+		
+		
+}
