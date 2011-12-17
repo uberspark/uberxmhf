@@ -357,7 +357,38 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		}
 
 #if defined(__DMAPROT__)	
-		//initialize external access protection (DMA protection)
+		{
+			u64 protectedbuffer_paddr;
+			u32 protectedbuffer_vaddr;
+			u32 protectedbuffer_size;
+			u64 memregionbase_paddr;
+			u32 memregion_size;
+			u32 cpu_vendor = get_cpu_vendor_or_die();
+			
+			ASSERT(cpu_vendor == CPU_VENDOR_AMD || cpu_vendor == CPU_VENDOR_INTEL);
+			
+			if(cpu_vendor == CPU_VENDOR_AMD){
+				protectedbuffer_paddr = sl_baseaddr + (u32)&g_sl_protected_dmabuffer;
+				protectedbuffer_vaddr = (u32)&g_sl_protected_dmabuffer;
+				protectedbuffer_size = (2 * PAGE_SIZE_4K);
+			}else{	//CPU_VENDOR_INTEL
+				protectedbuffer_paddr = sl_baseaddr + 0x100000;
+				protectedbuffer_vaddr = 0x100000;
+				protectedbuffer_size = (3 * PAGE_SIZE_4K);
+			}
+
+			memregionbase_paddr = sl_baseaddr;
+			memregion_size = (slpb.runtime_size + PAGE_SIZE_2M);
+			
+			if(!emhf_dmaprot_earlyinitialize(protectedbuffer_paddr,
+				protectedbuffer_vaddr, protectedbuffer_size,
+				memregionbase_paddr, memregion_size)){
+				printf("\nSL: Fatal, could not initialize DMA protections. Halting!");
+				HALT();	
+			}
+		}
+		
+		/*//initialize external access protection (DMA protection)
 		if(get_cpu_vendor_or_die() == CPU_VENDOR_AMD){
 			
 			printf("\nSL: initializing SVM DMA protection...");
@@ -412,7 +443,9 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 			}
 		
 			printf("\nSL: Bootstrapped VMX VT-d, protected entire system memory.");
-		}
+		}*/
+		
+		
 #endif //__DMAPROT__
 	
 	}
