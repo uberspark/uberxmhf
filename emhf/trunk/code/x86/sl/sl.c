@@ -392,63 +392,6 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 			printf("\nSL: Initialized DMA protections successfully");
 		}
 		
-		/*//initialize external access protection (DMA protection)
-		if(get_cpu_vendor_or_die() == CPU_VENDOR_AMD){
-			
-			printf("\nSL: initializing SVM DMA protection...");
-			
-			{
-				u32 svm_eap_protected_buffer_paddr, svm_eap_protected_buffer_vaddr;
-
-        printf("\nSL: runtime_physical_base=%08x, runtime_size=%08x", 
-        	runtime_physical_base, slpb.runtime_size);
-
-				svm_eap_protected_buffer_paddr = sl_baseaddr + (u32)&g_sl_protected_dmabuffer;
-				svm_eap_protected_buffer_vaddr = (u32)&g_sl_protected_dmabuffer;
-			
-				//sanity check: protected DEV buffer MUST be page-aligned
-				ASSERT(!(svm_eap_protected_buffer_paddr & 0x00000FFF));
-				ASSERT(!(svm_eap_protected_buffer_vaddr & 0x00000FFF));
-				
-			  if(!svm_eap_early_initialize(svm_eap_protected_buffer_paddr, svm_eap_protected_buffer_vaddr,
-					sl_baseaddr, (slpb.runtime_size + PAGE_SIZE_2M))){
-					printf("\nSL: Unable to initialize SVM EAP (DEV). HALT!");
-					HALT();
-				}
-
-				printf("\nSL: Initialized SVM DEV.");
-			
-				printf("\nSL: Protected SL+Runtime (%08x-%08lx) using DEV.", sl_baseaddr,
-						(slpb.runtime_size + PAGE_SIZE_2M));
-			}
-			
-		}else{
-			u32 vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr;
-			u32 vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr;
-			u32 vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr;
-			
-			printf("\nSL: Bootstrapping VMX DMA protection...");
-			
-			//we use 3 pages from SL base + 1Meg for Vt-d bootstrapping
-			vmx_eap_vtd_pdpt_paddr = sl_baseaddr + 0x100000; 
-			vmx_eap_vtd_pdpt_vaddr = 0x100000; 
-			vmx_eap_vtd_ret_paddr = sl_baseaddr + 0x100000 + PAGE_SIZE_4K; 
-			vmx_eap_vtd_ret_vaddr = 0x100000 + PAGE_SIZE_4K; 
-			vmx_eap_vtd_cet_paddr = sl_baseaddr + 0x100000 + (2*PAGE_SIZE_4K); 
-			vmx_eap_vtd_cet_vaddr = 0x100000 + (2*PAGE_SIZE_4K); 
-			
-			if(!vmx_eap_initialize(vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr,
-					0, 0,
-					0, 0,
-					vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr,
-					vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr, 1)){
-				printf("\nSL: Unable to bootstrap VMX EAP (VT-d). HALT!");
-				HALT();
-			}
-		
-			printf("\nSL: Bootstrapped VMX VT-d, protected entire system memory.");
-		}*/
-		
 		
 #endif //__DMAPROT__
 	
