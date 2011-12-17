@@ -113,9 +113,11 @@ void cstartup(void){
 				protectedbuffer_vaddr = (u32)&g_svm_dev_bitmap;
 				protectedbuffer_size = 131072; //sizeof(g_svm_dev_bitmap) XXX: TODO remove hard-coded constant
 			}else{	//CPU_VENDOR_INTEL
-				protectedbuffer_paddr = 0;
-				protectedbuffer_vaddr = 0;
-				protectedbuffer_size = 0;
+				protectedbuffer_paddr = __hva2spa__(&g_vmx_vtd_pdp_table);
+				protectedbuffer_vaddr = (u32)&g_vmx_vtd_pdp_table;
+				protectedbuffer_size = PAGE_SIZE_4K + (PAGE_SIZE_4K * PAE_PTRS_PER_PDPT) 
+					+ (PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT) + PAGE_SIZE_4K +
+					(PAGE_SIZE_4K * PCI_BUS_MAX);
 			}
 	}
 
