@@ -117,9 +117,6 @@ void cstartup(void){
 				protectedbuffer_vaddr = 0;
 				protectedbuffer_size = 0;
 			}
-			
-		
-		
 	}
 
 
