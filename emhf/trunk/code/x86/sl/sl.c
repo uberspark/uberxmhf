@@ -386,6 +386,8 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 				printf("\nSL: Fatal, could not initialize DMA protections. Halting!");
 				HALT();	
 			}
+			
+			printf("\nSL: Initialized DMA protections successfully");
 		}
 		
 		/*//initialize external access protection (DMA protection)
