@@ -407,3 +407,17 @@ void svm_eap_dev_unprotect(u32 paddr, u32 size){
 		svm_eap_dev_invalidate_cache();	//flush DEV cache
 	}
 }
+
+
+////////////////////////////////////////////////////////////////////////
+// GLOBALS
+
+//"early" DMA protection initialization to setup minimal
+//structures to protect a range of physical memory
+//return 1 on success 0 on failure
+u32 emhf_dmaprot_arch_x86svm_earlyinitialize(u64 protectedbuffer_paddr,
+	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
+	u64 memregionbase_paddr, u32 memregion_size){
+
+
+}
