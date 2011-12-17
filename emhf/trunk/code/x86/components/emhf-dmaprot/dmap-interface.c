@@ -73,3 +73,16 @@ u32 emhf_dmaprot_initialize(u64 protectedbuffer_paddr,
 	}
 		
 }
+
+
+//DMA protect a given region of memory, start_paddr is
+//assumed to be page aligned physical memory address
+void emhf_dmaprot_protect(u32 start_paddr, u32 size){
+	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
+
+	if(cpu_vendor == CPU_VENDOR_AMD){
+	  return emhf_dmaprot_arch_x86svm_protect(start_paddr, size);
+	}else{	//CPU_VENDOR_INTEL
+	  return emhf_dmaprot_arch_x86vmx_protect(start_paddr, size);	
+	} 
+}
