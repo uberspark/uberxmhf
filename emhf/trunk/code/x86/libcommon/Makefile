@@ -3,7 +3,7 @@
 
 # source files
 AS_SOURCES = $(wildcard *.S)
-C_SOURCES = dbg_printf.c dbg_vgamem.c delay_pit.c txt_mtrrs.c tpm.c tpm_extra.c tpm_emhf.c pci.c acpi.c svm_eap.c vmx_eap.c
+C_SOURCES = dbg_printf.c dbg_vgamem.c delay_pit.c txt_mtrrs.c tpm.c tpm_extra.c tpm_emhf.c pci.c acpi.c vmx_eap.c
 
 ifeq ($(DEBUG_SERIAL), y)
 C_SOURCES += dbg_uart.c
