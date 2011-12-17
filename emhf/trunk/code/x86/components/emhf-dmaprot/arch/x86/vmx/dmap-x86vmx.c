@@ -593,41 +593,6 @@ static void _vtd_invalidatecaches(void){
 #define PAE_get_ptaddress(x) ( (u32) ( (u64)(x) & (u64)0x3FFFFFFFFFFFF000ULL ))
 
 
-//------------------------------------------------------------------------------
-//vt-d protect/unprotect a given region of memory, start_paddr is
-//assumed to be page aligned physical memory address
-void vmx_eap_vtd_protect(u32 start_paddr, u32 size){
-  pt_t pt;
-  u32 vaddr, end_paddr;
-	u32 pdptindex, pdtindex, ptindex;
-  
-  //compute page aligned end
-  end_paddr = PAGE_ALIGN_4K(start_paddr + size);
-  
-  //sanity check
-  ASSERT( (l_vtd_pdpt_paddr != 0) && (l_vtd_pdpt_vaddr != 0) );
-  ASSERT( (l_vtd_pdts_paddr != 0) && (l_vtd_pdts_vaddr != 0) );
-  ASSERT( (l_vtd_pts_paddr != 0) && (l_vtd_pts_vaddr != 0) );
-  
-  for(vaddr=start_paddr; vaddr <= end_paddr; vaddr+=PAGE_SIZE_4K){
-  
-		//compute pdpt, pdt and pt indices
-  	pdptindex= PAE_get_pdptindex(vaddr);
-	  pdtindex= PAE_get_pdtindex(vaddr);
-	  ptindex=PAE_get_ptindex(vaddr);
-    
-    //get the page-table for this physical page
-	  pt=(pt_t) (l_vtd_pts_vaddr + (pdptindex * PAGE_SIZE_4K * 512)+ (pdtindex * PAGE_SIZE_4K));
-	  
-	  //protect the physical page
-    //pt[ptindex] &= 0xFFFFFFFFFFFFFFFCULL;  
-  	pt[ptindex] &= ~((u64)VTD_READ | (u64)VTD_WRITE);
-  
-  }
-  
-  //flush the caches
-	_vtd_invalidatecaches();  
-}
 
 
 
@@ -841,4 +806,40 @@ u32 emhf_dmaprot_arch_x86vmx_initialize(u64 protectedbuffer_paddr,
 					vmx_eap_vtd_pts_paddr, vmx_eap_vtd_pts_vaddr,
 					vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr,
 					vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr, 0);
+}
+
+//DMA protect a given region of memory, start_paddr is
+//assumed to be page aligned physical memory address
+void emhf_dmaprot_arch_x86vmx_protect(u32 start_paddr, u32 size){
+  pt_t pt;
+  u32 vaddr, end_paddr;
+u32 pdptindex, pdtindex, ptindex;
+  
+  //compute page aligned end
+  end_paddr = PAGE_ALIGN_4K(start_paddr + size);
+  
+  //sanity check
+  ASSERT( (l_vtd_pdpt_paddr != 0) && (l_vtd_pdpt_vaddr != 0) );
+  ASSERT( (l_vtd_pdts_paddr != 0) && (l_vtd_pdts_vaddr != 0) );
+  ASSERT( (l_vtd_pts_paddr != 0) && (l_vtd_pts_vaddr != 0) );
+  
+  for(vaddr=start_paddr; vaddr <= end_paddr; vaddr+=PAGE_SIZE_4K){
+  
+		//compute pdpt, pdt and pt indices
+  	pdptindex= PAE_get_pdptindex(vaddr);
+	  pdtindex= PAE_get_pdtindex(vaddr);
+	  ptindex=PAE_get_ptindex(vaddr);
+    
+    //get the page-table for this physical page
+	  pt=(pt_t) (l_vtd_pts_vaddr + (pdptindex * PAGE_SIZE_4K * 512)+ (pdtindex * PAGE_SIZE_4K));
+	  
+	  //protect the physical page
+    //pt[ptindex] &= 0xFFFFFFFFFFFFFFFCULL;  
+  	pt[ptindex] &= ~((u64)VTD_READ | (u64)VTD_WRITE);
+  
+  }
+  
+  //flush the caches
+	_vtd_invalidatecaches();  
+
 }

@@ -441,3 +441,20 @@ u32 emhf_dmaprot_arch_x86svm_initialize(u64 protectedbuffer_paddr,
 
 	return svm_eap_initialize(protectedbuffer_paddr, protectedbuffer_vaddr);
 }
+
+//DMA protect a given region of memory, start_paddr is
+//assumed to be page aligned physical memory address
+void emhf_dmaprot_arch_x86svm_protect(u32 start_paddr, u32 size){
+	u32 paligned_paddr_start, paligned_paddr_end, i;
+	
+	//compute page-aligned physical start and end addresses
+	paligned_paddr_start = PAGE_ALIGN_4K(start_paddr);
+	paligned_paddr_end = PAGE_ALIGN_4K((start_paddr+size));
+	
+	//protect pages from paligned_paddr_start through paligned_paddr_end inclusive
+	for(i=paligned_paddr_start; i <= paligned_paddr_end; i+= PAGE_SIZE_4K){
+		svm_eap_dev_set_page_protection(i >> PAGE_SHIFT_4K, (u8 *)_svm_eap.dev_bitmap_vaddr);
+		svm_eap_dev_invalidate_cache();	//flush DEV cache
+	}
+}
+
