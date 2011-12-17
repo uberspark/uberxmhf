@@ -602,7 +602,7 @@ static void _vtd_invalidatecaches(void){
 //if input parameter bootstrap is 1 then we perform minimal translation
 //structure initialization, else we do the full DMA translation structure
 //initialization at a page-granularity
-u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
+static u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 		u32 vtd_pdts_paddr, u32 vtd_pdts_vaddr,
 		u32 vtd_pts_paddr, u32 vtd_pts_vaddr,
 		u32 vtd_ret_paddr, u32 vtd_ret_vaddr,

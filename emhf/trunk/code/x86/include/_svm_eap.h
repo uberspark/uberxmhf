@@ -193,14 +193,14 @@ typedef union dev_err_addr_hi {
 //the runtime physical memory.
 //The runtime then re-initializes DEV once it gets control after a 
 //successful integrity check.
-u32 svm_eap_early_initialize(u32 protected_buffer_paddr, 
-			u32 protected_buffer_vaddr, u32 memregion_paddr_start, 
-				u32 memregion_size);
+//u32 svm_eap_early_initialize(u32 protected_buffer_paddr, 
+//			u32 protected_buffer_vaddr, u32 memregion_paddr_start, 
+//				u32 memregion_size);
 
 //initialize SVM EAP a.k.a DEV
 //returns 1 if all went well, else 0
 //inputs: physical and virtual addresses of the DEV bitmap area
-u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr);
+//u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr);
 
 
 
