@@ -42,7 +42,10 @@
 
 #ifndef __ASSEMBLY__
 
-
+//"early" DMA protection initialization to setup minimal
+//structures to protect a range of physical memory
+u32 emhf_dmaprot_earlyinitialize(u64 protectedbuffer_paddr,
+	u32 protectedbuffer_vaddr, u32 protectedbuffer_size);
 
 
 #endif	//__ASSEMBLY__
