@@ -82,6 +82,8 @@ components:
 	cd components/emhf-parteventhub && $(MAKE) -w all
 	#EMHF SMP guest component
 	cd components/emhf-smpguest && $(MAKE) -w all
+	#EMHF DMA protection component
+	cd components/emhf-dmaprot && $(MAKE) -w all
 
 .PHONY: common
 common:
