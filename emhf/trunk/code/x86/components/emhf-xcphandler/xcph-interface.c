@@ -62,7 +62,7 @@ void emhf_xcphandler_initialize(void){
 		idtentry->type=0x8E;
 	}
 	
-	printf("\n%s: IDT setup done.");
+	printf("\n%s: IDT setup done.", __FUNCTION__);
 }
 
 
