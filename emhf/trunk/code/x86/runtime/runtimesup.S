@@ -58,6 +58,9 @@
 	.extern cstartup
 	.extern allcpus_common_start
 	.extern runtime_exception_handler
+	
+	.extern emhf_xcphandler_idt
+	.extern emhf_xcphandler_exceptionstubs
 
 //------------------------------------------------------------------------------
 //RUNTIME PARAMETER BLOCK DATA
@@ -86,8 +89,8 @@ _rpb:
 	.long 0
 	.long 0
 	.long 0
-	.long x_idt
-	.long x_idt_functionpointers
+	.long emhf_xcphandler_idt
+	.long emhf_xcphandler_exceptionstubs
 	.long 32
 	.long 0 //x_e1000desc
 	.long 0 //x_e1000header
@@ -261,7 +264,7 @@ x_init_stack:
   _ap_pmode_entry_with_paging:
     //load our gdt and idt
     lgdt x_gdt
-    lidt x_idt
+    lidt emhf_xcphandler_idt
     
 
     
