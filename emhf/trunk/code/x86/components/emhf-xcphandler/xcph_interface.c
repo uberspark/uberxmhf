@@ -40,6 +40,10 @@
  
 #include <emhf.h>
 
+//rpb->XtVmmIdtFunctionPointers
+//rpb->XtVmmIdtEntries
+//rpb->XtVmmIdt
+
 //initialize EMHF core exception handlers
 void emhf_xcphandler_initialize(void){
 		 	//setup runtime IDT
