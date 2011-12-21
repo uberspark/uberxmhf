@@ -96,7 +96,7 @@ static u8 __attribute__((unused)) _svm_guest_readcode_byte(struct vmcb_struct *v
 
 //---function to obtain the vcpu of the currently executing core----------------
 //note: this always returns a valid VCPU pointer
-static VCPU *_svm_getvcpu(void){
+VCPU *_svm_getvcpu(void){
   int i;
   u32 eax, edx, *lapic_reg;
   u32 lapic_id;
@@ -578,11 +578,11 @@ u32 svm_isbsp(void){
 }
 
 
-//---generic exception handler--------------------------------------------------
+/*//---generic exception handler--------------------------------------------------
 void svm_runtime_exception_handler(u32 vector, struct regs *r){
 	VCPU *vcpu = _svm_getvcpu();
-  /* INTR_SAMEPRIVILEGE_STACKFRAME_NOERRORCODE *noecode_sf= (INTR_SAMEPRIVILEGE_STACKFRAME_NOERRORCODE *)((u32)r->esp + (u32)0x0C); */
-  /* INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE *ecode_sf= (INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE *)((u32)r->esp + (u32)0x0C); */
+  // INTR_SAMEPRIVILEGE_STACKFRAME_NOERRORCODE *noecode_sf= (INTR_SAMEPRIVILEGE_STACKFRAME_NOERRORCODE *)((u32)r->esp + (u32)0x0C); 
+  // INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE *ecode_sf= (INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE *)((u32)r->esp + (u32)0x0C); 
 
   printf("\nCPU(0x%02x): XtRtmExceptionHandler: Exception=0x%08X", vcpu->id, vector);
   printf("\nCPU(0x%02x): ESP=0x%08x", vcpu->id, r->esp);
@@ -591,7 +591,7 @@ void svm_runtime_exception_handler(u32 vector, struct regs *r){
     emhf_smpguest_eventhandler_nmiexception(vcpu, r);
     return;
   }	
-}
+}*/
 
 /*//---quiesce interface to halt all cores----------------------------------------
 void svm_do_quiesce(VCPU *vcpu){
@@ -877,7 +877,7 @@ static void svm_apic_setup(VCPU *vcpu){
 //------------------------------------------------------------------------------
 struct isolation_layer g_isolation_layer_svm = {
 	.initialize =	svm_initialize,
-	.runtime_exception_handler = svm_runtime_exception_handler,
+	//.runtime_exception_handler = svm_runtime_exception_handler,
 	.isbsp = svm_isbsp,
 	.wakeup_aps = svm_wakeup_aps,
 	.hvm_initialize_csrip = svm_initialize_vmcb_csrip,

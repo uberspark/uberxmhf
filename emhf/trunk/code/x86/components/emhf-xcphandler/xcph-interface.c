@@ -77,8 +77,21 @@ u8 * emhf_xcphandler_get_idt_start(void){
 
 //EMHF exception handler routine
 void emhf_xcphandler_hub(u32 vector, struct regs *r){
-	//we just let the isolation layer handle it
-	//TODO: assert g_isl is valid
-	printf("\n%s: handing off exception...", __FUNCTION__);
-	g_isl->runtime_exception_handler(vector, r);
+	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
+	VCPU *vcpu;
+	
+	printf("\n%s: exception 0x%02x - handing off...", __FUNCTION__, vector);
+	
+	if(cpu_vendor == CPU_VENDOR_AMD){
+		vcpu=_svm_getvcpu();
+	}else{	//CPU_VENDOR_INTEL
+	    vcpu=_vmx_getvcpu();
+	}	
+	
+	printf("\nCPU(0x%02x): XtRtmExceptionHandler: Exception=0x%08X", vcpu->id, vector);
+	printf("\nCPU(0x%02x): ESP=0x%08x", vcpu->id, r->esp);
+	if(vector == 0x2){
+		emhf_smpguest_eventhandler_nmiexception(vcpu, r);
+		return;
+	}	
 }

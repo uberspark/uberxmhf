@@ -604,7 +604,7 @@ static inline u64 VCPU_gcr4(VCPU *vcpu)
 struct isolation_layer {
 	void 	(*initialize)(VCPU *vcpu);
 	
-	void	(*runtime_exception_handler)(u32 vector, struct regs *r);
+	//void	(*runtime_exception_handler)(u32 vector, struct regs *r);
 	
 	u32		(*isbsp)(void);
 	void 	(*wakeup_aps)(void);
@@ -640,6 +640,7 @@ void svm_lapic_access_dbexception(VCPU *vcpu, struct regs *r);
 void __svm_start_hvm(VCPU *vcpu, u32 vmcb_phys_addr);
 u32 svm_kernel_pt_walker(struct vmcb_struct *vmcb, u32 vaddr);
 void svm_apic_wakeupAPs(void);
+VCPU *_svm_getvcpu(void);
 
 //VMX isolation layer interfaces
 void vmx_initialize(VCPU *vcpu);
@@ -653,7 +654,7 @@ u32 vmx_intercept_handler(VCPU *vcpu, struct regs *r);
 //void vmx_do_quiesce(VCPU *vcpu);
 //void vmx_do_wakeup(VCPU *vcpu);
 void vmx_setupvcpus(u32 cpu_vendor);
-
+VCPU *_vmx_getvcpu(void);
 
 //other VMX isolation layer global functions
 u32 vmx_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode);
