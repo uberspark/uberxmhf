@@ -48,6 +48,13 @@
 //array of exception handler stubs
 extern u32 emhf_xcphandler_exceptionstubs[]; 
 
+//IDT descriptor
+extern u8 emhf_xcphandler_idt[];
+
+//start of interrupt descriptor table 
+extern u8 emhf_xcphandler_idt_start[];
+
+
 //initialize EMHF core exception handlers
 void emhf_xcphandler_initialize(void);
 
