@@ -45,6 +45,9 @@
 
 #ifndef __ASSEMBLY__
 
+//----------------------------------------------------------------------
+//exported DATA 
+
 //array of exception handler stubs
 extern u32 emhf_xcphandler_exceptionstubs[]; 
 
@@ -54,6 +57,8 @@ extern u8 emhf_xcphandler_idt[];
 //start of interrupt descriptor table 
 extern u8 emhf_xcphandler_idt_start[];
 
+//----------------------------------------------------------------------
+//exported FUNCTIONS 
 
 //initialize EMHF core exception handlers
 void emhf_xcphandler_initialize(void);
@@ -64,7 +69,7 @@ void emhf_xcphandler_resetIDT(void);
 //get IDT start address
 u8 * emhf_xcphandler_get_idt_start(void);
 
-//EMHF exception handler routine
+//EMHF exception handler hub
 void emhf_xcphandler_hub(u32 vector, struct regs *r);
 
 #endif	//__ASSEMBLY__
