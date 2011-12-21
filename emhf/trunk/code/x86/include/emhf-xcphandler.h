@@ -58,6 +58,8 @@ extern u8 emhf_xcphandler_idt_start[];
 //initialize EMHF core exception handlers
 void emhf_xcphandler_initialize(void);
 
+//reset IDT to zeros
+void emhf_xcphandler_resetIDT(void);
 
 #endif	//__ASSEMBLY__
 

@@ -75,3 +75,10 @@ void emhf_xcphandler_initialize(void){
 	
 	
 }
+
+
+//reset IDT to zeros
+void emhf_xcphandler_resetIDT(void){
+	memset((void *)emhf_xcphandler_idt_start, 0, EMHF_XCPHANDLER_IDTSIZE);	
+	return;
+}
