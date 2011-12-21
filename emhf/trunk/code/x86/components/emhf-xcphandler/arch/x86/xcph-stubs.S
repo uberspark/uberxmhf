@@ -107,3 +107,40 @@ XtRtmEmitIdtStub 1d
 XtRtmEmitIdtStub 1e	
 XtRtmEmitIdtStub 1f	
 
+
+.section .data
+	.align 16
+	x_idt_functionpointers:
+	.long XtRtmIdtStub0
+	.long XtRtmIdtStub1
+	.long XtRtmIdtStub2
+	.long XtRtmIdtStub3
+	.long XtRtmIdtStub4
+	.long XtRtmIdtStub5
+	.long XtRtmIdtStub6
+	.long XtRtmIdtStub7
+	.long XtRtmIdtStub8
+	.long XtRtmIdtStub9
+	.long XtRtmIdtStuba
+	.long XtRtmIdtStubb
+	.long XtRtmIdtStubc
+	.long XtRtmIdtStubd
+	.long XtRtmIdtStube
+	.long XtRtmIdtStubf
+	.long XtRtmIdtStub10
+	.long XtRtmIdtStub11
+	.long XtRtmIdtStub12
+	.long XtRtmIdtStub13
+	.long XtRtmIdtStub14
+	.long XtRtmIdtStub15
+	.long XtRtmIdtStub16
+	.long XtRtmIdtStub17
+	.long XtRtmIdtStub18
+	.long XtRtmIdtStub19
+	.long XtRtmIdtStub1a
+	.long XtRtmIdtStub1b
+	.long XtRtmIdtStub1c
+	.long XtRtmIdtStub1d
+	.long XtRtmIdtStub1e
+	.long XtRtmIdtStub1f
+
