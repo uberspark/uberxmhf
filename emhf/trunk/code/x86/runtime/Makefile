@@ -43,6 +43,9 @@ OBJECTS_PRECOMPILED += ../components/emhf-dmaprot/dmap-interface.o
 OBJECTS_PRECOMPILED += ../components/emhf-dmaprot/arch/x86/svm/dmap-x86svm.o
 OBJECTS_PRECOMPILED += ../components/emhf-dmaprot/arch/x86/vmx/dmap-x86vmx.o
 
+OBJECTS_PRECOMPILED += ../components/emhf-xcphandler/xcph-interface.o
+OBJECTS_PRECOMPILED += ../components/emhf-xcphandler/arch/x86/xcph-stubs.o
+
 
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 

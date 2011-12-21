@@ -84,6 +84,8 @@ components:
 	cd components/emhf-smpguest && $(MAKE) -w all
 	#EMHF DMA protection component
 	cd components/emhf-dmaprot && $(MAKE) -w all
+	#EMHF exception handler component
+	cd components/emhf-xcphandler && $(MAKE) -w all
 
 .PHONY: common
 common:
@@ -138,6 +140,10 @@ init-late: hypervisor-$(TARGET_HWPLATFORM).bin.gz
 clean: 
 	cd components/emhf-memprot && $(MAKE) -w clean
 	cd components/emhf-parteventhub && $(MAKE) -w clean
+	cd components/emhf-dmaprot && $(MAKE) -w clean
+	cd components/emhf-smpguest && $(MAKE) -w clean
+	cd components/emhf-xcphandler && $(MAKE) -w clean
+
 	
 	cd runtime && $(MAKE) -w clean
 	cd sl && $(MAKE) -w clean
