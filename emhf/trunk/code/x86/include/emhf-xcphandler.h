@@ -40,6 +40,7 @@
 #ifndef __EMHF_XCPHANDLER_H__
 #define __EMHF_XCPHANDLER_H__
 
+#define	EMHF_XCPHANDLER_MAXEXCEPTIONS	32
 
 #ifndef __ASSEMBLY__
 
