@@ -446,6 +446,7 @@ typedef struct {
 #include <emhf-dmaprot.h>	//EMHF DMA protection component
 #include <emhf-parteventhub.h>	//EMHF partition event-hub component
 #include <emhf-smpguest.h>		//EMHF SMP guest component
+#include <emhf-xcphandler.h>	//EMHF exception handler component
 
 //----------------------------------------------------------------------
 // host to guest, guest to host VA to PA helpers
