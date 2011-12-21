@@ -425,31 +425,6 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
         /* pass command line configuration forward */
         rpb->uart_config = g_uart_config;
 
-	 	//setup runtime IDT
-		{
-			u32 *fptr, idtbase_virt, idtbase_rel;
-			u32 i;
-
-			printf("\nSL: setting up runtime IDT...");
-			fptr=hva2sla(rpb->XtVmmIdtFunctionPointers);
-			idtbase_virt= *(u32 *)(hva2sla(rpb->XtVmmIdt + 2));
-			idtbase_rel= (uintptr_t)(hva2sla(idtbase_virt));
-			printf("\n	fptr at virt=%08x, rel=%08x", (u32)rpb->XtVmmIdtFunctionPointers,
-					(u32)fptr);
-			printf("\n	idtbase at virt=%08x, rel=%08x", (u32)idtbase_virt,
-					(u32)idtbase_rel);
-
-			for(i=0; i < rpb->XtVmmIdtEntries; i++){
-				idtentry_t *idtentry=(idtentry_t *)((u32)idtbase_rel+ (i*8));
-				//printf("\n	%u: idtentry=%08x, fptr=%08x", i, (u32)idtentry, fptr[i]);
-				idtentry->isrLow= (u16)fptr[i];
-				idtentry->isrHigh= (u16) ( (u32)fptr[i] >> 16 );
-				idtentry->isrSelector = __CS;
-				idtentry->count=0x0;
-				idtentry->type=0x8E;
-			}
-			printf("\nSL: setup runtime IDT.");
-		}
 
 		//setup runtime TSS
 		{
