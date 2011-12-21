@@ -96,6 +96,9 @@ void cstartup(void){
 	//setup EMHF exception handler component
 	emhf_xcphandler_initialize();
 
+	//[debug]: test IDT/exception routing
+	//__asm__ __volatile__ ("int $0x03\r\n");
+
 	//initialize isolation layer and EMHF library interface abstraction
   if(cpu_vendor == CPU_VENDOR_INTEL){
   	g_isl = &g_isolation_layer_vmx;
