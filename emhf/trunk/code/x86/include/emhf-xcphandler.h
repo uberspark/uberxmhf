@@ -43,6 +43,9 @@
 
 #ifndef __ASSEMBLY__
 
+//array of exception handler stubs
+extern u32 emhf_xcphandler_exceptionstubs[]; 
+
 //initialize EMHF core exception handlers
 void emhf_xcphandler_initialize(void);
 

@@ -110,7 +110,8 @@ XtRtmEmitIdtStub 1f
 
 .section .data
 	.align 16
-	x_idt_functionpointers:
+	.global emhf_xcphandler_exceptionstubs
+	emhf_xcphandler_exceptionstubs:
 	.long XtRtmIdtStub0
 	.long XtRtmIdtStub1
 	.long XtRtmIdtStub2
