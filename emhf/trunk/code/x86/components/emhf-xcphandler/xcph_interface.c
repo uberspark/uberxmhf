@@ -82,3 +82,9 @@ void emhf_xcphandler_resetIDT(void){
 	memset((void *)emhf_xcphandler_idt_start, 0, EMHF_XCPHANDLER_IDTSIZE);	
 	return;
 }
+
+//get IDT start address
+u8 * emhf_xcphandler_get_idt_start(void){
+	return (u8 *)&emhf_xcphandler_idt_start;
+}
+

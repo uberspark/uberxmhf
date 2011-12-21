@@ -932,10 +932,7 @@ static void _vmx_lib_reboot(VCPU __attribute__((unused)) *vcpu){
 	write_cr4(read_cr4() & ~(CR4_VMXE));
 	
 	//step-2: zero out IDT
-	{
-		extern u32 x_idt_start[];
-		memset((void *)x_idt_start, 0, SIZE_RUNTIME_IDT);
-	}
+	emhf_xcphandler_resetIDT();
 	
 	//step-3: execute ud2 instruction to generate triple fault
 	__asm__ __volatile__("ud2 \r\n");
