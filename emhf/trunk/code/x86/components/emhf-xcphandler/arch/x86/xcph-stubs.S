@@ -109,6 +109,17 @@ XtRtmEmitIdtStub 1f
 
 
 .section .data
+	//EMHF interrupt descriptor table
+	x_idt:
+	.word x_idt_end - x_idt_start - 1
+	.long x_idt_start
+	.align 16
+	.global x_idt_start
+	x_idt_start:
+	.fill	SIZE_RUNTIME_IDT, 1, 0
+	x_idt_end:
+
+
 	.align 16
 	.global emhf_xcphandler_exceptionstubs
 	emhf_xcphandler_exceptionstubs:

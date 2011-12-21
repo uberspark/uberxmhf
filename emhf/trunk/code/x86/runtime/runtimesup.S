@@ -129,15 +129,6 @@ _rpb:
 	.quad	0x0000000000000000	
 	x_gdt_end:
 
-	//IDT
-	x_idt:
-	.word x_idt_end - x_idt_start - 1
-	.long x_idt_start
-	.align 16
-	.global x_idt_start
-	x_idt_start:
-	.fill	SIZE_RUNTIME_IDT, 1, 0
-	x_idt_end:
 	
 
 //------------------------------------------------------------------------------
