@@ -93,6 +93,9 @@ void cstartup(void){
 		}   	 	
   }
 
+	//setup EMHF exception handler component
+	emhf_xcphandler_initialize();
+
 	//initialize isolation layer and EMHF library interface abstraction
   if(cpu_vendor == CPU_VENDOR_INTEL){
   	g_isl = &g_isolation_layer_vmx;
