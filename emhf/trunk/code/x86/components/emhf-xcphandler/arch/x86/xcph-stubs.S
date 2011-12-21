@@ -39,4 +39,71 @@
  
 #include <emhf.h>
 
+.altmacro
+.macro XtRtmEmitIdtStub vector
+	.section .text
+	XtRtmIdtStub&vector&:
+		pushl	%edi	
+    pushl	%esi	
+	  pushl	%ebp	
+		pushl	%esp  
+    pushl	%ebx	
+    pushl	%edx	
+    pushl	%ecx	
+    pushl	%eax	
+    
+    movw	$(__DS), %ax
+		movw	%ax, %ds	
+		movl %esp, %eax
+		
+		pushl %eax
+		pushl	$0x&vector&
+		call	runtime_exception_handler
+		addl  $0x08, %esp
+		
+		popl	%eax	
+    popl	%ecx	
+    popl	%edx	
+    popl	%ebx	
+		popl	%esp	
+    popl	%ebp	
+    popl	%esi	
+    popl	%edi	 
+    
+    iretl
+	
+.endm
+
+XtRtmEmitIdtStub 0	
+XtRtmEmitIdtStub 1	
+XtRtmEmitIdtStub 2	
+XtRtmEmitIdtStub 3	
+XtRtmEmitIdtStub 4	
+XtRtmEmitIdtStub 5	
+XtRtmEmitIdtStub 6	
+XtRtmEmitIdtStub 7	
+XtRtmEmitIdtStub 8	
+XtRtmEmitIdtStub 9	
+XtRtmEmitIdtStub a	
+XtRtmEmitIdtStub b	
+XtRtmEmitIdtStub c	
+XtRtmEmitIdtStub d	
+XtRtmEmitIdtStub e	
+XtRtmEmitIdtStub f	
+XtRtmEmitIdtStub 10	
+XtRtmEmitIdtStub 11	
+XtRtmEmitIdtStub 12	
+XtRtmEmitIdtStub 13	
+XtRtmEmitIdtStub 14	
+XtRtmEmitIdtStub 15	
+XtRtmEmitIdtStub 16	
+XtRtmEmitIdtStub 17	
+XtRtmEmitIdtStub 18	
+XtRtmEmitIdtStub 19	
+XtRtmEmitIdtStub 1a	
+XtRtmEmitIdtStub 1b	
+XtRtmEmitIdtStub 1c	
+XtRtmEmitIdtStub 1d	
+XtRtmEmitIdtStub 1e	
+XtRtmEmitIdtStub 1f	
 
