@@ -40,3 +40,9 @@
  
 #include <emhf.h>
 
+//initialize EMHF core exception handlers
+void emhf_xcphandler_initialize(void){
+	
+	
+	
+}

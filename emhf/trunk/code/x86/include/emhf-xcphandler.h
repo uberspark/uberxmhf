@@ -43,6 +43,9 @@
 
 #ifndef __ASSEMBLY__
 
+//initialize EMHF core exception handlers
+void emhf_xcphandler_initialize(void);
+
 
 #endif	//__ASSEMBLY__
 
