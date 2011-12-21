@@ -40,9 +40,6 @@
  
 #include <emhf.h>
 
-//rpb->XtVmmIdtFunctionPointers
-//rpb->XtVmmIdtEntries
-//rpb->XtVmmIdt
 
 //initialize EMHF core exception handlers
 void emhf_xcphandler_initialize(void){
@@ -77,3 +74,11 @@ u8 * emhf_xcphandler_get_idt_start(void){
 	return (u8 *)&emhf_xcphandler_idt_start;
 }
 
+
+//EMHF exception handler routine
+void emhf_xcphandler_hub(u32 vector, struct regs *r){
+	//we just let the isolation layer handle it
+	//TODO: assert g_isl is valid
+	printf("\n%s: handing off exception...", __FUNCTION__);
+	g_isl->runtime_exception_handler(vector, r);
+}

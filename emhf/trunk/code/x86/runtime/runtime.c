@@ -426,11 +426,4 @@ void allcpus_common_start(VCPU *vcpu){
   HALT();
 }
 
-//---runtime exception handler--------------------------------------------------
-void runtime_exception_handler(u32 vector, struct regs *r){
-	//we just let the isolation layer handle it
-	//TODO: assert g_isl is valid
-	printf("\n%s: handing off exception...", __FUNCTION__);
-	g_isl->runtime_exception_handler(vector, r);
-}
 

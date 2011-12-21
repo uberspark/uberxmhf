@@ -59,7 +59,7 @@
 		
 		pushl %eax
 		pushl	$0x&vector&
-		call	runtime_exception_handler
+		call	emhf_xcphandler_hub
 		addl  $0x08, %esp
 		
 		popl	%eax	
