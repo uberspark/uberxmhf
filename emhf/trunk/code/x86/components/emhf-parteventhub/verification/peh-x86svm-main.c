@@ -42,6 +42,7 @@
 //globals referenced by this module
 RPB *rpb; 	//runtime parameter block pointer
 GRUBE820 g_e820map[MAX_E820_ENTRIES];
+struct vmcb_struct *vmcb; //AMD VMCB
 
 
 //======================================================================
@@ -107,7 +108,7 @@ static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *
   ioio_info_t ioinfo;
   struct vmcb_struct *x = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
   
-  ioinfo.bytes = x->exitinfo1;
+  ioinfo.bytes = vmcb->exitinfo1;
 
   if (ioinfo.fields.rep || ioinfo.fields.str){
     printf("\nCPU(0x%02x): Fatal, unsupported batch I/O ops!", vcpu->id);
@@ -439,10 +440,10 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
 
 u32 nondet_u32();
 
+
 void main() {
 	VCPU vcpu; //VCPU variable to identify the physical core
 	struct regs r; //General Purporse Register structure
-	struct vmcb_struct *vmcb; //AMD VMCB
 	RPB _rpb;	//actual definition
 	
 	//set VMCB virtual address to something meaningful
