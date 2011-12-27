@@ -40,76 +40,6 @@
 
 #include <emhf.h> 
 
-//------------------------------------------------------------------------------
-//TODO: move these into flat.c for unified FLAT memory accesses from both SL
-//and runtime
-//functions to read memory using flat selector to access ACPI related
-//data structures below SL base
-u8 flat_readu8(u32 addr){
-    u32 ret;
-    __asm__ __volatile("xor %%eax, %%eax\r\n"        
-                       "movl %%fs:(%%ebx), %%eax\r\n"
-                       : "=a"(ret)
-                       : "b"(addr)
-                       );
-    return (u8)ret;        
-}
-
-u32 flat_readu32(u32 addr){
-    u32 ret;
-    __asm__ __volatile("xor %%eax, %%eax\r\n"        
-                       "movl %%fs:(%%ebx), %%eax\r\n"
-                       : "=a"(ret)
-                       : "b"(addr)
-                       );
-    return ret;        
-}
-
-
-void flat_writeu32(u32 addr, u32 val) {
-    __asm__ __volatile__("movl %%eax, %%fs:(%%ebx)\r\n"
-                         :
-                         : "b"(addr), "a"((u32)val)
-                         );
-}
-
-u64 flat_readu64(u32 addr){
-    u32 highpart, lowpart;
-    __asm__ __volatile("xor %%eax, %%eax\r\n"        
-    									 "xor %%edx, %%edx\r\n"
-                       "movl %%fs:(%%ebx), %%eax\r\n"
-                       "movl %%fs:0x4(%%ebx), %%edx\r\n"
-                       : "=a"(lowpart), "=d"(highpart)
-                       : "b"(addr)
-                       );
-    return  ((u64)highpart << 32) | (u64)lowpart;        
-}
-
-void flat_writeu64(u32 addr, u64 val) {
-    u32 highpart, lowpart;
-    lowpart = (u32)val;
-    highpart = (u32)((u64)val >> 32);
-    
-		__asm__ __volatile__("movl %%eax, %%fs:(%%ebx)\r\n"
-												"movl %%edx, %%fs:0x4(%%ebx)\r\n"	
-                         :
-                         : "b"(addr), "a"(lowpart), "d"(highpart)
-                         );
-}
-
-
-
-//memory copy using FLAT addresses, dest is always assumed to be DS relative
-//(typically a variable) while src is assumed to be an absolute physical
-//memory address
-void flat_copy(u8 *dest, u8 *src, u32 size){
-	u32 i;
-	u8 val;
-	for(i=0; i < size; i++){
-		val = flat_readu8((u32)src + i);
-		dest[i] = val;
-	}
-}
 
 
 //------------------------------------------------------------------------------
@@ -138,14 +68,14 @@ u32 acpi_getRSDP(ACPI_RSDP *rsdp){
   u32 i, found=0;
   
   //get EBDA segment from 040E:0000h in BIOS data area
-  flat_copy((u8 *)&ebdaseg, (u8 *)0x0000040E, sizeof(u16));
+  emhf_arch_baseplatform_flat_copy((u8 *)&ebdaseg, (u8 *)0x0000040E, sizeof(u16));
 
   //convert it to its 32-bit physical address
   ebdaphys=(u32)(ebdaseg * 16);
 
   //search first 1KB of ebda for rsdp signature (8 bytes long)
   for(i=0; i < (1024-8); i+=16){
-    flat_copy((u8 *)rsdp, (u8 *)(ebdaphys+i), sizeof(ACPI_RSDP));
+    emhf_arch_baseplatform_flat_copy((u8 *)rsdp, (u8 *)(ebdaphys+i), sizeof(ACPI_RSDP));
     if(rsdp->signature == ACPI_RSDP_SIGNATURE){
       if(!_acpi_computetablechecksum((u32)rsdp, 20)){
         found=1;
@@ -160,7 +90,7 @@ u32 acpi_getRSDP(ACPI_RSDP *rsdp){
   
   //nope, search within BIOS areas 0xE0000 to 0xFFFFF
   for(i=0xE0000; i < (0xFFFFF-8); i+=16){
-    flat_copy((u8 *)rsdp, (u8 *)i, sizeof(ACPI_RSDP));
+    emhf_arch_baseplatform_flat_copy((u8 *)rsdp, (u8 *)i, sizeof(ACPI_RSDP));
     if(rsdp->signature == ACPI_RSDP_SIGNATURE){
       if(!_acpi_computetablechecksum((u32)rsdp, 20)){
         found=1;
