@@ -337,6 +337,10 @@ sl_cpu_common:
 
     // We start here with our new GDT CS selector
 sl_startnew:
+	// cpu vendor is in edx, move it into esi in case PERF_CRIT
+	// is not definied, the following block will clobber edx
+	movl	%edx, %esi
+
 #ifndef PERF_CRIT
     // we are switching stacks so we need to save our performance
     // measurements in registers and then push them onto the new stack              
@@ -380,7 +384,8 @@ sl_startnew:
     pushl $0x00000000
 #endif
               
-    pushl %ebp
+    pushl %ebp			//SL base address
+    pushl %esi			//cpu vendor
     call slmain
 
     // We should never get here

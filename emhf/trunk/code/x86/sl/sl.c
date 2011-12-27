@@ -220,7 +220,7 @@ bool sl_integrity_check(u8* runtime_base_addr, size_t runtime_len) {
 //we get here from slheader.S
 // rdtsc_* are valid only if PERF_CRIT is not defined.  slheader.S
 // sets them to 0 otherwise.
-void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
+void slmain(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	//SL_PARAMETER_BLOCK *slpb;
 	u32 runtime_physical_base;
 	u32 runtime_size_2Maligned;
@@ -233,6 +233,9 @@ void slmain(u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	ASSERT( (u32)&slpb == 0x10000 ); //linker relocates sl image starting from 0, so
                                          //parameter block must be at offset 0x10000    
 
+	//we currently only support x86 (AMD and Intel)
+	ASSERT (cpu_vendor == CPU_VENDOR_AMD || cpu_vendor == CPU_VENDOR_INTEL);
+	
 	//initialize debugging early on
 	#ifdef __DEBUG_SERIAL__
 			g_uart_config = slpb.uart_config;
