@@ -557,7 +557,7 @@ void vmx_wakeup_aps(void){
     //MP protocol. Use the APIC for IPI purposes.
     if(!txt_is_launched()) { // XXX TODO: Do actual GETSEC[WAKEUP] in here?
         printf("\nBSP: Using APIC to awaken APs...");
-        emhf_arch_x86_wakeupAPs();
+        emhf_arch_x86_baseplatform_wakeupAPs();
         printf("\nBSP: APs should be awake.");
     }else{
 		//we ran SENTER, so do a GETSEC[WAKEUP]

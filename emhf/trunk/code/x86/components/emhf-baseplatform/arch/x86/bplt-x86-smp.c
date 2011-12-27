@@ -42,7 +42,7 @@
 #include <emhf.h>
 
 //wake up APs using the LAPIC by sending the INIT-SIPI-SIPI IPI sequence
-void emhf_arch_x86_wakeupAPs(void){
+void emhf_arch_x86_baseplatform_wakeupAPs(void){
   u32 eax, edx;
   volatile u32 *icr;
   
