@@ -289,7 +289,12 @@ void emhf_partition_arch_x86svm_setupguestOSstate(VCPU *vcpu){
 
 //start executing the partition and guest OS
 void emhf_partition_arch_x86svm_start(VCPU *vcpu){
-	
-	
-	
+    struct vmcb_struct *vmcb;
+    vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+    printf("\nCPU(0x%02x): Starting HVM using CS:EIP=0x%04x:0x%08x...", vcpu->id,
+			(u16)vmcb->cs.sel, (u32)vmcb->rip);
+    __svm_start_hvm(vcpu, __hva2spa__((void*)vcpu->vmcb_vaddr_ptr));
+	//we never get here, if we do, we just return and our caller is responsible
+	//for halting the core as something really bad happened!
 }
+	

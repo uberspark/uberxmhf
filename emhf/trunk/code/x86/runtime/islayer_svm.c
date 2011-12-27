@@ -594,18 +594,6 @@ void svm_initialize_vmcb_csrip(VCPU *vcpu, u16 cs_selector, u32 cs_base,
 	vmcb->cs.base = cs_base; 
 }
 
-//------------------------------------------------------------------------------
-//svm_start_hvm
-//start a HVM on the core
-void svm_start_hvm(VCPU *vcpu){
-    struct vmcb_struct *vmcb;
-    vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
-    printf("\nCPU(0x%02x): Starting HVM using CS:EIP=0x%04x:0x%08x...", vcpu->id,
-			(u16)vmcb->cs.sel, (u32)vmcb->rip);
-    __svm_start_hvm(vcpu, __hva2spa__((void*)vcpu->vmcb_vaddr_ptr));
- 		//we never get here, if we do, we just return and our caller is responsible
- 		//for halting the core as something really bad happened!
-}
 
 /*static void svm_apic_setup(VCPU *vcpu){
 		printf("\nREFACTORED COMPONENT, SHOULD NEVER BE HERE");
@@ -623,7 +611,7 @@ struct isolation_layer g_isolation_layer_svm = {
 	//.wakeup_aps = svm_wakeup_aps,
 	.hvm_initialize_csrip = svm_initialize_vmcb_csrip,
 	//.hvm_apic_setup = svm_apic_setup,
-	.hvm_start = svm_start_hvm,
+	//.hvm_start = svm_start_hvm,
 	//.hvm_intercept_handler = emhf_parteventhub_intercept_handler_x86svm,
 	//.do_quiesce = svm_do_quiesce,
 	//.do_wakeup = svm_do_wakeup,

@@ -419,6 +419,57 @@ static void _vmx_initVMCS(VCPU *vcpu){
 }
 
 
+//---start a HVM----------------------------------------------------------------
+static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
+  //clear VMCS
+  if(!__vmx_vmclear((u64)vmcs_phys_addr)){
+    printf("\nCPU(0x%02x): VMCLEAR failed, HALT!", vcpu->id);
+    HALT();
+  }
+  printf("\nCPU(0x%02x): VMCLEAR success.", vcpu->id);
+  
+  
+  //set VMCS revision id
+ 	*((u32 *)vcpu->vmx_vmcs_vaddr) = (u32)vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
+
+  //load VMPTR
+  if(!__vmx_vmptrld((u64)vmcs_phys_addr)){
+    printf("\nCPU(0x%02x): VMPTRLD failed, HALT!", vcpu->id);
+    HALT();
+  }
+  printf("\nCPU(0x%02x): VMPTRLD success.", vcpu->id);
+  
+  //put VMCS to CPU
+  _vmx_putVMCS(vcpu);
+  printf("\nCPU(0x%02x): VMWRITEs success.", vcpu->id);
+  ASSERT( vcpu->vmcs.guest_VMCS_link_pointer_full == 0xFFFFFFFFUL );
+
+  {
+    u32 errorcode;
+    errorcode=__vmx_start_hvm();
+    ASSERT(errorcode != 2);	//this means the VMLAUNCH implementation violated the specs.
+    //get CPU VMCS into VCPU structure
+    _vmx_getVMCS(vcpu);
+    
+    switch(errorcode){
+			case 0:	//no error code, VMCS pointer is invalid
+			    printf("\nCPU(0x%02x): VMLAUNCH error; VMCS pointer invalid?. HALT!", vcpu->id);
+				break;
+			case 1:{//error code available, so dump it
+				u32 code=5;
+				__vmx_vmread(0x4400, &code);
+			    printf("\nCPU(0x%02x): VMLAUNCH error; code=0x%x. HALT!", vcpu->id, code);
+			    _vmx_dumpVMCS(vcpu);
+				break;
+			}
+	}
+    HALT();
+  }
+
+  HALT();
+}
+
+
 
 
 //initialize partition monitor for a given CPU
@@ -517,7 +568,10 @@ void emhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu){
 
 //start executing the partition and guest OS
 void emhf_partition_arch_x86vmx_start(VCPU *vcpu){
-	
-	
-	
+    printf("\nCPU(0x%02x): Starting HVM using CS:EIP=0x%04x:0x%08x...", vcpu->id,
+			(u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP);
+    _vmx_start_hvm(vcpu, __hva2spa__((void*)vcpu->vmx_vmcs_vaddr));
+	//we never get here, if we do, we just return and our caller is responsible
+	//for halting the core as something really bad happened!
 }
+
