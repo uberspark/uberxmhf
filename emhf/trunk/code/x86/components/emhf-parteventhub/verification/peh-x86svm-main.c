@@ -57,6 +57,26 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 			return APP_SUCCESS;
 }
 
+u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
+	u32 status=APP_SUCCESS;
+	u32 call_id= (u32)r->eax;
+
+   switch(call_id){
+		case 0xDEADBEEF:
+			//r->ebx contains a 32-bit number that needs to be printed out
+			printf("\nCPU(0x%02x): Our hypercall", vcpu->id);
+			break;
+		
+		default:
+			printf("\nCPU(0x%02x): unsupported hypercall (0x%08x)!!", 
+			  vcpu->id, call_id);
+			status=APP_ERROR;
+			break;
+	}
+
+	return status;			
+}
+
 
 //---IO Intercept handling------------------------------------------------------
 static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs __attribute__((unused)) *r){
