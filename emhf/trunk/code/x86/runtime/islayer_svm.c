@@ -825,7 +825,7 @@ void svm_wakeup_aps(void){
 	//step-2: wake up the APs sending the INIT-SIPI-SIPI sequence as per the
 	//MP protocol. Use the APIC for IPI purposes.	
   printf("\nBSP: Using APIC to awaken APs...");
-	svm_apic_wakeupAPs();
+  emhf_arch_x86_wakeupAPs();
   printf("\nBSP: APs should be awake.");
 }
 
