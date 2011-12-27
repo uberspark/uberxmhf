@@ -51,6 +51,6 @@ char *strncpy(char * dst, const char * src, size_t n);
 size_t strlen(const char * s);
 unsigned long strtoul(const char *cp,const char **endp, unsigned int base);
 int memcmp(const void *b1, const void *b2, size_t len);
-#endif/* __ASSEMBLY__ */
+#endif /* __ASSEMBLY__ */
 
 #endif /* __EMHF_STRING_H__ */
