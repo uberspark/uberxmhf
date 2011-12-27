@@ -4,14 +4,6 @@
 # source files
 AS_SOURCES = runtimesup.S 
 C_SOURCES = runtime.c globals.c 
-# libemhf.c 
-
-# AS_SOURCES += islayersup_svm.S 
-# C_SOURCES += islayer_svm.c   
-
-# AS_SOURCES += islayersup_vmx.S
-# C_SOURCES += islayer_vmx.c 
-# islayer_vmx_ug.c  
 
 # These are the core runtime objects
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
@@ -28,56 +20,56 @@ OBJECTS_PRECOMPILED += $(filter-out %dbg_uart.o,$(wildcard ../libcommon/*.o))
 endif
 
 # tie components used by the runtime
-OBJECTS_PRECOMPILED += ../components/emhf-memprot/emhf-memprot.o
-OBJECTS_PRECOMPILED += ../components/emhf-memprot/arch/vmx/emhf-memprot-vmx.o
-OBJECTS_PRECOMPILED += ../components/emhf-memprot/arch/svm/emhf-memprot-svm.o
+OBJECTS_PRECOMPILED += ../emhf-memprot/emhf-memprot.o
+OBJECTS_PRECOMPILED += ../emhf-memprot/arch/vmx/emhf-memprot-vmx.o
+OBJECTS_PRECOMPILED += ../emhf-memprot/arch/svm/emhf-memprot-svm.o
 
-OBJECTS_PRECOMPILED += ../components/emhf-parteventhub/arch/x86/svm/peh-x86svm-entry.o
-OBJECTS_PRECOMPILED += ../components/emhf-parteventhub/arch/x86/svm/peh-x86svm-main.o
-OBJECTS_PRECOMPILED += ../components/emhf-parteventhub/arch/x86/vmx/peh-x86vmx-entry.o
-OBJECTS_PRECOMPILED += ../components/emhf-parteventhub/arch/x86/vmx/peh-x86vmx-main.o
+OBJECTS_PRECOMPILED += ../emhf-parteventhub/arch/x86/svm/peh-x86svm-entry.o
+OBJECTS_PRECOMPILED += ../emhf-parteventhub/arch/x86/svm/peh-x86svm-main.o
+OBJECTS_PRECOMPILED += ../emhf-parteventhub/arch/x86/vmx/peh-x86vmx-entry.o
+OBJECTS_PRECOMPILED += ../emhf-parteventhub/arch/x86/vmx/peh-x86vmx-main.o
 
-OBJECTS_PRECOMPILED += ../components/emhf-smpguest/smpg-interface.o
-OBJECTS_PRECOMPILED += ../components/emhf-smpguest/arch/x86/smpg-x86.o
-OBJECTS_PRECOMPILED += ../components/emhf-smpguest/arch/x86/svm/smpg-x86svm.o
-OBJECTS_PRECOMPILED += ../components/emhf-smpguest/arch/x86/vmx/smpg-x86vmx.o
+OBJECTS_PRECOMPILED += ../emhf-smpguest/smpg-interface.o
+OBJECTS_PRECOMPILED += ../emhf-smpguest/arch/x86/smpg-x86.o
+OBJECTS_PRECOMPILED += ../emhf-smpguest/arch/x86/svm/smpg-x86svm.o
+OBJECTS_PRECOMPILED += ../emhf-smpguest/arch/x86/vmx/smpg-x86vmx.o
 
-OBJECTS_PRECOMPILED += ../components/emhf-dmaprot/dmap-interface.o
-OBJECTS_PRECOMPILED += ../components/emhf-dmaprot/arch/x86/svm/dmap-x86svm.o
-OBJECTS_PRECOMPILED += ../components/emhf-dmaprot/arch/x86/vmx/dmap-x86vmx.o
+OBJECTS_PRECOMPILED += ../emhf-dmaprot/dmap-interface.o
+OBJECTS_PRECOMPILED += ../emhf-dmaprot/arch/x86/svm/dmap-x86svm.o
+OBJECTS_PRECOMPILED += ../emhf-dmaprot/arch/x86/vmx/dmap-x86vmx.o
 
-OBJECTS_PRECOMPILED += ../components/emhf-xcphandler/xcph-interface.o
-OBJECTS_PRECOMPILED += ../components/emhf-xcphandler/arch/x86/xcph-x86.o
-OBJECTS_PRECOMPILED += ../components/emhf-xcphandler/arch/x86/xcph-stubs.o
+OBJECTS_PRECOMPILED += ../emhf-xcphandler/xcph-interface.o
+OBJECTS_PRECOMPILED += ../emhf-xcphandler/arch/x86/xcph-x86.o
+OBJECTS_PRECOMPILED += ../emhf-xcphandler/arch/x86/xcph-stubs.o
 
-OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/bplt-interface.o
-OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/bplt-interface-smp.o
-OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86.o
-OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-pci.o
-OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-acpi.o
-OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-pit.o
-OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-smp.o
-OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-smptrampoline.o
-OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-smplock.o
-OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-addressing.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/bplt-interface.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/bplt-interface-smp.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86-pci.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86-acpi.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86-pit.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86-smp.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86-smptrampoline.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86-smplock.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86-addressing.o
 
-OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/vmx/bplt-x86vmx.o
-OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/vmx/bplt-x86vmx-smp.o
-OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/vmx/bplt-x86vmx-vmcs.o
-OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/vmx/bplt-x86vmx-mtrrs.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/vmx/bplt-x86vmx.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/vmx/bplt-x86vmx-smp.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/vmx/bplt-x86vmx-vmcs.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/vmx/bplt-x86vmx-mtrrs.o
 
-OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/svm/bplt-x86svm-smp.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/svm/bplt-x86svm-smp.o
 
 
-OBJECTS_PRECOMPILED += ../components/emhf-partition/part-interface.o
-OBJECTS_PRECOMPILED += ../components/emhf-partition/arch/x86/svm/part-x86svm.o
-OBJECTS_PRECOMPILED += ../components/emhf-partition/arch/x86/svm/part-x86svm-sup.o
-OBJECTS_PRECOMPILED += ../components/emhf-partition/arch/x86/vmx/part-x86vmx.o
-OBJECTS_PRECOMPILED += ../components/emhf-partition/arch/x86/vmx/part-x86vmx-sup.o
+OBJECTS_PRECOMPILED += ../emhf-partition/part-interface.o
+OBJECTS_PRECOMPILED += ../emhf-partition/arch/x86/svm/part-x86svm.o
+OBJECTS_PRECOMPILED += ../emhf-partition/arch/x86/svm/part-x86svm-sup.o
+OBJECTS_PRECOMPILED += ../emhf-partition/arch/x86/vmx/part-x86vmx.o
+OBJECTS_PRECOMPILED += ../emhf-partition/arch/x86/vmx/part-x86vmx-sup.o
 
-OBJECTS_PRECOMPILED += ../components/emhf-applib/libemhf.o
-OBJECTS_PRECOMPILED += ../components/emhf-applib/applib-svm.o
-OBJECTS_PRECOMPILED += ../components/emhf-applib/applib-vmx.o
+OBJECTS_PRECOMPILED += ../emhf-applib/libemhf.o
+OBJECTS_PRECOMPILED += ../emhf-applib/applib-svm.o
+OBJECTS_PRECOMPILED += ../emhf-applib/applib-vmx.o
 
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 
@@ -89,9 +81,9 @@ runtime.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) runtime.lds.S
 	$(LD) -T runtime.lds.S -o runtime.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(ADDL_LIBS)
 	$(OBJCOPY) --output-format=binary runtime.exe runtime.bin
 
-%.o: %.S $(I_SOURCES) Makefile ../Makefile ../../../Makefile
+%.o: %.S $(I_SOURCES) Makefile ../../Makefile
 	$(CC) -c $(ASFLAGS) -o $@ $<
-%.o: %.c $(I_SOURCES) Makefile ../Makefile ../../../Makefile 
+%.o: %.c $(I_SOURCES) Makefile ../../Makefile 
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 .PHONY: clean 
