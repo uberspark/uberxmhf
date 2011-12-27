@@ -8,7 +8,8 @@ C_SOURCES = init.c smp.c txt_heap.c txt_hash.c txt_acmod.c txt.c cmdline.c
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
-OBJECTS_PRECOMPILED = ../libcommon/mpsup.o ../libcommon/txt_mtrrs.o ../libcommon/pci.o ../libcommon/acpi.o ../libcommon/tpm.o 
+OBJECTS_PRECOMPILED = ../libcommon/mpsup.o ../libcommon/txt_mtrrs.o ../libcommon/acpi.o ../libcommon/tpm.o 
+OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-pci.o
 
 # FIXME: This is overly general; init/ doesn't need all of these
 CFLAGS += $(ADDL_INCLUDES)

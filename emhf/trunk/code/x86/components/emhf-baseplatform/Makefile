@@ -5,6 +5,7 @@
 AS_SOURCES =  ./arch/x86/bplt-x86-smptrampoline.S
 C_SOURCES = bplt-interface.c
 C_SOURCES += ./arch/x86/bplt-x86.c
+C_SOURCES += ./arch/x86/bplt-x86-pci.c
 
 
 
