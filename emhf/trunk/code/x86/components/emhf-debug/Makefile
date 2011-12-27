@@ -1,4 +1,4 @@
-# makefile for libcommon
+# makefile for EMHF debug component
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files
@@ -23,9 +23,9 @@ CFLAGS += -I../../libemhfutil/include -I../../libemhfc/include
 .PHONY: all
 all: $(OBJECTS) 
 
-%.o: %.S $(I_SOURCES) Makefile ../Makefile ../../../Makefile 
+%.o: %.S $(I_SOURCES) Makefile ../../Makefile 
 	$(CC) -c $(ASFLAGS) -o $@ $<
-%.o: %.c $(I_SOURCES) Makefile ../Makefile ../../../Makefile
+%.o: %.c $(I_SOURCES) Makefile ../../Makefile
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 .PHONY: clean 
