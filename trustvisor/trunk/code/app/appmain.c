@@ -54,7 +54,7 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 	printf("\nCPU(0x%02x): Hello world from sechyp app!", vcpu->id);
 
 #ifdef __MP_VERSION__
-	if (g_isl->isbsp()) 
+	if (vcpu->isbsp) 
 #endif
 	{
 		printf("[TV] CPU(0x%02x): init scode!\n", vcpu->id);
