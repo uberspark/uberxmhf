@@ -44,25 +44,6 @@
 
 
 
-//---VMX decode assist----------------------------------------------------------
-//map a CPU register index into appropriate VCPU *vcpu or struct regs *r field 
-//and return the address of the field
-static u32 * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
-  ASSERT ( ((int)gpr >=0) && ((int)gpr <= 7) );
-  
-  switch(gpr){
-    case 0: return ( (u32 *)&r->eax );
-    case 1: return ( (u32 *)&r->ecx );
-    case 2: return ( (u32 *)&r->edx );
-    case 3: return ( (u32 *)&r->ebx );
-    case 4: return ( (u32 *)&vcpu->vmcs.guest_RSP);
-    case 5: return ( (u32 *)&r->ebp );
-    case 6: return ( (u32 *)&r->esi );
-    case 7: return ( (u32 *)&r->edi );
-  }
-
-  return NULL; /* unreachable */
-}
 
 /*
  //extracted to memory protection component
@@ -354,19 +335,3 @@ void _vmx_setupEPT(VCPU *vcpu){
 
 
 
-//---CR4 access handler---------------------------------------------------------
-void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gpr, u32 tofrom){
-	ASSERT(tofrom == VMX_CRX_ACCESS_TO);
-
-  printf("\nCPU(0x%02x): CS:EIP=0x%04x:0x%08x MOV CR4, xx", vcpu->id,
-    (u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP);
-  
-	printf("\nMOV TO CR4 (flush TLB?), current=0x%08x, proposed=0x%08x",
-			(u32)vcpu->vmcs.guest_CR4, *((u32 *)_vmx_decode_reg(gpr, vcpu, r)) );
-
-  #if defined (__NESTED_PAGING__)
-  //we need to flush EPT mappings as we emulated CR4 load above
-  __vmx_invvpid(VMX_VPID_EXTENT_SINGLE_CONTEXT, 1, 0);
-  #endif
-
-}
