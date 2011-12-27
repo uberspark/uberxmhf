@@ -49,12 +49,17 @@ u32 lock_test_quiesce_cpu_counter __attribute__(( section(".data") )) = 1;
 void cstartup(void){
 	u32 cpu_vendor;
 
+	//get CPU vendor
+	cpu_vendor = emhf_baseplatform_getcpuvendor();
+
 	//initialize global runtime variables including Runtime Parameter Block (rpb)
 	runtime_globals_init();
 
+	//setup EMHF exception handler component
+	emhf_xcphandler_initialize();
 
-	//get CPU vendor
-	cpu_vendor = emhf_baseplatform_getcpuvendor();
+	//[debug]: test IDT/exception routing
+	//__asm__ __volatile__ ("int $0x03\r\n");
 
 	//setup debugging	
 #ifdef __DEBUG_SERIAL__
@@ -72,21 +77,6 @@ void cstartup(void){
 #endif
 	printf("\nruntime initializing...");
 
-	
-	//setup EMHF exception handler component
-	emhf_xcphandler_initialize();
-
-	//[debug]: test IDT/exception routing
-	//__asm__ __volatile__ ("int $0x03\r\n");
-
-	//initialize isolation layer and EMHF library interface abstraction
-  if(cpu_vendor == CPU_VENDOR_INTEL){
-  	g_isl = &g_isolation_layer_vmx;
-		g_libemhf = &g_emhf_library_vmx;
-	}else{
-		g_isl = &g_isolation_layer_svm; 
-		g_libemhf = &g_emhf_library_svm;
-	}
 
 #if defined (__DMAPROT__)
 	{
@@ -123,7 +113,8 @@ void cstartup(void){
 
 	
 #endif //__DMAPROT__
-	
+
+
   //debug, dump E820 and MP table
  	printf("\nNumber of E820 entries = %u", rpb->XtVmmE820NumEntries);
   {
@@ -152,10 +143,21 @@ void cstartup(void){
        g_midtable_numentries++;
     }
   }
+	
+
+	//initialize isolation layer and EMHF library interface abstraction
+  if(cpu_vendor == CPU_VENDOR_INTEL){
+  	g_isl = &g_isolation_layer_vmx;
+		g_libemhf = &g_emhf_library_vmx;
+	}else{
+		g_isl = &g_isolation_layer_svm; 
+		g_libemhf = &g_emhf_library_svm;
+	}
 
   //setup vcpus 
   //svm_setupvcpus(cpu_vendor);
   g_isl->setupvcpus(cpu_vendor);
+
 
   //wake up APS
   if(g_midtable_numentries > 1)
