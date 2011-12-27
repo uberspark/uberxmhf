@@ -8,7 +8,15 @@ C_SOURCES = init.c smp.c txt_heap.c txt_hash.c txt_acmod.c txt.c cmdline.c
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
-OBJECTS_PRECOMPILED =  ../components/emhf-tpm/tpm.o 
+OBJECTS_PRECOMPILED = ../components/emhf-debug/dbg_printf.o
+ifeq ($(DEBUG_SERIAL), y)
+OBJECTS_PRECOMPILED += ../components/emhf-debug/dbg_uart.o
+endif
+ifeq ($(DEBUG_VGA), y)
+OBJECTS_PRECOMPILED += ../components/emhf-debug/dbg_vgamem.o
+endif
+
+OBJECTS_PRECOMPILED +=  ../components/emhf-tpm/tpm.o 
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-pci.o
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-acpi.o
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-smplock.o
@@ -19,12 +27,6 @@ OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/vmx/bplt-x86vmx-
 # FIXME: This is overly general; init/ doesn't need all of these
 CFLAGS += $(ADDL_INCLUDES)
 
-ifeq ($(DEBUG_SERIAL), y)
-OBJECTS_PRECOMPILED += ../libcommon/dbg_printf.o ../libcommon/dbg_uart.o
-endif
-ifeq ($(DEBUG_VGA), y)
-OBJECTS_PRECOMPILED += ../libcommon/dbg_printf.o ../libcommon/dbg_vgamem.o
-endif
 
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 

@@ -72,7 +72,7 @@
 
 #-----build rules
 .PHONY: all
-all: components common runtime sl init hypervisor-$(TARGET_HWPLATFORM).bin.gz
+all: components runtime sl init hypervisor-$(TARGET_HWPLATFORM).bin.gz
 
 .PHONY: components
 components:
@@ -98,13 +98,8 @@ components:
 	cd components/emhf-debug && $(MAKE) -w all
 
 
-.PHONY: common
-common:
-	#make libcommon first	
-	cd libcommon && $(MAKE) -w all
-
 .PHONY: runtime
-runtime: common
+runtime: 
 	#EMHF runtime component
 	cd components/emhf-runtime && $(MAKE) -w all
 
@@ -118,7 +113,7 @@ sl: runtime
 		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum ./components/emhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
 
 .PHONY: init
-init: sl runtime common
+init: sl runtime 
 	#make init	
 	cd init && $(MAKE) -w all \
 		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum ./components/emhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
