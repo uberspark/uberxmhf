@@ -362,3 +362,118 @@ void allcpus_common_start(VCPU *vcpu){
 }
 
 
+/*
+//we get control here in the context of *each* physical CPU core 
+//vcpu->isbsp = 1 if the core is a BSP or 0 if its an AP
+//isEarlyInit = 1 if we were boot-strapped by the BIOS and is 0
+//in the event we were launched from a running OS
+void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
+	//initialize core
+	//TODO: need to refactor code below into interface 
+	//emhf_baseplatform_cpuinitialize
+    if(vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+    	u32 bcr0;
+	    txt_heap_t *txt_heap;
+        os_mle_data_t *os_mle_data;
+  
+	    //set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
+		bcr0 = read_cr0();
+		bcr0 |= 0x20;
+		write_cr0(bcr0);
+
+        // restore pre-SENTER MTRRs that were overwritten for SINIT launch 
+        // NOTE: XXX TODO; BSP MTRRs ALREADY RESTORED IN SL; IS IT
+        //   DANGEROUS TO DO THIS TWICE? 
+        // sl.c unity-maps 0xfed00000 for 2M so these should work fine 
+        txt_heap = get_txt_heap();
+        //printf("\ntxt_heap = 0x%08x", (u32)txt_heap);
+        os_mle_data = get_os_mle_data_start(txt_heap);
+        //printf("\nos_mle_data = 0x%08x", (u32)os_mle_data);
+    
+        if(!validate_mtrrs(&(os_mle_data->saved_mtrr_state))) {
+             printf("\nSECURITY FAILURE: validate_mtrrs() failed.\n");
+             HALT();
+        }
+        printf("\nCPU(0x%02x): Restoring mtrrs...", vcpu->id);
+        restore_mtrrs(&(os_mle_data->saved_mtrr_state));
+	}
+
+  //switch core into hypervisor mode
+  g_isl->initialize(vcpu);
+
+	
+  //initialize memory protection for this core
+  emhf_memprot_initialize(vcpu);
+
+  //initialize application parameter block and call app main
+  {
+  	APP_PARAM_BLOCK appParamBlock;
+  	
+		appParamBlock.bootsector_ptr = (u32)rpb->XtGuestOSBootModuleBase;
+  	appParamBlock.bootsector_size = (u32)rpb->XtGuestOSBootModuleSize;
+  	appParamBlock.optionalmodule_ptr = (u32)rpb->XtGuestOSBootModuleBaseSup1;
+  	appParamBlock.optionalmodule_size = (u32)rpb->XtGuestOSBootModuleSizeSup1;
+ 		appParamBlock.runtimephysmembase = (u32)rpb->XtVmmRuntimePhysBase;  
+
+  	//call app main
+  	if(emhf_app_main(vcpu, &appParamBlock)){
+    	printf("\nCPU(0x%02x): EMHF app. failed to initialize. HALT!", vcpu->id);
+    	HALT();
+  	}
+  }   	
+
+  //increment app main success counter
+  spin_lock(&g_lock_appmain_success_counter);
+  g_appmain_success_counter++;
+  spin_unlock(&g_lock_appmain_success_counter);
+	
+  //if BSP, wait for all cores to go through app main successfully
+  //TODO: conceal g_midtable_numentries behind interface
+  //emhf_baseplatform_getnumberofcpus
+  if(vcpu->isbsp && (g_midtable_numentries > 1)){
+		printf("\nCPU(0x%02x): Waiting for all cores to cycle through appmain...", vcpu->id);
+		while(g_appmain_success_counter < g_midtable_numentries);	
+		printf("\nCPU(0x%02x): All cores have successfully been through appmain.", vcpu->id);
+  }
+
+  //initialize SMP guest (currently only supported when isEarlyInit=1)
+  //TODOs: 
+  //conceal entire logic under a single interface
+  //emhf_smpguest_initialize; this will return immediately for the BSP
+  //and will return for a given AP once the guest OS sends it the SIPI
+  //concel g_midtable_numentries behind interface 
+  //emhf_baseplatform_getnumberofcpus
+	if(isEarlyInit){
+		//if we are the BSP setup SIPI intercept
+		if(vcpu->isbsp){
+			if(g_midtable_numentries > 1){
+				//g_isl->hvm_apic_setup(vcpu);
+				//initialize SMP guest component
+				emhf_smpguest_initialize(vcpu);
+				printf("\nCPU(0x%02x): BSP, setup SIPI interception.", vcpu->id);
+			}
+		}else{ //else, we are an AP and wait for SIPI signal
+			printf("\nCPU(0x%02x): AP, waiting for SIPI signal...", vcpu->id);
+			while(!vcpu->sipireceived);
+			printf("\nCPU(0x%02x): SIPI signal received, vector=0x%02x", vcpu->id, vcpu->sipivector);
+	
+			g_isl->hvm_initialize_csrip(vcpu, ((vcpu->sipivector * PAGE_SIZE_4K) >> 4),
+				 (vcpu->sipivector * PAGE_SIZE_4K), 0x0ULL);
+		}
+	}
+
+
+  //late initialization is still work in progress, we can only get this far :(
+  if(!isEarlyInit){
+		printf("\nCPU(0x%02x): Late-initialization, WiP, HALT!", vcpu->id);
+		HALT();
+  }
+  
+  //start HVM
+  g_isl->hvm_start(vcpu);
+
+  printf("\nCPU(0x%02x): FATAL, should not be here. HALTING!", vcpu->id);
+  HALT();
+
+}
+*/
