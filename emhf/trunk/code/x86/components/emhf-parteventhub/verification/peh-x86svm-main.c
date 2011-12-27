@@ -176,7 +176,7 @@ static void _svm_handle_npf(VCPU *vcpu, struct regs *r){
   
   return;
 }
-
+*/
 
 //---NMI handling---------------------------------------------------------------
 // note: we use NMI for core quiescing, we simply inject the others back
@@ -192,6 +192,7 @@ static void _svm_handle_nmi(VCPU *vcpu, struct vmcb_struct __attribute__((unused
                                       //our exception handler which handles the rest
     printf("\nCPU(0x%02x): resuming guest...", vcpu->id);
 }
+
 
 
 //---svm int 15 intercept handler-----------------------------------------------
@@ -315,7 +316,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 	vmcb->rip = ip;
 	vmcb->cs.base = cs * 16;
 	vmcb->cs.sel = cs;		 
-}*/
+}
 
 
 //---SVM intercept handler hub--------------------------------------------------
@@ -385,7 +386,7 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
 				ASSERT( !(vmcb->cr0 & CR0_PE)  ||
 					( (vmcb->cr0 & CR0_PE) && (vmcb->cr0 & CR0_PG) &&
 						(vmcb->rflags & EFLAGS_VM)  ) );
-				//_svm_int15_handleintercept(vcpu, r);	
+				_svm_int15_handleintercept(vcpu, r);	
 			}else{	//if not E820 hook, give app a chance to handle the hypercall
 				if( emhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
 					printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", vcpu->id, r->eax);
@@ -396,10 +397,10 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
     }
     break;
 
-/*    case VMEXIT_NMI:{
+    case VMEXIT_NMI:{
         _svm_handle_nmi(vcpu, vmcb, r);
       }
-      break;*/
+      break;
     
 		default:{
 				printf("\nUnhandled Intercept:0x%08llx", vmcb->exitcode);
