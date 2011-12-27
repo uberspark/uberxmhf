@@ -38,50 +38,6 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 #include <emhf.h> 
 
-/*
-//---NMI processing routine-----------------------------------------------------
-void _vmx_processNMI(VCPU *vcpu, struct regs __attribute__((unused)) *r){
-  
-	if( (!vcpu->nmiinhvm) && (!g_vmx_quiesce) ){
-    printf("\nCPU(0x%02x): Spurious NMI within hypervisor. halt!", vcpu->id);
-    HALT();
-  }
-
-	if(g_vmx_quiesce){
-    //ok this NMI is because of g_vmx_quiesce. note: g_vmx_quiesce can be 1 and
-    //this could be a NMI for the guest. we have no way of distinguising
-    //this. however, since g_vmx_quiesce=1, we can handle this NMI as a quiesce NMI
-    //and rely on the platform h/w to reissue the NMI later
-    printf("\nCPU(0x%02x): NMI for core quiesce", vcpu->id);
-    printf("\nCPU(0x%02x): CS:EIP=0x%04x:0x%08x", vcpu->id, (u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP);
-  
-    printf("\nCPU(0x%02x): quiesced, updating counter. awaiting EOQ...", vcpu->id);
-    spin_lock(&g_vmx_lock_quiesce_counter);
-    g_vmx_quiesce_counter++;
-    spin_unlock(&g_vmx_lock_quiesce_counter);
-    
-    while(!g_vmx_quiesce_resume_signal);
-    printf("\nCPU(0x%02x): EOQ received, resuming...", vcpu->id);
-    
-    spin_lock(&g_vmx_lock_quiesce_resume_counter);
-    g_vmx_quiesce_resume_counter++;
-    spin_unlock(&g_vmx_lock_quiesce_resume_counter);
-    
-    //printf("\nCPU(0x%08x): Halting!", vcpu->id);
-    //HALT();
-    
-  }else{
-    //we are not in quiesce, so simply inject this NMI back to guest
-    ASSERT( vcpu->nmiinhvm == 1 );
-    printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
-		vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
-					vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
-			     INTR_TYPE_NMI |
-			     INTR_INFO_VALID_MASK;
-  }
-  
-  
-}*/
 
 //---VMX decode assist----------------------------------------------------------
 //map a CPU register index into appropriate VCPU *vcpu or struct regs *r field 
@@ -497,13 +453,13 @@ static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gp
 //---hvm_intercept_handler------------------------------------------------------
 u32 emhf_parteventhub_intercept_handler_x86vmx(VCPU *vcpu, struct regs *r){
   //read VMCS from physical CPU/core
-	_vmx_getVMCS(vcpu);
+	emhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
 
 	//sanity check for VM-entry errors
 	if( (u32)vcpu->vmcs.info_vmexit_reason & 0x80000000UL ){
 		printf("\nVM-ENTRY error: reason=0x%08x, qualification=0x%016llx", 
 			(u32)vcpu->vmcs.info_vmexit_reason, (u64)vcpu->vmcs.info_exit_qualification);
-    _vmx_dumpVMCS(vcpu);
+    emhf_baseplatform_arch_x86vmx_dumpVMCS(vcpu);
     HALT();
   }
   
@@ -696,7 +652,7 @@ u32 emhf_parteventhub_intercept_handler_x86vmx(VCPU *vcpu, struct regs *r){
 	}
 
 	//write updated VMCS back to CPU
-  _vmx_putVMCS(vcpu);
+  emhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
   if(vcpu->vmcs.guest_RIP == 0x7c00){
 		printf("\nCPU(0x%02x): We are starting at guest boot-sector...", vcpu->id);
 	}
