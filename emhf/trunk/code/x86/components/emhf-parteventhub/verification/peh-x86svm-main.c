@@ -43,7 +43,7 @@
 RPB *rpb; 	//runtime parameter block pointer
 GRUBE820 g_e820map[MAX_E820_ENTRIES];
 
-
+#define ASSERT assert
 //======================================================================
 //support functions
 u32 svm_isbsp(void){
