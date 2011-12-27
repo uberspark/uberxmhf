@@ -620,7 +620,7 @@ struct isolation_layer {
 	//u32		(*isbsp)(void);
 	//void 	(*wakeup_aps)(void);
 	
-	void 	(*hvm_initialize_csrip)(VCPU *vcpu, u16 cs_selector, u32 cs_base, u64 rip);
+	//void 	(*hvm_initialize_csrip)(VCPU *vcpu, u16 cs_selector, u32 cs_base, u64 rip);
 	//void 	(*hvm_apic_setup)(VCPU *vcpu);
 	//void 	(*hvm_start)(VCPU *vcpu);
 	//u32 	(*hvm_intercept_handler)(VCPU *vcpu, struct regs *r);
