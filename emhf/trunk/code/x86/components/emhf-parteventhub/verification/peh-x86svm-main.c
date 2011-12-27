@@ -38,6 +38,25 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 #include <emhf.h> 
 
+//======================================================================
+//support functions
+u32 svm_isbsp(void){
+		return 1;	//assume BSP for now
+}
+
+u32 svm_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
+		return 0;
+}
+
+
+//======================================================================
+//app stubs
+u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
+      struct regs *r,
+      u64 gpa, u64 gva, u64 violationcode){
+			return APP_SUCCESS;
+}
+
 
 //---IO Intercept handling------------------------------------------------------
 static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs __attribute__((unused)) *r){
