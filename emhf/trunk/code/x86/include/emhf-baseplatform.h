@@ -121,6 +121,15 @@ void emhf_baseplatform_arch_x86vmx_wakeupAPs(void);
 //allocate and setup VCPU structure for all the CPUs
 void emhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor);
 
+// routine takes vcpu vmcsfields and stores it in the CPU VMCS 
+void emhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu);
+
+// routine takes CPU VMCS and stores it in vcpu vmcsfields  
+void emhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu);
+
+//--debug: dumpVMCS dumps VMCS contents
+void emhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu);
+
 //----------------------------------------------------------------------
 //x86svm arch. backends
 

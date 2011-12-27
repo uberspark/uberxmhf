@@ -62,6 +62,7 @@ OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-address
 
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/vmx/bplt-x86vmx.o
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/vmx/bplt-x86vmx-smp.o
+OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/vmx/bplt-x86vmx-vmcs.o
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/vmx/bplt-x86vmx-mtrrs.o
 
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/svm/bplt-x86svm-smp.o
