@@ -445,18 +445,15 @@ void main() {
 	//set VMCB virtual address to something meaningful
 	vcpu.vmcb_vaddr_ptr = 0xC0000000;	
 	vmcb = (struct vmcb_struct *)vcpu.vmcb_vaddr_ptr;
-	
-	//set VMCB event code to indicate a hypercall
-	vmcb->exitcode = VMEXIT_VMMCALL;
-	vmcb->rax = 0;
-	
-	//setup dummy register contents
-	r.eax = r.ebx = r.ecx= r.edx = r.esi = r.edi = r.ebp = r.esp = 0;
 
 	//setup RPB pointer and required runtime parameter block values
 	rpb = (RPB *)&_rpb;
 	rpb->XtVmmE820NumEntries = 0; 
 	
+	//setup values that the CPU would do on a hypercall event
+	vmcb->exitcode = VMEXIT_VMMCALL;
+	vmcb->rax = 0xDEADBEEF;
+	r.eax = r.ebx = r.ecx= r.edx = r.esi = r.edi = r.ebp = r.esp = 0; 	//these are dummy for now
 
 	//invoke the event hub intercept handler (this is where we would
 	//land up when the hardware triggers any event within the guest)
