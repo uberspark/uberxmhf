@@ -52,6 +52,10 @@ void cstartup(void){
 	//initialize global runtime variables including Runtime Parameter Block (rpb)
 	runtime_globals_init();
 
+
+	//get CPU vendor
+	cpu_vendor = emhf_baseplatform_getcpuvendor();
+
 	//setup debugging	
 #ifdef __DEBUG_SERIAL__
         /* need to reinitialize serial port on some systems.
@@ -68,31 +72,7 @@ void cstartup(void){
 #endif
 	printf("\nruntime initializing...");
 
-	//check CPU type (Intel vs AMD)
-  {
-    u32 vendor_dword1, vendor_dword2, vendor_dword3;
-	  asm(	"xor	%%eax, %%eax \n"
-				  "cpuid \n"		
-				  "mov	%%ebx, %0 \n"
-				  "mov	%%edx, %1 \n"
-				  "mov	%%ecx, %2 \n"
-			     :	//no inputs
-					 : "m"(vendor_dword1), "m"(vendor_dword2), "m"(vendor_dword3)
-					 : "eax", "ebx", "ecx", "edx" );
-
-		if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
-				&& vendor_dword3 == AMD_STRING_DWORD3)
-			cpu_vendor = CPU_VENDOR_AMD;
-		else if(vendor_dword1 == INTEL_STRING_DWORD1 && vendor_dword2 == INTEL_STRING_DWORD2
-				&& vendor_dword3 == INTEL_STRING_DWORD3)
-   	 	cpu_vendor = CPU_VENDOR_INTEL;
-		else{
-			printf("\nRuntime: Fatal error, unrecognized CPU! 0x%08x:0x%08x:0x%08x",
-				vendor_dword1, vendor_dword2, vendor_dword3);
-			HALT();
-		}   	 	
-  }
-
+	
 	//setup EMHF exception handler component
 	emhf_xcphandler_initialize();
 
