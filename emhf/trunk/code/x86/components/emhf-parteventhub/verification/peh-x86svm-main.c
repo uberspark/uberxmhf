@@ -261,7 +261,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		{
 			u32 destaddr = ((u32)((vmcb->es.base)+(u16)r->edi));
 			//u32 srcaddr = (u32)&g_e820map[r->ebx];
-			u32 srcaddr = (u32)&g_e820map; 
+			u32 srcaddr = (u32)&g_e820map + (u32)(r->ebx * sizeof(GRUBE820)); 
 			//memcpy((char *)0x2000, (char *)0x1000, 20);
 			memcpy((void *)destaddr, (void *)srcaddr, sizeof(GRUBE820));
 		}
