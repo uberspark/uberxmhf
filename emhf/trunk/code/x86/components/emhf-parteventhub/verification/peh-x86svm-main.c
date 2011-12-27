@@ -48,6 +48,19 @@ u32 svm_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
 		return 0;
 }
 
+void svm_lapic_access_dbexception(VCPU *vcpu, struct regs *r){
+		return;
+}
+
+void *memcpy (void *destaddr, void const *srcaddr, u32 len){
+  char *dest = destaddr;
+  char const *src = srcaddr;
+
+  while (len-- > 0)
+    *dest++ = *src++;
+  return destaddr;
+}
+
 
 //======================================================================
 //app stubs
@@ -195,7 +208,8 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 	if( (vmcb->cr0 & CR0_PE) && (vmcb->cr0 & CR0_PG) &&
 			(vmcb->rflags & EFLAGS_VM) ){
 		u8 *bdamemoryphysical;
-		bdamemoryphysical = (u8 *)_svm_lib_guestpgtbl_walk(vcpu, (u32)bdamemory);
+		//bdamemoryphysical = (u8 *)_svm_lib_guestpgtbl_walk(vcpu, (u32)bdamemory);
+		bdamemoryphysical = (u8 *)0x4AC;
 		ASSERT( (u32)bdamemoryphysical != 0xFFFFFFFFUL );
 		printf("\nINT15 (E820): V86 mode, bdamemory translated from %08x to %08x",
 			(u32)bdamemory, (u32)bdamemoryphysical);
