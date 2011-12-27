@@ -101,12 +101,13 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 	return status;			
 }
 
-/*
+
 //---IO Intercept handling------------------------------------------------------
-static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs __attribute__((unused)) *r){
+static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *r){
   ioio_info_t ioinfo;
+  struct vmcb_struct *x = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
   
-  ioinfo.bytes = vmcb->exitinfo1;
+  ioinfo.bytes = x->exitinfo1;
 
   if (ioinfo.fields.rep || ioinfo.fields.str){
     printf("\nCPU(0x%02x): Fatal, unsupported batch I/O ops!", vcpu->id);
@@ -119,29 +120,29 @@ static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs _
   //    ioinfo.fields.port, ioinfo.fields.type);
   
   //for now we just chain
-	if (ioinfo.fields.type){
+  if (ioinfo.fields.type){
     // IN 
     if (ioinfo.fields.sz8)
-      *(u8 *)&vmcb->rax = inb(ioinfo.fields.port);
+      *(u8 *)(u32)&x->rax = inb(ioinfo.fields.port);
     if (ioinfo.fields.sz16)
-      *(u16 *)&vmcb->rax = inw(ioinfo.fields.port);
+      *(u16 *)(u32)&x->rax = inw(ioinfo.fields.port);
     if (ioinfo.fields.sz32) 
-       *(u32 *)&vmcb->rax = inl(ioinfo.fields.port);
+       *(u32 *)(u32)&x->rax = inl(ioinfo.fields.port);
   }else{
     // OUT 
     if (ioinfo.fields.sz8)
-      outb((u8)vmcb->rax, ioinfo.fields.port);
+      outb((u8)x->rax, ioinfo.fields.port);
     if (ioinfo.fields.sz16)
-      outw((u16)vmcb->rax, ioinfo.fields.port);
+      outw((u16)x->rax, ioinfo.fields.port);
     if (ioinfo.fields.sz32) 
-      outl((u32)vmcb->rax, ioinfo.fields.port);
+      outl((u32)x->rax, ioinfo.fields.port);
   }
   
   // exitinfo2 stores the rip of instruction following the IN/OUT 
-  vmcb->rip = vmcb->exitinfo2;
+  x->rip = x->exitinfo2;
 }
 
-
+/*	
 //---MSR intercept handling-----------------------------------------------------
 static void _svm_handle_msr(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *r){
   ASSERT( (vmcb->exitinfo1 == 0) || (vmcb->exitinfo1 == 1) );
@@ -341,13 +342,13 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
   vmcb->tlb_control = TLB_CONTROL_NOTHING;
     
   switch(vmcb->exitcode){
-/*    //IO interception
+    //IO interception
  		case VMEXIT_IOIO:{
    		_svm_handle_ioio(vcpu, vmcb, r);
    	}
    	break;
   
-    //MSR interception
+/*    //MSR interception
     case VMEXIT_MSR:{
       _svm_handle_msr(vcpu, vmcb, r);
     }
@@ -452,6 +453,7 @@ void main() {
 	vmcb->exitcode = VMEXIT_VMMCALL;
 	vmcb->rax = 0;
 	vmcb->es.base = 0;
+	vmcb->exitinfo1 = 0;
 	
 	//setup dummy register contents
 	r.eax = r.ebx = r.ecx= r.edx = r.esi = r.edi = r.ebp = r.esp = 0;
