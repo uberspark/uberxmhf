@@ -160,7 +160,6 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
   //setup guest OS state for partition
   emhf_partition_setupguestOSstate(vcpu);
 
-
   //initialize memory protection for this core
   emhf_memprot_initialize(vcpu);
 
@@ -203,8 +202,8 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 	}
 
 
-	//initialize support for SMP guests
-	emhf_smpguest_initialize(vcpu);
+  //initialize support for SMP guests
+  emhf_smpguest_initialize(vcpu);
 
 	
   //start HVM

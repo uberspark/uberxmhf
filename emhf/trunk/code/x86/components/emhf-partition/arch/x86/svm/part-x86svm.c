@@ -286,3 +286,10 @@ void emhf_partition_arch_x86svm_setupguestOSstate(VCPU *vcpu){
 	_svm_initVMCB(vcpu);
 	
 }
+
+//start executing the partition and guest OS
+void emhf_partition_arch_x86svm_start(VCPU *vcpu){
+	
+	
+	
+}

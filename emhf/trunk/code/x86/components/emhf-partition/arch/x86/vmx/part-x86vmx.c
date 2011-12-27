@@ -515,3 +515,9 @@ void emhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu){
 	
 }
 
+//start executing the partition and guest OS
+void emhf_partition_arch_x86vmx_start(VCPU *vcpu){
+	
+	
+	
+}
