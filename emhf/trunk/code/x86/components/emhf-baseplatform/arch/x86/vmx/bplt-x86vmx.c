@@ -65,3 +65,6 @@ void emhf_arch_x86vmx_baseplatform_cpuinitialize(void){
         }
         restore_mtrrs(&(os_mle_data->saved_mtrr_state));
 }
+
+
+

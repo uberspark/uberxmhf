@@ -79,6 +79,9 @@ void emhf_arch_baseplatform_flat_copy(u8 *dest, u8 *src, u32 size);
 void emhf_arch_x86_baseplatform_wakeupAPs(void);
 void emhf_arch_x86vmx_baseplatform_cpuinitialize(void);
 
+//allocate and setup VCPU structure for all the CPUs
+void emhf_arch_x86vmx_baseplatform_allocandsetupvcpus(u32 cpu_vendor);
+
 #endif	//__ASSEMBLY__
 
 #endif //__EMHF_BASEPLATFORM_H__

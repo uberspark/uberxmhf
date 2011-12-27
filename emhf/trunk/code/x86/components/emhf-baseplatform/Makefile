@@ -17,6 +17,7 @@ C_SOURCES += ./arch/x86/bplt-x86-addressing.c
 
 
 C_SOURCES += ./arch/x86/vmx/bplt-x86vmx.c
+C_SOURCES += ./arch/x86/vmx/bplt-x86vmx-smp.c
 C_SOURCES += ./arch/x86/vmx/bplt-x86vmx-mtrrs.c
 
 
