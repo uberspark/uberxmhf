@@ -101,7 +101,6 @@ void emhf_baseplatform_arch_x86_wakeupAPs(void){
 //initialize SMP
 void emhf_baseplatform_arch_smpinitialize(void){
   u32 cpu_vendor;
-  ASSERT((u32)g_isl != 	0);
   
   //grab CPU vendor
   cpu_vendor = emhf_baseplatform_arch_getcpuvendor();

@@ -307,7 +307,7 @@ extern struct isolation_layer g_isolation_layer_svm;
 extern struct isolation_layer g_isolation_layer_vmx;
 
 //isolation layer abstraction
-extern struct isolation_layer *g_isl __attribute__(( section(".data") ));;
+//extern struct isolation_layer *g_isl __attribute__(( section(".data") ));;
 
 //external EMHF library interface backends
 extern struct emhf_library g_emhf_library_svm;
