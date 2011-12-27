@@ -309,7 +309,7 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
         u8 *code;
         u32 paddr;
         int i;
-        paddr= svm_kernel_pt_walker(vmcb, (u32)vmcb->rip); 
+        paddr= (u32)_svm_lib_guestpgtbl_walk(vcpu, (u32)vmcb->rip); 
         code = (u8 *)paddr; 
         printf("\nCode physical address=0x%08x\n", (u32)code);
         for(i=0; i < 16; i++)
