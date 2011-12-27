@@ -4,6 +4,8 @@
 # source files
 AS_SOURCES =  
 C_SOURCES = bplt-interface.c
+C_SOURCES += ./arch/x86/bplt-x86.c
+
 
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
