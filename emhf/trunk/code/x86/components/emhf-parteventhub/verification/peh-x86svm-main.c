@@ -42,7 +42,6 @@
 //globals referenced by this module
 RPB *rpb; 	//runtime parameter block pointer
 GRUBE820 g_e820map[MAX_E820_ENTRIES];
-struct vmcb_struct *vmcb; //AMD VMCB
 
 
 //======================================================================
@@ -108,7 +107,7 @@ static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *
   ioio_info_t ioinfo;
   struct vmcb_struct *x = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
   
-  ioinfo.bytes = vmcb->exitinfo1;
+  ioinfo.bytes = x->exitinfo1;
 
   if (ioinfo.fields.rep || ioinfo.fields.str){
     printf("\nCPU(0x%02x): Fatal, unsupported batch I/O ops!", vcpu->id);
@@ -143,9 +142,11 @@ static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *
   x->rip = x->exitinfo2;
 }
 
-/*	
+	
 //---MSR intercept handling-----------------------------------------------------
-static void _svm_handle_msr(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *r){
+static void _svm_handle_msr(VCPU *vcpu, struct regs *r){
+  struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+  
   ASSERT( (vmcb->exitinfo1 == 0) || (vmcb->exitinfo1 == 1) );
   printf("\nCPU(0x%02x): MSR intercept, type=%u, MSR=0x%08x", vcpu->id,
     (u32)vmcb->exitinfo1, r->ecx);
@@ -164,7 +165,7 @@ static void _svm_handle_msr(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *r
   vmcb->rip += 2; 
 }
 
-
+/*
 //invoked on a nested page-fault 
 //struct regs *r -> guest OS GPR state
 //win_vmcb	-> rest of the guest OS state
@@ -349,12 +350,12 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
    	}
    	break;
   
-/*    //MSR interception
+    //MSR interception
     case VMEXIT_MSR:{
-      _svm_handle_msr(vcpu, vmcb, r);
+      _svm_handle_msr(vcpu, r);
     }
     break;
-    
+/*    
     //this only gets called on BSP
     //case VMEXIT_SWINT:{
 		//	_svm_handle_swint(vcpu, vmcb, r);
@@ -445,6 +446,7 @@ void main() {
 	VCPU vcpu; //VCPU variable to identify the physical core
 	struct regs r; //General Purporse Register structure
 	RPB _rpb;	//actual definition
+	struct vmcb_struct *vmcb; //AMD VMCB
 	
 	//set VMCB virtual address to something meaningful
 	vcpu.vmcb_vaddr_ptr = 0xC0000000;	
