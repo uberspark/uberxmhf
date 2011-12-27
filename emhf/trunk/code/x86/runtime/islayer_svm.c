@@ -743,7 +743,7 @@ u32 svm_kernel_pt_walker(struct vmcb_struct *vmcb, u32 vaddr){
 
 
 
-
+/*
 //---setup vcpu structures for all the cores including BSP----------------------
 void svm_setupvcpus(u32 cpu_vendor){
   u32 i;
@@ -807,7 +807,7 @@ void svm_setupvcpus(u32 cpu_vendor){
     printf("\n  hsave_vaddr_ptr=0x%08x, vmcb_vaddr_ptr=0x%08x", vcpu->hsave_vaddr_ptr,
           vcpu->vmcb_vaddr_ptr);
   }
-}
+}*/
 
 
 //---wakeupAPs------------------------------------------------------------------
@@ -866,11 +866,11 @@ void svm_start_hvm(VCPU *vcpu){
  		//for halting the core as something really bad happened!
 }
 
-static void svm_apic_setup(VCPU *vcpu){
+/*static void svm_apic_setup(VCPU *vcpu){
 		printf("\nREFACTORED COMPONENT, SHOULD NEVER BE HERE");
 		HALT();
 	
-}
+}*/
 
 
 
@@ -886,7 +886,7 @@ struct isolation_layer g_isolation_layer_svm = {
 	.hvm_intercept_handler = emhf_parteventhub_intercept_handler_x86svm,
 	//.do_quiesce = svm_do_quiesce,
 	//.do_wakeup = svm_do_wakeup,
-	.setupvcpus = svm_setupvcpus,
+	//.setupvcpus = svm_setupvcpus,
 };
 
 

@@ -627,7 +627,7 @@ struct isolation_layer {
 	
 	//void 	(*do_quiesce)(VCPU *vcpu);
 	//void 	(*do_wakeup)(VCPU *vcpu);
-	void 	(*setupvcpus)(u32 cpu_vendor);
+	//void 	(*setupvcpus)(u32 cpu_vendor);
 }; 
 
 

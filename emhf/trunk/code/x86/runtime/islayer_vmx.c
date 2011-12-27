@@ -704,6 +704,7 @@ static void vmx_do_wakeup(VCPU *vcpu){
         //HALT();
 }*/
 
+/*
 //---setupvcpus-----------------------------------------------------------------
 void vmx_setupvcpus(u32 cpu_vendor){
   u32 i;
@@ -777,13 +778,13 @@ void vmx_setupvcpus(u32 cpu_vendor){
 		//printf("\nCPU #%u: vcpu_vaddr_ptr=0x%08x, esp=0x%08x", i, midtable[i].vcpu_vaddr_ptr,
     //  vcpu->esp);
   }
-}
+}*/
 
-static void vmx_apic_setup(VCPU *vcpu){
+/*static void vmx_apic_setup(VCPU *vcpu){
 		printf("\n%s: REFACTORED, SHOULD NEVER BE HERE", __FUNCTION__);
 		HALT();
 	
-}
+}*/
 
 //------------------------------------------------------------------------------
 struct isolation_layer g_isolation_layer_vmx = {
@@ -797,7 +798,7 @@ struct isolation_layer g_isolation_layer_vmx = {
 	.hvm_intercept_handler = emhf_parteventhub_intercept_handler_x86vmx,
 	//.do_quiesce = vmx_do_quiesce,
 	//.do_wakeup = vmx_do_wakeup,
-	.setupvcpus = vmx_setupvcpus,
+	//.setupvcpus = vmx_setupvcpus,
 };
 
 
