@@ -42,7 +42,7 @@
 #include <emhf.h>
 
 //allocate and setup VCPU structure for all the CPUs
-void emhf_arch_x86svm_baseplatform_allocandsetupvcpus(u32 cpu_vendor){
+void emhf_baseplatform_arch_x86svm_allocandsetupvcpus(u32 cpu_vendor){
   u32 i;
   u32 npt_current_asid=ASID_GUEST_KERNEL;
   VCPU *vcpu;
@@ -105,7 +105,7 @@ void emhf_arch_x86svm_baseplatform_allocandsetupvcpus(u32 cpu_vendor){
 }
 
 //wake up application processors (cores) in the system
-void emhf_arch_x86svm_baseplatform_wakeupAPs(void){
+void emhf_baseplatform_arch_x86svm_wakeupAPs(void){
 	//step-1: setup AP boot-strap code at in the desired physical memory location 
 	//note that we need an address < 1MB since the APs are woken up in real-mode
 	//we choose 0x10000 physical or 0x1000:0x0000 logical
@@ -118,7 +118,7 @@ void emhf_arch_x86svm_baseplatform_wakeupAPs(void){
 	//step-2: wake up the APs sending the INIT-SIPI-SIPI sequence as per the
 	//MP protocol. Use the APIC for IPI purposes.	
   printf("\nBSP: Using APIC to awaken APs...");
-  emhf_arch_x86_baseplatform_wakeupAPs();
+  emhf_baseplatform_arch_x86_wakeupAPs();
   printf("\nBSP: APs should be awake.");
 }
 

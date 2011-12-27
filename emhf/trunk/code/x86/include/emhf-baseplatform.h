@@ -65,30 +65,70 @@ void emhf_baseplatform_initialize(void);
 
 
 //----------------------------------------------------------------------
-//arch. backends
-u32 emhf_arch_baseplatform_getcpuvendor(void);
+//generic arch. backends
 
-u8 emhf_arch_baseplatform_flat_readu8(u32 addr);
-u32 emhf_arch_baseplatform_flat_readu32(u32 addr);
-void emhf_arch_baseplatform_flat_writeu32(u32 addr, u32 val);
-void emhf_arch_baseplatform_flat_writeu64(u32 addr, u64 val);
-u64 emhf_arch_baseplatform_flat_readu64(u32 addr);
-void emhf_arch_baseplatform_flat_copy(u8 *dest, u8 *src, u32 size);
+//get CPU vendor
+u32 emhf_baseplatform_arch_getcpuvendor(void);
+
+//initialize CPU state
+void emhf_baseplatform_arch_cpuinitialize(void);
+
+//initialize SMP
+void emhf_baseplatform_arch_smpinitialize(void);
+
+//initialize basic platform elements
+void emhf_baseplatform_arch_initialize(void);
+
+//read 8-bits from absolute physical address
+u8 emhf_baseplatform_arch_flat_readu8(u32 addr);
+
+//read 32-bits from absolute physical address
+u32 emhf_baseplatform_arch_flat_readu32(u32 addr);
+
+//read 64-bits from absolute physical address
+u64 emhf_baseplatform_arch_flat_readu64(u32 addr);
+
+//write 32-bits to absolute physical address
+void emhf_baseplatform_arch_flat_writeu32(u32 addr, u32 val);
+
+//write 64-bits to absolute physical address
+void emhf_baseplatform_arch_flat_writeu64(u32 addr, u64 val);
+
+//memory copy from absolute physical address (src) to
+//data segment relative address (dest)
+void emhf_baseplatform_arch_flat_copy(u8 *dest, u8 *src, u32 size);
 
 
-void emhf_arch_x86_baseplatform_wakeupAPs(void);
-void emhf_arch_x86vmx_baseplatform_cpuinitialize(void);
 
-//allocate and setup VCPU structure for all the CPUs
-void emhf_arch_x86vmx_baseplatform_allocandsetupvcpus(u32 cpu_vendor);
-void emhf_arch_x86svm_baseplatform_allocandsetupvcpus(u32 cpu_vendor);
+//----------------------------------------------------------------------
+//x86 arch. backends
 
 //return 1 if the calling CPU is the BSP
-u32 emhf_arch_x86_baseplatform_isbsp(void);
+u32 emhf_baseplatform_arch_x86_isbsp(void);
+
+//wake up APs using the LAPIC by sending the INIT-SIPI-SIPI IPI sequence
+void emhf_baseplatform_arch_x86_wakeupAPs(void);
+
+//----------------------------------------------------------------------
+//x86vmx arch. backends
+
+//initialize CPU state
+void emhf_baseplatform_arch_x86vmx_cpuinitialize(void);
+
+//wake up application processors (cores) in the system
+void emhf_baseplatform_arch_x86vmx_wakeupAPs(void);
+
+//allocate and setup VCPU structure for all the CPUs
+void emhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor);
+
+//----------------------------------------------------------------------
+//x86svm arch. backends
 
 //wake up application processors (cores) in the system
 void emhf_arch_x86svm_baseplatform_wakeupAPs(void);
-void emhf_arch_x86vmx_baseplatform_wakeupAPs(void);
+
+//allocate and setup VCPU structure for all the CPUs
+void emhf_arch_x86svm_baseplatform_allocandsetupvcpus(u32 cpu_vendor);
 
 
 

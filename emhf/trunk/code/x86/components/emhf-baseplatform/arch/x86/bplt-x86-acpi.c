@@ -68,14 +68,14 @@ u32 acpi_getRSDP(ACPI_RSDP *rsdp){
   u32 i, found=0;
   
   //get EBDA segment from 040E:0000h in BIOS data area
-  emhf_arch_baseplatform_flat_copy((u8 *)&ebdaseg, (u8 *)0x0000040E, sizeof(u16));
+  emhf_baseplatform_arch_flat_copy((u8 *)&ebdaseg, (u8 *)0x0000040E, sizeof(u16));
 
   //convert it to its 32-bit physical address
   ebdaphys=(u32)(ebdaseg * 16);
 
   //search first 1KB of ebda for rsdp signature (8 bytes long)
   for(i=0; i < (1024-8); i+=16){
-    emhf_arch_baseplatform_flat_copy((u8 *)rsdp, (u8 *)(ebdaphys+i), sizeof(ACPI_RSDP));
+    emhf_baseplatform_arch_flat_copy((u8 *)rsdp, (u8 *)(ebdaphys+i), sizeof(ACPI_RSDP));
     if(rsdp->signature == ACPI_RSDP_SIGNATURE){
       if(!_acpi_computetablechecksum((u32)rsdp, 20)){
         found=1;
@@ -90,7 +90,7 @@ u32 acpi_getRSDP(ACPI_RSDP *rsdp){
   
   //nope, search within BIOS areas 0xE0000 to 0xFFFFF
   for(i=0xE0000; i < (0xFFFFF-8); i+=16){
-    emhf_arch_baseplatform_flat_copy((u8 *)rsdp, (u8 *)i, sizeof(ACPI_RSDP));
+    emhf_baseplatform_arch_flat_copy((u8 *)rsdp, (u8 *)i, sizeof(ACPI_RSDP));
     if(rsdp->signature == ACPI_RSDP_SIGNATURE){
       if(!_acpi_computetablechecksum((u32)rsdp, 20)){
         found=1;

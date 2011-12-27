@@ -40,7 +40,8 @@
 
 #include <emhf.h>
 
-void emhf_arch_x86vmx_baseplatform_cpuinitialize(void){
+//initialize CPU state
+void emhf_baseplatform_arch_x86vmx_cpuinitialize(void){
     	u32 bcr0;
 	    txt_heap_t *txt_heap;
         os_mle_data_t *os_mle_data;

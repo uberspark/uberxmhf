@@ -35,13 +35,16 @@
 
 //	EMHF base platform component
 //  addressing interface backends
-//  author: amit vasudevan (amitvasudevan@acm.org)
+//  authors: amit vasudevan (amitvasudevan@acm.org) and
+// 			jonathan m. mccune
 
 #include <emhf.h> 
 
 //functions to read/write memory using flat selector so that they
 //can be used from both within the SL and runtime
-u8 emhf_arch_baseplatform_flat_readu8(u32 addr){
+
+//read 8-bits from absolute physical address
+u8 emhf_baseplatform_arch_flat_readu8(u32 addr){
     u32 ret;
     __asm__ __volatile("xor %%eax, %%eax\r\n"        
                        "movl %%fs:(%%ebx), %%eax\r\n"
@@ -51,7 +54,8 @@ u8 emhf_arch_baseplatform_flat_readu8(u32 addr){
     return (u8)ret;        
 }
 
-u32 emhf_arch_baseplatform_flat_readu32(u32 addr){
+//read 32-bits from absolute physical address
+u32 emhf_baseplatform_arch_flat_readu32(u32 addr){
     u32 ret;
     __asm__ __volatile("xor %%eax, %%eax\r\n"        
                        "movl %%fs:(%%ebx), %%eax\r\n"
@@ -61,15 +65,8 @@ u32 emhf_arch_baseplatform_flat_readu32(u32 addr){
     return ret;        
 }
 
-
-void emhf_arch_baseplatform_flat_writeu32(u32 addr, u32 val) {
-    __asm__ __volatile__("movl %%eax, %%fs:(%%ebx)\r\n"
-                         :
-                         : "b"(addr), "a"((u32)val)
-                         );
-}
-
-u64 emhf_arch_baseplatform_flat_readu64(u32 addr){
+//read 64-bits from absolute physical address
+u64 emhf_baseplatform_arch_flat_readu64(u32 addr){
     u32 highpart, lowpart;
     __asm__ __volatile("xor %%eax, %%eax\r\n"        
     									 "xor %%edx, %%edx\r\n"
@@ -81,7 +78,16 @@ u64 emhf_arch_baseplatform_flat_readu64(u32 addr){
     return  ((u64)highpart << 32) | (u64)lowpart;        
 }
 
-void emhf_arch_baseplatform_flat_writeu64(u32 addr, u64 val) {
+//write 32-bits to absolute physical address
+void emhf_baseplatform_arch_flat_writeu32(u32 addr, u32 val) {
+    __asm__ __volatile__("movl %%eax, %%fs:(%%ebx)\r\n"
+                         :
+                         : "b"(addr), "a"((u32)val)
+                         );
+}
+
+//write 64-bits to absolute physical address
+void emhf_baseplatform_arch_flat_writeu64(u32 addr, u64 val) {
     u32 highpart, lowpart;
     lowpart = (u32)val;
     highpart = (u32)((u64)val >> 32);
@@ -93,14 +99,13 @@ void emhf_arch_baseplatform_flat_writeu64(u32 addr, u64 val) {
                          );
 }
 
-//memory copy using FLAT addresses, dest is always assumed to be DS relative
-//(typically a variable) while src is assumed to be an absolute physical
-//memory address
-void emhf_arch_baseplatform_flat_copy(u8 *dest, u8 *src, u32 size){
+//memory copy from absolute physical address (src) to
+//data segment relative address (dest)
+void emhf_baseplatform_arch_flat_copy(u8 *dest, u8 *src, u32 size){
 	u32 i;
 	u8 val;
 	for(i=0; i < size; i++){
-		val = emhf_arch_baseplatform_flat_readu8((u32)src + i);
+		val = emhf_baseplatform_arch_flat_readu8((u32)src + i);
 		dest[i] = val;
 	}
 }

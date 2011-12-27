@@ -42,6 +42,6 @@
 
 //initialize SMP
 void emhf_baseplatform_smpinitialize(void){
-	emhf_arch_baseplatform_smpinitialize();
+	emhf_baseplatform_arch_smpinitialize();
 }
 

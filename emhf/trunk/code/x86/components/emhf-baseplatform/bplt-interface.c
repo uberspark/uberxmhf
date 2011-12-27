@@ -42,16 +42,16 @@
 
 //get CPU vendor
 u32 emhf_baseplatform_getcpuvendor(void){
-	return emhf_arch_baseplatform_getcpuvendor();
+	return emhf_baseplatform_arch_getcpuvendor();
 }
 
 //initialize basic platform elements
 void emhf_baseplatform_initialize(void){
-	emhf_arch_baseplatform_initialize();	
+	emhf_baseplatform_arch_initialize();	
 }
 
 //initialize CPU state
 void emhf_baseplatform_cpuinitialize(void){
-	emhf_arch_baseplatform_cpuinitialize();
+	emhf_baseplatform_arch_cpuinitialize();
 }
 

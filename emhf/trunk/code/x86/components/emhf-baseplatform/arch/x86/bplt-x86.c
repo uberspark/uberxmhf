@@ -41,7 +41,7 @@
 #include <emhf.h>
 
 //get CPU vendor
-u32 emhf_arch_baseplatform_getcpuvendor(void){
+u32 emhf_baseplatform_arch_getcpuvendor(void){
 	u32 vendor_dword1, vendor_dword2, vendor_dword3;
 	u32 cpu_vendor;
 	asm(	"xor	%%eax, %%eax \n"
@@ -70,7 +70,7 @@ u32 emhf_arch_baseplatform_getcpuvendor(void){
 
 
 //initialize basic platform elements
-void emhf_arch_baseplatform_initialize(void){
+void emhf_baseplatform_arch_initialize(void){
 	//initialize PCI subsystem
 	pci_initialize();
 	
@@ -87,10 +87,10 @@ void emhf_arch_baseplatform_initialize(void){
 
 
 //initialize CPU state
-void emhf_arch_baseplatform_cpuinitialize(void){
-	u32 cpu_vendor = emhf_arch_baseplatform_getcpuvendor();
+void emhf_baseplatform_arch_cpuinitialize(void){
+	u32 cpu_vendor = emhf_baseplatform_arch_getcpuvendor();
 	
 	if(cpu_vendor == CPU_VENDOR_INTEL)
-		emhf_arch_x86vmx_baseplatform_cpuinitialize();
+		emhf_baseplatform_arch_x86vmx_cpuinitialize();
 }
 

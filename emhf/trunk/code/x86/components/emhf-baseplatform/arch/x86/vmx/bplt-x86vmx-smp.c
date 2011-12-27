@@ -42,7 +42,7 @@
 #include <emhf.h>
 
 //allocate and setup VCPU structure for all the CPUs
-void emhf_arch_x86vmx_baseplatform_allocandsetupvcpus(u32 cpu_vendor){
+void emhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor){
   u32 i;
   VCPU *vcpu;
   
@@ -100,7 +100,7 @@ void emhf_arch_x86vmx_baseplatform_allocandsetupvcpus(u32 cpu_vendor){
 }
 
 //wake up application processors (cores) in the system
-void emhf_arch_x86vmx_baseplatform_wakeupAPs(void){
+void emhf_baseplatform_arch_x86vmx_wakeupAPs(void){
 	//step-1: setup AP boot-strap code at in the desired physical memory location 
 	//note that we need an address < 1MB since the APs are woken up in real-mode
 	//we choose 0x10000 physical or 0x1000:0x0000 logical
@@ -114,7 +114,7 @@ void emhf_arch_x86vmx_baseplatform_wakeupAPs(void){
     //MP protocol. Use the APIC for IPI purposes.
     if(!txt_is_launched()) { // XXX TODO: Do actual GETSEC[WAKEUP] in here?
         printf("\nBSP: Using APIC to awaken APs...");
-        emhf_arch_x86_baseplatform_wakeupAPs();
+        emhf_baseplatform_arch_x86_wakeupAPs();
         printf("\nBSP: APs should be awake.");
     }else{
 		//we ran SENTER, so do a GETSEC[WAKEUP]
