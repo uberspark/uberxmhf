@@ -55,9 +55,9 @@ void emhf_arch_x86vmx_baseplatform_cpuinitialize(void){
         //   DANGEROUS TO DO THIS TWICE? 
         // sl.c unity-maps 0xfed00000 for 2M so these should work fine 
         txt_heap = get_txt_heap();
-        //printf("\ntxt_heap = 0x%08x", (u32)txt_heap);
+        printf("\ntxt_heap = 0x%08x", (u32)txt_heap);
         os_mle_data = get_os_mle_data_start(txt_heap);
-        //printf("\nos_mle_data = 0x%08x", (u32)os_mle_data);
+        printf("\nos_mle_data = 0x%08x", (u32)os_mle_data);
     
         if(!validate_mtrrs(&(os_mle_data->saved_mtrr_state))) {
              printf("\nSECURITY FAILURE: validate_mtrrs() failed.\n");
