@@ -34,63 +34,34 @@
  */
 
 /*
- * EMHF base platform component interface, x86 common backend
+ * EMHF base platform component interface, x86 vmx backend
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
 #include <emhf.h>
 
-//get CPU vendor
-u32 emhf_arch_baseplatform_getcpuvendor(void){
-	u32 vendor_dword1, vendor_dword2, vendor_dword3;
-	u32 cpu_vendor;
-	asm(	"xor	%%eax, %%eax \n"
-				  "cpuid \n"		
-				  "mov	%%ebx, %0 \n"
-				  "mov	%%edx, %1 \n"
-				  "mov	%%ecx, %2 \n"
-			     :	//no inputs
-					 : "m"(vendor_dword1), "m"(vendor_dword2), "m"(vendor_dword3)
-					 : "eax", "ebx", "ecx", "edx" );
+void emhf_arch_x86vmx_baseplatform_cpuinitialize(void){
+    	u32 bcr0;
+	    txt_heap_t *txt_heap;
+        os_mle_data_t *os_mle_data;
+  
+	    //set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
+		bcr0 = read_cr0();
+		bcr0 |= 0x20;
+		write_cr0(bcr0);
 
-	if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
-			&& vendor_dword3 == AMD_STRING_DWORD3)
-		cpu_vendor = CPU_VENDOR_AMD;
-	else if(vendor_dword1 == INTEL_STRING_DWORD1 && vendor_dword2 == INTEL_STRING_DWORD2
-			&& vendor_dword3 == INTEL_STRING_DWORD3)
-		cpu_vendor = CPU_VENDOR_INTEL;
-	else{
-		printf("\n%s: unrecognized x86 CPU (0x%08x:0x%08x:0x%08x). HALT!",
-			__FUNCTION__, vendor_dword1, vendor_dword2, vendor_dword3);
-		HALT();
-	}   	 	
-
-	return cpu_vendor;
+        // restore pre-SENTER MTRRs that were overwritten for SINIT launch 
+        // NOTE: XXX TODO; BSP MTRRs ALREADY RESTORED IN SL; IS IT
+        //   DANGEROUS TO DO THIS TWICE? 
+        // sl.c unity-maps 0xfed00000 for 2M so these should work fine 
+        txt_heap = get_txt_heap();
+        //printf("\ntxt_heap = 0x%08x", (u32)txt_heap);
+        os_mle_data = get_os_mle_data_start(txt_heap);
+        //printf("\nos_mle_data = 0x%08x", (u32)os_mle_data);
+    
+        if(!validate_mtrrs(&(os_mle_data->saved_mtrr_state))) {
+             printf("\nSECURITY FAILURE: validate_mtrrs() failed.\n");
+             HALT();
+        }
+        restore_mtrrs(&(os_mle_data->saved_mtrr_state));
 }
-
-
-//initialize basic platform elements
-void emhf_arch_baseplatform_initialize(void){
-	//initialize PCI subsystem
-	pci_initialize();
-	
-	//check ACPI subsystem
-	{
-		ACPI_RSDP rsdp;
-		if(!acpi_getRSDP(&rsdp)){
-			printf("\n%s: ACPI RSDP not found, Halting!", __FUNCTION__);
-			HALT();
-		}
-	}
-
-}
-
-
-//initialize CPU state
-void emhf_arch_baseplatform_cpuinitialize(void){
-	u32 cpu_vendor = emhf_arch_baseplatform_getcpuvendor();
-	
-	if(cpu_vendor == CPU_VENDOR_INTEL)
-		emhf_arch_x86vmx_baseplatform_cpuinitialize();
-}
-

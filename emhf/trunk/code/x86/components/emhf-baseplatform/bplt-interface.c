@@ -49,3 +49,9 @@ u32 emhf_baseplatform_getcpuvendor(void){
 void emhf_baseplatform_initialize(void){
 	emhf_arch_baseplatform_initialize();	
 }
+
+//initialize CPU state
+void emhf_baseplatform_cpuinitialize(void){
+	emhf_arch_baseplatform_cpuinitialize();
+}
+

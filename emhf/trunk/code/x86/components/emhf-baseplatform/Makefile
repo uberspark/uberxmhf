@@ -14,6 +14,7 @@ C_SOURCES += ./arch/x86/bplt-x86-acpi.c
 C_SOURCES += ./arch/x86/bplt-x86-pit.c
 C_SOURCES += ./arch/x86/bplt-x86-smp.c
 
+C_SOURCES += ./arch/x86/vmx/bplt-x86vmx.c
 C_SOURCES += ./arch/x86/vmx/bplt-x86vmx-mtrrs.c
 
 
