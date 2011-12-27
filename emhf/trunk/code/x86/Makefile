@@ -86,6 +86,8 @@ components:
 	cd components/emhf-dmaprot && $(MAKE) -w all
 	#EMHF exception handler component
 	cd components/emhf-xcphandler && $(MAKE) -w all
+	#EMHF base platform component
+	cd components/emhf-baseplatform && $(MAKE) -w all
 
 .PHONY: common
 common:
@@ -143,6 +145,7 @@ clean:
 	cd components/emhf-dmaprot && $(MAKE) -w clean
 	cd components/emhf-smpguest && $(MAKE) -w clean
 	cd components/emhf-xcphandler && $(MAKE) -w clean
+	cd components/emhf-baseplatform && $(MAKE) -w clean
 
 	
 	cd runtime && $(MAKE) -w clean
