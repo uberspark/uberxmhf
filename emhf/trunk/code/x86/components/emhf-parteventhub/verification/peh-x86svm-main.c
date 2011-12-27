@@ -41,6 +41,17 @@
 //======================================================================
 //globals referenced by this module
 RPB *rpb; 	//runtime parameter block pointer
+//actual definitions
+RPB _xrpb;	
+struct vmcb_struct _xvmcb;
+
+struct mystruct {
+	u32 a;
+	u32 b;
+	u32 c;
+};
+
+
 GRUBE820 g_e820map[MAX_E820_ENTRIES];
 
 /*
@@ -336,14 +347,18 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 	vmcb->cs.base = cs * 16;
 	vmcb->cs.sel = cs;		 
 }
-
+*/
 
 //---SVM intercept handler hub--------------------------------------------------
 u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
-  struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
-  
-  vmcb->tlb_control = TLB_CONTROL_NOTHING;
-    
+  struct mystruct *m = (struct mystruct *)vcpu->vmcb_vaddr_ptr;
+  assert((u32)m != 0);
+  //vmcb->tlb_control = TLB_CONTROL_NOTHING;
+  (struct mystruct *)m->a = 0;
+
+  assert(0);
+
+/*    
   switch(vmcb->exitcode){
     //IO interception
  		case VMEXIT_IOIO:{
@@ -421,10 +436,10 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
         HALT();
 		}
 	}	//end switch(vmcb->exitcode)	
-
+*/
 	return 0;
 }
-*/
+
 
 //----------------------------------------------------------------------
 //verification driver function
@@ -440,28 +455,25 @@ u32 nondet_u32();
 
 void main() {
 	VCPU vcpu; //VCPU variable to identify the physical core
-	struct regs r; //General Purporse Register structure
-	RPB _rpb;	//actual definition
-	struct vmcb_struct *vmcb; //AMD VMCB
-	
-	//set VMCB virtual address to something meaningful
-	vcpu.vmcb_vaddr_ptr = 0x00800000;	
-	vmcb = (struct vmcb_struct *)vcpu.vmcb_vaddr_ptr;
+	struct vmcb_struct *vmcb; //AMD VMCB pointer
+	struct regs r; //guest GPR structure 
+
+	//set vcpu VMCB virtual address to something meaningful
+	vcpu.vmcb_vaddr_ptr = (u32)0x00040000;	
+	vmcb=(struct vmcb_struct *)vcpu.vmcb_vaddr_ptr;
 	assert((u32)vmcb != 0);
 
-/*	//setup RPB pointer and required runtime parameter block values
-	rpb = (RPB *)&_rpb;
-	rpb->XtVmmE820NumEntries = 0; 
+	//setup RPB pointer and required runtime parameter block values
+	rpb = (RPB *)&_xrpb;
+	rpb->XtVmmE820NumEntries = 0; //lets worry about E820 later
+
 	
 	//setup values that the CPU would do on a hypercall event
-	vmcb->exitcode = VMEXIT_VMMCALL;
-	vmcb->rax = 0xDEADBEEF;
-	r.eax = r.ebx = r.ecx= r.edx = r.esi = r.edi = r.ebp = r.esp = 0; 	//these are dummy for now*/
+	_xvmcb.exitcode = VMEXIT_VMMCALL;
+	_xvmcb.rax = 0xDEADBEEF;
+	r.eax = r.ebx = r.ecx= r.edx = r.esi = r.edi = r.ebp = r.esp = 0; 	//these are dummy for now
 
-	assert(0);
-	
 	//invoke the event hub intercept handler (this is where we would
 	//land up when the hardware triggers any event within the guest)
-	//emhf_parteventhub_intercept_handler_x86svm(&vcpu, &r);
-
+	emhf_parteventhub_intercept_handler_x86svm(&vcpu, &r);
 }
