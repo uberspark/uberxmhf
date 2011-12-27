@@ -135,6 +135,7 @@ void cstartup(void){
   }
 
   //setup Master-ID Table (MIDTABLE)
+  //BASEPLATFORM
   {
     int i;
     for(i=0; i < (int)rpb->XtVmmMPCpuinfoNumEntries; i++){
@@ -146,6 +147,7 @@ void cstartup(void){
 	
 
 	//initialize isolation layer and EMHF library interface abstraction
+	//BASEPLATFORM
   if(cpu_vendor == CPU_VENDOR_INTEL){
   	g_isl = &g_isolation_layer_vmx;
 		g_libemhf = &g_emhf_library_vmx;
@@ -156,10 +158,12 @@ void cstartup(void){
 
   //setup vcpus 
   //svm_setupvcpus(cpu_vendor);
+  //BASEPLATFORM
   g_isl->setupvcpus(cpu_vendor);
 
 
   //wake up APS
+  //BASEPLATFORM
   if(g_midtable_numentries > 1)
     g_isl->wakeup_aps();
 
