@@ -13,10 +13,10 @@ OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 # WARNING: if both Serial & VGA are enabled, you actually get neither. 
 # TODO: Fix it.
 ifeq ($(DEBUG_SERIAL), y)
-OBJECTS_PRECOMPILED += $(filter-out %dbg_vgamem.o,$(wildcard ../libcommon/*.o))
+OBJECTS_PRECOMPILED += $(filter-out %dbg_vgamem.o,$(wildcard ../../libcommon/*.o))
 endif
 ifeq ($(DEBUG_VGA), y)
-OBJECTS_PRECOMPILED += $(filter-out %dbg_uart.o,$(wildcard ../libcommon/*.o))
+OBJECTS_PRECOMPILED += $(filter-out %dbg_uart.o,$(wildcard ../../libcommon/*.o))
 endif
 
 # tie components used by the runtime
