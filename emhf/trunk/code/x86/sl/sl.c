@@ -307,7 +307,7 @@ void slmain(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 
 	//initialize basic platform elements
-	emhf_baseplatform_initialize();
+	emhf_arch_baseplatform_initialize();
 
 	//sanitize cache/MTRR/SMRAM (most important is to ensure that MTRRs 
 	//do not contain weird mappings)

@@ -45,6 +45,7 @@ u32 emhf_baseplatform_getcpuvendor(void){
 	return emhf_arch_baseplatform_getcpuvendor();
 }
 
+//this resides in bplt-x86-smp.c
 //initialize SMP
 void emhf_baseplatform_smpinitialize(void){
 	emhf_arch_baseplatform_smpinitialize();

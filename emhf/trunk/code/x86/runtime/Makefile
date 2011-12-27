@@ -48,10 +48,11 @@ OBJECTS_PRECOMPILED += ../components/emhf-xcphandler/arch/x86/xcph-stubs.o
 
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/bplt-interface.o
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86.o
-OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-smptrampoline.o
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-pci.o
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-acpi.o
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-pit.o
+OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-smp.o
+OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-smptrampoline.o
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-smplock.o
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/vmx/bplt-x86vmx-mtrrs.o
 
