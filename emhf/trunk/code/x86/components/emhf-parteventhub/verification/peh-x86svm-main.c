@@ -58,12 +58,13 @@ void svm_lapic_access_dbexception(VCPU *vcpu, struct regs *r){
 		return;
 }
 
-void *memcpy (void *destaddr, void const *srcaddr, u32 len){
-  char *dest = destaddr;
-  char const *src = srcaddr;
-
+void *memcpy (char *destaddr, char *srcaddr, u32 len){
+  u8 value;
+  
   while (len-- > 0);
-    //*dest++ = *src++;
+    *destaddr++ = *srcaddr++;
+    //value = *srcaddr++;
+
   return destaddr;
 }
 
@@ -244,7 +245,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		//copy the e820 descriptor and return its size in ECX
 		memcpy((void *)((u32)((vmcb->es.base)+(u16)r->edi)), (void *)&g_e820map[r->ebx],
 					sizeof(GRUBE820));
-
+		
 
 					
 		r->ecx=20;
