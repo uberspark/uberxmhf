@@ -220,39 +220,16 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 		printf("\nCPU(0x%02x): All cores have successfully been through appmain.", vcpu->id);
   }
 
-  //initialize SMP guest (currently only supported when isEarlyInit=1)
-  //TODOs: 
-  //conceal entire logic under a single interface
-  //emhf_smpguest_initialize; this will return immediately for the BSP
-  //and will return for a given AP once the guest OS sends it the SIPI
-  //concel g_midtable_numentries behind interface 
-  //emhf_baseplatform_getnumberofcpus
-	if(isEarlyInit){
-		/*//if we are the BSP setup SIPI intercept
-		if(vcpu->isbsp){
-			if(g_midtable_numentries > 1){
-				//g_isl->hvm_apic_setup(vcpu);
-				//initialize SMP guest component
-				emhf_smpguest_initialize(vcpu);
-				printf("\nCPU(0x%02x): BSP, setup SIPI interception.", vcpu->id);
-			}
-		}else{ //else, we are an AP and wait for SIPI signal
-			printf("\nCPU(0x%02x): AP, waiting for SIPI signal...", vcpu->id);
-			while(!vcpu->sipireceived);
-			printf("\nCPU(0x%02x): SIPI signal received, vector=0x%02x", vcpu->id, vcpu->sipivector);
-	
-			g_isl->hvm_initialize_csrip(vcpu, ((vcpu->sipivector * PAGE_SIZE_4K) >> 4),
-				 (vcpu->sipivector * PAGE_SIZE_4K), 0x0ULL);
-		}*/
-		emhf_smpguest_initialize(vcpu);
+	//late initialization is still WiP and we can get only this far 
+	//currently
+	if(!isEarlyInit){
+		printf("\nCPU(0x%02x): Late-initialization, WiP, HALT!", vcpu->id);
+		HALT();
 	}
 
 
-  //late initialization is still work in progress, we can only get this far :(
-  if(!isEarlyInit){
-		printf("\nCPU(0x%02x): Late-initialization, WiP, HALT!", vcpu->id);
-		HALT();
-  }
+	//initialize support for SMP guests
+	emhf_smpguest_initialize(vcpu);
   
   //start HVM
   g_isl->hvm_start(vcpu);
