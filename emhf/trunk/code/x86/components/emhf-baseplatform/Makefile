@@ -20,6 +20,8 @@ C_SOURCES += ./arch/x86/vmx/bplt-x86vmx.c
 C_SOURCES += ./arch/x86/vmx/bplt-x86vmx-smp.c
 C_SOURCES += ./arch/x86/vmx/bplt-x86vmx-mtrrs.c
 
+C_SOURCES += ./arch/x86/svm/bplt-x86svm-smp.c
+
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))

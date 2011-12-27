@@ -81,6 +81,7 @@ void emhf_arch_x86vmx_baseplatform_cpuinitialize(void);
 
 //allocate and setup VCPU structure for all the CPUs
 void emhf_arch_x86vmx_baseplatform_allocandsetupvcpus(u32 cpu_vendor);
+void emhf_arch_x86svm_baseplatform_allocandsetupvcpus(u32 cpu_vendor);
 
 #endif	//__ASSEMBLY__
 
