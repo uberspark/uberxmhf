@@ -61,7 +61,24 @@ static const unsigned int vmx_msr_area_msrs_count = (sizeof(vmx_msr_area_msrs)/s
 static void _vmx_initVT(VCPU *vcpu){
 	//step-0: to enable VMX on a core, we require it to have a TR loaded,
 	//so load it for this core
-	__vmx_loadTR();
+	//__vmx_loadTR();
+	{
+	  u32 gdtstart = (u32)&x_gdt_start;
+	  u16 trselector = 	__TRSEL;
+	  asm volatile("movl %0, %%edi\r\n"
+		"xorl %%eax, %%eax\r\n"
+		"movw %1, %%ax\r\n"
+		"addl %%eax, %%edi\r\n"		//%edi is pointer to TSS descriptor in GDT
+		"addl $0x4, %%edi\r\n"		//%edi points to top 32-bits of 64-bit TSS desc.
+		"lock andl $0xFFFF00FF, (%%edi)\r\n"
+		"lock orl  $0x00008900, (%%edi)\r\n"
+		"ltr %%ax\r\n"				//load TR
+	     : 
+	     : "m"(gdtstart), "m"(trselector)
+	     : "edi", "eax"
+	  );
+	}
+	
 
 
   //step-1: check if intel CPU
