@@ -305,6 +305,10 @@ void slmain(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	printf("\nSL: runtime at 0x%08x (2M aligned size= %u bytes)", 
 			runtime_physical_base, runtime_size_2Maligned);
 
+
+	//initialize basic platform elements
+	emhf_baseplatform_initialize();
+
 	//sanitize cache/MTRR/SMRAM (most important is to ensure that MTRRs 
 	//do not contain weird mappings)
     if(get_cpu_vendor_or_die() == CPU_VENDOR_INTEL) {

@@ -9,7 +9,12 @@ OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
 OBJECTS_PRECOMPILED = ../libcommon/tpm.o ../libcommon/tpm_emhf.o 
-OBJECTS_PRECOMPILED += ../components/emhf-dmaprot/dmap-interface.o ../components/emhf-dmaprot/arch/x86/svm/dmap-x86svm.o ../components/emhf-dmaprot/arch/x86/vmx/dmap-x86vmx.o
+OBJECTS_PRECOMPILED += ../components/emhf-dmaprot/dmap-interface.o 
+OBJECTS_PRECOMPILED += ../components/emhf-dmaprot/arch/x86/svm/dmap-x86svm.o 
+OBJECTS_PRECOMPILED += ../components/emhf-dmaprot/arch/x86/vmx/dmap-x86vmx.o
+
+OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/bplt-interface.o
+OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86.o
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-pci.o
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-acpi.o
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-smplock.o
