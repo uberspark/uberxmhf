@@ -41,6 +41,49 @@
 
 #include <emhf.h>
 
+//wake up APs using the LAPIC by sending the INIT-SIPI-SIPI IPI sequence
+void emhf_arch_x86_wakeupAPs(void){
+  u32 eax, edx;
+  volatile u32 *icr;
+  
+  //read LAPIC base address from MSR
+  rdmsr(MSR_APIC_BASE, &eax, &edx);
+  ASSERT( edx == 0 ); //APIC is below 4G
+
+	//construct the command register address (offset 0x300)    
+  icr = (u32 *) (((u32)eax & 0xFFFFF000UL) + 0x300);
+    
+  //our AP boot-strap code is at physical memory location 0x10000.
+	//so use 0x10 as the vector (0x10000/0x1000 = 0x10)
+
+  //send INIT
+  *icr = 0x000c4500UL;
+  udelay(10000);
+  //wait for command completion
+  {
+    u32 val;
+    do{
+      val = *icr;
+    }while( (val & 0x1000) );
+  }
+
+  //send SIPI (twice as per the MP protocol)
+  {
+    int i;
+    for(i=0; i < 2; i++){
+      *icr = 0x000c4610UL;
+      udelay(200);
+        //wait for command completion
+        {
+          u32 val;
+          do{
+            val = *icr;
+          }while( (val & 0x1000) );
+        }
+      }
+  }    
+}
+
 
 //initialize SMP
 void emhf_arch_baseplatform_smpinitialize(void){

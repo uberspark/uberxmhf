@@ -76,6 +76,9 @@ u64 emhf_arch_baseplatform_flat_readu64(u32 addr);
 void emhf_arch_baseplatform_flat_copy(u8 *dest, u8 *src, u32 size);
 
 
+void emhf_arch_x86_wakeupAPs(void);
+void emhf_arch_x86vmx_baseplatform_cpuinitialize(void);
+
 #endif	//__ASSEMBLY__
 
 #endif //__EMHF_BASEPLATFORM_H__
