@@ -217,7 +217,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		bdamemory = bdamemoryphysical; 		
 	}
 	
-	//if E820 service then...
+	/*//if E820 service then...
 	if((u16)vmcb->rax == 0xE820){
 		//AX=0xE820, EBX=continuation value, 0 for first call
 		//ES:DI pointer to buffer, ECX=buffer size, EDX='SMAP'
@@ -299,7 +299,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 	  vmcb->rip += 3;
 
 		return;
-	}
+	}*/
 	
 	
 	//ok, this is some other INT 15h service, so simply chain to the original
