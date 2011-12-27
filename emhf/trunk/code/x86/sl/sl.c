@@ -296,9 +296,6 @@ void slmain(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
   }
 
 
-	//check for unsuccessful DRT
-	//TODO
-	
 	//get runtime physical base
 	runtime_physical_base = sl_baseaddr + PAGE_SIZE_2M;	//base of SL + 2M
 	
@@ -310,18 +307,17 @@ void slmain(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 	//sanitize cache/MTRR/SMRAM (most important is to ensure that MTRRs 
 	//do not contain weird mappings)
-	//TODO
     if(get_cpu_vendor_or_die() == CPU_VENDOR_INTEL) {
         txt_heap_t *txt_heap;
         os_mle_data_t *os_mle_data;
 
-        /* sl.c unity-maps 0xfed00000 for 2M so these should work fine */
+        // sl.c unity-maps 0xfed00000 for 2M so these should work fine 
         txt_heap = get_txt_heap();
         printf("\nSL: txt_heap = 0x%08x", (u32)txt_heap);
-        /* compensate for special DS here in SL */
+        /// compensate for special DS here in SL 
         os_mle_data = get_os_mle_data_start((txt_heap_t*)((u32)txt_heap - sl_baseaddr));
         printf("\nSL: os_mle_data = 0x%08x", (u32)os_mle_data);
-        /* restore pre-SENTER MTRRs that were overwritten for SINIT launch */
+        // restore pre-SENTER MTRRs that were overwritten for SINIT launch 
         if(!validate_mtrrs(&(os_mle_data->saved_mtrr_state))) {
             printf("\nSECURITY FAILURE: validate_mtrrs() failed.\n");
             HALT();
@@ -331,12 +327,10 @@ void slmain(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
     }
     
     /* Note: calling this *before* paging is enabled is important */
-#if 0
     if(sl_integrity_check((u8*)PAGE_SIZE_2M, slpb.runtime_size)) // XXX base addr
         printf("\nsl_intergrity_check SUCCESS");
     else
         printf("\nsl_intergrity_check FAILURE");
-#endif
 
 	//get a pointer to the runtime header
  	rpb=(RPB *)PAGE_SIZE_2M;	//runtime starts at offset 2M from sl base
@@ -345,7 +339,6 @@ void slmain(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
     
 	//setup DMA protection on runtime (secure loader is already DMA protected)
-	//WIP
 	{
 		//initialize PCI subsystem
 		pci_initialize();
@@ -399,38 +392,41 @@ void slmain(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 #endif //__DMAPROT__
 	
 	}
-    
-	//Measure runtime and sanity check if measurements were fine
-	//TODO
-	
-	
-	//setup runtime image for startup
-	
+
+		
+	//tell runtime if we started "early" or "late"
+	rpb->isEarlyInit = slpb.isEarlyInit;
 		
     //store runtime physical and virtual base addresses along with size
   	rpb->XtVmmRuntimePhysBase = runtime_physical_base;
   	rpb->XtVmmRuntimeVirtBase = __TARGET_BASE;
   	rpb->XtVmmRuntimeSize = slpb.runtime_size;
 
-	  //store revised E820 map and number of entries
-	  memcpy(hva2sla(rpb->XtVmmE820Buffer), (void *)&slpb.e820map, (sizeof(GRUBE820) * slpb.numE820Entries));
+    //store revised E820 map and number of entries
+	memcpy(hva2sla(rpb->XtVmmE820Buffer), (void *)&slpb.e820map, (sizeof(GRUBE820) * slpb.numE820Entries));
   	rpb->XtVmmE820NumEntries = slpb.numE820Entries; 
 
-		//store CPU table and number of CPUs
+	//store CPU table and number of CPUs
     memcpy(hva2sla(rpb->XtVmmMPCpuinfoBuffer), (void *)&slpb.pcpus, (sizeof(PCPU) * slpb.numCPUEntries));
   	rpb->XtVmmMPCpuinfoNumEntries = slpb.numCPUEntries; 
 
    	//setup guest OS boot module info in LPB	
-		rpb->XtGuestOSBootModuleBase=slpb.runtime_osbootmodule_base;
-		rpb->XtGuestOSBootModuleSize=slpb.runtime_osbootmodule_size;
+	rpb->XtGuestOSBootModuleBase=slpb.runtime_osbootmodule_base;
+	rpb->XtGuestOSBootModuleSize=slpb.runtime_osbootmodule_size;
+
+    // pass command line configuration forward 
+    rpb->uart_config = g_uart_config;
+
+	////debug dump uart_config field
+    //printf("\nrpb->uart_config.port = %x", rpb->uart_config.port);
+	//printf("\nrpb->uart_config.clock_hz = %u", rpb->uart_config.clock_hz);
+	//printf("\nrpb->uart_config.baud = %u", rpb->uart_config.baud);
+	//printf("\nrpb->uart_config.data_bits, parity, stop_bits, fifo = %x %x %x %x", 
+	//	rpb->uart_config.data_bits, rpb->uart_config.parity, rpb->uart_config.stop_bits, rpb->uart_config.fifo);*/
 
 
-        /* pass command line configuration forward */
-        rpb->uart_config = g_uart_config;
-
-
-		//setup runtime TSS
-		{
+	//setup runtime TSS
+	{
 			TSSENTRY *t;
 	  	u32 tss_base=(u32)rpb->XtVmmTSSBase;
 	  	u32 gdt_base= *(u32 *)(hva2sla(rpb->XtVmmGdt + 2));
@@ -443,13 +439,13 @@ void slmain(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		  t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
 		  t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);      
 		  t->limit0_15=0x67;
-		}
-		printf("\nSL: setup runtime TSS.");	
+	}
+	printf("\nSL: setup runtime TSS.");	
 
 
-		//obtain runtime gdt, idt, entrypoint and stacktop values and patch
-		//entry point in XtLdrTransferControltoRtm
-		{
+	//obtain runtime gdt, idt, entrypoint and stacktop values and patch
+	//entry point in XtLdrTransferControltoRtm
+	{
 			extern u32 sl_runtime_entrypoint_patch[];
 			u32 *patchloc = (u32 *)((u32)sl_runtime_entrypoint_patch + 1);
 			
@@ -461,37 +457,19 @@ void slmain(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 			printf("\n	gdt=0x%08x, idt=0x%08x", runtime_gdt, runtime_idt);
 			printf("\n	entrypoint=0x%08x, topofstack=0x%08x", runtime_entrypoint, runtime_topofstack);
 			*patchloc = runtime_entrypoint;
-		}
+	}
 		
 		
-		//tell runtime if we started "early" or "late"
-		rpb->isEarlyInit = slpb.isEarlyInit;
-		
-		/*//debug dump uart_config field
-	    printf("\nrpb->uart_config.port = %x", rpb->uart_config.port);
-		printf("\nrpb->uart_config.clock_hz = %u", rpb->uart_config.clock_hz);
-		printf("\nrpb->uart_config.baud = %u", rpb->uart_config.baud);
-		printf("\nrpb->uart_config.data_bits, parity, stop_bits, fifo = %x %x %x %x", 
-			rpb->uart_config.data_bits, rpb->uart_config.parity, rpb->uart_config.stop_bits, rpb->uart_config.fifo);*/
+	//setup paging for runtime 
+	runtime_setup_paging(runtime_physical_base, __TARGET_BASE, runtime_size_2Maligned);
+	printf("\nSL: setup runtime paging.");        
 
-		
-		//setup paging for runtime 
-		runtime_setup_paging(runtime_physical_base, __TARGET_BASE, runtime_size_2Maligned);
-		printf("\nSL: setup runtime paging.");        
-
-		
-		
-		/*if(!slpb.isEarlyInit){
-				printf("\nSL(late-init): still WiP, impressed that we got this far :>");
-				HALT();
-		}*/
-
-	  //transfer control to runtime
-		XtLdrTransferControlToRtm(runtime_gdt, runtime_idt, 
+    //transfer control to runtime
+	XtLdrTransferControlToRtm(runtime_gdt, runtime_idt, 
 				runtime_entrypoint, runtime_topofstack);
 
-		//we should never get here
-		printf("\nSL: Fatal, should never be here!");
-		HALT();
+	//we should never get here
+	printf("\nSL: Fatal, should never be here!");
+	HALT();
 } 
 
