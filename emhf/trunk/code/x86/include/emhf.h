@@ -632,25 +632,8 @@ struct isolation_layer {
 
 
 
+//XXX: get rid of this
 //SVM isolation layer interfaces
-void svm_initialize(VCPU *vcpu);
-void svm_runtime_exception_handler(u32 vector, struct regs *r);
-u32 svm_isbsp(void);
-void svm_wakeup_aps(void);
-void svm_initialize_vmcb_csrip(VCPU *vcpu, u16 cs_selector, u32 cs_base, u64 rip);
-//void svm_apic_setup(VCPU *vcpu);
-void svm_start_hvm(VCPU *vcpu);
-u32 svm_intercept_handler(VCPU *vcpu, struct regs *r);
-//void svm_do_quiesce(VCPU *vcpu);
-//void svm_do_wakeup(VCPU *vcpu);
-void svm_setupvcpus(u32 cpu_vendor);
-
-//other SVM isolation layer global functions
-u32 svm_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode);
-void svm_lapic_access_dbexception(VCPU *vcpu, struct regs *r);
-void __svm_start_hvm(VCPU *vcpu, u32 vmcb_phys_addr);
-u32 svm_kernel_pt_walker(struct vmcb_struct *vmcb, u32 vaddr);
-void svm_apic_wakeupAPs(void);
 VCPU *_svm_getvcpu(void);
 
 //VMX isolation layer interfaces
