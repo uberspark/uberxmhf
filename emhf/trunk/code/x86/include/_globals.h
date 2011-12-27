@@ -303,8 +303,8 @@ extern u8 g_vmx_vtd_cet[] __attribute__(( section(".palign_data") ));
 
 
 //external isolation layer backends
-extern struct isolation_layer g_isolation_layer_svm;
-extern struct isolation_layer g_isolation_layer_vmx;
+//extern struct isolation_layer g_isolation_layer_svm;
+//extern struct isolation_layer g_isolation_layer_vmx;
 
 //isolation layer abstraction
 //extern struct isolation_layer *g_isl __attribute__(( section(".data") ));;
