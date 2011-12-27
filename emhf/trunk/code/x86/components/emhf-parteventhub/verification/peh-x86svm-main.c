@@ -354,3 +354,18 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
 
 	return 0;
 }
+
+//----------------------------------------------------------------------
+//verification driver function
+//invoked using:
+//cbmc emhf-memprot.c 
+//-I<emhfcore>/trunk/code/libemhfc/include
+//-I<emhfcore>/trunk/code/x86/include -D__EMHF_VERIFICATION__ -D__NESTED_PAGING__ 
+//--bounds-check --pointer-check
+//where <emhfcore> is where the emhf repo is checked out
+
+u32 nondet_u32();
+
+void main() {
+
+}
