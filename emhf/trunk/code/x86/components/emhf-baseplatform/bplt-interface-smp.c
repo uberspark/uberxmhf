@@ -34,18 +34,14 @@
  */
 
 /*
- * EMHF base platform component interface
+ * EMHF base platform component interface (SMP exports)
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
 #include <emhf.h>
 
-//get CPU vendor
-u32 emhf_baseplatform_getcpuvendor(void){
-	return emhf_arch_baseplatform_getcpuvendor();
+//initialize SMP
+void emhf_baseplatform_smpinitialize(void){
+	emhf_arch_baseplatform_smpinitialize();
 }
 
-//initialize basic platform elements
-void emhf_baseplatform_initialize(void){
-	emhf_arch_baseplatform_initialize();	
-}
