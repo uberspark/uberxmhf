@@ -105,3 +105,10 @@ void emhf_arch_baseplatform_smpinitialize(void){
   }
 
 }
+
+//common function which is entered by all CPUs upon SMP initialization
+//note: this is specific to the x86 architecture backend
+void emhf_arch_x86_baseplatform_smpinitialize_commonstart(VCPU *vcpu){
+	
+	
+}

@@ -43,6 +43,7 @@
 	.extern g_midtable
 	.extern g_midtable_numentries
 	.extern x_gdt
+	.extern emhf_arch_x86_baseplatform_smpinitialize_commonstart
 
 //------------------------------------------------------------------------------
 //CODE
@@ -167,7 +168,7 @@ gotvcpu:
    movl 0x4(%ebx, %ecx, 8), %esi //esi contains vcpu pointer
    movl 0x0(%esi), %esp     //load stack for this CPU
    pushl %esi
-   call allcpus_common_start
+   call emhf_arch_x86_baseplatform_smpinitialize_commonstart
    //we should never get here, if so just halt
    hlt  
 

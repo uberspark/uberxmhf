@@ -166,10 +166,10 @@ void allcpus_common_start(VCPU *vcpu){
 		bcr0 |= 0x20;
 		write_cr0(bcr0);
 
-        /* restore pre-SENTER MTRRs that were overwritten for SINIT launch */
-        /* NOTE: XXX TODO; BSP MTRRs ALREADY RESTORED IN SL; IS IT
-           DANGEROUS TO DO THIS TWICE? */
-        /* sl.c unity-maps 0xfed00000 for 2M so these should work fine */
+        // restore pre-SENTER MTRRs that were overwritten for SINIT launch 
+        // NOTE: XXX TODO; BSP MTRRs ALREADY RESTORED IN SL; IS IT
+        //   DANGEROUS TO DO THIS TWICE? 
+        // sl.c unity-maps 0xfed00000 for 2M so these should work fine 
         txt_heap = get_txt_heap();
         //printf("\ntxt_heap = 0x%08x", (u32)txt_heap);
         os_mle_data = get_os_mle_data_start(txt_heap);
