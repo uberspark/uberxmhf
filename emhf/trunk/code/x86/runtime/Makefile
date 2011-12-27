@@ -9,7 +9,8 @@ C_SOURCES = runtime.c globals.c libemhf.c
 C_SOURCES += islayer_svm.c   
 
 # AS_SOURCES += islayersup_vmx.S
-C_SOURCES += islayer_vmx.c islayer_vmx_ug.c  
+C_SOURCES += islayer_vmx.c 
+# islayer_vmx_ug.c  
 
 # These are the core runtime objects
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
