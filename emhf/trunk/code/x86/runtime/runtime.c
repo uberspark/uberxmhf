@@ -182,10 +182,9 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 	}*/
 	emhf_baseplatform_cpuinitialize();
 
-  //switch core into hypervisor mode
-  g_isl->initialize(vcpu);
+  //initialize partition monitor (i.e., hypervisor) for this CPU
+  emhf_partition_initializemonitor(vcpu);
 
-	
   //initialize memory protection for this core
   emhf_memprot_initialize(vcpu);
 

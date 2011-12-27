@@ -355,68 +355,6 @@ static void _svm_handle_swint(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs 
 
   
 
-//---init SVM-------------------------------------------------------------------
-static void _svm_initSVM(VCPU *vcpu){
-  u32 eax, edx, ecx, ebx;
-  u64 hsave_pa;
-
-  //check if CPU supports SVM extensions 
-  cpuid(0x80000001, &eax, &ebx, &ecx, &edx);
-  if( !(ecx & (1<<ECX_SVM)) ){
-   printf("\nCPU(0x%02x): no SVM extensions. HALT!", vcpu->id);
-   HALT();
-  }
-  
-  //check if SVM extensions are disabled by the BIOS 
-  rdmsr(VM_CR_MSR, &eax, &edx);
-  if( eax & (1<<VM_CR_SVME_DISABLE) ){
-    printf("\nCPU(0x%02x): SVM extensions disabled in the BIOS. HALT!", vcpu->id);
-    HALT();
-  }
-
-  // check for nested paging support and number of ASIDs 
-	cpuid(0x8000000A, &eax, &ebx, &ecx, &edx);
-  if(!(edx & 0x1)){
-      printf("\nCPU(0x%02x): No support for Nested Paging, HALTING!", vcpu->id);
-		HALT();
-	}
-	
-  printf("\nCPU(0x%02x): Nested paging support present", vcpu->id);
-	if( (ebx-1) < 2 ){
-		printf("\nCPU(0x%02x): Total number of ASID is too low, HALTING!", vcpu->id);
-		HALT();
-	}
-	
-	printf("\nCPU(0x%02x): Total ASID is valid", vcpu->id);
-
-  // enable SVM and debugging support (if required)   
-  rdmsr((u32)VM_CR_MSR, &eax, &edx);
-  eax &= (~(1<<VM_CR_DPD));
-  wrmsr((u32)VM_CR_MSR, eax, edx);
-  printf("\nCPU(0x%02x): HDT debugging enabled", vcpu->id);
-
-  rdmsr((u32)MSR_EFER, &eax, &edx);
-  eax |= (1<<EFER_SVME);
-  wrmsr((u32)MSR_EFER, eax, edx);
-  printf("\nCPU(0x%02x): SVM extensions enabled", vcpu->id);
-
-  // Initialize the HSA 
-  //printf("\nHSAVE area=0x%08X", vcpu->hsave_vaddr_ptr);
-  hsave_pa = __hva2spa__((void*)vcpu->hsave_vaddr_ptr);
-  //printf("\nHSAVE physaddr=0x%08x", hsave_pa);
-  eax = (u32)hsave_pa;
-  edx = (u32)(hsave_pa >> 32);
-  wrmsr((u32)VM_HSAVE_PA, eax, edx);
-  printf("\nCPU(0x%02x): SVM HSAVE initialized", vcpu->id);
-
-  // enable NX protections 
-  rdmsr(MSR_EFER, &eax, &edx);
-  eax |= (1 << EFER_NXE);
-  wrmsr(MSR_EFER, eax, edx);
-  printf("\nCPU(0x%02x): NX protection enabled", vcpu->id);
-
-  return;
-}
 
 
 //---setup VMCB-----------------------------------------------------------------
@@ -811,7 +749,7 @@ void svm_setupvcpus(u32 cpu_vendor){
 }*/
 
 
-
+/*
 //------------------------------------------------------------------------------
 //svm_initialize
 //initialize SVM on the core
@@ -821,7 +759,7 @@ void svm_initialize(VCPU *vcpu){
  
   //initiaize VMCB
   _svm_initVMCB(vcpu); 
-}
+}*/
 
 //------------------------------------------------------------------------------
 //svm_initialize_vmcb_csrip
@@ -859,7 +797,7 @@ void svm_start_hvm(VCPU *vcpu){
 
 //------------------------------------------------------------------------------
 struct isolation_layer g_isolation_layer_svm = {
-	.initialize =	svm_initialize,
+	//.initialize =	svm_initialize,
 	//.runtime_exception_handler = svm_runtime_exception_handler,
 	//.isbsp = svm_isbsp,
 	//.wakeup_aps = svm_wakeup_aps,

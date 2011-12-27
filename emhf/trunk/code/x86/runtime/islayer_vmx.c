@@ -267,10 +267,10 @@ static void _vmx_send_quiesce_signal(VCPU *vcpu){
 //isolation layer abstraction global functions
 //==============================================================================
 
-static void vmx_initialize(VCPU *vcpu){
-	printf("\n%s: REFACTORED, SHOULD NEVER BE HERE!", __FUNCTION__);
-	HALT();
-}
+//static void vmx_initialize(VCPU *vcpu){
+//	printf("\n%s: REFACTORED, SHOULD NEVER BE HERE!", __FUNCTION__);
+//	HALT();
+//}
 
 /*
 //---initialize-----------------------------------------------------------------
@@ -561,7 +561,7 @@ void vmx_setupvcpus(u32 cpu_vendor){
 
 //------------------------------------------------------------------------------
 struct isolation_layer g_isolation_layer_vmx = {
-	.initialize =	vmx_initialize,
+	//.initialize =	vmx_initialize,
 	//.runtime_exception_handler = vmx_runtime_exception_handler,
 	//.isbsp = vmx_isbsp,
 	//.wakeup_aps = vmx_wakeup_aps,

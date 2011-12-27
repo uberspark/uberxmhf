@@ -613,7 +613,7 @@ static inline u64 VCPU_gcr4(VCPU *vcpu)
 
 //generic isolation layer interface
 struct isolation_layer {
-	void 	(*initialize)(VCPU *vcpu);
+	//void 	(*initialize)(VCPU *vcpu);
 	
 	//void	(*runtime_exception_handler)(u32 vector, struct regs *r);
 	
