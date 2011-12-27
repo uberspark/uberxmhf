@@ -245,18 +245,18 @@ static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
 	switch(regtype){
     case VTD_REG_32BITS:{	//32-bit r/w
       if(access == VTD_REG_READ)
-        *((u32 *)value)= flat_readu32(regaddr);
+        *((u32 *)value)= emhf_arch_baseplatform_flat_readu32(regaddr);
       else
-        flat_writeu32(regaddr, *((u32 *)value));
+        emhf_arch_baseplatform_flat_writeu32(regaddr, *((u32 *)value));
         
       break;
     }
     
     case VTD_REG_64BITS:{	//64-bit r/w
       if(access == VTD_REG_READ)
-        *((u64 *)value)=flat_readu64(regaddr);
+        *((u64 *)value)=emhf_arch_baseplatform_flat_readu64(regaddr);
       else
-        flat_writeu64(regaddr, *((u64 *)value));
+        emhf_arch_baseplatform_flat_writeu64(regaddr, *((u64 *)value));
     
       break;
     }
@@ -628,14 +628,14 @@ static u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
   printf("\n%s: RSDP at %08x", __FUNCTION__, status);
   
 	//grab ACPI RSDT
-	flat_copy((u8 *)&rsdt, (u8 *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
+	emhf_arch_baseplatform_flat_copy((u8 *)&rsdt, (u8 *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
 	printf("\n%s: RSDT at %08x, len=%u bytes, hdrlen=%u bytes", 
 		__FUNCTION__, rsdp.rsdtaddress, rsdt.length, sizeof(ACPI_RSDT));
 	
 	//get the RSDT entry list
 	num_rsdtentries = (rsdt.length - sizeof(ACPI_RSDT))/ sizeof(u32);
 	ASSERT(num_rsdtentries < ACPI_MAX_RSDT_ENTRIES);
-	flat_copy((u8 *)&rsdtentries, (u8 *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
+	emhf_arch_baseplatform_flat_copy((u8 *)&rsdtentries, (u8 *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
 			sizeof(u32)*num_rsdtentries);			
   printf("\n%s: RSDT entry list at %08x, len=%u", __FUNCTION__,
 		(rsdp.rsdtaddress + sizeof(ACPI_RSDT)), num_rsdtentries);
@@ -643,7 +643,7 @@ static u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 
 	//find the VT-d DMAR table in the list (if any)
   for(i=0; i< num_rsdtentries; i++){
-  	flat_copy((u8 *)&dmar, (u8 *)rsdtentries[i], sizeof(VTD_DMAR));  
+  	emhf_arch_baseplatform_flat_copy((u8 *)&dmar, (u8 *)rsdtentries[i], sizeof(VTD_DMAR));  
     if(dmar.signature == VTD_DMAR_SIGNATURE){
       dmarfound=1;
       break;
@@ -663,14 +663,14 @@ static u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
   
   while(i < (dmar.length-sizeof(VTD_DMAR))){
     u16 type, length;
-		flat_copy((u8 *)&type, (u8 *)(remappingstructuresaddrphys+i), sizeof(u16));
-		flat_copy((u8 *)&length, (u8 *)(remappingstructuresaddrphys+i+sizeof(u16)), sizeof(u16));     
+		emhf_arch_baseplatform_flat_copy((u8 *)&type, (u8 *)(remappingstructuresaddrphys+i), sizeof(u16));
+		emhf_arch_baseplatform_flat_copy((u8 *)&length, (u8 *)(remappingstructuresaddrphys+i+sizeof(u16)), sizeof(u16));     
 
     switch(type){
       case  0:  //DRHD
         printf("\nDRHD at %08x, len=%u bytes", (u32)(remappingstructuresaddrphys+i), length);
         ASSERT(vtd_num_drhd < VTD_MAX_DRHD);
-				flat_copy((u8 *)&vtd_drhd[vtd_num_drhd], (u8 *)(remappingstructuresaddrphys+i), length);
+				emhf_arch_baseplatform_flat_copy((u8 *)&vtd_drhd[vtd_num_drhd], (u8 *)(remappingstructuresaddrphys+i), length);
         vtd_num_drhd++;
         i+=(u32)length;
         break;
@@ -732,7 +732,7 @@ static u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 	//TODO: we need to be a little elegant here. eventually need to setup 
 	//EPT/NPTs such that the DMAR pages are unmapped for the guest
 	if(!isbootstrap)
-		flat_writeu32(dmaraddrphys, 0UL);
+		emhf_arch_baseplatform_flat_writeu32(dmaraddrphys, 0UL);
 
 
 	//success

@@ -12,6 +12,8 @@ OBJECTS_PRECOMPILED =  ../libcommon/tpm.o
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-pci.o
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-acpi.o
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-smplock.o
+OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-addressing.o
+
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/vmx/bplt-x86vmx-mtrrs.o
 
 # FIXME: This is overly general; init/ doesn't need all of these
