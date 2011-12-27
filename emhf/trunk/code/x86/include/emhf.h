@@ -654,7 +654,7 @@ void svm_apic_wakeupAPs(void);
 VCPU *_svm_getvcpu(void);
 
 //VMX isolation layer interfaces
-void vmx_initialize(VCPU *vcpu);
+//void vmx_initialize(VCPU *vcpu);
 void vmx_runtime_exception_handler(u32 vector, struct regs *r);
 u32 vmx_isbsp(void);
 void vmx_wakeup_aps(void);
