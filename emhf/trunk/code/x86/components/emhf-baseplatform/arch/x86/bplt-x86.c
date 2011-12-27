@@ -152,3 +152,20 @@ void emhf_arch_x86_baseplatform_smpinitialize_commonstart(VCPU *vcpu){
   //TODO: don't reference rpb->isEarlyInit directly
   emhf_runtime_main(vcpu, rpb->isEarlyInit);	
 }
+
+//initialize basic platform elements
+void emhf_arch_baseplatform_initialize(void){
+	//initialize PCI subsystem
+	pci_initialize();
+	
+	//check ACPI subsystem
+	{
+		ACPI_RSDP rsdp;
+		if(!acpi_getRSDP(&rsdp)){
+			printf("\n%s: ACPI RSDP not found, Halting!", __FUNCTION__);
+			HALT();
+		}
+	}
+
+}
+

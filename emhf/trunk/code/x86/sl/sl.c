@@ -340,17 +340,6 @@ void slmain(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
     
 	//setup DMA protection on runtime (secure loader is already DMA protected)
 	{
-		//initialize PCI subsystem
-		pci_initialize();
-	
-		//check ACPI subsystem
-		{
-			ACPI_RSDP rsdp;
-			if(!acpi_getRSDP(&rsdp)){
-				printf("\nSL: ACPI RSDP not found, Halting!");
-				HALT();
-			}
-		}
 
 #if defined(__DMAPROT__)	
 		{
