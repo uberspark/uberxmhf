@@ -10,7 +10,16 @@ OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
 
 #tie components used by SL
-OBJECTS_PRECOMPILED = ../emhf-tpm/tpm.o ../emhf-tpm/tpm_emhf.o 
+OBJECTS_PRECOMPILED = ../emhf-debug/dbg_printf.o
+ifeq ($(DEBUG_SERIAL), y)
+OBJECTS_PRECOMPILED += ../emhf-debug/dbg_uart.o
+endif
+ifeq ($(DEBUG_VGA), y)
+OBJECTS_PRECOMPILED += ../emhf-debug/dbg_vgamem.o
+endif
+
+OBJECTS_PRECOMPILED += ../emhf-tpm/tpm.o 
+OBJECTS_PRECOMPILED += ../emhf-tpm/tpm_emhf.o 
 
 OBJECTS_PRECOMPILED += ../emhf-dmaprot/dmap-interface.o 
 OBJECTS_PRECOMPILED += ../emhf-dmaprot/arch/x86/svm/dmap-x86svm.o 
@@ -28,13 +37,6 @@ OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/vmx/bplt-x86vmx-mtrrs.o
 
 # FIXME: ADDL_INCLUDES is overly general; sl/ doesn't need all of them
 CFLAGS += $(ADDL_INCLUDES)
-
-ifeq ($(DEBUG_SERIAL), y)
-OBJECTS_PRECOMPILED += ../../libcommon/dbg_printf.o ../../libcommon/dbg_uart.o
-endif
-ifeq ($(DEBUG_VGA), y)
-OBJECTS_PRECOMPILED += ../../libcommon/dbg_printf.o ../../libcommon/dbg_vgamem.o
-endif
 
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 

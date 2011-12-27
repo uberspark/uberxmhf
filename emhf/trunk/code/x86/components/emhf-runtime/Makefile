@@ -9,17 +9,18 @@ C_SOURCES = runtime.c globals.c
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
-### Bring in libcommon/*.o so that App's (e.g., TrustVisor) can use them
-# WARNING: if both Serial & VGA are enabled, you actually get neither. 
-# TODO: Fix it.
-ifeq ($(DEBUG_SERIAL), y)
-OBJECTS_PRECOMPILED += $(filter-out %dbg_vgamem.o,$(wildcard ../../libcommon/*.o))
-endif
-ifeq ($(DEBUG_VGA), y)
-OBJECTS_PRECOMPILED += $(filter-out %dbg_uart.o,$(wildcard ../../libcommon/*.o))
-endif
 
 # tie components used by the runtime
+# WARNING: if both Serial & VGA are enabled, you actually get neither. 
+# TODO: Fix it.
+OBJECTS_PRECOMPILED = ../emhf-debug/dbg_printf.o
+ifeq ($(DEBUG_SERIAL), y)
+OBJECTS_PRECOMPILED += ../emhf-debug/dbg_uart.o
+endif
+ifeq ($(DEBUG_VGA), y)
+OBJECTS_PRECOMPILED += ../emhf-debug/dbg_vgamem.o
+endif
+
 OBJECTS_PRECOMPILED += ../emhf-memprot/emhf-memprot.o
 OBJECTS_PRECOMPILED += ../emhf-memprot/arch/vmx/emhf-memprot-vmx.o
 OBJECTS_PRECOMPILED += ../emhf-memprot/arch/svm/emhf-memprot-svm.o
