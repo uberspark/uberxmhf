@@ -62,10 +62,14 @@ void *memcpy (void *destaddr, void const *srcaddr, u32 len){
   char *dest = destaddr;
   char const *src = srcaddr;
 
-  while (len-- > 0)
-    *dest++ = *src++;
+  while (len-- > 0);
+    //*dest++ = *src++;
   return destaddr;
 }
+
+
+
+
 
 
 //======================================================================
@@ -236,10 +240,13 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		ASSERT(r->edx == 0x534D4150UL);  //'SMAP' should be specified by guest
 		ASSERT(r->ebx < rpb->XtVmmE820NumEntries); //invalid continuation value specified by guest!
 			
-		/*
+		
 		//copy the e820 descriptor and return its size in ECX
 		memcpy((void *)((u32)((vmcb->es.base)+(u16)r->edi)), (void *)&g_e820map[r->ebx],
-					sizeof(GRUBE820));*/
+					sizeof(GRUBE820));
+
+
+					
 		r->ecx=20;
 
 		//set EAX to 'SMAP' as required by the service call				
@@ -443,6 +450,7 @@ void main() {
 	//set VMCB event code to indicate a hypercall
 	vmcb->exitcode = VMEXIT_VMMCALL;
 	vmcb->rax = 0;
+	vmcb->es.base = 0;
 	
 	//setup dummy register contents
 	r.eax = r.ebx = r.ecx= r.edx = r.esi = r.edi = r.ebp = r.esp = 0;
