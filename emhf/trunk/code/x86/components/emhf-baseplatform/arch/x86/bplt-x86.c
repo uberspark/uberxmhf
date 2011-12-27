@@ -147,4 +147,8 @@ void emhf_arch_x86_baseplatform_smpinitialize_commonstart(VCPU *vcpu){
     printf("\nAP(0x%02x): My ESP is 0x%08x, proceeding...", vcpu->id, vcpu->esp);
   }
 	
+   	
+  //invoke EMHF runtime component main function for this CPU
+  //TODO: don't reference rpb->isEarlyInit directly
+  emhf_runtime_main(vcpu, rpb->isEarlyInit);	
 }

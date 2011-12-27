@@ -149,7 +149,7 @@ void cstartup(void){
 	HALT();
 }
 
-
+/*
 //---allcpus_common_start-------------------------------------------------------
 void allcpus_common_start(VCPU *vcpu){
   //we start here with all CPUs executing common code, we 
@@ -329,10 +329,10 @@ void allcpus_common_start(VCPU *vcpu){
 
   printf("\nCPU(0x%02x): FATAL, should not be here. HALTING!", vcpu->id);
   HALT();
-}
+}*/
 
 
-/*
+
 //we get control here in the context of *each* physical CPU core 
 //vcpu->isbsp = 1 if the core is a BSP or 0 if its an AP
 //isEarlyInit = 1 if we were boot-strapped by the BIOS and is 0
@@ -446,4 +446,4 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
   HALT();
 
 }
-*/
+
