@@ -495,7 +495,7 @@ void main() {
 	
 	//setup values that the CPU would do on a hypercall event
 	_xvmcb.exitcode = VMEXIT_VMMCALL;
-	_xvmcb.rax = 0xDEADBEEF;
+	_xvmcb.rax = 0xD0ADBEEF;
 	r.eax = r.ebx = r.ecx= r.edx = r.esi = r.edi = r.ebp = r.esp = 0; 	//these are dummy for now
 
 	//invoke the event hub intercept handler (this is where we would
