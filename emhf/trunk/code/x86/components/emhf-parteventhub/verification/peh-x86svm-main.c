@@ -367,5 +367,11 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
 u32 nondet_u32();
 
 void main() {
+	VCPU vcpu; //VCPU variable to identify the physical core
+	struct regs r; //General Purporse Register structure
+	
+	//invoke the event hub intercept handler (this is where we would
+	//land up when the hardware triggers any event within the guest)
+	emhf_parteventhub_intercept_handler_x86svm(&vcpu, &r);
 
 }
