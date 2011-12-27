@@ -58,10 +58,12 @@ u32 svm_isbsp(void){
 }
 
 u32 svm_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode){
+		assert(0);
 		return 0;
 }
 
 void svm_lapic_access_dbexception(VCPU *vcpu, struct regs *r){
+		assert(0);
 		return;
 }
 
@@ -85,6 +87,7 @@ void *memcpy (void *destaddr, void const *srcaddr, u32 len){
 u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
       struct regs *r,
       u64 gpa, u64 gva, u64 violationcode){
+			assert(0);
 			return APP_SUCCESS;
 }
 
@@ -105,6 +108,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 			printf("\nCPU(0x%02x): unsupported hypercall (0x%08x)!!", 
 			  vcpu->id, call_id);
 			status=APP_ERROR;
+			assert(0);
 			break;
 	}
 
@@ -119,6 +123,7 @@ static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *
   
   ioinfo.bytes = x->exitinfo1;
 
+  assert(0);
   if (ioinfo.fields.rep || ioinfo.fields.str){
     printf("\nCPU(0x%02x): Fatal, unsupported batch I/O ops!", vcpu->id);
     HALT();
@@ -157,6 +162,8 @@ static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *
 static void _svm_handle_msr(VCPU *vcpu, struct regs *r){
   struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
   
+  assert(0);
+  
   ASSERT( (vmcb->exitinfo1 == 0) || (vmcb->exitinfo1 == 1) );
   printf("\nCPU(0x%02x): MSR intercept, type=%u, MSR=0x%08x", vcpu->id,
     (u32)vmcb->exitinfo1, r->ecx);
@@ -186,6 +193,8 @@ static void _svm_handle_npf(VCPU *vcpu, struct regs *r){
   u32 gpa = vmcb->exitinfo2;
   u32 errorcode = vmcb->exitinfo1;
   
+  assert(0);
+  
   if(gpa >= g_svm_lapic_base && gpa < (g_svm_lapic_base + PAGE_SIZE_4K)){
     //LAPIC access, xfer control to apropriate handler
     //printf("\n0x%04x:0x%08x -> LAPIC access, gpa=0x%08x, errorcode=0x%08x", 
@@ -206,6 +215,8 @@ static void _svm_handle_npf(VCPU *vcpu, struct regs *r){
 // note: we use NMI for core quiescing, we simply inject the others back
 // into the guest in the normal case
 static void _svm_handle_nmi(VCPU *vcpu, struct vmcb_struct __attribute__((unused)) *vmcb, struct regs __attribute__((unused)) *r){
+  assert(0);
+  
     //now we adopt a simple trick, this NMI is pending, the only
     //way we can dismiss it is if we set GIF=0 and make GIF=1 so that
     //the core thinks it must dispatch the pending NMI :p
@@ -225,6 +236,8 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 	u8 *bdamemory = (u8 *)0x4AC;
 	struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
 	
+	assert(0);
+  
 	//printf("\nCPU(0x%02x): BDA dump in intercept: %02x %02x %02x %02x %02x %02x %02x %02x", vcpu->id,
 	//		bdamemory[0], bdamemory[1], bdamemory[2], bdamemory[3], bdamemory[4],
 	//			bdamemory[5], bdamemory[6], bdamemory[7]);
@@ -359,22 +372,28 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
   switch(vmcb->exitcode){
     //IO interception
  		case VMEXIT_IOIO:{
+   		assert(0);
    		_svm_handle_ioio(vcpu, vmcb, r);
    	}
    	break;
   
     //MSR interception
     case VMEXIT_MSR:{
-      _svm_handle_msr(vcpu, r);
+		assert(0);
+        _svm_handle_msr(vcpu, r);
     }
     break;
     
 	  case VMEXIT_NPF:{
+		assert(0);
+  
 			_svm_handle_npf(vcpu, r);
     }
 		break;
 
  		case VMEXIT_EXCEPTION_DB:{
+     assert(0);
+  
      ASSERT(svm_isbsp() == 1); //LAPIC SIPI detection only happens on BSP
      svm_lapic_access_dbexception(vcpu, r);
      }
@@ -382,6 +401,8 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
 
 
     case VMEXIT_INIT:{
+	assert(0);
+  
       printf("\nCPU(0x%02x): INIT intercepted, halting.", vcpu->id);
       printf("\nGuest CS:EIP=0x%04x:0x%08x", (u16)vmcb->cs.sel, (u32)vmcb->rip);
       //{
@@ -408,6 +429,8 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
 				vmcb->rip == VMX_UG_E820HOOK_IP){
 				//assertions, we need to be either in real-mode or in protected
 				//mode with paging and EFLAGS.VM bit set (virtual-8086 mode)
+				assert(0);
+  
 				ASSERT( !(vmcb->cr0 & CR0_PE)  ||
 					( (vmcb->cr0 & CR0_PE) && (vmcb->cr0 & CR0_PG) &&
 						(vmcb->rflags & EFLAGS_VM)  ) );
@@ -424,6 +447,8 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
     break;
 
     case VMEXIT_NMI:{
+	assert(0);
+  
         _svm_handle_nmi(vcpu, vmcb, r);
       }
       break;
@@ -431,6 +456,8 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
 		default:{
 				printf("\nUnhandled Intercept:0x%08llx", vmcb->exitcode);
 				printf("\nCS:EIP=0x%04x:0x%08x", (u16)vmcb->cs.sel, (u32)vmcb->rip);
+        assert(0);
+  
         HALT();
 		}
 	}	//end switch(vmcb->exitcode)	
