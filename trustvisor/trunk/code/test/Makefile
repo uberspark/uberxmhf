@@ -5,7 +5,7 @@
 CFLAGS := -I${UNITYDIR}/src -DUNITY_SUPPORT_64 -g
 CFLAGS := $(filter-out -nostdinc,${CFLAGS})
 CFLAGS += -I$(EMHF_ROOT)/libemhfutil/include
-CFLAGS += -I$(EMHF_ROOT)/x86/include
+CFLAGS += -I$(EMHF_ROOT)/emhfcore/include
 
 all: do_hpt do_drbg # do_pages do_pt
 
