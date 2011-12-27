@@ -217,7 +217,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		bdamemory = bdamemoryphysical; 		
 	}
 	
-	/*//if E820 service then...
+	//if E820 service then...
 	if((u16)vmcb->rax == 0xE820){
 		//AX=0xE820, EBX=continuation value, 0 for first call
 		//ES:DI pointer to buffer, ECX=buffer size, EDX='SMAP'
@@ -229,7 +229,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		
 		ASSERT(r->edx == 0x534D4150UL);  //'SMAP' should be specified by guest
 		ASSERT(r->ebx < rpb->XtVmmE820NumEntries); //invalid continuation value specified by guest!
-			
+		/*	
 		//copy the e820 descriptor and return its size in ECX
 		memcpy((void *)((u32)((vmcb->es.base)+(u16)r->edi)), (void *)&g_e820map[r->ebx],
 					sizeof(GRUBE820));
@@ -292,14 +292,14 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 				gueststackregion[2] = guest_flags;
 			}
 		  
-		}
+		}*/
 
  	  //update RIP to execute the IRET following the VMCALL instruction
  	  //effectively returning from the INT 15 call made by the guest
 	  vmcb->rip += 3;
 
 		return;
-	}*/
+	}
 	
 	
 	//ok, this is some other INT 15h service, so simply chain to the original
@@ -435,7 +435,11 @@ void main() {
 	
 	//set VMCB event code to indicate a hypercall
 	vmcb->exitcode = VMEXIT_VMMCALL;
+	vmcb->rax = 0;
 	
+	//setup dummy register contents
+	r.eax = r.ebx = r.ecx= r.edx = r.esi = r.edi = r.ebp = r.esp = 0;
+
 	//invoke the event hub intercept handler (this is where we would
 	//land up when the hardware triggers any event within the guest)
 	emhf_parteventhub_intercept_handler_x86svm(&vcpu, &r);
