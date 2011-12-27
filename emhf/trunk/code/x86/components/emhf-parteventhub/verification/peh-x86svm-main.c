@@ -39,6 +39,12 @@
 #include <emhf.h> 
 
 //======================================================================
+//globals referenced by this module
+RPB *rpb; 	//runtime parameter block pointer
+
+
+
+//======================================================================
 //support functions
 u32 svm_isbsp(void){
 		return 1;	//assume BSP for now
@@ -427,8 +433,8 @@ void main() {
 	VCPU vcpu; //VCPU variable to identify the physical core
 	struct regs r; //General Purporse Register structure
 	struct vmcb_struct *vmcb; //AMD VMCB
-  
-
+	RPB _rpb;	//actual definition
+	
 	//set VMCB virtual address to something meaningful
 	vcpu.vmcb_vaddr_ptr = 0xC0000000;	
 	vmcb = (struct vmcb_struct *)vcpu.vmcb_vaddr_ptr;
@@ -439,6 +445,11 @@ void main() {
 	
 	//setup dummy register contents
 	r.eax = r.ebx = r.ecx= r.edx = r.esi = r.edi = r.ebp = r.esp = 0;
+
+	//setup RPB pointer and required runtime parameter block values
+	rpb = (RPB *)&_rpb;
+	rpb->XtVmmE820NumEntries = 0; 
+	
 
 	//invoke the event hub intercept handler (this is where we would
 	//land up when the hardware triggers any event within the guest)
