@@ -86,6 +86,12 @@ void emhf_arch_x86svm_baseplatform_allocandsetupvcpus(u32 cpu_vendor);
 //return 1 if the calling CPU is the BSP
 u32 emhf_arch_x86_baseplatform_isbsp(void);
 
+//wake up application processors (cores) in the system
+void emhf_arch_x86svm_baseplatform_wakeupAPs(void);
+void emhf_arch_x86vmx_baseplatform_wakeupAPs(void);
+
+
+
 #endif	//__ASSEMBLY__
 
 #endif //__EMHF_BASEPLATFORM_H__

@@ -811,24 +811,6 @@ void svm_setupvcpus(u32 cpu_vendor){
 }*/
 
 
-//---wakeupAPs------------------------------------------------------------------
-//wake up application processors (cores) in the system
-void svm_wakeup_aps(void){
-	//step-1: setup AP boot-strap code at in the desired physical memory location 
-	//note that we need an address < 1MB since the APs are woken up in real-mode
-	//we choose 0x10000 physical or 0x1000:0x0000 logical
-  {
-    _ap_cr3_value = read_cr3();
-    _ap_cr4_value = read_cr4();
-    memcpy((void *)0x10000, (void *)_ap_bootstrap_start, (u32)_ap_bootstrap_end - (u32)_ap_bootstrap_start + 1);
-  }
-	
-	//step-2: wake up the APs sending the INIT-SIPI-SIPI sequence as per the
-	//MP protocol. Use the APIC for IPI purposes.	
-  printf("\nBSP: Using APIC to awaken APs...");
-  emhf_arch_x86_baseplatform_wakeupAPs();
-  printf("\nBSP: APs should be awake.");
-}
 
 //------------------------------------------------------------------------------
 //svm_initialize
@@ -880,7 +862,7 @@ struct isolation_layer g_isolation_layer_svm = {
 	.initialize =	svm_initialize,
 	//.runtime_exception_handler = svm_runtime_exception_handler,
 	//.isbsp = svm_isbsp,
-	.wakeup_aps = svm_wakeup_aps,
+	//.wakeup_aps = svm_wakeup_aps,
 	.hvm_initialize_csrip = svm_initialize_vmcb_csrip,
 	//.hvm_apic_setup = svm_apic_setup,
 	.hvm_start = svm_start_hvm,

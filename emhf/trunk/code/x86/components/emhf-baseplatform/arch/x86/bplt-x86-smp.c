@@ -125,9 +125,12 @@ void emhf_arch_baseplatform_smpinitialize(void){
 	
   
   //wake up APS
-  if(g_midtable_numentries > 1)
-		g_isl->wakeup_aps();
-
+  if(g_midtable_numentries > 1){
+    if(cpu_vendor == CPU_VENDOR_AMD)
+	  emhf_arch_x86svm_baseplatform_wakeupAPs();
+    else //CPU_VENDOR_INTEL
+	  emhf_arch_x86vmx_baseplatform_wakeupAPs();
+  }
 
   //fall through to common code  
   {
