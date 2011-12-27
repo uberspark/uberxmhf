@@ -70,5 +70,38 @@ u32 emhf_arch_baseplatform_getcpuvendor(void){
 
 //initialize SMP
 void emhf_arch_baseplatform_smpinitialize(void){
-	
+  u32 cpu_vendor;
+  ASSERT((u32)g_isl != 	0);
+  
+  //grab CPU vendor
+  cpu_vendor = emhf_baseplatform_getcpuvendor();
+  
+  //setup Master-ID Table (MIDTABLE)
+  {
+    int i;
+    for(i=0; i < (int)rpb->XtVmmMPCpuinfoNumEntries; i++){
+       g_midtable[g_midtable_numentries].cpu_lapic_id = g_cpumap[i].lapic_id;
+       g_midtable[g_midtable_numentries].vcpu_vaddr_ptr = 0;
+       g_midtable_numentries++;
+    }
+  }
+
+  //setup vcpus 
+  g_isl->setupvcpus(cpu_vendor);
+
+  //wake up APS
+  if(g_midtable_numentries > 1)
+		g_isl->wakeup_aps();
+
+
+  //fall through to common code  
+  {
+	 void _ap_pmode_entry_with_paging(void);
+   printf("\nRelinquishing BSP thread and moving to common...");
+   // Do some low-level init and then call allcpus_common_start() below
+   _ap_pmode_entry_with_paging(); 
+   printf("\nBSP must never get here. HALT!");
+   HALT();
+  }
+
 }
