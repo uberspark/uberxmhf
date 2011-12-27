@@ -5,7 +5,7 @@
 # source files
 AS_SOURCES =  
 
-C_SOURCES = 
+C_SOURCES = part-interface.c
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))

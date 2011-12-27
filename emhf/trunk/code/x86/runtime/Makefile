@@ -64,6 +64,9 @@ OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/vmx/bplt-x86vmx-
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/svm/bplt-x86svm-smp.o
 
 
+OBJECTS_PRECOMPILED += ../components/emhf-partition/part-interface.o
+
+
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 
 # targets
