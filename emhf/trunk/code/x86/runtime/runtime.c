@@ -228,7 +228,7 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
   //concel g_midtable_numentries behind interface 
   //emhf_baseplatform_getnumberofcpus
 	if(isEarlyInit){
-		//if we are the BSP setup SIPI intercept
+		/*//if we are the BSP setup SIPI intercept
 		if(vcpu->isbsp){
 			if(g_midtable_numentries > 1){
 				//g_isl->hvm_apic_setup(vcpu);
@@ -243,7 +243,8 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 	
 			g_isl->hvm_initialize_csrip(vcpu, ((vcpu->sipivector * PAGE_SIZE_4K) >> 4),
 				 (vcpu->sipivector * PAGE_SIZE_4K), 0x0ULL);
-		}
+		}*/
+		emhf_smpguest_initialize(vcpu);
 	}
 
 
