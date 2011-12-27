@@ -4,6 +4,7 @@
 # source files
 AS_SOURCES =  
 C_SOURCES = smpg-interface.c
+C_SOURCES += ./arch/x86/smpg-x86.c
 C_SOURCES += ./arch/x86/svm/smpg-x86svm.c
 C_SOURCES += ./arch/x86/vmx/smpg-x86vmx.c
 

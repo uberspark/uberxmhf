@@ -427,3 +427,15 @@ void emhf_smpguest_arch_x86svm_eventhandler_nmiexception(VCPU *vcpu, struct regs
   
   vcpu->nmiinhvm=0;
 }
+
+
+//perform required setup after a guest awakens a new CPU
+void emhf_smpguest_arch_x86svm_postCPUwakeup(VCPU *vcpu){
+	//setup guest CS and EIP as specified by the SIPI vector
+	struct vmcb_struct *vmcb;
+
+	vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr; 
+	vmcb->cs.sel = ((vcpu->sipivector * PAGE_SIZE_4K) >> 4); 
+	vmcb->cs.base = (vcpu->sipivector * PAGE_SIZE_4K); 
+	vmcb->rip = 0x0ULL;
+}

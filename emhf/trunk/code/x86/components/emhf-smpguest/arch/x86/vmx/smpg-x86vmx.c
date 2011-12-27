@@ -436,3 +436,11 @@ void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 			     INTR_INFO_VALID_MASK;
   }
 }
+
+//perform required setup after a guest awakens a new CPU
+void emhf_smpguest_arch_x86vmx_postCPUwakeup(VCPU *vcpu){
+	//setup guest CS and EIP as specified by the SIPI vector
+	vcpu->vmcs.guest_CS_selector = ((vcpu->sipivector * PAGE_SIZE_4K) >> 4); 
+	vcpu->vmcs.guest_CS_base = (vcpu->sipivector * PAGE_SIZE_4K); 
+	vcpu->vmcs.guest_RIP = 0x0ULL;
+}

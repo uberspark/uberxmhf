@@ -70,8 +70,11 @@ void emhf_smpguest_initialize(VCPU *vcpu){
 			while(!vcpu->sipireceived);
 			printf("\nCPU(0x%02x): SIPI signal received, vector=0x%02x", vcpu->id, vcpu->sipivector);
 	
-			g_isl->hvm_initialize_csrip(vcpu, ((vcpu->sipivector * PAGE_SIZE_4K) >> 4),
-				 (vcpu->sipivector * PAGE_SIZE_4K), 0x0ULL);
+			//g_isl->hvm_initialize_csrip(vcpu, ((vcpu->sipivector * PAGE_SIZE_4K) >> 4),
+			//	 (vcpu->sipivector * PAGE_SIZE_4K), 0x0ULL);
+			
+			//perform required setup after a guest awakens a new CPU
+			emhf_smpguest_arch_postCPUwakeup(vcpu);
 	}
 }
 

@@ -62,18 +62,29 @@ void emhf_smpguest_endquiesce(VCPU *vcpu);
 //quiescing handler for #NMI (non-maskable interrupt) exception event
 void emhf_smpguest_eventhandler_nmiexception(VCPU *vcpu, struct regs *r);
 
+//----------------------------------------------------------------------
+//generic arch. backends
+
+//perform required setup after a guest awakens a new CPU
+void emhf_smpguest_arch_postCPUwakeup(VCPU *vcpu);
+
 
 //x86 SVM backends
 void emhf_smpguest_arch_x86svm_initialize(VCPU *vcpu);
 void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, 
 	struct regs *r);
 u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode);
+//perform required setup after a guest awakens a new CPU
+void emhf_smpguest_arch_x86svm_postCPUwakeup(VCPU *vcpu);
+
 
 //x86 VMX backends
 void emhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu);
 void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, 
 	struct regs *r);
 u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode);
+//perform required setup after a guest awakens a new CPU
+void emhf_smpguest_arch_x86vmx_postCPUwakeup(VCPU *vcpu);
 
 
 
