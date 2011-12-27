@@ -8,9 +8,10 @@ C_SOURCES = sl.c
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
-OBJECTS_PRECOMPILED = ../../libcommon/tpm.o ../../libcommon/tpm_emhf.o 
 
 #tie components used by SL
+OBJECTS_PRECOMPILED = ../emhf-tpm/tpm.o ../emhf-tpm/tpm_emhf.o 
+
 OBJECTS_PRECOMPILED += ../emhf-dmaprot/dmap-interface.o 
 OBJECTS_PRECOMPILED += ../emhf-dmaprot/arch/x86/svm/dmap-x86svm.o 
 OBJECTS_PRECOMPILED += ../emhf-dmaprot/arch/x86/vmx/dmap-x86vmx.o
