@@ -55,11 +55,14 @@ void cstartup(void){
 	//initialize global runtime variables including Runtime Parameter Block (rpb)
 	runtime_globals_init();
 
-	//setup EMHF exception handler component
-	emhf_xcphandler_initialize();
-
-	//[debug]: test IDT/exception routing
-	//__asm__ __volatile__ ("int $0x03\r\n");
+	//initialize isolation layer and EMHF library interface abstraction
+	if(cpu_vendor == CPU_VENDOR_INTEL){
+		g_isl = &g_isolation_layer_vmx;
+		g_libemhf = &g_emhf_library_vmx;
+	}else{
+		g_isl = &g_isolation_layer_svm; 
+		g_libemhf = &g_emhf_library_svm;
+	}
 
 	//setup debugging	
 #ifdef __DEBUG_SERIAL__
@@ -76,6 +79,33 @@ void cstartup(void){
 		rpb->uart_config.data_bits, rpb->uart_config.parity, rpb->uart_config.stop_bits, rpb->uart_config.fifo);
 #endif
 	printf("\nruntime initializing...");
+
+
+    //[debug] dump E820 and MP table
+ 	printf("\nNumber of E820 entries = %u", rpb->XtVmmE820NumEntries);
+	{
+		int i;
+		for(i=0; i < (int)rpb->XtVmmE820NumEntries; i++){
+		printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
+          g_e820map[i].baseaddr_high, g_e820map[i].baseaddr_low,
+          g_e820map[i].length_high, g_e820map[i].length_low,
+          g_e820map[i].type);
+		}
+  	}
+	printf("\nNumber of MP entries = %u", rpb->XtVmmMPCpuinfoNumEntries);
+	{
+		int i;
+		for(i=0; i < (int)rpb->XtVmmMPCpuinfoNumEntries; i++)
+			printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x", i, g_cpumap[i].isbsp, g_cpumap[i].lapic_id);
+	}
+
+
+	//setup EMHF exception handler component
+	emhf_xcphandler_initialize();
+
+	//[debug]: test IDT/exception routing
+	//__asm__ __volatile__ ("int $0x03\r\n");
+
 
 
 #if defined (__DMAPROT__)
@@ -109,30 +139,8 @@ void cstartup(void){
 				rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M,
 				rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
 	}
-
-
-	
 #endif //__DMAPROT__
 
-
-  //debug, dump E820 and MP table
- 	printf("\nNumber of E820 entries = %u", rpb->XtVmmE820NumEntries);
-  {
-    int i;
-    for(i=0; i < (int)rpb->XtVmmE820NumEntries; i++){
-      printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
-          g_e820map[i].baseaddr_high, g_e820map[i].baseaddr_low,
-          g_e820map[i].length_high, g_e820map[i].length_low,
-          g_e820map[i].type);
-    }
-  
-  }
-  printf("\nNumber of MP entries = %u", rpb->XtVmmMPCpuinfoNumEntries);
-  {
-    int i;
-    for(i=0; i < (int)rpb->XtVmmMPCpuinfoNumEntries; i++)
-      printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x", i, g_cpumap[i].isbsp, g_cpumap[i].lapic_id);
-  }
 
   //setup Master-ID Table (MIDTABLE)
   //BASEPLATFORM
@@ -144,17 +152,6 @@ void cstartup(void){
        g_midtable_numentries++;
     }
   }
-	
-
-	//initialize isolation layer and EMHF library interface abstraction
-	//BASEPLATFORM
-  if(cpu_vendor == CPU_VENDOR_INTEL){
-  	g_isl = &g_isolation_layer_vmx;
-		g_libemhf = &g_emhf_library_vmx;
-	}else{
-		g_isl = &g_isolation_layer_svm; 
-		g_libemhf = &g_emhf_library_svm;
-	}
 
   //setup vcpus 
   //svm_setupvcpus(cpu_vendor);
