@@ -2,7 +2,7 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files
-AS_SOURCES =  
+AS_SOURCES =  ./arch/x86/bplt-x86-smptrampoline.S
 C_SOURCES = bplt-interface.c
 C_SOURCES += ./arch/x86/bplt-x86.c
 
