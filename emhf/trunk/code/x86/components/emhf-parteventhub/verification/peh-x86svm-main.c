@@ -45,16 +45,10 @@ RPB *rpb; 	//runtime parameter block pointer
 RPB _xrpb;	
 struct vmcb_struct _xvmcb;
 
-struct mystruct {
-	u32 a;
-	u32 b;
-	u32 c;
-};
-
 
 GRUBE820 g_e820map[MAX_E820_ENTRIES];
 
-/*
+
 //#define ASSERT assert
 //======================================================================
 //support functions
@@ -71,12 +65,9 @@ void svm_lapic_access_dbexception(VCPU *vcpu, struct regs *r){
 }
 
 void *memcpy (char *destaddr, char *srcaddr, u32 len){
-//  u8 value;
-  
+ 
 //  while (len-- > 0);
 //    *destaddr++ = *srcaddr++;
-//    //value = *srcaddr++;
-//
   return destaddr;
 }
 
@@ -94,13 +85,16 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 }
 
 u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
+	struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+	
 	u32 status=APP_SUCCESS;
-	u32 call_id= (u32)r->eax;
+	u32 call_id= (u32)vmcb->rax;
 
    switch(call_id){
 		case 0xDEADBEEF:
 			//r->ebx contains a 32-bit number that needs to be printed out
 			printf("\nCPU(0x%02x): Our hypercall", vcpu->id);
+			assert(1);
 			break;
 		
 		default:
@@ -347,18 +341,14 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 	vmcb->cs.base = cs * 16;
 	vmcb->cs.sel = cs;		 
 }
-*/
 
 //---SVM intercept handler hub--------------------------------------------------
 u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
-  struct mystruct *m = (struct mystruct *)vcpu->vmcb_vaddr_ptr;
-  assert((u32)m != 0);
-  //vmcb->tlb_control = TLB_CONTROL_NOTHING;
-  (struct mystruct *)m->a = 0;
+  struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+	
+  vmcb->tlb_control = TLB_CONTROL_NOTHING;
 
-  assert(0);
-
-/*    
+    
   switch(vmcb->exitcode){
     //IO interception
  		case VMEXIT_IOIO:{
@@ -418,6 +408,7 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
 			}else{	//if not E820 hook, give app a chance to handle the hypercall
 				if( emhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
 					printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", vcpu->id, r->eax);
+					assert(0);
 					HALT();
 				}
       	vmcb->rip += 3;
@@ -436,7 +427,7 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
         HALT();
 		}
 	}	//end switch(vmcb->exitcode)	
-*/
+
 	return 0;
 }
 
@@ -459,7 +450,7 @@ void main() {
 	struct regs r; //guest GPR structure 
 
 	//set vcpu VMCB virtual address to something meaningful
-	vcpu.vmcb_vaddr_ptr = (u32)0x00040000;	
+	vcpu.vmcb_vaddr_ptr = (u32)&_xvmcb;	
 	vmcb=(struct vmcb_struct *)vcpu.vmcb_vaddr_ptr;
 	assert((u32)vmcb != 0);
 
@@ -476,4 +467,6 @@ void main() {
 	//invoke the event hub intercept handler (this is where we would
 	//land up when the hardware triggers any event within the guest)
 	emhf_parteventhub_intercept_handler_x86svm(&vcpu, &r);
+	
+	assert(1);
 }
