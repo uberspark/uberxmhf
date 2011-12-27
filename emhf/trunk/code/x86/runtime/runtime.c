@@ -74,6 +74,9 @@ void cstartup(void){
 #endif
 	printf("\nruntime initializing...");
 
+	//initialize basic platform elements
+	emhf_baseplatform_initialize();
+
 
     //[debug] dump E820 and MP table
  	printf("\nNumber of E820 entries = %u", rpb->XtVmmE820NumEntries);
