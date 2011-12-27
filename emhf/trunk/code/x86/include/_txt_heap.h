@@ -210,7 +210,8 @@ static inline txt_heap_t *get_txt_heap(void)
 
 static inline uint64_t get_bios_data_size(txt_heap_t *heap)
 {
-    return *(uint64_t *)heap;
+    //return *(uint64_t *)heap;
+    return emhf_arch_baseplatform_flat_readu64((u32)heap);
 }
 
 static inline bios_data_t *get_bios_data_start(txt_heap_t *heap)
@@ -220,7 +221,8 @@ static inline bios_data_t *get_bios_data_start(txt_heap_t *heap)
 
 static inline uint64_t get_os_mle_data_size(txt_heap_t *heap)
 {
-    return *(uint64_t *)(heap + get_bios_data_size(heap));
+    //return *(uint64_t *)(heap + get_bios_data_size(heap));
+    return emhf_arch_baseplatform_flat_readu64((u32)(heap + get_bios_data_size(heap)));
 }
 
 static inline os_mle_data_t *get_os_mle_data_start(txt_heap_t *heap)
@@ -231,8 +233,11 @@ static inline os_mle_data_t *get_os_mle_data_start(txt_heap_t *heap)
 
 static inline uint64_t get_os_sinit_data_size(txt_heap_t *heap)
 {
-    return *(uint64_t *)(heap + get_bios_data_size(heap) +
-                         get_os_mle_data_size(heap));
+    //return *(uint64_t *)(heap + get_bios_data_size(heap) +
+    //                     get_os_mle_data_size(heap));
+    return emhf_arch_baseplatform_flat_readu64((u32)(heap + get_bios_data_size(heap) +
+                         get_os_mle_data_size(heap)));
+    
 }
 
 static inline os_sinit_data_t *get_os_sinit_data_start(txt_heap_t *heap)
@@ -244,9 +249,12 @@ static inline os_sinit_data_t *get_os_sinit_data_start(txt_heap_t *heap)
 
 static inline uint64_t get_sinit_mle_data_size(txt_heap_t *heap)
 {
-    return *(uint64_t *)(heap + get_bios_data_size(heap) +
+    //return *(uint64_t *)(heap + get_bios_data_size(heap) +
+    //                     get_os_mle_data_size(heap) +
+    //                     get_os_sinit_data_size(heap));
+    return emhf_arch_baseplatform_flat_readu64((u32)(heap + get_bios_data_size(heap) +
                          get_os_mle_data_size(heap) +
-                         get_os_sinit_data_size(heap));
+                         get_os_sinit_data_size(heap)));
 }
 
 static inline sinit_mle_data_t *get_sinit_mle_data_start(txt_heap_t *heap)
