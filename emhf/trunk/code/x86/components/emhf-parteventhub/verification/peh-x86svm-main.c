@@ -449,8 +449,6 @@ void main() {
 	//set VMCB event code to indicate a hypercall
 	vmcb->exitcode = VMEXIT_VMMCALL;
 	vmcb->rax = 0;
-	vmcb->es.base = 0;
-	vmcb->exitinfo1 = 0;
 	
 	//setup dummy register contents
 	r.eax = r.ebx = r.ecx= r.edx = r.esi = r.edi = r.ebp = r.esp = 0;
