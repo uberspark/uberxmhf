@@ -59,12 +59,12 @@ void svm_lapic_access_dbexception(VCPU *vcpu, struct regs *r){
 }
 
 void *memcpy (char *destaddr, char *srcaddr, u32 len){
-  u8 value;
+/*  u8 value;
   
   while (len-- > 0);
     *destaddr++ = *srcaddr++;
     //value = *srcaddr++;
-
+*/
   return destaddr;
 }
 
