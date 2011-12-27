@@ -70,7 +70,8 @@ export CAT = @CAT@
 
 
 .PHONY: all
-all: $(APP_ARCHIVE) subdirs init-late
+# all: $(APP_ARCHIVE) subdirs init-late
+all: $(APP_ARCHIVE) subdirs 
 
 $(APP_ARCHIVE):
 	cd $(APP_ROOT) && $(MAKE) -w all
@@ -109,7 +110,7 @@ install-dev:
 test:
 	cd $(APP_ROOT) && $(MAKE) -w test
 
-.PHONY: clean distclean
+.PHONY: clean distclean init-late-clean
 clean:
 	cd $(APP_ROOT) && $(MAKE) -w clean
 	@for i in $(SUBDIRS) ;\
@@ -121,6 +122,9 @@ distclean: clean
 	$(RM) config.log config.status
 	# http://www.gnu.org/software/automake/manual/automake.html#Clean
 	$(RM) -rf Makefile
+
+init-late-clean:
+	cd $(TARGET_HWPLATFORM) && make -w init-late-clean
 	
 #-----autoconf rules
 Makefile: Makefile.in config.status

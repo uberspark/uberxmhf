@@ -142,7 +142,7 @@ init-late: hypervisor-$(TARGET_HWPLATFORM).bin.gz
 
 
 # cleanup rules
-.PHONY: clean 
+.PHONY: clean init-late-clean
 clean: 
 	cd components/emhf-memprot && $(MAKE) -w clean
 	cd components/emhf-parteventhub && $(MAKE) -w clean
@@ -161,15 +161,16 @@ clean:
 	
 	cd init && $(MAKE) -w clean
 
-	cd ./init-late/os/linux && $(MAKE) clean
-	$(RM) -rf $(HYPOUTDIR)/emhfil.ko
-	$(RM) -rf $(HYPOUTDIR)/emhfil.sh
-
 	rm -rf $(APPOBJECTSDIR)
 
 	rm -rf ./hypervisor-$(TARGET_HWPLATFORM).bin.gz
 	$(RM) -rf $(HYPOUTDIR)/init-$(TARGET_HWPLATFORM).bin
 	$(RM) -rf $(HYPOUTDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz
+
+init-late-clean:
+	cd ./init-late/os/linux && $(MAKE) clean
+	$(RM) -rf $(HYPOUTDIR)/emhfil.ko
+	$(RM) -rf $(HYPOUTDIR)/emhfil.sh
 
 
 .PHONY: install-dev
