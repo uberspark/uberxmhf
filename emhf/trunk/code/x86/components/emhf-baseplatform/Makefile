@@ -6,11 +6,13 @@ AS_SOURCES =  ./arch/x86/bplt-x86-smptrampoline.S
 AS_SOURCES +=  ./arch/x86/bplt-x86-smplock.S
 
 C_SOURCES = bplt-interface.c
+
 C_SOURCES += ./arch/x86/bplt-x86.c
 C_SOURCES += ./arch/x86/bplt-x86-pci.c
 C_SOURCES += ./arch/x86/bplt-x86-acpi.c
 C_SOURCES += ./arch/x86/bplt-x86-pit.c
 
+C_SOURCES += ./arch/x86/vmx/bplt-x86vmx-mtrrs.c
 
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
