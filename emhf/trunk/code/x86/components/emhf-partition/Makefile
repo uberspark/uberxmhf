@@ -7,6 +7,10 @@ AS_SOURCES =
 
 C_SOURCES = part-interface.c
 
+C_SOURCES += ./arch/x86/vmx/part-x86vmx.c
+C_SOURCES += ./arch/x86/svm/part-x86svm.c
+
+
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
