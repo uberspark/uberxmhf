@@ -41,6 +41,19 @@
 
 #include <emhf.h>
 
+//return 1 if the calling CPU is the BSP
+u32 emhf_arch_x86_baseplatform_isbsp(void){
+  u32 eax, edx;
+  //read LAPIC base address from MSR
+  rdmsr(MSR_APIC_BASE, &eax, &edx);
+  ASSERT( edx == 0 ); //APIC is below 4G
+  
+  if(eax & 0x100)
+    return 1;
+  else
+    return 0;
+}
+
 //wake up APs using the LAPIC by sending the INIT-SIPI-SIPI IPI sequence
 void emhf_arch_x86_baseplatform_wakeupAPs(void){
   u32 eax, edx;
