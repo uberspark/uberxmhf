@@ -53,32 +53,6 @@ u8 *_vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
 
 
 
-//---function to obtain the vcpu of the currently executing core----------------
-//note: this always returns a valid VCPU pointer
-VCPU *_vmx_getvcpu(void){
-  int i;
-  u32 eax, edx, *lapic_reg;
-  u32 lapic_id;
-  
-  //read LAPIC id of this core
-  rdmsr(MSR_APIC_BASE, &eax, &edx);
-  ASSERT( edx == 0 ); //APIC is below 4G
-  eax &= (u32)0xFFFFF000UL;
-  lapic_reg = (u32 *)((u32)eax+ (u32)LAPIC_ID);
-  lapic_id = *lapic_reg;
-  //printf("\n%s: lapic base=0x%08x, id reg=0x%08x", __FUNCTION__, eax, lapic_id);
-  lapic_id = lapic_id >> 24;
-  //printf("\n%s: lapic_id of core=0x%02x", __FUNCTION__, lapic_id);
-  
-  for(i=0; i < (int)g_midtable_numentries; i++){
-    if(g_midtable[i].cpu_lapic_id == lapic_id)
-        return( (VCPU *)g_midtable[i].vcpu_vaddr_ptr );
-  }
-
-  printf("\n%s: fatal, unable to retrieve vcpu for id=0x%02x", __FUNCTION__, lapic_id);
-  HALT();
-  return NULL; /* currently unreachable */
-}
 
 
 

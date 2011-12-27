@@ -632,35 +632,6 @@ struct isolation_layer {
 
 
 
-//XXX: get rid of this
-//SVM isolation layer interfaces
-VCPU *_svm_getvcpu(void);
-
-//VMX isolation layer interfaces
-//void vmx_initialize(VCPU *vcpu);
-void vmx_runtime_exception_handler(u32 vector, struct regs *r);
-u32 vmx_isbsp(void);
-void vmx_wakeup_aps(void);
-void vmx_initialize_vmcs_csrip(VCPU *vcpu, u16 cs_selector, u32 cs_base, u64 rip);
-//void vmx_apic_setup(VCPU *vcpu);
-void vmx_start_hvm(VCPU *vcpu);
-u32 vmx_intercept_handler(VCPU *vcpu, struct regs *r);
-//void vmx_do_quiesce(VCPU *vcpu);
-//void vmx_do_wakeup(VCPU *vcpu);
-void vmx_setupvcpus(u32 cpu_vendor);
-VCPU *_vmx_getvcpu(void);
-
-//other VMX isolation layer global functions
-u32 vmx_lapic_access_handler(VCPU *vcpu, u32 paddr, u32 errorcode);
-void vmx_lapic_access_dbexception(VCPU *vcpu, struct regs *r);
-u32 __vmx_start_hvm(void);
-//u32 svm_kernel_pt_walker(struct vmcb_struct *vmcb, u32 vaddr);
-void vmx_apic_wakeupAPs(void);
-void vmx_initunrestrictedguestVMCS(VCPU *vcpu);
-u32 * vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r);
-//void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gpr, u32 tofrom);
-void __vmx_loadTR(void);
-
 /* TODO: is this a reasonable home for this prototype? */
 u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus);
 
