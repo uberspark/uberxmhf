@@ -165,7 +165,7 @@ static void _svm_handle_msr(VCPU *vcpu, struct regs *r){
   vmcb->rip += 2; 
 }
 
-/*
+
 //invoked on a nested page-fault 
 //struct regs *r -> guest OS GPR state
 //win_vmcb	-> rest of the guest OS state
@@ -190,7 +190,7 @@ static void _svm_handle_npf(VCPU *vcpu, struct regs *r){
   
   return;
 }
-*/
+
 
 //---NMI handling---------------------------------------------------------------
 // note: we use NMI for core quiescing, we simply inject the others back
@@ -355,13 +355,7 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
       _svm_handle_msr(vcpu, r);
     }
     break;
-/*    
-    //this only gets called on BSP
-    //case VMEXIT_SWINT:{
-		//	_svm_handle_swint(vcpu, vmcb, r);
-		//}
-		//break;
-
+    
 	  case VMEXIT_NPF:{
 			_svm_handle_npf(vcpu, r);
     }
@@ -393,7 +387,7 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
       //initspin:
       //  goto initspin;
     }
-    break;*/
+    break;
 
     case VMEXIT_VMMCALL:{
 			//check to see if this is a hypercall for INT 15h hooking
