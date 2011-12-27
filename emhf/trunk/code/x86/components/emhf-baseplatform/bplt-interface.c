@@ -42,7 +42,7 @@
 
 //get CPU vendor
 u32 emhf_baseplatform_getcpuvendor(void){
-	return emhf_arch_getcpuvendor();
+	return emhf_arch_baseplatform_getcpuvendor();
 }
 
 //initialize SMP

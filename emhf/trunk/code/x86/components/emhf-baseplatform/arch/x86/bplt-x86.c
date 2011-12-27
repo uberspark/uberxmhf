@@ -41,7 +41,7 @@
 #include <emhf.h>
 
 //get CPU vendor
-u32 emhf_arch_getcpuvendor(void){
+u32 emhf_arch_baseplatform_getcpuvendor(void){
 	u32 vendor_dword1, vendor_dword2, vendor_dword3;
 	u32 cpu_vendor;
 	asm(	"xor	%%eax, %%eax \n"
