@@ -425,6 +425,15 @@ u32 nondet_u32();
 void main() {
 	VCPU vcpu; //VCPU variable to identify the physical core
 	struct regs r; //General Purporse Register structure
+	struct vmcb_struct *vmcb; //AMD VMCB
+  
+
+	//set VMCB virtual address to something meaningful
+	vcpu.vmcb_vaddr_ptr = 0xC0000000;	
+	vmcb = (struct vmcb_struct *)vcpu.vmcb_vaddr_ptr;
+	
+	//set VMCB event code to indicate a hypercall
+	vmcb->exitcode = VMEXIT_VMMCALL;
 	
 	//invoke the event hub intercept handler (this is where we would
 	//land up when the hardware triggers any event within the guest)
