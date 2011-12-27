@@ -20,8 +20,8 @@ export HYPOUTDIR = $(CURDIR)
 
 # TODO: Consider automating discovery of subdirs (presence of Makefile*?)
 # E.g., have a target architecure and include that version of the core
-LIBDIRS = libemhfc libemhfutil libtv_utpm libemhfcrypto
-SUBDIRS = $(LIBDIRS) $(TARGET_HWPLATFORM)
+LIBDIRS = libemhfc libemhfutil libtv_utpm libemhfcrypto 
+SUBDIRS = $(LIBDIRS) emhfcore
 
 # App's source tree root (
 export APP_ROOT := @APP_ROOT@
@@ -85,7 +85,7 @@ subdirs: $(SUBDIRS)
 
 .PHONY: init-late
 init-late: $(APP_ARCHIVE) subdirs
-	cd $(TARGET_HWPLATFORM) && make -w init-late
+	cd emhfcore && make -w init-late
 
 .PHONY: install
 install: install-dev install-bin
@@ -124,7 +124,7 @@ distclean: clean
 	$(RM) -rf Makefile
 
 init-late-clean:
-	cd $(TARGET_HWPLATFORM) && make -w init-late-clean
+	cd emhfcore && make -w init-late-clean
 	
 #-----autoconf rules
 Makefile: Makefile.in config.status
