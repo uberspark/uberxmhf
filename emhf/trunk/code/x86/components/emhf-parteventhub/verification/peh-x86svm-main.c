@@ -46,7 +46,8 @@ RPB _xrpb;
 struct vmcb_struct _xvmcb;
 
 
-GRUBE820 g_e820map[MAX_E820_ENTRIES];
+//GRUBE820 g_e820map[MAX_E820_ENTRIES];
+u8 g_e820map[MAX_E820_ENTRIES * sizeof(GRUBE820)];
 
 
 //#define ASSERT assert
@@ -64,10 +65,13 @@ void svm_lapic_access_dbexception(VCPU *vcpu, struct regs *r){
 		return;
 }
 
-void *memcpy (char *destaddr, char *srcaddr, u32 len){
- 
+void *memcpy (void *destaddr, void const *srcaddr, u32 len){
+  char *dest = destaddr;
+  char const *src = srcaddr;
+
   while (len-- > 0);
-    *destaddr++ = *srcaddr++;
+    *dest++ = *src++;
+  
   return destaddr;
 }
 
@@ -254,8 +258,13 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		//copy the e820 descriptor and return its size in ECX
 		//memcpy((char *)((u32)((vmcb->es.base)+(u16)r->edi)), (char *)&g_e820map[r->ebx],
 		//			sizeof(GRUBE820));
-		memcpy(0x2000, 0x1000, 20);
-
+		{
+			u32 destaddr = ((u32)((vmcb->es.base)+(u16)r->edi));
+			//u32 srcaddr = (u32)&g_e820map[r->ebx];
+			u32 srcaddr = (u32)&g_e820map; 
+			//memcpy((char *)0x2000, (char *)0x1000, 20);
+			memcpy((void *)destaddr, (void *)srcaddr, sizeof(GRUBE820));
+		}
 					
 		r->ecx=20;
 
