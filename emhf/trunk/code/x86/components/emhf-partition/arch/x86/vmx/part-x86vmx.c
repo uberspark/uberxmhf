@@ -222,9 +222,6 @@ static void	_vmx_int15_initializehook(VCPU *vcpu){
 void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 		u32 lodword, hidword;
 
-			//clear VMCS
-			memset((void *)&vcpu->vmcs, 0, sizeof(struct _vmx_vmcsfields));
-			
 			//setup host state
 			vcpu->vmcs.host_CR0 = read_cr0();
 			vcpu->vmcs.host_CR4 = read_cr4();
@@ -429,6 +426,10 @@ void emhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu){
 
   //initialize VT
   _vmx_initVT(vcpu);
+
+  //clear VMCS
+  memset((void *)&vcpu->vmcs, 0, sizeof(struct _vmx_vmcsfields));
+
 
 	//initialize CPU MTRRs for guest local copy
 	memset((void *)&vcpu->vmx_guestmtrrmsrs, 0, sizeof(struct _guestmtrrmsrs) * NUM_MTRR_MSRS);

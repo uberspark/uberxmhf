@@ -211,6 +211,7 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
 				u32 code=5;
 				__vmx_vmread(0x4400, &code);
 			    printf("\nCPU(0x%02x): VMLAUNCH error; code=0x%x. HALT!", vcpu->id, code);
+			    _vmx_dumpVMCS(vcpu);
 				break;
 			}
 	}
