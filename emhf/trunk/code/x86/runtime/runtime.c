@@ -151,7 +151,7 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 	//initialize core
 	//TODO: need to refactor code below into interface 
 	//emhf_baseplatform_cpuinitialize
-    if(vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+    /*if(vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     	u32 bcr0;
 	    txt_heap_t *txt_heap;
         os_mle_data_t *os_mle_data;
@@ -176,7 +176,8 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
         }
         printf("\nCPU(0x%02x): Restoring mtrrs...", vcpu->id);
         restore_mtrrs(&(os_mle_data->saved_mtrr_state));
-	}
+	}*/
+	emhf_baseplatform_cpuinitialize();
 
   //switch core into hypervisor mode
   g_isl->initialize(vcpu);
