@@ -559,7 +559,61 @@ void vmx_wakeup_aps(void){
         printf("\nBSP: Using APIC to awaken APs...");
         vmx_apic_wakeupAPs(); // apic_vmx.c
         printf("\nBSP: APs should be awake.");
-    } /* else we need to do Intel TXT wakeup. */
+    }else{
+		//we ran SENTER, so do a GETSEC[WAKEUP]
+        txt_heap_t *txt_heap;
+        os_mle_data_t *os_mle_data;
+        mle_join_t *mle_join;
+        sinit_mle_data_t *sinit_mle_data;
+        os_sinit_data_t *os_sinit_data;
+
+        /* sl.c unity-maps 0xfed00000 for 2M so these should work fine */
+        txt_heap = get_txt_heap();
+        //printf("\ntxt_heap = 0x%08x", (u32)txt_heap);
+        os_mle_data = get_os_mle_data_start(txt_heap);
+        //printf("\nos_mle_data = 0x%08x", (u32)os_mle_data);
+        sinit_mle_data = get_sinit_mle_data_start(txt_heap);
+        //printf("\nsinit_mle_data = 0x%08x", (u32)sinit_mle_data);
+        os_sinit_data = get_os_sinit_data_start(txt_heap);
+        //printf("\nos_sinit_data = 0x%08x", (u32)os_sinit_data);
+            
+        /* Start APs.  Choose wakeup mechanism based on
+         * capabilities used. MLE Dev Guide says MLEs should
+         * support both types of Wakeup mechanism. */
+
+        /* We are jumping straight into the 32-bit portion of the
+         * unity-mapped trampoline that starts at 64K
+         * physical. Without SENTER, or with AMD, APs start in
+         * 16-bit mode.  We get to skip that. */
+        printf("\nBSP: _mle_join_start = 0x%08x, _ap_bootstrap_start = 0x%08x",
+			(u32)_mle_join_start, (u32)_ap_bootstrap_start);
+
+        /* enable SMIs on BSP before waking APs (which will enable them on APs)
+           because some SMM may take immediate SMI and hang if AP gets in first */
+        //printf("Enabling SMIs on BSP\n");
+        //__getsec_smctrl();
+                
+        /* MLE Join structure constructed in runtimesup.S. Debug print. */
+        mle_join = (mle_join_t*)((u32)_mle_join_start - (u32)_ap_bootstrap_start + 0x10000); // XXX magic number
+        printf("\nBSP: mle_join.gdt_limit = %x", mle_join->gdt_limit);
+        printf("\nBSP: mle_join.gdt_base = %x", mle_join->gdt_base);
+        printf("\nBSP: mle_join.seg_sel = %x", mle_join->seg_sel);
+        printf("\nBSP: mle_join.entry_point = %x", mle_join->entry_point);                
+
+        write_priv_config_reg(TXTCR_MLE_JOIN, (uint64_t)(unsigned long)mle_join);
+
+        if (os_sinit_data->capabilities.rlp_wake_monitor) {
+            printf("\nBSP: joining RLPs to MLE with MONITOR wakeup");
+            printf("\nBSP: rlp_wakeup_addr = 0x%x", sinit_mle_data->rlp_wakeup_addr);
+            *((uint32_t *)(unsigned long)(sinit_mle_data->rlp_wakeup_addr)) = 0x01;
+        }else {
+            printf("\nBSP: joining RLPs to MLE with GETSEC[WAKEUP]");
+            __getsec_wakeup();
+            printf("\nBSP: GETSEC[WAKEUP] completed");
+        }
+		
+	} 
+	
 }
 
 //---hvm_initialize_csrip-------------------------------------------------------
