@@ -40,3 +40,14 @@
 
 #include <emhf.h>
 
+//initialize partition monitor for a given CPU
+void emhf_partition_initializemonitor(VCPU *vcpu){
+	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
+		emhf_partition_arch_x86svm_initializemonitor(vcpu);
+	}else{ //CPU_VENDOR_INTEL
+		emhf_partition_arch_x86vmx_initializemonitor(vcpu);
+	}
+
+}

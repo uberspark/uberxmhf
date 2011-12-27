@@ -50,6 +50,8 @@
 //----------------------------------------------------------------------
 //exported FUNCTIONS 
 
+//initialize partition monitor for a given CPU
+void emhf_partition_initializemonitor(VCPU *vcpu);
 
 //----------------------------------------------------------------------
 //generic arch. backends
