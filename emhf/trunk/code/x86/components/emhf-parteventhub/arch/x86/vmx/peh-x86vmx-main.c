@@ -399,7 +399,7 @@ static void _vmx_handle_intercept_eptviolation(VCPU *vcpu, struct regs *r){
 	gva = (u32) vcpu->vmcs.info_guest_linear_address;
 
 	//check if EPT violation is due to LAPIC interception
-	if(vmx_isbsp() && (gpa >= g_vmx_lapic_base) && (gpa < (g_vmx_lapic_base + PAGE_SIZE_4K)) ){
+	if(vcpu->isbsp && (gpa >= g_vmx_lapic_base) && (gpa < (g_vmx_lapic_base + PAGE_SIZE_4K)) ){
     emhf_smpguest_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
   }else{ //no, pass it to emhf app  
 	  emhf_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, gva,

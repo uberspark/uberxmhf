@@ -146,7 +146,7 @@ void emhf_arch_baseplatform_smpinitialize(void){
 void emhf_arch_x86_baseplatform_smpinitialize_commonstart(VCPU *vcpu){
 	  //step:1 rally all APs up, make sure all of them started, this is
   //a task for the BSP
-  if(g_isl->isbsp()){
+  if(emhf_arch_x86_baseplatform_isbsp()){
     vcpu->isbsp = 1;	//this core is a BSP
     
 	printf("\nBSP rallying APs...");

@@ -479,7 +479,7 @@ static void _svm_initVMCB(VCPU *vcpu){
   vmcb->rax= 0x0ULL;
   vmcb->rsp= 0x0ULL;
 
-  if(svm_isbsp()){
+  if(vcpu->isbsp){
     printf("\nBSP(0x%02x): copying boot-module to boot guest", vcpu->id);
   	memcpy((void *)__GUESTOSBOOTMODULE_BASE, (void *)rpb->XtGuestOSBootModuleBase, rpb->XtGuestOSBootModuleSize);
     vmcb->rip = 0x7c00ULL;
@@ -563,6 +563,7 @@ static void _svm_initVMCB(VCPU *vcpu){
 //global function definitions
 //==============================================================================
 
+/*
 //---svm_isbsp----------------------------------------------------------------------
 //returns 1 if the calling CPU is the BSP, else 0
 u32 svm_isbsp(void){
@@ -575,7 +576,7 @@ u32 svm_isbsp(void){
     return 1;
   else
     return 0;
-}
+}*/
 
 
 /*//---generic exception handler--------------------------------------------------
@@ -878,7 +879,7 @@ void svm_start_hvm(VCPU *vcpu){
 struct isolation_layer g_isolation_layer_svm = {
 	.initialize =	svm_initialize,
 	//.runtime_exception_handler = svm_runtime_exception_handler,
-	.isbsp = svm_isbsp,
+	//.isbsp = svm_isbsp,
 	.wakeup_aps = svm_wakeup_aps,
 	.hvm_initialize_csrip = svm_initialize_vmcb_csrip,
 	//.hvm_apic_setup = svm_apic_setup,

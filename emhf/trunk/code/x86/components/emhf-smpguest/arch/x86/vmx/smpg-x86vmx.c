@@ -189,7 +189,7 @@ void emhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu){
   u32 eax, edx;
 
 	//we should only be called from the BSP
-	ASSERT( vmx_isbsp() == 1 );	
+	ASSERT( vcpu->isbsp == 1 );	
   
   //clear virtual LAPIC page
   memset((void *)&g_vmx_virtual_LAPIC_base, 0, PAGE_SIZE_4K);

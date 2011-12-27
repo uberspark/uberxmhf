@@ -114,7 +114,7 @@ static void _svm_handle_npf(VCPU *vcpu, struct regs *r){
     //LAPIC access, xfer control to apropriate handler
     //printf("\n0x%04x:0x%08x -> LAPIC access, gpa=0x%08x, errorcode=0x%08x", 
     //  (u16)vmcb->cs.sel, (u32)vmcb->rip, gpa, errorcode);
-    ASSERT( svm_isbsp() == 1); //only BSP gets a NPF during LAPIC SIPI detection
+    ASSERT( vcpu->isbsp == 1); //only BSP gets a NPF during LAPIC SIPI detection
     //svm_lapic_access_handler(vcpu, gpa, errorcode);
     emhf_smpguest_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
     //HALT();
@@ -295,7 +295,7 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
 		break;
 
  		case VMEXIT_EXCEPTION_DB:{
-     ASSERT(svm_isbsp() == 1); //LAPIC SIPI detection only happens on BSP
+     ASSERT(vcpu->isbsp == 1); //LAPIC SIPI detection only happens on BSP
      //svm_lapic_access_dbexception(vcpu, r);
      emhf_smpguest_eventhandler_dbexception(vcpu, r);
      }

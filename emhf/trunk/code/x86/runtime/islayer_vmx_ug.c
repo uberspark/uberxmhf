@@ -483,7 +483,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 				//RSP
 				vcpu->vmcs.guest_RSP = 0x0;
 				//RIP
-			  if(vmx_isbsp()){
+			  if(vcpu->isbsp){
 			    printf("\nBSP(0x%02x): copying boot-module to boot guest", vcpu->id);
   				memcpy((void *)__GUESTOSBOOTMODULE_BASE, (void *)rpb->XtGuestOSBootModuleBase, rpb->XtGuestOSBootModuleSize);
 					vcpu->vmcs.guest_CS_selector = 0;

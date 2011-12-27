@@ -524,7 +524,7 @@ void vmx_runtime_exception_handler(u32 vector, struct regs *r){
   }	
 }*/
 
-
+/*
 //---isbsp----------------------------------------------------------------------
 //returns 1 if the calling CPU is the BSP, else 0
 u32 vmx_isbsp(void){
@@ -537,7 +537,7 @@ u32 vmx_isbsp(void){
     return 1;
   else
     return 0;
-}
+}*/
 
 
 
@@ -790,7 +790,7 @@ void vmx_setupvcpus(u32 cpu_vendor){
 struct isolation_layer g_isolation_layer_vmx = {
 	.initialize =	vmx_initialize,
 	//.runtime_exception_handler = vmx_runtime_exception_handler,
-	.isbsp = vmx_isbsp,
+	//.isbsp = vmx_isbsp,
 	.wakeup_aps = vmx_wakeup_aps,
 	.hvm_initialize_csrip = vmx_initialize_vmcs_csrip,
 	//.hvm_apic_setup = vmx_apic_setup,

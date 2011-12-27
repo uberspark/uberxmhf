@@ -617,7 +617,7 @@ struct isolation_layer {
 	
 	//void	(*runtime_exception_handler)(u32 vector, struct regs *r);
 	
-	u32		(*isbsp)(void);
+	//u32		(*isbsp)(void);
 	void 	(*wakeup_aps)(void);
 	
 	void 	(*hvm_initialize_csrip)(VCPU *vcpu, u16 cs_selector, u32 cs_base, u64 rip);
