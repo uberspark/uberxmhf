@@ -203,14 +203,6 @@ typedef struct{
 u32 acpi_getRSDP(ACPI_RSDP *rsdp);
 
 
-//TODO: move these into flat.c
-u8 flat_readu8(u32 addr);
-u32 flat_readu32(u32 addr);
-void flat_writeu32(u32 addr, u32 val);
-void flat_writeu64(u32 addr, u64 val);
-u64 flat_readu64(u32 addr);
-void flat_copy(u8 *dest, u8 *src, u32 size);
-
 #endif	//__ASSEMBLY__
 
 #endif //__ACPI_H__
