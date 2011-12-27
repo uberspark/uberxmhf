@@ -41,7 +41,7 @@
 //======================================================================
 //globals referenced by this module
 RPB *rpb; 	//runtime parameter block pointer
-
+GRUBE820 g_e820map[MAX_E820_ENTRIES];
 
 
 //======================================================================
@@ -235,10 +235,11 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		
 		ASSERT(r->edx == 0x534D4150UL);  //'SMAP' should be specified by guest
 		ASSERT(r->ebx < rpb->XtVmmE820NumEntries); //invalid continuation value specified by guest!
-		/*	
+			
+		/*
 		//copy the e820 descriptor and return its size in ECX
 		memcpy((void *)((u32)((vmcb->es.base)+(u16)r->edi)), (void *)&g_e820map[r->ebx],
-					sizeof(GRUBE820));
+					sizeof(GRUBE820));*/
 		r->ecx=20;
 
 		//set EAX to 'SMAP' as required by the service call				
@@ -298,7 +299,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 				gueststackregion[2] = guest_flags;
 			}
 		  
-		}*/
+		}
 
  	  //update RIP to execute the IRET following the VMCALL instruction
  	  //effectively returning from the INT 15 call made by the guest
