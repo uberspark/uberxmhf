@@ -119,7 +119,9 @@ clean:
 
 distclean: clean
 	$(RM) config.log config.status
-
+	# http://www.gnu.org/software/automake/manual/automake.html#Clean
+	$(RM) -rf Makefile
+	
 #-----autoconf rules
 Makefile: Makefile.in config.status
 	./config.status $@
