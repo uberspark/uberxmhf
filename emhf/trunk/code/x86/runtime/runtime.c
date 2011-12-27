@@ -151,36 +151,8 @@ void cstartup(void){
 //isEarlyInit = 1 if we were boot-strapped by the BIOS and is 0
 //in the event we were launched from a running OS
 void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
-	//initialize core
-	//TODO: need to refactor code below into interface 
-	//emhf_baseplatform_cpuinitialize
-    /*if(vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    	u32 bcr0;
-	    txt_heap_t *txt_heap;
-        os_mle_data_t *os_mle_data;
-  
-	    //set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
-		bcr0 = read_cr0();
-		bcr0 |= 0x20;
-		write_cr0(bcr0);
-
-        // restore pre-SENTER MTRRs that were overwritten for SINIT launch 
-        // NOTE: XXX TODO; BSP MTRRs ALREADY RESTORED IN SL; IS IT
-        //   DANGEROUS TO DO THIS TWICE? 
-        // sl.c unity-maps 0xfed00000 for 2M so these should work fine 
-        txt_heap = get_txt_heap();
-        //printf("\ntxt_heap = 0x%08x", (u32)txt_heap);
-        os_mle_data = get_os_mle_data_start(txt_heap);
-        //printf("\nos_mle_data = 0x%08x", (u32)os_mle_data);
-    
-        if(!validate_mtrrs(&(os_mle_data->saved_mtrr_state))) {
-             printf("\nSECURITY FAILURE: validate_mtrrs() failed.\n");
-             HALT();
-        }
-        printf("\nCPU(0x%02x): Restoring mtrrs...", vcpu->id);
-        restore_mtrrs(&(os_mle_data->saved_mtrr_state));
-	}*/
-	emhf_baseplatform_cpuinitialize();
+  //initialize CPU
+  emhf_baseplatform_cpuinitialize();
 
   //initialize partition monitor (i.e., hypervisor) for this CPU
   emhf_partition_initializemonitor(vcpu);

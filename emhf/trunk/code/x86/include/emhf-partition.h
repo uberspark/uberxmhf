@@ -53,6 +53,9 @@
 //initialize partition monitor for a given CPU
 void emhf_partition_initializemonitor(VCPU *vcpu);
 
+//setup guest OS state for the partition
+void emhf_partition_setupguestOSstate(VCPU *vcpu);
+
 //----------------------------------------------------------------------
 //generic arch. backends
 
@@ -67,6 +70,9 @@ void emhf_partition_initializemonitor(VCPU *vcpu);
 //initialize partition monitor for a given CPU
 void emhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu);
 
+//setup guest OS state for the partition
+void emhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu);
+
 
 //----------------------------------------------------------------------
 //x86svm arch. backends
@@ -74,6 +80,8 @@ void emhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu);
 //initialize partition monitor for a given CPU
 void emhf_partition_arch_x86svm_initializemonitor(VCPU *vcpu);
 
+//setup guest OS state for the partition
+void emhf_partition_arch_x86svm_setupguestOSstate(VCPU *vcpu);
 
 #endif	//__ASSEMBLY__
 

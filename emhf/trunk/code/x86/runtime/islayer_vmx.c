@@ -53,21 +53,6 @@ u8 *_vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
 
 
 
-//---initVMCS - intialize VMCS for guest boot-----------------------------------
-static void _vmx_initVMCS(VCPU *vcpu){
-  if(vcpu->vmx_guest_unrestricted){
-  	vmx_initunrestrictedguestVMCS(vcpu);
-  }else{
-		//tie in v86 monitor and setup initial guest state
-		//printf("\nCPU(0x%02x): Preparing VMCS for launch...", vcpu->id);
-		//vcpu->guest_currentstate=GSTATE_DEAD;
-		//vcpu->guest_nextstate=GSTATE_REALMODE;
-		//vcpu->guest_currentstate=isl_prepareVMCS(vcpu, NULL, vcpu->guest_currentstate, vcpu->guest_nextstate);
-		//printf("\nDone.");
-		printf("\nHALT: Fatal, v86 monitor based real-mode exec. unsupported!");
-		HALT();
-	}
-}
 
 //---function to obtain the vcpu of the currently executing core----------------
 //note: this always returns a valid VCPU pointer

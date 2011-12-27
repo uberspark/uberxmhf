@@ -51,3 +51,14 @@ void emhf_partition_initializemonitor(VCPU *vcpu){
 	}
 
 }
+
+//setup guest OS state for the partition
+void emhf_partition_setupguestOSstate(VCPU *vcpu){
+	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
+		emhf_partition_arch_x86svm_setupguestOSstate(vcpu);
+	}else{ //CPU_VENDOR_INTEL
+		emhf_partition_arch_x86vmx_setupguestOSstate(vcpu);
+	}
+}
