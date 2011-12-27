@@ -90,25 +90,3 @@ __vmx_start_hvm_failinvalid:
 	ret
 
 
-//---__vmx_loadTR---------------------------------------------------------------
-//loads TR on the core   
-.section .text
-  .global __vmx_loadTR
-  __vmx_loadTR:
-
-	pushal  
-  
-	//load TR
-	//note: we MUST clear the TSS descriptor "busy" bit before issuing
-	//the LTR instruction on Intel cores, else we will #GPF.  
-	movl $(x_gdt_start), %edi
-	xorl %eax, %eax
-	movw $(__TRSEL), %ax
-	addl %eax, %edi				//%edi is pointer to TSS descriptor in GDT
-	addl $0x4, %edi				//%edi points to top 32-bits of 64-bit TSS desc.
-	lock andl $0xFFFF00FF, (%edi)
-	lock orl  $0x00008900, (%edi)  
-	ltr %ax								//load TR
-
-	popal
-	ret
