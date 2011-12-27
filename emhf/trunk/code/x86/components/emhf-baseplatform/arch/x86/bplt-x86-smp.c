@@ -92,6 +92,7 @@ void emhf_arch_baseplatform_smpinitialize(void){
   
   //grab CPU vendor
   cpu_vendor = emhf_baseplatform_getcpuvendor();
+  ASSERT(cpu_vendor == CPU_VENDOR_AMD || cpu_vendor == CPU_VENDOR_INTEL);
   
   //setup Master-ID Table (MIDTABLE)
   {
@@ -103,9 +104,13 @@ void emhf_arch_baseplatform_smpinitialize(void){
     }
   }
 
-  //setup vcpus 
-  g_isl->setupvcpus(cpu_vendor);
-
+  //allocate and setup VCPU structure on each CPU
+  if(cpu_vendor == CPU_VENDOR_AMD)
+	emhf_arch_x86svm_baseplatform_allocandsetupvcpus(cpu_vendor);
+  else //CPU_VENDOR_INTEL
+	emhf_arch_x86vmx_baseplatform_allocandsetupvcpus(cpu_vendor);
+	
+  
   //wake up APS
   if(g_midtable_numentries > 1)
 		g_isl->wakeup_aps();
