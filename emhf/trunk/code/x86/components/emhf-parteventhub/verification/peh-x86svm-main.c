@@ -34,7 +34,7 @@
  */
 
 // peh-x86svm-main.c
-// EMHF partition event-hub for AMD x86 svm
+// EMHF partition event-hub for AMD x86 svm (verification stub)
 // author: amit vasudevan (amitvasudevan@acm.org)
 #include <emhf.h> 
 
