@@ -3,7 +3,9 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files
-AS_SOURCES =  
+AS_SOURCES =  ./arch/x86/vmx/part-x86vmx-sup.S
+AS_SOURCES +=  ./arch/x86/svm/part-x86svm-sup.S
+
 
 C_SOURCES = part-interface.c
 

@@ -5,10 +5,10 @@
 AS_SOURCES = runtimesup.S 
 C_SOURCES = runtime.c globals.c libemhf.c 
 
-AS_SOURCES += islayersup_svm.S 
+# AS_SOURCES += islayersup_svm.S 
 C_SOURCES += islayer_svm.c   
 
-AS_SOURCES += islayersup_vmx.S
+# AS_SOURCES += islayersup_vmx.S
 C_SOURCES += islayer_vmx.c islayer_vmx_ug.c  
 
 # These are the core runtime objects
@@ -66,7 +66,9 @@ OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/svm/bplt-x86svm-
 
 OBJECTS_PRECOMPILED += ../components/emhf-partition/part-interface.o
 OBJECTS_PRECOMPILED += ../components/emhf-partition/arch/x86/svm/part-x86svm.o
+OBJECTS_PRECOMPILED += ../components/emhf-partition/arch/x86/svm/part-x86svm-sup.o
 OBJECTS_PRECOMPILED += ../components/emhf-partition/arch/x86/vmx/part-x86vmx.o
+OBJECTS_PRECOMPILED += ../components/emhf-partition/arch/x86/vmx/part-x86vmx-sup.o
 
 
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
