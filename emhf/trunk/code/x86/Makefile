@@ -160,10 +160,17 @@ clean:
 	cd components/emhf-sl && $(MAKE) -w clean
 	
 	cd init && $(MAKE) -w clean
+
 	cd ./init-late/os/linux && $(MAKE) clean
+	$(RM) -rf $(HYPOUTDIR)/emhfil.ko
+	$(RM) -rf $(HYPOUTDIR)/emhfil.sh
 
 	rm -rf $(APPOBJECTSDIR)
+
 	rm -rf ./hypervisor-$(TARGET_HWPLATFORM).bin.gz
+	$(RM) -rf $(HYPOUTDIR)/init-$(TARGET_HWPLATFORM).bin
+	$(RM) -rf $(HYPOUTDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz
+
 
 .PHONY: install-dev
 install-dev:
