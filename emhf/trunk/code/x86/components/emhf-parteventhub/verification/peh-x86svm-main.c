@@ -43,7 +43,8 @@
 RPB *rpb; 	//runtime parameter block pointer
 GRUBE820 g_e820map[MAX_E820_ENTRIES];
 
-#define ASSERT assert
+/*
+//#define ASSERT assert
 //======================================================================
 //support functions
 u32 svm_isbsp(void){
@@ -59,12 +60,12 @@ void svm_lapic_access_dbexception(VCPU *vcpu, struct regs *r){
 }
 
 void *memcpy (char *destaddr, char *srcaddr, u32 len){
-/*  u8 value;
+//  u8 value;
   
-  while (len-- > 0);
-    *destaddr++ = *srcaddr++;
-    //value = *srcaddr++;
-*/
+//  while (len-- > 0);
+//    *destaddr++ = *srcaddr++;
+//    //value = *srcaddr++;
+//
   return destaddr;
 }
 
@@ -423,6 +424,7 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
 
 	return 0;
 }
+*/
 
 //----------------------------------------------------------------------
 //verification driver function
@@ -443,20 +445,23 @@ void main() {
 	struct vmcb_struct *vmcb; //AMD VMCB
 	
 	//set VMCB virtual address to something meaningful
-	vcpu.vmcb_vaddr_ptr = 0xC0000000;	
+	vcpu.vmcb_vaddr_ptr = 0x00800000;	
 	vmcb = (struct vmcb_struct *)vcpu.vmcb_vaddr_ptr;
+	assert((u32)vmcb != 0);
 
-	//setup RPB pointer and required runtime parameter block values
+/*	//setup RPB pointer and required runtime parameter block values
 	rpb = (RPB *)&_rpb;
 	rpb->XtVmmE820NumEntries = 0; 
 	
 	//setup values that the CPU would do on a hypercall event
 	vmcb->exitcode = VMEXIT_VMMCALL;
 	vmcb->rax = 0xDEADBEEF;
-	r.eax = r.ebx = r.ecx= r.edx = r.esi = r.edi = r.ebp = r.esp = 0; 	//these are dummy for now
+	r.eax = r.ebx = r.ecx= r.edx = r.esi = r.edi = r.ebp = r.esp = 0; 	//these are dummy for now*/
 
+	assert(0);
+	
 	//invoke the event hub intercept handler (this is where we would
 	//land up when the hardware triggers any event within the guest)
-	emhf_parteventhub_intercept_handler_x86svm(&vcpu, &r);
+	//emhf_parteventhub_intercept_handler_x86svm(&vcpu, &r);
 
 }
