@@ -90,7 +90,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 	return status;			
 }
 
-
+/*
 //---IO Intercept handling------------------------------------------------------
 static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs __attribute__((unused)) *r){
   ioio_info_t ioinfo;
@@ -315,7 +315,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 	vmcb->rip = ip;
 	vmcb->cs.base = cs * 16;
 	vmcb->cs.sel = cs;		 
-}
+}*/
 
 
 //---SVM intercept handler hub--------------------------------------------------
@@ -325,7 +325,7 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
   vmcb->tlb_control = TLB_CONTROL_NOTHING;
     
   switch(vmcb->exitcode){
-    //IO interception
+/*    //IO interception
  		case VMEXIT_IOIO:{
    		_svm_handle_ioio(vcpu, vmcb, r);
    	}
@@ -358,23 +358,23 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
     case VMEXIT_INIT:{
       printf("\nCPU(0x%02x): INIT intercepted, halting.", vcpu->id);
       printf("\nGuest CS:EIP=0x%04x:0x%08x", (u16)vmcb->cs.sel, (u32)vmcb->rip);
-      /*{
-        u8 *code;
-        u32 paddr;
-        int i;
-        paddr= svm_kernel_pt_walker(vmcb, (u32)vmcb->rip); 
-        code = (u8 *)paddr; 
-        printf("\nCode physical address=0x%08x\n", (u32)code);
-        for(i=0; i < 16; i++)
-          printf("0x%02x ", code[i]);
-        HALT();
-      }*/
+      //{
+      //u8 *code;
+      //u32 paddr;
+      //  int i;
+      //  paddr= svm_kernel_pt_walker(vmcb, (u32)vmcb->rip); 
+      //  code = (u8 *)paddr; 
+      //  printf("\nCode physical address=0x%08x\n", (u32)code);
+      //  for(i=0; i < 16; i++)
+      //    printf("0x%02x ", code[i]);
+      //  HALT();
+      //}
       HALT();
       
       //initspin:
       //  goto initspin;
     }
-    break;
+    break;*/
 
     case VMEXIT_VMMCALL:{
 			//check to see if this is a hypercall for INT 15h hooking
@@ -385,7 +385,7 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
 				ASSERT( !(vmcb->cr0 & CR0_PE)  ||
 					( (vmcb->cr0 & CR0_PE) && (vmcb->cr0 & CR0_PG) &&
 						(vmcb->rflags & EFLAGS_VM)  ) );
-				_svm_int15_handleintercept(vcpu, r);	
+				//_svm_int15_handleintercept(vcpu, r);	
 			}else{	//if not E820 hook, give app a chance to handle the hypercall
 				if( emhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
 					printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", vcpu->id, r->eax);
@@ -396,10 +396,10 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
     }
     break;
 
-    case VMEXIT_NMI:{
+/*    case VMEXIT_NMI:{
         _svm_handle_nmi(vcpu, vmcb, r);
       }
-      break;
+      break;*/
     
 		default:{
 				printf("\nUnhandled Intercept:0x%08llx", vmcb->exitcode);
