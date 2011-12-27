@@ -35,30 +35,63 @@
 
 /* 
  * EMHF exception handler component interface
+ * x86 arch. backend
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
- 
+
 #include <emhf.h>
 
-
 //initialize EMHF core exception handlers
-void emhf_xcphandler_initialize(void){
-	emhf_xcphandler_arch_initialize();
+void emhf_xcphandler_arch_initialize(void){
+	u32 *pexceptionstubs;
+	u32 i;
+
+	printf("\n%s: setting up runtime IDT...", __FUNCTION__);
+	
+	pexceptionstubs=(u32 *)&emhf_xcphandler_exceptionstubs;
+	
+	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
+		idtentry_t *idtentry=(idtentry_t *)((u32)&emhf_xcphandler_idt+ (i*8));
+		idtentry->isrLow= (u16)pexceptionstubs[i];
+		idtentry->isrHigh= (u16) ( (u32)pexceptionstubs[i] >> 16 );
+		idtentry->isrSelector = __CS;
+		idtentry->count=0x0;
+		idtentry->type=0x8E;
+	}
+	
+	printf("\n%s: IDT setup done.", __FUNCTION__);
 }
 
 
 //reset IDT to zeros
-void emhf_xcphandler_resetIDT(void){
-	emhf_xcphandler_arch_resetIDT();
+void emhf_xcphandler_arch_resetIDT(void){
+	memset((void *)emhf_xcphandler_idt_start, 0, EMHF_XCPHANDLER_IDTSIZE);	
+	return;
 }
 
 //get IDT start address
-u8 * emhf_xcphandler_get_idt_start(void){
-	return emhf_xcphandler_arch_get_idt_start();
+u8 * emhf_xcphandler_arch_get_idt_start(void){
+	return (u8 *)&emhf_xcphandler_idt_start;
 }
 
 
 //EMHF exception handler hub
-void emhf_xcphandler_hub(u32 vector, struct regs *r){
-	emhf_xcphandler_arch_hub(vector, r);
+void emhf_xcphandler_arch_hub(u32 vector, struct regs *r){
+	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
+	VCPU *vcpu;
+	
+	printf("\n%s: exception 0x%02x - handing off...", __FUNCTION__, vector);
+	
+	if(cpu_vendor == CPU_VENDOR_AMD){
+		vcpu=_svm_getvcpu();
+	}else{	//CPU_VENDOR_INTEL
+	    vcpu=_vmx_getvcpu();
+	}	
+	
+	printf("\nCPU(0x%02x): XtRtmExceptionHandler: Exception=0x%08X", vcpu->id, vector);
+	printf("\nCPU(0x%02x): ESP=0x%08x", vcpu->id, r->esp);
+	if(vector == 0x2){
+		emhf_smpguest_eventhandler_nmiexception(vcpu, r);
+		return;
+	}	
 }

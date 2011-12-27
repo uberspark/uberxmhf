@@ -72,6 +72,25 @@ u8 * emhf_xcphandler_get_idt_start(void);
 //EMHF exception handler hub
 void emhf_xcphandler_hub(u32 vector, struct regs *r);
 
+
+//----------------------------------------------------------------------
+// generic arch. interfaces
+
+//initialize EMHF core exception handlers
+void emhf_xcphandler_arch_initialize(void);
+
+//reset IDT to zeros
+void emhf_xcphandler_arch_resetIDT(void);
+
+//get IDT start address
+u8 * emhf_xcphandler_arch_get_idt_start(void);
+
+//EMHF exception handler hub
+void emhf_xcphandler_arch_hub(u32 vector, struct regs *r);
+
+
+
+
 #endif	//__ASSEMBLY__
 
 #endif //__EMHF_XCPHANDLER_H__
