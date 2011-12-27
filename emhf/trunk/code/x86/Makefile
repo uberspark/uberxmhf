@@ -88,6 +88,8 @@ components:
 	cd components/emhf-xcphandler && $(MAKE) -w all
 	#EMHF base platform component
 	cd components/emhf-baseplatform && $(MAKE) -w all
+	#EMHF partition component
+	cd components/emhf-partition && $(MAKE) -w all
 
 .PHONY: common
 common:
@@ -146,6 +148,7 @@ clean:
 	cd components/emhf-smpguest && $(MAKE) -w clean
 	cd components/emhf-xcphandler && $(MAKE) -w clean
 	cd components/emhf-baseplatform && $(MAKE) -w clean
+	cd components/emhf-partition && $(MAKE) -w clean
 
 	
 	cd runtime && $(MAKE) -w clean
