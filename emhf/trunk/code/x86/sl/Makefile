@@ -8,9 +8,10 @@ C_SOURCES = sl.c
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
-OBJECTS_PRECOMPILED = ../libcommon/mpsup.o ../libcommon/tpm.o ../libcommon/tpm_emhf.o ../libcommon/acpi.o ../libcommon/txt_mtrrs.o
+OBJECTS_PRECOMPILED = ../libcommon/mpsup.o ../libcommon/tpm.o ../libcommon/tpm_emhf.o ../libcommon/txt_mtrrs.o
 OBJECTS_PRECOMPILED += ../components/emhf-dmaprot/dmap-interface.o ../components/emhf-dmaprot/arch/x86/svm/dmap-x86svm.o ../components/emhf-dmaprot/arch/x86/vmx/dmap-x86vmx.o
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-pci.o
+OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-acpi.o
 
 # FIXME: ADDL_INCLUDES is overly general; sl/ doesn't need all of them
 CFLAGS += $(ADDL_INCLUDES)

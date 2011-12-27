@@ -50,6 +50,7 @@ OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/bplt-interface.o
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86.o
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-smptrampoline.o
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-pci.o
+OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-acpi.o
 
 
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
