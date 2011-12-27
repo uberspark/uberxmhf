@@ -109,6 +109,42 @@ void emhf_arch_baseplatform_smpinitialize(void){
 //common function which is entered by all CPUs upon SMP initialization
 //note: this is specific to the x86 architecture backend
 void emhf_arch_x86_baseplatform_smpinitialize_commonstart(VCPU *vcpu){
-	
+	  //step:1 rally all APs up, make sure all of them started, this is
+  //a task for the BSP
+  if(g_isl->isbsp()){
+    vcpu->isbsp = 1;	//this core is a BSP
+    
+	printf("\nBSP rallying APs...");
+    printf("\nBSP(0x%02x): My ESP is 0x%08x", vcpu->id, vcpu->esp);
+
+    //increment a CPU to account for the BSP
+    spin_lock(&g_lock_cpus_active);
+    g_cpus_active++;
+    spin_unlock(&g_lock_cpus_active);
+
+    //wait for g_cpus_active to become g_midtable_numentries -1 to indicate
+    //that all APs have been successfully started
+    while(g_cpus_active < g_midtable_numentries);
+    
+    printf("\nAPs all awake...Setting them free...");
+    spin_lock(&g_lock_ap_go_signal);
+    g_ap_go_signal=1;
+    spin_unlock(&g_lock_ap_go_signal);
+
+  
+  }else{
+    //we are an AP, so we need to simply update the AP startup counter
+    //and wait until we are told to proceed
+    //increment active CPUs
+	vcpu->isbsp=0;	//this core is a AP
+
+    spin_lock(&g_lock_cpus_active);
+    g_cpus_active++;
+    spin_unlock(&g_lock_cpus_active);
+
+    while(!g_ap_go_signal); //Just wait for the BSP to tell us all is well.
+ 
+    printf("\nAP(0x%02x): My ESP is 0x%08x, proceeding...", vcpu->id, vcpu->esp);
+  }
 	
 }
