@@ -33,48 +33,15 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF partition component 
-// declarations
-// author: amit vasudevan (amitvasudevan@acm.org)
+/*
+ * EMHF partition component interface (x86 SVM backend)
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
-#ifndef __EMHF_PARTITION_H__
-#define __EMHF_PARTITION_H__
-
-
-#ifndef __ASSEMBLY__
-
-//----------------------------------------------------------------------
-//exported DATA 
-
-
-//----------------------------------------------------------------------
-//exported FUNCTIONS 
+#include <emhf.h>
 
 //initialize partition monitor for a given CPU
-void emhf_partition_initializemonitor(VCPU *vcpu);
-
-//----------------------------------------------------------------------
-//generic arch. backends
-
-
-//----------------------------------------------------------------------
-//x86 arch. backends
-
-
-//----------------------------------------------------------------------
-//x86vmx arch. backends
-
-//initialize partition monitor for a given CPU
-void emhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu);
-
-
-//----------------------------------------------------------------------
-//x86svm arch. backends
-
-//initialize partition monitor for a given CPU
-void emhf_partition_arch_x86svm_initializemonitor(VCPU *vcpu);
-
-
-#endif	//__ASSEMBLY__
-
-#endif //__EMHF_PARTITION_H__
+void emhf_partition_arch_x86svm_initializemonitor(VCPU *vcpu){
+	
+	
+}
