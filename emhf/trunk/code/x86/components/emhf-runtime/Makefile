@@ -21,6 +21,11 @@ ifeq ($(DEBUG_VGA), y)
 OBJECTS_PRECOMPILED += ../emhf-debug/dbg_vgamem.o
 endif
 
+OBJECTS_PRECOMPILED += ../emhf-tpm/tpm.o
+OBJECTS_PRECOMPILED += ../emhf-tpm/tpm_emhf.o
+OBJECTS_PRECOMPILED += ../emhf-tpm/tpm_extra.o
+
+
 OBJECTS_PRECOMPILED += ../emhf-memprot/emhf-memprot.o
 OBJECTS_PRECOMPILED += ../emhf-memprot/arch/vmx/emhf-memprot-vmx.o
 OBJECTS_PRECOMPILED += ../emhf-memprot/arch/svm/emhf-memprot-svm.o
