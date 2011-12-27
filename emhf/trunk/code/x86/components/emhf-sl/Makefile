@@ -8,29 +8,31 @@ C_SOURCES = sl.c
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
-OBJECTS_PRECOMPILED = ../libcommon/tpm.o ../libcommon/tpm_emhf.o 
-OBJECTS_PRECOMPILED += ../components/emhf-dmaprot/dmap-interface.o 
-OBJECTS_PRECOMPILED += ../components/emhf-dmaprot/arch/x86/svm/dmap-x86svm.o 
-OBJECTS_PRECOMPILED += ../components/emhf-dmaprot/arch/x86/vmx/dmap-x86vmx.o
+OBJECTS_PRECOMPILED = ../../libcommon/tpm.o ../../libcommon/tpm_emhf.o 
 
-OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/bplt-interface.o
-OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86.o
-OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-pci.o
-OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-acpi.o
-OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-smplock.o
-OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-addressing.o
+#tie components used by SL
+OBJECTS_PRECOMPILED += ../emhf-dmaprot/dmap-interface.o 
+OBJECTS_PRECOMPILED += ../emhf-dmaprot/arch/x86/svm/dmap-x86svm.o 
+OBJECTS_PRECOMPILED += ../emhf-dmaprot/arch/x86/vmx/dmap-x86vmx.o
 
-OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/vmx/bplt-x86vmx.o
-OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/vmx/bplt-x86vmx-mtrrs.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/bplt-interface.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86-pci.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86-acpi.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86-smplock.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86-addressing.o
+
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/vmx/bplt-x86vmx.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/vmx/bplt-x86vmx-mtrrs.o
 
 # FIXME: ADDL_INCLUDES is overly general; sl/ doesn't need all of them
 CFLAGS += $(ADDL_INCLUDES)
 
 ifeq ($(DEBUG_SERIAL), y)
-OBJECTS_PRECOMPILED += ../libcommon/dbg_printf.o ../libcommon/dbg_uart.o
+OBJECTS_PRECOMPILED += ../../libcommon/dbg_printf.o ../../libcommon/dbg_uart.o
 endif
 ifeq ($(DEBUG_VGA), y)
-OBJECTS_PRECOMPILED += ../libcommon/dbg_printf.o ../libcommon/dbg_vgamem.o
+OBJECTS_PRECOMPILED += ../../libcommon/dbg_printf.o ../../libcommon/dbg_vgamem.o
 endif
 
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
@@ -54,9 +56,9 @@ sl.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) sl.lds.S
 	$(STRIP) -s sl.exe
 	$(OBJCOPY) --output-format=binary sl.exe sl.bin
 
-%.o: %.S $(I_SOURCES) Makefile ../Makefile	../../../Makefile
+%.o: %.S $(I_SOURCES) Makefile ../../Makefile
 	$(CC) -c $(ASFLAGS) -o $@ $<
-%.o: %.c $(I_SOURCES) Makefile ../Makefile	../../../Makefile
+%.o: %.c $(I_SOURCES) Makefile ../../Makefile
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 .PHONY: clean 
