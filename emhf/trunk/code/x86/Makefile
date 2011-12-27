@@ -166,7 +166,6 @@ clean:
 	
 	cd init && $(MAKE) -w clean
 	cd ./init-late/os/linux && $(MAKE) clean
-	cd libcommon && $(MAKE) -w clean
 
 	rm -rf $(APPOBJECTSDIR)
 	rm -rf ./hypervisor-$(TARGET_HWPLATFORM).bin.gz
