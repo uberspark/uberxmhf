@@ -38,7 +38,6 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <emhf.h> 
-#include <hpt.h>
 
 // initialize memory protection structures for a given core (vcpu)
 void emhf_memprot_initialize(VCPU *vcpu){
@@ -104,10 +103,9 @@ spa_t emhf_memprot_get_current_root_pagemap_address(VCPU *vcpu){
   ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
   
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-          return hpt_cr3_get_address(HPT_TYPE_PAE,
-                                     ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3);
+          return (spa_t)((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3; 
 	else //CPU_VENDOR_INTEL
-          return hpt_eptp_get_address(HPT_TYPE_EPT, vcpu->vmcs.control_EPT_pointer_full);
+          return (spa_t)vcpu->vmcs.control_EPT_pointer_full;
 }
 
 //set current root page map address
@@ -115,13 +113,9 @@ void emhf_memprot_set_current_root_pagemap_address(VCPU *vcpu, spa_t root){
   ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
   
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-          ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3 =
-            hpt_cr3_set_address(HPT_TYPE_PAE,
-                                ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3, root);
+          ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3 = root;
 	else //CPU_VENDOR_INTEL
-          vcpu->vmcs.control_EPT_pointer_full =
-            hpt_eptp_set_address(HPT_TYPE_EPT,
-                                 vcpu->vmcs.control_EPT_pointer_full, root);
+          vcpu->vmcs.control_EPT_pointer_full = root;
 }
 
 
