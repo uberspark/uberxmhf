@@ -2,7 +2,7 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files
-AS_SOURCES = $(wildcard *.S)
+AS_SOURCES = 
 C_SOURCES = dbg_printf.c dbg_vgamem.c txt_mtrrs.c tpm.c tpm_extra.c tpm_emhf.c  
 
 ifeq ($(DEBUG_SERIAL), y)

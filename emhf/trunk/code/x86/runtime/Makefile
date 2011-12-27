@@ -52,6 +52,7 @@ OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-smptram
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-pci.o
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-acpi.o
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-pit.o
+OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-smplock.o
 
 
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
