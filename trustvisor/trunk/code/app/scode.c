@@ -1275,36 +1275,36 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
 	dprintf(LOG_TRACE, "[TV] ************************************\n");
 
 	/* marshalling parameters back to regular code */
-	if (!scode_unmarshall(vcpu)){
-
-		/* release shared pages */
-		scode_release_all_shared_pages(vcpu, &whitelist[curr]);
-
-		/* clear the NPT permission setting in switching into scode */
-		dprintf(LOG_TRACE, "[TV] change NPT permission to exit PAL!\n"); 
-		VCPU_set_current_root_pm(vcpu, g_reg_npmo_root.pm);
-		VCPU_gcr3_set(vcpu, whitelist[curr].gcr3);
-		emhf_hwpgtbl_flushall(vcpu); /* XXX */
-
-		/* switch back to regular stack */
-		dprintf(LOG_TRACE, "[TV] switch from scode stack %#x back to regular stack %#x\n", (u32)VCPU_grsp(vcpu), (u32)whitelist[curr].grsp);
-		VCPU_grsp_set(vcpu, whitelist[curr].grsp + 4);
-		whitelist[curr].grsp = (u32)-1;
-
-		/* enable interrupts */
-		VCPU_grflags_set(vcpu, VCPU_grflags(vcpu) | EFLAGS_IF);
-
-		dprintf(LOG_TRACE, "[TV] stack pointer before exiting scode is %#x\n",(u32)VCPU_grsp(vcpu));
-
-		/* return to actual return address */
-		VCPU_grip_set(vcpu, whitelist[curr].return_v);
-
-		perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_REGULAR], vcpu->idx);
-
-		return 0;
+	if (scode_unmarshall(vcpu)){
+		dprintf(LOG_ERROR, "hpt_scode_switch_regular: error in scode_unmarshall\n");
+		return 1;
 	}
-	/* error in scode unmarshalling */
-	return 1;
+
+	/* release shared pages */
+	scode_release_all_shared_pages(vcpu, &whitelist[curr]);
+
+	/* clear the NPT permission setting in switching into scode */
+	dprintf(LOG_TRACE, "[TV] change NPT permission to exit PAL!\n"); 
+	VCPU_set_current_root_pm(vcpu, g_reg_npmo_root.pm);
+	VCPU_gcr3_set(vcpu, whitelist[curr].gcr3);
+	emhf_hwpgtbl_flushall(vcpu); /* XXX */
+
+	/* switch back to regular stack */
+	dprintf(LOG_TRACE, "[TV] switch from scode stack %#x back to regular stack %#x\n", (u32)VCPU_grsp(vcpu), (u32)whitelist[curr].grsp);
+	VCPU_grsp_set(vcpu, whitelist[curr].grsp + 4);
+	whitelist[curr].grsp = (u32)-1;
+
+	/* enable interrupts */
+	VCPU_grflags_set(vcpu, VCPU_grflags(vcpu) | EFLAGS_IF);
+
+	dprintf(LOG_TRACE, "[TV] stack pointer before exiting scode is %#x\n",(u32)VCPU_grsp(vcpu));
+
+	/* return to actual return address */
+	VCPU_grip_set(vcpu, whitelist[curr].return_v);
+
+	perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_REGULAR], vcpu->idx);
+
+	return 0;
 }
 
 static bool hpt_error_wasInsnFetch(VCPU *vcpu, u64 errorcode)
