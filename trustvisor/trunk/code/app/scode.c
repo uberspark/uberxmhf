@@ -605,9 +605,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 		reg_gpmo_root = (hpt_pmo_t) {
 			.t = guest_t,
 			.lvl = hpt_root_lvl(guest_t),
-			.pm = ((guest_t == HPT_TYPE_PAE)
-						 ? gpa2hva(pae_get_addr_from_32bit_cr3(VCPU_gcr3(vcpu)))
-						 : gpa2hva(npae_get_addr_from_32bit_cr3(VCPU_gcr3(vcpu))))
+			.pm = gpa2hva(hpt_cr3_get_address(guest_t, VCPU_gcr3(vcpu))),
 		};
 		dprintf(LOG_TRACE, "is-pae:%d, gcr3:%016llx, pae_get_addr:%08x npae_get_addr:%08x pm:%p\n",
 						(guest_t == HPT_TYPE_PAE),
