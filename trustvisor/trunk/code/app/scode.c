@@ -57,6 +57,11 @@ static void scode_unexpose_arch(VCPU *vcpu, whitelist_entry_t *wle);
 hpt_walk_ctx_t hpt_nested_walk_ctx;
 hpt_walk_ctx_t hpt_guest_walk_ctx;
 
+/* this is the return address we push onto the stack when entering the
+	 pal. We return to the reg world on a nested page fault on
+	 instruction fetch of this address */
+#define RETURN_FROM_PAL_ADDRESS 0x00000004
+
 /* whitelist of all approved sensitive code regions */
 /* whitelist_max and *whitelist is set up by BSP, no need to apply lock
  * whitelist_size will only be updated in scode_register() and scode_unreg(), no need to apply lock
@@ -714,12 +719,42 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 										&pal_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
 										whitelist_new.gpl);
 
+		/* we add the page containing the designated return address to the
+			 guest page tables, but not the nested page tables. failure to
+			 add to the guest page tables will cause a triple fault in the
+			 guest. */
+		{
+			hpt_pmeo_t pmeo = {
+				.pme = 0,
+				.t = pal_gpmo_root.t,
+				.lvl = 1,
+			};
+			int hpt_err;
+			hpt_pmeo_setprot(&pmeo, HPT_PROTS_RX);
+			hpt_pmeo_setuser(&pmeo, true);
+			/* the gpa address here shouldn't matter, so long as it's one not
+				 accessible by the pal. we'll also set that to the sentinel
+				 return address value
+			*/
+			hpt_pmeo_set_address(&pmeo, RETURN_FROM_PAL_ADDRESS);
+
+			dprintf(LOG_TRACE, "[TV] generated pme for return gva address %x: lvl:%d %llx\n",
+							RETURN_FROM_PAL_ADDRESS, pmeo.lvl, pmeo.pme);
+			hpt_err = hpt_walk_insert_pmeo_alloc(&whitelist_new.hpt_guest_walk_ctx,
+																					 &pal_gpmo_root,
+																					 &pmeo,
+																					 RETURN_FROM_PAL_ADDRESS);
+			ASSERT(!hpt_err);
+		}
+
 		whitelist_new.pal_npt_root = pal_npmo_root;
 		whitelist_new.pal_gpt_root = pal_gpmo_root;
 		whitelist_new.reg_gpt_root = reg_gpmo_root;
 		whitelist_new.pal_gcr3 = hpt_cr3_set_address(whitelist_new.pal_gpt_root.t,
 																								 VCPU_gcr3(vcpu), /* XXX should build trusted cr3 from scratch */
 																								 hva2gpa(whitelist_new.pal_gpt_root.pm));
+
+
 		/* XXX flush TLB to ensure 'reg' is now correctly denied access */
 	}
 	/********************************/
@@ -1199,45 +1234,10 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 	VCPU_grsp_set(vcpu, VCPU_grsp(vcpu)-4);
 	put_32bit_aligned_value_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
 																	 &whitelist[curr].pal_gpt_root,
-																	 (u32)VCPU_grsp(vcpu), addr);
+																	 (u32)VCPU_grsp(vcpu), RETURN_FROM_PAL_ADDRESS);
 	/* store the return address in whitelist structure */
 	whitelist[curr].return_v = addr;
 	dprintf(LOG_TRACE, "[TV] scode return vaddr is %#x\n", whitelist[curr].return_v);
-
-	/* we add the page containing the return address to the
-		 guest page tables, but not the nested page tables. failure to
-		 add to the guest page tables will cause a triple fault in the
-		 guest. */
-	{
-		hpt_pmeo_t pmeo = {
-			.pme = 0,
-			.t = whitelist[curr].pal_gpt_root.t,
-			.lvl = 1,
-		};
-		hpt_pmeo_t orig;
-		int hpt_err;
-		hpt_walk_get_pmeo(&orig,
-											&whitelist[curr].hpt_guest_walk_ctx,
-											&whitelist[curr].reg_gpt_root,
-											1,
-											addr);
-		hpt_pmeo_setprot(&pmeo, HPT_PROTS_RX);
-		hpt_pmeo_setuser(&pmeo, true);
-		/* the gpa address here shouldn't matter, so long as it's one not
-			 accessible by the pal.  we'll copy the original for now to be
-			 cautious */
-		hpt_pmeo_set_address(&pmeo, hpt_pmeo_get_address(&orig));
-
-		dprintf(LOG_TRACE, "[TV] original pme for return gva address %x: lvl:%d %llx\n",
-						addr, orig.lvl, orig.pme);
-		dprintf(LOG_TRACE, "[TV] generated pme for return gva address %x: lvl:%d %llx\n",
-						addr, pmeo.lvl, pmeo.pme);
-		hpt_err = hpt_walk_insert_pmeo_alloc(&whitelist[curr].hpt_guest_walk_ctx,
-																				 &whitelist[curr].pal_gpt_root,
-																				 &pmeo,
-																				 addr);
-		ASSERT(!hpt_err);
-	}
 
 	dprintf(LOG_TRACE, "[TV] host stack pointer before running scode is %#x\n",(u32)VCPU_grsp(vcpu));
 
@@ -1381,6 +1381,9 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
 
 		dprintf(LOG_TRACE, "[TV] stack pointer before exiting scode is %#x\n",(u32)VCPU_grsp(vcpu));
 
+		/* return to actual return address */
+		VCPU_grip_set(vcpu, whitelist[curr].return_v);
+
 		perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_REGULAR], vcpu->idx);
 
 		return 0;
@@ -1447,7 +1450,7 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
 	} else if ((*curr >=0) && (index < 0)) {
 		/* sensitive code to regular code */
 
-		if (whitelist[*curr].return_v != rip) {
+		if (RETURN_FROM_PAL_ADDRESS != rip) {
 			dprintf(LOG_ERROR, "[TV] SECURITY: invalid scode return point!\n");
 			goto npf_error;
 		}
