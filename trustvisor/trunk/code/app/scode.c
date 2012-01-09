@@ -782,17 +782,6 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 		return 1;
 	}
 
-	/* register guest page table pages. TODO: cloneguest page table
-		 instead of checking on every switch to ensure it hasn't been
-		 tampered. */
-	scode_expose_arch(vcpu, &whitelist_new);
-	hpt_insert_pal_pmes(vcpu, &whitelist_new.hpt_nested_walk_ctx,
-											whitelist_new.pal_npt_root.pm,
-											whitelist_new.pal_npt_root.lvl,
-											whitelist_new.pte_page,
-											whitelist_new.pte_size>>PAGE_SHIFT_4K);
-	scode_unexpose_arch(vcpu, &whitelist_new);
-
 	/* initialize Micro-TPM instance */
 	utpm_init_instance(&whitelist_new.utpm);
 
