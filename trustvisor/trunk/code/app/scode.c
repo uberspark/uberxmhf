@@ -1096,9 +1096,6 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 	VCPU_gcr3_set(vcpu, whitelist[curr].pal_gcr3);
 	emhf_hwpgtbl_flushall(vcpu); /* XXX */
 
-	/* hpt_nested_switch_scode(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size, */
-	/* 												whitelist[curr].pte_page, whitelist[curr].pte_size); */
-		
 	/* disable interrupts */
 	VCPU_grflags_set(vcpu, VCPU_grflags(vcpu) & ~EFLAGS_IF);
 
@@ -1228,8 +1225,6 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
 		VCPU_set_current_root_pm(vcpu, VCPU_get_default_root_pm(vcpu));
 		VCPU_gcr3_set(vcpu, whitelist[curr].gcr3);
 		emhf_hwpgtbl_flushall(vcpu); /* XXX */
-		/* hpt_nested_switch_regular(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size, */
-		/* 													whitelist[curr].pte_page, whitelist[curr].pte_size); */
 
 		/* release shared pages */
 		scode_release_all_shared_pages(vcpu, &whitelist[curr]);
