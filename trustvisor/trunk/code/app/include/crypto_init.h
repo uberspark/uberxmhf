@@ -53,7 +53,6 @@ int trustvisor_master_crypto_init(void);
 
 /* Local Variables: */
 /* mode:c           */
-/* indent-tabs-mode:'t */
-/* tab-width:2      */
+/* indent-tabs-mode:nil */
+/* c-basic-offset:2 */
 /* End:             */
-

@@ -51,350 +51,349 @@ void setuplinuxboot(VCPU *vcpu, u32 vmlinuz_base, u32 vmlinuz_size,
 
 // a placeholder for now...
 u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
-	printf("\nCPU(0x%02x): Hello world from sechyp app!", vcpu->id);
+  printf("\nCPU(0x%02x): Hello world from sechyp app!", vcpu->id);
 
 #ifdef __MP_VERSION__
-	if (vcpu->isbsp) 
+  if (vcpu->isbsp) 
 #endif
-	{
-		printf("[TV] CPU(0x%02x): init scode!\n", vcpu->id);
-		init_scode(vcpu);
+    {
+      printf("[TV] CPU(0x%02x): init scode!\n", vcpu->id);
+      init_scode(vcpu);
 
 
-		//sanity checks
-	//	ASSERT( apb->bootsector_size > 0 && apb->optionalmodule_size > 0 );
+      //sanity checks
+      //	ASSERT( apb->bootsector_size > 0 && apb->optionalmodule_size > 0 );
 
-		if (apb->optionalmodule_ptr) {
-			printf("\nCPU(0x%02x): vmlinuz b=0x%08x, size=%u bytes", vcpu->id,
-					apb->bootsector_ptr, apb->bootsector_size);
-			printf("\nCPU(0x%02x): initramfs b=0x%08x, size=%u bytes", vcpu->id,
-					apb->optionalmodule_ptr, apb->optionalmodule_size);
+      if (apb->optionalmodule_ptr) {
+        printf("\nCPU(0x%02x): vmlinuz b=0x%08x, size=%u bytes", vcpu->id,
+               apb->bootsector_ptr, apb->bootsector_size);
+        printf("\nCPU(0x%02x): initramfs b=0x%08x, size=%u bytes", vcpu->id,
+               apb->optionalmodule_ptr, apb->optionalmodule_size);
 
-			setuplinuxboot(vcpu, apb->bootsector_ptr, apb->bootsector_size, 
-					apb->optionalmodule_ptr, apb->optionalmodule_size);
-		}
+        setuplinuxboot(vcpu, apb->bootsector_ptr, apb->bootsector_size, 
+                       apb->optionalmodule_ptr, apb->optionalmodule_size);
+      }
 
-	}
+    }
 
-	return APP_INIT_SUCCESS;  //successful
+  return APP_INIT_SUCCESS;  //successful
 }
 
 u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 {	
-	struct vmcb_struct * linux_vmcb;
-	u32 cmd;
+  struct vmcb_struct * linux_vmcb;
+  u32 cmd;
 
-	u32 status = APP_SUCCESS;
-	u32 ret = 0;
+  u32 status = APP_SUCCESS;
+  u32 ret = 0;
 
-	if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-		cmd = (u32)r->eax;
-		linux_vmcb = 0;
-	} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-		linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
-		cmd = (u32)linux_vmcb->rax;
-	} else {
-		printf("unknow cpu vendor type!\n");
-		HALT();
-	}
+  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+    cmd = (u32)r->eax;
+    linux_vmcb = 0;
+  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+    linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
+    cmd = (u32)linux_vmcb->rax;
+  } else {
+    printf("unknow cpu vendor type!\n");
+    HALT();
+  }
 
-	switch (cmd)
-	{
-		case TV_HC_TEST:
-			{
-				printf("\nCPU(0x%02x): Hello world from sechyp vmmcall handler!", vcpu->id);
-				ret = 0;
-				break;
-			}
-			/* register the scode */
-		case TV_HC_REG:
-			{
-				u32 scode_info, /*scode_sp,*/ scode_pm, scode_en;
-				/* sensitive code as guest virtual address in ecx */
-				scode_info = r->ecx;
-				/* sensitive code params information addres in esi */
-				scode_pm = r->esi;
-				/* sensitive code entry point in edi */
-				scode_en = r->edi;
-
-#ifdef __MP_VERSION__
-				/* quiesce othe CPUs */
-				emhf_smpguest_quiesce(vcpu);
-#endif
-
-				/* do atomic scode registration */
-				ret = scode_register(vcpu, scode_info, scode_pm, scode_en);
+  switch (cmd)
+    {
+    case TV_HC_TEST:
+      {
+        printf("\nCPU(0x%02x): Hello world from sechyp vmmcall handler!", vcpu->id);
+        ret = 0;
+        break;
+      }
+      /* register the scode */
+    case TV_HC_REG:
+      {
+        u32 scode_info, /*scode_sp,*/ scode_pm, scode_en;
+        /* sensitive code as guest virtual address in ecx */
+        scode_info = r->ecx;
+        /* sensitive code params information addres in esi */
+        scode_pm = r->esi;
+        /* sensitive code entry point in edi */
+        scode_en = r->edi;
 
 #ifdef __MP_VERSION__
-				/* wake up other CPUs */
-				emhf_smpguest_endquiesce(vcpu);
+        /* quiesce othe CPUs */
+        emhf_smpguest_quiesce(vcpu);
 #endif
-				break;
-			}
 
-			/* unregister the scode */
-		case TV_HC_UNREG:
-			{
-				u32 scode_gva;
-				/* sensitive code as guest virtual address in ecx */
-				scode_gva = r->ecx;
+        /* do atomic scode registration */
+        ret = scode_register(vcpu, scode_info, scode_pm, scode_en);
 
 #ifdef __MP_VERSION__
-				/* quiesce othe CPUs */
-				emhf_smpguest_quiesce(vcpu);
+        /* wake up other CPUs */
+        emhf_smpguest_endquiesce(vcpu);
 #endif
+        break;
+      }
 
-				/* do atomic scode unregistration */
-				ret = scode_unregister(vcpu, scode_gva);
+      /* unregister the scode */
+    case TV_HC_UNREG:
+      {
+        u32 scode_gva;
+        /* sensitive code as guest virtual address in ecx */
+        scode_gva = r->ecx;
 
 #ifdef __MP_VERSION__
-				/* wake up other CPUs */
-				emhf_smpguest_endquiesce(vcpu);
+        /* quiesce othe CPUs */
+        emhf_smpguest_quiesce(vcpu);
 #endif
-				break;
-			}
-			/* seal data */
-		case TV_HC_UTPM_SEAL_DEPRECATED:
-			{
-				u32 inbuf, outbuf, data_addr, data_len, pcr_addr, out_addr, out_len_addr;
-				inbuf = r->ecx;
-				outbuf = r->esi;
-				data_addr = get_32bit_aligned_value_from_current_guest(vcpu, inbuf); 
-				data_len = get_32bit_aligned_value_from_current_guest(vcpu, inbuf+4);
-				/* valid pcr value for unseal in edx */
-				pcr_addr = r->edx;
-				out_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf);
-				out_len_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf+4);
 
-				ret = hc_utpm_seal_deprecated(vcpu, data_addr, data_len, pcr_addr, out_addr, out_len_addr);
+        /* do atomic scode unregistration */
+        ret = scode_unregister(vcpu, scode_gva);
 
-				break;
-			}
-			/* unseal data */
-		case TV_HC_UTPM_UNSEAL:
-		  {
-				u32 inbuf, outbuf, input_addr, in_len, out_addr, out_len_addr, digestAtCreation_addr;
-				inbuf = r->ecx;
-				outbuf = r->edx;
+#ifdef __MP_VERSION__
+        /* wake up other CPUs */
+        emhf_smpguest_endquiesce(vcpu);
+#endif
+        break;
+      }
+      /* seal data */
+    case TV_HC_UTPM_SEAL_DEPRECATED:
+      {
+        u32 inbuf, outbuf, data_addr, data_len, pcr_addr, out_addr, out_len_addr;
+        inbuf = r->ecx;
+        outbuf = r->esi;
+        data_addr = get_32bit_aligned_value_from_current_guest(vcpu, inbuf); 
+        data_len = get_32bit_aligned_value_from_current_guest(vcpu, inbuf+4);
+        /* valid pcr value for unseal in edx */
+        pcr_addr = r->edx;
+        out_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf);
+        out_len_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf+4);
 
-				input_addr = get_32bit_aligned_value_from_current_guest(vcpu, inbuf);
-				in_len = get_32bit_aligned_value_from_current_guest(vcpu, inbuf+4);
-				out_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf);
-				out_len_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf+4);
-				digestAtCreation_addr = r->esi;				
+        ret = hc_utpm_seal_deprecated(vcpu, data_addr, data_len, pcr_addr, out_addr, out_len_addr);
+
+        break;
+      }
+      /* unseal data */
+    case TV_HC_UTPM_UNSEAL:
+      {
+        u32 inbuf, outbuf, input_addr, in_len, out_addr, out_len_addr, digestAtCreation_addr;
+        inbuf = r->ecx;
+        outbuf = r->edx;
+
+        input_addr = get_32bit_aligned_value_from_current_guest(vcpu, inbuf);
+        in_len = get_32bit_aligned_value_from_current_guest(vcpu, inbuf+4);
+        out_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf);
+        out_len_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf+4);
+        digestAtCreation_addr = r->esi;				
 				
-				ret = hc_utpm_unseal(vcpu, input_addr, in_len, out_addr, out_len_addr, digestAtCreation_addr);
-			}
+        ret = hc_utpm_unseal(vcpu, input_addr, in_len, out_addr, out_len_addr, digestAtCreation_addr);
+      }
       break;
-		case TV_HC_UTPM_SEAL:
-		  {
-				u32 inbuf, outbuf, data_addr, data_len, pcrinfo_addr, out_addr, out_len_addr;
-				inbuf = r->ecx;
-				outbuf = r->esi;
-				data_addr = get_32bit_aligned_value_from_current_guest(vcpu, inbuf); 
-				data_len = get_32bit_aligned_value_from_current_guest(vcpu, inbuf+4);
-				/* valid pcr value for unseal in edx */
-				pcrinfo_addr = r->edx;
-				out_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf);
-				out_len_addr = get_32bit_aligned_value_from_current_guest(vcpu,outbuf+4);
+    case TV_HC_UTPM_SEAL:
+      {
+        u32 inbuf, outbuf, data_addr, data_len, pcrinfo_addr, out_addr, out_len_addr;
+        inbuf = r->ecx;
+        outbuf = r->esi;
+        data_addr = get_32bit_aligned_value_from_current_guest(vcpu, inbuf); 
+        data_len = get_32bit_aligned_value_from_current_guest(vcpu, inbuf+4);
+        /* valid pcr value for unseal in edx */
+        pcrinfo_addr = r->edx;
+        out_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf);
+        out_len_addr = get_32bit_aligned_value_from_current_guest(vcpu,outbuf+4);
 
-				ret = hc_utpm_seal(vcpu, data_addr, data_len, pcrinfo_addr, out_addr, out_len_addr);
-			}
-			break;
-		case TV_HC_UTPM_UNSEAL_DEPRECATED:
-			{
-				u32 inbuf, outbuf, input_addr, in_len, out_addr, out_len_addr;
-				inbuf = r->ecx;
-				outbuf = r->edx;
+        ret = hc_utpm_seal(vcpu, data_addr, data_len, pcrinfo_addr, out_addr, out_len_addr);
+      }
+      break;
+    case TV_HC_UTPM_UNSEAL_DEPRECATED:
+      {
+        u32 inbuf, outbuf, input_addr, in_len, out_addr, out_len_addr;
+        inbuf = r->ecx;
+        outbuf = r->edx;
 
-				input_addr = get_32bit_aligned_value_from_current_guest(vcpu, inbuf);
-				in_len = get_32bit_aligned_value_from_current_guest(vcpu, inbuf+4);
-				out_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf);
-				out_len_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf+4);
+        input_addr = get_32bit_aligned_value_from_current_guest(vcpu, inbuf);
+        in_len = get_32bit_aligned_value_from_current_guest(vcpu, inbuf+4);
+        out_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf);
+        out_len_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf+4);
 
-				ret = hc_utpm_unseal_deprecated(vcpu, input_addr, in_len, out_addr, out_len_addr);
+        ret = hc_utpm_unseal_deprecated(vcpu, input_addr, in_len, out_addr, out_len_addr);
 
-				break;
-			}
-		case TV_HC_UTPM_QUOTE:
-		  {
-				u32 sigbuf, nonce_addr, tpmsel_addr, sig_addr, sig_len_addr,
-						pcrCompbuf, pcrComp_addr, pcrCompLen_addr;
+        break;
+      }
+    case TV_HC_UTPM_QUOTE:
+      {
+        u32 sigbuf, nonce_addr, tpmsel_addr, sig_addr, sig_len_addr,
+          pcrCompbuf, pcrComp_addr, pcrCompLen_addr;
         printf("[TV] TV_HC_UTPM_QUOTE hypercall received.\n");
-				/* address of nonce to be sealed in esi*/
-				nonce_addr = r->esi;
-				/* tpm selection data address in ecx */
-				tpmsel_addr = r->ecx;
+        /* address of nonce to be sealed in esi*/
+        nonce_addr = r->esi;
+        /* tpm selection data address in ecx */
+        tpmsel_addr = r->ecx;
 
-				/* signature buffer and its length in array */
-				sigbuf = r->edx;
-				sig_addr = get_32bit_aligned_value_from_current_guest(vcpu, sigbuf);
-				sig_len_addr = get_32bit_aligned_value_from_current_guest(vcpu,sigbuf+4);
+        /* signature buffer and its length in array */
+        sigbuf = r->edx;
+        sig_addr = get_32bit_aligned_value_from_current_guest(vcpu, sigbuf);
+        sig_len_addr = get_32bit_aligned_value_from_current_guest(vcpu,sigbuf+4);
 
-				/* PCR Composite buffer and its length in array */
-				pcrCompbuf = r->edi;
-				pcrComp_addr = get_32bit_aligned_value_from_current_guest(vcpu, pcrCompbuf);
-				pcrCompLen_addr = get_32bit_aligned_value_from_current_guest(vcpu, pcrCompbuf+4);
+        /* PCR Composite buffer and its length in array */
+        pcrCompbuf = r->edi;
+        pcrComp_addr = get_32bit_aligned_value_from_current_guest(vcpu, pcrCompbuf);
+        pcrCompLen_addr = get_32bit_aligned_value_from_current_guest(vcpu, pcrCompbuf+4);
 				
-				ret = hc_utpm_quote(vcpu, nonce_addr, tpmsel_addr, sig_addr, sig_len_addr, pcrComp_addr, pcrCompLen_addr);
+        ret = hc_utpm_quote(vcpu, nonce_addr, tpmsel_addr, sig_addr, sig_len_addr, pcrComp_addr, pcrCompLen_addr);
 
-				break;
-			}
+        break;
+      }
     case TV_HC_UTPM_ID_GETPUB:
-		  {
+      {
         u32 addr;
-				addr = r->ecx;
-				ret = hc_utpm_utpm_id_getpub(vcpu, addr);
-				break;
-			}
-		case TV_HC_UTPM_QUOTE_DEPRECATED:
-			{
-				u32 outbuf, nonce_addr, tpmsel_addr, out_addr, out_len_addr;
-				/* address of nonce to be sealed in esi*/
-				nonce_addr = r->esi;
-				/* tpm selection data address in ecx */
-				tpmsel_addr = r->ecx;
+        addr = r->ecx;
+        ret = hc_utpm_utpm_id_getpub(vcpu, addr);
+        break;
+      }
+    case TV_HC_UTPM_QUOTE_DEPRECATED:
+      {
+        u32 outbuf, nonce_addr, tpmsel_addr, out_addr, out_len_addr;
+        /* address of nonce to be sealed in esi*/
+        nonce_addr = r->esi;
+        /* tpm selection data address in ecx */
+        tpmsel_addr = r->ecx;
 
-				outbuf = r->edx;
-				out_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf);
-				out_len_addr = get_32bit_aligned_value_from_current_guest(vcpu,outbuf+4);
+        outbuf = r->edx;
+        out_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf);
+        out_len_addr = get_32bit_aligned_value_from_current_guest(vcpu,outbuf+4);
 
-				ret = hc_utpm_quote_deprecated(vcpu,nonce_addr,tpmsel_addr,out_addr,out_len_addr);
+        ret = hc_utpm_quote_deprecated(vcpu,nonce_addr,tpmsel_addr,out_addr,out_len_addr);
 
-				break;
-			}
-		case TV_HC_SHARE:
-			{
-				u32 scode_entry, addrs_gva, lens_gva, count;
-				u32 *addrs=NULL, *lens=NULL;
+        break;
+      }
+    case TV_HC_SHARE:
+      {
+        u32 scode_entry, addrs_gva, lens_gva, count;
+        u32 *addrs=NULL, *lens=NULL;
 
-				scode_entry = r->ecx;
+        scode_entry = r->ecx;
 
-				addrs_gva = r->edx;
-				lens_gva = r->esi;
-				count = r->edi;
+        addrs_gva = r->edx;
+        lens_gva = r->esi;
+        count = r->edi;
 
-				addrs = malloc(count * sizeof(u32));
-				copy_from_current_guest(vcpu, (u8*)addrs, addrs_gva, sizeof(u32)*count);
+        addrs = malloc(count * sizeof(u32));
+        copy_from_current_guest(vcpu, (u8*)addrs, addrs_gva, sizeof(u32)*count);
 
-				lens = malloc(count * sizeof(u32));
-				copy_from_current_guest(vcpu, (u8*)lens, lens_gva, sizeof(u32)*count);
+        lens = malloc(count * sizeof(u32));
+        copy_from_current_guest(vcpu, (u8*)lens, lens_gva, sizeof(u32)*count);
 
-				if (lens && addrs) {
-					ret = scode_share_ranges(vcpu, scode_entry, addrs, lens, count);
-				} else {
-					printf("[TV] TV_VMMCMD_SHARE: ERROR- couldn't allocate %d entries\n",
-								 count);
-					ret = -2;
-				}
+        if (lens && addrs) {
+          ret = scode_share_ranges(vcpu, scode_entry, addrs, lens, count);
+        } else {
+          printf("[TV] TV_VMMCMD_SHARE: ERROR- couldn't allocate %d entries\n",
+                 count);
+          ret = -2;
+        }
 
-				free(addrs);
-				free(lens);
-				break;
-			}
-		case TV_HC_UTPM_PCRREAD:
-			{
-				u32 addr, num;
-				addr = r->edx;
-				num = r->ecx;
-				ret = hc_utpm_pcrread(vcpu, addr, num);
-				break;
-			}
-		case TV_HC_UTPM_PCREXT:
-			{
-				u32 meas_addr, idx;
-				meas_addr = r->edx;
-				idx = r->ecx;
-				ret = hc_utpm_pcrextend(vcpu, idx, meas_addr);
-				break;
-			}
-		case TV_HC_UTPM_GENRAND:
-			{
-				u32 addr, len_addr;
-				addr = r->ecx;
-				len_addr = r->edx;
-				ret = hc_utpm_rand(vcpu, addr, len_addr);
-				break;
-			}
+        free(addrs);
+        free(lens);
+        break;
+      }
+    case TV_HC_UTPM_PCRREAD:
+      {
+        u32 addr, num;
+        addr = r->edx;
+        num = r->ecx;
+        ret = hc_utpm_pcrread(vcpu, addr, num);
+        break;
+      }
+    case TV_HC_UTPM_PCREXT:
+      {
+        u32 meas_addr, idx;
+        meas_addr = r->edx;
+        idx = r->ecx;
+        ret = hc_utpm_pcrextend(vcpu, idx, meas_addr);
+        break;
+      }
+    case TV_HC_UTPM_GENRAND:
+      {
+        u32 addr, len_addr;
+        addr = r->ecx;
+        len_addr = r->edx;
+        ret = hc_utpm_rand(vcpu, addr, len_addr);
+        break;
+      }
     case TV_HC_TPMNVRAM_GETSIZE:
-		  {
-				u32 size_addr;
-				printf("[TV] TV_HC_TPMNVRAM_GETSIZE invoked.\n");
-				size_addr = r->ecx;
-				ret = hc_tpmnvram_getsize(vcpu, size_addr);
-				break;
-			}
+      {
+        u32 size_addr;
+        printf("[TV] TV_HC_TPMNVRAM_GETSIZE invoked.\n");
+        size_addr = r->ecx;
+        ret = hc_tpmnvram_getsize(vcpu, size_addr);
+        break;
+      }
     case TV_HC_TPMNVRAM_READALL:
-        {
-						u32 out_addr;
-						printf("[TV] TV_HC_TPMNVRAM_READALL invoked.\n");
-						out_addr = r->ecx;
-						ret = hc_tpmnvram_readall(vcpu, out_addr);
-						break;
-        }
+      {
+        u32 out_addr;
+        printf("[TV] TV_HC_TPMNVRAM_READALL invoked.\n");
+        out_addr = r->ecx;
+        ret = hc_tpmnvram_readall(vcpu, out_addr);
+        break;
+      }
     case TV_HC_TPMNVRAM_WRITEALL:
-        {
-						u32 in_addr;
-						printf("[TV] TV_HC_TPMNVRAM_WRITEALL invoked.\n");
-						in_addr = r->ecx;
-						ret = hc_tpmnvram_writeall(vcpu, in_addr);
-						break;
-        }
-		default:
-			{
-				printf("[TV] FATAL ERROR: Invalid vmmcall cmd (%d)\n", cmd);
-				status = APP_ERROR;
-				ret = 1;
-			}
-	}
+      {
+        u32 in_addr;
+        printf("[TV] TV_HC_TPMNVRAM_WRITEALL invoked.\n");
+        in_addr = r->ecx;
+        ret = hc_tpmnvram_writeall(vcpu, in_addr);
+        break;
+      }
+    default:
+      {
+        printf("[TV] FATAL ERROR: Invalid vmmcall cmd (%d)\n", cmd);
+        status = APP_ERROR;
+        ret = 1;
+      }
+    }
 
-	if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-		r->eax = ret;
-	} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-		linux_vmcb->rax = ret;
-	} else {
-		printf("unknow cpu vendor type!\n");
-		HALT();
-	}
-	return status;
+  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+    r->eax = ret;
+  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+    linux_vmcb->rax = ret;
+  } else {
+    printf("unknow cpu vendor type!\n");
+    HALT();
+  }
+  return status;
 }
 
 /* EPT violation handler */
 u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
-		struct regs __attribute__((unused)) *r, u64 gpa, u64 gva, u64 violationcode)
+                                              struct regs __attribute__((unused)) *r, u64 gpa, u64 gva, u64 violationcode)
 {
-	u32 ret;
-	dprintf(LOG_TRACE, "\nCPU(0x%02x): gva=0x%08Lx, gpa=0x%08Lx, code=0x%016Lx\n", (int)vcpu->id,
-			gva, gpa, violationcode);
-	//	printf("\nprot is: 0x%016llx", emhf_hwpgtbl_getprot(vcpu, gpa));
-	if ((ret = hpt_scode_npf(vcpu, gpa, violationcode)) != 0) {
-		dprintf(LOG_ERROR, "FATAL ERROR: Unexpected return value from page fault handling\n");
-		HALT();
-	}
-    return ret;
+  u32 ret;
+  dprintf(LOG_TRACE, "\nCPU(0x%02x): gva=0x%08Lx, gpa=0x%08Lx, code=0x%016Lx\n", (int)vcpu->id,
+          gva, gpa, violationcode);
+  //	printf("\nprot is: 0x%016llx", emhf_hwpgtbl_getprot(vcpu, gpa));
+  if ((ret = hpt_scode_npf(vcpu, gpa, violationcode)) != 0) {
+    dprintf(LOG_ERROR, "FATAL ERROR: Unexpected return value from page fault handling\n");
+    HALT();
+  }
+  return ret;
 }
 
 u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs __attribute__((unused)) *r, 
-		u32 portnum, u32 access_type, u32 access_size)
+                                        u32 portnum, u32 access_type, u32 access_size)
 {
-	dprintf(LOG_TRACE, "\nCPU(0x%02x): Port access intercept feature unimplemented. Halting!", vcpu->id);
-	dprintf(LOG_TRACE, "\nCPU(0x%02x): portnum=0x%08x, access_type=0x%08x, access_size=0x%08x", vcpu->id,
-			(u32)portnum, (u32)access_type, (u32)access_size);
-	HALT();
-    return 0; /* XXX DUMMY; keeps compiler happy */
-	//return APP_IOINTERCEPT_SKIP;
-	//return APP_IOINTERCEPT_CHAIN; //chain and do the required I/O    
+  dprintf(LOG_TRACE, "\nCPU(0x%02x): Port access intercept feature unimplemented. Halting!", vcpu->id);
+  dprintf(LOG_TRACE, "\nCPU(0x%02x): portnum=0x%08x, access_type=0x%08x, access_size=0x%08x", vcpu->id,
+          (u32)portnum, (u32)access_type, (u32)access_size);
+  HALT();
+  return 0; /* XXX DUMMY; keeps compiler happy */
+  //return APP_IOINTERCEPT_SKIP;
+  //return APP_IOINTERCEPT_CHAIN; //chain and do the required I/O    
 }
-
 
 void emhf_app_handleshutdown(VCPU *vcpu, struct regs __attribute__((unused)) *r)
 {
-	dprintf(LOG_TRACE, "\nCPU(0x%02x): Shutdown intercept!", vcpu->id);
-	g_libemhf->emhf_reboot(vcpu);
+  dprintf(LOG_TRACE, "\nCPU(0x%02x): Shutdown intercept!", vcpu->id);
+  g_libemhf->emhf_reboot(vcpu);
 }
 
 /* Local Variables: */
 /* mode:c           */
-/* indent-tabs-mode:'t */
-/* tab-width:2      */
+/* indent-tabs-mode:nil */
+/* c-basic-offset:2 */
 /* End:             */

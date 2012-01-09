@@ -92,51 +92,51 @@ typedef struct {
   size_t size;
   hpt_prot_t pal_prot;
   hpt_prot_t reg_prot;
-	u32 section_type;
+  u32 section_type;
 } tv_pal_section_int_t;
 
 /* scode state struct */
 typedef struct whitelist_entry{
-	u64 gcr3; 
-	u32 id;
-	u32 grsp;		/* guest reguar stack */
-	u32 gssp;		/* guest sensitive code stack */
-	u32 gss_size;   /* guest sensitive code stack page number */
-	u32 entry_v; /* entry point virtual address */
-	u32 entry_p; /* entry point physical address */
-	u32 return_v; /* return point virtual address */
+  u64 gcr3; 
+  u32 id;
+  u32 grsp;		/* guest reguar stack */
+  u32 gssp;		/* guest sensitive code stack */
+  u32 gss_size;   /* guest sensitive code stack page number */
+  u32 entry_v; /* entry point virtual address */
+  u32 entry_p; /* entry point physical address */
+  u32 return_v; /* return point virtual address */
 
-	u32 gpmp;     /* guest parameter page address */
-	u32 gpm_size; /* guest parameter page number */
-	u32 gpm_num;  /* guest parameter number */
+  u32 gpmp;     /* guest parameter page address */
+  u32 gpm_size; /* guest parameter page number */
+  u32 gpm_num;  /* guest parameter number */
 
-	tv_pal_section_int_t sections[TV_MAX_SECTIONS];
-	size_t sections_num;
+  tv_pal_section_int_t sections[TV_MAX_SECTIONS];
+  size_t sections_num;
 
-	struct tv_pal_sections scode_info; /* scode_info struct for registration function inpu */
-	struct tv_pal_params params_info; /* param info struct */
-	pte_t* scode_pages; /* registered pte's (copied from guest page tables and additional info added) */
-	u32 scode_size; /* scode size */
+  struct tv_pal_sections scode_info; /* scode_info struct for registration function inpu */
+  struct tv_pal_params params_info; /* param info struct */
+  pte_t* scode_pages; /* registered pte's (copied from guest page tables and additional info added) */
+  u32 scode_size; /* scode size */
 
-	pte_t * pte_page;  /* holder for guest page table entry to access scode and GDT */
-	u32 pte_size;	/* total size of all PTE pages */
+  pte_t * pte_page;  /* holder for guest page table entry to access scode and GDT */
+  u32 pte_size;	/* total size of all PTE pages */
 #ifdef __MP_VERSION__
-	u32 pal_running_lock; /* PAL running lock */
-	u32 pal_running_vcpu_id; /* the cpu that is running this PAL */
+  u32 pal_running_lock; /* PAL running lock */
+  u32 pal_running_vcpu_id; /* the cpu that is running this PAL */
 #endif
 
-	/* Micro-TPM related */
+  /* Micro-TPM related */
   utpm_master_state_t utpm;
 
-	/* pal page tables */
-	pagelist_t *gpl;
-	pagelist_t *npl;
-	hpt_walk_ctx_t hpt_nested_walk_ctx;
-	hpt_walk_ctx_t hpt_guest_walk_ctx;
-	hpt_pmo_t pal_npt_root;
-	hpt_pmo_t pal_gpt_root;
-	hpt_pmo_t reg_gpt_root;
-	u64 pal_gcr3;
+  /* pal page tables */
+  pagelist_t *gpl;
+  pagelist_t *npl;
+  hpt_walk_ctx_t hpt_nested_walk_ctx;
+  hpt_walk_ctx_t hpt_guest_walk_ctx;
+  hpt_pmo_t pal_npt_root;
+  hpt_pmo_t pal_gpt_root;
+  hpt_pmo_t reg_gpt_root;
+  u64 pal_gcr3;
 } __attribute__ ((packed)) whitelist_entry_t;
 
 
@@ -146,17 +146,17 @@ extern hpt_walk_ctx_t hpt_guest_walk_ctx;
 
 /* nested paging handlers (hpt) */
 void hpt_insert_pal_pmes(VCPU *vcpu,
-												 hpt_walk_ctx_t *walk_ctx,
-												 hpt_pm_t pal_pm,
-												 int pal_pm_lvl,
-												 gpa_t gpas[],
-												 size_t num_gpas);
+                         hpt_walk_ctx_t *walk_ctx,
+                         hpt_pm_t pal_pm,
+                         int pal_pm_lvl,
+                         gpa_t gpas[],
+                         size_t num_gpas);
 void hpt_walk_set_prots(hpt_walk_ctx_t *walk_ctx,
-												hpt_pm_t pm,
-												int pm_lvl,
-												gpa_t gpas[],
-												size_t num_gpas,
-												hpt_prot_t prot);
+                        hpt_pm_t pm,
+                        int pm_lvl,
+                        gpa_t gpas[],
+                        size_t num_gpas,
+                        hpt_prot_t prot);
 void hpt_nested_set_prot(VCPU * vcpu, u64 gpaddr);
 void hpt_nested_clear_prot(VCPU * vcpu, u64 gpaddr);
 void hpt_nested_switch_scode(VCPU * vcpu, pte_t *pte_pages, u32 size, pte_t *pte_page2, u32 size2);
@@ -179,22 +179,22 @@ void put_32bit_aligned_value_to_current_guest(VCPU *vcpu, u32 gvaddr, u32 value)
 int guest_pt_copy(VCPU * vcpu, pte_t *pte_page, u32 gvaddr, u32 size, int type);
 static inline gpa_t gpt_vaddr_to_paddr(const hpt_walk_ctx_t *ctx, const hpt_pmo_t *gpt_root, gva_t vaddr)
 {
-	return hpto_walk_va_to_pa(ctx, gpt_root, vaddr);
+  return hpto_walk_va_to_pa(ctx, gpt_root, vaddr);
 }
 static inline gpa_t gpt_vaddr_to_paddr_current(VCPU *vcpu, gva_t vaddr)
 {
-	hpt_type_t t = (VCPU_gcr4(vcpu) & CR4_PAE) ? HPT_TYPE_PAE : HPT_TYPE_NORM;
-	hpt_pmo_t root = {
-		.pm = hpt_emhf_get_guest_root_pm(vcpu),
-		.t = t,
-		.lvl = hpt_root_lvl(t),
-	};
-	hpt_walk_ctx_t ctx = hpt_guest_walk_ctx;
-	gpa_t rv;
-	ctx.t = t;
-	rv = hpto_walk_va_to_pa(&ctx, &root, vaddr);
+  hpt_type_t t = (VCPU_gcr4(vcpu) & CR4_PAE) ? HPT_TYPE_PAE : HPT_TYPE_NORM;
+  hpt_pmo_t root = {
+    .pm = hpt_emhf_get_guest_root_pm(vcpu),
+    .t = t,
+    .lvl = hpt_root_lvl(t),
+  };
+  hpt_walk_ctx_t ctx = hpt_guest_walk_ctx;
+  gpa_t rv;
+  ctx.t = t;
+  rv = hpto_walk_va_to_pa(&ctx, &root, vaddr);
 
-	return rv;
+  return rv;
 }
 
 #define  gpt_get_ptpages(vcpu, vaddr, pdp, pd, pt) guest_pt_walker_internal(vcpu, vaddr, pdp, pd, pt, NULL, NULL, NULL, NULL)
@@ -228,9 +228,9 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
                         hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx,
                         const tv_pal_section_int_t *section);
 void scode_return_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
-													hpt_pmo_t* pal_npmo_root, hpt_walk_ctx_t *pal_npm_ctx,
-													hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx,
-													const tv_pal_section_int_t *section);
+                          hpt_pmo_t* pal_npmo_root, hpt_walk_ctx_t *pal_npm_ctx,
+                          hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx,
+                          const tv_pal_section_int_t *section);
 
 void scode_clone_gdt(gva_t gdtr_base, size_t gdtr_lim,
                      hpt_pmo_t* reg_gpmo_root, hpt_walk_ctx_t *reg_gpm_ctx,
@@ -239,8 +239,9 @@ void scode_clone_gdt(gva_t gdtr_base, size_t gdtr_lim,
                      );
 
 #endif /* __SCODE_H_ */
+
 /* Local Variables: */
 /* mode:c           */
-/* indent-tabs-mode:'t */
-/* tab-width:2      */
+/* indent-tabs-mode:nil */
+/* c-basic-offset:2 */
 /* End:             */

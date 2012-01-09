@@ -70,11 +70,11 @@
  */
 static inline hpt_pme_t hpt_pme_setpalprot(hpt_type_t t, int lvl, hpt_pme_t pme, hpt_prot_t prot)
 {
-	return hpt_pme_setunused(t, lvl, pme, 2, 0, prot);
+  return hpt_pme_setunused(t, lvl, pme, 2, 0, prot);
 }
 static inline hpt_prot_t hpt_pme_getpalprot(hpt_type_t t, int lvl, hpt_pme_t pme)
 {
-	return hpt_pme_getunused(t, lvl, pme, 2, 0);
+  return hpt_pme_getunused(t, lvl, pme, 2, 0);
 }
 
 /* ********************************* */
@@ -83,83 +83,83 @@ static inline hpt_prot_t hpt_pme_getpalprot(hpt_type_t t, int lvl, hpt_pme_t pme
 
 hpt_prot_t pal_prot_of_type(int type)
 {
-	switch(type) {
-	case TV_PAL_SECTION_CODE:
-		return HPT_PROTS_RX;
-		break;
-	case TV_PAL_SECTION_SHARED_CODE:
-		return HPT_PROTS_RX;
-		break;
-	case TV_PAL_SECTION_DATA:
-		return HPT_PROTS_RWX;
-		break;
-	case TV_PAL_SECTION_PARAM:
-	case TV_PAL_SECTION_STACK:
-		return HPT_PROTS_RW;
-		break;
-	case TV_PAL_SECTION_SHARED:
-		return HPT_PROTS_RWX;
-		break;
-	case TV_PAL_SECTION_GUEST_PAGE_TABLES:
-		return HPT_PROTS_RWX;
-		break;
-	}
-	ASSERT(0); return 0; /* unreachable; appeases compiler */
+  switch(type) {
+  case TV_PAL_SECTION_CODE:
+    return HPT_PROTS_RX;
+    break;
+  case TV_PAL_SECTION_SHARED_CODE:
+    return HPT_PROTS_RX;
+    break;
+  case TV_PAL_SECTION_DATA:
+    return HPT_PROTS_RWX;
+    break;
+  case TV_PAL_SECTION_PARAM:
+  case TV_PAL_SECTION_STACK:
+    return HPT_PROTS_RW;
+    break;
+  case TV_PAL_SECTION_SHARED:
+    return HPT_PROTS_RWX;
+    break;
+  case TV_PAL_SECTION_GUEST_PAGE_TABLES:
+    return HPT_PROTS_RWX;
+    break;
+  }
+  ASSERT(0); return 0; /* unreachable; appeases compiler */
 }
 
 hpt_prot_t reg_prot_of_type(int type)
 {
-	switch(type) {
-	case TV_PAL_SECTION_CODE:
-		return HPT_PROTS_NONE;
-		break;
-	case TV_PAL_SECTION_SHARED_CODE:
-		return HPT_PROTS_RX;
-		break;
-	case TV_PAL_SECTION_DATA:
-		return HPT_PROTS_NONE;
-		break;
-	case TV_PAL_SECTION_PARAM:
-	case TV_PAL_SECTION_STACK:
-		return HPT_PROTS_NONE;
-		break;
-	case TV_PAL_SECTION_SHARED:
-		return HPT_PROTS_NONE;
-		break;
-	case TV_PAL_SECTION_GUEST_PAGE_TABLES:
-		return HPT_PROTS_RWX;
-		break;
-	}
-	ASSERT(0); return 0; /* unreachable; appeases compiler */
+  switch(type) {
+  case TV_PAL_SECTION_CODE:
+    return HPT_PROTS_NONE;
+    break;
+  case TV_PAL_SECTION_SHARED_CODE:
+    return HPT_PROTS_RX;
+    break;
+  case TV_PAL_SECTION_DATA:
+    return HPT_PROTS_NONE;
+    break;
+  case TV_PAL_SECTION_PARAM:
+  case TV_PAL_SECTION_STACK:
+    return HPT_PROTS_NONE;
+    break;
+  case TV_PAL_SECTION_SHARED:
+    return HPT_PROTS_NONE;
+    break;
+  case TV_PAL_SECTION_GUEST_PAGE_TABLES:
+    return HPT_PROTS_RWX;
+    break;
+  }
+  ASSERT(0); return 0; /* unreachable; appeases compiler */
 }
 
 /* check all pages in given range can be read/written by user level privilege */
 /* see Intel System Programming Guide, Volume 3, 5-42 "combined Page-Directory and Page-Table Protection"  */
 u32 guest_pt_check_user_rw(VCPU * vcpu, u32 vaddr, u32 page_num)
 {
-	hpt_prot_t effective_prots;
-	bool user_accessible;
-	hpt_type_t t = hpt_emhf_get_guest_hpt_type(vcpu);
-	hpt_pmo_t root = {
-		.pm = hpt_emhf_get_guest_root_pm(vcpu),
-		.t = t,
-		.lvl = hpt_root_lvl(t),
-	};
-	hpt_walk_ctx_t ctx = hpt_guest_walk_ctx;
-	size_t i;
+  hpt_prot_t effective_prots;
+  bool user_accessible;
+  hpt_type_t t = hpt_emhf_get_guest_hpt_type(vcpu);
+  hpt_pmo_t root = {
+    .pm = hpt_emhf_get_guest_root_pm(vcpu),
+    .t = t,
+    .lvl = hpt_root_lvl(t),
+  };
+  hpt_walk_ctx_t ctx = hpt_guest_walk_ctx;
+  size_t i;
 
-	ctx.t = t;
+  ctx.t = t;
 
-	for(i=0; i<page_num; i++) {
-		effective_prots = hpto_walk_get_effective_prots(&ctx,
-																										&root,
-																										vaddr+(i<<PAGE_SHIFT_4K),
-																										&user_accessible);
-		if (!user_accessible
-				|| !((effective_prots & HPT_PROTS_RW) == HPT_PROTS_RW))
-			return 1;
-	}
-	return 0;
+  for(i=0; i<page_num; i++) {
+    effective_prots = hpto_walk_get_effective_prots(&ctx,
+                                                    &root,
+                                                    vaddr+(i<<PAGE_SHIFT_4K),
+                                                    &user_accessible);
+    if (!user_accessible
+        || !((effective_prots & HPT_PROTS_RW) == HPT_PROTS_RW))
+      return 1;
+  }
+  return 0;
 }
 
 /* several help functions to access guest address space */
@@ -214,84 +214,84 @@ extern void put_32bit_aligned_value_to_current_guest(VCPU *vcpu, u32 gvaddr, u32
 
 extern void copy_from_current_guest(VCPU * vcpu, u8 *dst,u32 gvaddr, u32 len)
 {
-	hpt_type_t t = hpt_emhf_get_guest_hpt_type(vcpu);
-	hpt_pmo_t root = {
-		.pm = hpt_emhf_get_guest_root_pm(vcpu),
-		.t = t,
-		.lvl = hpt_root_lvl(t),
-	};
-	hpt_walk_ctx_t ctx = hpt_guest_walk_ctx;
-	ctx.t = t;
+  hpt_type_t t = hpt_emhf_get_guest_hpt_type(vcpu);
+  hpt_pmo_t root = {
+    .pm = hpt_emhf_get_guest_root_pm(vcpu),
+    .t = t,
+    .lvl = hpt_root_lvl(t),
+  };
+  hpt_walk_ctx_t ctx = hpt_guest_walk_ctx;
+  ctx.t = t;
 
-	hpt_copy_from_guest(&ctx, &root, dst, gvaddr, len);
+  hpt_copy_from_guest(&ctx, &root, dst, gvaddr, len);
 
 }
 
 extern void copy_to_current_guest(VCPU * vcpu, u32 gvaddr, u8 *src, u32 len)
 {
-	hpt_type_t t = hpt_emhf_get_guest_hpt_type(vcpu);
-	hpt_pmo_t root = {
-		.pm = hpt_emhf_get_guest_root_pm(vcpu),
-		.t = t,
-		.lvl = hpt_root_lvl(t),
-	};
-	hpt_walk_ctx_t ctx = hpt_guest_walk_ctx;
-	ctx.t = t;
+  hpt_type_t t = hpt_emhf_get_guest_hpt_type(vcpu);
+  hpt_pmo_t root = {
+    .pm = hpt_emhf_get_guest_root_pm(vcpu),
+    .t = t,
+    .lvl = hpt_root_lvl(t),
+  };
+  hpt_walk_ctx_t ctx = hpt_guest_walk_ctx;
+  ctx.t = t;
 
-	hpt_copy_to_guest(&ctx, &root, gvaddr, src, len);
+  hpt_copy_to_guest(&ctx, &root, gvaddr, src, len);
 
 }
 
 
 /* clone pal's gdt from 'reg' gdt, and add to pal's guest page tables.
-	 gdt is allocted using passed-in-pl, whose pages should already be
-	 accessible to pal's nested page tables. XXX SECURITY need to build
-	 a trusted gdt instead. */
+   gdt is allocted using passed-in-pl, whose pages should already be
+   accessible to pal's nested page tables. XXX SECURITY need to build
+   a trusted gdt instead. */
 void scode_clone_gdt(gva_t gdtr_base, size_t gdtr_lim,
-										 hpt_pmo_t* reg_gpmo_root, hpt_walk_ctx_t *reg_gpm_ctx,
-										 hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx,
-										 pagelist_t *pl
-										 )
+                     hpt_pmo_t* reg_gpmo_root, hpt_walk_ctx_t *reg_gpm_ctx,
+                     hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx,
+                     pagelist_t *pl
+                     )
 {
-	void *gdt_pal_page;
-	u64 *gdt=NULL;
-	size_t gdt_size = (gdtr_lim+1)*sizeof(*gdt);
-	size_t gdt_page_offset = gdtr_base & MASKRANGE64(11, 0); /* XXX */
-	gva_t gdt_reg_page_gva = gdtr_base & MASKRANGE64(63, 12); /* XXX */
+  void *gdt_pal_page;
+  u64 *gdt=NULL;
+  size_t gdt_size = (gdtr_lim+1)*sizeof(*gdt);
+  size_t gdt_page_offset = gdtr_base & MASKRANGE64(11, 0); /* XXX */
+  gva_t gdt_reg_page_gva = gdtr_base & MASKRANGE64(63, 12); /* XXX */
 
-	dprintf(LOG_TRACE, "scode_clone_gdt base:%x size:%d:\n", gdtr_base, gdt_size);
+  dprintf(LOG_TRACE, "scode_clone_gdt base:%x size:%d:\n", gdtr_base, gdt_size);
 
-	/* rest of fn assumes gdt is all on one page */
-	ASSERT((gdt_page_offset+gdt_size) <= PAGE_SIZE_4K); 
+  /* rest of fn assumes gdt is all on one page */
+  ASSERT((gdt_page_offset+gdt_size) <= PAGE_SIZE_4K); 
 
-	gdt_pal_page = pagelist_get_zeroedpage(pl);
-	CHK(gdt_pal_page);
-	gdt = gdt_pal_page + gdt_page_offset;
+  gdt_pal_page = pagelist_get_zeroedpage(pl);
+  CHK(gdt_pal_page);
+  gdt = gdt_pal_page + gdt_page_offset;
 
-	dprintf(LOG_TRACE, "copying gdt from gva:%x to hva:%p\n", gdtr_base, gdt);
-	hpt_copy_from_guest(reg_gpm_ctx, reg_gpmo_root,
-											gdt, gdtr_base, gdt_size);
+  dprintf(LOG_TRACE, "copying gdt from gva:%x to hva:%p\n", gdtr_base, gdt);
+  hpt_copy_from_guest(reg_gpm_ctx, reg_gpmo_root,
+                      gdt, gdtr_base, gdt_size);
 
-	/* add to guest page tables */
-	{
-		hpt_pmeo_t gdt_g_pmeo = { .t = pal_gpmo_root->t, .lvl = 1 };
-		hpt_pa_t gdt_gpa;
-		int hpt_err;
+  /* add to guest page tables */
+  {
+    hpt_pmeo_t gdt_g_pmeo = { .t = pal_gpmo_root->t, .lvl = 1 };
+    hpt_pa_t gdt_gpa;
+    int hpt_err;
 
-		gdt_gpa = hva2gpa(gdt);
+    gdt_gpa = hva2gpa(gdt);
 
-		dprintf(LOG_TRACE, "mapping gdt into guest page tables\n");
-		/* XXX SECURITY check to ensure we're not clobbering some existing
-			 mapping */
+    dprintf(LOG_TRACE, "mapping gdt into guest page tables\n");
+    /* XXX SECURITY check to ensure we're not clobbering some existing
+       mapping */
     /* add access to pal guest page tables */
-		hpt_pmeo_set_address(&gdt_g_pmeo, gdt_gpa);
-		hpt_pmeo_setprot(&gdt_g_pmeo, HPT_PROTS_RWX);
+    hpt_pmeo_set_address(&gdt_g_pmeo, gdt_gpa);
+    hpt_pmeo_setprot(&gdt_g_pmeo, HPT_PROTS_RWX);
     hpt_err = hpt_walk_insert_pmeo_alloc(pal_gpm_ctx,
                                          pal_gpmo_root,
                                          &gdt_g_pmeo,
                                          gdt_reg_page_gva);
     CHK_RV(hpt_err);
-	}
+  }
 }
 
 /* lend a section of memory from a user-space process (on the
@@ -305,9 +305,9 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
   size_t offset;
   int hpt_err;
 
-	dprintf(LOG_TRACE,
-					"entering scode_lend_section. Mapping from %016llx to %016llx, size %u, pal_prot %u\n",
-					section->reg_gva, section->pal_gva, section->size, (u32)section->pal_prot);
+  dprintf(LOG_TRACE,
+          "entering scode_lend_section. Mapping from %016llx to %016llx, size %u, pal_prot %u\n",
+          section->reg_gva, section->pal_gva, section->size, (u32)section->pal_prot);
   
   /* XXX don't hard-code page size here. */
   /* XXX fail gracefully */
@@ -334,9 +334,9 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
                       reg_gpmo_root,
                       1,
                       page_reg_gva);
-		dprintf(LOG_TRACE,
-						"got pme %016llx, level %d, type %d\n",
-						page_reg_gpmeo.pme, page_reg_gpmeo.lvl, page_reg_gpmeo.t);
+    dprintf(LOG_TRACE,
+            "got pme %016llx, level %d, type %d\n",
+            page_reg_gpmeo.pme, page_reg_gpmeo.lvl, page_reg_gpmeo.t);
     ASSERT(page_reg_gpmeo.lvl==1); /* we don't handle large pages */
     page_reg_gpa = hpt_pmeo_get_address(&page_reg_gpmeo);
 
@@ -370,8 +370,8 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
                                                       reg_gpmo_root,
                                                       page_reg_gva,
                                                       &user_accessible);
-			dprintf(LOG_TRACE, "%s got reg gpt prots:0x%x, user:%d\n",
-							__FUNCTION__, (u32)effective_prots, (int)user_accessible);
+      dprintf(LOG_TRACE, "%s got reg gpt prots:0x%x, user:%d\n",
+              __FUNCTION__, (u32)effective_prots, (int)user_accessible);
       CHK((effective_prots & section->pal_prot) == section->pal_prot);
       CHK(user_accessible);
     }
@@ -424,13 +424,13 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
 
 /* lend a section of memory from a user-space process (on the
    commodity OS) to a pal.
-	 PRE: assumes section was already successfully lent using scode_lend_section
-	 PRE: assumes no concurrent access to page tables (e.g., quiesce other cpus)
+   PRE: assumes section was already successfully lent using scode_lend_section
+   PRE: assumes no concurrent access to page tables (e.g., quiesce other cpus)
 */
 void scode_return_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
-													hpt_pmo_t* pal_npmo_root, hpt_walk_ctx_t *pal_npm_ctx,
-													hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx,
-													const tv_pal_section_int_t *section)
+                          hpt_pmo_t* pal_npmo_root, hpt_walk_ctx_t *pal_npm_ctx,
+                          hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx,
+                          const tv_pal_section_int_t *section)
 {
   size_t offset;
 
@@ -454,10 +454,10 @@ void scode_return_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
     page_reg_gpa = page_pal_gpa;
 
     /* check that this pal VM is allowed to access this system-physical mem.
-			 we only check that it's readable; trustvisor-wide we maintain the invariant
-			 that a page is readable in a PAL's npt iff it is not readable in the guest npt
-			 or other PALs' npts.
-		 */
+       we only check that it's readable; trustvisor-wide we maintain the invariant
+       that a page is readable in a PAL's npt iff it is not readable in the guest npt
+       or other PALs' npts.
+    */
     {
       hpt_prot_t effective_prots;
       bool user_accessible=false;
@@ -465,36 +465,35 @@ void scode_return_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
                                                       pal_npmo_root,
                                                       page_pal_gpa,
                                                       &user_accessible);
-			CHK(effective_prots & HPT_PROTS_R);
+      CHK(effective_prots & HPT_PROTS_R);
     }
 
     /* revoke access from 'pal' VM */
-		hpto_walk_set_prot(pal_npm_ctx,
-											 pal_npmo_root,
-											 page_pal_gpa,
-											 HPT_PROTS_NONE);
+    hpto_walk_set_prot(pal_npm_ctx,
+                       pal_npmo_root,
+                       page_pal_gpa,
+                       HPT_PROTS_NONE);
 
     /* scode_lend_section leaves reg guest page tables intact, so no
-			 need to restore anything in them here. */
+       need to restore anything in them here. */
 
     /* revoke access from pal guest page tables */
-		hpto_walk_set_prot(pal_gpm_ctx,
-											 pal_gpmo_root,
-											 page_pal_gva,
-											 HPT_PROTS_NONE);
+    hpto_walk_set_prot(pal_gpm_ctx,
+                       pal_gpmo_root,
+                       page_pal_gva,
+                       HPT_PROTS_NONE);
 
     /* add access to reg nested page tables */
-		hpto_walk_set_prot(reg_npm_ctx,
-											 reg_npmo_root,
-											 page_reg_gpa,
-											 HPT_PROTS_RWX);
+    hpto_walk_set_prot(reg_npm_ctx,
+                       reg_npmo_root,
+                       page_reg_gpa,
+                       HPT_PROTS_RWX);
   }
 }
 
-
-
 /* Local Variables: */
 /* mode:c           */
-/* indent-tabs-mode:'t */
-/* tab-width:2      */
+/* indent-tabs-mode:nil */
+/* c-basic-offset:2 */
 /* End:             */
+
