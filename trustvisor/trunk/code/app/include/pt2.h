@@ -36,8 +36,7 @@
 #ifndef PT2_H
 #define PT2_H
 
-#include <hpt.h>
-#include <hpt_ext.h>
+#include <hpto.h>
 #include <pages.h>
 
 typedef struct {
@@ -47,54 +46,6 @@ typedef struct {
   hpt_prot_t pal_prot;
   hpt_prot_t reg_prot;
 } section_t;
-
-typedef struct {
-  hpt_pm_t pm;
-  hpt_type_t t;
-  int lvl;
-} hpt_pmo_t;
-
-typedef struct {
-  hpt_pme_t pme;
-  hpt_type_t t;
-  int lvl;
-} hpt_pmeo_t;
-
-/* experimental "object-oriented" wrappers around hpt functions. idea
-   is to make code a bit less noisy by bundling page-maps and
-   page-map-entries with their level and type. consider adding to
-   hpt */
-int hpt_walk_insert_pmeo(const hpt_walk_ctx_t *ctx,
-                         hpt_pmo_t *pmo,
-                         const hpt_pmeo_t *pmeo,
-                         hpt_va_t va);
-int hpt_walk_insert_pmeo_alloc(const hpt_walk_ctx_t *ctx,
-                               hpt_pmo_t *pmo,
-                               const hpt_pmeo_t *pmeo,
-                               hpt_va_t va);
-void hpt_walk_get_pmeo(hpt_pmeo_t *pmeo,
-                       const hpt_walk_ctx_t *ctx,
-                       const hpt_pmo_t *pmo,
-                       int end_lvl,
-                       hpt_va_t va);
-hpt_pa_t hpt_pmeo_get_address(const hpt_pmeo_t *pmeo);
-void hpt_pmeo_set_address(hpt_pmeo_t *pmeo, hpt_pa_t addr);
-bool hpt_pmeo_is_present(const hpt_pmeo_t *pmeo);
-void hpt_pmeo_setprot(hpt_pmeo_t *pmeo, hpt_prot_t perms);
-hpt_prot_t hpt_pmeo_getprot(const hpt_pmeo_t *pmeo);
-bool hpt_pmeo_getuser(const hpt_pmeo_t *pmeo);
-void hpt_pmeo_setuser(hpt_pmeo_t *pmeo, bool user);
-void hpt_pm_get_pmeo_by_va(hpt_pmeo_t *pmeo, const hpt_pmo_t *pmo, hpt_va_t va);
-bool hpto_walk_next_lvl(const hpt_walk_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va);
-hpt_prot_t hpto_walk_get_effective_prots(const hpt_walk_ctx_t *ctx,
-                                         const hpt_pmo_t *pmo_root,
-                                         hpt_va_t va,
-                                         bool *user_accessible);
-hpt_pa_t hpt_pmeo_va_to_pa(hpt_pmeo_t* pmeo, hpt_va_t va);
-hpt_pa_t hpto_walk_va_to_pa(const hpt_walk_ctx_t *ctx,
-                            const hpt_pmo_t *pmo,
-                            hpt_va_t va);
-
 
 void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
                         hpt_pmo_t* reg_gpmo_root, hpt_walk_ctx_t *reg_gpm_ctx,
