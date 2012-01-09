@@ -449,7 +449,6 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
 
     /* unlock? unquiesce? */
   }
-  /* XXX add pal guest page tables to pal nested page tables */
 }
 
 /* for a given virtual address range, return an array of page-map-entry-objects */
