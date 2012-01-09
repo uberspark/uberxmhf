@@ -1461,6 +1461,7 @@ u32 scode_share_range(VCPU * vcpu, whitelist_entry_t *wle, u32 gva_base, u32 gva
 		.size = gva_len,
 		.pal_prot = pal_prot_of_type(TV_PAL_SECTION_SHARED),
 		.reg_prot = reg_prot_of_type(TV_PAL_SECTION_SHARED),
+		.section_type = TV_PAL_SECTION_SHARED,
 	};
 
 	scode_lend_section(&g_reg_npmo_root, &wle->hpt_nested_walk_ctx,
