@@ -643,8 +643,6 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 		guest_walk_ctx.gzp_ctx = pl;
 		guest_walk_ctx.t = reg_gpmo_root.t;
 
-		pagelist_init(pl);
-
 		for (i=0; i<whitelist_new.scode_info.num_sections; i++) {
 			section_t section = {
 				.reg_gva = whitelist_new.scode_info.sections[i].start_addr,
@@ -662,7 +660,10 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 		/* XXX flush TLB to ensure 'reg' is now correctly denied access */
 
 		/* whitelist_new.pal_hpt_root = pal_npmo_root.pm; */
-		free(pl); /* XXX temp for testing */
+
+		/* XXX temp for testing */
+		pagelist_free_all(pl);
+		free(pl);
 	}
 	/********************************/
 
