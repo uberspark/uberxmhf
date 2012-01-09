@@ -721,12 +721,6 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 																								 VCPU_gcr3(vcpu), /* XXX should build trusted cr3 from scratch */
 																								 hva2gpa(whitelist_new.pal_gpt_root.pm));
 		/* XXX flush TLB to ensure 'reg' is now correctly denied access */
-
-		/* XXX temp for testing */
-		dprintf(LOG_TRACE, "freeing page lists:\n");
-		whitelist_new.pal_gcr3 = whitelist_new.gcr3; /* point to reg page tables for now */
-		whitelist_new.pal_gpt_root.pm = gpa2hva(hpt_cr3_get_address(whitelist_new.pal_gpt_root.t,
-																																whitelist_new.gcr3)); /* point to reg page tables for now */
 	}
 	/********************************/
 
@@ -1199,7 +1193,7 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 
 	/* write the return address to scode stack */
 	addr = get_32bit_aligned_value_from_guest(&whitelist[curr].hpt_guest_walk_ctx,
-																						&whitelist[curr].pal_gpt_root,
+																						&whitelist[curr].reg_gpt_root,
 																						(u32)whitelist[curr].grsp);
 	VCPU_grsp_set(vcpu, VCPU_grsp(vcpu)-4);
 	put_32bit_aligned_value_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
