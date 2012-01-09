@@ -1282,7 +1282,7 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
 
 		/* clear the NPT permission setting in switching into scode */
 		dprintf(LOG_TRACE, "[TV] change NPT permission to exit PAL!\n"); 
-		VCPU_set_current_root_pm(vcpu, VCPU_get_default_root_pm(vcpu));
+		VCPU_set_current_root_pm(vcpu, g_reg_npmo_root.pm);
 		VCPU_gcr3_set(vcpu, whitelist[curr].gcr3);
 		emhf_hwpgtbl_flushall(vcpu); /* XXX */
 
