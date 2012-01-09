@@ -586,55 +586,55 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	}
 
 	/********************************/
-	{
-		void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
-														hpt_pmo_t* reg_gpmo_root, hpt_walk_ctx_t *reg_gpm_ctx,
-														hpt_pmo_t* pal_npmo_root, hpt_walk_ctx_t *pal_npm_ctx,
-														hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx,
-														const section_t *section);
-		pagelist_t *pl = vmalloc(sizeof(pagelist_t));
-		hpt_walk_ctx_t walk_ctx;
-		hpt_pmo_t reg_npmo_root, reg_gpmo_root, pal_npmo_root, pal_gpmo_root;
+	/* { */
+	/* 	void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx, */
+	/* 													hpt_pmo_t* reg_gpmo_root, hpt_walk_ctx_t *reg_gpm_ctx, */
+	/* 													hpt_pmo_t* pal_npmo_root, hpt_walk_ctx_t *pal_npm_ctx, */
+	/* 													hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx, */
+	/* 													const section_t *section); */
+	/* 	pagelist_t *pl = vmalloc(sizeof(pagelist_t)); */
+	/* 	hpt_walk_ctx_t walk_ctx; */
+	/* 	hpt_pmo_t reg_npmo_root, reg_gpmo_root, pal_npmo_root, pal_gpmo_root; */
 
-		hpt_type_t guest_t = (VCPU_gcr4(vcpu) & CR4_PAE) ? HPT_TYPE_PAE : HPT_TYPE_NORM;
+	/* 	hpt_type_t guest_t = (VCPU_gcr4(vcpu) & CR4_PAE) ? HPT_TYPE_PAE : HPT_TYPE_NORM; */
 
-		pagelist_init(pl);
+	/* 	pagelist_init(pl); */
 
-		reg_npmo_root = (hpt_pmo_t) {
-			.type = hpt_nested_walk_ctx.t,
-			.level = hpt_root_lvl(hpt_nested_walk_ctx.t),
-			.pm = VCPU_get_current_root_pm(vcpu),
-		};
-		reg_gpmo_root = (hpt_pmo_t) {
-			.type = guest_t,
-			.level = hpt_root_lvl(guest_t),
-			.pm = (guest_t == HPT_TYPE_PAE)
-			? __gpa2hva__(pae_get_addr_from_32bit_cr3(VCPU_gcr3(vcpu)))
-			:
-		};
-		pal_npmo_root = (hpt_pmo_t) {
-			.type = hpt_nested_walk_ctx.t,
-			.level = hpt_root_lvl(hpt_nested_walk_ctx.t),
-			.pm = pagelist_get_zeroedpage(whitelist_new.pl),
-		};
-		pal_gpmo_root = (hpt_pmo_t) {
-			.type =
-			.level =
-			.pm = pagelist_get_zeroedpage(whitelist_new.pl),
-		};
+	/* 	reg_npmo_root = (hpt_pmo_t) { */
+	/* 		.type = hpt_nested_walk_ctx.t, */
+	/* 		.level = hpt_root_lvl(hpt_nested_walk_ctx.t), */
+	/* 		.pm = VCPU_get_current_root_pm(vcpu), */
+	/* 	}; */
+	/* 	reg_gpmo_root = (hpt_pmo_t) { */
+	/* 		.type = guest_t, */
+	/* 		.level = hpt_root_lvl(guest_t), */
+	/* 		.pm = (guest_t == HPT_TYPE_PAE) */
+	/* 		? gpa2hva(pae_get_addr_from_32bit_cr3(VCPU_gcr3(vcpu))) */
+	/* 		: */
+	/* 	}; */
+	/* 	pal_npmo_root = (hpt_pmo_t) { */
+	/* 		.type = hpt_nested_walk_ctx.t, */
+	/* 		.level = hpt_root_lvl(hpt_nested_walk_ctx.t), */
+	/* 		.pm = pagelist_get_zeroedpage(whitelist_new.pl), */
+	/* 	}; */
+	/* 	pal_gpmo_root = (hpt_pmo_t) { */
+	/* 		.type =  */
+	/* 		.level =  */
+	/* 		.pm = pagelist_get_zeroedpage(whitelist_new.pl), */
+	/* 	}; */
 
-		/* we can use the same walk ctx for guest page tables as for
-			 nested page tables, because guest physical addresses are
-			 unity-mapped to system physical addresses. we also use the same
-			 walk ctx for both 'pal' and 'reg' page table sets for
-			 simplicity. */
-		walk_ctx = hpt_nested_walk_ctx; /* copy from template */
-		walk_ctx.hpt_nested_walk_ctx.gzp_ctx = pl;
-		pagelist_init(pl);
+	/* 	/\* we can use the same walk ctx for guest page tables as for */
+	/* 		 nested page tables, because guest physical addresses are */
+	/* 		 unity-mapped to system physical addresses. we also use the same */
+	/* 		 walk ctx for both 'pal' and 'reg' page table sets for */
+	/* 		 simplicity. *\/ */
+	/* 	walk_ctx = hpt_nested_walk_ctx; /\* copy from template *\/ */
+	/* 	walk_ctx.hpt_nested_walk_ctx.gzp_ctx = pl; */
+	/* 	pagelist_init(pl); */
 
-		for (i=0; i<whitelist_new.scode_info.num_sections; i++) {
-		}
-	}
+	/* 	for (i=0; i<whitelist_new.scode_info.num_sections; i++) { */
+	/* 	} */
+	/* } */
 	/********************************/
 
 	/* register pages in each scode section */
