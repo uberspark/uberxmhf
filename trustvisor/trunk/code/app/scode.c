@@ -588,14 +588,16 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
 	/********************************/
 	{
-		pagelist_t *pl = malloc(sizeof(pagelist_t));
+		pagelist_t *npl = malloc(sizeof(pagelist_t));
+		pagelist_t *gpl = malloc(sizeof(pagelist_t));
 		hpt_walk_ctx_t guest_walk_ctx;
 		hpt_walk_ctx_t nested_walk_ctx;
 		hpt_pmo_t reg_npmo_root, reg_gpmo_root, pal_npmo_root, pal_gpmo_root;
 
 		hpt_type_t guest_t = (VCPU_gcr4(vcpu) & CR4_PAE) ? HPT_TYPE_PAE : HPT_TYPE_NORM;
 
-		pagelist_init(pl);
+		pagelist_init(npl);
+		pagelist_init(gpl);
 
 		reg_npmo_root = (hpt_pmo_t) {
 			.t = hpt_nested_walk_ctx.t,
@@ -623,12 +625,12 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 		pal_npmo_root = (hpt_pmo_t) {
 			.t = reg_npmo_root.t,
 			.lvl = reg_npmo_root.lvl,
-			.pm = pagelist_get_zeroedpage(pl),
+			.pm = pagelist_get_zeroedpage(npl),
 		};
 		pal_gpmo_root = (hpt_pmo_t) {
 			.t = reg_gpmo_root.t,
 			.lvl = reg_gpmo_root.lvl,
-			.pm = pagelist_get_zeroedpage(pl),
+			.pm = pagelist_get_zeroedpage(gpl),
 		};
 
 		/* we can use the same walk ctx for guest page tables as for
@@ -637,10 +639,10 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 			 walk ctx for both 'pal' and 'reg' page table sets for
 			 simplicity. */
 		nested_walk_ctx = hpt_nested_walk_ctx; /* copy from template */
-		nested_walk_ctx.gzp_ctx = pl;
+		nested_walk_ctx.gzp_ctx = npl;
 
 		guest_walk_ctx = hpt_nested_walk_ctx;
-		guest_walk_ctx.gzp_ctx = pl;
+		guest_walk_ctx.gzp_ctx = gpl;
 		guest_walk_ctx.t = reg_gpmo_root.t;
 
 		for (i=0; i<whitelist_new.scode_info.num_sections; i++) {
@@ -657,13 +659,17 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 												 &section);
 		}
 
+		/* XXX add all gpl pages to pal's nested page tables */
+
 		/* XXX flush TLB to ensure 'reg' is now correctly denied access */
 
 		/* whitelist_new.pal_hpt_root = pal_npmo_root.pm; */
 
 		/* XXX temp for testing */
-		pagelist_free_all(pl);
-		free(pl);
+		pagelist_free_all(gpl);
+		pagelist_free_all(npl);
+		free(gpl);
+		free(npl);
 	}
 	/********************************/
 
