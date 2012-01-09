@@ -267,7 +267,9 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
                                                       reg_gpmo_root,
                                                       page_pal_gva,
                                                       &user_accessible);
-      CHK(HPT_PROTS_RWX == effective_prots);
+			dprintf(LOG_TRACE, "%s got reg gpt prots:0x%x, user:%d\n",
+							__FUNCTION__, (u32)effective_prots, (int)user_accessible);
+      CHK((effective_prots & section->prot) == section->prot);
       CHK(user_accessible);
     }
 
