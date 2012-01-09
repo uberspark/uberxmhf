@@ -164,13 +164,13 @@ TVOperationPerform(INOUT tz_operation_t* psOperation,
 
       TZIEncodeToDecode(psInBuf);
 
-      /* if (share_referenced_mem(fn, */
-      /*                          psOperation->sImp.psRefdSubranges, */
-      /*                          psOutBuf, */
-      /*                          psInBuf, */
-      /*                          psOperation->sImp.psSession->sImp.psDevice->sImp.psExt->userspace_only)) { */
-      /*   return TZ_ERROR_GENERIC; */
-      /* } */
+      if (share_referenced_mem(fn,
+                               psOperation->sImp.psRefdSubranges,
+                               psOutBuf,
+                               psInBuf,
+                               psOperation->sImp.psSession->sImp.psDevice->sImp.psExt->userspace_only)) {
+        return TZ_ERROR_GENERIC;
+      }
       fn(uiCommand, psInBuf, psOutBuf, puiServiceReturn);
       TZIEncodeToDecode(psOutBuf);
 
@@ -303,12 +303,12 @@ TVManagerDownloadService(INOUT tz_session_t* psSession,
          .size = sizeof(uint32_t)/sizeof(int)},
 
         /* psInBuf. (pass a pointer to a shared region) */
-        {.type = TV_PAL_PM_POINTER,
-         .size = MARSHAL_BUF_SIZE/sizeof(int)},
+        {.type = TV_PAL_PM_INTEGER,
+         .size = sizeof(uint32_t)/sizeof(int)},
 
         /* psOutBuf */
-        {.type = TV_PAL_PM_POINTER,
-         .size = MARSHAL_BUF_SIZE/sizeof(int)},
+        {.type = TV_PAL_PM_INTEGER,
+         .size = sizeof(uint32_t)/sizeof(int)},
 
         /* puiRv */
         {.type = TV_PAL_PM_POINTER,
