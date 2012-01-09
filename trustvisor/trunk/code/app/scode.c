@@ -51,9 +51,6 @@
 #include <crypto_init.h>
 #include <sha1.h>
 
-static void scode_expose_arch(VCPU *vcpu, whitelist_entry_t *wle);
-static void scode_unexpose_arch(VCPU *vcpu, whitelist_entry_t *wle);
-
 hpt_walk_ctx_t hpt_nested_walk_ctx;
 hpt_walk_ctx_t hpt_guest_walk_ctx;
 
@@ -908,108 +905,6 @@ int test_page_in_list(pte_t * page_list, pte_t page, u32 count)
 	return 0;
 }
 
-#define EXPOSE_PAGE(x) expose_page(pte_page,x, &pte_count)
-/* expose one page, helper function used by scode_expose_arch() */
-void expose_page (pte_t *page_list, pte_t page, u32 * count)
-{
-	dprintf(LOG_TRACE, "[TV] expose page %#Lx \n", page);
-	if (page != 0xFFFFFFFF) {
-		page = SCODE_PTE_TYPE_SET(page, TV_PAL_SECTION_GUEST_PAGE_TABLES);
-		if (!test_page_in_list(page_list, page, *count)) {
-			page_list[(*count)]=page;
-			*count = (*count)+1;
-			/* set up DEV vector to prevent DMA attack */
-			/* XXX FIXME: temporarily disable */
-			//set_page_dev_prot(pfn);
-			dprintf(LOG_TRACE, "[TV]   expose page %#Lx \n", page);
-		}
-	}
-}
-
-/* find all PTE entry pages that is related to access scode and GDT */
-static void scode_expose_arch(VCPU *vcpu, whitelist_entry_t *wle)
-{
-	size_t i;
-	size_t j;
-	pte_t *pte_page;
-	u32 pte_count = 0;
-	u32 gpaddr = 0;
-	u32 is_pae;
-	u32 gdtr;
-	struct tv_pal_section * ginfo;
-	pte_t tmp_page[3];
-	u32 tmp_count=0;
-	pte_t *sp = wle->scode_pages;
-	u32 gcr3_flag=0;
-
-	perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_EXPOSE_ARCH], vcpu->idx);
-
-	is_pae = VCPU_gcr4(vcpu) & CR4_PAE;
-	gdtr = VCPU_gdtr_base(vcpu);
-
-	/* alloc memory for page table entry holder */
-	wle->pte_page = malloc(MAX_REGPAGES_NUM*sizeof(pte_t));
-	pte_page = wle->pte_page;
-
-	/* get related page tables for scode */
-	/* Here we walk guest page table, and find out all the pdp,pd,pt entry
-	   that is necessary to translate gvaddr */
-	dprintf(LOG_TRACE, "[TV] expose SCODE related PTE pages\n");
-	for( i=0 ; i < wle->scode_info.num_sections ; i++ )  {
-		ginfo = &(wle->scode_info.sections[i]);
-		for( j=0 ; j< ginfo->page_num; j++ )  {
-			gpaddr = gpt_get_ptpages(vcpu, ginfo->start_addr+(j<<PAGE_SHIFT_4K), &tmp_page[0], &tmp_page[1], &tmp_page[2]);
-
-			/* check gvaddr to gpaddr mapping */
-			if( gpaddr != (sp[tmp_count+j] & ~0x7)) {
-				dprintf(LOG_ERROR, "[TV] SECURITY: scode vaddr %x -> paddr %#Lx mapping changed! invalide gpaddr is %x!\n", ginfo->start_addr+(j<<PAGE_SHIFT_4K), sp[tmp_count+j], gpaddr);
-				free(wle->pte_page);
-				HALT();
-			}
-
-			/* write pdp, pd, pt entry into pte_page */
-			if (is_pae) {
-				/* PAE mode */
-				if (gcr3_flag == 0) {
-					gcr3_flag = 1;
-					EXPOSE_PAGE(tmp_page[0]);
-				}
-
-				EXPOSE_PAGE(tmp_page[1]); 
-				EXPOSE_PAGE(tmp_page[2]);
-			} else {
-				/* NPAE mode */
-				/* PD table has 1024 entries, which is two page */
-				if (gcr3_flag == 0) {
-					gcr3_flag = 1;
-					EXPOSE_PAGE(tmp_page[0]);
-					EXPOSE_PAGE(tmp_page[0]+(1<<PAGE_SHIFT_4K));
-				}
-				EXPOSE_PAGE(tmp_page[1]);
-				EXPOSE_PAGE(tmp_page[1]+(1<<PAGE_SHIFT_4K));
-			}
-		}
-		tmp_count += (ginfo->page_num);
-	}
-
-	/* get related page tables for gdt */
-	/* Here we walk guest page table, and find out all the pages
-	   that is necessary to translate gdtr.base */
-	/* GDP table can be fit into one page and already be noted down in the
-	   page table walking for scode, no need to do it again, 
-	   that is why we put NULL below, and take gpaddr instead(protect the page contains GDT table */ 
-	dprintf(LOG_TRACE, "[TV] expose GDT related PTE pages\n");
-	gpaddr = gpt_get_ptpages(vcpu, gdtr, NULL, &tmp_page[1], &tmp_page[2]);
-
-	EXPOSE_PAGE(gpaddr);
-	EXPOSE_PAGE(tmp_page[1]);
-	EXPOSE_PAGE(tmp_page[2]);
-
-	wle->pte_size = pte_count << PAGE_SHIFT_4K;
-
-	perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_EXPOSE_ARCH], vcpu->idx);
-}
-
 void memcpy_guest_to_guest(VCPU * vcpu, u32 src, u32 dst, u32 len)
 {
 	u32 src_gpaddr, dst_gpaddr;
@@ -1231,25 +1126,6 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 
 	perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_SCODE], vcpu->idx);
 	return 0;
-}
-
-static void scode_unexpose_arch(VCPU __attribute__((unused)) *vcpu, whitelist_entry_t *wle)
-{
-	size_t i;
-	pte_t * page = wle->pte_page;
-	dprintf(LOG_TRACE, "[TV] unexpose SCODE and GDT related to PTE pages\n");
-	/* clear page bitmap set in scode_expose_arch() */
-	for (i=0; i<((wle->pte_size)>>PAGE_SHIFT_4K);i++) {
-		clear_page_scode_bitmap(((page[i])>>PAGE_SHIFT_4K));
-		/* XXX FIXME: temporarily disable */
-	//	clear_page_dev_prot(((page[i])>>PAGE_SHIFT_4K));
-	}
-
-	/* free pte_page to save heap space,
-	 * next expose will alloc a new pte_page */
-	free(wle->pte_page);
-	wle->pte_page = 0;
-	wle->pte_size = 0;
 }
 
 u32 scode_unmarshall(VCPU * vcpu)
@@ -1631,13 +1507,13 @@ u32 scode_share_range(VCPU * vcpu, whitelist_entry_t *entry, u32 gva_base, u32 g
 												hpt_root_lvl(entry->hpt_nested_walk_ctx.t),
 												new_scode_pages,
 												gva_len_pages);
-		scode_expose_arch(vcpu, entry);
+		/* scode_expose_arch(vcpu, entry); */
 		hpt_insert_pal_pmes(vcpu, &entry->hpt_nested_walk_ctx,
 												entry->pal_npt_root.pm,
 												hpt_root_lvl(entry->hpt_nested_walk_ctx.t),
 												entry->pte_page,
 												entry->pte_size>>PAGE_SHIFT_4K);
-		scode_unexpose_arch(vcpu, entry);
+		/* scode_unexpose_arch(vcpu, entry); */
 	}
 
   return rv;
