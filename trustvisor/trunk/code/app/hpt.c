@@ -62,6 +62,105 @@ void hpt_walk_set_prots(hpt_walk_ctx_t *walk_ctx,
   }
 }
 
+typedef struct {
+  hpt_va_t reg_gva;
+  hpt_va_t pal_gva;
+  size_t size;
+  hpt_prot_t prot;
+} section_t;
+
+void scode_add_section(hpt_pm_t reg_npt_root, hpt_walk_ctx_t *reg_npt_ctx,
+                       hpt_pm_t reg_gpt_root, hpt_walk_ctx_t *reg_gpt_ctx,
+                       hpt_pm_t pal_npt_root, hpt_walk_ctx_t *pal_npt_ctx,
+                       hpt_pm_t pal_gpt_root, hpt_walk_ctx_t *pal_gpt_ctx,
+                       const section_t *section)
+{
+  int reg_gpt_root_lvl = hpt_root_lvl(reg_gpt_ctx->t);
+  int reg_npt_root_lvl = hpt_root_lvl(reg_npt_ctx->t);
+  int pal_gpt_root_lvl = hpt_root_lvl(pal_gpt_ctx->t);
+  int pal_npt_root_lvl = hpt_root_lvl(pal_npt_ctx->t);
+  hpt_va_t page_reg_gva;
+  size_t offset;
+  
+  /* XXX don't hard-code page size here. */
+  /* XXX fail gracefully */
+  ASSERT((section->size % PAGE_SIZE_4K) == 0); 
+
+  for (offset=0; offset < section->size; offset += PAGE_SIZE_4K) {
+    hpt_va_t page_reg_gva = section->reg_gva + offset;
+    hpt_va_t page_pal_gva = section->pal_gva + offset;
+
+    /* XXX we don't use hpt_va_t or hpt_pa_t for gpa's because they
+       get used as both */
+    u64 page_reg_gpa, page_pal_gpa; /* guest-physical-addresses */
+    hpt_va_t page_reg_gva, page_pal_gva; /* guest-virtual-addresses */
+
+    hpt_pme_t page_reg_gpme; int page_reg_gpme_lvl; /* reg's guest page-map-entry and lvl */
+    hpt_pme_t page_pal_gpme; int page_pal_gpme_lvl; /* pal's guest page-map-entry and lvl */
+
+    hpt_pme_t page_reg_npme; int page_reg_npme_lvl; /* reg's nested page-map-entry and lvl */
+    hpt_pme_t page_pal_npme; int page_pal_npme_lvl; /* pal's nested page-map-entry and lvl */
+
+    /* lock? quiesce? */
+
+    page_reg_gpme_lvl=1;
+    page_reg_gpme = hpt_walk_get_pme(reg_gpt_ctx, reg_gpt_root_lvl, reg_gpt_root,
+                                     &page_reg_gpme_lvl,
+                                     page_reg_gva);
+    ASSERT(page_reg_gpme_lvl==1); /* we don't handle large pages */
+    page_reg_gpa = hpt_pme_get_address(reg_gpt_ctx->t, page_reg_gpme_lvl, page_reg_gpme);
+
+    page_reg_npme_lvl=1;
+    page_reg_npme = hpt_pm_get_pme_by_va(reg_npt_ctx, reg_npt_root_lvl, reg_npt_root,
+                                         &page_reg_npme_lvl,
+                                         page_reg_gpa);
+    ASSERT(page_reg_npme_lvl==1); /* we don't handle large pages */
+    page_spa = hpt_pme_get_address(reg_npt_ctx->t, page_reg_npme_lvl, page_reg_npme);
+
+    /* probably no reason to change */
+    page_pal_gpa = page_reg_gpa;
+
+    /* check that this VM is allowed to access this system-physical mem */
+    CHK(HPT_PROT_RWX == hpt_walk_check_prot(reg_npt_root, page_reg_gpa));
+
+    /* check that this guest process is allowed to access this guest-physical mem */
+    CHK(HPT_PROT_RWX == hpt_walk_check_prot(guest_reg_root, page_reg_gva));
+
+    /* check that the requested virtual address isn't already mapped
+       into PAL's address space */
+    /*FIXME XXX*/
+
+    /* revoke access from 'reg' VM */
+    page_reg_npme = hpt_pme_setprot(reg_npt_ctx->t, page_reg_npme_lvl,
+                                    page_reg_npme, HPT_PROT_NONE);
+    hpt_err = hpt_walk_insert_pme(reg_npt_ctx, reg_npt_root_lvl, reg_npt_root, 1,
+                                  page_reg_gpa, page_reg_npme);
+    CHK_RV(hpt_err);
+
+    /* for simplicity, we don't bother removing from guest page
+       tables. removing from nested page tables is sufficient */
+
+    /* add access to pal guest page tables */
+    page_pal_gpme = page_reg_gpme; /* XXX SECURITY should build from scratch */
+    page_pal_gpme = hpt_pme_set_address(pal_gpt_ctx->t, page_pal_gpme_lvl,
+                                        page_pal_gpme, page_pal_gva);
+    page_pal_gpme = hpt_pme_setprot(pal_gpt_ctx->t, page_pal_gpme_lvl,
+                                    page_pal_gpme, HPT_PROTS_RWX);
+    hpt_walk_insert_pme_alloc(pal_gpt_ctx, pal_gpt_root_lvl, pal_gpt_root, 1,
+                              page_pal_gva, page_pal_gpme);
+
+    /* add access to pal nested page tables */
+    page_pal_npme = page_reg_npme; /* XXX SECURITY should build from scratch */
+    page_pal_npme = hpt_pme_setprot(pal_npt_ctx->t, page_pal_npme_lvl,
+                                    page_pal_npme, section->prot);
+    hpt_walk_insert_pme_alloc(pal_npt_ctx, pal_npt_root_lvl, pal_npt_root, 1,
+                              page_pal_gpa, page_pal_npme);
+
+    /* unlock? unquiesce? */
+  }
+  /* add pal guest page tables to pal nested page tables */
+}
+
 /* Local Variables: */
 /* mode:c           */
 /* indent-tabs-mode:'f */
