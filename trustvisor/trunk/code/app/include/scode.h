@@ -90,7 +90,7 @@ typedef struct whitelist_entry{
 	u32 grsp;		/* guest reguar stack */
 	u32 gssp;		/* guest sensitive code stack */
 	u32 gss_size;   /* guest sensitive code stack page number */
-	u32 entry_v; /* entry point virutal address */
+	u32 entry_v; /* entry point virtual address */
 	u32 entry_p; /* entry point physical address */
 	u32 return_v; /* return point virtual address */
 
