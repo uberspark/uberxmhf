@@ -588,16 +588,17 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
 	/********************************/
 	{
-		pagelist_t *npl = malloc(sizeof(pagelist_t));
-		pagelist_t *gpl = malloc(sizeof(pagelist_t));
 		hpt_walk_ctx_t guest_walk_ctx;
 		hpt_walk_ctx_t nested_walk_ctx;
 		hpt_pmo_t reg_npmo_root, reg_gpmo_root, pal_npmo_root, pal_gpmo_root;
 
 		hpt_type_t guest_t = (VCPU_gcr4(vcpu) & CR4_PAE) ? HPT_TYPE_PAE : HPT_TYPE_NORM;
 
-		pagelist_init(npl);
-		pagelist_init(gpl);
+		whitelist_new.npl = malloc(sizeof(pagelist_t));
+		pagelist_init(whitelist_new.npl);
+
+		whitelist_new.gpl = malloc(sizeof(pagelist_t));
+		pagelist_init(whitelist_new.gpl);
 
 		reg_npmo_root = (hpt_pmo_t) {
 			.t = hpt_nested_walk_ctx.t,
@@ -625,12 +626,12 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 		pal_npmo_root = (hpt_pmo_t) {
 			.t = reg_npmo_root.t,
 			.lvl = reg_npmo_root.lvl,
-			.pm = pagelist_get_zeroedpage(npl),
+			.pm = pagelist_get_zeroedpage(whitelist_new.npl),
 		};
 		pal_gpmo_root = (hpt_pmo_t) {
 			.t = reg_gpmo_root.t,
 			.lvl = reg_gpmo_root.lvl,
-			.pm = pagelist_get_zeroedpage(gpl),
+			.pm = pagelist_get_zeroedpage(whitelist_new.gpl),
 		};
 
 		/* we can use the same walk ctx for guest page tables as for
@@ -639,10 +640,10 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 			 walk ctx for both 'pal' and 'reg' page table sets for
 			 simplicity. */
 		nested_walk_ctx = hpt_nested_walk_ctx; /* copy from template */
-		nested_walk_ctx.gzp_ctx = npl;
+		nested_walk_ctx.gzp_ctx = whitelist_new.npl;
 
 		guest_walk_ctx = hpt_nested_walk_ctx;
-		guest_walk_ctx.gzp_ctx = gpl;
+		guest_walk_ctx.gzp_ctx = whitelist_new.gpl;
 		guest_walk_ctx.t = reg_gpmo_root.t;
 
 		/* add all gpl pages to pal's nested page tables, ensuring that
@@ -651,13 +652,13 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 		/* XXX breaks pagelist abstraction. will break if pagelist ever dynamically
 			 allocates more buffers */
 		dprintf(LOG_TRACE, "adding gpl to pal's npt:\n");
-		for (i=0; i < gpl->num_allocd; i++) {
+		for (i=0; i < whitelist_new.gpl->num_allocd; i++) {
 			hpt_pmeo_t pmeo = {
 				.pme = 0,
 				.t = pal_npmo_root.t,
 				.lvl = 1,
 			};
-			void *page = gpl->page_base + i*PAGE_SIZE_4K;
+			void *page = whitelist_new.gpl->page_base + i*PAGE_SIZE_4K;
 			int hpt_err;
 			hpt_pmeo_setprot(&pmeo, HPT_PROTS_RWX);
 			hpt_pmeo_set_address(&pmeo, hva2spa(page));
@@ -689,17 +690,17 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 		scode_clone_gdt(VCPU_gdtr_base(vcpu), VCPU_gdtr_limit(vcpu),
 										&reg_gpmo_root, &guest_walk_ctx,
 										&pal_gpmo_root, &guest_walk_ctx,
-										gpl);
+										whitelist_new.gpl);
 
 		/* whitelist_new.pal_hpt_root = pal_npmo_root.pm; */
 		/* XXX flush TLB to ensure 'reg' is now correctly denied access */
 
 		/* XXX temp for testing */
 		dprintf(LOG_TRACE, "freeing page lists:\n");
-		pagelist_free_all(gpl);
-		pagelist_free_all(npl);
-		free(gpl);
-		free(npl);
+		pagelist_free_all(whitelist_new.gpl);
+		pagelist_free_all(whitelist_new.npl);
+		free(whitelist_new.gpl);
+		free(whitelist_new.npl);
 	}
 	/********************************/
 
@@ -728,9 +729,9 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
 	/* initialize pal's hardware page tables */
 	whitelist_new.hpt_nested_walk_ctx = hpt_nested_walk_ctx; /* copy from template */
-	whitelist_new.pl = malloc(sizeof(pagelist_t));
-	pagelist_init(whitelist_new.pl);
-	whitelist_new.hpt_nested_walk_ctx.gzp_ctx = whitelist_new.pl; /* assign page allocator */
+	whitelist_new.npl = malloc(sizeof(pagelist_t));
+	pagelist_init(whitelist_new.npl);
+	whitelist_new.hpt_nested_walk_ctx.gzp_ctx = whitelist_new.npl; /* assign page allocator */
 	whitelist_new.pal_hpt_root = pagelist_get_zeroedpage(whitelist_new.pl);
 
 	hpt_insert_pal_pmes(vcpu,
@@ -855,8 +856,11 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
 	whitelist_size --;
 	whitelist[i].gcr3 = 0;
 
-	pagelist_free_all(whitelist[i].pl);
-	free(whitelist[i].pl);
+	pagelist_free_all(whitelist[i].npl);
+	free(whitelist[i].npl);
+
+	pagelist_free_all(whitelist[i].gpl);
+	free(whitelist[i].gpl);
 
 	return 0; 
 }

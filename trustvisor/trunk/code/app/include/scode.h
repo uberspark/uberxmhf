@@ -113,7 +113,8 @@ typedef struct whitelist_entry{
   utpm_master_state_t utpm;
 
 	/* pal page tables */
-	pagelist_t *pl;
+	pagelist_t *gpl;
+	pagelist_t *npl;
 	hpt_walk_ctx_t hpt_nested_walk_ctx;
 	hpt_pm_t pal_hpt_root;
 } __attribute__ ((packed)) whitelist_entry_t;
