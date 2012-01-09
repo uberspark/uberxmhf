@@ -208,40 +208,91 @@ static whitelist_entry_t* find_scode_by_entry(u64 gcr3, u32 gv_entry)
 	return NULL;
 }
 
-/* FIXME: should this be in crypto_init.c? */
-u32 scode_measure(utpm_master_state_t *utpm, pte_t *pte_pages, u32 size)
+int scode_measure_section(utpm_master_state_t *utpm,
+													whitelist_entry_t *wle,
+													const tv_pal_section_int_t *section)
 {
-	size_t i; 
-	u32 paddr;
 	SHA_CTX ctx;
 	TPM_DIGEST sha1sum;
 
-	dprintf(LOG_TRACE, "[TV] measure scode and extend uTPM PCR value!\n");
 	SHA1_Init(&ctx);
-	for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)
+
+	/* always measure the section type, which determines permissions and
+		 how the section is used. */
+	SHA1_Update(&ctx, (const uint8_t*)&section->section_type, sizeof(section->section_type));
+
+	/* measure the address where the section is mapped. this prevents,
+		 for example, that a section is mapped with a different alignment
+		 to change the effective entry point, or switch some static data
+		 for other static data, etc. */
+	/* XXX we currently don't do this for PARAM and STACK sections,
+		 though it wouldn't be a bad idea to do so. this will break
+		 existing client code, though, which dynamically allocates those
+		 sections and doesn't request a fixed location to map into the
+		 pal's virtual address space.
+	*/
+	if (section->section_type != TV_PAL_SECTION_STACK
+			&& section->section_type != TV_PAL_SECTION_PARAM) {
+		SHA1_Update(&ctx, (const uint8_t*)&section->pal_gva, sizeof(section->pal_gva));
+	}
+
+	/* measure section size. not clear that this is strictly necessary,
+		 since giving a pal more memory shouldn't hurt anything, and less
+		 memory should result in no worse than the pal crashing, but seems
+		 like good hygiene. */
+	SHA1_Update(&ctx, (const uint8_t*)&section->size, sizeof(section->size));
+
+	/* measure contents. we could consider making this optional for,
+		 e.g., PARAM and STACK sections, but seems like good hygiene to
+		 always do it. client ought to ensure that those sections are
+		 consistent (e.g., 0'd). an alternative to consider is to enforce
+		 that the hypervisor either measures or zeroes each section.*/
 	{
-		/* only measure SCODE, STEXT, SDATA pages */
-		paddr = PAGE_ALIGN_4K(pte_pages[i]);
-		switch(SCODE_PTE_TYPE_GET(pte_pages[i])) {
-		case TV_PAL_SECTION_CODE:
-		case TV_PAL_SECTION_SHARED_CODE:
-		case TV_PAL_SECTION_DATA:
-			dprintf(LOG_TRACE, "[TV]   measure scode page %d paddr %#x\n", i+1, paddr);
-			SHA1_Update(&ctx, (u8 *)paddr, PAGE_SIZE_4K);
-			break;
-		case TV_PAL_SECTION_PARAM:
-		case TV_PAL_SECTION_STACK:
-		case TV_PAL_SECTION_SHARED:
-			dprintf(LOG_TRACE, "[TV]   ignore scode page %d paddr %#x\n", i+1, paddr);
-			break;
-		default:
-			ASSERT(0);
+		size_t measured=0;
+
+		while(measured < section->size) {
+			gva_t gva = section->pal_gva + measured;
+			hpt_pmeo_t pmeo;
+			gpa_t gpa;
+			size_t to_measure;
+			size_t remaining_on_page;
+
+			hpt_walk_get_pmeo(&pmeo, &wle->hpt_guest_walk_ctx, &wle->pal_gpt_root, 1, gva);
+			/* trustvisor should have already mapped this section in before measuring it */
+			/* XXX should this be a proper run-time check? */
+			ASSERT(hpt_pmeo_is_present(&pmeo));
+			ASSERT(hpt_pmeo_is_page(&pmeo));
+
+			gpa = hpt_pmeo_va_to_pa(&pmeo, gva);
+
+			remaining_on_page = hpt_remaining_on_page(&pmeo, gva);
+			to_measure = MIN(section->size-measured, remaining_on_page);
+
+			SHA1_Update(&ctx, gpa2hva(gpa), to_measure);
+			measured += to_measure;
 		}
 	}
+
 	SHA1_Final(sha1sum.value, &ctx);
 
 	/* extend pcr 0 */
 	utpm_extend(&sha1sum, utpm, 0);
+
+	return 0;
+}
+
+int scode_measure_sections(utpm_master_state_t *utpm,
+													 whitelist_entry_t *wle)
+{
+	size_t i;
+	int err=0;
+
+	for(i=0; i < wle->sections_num; i++) {
+		err = scode_measure_section(utpm, wle, &wle->sections[i]);
+		if (err) {
+			return err;
+		}
+	}
 
 	return 0;
 }
@@ -784,8 +835,8 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	/* initialize Micro-TPM instance */
 	utpm_init_instance(&whitelist_new.utpm);
 
-	/* hash the entire SSCB code, and then extend the hash value into uTPM PCR[0] */
-	if (scode_measure(&whitelist_new.utpm, whitelist_new.scode_pages, whitelist_new.scode_size))
+	/* extent uTPM PCR[0] with with hash of each section metadata and contents */
+	if (scode_measure_sections(&whitelist_new.utpm, &whitelist_new))
 	{
 		hpt_scode_clear_prot(vcpu, whitelist_new.scode_pages, whitelist_new.scode_size);
 		free(whitelist_new.scode_pages);
