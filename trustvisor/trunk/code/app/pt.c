@@ -783,7 +783,7 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
     hpt_err = hpt_walk_insert_pmeo_alloc(pal_npm_ctx,
                                          pal_npmo_root,
                                          &page_pal_npmeo,
-                                         gpa2spa(page_pal_gpa));
+                                         page_pal_gpa);
     CHK_RV(hpt_err);
 
     /* unlock? unquiesce? */
