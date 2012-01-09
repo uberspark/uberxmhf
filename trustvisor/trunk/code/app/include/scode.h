@@ -86,6 +86,15 @@ extern char *g_tv_perf_ctr_strings[];
 /* insert new counters here, and update count below */
 #define TV_PERF_CTRS_COUNT 7
 
+typedef struct {
+  hpt_va_t reg_gva;
+  hpt_va_t pal_gva;
+  size_t size;
+  hpt_prot_t pal_prot;
+  hpt_prot_t reg_prot;
+	u32 section_type;
+} tv_pal_section_int_t;
+
 /* scode state struct */
 typedef struct whitelist_entry{
 	u64 gcr3; 
@@ -100,6 +109,9 @@ typedef struct whitelist_entry{
 	u32 gpmp;     /* guest parameter page address */
 	u32 gpm_size; /* guest parameter page number */
 	u32 gpm_num;  /* guest parameter number */
+
+	tv_pal_section_int_t sections[TV_MAX_SECTIONS];
+	size_t sections_num;
 
 	struct tv_pal_sections scode_info; /* scode_info struct for registration function inpu */
 	struct tv_pal_params params_info; /* param info struct */
@@ -209,14 +221,6 @@ u32 scode_share_ranges(VCPU * vcpu, u32 scode_entry, u32 gva_base[], u32 gva_len
 u32 scode_register(VCPU * vcpu, u32 scode_info, u32 scode_pm, u32 gventry);
 u32 scode_unregister(VCPU * vcpu, u32 gvaddr);
 void init_scode(VCPU * vcpu);
-
-typedef struct {
-  hpt_va_t reg_gva;
-  hpt_va_t pal_gva;
-  size_t size;
-  hpt_prot_t pal_prot;
-  hpt_prot_t reg_prot;
-} tv_pal_section_int_t;
 
 void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
                         hpt_pmo_t* reg_gpmo_root, hpt_walk_ctx_t *reg_gpm_ctx,

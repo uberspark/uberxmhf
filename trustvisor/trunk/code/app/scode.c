@@ -694,19 +694,21 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
 		dprintf(LOG_TRACE, "adding sections to pal's npts and gpts:\n");
 		/* map each requested section into the pal */
+		whitelist_new.sections_num = whitelist_new.scode_info.num_sections;
 		for (i=0; i<whitelist_new.scode_info.num_sections; i++) {
-			tv_pal_section_int_t section = {
+			whitelist_new.sections[i] = (tv_pal_section_int_t) {
 				.reg_gva = whitelist_new.scode_info.sections[i].start_addr,
 				.pal_gva = whitelist_new.scode_info.sections[i].start_addr,
 				.size = whitelist_new.scode_info.sections[i].page_num * PAGE_SIZE_4K,
 				.pal_prot = pal_prot_of_type(whitelist_new.scode_info.sections[i].type),
 				.reg_prot = reg_prot_of_type(whitelist_new.scode_info.sections[i].type),
+				.section_type = whitelist_new.scode_info.sections[i].type,
 			};
 			scode_lend_section(&reg_npmo_root, &whitelist_new.hpt_nested_walk_ctx,
 												 &reg_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
 												 &pal_npmo_root, &whitelist_new.hpt_nested_walk_ctx,
 												 &pal_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
-												 &section);
+												 &whitelist_new.sections[i]);
 		}
 
 		/* clone gdt */
