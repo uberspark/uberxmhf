@@ -692,6 +692,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
 		whitelist_new.pal_npt_root = pal_npmo_root;
 		whitelist_new.pal_gpt_root = pal_gpmo_root;
+		whitelist_new.reg_gpt_root = reg_gpmo_root;
 		whitelist_new.pal_gcr3 = hpt_cr3_set_address(whitelist_new.pal_gpt_root.t,
 																								 VCPU_gcr3(vcpu), /* XXX should build trusted cr3 from scratch */
 																								 hva2gpa(whitelist_new.pal_gpt_root.pm));
