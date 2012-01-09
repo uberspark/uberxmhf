@@ -724,9 +724,6 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
 		/* XXX temp for testing */
 		dprintf(LOG_TRACE, "freeing page lists:\n");
-		pagelist_free_all(whitelist_new.npl);
-		free(whitelist_new.npl);
-		whitelist_new.npl=NULL;
 		whitelist_new.pal_gcr3 = whitelist_new.gcr3; /* point to reg page tables for now */
 		whitelist_new.pal_gpt_root.pm = gpa2hva(hpt_cr3_get_address(whitelist_new.pal_gpt_root.t,
 																																whitelist_new.gcr3)); /* point to reg page tables for now */
@@ -756,22 +753,6 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 		return 1;
 	}
 
-	/* initialize pal's hardware page tables */
-	whitelist_new.hpt_nested_walk_ctx = hpt_nested_walk_ctx; /* copy from template */
-	whitelist_new.npl = malloc(sizeof(pagelist_t));
-	pagelist_init(whitelist_new.npl);
-	whitelist_new.hpt_nested_walk_ctx.gzp_ctx = whitelist_new.npl; /* assign page allocator */
-
-	whitelist_new.pal_npt_root.pm = pagelist_get_zeroedpage(whitelist_new.npl);
-	whitelist_new.pal_npt_root.t = hpt_nested_walk_ctx.t;
-	whitelist_new.pal_npt_root.lvl = hpt_root_lvl(hpt_nested_walk_ctx.t);
-
-	hpt_insert_pal_pmes(vcpu,
-											&whitelist_new.hpt_nested_walk_ctx,
-											whitelist_new.pal_npt_root.pm,
-											whitelist_new.pal_npt_root.lvl,
-											whitelist_new.scode_pages,
-											whitelist_new.scode_size>>PAGE_SHIFT_4K);
 	/* register guest page table pages. TODO: cloneguest page table
 		 instead of checking on every switch to ensure it hasn't been
 		 tampered. */
