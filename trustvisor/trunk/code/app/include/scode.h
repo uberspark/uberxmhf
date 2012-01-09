@@ -119,6 +119,7 @@ typedef struct whitelist_entry{
 	hpt_walk_ctx_t hpt_nested_walk_ctx;
 	hpt_pmo_t pal_npt_root;
 	hpt_pmo_t pal_gpt_root;
+	u64 pal_gcr3;
 } __attribute__ ((packed)) whitelist_entry_t;
 
 
