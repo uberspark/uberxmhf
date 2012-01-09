@@ -402,19 +402,27 @@ int guest_pt_copy(VCPU *vcpu, pte_t *dst_page, u32 gvaddr, u32 size, int type)
 /* see Intel System Programming Guide, Volume 3, 5-42 "combined Page-Directory and Page-Table Protection"  */
 u32 guest_pt_check_user_rw(VCPU * vcpu, u32 vaddr, u32 page_num)
 {
-	u32 i, addr;
-	u64 pde, pte;
-	for( i=0 ; i<page_num ; i++ )  {
-		addr = vaddr+(i<<PAGE_SHIFT_4K);
-		gpt_get_ptentries(vcpu,addr,NULL,&pde, &pte, NULL);
-		if ((!(pde & _PAGE_USER)) || (!(pde & _PAGE_RW))) {
+	hpt_prot_t effective_prots;
+	bool user_accessible;
+	hpt_type_t t = (VCPU_gcr4(vcpu) & CR4_PAE) ? HPT_TYPE_PAE : HPT_TYPE_NORM;
+	hpt_pmo_t root = {
+		.pm = VCPU_get_current_guest_root_pm(vcpu),
+		.t = t,
+		.lvl = hpt_root_lvl(t),
+	};
+	hpt_walk_ctx_t ctx = hpt_guest_walk_ctx;
+	size_t i;
+
+	ctx.t = t;
+
+	for(i=0; i<page_num; i++) {
+		effective_prots = hpto_walk_get_effective_prots(&ctx,
+																										&root,
+																										vaddr+(i<<PAGE_SHIFT_4K),
+																										&user_accessible);
+		if (!user_accessible
+				|| !((effective_prots & HPT_PROTS_RW) == HPT_PROTS_RW))
 			return 1;
-		}
-		if (pte!=0xFFFFFFFF) {
-			if ((!(pte & _PAGE_USER)) || (!(pte & _PAGE_RW))) {
-				return 1;
-			}
-		}
 	}
 	return 0;
 }
