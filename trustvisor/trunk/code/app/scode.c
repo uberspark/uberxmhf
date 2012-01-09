@@ -52,6 +52,7 @@
 
 hpt_walk_ctx_t hpt_nested_walk_ctx;
 hpt_walk_ctx_t hpt_guest_walk_ctx;
+hpt_pmo_t      g_reg_npmo_root;
 
 /* this is the return address we push onto the stack when entering the
 	 pal. We return to the reg world on a nested page fault on
@@ -623,6 +624,40 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	struct tv_pal_section * ginfo; 
 	u64 gcr3;
 
+	/* set all CPUs to use the same 'reg' nested page tables,
+		 and set up a corresponding hpt_pmo.
+	 */
+	/* XXX would make more sense to do this in init_scode, but there
+		 seems to be a race condition with all cores simultaneously trying
+		 to set up their EPTs and call emhf_app_main.
+	*/
+	{
+		static bool did_change_root_mappings=false;
+
+		if (!did_change_root_mappings) {
+
+			g_reg_npmo_root = (hpt_pmo_t) {
+				.t = hpt_nested_walk_ctx.t,
+				.lvl = hpt_root_lvl(hpt_nested_walk_ctx.t),
+				.pm = VCPU_get_current_root_pm(vcpu),
+			};
+#ifdef __MP_VERSION__
+			{
+				size_t i;
+				for( i=0 ; i<g_midtable_numentries ; i++ )  {
+					dprintf(LOG_TRACE, "cpu %d setting root pm from %p to %p\n",
+									i,
+									VCPU_get_current_root_pm((VCPU *)(g_midtable[i].vcpu_vaddr_ptr)),
+									g_reg_npmo_root.pm);
+					VCPU_set_current_root_pm((VCPU *)(g_midtable[i].vcpu_vaddr_ptr),
+																	 g_reg_npmo_root.pm);
+				}
+			}
+#endif
+			did_change_root_mappings = true;
+		}
+	}
+
 	gcr3 = VCPU_gcr3(vcpu);
 
 	dprintf(LOG_TRACE, "\n[TV] ************************************\n");
@@ -664,7 +699,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
 	/********************************/
 	{
-		hpt_pmo_t reg_npmo_root, reg_gpmo_root, pal_npmo_root, pal_gpmo_root;
+		hpt_pmo_t reg_gpmo_root, pal_npmo_root, pal_gpmo_root;
 
 		hpt_type_t guest_t = (VCPU_gcr4(vcpu) & CR4_PAE) ? HPT_TYPE_PAE : HPT_TYPE_NORM;
 
@@ -674,11 +709,6 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 		whitelist_new.gpl = malloc(sizeof(pagelist_t));
 		pagelist_init(whitelist_new.gpl);
 
-		reg_npmo_root = (hpt_pmo_t) {
-			.t = hpt_nested_walk_ctx.t,
-			.lvl = hpt_root_lvl(hpt_nested_walk_ctx.t),
-			.pm = VCPU_get_current_root_pm(vcpu),
-		};
 		reg_gpmo_root = (hpt_pmo_t) {
 			.t = guest_t,
 			.lvl = hpt_root_lvl(guest_t),
@@ -698,8 +728,8 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 			}
 		}
 		pal_npmo_root = (hpt_pmo_t) {
-			.t = reg_npmo_root.t,
-			.lvl = reg_npmo_root.lvl,
+			.t = g_reg_npmo_root.t,
+			.lvl = g_reg_npmo_root.lvl,
 			.pm = pagelist_get_zeroedpage(whitelist_new.npl),
 		};
 		pal_gpmo_root = (hpt_pmo_t) {
@@ -755,7 +785,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 				.reg_prot = reg_prot_of_type(whitelist_new.scode_info.sections[i].type),
 				.section_type = whitelist_new.scode_info.sections[i].type,
 			};
-			scode_lend_section(&reg_npmo_root, &whitelist_new.hpt_nested_walk_ctx,
+			scode_lend_section(&g_reg_npmo_root, &whitelist_new.hpt_nested_walk_ctx,
 												 &reg_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
 												 &pal_npmo_root, &whitelist_new.hpt_nested_walk_ctx,
 												 &pal_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
