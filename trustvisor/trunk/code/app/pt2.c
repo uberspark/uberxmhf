@@ -38,6 +38,11 @@
 #include <pt2.h>
 #include <pages.h>
 
+/* XXX TEMP */
+#define CHK(x) ASSERT(x)
+#define CHK_RV(x) ASSERT(!(x))
+#define hpt_walk_check_prot(x, y) HPT_PROTS_RWX
+
 void hpt_walk_set_prot(hpt_walk_ctx_t *walk_ctx, hpt_pm_t pm, int pm_lvl, gpa_t gpa, hpt_prot_t prot)
 {
   hpt_pme_t pme;
@@ -241,26 +246,30 @@ void hpt_copy_from_guest(const hpt_walk_ctx_t *ctx,
 		size_t remaining_on_page;
 
 		hpt_walk_get_pmeo(&src_pmeo, ctx, pmo, 1, src_gva);
+		dprintf(LOG_TRACE, "hpt_copy_from_guest: pmeo.pme:%llx pmo.t:%d pmo.lvl:%d\n",
+						src_pmeo.pme, src_pmeo.t, src_pmeo.lvl);
 		src_gpa = hpt_pmeo_va_to_pa(&src_pmeo, src_gva);
+		dprintf(LOG_TRACE, "hpt_copy_from_guest: src_gpa:%llx\n",
+						src_gpa);
 
 		page_size_log_2 = hpt_pmeo_page_size_log_2(&src_pmeo);
 		page_size = 1 << page_size_log_2;
+		dprintf(LOG_TRACE, "hpt_copy_from_guest: page_size_log_2:%d page_size:%d\n",
+						page_size_log_2, page_size);
 		offset_on_page = src_gpa & MASKRANGE64(page_size_log_2-1, 0);
 		remaining_on_page = page_size - offset_on_page;
+		dprintf(LOG_TRACE, "hpt_copy_from_guest: offset_on_page:%d, remaining_on_page:%d\n",
+						offset_on_page, remaining_on_page);
 
 		to_copy = MAX(len-copied, remaining_on_page);
+		dprintf(LOG_TRACE, "hpt_copy_from_guest: to_copy:%d\n",
+						to_copy);
 
 		memcpy(dst+copied, gpa2hva(src_gpa), to_copy);
 		copied += to_copy;
 	}
 }
 
-
-/* XXX TEMP */
-#define CHK(x) ASSERT(x)
-
-#define CHK_RV(x) ASSERT(!(x))
-#define hpt_walk_check_prot(x, y) HPT_PROTS_RWX
 
 /* clone pal's gdt from 'reg' gdt, and add to pal's guest page tables.
 	 gdt is allocted using passed-in-pl, whose pages should already be
@@ -278,7 +287,7 @@ void scode_clone_gdt(gva_t gdtr_base, size_t gdtr_lim,
 	size_t gdt_page_offset = gdtr_base & MASKRANGE64(11, 0); /* XXX */
 	gva_t gdt_reg_page_gva = gdtr_base & MASKRANGE64(63, 12); /* XXX */
 
-	dprintf(LOG_TRACE, "scode_clone_gdt base:%x size:%x:\n", gdtr_base, gdt_size);
+	dprintf(LOG_TRACE, "scode_clone_gdt base:%x size:%d:\n", gdtr_base, gdt_size);
 
 	/* rest of fn assumes gdt is all on one page */
 	ASSERT((gdt_page_offset+gdt_size) <= PAGE_SIZE_4K); 
