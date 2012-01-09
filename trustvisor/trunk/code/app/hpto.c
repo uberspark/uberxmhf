@@ -82,6 +82,11 @@ bool hpt_pmeo_is_present(const hpt_pmeo_t *pmeo)
   return hpt_pme_is_present(pmeo->t, pmeo->lvl, pmeo->pme);
 }
 
+bool hpt_pmeo_is_page(const hpt_pmeo_t *pmeo)
+{
+  return hpt_pme_is_page(pmeo->t, pmeo->lvl, pmeo->pme);
+}
+
 void hpt_pmeo_setprot(hpt_pmeo_t *pmeo, hpt_prot_t perms)
 {
   pmeo->pme = hpt_pme_setprot(pmeo->t, pmeo->lvl, pmeo->pme, perms);
@@ -184,7 +189,7 @@ size_t hpt_pmeo_page_size(const hpt_pmeo_t *pmeo)
   return 1 << hpt_pmeo_page_size_log_2(pmeo);
 }
 
-static size_t hpt_remaining_on_page(const hpt_pmeo_t *pmeo, hpt_va_t va)
+size_t hpt_remaining_on_page(const hpt_pmeo_t *pmeo, hpt_va_t va)
 {
   size_t offset_on_page;
   size_t page_size;

@@ -71,6 +71,7 @@ void hpt_walk_get_pmeo(hpt_pmeo_t *pmeo,
 hpt_pa_t hpt_pmeo_get_address(const hpt_pmeo_t *pmeo);
 void hpt_pmeo_set_address(hpt_pmeo_t *pmeo, hpt_pa_t addr);
 bool hpt_pmeo_is_present(const hpt_pmeo_t *pmeo);
+bool hpt_pmeo_is_page(const hpt_pmeo_t *pmeo);
 void hpt_pmeo_setprot(hpt_pmeo_t *pmeo, hpt_prot_t perms);
 hpt_prot_t hpt_pmeo_getprot(const hpt_pmeo_t *pmeo);
 bool hpt_pmeo_getuser(const hpt_pmeo_t *pmeo);
@@ -92,6 +93,7 @@ hpt_pa_t hpto_walk_va_to_pa(const hpt_walk_ctx_t *ctx,
 size_t hpt_pmeo_page_size_log_2(const hpt_pmeo_t *pmeo);
 size_t hpt_pmeo_page_size(const hpt_pmeo_t *pmeo);
 
+size_t hpt_remaining_on_page(const hpt_pmeo_t *pmeo, hpt_va_t va);
 void hpt_copy_from_guest(const hpt_walk_ctx_t *ctx,
                          const hpt_pmo_t *pmo,
                          void *dst,
