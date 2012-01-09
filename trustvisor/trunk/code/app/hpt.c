@@ -209,12 +209,13 @@ hpt_prot_t hpto_walk_get_effective_prots(const hpt_walk_ctx_t *ctx,
 #define CHK_RV(x) ASSERT(!(x))
 #define hpt_walk_check_prot(x, y) HPT_PROTS_RWX
 
-
-void scode_add_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
-                       hpt_pmo_t* reg_gpmo_root, hpt_walk_ctx_t *reg_gpm_ctx,
-                       hpt_pmo_t* pal_npmo_root, hpt_walk_ctx_t *pal_npm_ctx,
-                       hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx,
-                       const section_t *section)
+/* lend a section of memory from a user-space process (on the
+   commodity OS) to a pal */
+void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
+                        hpt_pmo_t* reg_gpmo_root, hpt_walk_ctx_t *reg_gpm_ctx,
+                        hpt_pmo_t* pal_npmo_root, hpt_walk_ctx_t *pal_npm_ctx,
+                        hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx,
+                        const section_t *section)
 {
   size_t offset;
   int hpt_err;
@@ -230,7 +231,6 @@ void scode_add_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
     /* XXX we don't use hpt_va_t or hpt_pa_t for gpa's because these
        get used as both */
     u64 page_reg_gpa, page_pal_gpa; /* guest-physical-addresses */
-
 
     hpt_pmeo_t page_reg_gpmeo; /* reg's guest page-map-entry and lvl */
     hpt_pmeo_t page_pal_gpmeo; /* pal's guest page-map-entry and lvl */
