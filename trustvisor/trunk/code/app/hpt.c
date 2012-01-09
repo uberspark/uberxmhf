@@ -210,18 +210,6 @@ hpt_prot_t hpto_walk_get_effective_prots(const hpt_walk_ctx_t *ctx,
 #define hpt_walk_check_prot(x, y) HPT_PROTS_RWX
 
 
-/* /\* nested-page-map-entry-objects of guest-page-map-entry-objects *\/ */
-/* void npmeos_of_gpmeos(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx, */
-/*                       hpt_pmeo_t npmeos[], size_t *npmeos_num, */
-/*                       hpt_pmeo_t gpmeos[], size_t gpmeos_num) */
-/* { */
-/*   size_t gpmeos_i; */
-
-/*   for(gpmeos_i=0; gpmeos_i < gpmeos_num; gpmeos_i++) { */
-    
-/*   } */
-/* } */
-
 void scode_add_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
                        hpt_pmo_t* reg_gpmo_root, hpt_walk_ctx_t *reg_gpm_ctx,
                        hpt_pmo_t* pal_npmo_root, hpt_walk_ctx_t *pal_npm_ctx,
@@ -334,47 +322,61 @@ void scode_add_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
    written. */
 /* XXX need to think through concurrency issues. e.g., should caller
    hold a lock? */
-int pmeos_of_range(hpt_pmeo_t pmeos[], size_t *pmeos_num,
-                   hpt_pmo_t* pmo_root, hpt_walk_ctx_t *walk_ctx,
-                   hpt_va_t base, size_t *size)
-{
-  size_t offset;
-  size_t pmeos_maxnum = *pmeos_num;
+/* int pmeos_of_range(hpt_pmeo_t pmeos[], size_t *pmeos_num, */
+/*                    hpt_pmo_t* pmo_root, hpt_walk_ctx_t *walk_ctx, */
+/*                    hpt_va_t base, size_t *size) */
+/* { */
+/*   size_t offset; */
+/*   size_t pmeos_maxnum = *pmeos_num; */
   
-  *pmeos_num = 0;
+/*   *pmeos_num = 0; */
 
-  while (offset < *size) {
-    hpt_va_t va = base + offset;
-    size_t page_size;
-    hpt_pmeo_t pmeo;
+/*   while (offset < *size) { */
+/*     hpt_va_t va = base + offset; */
+/*     size_t page_size; */
+/*     hpt_pmeo_t pmeo; */
 
-    ASSERT(*pmeos_num < pmeos_maxnum);
+/*     ASSERT(*pmeos_num < pmeos_maxnum); */
 
-    hpt_walk_get_pmeo(&pmeo,
-                      walk_ctx,
-                      pmo_root,
-                      1,
-                      va);
-    /* XXX need to add support to hpt to get size of memory mapped by
-       a page */
-    ASSERT(pmeo.lvl == 1);
-    page_size = PAGE_SIZE_4K;
-    offset += page_size;
+/*     hpt_walk_get_pmeo(&pmeo, */
+/*                       walk_ctx, */
+/*                       pmo_root, */
+/*                       1, */
+/*                       va); */
+/*     /\* XXX need to add support to hpt to get size of memory mapped by */
+/*        a page *\/ */
+/*     ASSERT(pmeo.lvl == 1); */
+/*     page_size = PAGE_SIZE_4K; */
+/*     offset += page_size; */
 
-    if (*pmeos_num < pmeos_maxnum) {
-      pmeos[*pmeos_num] = pmeo;
-    }
-    (*pmeos_num)++;
-  }
+/*     if (*pmeos_num < pmeos_maxnum) { */
+/*       pmeos[*pmeos_num] = pmeo; */
+/*     } */
+/*     (*pmeos_num)++; */
+/*   } */
 
-  *size = offset; /* may be larger than requested */
+/*   *size = offset; /\* may be larger than requested *\/ */
 
-  if(*pmeos_num <= pmeos_maxnum) {
-    return 0;
-  } else {
-    return 1;
-  }
-}
+/*   if(*pmeos_num <= pmeos_maxnum) { */
+/*     return 0; */
+/*   } else { */
+/*     return 1; */
+/*   } */
+/* } */
+
+/* /\* nested-page-map-entry-objects of guest-page-map-entry-objects *\/ */
+/* void npmeos_of_gpmeos(hpt_walk_ctx_t *reg_npm_ctx, */
+/*                       hpt_pmo_t* reg_npmo_root, */
+/*                       hpt_pmeo_t npmeos[], size_t *npmeos_num, */
+/*                       hpt_pmeo_t gpmeos[], size_t gpmeos_num) */
+/* { */
+/*   size_t gpmeos_i; */
+
+/*   for(gpmeos_i=0; gpmeos_i < gpmeos_num; gpmeos_i++) { */
+    
+/*   } */
+/* } */
+
 
 /* Local Variables: */
 /* mode:c           */
