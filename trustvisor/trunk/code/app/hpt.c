@@ -156,7 +156,12 @@ void scode_add_section(hpt_pm_t reg_npt_root, hpt_walk_ctx_t *reg_npt_ctx,
 
     /* check that the requested virtual address isn't already mapped
        into PAL's address space */
-    /*FIXME XXX*/
+    {
+      int end_lvl=1;
+      hpt_pme_t existing_pme;
+      existing_pme = hpt_walk_get_pme(pal_gpt_ctx, pal_gpt_root_lvl, pal_gpt_root, &end_lvl, page_pal_gva);
+      CHK(!hpt_pme_is_present(pal_gpt_ctx->t, end_lvl, existing_pme));
+    }
 
     /* revoke access from 'reg' VM */
     page_reg_npme = hpt_pme_setprot(reg_npt_ctx->t, page_reg_npme_lvl,
