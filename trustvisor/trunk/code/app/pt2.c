@@ -42,54 +42,6 @@
 #define CHK(x) ASSERT(x)
 #define CHK_RV(x) ASSERT(!(x))
 
-void hpt_walk_set_prot(hpt_walk_ctx_t *walk_ctx, hpt_pm_t pm, int pm_lvl, gpa_t gpa, hpt_prot_t prot)
-{
-  hpt_pme_t pme;
-  int end_pm_lvl=1;
-
-  pm = hpt_walk_get_pm(walk_ctx, pm_lvl, pm, &end_pm_lvl, gpa);
-  ASSERT(pm != NULL);
-  ASSERT(end_pm_lvl==1); /* FIXME we don't handle large pages */
-  pme = hpt_pm_get_pme_by_va(walk_ctx->t, end_pm_lvl, pm, gpa);
-  pme = hpt_pme_setprot(walk_ctx->t, end_pm_lvl, pme, prot);
-  hpt_pm_set_pme_by_va(walk_ctx->t, end_pm_lvl, pm, gpa, pme);
-}
-
-void hpt_walk_set_prots(hpt_walk_ctx_t *walk_ctx,
-                        hpt_pm_t pm,
-                        int pm_lvl,
-                        gpa_t gpas[],
-                        size_t num_gpas,
-                        hpt_prot_t prot)
-{
-  size_t i;
-  for(i=0; i<num_gpas; i++) {
-    hpt_walk_set_prot(walk_ctx, pm, pm_lvl, gpas[i], prot);
-  }
-}
-
-/* inserts pme into the page map of level tgt_lvl containing va.
- * fails if tgt_lvl is not allocated.
- * XXX move into hpt.h once it's available again.
- */
-int hpt_walk_insert_pme(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int tgt_lvl, hpt_va_t va, hpt_pme_t pme)
-{
-  int end_lvl=tgt_lvl;
-  dprintf(LOG_TRACE, "hpt_walk_insert_pme_alloc: lvl:%d pm:%x tgt_lvl:%d va:%Lx pme:%Lx\n",
-          lvl, (u32)pm, tgt_lvl, va, pme);
-  pm = hpt_walk_get_pm(ctx, lvl, pm, &end_lvl, va);
-
-  dprintf(LOG_TRACE, "hpt_walk_insert_pme: got pm:%x end_lvl:%d\n",
-          (u32)pm, end_lvl);
-
-  if(pm == NULL || tgt_lvl != end_lvl) {
-    return 1;
-  }
-
-  hpt_pm_set_pme_by_va(ctx->t, tgt_lvl, pm, va, pme);
-  return 0;
-}
-
 int hpt_walk_insert_pmeo(const hpt_walk_ctx_t *ctx,
                          hpt_pmo_t *pmo,
                          const hpt_pmeo_t *pmeo,

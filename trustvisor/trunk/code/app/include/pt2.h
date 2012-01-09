@@ -37,6 +37,7 @@
 #define PT2_H
 
 #include <hpt.h>
+#include <hpt_ext.h>
 #include <pages.h>
 
 typedef struct {
@@ -63,14 +64,6 @@ typedef struct {
    is to make code a bit less noisy by bundling page-maps and
    page-map-entries with their level and type. consider adding to
    hpt */
-void hpt_walk_set_prot(hpt_walk_ctx_t *walk_ctx, hpt_pm_t pm, int pm_lvl, gpa_t gpa, hpt_prot_t prot);
-void hpt_walk_set_prots(hpt_walk_ctx_t *walk_ctx,
-                        hpt_pm_t pm,
-                        int pm_lvl,
-                        gpa_t gpas[],
-                        size_t num_gpas,
-                        hpt_prot_t prot);
-int hpt_walk_insert_pme(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int tgt_lvl, hpt_va_t va, hpt_pme_t pme);
 int hpt_walk_insert_pmeo(const hpt_walk_ctx_t *ctx,
                          hpt_pmo_t *pmo,
                          const hpt_pmeo_t *pmeo,
