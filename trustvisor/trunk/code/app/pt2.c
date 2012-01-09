@@ -152,6 +152,11 @@ bool hpt_pmeo_getuser(const hpt_pmeo_t *pmeo)
   return hpt_pme_getuser(pmeo->t, pmeo->lvl, pmeo->pme);
 }
 
+void hpt_pmeo_setuser(hpt_pmeo_t *pmeo, bool user)
+{
+  pmeo->pme = hpt_pme_setuser(pmeo->t, pmeo->lvl, pmeo->pme, user);
+}
+
 void hpt_pm_get_pmeo_by_va(hpt_pmeo_t *pmeo, const hpt_pmo_t *pmo, hpt_va_t va)
 {
   pmeo->t = pmo->t;

@@ -89,6 +89,7 @@ bool hpt_pmeo_is_present(const hpt_pmeo_t *pmeo);
 void hpt_pmeo_setprot(hpt_pmeo_t *pmeo, hpt_prot_t perms);
 hpt_prot_t hpt_pmeo_getprot(const hpt_pmeo_t *pmeo);
 bool hpt_pmeo_getuser(const hpt_pmeo_t *pmeo);
+void hpt_pmeo_setuser(hpt_pmeo_t *pmeo, bool user);
 void hpt_pm_get_pmeo_by_va(hpt_pmeo_t *pmeo, const hpt_pmo_t *pmo, hpt_va_t va);
 bool hpto_walk_next_lvl(const hpt_walk_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va);
 hpt_prot_t hpto_walk_get_effective_prots(const hpt_walk_ctx_t *ctx,
