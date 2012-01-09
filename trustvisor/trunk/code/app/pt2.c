@@ -494,8 +494,8 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
     }
 
     /* revoke access from 'reg' VM */
-    /* hpt_pmeo_setprot(&page_reg_npmeo, HPT_PROTS_NONE); */
-    hpt_pmeo_setprot(&page_reg_npmeo, HPT_PROTS_RWX); /* XXX FIXME TEMP for testing */
+    hpt_pmeo_setprot(&page_reg_npmeo, HPT_PROTS_NONE); /* XXX FIXME TEMP for testing */
+    /* hpt_pmeo_setprot(&page_reg_npmeo, HPT_PROTS_RWX);  */
     hpt_err = hpt_walk_insert_pmeo(reg_npm_ctx,
                                    reg_npmo_root,
                                    &page_reg_npmeo,
