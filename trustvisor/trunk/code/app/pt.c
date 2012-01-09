@@ -139,7 +139,7 @@ u32 guest_pt_check_user_rw(VCPU * vcpu, u32 vaddr, u32 page_num)
 {
 	hpt_prot_t effective_prots;
 	bool user_accessible;
-	hpt_type_t t = (VCPU_gcr4(vcpu) & CR4_PAE) ? HPT_TYPE_PAE : HPT_TYPE_NORM;
+	hpt_type_t t = hpt_emhf_get_guest_hpt_type(vcpu);
 	hpt_pmo_t root = {
 		.pm = hpt_emhf_get_current_guest_root_pm(vcpu),
 		.t = t,
@@ -214,7 +214,7 @@ extern void put_32bit_aligned_value_to_current_guest(VCPU *vcpu, u32 gvaddr, u32
 
 extern void copy_from_current_guest(VCPU * vcpu, u8 *dst,u32 gvaddr, u32 len)
 {
-	hpt_type_t t = (VCPU_gcr4(vcpu) & CR4_PAE) ? HPT_TYPE_PAE : HPT_TYPE_NORM;
+	hpt_type_t t = hpt_emhf_get_guest_hpt_type(vcpu);
 	hpt_pmo_t root = {
 		.pm = hpt_emhf_get_current_guest_root_pm(vcpu),
 		.t = t,
@@ -229,7 +229,7 @@ extern void copy_from_current_guest(VCPU * vcpu, u8 *dst,u32 gvaddr, u32 len)
 
 extern void copy_to_current_guest(VCPU * vcpu, u32 gvaddr, u8 *src, u32 len)
 {
-	hpt_type_t t = (VCPU_gcr4(vcpu) & CR4_PAE) ? HPT_TYPE_PAE : HPT_TYPE_NORM;
+	hpt_type_t t = hpt_emhf_get_guest_hpt_type(vcpu);
 	hpt_pmo_t root = {
 		.pm = hpt_emhf_get_current_guest_root_pm(vcpu),
 		.t = t,

@@ -605,7 +605,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	{
 		hpt_pmo_t reg_gpmo_root, pal_npmo_root, pal_gpmo_root;
 
-		hpt_type_t guest_t = (VCPU_gcr4(vcpu) & CR4_PAE) ? HPT_TYPE_PAE : HPT_TYPE_NORM;
+		hpt_type_t guest_t = hpt_emhf_get_guest_hpt_type(vcpu);
 
 		whitelist_new.npl = malloc(sizeof(pagelist_t));
 		pagelist_init(whitelist_new.npl);
