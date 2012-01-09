@@ -263,41 +263,55 @@ void scode_add_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
 }
 
 /* for a given virtual address range, return an array of page-map-entry-objects */
-/* XXX specify behavior if pmeos don't fit exactly. e.g., if requested
- * section size is 4K of a 2MB page */
+/* returned size may be larger than the requested size, in which case
+   the last returned pmeo contains "extra" address-range. it's up to
+   the caller to splinter that last page if necessary. */
+/* *pmeos_num should be set by caller to the size of pmeos. if the
+   return-value is non-zero, pmeos_of_range ran out of room;
+   *pmeos_num is set to the number of pmeos that would have been
+   written. */
 /* XXX need to think through concurrency issues. e.g., should caller
    hold a lock? */
-void pmeos_of_range(hpt_pmeo_t pmeos[], size_t *pmeos_num,
-                    hpt_pmo_t* pmo_root, hpt_walk_ctx_t *walk_ctx,
-                    hpt_va_t base, size_t size)
+int pmeos_of_range(hpt_pmeo_t pmeos[], size_t *pmeos_num,
+                   hpt_pmo_t* pmo_root, hpt_walk_ctx_t *walk_ctx,
+                   hpt_va_t base, size_t *size)
 {
   size_t offset;
   size_t pmeos_maxnum = *pmeos_num;
   
   *pmeos_num = 0;
 
-  while (offset < size) {
+  while (offset < *size) {
     hpt_va_t va = base + offset;
     size_t page_size;
+    hpt_pmeo_t pmeo;
 
     ASSERT(*pmeos_num < pmeos_maxnum);
 
-    hpt_walk_get_pmeo(&pmeos[*pmeos_num],
+    hpt_walk_get_pmeo(&pmeo,
                       walk_ctx,
                       pmo_root,
                       1,
                       va);
-
     /* XXX need to add support to hpt to get size of memory mapped by
        a page */
-    ASSERT(pmeos[*pmeos_num].lvl == 1);
+    ASSERT(pmeo.lvl == 1);
     page_size = PAGE_SIZE_4K;
-
     offset += page_size;
+
+    if (*pmeos_num < pmeos_maxnum) {
+      pmeos[*pmeos_num] = pmeo;
+    }
     (*pmeos_num)++;
   }
 
-  ASSERT(offset == size);
+  *size = offset; /* may be larger than requested */
+
+  if(*pmeos_num <= pmeos_maxnum) {
+    return 0;
+  } else {
+    return 1;
+  }
 }
 
 /* Local Variables: */
