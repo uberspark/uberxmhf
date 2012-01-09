@@ -83,12 +83,33 @@ static inline hpt_pm_t VCPU_get_default_root_pm(VCPU *vcpu)
 
 static inline hpt_pm_t VCPU_get_current_root_pm(VCPU *vcpu)
 {
-  return spa2hva(emhf_memprot_get_current_root_pagemap_address(vcpu));
+  hpt_type_t t = VCPU_get_hpt_type(vcpu);
+  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+    return spa2hva(hpt_eptp_get_address(t,
+                                        emhf_memprot_get_EPTP(vcpu)));
+  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+    return spa2hva(hpt_cr3_get_address(t,
+                                       emhf_memprot_get_h_cr3(vcpu)));
+  } else {
+    ASSERT(0);
+    return NULL;
+  }
 }
 
 static inline void VCPU_set_current_root_pm(VCPU *vcpu, hpt_pm_t root)
 {
-  emhf_memprot_set_current_root_pagemap_address(vcpu, hva2spa(root));
+  hpt_type_t t = VCPU_get_hpt_type(vcpu);
+  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+    emhf_memprot_set_EPTP(vcpu, hpt_eptp_set_address(t,
+                                                     emhf_memprot_get_EPTP(vcpu),
+                                                     hva2spa(root)));
+  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+    emhf_memprot_set_h_cr3(vcpu, hpt_cr3_set_address(t,
+                                                    emhf_memprot_get_h_cr3(vcpu),
+                                                    hva2spa(root)));
+  } else {
+    ASSERT(0);
+  }
 }
 
 static inline hpt_type_t VCPU_get_guest_hpt_type(VCPU *vcpu) {

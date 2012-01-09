@@ -98,24 +98,29 @@ u64 * emhf_memprot_get_default_root_pagemap_address(VCPU *vcpu){
 		return (u64*)vcpu->vmx_vaddr_ept_pml4_table;
 } 
 
-//get current root page map address
-spa_t emhf_memprot_get_current_root_pagemap_address(VCPU *vcpu){
-  ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-  
-	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-          return (spa_t)((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3; 
-	else //CPU_VENDOR_INTEL
-          return (spa_t)vcpu->vmcs.control_EPT_pointer_full;
+u64 emhf_memprot_get_EPTP(VCPU *vcpu)
+{
+  ASSERT(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+  return
+    ((u64)(vcpu->vmcs.control_EPT_pointer_high) << 32)
+    | (u64)(vcpu->vmcs.control_EPT_pointer_full);
+}
+void emhf_memprot_set_EPTP(VCPU *vcpu, u64 eptp)
+{
+  ASSERT(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+  vcpu->vmcs.control_EPT_pointer_full = (u32)eptp;
+  vcpu->vmcs.control_EPT_pointer_high = (u32)(eptp >> 32);
 }
 
-//set current root page map address
-void emhf_memprot_set_current_root_pagemap_address(VCPU *vcpu, spa_t root){
-  ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-  
-	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-          ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3 = root;
-	else //CPU_VENDOR_INTEL
-          vcpu->vmcs.control_EPT_pointer_full = root;
+u64 emhf_memprot_get_h_cr3(VCPU *vcpu)
+{
+  ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD);
+  return ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3; 
+}
+void emhf_memprot_set_h_cr3(VCPU *vcpu, u64 h_cr3)
+{
+  ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD);
+  ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3 = h_cr3;
 }
 
 

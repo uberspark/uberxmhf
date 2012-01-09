@@ -63,12 +63,13 @@ u64 * emhf_memprot_get_lvl4_pagemap_address(VCPU *vcpu);
 //get default root page map address
 u64 * emhf_memprot_get_default_root_pagemap_address(VCPU *vcpu);
 
-//get current root page map address
-spa_t emhf_memprot_get_current_root_pagemap_address(VCPU *vcpu);
+// get or set EPTP (only valid on Intel)
+u64 emhf_memprot_get_EPTP(VCPU *vcpu);
+void emhf_memprot_set_EPTP(VCPU *vcpu, u64 eptp);
 
-//set current root page map address
-void emhf_memprot_set_current_root_pagemap_address(VCPU *vcpu, spa_t root);
-
+// get or set host cr3 (only valid on AMD)
+u64 emhf_memprot_get_h_cr3(VCPU *vcpu);
+void emhf_memprot_set_h_cr3(VCPU *vcpu, u64 hcr3);
 	
 
 #endif	//__ASSEMBLY__
