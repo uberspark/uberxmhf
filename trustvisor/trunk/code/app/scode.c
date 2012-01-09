@@ -407,101 +407,6 @@ void init_scode(VCPU * vcpu)
 	dprintf(LOG_TRACE, "[TV] trustvisor_master_crypto_init successful.\n");
 }
 
-/* HPT related SCODE routines */
-
-/* ************************************
- * set up scode pages permission
- *
- * on all CPUs:
- * Section type		Real Permission  PTE permission
- * SENTRY(SCODE) 	RE					unpresent
- * STEXT			RE					RE
- * SDATA 			RW					unpresent
- * SPARAM			RW					unpresent
- * SSTACK			RW					unpresent
- *
- * **************************************/
-u32 hpt_scode_set_prot(VCPU *vcpu, pte_t *pte_pages, u32 size)
-{
-	size_t i; 
-	u32 pfn;
-	u32 k;
-	VCPU * tmpcpu;
-
-	dprintf(LOG_TRACE, "[TV] scode registration on local CPU %02x!\n", vcpu->id);
-	for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)
-	{
-		pfn = pte_pages[i] >> PAGE_SHIFT_4K;
-		if (test_page_scode_bitmap(pfn)) {
-			dprintf(LOG_ERROR, "[TV] Set scode page permission error! pfn %#x have already been registered!\n", pfn);
-			break;
-		}
-	}
-
-	for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)
-	{
-		pfn = pte_pages[i] >> PAGE_SHIFT_4K;
-		set_page_scode_bitmap(pfn);
-//			set_page_scode_bitmap_2M(pfn);
-
-		/* XXX FIXME: temporary disable DEV setting here! */
-		//	set_page_dev_prot(pfn);
-
-		/* XXX FIXME: do we need to grab a lock? */
-		for(k=0; k<g_midtable_numentries; k++) {
-			tmpcpu = (VCPU *)(g_midtable[k].vcpu_vaddr_ptr);
-			hpt_nested_set_prot(tmpcpu, pte_pages[i]);
-		}
-	}
-
-	return 0;
-}
-
-void hpt_scode_clear_prot(VCPU * vcpu, pte_t *pte_pages, u32 size)
-{
-	size_t i; 
-	u32 pfn;
-#ifdef __MP_VERSION__
-	size_t k;
-	VCPU * tmpcpu;
-#endif
-
-	/* set up page permission in local CPU */
-	dprintf(LOG_TRACE, "[TV] scode unreg on local CPU %02x!\n", vcpu->id);
-	for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)
-	{
-		pfn = pte_pages[i] >> PAGE_SHIFT_4K;
-		if (test_page_scode_bitmap(pfn))
-		{
-			/* XXX FIXME: temporary disable DEV setting here! */
-			//clear_page_dev_prot(pfn);
-			hpt_nested_clear_prot(vcpu, pte_pages[i]);
-
-			clear_page_scode_bitmap(pfn);
-//			if (clear_page_scode_bitmap_2M(pfn) == 0)
-//				nested_promote(vcpu, pfn);
-		}
-	}
-
-#ifdef __MP_VERSION__
-	/* not local CPU, set all mem sections unpresent */
-	for( k=0 ; k<g_midtable_numentries ; k++ )  {
-		tmpcpu = (VCPU *)(g_midtable[k].vcpu_vaddr_ptr);
-		if (tmpcpu->id != vcpu->id) {
-			dprintf(LOG_TRACE, "[TV] scode unreg on CPU %02x!\n", tmpcpu->id);
-			for (i = 0; i < (size >> PAGE_SHIFT_4K); i ++)
-			{
-				pfn = pte_pages[i] >> PAGE_SHIFT_4K;
-				/* XXX FIXME: temporary disable DEV setting here! */
-				//	set_page_dev_prot(pfn);
-				hpt_nested_clear_prot(tmpcpu, pte_pages[i]);
-			}
-		}
-	}
-#endif
-
-}
-
 /* parse scode paramter info ( scode registration input) */
 int parse_params_info(VCPU * vcpu, struct tv_pal_params* pm_info, u32 pm_addr)
 {
@@ -959,36 +864,6 @@ int test_page_in_list(pte_t * page_list, pte_t page, u32 count)
 			return 1;
 	}
 	return 0;
-}
-
-void memcpy_guest_to_guest(VCPU * vcpu, u32 src, u32 dst, u32 len)
-{
-	u32 src_gpaddr, dst_gpaddr;
-	u8 *src_hvaddr, *dst_hvaddr;
-	//u32 i;
-	u32 is_pae;
-
-	is_pae = VCPU_gcr4(vcpu) & CR4_PAE;
-
-	src_gpaddr = gpt_vaddr_to_paddr_current(vcpu, src);
-  	dst_gpaddr = gpt_vaddr_to_paddr_current(vcpu, dst);
-
-//	/* make sure the entire string are in same page */
-//	if (is_pae) {
-//		ASSERT (SAME_PAGE_PAE(src_gpaddr, src_gpaddr+len));
-//		ASSERT (SAME_PAGE_PAE(dst_gpaddr, dst_gpaddr+len));
-//	} else {
-//		ASSERT (SAME_PAGE_NPAE(src_gpaddr, src_gpaddr+len));
-//		ASSERT (SAME_PAGE_NPAE(dst_gpaddr, dst_gpaddr+len));
-//	}
-	src_hvaddr = (u8 *)(gpa2hva(src_gpaddr));
-	dst_hvaddr = (u8 *)(gpa2hva(dst_gpaddr));
-	//printf("[TV]   PM string value is:");
-	//for( i=0 ; i<len ; i++ )  {
-	//	printf("%x ", *(src_hvaddr+i));
-	//}
-	//printf("!\n");
-	memcpy(dst_hvaddr, src_hvaddr, len);
 }
 
 u32 scode_marshall(VCPU * vcpu)
