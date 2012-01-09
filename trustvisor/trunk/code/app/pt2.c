@@ -261,7 +261,7 @@ void hpt_copy_from_guest(const hpt_walk_ctx_t *ctx,
 		dprintf(LOG_TRACE, "hpt_copy_from_guest: offset_on_page:%d, remaining_on_page:%d\n",
 						offset_on_page, remaining_on_page);
 
-		to_copy = MAX(len-copied, remaining_on_page);
+		to_copy = MIN(len-copied, remaining_on_page);
 		dprintf(LOG_TRACE, "hpt_copy_from_guest: to_copy:%d\n",
 						to_copy);
 
