@@ -1430,11 +1430,14 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
 
 void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* wle)
 {
-	size_t i;
+	int i;
 
 	/* restore permissions for remapped sections */
 	/* assumes that SHARED sections are contiguous and on the end of the sections array */
-	for(i = wle->sections_num-1; wle->sections[i].section_type == TV_PAL_SECTION_SHARED; i--) {
+	for(i = wle->sections_num-1;
+			i >= 0 && wle->sections[i].section_type == TV_PAL_SECTION_SHARED;
+			i--) {
+		dprintf(LOG_TRACE, "returning shared section num %d at 0x%08llx\n", i, wle->sections[i].pal_gva);
 		scode_return_section(&g_reg_npmo_root, &wle->hpt_nested_walk_ctx,
 												 &wle->pal_npt_root, &wle->hpt_nested_walk_ctx,
 												 &wle->pal_gpt_root, &wle->hpt_guest_walk_ctx,
