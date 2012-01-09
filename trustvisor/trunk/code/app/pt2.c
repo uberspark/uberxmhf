@@ -278,15 +278,20 @@ void scode_clone_gdt(gva_t gdtr_base, size_t gdtr_lim,
 	size_t gdt_page_offset = gdtr_base & MASKRANGE64(11, 0); /* XXX */
 	gva_t gdt_reg_page_gva = gdtr_base & MASKRANGE64(63, 12); /* XXX */
 
-	ASSERT((gdt_page_offset+gdt_size) <= PAGE_SIZE_4K); /* XXX */
+	dprintf(LOG_TRACE, "scode_clone_gdt base:%x size:%x:\n", gdtr_base, gdt_size);
+
+	/* rest of fn assumes gdt is all on one page */
+	ASSERT((gdt_page_offset+gdt_size) <= PAGE_SIZE_4K); 
+
 	gdt_pal_page = pagelist_get_zeroedpage(pl);
 	CHK(gdt_pal_page);
 	gdt = gdt_pal_page + gdt_page_offset;
 
+	dprintf(LOG_TRACE, "copying gdt from gva:%x to hva:%p\n", gdtr_base, gdt);
 	hpt_copy_from_guest(reg_gpm_ctx, reg_gpmo_root,
 											gdt, gdtr_base, gdt_size);
 
-	/* add to guest and nested page tables */
+	/* add to guest page tables */
 	{
 		hpt_pmeo_t gdt_g_pmeo = { .t = pal_gpmo_root->t, .lvl = 1 };
 		hpt_pa_t gdt_gpa;
@@ -294,6 +299,7 @@ void scode_clone_gdt(gva_t gdtr_base, size_t gdtr_lim,
 
 		gdt_gpa = hva2gpa(gdt);
 
+		dprintf(LOG_TRACE, "mapping gdt into guest page tables\n");
 		/* XXX SECURITY check to ensure we're not clobbering some existing
 			 mapping */
     /* add access to pal guest page tables */

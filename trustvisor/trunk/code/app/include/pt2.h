@@ -37,6 +37,7 @@
 #define PT2_H
 
 #include <hpt.h>
+#include <pages.h>
 
 typedef struct {
   hpt_va_t reg_gva;
@@ -101,4 +102,9 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
                         hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx,
                         const section_t *section);
 
+void scode_clone_gdt(gva_t gdtr_base, size_t gdtr_lim,
+                     hpt_pmo_t* reg_gpmo_root, hpt_walk_ctx_t *reg_gpm_ctx,
+                     hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx,
+                     pagelist_t *pl
+                     );
 #endif

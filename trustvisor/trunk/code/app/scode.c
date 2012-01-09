@@ -650,6 +650,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 			 pal */
 		/* XXX breaks pagelist abstraction. will break if pagelist ever dynamically
 			 allocates more buffers */
+		dprintf(LOG_TRACE, "adding gpl to pal's npt:\n");
 		for (i=0; i < gpl->num_allocd; i++) {
 			hpt_pmeo_t pmeo = {
 				.pme = 0,
@@ -660,13 +661,14 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 			int hpt_err;
 			hpt_pmeo_setprot(&pmeo, HPT_PROTS_RWX);
 			hpt_pmeo_set_address(&pmeo, hva2spa(page));
-			hpt_err = hpt_walk_insert_pmeo(&nested_walk_ctx,
-																		 &pal_npmo_root,
-																		 &pmeo,
-																		 hva2gpa(page));
+			hpt_err = hpt_walk_insert_pmeo_alloc(&nested_walk_ctx,
+																					 &pal_npmo_root,
+																					 &pmeo,
+																					 hva2gpa(page));
 			ASSERT(!hpt_err);
 		}
 
+		dprintf(LOG_TRACE, "adding sections to pal's npts and gpts:\n");
 		/* map each requested section into the pal */
 		for (i=0; i<whitelist_new.scode_info.num_sections; i++) {
 			section_t section = {
@@ -682,11 +684,18 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 												 &section);
 		}
 
-		/* XXX flush TLB to ensure 'reg' is now correctly denied access */
+		/* clone gdt */
+		dprintf(LOG_TRACE, "cloning gdt:\n");
+		scode_clone_gdt(VCPU_gdtr_base(vcpu), VCPU_gdtr_limit(vcpu),
+										&reg_gpmo_root, &guest_walk_ctx,
+										&pal_gpmo_root, &guest_walk_ctx,
+										gpl);
 
 		/* whitelist_new.pal_hpt_root = pal_npmo_root.pm; */
+		/* XXX flush TLB to ensure 'reg' is now correctly denied access */
 
 		/* XXX temp for testing */
+		dprintf(LOG_TRACE, "freeing page lists:\n");
 		pagelist_free_all(gpl);
 		pagelist_free_all(npl);
 		free(gpl);
