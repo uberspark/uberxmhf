@@ -621,7 +621,6 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
   size_t i;
 	whitelist_entry_t whitelist_new;
-	struct tv_pal_section * ginfo; 
 	u64 gcr3;
 
 	/* set all CPUs to use the same 'reg' nested page tables,
@@ -834,33 +833,10 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 																								 VCPU_gcr3(vcpu), /* XXX should build trusted cr3 from scratch */
 																								 hva2gpa(whitelist_new.pal_gpt_root.pm));
 
-
-		/* XXX flush TLB to ensure 'reg' is now correctly denied access */
+		/* flush TLB for page table modifications to take effect */
+		emhf_hwpgtbl_flushall(vcpu);
 	}
 	/********************************/
-
-	/* register pages in each scode section */
-	whitelist_new.scode_pages = (pte_t*)malloc(MAX_REGPAGES_NUM*sizeof(whitelist_new.scode_pages[0]));
-	whitelist_new.scode_size = 0;
-	for( i=0 ; i < (u32)(whitelist_new.scode_info.num_sections) ; i++ )  {
-		ginfo = &(whitelist_new.scode_info.sections[i]);
-		if (guest_pt_copy(vcpu, &(whitelist_new.scode_pages[whitelist_new.scode_size]), ginfo->start_addr, (ginfo->page_num)<<PAGE_SHIFT_4K, ginfo->type)) {
-			free(whitelist_new.scode_pages);
-			dprintf(LOG_ERROR, "[TV] SECURITY: Registration Failed. Probably some page of sensitive code is not in memory yet\n");
-			return 1;
-		}
-		whitelist_new.scode_size += ginfo->page_num;
-	}
-	whitelist_new.scode_size = (whitelist_new.scode_size) << PAGE_SHIFT_4K;
-
-	/* set up scode pages permission (also flush TLB) */
-	/* CRITICAL SECTION in MP scenario: need to quiesce other CPUs or at least acquire spinlock */
-	if (hpt_scode_set_prot(vcpu, whitelist_new.scode_pages, whitelist_new.scode_size))
-	{
-		free(whitelist_new.scode_pages);
-		dprintf(LOG_ERROR, "[TV] SECURITY: Registration Failed. Probably some page has already been used by other sensitive code.\n");
-		return 1;
-	}
 
 	/* initialize Micro-TPM instance */
 	utpm_init_instance(&whitelist_new.utpm);
@@ -868,8 +844,6 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	/* extent uTPM PCR[0] with with hash of each section metadata and contents */
 	if (scode_measure_sections(&whitelist_new.utpm, &whitelist_new))
 	{
-		hpt_scode_clear_prot(vcpu, whitelist_new.scode_pages, whitelist_new.scode_size);
-		free(whitelist_new.scode_pages);
 		dprintf(LOG_ERROR, "[TV] SECURITY: Registration Failed. sensitived code cannot be verified.\n");
 		return 1;
 	}
@@ -899,7 +873,6 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 			perf_ctr_reset(&g_tv_perf_ctrs[j]);
 		}
 	}
-
 
 	return 0; 
 }
@@ -950,16 +923,7 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
 	}
 	dprintf(LOG_PROFILE, "total mem mallocd: %u\n", heapmem_get_used_size());
 
-	/* if we find one to remove, we also need to clear the physcial page number
-	 * vector 
-	 */
-	/* CRITICAL SECTION in MP scenario: need to quiesce other CPUs or at least acquire spinlock */
-	if (whitelist[i].scode_pages)
-	{
-		free((void *)(whitelist[i].scode_pages));
-		whitelist[i].scode_pages = NULL;
-	}
-
+	/* restore permissions for remapped sections */
 	{
 		for(j = 0; j < whitelist[i].sections_num; j++) {
 			scode_return_section(&g_reg_npmo_root, &whitelist[i].hpt_nested_walk_ctx,
@@ -968,6 +932,8 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
 													 &whitelist[i].sections[j]);
 		}
 	}
+	/* flush TLB for page table modifications to take effect */
+	emhf_hwpgtbl_flushall(vcpu);
 
 	/* delete entry from scode whitelist */
 	/* CRITICAL SECTION in MP scenario: need to quiesce other CPUs or at least acquire spinlock */
