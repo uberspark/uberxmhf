@@ -757,7 +757,7 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
     }
 
     /* revoke access from 'reg' VM */
-    hpt_pmeo_setprot(&page_reg_npmeo, section->pal_prot);
+    hpt_pmeo_setprot(&page_reg_npmeo, section->reg_prot);
     hpt_err = hpt_walk_insert_pmeo(reg_npm_ctx,
                                    reg_npmo_root,
                                    &page_reg_npmeo,
