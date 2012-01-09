@@ -88,4 +88,22 @@ hpt_pa_t hpto_walk_va_to_pa(const hpt_walk_ctx_t *ctx,
 size_t hpt_pmeo_page_size_log_2(const hpt_pmeo_t *pmeo);
 size_t hpt_pmeo_page_size(const hpt_pmeo_t *pmeo);
 
+void hpt_copy_from_guest(const hpt_walk_ctx_t *ctx,
+                         const hpt_pmo_t *pmo,
+                         void *dst,
+                         hpt_va_t src_va_base,
+                         size_t len);
+void hpt_copy_to_guest(const hpt_walk_ctx_t *ctx,
+                       const hpt_pmo_t *pmo,
+                       hpt_va_t dst_va_base,
+                       void *src,
+                       size_t len);
+void hpt_copy_guest_to_guest(const hpt_walk_ctx_t *dst_ctx,
+                             const hpt_pmo_t *dst_pmo,
+                             hpt_va_t dst_va_base,
+                             const hpt_walk_ctx_t *src_ctx,
+                             const hpt_pmo_t *src_pmo,
+                             hpt_va_t src_va_base,
+                             size_t len);
+
 #endif
