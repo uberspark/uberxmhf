@@ -185,7 +185,7 @@ static inline gpa_t gpt_vaddr_to_paddr_current(VCPU *vcpu, gva_t vaddr)
 {
 	hpt_type_t t = (VCPU_gcr4(vcpu) & CR4_PAE) ? HPT_TYPE_PAE : HPT_TYPE_NORM;
 	hpt_pmo_t root = {
-		.pm = VCPU_get_current_guest_root_pm(vcpu),
+		.pm = hpt_emhf_get_current_guest_root_pm(vcpu),
 		.t = t,
 		.lvl = hpt_root_lvl(t),
 	};

@@ -44,27 +44,24 @@
 
 #ifndef __ASSEMBLY__
 
-static inline hpt_pme_t* VCPU_get_pml1es(VCPU *vcpu){
+static inline hpt_pme_t* hpt_emhf_get_pml1es(VCPU *vcpu){
 	return (hpt_pme_t *)emhf_memprot_get_lvl1_pagemap_address(vcpu);
 
 }
 
-static inline hpt_pme_t* VCPU_get_pml2es(VCPU *vcpu){
+static inline hpt_pme_t* hpt_emhf_get_pml2es(VCPU *vcpu){
 	return (hpt_pme_t *)emhf_memprot_get_lvl2_pagemap_address(vcpu);
-
 }
 
-static inline hpt_pme_t* VCPU_get_pml3es(VCPU *vcpu){
+static inline hpt_pme_t* hpt_emhf_get_pml3es(VCPU *vcpu){
 	return (hpt_pme_t *)emhf_memprot_get_lvl3_pagemap_address(vcpu);
-	
-	
 }
 
-static inline hpt_pme_t* VCPU_get_pml4(VCPU *vcpu){
+static inline hpt_pme_t* hpt_emhf_get_pml4(VCPU *vcpu){
 	return (hpt_pme_t *)emhf_memprot_get_lvl4_pagemap_address(vcpu);
 }
 
-static inline hpt_type_t VCPU_get_hpt_type(VCPU *vcpu)
+static inline hpt_type_t hpt_emhf_get_hpt_type(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     return HPT_TYPE_EPT;
@@ -76,14 +73,14 @@ static inline hpt_type_t VCPU_get_hpt_type(VCPU *vcpu)
   return HPT_TYPE_INVALID;
 }
 
-static inline hpt_pm_t VCPU_get_default_root_pm(VCPU *vcpu)
+static inline hpt_pm_t hpt_emhf_get_default_root_pm(VCPU *vcpu)
 {
   return (hpt_pm_t)emhf_memprot_get_default_root_pagemap_address(vcpu);
 }
 
-static inline hpt_pm_t VCPU_get_current_root_pm(VCPU *vcpu)
+static inline hpt_pm_t hpt_emhf_get_current_root_pm(VCPU *vcpu)
 {
-  hpt_type_t t = VCPU_get_hpt_type(vcpu);
+  hpt_type_t t = hpt_emhf_get_hpt_type(vcpu);
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     return spa2hva(hpt_eptp_get_address(t,
                                         emhf_memprot_get_EPTP(vcpu)));
@@ -96,9 +93,9 @@ static inline hpt_pm_t VCPU_get_current_root_pm(VCPU *vcpu)
   }
 }
 
-static inline void VCPU_set_current_root_pm(VCPU *vcpu, hpt_pm_t root)
+static inline void hpt_emhf_set_current_root_pm(VCPU *vcpu, hpt_pm_t root)
 {
-  hpt_type_t t = VCPU_get_hpt_type(vcpu);
+  hpt_type_t t = hpt_emhf_get_hpt_type(vcpu);
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     emhf_memprot_set_EPTP(vcpu, hpt_eptp_set_address(t,
                                                      emhf_memprot_get_EPTP(vcpu),
@@ -112,14 +109,14 @@ static inline void VCPU_set_current_root_pm(VCPU *vcpu, hpt_pm_t root)
   }
 }
 
-static inline hpt_type_t VCPU_get_guest_hpt_type(VCPU *vcpu) {
+static inline hpt_type_t hpt_emhf_get_guest_hpt_type(VCPU *vcpu) {
   /* XXX assumes NORM or PAE. Need to check for 64-bit */
   return (VCPU_gcr4(vcpu) & CR4_PAE) ? HPT_TYPE_PAE : HPT_TYPE_NORM;
 }
 
-static inline hpt_pm_t VCPU_get_current_guest_root_pm(VCPU *vcpu)
+static inline hpt_pm_t hpt_emhf_get_current_guest_root_pm(VCPU *vcpu)
 {
-  return gpa2hva(hpt_cr3_get_address(VCPU_get_guest_hpt_type(vcpu),
+  return gpa2hva(hpt_cr3_get_address(hpt_emhf_get_guest_hpt_type(vcpu),
                                      VCPU_gcr3(vcpu)));
 }
 
