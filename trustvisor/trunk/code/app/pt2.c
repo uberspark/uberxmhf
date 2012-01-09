@@ -36,6 +36,7 @@
 #include <emhf.h> /* FIXME: narrow this down so this can be compiled
                      and tested independently */
 #include <pt2.h>
+#include <pages.h>
 
 void hpt_walk_set_prot(hpt_walk_ctx_t *walk_ctx, hpt_pm_t pm, int pm_lvl, gpa_t gpa, hpt_prot_t prot)
 {
@@ -186,10 +187,126 @@ hpt_prot_t hpto_walk_get_effective_prots(const hpt_walk_ctx_t *ctx,
   return prots_rv;
 }
 
+hpt_pa_t hpt_pmeo_va_to_pa(hpt_pmeo_t* pmeo, hpt_va_t va)
+{
+	hpt_pa_t base;
+	hpt_pa_t offset;
+	int offset_hi;
+
+	ASSERT(hpt_pme_is_page(pmeo->t, pmeo->lvl, pmeo->pme));
+	base = hpt_pmeo_get_address(pmeo);
+
+	offset_hi = hpt_va_idx_hi[pmeo->t][pmeo->lvl-1];
+	offset = va & MASKRANGE64(offset_hi, 0);
+	return base + offset;
+}
+
+hpt_pa_t hpto_walk_va_to_pa(const hpt_walk_ctx_t *ctx,
+														const hpt_pmo_t *pmo,
+														hpt_va_t va)
+{
+	hpt_pmeo_t pmeo;
+	hpt_walk_get_pmeo(&pmeo, ctx, pmo, 1, va);
+	return hpt_pmeo_va_to_pa(&pmeo, va);
+}
+
+size_t hpt_pmeo_page_size_log_2(const hpt_pmeo_t *pmeo)
+{
+	int offset_hi;
+	offset_hi = hpt_va_idx_hi[pmeo->t][pmeo->lvl-1];
+	return offset_hi+1;
+}
+
+size_t hpt_pmeo_page_size(const hpt_pmeo_t *pmeo)
+{
+	return 1 << hpt_pmeo_page_size_log_2(pmeo);
+}
+
+void hpt_copy_from_guest(const hpt_walk_ctx_t *ctx,
+												 const hpt_pmo_t *pmo,
+												 void *dst,
+												 hpt_va_t src_gva_base,
+												 size_t len)
+{
+	size_t copied=0;
+
+	while(copied < len) {
+		hpt_va_t src_gva = src_gva_base + copied;
+		hpt_pmeo_t src_pmeo;
+		hpt_pa_t src_gpa;
+		size_t to_copy;
+		size_t page_size_log_2;
+		size_t page_size;
+		size_t offset_on_page;
+		size_t remaining_on_page;
+
+		hpt_walk_get_pmeo(&src_pmeo, ctx, pmo, 1, src_gva);
+		src_gpa = hpt_pmeo_va_to_pa(&src_pmeo, src_gva);
+
+		page_size_log_2 = hpt_pmeo_page_size_log_2(&src_pmeo);
+		page_size = 1 << page_size_log_2;
+		offset_on_page = src_gpa & MASKRANGE64(page_size_log_2-1, 0);
+		remaining_on_page = page_size - offset_on_page;
+
+		to_copy = MAX(len-copied, remaining_on_page);
+
+		memcpy(dst+copied, gpa2hva(src_gpa), to_copy);
+		copied += to_copy;
+	}
+}
+
+
 /* XXX TEMP */
 #define CHK(x) ASSERT(x)
+
 #define CHK_RV(x) ASSERT(!(x))
 #define hpt_walk_check_prot(x, y) HPT_PROTS_RWX
+
+/* clone pal's gdt from 'reg' gdt, and add to pal's guest page tables.
+	 gdt is allocted using passed-in-pl, whose pages should already be
+	 accessible to pal's nested page tables. XXX SECURITY need to build
+	 a trusted gdt instead. */
+void scode_clone_gdt(gva_t gdtr_base, size_t gdtr_lim,
+										 hpt_pmo_t* reg_gpmo_root, hpt_walk_ctx_t *reg_gpm_ctx,
+										 hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx,
+										 pagelist_t *pl
+										 )
+{
+	void *gdt_pal_page;
+	u64 *gdt=NULL;
+	size_t gdt_size = (gdtr_lim+1)*sizeof(*gdt);
+	size_t gdt_page_offset = gdtr_base & MASKRANGE64(11, 0); /* XXX */
+	gva_t gdt_reg_page_gva = gdtr_base & MASKRANGE64(63, 12); /* XXX */
+
+	ASSERT((gdt_page_offset+gdt_size) <= PAGE_SIZE_4K); /* XXX */
+	gdt_pal_page = pagelist_get_zeroedpage(pl);
+	CHK(gdt_pal_page);
+	gdt = gdt_pal_page + gdt_page_offset;
+
+	hpt_copy_from_guest(reg_gpm_ctx, reg_gpmo_root,
+											gdt, gdtr_base, gdt_size);
+
+	/* add to guest and nested page tables */
+	{
+		hpt_pmeo_t gdt_g_pmeo = { .t = pal_gpmo_root->t, .lvl = 1 };
+		hpt_pa_t gdt_gpa;
+		int hpt_err;
+
+		gdt_gpa = hva2gpa(gdt);
+
+		/* XXX SECURITY check to ensure we're not clobbering some existing
+			 mapping */
+    /* add access to pal guest page tables */
+		hpt_pmeo_set_address(&gdt_g_pmeo, gdt_gpa);
+		hpt_pmeo_setprot(&gdt_g_pmeo, HPT_PROTS_RWX);
+    hpt_err = hpt_walk_insert_pmeo_alloc(pal_gpm_ctx,
+                                         pal_gpmo_root,
+                                         &gdt_g_pmeo,
+                                         gdt_reg_page_gva);
+    CHK_RV(hpt_err);
+	}
+}
+
 
 /* lend a section of memory from a user-space process (on the
    commodity OS) to a pal */
@@ -299,7 +416,7 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
 
     /* add access to pal guest page tables */
     page_pal_gpmeo = page_reg_gpmeo; /* XXX SECURITY should build from scratch */
-    hpt_pmeo_set_address(&page_pal_gpmeo, page_pal_gva);
+    hpt_pmeo_set_address(&page_pal_gpmeo, page_pal_gpa);
     hpt_pmeo_setprot    (&page_pal_gpmeo, HPT_PROTS_RWX);
     hpt_err = hpt_walk_insert_pmeo_alloc(pal_gpm_ctx,
                                          pal_gpmo_root,
@@ -308,12 +425,12 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
     CHK_RV(hpt_err);
 
     /* add access to pal nested page tables */
-    page_pal_npmeo = page_reg_npmeo; /* XXX SECURITY should build from scratch */
+    page_pal_npmeo = page_reg_npmeo;
     hpt_pmeo_setprot(&page_pal_npmeo, section->prot);
     hpt_err = hpt_walk_insert_pmeo_alloc(pal_npm_ctx,
                                          pal_npmo_root,
                                          &page_pal_npmeo,
-                                         page_pal_gpa);
+                                         gpa2spa(page_pal_gpa));
     CHK_RV(hpt_err);
 
     /* unlock? unquiesce? */
