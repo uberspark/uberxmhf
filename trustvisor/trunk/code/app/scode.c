@@ -55,6 +55,7 @@ static void scode_expose_arch(VCPU *vcpu, whitelist_entry_t *wle);
 static void scode_unexpose_arch(VCPU *vcpu, whitelist_entry_t *wle);
 
 hpt_walk_ctx_t hpt_nested_walk_ctx;
+hpt_walk_ctx_t hpt_guest_walk_ctx;
 
 /* whitelist of all approved sensitive code regions */
 /* whitelist_max and *whitelist is set up by BSP, no need to apply lock
@@ -252,7 +253,17 @@ void* hpt_nested_pa2ptr(void __attribute__((unused)) *ctx, hpt_pa_t ptr)
 {
 	return spa2hva(ptr);
 }
-void* hpt_nested_get_zeroed_page(void *ctx, size_t alignment, size_t sz)
+
+hpt_pa_t hpt_guest_ptr2pa(void __attribute__((unused)) *ctx, void *ptr)
+{
+	return hva2gpa(ptr);
+}
+void* hpt_guest_pa2ptr(void __attribute__((unused)) *ctx, hpt_pa_t ptr)
+{
+	return gpa2hva(ptr);
+}
+
+void* hpt_get_zeroed_page(void *ctx, size_t alignment, size_t sz)
 {
 	pagelist_t *pl = ctx;
 	ASSERT(PAGE_SIZE_4K % alignment == 0);
@@ -285,14 +296,26 @@ void init_scode(VCPU * vcpu)
 		} else {
 			ASSERT(0);
 		}
-		hpt_nested_walk_ctx.t = t;
-		hpt_nested_walk_ctx.gzp = hpt_nested_get_zeroed_page;
-		hpt_nested_walk_ctx.gzp_ctx = NULL; /* we'll copy this struct for
-														each pal and give each it's own allocation
-														pool */
-		hpt_nested_walk_ctx.pa2ptr = hpt_nested_pa2ptr;
-		hpt_nested_walk_ctx.ptr2pa = hpt_nested_ptr2pa;
-		hpt_nested_walk_ctx.ptr2pa_ctx = NULL;
+		hpt_nested_walk_ctx = (hpt_walk_ctx_t) {
+			.t = t,
+			.gzp = hpt_get_zeroed_page,
+			.gzp_ctx = NULL, /* we'll copy this struct for
+													each pal and give each it's own allocation
+													pool */
+			.pa2ptr = hpt_nested_pa2ptr,
+			.ptr2pa = hpt_nested_ptr2pa,
+			.ptr2pa_ctx = NULL,
+		};
+	}
+	{
+		hpt_guest_walk_ctx = (hpt_walk_ctx_t) {
+			.t = HPT_TYPE_INVALID, /* need to check gcr4 after OS is up and running */
+			.gzp = hpt_get_zeroed_page,
+			.gzp_ctx = NULL, /* add allocation pool on-demand */
+			.pa2ptr = hpt_guest_pa2ptr,
+			.ptr2pa = hpt_guest_ptr2pa,
+			.ptr2pa_ctx = NULL,
+		};
 	}
 
 	/* initialize heap memory */
@@ -433,7 +456,8 @@ int parse_params_info(VCPU * vcpu, struct tv_pal_params* pm_info, u32 pm_addr)
 	u32 addr;
 	addr = pm_addr;
 	/* get parameter number */
-	num = pm_info->num_params = get_32bit_aligned_value_from_guest(vcpu, addr);
+	num = pm_info->num_params = get_32bit_aligned_value_from_current_guest(vcpu,
+																																				 addr);
 	addr += 4;
 	dprintf(LOG_TRACE, "[TV] pm_info %#x, # of paramters is %d\n", pm_addr, num);
 	if (num > TV_MAX_PARAMS) {
@@ -443,8 +467,8 @@ int parse_params_info(VCPU * vcpu, struct tv_pal_params* pm_info, u32 pm_addr)
 
 	for (i = 0; i < num; i++)
 	{
-		pm_info->params[i].type = get_32bit_aligned_value_from_guest(vcpu, addr);
-		pm_info->params[i].size = get_32bit_aligned_value_from_guest(vcpu, addr+4);
+		pm_info->params[i].type = get_32bit_aligned_value_from_current_guest(vcpu, addr);
+		pm_info->params[i].size = get_32bit_aligned_value_from_current_guest(vcpu, addr+4);
 		dprintf(LOG_TRACE, "[TV] parameter %d type %d size %d\n", i+1, pm_info->params[i].type, pm_info->params[i].size);
 		addr += 8;
 	}
@@ -456,7 +480,7 @@ int memsect_info_copy_from_guest(VCPU * vcpu, struct tv_pal_sections *ps_scode_i
 	size_t gva_scode_info_offset = 0;
 
 	/* get parameter number */
-	ps_scode_info->num_sections = get_32bit_aligned_value_from_guest(vcpu, gva_scode_info);
+	ps_scode_info->num_sections = get_32bit_aligned_value_from_current_guest(vcpu, gva_scode_info);
 	gva_scode_info_offset += 4;
 	dprintf(LOG_TRACE, "[TV] scode_info addr %x, # of section is %d\n", gva_scode_info, ps_scode_info->num_sections);
 
@@ -465,10 +489,10 @@ int memsect_info_copy_from_guest(VCPU * vcpu, struct tv_pal_sections *ps_scode_i
 		dprintf(LOG_ERROR, "[TV] number of scode sections exceeds limit!\n");
 		return 1;
 	}
-	copy_from_guest(vcpu,
-									(u8*)&(ps_scode_info->sections[0]),
-									gva_scode_info+gva_scode_info_offset,
-									ps_scode_info->num_sections*sizeof(ps_scode_info->sections[0]));
+	copy_from_current_guest(vcpu,
+													(u8*)&(ps_scode_info->sections[0]),
+													gva_scode_info+gva_scode_info_offset,
+													ps_scode_info->num_sections*sizeof(ps_scode_info->sections[0]));
 	return 0;
 }
 
@@ -570,7 +594,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
 	/* store scode entry point */
 	whitelist_new.entry_v = gventry;
-	whitelist_new.entry_p = gpt_vaddr_to_paddr(vcpu, gventry); 
+	whitelist_new.entry_p = gpt_vaddr_to_paddr_current(vcpu, gventry); 
 	dprintf(LOG_TRACE, "[TV] CR3 value is %#llx, entry point vaddr is %#x, paddr is %#x\n", gcr3, whitelist_new.entry_v, whitelist_new.entry_p);
 
 	/* parse parameter structure */
@@ -700,11 +724,12 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
 		/* XXX temp for testing */
 		dprintf(LOG_TRACE, "freeing page lists:\n");
-		pagelist_free_all(whitelist_new.gpl);
 		pagelist_free_all(whitelist_new.npl);
-		free(whitelist_new.gpl);
 		free(whitelist_new.npl);
-		whitelist_new.pal_gcr3 = whitelist_new.gcr3;
+		whitelist_new.npl=NULL;
+		whitelist_new.pal_gcr3 = whitelist_new.gcr3; /* point to reg page tables for now */
+		whitelist_new.pal_gpt_root.pm = gpa2hva(hpt_cr3_get_address(whitelist_new.pal_gpt_root.t,
+																																whitelist_new.gcr3)); /* point to reg page tables for now */
 	}
 	/********************************/
 
@@ -995,8 +1020,8 @@ void memcpy_guest_to_guest(VCPU * vcpu, u32 src, u32 dst, u32 len)
 
 	is_pae = VCPU_gcr4(vcpu) & CR4_PAE;
 
-	src_gpaddr = gpt_vaddr_to_paddr(vcpu, src);
-  	dst_gpaddr = gpt_vaddr_to_paddr(vcpu, dst);
+	src_gpaddr = gpt_vaddr_to_paddr_current(vcpu, src);
+  	dst_gpaddr = gpt_vaddr_to_paddr_current(vcpu, dst);
 
 //	/* make sure the entire string are in same page */
 //	if (is_pae) {
@@ -1043,7 +1068,10 @@ u32 scode_marshall(VCPU * vcpu)
 
 	/* save params number */
 	pm_addr = pm_addr_base;
-	put_32bit_aligned_value_to_guest(vcpu, (u32)pm_addr, whitelist[curr].gpm_num);
+	put_32bit_aligned_value_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
+																	 &whitelist[curr].pal_gpt_root,
+																	 pm_addr,
+																	 whitelist[curr].gpm_num);
 	pm_addr += 4;
 	pm_size_sum = 4; /*memory used in input pms section*/
 	dprintf(LOG_TRACE, "[TV] params number is %d\n", whitelist[curr].gpm_num);
@@ -1062,7 +1090,9 @@ u32 scode_marshall(VCPU * vcpu)
 		pm_type = whitelist[curr].params_info.params[pm_num-1].type;
 		pm_size = whitelist[curr].params_info.params[pm_num-1].size;
 		/* get param value from guest stack */
-		pm_value = get_32bit_aligned_value_from_guest(vcpu, grsp+(pm_num-1)*4);
+		pm_value = get_32bit_aligned_value_from_guest(&whitelist[curr].hpt_guest_walk_ctx,
+																									&whitelist[curr].reg_gpt_root,
+																									grsp+(pm_num-1)*4);
 		pm_size_sum += 12;
 
 		if (pm_size_sum > (whitelist[curr].gpm_size*PAGE_SIZE_4K))
@@ -1073,9 +1103,15 @@ u32 scode_marshall(VCPU * vcpu)
 		}
 
 		/* save input params in input params memory for sensitive code */
-		put_32bit_aligned_value_to_guest(vcpu, (u32)pm_addr, pm_type);
-		put_32bit_aligned_value_to_guest(vcpu, (u32)pm_addr+4, pm_size);
-		put_32bit_aligned_value_to_guest(vcpu, (u32)pm_addr+8, pm_value);
+		put_32bit_aligned_value_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
+																		 &whitelist[curr].pal_gpt_root,
+																		 (u32)pm_addr, pm_type);
+		put_32bit_aligned_value_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
+																		 &whitelist[curr].pal_gpt_root,
+																		 (u32)pm_addr+4, pm_size);
+		put_32bit_aligned_value_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
+																		 &whitelist[curr].pal_gpt_root,
+																		 (u32)pm_addr+8, pm_value);
 		pm_addr += 12;
 		switch (pm_type)
 		{
@@ -1102,7 +1138,13 @@ u32 scode_marshall(VCPU * vcpu)
 						return 1;
 					}
 
-					memcpy_guest_to_guest(vcpu, pm_value, pm_addr, pm_size*4);
+					hpt_copy_guest_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
+																	&whitelist[curr].pal_gpt_root,
+																	pm_addr,
+																	&whitelist[curr].hpt_guest_walk_ctx,
+																	&whitelist[curr].reg_gpt_root,
+																	pm_value,
+																	pm_size*4);
 
 					/* put pointer address in sensitive code stack*/
 					pm_tmp = pm_addr;
@@ -1117,7 +1159,9 @@ u32 scode_marshall(VCPU * vcpu)
 		}
 		new_rsp = VCPU_grsp(vcpu)-4;
 		VCPU_grsp_set(vcpu, new_rsp);
-		put_32bit_aligned_value_to_guest(vcpu, new_rsp, pm_tmp);
+		put_32bit_aligned_value_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
+																		 &whitelist[curr].pal_gpt_root,
+																		 new_rsp, pm_tmp);
 	}
 	perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_MARSHALL], vcpu->idx);
 	return 0;
@@ -1173,9 +1217,13 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 	}
 
 	/* write the return address to scode stack */
-	addr = get_32bit_aligned_value_from_guest(vcpu, (u32)whitelist[curr].grsp);
+	addr = get_32bit_aligned_value_from_guest(&whitelist[curr].hpt_guest_walk_ctx,
+																						&whitelist[curr].pal_gpt_root,
+																						(u32)whitelist[curr].grsp);
 	VCPU_grsp_set(vcpu, VCPU_grsp(vcpu)-4);
-	put_32bit_aligned_value_to_guest(vcpu, (u32)VCPU_grsp(vcpu), addr);
+	put_32bit_aligned_value_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
+																	 &whitelist[curr].pal_gpt_root,
+																	 (u32)VCPU_grsp(vcpu), addr);
 	/* store the return address in whitelist structure */
 	whitelist[curr].return_v = addr;
 	dprintf(LOG_TRACE, "[TV] scode return vaddr is %#x\n", whitelist[curr].return_v);
@@ -1226,7 +1274,9 @@ u32 scode_unmarshall(VCPU * vcpu)
 
 	/* get params number */
 	pm_addr = pm_addr_base;
-	pm_num = get_32bit_aligned_value_from_guest(vcpu, (u32)pm_addr);
+	pm_num = get_32bit_aligned_value_from_guest(&whitelist[curr].hpt_guest_walk_ctx,
+																							&whitelist[curr].pal_gpt_root,
+																							(u32)pm_addr);
 	pm_addr += 4;
 	dprintf(LOG_TRACE, "[TV] params number is %d\n", pm_num);
 	if (pm_num > TV_MAX_PARAMS)
@@ -1238,7 +1288,9 @@ u32 scode_unmarshall(VCPU * vcpu)
 	for (i = 1; i <= pm_num; i++) /*the last parameter should be pushed in stack first*/
 	{
 		/* get param information*/
-		pm_type =  get_32bit_aligned_value_from_guest(vcpu, (u32)pm_addr);
+		pm_type =  get_32bit_aligned_value_from_guest(&whitelist[curr].hpt_guest_walk_ctx,
+																									&whitelist[curr].pal_gpt_root,
+																									(u32)pm_addr);
 		pm_addr += 4;
 
 		switch (pm_type)
@@ -1252,14 +1304,24 @@ u32 scode_unmarshall(VCPU * vcpu)
 				}
 			case TV_PAL_PM_POINTER: /* pointer */
 				{
-					pm_size =  get_32bit_aligned_value_from_guest(vcpu, (u32)pm_addr);
+					pm_size =  get_32bit_aligned_value_from_guest(&whitelist[curr].hpt_guest_walk_ctx,
+																												&whitelist[curr].pal_gpt_root,
+																												(u32)pm_addr);
 					/* get pointer adddress in regular code */
-					pm_value = get_32bit_aligned_value_from_guest(vcpu, (u32)pm_addr+4);
+					pm_value = get_32bit_aligned_value_from_guest(&whitelist[curr].hpt_guest_walk_ctx,
+																												&whitelist[curr].pal_gpt_root,
+																												(u32)pm_addr+4);
 					pm_addr += 8;
 
 					dprintf(LOG_TRACE, "[TV]   PM %d is a pointer (size %d, addr %#x)\n", i,  pm_size*4, pm_value);
-					/*copy data from guest space to sensitive code*/
-					memcpy_guest_to_guest(vcpu, pm_addr, pm_value, pm_size*4);
+					/* copy data from sensitive code (param space) to guest */
+					hpt_copy_guest_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
+																	&whitelist[curr].reg_gpt_root,
+																	pm_value,
+																	&whitelist[curr].hpt_guest_walk_ctx,
+																	&whitelist[curr].reg_gpt_root,
+																	pm_addr,
+																	pm_size*4);
 					pm_addr += 4*pm_size;
 					break;
 				}

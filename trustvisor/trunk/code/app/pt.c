@@ -684,124 +684,173 @@ u32 guest_pt_check_user(VCPU * vcpu, u32 vaddr, u32 page_num)
 }
 
 /* several help functions to access guest address space */
-extern u16 get_16bit_aligned_value_from_guest(VCPU * vcpu, u32 gvaddr)
+extern u16 get_16bit_aligned_value_from_guest(const hpt_walk_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr)
 {
   u32 gpaddr;
   
-  gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr);
+  gpaddr = gpt_vaddr_to_paddr(ctx, root, gvaddr);
   return *((u16 *)gpa2hva(gpaddr));
 }
 
-extern u32 get_32bit_aligned_value_from_guest(VCPU * vcpu, u32 gvaddr)
+extern u32 get_32bit_aligned_value_from_guest(const hpt_walk_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr)
 {
   u32 gpaddr;
   
-  gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr);
+  gpaddr = gpt_vaddr_to_paddr(ctx, root, gvaddr);
   return *((u32 *)gpa2hva(gpaddr));
 }
 
-extern void put_32bit_aligned_value_to_guest(VCPU * vcpu, u32 gvaddr, u32 value)
+extern void put_32bit_aligned_value_to_guest(const hpt_walk_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr, u32 value)
 {
   u32 gpaddr;
   
-  gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr);
+  gpaddr = gpt_vaddr_to_paddr(ctx, root, gvaddr);
   *((u32 *)gpa2hva(gpaddr)) = value;
 }
 
-extern void copy_from_guest(VCPU * vcpu, u8 *dst,u32 gvaddr, u32 len)
+/* several help functions to access guest address space */
+extern u16 get_16bit_aligned_value_from_current_guest(VCPU *vcpu, u32 gvaddr)
 {
-  u32 gpaddr, gvend, gvprev;
-  u32 tmp;
-
-  gvprev = gvaddr;
-  gvend = gvaddr + len;
-
-  gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr);
-
-  if (gvaddr & 0x3)
-  {
-    tmp = (gvaddr + 0x3) & (u32)~0x3;
-    for (; (gvaddr < gvend) && (gvaddr < tmp); gvaddr ++, gpaddr ++, dst ++)
-    {
-      if (!SAME_PAGE_NPAE(gvprev, gvaddr))
-        gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr);
-
-      *dst = *((u8 *)gpa2hva(gpaddr));
-      gvprev = gvaddr;
-    }
-  }
-  if (gvaddr < gvend)
-  {
-    tmp = gvend & (u32)~0x3;
-    for (; gvaddr < tmp; gvaddr += 4, gpaddr += 4, dst += 4)
-    {
-      if (!SAME_PAGE_NPAE(gvprev, gvaddr))
-        gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr);
-
-      *(u32 *)dst = *((u32 *)gpa2hva(gpaddr));
-      gvprev = gvaddr;
-    }
-  }
-  if (gvaddr < gvend)
-  {
-    for (; gvaddr < gvend; gvaddr ++, gpaddr ++, dst ++)
-    {
-      if (!SAME_PAGE_NPAE(gvprev, gvaddr))
-        gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr);
-
-      *dst = *((u8 *)gpa2hva(gpaddr));
-      gvprev = gvaddr;
-    }
-  }
-  return;
+  u32 gpaddr;
+  
+  gpaddr = gpt_vaddr_to_paddr_current(vcpu, gvaddr);
+  return *((u16 *)gpa2hva(gpaddr));
 }
 
-extern void copy_to_guest(VCPU * vcpu, u32 gvaddr, u8 *src, u32 len)
+extern u32 get_32bit_aligned_value_from_current_guest(VCPU *vcpu, u32 gvaddr)
 {
-  u32 gpaddr, gvend, gvprev;
-  u32 tmp;
+  u32 gpaddr;
+  
+  gpaddr = gpt_vaddr_to_paddr_current(vcpu, gvaddr);
+  return *((u32 *)gpa2hva(gpaddr));
+}
 
-  gvprev = gvaddr;
-  gvend = gvaddr + len;
+extern void put_32bit_aligned_value_to_current_guest(VCPU *vcpu, u32 gvaddr, u32 value)
+{
+  u32 gpaddr;
+  
+  gpaddr = gpt_vaddr_to_paddr_current(vcpu, gvaddr);
+  *((u32 *)gpa2hva(gpaddr)) = value;
+}
 
-  gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr);
 
-  if (gvaddr & 0x3)
-  {
-    tmp = (gvaddr + 0x3) & (u32)~0x3;
-    for (; (gvaddr < gvend) && (gvaddr < tmp); gvaddr ++, gpaddr ++, src ++)
-    {
-      if (!SAME_PAGE_NPAE(gvprev, gvaddr))
-        gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr);
 
-      *((u8 *)gpa2hva(gpaddr)) = *src;
-      gvprev = gvaddr;
-    }
-  }
-  if (gvaddr < gvend)
-  {
-    tmp = gvend & (u32)~0x3;
-    for (; gvaddr < tmp; gvaddr += 4, gpaddr += 4, src += 4)
-    {
-      if (!SAME_PAGE_NPAE(gvprev, gvaddr))
-        gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr);
+extern void copy_from_current_guest(VCPU * vcpu, u8 *dst,u32 gvaddr, u32 len)
+{
+	hpt_type_t t = (VCPU_gcr4(vcpu) & CR4_PAE) ? HPT_TYPE_PAE : HPT_TYPE_NORM;
+	hpt_pmo_t root = {
+		.pm = VCPU_get_current_guest_root_pm(vcpu),
+		.t = t,
+		.lvl = hpt_root_lvl(t),
+	};
+	hpt_walk_ctx_t ctx = hpt_guest_walk_ctx;
+	ctx.t = t;
 
-      *((u32 *)gpa2hva(gpaddr)) = *(u32 *)src;
-      gvprev = gvaddr;
-    }
-  }
-  if (gvaddr < gvend)
-  {
-    for (; gvaddr < gvend; gvaddr ++, gpaddr ++, src ++)
-    {
-      if (!SAME_PAGE_NPAE(gvprev, gvaddr))
-        gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr);
+	hpt_copy_from_guest(&ctx, &root, dst, gvaddr, len);
 
-      *((u8 *)gpa2hva(gpaddr)) = *src;
-      gvprev = gvaddr;
-    }
-  }
-  return;
+  /* u32 gpaddr, gvend, gvprev; */
+  /* u32 tmp; */
+
+  /* gvprev = gvaddr; */
+  /* gvend = gvaddr + len; */
+
+  /* gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr); */
+
+  /* if (gvaddr & 0x3) */
+  /* { */
+  /*   tmp = (gvaddr + 0x3) & (u32)~0x3; */
+  /*   for (; (gvaddr < gvend) && (gvaddr < tmp); gvaddr ++, gpaddr ++, dst ++) */
+  /*   { */
+  /*     if (!SAME_PAGE_NPAE(gvprev, gvaddr)) */
+  /*       gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr); */
+
+  /*     *dst = *((u8 *)gpa2hva(gpaddr)); */
+  /*     gvprev = gvaddr; */
+  /*   } */
+  /* } */
+  /* if (gvaddr < gvend) */
+  /* { */
+  /*   tmp = gvend & (u32)~0x3; */
+  /*   for (; gvaddr < tmp; gvaddr += 4, gpaddr += 4, dst += 4) */
+  /*   { */
+  /*     if (!SAME_PAGE_NPAE(gvprev, gvaddr)) */
+  /*       gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr); */
+
+  /*     *(u32 *)dst = *((u32 *)gpa2hva(gpaddr)); */
+  /*     gvprev = gvaddr; */
+  /*   } */
+  /* } */
+  /* if (gvaddr < gvend) */
+  /* { */
+  /*   for (; gvaddr < gvend; gvaddr ++, gpaddr ++, dst ++) */
+  /*   { */
+  /*     if (!SAME_PAGE_NPAE(gvprev, gvaddr)) */
+  /*       gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr); */
+
+  /*     *dst = *((u8 *)gpa2hva(gpaddr)); */
+  /*     gvprev = gvaddr; */
+  /*   } */
+  /* } */
+  /* return; */
+}
+
+extern void copy_to_current_guest(VCPU * vcpu, u32 gvaddr, u8 *src, u32 len)
+{
+	hpt_type_t t = (VCPU_gcr4(vcpu) & CR4_PAE) ? HPT_TYPE_PAE : HPT_TYPE_NORM;
+	hpt_pmo_t root = {
+		.pm = VCPU_get_current_guest_root_pm(vcpu),
+		.t = t,
+		.lvl = hpt_root_lvl(t),
+	};
+	hpt_walk_ctx_t ctx = hpt_guest_walk_ctx;
+	ctx.t = t;
+
+	hpt_copy_to_guest(&ctx, &root, gvaddr, src, len);
+
+  /* u32 gpaddr, gvend, gvprev; */
+  /* u32 tmp; */
+
+  /* gvprev = gvaddr; */
+  /* gvend = gvaddr + len; */
+
+  /* gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr); */
+
+  /* if (gvaddr & 0x3) */
+  /* { */
+  /*   tmp = (gvaddr + 0x3) & (u32)~0x3; */
+  /*   for (; (gvaddr < gvend) && (gvaddr < tmp); gvaddr ++, gpaddr ++, src ++) */
+  /*   { */
+  /*     if (!SAME_PAGE_NPAE(gvprev, gvaddr)) */
+  /*       gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr); */
+
+  /*     *((u8 *)gpa2hva(gpaddr)) = *src; */
+  /*     gvprev = gvaddr; */
+  /*   } */
+  /* } */
+  /* if (gvaddr < gvend) */
+  /* { */
+  /*   tmp = gvend & (u32)~0x3; */
+  /*   for (; gvaddr < tmp; gvaddr += 4, gpaddr += 4, src += 4) */
+  /*   { */
+  /*     if (!SAME_PAGE_NPAE(gvprev, gvaddr)) */
+  /*       gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr); */
+
+  /*     *((u32 *)gpa2hva(gpaddr)) = *(u32 *)src; */
+  /*     gvprev = gvaddr; */
+  /*   } */
+  /* } */
+  /* if (gvaddr < gvend) */
+  /* { */
+  /*   for (; gvaddr < gvend; gvaddr ++, gpaddr ++, src ++) */
+  /*   { */
+  /*     if (!SAME_PAGE_NPAE(gvprev, gvaddr)) */
+  /*       gpaddr = gpt_vaddr_to_paddr(vcpu, gvaddr); */
+
+  /*     *((u8 *)gpa2hva(gpaddr)) = *src; */
+  /*     gvprev = gvaddr; */
+  /*   } */
+  /* } */
+  /* return; */
 }
 
 /* Local Variables: */

@@ -127,6 +127,7 @@ typedef struct whitelist_entry{
 
 /* template page table context */
 extern hpt_walk_ctx_t hpt_nested_walk_ctx;
+extern hpt_walk_ctx_t hpt_guest_walk_ctx;
 
 /* nested paging handlers (hpt) */
 void hpt_insert_pal_pmes(VCPU *vcpu,
@@ -150,13 +151,36 @@ void hpt_nested_make_pt_accessible(pte_t *gpaddr_list, u32 gpaddr_count, u64 * n
 hpt_prot_t pal_prot_of_type(int type);
 
 /* several help functions to access guest address space */
-u16 get_16bit_aligned_value_from_guest(VCPU * vcpu, u32 gvaddr);
-u32 get_32bit_aligned_value_from_guest(VCPU * vcpu, u32 gvaddr);
-void put_32bit_aligned_value_to_guest(VCPU * vcpu, u32 gvaddr, u32 value);
+u16 get_16bit_aligned_value_from_guest(const hpt_walk_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr);
+u32 get_32bit_aligned_value_from_guest(const hpt_walk_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr);
+void put_32bit_aligned_value_to_guest(const hpt_walk_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr, u32 value);
+
+u16 get_16bit_aligned_value_from_current_guest(VCPU *vcpu, u32 gvaddr);
+u32 get_32bit_aligned_value_from_current_guest(VCPU *vcpu, u32 gvaddr);
+void put_32bit_aligned_value_to_current_guest(VCPU *vcpu, u32 gvaddr, u32 value);
 
 /* guest paging handlers */
 int guest_pt_copy(VCPU * vcpu, pte_t *pte_page, u32 gvaddr, u32 size, int type);
-#define gpt_vaddr_to_paddr(vcpu, vaddr)	guest_pt_walker_internal(vcpu, vaddr, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+static inline gpa_t gpt_vaddr_to_paddr(const hpt_walk_ctx_t *ctx, const hpt_pmo_t *gpt_root, gva_t vaddr)
+{
+	return hpto_walk_va_to_pa(ctx, gpt_root, vaddr);
+}
+static inline gpa_t gpt_vaddr_to_paddr_current(VCPU *vcpu, gva_t vaddr)
+{
+	hpt_type_t t = (VCPU_gcr4(vcpu) & CR4_PAE) ? HPT_TYPE_PAE : HPT_TYPE_NORM;
+	hpt_pmo_t root = {
+		.pm = VCPU_get_current_guest_root_pm(vcpu),
+		.t = t,
+		.lvl = hpt_root_lvl(t),
+	};
+	hpt_walk_ctx_t ctx = hpt_guest_walk_ctx;
+	gpa_t rv;
+	ctx.t = t;
+	rv = hpto_walk_va_to_pa(&ctx, &root, vaddr);
+
+	return rv;
+}
+
 #define  gpt_get_ptpages(vcpu, vaddr, pdp, pd, pt) guest_pt_walker_internal(vcpu, vaddr, pdp, pd, pt, NULL, NULL, NULL, NULL)
 #define  gpt_get_ptentries(vcpu, vaddr, pdpe, pde, pte, is_pae) guest_pt_walker_internal(vcpu, vaddr, NULL, NULL, NULL, pdpe, pde, pte, is_pae)
 
@@ -166,8 +190,8 @@ u32 guest_pt_check_user_rw(VCPU * vcpu, u32 vaddr, u32 page_num);
 
 /* operations from hypervisor to guest paging */
 void * __gpa2hva__(u32 gpaddr);
-void copy_from_guest(VCPU * vcpu, u8 *dst, u32 gvaddr, u32 len);
-void copy_to_guest(VCPU * vcpu, u32 gvaddr, u8 *src, u32 len);
+void copy_from_current_guest(VCPU * vcpu, u8 *dst, u32 gvaddr, u32 len);
+void copy_to_current_guest(VCPU * vcpu, u32 gvaddr, u8 *src, u32 len);
 
 /* PAL operations (HPT) */
 u32 hpt_scode_set_prot(VCPU *vcpu, pte_t *pte_pages, u32 size);

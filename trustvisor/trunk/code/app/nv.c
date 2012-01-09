@@ -397,7 +397,7 @@ uint32_t hc_tpmnvram_getsize(VCPU* vcpu, uint32_t size_addr) {
 		dprintf(LOG_TRACE, "\n[TV] HW_TPM_ROLLBACK_PROT_INDEX 0x%08x size"
 						" = %d", HW_TPM_ROLLBACK_PROT_INDEX, actual_size);
 						
-		put_32bit_aligned_value_to_guest(vcpu, size_addr, actual_size);		
+		put_32bit_aligned_value_to_current_guest(vcpu, size_addr, actual_size);		
 
 		return rv;
 }
@@ -446,7 +446,7 @@ uint32_t hc_tpmnvram_readall(VCPU* vcpu, uint32_t out_addr) {
 
 		if(0 == rv) { /* if no errors... */
 				/* copy output to guest */
-				copy_to_guest(vcpu, out_addr, data, HW_TPM_ROLLBACK_PROT_SIZE);				
+				copy_to_current_guest(vcpu, out_addr, data, HW_TPM_ROLLBACK_PROT_SIZE);				
 		}
 		
 		return rv;
@@ -473,7 +473,7 @@ uint32_t hc_tpmnvram_writeall(VCPU* vcpu, uint32_t in_addr) {
 		}
 
 		/* copy input data to host */
-		copy_from_guest(vcpu, data, in_addr, HW_TPM_ROLLBACK_PROT_SIZE);		
+		copy_from_current_guest(vcpu, data, in_addr, HW_TPM_ROLLBACK_PROT_SIZE);		
 		
 		/* Make the actual TPM call */		
     if(0 != (rv = tpm_nv_write_value(TRUSTVISOR_HWTPM_NV_LOCALITY,

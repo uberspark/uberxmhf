@@ -159,12 +159,12 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				u32 inbuf, outbuf, data_addr, data_len, pcr_addr, out_addr, out_len_addr;
 				inbuf = r->ecx;
 				outbuf = r->esi;
-				data_addr = get_32bit_aligned_value_from_guest(vcpu, inbuf); 
-				data_len = get_32bit_aligned_value_from_guest(vcpu, inbuf+4);
+				data_addr = get_32bit_aligned_value_from_current_guest(vcpu, inbuf); 
+				data_len = get_32bit_aligned_value_from_current_guest(vcpu, inbuf+4);
 				/* valid pcr value for unseal in edx */
 				pcr_addr = r->edx;
-				out_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf);
-				out_len_addr = get_32bit_aligned_value_from_guest(vcpu,outbuf+4);
+				out_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf);
+				out_len_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf+4);
 
 				ret = hc_utpm_seal_deprecated(vcpu, data_addr, data_len, pcr_addr, out_addr, out_len_addr);
 
@@ -177,10 +177,10 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				inbuf = r->ecx;
 				outbuf = r->edx;
 
-				input_addr = get_32bit_aligned_value_from_guest(vcpu, inbuf);
-				in_len = get_32bit_aligned_value_from_guest(vcpu, inbuf+4);
-				out_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf);
-				out_len_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf+4);
+				input_addr = get_32bit_aligned_value_from_current_guest(vcpu, inbuf);
+				in_len = get_32bit_aligned_value_from_current_guest(vcpu, inbuf+4);
+				out_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf);
+				out_len_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf+4);
 				digestAtCreation_addr = r->esi;				
 				
 				ret = hc_utpm_unseal(vcpu, input_addr, in_len, out_addr, out_len_addr, digestAtCreation_addr);
@@ -191,12 +191,12 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				u32 inbuf, outbuf, data_addr, data_len, pcrinfo_addr, out_addr, out_len_addr;
 				inbuf = r->ecx;
 				outbuf = r->esi;
-				data_addr = get_32bit_aligned_value_from_guest(vcpu, inbuf); 
-				data_len = get_32bit_aligned_value_from_guest(vcpu, inbuf+4);
+				data_addr = get_32bit_aligned_value_from_current_guest(vcpu, inbuf); 
+				data_len = get_32bit_aligned_value_from_current_guest(vcpu, inbuf+4);
 				/* valid pcr value for unseal in edx */
 				pcrinfo_addr = r->edx;
-				out_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf);
-				out_len_addr = get_32bit_aligned_value_from_guest(vcpu,outbuf+4);
+				out_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf);
+				out_len_addr = get_32bit_aligned_value_from_current_guest(vcpu,outbuf+4);
 
 				ret = hc_utpm_seal(vcpu, data_addr, data_len, pcrinfo_addr, out_addr, out_len_addr);
 			}
@@ -207,10 +207,10 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				inbuf = r->ecx;
 				outbuf = r->edx;
 
-				input_addr = get_32bit_aligned_value_from_guest(vcpu, inbuf);
-				in_len = get_32bit_aligned_value_from_guest(vcpu, inbuf+4);
-				out_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf);
-				out_len_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf+4);
+				input_addr = get_32bit_aligned_value_from_current_guest(vcpu, inbuf);
+				in_len = get_32bit_aligned_value_from_current_guest(vcpu, inbuf+4);
+				out_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf);
+				out_len_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf+4);
 
 				ret = hc_utpm_unseal_deprecated(vcpu, input_addr, in_len, out_addr, out_len_addr);
 
@@ -228,13 +228,13 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 
 				/* signature buffer and its length in array */
 				sigbuf = r->edx;
-				sig_addr = get_32bit_aligned_value_from_guest(vcpu, sigbuf);
-				sig_len_addr = get_32bit_aligned_value_from_guest(vcpu,sigbuf+4);
+				sig_addr = get_32bit_aligned_value_from_current_guest(vcpu, sigbuf);
+				sig_len_addr = get_32bit_aligned_value_from_current_guest(vcpu,sigbuf+4);
 
 				/* PCR Composite buffer and its length in array */
 				pcrCompbuf = r->edi;
-				pcrComp_addr = get_32bit_aligned_value_from_guest(vcpu, pcrCompbuf);
-				pcrCompLen_addr = get_32bit_aligned_value_from_guest(vcpu, pcrCompbuf+4);
+				pcrComp_addr = get_32bit_aligned_value_from_current_guest(vcpu, pcrCompbuf);
+				pcrCompLen_addr = get_32bit_aligned_value_from_current_guest(vcpu, pcrCompbuf+4);
 				
 				ret = hc_utpm_quote(vcpu, nonce_addr, tpmsel_addr, sig_addr, sig_len_addr, pcrComp_addr, pcrCompLen_addr);
 
@@ -256,8 +256,8 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				tpmsel_addr = r->ecx;
 
 				outbuf = r->edx;
-				out_addr = get_32bit_aligned_value_from_guest(vcpu, outbuf);
-				out_len_addr = get_32bit_aligned_value_from_guest(vcpu,outbuf+4);
+				out_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf);
+				out_len_addr = get_32bit_aligned_value_from_current_guest(vcpu,outbuf+4);
 
 				ret = hc_utpm_quote_deprecated(vcpu,nonce_addr,tpmsel_addr,out_addr,out_len_addr);
 
@@ -276,10 +276,10 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 				count = r->edi;
 
 				addrs = malloc(count * sizeof(u32));
-				copy_from_guest(vcpu, (u8*)addrs, addrs_gva, sizeof(u32)*count);
+				copy_from_current_guest(vcpu, (u8*)addrs, addrs_gva, sizeof(u32)*count);
 
 				lens = malloc(count * sizeof(u32));
-				copy_from_guest(vcpu, (u8*)lens, lens_gva, sizeof(u32)*count);
+				copy_from_current_guest(vcpu, (u8*)lens, lens_gva, sizeof(u32)*count);
 
 				if (lens && addrs) {
 					ret = scode_share_ranges(vcpu, scode_entry, addrs, lens, count);

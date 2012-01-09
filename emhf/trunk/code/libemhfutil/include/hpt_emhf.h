@@ -91,6 +91,16 @@ static inline void VCPU_set_current_root_pm(VCPU *vcpu, hpt_pm_t root)
   emhf_memprot_set_current_root_pagemap_address(vcpu, hva2spa(root));
 }
 
+static inline hpt_type_t VCPU_get_guest_hpt_type(VCPU *vcpu) {
+  /* XXX assumes NORM or PAE. Need to check for 64-bit */
+  return (VCPU_gcr4(vcpu) & CR4_PAE) ? HPT_TYPE_PAE : HPT_TYPE_NORM;
+}
+
+static inline hpt_pm_t VCPU_get_current_guest_root_pm(VCPU *vcpu)
+{
+  return gpa2hva(hpt_cr3_get_address(VCPU_get_guest_hpt_type(vcpu),
+                                     VCPU_gcr3(vcpu)));
+}
 
 #endif //__ASSEMBLY__
 

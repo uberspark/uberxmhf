@@ -95,6 +95,11 @@ hpt_prot_t hpto_walk_get_effective_prots(const hpt_walk_ctx_t *ctx,
                                          const hpt_pmo_t *pmo_root,
                                          hpt_va_t va,
                                          bool *user_accessible);
+hpt_pa_t hpt_pmeo_va_to_pa(hpt_pmeo_t* pmeo, hpt_va_t va);
+hpt_pa_t hpto_walk_va_to_pa(const hpt_walk_ctx_t *ctx,
+                            const hpt_pmo_t *pmo,
+                            hpt_va_t va);
+
 
 void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
                         hpt_pmo_t* reg_gpmo_root, hpt_walk_ctx_t *reg_gpm_ctx,
