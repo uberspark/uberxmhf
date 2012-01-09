@@ -597,6 +597,17 @@ static inline u64 VCPU_gcr3(VCPU *vcpu)
   }
 }
 
+static inline void VCPU_gcr3_set(VCPU *vcpu, u64 cr3)
+{
+  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+    vcpu->vmcs.guest_CR3 = cr3;
+  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+    ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->cr3 = cr3;
+  } else {
+    ASSERT(false);
+  }
+}
+
 static inline u64 VCPU_gcr4(VCPU *vcpu)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
