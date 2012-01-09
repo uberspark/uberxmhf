@@ -133,32 +133,6 @@ hpt_prot_t reg_prot_of_type(int type)
 	ASSERT(0); return 0; /* unreachable; appeases compiler */
 }
 
-void hpt_walk_set_prot(hpt_walk_ctx_t *walk_ctx, hpt_pm_t pm, int pm_lvl, gpa_t gpa, hpt_prot_t prot)
-{
-	hpt_pme_t pme;
-	int end_pm_lvl=1;
-
-	pm = hpt_walk_get_pm(walk_ctx, pm_lvl, pm, &end_pm_lvl, gpa);
-	ASSERT(pm != NULL);
-	ASSERT(end_pm_lvl==1); /* FIXME we don't handle large pages */
-	pme = hpt_pm_get_pme_by_va(walk_ctx->t, end_pm_lvl, pm, gpa);
-	pme = hpt_pme_setprot(walk_ctx->t, end_pm_lvl, pme, prot);
-	hpt_pm_set_pme_by_va(walk_ctx->t, end_pm_lvl, pm, gpa, pme);
-}
-
-void hpt_walk_set_prots(hpt_walk_ctx_t *walk_ctx,
-												hpt_pm_t pm,
-												int pm_lvl,
-												gpa_t gpas[],
-												size_t num_gpas,
-												hpt_prot_t prot)
-{
-	size_t i;
-	for(i=0; i<num_gpas; i++) {
-		hpt_walk_set_prot(walk_ctx, pm, pm_lvl, gpas[i],	prot);
-	}
-}
-
 void hpt_insert_pal_pme(VCPU *vcpu, hpt_walk_ctx_t *walk_ctx, hpt_pm_t pal_pm, int top_lvl, gpa_t gpa)
 {
 	hpt_pme_t reg_pme, pal_pme;
