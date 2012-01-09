@@ -44,6 +44,7 @@
 #include <emhf.h> 
 
 #include <pages.h>
+#include <pt2.h>
 
 #include <trustvisor.h>
 #include <crypto_init.h>
@@ -116,7 +117,8 @@ typedef struct whitelist_entry{
 	pagelist_t *gpl;
 	pagelist_t *npl;
 	hpt_walk_ctx_t hpt_nested_walk_ctx;
-	hpt_pm_t pal_hpt_root;
+	hpt_pmo_t pal_npt_root;
+	hpt_pmo_t pal_gpt_root;
 } __attribute__ ((packed)) whitelist_entry_t;
 
 

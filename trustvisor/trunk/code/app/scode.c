@@ -692,7 +692,10 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 										&pal_gpmo_root, &guest_walk_ctx,
 										whitelist_new.gpl);
 
-		/* whitelist_new.pal_hpt_root = pal_npmo_root.pm; */
+		whitelist_new.pal_npt_root = pal_npmo_root;
+		whitelist_new.pal_gpt_root = pal_gpmo_root;
+																								 VCPU_gcr3(vcpu), /* XXX should build trusted cr3 from scratch */
+																								 hva2gpa(whitelist_new.pal_gpt_root.pm));
 		/* XXX flush TLB to ensure 'reg' is now correctly denied access */
 
 		/* XXX temp for testing */
@@ -732,12 +735,15 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	whitelist_new.npl = malloc(sizeof(pagelist_t));
 	pagelist_init(whitelist_new.npl);
 	whitelist_new.hpt_nested_walk_ctx.gzp_ctx = whitelist_new.npl; /* assign page allocator */
-	whitelist_new.pal_hpt_root = pagelist_get_zeroedpage(whitelist_new.pl);
+
+	whitelist_new.pal_npt_root.pm = pagelist_get_zeroedpage(whitelist_new.npl);
+	whitelist_new.pal_npt_root.t = hpt_nested_walk_ctx.t;
+	whitelist_new.pal_npt_root.lvl = hpt_root_lvl(hpt_nested_walk_ctx.t);
 
 	hpt_insert_pal_pmes(vcpu,
 											&whitelist_new.hpt_nested_walk_ctx,
-											whitelist_new.pal_hpt_root,
-											hpt_root_lvl(hpt_nested_walk_ctx.t),
+											whitelist_new.pal_npt_root.pm,
+											whitelist_new.pal_npt_root.lvl,
 											whitelist_new.scode_pages,
 											whitelist_new.scode_size>>PAGE_SHIFT_4K);
 	/* register guest page table pages. TODO: cloneguest page table
@@ -745,8 +751,8 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 		 tampered. */
 	scode_expose_arch(vcpu, &whitelist_new);
 	hpt_insert_pal_pmes(vcpu, &whitelist_new.hpt_nested_walk_ctx,
-											whitelist_new.pal_hpt_root,
-											hpt_root_lvl(hpt_nested_walk_ctx.t),
+											whitelist_new.pal_npt_root.pm,
+											whitelist_new.pal_npt_root.lvl,
 											whitelist_new.pte_page,
 											whitelist_new.pte_size>>PAGE_SHIFT_4K);
 	scode_unexpose_arch(vcpu, &whitelist_new);
@@ -1146,10 +1152,9 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 
 	/* find all PTE pages related to access scode and GDT */
 	scode_expose_arch(vcpu, &whitelist[curr]);
-
 	/* change NPT permission for all PTE pages and scode pages */
 	dprintf(LOG_TRACE, "[TV] change NPT permission to run PAL!\n");
-	VCPU_set_current_root_pm(vcpu, whitelist[curr].pal_hpt_root);
+	VCPU_set_current_root_pm(vcpu, whitelist[curr].pal_npt_root.pm);
 	emhf_hwpgtbl_flushall(vcpu); /* XXX */
 
 	/* hpt_nested_switch_scode(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size, */
@@ -1470,7 +1475,7 @@ void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* entry)
 
 	/* remove from pal's page tables */
 	hpt_walk_set_prots(&entry->hpt_nested_walk_ctx,
-										 entry->pal_hpt_root,
+										 entry->pal_npt_root.pm,
 										 hpt_root_lvl(entry->hpt_nested_walk_ctx.t),
 										 &entry->scode_pages[scode_pages_shared_start],
 										 shared_page_count,
@@ -1557,13 +1562,13 @@ u32 scode_share_range(VCPU * vcpu, whitelist_entry_t *entry, u32 gva_base, u32 g
 	/* add to pal's page tables */
 	{
 		hpt_insert_pal_pmes(vcpu, &entry->hpt_nested_walk_ctx,
-												entry->pal_hpt_root,
+												entry->pal_npt_root.pm,
 												hpt_root_lvl(entry->hpt_nested_walk_ctx.t),
 												new_scode_pages,
 												gva_len_pages);
 		scode_expose_arch(vcpu, entry);
 		hpt_insert_pal_pmes(vcpu, &entry->hpt_nested_walk_ctx,
-												entry->pal_hpt_root,
+												entry->pal_npt_root.pm,
 												hpt_root_lvl(entry->hpt_nested_walk_ctx.t),
 												entry->pte_page,
 												entry->pte_size>>PAGE_SHIFT_4K);
