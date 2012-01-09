@@ -1194,7 +1194,7 @@ tz_return_t init_tz_sess(tze_dev_svc_sess_t* tz_sess)
       .pEntry = pals,
     };
     tv_pal_sections_init(&scode_info,
-                         PAGE_SIZE, 10*PAGE_SIZE);
+                         3*PAGE_SIZE, 10*PAGE_SIZE);
     rv = TZESvcLoadAndOpen(tz_sess,
                            &pal,
                            sizeof(pal),
@@ -1213,7 +1213,6 @@ tz_return_t init_tz_sess(tze_dev_svc_sess_t* tz_sess)
 
   return rv;
 }
-
 
 // function main
 // register some sensitive code and data in libfoo.so and call bar()
