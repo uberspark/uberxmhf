@@ -4,8 +4,18 @@
 # $< the name of the related file that caused the action.
 # $* the prefix shared by target and dependent files. 
 
-TESTS=-DTEST_VMMCALL -DTEST_WITHOUTPARAM -DTEST_PARAM -DTEST_SEAL -DTEST_LTSEAL -DTEST_QUOTE -DTEST_PCR_EXTEND -DTEST_PCR_READ -DTEST_RAND -DTEST_TIME
-#TESTS=-DTEST_NV_ROLLBACK
+TESTS=
+TESTS+=-DTEST_VMMCALL
+TESTS+=-DTEST_WITHOUTPARAM
+TESTS+=-DTEST_PARAM
+TESTS+=-DTEST_SEAL
+TESTS+=-DTEST_LTSEAL
+TESTS+=-DTEST_QUOTE
+TESTS+=-DTEST_PCR_EXTEND
+TESTS+=-DTEST_PCR_READ
+TESTS+=-DTEST_RAND
+TESTS+=-DTEST_TIME
+#TESTS+=-DTEST_NV_ROLLBACK
 
 # Set to 1 to use 'null' backend and test in userspace
 # Set to 0 to use TrustVisor backend and run 'for real'
