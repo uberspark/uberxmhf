@@ -62,12 +62,40 @@ void hpt_walk_set_prots(hpt_walk_ctx_t *walk_ctx,
   }
 }
 
+/* inserts pme into the page map of level tgt_lvl containing va.
+ * fails if tgt_lvl is not allocated.
+ * XXX move into hpt.h once it's available again.
+ */
+static inline
+int hpt_walk_insert_pme(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int tgt_lvl, hpt_va_t va, hpt_pme_t pme)
+{
+  int end_lvl=tgt_lvl;
+  dprintf(LOG_TRACE, "hpt_walk_insert_pme_alloc: lvl:%d pm:%x tgt_lvl:%d va:%Lx pme:%Lx\n",
+          lvl, (u32)pm, tgt_lvl, va, pme);
+  pm = hpt_walk_get_pm(ctx, lvl, pm, &end_lvl, va);
+
+  dprintf(LOG_TRACE, "hpt_walk_insert_pme: got pm:%x end_lvl:%d\n",
+          (u32)pm, end_lvl);
+
+  if(pm == NULL || tgt_lvl != end_lvl) {
+    return 1;
+  }
+
+  hpt_pm_set_pme_by_va(ctx->t, tgt_lvl, pm, va, pme);
+  return 0;
+}
+
 typedef struct {
   hpt_va_t reg_gva;
   hpt_va_t pal_gva;
   size_t size;
   hpt_prot_t prot;
 } section_t;
+
+/* XXX TEMP */
+#define CHK(x) ASSERT(x)
+#define CHK_RV(x) ASSERT(!(x))
+#define hpt_walk_check_prot(x, y) HPT_PROTS_RWX
 
 void scode_add_section(hpt_pm_t reg_npt_root, hpt_walk_ctx_t *reg_npt_ctx,
                        hpt_pm_t reg_gpt_root, hpt_walk_ctx_t *reg_gpt_ctx,
@@ -79,8 +107,8 @@ void scode_add_section(hpt_pm_t reg_npt_root, hpt_walk_ctx_t *reg_npt_ctx,
   int reg_npt_root_lvl = hpt_root_lvl(reg_npt_ctx->t);
   int pal_gpt_root_lvl = hpt_root_lvl(pal_gpt_ctx->t);
   int pal_npt_root_lvl = hpt_root_lvl(pal_npt_ctx->t);
-  hpt_va_t page_reg_gva;
   size_t offset;
+  int hpt_err;
   
   /* XXX don't hard-code page size here. */
   /* XXX fail gracefully */
@@ -93,7 +121,7 @@ void scode_add_section(hpt_pm_t reg_npt_root, hpt_walk_ctx_t *reg_npt_ctx,
     /* XXX we don't use hpt_va_t or hpt_pa_t for gpa's because they
        get used as both */
     u64 page_reg_gpa, page_pal_gpa; /* guest-physical-addresses */
-    hpt_va_t page_reg_gva, page_pal_gva; /* guest-virtual-addresses */
+
 
     hpt_pme_t page_reg_gpme; int page_reg_gpme_lvl; /* reg's guest page-map-entry and lvl */
     hpt_pme_t page_pal_gpme; int page_pal_gpme_lvl; /* pal's guest page-map-entry and lvl */
@@ -111,20 +139,20 @@ void scode_add_section(hpt_pm_t reg_npt_root, hpt_walk_ctx_t *reg_npt_ctx,
     page_reg_gpa = hpt_pme_get_address(reg_gpt_ctx->t, page_reg_gpme_lvl, page_reg_gpme);
 
     page_reg_npme_lvl=1;
-    page_reg_npme = hpt_pm_get_pme_by_va(reg_npt_ctx, reg_npt_root_lvl, reg_npt_root,
-                                         &page_reg_npme_lvl,
-                                         page_reg_gpa);
+    page_reg_npme = hpt_walk_get_pme(reg_npt_ctx, reg_npt_root_lvl, reg_npt_root,
+                                     &page_reg_npme_lvl,
+                                     page_reg_gpa);
     ASSERT(page_reg_npme_lvl==1); /* we don't handle large pages */
-    page_spa = hpt_pme_get_address(reg_npt_ctx->t, page_reg_npme_lvl, page_reg_npme);
+    /* page_spa = hpt_pme_get_address(reg_npt_ctx->t, page_reg_npme_lvl, page_reg_npme); */
 
     /* probably no reason to change */
     page_pal_gpa = page_reg_gpa;
 
     /* check that this VM is allowed to access this system-physical mem */
-    CHK(HPT_PROT_RWX == hpt_walk_check_prot(reg_npt_root, page_reg_gpa));
+    CHK(HPT_PROTS_RWX == hpt_walk_check_prot(reg_npt_root, page_reg_gpa));
 
     /* check that this guest process is allowed to access this guest-physical mem */
-    CHK(HPT_PROT_RWX == hpt_walk_check_prot(guest_reg_root, page_reg_gva));
+    CHK(HPT_PROTS_RWX == hpt_walk_check_prot(guest_reg_root, page_reg_gva));
 
     /* check that the requested virtual address isn't already mapped
        into PAL's address space */
@@ -132,7 +160,7 @@ void scode_add_section(hpt_pm_t reg_npt_root, hpt_walk_ctx_t *reg_npt_ctx,
 
     /* revoke access from 'reg' VM */
     page_reg_npme = hpt_pme_setprot(reg_npt_ctx->t, page_reg_npme_lvl,
-                                    page_reg_npme, HPT_PROT_NONE);
+                                    page_reg_npme, HPT_PROTS_NONE);
     hpt_err = hpt_walk_insert_pme(reg_npt_ctx, reg_npt_root_lvl, reg_npt_root, 1,
                                   page_reg_gpa, page_reg_npme);
     CHK_RV(hpt_err);
@@ -142,6 +170,7 @@ void scode_add_section(hpt_pm_t reg_npt_root, hpt_walk_ctx_t *reg_npt_ctx,
 
     /* add access to pal guest page tables */
     page_pal_gpme = page_reg_gpme; /* XXX SECURITY should build from scratch */
+    page_pal_gpme_lvl = page_reg_gpme_lvl;
     page_pal_gpme = hpt_pme_set_address(pal_gpt_ctx->t, page_pal_gpme_lvl,
                                         page_pal_gpme, page_pal_gva);
     page_pal_gpme = hpt_pme_setprot(pal_gpt_ctx->t, page_pal_gpme_lvl,
@@ -151,6 +180,7 @@ void scode_add_section(hpt_pm_t reg_npt_root, hpt_walk_ctx_t *reg_npt_ctx,
 
     /* add access to pal nested page tables */
     page_pal_npme = page_reg_npme; /* XXX SECURITY should build from scratch */
+    page_pal_npme_lvl = page_reg_npme_lvl;
     page_pal_npme = hpt_pme_setprot(pal_npt_ctx->t, page_pal_npme_lvl,
                                     page_pal_npme, section->prot);
     hpt_walk_insert_pme_alloc(pal_npt_ctx, pal_npt_root_lvl, pal_npt_root, 1,
