@@ -1175,6 +1175,7 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 	/* change NPT permission for all PTE pages and scode pages */
 	dprintf(LOG_TRACE, "[TV] change NPT permission to run PAL!\n");
 	VCPU_set_current_root_pm(vcpu, whitelist[curr].pal_npt_root.pm);
+	VCPU_gcr3_set(vcpu, whitelist[curr].pal_gcr3);
 	emhf_hwpgtbl_flushall(vcpu); /* XXX */
 
 	/* hpt_nested_switch_scode(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size, */
@@ -1361,6 +1362,7 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
 		/* clear the NPT permission setting in switching into scode */
 		dprintf(LOG_TRACE, "[TV] change NPT permission to exit PAL!\n"); 
 		VCPU_set_current_root_pm(vcpu, VCPU_get_default_root_pm(vcpu));
+		VCPU_gcr3_set(vcpu, whitelist[curr].gcr3);
 		emhf_hwpgtbl_flushall(vcpu); /* XXX */
 		/* hpt_nested_switch_regular(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size, */
 		/* 													whitelist[curr].pte_page, whitelist[curr].pte_size); */
