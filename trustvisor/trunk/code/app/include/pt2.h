@@ -36,8 +36,7 @@
 #ifndef PT2_H
 #define PT2_H
 
-#include <emhf.h> /* FIXME: narrow this down so this can be compiled
-                     and tested independently */
+#include <hpt.h>
 
 typedef struct {
   hpt_va_t reg_gva;
