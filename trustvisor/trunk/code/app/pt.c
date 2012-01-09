@@ -853,6 +853,186 @@ extern void copy_to_current_guest(VCPU * vcpu, u32 gvaddr, u8 *src, u32 len)
   /* return; */
 }
 
+
+/* clone pal's gdt from 'reg' gdt, and add to pal's guest page tables.
+	 gdt is allocted using passed-in-pl, whose pages should already be
+	 accessible to pal's nested page tables. XXX SECURITY need to build
+	 a trusted gdt instead. */
+void scode_clone_gdt(gva_t gdtr_base, size_t gdtr_lim,
+										 hpt_pmo_t* reg_gpmo_root, hpt_walk_ctx_t *reg_gpm_ctx,
+										 hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx,
+										 pagelist_t *pl
+										 )
+{
+	void *gdt_pal_page;
+	u64 *gdt=NULL;
+	size_t gdt_size = (gdtr_lim+1)*sizeof(*gdt);
+	size_t gdt_page_offset = gdtr_base & MASKRANGE64(11, 0); /* XXX */
+	gva_t gdt_reg_page_gva = gdtr_base & MASKRANGE64(63, 12); /* XXX */
+
+	dprintf(LOG_TRACE, "scode_clone_gdt base:%x size:%d:\n", gdtr_base, gdt_size);
+
+	/* rest of fn assumes gdt is all on one page */
+	ASSERT((gdt_page_offset+gdt_size) <= PAGE_SIZE_4K); 
+
+	gdt_pal_page = pagelist_get_zeroedpage(pl);
+	CHK(gdt_pal_page);
+	gdt = gdt_pal_page + gdt_page_offset;
+
+	dprintf(LOG_TRACE, "copying gdt from gva:%x to hva:%p\n", gdtr_base, gdt);
+	hpt_copy_from_guest(reg_gpm_ctx, reg_gpmo_root,
+											gdt, gdtr_base, gdt_size);
+
+	/* add to guest page tables */
+	{
+		hpt_pmeo_t gdt_g_pmeo = { .t = pal_gpmo_root->t, .lvl = 1 };
+		hpt_pa_t gdt_gpa;
+		int hpt_err;
+
+		gdt_gpa = hva2gpa(gdt);
+
+		dprintf(LOG_TRACE, "mapping gdt into guest page tables\n");
+		/* XXX SECURITY check to ensure we're not clobbering some existing
+			 mapping */
+    /* add access to pal guest page tables */
+		hpt_pmeo_set_address(&gdt_g_pmeo, gdt_gpa);
+		hpt_pmeo_setprot(&gdt_g_pmeo, HPT_PROTS_RWX);
+    hpt_err = hpt_walk_insert_pmeo_alloc(pal_gpm_ctx,
+                                         pal_gpmo_root,
+                                         &gdt_g_pmeo,
+                                         gdt_reg_page_gva);
+    CHK_RV(hpt_err);
+	}
+}
+
+/* lend a section of memory from a user-space process (on the
+   commodity OS) to a pal */
+void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
+                        hpt_pmo_t* reg_gpmo_root, hpt_walk_ctx_t *reg_gpm_ctx,
+                        hpt_pmo_t* pal_npmo_root, hpt_walk_ctx_t *pal_npm_ctx,
+                        hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx,
+                        const section_t *section)
+{
+  size_t offset;
+  int hpt_err;
+
+	dprintf(LOG_TRACE,
+					"entering scode_lend_section. Mapping from %016llx to %016llx, size %u, pal_prot %u\n",
+					section->reg_gva, section->pal_gva, section->size, (u32)section->pal_prot);
+  
+  /* XXX don't hard-code page size here. */
+  /* XXX fail gracefully */
+  ASSERT((section->size % PAGE_SIZE_4K) == 0); 
+
+  for (offset=0; offset < section->size; offset += PAGE_SIZE_4K) {
+    hpt_va_t page_reg_gva = section->reg_gva + offset;
+    hpt_va_t page_pal_gva = section->pal_gva + offset;
+
+    /* XXX we don't use hpt_va_t or hpt_pa_t for gpa's because these
+       get used as both */
+    u64 page_reg_gpa, page_pal_gpa; /* guest-physical-addresses */
+
+    hpt_pmeo_t page_reg_gpmeo; /* reg's guest page-map-entry and lvl */
+    hpt_pmeo_t page_pal_gpmeo; /* pal's guest page-map-entry and lvl */
+
+    hpt_pmeo_t page_reg_npmeo; /* reg's nested page-map-entry and lvl */
+    hpt_pmeo_t page_pal_npmeo; /* pal's nested page-map-entry and lvl */
+
+    /* lock? quiesce? */
+
+    hpt_walk_get_pmeo(&page_reg_gpmeo,
+                      reg_gpm_ctx,
+                      reg_gpmo_root,
+                      1,
+                      page_reg_gva);
+		dprintf(LOG_TRACE,
+						"got pme %016llx, level %d, type %d\n",
+						page_reg_gpmeo.pme, page_reg_gpmeo.lvl, page_reg_gpmeo.t);
+    ASSERT(page_reg_gpmeo.lvl==1); /* we don't handle large pages */
+    page_reg_gpa = hpt_pmeo_get_address(&page_reg_gpmeo);
+
+    hpt_walk_get_pmeo(&page_reg_npmeo,
+                      reg_npm_ctx,
+                      reg_npmo_root,
+                      1,
+                      page_reg_gpa);
+    ASSERT(page_reg_npmeo.lvl==1); /* we don't handle large pages */
+
+    /* no reason to go with a different mapping */
+    page_pal_gpa = page_reg_gpa;
+
+    /* check that this VM is allowed to access this system-physical mem */
+    {
+      hpt_prot_t effective_prots;
+      bool user_accessible=false;
+      effective_prots = hpto_walk_get_effective_prots(reg_npm_ctx,
+                                                      reg_npmo_root,
+                                                      page_pal_gva,
+                                                      &user_accessible);
+      CHK((effective_prots & section->reg_prot) == section->reg_prot);
+      CHK(user_accessible);
+    }
+
+    /* check that this guest process is allowed to access this guest-physical mem */
+    {
+      hpt_prot_t effective_prots;
+      bool user_accessible=false;
+      effective_prots = hpto_walk_get_effective_prots(reg_gpm_ctx,
+                                                      reg_gpmo_root,
+                                                      page_pal_gva,
+                                                      &user_accessible);
+			dprintf(LOG_TRACE, "%s got reg gpt prots:0x%x, user:%d\n",
+							__FUNCTION__, (u32)effective_prots, (int)user_accessible);
+      CHK((effective_prots & section->pal_prot) == section->pal_prot);
+      CHK(user_accessible);
+    }
+
+    /* check that the requested virtual address isn't already mapped
+       into PAL's address space */
+    {
+      hpt_pmeo_t existing_pmeo;
+      hpt_walk_get_pmeo(&existing_pmeo,
+                        pal_gpm_ctx,
+                        pal_gpmo_root,
+                        1,
+                        page_pal_gva);
+      CHK(!hpt_pmeo_is_present(&existing_pmeo));
+    }
+
+    /* revoke access from 'reg' VM */
+    hpt_pmeo_setprot(&page_reg_npmeo, section->pal_prot);
+    hpt_err = hpt_walk_insert_pmeo(reg_npm_ctx,
+                                   reg_npmo_root,
+                                   &page_reg_npmeo,
+                                   page_reg_gpa);
+    CHK_RV(hpt_err);
+
+    /* for simplicity, we don't bother removing from guest page
+       tables. removing from nested page tables is sufficient */
+
+    /* add access to pal guest page tables */
+    page_pal_gpmeo = page_reg_gpmeo; /* XXX SECURITY should build from scratch */
+    hpt_pmeo_set_address(&page_pal_gpmeo, page_pal_gpa);
+    hpt_pmeo_setprot    (&page_pal_gpmeo, HPT_PROTS_RWX);
+    hpt_err = hpt_walk_insert_pmeo_alloc(pal_gpm_ctx,
+                                         pal_gpmo_root,
+                                         &page_pal_gpmeo,
+                                         page_pal_gva);
+    CHK_RV(hpt_err);
+
+    /* add access to pal nested page tables */
+    page_pal_npmeo = page_reg_npmeo;
+    hpt_pmeo_setprot(&page_pal_npmeo, section->pal_prot);
+    hpt_err = hpt_walk_insert_pmeo_alloc(pal_npm_ctx,
+                                         pal_npmo_root,
+                                         &page_pal_npmeo,
+                                         gpa2spa(page_pal_gpa));
+    CHK_RV(hpt_err);
+
+    /* unlock? unquiesce? */
+  }
+}
+
 /* Local Variables: */
 /* mode:c           */
 /* indent-tabs-mode:'t */

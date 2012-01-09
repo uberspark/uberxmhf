@@ -53,6 +53,10 @@
 #include <hpt.h>
 #include <hpt_emhf.h>	/* from libemhfutil */
 
+/* XXX TEMP */
+#define CHK(x) ASSERT(x)
+#define CHK_RV(x) ASSERT(!(x))
+
 #define MAX_REGPAGES_NUM 300
 
 /* bits 0 to 2 of stored pte's store the section type */
@@ -206,6 +210,26 @@ u32 scode_share_ranges(VCPU * vcpu, u32 scode_entry, u32 gva_base[], u32 gva_len
 u32 scode_register(VCPU * vcpu, u32 scode_info, u32 scode_pm, u32 gventry);
 u32 scode_unregister(VCPU * vcpu, u32 gvaddr);
 void init_scode(VCPU * vcpu);
+
+typedef struct {
+  hpt_va_t reg_gva;
+  hpt_va_t pal_gva;
+  size_t size;
+  hpt_prot_t pal_prot;
+  hpt_prot_t reg_prot;
+} section_t;
+
+void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
+                        hpt_pmo_t* reg_gpmo_root, hpt_walk_ctx_t *reg_gpm_ctx,
+                        hpt_pmo_t* pal_npmo_root, hpt_walk_ctx_t *pal_npm_ctx,
+                        hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx,
+                        const section_t *section);
+
+void scode_clone_gdt(gva_t gdtr_base, size_t gdtr_lim,
+                     hpt_pmo_t* reg_gpmo_root, hpt_walk_ctx_t *reg_gpm_ctx,
+                     hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx,
+                     pagelist_t *pl
+                     );
 
 #endif /* __SCODE_H_ */
 /* Local Variables: */
