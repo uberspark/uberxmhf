@@ -42,7 +42,7 @@
 #define CHK(x) ASSERT(x)
 #define CHK_RV(x) ASSERT(!(x))
 
-static size_t hpt_remaining_on_page(const hpt_pmeo_t *pmeo, gpa_t gpa)
+static size_t hpt_remaining_on_page(const hpt_pmeo_t *pmeo, hpt_va_t va)
 {
 	size_t offset_on_page;
 	size_t page_size;
@@ -50,33 +50,33 @@ static size_t hpt_remaining_on_page(const hpt_pmeo_t *pmeo, gpa_t gpa)
 
 	page_size_log_2 = hpt_pmeo_page_size_log_2(pmeo);
 	page_size = 1 << page_size_log_2;
-	offset_on_page = gpa & MASKRANGE64(page_size_log_2-1, 0);
+	offset_on_page = va & MASKRANGE64(page_size_log_2-1, 0);
 	return page_size - offset_on_page;
 }
 
 void hpt_copy_from_guest(const hpt_walk_ctx_t *ctx,
 												 const hpt_pmo_t *pmo,
 												 void *dst,
-												 hpt_va_t src_gva_base,
+												 hpt_va_t src_va_base,
 												 size_t len)
 {
 	size_t copied=0;
 
 	while(copied < len) {
-		hpt_va_t src_gva = src_gva_base + copied;
+		hpt_va_t src_va = src_va_base + copied;
 		hpt_pmeo_t src_pmeo;
-		hpt_pa_t src_gpa;
+		hpt_pa_t src_pa;
 		size_t to_copy;
 		size_t remaining_on_page;
 
-		hpt_walk_get_pmeo(&src_pmeo, ctx, pmo, 1, src_gva);
+		hpt_walk_get_pmeo(&src_pmeo, ctx, pmo, 1, src_va);
 		dprintf(LOG_TRACE, "hpt_copy_from_guest: pmeo.pme:%llx pmo.t:%d pmo.lvl:%d\n",
 						src_pmeo.pme, src_pmeo.t, src_pmeo.lvl);
-		src_gpa = hpt_pmeo_va_to_pa(&src_pmeo, src_gva);
-		dprintf(LOG_TRACE, "hpt_copy_from_guest: src_gpa:%llx\n",
-						src_gpa);
+		src_pa = hpt_pmeo_va_to_pa(&src_pmeo, src_va);
+		dprintf(LOG_TRACE, "hpt_copy_from_guest: src_pa:%llx\n",
+						src_pa);
 
-		remaining_on_page = hpt_remaining_on_page(&src_pmeo, src_gpa);
+		remaining_on_page = hpt_remaining_on_page(&src_pmeo, src_pa);
 		dprintf(LOG_TRACE, "hpt_copy_from_guest: remaining_on_page:%d\n",
 						remaining_on_page);
 
@@ -84,7 +84,7 @@ void hpt_copy_from_guest(const hpt_walk_ctx_t *ctx,
 		dprintf(LOG_TRACE, "hpt_copy_from_guest: to_copy:%d\n",
 						to_copy);
 
-		memcpy(dst+copied, gpa2hva(src_gpa), to_copy);
+		memcpy(dst+copied, ctx->pa2ptr(ctx->pa2ptr_ctx, src_pa), to_copy);
 		copied += to_copy;
 	}
 }
