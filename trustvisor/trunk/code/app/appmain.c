@@ -267,7 +267,6 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 			{
 				u32 scode_entry, addrs_gva, lens_gva, count;
 				u32 *addrs=NULL, *lens=NULL;
-				ASSERT(0);
 
 				scode_entry = r->ecx;
 
