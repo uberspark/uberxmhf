@@ -416,8 +416,8 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
   int hpt_err;
 
 	dprintf(LOG_TRACE,
-					"entering scode_lend_section. Mapping from %016llx to %016llx, size %u, prot %u\n",
-					section->reg_gva, section->pal_gva, section->size, (u32)section->prot);
+					"entering scode_lend_section. Mapping from %016llx to %016llx, size %u, pal_prot %u\n",
+					section->reg_gva, section->pal_gva, section->size, (u32)section->pal_prot);
   
   /* XXX don't hard-code page size here. */
   /* XXX fail gracefully */
@@ -468,7 +468,7 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
                                                       reg_npmo_root,
                                                       page_pal_gva,
                                                       &user_accessible);
-      CHK(HPT_PROTS_RWX == effective_prots);
+      CHK((effective_prots & section->reg_prot) == section->reg_prot);
       CHK(user_accessible);
     }
 
@@ -482,7 +482,7 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
                                                       &user_accessible);
 			dprintf(LOG_TRACE, "%s got reg gpt prots:0x%x, user:%d\n",
 							__FUNCTION__, (u32)effective_prots, (int)user_accessible);
-      CHK((effective_prots & section->prot) == section->prot);
+      CHK((effective_prots & section->pal_prot) == section->pal_prot);
       CHK(user_accessible);
     }
 
@@ -499,8 +499,7 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
     }
 
     /* revoke access from 'reg' VM */
-    hpt_pmeo_setprot(&page_reg_npmeo, HPT_PROTS_NONE); /* XXX FIXME TEMP for testing */
-    /* hpt_pmeo_setprot(&page_reg_npmeo, HPT_PROTS_RWX);  */
+    hpt_pmeo_setprot(&page_reg_npmeo, section->pal_prot);
     hpt_err = hpt_walk_insert_pmeo(reg_npm_ctx,
                                    reg_npmo_root,
                                    &page_reg_npmeo,
@@ -522,7 +521,7 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
 
     /* add access to pal nested page tables */
     page_pal_npmeo = page_reg_npmeo;
-    hpt_pmeo_setprot(&page_pal_npmeo, section->prot);
+    hpt_pmeo_setprot(&page_pal_npmeo, section->pal_prot);
     hpt_err = hpt_walk_insert_pmeo_alloc(pal_npm_ctx,
                                          pal_npmo_root,
                                          &page_pal_npmeo,

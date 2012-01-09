@@ -700,7 +700,8 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 				.reg_gva = whitelist_new.scode_info.sections[i].start_addr,
 				.pal_gva = whitelist_new.scode_info.sections[i].start_addr,
 				.size = whitelist_new.scode_info.sections[i].page_num * PAGE_SIZE_4K,
-				.prot = pal_prot_of_type(whitelist_new.scode_info.sections[i].type),
+				.pal_prot = pal_prot_of_type(whitelist_new.scode_info.sections[i].type),
+				.reg_prot = reg_prot_of_type(whitelist_new.scode_info.sections[i].type),
 			};
 			scode_lend_section(&reg_npmo_root, &whitelist_new.hpt_nested_walk_ctx,
 												 &reg_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,

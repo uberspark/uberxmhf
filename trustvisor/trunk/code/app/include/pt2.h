@@ -43,7 +43,8 @@ typedef struct {
   hpt_va_t reg_gva;
   hpt_va_t pal_gva;
   size_t size;
-  hpt_prot_t prot;
+  hpt_prot_t pal_prot;
+  hpt_prot_t reg_prot;
 } section_t;
 
 typedef struct {
