@@ -155,10 +155,72 @@ void hpt_pmeo_setprot(hpt_pmeo_t *pmeo, hpt_prot_t perms)
   pmeo->pme = hpt_pme_setprot(pmeo->t, pmeo->lvl, pmeo->pme, perms);
 }
 
+hpt_prot_t hpt_pmeo_getprot(const hpt_pmeo_t *pmeo)
+{
+  return hpt_pme_getprot(pmeo->t, pmeo->lvl, pmeo->pme);
+}
+
+bool hpt_pmeo_getuser(const hpt_pmeo_t *pmeo)
+{
+  return hpt_pme_getuser(pmeo->t, pmeo->lvl, pmeo->pme);
+}
+
+void hpt_pm_get_pmeo_by_va(hpt_pmeo_t *pmeo, const hpt_pmo_t *pmo, hpt_va_t va)
+{
+  pmeo->t = pmo->t;
+  pmeo->lvl = pmo->lvl;
+  pmeo->pme = hpt_pm_get_pme_by_va(pmo->t, pmo->lvl, pmo->pm, va);
+}
+
+bool hpto_walk_next_lvl(const hpt_walk_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va)
+{
+  return hpt_walk_next_lvl(ctx, &pmo->lvl, &pmo->pm, va);
+}
+
+/* returns the effective protections for the given address, which is
+ * the lowest permissions for the page walk. Also sets
+ * *user_accessible if not NULL and if the virtual address is set
+ * user-accessible.
+ */
+hpt_prot_t hpto_walk_get_effective_prots(const hpt_walk_ctx_t *ctx,
+                                         const hpt_pmo_t *pmo_root,
+                                         hpt_va_t va,
+                                         bool *user_accessible)
+{
+  hpt_prot_t prots_rv = HPT_PROTS_RWX;
+  bool user_accessible_rv = true;
+  hpt_pmo_t pmo = *pmo_root;
+
+  do {
+    hpt_pmeo_t pmeo;
+    hpt_pm_get_pmeo_by_va(&pmeo, &pmo, va);
+    prots_rv &= hpt_pmeo_getprot(&pmeo);
+    user_accessible_rv = user_accessible_rv && hpt_pmeo_getuser(&pmeo);
+  } while (hpto_walk_next_lvl(ctx, &pmo, va));
+
+  if(user_accessible != NULL) {
+    *user_accessible = user_accessible_rv;
+  }
+  return prots_rv;
+}
+
 /* XXX TEMP */
 #define CHK(x) ASSERT(x)
 #define CHK_RV(x) ASSERT(!(x))
 #define hpt_walk_check_prot(x, y) HPT_PROTS_RWX
+
+
+/* /\* nested-page-map-entry-objects of guest-page-map-entry-objects *\/ */
+/* void npmeos_of_gpmeos(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx, */
+/*                       hpt_pmeo_t npmeos[], size_t *npmeos_num, */
+/*                       hpt_pmeo_t gpmeos[], size_t gpmeos_num) */
+/* { */
+/*   size_t gpmeos_i; */
+
+/*   for(gpmeos_i=0; gpmeos_i < gpmeos_num; gpmeos_i++) { */
+    
+/*   } */
+/* } */
 
 void scode_add_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
                        hpt_pmo_t* reg_gpmo_root, hpt_walk_ctx_t *reg_gpm_ctx,
