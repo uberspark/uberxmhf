@@ -724,7 +724,7 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
       bool user_accessible=false;
       effective_prots = hpto_walk_get_effective_prots(reg_npm_ctx,
                                                       reg_npmo_root,
-                                                      page_pal_gva,
+                                                      page_reg_gpa,
                                                       &user_accessible);
       CHK((effective_prots & section->reg_prot) == section->reg_prot);
       CHK(user_accessible);
@@ -736,7 +736,7 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
       bool user_accessible=false;
       effective_prots = hpto_walk_get_effective_prots(reg_gpm_ctx,
                                                       reg_gpmo_root,
-                                                      page_pal_gva,
+                                                      page_reg_gva,
                                                       &user_accessible);
 			dprintf(LOG_TRACE, "%s got reg gpt prots:0x%x, user:%d\n",
 							__FUNCTION__, (u32)effective_prots, (int)user_accessible);
