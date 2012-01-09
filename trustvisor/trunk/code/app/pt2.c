@@ -91,27 +91,27 @@ void hpt_copy_from_guest(const hpt_walk_ctx_t *ctx,
 
 void hpt_copy_to_guest(const hpt_walk_ctx_t *ctx,
 											 const hpt_pmo_t *pmo,
-											 hpt_va_t dst_gva_base,
+											 hpt_va_t dst_va_base,
 											 void *src,
 											 size_t len)
 {
 	size_t copied=0;
 
 	while(copied < len) {
-		hpt_va_t dst_gva = dst_gva_base + copied;
+		hpt_va_t dst_va = dst_va_base + copied;
 		hpt_pmeo_t dst_pmeo;
-		hpt_pa_t dst_gpa;
+		hpt_pa_t dst_pa;
 		size_t to_copy;
 		size_t remaining_on_page;
 
-		hpt_walk_get_pmeo(&dst_pmeo, ctx, pmo, 1, dst_gva);
+		hpt_walk_get_pmeo(&dst_pmeo, ctx, pmo, 1, dst_va);
 		dprintf(LOG_TRACE, "hpt_copy_to_guest: pmeo.pme:%llx pmo.t:%d pmo.lvl:%d\n",
 						dst_pmeo.pme, dst_pmeo.t, dst_pmeo.lvl);
-		dst_gpa = hpt_pmeo_va_to_pa(&dst_pmeo, dst_gva);
-		dprintf(LOG_TRACE, "hpt_copy_to_guest: dst_gpa:%llx\n",
-						dst_gpa);
+		dst_pa = hpt_pmeo_va_to_pa(&dst_pmeo, dst_va);
+		dprintf(LOG_TRACE, "hpt_copy_to_guest: dst_pa:%llx\n",
+						dst_pa);
 
-		remaining_on_page = hpt_remaining_on_page(&dst_pmeo, dst_gpa);
+		remaining_on_page = hpt_remaining_on_page(&dst_pmeo, dst_pa);
 		dprintf(LOG_TRACE, "hpt_copy_to_guest: remaining_on_page:%d\n",
 						remaining_on_page);
 
@@ -119,45 +119,47 @@ void hpt_copy_to_guest(const hpt_walk_ctx_t *ctx,
 		dprintf(LOG_TRACE, "hpt_copy_to_guest: to_copy:%d\n",
 						to_copy);
 
-		memcpy(gpa2hva(dst_gpa), src+copied, to_copy);
+		memcpy(ctx->pa2ptr(ctx->pa2ptr_ctx, dst_pa), src+copied, to_copy);
 		copied += to_copy;
 	}
 }
 
 void hpt_copy_guest_to_guest(const hpt_walk_ctx_t *dst_ctx,
 														 const hpt_pmo_t *dst_pmo,
-														 hpt_va_t dst_gva_base,
+														 hpt_va_t dst_va_base,
 														 const hpt_walk_ctx_t *src_ctx,
 														 const hpt_pmo_t *src_pmo,
-														 hpt_va_t src_gva_base,
+														 hpt_va_t src_va_base,
 														 size_t len)
 {
 	size_t copied=0;
 
 	while(copied < len) {
-		hpt_va_t dst_gva = dst_gva_base + copied;
-		hpt_va_t src_gva = src_gva_base + copied;
+		hpt_va_t dst_va = dst_va_base + copied;
+		hpt_va_t src_va = src_va_base + copied;
 		hpt_pmeo_t dst_pmeo;
 		hpt_pmeo_t src_pmeo;
-		hpt_pa_t dst_gpa;
-		hpt_pa_t src_gpa;
+		hpt_pa_t dst_pa;
+		hpt_pa_t src_pa;
 		size_t to_copy;
 		size_t dst_remaining_on_page;
 		size_t src_remaining_on_page;
 
-		hpt_walk_get_pmeo(&dst_pmeo, dst_ctx, dst_pmo, 1, dst_gva);
-		dst_gpa = hpt_pmeo_va_to_pa(&dst_pmeo, dst_gva);
+		hpt_walk_get_pmeo(&dst_pmeo, dst_ctx, dst_pmo, 1, dst_va);
+		dst_pa = hpt_pmeo_va_to_pa(&dst_pmeo, dst_va);
 
-		hpt_walk_get_pmeo(&src_pmeo, src_ctx, src_pmo, 1, src_gva);
-		src_gpa = hpt_pmeo_va_to_pa(&src_pmeo, src_gva);
+		hpt_walk_get_pmeo(&src_pmeo, src_ctx, src_pmo, 1, src_va);
+		src_pa = hpt_pmeo_va_to_pa(&src_pmeo, src_va);
 
-		dst_remaining_on_page = hpt_remaining_on_page(&dst_pmeo, dst_gpa);
-		src_remaining_on_page = hpt_remaining_on_page(&src_pmeo, src_gpa);
+		dst_remaining_on_page = hpt_remaining_on_page(&dst_pmeo, dst_pa);
+		src_remaining_on_page = hpt_remaining_on_page(&src_pmeo, src_pa);
 
 		to_copy = MIN(dst_remaining_on_page, src_remaining_on_page);
 		to_copy = MIN(to_copy, len-copied);
 
-		memcpy(gpa2hva(dst_gpa), gpa2hva(src_gpa), to_copy);
+		memcpy(dst_ctx->pa2ptr(dst_ctx->pa2ptr_ctx, dst_pa),
+					 src_ctx->pa2ptr(src_ctx->pa2ptr_ctx, src_pa),
+					 to_copy);
 		copied += to_copy;
 	}
 }
