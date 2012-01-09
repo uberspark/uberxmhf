@@ -645,6 +645,29 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 		guest_walk_ctx.gzp_ctx = gpl;
 		guest_walk_ctx.t = reg_gpmo_root.t;
 
+		/* add all gpl pages to pal's nested page tables, ensuring that
+			 the guest page tables allocated from it will be accessible to the
+			 pal */
+		/* XXX breaks pagelist abstraction. will break if pagelist ever dynamically
+			 allocates more buffers */
+		for (i=0; i < gpl->num_allocd; i++) {
+			hpt_pmeo_t pmeo = {
+				.pme = 0,
+				.t = pal_npmo_root.t,
+				.lvl = 1,
+			};
+			void *page = gpl->page_base + i*PAGE_SIZE_4K;
+			int hpt_err;
+			hpt_pmeo_setprot(&pmeo, HPT_PROTS_RWX);
+			hpt_pmeo_set_address(&pmeo, hva2spa(page));
+			hpt_err = hpt_walk_insert_pmeo(&nested_walk_ctx,
+																		 &pal_npmo_root,
+																		 &pmeo,
+																		 hva2gpa(page));
+			ASSERT(!hpt_err);
+		}
+
+		/* map each requested section into the pal */
 		for (i=0; i<whitelist_new.scode_info.num_sections; i++) {
 			section_t section = {
 				.reg_gva = whitelist_new.scode_info.sections[i].start_addr,
@@ -658,8 +681,6 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 												 &pal_gpmo_root, &guest_walk_ctx,
 												 &section);
 		}
-
-		/* XXX add all gpl pages to pal's nested page tables */
 
 		/* XXX flush TLB to ensure 'reg' is now correctly denied access */
 
@@ -709,7 +730,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 											hpt_root_lvl(hpt_nested_walk_ctx.t),
 											whitelist_new.scode_pages,
 											whitelist_new.scode_size>>PAGE_SHIFT_4K);
-	/* register guest page table pages. TODO: clone guest page table
+	/* register guest page table pages. TODO: cloneguest page table
 		 instead of checking on every switch to ensure it hasn't been
 		 tampered. */
 	scode_expose_arch(vcpu, &whitelist_new);
