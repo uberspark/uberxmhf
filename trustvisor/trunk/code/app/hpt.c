@@ -262,6 +262,44 @@ void scode_add_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
   /* add pal guest page tables to pal nested page tables */
 }
 
+/* for a given virtual address range, return an array of page-map-entry-objects */
+/* XXX specify behavior if pmeos don't fit exactly. e.g., if requested
+ * section size is 4K of a 2MB page */
+/* XXX need to think through concurrency issues. e.g., should caller
+   hold a lock? */
+void pmeos_of_range(hpt_pmeo_t pmeos[], size_t *pmeos_num,
+                    hpt_pmo_t* pmo_root, hpt_walk_ctx_t *walk_ctx,
+                    hpt_va_t base, size_t size)
+{
+  size_t offset;
+  size_t pmeos_maxnum = *pmeos_num;
+  
+  *pmeos_num = 0;
+
+  while (offset < size) {
+    hpt_va_t va = base + offset;
+    size_t page_size;
+
+    ASSERT(*pmeos_num < pmeos_maxnum);
+
+    hpt_walk_get_pmeo(&pmeos[*pmeos_num],
+                      walk_ctx,
+                      pmo_root,
+                      1,
+                      va);
+
+    /* XXX need to add support to hpt to get size of memory mapped by
+       a page */
+    ASSERT(pmeos[*pmeos_num].lvl == 1);
+    page_size = PAGE_SIZE_4K;
+
+    offset += page_size;
+    (*pmeos_num)++;
+  }
+
+  ASSERT(offset == size);
+}
+
 /* Local Variables: */
 /* mode:c           */
 /* indent-tabs-mode:'f */
