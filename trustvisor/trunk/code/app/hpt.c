@@ -227,7 +227,7 @@ void scode_add_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
     hpt_va_t page_reg_gva = section->reg_gva + offset;
     hpt_va_t page_pal_gva = section->pal_gva + offset;
 
-    /* XXX we don't use hpt_va_t or hpt_pa_t for gpa's because they
+    /* XXX we don't use hpt_va_t or hpt_pa_t for gpa's because these
        get used as both */
     u64 page_reg_gpa, page_pal_gpa; /* guest-physical-addresses */
 
@@ -254,16 +254,33 @@ void scode_add_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
                       1,
                       page_reg_gpa);
     ASSERT(page_reg_npmeo.lvl==1); /* we don't handle large pages */
-    /* page_spa = hpt_pme_get_address(reg_npt_ctx->t, page_reg_npme_lvl, page_reg_npme); */
 
     /* no reason to go with a different mapping */
     page_pal_gpa = page_reg_gpa;
 
     /* check that this VM is allowed to access this system-physical mem */
-    /* XXX CHK(HPT_PROTS_RWX == hpt_walk_check_prot(reg_npt_root, page_reg_gpa)); */
+    {
+      hpt_prot_t effective_prots;
+      bool user_accessible=false;
+      effective_prots = hpto_walk_get_effective_prots(reg_npm_ctx,
+                                                      reg_npmo_root,
+                                                      page_pal_gva,
+                                                      &user_accessible);
+      CHK(HPT_PROTS_RWX == effective_prots);
+      CHK(user_accessible);
+    }
 
     /* check that this guest process is allowed to access this guest-physical mem */
-    /* XXX CHK(HPT_PROTS_RWX == hpt_walk_check_prot(guest_reg_root, page_reg_gva)); */
+    {
+      hpt_prot_t effective_prots;
+      bool user_accessible=false;
+      effective_prots = hpto_walk_get_effective_prots(reg_gpm_ctx,
+                                                      reg_gpmo_root,
+                                                      page_pal_gva,
+                                                      &user_accessible);
+      CHK(HPT_PROTS_RWX == effective_prots);
+      CHK(user_accessible);
+    }
 
     /* check that the requested virtual address isn't already mapped
        into PAL's address space */
