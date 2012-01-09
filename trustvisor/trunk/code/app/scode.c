@@ -1276,14 +1276,15 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
 
 	/* marshalling parameters back to regular code */
 	if (!scode_unmarshall(vcpu)){
+
+		/* release shared pages */
+		scode_release_all_shared_pages(vcpu, &whitelist[curr]);
+
 		/* clear the NPT permission setting in switching into scode */
 		dprintf(LOG_TRACE, "[TV] change NPT permission to exit PAL!\n"); 
 		VCPU_set_current_root_pm(vcpu, VCPU_get_default_root_pm(vcpu));
 		VCPU_gcr3_set(vcpu, whitelist[curr].gcr3);
 		emhf_hwpgtbl_flushall(vcpu); /* XXX */
-
-		/* release shared pages */
-		scode_release_all_shared_pages(vcpu, &whitelist[curr]);
 
 		/* switch back to regular stack */
 		dprintf(LOG_TRACE, "[TV] switch from scode stack %#x back to regular stack %#x\n", (u32)VCPU_grsp(vcpu), (u32)whitelist[curr].grsp);
