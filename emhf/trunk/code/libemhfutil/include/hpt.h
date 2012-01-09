@@ -1101,4 +1101,26 @@ int hpt_walk_insert_pme_alloc(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, i
   return 0;
 }
 
+/* inserts pme into the page map of level tgt_lvl containing va.
+ * fails if tgt_lvl is not allocated.
+ */
+static inline
+int hpt_walk_insert_pme(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int tgt_lvl, hpt_va_t va, hpt_pme_t pme)
+{
+  int end_lvl=tgt_lvl;
+  dprintf(LOG_TRACE, "hpt_walk_insert_pme_alloc: lvl:%d pm:%x tgt_lvl:%d va:%Lx pme:%Lx\n",
+          lvl, (u32)pm, tgt_lvl, va, pme);
+  pm = hpt_walk_get_pm(ctx, lvl, pm, &end_lvl, va);
+
+  dprintf(LOG_TRACE, "hpt_walk_insert_pme: got pm:%x end_lvl:%d\n",
+          (u32)pm, end_lvl);
+
+  if(pm == NULL || tgt_lvl != end_lvl) {
+    return 1;
+  }
+
+  hpt_pm_set_pme_by_va(ctx->t, tgt_lvl, pm, va, pme);
+  return 0;
+}
+
 #endif
