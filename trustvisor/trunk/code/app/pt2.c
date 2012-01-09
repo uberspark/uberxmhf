@@ -226,6 +226,19 @@ size_t hpt_pmeo_page_size(const hpt_pmeo_t *pmeo)
 	return 1 << hpt_pmeo_page_size_log_2(pmeo);
 }
 
+
+static size_t hpt_remaining_on_page(const hpt_pmeo_t *pmeo, gpa_t gpa)
+{
+	size_t offset_on_page;
+	size_t page_size;
+	size_t page_size_log_2;
+
+	page_size_log_2 = hpt_pmeo_page_size_log_2(pmeo);
+	page_size = 1 << page_size_log_2;
+	offset_on_page = gpa & MASKRANGE64(page_size_log_2-1, 0);
+	return page_size - offset_on_page;
+}
+
 void hpt_copy_from_guest(const hpt_walk_ctx_t *ctx,
 												 const hpt_pmo_t *pmo,
 												 void *dst,
@@ -239,9 +252,6 @@ void hpt_copy_from_guest(const hpt_walk_ctx_t *ctx,
 		hpt_pmeo_t src_pmeo;
 		hpt_pa_t src_gpa;
 		size_t to_copy;
-		size_t page_size_log_2;
-		size_t page_size;
-		size_t offset_on_page;
 		size_t remaining_on_page;
 
 		hpt_walk_get_pmeo(&src_pmeo, ctx, pmo, 1, src_gva);
@@ -251,14 +261,9 @@ void hpt_copy_from_guest(const hpt_walk_ctx_t *ctx,
 		dprintf(LOG_TRACE, "hpt_copy_from_guest: src_gpa:%llx\n",
 						src_gpa);
 
-		page_size_log_2 = hpt_pmeo_page_size_log_2(&src_pmeo);
-		page_size = 1 << page_size_log_2;
-		dprintf(LOG_TRACE, "hpt_copy_from_guest: page_size_log_2:%d page_size:%d\n",
-						page_size_log_2, page_size);
-		offset_on_page = src_gpa & MASKRANGE64(page_size_log_2-1, 0);
-		remaining_on_page = page_size - offset_on_page;
-		dprintf(LOG_TRACE, "hpt_copy_from_guest: offset_on_page:%d, remaining_on_page:%d\n",
-						offset_on_page, remaining_on_page);
+		remaining_on_page = hpt_remaining_on_page(&src_pmeo, src_gpa);
+		dprintf(LOG_TRACE, "hpt_copy_from_guest: remaining_on_page:%d\n",
+						remaining_on_page);
 
 		to_copy = MIN(len-copied, remaining_on_page);
 		dprintf(LOG_TRACE, "hpt_copy_from_guest: to_copy:%d\n",
@@ -269,6 +274,78 @@ void hpt_copy_from_guest(const hpt_walk_ctx_t *ctx,
 	}
 }
 
+void hpt_copy_to_guest(const hpt_walk_ctx_t *ctx,
+											 const hpt_pmo_t *pmo,
+											 hpt_va_t dst_gva_base,
+											 void *src,
+											 size_t len)
+{
+	size_t copied=0;
+
+	while(copied < len) {
+		hpt_va_t dst_gva = dst_gva_base + copied;
+		hpt_pmeo_t dst_pmeo;
+		hpt_pa_t dst_gpa;
+		size_t to_copy;
+		size_t remaining_on_page;
+
+		hpt_walk_get_pmeo(&dst_pmeo, ctx, pmo, 1, dst_gva);
+		dprintf(LOG_TRACE, "hpt_copy_to_guest: pmeo.pme:%llx pmo.t:%d pmo.lvl:%d\n",
+						dst_pmeo.pme, dst_pmeo.t, dst_pmeo.lvl);
+		dst_gpa = hpt_pmeo_va_to_pa(&dst_pmeo, dst_gva);
+		dprintf(LOG_TRACE, "hpt_copy_to_guest: dst_gpa:%llx\n",
+						dst_gpa);
+
+		remaining_on_page = hpt_remaining_on_page(&dst_pmeo, dst_gpa);
+		dprintf(LOG_TRACE, "hpt_copy_to_guest: remaining_on_page:%d\n",
+						remaining_on_page);
+
+		to_copy = MIN(len-copied, remaining_on_page);
+		dprintf(LOG_TRACE, "hpt_copy_to_guest: to_copy:%d\n",
+						to_copy);
+
+		memcpy(gpa2hva(dst_gpa), src+copied, to_copy);
+		copied += to_copy;
+	}
+}
+
+void hpt_copy_guest_to_guest(const hpt_walk_ctx_t *dst_ctx,
+														 const hpt_pmo_t *dst_pmo,
+														 hpt_va_t dst_gva_base,
+														 const hpt_walk_ctx_t *src_ctx,
+														 const hpt_pmo_t *src_pmo,
+														 hpt_va_t src_gva_base,
+														 size_t len)
+{
+	size_t copied=0;
+
+	while(copied < len) {
+		hpt_va_t dst_gva = dst_gva_base + copied;
+		hpt_va_t src_gva = src_gva_base + copied;
+		hpt_pmeo_t dst_pmeo;
+		hpt_pmeo_t src_pmeo;
+		hpt_pa_t dst_gpa;
+		hpt_pa_t src_gpa;
+		size_t to_copy;
+		size_t dst_remaining_on_page;
+		size_t src_remaining_on_page;
+
+		hpt_walk_get_pmeo(&dst_pmeo, dst_ctx, dst_pmo, 1, dst_gva);
+		dst_gpa = hpt_pmeo_va_to_pa(&dst_pmeo, dst_gva);
+
+		hpt_walk_get_pmeo(&src_pmeo, src_ctx, src_pmo, 1, src_gva);
+		src_gpa = hpt_pmeo_va_to_pa(&src_pmeo, src_gva);
+
+		dst_remaining_on_page = hpt_remaining_on_page(&dst_pmeo, dst_gpa);
+		src_remaining_on_page = hpt_remaining_on_page(&src_pmeo, src_gpa);
+
+		to_copy = MIN(dst_remaining_on_page, src_remaining_on_page);
+		to_copy = MIN(to_copy, len-copied);
+
+		memcpy(gpa2hva(dst_gpa), gpa2hva(src_gpa), to_copy);
+		copied += to_copy;
+	}
+}
 
 /* clone pal's gdt from 'reg' gdt, and add to pal's guest page tables.
 	 gdt is allocted using passed-in-pl, whose pages should already be

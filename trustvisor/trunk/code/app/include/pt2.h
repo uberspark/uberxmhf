@@ -107,4 +107,23 @@ void scode_clone_gdt(gva_t gdtr_base, size_t gdtr_lim,
                      hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx,
                      pagelist_t *pl
                      );
+
+void hpt_copy_from_guest(const hpt_walk_ctx_t *ctx,
+                         const hpt_pmo_t *pmo,
+                         void *dst,
+                         hpt_va_t src_gva_base,
+                         size_t len);
+void hpt_copy_to_guest(const hpt_walk_ctx_t *ctx,
+                       const hpt_pmo_t *pmo,
+                       hpt_va_t dst_gva_base,
+                       void *src,
+                       size_t len);
+void hpt_copy_guest_to_guest(const hpt_walk_ctx_t *dst_ctx,
+                             const hpt_pmo_t *dst_pmo,
+                             hpt_va_t dst_gva_base,
+                             const hpt_walk_ctx_t *src_ctx,
+                             const hpt_pmo_t *src_pmo,
+                             hpt_va_t src_gva_base,
+                             size_t len);
+
 #endif
