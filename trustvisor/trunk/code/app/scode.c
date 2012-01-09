@@ -695,7 +695,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 		dprintf(LOG_TRACE, "adding sections to pal's npts and gpts:\n");
 		/* map each requested section into the pal */
 		for (i=0; i<whitelist_new.scode_info.num_sections; i++) {
-			section_t section = {
+			tv_pal_section_int_t section = {
 				.reg_gva = whitelist_new.scode_info.sections[i].start_addr,
 				.pal_gva = whitelist_new.scode_info.sections[i].start_addr,
 				.size = whitelist_new.scode_info.sections[i].page_num * PAGE_SIZE_4K,

@@ -668,7 +668,7 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
                         hpt_pmo_t* reg_gpmo_root, hpt_walk_ctx_t *reg_gpm_ctx,
                         hpt_pmo_t* pal_npmo_root, hpt_walk_ctx_t *pal_npm_ctx,
                         hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx,
-                        const section_t *section)
+                        const tv_pal_section_int_t *section)
 {
   size_t offset;
   int hpt_err;
