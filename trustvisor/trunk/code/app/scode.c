@@ -1203,6 +1203,41 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 	whitelist[curr].return_v = addr;
 	dprintf(LOG_TRACE, "[TV] scode return vaddr is %#x\n", whitelist[curr].return_v);
 
+	/* we add the page containing the return address to the
+		 guest page tables, but not the nested page tables. failure to
+		 add to the guest page tables will cause a triple fault in the
+		 guest. */
+	{
+		hpt_pmeo_t pmeo = {
+			.pme = 0,
+			.t = whitelist[curr].pal_gpt_root.t,
+			.lvl = 1,
+		};
+		hpt_pmeo_t orig;
+		int hpt_err;
+		hpt_walk_get_pmeo(&orig,
+											&whitelist[curr].hpt_guest_walk_ctx,
+											&whitelist[curr].reg_gpt_root,
+											1,
+											addr);
+		hpt_pmeo_setprot(&pmeo, HPT_PROTS_RX);
+		hpt_pmeo_setuser(&pmeo, true);
+		/* the gpa address here shouldn't matter, so long as it's one not
+			 accessible by the pal.  we'll copy the original for now to be
+			 cautious */
+		hpt_pmeo_set_address(&pmeo, hpt_pmeo_get_address(&orig));
+
+		dprintf(LOG_TRACE, "[TV] original pme for return gva address %x: lvl:%d %llx\n",
+						addr, orig.lvl, orig.pme);
+		dprintf(LOG_TRACE, "[TV] generated pme for return gva address %x: lvl:%d %llx\n",
+						addr, pmeo.lvl, pmeo.pme);
+		hpt_err = hpt_walk_insert_pmeo_alloc(&whitelist[curr].hpt_guest_walk_ctx,
+																				 &whitelist[curr].pal_gpt_root,
+																				 &pmeo,
+																				 addr);
+		ASSERT(!hpt_err);
+	}
+
 	dprintf(LOG_TRACE, "[TV] host stack pointer before running scode is %#x\n",(u32)VCPU_grsp(vcpu));
 
 	perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_SCODE], vcpu->idx);
