@@ -242,18 +242,20 @@ void scode_add_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
     page_pal_gpmeo = page_reg_gpmeo; /* XXX SECURITY should build from scratch */
     hpt_pmeo_set_address(&page_pal_gpmeo, page_pal_gva);
     hpt_pmeo_setprot    (&page_pal_gpmeo, HPT_PROTS_RWX);
-    hpt_walk_insert_pmeo_alloc(pal_gpm_ctx,
-                               pal_gpmo_root,
-                               &page_pal_gpmeo,
-                               page_pal_gva);
+    hpt_err = hpt_walk_insert_pmeo_alloc(pal_gpm_ctx,
+                                         pal_gpmo_root,
+                                         &page_pal_gpmeo,
+                                         page_pal_gva);
+    CHK_RV(hpt_err);
 
     /* add access to pal nested page tables */
     page_pal_npmeo = page_reg_npmeo; /* XXX SECURITY should build from scratch */
     hpt_pmeo_setprot(&page_pal_npmeo, section->prot);
-    hpt_walk_insert_pmeo_alloc(pal_npm_ctx,
-                               pal_npmo_root,
-                               &page_pal_npmeo,
-                               page_pal_gpa);
+    hpt_err = hpt_walk_insert_pmeo_alloc(pal_npm_ctx,
+                                         pal_npmo_root,
+                                         &page_pal_npmeo,
+                                         page_pal_gpa);
+    CHK_RV(hpt_err);
 
     /* unlock? unquiesce? */
   }
