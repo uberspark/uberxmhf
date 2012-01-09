@@ -44,13 +44,12 @@
 #include <emhf.h> 
 
 #include <pages.h>
-#include <pt2.h>
 
 #include <trustvisor.h>
 #include <crypto_init.h>
 #include <tv_utpm.h> /* formerly utpm.h */
 
-#include <hpt.h>
+#include <hpto.h>
 #include <hpt_emhf.h>	/* from libemhfutil */
 
 /* XXX TEMP */

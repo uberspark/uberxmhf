@@ -44,7 +44,6 @@
 
 #include <scode.h>
 #include <malloc.h>
-#include <pt2.h>
 #include <tv_utpm.h> /* formerly utpm.h */
 #include <rsa.h>
 #include <random.h>
