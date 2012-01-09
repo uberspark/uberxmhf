@@ -588,7 +588,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
 	/********************************/
 	{
-		pagelist_t *pl = vmalloc(sizeof(pagelist_t));
+		pagelist_t *pl = malloc(sizeof(pagelist_t));
 		hpt_walk_ctx_t guest_walk_ctx;
 		hpt_walk_ctx_t nested_walk_ctx;
 		hpt_pmo_t reg_npmo_root, reg_gpmo_root, pal_npmo_root, pal_gpmo_root;
@@ -664,7 +664,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 		/* XXX flush TLB to ensure 'reg' is now correctly denied access */
 
 		/* whitelist_new.pal_hpt_root = pal_npmo_root.pm; */
-		vfree(pl); /* XXX temp for testing */
+		free(pl); /* XXX temp for testing */
 	}
 	/********************************/
 
