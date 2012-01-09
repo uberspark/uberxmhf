@@ -1206,7 +1206,6 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 	}
 
 	/* find all PTE pages related to access scode and GDT */
-	scode_expose_arch(vcpu, &whitelist[curr]);
 	/* change NPT permission for all PTE pages and scode pages */
 	dprintf(LOG_TRACE, "[TV] change NPT permission to run PAL!\n");
 	VCPU_set_current_root_pm(vcpu, whitelist[curr].pal_npt_root.pm);
@@ -1366,7 +1365,6 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
 		emhf_hwpgtbl_flushall(vcpu); /* XXX */
 		/* hpt_nested_switch_regular(vcpu, whitelist[curr].scode_pages, whitelist[curr].scode_size, */
 		/* 													whitelist[curr].pte_page, whitelist[curr].pte_size); */
-		scode_unexpose_arch(vcpu, &whitelist[curr]);
 
 		/* release shared pages */
 		scode_release_all_shared_pages(vcpu, &whitelist[curr]);
