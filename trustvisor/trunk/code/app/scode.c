@@ -601,25 +601,25 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	/* 	pagelist_init(pl); */
 
 	/* 	reg_npmo_root = (hpt_pmo_t) { */
-	/* 		.type = hpt_nested_walk_ctx.t, */
-	/* 		.level = hpt_root_lvl(hpt_nested_walk_ctx.t), */
+	/* 		.t = hpt_nested_walk_ctx.t, */
+	/* 		.lvl = hpt_root_lvl(hpt_nested_walk_ctx.t), */
 	/* 		.pm = VCPU_get_current_root_pm(vcpu), */
 	/* 	}; */
 	/* 	reg_gpmo_root = (hpt_pmo_t) { */
-	/* 		.type = guest_t, */
-	/* 		.level = hpt_root_lvl(guest_t), */
+	/* 		.t = guest_t, */
+	/* 		.lvl = hpt_root_lvl(guest_t), */
 	/* 		.pm = (guest_t == HPT_TYPE_PAE) */
 	/* 		? gpa2hva(pae_get_addr_from_32bit_cr3(VCPU_gcr3(vcpu))) */
-	/* 		: */
+	/* 		: gpa2hva(npae_get_addr_from_32bit_cr3(VCPU_gcr3(vcpu))); */
 	/* 	}; */
 	/* 	pal_npmo_root = (hpt_pmo_t) { */
-	/* 		.type = hpt_nested_walk_ctx.t, */
-	/* 		.level = hpt_root_lvl(hpt_nested_walk_ctx.t), */
+	/* 		.t = reg_npmo_root.t, */
+	/* 		.lvl = reg_npmo_root.lvl, */
 	/* 		.pm = pagelist_get_zeroedpage(whitelist_new.pl), */
 	/* 	}; */
 	/* 	pal_gpmo_root = (hpt_pmo_t) { */
-	/* 		.type =  */
-	/* 		.level =  */
+	/* 		.type = reg_gpmo_root.t, */
+	/* 		.level = reg_gpmo_root.lvl, */
 	/* 		.pm = pagelist_get_zeroedpage(whitelist_new.pl), */
 	/* 	}; */
 
@@ -633,6 +633,17 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	/* 	pagelist_init(pl); */
 
 	/* 	for (i=0; i<whitelist_new.scode_info.num_sections; i++) { */
+	/* 		section_t section = { */
+	/* 			.reg_gva = .start_addr, */
+	/* 			.pal_gva = .start_addr, */
+	/* 			.size = .page_num * PAGE_SIZE_4K, */
+	/* 			.prot = pal_prot_of_type(.type), */
+	/* 		} */
+	/* 		scode_lend_section(&reg_npmo_root, &walk_ctx, */
+	/* 											 &reg_gpmo_root, &walk_ctx, */
+	/* 											 &pal_npmo_root, &walk_ctx, */
+	/* 											 &pal_gpmo_root, &walk_ctx, */
+	/* 											 &section); */
 	/* 	} */
 	/* } */
 	/********************************/
