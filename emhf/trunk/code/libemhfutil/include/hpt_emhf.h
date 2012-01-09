@@ -78,7 +78,7 @@ static inline hpt_pm_t hpt_emhf_get_default_root_pm(VCPU *vcpu)
   return (hpt_pm_t)emhf_memprot_get_default_root_pagemap_address(vcpu);
 }
 
-static inline hpt_pm_t hpt_emhf_get_current_root_pm(VCPU *vcpu)
+static inline hpt_pm_t hpt_emhf_get_root_pm(VCPU *vcpu)
 {
   hpt_type_t t = hpt_emhf_get_hpt_type(vcpu);
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
@@ -93,7 +93,7 @@ static inline hpt_pm_t hpt_emhf_get_current_root_pm(VCPU *vcpu)
   }
 }
 
-static inline void hpt_emhf_set_current_root_pm(VCPU *vcpu, hpt_pm_t root)
+static inline void hpt_emhf_set_root_pm(VCPU *vcpu, hpt_pm_t root)
 {
   hpt_type_t t = hpt_emhf_get_hpt_type(vcpu);
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
@@ -114,7 +114,7 @@ static inline hpt_type_t hpt_emhf_get_guest_hpt_type(VCPU *vcpu) {
   return (VCPU_gcr4(vcpu) & CR4_PAE) ? HPT_TYPE_PAE : HPT_TYPE_NORM;
 }
 
-static inline hpt_pm_t hpt_emhf_get_current_guest_root_pm(VCPU *vcpu)
+static inline hpt_pm_t hpt_emhf_get_guest_root_pm(VCPU *vcpu)
 {
   return gpa2hva(hpt_cr3_get_address(hpt_emhf_get_guest_hpt_type(vcpu),
                                      VCPU_gcr3(vcpu)));

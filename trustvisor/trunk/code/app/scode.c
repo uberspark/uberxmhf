@@ -543,7 +543,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 			g_reg_npmo_root = (hpt_pmo_t) {
 				.t = hpt_nested_walk_ctx.t,
 				.lvl = hpt_root_lvl(hpt_nested_walk_ctx.t),
-				.pm = hpt_emhf_get_current_root_pm(vcpu),
+				.pm = hpt_emhf_get_root_pm(vcpu),
 			};
 #ifdef __MP_VERSION__
 			{
@@ -551,9 +551,9 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 				for( i=0 ; i<g_midtable_numentries ; i++ )  {
 					dprintf(LOG_TRACE, "cpu %d setting root pm from %p to %p\n",
 									i,
-									hpt_emhf_get_current_root_pm((VCPU *)(g_midtable[i].vcpu_vaddr_ptr)),
+									hpt_emhf_get_root_pm((VCPU *)(g_midtable[i].vcpu_vaddr_ptr)),
 									g_reg_npmo_root.pm);
-					hpt_emhf_set_current_root_pm((VCPU *)(g_midtable[i].vcpu_vaddr_ptr),
+					hpt_emhf_set_root_pm((VCPU *)(g_midtable[i].vcpu_vaddr_ptr),
 																			 g_reg_npmo_root.pm);
 				}
 			}
@@ -1023,7 +1023,7 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 	/* find all PTE pages related to access scode and GDT */
 	/* change NPT permission for all PTE pages and scode pages */
 	dprintf(LOG_TRACE, "[TV] change NPT permission to run PAL!\n");
-	hpt_emhf_set_current_root_pm(vcpu, whitelist[curr].pal_npt_root.pm);
+	hpt_emhf_set_root_pm(vcpu, whitelist[curr].pal_npt_root.pm);
 	VCPU_gcr3_set(vcpu, whitelist[curr].pal_gcr3);
 	emhf_hwpgtbl_flushall(vcpu); /* XXX */
 
@@ -1160,7 +1160,7 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
 
 	/* clear the NPT permission setting in switching into scode */
 	dprintf(LOG_TRACE, "[TV] change NPT permission to exit PAL!\n"); 
-	hpt_emhf_set_current_root_pm(vcpu, g_reg_npmo_root.pm);
+	hpt_emhf_set_root_pm(vcpu, g_reg_npmo_root.pm);
 	VCPU_gcr3_set(vcpu, whitelist[curr].gcr3);
 	emhf_hwpgtbl_flushall(vcpu); /* XXX */
 
