@@ -35,6 +35,7 @@
 
 #include <emhf.h> /* FIXME: narrow this down so this can be compiled
                      and tested independently */
+#include <pt2.h>
 
 void hpt_walk_set_prot(hpt_walk_ctx_t *walk_ctx, hpt_pm_t pm, int pm_lvl, gpa_t gpa, hpt_prot_t prot)
 {
@@ -66,7 +67,6 @@ void hpt_walk_set_prots(hpt_walk_ctx_t *walk_ctx,
  * fails if tgt_lvl is not allocated.
  * XXX move into hpt.h once it's available again.
  */
-static inline
 int hpt_walk_insert_pme(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int tgt_lvl, hpt_va_t va, hpt_pme_t pme)
 {
   int end_lvl=tgt_lvl;
@@ -84,25 +84,6 @@ int hpt_walk_insert_pme(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int tgt
   hpt_pm_set_pme_by_va(ctx->t, tgt_lvl, pm, va, pme);
   return 0;
 }
-
-typedef struct {
-  hpt_va_t reg_gva;
-  hpt_va_t pal_gva;
-  size_t size;
-  hpt_prot_t prot;
-} section_t;
-
-typedef struct {
-  hpt_pm_t pm;
-  hpt_type_t t;
-  int lvl;
-} hpt_pmo_t;
-
-typedef struct {
-  hpt_pme_t pme;
-  hpt_type_t t;
-  int lvl;
-} hpt_pmeo_t;
 
 int hpt_walk_insert_pmeo(const hpt_walk_ctx_t *ctx,
                          hpt_pmo_t *pmo,
@@ -131,9 +112,10 @@ void hpt_walk_get_pmeo(hpt_pmeo_t *pmeo,
                        int end_lvl,
                        hpt_va_t va)
 {
-  pmeo->lvl = end_lvl;
+	dprintf(LOG_TRACE, "Entering %s\n", __FUNCTION__);
+  pmeo->pme = hpt_walk_get_pme(ctx, pmo->lvl, pmo->pm, &end_lvl, va);
   pmeo->t = pmo->t;
-  pmeo->pme = hpt_walk_get_pme(ctx, pmo->lvl, pmo->pm, &pmeo->lvl, va);
+  pmeo->lvl = end_lvl;
 }
 
 hpt_pa_t hpt_pmeo_get_address(const hpt_pmeo_t *pmeo)
@@ -219,6 +201,10 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
 {
   size_t offset;
   int hpt_err;
+
+	dprintf(LOG_TRACE,
+					"entering scode_lend_section. Mapping from %016llx to %016llx, size %u, prot %u\n",
+					section->reg_gva, section->pal_gva, section->size, (u32)section->prot);
   
   /* XXX don't hard-code page size here. */
   /* XXX fail gracefully */
@@ -245,6 +231,9 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
                       reg_gpmo_root,
                       1,
                       page_reg_gva);
+		dprintf(LOG_TRACE,
+						"got pme %016llx, level %d, type %d\n",
+						page_reg_gpmeo.pme, page_reg_gpmeo.lvl, page_reg_gpmeo.t);
     ASSERT(page_reg_gpmeo.lvl==1); /* we don't handle large pages */
     page_reg_gpa = hpt_pmeo_get_address(&page_reg_gpmeo);
 
@@ -295,7 +284,8 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
     }
 
     /* revoke access from 'reg' VM */
-    hpt_pmeo_setprot(&page_reg_npmeo, HPT_PROTS_NONE);
+    /* hpt_pmeo_setprot(&page_reg_npmeo, HPT_PROTS_NONE); */
+    hpt_pmeo_setprot(&page_reg_npmeo, HPT_PROTS_RWX); /* XXX FIXME TEMP for testing */
     hpt_err = hpt_walk_insert_pmeo(reg_npm_ctx,
                                    reg_npmo_root,
                                    &page_reg_npmeo,
@@ -326,7 +316,7 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
 
     /* unlock? unquiesce? */
   }
-  /* add pal guest page tables to pal nested page tables */
+  /* XXX add pal guest page tables to pal nested page tables */
 }
 
 /* for a given virtual address range, return an array of page-map-entry-objects */

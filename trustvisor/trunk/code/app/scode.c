@@ -44,6 +44,7 @@
 
 #include <scode.h>
 #include <malloc.h>
+#include <pt2.h>
 #include <tv_utpm.h> /* formerly utpm.h */
 #include <rsa.h>
 #include <random.h>
@@ -586,66 +587,85 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 	}
 
 	/********************************/
-	/* { */
-	/* 	void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx, */
-	/* 													hpt_pmo_t* reg_gpmo_root, hpt_walk_ctx_t *reg_gpm_ctx, */
-	/* 													hpt_pmo_t* pal_npmo_root, hpt_walk_ctx_t *pal_npm_ctx, */
-	/* 													hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx, */
-	/* 													const section_t *section); */
-	/* 	pagelist_t *pl = vmalloc(sizeof(pagelist_t)); */
-	/* 	hpt_walk_ctx_t walk_ctx; */
-	/* 	hpt_pmo_t reg_npmo_root, reg_gpmo_root, pal_npmo_root, pal_gpmo_root; */
+	{
+		pagelist_t *pl = vmalloc(sizeof(pagelist_t));
+		hpt_walk_ctx_t guest_walk_ctx;
+		hpt_walk_ctx_t nested_walk_ctx;
+		hpt_pmo_t reg_npmo_root, reg_gpmo_root, pal_npmo_root, pal_gpmo_root;
 
-	/* 	hpt_type_t guest_t = (VCPU_gcr4(vcpu) & CR4_PAE) ? HPT_TYPE_PAE : HPT_TYPE_NORM; */
+		hpt_type_t guest_t = (VCPU_gcr4(vcpu) & CR4_PAE) ? HPT_TYPE_PAE : HPT_TYPE_NORM;
 
-	/* 	pagelist_init(pl); */
+		pagelist_init(pl);
 
-	/* 	reg_npmo_root = (hpt_pmo_t) { */
-	/* 		.t = hpt_nested_walk_ctx.t, */
-	/* 		.lvl = hpt_root_lvl(hpt_nested_walk_ctx.t), */
-	/* 		.pm = VCPU_get_current_root_pm(vcpu), */
-	/* 	}; */
-	/* 	reg_gpmo_root = (hpt_pmo_t) { */
-	/* 		.t = guest_t, */
-	/* 		.lvl = hpt_root_lvl(guest_t), */
-	/* 		.pm = (guest_t == HPT_TYPE_PAE) */
-	/* 		? gpa2hva(pae_get_addr_from_32bit_cr3(VCPU_gcr3(vcpu))) */
-	/* 		: gpa2hva(npae_get_addr_from_32bit_cr3(VCPU_gcr3(vcpu))); */
-	/* 	}; */
-	/* 	pal_npmo_root = (hpt_pmo_t) { */
-	/* 		.t = reg_npmo_root.t, */
-	/* 		.lvl = reg_npmo_root.lvl, */
-	/* 		.pm = pagelist_get_zeroedpage(whitelist_new.pl), */
-	/* 	}; */
-	/* 	pal_gpmo_root = (hpt_pmo_t) { */
-	/* 		.type = reg_gpmo_root.t, */
-	/* 		.level = reg_gpmo_root.lvl, */
-	/* 		.pm = pagelist_get_zeroedpage(whitelist_new.pl), */
-	/* 	}; */
+		reg_npmo_root = (hpt_pmo_t) {
+			.t = hpt_nested_walk_ctx.t,
+			.lvl = hpt_root_lvl(hpt_nested_walk_ctx.t),
+			.pm = VCPU_get_current_root_pm(vcpu),
+		};
+		reg_gpmo_root = (hpt_pmo_t) {
+			.t = guest_t,
+			.lvl = hpt_root_lvl(guest_t),
+			.pm = ((guest_t == HPT_TYPE_PAE)
+						 ? gpa2hva(pae_get_addr_from_32bit_cr3(VCPU_gcr3(vcpu)))
+						 : gpa2hva(npae_get_addr_from_32bit_cr3(VCPU_gcr3(vcpu))))
+		};
+		dprintf(LOG_TRACE, "is-pae:%d, gcr3:%016llx, pae_get_addr:%08x npae_get_addr:%08x pm:%p\n",
+						(guest_t == HPT_TYPE_PAE),
+						VCPU_gcr3(vcpu),
+						(u32)pae_get_addr_from_32bit_cr3(VCPU_gcr3(vcpu)),
+						(u32)npae_get_addr_from_32bit_cr3(VCPU_gcr3(vcpu)),
+						reg_gpmo_root.pm);
+		{
+			size_t i;
+			dprintf(LOG_TRACE, "page map dump:\n");
+			for(i=0; i < (4096/4); i++) {
+				dprintf(LOG_TRACE, "%4u: 0x%08x\n", i, ((u32*)reg_gpmo_root.pm)[i]);
+			}
+		}
+		pal_npmo_root = (hpt_pmo_t) {
+			.t = reg_npmo_root.t,
+			.lvl = reg_npmo_root.lvl,
+			.pm = pagelist_get_zeroedpage(pl),
+		};
+		pal_gpmo_root = (hpt_pmo_t) {
+			.t = reg_gpmo_root.t,
+			.lvl = reg_gpmo_root.lvl,
+			.pm = pagelist_get_zeroedpage(pl),
+		};
 
-	/* 	/\* we can use the same walk ctx for guest page tables as for */
-	/* 		 nested page tables, because guest physical addresses are */
-	/* 		 unity-mapped to system physical addresses. we also use the same */
-	/* 		 walk ctx for both 'pal' and 'reg' page table sets for */
-	/* 		 simplicity. *\/ */
-	/* 	walk_ctx = hpt_nested_walk_ctx; /\* copy from template *\/ */
-	/* 	walk_ctx.hpt_nested_walk_ctx.gzp_ctx = pl; */
-	/* 	pagelist_init(pl); */
+		/* we can use the same walk ctx for guest page tables as for
+			 nested page tables, because guest physical addresses are
+			 unity-mapped to system physical addresses. we also use the same
+			 walk ctx for both 'pal' and 'reg' page table sets for
+			 simplicity. */
+		nested_walk_ctx = hpt_nested_walk_ctx; /* copy from template */
+		nested_walk_ctx.gzp_ctx = pl;
 
-	/* 	for (i=0; i<whitelist_new.scode_info.num_sections; i++) { */
-	/* 		section_t section = { */
-	/* 			.reg_gva = .start_addr, */
-	/* 			.pal_gva = .start_addr, */
-	/* 			.size = .page_num * PAGE_SIZE_4K, */
-	/* 			.prot = pal_prot_of_type(.type), */
-	/* 		} */
-	/* 		scode_lend_section(&reg_npmo_root, &walk_ctx, */
-	/* 											 &reg_gpmo_root, &walk_ctx, */
-	/* 											 &pal_npmo_root, &walk_ctx, */
-	/* 											 &pal_gpmo_root, &walk_ctx, */
-	/* 											 &section); */
-	/* 	} */
-	/* } */
+		guest_walk_ctx = hpt_nested_walk_ctx;
+		guest_walk_ctx.gzp_ctx = pl;
+		guest_walk_ctx.t = reg_gpmo_root.t;
+
+		pagelist_init(pl);
+
+		for (i=0; i<whitelist_new.scode_info.num_sections; i++) {
+			section_t section = {
+				.reg_gva = whitelist_new.scode_info.sections[i].start_addr,
+				.pal_gva = whitelist_new.scode_info.sections[i].start_addr,
+				.size = whitelist_new.scode_info.sections[i].page_num * PAGE_SIZE_4K,
+				.prot = pal_prot_of_type(whitelist_new.scode_info.sections[i].type),
+			};
+			scode_lend_section(&reg_npmo_root, &nested_walk_ctx,
+												 &reg_gpmo_root, &guest_walk_ctx,
+												 &pal_npmo_root, &nested_walk_ctx,
+												 &pal_gpmo_root, &guest_walk_ctx,
+												 &section);
+		}
+
+		/* XXX flush TLB to ensure 'reg' is now correctly denied access */
+
+		/* whitelist_new.pal_hpt_root = pal_npmo_root.pm; */
+		vfree(pl); /* XXX temp for testing */
+	}
 	/********************************/
 
 	/* register pages in each scode section */
