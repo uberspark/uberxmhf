@@ -211,7 +211,7 @@ void hpt_insert_pal_pmes(VCPU *vcpu,
  * SSTACK			RW					unpresent
  *
  * **************************************/
-void hpt_nested_set_prot(VCPU * vcpu, u64 gpaddr)
+void hpt_nested_set_prot(VCPU * vcpu, gpa_t gpaddr)
 {
 	u64 *pt = VCPU_get_pml1es(vcpu);
 	u64 pfn = gpaddr >> PAGE_SHIFT_4K;
@@ -233,7 +233,7 @@ void hpt_nested_set_prot(VCPU * vcpu, u64 gpaddr)
 	emhf_hwpgtbl_flushall(vcpu);
 }
 
-void hpt_nested_clear_prot(VCPU * vcpu, u64 gpaddr)
+void hpt_nested_clear_prot(VCPU * vcpu, gpa_t gpaddr)
 {	
 	u64 *pt = VCPU_get_pml1es(vcpu);
 	u64 pfn = gpaddr >> PAGE_SHIFT_4K;
