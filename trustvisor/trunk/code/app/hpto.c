@@ -141,6 +141,14 @@ hpt_prot_t hpto_walk_get_effective_prots(const hpt_walk_ctx_t *ctx,
   return prots_rv;
 }
 
+void hpto_walk_set_prot(hpt_walk_ctx_t *walk_ctx,
+                        hpt_pmo_t *pmo_root,
+                        hpt_va_t va,
+                        hpt_prot_t prot)
+{
+  hpt_walk_set_prot(walk_ctx, pmo_root->pm, pmo_root->lvl, va, prot);
+}
+
 hpt_pa_t hpt_pmeo_va_to_pa(hpt_pmeo_t* pmeo, hpt_va_t va)
 {
   hpt_pa_t base;
