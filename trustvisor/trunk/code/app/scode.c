@@ -1428,9 +1428,12 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
 	return 1;
 }
 
+/* caller is responsible for flushing TLB */
 void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* wle)
 {
 	int i;
+
+	(void)vcpu;
 
 	/* restore permissions for remapped sections */
 	/* assumes that SHARED sections are contiguous and on the end of the sections array */
@@ -1444,8 +1447,6 @@ void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* wle)
 												 &wle->sections[i]);
 		wle->sections_num--;
 	}
-	/* flush TLB for page table modifications to take effect */
-	emhf_hwpgtbl_flushall(vcpu);
 }
 
 /* note- caller is responsible for flushing page tables afterwards */
