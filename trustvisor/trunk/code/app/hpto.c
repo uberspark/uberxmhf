@@ -204,19 +204,10 @@ void hpt_copy_from_guest(const hpt_walk_ctx_t *ctx,
     size_t remaining_on_page;
 
     hpt_walk_get_pmeo(&src_pmeo, ctx, pmo, 1, src_va);
-    dprintf(LOG_TRACE, "hpt_copy_from_guest: pmeo.pme:%llx pmo.t:%d pmo.lvl:%d\n",
-            src_pmeo.pme, src_pmeo.t, src_pmeo.lvl);
+
     src_pa = hpt_pmeo_va_to_pa(&src_pmeo, src_va);
-    dprintf(LOG_TRACE, "hpt_copy_from_guest: src_pa:%llx\n",
-            src_pa);
-
     remaining_on_page = hpt_remaining_on_page(&src_pmeo, src_pa);
-    dprintf(LOG_TRACE, "hpt_copy_from_guest: remaining_on_page:%d\n",
-            remaining_on_page);
-
     to_copy = MIN(len-copied, remaining_on_page);
-    dprintf(LOG_TRACE, "hpt_copy_from_guest: to_copy:%d\n",
-            to_copy);
 
     memcpy(dst+copied, ctx->pa2ptr(ctx->pa2ptr_ctx, src_pa), to_copy);
     copied += to_copy;
@@ -239,19 +230,10 @@ void hpt_copy_to_guest(const hpt_walk_ctx_t *ctx,
     size_t remaining_on_page;
 
     hpt_walk_get_pmeo(&dst_pmeo, ctx, pmo, 1, dst_va);
-    dprintf(LOG_TRACE, "hpt_copy_to_guest: pmeo.pme:%llx pmo.t:%d pmo.lvl:%d\n",
-            dst_pmeo.pme, dst_pmeo.t, dst_pmeo.lvl);
+
     dst_pa = hpt_pmeo_va_to_pa(&dst_pmeo, dst_va);
-    dprintf(LOG_TRACE, "hpt_copy_to_guest: dst_pa:%llx\n",
-            dst_pa);
-
     remaining_on_page = hpt_remaining_on_page(&dst_pmeo, dst_pa);
-    dprintf(LOG_TRACE, "hpt_copy_to_guest: remaining_on_page:%d\n",
-            remaining_on_page);
-
     to_copy = MIN(len-copied, remaining_on_page);
-    dprintf(LOG_TRACE, "hpt_copy_to_guest: to_copy:%d\n",
-            to_copy);
 
     memcpy(ctx->pa2ptr(ctx->pa2ptr_ctx, dst_pa), src+copied, to_copy);
     copied += to_copy;
