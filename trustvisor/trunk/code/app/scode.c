@@ -907,7 +907,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 /* unregister scode in whitelist */
 u32 scode_unregister(VCPU * vcpu, u32 gvaddr) 
 {
-	size_t i;
+	size_t i, j;
 
 	u64 gcr3;
 
@@ -941,7 +941,6 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
 	/* dump perf counters */
 	dprintf(LOG_PROFILE, "performance counters:\n");
 	{
-		int j;
 		for(j=0; j<TV_PERF_CTRS_COUNT; j++) {
 			dprintf(LOG_PROFILE, "  %s total: %Lu count: %Lu\n",
 							g_tv_perf_ctr_strings[j],
@@ -957,9 +956,17 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
 	/* CRITICAL SECTION in MP scenario: need to quiesce other CPUs or at least acquire spinlock */
 	if (whitelist[i].scode_pages)
 	{
-		hpt_scode_clear_prot(vcpu, whitelist[i].scode_pages, whitelist[i].scode_size);
 		free((void *)(whitelist[i].scode_pages));
 		whitelist[i].scode_pages = NULL;
+	}
+
+	{
+		for(j = 0; j < whitelist[i].sections_num; j++) {
+			scode_return_section(&g_reg_npmo_root, &whitelist[i].hpt_nested_walk_ctx,
+													 &whitelist[i].pal_npt_root, &whitelist[i].hpt_nested_walk_ctx,
+													 &whitelist[i].pal_gpt_root, &whitelist[i].hpt_guest_walk_ctx,
+													 &whitelist[i].sections[j]);
+		}
 	}
 
 	/* delete entry from scode whitelist */

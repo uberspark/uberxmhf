@@ -790,6 +790,77 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
   }
 }
 
+/* lend a section of memory from a user-space process (on the
+   commodity OS) to a pal.
+	 PRE: assumes section was already successfully lent using scode_lend_section
+	 PRE: assumes no concurrent access to page tables (e.g., quiesce other cpus)
+*/
+void scode_return_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
+													hpt_pmo_t* pal_npmo_root, hpt_walk_ctx_t *pal_npm_ctx,
+													hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx,
+													const tv_pal_section_int_t *section)
+{
+  size_t offset;
+
+  for (offset=0; offset < section->size; offset += PAGE_SIZE_4K) {
+    hpt_va_t page_pal_gva = section->pal_gva + offset;
+
+    /* XXX we don't use hpt_va_t or hpt_pa_t for gpa's because these
+       get used as both */
+    u64 page_reg_gpa, page_pal_gpa; /* guest-physical-addresses */
+    hpt_pmeo_t page_pal_gpmeo; /* pal's guest page-map-entry and lvl */
+
+    hpt_walk_get_pmeo(&page_pal_gpmeo,
+                      pal_gpm_ctx,
+                      pal_gpmo_root,
+                      1,
+                      page_pal_gva);
+    ASSERT(page_pal_gpmeo.lvl==1); /* we don't handle large pages */
+    page_pal_gpa = hpt_pmeo_get_address(&page_pal_gpmeo);
+
+    /* lend_section always uses the same gpas between reg and pal */
+    page_reg_gpa = page_pal_gpa;
+
+    /* check that this pal VM is allowed to access this system-physical mem.
+			 we only check that it's readable; trustvisor-wide we maintain the invariant
+			 that a page is readable in a PAL's npt iff it is not readable in the guest npt
+			 or other PALs' npts.
+		 */
+    {
+      hpt_prot_t effective_prots;
+      bool user_accessible=false;
+      effective_prots = hpto_walk_get_effective_prots(pal_npm_ctx,
+                                                      pal_npmo_root,
+                                                      page_pal_gpa,
+                                                      &user_accessible);
+			CHK(effective_prots & HPT_PROTS_R);
+    }
+
+    /* revoke access from 'pal' VM */
+		hpto_walk_set_prot(pal_npm_ctx,
+											 pal_npmo_root,
+											 page_pal_gpa,
+											 HPT_PROTS_NONE);
+
+    /* scode_lend_section leaves reg guest page tables intact, so no
+			 need to restore anything in them here. */
+
+    /* revoke access from pal guest page tables */
+		hpto_walk_set_prot(pal_gpm_ctx,
+											 pal_gpmo_root,
+											 page_pal_gva,
+											 HPT_PROTS_NONE);
+
+    /* add access to reg nested page tables */
+		hpto_walk_set_prot(reg_npm_ctx,
+											 reg_npmo_root,
+											 page_reg_gpa,
+											 HPT_PROTS_RWX);
+  }
+}
+
+
+
 /* Local Variables: */
 /* mode:c           */
 /* indent-tabs-mode:'t */
