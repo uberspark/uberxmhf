@@ -588,8 +588,6 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
 	/********************************/
 	{
-		hpt_walk_ctx_t guest_walk_ctx;
-		hpt_walk_ctx_t nested_walk_ctx;
 		hpt_pmo_t reg_npmo_root, reg_gpmo_root, pal_npmo_root, pal_gpmo_root;
 
 		hpt_type_t guest_t = (VCPU_gcr4(vcpu) & CR4_PAE) ? HPT_TYPE_PAE : HPT_TYPE_NORM;
@@ -639,12 +637,12 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 			 unity-mapped to system physical addresses. we also use the same
 			 walk ctx for both 'pal' and 'reg' page table sets for
 			 simplicity. */
-		nested_walk_ctx = hpt_nested_walk_ctx; /* copy from template */
-		nested_walk_ctx.gzp_ctx = whitelist_new.npl;
+		whitelist_new.hpt_nested_walk_ctx = hpt_nested_walk_ctx; /* copy from template */
+		whitelist_new.hpt_nested_walk_ctx.gzp_ctx = whitelist_new.npl;
 
-		guest_walk_ctx = hpt_nested_walk_ctx;
-		guest_walk_ctx.gzp_ctx = whitelist_new.gpl;
-		guest_walk_ctx.t = reg_gpmo_root.t;
+		whitelist_new.hpt_guest_walk_ctx = hpt_nested_walk_ctx;
+		whitelist_new.hpt_guest_walk_ctx.gzp_ctx = whitelist_new.gpl;
+		whitelist_new.hpt_guest_walk_ctx.t = reg_gpmo_root.t;
 
 		/* add all gpl pages to pal's nested page tables, ensuring that
 			 the guest page tables allocated from it will be accessible to the
@@ -662,7 +660,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 			int hpt_err;
 			hpt_pmeo_setprot(&pmeo, HPT_PROTS_RWX);
 			hpt_pmeo_set_address(&pmeo, hva2spa(page));
-			hpt_err = hpt_walk_insert_pmeo_alloc(&nested_walk_ctx,
+			hpt_err = hpt_walk_insert_pmeo_alloc(&whitelist_new.hpt_nested_walk_ctx,
 																					 &pal_npmo_root,
 																					 &pmeo,
 																					 hva2gpa(page));
@@ -678,18 +676,18 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 				.size = whitelist_new.scode_info.sections[i].page_num * PAGE_SIZE_4K,
 				.prot = pal_prot_of_type(whitelist_new.scode_info.sections[i].type),
 			};
-			scode_lend_section(&reg_npmo_root, &nested_walk_ctx,
-												 &reg_gpmo_root, &guest_walk_ctx,
-												 &pal_npmo_root, &nested_walk_ctx,
-												 &pal_gpmo_root, &guest_walk_ctx,
+			scode_lend_section(&reg_npmo_root, &whitelist_new.hpt_nested_walk_ctx,
+												 &reg_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
+												 &pal_npmo_root, &whitelist_new.hpt_nested_walk_ctx,
+												 &pal_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
 												 &section);
 		}
 
 		/* clone gdt */
 		dprintf(LOG_TRACE, "cloning gdt:\n");
 		scode_clone_gdt(VCPU_gdtr_base(vcpu), VCPU_gdtr_limit(vcpu),
-										&reg_gpmo_root, &guest_walk_ctx,
-										&pal_gpmo_root, &guest_walk_ctx,
+										&reg_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
+										&pal_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
 										whitelist_new.gpl);
 
 		whitelist_new.pal_npt_root = pal_npmo_root;

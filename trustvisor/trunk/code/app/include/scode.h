@@ -117,6 +117,7 @@ typedef struct whitelist_entry{
 	pagelist_t *gpl;
 	pagelist_t *npl;
 	hpt_walk_ctx_t hpt_nested_walk_ctx;
+	hpt_walk_ctx_t hpt_guest_walk_ctx;
 	hpt_pmo_t pal_npt_root;
 	hpt_pmo_t pal_gpt_root;
 	u64 pal_gcr3;
