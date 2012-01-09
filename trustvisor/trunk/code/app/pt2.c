@@ -41,7 +41,6 @@
 /* XXX TEMP */
 #define CHK(x) ASSERT(x)
 #define CHK_RV(x) ASSERT(!(x))
-#define hpt_walk_check_prot(x, y) HPT_PROTS_RWX
 
 void hpt_walk_set_prot(hpt_walk_ctx_t *walk_ctx, hpt_pm_t pm, int pm_lvl, gpa_t gpa, hpt_prot_t prot)
 {
