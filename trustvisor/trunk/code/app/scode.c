@@ -396,8 +396,8 @@ void init_scode(VCPU * vcpu)
     if ( g_midtable[inum].cpu_lapic_id > max)
       max = g_midtable[inum].cpu_lapic_id;
   }
-  scode_curr = (int *)malloc((max+1)<<2);
-  memset(scode_curr, 0xFF, ((max+1)<<2));
+  scode_curr = malloc((max+1) * sizeof(*scode_curr));
+  memset(scode_curr, 0xFF, ((max+1) * sizeof(*scode_curr)));
 
   /* init PRNG and long-term crypto keys */
   if(trustvisor_master_crypto_init()) {
@@ -483,7 +483,7 @@ int memsect_info_register(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, wh
           wle->gpm_size=size;
           wle->gpmp=start+0x10;
           is_get_param=1;
-          if (!guest_pt_range_is_user_rw(vcpu, start, size)) {
+          if (!guest_pt_range_is_user_rw(vcpu, start, size*PAGE_SIZE_4K)) {
             dprintf(LOG_ERROR, "[TV] ERROR: SCODE_PARAM pages are not user writable!\n");
             return 1;
           }
@@ -497,7 +497,7 @@ int memsect_info_register(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, wh
           wle->gss_size=size;
           wle->gssp=start+(size<<PAGE_SHIFT_4K)-0x10;
           is_get_stack=1;
-          if (!guest_pt_range_is_user_rw(vcpu, start, size)) {
+          if (!guest_pt_range_is_user_rw(vcpu, start, size*PAGE_SIZE_4K)) {
             dprintf(LOG_ERROR, "[TV] ERROR: SCODE_STACK pages are not user writable!\n");
             return 1;
           }
@@ -941,7 +941,7 @@ u32 scode_marshall(VCPU * vcpu)
               }
 
             /* make sure that this pointer point to mem regeion that can be r/w by user */
-            if (!guest_pt_range_is_user_rw(vcpu, pm_value, (pm_value+pm_size*4-(pm_value & (~0xFFF)))/4096+1)) {
+            if (!guest_pt_range_is_user_rw(vcpu, pm_value, pm_size*4)) {
               dprintf(LOG_ERROR, "[TV] Fail: input param data region is not user writable!\n");
               return 1;
             }
