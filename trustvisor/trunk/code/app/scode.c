@@ -807,6 +807,14 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
 
   /* restore permissions for remapped sections */
   for(j = 0; j < whitelist[i].sections_num; j++) {
+    /* zero the contents of any sections that are writable by the PAL, and not readable by the reg guest */
+    if ((whitelist[i].sections[j].pal_prot & HPT_PROTS_W)
+        && !(whitelist[i].sections[j].reg_prot & HPT_PROTS_R)) {
+      dprintf(LOG_TRACE, "[TV] zeroing section %d\n", j);
+      hpt_memset_guest(&whitelist[i].hpt_guest_walk_ctx, &whitelist[i].pal_gpt_root,
+                       whitelist[i].sections[j].pal_gva, 0, whitelist[i].sections[j].size);
+    }
+
     scode_return_section(&g_reg_npmo_root, &whitelist[i].hpt_nested_walk_ctx,
                          &whitelist[i].pal_npt_root, &whitelist[i].hpt_nested_walk_ctx,
                          &whitelist[i].pal_gpt_root, &whitelist[i].hpt_guest_walk_ctx,

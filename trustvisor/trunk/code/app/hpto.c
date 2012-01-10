@@ -293,3 +293,29 @@ void hpt_copy_guest_to_guest(const hpt_walk_ctx_t *dst_ctx,
   }
 }
 
+void hpt_memset_guest(const hpt_walk_ctx_t *ctx,
+                      const hpt_pmo_t *pmo,
+                      hpt_va_t dst_va_base,
+                      int c,
+                      size_t len)
+{
+  size_t set=0;
+
+  while(set < len) {
+    hpt_va_t dst_va = dst_va_base + set;
+    hpt_pmeo_t dst_pmeo;
+    hpt_pa_t dst_pa;
+    size_t to_set;
+    size_t remaining_on_page;
+
+    hpt_walk_get_pmeo(&dst_pmeo, ctx, pmo, 1, dst_va);
+
+    dst_pa = hpt_pmeo_va_to_pa(&dst_pmeo, dst_va);
+    remaining_on_page = hpt_remaining_on_page(&dst_pmeo, dst_pa);
+    to_set = MIN(len-set, remaining_on_page);
+
+    memset(ctx->pa2ptr(ctx->pa2ptr_ctx, dst_pa), c, to_set);
+    set += to_set;
+  }
+}
+

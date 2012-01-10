@@ -112,4 +112,11 @@ void hpt_copy_guest_to_guest(const hpt_walk_ctx_t *dst_ctx,
                              hpt_va_t src_va_base,
                              size_t len);
 
+void hpt_memset_guest(const hpt_walk_ctx_t *ctx,
+                      const hpt_pmo_t *pmo,
+                      hpt_va_t dst_va_base,
+                      int c,
+                      size_t len);
+
+
 #endif
