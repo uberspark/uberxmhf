@@ -618,19 +618,6 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
       .lvl = hpt_root_lvl(guest_t),
       .pm = hpt_emhf_get_guest_root_pm(vcpu),
     };
-    dprintf(LOG_TRACE, "is-pae:%d, gcr3:%016llx, pae_get_addr:%08x npae_get_addr:%08x pm:%p\n",
-            (guest_t == HPT_TYPE_PAE),
-            VCPU_gcr3(vcpu),
-            (u32)pae_get_addr_from_32bit_cr3(VCPU_gcr3(vcpu)),
-            (u32)npae_get_addr_from_32bit_cr3(VCPU_gcr3(vcpu)),
-            reg_gpmo_root.pm);
-    {
-      size_t i;
-      dprintf(LOG_TRACE, "page map dump:\n");
-      for(i=0; i < (4096/4); i++) {
-        dprintf(LOG_TRACE, "%4u: 0x%08x\n", i, ((u32*)reg_gpmo_root.pm)[i]);
-      }
-    }
     pal_npmo_root = (hpt_pmo_t) {
       .t = g_reg_npmo_root.t,
       .lvl = g_reg_npmo_root.lvl,
