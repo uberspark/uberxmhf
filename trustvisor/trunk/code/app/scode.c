@@ -427,7 +427,7 @@ int parse_params_info(VCPU * vcpu, struct tv_pal_params* pm_info, u32 pm_addr)
     {
       pm_info->params[i].type = get_32bit_aligned_value_from_current_guest(vcpu, addr);
       pm_info->params[i].size = get_32bit_aligned_value_from_current_guest(vcpu, addr+4);
-      dprintf(LOG_TRACE, "[TV] parameter %d type %d size %d\n", i+1, pm_info->params[i].type, pm_info->params[i].size);
+      dprintf(LOG_TRACE, "[TV] parameter %d type %d size %d\n", i, pm_info->params[i].type, pm_info->params[i].size);
       addr += 8;
     }
   return 0;
@@ -852,7 +852,8 @@ int test_page_in_list(pte_t * page_list, pte_t page, u32 count)
 u32 scode_marshall(VCPU * vcpu)
 {
   u32 pm_addr, pm_addr_base, pm_value, pm_tmp;  /*parameter stack base address*/
-  u32 pm_num, pm_type, pm_size, pm_size_sum; /*save pm information*/
+  u32 pm_type, pm_size, pm_size_sum; /*save pm information*/
+  int pm_i;
   u32 grsp;
   u32 new_rsp;
   int curr=scode_curr[vcpu->id];
@@ -892,15 +893,15 @@ u32 scode_marshall(VCPU * vcpu)
     }
 
   /* begin to process the params*/
-  for (pm_num = whitelist[curr].gpm_num; pm_num > 0; pm_num--) /*the last parameter should be pushed in stack first*/
+  for (pm_i = whitelist[curr].gpm_num-1; pm_i >= 0; pm_i--) /*the last parameter should be pushed in stack first*/
     {
       /* get param information*/
-      pm_type = whitelist[curr].params_info.params[pm_num-1].type;
-      pm_size = whitelist[curr].params_info.params[pm_num-1].size;
+      pm_type = whitelist[curr].params_info.params[pm_i].type;
+      pm_size = whitelist[curr].params_info.params[pm_i].size;
       /* get param value from guest stack */
       pm_value = get_32bit_aligned_value_from_guest(&whitelist[curr].hpt_guest_walk_ctx,
                                                     &whitelist[curr].reg_gpt_root,
-                                                    grsp+(pm_num-1)*4);
+                                                    grsp + pm_i*4);
       pm_size_sum += 12;
 
       if (pm_size_sum > (whitelist[curr].gpm_size*PAGE_SIZE_4K))
@@ -927,7 +928,7 @@ u32 scode_marshall(VCPU * vcpu)
           {        
             /* put the parameter value in sensitive code stack */
             pm_tmp = pm_value;
-            dprintf(LOG_TRACE, "[TV]   PM %d is a integer (size %d, value %#x)\n", pm_num, pm_size, pm_value);
+            dprintf(LOG_TRACE, "[TV]   PM %d is a integer (size %d, value %#x)\n", pm_i, pm_size, pm_value);
             break;
           }
         case TV_PAL_PM_POINTER: /* pointer */
@@ -956,13 +957,13 @@ u32 scode_marshall(VCPU * vcpu)
 
             /* put pointer address in sensitive code stack*/
             pm_tmp = pm_addr;
-            dprintf(LOG_TRACE, "[TV]   PM %d is a pointer (size %d, addr %#x)\n", pm_num, pm_size*4, pm_value);
+            dprintf(LOG_TRACE, "[TV]   PM %d is a pointer (size %d, addr %#x)\n", pm_i, pm_size*4, pm_value);
             pm_addr += 4*pm_size;
             break;
           }
         default: /* other */
           perf_ctr_timer_discard(&g_tv_perf_ctrs[TV_PERF_CTR_MARSHALL], vcpu->idx);
-          dprintf(LOG_ERROR, "[TV] Fail: unknown parameter %d type %d \n", pm_num, pm_type);
+          dprintf(LOG_ERROR, "[TV] Fail: unknown parameter %d type %d \n", pm_i, pm_type);
           return 1;
         }
       new_rsp = VCPU_grsp(vcpu)-4;
@@ -1071,7 +1072,7 @@ u32 scode_unmarshall(VCPU * vcpu)
       return 1;
     }
   /* begin to process the params*/
-  for (i = 1; i <= pm_num; i++) /*the last parameter should be pushed in stack first*/
+  for (i = 0; i < pm_num; i++) /*the last parameter should be pushed in stack first*/
     {
       /* get param information*/
       pm_type =  get_32bit_aligned_value_from_guest(&whitelist[curr].hpt_guest_walk_ctx,
