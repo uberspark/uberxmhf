@@ -135,7 +135,7 @@ hpt_prot_t reg_prot_of_type(int type)
 
 /* check all pages in given range can be read/written by user level privilege */
 /* see Intel System Programming Guide, Volume 3, 5-42 "combined Page-Directory and Page-Table Protection"  */
-u32 guest_pt_check_user_rw(VCPU * vcpu, u32 vaddr, u32 page_num)
+bool guest_pt_range_is_user_rw(VCPU * vcpu, gva_t vaddr, size_t page_num)
 {
   hpt_prot_t effective_prots;
   bool user_accessible;
@@ -157,9 +157,9 @@ u32 guest_pt_check_user_rw(VCPU * vcpu, u32 vaddr, u32 page_num)
                                                     &user_accessible);
     if (!user_accessible
         || !((effective_prots & HPT_PROTS_RW) == HPT_PROTS_RW))
-      return 1;
+      return false;
   }
-  return 0;
+  return true;
 }
 
 /* several help functions to access guest address space */
