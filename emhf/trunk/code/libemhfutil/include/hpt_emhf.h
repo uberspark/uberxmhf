@@ -116,8 +116,18 @@ static inline hpt_type_t hpt_emhf_get_guest_hpt_type(VCPU *vcpu) {
 
 static inline hpt_pm_t hpt_emhf_get_guest_root_pm(VCPU *vcpu)
 {
-  return gpa2hva(hpt_cr3_get_address(hpt_emhf_get_guest_hpt_type(vcpu),
+  hpt_type_t t = hpt_emhf_get_guest_hpt_type(vcpu);
+  return gpa2hva(hpt_cr3_get_address(t,
                                      VCPU_gcr3(vcpu)));
+}
+
+static inline void hpt_emhf_set_guest_root_pm(VCPU *vcpu, hpt_pm_t root)
+{
+  hpt_type_t t = hpt_emhf_get_guest_hpt_type(vcpu);
+  VCPU_gcr3_set(vcpu,
+                hpt_cr3_set_address(t,
+                                    VCPU_gcr3(vcpu),
+                                    hva2gpa(root)));
 }
 
 #endif //__ASSEMBLY__
