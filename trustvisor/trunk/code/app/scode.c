@@ -777,47 +777,40 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
   dprintf(LOG_TRACE, "[TV] ********* scode unregister *********\n");
   dprintf(LOG_TRACE, "[TV] ************************************\n");
 
-  if (whitelist_size == 0)
-    {
-      dprintf(LOG_ERROR, "[TV] FATAL ERROR: no scode registered currently\n");
-      return 1;
-    }
+  if (whitelist_size == 0) {
+    dprintf(LOG_ERROR, "[TV] FATAL ERROR: no scode registered currently\n");
+    return 1;
+  }
 
   dprintf(LOG_TRACE, "[TV] CPU(%02x): remove from whitelist gcr3 %#llx, gvaddr %#x\n", vcpu->id, gcr3, gvaddr);
 
-  for (i = 0; i < whitelist_max; i ++)
-    {
-      /* find scode with correct cr3 and entry point */
-      if ((whitelist[i].gcr3 == gcr3) && (whitelist[i].entry_v == gvaddr))
-        break;
-    }
+  for (i = 0; i < whitelist_max; i ++) {
+    /* find scode with correct cr3 and entry point */
+    if ((whitelist[i].gcr3 == gcr3) && (whitelist[i].entry_v == gvaddr))
+      break;
+  }
 
-  if (i >= whitelist_max) 
-    {
-      dprintf(LOG_ERROR, "[TV] SECURITY: UnRegistration Failed. no matching sensitive code found\n");
-      return 1;
-    }
+  if (i >= whitelist_max) {
+    dprintf(LOG_ERROR, "[TV] SECURITY: UnRegistration Failed. no matching sensitive code found\n");
+    return 1;
+  }
 
   /* dump perf counters */
   dprintf(LOG_PROFILE, "performance counters:\n");
-  {
-    for(j=0; j<TV_PERF_CTRS_COUNT; j++) {
-      dprintf(LOG_PROFILE, "  %s total: %Lu count: %Lu\n",
-              g_tv_perf_ctr_strings[j],
-              perf_ctr_get_total_time(&g_tv_perf_ctrs[j]),
-              perf_ctr_get_count(&g_tv_perf_ctrs[j]));
-    }
+  for(j=0; j<TV_PERF_CTRS_COUNT; j++) {
+    dprintf(LOG_PROFILE, "  %s total: %Lu count: %Lu\n",
+            g_tv_perf_ctr_strings[j],
+            perf_ctr_get_total_time(&g_tv_perf_ctrs[j]),
+            perf_ctr_get_count(&g_tv_perf_ctrs[j]));
   }
   dprintf(LOG_PROFILE, "total mem mallocd: %u\n", heapmem_get_used_size());
 
   /* restore permissions for remapped sections */
-  {
-    for(j = 0; j < whitelist[i].sections_num; j++) {
-      scode_return_section(&g_reg_npmo_root, &whitelist[i].hpt_nested_walk_ctx,
-                           &whitelist[i].pal_npt_root, &whitelist[i].hpt_nested_walk_ctx,
-                           &whitelist[i].pal_gpt_root, &whitelist[i].hpt_guest_walk_ctx,
-                           &whitelist[i].sections[j]);
-    }
+  for(j = 0; j < whitelist[i].sections_num; j++) {
+    scode_return_section(&g_reg_npmo_root, &whitelist[i].hpt_nested_walk_ctx,
+                         &whitelist[i].pal_npt_root, &whitelist[i].hpt_nested_walk_ctx,
+                         &whitelist[i].pal_gpt_root, &whitelist[i].hpt_guest_walk_ctx,
+                         &whitelist[i].sections[j]);
   }
   /* flush TLB for page table modifications to take effect */
   emhf_hwpgtbl_flushall(vcpu);
