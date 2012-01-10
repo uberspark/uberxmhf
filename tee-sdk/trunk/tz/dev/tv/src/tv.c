@@ -95,44 +95,69 @@ TVOperationPrepareOpen(INOUT tz_device_t* psDevice,
   return TZ_SUCCESS;
 }
 
-static int share_referenced_mem(pal_fn_t fn, ll_t* psRefdSubranges, void* psOutBuf, void* psInBuf, bool userspace_only)
+static int share_referenced_mem(pal_fn_t fn, ll_t* psRefdSubranges, void* psOutBuf, void* psInBuf, bool userspace_only,
+                                void ***addrs, size_t **lens, size_t *count)
 {
   tzi_shared_memory_subrange_t *subrange;
-  size_t count;
-  void **addrs = NULL;
-  size_t *lens = NULL;
   int i;
   int rv=0;
 
-  count=2; /* psOutBuf and psInBuf */
+  *addrs = NULL;
+  *lens = NULL;
+
+  *count=2; /* psOutBuf and psInBuf */
   LL_FOR_EACH(psRefdSubranges, subrange) {
-    count++;
+    (*count)++;
   }
 
-  addrs = calloc(count, sizeof(void*));
-  lens = calloc(count, sizeof(size_t));
+  *addrs = calloc(*count, sizeof(void*));
+  *lens = calloc(*count, sizeof(size_t));
   
-  addrs[0] = psOutBuf;
-  lens[0] = MARSHAL_BUF_SIZE;
-  addrs[1] = psInBuf;
-  lens[1] = MARSHAL_BUF_SIZE;
+  (*addrs)[0] = psOutBuf;
+  (*lens)[0] = MARSHAL_BUF_SIZE;
+  (*addrs)[1] = psInBuf;
+  (*lens)[1] = MARSHAL_BUF_SIZE;
 
   i=2;
   LL_FOR_EACH(psRefdSubranges, subrange) {
-    addrs[i] = subrange->psSharedMem->pBlock + subrange->uiOffset;
-    lens[i] = subrange->uiLength;
-    if(!PAGE_ALIGNED_4K((uintptr_t)addrs[i]) || !PAGE_ALIGNED_4K(lens[i])) {
+    (*addrs)[i] = subrange->psSharedMem->pBlock + subrange->uiOffset;
+    (*lens)[i] = subrange->uiLength;
+    if(!PAGE_ALIGNED_4K((uintptr_t)(*addrs)[i]) || !PAGE_ALIGNED_4K((*lens)[i])) {
       printf("Error: TV back-end currently only supports 4K-aligned shared memory subranges\n");
       goto out;
     }
     i++;
   }
 
+  for(i=0; i<*count; i++) {
+    tv_lock_range((*addrs)[i], (*lens)[i]);
+    tv_touch_range((*addrs)[i], (*lens)[i], true);
+  }
+
   if(!userspace_only)
-    rv = tv_pal_share(fn, addrs, lens, count);
+    rv = tv_pal_share(fn, (*addrs), (*lens), *count);
 
   /* XXX we currently do not enforce the specified permissions-
      the service (pal) gets full access */
+
+ out:
+  if(rv) {
+    free(*addrs);
+    *addrs=NULL;
+    free(*lens);
+    *lens=NULL;
+  }
+  return rv;
+}
+
+static int unshare_referenced_mem(void **addrs, size_t *lens, size_t count)
+{
+  int i;
+  int rv=0;
+
+  for(i=0; i<count; i++) {
+    tv_unlock_range(addrs[i], lens[i]);
+  }
 
  out:
   free(addrs);
@@ -155,6 +180,9 @@ TVOperationPerform(INOUT tz_operation_t* psOperation,
       uint32_t uiCommand = psExt->uiCommand;
       tzi_encode_buffer_t *psInBuf = psOperation->sImp.psEncodeBuffer;
       tzi_encode_buffer_t *psOutBuf = NULL;
+      void **shared_addrs=NULL;
+      size_t *shared_lens=NULL;
+      size_t shared_count=0;
 
       posix_memalign((void**)&psOutBuf, PAGE_SIZE_4K, MARSHAL_BUF_SIZE);
       if(psOutBuf == NULL) {
@@ -168,10 +196,15 @@ TVOperationPerform(INOUT tz_operation_t* psOperation,
                                psOperation->sImp.psRefdSubranges,
                                psOutBuf,
                                psInBuf,
-                               psOperation->sImp.psSession->sImp.psDevice->sImp.psExt->userspace_only)) {
+                               psOperation->sImp.psSession->sImp.psDevice->sImp.psExt->userspace_only,
+                               &shared_addrs,
+                               &shared_lens,
+                               &shared_count)) {
         return TZ_ERROR_GENERIC;
       }
       fn(uiCommand, psInBuf, psOutBuf, puiServiceReturn);
+      unshare_referenced_mem(shared_addrs, shared_lens, shared_count);
+
       TZIEncodeToDecode(psOutBuf);
 
       free(psInBuf);
@@ -317,6 +350,8 @@ TVManagerDownloadService(INOUT tz_session_t* psSession,
     };
 
   if (!psSession->sImp.psDevice->sImp.psExt->userspace_only) {
+    tv_lock_pal_sections(svc->sPageInfo);
+
     rv = tv_pal_register(svc->sPageInfo,
                          &params,
                          svc->pEntry);

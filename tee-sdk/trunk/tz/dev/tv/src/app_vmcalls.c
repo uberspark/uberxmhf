@@ -52,7 +52,7 @@
 #endif
 
 #if HAVE_SYS_MMAN_H
-static int lock_range(void *ptr, size_t len)
+int tv_lock_range(void *ptr, size_t len)
 {
   ptr = (void*)PAGE_ALIGN_4K((uintptr_t)ptr);
   len = PAGE_ALIGN_UP4K(len);
@@ -97,7 +97,7 @@ static int lock_range(void *ptr, size_t len)
    are in physical memory while the process is in physical memory.
    Windows may still swap out the whole process.
 */
-static int lock_range(void *ptr, size_t len)
+int tv_lock_range(void *ptr, size_t len)
 {
   SIZE_T dwMin, dwMax;
   HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION|PROCESS_SET_QUOTA,
@@ -127,13 +127,30 @@ static int lock_range(void *ptr, size_t len)
   return 0;
 }
 #else
-static int lock_range(void *ptr, size_t len)
+int tv_lock_range(void *ptr, size_t len)
 {
   return -1;
 }
 #endif
 
-static int scode_touch_range(void *ptr, size_t len, int do_write)
+#if HAVE_SYS_MMAN_H
+int tv_unlock_range(void *ptr, size_t len)
+{
+  return munlock(ptr, len);
+}
+#elif IS_WINDOWS
+int tv_unlock_range(void *ptr, size_t len)
+{
+  return !VirtualUnlock(ptr, len);
+}
+#else
+int tv_unlock_range(void *ptr, size_t len)
+{
+  return -1;
+}
+#endif
+
+int tv_touch_range(void *ptr, size_t len, int do_write)
 {
   int i;
 
@@ -150,29 +167,38 @@ static int scode_touch_range(void *ptr, size_t len, int do_write)
 /* get scode pages into physical memory, and lock them there if possible.
  * TV won't cope if these pages are swapped out when a PAL executes.
  */
-static void lock_scode_pages(const struct tv_pal_sections *scode_info)
+void tv_lock_pal_sections(const struct tv_pal_sections *scode_info)
 {
   int i;
 
   for(i=0; i < scode_info->num_sections; i++) {
     /* first try locking the pages into physical memory */
-    if(lock_range((void*)scode_info->sections[i].start_addr,
+    if(tv_lock_range((void*)scode_info->sections[i].start_addr,
                   scode_info->sections[i].page_num*PAGE_SIZE)) {
       printf("warning, couldn't lock scode section %d into physical memory\n", i);
       printf("getting pages swapped in and hoping for the best...\n");
     }
 
-    /* if lock_range succeeded,
+    /* if tv_lock_range succeeded,
      * pages *should* already be in physical memory with
      * correct permissions. however, this doesn't seem to be
      * the case on windows unless we still go ahead and touch
      * them first.
      */
-    scode_touch_range((void*)scode_info->sections[i].start_addr,
-                      scode_info->sections[i].page_num*PAGE_SIZE,
-                      !(scode_info->sections[i].type == TV_PAL_SECTION_CODE
-                        || scode_info->sections[i].type == TV_PAL_SECTION_SHARED_CODE));
+    tv_touch_range((void*)scode_info->sections[i].start_addr,
+                   scode_info->sections[i].page_num*PAGE_SIZE,
+                   !(scode_info->sections[i].type == TV_PAL_SECTION_CODE
+                     || scode_info->sections[i].type == TV_PAL_SECTION_SHARED_CODE));
 
+  }
+}
+void tv_unlock_pal_sections(const struct tv_pal_sections *scode_info)
+{
+  int i;
+
+  for(i=0; i < scode_info->num_sections; i++) {
+    tv_unlock_range((void*)scode_info->sections[i].start_addr,
+                    scode_info->sections[i].page_num*PAGE_SIZE);
   }
 }
 
@@ -181,7 +207,6 @@ int tv_pal_register(const struct tv_pal_sections *pageinfo,
                     const void *entry)
 {
   int ret;
-  lock_scode_pages(pageinfo);
 
   return vmcall(TV_HC_REG,
                 (uint32_t)pageinfo,
@@ -201,19 +226,6 @@ int tv_pal_unregister(void *entry)
 int tv_pal_share(const void *entry, void **start, size_t *len, size_t count)
 {
   int i;
-
-  /* first try locking the pages into physical memory */
-  for(i=0; i<count; i++) {
-    if(lock_range(start[i], len[i])) {
-      printf("warning, couldn't lock shared section [%08x,%08x] into physical memory\n",
-             (uintptr_t)start[i], (uintptr_t)start[i]+len[i]);
-      printf("getting pages swapped in and hoping for the best...\n");
-    }
-    /* touch pages to help make sure. necessary in particular if locking
-       failed or we're on windows (where locking doesn't seem to ensure
-       the pages are initially mapped) */
-    scode_touch_range(start[i], len[i], true);
-  }
 
   return vmcall(TV_HC_SHARE,
                 (uint32_t)entry,

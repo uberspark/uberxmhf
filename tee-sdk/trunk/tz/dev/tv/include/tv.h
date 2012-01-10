@@ -92,7 +92,8 @@ void tv_pal_sections_print(struct tv_pal_sections *scode_info);
 
 /* Register a PAL.
  * pageinfo describes the memory areas to be used by the PAL.
- *   FIXME: preconditions? e.g., mandatory vs optional sections?
+ *   These memory areas must be page-aligned (e.g., 4K-aligned).
+ *   These areas must not be swapped out (use tv_lock_pal_sections)
  * params describes the parameters to the PAL function.
  * entry is a pointer to the PAL function.
  *
@@ -116,7 +117,10 @@ int tv_pal_register(const struct tv_pal_sections *pageinfo,
  */
 int tv_pal_unregister(void *entry);
 
-/* share memory ranges with a PAL. */
+/* share memory ranges with a PAL.
+   The memory areas must be page-aligned, and must not be swapped out.
+   (use tv_lock_range and\or tv_touch_range)
+*/
 int tv_pal_share(const void *entry, void **start, size_t *len, size_t count);
 
 /* Test for presence of TrustVisor.
@@ -143,5 +147,16 @@ tz_return_t tv_tz_init(tz_device_t*  tzDevice,
 tz_return_t tv_tz_teardown(tz_device_t*  tzDevice,
                            tz_session_t* tzPalSession,
                            tz_uuid_t*    tzSvcId);
+
+
+/* utility functions for locking ranges into memory. useful to call
+   before and after registration, and before and after sharing
+   memory */
+int tv_lock_range(void *ptr, size_t len);
+int tv_touch_range(void *ptr, size_t len, int do_write);
+void tv_lock_pal_sections(const struct tv_pal_sections *scode_info);
+
+int tv_unlock_range(void *ptr, size_t len);
+void tv_unlock_pal_sections(const struct tv_pal_sections *scode_info);
 
 #endif
