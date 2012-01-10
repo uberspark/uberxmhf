@@ -527,6 +527,8 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
   size_t i;
   whitelist_entry_t whitelist_new;
   u64 gcr3;
+  hpt_pmo_t reg_gpmo_root, pal_npmo_root, pal_gpmo_root;
+  hpt_type_t guest_t = hpt_emhf_get_guest_hpt_type(vcpu);
 
   /* set all CPUs to use the same 'reg' nested page tables,
      and set up a corresponding hpt_pmo.
@@ -601,134 +603,127 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
     return 1;
   }
 
-  /********************************/
-  {
-    hpt_pmo_t reg_gpmo_root, pal_npmo_root, pal_gpmo_root;
 
-    hpt_type_t guest_t = hpt_emhf_get_guest_hpt_type(vcpu);
+  whitelist_new.npl = malloc(sizeof(pagelist_t));
+  pagelist_init(whitelist_new.npl);
 
-    whitelist_new.npl = malloc(sizeof(pagelist_t));
-    pagelist_init(whitelist_new.npl);
+  whitelist_new.gpl = malloc(sizeof(pagelist_t));
+  pagelist_init(whitelist_new.gpl);
 
-    whitelist_new.gpl = malloc(sizeof(pagelist_t));
-    pagelist_init(whitelist_new.gpl);
+  reg_gpmo_root = (hpt_pmo_t) {
+    .t = guest_t,
+    .lvl = hpt_root_lvl(guest_t),
+    .pm = hpt_emhf_get_guest_root_pm(vcpu),
+  };
+  pal_npmo_root = (hpt_pmo_t) {
+    .t = g_reg_npmo_root.t,
+    .lvl = g_reg_npmo_root.lvl,
+    .pm = pagelist_get_zeroedpage(whitelist_new.npl),
+  };
+  pal_gpmo_root = (hpt_pmo_t) {
+    .t = reg_gpmo_root.t,
+    .lvl = reg_gpmo_root.lvl,
+    .pm = pagelist_get_zeroedpage(whitelist_new.gpl),
+  };
 
-    reg_gpmo_root = (hpt_pmo_t) {
-      .t = guest_t,
-      .lvl = hpt_root_lvl(guest_t),
-      .pm = hpt_emhf_get_guest_root_pm(vcpu),
+  /* we can use the same walk ctx for guest page tables as for
+     nested page tables, because guest physical addresses are
+     unity-mapped to system physical addresses. we also use the same
+     walk ctx for both 'pal' and 'reg' page table sets for
+     simplicity. */
+  whitelist_new.hpt_nested_walk_ctx = hpt_nested_walk_ctx; /* copy from template */
+  whitelist_new.hpt_nested_walk_ctx.gzp_ctx = whitelist_new.npl;
+
+  whitelist_new.hpt_guest_walk_ctx = hpt_nested_walk_ctx;
+  whitelist_new.hpt_guest_walk_ctx.gzp_ctx = whitelist_new.gpl;
+  whitelist_new.hpt_guest_walk_ctx.t = reg_gpmo_root.t;
+
+  /* add all gpl pages to pal's nested page tables, ensuring that
+     the guest page tables allocated from it will be accessible to the
+     pal */
+  /* XXX breaks pagelist abstraction. will break if pagelist ever dynamically
+     allocates more buffers */
+  dprintf(LOG_TRACE, "adding gpl to pal's npt:\n");
+  for (i=0; i < whitelist_new.gpl->num_allocd; i++) {
+    hpt_pmeo_t pmeo = {
+      .pme = 0,
+      .t = pal_npmo_root.t,
+      .lvl = 1,
     };
-    pal_npmo_root = (hpt_pmo_t) {
-      .t = g_reg_npmo_root.t,
-      .lvl = g_reg_npmo_root.lvl,
-      .pm = pagelist_get_zeroedpage(whitelist_new.npl),
-    };
-    pal_gpmo_root = (hpt_pmo_t) {
-      .t = reg_gpmo_root.t,
-      .lvl = reg_gpmo_root.lvl,
-      .pm = pagelist_get_zeroedpage(whitelist_new.gpl),
-    };
-
-    /* we can use the same walk ctx for guest page tables as for
-       nested page tables, because guest physical addresses are
-       unity-mapped to system physical addresses. we also use the same
-       walk ctx for both 'pal' and 'reg' page table sets for
-       simplicity. */
-    whitelist_new.hpt_nested_walk_ctx = hpt_nested_walk_ctx; /* copy from template */
-    whitelist_new.hpt_nested_walk_ctx.gzp_ctx = whitelist_new.npl;
-
-    whitelist_new.hpt_guest_walk_ctx = hpt_nested_walk_ctx;
-    whitelist_new.hpt_guest_walk_ctx.gzp_ctx = whitelist_new.gpl;
-    whitelist_new.hpt_guest_walk_ctx.t = reg_gpmo_root.t;
-
-    /* add all gpl pages to pal's nested page tables, ensuring that
-       the guest page tables allocated from it will be accessible to the
-       pal */
-    /* XXX breaks pagelist abstraction. will break if pagelist ever dynamically
-       allocates more buffers */
-    dprintf(LOG_TRACE, "adding gpl to pal's npt:\n");
-    for (i=0; i < whitelist_new.gpl->num_allocd; i++) {
-      hpt_pmeo_t pmeo = {
-        .pme = 0,
-        .t = pal_npmo_root.t,
-        .lvl = 1,
-      };
-      void *page = whitelist_new.gpl->page_base + i*PAGE_SIZE_4K;
-      int hpt_err;
-      hpt_pmeo_setprot(&pmeo, HPT_PROTS_RWX);
-      hpt_pmeo_set_address(&pmeo, hva2spa(page));
-      hpt_err = hpt_walk_insert_pmeo_alloc(&whitelist_new.hpt_nested_walk_ctx,
-                                           &pal_npmo_root,
-                                           &pmeo,
-                                           hva2gpa(page));
-      ASSERT(!hpt_err);
-    }
-
-    dprintf(LOG_TRACE, "adding sections to pal's npts and gpts:\n");
-    /* map each requested section into the pal */
-    whitelist_new.sections_num = whitelist_new.scode_info.num_sections;
-    for (i=0; i<whitelist_new.scode_info.num_sections; i++) {
-      whitelist_new.sections[i] = (tv_pal_section_int_t) {
-        .reg_gva = whitelist_new.scode_info.sections[i].start_addr,
-        .pal_gva = whitelist_new.scode_info.sections[i].start_addr,
-        .size = whitelist_new.scode_info.sections[i].page_num * PAGE_SIZE_4K,
-        .pal_prot = pal_prot_of_type(whitelist_new.scode_info.sections[i].type),
-        .reg_prot = reg_prot_of_type(whitelist_new.scode_info.sections[i].type),
-        .section_type = whitelist_new.scode_info.sections[i].type,
-      };
-      scode_lend_section(&g_reg_npmo_root, &whitelist_new.hpt_nested_walk_ctx,
-                         &reg_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
-                         &pal_npmo_root, &whitelist_new.hpt_nested_walk_ctx,
-                         &pal_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
-                         &whitelist_new.sections[i]);
-    }
-
-    /* clone gdt */
-    dprintf(LOG_TRACE, "cloning gdt:\n");
-    scode_clone_gdt(VCPU_gdtr_base(vcpu), VCPU_gdtr_limit(vcpu),
-                    &reg_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
-                    &pal_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
-                    whitelist_new.gpl);
-
-    /* we add the page containing the designated return address to the
-       guest page tables, but not the nested page tables. failure to
-       add to the guest page tables will cause a triple fault in the
-       guest. */
-    {
-      hpt_pmeo_t pmeo = {
-        .pme = 0,
-        .t = pal_gpmo_root.t,
-        .lvl = 1,
-      };
-      int hpt_err;
-      hpt_pmeo_setprot(&pmeo, HPT_PROTS_RX);
-      hpt_pmeo_setuser(&pmeo, true);
-      /* the gpa address here shouldn't matter, so long as it's one not
-         accessible by the pal. we'll also set that to the sentinel
-         return address value
-      */
-      hpt_pmeo_set_address(&pmeo, RETURN_FROM_PAL_ADDRESS);
-
-      dprintf(LOG_TRACE, "[TV] generated pme for return gva address %x: lvl:%d %llx\n",
-              RETURN_FROM_PAL_ADDRESS, pmeo.lvl, pmeo.pme);
-      hpt_err = hpt_walk_insert_pmeo_alloc(&whitelist_new.hpt_guest_walk_ctx,
-                                           &pal_gpmo_root,
-                                           &pmeo,
-                                           RETURN_FROM_PAL_ADDRESS);
-      ASSERT(!hpt_err);
-    }
-
-    whitelist_new.pal_npt_root = pal_npmo_root;
-    whitelist_new.pal_gpt_root = pal_gpmo_root;
-    whitelist_new.reg_gpt_root = reg_gpmo_root;
-    whitelist_new.pal_gcr3 = hpt_cr3_set_address(whitelist_new.pal_gpt_root.t,
-                                                 VCPU_gcr3(vcpu), /* XXX should build trusted cr3 from scratch */
-                                                 hva2gpa(whitelist_new.pal_gpt_root.pm));
-
-    /* flush TLB for page table modifications to take effect */
-    emhf_hwpgtbl_flushall(vcpu);
+    void *page = whitelist_new.gpl->page_base + i*PAGE_SIZE_4K;
+    int hpt_err;
+    hpt_pmeo_setprot(&pmeo, HPT_PROTS_RWX);
+    hpt_pmeo_set_address(&pmeo, hva2spa(page));
+    hpt_err = hpt_walk_insert_pmeo_alloc(&whitelist_new.hpt_nested_walk_ctx,
+                                         &pal_npmo_root,
+                                         &pmeo,
+                                         hva2gpa(page));
+    ASSERT(!hpt_err);
   }
-  /********************************/
+
+  dprintf(LOG_TRACE, "adding sections to pal's npts and gpts:\n");
+  /* map each requested section into the pal */
+  whitelist_new.sections_num = whitelist_new.scode_info.num_sections;
+  for (i=0; i<whitelist_new.scode_info.num_sections; i++) {
+    whitelist_new.sections[i] = (tv_pal_section_int_t) {
+      .reg_gva = whitelist_new.scode_info.sections[i].start_addr,
+      .pal_gva = whitelist_new.scode_info.sections[i].start_addr,
+      .size = whitelist_new.scode_info.sections[i].page_num * PAGE_SIZE_4K,
+      .pal_prot = pal_prot_of_type(whitelist_new.scode_info.sections[i].type),
+      .reg_prot = reg_prot_of_type(whitelist_new.scode_info.sections[i].type),
+      .section_type = whitelist_new.scode_info.sections[i].type,
+    };
+    scode_lend_section(&g_reg_npmo_root, &whitelist_new.hpt_nested_walk_ctx,
+                       &reg_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
+                       &pal_npmo_root, &whitelist_new.hpt_nested_walk_ctx,
+                       &pal_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
+                       &whitelist_new.sections[i]);
+  }
+
+  /* clone gdt */
+  dprintf(LOG_TRACE, "cloning gdt:\n");
+  scode_clone_gdt(VCPU_gdtr_base(vcpu), VCPU_gdtr_limit(vcpu),
+                  &reg_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
+                  &pal_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
+                  whitelist_new.gpl);
+
+  /* we add the page containing the designated return address to the
+     guest page tables, but not the nested page tables. failure to
+     add to the guest page tables will cause a triple fault in the
+     guest. */
+  {
+    hpt_pmeo_t pmeo = {
+      .pme = 0,
+      .t = pal_gpmo_root.t,
+      .lvl = 1,
+    };
+    int hpt_err;
+    hpt_pmeo_setprot(&pmeo, HPT_PROTS_RX);
+    hpt_pmeo_setuser(&pmeo, true);
+    /* the gpa address here shouldn't matter, so long as it's one not
+       accessible by the pal. we'll also set that to the sentinel
+       return address value
+    */
+    hpt_pmeo_set_address(&pmeo, RETURN_FROM_PAL_ADDRESS);
+
+    dprintf(LOG_TRACE, "[TV] generated pme for return gva address %x: lvl:%d %llx\n",
+            RETURN_FROM_PAL_ADDRESS, pmeo.lvl, pmeo.pme);
+    hpt_err = hpt_walk_insert_pmeo_alloc(&whitelist_new.hpt_guest_walk_ctx,
+                                         &pal_gpmo_root,
+                                         &pmeo,
+                                         RETURN_FROM_PAL_ADDRESS);
+    ASSERT(!hpt_err);
+  }
+
+  whitelist_new.pal_npt_root = pal_npmo_root;
+  whitelist_new.pal_gpt_root = pal_gpmo_root;
+  whitelist_new.reg_gpt_root = reg_gpmo_root;
+  whitelist_new.pal_gcr3 = hpt_cr3_set_address(whitelist_new.pal_gpt_root.t,
+                                               VCPU_gcr3(vcpu), /* XXX should build trusted cr3 from scratch */
+                                               hva2gpa(whitelist_new.pal_gpt_root.pm));
+
+  /* flush TLB for page table modifications to take effect */
+  emhf_hwpgtbl_flushall(vcpu);
 
   /* initialize Micro-TPM instance */
   utpm_init_instance(&whitelist_new.utpm);
