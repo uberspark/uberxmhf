@@ -186,7 +186,7 @@ int scode_in_list(u64 gcr3, u32 gvaddr)
         for( j=0 ; j<(u32)(whitelist[i].scode_info.num_sections) ; j++ )  {
           if( (gvaddr >= whitelist[i].scode_info.sections[j].start_addr) &&
               (gvaddr < ((whitelist[i].scode_info.sections[j].start_addr)+((whitelist[i].scode_info.sections[j].page_num)<<PAGE_SHIFT_4K)))  )  {
-            dprintf(LOG_TRACE, "[TV] find gvaddr %#x in scode %d section No.%d !\n", gvaddr, i, j+1);
+            dprintf(LOG_TRACE, "[TV] find gvaddr %#x in scode %d section No.%d !\n", gvaddr, i, j);
             return i;
           }
         }
@@ -508,7 +508,7 @@ int memsect_info_register(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, wh
       break;
     }
     pnum += size;
-    dprintf(LOG_TRACE, "[TV] section %d type %d addr %#x size %d\n",i+1, type, start, size);
+    dprintf(LOG_TRACE, "[TV] section %d type %d addr %#x size %d\n",i, type, start, size);
   }
 
   if (pnum > MAX_REGPAGES_NUM) {
