@@ -74,8 +74,11 @@ int tv_lock_range(void *ptr, size_t len)
     }
     memlock_limit.rlim_cur += len;
     if(setrlimit(RLIMIT_MEMLOCK, &memlock_limit)) {
+      if (!(memlock_limit.rlim_cur > memlock_limit.rlim_max
+            && errno == EINVAL)) {
         perror("setrlimit");
-        return -2;
+      }
+      return -2;
     }
 
     /* successfully increased limit. try locking again. */
