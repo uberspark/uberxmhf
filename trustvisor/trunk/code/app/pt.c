@@ -65,18 +65,6 @@
  * it safe to always map only 4GB of guest physical address space?
  */
 
-/* we store the permissions to use when executing the PAL in
- * unused bits of the pte's.
- */
-static inline hpt_pme_t hpt_pme_setpalprot(hpt_type_t t, int lvl, hpt_pme_t pme, hpt_prot_t prot)
-{
-  return hpt_pme_setunused(t, lvl, pme, 2, 0, prot);
-}
-static inline hpt_prot_t hpt_pme_getpalprot(hpt_type_t t, int lvl, hpt_pme_t pme)
-{
-  return hpt_pme_getunused(t, lvl, pme, 2, 0);
-}
-
 /* ********************************* */
 /* HPT related NPT operations */
 /* ********************************* */
