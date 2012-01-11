@@ -132,7 +132,7 @@ bool guest_pt_range_is_user_rw(VCPU * vcpu, gva_t vaddr, size_t size_bytes)
 }
 
 /* several help functions to access guest address space */
-extern u16 get_16bit_aligned_value_from_guest(const hpt_walk_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr)
+u16 get_16bit_aligned_value_from_guest(const hpt_walk_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr)
 {
   u32 gpaddr;
   
@@ -140,7 +140,7 @@ extern u16 get_16bit_aligned_value_from_guest(const hpt_walk_ctx_t *ctx, const h
   return *((u16 *)gpa2hva(gpaddr));
 }
 
-extern u32 get_32bit_aligned_value_from_guest(const hpt_walk_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr)
+u32 get_32bit_aligned_value_from_guest(const hpt_walk_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr)
 {
   u32 gpaddr;
   
@@ -148,7 +148,7 @@ extern u32 get_32bit_aligned_value_from_guest(const hpt_walk_ctx_t *ctx, const h
   return *((u32 *)gpa2hva(gpaddr));
 }
 
-extern void put_32bit_aligned_value_to_guest(const hpt_walk_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr, u32 value)
+void put_32bit_aligned_value_to_guest(const hpt_walk_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr, u32 value)
 {
   u32 gpaddr;
   
@@ -157,7 +157,7 @@ extern void put_32bit_aligned_value_to_guest(const hpt_walk_ctx_t *ctx, const hp
 }
 
 /* several help functions to access guest address space */
-extern u16 get_16bit_aligned_value_from_current_guest(VCPU *vcpu, u32 gvaddr)
+u16 get_16bit_aligned_value_from_current_guest(VCPU *vcpu, u32 gvaddr)
 {
   u32 gpaddr;
   
@@ -165,7 +165,7 @@ extern u16 get_16bit_aligned_value_from_current_guest(VCPU *vcpu, u32 gvaddr)
   return *((u16 *)gpa2hva(gpaddr));
 }
 
-extern u32 get_32bit_aligned_value_from_current_guest(VCPU *vcpu, u32 gvaddr)
+u32 get_32bit_aligned_value_from_current_guest(VCPU *vcpu, u32 gvaddr)
 {
   u32 gpaddr;
   
@@ -173,7 +173,7 @@ extern u32 get_32bit_aligned_value_from_current_guest(VCPU *vcpu, u32 gvaddr)
   return *((u32 *)gpa2hva(gpaddr));
 }
 
-extern void put_32bit_aligned_value_to_current_guest(VCPU *vcpu, u32 gvaddr, u32 value)
+void put_32bit_aligned_value_to_current_guest(VCPU *vcpu, u32 gvaddr, u32 value)
 {
   u32 gpaddr;
   
@@ -181,7 +181,7 @@ extern void put_32bit_aligned_value_to_current_guest(VCPU *vcpu, u32 gvaddr, u32
   *((u32 *)gpa2hva(gpaddr)) = value;
 }
 
-extern void copy_from_current_guest(VCPU * vcpu, u8 *dst,u32 gvaddr, u32 len)
+void copy_from_current_guest(VCPU * vcpu, u8 *dst,u32 gvaddr, u32 len)
 {
   hpt_type_t t = hpt_emhf_get_guest_hpt_type(vcpu);
   hpt_pmo_t root = {
@@ -196,7 +196,7 @@ extern void copy_from_current_guest(VCPU * vcpu, u8 *dst,u32 gvaddr, u32 len)
 
 }
 
-extern void copy_to_current_guest(VCPU * vcpu, u32 gvaddr, u8 *src, u32 len)
+void copy_to_current_guest(VCPU * vcpu, u32 gvaddr, u8 *src, u32 len)
 {
   hpt_type_t t = hpt_emhf_get_guest_hpt_type(vcpu);
   hpt_pmo_t root = {
