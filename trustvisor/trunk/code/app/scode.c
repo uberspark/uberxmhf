@@ -413,29 +413,35 @@ int parse_params_info(VCPU * vcpu, struct tv_pal_params* pm_info, u32 pm_addr)
   size_t i, num;
   u32 addr;
 
-  /* XXX need to check permissions for the address as well */
-  if (pm_addr & 0x3) {
-    dprintf(LOG_ERROR, "[TV] parse_params_info: pm_addr %08x not 32-bit aligned\n", pm_addr);
-    return 2;
-  }
-  addr = pm_addr;
-
   /* get number of parameters */
-  num = pm_info->num_params = get_32bit_aligned_value_from_current_guest(vcpu,
-                                                                         addr);
-  addr += 4;
-  dprintf(LOG_TRACE, "[TV] pm_info %#x, # of paramters is %d\n", pm_addr, num);
+  if (copy_from_current_guest(vcpu,
+                              &pm_info->num_params,
+                              pm_addr,
+                              sizeof(pm_info->num_params))) {
+    dprintf(LOG_ERROR, "ERROR: couldn't read num_params from gva 0x%08x\n", pm_addr);
+    return 1;
+  }
+  num = pm_info->num_params;
+
+  dprintf(LOG_TRACE, "[TV] pm_info %#x, # of parameters is %d\n", pm_addr, num);
   if (num > TV_MAX_PARAMS) {
     dprintf(LOG_ERROR, "[TV] number of scode sections exceeds limit!\n");
     return 1;
   }
 
-  for (i = 0; i < num; i++) {
-    pm_info->params[i].type = get_32bit_aligned_value_from_current_guest(vcpu, addr);
-    pm_info->params[i].size = get_32bit_aligned_value_from_current_guest(vcpu, addr+4);
-    dprintf(LOG_TRACE, "[TV] parameter %d type %d size %d\n", i, pm_info->params[i].type, pm_info->params[i].size);
-    addr += 8;
+  addr = pm_addr+4;
+  if (copy_from_current_guest(vcpu,
+                              &pm_info->params[0],
+                              addr,
+                              sizeof(pm_info->params[0]) * num)) {
+    dprintf(LOG_ERROR, "ERROR: couldn't read parameter info from gva 0x%08x\n", addr);
+    return 2;
   }
+
+  for (i = 0; i < num; i++) {
+    dprintf(LOG_TRACE, "[TV] parameter %d type %d size %d\n", i, pm_info->params[i].type, pm_info->params[i].size);
+  }
+
   return 0;
 }
 
