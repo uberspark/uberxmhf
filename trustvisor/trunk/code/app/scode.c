@@ -443,20 +443,31 @@ int memsect_info_copy_from_guest(VCPU * vcpu, struct tv_pal_sections *ps_scode_i
 {
   size_t gva_scode_info_offset = 0;
 
-  /* get parameter number */
-  ps_scode_info->num_sections = get_32bit_aligned_value_from_current_guest(vcpu, gva_scode_info);
+  /* get number of sections */
+  if(copy_from_current_guest(vcpu,
+                             &ps_scode_info->num_sections,
+                             gva_scode_info,
+                             sizeof(ps_scode_info->num_sections))) {
+    dprintf(LOG_ERROR, "ERROR: couldn't read num_sections from %08x", gva_scode_info);
+    return 1;
+  }
+
   gva_scode_info_offset += 4;
   dprintf(LOG_TRACE, "[TV] scode_info addr %x, # of section is %d\n", gva_scode_info, ps_scode_info->num_sections);
 
-  /* copy array of parameter descriptors */
+  /* copy array of section descriptors */
   if( ps_scode_info->num_sections > TV_MAX_SECTIONS )  {
     dprintf(LOG_ERROR, "[TV] number of scode sections exceeds limit!\n");
-    return 1;
+    return 3;
   }
-  copy_from_current_guest(vcpu,
-                          (u8*)&(ps_scode_info->sections[0]),
-                          gva_scode_info+gva_scode_info_offset,
-                          ps_scode_info->num_sections*sizeof(ps_scode_info->sections[0]));
+
+  if(copy_from_current_guest(vcpu,
+                             &(ps_scode_info->sections[0]),
+                             gva_scode_info+gva_scode_info_offset,
+                             ps_scode_info->num_sections*sizeof(ps_scode_info->sections[0]))) {
+    dprintf(LOG_ERROR, "ERROR: couldn't copy section info from gva %08x", gva_scode_info+gva_scode_info_offset);
+    return 4;
+  }
   return 0;
 }
 
