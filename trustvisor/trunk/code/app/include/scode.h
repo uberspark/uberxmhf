@@ -209,8 +209,12 @@ bool guest_pt_range_is_user_rw(VCPU * vcpu, gva_t vaddr, size_t page_num);
 
 /* operations from hypervisor to guest paging */
 void * __gpa2hva__(u32 gpaddr);
-void copy_from_current_guest(VCPU * vcpu, u8 *dst, u32 gvaddr, u32 len);
-void copy_to_current_guest(VCPU * vcpu, u32 gvaddr, u8 *src, u32 len);
+
+void copy_from_current_guest_UNCHECKED(VCPU * vcpu, u8 *dst, gva_t gvaddr, u32 len);
+int copy_from_current_guest(VCPU * vcpu, u8 *dst, gva_t gvaddr, u32 len);
+
+void copy_to_current_guest_UNCHECKED(VCPU * vcpu, gva_t gvaddr, u8 *src, u32 len);
+int copy_to_current_guest(VCPU * vcpu, gva_t gvaddr, u8 *src, u32 len);
 
 /* PAL operations (HPT) */
 u32 hpt_scode_set_prot(VCPU *vcpu, pte_t *pte_pages, u32 size);

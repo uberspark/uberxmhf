@@ -220,7 +220,7 @@ void put_32bit_aligned_value_to_current_guest(VCPU *vcpu, u32 gvaddr, u32 value)
   *((u32 *)gpa2hva(gpaddr)) = value;
 }
 
-void copy_from_current_guest(VCPU * vcpu, u8 *dst,u32 gvaddr, u32 len)
+void copy_from_current_guest_UNCHECKED(VCPU * vcpu, u8 *dst, gva_t gvaddr, u32 len)
 {
   hpt_type_t t = hpt_emhf_get_guest_hpt_type(vcpu);
   hpt_pmo_t root = {
@@ -234,8 +234,19 @@ void copy_from_current_guest(VCPU * vcpu, u8 *dst,u32 gvaddr, u32 len)
   hpt_copy_from_guest(&ctx, &root, dst, gvaddr, len);
 
 }
+int copy_from_current_guest(VCPU * vcpu, u8 *dst, gva_t gvaddr, u32 len)
+{
+  /* XXX TOCTTOU */
+  if (!nested_pt_range_has_reqd_prots(vcpu,
+                                      HPT_PROTS_R, true,
+                                      gvaddr, len)) {
+    return 1;
+  }
+  copy_from_current_guest_UNCHECKED(vcpu, dst, gvaddr, len);
+  return 0;
+}
 
-void copy_to_current_guest(VCPU * vcpu, u32 gvaddr, u8 *src, u32 len)
+void copy_to_current_guest_UNCHECKED(VCPU * vcpu, gva_t gvaddr, u8 *src, u32 len)
 {
   hpt_type_t t = hpt_emhf_get_guest_hpt_type(vcpu);
   hpt_pmo_t root = {
@@ -247,7 +258,17 @@ void copy_to_current_guest(VCPU * vcpu, u32 gvaddr, u8 *src, u32 len)
   ctx.t = t;
 
   hpt_copy_to_guest(&ctx, &root, gvaddr, src, len);
-
+}
+int copy_to_current_guest(VCPU * vcpu, gva_t gvaddr, u8 *src, u32 len)
+{
+  /* XXX TOCTTOU */
+  if (!nested_pt_range_has_reqd_prots(vcpu,
+                                      HPT_PROTS_W, true,
+                                      gvaddr, len)) {
+    return 1;
+  }
+  copy_to_current_guest_UNCHECKED(vcpu, gvaddr, src, len);
+  return 0;
 }
 
 
