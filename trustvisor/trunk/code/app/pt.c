@@ -46,25 +46,6 @@
 #include  "./include/scode.h"
 #include <pages.h>
 
-/* set up initial nested page tables. we need 4K pages only for the
- * memory regions occupied by the main kernel. all other memory can be
- * mapped as 2M pages. from AMD manual vol.2, "when an address is
- * mapped by guest and host page table entries with different page
- * sizes, the TLB entry that is created matches the size of the
- * smaller page". all address between 0 and 4GB but those between
- * visor_relocate_address and visor_relocate_address +
- * VISOR_RUNTIME_SIZE are unity mapped. the region between
- * visor_relocate_address and visor_relocate_address +
- * VISOR_RUNTIME_SIZE is marked "not present".
- */
-
-/* FIXME: In this implementation I am only mapping guest physical
- * addresses upto 4GB. Since SimNow only has 256MB of RAM, it seems
- * unlikely that any MMIO region will get mapped above 4GB. Also,
- * most leagacy devices only have 32 address lines. To Leendert, is
- * it safe to always map only 4GB of guest physical address space?
- */
-
 /* ********************************* */
 /* HPT related NPT operations */
 /* ********************************* */
