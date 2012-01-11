@@ -130,19 +130,22 @@ bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
   for(i=0; i<size_bytes; i += PAGE_SIZE_4K) {
     hpt_prot_t host_prots, guest_prots;
     bool host_user_accessible, guest_user_accessible;
+    gpa_t gpa = gpt_vaddr_to_paddr(&guest_ctx, &guest_root, vaddr+i); /* XXX redundant tablewalk */
+
     guest_prots = hpto_walk_get_effective_prots(&guest_ctx,
                                                 &guest_root,
                                                 vaddr+i,
                                                 &guest_user_accessible);
     host_prots = hpto_walk_get_effective_prots(&host_ctx,
                                                &host_root,
-                                               vaddr+i,
+                                               gpa,
                                                &host_user_accessible);
 
     if ((reqd_user_accessible && !(guest_user_accessible && host_user_accessible))
         || ((reqd_prots & guest_prots) != reqd_prots)
         || ((reqd_prots & host_prots) != reqd_prots)) {
-      dprintf(LOG_TRACE, "WARNING: Address %08x failed permission check\n", vaddr+i);
+      dprintf(LOG_TRACE, "WARNING: Failed prot check gva %08x gpa %08llx failed permission check\n",
+              vaddr+i, gpa);
       dprintf(LOG_TRACE, "\tReqd prots: 0x%llx reqd user: %d\n", reqd_prots, reqd_user_accessible);
       dprintf(LOG_TRACE, "\tHost prots: 0x%llx host user: %d\n", host_prots, host_user_accessible);
       dprintf(LOG_TRACE, "\tGuest prots: 0x%llx host user: %d\n", guest_prots, guest_user_accessible);
