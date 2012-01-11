@@ -202,6 +202,9 @@ static inline gpa_t gpt_vaddr_to_paddr_current(VCPU *vcpu, gva_t vaddr)
 
 u32 guest_pt_walker_internal(VCPU *vcpu, u32 vaddr, u64 *pdp, u64 *pd, u64 *pt, u64 *pdpe, u64 * pde, u64 * pte, u32 * is_pae);
 
+bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
+                                    hpt_prot_t reqd_prots, bool reqd_user_accessible,
+                                    gva_t vaddr, size_t size_bytes);
 bool guest_pt_range_is_user_rw(VCPU * vcpu, gva_t vaddr, size_t page_num);
 
 /* operations from hypervisor to guest paging */

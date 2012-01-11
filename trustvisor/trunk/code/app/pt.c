@@ -102,34 +102,64 @@ hpt_prot_t reg_prot_of_type(int type)
   ASSERT(0); return 0; /* unreachable; appeases compiler */
 }
 
-/* check all pages in given range can be read/written by user level privilege */
-/* see Intel System Programming Guide, Volume 3, 5-42 "combined Page-Directory and Page-Table Protection"  */
-bool guest_pt_range_is_user_rw(VCPU * vcpu, gva_t vaddr, size_t size_bytes)
+bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
+                                    hpt_prot_t reqd_prots, bool reqd_user_accessible,
+                                    gva_t vaddr, size_t size_bytes)
 {
-  hpt_prot_t effective_prots;
-  bool user_accessible;
-  hpt_type_t t = hpt_emhf_get_guest_hpt_type(vcpu);
-  hpt_pmo_t root = {
+  hpt_type_t guest_t = hpt_emhf_get_guest_hpt_type(vcpu);
+  hpt_pmo_t guest_root = {
     .pm = hpt_emhf_get_guest_root_pm(vcpu),
-    .t = t,
-    .lvl = hpt_root_lvl(t),
+    .t = guest_t,
+    .lvl = hpt_root_lvl(guest_t),
   };
-  hpt_walk_ctx_t ctx = hpt_guest_walk_ctx;
+  hpt_walk_ctx_t guest_ctx = hpt_guest_walk_ctx;
+
+  hpt_type_t host_t = hpt_emhf_get_hpt_type(vcpu);
+  hpt_pmo_t host_root = {
+    .pm = hpt_emhf_get_root_pm(vcpu),
+    .t = host_t,
+    .lvl = hpt_root_lvl(host_t),
+  };
+  hpt_walk_ctx_t host_ctx = hpt_nested_walk_ctx;
+
   size_t i;
 
-  ctx.t = t;
+  host_ctx.t = host_t;
+  guest_ctx.t = guest_t;
 
   for(i=0; i<size_bytes; i += PAGE_SIZE_4K) {
-    effective_prots = hpto_walk_get_effective_prots(&ctx,
-                                                    &root,
-                                                    vaddr,
-                                                    &user_accessible);
-    if (!user_accessible
-        || !((effective_prots & HPT_PROTS_RW) == HPT_PROTS_RW))
+    hpt_prot_t host_prots, guest_prots;
+    bool host_user_accessible, guest_user_accessible;
+    guest_prots = hpto_walk_get_effective_prots(&guest_ctx,
+                                                &guest_root,
+                                                vaddr+i,
+                                                &guest_user_accessible);
+    host_prots = hpto_walk_get_effective_prots(&host_ctx,
+                                               &host_root,
+                                               vaddr+i,
+                                               &host_user_accessible);
+
+    if ((reqd_user_accessible && !(guest_user_accessible && host_user_accessible))
+        || ((reqd_prots & guest_prots) != reqd_prots)
+        || ((reqd_prots & host_prots) != reqd_prots)) {
+      dprintf(LOG_TRACE, "WARNING: Address %08x failed permission check\n", vaddr+i);
+      dprintf(LOG_TRACE, "\tReqd prots: 0x%llx reqd user: %d\n", reqd_prots, reqd_user_accessible);
+      dprintf(LOG_TRACE, "\tHost prots: 0x%llx host user: %d\n", host_prots, host_user_accessible);
+      dprintf(LOG_TRACE, "\tGuest prots: 0x%llx host user: %d\n", guest_prots, guest_user_accessible);
       return false;
+    }
   }
   return true;
 }
+
+bool guest_pt_range_is_user_rw(VCPU * vcpu, gva_t vaddr, size_t size_bytes)
+{
+  return nested_pt_range_has_reqd_prots(vcpu,
+                                        HPT_PROTS_RW, true,
+                                        vaddr, size_bytes);
+
+}
+
 
 /* several help functions to access guest address space */
 u16 get_16bit_aligned_value_from_guest(const hpt_walk_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr)
