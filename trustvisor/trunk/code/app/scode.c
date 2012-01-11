@@ -412,8 +412,15 @@ int parse_params_info(VCPU * vcpu, struct tv_pal_params* pm_info, u32 pm_addr)
 {
   size_t i, num;
   u32 addr;
+
+  /* XXX need to check permissions for the address as well */
+  if (pm_addr & 0x3) {
+    dprintf(LOG_ERROR, "[TV] parse_params_info: pm_addr %08x not 32-bit aligned\n", pm_addr);
+    return 2;
+  }
   addr = pm_addr;
-  /* get parameter number */
+
+  /* get number of parameters */
   num = pm_info->num_params = get_32bit_aligned_value_from_current_guest(vcpu,
                                                                          addr);
   addr += 4;
@@ -423,13 +430,12 @@ int parse_params_info(VCPU * vcpu, struct tv_pal_params* pm_info, u32 pm_addr)
     return 1;
   }
 
-  for (i = 0; i < num; i++)
-    {
-      pm_info->params[i].type = get_32bit_aligned_value_from_current_guest(vcpu, addr);
-      pm_info->params[i].size = get_32bit_aligned_value_from_current_guest(vcpu, addr+4);
-      dprintf(LOG_TRACE, "[TV] parameter %d type %d size %d\n", i, pm_info->params[i].type, pm_info->params[i].size);
-      addr += 8;
-    }
+  for (i = 0; i < num; i++) {
+    pm_info->params[i].type = get_32bit_aligned_value_from_current_guest(vcpu, addr);
+    pm_info->params[i].size = get_32bit_aligned_value_from_current_guest(vcpu, addr+4);
+    dprintf(LOG_TRACE, "[TV] parameter %d type %d size %d\n", i, pm_info->params[i].type, pm_info->params[i].size);
+    addr += 8;
+  }
   return 0;
 }
 
@@ -523,7 +529,6 @@ int memsect_info_register(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, wh
 /* register scode in whitelist */
 u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry) 
 {
-
   size_t i;
   whitelist_entry_t whitelist_new;
   u64 gcr3;
