@@ -73,6 +73,7 @@ export CAT = @CAT@
 # all: $(APP_ARCHIVE) subdirs init-late
 all: $(APP_ARCHIVE) subdirs 
 
+.PHONY: $(APP_ARCHIVE)
 $(APP_ARCHIVE):
 	cd $(APP_ROOT) && $(MAKE) -w all
 
