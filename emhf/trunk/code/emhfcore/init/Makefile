@@ -8,12 +8,13 @@ C_SOURCES = init.c smp.c txt_heap.c txt_hash.c txt_acmod.c txt.c cmdline.c
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
-OBJECTS_PRECOMPILED = ../components/emhf-debug/dbg_printf.o
+OBJECTS_PRECOMPILED = ../components/emhf-debug/dbg-interface.o
+
 ifeq ($(DEBUG_SERIAL), y)
-OBJECTS_PRECOMPILED += ../components/emhf-debug/dbg_uart.o
+OBJECTS_PRECOMPILED += ../components/emhf-debug/arch/x86/dbg-x86-uart.o
 endif
 ifeq ($(DEBUG_VGA), y)
-OBJECTS_PRECOMPILED += ../components/emhf-debug/dbg_vgamem.o
+OBJECTS_PRECOMPILED += ../components/emhf-debug/arch/x86/dbg-x86-vgamem.o
 endif
 
 OBJECTS_PRECOMPILED +=  ../components/emhf-tpm/tpm.o 

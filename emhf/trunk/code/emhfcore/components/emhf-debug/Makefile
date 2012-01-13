@@ -3,10 +3,15 @@
 
 # source files
 AS_SOURCES = 
-C_SOURCES = dbg_printf.c dbg_vgamem.c 
+
+C_SOURCES = dbg-interface.c 
 
 ifeq ($(DEBUG_SERIAL), y)
-C_SOURCES += dbg_uart.c
+C_SOURCES += ./arch/x86/dbg-x86-uart.c
+endif
+
+ifeq ($(DEBUG_VGA), y)
+C_SOURCES += ./arch/x86/dbg-x86-vgamem.c
 endif
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
@@ -31,3 +36,4 @@ all: $(OBJECTS)
 .PHONY: clean 
 clean: 
 	$(RM) -rf *.o
+	$(RM) -rf ./arch/x86/*.o
