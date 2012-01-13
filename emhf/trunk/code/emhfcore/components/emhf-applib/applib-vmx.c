@@ -115,7 +115,7 @@ static void _vmx_lib_hwpgtbl_flushall(VCPU *vcpu){
 
 }*/
 
-//---hardware pagetable protection manipulation routine-------------------------
+/*//---hardware pagetable protection manipulation routine-------------------------
 static void _vmx_lib_hwpgtbl_setprot(VCPU *vcpu, u64 gpa, u64 flags){
   u32 pfn = (u32)gpa / PAGE_SIZE_4K;
   u64 *pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
@@ -125,9 +125,9 @@ static void _vmx_lib_hwpgtbl_setprot(VCPU *vcpu, u64 gpa, u64 flags){
 
 	//flush TLB
 	//_vmx_lib_hwpgtbl_flushall(vcpu);
-}
+}*/
 
-static void __attribute__((unused)) _vmx_lib_hwpgtbl_setentry(VCPU *vcpu, u64 gpa, u64 value){
+/*static void __attribute__((unused)) _vmx_lib_hwpgtbl_setentry(VCPU *vcpu, u64 gpa, u64 value){
   u32 pfn = (u32)gpa / PAGE_SIZE_4K;
   u64 *pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
 
@@ -135,7 +135,7 @@ static void __attribute__((unused)) _vmx_lib_hwpgtbl_setentry(VCPU *vcpu, u64 gp
 
   //flush the EPT mappings for changes to take effect
 //	_vmx_lib_hwpgtbl_flushall(vcpu);
-}
+}*/
 
 static u64 _vmx_lib_hwpgtbl_getprot(VCPU *vcpu, u64 gpa){
   u32 pfn = (u32)gpa / PAGE_SIZE_4K;
@@ -261,7 +261,7 @@ struct emhf_library g_emhf_library_vmx = {
 	//.emhf_iopm_set_write = _vmx_lib_iopm_set_write,
 	//.emhf_msrpm_set_write = _vmx_lib_msrpm_set_write,
 	//.emhf_hwpgtbl_flushall = _vmx_lib_hwpgtbl_flushall,
-	.emhf_hwpgtbl_setprot = _vmx_lib_hwpgtbl_setprot,
+	//.emhf_hwpgtbl_setprot = _vmx_lib_hwpgtbl_setprot,
 	.emhf_hwpgtbl_getprot = _vmx_lib_hwpgtbl_getprot,
 	//.emhf_guestpgtbl_walk = _vmx_lib_guestpgtbl_walk,
 	//.emhf_reboot = _vmx_lib_reboot,

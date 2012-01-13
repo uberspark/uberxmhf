@@ -79,7 +79,7 @@ static void _svm_lib_hwpgtbl_flushall(VCPU *vcpu){
 	((struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr))->tlb_control=TLB_CONTROL_FLUSHALL;
 }*/
 
-//---hardware pagetable protection manipulation routine-------------------------
+/*//---hardware pagetable protection manipulation routine-------------------------
 static void _svm_lib_hwpgtbl_setprot(VCPU __attribute__((unused)) *vcpu, u64 __attribute__((unused)) gpa, u64 __attribute__((unused)) flags){
 	printf("\n%s: not implemented, halting!", __FUNCTION__);
 	HALT();
@@ -88,7 +88,7 @@ static void _svm_lib_hwpgtbl_setprot(VCPU __attribute__((unused)) *vcpu, u64 __a
 static void __attribute__((unused)) _svm_lib_hwpgtbl_setentry(VCPU __attribute__((unused)) *vcpu, u64 __attribute__((unused)) gpa, u64 __attribute__((unused)) value){
 	printf("\n%s: not implemented, halting!", __FUNCTION__);
 	HALT();
-}
+}*/
 
 static u64 _svm_lib_hwpgtbl_getprot(VCPU __attribute__((unused)) *vcpu, u64 __attribute__((unused)) gpa){
 	printf("\n%s: not implemented, halting!", __FUNCTION__);
@@ -195,7 +195,7 @@ struct emhf_library g_emhf_library_svm = {
 	//.emhf_iopm_set_write = _svm_lib_iopm_set_write,
 	//.emhf_msrpm_set_write = _svm_lib_msrpm_set_write,
 	//.emhf_hwpgtbl_flushall = _svm_lib_hwpgtbl_flushall,
-	.emhf_hwpgtbl_setprot = _svm_lib_hwpgtbl_setprot,
+	//.emhf_hwpgtbl_setprot = _svm_lib_hwpgtbl_setprot,
 	.emhf_hwpgtbl_getprot = _svm_lib_hwpgtbl_getprot,
 	//.emhf_guestpgtbl_walk = _svm_lib_guestpgtbl_walk,
 	//.emhf_reboot = _svm_lib_reboot,

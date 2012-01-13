@@ -60,7 +60,7 @@ void emhf_hwpgtbl_flushall(VCPU *vcpu){
 	return g_libemhf->emhf_hwpgtbl_flushall(vcpu);
 }*/
 
-//---hardware pagetable protection manipulation routine-------------------------
+/*//---hardware pagetable protection manipulation routine-------------------------
 void emhf_hwpgtbl_setprot(VCPU *vcpu, u64 gpa, u64 flags){
   ASSERT(g_libemhf != NULL);
 	return g_libemhf->emhf_hwpgtbl_setprot(vcpu, gpa, flags);
@@ -69,7 +69,7 @@ void emhf_hwpgtbl_setprot(VCPU *vcpu, u64 gpa, u64 flags){
 void emhf_hwpgtbl_setentry(VCPU *vcpu, u64 gpa, u64 value){
   ASSERT(g_libemhf != NULL);
 	return g_libemhf->emhf_hwpgtbl_setentry(vcpu, gpa, value);
-}
+}*/
 
 
 u64 emhf_hwpgtbl_getprot(VCPU *vcpu, u64 gpa){
