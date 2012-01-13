@@ -130,4 +130,9 @@ void emhf_smpguest_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
 	}		
 }	
 
+//walk guest page tables; returns pointer to corresponding guest physical address
+//note: returns 0xFFFFFFFF if there is no mapping
+u8 * emhf_smpguest_walk_pagetables(VCPU *vcpu, u32 vaddr){
+		return emhf_smpguest_arch_walk_pagetables(vcpu, vaddr);
+}
 

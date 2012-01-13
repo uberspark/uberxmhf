@@ -439,3 +439,93 @@ void emhf_smpguest_arch_x86svm_postCPUwakeup(VCPU *vcpu){
 	vmcb->cs.base = (vcpu->sipivector * PAGE_SIZE_4K); 
 	vmcb->rip = 0x0ULL;
 }
+
+//walk guest page tables; returns pointer to corresponding guest physical address
+//note: returns 0xFFFFFFFF if there is no mapping
+u8 * emhf_smpguest_arch_x86svm_walk_pagetables(VCPU *vcpu, u32 vaddr){
+	struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+	
+  if((u32)vmcb->cr4 & CR4_PAE ){
+    //PAE paging used by guest
+    u32 kcr3 = (u32)vmcb->cr3;
+    u32 pdpt_index, pd_index, pt_index, offset;
+    u64 paddr;
+    pdpt_t kpdpt;
+    pdt_t kpd; 
+    pt_t kpt; 
+    u32 pdpt_entry, pd_entry, pt_entry;
+    u32 tmp;
+
+    // get fields from virtual addr 
+    pdpt_index = pae_get_pdpt_index(vaddr);
+    pd_index = pae_get_pdt_index(vaddr);
+    pt_index = pae_get_pt_index(vaddr);
+    offset = pae_get_offset_4K_page(vaddr);  
+
+    //grab pdpt entry
+    tmp = pae_get_addr_from_32bit_cr3(kcr3);
+    kpdpt = (pdpt_t)((u32)tmp); 
+    pdpt_entry = kpdpt[pdpt_index];
+  
+    //grab pd entry
+    tmp = pae_get_addr_from_pdpe(pdpt_entry);
+    kpd = (pdt_t)((u32)tmp); 
+    pd_entry = kpd[pd_index];
+
+    if ( (pd_entry & _PAGE_PSE) == 0 ) {
+      // grab pt entry
+      tmp = (u32)pae_get_addr_from_pde(pd_entry);
+      kpt = (pt_t)((u32)tmp);  
+      pt_entry  = kpt[pt_index];
+      
+      // find physical page base addr from page table entry 
+      paddr = (u64)pae_get_addr_from_pte(pt_entry) + offset;
+    }
+    else { // 2MB page 
+      offset = pae_get_offset_big(vaddr);
+      paddr = (u64)pae_get_addr_from_pde_big(pd_entry);
+      paddr += (u64)offset;
+    }
+  
+    return (u8 *)(u32)paddr;
+    
+  }else{
+    //non-PAE 2 level paging used by guest
+    u32 kcr3 = (u32)vmcb->cr3;
+    u32 pd_index, pt_index, offset;
+    u64 paddr;
+    npdt_t kpd; 
+    npt_t kpt; 
+    u32 pd_entry, pt_entry;
+    u32 tmp;
+
+    // get fields from virtual addr 
+    pd_index = npae_get_pdt_index(vaddr);
+    pt_index = npae_get_pt_index(vaddr);
+    offset = npae_get_offset_4K_page(vaddr);  
+  
+    // grab pd entry
+    tmp = npae_get_addr_from_32bit_cr3(kcr3);
+    kpd = (npdt_t)((u32)tmp); 
+    pd_entry = kpd[pd_index];
+  
+    if ( (pd_entry & _PAGE_PSE) == 0 ) {
+      // grab pt entry
+      tmp = (u32)npae_get_addr_from_pde(pd_entry);
+      kpt = (npt_t)((u32)tmp);  
+      pt_entry  = kpt[pt_index];
+      
+      // find physical page base addr from page table entry 
+      paddr = (u64)npae_get_addr_from_pte(pt_entry) + offset;
+    }
+    else { // 4MB page 
+      offset = npae_get_offset_big(vaddr);
+      paddr = (u64)npae_get_addr_from_pde_big(pd_entry);
+      paddr += (u64)offset;
+    }
+  
+    return (u8 *)(u32)paddr;
+  }
+
+
+}

@@ -144,6 +144,7 @@ static u64 _vmx_lib_hwpgtbl_getprot(VCPU *vcpu, u64 gpa){
   return (pt[pfn] & (u64)7) ;
 }
 
+/*
 //---guest page-table walker, returns guest physical address--------------------
 //note: returns 0xFFFFFFFF if there is no mapping
 u8 * _vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr){
@@ -229,7 +230,7 @@ u8 * _vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr){
   
     return (u8 *)(u32)paddr;
   }
-}
+}*/
 
 
 //---reboot functionality-------------------------------------------------------
@@ -262,7 +263,7 @@ struct emhf_library g_emhf_library_vmx = {
 	.emhf_hwpgtbl_flushall = _vmx_lib_hwpgtbl_flushall,
 	.emhf_hwpgtbl_setprot = _vmx_lib_hwpgtbl_setprot,
 	.emhf_hwpgtbl_getprot = _vmx_lib_hwpgtbl_getprot,
-	.emhf_guestpgtbl_walk = _vmx_lib_guestpgtbl_walk,
+	//.emhf_guestpgtbl_walk = _vmx_lib_guestpgtbl_walk,
 	.emhf_reboot = _vmx_lib_reboot,
 };
 

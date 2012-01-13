@@ -50,3 +50,15 @@ void emhf_smpguest_arch_postCPUwakeup(VCPU *vcpu){
 	}
 	
 }
+
+//walk guest page tables; returns pointer to corresponding guest physical address
+//note: returns 0xFFFFFFFF if there is no mapping
+u8 * emhf_smpguest_arch_walk_pagetables(VCPU *vcpu, u32 vaddr){
+	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
+		return emhf_smpguest_arch_x86svm_walk_pagetables(vcpu, vaddr);
+	}else{ //CPU_VENDOR_INTEL
+		return emhf_smpguest_arch_x86vmx_walk_pagetables(vcpu, vaddr);
+	}
+}

@@ -77,12 +77,13 @@ u64 emhf_hwpgtbl_getprot(VCPU *vcpu, u64 gpa){
 	return g_libemhf->emhf_hwpgtbl_getprot(vcpu, gpa);
 }
 
+/*
 //---guest page-table walker, returns guest physical address--------------------
 //note: returns 0xFFFFFFFF if there is no mapping
 u8 * emhf_guestpgtbl_walk(VCPU *vcpu, u32 vaddr){
   ASSERT(g_libemhf != NULL);
 	return g_libemhf->emhf_guestpgtbl_walk(vcpu, vaddr);
-}
+}*/
 
 
 //---reboot functionality-------------------------------------------------------

@@ -95,7 +95,7 @@ static u64 _svm_lib_hwpgtbl_getprot(VCPU __attribute__((unused)) *vcpu, u64 __at
 	HALT(); return 0; /* dummy return; appeases compiler */
 }
 
-//---guest page-table walker, returns guest physical address--------------------
+/*//---guest page-table walker, returns guest physical address--------------------
 //note: returns 0xFFFFFFFF if there is no mapping
 u8 * _svm_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr){
 	struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
@@ -181,7 +181,7 @@ u8 * _svm_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr){
   
     return (u8 *)(u32)paddr;
   }
-}
+}*/
 
 
 //---reboot functionality-------------------------------------------------------
@@ -197,7 +197,7 @@ struct emhf_library g_emhf_library_svm = {
 	.emhf_hwpgtbl_flushall = _svm_lib_hwpgtbl_flushall,
 	.emhf_hwpgtbl_setprot = _svm_lib_hwpgtbl_setprot,
 	.emhf_hwpgtbl_getprot = _svm_lib_hwpgtbl_getprot,
-	.emhf_guestpgtbl_walk = _svm_lib_guestpgtbl_walk,
+	//.emhf_guestpgtbl_walk = _svm_lib_guestpgtbl_walk,
 	.emhf_reboot = _svm_lib_reboot,
 };
 

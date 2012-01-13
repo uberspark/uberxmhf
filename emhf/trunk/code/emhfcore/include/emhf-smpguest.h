@@ -62,8 +62,18 @@ void emhf_smpguest_endquiesce(VCPU *vcpu);
 //quiescing handler for #NMI (non-maskable interrupt) exception event
 void emhf_smpguest_eventhandler_nmiexception(VCPU *vcpu, struct regs *r);
 
+//walk guest page tables; returns pointer to corresponding guest physical address
+//note: returns 0xFFFFFFFF if there is no mapping
+u8 * emhf_smpguest_walk_pagetables(VCPU *vcpu, u32 vaddr);
+
 //----------------------------------------------------------------------
 //generic arch. backends
+
+
+//walk guest page tables; returns pointer to corresponding guest physical address
+//note: returns 0xFFFFFFFF if there is no mapping
+u8 * emhf_smpguest_arch_walk_pagetables(VCPU *vcpu, u32 vaddr);
+
 
 //perform required setup after a guest awakens a new CPU
 void emhf_smpguest_arch_postCPUwakeup(VCPU *vcpu);
@@ -76,6 +86,9 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
 u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode);
 //perform required setup after a guest awakens a new CPU
 void emhf_smpguest_arch_x86svm_postCPUwakeup(VCPU *vcpu);
+//walk guest page tables; returns pointer to corresponding guest physical address
+//note: returns 0xFFFFFFFF if there is no mapping
+u8 * emhf_smpguest_arch_x86svm_walk_pagetables(VCPU *vcpu, u32 vaddr);
 
 
 //x86 VMX backends
@@ -85,6 +98,9 @@ void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu,
 u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode);
 //perform required setup after a guest awakens a new CPU
 void emhf_smpguest_arch_x86vmx_postCPUwakeup(VCPU *vcpu);
+//walk guest page tables; returns pointer to corresponding guest physical address
+//note: returns 0xFFFFFFFF if there is no mapping
+u8 * emhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr);
 
 
 

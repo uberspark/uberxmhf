@@ -72,7 +72,7 @@ struct emhf_library {
 	void 	(*emhf_hwpgtbl_setprot)(VCPU *vcpu, u64 gpa, u64 flags);
 	u64 	(*emhf_hwpgtbl_getprot)(VCPU *vcpu, u64 gpa);
 	void 	(*emhf_hwpgtbl_setentry)(VCPU *vcpu, u64 gpa, u64 value);
-	u8 * 	(*emhf_guestpgtbl_walk)(VCPU *vcpu, u32 gva);
+	//u8 * 	(*emhf_guestpgtbl_walk)(VCPU *vcpu, u32 gva);
 	void 	(*emhf_reboot)(VCPU *vcpu);
 }; 
 
@@ -83,7 +83,7 @@ void emhf_hwpgtbl_flushall(VCPU *vcpu);
 void emhf_hwpgtbl_setprot(VCPU *vcpu, u64 gpa, u64 flags);
 u64 emhf_hwpgtbl_getprot(VCPU *vcpu, u64 gpa);
 void emhf_hwpgtbl_setentry(VCPU *vcpu, u64 gpa, u64 value);
-u8 * emhf_guestpgtbl_walk(VCPU *vcpu, u32 gva);
+//u8 * emhf_guestpgtbl_walk(VCPU *vcpu, u32 gva);
 void emhf_reboot(VCPU *vcpu);
 
 //callbacks
