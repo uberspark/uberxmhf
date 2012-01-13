@@ -41,6 +41,11 @@
 
 //flush hardware page table mappings (TLB) 
 void emhf_memprot_arch_flushmappings(VCPU *vcpu){
-	
-	
+	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
+		emhf_memprot_arch_x86svm_flushmappings(vcpu);
+	else //CPU_VENDOR_INTEL
+		emhf_memprot_arch_x86vmx_flushmappings(vcpu);
+
 }

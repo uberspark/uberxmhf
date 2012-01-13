@@ -54,11 +54,11 @@ void emhf_msrpm_set_write(VCPU *vcpu, u32 msr){
 	return g_libemhf->emhf_msrpm_set_write(vcpu, msr);
 }*/
 
-//---hardware pagetable flush-all routine---------------------------------------
+/*//---hardware pagetable flush-all routine---------------------------------------
 void emhf_hwpgtbl_flushall(VCPU *vcpu){
   ASSERT(g_libemhf != NULL);
 	return g_libemhf->emhf_hwpgtbl_flushall(vcpu);
-}
+}*/
 
 //---hardware pagetable protection manipulation routine-------------------------
 void emhf_hwpgtbl_setprot(VCPU *vcpu, u64 gpa, u64 flags){

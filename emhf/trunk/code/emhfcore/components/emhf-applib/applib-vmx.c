@@ -106,14 +106,14 @@ static void _vmx_lib_msrpm_set_write(VCPU __attribute__((unused)) *vcpu, u32 __a
   return;
 }*/
 
-//---hardware pagetable flush-all routine---------------------------------------
+/*//---hardware pagetable flush-all routine---------------------------------------
 static void _vmx_lib_hwpgtbl_flushall(VCPU *vcpu){
   __vmx_invept(VMX_EPT_SINGLE_CONTEXT, 
           (u64)vcpu->vmcs.control_EPT_pointer_full, 
           0);
   __vmx_invvpid(VMX_VPID_EXTENT_SINGLE_CONTEXT, 1, 0);
 
-}
+}*/
 
 //---hardware pagetable protection manipulation routine-------------------------
 static void _vmx_lib_hwpgtbl_setprot(VCPU *vcpu, u64 gpa, u64 flags){
@@ -124,7 +124,7 @@ static void _vmx_lib_hwpgtbl_setprot(VCPU *vcpu, u64 gpa, u64 flags){
   pt[pfn] |= flags; //set new flags
 
 	//flush TLB
-	_vmx_lib_hwpgtbl_flushall(vcpu);
+	//_vmx_lib_hwpgtbl_flushall(vcpu);
 }
 
 static void __attribute__((unused)) _vmx_lib_hwpgtbl_setentry(VCPU *vcpu, u64 gpa, u64 value){
@@ -134,7 +134,7 @@ static void __attribute__((unused)) _vmx_lib_hwpgtbl_setentry(VCPU *vcpu, u64 gp
   pt[pfn] = value; //set new value
 
   //flush the EPT mappings for changes to take effect
-	_vmx_lib_hwpgtbl_flushall(vcpu);
+//	_vmx_lib_hwpgtbl_flushall(vcpu);
 }
 
 static u64 _vmx_lib_hwpgtbl_getprot(VCPU *vcpu, u64 gpa){
@@ -260,7 +260,7 @@ static void _vmx_lib_reboot(VCPU __attribute__((unused)) *vcpu){
 struct emhf_library g_emhf_library_vmx = {
 	//.emhf_iopm_set_write = _vmx_lib_iopm_set_write,
 	//.emhf_msrpm_set_write = _vmx_lib_msrpm_set_write,
-	.emhf_hwpgtbl_flushall = _vmx_lib_hwpgtbl_flushall,
+	//.emhf_hwpgtbl_flushall = _vmx_lib_hwpgtbl_flushall,
 	.emhf_hwpgtbl_setprot = _vmx_lib_hwpgtbl_setprot,
 	.emhf_hwpgtbl_getprot = _vmx_lib_hwpgtbl_getprot,
 	//.emhf_guestpgtbl_walk = _vmx_lib_guestpgtbl_walk,

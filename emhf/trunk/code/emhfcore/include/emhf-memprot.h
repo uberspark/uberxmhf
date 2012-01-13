@@ -82,6 +82,14 @@ void emhf_memprot_flushmappings(VCPU *vcpu);
 //flush hardware page table mappings (TLB) 
 void emhf_memprot_arch_flushmappings(VCPU *vcpu);
 
+//----------------------------------------------------------------------
+// SUBARCH. interfaces
+//----------------------------------------------------------------------
+
+//flush hardware page table mappings (TLB) 
+void emhf_memprot_arch_x86svm_flushmappings(VCPU *vcpu);
+void emhf_memprot_arch_x86vmx_flushmappings(VCPU *vcpu);
+
 
 #endif	//__ASSEMBLY__
 

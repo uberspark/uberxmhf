@@ -103,3 +103,8 @@ static void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts
 	}
 	
 }
+
+//flush hardware page table mappings (TLB) 
+void emhf_memprot_arch_x86svm_flushmappings(VCPU *vcpu){
+	((struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr))->tlb_control=TLB_CONTROL_FLUSHALL;	
+}
