@@ -44,6 +44,7 @@
 
 //----------------------------------------------------------------------
 //exported DATA 
+extern u32 sl_baseaddr;	
 
 
 //----------------------------------------------------------------------
@@ -52,7 +53,9 @@
 
 //----------------------------------------------------------------------
 // arch. interfaces (GENERIC)
-
+void* hva2sla(uintptr_t x);
+u64 sla2spa(void* x);
+void runtime_setup_paging(RPB * rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsize);
 
 //----------------------------------------------------------------------
 // arch. interfaces (SUBARCH SPECIFIC)

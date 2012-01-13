@@ -175,6 +175,54 @@ typedef struct _vcpu {
 #endif /* __ASSEMBLY__ */
 
 
+//NOTE: The declaration here _MUST_ match definition of RPB in runtimesup.S	
+typedef struct {
+	u32 magic;
+	u32 XtVmmEntryPoint;
+	u32 XtVmmPdptBase;
+	u32 XtVmmPdtsBase;
+	u32 XtVmmNpdtBase;
+	u32 XtVmmNestedNpdtBase;
+	u32 XtGuestOSBootModuleBase;
+	u32 XtGuestOSBootModuleSize;
+	u32 XtGuestOSBootModuleBaseSup1;
+	u32 XtGuestOSBootModuleSizeSup1;
+	u32 XtVmmStackBase;
+	u32 XtVmmStackSize;
+	u32 XtVmmGdt;
+	u32 XtVmmNetworkAdapterStructureBase;
+	u32 XtVmmHsaveBase;
+	u32 XtVmmVMCBBase;
+	u32 XtVmmIopmBase;
+	u32 XtVmmNestedPdptBase;
+	u32 XtVmmNestedPdtsBase;
+	u32 XtVmmNestedPtsBase;
+	u32 XtVmmIdt;
+	u32 XtVmmIdtFunctionPointers;
+	u32 XtVmmIdtEntries;
+	u32 XtVmmE1000DescBase;
+	u32 XtVmmE1000HeaderBase;
+	u32 XtVmmE1000BodyBase;
+	u32 XtVmmRuntimePhysBase;
+	u32 XtVmmRuntimeVirtBase;
+	u32 XtVmmRuntimeSize;
+	u32 XtVmmE820Buffer;
+	u32 XtVmmE820NumEntries;
+	u32 XtVmmMPCpuinfoBuffer;
+	u32 XtVmmMPCpuinfoNumEntries;
+	u32 XtVmmTSSBase;
+	u32 RtmSVMDevBitmapBase;
+	u32 RtmVMXVTdPdpt;
+	u32 RtmVMXVTdPdts;
+	u32 RtmVMXVTdPts;
+	u32 RtmVMXVTdRET;
+	u32 RtmVMXVTdCET;
+    uart_config_t uart_config;	        /* runtime options parsed in init and passed forward */
+	u32 isEarlyInit;					//1 for an "early init" else 0 (late-init)
+} __attribute__((packed)) RPB, *PRPB;
+
+
+
 
 //----------------------------------------------------------------------
 // component headers
@@ -410,51 +458,6 @@ typedef struct _sl_parameter_block {
     uart_config_t uart_config;
 } __attribute__((packed)) SL_PARAMETER_BLOCK;
 
-//NOTE: The declaration here _MUST_ match definition of RPB in runtimesup.S	
-typedef struct {
-	u32 magic;
-	u32 XtVmmEntryPoint;
-	u32 XtVmmPdptBase;
-	u32 XtVmmPdtsBase;
-	u32 XtVmmNpdtBase;
-	u32 XtVmmNestedNpdtBase;
-	u32 XtGuestOSBootModuleBase;
-	u32 XtGuestOSBootModuleSize;
-	u32 XtGuestOSBootModuleBaseSup1;
-	u32 XtGuestOSBootModuleSizeSup1;
-	u32 XtVmmStackBase;
-	u32 XtVmmStackSize;
-	u32 XtVmmGdt;
-	u32 XtVmmNetworkAdapterStructureBase;
-	u32 XtVmmHsaveBase;
-	u32 XtVmmVMCBBase;
-	u32 XtVmmIopmBase;
-	u32 XtVmmNestedPdptBase;
-	u32 XtVmmNestedPdtsBase;
-	u32 XtVmmNestedPtsBase;
-	u32 XtVmmIdt;
-	u32 XtVmmIdtFunctionPointers;
-	u32 XtVmmIdtEntries;
-	u32 XtVmmE1000DescBase;
-	u32 XtVmmE1000HeaderBase;
-	u32 XtVmmE1000BodyBase;
-	u32 XtVmmRuntimePhysBase;
-	u32 XtVmmRuntimeVirtBase;
-	u32 XtVmmRuntimeSize;
-	u32 XtVmmE820Buffer;
-	u32 XtVmmE820NumEntries;
-	u32 XtVmmMPCpuinfoBuffer;
-	u32 XtVmmMPCpuinfoNumEntries;
-	u32 XtVmmTSSBase;
-	u32 RtmSVMDevBitmapBase;
-	u32 RtmVMXVTdPdpt;
-	u32 RtmVMXVTdPdts;
-	u32 RtmVMXVTdPts;
-	u32 RtmVMXVTdRET;
-	u32 RtmVMXVTdCET;
-    uart_config_t uart_config;	        /* runtime options parsed in init and passed forward */
-	u32 isEarlyInit;					//1 for an "early init" else 0 (late-init)
-} __attribute__((packed)) RPB, *PRPB;
 
 #include <_libemhf.h>	//EMHF application interface
 
