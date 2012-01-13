@@ -43,6 +43,7 @@
 extern u32 slpb_buffer[];
 RPB * rpb;
 u32 sl_baseaddr=0;	
+
 extern void XtLdrTransferControlToRtm(u32 gdtbase, u32 idtbase,
 	u32 entrypoint, u32 stacktop)__attribute__((cdecl)); 
 
@@ -63,12 +64,6 @@ struct _sl_parameter_block slpb __attribute__(( section(".sl_untrusted_params") 
 //u8 g_sl_protected_dmabuffer[PAGE_SIZE_4K] __attribute__(( section(".protdmabuffer") ));
 extern u32 g_sl_protected_dmabuffer[];
 
-//we only have confidence in the runtime's expected value here in the SL
-INTEGRITY_MEASUREMENT_VALUES g_sl_gold /* __attribute__(( section("") )) */ = {
-    .sha_runtime = ___RUNTIME_INTEGRITY_HASH___,
-    .sha_slabove64K = BAD_INTEGRITY_HASH,
-    .sha_slbelow64K = BAD_INTEGRITY_HASH
-};
 
 #define SERIAL_BASE 0x3f8
 void raw_serial_init(void){
@@ -90,43 +85,6 @@ void raw_serial_init(void){
 
 
 
-/* XXX TODO Read PCR values and sanity-check that DRTM was successful
- * (i.e., measurements match expectations), and integrity-check the
- * runtime. */
-/* Note: calling this *before* paging is enabled is important. */
-bool sl_integrity_check(u8* runtime_base_addr, size_t runtime_len) {
-    int ret;
-    u32 locality = EMHF_TPM_LOCALITY_PREF; /* target.h */
-    tpm_pcr_value_t pcr17, pcr18;    
-
-    print_hex("SL: Golden Runtime SHA-1: ", g_sl_gold.sha_runtime, SHA_DIGEST_LENGTH);
-
-    printf("\nSL: CR0 %08lx, CD bit %ld", read_cr0(), read_cr0() & CR0_CD);
-    hashandprint("SL: Computed Runtime SHA-1: ",
-                 runtime_base_addr, runtime_len);    
-
-    if(hwtpm_open_locality(locality)) {
-        printf("SL: FAILED to open TPM locality %d\n", locality);
-        return false;
-    }
-    
-    if((ret = tpm_pcr_read(locality, 17, &pcr17)) != TPM_SUCCESS) {
-        printf("TPM: ERROR: tpm_pcr_read FAILED with error code 0x%08x\n", ret);
-        return false;
-    }
-    print_hex("PCR-17: ", &pcr17, sizeof(pcr17));
-
-    if((ret = tpm_pcr_read(locality, 18, &pcr18)) != TPM_SUCCESS) {
-        printf("TPM: ERROR: tpm_pcr_read FAILED with error code 0x%08x\n", ret);
-        return false;
-    }
-    print_hex("PCR-18: ", &pcr18, sizeof(pcr18));    
-
-    /* free TPM so that OS driver works as expected */
-    deactivate_all_localities();
-    
-    return true;    
-}
 
 //we get here from slheader.S
 // rdtsc_* are valid only if PERF_CRIT is not defined.  slheader.S

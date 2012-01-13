@@ -40,6 +40,14 @@
  */
  
 #include <emhf.h>
+#include <sha1.h>
+
+//we only have confidence in the runtime's expected value here in the SL
+static INTEGRITY_MEASUREMENT_VALUES g_sl_gold /* __attribute__(( section("") )) */ = {
+    .sha_runtime = ___RUNTIME_INTEGRITY_HASH___,
+    .sha_slabove64K = BAD_INTEGRITY_HASH,
+    .sha_slbelow64K = BAD_INTEGRITY_HASH
+};
 
 
 /* hypervisor (runtime) virtual address to sl-address. */
@@ -133,3 +141,42 @@ void runtime_setup_paging(RPB *rpb, u32 runtime_spa, u32 runtime_sva, u32 totals
   write_cr0(l_cr0);
   printf("\nSL: paging enabled successfully.");
 }
+
+/* XXX TODO Read PCR values and sanity-check that DRTM was successful
+ * (i.e., measurements match expectations), and integrity-check the
+ * runtime. */
+/* Note: calling this *before* paging is enabled is important. */
+bool sl_integrity_check(u8* runtime_base_addr, size_t runtime_len) {
+    int ret;
+    u32 locality = EMHF_TPM_LOCALITY_PREF; /* target.h */
+    tpm_pcr_value_t pcr17, pcr18;    
+
+    print_hex("SL: Golden Runtime SHA-1: ", g_sl_gold.sha_runtime, SHA_DIGEST_LENGTH);
+
+    printf("\nSL: CR0 %08lx, CD bit %ld", read_cr0(), read_cr0() & CR0_CD);
+    hashandprint("SL: Computed Runtime SHA-1: ",
+                 runtime_base_addr, runtime_len);    
+
+    if(hwtpm_open_locality(locality)) {
+        printf("SL: FAILED to open TPM locality %d\n", locality);
+        return false;
+    }
+    
+    if((ret = tpm_pcr_read(locality, 17, &pcr17)) != TPM_SUCCESS) {
+        printf("TPM: ERROR: tpm_pcr_read FAILED with error code 0x%08x\n", ret);
+        return false;
+    }
+    print_hex("PCR-17: ", &pcr17, sizeof(pcr17));
+
+    if((ret = tpm_pcr_read(locality, 18, &pcr18)) != TPM_SUCCESS) {
+        printf("TPM: ERROR: tpm_pcr_read FAILED with error code 0x%08x\n", ret);
+        return false;
+    }
+    print_hex("PCR-18: ", &pcr18, sizeof(pcr18));    
+
+    /* free TPM so that OS driver works as expected */
+    deactivate_all_localities();
+    
+    return true;    
+}
+
