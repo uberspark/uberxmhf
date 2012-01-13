@@ -245,14 +245,6 @@ void emhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 	}
 	printf("\nSL: setup runtime TSS.");	
 
-
-	//patch entry point in XtLdrTransferControltoRtm
-	{
-			extern u32 sl_runtime_entrypoint_patch[];
-			u32 *patchloc = (u32 *)((u32)sl_runtime_entrypoint_patch + 1);
-			*patchloc = rpb->XtVmmEntryPoint;
-	}
-
 	//setup paging structures for runtime 
 	ptba=emhf_sl_arch_setup_runtime_paging(rpb, rpb->XtVmmRuntimePhysBase, __TARGET_BASE, PAGE_ALIGN_UP2M(rpb->XtVmmRuntimeSize));
 	printf("\nSL: setup runtime paging structures.");        

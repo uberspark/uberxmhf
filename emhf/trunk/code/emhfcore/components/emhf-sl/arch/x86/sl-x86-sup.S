@@ -51,9 +51,11 @@ emhf_sl_arch_invoke_runtime_entrypoint:
 	movl	$(0x80000015), %eax	 // ET, EM, PE, PG
 	movl	%eax, %cr0			 //turn on paging
 
+	//grab gdtbase and idtbase parameters
 	movl 	0x4(%esp), %esi
 	movl 	0x8(%esp), %edi
 
+	//load runtime gdt and idt
 	subl  $0x8, %esp
 	
 	movw  %fs:(%esi), %ax
@@ -72,30 +74,27 @@ emhf_sl_arch_invoke_runtime_entrypoint:
 
 	addl  $0x8, %esp
 	
-	
-	
+	//grab entrypoint and topofstack parameters
 	movl 	0xC(%esp), %edi
-	movl  0x10(%esp), %esi
+	movl  	0x10(%esp), %esi
 
+	//load runtime segment selectors
 	movw	$(__DS), %ax
 	movw	%ax, %ds	
 	movw	%ax, %es
 	movw	%ax, %fs
 	movw	%ax, %gs
 	
+	//initialize runtime stack
 	movw  %ax, %ss
-  movl  %esi,%esp
+	movl  %esi,%esp
 
+	//clear flags
 	pushl	$0
 	popf
 	
+	//far jump to runtime entry point
+	pushl	$(__CS)
+	pushl	%edi
+	lret
 	
-//we will patch the entrypoint to the hypervisor runtime before
-//transfering control. not the most elegant approach, but since our
-//sl CS is segmented, the flat runtime CS can only be reloaded with
-//a far selector:offset jump and x86 doesnt have an indirect variant
-//of this instruction 
-.global	sl_runtime_entrypoint_patch
-	sl_runtime_entrypoint_patch:	
-	jmp $(__CS), $(0x00000000)
-
