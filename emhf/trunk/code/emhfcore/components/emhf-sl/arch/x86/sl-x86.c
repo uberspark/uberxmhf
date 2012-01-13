@@ -248,8 +248,12 @@ void early_dmaprot_init(u32 runtime_size)
 	
 }
 
-void sl_xfer_control_to_runtime(u32 gdtbase, u32 idtbase,
+void sl_xfer_control_to_runtime(RPB *rpb, u32 gdtbase, u32 idtbase,
 	u32 entrypoint, u32 stacktop){
+	//setup paging for runtime 
+	runtime_setup_paging(rpb, rpb->XtVmmRuntimePhysBase, __TARGET_BASE, PAGE_ALIGN_UP2M(rpb->XtVmmRuntimeSize));
+	printf("\nSL: setup runtime paging.");        
+
 	
 	//transfer control to runtime and never return
 	XtLdrTransferControlToRtm(gdtbase, idtbase, 

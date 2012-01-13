@@ -55,11 +55,10 @@ extern u32 sl_baseaddr;
 // arch. interfaces (GENERIC)
 void* hva2sla(uintptr_t x);
 u64 sla2spa(void* x);
-void runtime_setup_paging(RPB * rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsize);
 bool sl_integrity_check(u8* runtime_base_addr, size_t runtime_len);
 void sanitize_post_launch(void);
 void early_dmaprot_init(u32 runtime_size);
-void sl_xfer_control_to_runtime(u32 gdtbase, u32 idtbase,
+void sl_xfer_control_to_runtime(RPB * rpb, u32 gdtbase, u32 idtbase,
 	u32 entrypoint, u32 stacktop);
 
 //----------------------------------------------------------------------
@@ -69,6 +68,7 @@ void sl_xfer_control_to_runtime(u32 gdtbase, u32 idtbase,
 // used by the x86 AMD arch. backend
 extern u32 g_sl_protected_dmabuffer[];
 
+void runtime_setup_paging(RPB * rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsize);
 void XtLdrTransferControlToRtm(u32 gdtbase, u32 idtbase,
 	u32 entrypoint, u32 stacktop)__attribute__((cdecl)); 
 
