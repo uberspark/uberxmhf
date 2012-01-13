@@ -137,7 +137,7 @@ void emhf_memprot_arch_x86svm_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
 //get protection for a given physical memory address
 u32 emhf_memprot_arch_x86svm_getprot(VCPU *vcpu, u64 gpa){
   u32 pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
-  u64 *pt = (u64 *)(u32)emhf_memprot_get_h_cr3(vcpu); //TODO: push into vmx sub arch. backend
+  u64 *pt = (u64 *)(u32)emhf_memprot_get_h_cr3(vcpu); //TODO: push into svm sub arch. backend
   u64 entry = pt[pfn];
   u32 prottype;
   
