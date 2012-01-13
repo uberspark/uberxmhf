@@ -41,6 +41,14 @@
 #ifndef __EMHF_H_
 #define __EMHF_H_
 
+/* SHA-1 hash of runtime should be defined during build process.
+ * However, if it's not, don't fail.  Just proceed with all zeros.
+ * XXX TODO Disable proceeding with insecure hash value. */
+#ifndef ___RUNTIME_INTEGRITY_HASH___
+#define ___RUNTIME_INTEGRITY_HASH___ BAD_INTEGRITY_HASH
+#endif /*  ___RUNTIME_INTEGRITY_HASH___ */
+
+
 //---includes for the target----------------------------------------------------
 #ifndef __ASSEMBLY__
 #include <stdint.h>

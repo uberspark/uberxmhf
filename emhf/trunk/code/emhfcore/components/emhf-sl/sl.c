@@ -51,16 +51,6 @@ struct _sl_parameter_block slpb __attribute__(( section(".sl_untrusted_params") 
 };
 
 
-/* SHA-1 hash of runtime should be defined during build process.
- * However, if it's not, don't fail.  Just proceed with all zeros.
- * XXX TODO Disable proceeding with insecure hash value. */
-#ifndef ___RUNTIME_INTEGRITY_HASH___
-#define ___RUNTIME_INTEGRITY_HASH___ BAD_INTEGRITY_HASH
-#endif /*  ___RUNTIME_INTEGRITY_HASH___ */
-
-
-
-
 #define SERIAL_BASE 0x3f8
 void raw_serial_init(void){
     // enable DLAB and set baudrate 115200
