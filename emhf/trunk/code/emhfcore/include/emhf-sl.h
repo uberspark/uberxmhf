@@ -58,9 +58,16 @@ u64 sla2spa(void* x);
 void runtime_setup_paging(RPB * rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsize);
 bool sl_integrity_check(u8* runtime_base_addr, size_t runtime_len);
 void sanitize_post_launch(void);
+void early_dmaprot_init(u32 runtime_size);
 
 //----------------------------------------------------------------------
 // arch. interfaces (SUBARCH SPECIFIC)
+
+//protected DMA-protection buffer for early DMA protection (currently
+// used by the x86 AMD arch. backend
+extern u32 g_sl_protected_dmabuffer[];
+
+
 
 
 #endif	//__ASSEMBLY__

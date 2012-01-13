@@ -60,9 +60,6 @@ struct _sl_parameter_block slpb __attribute__(( section(".sl_untrusted_params") 
 	.magic = SL_PARAMETER_BLOCK_MAGIC,
 };
 
-//protected DMA-protection buffer placed in seperate section ".protdmabuffer"
-//u8 g_sl_protected_dmabuffer[PAGE_SIZE_4K] __attribute__(( section(".protdmabuffer") ));
-extern u32 g_sl_protected_dmabuffer[];
 
 
 #define SERIAL_BASE 0x3f8
@@ -198,49 +195,7 @@ void slmain(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
     
 	//setup DMA protection on runtime (secure loader is already DMA protected)
-	{
-
-#if defined(__DMAPROT__)	
-		{
-			u64 protectedbuffer_paddr;
-			u32 protectedbuffer_vaddr;
-			u32 protectedbuffer_size;
-			u64 memregionbase_paddr;
-			u32 memregion_size;
-			u32 cpu_vendor = get_cpu_vendor_or_die();
-			
-			ASSERT(cpu_vendor == CPU_VENDOR_AMD || cpu_vendor == CPU_VENDOR_INTEL);
-			
-			if(cpu_vendor == CPU_VENDOR_AMD){
-				protectedbuffer_paddr = sl_baseaddr + (u32)&g_sl_protected_dmabuffer;
-				protectedbuffer_vaddr = (u32)&g_sl_protected_dmabuffer;
-				protectedbuffer_size = (2 * PAGE_SIZE_4K);
-			}else{	//CPU_VENDOR_INTEL
-				protectedbuffer_paddr = sl_baseaddr + 0x100000;
-				protectedbuffer_vaddr = 0x100000;
-				protectedbuffer_size = (3 * PAGE_SIZE_4K);
-			}
-
-			memregionbase_paddr = sl_baseaddr;
-			memregion_size = (slpb.runtime_size + PAGE_SIZE_2M);
-
-			printf("\nSL: Initializing DMA protections...");
-			
-			if(!emhf_dmaprot_earlyinitialize(protectedbuffer_paddr,
-				protectedbuffer_vaddr, protectedbuffer_size,
-				memregionbase_paddr, memregion_size)){
-				printf("\nSL: Fatal, could not initialize DMA protections. Halting!");
-				HALT();	
-			}
-			
-			printf("\nSL: Initialized DMA protections successfully");
-		}
-		
-		
-#endif //__DMAPROT__
-	
-	}
-
+	early_dmaprot_init(slpb.runtime_size);
 		
 	//tell runtime if we started "early" or "late"
 	rpb->isEarlyInit = slpb.isEarlyInit;
