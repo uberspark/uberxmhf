@@ -40,7 +40,6 @@
 #include <emhf.h> 
 #include <sha1.h>
 
-extern u32 slpb_buffer[];
 RPB * rpb;
 u32 sl_baseaddr=0;	
 
