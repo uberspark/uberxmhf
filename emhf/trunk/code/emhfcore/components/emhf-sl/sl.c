@@ -51,7 +51,7 @@ struct _sl_parameter_block slpb __attribute__(( section(".sl_untrusted_params") 
 };
 
 
-#define SERIAL_BASE 0x3f8
+/*#define SERIAL_BASE 0x3f8
 void raw_serial_init(void){
     // enable DLAB and set baudrate 115200
     outb(SERIAL_BASE+0x3, 0x80);
@@ -67,9 +67,7 @@ void raw_serial_init(void){
     outb(SERIAL_BASE+0x2, 0x01);
     // set RTS,DTR
     outb(SERIAL_BASE+0x4, 0x03);
-}
-
-
+}*/
 
 
 //we get here from slheader.S
