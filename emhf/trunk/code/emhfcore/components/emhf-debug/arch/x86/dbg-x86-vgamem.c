@@ -39,16 +39,11 @@
 #define ROWS     25
 #define ATTR     7
 
-char *vidmem=(char *)0xB8000;
-unsigned int vid_x, vid_y;
-
-void vgamem_clrscr(void){
-  memset((char *)vidmem, 0, COLS * ROWS * 2);
-  vid_x = vid_y = 0;
-}
+static char *vidmem=(char *)0xB8000;
+static unsigned int vid_x, vid_y;
 
 
-void vgamem_newln(void){
+static void vgamem_newln(void){
     vid_x = 0;
     vid_y++;
 
@@ -59,7 +54,7 @@ void vgamem_newln(void){
     }
 }
 
-void vgamem_putchar(int c)
+static void vgamem_putchar(int c)
 {
     if ( c == '\n' )
         vgamem_newln();
@@ -71,7 +66,7 @@ void vgamem_putchar(int c)
     }
 }
 
-void putstr(const char *str)
+void emhf_debug_arch_putstr(const char *str)
 {
     int c;
 
@@ -80,3 +75,7 @@ void putstr(const char *str)
 }
 
 
+void emhf_debug_arch_init(void){
+  memset((char *)vidmem, 0, COLS * ROWS * 2);
+  vid_x = vid_y = 0;
+}

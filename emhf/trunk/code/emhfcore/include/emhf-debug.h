@@ -83,12 +83,13 @@ extern uint8_t g_log_level;
 
 //----------------------------------------------------------------------
 // arch. interfaces (GENERIC)
-void init_uart(void);
-void putstr(const char *str);
+void emhf_debug_arch_init(void);
+void emhf_debug_arch_putstr(const char *str);
 
 
 //----------------------------------------------------------------------
 // arch. interfaces (SUBARCH SPECIFIC)
+extern uart_config_t g_uart_config;
 
 
 

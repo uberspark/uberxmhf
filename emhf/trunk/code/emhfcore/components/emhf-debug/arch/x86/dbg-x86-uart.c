@@ -111,7 +111,7 @@ static void serial_putc(u32 x)
 #endif
 
 /* print a newline-containing null-terminated string to the serial port */
-void putstr(const char *str)
+void emhf_debug_arch_putstr(const char *str)
 {
   u8 tmp;
 
@@ -126,8 +126,7 @@ void putstr(const char *str)
   return;
 }
 
-void init_uart(void)
-{
+void emhf_debug_arch_init(void){
   u16 divisor;
   u8 x;
 

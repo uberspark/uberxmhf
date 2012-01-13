@@ -348,7 +348,6 @@ typedef struct {
     u32 clock_hz;
     u32 port;
 } __attribute__((packed)) uart_config_t;
-extern uart_config_t g_uart_config;
 
 extern void comc_init(void);
 extern void comc_puts(const char*, unsigned int);
