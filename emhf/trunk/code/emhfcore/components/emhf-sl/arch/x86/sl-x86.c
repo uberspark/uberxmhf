@@ -248,15 +248,45 @@ void early_dmaprot_init(u32 runtime_size)
 	
 }
 
-void sl_xfer_control_to_runtime(RPB *rpb, u32 gdtbase, u32 idtbase,
-	u32 entrypoint, u32 stacktop){
+void sl_xfer_control_to_runtime(RPB *rpb){
+	//setup runtime TSS
+	{
+			TSSENTRY *t;
+	  	u32 tss_base=(u32)rpb->XtVmmTSSBase;
+	  	u32 gdt_base= *(u32 *)(hva2sla(rpb->XtVmmGdt + 2));
+	
+			//fix TSS descriptor, 18h
+			t= (TSSENTRY *)((u32)gdt_base + __TRSEL );
+		  t->attributes1= 0x89;
+		  t->limit16_19attributes2= 0x10;
+		  t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
+		  t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
+		  t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);      
+		  t->limit0_15=0x67;
+	}
+	printf("\nSL: setup runtime TSS.");	
+
+
+	//obtain runtime gdt, idt, entrypoint and stacktop values and patch
+	//entry point in XtLdrTransferControltoRtm
+	{
+			extern u32 sl_runtime_entrypoint_patch[];
+			u32 *patchloc = (u32 *)((u32)sl_runtime_entrypoint_patch + 1);
+			
+			printf("\nSL: runtime entry values:");
+			printf("\n	gdt=0x%08x, idt=0x%08x", rpb->XtVmmGdt, rpb->XtVmmIdt);
+			printf("\n	entrypoint=0x%08x, topofstack=0x%08x", rpb->XtVmmEntryPoint, (rpb->XtVmmStackBase+rpb->XtVmmStackSize));
+			*patchloc = rpb->XtVmmEntryPoint;
+	}
+
+
 	//setup paging for runtime 
 	runtime_setup_paging(rpb, rpb->XtVmmRuntimePhysBase, __TARGET_BASE, PAGE_ALIGN_UP2M(rpb->XtVmmRuntimeSize));
 	printf("\nSL: setup runtime paging.");        
 
 	
 	//transfer control to runtime and never return
-	XtLdrTransferControlToRtm(gdtbase, idtbase, 
-				entrypoint, stacktop);
+	XtLdrTransferControlToRtm(rpb->XtVmmGdt, rpb->XtVmmIdt, 
+				rpb->XtVmmEntryPoint, (rpb->XtVmmStackBase+rpb->XtVmmStackSize));
 	
 }

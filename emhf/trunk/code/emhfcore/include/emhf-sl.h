@@ -58,8 +58,7 @@ u64 sla2spa(void* x);
 bool sl_integrity_check(u8* runtime_base_addr, size_t runtime_len);
 void sanitize_post_launch(void);
 void early_dmaprot_init(u32 runtime_size);
-void sl_xfer_control_to_runtime(RPB * rpb, u32 gdtbase, u32 idtbase,
-	u32 entrypoint, u32 stacktop);
+void sl_xfer_control_to_runtime(RPB * rpb);
 
 //----------------------------------------------------------------------
 // arch. interfaces (SUBARCH SPECIFIC)

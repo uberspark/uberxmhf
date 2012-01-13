@@ -193,45 +193,11 @@ void slmain(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		//printf("\nrpb->uart_config.data_bits, parity, stop_bits, fifo = %x %x %x %x", 
 			//	rpb->uart_config.data_bits, rpb->uart_config.parity, rpb->uart_config.stop_bits, rpb->uart_config.fifo);*/
 
-	//setup runtime TSS
-	{
-			TSSENTRY *t;
-	  	u32 tss_base=(u32)rpb->XtVmmTSSBase;
-	  	u32 gdt_base= *(u32 *)(hva2sla(rpb->XtVmmGdt + 2));
-	
-			//fix TSS descriptor, 18h
-			t= (TSSENTRY *)((u32)gdt_base + __TRSEL );
-		  t->attributes1= 0x89;
-		  t->limit16_19attributes2= 0x10;
-		  t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
-		  t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
-		  t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);      
-		  t->limit0_15=0x67;
-	}
-	printf("\nSL: setup runtime TSS.");	
-
-
-	//obtain runtime gdt, idt, entrypoint and stacktop values and patch
-	//entry point in XtLdrTransferControltoRtm
-	{
-			extern u32 sl_runtime_entrypoint_patch[];
-			u32 *patchloc = (u32 *)((u32)sl_runtime_entrypoint_patch + 1);
-			
-			runtime_gdt = rpb->XtVmmGdt;
-			runtime_idt = rpb->XtVmmIdt;
-			runtime_entrypoint = rpb->XtVmmEntryPoint;
-			runtime_topofstack = rpb->XtVmmStackBase+rpb->XtVmmStackSize; 
-			printf("\nSL: runtime entry values:");
-			printf("\n	gdt=0x%08x, idt=0x%08x", runtime_gdt, runtime_idt);
-			printf("\n	entrypoint=0x%08x, topofstack=0x%08x", runtime_entrypoint, runtime_topofstack);
-			*patchloc = runtime_entrypoint;
-	}
 		
 		
 
 	//transfer control to runtime
-	sl_xfer_control_to_runtime(rpb, runtime_gdt, runtime_idt, 
-				runtime_entrypoint, runtime_topofstack);
+	sl_xfer_control_to_runtime(rpb);
 
 	//we should never get here
 	printf("\nSL: Fatal, should never be here!");
