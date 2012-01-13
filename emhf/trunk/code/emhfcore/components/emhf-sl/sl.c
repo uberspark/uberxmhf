@@ -265,8 +265,8 @@ void slmain(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	runtime_setup_paging(rpb, runtime_physical_base, __TARGET_BASE, runtime_size_2Maligned);
 	printf("\nSL: setup runtime paging.");        
 
-    //transfer control to runtime
-	XtLdrTransferControlToRtm(runtime_gdt, runtime_idt, 
+	//transfer control to runtime
+	sl_xfer_control_to_runtime(runtime_gdt, runtime_idt, 
 				runtime_entrypoint, runtime_topofstack);
 
 	//we should never get here

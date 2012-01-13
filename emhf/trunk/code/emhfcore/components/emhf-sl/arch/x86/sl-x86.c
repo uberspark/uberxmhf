@@ -248,3 +248,11 @@ void early_dmaprot_init(u32 runtime_size)
 	
 }
 
+void sl_xfer_control_to_runtime(u32 gdtbase, u32 idtbase,
+	u32 entrypoint, u32 stacktop){
+	
+	//transfer control to runtime and never return
+	XtLdrTransferControlToRtm(gdtbase, idtbase, 
+				entrypoint, stacktop);
+	
+}
