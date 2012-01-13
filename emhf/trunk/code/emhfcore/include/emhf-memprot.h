@@ -73,14 +73,6 @@ u64 * emhf_memprot_get_lvl4_pagemap_address(VCPU *vcpu);
 //get default root page map address
 u64 * emhf_memprot_get_default_root_pagemap_address(VCPU *vcpu);
 
-// get or set EPTP (only valid on Intel)
-u64 emhf_memprot_get_EPTP(VCPU *vcpu);
-void emhf_memprot_set_EPTP(VCPU *vcpu, u64 eptp);
-
-// get or set host cr3 (only valid on AMD)
-u64 emhf_memprot_get_h_cr3(VCPU *vcpu);
-void emhf_memprot_set_h_cr3(VCPU *vcpu, u64 hcr3);
-	
 //flush hardware page table mappings (TLB) 
 void emhf_memprot_flushmappings(VCPU *vcpu);
 
@@ -94,6 +86,24 @@ u32 emhf_memprot_getprot(VCPU *vcpu, u64 gpa);
 //----------------------------------------------------------------------
 // ARCH. interfaces
 //----------------------------------------------------------------------
+
+//initialize memory protection for a core
+void emhf_memprot_arch_initialize(VCPU *vcpu);
+
+// get level-1 page map address
+u64 * emhf_memprot_arch_get_lvl1_pagemap_address(VCPU *vcpu);
+
+//get level-2 page map address
+u64 * emhf_memprot_arch_get_lvl2_pagemap_address(VCPU *vcpu);
+
+//get level-3 page map address
+u64 * emhf_memprot_arch_get_lvl3_pagemap_address(VCPU *vcpu);
+
+//get level-4 page map address
+u64 * emhf_memprot_arch_get_lvl4_pagemap_address(VCPU *vcpu);
+
+//get default root page map address
+u64 * emhf_memprot_arch_get_default_root_pagemap_address(VCPU *vcpu);
 
 //flush hardware page table mappings (TLB) 
 void emhf_memprot_arch_flushmappings(VCPU *vcpu);
@@ -125,6 +135,13 @@ void emhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype); //Inte
 u32 emhf_memprot_arch_x86svm_getprot(VCPU *vcpu, u64 gpa); //AMD SVM
 u32 emhf_memprot_arch_x86vmx_getprot(VCPU *vcpu, u64 gpa); //Intel VMX
 
+// get or set EPTP (only valid on Intel)
+u64 emhf_memprot_get_EPTP(VCPU *vcpu);
+void emhf_memprot_set_EPTP(VCPU *vcpu, u64 eptp);
+
+// get or set host cr3 (only valid on AMD)
+u64 emhf_memprot_get_h_cr3(VCPU *vcpu);
+void emhf_memprot_set_h_cr3(VCPU *vcpu, u64 hcr3);
 
 #endif	//__ASSEMBLY__
 
