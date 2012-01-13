@@ -157,7 +157,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 	if( (vmcb->cr0 & CR0_PE) && (vmcb->cr0 & CR0_PG) &&
 			(vmcb->rflags & EFLAGS_VM) ){
 		u8 *bdamemoryphysical;
-		bdamemoryphysical = (u8 *)_svm_lib_guestpgtbl_walk(vcpu, (u32)bdamemory);
+		bdamemoryphysical = (u8 *)emhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)bdamemory);
 		ASSERT( (u32)bdamemoryphysical != 0xFFFFFFFFUL );
 		printf("\nINT15 (E820): V86 mode, bdamemory translated from %08x to %08x",
 			(u32)bdamemory, (u32)bdamemoryphysical);
@@ -204,7 +204,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 			//if V86 mode translate the virtual address to physical address
 			if( (vmcb->cr0 & CR0_PE) && (vmcb->cr0 & CR0_PG) &&
 				(vmcb->rflags & EFLAGS_VM) ){
-				u8 *gueststackregionphysical = (u8 *)_svm_lib_guestpgtbl_walk(vcpu, (u32)gueststackregion);
+				u8 *gueststackregionphysical = (u8 *)emhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)gueststackregion);
 				ASSERT( (u32)gueststackregionphysical != 0xFFFFFFFFUL );
 				printf("\nINT15 (E820): V86 mode, gueststackregion translated from %08x to %08x",
 					(u32)gueststackregion, (u32)gueststackregionphysical);
@@ -309,7 +309,7 @@ u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r){
         u8 *code;
         u32 paddr;
         int i;
-        paddr= (u32)_svm_lib_guestpgtbl_walk(vcpu, (u32)vmcb->rip); 
+        paddr= (u32)emhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)vmcb->rip); 
         code = (u8 *)paddr; 
         printf("\nCode physical address=0x%08x\n", (u32)code);
         for(i=0; i < 16; i++)

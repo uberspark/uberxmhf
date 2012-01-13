@@ -82,7 +82,7 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 	if( (vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG) &&
 			(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM) ){
 		u8 *bdamemoryphysical;
-		bdamemoryphysical = (u8 *)_vmx_lib_guestpgtbl_walk(vcpu, (u32)bdamemory);
+		bdamemoryphysical = (u8 *)emhf_smpguest_arch_x86vmx_walk_pagetables(vcpu, (u32)bdamemory);
 		ASSERT( (u32)bdamemoryphysical != 0xFFFFFFFFUL );
 		printf("\nINT15 (E820): V86 mode, bdamemory translated from %08x to %08x",
 			(u32)bdamemory, (u32)bdamemoryphysical);
@@ -129,7 +129,7 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 			//if V86 mode translate the virtual address to physical address
 			if( (vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG) &&
 					(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM) ){
-				u8 *gueststackregionphysical = (u8 *)_vmx_lib_guestpgtbl_walk(vcpu, (u32)gueststackregion);
+				u8 *gueststackregionphysical = (u8 *)emhf_smpguest_arch_x86vmx_walk_pagetables(vcpu, (u32)gueststackregion);
 				ASSERT( (u32)gueststackregionphysical != 0xFFFFFFFFUL );
 				printf("\nINT15 (E820): V86 mode, gueststackregion translated from %08x to %08x",
 					(u32)gueststackregion, (u32)gueststackregionphysical);
