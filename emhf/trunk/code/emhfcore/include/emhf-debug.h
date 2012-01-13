@@ -74,6 +74,8 @@ extern uint8_t g_log_level;
 
 //----------------------------------------------------------------------
 //exported FUNCTIONS 
+void emhf_debug_init(char *params);
+
 #ifdef __DEBUG_SERIAL__
 	void printf(const char *format, ...)
 	  __attribute__ ((format (printf, 1, 2)));
@@ -90,7 +92,7 @@ extern uint8_t g_log_level;
 
 //----------------------------------------------------------------------
 // arch. interfaces (GENERIC)
-void emhf_debug_arch_init(void);
+void emhf_debug_arch_init(char *params);
 void emhf_debug_arch_putstr(const char *str);
 
 

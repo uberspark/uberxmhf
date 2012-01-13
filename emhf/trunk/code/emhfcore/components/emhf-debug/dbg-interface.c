@@ -492,3 +492,7 @@ void print_hex(const char *prefix, const void *prtptr, size_t size)
 
 #endif
 
+void emhf_debug_init(char *params){
+	emhf_debug_arch_init(params);
+}
+

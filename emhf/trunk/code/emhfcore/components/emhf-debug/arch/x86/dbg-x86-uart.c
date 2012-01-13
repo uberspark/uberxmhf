@@ -126,9 +126,12 @@ void emhf_debug_arch_putstr(const char *str)
   return;
 }
 
-void emhf_debug_arch_init(void){
+void emhf_debug_arch_init(char *params){
   u16 divisor;
   u8 x;
+
+  //store uart parameters passed to us
+  memcpy((void *)&g_uart_config, params, sizeof(uart_config_t));
 
   /* write divisor latch to set baud rate */
   divisor = g_uart_config.clock_hz / (g_uart_config.baud * 16);

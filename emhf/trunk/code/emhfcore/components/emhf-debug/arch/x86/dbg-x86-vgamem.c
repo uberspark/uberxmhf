@@ -75,7 +75,8 @@ void emhf_debug_arch_putstr(const char *str)
 }
 
 
-void emhf_debug_arch_init(void){
+void emhf_debug_arch_init(char *params){
+  (void)params;	//we don't use params for the VGA backend currently
   memset((char *)vidmem, 0, COLS * ROWS * 2);
   vid_x = vid_y = 0;
 }

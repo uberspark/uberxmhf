@@ -766,13 +766,14 @@ void cstartup(multiboot_info_t *mbi){
     }
 
     //initialize debugging early on
-#ifdef __DEBUG_SERIAL__        
+/*#ifdef __DEBUG_SERIAL__        
     init_uart();
 #endif
 
 #ifdef __DEBUG_VGA__
     vgamem_clrscr();
-#endif
+#endif*/
+	emhf_debug_init((char *)&g_uart_config);
 
     mod_array = (module_t*)mbi->mods_addr;
     mods_count = mbi->mods_count;
