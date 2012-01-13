@@ -41,16 +41,11 @@
 
 #include <emhf.h> 
 
-#define EXPORT_SYMBOL(var)
-
 uint8_t g_log_targets=LOG_TARGET_NONE;
 uint8_t g_log_level=LOG_LEVEL_NONE;
 
-static int skip_atoi(const char **s);
-static char * number(char * buf, char * end, unsigned long long num, int base, int size, int precision, int type);
-int vsnprintf(char *buf, size_t size, const char *fmt, va_list args);
-
-char printk_prefix[16] = "";
+static volatile u32 printf_lock=1;
+static char printk_prefix[16] = "";
 
 static int skip_atoi(const char **s)
 {
@@ -61,13 +56,6 @@ static int skip_atoi(const char **s)
     return i;
 }
 
-#define ZEROPAD 1               /* pad with zero */
-#define SIGN    2               /* unsigned/signed long */
-#define PLUS    4               /* show plus */
-#define SPACE   8               /* space if plus */
-#define LEFT    16              /* left justified */
-#define SPECIAL 32              /* 0x */
-#define LARGE   64              /* use 'ABCDEF' instead of 'abcdef' */
 
 static char * number(char * buf, char * end, unsigned long long num, int base, int size, int precision, int type)
 {
@@ -190,7 +178,7 @@ static char * number(char * buf, char * end, unsigned long long num, int base, i
  * Call this function if you are already dealing with a va_list.
  * You probably want snprintf instead.
  */
-int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
+static int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 {
     int len;
     unsigned long long num;
@@ -432,12 +420,6 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
     return str-buf;
 }
 
-//extern int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
-//    __attribute__ ((format (printf, 3, 0)));
-
-//#define __putstr putstr
-
-volatile u32 printf_lock=1;
 
 #ifdef __DEBUG_SERIAL__
 static void vprintf(const char *fmt, va_list args)
@@ -456,9 +438,9 @@ static void vprintf(const char *fmt, va_list args)
     {
         *q = '\0';
         if ( start_of_line )
-	  putstr(printk_prefix);
-	putstr(p);
-        putstr("\n");
+	  emhf_debug_arch_putstr(printk_prefix);
+	emhf_debug_arch_putstr(p);
+        emhf_debug_arch_putstr("\n");
         start_of_line = 1;
         p = q + 1;
     }
@@ -466,8 +448,8 @@ static void vprintf(const char *fmt, va_list args)
     if ( *p != '\0' )
     {
         if ( start_of_line )
-	  putstr(printk_prefix);
-        putstr(p);
+	  emhf_debug_arch_putstr(printk_prefix);
+        emhf_debug_arch_putstr(p);
         start_of_line = 0;
     }
 
@@ -509,3 +491,4 @@ void print_hex(const char *prefix, const void *prtptr, size_t size)
 }
 
 #endif
+
