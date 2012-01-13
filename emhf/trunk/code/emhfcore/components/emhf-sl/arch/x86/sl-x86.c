@@ -115,33 +115,6 @@ u32 runtime_setup_paging(RPB *rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsi
     xpdt[i] = pae_make_pde_big(spa, flags);
   }
 
-/*  printf("\nSL: preparing to turn on paging..");
-  
-  //setup cr4
-  l_cr4 = CR4_PSE | CR4_PAE;
-  write_cr4(l_cr4);
-  printf("\nSL: setup CR4.");
-  
-  //setup cr0
-	l_cr0 = 0x00000015; // ET, EM, PE
-  write_cr0(l_cr0);
-  printf("\nSL: setup CR0.");
-
-  //set up cr3
-  l_cr3 = sla2spa(xpdpt);
-  printf("\nSL: CR3=0x%08x", l_cr3);
-
-  write_cr3(l_cr3);
-  printf("\nSL: setup CR3.");
-
-  //disable caching 
-  //l_cr0 |= (u32)CR0_CD;
-  
-  //enable paging
-  l_cr0 |= (u32)0x80000000;
-  write_cr0(l_cr0);
-  printf("\nSL: paging enabled successfully.");*/
-  
   return sla2spa(xpdpt);
 }
 
@@ -273,36 +246,23 @@ void sl_xfer_control_to_runtime(RPB *rpb){
 	printf("\nSL: setup runtime TSS.");	
 
 
-	//obtain runtime gdt, idt, entrypoint and stacktop values and patch
-	//entry point in XtLdrTransferControltoRtm
+	//patch entry point in XtLdrTransferControltoRtm
 	{
 			extern u32 sl_runtime_entrypoint_patch[];
 			u32 *patchloc = (u32 *)((u32)sl_runtime_entrypoint_patch + 1);
-			
-			printf("\nSL: runtime entry values:");
-			printf("\n	gdt=0x%08x, idt=0x%08x", rpb->XtVmmGdt, rpb->XtVmmIdt);
-			printf("\n	entrypoint=0x%08x, topofstack=0x%08x", rpb->XtVmmEntryPoint, (rpb->XtVmmStackBase+rpb->XtVmmStackSize));
 			*patchloc = rpb->XtVmmEntryPoint;
 	}
 
-	
-	//setup paging for runtime 
+	//setup paging structures for runtime 
 	ptba=runtime_setup_paging(rpb, rpb->XtVmmRuntimePhysBase, __TARGET_BASE, PAGE_ALIGN_UP2M(rpb->XtVmmRuntimeSize));
-	printf("\nSL: setup runtime paging.");        
-
-	//collect inputs to transfer control to runtime
-	rtm_gdt = rpb->XtVmmGdt;
-	rtm_idt = rpb->XtVmmIdt;
-	rtm_ep = rpb->XtVmmEntryPoint;
-	rtm_tos = (rpb->XtVmmStackBase+rpb->XtVmmStackSize);
-
+	printf("\nSL: setup runtime paging structures.");        
 
 	printf("\nTransferring control to runtime");
-	
-	printf("\nGDT=%08x, IDT=%08x, EP=%08x", rtm_gdt, rtm_idt, rtm_ep);
-	printf("\nStacktop=%08x, CR3=%08x", rtm_tos, ptba);
+	printf("\nGDT=%08x, IDT=%08x, EntryPoint=%08x", rpb->XtVmmGdt, rpb->XtVmmIdt, rpb->XtVmmEntryPoint);
+	printf("\nTop-of-stack=%08x, CR3=%08x", (rpb->XtVmmStackBase+rpb->XtVmmStackSize), ptba);
+
 	//transfer control to runtime and never return
-	XtLdrTransferControlToRtm(rtm_gdt, rtm_idt, 
-				rtm_ep, rtm_tos, ptba);
+	XtLdrTransferControlToRtm(rpb->XtVmmGdt, rpb->XtVmmIdt, 
+				rpb->XtVmmEntryPoint, (rpb->XtVmmStackBase+rpb->XtVmmStackSize), ptba);
 	
 }
