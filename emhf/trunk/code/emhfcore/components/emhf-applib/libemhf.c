@@ -42,7 +42,7 @@
 //==============================================================================
 //exported interfaces
 
-//---IOPM Bitmap interface------------------------------------------------------
+/*//---IOPM Bitmap interface------------------------------------------------------
 void emhf_iopm_set_write(VCPU *vcpu, u32 port, u32 size){
   ASSERT(g_libemhf != NULL);
 	return g_libemhf->emhf_iopm_set_write(vcpu, port, size);
@@ -52,7 +52,7 @@ void emhf_iopm_set_write(VCPU *vcpu, u32 port, u32 size){
 void emhf_msrpm_set_write(VCPU *vcpu, u32 msr){
   ASSERT(g_libemhf != NULL);
 	return g_libemhf->emhf_msrpm_set_write(vcpu, msr);
-}
+}*/
 
 //---hardware pagetable flush-all routine---------------------------------------
 void emhf_hwpgtbl_flushall(VCPU *vcpu){
@@ -86,9 +86,9 @@ u8 * emhf_guestpgtbl_walk(VCPU *vcpu, u32 vaddr){
 }*/
 
 
-//---reboot functionality-------------------------------------------------------
+/*//---reboot functionality-------------------------------------------------------
 void emhf_reboot(VCPU *vcpu){
   ASSERT(g_libemhf != NULL);
 	return g_libemhf->emhf_reboot(vcpu);
-}
+}*/
 

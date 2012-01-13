@@ -48,7 +48,7 @@
 //==============================================================================
 // static (local) function definitions
 //==============================================================================
-u8 *_vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
+//u8 *_vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
 
 
 
@@ -93,7 +93,7 @@ static u32 __attribute__((unused)) _vmx_test_page_prot(u32 pfn, u8 *bit_vector){
     return 0;
 }
 
-
+/*
 //---IOPM Bitmap interface------------------------------------------------------
 static void _vmx_lib_iopm_set_write(VCPU *vcpu, u32 port, u32 size){
   u32 i;
@@ -104,7 +104,7 @@ static void _vmx_lib_iopm_set_write(VCPU *vcpu, u32 port, u32 size){
 //---MSRPM Bitmap interface------------------------------------------------------
 static void _vmx_lib_msrpm_set_write(VCPU __attribute__((unused)) *vcpu, u32 __attribute__((unused)) msr){
   return;
-}
+}*/
 
 //---hardware pagetable flush-all routine---------------------------------------
 static void _vmx_lib_hwpgtbl_flushall(VCPU *vcpu){
@@ -232,7 +232,7 @@ u8 * _vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr){
   }
 }*/
 
-
+/*
 //---reboot functionality-------------------------------------------------------
 static void _vmx_lib_reboot(VCPU __attribute__((unused)) *vcpu){
 
@@ -254,17 +254,17 @@ static void _vmx_lib_reboot(VCPU __attribute__((unused)) *vcpu){
 	//never get here
 	printf("\n%s: should never get here. halt!", __FUNCTION__);
 	HALT();
-}
+}*/
 
 
 struct emhf_library g_emhf_library_vmx = {
-	.emhf_iopm_set_write = _vmx_lib_iopm_set_write,
-	.emhf_msrpm_set_write = _vmx_lib_msrpm_set_write,
+	//.emhf_iopm_set_write = _vmx_lib_iopm_set_write,
+	//.emhf_msrpm_set_write = _vmx_lib_msrpm_set_write,
 	.emhf_hwpgtbl_flushall = _vmx_lib_hwpgtbl_flushall,
 	.emhf_hwpgtbl_setprot = _vmx_lib_hwpgtbl_setprot,
 	.emhf_hwpgtbl_getprot = _vmx_lib_hwpgtbl_getprot,
 	//.emhf_guestpgtbl_walk = _vmx_lib_guestpgtbl_walk,
-	.emhf_reboot = _vmx_lib_reboot,
+	//.emhf_reboot = _vmx_lib_reboot,
 };
 
 

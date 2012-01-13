@@ -66,25 +66,25 @@ typedef struct {
 //note: VMX and SVM backends can have different implementations of these 
 //interfaces
 struct emhf_library {
-	void 	(*emhf_iopm_set_write)(VCPU *vcpu, u32 port, u32 size);
-	void 	(*emhf_msrpm_set_write)(VCPU *vcpu, u32 msr);
+	//void 	(*emhf_iopm_set_write)(VCPU *vcpu, u32 port, u32 size);
+	//void 	(*emhf_msrpm_set_write)(VCPU *vcpu, u32 msr);
 	void 	(*emhf_hwpgtbl_flushall)(VCPU *vcpu);
 	void 	(*emhf_hwpgtbl_setprot)(VCPU *vcpu, u64 gpa, u64 flags);
 	u64 	(*emhf_hwpgtbl_getprot)(VCPU *vcpu, u64 gpa);
 	void 	(*emhf_hwpgtbl_setentry)(VCPU *vcpu, u64 gpa, u64 value);
 	//u8 * 	(*emhf_guestpgtbl_walk)(VCPU *vcpu, u32 gva);
-	void 	(*emhf_reboot)(VCPU *vcpu);
+	//void 	(*emhf_reboot)(VCPU *vcpu);
 }; 
 
 //exported functions
-void emhf_iopm_set_write(VCPU *vcpu, u32 port, u32 size);
-void emhf_msrpm_set_write(VCPU *vcpu, u32 msr);
+//void emhf_iopm_set_write(VCPU *vcpu, u32 port, u32 size);
+//void emhf_msrpm_set_write(VCPU *vcpu, u32 msr);
 void emhf_hwpgtbl_flushall(VCPU *vcpu);
 void emhf_hwpgtbl_setprot(VCPU *vcpu, u64 gpa, u64 flags);
 u64 emhf_hwpgtbl_getprot(VCPU *vcpu, u64 gpa);
 void emhf_hwpgtbl_setentry(VCPU *vcpu, u64 gpa, u64 value);
 //u8 * emhf_guestpgtbl_walk(VCPU *vcpu, u32 gva);
-void emhf_reboot(VCPU *vcpu);
+//void emhf_reboot(VCPU *vcpu);
 
 //callbacks
 extern u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb);

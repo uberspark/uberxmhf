@@ -51,7 +51,7 @@
 // upon resuming the hypervisor or guest resumes normally!
 
 
-u8 * _svm_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
+//u8 * _svm_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
 
 
 
@@ -61,7 +61,7 @@ u8 * _svm_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
 //==============================================================================
 //SVM EMHF library interface implementation
 
-
+/*
 //---IOPM Bitmap interface------------------------------------------------------
 static void _svm_lib_iopm_set_write(VCPU __attribute__((unused)) *vcpu, u32 __attribute__((unused)) port, u32 __attribute__((unused)) size){
 	printf("\n%s: not implemented, halting!", __FUNCTION__);
@@ -72,7 +72,7 @@ static void _svm_lib_iopm_set_write(VCPU __attribute__((unused)) *vcpu, u32 __at
 static void _svm_lib_msrpm_set_write(VCPU __attribute__((unused)) *vcpu, u32 __attribute__((unused)) msr){
 	printf("\n%s: not implemented, halting!", __FUNCTION__);
 	HALT();
-}
+}*/
 
 //---hardware pagetable flush-all routine---------------------------------------
 static void _svm_lib_hwpgtbl_flushall(VCPU *vcpu){
@@ -185,20 +185,20 @@ u8 * _svm_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr){
 
 
 //---reboot functionality-------------------------------------------------------
-static void _svm_lib_reboot(VCPU __attribute__((unused)) *vcpu){
+/*static void _svm_lib_reboot(VCPU __attribute__((unused)) *vcpu){
 	printf("\n%s: not implemented, halting!", __FUNCTION__);
 	HALT();
-}
+}*/
 
 
 struct emhf_library g_emhf_library_svm = {
-	.emhf_iopm_set_write = _svm_lib_iopm_set_write,
-	.emhf_msrpm_set_write = _svm_lib_msrpm_set_write,
+	//.emhf_iopm_set_write = _svm_lib_iopm_set_write,
+	//.emhf_msrpm_set_write = _svm_lib_msrpm_set_write,
 	.emhf_hwpgtbl_flushall = _svm_lib_hwpgtbl_flushall,
 	.emhf_hwpgtbl_setprot = _svm_lib_hwpgtbl_setprot,
 	.emhf_hwpgtbl_getprot = _svm_lib_hwpgtbl_getprot,
 	//.emhf_guestpgtbl_walk = _svm_lib_guestpgtbl_walk,
-	.emhf_reboot = _svm_lib_reboot,
+	//.emhf_reboot = _svm_lib_reboot,
 };
 
 
