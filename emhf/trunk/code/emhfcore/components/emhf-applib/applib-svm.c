@@ -190,7 +190,7 @@ u8 * _svm_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr){
 	HALT();
 }*/
 
-
+/*
 struct emhf_library g_emhf_library_svm = {
 	//.emhf_iopm_set_write = _svm_lib_iopm_set_write,
 	//.emhf_msrpm_set_write = _svm_lib_msrpm_set_write,
@@ -199,7 +199,7 @@ struct emhf_library g_emhf_library_svm = {
 	//.emhf_hwpgtbl_getprot = _svm_lib_hwpgtbl_getprot,
 	//.emhf_guestpgtbl_walk = _svm_lib_guestpgtbl_walk,
 	//.emhf_reboot = _svm_lib_reboot,
-};
+};*/
 
 
 

@@ -256,7 +256,7 @@ static void _vmx_lib_reboot(VCPU __attribute__((unused)) *vcpu){
 	HALT();
 }*/
 
-
+/*
 struct emhf_library g_emhf_library_vmx = {
 	//.emhf_iopm_set_write = _vmx_lib_iopm_set_write,
 	//.emhf_msrpm_set_write = _vmx_lib_msrpm_set_write,
@@ -265,7 +265,7 @@ struct emhf_library g_emhf_library_vmx = {
 	//.emhf_hwpgtbl_getprot = _vmx_lib_hwpgtbl_getprot,
 	//.emhf_guestpgtbl_walk = _vmx_lib_guestpgtbl_walk,
 	//.emhf_reboot = _vmx_lib_reboot,
-};
+};*/
 
 
 

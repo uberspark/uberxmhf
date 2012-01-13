@@ -57,6 +57,7 @@
 #include <string.h>
 #endif /* __ASSEMBLY__ */
 
+
 #include <_types.h>      //needs to die!!!
 #include <_ctype.h>		//the ctype variable definition for debug printf
 #include <_com.h>		//serial UART as debugging backend
@@ -226,6 +227,36 @@ typedef struct {
     uart_config_t uart_config;	        /* runtime options parsed in init and passed forward */
 	u32 isEarlyInit;					//1 for an "early init" else 0 (late-init)
 } __attribute__((packed)) RPB, *PRPB;
+
+
+//----------------------------------------------------------------------
+// EMHF application related declarations
+//----------------------------------------------------------------------
+
+//generic catch-all app return codes
+#define APP_SUCCESS     (0x1)
+#define APP_ERROR				(0x0)
+
+//application parameter block
+//for now it holds the bootsector and optional module info loaded by GRUB
+//eventually this will be generic enough for both boot-time and dynamic loading
+//capabilities
+typedef struct {
+  u32 bootsector_ptr;
+  u32 bootsector_size;
+  u32 optionalmodule_ptr;
+  u32 optionalmodule_size;
+  u32 runtimephysmembase;
+} __attribute__((packed)) APP_PARAM_BLOCK;
+
+//EMHF application callbacks
+extern u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb);
+extern u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size); 
+extern u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
+      struct regs *r,
+      u64 gpa, u64 gva, u64 violationcode);
+extern void emhf_app_handleshutdown(VCPU *vcpu, struct regs *r);
+extern u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r);	//returns APP_SUCCESS if handled, else APP_ERROR      
 
 
 #endif /* __ASSEMBLY__ */
@@ -471,7 +502,7 @@ typedef struct _sl_parameter_block {
 } __attribute__((packed)) SL_PARAMETER_BLOCK;
 
 
-#include <_libemhf.h>	//EMHF application interface
+//#include <_libemhf.h>	//EMHF application interface
 
 
 
