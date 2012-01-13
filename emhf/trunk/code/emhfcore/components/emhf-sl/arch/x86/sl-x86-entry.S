@@ -38,26 +38,9 @@
 
 #include <emhf.h> 
 
-///--- ALL COMMENTS BEGINNING WITH ///--- ARE RELATED TO JON'S
-///--- EFFORTS TO DEBUG SENTER SUPPORT.  LEAVING THEM IN FOR NOW.
-///--- THEY CAN BE REMOVED ONCE I HARVEST THE USEFUL DEBUG SNIPPETS
-///--- TO ANOTHER LOCATION
-
-///--- .macro OUT2VGA
-///---     movl %ecx, %eax
-///---     rol $8, %eax
-///---     call dumpal
-///---     movl %ecx, %eax
-///---     rol $16, %eax
-///---     call dumpal
-///---     movl %ecx, %eax
-///---     rol $24, %eax
-///---     call dumpal
-///---     movl %ecx, %eax
-///---     call dumpal
-///---     call aspace
-///--- .endm
-
+//----------------------------------------------------------------------
+// CODE
+//----------------------------------------------------------------------
 
 //our C main
 .extern slmain
@@ -110,25 +93,15 @@
     .global _sl_start
     _sl_start:
 
-///---     // LET'S FIGURE OUT REG VALUES UPON ENTRY INTO MLE (ON INTEL)
-///---     pushl %eax
-///---     pushl %ebx
-///---     pushl %ecx
-///---     pushl %edx
-///---     pushl %edi
-///---     pushl %esi
-///---     pushl %esp
-///---     pushl %ebp
-
-
+#ifndef PERF_CRIT
     //Get cycle count using rdtsc; useful to evaluate how long DRTM
     //takes
-#ifndef PERF_CRIT
     cpuid // Serializing instruction; causes more overhead :(
     rdtsc
     pushl %edx
     pushl %eax
 #endif
+
     //save EAX, for AMD and the stub SENTER DRTM this contains the
     //64K aligned physical memory address where the sl was loaded
     //    movl %eax, %ebp
@@ -148,7 +121,6 @@
     // Other assumptions: common to both Intel and AMD:
     // EFLAGS_IF=0 (GIF=0 on AMD) so we are running with no interruptions
     // CR0.PG=0, i.e., paging is off
-
 
     // Determine processor type to perform some low-level initialization
     // after DRTM. On AMD CPUs, we need to clear R_INIT, DIS_A20M and
@@ -265,72 +237,10 @@ sl_cpu_common:
     1: addl %ebp, %ds:2(%ebp, %ebx) // Intel
     2:
 
+	//load GDT
     lgdt %cs:(%ebp,%ebx)
 
     movl $(sl_gdt), %ebx
-
-///---     // VGA debugging? %ss modifier doesn't work correctly for VGA output
-///---     //goal: dump GDT to screen in hex
-///---     movl $0x0, %esi // all-time VGA offset buffer
-
-///---     call 1f   // 1. dump EIP
-///--- 1:  pop %ecx
-///---     OUT2VGA
-///---     movl $0xdeadbeef, %ecx // 2. useful to help w/ reversing, endian issues, etc
-///---     OUT2VGA
-///---     movl %esp, %ecx // 3. where is the stack?
-///---     OUT2VGA
-///---     movl %ebp, %ecx // 4. print what we're using as base address
-///---     OUT2VGA
-///---     movl %ebx, %ecx // 5. print what we're using as ebx offset
-///---     OUT2VGA
-///---     leal (%ebp, %ebx), %ecx // 6. addr of base of stuff we want to dump
-///---     OUT2VGA
-
-///---     // GDT pseudo-descriptor
-///---     movl $0, %ecx
-///---     movw %cs:(%ebp, %ebx), %cx // 7. word of GDT pseudo-descriptor
-///---     OUT2VGA
-///---     movl %cs:2(%ebp, %ebx), %ecx // 8. long of GDT pseudo-descriptor
-///---     OUT2VGA
-
-///---     // GDT itself
-///---     movl  $(sl_gdt_start), %ebx
-///---     movl %cs:(%ebp, %ebx), %ecx // 9.
-///---     OUT2VGA
-///---     movl %cs:4(%ebp, %ebx), %ecx // 10.
-///---     OUT2VGA
-///---     movl %cs:8(%ebp, %ebx), %ecx // 11.
-///---     OUT2VGA
-///---     movl %cs:12(%ebp, %ebx), %ecx // 12.
-///---     OUT2VGA
-///---     movl %cs:16(%ebp, %ebx), %ecx // 13.
-///---     OUT2VGA
-///---     movl %cs:20(%ebp, %ebx), %ecx // 14.
-///---     OUT2VGA
-///---     movl %cs:24(%ebp, %ebx), %ecx // 15.
-///---     OUT2VGA
-///---     movl %cs:28(%ebp, %ebx), %ecx // 16.
-///---     OUT2VGA
-
-///---     popl %ecx              // 17
-///---     OUT2VGA
-///---     popl %ecx              // 18
-///---     OUT2VGA
-///---     popl %ecx              // 19
-///---     OUT2VGA
-///---     popl %ecx              // 20
-///---     OUT2VGA
-///---     popl %ecx              // 21
-///---     OUT2VGA
-///---     popl %ecx              // 22
-///---     OUT2VGA
-///---     popl %ecx              // 23
-///---     OUT2VGA
-///---     popl %ecx              // 24
-///---     OUT2VGA
-///--- //1:            jmp 1b // HANG FOR NOW; WE WANT TO SEE SCREEN
-
 
     // Far jump to reload %cs
     jmpl $0x08, $(sl_startnew)
@@ -393,51 +303,9 @@ sl_startnew:
         jmp spinforever
     hlt
 
-///--- //-- DEBUG STUFF -------------------------------
-///--- aspace:
-///---     movb $0x20, 0xb8000(%esi)
-///---     movb $7, 0xb8001(%esi)
-///---     addl $2, %esi // next character location on screen
-///---     ret
-
-///--- dumpal:
-///---     call  reg2hex
-///---     movb %ah, 0xb8000(%esi) // output ascii char to VGA RAM
-///---     movb $7, 0xb8001(%esi) // white on black
-///---     addl $2, %esi // next character location on screen
-///---     movb %al, 0xb8000(%esi) // output ascii char to VGA RAM
-///---     movb $7, 0xb8001(%esi) // white on black
-///---     addl $2, %esi // next character location on screen
-///---     ret
-
-///--- reg2hex:      //    convert byte in al to ascii equivalent in AX, e.g., 0x12 -> 0x3132
-///---     mov %al, %ah // duplicate byte
-///---     and $0x0f, %al // keep only low nibble
-///---     shr $4, %ah  // shift right to access high nibble
-///---     and $0x0f, %ah // keep only low nibble
-///--- low:
-///---     cmp $0xa, %al
-///---     jge lowletter
-///--- lowdigit:
-///---     add $0x30, %al // convert digit from numerical value to ASCII
-///---     jmp high
-///--- lowletter:
-///---     add $0x57, %al // convert digit from numerical value to ASCII
-
-///--- high:
-///---     cmp $0xa, %ah
-///---     jge highletter
-///--- highdigit:
-///---     add $0x30, %ah
-///---     ret
-///--- highletter:
-///---     add $0x57, %ah // - 0xa + 'a'
-///---     ret
-
-///--- nomoredebug:
-///---     jmp nomoredebug
-///--- //-- END DEBUG STUFF ---------------------------
-
+//----------------------------------------------------------------------
+// DATA
+//----------------------------------------------------------------------
 
 .section .data
 
@@ -448,8 +316,6 @@ sl_startnew:
     .align    16
     sl_gdt_start:
     .quad    0x0000000000000000                //0x00: NULL selector
-//    .quad    0x00409a000000ffff              //0x08: 64K CODE selector
-//    .quad    0x004092000000ffff              //0x10: 64K DATA selector
     .quad    0x00cf9a000000ffff                //0x08: 4G CODE selector with sl load-base
     .quad    0x00cf92000000ffff                //0x10: 4G DATA selector with sl load-base
     .quad   0x00cf92000000ffff                 //0x18: 4G DATA selector with zero base
@@ -457,35 +323,12 @@ sl_startnew:
     sl_gdt_end:
 
 
+//----------------------------------------------------------------------
+// STACK
+//----------------------------------------------------------------------
+
 // sl stack, this is just a placeholder and ensures that the linker
 // actually "allocates" the stack up until 0x10000
 .section .sl_stack
     .fill 4096, 1, 0
-
-//this section is the input parameter section for the secure loader
-//parameters from "init" are placed here. ordering of the variables
-//MUST match that in include/target.h
-//this section is currently a pagesize in length and resides above
-//the 64K sl image
-//.section .sl_params
-
-//    .global slpb_buffer
-//    slpb_buffer:
-//    .long    SL_PARAMETER_BLOCK_MAGIC                //magic
-//    .long    0                                                                //hashSL
-//    .long 0                                                                //errorHandler
-//    .long 0                                                                //isEarlyInit
-//    .long 0                                                                //numE820Entries
-//    .fill    (SIZE_STRUCT_GRUBE820 * MAX_E820_ENTRIES), 1, 0    //grub E820 map buffer
-//    .long    0                                                                //numCPUEntries
-//    .fill (SIZE_STRUCT_PCPU * MAX_PCPU_ENTRIES), 1, 0    //cpu table buffer
-//    .long 0                                                                //size of the runtime image
-//    .long 0                                                                //guest OS boot module base
-//    .long 0                                                                //guest OS boot module size
-
-
-//----------------------------------------------------------------------
-// DEBUG CODE
-//----------------------------------------------------------------------
-
 
