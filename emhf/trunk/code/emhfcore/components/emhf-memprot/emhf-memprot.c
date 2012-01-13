@@ -124,6 +124,13 @@ void emhf_memprot_set_h_cr3(VCPU *vcpu, u64 h_cr3)
 }
 
 
+//flush hardware page table mappings (TLB) 
+void emhf_memprot_flushmappings(VCPU *vcpu){
+	emhf_memprot_arch_flushmappings(vcpu);
+}
+
+
+
 /*
 //set protection for a given page map entry
 inline hpt_pme_t emhf_memprot_pagemapentry_setprot(hpt_type_t t, int lvl, hpt_pme_t entry, hpt_prot_t perms){

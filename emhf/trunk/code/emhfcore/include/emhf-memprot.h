@@ -71,6 +71,17 @@ void emhf_memprot_set_EPTP(VCPU *vcpu, u64 eptp);
 u64 emhf_memprot_get_h_cr3(VCPU *vcpu);
 void emhf_memprot_set_h_cr3(VCPU *vcpu, u64 hcr3);
 	
+//flush hardware page table mappings (TLB) 
+void emhf_memprot_flushmappings(VCPU *vcpu);
+
+
+//----------------------------------------------------------------------
+// ARCH. interfaces
+//----------------------------------------------------------------------
+
+//flush hardware page table mappings (TLB) 
+void emhf_memprot_arch_flushmappings(VCPU *vcpu);
+
 
 #endif	//__ASSEMBLY__
 
