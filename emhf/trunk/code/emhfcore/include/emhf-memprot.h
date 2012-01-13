@@ -87,6 +87,10 @@ void emhf_memprot_flushmappings(VCPU *vcpu);
 //set protection for a given physical memory address
 void emhf_memprot_setprot(VCPU *vcpu, u64 gpa, u32 prottype);
 
+//get protection for a given physical memory address
+u32 emhf_memprot_getprot(VCPU *vcpu, u64 gpa);
+
+
 //----------------------------------------------------------------------
 // ARCH. interfaces
 //----------------------------------------------------------------------
@@ -96,6 +100,9 @@ void emhf_memprot_arch_flushmappings(VCPU *vcpu);
 
 //set protection for a given physical memory address
 void emhf_memprot_arch_setprot(VCPU *vcpu, u64 gpa, u32 prottype);
+
+//get protection for a given physical memory address
+u32 emhf_memprot_arch_getprot(VCPU *vcpu, u64 gpa);
 
 
 //----------------------------------------------------------------------
@@ -113,6 +120,10 @@ void emhf_memprot_arch_x86vmx_flushmappings(VCPU *vcpu); //Intel VMX
 //set protection for a given physical memory address
 void emhf_memprot_arch_x86svm_setprot(VCPU *vcpu, u64 gpa, u32 prottype); //AMD SVM
 void emhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype); //Intel VMX
+
+//get protection for a given physical memory address
+u32 emhf_memprot_arch_x86svm_getprot(VCPU *vcpu, u64 gpa); //AMD SVM
+u32 emhf_memprot_arch_x86vmx_getprot(VCPU *vcpu, u64 gpa); //Intel VMX
 
 
 #endif	//__ASSEMBLY__

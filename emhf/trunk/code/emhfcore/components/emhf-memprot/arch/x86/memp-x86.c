@@ -78,3 +78,12 @@ void emhf_memprot_arch_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
 	else //CPU_VENDOR_INTEL
 		emhf_memprot_arch_x86vmx_setprot(vcpu, gpa, prottype);
 }
+
+//get protection for a given physical memory address
+u32 emhf_memprot_arch_getprot(VCPU *vcpu, u64 gpa){
+	//invoke appropriate sub arch. backend
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
+		return emhf_memprot_arch_x86svm_getprot(vcpu, gpa);
+	else //CPU_VENDOR_INTEL
+		return emhf_memprot_arch_x86vmx_getprot(vcpu, gpa);
+}

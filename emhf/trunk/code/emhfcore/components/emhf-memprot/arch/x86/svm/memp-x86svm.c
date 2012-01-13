@@ -134,3 +134,7 @@ void emhf_memprot_arch_x86svm_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
   pt[pfn] |= flags; 
 }
 	
+//get protection for a given physical memory address
+u32 emhf_memprot_arch_x86svm_getprot(VCPU *vcpu, u64 gpa){
+
+}

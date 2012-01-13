@@ -135,6 +135,12 @@ void emhf_memprot_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
 }
 
 
+//get protection for a given physical memory address
+u32 emhf_memprot_getprot(VCPU *vcpu, u64 gpa){
+		return emhf_memprot_arch_getprot(vcpu, gpa);
+}
+
+
 /*
 //set protection for a given page map entry
 inline hpt_pme_t emhf_memprot_pagemapentry_setprot(hpt_type_t t, int lvl, hpt_pme_t entry, hpt_prot_t perms){
