@@ -90,10 +90,10 @@ static void __attribute__((unused)) _svm_lib_hwpgtbl_setentry(VCPU __attribute__
 	HALT();
 }*/
 
-static u64 _svm_lib_hwpgtbl_getprot(VCPU __attribute__((unused)) *vcpu, u64 __attribute__((unused)) gpa){
+/*static u64 _svm_lib_hwpgtbl_getprot(VCPU __attribute__((unused)) *vcpu, u64 __attribute__((unused)) gpa){
 	printf("\n%s: not implemented, halting!", __FUNCTION__);
-	HALT(); return 0; /* dummy return; appeases compiler */
-}
+	HALT(); return 0; // dummy return; appeases compiler 
+}*/
 
 /*//---guest page-table walker, returns guest physical address--------------------
 //note: returns 0xFFFFFFFF if there is no mapping
@@ -196,7 +196,7 @@ struct emhf_library g_emhf_library_svm = {
 	//.emhf_msrpm_set_write = _svm_lib_msrpm_set_write,
 	//.emhf_hwpgtbl_flushall = _svm_lib_hwpgtbl_flushall,
 	//.emhf_hwpgtbl_setprot = _svm_lib_hwpgtbl_setprot,
-	.emhf_hwpgtbl_getprot = _svm_lib_hwpgtbl_getprot,
+	//.emhf_hwpgtbl_getprot = _svm_lib_hwpgtbl_getprot,
 	//.emhf_guestpgtbl_walk = _svm_lib_guestpgtbl_walk,
 	//.emhf_reboot = _svm_lib_reboot,
 };

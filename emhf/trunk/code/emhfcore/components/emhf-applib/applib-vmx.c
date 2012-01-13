@@ -137,12 +137,12 @@ static void _vmx_lib_hwpgtbl_setprot(VCPU *vcpu, u64 gpa, u64 flags){
 //	_vmx_lib_hwpgtbl_flushall(vcpu);
 }*/
 
-static u64 _vmx_lib_hwpgtbl_getprot(VCPU *vcpu, u64 gpa){
+/*static u64 _vmx_lib_hwpgtbl_getprot(VCPU *vcpu, u64 gpa){
   u32 pfn = (u32)gpa / PAGE_SIZE_4K;
   u64 *pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
 
   return (pt[pfn] & (u64)7) ;
-}
+}*/
 
 /*
 //---guest page-table walker, returns guest physical address--------------------
@@ -262,7 +262,7 @@ struct emhf_library g_emhf_library_vmx = {
 	//.emhf_msrpm_set_write = _vmx_lib_msrpm_set_write,
 	//.emhf_hwpgtbl_flushall = _vmx_lib_hwpgtbl_flushall,
 	//.emhf_hwpgtbl_setprot = _vmx_lib_hwpgtbl_setprot,
-	.emhf_hwpgtbl_getprot = _vmx_lib_hwpgtbl_getprot,
+	//.emhf_hwpgtbl_getprot = _vmx_lib_hwpgtbl_getprot,
 	//.emhf_guestpgtbl_walk = _vmx_lib_guestpgtbl_walk,
 	//.emhf_reboot = _vmx_lib_reboot,
 };

@@ -72,10 +72,10 @@ void emhf_hwpgtbl_setentry(VCPU *vcpu, u64 gpa, u64 value){
 }*/
 
 
-u64 emhf_hwpgtbl_getprot(VCPU *vcpu, u64 gpa){
+/*u64 emhf_hwpgtbl_getprot(VCPU *vcpu, u64 gpa){
   ASSERT(g_libemhf != NULL);
 	return g_libemhf->emhf_hwpgtbl_getprot(vcpu, gpa);
-}
+}*/
 
 /*
 //---guest page-table walker, returns guest physical address--------------------
