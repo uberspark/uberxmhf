@@ -62,7 +62,8 @@ void emhf_baseplatform_smpinitialize(void);
 //initialize basic platform elements
 void emhf_baseplatform_initialize(void);
 
-
+//reboot platform
+void emhf_baseplatform_reboot(VCPU *vcpu);
 
 //----------------------------------------------------------------------
 //generic arch. backends
@@ -98,6 +99,9 @@ void emhf_baseplatform_arch_flat_writeu64(u32 addr, u64 val);
 //data segment relative address (dest)
 void emhf_baseplatform_arch_flat_copy(u8 *dest, u8 *src, u32 size);
 
+//reboot platform
+void emhf_baseplatform_arch_reboot(VCPU *vcpu);
+
 
 
 //----------------------------------------------------------------------
@@ -108,6 +112,9 @@ u32 emhf_baseplatform_arch_x86_isbsp(void);
 
 //wake up APs using the LAPIC by sending the INIT-SIPI-SIPI IPI sequence
 void emhf_baseplatform_arch_x86_wakeupAPs(void);
+
+//generic x86 platform reboot
+void emhf_baseplatform_arch_x86_reboot(void);
 
 //----------------------------------------------------------------------
 //x86vmx arch. backends
@@ -130,6 +137,9 @@ void emhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu);
 //--debug: dumpVMCS dumps VMCS contents
 void emhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu);
 
+//VMX specific platform reboot
+void emhf_baseplatform_arch_x86vmx_reboot(VCPU *vcpu);
+
 //----------------------------------------------------------------------
 //x86svm arch. backends
 
@@ -138,6 +148,10 @@ void emhf_arch_x86svm_baseplatform_wakeupAPs(void);
 
 //allocate and setup VCPU structure for all the CPUs
 void emhf_arch_x86svm_baseplatform_allocandsetupvcpus(u32 cpu_vendor);
+
+//SVM specific platform reboot
+void emhf_baseplatform_arch_x86svm_reboot(VCPU *vcpu);
+
 
 
 

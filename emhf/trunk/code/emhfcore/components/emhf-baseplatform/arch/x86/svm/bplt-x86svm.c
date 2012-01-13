@@ -34,28 +34,15 @@
  */
 
 /*
- * EMHF base platform component interface
+ * EMHF base platform component interface, x86 svm backend
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
 #include <emhf.h>
 
-//get CPU vendor
-u32 emhf_baseplatform_getcpuvendor(void){
-	return emhf_baseplatform_arch_getcpuvendor();
+//SVM specific platform reboot
+void emhf_baseplatform_arch_x86svm_reboot(VCPU *vcpu){
+	//fall back on generic x86 reboot
+	emhf_baseplatform_arch_x86_reboot();
 }
 
-//initialize basic platform elements
-void emhf_baseplatform_initialize(void){
-	emhf_baseplatform_arch_initialize();	
-}
-
-//initialize CPU state
-void emhf_baseplatform_cpuinitialize(void){
-	emhf_baseplatform_arch_cpuinitialize();
-}
-
-//reboot platform
-void emhf_baseplatform_reboot(VCPU *vcpu){
-	emhf_baseplatform_arch_reboot(vcpu);
-}
