@@ -172,8 +172,6 @@ typedef struct _vcpu {
 
 
 #define SIZE_STRUCT_VCPU    (sizeof(struct _vcpu))
-#endif /* __ASSEMBLY__ */
-
 
 //NOTE: The declaration here _MUST_ match definition of RPB in runtimesup.S	
 typedef struct {
@@ -220,6 +218,11 @@ typedef struct {
     uart_config_t uart_config;	        /* runtime options parsed in init and passed forward */
 	u32 isEarlyInit;					//1 for an "early init" else 0 (late-init)
 } __attribute__((packed)) RPB, *PRPB;
+
+
+#endif /* __ASSEMBLY__ */
+
+
 
 
 

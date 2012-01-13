@@ -2,7 +2,8 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files
-AS_SOURCES = slheader.S  slsup.S
+AS_SOURCES = slheader.S  
+AS_SOURCES += ./arch/x86/sl-x86-sup.S
 
 C_SOURCES = sl.c 
 
