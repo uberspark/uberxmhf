@@ -108,3 +108,9 @@ static void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts
 void emhf_memprot_arch_x86svm_flushmappings(VCPU *vcpu){
 	((struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr))->tlb_control=TLB_CONTROL_FLUSHALL;	
 }
+
+//set protection for a given physical memory address
+void emhf_memprot_arch_x86svm_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
+	
+	
+}

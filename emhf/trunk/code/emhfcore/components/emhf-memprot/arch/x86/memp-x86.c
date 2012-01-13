@@ -49,3 +49,32 @@ void emhf_memprot_arch_flushmappings(VCPU *vcpu){
 		emhf_memprot_arch_x86vmx_flushmappings(vcpu);
 
 }
+
+//set protection for a given physical memory address
+void emhf_memprot_arch_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
+	//sanity check on protection types
+		//if the page protection is set to not-present, we wipe out
+		//anything other protections if present
+		if(prottype & MEMP_PROT_NOTPRESENT)
+			prottype = MEMP_PROT_NOTPRESENT;
+	
+		//else, force PROT_PRESENT 
+		prottype |= MEMP_PROT_NOTPRESENT;
+		
+		//if both read-only and read-write are specified, fall back
+		//to read-only
+		if( (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_READWRITE) )
+			prottype &= ~(MEMP_PROT_READWRITE);
+		
+		//if both no-execute and execute are specified, fall back to
+		//no-execute
+		if( (prottype & MEMP_PROT_NOEXECUTE) && (prottype & MEMP_PROT_EXECUTE) )
+			prottype &= ~(MEMP_PROT_NOEXECUTE);
+
+
+	//invoke appropriate sub arch. backend
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
+		emhf_memprot_arch_x86svm_setprot(vcpu, gpa, prottype);
+	else //CPU_VENDOR_INTEL
+		emhf_memprot_arch_x86vmx_setprot(vcpu, gpa, prottype);
+}

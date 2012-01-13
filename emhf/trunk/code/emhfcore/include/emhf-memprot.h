@@ -43,6 +43,14 @@
 
 #ifndef __ASSEMBLY__
 
+// memory protection types
+#define MEMP_PROT_NOTPRESENT	(1)	// page not present
+#define	MEMP_PROT_PRESENT		(2)	// page present
+#define MEMP_PROT_READONLY		(4)	// page read-only
+#define MEMP_PROT_READWRITE		(8) // page read-write
+#define MEMP_PROT_EXECUTE		(16) // page execute
+#define MEMP_PROT_NOEXECUTE		(32) // page no-execute
+
 //----------------------------------------------------------------------
 // INTERFACES
 //----------------------------------------------------------------------
@@ -76,6 +84,8 @@ void emhf_memprot_set_h_cr3(VCPU *vcpu, u64 hcr3);
 //flush hardware page table mappings (TLB) 
 void emhf_memprot_flushmappings(VCPU *vcpu);
 
+//set protection for a given physical memory address
+void emhf_memprot_setprot(VCPU *vcpu, u64 gpa, u32 prottype);
 
 //----------------------------------------------------------------------
 // ARCH. interfaces
@@ -83,6 +93,10 @@ void emhf_memprot_flushmappings(VCPU *vcpu);
 
 //flush hardware page table mappings (TLB) 
 void emhf_memprot_arch_flushmappings(VCPU *vcpu);
+
+//set protection for a given physical memory address
+void emhf_memprot_arch_setprot(VCPU *vcpu, u64 gpa, u32 prottype);
+
 
 //----------------------------------------------------------------------
 // SUBARCH. interfaces
@@ -95,6 +109,10 @@ void emhf_memprot_arch_vmx_initialize(VCPU *vcpu);	//Intel VMX
 //flush hardware page table mappings (TLB) 
 void emhf_memprot_arch_x86svm_flushmappings(VCPU *vcpu); //AMD SVM 
 void emhf_memprot_arch_x86vmx_flushmappings(VCPU *vcpu); //Intel VMX 
+
+//set protection for a given physical memory address
+void emhf_memprot_arch_x86svm_setprot(VCPU *vcpu, u64 gpa, u32 prottype); //AMD SVM
+void emhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype); //Intel VMX
 
 
 #endif	//__ASSEMBLY__

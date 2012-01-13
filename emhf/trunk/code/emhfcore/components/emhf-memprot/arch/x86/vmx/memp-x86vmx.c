@@ -360,3 +360,11 @@ void emhf_memprot_arch_x86vmx_flushmappings(VCPU *vcpu){
   __vmx_invvpid(VMX_VPID_EXTENT_SINGLE_CONTEXT, 1, 0);
 
 }
+
+
+//set protection for a given physical memory address
+void emhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
+	
+	
+}
+

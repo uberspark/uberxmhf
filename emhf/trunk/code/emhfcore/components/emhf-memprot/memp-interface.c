@@ -129,6 +129,10 @@ void emhf_memprot_flushmappings(VCPU *vcpu){
 	emhf_memprot_arch_flushmappings(vcpu);
 }
 
+//set protection for a given physical memory address
+void emhf_memprot_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
+	emhf_memprot_arch_setprot(vcpu, gpa, prottype);
+}
 
 
 /*
