@@ -368,6 +368,7 @@ void emhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
   u64 *pt = (u64 *)(u32)emhf_memprot_get_EPTP(vcpu); //TODO: push into vmx sub arch. backend
   u32 flags=0;
 
+  //default is not-present, read-only, no-execute	
   pt[pfn] &= ~(u64)7; //clear all previous flags
 
   //map high level protection type to EPT protection bits

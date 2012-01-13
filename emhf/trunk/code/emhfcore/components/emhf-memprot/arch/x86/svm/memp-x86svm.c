@@ -111,6 +111,26 @@ void emhf_memprot_arch_x86svm_flushmappings(VCPU *vcpu){
 
 //set protection for a given physical memory address
 void emhf_memprot_arch_x86svm_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
+  u32 pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
+  u64 *pt = (u64 *)(u32)emhf_memprot_get_h_cr3(vcpu); //TODO: push into SVM sub arch. backend
+  u64 flags=0;
+
+  //default is not-present, read-only, no-execute	
+  pt[pfn] &= ~(u64)0x8000000000000003ULL; //clear all previous flags
+  pt[pfn] |= (u64)0x8000000000000000ULL; //no-execute
+
+  //map high level protection type to NPT protection bits
+  if(prottype & MEMP_PROT_PRESENT){
+	flags=1;	//present 
 	
-	
+	if(prottype & MEMP_PROT_READWRITE)
+		flags |= 0x2; //read-write
+		
+	if(prottype & MEMP_PROT_EXECUTE)
+		flags &= ~(u64)0x8000000000000000ULL; //execute
+  }
+  	
+  //set new flags
+  pt[pfn] |= flags; 
 }
+	
