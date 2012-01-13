@@ -54,7 +54,7 @@ struct _sl_parameter_block slpb __attribute__(( section(".sl_untrusted_params") 
 //we get here from slheader.S
 // rdtsc_* are valid only if PERF_CRIT is not defined.  slheader.S
 // sets them to 0 otherwise.
-void slmain(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
+void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	u32 runtime_physical_base;
 	u32 runtime_size_2Maligned;
 	
