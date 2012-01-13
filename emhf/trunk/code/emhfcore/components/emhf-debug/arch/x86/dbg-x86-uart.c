@@ -133,6 +133,9 @@ void emhf_debug_arch_init(char *params){
   //store uart parameters passed to us
   memcpy((void *)&g_uart_config, params, sizeof(uart_config_t));
 
+
+  g_uart_config.fifo = 0; // FIXME: work-around for issue #143 
+
   /* write divisor latch to set baud rate */
   divisor = g_uart_config.clock_hz / (g_uart_config.baud * 16);
   UART_WRITE_REG(LCR_DLAB, LCR);

@@ -59,19 +59,6 @@ void cstartup(void){
 	}
 
 	//setup debugging	
-/*#ifdef __DEBUG_SERIAL__
-        // need to reinitialize serial port on some systems.
-           (in particular using AMT SOL) 
-        
-    g_uart_config = rpb->uart_config;
-    g_uart_config.fifo = 0; // FIXME: work-around for issue #143 
-    init_uart();
-    printf("\nrpb->uart_config.port = %x", rpb->uart_config.port);
-    printf("\nrpb->uart_config.clock_hz = %u", rpb->uart_config.clock_hz);
-    printf("\nrpb->uart_config.baud = %u", rpb->uart_config.baud);
-    printf("\nrpb->uart_config.data_bits, parity, stop_bits, fifo = %x %x %x %x", 
-		rpb->uart_config.data_bits, rpb->uart_config.parity, rpb->uart_config.stop_bits, rpb->uart_config.fifo);
-#endif*/
 	emhf_debug_init((char *)&rpb->uart_config);
 	printf("\nruntime initializing...");
 

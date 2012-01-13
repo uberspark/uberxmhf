@@ -74,14 +74,6 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	ASSERT (cpu_vendor == CPU_VENDOR_AMD || cpu_vendor == CPU_VENDOR_INTEL);
 	
 	//initialize debugging early on
-	/*#ifdef __DEBUG_SERIAL__
-			g_uart_config = slpb.uart_config;
-			init_uart();
-	#endif
-
-	#ifdef __DEBUG_VGA__
-		vgamem_clrscr();
-	#endif*/
 	emhf_debug_init((char *)&slpb.uart_config);
 	
 
