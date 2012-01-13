@@ -43,10 +43,12 @@
 
 #ifndef __ASSEMBLY__
 
+//----------------------------------------------------------------------
+// INTERFACES
+//----------------------------------------------------------------------
+
 //initialize memory protection for a core
 void emhf_memprot_initialize(VCPU *vcpu);
-void emhf_memprot_arch_vmx_initialize(VCPU *vcpu);	//intel VMX arch. backend
-void emhf_memprot_arch_svm_initialize(VCPU *vcpu);	//amd SVM arch. backend
 
 // get level-1 page map address
 u64 * emhf_memprot_get_lvl1_pagemap_address(VCPU *vcpu);
@@ -86,9 +88,13 @@ void emhf_memprot_arch_flushmappings(VCPU *vcpu);
 // SUBARCH. interfaces
 //----------------------------------------------------------------------
 
+//initialize memory protection for a core
+void emhf_memprot_arch_svm_initialize(VCPU *vcpu);	//AMD SVM 
+void emhf_memprot_arch_vmx_initialize(VCPU *vcpu);	//Intel VMX 
+
 //flush hardware page table mappings (TLB) 
-void emhf_memprot_arch_x86svm_flushmappings(VCPU *vcpu);
-void emhf_memprot_arch_x86vmx_flushmappings(VCPU *vcpu);
+void emhf_memprot_arch_x86svm_flushmappings(VCPU *vcpu); //AMD SVM 
+void emhf_memprot_arch_x86vmx_flushmappings(VCPU *vcpu); //Intel VMX 
 
 
 #endif	//__ASSEMBLY__
