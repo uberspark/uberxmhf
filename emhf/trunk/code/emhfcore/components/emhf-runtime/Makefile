@@ -79,9 +79,9 @@ OBJECTS_PRECOMPILED += ../emhf-partition/arch/x86/svm/part-x86svm-sup.o
 OBJECTS_PRECOMPILED += ../emhf-partition/arch/x86/vmx/part-x86vmx.o
 OBJECTS_PRECOMPILED += ../emhf-partition/arch/x86/vmx/part-x86vmx-sup.o
 
-OBJECTS_PRECOMPILED += ../emhf-applib/libemhf.o
-OBJECTS_PRECOMPILED += ../emhf-applib/applib-svm.o
-OBJECTS_PRECOMPILED += ../emhf-applib/applib-vmx.o
+# OBJECTS_PRECOMPILED += ../emhf-applib/libemhf.o
+# OBJECTS_PRECOMPILED += ../emhf-applib/applib-svm.o
+# OBJECTS_PRECOMPILED += ../emhf-applib/applib-vmx.o
 
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 
