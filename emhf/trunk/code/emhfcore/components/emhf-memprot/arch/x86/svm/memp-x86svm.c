@@ -160,3 +160,14 @@ u32 emhf_memprot_arch_x86svm_getprot(VCPU *vcpu, u64 gpa){
 
   return prottype;
 }
+
+u64 emhf_memprot_get_h_cr3(VCPU *vcpu)
+{
+  ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD);
+  return ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3; 
+}
+void emhf_memprot_set_h_cr3(VCPU *vcpu, u64 h_cr3)
+{
+  ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD);
+  ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3 = h_cr3;
+}

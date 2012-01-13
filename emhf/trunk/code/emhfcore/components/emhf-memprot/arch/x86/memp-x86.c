@@ -39,6 +39,66 @@
 
 #include <emhf.h> 
 
+// initialize memory protection structures for a given core (vcpu)
+void emhf_memprot_arch_initialize(VCPU *vcpu){
+	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
+		emhf_memprot_arch_svm_initialize(vcpu);
+		printf("\nCPU(0x%02x): Activated SVM NPTs.", vcpu->id);
+	}else{	//CPU_VENDOR_INTEL
+		emhf_memprot_arch_vmx_initialize(vcpu);
+		printf("\nCPU(0x%02x): Activated VMX EPTs.", vcpu->id);
+	}
+}
+
+// get level-1 page map address
+u64 * emhf_memprot_arch_get_lvl1_pagemap_address(VCPU *vcpu){
+	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+
+	if (vcpu->cpu_vendor == CPU_VENDOR_AMD)
+		return (u64 *)vcpu->npt_vaddr_pts;
+	else //CPU_VENDOR_INTEL
+		return (u64 *)vcpu->vmx_vaddr_ept_p_tables;
+}
+
+//get level-2 page map address
+u64 * emhf_memprot_arch_get_lvl2_pagemap_address(VCPU *vcpu){
+	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+
+	if (vcpu->cpu_vendor == CPU_VENDOR_AMD)
+		return (u64 *)vcpu->npt_vaddr_pdts;
+	else //CPU_VENDOR_INTEL
+		return (u64 *)vcpu->vmx_vaddr_ept_pd_tables;
+}
+
+//get level-3 page map address
+u64 * emhf_memprot_arch_get_lvl3_pagemap_address(VCPU *vcpu){
+	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+
+	if (vcpu->cpu_vendor == CPU_VENDOR_AMD)
+		return (u64 *)vcpu->npt_vaddr_ptr;
+	else //CPU_VENDOR_INTEL
+		return (u64 *)vcpu->vmx_vaddr_ept_pdp_table;
+}
+
+//get level-4 page map address
+u64 * emhf_memprot_arch_get_lvl4_pagemap_address(VCPU *vcpu){
+	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_INTEL);	//we don;t have a level-4 pagemap for AMD
+
+    return (u64 *)vcpu->vmx_vaddr_ept_pml4_table;
+}
+
+//get default root page map address
+u64 * emhf_memprot_arch_get_default_root_pagemap_address(VCPU *vcpu){
+  ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
+		return (u64*)vcpu->npt_vaddr_ptr;
+	else //CPU_VENDOR_INTEL
+		return (u64*)vcpu->vmx_vaddr_ept_pml4_table;
+} 
+
+
 //flush hardware page table mappings (TLB) 
 void emhf_memprot_arch_flushmappings(VCPU *vcpu){
 	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);

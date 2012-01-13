@@ -414,3 +414,16 @@ u32 emhf_memprot_arch_x86vmx_getprot(VCPU *vcpu, u64 gpa){
   return prottype;
 }
 
+u64 emhf_memprot_get_EPTP(VCPU *vcpu)
+{
+  ASSERT(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+  return
+    ((u64)(vcpu->vmcs.control_EPT_pointer_high) << 32)
+    | (u64)(vcpu->vmcs.control_EPT_pointer_full);
+}
+void emhf_memprot_set_EPTP(VCPU *vcpu, u64 eptp)
+{
+  ASSERT(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+  vcpu->vmcs.control_EPT_pointer_full = (u32)eptp;
+  vcpu->vmcs.control_EPT_pointer_high = (u32)(eptp >> 32);
+}
