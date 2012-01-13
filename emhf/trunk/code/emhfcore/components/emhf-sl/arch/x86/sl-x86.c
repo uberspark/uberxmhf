@@ -51,12 +51,12 @@ static INTEGRITY_MEASUREMENT_VALUES g_sl_gold /* __attribute__(( section("") )) 
 
 
 /* hypervisor (runtime) virtual address to sl-address. */
-void* hva2sla(uintptr_t x) {
+void* emhf_sl_arch_hva2sla(uintptr_t x) {
   return (void*)(x - __TARGET_BASE + PAGE_SIZE_2M);
 }
 
 /* sl-address to system-physical-address */
-u64 sla2spa(void* x) {
+u64 emhf_sl_arch_sla2spa(void* x) {
   return (u64)(uintptr_t)(x) + sl_baseaddr;
 }
 
@@ -64,7 +64,7 @@ u64 sla2spa(void* x) {
 //---runtime paging setup-------------------------------------------------------
 //physaddr and virtaddr are assumed to be 2M aligned
 //returns 32-bit base address of page table root (can be loaded into CR3)
-u32 runtime_setup_paging(RPB *rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsize){
+u32 emhf_sl_arch_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsize){
   pdpt_t xpdpt;
   pdt_t xpdt;
   u32 hva=0, i;
@@ -75,8 +75,8 @@ u32 runtime_setup_paging(RPB *rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsi
   printf("\nSL (%s): runtime_spa=%08x, runtime_sva=%08x, totalsize=%08x",
          __FUNCTION__, runtime_spa, runtime_sva, totalsize);
 	
-  xpdpt= hva2sla(rpb->XtVmmPdptBase);
-  xpdt = hva2sla(rpb->XtVmmPdtsBase);
+  xpdpt= emhf_sl_arch_hva2sla(rpb->XtVmmPdptBase);
+  xpdt = emhf_sl_arch_hva2sla(rpb->XtVmmPdtsBase);
 	
   printf("\n	pa xpdpt=0x%p, xpdt=0x%p", xpdpt, xpdt);
 	
@@ -84,7 +84,7 @@ u32 runtime_setup_paging(RPB *rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsi
 
   //init pdpt
   for(i = 0; i < PAE_PTRS_PER_PDPT; i++) {
-    u64 pdt_spa = sla2spa(xpdt) + (i << PAGE_SHIFT_4K);
+    u64 pdt_spa = emhf_sl_arch_sla2spa(xpdt) + (i << PAGE_SHIFT_4K);
     xpdpt[i] = pae_make_pdpe(pdt_spa, default_flags);
   }
 
@@ -115,14 +115,14 @@ u32 runtime_setup_paging(RPB *rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsi
     xpdt[i] = pae_make_pde_big(spa, flags);
   }
 
-  return sla2spa(xpdpt);
+  return emhf_sl_arch_sla2spa(xpdpt);
 }
 
 /* XXX TODO Read PCR values and sanity-check that DRTM was successful
  * (i.e., measurements match expectations), and integrity-check the
  * runtime. */
 /* Note: calling this *before* paging is enabled is important. */
-bool sl_integrity_check(u8* runtime_base_addr, size_t runtime_len) {
+bool emhf_sl_arch_integrity_check(u8* runtime_base_addr, size_t runtime_len) {
     int ret;
     u32 locality = EMHF_TPM_LOCALITY_PREF; /* target.h */
     tpm_pcr_value_t pcr17, pcr18;    
@@ -156,7 +156,7 @@ bool sl_integrity_check(u8* runtime_base_addr, size_t runtime_len) {
     return true;    
 }
 
-void sanitize_post_launch(void){
+void emhf_sl_arch_sanitize_post_launch(void){
 	
     if(get_cpu_vendor_or_die() == CPU_VENDOR_INTEL) {
         txt_heap_t *txt_heap;
@@ -180,7 +180,7 @@ void sanitize_post_launch(void){
 }
 
 
-void early_dmaprot_init(u32 runtime_size)
+void emhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 {
 
 #if defined(__DMAPROT__)	
@@ -224,7 +224,7 @@ void early_dmaprot_init(u32 runtime_size)
 	
 }
 
-void sl_xfer_control_to_runtime(RPB *rpb){
+void emhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 	u32 ptba;	//page table base address
 	u32 rtm_gdt, rtm_idt, rtm_ep, rtm_tos;
 	
@@ -232,7 +232,7 @@ void sl_xfer_control_to_runtime(RPB *rpb){
 	{
 			TSSENTRY *t;
 	  	u32 tss_base=(u32)rpb->XtVmmTSSBase;
-	  	u32 gdt_base= *(u32 *)(hva2sla(rpb->XtVmmGdt + 2));
+	  	u32 gdt_base= *(u32 *)(emhf_sl_arch_hva2sla(rpb->XtVmmGdt + 2));
 	
 			//fix TSS descriptor, 18h
 			t= (TSSENTRY *)((u32)gdt_base + __TRSEL );
@@ -254,7 +254,7 @@ void sl_xfer_control_to_runtime(RPB *rpb){
 	}
 
 	//setup paging structures for runtime 
-	ptba=runtime_setup_paging(rpb, rpb->XtVmmRuntimePhysBase, __TARGET_BASE, PAGE_ALIGN_UP2M(rpb->XtVmmRuntimeSize));
+	ptba=emhf_sl_arch_setup_runtime_paging(rpb, rpb->XtVmmRuntimePhysBase, __TARGET_BASE, PAGE_ALIGN_UP2M(rpb->XtVmmRuntimeSize));
 	printf("\nSL: setup runtime paging structures.");        
 
 	printf("\nTransferring control to runtime");
@@ -262,7 +262,7 @@ void sl_xfer_control_to_runtime(RPB *rpb){
 	printf("\nTop-of-stack=%08x, CR3=%08x", (rpb->XtVmmStackBase+rpb->XtVmmStackSize), ptba);
 
 	//transfer control to runtime and never return
-	XtLdrTransferControlToRtm(rpb->XtVmmGdt, rpb->XtVmmIdt, 
+	emhf_sl_arch_invoke_runtime_entrypoint(rpb->XtVmmGdt, rpb->XtVmmIdt, 
 				rpb->XtVmmEntryPoint, (rpb->XtVmmStackBase+rpb->XtVmmStackSize), ptba);
 	
 }

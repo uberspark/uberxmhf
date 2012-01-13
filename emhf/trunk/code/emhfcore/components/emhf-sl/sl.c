@@ -147,10 +147,10 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 	//sanitize cache/MTRR/SMRAM (most important is to ensure that MTRRs 
 	//do not contain weird mappings)
-    sanitize_post_launch();
+    emhf_sl_arch_sanitize_post_launch();
     
     //check SL integrity
-    if(sl_integrity_check((u8*)PAGE_SIZE_2M, slpb.runtime_size)) // XXX base addr
+    if(emhf_sl_arch_integrity_check((u8*)PAGE_SIZE_2M, slpb.runtime_size)) // XXX base addr
         printf("\nsl_intergrity_check SUCCESS");
     else
         printf("\nsl_intergrity_check FAILURE");
@@ -161,7 +161,7 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	ASSERT(rpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
     
 	//setup DMA protection on runtime (secure loader is already DMA protected)
-	early_dmaprot_init(slpb.runtime_size);
+	emhf_sl_arch_early_dmaprot_init(slpb.runtime_size);
 		
 	//populate runtime parameter block fields
 		rpb->isEarlyInit = slpb.isEarlyInit; //tell runtime if we started "early" or "late"
@@ -172,11 +172,11 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		rpb->XtVmmRuntimeSize = slpb.runtime_size;
 
 		//store revised E820 map and number of entries
-		memcpy(hva2sla(rpb->XtVmmE820Buffer), (void *)&slpb.e820map, (sizeof(GRUBE820) * slpb.numE820Entries));
+		memcpy(emhf_sl_arch_hva2sla(rpb->XtVmmE820Buffer), (void *)&slpb.e820map, (sizeof(GRUBE820) * slpb.numE820Entries));
 		rpb->XtVmmE820NumEntries = slpb.numE820Entries; 
 
 		//store CPU table and number of CPUs
-		memcpy(hva2sla(rpb->XtVmmMPCpuinfoBuffer), (void *)&slpb.pcpus, (sizeof(PCPU) * slpb.numCPUEntries));
+		memcpy(emhf_sl_arch_hva2sla(rpb->XtVmmMPCpuinfoBuffer), (void *)&slpb.pcpus, (sizeof(PCPU) * slpb.numCPUEntries));
 		rpb->XtVmmMPCpuinfoNumEntries = slpb.numCPUEntries; 
 
 		//setup guest OS boot module info in LPB	
@@ -197,7 +197,7 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		
 
 	//transfer control to runtime
-	sl_xfer_control_to_runtime(rpb);
+	emhf_sl_arch_xfer_control_to_runtime(rpb);
 
 	//we should never get here
 	printf("\nSL: Fatal, should never be here!");
