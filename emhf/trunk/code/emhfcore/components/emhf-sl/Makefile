@@ -2,11 +2,10 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files
-AS_SOURCES = slheader.S  
+AS_SOURCES = ./arch/x86/sl-x86-entry.S  
 AS_SOURCES += ./arch/x86/sl-x86-sup.S
 
 C_SOURCES = sl.c 
-
 C_SOURCES += ./arch/x86/sl-x86.c 
 
 
