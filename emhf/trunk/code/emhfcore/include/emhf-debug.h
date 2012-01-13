@@ -36,15 +36,14 @@
 // EMHF secure loader component declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __EMHF_SL_H__
-#define __EMHF_SL_H__
+#ifndef __EMHF_DEBUG_H__
+#define __EMHF_DEBUG_H__
 
 
 #ifndef __ASSEMBLY__
 
 //----------------------------------------------------------------------
 //exported DATA 
-extern u32 sl_baseaddr;	
 
 
 //----------------------------------------------------------------------
@@ -53,26 +52,13 @@ extern u32 sl_baseaddr;
 
 //----------------------------------------------------------------------
 // arch. interfaces (GENERIC)
-void* emhf_sl_arch_hva2sla(uintptr_t x);
-u64 emhf_sl_arch_sla2spa(void* x);
-bool emhf_sl_arch_integrity_check(u8* runtime_base_addr, size_t runtime_len);
-void emhf_sl_arch_sanitize_post_launch(void);
-void emhf_sl_arch_early_dmaprot_init(u32 runtime_size);
-void emhf_sl_arch_xfer_control_to_runtime(RPB * rpb);
 
 //----------------------------------------------------------------------
 // arch. interfaces (SUBARCH SPECIFIC)
 
-//protected DMA-protection buffer for early DMA protection (currently
-// used by the x86 AMD arch. backend
-extern u32 g_sl_protected_dmabuffer[];
-
-u32 emhf_sl_arch_setup_runtime_paging(RPB * rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsize);
-void emhf_sl_arch_invoke_runtime_entrypoint(u32 gdtbase, u32 idtbase,
-	u32 entrypoint, u32 stacktop, u32 cr3)__attribute__((cdecl)); 
 
 
 
 #endif	//__ASSEMBLY__
 
-#endif //__EMHF_SL_H__
+#endif //__EMHF_DEBUG_H__

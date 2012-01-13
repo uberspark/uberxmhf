@@ -37,7 +37,7 @@
 // Adapted from Linux kernel sources and Xen sources for 
 // SecVisor by Elaine Shi and Arvind Seshadri
 // modified extensively by Amit Vasudevan (amitvasudevan@acm.org)
-// for SecHyp
+// for EMHF
 
 #include <emhf.h> 
 
