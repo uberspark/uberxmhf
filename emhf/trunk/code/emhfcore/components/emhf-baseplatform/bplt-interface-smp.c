@@ -45,3 +45,7 @@ void emhf_baseplatform_smpinitialize(void){
 	emhf_baseplatform_arch_smpinitialize();
 }
 
+//reboot platform
+void emhf_baseplatform_reboot(VCPU *vcpu){
+	emhf_baseplatform_arch_reboot(vcpu);
+}

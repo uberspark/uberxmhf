@@ -34,24 +34,32 @@
  */
 
 /*
- * EMHF base platform component interface
+ * EMHF base platform component interface, x86 common backend
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
 #include <emhf.h>
 
-//get CPU vendor
-u32 emhf_baseplatform_getcpuvendor(void){
-	return emhf_baseplatform_arch_getcpuvendor();
+//generic x86 platform reboot
+void emhf_baseplatform_arch_x86_reboot(void){
+	//zero out IDT
+	emhf_xcphandler_resetIDT();
+	
+	//step-3: execute ud2 instruction to generate triple fault
+	__asm__ __volatile__("ud2 \r\n");
+	
+	//never get here
+	printf("\n%s: should never get here. halt!", __FUNCTION__);
+	HALT();
 }
 
-//initialize basic platform elements
-void emhf_baseplatform_initialize(void){
-	emhf_baseplatform_arch_initialize();	
-}
 
-//initialize CPU state
-void emhf_baseplatform_cpuinitialize(void){
-	emhf_baseplatform_arch_cpuinitialize();
+//reboot platform
+void emhf_baseplatform_arch_reboot(VCPU *vcpu){
+	ASSERT (vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
+		emhf_baseplatform_arch_x86svm_reboot(vcpu);
+	else //CPU_VENDOR_INTEL
+		emhf_baseplatform_arch_x86vmx_reboot(vcpu);
 }
-
