@@ -51,30 +51,10 @@ struct _sl_parameter_block slpb __attribute__(( section(".sl_untrusted_params") 
 };
 
 
-/*#define SERIAL_BASE 0x3f8
-void raw_serial_init(void){
-    // enable DLAB and set baudrate 115200
-    outb(SERIAL_BASE+0x3, 0x80);
-    outb(SERIAL_BASE+0x0, 0x01);
-    outb(SERIAL_BASE+0x1, 0x00);
-    // disable DLAB and set 8N1
-    outb(SERIAL_BASE+0x3, 0x03);
-    // reset IRQ register
-    outb(SERIAL_BASE+0x1, 0x00);
-    // enable fifo, flush buffer, enable fifo
-    outb(SERIAL_BASE+0x2, 0x01);
-    outb(SERIAL_BASE+0x2, 0x07);
-    outb(SERIAL_BASE+0x2, 0x01);
-    // set RTS,DTR
-    outb(SERIAL_BASE+0x4, 0x03);
-}*/
-
-
 //we get here from slheader.S
 // rdtsc_* are valid only if PERF_CRIT is not defined.  slheader.S
 // sets them to 0 otherwise.
 void slmain(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
-	//SL_PARAMETER_BLOCK *slpb;
 	u32 runtime_physical_base;
 	u32 runtime_size_2Maligned;
 	
@@ -83,9 +63,13 @@ void slmain(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	u32 runtime_entrypoint;
 	u32 runtime_topofstack;
 
-	ASSERT( (u32)&slpb == 0x10000 ); //linker relocates sl image starting from 0, so
-                                         //parameter block must be at offset 0x10000    
+	//linker relocates sl image starting from 0, so
+    //parameter block must be at offset 0x10000    
+	ASSERT( (u32)&slpb == 0x10000 ); 
 
+	//do we have the required MAGIC?
+	ASSERT( slpb.magic == SL_PARAMETER_BLOCK_MAGIC);
+	
 	//we currently only support x86 (AMD and Intel)
 	ASSERT (cpu_vendor == CPU_VENDOR_AMD || cpu_vendor == CPU_VENDOR_INTEL);
 	
@@ -99,20 +83,19 @@ void slmain(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		vgamem_clrscr();
 	#endif
 	
-	//dump SL parameter block address
-	printf("\nSL: slpb at = 0x%08x", (u32)&slpb);
 
 	//initialze sl_baseaddr variable and print its value out
 	sl_baseaddr = baseaddr;
 	
+	//is our launch before the OS has been loaded (early) is loaded or 
+	//is it after the OS has been loaded (late)
 	if(slpb.isEarlyInit)
 		printf("\nSL(early-init): at 0x%08x, starting...", sl_baseaddr);    
     else
 		printf("\nSL(late-init): at 0x%08x, starting...", sl_baseaddr);
 		
-
-	ASSERT( slpb.magic == SL_PARAMETER_BLOCK_MAGIC);
-	
+	//debug: dump SL parameter block
+	printf("\nSL: slpb at = 0x%08x", (u32)&slpb);
 	printf("\n	hashSL=0x%08x", slpb.hashSL);
 	printf("\n	errorHandler=0x%08x", slpb.errorHandler);
 	printf("\n	isEarlyInit=0x%08x", slpb.isEarlyInit);
@@ -124,30 +107,30 @@ void slmain(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	printf("\n	OS bootmodule at 0x%08x, size=%u bytes", 
 		slpb.runtime_osbootmodule_base, slpb.runtime_osbootmodule_size);
 
+	//debug: if we are doing some performance measurements
     slpb.rdtsc_after_drtm = (u64)rdtsc_eax | ((u64)rdtsc_edx << 32);
     printf("\nSL: RDTSC before_drtm 0x%llx, after_drtm 0x%llx",
            slpb.rdtsc_before_drtm, slpb.rdtsc_after_drtm);
     printf("\nSL: [PERF] RDTSC DRTM elapsed cycles: 0x%llx",
            slpb.rdtsc_after_drtm - slpb.rdtsc_before_drtm);
     
-  //debug, dump E820 and MP table
+	//debug: dump E820 and MP table
  	printf("\n	e820map:\n");
-  {
-    u32 i;
-    for(i=0; i < slpb.numE820Entries; i++){
-      printf("\n		0x%08x%08x, size=0x%08x%08x (%u)", 
-          slpb.e820map[i].baseaddr_high, slpb.e820map[i].baseaddr_low,
-          slpb.e820map[i].length_high, slpb.e820map[i].length_low,
-          slpb.e820map[i].type);
-    }
-  }
-  printf("\n	pcpus:\n");
-  {
-    u32 i;
-    for(i=0; i < slpb.numCPUEntries; i++)
-      printf("\n		CPU #%u: bsp=%u, lapic_id=0x%02x", i, slpb.pcpus[i].isbsp, slpb.pcpus[i].lapic_id);
-  }
-
+	{
+		u32 i;
+		for(i=0; i < slpb.numE820Entries; i++){
+		  printf("\n		0x%08x%08x, size=0x%08x%08x (%u)", 
+			  slpb.e820map[i].baseaddr_high, slpb.e820map[i].baseaddr_low,
+			  slpb.e820map[i].length_high, slpb.e820map[i].length_low,
+			  slpb.e820map[i].type);
+		}
+	}
+	printf("\n	pcpus:\n");
+	{
+		u32 i;
+		for(i=0; i < slpb.numCPUEntries; i++)
+		printf("\n		CPU #%u: bsp=%u, lapic_id=0x%02x", i, slpb.pcpus[i].isbsp, slpb.pcpus[i].lapic_id);
+	}
 
 	//get runtime physical base
 	runtime_physical_base = sl_baseaddr + PAGE_SIZE_2M;	//base of SL + 2M
@@ -162,58 +145,53 @@ void slmain(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	//initialize basic platform elements
 	emhf_baseplatform_initialize();
 
-	//initialize CPU (sets up MTRR settings etc.)
-	//emhf_baseplatform_cpuinitialize();
-	
 	//sanitize cache/MTRR/SMRAM (most important is to ensure that MTRRs 
 	//do not contain weird mappings)
     sanitize_post_launch();
     
-    /* Note: calling this *before* paging is enabled is important */
+    //check SL integrity
     if(sl_integrity_check((u8*)PAGE_SIZE_2M, slpb.runtime_size)) // XXX base addr
         printf("\nsl_intergrity_check SUCCESS");
     else
         printf("\nsl_intergrity_check FAILURE");
 
-	//get a pointer to the runtime header
+	//get a pointer to the runtime header and make sure its sane
  	rpb=(RPB *)PAGE_SIZE_2M;	//runtime starts at offset 2M from sl base
 	printf("\nSL: RPB, magic=0x%08x", rpb->magic);
 	ASSERT(rpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
-
     
 	//setup DMA protection on runtime (secure loader is already DMA protected)
 	early_dmaprot_init(slpb.runtime_size);
 		
-	//tell runtime if we started "early" or "late"
-	rpb->isEarlyInit = slpb.isEarlyInit;
-		
-    //store runtime physical and virtual base addresses along with size
-  	rpb->XtVmmRuntimePhysBase = runtime_physical_base;
-  	rpb->XtVmmRuntimeVirtBase = __TARGET_BASE;
-  	rpb->XtVmmRuntimeSize = slpb.runtime_size;
+	//populate runtime parameter block fields
+		rpb->isEarlyInit = slpb.isEarlyInit; //tell runtime if we started "early" or "late"
+	
+		//store runtime physical and virtual base addresses along with size
+		rpb->XtVmmRuntimePhysBase = runtime_physical_base; 
+		rpb->XtVmmRuntimeVirtBase = __TARGET_BASE;
+		rpb->XtVmmRuntimeSize = slpb.runtime_size;
 
-    //store revised E820 map and number of entries
-	memcpy(hva2sla(rpb->XtVmmE820Buffer), (void *)&slpb.e820map, (sizeof(GRUBE820) * slpb.numE820Entries));
-  	rpb->XtVmmE820NumEntries = slpb.numE820Entries; 
+		//store revised E820 map and number of entries
+		memcpy(hva2sla(rpb->XtVmmE820Buffer), (void *)&slpb.e820map, (sizeof(GRUBE820) * slpb.numE820Entries));
+		rpb->XtVmmE820NumEntries = slpb.numE820Entries; 
 
-	//store CPU table and number of CPUs
-    memcpy(hva2sla(rpb->XtVmmMPCpuinfoBuffer), (void *)&slpb.pcpus, (sizeof(PCPU) * slpb.numCPUEntries));
-  	rpb->XtVmmMPCpuinfoNumEntries = slpb.numCPUEntries; 
+		//store CPU table and number of CPUs
+		memcpy(hva2sla(rpb->XtVmmMPCpuinfoBuffer), (void *)&slpb.pcpus, (sizeof(PCPU) * slpb.numCPUEntries));
+		rpb->XtVmmMPCpuinfoNumEntries = slpb.numCPUEntries; 
 
-   	//setup guest OS boot module info in LPB	
-	rpb->XtGuestOSBootModuleBase=slpb.runtime_osbootmodule_base;
-	rpb->XtGuestOSBootModuleSize=slpb.runtime_osbootmodule_size;
+		//setup guest OS boot module info in LPB	
+		rpb->XtGuestOSBootModuleBase=slpb.runtime_osbootmodule_base;
+		rpb->XtGuestOSBootModuleSize=slpb.runtime_osbootmodule_size;
 
-    // pass command line configuration forward 
-    rpb->uart_config = g_uart_config;
+		//pass command line configuration forward 
+		rpb->uart_config = g_uart_config;
 
-	////debug dump uart_config field
-    //printf("\nrpb->uart_config.port = %x", rpb->uart_config.port);
-	//printf("\nrpb->uart_config.clock_hz = %u", rpb->uart_config.clock_hz);
-	//printf("\nrpb->uart_config.baud = %u", rpb->uart_config.baud);
-	//printf("\nrpb->uart_config.data_bits, parity, stop_bits, fifo = %x %x %x %x", 
-	//	rpb->uart_config.data_bits, rpb->uart_config.parity, rpb->uart_config.stop_bits, rpb->uart_config.fifo);*/
-
+		////debug dump uart_config field
+		//printf("\nrpb->uart_config.port = %x", rpb->uart_config.port);
+		//printf("\nrpb->uart_config.clock_hz = %u", rpb->uart_config.clock_hz);
+		//printf("\nrpb->uart_config.baud = %u", rpb->uart_config.baud);
+		//printf("\nrpb->uart_config.data_bits, parity, stop_bits, fifo = %x %x %x %x", 
+			//	rpb->uart_config.data_bits, rpb->uart_config.parity, rpb->uart_config.stop_bits, rpb->uart_config.fifo);*/
 
 	//setup runtime TSS
 	{
@@ -263,3 +241,21 @@ void slmain(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	HALT();
 } 
 
+
+/*#define SERIAL_BASE 0x3f8
+void raw_serial_init(void){
+    // enable DLAB and set baudrate 115200
+    outb(SERIAL_BASE+0x3, 0x80);
+    outb(SERIAL_BASE+0x0, 0x01);
+    outb(SERIAL_BASE+0x1, 0x00);
+    // disable DLAB and set 8N1
+    outb(SERIAL_BASE+0x3, 0x03);
+    // reset IRQ register
+    outb(SERIAL_BASE+0x1, 0x00);
+    // enable fifo, flush buffer, enable fifo
+    outb(SERIAL_BASE+0x2, 0x01);
+    outb(SERIAL_BASE+0x2, 0x07);
+    outb(SERIAL_BASE+0x2, 0x01);
+    // set RTS,DTR
+    outb(SERIAL_BASE+0x4, 0x03);
+}*/
