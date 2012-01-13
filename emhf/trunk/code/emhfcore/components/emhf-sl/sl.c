@@ -43,6 +43,13 @@
 RPB * rpb;
 u32 sl_baseaddr=0;	
 
+//this is the SL parameter block and is placed in a seperate UNTRUSTED
+//section. It is populated by the "init" (late or early) loader, which
+//uses the late-launch mechanism to load the SL
+struct _sl_parameter_block slpb __attribute__(( section(".sl_untrusted_params") )) = {
+	.magic = SL_PARAMETER_BLOCK_MAGIC,
+};
+
 
 /* SHA-1 hash of runtime should be defined during build process.
  * However, if it's not, don't fail.  Just proceed with all zeros.
@@ -51,11 +58,6 @@ u32 sl_baseaddr=0;
 #define ___RUNTIME_INTEGRITY_HASH___ BAD_INTEGRITY_HASH
 #endif /*  ___RUNTIME_INTEGRITY_HASH___ */
 
-//this is the SL parameter block and is placed in a seperate UNTRUSTED
-//section
-struct _sl_parameter_block slpb __attribute__(( section(".sl_untrusted_params") )) = {
-	.magic = SL_PARAMETER_BLOCK_MAGIC,
-};
 
 
 
