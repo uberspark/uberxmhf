@@ -49,15 +49,6 @@ void cstartup(void){
 	//initialize global runtime variables including Runtime Parameter Block (rpb)
 	runtime_globals_init();
 
-/*	//initialize isolation layer and EMHF library interface abstraction
-	if(cpu_vendor == CPU_VENDOR_INTEL){
-		//g_isl = &g_isolation_layer_vmx;
-		g_libemhf = &g_emhf_library_vmx;
-	}else{
-		//g_isl = &g_isolation_layer_svm; 
-		g_libemhf = &g_emhf_library_svm;
-	}*/
-
 	//setup debugging	
 	emhf_debug_init((char *)&rpb->uart_config);
 	printf("\nruntime initializing...");

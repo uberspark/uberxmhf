@@ -502,7 +502,6 @@ typedef struct _sl_parameter_block {
 } __attribute__((packed)) SL_PARAMETER_BLOCK;
 
 
-//#include <_libemhf.h>	//EMHF application interface
 
 
 

@@ -90,8 +90,6 @@ components:
 	cd components/emhf-baseplatform && $(MAKE) -w all
 	#EMHF partition component
 	cd components/emhf-partition && $(MAKE) -w all
-	#EMHF app library component
-	# cd components/emhf-applib && $(MAKE) -w all
 	#EMHF TPM component
 	cd components/emhf-tpm && $(MAKE) -w all
 	#EMHF debug component
@@ -151,7 +149,6 @@ clean:
 	cd components/emhf-xcphandler && $(MAKE) -w clean
 	cd components/emhf-baseplatform && $(MAKE) -w clean
 	cd components/emhf-partition && $(MAKE) -w clean
-	# cd components/emhf-applib && $(MAKE) -w clean
 	cd components/emhf-tpm && $(MAKE) -w clean
 	cd components/emhf-debug && $(MAKE) -w clean
 
