@@ -43,6 +43,14 @@
 	.global XtLdrTransferControlToRtm
 XtLdrTransferControlToRtm:
 //------------------------------------------------------------------------------
+	//turn on paging
+	movl	$(0x00000030), %eax	//CR4_PAE | CR4_PSE
+	movl	%eax, %cr4
+	movl	0x14(%esp), %edi	//EDI = page table base address
+	movl	%edi, %cr3			
+	movl	$(0x80000015), %eax	 // ET, EM, PE, PG
+	movl	%eax, %cr0			 //turn on paging
+
 	movl 	0x4(%esp), %esi
 	movl 	0x8(%esp), %edi
 
@@ -63,6 +71,8 @@ XtLdrTransferControlToRtm:
 	lidt	(%esp)
 
 	addl  $0x8, %esp
+	
+	
 	
 	movl 	0xC(%esp), %edi
 	movl  0x10(%esp), %esi
