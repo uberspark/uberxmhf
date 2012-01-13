@@ -72,6 +72,7 @@ sl.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) sl.lds.S
 .PHONY: clean 
 clean: 
 	$(RM) -rf *.o
+	$(RM) -rf ./arch/x86/*.o
 	$(RM) -rf *.exe
 	$(RM) -rf *.bin
 	$(RM) -rf *.gz
