@@ -42,19 +42,54 @@
 
 #ifndef __ASSEMBLY__
 
+#define print_string putstr
+
+#define LOG_LEVEL_NONE    0x00
+#define LOG_LEVEL_ALL     0xFF
+
+#define LOG_TARGET_NONE   0x00
+#define LOG_TARGET_VGA    0x01
+#define LOG_TARGET_SERIAL 0x02
+#define LOG_TARGET_MEMORY 0x04
+
+#define LOG_PROFILE (1<<0)
+#define LOG_TRACE   (1<<1)
+#define LOG_ERROR   (1<<2)
+
+#define ENABLED_LOG_TYPES (LOG_PROFILE|LOG_TRACE|LOG_ERROR)
+
+
 //----------------------------------------------------------------------
 //exported DATA 
+extern uint8_t g_log_targets;
+extern uint8_t g_log_level;
 
 
 //----------------------------------------------------------------------
 //exported FUNCTIONS 
+#ifdef __DEBUG_SERIAL__
+	void printf(const char *format, ...)
+	  __attribute__ ((format (printf, 1, 2)));
+	void dprintf(u32 log_type, const char *format, ...)
+	  __attribute__ ((format (printf, 2, 3)));
+	void print_hex(const char *prefix, const void *prtptr, size_t size);
+
+#else
+	#define printf(format, args...) while(0)
+	#define dprintf(format, args...) while(0)
+	#define print_hex(prefix, prtptr, size) while(0)
+#endif
 
 
 //----------------------------------------------------------------------
 // arch. interfaces (GENERIC)
+void init_uart(void);
+void putstr(const char *str);
+
 
 //----------------------------------------------------------------------
 // arch. interfaces (SUBARCH SPECIFIC)
+
 
 
 

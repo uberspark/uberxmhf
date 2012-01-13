@@ -60,7 +60,7 @@
 #include <_types.h>      //needs to die!!!
 #include <_ctype.h>		//the ctype variable definition for debug printf
 #include <_com.h>		//serial UART as debugging backend
-#include <_print.h>      //early chance to disable/enable debug printfs
+//#include <_print.h>      //early chance to disable/enable debug printfs
 #include <_multiboot.h>  //boot manager (multiboot)
 #include <_cmdline.h>	//GRUB command line handling functions
 #include <_error.h>      //error handling and assertions
@@ -237,6 +237,7 @@ typedef struct {
 
 //----------------------------------------------------------------------
 // component headers
+#include <emhf-debug.h>		//EMHF debug component
 #include <emhf-sl.h>		//EMHF secure loader component
 #include <emhf-memprot.h>	//EMHF memory protection component
 #include <emhf-dmaprot.h>	//EMHF DMA protection component
