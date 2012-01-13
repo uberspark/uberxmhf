@@ -389,7 +389,8 @@ u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs __attribute__((u
 void emhf_app_handleshutdown(VCPU *vcpu, struct regs __attribute__((unused)) *r)
 {
   dprintf(LOG_TRACE, "\nCPU(0x%02x): Shutdown intercept!", vcpu->id);
-  g_libemhf->emhf_reboot(vcpu);
+  //g_libemhf->emhf_reboot(vcpu);
+  emhf_baseplatform_reboot(vcpu);
 }
 
 /* Local Variables: */
