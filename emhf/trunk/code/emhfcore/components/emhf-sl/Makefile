@@ -3,7 +3,11 @@
 
 # source files
 AS_SOURCES = slheader.S  slsup.S
+
 C_SOURCES = sl.c 
+
+C_SOURCES += ./arch/x86/sl-x86.c 
+
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
