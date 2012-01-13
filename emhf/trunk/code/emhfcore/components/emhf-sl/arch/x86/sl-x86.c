@@ -180,3 +180,25 @@ bool sl_integrity_check(u8* runtime_base_addr, size_t runtime_len) {
     return true;    
 }
 
+void sanitize_post_launch(void){
+	
+    if(get_cpu_vendor_or_die() == CPU_VENDOR_INTEL) {
+        txt_heap_t *txt_heap;
+        os_mle_data_t *os_mle_data;
+
+        // sl.c unity-maps 0xfed00000 for 2M so these should work fine 
+        txt_heap = get_txt_heap();
+        printf("\nSL: txt_heap = 0x%08x", (u32)txt_heap);
+        /// compensate for special DS here in SL 
+        os_mle_data = get_os_mle_data_start((txt_heap_t*)((u32)txt_heap - sl_baseaddr));
+        printf("\nSL: os_mle_data = 0x%08x", (u32)os_mle_data);
+        // restore pre-SENTER MTRRs that were overwritten for SINIT launch 
+        if(!validate_mtrrs(&(os_mle_data->saved_mtrr_state))) {
+            printf("\nSECURITY FAILURE: validate_mtrrs() failed.\n");
+            HALT();
+        }
+        printf("\nSL: Restoring mtrrs...");
+        restore_mtrrs(&(os_mle_data->saved_mtrr_state));
+    }
+
+}

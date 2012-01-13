@@ -57,6 +57,7 @@ void* hva2sla(uintptr_t x);
 u64 sla2spa(void* x);
 void runtime_setup_paging(RPB * rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsize);
 bool sl_integrity_check(u8* runtime_base_addr, size_t runtime_len);
+void sanitize_post_launch(void);
 
 //----------------------------------------------------------------------
 // arch. interfaces (SUBARCH SPECIFIC)
