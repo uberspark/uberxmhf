@@ -3,9 +3,9 @@
 
 # source files
 AS_SOURCES =  
-C_SOURCES = emhf-memprot.c
-C_SOURCES += ./arch/x86/vmx/emhf-memprot-vmx.c
-C_SOURCES += ./arch/x86/svm/emhf-memprot-svm.c
+C_SOURCES = memp-interface.c
+C_SOURCES += ./arch/x86/vmx/memp-x86vmx.c
+C_SOURCES += ./arch/x86/svm/memp-x86svm.c
 
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
