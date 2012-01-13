@@ -364,7 +364,24 @@ void emhf_memprot_arch_x86vmx_flushmappings(VCPU *vcpu){
 
 //set protection for a given physical memory address
 void emhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
+  u32 pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
+  u64 *pt = (u64 *)(u32)emhf_memprot_get_EPTP(vcpu); //TODO: push into vmx sub arch. backend
+  u32 flags=0;
+
+  pt[pfn] &= ~(u64)7; //clear all previous flags
+
+  //map high level protection type to EPT protection bits
+  if(prottype & MEMP_PROT_PRESENT){
+	flags=1;	//present is defined by the read bit in EPT
 	
-	
+	if(prottype & MEMP_PROT_READWRITE)
+		flags |= 0x2;
+		
+	if(prottype & MEMP_PROT_EXECUTE)
+		flags |= 0x4;
+  }
+  	
+  //set new flags
+  pt[pfn] |= flags; 
 }
 
