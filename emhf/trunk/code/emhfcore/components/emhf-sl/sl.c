@@ -44,8 +44,6 @@ extern u32 slpb_buffer[];
 RPB * rpb;
 u32 sl_baseaddr=0;	
 
-extern void XtLdrTransferControlToRtm(u32 gdtbase, u32 idtbase,
-	u32 entrypoint, u32 stacktop)__attribute__((cdecl)); 
 
 /* SHA-1 hash of runtime should be defined during build process.
  * However, if it's not, don't fail.  Just proceed with all zeros.

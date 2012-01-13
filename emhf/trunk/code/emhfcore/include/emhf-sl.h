@@ -59,6 +59,8 @@ void runtime_setup_paging(RPB * rpb, u32 runtime_spa, u32 runtime_sva, u32 total
 bool sl_integrity_check(u8* runtime_base_addr, size_t runtime_len);
 void sanitize_post_launch(void);
 void early_dmaprot_init(u32 runtime_size);
+void XtLdrTransferControlToRtm(u32 gdtbase, u32 idtbase,
+	u32 entrypoint, u32 stacktop)__attribute__((cdecl)); 
 
 //----------------------------------------------------------------------
 // arch. interfaces (SUBARCH SPECIFIC)
