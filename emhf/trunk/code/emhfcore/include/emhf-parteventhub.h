@@ -42,17 +42,43 @@
 #ifndef __ASSEMBLY__
 
 //XXX: FIX this
-extern u8 * _svm_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
+//extern u8 * _svm_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
 
 //XXX: FIX this
-extern u8 * _vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
+//extern u8 * _vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
 extern void _vmx_putVMCS(VCPU *vcpu);
 extern void _vmx_getVMCS(VCPU *vcpu);
 extern void _vmx_dumpVMCS(VCPU *vcpu);
 
-//exported functions
-u32 emhf_parteventhub_intercept_handler_x86svm(VCPU *vcpu, struct regs *r);
-u32 emhf_parteventhub_intercept_handler_x86vmx(VCPU *vcpu, struct regs *r);
+//----------------------------------------------------------------------
+//exported DATA 
+//----------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------
+//exported FUNCTIONS 
+//----------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------
+//ARCH. BACKENDS
+//----------------------------------------------------------------------
+
+//----------------------------------------------------------------------
+//x86 ARCH. INTERFACES
+//----------------------------------------------------------------------
+
+//----------------------------------------------------------------------
+//x86vmx SUBARCH. INTERFACES
+//----------------------------------------------------------------------
+void emhf_parteventhub_arch_x86vmx_entry(void);
+u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r);
+
+//----------------------------------------------------------------------
+//x86svm SUBARCH. INTERFACES
+//----------------------------------------------------------------------
+void emhf_parteventhub_arch_x86svm_entry(void);
+u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r);
 
 
 

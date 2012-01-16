@@ -42,7 +42,7 @@
 //---globals referenced by this module------------------------------------------
 .extern g_midtable_numentries
 .extern g_midtable
-.extern emhf_parteventhub_entry_x86svm
+.extern emhf_parteventhub_arch_x86svm_entry
 
 #define SAVEALL_GPRS \
         pushl	%edi	; \
@@ -94,7 +94,7 @@ __svm_resume_hvm:
 	//stgi
 
 	//invoke EMHF partition event-hub entry-point
-	call emhf_parteventhub_entry_x86svm
+	call emhf_parteventhub_arch_x86svm_entry
 	
 	//resume HVM
 	jmp __svm_resume_hvm

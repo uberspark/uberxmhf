@@ -44,9 +44,6 @@
 //TODO: need to remove these direct references
 extern u32 x_gdt_start[], x_idt_start[]; //runtimesup.S
 
-extern void emhf_parteventhub_entry_x86vmx(void);	//components/emhf-parteventhub/arch/x86/vmx/peh-x86vmx-entry.S
-
-
 
 //critical MSRs that need to be saved/restored across guest VM switches
 static const u32 vmx_msr_area_msrs[] = {
@@ -253,7 +250,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 			vcpu->vmcs.host_GDTR_base = (u64)(u32)x_gdt_start;
 			vcpu->vmcs.host_IDTR_base = (u64)(u32)emhf_xcphandler_get_idt_start();
 			vcpu->vmcs.host_TR_base = (u64)(u32)g_runtime_TSS;
-			vcpu->vmcs.host_RIP = (u64)(u32)emhf_parteventhub_entry_x86vmx;
+			vcpu->vmcs.host_RIP = (u64)(u32)emhf_parteventhub_arch_x86vmx_entry;
 			vcpu->vmcs.host_RSP = (u64)vcpu->esp;
 			rdmsr(IA32_SYSENTER_CS_MSR, &lodword, &hidword);
       vcpu->vmcs.host_SYSENTER_CS = lodword;

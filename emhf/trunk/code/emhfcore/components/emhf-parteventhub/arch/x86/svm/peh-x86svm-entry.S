@@ -41,7 +41,7 @@
 //globals referenced
 	.extern g_midtable_numentries
 	.extern g_midtable
-	.extern emhf_parteventhub_intercept_handler_x86svm
+	.extern emhf_parteventhub_arch_x86svm_intercept_handler
 
 //----------------------------------------------------------------------
 //macros to save and restore GPRs
@@ -70,8 +70,8 @@
 // emhf_parteventhub_entry_x86svm
 // we get control here right after any event within a partition
 .section .text
-.global emhf_parteventhub_entry_x86svm
-emhf_parteventhub_entry_x86svm:
+.global emhf_parteventhub_arch_x86svm_entry
+emhf_parteventhub_arch_x86svm_entry:
 	
 	//step-1: save all CPU GPRs
 	SAVEALL_GPRS
@@ -88,7 +88,7 @@ emhf_parteventhub_entry_x86svm:
    	//1st argument is VCPU * followed by pointer to saved GPRs
     pushl %eax
     pushl %esi
-	call emhf_parteventhub_intercept_handler_x86svm
+	call emhf_parteventhub_arch_x86svm_intercept_handler
     addl $0x08, %esp
 
 	//step-5: restore all CPU GPRs, will also 

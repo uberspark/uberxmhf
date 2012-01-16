@@ -451,7 +451,7 @@ static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gp
 
 
 //---hvm_intercept_handler------------------------------------------------------
-u32 emhf_parteventhub_intercept_handler_x86vmx(VCPU *vcpu, struct regs *r){
+u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
   //read VMCS from physical CPU/core
 	emhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
 
