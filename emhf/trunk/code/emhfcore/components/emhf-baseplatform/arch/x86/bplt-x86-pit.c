@@ -44,7 +44,7 @@
 #include <emhf.h> 
 
 //---microsecond delay----------------------------------------------------------
-void udelay(u32 usecs){
+void emhf_baseplatform_arch_x86_udelay(u32 usecs){
   u8 val;
   u32 latchregval;  
 

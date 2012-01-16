@@ -135,6 +135,8 @@ void emhf_baseplatform_arch_x86_pci_type1_write(u32 bus, u32 device, u32 functio
 void emhf_baseplatform_arch_x86_pci_type1_read(u32 bus, u32 device, u32 function, u32 index, u32 len,
 			u32 *value);
 
+//microsecond delay
+void emhf_baseplatform_arch_x86_udelay(u32 usecs);
 
 //----------------------------------------------------------------------
 //x86vmx SUBARCH. INTERFACES

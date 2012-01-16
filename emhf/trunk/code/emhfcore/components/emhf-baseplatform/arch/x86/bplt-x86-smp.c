@@ -71,7 +71,7 @@ void emhf_baseplatform_arch_x86_wakeupAPs(void){
 
   //send INIT
   *icr = 0x000c4500UL;
-  udelay(10000);
+  emhf_baseplatform_arch_x86_udelay(10000);
   //wait for command completion
   {
     u32 val;
@@ -85,7 +85,7 @@ void emhf_baseplatform_arch_x86_wakeupAPs(void){
     int i;
     for(i=0; i < 2; i++){
       *icr = 0x000c4610UL;
-      udelay(200);
+      emhf_baseplatform_arch_x86_udelay(200);
         //wait for command completion
         {
           u32 val;
