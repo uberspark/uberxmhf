@@ -43,6 +43,7 @@ OBJECTS_PRECOMPILED += ../emhf-smpguest/arch/x86/svm/smpg-x86svm.o
 OBJECTS_PRECOMPILED += ../emhf-smpguest/arch/x86/vmx/smpg-x86vmx.o
 
 OBJECTS_PRECOMPILED += ../emhf-dmaprot/dmap-interface.o
+OBJECTS_PRECOMPILED += ../emhf-dmaprot/arch/x86/dmap-x86.o
 OBJECTS_PRECOMPILED += ../emhf-dmaprot/arch/x86/svm/dmap-x86svm.o
 OBJECTS_PRECOMPILED += ../emhf-dmaprot/arch/x86/vmx/dmap-x86vmx.o
 

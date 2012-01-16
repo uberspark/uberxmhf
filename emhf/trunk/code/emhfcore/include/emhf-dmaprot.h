@@ -42,6 +42,16 @@
 
 #ifndef __ASSEMBLY__
 
+
+//----------------------------------------------------------------------
+//exported DATA 
+//----------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------
+//exported FUNCTIONS 
+//----------------------------------------------------------------------
+
 //"early" DMA protection initialization to setup minimal
 //structures to protect a range of physical memory
 //return 1 on success 0 on failure
@@ -55,13 +65,29 @@ u32 emhf_dmaprot_earlyinitialize(u64 protectedbuffer_paddr,
 u32 emhf_dmaprot_initialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size);
 
-
 //DMA protect a given region of memory, start_paddr is
 //assumed to be page aligned physical memory address
 void emhf_dmaprot_protect(u32 start_paddr, u32 size);
 
+//----------------------------------------------------------------------
+//ARCH. BACKENDS
+//----------------------------------------------------------------------
+u32 emhf_dmaprot_arch_earlyinitialize(u64 protectedbuffer_paddr,
+	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
+	u64 memregionbase_paddr, u32 memregion_size);
+u32 emhf_dmaprot_arch_initialize(u64 protectedbuffer_paddr,
+	u32 protectedbuffer_vaddr, u32 protectedbuffer_size);
+void emhf_dmaprot_arch_protect(u32 start_paddr, u32 size);
 
-//x86 SVM backend
+
+//----------------------------------------------------------------------
+//x86 ARCH. INTERFACES
+//----------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------
+//x86vmx SUBARCH. INTERFACES
+//----------------------------------------------------------------------
 u32 emhf_dmaprot_arch_x86svm_earlyinitialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
 	u64 memregionbase_paddr, u32 memregion_size);
@@ -70,7 +96,9 @@ u32 emhf_dmaprot_arch_x86svm_initialize(u64 protectedbuffer_paddr,
 void emhf_dmaprot_arch_x86svm_protect(u32 start_paddr, u32 size);
 
 
-//x86 VMX backend
+//----------------------------------------------------------------------
+//x86vmx SUBARCH. INTERFACES
+//----------------------------------------------------------------------
 u32 emhf_dmaprot_arch_x86vmx_earlyinitialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
 	u64 memregionbase_paddr, u32 memregion_size);

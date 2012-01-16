@@ -27,6 +27,7 @@ OBJECTS_PRECOMPILED += ../emhf-tpm/tpm.o
 OBJECTS_PRECOMPILED += ../emhf-tpm/tpm_emhf.o 
 
 OBJECTS_PRECOMPILED += ../emhf-dmaprot/dmap-interface.o 
+OBJECTS_PRECOMPILED += ../emhf-dmaprot/arch/x86/dmap-x86.o 
 OBJECTS_PRECOMPILED += ../emhf-dmaprot/arch/x86/svm/dmap-x86svm.o 
 OBJECTS_PRECOMPILED += ../emhf-dmaprot/arch/x86/vmx/dmap-x86vmx.o
 
