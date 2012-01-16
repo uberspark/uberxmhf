@@ -149,10 +149,10 @@ void emhf_baseplatform_arch_x86vmx_reboot(VCPU *vcpu);
 //----------------------------------------------------------------------
 
 //wake up application processors (cores) in the system
-void emhf_arch_x86svm_baseplatform_wakeupAPs(void);
+void emhf_baseplatform_arch_x86svm_wakeupAPs(void);
 
 //allocate and setup VCPU structure for all the CPUs
-void emhf_arch_x86svm_baseplatform_allocandsetupvcpus(u32 cpu_vendor);
+void emhf_baseplatform_arch_x86svm_allocandsetupvcpus(u32 cpu_vendor);
 
 //SVM specific platform reboot
 void emhf_baseplatform_arch_x86svm_reboot(VCPU *vcpu);
