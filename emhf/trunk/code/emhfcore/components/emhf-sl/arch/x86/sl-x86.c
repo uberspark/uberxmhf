@@ -64,7 +64,7 @@ u64 emhf_sl_arch_sla2spa(void* x) {
 //---runtime paging setup-------------------------------------------------------
 //physaddr and virtaddr are assumed to be 2M aligned
 //returns 32-bit base address of page table root (can be loaded into CR3)
-u32 emhf_sl_arch_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsize){
+u32 emhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsize){
   pdpt_t xpdpt;
   pdt_t xpdt;
   u32 hva=0, i;
@@ -246,7 +246,7 @@ void emhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 	printf("\nSL: setup runtime TSS.");	
 
 	//setup paging structures for runtime 
-	ptba=emhf_sl_arch_setup_runtime_paging(rpb, rpb->XtVmmRuntimePhysBase, __TARGET_BASE, PAGE_ALIGN_UP2M(rpb->XtVmmRuntimeSize));
+	ptba=emhf_sl_arch_x86_setup_runtime_paging(rpb, rpb->XtVmmRuntimePhysBase, __TARGET_BASE, PAGE_ALIGN_UP2M(rpb->XtVmmRuntimeSize));
 	printf("\nSL: setup runtime paging structures.");        
 
 	printf("\nTransferring control to runtime");
@@ -254,7 +254,7 @@ void emhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 	printf("\nTop-of-stack=%08x, CR3=%08x", (rpb->XtVmmStackBase+rpb->XtVmmStackSize), ptba);
 
 	//transfer control to runtime and never return
-	emhf_sl_arch_invoke_runtime_entrypoint(rpb->XtVmmGdt, rpb->XtVmmIdt, 
+	emhf_sl_arch_x86_invoke_runtime_entrypoint(rpb->XtVmmGdt, rpb->XtVmmIdt, 
 				rpb->XtVmmEntryPoint, (rpb->XtVmmStackBase+rpb->XtVmmStackSize), ptba);
 	
 }

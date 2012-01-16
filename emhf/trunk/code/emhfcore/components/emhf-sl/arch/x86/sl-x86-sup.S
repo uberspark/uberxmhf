@@ -40,8 +40,8 @@
 
 .section .text
 //------------------------------------------------------------------------------	
-	.global emhf_sl_arch_invoke_runtime_entrypoint
-emhf_sl_arch_invoke_runtime_entrypoint:
+	.global emhf_sl_arch_x86_invoke_runtime_entrypoint
+emhf_sl_arch_x86_invoke_runtime_entrypoint:
 //------------------------------------------------------------------------------
 	//turn on paging
 	movl	$(0x00000030), %eax	//CR4_PAE | CR4_PSE
