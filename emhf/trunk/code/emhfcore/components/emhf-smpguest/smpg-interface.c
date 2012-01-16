@@ -51,31 +51,7 @@
 
 //initialize SMP guest logic
 void emhf_smpguest_initialize(VCPU *vcpu){
-	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-
-	//TODOs:
-	//1. conceal g_midtable_numentries behind "baseplatform" component interface
-	//2. remove g_isl dependency
-	//if we are the BSP and platform has more than 1 CPU, setup SIPI interception to tackle SMP guests
-	if(vcpu->isbsp && (g_midtable_numentries > 1)){
-		if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
-			emhf_smpguest_arch_x86svm_initialize(vcpu);
-			printf("\nCPU(0x%02x): setup x86svm SMP guest capabilities", vcpu->id);
-		}else{	//CPU_VENDOR_INTEL
-			emhf_smpguest_arch_x86vmx_initialize(vcpu);
-			printf("\nCPU(0x%02x): setup x86vmx SMP guest capabilities", vcpu->id);
-		}
-	}else{ //we are an AP, so just wait for SIPI signal
-			printf("\nCPU(0x%02x): AP, waiting for SIPI signal...", vcpu->id);
-			while(!vcpu->sipireceived);
-			printf("\nCPU(0x%02x): SIPI signal received, vector=0x%02x", vcpu->id, vcpu->sipivector);
-	
-			//g_isl->hvm_initialize_csrip(vcpu, ((vcpu->sipivector * PAGE_SIZE_4K) >> 4),
-			//	 (vcpu->sipivector * PAGE_SIZE_4K), 0x0ULL);
-			
-			//perform required setup after a guest awakens a new CPU
-			emhf_smpguest_arch_postCPUwakeup(vcpu);
-	}
+	emhf_smpguest_arch_initialize(vcpu);
 }
 
 //handle LAPIC access #DB (single-step) exception event

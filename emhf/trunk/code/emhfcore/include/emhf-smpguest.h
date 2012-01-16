@@ -43,6 +43,15 @@
 
 #ifndef __ASSEMBLY__
 
+//----------------------------------------------------------------------
+//exported DATA 
+//----------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------
+//exported FUNCTIONS 
+//----------------------------------------------------------------------
+
 //initialize SMP guest logic
 void emhf_smpguest_initialize(VCPU *vcpu);
 
@@ -66,20 +75,22 @@ void emhf_smpguest_eventhandler_nmiexception(VCPU *vcpu, struct regs *r);
 //note: returns 0xFFFFFFFF if there is no mapping
 u8 * emhf_smpguest_walk_pagetables(VCPU *vcpu, u32 vaddr);
 
-//----------------------------------------------------------------------
-//generic arch. backends
 
+//----------------------------------------------------------------------
+//ARCH. BACKENDS
+//----------------------------------------------------------------------
 
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping
 u8 * emhf_smpguest_arch_walk_pagetables(VCPU *vcpu, u32 vaddr);
 
-
 //perform required setup after a guest awakens a new CPU
 void emhf_smpguest_arch_postCPUwakeup(VCPU *vcpu);
 
 
-//x86 SVM backends
+//----------------------------------------------------------------------
+//x86svm SUBARCH. INTERFACES
+//----------------------------------------------------------------------
 void emhf_smpguest_arch_x86svm_initialize(VCPU *vcpu);
 void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, 
 	struct regs *r);
@@ -90,8 +101,9 @@ void emhf_smpguest_arch_x86svm_postCPUwakeup(VCPU *vcpu);
 //note: returns 0xFFFFFFFF if there is no mapping
 u8 * emhf_smpguest_arch_x86svm_walk_pagetables(VCPU *vcpu, u32 vaddr);
 
-
-//x86 VMX backends
+//----------------------------------------------------------------------
+//x86vmx SUBARCH. INTERFACES
+//----------------------------------------------------------------------
 void emhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu);
 void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, 
 	struct regs *r);

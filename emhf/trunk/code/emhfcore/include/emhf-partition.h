@@ -73,6 +73,9 @@ void emhf_partition_arch_setupguestOSstate(VCPU *vcpu);
 //start executing the partition and guest OS
 void emhf_partition_arch_start(VCPU *vcpu);
 
+//initialize SMP guest logic
+void emhf_smpguest_arch_initialize(VCPU *vcpu);
+
 //----------------------------------------------------------------------
 //x86 ARCH. INTERFACES
 //----------------------------------------------------------------------
