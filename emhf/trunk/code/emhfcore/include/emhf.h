@@ -74,6 +74,25 @@
 #include <_svm.h>        //SVM extensions
 #include <_vmx.h>				//VMX extensions
 
+#include <_txt.h>		//Trusted eXecution Technology (SENTER support)
+
+#include <_pci.h>        //PCI bus glue
+#include <_acpi.h>				//ACPI glue
+
+#include <_svm_eap.h>		//SVM DMA protection
+#include <_vmx_eap.h>		//VMX DMA protection
+
+#include <_tpm.h>			//generic TPM functions
+#include <_tpm_emhf.h>		//EMHF-specific TPM functions
+
+//language specifics
+#include <_sarg.h>
+//#include <_str.h>
+#include <_div64.h>
+
+#include <_perf.h>			//performance measurement routines
+
+
 #ifndef __ASSEMBLY__
 //----------------------------------------------------------------------
 //the master-id table, which is used by the AP bootstrap code
@@ -278,23 +297,6 @@ extern u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r);	//returns APP_S
 #include <emhf-baseplatform.h>	//EMHF base platform component
 
 
-#include <_txt.h>		//Trusted eXecution Technology (SENTER support)
-
-#include <_pci.h>        //PCI bus glue
-#include <_acpi.h>				//ACPI glue
-
-#include <_svm_eap.h>		//SVM DMA protection
-#include <_vmx_eap.h>		//VMX DMA protection
-
-#include <_tpm.h>			//generic TPM functions
-#include <_tpm_emhf.h>		//EMHF-specific TPM functions
-
-//language specifics
-#include <_sarg.h>
-//#include <_str.h>
-#include <_div64.h>
-
-#include <_perf.h>			//performance measurement routines
 
 //------------------------------------------------------------------------------
 //preferred TPM locality to use for access inside hypervisor

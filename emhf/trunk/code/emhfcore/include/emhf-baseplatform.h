@@ -119,6 +119,9 @@ void emhf_baseplatform_arch_x86_wakeupAPs(void);
 //generic x86 platform reboot
 void emhf_baseplatform_arch_x86_reboot(void);
 
+//get the physical address of the root system description pointer (rsdp)
+u32 emhf_baseplatform_arch_x86_acpi_getRSDP(ACPI_RSDP *rsdp);
+
 //----------------------------------------------------------------------
 //x86vmx SUBARCH. INTERFACES
 //----------------------------------------------------------------------

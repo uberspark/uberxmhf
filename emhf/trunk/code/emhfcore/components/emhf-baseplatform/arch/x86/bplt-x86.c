@@ -77,7 +77,7 @@ void emhf_baseplatform_arch_initialize(void){
 	//check ACPI subsystem
 	{
 		ACPI_RSDP rsdp;
-		if(!acpi_getRSDP(&rsdp)){
+		if(!emhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp)){
 			printf("\n%s: ACPI RSDP not found, Halting!", __FUNCTION__);
 			HALT();
 		}
