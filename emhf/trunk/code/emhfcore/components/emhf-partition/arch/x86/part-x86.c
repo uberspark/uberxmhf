@@ -35,23 +35,44 @@
 
 /*
  * EMHF partition component interface
+ * x86 backend
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
 #include <emhf.h>
 
 //initialize partition monitor for a given CPU
-void emhf_partition_initializemonitor(VCPU *vcpu){
-	emhf_partition_arch_initializemonitor(vcpu);
+void emhf_partition_arch_initializemonitor(VCPU *vcpu){
+	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
+		emhf_partition_arch_x86svm_initializemonitor(vcpu);
+	}else{ //CPU_VENDOR_INTEL
+		emhf_partition_arch_x86vmx_initializemonitor(vcpu);
+	}
+
 }
 
 //setup guest OS state for the partition
-void emhf_partition_setupguestOSstate(VCPU *vcpu){
-	emhf_partition_arch_setupguestOSstate(vcpu);
+void emhf_partition_arch_setupguestOSstate(VCPU *vcpu){
+	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
+		emhf_partition_arch_x86svm_setupguestOSstate(vcpu);
+	}else{ //CPU_VENDOR_INTEL
+		emhf_partition_arch_x86vmx_setupguestOSstate(vcpu);
+	}
 }
 
 //start executing the partition and guest OS
-void emhf_partition_start(VCPU *vcpu){
-	emhf_partition_arch_start(vcpu);
+void emhf_partition_arch_start(VCPU *vcpu){
+	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
+		emhf_partition_arch_x86svm_start(vcpu);
+	}else{ //CPU_VENDOR_INTEL
+		emhf_partition_arch_x86vmx_start(vcpu);
+	}
+	
 }
 

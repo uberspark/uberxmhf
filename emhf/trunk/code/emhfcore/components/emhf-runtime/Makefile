@@ -75,6 +75,7 @@ OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/svm/bplt-x86svm-smp.o
 
 
 OBJECTS_PRECOMPILED += ../emhf-partition/part-interface.o
+OBJECTS_PRECOMPILED += ../emhf-partition/arch/x86/part-x86.o
 OBJECTS_PRECOMPILED += ../emhf-partition/arch/x86/svm/part-x86svm.o
 OBJECTS_PRECOMPILED += ../emhf-partition/arch/x86/svm/part-x86svm-sup.o
 OBJECTS_PRECOMPILED += ../emhf-partition/arch/x86/vmx/part-x86vmx.o
