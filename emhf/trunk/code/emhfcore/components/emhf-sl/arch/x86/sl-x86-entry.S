@@ -330,5 +330,5 @@ sl_startnew:
 // sl stack, this is just a placeholder and ensures that the linker
 // actually "allocates" the stack up until 0x10000
 .section .sl_stack
-    .fill 4096, 1, 0
+    .fill 2048, 1, 0
 

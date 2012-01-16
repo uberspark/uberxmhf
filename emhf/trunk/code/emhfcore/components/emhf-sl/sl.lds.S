@@ -77,7 +77,8 @@ SECTIONS
 
   .bss : {
     *(.bss)
-    . = ALIGN(4096);    
+    /*. = ALIGN(4096);*/    
+    . = ALIGN(16);    
   } >low
 
 	/* protected DMA protection buffer for DMA protection boot-strapping */
