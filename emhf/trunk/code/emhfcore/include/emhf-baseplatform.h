@@ -45,10 +45,12 @@
 
 //----------------------------------------------------------------------
 //exported DATA 
+//----------------------------------------------------------------------
 
 
 //----------------------------------------------------------------------
 //exported FUNCTIONS 
+//----------------------------------------------------------------------
 
 //get CPU vendor
 u32 emhf_baseplatform_getcpuvendor(void);
@@ -66,7 +68,8 @@ void emhf_baseplatform_initialize(void);
 void emhf_baseplatform_reboot(VCPU *vcpu);
 
 //----------------------------------------------------------------------
-//generic arch. backends
+//ARCH. BACKENDS
+//----------------------------------------------------------------------
 
 //get CPU vendor
 u32 emhf_baseplatform_arch_getcpuvendor(void);
@@ -103,9 +106,9 @@ void emhf_baseplatform_arch_flat_copy(u8 *dest, u8 *src, u32 size);
 void emhf_baseplatform_arch_reboot(VCPU *vcpu);
 
 
-
 //----------------------------------------------------------------------
-//x86 arch. backends
+//x86 ARCH. INTERFACES
+//----------------------------------------------------------------------
 
 //return 1 if the calling CPU is the BSP
 u32 emhf_baseplatform_arch_x86_isbsp(void);
@@ -117,7 +120,8 @@ void emhf_baseplatform_arch_x86_wakeupAPs(void);
 void emhf_baseplatform_arch_x86_reboot(void);
 
 //----------------------------------------------------------------------
-//x86vmx arch. backends
+//x86vmx SUBARCH. INTERFACES
+//----------------------------------------------------------------------
 
 //initialize CPU state
 void emhf_baseplatform_arch_x86vmx_cpuinitialize(void);
@@ -141,7 +145,8 @@ void emhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu);
 void emhf_baseplatform_arch_x86vmx_reboot(VCPU *vcpu);
 
 //----------------------------------------------------------------------
-//x86svm arch. backends
+//x86svm SUBARCH. INTERFACES
+//----------------------------------------------------------------------
 
 //wake up application processors (cores) in the system
 void emhf_arch_x86svm_baseplatform_wakeupAPs(void);
