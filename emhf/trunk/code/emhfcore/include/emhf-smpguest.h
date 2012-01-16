@@ -61,9 +61,6 @@ void emhf_smpguest_quiesce(VCPU *vcpu);
 //endquiesce interface to resume all guest cores after a quiesce
 void emhf_smpguest_endquiesce(VCPU *vcpu);
 
-//quiescing handler for #NMI (non-maskable interrupt) exception event
-void emhf_smpguest_eventhandler_nmiexception(VCPU *vcpu, struct regs *r);
-
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping
 u8 * emhf_smpguest_walk_pagetables(VCPU *vcpu, u32 vaddr);
@@ -90,6 +87,9 @@ void emhf_smpguest_arch_x86_eventhandler_dbexception(VCPU *vcpu,
 
 //handle LAPIC access #NPF (nested page fault) event
 void emhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 gpa, u32 errorcode);
+
+//quiescing handler for #NMI (non-maskable interrupt) exception event
+void emhf_smpguest_arch_x86_eventhandler_nmiexception(VCPU *vcpu, struct regs *r);
 
 
 //----------------------------------------------------------------------

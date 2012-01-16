@@ -75,15 +75,6 @@ void emhf_smpguest_endquiesce(VCPU *vcpu){
 	}		
 }
 
-//quiescing handler for #NMI (non-maskable interrupt) exception event
-void emhf_smpguest_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
-	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
-		emhf_smpguest_arch_x86svm_eventhandler_nmiexception(vcpu, r);
-	}else{	//CPU_VENDOR_INTEL
-		emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(vcpu, r);
-	}		
-}	
 
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping

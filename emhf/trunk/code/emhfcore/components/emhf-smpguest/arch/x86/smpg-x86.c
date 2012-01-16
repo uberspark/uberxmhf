@@ -92,6 +92,15 @@ void emhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 gpa, u
 	
 }
 
+//quiescing handler for #NMI (non-maskable interrupt) exception event
+void emhf_smpguest_arch_x86_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
+	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
+		emhf_smpguest_arch_x86svm_eventhandler_nmiexception(vcpu, r);
+	}else{	//CPU_VENDOR_INTEL
+		emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(vcpu, r);
+	}		
+}	
 
 //perform required setup after a guest awakens a new CPU
 void emhf_smpguest_arch_postCPUwakeup(VCPU *vcpu){

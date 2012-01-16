@@ -147,7 +147,7 @@ void emhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 	printf("\nCPU(0x%02x): XtRtmExceptionHandler: Exception=0x%08X", vcpu->id, vector);
 	printf("\nCPU(0x%02x): ESP=0x%08x", vcpu->id, r->esp);
 	if(vector == 0x2){
-		emhf_smpguest_eventhandler_nmiexception(vcpu, r);
+		emhf_smpguest_arch_x86_eventhandler_nmiexception(vcpu, r);
 		return;
 	}	
 }
