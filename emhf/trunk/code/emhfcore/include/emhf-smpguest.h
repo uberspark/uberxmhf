@@ -70,13 +70,21 @@ u8 * emhf_smpguest_walk_pagetables(VCPU *vcpu, u32 vaddr);
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
 
+//initialize SMP guest logic
+void emhf_smpguest_arch_initialize(VCPU *vcpu);
+
+//quiesce interface to switch all guest cores into hypervisor mode
+void emhf_smpguest_arch_quiesce(VCPU *vcpu);
+
+//endquiesce interface to resume all guest cores after a quiesce
+void emhf_smpguest_arch_endquiesce(VCPU *vcpu);
+
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping
 u8 * emhf_smpguest_arch_walk_pagetables(VCPU *vcpu, u32 vaddr);
 
 //perform required setup after a guest awakens a new CPU
 void emhf_smpguest_arch_postCPUwakeup(VCPU *vcpu);
-
 
 //----------------------------------------------------------------------
 //x86 ARCH. INTERFACES

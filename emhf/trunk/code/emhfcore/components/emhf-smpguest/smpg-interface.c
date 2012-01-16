@@ -57,28 +57,18 @@ void emhf_smpguest_initialize(VCPU *vcpu){
 
 //quiesce interface to switch all guest cores into hypervisor mode
 void emhf_smpguest_quiesce(VCPU *vcpu){
-	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
-		emhf_smpguest_arch_x86svm_quiesce(vcpu);
-	}else{	//CPU_VENDOR_INTEL
-		emhf_smpguest_arch_x86vmx_quiesce(vcpu);
-	}	
+	emhf_smpguest_arch_quiesce(vcpu);
 }
 
 //endquiesce interface to resume all guest cores after a quiesce
 void emhf_smpguest_endquiesce(VCPU *vcpu){
-	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
-		emhf_smpguest_arch_x86svm_endquiesce(vcpu);
-	}else{	//CPU_VENDOR_INTEL
-		emhf_smpguest_arch_x86vmx_endquiesce(vcpu);
-	}		
+	emhf_smpguest_arch_endquiesce(vcpu);
 }
 
 
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping
 u8 * emhf_smpguest_walk_pagetables(VCPU *vcpu, u32 vaddr){
-		return emhf_smpguest_arch_walk_pagetables(vcpu, vaddr);
+	return emhf_smpguest_arch_walk_pagetables(vcpu, vaddr);
 }
 
