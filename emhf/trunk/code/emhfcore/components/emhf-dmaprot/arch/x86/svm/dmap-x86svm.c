@@ -83,7 +83,7 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
 
 	//step-1: we read capabilities pointer (PCI_CONF_HDR_IDX_CAPABILITIES_POINTER)
 	//in b:d.f 0:24.3. If its 0, then DEV support is not available
-		pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, PCI_CONF_HDR_IDX_CAPABILITIES_POINTER, sizeof(u32), &mc_capabilities_pointer);
+		emhf_baseplatform_arch_x86_pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, PCI_CONF_HDR_IDX_CAPABILITIES_POINTER, sizeof(u32), &mc_capabilities_pointer);
 		if(mc_capabilities_pointer == 0)
 			return 0;	//DEV support unavailable
 	
@@ -94,7 +94,7 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
 	  
 	  do{
 		  //get the ID of this capability block
-		  pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, mc_caplist_nextptr, sizeof(u8), &mc_caplist_id);
+		  emhf_baseplatform_arch_x86_pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, mc_caplist_nextptr, sizeof(u8), &mc_caplist_id);
 		  
 			//check if this is a DEV capability ID block
 			if((u8)mc_caplist_id == PCI_CAPABILITIES_POINTER_ID_DEV){
@@ -103,7 +103,7 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
 			}
 		  
 		  //get the index of the next capability block
-			pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, mc_caplist_nextptr, sizeof(u8), &mc_caplist_nextptr);
+			emhf_baseplatform_arch_x86_pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, mc_caplist_nextptr, sizeof(u8), &mc_caplist_nextptr);
 		}while(mc_caplist_nextptr != 0);
 	
 
@@ -292,11 +292,11 @@ static u32 svm_eap_dev_read(u32 function, u32 index){
 
 	//step-1: write function and index to dev_fnidx_reg
 	//format of dev_fnidx_reg is in AMD Dev. Vol2 (p. 407)
-	pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
+	emhf_baseplatform_arch_x86_pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
 		_svm_eap.dev_fnidx_reg, sizeof(u32), (u32)(((function & 0xff) << 8) + (index & 0xff)) );
 
 	//step-2: read 32-bit value from dev_data_reg
-	pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
+	emhf_baseplatform_arch_x86_pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
 		_svm_eap.dev_data_reg, sizeof(u32), &value);
   
   return value;
@@ -314,11 +314,11 @@ static void svm_eap_dev_write(u32 function, u32 index, u32 value){
 
 	//step-1: write function and index to dev_fnidx_reg
 	//format of dev_fnidx_reg is in AMD Dev. Vol2 (p. 407)
-	pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
+	emhf_baseplatform_arch_x86_pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
 		_svm_eap.dev_fnidx_reg, sizeof(u32), (u32)(((function & 0xff) << 8) + (index & 0xff)) );
 
 	//step-2: write 32-bit value to dev_data_reg
-	pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
+	emhf_baseplatform_arch_x86_pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
 		_svm_eap.dev_data_reg, sizeof(u32), value);
 }
 

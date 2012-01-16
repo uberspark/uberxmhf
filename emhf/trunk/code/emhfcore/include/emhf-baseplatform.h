@@ -122,6 +122,20 @@ void emhf_baseplatform_arch_x86_reboot(void);
 //get the physical address of the root system description pointer (rsdp)
 u32 emhf_baseplatform_arch_x86_acpi_getRSDP(ACPI_RSDP *rsdp);
 
+//PCI subsystem initialization
+void emhf_baseplatform_arch_x86_pci_initialize(void);
+
+//does a PCI type-1 write of PCI config space for a given bus, device, 
+//function and index
+void emhf_baseplatform_arch_x86_pci_type1_write(u32 bus, u32 device, u32 function, u32 index, u32 len,
+	u32 value);
+	
+//does a PCI type-1 read of PCI config space for a given bus, device, 
+//function and index
+void emhf_baseplatform_arch_x86_pci_type1_read(u32 bus, u32 device, u32 function, u32 index, u32 len,
+			u32 *value);
+
+
 //----------------------------------------------------------------------
 //x86vmx SUBARCH. INTERFACES
 //----------------------------------------------------------------------

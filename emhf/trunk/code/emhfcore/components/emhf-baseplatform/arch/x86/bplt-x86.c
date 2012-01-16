@@ -72,7 +72,7 @@ u32 emhf_baseplatform_arch_getcpuvendor(void){
 //initialize basic platform elements
 void emhf_baseplatform_arch_initialize(void){
 	//initialize PCI subsystem
-	pci_initialize();
+	emhf_baseplatform_arch_x86_pci_initialize();
 	
 	//check ACPI subsystem
 	{

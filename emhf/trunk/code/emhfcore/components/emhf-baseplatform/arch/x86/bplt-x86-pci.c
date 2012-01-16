@@ -153,8 +153,8 @@ static void _pci_enumeratebus(void){
 			for(f=0; f < PCI_FUNCTION_MAX; f++){		
 				u32 vendor_id, device_id;
 				//read device and vendor ids, if no device then both will be 0xFFFF
-				pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_VENDOR_ID, sizeof(u16), &vendor_id);
-				pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_DEVICE_ID, sizeof(u16), &device_id);
+				emhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_VENDOR_ID, sizeof(u16), &vendor_id);
+				emhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_DEVICE_ID, sizeof(u16), &device_id);
 				if(vendor_id == 0xFFFF && device_id == 0xFFFF)
 					break;
 				
@@ -171,7 +171,7 @@ static void _pci_enumeratebus(void){
 //function and index
 //len = 1(byte), 2(word) and 4(dword)
 //value is a pointer to a 32-bit dword which contains the value read
-void pci_type1_read(u32 bus, u32 device, u32 function, u32 index, u32 len,
+void emhf_baseplatform_arch_x86_pci_type1_read(u32 bus, u32 device, u32 function, u32 index, u32 len,
 			u32 *value){
         
 	//sanity checks
@@ -203,7 +203,7 @@ void pci_type1_read(u32 bus, u32 device, u32 function, u32 index, u32 len,
 //len = 1(byte), 2(word) and 4(dword)
 //value contains the value to be written
 
-void pci_type1_write(u32 bus, u32 device, u32 function, u32 index, u32 len,
+void emhf_baseplatform_arch_x86_pci_type1_write(u32 bus, u32 device, u32 function, u32 index, u32 len,
 	u32 value){
 
  	//sanity checks
@@ -235,7 +235,7 @@ void pci_type1_write(u32 bus, u32 device, u32 function, u32 index, u32 len,
 //PCI subsystem initialization
 //check that PCI chipset supports type-1 accesses
 //true for most systems after 2001
-void pci_initialize(void){
+void emhf_baseplatform_arch_x86_pci_initialize(void){
   u32 tmp;
 
 	//save value at PCI_CONFIG_ADDR_PORT
