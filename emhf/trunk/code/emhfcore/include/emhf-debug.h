@@ -91,16 +91,16 @@ void emhf_debug_init(char *params);
 
 
 //----------------------------------------------------------------------
-// arch. interfaces (GENERIC)
+//ARCH. BACKENDS
+//----------------------------------------------------------------------
 void emhf_debug_arch_init(char *params);
 void emhf_debug_arch_putstr(const char *str);
 
 
 //----------------------------------------------------------------------
-// arch. interfaces (SUBARCH SPECIFIC)
+//x86 ARCH. INTERFACES
+//----------------------------------------------------------------------
 extern uart_config_t g_uart_config;
-
-
 
 
 
