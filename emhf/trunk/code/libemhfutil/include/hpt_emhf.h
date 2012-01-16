@@ -83,10 +83,10 @@ static inline hpt_pm_t hpt_emhf_get_root_pm(VCPU *vcpu)
   hpt_type_t t = hpt_emhf_get_hpt_type(vcpu);
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     return spa2hva(hpt_eptp_get_address(t,
-                                        emhf_memprot_get_EPTP(vcpu)));
+                                        emhf_memprot_arch_x86vmx_get_EPTP(vcpu)));
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     return spa2hva(hpt_cr3_get_address(t,
-                                       emhf_memprot_get_h_cr3(vcpu)));
+                                       emhf_memprot_arch_x86svm_get_h_cr3(vcpu)));
   } else {
     ASSERT(0);
     return NULL;
@@ -97,12 +97,12 @@ static inline void hpt_emhf_set_root_pm(VCPU *vcpu, hpt_pm_t root)
 {
   hpt_type_t t = hpt_emhf_get_hpt_type(vcpu);
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    emhf_memprot_set_EPTP(vcpu, hpt_eptp_set_address(t,
-                                                     emhf_memprot_get_EPTP(vcpu),
+    emhf_memprot_arch_x86vmx_set_EPTP(vcpu, hpt_eptp_set_address(t,
+                                                     emhf_memprot_arch_x86vmx_get_EPTP(vcpu),
                                                      hva2spa(root)));
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    emhf_memprot_set_h_cr3(vcpu, hpt_cr3_set_address(t,
-                                                    emhf_memprot_get_h_cr3(vcpu),
+    emhf_memprot_arch_x86svm_set_h_cr3(vcpu, hpt_cr3_set_address(t,
+                                                    emhf_memprot_arch_x86svm_get_h_cr3(vcpu),
                                                     hva2spa(root)));
   } else {
     ASSERT(0);

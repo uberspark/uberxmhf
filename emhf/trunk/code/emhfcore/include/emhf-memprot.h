@@ -52,7 +52,12 @@
 #define MEMP_PROT_NOEXECUTE		(32) // page no-execute
 
 //----------------------------------------------------------------------
-// INTERFACES
+//exported DATA 
+//----------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------
+//exported FUNCTIONS 
 //----------------------------------------------------------------------
 
 //initialize memory protection for a core
@@ -84,7 +89,7 @@ u32 emhf_memprot_getprot(VCPU *vcpu, u64 gpa);
 
 
 //----------------------------------------------------------------------
-// ARCH. interfaces
+//ARCH. BACKENDS
 //----------------------------------------------------------------------
 
 //initialize memory protection for a core
@@ -116,32 +121,44 @@ u32 emhf_memprot_arch_getprot(VCPU *vcpu, u64 gpa);
 
 
 //----------------------------------------------------------------------
-// SUBARCH. interfaces
+//x86 ARCH. INTERFACES
 //----------------------------------------------------------------------
 
-//initialize memory protection for a core
-void emhf_memprot_arch_svm_initialize(VCPU *vcpu);	//AMD SVM 
-void emhf_memprot_arch_vmx_initialize(VCPU *vcpu);	//Intel VMX 
 
-//flush hardware page table mappings (TLB) 
-void emhf_memprot_arch_x86svm_flushmappings(VCPU *vcpu); //AMD SVM 
-void emhf_memprot_arch_x86vmx_flushmappings(VCPU *vcpu); //Intel VMX 
+//----------------------------------------------------------------------
+//x86vmx SUBARCH. INTERFACES
+//----------------------------------------------------------------------
+void emhf_memprot_arch_x86vmx_initialize(VCPU *vcpu);	//initialize memory protection for a core
+void emhf_memprot_arch_x86vmx_flushmappings(VCPU *vcpu); //flush hardware page table mappings (TLB) 
+void emhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype); //set protection for a given physical memory address
+u32 emhf_memprot_arch_x86vmx_getprot(VCPU *vcpu, u64 gpa); //get protection for a given physical memory address
+u64 emhf_memprot_arch_x86vmx_get_EPTP(VCPU *vcpu); // get or set EPTP (only valid on Intel)
+void emhf_memprot_arch_x86vmx_set_EPTP(VCPU *vcpu, u64 eptp);
 
-//set protection for a given physical memory address
-void emhf_memprot_arch_x86svm_setprot(VCPU *vcpu, u64 gpa, u32 prottype); //AMD SVM
-void emhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype); //Intel VMX
+//----------------------------------------------------------------------
+//x86svm SUBARCH. INTERFACES
+//----------------------------------------------------------------------
 
-//get protection for a given physical memory address
-u32 emhf_memprot_arch_x86svm_getprot(VCPU *vcpu, u64 gpa); //AMD SVM
-u32 emhf_memprot_arch_x86vmx_getprot(VCPU *vcpu, u64 gpa); //Intel VMX
+void emhf_memprot_arch_x86svm_initialize(VCPU *vcpu);	//initialize memory protection for a core
+void emhf_memprot_arch_x86svm_flushmappings(VCPU *vcpu); //flush hardware page table mappings (TLB) 
+void emhf_memprot_arch_x86svm_setprot(VCPU *vcpu, u64 gpa, u32 prottype); //set protection for a given physical memory address
+u32 emhf_memprot_arch_x86svm_getprot(VCPU *vcpu, u64 gpa); //get protection for a given physical memory address
+u64 emhf_memprot_arch_x86svm_get_h_cr3(VCPU *vcpu); // get or set host cr3 (only valid on AMD)
+void emhf_memprot_arch_x86svm_set_h_cr3(VCPU *vcpu, u64 hcr3);
 
-// get or set EPTP (only valid on Intel)
-u64 emhf_memprot_get_EPTP(VCPU *vcpu);
-void emhf_memprot_set_EPTP(VCPU *vcpu, u64 eptp);
 
-// get or set host cr3 (only valid on AMD)
-u64 emhf_memprot_get_h_cr3(VCPU *vcpu);
-void emhf_memprot_set_h_cr3(VCPU *vcpu, u64 hcr3);
+
+
+
+
+
+
+
+
+
+
+
+
 
 #endif	//__ASSEMBLY__
 

@@ -43,10 +43,10 @@
 void emhf_memprot_arch_initialize(VCPU *vcpu){
 	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
-		emhf_memprot_arch_svm_initialize(vcpu);
+		emhf_memprot_arch_x86svm_initialize(vcpu);
 		printf("\nCPU(0x%02x): Activated SVM NPTs.", vcpu->id);
 	}else{	//CPU_VENDOR_INTEL
-		emhf_memprot_arch_vmx_initialize(vcpu);
+		emhf_memprot_arch_x86vmx_initialize(vcpu);
 		printf("\nCPU(0x%02x): Activated VMX EPTs.", vcpu->id);
 	}
 }

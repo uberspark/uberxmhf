@@ -47,7 +47,7 @@ static void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts
 // global interfaces (functions) exported by this component
 
 // initialize memory protection structures for a given core (vcpu)
-void emhf_memprot_arch_svm_initialize(VCPU *vcpu){
+void emhf_memprot_arch_x86svm_initialize(VCPU *vcpu){
 	struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
 	
 	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD);
@@ -112,7 +112,7 @@ void emhf_memprot_arch_x86svm_flushmappings(VCPU *vcpu){
 //set protection for a given physical memory address
 void emhf_memprot_arch_x86svm_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
   u32 pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
-  u64 *pt = (u64 *)(u32)emhf_memprot_get_h_cr3(vcpu); //TODO: push into SVM sub arch. backend
+  u64 *pt = (u64 *)(u32)emhf_memprot_arch_x86svm_get_h_cr3(vcpu); //TODO: push into SVM sub arch. backend
   u64 flags=0;
 
   //default is not-present, read-only, no-execute	
@@ -137,7 +137,7 @@ void emhf_memprot_arch_x86svm_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
 //get protection for a given physical memory address
 u32 emhf_memprot_arch_x86svm_getprot(VCPU *vcpu, u64 gpa){
   u32 pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
-  u64 *pt = (u64 *)(u32)emhf_memprot_get_h_cr3(vcpu); //TODO: push into svm sub arch. backend
+  u64 *pt = (u64 *)(u32)emhf_memprot_arch_x86svm_get_h_cr3(vcpu); //TODO: push into svm sub arch. backend
   u64 entry = pt[pfn];
   u32 prottype;
   
@@ -161,12 +161,12 @@ u32 emhf_memprot_arch_x86svm_getprot(VCPU *vcpu, u64 gpa){
   return prottype;
 }
 
-u64 emhf_memprot_get_h_cr3(VCPU *vcpu)
+u64 emhf_memprot_arch_x86svm_get_h_cr3(VCPU *vcpu)
 {
   ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD);
   return ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3; 
 }
-void emhf_memprot_set_h_cr3(VCPU *vcpu, u64 h_cr3)
+void emhf_memprot_arch_x86svm_set_h_cr3(VCPU *vcpu, u64 h_cr3)
 {
   ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD);
   ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3 = h_cr3;
