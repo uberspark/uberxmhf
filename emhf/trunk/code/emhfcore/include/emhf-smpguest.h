@@ -83,12 +83,14 @@ void emhf_smpguest_arch_endquiesce(VCPU *vcpu);
 //note: returns 0xFFFFFFFF if there is no mapping
 u8 * emhf_smpguest_arch_walk_pagetables(VCPU *vcpu, u32 vaddr);
 
-//perform required setup after a guest awakens a new CPU
-void emhf_smpguest_arch_postCPUwakeup(VCPU *vcpu);
 
 //----------------------------------------------------------------------
 //x86 ARCH. INTERFACES
 //----------------------------------------------------------------------
+
+//perform required setup after a guest awakens a new CPU
+void emhf_smpguest_arch_x86_postCPUwakeup(VCPU *vcpu);
+
 //handle LAPIC access #DB (single-step) exception event
 void emhf_smpguest_arch_x86_eventhandler_dbexception(VCPU *vcpu, 
 	struct regs *r);

@@ -64,7 +64,7 @@ void emhf_smpguest_arch_initialize(VCPU *vcpu){
 			//	 (vcpu->sipivector * PAGE_SIZE_4K), 0x0ULL);
 			
 			//perform required setup after a guest awakens a new CPU
-			emhf_smpguest_arch_postCPUwakeup(vcpu);
+			emhf_smpguest_arch_x86_postCPUwakeup(vcpu);
 	}
 	
 }
@@ -103,7 +103,7 @@ void emhf_smpguest_arch_x86_eventhandler_nmiexception(VCPU *vcpu, struct regs *r
 }	
 
 //perform required setup after a guest awakens a new CPU
-void emhf_smpguest_arch_postCPUwakeup(VCPU *vcpu){
+void emhf_smpguest_arch_x86_postCPUwakeup(VCPU *vcpu){
 	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
