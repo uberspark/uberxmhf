@@ -376,7 +376,7 @@ static void _vmx_handle_intercept_eptviolation(VCPU *vcpu, struct regs *r){
 
 	//check if EPT violation is due to LAPIC interception
 	if(vcpu->isbsp && (gpa >= g_vmx_lapic_base) && (gpa < (g_vmx_lapic_base + PAGE_SIZE_4K)) ){
-    emhf_smpguest_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
+    emhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
   }else{ //no, pass it to emhf app  
 	  emhf_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, gva,
   	  (errorcode & 7));
@@ -494,7 +494,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 				//	break;
 
 				case 0x01:
-					emhf_smpguest_eventhandler_dbexception(vcpu, r);
+					emhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
 					break;				
 				
 				case 0x02:	//NMI

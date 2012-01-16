@@ -69,6 +69,30 @@ void emhf_smpguest_arch_initialize(VCPU *vcpu){
 	
 }
 
+
+//handle LAPIC access #DB (single-step) exception event
+void emhf_smpguest_arch_x86_eventhandler_dbexception(VCPU *vcpu, 
+	struct regs *r){
+	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
+		emhf_smpguest_arch_x86svm_eventhandler_dbexception(vcpu, r);
+	}else{	//CPU_VENDOR_INTEL
+		emhf_smpguest_arch_x86vmx_eventhandler_dbexception(vcpu, r);
+	}
+}
+
+//handle LAPIC access #NPF (nested page fault) event
+void emhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 gpa, u32 errorcode){
+	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
+		emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
+	}else{	//CPU_VENDOR_INTEL
+		emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
+	}	
+	
+}
+
+
 //perform required setup after a guest awakens a new CPU
 void emhf_smpguest_arch_postCPUwakeup(VCPU *vcpu){
 	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);

@@ -55,13 +55,6 @@
 //initialize SMP guest logic
 void emhf_smpguest_initialize(VCPU *vcpu);
 
-//handle LAPIC access #DB (single-step) exception event
-void emhf_smpguest_eventhandler_dbexception(VCPU *vcpu, 
-	struct regs *r);
-
-//handle LAPIC access #NPF (nested page fault) event
-void emhf_smpguest_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 gpa, u32 errorcode);
-
 //quiesce interface to switch all guest cores into hypervisor mode
 void emhf_smpguest_quiesce(VCPU *vcpu);
 
@@ -86,6 +79,17 @@ u8 * emhf_smpguest_arch_walk_pagetables(VCPU *vcpu, u32 vaddr);
 
 //perform required setup after a guest awakens a new CPU
 void emhf_smpguest_arch_postCPUwakeup(VCPU *vcpu);
+
+
+//----------------------------------------------------------------------
+//x86 ARCH. INTERFACES
+//----------------------------------------------------------------------
+//handle LAPIC access #DB (single-step) exception event
+void emhf_smpguest_arch_x86_eventhandler_dbexception(VCPU *vcpu, 
+	struct regs *r);
+
+//handle LAPIC access #NPF (nested page fault) event
+void emhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 gpa, u32 errorcode);
 
 
 //----------------------------------------------------------------------
