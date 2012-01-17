@@ -102,18 +102,35 @@ hpt_prot_t reg_prot_of_type(int type)
   ASSERT(0); return 0; /* unreachable; appeases compiler */
 }
 
+
+typedef struct {
+  hpt_pmo_t *host_pmo_root;
+  hpt_walk_ctx_t *host_walk_ctx;
+} scode_guest_pa2ptr_ctx_t;
+static void* hpt_checked_guest_pa2ptr(void *ctx, hpt_pa_t gpa)
+{
+  scode_guest_pa2ptr_ctx_t *cctx = ctx;
+  hpt_prot_t host_prots;
+
+  /* in case of maliciously constructed guest page tables, we need to
+     check host page tables for RW access. */
+  ASSERT(cctx);
+  host_prots = hpto_walk_get_effective_prots(cctx->host_walk_ctx,
+                                             cctx->host_pmo_root,
+                                             gpa,
+                                             NULL);
+  if ((host_prots & HPT_PROTS_RW) != HPT_PROTS_RW) {
+    dprintf(LOG_ERROR, "ERROR: Guest-physical-address 0x%llx access denied. prots: %llx\n", gpa, host_prots);
+    return NULL;
+  }
+
+  return gpa2hva(gpa);
+}
+
 bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
                                     hpt_prot_t reqd_prots, bool reqd_user_accessible,
                                     gva_t vaddr, size_t size_bytes)
 {
-  hpt_type_t guest_t = hpt_emhf_get_guest_hpt_type(vcpu);
-  hpt_pmo_t guest_root = {
-    .pm = hpt_emhf_get_guest_root_pm(vcpu),
-    .t = guest_t,
-    .lvl = hpt_root_lvl(guest_t),
-  };
-  hpt_walk_ctx_t guest_ctx = hpt_guest_walk_ctx;
-
   hpt_type_t host_t = hpt_emhf_get_hpt_type(vcpu);
   hpt_pmo_t host_root = {
     .pm = hpt_emhf_get_root_pm(vcpu),
@@ -122,10 +139,39 @@ bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
   };
   hpt_walk_ctx_t host_ctx = hpt_nested_walk_ctx;
 
+  hpt_type_t guest_t = hpt_emhf_get_guest_hpt_type(vcpu);
+  hpt_pmo_t guest_root = {
+    .pm = hpt_emhf_get_guest_root_pm(vcpu),
+    .t = guest_t,
+    .lvl = hpt_root_lvl(guest_t),
+  };
+  hpt_walk_ctx_t guest_ctx = hpt_guest_walk_ctx;
+  scode_guest_pa2ptr_ctx_t pa2ptr_ctx = {
+    .host_pmo_root = &host_root,
+    .host_walk_ctx = &host_ctx,
+  };
+
   size_t i;
 
   host_ctx.t = host_t;
   guest_ctx.t = guest_t;
+  guest_ctx.pa2ptr = &hpt_checked_guest_pa2ptr;
+  guest_ctx.pa2ptr_ctx = &pa2ptr_ctx;
+
+  /* check that the guest root pagemap is accessible in the host page tables */
+  {
+    hpt_prot_t prot;
+    gpa_t guest_root_gpa = hva2gpa(guest_root.pm);
+    prot = hpto_walk_get_effective_prots(&host_ctx,
+                                         &host_root,
+                                         guest_root_gpa,
+                                         NULL);
+    if ((prot & HPT_PROTS_RW) != HPT_PROTS_RW) {
+      dprintf(LOG_ERROR, "ERROR: Guest root at hva:%p gpa:%llx not accessible in host page tables\n",
+              guest_root.pm, guest_root_gpa);
+      return false;
+    }
+  }
 
   for(i=0; i<size_bytes; i += PAGE_SIZE_4K) {
     hpt_prot_t host_prots, guest_prots;
