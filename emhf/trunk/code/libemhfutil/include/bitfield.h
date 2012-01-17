@@ -52,6 +52,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <assert.h>
 
 static inline u64 ZERO_HI64(u64 x, int bits)
 {
@@ -106,12 +107,12 @@ static inline u64 BR32_GET_HL(u32 x32, int hi, int lo)
 
 static inline u64 BR64_SET_HL(u64 x64, int hi, int lo, u64 val)
 {
-  ASSERT(ZERO_HI64(val, 63-(hi-lo)) == val);
+  assert(ZERO_HI64(val, 63-(hi-lo)) == val);
   return ((x64 & ~MASKRANGE64((hi), (lo))) | ((val) << (lo)));
 }
 static inline u32 BR32_SET_HL(u32 x32, int hi, int lo, u32 val)
 {
-  ASSERT(ZERO_HI64(val, 31-(hi-lo)) == val);
+  assert(ZERO_HI64(val, 31-(hi-lo)) == val);
   return ((x32 & ~MASKRANGE32((hi), (lo))) | ((val) << (lo)));
 }
 
