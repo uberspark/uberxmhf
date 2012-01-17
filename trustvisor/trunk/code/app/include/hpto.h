@@ -43,18 +43,6 @@
 
 #include <hpt_ext.h>
 
-typedef struct {
-  hpt_pm_t pm;
-  hpt_type_t t;
-  int lvl;
-} hpt_pmo_t;
-
-typedef struct {
-  hpt_pme_t pme;
-  hpt_type_t t;
-  int lvl;
-} hpt_pmeo_t;
-
 int hpt_walk_insert_pmeo(const hpt_walk_ctx_t *ctx,
                          hpt_pmo_t *pmo,
                          const hpt_pmeo_t *pmeo,

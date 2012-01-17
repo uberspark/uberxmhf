@@ -77,6 +77,18 @@ typedef u64 hpt_prot_t; /* pme protection flags type */
 typedef u64 hpt_va_t; /* virtual address type */
 typedef u64 hpt_pa_t; /* physical address type */
 
+typedef struct {
+  hpt_pm_t pm;
+  hpt_type_t t;
+  int lvl;
+} hpt_pmo_t;
+
+typedef struct {
+  hpt_pme_t pme;
+  hpt_type_t t;
+  int lvl;
+} hpt_pmeo_t;
+
 typedef hpt_pa_t (*hpt_ptr2pa_t)(void *ctx, void *ptr); /* translate a referencable pointer to a physical address */
 typedef void* (*hpt_pa2ptr_t)(void *ctx, hpt_pa_t pa); /* translate a physical address to a referenceable pointer */
 typedef void* (*hpt_get_zeroed_page_t)(void *ctx, size_t alignment, size_t sz);
