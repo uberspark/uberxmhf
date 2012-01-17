@@ -152,17 +152,8 @@ size_t hpt_pm_size(hpt_type_t t, int lvl);
 u64 hpt_cr3_set_address(hpt_type_t t, u64 cr3, hpt_pa_t a);
 hpt_pa_t hpt_cr3_get_address(hpt_type_t t, u64 cr3);
 
-static inline u64 hpt_eptp_set_address(hpt_type_t t, u64 eptp, hpt_pa_t a)
-{
-  assert(t == HPT_TYPE_EPT);
-  return BR64_COPY_BITS_HL(eptp, a, HPT_EPTP_PML4_HI, HPT_EPTP_PML4_LO, 0);
-}
-
-static inline hpt_pa_t hpt_eptp_get_address(hpt_type_t t, u64 eptp)
-{
-  assert(t == HPT_TYPE_EPT);
-  return BR64_COPY_BITS_HL(0, eptp, HPT_EPTP_PML4_HI, HPT_EPTP_PML4_LO, 0);
-}
+u64 hpt_eptp_set_address(hpt_type_t t, u64 eptp, hpt_pa_t a);
+hpt_pa_t hpt_eptp_get_address(hpt_type_t t, u64 eptp);
 
 #define MAX(x, y) (((y) > (x)) ? (y) : (x))
 #define MIN(x, y) (((y) < (x)) ? (y) : (x))

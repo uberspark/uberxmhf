@@ -117,3 +117,15 @@ hpt_pa_t hpt_cr3_get_address(hpt_type_t t, u64 cr3)
   }
   assert(0); return (hpt_pa_t)0; /* unreachable; appeases compiler */
 }
+
+u64 hpt_eptp_set_address(hpt_type_t t, u64 eptp, hpt_pa_t a)
+{
+  assert(t == HPT_TYPE_EPT);
+  return BR64_COPY_BITS_HL(eptp, a, HPT_EPTP_PML4_HI, HPT_EPTP_PML4_LO, 0);
+}
+
+hpt_pa_t hpt_eptp_get_address(hpt_type_t t, u64 eptp)
+{
+  assert(t == HPT_TYPE_EPT);
+  return BR64_COPY_BITS_HL(0, eptp, HPT_EPTP_PML4_HI, HPT_EPTP_PML4_LO, 0);
+}
