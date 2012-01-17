@@ -47,6 +47,11 @@
 
 //#include "_types.h"
 #include <bitfield.h>
+#include <stddef.h>
+
+#ifndef hpt_log_trace
+# define hpt_log_trace(fmt, args...) while(0)
+#endif
 
 typedef enum {
   HPT_TYPE_NORM=0, /* x86 'normal'\legacy */
@@ -108,42 +113,18 @@ typedef struct {
 #define HPT_PM_SIZE 4096
 
 /* page map sizes, in bytes. note that zero index is invalid. */
-static const u16 hpt_pm_sizes[HPT_TYPE_NUM][HPT_MAX_LEVEL+1] =
-  {
-    [HPT_TYPE_NORM] = {0, HPT_PM_SIZE, HPT_PM_SIZE, 0, 0},
-    [HPT_TYPE_PAE]  = {0, HPT_PM_SIZE, HPT_PM_SIZE, 4*sizeof(hpt_pme_t), 0},
-    [HPT_TYPE_LONG] = {0, HPT_PM_SIZE, HPT_PM_SIZE, HPT_PM_SIZE, HPT_PM_SIZE },
-    [HPT_TYPE_EPT]  = {0, HPT_PM_SIZE, HPT_PM_SIZE, HPT_PM_SIZE, HPT_PM_SIZE },
-  };
+extern const u16 hpt_pm_sizes[HPT_TYPE_NUM][HPT_MAX_LEVEL+1];
 
 /* page map sizes, in bytes. note that zero index is invalid. */
-static const u16 hpt_pm_alignments[HPT_TYPE_NUM][HPT_MAX_LEVEL+1] =
-  {
-    [HPT_TYPE_NORM] = { 0, HPT_PM_SIZE, HPT_PM_SIZE, 0, 0},
-    [HPT_TYPE_PAE]  = { 0, HPT_PM_SIZE, HPT_PM_SIZE, 32, 0},
-    [HPT_TYPE_LONG] = { 0, HPT_PM_SIZE, HPT_PM_SIZE, HPT_PM_SIZE, 1 },
-    [HPT_TYPE_EPT]  = { 0, HPT_PM_SIZE, HPT_PM_SIZE, HPT_PM_SIZE, HPT_PM_SIZE },
-  };
+extern const u16 hpt_pm_alignments[HPT_TYPE_NUM][HPT_MAX_LEVEL+1];
 
 /* high bit of va used to index into the page map of the given level.
  * we treat level '0' specially here, so that the low bit of the index
  * can consistently be found by looking up the entry for 'level-1'.
  */
-static const u8 hpt_va_idx_hi[HPT_TYPE_NUM][HPT_MAX_LEVEL+1] =
-  {
-    [HPT_TYPE_NORM] = { 11, 21, 31, 0, 0},
-    [HPT_TYPE_PAE]  = { 11, 20, 29, 31, 0},
-    [HPT_TYPE_LONG] = { 11, 20, 29, 38, 47},
-    [HPT_TYPE_EPT]  = { 11, 20, 29, 38, 47},
-  };
+extern const u8 hpt_va_idx_hi[HPT_TYPE_NUM][HPT_MAX_LEVEL+1];
 
-static const u8 hpt_type_max_lvl[HPT_TYPE_NUM] =
-  {
-    [HPT_TYPE_NORM] = 2,
-    [HPT_TYPE_PAE]  = 3,
-    [HPT_TYPE_LONG] = 4,
-    [HPT_TYPE_EPT]  = 4,
-  };
+extern const u8 hpt_type_max_lvl[HPT_TYPE_NUM];
 
 static inline size_t hpt_pm_size(hpt_type_t t, int lvl)
 {
@@ -1064,9 +1045,9 @@ hpt_pm_t hpt_walk_get_pm_alloc(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, 
   while(lvl > *end_lvl) {
     hpt_pme_t pme = hpt_pm_get_pme_by_va(ctx->t, lvl, pm, va);
 
-    dprintf(LOG_TRACE, "hpt_walk_get_pm_alloc: lvl:%d pm:%x end_lvl:%d va:%Lx\n",
-            lvl, (u32)pm, *end_lvl, va);
-    dprintf(LOG_TRACE, "hpt_walk_get_pm_alloc: pme:%Lx\n",
+    hpt_log_trace("hpt_walk_get_pm_alloc: lvl:%d pm:%x end_lvl:%d va:%Lx\n",
+                  lvl, (u32)pm, *end_lvl, va);
+    hpt_log_trace("hpt_walk_get_pm_alloc: pme:%Lx\n",
             pme);
     if (hpt_pme_is_page(ctx->t, lvl, pme)) {
       *end_lvl = lvl;
@@ -1076,7 +1057,7 @@ hpt_pm_t hpt_walk_get_pm_alloc(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, 
       hpt_pm_t new_pm = ctx->gzp(ctx->gzp_ctx,
                                  HPT_PM_SIZE/*FIXME*/,
                                  hpt_pm_size(ctx->t, lvl-1));
-      dprintf(LOG_TRACE, "hpt_walk_get_pm_alloc: allocated pm at hva:%x spa:%Lx\n",
+      hpt_log_trace("hpt_walk_get_pm_alloc: allocated pm at hva:%x spa:%Lx\n",
               (u32)new_pm, ctx->ptr2pa(ctx->ptr2pa_ctx, new_pm));
       if(!new_pm) {
         return NULL;
@@ -1085,7 +1066,7 @@ hpt_pm_t hpt_walk_get_pm_alloc(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, 
       pme = hpt_pme_setprot(ctx->t, lvl, pme, HPT_PROTS_RWX);
       pme = hpt_pme_setuser(ctx->t, lvl, pme, true);
       hpt_pm_set_pme_by_va(ctx->t, lvl, pm, va, pme);
-      dprintf(LOG_TRACE, "hpt_walk_get_pm_alloc: inserted pme:%Lx\n", pme);
+      hpt_log_trace("hpt_walk_get_pm_alloc: inserted pme:%Lx\n", pme);
     }
     ASSERT(hpt_walk_next_lvl(ctx, &lvl, &pm, va));
   }
@@ -1101,10 +1082,10 @@ static inline
 int hpt_walk_insert_pme_alloc(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int tgt_lvl, hpt_va_t va, hpt_pme_t pme)
 {
   int end_lvl=tgt_lvl;
-  dprintf(LOG_TRACE, "hpt_walk_insert_pme_alloc: lvl:%d pm:%x tgt_lvl:%d va:%Lx pme:%Lx\n",
+  hpt_log_trace("hpt_walk_insert_pme_alloc: lvl:%d pm:%x tgt_lvl:%d va:%Lx pme:%Lx\n",
           lvl, (u32)pm, tgt_lvl, va, pme);
   pm = hpt_walk_get_pm_alloc(ctx, lvl, pm, &end_lvl, va);
-  dprintf(LOG_TRACE, "hpt_walk_insert_pme_alloc: got pm:%x end_lvl:%d\n",
+  hpt_log_trace("hpt_walk_insert_pme_alloc: got pm:%x end_lvl:%d\n",
           (u32)pm, end_lvl);
 
   if(pm == NULL || tgt_lvl != end_lvl) {
