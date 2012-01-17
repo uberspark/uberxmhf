@@ -67,7 +67,8 @@ typedef enum {
 #define HPT_LVL_PML4 4
 
 typedef u64 hpt_pme_t; /* page map entry (any level) */
-typedef void* hpt_pm_t; /* page map (any level) */
+typedef hpt_pme_t* hpt_pm_t; /* page map (any level) */
+
 /* NOTE- do not dereference directly.
    Some page table types use 32-bit entries instead
    of 64-bit. */
