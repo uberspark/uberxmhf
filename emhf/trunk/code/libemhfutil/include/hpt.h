@@ -48,6 +48,7 @@
 //#include "_types.h"
 #include <bitfield.h>
 #include <stddef.h>
+#include <assert.h>
 
 #ifndef hpt_log_trace
 # define hpt_log_trace(fmt, args...) while(0)
@@ -129,9 +130,9 @@ extern const u8 hpt_type_max_lvl[HPT_TYPE_NUM];
 static inline size_t hpt_pm_size(hpt_type_t t, int lvl)
 {
   size_t rv;
-  ASSERT(lvl <= HPT_MAX_LEVEL);
+  assert(lvl <= HPT_MAX_LEVEL);
   rv = hpt_pm_sizes[t][lvl];
-  ASSERT(rv != 0);
+  assert(rv != 0);
   return rv;
 }
 
@@ -146,7 +147,7 @@ static inline size_t hpt_pm_size(hpt_type_t t, int lvl)
 /*     return 4; */
 /*   } */
 
-/*   ASSERT(0); */
+/*   assert(0); */
 /*   return 0; */
 /* } */
 
@@ -315,9 +316,9 @@ static inline u64 hpt_cr3_set_address(hpt_type_t t, u64 cr3, hpt_pa_t a)
     cr3 = BR64_COPY_BITS_HL(cr3, a, HPT_CR3_PML4_LONG_HI, HPT_CR3_PML4_LONG_LO, 0);
     cr3 = BR64_COPY_BITS_HL(cr3, 0, HPT_CR3_MBZ2_HI, HPT_CR3_MBZ2_LO, 0);
   } else if (t==HPT_TYPE_EPT) {
-    ASSERT(0); /* N\A. set EPTP ptr */
+    assert(0); /* N\A. set EPTP ptr */
   } else {
-    ASSERT(0);
+    assert(0);
   }
   return cr3;
 }
@@ -331,11 +332,11 @@ static inline hpt_pa_t hpt_cr3_get_address(hpt_type_t t, u64 cr3)
   } else if (t==HPT_TYPE_LONG) {
     return BR64_COPY_BITS_HL(0, cr3, HPT_CR3_PML4_LONG_HI, HPT_CR3_PML4_LONG_LO, 0);
   } else if (t==HPT_TYPE_EPT) {
-    ASSERT(0); /* N\A. set EPTP ptr */
+    assert(0); /* N\A. set EPTP ptr */
   } else {
-    ASSERT(0);
+    assert(0);
   }
-  ASSERT(0); return (hpt_pa_t)0; /* unreachable; appeases compiler */
+  assert(0); return (hpt_pa_t)0; /* unreachable; appeases compiler */
 }
 
 #define HPT_EPTP_MBZ63_H 63
@@ -351,13 +352,13 @@ static inline hpt_pa_t hpt_cr3_get_address(hpt_type_t t, u64 cr3)
 
 static inline u64 hpt_eptp_set_address(hpt_type_t t, u64 eptp, hpt_pa_t a)
 {
-  ASSERT(t == HPT_TYPE_EPT);
+  assert(t == HPT_TYPE_EPT);
   return BR64_COPY_BITS_HL(eptp, a, HPT_EPTP_PML4_HI, HPT_EPTP_PML4_LO, 0);
 }
 
 static inline hpt_pa_t hpt_eptp_get_address(hpt_type_t t, u64 eptp)
 {
-  ASSERT(t == HPT_TYPE_EPT);
+  assert(t == HPT_TYPE_EPT);
   return BR64_COPY_BITS_HL(0, eptp, HPT_EPTP_PML4_HI, HPT_EPTP_PML4_LO, 0);
 }
 
@@ -412,7 +413,7 @@ static inline bool hpt_type_is_valid(hpt_type_t t)
 
 static inline int hpt_root_lvl(hpt_type_t t)
 {
-  ASSERT(hpt_type_is_valid(t));
+  assert(hpt_type_is_valid(t));
   return hpt_type_max_lvl[t];
 }
 
@@ -422,7 +423,7 @@ static inline hpt_pme_t hpt_pme_setuser(hpt_type_t t, int lvl, hpt_pme_t entry, 
     return BR64_SET_BIT(entry, HPT_NORM_US_L21_MP_BIT, user_accessible);
   } else if (t == HPT_TYPE_PAE) {
     if (lvl == 3) {
-      ASSERT(user_accessible);
+      assert(user_accessible);
       return entry;
     } else {
       return BR64_SET_BIT(entry, HPT_PAE_US_L21_MP_BIT, user_accessible);
@@ -430,10 +431,10 @@ static inline hpt_pme_t hpt_pme_setuser(hpt_type_t t, int lvl, hpt_pme_t entry, 
   } else if (t == HPT_TYPE_LONG) {
     return BR64_SET_BIT(entry, HPT_LONG_US_L4321_MP_BIT, user_accessible);
   } else if (t == HPT_TYPE_EPT) {
-    ASSERT(user_accessible);
+    assert(user_accessible);
     return entry;
   }
-  ASSERT(0); return 0; /* unreachable; appeases compiler */
+  assert(0); return 0; /* unreachable; appeases compiler */
 }
 
 static inline bool hpt_pme_getuser(hpt_type_t t, int lvl, hpt_pme_t entry)
@@ -451,14 +452,14 @@ static inline bool hpt_pme_getuser(hpt_type_t t, int lvl, hpt_pme_t entry)
   } else if (t == HPT_TYPE_EPT) {
     return true;
   }
-  ASSERT(0); return false; /* unreachable; appeases compiler */
+  assert(0); return false; /* unreachable; appeases compiler */
 }
 
 static inline hpt_pme_t hpt_pme_setprot(hpt_type_t t, int lvl, hpt_pme_t entry, hpt_prot_t perms)
 {
   hpt_pme_t rv=entry;
-  ASSERT(hpt_lvl_is_valid(t, lvl));
-  ASSERT(hpt_prot_is_valid(t, lvl, perms));
+  assert(hpt_lvl_is_valid(t, lvl));
+  assert(hpt_prot_is_valid(t, lvl, perms));
 
   if (t == HPT_TYPE_NORM) {
     rv = BR64_SET_BIT(rv, HPT_NORM_P_L21_MP_BIT, perms & HPT_PROT_READ_MASK);
@@ -476,7 +477,7 @@ static inline hpt_pme_t hpt_pme_setprot(hpt_type_t t, int lvl, hpt_pme_t entry, 
   } else if (t == HPT_TYPE_EPT) {
     rv = BR64_SET_BR(rv, HPT_EPT_PROT_L4321_MP, perms);
   } else {
-    ASSERT(0);
+    assert(0);
   }
 
   return rv;
@@ -486,7 +487,7 @@ static inline hpt_prot_t hpt_pme_getprot(hpt_type_t t, int lvl, hpt_pme_t entry)
 {
   hpt_prot_t rv=HPT_PROTS_NONE;
   bool r,w,x;
-  ASSERT(hpt_lvl_is_valid(t, lvl));
+  assert(hpt_lvl_is_valid(t, lvl));
 
   if (t == HPT_TYPE_NORM) {
     r= entry & MASKBIT64(HPT_NORM_P_L21_MP_BIT);
@@ -510,7 +511,7 @@ static inline hpt_prot_t hpt_pme_getprot(hpt_type_t t, int lvl, hpt_pme_t entry)
     w=entry & MASKBIT64(HPT_EPT_W_L4321_MP_BIT);
     x=entry & MASKBIT64(HPT_EPT_X_L4321_MP_BIT);
   } else {
-    ASSERT(0);
+    assert(0);
   }
   rv = HPT_PROTS_NONE;
   rv = rv | (r ? HPT_PROT_READ_MASK : 0);
@@ -530,7 +531,7 @@ static inline hpt_prot_t hpt_pme_getprot(hpt_type_t t, int lvl, hpt_pme_t entry)
 static inline hpt_pme_t hpt_pme_setunused(hpt_type_t t, int lvl, hpt_pme_t entry, int hi, int lo, hpt_pme_t val)
 {
   hpt_pme_t rv=entry;
-  ASSERT(hi>lo);
+  assert(hi>lo);
   HPT_UNUSED_ARGUMENT(lvl);
 
   /* bits 9, 10, and 11 are unused in all levels of all current page
@@ -544,11 +545,11 @@ static inline hpt_pme_t hpt_pme_setunused(hpt_type_t t, int lvl, hpt_pme_t entry
      || t == HPT_TYPE_PAE
      || t == HPT_TYPE_LONG
      || t == HPT_TYPE_EPT) {
-    ASSERT(hi <= 2); /* we can remove this limitation for some table
+    assert(hi <= 2); /* we can remove this limitation for some table
                         types and levels if necessary. */
     rv = BR64_COPY_BITS_HL(rv, val, MIN(2,hi), MAX(0,lo), (9-0));
   } else {
-    ASSERT(0);
+    assert(0);
   }
   return rv;
 }
@@ -556,19 +557,19 @@ static inline hpt_pme_t hpt_pme_setunused(hpt_type_t t, int lvl, hpt_pme_t entry
 static inline hpt_pme_t hpt_pme_getunused(hpt_type_t t, int lvl, hpt_pme_t entry, int hi, int lo)
 {
   hpt_pme_t rv = 0ull;
-  ASSERT(hi>lo);
+  assert(hi>lo);
   HPT_UNUSED_ARGUMENT(lvl);
 
   if(t == HPT_TYPE_NORM
      || t == HPT_TYPE_PAE
      || t == HPT_TYPE_LONG
      || t == HPT_TYPE_EPT) {
-    ASSERT(hi <= 2); /* we can remove this limitation for some table
+    assert(hi <= 2); /* we can remove this limitation for some table
                         types and levels if necessary. */
     rv = BR64_COPY_BITS_HL(rv, entry, MIN(2,hi), MAX(0,lo), (9-0));
     rv = BR64_GET_HL(entry, MIN(2,hi)+9, MAX(0,lo)+9);
   } else {
-    ASSERT(0);
+    assert(0);
   }
   return rv;
 }
@@ -582,19 +583,19 @@ static inline bool hpt_pme_is_present(hpt_type_t t, int lvl, hpt_pme_t entry)
 static inline bool hpt_pme_is_page(hpt_type_t t, int lvl, hpt_pme_t entry)
 {
   if (t== HPT_TYPE_NORM) {
-    ASSERT(lvl<=2);
+    assert(lvl<=2);
     return lvl == 1 || (lvl==2 && BR64_GET_BIT(entry, HPT_NORM_PS_L2_MP_BIT));
   } else if (t == HPT_TYPE_PAE) {
-    ASSERT(lvl<=3);
+    assert(lvl<=3);
     return lvl == 1 || (lvl==2 && BR64_GET_BIT(entry, HPT_PAE_PS_L2_MP_BIT));
   } else if (t == HPT_TYPE_LONG) {
-    ASSERT(lvl<=3);
+    assert(lvl<=3);
     return lvl == 1 || ((lvl==2 || lvl==3) && BR64_GET_BIT(entry, HPT_LONG_PS_L32_MP_BIT));
   } else if (t == HPT_TYPE_EPT) {
-    ASSERT(lvl<=4);
+    assert(lvl<=4);
     return lvl == 1 || ((lvl==2 || lvl==3) && BR64_GET_BIT(entry, HPT_EPT_PS_L32_MP_BIT));
   } else {
-    ASSERT(0);
+    assert(0);
     return false;
   }
 }
@@ -602,7 +603,7 @@ static inline bool hpt_pme_is_page(hpt_type_t t, int lvl, hpt_pme_t entry)
 static inline hpt_pa_t hpt_pme_get_address(hpt_type_t t, int lvl, hpt_pme_t entry)
 {
   if (t == HPT_TYPE_NORM) {
-    ASSERT(lvl<=2);
+    assert(lvl<=2);
     if(lvl==2) {
       if (hpt_pme_is_page(t,lvl,entry)) {
         /* 4 MB page */
@@ -625,14 +626,14 @@ static inline hpt_pa_t hpt_pme_get_address(hpt_type_t t, int lvl, hpt_pme_t entr
                                HPT_NORM_ADDR_L1_P_LO, 0);
     }
   } else if (t == HPT_TYPE_PAE) {
-    ASSERT(lvl<=3);
+    assert(lvl<=3);
     if (hpt_pme_is_page(t, lvl, entry)) {
       if (lvl == 1) {
         return BR64_COPY_BITS_HL(0, entry,
                                  HPT_PAE_ADDR_L1_P_HI,
                                  HPT_PAE_ADDR_L1_P_LO, 0);
       } else {
-        ASSERT(lvl==2);
+        assert(lvl==2);
         return BR64_COPY_BITS_HL(0, entry,
                                  HPT_PAE_ADDR_L2_P_HI,
                                  HPT_PAE_ADDR_L2_P_LO, 0);
@@ -643,7 +644,7 @@ static inline hpt_pa_t hpt_pme_get_address(hpt_type_t t, int lvl, hpt_pme_t entr
                                HPT_PAE_ADDR_L321_M_LO, 0);
     }
   } else if (t == HPT_TYPE_LONG) {
-    ASSERT(lvl<=4);
+    assert(lvl<=4);
     if (hpt_pme_is_page(t, lvl, entry)) {
       if(lvl==1) {
         return BR64_COPY_BITS_HL(0, entry,
@@ -660,12 +661,12 @@ static inline hpt_pa_t hpt_pme_get_address(hpt_type_t t, int lvl, hpt_pme_t entr
                                HPT_LONG_ADDR_L4321_M_LO, 0);
     }
   } else if (t == HPT_TYPE_EPT) {
-    ASSERT(lvl<=4);
+    assert(lvl<=4);
     return BR64_COPY_BITS_HL(0, entry,
                              HPT_EPT_ADDR_L4321_MP_HI,
                              HPT_EPT_ADDR_L4321_MP_LO, 0);
   } else {
-    ASSERT(0);
+    assert(0);
     return 0;
   }
 }
@@ -673,7 +674,7 @@ static inline hpt_pa_t hpt_pme_get_address(hpt_type_t t, int lvl, hpt_pme_t entr
 static inline hpt_pme_t hpt_pme_set_address(hpt_type_t t, int lvl, hpt_pme_t entry, hpt_pa_t addr)
 {
   if (t == HPT_TYPE_NORM) {
-    ASSERT(lvl<=2);
+    assert(lvl<=2);
     if(lvl==2) {
       if (hpt_pme_is_page(t,lvl,entry)) {
         hpt_pme_t rv = entry;
@@ -698,14 +699,14 @@ static inline hpt_pme_t hpt_pme_set_address(hpt_type_t t, int lvl, hpt_pme_t ent
                                HPT_NORM_ADDR_L1_P_LO, 0);
     }
   } else if (t == HPT_TYPE_PAE) {
-    ASSERT(lvl<=3);
+    assert(lvl<=3);
     if (hpt_pme_is_page(t, lvl, entry)) {
       if (lvl == 1) {
         return BR64_COPY_BITS_HL(entry, addr,
                                  HPT_PAE_ADDR_L1_P_HI,
                                  HPT_PAE_ADDR_L1_P_LO, 0);
       } else {
-        ASSERT(lvl==2);
+        assert(lvl==2);
         return BR64_COPY_BITS_HL(entry, addr,
                                  HPT_PAE_ADDR_L2_P_HI,
                                  HPT_PAE_ADDR_L2_P_LO, 0);
@@ -716,7 +717,7 @@ static inline hpt_pme_t hpt_pme_set_address(hpt_type_t t, int lvl, hpt_pme_t ent
                                HPT_PAE_ADDR_L321_M_LO, 0);
     }
   } else if (t == HPT_TYPE_LONG) {
-    ASSERT(lvl<=4);
+    assert(lvl<=4);
     if (hpt_pme_is_page(t, lvl, entry)) {
       if(lvl==1) {
         return BR64_COPY_BITS_HL(entry, addr,
@@ -733,12 +734,12 @@ static inline hpt_pme_t hpt_pme_set_address(hpt_type_t t, int lvl, hpt_pme_t ent
                                HPT_LONG_ADDR_L4321_M_LO, 0);
     }
   } else if (t == HPT_TYPE_EPT) {
-    ASSERT(lvl<=4);
+    assert(lvl<=4);
     return BR64_COPY_BITS_HL(entry, addr,
                              HPT_EPT_ADDR_L4321_MP_HI,
                              HPT_EPT_ADDR_L4321_MP_LO, 0);
   } else {
-    ASSERT(0);
+    assert(0);
     return 0;
   }
 }
@@ -754,7 +755,7 @@ static inline hpt_pme_t hpt_pme_set_pat(hpt_type_t t, int lvl, hpt_pme_t pme, bo
     } else if (hpt_pme_is_page(t, lvl, pme) && lvl==2) {
       rv = BR64_SET_BIT(rv, HPT_NORM_PAT_L2_P_BIT, pat);
     } else {
-      ASSERT(!pat);
+      assert(!pat);
     }
   } else if (t== HPT_TYPE_PAE) {
     rv = pme;
@@ -763,7 +764,7 @@ static inline hpt_pme_t hpt_pme_set_pat(hpt_type_t t, int lvl, hpt_pme_t pme, bo
     } else if (hpt_pme_is_page(t, lvl, pme) && lvl==2) {
       rv = BR64_SET_BIT(rv, HPT_PAE_PAT_L2_P_BIT, pat);
     } else {
-      ASSERT(!pat);
+      assert(!pat);
     }
   } else if (t==HPT_TYPE_LONG) {
     rv = pme;
@@ -772,10 +773,10 @@ static inline hpt_pme_t hpt_pme_set_pat(hpt_type_t t, int lvl, hpt_pme_t pme, bo
     } else if (hpt_pme_is_page(t, lvl, pme) && (lvl==2||lvl==3)) {
       rv = BR64_SET_BIT(rv, HPT_LONG_PAT_L32_P_BIT, pat);
     } else {
-      ASSERT(!pat);
+      assert(!pat);
     }
   } else {
-    ASSERT(0);
+    assert(0);
   }
   return rv;
 }
@@ -808,7 +809,7 @@ static inline bool hpt_pme_get_pat(hpt_type_t t, int lvl, hpt_pme_t pme)
       return false;
     }
   } else {
-    ASSERT(0);
+    assert(0);
   }
   return pme;
 }
@@ -823,9 +824,9 @@ static inline bool hpt_pme_get_pcd(hpt_type_t t, int __attribute__((unused)) lvl
   } else if (t==HPT_TYPE_LONG) {
     return  BR64_GET_BIT(pme, HPT_LONG_PCD_L4321_MP_BIT);
   } else {
-    ASSERT(0);
+    assert(0);
   }
-  ASSERT(0); return false; /* unreachable; appeases compiler */  
+  assert(0); return false; /* unreachable; appeases compiler */  
 }
 
 /* "internal". use hpt_pme_set_pmt instead */
@@ -838,9 +839,9 @@ static inline hpt_pme_t hpt_pme_set_pcd(hpt_type_t t, int __attribute__((unused)
   } else if (t==HPT_TYPE_LONG) {
     return  BR64_SET_BIT(pme, HPT_LONG_PCD_L4321_MP_BIT, pcd);
   } else {
-    ASSERT(0);
+    assert(0);
   }
-  ASSERT(0); return (hpt_pme_t)0; /* unreachable; appeases compiler */  
+  assert(0); return (hpt_pme_t)0; /* unreachable; appeases compiler */  
 }
 
 /* "internal". use hpt_pme_get_pmt instead */
@@ -853,9 +854,9 @@ static inline bool hpt_pme_get_pwt(hpt_type_t t, int __attribute__((unused)) lvl
   } else if (t==HPT_TYPE_LONG) {
     return  BR64_GET_BIT(pme, HPT_LONG_PWT_L4321_MP_BIT);
   } else {
-    ASSERT(0);
+    assert(0);
   }
-  ASSERT(0); return false; /* unreachable; appeases compiler */  
+  assert(0); return false; /* unreachable; appeases compiler */  
 }
 
 /* "internal". use hpt_pme_set_pmt instead */
@@ -868,9 +869,9 @@ static inline hpt_pme_t hpt_pme_set_pwt(hpt_type_t t, int __attribute__((unused)
   } else if (t==HPT_TYPE_LONG) {
     return  BR64_SET_BIT(pme, HPT_LONG_PWT_L4321_MP_BIT, pwt);
   } else {
-    ASSERT(0);
+    assert(0);
   }
-  ASSERT(0); return (hpt_pme_t)0; /* unreachable; appeases compiler */  
+  assert(0); return (hpt_pme_t)0; /* unreachable; appeases compiler */  
 }
 
 /* Assumes PAT register has default values */
@@ -878,7 +879,7 @@ static inline hpt_pmt_t hpt_pme_get_pmt(hpt_type_t t, int lvl, hpt_pme_t pme)
 {
   hpt_pmt_t rv;
   if (t == HPT_TYPE_EPT) {
-    ASSERT(lvl <= 3 && hpt_pme_is_page(t, lvl, pme));
+    assert(lvl <= 3 && hpt_pme_is_page(t, lvl, pme));
     rv = BR64_GET_HL(pme, HPT_EPT_MT_L321_P_HI, HPT_EPT_MT_L321_P_LO);
   } else if (t == HPT_TYPE_PAE || t == HPT_TYPE_LONG || t == HPT_TYPE_NORM) {
     bool pcd, pwt;
@@ -894,7 +895,7 @@ static inline hpt_pmt_t hpt_pme_get_pmt(hpt_type_t t, int lvl, hpt_pme_t pme)
       return HPT_PMT_UC;
     }
   } else {
-    ASSERT(0);
+    assert(0);
   }
   return rv;
 }
@@ -904,7 +905,7 @@ static inline hpt_pmt_t hpt_pme_set_pmt(hpt_type_t t, int lvl, hpt_pme_t pme, hp
 {
   hpt_pme_t rv;
   if (t == HPT_TYPE_EPT) {
-    ASSERT(lvl <= 3 && hpt_pme_is_page(t, lvl, pme));
+    assert(lvl <= 3 && hpt_pme_is_page(t, lvl, pme));
     rv = BR64_SET_HL(pme, HPT_EPT_MT_L321_P_HI, HPT_EPT_MT_L321_P_LO, pmt);
   } else if (t == HPT_TYPE_NORM || t == HPT_TYPE_PAE || t == HPT_TYPE_LONG) {
     bool pat, pcd, pwt;
@@ -919,19 +920,19 @@ static inline hpt_pmt_t hpt_pme_set_pmt(hpt_type_t t, int lvl, hpt_pme_t pme, hp
       pcd=0;
       pwt=1;
     } else if (pmt == HPT_PMT_WP) {
-      ASSERT(0); /* can only get this by manipulating PAT register */
+      assert(0); /* can only get this by manipulating PAT register */
     } else if (pmt == HPT_PMT_WB) {
       pcd=0;
       pwt=0;
     } else {
-      ASSERT(0);
+      assert(0);
     }
     rv = pme;
     rv = hpt_pme_set_pat(t, lvl, rv, pat);
     rv = hpt_pme_set_pcd(t, lvl, rv, pcd);
     rv = hpt_pme_set_pwt(t, lvl, rv, pwt);
   } else {
-    ASSERT(0);
+    assert(0);
   }
   return rv;
 }
@@ -941,8 +942,8 @@ unsigned int hpt_get_pm_idx(hpt_type_t t, int lvl, hpt_va_t va)
 {
   unsigned int lo;
   unsigned int hi;
-  ASSERT(hpt_type_is_valid(t));
-  ASSERT(hpt_lvl_is_valid(t, lvl));
+  assert(hpt_type_is_valid(t));
+  assert(hpt_lvl_is_valid(t, lvl));
 
   hi = hpt_va_idx_hi[t][lvl];
   lo = hpt_va_idx_hi[t][lvl-1]+1;
@@ -959,7 +960,7 @@ hpt_pme_t hpt_pm_get_pme_by_idx(hpt_type_t t, int lvl, hpt_pm_t pm, int idx)
   } else if (t == HPT_TYPE_NORM) {
     return ((u32*)pm)[idx];
   } else {
-    ASSERT(0);
+    assert(0);
     return 0;
   }
 }
@@ -973,7 +974,7 @@ void hpt_pm_set_pme_by_idx(hpt_type_t t, int lvl, hpt_pm_t pm, int idx, hpt_pme_
   } else if (t == HPT_TYPE_NORM) {
     ((u32*)pm)[idx] = pme;
   } else {
-    ASSERT(0);
+    assert(0);
   }
 }
 
@@ -1012,7 +1013,7 @@ bool hpt_walk_next_lvl(const hpt_walk_ctx_t *ctx, int *lvl, hpt_pm_t *pm, hpt_va
 static inline
 hpt_pm_t hpt_walk_get_pm(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int *end_lvl, hpt_va_t va)
 {
-  ASSERT(lvl >= *end_lvl);
+  assert(lvl >= *end_lvl);
 
   while(lvl > *end_lvl) {
     if (!hpt_walk_next_lvl(ctx, &lvl, &pm, va)) {
@@ -1041,7 +1042,7 @@ hpt_pme_t hpt_walk_get_pme(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int 
 static inline
 hpt_pm_t hpt_walk_get_pm_alloc(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int *end_lvl, hpt_va_t va)
 {
-  ASSERT(lvl >= *end_lvl);
+  assert(lvl >= *end_lvl);
   while(lvl > *end_lvl) {
     hpt_pme_t pme = hpt_pm_get_pme_by_va(ctx->t, lvl, pm, va);
 
@@ -1068,9 +1069,9 @@ hpt_pm_t hpt_walk_get_pm_alloc(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, 
       hpt_pm_set_pme_by_va(ctx->t, lvl, pm, va, pme);
       hpt_log_trace("hpt_walk_get_pm_alloc: inserted pme:%Lx\n", pme);
     }
-    ASSERT(hpt_walk_next_lvl(ctx, &lvl, &pm, va));
+    assert(hpt_walk_next_lvl(ctx, &lvl, &pm, va));
   }
-  ASSERT(lvl==*end_lvl);
+  assert(lvl==*end_lvl);
   return pm;
 }
 
