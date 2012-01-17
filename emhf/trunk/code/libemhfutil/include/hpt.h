@@ -127,14 +127,7 @@ extern const u8 hpt_va_idx_hi[HPT_TYPE_NUM][HPT_MAX_LEVEL+1];
 
 extern const u8 hpt_type_max_lvl[HPT_TYPE_NUM];
 
-static inline size_t hpt_pm_size(hpt_type_t t, int lvl)
-{
-  size_t rv;
-  assert(lvl <= HPT_MAX_LEVEL);
-  rv = hpt_pm_sizes[t][lvl];
-  assert(rv != 0);
-  return rv;
-}
+size_t hpt_pm_size(hpt_type_t t, int lvl);
 
 /* static inline size_t hpt_pme_size(hpt_type_t t, int lvl) */
 /* { */

@@ -72,3 +72,12 @@ const u8 hpt_type_max_lvl[HPT_TYPE_NUM] =
     [HPT_TYPE_LONG] = 4,
     [HPT_TYPE_EPT]  = 4,
   };
+
+size_t hpt_pm_size(hpt_type_t t, int lvl)
+{
+  size_t rv;
+  assert(lvl <= HPT_MAX_LEVEL);
+  rv = hpt_pm_sizes[t][lvl];
+  assert(rv != 0);
+  return rv;
+}
