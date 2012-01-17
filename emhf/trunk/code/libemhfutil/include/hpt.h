@@ -149,41 +149,8 @@ size_t hpt_pm_size(hpt_type_t t, int lvl);
 #define HPT_PROTS_X (HPT_PROT_EXEC_MASK) /* never valid */
 #define HPT_PROTS_NONE (0)
 
-static inline u64 hpt_cr3_set_address(hpt_type_t t, u64 cr3, hpt_pa_t a)
-{
-  if (t==HPT_TYPE_NORM) {
-    cr3 = BR64_COPY_BITS_HL(cr3, a, HPT_CR3_PML2_NORM_HI, HPT_CR3_PML2_NORM_LO, 0);
-    cr3 = BR64_COPY_BITS_HL(cr3, 0, HPT_CR3_MBZ11_NORM_HI, HPT_CR3_MBZ11_NORM_LO, 0);
-    cr3 = BR64_COPY_BITS_HL(cr3, 0, HPT_CR3_MBZ2_HI, HPT_CR3_MBZ2_LO, 0);
-  } else if (t==HPT_TYPE_PAE) {
-    cr3 = BR64_COPY_BITS_HL(cr3, a, HPT_CR3_PML3_PAE_HI, HPT_CR3_PML3_PAE_LO, 0);
-    cr3 = BR64_COPY_BITS_HL(cr3, 0, HPT_CR3_MBZ2_HI, HPT_CR3_MBZ2_LO, 0);
-  } else if (t==HPT_TYPE_LONG) {
-    cr3 = BR64_COPY_BITS_HL(cr3, a, HPT_CR3_PML4_LONG_HI, HPT_CR3_PML4_LONG_LO, 0);
-    cr3 = BR64_COPY_BITS_HL(cr3, 0, HPT_CR3_MBZ2_HI, HPT_CR3_MBZ2_LO, 0);
-  } else if (t==HPT_TYPE_EPT) {
-    assert(0); /* N\A. set EPTP ptr */
-  } else {
-    assert(0);
-  }
-  return cr3;
-}
-
-static inline hpt_pa_t hpt_cr3_get_address(hpt_type_t t, u64 cr3)
-{
-  if (t==HPT_TYPE_NORM) {
-    return BR64_COPY_BITS_HL(0, cr3, HPT_CR3_PML2_NORM_HI, HPT_CR3_PML2_NORM_LO, 0);
-  } else if (t==HPT_TYPE_PAE) {
-    return BR64_COPY_BITS_HL(0, cr3, HPT_CR3_PML3_PAE_HI, HPT_CR3_PML3_PAE_LO, 0);
-  } else if (t==HPT_TYPE_LONG) {
-    return BR64_COPY_BITS_HL(0, cr3, HPT_CR3_PML4_LONG_HI, HPT_CR3_PML4_LONG_LO, 0);
-  } else if (t==HPT_TYPE_EPT) {
-    assert(0); /* N\A. set EPTP ptr */
-  } else {
-    assert(0);
-  }
-  assert(0); return (hpt_pa_t)0; /* unreachable; appeases compiler */
-}
+u64 hpt_cr3_set_address(hpt_type_t t, u64 cr3, hpt_pa_t a);
+hpt_pa_t hpt_cr3_get_address(hpt_type_t t, u64 cr3);
 
 static inline u64 hpt_eptp_set_address(hpt_type_t t, u64 eptp, hpt_pa_t a)
 {
