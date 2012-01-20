@@ -41,17 +41,13 @@
 #include <emhf.h>
 
 //SVM VM_HSAVE buffers 
-//baseplatform x86svm
 u8 g_svm_hsave_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".palign_data") ));
 
 //SVM VMCB buffers
-//baseplatform x86svm
 u8 g_svm_vmcb_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".palign_data") )); 
 
 //SVM IO bitmap buffer
-//baseplatform x86svm
 u8 g_svm_iopm[SIZEOF_IOPM_BITMAP]__attribute__(( section(".palign_data") )); 
 
 //SVM MSR bitmap buffer
-//baseplatform x86svm
 u8 g_svm_msrpm[SIZEOF_MSRPM_BITMAP]__attribute__(( section(".palign_data") ));

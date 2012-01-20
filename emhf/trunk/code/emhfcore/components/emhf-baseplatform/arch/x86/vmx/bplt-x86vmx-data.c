@@ -41,7 +41,6 @@
 #include <emhf.h>
 
 //VMX VMCS read-only field encodings
-//baseplatform x86vmx
 struct _vmx_vmcsrofields_encodings g_vmx_vmcsrofields_encodings[] __attribute__(( section(".data") )) = {
 	{ 0x4400, offsetof(struct _vmx_vmcsfields, info_vminstr_error) }, 
 	{ 0x4402, offsetof(struct _vmx_vmcsfields, info_vmexit_reason) },
@@ -64,11 +63,9 @@ struct _vmx_vmcsrofields_encodings g_vmx_vmcsrofields_encodings[] __attribute__(
 };
 
 //count of VMX VMCS read-only fields
-//baseplatform x86vmx
 unsigned int g_vmx_vmcsrofields_encodings_count __attribute__(( section(".data") )) = sizeof( g_vmx_vmcsrofields_encodings ) / sizeof( struct _vmx_vmcsrofields_encodings );
 
 //VMX VMCS read-write field encodings
-//baseplatform x86vmx
 struct _vmx_vmcsrwfields_encodings g_vmx_vmcsrwfields_encodings[] __attribute__(( section(".data") )) = {
 	// Control fields
 	#if defined(__NESTED_PAGING__)
@@ -220,26 +217,20 @@ struct _vmx_vmcsrwfields_encodings g_vmx_vmcsrwfields_encodings[] __attribute__(
 };
 
 //count of VMX VMCS read-write fields
-//baseplatform x86vmx
 unsigned int g_vmx_vmcsrwfields_encodings_count __attribute__(( section(".data") )) = sizeof( g_vmx_vmcsrwfields_encodings ) / sizeof( struct _vmx_vmcsrwfields_encodings );
 
 //VMX VMXON buffers
-//baseplatform x86vmx
 u8 g_vmx_vmxon_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
 
 //VMX VMCS buffers
-//baseplatform x86vmx
 u8 g_vmx_vmcs_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
 		
 //VMX IO bitmap buffers
-//baseplatform x86vmx
 u8 g_vmx_iobitmap_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
 		
 //VMX guest and host MSR save area buffers
-//baseplatform x86vmx
 u8 g_vmx_msr_area_host_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
 u8 g_vmx_msr_area_guest_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
 
 //VMX MSR bitmap buffers
-//baseplatform x86vmx
 u8 g_vmx_msrbitmap_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
