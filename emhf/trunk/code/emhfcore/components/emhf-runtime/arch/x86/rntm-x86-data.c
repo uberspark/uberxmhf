@@ -41,3 +41,17 @@
 
 #include <emhf.h> 
 
+//runtime GDT
+u64 x_gdt_start[] __attribute__(( section(".data"), aligned(16) )) = {
+	0x0000000000000000ULL,
+	0x00cf9a000000ffffULL,	
+	0x00cf92000000ffffULL,	
+	0x0000000000000000ULL	
+};
+
+//runtime GDT descriptor
+arch_x86_gdtdesc_t x_gdt __attribute__(( section(".data"), aligned(16) )) = {
+	.size=sizeof(x_gdt_start)-1,
+	.base=(u32)&x_gdt_start,
+};
+

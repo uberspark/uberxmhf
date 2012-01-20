@@ -67,6 +67,8 @@ void emhf_baseplatform_initialize(void);
 //reboot platform
 void emhf_baseplatform_reboot(VCPU *vcpu);
 
+
+
 /* hypervisor-virtual-address to system-physical-address. this fn is
  * used when creating the hypervisor's page tables, and hence
  * represents ground truth (assuming they haven't since been modified)
@@ -144,6 +146,14 @@ void emhf_baseplatform_arch_reboot(VCPU *vcpu);
 //----------------------------------------------------------------------
 //x86 ARCH. INTERFACES
 //----------------------------------------------------------------------
+
+
+//x86 GDT descriptor type
+typedef struct {
+		u16 size;
+		u32 base;
+} __attribute__((packed)) arch_x86_gdtdesc_t;
+
 
 //return 1 if the calling CPU is the BSP
 u32 emhf_baseplatform_arch_x86_isbsp(void);
