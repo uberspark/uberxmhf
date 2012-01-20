@@ -41,6 +41,8 @@
 #ifndef __GLOBALS_H__
 #define __GLOBALS_H__
 
+#ifndef __ASSEMBLY__
+
 //system e820 map
 #if defined(__EMHF_VERIFICATION__)
 	extern u8 g_e820map[] __attribute__(( section(".data") ));
@@ -319,38 +321,7 @@ extern struct emhf_library *g_libemhf __attribute__(( section(".data") ));
 //function that initializes the runtime global variables
 void runtime_globals_init(void);
 
-/* hypervisor-virtual-address to system-physical-address. this fn is
- * used when creating the hypervisor's page tables, and hence
- * represents ground truth (assuming they haven't since been modified)
- */
-static inline spa_t hva2spa(void *hva)
-{
-  uintptr_t hva_ui = (uintptr_t)hva;
-  uintptr_t offset = rpb->XtVmmRuntimeVirtBase - rpb->XtVmmRuntimePhysBase;
-  if (hva_ui >= rpb->XtVmmRuntimePhysBase && hva_ui < rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize){
-    return hva_ui + offset;
-  } else if (hva_ui >= rpb->XtVmmRuntimeVirtBase && hva_ui < rpb->XtVmmRuntimeVirtBase+rpb->XtVmmRuntimeSize) {
-    return hva_ui - offset;
-  } else {
-    return hva_ui;
-  }
-}
+#endif //__ASSEMBLY__
 
-static inline void * spa2hva(spa_t spa)
-{
-  uintptr_t offset = rpb->XtVmmRuntimeVirtBase - rpb->XtVmmRuntimePhysBase;
-  if (spa >= rpb->XtVmmRuntimePhysBase && spa < rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize){
-    return (void *)(uintptr_t)(spa + offset);
-  } else if (spa >= rpb->XtVmmRuntimeVirtBase && spa < rpb->XtVmmRuntimeVirtBase+rpb->XtVmmRuntimeSize) {
-    return (void *)(uintptr_t)(spa - offset);
-  } else {
-    return (void *)(uintptr_t)(spa);
-  }
-}
-
-static inline spa_t gpa2spa(gpa_t gpa) { return gpa; }
-static inline gpa_t spa2gpa(spa_t spa) { return spa; }
-static inline void* gpa2hva(gpa_t gpa) { return spa2hva(gpa2spa(gpa)); }
-static inline gpa_t hva2gpa(hva_t hva) { return spa2gpa(hva2spa(hva)); }
 
 #endif /* __GLOBALS_H__ */
