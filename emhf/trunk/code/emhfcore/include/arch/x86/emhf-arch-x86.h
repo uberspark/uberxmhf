@@ -33,43 +33,41 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//emhf.h - main EMHF core header file 
-// this orchestrates the inclusion of other core component specific
-// headers
-//author: amit vasudevan (amitvasudevan@acm.org)
-//
-#ifndef __EMHF_H_
-#define __EMHF_H_
+// EMHF core x86 platform/arch. specific declarations
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-//pull in required C99 compatible C-library interfaces
+#ifndef __EMHF_ARCH_X86_H__
+#define __EMHF_ARCH_X86_H__
+
+#include "_ctype.h"		//the ctype variable definition for debug printf
+#include "_com.h"		//serial UART as debugging backend
+#include "_multiboot.h"  //boot manager (multiboot)
+#include "_cmdline.h"	//GRUB command line handling functions
+#include "_error.h"      //error handling and assertions
+#include "_processor.h"  //CPU
+#include "_msr.h"        //model specific registers
+#include "_paging.h"     //MMU
+#include "_io.h"         //legacy I/O
+#include "_apic.h"       //APIC
+#include "_svm.h"        //SVM extensions
+#include "_vmx.h"				//VMX extensions
+#include "_txt.h"		//Trusted eXecution Technology (SENTER support)
+#include "_pci.h"        //PCI bus glue
+#include "_acpi.h"				//ACPI glue
+#include "_svm_eap.h"		//SVM DMA protection
+#include "_vmx_eap.h"		//VMX DMA protection
+#include "_tpm.h"			//generic TPM functions
+#include "_tpm_emhf.h"		//EMHF-specific TPM functions
+#include "_sarg.h"			//language specifics
+#include "_div64.h"			//do_div for debug output
+#include "_perf.h"			//performance measurement routines
+
+
+
 #ifndef __ASSEMBLY__
-	#include <stdint.h>
-	#include <stdbool.h>
-	#include <stddef.h>
-	#include <string.h>
-#endif /* __ASSEMBLY__ */
-
-#include <arch/emhf-arch.h>
-
-#include <emhf-types.h>		//EMHF specific base types
 
 
-//forward declaration of runtime parameter block
-#ifndef __ASSEMBLY__
-extern RPB *rpb;	
+
 #endif	//__ASSEMBLY__
 
-//----------------------------------------------------------------------
-// component headers
-#include <emhf-debug.h>		//EMHF debug component
-#include <emhf-baseplatform.h>	//EMHF base platform component
-#include <emhf-memprot.h>	//EMHF memory protection component
-#include <emhf-dmaprot.h>	//EMHF DMA protection component
-#include <emhf-parteventhub.h>	//EMHF partition event-hub component
-#include <emhf-smpguest.h>		//EMHF SMP guest component
-#include <emhf-xcphandler.h>	//EMHF exception handler component
-#include <emhf-sl.h>		//EMHF secure loader component
-#include <emhf-runtime.h>		//EMHF secure loader component
-
-
-#endif /* __EMHF_H_ */
+#endif //__EMHF_ARCH_X86_H__

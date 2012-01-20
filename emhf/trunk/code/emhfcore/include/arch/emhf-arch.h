@@ -33,43 +33,16 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//emhf.h - main EMHF core header file 
-// this orchestrates the inclusion of other core component specific
-// headers
-//author: amit vasudevan (amitvasudevan@acm.org)
-//
-#ifndef __EMHF_H_
-#define __EMHF_H_
+// EMHF core x86 platform/arch. specific declarations
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-//pull in required C99 compatible C-library interfaces
-#ifndef __ASSEMBLY__
-	#include <stdint.h>
-	#include <stdbool.h>
-	#include <stddef.h>
-	#include <string.h>
-#endif /* __ASSEMBLY__ */
+#ifndef __EMHF_ARCH_H__
+#define __EMHF_ARCH_H__
 
-#include <arch/emhf-arch.h>
-
-#include <emhf-types.h>		//EMHF specific base types
+//XXX: this file needs to include the appropriate arch. specific
+//header using either preprocessor directives, could be a 
+//symlink or use configure
+#include <arch/x86/emhf-arch-x86.h>
 
 
-//forward declaration of runtime parameter block
-#ifndef __ASSEMBLY__
-extern RPB *rpb;	
-#endif	//__ASSEMBLY__
-
-//----------------------------------------------------------------------
-// component headers
-#include <emhf-debug.h>		//EMHF debug component
-#include <emhf-baseplatform.h>	//EMHF base platform component
-#include <emhf-memprot.h>	//EMHF memory protection component
-#include <emhf-dmaprot.h>	//EMHF DMA protection component
-#include <emhf-parteventhub.h>	//EMHF partition event-hub component
-#include <emhf-smpguest.h>		//EMHF SMP guest component
-#include <emhf-xcphandler.h>	//EMHF exception handler component
-#include <emhf-sl.h>		//EMHF secure loader component
-#include <emhf-runtime.h>		//EMHF secure loader component
-
-
-#endif /* __EMHF_H_ */
+#endif //__EMHF_ARCH_H__
