@@ -6,6 +6,8 @@ AS_SOURCES = runtimesup.S
 C_SOURCES = runtime.c globals.c 
 C_SOURCES += rntm-data.c
 
+C_SOURCES += ./arch/x86/rntm-x86-data.c
+
 # These are the core runtime objects
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
