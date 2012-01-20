@@ -106,6 +106,25 @@ u32 emhf_dmaprot_arch_x86vmx_initialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size);
 void emhf_dmaprot_arch_x86vmx_protect(u32 start_paddr, u32 size);
 
+//VMX VT-d page table buffers; we support a 3 level page-table walk, 
+//4kb pdpt, 4kb pdt and 4kb pt and each entry in pdpt, pdt and pt is 64-bits
+extern u8 g_vmx_vtd_pdp_table[] __attribute__(( section(".palign_data") )); 
+extern u8 g_vmx_vtd_pd_tables[] __attribute__(( section(".palign_data") ));
+extern u8 g_vmx_vtd_p_tables[] __attribute__(( section(".palign_data") ));
+
+//VMX VT-d Root Entry Table (RET)
+//the RET is 4kb, each root entry (RE) is 128-bits
+//this gives us 256 entries in the RET, each corresponding to a PCI bus num. (0-255)
+extern u8 g_vmx_vtd_ret[] __attribute__(( section(".palign_data") )); 
+
+//VMX VT-d Context Entry Table (CET)
+//each RE points to a context entry table (CET) of 4kb, each context entry (CE)
+//is 128-bits which gives us 256 entries in the CET, accounting for 32 devices
+//with 8 functions each as per the PCI spec.
+extern u8 g_vmx_vtd_cet[] __attribute__(( section(".palign_data") ));
+
+
+
 
 #endif	//__ASSEMBLY__
 
