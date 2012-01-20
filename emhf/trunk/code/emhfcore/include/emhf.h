@@ -118,65 +118,8 @@ typedef struct _integrity_measurement_values {
 
 
 
-//------------------------------------------------------------------------------
-//preferred TPM locality to use for access inside hypervisor
-//needs to be 2 or 1 (4 is hw-only, 3 is sinit-only on Intel)
-#define EMHF_TPM_LOCALITY_PREF 2
-
-
-//guest boot record is always loaded at 0000:7C00
-#define __GUESTOSBOOTMODULE_BASE		0x7c00
-#define __GUESTOSBOOTMODULESUP1_BASE	0x7C00
-
-#define __CS 0x0008 /* Selector for GDT entry 1. RPL 0 */
-#define __DS 0x0010 /* Selector for GDT enry 0. RPL 0 */
-#define __TRSEL 0x0018  //selector for TSS
-
-
-//size of runtime IDT, 32 exception vectors each 8 bytes
-#define	SIZE_RUNTIME_IDT	(8*32)
-
-#define MPFP_SIGNATURE (0x5F504D5FUL) //"_MP_"
-#define MPCONFTABLE_SIGNATURE (0x504D4350UL)  //"PCMP"
-
-
-#define AP_BOOTSTRAP_CODE_SEG 0x1000
-#define SLB_BOOTSTRAP_CODE_BASE 0x40000000 /* 0x80000 */ /* 0x20000 */
-
-#ifdef __NESTED_PAGING__
-#define ASID_GUEST_KERNEL 2
-#endif
-
-//LAPIC emulation defines
-#define LAPIC_OP_RSVD   (3)
-#define LAPIC_OP_READ   (2)
-#define LAPIC_OP_WRITE  (1)
-
-//VMX runtime TSS size
-#define VMX_RUNTIME_TSS_SIZE    (4096)
-
-#define TEMPORARY_HARDCODED_MLE_SIZE       0x10000
-#define TEMPORARY_MAX_MLE_HEADER_SIZE      0x80
-#define TEMPORARY_HARDCODED_MLE_ENTRYPOINT TEMPORARY_MAX_MLE_HEADER_SIZE
-
-
-//VMX Unrestricted Guest (UG) E820 hook support
-//we currently use the BIOS data area (BDA) unused region
-//at 0x0040:0x00AC
-#define	VMX_UG_E820HOOK_CS				(0x0040)	
-#define	VMX_UG_E820HOOK_IP				(0x00AC)
-
 
 #ifndef __ASSEMBLY__
-
-
-
-
-
-
-
-
-
 //----------------------------------------------------------------------
 // host to guest, guest to host VA to PA helpers
 // XXX: should belong in the "platform" component
@@ -316,8 +259,6 @@ static inline u64 VCPU_gcr4(VCPU *vcpu)
     return 0;
   }
 }
-
-
 
 #include <_globals.h>
 
