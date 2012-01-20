@@ -145,6 +145,66 @@ typedef struct _pcpu {
 #define MAX_PCPU_ENTRIES  (MAX_MIDTAB_ENTRIES)
 
 
+//---platform
+//same privilege level exception/interrupt stack frame
+typedef struct {
+  u32 eip;
+  u32 cs;
+  u32 eflags;
+} __attribute__((packed)) INTR_SAMEPRIVILEGE_STACKFRAME_NOERRORCODE;
+
+//---platform
+typedef struct {
+  u32 errorcode;
+  u32 eip;
+  u32 cs;
+  u32 eflags;
+} __attribute__((packed)) INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE;
+
+//---platform
+typedef struct {
+  u32 signature;
+  u32 paddrpointer;
+  u8 length;
+  u8 spec_rev;
+  u8 checksum;
+  u8 mpfeatureinfo1;
+  u8 mpfeatureinfo2;
+  u8 mpfeatureinfo3;
+  u8 mpfeatureinfo4;
+  u8 mpfeatureinfo5;
+} __attribute__ ((packed)) MPFP;
+
+//---platform
+typedef struct{
+  u32 signature;
+  u16 length;
+  u8 spec_rev;
+  u8 checksum;
+  u8 oemid[8];
+  u8 productid[12];
+  u32 oemtableptr;
+  u16 oemtablesize;
+  u16 entrycount;
+  u32 lapicaddr;
+  u16 exttablelength;
+  u16 exttablechecksum;
+} __attribute__ ((packed)) MPCONFTABLE;
+
+//---platform
+typedef struct {
+  u8 entrytype;
+  u8 lapicid;
+  u8 lapicver;
+  u8 cpuflags;
+  u32 cpusig;
+  u32 featureflags;
+  u32 res0;
+  u32 res1;
+} __attribute__ ((packed)) MPENTRYCPU;
+
+
+
 //the vcpu structure which holds the current state of a core
 typedef struct _vcpu {
   //common fields	
@@ -276,6 +336,13 @@ typedef struct _sl_parameter_block {
 //generic catch-all app return codes
 #define APP_SUCCESS     (0x1)
 #define APP_ERROR				(0x0)
+
+//emhf app constant definitions
+#define APP_IOINTERCEPT_CHAIN   0xA0
+#define APP_IOINTERCEPT_SKIP    0xA1
+#define APP_INIT_SUCCESS        0x0
+#define APP_INIT_FAIL           0xFF
+
 
 //application parameter block
 //for now it holds the bootsector and optional module info loaded by GRUB

@@ -147,12 +147,6 @@ typedef struct _integrity_measurement_values {
 #define ASID_GUEST_KERNEL 2
 #endif
 
-//emhf app constant definitions
-#define APP_IOINTERCEPT_CHAIN   0xA0
-#define APP_IOINTERCEPT_SKIP    0xA1
-#define APP_INIT_SUCCESS        0x0
-#define APP_INIT_FAIL           0xFF
-
 //LAPIC emulation defines
 #define LAPIC_OP_RSVD   (3)
 #define LAPIC_OP_READ   (2)
@@ -175,68 +169,6 @@ typedef struct _integrity_measurement_values {
 
 #ifndef __ASSEMBLY__
 
-//#include <_bitfield.h> /* bit manipulation helpers */
-//#include <hpt.h> /* hardware page table types */
-
-//same privilege level exception/interrupt stack frame
-typedef struct {
-  u32 eip;
-  u32 cs;
-  u32 eflags;
-} __attribute__((packed)) INTR_SAMEPRIVILEGE_STACKFRAME_NOERRORCODE;
-
-typedef struct {
-  u32 errorcode;
-  u32 eip;
-  u32 cs;
-  u32 eflags;
-} __attribute__((packed)) INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE;
-
-
-
-
-
-
-
-typedef struct {
-  u32 signature;
-  u32 paddrpointer;
-  u8 length;
-  u8 spec_rev;
-  u8 checksum;
-  u8 mpfeatureinfo1;
-  u8 mpfeatureinfo2;
-  u8 mpfeatureinfo3;
-  u8 mpfeatureinfo4;
-  u8 mpfeatureinfo5;
-} __attribute__ ((packed)) MPFP;
-
-
-typedef struct{
-  u32 signature;
-  u16 length;
-  u8 spec_rev;
-  u8 checksum;
-  u8 oemid[8];
-  u8 productid[12];
-  u32 oemtableptr;
-  u16 oemtablesize;
-  u16 entrycount;
-  u32 lapicaddr;
-  u16 exttablelength;
-  u16 exttablechecksum;
-} __attribute__ ((packed)) MPCONFTABLE;
-
-typedef struct {
-  u8 entrytype;
-  u8 lapicid;
-  u8 lapicver;
-  u8 cpuflags;
-  u32 cpusig;
-  u32 featureflags;
-  u32 res0;
-  u32 res1;
-} __attribute__ ((packed)) MPENTRYCPU;
 
 
 
