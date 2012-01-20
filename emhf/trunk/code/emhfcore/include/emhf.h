@@ -41,41 +41,20 @@
 #ifndef __EMHF_H_
 #define __EMHF_H_
 
-//---includes for the target----------------------------------------------------
+//pull in required C99 compatible C-library interfaces
 #ifndef __ASSEMBLY__
-#include <stdint.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <string.h>
+	#include <stdint.h>
+	#include <stdbool.h>
+	#include <stddef.h>
+	#include <string.h>
 #endif /* __ASSEMBLY__ */
 
-#ifndef __ASSEMBLY__
-#define BAD_INTEGRITY_HASH "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-
-/* SHA-1 hash of runtime should be defined during build process.
- * However, if it's not, don't fail.  Just proceed with all zeros.
- * XXX TODO Disable proceeding with insecure hash value. */
-#ifndef ___RUNTIME_INTEGRITY_HASH___
-#define ___RUNTIME_INTEGRITY_HASH___ BAD_INTEGRITY_HASH
-#endif /*  ___RUNTIME_INTEGRITY_HASH___ */
-
-//"golden" digest values injected using CFLAGS during build process
-//NOTE: NO WAY TO SELF-CHECK slbelow64K; JUST A SANITY-CHECK
-typedef struct _integrity_measurement_values {
-    u8 sha_slbelow64K[20]; // TODO: play nice with SHA_DIGEST_LENGTH in sha1.h
-    u8 sha_slabove64K[20];
-    u8 sha_runtime[20];
-} INTEGRITY_MEASUREMENT_VALUES;
-#endif /* __ASSEMBLY__ */
-
-
+//XXX: arch. specific headers, need to move into include/arch folder
 #include <_ctype.h>		//the ctype variable definition for debug printf
 #include <_com.h>		//serial UART as debugging backend
-//#include <_print.h>      //early chance to disable/enable debug printfs
 #include <_multiboot.h>  //boot manager (multiboot)
 #include <_cmdline.h>	//GRUB command line handling functions
 #include <_error.h>      //error handling and assertions
-
 #include <_processor.h>  //CPU
 #include <_msr.h>        //model specific registers
 #include <_paging.h>     //MMU
@@ -83,28 +62,20 @@ typedef struct _integrity_measurement_values {
 #include <_apic.h>       //APIC
 #include <_svm.h>        //SVM extensions
 #include <_vmx.h>				//VMX extensions
-
 #include <_txt.h>		//Trusted eXecution Technology (SENTER support)
-
 #include <_pci.h>        //PCI bus glue
 #include <_acpi.h>				//ACPI glue
-
 #include <_svm_eap.h>		//SVM DMA protection
 #include <_vmx_eap.h>		//VMX DMA protection
-
 #include <_tpm.h>			//generic TPM functions
 #include <_tpm_emhf.h>		//EMHF-specific TPM functions
-
-//language specifics
-#include <_sarg.h>
-#include <_div64.h>
-
+#include <_sarg.h>			//language specifics
+#include <_div64.h>			//do_div for debug output
 #include <_perf.h>			//performance measurement routines
 
 
-
 #include <emhf-types.h>		//EMHF specific base types
-#include <_globals.h>
+#include <_globals.h>		//XXX: need to get rid of this
 
 //----------------------------------------------------------------------
 // component headers
@@ -117,13 +88,5 @@ typedef struct _integrity_measurement_values {
 #include <emhf-xcphandler.h>	//EMHF exception handler component
 #include <emhf-baseplatform.h>	//EMHF base platform component
 
-
-
-
-#ifndef __ASSEMBLY__
-
-
-
-#endif
 
 #endif /* __EMHF_H_ */

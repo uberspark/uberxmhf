@@ -118,6 +118,26 @@ typedef u32 	gva_t; 			//guest virtual address. we only support 32-bit guests
 typedef u64 	gpa_t; 			//guest physical address. can be 64-bit with PAE 
 
 
+#ifndef __ASSEMBLY__
+#define BAD_INTEGRITY_HASH "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+
+/* SHA-1 hash of runtime should be defined during build process.
+ * However, if it's not, don't fail.  Just proceed with all zeros.
+ * XXX TODO Disable proceeding with insecure hash value. */
+#ifndef ___RUNTIME_INTEGRITY_HASH___
+#define ___RUNTIME_INTEGRITY_HASH___ BAD_INTEGRITY_HASH
+#endif /*  ___RUNTIME_INTEGRITY_HASH___ */
+
+//"golden" digest values injected using CFLAGS during build process
+//NOTE: NO WAY TO SELF-CHECK slbelow64K; JUST A SANITY-CHECK
+typedef struct _integrity_measurement_values {
+    u8 sha_slbelow64K[20]; // TODO: play nice with SHA_DIGEST_LENGTH in sha1.h
+    u8 sha_slabove64K[20];
+    u8 sha_runtime[20];
+} INTEGRITY_MEASUREMENT_VALUES;
+#endif /* __ASSEMBLY__ */
+
+
 //----------------------------------------------------------------------
 //the master-id table, which is used by the AP bootstrap code
 //to locate its own vcpu structure
