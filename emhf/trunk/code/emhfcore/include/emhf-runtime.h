@@ -57,6 +57,11 @@ extern RPB *rpb __attribute__(( section(".data") ));
 //exported FUNCTIONS 
 //----------------------------------------------------------------------
 
+//entry point of EMHF runtime; this is where we get control from the SL
+void emhf_runtime_entry(void);
+
+//EMHF runtime main function; gets control in the context of each core
+void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit);
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS

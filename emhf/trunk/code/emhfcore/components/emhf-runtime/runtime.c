@@ -40,7 +40,7 @@
 #include <emhf.h> 
 
 //---runtime main---------------------------------------------------------------
-void cstartup(void){
+void emhf_runtime_entry(void){
 	u32 cpu_vendor;
 
 	//get CPU vendor
