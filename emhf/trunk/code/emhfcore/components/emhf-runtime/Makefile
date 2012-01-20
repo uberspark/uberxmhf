@@ -47,6 +47,7 @@ OBJECTS_PRECOMPILED += ../emhf-dmaprot/dmap-interface.o
 OBJECTS_PRECOMPILED += ../emhf-dmaprot/arch/x86/dmap-x86.o
 OBJECTS_PRECOMPILED += ../emhf-dmaprot/arch/x86/svm/dmap-x86svm.o
 OBJECTS_PRECOMPILED += ../emhf-dmaprot/arch/x86/vmx/dmap-x86vmx.o
+OBJECTS_PRECOMPILED += ../emhf-dmaprot/arch/x86/vmx/dmap-x86vmx-data.o
 
 OBJECTS_PRECOMPILED += ../emhf-xcphandler/xcph-interface.o
 OBJECTS_PRECOMPILED += ../emhf-xcphandler/arch/x86/xcph-x86.o

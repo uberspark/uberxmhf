@@ -155,7 +155,7 @@ x_init_stack:
 		.fill 4*4096, 1, 0
 
 	/* Vt-d protected buffer for DMA protection */
-	.global g_vmx_vtd_pdp_table
+/*	.global g_vmx_vtd_pdp_table
 	g_vmx_vtd_pdp_table:
 		.fill 4096, 1, 0	//PAGE_SIZE_4K
 	.global g_vmx_vtd_pd_tables
@@ -169,7 +169,7 @@ x_init_stack:
 		.fill 4096, 1, 0 	//PAGE_SIZE_4K
 	.global g_vmx_vtd_cet
 	g_vmx_vtd_cet:
-		.fill (4096 * 256), 1, 0	//PAGE_SIZE_4K * PCI_BUS_MAX
+		.fill (4096 * 256), 1, 0	//PAGE_SIZE_4K * PCI_BUS_MAX*/
 
 
 
