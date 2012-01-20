@@ -60,4 +60,6 @@ arch_x86_gdtdesc_t x_gdt __attribute__(( section(".data"), aligned(16) )) = {
 u8 x_3level_pdpt[PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
 u8 x_3level_pdt[PAE_PTRS_PER_PDPT * PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
 		
+//runtime stack
+u8 x_init_stack[RUNTIME_STACK_SIZE] __attribute__(( section(".stack") ));
 

@@ -112,13 +112,6 @@ _rpb:
 	.long 0, 0, 0, 0				//32 bytes for field uart_config of type uart_config_t 
 	.long 1							//isEarlyInit, 1 = early init, 0 = late init (default to early init)
 
-//------------------------------------------------------------------------------
-//STACK (LOCAL)
-//------------------------------------------------------------------------------
-	
-	.section .stack
-x_init_stack:
-	.fill	8192, 1, 0
 
 
 
