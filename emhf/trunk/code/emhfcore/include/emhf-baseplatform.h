@@ -358,6 +358,36 @@ static inline u64 VCPU_gcr4(VCPU *vcpu)
 //x86vmx SUBARCH. INTERFACES
 //----------------------------------------------------------------------
 
+
+//VMX VMCS read-only field encodings
+extern struct _vmx_vmcsrofields_encodings g_vmx_vmcsrofields_encodings[] __attribute__(( section(".data") ));
+
+//count of VMX VMCS read-only fields
+extern unsigned int g_vmx_vmcsrofields_encodings_count __attribute__(( section(".data") ));
+
+//VMX VMCS read-write field encodings
+extern struct _vmx_vmcsrwfields_encodings g_vmx_vmcsrwfields_encodings[] __attribute__(( section(".data") ));
+
+//count of VMX VMCS read-write fields
+extern unsigned int g_vmx_vmcsrwfields_encodings_count __attribute__(( section(".data") ));
+
+//VMX VMXON buffers
+extern u8 g_vmx_vmxon_buffers[] __attribute__(( section(".palign_data") ));
+
+//VMX VMCS buffers
+extern u8 g_vmx_vmcs_buffers[] __attribute__(( section(".palign_data") ));
+		
+//VMX IO bitmap buffers
+extern u8 g_vmx_iobitmap_buffers[] __attribute__(( section(".palign_data") ));
+		
+//VMX guest and host MSR save area buffers
+extern u8 g_vmx_msr_area_host_buffers[] __attribute__(( section(".palign_data") ));
+extern u8 g_vmx_msr_area_guest_buffers[] __attribute__(( section(".palign_data") ));
+
+//VMX MSR bitmap buffers
+extern u8 g_vmx_msrbitmap_buffers[] __attribute__(( section(".palign_data") ));
+
+
 //initialize CPU state
 void emhf_baseplatform_arch_x86vmx_cpuinitialize(void);
 
@@ -382,6 +412,19 @@ void emhf_baseplatform_arch_x86vmx_reboot(VCPU *vcpu);
 //----------------------------------------------------------------------
 //x86svm SUBARCH. INTERFACES
 //----------------------------------------------------------------------
+
+//SVM VM_HSAVE buffers 
+extern u8 g_svm_hsave_buffers[]__attribute__(( section(".palign_data") ));
+
+//SVM VMCB buffers 
+extern u8 g_svm_vmcb_buffers[]__attribute__(( section(".palign_data") )); 
+
+//SVM IO bitmap buffer
+extern u8 g_svm_iopm[]__attribute__(( section(".palign_data") )); 
+
+//SVM MSR bitmap buffer
+extern u8 g_svm_msrpm[]__attribute__(( section(".palign_data") ));
+
 
 //wake up application processors (cores) in the system
 void emhf_baseplatform_arch_x86svm_wakeupAPs(void);
