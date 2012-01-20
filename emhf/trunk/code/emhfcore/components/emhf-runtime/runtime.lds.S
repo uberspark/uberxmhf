@@ -35,7 +35,7 @@
 
 OUTPUT_ARCH(i386)
 
-ENTRY(cstartup)
+ENTRY(emhf_runtime_entry)
 
 MEMORY
 {

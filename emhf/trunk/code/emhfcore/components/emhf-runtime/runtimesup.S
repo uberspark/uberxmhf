@@ -53,7 +53,7 @@
 	.extern g_vmx_vtd_ret
 	.extern g_vmx_vtd_cet
 	
-	.extern cstartup
+	.extern emhf_runtime_entry
 	.extern allcpus_common_start
 	.extern runtime_exception_handler
 	
@@ -68,7 +68,7 @@
 	.global _rpb
 _rpb:
 	.long RUNTIME_PARAMETER_BLOCK_MAGIC
-	.long cstartup
+	.long emhf_runtime_entry
 	.long x_3level_pdpt
 	.long	x_3level_pdt
 	.long 0
