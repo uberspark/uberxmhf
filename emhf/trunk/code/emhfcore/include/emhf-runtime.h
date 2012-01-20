@@ -47,7 +47,8 @@
 //----------------------------------------------------------------------
 
 //runtime parameter block data area 
-extern u8 arch_rpb[];
+//extern u8 arch_rpb[];
+extern RPB arch_rpb;
 
 //runtime parameter block pointer 
 extern RPB *rpb __attribute__(( section(".data") )); 

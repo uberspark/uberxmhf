@@ -116,6 +116,52 @@ typedef struct {
  
 */
 
+//extern uart_config_t g_uart_config;
+
+RPB arch_rpb __attribute__(( section(".s_rpb") )) = {
+	.magic= RUNTIME_PARAMETER_BLOCK_MAGIC,
+	.XtVmmEntryPoint= (u32)emhf_runtime_entry,
+	.XtVmmPdptBase= (u32)x_3level_pdpt,
+	.XtVmmPdtsBase= (u32)x_3level_pdt,
+	.XtVmmNpdtBase= 0,
+	.XtVmmNestedNpdtBase= 0,
+	.XtGuestOSBootModuleBase= 0,
+	.XtGuestOSBootModuleSize= 0,
+	.XtGuestOSBootModuleBaseSup1= 0,
+	.XtGuestOSBootModuleSizeSup1= 0,
+	.XtVmmStackBase= (u32)x_init_stack,
+	.XtVmmStackSize= 8192,
+	.XtVmmGdt= (u32)&x_gdt,
+	.XtVmmNetworkAdapterStructureBase= 0,
+	.XtVmmHsaveBase= 0,
+	.XtVmmVMCBBase= 0,
+	.XtVmmIopmBase= 0,
+	.XtVmmNestedPdptBase= 0,
+	.XtVmmNestedPdtsBase= 0,
+	.XtVmmNestedPtsBase= 0,
+	.XtVmmIdt= (u32)emhf_xcphandler_idt,
+	.XtVmmIdtFunctionPointers= (u32)emhf_xcphandler_exceptionstubs,
+	.XtVmmIdtEntries= 32,
+	.XtVmmE1000DescBase= 0,
+	.XtVmmE1000HeaderBase= 0,
+	.XtVmmE1000BodyBase= 0,
+	.XtVmmRuntimePhysBase= 0,
+	.XtVmmRuntimeVirtBase= 0,
+	.XtVmmRuntimeSize= 0,
+	.XtVmmE820Buffer= (u32)g_e820map,
+	.XtVmmE820NumEntries= 0,
+	.XtVmmMPCpuinfoBuffer= (u32)g_cpumap,
+	.XtVmmMPCpuinfoNumEntries= 0,
+	.XtVmmTSSBase= (u32)g_runtime_TSS,
+	.RtmSVMDevBitmapBase= (u32)g_svm_dev_bitmap,
+	.RtmVMXVTdPdpt= (u32)g_vmx_vtd_pdp_table,
+	.RtmVMXVTdPdts= (u32)g_vmx_vtd_pd_tables,
+	.RtmVMXVTdPts= (u32)g_vmx_vtd_p_tables,
+	.RtmVMXVTdRET= (u32)g_vmx_vtd_ret,
+	.RtmVMXVTdCET= (u32)g_vmx_vtd_cet,
+	//.uart_config=(u32)&g_uart_config,
+	.isEarlyInit=1,					//1 for an "early init" else 0 (late-init)
+};
  
 
 

@@ -64,9 +64,9 @@
 //RUNTIME PARAMETER BLOCK DATA
 //------------------------------------------------------------------------------
 //NOTE: The definition here _MUST_ match declaration of RPB in target.h	
-	.section .s_rpb
-	.global arch_rpb
-arch_rpb:
+	.section .data
+	.global xarch_rpb
+xarch_rpb:
 	.long RUNTIME_PARAMETER_BLOCK_MAGIC
 	.long emhf_runtime_entry
 	.long x_3level_pdpt
