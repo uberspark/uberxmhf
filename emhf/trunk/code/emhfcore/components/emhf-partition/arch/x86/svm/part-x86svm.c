@@ -87,7 +87,7 @@ static void _svm_initSVM(VCPU *vcpu){
 
   // Initialize the HSA 
   //printf("\nHSAVE area=0x%08X", vcpu->hsave_vaddr_ptr);
-  hsave_pa = __hva2spa__((void*)vcpu->hsave_vaddr_ptr);
+  hsave_pa = hva2spa((void*)vcpu->hsave_vaddr_ptr);
   //printf("\nHSAVE physaddr=0x%08x", hsave_pa);
   eax = (u32)hsave_pa;
   edx = (u32)(hsave_pa >> 32);
@@ -259,12 +259,12 @@ static void _svm_initVMCB(VCPU *vcpu){
 
   //setup IO interception
   memset((void *)g_svm_iopm, 0, SIZEOF_IOPM_BITMAP);   //clear bitmap buffer
-  vmcb->iopm_base_pa = __hva2spa__(g_svm_iopm);   //setup vmcb iopm
+  vmcb->iopm_base_pa = hva2spa(g_svm_iopm);   //setup vmcb iopm
   vmcb->general1_intercepts |= (u32) GENERAL1_INTERCEPT_IOIO_PROT;
 
   //setup MSR interception
   memset((void *)g_svm_msrpm, 0, SIZEOF_MSRPM_BITMAP);   //clear bitmap buffer
-  vmcb->msrpm_base_pa = __hva2spa__(g_svm_msrpm);   //setup vmcb msrpm
+  vmcb->msrpm_base_pa = hva2spa(g_svm_msrpm);   //setup vmcb msrpm
   vmcb->general1_intercepts |= (u32) GENERAL1_INTERCEPT_MSR_PROT;
 
 
@@ -293,7 +293,7 @@ void emhf_partition_arch_x86svm_start(VCPU *vcpu){
     vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
     printf("\nCPU(0x%02x): Starting HVM using CS:EIP=0x%04x:0x%08x...", vcpu->id,
 			(u16)vmcb->cs.sel, (u32)vmcb->rip);
-    __svm_start_hvm(vcpu, __hva2spa__((void*)vcpu->vmcb_vaddr_ptr));
+    __svm_start_hvm(vcpu, hva2spa((void*)vcpu->vmcb_vaddr_ptr));
 	//we never get here, if we do, we just return and our caller is responsible
 	//for halting the core as something really bad happened!
 }

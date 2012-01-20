@@ -232,7 +232,7 @@ u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
       //change LAPIC physical address in EPT to point to physical address 
 			//of memregion_virtual_LAPIC
 			vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
-					(u64)__hva2spa__(&g_vmx_virtual_LAPIC_base) | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
+					(u64)hva2spa(&g_vmx_virtual_LAPIC_base) | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
 
     }else{
       g_vmx_lapic_op = LAPIC_OP_RSVD;
@@ -251,7 +251,7 @@ u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
       //change LAPIC physical address in EPT to point to physical address 
 			//of memregion_virtual_LAPIC
 			vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
-					(u64)__hva2spa__(&g_vmx_virtual_LAPIC_base) | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
+					(u64)hva2spa(&g_vmx_virtual_LAPIC_base) | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
 
     }else{
       g_vmx_lapic_op = LAPIC_OP_RSVD;

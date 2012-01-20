@@ -519,9 +519,9 @@ static inline gpa_t spa2gpa(spa_t spa);
 static inline void* gpa2hva(gpa_t gpa);
 static inline gpa_t hva2gpa(hva_t hva);
 
-#define __pa(x) (x)
-#define __hva2spa__(x) (hva2spa(x))
-#define __spa2hva__(x) (spa2hva(x))
+//#define __pa(x) (x)
+//#define __hva2spa__(x) (hva2spa(x))
+//#define __spa2hva__(x) (spa2hva(x))
 //----------------------------------------------------------------------
 
 

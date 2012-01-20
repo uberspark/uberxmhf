@@ -91,11 +91,11 @@ void cstartup(void){
 			u32 protectedbuffer_size;
 			
 			if(cpu_vendor == CPU_VENDOR_AMD){
-				protectedbuffer_paddr = __hva2spa__(&g_svm_dev_bitmap);
+				protectedbuffer_paddr = hva2spa(&g_svm_dev_bitmap);
 				protectedbuffer_vaddr = (u32)&g_svm_dev_bitmap;
 				protectedbuffer_size = 131072; //sizeof(g_svm_dev_bitmap) XXX: TODO remove hard-coded constant
 			}else{	//CPU_VENDOR_INTEL
-				protectedbuffer_paddr = __hva2spa__(&g_vmx_vtd_pdp_table);
+				protectedbuffer_paddr = hva2spa(&g_vmx_vtd_pdp_table);
 				protectedbuffer_vaddr = (u32)&g_vmx_vtd_pdp_table;
 				protectedbuffer_size = PAGE_SIZE_4K + (PAGE_SIZE_4K * PAE_PTRS_PER_PDPT) 
 					+ (PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT) + PAGE_SIZE_4K +

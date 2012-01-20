@@ -159,7 +159,7 @@ static void _vmx_initVT(VCPU *vcpu){
 	  //step-5:enter VMX root operation using VMXON
 	  {
 	  	u32 retval=0;
-	  	u64 vmxonregion_paddr = __hva2spa__((void*)vcpu->vmx_vmxonregion_vaddr);
+	  	u64 vmxonregion_paddr = hva2spa((void*)vcpu->vmx_vmxonregion_vaddr);
 	    //set VMCS rev id
 	  	*((u32 *)vcpu->vmx_vmxonregion_vaddr) = (u32)vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
 	    
@@ -270,15 +270,15 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
  			vcpu->vmcs.control_VM_entry_controls = vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR];
       
  			//IO bitmap support
-			vcpu->vmcs.control_IO_BitmapA_address_full = (u32)__hva2spa__((void*)vcpu->vmx_vaddr_iobitmap);
+			vcpu->vmcs.control_IO_BitmapA_address_full = (u32)hva2spa((void*)vcpu->vmx_vaddr_iobitmap);
 			vcpu->vmcs.control_IO_BitmapA_address_high = 0;
-			vcpu->vmcs.control_IO_BitmapB_address_full = (u32)__hva2spa__( ((void*)vcpu->vmx_vaddr_iobitmap + PAGE_SIZE_4K) );
+			vcpu->vmcs.control_IO_BitmapB_address_full = (u32)hva2spa( ((void*)vcpu->vmx_vaddr_iobitmap + PAGE_SIZE_4K) );
 			vcpu->vmcs.control_IO_BitmapB_address_high = 0;
 			vcpu->vmcs.control_VMX_cpu_based |= (1 << 25); //enable use IO Bitmaps
 
  			//MSR bitmap support
 			//memset( (void *)vcpu->vmx_vaddr_msrbitmaps, 0xFFFFFFFFUL, PAGE_SIZE_4K); //trap all MSR accesses
-			//vcpu->vmcs.control_MSR_Bitmaps_address_full = (u32)__hva2spa__((void*)vcpu->vmx_vaddr_msrbitmaps);	 							
+			//vcpu->vmcs.control_MSR_Bitmaps_address_full = (u32)hva2spa((void*)vcpu->vmx_vaddr_msrbitmaps);	 							
 			//vcpu->vmcs.control_MSR_Bitmaps_address_high = 0;
 			//vcpu->vmcs.control_VMX_cpu_based |= (1 << 28); //enable use MSR Bitmaps 
 
@@ -300,15 +300,15 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 					}
 					
 					//host MSR load on exit, we store it ourselves before entry
-					vcpu->vmcs.control_VM_exit_MSR_load_address_full=(u32)__hva2spa__((void*)vcpu->vmx_vaddr_msr_area_host);
+					vcpu->vmcs.control_VM_exit_MSR_load_address_full=(u32)hva2spa((void*)vcpu->vmx_vaddr_msr_area_host);
 					vcpu->vmcs.control_VM_exit_MSR_load_address_high=0;
 					vcpu->vmcs.control_VM_exit_MSR_load_count= vmx_msr_area_msrs_count;
 					
 					//guest MSR load on entry, store on exit
-					vcpu->vmcs.control_VM_entry_MSR_load_address_full=(u32)__hva2spa__((void*)vcpu->vmx_vaddr_msr_area_guest);
+					vcpu->vmcs.control_VM_entry_MSR_load_address_full=(u32)hva2spa((void*)vcpu->vmx_vaddr_msr_area_guest);
 					vcpu->vmcs.control_VM_entry_MSR_load_address_high=0;
 					vcpu->vmcs.control_VM_entry_MSR_load_count=vmx_msr_area_msrs_count;
-				  vcpu->vmcs.control_VM_exit_MSR_store_address_full=(u32)__hva2spa__((void*)vcpu->vmx_vaddr_msr_area_guest);
+				  vcpu->vmcs.control_VM_exit_MSR_store_address_full=(u32)hva2spa((void*)vcpu->vmx_vaddr_msr_area_guest);
 					vcpu->vmcs.control_VM_exit_MSR_store_address_high=0;
 					vcpu->vmcs.control_VM_exit_MSR_store_count=vmx_msr_area_msrs_count;
 			}
@@ -584,7 +584,7 @@ void emhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu){
 void emhf_partition_arch_x86vmx_start(VCPU *vcpu){
     printf("\nCPU(0x%02x): Starting HVM using CS:EIP=0x%04x:0x%08x...", vcpu->id,
 			(u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP);
-    _vmx_start_hvm(vcpu, __hva2spa__((void*)vcpu->vmx_vmcs_vaddr));
+    _vmx_start_hvm(vcpu, hva2spa((void*)vcpu->vmx_vmcs_vaddr));
 	//we never get here, if we do, we just return and our caller is responsible
 	//for halting the core as something really bad happened!
 }

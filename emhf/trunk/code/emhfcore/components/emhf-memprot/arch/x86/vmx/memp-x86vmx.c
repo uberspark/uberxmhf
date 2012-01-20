@@ -58,7 +58,7 @@ void emhf_memprot_arch_x86vmx_initialize(VCPU *vcpu){
 	vcpu->vmcs.control_VMX_seccpu_based |= (1 << 5); //enable VPID
 	vcpu->vmcs.control_vpid = 1; //VPID=0 is reserved for hypervisor
 	vcpu->vmcs.control_EPT_pointer_high = 0;
-	vcpu->vmcs.control_EPT_pointer_full = __hva2spa__((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E; //page walk of 4 and WB memory
+	vcpu->vmcs.control_EPT_pointer_full = hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E; //page walk of 4 and WB memory
 	vcpu->vmcs.control_VMX_cpu_based &= ~(1 << 15); //disable CR3 load exiting
 	vcpu->vmcs.control_VMX_cpu_based &= ~(1 << 16); //disable CR3 store exiting
 }
@@ -319,16 +319,16 @@ static void _vmx_setupEPT(VCPU *vcpu){
 	u32 i, j, k, paddr=0;
 
 	pml4_table = (u64 *)vcpu->vmx_vaddr_ept_pml4_table;
-	pml4_table[0] = (u64) (__hva2spa__((void*)vcpu->vmx_vaddr_ept_pdp_table) | 0x7); 
+	pml4_table[0] = (u64) (hva2spa((void*)vcpu->vmx_vaddr_ept_pdp_table) | 0x7); 
 
 	pdp_table = (u64 *)vcpu->vmx_vaddr_ept_pdp_table;
 		
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-		pdp_table[i] = (u64) ( __hva2spa__((void*)vcpu->vmx_vaddr_ept_pd_tables + (PAGE_SIZE_4K * i)) | 0x7 );
+		pdp_table[i] = (u64) ( hva2spa((void*)vcpu->vmx_vaddr_ept_pd_tables + (PAGE_SIZE_4K * i)) | 0x7 );
 		pd_table = (u64 *)  ((u32)vcpu->vmx_vaddr_ept_pd_tables + (PAGE_SIZE_4K * i)) ;
 		
 		for(j=0; j < PAE_PTRS_PER_PDT; j++){
-			pd_table[j] = (u64) ( __hva2spa__((void*)vcpu->vmx_vaddr_ept_p_tables + (PAGE_SIZE_4K * ((i*PAE_PTRS_PER_PDT)+j))) | 0x7 );
+			pd_table[j] = (u64) ( hva2spa((void*)vcpu->vmx_vaddr_ept_p_tables + (PAGE_SIZE_4K * ((i*PAE_PTRS_PER_PDT)+j))) | 0x7 );
 			p_table = (u64 *)  ((u32)vcpu->vmx_vaddr_ept_p_tables + (PAGE_SIZE_4K * ((i*PAE_PTRS_PER_PDT)+j))) ;
 			
 			for(k=0; k < PAE_PTRS_PER_PT; k++){
