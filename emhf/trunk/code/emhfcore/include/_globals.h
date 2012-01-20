@@ -48,35 +48,9 @@
 
 
 
-//defined in runtimesup.S(.text), this is the start of the real-mode AP
-//bootstrap code
-extern u32 _ap_bootstrap_start[];
-
-//defined in runtimesup.S(.text), this is the end of the real-mode AP
-//bootstrap code
-extern u32 _ap_bootstrap_end[];
-
-//defined in runtimesup.S(.text), this is the MLE Join stucture to
-//bring up the APs
-extern u32 _mle_join_start[];
-
-//the CR3 value to be loaded by the AP boot-strap code is placed in this
-//variable by the runtime before waking up the APs
-//defined in runtimesup.S(.text)
-extern u32 _ap_cr3_value;
-
-//the CR4 value to be loaded by the AP boot-strap code is placed in this
-//variable by the runtime before waking up the APs
-//defined in runtimesup.S(.text)
-extern u32 _ap_cr4_value;
 
 
-#if defined (__TEST_CPU_QUIESCE__)
-	//queisce test global variables
-	//quiesce cpu counter and corresponding lock
-	extern u32 g_quiesce_cpu_counter __attribute__(( section(".data") ));
-	extern u32 g_lock_quiesce_cpu_counter __attribute__(( section(".data") ));
-#endif
+
 
 
 

@@ -193,6 +193,21 @@ typedef struct {
 //runtime TSS
 extern u8 g_runtime_TSS[PAGE_SIZE_4K] __attribute__(( section(".data") ));
 
+//this is the start of the real-mode AP bootstrap code (bplt-x86-smptrampoline.S)
+extern u32 _ap_bootstrap_start[];
+
+//this is the end of the real-mode AP bootstrap code (bplt-x86-smptrampoline.S)
+extern u32 _ap_bootstrap_end[];
+
+//the CR3 value to be loaded by the AP boot-strap code is placed in this
+//variable by the runtime before waking up the APs (bplt-x86-smptrampoline.S)
+extern u32 _ap_cr3_value;
+
+//the CR4 value to be loaded by the AP boot-strap code is placed in this
+//variable by the runtime before waking up the APs (bplt-x86-smptrampoline.S)
+extern u32 _ap_cr4_value;
+
+
 
 //return 1 if the calling CPU is the BSP
 u32 emhf_baseplatform_arch_x86_isbsp(void);
@@ -357,6 +372,9 @@ static inline u64 VCPU_gcr4(VCPU *vcpu)
 //----------------------------------------------------------------------
 //x86vmx SUBARCH. INTERFACES
 //----------------------------------------------------------------------
+
+//this is the MLE Join stucture to bring up the APs (bplt-x86-smptrampoline.S)
+extern u32 _mle_join_start[];
 
 
 //VMX VMCS read-only field encodings
