@@ -43,28 +43,6 @@
 
 #ifndef __ASSEMBLY__
 
-//system e820 map
-#if defined(__EMHF_VERIFICATION__)
-	extern u8 g_e820map[] __attribute__(( section(".data") ));
-#else
-	extern GRUBE820 g_e820map[] __attribute__(( section(".data") ));
-#endif //__EMHF_VERIFICATION__
-
-//SMP CPU map; lapic id, base, ver and bsp indication for each available core
-extern PCPU	g_cpumap[] __attribute__(( section(".data") ));
-
-//runtime stacks for individual cores
-extern u8 g_cpustacks[] __attribute__(( section(".stack") ));
-
-//VCPU structure for each "guest OS" core
-extern VCPU g_vcpubuffers[] __attribute__(( section(".data") ));
-
-//master id table, contains core lapic id to VCPU mapping information
-extern MIDTAB g_midtable[] __attribute__(( section(".data") ));
-
-//number of entries in the master id table, in essence the number of 
-//physical cores in the system
-extern u32 g_midtable_numentries __attribute__(( section(".data") ));
 
 //variable that is incremented by 1 by all cores that boot up, this should
 //be finally equal to g_midtable_numentries at runtime which signifies

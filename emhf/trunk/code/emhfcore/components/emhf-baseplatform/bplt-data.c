@@ -41,3 +41,21 @@
 
 #include <emhf.h>
 
+//system e820 map
+GRUBE820 g_e820map[MAX_E820_ENTRIES] __attribute__(( section(".data") ));
+
+//SMP CPU map; lapic id, base, ver and bsp indication for each available core
+PCPU	g_cpumap[MAX_PCPU_ENTRIES] __attribute__(( section(".data") ));
+
+//runtime stacks for individual cores
+u8 g_cpustacks[RUNTIME_STACK_SIZE * MAX_PCPU_ENTRIES] __attribute__(( section(".stack") ));
+
+//VCPU structure for each "guest OS" core
+VCPU g_vcpubuffers[MAX_VCPU_ENTRIES] __attribute__(( section(".data") ));
+
+//master id table, contains core lapic id to VCPU mapping information
+MIDTAB g_midtable[MAX_MIDTAB_ENTRIES] __attribute__(( section(".data") ));
+
+//number of entries in the master id table, in essence the number of 
+//physical cores in the system
+u32 g_midtable_numentries __attribute__(( section(".data") )) = 0;
