@@ -93,8 +93,6 @@ _rpb:
 	.long 0 //x_e1000desc
 	.long 0 //x_e1000header
 	.long 0 //x_e1000body
-  .global __ha
-  __ha:
 	.long 0  //physical base address of runtime
 	.long 0  //virtual base address of runtime
 	.long 0  //2M aligned size of runtime
