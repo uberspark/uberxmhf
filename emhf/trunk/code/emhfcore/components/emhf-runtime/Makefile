@@ -35,7 +35,9 @@ OBJECTS_PRECOMPILED += ../emhf-tpm/tpm_extra.o
 OBJECTS_PRECOMPILED += ../emhf-memprot/memp-interface.o
 OBJECTS_PRECOMPILED += ../emhf-memprot/arch/x86/memp-x86.o
 OBJECTS_PRECOMPILED += ../emhf-memprot/arch/x86/vmx/memp-x86vmx.o
+OBJECTS_PRECOMPILED += ../emhf-memprot/arch/x86/vmx/memp-x86vmx-data.o
 OBJECTS_PRECOMPILED += ../emhf-memprot/arch/x86/svm/memp-x86svm.o
+OBJECTS_PRECOMPILED += ../emhf-memprot/arch/x86/svm/memp-x86svm-data.o
 
 OBJECTS_PRECOMPILED += ../emhf-parteventhub/arch/x86/svm/peh-x86svm-entry.o
 OBJECTS_PRECOMPILED += ../emhf-parteventhub/arch/x86/svm/peh-x86svm-main.o
