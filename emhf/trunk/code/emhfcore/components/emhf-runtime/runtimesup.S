@@ -154,22 +154,6 @@ x_init_stack:
 	x_3level_pdt:
 		.fill 4*4096, 1, 0
 
-	/* Vt-d protected buffer for DMA protection */
-/*	.global g_vmx_vtd_pdp_table
-	g_vmx_vtd_pdp_table:
-		.fill 4096, 1, 0	//PAGE_SIZE_4K
-	.global g_vmx_vtd_pd_tables
-	g_vmx_vtd_pd_tables:
-		.fill (4096 * 4), 1, 0	//PAGE_SIZE_4K * PAE_PTRS_PER_PDPT
-	.global g_vmx_vtd_p_tables
-	g_vmx_vtd_p_tables:	
-		.fill (4096 * 4 * 512), 1, 0 //PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT
-	.global g_vmx_vtd_ret				
-	g_vmx_vtd_ret:
-		.fill 4096, 1, 0 	//PAGE_SIZE_4K
-	.global g_vmx_vtd_cet
-	g_vmx_vtd_cet:
-		.fill (4096 * 256), 1, 0	//PAGE_SIZE_4K * PCI_BUS_MAX*/
 
 
 
