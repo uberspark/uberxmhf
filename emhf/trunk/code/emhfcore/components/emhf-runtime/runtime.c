@@ -46,8 +46,8 @@ void cstartup(void){
 	//get CPU vendor
 	cpu_vendor = emhf_baseplatform_getcpuvendor();
 
-	//initialize global runtime variables including Runtime Parameter Block (rpb)
-	runtime_globals_init();
+	//initialize Runtime Parameter Block (rpb)
+	rpb = (RPB *)_rpb;
 
 	//setup debugging	
 	emhf_debug_init((char *)&rpb->uart_config);

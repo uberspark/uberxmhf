@@ -4,6 +4,7 @@
 # source files
 AS_SOURCES = runtimesup.S 
 C_SOURCES = runtime.c globals.c 
+C_SOURCES += rntm-data.c
 
 # These are the core runtime objects
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))

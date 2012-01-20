@@ -83,7 +83,7 @@ u32 g_appmain_success_counter __attribute__(( section(".data") )) = 0;
 u32 g_lock_appmain_success_counter __attribute__(( section(".data") )) = 1;
 
 //runtime parameter block pointer 
-RPB *rpb __attribute__(( section(".data") )); 
+//RPB *rpb __attribute__(( section(".data") )); 
 
 //runtime TSS
 u8 g_runtime_TSS[PAGE_SIZE_4K] __attribute__(( section(".data") ));
@@ -442,9 +442,9 @@ u8 g_vmx_vtd_cet[PAGE_SIZE_4K * PCI_BUS_MAX] __attribute__(( section(".palign_da
 //struct emhf_library *g_libemhf __attribute__(( section(".data") )) = NULL; 
 
 //------------------------------------------------------------------------------
-void runtime_globals_init(){
+/*void runtime_globals_init(){
 
 	//initialize runtime parameter block pointer
 	rpb = (RPB *)_rpb;
-}
+}*/
  
