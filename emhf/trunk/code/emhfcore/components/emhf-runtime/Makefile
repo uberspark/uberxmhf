@@ -45,7 +45,9 @@ OBJECTS_PRECOMPILED += ../emhf-parteventhub/arch/x86/vmx/peh-x86vmx-main.o
 OBJECTS_PRECOMPILED += ../emhf-smpguest/smpg-interface.o
 OBJECTS_PRECOMPILED += ../emhf-smpguest/arch/x86/smpg-x86.o
 OBJECTS_PRECOMPILED += ../emhf-smpguest/arch/x86/svm/smpg-x86svm.o
+OBJECTS_PRECOMPILED += ../emhf-smpguest/arch/x86/svm/smpg-x86svm-data.o
 OBJECTS_PRECOMPILED += ../emhf-smpguest/arch/x86/vmx/smpg-x86vmx.o
+OBJECTS_PRECOMPILED += ../emhf-smpguest/arch/x86/vmx/smpg-x86vmx-data.o
 
 OBJECTS_PRECOMPILED += ../emhf-dmaprot/dmap-interface.o
 OBJECTS_PRECOMPILED += ../emhf-dmaprot/arch/x86/dmap-x86.o
