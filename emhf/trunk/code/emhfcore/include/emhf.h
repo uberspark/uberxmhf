@@ -82,8 +82,6 @@
 extern RPB *rpb;	
 #endif	//__ASSEMBLY__
 
-#include <_globals.h>		//XXX: need to get rid of this
-
 //----------------------------------------------------------------------
 // component headers
 #include <emhf-debug.h>		//EMHF debug component
