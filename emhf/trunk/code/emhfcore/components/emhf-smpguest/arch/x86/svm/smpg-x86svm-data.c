@@ -41,3 +41,48 @@
  
 #include <emhf.h> 
 
+//the BSP LAPIC base address - smpguest x86svm
+u32 g_svm_lapic_base __attribute__(( section(".data") )) = 0;
+
+//the quiesce counter, all CPUs except for the one requesting the
+//quiesce will increment this when they get their quiesce signal
+//smpguest x86svm
+u32 g_svm_quiesce_counter __attribute__(( section(".data") )) = 0;
+
+//SMP lock to access the above variable
+//smpguest x86svm
+u32 g_svm_lock_quiesce_counter __attribute__(( section(".data") )) = 1; 
+
+//resume counter to rally all CPUs after resumption from quiesce
+//smpguest x86svm
+u32 g_svm_quiesce_resume_counter __attribute__(( section(".data") )) = 0;
+
+//SMP lock to access the above variable
+//smpguest x86svm
+u32 g_svm_lock_quiesce_resume_counter __attribute__(( section(".data") )) = 1; 
+    
+//the "quiesce" variable, if 1, then we have a quiesce in process
+//smpguest x86svm
+u32 g_svm_quiesce __attribute__(( section(".data") )) = 0;;      
+
+//SMP lock to access the above variable
+//smpguest x86svm
+u32 g_svm_lock_quiesce __attribute__(( section(".data") )) = 1; 
+    
+//resume signal, becomes 1 to signal resume after quiescing
+//smpguest x86svm
+u32 g_svm_quiesce_resume_signal __attribute__(( section(".data") )) = 0;  
+
+//SMP lock to access the above variable
+//smpguest x86svm
+u32 g_svm_lock_quiesce_resume_signal __attribute__(( section(".data") )) = 1; 
+
+
+//4k buffer which is the virtual LAPIC page that guest reads and writes from/to
+//during INIT-SIPI-SIPI emulation
+//smpguest x86svm
+u8 g_svm_virtual_LAPIC_base[PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
+
+//SVM SIPI page buffers used for guest INIT-SIPI-SIPI emulation
+//smpguest x86svm
+u8 g_svm_sipi_page_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".palign_data") ));
