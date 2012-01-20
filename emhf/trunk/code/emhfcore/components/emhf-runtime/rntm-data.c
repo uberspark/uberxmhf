@@ -43,3 +43,8 @@
 
 //runtime parameter block pointer 
 RPB *rpb __attribute__(( section(".data") )); 
+
+//runtime DMA protection buffer
+u8 g_rntm_dmaprot_buffer[(PAGE_SIZE_4K + (PAGE_SIZE_4K * PAE_PTRS_PER_PDPT) 
+					+ (PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT) + PAGE_SIZE_4K +
+					(PAGE_SIZE_4K * PCI_BUS_MAX))] __attribute__(( section(".palign_data") ));

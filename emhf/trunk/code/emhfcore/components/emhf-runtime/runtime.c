@@ -90,7 +90,7 @@ void emhf_runtime_entry(void){
 			u32 protectedbuffer_vaddr;
 			u32 protectedbuffer_size;
 			
-			if(cpu_vendor == CPU_VENDOR_AMD){
+			/*if(cpu_vendor == CPU_VENDOR_AMD){
 				protectedbuffer_paddr = hva2spa(&g_svm_dev_bitmap);
 				protectedbuffer_vaddr = (u32)&g_svm_dev_bitmap;
 				protectedbuffer_size = 131072; //sizeof(g_svm_dev_bitmap) XXX: TODO remove hard-coded constant
@@ -100,7 +100,12 @@ void emhf_runtime_entry(void){
 				protectedbuffer_size = PAGE_SIZE_4K + (PAGE_SIZE_4K * PAE_PTRS_PER_PDPT) 
 					+ (PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT) + PAGE_SIZE_4K +
 					(PAGE_SIZE_4K * PCI_BUS_MAX);
-			}
+			}*/
+			protectedbuffer_paddr = hva2spa(&g_rntm_dmaprot_buffer);
+			protectedbuffer_vaddr = (u32)&g_rntm_dmaprot_buffer;
+			protectedbuffer_size = emhf_dmaprot_getbuffersize(ADDR_4GB);
+			ASSERT(protectedbuffer_size <= sizeof(g_rntm_dmaprot_buffer));
+			
 	
 			printf("\nRuntime: Re-initializing DMA protection...");
 			if(!emhf_dmaprot_initialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size)){
