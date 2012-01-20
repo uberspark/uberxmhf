@@ -41,6 +41,17 @@
 #ifndef __EMHF_H_
 #define __EMHF_H_
 
+//---includes for the target----------------------------------------------------
+#ifndef __ASSEMBLY__
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <string.h>
+#endif /* __ASSEMBLY__ */
+
+#ifndef __ASSEMBLY__
+#define BAD_INTEGRITY_HASH "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+
 /* SHA-1 hash of runtime should be defined during build process.
  * However, if it's not, don't fail.  Just proceed with all zeros.
  * XXX TODO Disable proceeding with insecure hash value. */
@@ -48,13 +59,13 @@
 #define ___RUNTIME_INTEGRITY_HASH___ BAD_INTEGRITY_HASH
 #endif /*  ___RUNTIME_INTEGRITY_HASH___ */
 
-
-//---includes for the target----------------------------------------------------
-#ifndef __ASSEMBLY__
-#include <stdint.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <string.h>
+//"golden" digest values injected using CFLAGS during build process
+//NOTE: NO WAY TO SELF-CHECK slbelow64K; JUST A SANITY-CHECK
+typedef struct _integrity_measurement_values {
+    u8 sha_slbelow64K[20]; // TODO: play nice with SHA_DIGEST_LENGTH in sha1.h
+    u8 sha_slabove64K[20];
+    u8 sha_runtime[20];
+} INTEGRITY_MEASUREMENT_VALUES;
 #endif /* __ASSEMBLY__ */
 
 
@@ -281,15 +292,7 @@ typedef struct _grube820 {
 } __attribute__((packed)) E820MAP;*/
 
 
-#define BAD_INTEGRITY_HASH "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 
-//"golden" digest values injected using CFLAGS during build process
-//NOTE: NO WAY TO SELF-CHECK slbelow64K; JUST A SANITY-CHECK
-typedef struct _integrity_measurement_values {
-    u8 sha_slbelow64K[20]; // TODO: play nice with SHA_DIGEST_LENGTH in sha1.h
-    u8 sha_slabove64K[20];
-    u8 sha_runtime[20];
-} INTEGRITY_MEASUREMENT_VALUES;
 
 //"sl" parameter block structure 
 typedef struct _sl_parameter_block {
@@ -477,26 +480,6 @@ static inline u64 VCPU_gcr4(VCPU *vcpu)
   }
 }
 
-//----------------------------------------------------------------------
-
-//generic isolation layer interface
-struct isolation_layer {
-	//void 	(*initialize)(VCPU *vcpu);
-	
-	//void	(*runtime_exception_handler)(u32 vector, struct regs *r);
-	
-	//u32		(*isbsp)(void);
-	//void 	(*wakeup_aps)(void);
-	
-	//void 	(*hvm_initialize_csrip)(VCPU *vcpu, u16 cs_selector, u32 cs_base, u64 rip);
-	//void 	(*hvm_apic_setup)(VCPU *vcpu);
-	//void 	(*hvm_start)(VCPU *vcpu);
-	//u32 	(*hvm_intercept_handler)(VCPU *vcpu, struct regs *r);
-	
-	//void 	(*do_quiesce)(VCPU *vcpu);
-	//void 	(*do_wakeup)(VCPU *vcpu);
-	//void 	(*setupvcpus)(u32 cpu_vendor);
-}; 
 
 
 
