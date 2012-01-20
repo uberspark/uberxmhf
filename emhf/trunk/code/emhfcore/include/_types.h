@@ -37,7 +37,6 @@
 #ifndef __TYPES_H_
 #define __TYPES_H_
 
-#define BITS_PER_LONG 32
 
 #ifndef __ASSEMBLY__
 

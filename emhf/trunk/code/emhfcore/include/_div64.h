@@ -38,6 +38,9 @@
 #ifndef __DIV64_H__
 #define __DIV64_H__
 
+#define BITS_PER_LONG 32
+
+
 #ifndef __ASSEMBLY__
 #if BITS_PER_LONG == 64
 
