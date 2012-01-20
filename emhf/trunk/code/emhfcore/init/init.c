@@ -40,7 +40,9 @@
 #include <emhf.h> 
 #include <sha1.h>
 
+
 //---forward prototypes---------------------------------------------------------
+u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus);
 void cstartup(multiboot_info_t *mbi);
 MPFP * MP_GetFPStructure(void);
 u32 _MPFPComputeChecksum(u32 spaddr, u32 size);

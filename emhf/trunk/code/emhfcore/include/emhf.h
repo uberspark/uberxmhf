@@ -482,11 +482,6 @@ static inline u64 VCPU_gcr4(VCPU *vcpu)
 
 
 
-
-/* TODO: is this a reasonable home for this prototype? */
-u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus);
-
-
 #include <_globals.h>
 
 #endif
