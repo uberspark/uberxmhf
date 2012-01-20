@@ -76,6 +76,7 @@ OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86-addressing.o
 OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86-reboot.o
 
 OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/vmx/bplt-x86vmx.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/vmx/bplt-x86vmx-data.o
 OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/vmx/bplt-x86vmx-smp.o
 OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/vmx/bplt-x86vmx-vmcs.o
 OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/vmx/bplt-x86vmx-mtrrs.o
@@ -83,6 +84,7 @@ OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/vmx/bplt-x86vmx-reboot.o
 
 
 OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/svm/bplt-x86svm.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/svm/bplt-x86svm-data.o
 OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/svm/bplt-x86svm-smp.o
 
 

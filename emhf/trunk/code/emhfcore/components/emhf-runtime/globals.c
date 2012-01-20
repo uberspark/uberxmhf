@@ -47,13 +47,6 @@
 	u32 g_lock_quiesce_cpu_counter __attribute__(( section(".data") )) =1;
 #endif
 
-
-//variable that is used to de-link the INT 15 handler, if 1 then signifies that
-//we have processed E820 requests and its safe to de-link
-//parteventhub
-//u32 g_svm_ine820handler __attribute__(( section(".data") )) = 0;
-
-
 //SVM VM_HSAVE buffers 
 //baseplatform x86svm
 u8 g_svm_hsave_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".palign_data") ));
