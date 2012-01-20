@@ -38,6 +38,22 @@
 #define __EMHF_TYPES_H_
 
 
+//runtime base address (virtual)
+#define __TARGET_BASE	0xC0000000
+
+//"sl" parameter block magic value
+#define SL_PARAMETER_BLOCK_MAGIC	0xDEADBEEF
+
+//"runtime" parameter block magic value
+#define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
+
+//16K stack for each core during runtime
+#define RUNTIME_STACK_SIZE  (16384)     
+
+//8K stack for each core in "init"
+#define INIT_STACK_SIZE	(8192)					
+
+
 #ifndef __ASSEMBLY__
 
 typedef u32 	paddr_t;		//physical address
@@ -58,6 +74,7 @@ typedef struct _midtab {
 } __attribute__((packed)) MIDTAB;
 
 #define SIZE_STRUCT_MIDTAB  (sizeof(struct _midtab))
+#define MAX_MIDTAB_ENTRIES  (4)
 
 
 //---platform
@@ -125,7 +142,7 @@ typedef struct _pcpu {
 } __attribute__((packed)) PCPU;
 
 #define SIZE_STRUCT_PCPU  (sizeof(struct _pcpu))
-#define MAX_PCPU_ENTRIES  (4)
+#define MAX_PCPU_ENTRIES  (MAX_MIDTAB_ENTRIES)
 
 
 //the vcpu structure which holds the current state of a core
@@ -177,6 +194,7 @@ typedef struct _vcpu {
 } __attribute__((packed)) VCPU;
 
 #define SIZE_STRUCT_VCPU    (sizeof(struct _vcpu))
+#define MAX_VCPU_ENTRIES    (MAX_PCPU_ENTRIES)
 #define CPU_VENDOR (g_vcpubuffers[0].cpu_vendor)
 
 

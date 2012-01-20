@@ -123,17 +123,9 @@ typedef struct _integrity_measurement_values {
 //needs to be 2 or 1 (4 is hw-only, 3 is sinit-only on Intel)
 #define EMHF_TPM_LOCALITY_PREF 2
 
-//runtime base address (virtual)
-#define __TARGET_BASE	0xC0000000
-
-//"sl" parameter block magic value
-#define SL_PARAMETER_BLOCK_MAGIC	0xDEADBEEF
-
-//"runtime" parameter block magic value
-#define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
 
 //guest boot record is always loaded at 0000:7C00
-#define __GUESTOSBOOTMODULE_BASE	0x7c00
+#define __GUESTOSBOOTMODULE_BASE		0x7c00
 #define __GUESTOSBOOTMODULESUP1_BASE	0x7C00
 
 #define __CS 0x0008 /* Selector for GDT entry 1. RPL 0 */
@@ -144,21 +136,12 @@ typedef struct _integrity_measurement_values {
 //size of runtime IDT, 32 exception vectors each 8 bytes
 #define	SIZE_RUNTIME_IDT	(8*32)
 
-
-
 #define MPFP_SIGNATURE (0x5F504D5FUL) //"_MP_"
 #define MPCONFTABLE_SIGNATURE (0x504D4350UL)  //"PCMP"
 
-//#define SIZE_STRUCT_MIDTAB  (8)
-#define MAX_MIDTAB_ENTRIES  (MAX_PCPU_ENTRIES)
-
-#define MAX_VCPU_ENTRIES    (MAX_PCPU_ENTRIES)
 
 #define AP_BOOTSTRAP_CODE_SEG 0x1000
 #define SLB_BOOTSTRAP_CODE_BASE 0x40000000 /* 0x80000 */ /* 0x20000 */
-
-#define RUNTIME_STACK_SIZE  (16384)     //16K stack for each core
-#define INIT_STACK_SIZE	(8192)					//8K stack for each core in "init"
 
 #ifdef __NESTED_PAGING__
 #define ASID_GUEST_KERNEL 2
