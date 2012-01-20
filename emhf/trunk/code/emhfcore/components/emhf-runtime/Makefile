@@ -61,6 +61,7 @@ OBJECTS_PRECOMPILED += ../emhf-baseplatform/bplt-interface.o
 OBJECTS_PRECOMPILED += ../emhf-baseplatform/bplt-interface-smp.o
 OBJECTS_PRECOMPILED += ../emhf-baseplatform/bplt-data.o
 OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86.o
+OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86-data.o
 OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86-pci.o
 OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86-acpi.o
 OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86-pit.o

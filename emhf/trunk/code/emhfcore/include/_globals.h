@@ -46,11 +46,6 @@
 
 
 
-//runtime parameter block data area (in runtimesup.S)
-//extern u8 _rpb[];
-
-//runtime parameter block pointer 
-//extern RPB *rpb __attribute__(( section(".data") )); 
 
 //runtime TSS
 extern u8 g_runtime_TSS[] __attribute__(( section(".data") ));

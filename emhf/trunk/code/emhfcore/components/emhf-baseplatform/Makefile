@@ -10,6 +10,7 @@ C_SOURCES += bplt-interface-smp.c
 C_SOURCES += bplt-data.c
 
 C_SOURCES += ./arch/x86/bplt-x86.c
+C_SOURCES += ./arch/x86/bplt-x86-data.c
 C_SOURCES += ./arch/x86/bplt-x86-pci.c
 C_SOURCES += ./arch/x86/bplt-x86-acpi.c
 C_SOURCES += ./arch/x86/bplt-x86-pit.c

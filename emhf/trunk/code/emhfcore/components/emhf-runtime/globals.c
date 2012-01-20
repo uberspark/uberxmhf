@@ -43,11 +43,7 @@
 
 
 
-//runtime parameter block pointer 
-//RPB *rpb __attribute__(( section(".data") )); 
 
-//runtime TSS
-u8 g_runtime_TSS[PAGE_SIZE_4K] __attribute__(( section(".data") ));
 
 
 #if defined (__TEST_CPU_QUIESCE__)

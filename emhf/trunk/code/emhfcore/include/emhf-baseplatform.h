@@ -190,6 +190,9 @@ typedef struct {
 		u32 base;
 } __attribute__((packed)) arch_x86_gdtdesc_t;
 
+//runtime TSS
+extern u8 g_runtime_TSS[PAGE_SIZE_4K] __attribute__(( section(".data") ));
+
 
 //return 1 if the calling CPU is the BSP
 u32 emhf_baseplatform_arch_x86_isbsp(void);
