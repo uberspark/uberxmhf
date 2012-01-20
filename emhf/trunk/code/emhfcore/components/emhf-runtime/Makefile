@@ -2,7 +2,9 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files
-AS_SOURCES = runtimesup.S 
+# AS_SOURCES = runtimesup.S 
+AS_SOURCES =
+
 C_SOURCES = runtime.c globals.c 
 C_SOURCES += rntm-data.c
 
