@@ -120,19 +120,6 @@ _rpb:
 x_init_stack:
 	.fill	8192, 1, 0
 
-//------------------------------------------------------------------------------
-// DATA (LOCAL, PAGE_ALIGNED)
-//------------------------------------------------------------------------------
-
-	.section	.palign_data
-	.align 4096
-	//page tables for the runtime
-  x_3level_pdpt:
-		.fill 4096, 1, 0
-	.global xtrac_3level_pdt
-	x_3level_pdt:
-		.fill 4*4096, 1, 0
-
 
 
 
