@@ -47,7 +47,7 @@ void emhf_runtime_entry(void){
 	cpu_vendor = emhf_baseplatform_getcpuvendor();
 
 	//initialize Runtime Parameter Block (rpb)
-	rpb = (RPB *)_rpb;
+	rpb = (RPB *)arch_rpb;
 
 	//setup debugging	
 	emhf_debug_init((char *)&rpb->uart_config);
