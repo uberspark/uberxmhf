@@ -303,7 +303,7 @@ extern u8 g_vmx_ept_p_table_buffers[] __attribute__(( section(".palign_data") ))
 //extern struct emhf_library *g_libemhf __attribute__(( section(".data") )); 
 
 //function that initializes the runtime global variables
-void runtime_globals_init(void);
+//void runtime_globals_init(void);
 
 #endif //__ASSEMBLY__
 
