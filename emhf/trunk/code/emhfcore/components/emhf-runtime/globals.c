@@ -40,11 +40,6 @@
 #include <emhf.h> 
 
 
-
-
-
-
-
 #if defined (__TEST_CPU_QUIESCE__)
 	//queisce test global variables
 	//quiesce cpu counter and corresponding lock
@@ -53,48 +48,30 @@
 #endif
 
 
-
-
-    
 //variable that is used to de-link the INT 15 handler, if 1 then signifies that
 //we have processed E820 requests and its safe to de-link
 //parteventhub
-u32 g_svm_ine820handler __attribute__(( section(".data") )) = 0;
-
-
+//u32 g_svm_ine820handler __attribute__(( section(".data") )) = 0;
 
 
 //SVM VM_HSAVE buffers 
-//baseplatform
+//baseplatform x86svm
 u8 g_svm_hsave_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".palign_data") ));
 
 //SVM VMCB buffers
-//baseplatform 
+//baseplatform x86svm
 u8 g_svm_vmcb_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".palign_data") )); 
 
 //SVM IO bitmap buffer
-//baseplatform
+//baseplatform x86svm
 u8 g_svm_iopm[SIZEOF_IOPM_BITMAP]__attribute__(( section(".palign_data") )); 
 
 //SVM MSR bitmap buffer
-//baseplatform
+//baseplatform x86svm
 u8 g_svm_msrpm[SIZEOF_MSRPM_BITMAP]__attribute__(( section(".palign_data") ));
 
-//SVM DEV bitmap buffer
-//dmaprot
-//u8 g_svm_dev_bitmap[131072]__attribute__(( section(".palign_data") ));
-
-
-//------------------------------------------------------------------------------
-//VMX isolation layer specific runtime globals
-//these are global variables accessed across islayer_vmx.c, islayersup_vmx.S,
-//islayer_vmx_ug.c and apic_vmx.c
-
-//apic_vmx.c
-
-
 //VMX VMCS read-only field encodings
-//baseplatform
+//baseplatform x86vmx
 struct _vmx_vmcsrofields_encodings g_vmx_vmcsrofields_encodings[] __attribute__(( section(".data") )) = {
 	{ 0x4400, offsetof(struct _vmx_vmcsfields, info_vminstr_error) }, 
 	{ 0x4402, offsetof(struct _vmx_vmcsfields, info_vmexit_reason) },
@@ -117,11 +94,11 @@ struct _vmx_vmcsrofields_encodings g_vmx_vmcsrofields_encodings[] __attribute__(
 };
 
 //count of VMX VMCS read-only fields
-//baseplatform
+//baseplatform x86vmx
 unsigned int g_vmx_vmcsrofields_encodings_count __attribute__(( section(".data") )) = sizeof( g_vmx_vmcsrofields_encodings ) / sizeof( struct _vmx_vmcsrofields_encodings );
 
 //VMX VMCS read-write field encodings
-//baseplatform
+//baseplatform x86vmx
 struct _vmx_vmcsrwfields_encodings g_vmx_vmcsrwfields_encodings[] __attribute__(( section(".data") )) = {
 	// Control fields
 	#if defined(__NESTED_PAGING__)
@@ -273,27 +250,27 @@ struct _vmx_vmcsrwfields_encodings g_vmx_vmcsrwfields_encodings[] __attribute__(
 };
 
 //count of VMX VMCS read-write fields
-//baseplatform
+//baseplatform x86vmx
 unsigned int g_vmx_vmcsrwfields_encodings_count __attribute__(( section(".data") )) = sizeof( g_vmx_vmcsrwfields_encodings ) / sizeof( struct _vmx_vmcsrwfields_encodings );
 
 //VMX VMXON buffers
-//baseplatform
+//baseplatform x86vmx
 u8 g_vmx_vmxon_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
 
 //VMX VMCS buffers
-//baseplatform
+//baseplatform x86vmx
 u8 g_vmx_vmcs_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
 		
 //VMX IO bitmap buffers
-//baseplatform
+//baseplatform x86vmx
 u8 g_vmx_iobitmap_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
 		
 //VMX guest and host MSR save area buffers
-//baseplatform
+//baseplatform x86vmx
 u8 g_vmx_msr_area_host_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
 u8 g_vmx_msr_area_guest_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
 
 //VMX MSR bitmap buffers
-//baseplatform
+//baseplatform x86vmx
 u8 g_vmx_msrbitmap_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
 
