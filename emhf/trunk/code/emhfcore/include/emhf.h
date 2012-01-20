@@ -75,19 +75,26 @@
 
 
 #include <emhf-types.h>		//EMHF specific base types
+
+
+//forward declaration of runtime parameter block
+#ifndef __ASSEMBLY__
+extern RPB *rpb;	
+#endif	//__ASSEMBLY__
+
 #include <_globals.h>		//XXX: need to get rid of this
 
 //----------------------------------------------------------------------
 // component headers
-#include <emhf-sl.h>		//EMHF secure loader component
-#include <emhf-runtime.h>		//EMHF secure loader component
 #include <emhf-debug.h>		//EMHF debug component
+#include <emhf-baseplatform.h>	//EMHF base platform component
 #include <emhf-memprot.h>	//EMHF memory protection component
 #include <emhf-dmaprot.h>	//EMHF DMA protection component
 #include <emhf-parteventhub.h>	//EMHF partition event-hub component
 #include <emhf-smpguest.h>		//EMHF SMP guest component
 #include <emhf-xcphandler.h>	//EMHF exception handler component
-#include <emhf-baseplatform.h>	//EMHF base platform component
+#include <emhf-sl.h>		//EMHF secure loader component
+#include <emhf-runtime.h>		//EMHF secure loader component
 
 
 #endif /* __EMHF_H_ */
