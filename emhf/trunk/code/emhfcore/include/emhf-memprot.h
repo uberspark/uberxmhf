@@ -135,6 +135,19 @@ u32 emhf_memprot_arch_x86vmx_getprot(VCPU *vcpu, u64 gpa); //get protection for 
 u64 emhf_memprot_arch_x86vmx_get_EPTP(VCPU *vcpu); // get or set EPTP (only valid on Intel)
 void emhf_memprot_arch_x86vmx_set_EPTP(VCPU *vcpu, u64 eptp);
 
+//VMX EPT PML4 table buffers
+extern u8 g_vmx_ept_pml4_table_buffers[] __attribute__(( section(".palign_data") ));		
+
+//VMX EPT PDP table buffers
+extern u8 g_vmx_ept_pdp_table_buffers[] __attribute__(( section(".palign_data") ));
+		
+//VMX EPT PD table buffers
+extern u8 g_vmx_ept_pd_table_buffers[] __attribute__(( section(".palign_data") ));
+
+//VMX EPT P table buffers
+extern u8 g_vmx_ept_p_table_buffers[] __attribute__(( section(".palign_data") ));
+
+
 //----------------------------------------------------------------------
 //x86svm SUBARCH. INTERFACES
 //----------------------------------------------------------------------
@@ -147,6 +160,14 @@ u64 emhf_memprot_arch_x86svm_get_h_cr3(VCPU *vcpu); // get or set host cr3 (only
 void emhf_memprot_arch_x86svm_set_h_cr3(VCPU *vcpu, u64 hcr3);
 
 
+//SVM NPT PDPT buffers
+extern u8 g_svm_npt_pdpt_buffers[] __attribute__(( section(".palign_data") ));
+  
+//SVM NPT PDT buffers
+extern u8 g_svm_npt_pdts_buffers[]__attribute__(( section(".palign_data") ));
+
+//SVM NPT PT buffers
+extern u8 g_svm_npt_pts_buffers[]__attribute__(( section(".palign_data") )); 
 
 
 

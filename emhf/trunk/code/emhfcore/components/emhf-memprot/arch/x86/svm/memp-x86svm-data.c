@@ -41,3 +41,15 @@
 
 #include <emhf.h>
 
+//SVM NPT PDPT buffers
+//memprot
+u8 g_svm_npt_pdpt_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
+  
+//SVM NPT PDT buffers
+//memprot
+u8 g_svm_npt_pdts_buffers[PAE_PTRS_PER_PDPT * PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".palign_data") ));
+
+
+//SVM NPT PT buffers
+//memprot
+u8 g_svm_npt_pts_buffers[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".palign_data") )); 

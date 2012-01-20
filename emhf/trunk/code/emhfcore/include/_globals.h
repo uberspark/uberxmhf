@@ -44,26 +44,7 @@
 #ifndef __ASSEMBLY__
 
 
-//SVM NPT PDPT buffers
-extern u8 g_svm_npt_pdpt_buffers[] __attribute__(( section(".palign_data") ));
-  
-//SVM NPT PDT buffers
-extern u8 g_svm_npt_pdts_buffers[]__attribute__(( section(".palign_data") ));
 
-//SVM NPT PT buffers
-extern u8 g_svm_npt_pts_buffers[]__attribute__(( section(".palign_data") )); 
-
-//VMX EPT PML4 table buffers
-extern u8 g_vmx_ept_pml4_table_buffers[] __attribute__(( section(".palign_data") ));		
-
-//VMX EPT PDP table buffers
-extern u8 g_vmx_ept_pdp_table_buffers[] __attribute__(( section(".palign_data") ));
-		
-//VMX EPT PD table buffers
-extern u8 g_vmx_ept_pd_table_buffers[] __attribute__(( section(".palign_data") ));
-
-//VMX EPT P table buffers
-extern u8 g_vmx_ept_p_table_buffers[] __attribute__(( section(".palign_data") ));
 
 
 
