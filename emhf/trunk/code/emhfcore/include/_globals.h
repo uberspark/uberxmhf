@@ -43,12 +43,73 @@
 
 #ifndef __ASSEMBLY__
 
+//the BSP LAPIC base address
+extern u32 g_svm_lapic_base __attribute__(( section(".data") ));
 
+//the quiesce counter, all CPUs except for the one requesting the
+//quiesce will increment this when they get their quiesce signal
+extern u32 g_svm_quiesce_counter __attribute__(( section(".data") ));
 
+//SMP lock to access the above variable
+extern u32 g_svm_lock_quiesce_counter __attribute__(( section(".data") )); 
 
+//resume counter to rally all CPUs after resumption from quiesce
+extern u32 g_svm_quiesce_resume_counter __attribute__(( section(".data") ));
 
-//runtime TSS
-extern u8 g_runtime_TSS[] __attribute__(( section(".data") ));
+//SMP lock to access the above variable
+extern u32 g_svm_lock_quiesce_resume_counter __attribute__(( section(".data") )); 
+    
+//the "quiesce" variable, if 1, then we have a quiesce in process
+extern u32 g_svm_quiesce __attribute__(( section(".data") ));      
+
+//SMP lock to access the above variable
+extern u32 g_svm_lock_quiesce __attribute__(( section(".data") )); 
+    
+//resume signal, becomes 1 to signal resume after quiescing
+extern u32 g_svm_quiesce_resume_signal __attribute__(( section(".data") ));  
+
+//SMP lock to access the above variable
+extern u32 g_svm_lock_quiesce_resume_signal __attribute__(( section(".data") )); 
+
+//4k buffer which is the virtual LAPIC page that guest reads and writes from/to
+//during INIT-SIPI-SIPI emulation
+extern u8 g_svm_virtual_LAPIC_base[] __attribute__(( section(".palign_data") ));
+
+//SVM SIPI page buffers used for guest INIT-SIPI-SIPI emulation
+extern u8 g_svm_sipi_page_buffers[]__attribute__(( section(".palign_data") ));
+
+//the BSP LAPIC base address
+extern u32 g_vmx_lapic_base __attribute__(( section(".data") ));
+
+//4k buffer which is the virtual LAPIC page that guest reads and writes from/to
+//during INIT-SIPI-SIPI emulation
+extern u8 g_vmx_virtual_LAPIC_base[] __attribute__(( section(".palign_data") ));
+
+//the quiesce counter, all CPUs except for the one requesting the
+//quiesce will increment this when they get their quiesce signal
+extern u32 g_vmx_quiesce_counter __attribute__(( section(".data") ));
+
+//SMP lock to access the above variable
+extern u32 g_vmx_lock_quiesce_counter __attribute__(( section(".data") )); 
+
+//resume counter to rally all CPUs after resumption from quiesce
+extern u32 g_vmx_quiesce_resume_counter __attribute__(( section(".data") ));
+
+//SMP lock to access the above variable
+extern u32 g_vmx_lock_quiesce_resume_counter __attribute__(( section(".data") )); 
+    
+//the "quiesce" variable, if 1, then we have a quiesce in process
+extern u32 g_vmx_quiesce __attribute__(( section(".data") ));      
+
+//SMP lock to access the above variable
+extern u32 g_vmx_lock_quiesce __attribute__(( section(".data") )); 
+    
+//resume signal, becomes 1 to signal resume after quiescing
+extern u32 g_vmx_quiesce_resume_signal __attribute__(( section(".data") ));  
+
+//SMP lock to access the above variable
+extern u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") )); 
+
 
 
 //defined in runtimesup.S(.text), this is the start of the real-mode AP
@@ -83,51 +144,12 @@ extern u32 _ap_cr4_value;
 
 
 
-//------------------------------------------------------------------------------
-//SVM isolation layer specific runtime globals
-//these are global variables accessed across islayer_svm.c, islayersup_svm.S and
-//apic_svm.c
-
-//apic_svm.c
-
-//the BSP LAPIC base address
-extern u32 g_svm_lapic_base __attribute__(( section(".data") ));
-
-//islayer_svm.c
-
-//the quiesce counter, all CPUs except for the one requesting the
-//quiesce will increment this when they get their quiesce signal
-extern u32 g_svm_quiesce_counter __attribute__(( section(".data") ));
-
-//SMP lock to access the above variable
-extern u32 g_svm_lock_quiesce_counter __attribute__(( section(".data") )); 
-
-//resume counter to rally all CPUs after resumption from quiesce
-extern u32 g_svm_quiesce_resume_counter __attribute__(( section(".data") ));
-
-//SMP lock to access the above variable
-extern u32 g_svm_lock_quiesce_resume_counter __attribute__(( section(".data") )); 
-    
-//the "quiesce" variable, if 1, then we have a quiesce in process
-extern u32 g_svm_quiesce __attribute__(( section(".data") ));      
-
-//SMP lock to access the above variable
-extern u32 g_svm_lock_quiesce __attribute__(( section(".data") )); 
-    
-//resume signal, becomes 1 to signal resume after quiescing
-extern u32 g_svm_quiesce_resume_signal __attribute__(( section(".data") ));  
-
-//SMP lock to access the above variable
-extern u32 g_svm_lock_quiesce_resume_signal __attribute__(( section(".data") )); 
-    
+   
 //variable that is used to de-link the INT 15 handler, if 1 then signifies that
 //we have processed E820 requests and its safe to de-link
 extern u32 g_svm_ine820handler __attribute__(( section(".data") ));
 
 
-//4k buffer which is the virtual LAPIC page that guest reads and writes from/to
-//during INIT-SIPI-SIPI emulation
-extern u8 g_svm_virtual_LAPIC_base[] __attribute__(( section(".palign_data") ));
 
 //SVM NPT PDPT buffers
 extern u8 g_svm_npt_pdpt_buffers[] __attribute__(( section(".palign_data") ));
@@ -138,8 +160,6 @@ extern u8 g_svm_npt_pdts_buffers[]__attribute__(( section(".palign_data") ));
 //SVM NPT PT buffers
 extern u8 g_svm_npt_pts_buffers[]__attribute__(( section(".palign_data") )); 
 
-//SVM SIPI page buffers used for guest INIT-SIPI-SIPI emulation
-extern u8 g_svm_sipi_page_buffers[]__attribute__(( section(".palign_data") ));
 
 //SVM VM_HSAVE buffers 
 extern u8 g_svm_hsave_buffers[]__attribute__(( section(".palign_data") ));
@@ -157,44 +177,6 @@ extern u8 g_svm_msrpm[]__attribute__(( section(".palign_data") ));
 extern u8 g_svm_dev_bitmap[]__attribute__(( section(".palign_data") ));
 
 
-//------------------------------------------------------------------------------
-//VMX isolation layer specific runtime globals
-//these are global variables accessed across islayer_vmx.c, islayersup_vmx.S,
-//islayer_vmx_ug.c and apic_vmx.c
-
-//apic_vmx.c
-
-//the BSP LAPIC base address
-extern u32 g_vmx_lapic_base __attribute__(( section(".data") ));
-
-//4k buffer which is the virtual LAPIC page that guest reads and writes from/to
-//during INIT-SIPI-SIPI emulation
-extern u8 g_vmx_virtual_LAPIC_base[] __attribute__(( section(".palign_data") ));
-
-//the quiesce counter, all CPUs except for the one requesting the
-//quiesce will increment this when they get their quiesce signal
-extern u32 g_vmx_quiesce_counter __attribute__(( section(".data") ));
-
-//SMP lock to access the above variable
-extern u32 g_vmx_lock_quiesce_counter __attribute__(( section(".data") )); 
-
-//resume counter to rally all CPUs after resumption from quiesce
-extern u32 g_vmx_quiesce_resume_counter __attribute__(( section(".data") ));
-
-//SMP lock to access the above variable
-extern u32 g_vmx_lock_quiesce_resume_counter __attribute__(( section(".data") )); 
-    
-//the "quiesce" variable, if 1, then we have a quiesce in process
-extern u32 g_vmx_quiesce __attribute__(( section(".data") ));      
-
-//SMP lock to access the above variable
-extern u32 g_vmx_lock_quiesce __attribute__(( section(".data") )); 
-    
-//resume signal, becomes 1 to signal resume after quiescing
-extern u32 g_vmx_quiesce_resume_signal __attribute__(( section(".data") ));  
-
-//SMP lock to access the above variable
-extern u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") )); 
 
 //VMX VMCS read-only field encodings
 extern struct _vmx_vmcsrofields_encodings g_vmx_vmcsrofields_encodings[] __attribute__(( section(".data") ));
