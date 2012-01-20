@@ -44,6 +44,45 @@
 #ifndef __ASSEMBLY__
 
 //----------------------------------------------------------------------
+//ARCH. BACKENDS
+//----------------------------------------------------------------------
+
+//get CPU vendor
+u32 emhf_baseplatform_arch_getcpuvendor(void);
+
+//initialize CPU state
+void emhf_baseplatform_arch_cpuinitialize(void);
+
+//initialize SMP
+void emhf_baseplatform_arch_smpinitialize(void);
+
+//initialize basic platform elements
+void emhf_baseplatform_arch_initialize(void);
+
+//read 8-bits from absolute physical address
+u8 emhf_baseplatform_arch_flat_readu8(u32 addr);
+
+//read 32-bits from absolute physical address
+u32 emhf_baseplatform_arch_flat_readu32(u32 addr);
+
+//read 64-bits from absolute physical address
+u64 emhf_baseplatform_arch_flat_readu64(u32 addr);
+
+//write 32-bits to absolute physical address
+void emhf_baseplatform_arch_flat_writeu32(u32 addr, u32 val);
+
+//write 64-bits to absolute physical address
+void emhf_baseplatform_arch_flat_writeu64(u32 addr, u64 val);
+
+//memory copy from absolute physical address (src) to
+//data segment relative address (dest)
+void emhf_baseplatform_arch_flat_copy(u8 *dest, u8 *src, u32 size);
+
+//reboot platform
+void emhf_baseplatform_arch_reboot(VCPU *vcpu);
+
+
+//----------------------------------------------------------------------
 //x86 ARCH. INTERFACES
 //----------------------------------------------------------------------
 

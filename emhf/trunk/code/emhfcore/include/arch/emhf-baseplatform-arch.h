@@ -43,8 +43,9 @@
 
 #ifndef __ASSEMBLY__
 
-//XXX: this needs to include the appropriate arch. specific
-//header using either preprocessor directives or better, configure
+//XXX: this file needs to include the appropriate arch. specific
+//header using either preprocessor directives, could be a 
+//symlink or use configure
 #include <arch/x86/emhf-baseplatform-arch-x86.h>
 
 #endif	//__ASSEMBLY__
