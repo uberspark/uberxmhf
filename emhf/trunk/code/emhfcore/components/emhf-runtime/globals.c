@@ -82,7 +82,7 @@ u8 g_svm_msrpm[SIZEOF_MSRPM_BITMAP]__attribute__(( section(".palign_data") ));
 
 //SVM DEV bitmap buffer
 //dmaprot
-u8 g_svm_dev_bitmap[131072]__attribute__(( section(".palign_data") ));
+//u8 g_svm_dev_bitmap[131072]__attribute__(( section(".palign_data") ));
 
 
 //------------------------------------------------------------------------------
