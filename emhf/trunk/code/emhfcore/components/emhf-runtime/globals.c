@@ -40,12 +40,6 @@
 #include <emhf.h> 
 
 
-#if defined (__TEST_CPU_QUIESCE__)
-	//queisce test global variables
-	//quiesce cpu counter and corresponding lock
-	u32 g_quiesce_cpu_counter __attribute__(( section(".data") )) =0;
-	u32 g_lock_quiesce_cpu_counter __attribute__(( section(".data") )) =1;
-#endif
 
 
 
