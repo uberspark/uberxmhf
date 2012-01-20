@@ -60,70 +60,88 @@
 
 //apic_svm.c
 
-//the BSP LAPIC base address
+//the BSP LAPIC base address - smpguest
 u32 g_svm_lapic_base __attribute__(( section(".data") )) = 0;
 
 
-//islayer_svm.c
-
 //the quiesce counter, all CPUs except for the one requesting the
 //quiesce will increment this when they get their quiesce signal
+//smpguest
 u32 g_svm_quiesce_counter __attribute__(( section(".data") )) = 0;
 
 //SMP lock to access the above variable
+//smpguest
 u32 g_svm_lock_quiesce_counter __attribute__(( section(".data") )) = 1; 
 
 //resume counter to rally all CPUs after resumption from quiesce
+//smpguest
 u32 g_svm_quiesce_resume_counter __attribute__(( section(".data") )) = 0;
 
 //SMP lock to access the above variable
+//smpguest
 u32 g_svm_lock_quiesce_resume_counter __attribute__(( section(".data") )) = 1; 
     
 //the "quiesce" variable, if 1, then we have a quiesce in process
+//smpguest
 u32 g_svm_quiesce __attribute__(( section(".data") )) = 0;;      
 
 //SMP lock to access the above variable
+//smpguest
 u32 g_svm_lock_quiesce __attribute__(( section(".data") )) = 1; 
     
 //resume signal, becomes 1 to signal resume after quiescing
+//smpguest
 u32 g_svm_quiesce_resume_signal __attribute__(( section(".data") )) = 0;  
 
 //SMP lock to access the above variable
+//smpguest
 u32 g_svm_lock_quiesce_resume_signal __attribute__(( section(".data") )) = 1; 
     
 //variable that is used to de-link the INT 15 handler, if 1 then signifies that
 //we have processed E820 requests and its safe to de-link
+//parteventhub
 u32 g_svm_ine820handler __attribute__(( section(".data") )) = 0;
 
 //4k buffer which is the virtual LAPIC page that guest reads and writes from/to
 //during INIT-SIPI-SIPI emulation
+//smpguest
 u8 g_svm_virtual_LAPIC_base[PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
 
 //SVM NPT PDPT buffers
+//memprot
 u8 g_svm_npt_pdpt_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
   
 //SVM NPT PDT buffers
+//memprot
 u8 g_svm_npt_pdts_buffers[PAE_PTRS_PER_PDPT * PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".palign_data") ));
 
+
 //SVM NPT PT buffers
+//memprot
 u8 g_svm_npt_pts_buffers[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".palign_data") )); 
 
 //SVM SIPI page buffers used for guest INIT-SIPI-SIPI emulation
+//smpguest
 u8 g_svm_sipi_page_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".palign_data") ));
 
 //SVM VM_HSAVE buffers 
+//baseplatform
 u8 g_svm_hsave_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".palign_data") ));
 
-//SVM VMCB buffers 
+//SVM VMCB buffers
+//baseplatform 
 u8 g_svm_vmcb_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".palign_data") )); 
 
 //SVM IO bitmap buffer
+//baseplatform
 u8 g_svm_iopm[SIZEOF_IOPM_BITMAP]__attribute__(( section(".palign_data") )); 
 
 //SVM MSR bitmap buffer
+//baseplatform
 u8 g_svm_msrpm[SIZEOF_MSRPM_BITMAP]__attribute__(( section(".palign_data") ));
 
 //SVM DEV bitmap buffer
+//dmaprot
 u8 g_svm_dev_bitmap[131072]__attribute__(( section(".palign_data") ));
 
 
@@ -135,38 +153,49 @@ u8 g_svm_dev_bitmap[131072]__attribute__(( section(".palign_data") ));
 //apic_vmx.c
 
 //the BSP LAPIC base address
+//smpguest
 u32 g_vmx_lapic_base __attribute__(( section(".data") )) = 0;
 
 //4k buffer which is the virtual LAPIC page that guest reads and writes from/to
 //during INIT-SIPI-SIPI emulation
+//smpguest
 u8 g_vmx_virtual_LAPIC_base[PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
 
 //the quiesce counter, all CPUs except for the one requesting the
 //quiesce will increment this when they get their quiesce signal
+//smpguest
 u32 g_vmx_quiesce_counter __attribute__(( section(".data") )) = 0;
 
 //SMP lock to access the above variable
+//smpguest
 u32 g_vmx_lock_quiesce_counter __attribute__(( section(".data") )) = 1; 
 
 //resume counter to rally all CPUs after resumption from quiesce
+//smpguest
 u32 g_vmx_quiesce_resume_counter __attribute__(( section(".data") )) = 0;
 
 //SMP lock to access the above variable
+//smpguest
 u32 g_vmx_lock_quiesce_resume_counter __attribute__(( section(".data") )) = 1; 
     
 //the "quiesce" variable, if 1, then we have a quiesce in process
+//smpguest
 u32 g_vmx_quiesce __attribute__(( section(".data") )) = 0;;      
 
 //SMP lock to access the above variable
+//smpguest
 u32 g_vmx_lock_quiesce __attribute__(( section(".data") )) = 1; 
     
 //resume signal, becomes 1 to signal resume after quiescing
+//smpguest
 u32 g_vmx_quiesce_resume_signal __attribute__(( section(".data") )) = 0;  
 
 //SMP lock to access the above variable
+//smpguest
 u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") )) = 1; 
 
 //VMX VMCS read-only field encodings
+//baseplatform
 struct _vmx_vmcsrofields_encodings g_vmx_vmcsrofields_encodings[] __attribute__(( section(".data") )) = {
 	{ 0x4400, offsetof(struct _vmx_vmcsfields, info_vminstr_error) }, 
 	{ 0x4402, offsetof(struct _vmx_vmcsfields, info_vmexit_reason) },
@@ -189,9 +218,11 @@ struct _vmx_vmcsrofields_encodings g_vmx_vmcsrofields_encodings[] __attribute__(
 };
 
 //count of VMX VMCS read-only fields
+//baseplatform
 unsigned int g_vmx_vmcsrofields_encodings_count __attribute__(( section(".data") )) = sizeof( g_vmx_vmcsrofields_encodings ) / sizeof( struct _vmx_vmcsrofields_encodings );
 
 //VMX VMCS read-write field encodings
+//baseplatform
 struct _vmx_vmcsrwfields_encodings g_vmx_vmcsrwfields_encodings[] __attribute__(( section(".data") )) = {
 	// Control fields
 	#if defined(__NESTED_PAGING__)
@@ -343,65 +374,43 @@ struct _vmx_vmcsrwfields_encodings g_vmx_vmcsrwfields_encodings[] __attribute__(
 };
 
 //count of VMX VMCS read-write fields
+//baseplatform
 unsigned int g_vmx_vmcsrwfields_encodings_count __attribute__(( section(".data") )) = sizeof( g_vmx_vmcsrwfields_encodings ) / sizeof( struct _vmx_vmcsrwfields_encodings );
 
 //VMX VMXON buffers
+//baseplatform
 u8 g_vmx_vmxon_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
 
 //VMX VMCS buffers
+//baseplatform
 u8 g_vmx_vmcs_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
 		
 //VMX IO bitmap buffers
+//baseplatform
 u8 g_vmx_iobitmap_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
 		
 //VMX guest and host MSR save area buffers
+//baseplatform
 u8 g_vmx_msr_area_host_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
 u8 g_vmx_msr_area_guest_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
 
 //VMX MSR bitmap buffers
+//baseplatform
 u8 g_vmx_msrbitmap_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
 
 //VMX EPT PML4 table buffers
+//memprot
 u8 g_vmx_ept_pml4_table_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));		
 
 //VMX EPT PDP table buffers
+//memprot
 u8 g_vmx_ept_pdp_table_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
 		
 //VMX EPT PD table buffers
+//memprot
 u8 g_vmx_ept_pd_table_buffers[PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
 
 //VMX EPT P table buffers
+//memprot
 u8 g_vmx_ept_p_table_buffers[PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
 
-/*//VMX VT-d page table buffers; we support a 3 level page-table walk, 
-//4kb pdpt, 4kb pdt and 4kb pt and each entry in pdpt, pdt and pt is 64-bits
-u8 g_vmx_vtd_pdp_table[PAGE_SIZE_4K] __attribute__(( section(".palign_data") )); 
-u8 g_vmx_vtd_pd_tables[PAGE_SIZE_4K * PAE_PTRS_PER_PDPT] __attribute__(( section(".palign_data") ));
-u8 g_vmx_vtd_p_tables[PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT] __attribute__(( section(".palign_data") ));
-
-//VMX VT-d Root Entry Table (RET)
-//the RET is 4kb, each root entry (RE) is 128-bits
-//this gives us 256 entries in the RET, each corresponding to a PCI bus num. (0-255)
-u8 g_vmx_vtd_ret[PAGE_SIZE_4K] __attribute__(( section(".palign_data") )); 
-
-//VMX VT-d Context Entry Table (CET)
-//each RE points to a context entry table (CET) of 4kb, each context entry (CE)
-//is 128-bits which gives us 256 entries in the CET, accounting for 32 devices
-//with 8 functions each as per the PCI spec.
-u8 g_vmx_vtd_cet[PAGE_SIZE_4K * PCI_BUS_MAX] __attribute__(( section(".palign_data") ));*/
-
-
-
-//isolation layer abstraction
-//struct isolation_layer *g_isl __attribute__(( section(".data") )) = NULL;
-
-//EMHF library interface abstraction
-//struct emhf_library *g_libemhf __attribute__(( section(".data") )) = NULL; 
-
-//------------------------------------------------------------------------------
-/*void runtime_globals_init(){
-
-	//initialize runtime parameter block pointer
-	rpb = (RPB *)_rpb;
-}*/
- 
