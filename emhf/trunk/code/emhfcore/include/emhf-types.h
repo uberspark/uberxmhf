@@ -104,6 +104,28 @@ struct _guestmtrrmsrs {
 //---platform
 #define IA32_VMX_MSRCOUNT   								12
 
+//---platform
+typedef struct _grube820 {
+  u32 baseaddr_low;
+  u32 baseaddr_high;
+  u32 length_low;
+  u32 length_high;
+  u32 type;  
+} __attribute__((packed)) GRUBE820;
+
+#define SIZE_STRUCT_GRUBE820  (sizeof(struct _grube820))
+#define MAX_E820_ENTRIES    (64)  //maximum E820 entries we support, 64 should
+                                  //be enough
+//---platform
+typedef struct _pcpu {
+  u32 lapic_id;
+  u32 lapic_ver;
+  u32 lapic_base;
+  u32 isbsp;
+} __attribute__((packed)) PCPU;
+
+#define SIZE_STRUCT_PCPU  (sizeof(struct _pcpu))
+#define MAX_PCPU_ENTRIES  (4)
 
 
 //the vcpu structure which holds the current state of a core
@@ -204,6 +226,29 @@ typedef struct {
     uart_config_t uart_config;	        /* runtime options parsed in init and passed forward */
 	u32 isEarlyInit;					//1 for an "early init" else 0 (late-init)
 } __attribute__((packed)) RPB, *PRPB;
+
+
+//"sl" parameter block structure 
+typedef struct _sl_parameter_block {
+	u32 magic;	//magic identifier
+	u32 hashSL;	//hash of the secure loader
+	u32 errorHandler;	//error handler
+	u32 isEarlyInit;	//"early" or "late" init
+	u32 numE820Entries;		//number of E820 entries
+	GRUBE820 e820map[MAX_E820_ENTRIES];	//E820 memory-map buffer
+	u32 numCPUEntries;	//number of cores
+	PCPU pcpus[MAX_PCPU_ENTRIES];	//CPU table buffer
+	u32 runtime_size;			//size of the runtime image
+	u32 runtime_osbootmodule_base;	//guest OS bootmodule base
+	u32 runtime_osbootmodule_size;	//guest OS bootmodule size
+    // Performance measurements related to DRTM
+    u64 rdtsc_before_drtm;
+    u64 rdtsc_after_drtm;
+
+    /* runtime options parsed in init and passed forward */
+    uart_config_t uart_config;
+} __attribute__((packed)) SL_PARAMETER_BLOCK;
+
 
 
 //----------------------------------------------------------------------

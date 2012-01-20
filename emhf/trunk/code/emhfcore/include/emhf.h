@@ -144,12 +144,7 @@ typedef struct _integrity_measurement_values {
 //size of runtime IDT, 32 exception vectors each 8 bytes
 #define	SIZE_RUNTIME_IDT	(8*32)
 
-#define MAX_E820_ENTRIES    (64)  //maximum E820 entries we support, 64 should
-                                  //be enough
-//#define SIZE_STRUCT_GRUBE820  (20)
 
-//#define SIZE_STRUCT_PCPU  (16)
-#define MAX_PCPU_ENTRIES  (4)
 
 #define MPFP_SIGNATURE (0x5F504D5FUL) //"_MP_"
 #define MPCONFTABLE_SIGNATURE (0x504D4350UL)  //"PCMP"
@@ -263,58 +258,6 @@ typedef struct {
 
 
 
-typedef struct _pcpu {
-  u32 lapic_id;
-  u32 lapic_ver;
-  u32 lapic_base;
-  u32 isbsp;
-} __attribute__((packed)) PCPU;
-
-#define SIZE_STRUCT_PCPU  (sizeof(struct _pcpu))
-
-typedef struct _grube820 {
-  u32 baseaddr_low;
-  u32 baseaddr_high;
-  u32 length_low;
-  u32 length_high;
-  u32 type;  
-} __attribute__((packed)) GRUBE820;
-
-#define SIZE_STRUCT_GRUBE820  (sizeof(struct _grube820))
-
-
-/*typedef struct {
-  u32 baseaddr_low;
-  u32 baseaddr_high;
-  u32 length_low;
-  u32 length_high;
-  u32 type;  
-} __attribute__((packed)) E820MAP;*/
-
-
-
-
-//"sl" parameter block structure 
-typedef struct _sl_parameter_block {
-	u32 magic;	//magic identifier
-	u32 hashSL;	//hash of the secure loader
-	u32 errorHandler;	//error handler
-	u32 isEarlyInit;	//"early" or "late" init
-	u32 numE820Entries;		//number of E820 entries
-	GRUBE820 e820map[MAX_E820_ENTRIES];	//E820 memory-map buffer
-	u32 numCPUEntries;	//number of cores
-	PCPU pcpus[MAX_PCPU_ENTRIES];	//CPU table buffer
-	u32 runtime_size;			//size of the runtime image
-	u32 runtime_osbootmodule_base;	//guest OS bootmodule base
-	u32 runtime_osbootmodule_size;	//guest OS bootmodule size
-    // Performance measurements related to DRTM
-    u64 rdtsc_before_drtm;
-    u64 rdtsc_after_drtm;
-
-    /* runtime options parsed in init and passed forward */
-    uart_config_t uart_config;
-} __attribute__((packed)) SL_PARAMETER_BLOCK;
-
 
 
 
@@ -330,27 +273,6 @@ static inline spa_t gpa2spa(gpa_t gpa);
 static inline gpa_t spa2gpa(spa_t spa);
 static inline void* gpa2hva(gpa_t gpa);
 static inline gpa_t hva2gpa(hva_t hva);
-
-//#define __pa(x) (x)
-//#define __hva2spa__(x) (hva2spa(x))
-//#define __spa2hva__(x) (spa2hva(x))
-//----------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------
-// memory protection and platform specific EMHFapp interfaces
-// XXX: move these into appropriate components and document
-
-
-/*#define VCPU_get_pml1es emhf_memprot_get_lvl1_pagemap_address
-#define VCPU_get_pml2es emhf_memprot_get_lvl2_pagemap_address
-#define VCPU_get_pml3es emhf_memprot_get_lvl3_pagemap_address
-#define VCPU_get_pml4 emhf_memprot_get_lvl4_pagemap_address*/
-
-
-
-
-
 
 static inline u64 VCPU_gdtr_base(VCPU *vcpu)
 {
