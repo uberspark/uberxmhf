@@ -439,7 +439,7 @@ u8 g_vmx_vtd_cet[PAGE_SIZE_4K * PCI_BUS_MAX] __attribute__(( section(".palign_da
 //struct isolation_layer *g_isl __attribute__(( section(".data") )) = NULL;
 
 //EMHF library interface abstraction
-struct emhf_library *g_libemhf __attribute__(( section(".data") )) = NULL; 
+//struct emhf_library *g_libemhf __attribute__(( section(".data") )) = NULL; 
 
 //------------------------------------------------------------------------------
 void runtime_globals_init(){

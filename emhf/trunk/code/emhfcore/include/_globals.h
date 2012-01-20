@@ -312,11 +312,11 @@ extern u8 g_vmx_vtd_cet[] __attribute__(( section(".palign_data") ));
 //extern struct isolation_layer *g_isl __attribute__(( section(".data") ));;
 
 //external EMHF library interface backends
-extern struct emhf_library g_emhf_library_svm;
-extern struct emhf_library g_emhf_library_vmx;
+//extern struct emhf_library g_emhf_library_svm;
+//extern struct emhf_library g_emhf_library_vmx;
 
 //EMHF library interface abstraction
-extern struct emhf_library *g_libemhf __attribute__(( section(".data") )); 
+//extern struct emhf_library *g_libemhf __attribute__(( section(".data") )); 
 
 //function that initializes the runtime global variables
 void runtime_globals_init(void);
