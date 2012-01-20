@@ -34,19 +34,18 @@
  */
 
 //types.h - base types
-#ifndef __TYPES_H_
-#define __TYPES_H_
+#ifndef __EMHF_TYPES_H_
+#define __EMHF_TYPES_H_
 
 
 #ifndef __ASSEMBLY__
 
-typedef u32 paddr_t;
-typedef void * dma_addr_t;
+typedef u32 	paddr_t;		//physical address
+typedef void* 	hva_t; 			//hypervisor virtual address 
+typedef u64 	spa_t; 			//system physical address 
+typedef u32 	gva_t; 			//guest virtual address. we only support 32-bit guests 
+typedef u64 	gpa_t; 			//guest physical address. can be 64-bit with PAE 
 
-typedef void* hva_t; /* hypervisor virtual address */
-typedef u64 spa_t; /* system physical address */
-typedef u32 gva_t; /* guest virtual address. we only support 32-bit guests */
-typedef u64 gpa_t; /* guest physical address. can be 64-bit with PAE */
 #endif /*ifndef __ASSEMBLY__*/
 
-#endif /* __TYPES_H_ */
+#endif /* __EMHF_TYPES_H_ */

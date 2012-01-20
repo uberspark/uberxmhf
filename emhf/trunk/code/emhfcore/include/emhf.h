@@ -58,7 +58,7 @@
 #endif /* __ASSEMBLY__ */
 
 
-#include <_types.h>      //needs to die!!!
+#include <emhf-types.h>	//EMHF specific base types
 #include <_ctype.h>		//the ctype variable definition for debug printf
 #include <_com.h>		//serial UART as debugging backend
 //#include <_print.h>      //early chance to disable/enable debug printfs
