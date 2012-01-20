@@ -38,6 +38,13 @@
 
 #include <emhf.h> 
 
+//return size (in bytes) of the memory buffer required for
+//DMA protection for a given physical memory limit
+u32 emhf_dmaprot_getbuffersize(u64 physical_memory_limit){
+	return emhf_dmaprot_arch_getbuffersize(physical_memory_limit);
+}
+
+
 //"early" DMA protection initialization to setup minimal
 //structures to protect a range of physical memory
 //return 1 on success 0 on failure

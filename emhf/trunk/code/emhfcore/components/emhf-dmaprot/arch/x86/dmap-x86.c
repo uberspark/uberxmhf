@@ -39,6 +39,22 @@
 
 #include <emhf.h> 
 
+//return size (in bytes) of the memory buffer required for
+//DMA protection for a given physical memory limit
+u32 emhf_dmaprot_arch_getbuffersize(u64 physical_memory_limit){
+	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
+	ASSERT( physical_memory_limit <= ADDR_4GB ); 	//we only support 4GB physical memory currently
+	
+	if(cpu_vendor == CPU_VENDOR_AMD){
+		return ((physical_memory_limit / PAGE_SIZE_4K) / 8); //each page takes up 1-bit with AMD DEV
+	}else{	//CPU_VENDOR_INTEL
+		return (PAGE_SIZE_4K + (PAGE_SIZE_4K * PAE_PTRS_PER_PDPT) 
+					+ (PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT) + PAGE_SIZE_4K +
+					(PAGE_SIZE_4K * PCI_BUS_MAX));	//4-level PML4 page tables + 4KB root entry table + 4K context entry table per PCI bus
+	}
+}
+
+
 //"early" DMA protection initialization to setup minimal
 //structures to protect a range of physical memory
 //return 1 on success 0 on failure
