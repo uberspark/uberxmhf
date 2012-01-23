@@ -66,6 +66,7 @@ extern RPB *rpb;
 #include <emhf-baseplatform.h>	//EMHF base platform component
 #include <emhf-memprot.h>		//EMHF memory protection component
 #include <emhf-dmaprot.h>		//EMHF DMA protection component
+#include <emhf-partition.h>		//EMHF partition component
 #include <emhf-parteventhub.h>	//EMHF partition event-hub component
 #include <emhf-smpguest.h>		//EMHF SMP guest component
 #include <emhf-xcphandler.h>	//EMHF exception handler component
