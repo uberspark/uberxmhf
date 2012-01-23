@@ -74,7 +74,7 @@ void* hpt_get_zeroed_page(void *ctx, size_t alignment, size_t sz)
   ASSERT(sz <= PAGE_SIZE_4K);
   return pagelist_get_zeroedpage(pl);
 }
-const hpt_walk_ctx_t hpt_nested_walk_ctx = {
+const hptw_ctx_t hpt_nested_walk_ctx = {
   .gzp = hpt_get_zeroed_page,
   .gzp_ctx = NULL, /* we'll copy this struct for
                       each pal and give each it's own allocation
@@ -84,7 +84,7 @@ const hpt_walk_ctx_t hpt_nested_walk_ctx = {
   .ptr2pa_ctx = NULL,
 };
 
-const hpt_walk_ctx_t hpt_guest_walk_ctx = {
+const hptw_ctx_t hpt_guest_walk_ctx = {
   .gzp = hpt_get_zeroed_page,
   .gzp_ctx = NULL, /* add allocation pool on-demand */
   .pa2ptr = hpt_guest_pa2ptr,
@@ -298,7 +298,7 @@ int scode_measure_section(utpm_master_state_t *utpm,
       size_t to_measure;
       size_t remaining_on_page;
 
-      hpt_walk_get_pmeo(&pmeo, &wle->hpt_guest_walk_ctx, &wle->pal_gpt_root, 1, gva);
+      hptw_get_pmeo(&pmeo, &wle->hpt_guest_walk_ctx, &wle->pal_gpt_root, 1, gva);
       /* trustvisor should have already mapped this section in before measuring it */
       /* XXX should this be a proper run-time check? */
       ASSERT(hpt_pmeo_is_present(&pmeo));
@@ -649,7 +649,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
     int hpt_err;
     hpt_pmeo_setprot(&pmeo, HPT_PROTS_RWX);
     hpt_pmeo_set_address(&pmeo, hva2spa(page));
-    hpt_err = hpt_walk_insert_pmeo_alloc(&whitelist_new.hpt_nested_walk_ctx,
+    hpt_err = hptw_insert_pmeo_alloc(&whitelist_new.hpt_nested_walk_ctx,
                                          &pal_npmo_root,
                                          &pmeo,
                                          hva2gpa(page));
@@ -703,7 +703,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
     dprintf(LOG_TRACE, "[TV] generated pme for return gva address %x: lvl:%d %llx\n",
             RETURN_FROM_PAL_ADDRESS, pmeo.lvl, pmeo.pme);
-    hpt_err = hpt_walk_insert_pmeo_alloc(&whitelist_new.hpt_guest_walk_ctx,
+    hpt_err = hptw_insert_pmeo_alloc(&whitelist_new.hpt_guest_walk_ctx,
                                          &pal_gpmo_root,
                                          &pmeo,
                                          RETURN_FROM_PAL_ADDRESS);
@@ -806,7 +806,7 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
     if ((whitelist[i].sections[j].pal_prot & HPT_PROTS_W)
         && !(whitelist[i].sections[j].reg_prot & HPT_PROTS_R)) {
       dprintf(LOG_TRACE, "[TV] zeroing section %d\n", j);
-      hpt_memset_guest(&whitelist[i].hpt_guest_walk_ctx, &whitelist[i].pal_gpt_root,
+      hptw_memset_guest(&whitelist[i].hpt_guest_walk_ctx, &whitelist[i].pal_gpt_root,
                        whitelist[i].sections[j].pal_gva, 0, whitelist[i].sections[j].size);
     }
 
@@ -942,7 +942,7 @@ u32 scode_marshall(VCPU * vcpu)
               return 1;
             }
 
-            hpt_copy_guest_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
+            hptw_copy_guest_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
                                     &whitelist[curr].pal_gpt_root,
                                     pm_addr,
                                     &whitelist[curr].hpt_guest_walk_ctx,
@@ -1097,7 +1097,7 @@ u32 scode_unmarshall(VCPU * vcpu)
 
             dprintf(LOG_TRACE, "[TV]   PM %d is a pointer (size %d, addr %#x)\n", i,  pm_size*4, pm_value);
             /* copy data from sensitive code (param space) to guest */
-            hpt_copy_guest_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
+            hptw_copy_guest_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
                                     &whitelist[curr].reg_gpt_root,
                                     pm_value,
                                     &whitelist[curr].hpt_guest_walk_ctx,

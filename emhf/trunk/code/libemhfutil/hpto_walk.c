@@ -35,13 +35,13 @@
 
 #include <hpto.h>
 
-int hpt_walk_insert_pmeo(const hpt_walk_ctx_t *ctx,
-                         hpt_pmo_t *pmo_root,
-                         const hpt_pmeo_t *pmeo,
-                         hpt_va_t va)
+int hptw_insert_pmeo(const hptw_ctx_t *ctx,
+                     hpt_pmo_t *pmo_root,
+                     const hpt_pmeo_t *pmeo,
+                     hpt_va_t va)
 {
   hpt_pmo_t pmo;
-  hpt_walk_get_pmo(&pmo, ctx, pmo_root, pmeo->lvl, va);
+  hptw_get_pmo(&pmo, ctx, pmo_root, pmeo->lvl, va);
   if (!pmo.pm || pmo.lvl != pmeo->lvl) {
     return 1;
   }
@@ -49,11 +49,11 @@ int hpt_walk_insert_pmeo(const hpt_walk_ctx_t *ctx,
   return 0;
 }
 
-int hpt_walk_get_pmo_alloc(hpt_pmo_t *pmo,
-                           const hpt_walk_ctx_t *ctx,
-                           const hpt_pmo_t *pmo_root,
-                           int end_lvl,
-                           hpt_va_t va)
+int hptw_get_pmo_alloc(hpt_pmo_t *pmo,
+                       const hptw_ctx_t *ctx,
+                       const hpt_pmo_t *pmo_root,
+                       int end_lvl,
+                       hpt_va_t va)
 {
   assert(pmo_root->lvl >= end_lvl);
   *pmo = *pmo_root;
@@ -82,20 +82,20 @@ int hpt_walk_get_pmo_alloc(hpt_pmo_t *pmo,
     }
     {
       bool walked_next_lvl;
-      walked_next_lvl = hpto_walk_next_lvl(ctx, pmo, va);
+      walked_next_lvl = hptw_next_lvl(ctx, pmo, va);
       assert(walked_next_lvl);
     }
   }
   return 0;
 }
 
-int hpt_walk_insert_pmeo_alloc(const hpt_walk_ctx_t *ctx,
-                               hpt_pmo_t *pmo_root,
-                               const hpt_pmeo_t *pmeo,
-                               hpt_va_t va)
+int hptw_insert_pmeo_alloc(const hptw_ctx_t *ctx,
+                           hpt_pmo_t *pmo_root,
+                           const hpt_pmeo_t *pmeo,
+                           hpt_va_t va)
 {
   hpt_pmo_t pmo;
-  if (hpt_walk_get_pmo_alloc(&pmo, ctx, pmo_root, pmeo->lvl, va)) {
+  if (hptw_get_pmo_alloc(&pmo, ctx, pmo_root, pmeo->lvl, va)) {
     return 1;
   }
   if(!pmo.pm || pmo.lvl != pmeo->lvl) {
@@ -105,29 +105,29 @@ int hpt_walk_insert_pmeo_alloc(const hpt_walk_ctx_t *ctx,
   return 0;
 }
 
-void hpt_walk_get_pmo(hpt_pmo_t *pmo,
-                      const hpt_walk_ctx_t *ctx,
-                      const hpt_pmo_t *pmo_root,
-                      int end_lvl,
-                      hpt_va_t va)
+void hptw_get_pmo(hpt_pmo_t *pmo,
+                  const hptw_ctx_t *ctx,
+                  const hpt_pmo_t *pmo_root,
+                  int end_lvl,
+                  hpt_va_t va)
 {
   *pmo = *pmo_root;
   while (pmo->lvl > end_lvl
-         && hpto_walk_next_lvl(ctx, pmo, va));
+         && hptw_next_lvl(ctx, pmo, va));
 }
 
-void hpt_walk_get_pmeo(hpt_pmeo_t *pmeo,
-                       const hpt_walk_ctx_t *ctx,
-                       const hpt_pmo_t *pmo,
-                       int end_lvl,
-                       hpt_va_t va)
+void hptw_get_pmeo(hpt_pmeo_t *pmeo,
+                   const hptw_ctx_t *ctx,
+                   const hpt_pmo_t *pmo,
+                   int end_lvl,
+                   hpt_va_t va)
 {
   hpt_pmo_t end_pmo;
-  hpt_walk_get_pmo(&end_pmo, ctx, pmo, end_lvl, va);
+  hptw_get_pmo(&end_pmo, ctx, pmo, end_lvl, va);
   hpt_pm_get_pmeo_by_va(pmeo, &end_pmo, va);
 }
 
-bool hpto_walk_next_lvl(const hpt_walk_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va)
+bool hptw_next_lvl(const hptw_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va)
 {
   hpt_pmeo_t pmeo;
   hpt_pm_get_pmeo_by_va(&pmeo, pmo, va);
@@ -146,10 +146,10 @@ bool hpto_walk_next_lvl(const hpt_walk_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va)
  * *user_accessible if not NULL and if the virtual address is set
  * user-accessible.
  */
-hpt_prot_t hpto_walk_get_effective_prots(const hpt_walk_ctx_t *ctx,
-                                         const hpt_pmo_t *pmo_root,
-                                         hpt_va_t va,
-                                         bool *user_accessible)
+hpt_prot_t hptw_get_effective_prots(const hptw_ctx_t *ctx,
+                                    const hpt_pmo_t *pmo_root,
+                                    hpt_va_t va,
+                                    bool *user_accessible)
 {
   hpt_prot_t prots_rv = HPT_PROTS_RWX;
   bool user_accessible_rv = true;
@@ -160,7 +160,7 @@ hpt_prot_t hpto_walk_get_effective_prots(const hpt_walk_ctx_t *ctx,
     hpt_pm_get_pmeo_by_va(&pmeo, &pmo, va);
     prots_rv &= hpt_pmeo_getprot(&pmeo);
     user_accessible_rv = user_accessible_rv && hpt_pmeo_getuser(&pmeo);
-  } while (hpto_walk_next_lvl(ctx, &pmo, va));
+  } while (hptw_next_lvl(ctx, &pmo, va));
 
   if(user_accessible != NULL) {
     *user_accessible = user_accessible_rv;
@@ -168,15 +168,15 @@ hpt_prot_t hpto_walk_get_effective_prots(const hpt_walk_ctx_t *ctx,
   return prots_rv;
 }
 
-void hpto_walk_set_prot(hpt_walk_ctx_t *walk_ctx,
-                        hpt_pmo_t *pmo_root,
-                        hpt_va_t va,
-                        hpt_prot_t prot)
+void hptw_set_prot(hptw_ctx_t *ctx,
+                   hpt_pmo_t *pmo_root,
+                   hpt_va_t va,
+                   hpt_prot_t prot)
 {
   hpt_pmo_t pmo;
   hpt_pmeo_t pmeo;
 
-  hpt_walk_get_pmo (&pmo, walk_ctx, pmo_root, 1, va);
+  hptw_get_pmo (&pmo, ctx, pmo_root, 1, va);
   assert (pmo.pm);
   assert (pmo.lvl == 1);
 
@@ -185,25 +185,25 @@ void hpto_walk_set_prot(hpt_walk_ctx_t *walk_ctx,
   hpt_pmo_set_pme_by_va (&pmo, &pmeo, va);
 }
 
-hpt_pa_t hpto_walk_va_to_pa(const hpt_walk_ctx_t *ctx,
-                            const hpt_pmo_t *pmo,
-                            hpt_va_t va)
+hpt_pa_t hptw_va_to_pa(const hptw_ctx_t *ctx,
+                       const hpt_pmo_t *pmo,
+                       hpt_va_t va)
 {
   hpt_pmeo_t pmeo;
-  hpt_walk_get_pmeo(&pmeo, ctx, pmo, 1, va);
+  hptw_get_pmeo(&pmeo, ctx, pmo, 1, va);
   return hpt_pmeo_va_to_pa(&pmeo, va);
 }
 
-void* hpt_access_va(const hpt_walk_ctx_t *ctx,
-                    const hpt_pmo_t *root,
-                    hpt_va_t va,
-                    size_t requested_sz,
-                    size_t *avail_sz)
+void* hptw_access_va(const hptw_ctx_t *ctx,
+                     const hpt_pmo_t *root,
+                     hpt_va_t va,
+                     size_t requested_sz,
+                     size_t *avail_sz)
 {
   hpt_pmeo_t pmeo;
   hpt_pa_t pa;
 
-  hpt_walk_get_pmeo(&pmeo, ctx, root, 1, va);
+  hptw_get_pmeo(&pmeo, ctx, root, 1, va);
 
   pa = hpt_pmeo_va_to_pa(&pmeo, va);
   *avail_sz = MIN(requested_sz, hpt_remaining_on_page(&pmeo, pa));
@@ -212,7 +212,7 @@ void* hpt_access_va(const hpt_walk_ctx_t *ctx,
 }
 
 
-void hpt_copy_from_guest(const hpt_walk_ctx_t *ctx,
+void hptw_copy_from_guest(const hptw_ctx_t *ctx,
                          const hpt_pmo_t *pmo,
                          void *dst,
                          hpt_va_t src_va_base,
@@ -225,13 +225,13 @@ void hpt_copy_from_guest(const hpt_walk_ctx_t *ctx,
     size_t to_copy;
     void *src;
 
-    src = hpt_access_va(ctx, pmo, src_va, len-copied, &to_copy);
+    src = hptw_access_va(ctx, pmo, src_va, len-copied, &to_copy);
     memcpy(dst+copied, src, to_copy);
     copied += to_copy;
   }
 }
 
-void hpt_copy_to_guest(const hpt_walk_ctx_t *ctx,
+void hptw_copy_to_guest(const hptw_ctx_t *ctx,
                        const hpt_pmo_t *pmo,
                        hpt_va_t dst_va_base,
                        void *src,
@@ -245,16 +245,16 @@ void hpt_copy_to_guest(const hpt_walk_ctx_t *ctx,
     size_t to_copy;
     void *dst;
 
-    dst = hpt_access_va(ctx, pmo, dst_va, len-copied, &to_copy);
+    dst = hptw_access_va(ctx, pmo, dst_va, len-copied, &to_copy);
     memcpy(dst, src+copied, to_copy);
     copied += to_copy;
   }
 }
 
-void hpt_copy_guest_to_guest(const hpt_walk_ctx_t *dst_ctx,
+void hptw_copy_guest_to_guest(const hptw_ctx_t *dst_ctx,
                              const hpt_pmo_t *dst_pmo,
                              hpt_va_t dst_va_base,
-                             const hpt_walk_ctx_t *src_ctx,
+                             const hptw_ctx_t *src_ctx,
                              const hpt_pmo_t *src_pmo,
                              hpt_va_t src_va_base,
                              size_t len)
@@ -267,15 +267,15 @@ void hpt_copy_guest_to_guest(const hpt_walk_ctx_t *dst_ctx,
     size_t to_copy;
     void *src, *dst;
 
-    dst = hpt_access_va(dst_ctx, dst_pmo, dst_va, len-copied, &to_copy);
-    src = hpt_access_va(src_ctx, src_pmo, src_va, to_copy, &to_copy);
+    dst = hptw_access_va(dst_ctx, dst_pmo, dst_va, len-copied, &to_copy);
+    src = hptw_access_va(src_ctx, src_pmo, src_va, to_copy, &to_copy);
 
     memcpy(dst, src, to_copy);
     copied += to_copy;
   }
 }
 
-void hpt_memset_guest(const hpt_walk_ctx_t *ctx,
+void hptw_memset_guest(const hptw_ctx_t *ctx,
                       const hpt_pmo_t *pmo,
                       hpt_va_t dst_va_base,
                       int c,
@@ -288,7 +288,7 @@ void hpt_memset_guest(const hpt_walk_ctx_t *ctx,
     size_t to_set;
     void *dst;
 
-    dst = hpt_access_va(ctx, pmo, dst_va, len-set, &to_set);
+    dst = hptw_access_va(ctx, pmo, dst_va, len-set, &to_set);
     memset(dst, c, to_set);
     set += to_set;
   }

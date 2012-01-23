@@ -106,7 +106,7 @@ typedef struct {
   void *pa2ptr_ctx;
   hpt_ptr2pa_t ptr2pa;
   void *ptr2pa_ctx;
-} hpt_walk_ctx_t;
+} hptw_ctx_t;
 
 #define HPT_UNUSED_ARGUMENT(x) (void)x
 
@@ -199,12 +199,5 @@ void hpt_pm_set_pme_by_idx(hpt_type_t t, int lvl, hpt_pm_t pm, int idx, hpt_pme_
 
 hpt_pme_t hpt_pm_get_pme_by_va(hpt_type_t t, int lvl, hpt_pm_t pm, hpt_va_t va);
 void hpt_pm_set_pme_by_va(hpt_type_t t, int lvl, hpt_pm_t pm, hpt_va_t va, hpt_pme_t pme);
-
-/* inserts pme into the page map of level tgt_lvl containing va.
- * fails if tgt_lvl is not allocated.
- */
-int hpt_walk_insert_pme(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int tgt_lvl, hpt_va_t va, hpt_pme_t pme);
-
-
 
 #endif

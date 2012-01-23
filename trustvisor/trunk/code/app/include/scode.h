@@ -131,8 +131,8 @@ typedef struct whitelist_entry{
   /* pal page tables */
   pagelist_t *gpl;
   pagelist_t *npl;
-  hpt_walk_ctx_t hpt_nested_walk_ctx;
-  hpt_walk_ctx_t hpt_guest_walk_ctx;
+  hptw_ctx_t hpt_nested_walk_ctx;
+  hptw_ctx_t hpt_guest_walk_ctx;
   hpt_pmo_t pal_npt_root;
   hpt_pmo_t pal_gpt_root;
   hpt_pmo_t reg_gpt_root;
@@ -141,26 +141,26 @@ typedef struct whitelist_entry{
 
 
 /* template page table context */
-extern const hpt_walk_ctx_t hpt_nested_walk_ctx;
-extern const hpt_walk_ctx_t hpt_guest_walk_ctx;
+extern const hptw_ctx_t hpt_nested_walk_ctx;
+extern const hptw_ctx_t hpt_guest_walk_ctx;
 
 /* nested paging handlers (hpt) */
 hpt_prot_t pal_prot_of_type(int type);
 hpt_prot_t reg_prot_of_type(int type);
 
 /* several help functions to access guest address space */
-u16 get_16bit_aligned_value_from_guest(const hpt_walk_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr);
-u32 get_32bit_aligned_value_from_guest(const hpt_walk_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr);
-void put_32bit_aligned_value_to_guest(const hpt_walk_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr, u32 value);
+u16 get_16bit_aligned_value_from_guest(const hptw_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr);
+u32 get_32bit_aligned_value_from_guest(const hptw_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr);
+void put_32bit_aligned_value_to_guest(const hptw_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr, u32 value);
 
 u16 get_16bit_aligned_value_from_current_guest(VCPU *vcpu, u32 gvaddr);
 u32 get_32bit_aligned_value_from_current_guest(VCPU *vcpu, u32 gvaddr);
 void put_32bit_aligned_value_to_current_guest(VCPU *vcpu, u32 gvaddr, u32 value);
 
 /* guest paging handlers */
-static inline gpa_t gpt_vaddr_to_paddr(const hpt_walk_ctx_t *ctx, const hpt_pmo_t *gpt_root, gva_t vaddr)
+static inline gpa_t gpt_vaddr_to_paddr(const hptw_ctx_t *ctx, const hpt_pmo_t *gpt_root, gva_t vaddr)
 {
-  return hpto_walk_va_to_pa(ctx, gpt_root, vaddr);
+  return hptw_va_to_pa(ctx, gpt_root, vaddr);
 }
 static inline gpa_t gpt_vaddr_to_paddr_current(VCPU *vcpu, gva_t vaddr)
 {
@@ -170,9 +170,9 @@ static inline gpa_t gpt_vaddr_to_paddr_current(VCPU *vcpu, gva_t vaddr)
     .t = t,
     .lvl = hpt_root_lvl(t),
   };
-  hpt_walk_ctx_t ctx = hpt_guest_walk_ctx;
+  hptw_ctx_t ctx = hpt_guest_walk_ctx;
   gpa_t rv;
-  rv = hpto_walk_va_to_pa(&ctx, &root, vaddr);
+  rv = hptw_va_to_pa(&ctx, &root, vaddr);
 
   return rv;
 }
@@ -200,19 +200,19 @@ u32 scode_register(VCPU * vcpu, u32 scode_info, u32 scode_pm, u32 gventry);
 u32 scode_unregister(VCPU * vcpu, u32 gvaddr);
 void init_scode(VCPU * vcpu);
 
-void scode_lend_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
-                        hpt_pmo_t* reg_gpmo_root, hpt_walk_ctx_t *reg_gpm_ctx,
-                        hpt_pmo_t* pal_npmo_root, hpt_walk_ctx_t *pal_npm_ctx,
-                        hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx,
+void scode_lend_section(hpt_pmo_t* reg_npmo_root, hptw_ctx_t *reg_npm_ctx,
+                        hpt_pmo_t* reg_gpmo_root, hptw_ctx_t *reg_gpm_ctx,
+                        hpt_pmo_t* pal_npmo_root, hptw_ctx_t *pal_npm_ctx,
+                        hpt_pmo_t* pal_gpmo_root, hptw_ctx_t *pal_gpm_ctx,
                         const tv_pal_section_int_t *section);
-void scode_return_section(hpt_pmo_t* reg_npmo_root, hpt_walk_ctx_t *reg_npm_ctx,
-                          hpt_pmo_t* pal_npmo_root, hpt_walk_ctx_t *pal_npm_ctx,
-                          hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx,
+void scode_return_section(hpt_pmo_t* reg_npmo_root, hptw_ctx_t *reg_npm_ctx,
+                          hpt_pmo_t* pal_npmo_root, hptw_ctx_t *pal_npm_ctx,
+                          hpt_pmo_t* pal_gpmo_root, hptw_ctx_t *pal_gpm_ctx,
                           const tv_pal_section_int_t *section);
 
 void scode_clone_gdt(gva_t gdtr_base, size_t gdtr_lim,
-                     hpt_pmo_t* reg_gpmo_root, hpt_walk_ctx_t *reg_gpm_ctx,
-                     hpt_pmo_t* pal_gpmo_root, hpt_walk_ctx_t *pal_gpm_ctx,
+                     hpt_pmo_t* reg_gpmo_root, hptw_ctx_t *reg_gpm_ctx,
+                     hpt_pmo_t* pal_gpmo_root, hptw_ctx_t *pal_gpm_ctx,
                      pagelist_t *pl
                      );
 
