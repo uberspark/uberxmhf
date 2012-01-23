@@ -35,43 +35,6 @@
 
 #include <hpt.h>
 
-void hpt_walk_set_prot(hpt_walk_ctx_t *walk_ctx, hpt_pm_t pm, int pm_lvl, hpt_va_t va, hpt_prot_t prot)
-{
-  hpt_pmo_t pmo_start = {
-    .pm = pm,
-    .lvl = pm_lvl,
-    .t = walk_ctx->t,
-  };
-  hpt_pmo_t pmo;
-  hpt_pmeo_t pmeo;
-  hpt_pme_t pme;
-  int end_pm_lvl=1;
-
-  hpt_walk_get_pmo(&pmo, walk_ctx, &pmo_start, end_pm_lvl, va);
-  end_pm_lvl = pmo.lvl;
-  pm = pmo.pm;
-
-  assert(pm != NULL);
-  assert(end_pm_lvl==1); /* FIXME we don't handle large pages */
-
-  pme = hpt_pm_get_pme_by_va(walk_ctx->t, end_pm_lvl, pm, va);
-  pme = hpt_pme_setprot(walk_ctx->t, end_pm_lvl, pme, prot);
-  hpt_pm_set_pme_by_va(walk_ctx->t, end_pm_lvl, pm, va, pme);
-}
-
-void hpt_walk_set_prots(hpt_walk_ctx_t *walk_ctx,
-                        hpt_pm_t pm,
-                        int pm_lvl,
-                        hpt_va_t vas[],
-                        size_t num_vas,
-                        hpt_prot_t prot)
-{
-  size_t i;
-  for(i=0; i<num_vas; i++) {
-    hpt_walk_set_prot(walk_ctx, pm, pm_lvl, vas[i], prot);
-  }
-}
-
 /* inserts pme into the page map of level tgt_lvl containing va.
  * fails if tgt_lvl is not allocated.
  */

@@ -201,14 +201,6 @@ void hpt_pm_set_pme_by_idx(hpt_type_t t, int lvl, hpt_pm_t pm, int idx, hpt_pme_
 hpt_pme_t hpt_pm_get_pme_by_va(hpt_type_t t, int lvl, hpt_pm_t pm, hpt_va_t va);
 void hpt_pm_set_pme_by_va(hpt_type_t t, int lvl, hpt_pm_t pm, hpt_va_t va, hpt_pme_t pme);
 
-void hpt_walk_set_prot(hpt_walk_ctx_t *walk_ctx, hpt_pm_t pm, int pm_lvl, hpt_va_t va, hpt_prot_t prot);
-void hpt_walk_set_prots(hpt_walk_ctx_t *walk_ctx,
-                        hpt_pm_t pm,
-                        int pm_lvl,
-                        hpt_va_t vas[],
-                        size_t num_vas,
-                        hpt_prot_t prot);
-
 /* inserts pme into the page map of level tgt_lvl containing va.
  * fails if tgt_lvl is not allocated.
  */

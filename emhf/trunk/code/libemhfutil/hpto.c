@@ -223,7 +223,16 @@ void hpto_walk_set_prot(hpt_walk_ctx_t *walk_ctx,
                         hpt_va_t va,
                         hpt_prot_t prot)
 {
-  hpt_walk_set_prot(walk_ctx, pmo_root->pm, pmo_root->lvl, va, prot);
+  hpt_pmo_t pmo;
+  hpt_pmeo_t pmeo;
+
+  hpt_walk_get_pmo (&pmo, walk_ctx, pmo_root, 1, va);
+  assert (pmo.pm);
+  assert (pmo.lvl == 1);
+
+  hpt_pm_get_pmeo_by_va (&pmeo, &pmo, va);
+  hpt_pmeo_setprot (&pmeo, prot);
+  hpt_pmo_set_pme_by_va (&pmo, &pmeo, va);
 }
 
 hpt_pa_t hpt_pmeo_va_to_pa(hpt_pmeo_t* pmeo, hpt_va_t va)
