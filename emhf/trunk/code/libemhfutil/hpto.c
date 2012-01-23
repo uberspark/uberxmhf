@@ -89,11 +89,19 @@ int hpt_walk_get_pmo_alloc(hpt_pmo_t *pmo,
 }
 
 int hpt_walk_insert_pmeo_alloc(const hpt_walk_ctx_t *ctx,
-                               hpt_pmo_t *pmo,
+                               hpt_pmo_t *pmo_root,
                                const hpt_pmeo_t *pmeo,
                                hpt_va_t va)
 {
-  return hpt_walk_insert_pme_alloc(ctx, pmo->lvl, pmo->pm, pmeo->lvl, va, pmeo->pme);
+  hpt_pmo_t pmo;
+  if (hpt_walk_get_pmo_alloc(&pmo, ctx, pmo_root, pmeo->lvl, va)) {
+    return 1;
+  }
+  if(!pmo.pm || pmo.lvl != pmeo->lvl) {
+    return 2;
+  }
+  hpt_pmo_set_pme_by_va(&pmo, pmeo, va);
+  return 0;
 }
 
 void hpt_walk_get_pmo(hpt_pmo_t *pmo,

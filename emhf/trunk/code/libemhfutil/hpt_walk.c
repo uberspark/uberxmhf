@@ -35,38 +35,6 @@
 
 #include <hpt.h>
 
-/* inserts pme into the page map of level tgt_lvl containing va, allocating
- * maps if necessary. returns 0 on success, other on failure.
- * Will fail if one of the intermediate entries is a large page
- */
-int hpt_walk_insert_pme_alloc(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int tgt_lvl, hpt_va_t va, hpt_pme_t pme)
-{
-  int end_lvl=tgt_lvl;
-  hpt_log_trace("hpt_walk_insert_pme_alloc: lvl:%d pm:%p tgt_lvl:%d va:%Lx pme:%Lx\n",
-          lvl, pm, tgt_lvl, va, pme);
-  {
-    hpt_pmo_t pmo;
-    hpt_pmo_t pmo_root = {
-      .pm = pm,
-      .lvl = lvl,
-      .t = ctx->t,
-    };
-    if (hpt_walk_get_pmo_alloc(&pmo, ctx, &pmo_root, end_lvl, va)) {
-      return 1;
-    }
-    pm = pmo.pm;
-    end_lvl = pmo.lvl;
-  }
-  hpt_log_trace("hpt_walk_insert_pme_alloc: got pm:%x end_lvl:%d\n",
-          (u32)pm, end_lvl);
-
-  if(pm == NULL || tgt_lvl != end_lvl) {
-    return 1;
-  }
-  hpt_pm_set_pme_by_va(ctx->t, tgt_lvl, pm, va, pme);
-  return 0;
-}
-
 void hpt_walk_set_prot(hpt_walk_ctx_t *walk_ctx, hpt_pm_t pm, int pm_lvl, hpt_va_t va, hpt_prot_t prot)
 {
   hpt_pmo_t pmo_start = {
