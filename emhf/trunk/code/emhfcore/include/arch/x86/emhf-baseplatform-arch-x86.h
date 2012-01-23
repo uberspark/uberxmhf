@@ -57,7 +57,6 @@
 #include "_vmx_eap.h"		//VMX DMA protection
 #include "_tpm.h"			//generic TPM functions
 #include "_tpm_emhf.h"		//EMHF-specific TPM functions
-#include "_perf.h"			//performance measurement routines
 
 #ifndef __ASSEMBLY__
 
