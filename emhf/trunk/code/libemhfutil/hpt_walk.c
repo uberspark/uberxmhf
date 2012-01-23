@@ -35,36 +35,24 @@
 
 #include <hpt.h>
 
-/* attempt to descend one level. on success, lvl and pm are set
-   accordingly, and true is returned. on failure, lvl and pm are
-   untouched and false is returned. */
-bool hpt_walk_next_lvl(const hpt_walk_ctx_t *ctx, int *lvl, hpt_pm_t *pm, hpt_va_t va)
-{
-  hpt_pme_t pme = hpt_pm_get_pme_by_va(ctx->t, *lvl, *pm, va);
-  if (!hpt_pme_is_present(ctx->t, *lvl, pme)
-      || hpt_pme_is_page(ctx->t, *lvl, pme)) {
-    return false;
-  } else {
-    *pm = ctx->pa2ptr(ctx->pa2ptr_ctx, hpt_pme_get_address(ctx->t, *lvl, pme));
-    (*lvl)--;
-    return true;
-  }
-}
-
 /* returns the lowest-level page map containing va, down to
  * end_lvl. end_lvl is set to the level of the returned page map.
  */
 hpt_pm_t hpt_walk_get_pm(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int *end_lvl, hpt_va_t va)
 {
-  assert(lvl >= *end_lvl);
-
-  while(lvl > *end_lvl) {
-    if (!hpt_walk_next_lvl(ctx, &lvl, &pm, va)) {
-      *end_lvl = lvl;
-      return pm;
+  hpt_pmo_t pmo = {
+    .pm = pm,
+    .lvl = lvl,
+    .t = ctx->t,
+  };
+  
+  while (pmo.lvl > *end_lvl) {
+    if (!hpto_walk_next_lvl(ctx, &pmo, va)) {
+      *end_lvl = pmo.lvl;
+      return pmo.pm;
     }
   }
-  return pm;
+  return pmo.pm;
 }
 
 /* returns the lowest-level page map _entry_ containing va, down to
@@ -110,7 +98,18 @@ hpt_pm_t hpt_walk_get_pm_alloc(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, 
       hpt_pm_set_pme_by_va(ctx->t, lvl, pm, va, pme);
       hpt_log_trace("hpt_walk_get_pm_alloc: inserted pme:%Lx\n", pme);
     }
-    assert(hpt_walk_next_lvl(ctx, &lvl, &pm, va));
+    {
+      bool walked_next_lvl;
+      hpt_pmo_t pmo = {
+        .pm = pm,
+        .lvl = lvl,
+        .t = ctx->t,
+      };
+      walked_next_lvl = hpto_walk_next_lvl(ctx, &pmo, va);
+      assert(walked_next_lvl);
+      lvl = pmo.lvl;
+      pm = pmo.pm;
+    }
   }
   assert(lvl==*end_lvl);
   return pm;

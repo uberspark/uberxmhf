@@ -201,11 +201,6 @@ void hpt_pm_set_pme_by_idx(hpt_type_t t, int lvl, hpt_pm_t pm, int idx, hpt_pme_
 hpt_pme_t hpt_pm_get_pme_by_va(hpt_type_t t, int lvl, hpt_pm_t pm, hpt_va_t va);
 void hpt_pm_set_pme_by_va(hpt_type_t t, int lvl, hpt_pm_t pm, hpt_va_t va, hpt_pme_t pme);
 
-/* attempt to descend one level. on success, lvl and pm are set
-   accordingly, and true is returned. on failure, lvl and pm are
-   untouched and false is returned. */
-bool hpt_walk_next_lvl(const hpt_walk_ctx_t *ctx, int *lvl, hpt_pm_t *pm, hpt_va_t va);
-
 /* returns the lowest-level page map containing va, down to
  * end_lvl. end_lvl is set to the level of the returned page map.
  */
