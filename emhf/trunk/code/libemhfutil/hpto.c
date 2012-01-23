@@ -116,7 +116,16 @@ void hpt_pm_get_pmeo_by_va(hpt_pmeo_t *pmeo, const hpt_pmo_t *pmo, hpt_va_t va)
 
 bool hpto_walk_next_lvl(const hpt_walk_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va)
 {
-  return hpt_walk_next_lvl(ctx, &pmo->lvl, &pmo->pm, va);
+  hpt_pmeo_t pmeo;
+  hpt_pm_get_pmeo_by_va(&pmeo, pmo, va);
+  if (!hpt_pmeo_is_present(&pmeo)
+      || hpt_pmeo_is_page(&pmeo)) {
+    return false;
+  } else {
+    pmo->pm = ctx->pa2ptr(ctx->pa2ptr_ctx, hpt_pmeo_get_address(&pmeo));
+    pmo->lvl--;
+    return true;
+  }
 }
 
 /* returns the effective protections for the given address, which is
