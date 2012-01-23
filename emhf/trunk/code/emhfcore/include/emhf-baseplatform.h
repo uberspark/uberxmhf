@@ -43,6 +43,38 @@
 
 #ifndef __ASSEMBLY__
 
+//----------------------------------------------------------------------
+//the master-id table, which is used by the AP bootstrap code
+//to locate its own vcpu structure
+//NOTE: The size of this structure _MUST_ be _EXACTLY_EQUAL_ to 8 bytes
+//as it is made use of in low-level assembly language stubs
+typedef struct _midtab {
+  u32 cpu_lapic_id;       //CPU LAPIC id (unique)
+  u32 vcpu_vaddr_ptr;     //virt. addr. pointer to vcpu struct for this CPU
+} __attribute__((packed)) MIDTAB;
+
+#define SIZE_STRUCT_MIDTAB  (sizeof(struct _midtab))
+
+//---platform
+typedef struct _grube820 {
+  u32 baseaddr_low;
+  u32 baseaddr_high;
+  u32 length_low;
+  u32 length_high;
+  u32 type;  
+} __attribute__((packed)) GRUBE820;
+
+#define SIZE_STRUCT_GRUBE820  (sizeof(struct _grube820))
+
+//---platform
+typedef struct _pcpu {
+  u32 lapic_id;
+  u32 lapic_ver;
+  u32 lapic_base;
+  u32 isbsp;
+} __attribute__((packed)) PCPU;
+
+#define SIZE_STRUCT_PCPU  (sizeof(struct _pcpu))
 
 //----------------------------------------------------------------------
 //exported DATA 

@@ -147,7 +147,7 @@ typedef struct _integrity_measurement_values {
 #endif /* __ASSEMBLY__ */
 
 
-//----------------------------------------------------------------------
+/*//----------------------------------------------------------------------
 //the master-id table, which is used by the AP bootstrap code
 //to locate its own vcpu structure
 //NOTE: The size of this structure _MUST_ be _EXACTLY_EQUAL_ to 8 bytes
@@ -158,7 +158,7 @@ typedef struct _midtab {
 } __attribute__((packed)) MIDTAB;
 
 #define SIZE_STRUCT_MIDTAB  (sizeof(struct _midtab))
-
+*/
 
 //---platform
 //MTRR memory type structure
@@ -204,6 +204,7 @@ struct _guestmtrrmsrs {
 //---platform
 #define IA32_VMX_MSRCOUNT   								12
 
+/*
 //---platform
 typedef struct _grube820 {
   u32 baseaddr_low;
@@ -224,7 +225,7 @@ typedef struct _pcpu {
 } __attribute__((packed)) PCPU;
 
 #define SIZE_STRUCT_PCPU  (sizeof(struct _pcpu))
-
+*/
 
 //---platform
 /*//same privilege level exception/interrupt stack frame
