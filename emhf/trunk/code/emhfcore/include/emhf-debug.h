@@ -39,6 +39,8 @@
 #ifndef __EMHF_DEBUG_H__
 #define __EMHF_DEBUG_H__
 
+//bring in arch. specific declarations
+#include <arch/emhf-debug-arch.h>
 
 #ifndef __ASSEMBLY__
 
