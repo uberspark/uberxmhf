@@ -105,7 +105,6 @@ hpt_prot_t reg_prot_of_type(int type)
 
 typedef struct {
   hpt_pmo_t *host_pmo_root;
-  hpt_walk_ctx_t *host_walk_ctx;
 } scode_guest_pa2ptr_ctx_t;
 static void* hpt_checked_guest_pa2ptr(void *ctx, hpt_pa_t gpa)
 {
@@ -115,7 +114,7 @@ static void* hpt_checked_guest_pa2ptr(void *ctx, hpt_pa_t gpa)
   /* in case of maliciously constructed guest page tables, we need to
      check host page tables for RW access. */
   ASSERT(cctx);
-  host_prots = hpto_walk_get_effective_prots(cctx->host_walk_ctx,
+  host_prots = hpto_walk_get_effective_prots(&hpt_nested_walk_ctx,
                                              cctx->host_pmo_root,
                                              gpa,
                                              NULL);
@@ -137,7 +136,6 @@ bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
     .t = host_t,
     .lvl = hpt_root_lvl(host_t),
   };
-  hpt_walk_ctx_t host_ctx = hpt_nested_walk_ctx;
 
   hpt_type_t guest_t = hpt_emhf_get_guest_hpt_type(vcpu);
   hpt_pmo_t guest_root = {
@@ -145,14 +143,13 @@ bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
     .t = guest_t,
     .lvl = hpt_root_lvl(guest_t),
   };
-  hpt_walk_ctx_t guest_ctx = hpt_guest_walk_ctx;
+  hpt_walk_ctx_t guest_ctx;
   scode_guest_pa2ptr_ctx_t pa2ptr_ctx = {
     .host_pmo_root = &host_root,
-    .host_walk_ctx = &host_ctx,
   };
-
   size_t i;
 
+  guest_ctx = hpt_guest_walk_ctx;
   guest_ctx.pa2ptr = &hpt_checked_guest_pa2ptr;
   guest_ctx.pa2ptr_ctx = &pa2ptr_ctx;
 
@@ -160,7 +157,7 @@ bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
   {
     hpt_prot_t prot;
     gpa_t guest_root_gpa = hva2gpa(guest_root.pm);
-    prot = hpto_walk_get_effective_prots(&host_ctx,
+    prot = hpto_walk_get_effective_prots(&hpt_nested_walk_ctx,
                                          &host_root,
                                          guest_root_gpa,
                                          NULL);
@@ -180,7 +177,7 @@ bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
                                                 &guest_root,
                                                 vaddr+i,
                                                 &guest_user_accessible);
-    host_prots = hpto_walk_get_effective_prots(&host_ctx,
+    host_prots = hpto_walk_get_effective_prots(&hpt_nested_walk_ctx,
                                                &host_root,
                                                gpa,
                                                &host_user_accessible);
@@ -272,9 +269,8 @@ void copy_from_current_guest_UNCHECKED(VCPU * vcpu, void *dst, gva_t gvaddr, u32
     .t = t,
     .lvl = hpt_root_lvl(t),
   };
-  hpt_walk_ctx_t ctx = hpt_guest_walk_ctx;
 
-  hpt_copy_from_guest(&ctx, &root, dst, gvaddr, len);
+  hpt_copy_from_guest(&hpt_guest_walk_ctx, &root, dst, gvaddr, len);
 
 }
 int copy_from_current_guest(VCPU * vcpu, void *dst, gva_t gvaddr, u32 len)
@@ -297,9 +293,8 @@ void copy_to_current_guest_UNCHECKED(VCPU * vcpu, gva_t gvaddr, void *src, u32 l
     .t = t,
     .lvl = hpt_root_lvl(t),
   };
-  hpt_walk_ctx_t ctx = hpt_guest_walk_ctx;
 
-  hpt_copy_to_guest(&ctx, &root, gvaddr, src, len);
+  hpt_copy_to_guest(&hpt_guest_walk_ctx, &root, gvaddr, src, len);
 }
 int copy_to_current_guest(VCPU * vcpu, gva_t gvaddr, void *src, u32 len)
 {
