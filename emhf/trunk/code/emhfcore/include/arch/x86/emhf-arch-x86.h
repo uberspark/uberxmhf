@@ -39,7 +39,6 @@
 #ifndef __EMHF_ARCH_X86_H__
 #define __EMHF_ARCH_X86_H__
 
-//#include "_com.h"		//serial UART as debugging backend
 #include "_multiboot.h"  //boot manager (multiboot)
 #include "_cmdline.h"	//GRUB command line handling functions
 #include "_error.h"      //error handling and assertions
@@ -58,7 +57,6 @@
 #include "_tpm.h"			//generic TPM functions
 #include "_tpm_emhf.h"		//EMHF-specific TPM functions
 #include "_sarg.h"			//language specifics
-//#include "_div64.h"			//do_div for debug output
 #include "_perf.h"			//performance measurement routines
 
 
