@@ -836,7 +836,8 @@ void cstartup(multiboot_info_t *mbi){
         slpb->errorHandler = 0;
         slpb->isEarlyInit = 1;    //this is an "early" init
         slpb->numE820Entries = grube820list_numentries;
-        memcpy((void *)&slpb->e820map, (void *)&grube820list, (sizeof(GRUBE820) * grube820list_numentries));         
+        //memcpy((void *)&slpb->e820map, (void *)&grube820list, (sizeof(GRUBE820) * grube820list_numentries));         
+		memcpy((void *)&slpb->memmapbuffer, (void *)&grube820list, (sizeof(GRUBE820) * grube820list_numentries));         
         slpb->numCPUEntries = pcpus_numentries;
         memcpy((void *)&slpb->pcpus, (void *)&pcpus, (sizeof(PCPU) * pcpus_numentries));
         slpb->runtime_size = (mod_array[0].mod_end - mod_array[0].mod_start) - PAGE_SIZE_2M;      

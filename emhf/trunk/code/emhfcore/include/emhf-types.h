@@ -390,7 +390,8 @@ typedef struct _sl_parameter_block {
 	u32 errorHandler;	//error handler
 	u32 isEarlyInit;	//"early" or "late" init
 	u32 numE820Entries;		//number of E820 entries
-	GRUBE820 e820map[MAX_E820_ENTRIES];	//E820 memory-map buffer
+	//GRUBE820 e820map[MAX_E820_ENTRIES];	//E820 memory-map buffer
+	u8  memmapbuffer[1280];			//max. 64 entries of 20 bytes each describing the system memory map
 	u32 numCPUEntries;	//number of cores
 	PCPU pcpus[MAX_PCPU_ENTRIES];	//CPU table buffer
 	u32 runtime_size;			//size of the runtime image

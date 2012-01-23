@@ -93,7 +93,7 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	printf("\n	errorHandler=0x%08x", slpb.errorHandler);
 	printf("\n	isEarlyInit=0x%08x", slpb.isEarlyInit);
 	printf("\n	numE820Entries=%u", slpb.numE820Entries);
-	printf("\n	e820map at 0x%08x", (u32)&slpb.e820map);
+	printf("\n	system memory map buffer at 0x%08x", (u32)&slpb.memmapbuffer);
 	printf("\n	numCPUEntries=%u", slpb.numCPUEntries);
 	printf("\n	pcpus at 0x%08x", (u32)&slpb.pcpus);
 	printf("\n	runtime size= %u bytes", slpb.runtime_size);
@@ -107,7 +107,7 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
     printf("\nSL: [PERF] RDTSC DRTM elapsed cycles: 0x%llx",
            slpb.rdtsc_after_drtm - slpb.rdtsc_before_drtm);
     
-	//debug: dump E820 and MP table
+	/*//debug: dump E820 and MP table
  	printf("\n	e820map:\n");
 	{
 		u32 i;
@@ -117,7 +117,8 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 			  slpb.e820map[i].length_high, slpb.e820map[i].length_low,
 			  slpb.e820map[i].type);
 		}
-	}
+	}*/
+	
 	printf("\n	pcpus:\n");
 	{
 		u32 i;
@@ -165,7 +166,7 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		rpb->XtVmmRuntimeSize = slpb.runtime_size;
 
 		//store revised E820 map and number of entries
-		memcpy(emhf_sl_arch_hva2sla(rpb->XtVmmE820Buffer), (void *)&slpb.e820map, (sizeof(GRUBE820) * slpb.numE820Entries));
+		memcpy(emhf_sl_arch_hva2sla(rpb->XtVmmE820Buffer), (void *)&slpb.memmapbuffer, (sizeof(slpb.memmapbuffer)) );
 		rpb->XtVmmE820NumEntries = slpb.numE820Entries; 
 
 		//store CPU table and number of CPUs
