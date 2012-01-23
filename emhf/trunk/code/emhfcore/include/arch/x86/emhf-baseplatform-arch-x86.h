@@ -96,6 +96,100 @@ typedef struct {
   u32 res1;
 } __attribute__ ((packed)) MPENTRYCPU;
 
+//MTRR memory type structure
+struct _memorytype {
+  u64 startaddr;
+  u64 endaddr;
+  u32 type;
+  u32 invalid;
+  u32 reserved[6];
+} __attribute__((packed));
+
+//---platform
+#define MAX_MEMORYTYPE_ENTRIES    96    //8*11 fixed MTRRs and 8 variable MTRRs
+#define MAX_FIXED_MEMORYTYPE_ENTRIES  88
+#define MAX_VARIABLE_MEMORYTYPE_ENTRIES 8
+
+//---platform
+//total number of FIXED and VARIABLE MTRRs on current x86 platforms
+#define NUM_MTRR_MSRS		29
+
+//---platform
+//structure which holds values of guest MTRRs (64-bit)
+struct _guestmtrrmsrs {
+	u32 lodword;
+	u32 hidword;
+} __attribute__((packed));
+
+//---platform
+//VMX MSR indices for the vcpu structure
+#define INDEX_IA32_VMX_BASIC_MSR            0x0
+#define INDEX_IA32_VMX_PINBASED_CTLS_MSR    0x1
+#define INDEX_IA32_VMX_PROCBASED_CTLS_MSR   0x2
+#define INDEX_IA32_VMX_EXIT_CTLS_MSR        0x3
+#define INDEX_IA32_VMX_ENTRY_CTLS_MSR       0x4
+#define INDEX_IA32_VMX_MISC_MSR       	    0x5
+#define INDEX_IA32_VMX_CR0_FIXED0_MSR       0x6
+#define INDEX_IA32_VMX_CR0_FIXED1_MSR       0x7
+#define INDEX_IA32_VMX_CR4_FIXED0_MSR       0x8
+#define INDEX_IA32_VMX_CR4_FIXED1_MSR       0x9
+#define INDEX_IA32_VMX_VMCS_ENUM_MSR        0xA
+#define INDEX_IA32_VMX_PROCBASED_CTLS2_MSR  0xB
+
+//---platform
+#define IA32_VMX_MSRCOUNT   								12
+
+//the vcpu structure which holds the current state of a core
+typedef struct _vcpu {
+  //common fields	
+  u32 esp;                //used to establish stack for the CPU
+  u32 sipi_page_vaddr;    //SIPI page of the CPU used for SIPI handling
+  u32 id;                 //LAPIC id of the core
+  u32 idx;                //this vcpu's index in the g_vcpubuffers array
+  u32 sipivector;         //SIPI vector 
+  u32 sipireceived;       //SIPI received indicator, 1 if yes
+  u32 nmiinhvm;           //this is 1 if there was a NMI when in HVM, else 0        
+	u32 cpu_vendor;					//Intel or AMD
+	u32 isbsp;							//1 if this core is BSP else 0
+	
+  //SVM specific fields
+  u32 hsave_vaddr_ptr;    //VM_HSAVE area of the CPU
+  u32 vmcb_vaddr_ptr;     //VMCB of the CPU
+  u32 npt_vaddr_ptr;      //NPT base of the CPU
+  u32 npt_vaddr_pdts;      
+  u32 npt_asid;           //NPT ASID for this core
+  u32 npt_vaddr_pts;      //NPT page-tables for protection manipulation
+
+  //VMX specific fields
+  u64 vmx_msrs[IA32_VMX_MSRCOUNT];  //VMX msr values
+  u64 vmx_msr_efer;
+  u64 vmx_msr_efcr;
+  u32 vmx_vmxonregion_vaddr;    //virtual address of the vmxon region
+  u32 vmx_vmcs_vaddr;           //virtual address of the VMCS region
+  
+  u32 vmx_vaddr_iobitmap;		//virtual address of the I/O Bitmap area
+  u32 vmx_vaddr_msr_area_host;		//virtual address of the host MSR area
+  u32 vmx_vaddr_msr_area_guest;		//virtual address of the guest MSR area
+  u32 vmx_vaddr_msrbitmaps;				//virtual address of the MSR bitmap area
+  
+  u32 vmx_vaddr_ept_pml4_table;	//virtual address of EPT PML4 table
+  u32 vmx_vaddr_ept_pdp_table;	//virtual address of EPT PDP table
+  u32 vmx_vaddr_ept_pd_tables;	//virtual address of base of EPT PD tables
+  u32 vmx_vaddr_ept_p_tables;		//virtual address of base of EPT P tables
+  struct _memorytype vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
+  //guest MTRR shadow MSRs
+	struct _guestmtrrmsrs vmx_guestmtrrmsrs[NUM_MTRR_MSRS];
+
+  //guest state fields
+  u32 vmx_guest_currentstate;		//current operating mode of guest
+  u32 vmx_guest_nextstate;		  //next operating mode of guest
+	u32 vmx_guest_unrestricted;		//this is 1 if the CPU VMX implementation supports unrestricted guest execution
+  struct _vmx_vmcsfields vmcs;   //the VMCS fields
+} __attribute__((packed)) VCPU;
+
+#define SIZE_STRUCT_VCPU    (sizeof(struct _vcpu))
+#define CPU_VENDOR (g_vcpubuffers[0].cpu_vendor)
+
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
 //----------------------------------------------------------------------

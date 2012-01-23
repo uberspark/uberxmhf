@@ -160,6 +160,7 @@ typedef struct _midtab {
 #define SIZE_STRUCT_MIDTAB  (sizeof(struct _midtab))
 */
 
+/*
 //---platform
 //MTRR memory type structure
 struct _memorytype {
@@ -203,6 +204,7 @@ struct _guestmtrrmsrs {
 
 //---platform
 #define IA32_VMX_MSRCOUNT   								12
+*/
 
 /*
 //---platform
@@ -286,7 +288,7 @@ typedef struct {
 } __attribute__ ((packed)) MPENTRYCPU;
 */
 
-
+/*
 //the vcpu structure which holds the current state of a core
 typedef struct _vcpu {
   //common fields	
@@ -337,7 +339,7 @@ typedef struct _vcpu {
 
 #define SIZE_STRUCT_VCPU    (sizeof(struct _vcpu))
 #define CPU_VENDOR (g_vcpubuffers[0].cpu_vendor)
-
+*/
 
 #define RPB_MAX_RNTMOPTIONS_SIZE		1024		//max. size in bytes for runtime options
 
@@ -442,14 +444,6 @@ typedef struct {
   u32 runtimephysmembase;
 } __attribute__((packed)) APP_PARAM_BLOCK;
 
-//EMHF application callbacks
-extern u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb);
-extern u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size); 
-extern u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
-      struct regs *r,
-      u64 gpa, u64 gva, u64 violationcode);
-extern void emhf_app_handleshutdown(VCPU *vcpu, struct regs *r);
-extern u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r);	//returns APP_SUCCESS if handled, else APP_ERROR      
 
 
 #endif /*ifndef __ASSEMBLY__*/
