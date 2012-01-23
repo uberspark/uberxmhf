@@ -41,13 +41,10 @@
 #define __EMHF_BASEPLATFORM_ARCH_H__
 
 
-#ifndef __ASSEMBLY__
-
 //XXX: this file needs to include the appropriate arch. specific
 //header using either preprocessor directives, could be a 
 //symlink or use configure
 #include <arch/x86/emhf-baseplatform-arch-x86.h>
 
-#endif	//__ASSEMBLY__
 
 #endif //__EMHF_BASEPLATFORM_ARCH_H__

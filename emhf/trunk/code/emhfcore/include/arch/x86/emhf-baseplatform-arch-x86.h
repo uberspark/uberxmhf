@@ -40,6 +40,25 @@
 #ifndef __EMHF_BASEPLATFORM_ARCH_X86_H__
 #define __EMHF_BASEPLATFORM_ARCH_X86_H__
 
+#include "_multiboot.h"  	//boot manager (multiboot)
+#include "_cmdline.h"		//GRUB command line handling functions
+#include "_error.h"      	//error handling and assertions
+#include "_processor.h"  	//CPU
+#include "_msr.h"        	//model specific registers
+#include "_paging.h"     	//MMU
+#include "_io.h"         	//legacy I/O
+#include "_apic.h"       	//APIC
+#include "_svm.h"        	//SVM extensions
+#include "_vmx.h"			//VMX extensions
+#include "_txt.h"			//Trusted eXecution Technology (SENTER support)
+#include "_pci.h"        	//PCI bus glue
+#include "_acpi.h"			//ACPI glue
+#include "_svm_eap.h"		//SVM DMA protection
+#include "_vmx_eap.h"		//VMX DMA protection
+#include "_tpm.h"			//generic TPM functions
+#include "_tpm_emhf.h"		//EMHF-specific TPM functions
+#include "_sarg.h"			//language specifics
+#include "_perf.h"			//performance measurement routines
 
 #ifndef __ASSEMBLY__
 

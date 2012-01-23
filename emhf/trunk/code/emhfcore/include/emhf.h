@@ -61,7 +61,6 @@ extern RPB *rpb;
 //----------------------------------------------------------------------
 // component headers
 #include <emhf-debug.h>			//EMHF debug component
-#include <arch/emhf-arch.h>
 #include <emhf-baseplatform.h>	//EMHF base platform component
 #include <emhf-memprot.h>		//EMHF memory protection component
 #include <emhf-dmaprot.h>		//EMHF DMA protection component
