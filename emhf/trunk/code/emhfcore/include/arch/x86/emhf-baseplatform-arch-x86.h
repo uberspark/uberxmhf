@@ -43,6 +43,59 @@
 
 #ifndef __ASSEMBLY__
 
+typedef struct {
+  u32 eip;
+  u32 cs;
+  u32 eflags;
+} __attribute__((packed)) INTR_SAMEPRIVILEGE_STACKFRAME_NOERRORCODE;
+
+//---platform
+typedef struct {
+  u32 errorcode;
+  u32 eip;
+  u32 cs;
+  u32 eflags;
+} __attribute__((packed)) INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE;
+
+typedef struct {
+  u32 signature;
+  u32 paddrpointer;
+  u8 length;
+  u8 spec_rev;
+  u8 checksum;
+  u8 mpfeatureinfo1;
+  u8 mpfeatureinfo2;
+  u8 mpfeatureinfo3;
+  u8 mpfeatureinfo4;
+  u8 mpfeatureinfo5;
+} __attribute__ ((packed)) MPFP;
+
+typedef struct{
+  u32 signature;
+  u16 length;
+  u8 spec_rev;
+  u8 checksum;
+  u8 oemid[8];
+  u8 productid[12];
+  u32 oemtableptr;
+  u16 oemtablesize;
+  u16 entrycount;
+  u32 lapicaddr;
+  u16 exttablelength;
+  u16 exttablechecksum;
+} __attribute__ ((packed)) MPCONFTABLE;
+
+typedef struct {
+  u8 entrytype;
+  u8 lapicid;
+  u8 lapicver;
+  u8 cpuflags;
+  u32 cpusig;
+  u32 featureflags;
+  u32 res0;
+  u32 res1;
+} __attribute__ ((packed)) MPENTRYCPU;
+
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
 //----------------------------------------------------------------------

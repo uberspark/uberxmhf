@@ -43,8 +43,6 @@
 
 #ifndef __ASSEMBLY__
 
-//bring in arch. specific declarations
-#include <arch/emhf-baseplatform-arch.h>
 
 //----------------------------------------------------------------------
 //exported DATA 
@@ -143,10 +141,10 @@ static inline void* gpa2hva(gpa_t gpa) { return spa2hva(gpa2spa(gpa)); }
 static inline gpa_t hva2gpa(hva_t hva) { return spa2gpa(hva2spa(hva)); }
 
 
-
-
-
-
 #endif	//__ASSEMBLY__
+
+//bring in arch. specific declarations
+#include <arch/emhf-baseplatform-arch.h>
+
 
 #endif //__EMHF_BASEPLATFORM_H__

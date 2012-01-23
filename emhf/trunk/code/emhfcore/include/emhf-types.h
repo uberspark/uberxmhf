@@ -221,7 +221,7 @@ typedef struct _pcpu {
 
 
 //---platform
-//same privilege level exception/interrupt stack frame
+/*//same privilege level exception/interrupt stack frame
 typedef struct {
   u32 eip;
   u32 cs;
@@ -234,10 +234,10 @@ typedef struct {
   u32 eip;
   u32 cs;
   u32 eflags;
-} __attribute__((packed)) INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE;
+} __attribute__((packed)) INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE;*/
 
 //---platform
-typedef struct {
+/*typedef struct {
   u32 signature;
   u32 paddrpointer;
   u8 length;
@@ -248,10 +248,10 @@ typedef struct {
   u8 mpfeatureinfo3;
   u8 mpfeatureinfo4;
   u8 mpfeatureinfo5;
-} __attribute__ ((packed)) MPFP;
+} __attribute__ ((packed)) MPFP;*/
 
 //---platform
-typedef struct{
+/*typedef struct{
   u32 signature;
   u16 length;
   u8 spec_rev;
@@ -264,9 +264,9 @@ typedef struct{
   u32 lapicaddr;
   u16 exttablelength;
   u16 exttablechecksum;
-} __attribute__ ((packed)) MPCONFTABLE;
+} __attribute__ ((packed)) MPCONFTABLE;*/
 
-//---platform
+/*//---platform
 typedef struct {
   u8 entrytype;
   u8 lapicid;
@@ -277,7 +277,7 @@ typedef struct {
   u32 res0;
   u32 res1;
 } __attribute__ ((packed)) MPENTRYCPU;
-
+*/
 
 
 //the vcpu structure which holds the current state of a core
