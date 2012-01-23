@@ -100,7 +100,6 @@ typedef void* (*hpt_pa2ptr_t)(void *ctx, hpt_pa_t pa); /* translate a physical a
 typedef void* (*hpt_get_zeroed_page_t)(void *ctx, size_t alignment, size_t sz);
                        
 typedef struct {
-  hpt_type_t t;
   hpt_get_zeroed_page_t gzp;
   void *gzp_ctx;
   hpt_pa2ptr_t pa2ptr;

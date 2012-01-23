@@ -153,8 +153,6 @@ bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
 
   size_t i;
 
-  host_ctx.t = host_t;
-  guest_ctx.t = guest_t;
   guest_ctx.pa2ptr = &hpt_checked_guest_pa2ptr;
   guest_ctx.pa2ptr_ctx = &pa2ptr_ctx;
 
@@ -275,7 +273,6 @@ void copy_from_current_guest_UNCHECKED(VCPU * vcpu, void *dst, gva_t gvaddr, u32
     .lvl = hpt_root_lvl(t),
   };
   hpt_walk_ctx_t ctx = hpt_guest_walk_ctx;
-  ctx.t = t;
 
   hpt_copy_from_guest(&ctx, &root, dst, gvaddr, len);
 
@@ -301,7 +298,6 @@ void copy_to_current_guest_UNCHECKED(VCPU * vcpu, gva_t gvaddr, void *src, u32 l
     .lvl = hpt_root_lvl(t),
   };
   hpt_walk_ctx_t ctx = hpt_guest_walk_ctx;
-  ctx.t = t;
 
   hpt_copy_to_guest(&ctx, &root, gvaddr, src, len);
 }

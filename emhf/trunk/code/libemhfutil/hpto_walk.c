@@ -67,7 +67,7 @@ int hpt_walk_get_pmo_alloc(hpt_pmo_t *pmo,
       hpt_pmo_t new_pmo = {
         .pm = ctx->gzp(ctx->gzp_ctx,
                        HPT_PM_SIZE, /*FIXME*/
-                       hpt_pm_size(ctx->t, pmo->lvl-1)),
+                       hpt_pm_size(pmo->t, pmo->lvl-1)),
         .lvl = pmo->lvl-1,
         .t = pmo->t,
       };

@@ -350,7 +350,6 @@ void init_scode(VCPU * vcpu)
       ASSERT(0);
     }
     hpt_nested_walk_ctx = (hpt_walk_ctx_t) {
-      .t = t,
       .gzp = hpt_get_zeroed_page,
       .gzp_ctx = NULL, /* we'll copy this struct for
                           each pal and give each it's own allocation
@@ -362,7 +361,6 @@ void init_scode(VCPU * vcpu)
   }
   {
     hpt_guest_walk_ctx = (hpt_walk_ctx_t) {
-      .t = HPT_TYPE_INVALID, /* need to check gcr4 after OS is up and running */
       .gzp = hpt_get_zeroed_page,
       .gzp_ctx = NULL, /* add allocation pool on-demand */
       .pa2ptr = hpt_guest_pa2ptr,
@@ -551,6 +549,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
   u64 gcr3;
   hpt_pmo_t reg_gpmo_root, pal_npmo_root, pal_gpmo_root;
   hpt_type_t guest_t = hpt_emhf_get_guest_hpt_type(vcpu);
+  hpt_type_t host_t = hpt_emhf_get_hpt_type(vcpu);
 
   /* set all CPUs to use the same 'reg' nested page tables,
      and set up a corresponding hpt_pmo.
@@ -563,10 +562,9 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
     static bool did_change_root_mappings=false;
 
     if (!did_change_root_mappings) {
-
       g_reg_npmo_root = (hpt_pmo_t) {
-        .t = hpt_nested_walk_ctx.t,
-        .lvl = hpt_root_lvl(hpt_nested_walk_ctx.t),
+        .t = host_t,
+        .lvl = hpt_root_lvl(host_t),
         .pm = hpt_emhf_get_root_pm(vcpu),
       };
 #ifdef __MP_VERSION__
@@ -658,7 +656,6 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
   whitelist_new.hpt_guest_walk_ctx = hpt_nested_walk_ctx;
   whitelist_new.hpt_guest_walk_ctx.gzp_ctx = whitelist_new.gpl;
-  whitelist_new.hpt_guest_walk_ctx.t = reg_gpmo_root.t;
 
   /* add all gpl pages to pal's nested page tables, ensuring that
      the guest page tables allocated from it will be accessible to the

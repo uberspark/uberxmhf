@@ -191,7 +191,6 @@ static inline gpa_t gpt_vaddr_to_paddr_current(VCPU *vcpu, gva_t vaddr)
   };
   hpt_walk_ctx_t ctx = hpt_guest_walk_ctx;
   gpa_t rv;
-  ctx.t = t;
   rv = hpto_walk_va_to_pa(&ctx, &root, vaddr);
 
   return rv;
