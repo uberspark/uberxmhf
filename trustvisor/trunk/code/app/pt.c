@@ -130,24 +130,16 @@ bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
                                     hpt_prot_t reqd_prots, bool reqd_user_accessible,
                                     gva_t vaddr, size_t size_bytes)
 {
-  hpt_type_t host_t = hpt_emhf_get_hpt_type(vcpu);
-  hpt_pmo_t host_root = {
-    .pm = hpt_emhf_get_root_pm(vcpu),
-    .t = host_t,
-    .lvl = hpt_root_lvl(host_t),
-  };
-
-  hpt_type_t guest_t = hpt_emhf_get_guest_hpt_type(vcpu);
-  hpt_pmo_t guest_root = {
-    .pm = hpt_emhf_get_guest_root_pm(vcpu),
-    .t = guest_t,
-    .lvl = hpt_root_lvl(guest_t),
-  };
+  hpt_pmo_t host_root;
+  hpt_pmo_t guest_root;
   hpt_walk_ctx_t guest_ctx;
   scode_guest_pa2ptr_ctx_t pa2ptr_ctx = {
     .host_pmo_root = &host_root,
   };
   size_t i;
+
+  hpt_emhf_get_root_pmo(vcpu, &host_root);
+  hpt_emhf_get_guest_root_pmo(vcpu, &guest_root);
 
   guest_ctx = hpt_guest_walk_ctx;
   guest_ctx.pa2ptr = &hpt_checked_guest_pa2ptr;
@@ -263,12 +255,8 @@ void put_32bit_aligned_value_to_current_guest(VCPU *vcpu, u32 gvaddr, u32 value)
 
 void copy_from_current_guest_UNCHECKED(VCPU * vcpu, void *dst, gva_t gvaddr, u32 len)
 {
-  hpt_type_t t = hpt_emhf_get_guest_hpt_type(vcpu);
-  hpt_pmo_t root = {
-    .pm = hpt_emhf_get_guest_root_pm(vcpu),
-    .t = t,
-    .lvl = hpt_root_lvl(t),
-  };
+  hpt_pmo_t root;
+  hpt_emhf_get_guest_root_pmo(vcpu, &root);
 
   hpt_copy_from_guest(&hpt_guest_walk_ctx, &root, dst, gvaddr, len);
 
@@ -287,12 +275,8 @@ int copy_from_current_guest(VCPU * vcpu, void *dst, gva_t gvaddr, u32 len)
 
 void copy_to_current_guest_UNCHECKED(VCPU * vcpu, gva_t gvaddr, void *src, u32 len)
 {
-  hpt_type_t t = hpt_emhf_get_guest_hpt_type(vcpu);
-  hpt_pmo_t root = {
-    .pm = hpt_emhf_get_guest_root_pm(vcpu),
-    .t = t,
-    .lvl = hpt_root_lvl(t),
-  };
+  hpt_pmo_t root;
+  hpt_emhf_get_guest_root_pmo(vcpu, &root);
 
   hpt_copy_to_guest(&hpt_guest_walk_ctx, &root, gvaddr, src, len);
 }

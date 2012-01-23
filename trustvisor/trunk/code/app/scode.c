@@ -534,8 +534,6 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
   whitelist_entry_t whitelist_new;
   u64 gcr3;
   hpt_pmo_t reg_gpmo_root, pal_npmo_root, pal_gpmo_root;
-  hpt_type_t guest_t = hpt_emhf_get_guest_hpt_type(vcpu);
-  hpt_type_t host_t = hpt_emhf_get_hpt_type(vcpu);
 
   /* set all CPUs to use the same 'reg' nested page tables,
      and set up a corresponding hpt_pmo.
@@ -548,11 +546,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
     static bool did_change_root_mappings=false;
 
     if (!did_change_root_mappings) {
-      g_reg_npmo_root = (hpt_pmo_t) {
-        .t = host_t,
-        .lvl = hpt_root_lvl(host_t),
-        .pm = hpt_emhf_get_root_pm(vcpu),
-      };
+      hpt_emhf_get_root_pmo(vcpu, &g_reg_npmo_root);
 #ifdef __MP_VERSION__
       {
         size_t i;
@@ -616,11 +610,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
   whitelist_new.gpl = malloc(sizeof(pagelist_t));
   pagelist_init(whitelist_new.gpl);
 
-  reg_gpmo_root = (hpt_pmo_t) {
-    .t = guest_t,
-    .lvl = hpt_root_lvl(guest_t),
-    .pm = hpt_emhf_get_guest_root_pm(vcpu),
-  };
+  hpt_emhf_get_guest_root_pmo(vcpu, &reg_gpmo_root);
   pal_npmo_root = (hpt_pmo_t) {
     .t = g_reg_npmo_root.t,
     .lvl = g_reg_npmo_root.lvl,

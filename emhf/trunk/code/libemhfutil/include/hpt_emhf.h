@@ -130,6 +130,27 @@ static inline void hpt_emhf_set_guest_root_pm(VCPU *vcpu, hpt_pm_t root)
                                     hva2gpa(root)));
 }
 
+static inline void hpt_emhf_get_root_pmo(VCPU *vcpu, hpt_pmo_t *root)
+{
+  hpt_type_t t = hpt_emhf_get_hpt_type(vcpu);
+  *root = (hpt_pmo_t) {
+    .pm = hpt_emhf_get_root_pm(vcpu),
+    .t = t,
+    .lvl = hpt_root_lvl(t),
+  };
+}
+
+static inline void hpt_emhf_get_guest_root_pmo(VCPU *vcpu, hpt_pmo_t *root)
+{
+  hpt_type_t t = hpt_emhf_get_guest_hpt_type(vcpu);
+  *root = (hpt_pmo_t) {
+    .pm = hpt_emhf_get_guest_root_pm(vcpu),
+    .t = t,
+    .lvl = hpt_root_lvl(t),
+  };
+}
+
+
 #endif //__ASSEMBLY__
 
 
