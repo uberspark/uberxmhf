@@ -95,7 +95,7 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	printf("\n	numE820Entries=%u", slpb.numE820Entries);
 	printf("\n	system memory map buffer at 0x%08x", (u32)&slpb.memmapbuffer);
 	printf("\n	numCPUEntries=%u", slpb.numCPUEntries);
-	printf("\n	pcpus at 0x%08x", (u32)&slpb.pcpus);
+	printf("\n	cpuinfo buffer at 0x%08x", (u32)&slpb.cpuinfobuffer);
 	printf("\n	runtime size= %u bytes", slpb.runtime_size);
 	printf("\n	OS bootmodule at 0x%08x, size=%u bytes", 
 		slpb.runtime_osbootmodule_base, slpb.runtime_osbootmodule_size);
@@ -119,12 +119,12 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		}
 	}*/
 	
-	printf("\n	pcpus:\n");
+	/*printf("\n	pcpus:\n");
 	{
 		u32 i;
 		for(i=0; i < slpb.numCPUEntries; i++)
 		printf("\n		CPU #%u: bsp=%u, lapic_id=0x%02x", i, slpb.pcpus[i].isbsp, slpb.pcpus[i].lapic_id);
-	}
+	}*/
 
 	//get runtime physical base
 	runtime_physical_base = sl_baseaddr + PAGE_SIZE_2M;	//base of SL + 2M
@@ -170,7 +170,7 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		rpb->XtVmmE820NumEntries = slpb.numE820Entries; 
 
 		//store CPU table and number of CPUs
-		memcpy(emhf_sl_arch_hva2sla(rpb->XtVmmMPCpuinfoBuffer), (void *)&slpb.pcpus, (sizeof(PCPU) * slpb.numCPUEntries));
+		memcpy(emhf_sl_arch_hva2sla(rpb->XtVmmMPCpuinfoBuffer), (void *)&slpb.cpuinfobuffer, (sizeof(slpb.cpuinfobuffer)) );
 		rpb->XtVmmMPCpuinfoNumEntries = slpb.numCPUEntries; 
 
 		//setup guest OS boot module info in LPB	
