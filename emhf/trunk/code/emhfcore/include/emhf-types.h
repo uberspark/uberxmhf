@@ -38,6 +38,10 @@
 #define __EMHF_TYPES_H_
 
 
+//----------------------------------------------------------------------
+//EMHF configurable defines
+//XXX: to sort
+
 //runtime base address (virtual)
 #define __TARGET_BASE	0xC0000000
 
@@ -62,8 +66,6 @@
 #define MAX_E820_ENTRIES    (64)  //maximum E820 entries we support, 64 should
                                   //be enough
 
-//----------------------------------------------------------------------
-//XXX: to sort
 
 //preferred TPM locality to use for access inside hypervisor
 //needs to be 2 or 1 (4 is hw-only, 3 is sinit-only on Intel)
@@ -112,9 +114,20 @@
 #define	VMX_UG_E820HOOK_CS				(0x0040)	
 #define	VMX_UG_E820HOOK_IP				(0x00AC)
 
+
+#define BAD_INTEGRITY_HASH "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+
+/* SHA-1 hash of runtime should be defined during build process.
+ * However, if it's not, don't fail.  Just proceed with all zeros.
+ * XXX TODO Disable proceeding with insecure hash value. */
+#ifndef ___RUNTIME_INTEGRITY_HASH___
+#define ___RUNTIME_INTEGRITY_HASH___ BAD_INTEGRITY_HASH
+#endif /*  ___RUNTIME_INTEGRITY_HASH___ */
+
+//max. size in bytes for runtime options
+#define RPB_MAX_RNTMOPTIONS_SIZE		1024		
+
 //----------------------------------------------------------------------
-
-
 
 
 
@@ -127,16 +140,6 @@ typedef u32 	gva_t; 			//guest virtual address. we only support 32-bit guests
 typedef u64 	gpa_t; 			//guest physical address. can be 64-bit with PAE 
 
 
-#ifndef __ASSEMBLY__
-#define BAD_INTEGRITY_HASH "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-
-/* SHA-1 hash of runtime should be defined during build process.
- * However, if it's not, don't fail.  Just proceed with all zeros.
- * XXX TODO Disable proceeding with insecure hash value. */
-#ifndef ___RUNTIME_INTEGRITY_HASH___
-#define ___RUNTIME_INTEGRITY_HASH___ BAD_INTEGRITY_HASH
-#endif /*  ___RUNTIME_INTEGRITY_HASH___ */
-
 //"golden" digest values injected using CFLAGS during build process
 //NOTE: NO WAY TO SELF-CHECK slbelow64K; JUST A SANITY-CHECK
 typedef struct _integrity_measurement_values {
@@ -144,10 +147,7 @@ typedef struct _integrity_measurement_values {
     u8 sha_slabove64K[20];
     u8 sha_runtime[20];
 } INTEGRITY_MEASUREMENT_VALUES;
-#endif /* __ASSEMBLY__ */
 
-
-#define RPB_MAX_RNTMOPTIONS_SIZE		1024		//max. size in bytes for runtime options
 
 //NOTE: The declaration here _MUST_ match definition of RPB in runtimesup.S	
 typedef struct {
