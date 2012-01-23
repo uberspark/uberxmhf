@@ -201,12 +201,6 @@ void hpt_pm_set_pme_by_idx(hpt_type_t t, int lvl, hpt_pm_t pm, int idx, hpt_pme_
 hpt_pme_t hpt_pm_get_pme_by_va(hpt_type_t t, int lvl, hpt_pm_t pm, hpt_va_t va);
 void hpt_pm_set_pme_by_va(hpt_type_t t, int lvl, hpt_pm_t pm, hpt_va_t va, hpt_pme_t pme);
 
-/* returns the page map of level end_lvl containing va, allocating
-   maps if necessary. Note that the end_lvl may be a higher level than requested
-   if the address is mapped via a large page.
-*/
-hpt_pm_t hpt_walk_get_pm_alloc(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int *end_lvl, hpt_va_t va);
-
 /* inserts pme into the page map of level tgt_lvl containing va, allocating
  * maps if necessary. returns 0 on success, other on failure.
  * Will fail if one of the intermediate entries is a large page

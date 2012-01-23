@@ -47,6 +47,11 @@ int hpt_walk_insert_pmeo(const hpt_walk_ctx_t *ctx,
                          hpt_pmo_t *pmo,
                          const hpt_pmeo_t *pmeo,
                          hpt_va_t va);
+int hpt_walk_get_pmo_alloc(hpt_pmo_t *pmo,
+                           const hpt_walk_ctx_t *ctx,
+                           const hpt_pmo_t *pmo_root,
+                           int end_lvl,
+                           hpt_va_t va);
 int hpt_walk_insert_pmeo_alloc(const hpt_walk_ctx_t *ctx,
                                hpt_pmo_t *pmo,
                                const hpt_pmeo_t *pmeo,
@@ -70,6 +75,7 @@ hpt_prot_t hpt_pmeo_getprot(const hpt_pmeo_t *pmeo);
 bool hpt_pmeo_getuser(const hpt_pmeo_t *pmeo);
 void hpt_pmeo_setuser(hpt_pmeo_t *pmeo, bool user);
 void hpt_pm_get_pmeo_by_va(hpt_pmeo_t *pmeo, const hpt_pmo_t *pmo, hpt_va_t va);
+void hpt_pmo_set_pme_by_va(hpt_pmo_t *pmo, const hpt_pmeo_t *pmeo, hpt_va_t va);
 bool hpto_walk_next_lvl(const hpt_walk_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va);
 hpt_prot_t hpto_walk_get_effective_prots(const hpt_walk_ctx_t *ctx,
                                          const hpt_pmo_t *pmo_root,

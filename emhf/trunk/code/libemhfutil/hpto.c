@@ -48,6 +48,46 @@ int hpt_walk_insert_pmeo(const hpt_walk_ctx_t *ctx,
                              pmeo->pme);
 }
 
+int hpt_walk_get_pmo_alloc(hpt_pmo_t *pmo,
+                           const hpt_walk_ctx_t *ctx,
+                           const hpt_pmo_t *pmo_root,
+                           int end_lvl,
+                           hpt_va_t va)
+{
+  assert(pmo_root->lvl >= end_lvl);
+  *pmo = *pmo_root;
+  while(pmo->lvl > end_lvl) {
+    hpt_pmeo_t pmeo;
+    hpt_pm_get_pmeo_by_va(&pmeo, pmo, va);
+    if (hpt_pmeo_is_page(&pmeo)) {
+      return;
+    }
+    if (!hpt_pmeo_is_present(&pmeo)) {
+      hpt_pmo_t new_pmo = {
+        .pm = ctx->gzp(ctx->gzp_ctx,
+                       HPT_PM_SIZE, /*FIXME*/
+                       hpt_pm_size(ctx->t, pmo->lvl-1)),
+        .lvl = pmo->lvl-1,
+        .t = pmo->t,
+      };
+      if (!new_pmo.pm) {
+        return 1;
+      }
+      hpt_pmeo_set_address(&pmeo, ctx->ptr2pa(ctx->ptr2pa_ctx, new_pmo.pm));
+      hpt_pmeo_setprot(    &pmeo, HPT_PROTS_RWX);
+      hpt_pmeo_setuser(    &pmeo, true);
+
+      hpt_pmo_set_pme_by_va(pmo, &pmeo, va);
+    }
+    {
+      bool walked_next_lvl;
+      walked_next_lvl = hpto_walk_next_lvl(ctx, pmo, va);
+      assert(walked_next_lvl);
+    }
+  }
+  return 0;
+}
+
 int hpt_walk_insert_pmeo_alloc(const hpt_walk_ctx_t *ctx,
                                hpt_pmo_t *pmo,
                                const hpt_pmeo_t *pmeo,
@@ -122,6 +162,11 @@ void hpt_pm_get_pmeo_by_va(hpt_pmeo_t *pmeo, const hpt_pmo_t *pmo, hpt_va_t va)
   pmeo->t = pmo->t;
   pmeo->lvl = pmo->lvl;
   pmeo->pme = hpt_pm_get_pme_by_va(pmo->t, pmo->lvl, pmo->pm, va);
+}
+
+void hpt_pmo_set_pme_by_va(hpt_pmo_t *pmo, const hpt_pmeo_t *pmeo, hpt_va_t va)
+{
+  hpt_pm_set_pme_by_va(pmo->t, pmo->lvl, pmo->pm, va, pmeo->pme);
 }
 
 bool hpto_walk_next_lvl(const hpt_walk_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va)
