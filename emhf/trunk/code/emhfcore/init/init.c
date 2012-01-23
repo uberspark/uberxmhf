@@ -845,7 +845,9 @@ void cstartup(multiboot_info_t *mbi){
         slpb->runtime_osbootmodule_base = mod_array[1].mod_start;
         slpb->runtime_osbootmodule_size = (mod_array[1].mod_end - mod_array[1].mod_start); 
 
-        slpb->uart_config = g_uart_config;
+        //slpb->uart_config = g_uart_config;
+        memcpy((void *)&slpb->options, (void *)&g_uart_config, sizeof(g_uart_config));
+        
     }
    
     //switch to MP mode

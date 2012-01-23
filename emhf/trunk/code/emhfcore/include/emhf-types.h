@@ -403,7 +403,8 @@ typedef struct _sl_parameter_block {
     u64 rdtsc_after_drtm;
 
     /* runtime options parsed in init and passed forward */
-    uart_config_t uart_config;
+    //uart_config_t uart_config;
+    u8	options[RPB_MAX_RNTMOPTIONS_SIZE]; /* runtime options parsed in init and passed forward */
 } __attribute__((packed)) SL_PARAMETER_BLOCK;
 
 
