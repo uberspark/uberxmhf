@@ -145,24 +145,6 @@ extern const hpt_walk_ctx_t hpt_nested_walk_ctx;
 extern const hpt_walk_ctx_t hpt_guest_walk_ctx;
 
 /* nested paging handlers (hpt) */
-void hpt_insert_pal_pmes(VCPU *vcpu,
-                         hpt_walk_ctx_t *walk_ctx,
-                         hpt_pm_t pal_pm,
-                         int pal_pm_lvl,
-                         gpa_t gpas[],
-                         size_t num_gpas);
-void hpt_walk_set_prots(hpt_walk_ctx_t *walk_ctx,
-                        hpt_pm_t pm,
-                        int pm_lvl,
-                        gpa_t gpas[],
-                        size_t num_gpas,
-                        hpt_prot_t prot);
-void hpt_nested_set_prot(VCPU * vcpu, u64 gpaddr);
-void hpt_nested_clear_prot(VCPU * vcpu, u64 gpaddr);
-void hpt_nested_switch_scode(VCPU * vcpu, pte_t *pte_pages, u32 size, pte_t *pte_page2, u32 size2);
-void hpt_nested_switch_regular(VCPU * vcpu, pte_t *pte_page, u32 size, pte_t *pte_page2, u32 size2);
-void hpt_nested_make_pt_unaccessible(pte_t *gpaddr_list, u32 gpaddr_count, pdpt_t npdp, u32 is_pal);
-void hpt_nested_make_pt_accessible(pte_t *gpaddr_list, u32 gpaddr_count, u64 * npdp, u32 is_pal);
 hpt_prot_t pal_prot_of_type(int type);
 hpt_prot_t reg_prot_of_type(int type);
 
@@ -176,7 +158,6 @@ u32 get_32bit_aligned_value_from_current_guest(VCPU *vcpu, u32 gvaddr);
 void put_32bit_aligned_value_to_current_guest(VCPU *vcpu, u32 gvaddr, u32 value);
 
 /* guest paging handlers */
-int guest_pt_copy(VCPU * vcpu, pte_t *pte_page, u32 gvaddr, u32 size, int type);
 static inline gpa_t gpt_vaddr_to_paddr(const hpt_walk_ctx_t *ctx, const hpt_pmo_t *gpt_root, gva_t vaddr)
 {
   return hpto_walk_va_to_pa(ctx, gpt_root, vaddr);
@@ -196,19 +177,12 @@ static inline gpa_t gpt_vaddr_to_paddr_current(VCPU *vcpu, gva_t vaddr)
   return rv;
 }
 
-#define  gpt_get_ptpages(vcpu, vaddr, pdp, pd, pt) guest_pt_walker_internal(vcpu, vaddr, pdp, pd, pt, NULL, NULL, NULL, NULL)
-#define  gpt_get_ptentries(vcpu, vaddr, pdpe, pde, pte, is_pae) guest_pt_walker_internal(vcpu, vaddr, NULL, NULL, NULL, pdpe, pde, pte, is_pae)
-
-u32 guest_pt_walker_internal(VCPU *vcpu, u32 vaddr, u64 *pdp, u64 *pd, u64 *pt, u64 *pdpe, u64 * pde, u64 * pte, u32 * is_pae);
-
 bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
                                     hpt_prot_t reqd_prots, bool reqd_user_accessible,
                                     gva_t vaddr, size_t size_bytes);
 bool guest_pt_range_is_user_rw(VCPU * vcpu, gva_t vaddr, size_t page_num);
 
 /* operations from hypervisor to guest paging */
-void * __gpa2hva__(u32 gpaddr);
-
 void copy_from_current_guest_UNCHECKED(VCPU * vcpu, void *dst, gva_t gvaddr, u32 len);
 int copy_from_current_guest(VCPU * vcpu, void *dst, gva_t gvaddr, u32 len);
 
@@ -216,8 +190,6 @@ void copy_to_current_guest_UNCHECKED(VCPU * vcpu, gva_t gvaddr, void *src, u32 l
 int copy_to_current_guest(VCPU * vcpu, gva_t gvaddr, void *src, u32 len);
 
 /* PAL operations (HPT) */
-u32 hpt_scode_set_prot(VCPU *vcpu, pte_t *pte_pages, u32 size);
-void hpt_scode_clear_prot(VCPU * vcpu, pte_t *pte_pages, u32 size);
 u32 hpt_scode_switch_scode(VCPU * vcpu);
 u32 hpt_scode_switch_regular(VCPU * vcpu);
 u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode);
