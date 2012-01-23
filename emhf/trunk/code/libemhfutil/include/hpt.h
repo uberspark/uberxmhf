@@ -95,19 +95,6 @@ typedef struct {
   int lvl;
 } hpt_pmeo_t;
 
-typedef hpt_pa_t (*hpt_ptr2pa_t)(void *ctx, void *ptr); /* translate a referencable pointer to a physical address */
-typedef void* (*hpt_pa2ptr_t)(void *ctx, hpt_pa_t pa); /* translate a physical address to a referenceable pointer */
-typedef void* (*hpt_get_zeroed_page_t)(void *ctx, size_t alignment, size_t sz);
-                       
-typedef struct {
-  hpt_get_zeroed_page_t gzp;
-  void *gzp_ctx;
-  hpt_pa2ptr_t pa2ptr;
-  void *pa2ptr_ctx;
-  hpt_ptr2pa_t ptr2pa;
-  void *ptr2pa_ctx;
-} hptw_ctx_t;
-
 #define HPT_UNUSED_ARGUMENT(x) (void)x
 
 #define HPT_PM_SIZE 4096

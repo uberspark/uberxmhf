@@ -34,6 +34,7 @@
  */
 
 #include <hpto.h>
+#include <hptw.h>
 
 int hptw_insert_pmeo(const hptw_ctx_t *ctx,
                      hpt_pmo_t *pmo_root,

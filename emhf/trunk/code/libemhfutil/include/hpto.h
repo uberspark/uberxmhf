@@ -43,29 +43,6 @@
 
 #include <hpt.h>
 
-int hptw_insert_pmeo(const hptw_ctx_t *ctx,
-                         hpt_pmo_t *pmo,
-                         const hpt_pmeo_t *pmeo,
-                         hpt_va_t va);
-int hptw_get_pmo_alloc(hpt_pmo_t *pmo,
-                           const hptw_ctx_t *ctx,
-                           const hpt_pmo_t *pmo_root,
-                           int end_lvl,
-                           hpt_va_t va);
-int hptw_insert_pmeo_alloc(const hptw_ctx_t *ctx,
-                               hpt_pmo_t *pmo,
-                               const hpt_pmeo_t *pmeo,
-                               hpt_va_t va);
-void hptw_get_pmo(hpt_pmo_t *pmo,
-                      const hptw_ctx_t *ctx,
-                      const hpt_pmo_t *pmo_root,
-                      int end_lvl,
-                      hpt_va_t va);
-void hptw_get_pmeo(hpt_pmeo_t *pmeo,
-                       const hptw_ctx_t *ctx,
-                       const hpt_pmo_t *pmo,
-                       int end_lvl,
-                       hpt_va_t va);
 hpt_pa_t hpt_pmeo_get_address(const hpt_pmeo_t *pmeo);
 void hpt_pmeo_set_address(hpt_pmeo_t *pmeo, hpt_pa_t addr);
 bool hpt_pmeo_is_present(const hpt_pmeo_t *pmeo);
@@ -76,46 +53,11 @@ bool hpt_pmeo_getuser(const hpt_pmeo_t *pmeo);
 void hpt_pmeo_setuser(hpt_pmeo_t *pmeo, bool user);
 void hpt_pm_get_pmeo_by_va(hpt_pmeo_t *pmeo, const hpt_pmo_t *pmo, hpt_va_t va);
 void hpt_pmo_set_pme_by_va(hpt_pmo_t *pmo, const hpt_pmeo_t *pmeo, hpt_va_t va);
-bool hptw_next_lvl(const hptw_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va);
-hpt_prot_t hptw_get_effective_prots(const hptw_ctx_t *ctx,
-                                         const hpt_pmo_t *pmo_root,
-                                         hpt_va_t va,
-                                         bool *user_accessible);
-void hptw_set_prot(hptw_ctx_t *ctx,
-                        hpt_pmo_t *pmo_root,
-                        hpt_va_t va,
-                        hpt_prot_t prot);
 hpt_pa_t hpt_pmeo_va_to_pa(hpt_pmeo_t* pmeo, hpt_va_t va);
-hpt_pa_t hptw_va_to_pa(const hptw_ctx_t *ctx,
-                            const hpt_pmo_t *pmo,
-                            hpt_va_t va);
 size_t hpt_pmeo_page_size_log_2(const hpt_pmeo_t *pmeo);
 size_t hpt_pmeo_page_size(const hpt_pmeo_t *pmeo);
 
 size_t hpt_remaining_on_page(const hpt_pmeo_t *pmeo, hpt_va_t va);
-void hptw_copy_from_guest(const hptw_ctx_t *ctx,
-                         const hpt_pmo_t *pmo,
-                         void *dst,
-                         hpt_va_t src_va_base,
-                         size_t len);
-void hptw_copy_to_guest(const hptw_ctx_t *ctx,
-                       const hpt_pmo_t *pmo,
-                       hpt_va_t dst_va_base,
-                       void *src,
-                       size_t len);
-void hptw_copy_guest_to_guest(const hptw_ctx_t *dst_ctx,
-                             const hpt_pmo_t *dst_pmo,
-                             hpt_va_t dst_va_base,
-                             const hptw_ctx_t *src_ctx,
-                             const hpt_pmo_t *src_pmo,
-                             hpt_va_t src_va_base,
-                             size_t len);
-
-void hptw_memset_guest(const hptw_ctx_t *ctx,
-                      const hpt_pmo_t *pmo,
-                      hpt_va_t dst_va_base,
-                      int c,
-                      size_t len);
 
 
 #endif
