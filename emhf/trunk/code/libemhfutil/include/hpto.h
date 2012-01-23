@@ -36,8 +36,6 @@
 #ifndef HPTO_H
 #define HPTO_H
 
-#include <emhf.h>
-
 /* experimental "object-oriented" wrappers around hpt functions. idea
    is to make code a bit less noisy by bundling page-maps and
    page-map-entries with their level and type. consider adding to

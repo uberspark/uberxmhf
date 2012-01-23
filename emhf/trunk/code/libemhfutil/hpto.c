@@ -62,7 +62,7 @@ void hpt_walk_get_pmeo(hpt_pmeo_t *pmeo,
                        int end_lvl,
                        hpt_va_t va)
 {
-  dprintf(LOG_TRACE, "Entering %s\n", __FUNCTION__);
+  hpt_log_trace("Entering %s\n", __FUNCTION__);
   pmeo->pme = hpt_walk_get_pme(ctx, pmo->lvl, pmo->pm, &end_lvl, va);
   pmeo->t = pmo->t;
   pmeo->lvl = end_lvl;
@@ -160,7 +160,7 @@ hpt_pa_t hpt_pmeo_va_to_pa(hpt_pmeo_t* pmeo, hpt_va_t va)
   hpt_pa_t offset;
   int offset_hi;
 
-  ASSERT(hpt_pme_is_page(pmeo->t, pmeo->lvl, pmeo->pme));
+  assert(hpt_pme_is_page(pmeo->t, pmeo->lvl, pmeo->pme));
   base = hpt_pmeo_get_address(pmeo);
 
   offset_hi = hpt_va_idx_hi[pmeo->t][pmeo->lvl-1];
