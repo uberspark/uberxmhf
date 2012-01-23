@@ -73,10 +73,9 @@ void hpt_walk_get_pmeo(hpt_pmeo_t *pmeo,
                        int end_lvl,
                        hpt_va_t va)
 {
-  hpt_log_trace("Entering %s\n", __FUNCTION__);
-  pmeo->pme = hpt_walk_get_pme(ctx, pmo->lvl, pmo->pm, &end_lvl, va);
-  pmeo->t = pmo->t;
-  pmeo->lvl = end_lvl;
+  hpt_pmo_t end_pmo;
+  hpt_walk_get_pmo(&end_pmo, ctx, pmo, end_lvl, va);
+  hpt_pm_get_pmeo_by_va(pmeo, &end_pmo, va);
 }
 
 hpt_pa_t hpt_pmeo_get_address(const hpt_pmeo_t *pmeo)

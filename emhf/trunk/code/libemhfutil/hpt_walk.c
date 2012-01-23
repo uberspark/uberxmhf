@@ -35,25 +35,6 @@
 
 #include <hpt.h>
 
-/* returns the lowest-level page map _entry_ containing va, down to
- * end_lvl. end_lvl is set to the level of the returned page map
- * containing the returned entry.
- */
-hpt_pme_t hpt_walk_get_pme(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int *end_lvl, hpt_va_t va)
-{
-  hpt_pmo_t pmo_root = {
-    .pm = pm,
-    .lvl = lvl,
-    .t = ctx->t,
-  };
-  hpt_pmo_t pmo;
-  hpt_pmeo_t pmeo;
-  hpt_walk_get_pmo(&pmo, ctx, &pmo_root, *end_lvl, va);
-  *end_lvl = pmo.lvl;
-  hpt_pm_get_pmeo_by_va(&pmeo, &pmo, va);
-  return pmeo.pme;
-}
-
 /* returns the page map of level end_lvl containing va, allocating
    maps if necessary. Note that the end_lvl may be a higher level than requested
    if the address is mapped via a large page.
