@@ -33,7 +33,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <hpto.h>
+#include <hpt.h>
 #include <hptw.h>
 
 int hptw_insert_pmeo(const hptw_ctx_t *ctx,

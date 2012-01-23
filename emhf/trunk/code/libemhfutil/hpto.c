@@ -33,7 +33,8 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <hpto.h>
+#include <hpt.h>
+#include "hpt_internal.h"
 
 hpt_pa_t hpt_pmeo_get_address(const hpt_pmeo_t *pmeo)
 {

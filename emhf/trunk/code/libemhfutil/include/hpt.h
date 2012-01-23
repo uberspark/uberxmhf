@@ -45,7 +45,6 @@
 #ifndef HPT_H
 #define HPT_H
 
-//#include "_types.h"
 #include <bitfield.h>
 #include <stddef.h>
 #include <assert.h>
@@ -156,35 +155,19 @@ bool hpt_lvl_is_valid(hpt_type_t t, int lvl);
 bool hpt_type_is_valid(hpt_type_t t);
 int hpt_root_lvl(hpt_type_t t);
 
-hpt_pme_t hpt_pme_setuser(hpt_type_t t, int lvl, hpt_pme_t entry, bool user_accessible);
-bool hpt_pme_getuser(hpt_type_t t, int lvl, hpt_pme_t entry);
-
-hpt_pme_t hpt_pme_setprot(hpt_type_t t, int lvl, hpt_pme_t entry, hpt_prot_t perms);
-hpt_prot_t hpt_pme_getprot(hpt_type_t t, int lvl, hpt_pme_t entry);
-
-hpt_pme_t hpt_pme_setunused(hpt_type_t t, int lvl, hpt_pme_t entry, int hi, int lo, hpt_pme_t val);
-hpt_pme_t hpt_pme_getunused(hpt_type_t t, int lvl, hpt_pme_t entry, int hi, int lo);
-
-bool hpt_pme_is_present(hpt_type_t t, int lvl, hpt_pme_t entry);
-
-bool hpt_pme_is_page(hpt_type_t t, int lvl, hpt_pme_t entry);
-
-hpt_pa_t hpt_pme_get_address(hpt_type_t t, int lvl, hpt_pme_t entry);
-
-hpt_pme_t hpt_pme_set_address(hpt_type_t t, int lvl, hpt_pme_t entry, hpt_pa_t addr);
-
-/* Assumes PAT register has default values */
-hpt_pmt_t hpt_pme_get_pmt(hpt_type_t t, int lvl, hpt_pme_t pme);
-
-/* Always clears PAT bit when applicable. */
-hpt_pmt_t hpt_pme_set_pmt(hpt_type_t t, int lvl, hpt_pme_t pme, hpt_pmt_t pmt);
-
-unsigned int hpt_get_pm_idx(hpt_type_t t, int lvl, hpt_va_t va);
-
-hpt_pme_t hpt_pm_get_pme_by_idx(hpt_type_t t, int lvl, hpt_pm_t pm, int idx);
-void hpt_pm_set_pme_by_idx(hpt_type_t t, int lvl, hpt_pm_t pm, int idx, hpt_pme_t pme);
-
-hpt_pme_t hpt_pm_get_pme_by_va(hpt_type_t t, int lvl, hpt_pm_t pm, hpt_va_t va);
-void hpt_pm_set_pme_by_va(hpt_type_t t, int lvl, hpt_pm_t pm, hpt_va_t va, hpt_pme_t pme);
+hpt_pa_t hpt_pmeo_get_address(const hpt_pmeo_t *pmeo);
+void hpt_pmeo_set_address(hpt_pmeo_t *pmeo, hpt_pa_t addr);
+bool hpt_pmeo_is_present(const hpt_pmeo_t *pmeo);
+bool hpt_pmeo_is_page(const hpt_pmeo_t *pmeo);
+void hpt_pmeo_setprot(hpt_pmeo_t *pmeo, hpt_prot_t perms);
+hpt_prot_t hpt_pmeo_getprot(const hpt_pmeo_t *pmeo);
+bool hpt_pmeo_getuser(const hpt_pmeo_t *pmeo);
+void hpt_pmeo_setuser(hpt_pmeo_t *pmeo, bool user);
+void hpt_pm_get_pmeo_by_va(hpt_pmeo_t *pmeo, const hpt_pmo_t *pmo, hpt_va_t va);
+void hpt_pmo_set_pme_by_va(hpt_pmo_t *pmo, const hpt_pmeo_t *pmeo, hpt_va_t va);
+hpt_pa_t hpt_pmeo_va_to_pa(hpt_pmeo_t* pmeo, hpt_va_t va);
+size_t hpt_pmeo_page_size_log_2(const hpt_pmeo_t *pmeo);
+size_t hpt_pmeo_page_size(const hpt_pmeo_t *pmeo);
+size_t hpt_remaining_on_page(const hpt_pmeo_t *pmeo, hpt_va_t va);
 
 #endif

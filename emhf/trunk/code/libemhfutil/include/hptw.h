@@ -36,7 +36,8 @@
 #ifndef HPTW_H
 #define HPTW_H
 
-#include <hpto.h>
+#include <hpt.h>
+#include <hptw.h>
 
 typedef hpt_pa_t (*hpt_ptr2pa_t)(void *ctx, void *ptr); /* translate a referencable pointer to a physical address */
 typedef void* (*hpt_pa2ptr_t)(void *ctx, hpt_pa_t pa); /* translate a physical address to a referenceable pointer */

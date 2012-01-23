@@ -49,7 +49,7 @@
 #include <crypto_init.h>
 #include <tv_utpm.h> /* formerly utpm.h */
 
-#include <hpto.h>
+#include <hpt.h>
 #include <hptw.h>
 #include <hpt_emhf.h>	/* from libemhfutil */
 
