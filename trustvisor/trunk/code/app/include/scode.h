@@ -57,17 +57,9 @@
 #define CHK(x) ASSERT(x)
 #define CHK_RV(x) ASSERT(!(x))
 
-/* bits 0 to 2 of stored pte's store the section type */
-#define SCODE_PTE_TYPE_MASK (0x7ull)
-#define SCODE_PTE_TYPE_GET(pte)    ((pte) & SCODE_PTE_TYPE_MASK)
-#define SCODE_PTE_TYPE_SET(pte, t) (((pte) & ~SCODE_PTE_TYPE_MASK) | t)
-
 /* 
  * definition for scode whitelist 
  * */
-/* max size of memory that holds scode state */
-#define  WHITELIST_LIMIT 8*1024
-
 /* in order to support 4GB memory */
 #define  PFN_BITMAP_LIMIT 512*1024
 #define  PFN_BITMAP_2M_LIMIT 2*1024
@@ -138,6 +130,8 @@ typedef struct whitelist_entry{
   u64 pal_gcr3;
 } __attribute__ ((packed)) whitelist_entry_t;
 
+/* max size of memory that holds scode state */
+#define WHITELIST_LIMIT (sizeof(whitelist_entry_t)*100)
 
 /* template page table context */
 extern const hptw_ctx_t hpt_nested_walk_ctx;
