@@ -194,6 +194,24 @@ hpt_pa_t hpto_walk_va_to_pa(const hpt_walk_ctx_t *ctx,
   return hpt_pmeo_va_to_pa(&pmeo, va);
 }
 
+void* hpt_access_va(const hpt_walk_ctx_t *ctx,
+                    const hpt_pmo_t *root,
+                    hpt_va_t va,
+                    size_t requested_sz,
+                    size_t *avail_sz)
+{
+  hpt_pmeo_t pmeo;
+  hpt_pa_t pa;
+
+  hpt_walk_get_pmeo(&pmeo, ctx, root, 1, va);
+
+  pa = hpt_pmeo_va_to_pa(&pmeo, va);
+  *avail_sz = MIN(requested_sz, hpt_remaining_on_page(&pmeo, pa));
+
+  return ctx->pa2ptr(ctx->pa2ptr_ctx, pa);
+}
+
+
 void hpt_copy_from_guest(const hpt_walk_ctx_t *ctx,
                          const hpt_pmo_t *pmo,
                          void *dst,
@@ -204,18 +222,11 @@ void hpt_copy_from_guest(const hpt_walk_ctx_t *ctx,
 
   while(copied < len) {
     hpt_va_t src_va = src_va_base + copied;
-    hpt_pmeo_t src_pmeo;
-    hpt_pa_t src_pa;
     size_t to_copy;
-    size_t remaining_on_page;
+    void *src;
 
-    hpt_walk_get_pmeo(&src_pmeo, ctx, pmo, 1, src_va);
-
-    src_pa = hpt_pmeo_va_to_pa(&src_pmeo, src_va);
-    remaining_on_page = hpt_remaining_on_page(&src_pmeo, src_pa);
-    to_copy = MIN(len-copied, remaining_on_page);
-
-    memcpy(dst+copied, ctx->pa2ptr(ctx->pa2ptr_ctx, src_pa), to_copy);
+    src = hpt_access_va(ctx, pmo, src_va, len-copied, &to_copy);
+    memcpy(dst+copied, src, to_copy);
     copied += to_copy;
   }
 }
@@ -231,17 +242,11 @@ void hpt_copy_to_guest(const hpt_walk_ctx_t *ctx,
   while(copied < len) {
     hpt_va_t dst_va = dst_va_base + copied;
     hpt_pmeo_t dst_pmeo;
-    hpt_pa_t dst_pa;
     size_t to_copy;
-    size_t remaining_on_page;
+    void *dst;
 
-    hpt_walk_get_pmeo(&dst_pmeo, ctx, pmo, 1, dst_va);
-
-    dst_pa = hpt_pmeo_va_to_pa(&dst_pmeo, dst_va);
-    remaining_on_page = hpt_remaining_on_page(&dst_pmeo, dst_pa);
-    to_copy = MIN(len-copied, remaining_on_page);
-
-    memcpy(ctx->pa2ptr(ctx->pa2ptr_ctx, dst_pa), src+copied, to_copy);
+    dst = hpt_access_va(ctx, pmo, dst_va, len-copied, &to_copy);
+    memcpy(dst, src+copied, to_copy);
     copied += to_copy;
   }
 }
@@ -259,29 +264,13 @@ void hpt_copy_guest_to_guest(const hpt_walk_ctx_t *dst_ctx,
   while(copied < len) {
     hpt_va_t dst_va = dst_va_base + copied;
     hpt_va_t src_va = src_va_base + copied;
-    hpt_pmeo_t dst_pmeo;
-    hpt_pmeo_t src_pmeo;
-    hpt_pa_t dst_pa;
-    hpt_pa_t src_pa;
     size_t to_copy;
-    size_t dst_remaining_on_page;
-    size_t src_remaining_on_page;
+    void *src, *dst;
 
-    hpt_walk_get_pmeo(&dst_pmeo, dst_ctx, dst_pmo, 1, dst_va);
-    dst_pa = hpt_pmeo_va_to_pa(&dst_pmeo, dst_va);
+    dst = hpt_access_va(dst_ctx, dst_pmo, dst_va, len-copied, &to_copy);
+    src = hpt_access_va(src_ctx, src_pmo, src_va, to_copy, &to_copy);
 
-    hpt_walk_get_pmeo(&src_pmeo, src_ctx, src_pmo, 1, src_va);
-    src_pa = hpt_pmeo_va_to_pa(&src_pmeo, src_va);
-
-    dst_remaining_on_page = hpt_remaining_on_page(&dst_pmeo, dst_pa);
-    src_remaining_on_page = hpt_remaining_on_page(&src_pmeo, src_pa);
-
-    to_copy = MIN(dst_remaining_on_page, src_remaining_on_page);
-    to_copy = MIN(to_copy, len-copied);
-
-    memcpy(dst_ctx->pa2ptr(dst_ctx->pa2ptr_ctx, dst_pa),
-           src_ctx->pa2ptr(src_ctx->pa2ptr_ctx, src_pa),
-           to_copy);
+    memcpy(dst, src, to_copy);
     copied += to_copy;
   }
 }
@@ -296,18 +285,11 @@ void hpt_memset_guest(const hpt_walk_ctx_t *ctx,
 
   while(set < len) {
     hpt_va_t dst_va = dst_va_base + set;
-    hpt_pmeo_t dst_pmeo;
-    hpt_pa_t dst_pa;
     size_t to_set;
-    size_t remaining_on_page;
+    void *dst;
 
-    hpt_walk_get_pmeo(&dst_pmeo, ctx, pmo, 1, dst_va);
-
-    dst_pa = hpt_pmeo_va_to_pa(&dst_pmeo, dst_va);
-    remaining_on_page = hpt_remaining_on_page(&dst_pmeo, dst_pa);
-    to_set = MIN(len-set, remaining_on_page);
-
-    memset(ctx->pa2ptr(ctx->pa2ptr_ctx, dst_pa), c, to_set);
+    dst = hpt_access_va(ctx, pmo, dst_va, len-set, &to_set);
+    memset(dst, c, to_set);
     set += to_set;
   }
 }
