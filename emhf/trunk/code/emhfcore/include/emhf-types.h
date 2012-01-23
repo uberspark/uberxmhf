@@ -223,33 +223,6 @@ typedef struct _sl_parameter_block {
 
 
 
-//----------------------------------------------------------------------
-// EMHF application related declarations
-//----------------------------------------------------------------------
-
-//generic catch-all app return codes
-#define APP_SUCCESS     (0x1)
-#define APP_ERROR				(0x0)
-
-//emhf app constant definitions
-#define APP_IOINTERCEPT_CHAIN   0xA0
-#define APP_IOINTERCEPT_SKIP    0xA1
-#define APP_INIT_SUCCESS        0x0
-#define APP_INIT_FAIL           0xFF
-
-
-//application parameter block
-//for now it holds the bootsector and optional module info loaded by GRUB
-//eventually this will be generic enough for both boot-time and dynamic loading
-//capabilities
-typedef struct {
-  u32 bootsector_ptr;
-  u32 bootsector_size;
-  u32 optionalmodule_ptr;
-  u32 optionalmodule_size;
-  u32 runtimephysmembase;
-} __attribute__((packed)) APP_PARAM_BLOCK;
-
 
 
 #endif /*ifndef __ASSEMBLY__*/
