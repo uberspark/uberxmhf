@@ -141,8 +141,8 @@ typedef struct whitelist_entry{
 
 
 /* template page table context */
-extern hpt_walk_ctx_t hpt_nested_walk_ctx;
-extern hpt_walk_ctx_t hpt_guest_walk_ctx;
+extern const hpt_walk_ctx_t hpt_nested_walk_ctx;
+extern const hpt_walk_ctx_t hpt_guest_walk_ctx;
 
 /* nested paging handlers (hpt) */
 void hpt_insert_pal_pmes(VCPU *vcpu,

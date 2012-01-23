@@ -50,8 +50,48 @@
 #include <crypto_init.h>
 #include <sha1.h>
 
-hpt_walk_ctx_t hpt_nested_walk_ctx;
-hpt_walk_ctx_t hpt_guest_walk_ctx;
+hpt_pa_t hpt_nested_ptr2pa(void __attribute__((unused)) *ctx, void *ptr)
+{
+  return hva2spa(ptr);
+}
+void* hpt_nested_pa2ptr(void __attribute__((unused)) *ctx, hpt_pa_t ptr)
+{
+  return spa2hva(ptr);
+}
+hpt_pa_t hpt_guest_ptr2pa(void __attribute__((unused)) *ctx, void *ptr)
+{
+  return hva2gpa(ptr);
+}
+void* hpt_guest_pa2ptr(void __attribute__((unused)) *ctx, hpt_pa_t ptr)
+{
+  return gpa2hva(ptr);
+}
+
+void* hpt_get_zeroed_page(void *ctx, size_t alignment, size_t sz)
+{
+  pagelist_t *pl = ctx;
+  ASSERT(PAGE_SIZE_4K % alignment == 0);
+  ASSERT(sz <= PAGE_SIZE_4K);
+  return pagelist_get_zeroedpage(pl);
+}
+const hpt_walk_ctx_t hpt_nested_walk_ctx = {
+  .gzp = hpt_get_zeroed_page,
+  .gzp_ctx = NULL, /* we'll copy this struct for
+                      each pal and give each it's own allocation
+                      pool */
+  .pa2ptr = hpt_nested_pa2ptr,
+  .ptr2pa = hpt_nested_ptr2pa,
+  .ptr2pa_ctx = NULL,
+};
+
+const hpt_walk_ctx_t hpt_guest_walk_ctx = {
+  .gzp = hpt_get_zeroed_page,
+  .gzp_ctx = NULL, /* add allocation pool on-demand */
+  .pa2ptr = hpt_guest_pa2ptr,
+  .ptr2pa = hpt_guest_ptr2pa,
+  .ptr2pa_ctx = NULL,
+};
+
 hpt_pmo_t      g_reg_npmo_root;
 
 /* this is the return address we push onto the stack when entering the
@@ -298,36 +338,12 @@ int scode_measure_sections(utpm_master_state_t *utpm,
   return 0;
 }
 
-hpt_pa_t hpt_nested_ptr2pa(void __attribute__((unused)) *ctx, void *ptr)
-{
-  return hva2spa(ptr);
-}
-void* hpt_nested_pa2ptr(void __attribute__((unused)) *ctx, hpt_pa_t ptr)
-{
-  return spa2hva(ptr);
-}
-
-hpt_pa_t hpt_guest_ptr2pa(void __attribute__((unused)) *ctx, void *ptr)
-{
-  return hva2gpa(ptr);
-}
-void* hpt_guest_pa2ptr(void __attribute__((unused)) *ctx, hpt_pa_t ptr)
-{
-  return gpa2hva(ptr);
-}
-
-void* hpt_get_zeroed_page(void *ctx, size_t alignment, size_t sz)
-{
-  pagelist_t *pl = ctx;
-  ASSERT(PAGE_SIZE_4K % alignment == 0);
-  ASSERT(sz <= PAGE_SIZE_4K);
-  return pagelist_get_zeroedpage(pl);
-}
 
 /* initialize all the scode related variables and buffers */
 void init_scode(VCPU * vcpu)
 {
   size_t inum, max;
+  (void)vcpu;
 
   /* initialize perf counters. this needs to happen before anythings gets profiled
    * to prevent deadlock.
@@ -337,36 +353,6 @@ void init_scode(VCPU * vcpu)
     for(j=0; j<TV_PERF_CTRS_COUNT; j++) {
       perf_ctr_init(&g_tv_perf_ctrs[j]);
     }
-  }
-
-  /* set up page walk context */
-  {
-    hpt_type_t t;
-    if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-      t = HPT_TYPE_EPT;
-    } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-      t = HPT_TYPE_PAE;
-    } else {
-      ASSERT(0);
-    }
-    hpt_nested_walk_ctx = (hpt_walk_ctx_t) {
-      .gzp = hpt_get_zeroed_page,
-      .gzp_ctx = NULL, /* we'll copy this struct for
-                          each pal and give each it's own allocation
-                          pool */
-      .pa2ptr = hpt_nested_pa2ptr,
-      .ptr2pa = hpt_nested_ptr2pa,
-      .ptr2pa_ctx = NULL,
-    };
-  }
-  {
-    hpt_guest_walk_ctx = (hpt_walk_ctx_t) {
-      .gzp = hpt_get_zeroed_page,
-      .gzp_ctx = NULL, /* add allocation pool on-demand */
-      .pa2ptr = hpt_guest_pa2ptr,
-      .ptr2pa = hpt_guest_ptr2pa,
-      .ptr2pa_ctx = NULL,
-    };
   }
 
   /* initialize heap memory */
