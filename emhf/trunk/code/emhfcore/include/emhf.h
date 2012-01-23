@@ -47,10 +47,11 @@
 	#include <stdbool.h>
 	#include <stddef.h>
 	#include <string.h>
+	#include <ctype.h>
 #endif /* __ASSEMBLY__ */
 
 
-#include <emhf-types.h>		//EMHF specific base types
+#include <emhf-types.h>			//EMHF specific base types
 
 //forward declaration of runtime parameter block
 #ifndef __ASSEMBLY__
@@ -60,7 +61,7 @@ extern RPB *rpb;
 
 //----------------------------------------------------------------------
 // component headers
-#include <emhf-debug.h>			//EMHF debug component
+#include <emhf-debug.h>			//EMHF debug component 
 #include <emhf-baseplatform.h>	//EMHF base platform component
 #include <emhf-memprot.h>		//EMHF memory protection component
 #include <emhf-dmaprot.h>		//EMHF DMA protection component

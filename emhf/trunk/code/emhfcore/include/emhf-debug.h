@@ -48,7 +48,7 @@
 //exported DATA 
 extern uint8_t g_log_targets;
 extern uint8_t g_log_level;
-extern unsigned char g_dbg_ctype[];
+//extern unsigned char g_dbg_ctype[];
 
 //----------------------------------------------------------------------
 //definitions
@@ -86,7 +86,7 @@ extern unsigned char g_dbg_ctype[];
 #define _SP	0x80	/* hard space (0x20) */
 
 
-#define __ismask(x) (g_dbg_ctype[(int)(unsigned char)(x)])
+/*#define __ismask(x) (g_dbg_ctype[(int)(unsigned char)(x)])
 
 #define isalnum(c)	((__ismask(c)&(_U|_L|_D)) != 0)
 #define isalpha(c)	((__ismask(c)&(_U|_L)) != 0)
@@ -121,7 +121,7 @@ static inline unsigned char __toupper(unsigned char c)
 
 #define tolower(c) __tolower(c)
 #define toupper(c) __toupper(c)
-
+*/
 
 
 //----------------------------------------------------------------------
