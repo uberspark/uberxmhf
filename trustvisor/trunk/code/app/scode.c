@@ -465,12 +465,11 @@ int memsect_info_copy_from_guest(VCPU * vcpu, struct tv_pal_sections *ps_scode_i
 int memsect_info_register(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, whitelist_entry_t * wle)
 {
   size_t i;
-  int pnum, is_get_param, is_get_stack;
+  int is_get_param, is_get_stack;
   int type, size;
   unsigned int start;
 
   /* parse section type, start address and size */
-  pnum = 0;
   is_get_param=0;
   is_get_stack=0;
   for (i = 0; i < ps_scode_info->num_sections; i++) {
@@ -514,13 +513,7 @@ int memsect_info_register(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, wh
     default :
       break;
     }
-    pnum += size;
     dprintf(LOG_TRACE, "[TV] section %d type %d addr %#x size %d\n",i, type, start, size);
-  }
-
-  if (pnum > MAX_REGPAGES_NUM) {
-    dprintf(LOG_ERROR, "[TV] number of scode pages exceeds limit!\n");
-    return 1;
   }
 
   return 0;

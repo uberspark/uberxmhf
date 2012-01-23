@@ -57,8 +57,6 @@
 #define CHK(x) ASSERT(x)
 #define CHK_RV(x) ASSERT(!(x))
 
-#define MAX_REGPAGES_NUM 300
-
 /* bits 0 to 2 of stored pte's store the section type */
 #define SCODE_PTE_TYPE_MASK (0x7ull)
 #define SCODE_PTE_TYPE_GET(pte)    ((pte) & SCODE_PTE_TYPE_MASK)
