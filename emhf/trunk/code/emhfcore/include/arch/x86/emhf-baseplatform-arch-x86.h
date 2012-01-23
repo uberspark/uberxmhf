@@ -40,6 +40,7 @@
 #ifndef __EMHF_BASEPLATFORM_ARCH_X86_H__
 #define __EMHF_BASEPLATFORM_ARCH_X86_H__
 
+#include "_configx86.h"		//EMHF arch. specific configurable definitions
 #include "_multiboot.h"  	//boot manager (multiboot)
 #include "_cmdline.h"		//GRUB command line handling functions
 #include "_error.h"      	//error handling and assertions
@@ -57,6 +58,12 @@
 #include "_vmx_eap.h"		//VMX DMA protection
 #include "_tpm.h"			//generic TPM functions
 #include "_tpm_emhf.h"		//EMHF-specific TPM functions
+
+
+//SMP configuration table signatures on x86 platforms
+#define MPFP_SIGNATURE 					(0x5F504D5FUL) //"_MP_"
+#define MPCONFTABLE_SIGNATURE 			(0x504D4350UL)  //"PCMP"
+
 
 #ifndef __ASSEMBLY__
 
@@ -121,6 +128,7 @@ struct _memorytype {
   u32 invalid;
   u32 reserved[6];
 } __attribute__((packed));
+#endif //__ASSEMBLY__
 
 //---platform
 #define MAX_MEMORYTYPE_ENTRIES    96    //8*11 fixed MTRRs and 8 variable MTRRs
@@ -131,12 +139,14 @@ struct _memorytype {
 //total number of FIXED and VARIABLE MTRRs on current x86 platforms
 #define NUM_MTRR_MSRS		29
 
+#ifndef __ASSEMBLY__
 //---platform
 //structure which holds values of guest MTRRs (64-bit)
 struct _guestmtrrmsrs {
 	u32 lodword;
 	u32 hidword;
 } __attribute__((packed));
+#endif //__ASSEMBLY__
 
 //---platform
 //VMX MSR indices for the vcpu structure
@@ -156,6 +166,7 @@ struct _guestmtrrmsrs {
 //---platform
 #define IA32_VMX_MSRCOUNT   								12
 
+#ifndef __ASSEMBLY__
 //the vcpu structure which holds the current state of a core
 typedef struct _vcpu {
   //common fields	
@@ -206,11 +217,13 @@ typedef struct _vcpu {
 
 #define SIZE_STRUCT_VCPU    (sizeof(struct _vcpu))
 #define CPU_VENDOR (g_vcpubuffers[0].cpu_vendor)
+#endif //__ASSEMBLY__
+
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
-
+#ifndef __ASSEMBLY__
 //get CPU vendor
 u32 emhf_baseplatform_arch_getcpuvendor(void);
 
@@ -245,17 +258,24 @@ void emhf_baseplatform_arch_flat_copy(u8 *dest, u8 *src, u32 size);
 //reboot platform
 void emhf_baseplatform_arch_reboot(VCPU *vcpu);
 
+#endif //__ASSEMBLY__
 
 //----------------------------------------------------------------------
 //x86 ARCH. INTERFACES
 //----------------------------------------------------------------------
+#define 	__CS 	0x0008 	//runtime code segment selector
+#define 	__DS 	0x0010 	//runtime data segment selector
+#define 	__TRSEL 0x0018  //runtime TSS (task) selector
 
+
+#ifndef __ASSEMBLY__
 
 //x86 GDT descriptor type
 typedef struct {
 		u16 size;
 		u32 base;
 } __attribute__((packed)) arch_x86_gdtdesc_t;
+
 
 //runtime TSS
 extern u8 g_runtime_TSS[PAGE_SIZE_4K] __attribute__(( section(".data") ));
@@ -497,6 +517,10 @@ void emhf_baseplatform_arch_x86vmx_reboot(VCPU *vcpu);
 //----------------------------------------------------------------------
 //x86svm SUBARCH. INTERFACES
 //----------------------------------------------------------------------
+
+#ifdef __NESTED_PAGING__
+#define ASID_GUEST_KERNEL 2
+#endif
 
 //SVM VM_HSAVE buffers 
 extern u8 g_svm_hsave_buffers[]__attribute__(( section(".palign_data") ));

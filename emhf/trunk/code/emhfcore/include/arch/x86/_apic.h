@@ -43,5 +43,11 @@
 #define LAPIC_ICR_HIGH  (0x310)
 #define LAPIC_ID        (0x20)
 
+//LAPIC emulation defines
+#define LAPIC_OP_RSVD   (3)
+#define LAPIC_OP_READ   (2)
+#define LAPIC_OP_WRITE  (1)
+
+
 #endif // __APIC_H__ 
 

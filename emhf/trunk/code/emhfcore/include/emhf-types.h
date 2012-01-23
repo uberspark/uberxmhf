@@ -38,99 +38,6 @@
 #define __EMHF_TYPES_H_
 
 
-//----------------------------------------------------------------------
-//EMHF configurable defines
-//XXX: to sort
-
-//runtime base address (virtual)
-#define __TARGET_BASE	0xC0000000
-
-//"sl" parameter block magic value
-#define SL_PARAMETER_BLOCK_MAGIC	0xDEADBEEF
-
-//"runtime" parameter block magic value
-#define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
-
-//16K stack for each core during runtime
-#define RUNTIME_STACK_SIZE  (16384)     
-
-//8K stack for each core in "init"
-#define INIT_STACK_SIZE	(8192)					
-
-//max. cores/vcpus we support currently
-#define MAX_MIDTAB_ENTRIES  (4)
-#define MAX_PCPU_ENTRIES  	(MAX_MIDTAB_ENTRIES)
-#define MAX_VCPU_ENTRIES    (MAX_PCPU_ENTRIES)
-
-
-#define MAX_E820_ENTRIES    (64)  //maximum E820 entries we support, 64 should
-                                  //be enough
-
-
-//preferred TPM locality to use for access inside hypervisor
-//needs to be 2 or 1 (4 is hw-only, 3 is sinit-only on Intel)
-#define EMHF_TPM_LOCALITY_PREF 2
-
-
-//guest boot record is always loaded at 0000:7C00
-#define __GUESTOSBOOTMODULE_BASE		0x7c00
-#define __GUESTOSBOOTMODULESUP1_BASE	0x7C00
-
-#define __CS 0x0008 /* Selector for GDT entry 1. RPL 0 */
-#define __DS 0x0010 /* Selector for GDT enry 0. RPL 0 */
-#define __TRSEL 0x0018  //selector for TSS
-
-
-//size of runtime IDT, 32 exception vectors each 8 bytes
-#define	SIZE_RUNTIME_IDT	(8*32)
-
-#define MPFP_SIGNATURE (0x5F504D5FUL) //"_MP_"
-#define MPCONFTABLE_SIGNATURE (0x504D4350UL)  //"PCMP"
-
-
-#define AP_BOOTSTRAP_CODE_SEG 0x1000
-#define SLB_BOOTSTRAP_CODE_BASE 0x40000000 /* 0x80000 */ /* 0x20000 */
-
-#ifdef __NESTED_PAGING__
-#define ASID_GUEST_KERNEL 2
-#endif
-
-//LAPIC emulation defines
-#define LAPIC_OP_RSVD   (3)
-#define LAPIC_OP_READ   (2)
-#define LAPIC_OP_WRITE  (1)
-
-//VMX runtime TSS size
-#define VMX_RUNTIME_TSS_SIZE    (4096)
-
-#define TEMPORARY_HARDCODED_MLE_SIZE       0x10000
-#define TEMPORARY_MAX_MLE_HEADER_SIZE      0x80
-#define TEMPORARY_HARDCODED_MLE_ENTRYPOINT TEMPORARY_MAX_MLE_HEADER_SIZE
-
-
-//VMX Unrestricted Guest (UG) E820 hook support
-//we currently use the BIOS data area (BDA) unused region
-//at 0x0040:0x00AC
-#define	VMX_UG_E820HOOK_CS				(0x0040)	
-#define	VMX_UG_E820HOOK_IP				(0x00AC)
-
-
-#define BAD_INTEGRITY_HASH "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-
-/* SHA-1 hash of runtime should be defined during build process.
- * However, if it's not, don't fail.  Just proceed with all zeros.
- * XXX TODO Disable proceeding with insecure hash value. */
-#ifndef ___RUNTIME_INTEGRITY_HASH___
-#define ___RUNTIME_INTEGRITY_HASH___ BAD_INTEGRITY_HASH
-#endif /*  ___RUNTIME_INTEGRITY_HASH___ */
-
-//max. size in bytes for runtime options
-#define RPB_MAX_RNTMOPTIONS_SIZE		1024		
-
-//----------------------------------------------------------------------
-
-
-
 #ifndef __ASSEMBLY__
 
 typedef u32 	paddr_t;		//physical address
@@ -192,7 +99,7 @@ typedef struct {
 	u32 RtmVMXVTdRET;
 	u32 RtmVMXVTdCET;
     //uart_config_t uart_config;	        /* runtime options parsed in init and passed forward */
-    u8	RtmOptions[RPB_MAX_RNTMOPTIONS_SIZE]; /* runtime options parsed in init and passed forward */
+    u8	RtmOptions[1024]; 				/* runtime options parsed in init and passed forward */
 	u32 isEarlyInit;					//1 for an "early init" else 0 (late-init)
 } __attribute__((packed)) RPB, *PRPB;
 
@@ -218,7 +125,7 @@ typedef struct _sl_parameter_block {
 
     /* runtime options parsed in init and passed forward */
     //uart_config_t uart_config;
-    u8	options[RPB_MAX_RNTMOPTIONS_SIZE]; /* runtime options parsed in init and passed forward */
+    u8	options[1024]; /* runtime options parsed in init and passed forward */
 } __attribute__((packed)) SL_PARAMETER_BLOCK;
 
 
