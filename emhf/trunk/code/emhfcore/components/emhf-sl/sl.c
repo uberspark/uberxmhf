@@ -177,7 +177,8 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		rpb->XtGuestOSBootModuleSize=slpb.runtime_osbootmodule_size;
 
 		//pass command line configuration forward 
-		rpb->uart_config = g_uart_config;
+		//rpb->uart_config = g_uart_config;
+		memcpy((void *)&rpb->RtmOptions, (void *)&slpb.uart_config, sizeof(slpb.uart_config));
 
 		////debug dump uart_config field
 		//printf("\nrpb->uart_config.port = %x", rpb->uart_config.port);

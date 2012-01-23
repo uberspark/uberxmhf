@@ -333,6 +333,7 @@ typedef struct _vcpu {
 #define CPU_VENDOR (g_vcpubuffers[0].cpu_vendor)
 
 
+#define RPB_MAX_RNTMOPTIONS_SIZE		1024		//max. size in bytes for runtime options
 
 //NOTE: The declaration here _MUST_ match definition of RPB in runtimesup.S	
 typedef struct {
@@ -376,7 +377,8 @@ typedef struct {
 	u32 RtmVMXVTdPts;
 	u32 RtmVMXVTdRET;
 	u32 RtmVMXVTdCET;
-    uart_config_t uart_config;	        /* runtime options parsed in init and passed forward */
+    //uart_config_t uart_config;	        /* runtime options parsed in init and passed forward */
+    u8	RtmOptions[RPB_MAX_RNTMOPTIONS_SIZE]; /* runtime options parsed in init and passed forward */
 	u32 isEarlyInit;					//1 for an "early init" else 0 (late-init)
 } __attribute__((packed)) RPB, *PRPB;
 
