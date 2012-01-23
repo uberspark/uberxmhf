@@ -53,6 +53,15 @@
 //8K stack for each core in "init"
 #define INIT_STACK_SIZE	(8192)					
 
+//max. cores/vcpus we support currently
+#define MAX_MIDTAB_ENTRIES  (4)
+#define MAX_PCPU_ENTRIES  	(MAX_MIDTAB_ENTRIES)
+#define MAX_VCPU_ENTRIES    (MAX_PCPU_ENTRIES)
+
+
+#define MAX_E820_ENTRIES    (64)  //maximum E820 entries we support, 64 should
+                                  //be enough
+
 //----------------------------------------------------------------------
 //XXX: to sort
 
@@ -149,7 +158,6 @@ typedef struct _midtab {
 } __attribute__((packed)) MIDTAB;
 
 #define SIZE_STRUCT_MIDTAB  (sizeof(struct _midtab))
-#define MAX_MIDTAB_ENTRIES  (4)
 
 
 //---platform
@@ -206,8 +214,7 @@ typedef struct _grube820 {
 } __attribute__((packed)) GRUBE820;
 
 #define SIZE_STRUCT_GRUBE820  (sizeof(struct _grube820))
-#define MAX_E820_ENTRIES    (64)  //maximum E820 entries we support, 64 should
-                                  //be enough
+
 //---platform
 typedef struct _pcpu {
   u32 lapic_id;
@@ -217,7 +224,6 @@ typedef struct _pcpu {
 } __attribute__((packed)) PCPU;
 
 #define SIZE_STRUCT_PCPU  (sizeof(struct _pcpu))
-#define MAX_PCPU_ENTRIES  (MAX_MIDTAB_ENTRIES)
 
 
 //---platform
@@ -329,7 +335,6 @@ typedef struct _vcpu {
 } __attribute__((packed)) VCPU;
 
 #define SIZE_STRUCT_VCPU    (sizeof(struct _vcpu))
-#define MAX_VCPU_ENTRIES    (MAX_PCPU_ENTRIES)
 #define CPU_VENDOR (g_vcpubuffers[0].cpu_vendor)
 
 
