@@ -201,11 +201,6 @@ void hpt_pm_set_pme_by_idx(hpt_type_t t, int lvl, hpt_pm_t pm, int idx, hpt_pme_
 hpt_pme_t hpt_pm_get_pme_by_va(hpt_type_t t, int lvl, hpt_pm_t pm, hpt_va_t va);
 void hpt_pm_set_pme_by_va(hpt_type_t t, int lvl, hpt_pm_t pm, hpt_va_t va, hpt_pme_t pme);
 
-/* returns the lowest-level page map containing va, down to
- * end_lvl. end_lvl is set to the level of the returned page map.
- */
-hpt_pm_t hpt_walk_get_pm(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int *end_lvl, hpt_va_t va);
-
 /* returns the lowest-level page map _entry_ containing va, down to
  * end_lvl. end_lvl is set to the level of the returned page map
  * containing the returned entry.

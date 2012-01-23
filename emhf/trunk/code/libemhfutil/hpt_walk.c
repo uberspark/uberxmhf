@@ -35,34 +35,23 @@
 
 #include <hpt.h>
 
-/* returns the lowest-level page map containing va, down to
- * end_lvl. end_lvl is set to the level of the returned page map.
- */
-hpt_pm_t hpt_walk_get_pm(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int *end_lvl, hpt_va_t va)
-{
-  hpt_pmo_t pmo = {
-    .pm = pm,
-    .lvl = lvl,
-    .t = ctx->t,
-  };
-  
-  while (pmo.lvl > *end_lvl) {
-    if (!hpto_walk_next_lvl(ctx, &pmo, va)) {
-      *end_lvl = pmo.lvl;
-      return pmo.pm;
-    }
-  }
-  return pmo.pm;
-}
-
 /* returns the lowest-level page map _entry_ containing va, down to
  * end_lvl. end_lvl is set to the level of the returned page map
  * containing the returned entry.
  */
 hpt_pme_t hpt_walk_get_pme(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int *end_lvl, hpt_va_t va)
 {
-  pm = hpt_walk_get_pm(ctx, lvl, pm, end_lvl, va);
-  return hpt_pm_get_pme_by_va(ctx->t, *end_lvl, pm, va);
+  hpt_pmo_t pmo_root = {
+    .pm = pm,
+    .lvl = lvl,
+    .t = ctx->t,
+  };
+  hpt_pmo_t pmo;
+  hpt_pmeo_t pmeo;
+  hpt_walk_get_pmo(&pmo, ctx, &pmo_root, *end_lvl, va);
+  *end_lvl = pmo.lvl;
+  hpt_pm_get_pmeo_by_va(&pmeo, &pmo, va);
+  return pmeo.pme;
 }
 
 /* returns the page map of level end_lvl containing va, allocating
@@ -137,12 +126,23 @@ int hpt_walk_insert_pme_alloc(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, i
 
 void hpt_walk_set_prot(hpt_walk_ctx_t *walk_ctx, hpt_pm_t pm, int pm_lvl, hpt_va_t va, hpt_prot_t prot)
 {
+  hpt_pmo_t pmo_start = {
+    .pm = pm,
+    .lvl = pm_lvl,
+    .t = walk_ctx->t,
+  };
+  hpt_pmo_t pmo;
+  hpt_pmeo_t pmeo;
   hpt_pme_t pme;
   int end_pm_lvl=1;
 
-  pm = hpt_walk_get_pm(walk_ctx, pm_lvl, pm, &end_pm_lvl, va);
+  hpt_walk_get_pmo(&pmo, walk_ctx, &pmo_start, end_pm_lvl, va);
+  end_pm_lvl = pmo.lvl;
+  pm = pmo.pm;
+
   assert(pm != NULL);
   assert(end_pm_lvl==1); /* FIXME we don't handle large pages */
+
   pme = hpt_pm_get_pme_by_va(walk_ctx->t, end_pm_lvl, pm, va);
   pme = hpt_pme_setprot(walk_ctx->t, end_pm_lvl, pme, prot);
   hpt_pm_set_pme_by_va(walk_ctx->t, end_pm_lvl, pm, va, pme);
@@ -169,7 +169,18 @@ int hpt_walk_insert_pme(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int tgt
   int end_lvl=tgt_lvl;
   hpt_log_trace("hpt_walk_insert_pme_alloc: lvl:%d pm:%x tgt_lvl:%d va:%Lx pme:%Lx\n",
                 lvl, (u32)pm, tgt_lvl, va, pme);
-  pm = hpt_walk_get_pm(ctx, lvl, pm, &end_lvl, va);
+
+  {
+    hpt_pmo_t pmo;
+    hpt_pmo_t start_pmo = {
+      .pm = pm,
+      .lvl = lvl,
+      .t = ctx->t,
+    };
+    hpt_walk_get_pmo(&pmo, ctx, &start_pmo, end_lvl, va);
+    pm = pmo.pm;
+    end_lvl = pmo.lvl;
+  }
 
   hpt_log_trace("hpt_walk_insert_pme: got pm:%x end_lvl:%d\n",
                 (u32)pm, end_lvl);
