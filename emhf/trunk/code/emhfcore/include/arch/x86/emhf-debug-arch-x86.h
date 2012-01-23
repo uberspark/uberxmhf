@@ -40,8 +40,22 @@
 #ifndef __EMHF_DEBUG_ARCH_X86_H__
 #define __EMHF_DEBUG_ARCH_X86_H__
 
+#include "_com.h"		//serial UART as debugging backend
+#include "_div64.h"		//arch. specific do_div definition
 
 #ifndef __ASSEMBLY__
+
+//----------------------------------------------------------------------
+//ARCH. BACKENDS
+//----------------------------------------------------------------------
+void emhf_debug_arch_init(char *params);
+void emhf_debug_arch_putstr(const char *str);
+
+
+//----------------------------------------------------------------------
+//x86 ARCH. INTERFACES
+//----------------------------------------------------------------------
+extern uart_config_t g_uart_config;
 
 
 #endif // __ASSEMBLY__
