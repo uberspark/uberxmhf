@@ -49,15 +49,16 @@
 	#include <string.h>
 #endif /* __ASSEMBLY__ */
 
-#include <arch/emhf-arch.h>
 
 #include <emhf-types.h>		//EMHF specific base types
-
 
 //forward declaration of runtime parameter block
 #ifndef __ASSEMBLY__
 extern RPB *rpb;	
 #endif	//__ASSEMBLY__
+
+#include <arch/emhf-arch.h>
+
 
 //----------------------------------------------------------------------
 // component headers
