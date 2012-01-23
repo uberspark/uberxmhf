@@ -36,12 +36,14 @@
 #ifndef HPTO_H
 #define HPTO_H
 
+#include <emhf.h>
+
 /* experimental "object-oriented" wrappers around hpt functions. idea
    is to make code a bit less noisy by bundling page-maps and
    page-map-entries with their level and type. consider adding to
    hpt */
 
-#include <hpt_ext.h>
+#include <hpt.h>
 
 int hpt_walk_insert_pmeo(const hpt_walk_ctx_t *ctx,
                          hpt_pmo_t *pmo,

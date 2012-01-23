@@ -229,4 +229,19 @@ hpt_pm_t hpt_walk_get_pm_alloc(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, 
  */
 int hpt_walk_insert_pme_alloc(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int tgt_lvl, hpt_va_t va, hpt_pme_t pme);
 
+void hpt_walk_set_prot(hpt_walk_ctx_t *walk_ctx, hpt_pm_t pm, int pm_lvl, hpt_va_t va, hpt_prot_t prot);
+void hpt_walk_set_prots(hpt_walk_ctx_t *walk_ctx,
+                        hpt_pm_t pm,
+                        int pm_lvl,
+                        hpt_va_t vas[],
+                        size_t num_vas,
+                        hpt_prot_t prot);
+
+/* inserts pme into the page map of level tgt_lvl containing va.
+ * fails if tgt_lvl is not allocated.
+ */
+int hpt_walk_insert_pme(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int tgt_lvl, hpt_va_t va, hpt_pme_t pme);
+
+
+
 #endif

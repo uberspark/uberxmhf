@@ -33,7 +33,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <hpt_ext.h>
+#include <hpt.h>
 
 void hpt_walk_set_prot(hpt_walk_ctx_t *walk_ctx, hpt_pm_t pm, int pm_lvl, hpt_va_t va, hpt_prot_t prot)
 {
@@ -41,8 +41,8 @@ void hpt_walk_set_prot(hpt_walk_ctx_t *walk_ctx, hpt_pm_t pm, int pm_lvl, hpt_va
   int end_pm_lvl=1;
 
   pm = hpt_walk_get_pm(walk_ctx, pm_lvl, pm, &end_pm_lvl, va);
-  ASSERT(pm != NULL);
-  ASSERT(end_pm_lvl==1); /* FIXME we don't handle large pages */
+  assert(pm != NULL);
+  assert(end_pm_lvl==1); /* FIXME we don't handle large pages */
   pme = hpt_pm_get_pme_by_va(walk_ctx->t, end_pm_lvl, pm, va);
   pme = hpt_pme_setprot(walk_ctx->t, end_pm_lvl, pme, prot);
   hpt_pm_set_pme_by_va(walk_ctx->t, end_pm_lvl, pm, va, pme);
@@ -63,17 +63,16 @@ void hpt_walk_set_prots(hpt_walk_ctx_t *walk_ctx,
 
 /* inserts pme into the page map of level tgt_lvl containing va.
  * fails if tgt_lvl is not allocated.
- * XXX move into hpt.h once it's available again.
  */
 int hpt_walk_insert_pme(const hpt_walk_ctx_t *ctx, int lvl, hpt_pm_t pm, int tgt_lvl, hpt_va_t va, hpt_pme_t pme)
 {
   int end_lvl=tgt_lvl;
-  dprintf(LOG_TRACE, "hpt_walk_insert_pme_alloc: lvl:%d pm:%x tgt_lvl:%d va:%Lx pme:%Lx\n",
-          lvl, (u32)pm, tgt_lvl, va, pme);
+  hpt_log_trace("hpt_walk_insert_pme_alloc: lvl:%d pm:%x tgt_lvl:%d va:%Lx pme:%Lx\n",
+                lvl, (u32)pm, tgt_lvl, va, pme);
   pm = hpt_walk_get_pm(ctx, lvl, pm, &end_lvl, va);
 
-  dprintf(LOG_TRACE, "hpt_walk_insert_pme: got pm:%x end_lvl:%d\n",
-          (u32)pm, end_lvl);
+  hpt_log_trace("hpt_walk_insert_pme: got pm:%x end_lvl:%d\n",
+                (u32)pm, end_lvl);
 
   if(pm == NULL || tgt_lvl != end_lvl) {
     return 1;
