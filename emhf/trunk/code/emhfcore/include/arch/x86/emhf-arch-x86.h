@@ -39,7 +39,6 @@
 #ifndef __EMHF_ARCH_X86_H__
 #define __EMHF_ARCH_X86_H__
 
-#include "_ctype.h"		//the ctype variable definition for debug printf
 #include "_com.h"		//serial UART as debugging backend
 #include "_multiboot.h"  //boot manager (multiboot)
 #include "_cmdline.h"	//GRUB command line handling functions
