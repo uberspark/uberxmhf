@@ -33,25 +33,25 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//sarg.h - variable length arguments for debug printf
+//stdarg.h - variable length arguments 
 //author: amit vasudevan (amitvasudevan@acm.org)
+//based on guidelines in
+//http://pubs.opengroup.org/onlinepubs/007904875/basedefs/stdarg.h.html
 
-#ifndef _SARG_H
-#define	_SARG_H
+#ifndef __STDARG_H__
+#define	__STDARG_H__
 
 #ifndef __ASSEMBLY__
 
 typedef void *va_list;
+
 #define	va_start(list, name) (void) (list = (void *)((char *)&name + \
 	((sizeof (name) + (sizeof (int) - 1)) & ~(sizeof (int) - 1))))
 #define	va_arg(list, mode) ((mode *)(list = (char *)list + sizeof (mode)))[-1]
 
 #define	va_end(list) (void)0
 
-/* #define offsetof(type, member) ((unsigned int) \ */
-/* 		((char *)&((type *) 0)->member - (char *)((type *) 0))) */
-
 
 #endif //#ifndef __ASSEMBLY__
 
-#endif	/* _SARG_H */
+#endif	/* __STDARG_H__ */
