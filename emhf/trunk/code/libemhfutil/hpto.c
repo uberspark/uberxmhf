@@ -36,16 +36,17 @@
 #include <hpto.h>
 
 int hpt_walk_insert_pmeo(const hpt_walk_ctx_t *ctx,
-                         hpt_pmo_t *pmo,
+                         hpt_pmo_t *pmo_root,
                          const hpt_pmeo_t *pmeo,
                          hpt_va_t va)
 {
-  return hpt_walk_insert_pme(ctx,
-                             pmo->lvl,
-                             pmo->pm,
-                             pmeo->lvl,
-                             va,
-                             pmeo->pme);
+  hpt_pmo_t pmo;
+  hpt_walk_get_pmo(&pmo, ctx, pmo_root, pmeo->lvl, va);
+  if (!pmo.pm || pmo.lvl != pmeo->lvl) {
+    return 1;
+  }
+  hpt_pmo_set_pme_by_va(&pmo, pmeo, va);
+  return 0;
 }
 
 int hpt_walk_get_pmo_alloc(hpt_pmo_t *pmo,
