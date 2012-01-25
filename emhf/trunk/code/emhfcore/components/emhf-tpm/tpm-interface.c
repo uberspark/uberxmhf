@@ -43,19 +43,24 @@
  * support to "play nice" with the legacy OS's TPM driver probably
  * goes in here.
  *
- * Author: Jonathan McCune
+ * Author: Jonathan McCune and Amit Vasudevan (amitvasudevan@acm.org)
  */
 
 #include <emhf.h> 
 
-/* Open TPM Locality 'locality'.  Cope with AMD and Intel CPUs, pre-
- * and post-DRTM, and (TODO) play nice with an OS driver that already
- * has the TPM open at a lesser Locality.
- *
- * Also needs to be "thread safe"!!!
- *
- * Returns 0 on success.
- */
+//open TPM locality
+int emhf_tpm_open_locality(int locality){
+		return emhf_tpm_arch_open_locality(locality);
+}
+
+// Open TPM Locality 'locality'.  Cope with AMD and Intel CPUs, pre-
+// and post-DRTM, and (TODO) play nice with an OS driver that already
+// has the TPM open at a lesser Locality.
+//
+// Also needs to be "thread safe"!!!
+//
+// Returns 0 on success.
+//
 unsigned int hwtpm_open_locality(int locality) {
     /* We expect locality 1 or 2 */
     if(locality < 1 || locality > 2) {

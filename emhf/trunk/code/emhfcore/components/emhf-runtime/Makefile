@@ -27,9 +27,10 @@ ifeq ($(DEBUG_VGA), y)
 OBJECTS_PRECOMPILED += ../emhf-debug/arch/x86/dbg-x86-vgamem.o
 endif
 
-# OBJECTS_PRECOMPILED += ../emhf-tpm/tpm.o
-OBJECTS_PRECOMPILED += ../emhf-tpm/tpm-interface.o
-# OBJECTS_PRECOMPILED += ../emhf-tpm/tpm_extra.o
+OBJECTS_PRECOMPILED += ../emhf-tpm/tpm-interface.o 
+OBJECTS_PRECOMPILED += ../emhf-tpm/arch/x86/tpm-x86.o 
+OBJECTS_PRECOMPILED += ../emhf-tpm/arch/x86/svm/tpm-x86svm.o 
+OBJECTS_PRECOMPILED += ../emhf-tpm/arch/x86/vmx/tpm-x86vmx.o 
 
 
 OBJECTS_PRECOMPILED += ../emhf-memprot/memp-interface.o
