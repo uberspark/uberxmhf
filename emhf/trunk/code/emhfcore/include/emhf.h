@@ -42,6 +42,7 @@
 #define __EMHF_H_
 
 //pull in required C99 compatible C-library interfaces
+//libemhfc
 #ifndef __ASSEMBLY__
 	#include <stdint.h>
 	#include <stdbool.h>
@@ -49,6 +50,12 @@
 	#include <stdarg.h>
 	#include <string.h>
 	#include <ctype.h>
+#endif /* __ASSEMBLY__ */
+
+//pull in required TPM library
+//libtpm
+#ifndef __ASSEMBLY__
+	#include <tpm.h>
 #endif /* __ASSEMBLY__ */
 
 
