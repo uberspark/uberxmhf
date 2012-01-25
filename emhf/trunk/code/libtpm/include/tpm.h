@@ -83,19 +83,9 @@
 
 #ifndef __ASSEMBLY__
 
-//extern bool tpm_validate_locality(uint32_t locality);
-
-//extern void dump_locality_access_regs(void);
-
-//extern void deactivate_all_localities(void);
-
-//extern bool release_locality(uint32_t locality);
 
 extern uint32_t tpm_wait_cmd_ready(uint32_t locality);
 
-//extern bool prepare_tpm(void);
-
-//extern bool is_tpm_ready(uint32_t locality);
 
 extern uint32_t tpm_write_cmd_fifo(uint32_t locality, uint8_t *in,
                                    uint32_t in_size, uint8_t *out,
