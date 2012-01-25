@@ -68,4 +68,17 @@ void cpu_relax(void){
     __asm__ __volatile__ ("pause");
 }
 
+void _read_tpm_reg(int locality, u32 reg, u8 *_raw, size_t size)
+{
+    size_t i;
+    for ( i = 0; i < size; i++ )
+        _raw[i] = readb((TPM_LOCALITY_BASE_N(locality) | reg) + i);
+}
+
+void _write_tpm_reg(int locality, u32 reg, u8 *_raw, size_t size)
+{
+    size_t i;    
+    for ( i = 0; i < size; i++ )
+        writeb((TPM_LOCALITY_BASE_N(locality) | reg) + i, _raw[i]);
+}
 

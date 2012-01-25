@@ -325,33 +325,6 @@ extern uint32_t tpm_get_random(uint32_t locality, uint8_t *random_data,
 
 
 
-/*********************************************************************
- * Moved in from tboot's tpm.c; I think it belongs in a .h file. Also
- * facilitates split into tpm.c and tpm_extra.c.
- *********************************************************************/
-
-/* TODO: Give these a more appropriate home */
-/* #define readb(va)       (*(volatile uint8_t *) (va)) */
-/* #define writeb(va, d)   (*(volatile uint8_t *) (va) = (d)) */
-
-#ifndef __EMHF_VERIFICATION__
-static inline void writeb(u32 addr, u8 val) {
-    __asm__ __volatile__("movb %%al, %%fs:(%%ebx)\r\n"
-                         :
-                         : "b"(addr), "a"((u32)val)
-                         );
-}
-
-static inline u8 readb(u32 addr) {
-    u32 ret;
-    __asm__ __volatile("xor %%eax, %%eax\r\n"        
-                       "movb %%fs:(%%ebx), %%al\r\n"
-                       : "=a"(ret)
-                       : "b"(addr)
-                       );
-    return (u8)ret;        
-}
-#endif	//__EMHF_VERIFICATION__
 
 /*
  * the following inline function reversely copy the bytes from 'in' to
