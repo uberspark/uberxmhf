@@ -93,7 +93,7 @@ extern bool release_locality(uint32_t locality);
 
 extern uint32_t tpm_wait_cmd_ready(uint32_t locality);
 
-extern bool prepare_tpm(void);
+//extern bool prepare_tpm(void);
 
 //extern bool is_tpm_ready(uint32_t locality);
 

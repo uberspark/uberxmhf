@@ -196,6 +196,10 @@ static bool is_tpm_ready(uint32_t locality)
     return true;
 }
 
+//check if TPM is ready for use
+bool emhf_tpm_arch_is_tpm_ready(uint32_t locality){
+	return is_tpm_ready(locality);
+}
 
 
 //open TPM locality
@@ -208,13 +212,22 @@ int emhf_tpm_arch_open_locality(int locality){
     } else { /* AMD */        
 		return emhf_tpm_arch_x86svm_open_locality(locality);
     }
-	
 }
 
-//check if TPM is ready for use
-bool emhf_tpm_arch_is_tpm_ready(uint32_t locality){
-	return is_tpm_ready(locality);
+
+// other global interfaces
+// XXX: to sort
+bool prepare_tpm(void)
+{
+    /*
+     * must ensure TPM_ACCESS_0.activeLocality bit is clear
+     * (: locality is not active)
+     */
+
+    return release_locality(0);
 }
+
+
 
 
 //======================================================================
@@ -411,15 +424,6 @@ bool release_locality(uint32_t locality)
     return false;
 }
 
-bool prepare_tpm(void)
-{
-    /*
-     * must ensure TPM_ACCESS_0.activeLocality bit is clear
-     * (: locality is not active)
-     */
-
-    return release_locality(0);
-}
 
 
 
