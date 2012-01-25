@@ -85,7 +85,7 @@
 
 //extern bool tpm_validate_locality(uint32_t locality);
 
-extern void dump_locality_access_regs(void);
+//extern void dump_locality_access_regs(void);
 
 extern void deactivate_all_localities(void);
 

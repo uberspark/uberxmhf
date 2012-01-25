@@ -91,6 +91,21 @@ static bool tpm_validate_locality(uint32_t locality)
 }
 
 
+static void dump_locality_access_regs(void) {
+    tpm_reg_access_t reg_acc;
+    uint32_t locality;
+
+    printf("\n%s():\n", __FUNCTION__);
+    for(locality=0; locality <= 3; locality++) {    
+        read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+        printf("  TPM: Locality %d Access reg content: 0x%02x\n",
+               locality, (uint32_t)reg_acc._raw[0]);
+        if ( reg_acc.tpm_reg_valid_sts == 0 ) {
+            printf("    TPM: Access reg not valid\n");
+        }
+    }
+}
+
 
 static uint32_t tpm_get_flags(uint32_t locality, uint32_t flag_id,
                        uint8_t *flags, uint32_t flag_size)
@@ -284,20 +299,6 @@ bool prepare_tpm(void)
 
 
 
-void dump_locality_access_regs(void) {
-    tpm_reg_access_t reg_acc;
-    uint32_t locality;
-
-    printf("\n%s():\n", __FUNCTION__);
-    for(locality=0; locality <= 3; locality++) {    
-        read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
-        printf("  TPM: Locality %d Access reg content: 0x%02x\n",
-               locality, (uint32_t)reg_acc._raw[0]);
-        if ( reg_acc.tpm_reg_valid_sts == 0 ) {
-            printf("    TPM: Access reg not valid\n");
-        }
-    }
-}
 
 void deactivate_all_localities(void) {
     tpm_reg_access_t reg_acc;
