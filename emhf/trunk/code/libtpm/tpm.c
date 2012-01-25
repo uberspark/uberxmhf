@@ -75,8 +75,8 @@
  */
  
 /**
- * Adapted for libtpm - generic TPM library by Amit Vasudevan
- * amitvasudevan@acm.org 
+ * Adapted for libtpm - generic TPM library 
+ * by Amit Vasudevan amitvasudevan@acm.org 
  */
  
 

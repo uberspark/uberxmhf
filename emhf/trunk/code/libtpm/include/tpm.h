@@ -79,7 +79,7 @@
 //libtpm environment specific functions
 //the following need to be defined within the target environment
 //that uses libtpm
-//e.g., EMHF-x86, EMHF-ARM etc.
+//e.g., EMHF-x86
 
 #ifndef __ASSEMBLY__
 
@@ -344,9 +344,6 @@ static inline void _reverse_copy(uint8_t *out, const uint8_t *in, uint32_t count
     for ( i = 0; i < count; i++ )
         out[i] = in[count - i - 1];
 }
-
-
-
 
 
 /* un-comment to enable detailed command tracing */
