@@ -75,6 +75,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+//======================================================================
+//libtpm environment specific functions
+//the following need to be defined within the target environment
+//that uses libtpm
+//e.g., EMHF-x86, EMHF-ARM etc.
+
+extern bool tpm_validate_locality(uint32_t locality);
+
 
 #define TPM_LOCALITY_BASE             0xfed40000
 #define NR_TPM_LOCALITY_PAGES         ((TPM_LOCALITY_1 - TPM_LOCALITY_0) >> \
@@ -340,7 +348,7 @@ static inline void _reverse_copy(uint8_t *out, const uint8_t *in, uint32_t count
         out[i] = in[count - i - 1];
 }
 
-#define TPM_VALIDATE_LOCALITY_TIME_OUT  0x100
+
 
 
 

@@ -73,6 +73,8 @@ bool emhf_tpm_arch_is_tpm_ready(uint32_t locality);
 //x86 ARCH. INTERFACES
 //----------------------------------------------------------------------
 
+#define TPM_VALIDATE_LOCALITY_TIME_OUT  0x100
+
 /*********************************************************************
  * Moved in from tboot's tpm.c; I think it belongs in a .h file. Also
  * facilitates split into tpm.c and tpm_extra.c.
