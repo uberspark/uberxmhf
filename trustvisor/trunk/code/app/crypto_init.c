@@ -301,7 +301,7 @@ static int trustvisor_long_term_secret_init(void) {
 int trustvisor_master_crypto_init(void) {
   int rv;
 
-  if(0 != (rv = hwtpm_open_locality(CRYPTO_INIT_LOCALITY))) {
+  if(0 != (rv = emhf_tpm_open_locality(CRYPTO_INIT_LOCALITY))) {
     dprintf(LOG_ERROR, "\nFATAL ERROR: Could not access HW TPM.\n");
     return rv; /* no need to deactivate */
   }

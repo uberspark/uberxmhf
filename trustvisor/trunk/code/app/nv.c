@@ -378,7 +378,7 @@ uint32_t hc_tpmnvram_getsize(VCPU* vcpu, uint32_t size_addr) {
 
   /* Open TPM */
   /* TODO: Make sure this plays nice with guest OS */
-  if(0 != (rv = hwtpm_open_locality(TRUSTVISOR_HWTPM_NV_LOCALITY))) {
+  if(0 != (rv = emhf_tpm_open_locality(TRUSTVISOR_HWTPM_NV_LOCALITY))) {
     dprintf(LOG_ERROR, "\nFATAL ERROR: Could not access HW TPM.\n");
     return 1; /* no need to deactivate */
   }
@@ -418,7 +418,7 @@ uint32_t hc_tpmnvram_readall(VCPU* vcpu, uint32_t out_addr) {
 
   /* Open TPM */
   /* TODO: Make sure this plays nice with guest OS */
-  if(0 != (rv = hwtpm_open_locality(TRUSTVISOR_HWTPM_NV_LOCALITY))) {
+  if(0 != (rv = emhf_tpm_open_locality(TRUSTVISOR_HWTPM_NV_LOCALITY))) {
     dprintf(LOG_ERROR, "\nFATAL ERROR: Could not access HW TPM.\n");
     return 1; /* no need to deactivate */
   }
@@ -467,7 +467,7 @@ uint32_t hc_tpmnvram_writeall(VCPU* vcpu, uint32_t in_addr) {
 
   /* Open TPM */
   /* TODO: Make sure this plays nice with guest OS */
-  if(0 != (rv = hwtpm_open_locality(TRUSTVISOR_HWTPM_NV_LOCALITY))) {
+  if(0 != (rv = emhf_tpm_open_locality(TRUSTVISOR_HWTPM_NV_LOCALITY))) {
     dprintf(LOG_ERROR, "\nFATAL ERROR: Could not access HW TPM.\n");
     return 1; /* no need to deactivate */
   }
