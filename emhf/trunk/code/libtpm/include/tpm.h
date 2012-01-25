@@ -95,7 +95,7 @@ extern uint32_t tpm_wait_cmd_ready(uint32_t locality);
 
 extern bool prepare_tpm(void);
 
-extern bool is_tpm_ready(uint32_t locality);
+//extern bool is_tpm_ready(uint32_t locality);
 
 extern uint32_t tpm_write_cmd_fifo(uint32_t locality, uint8_t *in,
                                    uint32_t in_size, uint8_t *out,

@@ -126,7 +126,7 @@ static uint32_t tpm_get_timeout(uint32_t locality,
 
 
 /* ensure TPM is ready to accept commands */
-bool is_tpm_ready(uint32_t locality)
+static bool is_tpm_ready(uint32_t locality)
 {
     tpm_permanent_flags_t pflags;
     tpm_stclear_flags_t vflags;
