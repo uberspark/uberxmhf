@@ -719,10 +719,10 @@ void wakeupAPs(void){
 
 /* The TPM must be ready for the AMD CPU to send it commands at
  * Locality 4 when executing SKINIT. Ideally all that is necessary is
- * to deactivate_all_localities(), but some TPM's are still not
+ * to emhf_tpm_deactivate_all_localities(), but some TPM's are still not
  * sufficiently "awake" after that.  Thus, make sure it successfully
  * responds to a command at some locality, *then*
- * deactivate_all_localities().
+ * emhf_tpm_deactivate_all_localities().
  */
 bool svm_prepare_tpm(void) {
     uint32_t locality = EMHF_TPM_LOCALITY_PREF; /* target.h */
@@ -730,7 +730,7 @@ bool svm_prepare_tpm(void) {
     
     printf("\nINIT:TPM: prepare_tpm starting.");
     //dump_locality_access_regs();
-    deactivate_all_localities();
+    emhf_tpm_deactivate_all_localities();
     //dump_locality_access_regs();
     
     if(TPM_SUCCESS == tpm_wait_cmd_ready(locality)) {
@@ -739,7 +739,7 @@ bool svm_prepare_tpm(void) {
         printf("INIT:TPM: ERROR: Locality %d could not be opened.\n", locality);
         ret = false;
     }
-    deactivate_all_localities();
+    emhf_tpm_deactivate_all_localities();
     //dump_locality_access_regs();
     printf("\nINIT:TPM: prepare_tpm done.");
 

@@ -150,7 +150,7 @@ bool emhf_sl_arch_integrity_check(u8* runtime_base_addr, size_t runtime_len) {
     print_hex("PCR-18: ", &pcr18, sizeof(pcr18));    
 
     /* free TPM so that OS driver works as expected */
-    deactivate_all_localities();
+    emhf_tpm_arch_deactivate_all_localities();
     
     return true;    
 }
