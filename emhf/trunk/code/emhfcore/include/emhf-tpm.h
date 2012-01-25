@@ -40,6 +40,10 @@
 #define __EMHF_TPM_H__
 
 
+//bring in arch. specific declarations
+#include <arch/emhf-tpm-arch.h>
+
+
 #ifndef __ASSEMBLY__
 
 
