@@ -24,7 +24,7 @@ OBJECTS_PRECOMPILED += ../emhf-debug/arch/x86/dbg-x86-vgamem.o
 endif
 
 # OBJECTS_PRECOMPILED += ../emhf-tpm/tpm.o 
-OBJECTS_PRECOMPILED += ../emhf-tpm/tpm_emhf.o 
+OBJECTS_PRECOMPILED += ../emhf-tpm/tpm-interface.o 
 
 OBJECTS_PRECOMPILED += ../emhf-dmaprot/dmap-interface.o 
 OBJECTS_PRECOMPILED += ../emhf-dmaprot/arch/x86/dmap-x86.o 
