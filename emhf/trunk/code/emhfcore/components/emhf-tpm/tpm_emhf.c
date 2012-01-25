@@ -108,6 +108,9 @@ unsigned int hwtpm_open_locality(int locality) {
 }
 
 
+void cpu_relax(void){
+    __asm__ __volatile__ ("pause");
+}
 
 
 /* Local Variables: */
