@@ -17,7 +17,7 @@ ifeq ($(DEBUG_VGA), y)
 OBJECTS_PRECOMPILED += ../components/emhf-debug/arch/x86/dbg-x86-vgamem.o
 endif
 
-OBJECTS_PRECOMPILED +=  ../components/emhf-tpm/tpm.o 
+OBJECTS_PRECOMPILED +=  ../components/emhf-tpm/tpm_emhf.o 
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-pci.o
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-acpi.o
 OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/bplt-x86-smplock.o
