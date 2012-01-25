@@ -967,8 +967,12 @@ uint32_t tpm_save_state(uint32_t locality)
             break;
 
         retries++;
-        ASSERT(false); // XXX need delay support
+        //ASSERT(false); // XXX need delay support
         //delay(100);
+        //delay support; should probably end up using udelay (EMHF) or
+        //provider specific delay routine
+        printf("\nHalting, need delay support...");
+        while(1);
     } while ( retries < MAX_SAVESTATE_RETRIES );
     if ( retries >= MAX_SAVESTATE_RETRIES )
         printf("TIMEOUT!");
