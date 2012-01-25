@@ -56,7 +56,6 @@
 #include "_acpi.h"			//ACPI glue
 #include "_svm_eap.h"		//SVM DMA protection
 #include "_vmx_eap.h"		//VMX DMA protection
-#include "_tpm_emhf.h"		//EMHF-specific TPM functions
 
 
 //SMP configuration table signatures on x86 platforms
