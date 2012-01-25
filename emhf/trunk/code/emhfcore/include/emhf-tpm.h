@@ -74,11 +74,15 @@ int emhf_tpm_arch_open_locality(int locality);
 //----------------------------------------------------------------------
 //x86vmx SUBARCH. INTERFACES
 //----------------------------------------------------------------------
+//open TPM locality
+int emhf_tpm_arch_x86vmx_open_locality(int locality);
 
 
 //----------------------------------------------------------------------
 //x86vmx SUBARCH. INTERFACES
 //----------------------------------------------------------------------
+//open TPM locality
+int emhf_tpm_arch_x86svm_open_locality(int locality);
 
 
 #endif	//__ASSEMBLY__

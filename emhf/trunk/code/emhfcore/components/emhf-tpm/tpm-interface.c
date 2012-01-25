@@ -50,65 +50,21 @@
 
 //open TPM locality
 int emhf_tpm_open_locality(int locality){
-		return emhf_tpm_arch_open_locality(locality);
-}
+	int status;
 
-// Open TPM Locality 'locality'.  Cope with AMD and Intel CPUs, pre-
-// and post-DRTM, and (TODO) play nice with an OS driver that already
-// has the TPM open at a lesser Locality.
-//
-// Also needs to be "thread safe"!!!
-//
-// Returns 0 on success.
-//
-unsigned int hwtpm_open_locality(int locality) {
     /* We expect locality 1 or 2 */
     if(locality < 1 || locality > 2) {
         return 1;
     }
+	
+	status = emhf_tpm_arch_open_locality(locality);
 
-    if(get_cpu_vendor_or_die() == CPU_VENDOR_INTEL) {
-        txt_didvid_t didvid;
-        txt_ver_fsbif_emif_t ver;
-
-        /* display chipset fuse and device and vendor id info */
-        didvid._raw = read_pub_config_reg(TXTCR_DIDVID);
-        printf("\n[TV] HWTPM: chipset ids: vendor: 0x%x, device: 0x%x, revision: 0x%x",
-               didvid.vendor_id, didvid.device_id, didvid.revision_id);
-        ver._raw = read_pub_config_reg(TXTCR_VER_FSBIF);
-        if ( (ver._raw & 0xffffffff) == 0xffffffff ||
-             (ver._raw & 0xffffffff) == 0x00 )         /* need to use VER.EMIF */
-            ver._raw = read_pub_config_reg(TXTCR_VER_EMIF);
-        printf("\n[TV] HWTPM: chipset production fused: %x", ver.prod_fused );
-        
-        if(txt_is_launched()) {
-            write_priv_config_reg(locality == 1 ? TXTCR_CMD_OPEN_LOCALITY1
-                                  : TXTCR_CMD_OPEN_LOCALITY2, 0x01);
-            read_priv_config_reg(TXTCR_E2STS);   /* just a fence, so ignore return */
-        } else {
-            printf("\n[TV] HWTPM: ERROR: Locality opening UNIMPLEMENTED on Intel without SENTER\n");
-            return 1;
-        }        
-    } else { /* AMD */        
-        /* some systems leave locality 0 open for legacy software */
-        //dump_locality_access_regs();
-        deactivate_all_localities();
-        //dump_locality_access_regs();
-        
-        if(TPM_SUCCESS == tpm_wait_cmd_ready(locality)) {
-            printf("\n[TV] HWTPM: TPM successfully opened in Locality %d.", locality);            
-        } else {
-            printf("\n[TV] HWTPM: TPM ERROR: Locality %d could not be opened.\n", locality);
-            return 1;
-        }
-    }
-    
     if(!is_tpm_ready(locality)) {
-        printf("\n[TV] HWTPM: FAILED to open TPM locality %d\n", locality);
+        printf("\n%s: FAILED to open TPM locality %d\n", __FUNCTION__, locality);
         return 1;
     } 
 
-    printf("\n[TV] HWTPM: Opened TPM locality %d", locality);
+    printf("\n%s: opened TPM locality %d", __FUNCTION__, locality);
     return 0;    
 }
 

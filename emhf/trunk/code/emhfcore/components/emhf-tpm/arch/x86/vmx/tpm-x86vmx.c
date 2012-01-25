@@ -40,3 +40,28 @@
 
 #include <emhf.h>
 
+//open TPM locality
+int emhf_tpm_arch_x86vmx_open_locality(int locality){
+        txt_didvid_t didvid;
+        txt_ver_fsbif_emif_t ver;
+
+        // display chipset fuse and device and vendor id info 
+        didvid._raw = read_pub_config_reg(TXTCR_DIDVID);
+        printf("\n%s: chipset ids: vendor: 0x%x, device: 0x%x, revision: 0x%x", __FUNCTION__,
+               didvid.vendor_id, didvid.device_id, didvid.revision_id);
+        ver._raw = read_pub_config_reg(TXTCR_VER_FSBIF);
+        if ( (ver._raw & 0xffffffff) == 0xffffffff ||
+             (ver._raw & 0xffffffff) == 0x00 )         /* need to use VER.EMIF */
+            ver._raw = read_pub_config_reg(TXTCR_VER_EMIF);
+        printf("\n%s: chipset production fused: %x", __FUNCTION__, ver.prod_fused);
+        
+        if(txt_is_launched()) {
+            write_priv_config_reg(locality == 1 ? TXTCR_CMD_OPEN_LOCALITY1
+                                  : TXTCR_CMD_OPEN_LOCALITY2, 0x01);
+            read_priv_config_reg(TXTCR_E2STS);   /* just a fence, so ignore return */
+            return 0;
+        } else {
+            printf("\n%s: ERROR: Locality opening UNIMPLEMENTED on Intel without SENTER\n", __FUNCTION__);
+            return 1;
+        }        
+}
