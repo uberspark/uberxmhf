@@ -20,7 +20,7 @@ export HYPOUTDIR = $(CURDIR)
 
 # TODO: Consider automating discovery of subdirs (presence of Makefile*?)
 # E.g., have a target architecure and include that version of the core
-LIBDIRS = libtv_utpm libemhfcrypto libemhfutil libemhfc 
+LIBDIRS = libtv_utpm libemhfcrypto libemhfutil libemhfc libtpm
 SUBDIRS = $(LIBDIRS) emhfcore
 
 # App's source tree root (
