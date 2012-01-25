@@ -40,7 +40,6 @@
  */
  
 #include <emhf.h>
-#include <sha1.h>
 
 //we only have confidence in the runtime's expected value here in the SL
 static INTEGRITY_MEASUREMENT_VALUES g_sl_gold /* __attribute__(( section("") )) */ = {

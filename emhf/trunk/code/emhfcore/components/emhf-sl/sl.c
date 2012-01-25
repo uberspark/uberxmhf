@@ -38,7 +38,6 @@
 //author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <emhf.h> 
-#include <sha1.h>
 
 RPB * rpb;
 u32 sl_baseaddr=0;	

@@ -52,6 +52,13 @@
 	#include <ctype.h>
 #endif /* __ASSEMBLY__ */
 
+//pull in required crypto (SHA-1)
+//libemhfcrypto
+#ifndef __ASSEMBLY__
+	#include <sha1.h>
+#endif /* __ASSEMBLY__ */
+
+
 //pull in required TPM library
 //libtpm
 #ifndef __ASSEMBLY__
