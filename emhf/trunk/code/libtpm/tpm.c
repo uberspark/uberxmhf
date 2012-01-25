@@ -75,7 +75,6 @@
  */
 
 #include <tpm.h>
-#include <sha1.h>
 
 
 static void _read_tpm_reg(int locality, u32 reg, u8 *_raw, size_t size)
@@ -943,41 +942,6 @@ uint32_t tpm_get_random(uint32_t locality, uint8_t *random_data,
 }
 
 
-/* misc utility functions; probably belong elsewhere */
-void hashandprint(const char* prefix, const u8 *bytes, size_t len) {
-    SHA_CTX ctx;
-    u8 digest[SHA_DIGEST_LENGTH];
-    u64 start, end;
-
-    printf("\nhashandprint: processing 0x%08x bytes at addr 0x%08x", len, (u32)bytes);
-    
-    start = rdtsc64();
-    //printf("\n%s (%u)", __FUNCTION__, __LINE__);
-    SHA1_Init(&ctx);
-    //printf("\n%s (%u)", __FUNCTION__, __LINE__);
-    SHA1_Update(&ctx, bytes, len);
-    //printf("\n%s (%u)", __FUNCTION__, __LINE__);
-    SHA1_Final(digest, &ctx);
-    //printf("\n%s (%u)", __FUNCTION__, __LINE__);
-    end = rdtsc64();
-    //printf("\n%s (%u)", __FUNCTION__, __LINE__);
-    print_hex(prefix, digest, SHA_DIGEST_LENGTH);
-    printf("\n[PERF] hashandprint: elapsed CPU cycles 0x%016llx", end-start);    
-
-    /* Simulate PCR 17 value on AMD processor */
-    if(len == 0x10000) {
-        u8 zeros[SHA_DIGEST_LENGTH];
-        u8 pcr17[SHA_DIGEST_LENGTH];
-        memset(zeros, 0, SHA_DIGEST_LENGTH);
-        
-        SHA1_Init(&ctx);
-        SHA1_Update(&ctx, zeros, SHA_DIGEST_LENGTH);
-        SHA1_Update(&ctx, digest, SHA_DIGEST_LENGTH);
-        SHA1_Final(pcr17, &ctx);
-
-        print_hex("[AMD] Expected PCR-17: ", pcr17, SHA_DIGEST_LENGTH);
-    }    
-}
 
 
 /*
