@@ -71,6 +71,10 @@
 #ifndef __TPM_H__
 #define __TPM_H__
 
+#include <stddef.h>
+#include <stdbool.h>
+#include <stdint.h>
+
 
 #define TPM_LOCALITY_BASE             0xfed40000
 #define NR_TPM_LOCALITY_PAGES         ((TPM_LOCALITY_1 - TPM_LOCALITY_0) >> \
