@@ -73,6 +73,21 @@ bool emhf_tpm_arch_is_tpm_ready(uint32_t locality);
 //x86 ARCH. INTERFACES
 //----------------------------------------------------------------------
 
+#define TPM_LOCALITY_BASE             0xfed40000
+#define NR_TPM_LOCALITY_PAGES         ((TPM_LOCALITY_1 - TPM_LOCALITY_0) >> \
+                                       PAGE_SHIFT)
+	
+#define TPM_LOCALITY_0                TPM_LOCALITY_BASE
+#define TPM_LOCALITY_1                (TPM_LOCALITY_BASE | 0x1000)
+#define TPM_LOCALITY_2                (TPM_LOCALITY_BASE | 0x2000)
+/* these localities (3+4) are mostly not usable by Xen */
+#define TPM_LOCALITY_3                (TPM_LOCALITY_BASE | 0x3000)
+#define TPM_LOCALITY_4                (TPM_LOCALITY_BASE | 0x4000)
+
+#define TPM_LOCALITY_BASE_N(n)        (TPM_LOCALITY_BASE | ((n) << 12))
+
+
+
 #define TPM_VALIDATE_LOCALITY_TIME_OUT  0x100
 
 /*

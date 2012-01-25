@@ -73,6 +73,12 @@
  *
  * "Extra" functions unnecessary in SL denoted as such.
  */
+ 
+/**
+ * Adapted for libtpm - generic TPM library by Amit Vasudevan
+ * amitvasudevan@acm.org 
+ */
+ 
 
 #include <tpm.h>
 
@@ -338,12 +344,6 @@ uint32_t tpm_get_capability(
 
     return ret;
 }
-
-
-
-
-
-
 
 
 uint32_t tpm_get_random(uint32_t locality, uint8_t *random_data,
