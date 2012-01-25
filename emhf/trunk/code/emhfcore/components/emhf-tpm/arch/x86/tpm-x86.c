@@ -52,3 +52,8 @@ int emhf_tpm_arch_open_locality(int locality){
     }
 	
 }
+
+//check if TPM is ready for use
+bool emhf_tpm_arch_is_tpm_ready(uint32_t locality){
+	return is_tpm_ready(locality);
+}

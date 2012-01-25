@@ -65,6 +65,9 @@ bool emhf_tpm_is_tpm_ready(uint32_t locality);
 //open TPM locality
 int emhf_tpm_arch_open_locality(int locality);
 
+//check if TPM is ready for use
+bool emhf_tpm_arch_is_tpm_ready(uint32_t locality);
+
 
 //----------------------------------------------------------------------
 //x86 ARCH. INTERFACES

@@ -132,7 +132,7 @@ bool emhf_sl_arch_integrity_check(u8* runtime_base_addr, size_t runtime_len) {
     hashandprint("SL: Computed Runtime SHA-1: ",
                  runtime_base_addr, runtime_len);    
 
-    if(hwtpm_open_locality(locality)) {
+    if(emhf_tpm_open_locality(locality)) {
         printf("SL: FAILED to open TPM locality %d\n", locality);
         return false;
     }
