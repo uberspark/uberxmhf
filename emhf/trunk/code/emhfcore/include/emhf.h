@@ -84,6 +84,7 @@ extern RPB *rpb;
 #include <emhf-parteventhub.h>	//EMHF partition event-hub component
 #include <emhf-smpguest.h>		//EMHF SMP guest component
 #include <emhf-xcphandler.h>	//EMHF exception handler component
+#include <emhf-tpm.h>			//EMHF Trusted Platform Module component
 #include <emhf-sl.h>			//EMHF secure loader component
 #include <emhf-runtime.h>		//EMHF secure loader component
 #include <emhf-app.h>			//EMHF Application callback declarations
