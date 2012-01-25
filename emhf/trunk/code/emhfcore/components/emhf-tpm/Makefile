@@ -3,7 +3,7 @@
 
 # source files
 AS_SOURCES = 
-C_SOURCES = tpm.c tpm_extra.c tpm_emhf.c  
+C_SOURCES = tpm_emhf.c  
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
