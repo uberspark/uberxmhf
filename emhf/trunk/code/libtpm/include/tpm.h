@@ -377,66 +377,7 @@ static inline void _reverse_copy(uint8_t *out, const uint8_t *in, uint32_t count
 #define TPM_TAG_PCR_INFO_LONG       0x0006
 #define TPM_TAG_STORED_DATA12       0x0016
 
-/*
- * TPM registers and data structures
- *
- * register values are offsets from each locality base
- * see {read,write}_tpm_reg() for data struct format
- */
-
-/* TPM_ACCESS_x */
-#define TPM_REG_ACCESS           0x00
-typedef union {
-    u8 _raw[1];                      /* 1-byte reg */
-    struct __attribute__ ((packed)) {
-        u8 tpm_establishment   : 1;  /* RO, 0=T/OS has been established
-                                        before */
-        u8 request_use         : 1;  /* RW, 1=locality is requesting TPM use */
-        u8 pending_request     : 1;  /* RO, 1=other locality is requesting
-                                        TPM usage */
-        u8 seize               : 1;  /* WO, 1=seize locality */
-        u8 been_seized         : 1;  /* RW, 1=locality seized while active */
-        u8 active_locality     : 1;  /* RW, 1=locality is active */
-        u8 reserved            : 1;
-        u8 tpm_reg_valid_sts   : 1;  /* RO, 1=other bits are valid */
-    };
-} tpm_reg_access_t;
-
-/* TPM_STS_x */
-#define TPM_REG_STS              0x18
-typedef union {
-    u8 _raw[3];                  /* 3-byte reg */
-    struct __attribute__ ((packed)) {
-        u8 reserved1       : 1;
-        u8 response_retry  : 1;  /* WO, 1=re-send response */
-        u8 reserved2       : 1;
-        u8 expect          : 1;  /* RO, 1=more data for command expected */
-        u8 data_avail      : 1;  /* RO, 0=no more data for response */
-        u8 tpm_go          : 1;  /* WO, 1=execute sent command */
-        u8 command_ready   : 1;  /* RW, 1=TPM ready to receive new cmd */
-        u8 sts_valid       : 1;  /* RO, 1=data_avail and expect bits are
-                                    valid */
-        u16 burst_count    : 16; /* RO, # read/writes bytes before wait */
-    };
-} tpm_reg_sts_t;
-
-/* TPM_DATA_FIFO_x */
-#define TPM_REG_DATA_FIFO        0x24
-typedef union {
-        uint8_t _raw[1];                      /* 1-byte reg */
-} tpm_reg_data_fifo_t;
-
-/*
- * assumes that all reg types follow above format:
- *   - packed
- *   - member named '_raw' which is array whose size is that of data to read
- */
-#define read_tpm_reg(locality, reg, pdata)      \
-    _read_tpm_reg(locality, reg, (pdata)->_raw, sizeof(*(pdata)))
-
-#define write_tpm_reg(locality, reg, pdata)     \
-    _write_tpm_reg(locality, reg, (pdata)->_raw, sizeof(*(pdata)))
-
+//TPM timeout and data structures
 
 #define TIMEOUT_UNIT    (0x100000 / 330) /* ~1ms, 1 tpm r/w need > 330ns */
 #define TIMEOUT_A       750  /* 750ms */
