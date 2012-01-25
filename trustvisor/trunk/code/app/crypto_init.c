@@ -351,7 +351,7 @@ int trustvisor_master_crypto_init(void) {
   /* We're now done with the TPM for a while. Make sure it is
    * available to the legacy OS. */
  out:
-  deactivate_all_localities();
+  emhf_tpm_deactivate_all_localities();
 		
   return 0;
 }

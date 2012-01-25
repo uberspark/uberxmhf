@@ -392,7 +392,7 @@ uint32_t hc_tpmnvram_getsize(VCPU* vcpu, uint32_t size_addr) {
   }
 
   /* Close TPM */
-  deactivate_all_localities();
+  emhf_tpm_deactivate_all_localities();
 
   dprintf(LOG_TRACE, "\n[TV] HW_TPM_ROLLBACK_PROT_INDEX 0x%08x size"
           " = %d", HW_TPM_ROLLBACK_PROT_INDEX, actual_size);
@@ -442,7 +442,7 @@ uint32_t hc_tpmnvram_readall(VCPU* vcpu, uint32_t out_addr) {
   }
 		
   /* Close TPM */
-  deactivate_all_localities();
+  emhf_tpm_deactivate_all_localities();
 
   if(0 == rv) { /* if no errors... */
     /* copy output to guest */
@@ -486,7 +486,7 @@ uint32_t hc_tpmnvram_writeall(VCPU* vcpu, uint32_t in_addr) {
   }
 
   /* Close TPM */
-  deactivate_all_localities();
+  emhf_tpm_deactivate_all_localities();
 		
   return rv;
 }
