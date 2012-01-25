@@ -40,10 +40,57 @@
 
 #include <emhf.h>
 
+
+static void cpu_relax(void){
+    __asm__ __volatile__ ("pause");
+}
+
+
+static void _read_tpm_reg(int locality, u32 reg, u8 *_raw, size_t size)
+{
+    size_t i;
+    for ( i = 0; i < size; i++ )
+        _raw[i] = readb((TPM_LOCALITY_BASE_N(locality) | reg) + i);
+}
+
+static void _write_tpm_reg(int locality, u32 reg, u8 *_raw, size_t size)
+{
+    size_t i;    
+    for ( i = 0; i < size; i++ )
+        writeb((TPM_LOCALITY_BASE_N(locality) | reg) + i, _raw[i]);
+}
+
+
 static tpm_timeout_t g_timeout = {TIMEOUT_A,
                                   TIMEOUT_B,
                                   TIMEOUT_C,
                                   TIMEOUT_D};
+
+static bool tpm_validate_locality(uint32_t locality)
+{
+    uint32_t i;
+    tpm_reg_access_t reg_acc;
+
+    for ( i = TPM_VALIDATE_LOCALITY_TIME_OUT; i > 0; i-- ) {
+        /*
+         * TCG spec defines reg_acc.tpm_reg_valid_sts bit to indicate whether
+         * other bits of access reg are valid.( but this bit will also be 1
+         * while this locality is not available, so check seize bit too)
+         * It also defines that reading reg_acc.seize should always return 0
+         */
+        read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+        if ( reg_acc.tpm_reg_valid_sts == 1 && reg_acc.seize == 0)
+            return true;
+        cpu_relax();
+    }
+
+    if ( i <= 0 )
+        printf("\nTPM: tpm_validate_locality timeout\n");
+
+    return false;
+}
+
+
 
 static uint32_t tpm_get_flags(uint32_t locality, uint32_t flag_id,
                        uint8_t *flags, uint32_t flag_size)
@@ -234,47 +281,8 @@ bool prepare_tpm(void)
 // libtpm environment specific function definitions
 //======================================================================
 
-void cpu_relax(void){
-    __asm__ __volatile__ ("pause");
-}
 
-void _read_tpm_reg(int locality, u32 reg, u8 *_raw, size_t size)
-{
-    size_t i;
-    for ( i = 0; i < size; i++ )
-        _raw[i] = readb((TPM_LOCALITY_BASE_N(locality) | reg) + i);
-}
 
-void _write_tpm_reg(int locality, u32 reg, u8 *_raw, size_t size)
-{
-    size_t i;    
-    for ( i = 0; i < size; i++ )
-        writeb((TPM_LOCALITY_BASE_N(locality) | reg) + i, _raw[i]);
-}
-
-bool tpm_validate_locality(uint32_t locality)
-{
-    uint32_t i;
-    tpm_reg_access_t reg_acc;
-
-    for ( i = TPM_VALIDATE_LOCALITY_TIME_OUT; i > 0; i-- ) {
-        /*
-         * TCG spec defines reg_acc.tpm_reg_valid_sts bit to indicate whether
-         * other bits of access reg are valid.( but this bit will also be 1
-         * while this locality is not available, so check seize bit too)
-         * It also defines that reading reg_acc.seize should always return 0
-         */
-        read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
-        if ( reg_acc.tpm_reg_valid_sts == 1 && reg_acc.seize == 0)
-            return true;
-        cpu_relax();
-    }
-
-    if ( i <= 0 )
-        printf("\nTPM: tpm_validate_locality timeout\n");
-
-    return false;
-}
 
 void dump_locality_access_regs(void) {
     tpm_reg_access_t reg_acc;
