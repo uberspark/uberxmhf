@@ -41,6 +41,10 @@
 #include <emhf.h>
 
 
+//======================================================================
+//static (local) decls./defns.
+//======================================================================
+
 static void cpu_relax(void){
     __asm__ __volatile__ ("pause");
 }
@@ -105,6 +109,7 @@ static void dump_locality_access_regs(void) {
         }
     }
 }
+
 
 
 static uint32_t tpm_get_flags(uint32_t locality, uint32_t flag_id,
@@ -258,6 +263,58 @@ static bool is_tpm_ready(uint32_t locality)
     return true;
 }
 
+
+static bool release_locality(uint32_t locality)
+{
+    uint32_t i;
+    tpm_reg_access_t reg_acc;
+#ifdef TPM_TRACE
+    printf("TPM: releasing locality %u\n", locality);
+#endif
+
+    if ( !tpm_validate_locality(locality) )
+        return true;
+
+    read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+    if ( reg_acc.active_locality == 0 )
+        return true;
+
+    /* make inactive by writing a 1 */
+    reg_acc._raw[0] = 0;
+    reg_acc.active_locality = 1;
+    write_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+
+    i = 0;
+    do {
+        read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+        if ( reg_acc.active_locality == 0 )
+            return true;
+        else
+            cpu_relax();
+        i++;
+    } while ( i <= TPM_ACTIVE_LOCALITY_TIME_OUT );
+
+    printf("TPM: access reg release locality timeout\n");
+    return false;
+}
+
+//======================================================================
+//ARCH. Backends
+//======================================================================
+
+void deactivate_all_localities(void) {
+    tpm_reg_access_t reg_acc;
+    uint32_t locality;
+
+    printf("\nTPM: %s()\n", __FUNCTION__);
+    for(locality=0; locality <= 3; locality++) {    
+        reg_acc._raw[0] = 0;
+        reg_acc.active_locality = 1;
+        write_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+    }
+}
+
+
 //check if TPM is ready for use
 bool emhf_tpm_arch_is_tpm_ready(uint32_t locality){
 	return is_tpm_ready(locality);
@@ -277,8 +334,6 @@ int emhf_tpm_arch_open_locality(int locality){
 }
 
 
-// other global interfaces
-// XXX: to sort
 bool prepare_tpm(void)
 {
     /*
@@ -291,26 +346,10 @@ bool prepare_tpm(void)
 
 
 
-
 //======================================================================
 // libtpm environment specific function definitions
 //======================================================================
 
-
-
-
-
-void deactivate_all_localities(void) {
-    tpm_reg_access_t reg_acc;
-    uint32_t locality;
-
-    printf("\nTPM: %s()\n", __FUNCTION__);
-    for(locality=0; locality <= 3; locality++) {    
-        reg_acc._raw[0] = 0;
-        reg_acc.active_locality = 1;
-        write_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
-    }
-}
 
 uint32_t tpm_wait_cmd_ready(uint32_t locality)
 {
@@ -398,43 +437,6 @@ RelinquishControl:
 
     return TPM_FAIL;
 }
-
-bool release_locality(uint32_t locality)
-{
-    uint32_t i;
-    tpm_reg_access_t reg_acc;
-#ifdef TPM_TRACE
-    printf("TPM: releasing locality %u\n", locality);
-#endif
-
-    if ( !tpm_validate_locality(locality) )
-        return true;
-
-    read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
-    if ( reg_acc.active_locality == 0 )
-        return true;
-
-    /* make inactive by writing a 1 */
-    reg_acc._raw[0] = 0;
-    reg_acc.active_locality = 1;
-    write_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
-
-    i = 0;
-    do {
-        read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
-        if ( reg_acc.active_locality == 0 )
-            return true;
-        else
-            cpu_relax();
-        i++;
-    } while ( i <= TPM_ACTIVE_LOCALITY_TIME_OUT );
-
-    printf("TPM: access reg release locality timeout\n");
-    return false;
-}
-
-
-
 
 /*
  *   locality : TPM locality (0 - 3)

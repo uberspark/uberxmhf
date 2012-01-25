@@ -58,6 +58,9 @@ int emhf_tpm_open_locality(int locality);
 //check if TPM is ready for use
 bool emhf_tpm_is_tpm_ready(uint32_t locality);
 
+void deactivate_all_localities(void);
+
+
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
 //----------------------------------------------------------------------

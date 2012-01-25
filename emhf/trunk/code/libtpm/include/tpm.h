@@ -87,9 +87,9 @@
 
 //extern void dump_locality_access_regs(void);
 
-extern void deactivate_all_localities(void);
+//extern void deactivate_all_localities(void);
 
-extern bool release_locality(uint32_t locality);
+//extern bool release_locality(uint32_t locality);
 
 extern uint32_t tpm_wait_cmd_ready(uint32_t locality);
 
