@@ -44,7 +44,7 @@
 int emhf_tpm_arch_x86svm_open_locality(int locality){
 		// some systems leave locality 0 open for legacy software 
         //dump_locality_access_regs();
-        deactivate_all_localities();
+        emhf_tpm_arch_deactivate_all_localities();
         //dump_locality_access_regs();
         
         if(TPM_SUCCESS == tpm_wait_cmd_ready(locality)) {
