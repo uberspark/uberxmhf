@@ -81,7 +81,28 @@
 //that uses libtpm
 //e.g., EMHF-x86, EMHF-ARM etc.
 
+#ifndef __ASSEMBLY__
+
 extern bool tpm_validate_locality(uint32_t locality);
+
+extern void dump_locality_access_regs(void);
+
+extern void deactivate_all_localities(void);
+
+extern bool release_locality(uint32_t locality);
+
+extern uint32_t tpm_wait_cmd_ready(uint32_t locality);
+
+extern bool prepare_tpm(void);
+
+extern bool is_tpm_ready(uint32_t locality);
+
+extern uint32_t tpm_write_cmd_fifo(uint32_t locality, uint8_t *in,
+                                   uint32_t in_size, uint8_t *out,
+                                   uint32_t *out_size);
+
+#endif //__ASSEMBLY__
+//======================================================================
 
 
 #define TPM_LOCALITY_BASE             0xfed40000
@@ -131,20 +152,6 @@ extern bool tpm_validate_locality(uint32_t locality);
 
 #ifndef __ASSEMBLY__
 
-extern bool release_locality(uint32_t locality);
-
-/* Moved here by Jon.  Non-TXT boots (e.g., AMD, debug Intel) need to
- * explicitly request access at the desired locality.  TXT does this
- * automatically. */
-extern void dump_locality_access_regs(void);
-extern void deactivate_all_localities(void);
-extern uint32_t tpm_wait_cmd_ready(uint32_t locality);
-
-extern bool prepare_tpm(void);
-
-extern bool is_tpm_ready(uint32_t locality);
-
-extern uint32_t tpm_get_version(uint8_t *major, uint8_t *minor);
 
 #define TPM_DIGEST_SIZE          20
 typedef struct __attribute__ ((packed)) {
@@ -160,6 +167,9 @@ typedef tpm_digest_t tpm_pcr_value_t;
 #define TPM_RSP_SIZE_MAX        768
 
 #define TPM_NR_PCRS             24
+
+
+extern uint32_t tpm_get_version(uint8_t *major, uint8_t *minor);
 
 /*
  * tpm_pcr_read fetchs the current value of given PCR vai given locality.
@@ -377,32 +387,8 @@ static inline void _reverse_copy(uint8_t *out, const uint8_t *in, uint32_t count
 #define TPM_TAG_PCR_INFO_LONG       0x0006
 #define TPM_TAG_STORED_DATA12       0x0016
 
-//TPM timeout and data structures
+//TPM data structures
 
-#define TIMEOUT_UNIT    (0x100000 / 330) /* ~1ms, 1 tpm r/w need > 330ns */
-#define TIMEOUT_A       750  /* 750ms */
-#define TIMEOUT_B       2000 /* 2s */
-#define TIMEOUT_C       750  /* 750ms */
-#define TIMEOUT_D       750  /* 750ms */
-
-typedef struct __attribute__ ((packed)) {
-    uint32_t timeout_a;
-    uint32_t timeout_b;
-    uint32_t timeout_c;
-    uint32_t timeout_d;
-} tpm_timeout_t;
-
-
-#define TPM_ACTIVE_LOCALITY_TIME_OUT    \
-          (TIMEOUT_UNIT * g_timeout.timeout_a)  /* according to spec */
-#define TPM_CMD_READY_TIME_OUT          \
-          (TIMEOUT_UNIT * g_timeout.timeout_b)  /* according to spec */
-#define TPM_CMD_WRITE_TIME_OUT          \
-          (TIMEOUT_UNIT * g_timeout.timeout_d)  /* let it long enough */
-#define TPM_DATA_AVAIL_TIME_OUT         \
-          (TIMEOUT_UNIT * g_timeout.timeout_c)  /* let it long enough */
-#define TPM_RSP_READ_TIME_OUT           \
-          (TIMEOUT_UNIT * g_timeout.timeout_d)  /* let it long enough */
 
 
 #define CMD_HEAD_SIZE           10

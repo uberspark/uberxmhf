@@ -164,6 +164,33 @@ static inline u8 readb(u32 addr) {
 }
 #endif	//__EMHF_VERIFICATION__
 
+//TPM timeouts
+#define TIMEOUT_UNIT    (0x100000 / 330) /* ~1ms, 1 tpm r/w need > 330ns */
+#define TIMEOUT_A       750  /* 750ms */
+#define TIMEOUT_B       2000 /* 2s */
+#define TIMEOUT_C       750  /* 750ms */
+#define TIMEOUT_D       750  /* 750ms */
+
+typedef struct __attribute__ ((packed)) {
+    uint32_t timeout_a;
+    uint32_t timeout_b;
+    uint32_t timeout_c;
+    uint32_t timeout_d;
+} tpm_timeout_t;
+
+
+#define TPM_ACTIVE_LOCALITY_TIME_OUT    \
+          (TIMEOUT_UNIT * g_timeout.timeout_a)  /* according to spec */
+#define TPM_CMD_READY_TIME_OUT          \
+          (TIMEOUT_UNIT * g_timeout.timeout_b)  /* according to spec */
+#define TPM_CMD_WRITE_TIME_OUT          \
+          (TIMEOUT_UNIT * g_timeout.timeout_d)  /* let it long enough */
+#define TPM_DATA_AVAIL_TIME_OUT         \
+          (TIMEOUT_UNIT * g_timeout.timeout_c)  /* let it long enough */
+#define TPM_RSP_READ_TIME_OUT           \
+          (TIMEOUT_UNIT * g_timeout.timeout_d)  /* let it long enough */
+
+
 
 //----------------------------------------------------------------------
 //x86vmx SUBARCH. INTERFACES
