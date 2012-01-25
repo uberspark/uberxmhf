@@ -40,6 +40,7 @@
 
 #include <emhf.h>
 
+
 //open TPM locality
 int emhf_tpm_arch_open_locality(int locality){
 	u32 cpu_vendor = get_cpu_vendor_or_die();
@@ -57,3 +58,14 @@ int emhf_tpm_arch_open_locality(int locality){
 bool emhf_tpm_arch_is_tpm_ready(uint32_t locality){
 	return is_tpm_ready(locality);
 }
+
+
+//======================================================================
+// libtpm environment specific function definitions
+//======================================================================
+
+void cpu_relax(void){
+    __asm__ __volatile__ ("pause");
+}
+
+

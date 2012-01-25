@@ -74,9 +74,6 @@ bool emhf_tpm_is_tpm_ready(uint32_t locality){
 }
 
 
-void cpu_relax(void){
-    __asm__ __volatile__ ("pause");
-}
 
 
 /* Local Variables: */
