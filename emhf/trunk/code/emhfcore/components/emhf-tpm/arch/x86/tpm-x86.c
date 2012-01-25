@@ -302,7 +302,8 @@ static bool release_locality(uint32_t locality)
 //ARCH. Backends
 //======================================================================
 
-void deactivate_all_localities(void) {
+//deactivate all TPM localities
+void emhf_tpm_arch_deactivate_all_localities(void) {
     tpm_reg_access_t reg_acc;
     uint32_t locality;
 
@@ -333,9 +334,8 @@ int emhf_tpm_arch_open_locality(int locality){
     }
 }
 
-
-bool prepare_tpm(void)
-{
+//prepare TPM for use
+bool emhf_tpm_arch_prepare_tpm(void){
     /*
      * must ensure TPM_ACCESS_0.activeLocality bit is clear
      * (: locality is not active)

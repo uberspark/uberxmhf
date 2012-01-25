@@ -73,6 +73,16 @@ bool emhf_tpm_is_tpm_ready(uint32_t locality){
 		return emhf_tpm_arch_is_tpm_ready(locality);
 }
 
+//deactivate all TPM localities
+void emhf_tpm_deactivate_all_localities(void){
+	emhf_tpm_arch_deactivate_all_localities();
+}
+
+//prepare TPM for use
+bool emhf_tpm_prepare_tpm(void){
+	return emhf_tpm_arch_prepare_tpm();
+}
+
 
 
 

@@ -58,7 +58,11 @@ int emhf_tpm_open_locality(int locality);
 //check if TPM is ready for use
 bool emhf_tpm_is_tpm_ready(uint32_t locality);
 
-void deactivate_all_localities(void);
+//deactivate all TPM localities
+void emhf_tpm_deactivate_all_localities(void);
+
+//prepare TPM for use
+bool emhf_tpm_prepare_tpm(void);
 
 
 //----------------------------------------------------------------------
@@ -70,6 +74,12 @@ int emhf_tpm_arch_open_locality(int locality);
 
 //check if TPM is ready for use
 bool emhf_tpm_arch_is_tpm_ready(uint32_t locality);
+
+//deactivate all TPM localities
+void emhf_tpm_arch_deactivate_all_localities(void);
+
+//prepare TPM for use
+bool emhf_tpm_arch_prepare_tpm(void);
 
 
 //----------------------------------------------------------------------
