@@ -492,15 +492,20 @@ void printf(const char *fmt, ...)
     va_end(args);        
 }
 
+void dvprintf(u32 log_type, const char *fmt, va_list args)
+{
+    if (log_type & ENABLED_LOG_TYPES) {
+      vprintf(fmt, args);
+    }
+}
+
 void dprintf(u32 log_type, const char *fmt, ...)
 {
     va_list       args;
 
-    if (log_type & ENABLED_LOG_TYPES) {
-      va_start(args, fmt);
-      vprintf(fmt, args);
-      va_end(args);
-    }
+    va_start(args, fmt);
+    vprintf(fmt, args);
+    va_end(args);
 }
 
 /*
