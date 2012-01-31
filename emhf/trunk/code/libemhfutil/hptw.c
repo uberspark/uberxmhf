@@ -132,6 +132,9 @@ bool hptw_next_lvl(const hptw_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va)
 {
   hpt_pmeo_t pmeo;
   hpt_pm_get_pmeo_by_va(&pmeo, pmo, va);
+
+  assert(pmo->pm);
+
   if (!hpt_pmeo_is_present(&pmeo)
       || hpt_pmeo_is_page(&pmeo)) {
     return false;
@@ -146,6 +149,12 @@ bool hptw_next_lvl(const hptw_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va)
                                page map. we don't handle this
                                case. will never happen with current
                                x86 page types */
+    assert(pmo->pm); /* FIXME: need to make this a proper run-time
+                        check.  to do so, need to change semantics of
+                        this function though, since we currently don't
+                        have a way to signal an error, only that we've
+                        legitimately reached the leaf of the table
+                        walk */
     pmo->lvl--;
     return true;
   }
