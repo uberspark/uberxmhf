@@ -88,6 +88,12 @@ typedef struct {
   u32 section_type;
 } tv_pal_section_int_t;
 
+typedef struct {
+  hptw_ctx_t host_walk_ctx;
+  hpt_pmo_t host_pmo_root;
+} scode_guest_pa2ptr_ctx_t;
+void* hpt_checked_guest_pa2ptr(void *vctx, hpt_pa_t gpa, size_t sz, hpt_prot_t access_type, hptw_cpl_t cpl, size_t *avail_sz);
+
 /* scode state struct */
 typedef struct whitelist_entry{
   u64 gcr3; 
@@ -137,7 +143,9 @@ typedef struct whitelist_entry{
 
 /* template page table context */
 extern const hptw_ctx_t hpt_nested_walk_ctx;
-extern const hptw_ctx_t hpt_guest_walk_ctx;
+int hpt_guest_walk_ctx_construct(hptw_ctx_t *rv, const hpt_pmo_t *host_root, const hptw_ctx_t *host_walk_ctx, pagelist_t *pl);
+int hpt_guest_walk_ctx_construct_vcpu(hptw_ctx_t *rv, VCPU *vcpu, pagelist_t *pl);
+void hpt_guest_walk_ctx_destroy(hptw_ctx_t *ctx);
 
 /* nested paging handlers (hpt) */
 hpt_prot_t pal_prot_of_type(int type);
@@ -159,15 +167,16 @@ static inline gpa_t gpt_vaddr_to_paddr(const hptw_ctx_t *ctx, const hpt_pmo_t *g
 }
 static inline gpa_t gpt_vaddr_to_paddr_current(VCPU *vcpu, gva_t vaddr)
 {
-  hpt_type_t t = (VCPU_gcr4(vcpu) & CR4_PAE) ? HPT_TYPE_PAE : HPT_TYPE_NORM;
-  hpt_pmo_t root = {
-    .pm = hpt_emhf_get_guest_root_pm(vcpu),
-    .t = t,
-    .lvl = hpt_root_lvl(t),
-  };
-  hptw_ctx_t ctx = hpt_guest_walk_ctx;
+  hptw_ctx_t ctx;
+  hpt_pmo_t guest_root;
   gpa_t rv;
-  rv = hptw_va_to_pa(&ctx, &root, vaddr);
+  int err;
+
+  hpt_emhf_get_guest_root_pmo(vcpu, &guest_root);
+  err = hpt_guest_walk_ctx_construct_vcpu(&ctx, vcpu, NULL);
+  assert(!err); /* FIXME */
+
+  rv = hptw_va_to_pa(&ctx, &guest_root, vaddr);
 
   return rv;
 }

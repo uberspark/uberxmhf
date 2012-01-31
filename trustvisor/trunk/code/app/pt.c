@@ -102,107 +102,83 @@ hpt_prot_t reg_prot_of_type(int type)
   ASSERT(0); return 0; /* unreachable; appeases compiler */
 }
 
-
 typedef struct {
-  hptw_ctx_t host_walk_ctx;
-  hpt_pmo_t host_pmo_root;
-} scode_guest_pa2ptr_ctx_t;
-static void* hpt_checked_guest_pa2ptr(void *vctx, hpt_pa_t gpa, size_t sz, hpt_prot_t access_type, hptw_cpl_t cpl, size_t *avail_sz)
+  hpt_pmo_t guest_root;
+  hptw_ctx_t guest_walk_ctx;
+  hptw_cpl_t cpl;
+} checked_guest_walk_ctx_t;
+
+static int construct_checked_walk_ctx(VCPU *vcpu, checked_guest_walk_ctx_t *rv)
 {
-  scode_guest_pa2ptr_ctx_t *ctx = vctx;
-  ASSERT(ctx);
+  int err=0;
+  scode_guest_pa2ptr_ctx_t *guest_pa2ptr_ctx;
 
-  dprintf(LOG_TRACE, "hpt_checked_guest_pa2ptr gpa:%llx, sz:%d, access_type:%lld, cpl:%d\n",
-          gpa, sz, access_type, cpl);
-  dprintf(LOG_TRACE, "hpt_checked_guest_pa2ptr host_pmo_root t:%d pm:%p lvl:%d\n",
-          ctx->host_pmo_root.t, ctx->host_pmo_root.pm, ctx->host_pmo_root.lvl);
+  memset(rv, 0, sizeof(*rv));
 
-  return hptw_checked_access_va(&ctx->host_walk_ctx,
-                                &ctx->host_pmo_root,
-                                access_type,
-                                cpl,
-                                gpa,
-                                sz,
-                                avail_sz);
+  guest_pa2ptr_ctx = malloc(sizeof(*guest_pa2ptr_ctx));
+  if (!guest_pa2ptr_ctx) {
+    err=1;
+    goto out;
+  }
+
+  hpt_emhf_get_root_pmo(vcpu, &guest_pa2ptr_ctx->host_pmo_root);
+  guest_pa2ptr_ctx->host_walk_ctx = hpt_nested_walk_ctx;
+
+  if (hpt_guest_walk_ctx_construct_vcpu(&rv->guest_walk_ctx, vcpu, NULL)) {
+    err = 2;
+    goto out;
+  }
+
+  hpt_emhf_get_guest_root_pmo(vcpu, &rv->guest_root);
+  rv->cpl = HPTW_CPL3; /* FIXME - extract cpl from vcpu */
+
+ out:
+  if (err) {
+    free(rv->guest_walk_ctx.pa2ptr_ctx);
+  }
+  return err;
+}
+
+static void destroy_checked_walk_ctx(checked_guest_walk_ctx_t *ctx)
+{
+  hpt_guest_walk_ctx_destroy(&ctx->guest_walk_ctx);
 }
 
 bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
                                     hpt_prot_t reqd_prots, bool reqd_user_accessible,
-                                    gva_t vaddr, size_t size_bytes)
+                                    gva_t gva_base, size_t len)
 {
-  hpt_pmo_t host_root;
-  hpt_pmo_t guest_root;
-  hptw_ctx_t guest_ctx;
-  scode_guest_pa2ptr_ctx_t pa2ptr_ctx;
-  size_t i;
+  checked_guest_walk_ctx_t ctx;
+  size_t checked=0;
+  int err = 0;
 
-  hpt_emhf_get_root_pmo(vcpu, &host_root);
-  hpt_emhf_get_guest_root_pmo(vcpu, &guest_root);
-
-  pa2ptr_ctx = (scode_guest_pa2ptr_ctx_t) {
-    .host_walk_ctx = hpt_nested_walk_ctx,
-    .host_pmo_root = host_root,
-  };
-
-  guest_ctx = hpt_guest_walk_ctx;
-  guest_ctx.pa2ptr = &hpt_checked_guest_pa2ptr;
-  guest_ctx.pa2ptr_ctx = &pa2ptr_ctx;
-
-  dprintf(LOG_TRACE, "guest_root pm:%p lvl:%d t:%d\n",
-          guest_root.pm,
-          guest_root.lvl,
-          guest_root.t);
-  dprintf(LOG_TRACE, "entering nested_pt_range_has_reqd_prots\n");
-
-  /* check that the guest root pagemap is accessible in the host page tables */
-  {
-    hpt_prot_t prot;
-    gpa_t guest_root_gpa = hva2gpa(guest_root.pm);
-    prot = hptw_get_effective_prots(&hpt_nested_walk_ctx,
-                                         &host_root,
-                                         guest_root_gpa,
-                                         NULL);
-    if ((prot & HPT_PROTS_RW) != HPT_PROTS_RW) {
-      dprintf(LOG_ERROR, "ERROR: Guest root at hva:%p gpa:%llx not accessible in host page tables\n",
-              guest_root.pm, guest_root_gpa);
-      return false;
-    }
+  if (construct_checked_walk_ctx(vcpu, &ctx)) {
+    err=1;
+    goto out;
   }
 
-  dprintf(LOG_TRACE, "guest root pagemap is accessible\n");
+  while(checked < len) {
+    hpt_va_t gva = gva_base + checked;
+    void *ptr;
+    size_t size_checked;
+    hptw_cpl_t cpl;
 
-  for(i=0; i<size_bytes; i += PAGE_SIZE_4K) {
-    hpt_prot_t host_prots, guest_prots;
-    bool host_user_accessible, guest_user_accessible;
-    gpa_t gpa;
+    cpl = reqd_user_accessible ? HPTW_CPL3 : HPTW_CPL0;
 
-    dprintf(LOG_TRACE, "checking gva %x\n", vaddr+i);
-    gpa = gpt_vaddr_to_paddr(&guest_ctx, &guest_root, vaddr+i); /* XXX redundant tablewalk */
-    dprintf(LOG_TRACE, "checking gpa %llx\n", gpa);
-
-    guest_prots = hptw_get_effective_prots(&guest_ctx,
-                                                &guest_root,
-                                                vaddr+i,
-                                                &guest_user_accessible);
-    dprintf(LOG_TRACE, "got guest prots %lld\n", guest_prots);
-    host_prots = hptw_get_effective_prots(&hpt_nested_walk_ctx,
-                                               &host_root,
-                                               gpa,
-                                               &host_user_accessible);
-    dprintf(LOG_TRACE, "got host prots %lld\n", host_prots);
-
-    if ((reqd_user_accessible && !(guest_user_accessible && host_user_accessible))
-        || ((reqd_prots & guest_prots) != reqd_prots)
-        || ((reqd_prots & host_prots) != reqd_prots)) {
-      dprintf(LOG_TRACE, "WARNING: Failed prot check gva %08x gpa %08llx failed permission check\n",
-              vaddr+i, gpa);
-      dprintf(LOG_TRACE, "\tReqd prots: 0x%llx reqd user: %d\n", reqd_prots, reqd_user_accessible);
-      dprintf(LOG_TRACE, "\tHost prots: 0x%llx host user: %d\n", host_prots, host_user_accessible);
-      dprintf(LOG_TRACE, "\tGuest prots: 0x%llx host user: %d\n", guest_prots, guest_user_accessible);
+    ptr = hptw_checked_access_va(&ctx.guest_walk_ctx,
+                                 &ctx.guest_root,
+                                 reqd_prots,
+                                 cpl,
+                                 gva,
+                                 len-checked,
+                                 &size_checked);
+    if(!ptr) {
       return false;
     }
+    checked += size_checked;
   }
-  dprintf(LOG_TRACE, "exiting nested_pt_range_has_reqd_prots\n");
+ out:
+  assert(!err); /* FIXME */
   return true;
 }
 
@@ -271,47 +247,6 @@ void put_32bit_aligned_value_to_current_guest(VCPU *vcpu, u32 gvaddr, u32 value)
   *((u32 *)gpa2hva(gpaddr)) = value;
 }
 
-typedef struct {
-  hpt_pmo_t guest_root;
-  hptw_ctx_t guest_walk_ctx;
-  hptw_cpl_t cpl;
-} checked_guest_walk_ctx_t;
-
-static int construct_checked_walk_ctx(VCPU *vcpu, checked_guest_walk_ctx_t *rv)
-{
-  scode_guest_pa2ptr_ctx_t *guest_pa2ptr_ctx=NULL;
-  int err=0;
-
-  memset(rv, 0, sizeof(*rv));
-
-  guest_pa2ptr_ctx = malloc(sizeof(*guest_pa2ptr_ctx));
-  if (!guest_pa2ptr_ctx) {
-    err=1;
-    goto out;
-  }
-
-  hpt_emhf_get_root_pmo(vcpu, &guest_pa2ptr_ctx->host_pmo_root);
-  guest_pa2ptr_ctx->host_walk_ctx = hpt_nested_walk_ctx;
-
-  rv->guest_walk_ctx = hpt_guest_walk_ctx;
-  rv->guest_walk_ctx.pa2ptr = &hpt_checked_guest_pa2ptr;
-  rv->guest_walk_ctx.pa2ptr_ctx = guest_pa2ptr_ctx;
-
-  hpt_emhf_get_guest_root_pmo(vcpu, &rv->guest_root);
-  rv->cpl = HPTW_CPL3; /* FIXME - extract cpl from vcpu */
-
- out:
-  if (err) {
-    free(rv->guest_walk_ctx.pa2ptr_ctx);
-  }
-  return err;
-}
-
-static void destroy_checked_walk_ctx(checked_guest_walk_ctx_t *ctx)
-{
-  free(ctx->guest_walk_ctx.pa2ptr_ctx);
-  ctx->guest_walk_ctx.pa2ptr_ctx = NULL;
-}
 
 int copy_from_current_guest(VCPU * vcpu, void *dst, gva_t gvaddr, u32 len)
 {

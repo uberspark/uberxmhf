@@ -66,13 +66,33 @@ hpt_pa_t hpt_guest_ptr2pa(void __attribute__((unused)) *ctx, void *ptr)
 {
   return hva2gpa(ptr);
 }
-void* hpt_guest_pa2ptr(void *vctx, hpt_pa_t gpa, size_t sz, hpt_prot_t access_type, hptw_cpl_t cpl, size_t *avail_sz)
+
+/* void* hpt_guest_pa2ptr(void *vctx, hpt_pa_t gpa, size_t sz, hpt_prot_t access_type, hptw_cpl_t cpl, size_t *avail_sz) */
+/* { */
+/*   (void)vctx; */
+/*   (void)access_type; */
+/*   (void)cpl; */
+/*   *avail_sz = sz; */
+/*   return gpa2hva(gpa); */
+/* } */
+void* hpt_checked_guest_pa2ptr(void *vctx, hpt_pa_t gpa, size_t sz, hpt_prot_t access_type, hptw_cpl_t cpl, size_t *avail_sz)
 {
-  (void)vctx;
-  (void)access_type;
-  (void)cpl;
-  *avail_sz = sz;
-  return gpa2hva(gpa);
+  scode_guest_pa2ptr_ctx_t *ctx = vctx;
+
+  dprintf(LOG_TRACE, "hpt_checked_guest_pa2ptr gpa:%llx, sz:%d, access_type:%lld, cpl:%d\n",
+          gpa, sz, access_type, cpl);
+  dprintf(LOG_TRACE, "hpt_checked_guest_pa2ptr host_pmo_root t:%d pm:%p lvl:%d\n",
+          ctx->host_pmo_root.t, ctx->host_pmo_root.pm, ctx->host_pmo_root.lvl);
+
+  ASSERT(ctx);
+
+  return hptw_checked_access_va(&ctx->host_walk_ctx,
+                                &ctx->host_pmo_root,
+                                access_type,
+                                cpl,
+                                gpa,
+                                sz,
+                                avail_sz);
 }
 
 void* hpt_get_zeroed_page(void *ctx, size_t alignment, size_t sz)
@@ -92,13 +112,50 @@ const hptw_ctx_t hpt_nested_walk_ctx = {
   .ptr2pa_ctx = NULL,
 };
 
-const hptw_ctx_t hpt_guest_walk_ctx = {
-  .gzp = hpt_get_zeroed_page,
-  .gzp_ctx = NULL, /* add allocation pool on-demand */
-  .pa2ptr = hpt_guest_pa2ptr,
-  .ptr2pa = hpt_guest_ptr2pa,
-  .ptr2pa_ctx = NULL,
-};
+int hpt_guest_walk_ctx_construct(hptw_ctx_t *rv, const hpt_pmo_t *host_root, const hptw_ctx_t *host_walk_ctx, pagelist_t *pl)
+{
+  scode_guest_pa2ptr_ctx_t *guest_pa2ptr_ctx=NULL;
+  int err=0;
+
+  guest_pa2ptr_ctx = malloc(sizeof(*guest_pa2ptr_ctx));
+  if (!guest_pa2ptr_ctx) {
+    err=1;
+    goto out;
+  }
+
+  *guest_pa2ptr_ctx = (scode_guest_pa2ptr_ctx_t) {
+    .host_pmo_root = *host_root,
+    .host_walk_ctx = *host_walk_ctx,
+  };
+
+  *rv = (hptw_ctx_t) {
+    .gzp = hpt_get_zeroed_page,
+    .gzp_ctx = pl,
+    .pa2ptr = hpt_checked_guest_pa2ptr,
+    .pa2ptr_ctx = guest_pa2ptr_ctx,
+    .ptr2pa = hpt_guest_ptr2pa,
+    .ptr2pa_ctx = NULL,
+  };
+
+ out:
+  if (err) {
+    free(guest_pa2ptr_ctx);
+  }
+  return err;
+}
+int hpt_guest_walk_ctx_construct_vcpu(hptw_ctx_t *rv, VCPU *vcpu, pagelist_t *pl)
+{
+  hpt_pmo_t host_root;
+  
+  hpt_emhf_get_root_pmo(vcpu, &host_root);
+  return hpt_guest_walk_ctx_construct(rv, &host_root, &hpt_nested_walk_ctx, pl);
+}
+
+void hpt_guest_walk_ctx_destroy(hptw_ctx_t *ctx)
+{
+  free(ctx->pa2ptr_ctx);
+  ctx->pa2ptr_ctx = NULL;
+}
 
 hpt_pmo_t      g_reg_npmo_root;
 
@@ -607,7 +664,6 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
     return 1;
   }
 
-
   whitelist_new.npl = malloc(sizeof(pagelist_t));
   pagelist_init(whitelist_new.npl);
 
@@ -634,8 +690,10 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
   whitelist_new.hpt_nested_walk_ctx = hpt_nested_walk_ctx; /* copy from template */
   whitelist_new.hpt_nested_walk_ctx.gzp_ctx = whitelist_new.npl;
 
-  whitelist_new.hpt_guest_walk_ctx = hpt_nested_walk_ctx;
-  whitelist_new.hpt_guest_walk_ctx.gzp_ctx = whitelist_new.gpl;
+  hpt_guest_walk_ctx_construct(&whitelist_new.hpt_guest_walk_ctx,
+                               &pal_npmo_root,
+                               &whitelist_new.hpt_nested_walk_ctx,
+                               whitelist_new.gpl);
 
   /* add all gpl pages to pal's nested page tables, ensuring that
      the guest page tables allocated from it will be accessible to the
@@ -832,6 +890,8 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
   /* CRITICAL SECTION in MP scenario: need to quiesce other CPUs or at least acquire spinlock */
   whitelist_size --;
   whitelist[i].gcr3 = 0;
+
+  hpt_guest_walk_ctx_destroy(&whitelist[i].hpt_guest_walk_ctx);
 
   pagelist_free_all(whitelist[i].npl);
   free(whitelist[i].npl);

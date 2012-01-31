@@ -137,24 +137,28 @@ bool hptw_next_lvl(const hptw_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va)
 
   if (!hpt_pmeo_is_present(&pmeo)
       || hpt_pmeo_is_page(&pmeo)) {
+    hpt_log_trace("hptw_next_lvl at leaf. is-present:%d is-page:%d\n",
+                  hpt_pmeo_is_present(&pmeo), hpt_pmeo_is_page(&pmeo));
     return false;
   } else {
     size_t avail;
     size_t pm_sz = hpt_pm_size(pmo->t, pmo->lvl-1);
     pmo->pm = ctx->pa2ptr(ctx->pa2ptr_ctx, hpt_pmeo_get_address(&pmeo),
                           pm_sz, HPT_PROTS_R, HPTW_CPL0, &avail);
-    assert(avail == pm_sz); /* this could in principle be false if,
-                               e.g., a host page table has a smaller
-                               page size than the size of the given
-                               page map. we don't handle this
-                               case. will never happen with current
-                               x86 page types */
+    hpt_log_trace("hptw_next_lvl next-lvl:%d pm-sz:%d pmo->pm:%p avail:%d\n",
+                  pmo->lvl-1, pm_sz, pmo->pm, avail);
     assert(pmo->pm); /* FIXME: need to make this a proper run-time
                         check.  to do so, need to change semantics of
                         this function though, since we currently don't
                         have a way to signal an error, only that we've
                         legitimately reached the leaf of the table
                         walk */
+    assert(avail == pm_sz); /* this could in principle be false if,
+                               e.g., a host page table has a smaller
+                               page size than the size of the given
+                               page map. we don't handle this
+                               case. will never happen with current
+                               x86 page types */
     pmo->lvl--;
     return true;
   }
@@ -243,7 +247,8 @@ void* hptw_checked_access_va(const hptw_ctx_t *ctx,
   hpt_pa_t pa;
   hpt_pmo_t pmo = *pmo_root;
 
-  hpt_log_trace("hptw_checked_access_va: entering\n");
+  hpt_log_trace("hptw_checked_access_va: entering. va:0x%llx access_type %lld cpl:%d\n",
+                va, access_type, cpl);
 
   do {
     hpt_log_trace("hptw_checked_access_va pmo t:%d pm:%p lvl:%d\n",
@@ -251,11 +256,14 @@ void* hptw_checked_access_va(const hptw_ctx_t *ctx,
     hpt_pm_get_pmeo_by_va(&pmeo, &pmo, va);
     if (((access_type & hpt_pmeo_getprot(&pmeo)) != access_type)
         || (cpl != HPTW_CPL0 && !hpt_pmeo_getuser(&pmeo))) {
+      hpt_log_trace("hptw_checked_access_va insufficient prv. pme:0x%llx cpl:%d priv:%lld returning NULL\n",
+                    pmeo.pme, cpl, hpt_pmeo_getprot(&pmeo));
       return NULL;
     }
   } while (hptw_next_lvl(ctx, &pmo, va));
 
   if(!hpt_pmeo_is_present(&pmeo)) {
+    hpt_log_trace("hptw_checked_access_va not-present. returning NULL\n");
     return NULL;
   }
 
