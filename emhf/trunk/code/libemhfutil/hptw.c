@@ -350,6 +350,9 @@ int hptw_checked_memset_va(const hptw_ctx_t *ctx,
     void *dst;
 
     dst = hptw_checked_access_va(ctx, pmo, HPT_PROTS_W, cpl, dst_va, len-set, &to_set);
+    if(!dst) {
+      return 1;
+    }
     memset(dst, c, to_set);
     set += to_set;
   }
