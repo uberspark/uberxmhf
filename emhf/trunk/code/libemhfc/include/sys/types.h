@@ -142,6 +142,11 @@ typedef __size_t        size_t;
 #define _SIZE_T_DECLARED
 #endif
 
+#ifndef _SSIZE_T_DECLARED
+typedef __ssize_t        ssize_t;
+#define _SSIZE_T_DECLARED
+#endif
+
 typedef uint8_t         u8;
 typedef uint16_t        u16;
 typedef uint32_t        u32;
