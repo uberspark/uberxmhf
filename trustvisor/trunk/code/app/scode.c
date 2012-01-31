@@ -1153,11 +1153,20 @@ u32 scode_unmarshall(VCPU * vcpu)
 
   int curr=scode_curr[vcpu->id];
 
+  hptw_ctx_t reg_guest_walk_ctx;
+  u32 err=0;
+
+  if(hpt_guest_walk_ctx_construct(&reg_guest_walk_ctx, &g_reg_npmo_root, &hpt_nested_walk_ctx, NULL)) {
+    err=1;
+    goto out;
+  }
+
   dprintf(LOG_TRACE, "[TV] unmarshalling scode parameters!\n");
   if (whitelist[curr].gpm_num == 0)
     {
       dprintf(LOG_TRACE, "[TV] unmarshall pm numbuer is 0. Return!\n");
-      return 0;
+      err=2;
+      goto out;
     }
 
   /* memory address for input parameter in sensitive code */
@@ -1174,7 +1183,8 @@ u32 scode_unmarshall(VCPU * vcpu)
   if (pm_num > TV_MAX_PARAMS)
     {
       dprintf(LOG_ERROR, "[TV] Fail: parameter number too big!\n");
-      return 1;
+      err=3;
+      goto out;
     }
   /* begin to process the params*/
   for (i = 0; i < pm_num; i++) /*the last parameter should be pushed in stack first*/
@@ -1207,12 +1217,12 @@ u32 scode_unmarshall(VCPU * vcpu)
 
             dprintf(LOG_TRACE, "[TV]   PM %d is a pointer (size %d, addr %#x)\n", i,  pm_size*4, pm_value);
             /* copy data from sensitive code (param space) to guest */
-            hptw_checked_copy_va_to_va(&whitelist[curr].hpt_guest_walk_ctx,
+            hptw_checked_copy_va_to_va(&reg_guest_walk_ctx,
                                        &whitelist[curr].reg_gpt_root,
                                        HPTW_CPL3,
                                        pm_value,
                                        &whitelist[curr].hpt_guest_walk_ctx,
-                                       &whitelist[curr].reg_gpt_root,
+                                       &whitelist[curr].pal_gpt_root,
                                        HPTW_CPL3,
                                        pm_addr,
                                        pm_size*4);
@@ -1222,11 +1232,14 @@ u32 scode_unmarshall(VCPU * vcpu)
 
         default: /* other */
           dprintf(LOG_ERROR, "[TV] Fail: unknown parameter %d type %d \n", i, pm_type);
-          return 1;
+          err=5;
+          goto out;
         } // end switch
 
     } //end for loop 
-  return 0;
+ out:
+  hpt_guest_walk_ctx_destroy(&reg_guest_walk_ctx);
+  return err;
 }
 
 //switch from sensitive code to regular code
