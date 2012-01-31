@@ -136,7 +136,16 @@ bool hptw_next_lvl(const hptw_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va)
       || hpt_pmeo_is_page(&pmeo)) {
     return false;
   } else {
-    pmo->pm = ctx->pa2ptr(ctx->pa2ptr_ctx, hpt_pmeo_get_address(&pmeo));
+    size_t avail;
+    size_t pm_sz = hpt_pm_size(pmo->t, pmo->lvl-1);
+    pmo->pm = ctx->pa2ptr(ctx->pa2ptr_ctx, hpt_pmeo_get_address(&pmeo),
+                          pm_sz, HPT_PROTS_R, HPTW_CPL0, &avail);
+    assert(avail == pm_sz); /* this could in principle be false if,
+                               e.g., a host page table has a smaller
+                               page size than the size of the given
+                               page map. we don't handle this
+                               case. will never happen with current
+                               x86 page types */
     pmo->lvl--;
     return true;
   }
@@ -209,15 +218,9 @@ void* hptw_access_va(const hptw_ctx_t *ctx,
   pa = hpt_pmeo_va_to_pa(&pmeo, va);
   *avail_sz = MIN(requested_sz, hpt_remaining_on_page(&pmeo, pa));
 
-  return ctx->pa2ptr(ctx->pa2ptr_ctx, pa);
+  return ctx->pa2ptr(ctx->pa2ptr_ctx, pa,
+                     *avail_sz, HPT_PROTS_R, HPTW_CPL0, avail_sz);
 }
-
-typedef enum {
-  HPTW_CPL0=0,
-  HPTW_CPL1=1,
-  HPTW_CPL2=2,
-  HPTW_CPL3=3,
-} hptw_cpl_t;
 
 void* hptw_checked_access_va(const hptw_ctx_t *ctx,
                              const hpt_pmo_t *pmo_root,
@@ -249,16 +252,16 @@ void* hptw_checked_access_va(const hptw_ctx_t *ctx,
 
   pa = hpt_pmeo_va_to_pa(&pmeo, va);
   *avail_sz = MIN(requested_sz, hpt_remaining_on_page(&pmeo, pa));
-
-  return ctx->pa2ptr(ctx->pa2ptr_ctx, pa);
+  return ctx->pa2ptr(ctx->pa2ptr_ctx, pa,
+                     *avail_sz, access_type, cpl, avail_sz);
 }
 
-int hptw_checked_copy_from_guest(const hptw_ctx_t *ctx,
-                                 const hpt_pmo_t *pmo,
-                                 hptw_cpl_t cpl,
-                                 void *dst,
-                                 hpt_va_t src_va_base,
-                                 size_t len)
+int hptw_checked_copy_from_va(const hptw_ctx_t *ctx,
+                              const hpt_pmo_t *pmo,
+                              hptw_cpl_t cpl,
+                              void *dst,
+                              hpt_va_t src_va_base,
+                              size_t len)
 {
   size_t copied=0;
 
@@ -277,30 +280,12 @@ int hptw_checked_copy_from_guest(const hptw_ctx_t *ctx,
   return 0;
 }
 
-void hptw_copy_from_guest(const hptw_ctx_t *ctx,
-                         const hpt_pmo_t *pmo,
-                         void *dst,
-                         hpt_va_t src_va_base,
-                         size_t len)
-{
-  size_t copied=0;
-
-  while(copied < len) {
-    hpt_va_t src_va = src_va_base + copied;
-    size_t to_copy;
-    void *src;
-
-    src = hptw_access_va(ctx, pmo, src_va, len-copied, &to_copy);
-    memcpy(dst+copied, src, to_copy);
-    copied += to_copy;
-  }
-}
-
-void hptw_copy_to_guest(const hptw_ctx_t *ctx,
-                       const hpt_pmo_t *pmo,
-                       hpt_va_t dst_va_base,
-                       void *src,
-                       size_t len)
+int hptw_checked_copy_to_va(const hptw_ctx_t *ctx,
+                            const hpt_pmo_t *pmo,
+                            hptw_cpl_t cpl,
+                            hpt_va_t dst_va_base,
+                            void *src,
+                            size_t len)
 {
   size_t copied=0;
 
@@ -310,19 +295,25 @@ void hptw_copy_to_guest(const hptw_ctx_t *ctx,
     size_t to_copy;
     void *dst;
 
-    dst = hptw_access_va(ctx, pmo, dst_va, len-copied, &to_copy);
+    dst = hptw_checked_access_va(ctx, pmo, HPT_PROTS_W, cpl, dst_va, len-copied, &to_copy);
+    if (!dst) {
+      return 1;
+    }
     memcpy(dst, src+copied, to_copy);
     copied += to_copy;
   }
+  return 0;
 }
 
-void hptw_copy_guest_to_guest(const hptw_ctx_t *dst_ctx,
-                             const hpt_pmo_t *dst_pmo,
-                             hpt_va_t dst_va_base,
-                             const hptw_ctx_t *src_ctx,
-                             const hpt_pmo_t *src_pmo,
-                             hpt_va_t src_va_base,
-                             size_t len)
+int hptw_checked_copy_va_to_va(const hptw_ctx_t *dst_ctx,
+                               const hpt_pmo_t *dst_pmo,
+                               hptw_cpl_t dst_cpl,
+                               hpt_va_t dst_va_base,
+                               const hptw_ctx_t *src_ctx,
+                               const hpt_pmo_t *src_pmo,
+                               hptw_cpl_t src_cpl,
+                               hpt_va_t src_va_base,
+                               size_t len)
 {
   size_t copied=0;
 
@@ -332,19 +323,24 @@ void hptw_copy_guest_to_guest(const hptw_ctx_t *dst_ctx,
     size_t to_copy;
     void *src, *dst;
 
-    dst = hptw_access_va(dst_ctx, dst_pmo, dst_va, len-copied, &to_copy);
-    src = hptw_access_va(src_ctx, src_pmo, src_va, to_copy, &to_copy);
+    dst = hptw_checked_access_va(dst_ctx, dst_pmo, HPT_PROTS_W, dst_cpl, dst_va, len-copied, &to_copy);
+    src = hptw_checked_access_va(src_ctx, src_pmo, HPT_PROTS_R, src_cpl, src_va, to_copy, &to_copy);
+    if(!dst || !src) {
+      return 1;
+    }
 
     memcpy(dst, src, to_copy);
     copied += to_copy;
   }
+  return 0;
 }
 
-void hptw_memset_guest(const hptw_ctx_t *ctx,
-                      const hpt_pmo_t *pmo,
-                      hpt_va_t dst_va_base,
-                      int c,
-                      size_t len)
+int hptw_checked_memset_va(const hptw_ctx_t *ctx,
+                           const hpt_pmo_t *pmo,
+                           hptw_cpl_t cpl,
+                           hpt_va_t dst_va_base,
+                           int c,
+                           size_t len)
 {
   size_t set=0;
 
@@ -353,7 +349,7 @@ void hptw_memset_guest(const hptw_ctx_t *ctx,
     size_t to_set;
     void *dst;
 
-    dst = hptw_access_va(ctx, pmo, dst_va, len-set, &to_set);
+    dst = hptw_checked_access_va(ctx, pmo, HPT_PROTS_W, cpl, dst_va, len-set, &to_set);
     memset(dst, c, to_set);
     set += to_set;
   }
