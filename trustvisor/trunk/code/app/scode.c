@@ -1217,15 +1217,19 @@ u32 scode_unmarshall(VCPU * vcpu)
 
             dprintf(LOG_TRACE, "[TV]   PM %d is a pointer (size %d, addr %#x)\n", i,  pm_size*4, pm_value);
             /* copy data from sensitive code (param space) to guest */
-            hptw_checked_copy_va_to_va(&reg_guest_walk_ctx,
-                                       &whitelist[curr].reg_gpt_root,
-                                       HPTW_CPL3,
-                                       pm_value,
-                                       &whitelist[curr].hpt_guest_walk_ctx,
-                                       &whitelist[curr].pal_gpt_root,
-                                       HPTW_CPL3,
-                                       pm_addr,
-                                       pm_size*4);
+            if(hptw_checked_copy_va_to_va(&reg_guest_walk_ctx,
+                                          &whitelist[curr].reg_gpt_root,
+                                          HPTW_CPL3,
+                                          pm_value,
+                                          &whitelist[curr].hpt_guest_walk_ctx,
+                                          &whitelist[curr].pal_gpt_root,
+                                          HPTW_CPL3,
+                                          pm_addr,
+                                          pm_size*4)) {
+              dprintf(LOG_ERROR, "Couldn't copy from param area to ptr\n");
+              err=4;
+              goto out;
+            }
             pm_addr += 4*pm_size;
             break;
           }
