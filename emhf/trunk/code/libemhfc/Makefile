@@ -4,7 +4,7 @@ OBJECTS = $(patsubst %.c, %.o, $(C_SOURCES))
 
 I_SOURCES =  $(wildcard ./include/*.h)
 
-CFLAGS += -I./include -nostdinc
+CFLAGS += -I./include -nostdinc -Wall -Werror
 
 THE_ARCHIVE = libemhfc.a
 
