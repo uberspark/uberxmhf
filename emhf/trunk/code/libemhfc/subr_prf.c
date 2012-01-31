@@ -100,6 +100,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stddef.h>
+#include <ctype.h>
+
+#include <sys/libkern.h>
 
 /*
  * Note that stdarg.h and the ANSI style va_start macro is used for both
@@ -134,22 +137,22 @@ struct snprintf_arg {
 
 extern	int log_open;
 
-static void  msglogchar(int c, int pri);
+/* static void  msglogchar(int c, int pri); */
 /* static void  putchar(int ch, void *arg); */
 static char *ksprintn(char *nbuf, uintmax_t num, int base, int *len, int upper);
 static void  snprintf_func(int ch, void *arg);
 static int
 kvprintf(char const *fmt, void (*func)(int, void*), void *arg, int radix, va_list ap);
 
-static int msgbufmapped;		/* Set when safe to use msgbuf */
-int msgbuftrigger;
+/* static int msgbufmapped;		/\* Set when safe to use msgbuf *\/ */
+/* int msgbuftrigger; */
 
-static int      log_console_output = 1;
+/* static int      log_console_output = 1; */
 /* TUNABLE_INT("kern.log_console_output", &log_console_output); */
 /* SYSCTL_INT(_kern, OID_AUTO, log_console_output, CTLFLAG_RW, */
 /*     &log_console_output, 0, "Duplicate console output to the syslog."); */
 
-static int	always_console_output = 0;
+/* static int	always_console_output = 0; */
 /* TUNABLE_INT("kern.always_console_output", &always_console_output); */
 /* SYSCTL_INT(_kern, OID_AUTO, always_console_output, CTLFLAG_RW, */
 /*     &always_console_output, 0, "Always output to console despite TIOCCONS."); */
