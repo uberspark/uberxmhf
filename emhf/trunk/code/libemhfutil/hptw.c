@@ -243,8 +243,11 @@ void* hptw_checked_access_va(const hptw_ctx_t *ctx,
   hpt_pa_t pa;
   hpt_pmo_t pmo = *pmo_root;
 
+  hpt_log_trace("hptw_checked_access_va: entering\n");
 
   do {
+    hpt_log_trace("hptw_checked_access_va pmo t:%d pm:%p lvl:%d\n",
+                  pmo.t, pmo.pm, pmo.lvl);
     hpt_pm_get_pmeo_by_va(&pmeo, &pmo, va);
     if (((access_type & hpt_pmeo_getprot(&pmeo)) != access_type)
         || (cpl != HPTW_CPL0 && !hpt_pmeo_getuser(&pmeo))) {
@@ -264,6 +267,7 @@ void* hptw_checked_access_va(const hptw_ctx_t *ctx,
 
   pa = hpt_pmeo_va_to_pa(&pmeo, va);
   *avail_sz = MIN(requested_sz, hpt_remaining_on_page(&pmeo, pa));
+  hpt_log_trace("hptw_checked_access_va got pa:%llx sz:%d\n", pa, *avail_sz);
   return ctx->pa2ptr(ctx->pa2ptr_ctx, pa,
                      *avail_sz, access_type, cpl, avail_sz);
 }
@@ -328,21 +332,34 @@ int hptw_checked_copy_va_to_va(const hptw_ctx_t *dst_ctx,
 {
   size_t copied=0;
 
+  hpt_log_trace("hptw_checked_copy_va_to_va: entering\n");
+  hpt_log_trace("hptw_checked_copy_va_to_va: dst_pmo t:%d pm:%p lvl:%d\n",
+          dst_pmo->t, dst_pmo->pm, dst_pmo->lvl);
+  hpt_log_trace("hptw_checked_copy_va_to_va: src_pmo t:%d pm:%p lvl:%d\n",
+          src_pmo->t, src_pmo->pm, src_pmo->lvl);
+
   while(copied < len) {
     hpt_va_t dst_va = dst_va_base + copied;
     hpt_va_t src_va = src_va_base + copied;
     size_t to_copy;
     void *src, *dst;
 
+    hpt_log_trace("hptw_checked_copy_va_to_va: dst_va:0x%llx src_va:0x%llx\n", dst_va, src_va);
+
+    hpt_log_trace("hptw_checked_copy_va_to_va: calling hptw_checked_access_va\n");
     dst = hptw_checked_access_va(dst_ctx, dst_pmo, HPT_PROTS_W, dst_cpl, dst_va, len-copied, &to_copy);
+    hpt_log_trace("hptw_checked_copy_va_to_va: calling hptw_checked_access_va\n");
     src = hptw_checked_access_va(src_ctx, src_pmo, HPT_PROTS_R, src_cpl, src_va, to_copy, &to_copy);
     if(!dst || !src) {
       return 1;
     }
 
+    hpt_log_trace("hptw_checked_copy_va_to_va: calling memcpy\n");
     memcpy(dst, src, to_copy);
     copied += to_copy;
   }
+
+  hpt_log_trace("hptw_checked_copy_va_to_va: returning\n");
   return 0;
 }
 
@@ -354,19 +371,23 @@ int hptw_checked_memset_va(const hptw_ctx_t *ctx,
                            size_t len)
 {
   size_t set=0;
+  hpt_log_trace("hptw_checked_memset_va entering\n");
 
   while(set < len) {
     hpt_va_t dst_va = dst_va_base + set;
     size_t to_set;
     void *dst;
 
+    hpt_log_trace("hptw_checked_memset_va calling hptw_checked_access_va\n");
     dst = hptw_checked_access_va(ctx, pmo, HPT_PROTS_W, cpl, dst_va, len-set, &to_set);
+    hpt_log_trace("hptw_checked_memset_va got pointer %p, size %d\n", dst, to_set);
     if(!dst) {
       return 1;
     }
     memset(dst, c, to_set);
     set += to_set;
   }
+  hpt_log_trace("hptw_checked_memset_va returning\n");
   return 0;
 }
 
