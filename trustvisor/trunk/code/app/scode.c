@@ -936,16 +936,24 @@ u32 scode_marshall(VCPU * vcpu)
   u32 grsp;
   u32 new_rsp;
   int curr=scode_curr[vcpu->id];
+  u32 err=0;
+  hptw_ctx_t vcpu_guest_walk_ctx;
+  hpt_pmo_t vcpu_guest_root;
+
+  if (hpt_guest_walk_ctx_construct_vcpu(&vcpu_guest_walk_ctx, vcpu, NULL)) {
+    dprintf(LOG_ERROR, "scode_marshall: hpt_guest_walk_ctx_construct_vcpu failed\n");
+    err=1;
+    goto out;
+  }
+  hpt_emhf_get_guest_root_pmo(vcpu, &vcpu_guest_root);
 
   perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_MARSHALL], vcpu->idx);
 
   dprintf(LOG_TRACE, "[TV] marshalling scode parameters!\n");
-  if(whitelist[curr].gpm_num == 0)
-    {
-      dprintf(LOG_TRACE, "[TV] params number is 0. Return!\n");
-      perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_MARSHALL], vcpu->idx);
-      return 0;
-    }
+  if(whitelist[curr].gpm_num == 0) {
+    dprintf(LOG_TRACE, "[TV] params number is 0. Return!\n");
+    goto out;
+  }
 
   /* memory address for input parameter in sensitive code */
   pm_addr_base = whitelist[curr].gpmp;
@@ -964,12 +972,11 @@ u32 scode_marshall(VCPU * vcpu)
   pm_size_sum = 4; /*memory used in input pms section*/
   dprintf(LOG_TRACE, "[TV] params number is %d\n", whitelist[curr].gpm_num);
 
-  if (whitelist[curr].gpm_num > TV_MAX_PARAMS)
-    {
-      dprintf(LOG_ERROR, "[TV] Fail: param num is too big!\n");
-      perf_ctr_timer_discard(&g_tv_perf_ctrs[TV_PERF_CTR_MARSHALL], vcpu->idx);
-      return 1;
-    }
+  if (whitelist[curr].gpm_num > TV_MAX_PARAMS) {
+    dprintf(LOG_ERROR, "[TV] Fail: param num is too big!\n");
+    err=1;
+    goto out;
+  }
 
   /* begin to process the params*/
   for (pm_i = whitelist[curr].gpm_num-1; pm_i >= 0; pm_i--) /*the last parameter should be pushed in stack first*/
@@ -978,29 +985,45 @@ u32 scode_marshall(VCPU * vcpu)
       pm_type = whitelist[curr].params_info.params[pm_i].type;
       pm_size = whitelist[curr].params_info.params[pm_i].size;
       /* get param value from guest stack */
-      pm_value = get_32bit_aligned_value_from_guest(&whitelist[curr].hpt_guest_walk_ctx,
-                                                    &whitelist[curr].reg_gpt_root,
-                                                    grsp + pm_i*4);
-      pm_size_sum += 12;
+      if (copy_from_current_guest(vcpu, &pm_value, grsp + pm_i*4, sizeof(u32))) {
+        dprintf(LOG_ERROR, "[TV] scode_marshall failed to copy from guest\n");
+        err=2;
+        goto out;
+      }
+      dprintf(LOG_TRACE, "scode_marshal copied param %d\n", pm_i);
 
-      if (pm_size_sum > (whitelist[curr].gpm_size*PAGE_SIZE_4K))
-        {
-          dprintf(LOG_ERROR, "[TV] Fail: No enough space to save input params data!\n");
-          perf_ctr_timer_discard(&g_tv_perf_ctrs[TV_PERF_CTR_MARSHALL], vcpu->idx);
-          return 1;
-        }
+      pm_size_sum += 12;
+      if (pm_size_sum > (whitelist[curr].gpm_size*PAGE_SIZE_4K)) {
+        dprintf(LOG_ERROR, "[TV] Fail: No enough space to save input params data!\n");
+        err=3;
+        goto out;
+      }
 
       /* save input params in input params memory for sensitive code */
-      put_32bit_aligned_value_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
-                                       &whitelist[curr].pal_gpt_root,
-                                       (u32)pm_addr, pm_type);
-      put_32bit_aligned_value_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
-                                       &whitelist[curr].pal_gpt_root,
-                                       (u32)pm_addr+4, pm_size);
-      put_32bit_aligned_value_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
-                                       &whitelist[curr].pal_gpt_root,
-                                       (u32)pm_addr+8, pm_value);
-      pm_addr += 12;
+      if (hptw_checked_copy_to_va(&whitelist[curr].hpt_guest_walk_ctx,
+                                  &whitelist[curr].pal_gpt_root,
+                                  HPTW_CPL3,
+                                  pm_addr,
+                                  &pm_type, sizeof(pm_type))
+          ||
+          hptw_checked_copy_to_va(&whitelist[curr].hpt_guest_walk_ctx,
+                                  &whitelist[curr].pal_gpt_root,
+                                  HPTW_CPL3,
+                                  pm_addr+sizeof(pm_type),
+                                  &pm_size, sizeof(pm_size))
+          ||
+          hptw_checked_copy_to_va(&whitelist[curr].hpt_guest_walk_ctx,
+                                  &whitelist[curr].pal_gpt_root,
+                                  HPTW_CPL3,
+                                  pm_addr+sizeof(pm_type)+sizeof(pm_size),
+                                  &pm_value, sizeof(pm_value))) {
+        dprintf(LOG_ERROR, "[TV] scode_marshall: couldn't write to param area\n");
+        err=4;
+        goto out;
+      }
+      pm_addr += sizeof(pm_type)+sizeof(pm_size)+sizeof(pm_addr);
+      dprintf(LOG_TRACE, "scode_marshal copied metadata to params area\n");      
+
       switch (pm_type)
         {
         case TV_PAL_PM_INTEGER: /* integer */
@@ -1014,38 +1037,36 @@ u32 scode_marshall(VCPU * vcpu)
           {
             /*copy data from guest space to sensitive code*/
             pm_size_sum += 4*pm_size;
-            if (pm_size_sum > (whitelist[curr].gpm_size*PAGE_SIZE_4K))
-              {
-                dprintf(LOG_TRACE, "[TV] Fail: No enough space to save input params data!\n");
-                return 1;
-              }
-
-            /* make sure that this pointer point to mem regeion that can be r/w by user */
-            if (!guest_pt_range_is_user_rw(vcpu, pm_value, pm_size*4)) {
-              dprintf(LOG_ERROR, "[TV] Fail: input param data region is not user writable!\n");
-              return 1;
+            if (pm_size_sum > (whitelist[curr].gpm_size*PAGE_SIZE_4K)) {
+              dprintf(LOG_ERROR, "[TV] Fail: Not enough space to save input params data!\n");
+              err=5;
+              goto out;
             }
+            dprintf(LOG_TRACE, "[TV]   PM %d is a pointer (size %d, value %#x)\n", pm_i, pm_size, pm_value);
 
-            hptw_checked_copy_va_to_va(&whitelist[curr].hpt_guest_walk_ctx,
-                                       &whitelist[curr].pal_gpt_root,
-                                       HPTW_CPL3,
-                                       pm_addr,
-                                       &whitelist[curr].hpt_guest_walk_ctx,
-                                       &whitelist[curr].reg_gpt_root,
-                                       HPTW_CPL3,
-                                       pm_value,
-                                       pm_size*4);
+            if (hptw_checked_copy_va_to_va(&whitelist[curr].hpt_guest_walk_ctx,
+                                           &whitelist[curr].pal_gpt_root,
+                                           HPTW_CPL3,
+                                           pm_addr,
+                                           &vcpu_guest_walk_ctx,
+                                           &vcpu_guest_root,
+                                           HPTW_CPL3,
+                                           pm_value,
+                                           pm_size*4)) {
+              dprintf(LOG_ERROR, "[TV] scode_marshall failed to copy to params\n");
+              err=6;
+              goto out;
+            }
 
             /* put pointer address in sensitive code stack*/
             pm_tmp = pm_addr;
-            dprintf(LOG_TRACE, "[TV]   PM %d is a pointer (size %d, addr %#x)\n", pm_i, pm_size*4, pm_value);
             pm_addr += 4*pm_size;
             break;
           }
         default: /* other */
-          perf_ctr_timer_discard(&g_tv_perf_ctrs[TV_PERF_CTR_MARSHALL], vcpu->idx);
           dprintf(LOG_ERROR, "[TV] Fail: unknown parameter %d type %d \n", pm_i, pm_type);
-          return 1;
+          err=7;
+          goto out;
         }
       new_rsp = VCPU_grsp(vcpu)-4;
       VCPU_grsp_set(vcpu, new_rsp);
@@ -1053,8 +1074,11 @@ u32 scode_marshall(VCPU * vcpu)
                                        &whitelist[curr].pal_gpt_root,
                                        new_rsp, pm_tmp);
     }
+
+ out:
+  hpt_guest_walk_ctx_destroy(&vcpu_guest_walk_ctx);
   perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_MARSHALL], vcpu->idx);
-  return 0;
+  return err;
 }
 
 
