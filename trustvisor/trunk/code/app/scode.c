@@ -1395,11 +1395,20 @@ void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* wle)
 /* note- caller is responsible for flushing page tables afterwards */
 u32 scode_share_range(VCPU * vcpu, whitelist_entry_t *wle, u32 gva_base, u32 gva_len)
 {
-  (void)vcpu; /* tell compiler to ignore unused param */
+  u32 err=0;
+  hptw_ctx_t vcpu_guest_walk_ctx;
+  hpt_pmo_t vcpu_guest_root;
+  if (hpt_guest_walk_ctx_construct_vcpu(&vcpu_guest_walk_ctx, vcpu, NULL)) {
+    dprintf(LOG_ERROR, "[TV] scode_share_range: scode_share_range failed\n");
+    err=1;
+    goto out;
+  }
+  hpt_emhf_get_guest_root_pmo(vcpu, &vcpu_guest_root);
 
   if (wle->sections_num >= TV_MAX_SECTIONS) {
     dprintf(LOG_ERROR, "[TV] scode_share_range: max sections (%d) limit exceeded\n", TV_MAX_SECTIONS);
-    return 1;
+    err=2;
+    goto out;
   }
 
   wle->sections[wle->sections_num] = (tv_pal_section_int_t) {
@@ -1412,15 +1421,17 @@ u32 scode_share_range(VCPU * vcpu, whitelist_entry_t *wle, u32 gva_base, u32 gva
   };
 
   scode_lend_section(&g_reg_npmo_root, &wle->hpt_nested_walk_ctx,
-                     &wle->reg_gpt_root, &wle->hpt_guest_walk_ctx,
+                     &vcpu_guest_root, &vcpu_guest_walk_ctx,
                      &wle->pal_npt_root, &wle->hpt_nested_walk_ctx,
                      &wle->pal_gpt_root, &wle->hpt_guest_walk_ctx,
                      &wle->sections[wle->sections_num]);
 
   wle->sections_num++;
 
-  return 0;
+ out:
+  hpt_guest_walk_ctx_destroy(&vcpu_guest_walk_ctx);
 
+  return err;
 }
 
 u32 scode_share_ranges(VCPU * vcpu, u32 scode_entry, u32 gva_base[], u32 gva_len[], u32 count)
