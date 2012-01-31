@@ -133,14 +133,16 @@ bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
   hpt_pmo_t host_root;
   hpt_pmo_t guest_root;
   hptw_ctx_t guest_ctx;
-  scode_guest_pa2ptr_ctx_t pa2ptr_ctx = {
-    .host_walk_ctx = hpt_nested_walk_ctx,
-    .host_pmo_root = host_root,
-  };
+  scode_guest_pa2ptr_ctx_t pa2ptr_ctx;
   size_t i;
 
   hpt_emhf_get_root_pmo(vcpu, &host_root);
   hpt_emhf_get_guest_root_pmo(vcpu, &guest_root);
+
+  pa2ptr_ctx = (scode_guest_pa2ptr_ctx_t) {
+    .host_walk_ctx = hpt_nested_walk_ctx,
+    .host_pmo_root = host_root,
+  };
 
   guest_ctx = hpt_guest_walk_ctx;
   guest_ctx.pa2ptr = &hpt_checked_guest_pa2ptr;
