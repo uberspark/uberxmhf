@@ -49,9 +49,7 @@
 #include <stddef.h>
 #include <assert.h>
 
-#ifndef hpt_log_trace
-# define hpt_log_trace(fmt, args...) while(0)
-#endif
+void hpt_log_trace(const char* fmt, ...);
 
 typedef enum {
   HPT_TYPE_NORM=0, /* x86 'normal'\legacy */
