@@ -1086,7 +1086,6 @@ u32 scode_marshall(VCPU * vcpu)
 //todo: switch from regular code to sensitive code
 u32 hpt_scode_switch_scode(VCPU * vcpu)
 {
-  u32 addr;
   int curr=scode_curr[vcpu->id];
 
   perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_SCODE], vcpu->idx);
@@ -1099,6 +1098,14 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
   dprintf(LOG_TRACE, "[TV] saved guest regular stack %#x, switch to sensitive code stack %#x\n", (u32)VCPU_grsp(vcpu), whitelist[curr].gssp);
   whitelist[curr].grsp = (u32)VCPU_grsp(vcpu);
   VCPU_grsp_set(vcpu, whitelist[curr].gssp);
+
+  if (copy_from_current_guest(vcpu,
+                              &whitelist[curr].return_v,
+                              whitelist[curr].grsp,
+                              sizeof(void*))) {
+    dprintf(LOG_ERROR, "switch_scode: Couldn't read return address\n");
+  }
+  dprintf(LOG_TRACE, "[TV] scode return vaddr is %#x\n", whitelist[curr].return_v);
 
   /* input parameter marshalling */
   if (scode_marshall(vcpu)){
@@ -1127,18 +1134,11 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
     ((struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr))->cpl = 3;
   }
 
-  /* write the return address to scode stack */
-  addr = get_32bit_aligned_value_from_guest(&whitelist[curr].hpt_guest_walk_ctx,
-                                            &whitelist[curr].reg_gpt_root,
-                                            (u32)whitelist[curr].grsp);
+  /* write the sentinel return address to scode stack */
   VCPU_grsp_set(vcpu, VCPU_grsp(vcpu)-4);
   put_32bit_aligned_value_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
                                    &whitelist[curr].pal_gpt_root,
                                    (u32)VCPU_grsp(vcpu), RETURN_FROM_PAL_ADDRESS);
-  /* store the return address in whitelist structure */
-  whitelist[curr].return_v = addr;
-  dprintf(LOG_TRACE, "[TV] scode return vaddr is %#x\n", whitelist[curr].return_v);
-
   dprintf(LOG_TRACE, "[TV] host stack pointer before running scode is %#x\n",(u32)VCPU_grsp(vcpu));
 
   perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_SCODE], vcpu->idx);
