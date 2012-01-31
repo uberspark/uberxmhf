@@ -147,12 +147,15 @@ bool hptw_next_lvl(const hptw_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va)
                           pm_sz, HPT_PROTS_R, HPTW_CPL0, &avail);
     hpt_log_trace("hptw_next_lvl next-lvl:%d pm-sz:%d pmo->pm:%p avail:%d\n",
                   pmo->lvl-1, pm_sz, pmo->pm, avail);
-    assert(pmo->pm); /* FIXME: need to make this a proper run-time
-                        check.  to do so, need to change semantics of
-                        this function though, since we currently don't
-                        have a way to signal an error, only that we've
-                        legitimately reached the leaf of the table
-                        walk */
+    if(!pmo->pm) {
+      /* didn't descend, and this is an error. we ran into trouble
+         accessing the page tables themselves, which should only
+         happen if the entity that set up the page tables, whether the
+         guest OS or the hypervisor, is buggy or malicious */
+      pmo->t = HPT_TYPE_INVALID;
+      pmo->lvl = 0;
+      return false;
+    }
     assert(avail == pm_sz); /* this could in principle be false if,
                                e.g., a host page table has a smaller
                                page size than the size of the given
@@ -184,6 +187,11 @@ hpt_prot_t hptw_get_effective_prots(const hptw_ctx_t *ctx,
     prots_rv &= hpt_pmeo_getprot(&pmeo);
     user_accessible_rv = user_accessible_rv && hpt_pmeo_getuser(&pmeo);
   } while (hptw_next_lvl(ctx, &pmo, va));
+
+  /* XXX should more clearly indicate an error */
+  if (pmo.t == HPT_TYPE_INVALID) {
+    return HPT_PROTS_NONE;
+  }
 
   if(user_accessible != NULL) {
     *user_accessible = user_accessible_rv;
@@ -246,6 +254,7 @@ void* hptw_checked_access_va(const hptw_ctx_t *ctx,
   hpt_pmeo_t pmeo;
   hpt_pa_t pa;
   hpt_pmo_t pmo = *pmo_root;
+  *avail_sz=0;
 
   hpt_log_trace("hptw_checked_access_va: entering. va:0x%llx access_type %lld cpl:%d\n",
                 va, access_type, cpl);
@@ -261,6 +270,10 @@ void* hptw_checked_access_va(const hptw_ctx_t *ctx,
       return NULL;
     }
   } while (hptw_next_lvl(ctx, &pmo, va));
+
+  if (pmo.t == HPT_TYPE_INVALID) {
+    return NULL;
+  }
 
   if(!hpt_pmeo_is_present(&pmeo)) {
     hpt_log_trace("hptw_checked_access_va not-present. returning NULL\n");

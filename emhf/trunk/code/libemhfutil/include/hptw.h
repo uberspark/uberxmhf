@@ -86,6 +86,10 @@ void hptw_get_pmeo(hpt_pmeo_t *pmeo,
                        int end_lvl,
                        hpt_va_t va);
 
+/* tries to descend one level in the page table tree. returns true
+ * if successful. in case of an exception, such as pa2ptr callback
+ * failing, pmo is set to type HPT_INVALID.
+ */
 bool hptw_next_lvl(const hptw_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va);
 
 hpt_prot_t hptw_get_effective_prots(const hptw_ctx_t *ctx,
