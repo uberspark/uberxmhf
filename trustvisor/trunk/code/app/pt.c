@@ -313,14 +313,6 @@ static void destroy_checked_walk_ctx(checked_guest_walk_ctx_t *ctx)
   ctx->guest_walk_ctx.pa2ptr_ctx = NULL;
 }
 
-/* void copy_from_current_guest_UNCHECKED(VCPU * vcpu, void *dst, gva_t gvaddr, u32 len) */
-/* { */
-/*   hpt_pmo_t root; */
-/*   hpt_emhf_get_guest_root_pmo(vcpu, &root); */
-
-/*   hptw_copy_from_guest(&hpt_guest_walk_ctx, &root, dst, gvaddr, len); */
-
-/* } */
 int copy_from_current_guest(VCPU * vcpu, void *dst, gva_t gvaddr, u32 len)
 {
   checked_guest_walk_ctx_t ctx;
@@ -341,13 +333,6 @@ int copy_from_current_guest(VCPU * vcpu, void *dst, gva_t gvaddr, u32 len)
   return rv;
 }
 
-/* void copy_to_current_guest_UNCHECKED(VCPU * vcpu, gva_t gvaddr, void *src, u32 len) */
-/* { */
-/*   hpt_pmo_t root; */
-/*   hpt_emhf_get_guest_root_pmo(vcpu, &root); */
-
-/*   hptw_copy_to_guest(&hpt_guest_walk_ctx, &root, gvaddr, src, len); */
-/* } */
 int copy_to_current_guest(VCPU * vcpu, gva_t gvaddr, void *src, u32 len)
 {
   checked_guest_walk_ctx_t ctx;
