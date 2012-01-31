@@ -110,8 +110,13 @@ typedef struct {
 static void* hpt_checked_guest_pa2ptr(void *vctx, hpt_pa_t gpa, size_t sz, hpt_prot_t access_type, hptw_cpl_t cpl, size_t *avail_sz)
 {
   scode_guest_pa2ptr_ctx_t *ctx = vctx;
-
   ASSERT(ctx);
+
+  dprintf(LOG_TRACE, "hpt_checked_guest_pa2ptr gpa:%llx, sz:%d, access_type:%lld, cpl:%d\n",
+          gpa, sz, access_type, cpl);
+  dprintf(LOG_TRACE, "hpt_checked_guest_pa2ptr host_pmo_root t:%d pm:%p lvl:%d\n",
+          ctx->host_pmo_root.t, ctx->host_pmo_root.pm, ctx->host_pmo_root.lvl);
+
   return hptw_checked_access_va(&ctx->host_walk_ctx,
                                 &ctx->host_pmo_root,
                                 access_type,
@@ -141,6 +146,12 @@ bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
   guest_ctx.pa2ptr = &hpt_checked_guest_pa2ptr;
   guest_ctx.pa2ptr_ctx = &pa2ptr_ctx;
 
+  dprintf(LOG_TRACE, "guest_root pm:%p lvl:%d t:%d\n",
+          guest_root.pm,
+          guest_root.lvl,
+          guest_root.t);
+  dprintf(LOG_TRACE, "entering nested_pt_range_has_reqd_prots\n");
+
   /* check that the guest root pagemap is accessible in the host page tables */
   {
     hpt_prot_t prot;
@@ -156,19 +167,27 @@ bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
     }
   }
 
+  dprintf(LOG_TRACE, "guest root pagemap is accessible\n");
+
   for(i=0; i<size_bytes; i += PAGE_SIZE_4K) {
     hpt_prot_t host_prots, guest_prots;
     bool host_user_accessible, guest_user_accessible;
-    gpa_t gpa = gpt_vaddr_to_paddr(&guest_ctx, &guest_root, vaddr+i); /* XXX redundant tablewalk */
+    gpa_t gpa;
+
+    dprintf(LOG_TRACE, "checking gva %x\n", vaddr+i);
+    gpa = gpt_vaddr_to_paddr(&guest_ctx, &guest_root, vaddr+i); /* XXX redundant tablewalk */
+    dprintf(LOG_TRACE, "checking gpa %llx\n", gpa);
 
     guest_prots = hptw_get_effective_prots(&guest_ctx,
                                                 &guest_root,
                                                 vaddr+i,
                                                 &guest_user_accessible);
+    dprintf(LOG_TRACE, "got guest prots %lld\n", guest_prots);
     host_prots = hptw_get_effective_prots(&hpt_nested_walk_ctx,
                                                &host_root,
                                                gpa,
                                                &host_user_accessible);
+    dprintf(LOG_TRACE, "got host prots %lld\n", host_prots);
 
     if ((reqd_user_accessible && !(guest_user_accessible && host_user_accessible))
         || ((reqd_prots & guest_prots) != reqd_prots)
@@ -181,6 +200,7 @@ bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
       return false;
     }
   }
+  dprintf(LOG_TRACE, "exiting nested_pt_range_has_reqd_prots\n");
   return true;
 }
 

@@ -466,6 +466,7 @@ int memsect_info_copy_from_guest(VCPU * vcpu, struct tv_pal_sections *ps_scode_i
     dprintf(LOG_ERROR, "ERROR: couldn't copy section info from gva %08x", gva_scode_info+gva_scode_info_offset);
     return 4;
   }
+
   return 0;
 }
 
@@ -511,10 +512,12 @@ int memsect_info_register(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, wh
           wle->gss_size=size;
           wle->gssp=start+(size<<PAGE_SHIFT_4K)-0x10;
           is_get_stack=1;
+          dprintf(LOG_TRACE, "calling guest_pt_range_is_user_rw\n");
           if (!guest_pt_range_is_user_rw(vcpu, start, size*PAGE_SIZE_4K)) {
             dprintf(LOG_ERROR, "[TV] ERROR: SCODE_STACK pages are not user writable!\n");
             return 1;
           }
+          dprintf(LOG_TRACE, "returned from guest_pt_range_is_user_rw\n");
         }
       }
       break;
