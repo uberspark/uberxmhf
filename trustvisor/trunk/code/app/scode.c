@@ -595,6 +595,13 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
   whitelist_entry_t whitelist_new;
   u64 gcr3;
   hpt_pmo_t reg_gpmo_root, pal_npmo_root, pal_gpmo_root;
+  hptw_ctx_t reg_guest_walk_ctx;
+  u32 err=0;
+
+  if (hpt_guest_walk_ctx_construct_vcpu(&reg_guest_walk_ctx, vcpu, NULL)) {
+    dprintf(LOG_ERROR, "scode_register: hpt_guest_walk_ctx_construct_vcpu failed\n");
+    return 1;
+  }
 
   /* set all CPUs to use the same 'reg' nested page tables,
      and set up a corresponding hpt_pmo.
@@ -634,7 +641,8 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
   if (whitelist_size == whitelist_max)
     {
       dprintf(LOG_ERROR, "[TV] FATAL ERROR: too many registered scode, the limitation is %d\n", whitelist_max);
-      return 1;
+      err=1;
+      goto out;
     }
 
   dprintf(LOG_TRACE, "[TV] CPU(0x%02x): add to whitelist,  scode_info %#x, scode_pm %#x, gventry %#x\n", vcpu->id, scode_info, scode_pm, gventry);
@@ -654,14 +662,16 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
   /* parse parameter structure */
   if (parse_params_info(vcpu, &(whitelist_new.params_info), scode_pm)) {
     dprintf(LOG_ERROR, "[TV] Registration Failed. Scode param info incorrect! \n");
-    return 1;
+    err=2;
+    goto out;
   }
   whitelist_new.gpm_num = whitelist_new.params_info.num_params;
   /* register scode sections into whitelist entry */
   if (memsect_info_copy_from_guest(vcpu, &(whitelist_new.scode_info), scode_info)
       || memsect_info_register(vcpu, &(whitelist_new.scode_info), &whitelist_new)) {
     dprintf(LOG_ERROR, "[TV] Registration Failed. Scode section info incorrect! \n");
-    return 1;
+    err=3;
+    goto out;
   }
 
   whitelist_new.npl = malloc(sizeof(pagelist_t));
@@ -731,7 +741,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
       .section_type = whitelist_new.scode_info.sections[i].type,
     };
     scode_lend_section(&g_reg_npmo_root, &whitelist_new.hpt_nested_walk_ctx,
-                       &reg_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
+                       &reg_gpmo_root, &reg_guest_walk_ctx,
                        &pal_npmo_root, &whitelist_new.hpt_nested_walk_ctx,
                        &pal_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
                        &whitelist_new.sections[i]);
@@ -789,7 +799,8 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
   if (scode_measure_sections(&whitelist_new.utpm, &whitelist_new))
     {
       dprintf(LOG_ERROR, "[TV] SECURITY: Registration Failed. sensitived code cannot be verified.\n");
-      return 1;
+      err=4;
+      goto out;
     }
 
 #ifdef __MP_VERSION__
@@ -803,7 +814,8 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
   for (i = 0; (whitelist[i].gcr3!=0); i ++);
   if (i >= whitelist_max) {
     dprintf(LOG_ERROR, "[TV] FATAL ERROR: no room for new scode, the limitation is %d\n", whitelist_max);
-    return 1;
+    err=5;
+    goto out;
   }
   whitelist_size ++;
   memcpy(whitelist + i, &whitelist_new, sizeof(whitelist_entry_t));
@@ -818,7 +830,9 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
     }
   }
 
-  return 0; 
+ out:
+  hpt_guest_walk_ctx_destroy(&reg_guest_walk_ctx);
+  return err;
 }
 
 /* unregister scode in whitelist */
