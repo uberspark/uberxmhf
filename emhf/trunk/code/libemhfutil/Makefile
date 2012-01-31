@@ -13,6 +13,9 @@ I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 # TODO: Inherit these from above; I don't like having to specify all of this here
 CFLAGS = -fno-builtin -fno-common -fno-strict-aliasing -iwithprefix include
 CFLAGS += -fno-stack-protector
+CFLAGS += -Wall
+CFLAGS += -Wno-unused-function
+CFLAGS += -Wno-unused-parameter
 CFLAGS += -Wstrict-prototypes -Wdeclaration-after-statement
 CFLAGS += -Werror -Wno-pointer-arith -Wextra -Wfloat-equal
 CFLAGS += -Wcast-qual -Wsign-compare
