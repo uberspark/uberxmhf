@@ -69,17 +69,11 @@
  * SUCH DAMAGE.
  */
 
-/**
- * FIXME: This is an awful hack.  Do proper failure handling.
- */
-#ifndef HALT
-#define HALT() do { int dummy=0; } while(0);
-#endif
-
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 #include <sha2.h> 
+#include <assert.h>
 /*
  * ASSERT NOTE:
  * Some sanity checking code is included using assert().  On my FreeBSD
@@ -99,8 +93,6 @@
  *   #define SHA2_UNROLL_TRANSFORM
  *
  */
-
-#define assert(x) { if(x) HALT(); }
 
 /*** SHA-256/384/512 Machine Architecture Definitions *****************/
 /*
