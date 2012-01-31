@@ -212,6 +212,70 @@ void* hptw_access_va(const hptw_ctx_t *ctx,
   return ctx->pa2ptr(ctx->pa2ptr_ctx, pa);
 }
 
+typedef enum {
+  HPTW_CPL0=0,
+  HPTW_CPL1=1,
+  HPTW_CPL2=2,
+  HPTW_CPL3=3,
+} hptw_cpl_t;
+
+void* hptw_checked_access_va(const hptw_ctx_t *ctx,
+                             const hpt_pmo_t *pmo_root,
+                             hpt_prot_t access_type,
+                             hptw_cpl_t cpl,
+                             hpt_va_t va,
+                             size_t requested_sz,
+                             size_t *avail_sz)
+{
+  hpt_pmeo_t pmeo;
+  hpt_pa_t pa;
+  hpt_pmo_t pmo = *pmo_root;
+
+  assert(access_type & HPT_PROTS_R);
+
+  do {
+    hpt_pm_get_pmeo_by_va(&pmeo, &pmo, va);
+    if (((access_type & hpt_pmeo_getprot(&pmeo)) != access_type)
+        || (cpl != HPTW_CPL0 && !hpt_pmeo_getuser(&pmeo))) {
+      return NULL;
+    }
+  } while (hptw_next_lvl(ctx, &pmo, va));
+
+  /* exiting loop means hptw_next_lvl failed, which means either the
+   * current pmeo is a page, or the current pmeo is not present.
+   * however, we should have already returned if not present, so pmeo
+   * must be a page */
+  assert(hpt_pmeo_is_page(&pmeo));
+
+  pa = hpt_pmeo_va_to_pa(&pmeo, va);
+  *avail_sz = MIN(requested_sz, hpt_remaining_on_page(&pmeo, pa));
+
+  return ctx->pa2ptr(ctx->pa2ptr_ctx, pa);
+}
+
+int hptw_checked_copy_from_guest(const hptw_ctx_t *ctx,
+                                 const hpt_pmo_t *pmo,
+                                 hptw_cpl_t cpl,
+                                 void *dst,
+                                 hpt_va_t src_va_base,
+                                 size_t len)
+{
+  size_t copied=0;
+
+  while(copied < len) {
+    hpt_va_t src_va = src_va_base + copied;
+    size_t to_copy;
+    void *src;
+
+    src = hptw_checked_access_va(ctx, pmo, HPT_PROTS_R, cpl, src_va, len-copied, &to_copy);
+    if(!src) {
+      return 1;
+    }
+    memcpy(dst+copied, src, to_copy);
+    copied += to_copy;
+  }
+  return 0;
+}
 
 void hptw_copy_from_guest(const hptw_ctx_t *ctx,
                          const hpt_pmo_t *pmo,
