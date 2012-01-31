@@ -35,7 +35,7 @@
 
 #include <hpt.h>
 #include <hptw.h>
-
+#include <string.h> /* for memset */
 int hptw_insert_pmeo(const hptw_ctx_t *ctx,
                      hpt_pmo_t *pmo_root,
                      const hpt_pmeo_t *pmeo,
@@ -62,7 +62,7 @@ int hptw_get_pmo_alloc(hpt_pmo_t *pmo,
     hpt_pmeo_t pmeo;
     hpt_pm_get_pmeo_by_va(&pmeo, pmo, va);
     if (hpt_pmeo_is_page(&pmeo)) {
-      return;
+      return 2;
     }
     if (!hpt_pmeo_is_present(&pmeo)) {
       hpt_pmo_t new_pmo = {
@@ -303,7 +303,6 @@ int hptw_checked_copy_to_va(const hptw_ctx_t *ctx,
 
   while(copied < len) {
     hpt_va_t dst_va = dst_va_base + copied;
-    hpt_pmeo_t dst_pmeo;
     size_t to_copy;
     void *dst;
 
@@ -368,5 +367,6 @@ int hptw_checked_memset_va(const hptw_ctx_t *ctx,
     memset(dst, c, to_set);
     set += to_set;
   }
+  return 0;
 }
 
