@@ -243,7 +243,6 @@ void* hptw_checked_access_va(const hptw_ctx_t *ctx,
   hpt_pa_t pa;
   hpt_pmo_t pmo = *pmo_root;
 
-  assert(access_type & HPT_PROTS_R);
 
   do {
     hpt_pm_get_pmeo_by_va(&pmeo, &pmo, va);
@@ -252,6 +251,10 @@ void* hptw_checked_access_va(const hptw_ctx_t *ctx,
       return NULL;
     }
   } while (hptw_next_lvl(ctx, &pmo, va));
+
+  if(!hpt_pmeo_is_present(&pmeo)) {
+    return NULL;
+  }
 
   /* exiting loop means hptw_next_lvl failed, which means either the
    * current pmeo is a page, or the current pmeo is not present.
