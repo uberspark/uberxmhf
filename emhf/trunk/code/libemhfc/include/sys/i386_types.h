@@ -80,6 +80,9 @@
 
 #define __NO_STRICT_ALIGNMENT
 
+/* number of bits per byte */
+#define NBBY 8
+
 /*
  * Basic types upon which most other types are built.
  */
