@@ -45,7 +45,7 @@
 # define assert(x)                                                      \
   do {                                                                  \
     if(!(x)) {                                                          \
-      emhfc_log_error("%s:%s: assert failed: %s", __FILE__, __LINE__, #x); \
+      emhfc_log_error("%s:%d: assert failed: %s", __FILE__, __LINE__, #x); \
       abort();                                                          \
     }                                                                   \
   } while(0)
