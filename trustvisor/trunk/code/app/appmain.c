@@ -76,6 +76,10 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 
     }
 
+  /* force these to be linked in */
+  hpt_log_trace("");
+  emhfc_log_error("");
+
   return APP_INIT_SUCCESS;  //successful
 }
 
