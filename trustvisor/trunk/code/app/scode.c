@@ -54,17 +54,25 @@ hpt_pa_t hpt_nested_ptr2pa(void __attribute__((unused)) *ctx, void *ptr)
 {
   return hva2spa(ptr);
 }
-void* hpt_nested_pa2ptr(void __attribute__((unused)) *ctx, hpt_pa_t ptr)
+void* hpt_nested_pa2ptr(void *vctx, hpt_pa_t spa, size_t sz, hpt_prot_t access_type, hptw_cpl_t cpl, size_t *avail_sz)
 {
-  return spa2hva(ptr);
+  (void)vctx;
+  (void)access_type;
+  (void)cpl;
+  *avail_sz = sz;
+  return spa2hva(spa);
 }
 hpt_pa_t hpt_guest_ptr2pa(void __attribute__((unused)) *ctx, void *ptr)
 {
   return hva2gpa(ptr);
 }
-void* hpt_guest_pa2ptr(void __attribute__((unused)) *ctx, hpt_pa_t ptr)
+void* hpt_guest_pa2ptr(void *vctx, hpt_pa_t gpa, size_t sz, hpt_prot_t access_type, hptw_cpl_t cpl, size_t *avail_sz)
 {
-  return gpa2hva(ptr);
+  (void)vctx;
+  (void)access_type;
+  (void)cpl;
+  *avail_sz = sz;
+  return gpa2hva(gpa);
 }
 
 void* hpt_get_zeroed_page(void *ctx, size_t alignment, size_t sz)
@@ -670,8 +678,8 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
   /* clone gdt */
   dprintf(LOG_TRACE, "cloning gdt:\n");
-  scode_clone_gdt(VCPU_gdtr_base(vcpu), VCPU_gdtr_limit(vcpu),
-                  &reg_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
+  scode_clone_gdt(vcpu,
+                  VCPU_gdtr_base(vcpu), VCPU_gdtr_limit(vcpu),
                   &pal_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
                   whitelist_new.gpl);
 
@@ -798,9 +806,15 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
     /* zero the contents of any sections that are writable by the PAL, and not readable by the reg guest */
     if ((whitelist[i].sections[j].pal_prot & HPT_PROTS_W)
         && !(whitelist[i].sections[j].reg_prot & HPT_PROTS_R)) {
+      int err;
       dprintf(LOG_TRACE, "[TV] zeroing section %d\n", j);
-      hptw_memset_guest(&whitelist[i].hpt_guest_walk_ctx, &whitelist[i].pal_gpt_root,
-                       whitelist[i].sections[j].pal_gva, 0, whitelist[i].sections[j].size);
+      err = hptw_checked_memset_va(&whitelist[i].hpt_guest_walk_ctx, &whitelist[i].pal_gpt_root,
+                                   HPTW_CPL3,
+                                   whitelist[i].sections[j].pal_gva, 0, whitelist[i].sections[j].size);
+      /* should only fail if insufficient permissions in the guest
+         page tables, which TV constructed and the PAL should not have
+         been able to modify */
+      ASSERT(!err);
     }
 
     scode_return_section(&g_reg_npmo_root, &whitelist[i].hpt_nested_walk_ctx,
@@ -935,13 +949,15 @@ u32 scode_marshall(VCPU * vcpu)
               return 1;
             }
 
-            hptw_copy_guest_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
-                                    &whitelist[curr].pal_gpt_root,
-                                    pm_addr,
-                                    &whitelist[curr].hpt_guest_walk_ctx,
-                                    &whitelist[curr].reg_gpt_root,
-                                    pm_value,
-                                    pm_size*4);
+            hptw_checked_copy_va_to_va(&whitelist[curr].hpt_guest_walk_ctx,
+                                       &whitelist[curr].pal_gpt_root,
+                                       HPTW_CPL3,
+                                       pm_addr,
+                                       &whitelist[curr].hpt_guest_walk_ctx,
+                                       &whitelist[curr].reg_gpt_root,
+                                       HPTW_CPL3,
+                                       pm_value,
+                                       pm_size*4);
 
             /* put pointer address in sensitive code stack*/
             pm_tmp = pm_addr;
@@ -1090,13 +1106,15 @@ u32 scode_unmarshall(VCPU * vcpu)
 
             dprintf(LOG_TRACE, "[TV]   PM %d is a pointer (size %d, addr %#x)\n", i,  pm_size*4, pm_value);
             /* copy data from sensitive code (param space) to guest */
-            hptw_copy_guest_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
-                                    &whitelist[curr].reg_gpt_root,
-                                    pm_value,
-                                    &whitelist[curr].hpt_guest_walk_ctx,
-                                    &whitelist[curr].reg_gpt_root,
-                                    pm_addr,
-                                    pm_size*4);
+            hptw_checked_copy_va_to_va(&whitelist[curr].hpt_guest_walk_ctx,
+                                       &whitelist[curr].reg_gpt_root,
+                                       HPTW_CPL3,
+                                       pm_value,
+                                       &whitelist[curr].hpt_guest_walk_ctx,
+                                       &whitelist[curr].reg_gpt_root,
+                                       HPTW_CPL3,
+                                       pm_addr,
+                                       pm_size*4);
             pm_addr += 4*pm_size;
             break;
           }

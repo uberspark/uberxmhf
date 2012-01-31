@@ -42,7 +42,7 @@
  * guest page table operations
  */
 #include <emhf.h> 
-
+#include <malloc.h>
 #include  "./include/scode.h"
 #include <pages.h>
 
@@ -104,26 +104,21 @@ hpt_prot_t reg_prot_of_type(int type)
 
 
 typedef struct {
-  hpt_pmo_t *host_pmo_root;
+  hptw_ctx_t host_walk_ctx;
+  hpt_pmo_t host_pmo_root;
 } scode_guest_pa2ptr_ctx_t;
-static void* hpt_checked_guest_pa2ptr(void *ctx, hpt_pa_t gpa)
+static void* hpt_checked_guest_pa2ptr(void *vctx, hpt_pa_t gpa, size_t sz, hpt_prot_t access_type, hptw_cpl_t cpl, size_t *avail_sz)
 {
-  scode_guest_pa2ptr_ctx_t *cctx = ctx;
-  hpt_prot_t host_prots;
+  scode_guest_pa2ptr_ctx_t *ctx = vctx;
 
-  /* in case of maliciously constructed guest page tables, we need to
-     check host page tables for RW access. */
-  ASSERT(cctx);
-  host_prots = hptw_get_effective_prots(&hpt_nested_walk_ctx,
-                                             cctx->host_pmo_root,
-                                             gpa,
-                                             NULL);
-  if ((host_prots & HPT_PROTS_RW) != HPT_PROTS_RW) {
-    dprintf(LOG_ERROR, "ERROR: Guest-physical-address 0x%llx access denied. prots: %llx\n", gpa, host_prots);
-    return NULL;
-  }
-
-  return gpa2hva(gpa);
+  ASSERT(ctx);
+  return hptw_checked_access_va(&ctx->host_walk_ctx,
+                                &ctx->host_pmo_root,
+                                access_type,
+                                cpl,
+                                gpa,
+                                sz,
+                                avail_sz);
 }
 
 bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
@@ -134,7 +129,8 @@ bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
   hpt_pmo_t guest_root;
   hptw_ctx_t guest_ctx;
   scode_guest_pa2ptr_ctx_t pa2ptr_ctx = {
-    .host_pmo_root = &host_root,
+    .host_walk_ctx = hpt_nested_walk_ctx,
+    .host_pmo_root = host_root,
   };
   size_t i;
 
@@ -253,43 +249,101 @@ void put_32bit_aligned_value_to_current_guest(VCPU *vcpu, u32 gvaddr, u32 value)
   *((u32 *)gpa2hva(gpaddr)) = value;
 }
 
-void copy_from_current_guest_UNCHECKED(VCPU * vcpu, void *dst, gva_t gvaddr, u32 len)
+typedef struct {
+  hpt_pmo_t guest_root;
+  hptw_ctx_t guest_walk_ctx;
+  hptw_cpl_t cpl;
+} checked_guest_walk_ctx_t;
+
+static int construct_checked_walk_ctx(VCPU *vcpu, checked_guest_walk_ctx_t *rv)
 {
-  hpt_pmo_t root;
-  hpt_emhf_get_guest_root_pmo(vcpu, &root);
+  scode_guest_pa2ptr_ctx_t *guest_pa2ptr_ctx=NULL;
+  int err=0;
 
-  hptw_copy_from_guest(&hpt_guest_walk_ctx, &root, dst, gvaddr, len);
+  memset(rv, 0, sizeof(*rv));
 
+  guest_pa2ptr_ctx = malloc(sizeof(*guest_pa2ptr_ctx));
+  if (!guest_pa2ptr_ctx) {
+    err=1;
+    goto out;
+  }
+
+  hpt_emhf_get_root_pmo(vcpu, &guest_pa2ptr_ctx->host_pmo_root);
+  guest_pa2ptr_ctx->host_walk_ctx = hpt_nested_walk_ctx;
+
+  rv->guest_walk_ctx = hpt_guest_walk_ctx;
+  rv->guest_walk_ctx.pa2ptr = &hpt_checked_guest_pa2ptr;
+  rv->guest_walk_ctx.pa2ptr_ctx = guest_pa2ptr_ctx;
+
+  hpt_emhf_get_guest_root_pmo(vcpu, &rv->guest_root);
+  rv->cpl = HPTW_CPL3; /* FIXME - extract cpl from vcpu */
+
+ out:
+  if (err) {
+    free(rv->guest_walk_ctx.pa2ptr_ctx);
+  }
+  return err;
 }
+
+static void destroy_checked_walk_ctx(checked_guest_walk_ctx_t *ctx)
+{
+  free(ctx->guest_walk_ctx.pa2ptr_ctx);
+  ctx->guest_walk_ctx.pa2ptr_ctx = NULL;
+}
+
+/* void copy_from_current_guest_UNCHECKED(VCPU * vcpu, void *dst, gva_t gvaddr, u32 len) */
+/* { */
+/*   hpt_pmo_t root; */
+/*   hpt_emhf_get_guest_root_pmo(vcpu, &root); */
+
+/*   hptw_copy_from_guest(&hpt_guest_walk_ctx, &root, dst, gvaddr, len); */
+
+/* } */
 int copy_from_current_guest(VCPU * vcpu, void *dst, gva_t gvaddr, u32 len)
 {
-  /* XXX TOCTTOU */
-  if (!nested_pt_range_has_reqd_prots(vcpu,
-                                      HPT_PROTS_R, true,
-                                      gvaddr, len)) {
-    return 1;
+  checked_guest_walk_ctx_t ctx;
+  int rv=0;
+
+  if (construct_checked_walk_ctx(vcpu, &ctx)) {
+    rv=1;
+    goto out;
   }
-  copy_from_current_guest_UNCHECKED(vcpu, dst, gvaddr, len);
-  return 0;
+
+  if (hptw_checked_copy_from_va(&ctx.guest_walk_ctx, &ctx.guest_root, ctx.cpl, dst, gvaddr, len)) {
+    rv = 2;
+    goto out;
+  }
+
+ out:
+  destroy_checked_walk_ctx(&ctx);
+  return rv;
 }
 
-void copy_to_current_guest_UNCHECKED(VCPU * vcpu, gva_t gvaddr, void *src, u32 len)
-{
-  hpt_pmo_t root;
-  hpt_emhf_get_guest_root_pmo(vcpu, &root);
+/* void copy_to_current_guest_UNCHECKED(VCPU * vcpu, gva_t gvaddr, void *src, u32 len) */
+/* { */
+/*   hpt_pmo_t root; */
+/*   hpt_emhf_get_guest_root_pmo(vcpu, &root); */
 
-  hptw_copy_to_guest(&hpt_guest_walk_ctx, &root, gvaddr, src, len);
-}
+/*   hptw_copy_to_guest(&hpt_guest_walk_ctx, &root, gvaddr, src, len); */
+/* } */
 int copy_to_current_guest(VCPU * vcpu, gva_t gvaddr, void *src, u32 len)
 {
-  /* XXX TOCTTOU */
-  if (!nested_pt_range_has_reqd_prots(vcpu,
-                                      HPT_PROTS_W, true,
-                                      gvaddr, len)) {
-    return 1;
+  checked_guest_walk_ctx_t ctx;
+  int rv=0;
+
+  if (construct_checked_walk_ctx(vcpu, &ctx)) {
+    rv=1;
+    goto out;
   }
-  copy_to_current_guest_UNCHECKED(vcpu, gvaddr, src, len);
-  return 0;
+
+  if (hptw_checked_copy_to_va(&ctx.guest_walk_ctx, &ctx.guest_root, ctx.cpl, gvaddr, src, len)) {
+    rv = 2;
+    goto out;
+  }
+
+ out:
+  destroy_checked_walk_ctx(&ctx);
+  return rv;
 }
 
 
@@ -297,8 +351,8 @@ int copy_to_current_guest(VCPU * vcpu, gva_t gvaddr, void *src, u32 len)
    gdt is allocted using passed-in-pl, whose pages should already be
    accessible to pal's nested page tables. XXX SECURITY need to build
    a trusted gdt instead. */
-void scode_clone_gdt(gva_t gdtr_base, size_t gdtr_lim,
-                     hpt_pmo_t* reg_gpmo_root, hptw_ctx_t *reg_gpm_ctx,
+void scode_clone_gdt(VCPU *vcpu,
+                     gva_t gdtr_base, size_t gdtr_lim,
                      hpt_pmo_t* pal_gpmo_root, hptw_ctx_t *pal_gpm_ctx,
                      pagelist_t *pl
                      )
@@ -319,8 +373,7 @@ void scode_clone_gdt(gva_t gdtr_base, size_t gdtr_lim,
   gdt = gdt_pal_page + gdt_page_offset;
 
   dprintf(LOG_TRACE, "copying gdt from gva:%x to hva:%p\n", gdtr_base, gdt);
-  hptw_copy_from_guest(reg_gpm_ctx, reg_gpmo_root,
-                      gdt, gdtr_base, gdt_size);
+  copy_from_current_guest(vcpu, gdt, gdtr_base, gdt_size);
 
   /* add to guest page tables */
   {

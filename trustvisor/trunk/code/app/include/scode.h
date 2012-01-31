@@ -205,8 +205,8 @@ void scode_return_section(hpt_pmo_t* reg_npmo_root, hptw_ctx_t *reg_npm_ctx,
                           hpt_pmo_t* pal_gpmo_root, hptw_ctx_t *pal_gpm_ctx,
                           const tv_pal_section_int_t *section);
 
-void scode_clone_gdt(gva_t gdtr_base, size_t gdtr_lim,
-                     hpt_pmo_t* reg_gpmo_root, hptw_ctx_t *reg_gpm_ctx,
+void scode_clone_gdt(VCPU *vcpu,
+                     gva_t gdtr_base, size_t gdtr_lim,
                      hpt_pmo_t* pal_gpmo_root, hptw_ctx_t *pal_gpm_ctx,
                      pagelist_t *pl
                      );
