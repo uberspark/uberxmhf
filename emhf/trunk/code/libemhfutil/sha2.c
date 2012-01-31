@@ -124,9 +124,12 @@
  */
 
 /* Inspired by the macros in sha1.[ch] */
+#undef LITTLE_ENDIAN
+#undef BIG_ENDIAN
 #define LITTLE_ENDIAN 1234
 #define BIG_ENDIAN    4321
 
+#undef BYTE_ORDER
 #if (!(__x86_64__ || __i386__ || _M_IX86 || _M_X64 || __ARMEL__ || __MIPSEL__))
 #define BYTE_ORDER BIG_ENDIAN
 #else

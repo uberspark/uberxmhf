@@ -81,6 +81,8 @@
 #include <string.h>
 #include <sha1.h> 
 
+#undef BIG_ENDIAN
+#undef LITTLE_ENDIAN
 #define BIG_ENDIAN \
     (!(__x86_64__ || __i386__ || _M_IX86 || _M_X64 || __ARMEL__ || __MIPSEL__))
 #define LITTLE_ENDIAN   !BIG_ENDIAN
