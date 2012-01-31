@@ -79,10 +79,10 @@ void* hpt_checked_guest_pa2ptr(void *vctx, hpt_pa_t gpa, size_t sz, hpt_prot_t a
 {
   scode_guest_pa2ptr_ctx_t *ctx = vctx;
 
-  dprintf(LOG_TRACE, "hpt_checked_guest_pa2ptr gpa:%llx, sz:%d, access_type:%lld, cpl:%d\n",
-          gpa, sz, access_type, cpl);
-  dprintf(LOG_TRACE, "hpt_checked_guest_pa2ptr host_pmo_root t:%d pm:%p lvl:%d\n",
-          ctx->host_pmo_root.t, ctx->host_pmo_root.pm, ctx->host_pmo_root.lvl);
+  /* dprintf(LOG_TRACE, "hpt_checked_guest_pa2ptr gpa:%llx, sz:%d, access_type:%lld, cpl:%d\n", */
+  /*         gpa, sz, access_type, cpl); */
+  /* dprintf(LOG_TRACE, "hpt_checked_guest_pa2ptr host_pmo_root t:%d pm:%p lvl:%d\n", */
+  /*         ctx->host_pmo_root.t, ctx->host_pmo_root.pm, ctx->host_pmo_root.lvl); */
 
   ASSERT(ctx);
 
