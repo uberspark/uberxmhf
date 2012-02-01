@@ -26,7 +26,10 @@ CFLAGS += -I../../libemhfutil/include -I../../libemhfc/include
 
 # targets
 .PHONY: all
-all: $(OBJECTS) 
+all: lib.a
+
+lib.a: $(OBJECTS)
+	$(AR) rvs $@ $^
 
 %.o: %.S $(I_SOURCES) Makefile ../../Makefile 
 	$(CC) -c $(ASFLAGS) -o $@ $<
