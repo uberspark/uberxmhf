@@ -5,6 +5,7 @@
 AS_SOURCES = 
 
 C_SOURCES = dbg-interface.c 
+C_SOURCES += ./arch/x86/emhf_debug_arch.c
 
 ifeq ($(DEBUG_SERIAL), y)
 C_SOURCES += ./arch/x86/dbg-x86-uart.c

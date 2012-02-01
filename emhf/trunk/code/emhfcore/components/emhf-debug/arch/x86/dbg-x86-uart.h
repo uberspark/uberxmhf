@@ -33,49 +33,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <emhf.h> 
+#ifndef DBG_X86_UART_H
+#define DBG_X86_UART_H
 
-#define COLS     80
-#define ROWS     25
-#define ATTR     7
+void dbg_x86_uart_init(char *params);
+void dbg_x86_uart_putc(int x);
+void dbg_x86_uart_putstr(const char *str);
 
-static char *vidmem=(char *)0xB8000;
-static unsigned int vid_x, vid_y;
-
-static void vgamem_newln(void){
-    vid_x = 0;
-    vid_y++;
-
-    if (vid_y >= ROWS){
-        vid_y = ROWS-1;
-        memcpy((char*)vidmem,(char*)vidmem + 2*COLS, (ROWS-1)*2*COLS);
-        memcpy((char*)vidmem + (ROWS-1)*2*COLS, 0, 2*COLS);
-    }
-}
-
-void dbg_x86_vgamem_putc(int c)
-{
-    if ( c == '\n' )
-        vgamem_newln();
-    else
-    {
-        vidmem[(vid_x + vid_y * COLS) * 2]  = c & 0xFF;
-        vidmem[(vid_x + vid_y * COLS) * 2 + 1] = ATTR;
-        if ( ++vid_x >= COLS ) vgamem_newln();
-    }
-}
-
-void dbg_x86_vgamem_putstr(const char *str)
-{
-    int c;
-
-    while ( (c = *str++) != '\0' )
-        dbg_x86_vgamem_putc(c);
-}
-
-
-void dbg_x86_vgamem_init(char *params){
-  (void)params;	//we don't use params for the VGA backend currently
-  memset((char *)vidmem, 0, COLS * ROWS * 2);
-  vid_x = vid_y = 0;
-}
+#endif

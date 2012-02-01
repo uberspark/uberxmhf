@@ -94,8 +94,7 @@ inline u32 uart_tx_empty(void)
   return (x & LSR_THRE);
 }
 
-#ifdef __DEBUG_SERIAL__
-static void serial_putc(u32 x)
+void dbg_x86_uart_putc(int x)
 {
 
   while ( !uart_tx_empty() )
@@ -104,29 +103,24 @@ static void serial_putc(u32 x)
 
   return;
 }
-#else
-static void serial_putc(u32 x)
-{
-}
-#endif
 
 /* print a newline-containing null-terminated string to the serial port */
-void emhf_debug_arch_putstr(const char *str)
+void dbg_x86_uart_putstr(const char *str)
 {
   u8 tmp;
 
   while ((tmp = (u8)*str++) != '\0')
   {
     if (tmp == '\n')
-        serial_putc('\r');        
+        dbg_x86_uart_putc('\r');        
         //tmp = '\r';
-    serial_putc(tmp);
+    dbg_x86_uart_putc(tmp);
   }
 
   return;
 }
 
-void emhf_debug_arch_init(char *params){
+void dbg_x86_uart_init(char *params){
   u16 divisor;
   u8 x;
 
