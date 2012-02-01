@@ -89,6 +89,9 @@ OBJECTS_PRECOMPILED += ../emhf-partition/arch/x86/svm/part-x86svm-sup.o
 OBJECTS_PRECOMPILED += ../emhf-partition/arch/x86/vmx/part-x86vmx.o
 OBJECTS_PRECOMPILED += ../emhf-partition/arch/x86/vmx/part-x86vmx-sup.o
 
+# separate from OBJECTS_PRECOMPILED becasue needs to come after libs on link line
+OBJECTS_PRECOMPILED_LIBBACKENDS = ../emhf-emhfcbackend/emhfc_putchar.o
+
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 
 # targets
@@ -96,7 +99,7 @@ I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 all: runtime.bin
 
 runtime.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) runtime.lds.S
-	$(LD) -T runtime.lds.S -o runtime.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(ADDL_LIBS)
+	$(LD) -T runtime.lds.S -o runtime.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
 	$(OBJCOPY) --output-format=binary runtime.exe runtime.bin
 
 %.o: %.S $(I_SOURCES) Makefile ../../Makefile

@@ -94,7 +94,8 @@ components:
 	cd components/emhf-tpm && $(MAKE) -w all
 	#EMHF debug component
 	cd components/emhf-debug && $(MAKE) -w all
-
+	#EMHF libemhfc environment callbacks
+	cd components/emhf-emhfcbackend && $(MAKE) -w all
 
 .PHONY: runtime
 runtime: 

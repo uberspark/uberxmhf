@@ -25,6 +25,8 @@ OBJECTS_PRECOMPILED += ../components/emhf-baseplatform/arch/x86/vmx/bplt-x86vmx-
 # FIXME: This is overly general; init/ doesn't need all of these
 CFLAGS += $(ADDL_INCLUDES)
 
+# separate from OBJECTS_PRECOMPILED becasue needs to come after libs on link line
+OBJECTS_PRECOMPILED_LIBBACKENDS = ../components/emhf-emhfcbackend/emhfc_putchar.o
 
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 
@@ -53,7 +55,7 @@ all: init-$(TARGET_HWPLATFORM).bin
 
 # FIXME: ADDL_LIBS is overly general; init/ doesn't need all of them
 init-$(TARGET_HWPLATFORM).bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) init.lds.S
-	$(LD) -T init.lds.S -o init.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) $(ADDL_LIBS)
+	$(LD) -T init.lds.S -o init.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
 	$(CP) init.exe init_syms.exe
 	$(STRIP) -s init.exe
 	$(OBJCOPY) --output-format=binary init.exe init-$(TARGET_HWPLATFORM).bin

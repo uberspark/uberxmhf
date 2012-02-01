@@ -64,6 +64,8 @@ export TAR = @TAR@
 export SED = @SED@
 export MKDIR = @MKDIR@
 export CAT = @CAT@
+
+export CCLIB = @CCLIB@
 ##################################################################################
 ### END Variables controlled using autoconf
 ##################################################################################

@@ -21,6 +21,9 @@ AC_CHECK_PROG([SED], [sed], [sed])
 AC_CHECK_PROG([MKDIR], [mkdir], [mkdir])
 AC_CHECK_PROG([CAT], [cat], [cat])
 
+# find path to -lgcc
+AC_SUBST([CCLIB], [`$CC --print-file-name=`])
+
 # user-defined options
 
 AC_SUBST([DEBUG_SERIAL])

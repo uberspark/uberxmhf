@@ -33,53 +33,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// printf and friends 
-// Adapted from Linux kernel sources and Xen sources for 
-// SecVisor by Elaine Shi and Arvind Seshadri
-// modified extensively by Amit Vasudevan (amitvasudevan@acm.org)
-// for EMHF
+#include <emhf.h>
 
-#include <emhf.h> 
+void *emhfc_putchar_arg;
 
-uint8_t g_log_targets=LOG_TARGET_NONE;
-uint8_t g_log_level=LOG_LEVEL_NONE;
-
-static volatile u32 printf_lock=1;
-static char printk_prefix[16] = "";
-
-void dvprintf(u32 log_type, const char *fmt, va_list args)
+void emhfc_putchar(int ch, void *arg)
 {
-    if (log_type & ENABLED_LOG_TYPES) {
-      vprintf(fmt, args);
-    }
+  emhf_debug_arch_putc(ch);
 }
-
-void dprintf(u32 log_type, const char *fmt, ...)
-{
-    va_list       args;
-
-    va_start(args, fmt);
-    vprintf(fmt, args);
-    va_end(args);
-}
-
-/*
- * if 'prefix' != NULL, print it before each line of hex string
- */
-void print_hex(const char *prefix, const void *prtptr, size_t size)
-{
-    size_t i;
-    for ( i = 0; i < size; i++ ) {
-        if ( i % 16 == 0 && prefix != NULL )
-            printf("\n%s", prefix);
-        printf("%02x ", *(const uint8_t *)prtptr++);
-    }
-    printf("\n");
-}
-
-/* #endif */
-
-void emhf_debug_init(char *params){
-	emhf_debug_arch_init(params);
-}
-

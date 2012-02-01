@@ -37,6 +37,9 @@ OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86-addressing.o
 OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/vmx/bplt-x86vmx.o
 OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/vmx/bplt-x86vmx-mtrrs.o
 
+# separate from OBJECTS_PRECOMPILED becasue needs to come after libs on link line
+OBJECTS_PRECOMPILED_LIBBACKENDS = ../emhf-emhfcbackend/emhfc_putchar.o
+
 # FIXME: ADDL_INCLUDES is overly general; sl/ doesn't need all of them
 CFLAGS += $(ADDL_INCLUDES)
 
@@ -56,7 +59,7 @@ all: sl.bin
 
 # FIXME: ADDL_LIBS is overly general; sl/ doesn't need all of them
 sl.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) sl.lds.S
-	$(LD) -T sl.lds.S -o sl.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) $(ADDL_LIBS)
+	$(LD) -T sl.lds.S -o sl.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
 	$(CP) sl.exe sl_syms.exe
 	$(STRIP) -s sl.exe
 	$(OBJCOPY) --output-format=binary sl.exe sl.bin
