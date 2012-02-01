@@ -37,7 +37,20 @@
 
 void *emhfc_putchar_arg;
 
+static u32 emhfc_putchar_linelock_spinlock = 1;
+void *emhfc_putchar_linelock_arg = &emhfc_putchar_linelock_spinlock;
+
 void emhfc_putchar(int ch, void *arg)
 {
   emhf_debug_arch_putc(ch);
+}
+
+void emhfc_putchar_linelock(void *arg)
+{
+  spin_lock(arg);
+}
+
+void emhfc_putchar_lineunlock(void *arg)
+{
+  spin_unlock(arg);
 }

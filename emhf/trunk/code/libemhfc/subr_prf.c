@@ -373,7 +373,9 @@ vprintf(const char *fmt, va_list ap)
 /* 	pca.p_bufr = NULL; */
 /* #endif */
 
+        emhfc_putchar_linelock(emhfc_putchar_linelock_arg);
 	retval = kvprintf(fmt, emhfc_putchar, emhfc_putchar_arg, 10, ap);
+        emhfc_putchar_lineunlock(emhfc_putchar_linelock_arg);
 
 /* #ifdef PRINTF_BUFR_SIZE */
 /* 	/\* Write any buffered console output: *\/ */

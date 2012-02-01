@@ -45,6 +45,8 @@ void emhfc_abort(void);
 void emhfc_putchar(int ch, void *arg);
 extern void *emhfc_putchar_arg;
 
-
+void emhfc_putchar_linelock(void *arg);
+void emhfc_putchar_lineunlock(void *arg);
+extern void *emhfc_putchar_linelock_arg;
 
 #endif
