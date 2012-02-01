@@ -18,14 +18,7 @@ OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 # tie components used by the runtime
 # WARNING: if both Serial & VGA are enabled, you actually get neither. 
 # TODO: Fix it.
-OBJECTS_PRECOMPILED = ../emhf-debug/dbg-interface.o
-
-ifeq ($(DEBUG_SERIAL), y)
-OBJECTS_PRECOMPILED += ../emhf-debug/arch/x86/dbg-x86-uart.o
-endif
-ifeq ($(DEBUG_VGA), y)
-OBJECTS_PRECOMPILED += ../emhf-debug/arch/x86/dbg-x86-vgamem.o
-endif
+OBJECTS_PRECOMPILED = ../emhf-debug/lib.a
 
 OBJECTS_PRECOMPILED += ../emhf-tpm/tpm-interface.o 
 OBJECTS_PRECOMPILED += ../emhf-tpm/arch/x86/tpm-x86.o 
