@@ -57,6 +57,7 @@ SECTIONS
     *(.data)
     *(.rodata)
     *(.comment)
+    *(.eh_frame) /* exception-metadata. might be able to discard */
     *(.bss)
  		. = ALIGN(4096);    
   } =0x9090 

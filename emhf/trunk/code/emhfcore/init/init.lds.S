@@ -60,6 +60,7 @@ SECTIONS
   .data : {
     *(.data)
     *(.rodata)
+    *(.eh_frame)
     *(.bss)
  		. = ALIGN(4096);    
   } =0x9090 

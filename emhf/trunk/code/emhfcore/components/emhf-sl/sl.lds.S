@@ -75,6 +75,11 @@ SECTIONS
     *(.rodata)
   } >low
 
+  /* discard? */
+  .eh_frame : {
+    *(.eh_frame)
+  } >low
+
   .bss : {
     *(.bss)
     /*. = ALIGN(4096);*/    
