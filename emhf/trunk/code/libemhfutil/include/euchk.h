@@ -71,28 +71,28 @@
   do {                                                                  \
     int _eu_chk_cond = (int)(cond);                                     \
     if (_eu_chk_cond) {                                                 \
-      EULOG(priority, "EU_CHKN(%s) failed with: %d", #cond, _eu_chk_cond); \
+      EU_LOG(priority, "EU_CHKN(%s) failed with: %d", #cond, _eu_chk_cond); \
       (void)0, ## args;                                                 \
       goto out;                                                         \
     }                                                                   \
   } while(0)
 
-#define EU_CHK_PRI(cond, priority, args...)                             \
-  do {                                                                  \
-    if (!(cond)) {                                                      \
-      EULOG(priority, "EU_CHK(%s) failed", #cond);                      \
-      (void)0, ## args;                                                 \
-      goto out;                                                         \
-    }                                                                   \
+#define EU_CHK_PRI(cond, priority, args...)             \
+  do {                                                  \
+    if (!(cond)) {                                      \
+      EU_LOG(priority, "EU_CHK(%s) failed", #cond);     \
+      (void)0, ## args;                                 \
+      goto out;                                         \
+    }                                                   \
   } while(0)
 
-#define EU_CHK_T(cond, args...) EU_CHK_PRI(cond, EUTRACE, ## args)
-#define EU_CHK_W(cond, args...) EU_CHK_PRI(cond, EUWARN, ## args)
-#define EU_CHK_E(cond, args...) EU_CHK_PRI(cond, EUERR, ## args)
+#define EU_CHK_T(cond, args...) EU_CHK_PRI(cond, EU_TRACE, ## args)
+#define EU_CHK_W(cond, args...) EU_CHK_PRI(cond, EU_WARN, ## args)
+#define EU_CHK_E(cond, args...) EU_CHK_PRI(cond, EU_ERR, ## args)
 
-#define EU_CHKN_T(cond, args...) EU_CHKN_PRI(cond, EUTRACE, ## args)
-#define EU_CHKN_W(cond, args...) EU_CHKN_PRI(cond, EUWARN, ## args)
-#define EU_CHKN_E(cond, args...) EU_CHKN_PRI(cond, EUERR, ## args)
+#define EU_CHKN_T(cond, args...) EU_CHKN_PRI(cond, EU_TRACE, ## args)
+#define EU_CHKN_W(cond, args...) EU_CHKN_PRI(cond, EU_WARN, ## args)
+#define EU_CHKN_E(cond, args...) EU_CHKN_PRI(cond, EU_ERR, ## args)
 
 #define EU_CHK(cond, args...) EU_CHK_E(cond, ## args)
 #define EU_CHKN(cond, args...) EU_CHKN_E(cond, ## args)
@@ -102,19 +102,19 @@
 #define EU_VERIFY(cond)                         \
   do {                                          \
     if (!(cond)) {                              \
-      euerr("EU_VERIFY(%s) failed", #cond);     \
+      eu_err("EU_VERIFY(%s) failed", #cond);    \
       abort();                                  \
     }                                           \
-  }
+  } while(0)
 
 /* verify-not. logs value in case of failure as with EU_CHKN. */
-#define EU_VERIFYN(cond)                        \
-  do {                                          \
-    int _eu_chk_cond = (int)(cond);             \
-    if (!_eu_chk_cond) {                                                \
-      euerr("EU_VERIFYN(%s) failed with %d", #cond, _eu_chk_cond);      \
+#define EU_VERIFYN(cond)                                                \
+  do {                                                                  \
+    int _eu_chk_cond = (int)(cond);                                     \
+    if (_eu_chk_cond) {                                                 \
+      eu_err("EU_VERIFYN(%s) failed with %d", #cond, _eu_chk_cond);     \
       abort();                                                          \
     }                                                                   \
-  }
+  } while(0)
 
 #endif

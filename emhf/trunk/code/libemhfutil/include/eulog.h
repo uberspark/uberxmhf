@@ -36,38 +36,71 @@
 #ifndef EULOG_H
 #define EULOG_H
 
-#define EUTRACE 0
-#define EUPERF  1
-#define EUWARN  2
-#define EUERR   3
+#define EU_TRACE 0
+#define EU_PERF  1
+#define EU_WARN  2
+#define EU_ERR   3
 
-#ifndef EULOG_PREFIX
-#define EULOG_PREFIX ""
+#ifndef EU_LOG_PREFIX
+#define EU_LOG_PREFIX ""
 #endif
 
-#ifndef EULOG_LVL
-#define EULOG_LVL EUTRACE
+#ifndef EU_LOG_LVL
+#define EU_LOG_LVL EU_TRACE
 #endif
 
 #include <stdio.h>
+#include <stdarg.h>
 
-#define EULOG(pri, fmt, args...)                                        \
+#define EU_LOG(pri, fmt, args...)                                        \
   do {                                                                  \
     char _eulogbuf[128];                                                \
-    if (EULOG_LVL <= pri) {                                             \
-      snprintf(_eulogbuf, 128, "%s[%d]:%s:%s:%d:", EULOG_PREFIX, pri, __FILE__, __FUNCTION__, __LINE__); \
+    if (EU_LOG_LVL <= pri) {                                             \
+      snprintf(_eulogbuf, 128, "%s[%d]:%s:%s:%d:", EU_LOG_PREFIX, pri, __FILE__, __FUNCTION__, __LINE__); \
       _eulogbuf[127] = '\0';                                            \
       printf("%-50s " fmt "\n", _eulogbuf, ## args);                    \
     }                                                                   \
   } while(0)
 
-      /* printf("%s[%d]:%s:%s:%d:\t" fmt "\n", EULOG_PREFIX, pri, __FILE__, __FUNCTION__, __LINE__, ## args); \ */
+#define eu_trace(fmt, args...) EU_LOG(EU_TRACE, fmt, ## args)
+#define eu_perf(fmt, args...) EU_LOG(EU_PERF, fmt, ## args)
+#define eu_warn(fmt, args...) EU_LOG(EU_WARN, fmt, ## args)
+#define eu_err(fmt, args...) EU_LOG(EU_ERR, fmt, ## args)
 
-#define eutrace(fmt, args...) EULOG(EUTRACE, fmt, ## args)
-#define euperf(fmt, args...) EULOG(EUPERF, fmt, ## args)
-#define euwarn(fmt, args...) EULOG(EUWARN, fmt, ## args)
-#define euerr(fmt, args...) EULOG(EUERR, fmt, ## args)
+#define eu_pulse() EU_LOG(EU_TRACE, "pulse")
 
-#define eupulse() EULOG(EUTRACE, "pulse")
+/* below are versions that can be used where an expression is
+   expected. this is useful as extra parameters to eu_chk
+   functions. Unfortunately we end up using multiple print statements,
+   which may not be printed atomically.
+*/
+static int eu_logfn(const char* fmt, const char* prefix, int pri, const char *file, const char *fn, int line, ...) __attribute__ ((unused));
+static int eu_logfn(const char* fmt, const char* prefix, int pri, const char *file, const char *fn, int line, ...)
+{
+  va_list va;
+  char loc_string[128];
+  /* int written; */
+
+  snprintf(loc_string, 128, "%s[%d]:%s:%s:%d:", prefix, pri, file, fn, line);
+  printf("%-50s ", loc_string);
+
+  va_start(va, line);
+  vprintf(fmt, va);
+  va_end(va);
+
+  printf("\n");
+  return 0;
+}
+
+#define EU_LOGE(pri, fmt, args...)                                      \
+  ((void)((EU_LOG_LVL <= pri) &&                                        \
+          eu_logfn(fmt, EU_LOG_PREFIX, pri, __FILE__, __FUNCTION__, __LINE__, ## args)))
+
+#define eu_trace_e(fmt, args...) EU_LOGE(EU_TRACE, fmt, ## args)
+#define eu_perf_e(fmt, args...) EU_LOGE(EU_PERF, fmt, ## args)
+#define eu_warn_e(fmt, args...) EU_LOGE(EU_WARN, fmt, ## args)
+#define eu_err_e(fmt, args...) EU_LOGE(EU_ERR, fmt, ## args)
+
+#define eu_pulse_e() EU_LOGE(EU_TRACE, "pulse"
 
 #endif
