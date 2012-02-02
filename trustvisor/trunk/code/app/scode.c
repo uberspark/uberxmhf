@@ -1007,6 +1007,10 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 
   eu_trace("*** to scode ***");
 
+  spin_lock(&(whitelist[curr].pal_running_lock));
+  whitelist[curr].pal_running_vcpu_id=vcpu->id;
+  eu_trace("got pal_running lock!");
+
   EU_CHKN( copy_from_current_guest(vcpu,
                                    &whitelist[curr].return_v,
                                    VCPU_grsp(vcpu),
@@ -1063,6 +1067,10 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
     if (pushed_return) {
       VCPU_grsp_set(vcpu, VCPU_grsp(vcpu)+4);
     }
+
+    whitelist[curr].pal_running_vcpu_id=-1;
+    spin_unlock(&(whitelist[curr].pal_running_lock));
+    eu_trace("released pal_running lock!");
   }
   return err;
 }
@@ -1196,6 +1204,10 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
   /* return to actual return address */
   VCPU_grip_set(vcpu, whitelist[curr].return_v);
 
+  whitelist[curr].pal_running_vcpu_id=-1;
+  spin_unlock(&(whitelist[curr].pal_running_lock));
+  eu_trace("released pal_running lock!");
+
   perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_REGULAR], vcpu->idx);
 
   return rv;
@@ -1238,20 +1250,11 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
             eu_err_e("Invalid entry point"));
 
     /* valid entry point, switch from regular code to sensitive code */
-#ifdef __MP_VERSION__
-    spin_lock(&(whitelist[*curr].pal_running_lock));
-    whitelist[*curr].pal_running_vcpu_id=vcpu->id;
-    eu_trace("got pal_running lock!");
-#endif
     if (hpt_scode_switch_scode(vcpu)) {
       eu_err("error in switch to scode!");
-#ifdef __MP_VERSION__
-      spin_unlock(&(whitelist[*curr].pal_running_lock));
-      whitelist[*curr].pal_running_vcpu_id=-1;
-      eu_trace("released pal_running lock!");
-#endif
       goto out;
     }
+
   } else if ((*curr >=0) && (index < 0)) {
     /* sensitive code to regular code */
 
@@ -1263,18 +1266,8 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
     /* XXX FIXME: now return ponit is extracted from regular code stack, only support one scode function call */
     if (hpt_scode_switch_regular(vcpu)) {
       eu_err("error in switch to regular code!");
-#ifdef __MP_VERSION__
-      spin_unlock(&(whitelist[*curr].pal_running_lock));
-      whitelist[*curr].pal_running_vcpu_id=-1;
-      eu_trace("released pal_running lock!");
-#endif
       goto out;
     }
-#ifdef __MP_VERSION__
-    spin_unlock(&(whitelist[*curr].pal_running_lock));
-    whitelist[*curr].pal_running_vcpu_id=-1;
-    eu_trace("released pal_running lock!");
-#endif
     *curr = -1;
   } else if ((*curr >=0) && (index >= 0)) {
     /* sensitive code to sensitive code */
@@ -1282,11 +1275,6 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
       eu_err("SECURITY: incorrect scode EPT configuration!");
     else
       eu_err("SECURITY: invalid access to scode mem region from other scodes!"); 
-#ifdef __MP_VERSION__
-    spin_unlock(&(whitelist[*curr].pal_running_lock));
-    whitelist[*curr].pal_running_vcpu_id=-1;
-    eu_trace("released pal_running lock!");
-#endif
     goto out;	
   } else {
     /* regular code to regular code */
