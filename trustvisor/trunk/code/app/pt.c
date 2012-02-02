@@ -46,6 +46,11 @@
 #include  "./include/scode.h"
 #include <pages.h>
 
+#define EU_LOG_LVL EU_TRACE
+#define EU_LOG_PREFIX "TV"
+#include <eulog.h>
+#include <euchk.h>
+
 /* ********************************* */
 /* HPT related NPT operations */
 /* ********************************* */
@@ -115,23 +120,20 @@ static int construct_checked_walk_ctx(VCPU *vcpu, checked_guest_walk_ctx_t *rv)
 
   memset(rv, 0, sizeof(*rv));
 
-  guest_pa2ptr_ctx = malloc(sizeof(*guest_pa2ptr_ctx));
-  if (!guest_pa2ptr_ctx) {
-    err=1;
-    goto out;
-  }
+  EU_CHK(
+         guest_pa2ptr_ctx = malloc(sizeof(*guest_pa2ptr_ctx)),
+         err=1);
 
   hpt_emhf_get_root_pmo(vcpu, &guest_pa2ptr_ctx->host_pmo_root);
   guest_pa2ptr_ctx->host_walk_ctx = hpt_nested_walk_ctx;
 
-  if (hpt_guest_walk_ctx_construct_vcpu(&rv->guest_walk_ctx, vcpu, NULL)) {
-    err = 2;
-    goto out;
-  }
+  EU_CHKN(
+          hpt_guest_walk_ctx_construct_vcpu(&rv->guest_walk_ctx, vcpu, NULL),
+          err=2);
 
   hpt_emhf_get_guest_root_pmo(vcpu, &rv->guest_root);
   rv->cpl = HPTW_CPL3; /* FIXME - extract cpl from vcpu */
-
+  
  out:
   if (err) {
     free(rv->guest_walk_ctx.pa2ptr_ctx);
@@ -151,11 +153,11 @@ bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
   checked_guest_walk_ctx_t ctx;
   size_t checked=0;
   int err = 0;
+  bool rv = true;
 
-  if (construct_checked_walk_ctx(vcpu, &ctx)) {
-    err=1;
-    goto out;
-  }
+  EU_CHKN(
+          construct_checked_walk_ctx(vcpu, &ctx),
+          err=1);
 
   while(checked < len) {
     hpt_va_t gva = gva_base + checked;
@@ -165,21 +167,20 @@ bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
 
     cpl = reqd_user_accessible ? HPTW_CPL3 : HPTW_CPL0;
 
-    ptr = hptw_checked_access_va(&ctx.guest_walk_ctx,
-                                 &ctx.guest_root,
-                                 reqd_prots,
-                                 cpl,
-                                 gva,
-                                 len-checked,
-                                 &size_checked);
-    if(!ptr) {
-      return false;
-    }
+    EU_CHK(
+           ptr = hptw_checked_access_va(&ctx.guest_walk_ctx,
+                                        &ctx.guest_root,
+                                        reqd_prots,
+                                        cpl,
+                                        gva,
+                                        len-checked,
+                                        &size_checked),
+           rv=false);
     checked += size_checked;
   }
  out:
   assert(!err); /* FIXME */
-  return true;
+  return rv;
 }
 
 bool guest_pt_range_is_user_rw(VCPU * vcpu, gva_t vaddr, size_t size_bytes)
@@ -253,15 +254,11 @@ int copy_from_current_guest(VCPU * vcpu, void *dst, gva_t gvaddr, u32 len)
   checked_guest_walk_ctx_t ctx;
   int rv=0;
 
-  if (construct_checked_walk_ctx(vcpu, &ctx)) {
-    rv=1;
-    goto out;
-  }
+  EU_CHKN( construct_checked_walk_ctx(vcpu, &ctx),
+           rv=1);
 
-  if (hptw_checked_copy_from_va(&ctx.guest_walk_ctx, &ctx.guest_root, ctx.cpl, dst, gvaddr, len)) {
-    rv = 2;
-    goto out;
-  }
+  EU_CHKN( hptw_checked_copy_from_va(&ctx.guest_walk_ctx, &ctx.guest_root, ctx.cpl, dst, gvaddr, len),
+           rv=2);
 
  out:
   destroy_checked_walk_ctx(&ctx);
@@ -273,15 +270,11 @@ int copy_to_current_guest(VCPU * vcpu, gva_t gvaddr, void *src, u32 len)
   checked_guest_walk_ctx_t ctx;
   int rv=0;
 
-  if (construct_checked_walk_ctx(vcpu, &ctx)) {
-    rv=1;
-    goto out;
-  }
+  EU_CHKN( construct_checked_walk_ctx(vcpu, &ctx),
+           rv=1);
 
-  if (hptw_checked_copy_to_va(&ctx.guest_walk_ctx, &ctx.guest_root, ctx.cpl, gvaddr, src, len)) {
-    rv = 2;
-    goto out;
-  }
+  EU_CHKN( hptw_checked_copy_to_va(&ctx.guest_walk_ctx, &ctx.guest_root, ctx.cpl, gvaddr, src, len),
+           rv = 2);
 
  out:
   destroy_checked_walk_ctx(&ctx);
@@ -305,7 +298,7 @@ void scode_clone_gdt(VCPU *vcpu,
   size_t gdt_page_offset = gdtr_base & MASKRANGE64(11, 0); /* XXX */
   gva_t gdt_reg_page_gva = gdtr_base & MASKRANGE64(63, 12); /* XXX */
 
-  dprintf(LOG_TRACE, "scode_clone_gdt base:%x size:%d:\n", gdtr_base, gdt_size);
+  eu_trace("scode_clone_gdt base:%x size:%d", gdtr_base, gdt_size);
 
   /* rest of fn assumes gdt is all on one page */
   ASSERT((gdt_page_offset+gdt_size) <= PAGE_SIZE_4K); 
@@ -314,7 +307,7 @@ void scode_clone_gdt(VCPU *vcpu,
   CHK(gdt_pal_page);
   gdt = gdt_pal_page + gdt_page_offset;
 
-  dprintf(LOG_TRACE, "copying gdt from gva:%x to hva:%p\n", gdtr_base, gdt);
+  eu_trace("copying gdt from gva:%x to hva:%p", gdtr_base, gdt);
   copy_from_current_guest(vcpu, gdt, gdtr_base, gdt_size);
 
   /* add to guest page tables */
@@ -325,7 +318,7 @@ void scode_clone_gdt(VCPU *vcpu,
 
     gdt_gpa = hva2gpa(gdt);
 
-    dprintf(LOG_TRACE, "mapping gdt into guest page tables\n");
+    eu_trace("mapping gdt into guest page tables");
     /* XXX SECURITY check to ensure we're not clobbering some existing
        mapping */
     /* add access to pal guest page tables */
@@ -350,9 +343,8 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hptw_ctx_t *reg_npm_ctx,
   size_t offset;
   int hpt_err;
 
-  dprintf(LOG_TRACE,
-          "entering scode_lend_section. Mapping from %016llx to %016llx, size %u, pal_prot %u\n",
-          section->reg_gva, section->pal_gva, section->size, (u32)section->pal_prot);
+  eu_trace("Mapping from %016llx to %016llx, size %u, pal_prot %u",
+           section->reg_gva, section->pal_gva, section->size, (u32)section->pal_prot);
   
   /* XXX don't hard-code page size here. */
   /* XXX fail gracefully */
@@ -379,9 +371,8 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hptw_ctx_t *reg_npm_ctx,
                       reg_gpmo_root,
                       1,
                       page_reg_gva);
-    dprintf(LOG_TRACE,
-            "got pme %016llx, level %d, type %d\n",
-            page_reg_gpmeo.pme, page_reg_gpmeo.lvl, page_reg_gpmeo.t);
+    eu_trace("got pme %016llx, level %d, type %d",
+             page_reg_gpmeo.pme, page_reg_gpmeo.lvl, page_reg_gpmeo.t);
     ASSERT(page_reg_gpmeo.lvl==1); /* we don't handle large pages */
     page_reg_gpa = hpt_pmeo_get_address(&page_reg_gpmeo);
 
@@ -415,8 +406,8 @@ void scode_lend_section(hpt_pmo_t* reg_npmo_root, hptw_ctx_t *reg_npm_ctx,
                                                       reg_gpmo_root,
                                                       page_reg_gva,
                                                       &user_accessible);
-      dprintf(LOG_TRACE, "%s got reg gpt prots:0x%x, user:%d\n",
-              __FUNCTION__, (u32)effective_prots, (int)user_accessible);
+      eu_trace("got reg gpt prots:0x%x, user:%d",
+               (u32)effective_prots, (int)user_accessible);
       CHK((effective_prots & section->pal_prot) == section->pal_prot);
       CHK(user_accessible);
     }
