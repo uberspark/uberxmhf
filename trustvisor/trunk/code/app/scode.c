@@ -1250,10 +1250,7 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
             eu_err_e("Invalid entry point"));
 
     /* valid entry point, switch from regular code to sensitive code */
-    if (hpt_scode_switch_scode(vcpu)) {
-      eu_err("error in switch to scode!");
-      goto out;
-    }
+    EU_CHKN( hpt_scode_switch_scode(vcpu));
 
   } else if ((*curr >=0) && (index < 0)) {
     /* sensitive code to regular code */
@@ -1264,10 +1261,7 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
     /* valid return point, switch from sensitive code to regular code */
 
     /* XXX FIXME: now return ponit is extracted from regular code stack, only support one scode function call */
-    if (hpt_scode_switch_regular(vcpu)) {
-      eu_err("error in switch to regular code!");
-      goto out;
-    }
+    EU_CHKN( hpt_scode_switch_regular(vcpu));
     *curr = -1;
   } else if ((*curr >=0) && (index >= 0)) {
     /* sensitive code to sensitive code */
