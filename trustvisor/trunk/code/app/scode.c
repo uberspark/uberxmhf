@@ -1219,84 +1219,79 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
   int * curr=&(scode_curr[vcpu->id]);
   u64 gcr3 = VCPU_gcr3(vcpu);
   u32 rip = (u32)VCPU_grip(vcpu);
+  u32 err=1;
 
   perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_NPF], vcpu->idx);
 
-  eutrace("CPU(%02x): nested page fault!(rip %#x, gcr3 %#Lx, gpaddr %#x, errorcode %Lx)",
+  eu_trace("CPU(%02x): nested page fault!(rip %#x, gcr3 %#Lx, gpaddr %#x, errorcode %Lx)",
           vcpu->id, rip, gcr3, gpaddr, errorcode);
 
-  if(!hpt_error_wasInsnFetch(vcpu, errorcode)) {
-    /* data read or data write */
-    euerr("SECURITY: nested page fault on non-instruction fetch.");
-    goto npf_error;
-  }
+  EU_CHK( hpt_error_wasInsnFetch(vcpu, errorcode));
 
   index = scode_in_list(gcr3, rip);
   if ((*curr == -1) && (index >= 0)) {
     /* regular code to sensitive code */
 
     *curr = index;
-    if (!((whitelist[*curr].entry_v == rip) && (whitelist[*curr].entry_p == gpaddr))) { 
-      euerr("SECURITY: invalid scode entry point!");
-      goto npf_error;
-    }
+    EU_CHK( ((whitelist[*curr].entry_v == rip)
+             && (whitelist[*curr].entry_p == gpaddr)),
+            eu_err_e("Invalid entry point"));
 
     /* valid entry point, switch from regular code to sensitive code */
 #ifdef __MP_VERSION__
     spin_lock(&(whitelist[*curr].pal_running_lock));
     whitelist[*curr].pal_running_vcpu_id=vcpu->id;
-    eutrace("got pal_running lock!");
+    eu_trace("got pal_running lock!");
 #endif
     if (hpt_scode_switch_scode(vcpu)) {
-      euerr("error in switch to scode!");
+      eu_err("error in switch to scode!");
 #ifdef __MP_VERSION__
       spin_unlock(&(whitelist[*curr].pal_running_lock));
       whitelist[*curr].pal_running_vcpu_id=-1;
-      eutrace("released pal_running lock!");
+      eu_trace("released pal_running lock!");
 #endif
-      goto npf_error;
+      goto out;
     }
   } else if ((*curr >=0) && (index < 0)) {
     /* sensitive code to regular code */
 
-    if (RETURN_FROM_PAL_ADDRESS != rip) {
-      euerr("SECURITY: invalid scode return point!");
-      goto npf_error;
-    }
+    EU_CHK( RETURN_FROM_PAL_ADDRESS == rip,
+            eu_err_e("SECURITY: invalid scode return point!"));
+
     /* valid return point, switch from sensitive code to regular code */
 
     /* XXX FIXME: now return ponit is extracted from regular code stack, only support one scode function call */
     if (hpt_scode_switch_regular(vcpu)) {
-      euerr("error in switch to regular code!");
+      eu_err("error in switch to regular code!");
 #ifdef __MP_VERSION__
       spin_unlock(&(whitelist[*curr].pal_running_lock));
       whitelist[*curr].pal_running_vcpu_id=-1;
-      eutrace("released pal_running lock!");
+      eu_trace("released pal_running lock!");
 #endif
-      goto npf_error;
+      goto out;
     }
 #ifdef __MP_VERSION__
     spin_unlock(&(whitelist[*curr].pal_running_lock));
     whitelist[*curr].pal_running_vcpu_id=-1;
-    eutrace("released pal_running lock!");
+    eu_trace("released pal_running lock!");
 #endif
     *curr = -1;
   } else if ((*curr >=0) && (index >= 0)) {
     /* sensitive code to sensitive code */
     if (*curr == index)
-      euerr("SECURITY: incorrect scode EPT configuration!");
+      eu_err("SECURITY: incorrect scode EPT configuration!");
     else
-      euerr("SECURITY: invalid access to scode mem region from other scodes!"); 
+      eu_err("SECURITY: invalid access to scode mem region from other scodes!"); 
 #ifdef __MP_VERSION__
     spin_unlock(&(whitelist[*curr].pal_running_lock));
     whitelist[*curr].pal_running_vcpu_id=-1;
-    eutrace("released pal_running lock!");
+    eu_trace("released pal_running lock!");
 #endif
-    goto npf_error;	
+    goto out;	
   } else {
     /* regular code to regular code */
-    euerr("incorrect regular code EPT configuration!"); 
-    goto npf_error;
+    eu_err("incorrect regular code EPT configuration!"); 
+    goto out;
   }
 
   /* no errors, pseodu page fault canceled by nested paging */
@@ -1304,23 +1299,22 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
     ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->eventinj.bytes = 0ull;
   } /* FIXME - equivalent for intel? */
 
+  err=0;
+ out:
   perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_NPF], vcpu->idx);
-  return 0;
+  if(err) {
+    if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+      /* errors, inject segfault to guest */
+      struct vmcb_struct* vmcb = (struct vmcb_struct*)(vcpu->vmcb_vaddr_ptr);
+      vmcb->eventinj.bytes=0;
+      vmcb->eventinj.fields.vector=0xd;
+      vmcb->eventinj.fields.vector=EVENTTYPE_EXCEPTION;
+      vmcb->eventinj.fields.v=0x1;
+    } /* FIXME - equivalent for intel? */
 
- npf_error:
-  perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_NPF], vcpu->idx);
-
-  if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    /* errors, inject segfault to guest */
-    struct vmcb_struct* vmcb = (struct vmcb_struct*)(vcpu->vmcb_vaddr_ptr);
-    vmcb->eventinj.bytes=0;
-    vmcb->eventinj.fields.vector=0xd;
-    vmcb->eventinj.fields.vector=EVENTTYPE_EXCEPTION;
-    vmcb->eventinj.fields.v=0x1;
-  } /* FIXME - equivalent for intel? */
-
-  *curr = -1;
-  return 1;
+    *curr = -1;
+  }
+  return err;
 }
 
 /* caller is responsible for flushing TLB */
