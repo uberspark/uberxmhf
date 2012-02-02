@@ -37,6 +37,7 @@
 #define EUCHK_H
 
 #include <eulog.h>
+#include <stdlib.h>
 
 /* EU_CHK(cond) - if condition is false, will log an error, including
  * the stringified condition, and goto label 'out'. Use above variants
