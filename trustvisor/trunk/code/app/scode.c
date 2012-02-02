@@ -50,10 +50,7 @@
 #include <crypto_init.h>
 #include <sha1.h>
 
-#define EU_LOG_LVL EU_TRACE
-#define EU_LOG_PREFIX "TV"
-#include <eulog.h>
-#include <euchk.h>
+#include <tv_log.h>
 
 hpt_pa_t hpt_nested_ptr2pa(void __attribute__((unused)) *ctx, void *ptr)
 {

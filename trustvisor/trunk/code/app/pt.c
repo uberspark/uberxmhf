@@ -46,10 +46,7 @@
 #include  "./include/scode.h"
 #include <pages.h>
 
-#define EU_LOG_LVL EU_TRACE
-#define EU_LOG_PREFIX "TV"
-#include <eulog.h>
-#include <euchk.h>
+#include <tv_log.h>
 
 /* ********************************* */
 /* HPT related NPT operations */

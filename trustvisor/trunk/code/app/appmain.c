@@ -44,6 +44,8 @@
 #include <hc_utpm.h>
 #include <nv.h>
 
+#include <tv_log.h>
+
 /* Declared in linuxrelc.c.  TODO: figure out an approriate header
  * file for it. */
 void setuplinuxboot(VCPU *vcpu, u32 vmlinuz_base, u32 vmlinuz_size, 
@@ -51,24 +53,23 @@ void setuplinuxboot(VCPU *vcpu, u32 vmlinuz_base, u32 vmlinuz_size,
 
 // a placeholder for now...
 u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
-  printf("\nCPU(0x%02x): Hello world from sechyp app!", vcpu->id);
+  eu_trace("CPU(0x%02x)", vcpu->id);
 
 #ifdef __MP_VERSION__
   if (vcpu->isbsp) 
 #endif
     {
-      printf("[TV] CPU(0x%02x): init scode!\n", vcpu->id);
+      eu_trace("CPU(0x%02x): init\n", vcpu->id);
       init_scode(vcpu);
-
 
       //sanity checks
       //	ASSERT( apb->bootsector_size > 0 && apb->optionalmodule_size > 0 );
 
       if (apb->optionalmodule_ptr) {
-        printf("\nCPU(0x%02x): vmlinuz b=0x%08x, size=%u bytes", vcpu->id,
-               apb->bootsector_ptr, apb->bootsector_size);
-        printf("\nCPU(0x%02x): initramfs b=0x%08x, size=%u bytes", vcpu->id,
-               apb->optionalmodule_ptr, apb->optionalmodule_size);
+        eu_trace("CPU(0x%02x): vmlinuz b=0x%08x, size=%u bytes", vcpu->id,
+                 apb->bootsector_ptr, apb->bootsector_size);
+        eu_trace("CPU(0x%02x): initramfs b=0x%08x, size=%u bytes", vcpu->id,
+                 apb->optionalmodule_ptr, apb->optionalmodule_size);
 
         setuplinuxboot(vcpu, apb->bootsector_ptr, apb->bootsector_size, 
                        apb->optionalmodule_ptr, apb->optionalmodule_size);
@@ -106,7 +107,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
     {
     case TV_HC_TEST:
       {
-        printf("\nCPU(0x%02x): Hello world from sechyp vmmcall handler!", vcpu->id);
+        eu_trace("CPU(0x%02x): test hypercall", vcpu->id);
         ret = 0;
         break;
       }
@@ -287,7 +288,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
         if (lens && addrs) {
           ret = scode_share_ranges(vcpu, scode_entry, addrs, lens, count);
         } else {
-          printf("[TV] TV_VMMCMD_SHARE: ERROR- couldn't allocate %d entries\n",
+          eu_err("TV_VMMCMD_SHARE: ERROR- couldn't allocate %d entries\n",
                  count);
           ret = -2;
         }
@@ -323,7 +324,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
     case TV_HC_TPMNVRAM_GETSIZE:
       {
         u32 size_addr;
-        printf("[TV] TV_HC_TPMNVRAM_GETSIZE invoked.\n");
+        eu_trace("TV_HC_TPMNVRAM_GETSIZE invoked.");
         size_addr = r->ecx;
         ret = hc_tpmnvram_getsize(vcpu, size_addr);
         break;
@@ -331,7 +332,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
     case TV_HC_TPMNVRAM_READALL:
       {
         u32 out_addr;
-        printf("[TV] TV_HC_TPMNVRAM_READALL invoked.\n");
+        eu_trace("TV_HC_TPMNVRAM_READALL invoked.");
         out_addr = r->ecx;
         ret = hc_tpmnvram_readall(vcpu, out_addr);
         break;
@@ -339,14 +340,14 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
     case TV_HC_TPMNVRAM_WRITEALL:
       {
         u32 in_addr;
-        printf("[TV] TV_HC_TPMNVRAM_WRITEALL invoked.\n");
+        eu_trace("TV_HC_TPMNVRAM_WRITEALL invoked.");
         in_addr = r->ecx;
         ret = hc_tpmnvram_writeall(vcpu, in_addr);
         break;
       }
     default:
       {
-        printf("[TV] FATAL ERROR: Invalid vmmcall cmd (%d)\n", cmd);
+        eu_err("FATAL ERROR: Invalid vmmcall cmd (%d)", cmd);
         status = APP_ERROR;
         ret = 1;
       }
@@ -368,11 +369,11 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
                                               struct regs __attribute__((unused)) *r, u64 gpa, u64 gva, u64 violationcode)
 {
   u32 ret;
-  dprintf(LOG_TRACE, "\nCPU(0x%02x): gva=0x%08Lx, gpa=0x%08Lx, code=0x%016Lx\n", (int)vcpu->id,
+  eu_trace("CPU(0x%02x): gva=0x%08Lx, gpa=0x%08Lx, code=0x%016Lx", (int)vcpu->id,
           gva, gpa, violationcode);
   //	printf("\nprot is: 0x%016llx", emhf_hwpgtbl_getprot(vcpu, gpa));
   if ((ret = hpt_scode_npf(vcpu, gpa, violationcode)) != 0) {
-    dprintf(LOG_ERROR, "FATAL ERROR: Unexpected return value from page fault handling\n");
+    eu_trace("FATAL ERROR: Unexpected return value from page fault handling");
     HALT();
   }
   return ret;
@@ -381,9 +382,9 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs __attribute__((unused)) *r, 
                                         u32 portnum, u32 access_type, u32 access_size)
 {
-  dprintf(LOG_TRACE, "\nCPU(0x%02x): Port access intercept feature unimplemented. Halting!", vcpu->id);
-  dprintf(LOG_TRACE, "\nCPU(0x%02x): portnum=0x%08x, access_type=0x%08x, access_size=0x%08x", vcpu->id,
-          (u32)portnum, (u32)access_type, (u32)access_size);
+  eu_err("CPU(0x%02x): Port access intercept feature unimplemented. Halting!", vcpu->id);
+  eu_trace("CPU(0x%02x): portnum=0x%08x, access_type=0x%08x, access_size=0x%08x", vcpu->id,
+           (u32)portnum, (u32)access_type, (u32)access_size);
   HALT();
   return 0; /* XXX DUMMY; keeps compiler happy */
   //return APP_IOINTERCEPT_SKIP;
@@ -392,7 +393,7 @@ u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs __attribute__((u
 
 void emhf_app_handleshutdown(VCPU *vcpu, struct regs __attribute__((unused)) *r)
 {
-  dprintf(LOG_TRACE, "\nCPU(0x%02x): Shutdown intercept!", vcpu->id);
+  eu_trace("CPU(0x%02x): Shutdown intercept!", vcpu->id);
   //g_libemhf->emhf_reboot(vcpu);
   emhf_baseplatform_reboot(vcpu);
 }

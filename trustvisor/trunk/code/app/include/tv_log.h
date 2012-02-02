@@ -33,52 +33,18 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <emhf.h> 
+#ifndef TV_LOG_H
+#define TV_LOG_H
 
-#include <malloc.h>
-#include <pages.h>
+#ifndef EU_LOG_LVL
+#define EU_LOG_LVL EU_TRACE
+#endif
 
-#include <tv_log.h>
+#ifndef EU_LOG_PREFIX
+#define EU_LOG_PREFIX "TV"
+#endif 
 
-void pagelist_init(pagelist_t *pl)
-{
-  const int pages = 128;
-  pl->buf = malloc(pages*PAGE_SIZE_4K);
-  EU_VERIFY(pl->buf != NULL);
+#include <eulog.h>
+#include <euchk.h>
 
-  pl->page_base = (void*)PAGE_ALIGN_UP4K((uintptr_t)pl->buf);
-  pl->num_allocd =
-    (pl->page_base == pl->buf)
-    ? pages
-    : pages-1;
- 
-  pl->num_used = 0;
-}
-
-void* pagelist_get_page(pagelist_t *pl)
-{
-  void *page;
-  eu_trace("num_used:%d num_alocd:%d", pl->num_used, pl->num_allocd);
-
-  /* we'll handle allocating more on-demand later */
-  EU_VERIFY(pl->num_used < pl->num_allocd);
-
-  page = pl->page_base + (pl->num_used*PAGE_SIZE_4K);
-  pl->num_used++;
-
-  return page;
-}
-
-void* pagelist_get_zeroedpage(pagelist_t *pl)
-{
-  void *page = pagelist_get_page(pl);
-  memset(page, 0, PAGE_SIZE_4K);
-  return page;
-}
-
-void pagelist_free_all(pagelist_t *pl)
-{
-  free(pl->buf);
-  pl->buf=NULL;
-  pl->num_allocd=0;
-}
+#endif
