@@ -38,17 +38,18 @@
 
 #include <eulog.h>
 
-#define EU_CHK_PRI(cond, priority)                      \
+#define EU_CHK_PRI(cond, priority, args...)             \
   do {                                                  \
     if (!(cond)) {                                      \
       EULOG(priority, "EU_CHK failed: %s", #cond);      \
+      (void)0, ## args;                                 \
       goto out;                                         \
     }                                                   \
   } while(0)
 
-#define EU_CHK_T(cond) EU_CHK_PRI(cond, EUTRACE)
-#define EU_CHK_W(cond) EU_CHK_PRI(cond, EUWARN)
-#define EU_CHK_E(cond) EU_CHK_PRI(cond, EUERR)
+#define EU_CHK_T(cond, args...) EU_CHK_PRI(cond, EUTRACE, ## args)
+#define EU_CHK_W(cond, args...) EU_CHK_PRI(cond, EUWARN, ## args)
+#define EU_CHK_E(cond, args...) EU_CHK_PRI(cond, EUERR, ## args)
 
 #define EU_CHK EU_CHK_E
 
