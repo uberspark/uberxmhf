@@ -38,28 +38,15 @@
 
 #include <eulog.h>
 
-#define EU_CHK_PRI(cond, priority, args...)             \
-  do {                                                  \
-    if (!(cond)) {                                      \
-      EULOG(priority, "EU_CHK failed: %s", #cond);      \
-      (void)0, ## args;                                 \
-      goto out;                                         \
-    }                                                   \
-  } while(0)
-
-#define EU_CHK_T(cond, args...) EU_CHK_PRI(cond, EUTRACE, ## args)
-#define EU_CHK_W(cond, args...) EU_CHK_PRI(cond, EUWARN, ## args)
-#define EU_CHK_E(cond, args...) EU_CHK_PRI(cond, EUERR, ## args)
-
-/* Use:
- * EU_CHK(cond) - if condition doesn't hold, will log an error, including the stringified condition,
- * and goto label 'out'. Use above variants if a different logging priority is desired.
+/* EU_CHK(cond) - if condition is false, will log an error, including
+ * the stringified condition, and goto label 'out'. Use above variants
+ * if a different logging priority is desired.
  *
- * Optionally, include additional expressions that will be evaluated iff the condition doesn't hold.
- * This can be used, e.g., to set a return value or error flag.
- * examples:
+ * Optionally, include additional expressions that will be evaluated
+ * iff the condition doesn't hold.  This can be used, e.g., to set a
+ * return value or error flag.  examples:
  * 
- * EU_CHK(buf = malloc(20));
+ * EU_CHK((buf = malloc(20)));
  *
  * EU_CHK(buf = malloc(20),
  *        rv = ENOMEM);
@@ -69,17 +56,65 @@
  * that failed ("buf = malloc(20)"), and goto label 'out'. In the
  * second case, failure will also cause the variable rv to be assigned
  * ENOMEM.
+ *
+ * EU_CHKN is as-above, but inverts the condition, and prints the value of the condition
+ * on failure. useful for checking (and printing) error codes. example:
+ *
+ * EU_CHKN(fn_that_may_fail(arg1, arg2, arg3));
+ *
+ * if fn_that_may_fail returns non-zero, the check will fail and the
+ * return value will be logged.
+ *
  */ 
+
+#define EU_CHKN_PRI(cond, priority, args...)                            \
+  do {                                                                  \
+    int _eu_chk_cond = (int)(cond);                                     \
+    if (_eu_chk_cond) {                                                 \
+      EULOG(priority, "EU_CHKN(%s) failed with: %d", #cond, _eu_chk_cond); \
+      (void)0, ## args;                                                 \
+      goto out;                                                         \
+    }                                                                   \
+  } while(0)
+
+#define EU_CHK_PRI(cond, priority, args...)                             \
+  do {                                                                  \
+    if (!(cond)) {                                                      \
+      EULOG(priority, "EU_CHK(%s) failed", #cond);                      \
+      (void)0, ## args;                                                 \
+      goto out;                                                         \
+    }                                                                   \
+  } while(0)
+
+#define EU_CHK_T(cond, args...) EU_CHK_PRI(cond, EUTRACE, ## args)
+#define EU_CHK_W(cond, args...) EU_CHK_PRI(cond, EUWARN, ## args)
+#define EU_CHK_E(cond, args...) EU_CHK_PRI(cond, EUERR, ## args)
+
+#define EU_CHKN_T(cond, args...) EU_CHKN_PRI(cond, EUTRACE, ## args)
+#define EU_CHKN_W(cond, args...) EU_CHKN_PRI(cond, EUWARN, ## args)
+#define EU_CHKN_E(cond, args...) EU_CHKN_PRI(cond, EUERR, ## args)
+
 #define EU_CHK(cond, args...) EU_CHK_E(cond, ## args)
+#define EU_CHKN(cond, args...) EU_CHKN_E(cond, ## args)
 
 /* use like assert, but where arg will always be expanded and the
    check never disabled */
 #define EU_VERIFY(cond)                         \
   do {                                          \
     if (!(cond)) {                              \
-      euerr("EU_VERIFY failed: %s", #cond);     \
+      euerr("EU_VERIFY(%s) failed", #cond);     \
       abort();                                  \
     }                                           \
+  }
+
+/* verify-not. logs value in case of failure as with EU_CHKN. */
+#define EU_VERIFYN(cond)                        \
+  do {                                          \
+    int _eu_chk_cond = (int)(cond);             \
+    if (!_eu_chk_cond) {                                                \
+      euerr("EU_VERIFYN(%s) failed with %d", #cond, _eu_chk_cond);      \
+      abort();                                                          \
+    }                                                                   \
   }
 
 #endif
