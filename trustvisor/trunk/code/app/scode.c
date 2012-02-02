@@ -50,9 +50,10 @@
 #include <crypto_init.h>
 #include <sha1.h>
 
-#define EULOG_LVL EUTRACE
-#define EULOG_PREFIX "TV"
+#define EU_LOG_LVL EU_TRACE
+#define EU_LOG_PREFIX "TV"
 #include <eulog.h>
+#include <euchk.h>
 
 hpt_pa_t hpt_nested_ptr2pa(void __attribute__((unused)) *ctx, void *ptr)
 {
@@ -116,23 +117,19 @@ const hptw_ctx_t hpt_nested_walk_ctx = {
   .ptr2pa_ctx = NULL,
 };
 
-int hpt_guest_walk_ctx_construct(hptw_ctx_t *rv, const hpt_pmo_t *host_root, const hptw_ctx_t *host_walk_ctx, pagelist_t *pl)
+int hpt_guest_walk_ctx_construct(hptw_ctx_t *ctx, const hpt_pmo_t *host_root, const hptw_ctx_t *host_walk_ctx, pagelist_t *pl)
 {
   scode_guest_pa2ptr_ctx_t *guest_pa2ptr_ctx=NULL;
-  int err=0;
+  int rv=1;
 
-  guest_pa2ptr_ctx = malloc(sizeof(*guest_pa2ptr_ctx));
-  if (!guest_pa2ptr_ctx) {
-    err=1;
-    goto out;
-  }
+  EU_CHK( guest_pa2ptr_ctx = malloc(sizeof(*guest_pa2ptr_ctx)));
 
   *guest_pa2ptr_ctx = (scode_guest_pa2ptr_ctx_t) {
     .host_pmo_root = *host_root,
     .host_walk_ctx = *host_walk_ctx,
   };
 
-  *rv = (hptw_ctx_t) {
+  *ctx = (hptw_ctx_t) {
     .gzp = hpt_get_zeroed_page,
     .gzp_ctx = pl,
     .pa2ptr = hpt_checked_guest_pa2ptr,
@@ -141,11 +138,12 @@ int hpt_guest_walk_ctx_construct(hptw_ctx_t *rv, const hpt_pmo_t *host_root, con
     .ptr2pa_ctx = NULL,
   };
 
+  rv=0;
  out:
-  if (err) {
+  if (rv) {
     free(guest_pa2ptr_ctx);
   }
-  return err;
+  return rv;
 }
 int hpt_guest_walk_ctx_construct_vcpu(hptw_ctx_t *rv, VCPU *vcpu, pagelist_t *pl)
 {
@@ -246,13 +244,8 @@ static inline u32 set_page_scode_bitmap_2M(u32 pfn)
   u32 index;
 
   index = pfn >> (PAGE_SHIFT_2M - PAGE_SHIFT_4K);
-  if (scode_pfn_bitmap_2M[index] < PAE_PTRS_PER_PDT)
-    scode_pfn_bitmap_2M[index] ++;
-  else
-    {
-      euerr("FATAL ERROR: exceed the limitation of 2M page");
-      HALT();
-    }
+  EU_VERIFY(scode_pfn_bitmap_2M[index] < PAE_PTRS_PER_PDT);
+  scode_pfn_bitmap_2M[index] ++;
 
   return scode_pfn_bitmap_2M[index];
 }
@@ -262,13 +255,8 @@ static inline u32 clear_page_scode_bitmap_2M(u32 pfn)
   u32 index;
 
   index = pfn >> (PAGE_SHIFT_2M - PAGE_SHIFT_4K);
-  if (scode_pfn_bitmap_2M[index] > 0)
-    scode_pfn_bitmap_2M[index] --;
-  else
-    {
-      euerr("FATAL ERROR: exceed the limitation of 2M page");
-      HALT();
-    }
+  EU_VERIFY(scode_pfn_bitmap_2M[index] > 0);
+  scode_pfn_bitmap_2M[index] --;
 
   return scode_pfn_bitmap_2M[index];
 }
@@ -295,13 +283,13 @@ int scode_in_list(u64 gcr3, u32 gvaddr)
         for( j=0 ; j<(u32)(whitelist[i].scode_info.num_sections) ; j++ )  {
           if( (gvaddr >= whitelist[i].scode_info.sections[j].start_addr) &&
               (gvaddr < ((whitelist[i].scode_info.sections[j].start_addr)+((whitelist[i].scode_info.sections[j].page_num)<<PAGE_SHIFT_4K)))  )  {
-            eutrace("find gvaddr %#x in scode %d section No.%d", gvaddr, i, j);
+            eu_trace("find gvaddr %#x in scode %d section No.%d", gvaddr, i, j);
             return i;
           }
         }
       }
     }
-  eutrace("no matching scode found for gvaddr %#x!", gvaddr);
+  eu_trace("no matching scode found for gvaddr %#x!", gvaddr);
   return -1;
 }
 
@@ -428,11 +416,11 @@ void init_scode(VCPU * vcpu)
   mem_init();
 
   whitelist = malloc(WHITELIST_LIMIT);
-  eutrace("alloc %dKB mem for scode_list at %x!", (WHITELIST_LIMIT/1024), (unsigned int)whitelist);
+  eu_trace("alloc %dKB mem for scode_list at %x!", (WHITELIST_LIMIT/1024), (unsigned int)whitelist);
   scode_pfn_bitmap = (unsigned char *)malloc(PFN_BITMAP_LIMIT);
-  eutrace("alloc %dKB mem for pfn_bitmap at %x!", (PFN_BITMAP_LIMIT/1024), (unsigned int)scode_pfn_bitmap);
+  eu_trace("alloc %dKB mem for pfn_bitmap at %x!", (PFN_BITMAP_LIMIT/1024), (unsigned int)scode_pfn_bitmap);
   scode_pfn_bitmap_2M = (unsigned short *)malloc(PFN_BITMAP_2M_LIMIT);
-  eutrace("alloc %dKB mem for pfn_bitmap_2M at %x!", (PFN_BITMAP_LIMIT/1024), (unsigned int)scode_pfn_bitmap_2M);
+  eu_trace("alloc %dKB mem for pfn_bitmap_2M at %x!", (PFN_BITMAP_LIMIT/1024), (unsigned int)scode_pfn_bitmap_2M);
 
   memset(whitelist, 0, WHITELIST_LIMIT); 
   memset(scode_pfn_bitmap, 0, PFN_BITMAP_LIMIT);
@@ -440,7 +428,7 @@ void init_scode(VCPU * vcpu)
 
   whitelist_size = 0;
   whitelist_max = WHITELIST_LIMIT / sizeof(whitelist_entry_t);
-  eutrace("whitelist max = %d!", whitelist_max);
+  eu_trace("whitelist max = %d!", whitelist_max);
 
   /* init scode_curr struct
    * NOTE that cpu_lapic_id could be bigger than midtable_numentries */
@@ -453,11 +441,8 @@ void init_scode(VCPU * vcpu)
   memset(scode_curr, 0xFF, ((max+1) * sizeof(*scode_curr)));
 
   /* init PRNG and long-term crypto keys */
-  if(trustvisor_master_crypto_init()) {
-    euerr("trustvisor_master_crypto_init() FAILED! SECURITY HALT!");
-    HALT();			
-  }
-  eutrace("trustvisor_master_crypto_init successful.");
+  EU_VERIFYN(trustvisor_master_crypto_init());
+  eu_trace("trustvisor_master_crypto_init successful.");
 }
 
 /* parse scode paramter info ( scode registration input) */
@@ -465,70 +450,61 @@ int parse_params_info(VCPU * vcpu, struct tv_pal_params* pm_info, u32 pm_addr)
 {
   size_t i, num;
   u32 addr;
+  int rv=1;
 
   /* get number of parameters */
-  if (copy_from_current_guest(vcpu,
-                              &pm_info->num_params,
-                              pm_addr,
-                              sizeof(pm_info->num_params))) {
-    euerr("couldn't read num_params from gva 0x%08x", pm_addr);
-    return 1;
-  }
+  EU_CHKN( copy_from_current_guest(vcpu,
+                                   &pm_info->num_params,
+                                   pm_addr,
+                                   sizeof(pm_info->num_params)));
   num = pm_info->num_params;
 
-  eutrace("pm_info %#x, # of parameters is %d", pm_addr, num);
-  if (num > TV_MAX_PARAMS) {
-    euerr("number of scode sections exceeds limit!");
-    return 1;
-  }
+  eu_trace("pm_info %#x, # of parameters is %d", pm_addr, num);
+  EU_CHK( num <= TV_MAX_PARAMS);
 
   addr = pm_addr+4;
-  if (copy_from_current_guest(vcpu,
-                              &pm_info->params[0],
-                              addr,
-                              sizeof(pm_info->params[0]) * num)) {
-    euerr("couldn't read parameter info from gva 0x%08x", addr);
-    return 2;
-  }
+  EU_CHKN( copy_from_current_guest(vcpu,
+                                   &pm_info->params[0],
+                                   addr,
+                                   sizeof(pm_info->params[0]) * num));
 
   for (i = 0; i < num; i++) {
-    eutrace("parameter %d type %d size %d", i, pm_info->params[i].type, pm_info->params[i].size);
+    eu_trace("parameter %d type %d size %d", i, pm_info->params[i].type, pm_info->params[i].size);
   }
 
-  return 0;
+  rv=0;
+out:
+  return rv;
 }
 
 int memsect_info_copy_from_guest(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, u32 gva_scode_info)
 {
   size_t gva_scode_info_offset = 0;
+  int rv=1;
 
   /* get number of sections */
-  if(copy_from_current_guest(vcpu,
-                             &ps_scode_info->num_sections,
-                             gva_scode_info,
-                             sizeof(ps_scode_info->num_sections))) {
-    euerr("ERROR: couldn't read num_sections from %08x", gva_scode_info);
-    return 1;
-  }
+  EU_CHKN( copy_from_current_guest(vcpu,
+                                   &ps_scode_info->num_sections,
+                                   gva_scode_info,
+                                   sizeof(ps_scode_info->num_sections)));
 
   gva_scode_info_offset += 4;
-  eutrace("scode_info addr %x, # of section is %d", gva_scode_info, ps_scode_info->num_sections);
+  eu_trace("scode_info addr %x, # of section is %d", gva_scode_info, ps_scode_info->num_sections);
 
   /* copy array of section descriptors */
-  if( ps_scode_info->num_sections > TV_MAX_SECTIONS )  {
-    euerr("number of scode sections exceeds limit");
-    return 3;
-  }
+  EU_CHK( ps_scode_info->num_sections <= TV_MAX_SECTIONS);
 
-  if(copy_from_current_guest(vcpu,
-                             &(ps_scode_info->sections[0]),
-                             gva_scode_info+gva_scode_info_offset,
-                             ps_scode_info->num_sections*sizeof(ps_scode_info->sections[0]))) {
-    euerr("couldn't copy section info from gva %08x", gva_scode_info+gva_scode_info_offset);
-    return 4;
-  }
+  EU_CHKN( copy_from_current_guest(vcpu,
+                                   &(ps_scode_info->sections[0]),
+                                   gva_scode_info+gva_scode_info_offset,
+                                   ps_scode_info->num_sections*sizeof(ps_scode_info->sections[0])));
 
-  return 0;
+  rv=0;
+ out:
+  if(rv) {
+    eu_err("failed with params: ps_scode_info:%p gva_scode_info:%#x", ps_scode_info, gva_scode_info);
+  }
+  return rv;
 }
 
 /* parse scode sections info (scode registration input) */
@@ -538,6 +514,7 @@ int memsect_info_register(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, wh
   int is_get_param, is_get_stack;
   int type, size;
   unsigned int start;
+  int rv=1;
 
   /* parse section type, start address and size */
   is_get_param=0;
@@ -546,11 +523,10 @@ int memsect_info_register(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, wh
     size = ps_scode_info->sections[i].page_num;
     type = ps_scode_info->sections[i].type;
     start = ps_scode_info->sections[i].start_addr;
+
     /* make sure the addr is 4kb page aligned */
-    if(!is_page_4K_aligned(start)) {
-      euerr("Section %d start address %x is not 4K-aligned", i, start);
-      return 1;
-    }
+    EU_CHK( is_page_4K_aligned(start));
+
     switch ( type )  {
     case TV_PAL_SECTION_PARAM :
       {
@@ -559,10 +535,7 @@ int memsect_info_register(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, wh
           wle->gpm_size=size;
           wle->gpmp=start+0x10;
           is_get_param=1;
-          if (!guest_pt_range_is_user_rw(vcpu, start, size*PAGE_SIZE_4K)) {
-            euerr("SCODE_PARAM pages are not user writable!");
-            return 1;
-          }
+          EU_CHK( guest_pt_range_is_user_rw(vcpu, start, size*PAGE_SIZE_4K));
         }
       }
       break;
@@ -573,22 +546,19 @@ int memsect_info_register(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, wh
           wle->gss_size=size;
           wle->gssp=start+(size<<PAGE_SHIFT_4K)-0x10;
           is_get_stack=1;
-          eutrace("calling guest_pt_range_is_user_rw");
-          if (!guest_pt_range_is_user_rw(vcpu, start, size*PAGE_SIZE_4K)) {
-            euerr("SCODE_STACK pages are not user writable!");
-            return 1;
-          }
-          eutrace("returned from guest_pt_range_is_user_rw");
+          EU_CHK( guest_pt_range_is_user_rw(vcpu, start, size*PAGE_SIZE_4K));
         }
       }
       break;
     default :
       break;
     }
-    eutrace("section %d type %d addr %#x size %d",i, type, start, size);
+    eu_trace("section %d type %d addr %#x size %d",i, type, start, size);
   }
 
-  return 0;
+  rv=0;
+ out:
+  return rv;
 }
 
 
@@ -600,14 +570,9 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
   u64 gcr3;
   hpt_pmo_t reg_gpmo_root, pal_npmo_root, pal_gpmo_root;
   hptw_ctx_t reg_guest_walk_ctx;
-  u32 err=0;
+  u32 rv=1;
 
-  eupulse();
-
-  if (hpt_guest_walk_ctx_construct_vcpu(&reg_guest_walk_ctx, vcpu, NULL)) {
-    euerr("hpt_guest_walk_ctx_construct_vcpu failed");
-    return 1;
-  }
+  EU_CHKN( hpt_guest_walk_ctx_construct_vcpu(&reg_guest_walk_ctx, vcpu, NULL));
 
   /* set all CPUs to use the same 'reg' nested page tables,
      and set up a corresponding hpt_pmo.
@@ -625,7 +590,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
       {
         size_t i;
         for( i=0 ; i<g_midtable_numentries ; i++ )  {
-          eutrace("cpu %d setting root pm from %p to %p",
+          eu_trace("cpu %d setting root pm from %p to %p",
                   i,
                   hpt_emhf_get_root_pm((VCPU *)(g_midtable[i].vcpu_vaddr_ptr)),
                   g_reg_npmo_root.pm);
@@ -640,16 +605,11 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
   gcr3 = VCPU_gcr3(vcpu);
 
-  eutrace("*** scode register ***");
+  eu_trace("*** scode register ***");
 
-  if (whitelist_size == whitelist_max)
-    {
-      euerr("too many registered scode, the limitation is %d", whitelist_max);
-      err=1;
-      goto out;
-    }
+  EU_CHK( whitelist_size < whitelist_max);
 
-  eutrace("CPU(0x%02x): add to whitelist,  scode_info %#x, scode_pm %#x, gventry %#x", vcpu->id, scode_info, scode_pm, gventry);
+  eu_trace("CPU(0x%02x): add to whitelist,  scode_info %#x, scode_pm %#x, gventry %#x", vcpu->id, scode_info, scode_pm, gventry);
 
   /* ATTN: we should assign a ID for each registered sensitive code
    * so we know what to verify each time
@@ -661,27 +621,20 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
   /* store scode entry point */
   whitelist_new.entry_v = gventry;
   whitelist_new.entry_p = gpt_vaddr_to_paddr_current(vcpu, gventry); 
-  eutrace("CR3 value is %#llx, entry point vaddr is %#x, paddr is %#x", gcr3, whitelist_new.entry_v, whitelist_new.entry_p);
+  eu_trace("CR3 value is %#llx, entry point vaddr is %#x, paddr is %#x", gcr3, whitelist_new.entry_v, whitelist_new.entry_p);
 
   /* parse parameter structure */
-  if (parse_params_info(vcpu, &(whitelist_new.params_info), scode_pm)) {
-    euerr("Registration Failed. Scode param info incorrect! ");
-    err=2;
-    goto out;
-  }
+  EU_CHKN( parse_params_info(vcpu, &(whitelist_new.params_info), scode_pm));
+
   whitelist_new.gpm_num = whitelist_new.params_info.num_params;
   /* register scode sections into whitelist entry */
-  if (memsect_info_copy_from_guest(vcpu, &(whitelist_new.scode_info), scode_info)
-      || memsect_info_register(vcpu, &(whitelist_new.scode_info), &whitelist_new)) {
-    euerr("Registration Failed. Scode section info incorrect! ");
-    err=3;
-    goto out;
-  }
+  EU_CHKN( memsect_info_copy_from_guest(vcpu, &(whitelist_new.scode_info), scode_info));
+  EU_CHKN( memsect_info_register(vcpu, &(whitelist_new.scode_info), &whitelist_new));
 
-  whitelist_new.npl = malloc(sizeof(pagelist_t));
+  EU_CHK( whitelist_new.npl = malloc(sizeof(pagelist_t)));
   pagelist_init(whitelist_new.npl);
 
-  whitelist_new.gpl = malloc(sizeof(pagelist_t));
+  EU_CHK( whitelist_new.gpl = malloc(sizeof(pagelist_t)));
   pagelist_init(whitelist_new.gpl);
 
   hpt_emhf_get_guest_root_pmo(vcpu, &reg_gpmo_root);
@@ -704,17 +657,17 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
   whitelist_new.hpt_nested_walk_ctx = hpt_nested_walk_ctx; /* copy from template */
   whitelist_new.hpt_nested_walk_ctx.gzp_ctx = whitelist_new.npl;
 
-  hpt_guest_walk_ctx_construct(&whitelist_new.hpt_guest_walk_ctx,
-                               &pal_npmo_root,
-                               &whitelist_new.hpt_nested_walk_ctx,
-                               whitelist_new.gpl);
+  EU_CHKN( hpt_guest_walk_ctx_construct(&whitelist_new.hpt_guest_walk_ctx,
+                                        &pal_npmo_root,
+                                        &whitelist_new.hpt_nested_walk_ctx,
+                                        whitelist_new.gpl));
 
   /* add all gpl pages to pal's nested page tables, ensuring that
      the guest page tables allocated from it will be accessible to the
      pal */
   /* XXX breaks pagelist abstraction. will break if pagelist ever dynamically
      allocates more buffers */
-  eutrace("adding gpl to pal's npt:");
+  eu_trace("adding gpl to pal's npt:");
   for (i=0; i < whitelist_new.gpl->num_allocd; i++) {
     hpt_pmeo_t pmeo = {
       .pme = 0,
@@ -722,17 +675,15 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
       .lvl = 1,
     };
     void *page = whitelist_new.gpl->page_base + i*PAGE_SIZE_4K;
-    int hpt_err;
     hpt_pmeo_setprot(&pmeo, HPT_PROTS_RWX);
     hpt_pmeo_set_address(&pmeo, hva2spa(page));
-    hpt_err = hptw_insert_pmeo_alloc(&whitelist_new.hpt_nested_walk_ctx,
-                                         &pal_npmo_root,
-                                         &pmeo,
-                                         hva2gpa(page));
-    ASSERT(!hpt_err);
+    EU_CHKN( hptw_insert_pmeo_alloc(&whitelist_new.hpt_nested_walk_ctx,
+                                    &pal_npmo_root,
+                                    &pmeo,
+                                    hva2gpa(page)));
   }
 
-  eutrace("adding sections to pal's npts and gpts:");
+  eu_trace("adding sections to pal's npts and gpts:");
   /* map each requested section into the pal */
   whitelist_new.sections_num = whitelist_new.scode_info.num_sections;
   for (i=0; i<whitelist_new.scode_info.num_sections; i++) {
@@ -752,7 +703,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
   }
 
   /* clone gdt */
-  eutrace("cloning gdt");
+  eu_trace("cloning gdt");
   scode_clone_gdt(vcpu,
                   VCPU_gdtr_base(vcpu), VCPU_gdtr_limit(vcpu),
                   &pal_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
@@ -768,7 +719,6 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
       .t = pal_gpmo_root.t,
       .lvl = 1,
     };
-    int hpt_err;
     hpt_pmeo_setprot(&pmeo, HPT_PROTS_RX);
     hpt_pmeo_setuser(&pmeo, true);
     /* the gpa address here shouldn't matter, so long as it's one not
@@ -777,13 +727,12 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
     */
     hpt_pmeo_set_address(&pmeo, RETURN_FROM_PAL_ADDRESS);
 
-    eutrace("generated pme for return gva address %x: lvl:%d %llx",
+    eu_trace("generated pme for return gva address %x: lvl:%d %llx",
             RETURN_FROM_PAL_ADDRESS, pmeo.lvl, pmeo.pme);
-    hpt_err = hptw_insert_pmeo_alloc(&whitelist_new.hpt_guest_walk_ctx,
-                                         &pal_gpmo_root,
-                                         &pmeo,
-                                         RETURN_FROM_PAL_ADDRESS);
-    ASSERT(!hpt_err);
+    EU_CHKN( hptw_insert_pmeo_alloc(&whitelist_new.hpt_guest_walk_ctx,
+                                    &pal_gpmo_root,
+                                    &pmeo,
+                                    RETURN_FROM_PAL_ADDRESS));
   }
 
   whitelist_new.pal_npt_root = pal_npmo_root;
@@ -800,12 +749,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
   utpm_init_instance(&whitelist_new.utpm);
 
   /* extent uTPM PCR[0] with with hash of each section metadata and contents */
-  if (scode_measure_sections(&whitelist_new.utpm, &whitelist_new))
-    {
-      euerr("SECURITY: Registration Failed. sensitived code cannot be verified.");
-      err=4;
-      goto out;
-    }
+  EU_CHKN( scode_measure_sections(&whitelist_new.utpm, &whitelist_new));
 
 #ifdef __MP_VERSION__
   /* initialize PAL running lock */
@@ -815,12 +759,8 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
   /* add new entry into whitelist */
   /* CRITICAL SECTION in MP scenario: need to quiesce other CPUs or at least acquire spinlock */
-  for (i = 0; (whitelist[i].gcr3!=0); i ++);
-  if (i >= whitelist_max) {
-    euerr("no room for new scode, the limitation is %d", whitelist_max);
-    err=5;
-    goto out;
-  }
+  for (i = 0; whitelist[i].gcr3!=0 && i < whitelist_max; i ++);
+  EU_CHK( i < whitelist_max);
   whitelist_size ++;
   memcpy(whitelist + i, &whitelist_new, sizeof(whitelist_entry_t));
 
@@ -834,28 +774,28 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
     }
   }
 
+  rv=0;
  out:
+  /* FIXME clean-up in case of error */
   hpt_guest_walk_ctx_destroy(&reg_guest_walk_ctx);
-  return err;
+  return rv;
 }
 
 /* unregister scode in whitelist */
 u32 scode_unregister(VCPU * vcpu, u32 gvaddr) 
 {
   size_t i, j;
+  u32 rv=1;
 
   u64 gcr3;
 
   gcr3 = VCPU_gcr3(vcpu);
 
-  eutrace("*** scode unregister ***");
+  eu_trace("*** scode unregister ***");
 
-  if (whitelist_size == 0) {
-    euerr("FATAL ERROR: no scode registered currently");
-    return 1;
-  }
+  EU_CHK( whitelist_size != 0);
 
-  eutrace("CPU(%02x): remove from whitelist gcr3 %#llx, gvaddr %#x", vcpu->id, gcr3, gvaddr);
+  eu_trace("CPU(%02x): remove from whitelist gcr3 %#llx, gvaddr %#x", vcpu->id, gcr3, gvaddr);
 
   for (i = 0; i < whitelist_max; i ++) {
     /* find scode with correct cr3 and entry point */
@@ -863,20 +803,17 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
       break;
   }
 
-  if (i >= whitelist_max) {
-    euerr("SECURITY: UnRegistration Failed. no matching sensitive code found");
-    return 1;
-  }
+  EU_CHK( i < whitelist_max);
 
   /* dump perf counters */
-  euperf("performance counters:");
+  eu_perf("performance counters:");
   for(j=0; j<TV_PERF_CTRS_COUNT; j++) {
-    euperf("  %s total: %Lu count: %Lu",
+    eu_perf("  %s total: %Lu count: %Lu",
             g_tv_perf_ctr_strings[j],
             perf_ctr_get_total_time(&g_tv_perf_ctrs[j]),
             perf_ctr_get_count(&g_tv_perf_ctrs[j]));
   }
-  euperf("total mem mallocd: %u", heapmem_get_used_size());
+  eu_perf("total mem mallocd: %u", heapmem_get_used_size());
 
   /* restore permissions for remapped sections */
   for(j = 0; j < whitelist[i].sections_num; j++) {
@@ -884,7 +821,7 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
     if ((whitelist[i].sections[j].pal_prot & HPT_PROTS_W)
         && !(whitelist[i].sections[j].reg_prot & HPT_PROTS_R)) {
       int err;
-      eutrace("zeroing section %d", j);
+      eu_trace("zeroing section %d", j);
       err = hptw_checked_memset_va(&whitelist[i].hpt_guest_walk_ctx, &whitelist[i].pal_gpt_root,
                                    HPTW_CPL3,
                                    whitelist[i].sections[j].pal_gva, 0, whitelist[i].sections[j].size);
@@ -915,7 +852,9 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
   pagelist_free_all(whitelist[i].gpl);
   free(whitelist[i].gpl);
 
-  return 0; 
+  rv=0;
+ out:
+  return rv;
 }
 
 /* test if the page is already in page_list
@@ -938,28 +877,22 @@ u32 scode_marshall(VCPU * vcpu)
   u32 grsp;
   u32 new_rsp;
   int curr=scode_curr[vcpu->id];
-  u32 err=0;
+  u32 err=1;
   hptw_ctx_t vcpu_guest_walk_ctx;
   hpt_pmo_t vcpu_guest_root;
 
-  if (hpt_guest_walk_ctx_construct_vcpu(&vcpu_guest_walk_ctx, vcpu, NULL)) {
-    euerr("scode_marshall: hpt_guest_walk_ctx_construct_vcpu failed");
-    err=1;
-    goto out;
-  }
+  EU_CHKN( hpt_guest_walk_ctx_construct_vcpu(&vcpu_guest_walk_ctx, vcpu, NULL));
+
   hpt_emhf_get_guest_root_pmo(vcpu, &vcpu_guest_root);
 
   perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_MARSHALL], vcpu->idx);
 
-  eutrace("marshalling scode parameters!");
-  if(whitelist[curr].gpm_num == 0) {
-    eutrace("params number is 0. Return!");
-    goto out;
-  }
+  eu_trace("marshalling scode parameters!");
+  EU_CHK(whitelist[curr].gpm_num != 0);
 
   /* memory address for input parameter in sensitive code */
   pm_addr_base = whitelist[curr].gpmp;
-  eutrace("parameter page base address is %#x", pm_addr_base);
+  eu_trace("parameter page base address is %#x", pm_addr_base);
 
   /* address for parameters in guest stack */
   grsp = (u32)whitelist[curr].grsp + 4; /*the stack pointer of parameters in guest stack*/
@@ -972,13 +905,9 @@ u32 scode_marshall(VCPU * vcpu)
                                    whitelist[curr].gpm_num);
   pm_addr += 4;
   pm_size_sum = 4; /*memory used in input pms section*/
-  eutrace("params number is %d", whitelist[curr].gpm_num);
+  eu_trace("params number is %d", whitelist[curr].gpm_num);
 
-  if (whitelist[curr].gpm_num > TV_MAX_PARAMS) {
-    euerr("Fail: param num is too big!");
-    err=1;
-    goto out;
-  }
+  EU_CHK( whitelist[curr].gpm_num <= TV_MAX_PARAMS);
 
   /* begin to process the params*/
   for (pm_i = whitelist[curr].gpm_num-1; pm_i >= 0; pm_i--) /*the last parameter should be pushed in stack first*/
@@ -987,44 +916,31 @@ u32 scode_marshall(VCPU * vcpu)
       pm_type = whitelist[curr].params_info.params[pm_i].type;
       pm_size = whitelist[curr].params_info.params[pm_i].size;
       /* get param value from guest stack */
-      if (copy_from_current_guest(vcpu, &pm_value, grsp + pm_i*4, sizeof(u32))) {
-        euerr("scode_marshall failed to copy from guest");
-        err=2;
-        goto out;
-      }
-      eutrace("scode_marshal copied param %d", pm_i);
+      eu_trace("copying param %d", pm_i);
+      EU_CHKN( copy_from_current_guest(vcpu, &pm_value, grsp + pm_i*4, sizeof(u32)));
+
 
       pm_size_sum += 12;
-      if (pm_size_sum > (whitelist[curr].gpm_size*PAGE_SIZE_4K)) {
-        euerr("Fail: No enough space to save input params data!");
-        err=3;
-        goto out;
-      }
+      EU_CHK( pm_size_sum <= (whitelist[curr].gpm_size*PAGE_SIZE_4K));
 
       /* save input params in input params memory for sensitive code */
-      if (hptw_checked_copy_to_va(&whitelist[curr].hpt_guest_walk_ctx,
-                                  &whitelist[curr].pal_gpt_root,
-                                  HPTW_CPL3,
-                                  pm_addr,
-                                  &pm_type, sizeof(pm_type))
-          ||
-          hptw_checked_copy_to_va(&whitelist[curr].hpt_guest_walk_ctx,
-                                  &whitelist[curr].pal_gpt_root,
-                                  HPTW_CPL3,
-                                  pm_addr+sizeof(pm_type),
-                                  &pm_size, sizeof(pm_size))
-          ||
-          hptw_checked_copy_to_va(&whitelist[curr].hpt_guest_walk_ctx,
-                                  &whitelist[curr].pal_gpt_root,
-                                  HPTW_CPL3,
-                                  pm_addr+sizeof(pm_type)+sizeof(pm_size),
-                                  &pm_value, sizeof(pm_value))) {
-        euerr("scode_marshall: couldn't write to param area");
-        err=4;
-        goto out;
-      }
+      EU_CHKN( hptw_checked_copy_to_va(&whitelist[curr].hpt_guest_walk_ctx,
+                                       &whitelist[curr].pal_gpt_root,
+                                       HPTW_CPL3,
+                                       pm_addr,
+                                       &pm_type, sizeof(pm_type)));
+      EU_CHKN( hptw_checked_copy_to_va(&whitelist[curr].hpt_guest_walk_ctx,
+                                       &whitelist[curr].pal_gpt_root,
+                                       HPTW_CPL3,
+                                       pm_addr+sizeof(pm_type),
+                                       &pm_size, sizeof(pm_size)));
+      EU_CHKN( hptw_checked_copy_to_va(&whitelist[curr].hpt_guest_walk_ctx,
+                                       &whitelist[curr].pal_gpt_root,
+                                       HPTW_CPL3,
+                                       pm_addr+sizeof(pm_type)+sizeof(pm_size),
+                                       &pm_value, sizeof(pm_value)));
       pm_addr += sizeof(pm_type)+sizeof(pm_size)+sizeof(pm_addr);
-      eutrace("scode_marshal copied metadata to params area");      
+      eu_trace("scode_marshal copied metadata to params area");      
 
       switch (pm_type)
         {
@@ -1032,33 +948,26 @@ u32 scode_marshall(VCPU * vcpu)
           {        
             /* put the parameter value in sensitive code stack */
             pm_tmp = pm_value;
-            eutrace("PM %d is a integer (size %d, value %#x)", pm_i, pm_size, pm_value);
+            eu_trace("PM %d is a integer (size %d, value %#x)", pm_i, pm_size, pm_value);
             break;
           }
         case TV_PAL_PM_POINTER: /* pointer */
           {
             /*copy data from guest space to sensitive code*/
             pm_size_sum += 4*pm_size;
-            if (pm_size_sum > (whitelist[curr].gpm_size*PAGE_SIZE_4K)) {
-              euerr("Fail: Not enough space to save input params data!");
-              err=5;
-              goto out;
-            }
-            eutrace("PM %d is a pointer (size %d, value %#x)", pm_i, pm_size, pm_value);
+            EU_CHK( pm_size_sum <= (whitelist[curr].gpm_size*PAGE_SIZE_4K));
 
-            if (hptw_checked_copy_va_to_va(&whitelist[curr].hpt_guest_walk_ctx,
-                                           &whitelist[curr].pal_gpt_root,
-                                           HPTW_CPL3,
-                                           pm_addr,
-                                           &vcpu_guest_walk_ctx,
-                                           &vcpu_guest_root,
-                                           HPTW_CPL3,
-                                           pm_value,
-                                           pm_size*4)) {
-              euerr("scode_marshall failed to copy to params");
-              err=6;
-              goto out;
-            }
+            eu_trace("PM %d is a pointer (size %d, value %#x)", pm_i, pm_size, pm_value);
+
+            EU_CHKN( hptw_checked_copy_va_to_va(&whitelist[curr].hpt_guest_walk_ctx,
+                                                &whitelist[curr].pal_gpt_root,
+                                                HPTW_CPL3,
+                                                pm_addr,
+                                                &vcpu_guest_walk_ctx,
+                                                &vcpu_guest_root,
+                                                HPTW_CPL3,
+                                                pm_value,
+                                                pm_size*4));
 
             /* put pointer address in sensitive code stack*/
             pm_tmp = pm_addr;
@@ -1066,7 +975,7 @@ u32 scode_marshall(VCPU * vcpu)
             break;
           }
         default: /* other */
-          euerr("Fail: unknown parameter %d type %d ", pm_i, pm_type);
+          eu_err("Fail: unknown parameter %d type %d ", pm_i, pm_type);
           err=7;
           goto out;
         }
@@ -1077,6 +986,7 @@ u32 scode_marshall(VCPU * vcpu)
                                        new_rsp, pm_tmp);
     }
 
+  err=0;
  out:
   hpt_guest_walk_ctx_destroy(&vcpu_guest_walk_ctx);
   perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_MARSHALL], vcpu->idx);
@@ -1089,38 +999,43 @@ u32 scode_marshall(VCPU * vcpu)
 u32 hpt_scode_switch_scode(VCPU * vcpu)
 {
   int curr=scode_curr[vcpu->id];
+  int err=1;
+  bool swapped_grsp=false;
+  bool pushed_return=false;
 
   perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_SCODE], vcpu->idx);
 
-  eutrace("************************************");
-  eutrace("********* switch to scode **********");
-  eutrace("************************************");
+  eu_trace("*** to scode ***");
+
+  EU_CHKN( copy_from_current_guest(vcpu,
+                                   &whitelist[curr].return_v,
+                                   VCPU_grsp(vcpu),
+                                   sizeof(void*)));
+  eu_trace("scode return vaddr is %#x", whitelist[curr].return_v);
 
   /* save the guest stack pointer and set new stack pointer to scode stack */
-  eutrace("saved guest regular stack %#x, switch to sensitive code stack %#x", (u32)VCPU_grsp(vcpu), whitelist[curr].gssp);
+  eu_trace("saved guest regular stack %#x, switch to sensitive code stack %#x",
+           (u32)VCPU_grsp(vcpu), whitelist[curr].gssp);
   whitelist[curr].grsp = (u32)VCPU_grsp(vcpu);
   VCPU_grsp_set(vcpu, whitelist[curr].gssp);
-
-  if (copy_from_current_guest(vcpu,
-                              &whitelist[curr].return_v,
-                              whitelist[curr].grsp,
-                              sizeof(void*))) {
-    euerr("switch_scode: Couldn't read return address");
-  }
-  eutrace("scode return vaddr is %#x", whitelist[curr].return_v);
+  swapped_grsp=true;
 
   /* input parameter marshalling */
-  if (scode_marshall(vcpu)){
-    /* error in parameter marshalling */
-    /* restore regular code stack */
-    VCPU_grsp_set(vcpu, whitelist[curr].grsp);
-    whitelist[curr].grsp = (u32)-1; 
-    return 1;
-  }
+  EU_CHKN( scode_marshall(vcpu));
 
-  /* find all PTE pages related to access scode and GDT */
-  /* change NPT permission for all PTE pages and scode pages */
-  eutrace("change NPT permission to run PAL!");
+  /* write the sentinel return address to scode stack */
+  put_32bit_aligned_value_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
+                                   &whitelist[curr].pal_gpt_root,
+                                   (u32)VCPU_grsp(vcpu)-4, RETURN_FROM_PAL_ADDRESS);
+  VCPU_grsp_set(vcpu, VCPU_grsp(vcpu)-4);
+  pushed_return=true;
+  
+  eu_trace("host stack pointer before running scode is %#x",(u32)VCPU_grsp(vcpu));
+
+  /* nothing below here can fail. (i.e., don't have to cleanup code
+     below in case of error) */
+
+  eu_trace("change NPT permission to run PAL!");
   hpt_emhf_set_root_pm(vcpu, whitelist[curr].pal_npt_root.pm);
   VCPU_gcr3_set(vcpu, whitelist[curr].pal_gcr3);
   emhf_memprot_flushmappings(vcpu); /* XXX */
@@ -1136,15 +1051,20 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
     ((struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr))->cpl = 3;
   }
 
-  /* write the sentinel return address to scode stack */
-  VCPU_grsp_set(vcpu, VCPU_grsp(vcpu)-4);
-  put_32bit_aligned_value_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
-                                   &whitelist[curr].pal_gpt_root,
-                                   (u32)VCPU_grsp(vcpu), RETURN_FROM_PAL_ADDRESS);
-  eutrace("host stack pointer before running scode is %#x",(u32)VCPU_grsp(vcpu));
-
   perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_SCODE], vcpu->idx);
-  return 0;
+
+  err=0;
+ out:
+  if(err) {
+    if (swapped_grsp) {
+      VCPU_grsp_set(vcpu, whitelist[curr].grsp);
+      whitelist[curr].grsp = (u32)-1;
+    }
+    if (pushed_return) {
+      VCPU_grsp_set(vcpu, VCPU_grsp(vcpu)+4);
+    }
+  }
+  return err;
 }
 
 u32 scode_unmarshall(VCPU * vcpu)
@@ -1156,24 +1076,16 @@ u32 scode_unmarshall(VCPU * vcpu)
   int curr=scode_curr[vcpu->id];
 
   hptw_ctx_t reg_guest_walk_ctx;
-  u32 err=0;
+  u32 err=1;
 
-  if(hpt_guest_walk_ctx_construct(&reg_guest_walk_ctx, &g_reg_npmo_root, &hpt_nested_walk_ctx, NULL)) {
-    err=1;
-    goto out;
-  }
+  EU_CHKN( hpt_guest_walk_ctx_construct(&reg_guest_walk_ctx, &g_reg_npmo_root, &hpt_nested_walk_ctx, NULL));
 
-  eutrace("unmarshalling scode parameters!");
-  if (whitelist[curr].gpm_num == 0)
-    {
-      eutrace("unmarshall pm numbuer is 0. Return!");
-      err=2;
-      goto out;
-    }
+  eu_trace("unmarshalling scode parameters!");
+  EU_CHK( whitelist[curr].gpm_num != 0);
 
   /* memory address for input parameter in sensitive code */
   pm_addr_base = whitelist[curr].gpmp;
-  eutrace("parameter page base address is %#x", pm_addr_base);
+  eu_trace("parameter page base address is %#x", pm_addr_base);
 
   /* get params number */
   pm_addr = pm_addr_base;
@@ -1181,13 +1093,9 @@ u32 scode_unmarshall(VCPU * vcpu)
                                               &whitelist[curr].pal_gpt_root,
                                               (u32)pm_addr);
   pm_addr += 4;
-  eutrace("params number is %d", pm_num);
-  if (pm_num > TV_MAX_PARAMS)
-    {
-      euerr("Fail: parameter number too big!");
-      err=3;
-      goto out;
-    }
+  eu_trace("params number is %d", pm_num);
+  EU_CHK( pm_num <= TV_MAX_PARAMS);
+
   /* begin to process the params*/
   for (i = 0; i < pm_num; i++) /*the last parameter should be pushed in stack first*/
     {
@@ -1203,7 +1111,7 @@ u32 scode_unmarshall(VCPU * vcpu)
           {
             /* don't need to put integer back to regular code stack */
             pm_addr += 8; 
-            eutrace("skip an integer parameter!"); 
+            eu_trace("skip an integer parameter!"); 
             break;
           }
         case TV_PAL_PM_POINTER: /* pointer */
@@ -1217,32 +1125,30 @@ u32 scode_unmarshall(VCPU * vcpu)
                                                           (u32)pm_addr+4);
             pm_addr += 8;
 
-            eutrace("PM %d is a pointer (size %d, addr %#x)", i,  pm_size*4, pm_value);
+            eu_trace("PM %d is a pointer (size %d, addr %#x)", i,  pm_size*4, pm_value);
             /* copy data from sensitive code (param space) to guest */
-            if(hptw_checked_copy_va_to_va(&reg_guest_walk_ctx,
-                                          &whitelist[curr].reg_gpt_root,
-                                          HPTW_CPL3,
-                                          pm_value,
-                                          &whitelist[curr].hpt_guest_walk_ctx,
-                                          &whitelist[curr].pal_gpt_root,
-                                          HPTW_CPL3,
-                                          pm_addr,
-                                          pm_size*4)) {
-              euerr("Couldn't copy from param area to ptr");
-              err=4;
-              goto out;
-            }
+            EU_CHKN( hptw_checked_copy_va_to_va(&reg_guest_walk_ctx,
+                                                &whitelist[curr].reg_gpt_root,
+                                                HPTW_CPL3,
+                                                pm_value,
+                                                &whitelist[curr].hpt_guest_walk_ctx,
+                                                &whitelist[curr].pal_gpt_root,
+                                                HPTW_CPL3,
+                                                pm_addr,
+                                                pm_size*4));
             pm_addr += 4*pm_size;
             break;
           }
 
         default: /* other */
-          euerr("Fail: unknown parameter %d type %d ", i, pm_type);
+          eu_err("Fail: unknown parameter %d type %d ", i, pm_type);
           err=5;
           goto out;
         } // end switch
 
     } //end for loop 
+
+  err=0;
  out:
   hpt_guest_walk_ctx_destroy(&reg_guest_walk_ctx);
   return err;
@@ -1252,44 +1158,47 @@ u32 scode_unmarshall(VCPU * vcpu)
 u32 hpt_scode_switch_regular(VCPU * vcpu)
 {
   int curr=scode_curr[vcpu->id];
+  u32 rv=1;
 
   perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_REGULAR], vcpu->idx);
 
-  eutrace("************************************");
-  eutrace("***** switch to regular code  ******");
-  eutrace("************************************");
+  eu_trace("************************************");
+  eu_trace("***** switch to regular code  ******");
+  eu_trace("************************************");
 
   /* marshalling parameters back to regular code */
-  if (scode_unmarshall(vcpu)){
-    euerr("hpt_scode_switch_regular: error in scode_unmarshall");
-    return 1;
-  }
+  EU_CHKN( scode_unmarshall(vcpu));
 
+  /* whether or not marshalling succeeded, we switch back to reg world.
+   * nothing below can fail.
+   */
+  rv=0;
+ out:
   /* release shared pages */
   scode_release_all_shared_pages(vcpu, &whitelist[curr]);
 
   /* clear the NPT permission setting in switching into scode */
-  eutrace("change NPT permission to exit PAL!"); 
+  eu_trace("change NPT permission to exit PAL!"); 
   hpt_emhf_set_root_pm(vcpu, g_reg_npmo_root.pm);
   VCPU_gcr3_set(vcpu, whitelist[curr].gcr3);
   emhf_memprot_flushmappings(vcpu); /* XXX */
 
   /* switch back to regular stack */
-  eutrace("switch from scode stack %#x back to regular stack %#x", (u32)VCPU_grsp(vcpu), (u32)whitelist[curr].grsp);
+  eu_trace("switch from scode stack %#x back to regular stack %#x", (u32)VCPU_grsp(vcpu), (u32)whitelist[curr].grsp);
   VCPU_grsp_set(vcpu, whitelist[curr].grsp + 4);
   whitelist[curr].grsp = (u32)-1;
 
   /* enable interrupts */
   VCPU_grflags_set(vcpu, VCPU_grflags(vcpu) | EFLAGS_IF);
 
-  eutrace("stack pointer before exiting scode is %#x",(u32)VCPU_grsp(vcpu));
+  eu_trace("stack pointer before exiting scode is %#x",(u32)VCPU_grsp(vcpu));
 
   /* return to actual return address */
   VCPU_grip_set(vcpu, whitelist[curr].return_v);
 
   perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_REGULAR], vcpu->idx);
 
-  return 0;
+  return rv;
 }
 
 static bool hpt_error_wasInsnFetch(VCPU *vcpu, u64 errorcode)
@@ -1426,7 +1335,7 @@ void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* wle)
   for(i = wle->sections_num-1;
       i >= 0 && wle->sections[i].section_type == TV_PAL_SECTION_SHARED;
       i--) {
-    eutrace("returning shared section num %d at 0x%08llx", i, wle->sections[i].pal_gva);
+    eu_trace("returning shared section num %d at 0x%08llx", i, wle->sections[i].pal_gva);
     scode_return_section(&g_reg_npmo_root, &wle->hpt_nested_walk_ctx,
                          &wle->pal_npt_root, &wle->hpt_nested_walk_ctx,
                          &wle->pal_gpt_root, &wle->hpt_guest_walk_ctx,
@@ -1438,21 +1347,13 @@ void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* wle)
 /* note- caller is responsible for flushing page tables afterwards */
 u32 scode_share_range(VCPU * vcpu, whitelist_entry_t *wle, u32 gva_base, u32 gva_len)
 {
-  u32 err=0;
+  u32 err=1;
   hptw_ctx_t vcpu_guest_walk_ctx;
   hpt_pmo_t vcpu_guest_root;
-  if (hpt_guest_walk_ctx_construct_vcpu(&vcpu_guest_walk_ctx, vcpu, NULL)) {
-    euerr("scode_share_range: scode_share_range failed");
-    err=1;
-    goto out;
-  }
+  EU_CHKN( hpt_guest_walk_ctx_construct_vcpu(&vcpu_guest_walk_ctx, vcpu, NULL));
   hpt_emhf_get_guest_root_pmo(vcpu, &vcpu_guest_root);
 
-  if (wle->sections_num >= TV_MAX_SECTIONS) {
-    euerr("scode_share_range: max sections (%d) limit exceeded", TV_MAX_SECTIONS);
-    err=2;
-    goto out;
-  }
+  EU_CHK( wle->sections_num < TV_MAX_SECTIONS);
 
   wle->sections[wle->sections_num] = (tv_pal_section_int_t) {
     .reg_gva = gva_base,
@@ -1471,6 +1372,7 @@ u32 scode_share_range(VCPU * vcpu, whitelist_entry_t *wle, u32 gva_base, u32 gva
 
   wle->sections_num++;
 
+  err=0;
  out:
   hpt_guest_walk_ctx_destroy(&vcpu_guest_walk_ctx);
 
@@ -1481,24 +1383,23 @@ u32 scode_share_ranges(VCPU * vcpu, u32 scode_entry, u32 gva_base[], u32 gva_len
 {
   size_t i;
   whitelist_entry_t* entry;
+  u32 err=1;
 
-  if (!(entry = find_scode_by_entry(VCPU_gcr3(vcpu), scode_entry))) {
-    euerr("scode_share: Invalid entry pt %x", scode_entry);
-    return 1;
-  }
+  EU_CHK( entry = find_scode_by_entry(VCPU_gcr3(vcpu), scode_entry));
 
   for(i=0; i<count; i++) {
-    if(scode_share_range(vcpu, entry, gva_base[i], gva_len[i])) {
-      eutrace("scode_share_ranges releasing all shared pages");
-      scode_release_all_shared_pages(vcpu, entry);
-      return 1;
-    }
+    EU_CHKN( scode_share_range(vcpu, entry, gva_base[i], gva_len[i]));
   }
 
   /* flush TLB for page table modifications to take effect */
   emhf_memprot_flushmappings(vcpu);
   
-  return 0;
+  err=0;
+out:
+  if (err && entry) {
+    scode_release_all_shared_pages(vcpu, entry);
+  }
+  return err;
 }
 
 /* Local Variables: */
