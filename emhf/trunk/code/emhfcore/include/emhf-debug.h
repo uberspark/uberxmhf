@@ -128,16 +128,17 @@ static inline unsigned char __toupper(unsigned char c)
 //exported FUNCTIONS 
 void emhf_debug_init(char *params);
 
+#include <stdio.h>
 #ifdef __DEBUG_SERIAL__
-	void printf(const char *format, ...)
-	  __attribute__ ((format (printf, 1, 2)));
+	/* void printf(const char *format, ...) */
+	/*   __attribute__ ((format (printf, 1, 2))); */
 	void dprintf(u32 log_type, const char *format, ...)
 	  __attribute__ ((format (printf, 2, 3)));
 	void dvprintf(u32 log_type, const char *fmt, va_list args);
 	void print_hex(const char *prefix, const void *prtptr, size_t size);
 
 #else
-	#define printf(format, args...) while(0)
+	/* #define printf(format, args...) while(0) */
 	#define dprintf(format, args...) while(0)
 	#define dvprintf(u32 log_type, const char *fmt, va_list args) while(0)
 	#define print_hex(prefix, prtptr, size) while(0)
