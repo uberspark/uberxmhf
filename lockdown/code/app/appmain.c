@@ -398,7 +398,7 @@ u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
 				return APP_IOINTERCEPT_SKIP;
 			}
 			#else
-				emhf_reboot();
+				emhf_baseplatform_reboot(vcpu);
 			#endif
       //we should never get here
       HALT();  
