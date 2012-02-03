@@ -69,7 +69,7 @@ u8 test_first1024[1024]; //the first 1K of low memory
 
 
 
-
+/*
 //---setup 2M pages in EPT
 //---TODO: we need to move this to emhf core at some point
 void vmx_setupEPT2M(VCPU *vcpu){
@@ -117,7 +117,7 @@ void vmx_setupEPT2M(VCPU *vcpu){
 	}
 #endif
 }
-
+*/
 
 
 
@@ -280,24 +280,24 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
     #endif
 
 
-		#if 0
+		/*#if 0
 		//TODO:make EPT entries such that they map 2M pages for the untrusted
 		//environment in order to achieve greatest speedup during EPT
 		//translation
 		vmx_setupEPT2M(vcpu);
 		emhf_hwpgtbl_flushall(vcpu);
 		printf("\nCPU(0x%02x): setup 2M EPT pages");
-		#endif
+		#endif*/
   
   }else{	//we are going to run the untrusted environment
   	ASSERT( currentenvironment == LDN_ENV_UNTRUSTED_SIGNATURE);
 	
-		//TODO:make EPT entries such that they map 2M pages for the untrusted
+		/*//TODO:make EPT entries such that they map 2M pages for the untrusted
 		//environment in order to achieve greatest speedup during EPT
 		//translation
 		vmx_setupEPT2M(vcpu);
 		emhf_hwpgtbl_flushall(vcpu);
-		printf("\nCPU(0x%02x): setup 2M EPT pages");
+		printf("\nCPU(0x%02x): setup 2M EPT pages");*/
 	}
   
   //test purposes, force currentenvironment to by UNTRUSTED.

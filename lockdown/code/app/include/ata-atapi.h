@@ -54,16 +54,18 @@
 #define CMD_READ_SECTORS_EXT		0x24
 #define CMD_WRITE_SECTORS_EXT		0x34
 
+/*
 //some defines to construct 32/64 bit numbers for 28bit and 48bit LBA addressing
-//#define LBA28BIT_TO_32BITVAL(bits27_24, bits23_16, bits15_8, bits7_0) \
-//	( (u32) ( ((u32)bits27_24 << 24) | ((u32)bits23_16 << 16) | ((u32)bits15_8 << 8) | (u32)bits7_0 ) )
+#define LBA28BIT_TO_32BITVAL(bits27_24, bits23_16, bits15_8, bits7_0) \
+	( (u32) ( ((u32)bits27_24 << 24) | ((u32)bits23_16 << 16) | ((u32)bits15_8 << 8) | (u32)bits7_0 ) )
 
-//#define LBA48BIT_TO_64BITVAL(bits63_56, bits55_48, bits47_40, bits39_32, bits31_24, bits23_16, bits15_8, bits7_0) \
-//		( (u64) ( \
-//			((u64)bits63_56 << 56) | ((u64)bits55_48 << 48) | ((u64)bits47_40 << 40) | \
-//			((u64)bits39_32 << 32) | ((u64)bits31_24 << 24) | ((u64)bits23_16 << 16) | \
-//			((u64)bits15_8 << 8) | (u64)bits7_0 \
-//		) )
+#define LBA48BIT_TO_64BITVAL(bits63_56, bits55_48, bits47_40, bits39_32, bits31_24, bits23_16, bits15_8, bits7_0) \
+		( (u64) ( \
+			((u64)bits63_56 << 56) | ((u64)bits55_48 << 48) | ((u64)bits47_40 << 40) | \
+			((u64)bits39_32 << 32) | ((u64)bits31_24 << 24) | ((u64)bits23_16 << 16) | \
+			((u64)bits15_8 << 8) | (u64)bits7_0 \
+		) )
+*/
 
 #ifndef __ASSEMBLY__
 
