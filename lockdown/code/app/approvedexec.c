@@ -89,7 +89,7 @@ static u32 approvedexec_getguestpcpaddr(VCPU *vcpu){
   //the physical address
   if( (vcpu->vmcs.guest_CR0 & CR0_PE) &&
     (vcpu->vmcs.guest_CR0 & CR0_PG) ){
-    u32 guestpcpaddr = emhf_smpguest_walk_pagetables(vcpu, guestpclinearaddress);
+    u32 guestpcpaddr = (u32)(u32 *)emhf_smpguest_walk_pagetables(vcpu, guestpclinearaddress);
     ASSERT(guestpcpaddr != 0xFFFFFFFFUL);
     return (u32)guestpcpaddr;  
   }else{
@@ -115,6 +115,7 @@ static u32 approvedexec_getguestpcpaddr(VCPU *vcpu){
 //memory page, else 0
 u32 approvedexec_iscmdonsamepage(VCPU *vcpu, u64 gpa, u64 gva){
   u32 pagealigned_pc, pagealigned_gpa;
+  (void)gva;
   
   //obtain page-aligned program counter physical address
   pagealigned_pc = PAGE_ALIGN_4K(approvedexec_getguestpcpaddr(vcpu));
