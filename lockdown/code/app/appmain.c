@@ -527,11 +527,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 			u32 status=APP_SUCCESS;
 
 			u32 call_id= (u32)r->eax;
-      if(call_id == 0x0000BEEF){
-      	printf("\nCPU(0x%02x): proceeding to quiesce...", vcpu->id);
-			  do_quiesce(vcpu);
-				printf("\nCPU(0x%02x): quiesce operation completed.", vcpu->id);
-      }else if(call_id == 0xDEADBEEF){
+      if(call_id == 0xDEADBEEF){
         printf("\nCPU(0x%02x): marker message.", vcpu->id);
       }else if(call_id == LDN_HYPERCALL_HIB_READWRITE){
 				switch(r->edx){
