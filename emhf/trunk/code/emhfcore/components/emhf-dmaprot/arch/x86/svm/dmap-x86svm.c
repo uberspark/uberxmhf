@@ -340,7 +340,7 @@ static void svm_eap_dev_set_page_protection(u32 pfn, u8 *bit_vector){
   return;
 }
 
-static void svm_eap_dev_clear_page_protection(u32 pfn, u8 *bit_vector){
+/*static void svm_eap_dev_clear_page_protection(u32 pfn, u8 *bit_vector){
   u32 byte_offset, bit_offset;
 
  	//sanity check
@@ -351,7 +351,7 @@ static void svm_eap_dev_clear_page_protection(u32 pfn, u8 *bit_vector){
   bit_vector[byte_offset] &= ~(1 << bit_offset);
 
   return;
-}
+}*/
 
 
 //invalidate DEV cache
@@ -372,7 +372,7 @@ static void svm_eap_dev_invalidate_cache(void){
   return;
 }
 
-
+/*
 //clear DEV protection for a range of physical pages
 //input: paddr is the address of the first page and size
 //is the size of the memory region (rounded to a page) in bytes
@@ -388,7 +388,7 @@ static void svm_eap_dev_unprotect(u32 paddr, u32 size){
 		svm_eap_dev_clear_page_protection(i >> PAGE_SHIFT_4K, (u8 *)_svm_eap.dev_bitmap_vaddr);
 		svm_eap_dev_invalidate_cache();	//flush DEV cache
 	}
-}
+}*/
 
 
 ////////////////////////////////////////////////////////////////////////
