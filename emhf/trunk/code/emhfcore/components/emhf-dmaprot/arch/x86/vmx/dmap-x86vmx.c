@@ -752,7 +752,10 @@ u32 emhf_dmaprot_arch_x86vmx_earlyinitialize(u64 protectedbuffer_paddr,
 	u32 vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr;
 	u32 vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr;
 	u32 vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr;
-			
+
+	(void)memregionbase_paddr;
+	(void)memregion_size;
+	
 	printf("\nSL: Bootstrapping VMX DMA protection...");
 			
 	//we use 3 pages for Vt-d bootstrapping
