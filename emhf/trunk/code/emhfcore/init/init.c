@@ -848,6 +848,9 @@ void cstartup(multiboot_info_t *mbi){
 		//fields
 		{
 			u32 i, bytes;
+			slpb->runtime_appmodule_base= 0;
+			slpb->runtime_appmodule_size= 0;
+
 			//we search from module index 2 upto and including mods_count-1
 			//and grab the first non-SINIT module in the list
 			for(i=2; i < mods_count; i++) {
