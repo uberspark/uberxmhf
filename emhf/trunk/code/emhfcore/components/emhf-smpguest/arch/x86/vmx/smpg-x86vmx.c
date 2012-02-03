@@ -289,6 +289,7 @@ u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs *r){
   u32 delink_lapic_interception=0;
   
+  (void)r;
   if(g_vmx_lapic_op == LAPIC_OP_WRITE){
     u32 src_registeraddress, dst_registeraddress;
     u32 value_tobe_written;
@@ -398,6 +399,8 @@ void emhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
 void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
+    (void)r;
+
 	if( (!vcpu->nmiinhvm) && (!g_vmx_quiesce) ){
     printf("\nCPU(0x%02x): Spurious NMI within hypervisor. halt!", vcpu->id);
     HALT();
