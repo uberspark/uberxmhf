@@ -482,7 +482,7 @@ extern u8 g_vmx_vmxon_buffers[] __attribute__(( section(".palign_data") ));
 extern u8 g_vmx_vmcs_buffers[] __attribute__(( section(".palign_data") ));
 		
 //VMX IO bitmap buffers
-extern u8 g_vmx_iobitmap_buffers[] __attribute__(( section(".palign_data") ));
+extern u8 g_vmx_iobitmap_buffer[] __attribute__(( section(".palign_data") ));
 		
 //VMX guest and host MSR save area buffers
 extern u8 g_vmx_msr_area_host_buffers[] __attribute__(( section(".palign_data") ));

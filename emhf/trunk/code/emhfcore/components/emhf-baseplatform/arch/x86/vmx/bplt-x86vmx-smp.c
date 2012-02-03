@@ -65,7 +65,7 @@ void emhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor){
     memset((void *)vcpu->vmx_vmcs_vaddr, 0, PAGE_SIZE_4K);
 		
 	//allocate VMX IO bitmap region
-	vcpu->vmx_vaddr_iobitmap = ((u32)g_vmx_iobitmap_buffers + (i * (2*PAGE_SIZE_4K))) ; 
+	vcpu->vmx_vaddr_iobitmap = (u32)g_vmx_iobitmap_buffer; 
 	memset( (void *)vcpu->vmx_vaddr_iobitmap, 0, (2*PAGE_SIZE_4K));
 		
 	//allocate VMX guest and host MSR save areas
