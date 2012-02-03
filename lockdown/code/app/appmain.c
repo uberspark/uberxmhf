@@ -17,6 +17,7 @@ u32 LDN_ENV_PHYSICALMEMORYLIMIT=0; //max physical memory address permissible
  
 u32 currentenvironment = LDN_ENV_UNTRUSTED_SIGNATURE; //default to untrusted env.
 
+#if 0
 //linux hibernation related
 #define	LDN_HYPERCALL_HIB_READWRITE	(0xDEADF00D)
 #define LDN_HYPERCALL_HIB_TOTALPAGES (0xF00DDEAD)
@@ -48,7 +49,7 @@ int memcmp (const unsigned char *str1, const unsigned char *str2, int count){
     }
   return 0;
 }
-
+#endif
 
 #if defined (__LDN_TEST_FWRESET__)
 //our boot-sector buffer to restore between switches
@@ -230,7 +231,7 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
     vcpu->id, acpi_control_portnum);
   
   //set I/O port intercept for ACPI control port
-  emhf_iopm_set_write(vcpu, acpi_control_portnum, 2); //16-bit port
+  emhf_partition_legacyIO_setprot(vcpu, acpi_control_portnum, 2, PART_LEGACYIO_NOACCESS); //16-bit port
 #endif
 
 #if defined(__LDN_HYPERPARTITIONING__)
@@ -489,6 +490,8 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
   printf("\nprot is: 0x%08x", emhf_memprot_getprot(vcpu, gpa));
 	HALT();
 #endif
+
+  while(1);
 }
 #endif
 
@@ -525,8 +528,12 @@ void emhf_app_handleshutdown(VCPU *vcpu, struct regs *r){
 //returns APP_SUCCESS if we handled the hypercall else APP_ERROR
 u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 			u32 status=APP_SUCCESS;
+			
+		(void)r;
+		(void)vcpu;
 
-			u32 call_id= (u32)r->eax;
+
+/*			u32 call_id= (u32)r->eax;
       if(call_id == 0xDEADBEEF){
         printf("\nCPU(0x%02x): marker message.", vcpu->id);
       }else if(call_id == LDN_HYPERCALL_HIB_READWRITE){
@@ -567,7 +574,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 				ASSERT( (r->ebx * PAGE_SIZE_4K) < TEST_MLOAD_HIB_BUFFER_SIZE );
 			}else{ 	
 				status=APP_ERROR; //unknown hypercall
-      }
+      }*/
 
 			return status;
 }      
