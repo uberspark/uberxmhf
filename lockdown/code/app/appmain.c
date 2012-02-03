@@ -538,7 +538,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 							printf("\nCPU(0x%02x): HIB(R), o=%u, s=%u, rw=%u, v=0x%08x, p=0x%08x", vcpu->id,
 								r->ebx, r->ecx, r->edx, r->esi, r->edi);
 
-						ASSERT( emhf_guestpgtbl_walk(vcpu, r->esi) == r->edi );
+						ASSERT( emhf_smpguest_walk_pagetables(vcpu, r->esi) == r->edi );
 						memcpy( (void *)r->edi,
 										(void *) ((u32)&test_mload_hib_buffer + ((r->ebx/8)*PAGE_SIZE_4K) ),
 									 PAGE_SIZE_4K);
@@ -550,7 +550,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 							printf("\nCPU(0x%02x): HIB(W), o=%u, s=%u, rw=%u, v=0x%08x, p=0x%08x", vcpu->id,
 									r->ebx, r->ecx, r->edx, r->esi, r->edi);
 
-						ASSERT( emhf_guestpgtbl_walk(vcpu, r->esi) == r->edi );
+						ASSERT( emhf_smpguest_walk_pagetables(vcpu, r->esi) == r->edi );
 
 						memcpy( (void *) ((u32)&test_mload_hib_buffer + ((r->ebx/8)*PAGE_SIZE_4K) ),
 									(void *)r->edi, PAGE_SIZE_4K);
