@@ -77,6 +77,7 @@ void emhf_dmaprot_protect(u32 start_paddr, u32 size);
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
+u32 emhf_dmaprot_arch_getbuffersize(u64 physical_memory_limit);
 u32 emhf_dmaprot_arch_earlyinitialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
 	u64 memregionbase_paddr, u32 memregion_size);
