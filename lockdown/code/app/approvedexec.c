@@ -1,25 +1,25 @@
 // approved execution implementation for lockdown
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <target.h>
+#include <emhf.h>
 
 #include <lockdown.h>
 
 #include <approvedexec.h>
 #include <exe_pe.h>
-#include <sha1.h>
+//#include <sha1.h>
 
 u32 ax_debug_flag = 0;
 
 
 //the trusted environment hash-lists
 struct hashinfo hashlist_full[] = {
-#include "hashlist_full.dat"
+//#include "hashlist_full.dat"
 };
 u32 hashlist_full_totalelements= (sizeof(hashlist_full)/sizeof(struct hashinfo));
 
 struct hashinfo hashlist_partial[] = {
-#include "hashlist_partial.dat"
+//#include "hashlist_partial.dat"
 };
 u32 hashlist_partial_totalelements= (sizeof(hashlist_partial)/sizeof(struct hashinfo));
 
@@ -84,7 +84,7 @@ static u32 approvedexec_getguestpcpaddr(VCPU *vcpu){
   //get linear address of guest PC
   guestpclinearaddress = approvedexec_getguestpcvaddr(vcpu);
 
-if(vcpu->guest_unrestricted){
+//if(vcpu->guest_unrestricted){
 	//if paging is enabled, then we walk the guest page-table to obtain
   //the physical address
   if( (vcpu->vmcs.guest_CR0 & CR0_PE) &&
@@ -95,7 +95,8 @@ if(vcpu->guest_unrestricted){
   }else{
     return (u32)guestpclinearaddress; //linear address is physical address when no paging in effect
   }
-}else{
+//}
+/*else{
 	//if paging is enabled, then we walk the guest page-table to obtain
   //the physical address
   if( (vcpu->guest_currentstate & GSTATE_PROTECTEDMODE) &&
@@ -106,7 +107,7 @@ if(vcpu->guest_unrestricted){
   }else{
     return (u32)guestpclinearaddress; //linear address is physical address when no paging in effect
   }
-}  
+}*/  
   
 }
 
