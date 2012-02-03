@@ -57,6 +57,16 @@ void emhf_debug_arch_putstr(const char *str);
 //----------------------------------------------------------------------
 extern uart_config_t g_uart_config;
 
+//#ifdef __DEBUG_SERIAL__
+void dbg_x86_uart_init(char *params);
+void dbg_x86_uart_putc(int x);
+void dbg_x86_uart_putstr(const char *str);
+
+//#ifdef __DEBUG_VGA__
+void dbg_x86_vgamem_init(char *params);
+void dbg_x86_vgamem_putc(int c);
+void dbg_x86_vgamem_putstr(const char *str);
+
 
 #endif // __ASSEMBLY__
 
