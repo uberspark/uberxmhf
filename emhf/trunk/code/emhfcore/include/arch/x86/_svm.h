@@ -42,7 +42,7 @@
 #define SKINIT_SLB_SIZE 0x10000
 #define NP_ENABLE 0
 
-#define SIZEOF_IOPM_BITMAP    (3*4096)
+//#define SIZEOF_IOPM_BITMAP    (3*4096)
 #define SIZEOF_MSRPM_BITMAP   (2*4096)
 
 #ifndef __ASSEMBLY__

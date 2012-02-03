@@ -528,7 +528,7 @@ extern u8 g_svm_hsave_buffers[]__attribute__(( section(".palign_data") ));
 extern u8 g_svm_vmcb_buffers[]__attribute__(( section(".palign_data") )); 
 
 //SVM IO bitmap buffer
-extern u8 g_svm_iopm[]__attribute__(( section(".palign_data") )); 
+extern u8 g_svm_iobitmap_buffer[]__attribute__(( section(".palign_data") )); 
 
 //SVM MSR bitmap buffer
 extern u8 g_svm_msrpm[]__attribute__(( section(".palign_data") ));
