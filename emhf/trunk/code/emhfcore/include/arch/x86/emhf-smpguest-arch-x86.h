@@ -89,6 +89,7 @@ void emhf_smpguest_arch_x86_eventhandler_nmiexception(VCPU *vcpu, struct regs *r
 void emhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu);
 void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, 
 	struct regs *r);
+void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r);
 u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode);
 //perform required setup after a guest awakens a new CPU
 void emhf_smpguest_arch_x86vmx_postCPUwakeup(VCPU *vcpu);
