@@ -45,9 +45,17 @@ u8 __acpi_reset_reg_val;
 void ACPIInitializeRegisters(void){
 	ACPI_RSDP rsdp;
 	u32 rsdp_paddr;
+#if 0
 	ACPI_XSDT *xsdt;
-	u32 n_xsdt_entries, i;
+	u32 n_xsdt_entries
 	u64 *xsdtentrylist;
+#else
+	//RSDT method
+	ACPI_RSDT *rsdt;
+	u32 n_rsdt_entries;
+	u32 *rsdtentrylist;	
+#endif
+	u32 i;
 	ACPI_FADT *fadt;
 	u8 fadt_found=0;
 	ACPI_GAS *gas;
@@ -61,6 +69,7 @@ void ACPIInitializeRegisters(void){
 	
 	printf("\nACPI System (RSDP phys addr=0x%08X)", rsdp_paddr);
 
+#if 0
 	xsdt=(ACPI_XSDT *)(u32)rsdp.xsdtaddress;
 	printf("\nXSDT phys addr=0x%08X", (u32)xsdt);
   printf("\nLength of XSDT=0x%08X, XSDT header length=0x%08X", xsdt->length, sizeof(ACPI_XSDT));
@@ -77,6 +86,29 @@ void ACPIInitializeRegisters(void){
     	break;
     }
 	}
+#else
+	//use standard RSDT method
+	rsdt=(ACPI_RSDT *)(u32)rsdp.rsdtaddress;
+	n_rsdt_entries=(u32)((rsdt->length-sizeof(ACPI_RSDT))/4);
+
+	printf("\nACPI RSDT at 0x%08x", (u32)rsdt);
+	printf("\n	len=0x%08x, headerlen=0x%08x, numentries=%u", 
+			rsdt->length, sizeof(ACPI_RSDT), n_rsdt_entries);
+  
+	rsdtentrylist=(u32 *) ( (u32)rsdt + sizeof(ACPI_RSDT) );
+
+	for(i=0; i< n_rsdt_entries; i++){
+		fadt=(ACPI_FADT *)( (u32)rsdtentrylist[i]);
+		if(fadt->signature == ACPI_FADT_SIGNATURE){
+			fadt_found=1;
+			break;
+		}
+	}	
+#endif
+
+
+
+
 
 	if(!fadt_found){
 		printf("\nFADT not found!");
@@ -152,7 +184,8 @@ void ACPIInitializeRegisters(void){
 	//			gas->access_size, gas->address);
 	__PM1_CNTb=gas->address;
 	__PM1_CNTb_size=fadt->pm1_cnt_len;
-	
+
+#if 0	
 	//obtain ACPI reset register details
 	//we ignore the RESET_REG_SUP bit when using ACPI reset mechanism
 	//According to ACPI 3.0, FADT.flags.RESET_REG_SUP indicates
@@ -175,7 +208,7 @@ void ACPIInitializeRegisters(void){
 			(gas->register_bit_offset == 0) );
 	__acpi_reset_reg = (u32)gas->address;
 	__acpi_reset_reg_val = 	fadt->reset_value;		
-			
+#endif			
 
 	printf("\nPM1a_STS=0x%016Lx (size=%u bytes)", PM1a_STS, PM1a_STS_SIZE);
 	printf("\nPM1a_EN=0x%016Lx (size=%u bytes)", PM1a_EN, PM1a_EN_SIZE);
