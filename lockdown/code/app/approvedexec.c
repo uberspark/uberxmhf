@@ -89,7 +89,7 @@ static u32 approvedexec_getguestpcpaddr(VCPU *vcpu){
   //the physical address
   if( (vcpu->vmcs.guest_CR0 & CR0_PE) &&
     (vcpu->vmcs.guest_CR0 & CR0_PG) ){
-    u32 guestpcpaddr = emhf_guestpgtbl_walk(vcpu, guestpclinearaddress);
+    u32 guestpcpaddr = emhf_smpguest_walk_pagetables(vcpu, guestpclinearaddress);
     ASSERT(guestpcpaddr != 0xFFFFFFFFUL);
     return (u32)guestpcpaddr;  
   }else{
