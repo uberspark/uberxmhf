@@ -844,6 +844,24 @@ void cstartup(multiboot_info_t *mbi){
         slpb->runtime_osbootmodule_base = mod_array[1].mod_start;
         slpb->runtime_osbootmodule_size = (mod_array[1].mod_end - mod_array[1].mod_start); 
 
+		//check if we have an optional app module and if so populate relevant SLPB
+		//fields
+		{
+			u32 i, bytes;
+			//we search from module index 2 upto and including mods_count-1
+			//and grab the first non-SINIT module in the list
+			for(i=2; i < mods_count; i++) {
+				bytes = mod_array[i].mod_end - mod_array[i].mod_start;
+				if(!is_sinit_acmod((void*)mod_array[i].mod_start, bytes, false)){
+						slpb->runtime_appmodule_base= mod_array[i].mod_start;
+						slpb->runtime_appmodule_size= bytes;
+						printf("\nINIT(early): found app module, base=0x%08x, size=0x%08x",
+								slpb->runtime_appmodule_base, slpb->runtime_appmodule_size);
+						break;
+				}
+			}
+		}
+
         //slpb->uart_config = g_uart_config;
         memcpy((void *)&slpb->options, (void *)&g_uart_config, sizeof(g_uart_config));
         
