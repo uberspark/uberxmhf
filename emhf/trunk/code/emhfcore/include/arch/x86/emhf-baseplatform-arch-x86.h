@@ -185,6 +185,7 @@ typedef struct _vcpu {
   u32 npt_vaddr_pdts;      
   u32 npt_asid;           //NPT ASID for this core
   u32 npt_vaddr_pts;      //NPT page-tables for protection manipulation
+  u32 svm_vaddr_iobitmap;		//virtual address of the I/O Bitmap area
 
   //VMX specific fields
   u64 vmx_msrs[IA32_VMX_MSRCOUNT];  //VMX msr values
