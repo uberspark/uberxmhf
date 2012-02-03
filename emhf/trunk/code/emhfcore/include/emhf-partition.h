@@ -109,7 +109,8 @@ void emhf_partition_arch_x86svm_setupguestOSstate(VCPU *vcpu);
 //start executing the partition and guest OS
 void emhf_partition_arch_x86svm_start(VCPU *vcpu);
 
-
+//low-level HVM start routine (part-x86svm-sup.S)
+void __svm_start_hvm(VCPU *vcpu, u32 vmcb_paddr);
 
 
 
