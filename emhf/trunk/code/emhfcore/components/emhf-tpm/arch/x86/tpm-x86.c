@@ -94,7 +94,7 @@ static bool tpm_validate_locality(uint32_t locality)
     return false;
 }
 
-
+/*
 static void dump_locality_access_regs(void) {
     tpm_reg_access_t reg_acc;
     uint32_t locality;
@@ -108,7 +108,7 @@ static void dump_locality_access_regs(void) {
             printf("    TPM: Access reg not valid\n");
         }
     }
-}
+}*/
 
 
 
