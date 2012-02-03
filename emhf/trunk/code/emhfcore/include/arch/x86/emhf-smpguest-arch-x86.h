@@ -91,6 +91,10 @@ void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu,
 	struct regs *r);
 void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r);
 u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode);
+void emhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu);
+void emhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu);
+
+
 //perform required setup after a guest awakens a new CPU
 void emhf_smpguest_arch_x86vmx_postCPUwakeup(VCPU *vcpu);
 //walk guest page tables; returns pointer to corresponding guest physical address
@@ -137,7 +141,12 @@ extern u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") ));
 void emhf_smpguest_arch_x86svm_initialize(VCPU *vcpu);
 void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, 
 	struct regs *r);
+void emhf_smpguest_arch_x86svm_eventhandler_nmiexception(VCPU *vcpu, struct regs *r);
 u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode);
+void emhf_smpguest_arch_x86svm_quiesce(VCPU *vcpu);
+void emhf_smpguest_arch_x86svm_endquiesce(VCPU *vcpu);
+
+
 //perform required setup after a guest awakens a new CPU
 void emhf_smpguest_arch_x86svm_postCPUwakeup(VCPU *vcpu);
 //walk guest page tables; returns pointer to corresponding guest physical address
