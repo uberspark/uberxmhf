@@ -67,9 +67,9 @@ u32 emhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime
   pdpt_t xpdpt;
   pdt_t xpdt;
   u32 hva=0, i;
-  u32 l_cr0, l_cr3, l_cr4;
+ // u32 l_cr0, l_cr3, l_cr4;
   u64 default_flags;
-  u32 runtime_image_offset = PAGE_SIZE_2M;
+  //u32 runtime_image_offset = PAGE_SIZE_2M;
 	
   printf("\nSL (%s): runtime_spa=%08x, runtime_sva=%08x, totalsize=%08x",
          __FUNCTION__, runtime_spa, runtime_sva, totalsize);
@@ -225,7 +225,7 @@ void emhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 
 void emhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 	u32 ptba;	//page table base address
-	u32 rtm_gdt, rtm_idt, rtm_ep, rtm_tos;
+//	u32 rtm_gdt, rtm_idt, rtm_ep, rtm_tos;
 	
 	//setup runtime TSS
 	{
