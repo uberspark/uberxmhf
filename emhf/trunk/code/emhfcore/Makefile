@@ -20,7 +20,7 @@
 	CFLAGS += -Wstrict-prototypes -Wdeclaration-after-statement 
 	CFLAGS += -Werror -Wno-pointer-arith -Wextra -Wfloat-equal 
 	CFLAGS += -Wcast-qual -Wsign-compare
-	CFLAGS += -Wno-bad-function-cast
+	CFLAGS += -Wno-bad-function-cast 
 	CFLAGS += -Waggregate-return
 	CFLAGS += -Winline
 	CFLAGS += -m32 -march=k8 

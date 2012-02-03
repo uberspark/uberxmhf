@@ -258,8 +258,8 @@ static void _svm_initVMCB(VCPU *vcpu){
   vmcb->general1_intercepts |= (u32) GENERAL1_INTERCEPT_NMI;
 
   //setup IO interception
-  memset((void *)g_svm_iopm, 0, SIZEOF_IOPM_BITMAP);   //clear bitmap buffer
-  vmcb->iopm_base_pa = hva2spa(g_svm_iopm);   //setup vmcb iopm
+  //memset((void *)g_svm_iopm, 0, SIZEOF_IOPM_BITMAP);   //clear bitmap buffer
+  vmcb->iopm_base_pa = hva2spa((void *)vcpu->svm_vaddr_iobitmap);   //setup vmcb iopm
   vmcb->general1_intercepts |= (u32) GENERAL1_INTERCEPT_IOIO_PROT;
 
   //setup MSR interception
