@@ -5,7 +5,7 @@
 #include <emhf.h>
 
 #include <lockdown.h>
-#include <acpi.h>
+#include <lockdown-acpi.h>
 #include <ata-atapi.h>
 
 #if defined(__LDN_HYPERSWITCHING__)

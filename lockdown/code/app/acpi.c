@@ -3,7 +3,7 @@
 
 #include <emhf.h>
 
-#include <acpi.h>
+#include <lockdown-acpi.h>
 
 
 //------------------------------------------------------------------------------
@@ -62,7 +62,7 @@ void ACPIInitializeRegisters(void){
 	printf("\nACPI System (RSDP phys addr=0x%08X)", rsdp_paddr);
 
 	xsdt=(ACPI_XSDT *)(u32)rsdp.xsdtaddress;
-	printf("\nXSDT phys addr=0x%08X", xsdt);
+	printf("\nXSDT phys addr=0x%08X", (u32)xsdt);
   printf("\nLength of XSDT=0x%08X, XSDT header length=0x%08X", xsdt->length, sizeof(ACPI_XSDT));
   
 	n_xsdt_entries=(u32)((xsdt->length-sizeof(ACPI_XSDT))/8);
