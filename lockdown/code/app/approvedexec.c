@@ -133,15 +133,17 @@ u32 approvedexec_iscmdonsamepage(VCPU *vcpu, u64 gpa, u64 gva){
 //---approved execution violation handler---------------------------------------                                                                   
 u32 approvedexec_handleevent(VCPU *vcpu, struct regs *r, 
   u64 gpa, u64 gva, u64 violationcode){
+  (void)r;
   
-  if(violationcode & HWPGTBL_FLAG_EXECUTE){
+  if(violationcode & (1ULL << 2) ){ //XXX: this is EPT specific
     //printf("\nCPU(0x%02x): EPT/EXEC, p=0x%08x, v=0x%08x, pcp=0x%08x, pcv=0x%08x",
     // vcpu->id, (u32)gpa, (u32)gva, approvedexec_getguestpcpaddr(vcpu), approvedexec_getguestpcvaddr(vcpu));
     //we had a exec violation, time to check this physical page and lock it
     //TODO: check hash
     windows_verifycodeintegrity(vcpu, (u32)gpa, (u32)gva);
     //give page execute permissions but prevent further writes
-    emhf_hwpgtbl_setprot(vcpu, gpa, HWPGTBL_FLAG_READ | HWPGTBL_FLAG_EXECUTE);
+    //emhf_hwpgtbl_setprot(vcpu, gpa, HWPGTBL_FLAG_READ | HWPGTBL_FLAG_EXECUTE);
+    emhf_memprot_setprot(vcpu, gpa, MEMP_PROT_READONLY | MEMP_PROT_EXECUTE);
 
   }else{
     //printf("\nCPU(0x%02x): EPT/WR, p=0x%08x, v=0x%08x, pcp=0x%08x, pcv=0x%08x",
@@ -152,11 +154,13 @@ u32 approvedexec_handleevent(VCPU *vcpu, struct regs *r,
       //page  
       //printf("\n  CPU(0x%02x): C-M-D on same page", vcpu->id);
       //for now give all permissions
-      emhf_hwpgtbl_setprot(vcpu, gpa, 
-           HWPGTBL_FLAG_READ | HWPGTBL_FLAG_WRITE | HWPGTBL_FLAG_EXECUTE);
+      //emhf_hwpgtbl_setprot(vcpu, gpa, 
+      //     HWPGTBL_FLAG_READ | HWPGTBL_FLAG_WRITE | HWPGTBL_FLAG_EXECUTE);
+      emhf_memprot_setprot(vcpu, gpa, MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE);
     }else{
       //make page read-write and remove execute permission
-      emhf_hwpgtbl_setprot(vcpu, gpa, HWPGTBL_FLAG_READ | HWPGTBL_FLAG_WRITE);
+      //emhf_hwpgtbl_setprot(vcpu, gpa, HWPGTBL_FLAG_READ | HWPGTBL_FLAG_WRITE);
+      emhf_memprot_setprot(vcpu, gpa, MEMP_PROT_READWRITE);
     }
   }
 
