@@ -477,7 +477,7 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 	  printf("\nCPU(0x%02x): Fatal, got HW pgfault in untrusted should never happen", vcpu->id);
   	printf("\nCPU(0x%02x): gva=0x%08x, gpa=0x%08x, code=0x%08x", vcpu->id,
 			(u32)gva, (u32)gpa, (u32)violationcode);
-  	printf("\nprot is: 0x%016llx", emhf_hwpgtbl_getprot(vcpu, gpa));
+  	printf("\nprot is: 0x%08x", emhf_memprot_getprot(vcpu, gpa));
 		HALT();
 	
 	}
@@ -485,7 +485,7 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
   printf("\nCPU(0x%02x): HW pgtbl handling feature unimplemented. Halting!", vcpu->id);
   printf("\nCPU(0x%02x): gva=0x%08x, gpa=0x%08x, code=0x%08x", vcpu->id,
 			(u32)gva, (u32)gpa, (u32)violationcode);
-  printf("\nprot is: 0x%016llx", emhf_hwpgtbl_getprot(vcpu, gpa));
+  printf("\nprot is: 0x%08x", emhf_memprot_getprot(vcpu, gpa));
 	HALT();
 #endif
 }
