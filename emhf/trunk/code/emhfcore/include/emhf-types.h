@@ -119,6 +119,8 @@ typedef struct _sl_parameter_block {
 	u32 runtime_size;			//size of the runtime image
 	u32 runtime_osbootmodule_base;	//guest OS bootmodule base
 	u32 runtime_osbootmodule_size;	//guest OS bootmodule size
+	u32 runtime_appmodule_base;		//EMHF hyperapp additional module (optional)
+	u32 runtime_appmodule_size;		//size of EMHF hyperapp additional module (optional)
     // Performance measurements related to DRTM
     u64 rdtsc_before_drtm;
     u64 rdtsc_after_drtm;
