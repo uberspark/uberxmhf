@@ -45,7 +45,7 @@ uint8_t g_log_targets=LOG_TARGET_NONE;
 uint8_t g_log_level=LOG_LEVEL_NONE;
 
 static volatile u32 printf_lock=1;
-static char printk_prefix[16] = "";
+//static char printk_prefix[16] = "";
 
 void dvprintf(u32 log_type, const char *fmt, va_list args)
 {
@@ -57,7 +57,7 @@ void dvprintf(u32 log_type, const char *fmt, va_list args)
 void dprintf(u32 log_type, const char *fmt, ...)
 {
     va_list       args;
-
+	(void)log_type;
     va_start(args, fmt);
     vprintf(fmt, args);
     va_end(args);
