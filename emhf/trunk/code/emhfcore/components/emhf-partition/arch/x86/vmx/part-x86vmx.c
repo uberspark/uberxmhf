@@ -598,7 +598,12 @@ void emhf_partition_arch_x86vmx_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size,
 	for(i=0; i < size; i++){
 		byte_offset = (port+i) / 8;
 		bit_offset = (port+i) & 7;
-		bit_vector[byte_offset] |= (1 << bit_offset);	
+		if(prottype & PART_LEGACYIO_NOACCESS){
+			bit_vector[byte_offset] |= (1 << bit_offset);	
+		}else{
+			prottype = PART_LEGACYIO_READWRITE;
+			bit_vector[byte_offset] &= ~((1 << bit_offset));	
+		}
 	}
 }
 
