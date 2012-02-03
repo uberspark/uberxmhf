@@ -482,6 +482,7 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 	
 	}
 #else
+  (void)r;
   printf("\nCPU(0x%02x): HW pgtbl handling feature unimplemented. Halting!", vcpu->id);
   printf("\nCPU(0x%02x): gva=0x%08x, gpa=0x%08x, code=0x%08x", vcpu->id,
 			(u32)gva, (u32)gpa, (u32)violationcode);
@@ -513,7 +514,8 @@ void emhf_app_handleshutdown(VCPU *vcpu, struct regs *r){
 				return;
 			}
 			#else
-				emhf_baseplatform_reboot();
+				(void)r;
+				emhf_baseplatform_reboot(vcpu);
 			#endif
 }
 
