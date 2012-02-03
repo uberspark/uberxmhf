@@ -3,9 +3,9 @@
 //environments under lockdown
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <target.h>
+#include <emhf.h>
 
-//------------------------------------------------------------------------------
+/*//------------------------------------------------------------------------------
 //PCI subsystem glue code
 //we support only type-1 direct access which should not be a problem
 //with any system manufactured after the year 2001
@@ -38,7 +38,7 @@ int pci_initialize(void){
 #define PCI_DEVFN(device, func) ((((device) & 0x1f) << 3) | ((func) & 0x07) )
 
 //returns 1 on success, 0 on error
-int pci_conf1_read(unsigned int bus, unsigned int device, unsigned int function,
+int emhf_baseplatform_arch_x86_pci_conf1_read(unsigned int bus, unsigned int device, unsigned int function,
 							unsigned int reg, int len, u32 *value){
         unsigned long flags;
         unsigned int devfn=PCI_DEVFN(device, function);
@@ -66,7 +66,7 @@ int pci_conf1_read(unsigned int bus, unsigned int device, unsigned int function,
 }
 
 //returns 1 on success, 0 on failure
-int pci_conf1_write(unsigned int bus, unsigned int device, unsigned int function,
+int emhf_baseplatform_arch_x86_pci_conf1_write(unsigned int bus, unsigned int device, unsigned int function,
 	unsigned int reg, int len, u32 value){
         unsigned long flags;
         unsigned int devfn=PCI_DEVFN(device, function);
@@ -92,6 +92,7 @@ int pci_conf1_write(unsigned int bus, unsigned int device, unsigned int function
 }
 
 #undef PCI_CONF1_ADDRESS
+*/
 
 //------------------------------------------------------------------------------
 //VGA compatible adapter reset
@@ -177,7 +178,7 @@ void hw_disk_savepciconf(void){
 	int i;
 	printf("\n%s: starting...", __FUNCTION__);
 	for(i=0; i < 16; i++)
-			pci_conf1_read(0, 0x1f, 0x2, i*4, 4, &diskpciconf[i]);
+			emhf_baseplatform_arch_x86_pci_type1_read(0, 0x1f, 0x2, i*4, 4, &diskpciconf[i]);
 	printf("\n%s: done.", __FUNCTION__);
 }
 
@@ -185,7 +186,7 @@ void hw_disk_restorepciconf(void){
 	int i;
 	printf("\n%s: starting...", __FUNCTION__);
 	for(i=0; i < 16; i++)
-			pci_conf1_write(0, 0x1f, 0x2, i*4, 4, diskpciconf[i]);
+			emhf_baseplatform_arch_x86_pci_type1_write(0, 0x1f, 0x2, i*4, 4, diskpciconf[i]);
 	printf("\n%s: done.", __FUNCTION__);
 }
 
@@ -211,7 +212,7 @@ void hw_disk_printpciconf(void){
 	
 	printf("\nconf dump for 0:1f:2...");
 	for(i=0; i < 16; i++){
-			pci_conf1_read(0, 0x1f, 0x2, i*4, 4, &value);
+			emhf_baseplatform_arch_x86_pci_type1_read(0, 0x1f, 0x2, i*4, 4, &value);
    		printf("\nat offset 0x%02x: 0x%08x", (i*4), value);
   }
 }
