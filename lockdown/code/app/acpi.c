@@ -43,7 +43,8 @@ u8 __acpi_reset_reg_val;
 
 //get ACPI register addresses from system
 void ACPIInitializeRegisters(void){
-	ACPI_RSDP *rsdp;
+	ACPI_RSDP rsdp;
+	u32 rsdp_paddr;
 	ACPI_XSDT *xsdt;
 	u32 n_xsdt_entries, i;
 	u64 *xsdtentrylist;
@@ -51,15 +52,16 @@ void ACPIInitializeRegisters(void){
 	u8 fadt_found=0;
 	ACPI_GAS *gas;
 	
-	rsdp=(ACPI_RSDP *)acpi_getRSDP();
-	if(!rsdp){
+	//rsdp=(ACPI_RSDP *)acpi_getRSDP();
+	rsdp_paddr = acpi_getRSDP(&rsdp);
+	if(!rsdp_paddr){
 		printf("\nSystem is not ACPI Compliant (RSDP unavailable!)");
 		HALT();
 	}
 	
-	printf("\nACPI System (RSDP phys addr=0x%08X)", rsdp);
+	printf("\nACPI System (RSDP phys addr=0x%08X)", rsdp_paddr);
 
-	xsdt=(ACPI_XSDT *)(u32)rsdp->xsdtaddress;
+	xsdt=(ACPI_XSDT *)(u32)rsdp.xsdtaddress;
 	printf("\nXSDT phys addr=0x%08X", xsdt);
   printf("\nLength of XSDT=0x%08X, XSDT header length=0x%08X", xsdt->length, sizeof(ACPI_XSDT));
   
