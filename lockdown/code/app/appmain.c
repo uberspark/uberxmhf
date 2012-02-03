@@ -513,7 +513,7 @@ void emhf_app_handleshutdown(VCPU *vcpu, struct regs *r){
 				return;
 			}
 			#else
-				emhf_reboot();
+				emhf_baseplatform_reboot();
 			#endif
 }
 
