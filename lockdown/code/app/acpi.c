@@ -53,7 +53,7 @@ void ACPIInitializeRegisters(void){
 	ACPI_GAS *gas;
 	
 	//rsdp=(ACPI_RSDP *)acpi_getRSDP();
-	rsdp_paddr = acpi_getRSDP(&rsdp);
+	rsdp_paddr = emhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
 	if(!rsdp_paddr){
 		printf("\nSystem is not ACPI Compliant (RSDP unavailable!)");
 		HALT();
