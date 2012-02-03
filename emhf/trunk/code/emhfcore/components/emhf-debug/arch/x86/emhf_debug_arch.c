@@ -33,8 +33,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include "dbg-x86-uart.h"
-#include "dbg-x86-vgamem.h"
+#include <emhf.h>
 
 void emhf_debug_arch_init(char *params)
 {

@@ -50,7 +50,7 @@
 //----------------------------------------------------------------------
 void emhf_debug_arch_init(char *params);
 void emhf_debug_arch_putstr(const char *str);
-
+void emhf_debug_arch_putc(int c);
 
 //----------------------------------------------------------------------
 //x86 ARCH. INTERFACES
