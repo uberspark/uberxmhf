@@ -79,6 +79,11 @@ void emhf_baseplatform_arch_x86svm_allocandsetupvcpus(u32 cpu_vendor){
     vcpu->hsave_vaddr_ptr = ((u32)g_svm_hsave_buffers + (i * 8192));
     vcpu->vmcb_vaddr_ptr = ((u32)g_svm_vmcb_buffers + (i * 8192));
 
+	//allocate SVM IO bitmap region and clear it
+	vcpu->svm_vaddr_iobitmap = (u32)g_svm_iobitmap_buffer; 
+	memset( (void *)vcpu->svm_vaddr_iobitmap, 0, (3*PAGE_SIZE_4K));
+
+
     {
       u32 npt_pdpt_base, npt_pdts_base, npt_pts_base;
       npt_pdpt_base = ((u32)g_svm_npt_pdpt_buffers + (i * 4096)); 
