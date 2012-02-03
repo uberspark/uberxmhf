@@ -40,6 +40,8 @@
 #ifndef __EMHF_PARTITION_H__
 #define __EMHF_PARTITION_H__
 
+//partition legacy I/O protection types
+#define	PART_LEGACYIO_NOACCESS		(1)		//no access
 
 #ifndef __ASSEMBLY__
 
@@ -61,6 +63,10 @@ void emhf_partition_setupguestOSstate(VCPU *vcpu);
 //start executing the partition and guest OS
 void emhf_partition_start(VCPU *vcpu);
 
+//set legacy I/O protection for the partition
+void emhf_partition_legacyIO_setprot(VCPU *vcpu, u32 port, u32 prottype);
+
+
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
@@ -75,6 +81,10 @@ void emhf_partition_arch_start(VCPU *vcpu);
 
 //initialize SMP guest logic
 void emhf_smpguest_arch_initialize(VCPU *vcpu);
+
+//set legacy I/O protection for the partition
+void emhf_partition_arch_legacyIO_setprot(VCPU *vcpu, u32 port, u32 prottype);
+
 
 //----------------------------------------------------------------------
 //x86 ARCH. INTERFACES
@@ -95,6 +105,8 @@ void emhf_partition_arch_x86vmx_start(VCPU *vcpu);
 //low-level HVM start routine (part-x86vmx-sup.S)
 u32 __vmx_start_hvm(void);
 
+//set legacy I/O protection for the partition
+void emhf_partition_arch_x86vmx_legacyIO_setprot(VCPU *vcpu, u32 port, u32 prottype);
 
 
 //----------------------------------------------------------------------
@@ -111,6 +123,9 @@ void emhf_partition_arch_x86svm_start(VCPU *vcpu);
 
 //low-level HVM start routine (part-x86svm-sup.S)
 void __svm_start_hvm(VCPU *vcpu, u32 vmcb_paddr);
+
+//set legacy I/O protection for the partition
+void emhf_partition_arch_x86svm_legacyIO_setprot(VCPU *vcpu, u32 port, u32 prottype);
 
 
 

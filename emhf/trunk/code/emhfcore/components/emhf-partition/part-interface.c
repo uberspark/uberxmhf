@@ -55,3 +55,7 @@ void emhf_partition_start(VCPU *vcpu){
 	emhf_partition_arch_start(vcpu);
 }
 
+//set legacy I/O protection for the partition
+void emhf_partition_legacyIO_setprot(VCPU *vcpu, u32 port, u32 prottype){
+	emhf_partition_arch_legacyIO_setprot(vcpu, port, prottype);
+}

@@ -76,3 +76,12 @@ void emhf_partition_arch_start(VCPU *vcpu){
 	
 }
 
+//set legacy I/O protection for the partition
+void emhf_partition_arch_legacyIO_setprot(VCPU *vcpu, u32 port, u32 prottype){
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
+		emhf_partition_arch_x86svm_legacyIO_setprot(vcpu, port, prottype);
+	}else{ //CPU_VENDOR_INTEL
+		emhf_partition_arch_x86vmx_legacyIO_setprot(vcpu, port, prottype);
+	}
+	
+}
