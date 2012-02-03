@@ -300,6 +300,11 @@ void emhf_partition_arch_x86svm_start(VCPU *vcpu){
 	
 //set legacy I/O protection for the partition
 void emhf_partition_arch_x86svm_legacyIO_setprot(VCPU *vcpu, u32 port, u32 prottype){
-	
-	
+	u8 *bit_vector = (u8 *)vcpu->svm_vaddr_iobitmap;
+	u32 byte_offset, bit_offset;
+
+	byte_offset = (port) / 8;
+	bit_offset = (port) & 7;
+	bit_vector[byte_offset] |= (1 << bit_offset);	
 }
+

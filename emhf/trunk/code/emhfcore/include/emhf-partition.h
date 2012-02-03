@@ -42,6 +42,13 @@
 
 //partition legacy I/O protection types
 #define	PART_LEGACYIO_NOACCESS		(1)		//no access
+#define	PART_LEGACYIO_READWRITE		(2)		//read and write access
+
+//partition legacy I/O port sizes
+#define PART_LEGACYIO_PORTSIZE_BYTE		(1)		//8-bit port
+#define PART_LEGACYIO_PORTSIZE_WORD		(2)		//16-bit port
+#define PART_LEGACYIO_PORTSIZE_DWORD	(4)		//32-bit port
+
 
 #ifndef __ASSEMBLY__
 
