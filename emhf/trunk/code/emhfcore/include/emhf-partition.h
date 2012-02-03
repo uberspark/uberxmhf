@@ -92,6 +92,11 @@ void emhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu);
 //start executing the partition and guest OS
 void emhf_partition_arch_x86vmx_start(VCPU *vcpu);
 
+//low-level HVM start routine (part-x86vmx-sup.S)
+u32 __vmx_start_hvm(void);
+
+
+
 //----------------------------------------------------------------------
 //x86svm SUBARCH. INTERFACES
 //----------------------------------------------------------------------
