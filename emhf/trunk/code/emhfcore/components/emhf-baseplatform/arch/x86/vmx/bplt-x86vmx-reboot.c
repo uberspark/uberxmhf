@@ -43,6 +43,7 @@
 
 //VMX specific platform reboot
 void emhf_baseplatform_arch_x86vmx_reboot(VCPU *vcpu){
+	(void)vcpu;
 
 	//shut VMX off, else CPU ignores INIT signal!
 	__asm__ __volatile__("vmxoff \r\n");

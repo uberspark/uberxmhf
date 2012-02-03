@@ -42,6 +42,7 @@
 
 //SVM specific platform reboot
 void emhf_baseplatform_arch_x86svm_reboot(VCPU *vcpu){
+	(void)vcpu;
 	//fall back on generic x86 reboot
 	emhf_baseplatform_arch_x86_reboot();
 }
