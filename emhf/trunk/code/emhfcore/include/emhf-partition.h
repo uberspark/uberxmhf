@@ -71,7 +71,7 @@ void emhf_partition_setupguestOSstate(VCPU *vcpu);
 void emhf_partition_start(VCPU *vcpu);
 
 //set legacy I/O protection for the partition
-void emhf_partition_legacyIO_setprot(VCPU *vcpu, u32 port, u32 prottype);
+void emhf_partition_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype);
 
 
 //----------------------------------------------------------------------
@@ -87,7 +87,7 @@ void emhf_partition_arch_setupguestOSstate(VCPU *vcpu);
 void emhf_partition_arch_start(VCPU *vcpu);
 
 //set legacy I/O protection for the partition
-void emhf_partition_arch_legacyIO_setprot(VCPU *vcpu, u32 port, u32 prottype);
+void emhf_partition_arch_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype);
 
 
 //----------------------------------------------------------------------
@@ -110,7 +110,7 @@ void emhf_partition_arch_x86vmx_start(VCPU *vcpu);
 u32 __vmx_start_hvm(void);
 
 //set legacy I/O protection for the partition
-void emhf_partition_arch_x86vmx_legacyIO_setprot(VCPU *vcpu, u32 port, u32 prottype);
+void emhf_partition_arch_x86vmx_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype);
 
 
 //----------------------------------------------------------------------
@@ -129,7 +129,7 @@ void emhf_partition_arch_x86svm_start(VCPU *vcpu);
 void __svm_start_hvm(VCPU *vcpu, u32 vmcb_paddr);
 
 //set legacy I/O protection for the partition
-void emhf_partition_arch_x86svm_legacyIO_setprot(VCPU *vcpu, u32 port, u32 prottype);
+void emhf_partition_arch_x86svm_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype);
 
 
 
