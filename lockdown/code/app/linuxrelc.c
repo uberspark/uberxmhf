@@ -2,7 +2,7 @@
 // linux kernel/initrd relocate and bootstrap
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <target.h>
+#include <emhf.h>
 
 /*
 	grub_debug
@@ -96,7 +96,7 @@ void relocate_kernel(u32 vmlinuz_base, u32 vmlinuz_size,
 	struct linux_setup_header *h;
   u32 setup_size, setup_base= SETUP_RELOCATE;
 	u32 system_size, system_base = SYSTEM_RELOCATE;
-  u32 x;
+  //u32 x;
   
 	//initialize linux kernel header located at OFFSET from vmlinuz_base
 	h = (struct linux_setup_header*)(vmlinuz_base + OFFSET);

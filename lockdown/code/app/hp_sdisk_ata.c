@@ -4,7 +4,7 @@
 // ata disk
 // author: amit vasudevan (amitvasudevan@acm.org) 
 
-#include <target.h>
+#include <emhf.h>
 
 #include <lockdown.h>
 #include <ata-atapi.h>
