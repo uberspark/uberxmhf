@@ -2,13 +2,13 @@
 //implements windows OS specific approved execution in the trusted environment in lockdown
 //author(s): amit vasudevan (amitvasudevan@acm.org)
 
-#include <target.h>
+#include <emhf.h>
 
 #include <lockdown.h>
 
 #include <approvedexec.h>
 #include <exe_pe.h>
-#include <sha1.h>
+//#include <sha1.h>
 
 
 #if 0
@@ -38,16 +38,16 @@ u32 windows_unrelocate_cornercases(u32 vaddr){
 //assumption: the vaddr that is passed to us is a fully qualified vaddr,
 //in other words if paging is disabled, then the vaddr is the Cs.base + offset
 u32 windows_getphysicaladdress(VCPU *vcpu, u32 vaddr){
-if(vcpu->guest_unrestricted){
+//if(vcpu->guest_unrestricted){
 	if( (vcpu->vmcs.guest_CR0 & CR0_PE) &&
 			(vcpu->vmcs.guest_CR0 & CR0_PG) ){	
 		//protected mode and paging enabled, so walk guest page tables
-		return emhf_guestpgtbl_walk(vcpu, vaddr);
+		return (u32)(u32 *)emhf_smpguest_walk_pagetables(vcpu, vaddr);
 	}else{	//paging is disabled
 		return vaddr;
 	}
 
-}else{
+/*}else{
 	if( (vcpu->guest_currentstate & GSTATE_PROTECTEDMODE) &&
 			(vcpu->guest_currentstate & GSTATE_PROTECTEDMODE_PG) ){	
 		//protected mode and paging enabled, so walk guest page tables
@@ -55,12 +55,13 @@ if(vcpu->guest_unrestricted){
 	}else{	//paging is disabled
 		return vaddr;
 	}
-}
+}*/
 }
 
 //------------------------------------------------------------------------------
 //gets the virtual address of the physical address paddr
 u32 windows_getvirtualaddress(VCPU *vcpu, u32 paddr){
+	(void)paddr;
 	//if( (vcpu->guest_currentstate & GSTATE_PROTECTEDMODE) &&
 	//		(vcpu->guest_currentstate & GSTATE_PROTECTEDMODE_PG) ){	
 		//protected mode and paging enabled
@@ -255,6 +256,8 @@ u32 windows_unrelocatepage_processrelocations(VCPU *vcpu, u32 imagebase, u32 ori
 	RELOCTYPEOFFSET *relocTypeOffsets;
 	u32 relocvalue, *relocaddr;
 	
+	(void)vcpu;
+	
 	for(i=0; i < ((relocEntry->SizeOfBlock-8)/sizeof(unsigned short int)); i++){
 		relocTypeOffsets = (RELOCTYPEOFFSET *)( (u8 *)relocEntry_relocInfo + (i*2));
 		//if(vaddr == 0x8084d426)
@@ -292,16 +295,19 @@ u32 windows_unrelocatepage(VCPU *vcpu, IMAGE_NT_HEADERS32 *ntHeader, u32 imageba
 	u8 *relocEntry_relocInfo=NULL;
 	u8 *relocEntryPrevious_relocInfo=NULL;
 	u8 *relocEntryNext_relocInfo=NULL;
-	u32 current_size=0, prev_size=0;
+	u32 current_size=0;
+	//u32 prev_size=0;
 	u32 paligned_vaddr = PAGE_ALIGN_4K(vaddr); 
 	u32 found_relocEntry=0;
 	u32 i;
 	u32 reloc_size, reloc_vaddr;
 	u32 originalimagebase=ntHeader->OptionalHeader.ImageBase;
 	u32 retval;
-	u32 prevpage_paddr;
+	//u32 prevpage_paddr;
 	RELOCTYPEOFFSET *relocTypeOffsets;
 	u32 needPreviousPage=0, needNextPage=0;
+	
+	
 	
 	AX_DEBUG(("\n windows_unrelocatepage: imagebase=0x%08x, vaddr=0x%08x, paligned=0x%08x", imagebase, vaddr, paligned_vaddr));
 	AX_DEBUG(("\n inputPage(prev, curr, next)=0x%08x, 0x%08x, 0x%08x", (u32)inputPagePrevious, (u32)inputPage, (u32)inputPageNext));
@@ -383,12 +389,12 @@ u32 windows_unrelocatepage(VCPU *vcpu, IMAGE_NT_HEADERS32 *ntHeader, u32 imageba
 	}
 	
 	//found base relocation entry and info for inputPage
-	AX_DEBUG(("\n relocEntry: rva=0x%08x, size=0x%08x", relocEntry->VirtualAddress, relocEntry->SizeOfBlock));
+	AX_DEBUG(("\n relocEntry: rva=0x%08x, size=0x%08x", (u32)relocEntry->VirtualAddress, (u32)relocEntry->SizeOfBlock));
 	if(relocEntryPrevious){
-		AX_DEBUG(("\n relocEntryPrevious: rva=0x%08x, size=0x%08x", relocEntryPrevious->VirtualAddress, relocEntryPrevious->SizeOfBlock));
+		AX_DEBUG(("\n relocEntryPrevious: rva=0x%08x, size=0x%08x", (u32)relocEntryPrevious->VirtualAddress, (u32)relocEntryPrevious->SizeOfBlock));
 	}
 	if(relocEntryNext){
-		AX_DEBUG(("\n relocEntryNext: rva=0x%08x, size=0x%08x", relocEntryNext->VirtualAddress, relocEntryNext->SizeOfBlock));
+		AX_DEBUG(("\n relocEntryNext: rva=0x%08x, size=0x%08x", (u32)relocEntryNext->VirtualAddress, (u32)relocEntryNext->SizeOfBlock));
 	}
 		
 	memset(&unrelocateBuffer, 0, (PAGE_SIZE_4K *3));
@@ -485,15 +491,16 @@ u8 outputPage[PAGE_SIZE_4K];
 u32 windows_verifycodeintegrity(VCPU *vcpu, u32 paddr, u32 vaddrfromcpu){
 	u32 vaddr, paligned_vaddr;
 	u32 imagebase, retval;
-	u8 *p;	
+	//u8 *p;	
 	IMAGE_NT_HEADERS32 *ntHeader;
-	int i;
+	//int i;
 	u32 paligned_paddr;
 	u32 paddr_prevpage, paddr_nextpage;
 	u32 paligned_paddr_prevpage, paligned_paddr_nextpage;
 
+	(void)vaddrfromcpu;
 	
-__step1:	
+//__step1:	
 	//if an instruction straddles page boundaries, the nested/extended
 	//page-fault intercept can deliver a physical address that has a 
 	//forward bias. for example, if the faulting paddr=0x0fff and the instruction
@@ -515,21 +522,21 @@ __step1:
 	paligned_paddr = PAGE_ALIGN_4K(paddr);
 
 	
-__step2:	
+//__step2:	
 	//check for valid PE image if in protected mode
-if(vcpu->guest_unrestricted){
+//if(vcpu->guest_unrestricted){
 	if(! (vcpu->vmcs.guest_CR0 & CR0_PE) ){
 		AX_DEBUG(("\nstep-2: SKIPPED - in real mode"));
 		retval = 0;
 		goto __step5;
 	}
-}else{
+/*}else{
 	if(! (vcpu->guest_currentstate & GSTATE_PROTECTEDMODE) ){
 		AX_DEBUG(("\nstep-2: SKIPPED - in real mode"));
 		retval = 0;
 		goto __step5;
 	}
-}
+}*/
 	
 	imagebase=windows_scanmzpe(vcpu, vaddr, &ntHeader);
 	
@@ -542,10 +549,10 @@ if(vcpu->guest_unrestricted){
 	//printf("\nSQ: imagebase=0x%08x, vaddr=0x%08x", imagebase, vaddr);
 	
 	AX_DEBUG(("\nstep-2: PE imagebase(load=0x%08x, orig=0x%08x), image size=0x%08x", 
-		imagebase, ntHeader->OptionalHeader.ImageBase, ntHeader->OptionalHeader.SizeOfImage));
+		(u32)imagebase, (u32)ntHeader->OptionalHeader.ImageBase, (u32)ntHeader->OptionalHeader.SizeOfImage));
 
 
-__step3:	
+//__step3:	
 	//unrelocate the memory page of the PE image if needed
 	if(imagebase == ntHeader->OptionalHeader.ImageBase){
 		AX_DEBUG(("\nstep-3: SKIPPED - PE image loaded at preferred adress, no relocation needed"));
@@ -579,8 +586,8 @@ __step3:
 __step4:	
 	//verify the memory page conents with hash list 
 	{
-		extern struct hashinfo hashlist_full[];
-		extern struct hashinfo hashlist_partial[];
+		//extern struct hashinfo hashlist_full[];
+		//extern struct hashinfo hashlist_partial[];
 		u32 index, fullhash;
 		retval=approvedexec_checkhashes(paligned_paddr, &index, &fullhash);
 
