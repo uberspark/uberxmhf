@@ -2,11 +2,11 @@
 // emhf application main module
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <target.h>
+#include <emhf.h>
 
-#include "./include/lockdown.h"
-#include "./include/acpi.h"
-#include "./include/ata-atapi.h"
+#include <lockdown.h>
+#include <acpi.h>
+#include <ata-atapi.h>
 
 #if defined(__LDN_HYPERSWITCHING__)
 u32 acpi_control_portnum=0;

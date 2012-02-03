@@ -1,9 +1,9 @@
 // ACPI interface implementation
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <target.h>
+#include <emhf.h>
 
-#include "./include/acpi.h"
+#include <acpi.h>
 
 
 //------------------------------------------------------------------------------
@@ -51,7 +51,7 @@ void ACPIInitializeRegisters(void){
 	u8 fadt_found=0;
 	ACPI_GAS *gas;
 	
-	rsdp=(ACPI_RSDP *)ACPIGetRSDP();
+	rsdp=(ACPI_RSDP *)acpi_getRSDP();
 	if(!rsdp){
 		printf("\nSystem is not ACPI Compliant (RSDP unavailable!)");
 		HALT();
@@ -187,6 +187,7 @@ void ACPIInitializeRegisters(void){
 
 }
 
+/*
 //------------------------------------------------------------------------------
 u32 _ACPIGetRSDPComputeChecksum(u32 spaddr, u32 size){
   char *p;
@@ -242,7 +243,7 @@ ACPI_RSDP * ACPIGetRSDP(void){
     return rsdp;
   
   return (ACPI_RSDP *)NULL;  
-}
+}*/
 //------------------------------------------------------------------------------
 
 //non-zero is success, else no ACPI
