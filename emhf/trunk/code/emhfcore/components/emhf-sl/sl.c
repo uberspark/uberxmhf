@@ -172,6 +172,10 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		rpb->XtGuestOSBootModuleBase=slpb.runtime_osbootmodule_base;
 		rpb->XtGuestOSBootModuleSize=slpb.runtime_osbootmodule_size;
 
+		//pass optional app module if any
+		rpb->runtime_appmodule_base = slpb.runtime_appmodule_base;
+		rpb->runtime_appmodule_size = slpb.runtime_appmodule_size;
+
 		//pass command line configuration forward 
 		//rpb->uart_config = g_uart_config;
 		memcpy((void *)&rpb->RtmOptions, (void *)&slpb.options, sizeof(slpb.options));
