@@ -140,8 +140,8 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
   	
 	appParamBlock.bootsector_ptr = (u32)rpb->XtGuestOSBootModuleBase;
   	appParamBlock.bootsector_size = (u32)rpb->XtGuestOSBootModuleSize;
-  	appParamBlock.optionalmodule_ptr = (u32)rpb->XtGuestOSBootModuleBaseSup1;
-  	appParamBlock.optionalmodule_size = (u32)rpb->XtGuestOSBootModuleSizeSup1;
+  	appParamBlock.optionalmodule_ptr = (u32)rpb->runtime_appmodule_base;
+  	appParamBlock.optionalmodule_size = (u32)rpb->runtime_appmodule_size;
 	appParamBlock.runtimephysmembase = (u32)rpb->XtVmmRuntimePhysBase;  
 
   	//call app main
