@@ -42,14 +42,30 @@
 
 #define	QUIESCE_HYPERCALL		0x44550002
 
-/* XXX: this is intel specific at the moment */
-static void do_quiescehypercall(void){
-	asm volatile ("vmcall\r\n"
-             : /* no output registers */
-             : "b" (QUIESCE_HYPERCALL)
-             : "memory" 
-             );
-}
+
+#if defined(__X86VMX__)
+	static void do_quiescehypercall(void){
+		asm volatile ("vmcall\r\n"
+				 : /* no output registers */
+				 : "b" (QUIESCE_HYPERCALL)
+				 : "memory" 
+				 );
+	}
+#elif defined(__X86SVM__)
+	static void do_quiescehypercall(void){
+		asm volatile ("vmmcall\r\n"
+				 : /* no output registers */
+				 : "b" (QUIESCE_HYPERCALL)
+				 : "memory" 
+				 );
+	}
+
+#else
+
+#error MUST choose proper TARGET_CPU in Makefile (x86svm or x86vmx)
+
+#endif
+
 
 int main(void){
 	printf("\nStarting qcontrol...");
