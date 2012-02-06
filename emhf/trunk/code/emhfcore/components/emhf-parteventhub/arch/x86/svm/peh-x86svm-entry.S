@@ -76,13 +76,6 @@ emhf_parteventhub_arch_x86svm_entry:
 	//step-1: save all CPU GPRs
 	SAVEALL_GPRS
 	
-/*	//[debug]
-lp1:
-	push 0x61
-	call dbg_x86_uart_putc
-	add	$0x4, %esp
-	jmp lp1*/
-	
 	//step-2: get hold of pointer to saved GPRs on stack
 	movl %esp, %eax
 	

@@ -138,8 +138,6 @@ void emhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 	
 	printf("\n%s: exception 0x%02x - handing off...", __FUNCTION__, vector);
 
-	while(1);
-	
 	if(cpu_vendor == CPU_VENDOR_AMD){
 		vcpu=_svm_getvcpu();
 	}else{	//CPU_VENDOR_INTEL

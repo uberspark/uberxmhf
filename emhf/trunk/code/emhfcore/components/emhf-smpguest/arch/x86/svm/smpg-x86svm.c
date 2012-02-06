@@ -159,8 +159,6 @@ static void _svm_send_quiesce_signal(VCPU *vcpu, struct vmcb_struct __attribute_
   
   //restore icr high
   *icr_high = prev_icr_high_value;
-  
-  while(1);
     
   printf("\n%s: CPU(0x%02x): NMIs fired!", __FUNCTION__, vcpu->id);
 }
