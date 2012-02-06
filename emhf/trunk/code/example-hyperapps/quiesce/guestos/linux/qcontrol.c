@@ -47,4 +47,5 @@ int main(void){
 	
 	
 	printf("\nDone.");
+	printf("\n");
 }
