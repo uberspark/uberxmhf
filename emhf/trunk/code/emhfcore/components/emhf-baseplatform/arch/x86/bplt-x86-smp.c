@@ -185,6 +185,11 @@ void emhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
   }
 	
    	
+  //[debug] dump IDT 
+  {
+	printf("\nCPU(0x%02x): emhf_xcphandler_idt =0x%08x", vcpu->id, &emhf_xcphandler_idt);
+  }
+   	
   //invoke EMHF runtime component main function for this CPU
   //TODO: don't reference rpb->isEarlyInit directly
   emhf_runtime_main(vcpu, rpb->isEarlyInit);	
