@@ -143,6 +143,9 @@ void emhf_baseplatform_arch_smpinitialize(void){
 
 }
 
+
+static u8 idtdesc[6];
+
 //common function which is entered by all CPUs upon SMP initialization
 //note: this is specific to the x86 architecture backend
 void emhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
@@ -188,6 +191,10 @@ void emhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
   //[debug] dump IDT 
   {
 	printf("\nCPU(0x%02x): emhf_xcphandler_idt =0x%08x", vcpu->id, &emhf_xcphandler_idt);
+	asm volatile("sidt %0":"=m" (idtdesc));
+	printf("\nCPU(0x%02x): limit=0x%04x, base=0x%08x", vcpu->id, *((u16 *)&idtdesc),
+			*((u32 *)((u32)&idtdesc+2)));
+
   }
    	
   //invoke EMHF runtime component main function for this CPU
