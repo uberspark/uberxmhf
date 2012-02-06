@@ -39,6 +39,8 @@
 
 #include <emhf.h>
 
+#define	QUIESCE_HYPERCALL		0x44550002
+
 // application main
 u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
   (void)apb;	//unused
@@ -48,10 +50,20 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 
 //returns APP_SUCCESS if we handled the hypercall else APP_ERROR
 u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
-			u32 status=APP_SUCCESS;
-			(void)r; //unused
-			printf("\nCPU(0x%02x): hypercall unhandled, simply returning!", vcpu->id);
-			return status;
+	u32 status=APP_SUCCESS;
+	u32 hypercall_number = r->ebx;
+
+	switch(hypercall_number){
+		case QUIESCE_HYPERCALL:
+			printf("\nCPU(0x%02x): quiesce test hypercall received...", vcpu->id);
+			break;
+			
+		default:
+`			printf("\nCPU(0x%02x): unhandled hypercall (0x%08x)!", vcpu->id, r->ebx);
+			break;
+	}
+	
+	return status;
 }
 
 //handles EMHF shutdown callback
