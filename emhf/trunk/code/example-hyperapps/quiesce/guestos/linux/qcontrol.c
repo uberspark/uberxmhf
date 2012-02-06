@@ -42,10 +42,19 @@
 
 #define	QUIESCE_HYPERCALL		0x44550002
 
+/* XXX: this is intel specific at the moment */
+static void do_quiescehypercall(void){
+	asm volatile ("vmcall\r\n"
+             : /* no output registers */
+             : "a" (QUIESCE_HYPERCALL)
+             : "memory" 
+             );
+}
+
 int main(void){
 	printf("\nStarting qcontrol...");
 	
-	
+	do_quiescehypercall();
 	printf("\nDone.");
 	printf("\n");
 }
