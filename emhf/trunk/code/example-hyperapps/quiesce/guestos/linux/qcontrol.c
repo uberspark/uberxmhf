@@ -46,7 +46,7 @@
 static void do_quiescehypercall(void){
 	asm volatile ("vmcall\r\n"
              : /* no output registers */
-             : "a" (QUIESCE_HYPERCALL)
+             : "b" (QUIESCE_HYPERCALL)
              : "memory" 
              );
 }
