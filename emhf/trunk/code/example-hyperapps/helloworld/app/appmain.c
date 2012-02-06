@@ -58,7 +58,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 //note: should not return
 void emhf_app_handleshutdown(VCPU *vcpu, struct regs *r){
 	(void)r; //unused
-	emhf_reboot(vcpu);				
+	emhf_baseplatform_reboot(vcpu);				
 }
 
 //handles h/w pagetable violations
