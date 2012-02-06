@@ -59,7 +59,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 			break;
 			
 		default:
-`			printf("\nCPU(0x%02x): unhandled hypercall (0x%08x)!", vcpu->id, r->ebx);
+			printf("\nCPU(0x%02x): unhandled hypercall (0x%08x)!", vcpu->id, r->ebx);
 			break;
 	}
 	
