@@ -118,7 +118,7 @@ XtRtmEmitIdtStub 1f
 	.align 16
 	.global emhf_xcphandler_idt_start
 	emhf_xcphandler_idt_start:
-	.fill	EMHF_XCPHANDLER_IDTSIZE, 1, 0
+	.fill	1024, 1, 0
 	emhf_xcphandler_idt_end:
 
 
