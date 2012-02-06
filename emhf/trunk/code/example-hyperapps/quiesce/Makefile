@@ -3,7 +3,7 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # change this to whatever you want your EMHF app to be called
-export TARGET_ARCHIVE = ../emhfapp_helloworld.a
+export TARGET_ARCHIVE = ../emhfapp_quiesce.a
 
 # generate app INCLUDE and OBJECT directories
 export APP_INCLUDEDIR = $(CURDIR)/app/include

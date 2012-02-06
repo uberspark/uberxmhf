@@ -42,7 +42,7 @@
 // application main
 u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
   (void)apb;	//unused
-  printf("\nCPU(0x%02x): Hello world from EMHF hyperapp!", vcpu->id);
+  printf("\nCPU(0x%02x): Hello world from Quiesce EMHF hyperapp!", vcpu->id);
   return APP_INIT_SUCCESS;  //successful
 }
 
