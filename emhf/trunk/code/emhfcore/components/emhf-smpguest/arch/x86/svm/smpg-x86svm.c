@@ -139,7 +139,7 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
 
 
 static void _svm_send_quiesce_signal(VCPU *vcpu, struct vmcb_struct __attribute__((unused)) *vmcb){
-  //volatile u32 *icr_low = (u32 *)(0xFEE00000 + 0x300);
+  volatile u32 *icr_low = (u32 *)(0xFEE00000 + 0x300);
   volatile u32 *icr_high = (u32 *)(0xFEE00000 + 0x310);
   u32 icr_high_value= 0xFFUL << 24;
   u32 prev_icr_high_value;

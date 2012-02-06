@@ -269,60 +269,58 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
   struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
   
   vmcb->tlb_control = TLB_CONTROL_NOTHING;
+
+	if(vmcb->exitcode == VMEXIT_NMI){
+		while(1){
+			dbg_x86_uart_putc('X');
+		}
+	}
     
   switch(vmcb->exitcode){
-    //IO interception
- 		case VMEXIT_IOIO:{
-   		_svm_handle_ioio(vcpu, vmcb, r);
-   	}
-   	break;
+		//IO interception
+		case VMEXIT_IOIO:{
+			_svm_handle_ioio(vcpu, vmcb, r);
+		}
+		break;
   
-    //MSR interception
-    case VMEXIT_MSR:{
-      _svm_handle_msr(vcpu, vmcb, r);
-    }
-    break;
+		//MSR interception
+		case VMEXIT_MSR:{
+		  _svm_handle_msr(vcpu, vmcb, r);
+		}
+		break;
     
-    //this only gets called on BSP
-    //case VMEXIT_SWINT:{
-		//	_svm_handle_swint(vcpu, vmcb, r);
-		//}
-		//break;
-
-	  case VMEXIT_NPF:{
-			_svm_handle_npf(vcpu, r);
-    }
+		//Nested Page Fault (NPF)
+		case VMEXIT_NPF:{
+		 _svm_handle_npf(vcpu, r);
+		}
 		break;
 
- 		case VMEXIT_EXCEPTION_DB:{
-     ASSERT(vcpu->isbsp == 1); //LAPIC SIPI detection only happens on BSP
-     //svm_lapic_access_dbexception(vcpu, r);
-     emhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
-     }
-     break;
+		case VMEXIT_EXCEPTION_DB:{
+		ASSERT(vcpu->isbsp == 1); //LAPIC SIPI detection only happens on BSP
+		//svm_lapic_access_dbexception(vcpu, r);
+		emhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
+		}
+		break;
 
 
-    case VMEXIT_INIT:{
-      printf("\nCPU(0x%02x): INIT intercepted, halting.", vcpu->id);
-      printf("\nGuest CS:EIP=0x%04x:0x%08x", (u16)vmcb->cs.sel, (u32)vmcb->rip);
-      {
-        u8 *code;
-        u32 paddr;
-        int i;
-        paddr= (u32)emhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)vmcb->rip); 
-        code = (u8 *)paddr; 
-        printf("\nCode physical address=0x%08x\n", (u32)code);
-        for(i=0; i < 16; i++)
-          printf("0x%02x ", code[i]);
-        HALT();
-      }
-      
-      //initspin:
-      //  goto initspin;
-    }
-    break;
+		case VMEXIT_INIT:{
+		printf("\nCPU(0x%02x): INIT intercepted, halting.", vcpu->id);
+		printf("\nGuest CS:EIP=0x%04x:0x%08x", (u16)vmcb->cs.sel, (u32)vmcb->rip);
+			{
+				u8 *code;
+				u32 paddr;
+				int i;
+				paddr= (u32)emhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)vmcb->rip); 
+				code = (u8 *)paddr; 
+				printf("\nCode physical address=0x%08x\n", (u32)code);
+				for(i=0; i < 16; i++)
+					printf("0x%02x ", code[i]);
+				HALT();
+			}
+		}
+		break;
 
-    case VMEXIT_VMMCALL:{
+		case VMEXIT_VMMCALL:{
 			//check to see if this is a hypercall for INT 15h hooking
 			if(vmcb->cs.base == (VMX_UG_E820HOOK_CS << 4) &&
 				vmcb->rip == VMX_UG_E820HOOK_IP){
@@ -337,20 +335,20 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 					printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", vcpu->id, r->eax);
 					HALT();
 				}
-      	vmcb->rip += 3;
+				vmcb->rip += 3;
 			}
-    }
-    break;
+		}
+		break;
 
-    case VMEXIT_NMI:{
-        _svm_handle_nmi(vcpu, vmcb, r);
-      }
-      break;
+		case VMEXIT_NMI:{
+			_svm_handle_nmi(vcpu, vmcb, r);
+		}
+		break;
     
 		default:{
 				printf("\nUnhandled Intercept:0x%08llx", vmcb->exitcode);
 				printf("\nCS:EIP=0x%04x:0x%08x", (u16)vmcb->cs.sel, (u32)vmcb->rip);
-        HALT();
+				HALT();
 		}
 	}	//end switch(vmcb->exitcode)	
 
