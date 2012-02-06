@@ -131,11 +131,21 @@ static void _svm_handle_npf(VCPU *vcpu, struct regs *r){
 // note: we use NMI for core quiescing, we simply inject the others back
 // into the guest in the normal case
 static void _svm_handle_nmi(VCPU *vcpu, struct vmcb_struct __attribute__((unused)) *vmcb, struct regs __attribute__((unused)) *r){
+	u32 sidt_value;
     //now we adopt a simple trick, this NMI is pending, the only
     //way we can dismiss it is if we set GIF=0 and make GIF=1 so that
     //the core thinks it must dispatch the pending NMI :p
     //set nmiinhvm to 1 since this NMI was when the core was in HVM 
     vcpu->nmiinhvm=1;
+    
+    printf("\nCPU(0x%02x): preparing to trigger NMI in CPU...", vcpu->id);
+    //dump IDT contents
+    {
+		asm volatile("sidt %0":"=m" (sidt_value));
+		printf("\nCPU(0x%02x): IDT=0x%08x", vcpu->id, sidt_value);
+		HALT();
+	}
+    
     __asm__ __volatile__("clgi\r\n");
     __asm__ __volatile__("stgi\r\n"); //at this point we get control in
                                       //our exception handler which handles the rest
