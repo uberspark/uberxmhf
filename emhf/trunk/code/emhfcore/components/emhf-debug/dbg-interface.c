@@ -47,6 +47,8 @@ uint8_t g_log_level=LOG_LEVEL_NONE;
 static volatile u32 printf_lock=1;
 //static char printk_prefix[16] = "";
 
+#if defined (__DEBUG_SERIAL__) || defined (__DEBUG_VGA__)
+
 void dvprintf(u32 log_type, const char *fmt, va_list args)
 {
     if (log_type & ENABLED_LOG_TYPES) {
@@ -77,7 +79,7 @@ void print_hex(const char *prefix, const void *prtptr, size_t size)
     printf("\n");
 }
 
-/* #endif */
+#endif 
 
 void emhf_debug_init(char *params){
 	emhf_debug_arch_init(params);

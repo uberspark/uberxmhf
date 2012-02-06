@@ -37,6 +37,7 @@
 
 void emhf_debug_arch_init(char *params)
 {
+	(void)params;
 #ifdef __DEBUG_SERIAL__
   dbg_x86_uart_init(params);
 #endif
@@ -48,6 +49,7 @@ void emhf_debug_arch_init(char *params)
 
 void emhf_debug_arch_putc(int c)
 {
+	(void)c;
 #ifdef __DEBUG_SERIAL__
   dbg_x86_uart_putc(c);
 #endif
@@ -59,6 +61,7 @@ void emhf_debug_arch_putc(int c)
 
 void emhf_debug_arch_putstr(const char *str)
 {
+	(void)str;
 #ifdef __DEBUG_SERIAL__
   dbg_x86_uart_putstr(str);
 #endif

@@ -323,7 +323,7 @@ void hashandprint(const char* prefix, const u8 *bytes, size_t len) {
     //printf("\n%s (%u)", __FUNCTION__, __LINE__);
     //end = rdtsc64();
     //printf("\n%s (%u)", __FUNCTION__, __LINE__);
-    print_hex(prefix, digest, SHA_DIGEST_LENGTH);
+    //print_hex(prefix, digest, SHA_DIGEST_LENGTH);
     //printf("\n[PERF] hashandprint: elapsed CPU cycles 0x%016llx", end-start);    
 
     /* Simulate PCR 17 value on AMD processor */
@@ -337,6 +337,6 @@ void hashandprint(const char* prefix, const u8 *bytes, size_t len) {
         SHA1_Update(&ctx, digest, SHA_DIGEST_LENGTH);
         SHA1_Final(pcr17, &ctx);
 
-        print_hex("[AMD] Expected PCR-17: ", pcr17, SHA_DIGEST_LENGTH);
+        //print_hex("[AMD] Expected PCR-17: ", pcr17, SHA_DIGEST_LENGTH);
     }    
 }

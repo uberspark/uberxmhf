@@ -125,6 +125,7 @@ bool emhf_sl_arch_integrity_check(u8* runtime_base_addr, size_t runtime_len) {
     int ret;
     u32 locality = EMHF_TPM_LOCALITY_PREF; /* target.h */
     tpm_pcr_value_t pcr17, pcr18;    
+	(void)g_sl_gold;
 
     print_hex("SL: Golden Runtime SHA-1: ", g_sl_gold.sha_runtime, SHA_DIGEST_LENGTH);
 

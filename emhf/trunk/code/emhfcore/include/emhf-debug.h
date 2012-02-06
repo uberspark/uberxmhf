@@ -140,7 +140,7 @@ void emhf_debug_init(char *params);
 #else
 	/* #define printf(format, args...) while(0) */
 	#define dprintf(format, args...) while(0)
-	#define dvprintf(u32 log_type, const char *fmt, va_list args) while(0)
+	#define dvprintf(log_type, fmt, args) while(0)
 	#define print_hex(prefix, prtptr, size) while(0)
 #endif
 
