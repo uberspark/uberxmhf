@@ -137,6 +137,8 @@ void emhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 	VCPU *vcpu;
 	
 	printf("\n%s: exception 0x%02x - handing off...", __FUNCTION__, vector);
+
+	while(1);
 	
 	if(cpu_vendor == CPU_VENDOR_AMD){
 		vcpu=_svm_getvcpu();
@@ -146,6 +148,8 @@ void emhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 	
 	printf("\nCPU(0x%02x): XtRtmExceptionHandler: Exception=0x%08X", vcpu->id, vector);
 	printf("\nCPU(0x%02x): ESP=0x%08x", vcpu->id, r->esp);
+	
+	
 	if(vector == 0x2){
 		emhf_smpguest_arch_x86_eventhandler_nmiexception(vcpu, r);
 		return;

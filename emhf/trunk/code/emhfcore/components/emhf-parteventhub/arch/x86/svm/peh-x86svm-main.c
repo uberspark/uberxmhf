@@ -270,11 +270,11 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
   
   vmcb->tlb_control = TLB_CONTROL_NOTHING;
 
-	if(vmcb->exitcode == VMEXIT_NMI){
+/*	if(vmcb->exitcode == VMEXIT_NMI){
 		while(1){
 			dbg_x86_uart_putc('X');
 		}
-	}
+	}*/
     
   switch(vmcb->exitcode){
 		//IO interception
