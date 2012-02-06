@@ -191,6 +191,8 @@ void emhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
   //[debug] dump IDT 
   {
 	printf("\nCPU(0x%02x): emhf_xcphandler_idt =0x%08x", vcpu->id, &emhf_xcphandler_idt);
+	printf("\nCPU(0x%02x): emhf_xcphandler_idt limit=0x%04x, base=0x%08x", vcpu->id, *((u16 *)&emhf_xcphandler_idt),
+			*((u32 *)((u32)&emhf_xcphandler_idt+2)));
 	asm volatile("sidt %0\r\n":"=m" (idtdesc));
 	printf("\nCPU(0x%02x): IDT limit=0x%04x, base=0x%08x", vcpu->id, *((u16 *)&idtdesc),
 			*((u32 *)((u32)&idtdesc+2)));

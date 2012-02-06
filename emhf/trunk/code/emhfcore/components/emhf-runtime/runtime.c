@@ -82,6 +82,8 @@ void emhf_runtime_entry(void){
 	//[debug] dump IDT 
 	  {
 		printf("\nRuntime: emhf_xcphandler_idt =0x%08x", &emhf_xcphandler_idt);
+		printf("\nRuntime: emhf_xcphandler_idt limit=0x%04x, base=0x%08x", *((u16 *)&emhf_xcphandler_idt),
+			*((u32 *)((u32)&emhf_xcphandler_idt+2)));
 		asm volatile("sidt %0\r\n":"=m" (rdesc));
 		printf("\nRuntime: IDT limit=0x%04x, base=0x%08x", *((u16 *)&rdesc),
 				*((u32 *)((u32)&rdesc+2)));
@@ -94,6 +96,15 @@ void emhf_runtime_entry(void){
 
 	//setup EMHF exception handler component
 	emhf_xcphandler_initialize();
+
+
+	//[debug] dump IDT 
+	  {
+		printf("\nRuntime: emhf_xcphandler_idt =0x%08x", &emhf_xcphandler_idt);
+		printf("\nRuntime: emhf_xcphandler_idt limit=0x%04x, base=0x%08x", *((u16 *)&emhf_xcphandler_idt),
+			*((u32 *)((u32)&emhf_xcphandler_idt+2)));
+	  }
+
 
 	//[debug]: test IDT/exception routing
 	//__asm__ __volatile__ ("int $0x03\r\n");
