@@ -107,7 +107,7 @@ void emhf_xcphandler_arch_initialize(void){
 	pexceptionstubs=(u32 *)&emhf_xcphandler_exceptionstubs;
 	
 	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
-		idtentry_t *idtentry=(idtentry_t *)((u32)&emhf_xcphandler_idt+ (i*8));
+		idtentry_t *idtentry=(idtentry_t *)((u32)emhf_xcphandler_arch_get_idt_start()+ (i*8));
 		idtentry->isrLow= (u16)pexceptionstubs[i];
 		idtentry->isrHigh= (u16) ( (u32)pexceptionstubs[i] >> 16 );
 		idtentry->isrSelector = __CS;
