@@ -39,6 +39,8 @@
 //---includes-------------------------------------------------------------------
 #include <emhf.h> 
 
+static u8 rdesc[6];
+
 //---runtime main---------------------------------------------------------------
 void emhf_runtime_entry(void){
 	u32 cpu_vendor;
@@ -53,7 +55,8 @@ void emhf_runtime_entry(void){
 	emhf_debug_init((char *)&rpb->RtmOptions);
 	printf("\nruntime initializing...");
 
-	//initialize basic platform elements
+
+  	//initialize basic platform elements
 	emhf_baseplatform_initialize();
 
 
@@ -74,6 +77,19 @@ void emhf_runtime_entry(void){
 		for(i=0; i < (int)rpb->XtVmmMPCpuinfoNumEntries; i++)
 			printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x", i, g_cpumap[i].isbsp, g_cpumap[i].lapic_id);
 	}
+
+
+	//[debug] dump IDT 
+	  {
+		printf("\nRuntime: emhf_xcphandler_idt =0x%08x", &emhf_xcphandler_idt);
+		asm volatile("sidt %0\r\n":"=m" (rdesc));
+		printf("\nRuntime: IDT limit=0x%04x, base=0x%08x", *((u16 *)&rdesc),
+				*((u32 *)((u32)&rdesc+2)));
+		asm volatile("sgdt %0\r\n":"=m" (rdesc));
+		printf("\nRuntime: GDT limit=0x%04x, base=0x%08x", *((u16 *)&rdesc),
+				*((u32 *)((u32)&rdesc+2)));
+
+	  }
 
 
 	//setup EMHF exception handler component

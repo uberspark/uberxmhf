@@ -44,6 +44,7 @@
 	.extern g_midtable_numentries
 	.extern x_gdt
 	.extern emhf_baseplatform_arch_x86_smpinitialize_commonstart
+	.extern emhf_xcphandler_idt	
 
 //------------------------------------------------------------------------------
 //CODE
