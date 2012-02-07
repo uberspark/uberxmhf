@@ -57,43 +57,12 @@ sleep 1
 
 expect "grub>"
 puts "[string trim $expect_out(buffer) \r\n]" 
-send -h "root (hd0,0)\r\n"
-
-sleep 1
-
-expect "grub>"
-puts "[string trim $expect_out(buffer) \r\n]" 
-send -h "a.bc.def.ghij.klmno.pqrstu.vwxyz01\r\n"
-
-sleep 1
-
-expect "grub>"
-puts "[string trim $expect_out(buffer) \r\n]" 
-send -h "kernel /init-x86.bin serial=115200,8n1,0x3f8\r\n"
-
-sleep 1
-
-expect "grub>"
-puts "[string trim $expect_out(buffer) \r\n]" 
-send -h "module /hypervisor-x86.bin.gz\r\n"
-
-sleep 1
-
-expect "grub>"
-puts "[string trim $expect_out(buffer) \r\n]" 
-send -h "modulenounzip (hd0)+1\r\n"
-
-sleep 1
-
-expect "grub>"
-puts "[string trim $expect_out(buffer) \r\n]" 
-send -h "module /i5_i7_DUAL_SINIT_18.BIN\r\n"
-
-sleep 1
-
-expect "grub>"
-puts "[string trim $expect_out(buffer) \r\n]" 
-send -h "boot\r\n"
+send -h "root (hd0,0)\r\n \
+  kernel /init-x86.bin serial=115200,8n1,0x3f8\r\n \
+  module /hypervisor-x86.bin.gz\r\n \
+  modulenounzip (hd0)+1\r\n \
+  module /i5_i7_DUAL_SINIT_18.BIN\r\n \
+  boot\r\n"
 
 # log each input line 
 #  add a timeStamp at the beginning of each line 
