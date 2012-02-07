@@ -152,7 +152,6 @@ hpt_prot_t pal_prot_of_type(int type);
 hpt_prot_t reg_prot_of_type(int type);
 
 /* several help functions to access guest address space */
-u16 get_16bit_aligned_value_from_guest(const hptw_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr);
 u32 get_32bit_aligned_value_from_guest(const hptw_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr);
 void put_32bit_aligned_value_to_guest(const hptw_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr, u32 value);
 
