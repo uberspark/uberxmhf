@@ -1,0 +1,88 @@
+#!/usr/bin/expect -f 
+# 
+#   Connect up to a device on a serial port 
+#   Time stamp any incoming lines to stdout
+
+       # port is any serial port (omit the /dev/ prefix) 
+       # e.g. ttya, cua0, serialA, serialB, boca01 - boca16
+
+# Jon based this on:
+# http://www.aps.anl.gov/Sectors/33_34/controls/docs/serialWatch.html
+
+if {$argc != 1} { 
+  puts "$argc, $argv" 
+  puts "usage: serial.exp port" 
+  exit 
+}
+
+proc timeStamp {} { 
+  global tcl_version 
+  if {$tcl_version >= 7.5} { 
+    # "clock" command requires Tcl v7.5 or greater 
+    # internal routine a little faster than making a system call 
+    set stamp [clock format [clock seconds] -format %Y-%m-%d,%T] 
+  } else { 
+    # fall back to standard UNIX system call 
+    set stamp [exec /bin/date +%Y-%m-%d,%T] 
+  } 
+  return $stamp 
+}
+
+puts "\n[timeStamp] Log starting..." 
+set port /dev/$argv 
+set spawned [spawn -open [open $port w+]] 
+puts "[timeStamp]: [string trim $spawned \r\n]" 
+set baud 115200
+    # -parenb means don't use a parity bit 
+    # -cstopb means "not 2 stop bits, but 1" 
+    # cs8 means 8 bits 
+    # -echo means no echo (full duplex?) 
+stty ispeed $baud ospeed $baud raw -echo cs8 -parenb -cstopb onlcr < $port 
+log_user 0
+
+# # log each input line 
+# #  add a timeStamp at the beginning of each line 
+# while {1} { 
+#   expect "\n" { 
+#     puts "[timeStamp]: [string trim $expect_out(buffer) \r\n]" 
+#   } 
+# } 
+
+set send_human {.1 .3 1 .05 2}
+
+expect "Press any key to continue."
+puts "[timeStamp]: [string trim $expect_out(buffer) \r\n]" 
+send -h "\r"
+
+expect "command-line."
+puts "[timeStamp]: [string trim $expect_out(buffer) \r\n]" 
+send -h "c\r"
+
+expect "grub>"
+puts "[timeStamp]: [string trim $expect_out(buffer) \r\n]" 
+send -h "root (hd0,0)\r\n"
+
+expect "grub>"
+puts "[timeStamp]: [string trim $expect_out(buffer) \r\n]" 
+send -h "a.bc.def.ghij.klmno.pqrstu.vwxyz01\r\n"
+
+expect "grub>"
+puts "[timeStamp]: [string trim $expect_out(buffer) \r\n]" 
+send -h "kernel /init-x86.bin\r\n"
+
+expect "grub>"
+puts "[timeStamp]: [string trim $expect_out(buffer) \r\n]" 
+send -h "module /hypervisor-x86.bin.gz\r\n"
+
+expect "grub>"
+puts "[timeStamp]: [string trim $expect_out(buffer) \r\n]" 
+send -h "modulenounzip (hd0)+1\r\n"
+
+expect "grub>"
+puts "[timeStamp]: [string trim $expect_out(buffer) \r\n]" 
+send -h "module /i5_i7_DUAL_SINIT_18.BIN\r\n"
+
+expect "grub>"
+puts "[timeStamp]: [string trim $expect_out(buffer) \r\n]" 
+send -h "boot\r\n"
+
