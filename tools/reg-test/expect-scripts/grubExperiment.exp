@@ -47,42 +47,34 @@ log_file foo.log
 log_user 1
 
 expect "Press any key to continue."
-puts "ONE [string trim $expect_out(buffer) \r\n]" 
 send -h "c"
 
 expect "command-line."
-puts "TWO [string trim $expect_out(buffer) \r\n]" 
 send -h "c"
 
 expect "grub>"
-puts "THREE [string trim $expect_out(buffer) \n]" 
 send -h "root (hd0,0)\r\n"
 
 expect "grub>"
-puts "FOUR [string trim $expect_out(buffer) \n]" 
 send -h "kernel /init-x86.bin serial=115200,8n1,0x3f8\r\n"
 
 expect "grub>"
-puts "FIVE [string trim $expect_out(buffer) \n]" 
 send -h "module /hypervisor-x86.bin.gz\r\n"
 
 expect "grub>"
-puts "SIX [string trim $expect_out(buffer) \n]" 
 send -h "modulenounzip (hd0)+1\r\n"
 
 expect "grub>"
-puts "SEVEN [string trim $expect_out(buffer) \n]" 
 send -h "module /i5_i7_DUAL_SINIT_18.BIN\r\n"
 
 expect "grub>"
-puts "EIGHT [string trim $expect_out(buffer) \n]" 
 send -h "boot\r\n"
 
-# log each input line 
-#  add a timeStamp at the beginning of each line 
+log_user 0
 while {1} { 
   expect "\n" { 
     puts "[timeStamp]: [string trim $expect_out(buffer) \r\n]" 
+    send_log -- "[timeStamp]: [string trim $expect_out(buffer) \r\n]" 
   } 
 } 
 
