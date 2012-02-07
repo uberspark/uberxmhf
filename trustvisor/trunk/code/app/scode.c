@@ -805,7 +805,7 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
   /* dump perf counters */
   eu_perf("performance counters:");
   for(j=0; j<TV_PERF_CTRS_COUNT; j++) {
-    eu_perf("  %s total: %Lu count: %Lu",
+    eu_perf("  %s total: %llu count: %llu",
             g_tv_perf_ctr_strings[j],
             perf_ctr_get_total_time(&g_tv_perf_ctrs[j]),
             perf_ctr_get_count(&g_tv_perf_ctrs[j]));
@@ -1254,7 +1254,7 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
 
   perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_NPF], vcpu->idx);
 
-  eu_trace("CPU(%02x): nested page fault!(rip %#x, gcr3 %#Lx, gpaddr %#x, errorcode %Lx)",
+  eu_trace("CPU(%02x): nested page fault!(rip %#x, gcr3 %#Lx, gpaddr %#x, errorcode %llx)",
           vcpu->id, rip, gcr3, gpaddr, errorcode);
 
   EU_CHK( hpt_error_wasInsnFetch(vcpu, errorcode));
