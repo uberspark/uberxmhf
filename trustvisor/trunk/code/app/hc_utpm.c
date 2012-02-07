@@ -56,6 +56,8 @@
 #include <scode.h> /* copy_from_guest */
 #include <malloc.h> /* malloc */
 
+#include <tv_log.h>
+
 /**
  * FIXME: Ugly circular dependency.  hc_utpm.c doesn't work without
  * scode.h, and scode.c doesn't work without hc_utpm.h.  Figure out
@@ -77,11 +79,11 @@ uint32_t hc_utpm_seal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len, uint
 
 	TPM_PCR_INFO tpmPcrInfo;
 	
-	dprintf(LOG_TRACE, "\n[TV] ********** uTPM seal **********\n");
-	dprintf(LOG_TRACE, "[TV] input_addr: %x, input_len %d, tpmPcrInfo_addr: %x, output_addr: %x!\n", input_addr, input_len, tpmPcrInfo_addr, output_addr);
+	eu_trace("********** uTPM seal **********");
+	eu_trace("input_addr: %x, input_len %d, tpmPcrInfo_addr: %x, output_addr: %x!", input_addr, input_len, tpmPcrInfo_addr, output_addr);
 
 	if(!vcpu || !input_addr || !tpmPcrInfo_addr || !output_addr || !output_len_addr) {
-		dprintf(LOG_ERROR, "[TV] Seal ERROR: !vcpu || !input_addr || !tpmPcrInfo_addr || !output_addr || !output_len_addr\n");
+		eu_err("Seal ERROR: !vcpu || !input_addr || !tpmPcrInfo_addr || !output_addr || !output_len_addr");
 		return 1;
 	}
 
@@ -90,13 +92,13 @@ uint32_t hc_utpm_seal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len, uint
 	 */
 	/* include seal data header and possible AES encryption padding */
 	if (input_len > (MAX_SEALDATA_LEN - SEALDATA_HEADER_LEN - 16) ) {
-		dprintf(LOG_ERROR, "[TV] Seal ERROR: input data length is too large, lenth %#x\n", input_len);
+		eu_err("Seal ERROR: input data length is too large, lenth %#x", input_len);
 		return 1;
 	}
 
 	/* make sure that this vmmcall can only be executed when a PAL is running */
 	if (scode_curr[vcpu->id]== -1) {
-		dprintf(LOG_ERROR, "[TV] Seal ERROR: no PAL is running!\n");
+		eu_err("Seal ERROR: no PAL is running!");
 		return 1;
 	}
 
@@ -106,7 +108,7 @@ uint32_t hc_utpm_seal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len, uint
 	copy_from_current_guest(vcpu, indata, input_addr, input_len);
 	copy_from_current_guest(vcpu, (uint8_t*)&tpmPcrInfo, tpmPcrInfo_addr, sizeof(TPM_PCR_INFO));
 
-	dprintf(LOG_TRACE, "[TV] input len = %d!\n", input_len);
+	eu_trace("input len = %d!", input_len);
 	print_hex("  indata: ", indata, input_len);
 	print_hex("  tpmPcrInfo: ", (uint8_t*)&tpmPcrInfo, sizeof(TPM_PCR_INFO));
 
@@ -117,7 +119,7 @@ uint32_t hc_utpm_seal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len, uint
 								 indata, input_len,
 								 output, &outlen);
 	if (rv != 0 || outlen > MAX_SEALDATA_LEN) {
-		dprintf(LOG_ERROR, "[TV] Seal ERROR: output data length is too large, lenth %#x\n", outlen);
+		eu_err("Seal ERROR: output data length is too large, lenth %#x", outlen);
 		return rv;
 	}
 	print_hex("  sealedData: ", output, outlen);
@@ -144,24 +146,24 @@ uint32_t hc_utpm_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
 	uint32_t ret;
 	TPM_COMPOSITE_HASH digestAtCreation;
 
-	dprintf(LOG_TRACE, "\n[TV:scode] ********** uTPM unseal **********\n");
+	eu_trace("[TV:scode] ********** uTPM unseal **********");
 
 	if(!vcpu || !input_addr || !output_addr || !output_len_addr || !digestAtCreation_addr) {
-		dprintf(LOG_ERROR, "[TV:scode] Unseal ERROR: !vcpu || !input_addr || !output_addr || !output_len_addr || !digestAtCreation_addr\n");
+		eu_err("[TV:scode] Unseal ERROR: !vcpu || !input_addr || !output_addr || !output_len_addr || !digestAtCreation_addr");
 		return 1;
 	}
 	
-	dprintf(LOG_TRACE, "[TV:scode] input addr: %x, len %d, output addr: %x!\n",
+	eu_trace("[TV:scode] input addr: %x, len %d, output addr: %x!",
 					input_addr, input_len, output_addr);
 	/* check input data length */
 	if (input_len > MAX_SEALDATA_LEN) {
-		dprintf(LOG_ERROR, "[TV:scode] Unseal ERROR: input data length is too large, lenth %#x\n", input_len);
+		eu_err("[TV:scode] Unseal ERROR: input data length is too large, lenth %#x", input_len);
 		return 1;
 	}
 
 	/* make sure that this vmmcall can only be executed when a PAL is running */
 	if (scode_curr[vcpu->id]== -1) {
-		dprintf(LOG_ERROR, "[TV:scode] Seal ERROR: no PAL is running!\n");
+		eu_err("[TV:scode] Seal ERROR: no PAL is running!");
 		return 1;
 	}
 
@@ -175,7 +177,7 @@ uint32_t hc_utpm_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
 	/* unseal */
 	if ((ret = utpm_unseal(&whitelist[scode_curr[vcpu->id]].utpm, indata, input_len,
 												 outdata, &outlen, &digestAtCreation))) {
-		dprintf(LOG_ERROR, "[TV:scode] Unseal ERROR: utpm_unseal fail!\n");
+		eu_err("[TV:scode] Unseal ERROR: utpm_unseal fail!");
 		return 1;
 	}
 
@@ -183,7 +185,7 @@ uint32_t hc_utpm_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
 
 	/* check output data length */
 	if (outlen > MAX_SEALDATA_LEN ) {
-		dprintf(LOG_ERROR, "[TV:scode] Unseal ERROR: output data length is too large, lenth %#x\n", outlen);
+		eu_err("[TV:scode] Unseal ERROR: output data length is too large, lenth %#x", outlen);
 		return 1;
 	}
 
@@ -205,18 +207,18 @@ u32 hc_utpm_seal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrA
 	u8 indata[MAX_SEALDATA_LEN];  
 	u8 output[MAX_SEALDATA_LEN]; 
 
-	dprintf(LOG_TRACE, "\n[TV] ********** uTPM seal DEPRECATED **********\n");
-	dprintf(LOG_TRACE, "[TV] input addr: %x, len %d, pcr addr: %x, output addr: %x!\n", input_addr, input_len, pcrAtRelease_addr, output_addr);
+	eu_trace("********** uTPM seal DEPRECATED **********");
+	eu_trace("input addr: %x, len %d, pcr addr: %x, output addr: %x!", input_addr, input_len, pcrAtRelease_addr, output_addr);
 	/* check input data length */
 	/* include seal data header and possible AES encryption padding */
 	if (input_len > (MAX_SEALDATA_LEN-SEALDATA_HEADER_LEN - 16) ) {
-		dprintf(LOG_ERROR, "[TV] Seal ERROR: input data length is too large, lenth %#x\n", input_len);
+		eu_err("Seal ERROR: input data length is too large, lenth %#x", input_len);
 		return 1;
 	}
 
 	/* make sure that this vmmcall can only be executed when a PAL is running */
 	if (scode_curr[vcpu->id]== -1) {
-		dprintf(LOG_ERROR, "[TV] Seal ERROR: no PAL is running!\n");
+		eu_err("Seal ERROR: no PAL is running!");
 		return 1;
 	}
 
@@ -226,12 +228,12 @@ u32 hc_utpm_seal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrA
 	copy_from_current_guest(vcpu, indata, input_addr, input_len);
 
 #if 0
-	dprintf(LOG_TRACE, "[TV] input len = %d!\n", input_len);
-	dprintf(LOG_TRACE, "[TV] input data is:");
+	eu_trace("input len = %d!", input_len);
+	eu_trace("input data is:");
 	for(i=0;i<input_len;i++) {
-		dprintf(LOG_TRACE, "%x ", indata[i]);
+		eu_trace("%x ", indata[i]);
 	}
-	dprintf(LOG_TRACE, "[TV] \n");
+	eu_trace("");
 #endif
 
 	if (pcrAtRelease_addr != 0) {
@@ -241,33 +243,33 @@ u32 hc_utpm_seal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrA
 	} else {
 		/* seal data to our own */
 		/* use current PAL's PCR value */
-		dprintf(LOG_TRACE, "[TV] get pcr from current PAL's softTPM!\n");
+		eu_trace("get pcr from current PAL's softTPM!");
 		memcpy(pcr, whitelist[scode_curr[vcpu->id]].utpm.pcr_bank, TPM_PCR_SIZE);
 	}
 
 #if 1
-	dprintf(LOG_TRACE, "[TV] pcr value is:");
+	eu_trace("pcr value is:");
 	for(i=0;i<TPM_PCR_SIZE;i++) {
-		dprintf(LOG_TRACE, "%x ", pcr[i]);
+		eu_trace("%x ", pcr[i]);
 	}
-	dprintf(LOG_TRACE, "\n");
+	eu_trace("");
 #endif
 
 	/* seal */
 	utpm_seal_deprecated(pcr, indata, input_len, output, &outlen);
 
 #if 1
-	dprintf(LOG_TRACE, "[TV] sealed data len = %d!\n", outlen);
-	dprintf(LOG_TRACE, "[TV] sealed data is: ");
+	eu_trace("sealed data len = %d!", outlen);
+	eu_trace("sealed data is: ");
 	for(i=0;i<outlen;i++) {
-		dprintf(LOG_TRACE, "%x ", output[i]);
+		eu_trace("%x ", output[i]);
 	}
-	dprintf(LOG_TRACE, "\n");
+	eu_trace("");
 #endif
 
 	/* check output data length */
 	if (outlen > MAX_SEALDATA_LEN) {
-		dprintf(LOG_ERROR, "[TV] Seal ERROR: output data length is too large, lenth %#x\n", outlen);
+		eu_err("Seal ERROR: output data length is too large, lenth %#x", outlen);
 		return 1;
 	}
 
@@ -288,17 +290,17 @@ u32 hc_utpm_unseal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 ou
 	u32 outlen;
 	u32 ret;
 
-	dprintf(LOG_TRACE, "\n[TV] ********** uTPM unseal DEPRECATED **********\n");
-	dprintf(LOG_TRACE, "[TV] input addr: %x, len %d, output addr: %x!\n", input_addr, input_len, output_addr);
+	eu_trace("********** uTPM unseal DEPRECATED **********");
+	eu_trace("input addr: %x, len %d, output addr: %x!", input_addr, input_len, output_addr);
 	/* check input data length */
 	if (input_len > MAX_SEALDATA_LEN) {
-		dprintf(LOG_ERROR, "[TV] Unseal ERROR: input data length is too large, lenth %#x\n", input_len);
+		eu_err("Unseal ERROR: input data length is too large, lenth %#x", input_len);
 		return 1;
 	}
 
 	/* make sure that this vmmcall can only be executed when a PAL is running */
 	if (scode_curr[vcpu->id]== -1) {
-		dprintf(LOG_ERROR, "[TV] Seal ERROR: no PAL is running!\n");
+		eu_err("Seal ERROR: no PAL is running!");
 		return 1;
 	}
 
@@ -308,32 +310,32 @@ u32 hc_utpm_unseal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 ou
 	copy_from_current_guest(vcpu, indata, input_addr, input_len);
 
 #if 0
-	dprintf(LOG_TRACE, "[TV] input len = %d!\n", input_len);
-	dprintf(LOG_TRACE, "[TV] input data is:");
+	eu_trace("input len = %d!", input_len);
+	eu_trace("input data is:");
 	for(i=0;i<input_len;i++) {
-		dprintf(LOG_TRACE, "%x ", indata[i]);
+		eu_trace("%x ", indata[i]);
 	}
-	dprintf(LOG_TRACE, "[TV] \n");
+	eu_trace("");
 #endif
 
 	/* unseal */
 	if ((ret = utpm_unseal_deprecated(&whitelist[scode_curr[vcpu->id]].utpm, indata, input_len, outdata, &outlen))) {
-		dprintf(LOG_ERROR, "[TV] Unseal ERROR: utpm_unseal fail!\n");
+		eu_err("Unseal ERROR: utpm_unseal fail!");
 		return 1;
 	}
 
 #if 1
-	dprintf(LOG_TRACE, "[TV] unsealed data len = %d!\n", outlen);
-	dprintf(LOG_TRACE, "[TV] unsealed data is: ");
+	eu_trace("unsealed data len = %d!", outlen);
+	eu_trace("unsealed data is: ");
 	for(i=0;i<outlen;i++) {
-		dprintf(LOG_TRACE, "%x ", outdata[i]);
+		eu_trace("%x ", outdata[i]);
 	}
-	dprintf(LOG_TRACE, "\n");
+	eu_trace("");
 #endif
 
 	/* check output data length */
 	if (outlen > MAX_SEALDATA_LEN ) {
-		dprintf(LOG_ERROR, "[TV] Seal ERROR: output data length is too large, lenth %#x\n", outlen);
+		eu_err("Seal ERROR: output data length is too large, lenth %#x", outlen);
 		return 1;
 	}
 
@@ -356,11 +358,11 @@ u32 hc_utpm_quote_deprecated(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 o
     uint32_t rsaLen;
     uint8_t rsaModulus[TPM_RSA_KEY_LEN];
 
-	dprintf(LOG_TRACE, "\n[TV] ********** uTPM Quote [DEPRECATED] **********\n");
-	dprintf(LOG_TRACE, "[TV] nonce addr: %x, tpmsel addr: %x, output addr %x, outlen addr: %x!\n", nonce_addr, tpmsel_addr, out_addr, out_len_addr);
+	eu_trace("********** uTPM Quote [DEPRECATED] **********");
+	eu_trace("nonce addr: %x, tpmsel addr: %x, output addr %x, outlen addr: %x!", nonce_addr, tpmsel_addr, out_addr, out_len_addr);
 	/* make sure that this vmmcall can only be executed when a PAL is running */
 	if (scode_curr[vcpu->id]== -1) {
-		dprintf(LOG_ERROR, "[TV] Quote ERROR: no PAL is running!\n");
+		eu_err("Quote ERROR: no PAL is running!");
 		return 1;
 	}	
 
@@ -369,16 +371,16 @@ u32 hc_utpm_quote_deprecated(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 o
 	/* get TPM PCR selection from guest */
 	copy_from_current_guest( vcpu, &num, tpmsel_addr, sizeof(num));
 	if (num > MAX_PCR_SEL_NUM) {
-		dprintf(LOG_ERROR, "[TV] Quote ERROR: select too many PCR!\n");
+		eu_err("Quote ERROR: select too many PCR!");
 		return 1;
 	}
 	tpmsel_len = 4+4*num;
-	dprintf(LOG_TRACE, "[TV] %d pcrs are selected!\n", num);
+	eu_trace("%d pcrs are selected!", num);
 
 	copy_from_current_guest(vcpu, tpmsel, tpmsel_addr, tpmsel_len);
 	for( i=0 ; i< num ; i++ )  {
 		if (*(((u32 *)(tpmsel+4))+i) >= TPM_PCR_NUM) {
-			dprintf(LOG_ERROR, "[TV] Quote ERROR: bad format of TPM PCR num!\n");
+			eu_err("Quote ERROR: bad format of TPM PCR num!");
 			return 1;
 		}
 	}
@@ -387,25 +389,25 @@ u32 hc_utpm_quote_deprecated(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 o
 	copy_from_current_guest(vcpu, nonce, nonce_addr, TPM_NONCE_SIZE);
 
 #if 1
-	dprintf(LOG_TRACE, "[TV] external nonce is: ");
+	eu_trace("external nonce is: ");
 	for(i=0;i<TPM_NONCE_SIZE;i++) {
-		dprintf(LOG_TRACE, "%x ", nonce[i]);
+		eu_trace("%x ", nonce[i]);
 	}
-	dprintf(LOG_TRACE, "\n");
+	eu_trace("");
 #endif
 
 	if((ret = utpm_quote_deprecated(nonce, outdata, &outlen, &whitelist[scode_curr[vcpu->id]].utpm, tpmsel, tpmsel_len)) != 0) {
-		dprintf(LOG_ERROR, "[TV] quote ERROR: utpm_quote fail!\n");
+		eu_err("quote ERROR: utpm_quote fail!");
 		return 1;
 	}
 
 #if 0
-	dprintf(LOG_TRACE, "[TV] quote data len = %d!\n", outlen);
-	dprintf(LOG_TRACE, "[TV] quote data is: ");
+	eu_trace("quote data len = %d!", outlen);
+	eu_trace("quote data is: ");
 	for(i=0;i<outlen;i++) {
-		dprintf(LOG_TRACE, "%x ", outdata[i]);
+		eu_trace("%x ", outdata[i]);
 	}
-	dprintf(LOG_TRACE, "\n");
+	eu_trace("");
 #endif
 
 	/* copy output to guest */
@@ -436,13 +438,13 @@ u32 hc_utpm_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 sig_addr, u3
     uint8_t *pcrComp = NULL;
     uint32_t pcrCompLen = 0;
 
-	dprintf(LOG_TRACE, "\n[TV] ********** uTPM Quote **********\n");
-	dprintf(LOG_TRACE, "[TV] nonce addr: %x, tpmsel addr: %x, sig_addr %x, sig_len_addr: %x!\n",
+	eu_trace("********** uTPM Quote **********");
+	eu_trace("nonce addr: %x, tpmsel addr: %x, sig_addr %x, sig_len_addr: %x!",
 					nonce_addr, tpmsel_addr, sig_addr, sig_len_addr);
 
 	/* make sure that this vmmcall can only be executed when a PAL is running */
 	if (scode_curr[vcpu->id]== -1) {
-		dprintf(LOG_ERROR, "[TV] Quote ERROR: no PAL is running!\n");
+		eu_err("Quote ERROR: no PAL is running!");
 		ret = 1;
 		goto out;
 	}	
@@ -458,30 +460,30 @@ u32 hc_utpm_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 sig_addr, u3
 
 	/* Get size of guest's sig buffer */
 	copy_from_current_guest(vcpu, (void*)&siglen, sig_len_addr, sizeof(uint32_t));
-	dprintf(LOG_TRACE, "[TV] Guest provided sig buffer of %d bytes\n", siglen);
+	eu_trace("Guest provided sig buffer of %d bytes", siglen);
 
 	/* FIXME: This is just a rough sanity check that catches some uninitialized variables. */
 	if(siglen > 5*TPM_QUOTE_SIZE) {
-			dprintf(LOG_ERROR, "[TV] ERROR: Guest-provided siglen value of %d seems ridiculous\n", siglen);
+			eu_err("ERROR: Guest-provided siglen value of %d seems ridiculous", siglen);
 			ret = 1;
 			goto out;
 	}
 
     /* Get size of guest's pcrComp buffer */
 	copy_from_current_guest(vcpu, (void*)&pcrCompLen, pcrCompLen_addr, sizeof(uint32_t));
-	dprintf(LOG_TRACE, "[TV] Guest provided pcrComp buffer of %d bytes\n", pcrCompLen);
+	eu_trace("Guest provided pcrComp buffer of %d bytes", pcrCompLen);
     
 	/**
 	 * Allocate space to do internal processing
 	 */
 	if(NULL == (sigdata = malloc(siglen))) {
-			dprintf(LOG_ERROR, "[TV] ERROR: malloc(%d) failed!\n", siglen);
+			eu_err("ERROR: malloc(%d) failed!", siglen);
 			ret = 1;
 			goto out;
 	}
 
     if(NULL == (pcrComp = malloc(pcrCompLen))) {
-			dprintf(LOG_ERROR, "[TV] ERROR: malloc(%d) failed!\n", siglen);
+			eu_err("ERROR: malloc(%d) failed!", siglen);
 			ret = 1;
 			goto out;
     }
@@ -492,18 +494,18 @@ u32 hc_utpm_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 sig_addr, u3
 	if ((ret = utpm_quote(&nonce, &tpmsel, sigdata, &siglen,
                           pcrComp, &pcrCompLen,
                           &whitelist[scode_curr[vcpu->id]].utpm)) != 0) {
-		dprintf(LOG_ERROR, "[TV] ERROR: utpm_quote failed!\n");
+		eu_err("ERROR: utpm_quote failed!");
 		return 1;
 	}
 
 	/* Some sanity-checking. TODO: replace with asserts & use tighter bound */
 	if(siglen > 2*TPM_QUOTE_SIZE) {
-			dprintf(LOG_ERROR, "[TV] ERROR: siglen (%d) > 2*TPM_QUOTE_SIZE\n", siglen);
+			eu_err("ERROR: siglen (%d) > 2*TPM_QUOTE_SIZE", siglen);
 			siglen = TPM_QUOTE_SIZE; /* FIXME: We should return some kind of error code */
 			/* return 1; */ /* Don't return from here; it causes some kind of crash in the PAL */
 	}
 	
-	dprintf(LOG_TRACE, "[TV] quote sigdata len = %d!\n", siglen);
+	eu_trace("quote sigdata len = %d!", siglen);
 	//print_hex("  QD: ", sigdata, siglen);
 
 	/* copy quote sig to guest */
@@ -513,11 +515,11 @@ u32 hc_utpm_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 sig_addr, u3
 	copy_to_current_guest(vcpu, pcrComp_addr, pcrComp, pcrCompLen);
     
     
-	dprintf(LOG_TRACE, "[TV] hc_utpm_quote: Survived copy_to_current_guest of %d bytes\n", siglen);
+	eu_trace("hc_utpm_quote: Survived copy_to_current_guest of %d bytes", siglen);
 	
 	/* copy quote sig length to guest */
 	copy_to_current_guest( vcpu, sig_len_addr, &siglen, sizeof(siglen));
-	dprintf(LOG_TRACE, "[TV] hc_utpm_quote: Survived put_32bit_aligned_value_to_current_guest\n");
+	eu_trace("hc_utpm_quote: Survived put_32bit_aligned_value_to_current_guest");
 
 	out:
 
@@ -530,11 +532,11 @@ uint32_t hc_utpm_utpm_id_getpub(VCPU * vcpu, uint32_t gvaddr)
 {
   uint32_t len;
   uint8_t rsaModulus[TPM_RSA_KEY_LEN];
-	dprintf(LOG_TRACE, "\n[TV] ********** uTPM id_getpub **********\n");
+	eu_trace("********** uTPM id_getpub **********");
 
 	/* make sure that this vmmcall can only be executed when a PAL is running */
 	if (scode_curr[vcpu->id]== -1) {
-		dprintf(LOG_ERROR, "[TV] ID_GETPUB ERROR: no PAL is running!\n");
+		eu_err("ID_GETPUB ERROR: no PAL is running!");
 		return 1;
 	}
 
@@ -545,7 +547,7 @@ uint32_t hc_utpm_utpm_id_getpub(VCPU * vcpu, uint32_t gvaddr)
     if(len > TPM_RSA_KEY_LEN) { return 1; }
 
     if(UTPM_SUCCESS != utpm_id_getpub(rsaModulus, &len)) {    
-        dprintf(LOG_ERROR, "utpm_id_getpub ERROR\n");
+        eu_err("utpm_id_getpub ERROR");
         return 1;
 	}
 
@@ -559,18 +561,18 @@ u32 hc_utpm_pcrread(VCPU * vcpu, u32 gvaddr, u32 num)
 {
 	TPM_DIGEST pcr;
 
-	dprintf(LOG_TRACE, "\n[TV] ********** uTPM pcrread **********\n");
+	eu_trace("********** uTPM pcrread **********");
 
 	/* make sure that this vmmcall can only be executed when a PAL is running */
 	if (scode_curr[vcpu->id]== -1) {
-		dprintf(LOG_ERROR, "[TV] PCRRead ERROR: no PAL is running!\n");
+		eu_err("PCRRead ERROR: no PAL is running!");
 		return 1;
 	}
 
 	/* make sure requested PCR number is in reasonable range */
 	if (num >= TPM_PCR_NUM)
 	{
-		dprintf(LOG_ERROR, "[TV] PCRRead ERROR: pcr num %d not correct!\n", num);
+		eu_err("PCRRead ERROR: pcr num %d not correct!", num);
 		return 1;
 	}
 
@@ -588,18 +590,18 @@ u32 hc_utpm_pcrextend(VCPU * vcpu, u32 idx, u32 meas_gvaddr)
 {
 	TPM_DIGEST measurement;
 
-	dprintf(LOG_TRACE, "\n[TV] ********** uTPM pcrextend **********\n");
+	eu_trace("********** uTPM pcrextend **********");
 
 	/* make sure that this vmmcall can only be executed when a PAL is running */
 	if (scode_curr[vcpu->id]== -1) {
-		dprintf(LOG_ERROR, "[TV] PCRExtend ERROR: no PAL is running!\n");
+		eu_err("PCRExtend ERROR: no PAL is running!");
 		return 1;
 	}
 
 	/* make sure requested PCR number is in reasonable range */
 	if (idx >= TPM_PCR_NUM)
 	{
-		dprintf(LOG_ERROR, "[TV] PCRExtend ERROR: pcr idx %d not correct!\n", idx);
+		eu_err("PCRExtend ERROR: pcr idx %d not correct!", idx);
 		return 1;
 	}
 
@@ -607,7 +609,7 @@ u32 hc_utpm_pcrextend(VCPU * vcpu, u32 idx, u32 meas_gvaddr)
 	copy_from_current_guest(vcpu, (u8 *)measurement.value, meas_gvaddr, TPM_HASH_SIZE);
 
 	/* extend pcr */
-    //print_hex("[TV] PCRExtend data from guest: ", measurement.value, TPM_HASH_SIZE);    
+    //print_hex("PCRExtend data from guest: ", measurement.value, TPM_HASH_SIZE);    
 	utpm_extend(&measurement, &whitelist[scode_curr[vcpu->id]].utpm, idx);
 
 	return 0;
@@ -621,7 +623,7 @@ u32 hc_utpm_rand(VCPU * vcpu, u32 buffer_addr, u32 numbytes_addr)
 
 	/* make sure that this vmmcall can only be executed when a PAL is running */
 	if (scode_curr[vcpu->id]== -1) {
-		dprintf(LOG_ERROR, "[TV] GenRandom ERROR: no PAL is running!\n");
+		eu_err("GenRandom ERROR: no PAL is running!");
 		return 1;
 	}
 
@@ -629,13 +631,13 @@ u32 hc_utpm_rand(VCPU * vcpu, u32 buffer_addr, u32 numbytes_addr)
 	copy_from_current_guest( vcpu, &numbytes, numbytes_addr, sizeof(numbytes));
 	if (numbytes > MAX_TPM_RAND_DATA_LEN)
 	{
-		dprintf(LOG_ERROR, "[TV] GenRandom ERROR: requested rand data len %d too large!\n", numbytes);
+		eu_err("GenRandom ERROR: requested rand data len %d too large!", numbytes);
 		return 1;
 	}
 
 	ret = utpm_rand(buffer, &numbytes);
 	if (ret != UTPM_SUCCESS) {
-		dprintf(LOG_ERROR, "[TV] GenRandom ERROR: rand byte error; numbytes=%d!",
+		eu_err("GenRandom ERROR: rand byte error; numbytes=%d!",
 						numbytes);
 		return 1;
 	}
