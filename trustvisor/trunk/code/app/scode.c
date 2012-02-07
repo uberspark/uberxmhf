@@ -1004,6 +1004,7 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
   int err=1;
   bool swapped_grsp=false;
   bool pushed_return=false;
+  u32 sentinel_return;
 
   perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_SCODE], vcpu->idx);
 
@@ -1030,9 +1031,13 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
   EU_CHKN( scode_marshall(vcpu));
 
   /* write the sentinel return address to scode stack */
-  put_32bit_aligned_value_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
-                                   &whitelist[curr].pal_gpt_root,
-                                   (u32)VCPU_grsp(vcpu)-4, RETURN_FROM_PAL_ADDRESS);
+  sentinel_return = RETURN_FROM_PAL_ADDRESS;
+  EU_CHKN( hptw_checked_copy_to_va( &whitelist[curr].hpt_guest_walk_ctx,
+                                    &whitelist[curr].pal_gpt_root,
+                                    HPTW_CPL3,
+                                    VCPU_grsp(vcpu)-4,
+                                    &sentinel_return,
+                                    sizeof(sentinel_return)));
   VCPU_grsp_set(vcpu, VCPU_grsp(vcpu)-4);
   pushed_return=true;
   
