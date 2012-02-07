@@ -151,11 +151,6 @@ void hpt_guest_walk_ctx_destroy(hptw_ctx_t *ctx);
 hpt_prot_t pal_prot_of_type(int type);
 hpt_prot_t reg_prot_of_type(int type);
 
-/* several help functions to access guest address space */
-u16 get_16bit_aligned_value_from_current_guest(VCPU *vcpu, u32 gvaddr);
-u32 get_32bit_aligned_value_from_current_guest(VCPU *vcpu, u32 gvaddr);
-void put_32bit_aligned_value_to_current_guest(VCPU *vcpu, u32 gvaddr, u32 value);
-
 /* guest paging handlers */
 static inline gpa_t gpt_vaddr_to_paddr(const hptw_ctx_t *ctx, const hpt_pmo_t *gpt_root, gva_t vaddr)
 {
