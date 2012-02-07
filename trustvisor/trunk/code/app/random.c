@@ -44,6 +44,8 @@
 #include <random.h>
 #include <crypto_init.h>
 
+#include <tv_log.h>
+
 /**
  * Reseed the CTR_DRBG if needed.  This function is structured to do
  * nothing if a reseed is not required, to simplify the logic in the
@@ -59,17 +61,15 @@ int reseed_ctr_drbg_using_tpm_entropy_if_needed(void) {
     if (g_drbg.reseed_counter < NIST_CTR_DRBG_RESEED_INTERVAL)
         return 0; /* nothing to do */
 
-    dprintf(LOG_ERROR, "\n[TV] Low Entropy: Attemping TPM-based PRNG reseed.\n");    
+    eu_err("Low Entropy: Attemping TPM-based PRNG reseed.");
     
     /* Get CTR_DRBG_SEED_BITS of entropy from the hardware TPM */
-    if(get_hw_tpm_entropy(EntropyInput, CTR_DRBG_SEED_BITS/8)) {
-        dprintf(LOG_ERROR, "\nFATAL ERROR: Could not access TPM to reseed PRNG.\n");
-        HALT();
-    }
+    EU_VERIFYN( get_hw_tpm_entropy(EntropyInput, CTR_DRBG_SEED_BITS/8),
+                eu_err_e("FATAL ERROR: Could not access TPM to reseed PRNG."));
 
-    nist_ctr_drbg_reseed(&g_drbg, EntropyInput, sizeof(EntropyInput), NULL, 0);
+    EU_VERIFYN( nist_ctr_drbg_reseed( &g_drbg, EntropyInput, sizeof(EntropyInput), NULL, 0));
     
-    dprintf(LOG_TRACE, "\n[TV] master_crypto_init: PRNG reseeded successfully.\n");
+    eu_trace("master_crypto_init: PRNG reseeded successfully.");
 
     return 0;
 }
@@ -81,18 +81,11 @@ int reseed_ctr_drbg_using_tpm_entropy_if_needed(void) {
  */
 uint8_t rand_byte_or_die(void) {
     uint8_t byte;
-    int rv;
-    
-    if(!g_master_prng_init_completed) {
-        dprintf(LOG_ERROR, "\nFATAL: !g_master_prng_init_completed\n");
-        HALT();
-    }
 
-    reseed_ctr_drbg_using_tpm_entropy_if_needed();
-    if((rv = nist_ctr_drbg_generate(&g_drbg, &byte, sizeof(byte), NULL, 0))) {
-        dprintf(LOG_ERROR, "\nFATAL: %s: nist_ctr_drbg_generate() returned error %d!\n", __FUNCTION__, rv);
-        HALT();
-    }
+    EU_VERIFY( g_master_prng_init_completed);
+
+    EU_VERIFYN( reseed_ctr_drbg_using_tpm_entropy_if_needed());
+    EU_VERIFYN( nist_ctr_drbg_generate( &g_drbg, &byte, sizeof(byte), NULL, 0));
 
     return byte;
 }
@@ -102,22 +95,13 @@ uint8_t rand_byte_or_die(void) {
  * system if they cannot be generated.
  */
 void rand_bytes_or_die(uint8_t *out, unsigned int len) {
-    int rv;
-    if(!g_master_prng_init_completed) {
-        dprintf(LOG_ERROR, "FATAL: !g_master_prng_init_completed\n");
-        HALT();
-    }
-
-    if(!out || (len < 1)) {
-        dprintf(LOG_ERROR, "FATAL: !out || (len < 1)\n");
-        HALT();
-    }
+    EU_VERIFY( g_master_prng_init_completed);
+    EU_VERIFY( out);
+    EU_VERIFY( len >= 1);
     
-    reseed_ctr_drbg_using_tpm_entropy_if_needed();
-    if((rv = nist_ctr_drbg_generate(&g_drbg, out, len, NULL, 0))) {
-        dprintf(LOG_ERROR, "\nFATAL: %s: nist_ctr_drbg_generate() returned error %d!\n", __FUNCTION__, rv);
-        HALT();
-    }
+    EU_VERIFYN( reseed_ctr_drbg_using_tpm_entropy_if_needed());
+
+    EU_VERIFYN( nist_ctr_drbg_generate(&g_drbg, out, len, NULL, 0));
 }    
 
 /**
@@ -126,30 +110,27 @@ void rand_bytes_or_die(uint8_t *out, unsigned int len) {
  * actually available (and updates *len).
  */
 int rand_bytes(uint8_t *out, unsigned int *len) {
-    int rv;
-    /* even here we do not want to tolerate failure to initialize */
-    if(!g_master_prng_init_completed) {
-        dprintf(LOG_ERROR, "FATAL: !g_master_prng_init_completed\n");
-        HALT();
-    }
+    int rv=1;
 
-    if(!out || !len || *len < 1) {
-        dprintf(LOG_ERROR, "ERROR: !out || !len || *len < 1\n");
-        return 1;
-    }
+    /* even here we do not want to tolerate failure to initialize */
+    EU_VERIFY( g_master_prng_init_completed);
+
+    EU_VERIFY( out);
+    EU_VERIFY( len);
+    EU_VERIFY( *len >= 1);
 
     /* at the present time this will either give all requested bytes
      * or fail completely.  no support for partial returns, though
      * that may one day be desirable. */
-    reseed_ctr_drbg_using_tpm_entropy_if_needed();
-    if((rv = nist_ctr_drbg_generate(&g_drbg, out, *len, NULL, 0))) {
-        dprintf(LOG_ERROR, "\nFATAL: %s: nist_ctr_drbg_generate() returned error %d!\n", __FUNCTION__, rv);
-        return 1;
-    }
+    EU_VERIFYN( reseed_ctr_drbg_using_tpm_entropy_if_needed());
 
-    dprintf(LOG_TRACE, "\n[TV]Successfully generated %d pseudo-random bytes\n", *len);
+    EU_CHKN( rv = nist_ctr_drbg_generate(&g_drbg, out, *len, NULL, 0));
 
-    return 0;                              
+    eu_trace("Successfully generated %d pseudo-random bytes", *len);
+
+    rv=0;
+ out:
+    return rv;
 }
 
 
