@@ -126,7 +126,10 @@ uint32_t hc_utpm_seal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len, uint
 	copy_to_current_guest(vcpu, output_addr, output, outlen);
 
 	/* copy out length to guest */
-	put_32bit_aligned_value_to_current_guest(vcpu, output_len_addr, outlen);
+	copy_to_current_guest(vcpu,
+			      output_len_addr,
+			      &outlen,
+			      sizeof(outlen));
 
 	return rv;
 }
@@ -165,7 +168,7 @@ uint32_t hc_utpm_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
 	/* XXX FIXME: check input data and output data are all in PAL's memory range */
 
 	/* copy input data from guest */
-	copy_from_current_guest(vcpu, indata, input_addr, input_len);
+	copy_from_current_guest( vcpu, indata, input_addr, input_len);
 
 	print_hex("  [TV:scode] input data: ", indata, input_len);	
 
@@ -189,7 +192,7 @@ uint32_t hc_utpm_unseal(VCPU * vcpu, uint32_t input_addr, uint32_t input_len,
 	copy_to_current_guest(vcpu, digestAtCreation_addr, (uint8_t*)&digestAtCreation, TPM_HASH_SIZE);
 	
 	/* copy out length to guest */
-	put_32bit_aligned_value_to_current_guest(vcpu, output_len_addr, outlen);
+	copy_to_current_guest( vcpu, output_len_addr, &outlen, sizeof(outlen));
 	return 0;
 }
 
@@ -272,7 +275,7 @@ u32 hc_utpm_seal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 pcrA
 	copy_to_current_guest(vcpu, output_addr, output, outlen);
 
 	/* copy out length to guest */
-	put_32bit_aligned_value_to_current_guest(vcpu, output_len_addr, outlen);
+	copy_to_current_guest( vcpu, output_len_addr, &outlen, sizeof(outlen));
 
 	return 0;
 }
@@ -338,7 +341,7 @@ u32 hc_utpm_unseal_deprecated(VCPU * vcpu, u32 input_addr, u32 input_len, u32 ou
 	copy_to_current_guest(vcpu, output_addr, outdata, outlen);
 
 	/* copy out length to guest */
-	put_32bit_aligned_value_to_current_guest(vcpu, output_len_addr, outlen);
+	copy_to_current_guest( vcpu, output_len_addr, &outlen, sizeof(outlen));
 	return 0;
 }
 
@@ -364,7 +367,7 @@ u32 hc_utpm_quote_deprecated(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 o
 	/* XXX FIXME: check input data and output data are all in PAL's memory range */
 
 	/* get TPM PCR selection from guest */
-	num = get_32bit_aligned_value_from_current_guest(vcpu, tpmsel_addr);
+	copy_from_current_guest( vcpu, &num, tpmsel_addr, sizeof(num));
 	if (num > MAX_PCR_SEL_NUM) {
 		dprintf(LOG_ERROR, "[TV] Quote ERROR: select too many PCR!\n");
 		return 1;
@@ -419,7 +422,7 @@ u32 hc_utpm_quote_deprecated(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 o
 	outlen += TPM_RSA_KEY_LEN;
 
 	/* copy out length to guest */
-	put_32bit_aligned_value_to_current_guest(vcpu, out_len_addr, outlen);
+	copy_to_current_guest( vcpu, out_len_addr, &outlen, sizeof(outlen));
 	return 0;
 }
 
@@ -513,7 +516,7 @@ u32 hc_utpm_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 sig_addr, u3
 	dprintf(LOG_TRACE, "[TV] hc_utpm_quote: Survived copy_to_current_guest of %d bytes\n", siglen);
 	
 	/* copy quote sig length to guest */
-	put_32bit_aligned_value_to_current_guest(vcpu, sig_len_addr, siglen);
+	copy_to_current_guest( vcpu, sig_len_addr, &siglen, sizeof(siglen));
 	dprintf(LOG_TRACE, "[TV] hc_utpm_quote: Survived put_32bit_aligned_value_to_current_guest\n");
 
 	out:
@@ -623,7 +626,7 @@ u32 hc_utpm_rand(VCPU * vcpu, u32 buffer_addr, u32 numbytes_addr)
 	}
 
 	// get the byte number requested
-	numbytes = get_32bit_aligned_value_from_current_guest(vcpu, numbytes_addr);
+	copy_from_current_guest( vcpu, &numbytes, numbytes_addr, sizeof(numbytes));
 	if (numbytes > MAX_TPM_RAND_DATA_LEN)
 	{
 		dprintf(LOG_ERROR, "[TV] GenRandom ERROR: requested rand data len %d too large!\n", numbytes);
@@ -641,7 +644,7 @@ u32 hc_utpm_rand(VCPU * vcpu, u32 buffer_addr, u32 numbytes_addr)
 	copy_to_current_guest(vcpu, buffer_addr, buffer, numbytes);
 
 	/* copy data length to guest */
-	put_32bit_aligned_value_to_current_guest(vcpu, numbytes_addr, numbytes);
+	copy_to_current_guest( vcpu, numbytes_addr, &numbytes, sizeof(numbytes));
 
 	return 0;
 }
