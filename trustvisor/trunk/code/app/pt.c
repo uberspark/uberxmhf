@@ -117,16 +117,14 @@ static int construct_checked_walk_ctx(VCPU *vcpu, checked_guest_walk_ctx_t *rv)
 
   memset(rv, 0, sizeof(*rv));
 
-  EU_CHK(
-         guest_pa2ptr_ctx = malloc(sizeof(*guest_pa2ptr_ctx)),
-         err=1);
+  EU_CHK( guest_pa2ptr_ctx = malloc(sizeof(*guest_pa2ptr_ctx)),
+          err=1);
 
   hpt_emhf_get_root_pmo(vcpu, &guest_pa2ptr_ctx->host_pmo_root);
   guest_pa2ptr_ctx->host_walk_ctx = hpt_nested_walk_ctx;
 
-  EU_CHKN(
-          hpt_guest_walk_ctx_construct_vcpu(&rv->guest_walk_ctx, vcpu, NULL),
-          err=2);
+  EU_CHKN( hpt_guest_walk_ctx_construct_vcpu(&rv->guest_walk_ctx, vcpu, NULL),
+           err=2);
 
   hpt_emhf_get_guest_root_pmo(vcpu, &rv->guest_root);
   rv->cpl = HPTW_CPL3; /* FIXME - extract cpl from vcpu */
@@ -152,9 +150,8 @@ bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
   int err = 0;
   bool rv = true;
 
-  EU_CHKN(
-          construct_checked_walk_ctx(vcpu, &ctx),
-          err=1);
+  EU_CHKN( construct_checked_walk_ctx(vcpu, &ctx),
+           err=1);
 
   while(checked < len) {
     hpt_va_t gva = gva_base + checked;
@@ -164,15 +161,14 @@ bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
 
     cpl = reqd_user_accessible ? HPTW_CPL3 : HPTW_CPL0;
 
-    EU_CHK(
-           ptr = hptw_checked_access_va(&ctx.guest_walk_ctx,
-                                        &ctx.guest_root,
-                                        reqd_prots,
-                                        cpl,
-                                        gva,
-                                        len-checked,
-                                        &size_checked),
-           rv=false);
+    EU_CHK( ptr = hptw_checked_access_va(&ctx.guest_walk_ctx,
+                                         &ctx.guest_root,
+                                         reqd_prots,
+                                         cpl,
+                                         gva,
+                                         len-checked,
+                                         &size_checked),
+            rv=false);
     checked += size_checked;
   }
  out:
