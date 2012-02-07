@@ -43,7 +43,7 @@ set baud 115200
 stty ispeed $baud ospeed $baud raw -echo cs8 -parenb -cstopb onlcr < $port 
 
 set timeout 60
-set send_slow {1 .1}
+set send_slow {1 .05}
 #log_file foo.log
 log_user 1
 
@@ -55,6 +55,7 @@ send -s "c"
 
 expect "grub>"
 send -s "root (hd0,0)\r\n"
+#send -s "$env(EXPECT_ROOT)\r\n"
 
 expect "grub>"
 send -s "kernel /init-x86.bin serial=115200,8n1,0x3f8\r\n"
