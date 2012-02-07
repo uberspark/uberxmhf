@@ -654,4 +654,5 @@ u32 hc_utpm_rand(VCPU * vcpu, u32 buffer_addr, u32 numbytes_addr)
 /* Local Variables: */
 /* mode:c           */
 /* indent-tabs-mode:'t */
+/* c-basic-offset:8 */
 /* End:             */
