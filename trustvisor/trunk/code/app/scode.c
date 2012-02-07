@@ -346,24 +346,22 @@ int scode_measure_section(utpm_master_state_t *utpm,
     size_t measured=0;
 
     while(measured < section->size) {
-      gva_t gva = section->pal_gva + measured;
-      hpt_pmeo_t pmeo;
-      gpa_t gpa;
       size_t to_measure;
-      size_t remaining_on_page;
+      uint8_t *ptr=NULL;
+      
+      /* we just constructed these page tables, so in principle the
+       * additional checks here should be unnecessary. leaving them in
+       * to avoid potential future TOCTTOU vulnerabilities.
+       */
+      EU_VERIFY( ptr = hptw_checked_access_va( &wle->hpt_guest_walk_ctx,
+                                               &wle->pal_gpt_root,
+                                               HPT_PROTS_R,
+                                               HPTW_CPL3,
+                                               section->pal_gva + measured,
+                                               section->size - measured,
+                                               &to_measure));
 
-      hptw_get_pmeo(&pmeo, &wle->hpt_guest_walk_ctx, &wle->pal_gpt_root, 1, gva);
-      /* trustvisor should have already mapped this section in before measuring it */
-      /* XXX should this be a proper run-time check? */
-      ASSERT(hpt_pmeo_is_present(&pmeo));
-      ASSERT(hpt_pmeo_is_page(&pmeo));
-
-      gpa = hpt_pmeo_va_to_pa(&pmeo, gva);
-
-      remaining_on_page = hpt_remaining_on_page(&pmeo, gva);
-      to_measure = MIN(section->size-measured, remaining_on_page);
-
-      SHA1_Update(&ctx, gpa2hva(gpa), to_measure);
+      SHA1_Update(&ctx, ptr, to_measure);
       measured += to_measure;
     }
   }
