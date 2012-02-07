@@ -173,6 +173,7 @@ bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
   }
  out:
   EU_VERIFY( !err); /* FIXME */
+  destroy_checked_walk_ctx(&ctx);
   return rv;
 }
 
