@@ -83,6 +83,47 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
   return APP_INIT_SUCCESS;  //successful
 }
 
+struct inbuf_s {
+  u32 gva;
+  u32 len;
+};
+struct outbuf_s {
+  u32 gva;
+  u32 len_gva;
+};
+
+static u32 do_TV_HC_SHARE(VCPU *vcpu, struct regs *r)
+{
+  u32 scode_entry, addrs_gva, lens_gva, count;
+  u32 *addrs=NULL, *lens=NULL;
+  u32 ret = 1;
+
+  scode_entry = r->ecx;
+
+  addrs_gva = r->edx;
+  lens_gva = r->esi;
+  count = r->edi;
+
+  EU_CHK( addrs = malloc(count * sizeof(addrs[0])));
+  EU_CHK( lens = malloc(count * sizeof(lens[0])));
+
+  EU_CHKN( copy_from_current_guest( vcpu,
+                                    addrs,
+                                    addrs_gva,
+                                    sizeof(addrs[0])*count));
+  EU_CHKN( copy_from_current_guest( vcpu,
+                                    lens,
+                                    lens_gva,
+                                    sizeof(lens[0])*count));
+
+  ret = scode_share_ranges(vcpu, scode_entry, addrs, lens, count);
+
+ out:
+  free(addrs);
+  free(lens);
+  return ret;
+}
+
 u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 {	
   struct vmcb_struct * linux_vmcb;
@@ -160,87 +201,144 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
       /* seal data */
     case TV_HC_UTPM_SEAL_DEPRECATED:
       {
-        u32 inbuf, outbuf, data_addr, data_len, pcr_addr, out_addr, out_len_addr;
-        inbuf = r->ecx;
-        outbuf = r->esi;
-        data_addr = get_32bit_aligned_value_from_current_guest(vcpu, inbuf); 
-        data_len = get_32bit_aligned_value_from_current_guest(vcpu, inbuf+4);
-        /* valid pcr value for unseal in edx */
-        pcr_addr = r->edx;
-        out_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf);
-        out_len_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf+4);
+        struct inbuf_s plainbuf_s;
+        struct outbuf_s sealedbuf_s;
+        gva_t plainbuf_s_gva;
+        gva_t sealedbuf_s_gva;
+        gva_t pcr_gva;
 
-        ret = hc_utpm_seal_deprecated(vcpu, data_addr, data_len, pcr_addr, out_addr, out_len_addr);
+        plainbuf_s_gva = r->ecx;
+        sealedbuf_s_gva = r->esi;
+        pcr_gva = r->edx;        
+        
+        ret = 1;
+        EU_CHKN( copy_from_current_guest( vcpu,
+                                          &plainbuf_s,
+                                          plainbuf_s_gva,
+                                          sizeof(plainbuf_s)));
+
+        EU_CHKN( copy_from_current_guest( vcpu,
+                                          &sealedbuf_s,
+                                          sealedbuf_s_gva,
+                                          sizeof(sealedbuf_s)));
+
+        ret = hc_utpm_seal_deprecated(vcpu,
+                                      plainbuf_s.gva, plainbuf_s.len,
+                                      pcr_gva,
+                                      sealedbuf_s.gva, sealedbuf_s.len_gva);
 
         break;
       }
       /* unseal data */
     case TV_HC_UTPM_UNSEAL:
       {
-        u32 inbuf, outbuf, input_addr, in_len, out_addr, out_len_addr, digestAtCreation_addr;
-        inbuf = r->ecx;
-        outbuf = r->edx;
+        struct inbuf_s sealedbuf_s;
+        struct outbuf_s plainbuf_s;
+        gva_t sealedbuf_s_gva, plainbuf_s_gva;
+        gva_t digestAtCreation_gva;
 
-        input_addr = get_32bit_aligned_value_from_current_guest(vcpu, inbuf);
-        in_len = get_32bit_aligned_value_from_current_guest(vcpu, inbuf+4);
-        out_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf);
-        out_len_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf+4);
-        digestAtCreation_addr = r->esi;				
+        sealedbuf_s_gva = r->ecx;
+        plainbuf_s_gva = r->edx;
+        digestAtCreation_gva = r->esi;				
+
+        EU_CHKN( copy_from_current_guest( vcpu,
+                                          &sealedbuf_s,
+                                          sealedbuf_s_gva,
+                                          sizeof(sealedbuf_s)));
+        EU_CHKN( copy_from_current_guest( vcpu,
+                                          &plainbuf_s,
+                                          plainbuf_s_gva,
+                                          sizeof(plainbuf_s)));
 				
-        ret = hc_utpm_unseal(vcpu, input_addr, in_len, out_addr, out_len_addr, digestAtCreation_addr);
+        ret = hc_utpm_unseal( vcpu,
+                              sealedbuf_s.gva, sealedbuf_s.len,
+                              plainbuf_s.gva, plainbuf_s.len_gva,
+                              digestAtCreation_gva);
       }
       break;
     case TV_HC_UTPM_SEAL:
       {
-        u32 inbuf, outbuf, data_addr, data_len, pcrinfo_addr, out_addr, out_len_addr;
-        inbuf = r->ecx;
-        outbuf = r->esi;
-        data_addr = get_32bit_aligned_value_from_current_guest(vcpu, inbuf); 
-        data_len = get_32bit_aligned_value_from_current_guest(vcpu, inbuf+4);
-        /* valid pcr value for unseal in edx */
-        pcrinfo_addr = r->edx;
-        out_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf);
-        out_len_addr = get_32bit_aligned_value_from_current_guest(vcpu,outbuf+4);
+        struct inbuf_s plainbuf_s;
+        struct outbuf_s sealedbuf_s;
+        gva_t sealedbuf_s_gva, plainbuf_s_gva;
+        gva_t pcrinfo_gva;
+        
+        plainbuf_s_gva = r->ecx;
+        sealedbuf_s_gva = r->esi;
+        pcrinfo_gva = r->edx;
 
-        ret = hc_utpm_seal(vcpu, data_addr, data_len, pcrinfo_addr, out_addr, out_len_addr);
+        ret = 1;
+        EU_CHKN( copy_from_current_guest( vcpu,
+                                          &plainbuf_s,
+                                          plainbuf_s_gva,
+                                          sizeof(plainbuf_s)));
+        EU_CHKN( copy_from_current_guest( vcpu,
+                                          &sealedbuf_s,
+                                          sealedbuf_s_gva,
+                                          sizeof(sealedbuf_s)));
+
+        ret = hc_utpm_seal( vcpu,
+                            plainbuf_s.gva, plainbuf_s.len,
+                            pcrinfo_gva,
+                            sealedbuf_s.gva, sealedbuf_s.len_gva);
       }
       break;
     case TV_HC_UTPM_UNSEAL_DEPRECATED:
       {
-        u32 inbuf, outbuf, input_addr, in_len, out_addr, out_len_addr;
-        inbuf = r->ecx;
-        outbuf = r->edx;
+        struct inbuf_s sealedbuf_s;
+        struct outbuf_s plainbuf_s;
+        gva_t plainbuf_s_gva, sealedbuf_s_gva;
 
-        input_addr = get_32bit_aligned_value_from_current_guest(vcpu, inbuf);
-        in_len = get_32bit_aligned_value_from_current_guest(vcpu, inbuf+4);
-        out_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf);
-        out_len_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf+4);
+        sealedbuf_s_gva = r->ecx;
+        plainbuf_s_gva = r->edx;
 
-        ret = hc_utpm_unseal_deprecated(vcpu, input_addr, in_len, out_addr, out_len_addr);
+        EU_CHKN( copy_from_current_guest( vcpu,
+                                          &sealedbuf_s,
+                                          sealedbuf_s_gva,
+                                          sizeof(sealedbuf_s)));
+
+        EU_CHKN( copy_from_current_guest( vcpu,
+                                          &plainbuf_s,
+                                          plainbuf_s_gva,
+                                          sizeof(plainbuf_s)));
+
+        ret = hc_utpm_unseal_deprecated(vcpu,
+                                        sealedbuf_s.gva, sealedbuf_s.len,
+                                        plainbuf_s.gva, plainbuf_s.len_gva);
 
         break;
       }
     case TV_HC_UTPM_QUOTE:
       {
-        u32 sigbuf, nonce_addr, tpmsel_addr, sig_addr, sig_len_addr,
-          pcrCompbuf, pcrComp_addr, pcrCompLen_addr;
-        printf("[TV] TV_HC_UTPM_QUOTE hypercall received.\n");
-        /* address of nonce to be sealed in esi*/
-        nonce_addr = r->esi;
-        /* tpm selection data address in ecx */
-        tpmsel_addr = r->ecx;
+        gva_t nonce_gva, tpmsel_gva;
+        struct outbuf_s sigbuf_s;
+        gva_t sigbuf_s_gva;
+        struct outbuf_s pcr_comp_buf_s;
+        gva_t pcr_comp_buf_s_gva;
 
-        /* signature buffer and its length in array */
-        sigbuf = r->edx;
-        sig_addr = get_32bit_aligned_value_from_current_guest(vcpu, sigbuf);
-        sig_len_addr = get_32bit_aligned_value_from_current_guest(vcpu,sigbuf+4);
+        eu_trace("TV_HC_UTPM_QUOTE hypercall received.");
+        ret = 1;
+        
+        nonce_gva = r->esi; /* address of nonce to be sealed */
+        tpmsel_gva = r->ecx; /* tpm selection data address */
+        pcr_comp_buf_s_gva = r->edi; /* PCR Composite buffer and its length */
+        sigbuf_s_gva = r->edx; /* signature buffer and its length */
 
-        /* PCR Composite buffer and its length in array */
-        pcrCompbuf = r->edi;
-        pcrComp_addr = get_32bit_aligned_value_from_current_guest(vcpu, pcrCompbuf);
-        pcrCompLen_addr = get_32bit_aligned_value_from_current_guest(vcpu, pcrCompbuf+4);
+        EU_CHKN( copy_from_current_guest( vcpu,
+                                          &sigbuf_s,
+                                          sigbuf_s_gva,
+                                          sizeof(sigbuf_s)));
+        
+        EU_CHKN( copy_from_current_guest( vcpu,
+                                          &pcr_comp_buf_s,
+                                          pcr_comp_buf_s_gva,
+                                          sizeof(sigbuf_s)));
 				
-        ret = hc_utpm_quote(vcpu, nonce_addr, tpmsel_addr, sig_addr, sig_len_addr, pcrComp_addr, pcrCompLen_addr);
+        ret = hc_utpm_quote( vcpu,
+                             nonce_gva,
+                             tpmsel_gva,
+                             sigbuf_s.gva, sigbuf_s.len_gva,
+                             pcr_comp_buf_s.gva, pcr_comp_buf_s.len_gva);
 
         break;
       }
@@ -253,47 +351,32 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
       }
     case TV_HC_UTPM_QUOTE_DEPRECATED:
       {
-        u32 outbuf, nonce_addr, tpmsel_addr, out_addr, out_len_addr;
-        /* address of nonce to be sealed in esi*/
-        nonce_addr = r->esi;
-        /* tpm selection data address in ecx */
-        tpmsel_addr = r->ecx;
+        struct outbuf_s sigbuf_s;
+        gva_t sigbuf_s_gva;
+        gva_t nonce_gva, tpmsel_gva;
 
-        outbuf = r->edx;
-        out_addr = get_32bit_aligned_value_from_current_guest(vcpu, outbuf);
-        out_len_addr = get_32bit_aligned_value_from_current_guest(vcpu,outbuf+4);
+        ret = 1;
+        
+        nonce_gva = r->esi; /* address of nonce to be sealed */
+        tpmsel_gva = r->ecx; /* tpm selection data address */
+        sigbuf_s_gva = r->edx;
 
-        ret = hc_utpm_quote_deprecated(vcpu,nonce_addr,tpmsel_addr,out_addr,out_len_addr);
+        EU_CHKN( copy_from_current_guest( vcpu,
+                                          &sigbuf_s,
+                                          sigbuf_s_gva,
+                                          sizeof(sigbuf_s)));
+
+        ret = hc_utpm_quote_deprecated( vcpu,
+                                        nonce_gva,
+                                        tpmsel_gva,
+                                        sigbuf_s.gva, sigbuf_s.len_gva);
 
         break;
       }
+
     case TV_HC_SHARE:
       {
-        u32 scode_entry, addrs_gva, lens_gva, count;
-        u32 *addrs=NULL, *lens=NULL;
-
-        scode_entry = r->ecx;
-
-        addrs_gva = r->edx;
-        lens_gva = r->esi;
-        count = r->edi;
-
-        addrs = malloc(count * sizeof(u32));
-        copy_from_current_guest(vcpu, (u8*)addrs, addrs_gva, sizeof(u32)*count);
-
-        lens = malloc(count * sizeof(u32));
-        copy_from_current_guest(vcpu, (u8*)lens, lens_gva, sizeof(u32)*count);
-
-        if (lens && addrs) {
-          ret = scode_share_ranges(vcpu, scode_entry, addrs, lens, count);
-        } else {
-          eu_err("TV_VMMCMD_SHARE: ERROR- couldn't allocate %d entries\n",
-                 count);
-          ret = -2;
-        }
-
-        free(addrs);
-        free(lens);
+        ret = do_TV_HC_SHARE(vcpu, r);
         break;
       }
     case TV_HC_UTPM_PCRREAD:
@@ -351,6 +434,8 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
         ret = 1;
       }
     }
+
+ out:
 
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     r->eax = ret;
