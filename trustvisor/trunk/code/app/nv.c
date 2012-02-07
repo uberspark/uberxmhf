@@ -366,7 +366,7 @@ uint32_t hc_tpmnvram_getsize(VCPU* vcpu, uint32_t size_addr) {
   eu_trace("HW_TPM_ROLLBACK_PROT_INDEX 0x%08x size"
           " = %d", HW_TPM_ROLLBACK_PROT_INDEX, actual_size);
 
-  put_32bit_aligned_value_to_current_guest(vcpu, size_addr, actual_size);		
+  EU_CHKN( copy_to_current_guest(vcpu, size_addr, &actual_size, sizeof(actual_size)));
 
   rv = 0;
  out:
