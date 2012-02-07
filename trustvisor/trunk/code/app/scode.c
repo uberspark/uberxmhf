@@ -1094,9 +1094,12 @@ u32 scode_unmarshall(VCPU * vcpu)
 
   /* get params number */
   pm_addr = pm_addr_base;
-  pm_num = get_32bit_aligned_value_from_guest(&whitelist[curr].hpt_guest_walk_ctx,
-                                              &whitelist[curr].pal_gpt_root,
-                                              (u32)pm_addr);
+  EU_CHKN( hptw_checked_copy_from_va( &whitelist[curr].hpt_guest_walk_ctx,
+                                      &whitelist[curr].pal_gpt_root,
+                                      HPTW_CPL3,
+                                      &pm_num,
+                                      pm_addr,
+                                      sizeof(pm_num)));
   pm_addr += 4;
   eu_trace("params number is %d", pm_num);
   EU_CHK( pm_num <= TV_MAX_PARAMS);
@@ -1105,9 +1108,12 @@ u32 scode_unmarshall(VCPU * vcpu)
   for (i = 0; i < pm_num; i++) /*the last parameter should be pushed in stack first*/
     {
       /* get param information*/
-      pm_type =  get_32bit_aligned_value_from_guest(&whitelist[curr].hpt_guest_walk_ctx,
-                                                    &whitelist[curr].pal_gpt_root,
-                                                    (u32)pm_addr);
+      EU_CHKN( hptw_checked_copy_from_va( &whitelist[curr].hpt_guest_walk_ctx,
+                                          &whitelist[curr].pal_gpt_root,
+                                          HPTW_CPL3,
+                                          &pm_type,
+                                          pm_addr,
+                                          sizeof(pm_type)));
       pm_addr += 4;
 
       switch (pm_type)
@@ -1121,13 +1127,19 @@ u32 scode_unmarshall(VCPU * vcpu)
           }
         case TV_PAL_PM_POINTER: /* pointer */
           {
-            pm_size =  get_32bit_aligned_value_from_guest(&whitelist[curr].hpt_guest_walk_ctx,
-                                                          &whitelist[curr].pal_gpt_root,
-                                                          (u32)pm_addr);
+            EU_CHKN( hptw_checked_copy_from_va( &whitelist[curr].hpt_guest_walk_ctx,
+                                                &whitelist[curr].pal_gpt_root,
+                                                HPTW_CPL3,
+                                                &pm_size,
+                                                pm_addr,
+                                                sizeof(pm_size)));
             /* get pointer adddress in regular code */
-            pm_value = get_32bit_aligned_value_from_guest(&whitelist[curr].hpt_guest_walk_ctx,
-                                                          &whitelist[curr].pal_gpt_root,
-                                                          (u32)pm_addr+4);
+            EU_CHKN( hptw_checked_copy_from_va( &whitelist[curr].hpt_guest_walk_ctx,
+                                                &whitelist[curr].pal_gpt_root,
+                                                HPTW_CPL3,
+                                                &pm_value,
+                                                pm_addr+4,
+                                                sizeof(pm_value)));
             pm_addr += 8;
 
             eu_trace("PM %d is a pointer (size %d, addr %#x)", i,  pm_size*4, pm_value);
