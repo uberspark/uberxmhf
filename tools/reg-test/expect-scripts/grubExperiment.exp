@@ -9,7 +9,7 @@
 # Jon based this on:
 # http://www.aps.anl.gov/Sectors/33_34/controls/docs/serialWatch.html
 
-exp_internal -f internal.log 1
+#exp_internal -f internal.log 1
 
 if {$argc != 1} { 
   puts "$argc, $argv" 
@@ -42,34 +42,40 @@ set baud 115200
 stty ispeed $baud ospeed $baud raw -echo cs8 -parenb -cstopb onlcr < $port 
 
 set timeout 60
-set send_human {.1 .3 1 .05 2}
+set send_human {.1 .3 1 .05 .5}
 log_file foo.log
 log_user 1
 
 expect "Press any key to continue."
-puts "[string trim $expect_out(buffer) \r\n]" 
+puts "ONE [string trim $expect_out(buffer) \r\n]" 
 send -h "c"
-
-sleep 1
 
 expect "command-line."
-puts "[string trim $expect_out(buffer) \r\n]" 
+puts "TWO [string trim $expect_out(buffer) \r\n]" 
 send -h "c"
 
-sleep 1
+expect "grub>"
+puts "THREE [string trim $expect_out(buffer) \n]" 
+send -h "root (hd0,0)\r\n"
 
 expect "grub>"
-puts "[string trim $expect_out(buffer) \n]" 
-send -h "root (hd0,0)\r\n"
+puts "FOUR [string trim $expect_out(buffer) \n]" 
 send -h "kernel /init-x86.bin serial=115200,8n1,0x3f8\r\n"
+
+expect "grub>"
+puts "FIVE [string trim $expect_out(buffer) \n]" 
 send -h "module /hypervisor-x86.bin.gz\r\n"
+
+expect "grub>"
+puts "SIX [string trim $expect_out(buffer) \n]" 
 send -h "modulenounzip (hd0)+1\r\n"
+
+expect "grub>"
+puts "SEVEN [string trim $expect_out(buffer) \n]" 
 send -h "module /i5_i7_DUAL_SINIT_18.BIN\r\n"
 
-sleep 1
-
 expect "grub>"
-puts "[string trim $expect_out(buffer) \n]" 
+puts "EIGHT [string trim $expect_out(buffer) \n]" 
 send -h "boot\r\n"
 
 # log each input line 
