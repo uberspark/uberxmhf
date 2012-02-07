@@ -896,10 +896,12 @@ u32 scode_marshall(VCPU * vcpu)
 
   /* save params number */
   pm_addr = pm_addr_base;
-  put_32bit_aligned_value_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
-                                   &whitelist[curr].pal_gpt_root,
-                                   pm_addr,
-                                   whitelist[curr].gpm_num);
+  EU_CHKN( hptw_checked_copy_to_va( &whitelist[curr].hpt_guest_walk_ctx,
+                                    &whitelist[curr].pal_gpt_root,
+                                    HPTW_CPL3,
+                                    pm_addr,
+                                    &whitelist[curr].gpm_num,
+                                    sizeof(whitelist[curr].gpm_num)));
   pm_addr += 4;
   pm_size_sum = 4; /*memory used in input pms section*/
   eu_trace("params number is %d", whitelist[curr].gpm_num);
@@ -978,9 +980,12 @@ u32 scode_marshall(VCPU * vcpu)
         }
       new_rsp = VCPU_grsp(vcpu)-4;
       VCPU_grsp_set(vcpu, new_rsp);
-      put_32bit_aligned_value_to_guest(&whitelist[curr].hpt_guest_walk_ctx,
-                                       &whitelist[curr].pal_gpt_root,
-                                       new_rsp, pm_tmp);
+      EU_CHKN( hptw_checked_copy_to_va( &whitelist[curr].hpt_guest_walk_ctx,
+                                        &whitelist[curr].pal_gpt_root,
+                                        HPTW_CPL3,
+                                        new_rsp,
+                                        &pm_tmp,
+                                        sizeof(pm_tmp)));
     }
 
   err=0;
