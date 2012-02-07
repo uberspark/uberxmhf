@@ -1254,7 +1254,7 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
 
   perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_NPF], vcpu->idx);
 
-  eu_trace("CPU(%02x): nested page fault!(rip %#x, gcr3 %#Lx, gpaddr %#x, errorcode %llx)",
+  eu_trace("CPU(%02x): nested page fault!(rip %#x, gcr3 %#llx, gpaddr %#x, errorcode %llx)",
           vcpu->id, rip, gcr3, gpaddr, errorcode);
 
   EU_CHK( hpt_error_wasInsnFetch(vcpu, errorcode));
