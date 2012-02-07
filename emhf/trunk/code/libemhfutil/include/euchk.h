@@ -100,20 +100,22 @@
 
 /* use like assert, but where arg will always be expanded and the
    check never disabled */
-#define EU_VERIFY(cond)                         \
+#define EU_VERIFY(cond, args...)                \
   do {                                          \
     if (!(cond)) {                              \
-      eu_err("EU_VERIFY(%s) failed", #cond);    \
+      eu_err("EU_VERIFY( %s) failed", #cond);   \
+      (void)0, ## args;                         \
       abort();                                  \
     }                                           \
   } while(0)
 
 /* verify-not. logs value in case of failure as with EU_CHKN. */
-#define EU_VERIFYN(cond)                                                \
+#define EU_VERIFYN(cond, args...)                                       \
   do {                                                                  \
     int _eu_chk_cond = (int)(cond);                                     \
     if (_eu_chk_cond) {                                                 \
-      eu_err("EU_VERIFYN(%s) failed with %d", #cond, _eu_chk_cond);     \
+      eu_err("EU_VERIFYN( %s) failed with %d", #cond, _eu_chk_cond);    \
+      (void)0, ## args;                                                 \
       abort();                                                          \
     }                                                                   \
   } while(0)
