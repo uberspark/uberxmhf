@@ -36,6 +36,9 @@
 #include <hpt.h>
 #include <hptw.h>
 #include <string.h> /* for memset */
+
+#include "hpt_log.h"
+
 int hptw_insert_pmeo(const hptw_ctx_t *ctx,
                      hpt_pmo_t *pmo_root,
                      const hpt_pmeo_t *pmeo,
@@ -137,7 +140,7 @@ bool hptw_next_lvl(const hptw_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va)
 
   if (!hpt_pmeo_is_present(&pmeo)
       || hpt_pmeo_is_page(&pmeo)) {
-    hpt_log_trace("hptw_next_lvl at leaf. is-present:%d is-page:%d\n",
+    eu_trace("at leaf. is-present:%d is-page:%d",
                   hpt_pmeo_is_present(&pmeo), hpt_pmeo_is_page(&pmeo));
     return false;
   } else {
@@ -145,7 +148,7 @@ bool hptw_next_lvl(const hptw_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va)
     size_t pm_sz = hpt_pm_size(pmo->t, pmo->lvl-1);
     pmo->pm = ctx->pa2ptr(ctx->pa2ptr_ctx, hpt_pmeo_get_address(&pmeo),
                           pm_sz, HPT_PROTS_R, HPTW_CPL0, &avail);
-    hpt_log_trace("hptw_next_lvl next-lvl:%d pm-sz:%d pmo->pm:%p avail:%d\n",
+    eu_trace("next-lvl:%d pm-sz:%d pmo->pm:%p avail:%d",
                   pmo->lvl-1, pm_sz, pmo->pm, avail);
     if(!pmo->pm) {
       /* didn't descend, and this is an error. we ran into trouble
@@ -254,43 +257,40 @@ void* hptw_checked_access_va(const hptw_ctx_t *ctx,
   hpt_pmeo_t pmeo;
   hpt_pa_t pa;
   hpt_pmo_t pmo = *pmo_root;
+  void *rv=NULL;
   *avail_sz=0;
 
-  hpt_log_trace("hptw_checked_access_va: entering. va:0x%llx access_type %lld cpl:%d\n",
-                va, access_type, cpl);
+  eu_trace("va:0x%llx access_type %lld cpl:%d",
+           va, access_type, cpl);
 
   do {
-    hpt_log_trace("hptw_checked_access_va pmo t:%d pm:%p lvl:%d\n",
-                  pmo.t, pmo.pm, pmo.lvl);
+    eu_trace("pmo t:%d pm:%p lvl:%d",
+             pmo.t, pmo.pm, pmo.lvl);
     hpt_pm_get_pmeo_by_va(&pmeo, &pmo, va);
-    if (((access_type & hpt_pmeo_getprot(&pmeo)) != access_type)
-        || (cpl != HPTW_CPL0 && !hpt_pmeo_getuser(&pmeo))) {
-      hpt_log_trace("hptw_checked_access_va insufficient prv. pme:0x%llx cpl:%d priv:%lld returning NULL\n",
-                    pmeo.pme, cpl, hpt_pmeo_getprot(&pmeo));
-      return NULL;
-    }
+    EU_CHK(((access_type & hpt_pmeo_getprot(&pmeo)) == access_type)
+           && (cpl == HPTW_CPL0 || hpt_pmeo_getuser(&pmeo)),
+           eu_err_e("req-priv:%lld req-cpl:%d priv:%lld user-accessible:%d",
+                    access_type, cpl, hpt_pmeo_getprot(&pmeo), hpt_pmeo_getuser(&pmeo)));
   } while (hptw_next_lvl(ctx, &pmo, va));
 
-  if (pmo.t == HPT_TYPE_INVALID) {
-    return NULL;
-  }
+  EU_CHK( pmo.t != HPT_TYPE_INVALID);
 
-  if(!hpt_pmeo_is_present(&pmeo)) {
-    hpt_log_trace("hptw_checked_access_va not-present. returning NULL\n");
-    return NULL;
-  }
+  EU_CHK( hpt_pmeo_is_present(&pmeo));
 
   /* exiting loop means hptw_next_lvl failed, which means either the
    * current pmeo is a page, or the current pmeo is not present.
    * however, we should have already returned if not present, so pmeo
    * must be a page */
-  assert(hpt_pmeo_is_page(&pmeo));
+  EU_VERIFY(hpt_pmeo_is_page(&pmeo));
 
   pa = hpt_pmeo_va_to_pa(&pmeo, va);
   *avail_sz = MIN(requested_sz, hpt_remaining_on_page(&pmeo, pa));
-  hpt_log_trace("hptw_checked_access_va got pa:%llx sz:%d\n", pa, *avail_sz);
-  return ctx->pa2ptr(ctx->pa2ptr_ctx, pa,
-                     *avail_sz, access_type, cpl, avail_sz);
+  eu_trace("got pa:%llx sz:%d", pa, *avail_sz);
+  rv = ctx->pa2ptr(ctx->pa2ptr_ctx, pa,
+                   *avail_sz, access_type, cpl, avail_sz);
+
+ out:
+  return rv;
 }
 
 int hptw_checked_copy_from_va(const hptw_ctx_t *ctx,
@@ -352,12 +352,12 @@ int hptw_checked_copy_va_to_va(const hptw_ctx_t *dst_ctx,
                                size_t len)
 {
   size_t copied=0;
+  int rv=1;
 
-  hpt_log_trace("hptw_checked_copy_va_to_va: entering\n");
-  hpt_log_trace("hptw_checked_copy_va_to_va: dst_pmo t:%d pm:%p lvl:%d\n",
-          dst_pmo->t, dst_pmo->pm, dst_pmo->lvl);
-  hpt_log_trace("hptw_checked_copy_va_to_va: src_pmo t:%d pm:%p lvl:%d\n",
-          src_pmo->t, src_pmo->pm, src_pmo->lvl);
+  eu_trace("dst_pmo t:%d pm:%p lvl:%d",
+           dst_pmo->t, dst_pmo->pm, dst_pmo->lvl);
+  eu_trace("src_pmo t:%d pm:%p lvl:%d",
+           src_pmo->t, src_pmo->pm, src_pmo->lvl);
 
   while(copied < len) {
     hpt_va_t dst_va = dst_va_base + copied;
@@ -365,23 +365,33 @@ int hptw_checked_copy_va_to_va(const hptw_ctx_t *dst_ctx,
     size_t to_copy;
     void *src, *dst;
 
-    hpt_log_trace("hptw_checked_copy_va_to_va: dst_va:0x%llx src_va:0x%llx\n", dst_va, src_va);
+    eu_trace("dst_va:0x%llx src_va:0x%llx", dst_va, src_va);
 
-    hpt_log_trace("hptw_checked_copy_va_to_va: calling hptw_checked_access_va\n");
-    dst = hptw_checked_access_va(dst_ctx, dst_pmo, HPT_PROTS_W, dst_cpl, dst_va, len-copied, &to_copy);
-    hpt_log_trace("hptw_checked_copy_va_to_va: calling hptw_checked_access_va\n");
-    src = hptw_checked_access_va(src_ctx, src_pmo, HPT_PROTS_R, src_cpl, src_va, to_copy, &to_copy);
-    if(!dst || !src) {
-      return 1;
-    }
+    EU_CHK( dst = hptw_checked_access_va(dst_ctx,
+                                         dst_pmo,
+                                         HPT_PROTS_W,
+                                         dst_cpl,
+                                         dst_va,
+                                         len-copied,
+                                         &to_copy));
+    EU_CHK( src = hptw_checked_access_va(src_ctx,
+                                         src_pmo,
+                                         HPT_PROTS_R,
+                                         src_cpl,
+                                         src_va,
+                                         to_copy,
+                                         &to_copy));
+    eu_trace("dst-ptr:%p src-ptr:%p to-copy:%d",
+             dst, src, to_copy);
 
-    hpt_log_trace("hptw_checked_copy_va_to_va: calling memcpy\n");
     memcpy(dst, src, to_copy);
     copied += to_copy;
   }
 
-  hpt_log_trace("hptw_checked_copy_va_to_va: returning\n");
-  return 0;
+  eu_trace("hptw_checked_copy_va_to_va: returning");
+  rv=0;
+ out:
+  return rv;
 }
 
 int hptw_checked_memset_va(const hptw_ctx_t *ctx,
@@ -392,23 +402,30 @@ int hptw_checked_memset_va(const hptw_ctx_t *ctx,
                            size_t len)
 {
   size_t set=0;
-  hpt_log_trace("hptw_checked_memset_va entering\n");
+  int rv=1;
+  eu_trace("hptw_checked_memset_va entering");
 
   while(set < len) {
     hpt_va_t dst_va = dst_va_base + set;
     size_t to_set;
     void *dst;
 
-    hpt_log_trace("hptw_checked_memset_va calling hptw_checked_access_va\n");
-    dst = hptw_checked_access_va(ctx, pmo, HPT_PROTS_W, cpl, dst_va, len-set, &to_set);
-    hpt_log_trace("hptw_checked_memset_va got pointer %p, size %d\n", dst, to_set);
-    if(!dst) {
-      return 1;
-    }
+    eu_trace("calling hptw_checked_access_va");
+    EU_CHK(dst = hptw_checked_access_va(ctx,
+                                        pmo,
+                                        HPT_PROTS_W,
+                                        cpl,
+                                        dst_va,
+                                        len-set,
+                                        &to_set));
+    eu_trace("got pointer %p, size %d", dst, to_set);
     memset(dst, c, to_set);
     set += to_set;
   }
-  hpt_log_trace("hptw_checked_memset_va returning\n");
-  return 0;
+  eu_trace("hptw_checked_memset_va returning");
+
+  rv=0;
+ out:
+  return rv;
 }
 

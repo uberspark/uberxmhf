@@ -49,8 +49,6 @@
 #include <stddef.h>
 #include <assert.h>
 
-void hpt_log_trace(const char* fmt, ...);
-
 typedef enum {
   HPT_TYPE_NORM=0, /* x86 'normal'\legacy */
   HPT_TYPE_PAE=1, /* Physical address extension */
