@@ -41,6 +41,8 @@
 #include <random.h> /* rand_bytes_or_die() */
 #include <nv.h>
 
+#include <tv_log.h>
+
 /* defined in scode.c */
 /* TODO: more elegant organization of these data structures */
 extern int *scode_curr;
@@ -66,48 +68,50 @@ static void dump_pcr_info_short(tpm_pcr_info_short_t *info) {
   ASSERT(NULL != info);
 
   /* pcr_selection */
-  dprintf(LOG_TRACE, "\n    selected PCRs      ");
+  eu_trace("selected PCRs:");
   for(i=0; i<24; i++) {
     if(pcr_is_selected(&info->pcr_selection, i)) {
-      dprintf(LOG_TRACE, "%d, ", i);						
+      eu_trace("pcr %d, ", i);						
     }
   }
 
   /* locality_at_release */
-  dprintf(LOG_TRACE, "\n    localityAtRelease  ");
+  eu_trace("localityAtRelease  ");
   for(i=0; i<=4; i++) {
     if(1<<i & info->locality_at_release) {
-      dprintf(LOG_TRACE, "%d, ", i);
+      eu_trace("locality %d, ", i);
     }
   }
   /* digest_at_release */
-  print_hex("    digestAtRelease    ",
-            info->digest_at_release.digest,
-            sizeof(info->digest_at_release));
+  eu_trace("digestAtRelease %*D",
+           sizeof(info->digest_at_release),
+           info->digest_at_release.digest,
+           " ");
+
 }
 
 static void dump_nv_data_public(tpm_nv_data_public_t *pub) {
   ASSERT(NULL != pub);
 
-  dprintf(LOG_TRACE, "\n  nvIndex              "
+  eu_trace("nvIndex              "
           "0x%08x", pub->nv_index);
 
   /* pcrInfoRead, pcrInfoWrite */
-  dprintf(LOG_TRACE, "\n  pcrInfoRead:         ");
+  eu_trace("pcrInfoRead:         ");
   dump_pcr_info_short(&pub->pcr_info_read);
-  dprintf(LOG_TRACE, "  pcrInfoWrite:        ");
+  eu_trace("pcrInfoWrite:        ");
   dump_pcr_info_short(&pub->pcr_info_write);
 
-  dprintf(LOG_TRACE, "  permission           0x%08x",	pub->permission.attributes);
+  eu_trace("  permission           0x%08x",	pub->permission.attributes);
 
-  dprintf(LOG_TRACE, "\n  bReadSTClear         %s",
-          pub->b_read_st_clear ? "true" : "false");
-  dprintf(LOG_TRACE, "\n  bWriteSTClear        %s",
-          pub->b_write_st_clear ? "true" : "false");
-  dprintf(LOG_TRACE, "\n  bWriteDefine         %s",
-          pub->b_write_define ? "true" : "false");
+  eu_trace("bReadSTClear         %s",
+           pub->b_read_st_clear ? "true" : "false");
+  eu_trace("bWriteSTClear        %s",
+           pub->b_write_st_clear ? "true" : "false");
+  eu_trace("bWriteDefine         %s",
+           pub->b_write_define ? "true" : "false");
 
-  dprintf(LOG_TRACE, "\n  data_size            %d",	pub->data_size);
+  eu_trace("data_size            %d",	pub->data_size);
 }
 
 /**
@@ -128,8 +132,8 @@ static int validate_nv_access_controls(unsigned int locality,
   ASSERT(locality <= 4);
 		
   if(0 != (rv = tpm_get_nv_data_public(locality, idx, &pub))) {
-    dprintf(LOG_ERROR, "\n[TV] %s: tpm_get_nv_data_public()"
-            " returned ERROR %d!", __FUNCTION__, rv);
+    eu_err("tpm_get_nv_data_public()"
+           " returned ERROR %d!", rv);
     return rv;
   }
 
@@ -138,28 +142,27 @@ static int validate_nv_access_controls(unsigned int locality,
   /* Confirm a single EXCLUSIVE locality for both reading and writing. */
   if((1<<locality != pub.pcr_info_read.locality_at_release) ||
      (1<<locality != pub.pcr_info_write.locality_at_release)) {
-    dprintf(LOG_ERROR, "\n[TV] %s: locality %d !="
-            " locality_at_release", __FUNCTION__, locality);
+    eu_err("locality %d !="
+           " locality_at_release", locality);
     return 1;
   }
 
   /* Confirm MANDATORY PCRs included. */
 #define MANDATORY_PCR_A 11 /* XXX 17 */
 #define MANDATORY_PCR_B 12 /* XXX 18 */
-  dprintf(LOG_ERROR, "\n[TV] %s: \n\n"
-          "VULNERABILITY:VULNERABILITY:VULNERABILITY:VULNERABILITY\n"
-          "   MANDATORY_PCR_x set to unsafe value!!! Proper code\n"
-          "   measurement UNIMPLEMENTED for NV index 0x%08x!\n"
-          "   Continuing anyways...\n"
-          "VULNERABILITY:VULNERABILITY:VULNERABILITY:VULNERABILITY\n\n",
-          __FUNCTION__, idx);
+  eu_err("\nVULNERABILITY:VULNERABILITY:VULNERABILITY:VULNERABILITY\n"
+         "   MANDATORY_PCR_x set to unsafe value!!! Proper code\n"
+         "   measurement UNIMPLEMENTED for NV index 0x%08x!\n"
+         "   Continuing anyways...\n"
+         "VULNERABILITY:VULNERABILITY:VULNERABILITY:VULNERABILITY\n",
+         idx);
 
   if(!pcr_is_selected(&pub.pcr_info_read.pcr_selection, MANDATORY_PCR_A) ||
      !pcr_is_selected(&pub.pcr_info_read.pcr_selection, MANDATORY_PCR_B) ||
      !pcr_is_selected(&pub.pcr_info_write.pcr_selection, MANDATORY_PCR_A) ||
      !pcr_is_selected(&pub.pcr_info_write.pcr_selection, MANDATORY_PCR_B)) {
-    dprintf(LOG_ERROR, "\n[TV] %s: ERROR: MANDATORY PCRs NOT FOUND in PCR"
-            " Selection for NV index 0x%08x", __FUNCTION__, idx);
+    eu_err("ERROR: MANDATORY PCRs NOT FOUND in PCR"
+           " Selection for NV index 0x%08x", idx);
     return 1;
   }
 
@@ -181,21 +184,20 @@ int validate_trustvisor_nv_region(unsigned int locality,
   unsigned int actual_size = 0;
     
   if(0 != (rv = tpm_get_nvindex_size(locality, idx, &actual_size))) {
-    dprintf(LOG_ERROR, "\n[TV] %s: tpm_get_nvindex_size returned an ERROR!",
-            __FUNCTION__);
+    eu_err("tpm_get_nvindex_size returned an ERROR!");
     return rv;
   }
 
   if(actual_size != expected_size) {
-    dprintf(LOG_ERROR, "\n[TV] ERROR: %s: actual_size (%d) != expected_size (%d)!",
-            __FUNCTION__, actual_size, expected_size);
+    eu_err("ERROR: actual_size (%d) != expected_size (%d)!",
+           actual_size, expected_size);
     return 1;
   }
 
   if(0 != (rv = validate_nv_access_controls(locality, idx))) {		
-    dprintf(LOG_ERROR, "\n\n[TV] %s: SECURITY ERROR: NV REGION"
-            " ACCESS CONTROL CHECK FAILED for index 0x%08x\n",
-            __FUNCTION__, idx);
+    eu_err("SECURITY ERROR: NV REGION"
+           " ACCESS CONTROL CHECK FAILED for index 0x%08x",
+           idx);
     return rv;
   }
     
@@ -223,20 +225,18 @@ static int _trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
   bool first_boot;
 
   if(0 != (rv = validate_trustvisor_nv_region(locality, idx, mss_size))) {
-    dprintf(LOG_ERROR, "\n\n[TV] %s: ERROR: validate_trustvisor_nv_region FAILED\n",
-            __FUNCTION__);
+    eu_err("ERROR: validate_trustvisor_nv_region FAILED");
     return rv;
   }
 
   if(0 != (rv = tpm_nv_read_value(locality, idx, 0, mss, &actual_size))) {
-    dprintf(LOG_ERROR, "\n[TV] %s: tpm_nv_read_value FAILED! with error %d\n",
-            __FUNCTION__, rv);
+    eu_err("tpm_nv_read_value FAILED! with error %d");
     return rv;
   }
 
   if(actual_size != mss_size) {
-    dprintf(LOG_ERROR, "\n[TV] %s: NVRAM read size %d != MSS expected size %d\n",
-            __FUNCTION__, actual_size, mss_size);
+    eu_err("NVRAM read size %d != MSS expected size %d",
+           actual_size, mss_size);
     return 1;
   }
 
@@ -256,16 +256,15 @@ static int _trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
      (for additional simplicitly / less dependence on PRNG
      security) */
   if(first_boot) {
-    dprintf(LOG_TRACE, "\n[TV] %s: first_boot detected!", __FUNCTION__);
+    eu_trace("first_boot detected!");
     rand_bytes_or_die(mss, mss_size); /* "or_die" is VERY important! */
     if(0 != (rv = tpm_nv_write_value(locality, idx, 0, mss, mss_size))) {
-      dprintf(LOG_ERROR, "\n[TV] %s: ERROR: Unable to write new MSS to TPM NVRAM (%d)!\n",
-              __FUNCTION__, rv);
+      eu_err("ERROR: Unable to write new MSS to TPM NVRAM (%d)!",
+             rv);
       return rv;
     }
   } else {
-    dprintf(LOG_TRACE, "\n[TV] %s: MSS successfully read from TPM NVRAM",
-            __FUNCTION__);
+    eu_trace("MSS successfully read from TPM NVRAM");
   }
     
   return rv;
@@ -278,8 +277,8 @@ int trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
   ASSERT(NULL != mss);
   ASSERT(mss_size >= 20); /* Sanity-check security level wrt SHA-1 */
 
-  dprintf(LOG_TRACE, "\n[TV] %s: locality %d, idx 0x%08x, mss@%p, mss_size %d",
-          __FUNCTION__, locality, idx, mss, mss_size);
+  eu_trace("locality %d, idx 0x%08x, mss@%p, mss_size %d",
+           locality, idx, mss, mss_size);
   
   rv = _trustvisor_nv_get_mss(locality, idx, mss, mss_size);
   if(0 == rv) {
@@ -291,8 +290,8 @@ int trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
    * initialize the MSS.  If configured conservatively, halt now!
    */
   if(HALT_UPON_NV_PROBLEM) {
-    dprintf(LOG_ERROR, "\n[TV] %s MasterSealingSeed initialization FAILED! SECURITY HALT!\n",
-            __FUNCTION__);
+    eu_err("MasterSealingSeed initialization FAILED! SECURITY HALT!");
+
     HALT();
   }
 
@@ -302,9 +301,8 @@ int trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
    * reboots) sealing support.  Complain loudly.  We will still halt
    * if random keys are not available.
    */
-  dprintf(LOG_ERROR, "\n[TV] %s MasterSealingSeed initialization FAILED!\n"
-          "Continuing to operate in degraded mode. EMPHEMERAL SEALING ONLY!\n",
-          __FUNCTION__);
+  eu_err("MasterSealingSeed initialization FAILED!\n"
+         "Continuing to operate in degraded mode. EMPHEMERAL SEALING ONLY!");
   rand_bytes_or_die(mss, mss_size);
   
   /* XXX TODO: Eliminate degraded mode once we are sufficiently robust
@@ -343,22 +341,21 @@ int trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
  * TODO: Define some more meaningful failure codes.
  */
 static uint32_t authenticate_nv_mux_pal(VCPU *vcpu) {
-  dprintf(LOG_TRACE, "\n[TV] Entered %s", __FUNCTION__);
+  eu_pulse();
 
   /* make sure that this vmmcall can only be executed when a PAL is
    * running */
   if (scode_curr[vcpu->id]== -1) {
-    dprintf(LOG_ERROR, "\n[TV] GenRandom ERROR: no PAL is running!\n");
+    eu_err("GenRandom ERROR: no PAL is running!");
     return 1;
   }
     
-  dprintf(LOG_ERROR, "\n[TV] %s: \n\n"
-          "VULNERABILITY:VULNERABILITY:VULNERABILITY:VULNERABILITY\n"
-          "   NvMuxPal Authentication Unimplemented!!!\n"
-          "   Any PAL can manipulate sensitive NV areas!!!\n"
-          "   Continuing anyways...\n"
-          "VULNERABILITY:VULNERABILITY:VULNERABILITY:VULNERABILITY\n\n",
-          __FUNCTION__);
+  eu_err("\n\n"
+         "VULNERABILITY:VULNERABILITY:VULNERABILITY:VULNERABILITY\n"
+         "   NvMuxPal Authentication Unimplemented!!!\n"
+         "   Any PAL can manipulate sensitive NV areas!!!\n"
+         "   Continuing anyways...\n"
+         "VULNERABILITY:VULNERABILITY:VULNERABILITY:VULNERABILITY\n");
 
   return 0; /* XXX Actual check unimplemented XXX */
 }
@@ -366,35 +363,35 @@ static uint32_t authenticate_nv_mux_pal(VCPU *vcpu) {
 uint32_t hc_tpmnvram_getsize(VCPU* vcpu, uint32_t size_addr) {
   uint32_t rv = 0;
   uint32_t actual_size;
-		
-  dprintf(LOG_TRACE, "\n[TV] Entered %s", __FUNCTION__);
+
+  eu_pulse();
 
   /* Make sure the asking PAL is authorized */
   if(0 != (rv = authenticate_nv_mux_pal(vcpu))) {
-    dprintf(LOG_ERROR, "\n[TV] %s: ERROR: authenticate_nv_mux_pal"
-            " FAILED with error code %d", __FUNCTION__, rv);
+    eu_err("ERROR: authenticate_nv_mux_pal"
+            " FAILED with error code %d", rv);
     return 1;
   }
 
   /* Open TPM */
   /* TODO: Make sure this plays nice with guest OS */
   if(0 != (rv = emhf_tpm_open_locality(TRUSTVISOR_HWTPM_NV_LOCALITY))) {
-    dprintf(LOG_ERROR, "\nFATAL ERROR: Could not access HW TPM.\n");
+    eu_err("FATAL ERROR: Could not access HW TPM.");
     return 1; /* no need to deactivate */
   }
 
   /* Make the actual TPM call */
   if(0 != (rv = tpm_get_nvindex_size(TRUSTVISOR_HWTPM_NV_LOCALITY,
                                      HW_TPM_ROLLBACK_PROT_INDEX, &actual_size))) {
-    dprintf(LOG_ERROR, "\n[TV] %s: tpm_get_nvindex_size returned"
-            " ERROR %d!", __FUNCTION__, rv);
+    eu_err("tpm_get_nvindex_size returned"
+            " ERROR %d!", rv);
     rv = 1; /* failed. */
   }
 
   /* Close TPM */
   emhf_tpm_deactivate_all_localities();
 
-  dprintf(LOG_TRACE, "\n[TV] HW_TPM_ROLLBACK_PROT_INDEX 0x%08x size"
+  eu_trace("HW_TPM_ROLLBACK_PROT_INDEX 0x%08x size"
           " = %d", HW_TPM_ROLLBACK_PROT_INDEX, actual_size);
 						
   put_32bit_aligned_value_to_current_guest(vcpu, size_addr, actual_size);		
@@ -406,20 +403,20 @@ uint32_t hc_tpmnvram_readall(VCPU* vcpu, uint32_t out_addr) {
   uint32_t rv = 0;
   uint32_t data_size;
   uint8_t data[HW_TPM_ROLLBACK_PROT_SIZE];
-		
-  dprintf(LOG_TRACE, "\n[TV] Entered %s", __FUNCTION__);
+
+  eu_pulse();
 
   /* Make sure the asking PAL is authorized */
   if(0 != (rv = authenticate_nv_mux_pal(vcpu))) {
-    dprintf(LOG_ERROR, "\n[TV] %s: ERROR: authenticate_nv_mux_pal"
-            " FAILED with error code %d", __FUNCTION__, rv);
+    eu_err("ERROR: authenticate_nv_mux_pal"
+            " FAILED with error code %d", rv);
     return 1;
   }
 
   /* Open TPM */
   /* TODO: Make sure this plays nice with guest OS */
   if(0 != (rv = emhf_tpm_open_locality(TRUSTVISOR_HWTPM_NV_LOCALITY))) {
-    dprintf(LOG_ERROR, "\nFATAL ERROR: Could not access HW TPM.\n");
+    eu_err("FATAL ERROR: Could not access HW TPM.");
     return 1; /* no need to deactivate */
   }
 
@@ -429,14 +426,14 @@ uint32_t hc_tpmnvram_readall(VCPU* vcpu, uint32_t out_addr) {
                                   HW_TPM_ROLLBACK_PROT_INDEX, 0,
                                   data,
                                   &data_size))) {
-    dprintf(LOG_ERROR, "\n[TV] %s: tpm_get_nvindex_size returned"
-            " ERROR %d!", __FUNCTION__, rv);
+    eu_err("tpm_get_nvindex_size returned"
+            " ERROR %d!", rv);
     rv = 1; /* failed. */
   }
 
   if(HW_TPM_ROLLBACK_PROT_SIZE != data_size) {
-    dprintf(LOG_ERROR, "\n[TV] %s: HW_TPM_ROLLBACK_PROT_SIZE (%d) !="
-            " data_size (%d)", __FUNCTION__,
+    eu_err("HW_TPM_ROLLBACK_PROT_SIZE (%d) !="
+            " data_size (%d)",
             HW_TPM_ROLLBACK_PROT_SIZE, data_size);
     rv = 1;
   }
@@ -456,19 +453,19 @@ uint32_t hc_tpmnvram_writeall(VCPU* vcpu, uint32_t in_addr) {
   uint32_t rv = 0;
   uint8_t data[HW_TPM_ROLLBACK_PROT_SIZE];
 		
-  dprintf(LOG_TRACE, "\n[TV] Entered %s", __FUNCTION__);
+  eu_pulse();
 
   /* Make sure the asking PAL is authorized */
   if(0 != (rv = authenticate_nv_mux_pal(vcpu))) {
-    dprintf(LOG_ERROR, "\n[TV] %s: ERROR: authenticate_nv_mux_pal"
-            " FAILED with error code %d", __FUNCTION__, rv);
+    eu_err("ERROR: authenticate_nv_mux_pal"
+            " FAILED with error code %d", rv);
     return 1;
   }
 
   /* Open TPM */
   /* TODO: Make sure this plays nice with guest OS */
   if(0 != (rv = emhf_tpm_open_locality(TRUSTVISOR_HWTPM_NV_LOCALITY))) {
-    dprintf(LOG_ERROR, "\nFATAL ERROR: Could not access HW TPM.\n");
+    eu_err("FATAL ERROR: Could not access HW TPM.");
     return 1; /* no need to deactivate */
   }
 
@@ -480,8 +477,8 @@ uint32_t hc_tpmnvram_writeall(VCPU* vcpu, uint32_t in_addr) {
                                    HW_TPM_ROLLBACK_PROT_INDEX, 0,
                                    data,
                                    HW_TPM_ROLLBACK_PROT_SIZE))) {
-    dprintf(LOG_ERROR, "\n[TV] %s: tpm_get_nvindex_size returned"
-            " ERROR %d!", __FUNCTION__, rv);
+    eu_err("tpm_get_nvindex_size returned"
+            " ERROR %d!", rv);
     rv = 1; /* failed. */
   }
 
