@@ -72,7 +72,7 @@
   do {                                                                  \
     int _eu_chk_cond = (int)(cond);                                     \
     if (_eu_chk_cond) {                                                 \
-      EU_LOG(priority, "EU_CHKN(%s) failed with: %d", #cond, _eu_chk_cond); \
+      EU_LOG(priority, "EU_CHKN( %s) failed with: %d", #cond, _eu_chk_cond); \
       (void)0, ## args;                                                 \
       goto out;                                                         \
     }                                                                   \
@@ -81,7 +81,7 @@
 #define EU_CHK_PRI(cond, priority, args...)             \
   do {                                                  \
     if (!(cond)) {                                      \
-      EU_LOG(priority, "EU_CHK(%s) failed", #cond);     \
+      EU_LOG(priority, "EU_CHK( %s) failed", #cond);    \
       (void)0, ## args;                                 \
       goto out;                                         \
     }                                                   \
