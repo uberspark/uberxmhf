@@ -701,10 +701,10 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
   /* clone gdt */
   eu_trace("cloning gdt");
-  scode_clone_gdt(vcpu,
-                  VCPU_gdtr_base(vcpu), VCPU_gdtr_limit(vcpu),
-                  &pal_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
-                  whitelist_new.gpl);
+  EU_CHKN( scode_clone_gdt(vcpu,
+                           VCPU_gdtr_base(vcpu), VCPU_gdtr_limit(vcpu),
+                           &pal_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
+                           whitelist_new.gpl));
 
   /* we add the page containing the designated return address to the
      guest page tables, but not the nested page tables. failure to

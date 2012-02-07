@@ -283,35 +283,34 @@ int copy_to_current_guest(VCPU * vcpu, gva_t gvaddr, void *src, u32 len)
    gdt is allocted using passed-in-pl, whose pages should already be
    accessible to pal's nested page tables. XXX SECURITY need to build
    a trusted gdt instead. */
-void scode_clone_gdt(VCPU *vcpu,
-                     gva_t gdtr_base, size_t gdtr_lim,
-                     hpt_pmo_t* pal_gpmo_root, hptw_ctx_t *pal_gpm_ctx,
-                     pagelist_t *pl
-                     )
+int scode_clone_gdt(VCPU *vcpu,
+                    gva_t gdtr_base, size_t gdtr_lim,
+                    hpt_pmo_t* pal_gpmo_root, hptw_ctx_t *pal_gpm_ctx,
+                    pagelist_t *pl
+                    )
 {
   void *gdt_pal_page;
   u64 *gdt=NULL;
   size_t gdt_size = (gdtr_lim+1)*sizeof(*gdt);
   size_t gdt_page_offset = gdtr_base & MASKRANGE64(11, 0); /* XXX */
   gva_t gdt_reg_page_gva = gdtr_base & MASKRANGE64(63, 12); /* XXX */
+  int err=1;
 
   eu_trace("scode_clone_gdt base:%x size:%d", gdtr_base, gdt_size);
 
   /* rest of fn assumes gdt is all on one page */
-  ASSERT((gdt_page_offset+gdt_size) <= PAGE_SIZE_4K); 
+  EU_VERIFY((gdt_page_offset+gdt_size) <= PAGE_SIZE_4K); 
 
-  gdt_pal_page = pagelist_get_zeroedpage(pl);
-  CHK(gdt_pal_page);
+  EU_CHK( gdt_pal_page = pagelist_get_zeroedpage(pl));
   gdt = gdt_pal_page + gdt_page_offset;
 
   eu_trace("copying gdt from gva:%x to hva:%p", gdtr_base, gdt);
-  copy_from_current_guest(vcpu, gdt, gdtr_base, gdt_size);
+  EU_CHKN( copy_from_current_guest(vcpu, gdt, gdtr_base, gdt_size));
 
   /* add to guest page tables */
   {
     hpt_pmeo_t gdt_g_pmeo = { .t = pal_gpmo_root->t, .lvl = 1 };
     hpt_pa_t gdt_gpa;
-    int hpt_err;
 
     gdt_gpa = hva2gpa(gdt);
 
@@ -321,12 +320,15 @@ void scode_clone_gdt(VCPU *vcpu,
     /* add access to pal guest page tables */
     hpt_pmeo_set_address(&gdt_g_pmeo, gdt_gpa);
     hpt_pmeo_setprot(&gdt_g_pmeo, HPT_PROTS_RWX);
-    hpt_err = hptw_insert_pmeo_alloc(pal_gpm_ctx,
-                                         pal_gpmo_root,
-                                         &gdt_g_pmeo,
-                                         gdt_reg_page_gva);
-    CHK_RV(hpt_err);
+    EU_CHKN( hptw_insert_pmeo_alloc(pal_gpm_ctx,
+                                    pal_gpmo_root,
+                                    &gdt_g_pmeo,
+                                    gdt_reg_page_gva));
   }
+
+  err=0;
+ out:
+  return err;
 }
 
 /* lend a section of memory from a user-space process (on the
