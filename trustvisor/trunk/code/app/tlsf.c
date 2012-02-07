@@ -144,7 +144,8 @@
 #include <sys/mman.h>
 #endif
 
-#include <emhf.h> 
+#include <tv_log.h>
+#include <emhf.h> /* needed for spin_lock etc. */
 
 #include "tlsf.h"
 
@@ -207,8 +208,8 @@
 #endif
 
 #ifdef USE_PRINTF
-# define PRINT_MSG(fmt, args...) dprintf(LOG_TRACE, fmt, ## args)
-# define ERROR_MSG(fmt, args...) dprintf(LOG_ERROR, fmt, ## args)
+# define PRINT_MSG(fmt, args...) eu_trace( fmt, ## args)
+# define ERROR_MSG(fmt, args...) eu_err( fmt, ## args)
 #else
 # if !defined(PRINT_MSG)
 #  define PRINT_MSG(fmt, args...)

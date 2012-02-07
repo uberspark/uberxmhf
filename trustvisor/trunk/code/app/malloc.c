@@ -45,6 +45,8 @@
 #include <scode.h> /* only for perf ctr stuff */
 #include <malloc.h>
 
+#include <tv_log.h>
+
 static u8 memory_pool[HEAPMEM_POOLSIZE];
 void mem_init(void){
   init_memory_pool(HEAPMEM_POOLSIZE, memory_pool);
@@ -57,25 +59,22 @@ size_t heapmem_get_used_size(void)
 
 void *malloc(size_t size)
 {
-	void *p;
-    perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_SAFEMALLOC], 0/*FIXME*/);
+  void *p;
+  perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_SAFEMALLOC], 0/*FIXME*/);
 
-    p = tlsf_malloc(size);
+  EU_CHK_W( p = tlsf_malloc(size),
+            eu_warn_e( "malloc: allocation of size %d failed.", size));
 
-    perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_SAFEMALLOC], 0/*FIXME*/);
-    
-	if (!p) {
-        dprintf(LOG_ERROR, "malloc: allocation of size %d failed.", size);
-	}
-
-	return p;
+ out:
+  perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_SAFEMALLOC], 0/*FIXME*/);
+  return p;
 }
 
 void free(void *ptr)
 {
-	if (ptr) {
-		tlsf_free(ptr);
-	}
+  if (ptr) {
+    tlsf_free(ptr);
+  }
 }
 
 
