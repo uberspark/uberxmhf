@@ -185,35 +185,6 @@ bool guest_pt_range_is_user_rw(VCPU * vcpu, gva_t vaddr, size_t size_bytes)
 
 }
 
-
-/* several help functions to access guest address space */
-u16 get_16bit_aligned_value_from_guest(const hptw_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr)
-{
-  u32 gpaddr;
-  ASSERT(!(gvaddr & 0x1));
-
-  gpaddr = gpt_vaddr_to_paddr(ctx, root, gvaddr);
-  return *((u16 *)gpa2hva(gpaddr));
-}
-
-u32 get_32bit_aligned_value_from_guest(const hptw_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr)
-{
-  u32 gpaddr;
-  ASSERT(!(gvaddr & 0x3));
-
-  gpaddr = gpt_vaddr_to_paddr(ctx, root, gvaddr);
-  return *((u32 *)gpa2hva(gpaddr));
-}
-
-void put_32bit_aligned_value_to_guest(const hptw_ctx_t *ctx, const hpt_pmo_t *root, u32 gvaddr, u32 value)
-{
-  u32 gpaddr;
-  ASSERT(!(gvaddr & 0x3));
-  
-  gpaddr = gpt_vaddr_to_paddr(ctx, root, gvaddr);
-  *((u32 *)gpa2hva(gpaddr)) = value;
-}
-
 /* several help functions to access guest address space */
 u16 get_16bit_aligned_value_from_current_guest(VCPU *vcpu, u32 gvaddr)
 {
