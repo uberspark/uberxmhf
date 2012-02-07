@@ -37,6 +37,7 @@
 #define STDIO_H
 
 #include <stdarg.h>
+#include <stdint.h>
 
 int
 printf(const char *fmt, ...);
