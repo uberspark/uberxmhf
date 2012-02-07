@@ -2,37 +2,84 @@
 # Based upon /use/share/doc/minicom/examples/unixlogin
 # See also 'man runscript' and 'man minicom' to understand
 #
-	print "Waiting for grub prompt (Press any key to continue.)"
+	print "\nWaiting for grub prompt (Press any key to continue.)"
 	expect {
-		"Press any key to continue." send ""
+		"Press any key to continue." 
 	}
-	print "Okay, looks like grub is alive. Attempting to drop to grub> shell."
-	expect {
-		"command-line." send "c"
-	}
-	expect {
-		"grub>" send "root (hd0,0)
-	}
-	send "kernel /init-x86.bin"
-	send "module /hypervisor-x86.bin.gz"
-	send "modulenounzip (hd0)+1"
-	send "module /i5_i7_DUAL_SINIT_18.BIN"
-	print "\nOkay, hypervisor boot information sent.  Booting the hypervisor!"
-	send "boot"
+    sleep 2
+    send ""
 
-	print "\nWaiting for SECOND grub prompt (Press any key to continue.)"
 	expect {
-		"Press any key to continue." send ""
+		"command-line." 
 	}
-	print "\nOkay, looks like grub is alive. Attempting to drop to grub> shell."
+    sleep 2
+    send "c"
+
 	expect {
-		"command-line." send "c"
+		"grub>"
 	}
+    sleep 5
+    send "root (hd0,0)"
+
 	expect {
-		"grub>" send "uuid c2a09e3b-08ba-409a-a896-bac38e8a8347"
+		"grub>"
 	}
-	send "kernel /vmlinuz-2.6.32.26+drm33.12emhf-jm1 root=UUID=e62ba4c2-87d2-4b42-b66d-dabf9af0c68c ro ip=dhcp ISCSI_INITIATOR=iqn.2012-02.com.nfsec:01:643150805036 ISCSI_TARGET_NAME=iqn.2012-01.com.nfsec:lucid_rootfs ISCSI_TARGET_IP=10.0.0.1 ISCSI_TARGET_PORT=3260 aufs=tmpfs"
-	send "initrd /initrd.img-2.6.32.26+drm33.12emhf-jm1"
-	print "\nOkay, Guest OS boot information sent.  Booting the guest!"
-	send "boot"
+    sleep 5
+    send "a.bc.def.ghij.klmno.pqrstu.vwxyz01"
+    send ""
+
+	expect {
+		"grub>"
+	}
+    sleep 5
+    send "kernel /init-x86.bin"
+
+	expect {
+		"grub>"
+	}
+    sleep 5
+    # \011 is the octal ASCII code for a TAB
+    send "module /hyp\011"
+
+	expect {
+		"grub>"
+	}
+    sleep 5
+    send "modulenounzip (hd0)+1"
+
+	expect {
+		"grub>"
+	}
+    sleep 5
+    send "module /i5_i7\011"
+    send ""
+
+	expect {
+		"grub>"
+	}
+    sleep 5
+    send "boot"
+
+    exit
+
+# # Junk below here.
+
+# 	print "\n\n\n\nWaiting for SECOND grub prompt (Press any key to continue.)\n"
+# 	expect {
+# 		"Press any key to continue." 
+# 	}
+#     send ""
+# 	print "\n\nOkay, looks like grub is alive. Attempting to drop to grub> shell."
+# 	expect {
+# 		"command-line."
+# 	}
+#     send "c"
+# 	expect {
+# 		"grub>" 
+# 	}
+#     send "uuid c2a09e3b-08ba-409a-a896-bac38e8a8347"
+# 	send "kernel /vmlinuz-2.6.32.26+drm33.12emhf-jm1 root=UUID=e62ba4c2-87d2-4b42-b66d-dabf9af0c68c ro ip=dhcp ISCSI_INITIATOR=iqn.2012-02.com.nfsec:01:643150805036 ISCSI_TARGET_NAME=iqn.2012-01.com.nfsec:lucid_rootfs ISCSI_TARGET_IP=10.0.0.1 ISCSI_TARGET_PORT=3260 aufs=tmpfs"
+# 	send "initrd /initrd.img-2.6.32.26+drm33.12emhf-jm1"
+# 	print "\n\nOkay, Guest OS boot information sent.  Booting the guest!"
+# 	send "boot"
 
