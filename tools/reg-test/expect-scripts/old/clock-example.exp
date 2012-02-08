@@ -1,0 +1,28 @@
+#!/usr/bin/expect -f
+
+# Jon found this here: 
+# http://www.linux-mag.com/id/674/
+
+set clock /dev/ttyS0
+
+spawn -open [open $clock r+]
+
+# set the serial line characteristics
+stty ispeed 300 ospeed 300 parenb -parodd \
+ cs7 hupcl -cstopb cread clocal -icrnl \
+ -opost -isig -icanon -iexten -echo -noflsh < $clock
+
+send "o"
+
+expect -re "(.)"
+
+send "\r" a
+
+expect -re "(.)"
+
+# expect 16 or more characters
+
+expect -re "(................*)"
+
+
+exit
