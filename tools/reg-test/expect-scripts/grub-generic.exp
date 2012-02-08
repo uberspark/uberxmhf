@@ -152,8 +152,12 @@ while {1} {
             puts "[timeStamp]: [string trim $expect_out(buffer) \r\n]"
             # send_log -- "[timeStamp]: [string trim $expect_out(buffer) \r\n]"
         }
-        "REGRESSION TESTING COMPLETED." {
+        "amtterm: ERROR: redir_data: unknown" {
             puts "[timeStamp]: [string trim $expect_out(buffer) \r\n]"
+            exit
+        }
+        "REGRESSION TESTING COMPLETED." {
+            puts "\r\n\r\n[timeStamp]: [string trim $expect_out(buffer) \r\n]"
             exit
         }
     }
