@@ -22,5 +22,8 @@ scp -o StrictHostKeyChecking=no -r $MACADDR logger@10.0.0.1: \
   | tee shell.log
 
 echo "... Success!"
+
+expect alldone.exp ttyS0
+
 exit 0
 
