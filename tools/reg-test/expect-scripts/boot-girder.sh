@@ -26,5 +26,5 @@ export SECOND_ROOT='uuid e62ba4c2-87d2-4b42-b66d-dabf9af0c68c'
 export SECOND_KERNEL='kernel /boot/vmlinuz-2.6.32.26+drm33.12emhf-jm1 root=UUID=e62ba4c2-87d2-4b42-b66d-dabf9af0c68c ro ip=dhcp hostname=girder ISCSI_INITIATOR=iqn.2012-02.com.nfsec:01:643150805036 ISCSI_TARGET_NAME=iqn.2012-01.com.nfsec:lucid_rootfs ISCSI_TARGET_IP=10.0.0.1 ISCSI_TARGET_PORT=3260 aufs=tmpfs'
 export SECOND_MOD1='initrd /boot/initrd.img-2.6.32.26+drm33.12emhf-jm1'
 
-./grub-generic.exp ttyS0
+./grub-generic.exp serial ttyS0
 
