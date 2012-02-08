@@ -71,7 +71,9 @@ if {[string compare "serial" [lindex $argv 0]] == 0} {
             "amtterm: ERROR:" {
                 puts "[timeStamp]: [string trim $expect_out(buffer) \r\n]"
                 puts "*** Retrying amtterm launch"
-                # while will loop and try again
+                # while will loop and try again,
+                # but don't cycle too fast
+                sleep 1 
             }
             # TODO: Gracefully handle more amtterm failure cases.  It has
             # a tendency to hang, suddenly drop connections, etc. when the
@@ -151,6 +153,7 @@ while {1} {
             # send_log -- "[timeStamp]: [string trim $expect_out(buffer) \r\n]"
         }
         "REGRESSION TESTING COMPLETED." {
+            puts "[timeStamp]: [string trim $expect_out(buffer) \r\n]"
             exit
         }
     }
