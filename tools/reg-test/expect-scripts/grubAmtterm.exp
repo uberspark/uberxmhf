@@ -1,0 +1,125 @@
+#!/usr/bin/expect -f 
+# 
+#   Connect up to a device on a serial port 
+#   Time stamp any incoming lines to stdout
+
+       # port is any serial port (omit the /dev/ prefix) 
+       # e.g. ttya, cua0, serialA, serialB, boca01 - boca16
+
+# Jon based this on:
+# http://www.aps.anl.gov/Sectors/33_34/controls/docs/serialWatch.html
+
+# Uncomment this line to enable extremely verbose debug info.
+exp_internal -f internal.log 1
+
+# /home/jmmccune/work/hyp.git/tools/amtterm/amtterm-1.2/amtterm -p 'AMTp4ssw0rd!' pratt
+
+proc timeStamp {} { 
+  global tcl_version 
+  if {$tcl_version >= 7.5} { 
+    # "clock" command requires Tcl v7.5 or greater 
+    # internal routine a little faster than making a system call 
+    set stamp [clock format [clock seconds] -format %Y-%m-%d,%T] 
+  } else { 
+    # fall back to standard UNIX system call 
+    set stamp [exec /bin/date +%Y-%m-%d,%T] 
+  } 
+  return $stamp 
+}
+
+puts "\n[timeStamp] Log starting..." 
+#set spawned [spawn /home/jmmccune/work/hyp.git/tools/amtterm/amtterm-1.2/amtterm pratt] 
+#puts "[timeStamp]: [string trim $spawned \r\n]" 
+
+set timeout 60
+set send_slow {1 .05}
+#log_file foo.log
+log_user 1
+
+while {1} { 
+    set spawned [spawn /home/jmmccune/work/hyp.git/tools/amtterm/amtterm-1.2/amtterm pratt] 
+    puts "[timeStamp]: [string trim $spawned \r\n]" 
+    expect { 
+        "connected now, use ^] to escape" { 
+            puts "[timeStamp]: [string trim $expect_out(buffer) \r\n]"
+            break;
+        }
+        "amtterm: ERROR:" {
+            puts "[timeStamp]: [string trim $expect_out(buffer) \r\n]"
+            puts "*** Retrying amtterm launch"
+            # while will loop and try again
+        }
+        # TODO: Gracefully handle more amtterm failure cases.  It has
+        # a tendency to hang, suddenly drop connections, etc. when the
+        # target system is first coming up.
+    }
+}
+
+expect "Press any key to continue."
+send -s "c"
+
+expect "command-line."
+send -s "c"
+
+expect "grub>"
+send -s "root (hd0,0)\r\n"
+#send -s "$env(EXPECT_ROOT)\r\n"
+
+expect "grub>"
+send -s "kernel /init-x86.bin serial=115200,8n1,0x3f8\r\n"
+
+expect "grub>"
+send -s "module /hypervisor-x86.bin.gz\r\n"
+
+expect "grub>"
+send -s "modulenounzip (hd0)+1\r\n"
+
+expect "grub>"
+send -s "module /i5_i7_DUAL_SINIT_18.BIN\r\n"
+
+expect "grub>"
+send -s "boot\r\n"
+
+log_user 0
+while {1} { 
+    expect { 
+        "Press any key to continue." {
+            send -s "c"
+            break
+        }
+        "\n" { 
+            puts "[timeStamp]: [string trim $expect_out(buffer) \r\n]" 
+            # send_log -- "[timeStamp]: [string trim $expect_out(buffer) \r\n]"
+        }
+    }
+}
+
+log_user 1
+
+expect "command-line."
+send -s "c"
+
+expect "grub>"
+send -s "uuid c2a09e3b-08ba-409a-a896-bac38e8a8347\r\n"
+
+expect "grub>"
+send -s "kernel /vmlinuz-2.6.32.26+drm33.12emhf-jm1 root=UUID=e62ba4c2-87d2-4b42-b66d-dabf9af0c68c ro ip=dhcp ISCSI_INITIATOR=iqn.2012-02.com.nfsec:01:643150805036 ISCSI_TARGET_NAME=iqn.2012-01.com.nfsec:lucid_rootfs ISCSI_TARGET_IP=10.0.0.1 ISCSI_TARGET_PORT=3260 aufs=tmpfs\r\n"
+
+expect "grub>"
+send -s "initrd /initrd.img-2.6.32.26+drm33.12emhf-jm1\r\n"
+
+expect "grub>"
+send -s "boot\r\n"
+
+log_user 0
+while {1} { 
+    expect { 
+        "\n" { 
+            puts "[timeStamp]: [string trim $expect_out(buffer) \r\n]" 
+            # send_log -- "[timeStamp]: [string trim $expect_out(buffer) \r\n]"
+        }
+        "REGRESSION TESTING COMPLETED." {
+            exit
+        }
+    }
+}
