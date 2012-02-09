@@ -140,18 +140,8 @@ static u32 do_TV_HC_REG(VCPU *vcpu, struct regs *r)
   scode_pm = r->esi; /* sensitive code params information address */
   scode_en = r->edi; /* sensitive code entry point in edi */
 
-#ifdef __MP_VERSION__
-  /* quiesce othe CPUs */
-  emhf_smpguest_quiesce(vcpu);
-#endif
-
   /* do atomic scode registration */
   ret = scode_register(vcpu, scode_info, scode_pm, scode_en);
-
-#ifdef __MP_VERSION__
-  /* wake up other CPUs */
-  emhf_smpguest_endquiesce(vcpu);
-#endif
 
   return ret;
 }
@@ -163,18 +153,8 @@ static u32 do_TV_HC_UNREG(VCPU *vcpu, struct regs *r)
   /* sensitive code as guest virtual address in ecx */
   scode_gva = r->ecx;
 
-#ifdef __MP_VERSION__
-  /* quiesce othe CPUs */
-  emhf_smpguest_quiesce(vcpu);
-#endif
-
   /* do atomic scode unregistration */
   ret = scode_unregister(vcpu, scode_gva);
-
-#ifdef __MP_VERSION__
-  /* wake up other CPUs */
-  emhf_smpguest_endquiesce(vcpu);
-#endif
 
   return ret;
 }
@@ -451,6 +431,10 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
   u32 status = APP_SUCCESS;
   u32 ret = 0;
 
+#ifdef __MP_VERSION__
+  emhf_smpguest_quiesce(vcpu);
+#endif
+
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     cmd = (u32)r->eax;
     linux_vmcb = 0;
@@ -500,6 +484,11 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
     printf("unknow cpu vendor type!\n");
     HALT();
   }
+
+#ifdef __MP_VERSION__
+  emhf_smpguest_endquiesce(vcpu);
+#endif
+
   return status;
 }
 
@@ -508,6 +497,11 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
                                               struct regs __attribute__((unused)) *r, u64 gpa, u64 gva, u64 violationcode)
 {
   u32 ret;
+
+#ifdef __MP_VERSION__
+  emhf_smpguest_quiesce(vcpu);
+#endif
+
   eu_trace("CPU(0x%02x): gva=0x%08Lx, gpa=0x%08Lx, code=0x%016Lx", (int)vcpu->id,
           gva, gpa, violationcode);
   //	printf("\nprot is: 0x%016llx", emhf_hwpgtbl_getprot(vcpu, gpa));
@@ -515,19 +509,33 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
     eu_trace("FATAL ERROR: Unexpected return value from page fault handling");
     HALT();
   }
+
+#ifdef __MP_VERSION__
+  emhf_smpguest_endquiesce(vcpu);
+#endif
+
   return ret;
 }
 
 u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs __attribute__((unused)) *r, 
                                         u32 portnum, u32 access_type, u32 access_size)
 {
+#ifdef __MP_VERSION__
+  emhf_smpguest_quiesce(vcpu);
+#endif
+
   eu_err("CPU(0x%02x): Port access intercept feature unimplemented. Halting!", vcpu->id);
   eu_trace("CPU(0x%02x): portnum=0x%08x, access_type=0x%08x, access_size=0x%08x", vcpu->id,
            (u32)portnum, (u32)access_type, (u32)access_size);
   HALT();
-  return 0; /* XXX DUMMY; keeps compiler happy */
   //return APP_IOINTERCEPT_SKIP;
   //return APP_IOINTERCEPT_CHAIN; //chain and do the required I/O    
+
+#ifdef __MP_VERSION__
+  emhf_smpguest_endquiesce(vcpu);
+#endif
+
+  return 0; /* XXX DUMMY; keeps compiler happy */
 }
 
 void emhf_app_handleshutdown(VCPU *vcpu, struct regs __attribute__((unused)) *r)
