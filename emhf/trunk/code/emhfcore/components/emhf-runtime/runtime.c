@@ -175,10 +175,8 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 		HALT();
 	}
 
-#if defined(__MP_VERSION__)	
   //initialize support for SMP guests
   emhf_smpguest_initialize(vcpu);
-#endif
 	
   //start partition
   emhf_partition_start(vcpu);

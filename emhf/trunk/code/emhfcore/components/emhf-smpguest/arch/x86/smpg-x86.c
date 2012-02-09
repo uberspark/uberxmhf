@@ -41,8 +41,9 @@
 
 //initialize SMP guest logic
 void emhf_smpguest_arch_initialize(VCPU *vcpu){
-		ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
+#if defined(__MP_VERSION__)	
 	//TODOs:
 	//1. conceal g_midtable_numentries behind "baseplatform" component interface
 	//2. remove g_isl dependency
@@ -66,6 +67,16 @@ void emhf_smpguest_arch_initialize(VCPU *vcpu){
 			//perform required setup after a guest awakens a new CPU
 			emhf_smpguest_arch_x86_postCPUwakeup(vcpu);
 	}
+#else
+	//UP version, we just let the BSP continue and stall the APs
+	if(vcpu->isbsp)
+		return;
+		
+	//we are an AP, so just lockup
+	printf("\nCPU(0x%02x): AP, locked!", vcpu->id);
+	while(1);
+#endif
+
 	
 }
 
