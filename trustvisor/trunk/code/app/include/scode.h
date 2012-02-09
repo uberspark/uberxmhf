@@ -54,6 +54,7 @@
 #include <hpt.h>
 #include <hptw.h>
 #include <hpt_emhf.h>	/* from libemhfutil */
+#include <hptw_emhf.h>
 
 /* XXX TEMP */
 #define CHK(x) ASSERT(x)
@@ -87,40 +88,6 @@ typedef struct {
   hpt_prot_t reg_prot;
   u32 section_type;
 } tv_pal_section_int_t;
-
-
-
-
-typedef struct {
-  hptw_ctx_t super;
-
-  pagelist_t *pl;
-} hptw_emhf_host_ctx_t;
-int hptw_emhf_host_ctx_init(hptw_emhf_host_ctx_t *ctx, hpt_pa_t root_pa, hpt_type_t t, pagelist_t *pl);
-int hptw_emhf_host_ctx_init_of_vcpu(hptw_emhf_host_ctx_t *rv, VCPU *vcpu);
-
-typedef struct {
-  hptw_ctx_t super;
-
-  hptw_cpl_t cpl;
-
-  hptw_emhf_host_ctx_t hptw_host_ctx;
-  pagelist_t *pl;
-} hptw_emhf_checked_guest_ctx_t;
-int hptw_emhf_checked_guest_ctx_init(hptw_emhf_checked_guest_ctx_t *ctx,
-                                     hpt_pa_t root_pa,
-                                     hpt_type_t t,
-                                     hptw_cpl_t cpl,
-                                     const hptw_emhf_host_ctx_t *host_ctx,
-                                     pagelist_t *pl);
-int hptw_emhf_checked_guest_ctx_init_of_vcpu(hptw_emhf_checked_guest_ctx_t *rv, VCPU *vcpu);
-
-
-
-
-
-
-
 
 /* scode state struct */
 typedef struct whitelist_entry{
