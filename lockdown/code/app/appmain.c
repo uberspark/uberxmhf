@@ -342,10 +342,18 @@ u32 sslpa_isnetworkdevice(u32 bus, u32 device, u32 function){
 
 u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, 
   u32 portnum, u32 access_type, u32 access_size){
+#if defined(__LDN_HYPERSWITCHING__)  
+		u32 acpi_sleep_en;
+#endif	  
 
 #if defined(__LDN_HYPERSWITCHING__)  
+  if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
+	acpi_sleep_en = (u16)(((struct vmcb_struct *)vcpu->vmcb_vaddr_ptr)->rax) & (u16)(1 << 13);
+  else
+	acpi_sleep_en = ((u16)r->eax & (u16)(1 << 13));
+  
   if(access_type == IO_TYPE_OUT && portnum == acpi_control_portnum && 
-      access_size == IO_SIZE_WORD && ((u16)r->eax & (u16)(1 << 13)) ){
+      access_size == IO_SIZE_WORD && acpi_sleep_en ){
       printf("\nCPU(0x%02x): Lockdown; ACPI SLEEP_EN signal caught. resetting firmware...",
           vcpu->id);
       
