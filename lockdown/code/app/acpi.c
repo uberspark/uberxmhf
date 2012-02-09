@@ -115,6 +115,7 @@ void ACPIInitializeRegisters(void){
 		HALT();
 	}
 
+#if 0
 	//get register addresses
 	gas=(ACPI_GAS *)&fadt->x_pm2_cnt_blk;
 	//printf("\nPM2_CNT_BLK");
@@ -185,6 +186,18 @@ void ACPIInitializeRegisters(void){
 	__PM1_CNTb=gas->address;
 	__PM1_CNTb_size=fadt->pm1_cnt_len;
 
+	printf("\nPM1a_STS=0x%016llx (size=%u bytes)", PM1a_STS, PM1a_STS_SIZE);
+	printf("\nPM1a_EN=0x%016llx (size=%u bytes)", PM1a_EN, PM1a_EN_SIZE);
+	printf("\nPM1b_STS=0x%016llx (size=%u bytes)", PM1b_STS, PM1b_STS_SIZE);
+	printf("\nPM1b_EN=0x%016llx (size=%u bytes)", PM1b_EN, PM1b_EN_SIZE);
+	printf("\nPM1_CNTa=0x%016llx (size=%u bytes)", PM1_CNTa, PM1_CNTa_SIZE);
+	printf("\nPM1_CNTb=0x%016llx (size=%u bytes)", PM1_CNTb, PM1_CNTb_SIZE);
+
+	//what we need is PM1_CNTa and PM1a_STS register values
+	//VTBOX - 804 and 800 respectively (16-bit access)
+
+
+
 #if 0	
 	//obtain ACPI reset register details
 	//we ignore the RESET_REG_SUP bit when using ACPI reset mechanism
@@ -210,15 +223,7 @@ void ACPIInitializeRegisters(void){
 	__acpi_reset_reg_val = 	fadt->reset_value;		
 #endif			
 
-	printf("\nPM1a_STS=0x%016Lx (size=%u bytes)", PM1a_STS, PM1a_STS_SIZE);
-	printf("\nPM1a_EN=0x%016Lx (size=%u bytes)", PM1a_EN, PM1a_EN_SIZE);
-	printf("\nPM1b_STS=0x%016Lx (size=%u bytes)", PM1b_STS, PM1b_STS_SIZE);
-	printf("\nPM1b_EN=0x%016Lx (size=%u bytes)", PM1b_EN, PM1b_EN_SIZE);
-	printf("\nPM1_CNTa=0x%016Lx (size=%u bytes)", PM1_CNTa, PM1_CNTa_SIZE);
-	printf("\nPM1_CNTb=0x%016Lx (size=%u bytes)", PM1_CNTb, PM1_CNTb_SIZE);
-
-	//what we need is PM1_CNTa and PM1a_STS register values
-	//VTBOX - 804 and 800 respectively (16-bit access)
+#endif
 
 }
 
