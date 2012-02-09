@@ -43,34 +43,10 @@
 
 //generic x86 platform reboot
 void emhf_baseplatform_arch_x86_reboot(void){
-	//u8 nullidt[] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
-
-    //zero out IDT
-	emhf_xcphandler_resetIDT();
-	
-	{
-	  volatile u32 *icr_low = (u32 *)(0xFEE00000 + 0x300);
-	  volatile u32 *icr_high = (u32 *)(0xFEE00000 + 0x310);
-	  u32 icr_high_value= 0xFFUL << 24;
-	  u32 delivered;	
-  
-      *icr_high = icr_high_value;    //send to all but self
-      printf("\n%s: firing reboot NMIs...", __FUNCTION__);
-	  *icr_low = 0x000C0400UL;      //send NMI        
-  
-	  //check if IPI has been delivered successfully
-	  do{
-		delivered = *icr_high;
-		delivered &= 0x00001000;
-	  }while(delivered);
-	}
-	
-	//load IDT of 0 size
-	//__asm__ __volatile__ ("lidtl %0\r\n" : : "m" (*nullidt) );
-	
-	printf("\n%s: reboot!", __FUNCTION__);
-	//step-3: execute ud2 instruction to generate triple fault
-	__asm__ __volatile__("ud2 \r\n");
+	unsigned char flush = 0x02;
+	while ((flush & 0x02) != 0)
+		flush = inb(0x64);
+	outb(0xFE, 0x64);
 	
 	//never get here
 	printf("\n%s: should never get here. halt!", __FUNCTION__);
