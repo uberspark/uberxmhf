@@ -231,7 +231,7 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
     vcpu->id, acpi_control_portnum);
   
   //set I/O port intercept for ACPI control port
-  //emhf_partition_legacyIO_setprot(vcpu, acpi_control_portnum, 2, PART_LEGACYIO_NOACCESS); //16-bit port
+  emhf_partition_legacyIO_setprot(vcpu, acpi_control_portnum, 2, PART_LEGACYIO_NOACCESS); //16-bit port
 #endif
 
 #if defined(__LDN_HYPERPARTITIONING__)
