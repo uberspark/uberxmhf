@@ -410,6 +410,8 @@ int memsect_info_register(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, wh
   unsigned int start;
   int rv=1;
 
+  (void)vcpu;
+
   /* parse section type, start address and size */
   is_get_param=0;
   is_get_stack=0;
@@ -429,7 +431,6 @@ int memsect_info_register(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, wh
           wle->gpm_size=size;
           wle->gpmp=start+0x10;
           is_get_param=1;
-          EU_CHK( guest_pt_range_is_user_rw(vcpu, start, size*PAGE_SIZE_4K));
         }
       }
       break;
@@ -440,7 +441,6 @@ int memsect_info_register(VCPU * vcpu, struct tv_pal_sections *ps_scode_info, wh
           wle->gss_size=size;
           wle->gssp=start+(size<<PAGE_SHIFT_4K)-0x10;
           is_get_stack=1;
-          EU_CHK( guest_pt_range_is_user_rw(vcpu, start, size*PAGE_SIZE_4K));
         }
       }
       break;
