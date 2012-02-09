@@ -515,7 +515,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
   /* store scode entry point */
   whitelist_new.entry_v = gventry;
-  whitelist_new.entry_p = gpt_vaddr_to_paddr_current(vcpu, gventry); 
+  whitelist_new.entry_p = hptw_va_to_pa( &reg_guest_walk_ctx.super, gventry);
   eu_trace("CR3 value is %#llx, entry point vaddr is %#x, paddr is %#x", gcr3, whitelist_new.entry_v, whitelist_new.entry_p);
 
   /* parse parameter structure */

@@ -141,25 +141,6 @@ typedef struct whitelist_entry{
 hpt_prot_t pal_prot_of_type(int type);
 hpt_prot_t reg_prot_of_type(int type);
 
-/* guest paging handlers */
-static inline gpa_t gpt_vaddr_to_paddr( hptw_ctx_t *ctx, gva_t vaddr)
-{
-  return hptw_va_to_pa(ctx, vaddr);
-}
-static inline gpa_t gpt_vaddr_to_paddr_current(VCPU *vcpu, gva_t vaddr)
-{
-  hptw_emhf_checked_guest_ctx_t ctx;
-  gpa_t rv;
-  int err;
-
-  err = hptw_emhf_checked_guest_ctx_init_of_vcpu(&ctx, vcpu);
-  assert(!err); /* FIXME */
-
-  rv = hptw_va_to_pa(&ctx.super, vaddr);
-
-  return rv;
-}
-
 /* operations from hypervisor to guest paging */
 void copy_from_current_guest_UNCHECKED(VCPU * vcpu, void *dst, gva_t gvaddr, u32 len);
 int copy_from_current_guest(VCPU * vcpu, void *dst, gva_t gvaddr, u32 len);
