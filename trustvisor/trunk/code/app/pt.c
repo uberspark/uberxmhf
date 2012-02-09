@@ -104,50 +104,6 @@ hpt_prot_t reg_prot_of_type(int type)
   ASSERT(0); return 0; /* unreachable; appeases compiler */
 }
 
-
-bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
-                                    hpt_prot_t reqd_prots, bool reqd_user_accessible,
-                                    gva_t gva_base, size_t len)
-{
-  hptw_emhf_checked_guest_ctx_t ctx;
-  size_t checked=0;
-  int err = 1;
-  bool rv = true;
-
-  EU_CHKN( hptw_emhf_checked_guest_ctx_init_of_vcpu( &ctx, vcpu));
-
-  while(checked < len) {
-    hpt_va_t gva = gva_base + checked;
-    void *ptr;
-    size_t size_checked;
-    hptw_cpl_t cpl;
-
-    cpl = reqd_user_accessible ? HPTW_CPL3 : HPTW_CPL0;
-
-    EU_CHK( ptr = hptw_checked_access_va( &ctx.super,
-                                          reqd_prots,
-                                          cpl,
-                                          gva,
-                                          len-checked,
-                                          &size_checked),
-            rv=false);
-    checked += size_checked;
-  }
-
-  err=0;
- out:
-  EU_VERIFY( !err); /* FIXME */
-  return rv;
-}
-
-bool guest_pt_range_is_user_rw(VCPU * vcpu, gva_t vaddr, size_t size_bytes)
-{
-  return nested_pt_range_has_reqd_prots(vcpu,
-                                        HPT_PROTS_RW, true,
-                                        vaddr, size_bytes);
-
-}
-
 int copy_from_current_guest(VCPU * vcpu, void *dst, gva_t gvaddr, u32 len)
 {
   hptw_emhf_checked_guest_ctx_t ctx;
