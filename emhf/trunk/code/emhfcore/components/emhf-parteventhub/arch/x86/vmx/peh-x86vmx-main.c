@@ -465,18 +465,18 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
   
   //handle intercepts
   switch((u32)vcpu->vmcs.info_vmexit_reason){
-		case VMEXIT_IOIO:
+		case VMX_VMEXIT_IOIO:
 			{
 				_vmx_handle_intercept_ioportaccess(vcpu, r);
 			}
 			break;
 
-      case VMEXIT_EPT_VIOLATION:{
+      case VMX_VMEXIT_EPT_VIOLATION:{
 		    _vmx_handle_intercept_eptviolation(vcpu, r);
     	}
 			break;  	
 
-    case VMEXIT_HLT:
+    case VMX_VMEXIT_HLT:
 			if(!vcpu->vmx_guest_unrestricted){
 				//isl_handleintercept_hlt(vcpu, r);
 				printf("\nCPU(0x%02x): V86 monitor based real-mode exec. unsupported!", vcpu->id);
@@ -487,7 +487,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			}
 			break;
 
- 		case VMEXIT_EXCEPTION:{
+ 		case VMX_VMEXIT_EXCEPTION:{
 			switch( ((u32)vcpu->vmcs.info_vmexit_interrupt_information & INTR_INFO_VECTOR_MASK) ){
 				//case 0x0D: //v86monitor only
 				//	_vmx_handle_intercept_exception_0D(vcpu, r);
@@ -517,7 +517,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		}
 		break;
 
- 		case VMEXIT_CRX_ACCESS:{
+ 		case VMX_VMEXIT_CRX_ACCESS:{
 			u32 tofrom, gpr, crx; 
 			//printf("\nVMEXIT_CRX_ACCESS:");
 			//printf("\ninstruction length: %u", info_vmexit_instruction_length);
@@ -554,19 +554,19 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		}
 		break;	
 
- 		case VMEXIT_RDMSR:
+ 		case VMX_VMEXIT_RDMSR:
 			_vmx_handle_intercept_rdmsr(vcpu, r);
 			break;
 			
-		case VMEXIT_WRMSR:
+		case VMX_VMEXIT_WRMSR:
 			_vmx_handle_intercept_wrmsr(vcpu, r);
 			break;
 			
-		case VMEXIT_CPUID:
+		case VMX_VMEXIT_CPUID:
 			_vmx_handle_intercept_cpuid(vcpu, r);
 			break;
 
-    case VMEXIT_INIT:{
+    case VMX_VMEXIT_INIT:{
         printf("\n***** VMEXIT_INIT emhf_app_handleshutdown\n");
       emhf_app_handleshutdown(vcpu, r);      
       printf("\nCPU(0x%02x): warning, emhf_app_handleshutdown returned!", vcpu->id);
@@ -574,7 +574,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
     }
     break;
 
-    case VMEXIT_VMCALL:{
+    case VMX_VMEXIT_VMCALL:{
 			//check to see if this is a hypercall for INT 15h hooking
 			if(vcpu->vmcs.guest_CS_base == (VMX_UG_E820HOOK_CS << 4) &&
 				vcpu->vmcs.guest_RIP == VMX_UG_E820HOOK_IP){
@@ -595,7 +595,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
     break;
 
 
-		case VMEXIT_TASKSWITCH:{
+		case VMX_VMEXIT_TASKSWITCH:{
 			u32 idt_v = vcpu->vmcs.info_IDT_vectoring_information & VECTORING_INFO_VALID_MASK;
 			u32 type = vcpu->vmcs.info_IDT_vectoring_information & VECTORING_INFO_TYPE_MASK;
 			u32 reason = vcpu->vmcs.info_exit_qualification >> 30;
