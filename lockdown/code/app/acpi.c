@@ -49,6 +49,7 @@ void ACPIInitializeRegisters(void){
 	ACPI_XSDT *xsdt;
 	u32 n_xsdt_entries
 	u64 *xsdtentrylist;
+	ACPI_GAS *gas;
 #else
 	//RSDT method
 	ACPI_RSDT *rsdt;
@@ -58,7 +59,6 @@ void ACPIInitializeRegisters(void){
 	u32 i;
 	ACPI_FADT *fadt;
 	u8 fadt_found=0;
-	ACPI_GAS *gas;
 	
 	//rsdp=(ACPI_RSDP *)acpi_getRSDP();
 	rsdp_paddr = emhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
@@ -224,6 +224,35 @@ void ACPIInitializeRegisters(void){
 #endif			
 
 #endif
+
+	//PM1 status registers (ACPI 4.0a spec, 4.7.3.1.1)
+	__PM1a_STS=fadt->pm1a_evt_blk;
+	__PM1a_STS_size= (fadt->pm1_evt_len)/2;
+	__PM1b_STS=fadt->pm1b_evt_blk;
+	__PM1b_STS_size=(fadt->pm1_evt_len)/2;
+	
+	//PM1 enable registers (ACPI 4.0a spec, 4.7.3.1.2)
+	__PM1a_EN=fadt->pm1a_evt_blk + ((fadt->pm1_evt_len)/2);
+	__PM1a_EN_size=(fadt->pm1_evt_len)/2;
+	__PM1b_EN=fadt->pm1b_evt_blk + ((fadt->pm1_evt_len)/2);
+	__PM1b_EN_size=(fadt->pm1_evt_len)/2;
+
+	//PM1 control registers (ACPI 4.0a spec, 4.7.3.2.1)
+	__PM1_CNTa=fadt->pm1a_cnt_blk;
+	__PM1_CNTa_size=(fadt->pm1_cnt_len)/2;
+	__PM1_CNTb=fadt->pm1b_cnt_blk;
+	__PM1_CNTb_size=(fadt->pm1_cnt_len)/2;;
+
+
+	printf("\nPM1a_STS=0x%08x (size=%u bytes)", PM1a_STS, PM1a_STS_SIZE);
+	printf("\nPM1a_EN=0x%08x (size=%u bytes)", PM1a_EN, PM1a_EN_SIZE);
+	printf("\nPM1b_STS=0x%08x (size=%u bytes)", PM1b_STS, PM1b_STS_SIZE);
+	printf("\nPM1b_EN=0x%08x (size=%u bytes)", PM1b_EN, PM1b_EN_SIZE);
+	printf("\nPM1_CNTa=0x%08x (size=%u bytes)", PM1_CNTa, PM1_CNTa_SIZE);
+	printf("\nPM1_CNTb=0x%08x (size=%u bytes)", PM1_CNTb, PM1_CNTb_SIZE);
+
+	//what we *really* need is PM1_CNTa and PM1a_STS register values
+
 
 }
 
