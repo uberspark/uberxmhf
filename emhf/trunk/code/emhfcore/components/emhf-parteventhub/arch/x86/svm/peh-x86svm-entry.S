@@ -73,6 +73,9 @@
 .global emhf_parteventhub_arch_x86svm_entry
 emhf_parteventhub_arch_x86svm_entry:
 	
+	//save EAX as it contains the VMCB address
+	pushl	%eax
+	
 	//step-1: save all CPU GPRs
 	SAVEALL_GPRS
 	
@@ -81,8 +84,8 @@ emhf_parteventhub_arch_x86svm_entry:
 	
 	//step-3: get VCPU * for this core (it is the first DWORD on
 	//the core stack when we have an intercept, so move past the
-	//saved GPRs and the return EIP for this function invocation)
-	movl 36(%esp), %esi
+	//saved GPRs, VMCB address and the return EIP for this function invocation)
+	movl 40(%esp), %esi
 	
    	//step-4: invoke "C" handler
    	//1st argument is VCPU * followed by pointer to saved GPRs
@@ -91,9 +94,11 @@ emhf_parteventhub_arch_x86svm_entry:
 	call emhf_parteventhub_arch_x86svm_intercept_handler
     addl $0x08, %esp
 
-	//step-5: restore all CPU GPRs, will also 
-	//restore eax=phys. addr of vmcb
+	//step-5: restore all CPU GPRs
 	RESTOREALL_GPRS
+	
+	//restore VMCB address
+	popl	%eax
 	
 	//return
 	ret
