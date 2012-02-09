@@ -94,25 +94,24 @@ typedef struct {
 typedef struct {
   hptw_ctx_t super;
 
-  hpt_pmo_t root;
   pagelist_t *pl;
 } hptw_emhf_host_ctx_t;
-int hptw_emhf_host_ctx_init(hptw_emhf_host_ctx_t *ctx, const hpt_pmo_t *root, pagelist_t *pl);
+int hptw_emhf_host_ctx_init(hptw_emhf_host_ctx_t *ctx, hpt_pa_t root_pa, hpt_type_t t, pagelist_t *pl);
 int hptw_emhf_host_ctx_init_of_vcpu(hptw_emhf_host_ctx_t *rv, VCPU *vcpu);
 
 typedef struct {
   hptw_ctx_t super;
 
-  hpt_pmo_t root;
   hptw_cpl_t cpl;
 
   hptw_emhf_host_ctx_t hptw_host_ctx;
   pagelist_t *pl;
 } hptw_emhf_checked_guest_ctx_t;
 int hptw_emhf_checked_guest_ctx_init(hptw_emhf_checked_guest_ctx_t *ctx,
-                                     const hpt_pmo_t *root,
+                                     hpt_pa_t root_pa,
+                                     hpt_type_t t,
                                      hptw_cpl_t cpl,
-                                     const hptw_emhf_host_ctx_t *hpt_emhf_host_walk_ctx,
+                                     const hptw_emhf_host_ctx_t *host_ctx,
                                      pagelist_t *pl);
 int hptw_emhf_checked_guest_ctx_init_of_vcpu(hptw_emhf_checked_guest_ctx_t *rv, VCPU *vcpu);
 
@@ -175,9 +174,9 @@ hpt_prot_t pal_prot_of_type(int type);
 hpt_prot_t reg_prot_of_type(int type);
 
 /* guest paging handlers */
-static inline gpa_t gpt_vaddr_to_paddr( hptw_ctx_t *ctx, const hpt_pmo_t *gpt_root, gva_t vaddr)
+static inline gpa_t gpt_vaddr_to_paddr( hptw_ctx_t *ctx, gva_t vaddr)
 {
-  return hptw_va_to_pa(ctx, gpt_root, vaddr);
+  return hptw_va_to_pa(ctx, vaddr);
 }
 static inline gpa_t gpt_vaddr_to_paddr_current(VCPU *vcpu, gva_t vaddr)
 {
@@ -188,7 +187,7 @@ static inline gpa_t gpt_vaddr_to_paddr_current(VCPU *vcpu, gva_t vaddr)
   err = hptw_emhf_checked_guest_ctx_init_of_vcpu(&ctx, vcpu);
   assert(!err); /* FIXME */
 
-  rv = hptw_va_to_pa(&ctx.super, &ctx.root, vaddr);
+  rv = hptw_va_to_pa(&ctx.super, vaddr);
 
   return rv;
 }
@@ -216,19 +215,19 @@ u32 scode_register(VCPU * vcpu, u32 scode_info, u32 scode_pm, u32 gventry);
 u32 scode_unregister(VCPU * vcpu, u32 gvaddr);
 void init_scode(VCPU * vcpu);
 
-void scode_lend_section(hpt_pmo_t* reg_npmo_root, hptw_ctx_t *reg_npm_ctx,
-                        hpt_pmo_t* reg_gpmo_root, hptw_ctx_t *reg_gpm_ctx,
-                        hpt_pmo_t* pal_npmo_root, hptw_ctx_t *pal_npm_ctx,
-                        hpt_pmo_t* pal_gpmo_root, hptw_ctx_t *pal_gpm_ctx,
-                        const tv_pal_section_int_t *section);
-void scode_return_section(hpt_pmo_t* reg_npmo_root, hptw_ctx_t *reg_npm_ctx,
-                          hpt_pmo_t* pal_npmo_root, hptw_ctx_t *pal_npm_ctx,
-                          hpt_pmo_t* pal_gpmo_root, hptw_ctx_t *pal_gpm_ctx,
-                          const tv_pal_section_int_t *section);
+void scode_lend_section( hptw_ctx_t *reg_npm_ctx,
+                         hptw_ctx_t *reg_gpm_ctx,
+                         hptw_ctx_t *pal_npm_ctx,
+                         hptw_ctx_t *pal_gpm_ctx,
+                         const tv_pal_section_int_t *section);
+void scode_return_section( hptw_ctx_t *reg_npm_ctx,
+                           hptw_ctx_t *pal_npm_ctx,
+                           hptw_ctx_t *pal_gpm_ctx,
+                           const tv_pal_section_int_t *section);
 
 int scode_clone_gdt(VCPU *vcpu,
                     gva_t gdtr_base, size_t gdtr_lim,
-                    hpt_pmo_t* pal_gpmo_root, hptw_ctx_t *pal_gpm_ctx,
+                    hptw_ctx_t *pal_gpm_ctx,
                     pagelist_t *pl
                     );
 

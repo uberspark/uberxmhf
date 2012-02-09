@@ -39,45 +39,78 @@
 
 #include "hpt_log.h"
 
+static int hptw_get_root( hptw_ctx_t *ctx, hpt_pmo_t *pmo)
+{
+  int lvl = hpt_type_max_lvl[ ctx->t];
+  size_t pm_sz = hpt_pm_size( ctx->t, lvl);
+  size_t avail;
+  hpt_pm_t pm;
+  int err = 1;
+
+  pm = ctx->pa2ptr( ctx,
+                    ctx->root_pa,
+                    pm_sz,
+                    HPT_PROTS_RW,
+                    HPTW_CPL0,
+                    &avail);
+  EU_CHK( pm);
+  EU_CHK( avail == pm_sz);
+
+  *pmo = (hpt_pmo_t) {
+    .t = ctx->t,
+    .pm = pm,
+    .lvl = lvl,
+  };
+
+  err = 0;
+ out:
+  return err;
+}
+
 int hptw_insert_pmeo(hptw_ctx_t *ctx,
-                     hpt_pmo_t *pmo_root,
                      const hpt_pmeo_t *pmeo,
                      hpt_va_t va)
 {
   hpt_pmo_t pmo;
-  hptw_get_pmo(&pmo, ctx, pmo_root, pmeo->lvl, va);
-  if (!pmo.pm || pmo.lvl != pmeo->lvl) {
-    return 1;
-  }
-  hpt_pmo_set_pme_by_va(&pmo, pmeo, va);
-  return 0;
+  int err = 1;
+
+  hptw_get_pmo( &pmo, ctx, pmeo->lvl, va);
+  EU_CHK( pmo.pm);
+  EU_CHK( pmo.lvl == pmeo->lvl);
+
+  hpt_pmo_set_pme_by_va( &pmo, pmeo, va);
+
+  err = 0;
+ out:
+  return err;
 }
 
 int hptw_get_pmo_alloc(hpt_pmo_t *pmo,
                        hptw_ctx_t *ctx,
-                       const hpt_pmo_t *pmo_root,
                        int end_lvl,
                        hpt_va_t va)
 {
-  assert(pmo_root->lvl >= end_lvl);
-  *pmo = *pmo_root;
+  int err = 1;
+
+  EU_CHKN( hptw_get_root( ctx, pmo));  
+  
   while(pmo->lvl > end_lvl) {
     hpt_pmeo_t pmeo;
     hpt_pm_get_pmeo_by_va(&pmeo, pmo, va);
-    if (hpt_pmeo_is_page(&pmeo)) {
-      return 2;
-    }
+    EU_CHK( !hpt_pmeo_is_page(&pmeo));
+
     if (!hpt_pmeo_is_present(&pmeo)) {
-      hpt_pmo_t new_pmo = {
-        .pm = ctx->gzp(ctx,
-                       HPT_PM_SIZE, /*FIXME*/
-                       hpt_pm_size(pmo->t, pmo->lvl-1)),
+      hpt_pm_t pm;
+      hpt_pmo_t new_pmo;
+
+      EU_CHK( pm = ctx->gzp(ctx,
+                            HPT_PM_SIZE, /*FIXME*/
+                            hpt_pm_size(pmo->t, pmo->lvl-1)));
+      new_pmo = (hpt_pmo_t) {
+        .pm = pm,
         .lvl = pmo->lvl-1,
         .t = pmo->t,
       };
-      if (!new_pmo.pm) {
-        return 1;
-      }
       hpt_pmeo_set_address(&pmeo, ctx->ptr2pa(ctx, new_pmo.pm));
       hpt_pmeo_setprot(    &pmeo, HPT_PROTS_RWX);
       hpt_pmeo_setuser(    &pmeo, true);
@@ -90,44 +123,51 @@ int hptw_get_pmo_alloc(hpt_pmo_t *pmo,
       assert(walked_next_lvl);
     }
   }
-  return 0;
+
+  err = 0;
+ out:
+  return err;
 }
 
 int hptw_insert_pmeo_alloc(hptw_ctx_t *ctx,
-                           hpt_pmo_t *pmo_root,
                            const hpt_pmeo_t *pmeo,
                            hpt_va_t va)
 {
   hpt_pmo_t pmo;
-  if (hptw_get_pmo_alloc(&pmo, ctx, pmo_root, pmeo->lvl, va)) {
-    return 1;
-  }
-  if(!pmo.pm || pmo.lvl != pmeo->lvl) {
-    return 2;
-  }
+  int err=1;
+
+  EU_CHKN( hptw_get_pmo_alloc( &pmo, ctx, pmeo->lvl, va));
+  EU_CHK( pmo.pm);
+  EU_CHK( pmo.lvl == pmeo->lvl);
+
   hpt_pmo_set_pme_by_va(&pmo, pmeo, va);
-  return 0;
+
+  err=0;
+ out:
+  return err;
 }
 
-void hptw_get_pmo(hpt_pmo_t *pmo,
-                  hptw_ctx_t *ctx,
-                  const hpt_pmo_t *pmo_root,
-                  int end_lvl,
-                  hpt_va_t va)
+void hptw_get_pmo( hpt_pmo_t *pmo,
+                   hptw_ctx_t *ctx,
+                   int end_lvl,
+                   hpt_va_t va)
 {
-  *pmo = *pmo_root;
+  int err=1;
+  EU_CHKN( hptw_get_root( ctx, pmo));
   while (pmo->lvl > end_lvl
          && hptw_next_lvl(ctx, pmo, va));
+  err=0;
+ out:
+  EU_VERIFYN( err); /* XXX */
 }
 
 void hptw_get_pmeo(hpt_pmeo_t *pmeo,
                    hptw_ctx_t *ctx,
-                   const hpt_pmo_t *pmo,
                    int end_lvl,
                    hpt_va_t va)
 {
   hpt_pmo_t end_pmo;
-  hptw_get_pmo(&end_pmo, ctx, pmo, end_lvl, va);
+  hptw_get_pmo(&end_pmo, ctx, end_lvl, va);
   hpt_pm_get_pmeo_by_va(pmeo, &end_pmo, va);
 }
 
@@ -176,13 +216,15 @@ bool hptw_next_lvl(hptw_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va)
  * user-accessible.
  */
 hpt_prot_t hptw_get_effective_prots(hptw_ctx_t *ctx,
-                                    const hpt_pmo_t *pmo_root,
                                     hpt_va_t va,
                                     bool *user_accessible)
 {
   hpt_prot_t prots_rv = HPT_PROTS_RWX;
   bool user_accessible_rv = true;
-  hpt_pmo_t pmo = *pmo_root;
+  hpt_pmo_t pmo;
+  int err = 1;
+
+  EU_CHKN( hptw_get_root( ctx, &pmo));
 
   do {
     hpt_pmeo_t pmeo;
@@ -192,25 +234,28 @@ hpt_prot_t hptw_get_effective_prots(hptw_ctx_t *ctx,
   } while (hptw_next_lvl(ctx, &pmo, va));
 
   /* XXX should more clearly indicate an error */
-  if (pmo.t == HPT_TYPE_INVALID) {
-    return HPT_PROTS_NONE;
-  }
+  EU_CHK( pmo.t != HPT_TYPE_INVALID);
 
   if(user_accessible != NULL) {
     *user_accessible = user_accessible_rv;
+  }
+
+  err=0;
+ out:
+  if (err) {
+    prots_rv = HPT_PROTS_NONE;
   }
   return prots_rv;
 }
 
 void hptw_set_prot(hptw_ctx_t *ctx,
-                   hpt_pmo_t *pmo_root,
                    hpt_va_t va,
                    hpt_prot_t prot)
 {
   hpt_pmo_t pmo;
   hpt_pmeo_t pmeo;
 
-  hptw_get_pmo (&pmo, ctx, pmo_root, 1, va);
+  hptw_get_pmo (&pmo, ctx, 1, va);
   assert (pmo.pm);
   assert (pmo.lvl == 1);
 
@@ -220,16 +265,14 @@ void hptw_set_prot(hptw_ctx_t *ctx,
 }
 
 hpt_pa_t hptw_va_to_pa(hptw_ctx_t *ctx,
-                       const hpt_pmo_t *pmo,
                        hpt_va_t va)
 {
   hpt_pmeo_t pmeo;
-  hptw_get_pmeo(&pmeo, ctx, pmo, 1, va);
+  hptw_get_pmeo(&pmeo, ctx, 1, va);
   return hpt_pmeo_va_to_pa(&pmeo, va);
 }
 
 void* hptw_access_va(hptw_ctx_t *ctx,
-                     const hpt_pmo_t *root,
                      hpt_va_t va,
                      size_t requested_sz,
                      size_t *avail_sz)
@@ -237,7 +280,7 @@ void* hptw_access_va(hptw_ctx_t *ctx,
   hpt_pmeo_t pmeo;
   hpt_pa_t pa;
 
-  hptw_get_pmeo(&pmeo, ctx, root, 1, va);
+  hptw_get_pmeo(&pmeo, ctx, 1, va);
 
   pa = hpt_pmeo_va_to_pa(&pmeo, va);
   *avail_sz = MIN(requested_sz, hpt_remaining_on_page(&pmeo, pa));
@@ -247,7 +290,6 @@ void* hptw_access_va(hptw_ctx_t *ctx,
 }
 
 void* hptw_checked_access_va(hptw_ctx_t *ctx,
-                             const hpt_pmo_t *pmo_root,
                              hpt_prot_t access_type,
                              hptw_cpl_t cpl,
                              hpt_va_t va,
@@ -256,9 +298,11 @@ void* hptw_checked_access_va(hptw_ctx_t *ctx,
 {
   hpt_pmeo_t pmeo;
   hpt_pa_t pa;
-  hpt_pmo_t pmo = *pmo_root;
+  hpt_pmo_t pmo;
   void *rv=NULL;
   *avail_sz=0;
+
+  EU_CHKN( hptw_get_root( ctx, &pmo));
 
   eu_trace("va:0x%llx access_type %lld cpl:%d",
            va, access_type, cpl);
@@ -266,7 +310,7 @@ void* hptw_checked_access_va(hptw_ctx_t *ctx,
   do {
     eu_trace("pmo t:%d pm:%p lvl:%d",
              pmo.t, pmo.pm, pmo.lvl);
-    hpt_pm_get_pmeo_by_va(&pmeo, &pmo, va);
+    hpt_pm_get_pmeo_by_va( &pmeo, &pmo, va);
     EU_CHK(((access_type & hpt_pmeo_getprot(&pmeo)) == access_type)
            && (cpl == HPTW_CPL0 || hpt_pmeo_getuser(&pmeo)),
            eu_err_e("req-priv:%lld req-cpl:%d priv:%lld user-accessible:%d",
@@ -294,7 +338,6 @@ void* hptw_checked_access_va(hptw_ctx_t *ctx,
 }
 
 int hptw_checked_copy_from_va(hptw_ctx_t *ctx,
-                              const hpt_pmo_t *pmo,
                               hptw_cpl_t cpl,
                               void *dst,
                               hpt_va_t src_va_base,
@@ -307,7 +350,7 @@ int hptw_checked_copy_from_va(hptw_ctx_t *ctx,
     size_t to_copy;
     void *src;
 
-    src = hptw_checked_access_va(ctx, pmo, HPT_PROTS_R, cpl, src_va, len-copied, &to_copy);
+    src = hptw_checked_access_va(ctx, HPT_PROTS_R, cpl, src_va, len-copied, &to_copy);
     if(!src) {
       return 1;
     }
@@ -318,7 +361,6 @@ int hptw_checked_copy_from_va(hptw_ctx_t *ctx,
 }
 
 int hptw_checked_copy_to_va(hptw_ctx_t *ctx,
-                            const hpt_pmo_t *pmo,
                             hptw_cpl_t cpl,
                             hpt_va_t dst_va_base,
                             void *src,
@@ -331,7 +373,7 @@ int hptw_checked_copy_to_va(hptw_ctx_t *ctx,
     size_t to_copy;
     void *dst;
 
-    dst = hptw_checked_access_va(ctx, pmo, HPT_PROTS_W, cpl, dst_va, len-copied, &to_copy);
+    dst = hptw_checked_access_va(ctx, HPT_PROTS_W, cpl, dst_va, len-copied, &to_copy);
     if (!dst) {
       return 1;
     }
@@ -342,22 +384,15 @@ int hptw_checked_copy_to_va(hptw_ctx_t *ctx,
 }
 
 int hptw_checked_copy_va_to_va(hptw_ctx_t *dst_ctx,
-                               const hpt_pmo_t *dst_pmo,
                                hptw_cpl_t dst_cpl,
                                hpt_va_t dst_va_base,
                                hptw_ctx_t *src_ctx,
-                               const hpt_pmo_t *src_pmo,
                                hptw_cpl_t src_cpl,
                                hpt_va_t src_va_base,
                                size_t len)
 {
   size_t copied=0;
   int rv=1;
-
-  eu_trace("dst_pmo t:%d pm:%p lvl:%d",
-           dst_pmo->t, dst_pmo->pm, dst_pmo->lvl);
-  eu_trace("src_pmo t:%d pm:%p lvl:%d",
-           src_pmo->t, src_pmo->pm, src_pmo->lvl);
 
   while(copied < len) {
     hpt_va_t dst_va = dst_va_base + copied;
@@ -368,14 +403,12 @@ int hptw_checked_copy_va_to_va(hptw_ctx_t *dst_ctx,
     eu_trace("dst_va:0x%llx src_va:0x%llx", dst_va, src_va);
 
     EU_CHK( dst = hptw_checked_access_va(dst_ctx,
-                                         dst_pmo,
                                          HPT_PROTS_W,
                                          dst_cpl,
                                          dst_va,
                                          len-copied,
                                          &to_copy));
     EU_CHK( src = hptw_checked_access_va(src_ctx,
-                                         src_pmo,
                                          HPT_PROTS_R,
                                          src_cpl,
                                          src_va,
@@ -395,7 +428,6 @@ int hptw_checked_copy_va_to_va(hptw_ctx_t *dst_ctx,
 }
 
 int hptw_checked_memset_va(hptw_ctx_t *ctx,
-                           const hpt_pmo_t *pmo,
                            hptw_cpl_t cpl,
                            hpt_va_t dst_va_base,
                            int c,
@@ -412,7 +444,6 @@ int hptw_checked_memset_va(hptw_ctx_t *ctx,
 
     eu_trace("calling hptw_checked_access_va");
     EU_CHK(dst = hptw_checked_access_va(ctx,
-                                        pmo,
                                         HPT_PROTS_W,
                                         cpl,
                                         dst_va,
@@ -428,4 +459,3 @@ int hptw_checked_memset_va(hptw_ctx_t *ctx,
  out:
   return rv;
 }
-

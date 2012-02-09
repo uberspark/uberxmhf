@@ -53,33 +53,31 @@ typedef struct {
   hpt_get_zeroed_page_t gzp;
   hpt_pa2ptr_t pa2ptr;
   hpt_ptr2pa_t ptr2pa;
+
+  hpt_pa_t root_pa;
+  hpt_type_t t;
 } hptw_ctx_t;
 
 int hptw_insert_pmeo( hptw_ctx_t *ctx,
-                      hpt_pmo_t *pmo,
                       const hpt_pmeo_t *pmeo,
                       hpt_va_t va);
 
 int hptw_get_pmo_alloc( hpt_pmo_t *pmo,
                         hptw_ctx_t *ctx,
-                        const hpt_pmo_t *pmo_root,
                         int end_lvl,
                         hpt_va_t va);
 
 int hptw_insert_pmeo_alloc( hptw_ctx_t *ctx,
-                            hpt_pmo_t *pmo,
                             const hpt_pmeo_t *pmeo,
                             hpt_va_t va);
 
 void hptw_get_pmo( hpt_pmo_t *pmo,
                    hptw_ctx_t *ctx,
-                   const hpt_pmo_t *pmo_root,
                    int end_lvl,
                    hpt_va_t va);
 
 void hptw_get_pmeo( hpt_pmeo_t *pmeo,
                     hptw_ctx_t *ctx,
-                    const hpt_pmo_t *pmo,
                     int end_lvl,
                     hpt_va_t va);
 
@@ -90,21 +88,17 @@ void hptw_get_pmeo( hpt_pmeo_t *pmeo,
 bool hptw_next_lvl( hptw_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va);
 
 hpt_prot_t hptw_get_effective_prots( hptw_ctx_t *ctx,
-                                     const hpt_pmo_t *pmo_root,
                                      hpt_va_t va,
                                      bool *user_accessible);
 
 void hptw_set_prot( hptw_ctx_t *ctx,
-                    hpt_pmo_t *pmo_root,
                     hpt_va_t va,
                     hpt_prot_t prot);
 
 hpt_pa_t hptw_va_to_pa( hptw_ctx_t *ctx,
-                        const hpt_pmo_t *pmo,
                         hpt_va_t va);
 
 void* hptw_checked_access_va( hptw_ctx_t *ctx,
-                              const hpt_pmo_t *pmo_root,
                               hpt_prot_t access_type,
                               hptw_cpl_t cpl,
                               hpt_va_t va,
@@ -112,31 +106,26 @@ void* hptw_checked_access_va( hptw_ctx_t *ctx,
                               size_t *avail_sz);
 
 int hptw_checked_copy_from_va( hptw_ctx_t *ctx,
-                               const hpt_pmo_t *pmo,
                                hptw_cpl_t cpl,
                                void *dst,
                                hpt_va_t src_va_base,
                                size_t len);
 
 int hptw_checked_copy_to_va( hptw_ctx_t *ctx,
-                             const hpt_pmo_t *pmo,
                              hptw_cpl_t cpl,
                              hpt_va_t dst_va_base,
                              void *src,
                              size_t len);
 
 int hptw_checked_copy_va_to_va( hptw_ctx_t *dst_ctx,
-                                const hpt_pmo_t *dst_pmo,
                                 hptw_cpl_t dst_cpl,
                                 hpt_va_t dst_va_base,
                                 hptw_ctx_t *src_ctx,
-                                const hpt_pmo_t *src_pmo,
                                 hptw_cpl_t src_cpl,
                                 hpt_va_t src_va_base,
                                 size_t len);
 
 int hptw_checked_memset_va( hptw_ctx_t *ctx,
-                            const hpt_pmo_t *pmo,
                             hptw_cpl_t cpl,
                             hpt_va_t dst_va_base,
                             int c,
