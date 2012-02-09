@@ -39,7 +39,7 @@
 
 #include "hpt_log.h"
 
-int hptw_insert_pmeo(const hptw_ctx_t *ctx,
+int hptw_insert_pmeo(hptw_ctx_t *ctx,
                      hpt_pmo_t *pmo_root,
                      const hpt_pmeo_t *pmeo,
                      hpt_va_t va)
@@ -54,7 +54,7 @@ int hptw_insert_pmeo(const hptw_ctx_t *ctx,
 }
 
 int hptw_get_pmo_alloc(hpt_pmo_t *pmo,
-                       const hptw_ctx_t *ctx,
+                       hptw_ctx_t *ctx,
                        const hpt_pmo_t *pmo_root,
                        int end_lvl,
                        hpt_va_t va)
@@ -69,7 +69,7 @@ int hptw_get_pmo_alloc(hpt_pmo_t *pmo,
     }
     if (!hpt_pmeo_is_present(&pmeo)) {
       hpt_pmo_t new_pmo = {
-        .pm = ctx->gzp(ctx->gzp_ctx,
+        .pm = ctx->gzp(ctx,
                        HPT_PM_SIZE, /*FIXME*/
                        hpt_pm_size(pmo->t, pmo->lvl-1)),
         .lvl = pmo->lvl-1,
@@ -78,7 +78,7 @@ int hptw_get_pmo_alloc(hpt_pmo_t *pmo,
       if (!new_pmo.pm) {
         return 1;
       }
-      hpt_pmeo_set_address(&pmeo, ctx->ptr2pa(ctx->ptr2pa_ctx, new_pmo.pm));
+      hpt_pmeo_set_address(&pmeo, ctx->ptr2pa(ctx, new_pmo.pm));
       hpt_pmeo_setprot(    &pmeo, HPT_PROTS_RWX);
       hpt_pmeo_setuser(    &pmeo, true);
 
@@ -93,7 +93,7 @@ int hptw_get_pmo_alloc(hpt_pmo_t *pmo,
   return 0;
 }
 
-int hptw_insert_pmeo_alloc(const hptw_ctx_t *ctx,
+int hptw_insert_pmeo_alloc(hptw_ctx_t *ctx,
                            hpt_pmo_t *pmo_root,
                            const hpt_pmeo_t *pmeo,
                            hpt_va_t va)
@@ -110,7 +110,7 @@ int hptw_insert_pmeo_alloc(const hptw_ctx_t *ctx,
 }
 
 void hptw_get_pmo(hpt_pmo_t *pmo,
-                  const hptw_ctx_t *ctx,
+                  hptw_ctx_t *ctx,
                   const hpt_pmo_t *pmo_root,
                   int end_lvl,
                   hpt_va_t va)
@@ -121,7 +121,7 @@ void hptw_get_pmo(hpt_pmo_t *pmo,
 }
 
 void hptw_get_pmeo(hpt_pmeo_t *pmeo,
-                   const hptw_ctx_t *ctx,
+                   hptw_ctx_t *ctx,
                    const hpt_pmo_t *pmo,
                    int end_lvl,
                    hpt_va_t va)
@@ -131,7 +131,7 @@ void hptw_get_pmeo(hpt_pmeo_t *pmeo,
   hpt_pm_get_pmeo_by_va(pmeo, &end_pmo, va);
 }
 
-bool hptw_next_lvl(const hptw_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va)
+bool hptw_next_lvl(hptw_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va)
 {
   hpt_pmeo_t pmeo;
   hpt_pm_get_pmeo_by_va(&pmeo, pmo, va);
@@ -146,7 +146,7 @@ bool hptw_next_lvl(const hptw_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va)
   } else {
     size_t avail;
     size_t pm_sz = hpt_pm_size(pmo->t, pmo->lvl-1);
-    pmo->pm = ctx->pa2ptr(ctx->pa2ptr_ctx, hpt_pmeo_get_address(&pmeo),
+    pmo->pm = ctx->pa2ptr(ctx, hpt_pmeo_get_address(&pmeo),
                           pm_sz, HPT_PROTS_R, HPTW_CPL0, &avail);
     eu_trace("next-lvl:%d pm-sz:%d pmo->pm:%p avail:%d",
                   pmo->lvl-1, pm_sz, pmo->pm, avail);
@@ -175,7 +175,7 @@ bool hptw_next_lvl(const hptw_ctx_t *ctx, hpt_pmo_t *pmo, hpt_va_t va)
  * *user_accessible if not NULL and if the virtual address is set
  * user-accessible.
  */
-hpt_prot_t hptw_get_effective_prots(const hptw_ctx_t *ctx,
+hpt_prot_t hptw_get_effective_prots(hptw_ctx_t *ctx,
                                     const hpt_pmo_t *pmo_root,
                                     hpt_va_t va,
                                     bool *user_accessible)
@@ -219,7 +219,7 @@ void hptw_set_prot(hptw_ctx_t *ctx,
   hpt_pmo_set_pme_by_va (&pmo, &pmeo, va);
 }
 
-hpt_pa_t hptw_va_to_pa(const hptw_ctx_t *ctx,
+hpt_pa_t hptw_va_to_pa(hptw_ctx_t *ctx,
                        const hpt_pmo_t *pmo,
                        hpt_va_t va)
 {
@@ -228,7 +228,7 @@ hpt_pa_t hptw_va_to_pa(const hptw_ctx_t *ctx,
   return hpt_pmeo_va_to_pa(&pmeo, va);
 }
 
-void* hptw_access_va(const hptw_ctx_t *ctx,
+void* hptw_access_va(hptw_ctx_t *ctx,
                      const hpt_pmo_t *root,
                      hpt_va_t va,
                      size_t requested_sz,
@@ -242,11 +242,11 @@ void* hptw_access_va(const hptw_ctx_t *ctx,
   pa = hpt_pmeo_va_to_pa(&pmeo, va);
   *avail_sz = MIN(requested_sz, hpt_remaining_on_page(&pmeo, pa));
 
-  return ctx->pa2ptr(ctx->pa2ptr_ctx, pa,
+  return ctx->pa2ptr(ctx, pa,
                      *avail_sz, HPT_PROTS_R, HPTW_CPL0, avail_sz);
 }
 
-void* hptw_checked_access_va(const hptw_ctx_t *ctx,
+void* hptw_checked_access_va(hptw_ctx_t *ctx,
                              const hpt_pmo_t *pmo_root,
                              hpt_prot_t access_type,
                              hptw_cpl_t cpl,
@@ -286,14 +286,14 @@ void* hptw_checked_access_va(const hptw_ctx_t *ctx,
   pa = hpt_pmeo_va_to_pa(&pmeo, va);
   *avail_sz = MIN(requested_sz, hpt_remaining_on_page(&pmeo, pa));
   eu_trace("got pa:%llx sz:%d", pa, *avail_sz);
-  rv = ctx->pa2ptr(ctx->pa2ptr_ctx, pa,
+  rv = ctx->pa2ptr(ctx, pa,
                    *avail_sz, access_type, cpl, avail_sz);
 
  out:
   return rv;
 }
 
-int hptw_checked_copy_from_va(const hptw_ctx_t *ctx,
+int hptw_checked_copy_from_va(hptw_ctx_t *ctx,
                               const hpt_pmo_t *pmo,
                               hptw_cpl_t cpl,
                               void *dst,
@@ -317,7 +317,7 @@ int hptw_checked_copy_from_va(const hptw_ctx_t *ctx,
   return 0;
 }
 
-int hptw_checked_copy_to_va(const hptw_ctx_t *ctx,
+int hptw_checked_copy_to_va(hptw_ctx_t *ctx,
                             const hpt_pmo_t *pmo,
                             hptw_cpl_t cpl,
                             hpt_va_t dst_va_base,
@@ -341,11 +341,11 @@ int hptw_checked_copy_to_va(const hptw_ctx_t *ctx,
   return 0;
 }
 
-int hptw_checked_copy_va_to_va(const hptw_ctx_t *dst_ctx,
+int hptw_checked_copy_va_to_va(hptw_ctx_t *dst_ctx,
                                const hpt_pmo_t *dst_pmo,
                                hptw_cpl_t dst_cpl,
                                hpt_va_t dst_va_base,
-                               const hptw_ctx_t *src_ctx,
+                               hptw_ctx_t *src_ctx,
                                const hpt_pmo_t *src_pmo,
                                hptw_cpl_t src_cpl,
                                hpt_va_t src_va_base,
@@ -394,7 +394,7 @@ int hptw_checked_copy_va_to_va(const hptw_ctx_t *dst_ctx,
   return rv;
 }
 
-int hptw_checked_memset_va(const hptw_ctx_t *ctx,
+int hptw_checked_memset_va(hptw_ctx_t *ctx,
                            const hpt_pmo_t *pmo,
                            hptw_cpl_t cpl,
                            hpt_va_t dst_va_base,

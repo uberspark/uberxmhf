@@ -104,54 +104,17 @@ hpt_prot_t reg_prot_of_type(int type)
   ASSERT(0); return 0; /* unreachable; appeases compiler */
 }
 
-typedef struct {
-  hpt_pmo_t guest_root;
-  hptw_ctx_t guest_walk_ctx;
-  hptw_cpl_t cpl;
-} checked_guest_walk_ctx_t;
-
-static int construct_checked_walk_ctx(VCPU *vcpu, checked_guest_walk_ctx_t *rv)
-{
-  int err=0;
-  scode_guest_pa2ptr_ctx_t *guest_pa2ptr_ctx;
-
-  memset(rv, 0, sizeof(*rv));
-
-  EU_CHK( guest_pa2ptr_ctx = malloc(sizeof(*guest_pa2ptr_ctx)),
-          err=1);
-
-  hpt_emhf_get_root_pmo(vcpu, &guest_pa2ptr_ctx->host_pmo_root);
-  guest_pa2ptr_ctx->host_walk_ctx = hpt_nested_walk_ctx;
-
-  EU_CHKN( hpt_guest_walk_ctx_construct_vcpu(&rv->guest_walk_ctx, vcpu, NULL),
-           err=2);
-
-  hpt_emhf_get_guest_root_pmo(vcpu, &rv->guest_root);
-  rv->cpl = HPTW_CPL3; /* FIXME - extract cpl from vcpu */
-  
- out:
-  if (err) {
-    free(rv->guest_walk_ctx.pa2ptr_ctx);
-  }
-  return err;
-}
-
-static void destroy_checked_walk_ctx(checked_guest_walk_ctx_t *ctx)
-{
-  hpt_guest_walk_ctx_destroy(&ctx->guest_walk_ctx);
-}
 
 bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
                                     hpt_prot_t reqd_prots, bool reqd_user_accessible,
                                     gva_t gva_base, size_t len)
 {
-  checked_guest_walk_ctx_t ctx;
+  hptw_emhf_checked_guest_ctx_t ctx;
   size_t checked=0;
-  int err = 0;
+  int err = 1;
   bool rv = true;
 
-  EU_CHKN( construct_checked_walk_ctx(vcpu, &ctx),
-           err=1);
+  EU_CHKN( hptw_emhf_checked_guest_ctx_init_of_vcpu( &ctx, vcpu));
 
   while(checked < len) {
     hpt_va_t gva = gva_base + checked;
@@ -161,19 +124,20 @@ bool nested_pt_range_has_reqd_prots(VCPU * vcpu,
 
     cpl = reqd_user_accessible ? HPTW_CPL3 : HPTW_CPL0;
 
-    EU_CHK( ptr = hptw_checked_access_va(&ctx.guest_walk_ctx,
-                                         &ctx.guest_root,
-                                         reqd_prots,
-                                         cpl,
-                                         gva,
-                                         len-checked,
-                                         &size_checked),
+    EU_CHK( ptr = hptw_checked_access_va( &ctx.super,
+                                          &ctx.root,
+                                          reqd_prots,
+                                          cpl,
+                                          gva,
+                                          len-checked,
+                                          &size_checked),
             rv=false);
     checked += size_checked;
   }
+
+  err=0;
  out:
   EU_VERIFY( !err); /* FIXME */
-  destroy_checked_walk_ctx(&ctx);
   return rv;
 }
 
@@ -187,33 +151,29 @@ bool guest_pt_range_is_user_rw(VCPU * vcpu, gva_t vaddr, size_t size_bytes)
 
 int copy_from_current_guest(VCPU * vcpu, void *dst, gva_t gvaddr, u32 len)
 {
-  checked_guest_walk_ctx_t ctx;
-  int rv=0;
+  hptw_emhf_checked_guest_ctx_t ctx;
+  int rv=1;
 
-  EU_CHKN( construct_checked_walk_ctx(vcpu, &ctx),
-           rv=1);
+  EU_CHKN( hptw_emhf_checked_guest_ctx_init_of_vcpu( &ctx, vcpu));
 
-  EU_CHKN( hptw_checked_copy_from_va(&ctx.guest_walk_ctx, &ctx.guest_root, ctx.cpl, dst, gvaddr, len),
-           rv=2);
+  EU_CHKN( hptw_checked_copy_from_va( &ctx.super, &ctx.root, ctx.cpl, dst, gvaddr, len));
 
+  rv=0;
  out:
-  destroy_checked_walk_ctx(&ctx);
   return rv;
 }
 
 int copy_to_current_guest(VCPU * vcpu, gva_t gvaddr, void *src, u32 len)
 {
-  checked_guest_walk_ctx_t ctx;
-  int rv=0;
+  hptw_emhf_checked_guest_ctx_t ctx;
+  int rv=1;
 
-  EU_CHKN( construct_checked_walk_ctx(vcpu, &ctx),
-           rv=1);
+  EU_CHKN( hptw_emhf_checked_guest_ctx_init_of_vcpu( &ctx, vcpu));
 
-  EU_CHKN( hptw_checked_copy_to_va(&ctx.guest_walk_ctx, &ctx.guest_root, ctx.cpl, gvaddr, src, len),
-           rv = 2);
+  EU_CHKN( hptw_checked_copy_to_va( &ctx.super, &ctx.root, ctx.cpl, gvaddr, src, len));
 
+  rv=0;
  out:
-  destroy_checked_walk_ctx(&ctx);
   return rv;
 }
 

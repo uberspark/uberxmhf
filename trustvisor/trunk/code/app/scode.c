@@ -52,11 +52,15 @@
 
 #include <tv_log.h>
 
-hpt_pa_t hpt_nested_ptr2pa(void __attribute__((unused)) *ctx, void *ptr)
+/* #define EU_DOWNCAST(vctx, t) assert(((t)vctx)->magic == t ## _MAGIC), (t)vctx */
+
+static hpt_pa_t hptw_emhf_host_ctx_ptr2pa(void *vctx, void *ptr)
 {
+  (void)vctx;
   return hva2spa(ptr);
 }
-void* hpt_nested_pa2ptr(void *vctx, hpt_pa_t spa, size_t sz, hpt_prot_t access_type, hptw_cpl_t cpl, size_t *avail_sz)
+
+static void* hptw_emhf_host_ctx_pa2ptr(void *vctx, hpt_pa_t spa, size_t sz, hpt_prot_t access_type, hptw_cpl_t cpl, size_t *avail_sz)
 {
   (void)vctx;
   (void)access_type;
@@ -64,32 +68,42 @@ void* hpt_nested_pa2ptr(void *vctx, hpt_pa_t spa, size_t sz, hpt_prot_t access_t
   *avail_sz = sz;
   return spa2hva(spa);
 }
-hpt_pa_t hpt_guest_ptr2pa(void __attribute__((unused)) *ctx, void *ptr)
+
+static void* hptw_emhf_host_ctx_gzp(void *vctx, size_t alignment, size_t sz)
+{
+  hptw_emhf_host_ctx_t *ctx = vctx;
+  pagelist_t *pl = ctx->pl;
+  ASSERT(PAGE_SIZE_4K % alignment == 0);
+  ASSERT(sz <= PAGE_SIZE_4K);
+  return pagelist_get_zeroedpage(pl);
+}
+
+int hptw_emhf_host_ctx_init(hptw_emhf_host_ctx_t *ctx, const hpt_pmo_t *root, pagelist_t *pl)
+{
+  *ctx = (hptw_emhf_host_ctx_t) {
+    .super = (hptw_ctx_t) {
+      .ptr2pa = hptw_emhf_host_ctx_ptr2pa,
+      .pa2ptr = hptw_emhf_host_ctx_pa2ptr,
+      .gzp = hptw_emhf_host_ctx_gzp,
+    },
+    .root = *root,
+    .pl = pl,
+  };
+  return 0;
+}
+
+static hpt_pa_t hptw_emhf_checked_guest_ctx_ptr2pa(void __attribute__((unused)) *ctx, void *ptr)
 {
   return hva2gpa(ptr);
 }
 
-/* void* hpt_guest_pa2ptr(void *vctx, hpt_pa_t gpa, size_t sz, hpt_prot_t access_type, hptw_cpl_t cpl, size_t *avail_sz) */
-/* { */
-/*   (void)vctx; */
-/*   (void)access_type; */
-/*   (void)cpl; */
-/*   *avail_sz = sz; */
-/*   return gpa2hva(gpa); */
-/* } */
-void* hpt_checked_guest_pa2ptr(void *vctx, hpt_pa_t gpa, size_t sz, hpt_prot_t access_type, hptw_cpl_t cpl, size_t *avail_sz)
+static void* hptw_emhf_checked_guest_ctx_pa2ptr(void *vctx, hpt_pa_t gpa, size_t sz, hpt_prot_t access_type, hptw_cpl_t cpl, size_t *avail_sz)
 {
-  scode_guest_pa2ptr_ctx_t *ctx = vctx;
-
-  /* dprintf(LOG_TRACE, "hpt_checked_guest_pa2ptr gpa:%llx, sz:%d, access_type:%lld, cpl:%d\n", */
-  /*         gpa, sz, access_type, cpl); */
-  /* dprintf(LOG_TRACE, "hpt_checked_guest_pa2ptr host_pmo_root t:%d pm:%p lvl:%d\n", */
-  /*         ctx->host_pmo_root.t, ctx->host_pmo_root.pm, ctx->host_pmo_root.lvl); */
-
+  hptw_emhf_checked_guest_ctx_t *ctx = vctx;
   ASSERT(ctx);
 
-  return hptw_checked_access_va(&ctx->host_walk_ctx,
-                                &ctx->host_pmo_root,
+  return hptw_checked_access_va(&ctx->hptw_host_ctx.super,
+                                &ctx->hptw_host_ctx.root,
                                 access_type,
                                 cpl,
                                 gpa,
@@ -97,66 +111,68 @@ void* hpt_checked_guest_pa2ptr(void *vctx, hpt_pa_t gpa, size_t sz, hpt_prot_t a
                                 avail_sz);
 }
 
-void* hpt_get_zeroed_page(void *ctx, size_t alignment, size_t sz)
+static void* hptw_emhf_checked_guest_ctx_gzp(void *vctx, size_t alignment, size_t sz)
 {
-  pagelist_t *pl = ctx;
+  hptw_emhf_checked_guest_ctx_t *ctx = vctx;
+  pagelist_t *pl = ctx->pl;
   ASSERT(PAGE_SIZE_4K % alignment == 0);
   ASSERT(sz <= PAGE_SIZE_4K);
   return pagelist_get_zeroedpage(pl);
 }
-const hptw_ctx_t hpt_nested_walk_ctx = {
-  .gzp = hpt_get_zeroed_page,
-  .gzp_ctx = NULL, /* we'll copy this struct for
-                      each pal and give each it's own allocation
-                      pool */
-  .pa2ptr = hpt_nested_pa2ptr,
-  .ptr2pa = hpt_nested_ptr2pa,
-  .ptr2pa_ctx = NULL,
-};
 
-int hpt_guest_walk_ctx_construct(hptw_ctx_t *ctx, const hpt_pmo_t *host_root, const hptw_ctx_t *host_walk_ctx, pagelist_t *pl)
+int hptw_emhf_checked_guest_ctx_init(hptw_emhf_checked_guest_ctx_t *ctx,
+                                     const hpt_pmo_t *root,
+                                     hptw_cpl_t cpl,
+                                     const hptw_emhf_host_ctx_t *host_ctx,
+                                     pagelist_t *pl)
 {
-  scode_guest_pa2ptr_ctx_t *guest_pa2ptr_ctx=NULL;
-  int rv=1;
+  /* FIXME: check that guest root is accessible in host pts here? */
 
-  EU_CHK( guest_pa2ptr_ctx = malloc(sizeof(*guest_pa2ptr_ctx)));
-
-  *guest_pa2ptr_ctx = (scode_guest_pa2ptr_ctx_t) {
-    .host_pmo_root = *host_root,
-    .host_walk_ctx = *host_walk_ctx,
+  *ctx = (hptw_emhf_checked_guest_ctx_t) {
+    .super = (hptw_ctx_t) {
+      .ptr2pa = hptw_emhf_checked_guest_ctx_ptr2pa,
+      .pa2ptr = hptw_emhf_checked_guest_ctx_pa2ptr,
+      .gzp = hptw_emhf_checked_guest_ctx_gzp,
+    },
+    .root = *root,
+    .cpl = cpl,
+    .hptw_host_ctx = *host_ctx,
+    .pl = pl,
   };
 
-  *ctx = (hptw_ctx_t) {
-    .gzp = hpt_get_zeroed_page,
-    .gzp_ctx = pl,
-    .pa2ptr = hpt_checked_guest_pa2ptr,
-    .pa2ptr_ctx = guest_pa2ptr_ctx,
-    .ptr2pa = hpt_guest_ptr2pa,
-    .ptr2pa_ctx = NULL,
-  };
+  return 0;
+}
 
-  rv=0;
+int hptw_emhf_host_ctx_init_of_vcpu(hptw_emhf_host_ctx_t *rv, VCPU *vcpu)
+{
+  hpt_pmo_t root;
+  hpt_emhf_get_root_pmo(vcpu, &root);
+  hptw_emhf_host_ctx_init(rv, &root, NULL);
+  return 0;
+}
+
+/* static int construct_checked_walk_ctx(VCPU *vcpu, checked_guest_walk_ctx_t *rv) */
+int hptw_emhf_checked_guest_ctx_init_of_vcpu(hptw_emhf_checked_guest_ctx_t *rv, VCPU *vcpu)
+{
+  int err=1;
+  hptw_emhf_host_ctx_t host_ctx;
+  hpt_pmo_t root;
+
+  hpt_emhf_get_guest_root_pmo( vcpu, &root);
+  EU_CHKN( hptw_emhf_host_ctx_init_of_vcpu( &host_ctx, vcpu));
+  EU_CHKN( hptw_emhf_checked_guest_ctx_init( rv,
+                                             &root,
+                                             HPTW_CPL3, /* FIXME - extract cpl from vcpu */
+                                             &host_ctx,
+                                             NULL));
+
+  err = 0;
  out:
-  if (rv) {
-    free(guest_pa2ptr_ctx);
-  }
-  return rv;
-}
-int hpt_guest_walk_ctx_construct_vcpu(hptw_ctx_t *rv, VCPU *vcpu, pagelist_t *pl)
-{
-  hpt_pmo_t host_root;
-  
-  hpt_emhf_get_root_pmo(vcpu, &host_root);
-  return hpt_guest_walk_ctx_construct(rv, &host_root, &hpt_nested_walk_ctx, pl);
+  return err;
 }
 
-void hpt_guest_walk_ctx_destroy(hptw_ctx_t *ctx)
-{
-  free(ctx->pa2ptr_ctx);
-  ctx->pa2ptr_ctx = NULL;
-}
-
-hpt_pmo_t      g_reg_npmo_root;
+hpt_pmo_t g_reg_npmo_root;
+hptw_emhf_host_ctx_t g_hptw_reg_host_ctx;
 
 /* this is the return address we push onto the stack when entering the
    pal. We return to the reg world on a nested page fault on
@@ -353,7 +369,7 @@ int scode_measure_section(utpm_master_state_t *utpm,
        * additional checks here should be unnecessary. leaving them in
        * to avoid potential future TOCTTOU vulnerabilities.
        */
-      EU_VERIFY( ptr = hptw_checked_access_va( &wle->hpt_guest_walk_ctx,
+      EU_VERIFY( ptr = hptw_checked_access_va( &wle->hptw_pal_checked_guest_ctx.super,
                                                &wle->pal_gpt_root,
                                                HPT_PROTS_R,
                                                HPTW_CPL3,
@@ -564,10 +580,8 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
   whitelist_entry_t whitelist_new;
   u64 gcr3;
   hpt_pmo_t reg_gpmo_root, pal_npmo_root, pal_gpmo_root;
-  hptw_ctx_t reg_guest_walk_ctx;
+  hptw_emhf_checked_guest_ctx_t reg_guest_walk_ctx;
   u32 rv=1;
-
-  EU_CHKN( hpt_guest_walk_ctx_construct_vcpu(&reg_guest_walk_ctx, vcpu, NULL));
 
   /* set all CPUs to use the same 'reg' nested page tables,
      and set up a corresponding hpt_pmo.
@@ -581,6 +595,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
     if (!did_change_root_mappings) {
       hpt_emhf_get_root_pmo(vcpu, &g_reg_npmo_root);
+      hptw_emhf_host_ctx_init( &g_hptw_reg_host_ctx, &g_reg_npmo_root, NULL);
 #ifdef __MP_VERSION__
       {
         size_t i;
@@ -597,6 +612,8 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
       did_change_root_mappings = true;
     }
   }
+
+  EU_CHKN( hptw_emhf_checked_guest_ctx_init_of_vcpu( &reg_guest_walk_ctx, vcpu));
 
   gcr3 = VCPU_gcr3(vcpu);
 
@@ -642,26 +659,23 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
     .t = reg_gpmo_root.t,
     .lvl = reg_gpmo_root.lvl,
     .pm = pagelist_get_zeroedpage(whitelist_new.gpl),
-  };
+      };
 
-  /* we can use the same walk ctx for guest page tables as for
-     nested page tables, because guest physical addresses are
-     unity-mapped to system physical addresses. we also use the same
-     walk ctx for both 'pal' and 'reg' page table sets for
-     simplicity. */
-  whitelist_new.hpt_nested_walk_ctx = hpt_nested_walk_ctx; /* copy from template */
-  whitelist_new.hpt_nested_walk_ctx.gzp_ctx = whitelist_new.npl;
+  EU_CHKN( hptw_emhf_host_ctx_init( &whitelist_new.hptw_pal_host_ctx,
+                                    &pal_npmo_root,
+                                    whitelist_new.npl));
 
-  EU_CHKN( hpt_guest_walk_ctx_construct(&whitelist_new.hpt_guest_walk_ctx,
-                                        &pal_npmo_root,
-                                        &whitelist_new.hpt_nested_walk_ctx,
-                                        whitelist_new.gpl));
+  EU_CHKN( hptw_emhf_checked_guest_ctx_init( &whitelist_new.hptw_pal_checked_guest_ctx,
+                                             &pal_gpmo_root,
+                                             HPTW_CPL3,
+                                             &whitelist_new.hptw_pal_host_ctx,
+                                             whitelist_new.gpl));
 
   /* add all gpl pages to pal's nested page tables, ensuring that
      the guest page tables allocated from it will be accessible to the
      pal */
   /* XXX breaks pagelist abstraction. will break if pagelist ever dynamically
-     allocates more buffers */
+     allocates more buffers. consider doing this on-demand inside pal's gzp fn instead. */
   eu_trace("adding gpl to pal's npt:");
   for (i=0; i < whitelist_new.gpl->num_allocd; i++) {
     hpt_pmeo_t pmeo = {
@@ -672,10 +686,10 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
     void *page = whitelist_new.gpl->page_base + i*PAGE_SIZE_4K;
     hpt_pmeo_setprot(&pmeo, HPT_PROTS_RWX);
     hpt_pmeo_set_address(&pmeo, hva2spa(page));
-    EU_CHKN( hptw_insert_pmeo_alloc(&whitelist_new.hpt_nested_walk_ctx,
-                                    &pal_npmo_root,
-                                    &pmeo,
-                                    hva2gpa(page)));
+    EU_CHKN( hptw_insert_pmeo_alloc( &whitelist_new.hptw_pal_host_ctx.super,
+                                     &pal_npmo_root,
+                                     &pmeo,
+                                     hva2gpa(page)));
   }
 
   eu_trace("adding sections to pal's npts and gpts:");
@@ -690,11 +704,11 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
       .reg_prot = reg_prot_of_type(whitelist_new.scode_info.sections[i].type),
       .section_type = whitelist_new.scode_info.sections[i].type,
     };
-    scode_lend_section(&g_reg_npmo_root, &whitelist_new.hpt_nested_walk_ctx,
-                       &reg_gpmo_root, &reg_guest_walk_ctx,
-                       &pal_npmo_root, &whitelist_new.hpt_nested_walk_ctx,
-                       &pal_gpmo_root, &whitelist_new.hpt_guest_walk_ctx,
-                       &whitelist_new.sections[i]);
+    scode_lend_section( &g_reg_npmo_root, &g_hptw_reg_host_ctx.super,
+                        &reg_gpmo_root, &reg_guest_walk_ctx.super,
+                        &pal_npmo_root, &whitelist_new.hptw_pal_host_ctx.super,
+                        &pal_gpmo_root, &whitelist_new.hptw_pal_checked_guest_ctx.super,
+                        &whitelist_new.sections[i]);
   }
 
   /* clone gdt */
@@ -724,10 +738,10 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
 
     eu_trace("generated pme for return gva address %x: lvl:%d %llx",
             RETURN_FROM_PAL_ADDRESS, pmeo.lvl, pmeo.pme);
-    EU_CHKN( hptw_insert_pmeo_alloc(&whitelist_new.hpt_guest_walk_ctx,
-                                    &pal_gpmo_root,
-                                    &pmeo,
-                                    RETURN_FROM_PAL_ADDRESS));
+    EU_CHKN( hptw_insert_pmeo_alloc( &whitelist_new.hptw_pal_checked_guest_ctx.super,
+                                     &pal_gpmo_root,
+                                     &pmeo,
+                                     RETURN_FROM_PAL_ADDRESS));
   }
 
   whitelist_new.pal_npt_root = pal_npmo_root;
@@ -772,7 +786,6 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
   rv=0;
  out:
   /* FIXME clean-up in case of error */
-  hpt_guest_walk_ctx_destroy(&reg_guest_walk_ctx);
   return rv;
 }
 
@@ -817,18 +830,18 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
         && !(whitelist[i].sections[j].reg_prot & HPT_PROTS_R)) {
       int err;
       eu_trace("zeroing section %d", j);
-      err = hptw_checked_memset_va(&whitelist[i].hpt_guest_walk_ctx, &whitelist[i].pal_gpt_root,
-                                   HPTW_CPL3,
-                                   whitelist[i].sections[j].pal_gva, 0, whitelist[i].sections[j].size);
+      err = hptw_checked_memset_va( &whitelist[i].hptw_pal_checked_guest_ctx.super, &whitelist[i].pal_gpt_root,
+                                    HPTW_CPL3,
+                                    whitelist[i].sections[j].pal_gva, 0, whitelist[i].sections[j].size);
       /* should only fail if insufficient permissions in the guest
          page tables, which TV constructed and the PAL should not have
          been able to modify */
       ASSERT(!err);
     }
 
-    scode_return_section(&g_reg_npmo_root, &whitelist[i].hpt_nested_walk_ctx,
-                         &whitelist[i].pal_npt_root, &whitelist[i].hpt_nested_walk_ctx,
-                         &whitelist[i].pal_gpt_root, &whitelist[i].hpt_guest_walk_ctx,
+    scode_return_section(&g_reg_npmo_root, &g_hptw_reg_host_ctx.super,
+                         &whitelist[i].pal_npt_root, &whitelist[i].hptw_pal_host_ctx.super,
+                         &whitelist[i].pal_gpt_root, &whitelist[i].hptw_pal_checked_guest_ctx.super,
                          &whitelist[i].sections[j]);
   }
   /* flush TLB for page table modifications to take effect */
@@ -838,8 +851,6 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
   /* CRITICAL SECTION in MP scenario: need to quiesce other CPUs or at least acquire spinlock */
   whitelist_size --;
   whitelist[i].gcr3 = 0;
-
-  hpt_guest_walk_ctx_destroy(&whitelist[i].hpt_guest_walk_ctx);
 
   pagelist_free_all(whitelist[i].npl);
   free(whitelist[i].npl);
@@ -873,14 +884,11 @@ u32 scode_marshall(VCPU * vcpu)
   u32 new_rsp;
   int curr=scode_curr[vcpu->id];
   u32 err=1;
-  hptw_ctx_t vcpu_guest_walk_ctx;
-  hpt_pmo_t vcpu_guest_root;
-
-  EU_CHKN( hpt_guest_walk_ctx_construct_vcpu(&vcpu_guest_walk_ctx, vcpu, NULL));
-
-  hpt_emhf_get_guest_root_pmo(vcpu, &vcpu_guest_root);
+  hptw_emhf_checked_guest_ctx_t vcpu_guest_walk_ctx;
 
   perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_MARSHALL], vcpu->idx);
+
+  EU_CHKN( hptw_emhf_checked_guest_ctx_init_of_vcpu( &vcpu_guest_walk_ctx, vcpu));
 
   eu_trace("marshalling scode parameters!");
   EU_CHK(whitelist[curr].gpm_num != 0);
@@ -894,7 +902,7 @@ u32 scode_marshall(VCPU * vcpu)
 
   /* save params number */
   pm_addr = pm_addr_base;
-  EU_CHKN( hptw_checked_copy_to_va( &whitelist[curr].hpt_guest_walk_ctx,
+  EU_CHKN( hptw_checked_copy_to_va( &whitelist[curr].hptw_pal_checked_guest_ctx.super,
                                     &whitelist[curr].pal_gpt_root,
                                     HPTW_CPL3,
                                     pm_addr,
@@ -921,17 +929,17 @@ u32 scode_marshall(VCPU * vcpu)
       EU_CHK( pm_size_sum <= (whitelist[curr].gpm_size*PAGE_SIZE_4K));
 
       /* save input params in input params memory for sensitive code */
-      EU_CHKN( hptw_checked_copy_to_va(&whitelist[curr].hpt_guest_walk_ctx,
+      EU_CHKN( hptw_checked_copy_to_va(&whitelist[curr].hptw_pal_checked_guest_ctx.super,
                                        &whitelist[curr].pal_gpt_root,
                                        HPTW_CPL3,
                                        pm_addr,
                                        &pm_type, sizeof(pm_type)));
-      EU_CHKN( hptw_checked_copy_to_va(&whitelist[curr].hpt_guest_walk_ctx,
+      EU_CHKN( hptw_checked_copy_to_va(&whitelist[curr].hptw_pal_checked_guest_ctx.super,
                                        &whitelist[curr].pal_gpt_root,
                                        HPTW_CPL3,
                                        pm_addr+sizeof(pm_type),
                                        &pm_size, sizeof(pm_size)));
-      EU_CHKN( hptw_checked_copy_to_va(&whitelist[curr].hpt_guest_walk_ctx,
+      EU_CHKN( hptw_checked_copy_to_va(&whitelist[curr].hptw_pal_checked_guest_ctx.super,
                                        &whitelist[curr].pal_gpt_root,
                                        HPTW_CPL3,
                                        pm_addr+sizeof(pm_type)+sizeof(pm_size),
@@ -956,12 +964,12 @@ u32 scode_marshall(VCPU * vcpu)
 
             eu_trace("PM %d is a pointer (size %d, value %#x)", pm_i, pm_size, pm_value);
 
-            EU_CHKN( hptw_checked_copy_va_to_va(&whitelist[curr].hpt_guest_walk_ctx,
+            EU_CHKN( hptw_checked_copy_va_to_va(&whitelist[curr].hptw_pal_checked_guest_ctx.super,
                                                 &whitelist[curr].pal_gpt_root,
                                                 HPTW_CPL3,
                                                 pm_addr,
-                                                &vcpu_guest_walk_ctx,
-                                                &vcpu_guest_root,
+                                                &vcpu_guest_walk_ctx.super,
+                                                &vcpu_guest_walk_ctx.root,
                                                 HPTW_CPL3,
                                                 pm_value,
                                                 pm_size*4));
@@ -978,7 +986,7 @@ u32 scode_marshall(VCPU * vcpu)
         }
       new_rsp = VCPU_grsp(vcpu)-4;
       VCPU_grsp_set(vcpu, new_rsp);
-      EU_CHKN( hptw_checked_copy_to_va( &whitelist[curr].hpt_guest_walk_ctx,
+      EU_CHKN( hptw_checked_copy_to_va( &whitelist[curr].hptw_pal_checked_guest_ctx.super,
                                         &whitelist[curr].pal_gpt_root,
                                         HPTW_CPL3,
                                         new_rsp,
@@ -988,7 +996,6 @@ u32 scode_marshall(VCPU * vcpu)
 
   err=0;
  out:
-  hpt_guest_walk_ctx_destroy(&vcpu_guest_walk_ctx);
   perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_MARSHALL], vcpu->idx);
   return err;
 }
@@ -1030,7 +1037,7 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 
   /* write the sentinel return address to scode stack */
   sentinel_return = RETURN_FROM_PAL_ADDRESS;
-  EU_CHKN( hptw_checked_copy_to_va( &whitelist[curr].hpt_guest_walk_ctx,
+  EU_CHKN( hptw_checked_copy_to_va( &whitelist[curr].hptw_pal_checked_guest_ctx.super,
                                     &whitelist[curr].pal_gpt_root,
                                     HPTW_CPL3,
                                     VCPU_grsp(vcpu)-4,
@@ -1088,10 +1095,15 @@ u32 scode_unmarshall(VCPU * vcpu)
 
   int curr=scode_curr[vcpu->id];
 
-  hptw_ctx_t reg_guest_walk_ctx;
+  hptw_emhf_checked_guest_ctx_t reg_guest_walk_ctx;
   u32 err=1;
 
-  EU_CHKN( hpt_guest_walk_ctx_construct(&reg_guest_walk_ctx, &g_reg_npmo_root, &hpt_nested_walk_ctx, NULL));
+
+  EU_CHKN( hptw_emhf_checked_guest_ctx_init( &reg_guest_walk_ctx,
+                                             &whitelist[curr].reg_gpt_root,
+                                             HPTW_CPL3,
+                                             &g_hptw_reg_host_ctx,
+                                             NULL));
 
   eu_trace("unmarshalling scode parameters!");
   EU_CHK( whitelist[curr].gpm_num != 0);
@@ -1102,7 +1114,7 @@ u32 scode_unmarshall(VCPU * vcpu)
 
   /* get params number */
   pm_addr = pm_addr_base;
-  EU_CHKN( hptw_checked_copy_from_va( &whitelist[curr].hpt_guest_walk_ctx,
+  EU_CHKN( hptw_checked_copy_from_va( &whitelist[curr].hptw_pal_checked_guest_ctx.super,
                                       &whitelist[curr].pal_gpt_root,
                                       HPTW_CPL3,
                                       &pm_num,
@@ -1116,7 +1128,7 @@ u32 scode_unmarshall(VCPU * vcpu)
   for (i = 0; i < pm_num; i++) /*the last parameter should be pushed in stack first*/
     {
       /* get param information*/
-      EU_CHKN( hptw_checked_copy_from_va( &whitelist[curr].hpt_guest_walk_ctx,
+      EU_CHKN( hptw_checked_copy_from_va( &whitelist[curr].hptw_pal_checked_guest_ctx.super,
                                           &whitelist[curr].pal_gpt_root,
                                           HPTW_CPL3,
                                           &pm_type,
@@ -1135,14 +1147,14 @@ u32 scode_unmarshall(VCPU * vcpu)
           }
         case TV_PAL_PM_POINTER: /* pointer */
           {
-            EU_CHKN( hptw_checked_copy_from_va( &whitelist[curr].hpt_guest_walk_ctx,
+            EU_CHKN( hptw_checked_copy_from_va( &whitelist[curr].hptw_pal_checked_guest_ctx.super,
                                                 &whitelist[curr].pal_gpt_root,
                                                 HPTW_CPL3,
                                                 &pm_size,
                                                 pm_addr,
                                                 sizeof(pm_size)));
             /* get pointer adddress in regular code */
-            EU_CHKN( hptw_checked_copy_from_va( &whitelist[curr].hpt_guest_walk_ctx,
+            EU_CHKN( hptw_checked_copy_from_va( &whitelist[curr].hptw_pal_checked_guest_ctx.super,
                                                 &whitelist[curr].pal_gpt_root,
                                                 HPTW_CPL3,
                                                 &pm_value,
@@ -1152,15 +1164,15 @@ u32 scode_unmarshall(VCPU * vcpu)
 
             eu_trace("PM %d is a pointer (size %d, addr %#x)", i,  pm_size*4, pm_value);
             /* copy data from sensitive code (param space) to guest */
-            EU_CHKN( hptw_checked_copy_va_to_va(&reg_guest_walk_ctx,
-                                                &whitelist[curr].reg_gpt_root,
-                                                HPTW_CPL3,
-                                                pm_value,
-                                                &whitelist[curr].hpt_guest_walk_ctx,
-                                                &whitelist[curr].pal_gpt_root,
-                                                HPTW_CPL3,
-                                                pm_addr,
-                                                pm_size*4));
+            EU_CHKN( hptw_checked_copy_va_to_va( &reg_guest_walk_ctx.super,
+                                                 &reg_guest_walk_ctx.root,
+                                                 HPTW_CPL3,
+                                                 pm_value,
+                                                 &whitelist[curr].hptw_pal_checked_guest_ctx.super,
+                                                 &whitelist[curr].pal_gpt_root,
+                                                 HPTW_CPL3,
+                                                 pm_addr,
+                                                 pm_size*4));
             pm_addr += 4*pm_size;
             break;
           }
@@ -1175,7 +1187,6 @@ u32 scode_unmarshall(VCPU * vcpu)
 
   err=0;
  out:
-  hpt_guest_walk_ctx_destroy(&reg_guest_walk_ctx);
   return err;
 }
 
@@ -1329,10 +1340,10 @@ void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* wle)
       i >= 0 && wle->sections[i].section_type == TV_PAL_SECTION_SHARED;
       i--) {
     eu_trace("returning shared section num %d at 0x%08llx", i, wle->sections[i].pal_gva);
-    scode_return_section(&g_reg_npmo_root, &wle->hpt_nested_walk_ctx,
-                         &wle->pal_npt_root, &wle->hpt_nested_walk_ctx,
-                         &wle->pal_gpt_root, &wle->hpt_guest_walk_ctx,
-                         &wle->sections[i]);
+    scode_return_section( &g_reg_npmo_root, &g_hptw_reg_host_ctx.super,
+                          &wle->pal_npt_root, &wle->hptw_pal_host_ctx.super,
+                          &wle->pal_gpt_root, &wle->hptw_pal_checked_guest_ctx.super,
+                          &wle->sections[i]);
     wle->sections_num--;
   }
 }
@@ -1341,10 +1352,8 @@ void scode_release_all_shared_pages(VCPU *vcpu, whitelist_entry_t* wle)
 u32 scode_share_range(VCPU * vcpu, whitelist_entry_t *wle, u32 gva_base, u32 gva_len)
 {
   u32 err=1;
-  hptw_ctx_t vcpu_guest_walk_ctx;
-  hpt_pmo_t vcpu_guest_root;
-  EU_CHKN( hpt_guest_walk_ctx_construct_vcpu(&vcpu_guest_walk_ctx, vcpu, NULL));
-  hpt_emhf_get_guest_root_pmo(vcpu, &vcpu_guest_root);
+  hptw_emhf_checked_guest_ctx_t vcpu_guest_walk_ctx;
+  EU_CHKN( hptw_emhf_checked_guest_ctx_init_of_vcpu( &vcpu_guest_walk_ctx, vcpu));
 
   EU_CHK( wle->sections_num < TV_MAX_SECTIONS);
 
@@ -1357,18 +1366,16 @@ u32 scode_share_range(VCPU * vcpu, whitelist_entry_t *wle, u32 gva_base, u32 gva
     .section_type = TV_PAL_SECTION_SHARED,
   };
 
-  scode_lend_section(&g_reg_npmo_root, &wle->hpt_nested_walk_ctx,
-                     &vcpu_guest_root, &vcpu_guest_walk_ctx,
-                     &wle->pal_npt_root, &wle->hpt_nested_walk_ctx,
-                     &wle->pal_gpt_root, &wle->hpt_guest_walk_ctx,
+  scode_lend_section(&g_reg_npmo_root, &g_hptw_reg_host_ctx.super,
+                     &vcpu_guest_walk_ctx.root, &vcpu_guest_walk_ctx.super,
+                     &wle->pal_npt_root, &wle->hptw_pal_host_ctx.super,
+                     &wle->pal_gpt_root, &wle->hptw_pal_checked_guest_ctx.super,
                      &wle->sections[wle->sections_num]);
 
   wle->sections_num++;
 
   err=0;
  out:
-  hpt_guest_walk_ctx_destroy(&vcpu_guest_walk_ctx);
-
   return err;
 }
 

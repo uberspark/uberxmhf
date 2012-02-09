@@ -88,11 +88,40 @@ typedef struct {
   u32 section_type;
 } tv_pal_section_int_t;
 
+
+
+
 typedef struct {
-  hptw_ctx_t host_walk_ctx;
-  hpt_pmo_t host_pmo_root;
-} scode_guest_pa2ptr_ctx_t;
-void* hpt_checked_guest_pa2ptr(void *vctx, hpt_pa_t gpa, size_t sz, hpt_prot_t access_type, hptw_cpl_t cpl, size_t *avail_sz);
+  hptw_ctx_t super;
+
+  hpt_pmo_t root;
+  pagelist_t *pl;
+} hptw_emhf_host_ctx_t;
+int hptw_emhf_host_ctx_init(hptw_emhf_host_ctx_t *ctx, const hpt_pmo_t *root, pagelist_t *pl);
+int hptw_emhf_host_ctx_init_of_vcpu(hptw_emhf_host_ctx_t *rv, VCPU *vcpu);
+
+typedef struct {
+  hptw_ctx_t super;
+
+  hpt_pmo_t root;
+  hptw_cpl_t cpl;
+
+  hptw_emhf_host_ctx_t hptw_host_ctx;
+  pagelist_t *pl;
+} hptw_emhf_checked_guest_ctx_t;
+int hptw_emhf_checked_guest_ctx_init(hptw_emhf_checked_guest_ctx_t *ctx,
+                                     const hpt_pmo_t *root,
+                                     hptw_cpl_t cpl,
+                                     const hptw_emhf_host_ctx_t *hpt_emhf_host_walk_ctx,
+                                     pagelist_t *pl);
+int hptw_emhf_checked_guest_ctx_init_of_vcpu(hptw_emhf_checked_guest_ctx_t *rv, VCPU *vcpu);
+
+
+
+
+
+
+
 
 /* scode state struct */
 typedef struct whitelist_entry{
@@ -130,10 +159,10 @@ typedef struct whitelist_entry{
   /* pal page tables */
   pagelist_t *gpl;
   pagelist_t *npl;
-  hptw_ctx_t hpt_nested_walk_ctx;
-  hptw_ctx_t hpt_guest_walk_ctx;
-  hpt_pmo_t pal_npt_root;
-  hpt_pmo_t pal_gpt_root;
+  hptw_emhf_host_ctx_t hptw_pal_host_ctx;
+  hptw_emhf_checked_guest_ctx_t hptw_pal_checked_guest_ctx;
+  hpt_pmo_t pal_npt_root; /* XXX remove: now part of walker ctx */
+  hpt_pmo_t pal_gpt_root; /* XXX remove: now part of walker ctx */
   hpt_pmo_t reg_gpt_root; /* XXX consider removing this. ought to be grabbed and re-checked on every ctx switch */
   u64 pal_gcr3;
 } __attribute__ ((packed)) whitelist_entry_t;
@@ -141,33 +170,25 @@ typedef struct whitelist_entry{
 /* max size of memory that holds scode state */
 #define WHITELIST_LIMIT (sizeof(whitelist_entry_t)*100)
 
-/* template page table context */
-extern const hptw_ctx_t hpt_nested_walk_ctx;
-int hpt_guest_walk_ctx_construct(hptw_ctx_t *rv, const hpt_pmo_t *host_root, const hptw_ctx_t *host_walk_ctx, pagelist_t *pl);
-int hpt_guest_walk_ctx_construct_vcpu(hptw_ctx_t *rv, VCPU *vcpu, pagelist_t *pl);
-void hpt_guest_walk_ctx_destroy(hptw_ctx_t *ctx);
-
 /* nested paging handlers (hpt) */
 hpt_prot_t pal_prot_of_type(int type);
 hpt_prot_t reg_prot_of_type(int type);
 
 /* guest paging handlers */
-static inline gpa_t gpt_vaddr_to_paddr(const hptw_ctx_t *ctx, const hpt_pmo_t *gpt_root, gva_t vaddr)
+static inline gpa_t gpt_vaddr_to_paddr( hptw_ctx_t *ctx, const hpt_pmo_t *gpt_root, gva_t vaddr)
 {
   return hptw_va_to_pa(ctx, gpt_root, vaddr);
 }
 static inline gpa_t gpt_vaddr_to_paddr_current(VCPU *vcpu, gva_t vaddr)
 {
-  hptw_ctx_t ctx;
-  hpt_pmo_t guest_root;
+  hptw_emhf_checked_guest_ctx_t ctx;
   gpa_t rv;
   int err;
 
-  hpt_emhf_get_guest_root_pmo(vcpu, &guest_root);
-  err = hpt_guest_walk_ctx_construct_vcpu(&ctx, vcpu, NULL);
+  err = hptw_emhf_checked_guest_ctx_init_of_vcpu(&ctx, vcpu);
   assert(!err); /* FIXME */
 
-  rv = hptw_va_to_pa(&ctx, &guest_root, vaddr);
+  rv = hptw_va_to_pa(&ctx.super, &ctx.root, vaddr);
 
   return rv;
 }
