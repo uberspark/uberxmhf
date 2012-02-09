@@ -121,6 +121,7 @@ void emhf_xcphandler_arch_initialize(void){
 
 //reset IDT to zeros
 void emhf_xcphandler_arch_resetIDT(void){
+	memset((void *)&emhf_xcphandler_idt, 0, 6);	//zero out IDT descriptor
 	memset((void *)emhf_xcphandler_arch_get_idt_start(), 0, EMHF_XCPHANDLER_IDTSIZE);	
 	return;
 }
