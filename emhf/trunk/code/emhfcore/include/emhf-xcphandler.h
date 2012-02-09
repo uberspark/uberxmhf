@@ -63,9 +63,6 @@ extern u8 emhf_xcphandler_idt_start[];
 //initialize EMHF core exception handlers
 void emhf_xcphandler_initialize(void);
 
-//reset IDT to zeros
-//void emhf_xcphandler_resetIDT(void);
-
 //get IDT start address
 u8 * emhf_xcphandler_get_idt_start(void);
 
@@ -78,9 +75,6 @@ void emhf_xcphandler_hub(u32 vector, struct regs *r);
 
 //initialize EMHF core exception handlers
 void emhf_xcphandler_arch_initialize(void);
-
-//reset IDT to zeros
-//void emhf_xcphandler_arch_resetIDT(void);
 
 //get IDT start address
 u8 * emhf_xcphandler_arch_get_idt_start(void);

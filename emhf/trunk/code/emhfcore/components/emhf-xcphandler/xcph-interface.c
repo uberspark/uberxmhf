@@ -47,11 +47,6 @@ void emhf_xcphandler_initialize(void){
 }
 
 
-/*//reset IDT to zeros
-void emhf_xcphandler_resetIDT(void){
-	emhf_xcphandler_arch_resetIDT();
-}*/
-
 //get IDT start address
 u8 * emhf_xcphandler_get_idt_start(void){
 	return emhf_xcphandler_arch_get_idt_start();
