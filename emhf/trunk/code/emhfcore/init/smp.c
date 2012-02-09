@@ -41,17 +41,21 @@
 //author: amit vasudevan (amitvasudevan@acm.org)
 #include <emhf.h> 
 
+#if defined(__MP_VERSION__)	
 //forward prototypes
 static int mp_checksum(unsigned char *mp, int len);
 static u32 mp_scan_config(u32 base, u32 length, MPFP **mpfp);
 static u32 mp_getebda(void);
-ACPI_RSDP * ACPIGetRSDP(void);
+//ACPI_RSDP * ACPIGetRSDP(void);
+#endif
 
 //exposed interface to the outside world
 //inputs: array of type PCPU and pointer to u32 which will
 //receive the number of cores/CPUs in the system
 //returns: 1 on succes, 0 on any failure
 u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
+#if defined(__MP_VERSION__)	
+
 	MPFP *mpfp;
 	MPCONFTABLE *mpctable;
 	
@@ -71,7 +75,6 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
 	u8 madt_found=0;
 	u32 i;
 
-#if defined(__MP_VERSION__)	
 	//we scan ACPI MADT and then the MP configuration table if one is
 	//present, in that order!
 
@@ -260,6 +263,8 @@ fallthrough:
 
 }
 
+#if defined(__MP_VERSION__)	
+
 static int mp_checksum(unsigned char *mp, int len){
 	int sum = 0;
   
@@ -268,6 +273,7 @@ static int mp_checksum(unsigned char *mp, int len){
   
 	return sum & 0xFF;
 }
+
 
 //returns 1 if MP table found and populates mpfp with MP table pointer
 //returns 0 if no MP table and makes mpfp=NULL
@@ -310,6 +316,9 @@ u32 mp_getebda(void){
   ebdaphys=(u32)(ebdaseg * 16);
 	return ebdaphys;
 }
+
+#endif //#if defined(__MP_VERSION__)	
+
 
 //------------------------------------------------------------------------------
 u32 _ACPIGetRSDPComputeChecksum(u32 spaddr, u32 size){
