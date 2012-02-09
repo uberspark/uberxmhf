@@ -46,7 +46,7 @@
 static int mp_checksum(unsigned char *mp, int len);
 static u32 mp_scan_config(u32 base, u32 length, MPFP **mpfp);
 static u32 mp_getebda(void);
-//ACPI_RSDP * ACPIGetRSDP(void);
+ACPI_RSDP * ACPIGetRSDP(void);
 #endif
 
 //exposed interface to the outside world
