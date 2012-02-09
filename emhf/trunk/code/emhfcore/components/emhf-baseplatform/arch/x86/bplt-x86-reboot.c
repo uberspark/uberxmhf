@@ -40,12 +40,18 @@
 
 #include <emhf.h>
 
+
 //generic x86 platform reboot
 void emhf_baseplatform_arch_x86_reboot(void){
-	//zero out IDT
-	emhf_xcphandler_resetIDT();
+	u8 nullidt[] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+
+    //zero out IDT
+	//emhf_xcphandler_resetIDT();
 	
-	printf("\n%s: reboot!");
+	//load IDT of 0 size
+	__asm__ __volatile__ ("lidtl %0\r\n" : : "m" (*nullidt) );
+	
+	printf("\n%s: reboot!", __FUNCTION__);
 	//step-3: execute ud2 instruction to generate triple fault
 	__asm__ __volatile__("ud2 \r\n");
 	

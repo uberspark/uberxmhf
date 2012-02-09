@@ -42,7 +42,17 @@
 
 //SVM specific platform reboot
 void emhf_baseplatform_arch_x86svm_reboot(VCPU *vcpu){
+	u32 eax, edx;
+	
 	(void)vcpu;
+	
+	//disable SVM extensions
+	rdmsr((u32)MSR_EFER, &eax, &edx);
+	eax &= ~(1<<EFER_SVME);
+	wrmsr((u32)MSR_EFER, eax, edx);
+	printf("\nCPU(0x%02x): SVM extensions disabled", vcpu->id);
+
+	
 	//fall back on generic x86 reboot
 	emhf_baseplatform_arch_x86_reboot();
 }
