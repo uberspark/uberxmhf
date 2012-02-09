@@ -78,35 +78,45 @@ static inline hpt_pm_t hpt_emhf_get_default_root_pm(VCPU *vcpu)
   return (hpt_pm_t)emhf_memprot_get_default_root_pagemap_address(vcpu);
 }
 
-static inline hpt_pm_t hpt_emhf_get_root_pm(VCPU *vcpu)
+static inline hpt_pa_t hpt_emhf_get_root_pm_pa(VCPU *vcpu)
 {
   hpt_type_t t = hpt_emhf_get_hpt_type(vcpu);
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    return spa2hva(hpt_eptp_get_address(t,
-                                        emhf_memprot_arch_x86vmx_get_EPTP(vcpu)));
+    return hpt_eptp_get_address(t,
+                                 emhf_memprot_arch_x86vmx_get_EPTP(vcpu));
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    return spa2hva(hpt_cr3_get_address(t,
-                                       emhf_memprot_arch_x86svm_get_h_cr3(vcpu)));
+    return hpt_cr3_get_address(t,
+                               emhf_memprot_arch_x86svm_get_h_cr3(vcpu));
   } else {
     ASSERT(0);
-    return NULL;
+    return 0;
   }
+}
+
+static inline void hpt_emhf_set_root_pm_pa(VCPU *vcpu, hpt_pa_t root_pa)
+{
+  hpt_type_t t = hpt_emhf_get_hpt_type(vcpu);
+  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+    emhf_memprot_arch_x86vmx_set_EPTP( vcpu, hpt_eptp_set_address(t,
+                                                                  emhf_memprot_arch_x86vmx_get_EPTP(vcpu),
+                                                                  root_pa));
+  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+    emhf_memprot_arch_x86svm_set_h_cr3( vcpu, hpt_cr3_set_address(t,
+                                                                  emhf_memprot_arch_x86svm_get_h_cr3(vcpu),
+                                                                  root_pa));
+  } else {
+    ASSERT(0);
+  }
+}
+
+static inline hpt_pm_t hpt_emhf_get_root_pm(VCPU *vcpu)
+{
+  return spa2hva( hpt_emhf_get_root_pm_pa( vcpu));
 }
 
 static inline void hpt_emhf_set_root_pm(VCPU *vcpu, hpt_pm_t root)
 {
-  hpt_type_t t = hpt_emhf_get_hpt_type(vcpu);
-  if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    emhf_memprot_arch_x86vmx_set_EPTP(vcpu, hpt_eptp_set_address(t,
-                                                     emhf_memprot_arch_x86vmx_get_EPTP(vcpu),
-                                                     hva2spa(root)));
-  } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    emhf_memprot_arch_x86svm_set_h_cr3(vcpu, hpt_cr3_set_address(t,
-                                                    emhf_memprot_arch_x86svm_get_h_cr3(vcpu),
-                                                    hva2spa(root)));
-  } else {
-    ASSERT(0);
-  }
+  hpt_emhf_set_root_pm_pa( vcpu, hva2spa(root));
 }
 
 static inline hpt_type_t hpt_emhf_get_guest_hpt_type(VCPU *vcpu) {
@@ -114,20 +124,32 @@ static inline hpt_type_t hpt_emhf_get_guest_hpt_type(VCPU *vcpu) {
   return (VCPU_gcr4(vcpu) & CR4_PAE) ? HPT_TYPE_PAE : HPT_TYPE_NORM;
 }
 
-static inline hpt_pm_t hpt_emhf_get_guest_root_pm(VCPU *vcpu)
+static inline hpt_pa_t hpt_emhf_get_guest_root_pm_pa(VCPU *vcpu)
 {
   hpt_type_t t = hpt_emhf_get_guest_hpt_type(vcpu);
-  return gpa2hva(hpt_cr3_get_address(t,
-                                     VCPU_gcr3(vcpu)));
+  return hpt_cr3_get_address(t,
+                             VCPU_gcr3(vcpu));
 }
 
-static inline void hpt_emhf_set_guest_root_pm(VCPU *vcpu, hpt_pm_t root)
+static inline void hpt_emhf_set_guest_root_pm_pa( VCPU *vcpu, hpt_pa_t root_pa)
 {
   hpt_type_t t = hpt_emhf_get_guest_hpt_type(vcpu);
   VCPU_gcr3_set(vcpu,
                 hpt_cr3_set_address(t,
                                     VCPU_gcr3(vcpu),
-                                    hva2gpa(root)));
+                                    root_pa));
+}
+
+/* XXX use with extreme caution. guest could have set its cr3 to point
+   to a gpa to which it shouldn't have access */
+static inline hpt_pm_t hpt_emhf_get_guest_root_pm(VCPU *vcpu)
+{
+  return gpa2hva( hpt_emhf_get_guest_root_pm_pa( vcpu));
+}
+
+static inline void hpt_emhf_set_guest_root_pm( VCPU *vcpu, hpt_pm_t root)
+{
+  hpt_emhf_set_guest_root_pm_pa( vcpu, hva2gpa( root));
 }
 
 static inline void hpt_emhf_get_root_pmo(VCPU *vcpu, hpt_pmo_t *root)

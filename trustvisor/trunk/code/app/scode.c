@@ -166,7 +166,7 @@ int hptw_emhf_checked_guest_ctx_init_of_vcpu(hptw_emhf_checked_guest_ctx_t *rv, 
   hpt_pa_t root_pa;
   hpt_type_t t;
 
-  root_pa = hva2gpa( hpt_emhf_get_guest_root_pm( vcpu));
+  root_pa = hpt_emhf_get_guest_root_pm_pa( vcpu);
   t = hpt_emhf_get_guest_hpt_type( vcpu);
 
   EU_CHKN( hptw_emhf_host_ctx_init_of_vcpu( &host_ctx, vcpu));
@@ -589,7 +589,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
   size_t i;
   whitelist_entry_t whitelist_new;
   u64 gcr3;
-  hpt_pmo_t reg_gpmo_root, pal_npmo_root, pal_gpmo_root;
+  hpt_pmo_t pal_npmo_root, pal_gpmo_root;
   hptw_emhf_checked_guest_ctx_t reg_guest_walk_ctx;
   u32 rv=1;
 
@@ -659,17 +659,18 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
   EU_CHK( whitelist_new.gpl = malloc(sizeof(pagelist_t)));
   pagelist_init(whitelist_new.gpl);
 
-  hpt_emhf_get_guest_root_pmo(vcpu, &reg_gpmo_root);
+  whitelist_new.reg_gpt_root_pa = hpt_emhf_get_guest_root_pm_pa( vcpu);
+  whitelist_new.reg_gpt_type = hpt_emhf_get_guest_hpt_type( vcpu);
   pal_npmo_root = (hpt_pmo_t) {
     .t = g_reg_npmo_root.t,
     .lvl = g_reg_npmo_root.lvl,
     .pm = pagelist_get_zeroedpage(whitelist_new.npl),
   };
   pal_gpmo_root = (hpt_pmo_t) {
-    .t = reg_gpmo_root.t,
-    .lvl = reg_gpmo_root.lvl,
-    .pm = pagelist_get_zeroedpage(whitelist_new.gpl),
-      };
+    .t = whitelist_new.reg_gpt_type,
+    .lvl = hpt_root_lvl( whitelist_new.reg_gpt_type),
+    .pm = pagelist_get_zeroedpage( whitelist_new.gpl),
+  };
 
   EU_CHKN( hptw_emhf_host_ctx_init( &whitelist_new.hptw_pal_host_ctx,
                                     hva2spa( pal_npmo_root.pm),
@@ -754,12 +755,9 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
                                      RETURN_FROM_PAL_ADDRESS));
   }
 
-  whitelist_new.pal_npt_root = pal_npmo_root;
-  whitelist_new.pal_gpt_root = pal_gpmo_root;
-  whitelist_new.reg_gpt_root = reg_gpmo_root;
-  whitelist_new.pal_gcr3 = hpt_cr3_set_address(whitelist_new.pal_gpt_root.t,
-                                               VCPU_gcr3(vcpu), /* XXX should build trusted cr3 from scratch */
-                                               hva2gpa(whitelist_new.pal_gpt_root.pm));
+  whitelist_new.pal_gcr3 = hpt_cr3_set_address( whitelist_new.hptw_pal_checked_guest_ctx.super.t,
+                                                VCPU_gcr3( vcpu), /* XXX should build trusted cr3 from scratch */
+                                                whitelist_new.hptw_pal_checked_guest_ctx.super.root_pa);
 
   /* flush TLB for page table modifications to take effect */
   emhf_memprot_flushmappings(vcpu);
@@ -1054,7 +1052,7 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
      below in case of error) */
 
   eu_trace("change NPT permission to run PAL!");
-  hpt_emhf_set_root_pm(vcpu, whitelist[curr].pal_npt_root.pm);
+  hpt_emhf_set_root_pm_pa( vcpu, whitelist[curr].hptw_pal_host_ctx.super.root_pa);
   VCPU_gcr3_set(vcpu, whitelist[curr].pal_gcr3);
   emhf_memprot_flushmappings(vcpu); /* XXX */
 
@@ -1102,8 +1100,8 @@ u32 scode_unmarshall(VCPU * vcpu)
 
 
   EU_CHKN( hptw_emhf_checked_guest_ctx_init( &reg_guest_walk_ctx,
-                                             hva2gpa( whitelist[curr].reg_gpt_root.pm),
-                                             whitelist[curr].reg_gpt_root.t,
+                                             whitelist[curr].reg_gpt_root_pa,
+                                             whitelist[curr].reg_gpt_type,
                                              HPTW_CPL3,
                                              &g_hptw_reg_host_ctx,
                                              NULL));

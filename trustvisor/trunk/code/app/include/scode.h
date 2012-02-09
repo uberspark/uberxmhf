@@ -160,9 +160,10 @@ typedef struct whitelist_entry{
   pagelist_t *npl;
   hptw_emhf_host_ctx_t hptw_pal_host_ctx;
   hptw_emhf_checked_guest_ctx_t hptw_pal_checked_guest_ctx;
-  hpt_pmo_t pal_npt_root; /* XXX remove: now part of walker ctx */
-  hpt_pmo_t pal_gpt_root; /* XXX remove: now part of walker ctx */
-  hpt_pmo_t reg_gpt_root; /* XXX consider removing this. ought to be grabbed and re-checked on every ctx switch */
+
+  hpt_pa_t reg_gpt_root_pa;
+  hpt_type_t reg_gpt_type;
+
   u64 pal_gcr3;
 } __attribute__ ((packed)) whitelist_entry_t;
 
