@@ -571,6 +571,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
     };
     void *page = whitelist_new.gpl->page_base + i*PAGE_SIZE_4K;
     hpt_pmeo_setprot(&pmeo, HPT_PROTS_RWX);
+    hpt_pmeo_setuser(&pmeo, true);
     hpt_pmeo_set_address(&pmeo, hva2spa(page));
     EU_CHKN( hptw_insert_pmeo_alloc( &whitelist_new.hptw_pal_host_ctx.super,
                                      &pmeo,
