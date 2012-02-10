@@ -20,7 +20,11 @@ wget http://10.0.0.1/test
 chmod +x test
 echo "Invoking ./test" | tee shell.log
 ./test 2>&1 | tee shell.log
-
+if [ $? -eq 0 ] ; then
+    echo "./test exited successfully with exit code $?"
+else
+    echo "./test FAILED with exit code $?"
+fi
 
 popd
 scp -o StrictHostKeyChecking=no -r $MACADDR logger@10.0.0.1: \
