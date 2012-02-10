@@ -94,7 +94,7 @@ inline u32 uart_tx_empty(void)
   return (x & LSR_THRE);
 }
 
-void dbg_x86_uart_putc(int x)
+static void dbg_x86_uart_putc_bare(int x)
 {
 
   while ( !uart_tx_empty() )
@@ -104,16 +104,22 @@ void dbg_x86_uart_putc(int x)
   return;
 }
 
-/* print a newline-containing null-terminated string to the serial port */
+/* write character to serial port, translating '\n' to '\r\n' */
+void dbg_x86_uart_putc(int x)
+{
+  if ((char)x == '\n') {
+    dbg_x86_uart_putc_bare('\r');
+  }
+  dbg_x86_uart_putc_bare(x);
+}
+
+/* print a null-terminated string to the serial port */
 void dbg_x86_uart_putstr(const char *str)
 {
   u8 tmp;
 
   while ((tmp = (u8)*str++) != '\0')
   {
-    if (tmp == '\n')
-        dbg_x86_uart_putc('\r');        
-        //tmp = '\r';
     dbg_x86_uart_putc(tmp);
   }
 
