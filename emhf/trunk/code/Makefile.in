@@ -96,9 +96,9 @@ install: install-dev install-bin
 .PHONY: install-bin
 install-bin:
 	# Install the _actual_ final product
-	install -d $(DESTDIR)/boot
-	install --mode=644 $(HYPOUTDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz $(DESTDIR)/boot
-	install --mode=644 $(HYPOUTDIR)/init-$(TARGET_HWPLATFORM).bin $(DESTDIR)/boot
+	install -d $(DESTDIR)boot
+	install --mode=644 $(HYPOUTDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz $(DESTDIR)boot
+	install --mode=644 $(HYPOUTDIR)/init-$(TARGET_HWPLATFORM).bin $(DESTDIR)boot
 
 .PHONY: install-dev
 install-dev:

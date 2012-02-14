@@ -42,8 +42,8 @@ $(THE_ARCHIVE): $(OBJECTS)
 
 .PHONY: install-dev
 install-dev:
-	install -d $(DESTDIR)/$(includedir)/trustvisor
-	install --mode=644 include/tv_utpm.h $(DESTDIR)/$(includedir)/trustvisor
+	install -d $(DESTDIR)$(includedir)/trustvisor
+	install --mode=644 include/tv_utpm.h $(DESTDIR)$(includedir)/trustvisor
 
 .PHONY: clean 
 clean: 
