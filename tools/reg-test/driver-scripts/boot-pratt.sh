@@ -19,9 +19,15 @@ export FIRST_MOD1='module /hypervisor-x86.bin.gz'
 export FIRST_MOD2='modulenounzip (hd0)+1'
 export FIRST_MOD3='module /i5_i7_DUAL_SINIT_18.BIN'
 
+# lucid (Ubuntu 10.04 LTS)
+#export SECOND_ROOT='uuid c2a09e3b-08ba-409a-a896-bac38e8a8347'
+#export SECOND_KERNEL='kernel /vmlinuz-2.6.32.26+drm33.12emhf-jm1 root=UUID=e62ba4c2-87d2-4b42-b66d-dabf9af0c68c ro ip=dhcp hostname=pratt ISCSI_INITIATOR=iqn.2012-02.com.nfsec:01:88ae1dab7eb7 ISCSI_TARGET_NAME=iqn.2012-01.com.nfsec:lucid_rootfs ISCSI_TARGET_IP=10.0.0.1 ISCSI_TARGET_PORT=3260 aufs=tmpfs'
+#export SECOND_MOD1='initrd /initrd.img-2.6.32.26+drm33.12emhf-jm1'
+
+# oneiric (Ubuntu 11.10)
 export SECOND_ROOT='uuid c2a09e3b-08ba-409a-a896-bac38e8a8347'
-export SECOND_KERNEL='kernel /vmlinuz-2.6.32.26+drm33.12emhf-jm1 root=UUID=e62ba4c2-87d2-4b42-b66d-dabf9af0c68c ro ip=dhcp hostname=pratt ISCSI_INITIATOR=iqn.2012-02.com.nfsec:01:88ae1dab7eb7 ISCSI_TARGET_NAME=iqn.2012-01.com.nfsec:lucid_rootfs ISCSI_TARGET_IP=10.0.0.1 ISCSI_TARGET_PORT=3260 aufs=tmpfs'
-export SECOND_MOD1='initrd /initrd.img-2.6.32.26+drm33.12emhf-jm1'
+export SECOND_KERNEL='kernel /vmlinuz-3.0.4-jm2 root=UUID=ad60f8ff-e0ca-4294-a7d4-9c07da18365b ro ip=dhcp hostname=pratt ISCSI_INITIATOR=iqn.2012-02.com.nfsec:01:88ae1dab7eb7 ISCSI_TARGET_NAME=iqn.2012-01.com.nfsec:oneiric_rootfs ISCSI_TARGET_IP=10.0.0.1 ISCSI_TARGET_PORT=3260 aufs=tmpfs'
+export SECOND_MOD1='initrd /initrd.img-3.0.4-jm2'
 
 # This password is sufficient to totally control this test host.  It
 # might be better not to have it sitting here in the clear.

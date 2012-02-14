@@ -40,6 +40,10 @@ set baud 115200
 stty ispeed $baud ospeed $baud raw -echo cs8 -parenb -cstopb onlcr < $port 
 log_user 0
 
+send "hello1\r\n"
+send "hello2\r\n"
+send "hello3\r\n"
+
 # log each input line 
 #  add a timeStamp at the beginning of each line 
 while {1} { 
