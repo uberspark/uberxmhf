@@ -1,0 +1,80 @@
+#!/usr/bin/expect -f
+#
+#   Connect up to a StarTech Remote Power Control
+
+       # port is any serial port (omit the /dev/ prefix)
+       # e.g. ttya, cua0, serialA, serialB, boca01 - boca16
+
+# Jon based this on:
+# http://www.aps.anl.gov/Sectors/33_34/controls/docs/serialWatch.html
+
+
+# Uncomment this line to enable extremely verbose debug info.
+#exp_internal -f internal.log 1
+
+if {$argc != 2 && $argc != 3} {
+  puts "$argc, $argv"
+  puts "usage  power-control.exp <serial port> <command> <power port>"
+  puts "       NOTE: omit /dev/, e.g., just use ttyS0"
+  puts "       on [port] : power on"
+  puts "       of [port] : power off"
+  puts "       st        : power status"
+  puts "       ver       : firmware version"
+
+  exit
+}
+
+puts "SERIAL MODE"
+set port /dev/[lindex $argv 0]
+set spawned [spawn -open [open $port w+]]
+puts "[string trim $spawned \r\n]"
+set baud 9600
+    # -parenb means don't use a parity bit
+    # -cstopb means "not 2 stop bits, but 1"
+    # cs8 means 8 bits
+    # -echo means no echo (full duplex?)
+    # cdxon Enables CD hardware flow control mode on output.
+    # ctsxon Enables CTS hardware flow control mode on output.
+    # dtrxoff Enables DTR hardware flow control mode on input.
+    # rtsxoff Enables RTS hardware flow control mode on input.
+stty ispeed $baud ospeed $baud raw -echo cs8 -parenb -cstopb onlcr cdxon ctsxon dtrxoff rtsxoff < $port
+
+set timeout 60
+set send_slow {1 .05}
+#log_file foo.log
+log_user 1
+
+# Awaken the device as it may not already be giving us a prompt
+send -s "\r\r"
+
+# Now respond to commands
+if {[string compare "on" [lindex $argv 1]] == 0} {
+    puts "ON"
+    set command "on 1 [lindex $argv 2]\r"
+} elseif {[string compare "of" [lindex $argv 1]] == 0} {
+    puts "OFF"
+    set command "of 1 [lindex $argv 2]\r"
+} elseif {[string compare "st" [lindex $argv 1]] == 0} {
+    puts "STATUS"
+    set command "st 1\r"
+} elseif {[string compare "ver" [lindex $argv 1]] == 0} {
+    puts "VERSION"
+    set command "ver 1\r"
+} else {
+    puts "Unrecognized command \"$argv\""
+    send -s "quit\r"
+    expect "DisConnect !!!"
+    exit
+}
+
+puts "Command $command"
+
+#send -s "ver 1\r"
+#expect ">"
+
+send -s "$command"
+expect ">"
+
+send -s "quit\r"
+expect "DisConnect !!!"
+exit
