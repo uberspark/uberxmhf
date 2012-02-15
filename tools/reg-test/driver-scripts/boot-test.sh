@@ -33,6 +33,7 @@ TEST_INITRD=initrd.img-3.0.4-jm2
 TEST_SINIT=i5_i7_DUAL_SINIT_18.BIN
 
 TEST_ROOT_UUID=d60f8ff-e0ca-4294-a7d4-9c07da18365b
+BOOT_ROOT_UUID=d60f8ff-e0ca-4294-a7d4-9c07da18365b
 TEST_MACADDR=decafebadbad
 ISCSI_TARGET_NAME=iqn.2012-01.com.nfsec:oneiric_rootfs
 ISCSI_TARGET_IP=10.0.0.1
@@ -58,9 +59,12 @@ export FIRST_MOD2="modulenounzip (hd0)+1"
 # On an AMD host this is a dummy module and gets ignored
 export FIRST_MOD3="module $TEST_SLASHBOOT/$TEST_SINIT"
 
-export SECOND_ROOT="uuid ad60f8ff-e0ca-4294-a7d4-9c07da18365b"
+export SECOND_ROOT="uuid $BOOT_ROOT_UUID"
 export SECOND_KERNEL="kernel $TEST_SLASHBOOT/$TEST_KERNEL root=UUID=$TEST_ROOT_UUID ro ip=dhcp hostname=$TEST_HOSTNAME ISCSI_INITIATOR=iqn.2012-02.com.nfsec:01:$TEST_MACADDR ISCSI_TARGET_NAME=$ISCSI_TARGET_NAME ISCSI_TARGET_IP=$ISCSI_TARGET_IP ISCSI_TARGET_PORT=$ISCSI_TARGET_PORT aufs=tmpfs"
 export SECOND_MOD1="initrd $TEST_SLASHBOOT/$TEST_INITRD"
+
+export AMT_PASSWORD='AMTp4ssw0rd!'
+
 
 echo $FIRST_ROOT
 echo $FIRST_KERNEL
