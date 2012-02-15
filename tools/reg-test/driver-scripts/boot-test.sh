@@ -107,6 +107,9 @@ if [ $TEST_CONNECTION = "serial" ]; then
     $DRYRUN sleep 3
     echo "Sending wake-on-LAN packet"
     $DRYRUN etherwake $TEST_MACADDR
+
+    echo "Starting grub-generic.exp"
+    $DRYRUN ./grub-generic.exp $TEST_CONNECTION $TEST_CONNECTION_SERIAL_PORT
 fi
 
 if [ $TEST_CONNECTION = "amtterm" ]; then
@@ -115,7 +118,8 @@ if [ $TEST_CONNECTION = "amtterm" ]; then
     sleep 1
     echo "Powering up."
     echo y | $DRYRUN amttool $TEST_HOSTNAME powerup
+    sleep 10
+    echo "Starting grub-generic.exp"
+    $DRYRUN ./grub-generic.exp $TEST_CONNECTION $TEST_HOSTNAME
 fi
 
-echo "Starting grub-generic.exp"
-$DRYRUN ./grub-generic.exp $TEST_CONNECTION $TEST_CONNECTION_SERIAL_PORT
