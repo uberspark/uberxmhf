@@ -35,12 +35,12 @@ SERIAL_ADDR=0x3f8
 
 TEST_SLASHBOOT=
 
-TEST_KERNEL=vmlinux-3.0.4-jm2
+TEST_KERNEL=vmlinuz-3.0.4-jm2
 TEST_INITRD=initrd.img-3.0.4-jm2
 TEST_SINIT=i5_i7_DUAL_SINIT_18.BIN
 
-TEST_ROOT_UUID=d60f8ff-e0ca-4294-a7d4-9c07da18365b
-BOOT_ROOT_UUID=d60f8ff-e0ca-4294-a7d4-9c07da18365b
+TEST_ROOT_UUID=ad60f8ff-e0ca-4294-a7d4-9c07da18365b
+BOOT_ROOT_UUID=ad60f8ff-e0ca-4294-a7d4-9c07da18365b
 TEST_MACADDR=decafebadbad
 ISCSI_TARGET_NAME=iqn.2012-01.com.nfsec:oneiric_rootfs
 ISCSI_TARGET_IP=10.0.0.1
@@ -104,8 +104,8 @@ if [ $TEST_CONNECTION = "serial" ]; then
 
     # If it has been power-cycled then we want to Wake-on-Lan:
     # (and if the machine is already up, this is harmless)
-    echo "Sending wake-on-LAN packet"
     $DRYRUN sleep 3
+    echo "Sending wake-on-LAN packet"
     $DRYRUN etherwake $TEST_MACADDR
 fi
 
