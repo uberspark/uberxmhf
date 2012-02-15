@@ -24,6 +24,8 @@
 
 if [ -z $1 ]; then
     echo "Usage: $0 [test hostname]"
+    echo "       Define environment variable DRYRUN=echo to get a dry-run"
+    echo "       of the commands that would be executed."
     exit
 fi
 
@@ -60,6 +62,7 @@ if [ -e $CFG_FILENAME ]; then
     echo "Sourcing configuration from: $CFG_FILENAME"
 else
     echo "ERROR: Configuration file $CFG_FILENAME not found" 1>&2
+    exit
 fi
 
 . $CFG_FILENAME
@@ -94,25 +97,25 @@ export AMT_PASSWORD='AMTp4ssw0rd!'
 if [ $TEST_CONNECTION = "serial" ]; then
     # Turn this machine's outlet off (just in case it's on), pause, then turn it on
     echo "Powering off outlet"
-    echo ./power-control.exp ttyS0 of $TEST_CONNECTION_OUTLET_NUMBER
-    sleep 2
+    $DRYRUN ./power-control.exp ttyS0 of $TEST_CONNECTION_OUTLET_NUMBER
+    $DRYRUN sleep 2
     echo "Powering on outlet"
-    echo ./power-control.exp ttyS0 on $TEST_CONNECTION_OUTLET_NUMBER
+    $DRYRUN ./power-control.exp ttyS0 on $TEST_CONNECTION_OUTLET_NUMBER
 
     # If it has been power-cycled then we want to Wake-on-Lan:
     # (and if the machine is already up, this is harmless)
     echo "Sending wake-on-LAN packet"
-    sleep 3
-    echo etherwake $TEST_MACADDR
+    $DRYRUN sleep 3
+    $DRYRUN etherwake $TEST_MACADDR
 fi
 
 if [ $TEST_CONNECTION = "amtterm" ]; then
     echo "Cycling power using amtterm. Powering down."
-    echo y | amttool $TEST_HOSTNAME powerdown
+    echo y | $DRYRUN amttool $TEST_HOSTNAME powerdown
     sleep 1
     echo "Powering up."
-    echo y | amttool $TEST_HOSTNAME powerup
+    echo y | $DRYRUN amttool $TEST_HOSTNAME powerup
 fi
 
 echo "Starting grub-generic.exp"
-echo ./grub-generic.exp $TEST_CONNECTION $TEST_CONNECTION_SERIAL_PORT
+$DRYRUN ./grub-generic.exp $TEST_CONNECTION $TEST_CONNECTION_SERIAL_PORT
