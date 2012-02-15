@@ -1,6 +1,9 @@
 # export EMHFCOREDIR := $(CURDIR)/../../../emhf/trunk/code/$(EMHFROOTDIR)/x86
 # export EMHF_INCLUDEDIR = $(EMHFCOREDIR)/include
 
+# TODO: Control via configuration
+export THE_ARCHIVE = app_trustvisor.a
+
 export APP_INCLUDEDIR = $(CURDIR)/app/include
 export APPOBJECTSDIR = $(CURDIR)/app/objects
 
@@ -69,7 +72,7 @@ test:
 .PHONY: clean
 clean: 
 	cd app && $(MAKE) -w clean
-	rm -rf $(APPOBJECTSDIR) app_trustvisor.a
+	rm -rf $(APPOBJECTSDIR) $(THE_ARCHIVE)
 	cd test && $(MAKE) -w clean
 	rm -f *.bin
 	rm -f *.bin.gz

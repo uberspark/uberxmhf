@@ -1,6 +1,3 @@
-# TODO: Control via configuration
-THE_ARCHIVE = ../app_trustvisor.a
-
 # source files
 AS_SOURCES = 
 C_SOURCES = $(wildcard *.c)
@@ -13,11 +10,11 @@ I_SOURCES  +=  $(wildcard $(APP_INCLUDEDIR)/*.h)
 
 # targets
 .PHONY: all
-all: $(THE_ARCHIVE)
+all: ../$(THE_ARCHIVE)
 
-$(THE_ARCHIVE): $(OBJECTS)
+../$(THE_ARCHIVE): $(OBJECTS)
 	mkdir -p $(APPOBJECTSDIR)
-	$(AR) -rcs $(THE_ARCHIVE) $(OBJECTS)
+	$(AR) -rcs ../$(THE_ARCHIVE) $(OBJECTS)
 
 $(APPBOJECTSDIR)/%.o: %.S $(I_SOURCES) Makefile ../Makefile
 	$(CC) -c $(ASFLAGS) -o $@ $<
@@ -26,4 +23,4 @@ $(APPOBJECTSDIR)/%.o: %.c $(I_SOURCES) Makefile ../Makefile
 
 .PHONY: clean 
 clean:
-	$(RM) -f $(OBJECTS) $(THE_ARCHIVE)
+	$(RM) -f $(OBJECTS)
