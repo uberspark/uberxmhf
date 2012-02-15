@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# This script copies one file to all of the different /boot partitions for test hosts
+MAPPER_MOUNTS=`mount | grep mapper | wc -l`
+
+if [ $MAPPER_MOUNTS -gt 0 ]; then
+    echo "ERROR: Looks like some LVM filesystems are already mounted" 1>&2
+    exit
+fi
+
+if [ -e $1 ]; then
+    echo "Source file: $1"
+else
+    echo "ERROR: Source file $1 not found" 1>&2
+    exit
+fi
+
+TARGET=/mnt
+
+echo "Looks good"
+for i in /dev/vg0/iscsi.slashboot.* ; do 
+    echo "*** Copying $1 to $i ***"
+
+    $DRYRUN losetup /dev/loop0 $i
+    $DRYRUN kpartx -av /dev/loop0
+    $DRYRUN mount /dev/mapper/loop0p1 $TARGET
+    $DRYRUN cp -v $1 $TARGET
+    $DRYRUN sync
+    $DRYRUN umount $TARGET
+    $DRYRUN kpartx -dv /dev/loop0
+    $DRYRUN losetup -d /dev/loop0
+    #break
+done
+
+for i in /dev/vg0/oneiric_rootfs /dev/vg0/lucid_rootfs; do
+    echo "*** Copying $1 to $i ***"
+    #break
+    $DRYRUN losetup /dev/loop0 $i
+    $DRYRUN kpartx -av /dev/loop0
+    $DRYRUN mount /dev/mapper/loop0p1 $TARGET
+    $DRYRUN cp -v $1 $TARGET/boot
+    $DRYRUN sync
+    $DRYRUN umount $TARGET
+    $DRYRUN kpartx -dv /dev/loop0
+    $DRYRUN losetup -d /dev/loop0
+done
