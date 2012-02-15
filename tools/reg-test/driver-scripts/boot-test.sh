@@ -29,6 +29,12 @@ if [ -z $1 ]; then
     exit
 fi
 
+MYNAME=$0
+if [ -n `readlink $0` ]; then
+    MYNAME=`readlink $0`
+fi
+pushd `dirname $MYNAME`
+
 SERIAL_BAUD=115200
 SERIAL_PARITY=8n1
 SERIAL_ADDR=0x3f8
@@ -123,3 +129,4 @@ if [ $TEST_CONNECTION = "amtterm" ]; then
     $DRYRUN ./grub-generic.exp $TEST_CONNECTION $TEST_HOSTNAME
 fi
 
+popd
