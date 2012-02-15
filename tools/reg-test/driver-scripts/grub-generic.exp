@@ -61,7 +61,7 @@ if {[string compare "serial" [lindex $argv 0]] == 0} {
 } elseif {[string compare "amtterm" [lindex $argv 0]] == 0} {
     puts "AMTTERM MODE"
     while {1} {
-        set spawned [spawn amtterm pratt]
+        set spawned [spawn amtterm [lindex $argv 1]]
         puts "[timeStamp]: [string trim $spawned \r\n]"
         expect {
             "connected now, use ^] to escape" {
