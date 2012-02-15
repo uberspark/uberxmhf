@@ -2,7 +2,7 @@
 # export EMHF_INCLUDEDIR = $(EMHFCOREDIR)/include
 
 # TODO: Control via configuration
-export THE_ARCHIVE = app_trustvisor.a
+export THE_ARCHIVE = emhfapp.a
 
 export APP_INCLUDEDIR = $(CURDIR)/app/include
 export APPOBJECTSDIR = $(CURDIR)/app/objects
