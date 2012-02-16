@@ -117,14 +117,14 @@ export SECOND_MOD1="initrd $TEST_SLASHBOOT/$TEST_INITRD"
 
 export AMT_PASSWORD='AMTp4ssw0rd!'
 
-# echo $FIRST_ROOT
-# echo $FIRST_KERNEL
-# echo $FIRST_MOD1
-# echo $FIRST_MOD2
-# echo $FIRST_MOD3
-# echo $SECOND_ROOT
-# echo $SECOND_KERNEL
-# echo $SECOND_MOD1
+echo "FIRST_ROOT:    $FIRST_ROOT"
+echo "FIRST_KERNEL:  $FIRST_KERNEL"
+echo "FIRST_MOD1:    $FIRST_MOD1"
+echo "FIRST_MOD2:    $FIRST_MOD2"
+echo "FIRST_MOD3:    $FIRST_MOD3"
+echo "SECOND_ROOT:   $SECOND_ROOT"
+echo "SECOND_KERNEL: $SECOND_KERNEL"
+echo "SECOND_MOD1:   $SECOND_MOD1"
 
 if [ $TEST_CONNECTION = "serial" ]; then
     # Turn this machine's outlet off (just in case it's on), pause, then turn it on
