@@ -29,11 +29,25 @@ if [ -z $1 ]; then
     exit
 fi
 
+# Goal: figure out the path to other commands that will be invoked
+# from this script.  Assumption: they are in the same directory as
+# this script, but this script may be invoked via a symlink or a
+# complex path (i.e., something other that ./boot-test.sh).
 MYNAME=$0
-if [ -n `readlink $0` ]; then
+# Check if we were invoked via a symlink
+if [ -h $0 ]; then
+    echo "I seem to have been invoked through a symlink."
     MYNAME=`readlink $0`
+    echo "My real home is: $MYNAME"
 fi
-pushd `dirname $MYNAME`
+DIRPREFIX=`dirname $MYNAME`
+echo "Directory prefix: $DIRPREFIX"
+if [ $DIRPREFIX != "." ]; then
+    echo "Changing directory to: $DIRPREFIX"
+    pushd $DIRPREFIX
+else
+    echo "I don't need to change directories; I'm already in \"$DIRPREFIX\""
+fi
 
 SERIAL_BAUD=115200
 SERIAL_PARITY=8n1
@@ -129,4 +143,6 @@ if [ $TEST_CONNECTION = "amtterm" ]; then
     $DRYRUN ./grub-generic.exp $TEST_CONNECTION $TEST_HOSTNAME
 fi
 
-popd
+if [ $DIRPREFIX != "." ]; then
+    popd
+fi
