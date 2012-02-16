@@ -95,7 +95,7 @@ if {[string compare "serial" [lindex $argv 0]] == 0} {
 
 # 2. Detect the "eof" that is produced when amtterm dies, and
 #    automatically restart it. "expect_after" is perfect for this,
-#    since it is applied to all subsecquent expect blocks if they fail
+#    since it is applied to all subsequent expect blocks if they fail
 #    to match anything.  Thus, we don't need to litter eof detection
 #    conditions throughout this entire script..
 
