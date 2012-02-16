@@ -18,20 +18,19 @@ for i in $HOSTS; do
     chown logger:logger $THISLOGDIR
     LOGFILE=$THISLOGDIR/boot-test.log
 
-    echo -e "#############################################\n"\
-            "########## STARTING tests on Host $i \n"\
-            "#############################################\n"\
-            "### Log directory: $THISLOGDIR\n"\
-            "### TIMESTAMP:     $TIMESTAMP\n\n"\
+    echo -e "#############################################"\
+            "\n### STARTING tests on Host $i"\
+            "\n### Log directory: $THISLOGDIR"\
+            "\n### Timestamp:     $TIMESTAMP\n\n"\
         | tee -a $LOGFILE
 
     # bash has a built-in time command; we don't want to use it.
     /usr/bin/time -o /tmp/time.log ./boot-test.sh $i 2>&1 | tee -a $LOGFILE
     cat /tmp/time.log | tee -a $LOGFILE
 
-    echo -e "##############################################\n"\
-            "########## COMPLETED tests on Host $i \n"\
-            "##############################################\n\n"\
+    echo -e "##############################################"\
+            "\n### COMPLETED tests on Host $i"\
+            "\n##############################################\n\n"\
         | tee -a $THISLOGDIR/boot-test.log
     sleep 1
 done
