@@ -87,10 +87,18 @@ fi
 
 . $CFG_FILENAME
 
+
 if [ $1 != $TEST_HOSTNAME ]; then
     echo "ERROR: inconsistent hostnames: $1 and $TEST_HOSTNAME" 1>&2
     exit
 fi
+
+# These two are used to construct a unique ISCSI_INITIATOR, which is
+# currently also used in the test host to form a directory for test
+# results.
+TEST_MACADDR_NOCOLONS=`echo $TEST_MACADDR | tr -d :`
+TIMESTAMP=`date --rfc-3339=seconds | tr ' ' - | cut -d - -f 1,2,3,4`
+echo "Using TIMESTAMP $TIMESTAMP"
 
 export FIRST_ROOT="root (hd0,0)"
 export FIRST_KERNEL="kernel $TEST_SLASHBOOT/init-x86.bin serial=$SERIAL_BAUD,$SERIAL_PARITY,$SERIAL_ADDR"
@@ -100,7 +108,7 @@ export FIRST_MOD2="modulenounzip (hd0)+1"
 export FIRST_MOD3="module $TEST_SLASHBOOT/$TEST_SINIT"
 
 export SECOND_ROOT="uuid $BOOT_ROOT_UUID"
-export SECOND_KERNEL="kernel $TEST_SLASHBOOT/$TEST_KERNEL root=UUID=$TEST_ROOT_UUID ro ip=dhcp hostname=$TEST_HOSTNAME ISCSI_INITIATOR=iqn.2012:$TEST_MACADDR ISCSI_TARGET_NAME=$ISCSI_TARGET_NAME ISCSI_TARGET_IP=$ISCSI_TARGET_IP ISCSI_TARGET_PORT=$ISCSI_TARGET_PORT aufs=tmpfs $ADDL_KERNEL_PARAM"
+export SECOND_KERNEL="kernel $TEST_SLASHBOOT/$TEST_KERNEL root=UUID=$TEST_ROOT_UUID ro ip=dhcp hostname=$TEST_HOSTNAME ISCSI_INITIATOR=iqn.$TEST_MACADDR_NOCOLONS.$TIMESTAMP ISCSI_TARGET_NAME=$ISCSI_TARGET_NAME ISCSI_TARGET_IP=$ISCSI_TARGET_IP ISCSI_TARGET_PORT=$ISCSI_TARGET_PORT aufs=tmpfs $ADDL_KERNEL_PARAM"
 export SECOND_MOD1="initrd $TEST_SLASHBOOT/$TEST_INITRD"
 
 export AMT_PASSWORD='AMTp4ssw0rd!'
