@@ -16,15 +16,18 @@ for i in $HOSTS; do
     THISLOGDIR=$HOSTLOGDIR/$TIMESTAMP
     mkdir -p $THISLOGDIR
     chown logger:logger $THISLOGDIR
+    LOGFILE=$THISLOGDIR/boot-test.log
 
     echo -e "#############################################\n"\
             "########## STARTING tests on Host $i \n"\
             "#############################################\n"\
             "### Log directory: $THISLOGDIR\n"\
             "### TIMESTAMP:     $TIMESTAMP\n\n"\
-        | tee -a $THISLOGDIR/boot-test.log
+        | tee -a $LOGFILE
 
-    time ./boot-test.sh $i 2>&1 | tee -a $THISLOGDIR/boot-test.log
+    # bash has a built-in time command; we don't want to use it.
+    /usr/bin/time -o /tmp/time.log ./boot-test.sh $i 2>&1 | tee -a $LOGFILE
+    cat /tmp/time.log | tee -a $LOGFILE
 
     echo -e "##############################################\n"\
             "########## COMPLETED tests on Host $i \n"\
