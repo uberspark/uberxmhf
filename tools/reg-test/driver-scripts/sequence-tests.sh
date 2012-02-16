@@ -22,7 +22,7 @@ for i in $HOSTS; do
     echo "### Log directory: $THISLOGDIR"
     echo "### TIMESTAMP:     $TIMESTAMP"
 
-    ./boot-test.sh $i 2>&1 | tee $THISLOGDIR/boot-test.log
+    time ./boot-test.sh $i 2>&1 | tee $THISLOGDIR/boot-test.log
 
     echo "################################################################################"
     echo "########## COMPLETED tests on Host $i ########"
