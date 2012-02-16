@@ -145,6 +145,15 @@ send -s "$env(SECOND_MOD1)\r\n"
 expect "grub>"
 send -s "boot\r\n"
 
+# High tendency for amtterm to crap out in the loop below; it's
+# related to the the linux kernel initializing serial ports for its
+# own use. Consider linux kernel command line option 8250.nr_uarts=0
+# to completely disable the Linux kernel's support for serial I/O.
+
+# A more suitable alternative would be to gracefully handle the
+# "death" of amtterm during the loop below, and to automatically
+# restart it.
+
 log_user 0
 while {1} {
     expect {
