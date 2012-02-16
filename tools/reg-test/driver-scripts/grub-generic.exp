@@ -184,5 +184,9 @@ while {1} {
             puts "[timeStamp]: [string trim $expect_out(buffer) \r\n]"
             # send_log -- "[timeStamp]: [string trim $expect_out(buffer) \r\n]"
         }
+        timeout {
+            puts "\r\n[timeStamp]: OUTPUT MONITORING TIMED OUT; GOODBYE!\r\n"
+            exit
+        }
     }
 }
