@@ -97,7 +97,11 @@ fi
 # currently also used in the test host to form a directory for test
 # results.
 TEST_MACADDR_NOCOLONS=`echo $TEST_MACADDR | tr -d :`
-TIMESTAMP=`date --rfc-3339=seconds | tr ' ' - | cut -d - -f 1,2,3,4`
+# If TIMESTAMP was already defined by a parent script, don't
+# regenerate it.
+if [ ${#TIMESTAMP} -lt 14 ]; then
+    TIMESTAMP=`date --rfc-3339=seconds | tr ' ' - | cut -d - -f 1,2,3,4`
+fi
 echo "Using TIMESTAMP $TIMESTAMP"
 
 export FIRST_ROOT="root (hd0,0)"
