@@ -6,7 +6,20 @@ LOGFILE=shell.log
 echo "$0 initializing" >&2
 
 MACADDR=$(./getmacaddr.sh)
-TIMESTAMP=$(./gettimestamp.sh)
+# Disable local timestamp generation; get it from ISCSI_INITIATOR
+#TIMESTAMP=$(./gettimestamp.sh)
+
+# Typical values for ISCSI_INITIATOR look like this:
+# iqn.78acc0b183aa.2012-02-16-14:37:32
+# We want to strip off the timestamp at the end.
+TIMESTAMP=`perl -ne 'if(m/ISCSI_INITIATOR=iqn\.[0-9a-f]+\.([0-9:-]+) /) { print "$1\n"; }' < /proc/cmdline`
+
+# Sanity check the timestamp; if it's too short, don't use it. Should
+# be 14 actual characters plus some punctuation, so compare against
+# 14.
+if [ ${#TIMESTAMP} -lt 14 ]; then
+    TIMESTAMP="parse_error"
+fi
 
 TESTDIR=$MACADDR/$TIMESTAMP
 mkdir -p $TESTDIR
