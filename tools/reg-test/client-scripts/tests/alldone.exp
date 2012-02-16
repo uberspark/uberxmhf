@@ -28,5 +28,5 @@ stty ispeed $baud ospeed $baud raw -echo cs8 -parenb -cstopb onlcr < $port
 log_user 0
 
 set send_slow {1 .05}
-send -s "REGRESSION TESTING COMPLETED."
+send -s "\r\nREGRESSION TESTING COMPLETED.\r\n"
 
