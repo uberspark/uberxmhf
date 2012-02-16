@@ -75,9 +75,9 @@ if {[string compare "serial" [lindex $argv 0]] == 0} {
                 # but don't cycle too fast
                 sleep 1 
             }
-            # TODO: Gracefully handle more amtterm failure cases.  It has
-            # a tendency to hang, suddenly drop connections, etc. when the
-            # target system is first coming up.
+            # The expect_after block below that looks for eof from
+            # amtterm will gracefully handle subsequent failures in
+            # amtterm.  Nothing else needs to be done here.
         }
     }
 } else {
@@ -177,14 +177,6 @@ send -s "boot\r\n"
 log_user 0
 while {1} {
     expect {
-#        eof {
-#            puts "\r\nDETECTED eof FROM amtterm. I NEED TO RESTART amtterm!\r\n"
-#        }
-#
-#        "amtterm: ERROR: redir_data: unknown" {
-#            puts "\r\nI THINK amtterm IS GOING TO DIE\r\n"
-#            puts "[timeStamp]: [string trim $expect_out(buffer) \r\n]"
-#        }
         "REGRESSION TESTING COMPLETED." {
             puts "\r\n\r\n[timeStamp]: [string trim $expect_out(buffer) \r\n]"
             exit
