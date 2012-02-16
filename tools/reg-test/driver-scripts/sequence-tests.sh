@@ -6,9 +6,6 @@ LOGDIR_ROOT=/home/logger/public_html
 
 for i in $HOSTS; do
     export TIMESTAMP=`date --rfc-3339=seconds | tr ' ' - | cut -d - -f 1,2,3,4`
-    echo "################################################################################"
-    echo "########## STARTING tests on Host $i ########"
-    echo "################################################################################"
     HOSTLOGDIR=$LOGDIR_ROOT/$i
     
     if [ ! -d $HOSTLOGDIR ]; then
@@ -19,14 +16,19 @@ for i in $HOSTS; do
     THISLOGDIR=$HOSTLOGDIR/$TIMESTAMP
     mkdir -p $THISLOGDIR
     chown logger:logger $THISLOGDIR
-    echo "### Log directory: $THISLOGDIR"
-    echo "### TIMESTAMP:     $TIMESTAMP"
 
-    time ./boot-test.sh $i 2>&1 | tee $THISLOGDIR/boot-test.log
+    echo -e "#############################################\n"\
+            "########## STARTING tests on Host $i \n"\
+            "#############################################\n"\
+            "### Log directory: $THISLOGDIR\n"\
+            "### TIMESTAMP:     $TIMESTAMP\n\n"\
+        | tee -a $THISLOGDIR/boot-test.log
 
-    echo "################################################################################"
-    echo "########## COMPLETED tests on Host $i ########"
-    echo "################################################################################"
-    echo ""
+    time ./boot-test.sh $i 2>&1 | tee -a $THISLOGDIR/boot-test.log
+
+    echo -e "##############################################\n"\
+            "########## COMPLETED tests on Host $i \n"\
+            "##############################################\n\n"\
+        | tee -a $THISLOGDIR/boot-test.log
     sleep 1
 done
