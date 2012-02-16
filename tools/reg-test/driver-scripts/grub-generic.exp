@@ -178,6 +178,7 @@ while {1} {
     expect {
         "REGRESSION TESTING COMPLETED." {
             puts "\r\n\r\n[timeStamp]: [string trim $expect_out(buffer) \r\n]"
+            puts "\r\n[timeStamp]: OUTPUT MONITORING COMPLETED; GOODBYE!\r\n"
             exit
         }
         "\n" {
