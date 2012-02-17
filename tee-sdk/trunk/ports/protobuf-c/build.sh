@@ -7,7 +7,7 @@ fi
 
 if [ -z "$BUILD" ]
 then
-	HOST=i686-pc-linux-gnu
+	BUILD=i686-pc-linux-gnu
 fi
 
 if [ -z "$PREFIX" ]
