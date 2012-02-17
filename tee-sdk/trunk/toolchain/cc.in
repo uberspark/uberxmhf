@@ -14,4 +14,11 @@ for ARG in $@ ; do
   fi
 done
 
+for ARG in $@ ; do
+  if [ x"$ARG" = x"-c" ] || [ x"$ARG" = x"-S" ] || [ x"$ARG" = x"-E" ] ; then
+      LDLIBS=""
+      LDFLAGS=""
+  fi
+done
+
 exec $CC $CFLAGS $LDFLAGS "$@" $LDLIBS
