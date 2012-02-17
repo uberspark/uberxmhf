@@ -56,7 +56,7 @@ LDLIBS="-lgcc -lc -lnosys"
 AC_SUBST([CCINC], [`$CC --print-file-name=include`])
 
 AC_SUBST([CFLAGS])
-CFLAGS="-march=$ARCH"
+CFLAGS="-march=$target_cpu"
 CFLAGS="$CFLAGS -nostdinc" # drop default include directories
 CFLAGS="$CFLAGS -isystem $CCINC -isystem $CCINC-fixed" # add back compiler-include directories
 CFLAGS="$CFLAGS -I"'$prefix'"/$target/usr/local/include -I"'$prefix'"/$target/usr/include -I"'$prefix'"/$target/include"
