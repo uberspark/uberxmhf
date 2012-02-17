@@ -10,7 +10,7 @@ toolchain:
 	autoreconf -i && \
 	HOST=$(HOST) ./configure --prefix=$(PREFIX) && \
 	make && \
-	sudo make install
+	make install
 
 newlib: toolchain
 	export PATH=$(PREFIX)/bin:$(PATH) && \
@@ -26,7 +26,7 @@ tz_host: tz_autoreconf
 	cd build-host && \
 	../configure --prefix=$(PREFIX) && \
 	make && \
-	sudo make install
+	make install
 
 tz_cross: tz_autoreconf toolchain newlib
 	export PATH=$(PREFIX)/bin:$(PATH) && \
@@ -35,7 +35,7 @@ tz_cross: tz_autoreconf toolchain newlib
 	cd build-cross && \
 	../configure --prefix=$(SYSROOT)/usr --host=$(HOST) --build=$(BUILD) && \
 	make && \
-	sudo make install
+	make install
 
 openssl: toolchain newlib
 	export PATH=$(PREFIX)/bin:$(PATH) && \
