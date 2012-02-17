@@ -70,7 +70,7 @@ case $host_os in
 esac
 AS_IF([test "x${CYGWIN}" != "xno"],
   # lie to newlib so it doesn't try including cygwin system headers
-  CFLAGS="$CFLAGS -U__CYGWIN__";
+  CFLAGS="$CFLAGS -U__CYGWIN__ -U__CYGWIN32__";
   # ugly hack to pick up __main, allowing cc to compile
   # standalone executables, even if they won't run. this is
   # helpful to fool autoconf when cross-compiling
