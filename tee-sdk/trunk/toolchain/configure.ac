@@ -62,6 +62,7 @@ CFLAGS="$CFLAGS -I"'$prefix'"/$HOST/usr/local/include -I"'$prefix'"/$HOST/usr/in
 #CFLAGS="$CFLAGS --sysroot=$prefix" # would replace the above nastiness, but unfortunately ld is not built to support it on ubuntu
 CFLAGS="$CFLAGS -fno-jump-tables" # sometimes conflicts with PAL memory protections. may no longer be needed
 CFLAGS="$CFLAGS -fno-stack-protector" # stack protector results in unresolved symbols
+CFLAGS="$CFLAGS -U__CYGWIN__" # lie to newlib so it doesn't try including cygwin system headers
 
 # unfortunately there's no command-line option to the compiler to specify
 # which linker to use, in which case we could just point it to our linker
