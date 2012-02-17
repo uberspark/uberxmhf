@@ -19,7 +19,7 @@ export CC
 CFLAGS="-DOPENSSL_NO_DGRAM -DOPENSSL_NO_SOCK"
 
 cd openssl-1.0.0d
-./Configure cc --prefix="$PREFIX" no-threads no-zlib no-shared no-sse2 no-dso no-hw $CFLAGS
+./Configure linux-elf --prefix="$PREFIX" no-threads no-zlib no-shared no-sse2 no-dso no-hw no-asm $CFLAGS
 make
 sudo make install
 
