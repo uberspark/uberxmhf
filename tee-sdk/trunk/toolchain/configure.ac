@@ -62,7 +62,20 @@ CFLAGS="$CFLAGS -I"'$prefix'"/$HOST/usr/local/include -I"'$prefix'"/$HOST/usr/in
 #CFLAGS="$CFLAGS --sysroot=$prefix" # would replace the above nastiness, but unfortunately ld is not built to support it on ubuntu
 CFLAGS="$CFLAGS -fno-jump-tables" # sometimes conflicts with PAL memory protections. may no longer be needed
 CFLAGS="$CFLAGS -fno-stack-protector" # stack protector results in unresolved symbols
-CFLAGS="$CFLAGS -U__CYGWIN__" # lie to newlib so it doesn't try including cygwin system headers
+
+AC_CANONICAL_HOST
+case $host_os in
+  *cygwin* ) CYGWIN=yes;;
+         * ) CYGWIN=no;;
+esac
+AS_IF([test "x${CYGWIN}" != "xno"],
+  # lie to newlib so it doesn't try including cygwin system headers
+  CFLAGS="$CFLAGS -U__CYGWIN__";
+  # ugly hack to pick up __main, allowing cc to compile
+  # standalone executables, even if they won't run. this is
+  # helpful to fool autoconf when cross-compiling
+  LDLIBS="$LDLIBS /usr/libcygwin.a",
+  )
 
 # unfortunately there's no command-line option to the compiler to specify
 # which linker to use, in which case we could just point it to our linker
