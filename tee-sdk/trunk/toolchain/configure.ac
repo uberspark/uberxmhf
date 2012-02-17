@@ -74,7 +74,7 @@ AS_IF([test "x${CYGWIN}" != "xno"],
   # ugly hack to pick up __main, allowing cc to compile
   # standalone executables, even if they won't run. this is
   # helpful to fool autoconf when cross-compiling
-  LDLIBS="$LDLIBS /usr/libcygwin.a",
+  LDLIBS="$LDLIBS /usr/lib/libcygwin.a",
   )
 
 # unfortunately there's no command-line option to the compiler to specify
