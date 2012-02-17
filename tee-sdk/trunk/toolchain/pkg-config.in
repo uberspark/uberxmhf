@@ -3,8 +3,8 @@ prefix=@prefix@
 SYSROOT=@SYSROOT@
 PKG_CONFIG=@PKG_CONFIG@
 
-export PKG_CONFIG_DIR=
+export PKG_CONFIG_PATH=
 export PKG_CONFIG_LIBDIR=${SYSROOT}/usr/local/lib/pkgconfig:${SYSROOT}/usr/local/share/pkgconfig:${SYSROOT}/usr/lib/pkgconfig:${SYSROOT}/usr/share/pkgconfig
-export PKG_CONFIG_SYSROOT_DIR=${SYSROOT}
+export PKG_CONFIG_SYSROOT_DIR=
 
 exec ${PKG_CONFIG} "$@"
