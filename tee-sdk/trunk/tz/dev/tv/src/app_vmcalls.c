@@ -47,11 +47,47 @@
 #include  <errno.h>
 #endif
 
-#ifdef IS_WINDOWS
+#if HAVE_WINDOWS_H
 #include <windows.h>
 #endif
 
-#if HAVE_SYS_MMAN_H
+#if HAVE_WINDOWS_H
+/* mlock always returns an error on cygwin, and get\setrlimit doesn't
+   support RLIMIT_MEMLOCK. Instead we use the native windows API
+   VirtualLock. Unfortunately this API only guarantees that the pages
+   are in physical memory while the process is in physical memory.
+   Windows may still swap out the whole process.
+*/
+int tv_lock_range(void *ptr, size_t len)
+{
+  SIZE_T dwMin, dwMax;
+  HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION|PROCESS_SET_QUOTA,
+                                FALSE,
+                                GetCurrentProcessId());
+  ptr = (void*)PAGE_ALIGN_4K((uintptr_t)ptr);
+  len = PAGE_ALIGN_UP4K(len);
+
+  if (!GetProcessWorkingSetSize(hProcess, &dwMin, &dwMax)) {
+    printf("GetProcessWorkingSetSize failed (%ld)\n",
+           GetLastError());
+    return -1;
+  }
+
+  if (!SetProcessWorkingSetSize(hProcess, dwMin+len, dwMax+len)) {
+    printf("GetProcessWorkingSetSize failed (%ld)\n",
+           GetLastError());
+    return -2;
+  }
+
+  if (!VirtualLock(ptr, len)) {
+    printf("VirtualLock failed (%ld)\n",
+           GetLastError());
+    return -3;
+  }
+
+  return 0;
+}
+#elif HAVE_SYS_MMAN_H
 int tv_lock_range(void *ptr, size_t len)
 {
   ptr = (void*)PAGE_ALIGN_4K((uintptr_t)ptr);
@@ -88,46 +124,10 @@ int tv_lock_range(void *ptr, size_t len)
     }
 
     return 0;
-  } else {
-    perror("mlock");
-    return -4;
-  }
-}
-#elif IS_WINDOWS
-/* mlock always returns an error on cygwin, and get\setrlimit doesn't
-   support RLIMIT_MEMLOCK. Instead we use the native windows API
-   VirtualLock. Unfortunately this API only guarantees that the pages
-   are in physical memory while the process is in physical memory.
-   Windows may still swap out the whole process.
-*/
-int tv_lock_range(void *ptr, size_t len)
-{
-  SIZE_T dwMin, dwMax;
-  HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION|PROCESS_SET_QUOTA,
-                                FALSE,
-                                GetCurrentProcessId());
-  ptr = (void*)PAGE_ALIGN_4K((uintptr_t)ptr);
-  len = PAGE_ALIGN_UP4K(len);
-
-  if (!GetProcessWorkingSetSize(hProcess, &dwMin, &dwMax)) {
-    printf("GetProcessWorkingSetSize failed (%ld)\n",
-           GetLastError());
-    return -1;
   }
 
-  if (!SetProcessWorkingSetSize(hProcess, dwMin+len, dwMax+len)) {
-    printf("GetProcessWorkingSetSize failed (%ld)\n",
-           GetLastError());
-    return -2;
-  }
-
-  if (!VirtualLock(ptr, len)) {
-    printf("VirtualLock failed (%ld)\n",
-           GetLastError());
-    return -3;
-  }
-
-  return 0;
+  perror("mlock");
+  return -4;
 }
 #else
 int tv_lock_range(void *ptr, size_t len)
@@ -136,15 +136,15 @@ int tv_lock_range(void *ptr, size_t len)
 }
 #endif
 
-#if HAVE_SYS_MMAN_H
-int tv_unlock_range(void *ptr, size_t len)
-{
-  return munlock(ptr, len);
-}
-#elif IS_WINDOWS
+#if HAS_WINDOWS_H
 int tv_unlock_range(void *ptr, size_t len)
 {
   return !VirtualUnlock(ptr, len);
+}
+#elif HAVE_SYS_MMAN_H
+int tv_unlock_range(void *ptr, size_t len)
+{
+  return munlock(ptr, len);
 }
 #else
 int tv_unlock_range(void *ptr, size_t len)
