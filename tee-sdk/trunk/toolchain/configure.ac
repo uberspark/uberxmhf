@@ -1,26 +1,27 @@
 AC_INIT([tsvc-toolchain], [0.1])
+AC_CANONICAL_HOST
 
-if test -z ${ARCH}
+if test -z ${TARGET_CPU}
 then
-        ARCH=i586
+        target_cpu=i586
 fi
-AC_SUBST([ARCH])
+AC_SUBST([target_cpu])
 
-if test -z ${OS}
+if test -z ${TARGET_OS}
 then
-        OS=tsvc
+        target_os=tsvc
 fi
-AC_SUBST([OS])
+AC_SUBST([target_os])
 
-if test -z ${HOST}
+if test -z ${TARGET}
 then
-        HOST="${ARCH}-${OS}"
+        target="${target_cpu}-${target_os}"
 fi
-AC_SUBST([HOST])
+AC_SUBST([target])
 
 if test -z ${SYSROOT}
 then
-        SYSROOT='$prefix'/${HOST}
+        SYSROOT='$prefix'/${target}
 fi
 AC_SUBST([SYSROOT])
 
@@ -46,7 +47,7 @@ AC_SUBST([CCLIB], [`$CC --print-file-name=`])
 AC_SUBST([LDFLAGS])
 LDFLAGS=""
 LDFLAGS="$LDFLAGS -nostdlib"
-LDFLAGS="$LDFLAGS -L"'$prefix'"/$HOST/usr/local/lib -L"'$prefix'"/$HOST/usr/lib -L"'$prefix'"/$HOST/lib"
+LDFLAGS="$LDFLAGS -L"'$prefix'"/$target/usr/local/lib -L"'$prefix'"/$target/usr/lib -L"'$prefix'"/$target/lib"
 LDFLAGS="$LDFLAGS -L$CCLIB"
 
 AC_SUBST([LDLIBS])
@@ -58,12 +59,11 @@ AC_SUBST([CFLAGS])
 CFLAGS="-march=$ARCH"
 CFLAGS="$CFLAGS -nostdinc" # drop default include directories
 CFLAGS="$CFLAGS -isystem $CCINC -isystem $CCINC-fixed" # add back compiler-include directories
-CFLAGS="$CFLAGS -I"'$prefix'"/$HOST/usr/local/include -I"'$prefix'"/$HOST/usr/include -I"'$prefix'"/$HOST/include"
+CFLAGS="$CFLAGS -I"'$prefix'"/$target/usr/local/include -I"'$prefix'"/$target/usr/include -I"'$prefix'"/$target/include"
 #CFLAGS="$CFLAGS --sysroot=$prefix" # would replace the above nastiness, but unfortunately ld is not built to support it on ubuntu
 CFLAGS="$CFLAGS -fno-jump-tables" # sometimes conflicts with PAL memory protections. may no longer be needed
 CFLAGS="$CFLAGS -fno-stack-protector" # stack protector results in unresolved symbols
 
-AC_CANONICAL_HOST
 case $host_os in
   *cygwin* ) CYGWIN=yes;;
          * ) CYGWIN=no;;

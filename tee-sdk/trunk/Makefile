@@ -1,3 +1,4 @@
+TARGET=i586-tsvc
 HOST=i586-tsvc
 BUILD=i686-pc-linux-gnu
 PREFIX=/usr/local
@@ -8,7 +9,7 @@ all: toolchain newlib tz_host tz_cross
 toolchain:
 	cd toolchain && \
 	autoreconf -i && \
-	HOST=$(HOST) ./configure --prefix=$(PREFIX) && \
+	TARGET=$(TARGET) ./configure --prefix=$(PREFIX) && \
 	make && \
 	make install
 
