@@ -214,6 +214,9 @@
 #undef SGTTY
 #endif
 
+#undef TERMIO
+#define TERMIOS
+
 #ifdef TERMIOS
 # include <termios.h>
 # define TTY_STRUCT		struct termios
