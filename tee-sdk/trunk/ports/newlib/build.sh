@@ -22,5 +22,5 @@ fi
 CFLAGS=$CFLAGS ../newlib-1.19.0/configure --target=${HOST} --enable-languages=c --with-newlib --disable-multilib --prefix=$PREFIX
 
 make
-sudo make install
+make install
 
