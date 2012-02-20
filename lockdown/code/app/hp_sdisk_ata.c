@@ -126,12 +126,12 @@ u32 hp(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size
 		HALT();
 	}
 
-	if(access_type == IO_TYPE_IN)	//IN, we simply chain
-		return APP_IOINTERCEPT_CHAIN;
-
 	//check for correct disk
 	temp=inb(ATA_DRIVE_SELECT(ATA_BUS_PRIMARY));
 	if(temp & 0x10)	//slave, so simply chain
+		return APP_IOINTERCEPT_CHAIN;
+
+	if(access_type == IO_TYPE_IN)	//IN, we simply chain
 		return APP_IOINTERCEPT_CHAIN;
 
 	switch(portnum){
