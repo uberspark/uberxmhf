@@ -72,7 +72,7 @@ u32 check_if_LBA_outofbounds(u64 lbaaddr){
   ASSERT(currentenvironment == LDN_ENV_TRUSTED_SIGNATURE ||
       currentenvironment == LDN_ENV_UNTRUSTED_SIGNATURE);
 
-#if 0  
+#if 1 
   //check if the given LBA falls into one of the allowed sectors list
   for(i=0; i< (sizeof(hp_allowedsectors)/sizeof(u32)); i++){
     if(hp_allowedsectors[i] == (u32)lbaaddr)
