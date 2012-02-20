@@ -182,7 +182,7 @@ u32 hp(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size
 
 				//check if we are out of bounds
 				if(check_if_LBA_outofbounds(lba48addr)){
-					printf("\nATA R/W DMA EXT: 0x%02x (count=%02x%02x, lba=%02x%02x%02x%02x%02x%02x)", 
+					printf("\nATA R/W DMA EXT (OOB): 0x%02x (count=%02x%02x, lba=%02x%02x%02x%02x%02x%02x)", 
 						command, ata_sector_count_buf[0], ata_sector_count_buf[1],
 						ata_lbahigh_buf[0], ata_lbamid_buf[0], ata_lbalow_buf[0],
 						ata_lbahigh_buf[1], ata_lbamid_buf[1], ata_lbalow_buf[1]);
@@ -228,7 +228,7 @@ u32 hp(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size
 				
 				//check if LBA is out of bounds
 				if(check_if_LBA_outofbounds((u64)lba28addr)){
-					printf("\nATA R/W DMA: 0x%02x (count=%02x, lba=(%02x%02x%02x%02x)", 
+					printf("\nATA R/W DMA (OOB): 0x%02x (count=%02x, lba=(%02x%02x%02x%02x)", 
 					command, count, t3, t2, t1, t0);
 					//convert the access to a "null" sector
 					CPU32_TO_LBA28((u32)LDN_NULL_SECTOR, &t3, &t2, &t1, &t0);
