@@ -99,6 +99,13 @@ u32 check_if_LBA_outofbounds(u64 lbaaddr){
   }
 }
 
+//return guest EAX value 
+u32 hp_getguesteaxvalue(VCPU *vcpu, struct regs *r){
+		if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
+			return (u32) ((struct vmcb_struct *)vcpu->vmcb_vaddr_ptr)->rax;
+		else
+			return r->eax;
+}
 
 //returns APP_IOINTERCEPT_SKIP or APP_IOINTERCEPT_CHAIN
 u32 hp(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size){
@@ -123,9 +130,9 @@ u32 hp(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size
 		case ATA_SECTOR_COUNT(ATA_BUS_PRIMARY):
 			if(ata_sector_count_index > 1){
 				ata_sector_count_buf[0]=ata_sector_count_buf[1];
-				ata_sector_count_buf[1]=(u8)r->eax;
+				ata_sector_count_buf[1]=(u8)hp_getguesteaxvalue(vcpu, r);
 			}else{
-				ata_sector_count_buf[ata_sector_count_index]=(u8)r->eax;
+				ata_sector_count_buf[ata_sector_count_index]=(u8)hp_getguesteaxvalue(vcpu, r);
 			}
 			ata_sector_count_index++;
 			return(APP_IOINTERCEPT_CHAIN);
@@ -133,9 +140,9 @@ u32 hp(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size
 		case ATA_LBALOW(ATA_BUS_PRIMARY):
 			if(ata_lbalow_index > 1){
 				ata_lbalow_buf[0]=ata_lbalow_buf[1];
-				ata_lbalow_buf[1]=(u8)r->eax;
+				ata_lbalow_buf[1]=(u8)hp_getguesteaxvalue(vcpu, r);
 			}else{
-				ata_lbalow_buf[ata_lbalow_index]=(u8)r->eax;
+				ata_lbalow_buf[ata_lbalow_index]=(u8)hp_getguesteaxvalue(vcpu, r);
 			}
 			ata_lbalow_index++;
 			return(APP_IOINTERCEPT_CHAIN);
@@ -143,9 +150,9 @@ u32 hp(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size
 		case ATA_LBAMID(ATA_BUS_PRIMARY):
 			if(ata_lbamid_index > 1){
 				ata_lbamid_buf[0]=ata_lbamid_buf[1];
-				ata_lbamid_buf[1]=(u8)r->eax;
+				ata_lbamid_buf[1]=(u8)hp_getguesteaxvalue(vcpu, r);
 			}else{
-				ata_lbamid_buf[ata_lbamid_index]=(u8)r->eax;
+				ata_lbamid_buf[ata_lbamid_index]=(u8)hp_getguesteaxvalue(vcpu, r);
 			}
 			ata_lbamid_index++;
 			return(APP_IOINTERCEPT_CHAIN);
@@ -153,15 +160,15 @@ u32 hp(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size
 		case ATA_LBAHIGH(ATA_BUS_PRIMARY):
 			if(ata_lbahigh_index > 1){
 				ata_lbahigh_buf[0]=ata_lbahigh_buf[1];
-				ata_lbahigh_buf[1]=(u8)r->eax;
+				ata_lbahigh_buf[1]=(u8)hp_getguesteaxvalue(vcpu, r);
 			}else{
-				ata_lbahigh_buf[ata_lbahigh_index]=(u8)r->eax;
+				ata_lbahigh_buf[ata_lbahigh_index]=(u8)hp_getguesteaxvalue(vcpu, r);
 			}
 			ata_lbahigh_index++;
 			return(APP_IOINTERCEPT_CHAIN);
 	
 		case ATA_COMMAND(ATA_BUS_PRIMARY):
-			command = (u8)r->eax;
+			command = (u8)hp_getguesteaxvalue(vcpu, r);
 			if(command == CMD_READ_DMA_EXT || command == CMD_WRITE_DMA_EXT){
 				lba48addr = LBA48_TO_CPU64(0x00, 0x00, ata_lbahigh_buf[0], 
 					ata_lbamid_buf[0], ata_lbalow_buf[0], ata_lbahigh_buf[1], 
