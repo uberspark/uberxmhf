@@ -236,11 +236,12 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 
 #if defined(__LDN_HYPERPARTITIONING__)
   //set IDE port intercepts for hyper-partitioning
-  emhf_iopm_set_write(vcpu, ATA_COMMAND(ATA_BUS_PRIMARY), 1); //8-bit port
-  emhf_iopm_set_write(vcpu, ATA_SECTOR_COUNT(ATA_BUS_PRIMARY), 1); //8-bit port
-  emhf_iopm_set_write(vcpu, ATA_LBALOW(ATA_BUS_PRIMARY), 1); //8-bit port
-  emhf_iopm_set_write(vcpu, ATA_LBAMID(ATA_BUS_PRIMARY), 1); //8-bit port
-  emhf_iopm_set_write(vcpu, ATA_LBAHIGH(ATA_BUS_PRIMARY), 1); //8-bit port
+  
+  emhf_partition_legacyIO_setprot(vcpu, ATA_COMMAND(ATA_BUS_PRIMARY), 1, PART_LEGACYIO_NOACCESS); //8-bit port
+  emhf_partition_legacyIO_setprot(vcpu, ATA_SECTOR_COUNT(ATA_BUS_PRIMARY), 1, PART_LEGACYIO_NOACCESS); //8-bit port
+  emhf_partition_legacyIO_setprot(vcpu, ATA_LBALOW(ATA_BUS_PRIMARY), 1, PART_LEGACYIO_NOACCESS); //8-bit port
+  emhf_partition_legacyIO_setprot(vcpu, ATA_LBAMID(ATA_BUS_PRIMARY), 1, PART_LEGACYIO_NOACCESS); //8-bit port
+  emhf_partition_legacyIO_setprot(vcpu, ATA_LBAHIGH(ATA_BUS_PRIMARY), 1, PART_LEGACYIO_NOACCESS); //8-bit port
 #endif
 
   //grab the ldn parameter block from verifier, this tells us the
