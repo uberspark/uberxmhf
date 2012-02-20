@@ -71,7 +71,8 @@ u32 check_if_LBA_outofbounds(u64 lbaaddr){
 	u32 i;
   ASSERT(currentenvironment == LDN_ENV_TRUSTED_SIGNATURE ||
       currentenvironment == LDN_ENV_UNTRUSTED_SIGNATURE);
-  
+
+#if 0  
   //check if the given LBA falls into one of the allowed sectors list
   for(i=0; i< (sizeof(hp_allowedsectors)/sizeof(u32)); i++){
     if(hp_allowedsectors[i] == (u32)lbaaddr)
@@ -97,6 +98,13 @@ u32 check_if_LBA_outofbounds(u64 lbaaddr){
 			return 0; //not out of bounds 
   
   }
+  
+#else
+	(void)lbaaddr;
+	(void)i;
+	return 0; //not out of bounds 
+
+#endif  
 }
 
 //return guest EAX value 
