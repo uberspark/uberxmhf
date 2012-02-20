@@ -207,7 +207,8 @@ u32 hp(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size
 			
 			if(command == CMD_IDENTIFY_PACKET_DEVICE){
 				printf("\nATA IDENTIFY PACKET DEVICE command: 0x%02x",	command);
-				
+				cmd_packet_identify = true;
+				return APP_IOINTERCEPT_SKIP;
 				
 			}else if(command == CMD_READ_DMA_EXT || command == CMD_WRITE_DMA_EXT){
 				lba48addr = LBA48_TO_CPU64(0x00, 0x00, ata_lbahigh_buf[0], 
