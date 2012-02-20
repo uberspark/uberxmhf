@@ -115,6 +115,19 @@ static inline u32 hp_getguesteaxvalue(VCPU *vcpu, struct regs *r){
 			return r->eax;
 }
 
+//set guest EAX value 
+static inline void hp_setguesteaxvalue(VCPU *vcpu, struct regs *r, u32 value){
+		if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
+			((struct vmcb_struct *)vcpu->vmcb_vaddr_ptr)->rax = value;
+		else
+			r->eax=value;
+}
+
+
+//if there was a previoud packet identify command
+static bool cmd_packet_identify=false;
+
+
 //returns APP_IOINTERCEPT_SKIP or APP_IOINTERCEPT_CHAIN
 u32 hp(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size){
 	u8 command, temp;
@@ -131,8 +144,22 @@ u32 hp(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size
 	if(temp & 0x10)	//slave, so simply chain
 		return APP_IOINTERCEPT_CHAIN;
 
-	if(access_type == IO_TYPE_IN)	//IN, we simply chain
-		return APP_IOINTERCEPT_CHAIN;
+	if(access_type == IO_TYPE_IN){	
+		if(portnum == ATA_COMMAND(ATA_BUS_PRIMARY) && cmd_packet_identify){
+			//we had a packet identify command previously, so return
+			//a status saying we dont support packet commands
+			u32 eax = hp_getguesteaxvalue(vcpu, r);
+			eax |= 0x1;
+			hp_setguesteaxvalue(vcpu, r, eax);
+			cmd_packet_identify = false;
+			printf("\nATA IDENTIFY PACKET DEVICE Status read; returned error:0x%08x", 
+				hp_getguesteaxvalue(vcpu, r));
+			return APP_IOINTERCEPT_SKIP;	
+		}else{
+			//IN, we simply chain
+			return APP_IOINTERCEPT_CHAIN;
+		}
+	}
 
 	switch(portnum){
 		case ATA_SECTOR_COUNT(ATA_BUS_PRIMARY):
@@ -177,7 +204,12 @@ u32 hp(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size
 	
 		case ATA_COMMAND(ATA_BUS_PRIMARY):
 			command = (u8)hp_getguesteaxvalue(vcpu, r);
-			if(command == CMD_READ_DMA_EXT || command == CMD_WRITE_DMA_EXT){
+			
+			if(command == CMD_IDENTIFY_PACKET_DEVICE){
+				printf("\nATA IDENTIFY PACKET DEVICE command: 0x%02x",	command);
+				
+				
+			}else if(command == CMD_READ_DMA_EXT || command == CMD_WRITE_DMA_EXT){
 				lba48addr = LBA48_TO_CPU64(0x00, 0x00, ata_lbahigh_buf[0], 
 					ata_lbamid_buf[0], ata_lbalow_buf[0], ata_lbahigh_buf[1], 
 					ata_lbamid_buf[1], ata_lbalow_buf[1]);

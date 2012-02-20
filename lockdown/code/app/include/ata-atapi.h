@@ -54,6 +54,8 @@
 #define CMD_READ_SECTORS_EXT		0x24
 #define CMD_WRITE_SECTORS_EXT		0x34
 
+#define	CMD_IDENTIFY_PACKET_DEVICE	0xA1
+
 /*
 //some defines to construct 32/64 bit numbers for 28bit and 48bit LBA addressing
 #define LBA28BIT_TO_32BITVAL(bits27_24, bits23_16, bits15_8, bits7_0) \
