@@ -108,7 +108,7 @@ u32 check_if_LBA_outofbounds(u64 lbaaddr){
 }
 
 //return guest EAX value 
-u32 hp_getguesteaxvalue(VCPU *vcpu, struct regs *r){
+static inline u32 hp_getguesteaxvalue(VCPU *vcpu, struct regs *r){
 		if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
 			return (u32) ((struct vmcb_struct *)vcpu->vmcb_vaddr_ptr)->rax;
 		else
@@ -260,7 +260,7 @@ u32 hp(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size
 				ata_lbahigh_buf[0] = ata_lbahigh_buf[1] = 0;
 				
 			}else {
-				printf("\nATA command: 0x%02x",	command);
+				//printf("\nATA command: 0x%02x",	command);
 			}
 			
 			ata_sector_count_index=0;
