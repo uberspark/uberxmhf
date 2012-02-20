@@ -22,7 +22,7 @@
 #define LDN_ENV_TRUSTED_STARTSECTOR  	(159396993)
 #define LDN_ENV_TRUSTED_ENDSECTOR  		(222291404)
 #define LDN_NULL_SECTOR  				(620000000)
-#define LDN_IDE_BUS   					0x6000
+#define LDN_IDE_BUS   					0x6010
 #define LDN_ALLOWED_SECTORS 			159396930
 #define LDN_OUTOFBOUNDS_CHECK			(((u64)lbaaddr >= (u64)LDN_ENV_TRUSTED_STARTSECTOR) && ((u64)lbaaddr <= (u64)LDN_ENV_TRUSTED_ENDSECTOR)) || ((u64)lbaaddr < 63ULL) || ((u64)lbaaddr >= 63ULL && (u64)lbaaddr <= 33554494ULL)
 
