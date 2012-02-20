@@ -236,12 +236,16 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 
 #if defined(__LDN_HYPERPARTITIONING__)
   //set IDE port intercepts for hyper-partitioning
-  
+ 
   emhf_partition_legacyIO_setprot(vcpu, ATA_COMMAND(ATA_BUS_PRIMARY), 1, PART_LEGACYIO_NOACCESS); //8-bit port
   emhf_partition_legacyIO_setprot(vcpu, ATA_SECTOR_COUNT(ATA_BUS_PRIMARY), 1, PART_LEGACYIO_NOACCESS); //8-bit port
   emhf_partition_legacyIO_setprot(vcpu, ATA_LBALOW(ATA_BUS_PRIMARY), 1, PART_LEGACYIO_NOACCESS); //8-bit port
   emhf_partition_legacyIO_setprot(vcpu, ATA_LBAMID(ATA_BUS_PRIMARY), 1, PART_LEGACYIO_NOACCESS); //8-bit port
   emhf_partition_legacyIO_setprot(vcpu, ATA_LBAHIGH(ATA_BUS_PRIMARY), 1, PART_LEGACYIO_NOACCESS); //8-bit port
+
+  printf("\nCPU(0x%02x): Lockdown; Setup hyperpartitioning on \
+    ATA/SATA device at 0x%08x", vcpu->id, ATA_BUS_PRIMARY);
+
 #endif
 
   //grab the ldn parameter block from verifier, this tells us the
