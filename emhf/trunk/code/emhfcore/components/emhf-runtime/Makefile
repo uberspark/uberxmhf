@@ -98,8 +98,8 @@ I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 .PHONY: all
 all: runtime.bin
 
-runtime.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(OBJECTS_PRECOMPILED_LIBBACKENDS) runtime.lds.S
-	$(LD) -T runtime.lds.S -o runtime.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
+runtime.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) ../../../$(APP_ARCHIVE) $(OBJECTS_PRECOMPILED_LIBBACKENDS) runtime.lds.S
+	$(LD) -T runtime.lds.S -o runtime.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) ../../../$(APP_ARCHIVE) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
 	$(OBJCOPY) --output-format=binary runtime.exe runtime.bin
 
 %.o: %.S $(I_SOURCES) Makefile ../../Makefile

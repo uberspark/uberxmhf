@@ -27,7 +27,8 @@ SUBDIRS = $(LIBDIRS) emhfcore
 export APP_ROOT := @APP_ROOT@
 # The APP_ARCHIVE is what MUST contain ALL of the App's binary code
 # 'make install-dev' is handled indepdendently
-export APP_ARCHIVE := $(APP_ROOT)/@APP_ARCHIVE@
+export builddir=@builddir@
+export APP_ARCHIVE := $(builddir)/$(APP_ROOT)/@APP_ARCHIVE@
 
 export ADDL_LIBS := $(foreach lib,$(LIBDIRS),$(CURDIR)/$(lib)/$(lib).a)
 export ADDL_INCLUDES := -I$(APP_ROOT)/app/include $(foreach dir,$(SUBDIRS),-I$(CURDIR)/$(dir)/include)
