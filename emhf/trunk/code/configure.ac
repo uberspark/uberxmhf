@@ -1,5 +1,7 @@
 AC_INIT([emhf], [0.2])
-#AC_CONFIG_AUX_DIR([build-aux]) # use this if\when switching to automake
+AC_CONFIG_AUX_DIR([build-aux]) # use this if\when switching to automake
+
+AC_PROG_INSTALL
 
 #AC_PROG_CC
 # disabled for now. this macro would test gcc with compiling a
