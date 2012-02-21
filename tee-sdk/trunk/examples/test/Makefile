@@ -24,6 +24,8 @@ DO_USERSPACE_ONLY=0
 PROG_NAME=test
 CFLAGS=-g -Wall -Wextra -Werror
 CFLAGS+=-DUSERSPACE_ONLY=$(DO_USERSPACE_ONLY)
+CFLAGS+=-m32
+LDFLAGS=-m32 -L/usr/lib32
 CPPFLAGS=$(TESTS)
 PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv libssl libcrypto
 PROG_OBJS=test.o
@@ -38,7 +40,8 @@ endif
 PAL_NAME=pals
 PAL_PKGCONFIG_DEPS=tee-sdk-svc $(PAL_BACKEND)
 PAL_OBJS=pals.o
-PAL_CFLAGS=-Wall -Wextra -Werror
+PAL_CFLAGS=-Wall -Wextra -Werror -m32
+PAL_LDFLAGS=-m32
 
 .PHONY: all
 all: $(PROG_NAME) Makefile
