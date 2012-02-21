@@ -16,6 +16,8 @@ AC_SUBST([target_os])
 if test -z ${TARGET}
 then
         target="${target_cpu}-${target_os}"
+else
+        target=${TARGET}
 fi
 AC_SUBST([target])
 
