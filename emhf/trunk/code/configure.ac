@@ -111,5 +111,7 @@ AC_SUBST([pkgdatadir], ['${datadir}/AC_PACKAGE_NAME'])
 AC_SUBST([pkgconfigdir], ['${libdir}/pkgconfig'])
 AC_SUBST([pkgincludedir], ['${includedir}/AC_PACKAGE_NAME'])
 
+AC_CONFIG_SUBDIRS([${APP_ROOT}])
+
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
