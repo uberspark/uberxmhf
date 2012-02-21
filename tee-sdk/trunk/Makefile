@@ -22,6 +22,7 @@ tz_autoreconf:
 	cd tz && autoreconf -i
 
 tz_host: tz_autoreconf
+	export PKG_CONFIG_PATH=$(PREFIX)/lib/pkgconfig && \
 	cd tz && \
 	mkdir -p build-host && \
 	cd build-host && \
