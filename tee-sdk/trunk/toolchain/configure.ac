@@ -45,7 +45,7 @@ AC_PATH_PROG([RANLIB], [ranlib], [ranlib])
 AC_PATH_PROG([STRIP], [strip], [strip])
 AC_PATH_PROG([PKG_CONFIG], [pkg-config], [pkg-config])
 
-AC_SUBST([CCLIB], [`$CC --print-file-name=`])
+AC_SUBST([CCLIB], [`$CC -m32 --print-file-name=`])
 
 AC_SUBST([LDFLAGS])
 LDFLAGS=""
