@@ -1,13 +1,13 @@
 AC_INIT([tee-sdk], [0.1], [jnewsome@cmu.edu])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([foreign -Wall -Werror])
+AC_SUBST([CFLAGS], ['-g -O0 -m32'])
 AC_PROG_CC
 AC_CONFIG_HEADERS([include/config.h])
 
 PKG_PROG_PKG_CONFIG
 PKG_CHECK_MODULES([TRUSTVISOR], [trustvisor])
 
-AC_SUBST([CFLAGS], ['-g -O0'])
 
 # install in-place by default
 #AC_PREFIX_DEFAULT([${top_srcdir}/_install])
