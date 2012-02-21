@@ -1,4 +1,5 @@
 AC_INIT([tsvc-toolchain], [0.1])
+AC_CONFIG_AUX_DIR([build-aux])
 AC_CANONICAL_HOST
 
 if test -z ${TARGET_CPU}
@@ -91,6 +92,8 @@ AC_CHECK_PROG([CP], [cp], [cp])
 AC_CHECK_PROG([SED], [sed], [sed])
 AC_CHECK_PROG([CAT], [cat], [cat])
 AC_CHECK_PROG([INSTALL], [install], [install])
+
+AC_PROG_INSTALL
 
 AC_CONFIG_FILES([
   ar as cc ld nm objdump ranlib strip pkg-config Makefile

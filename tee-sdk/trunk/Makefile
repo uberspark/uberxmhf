@@ -8,7 +8,7 @@ all: toolchain newlib tz_host tz_cross
 
 toolchain:
 	cd toolchain && \
-	autoreconf -i && \
+	./autogen.sh && \
 	TARGET=$(TARGET) ./configure --prefix=$(PREFIX) && \
 	make && \
 	make install
