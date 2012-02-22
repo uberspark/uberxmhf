@@ -19,18 +19,19 @@ TV_ABSPATH=`( cd "$MY_PATH/$TV_RELPATH" && pwd )`
 pushd $EMHF_ABSPATH
 
 make clean
-git svn rebase
+#git svn rebase
 autoreconf
-./configure --with-approot=$TV_ABSPATH
+./configure --prefix=/home/driver/tmp/tee-sdk --with-approot=$TV_ABSPATH
 make clean
 make
+DESTDIR=/home/driver/tmp/tee-sdk/ make install
 
 ls -l init-x86.bin hypervisor-x86.bin.gz
 
 echo -e "\nTRUSTVISOR BUILD COMPLETED SUCCESSFULLY\n"
 
+# symlinks in /usr/lib32 for libcrypto.so and libssl.so
 # embed output of `git svn info` into init-x86.bin somewhere
-
 
 # configure TV with cross compiler prefix
 cd ../../../trustvisor/trunk/code
