@@ -30,3 +30,28 @@ ls -l init-x86.bin hypervisor-x86.bin.gz
 echo -e "\nTRUSTVISOR BUILD COMPLETED SUCCESSFULLY\n"
 
 # embed output of `git svn info` into init-x86.bin somewhere
+
+
+# configure TV with cross compiler prefix
+cd ../../../trustvisor/trunk/code
+autoreconf
+./configure --prefix=/home/driver/tmp/tee-sdk/i586-tsvc
+# configure EMHF with cross compiler prefix and approot
+cd ../../../emhf/trunk/code
+./configure --prefix=/home/driver/tmp/tee-sdk/i586-tsvc --with-approot=/home/driver/hyp.git/trustvisor/trunk/code
+make install-dev
+
+# repeat with regular prefix (not cross compiler prefix)
+cd ../../../trustvisor/trunk/code
+./configure --prefix=/home/driver/tmp/tee-sdk
+cd ../../../emhf/trunk/code
+./configure --prefix=/home/driver/tmp/tee-sdk --with-approot=/home/driver/hyp.git/trustvisor/trunk/code
+
+# now trustvisor headers are in place and can build & install tee-sdk
+cd ../../../tee-sdk/trunk
+make PREFIX=/home/driver/tmp/tee-sdk
+
+# Now to build the examples/test PAL:
+PATH=$PATH:/home/driver/tmp/tee-sdk/bin PKG_CONFIG_PATH=~/tmp/tee-sdk/lib/pkgconfig make clean
+PATH=$PATH:/home/driver/tmp/tee-sdk/bin PKG_CONFIG_PATH=~/tmp/tee-sdk/lib/pkgconfig make
+
