@@ -24,11 +24,18 @@ mkdir -p $TEMPDIR
 
 pushd $EMHF_ABSPATH
 
-## 1. Build TrustVisor
+## 0. autogen.sh in TrustVisor path
+pushd $TV_RELPATH
+git clean -d -n -x .
+./autogen.sh
+popd
 
-make clean
+## 1. Build EMHF + TrustVisor
+
+#make clean
+git clean -d -n -x .
 #git svn rebase
-autoreconf -i
+./autogen.sh
 ./configure --prefix=$TEMPDIR --with-approot=$TV_RELPATH
 make clean
 make
