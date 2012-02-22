@@ -12,47 +12,52 @@ MY_PATH=`( cd "$MY_PATH" && pwd )`
 EMHF_RELPATH=../../../emhf/trunk/code
 EMHF_ABSPATH=`( cd "$MY_PATH/$EMHF_RELPATH" && pwd )`
 
-# and these are TrustVisor's paths
+# and these are TrustVisor and tee-sdk's paths
 TV_RELPATH=../../../trustvisor/trunk/code
-TV_ABSPATH=`( cd "$MY_PATH/$TV_RELPATH" && pwd )`
+TEESDK_RELPATH=../../../tee-sdk/trunk
+TESTPAL_RELPATH=../../../tee-sdk/trunk/examples/test
+
+# Temporary directory to place build results
+TEMPDIR=/tmp/build/tee-sdk
+rm -rf $TEMPDIR
+mkdir -p $TEMPDIR
 
 pushd $EMHF_ABSPATH
 
+## 1. Build TrustVisor
+
 make clean
 #git svn rebase
-autoreconf
-./configure --prefix=/home/driver/tmp/tee-sdk --with-approot=$TV_ABSPATH
+autoreconf -i
+./configure --prefix=$TEMPDIR --with-approot=$TV_RELPATH
 make clean
 make
-DESTDIR=/home/driver/tmp/tee-sdk/ make install
-
+#DESTDIR=$TEMPDIR make install
 ls -l init-x86.bin hypervisor-x86.bin.gz
 
-echo -e "\nTRUSTVISOR BUILD COMPLETED SUCCESSFULLY\n"
+## 2. Install TrustVisor host development files
+make install-dev
+
+## 3. Install TrustVisor cross-compile development files
+./configure --prefix=$TEMPDIR/i586-tsvc --with-approot=$TV_RELPATH
+make install-dev
+
+popd
 
 # symlinks in /usr/lib32 for libcrypto.so and libssl.so
 # embed output of `git svn info` into init-x86.bin somewhere
 
-# configure TV with cross compiler prefix
-cd ../../../trustvisor/trunk/code
-autoreconf
-./configure --prefix=/home/driver/tmp/tee-sdk/i586-tsvc
-# configure EMHF with cross compiler prefix and approot
-cd ../../../emhf/trunk/code
-./configure --prefix=/home/driver/tmp/tee-sdk/i586-tsvc --with-approot=/home/driver/hyp.git/trustvisor/trunk/code
-make install-dev
-
-# repeat with regular prefix (not cross compiler prefix)
-cd ../../../trustvisor/trunk/code
-./configure --prefix=/home/driver/tmp/tee-sdk
-cd ../../../emhf/trunk/code
-./configure --prefix=/home/driver/tmp/tee-sdk --with-approot=/home/driver/hyp.git/trustvisor/trunk/code
+## 4. Build and install tee-sdk
 
 # now trustvisor headers are in place and can build & install tee-sdk
-cd ../../../tee-sdk/trunk
-make PREFIX=/home/driver/tmp/tee-sdk
+pushd $TEESDK_RELPATH
+make PREFIX=$TEMPDIR
+popd
 
 # Now to build the examples/test PAL:
-PATH=$PATH:/home/driver/tmp/tee-sdk/bin PKG_CONFIG_PATH=~/tmp/tee-sdk/lib/pkgconfig make clean
-PATH=$PATH:/home/driver/tmp/tee-sdk/bin PKG_CONFIG_PATH=~/tmp/tee-sdk/lib/pkgconfig make
+pushd $TESTPAL_RELPATH
+PATH=$PATH:$TEMPDIR/bin PKG_CONFIG_PATH=$TEMPDIR/lib/pkgconfig make clean
+PATH=$PATH:$TEMPDIR/bin PKG_CONFIG_PATH=$TEMPDIR/lib/pkgconfig make
+popd
 
+echo -e "\nTRUSTVISOR BUILD COMPLETED SUCCESSFULLY\n"
