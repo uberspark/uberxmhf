@@ -1,21 +1,29 @@
 #!/bin/bash
 
+set -e
+
 HOSTS="test-e8100 pratt test-6555b creeper"
 
 LOGDIR_ROOT=/home/logger/public_html
 
+# If TIMESTAMP was already defined by a parent script, don't
+# regenerate it.
+if [ ${#TIMESTAMP} -lt 14 ]; then
+    TIMESTAMP=`date --rfc-3339=seconds | tr ' ' - | cut -d - -f 1,2,3,4`
+fi
+echo "$0: Using TIMESTAMP $TIMESTAMP" 1>&2
+
 for i in $HOSTS; do
-    export TIMESTAMP=`date --rfc-3339=seconds | tr ' ' - | cut -d - -f 1,2,3,4`
     HOSTLOGDIR=$LOGDIR_ROOT/$i
     
     if [ ! -d $HOSTLOGDIR ]; then
         echo "FATAL ERROR: $LOGDIR does not exist!"
-        exit
+        exit 1
     fi
 
     THISLOGDIR=$HOSTLOGDIR/$TIMESTAMP
     mkdir -p $THISLOGDIR
-    chown logger:logger $THISLOGDIR
+#    chown logger:logger $THISLOGDIR
     LOGFILE=$THISLOGDIR/boot-test.log
 
     echo -e "#############################################"\
@@ -25,12 +33,12 @@ for i in $HOSTS; do
         | tee -a $LOGFILE
 
     # bash has a built-in time command; we don't want to use it.
-    /usr/bin/time -o /tmp/time.log ./boot-test.sh $i 2>&1 | tee -a $LOGFILE
-    cat /tmp/time.log | tee -a $LOGFILE
+    /usr/bin/time -o /tmp/time-$i.log ./boot-test.sh $i 2>&1 | tee -a $LOGFILE
+    cat /tmp/time-$i.log | tee -a $LOGFILE
 
     echo -e "##############################################"\
             "\n### COMPLETED tests on Host $i"\
             "\n##############################################\n\n"\
         | tee -a $THISLOGDIR/boot-test.log
-    sleep 1
+#    sleep 1
 done
