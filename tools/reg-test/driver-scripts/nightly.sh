@@ -92,3 +92,6 @@ if [[ $rc != 0 ]] ; then
 fi
 cat time.log >> $BUILD_LOG
 echo -e "\nCOMPLETED sequence-tests.sh\n" >> $BUILD_LOG
+
+echo -e "\nCOMPLETED $0; SUCCESS!!!\n" >> $BUILD_LOG
+
