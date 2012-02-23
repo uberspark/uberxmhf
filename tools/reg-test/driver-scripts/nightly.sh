@@ -14,6 +14,11 @@
 
 ## 0. Basic Setup
 
+# Find the absolute path of this script and cd there.
+MY_PATH=`dirname "$0"`
+MY_PATH=`( cd "$MY_PATH" && pwd )`
+cd $MY_PATH
+
 export TIMESTAMP=`date --rfc-3339=seconds | tr ' ' - | cut -d - -f 1,2,3,4`
 BUILD_LOG=/home/logger/public_html/build-$TIMESTAMP.log
 
@@ -93,5 +98,5 @@ fi
 cat time.log >> $BUILD_LOG
 echo -e "\nCOMPLETED sequence-tests.sh\n" >> $BUILD_LOG
 
-echo -e "\nCOMPLETED $0; SUCCESS!!!\n" >> $BUILD_LOG
+echo -e "\nCOMPLETED $0; SUCCESS!!!\n" | tee -a $BUILD_LOG
 
