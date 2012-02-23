@@ -14,7 +14,7 @@
 
 ## 1. Build everything
 
-TIMESTAMP=`date --rfc-3339=seconds | tr ' ' - | cut -d - -f 1,2,3,4`
+export TIMESTAMP=`date --rfc-3339=seconds | tr ' ' - | cut -d - -f 1,2,3,4`
 BUILD_LOG=/home/logger/public_html/build-$TIMESTAMP.log
 
 bash build-tv.sh > $BUILD_LOG 2>&1
