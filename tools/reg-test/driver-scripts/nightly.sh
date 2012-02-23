@@ -18,7 +18,7 @@ export TIMESTAMP=`date --rfc-3339=seconds | tr ' ' - | cut -d - -f 1,2,3,4`
 BUILD_LOG=/home/logger/public_html/build-$TIMESTAMP.log
 
 ## Make sure the current user is in groups logger and dialout
-if [ `groups | grep logger | grep dialout | wc -l` -lt 1]; then
+if [ `groups | grep logger | grep dialout | wc -l` -lt 1 ]; then
     echo -e "\nERROR: CURRENT USER NOT IN GROUPS logger, dialout!!!\n" >> $BUILD_LOG
     exit 1
 fi
