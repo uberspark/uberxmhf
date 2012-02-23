@@ -22,11 +22,13 @@
 # amtterm or (ii) a hard power cycle using the Remote Power Switch +
 # etherwake is also expected to be performed.
 
+set -e
+
 if [ -z $1 ]; then
     echo "Usage: $0 [test hostname]"
     echo "       Define environment variable DRYRUN=echo to get a dry-run"
     echo "       of the commands that would be executed."
-    exit
+    exit 1
 fi
 
 # Goal: figure out the path to other commands that will be invoked
@@ -82,7 +84,7 @@ if [ -e $CFG_FILENAME ]; then
     echo "Sourcing configuration from: $CFG_FILENAME"
 else
     echo "ERROR: Configuration file $CFG_FILENAME not found" 1>&2
-    exit
+    exit 1
 fi
 
 . $CFG_FILENAME
@@ -90,7 +92,7 @@ fi
 
 if [ $1 != $TEST_HOSTNAME ]; then
     echo "ERROR: inconsistent hostnames: $1 and $TEST_HOSTNAME" 1>&2
-    exit
+    exit 1
 fi
 
 # These two are used to construct a unique ISCSI_INITIATOR, which is
@@ -138,7 +140,7 @@ if [ $TEST_CONNECTION = "serial" ]; then
     # (and if the machine is already up, this is harmless)
     $DRYRUN sleep 3
     echo "Sending wake-on-LAN packet"
-    $DRYRUN etherwake $TEST_MACADDR
+    $DRYRUN sudo etherwake $TEST_MACADDR
 
     echo "Starting grub-generic.exp"
     $DRYRUN ./grub-generic.exp $TEST_CONNECTION $TEST_CONNECTION_SERIAL_PORT
