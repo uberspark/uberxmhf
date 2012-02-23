@@ -34,10 +34,14 @@ fi
 
 # TODO: Perhaps somehow stop requiring 'driver' to be a no-password
 # sudoer. Ugh.
-sudo bash copy_to_slashboots.sh $EMHF_RELPATH/init-x86.bin \
-    $EMHF_RELPATH/hypervisor-x86.bin.gz \
-    >> $BUILD_LOG 2>&1
+sudo -n true
+rc=$?
+if [[ $rc != 0 ]] ; then
+    echo -e "\nERROR: CANNOT sudo FOR ./copy_to_slashboots.sh; ABORTING REMAINING REGRESSION TESTING!!!\n" >> $BUILD_LOG
+    exit $rc
+fi
 
+sudo bash copy_to_slashboots.sh $EMHF_RELPATH/init-x86.bin $EMHF_RELPATH/hypervisor-x86.bin.gz >> $BUILD_LOG 2>&1
 rc=$?
 if [[ $rc != 0 ]] ; then
     echo -e "\nERROR: ./copy_to_slashboots.sh FAILED; ABORTING REMAINING REGRESSION TESTING!!!\n" >> $BUILD_LOG
