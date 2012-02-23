@@ -49,12 +49,33 @@ if [[ $rc != 0 ]] ; then
 fi
 
 ## 3. Create a tests.tgz tarball
-bash ../client-scripts/make_tarball.sh >> $BUILD_LOG 2>&1
 
-# WORK TO DO HERE!
+CLI_SCR_PATH=../client-scripts
+if [ ! -d $CLI_SCR_PATH ]; then
+    echo -e "\nERROR: DIRECTORY $CLI_SCR_PATH DOES NOT EXIST; ABORTING REMAINING REGRESSION TESTING!!!\n" >> $BUILD_LOG
+    exit $rc
+fi
+
+pushd $CLI_SCR_PATH
+bash make-tarball.sh >> $BUILD_LOG 2>&1
 cp -av tests.tgz /home/driver/public_html >> $BUILD_LOG 2>&1
+popd
 
-## 4. Invoke the tests on all of the test hosts
+
+## 4. Copy test PAL into place
+## TODO: Get more PALs!!!
+## TODO: Bundle PALs into tests.tgz
+TEST_PAL_PATH=../../../tee-sdk/trunk/examples/test/test
+if [ ! -e $TEST_PAL_PATH ]; then
+    echo -e "\nERROR: TEST PAL $TEST_PAL_PATH DOES NOT EXIST; ABORTING REMAINING REGRESSION TESTING!!!\n" >> $BUILD_LOG
+    exit $rc
+fi
+cp -av $TEST_PAL_PATH /home/driver/public_html >> $BUILD_LOG 2>&1
+
+echo "Jon too scared to go past here. Stopping."
+exit 0
+
+## 5. Invoke the tests on all of the test hosts
 ## Note: sequence-tests.sh is responsible for its own logging;
 ## we only grab stderr here.
 echo -e "\nBEGINNING sequence-tests.sh\n" >> $BUILD_LOG
