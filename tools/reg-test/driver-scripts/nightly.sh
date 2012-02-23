@@ -72,9 +72,6 @@ if [ ! -e $TEST_PAL_PATH ]; then
 fi
 cp -av $TEST_PAL_PATH /home/driver/public_html >> $BUILD_LOG 2>&1
 
-echo "Jon too scared to go past here. Stopping."
-exit 0
-
 ## 5. Invoke the tests on all of the test hosts
 ## Note: sequence-tests.sh is responsible for its own logging;
 ## we only grab stderr here.

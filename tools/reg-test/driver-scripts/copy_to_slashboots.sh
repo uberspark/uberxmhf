@@ -17,10 +17,9 @@ for file in "$@"; do
     fi
 done
 
-
 TARGET=/mnt
 
-echo "Looks good"
+echo "$0: Source files exist. Here goes!"
 for i in /dev/vg0/iscsi.slashboot.* ; do 
     echo "*** Copying $1 to $i ***"
 
