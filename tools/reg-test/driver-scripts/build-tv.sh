@@ -32,7 +32,6 @@ popd
 
 ## 1. Build EMHF + TrustVisor
 
-#make clean
 git clean -d -n -x .
 #git svn rebase
 ./autogen.sh
