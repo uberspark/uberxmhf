@@ -31,6 +31,7 @@ fi
 
 ## 1. Build everything
 
+echo -e "\nSTARTING EXHAUSTIVE BUILD\n"
 bash build-tv.sh > $BUILD_LOG 2>&1
 rc=$?
 if [[ $rc != 0 ]] ; then
