@@ -61,7 +61,7 @@ if {[string compare "serial" [lindex $argv 0]] == 0} {
 } elseif {[string compare "amtterm" [lindex $argv 0]] == 0} {
     puts "AMTTERM MODE"
     while {1} {
-        set spawned [spawn amtterm [lindex $argv 1]]
+        set spawned [spawn /usr/local/bin/amtterm [lindex $argv 1]]
         puts "[timeStamp]: [string trim $spawned \r\n]"
         expect {
             "connected now, use ^] to escape" {
@@ -103,7 +103,7 @@ expect_after {
     eof {
         if {[string compare "amtterm" [lindex $argv 0]] == 0} {
             puts "\r\nDETECTED eof FROM amtterm. I NEED TO RESTART amtterm!\r\n"
-            set spawned [spawn amtterm [lindex $argv 1]]
+            set spawned [spawn /usr/local/bin/amtterm [lindex $argv 1]]
         } else {
             puts "\r\nDETECTED eof BUT I WAS NOT RUNNING amtterm\r\n"
             puts "\r\nI DO NOT KNOW HOW TO DEAL WITH THIS\r\n"
