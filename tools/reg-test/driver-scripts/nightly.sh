@@ -110,11 +110,14 @@ echo -e "\nCOMPLETED $0; SUCCESS!!!\n" | tee -a $BUILD_LOG
 ## 6. Prepare an email with convenient links to test results
 STATUS_REPORT_FILE=/tmp/test-email.txt
 WEB_URL_BASE='mccune.ece.cmu.edu:8080'
+JON_URL_BASE=squid
 echo -e "Primary nightly build and test administration log:\n" > $STATUS_REPORT_FILE
-echo $BUILD_LOG | perl -pe "s/\/var\/www/http:\/\/$WEB_URL_BASE/" >> $STATUS_REPORT_FILE
+echo $BUILD_LOG >> $STATUS_REPORT_FILE
 echo -e "\n\nIndividual test host results:\n" >> $STATUS_REPORT_FILE
 for i in `find /var/www/logger -type l`; do 
     find $i/ -name "*$TIMESTAMP*"; 
-done | perl -pe "s/\/var\/www/http:\/\/$WEB_URL_BASE/" >> $STATUS_REPORT_FILE
+done >> $STATUS_REPORT_FILE
+SUBJECT="[reg-test] squid test report for $TIMESTAMP"
 
-cat $STATUS_REPORT_FILE | mailx -s "[reg-test] squid test report for $TIMESTAMP" jonmccune@cmu.edu jnewsome@cmu.edu amitvasudevan@cmu.edu
+perl -pe "s/\/var\/www/http:\/\/$JON_URL_BASE/" < $STATUS_REPORT_FILE | mailx -s "$SUBJECT" jonmccune@cmu.edu
+perl -pe "s/\/var\/www/http:\/\/$WEB_URL_BASE/" < $STATUS_REPORT_FILE | mailx -s "$SUBJECT" jonmccune@cmu.edu jnewsome@cmu.edu amitvasudevan@cmu.edu
