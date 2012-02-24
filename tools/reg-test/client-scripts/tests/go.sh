@@ -41,7 +41,7 @@ else
 fi
 
 popd
-scp -o StrictHostKeyChecking=no -r $MACADDR logger@10.0.0.1: >> $LOGFILE 2>&1
+scp -o StrictHostKeyChecking=no -r $MACADDR logger@10.0.0.1:/var/www/logger >> $LOGFILE 2>&1
 
 # In lieu of a better option, send the "all done" message to all
 # serial ports.
