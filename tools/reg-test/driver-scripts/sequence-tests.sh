@@ -22,9 +22,7 @@ for i in $HOSTS; do
     fi
 
     THISLOGDIR=$HOSTLOGDIR/$TIMESTAMP
-    mkdir -p $THISLOGDIR
-    find $HOSTLOGDIR -type d -exec chmod 2775 {} \;
-#    chown logger:logger $THISLOGDIR
+    mkdir -m 2775 $THISLOGDIR
     LOGFILE=$THISLOGDIR/boot-test.log
 
     echo -e "#############################################"\
