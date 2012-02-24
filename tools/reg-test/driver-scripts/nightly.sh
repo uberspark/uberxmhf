@@ -19,8 +19,9 @@ MY_PATH=`dirname "$0"`
 MY_PATH=`( cd "$MY_PATH" && pwd )`
 cd $MY_PATH
 
+LOGDIR_ROOT=/var/www/logger
 export TIMESTAMP=`date --rfc-3339=seconds | tr ' ' - | cut -d - -f 1,2,3,4`
-BUILD_LOG=/home/logger/public_html/build-$TIMESTAMP.log
+BUILD_LOG=$LOGDIR_ROOT/build-$TIMESTAMP.log
 
 ## Make sure the current user is in groups logger and dialout
 if [ `groups | grep logger | grep dialout | wc -l` -lt 1 ]; then

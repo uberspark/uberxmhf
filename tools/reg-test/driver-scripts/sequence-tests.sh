@@ -4,7 +4,7 @@ set -e
 
 HOSTS="test-e8100 pratt test-6555b creeper"
 
-LOGDIR_ROOT=/home/logger/public_html
+LOGDIR_ROOT=/var/www/logger
 
 # If TIMESTAMP was already defined by a parent script, don't
 # regenerate it.
