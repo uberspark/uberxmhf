@@ -24,7 +24,6 @@ for i in $HOSTS; do
     THISLOGDIR=$HOSTLOGDIR/$TIMESTAMP
     mkdir -p $THISLOGDIR
     find $HOSTLOGDIR -type d -exec chmod 2775 {} \;
-    find $HOSTLOGDIR -type f -exec chmod ug+rw {} \;
 #    chown logger:logger $THISLOGDIR
     LOGFILE=$THISLOGDIR/boot-test.log
 
