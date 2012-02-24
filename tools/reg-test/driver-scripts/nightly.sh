@@ -23,7 +23,7 @@ LOGDIR_ROOT=/var/www/logger
 export TIMESTAMP=`date --rfc-3339=seconds | tr ' ' - | cut -d - -f 1,2,3,4`
 BUILD_LOG=$LOGDIR_ROOT/build-$TIMESTAMP.log
 
-echo -e "\n$0: BEGINNING REGRESSION TEST SET WITH TIMESTAMP $TIMESTAMP\n" >> $BUILD_LOG
+echo -e "\n$0: BEGINNING REGRESSION TEST SET WITH TIMESTAMP $TIMESTAMP\n" | tee -a $BUILD_LOG
 echo "Environment:" >> $BUILD_LOG
 set >> $BUILD_LOG
 echo "" >> $BUILD_LOG
@@ -36,8 +36,8 @@ fi
 
 ## 1. Build everything
 
-echo -e "\nSTARTING EXHAUSTIVE BUILD\n"
-bash build-tv.sh > $BUILD_LOG 2>&1
+echo -e "\nSTARTING EXHAUSTIVE BUILD\n" | tee -a $BUILD_LOG
+bash build-tv.sh >> $BUILD_LOG 2>&1
 rc=$?
 if [[ $rc != 0 ]] ; then
     echo -e "\nERROR: BUILD FAILED; ABORTING REMAINING REGRESSION TESTING!!!\n" >> $BUILD_LOG
