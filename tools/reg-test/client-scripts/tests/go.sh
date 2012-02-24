@@ -28,6 +28,8 @@ pushd $TESTDIR
 echo "$0 initializing" >> $LOGFILE
 echo "Host identifier: $MACADDR" >> $LOGFILE
 echo "Time stamp: $TIMESTAMP" >> $LOGFILE
+echo "Environment:" >> $LOGFILE
+set >> $LOGFILE
 
 echo "Fetching http://10.0.0.1/~driver/test" >> $LOGFILE
 wget http://10.0.0.1/~driver/test
