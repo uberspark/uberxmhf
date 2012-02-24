@@ -117,4 +117,4 @@ for i in `find /var/www/logger -type l`; do
     find $i/ -name "*$TIMESTAMP*"; 
 done | perl -pe "s/\/var\/www/http:\/\/$WEB_URL_BASE/" >> $STATUS_REPORT_FILE
 
-cat $STATUS_REPORT_FILE | mailx -s "[reg-test] squid test report for $TIMESTAMP" jonmccune@cmu.edu
+cat $STATUS_REPORT_FILE | mailx -s "[reg-test] squid test report for $TIMESTAMP" jonmccune@cmu.edu jnewsome@cmu.edu amitvasudevan@cmu.edu
