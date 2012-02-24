@@ -23,6 +23,11 @@ LOGDIR_ROOT=/var/www/logger
 export TIMESTAMP=`date --rfc-3339=seconds | tr ' ' - | cut -d - -f 1,2,3,4`
 BUILD_LOG=$LOGDIR_ROOT/build-$TIMESTAMP.log
 
+echo -e "\n$0: BEGINNING REGRESSION TEST SET WITH TIMESTAMP $TIMESTAMP\n" >> $BUILD_LOG
+echo "Environment:" >> $BUILD_LOG
+set >> $BUILD_LOG
+echo "" >> $BUILD_LOG
+
 ## Make sure the current user is in groups logger and dialout
 if [ `groups | grep logger | grep dialout | wc -l` -lt 1 ]; then
     echo -e "\nERROR: CURRENT USER NOT IN GROUPS logger, dialout!!!\n" >> $BUILD_LOG
