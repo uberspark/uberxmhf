@@ -21,7 +21,7 @@ cd $MY_PATH
 
 LOGDIR_ROOT=/var/www/logger
 export TIMESTAMP=`date --rfc-3339=seconds | tr ' ' - | cut -d - -f 1,2,3,4`
-BUILD_LOG=$LOGDIR_ROOT/build-$TIMESTAMP.log
+BUILD_LOG=$LOGDIR_ROOT/nightly-$TIMESTAMP.log
 
 echo -e "\n$0: BEGINNING REGRESSION TEST SET WITH TIMESTAMP $TIMESTAMP\n" | tee -a $BUILD_LOG
 echo "Environment:" >> $BUILD_LOG
@@ -107,3 +107,14 @@ echo -e "\nCOMPLETED sequence-tests.sh\n" >> $BUILD_LOG
 
 echo -e "\nCOMPLETED $0; SUCCESS!!!\n" | tee -a $BUILD_LOG
 
+## 6. Prepare an email with convenient links to test results
+STATUS_REPORT_FILE=/tmp/test-email.txt
+WEB_URL_BASE='mccune.ece.cmu.edu:8080'
+echo -e "Primary nightly build and test administration log:\n" > $STATUS_REPORT_FILE
+echo $BUILD_LOG | perl -pe "s/\/var\/www/http:\/\/$WEB_URL_BASE/" >> $STATUS_REPORT_FILE
+echo -e "\n\nIndividual test host results:\n" >> $STATUS_REPORT_FILE
+for i in `find /var/www/logger -type l`; do 
+    find $i/ -name "*$TIMESTAMP*"; 
+done | perl -pe "s/\/var\/www/http:\/\/$WEB_URL_BASE/" >> $STATUS_REPORT_FILE
+
+cat $STATUS_REPORT_FILE | mailx -s "[reg-test] squid test report for $TIMESTAMP" jonmccune@cmu.edu
