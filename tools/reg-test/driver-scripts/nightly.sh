@@ -103,6 +103,7 @@ if [[ $rc != 0 ]] ; then
     exit $rc
 fi
 cat time.log >> $BUILD_LOG
+rm time.log
 echo -e "\nCOMPLETED sequence-tests.sh\n" >> $BUILD_LOG
 
 echo -e "\nCOMPLETED $0; SUCCESS!!!\n" | tee -a $BUILD_LOG
