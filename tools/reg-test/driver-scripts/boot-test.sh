@@ -31,6 +31,11 @@ if [ -z $1 ]; then
     exit 1
 fi
 
+AMTTOOL=/usr/local/bin/amttool
+if [ ! -x $AMTTOOL ]; then
+    echo -e "\nERROR: amttool NOT FOUND AT $AMTTOOL\n" 1>&2
+fi
+
 # Goal: figure out the path to other commands that will be invoked
 # from this script.  Assumption: they are in the same directory as
 # this script, but this script may be invoked via a symlink or a
@@ -148,10 +153,10 @@ fi
 
 if [ $TEST_CONNECTION = "amtterm" ]; then
     echo "Cycling power using amtterm. Powering down."
-    echo y | $DRYRUN amttool $TEST_HOSTNAME powerdown
+    echo y | $DRYRUN $AMTTOOL $TEST_HOSTNAME powerdown
     sleep 1
     echo "Powering up."
-    echo y | $DRYRUN amttool $TEST_HOSTNAME powerup
+    echo y | $DRYRUN $AMTTOOL $TEST_HOSTNAME powerup
     sleep 10
     echo "Starting grub-generic.exp"
     $DRYRUN ./grub-generic.exp $TEST_CONNECTION $TEST_HOSTNAME
