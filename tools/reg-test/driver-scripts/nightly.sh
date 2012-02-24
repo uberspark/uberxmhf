@@ -121,4 +121,4 @@ done >> $STATUS_REPORT_FILE
 SUBJECT="[reg-test] squid test report for $TIMESTAMP"
 
 perl -pe "s/\/var\/www/http:\/\/$JON_URL_BASE/" < $STATUS_REPORT_FILE | mailx -s "$SUBJECT" jonmccune@cmu.edu
-perl -pe "s/\/var\/www/http:\/\/$WEB_URL_BASE/" < $STATUS_REPORT_FILE | mailx -s "$SUBJECT" jonmccune@cmu.edu jnewsome@cmu.edu amitvasudevan@cmu.edu
+perl -pe "s/\/var\/www/http:\/\/$WEB_URL_BASE/" < $STATUS_REPORT_FILE | mailx -s "$SUBJECT" jonmccune@cmu.edu jnewsome@cmu.edu amitvasudevan@gmail.com
