@@ -104,6 +104,28 @@
 #define CPUID_X86_FEATURE_VMX    (1<<5)
 #define CPUID_X86_FEATURE_SMX    (1<<6)
 
+//CPU exception numbers
+//(intel SDM vol 3a 6-27)
+#define	CPU_EXCEPTION_DE				0			//divide error exception
+#define CPU_EXCEPTION_DB				1			//debug exception
+#define	CPU_EXCEPTION_NMI				2			//non-maskable interrupt
+#define	CPU_EXCEPTION_BP				3			//breakpoint exception
+#define	CPU_EXCEPTION_OF				4			//overflow exception
+#define	CPU_EXCEPTION_BR				5			//bound-range exceeded
+#define	CPU_EXCEPTION_UD				6			//invalid opcode
+#define	CPU_EXCEPTION_NM				7			//device not available
+#define	CPU_EXCEPTION_DF				8			//double fault exception (code)
+#define	CPU_EXCEPTION_RESV9				9			//reserved
+#define	CPU_EXCEPTION_TS				10			//invalid TSS (code)
+#define	CPU_EXCEPTION_NP				11			//segment not present (code)
+#define	CPU_EXCEPTION_SS				12			//stack fault (code)
+#define	CPU_EXCEPTION_GP				13			//general protection (code)
+#define CPU_EXCEPTION_PF				14			//page fault (code)
+#define	CPU_EXCEPTION_RESV15			15			//reserved
+#define CPU_EXCEPTION_MF				16			//floating-point exception
+#define CPU_EXCEPTION_AC				17			//alignment check (code)
+#define CPU_EXCEPTION_MC				18			//machine check
+#define CPU_EXCEPTION_XM				19			//SIMD floating point exception
 
 #ifndef __ASSEMBLY__
 
