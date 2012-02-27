@@ -521,17 +521,6 @@ struct vmcb_struct {
 } __attribute__ ((packed));
 
 
-struct regs
-{
-  u32 eax;
-  u32 ecx;
-  u32 edx;
-  u32 ebx;
-  u32 esp;
-  u32 ebp;
-  u32 esi;
-  u32 edi;
-}__attribute__ ((packed));
 
 
 static inline void vmsave(u32 vmcb){
