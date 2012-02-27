@@ -74,25 +74,30 @@
 		pushl	%ecx	
 		pushl	%eax	
     
-    movw	$(__DS), %ax
-		movw	%ax, %ds	
-		movl %esp, %eax
+		movw	$(__DS), %ax
+		movw	%ax, %ds			//load DS
+		movl 	%esp, %eax			//EAX = struct regs *
 		
-		pushl %eax
-		pushl	$0x&vector&
-		call	emhf_xcphandler_hub
-		addl  $0x08, %esp
+		pushl 	%eax				//struct regs *r
+		pushl	$0x&vector&			//vector
+		call	emhf_xcphandler_hub	//call C-land hub
+		addl  	$0x08, %esp			//remove params from stack
 		
+		//restore GPRs
 		popl	%eax	
-    popl	%ecx	
-    popl	%edx	
-    popl	%ebx	
+		popl	%ecx	
+		popl	%edx	
+		popl	%ebx	
+		
 		popl	%esp	
-    popl	%ebp	
-    popl	%esi	
-    popl	%edi	 
+		subl	$12, %esp			//adjust esp so we can pop off remaining
+									//GPRs off the stack
+		popl	%ebp	
+		popl	%esi	
+		popl	%edi	 
     
-    iretl
+		//return from exception
+		iretl
 	
 .endm
 
