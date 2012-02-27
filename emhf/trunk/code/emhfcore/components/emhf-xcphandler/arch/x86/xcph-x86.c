@@ -144,16 +144,26 @@ void emhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 				emhf_smpguest_arch_x86_eventhandler_nmiexception(vcpu, r);
 				break;
 
-			default:
+			default:{
+				u32 exception_cs, exception_eip;
+				
 				printf("\n%s: unhandled exception, halting!", __FUNCTION__);
 				printf("\n%s: state dump follows...", __FUNCTION__);
 				//things to dump
-				//VCPU, VCPU->id
-				//GPRs
-				//segment selectors
-				//task selector
+				printf("\nVCPU at 0x%08x, core=0x%02x", (u32)vcpu, vcpu->id);
+				printf("\nEAX=0x%08x EBX=0x%08x ECX=0x%08x EDX=0x%08x",
+						r->eax, r->ebx, r->ecx, r->edx);
+				printf("\nESI=0x%08x EDI=0x%08x EBP=0x%08x ESP=0x%08x",
+						r->esi, r->edi, r->ebp, r->esp);
+				printf("\nCS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x",
+					(u16)read_segreg_cs(), (u16)read_segreg_ds(),
+					(u16)read_segreg_es(), (u16)read_segreg_ss());
+				printf("\nFS=0x%04x, GS=0x%04x",
+					(u16)read_segreg_fs(), (u16)read_segreg_gs());
+				printf("\nTR=0x%04x", (u16)read_tr_sel());
 				//CS:EIP of exception
 				//EFLAGS
 				HALT();
+			}
 	}
 }
