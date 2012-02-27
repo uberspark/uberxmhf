@@ -64,11 +64,7 @@
 		pushl	%edi	
 		pushl	%esi	
 		pushl	%ebp	
-		
-		movl	%esp, %edi	//ensure that the esp we store
-		addl	%esp, $12	//points to the top-of-stack when
-		pushl	%edi		//we enter the exception handler
-		
+		pushl	%esp		
 		pushl	%ebx	
 		pushl	%edx	
 		pushl	%ecx	
@@ -88,10 +84,7 @@
 		popl	%ecx	
 		popl	%edx	
 		popl	%ebx	
-		
 		popl	%esp	
-		subl	$12, %esp			//adjust esp so we can pop off remaining
-									//GPRs off the stack
 		popl	%ebp	
 		popl	%esi	
 		popl	%edi	 
