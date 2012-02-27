@@ -145,11 +145,27 @@ void emhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 				break;
 
 			default:{
-				u32 exception_cs, exception_eip;
+				u32 exception_cs, exception_eip, exception_eflags;
+
+				if(vector == CPU_EXCEPTION_DF ||
+					vector == CPU_EXCEPTION_TS ||
+					vector == CPU_EXCEPTION_NP ||
+					vector == CPU_EXCEPTION_SS ||
+					vector == CPU_EXCEPTION_GP ||
+					vector == CPU_EXCEPTION_PF ||
+					vector == CPU_EXCEPTION_AC){
+					r->esp += sizeof(uint32_t);	//skip error code on stack if applicable
+				}
 				
+				exception_eip = *(uint32_t *)(r->esp+0);
+				exception_cs = *(uint32_t *)(r->esp+sizeof(uint32_t));
+				exception_eflags = *(uint32_t *)(r->esp+(2*sizeof(uint32_t)));
+
 				printf("\n%s: unhandled exception, halting!", __FUNCTION__);
 				printf("\n%s: state dump follows...", __FUNCTION__);
 				//things to dump
+				printf("\nat CS:EIP 0x%04x:0x%08x with EFLAGS=0x%08x",
+					(u16)exception_cs, exception_eip, exception_eflags);
 				printf("\nVCPU at 0x%08x, core=0x%02x", (u32)vcpu, vcpu->id);
 				printf("\nEAX=0x%08x EBX=0x%08x ECX=0x%08x EDX=0x%08x",
 						r->eax, r->ebx, r->ecx, r->edx);
@@ -161,8 +177,7 @@ void emhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 				printf("\nFS=0x%04x, GS=0x%04x",
 					(u16)read_segreg_fs(), (u16)read_segreg_gs());
 				printf("\nTR=0x%04x", (u16)read_tr_sel());
-				//CS:EIP of exception
-				//EFLAGS
+				
 				HALT();
 			}
 	}
