@@ -58,14 +58,21 @@
 	//	 error-code (32-bits, depends on the exception)
 	
 	XtRtmIdtStub&vector&:
+		
+		//push GPR values on stack to construct a 
+		//struct regs *r
 		pushl	%edi	
-    pushl	%esi	
-	  pushl	%ebp	
-		pushl	%esp  
-    pushl	%ebx	
-    pushl	%edx	
-    pushl	%ecx	
-    pushl	%eax	
+		pushl	%esi	
+		pushl	%ebp	
+		
+		movl	%esp, %edi	//ensure that the esp we store
+		addl	%esp, $12	//points to the top-of-stack when
+		pushl	%edi		//we enter the exception handler
+		
+		pushl	%ebx	
+		pushl	%edx	
+		pushl	%ecx	
+		pushl	%eax	
     
     movw	$(__DS), %ax
 		movw	%ax, %ds	
