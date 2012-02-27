@@ -139,17 +139,21 @@ void emhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 	    vcpu=_vmx_getvcpu();
 	}	
 	
-	//things to dump
-	//VCPU, VCPU->id
-	//GPRs
-	//segment selectors
-	//task selector
-	//CS:EIP of exception
-	//EFLAGS
-	
-	
-	if(vector == CPU_EXCEPTION_NMI){
-		emhf_smpguest_arch_x86_eventhandler_nmiexception(vcpu, r);
-		return;
-	}	
+	switch(vector){
+			case CPU_EXCEPTION_NMI:
+				emhf_smpguest_arch_x86_eventhandler_nmiexception(vcpu, r);
+				break;
+
+			default:
+				printf("\n%s: unhandled exception, halting!", __FUNCTION__);
+				printf("\n%s: state dump follows...", __FUNCTION__);
+				//things to dump
+				//VCPU, VCPU->id
+				//GPRs
+				//segment selectors
+				//task selector
+				//CS:EIP of exception
+				//EFLAGS
+				HALT();
+	}
 }
