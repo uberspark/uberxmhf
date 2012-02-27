@@ -131,7 +131,7 @@ void emhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
 	VCPU *vcpu;
 	
-	printf("\n%s: exception 0x%02x - handing off...", __FUNCTION__, vector);
+	printf("\n%s: exception %u...", __FUNCTION__, vector);
 
 	if(cpu_vendor == CPU_VENDOR_AMD){
 		vcpu=_svm_getvcpu();
@@ -139,8 +139,13 @@ void emhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 	    vcpu=_vmx_getvcpu();
 	}	
 	
-	printf("\nCPU(0x%02x): XtRtmExceptionHandler: Exception=0x%08X", vcpu->id, vector);
-	printf("\nCPU(0x%02x): ESP=0x%08x", vcpu->id, r->esp);
+	//things to dump
+	//VCPU, VCPU->id
+	//GPRs
+	//segment selectors
+	//task selector
+	//CS:EIP of exception
+	//EFLAGS
 	
 	
 	if(vector == 0x2){
