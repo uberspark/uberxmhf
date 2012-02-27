@@ -61,14 +61,15 @@
 		
 		//push GPR values on stack to construct a 
 		//struct regs *r
-		pushl	%edi	
+		/*pushl	%edi	
 		pushl	%esi	
 		pushl	%ebp	
 		pushl	%esp		
 		pushl	%ebx	
 		pushl	%edx	
 		pushl	%ecx	
-		pushl	%eax	
+		pushl	%eax*/
+		pushal	
     
 		movw	$(__DS), %ax
 		movw	%ax, %ds			//load DS
@@ -80,14 +81,15 @@
 		addl  	$0x08, %esp			//remove params from stack
 		
 		//restore GPRs
-		popl	%eax	
+		/*popl	%eax	
 		popl	%ecx	
 		popl	%edx	
 		popl	%ebx	
 		popl	%esp	
 		popl	%ebp	
 		popl	%esi	
-		popl	%edi	 
+		popl	%edi*/
+		popal	 
     
 		//return from exception
 		iretl

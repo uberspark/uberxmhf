@@ -75,7 +75,8 @@
 .global emhf_parteventhub_arch_x86vmx_entry
 emhf_parteventhub_arch_x86vmx_entry:
 	//step-1: save all CPU GPRs
-	SAVEALL_GPRS
+	//SAVEALL_GPRS
+	pushal
 	      
     //step-2: get hold of local APIC id
     mov $(MSR_APIC_BASE), %ecx
@@ -112,7 +113,8 @@ emhf_parteventhub_arch_x86vmx_entry:
     addl $0x08, %esp
 
     //step-6; restore all CPU GPRs
-      RESTOREALL_GPRS
+    //  RESTOREALL_GPRS
+    popal
 
     //resume partition
     vmresume

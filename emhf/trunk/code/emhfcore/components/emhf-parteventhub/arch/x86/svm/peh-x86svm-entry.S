@@ -77,7 +77,8 @@ emhf_parteventhub_arch_x86svm_entry:
 	//pushl	%eax
 	
 	//step-1: save all CPU GPRs
-	SAVEALL_GPRS
+	//SAVEALL_GPRS
+	pushal
 	
 	//step-2: get hold of pointer to saved GPRs on stack
 	movl %esp, %eax
@@ -96,7 +97,8 @@ emhf_parteventhub_arch_x86svm_entry:
     addl $0x08, %esp
 
 	//step-5: restore all CPU GPRs
-	RESTOREALL_GPRS
+	//RESTOREALL_GPRS
+	popal
 	
 	//restore VMCB address
 	//popl	%eax
