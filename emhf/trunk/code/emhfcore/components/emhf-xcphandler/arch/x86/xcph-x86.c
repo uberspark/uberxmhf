@@ -112,7 +112,8 @@ void emhf_xcphandler_arch_initialize(void){
 		idtentry->isrHigh= (u16) ( (u32)pexceptionstubs[i] >> 16 );
 		idtentry->isrSelector = __CS;
 		idtentry->count=0x0;
-		idtentry->type=0x8E;
+		idtentry->type=0x8E;	//32-bit interrupt gate
+								//present=1, DPL=00b, system=0, type=1110b
 	}
 	
 	printf("\n%s: IDT setup done.", __FUNCTION__);

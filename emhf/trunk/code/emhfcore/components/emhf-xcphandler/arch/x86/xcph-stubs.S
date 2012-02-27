@@ -43,6 +43,20 @@
 .altmacro
 .macro XtRtmEmitIdtStub vector
 	.section .text
+	
+	//notes: 
+	//1. we only handle exceptions (0-31) and nothing else
+	//2. descriptor type for all exception handlers are 0x8E
+	//   i.e., they are all interrupt gates, so when we get called
+	//   EFLAGS.IF = 0 (interrupts disabled)
+	//3. there are no stack switches as everything in the hypervisor
+	//	 is CPL=0
+	//4. stack layout is as follows when we enter
+	//	 EFLAGS	(32-bits)
+	//   CS		(32-bits)
+	//	 EIP	(32-bits)
+	//	 error-code (32-bits, depends on the exception)
+	
 	XtRtmIdtStub&vector&:
 		pushl	%edi	
     pushl	%esi	
