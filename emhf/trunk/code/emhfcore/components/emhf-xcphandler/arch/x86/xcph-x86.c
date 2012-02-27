@@ -148,7 +148,7 @@ void emhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 	//EFLAGS
 	
 	
-	if(vector == 0x2){
+	if(vector == CPU_EXCEPTION_NMI){
 		emhf_smpguest_arch_x86_eventhandler_nmiexception(vcpu, r);
 		return;
 	}	
