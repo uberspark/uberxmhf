@@ -136,7 +136,6 @@ static void _svm_handle_npf(VCPU *vcpu, struct regs *r){
     emhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
     //HALT();
   } else {
-	u32 gva;
 	//note: AMD does not provide guest virtual address on a #NPF
 	//so we pass zero always
 	// call EMHF app hook
