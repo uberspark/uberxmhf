@@ -114,16 +114,14 @@ void emhf_memprot_arch_x86svm_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
   u32 pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
   //u64 *pt = (u64 *)(u32)emhf_memprot_arch_x86svm_get_h_cr3(vcpu); //TODO: push into SVM sub arch. backend
   u64 *pt = (u64 *)vcpu->npt_vaddr_pts;
-  
   u64 flags=0;
 
   //default is not-present, read-only, no-execute	
-  pt[pfn] &= ~(u64)0x8000000000000003ULL; //clear all previous flags
-  pt[pfn] |= (u64)0x8000000000000000ULL; //no-execute
+  flags = (u64)0x8000000000000000ULL;
 
   //map high level protection type to NPT protection bits
   if(prottype & MEMP_PROT_PRESENT){
-	flags=1;	//present 
+	flags |= 0x1;	//present 
 	
 	if(prottype & MEMP_PROT_READWRITE)
 		flags |= 0x2; //read-write
@@ -132,8 +130,8 @@ void emhf_memprot_arch_x86svm_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
 		flags &= ~(u64)0x8000000000000000ULL; //execute
   }
   	
-  //set new flags
-  pt[pfn] |= flags; 
+  pt[pfn] &= ~(u64)0x8000000000000003ULL; //clear all previous flags
+  pt[pfn] |= flags; 					  //set new flags
 }
 	
 //get protection for a given physical memory address
