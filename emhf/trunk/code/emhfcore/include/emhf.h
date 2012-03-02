@@ -50,13 +50,10 @@
 	#include <stdint.h>
 	#include <stdbool.h>
 	#include <stddef.h>
-#ifndef __EMHF_VERIFICATION__
 	#include <stdarg.h>
 	#include <stdio.h>
 	#include <string.h>
 	#include <ctype.h>
-#endif	//__EMHF_VERIFICATION__
-
 #endif /* __ASSEMBLY__ */
 
 #ifndef __EMHF_VERIFICATION__
