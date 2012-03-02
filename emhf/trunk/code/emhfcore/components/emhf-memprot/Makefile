@@ -36,7 +36,10 @@ clean:
 	$(RM) -rf ./arch/vmx/*.o
 	$(RM) -rf ./arch/svm/*.o
  
-  
+.PHONY: verify 
+verify: 
+	cbmc --bounds-check --pointer-check $(CFLAGS) $(C_SOURCES)
+	
   
 
   
