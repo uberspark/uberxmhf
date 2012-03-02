@@ -175,3 +175,8 @@ init-late-clean:
 install-dev:
 	# Nothing to do here
 
+.PHONY: verify
+verify:
+	# verify emhf-memprot 
+	cd components/emhf-memprot && $(MAKE) -w verify
+	
