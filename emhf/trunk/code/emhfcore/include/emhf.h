@@ -54,7 +54,9 @@
 	#include <stdio.h>
 	#include <string.h>
 	#include <ctype.h>
-	#include <assert.h>
+	#ifndef __EMHF_VERIFICATION__
+		#include <assert.h>
+	#endif
 #endif /* __ASSEMBLY__ */
 
 //pull in required crypto (SHA-1)
