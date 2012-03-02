@@ -111,11 +111,29 @@ void emhf_memprot_arch_x86svm_flushmappings(VCPU *vcpu){
 
 //set protection for a given physical memory address
 void emhf_memprot_arch_x86svm_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
-  u32 pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
-  //u64 *pt = (u64 *)(u32)emhf_memprot_arch_x86svm_get_h_cr3(vcpu); //TODO: push into SVM sub arch. backend
-  u64 *pt = (u64 *)vcpu->npt_vaddr_pts;
+  u32 pfn;
+  u64 *pt;
   u64 flags=0;
+  
+  	EV_FNCONTRACT_DOMAIN ( (vcpu != NULL) );
+	EV_FNCONTRACT_DOMAIN ( ( (gpa < rpb->XtVmmRuntimePhysBase) || 
+							 (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) 
+						   ) );
+	EV_FNCONTRACT_DOMAIN ( ( (prottype > 0)	&& 
+	                         (prottype <= MEMP_PROT_NOEXECUTE) 
+	                       ) );						
+	EV_FNCONTRACT_DOMAIN(
+	 (prottype == MEMP_PROT_NOTPRESENT) ||
+	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_EXECUTE)) ||
+	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_EXECUTE)) ||
+	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_NOEXECUTE)) ||
+	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_NOEXECUTE)) 
+	);
 
+  
+  pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
+  pt = (u64 *)vcpu->npt_vaddr_pts;
+ 
   //default is not-present, read-only, no-execute	
   flags = (u64)0x8000000000000000ULL;
 
