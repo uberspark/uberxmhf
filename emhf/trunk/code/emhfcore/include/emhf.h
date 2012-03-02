@@ -56,8 +56,6 @@
 	#include <ctype.h>
 #endif /* __ASSEMBLY__ */
 
-#ifndef __EMHF_VERIFICATION__
-
 //pull in required crypto (SHA-1)
 //libemhfcrypto
 #ifndef __ASSEMBLY__
@@ -70,8 +68,6 @@
 #ifndef __ASSEMBLY__
 	#include <tpm.h>
 #endif /* __ASSEMBLY__ */
-
-#endif //__EMHF_VERIFICATION__
 
 
 #include <emhf-types.h>			//EMHF specific base types
@@ -92,10 +88,8 @@ extern RPB *rpb;
 #include <emhf-smpguest.h>		//EMHF SMP guest component
 #include <emhf-parteventhub.h>	//EMHF partition event-hub component
 #include <emhf-xcphandler.h>	//EMHF exception handler component
-#ifndef __EMHF_VERIFICATION__
 #include <emhf-tpm.h>			//EMHF Trusted Platform Module component
 #include <emhf-sl.h>			//EMHF secure loader component
-#endif //__EMHF_VERIFICATION__
 #include <emhf-runtime.h>		//EMHF secure loader component
 #include <emhf-app.h>			//EMHF Application callback declarations
 
