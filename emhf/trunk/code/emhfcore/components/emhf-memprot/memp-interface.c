@@ -80,7 +80,7 @@ void emhf_memprot_flushmappings(VCPU *vcpu){
 void emhf_memprot_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
 	EV_FNCONTRACT_DOMAIN ( (vcpu != NULL) );
 	EV_FNCONTRACT_DOMAIN ( ( (gpa < rpb->XtVmmRuntimePhysBase) || 
-							 (gpa >= rpb->XtVmmRuntimeSize) 
+							 (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) 
 						   ) );
 	EV_FNCONTRACT_DOMAIN ( ( (prottype > 0)	&& 
 	                         (prottype <= MEMP_PROT_NOEXECUTE) 
