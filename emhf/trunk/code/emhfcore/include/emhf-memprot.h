@@ -50,6 +50,7 @@
 #define MEMP_PROT_READWRITE		(8) // page read-write
 #define MEMP_PROT_EXECUTE		(16) // page execute
 #define MEMP_PROT_NOEXECUTE		(32) // page no-execute
+#define MEMP_PROT_MAXVALUE		(MEMP_PROT_NOTPRESENT+MEMP_PROT_PRESENT+MEMP_PROT_READONLY+MEMP_PROT_READWRITE+MEMP_PROT_NOEXECUTE+MEMP_PROT_EXECUTE)
 
 //----------------------------------------------------------------------
 //exported DATA 

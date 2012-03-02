@@ -117,7 +117,7 @@ void emhf_memprot_arch_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
 							 (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) 
 						   ) );
 	EV_FNCONTRACT_DOMAIN ( ( (prottype > 0)	&& 
-	                         (prottype <= MEMP_PROT_NOEXECUTE) 
+	                         (prottype <= MEMP_PROT_MAXVALUE) 
 	                       ) );						
 	EV_FNCONTRACT_DOMAIN(
 	 (prottype == MEMP_PROT_NOTPRESENT) ||
