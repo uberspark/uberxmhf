@@ -75,8 +75,16 @@ void emhf_memprot_flushmappings(VCPU *vcpu){
 	emhf_memprot_arch_flushmappings(vcpu);
 }
 
+
 //set protection for a given physical memory address
 void emhf_memprot_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
+	EV_FNCONTRACT_DOMAIN ( (vcpu != NULL) );
+	EV_FNCONTRACT_DOMAIN ( ( (gpa < rpb->XtVmmRuntimePhysBase) || 
+							 (gpa >= rpb->XtVmmRuntimeSize) 
+						   ) );
+	EV_FNCONTRACT_DOMAIN ( ( (prottype > 0)	&& 
+	                         (prottype <= MEMP_PROT_NOEXECUTE) 
+	                       ) );						
 	emhf_memprot_arch_setprot(vcpu, gpa, prottype);
 }
 
