@@ -129,6 +129,10 @@ distclean: clean
 
 init-late-clean:
 	cd emhfcore && make -w init-late-clean
+
+verify:
+	cd emhfcore && make -w verify
+
 	
 #-----autoconf rules
 Makefile: Makefile.in config.status
