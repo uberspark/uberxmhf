@@ -45,7 +45,11 @@
 
 #ifndef __ASSEMBLY__
 
+//EV => EMHF Verify
+//FNCONTRACT => Function Contract Primitive
 
+#define	EV_FNCONTRACT_DOMAIN(x)		assert((x));
+#define EV_FNCONTRACT_RANGE(x)		assert((x));
 
 #endif
 

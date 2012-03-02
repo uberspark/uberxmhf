@@ -41,6 +41,9 @@
 #ifndef __EMHF_H_
 #define __EMHF_H_
 
+//include verification related primitives
+#include <emhf-verification.h>
+
 //pull in required C99 compatible C-library interfaces
 //libemhfc
 #ifndef __ASSEMBLY__
