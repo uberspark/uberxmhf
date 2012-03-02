@@ -43,7 +43,8 @@ clean:
  
 .PHONY: verify 
 verify: 
-	cbmc -I../../include/ -I../../../libemhfc/include/ -D__EMHF_VERIFICATION__ --bounds-check --pointer-check ./verification/emhf-memprot-vdriver.c 
+	cbmc $(VFLAGS) -D__EMHF_VERIFICATION__ --bounds-check --pointer-check ./verification/emhf-memprot-vdriver.c 
+	# -I../../include/ -I../../../libemhfc/include/ 
 	# $(V_SOURCES)
 	
   
