@@ -112,28 +112,20 @@ void emhf_memprot_arch_flushmappings(VCPU *vcpu){
 
 //set protection for a given physical memory address
 void emhf_memprot_arch_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
-	u32 finalprottype;
-	
-	finalprottype = prottype;	//start with protections specified
-	
-	//sanity check on protection types
-		//if the page protection is set to not-present, then wipe out 
-		//everything else
-		if(prottype & MEMP_PROT_NOTPRESENT)
-			finalprottype = MEMP_PROT_NOTPRESENT;
-		else //else, force PROT_PRESENT 
-			finalprottype |= MEMP_PROT_PRESENT;
-		
-		//if both read-only and read-write are specified, fall back
-		//to read-only
-		if( (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_READWRITE) )
-			finalprottype &= ~MEMP_PROT_READWRITE;
-		
-		//if both no-execute and execute are specified, fall back to
-		//no-execute
-		if( (prottype & MEMP_PROT_NOEXECUTE) && (prottype & MEMP_PROT_EXECUTE) )
-			finalprottype &= ~MEMP_PROT_EXECUTE;
-
+	EV_FNCONTRACT_DOMAIN ( (vcpu != NULL) );
+	EV_FNCONTRACT_DOMAIN ( ( (gpa < rpb->XtVmmRuntimePhysBase) || 
+							 (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) 
+						   ) );
+	EV_FNCONTRACT_DOMAIN ( ( (prottype > 0)	&& 
+	                         (prottype <= MEMP_PROT_NOEXECUTE) 
+	                       ) );						
+	EV_FNCONTRACT_DOMAIN(
+	 (prottype == MEMP_PROT_NOTPRESENT) ||
+	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_EXECUTE)) ||
+	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_EXECUTE)) ||
+	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_NOEXECUTE)) ||
+	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_NOEXECUTE)) 
+	);
 
 	//invoke appropriate sub arch. backend
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
