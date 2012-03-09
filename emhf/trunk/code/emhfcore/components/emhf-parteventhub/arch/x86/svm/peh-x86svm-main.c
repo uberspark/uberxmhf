@@ -385,6 +385,8 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 		}
 		break;
 
+#endif
+
 		case VMEXIT_INIT:{
 		printf("\nCPU(0x%02x): INIT intercepted, halting.", vcpu->id);
 		printf("\nGuest CS:EIP=0x%04x:0x%08x", (u16)vmcb->cs.sel, (u32)vmcb->rip);
@@ -405,7 +407,6 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 		}
 		break;
 
-#endif
 
 		case VMEXIT_VMMCALL:{
 			//check to see if this is a hypercall for INT 15h hooking
