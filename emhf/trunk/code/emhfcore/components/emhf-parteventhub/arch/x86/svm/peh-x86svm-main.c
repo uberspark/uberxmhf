@@ -346,8 +346,6 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 		}
 		break;
 
-#if 0  
-
 		case VMEXIT_VMMCALL:{
 			//check to see if this is a hypercall for INT 15h hooking
 			if(vmcb->cs.base == (VMX_UG_E820HOOK_CS << 4) &&
@@ -367,6 +365,8 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 			}
 		}
 		break;
+
+#if 0  
 
 		case VMEXIT_NMI:{
 			_svm_handle_nmi(vcpu, vmcb, r);
