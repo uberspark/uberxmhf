@@ -39,12 +39,17 @@
 #ifndef __EMHF_STRING_H__
 #define __EMHF_STRING_H__
 
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdarg.h>
+
 #ifndef __ASSEMBLY__
-void *memmove(void *dst_void, const void *src_void, u32 length);
+void *memmove(void *dst_void, const void *src_void, uint32_t length);
 char *strchr(const char *s, int c);
-u32 strnlen(const char * s, u32 count);
-void *memcpy(void * to, const void * from, u32 n);
-void *memset (void *str, u32 c, u32 len);
+u32 strnlen(const char * s, uint32_t count);
+void *memcpy(void * to, const void * from, uint32_t n);
+void *memset (void *str, uint32_t c, uint32_t len);
 int strncmp(const char *s1, const char *s2, size_t n);
 int strcmp(const char * cs,const char * ct);
 char *strncpy(char * dst, const char * src, size_t n);
