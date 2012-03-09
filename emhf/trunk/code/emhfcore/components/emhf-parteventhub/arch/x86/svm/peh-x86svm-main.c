@@ -205,8 +205,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		}
 	}
 
-#if 0	
-	
+
 	//if E820 service then...
 	if((u16)vmcb->rax == 0xE820){
 		//AX=0xE820, EBX=continuation value, 0 for first call
@@ -223,16 +222,33 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 			
 			//copy the e820 descriptor and return its size in ECX
 			{
-				GRUBE820 *pe820entry;
-				pe820entry = (GRUBE820 *)((u32)((vmcb->es.base)+(u16)r->edi));
-				pe820entry->baseaddr_low = g_e820map[r->ebx].baseaddr_low;
-				pe820entry->baseaddr_high = g_e820map[r->ebx].baseaddr_high;
-				pe820entry->length_low = g_e820map[r->ebx].length_low;
-				pe820entry->length_high = g_e820map[r->ebx].length_high;
-				pe820entry->type = g_e820map[r->ebx].type;
 				
-				//memcpy((void *)((u32)((vmcb->es.base)+(u16)r->edi)), (void *)&g_e820map[r->ebx],
-				//		sizeof(GRUBE820));
+				if(((u32)((vmcb->es.base)+(u16)r->edi)) < rpb->XtVmmRuntimePhysBase){
+					#ifdef __EMHF_VERIFICATION__
+						GRUBE820 pe820entry;
+						pe820entry.baseaddr_low = g_e820map[r->ebx].baseaddr_low;
+						pe820entry.baseaddr_high = g_e820map[r->ebx].baseaddr_high;
+						pe820entry.length_low = g_e820map[r->ebx].length_low;
+						pe820entry.length_high = g_e820map[r->ebx].length_high;
+						pe820entry.type = g_e820map[r->ebx].type;
+					#else
+						GRUBE820 *pe820entry;
+						pe820entry = (GRUBE820 *)((u32)((vmcb->es.base)+(u16)r->edi));
+					
+						pe820entry->baseaddr_low = g_e820map[r->ebx].baseaddr_low;
+						pe820entry->baseaddr_high = g_e820map[r->ebx].baseaddr_high;
+						pe820entry->length_low = g_e820map[r->ebx].length_low;
+						pe820entry->length_high = g_e820map[r->ebx].length_high;
+						pe820entry->type = g_e820map[r->ebx].type;
+					
+						//memcpy((void *)((u32)((vmcb->es.base)+(u16)r->edi)), (void *)&g_e820map[r->ebx],
+						//		sizeof(GRUBE820));
+					#endif //__EMHF_VERIFICATION__
+				}else{
+						printf("\nCPU(0x%02x): INT15 E820. Guest buffer is beyond guest \
+							physical memory bounds. Halting!", vcpu->id);
+						HALT();
+				}
 						
 			}
 			r->ecx=20;
@@ -260,10 +276,15 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 				if( (vmcb->cr0 & CR0_PE) && (vmcb->cr0 & CR0_PG) &&
 					(vmcb->rflags & EFLAGS_VM) ){
 					u8 *gueststackregionphysical = (u8 *)emhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)gueststackregion);
-					ASSERT( (u32)gueststackregionphysical != 0xFFFFFFFFUL );
-					printf("\nINT15 (E820): V86 mode, gueststackregion translated from %08x to %08x",
-						(u32)gueststackregion, (u32)gueststackregionphysical);
-					gueststackregion = (u16 *)gueststackregionphysical; 		
+					if((u32)gueststackregionphysical < rpb->XtVmmRuntimePhysBase){
+						printf("\nINT15 (E820): V86 mode, gueststackregion translated from %08x to %08x",
+							(u32)gueststackregion, (u32)gueststackregionphysical);
+						gueststackregion = (u16 *)gueststackregionphysical; 		
+					}else{
+						printf("\nCPU(0x%02x): INT15 (E820) V86 mode, translated gueststackregion points beyond \
+							guest physical memory space. Halting!", vcpu->id);
+						HALT();
+					}
 				}
 			
 				
@@ -271,9 +292,15 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 				//		(u16)vcpu->vmcs.guest_RSP, (u32)gueststackregion);
 				
 				//get guest IP, CS and FLAGS from the IRET frame
-				guest_ip = gueststackregion[0];
-				guest_cs = gueststackregion[1];
-				guest_flags = gueststackregion[2];
+				#ifdef __EMHF_VERIFICATION__
+					guest_ip = nondet_u16();
+					guest_cs = nondet_u16();
+					guest_flags = nondet_u16();
+				#else
+					guest_ip = gueststackregion[0];
+					guest_cs = gueststackregion[1];
+					guest_flags = gueststackregion[2];
+				#endif	//__EMHF_VERIFICATION__
 
 				//printf("\nINT15 (E820): guest_flags=%04x, guest_cs=%04x, guest_ip=%04x",
 				//	guest_flags, guest_cs, guest_ip);
@@ -285,44 +312,24 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 					//we have reached the last record, so set CF and make EBX=0
 					r->ebx=0;
 					guest_flags |= (u16)EFLAGS_CF;
-					gueststackregion[2] = guest_flags;
+					#ifndef __EMHF_VERIFICATION__
+						gueststackregion[2] = guest_flags;
+					#endif
 				}else{
 					//we still have more records, so clear CF
 					guest_flags &= ~(u16)EFLAGS_CF;
-					gueststackregion[2] = guest_flags;
+					#ifndef __EMHF_VERIFICATION__
+						gueststackregion[2] = guest_flags;
+					#endif
 				}
 			  
 			}
-		
+			
 		}else{	//invalid state specified during INT 15 E820, fail by
 				//setting carry flag
-				{
-					u16 guest_cs, guest_ip, guest_flags;
-					u16 *gueststackregion = (u16 *)( (u32)vmcb->ss.base + (u16)vmcb->rsp );
-			
-			
-					//if V86 mode translate the virtual address to physical address
-					if( (vmcb->cr0 & CR0_PE) && (vmcb->cr0 & CR0_PG) &&
-						(vmcb->rflags & EFLAGS_VM) ){
-						u8 *gueststackregionphysical = (u8 *)emhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)gueststackregion);
-						ASSERT( (u32)gueststackregionphysical != 0xFFFFFFFFUL );
-						printf("\nINT15 (E820): V86 mode, gueststackregion translated from %08x to %08x",
-							(u32)gueststackregion, (u32)gueststackregionphysical);
-						gueststackregion = (u16 *)gueststackregionphysical; 		
-					}
-			
-				
-					//printf("\nINT15 (E820): guest_ss=%04x, sp=%04x, stackregion=%08x", (u16)vcpu->vmcs.guest_SS_selector,
-					//		(u16)vcpu->vmcs.guest_RSP, (u32)gueststackregion);
-				
-					//get guest IP, CS and FLAGS from the IRET frame
-					guest_ip = gueststackregion[0];
-					guest_cs = gueststackregion[1];
-					guest_flags = gueststackregion[2];
-
-					guest_flags |= (u16)EFLAGS_CF;
-					gueststackregion[2] = guest_flags;
-				}
+				printf("\nCPU(0x%02x): INT15 (E820), invalid state specified by guest \
+						Halting!", vcpu->id);
+				HALT();
 		}
 		
 		//update RIP to execute the IRET following the VMCALL instruction
@@ -331,7 +338,6 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 
 		return;
 	} //E820 service
-#endif	
 	
 	//ok, this is some other INT 15h service, so simply chain to the original
 	//INT 15h handler
