@@ -369,6 +369,7 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
     value_tobe_written= nondet_u32();
 
 	g_svm_lapic_db_verification_pre = (g_svm_lapic_op == LAPIC_OP_WRITE) &&
+		(g_svm_lapic_reg == LAPIC_ICR_LOW) &&
 		(((value_tobe_written & 0x00000F00) == 0x500) || ( (value_tobe_written & 0x00000F00) == 0x600 ));
 #else
     value_tobe_written= *((u32 *)src_registeraddress);
