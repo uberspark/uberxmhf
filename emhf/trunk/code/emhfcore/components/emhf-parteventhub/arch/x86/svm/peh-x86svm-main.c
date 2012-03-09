@@ -71,12 +71,24 @@ static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs _
   if(app_ret_status == APP_IOINTERCEPT_CHAIN){
 	  if (ioinfo.fields.type){
 		// IN 
-		if (ioinfo.fields.sz8)
-		  *(u8 *)&vmcb->rax = inb(ioinfo.fields.port);
-		if (ioinfo.fields.sz16)
-		  *(u16 *)&vmcb->rax = inw(ioinfo.fields.port);
-		if (ioinfo.fields.sz32) 
-		   *(u32 *)&vmcb->rax = inl(ioinfo.fields.port);
+		if (ioinfo.fields.sz8){
+			vmcb->rax &= ~(u64)0x00000000000000FF;
+			vmcb->rax |= (u8)inb(ioinfo.fields.port);
+		  //*(u8 *)&vmcb->rax = inb(ioinfo.fields.port);
+		}else if (ioinfo.fields.sz16){
+			vmcb->rax &= ~(u64)0x000000000000FFFF;
+			vmcb->rax |= (u16)inw(ioinfo.fields.port);
+		  //*(u16 *)&vmcb->rax = inw(ioinfo.fields.port);
+		}else if (ioinfo.fields.sz32){ 
+			vmcb->rax &= ~(u64)0x00000000FFFFFFFF;
+			vmcb->rax |= (u32)inl(ioinfo.fields.port);
+		   //*(u32 *)&vmcb->rax = inl(ioinfo.fields.port);
+		}else{
+		   //h/w should set sz8, sz16 or sz32, we get here if there
+		   //is a non-complaint CPU
+		   printf("\nnon-complaint CPU (ioio intercept). Halting!");
+		   HALT();
+		}
 	  }else{
 		// OUT 
 		if (ioinfo.fields.sz8)
