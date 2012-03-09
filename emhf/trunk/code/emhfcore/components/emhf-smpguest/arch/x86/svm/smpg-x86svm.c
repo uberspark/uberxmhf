@@ -327,6 +327,11 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 }
 
 
+#ifdef __EMHF_VERIFICATION__
+	bool g_svm_lapic_db_verification_coreprotected = false;
+	bool g_svm_lapic_db_verification_pre = false;
+#endif
+
 
 //------------------------------------------------------------------------------
 //within single-step
@@ -341,6 +346,16 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
   u32 delink_lapic_interception=0;
 
   (void)r;	
+  
+#ifdef	__EMHF_VERIFICATION__
+	//this handler relies on two global symbols apart from the
+	//parameters, set them to non-deterministic values with
+	//correct range. note: LAPIC #npf handler has a function contract
+	//which ensures this
+	g_svm_lapic_op = (nondet_u32() % 3) + 1;
+	g_svm_lapic_reg = (nondet_u32() % PAGE_SIZE_4K);
+#endif
+  
   if(g_svm_lapic_op == LAPIC_OP_WRITE){
     u32 src_registeraddress, dst_registeraddress;
     u32 value_tobe_written;
@@ -349,20 +364,33 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
    
     src_registeraddress = (u32)g_svm_virtual_LAPIC_base + g_svm_lapic_reg;
     dst_registeraddress = (u32)g_svm_lapic_base + g_svm_lapic_reg;
-    
+
+#ifdef	__EMHF_VERIFICATION__
+    value_tobe_written= nondet_u32();
+
+	g_svm_lapic_db_verification_pre = (g_svm_lapic_op == LAPIC_OP_WRITE) &&
+		(((value_tobe_written & 0x00000F00) == 0x500) || ( (value_tobe_written & 0x00000F00) == 0x600 ));
+#else
     value_tobe_written= *((u32 *)src_registeraddress);
-    
+#endif
+
     if(g_svm_lapic_reg == LAPIC_ICR_LOW){
       if ( (value_tobe_written & 0x00000F00) == 0x500){
         //this is an INIT IPI, we just void it
         printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) INIT IPI detected and skipped, value=0x%08x", 
           (u16)vmcb->cs.sel, (u32)vmcb->rip, g_svm_lapic_reg, value_tobe_written);
+        #ifdef __EMHF_VERIFICATION__
+			g_svm_lapic_db_verification_coreprotected = true;
+		#endif
       }else if( (value_tobe_written & 0x00000F00) == 0x600 ){
         //this is a STARTUP IPI
         u32 icr_value_high = *((u32 *)((u32)g_svm_virtual_LAPIC_base + (u32)LAPIC_ICR_HIGH));
         printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) STARTUP IPI detected, value=0x%08x", 
           (u16)vmcb->cs.sel, (u32)vmcb->rip, g_svm_lapic_reg, value_tobe_written);
         delink_lapic_interception=processSIPI(vcpu, value_tobe_written, icr_value_high);
+        #ifdef __EMHF_VERIFICATION__
+			g_svm_lapic_db_verification_coreprotected = true;
+		#endif
       }else{
         //neither an INIT or SIPI, just propagate this IPI to physical LAPIC
         *((u32 *)dst_registeraddress) = value_tobe_written;
@@ -422,6 +450,11 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
   
   //enable interrupts on this CPU
   stgi();
+
+#ifdef __EMHF_VERIFICATION__
+  assert(!g_svm_lapic_db_verification_pre || g_svm_lapic_db_verification_coreprotected);
+#endif
+
 }
 
 //quiesce interface to switch all guest cores into hypervisor mode
