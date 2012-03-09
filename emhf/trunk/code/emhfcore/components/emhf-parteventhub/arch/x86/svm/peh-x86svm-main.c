@@ -292,6 +292,7 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
   
   vmcb->tlb_control = TLB_CONTROL_NOTHING;
 
+#if 0
   //SVM stores guest EAX in VMCB, so move that into struct regs r->eax 
   //to reflect true guest EAX value
   //r->eax = (u32)vmcb->rax;
@@ -377,6 +378,7 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 	//to reflect true guest EAX value
 	//vmcb->rax = r->eax;
 
+#endif
 
 	return 0;
 }
