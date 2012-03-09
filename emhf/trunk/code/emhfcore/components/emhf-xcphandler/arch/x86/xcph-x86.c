@@ -126,7 +126,7 @@ void emhf_xcphandler_arch_initialize(void){
 
 //get IDT start address
 u8 * emhf_xcphandler_arch_get_idt_start(void){
-	//return (u8 *)&emhf_xcphandler_idt_start;
+	return (u8 *)&emhf_xcphandler_idt_start;
 }
 
 
