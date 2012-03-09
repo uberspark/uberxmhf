@@ -202,8 +202,19 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		ASSERT(r->ebx < rpb->XtVmmE820NumEntries); //invalid continuation value specified by guest!
 			
 		//copy the e820 descriptor and return its size in ECX
-		memcpy((void *)((u32)((vmcb->es.base)+(u16)r->edi)), (void *)&g_e820map[r->ebx],
-					sizeof(GRUBE820));
+		{
+			GRUBE820 *pe820entry;
+			pe820entry = (GRUBE820 *)((u32)((vmcb->es.base)+(u16)r->edi));
+			pe820entry->baseaddr_low = g_e820map[r->ebx].baseaddr_low;
+			pe820entry->baseaddr_high = g_e820map[r->ebx].baseaddr_high;
+			pe820entry->length_low = g_e820map[r->ebx].length_low;
+			pe820entry->length_high = g_e820map[r->ebx].length_high;
+			pe820entry->type = g_e820map[r->ebx].type;
+			
+			//memcpy((void *)((u32)((vmcb->es.base)+(u16)r->edi)), (void *)&g_e820map[r->ebx],
+			//		sizeof(GRUBE820));
+					
+		}
 		r->ecx=20;
 
 		//set EAX to 'SMAP' as required by the service call				
