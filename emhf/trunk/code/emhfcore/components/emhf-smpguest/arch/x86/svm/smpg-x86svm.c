@@ -181,8 +181,10 @@ void emhf_smpguest_arch_x86svm_initialize(VCPU *vcpu){
   //this will cause NPF on access to the APIC page which is then
   //handled by lapic_access_handler
   //XXX: change this to access emhf-memprot interfaces
-  npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, 0);
-  vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
+  //npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, 0);
+  //vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
+  emhf_memprot_arch_x86svm_setprot(vcpu, g_svm_lapic_base, MEMP_PROT_NOTPRESENT);
+  emhf_memprot_arch_x86svm_flushmappings(vcpu);
 }
 
 //if there is a read request, store the register accessed
@@ -213,8 +215,10 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
       g_svm_lapic_op = LAPIC_OP_RSVD;
 
       //change LAPIC physical address NPT mapping to point to physical LAPIC
-      npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
-      vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
+      //npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+      //vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
+      emhf_memprot_arch_x86svm_setprot(vcpu, g_svm_lapic_base, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE);
+      emhf_memprot_arch_x86svm_flushmappings(vcpu);
     }    
     
     //setup #DB intercept in vmcb
@@ -242,8 +246,10 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
       g_svm_lapic_op = LAPIC_OP_RSVD;
 
       //change LAPIC physical address NPT mapping to point to physical LAPIC
-      npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
-      vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
+      //npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+      //vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
+      emhf_memprot_arch_x86svm_setprot(vcpu, g_svm_lapic_base, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE);
+      emhf_memprot_arch_x86svm_flushmappings(vcpu);
     }  
 
     //setup #DB intercept in vmcb
@@ -327,8 +333,11 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
   //make LAPIC page inaccessible and flush TLB
   if(delink_lapic_interception){
     printf("\n%s: delinking LAPIC interception since all cores have SIPI", __FUNCTION__);
-    npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
-	  vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
+    //npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+	//  vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
+	emhf_memprot_arch_x86svm_setprot(vcpu, g_svm_lapic_base, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE);
+	emhf_memprot_arch_x86svm_flushmappings(vcpu);
+	
   }else{
 	  //npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, 0);
 	  //vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
