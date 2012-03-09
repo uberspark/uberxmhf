@@ -387,9 +387,10 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
         u32 icr_value_high = *((u32 *)((u32)g_svm_virtual_LAPIC_base + (u32)LAPIC_ICR_HIGH));
         printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) STARTUP IPI detected, value=0x%08x", 
           (u16)vmcb->cs.sel, (u32)vmcb->rip, g_svm_lapic_reg, value_tobe_written);
-        delink_lapic_interception=processSIPI(vcpu, value_tobe_written, icr_value_high);
         #ifdef __EMHF_VERIFICATION__
 			g_svm_lapic_db_verification_coreprotected = true;
+		#else
+			delink_lapic_interception=processSIPI(vcpu, value_tobe_written, icr_value_high);
 		#endif
       }else{
         //neither an INIT or SIPI, just propagate this IPI to physical LAPIC
