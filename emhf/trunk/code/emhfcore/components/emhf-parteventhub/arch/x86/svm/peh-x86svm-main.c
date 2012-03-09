@@ -349,6 +349,7 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 		}
 		break;
 
+#if 0
 		//MSR interception
 		case VMEXIT_MSR:{
 		  _svm_handle_msr(vcpu, vmcb, r);
@@ -418,7 +419,7 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 		}
 		break;
 
-
+#endif
 		default:{
 				printf("\nUnhandled Intercept:0x%08llx", vmcb->exitcode);
 				printf("\nCS:EIP=0x%04x:0x%08x", (u16)vmcb->cs.sel, (u32)vmcb->rip);
