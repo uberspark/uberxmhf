@@ -230,7 +230,10 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 		//constant index > runtime_base+runtime_size
 		//since npt_changemapping above is a direct 64-bit assignment, it should
 		//be ok to skip it for verification with manual inspection
+		g_svm_lapic_npf_verification_coreprotected = true;
 	  #endif
+
+
 
     }else{
       g_svm_lapic_op = LAPIC_OP_RSVD;
@@ -257,9 +260,6 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
   
     clgi();
     
-    #ifdef __EMHF_VERIFICATION__
-		g_svm_lapic_npf_verification_coreprotected = true;
-	#endif
 
     
   }else{
