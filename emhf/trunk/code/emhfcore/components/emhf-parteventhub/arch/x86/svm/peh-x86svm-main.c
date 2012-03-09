@@ -185,7 +185,6 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 	u8 *bdamemory = (u8 *)0x4AC;
 	struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
 
-#if 0	
 	//printf("\nCPU(0x%02x): BDA dump in intercept: %02x %02x %02x %02x %02x %02x %02x %02x", vcpu->id,
 	//		bdamemory[0], bdamemory[1], bdamemory[2], bdamemory[3], bdamemory[4],
 	//			bdamemory[5], bdamemory[6], bdamemory[7]);
@@ -195,11 +194,18 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 			(vmcb->rflags & EFLAGS_VM) ){
 		u8 *bdamemoryphysical;
 		bdamemoryphysical = (u8 *)emhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)bdamemory);
-		ASSERT( (u32)bdamemoryphysical != 0xFFFFFFFFUL );
-		printf("\nINT15 (E820): V86 mode, bdamemory translated from %08x to %08x",
-			(u32)bdamemory, (u32)bdamemoryphysical);
-		bdamemory = bdamemoryphysical; 		
+		if((u32)bdamemoryphysical < rpb->XtVmmRuntimePhysBase){
+			printf("\nINT15 (E820): V86 mode, bdamemory translated from %08x to %08x",
+				(u32)bdamemory, (u32)bdamemoryphysical);
+			bdamemory = bdamemoryphysical; 		
+		}else{
+			printf("\nCPU(0x%02x): INT15 (E820) V86 mode, translated bdamemory points beyond \
+				guest physical memory space. Halting!", vcpu->id);
+			HALT();
+		}
 	}
+
+#if 0	
 	
 	//if E820 service then...
 	if((u16)vmcb->rax == 0xE820){
@@ -329,10 +335,16 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 	
 	//ok, this is some other INT 15h service, so simply chain to the original
 	//INT 15h handler
-	
+
+#ifdef __EMHF_VERIFICATION__	
+	//get IP and CS of the original INT 15h handler
+	ip = nondet_u16();
+	cs = nondet_u16();
+#else
 	//get IP and CS of the original INT 15h handler
 	ip = *((u16 *)((u32)bdamemory + 4));
 	cs = *((u16 *)((u32)bdamemory + 6));
+#endif
 	
 	//printf("\nCPU(0x%02x): INT 15, transferring control to 0x%04x:0x%04x", vcpu->id,
 	//	cs, ip);
