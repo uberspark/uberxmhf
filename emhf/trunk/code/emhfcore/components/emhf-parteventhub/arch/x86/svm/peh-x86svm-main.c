@@ -44,7 +44,7 @@ static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs _
   ioio_info_t ioinfo;
   u32 app_ret_status = APP_IOINTERCEPT_CHAIN;
   u32 access_size, access_type;
-	
+
   ioinfo.bytes = vmcb->exitinfo1;
   
   if (ioinfo.fields.rep || ioinfo.fields.str){
@@ -93,6 +93,8 @@ static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs _
       //skip the IO instruction, app has taken care of it
 	  vmcb->rip = vmcb->exitinfo2;
   }
+  
+  
 }
 
 
@@ -296,6 +298,7 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
   //to reflect true guest EAX value
   //r->eax = (u32)vmcb->rax;
 
+
   switch(vmcb->exitcode){
 		//IO interception
 		case VMEXIT_IOIO:{
@@ -304,6 +307,7 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 		break;
 
 #if 0  
+
 		//MSR interception
 		case VMEXIT_MSR:{
 		  _svm_handle_msr(vcpu, vmcb, r);
@@ -365,7 +369,9 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 			_svm_handle_nmi(vcpu, vmcb, r);
 		}
 		break;
+
 #endif    
+
 		default:{
 				printf("\nUnhandled Intercept:0x%08llx", vmcb->exitcode);
 				printf("\nCS:EIP=0x%04x:0x%08x", (u16)vmcb->cs.sel, (u32)vmcb->rip);
