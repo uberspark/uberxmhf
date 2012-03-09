@@ -306,13 +306,13 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 		}
 		break;
 
-#if 0  
-
 		//MSR interception
 		case VMEXIT_MSR:{
 		  _svm_handle_msr(vcpu, vmcb, r);
 		}
 		break;
+
+#if 0  
     
 		//Nested Page Fault (NPF)
 		case VMEXIT_NPF:{
