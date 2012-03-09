@@ -393,10 +393,18 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
 		#endif
       }else{
         //neither an INIT or SIPI, just propagate this IPI to physical LAPIC
-        *((u32 *)dst_registeraddress) = value_tobe_written;
+        #ifndef __EMHF_VERIFICATION__        
+			*((u32 *)dst_registeraddress) = value_tobe_written;
+		#else
+			//CBMC does not know to handle MMIO
+		#endif
       }
     }else{
-      *((u32 *)dst_registeraddress) = value_tobe_written;
+      #ifndef __EMHF_VERIFICATION__
+		*((u32 *)dst_registeraddress) = value_tobe_written;
+	  #else
+		//CBMC does not know how to handle MMIO
+	  #endif
     }
                 
   }else if( g_svm_lapic_op == LAPIC_OP_READ){
@@ -406,7 +414,11 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
 
     src_registeraddress = (u32)g_svm_virtual_LAPIC_base + g_svm_lapic_reg;
    
-    value_read = *((u32 *)src_registeraddress);
+    #ifndef __EMHF_VERIFICATION__
+		value_read = *((u32 *)src_registeraddress);
+	#else
+		value_read = nondet_u32();
+	#endif
     //printf("\n0x%04x:0x%08x -> (ICR=0x%08x read), value=0x%08x", 
     //  (u16)vmcb->cs.sel, (u32)vmcb->rip, g_svm_lapic_reg, value_read);
   }
