@@ -343,7 +343,9 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 		case VMEXIT_INIT:{
 		printf("\nCPU(0x%02x): INIT intercepted, halting.", vcpu->id);
 		printf("\nGuest CS:EIP=0x%04x:0x%08x", (u16)vmcb->cs.sel, (u32)vmcb->rip);
-			{
+		printf("\nHalting!");
+		HALT();
+			/*{
 				u8 *code;
 				u32 paddr;
 				int i;
@@ -353,7 +355,8 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 				for(i=0; i < 16; i++)
 					printf("0x%02x ", code[i]);
 				HALT();
-			}
+			}*/
+		
 		}
 		break;
 
