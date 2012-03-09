@@ -140,41 +140,48 @@ void emhf_baseplatform_initialize(void);
 void emhf_baseplatform_reboot(VCPU *vcpu);
 
 
+#ifndef __EMHF_VERIFICATION__
+	/* hypervisor-virtual-address to system-physical-address. this fn is
+	 * used when creating the hypervisor's page tables, and hence
+	 * represents ground truth (assuming they haven't since been modified)
+	 */
+	static inline spa_t hva2spa(void *hva)
+	{
+	  uintptr_t hva_ui = (uintptr_t)hva;
+	  uintptr_t offset = rpb->XtVmmRuntimeVirtBase - rpb->XtVmmRuntimePhysBase;
+	  if (hva_ui >= rpb->XtVmmRuntimePhysBase && hva_ui < rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize){
+		return hva_ui + offset;
+	  } else if (hva_ui >= rpb->XtVmmRuntimeVirtBase && hva_ui < rpb->XtVmmRuntimeVirtBase+rpb->XtVmmRuntimeSize) {
+		return hva_ui - offset;
+	  } else {
+		return hva_ui;
+	  }
+	}
 
-/* hypervisor-virtual-address to system-physical-address. this fn is
- * used when creating the hypervisor's page tables, and hence
- * represents ground truth (assuming they haven't since been modified)
- */
-static inline spa_t hva2spa(void *hva)
-{
-  uintptr_t hva_ui = (uintptr_t)hva;
-  uintptr_t offset = rpb->XtVmmRuntimeVirtBase - rpb->XtVmmRuntimePhysBase;
-  if (hva_ui >= rpb->XtVmmRuntimePhysBase && hva_ui < rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize){
-    return hva_ui + offset;
-  } else if (hva_ui >= rpb->XtVmmRuntimeVirtBase && hva_ui < rpb->XtVmmRuntimeVirtBase+rpb->XtVmmRuntimeSize) {
-    return hva_ui - offset;
-  } else {
-    return hva_ui;
-  }
-}
+	static inline void * spa2hva(spa_t spa)
+	{
+	  uintptr_t offset = rpb->XtVmmRuntimeVirtBase - rpb->XtVmmRuntimePhysBase;
+	  if (spa >= rpb->XtVmmRuntimePhysBase && spa < rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize){
+		return (void *)(uintptr_t)(spa + offset);
+	  } else if (spa >= rpb->XtVmmRuntimeVirtBase && spa < rpb->XtVmmRuntimeVirtBase+rpb->XtVmmRuntimeSize) {
+		return (void *)(uintptr_t)(spa - offset);
+	  } else {
+		return (void *)(uintptr_t)(spa);
+	  }
+	}
 
-static inline void * spa2hva(spa_t spa)
-{
-  uintptr_t offset = rpb->XtVmmRuntimeVirtBase - rpb->XtVmmRuntimePhysBase;
-  if (spa >= rpb->XtVmmRuntimePhysBase && spa < rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize){
-    return (void *)(uintptr_t)(spa + offset);
-  } else if (spa >= rpb->XtVmmRuntimeVirtBase && spa < rpb->XtVmmRuntimeVirtBase+rpb->XtVmmRuntimeSize) {
-    return (void *)(uintptr_t)(spa - offset);
-  } else {
-    return (void *)(uintptr_t)(spa);
-  }
-}
-
-static inline spa_t gpa2spa(gpa_t gpa) { return gpa; }
-static inline gpa_t spa2gpa(spa_t spa) { return spa; }
-static inline void* gpa2hva(gpa_t gpa) { return spa2hva(gpa2spa(gpa)); }
-static inline gpa_t hva2gpa(hva_t hva) { return spa2gpa(hva2spa(hva)); }
-
+	static inline spa_t gpa2spa(gpa_t gpa) { return gpa; }
+	static inline gpa_t spa2gpa(spa_t spa) { return spa; }
+	static inline void* gpa2hva(gpa_t gpa) { return spa2hva(gpa2spa(gpa)); }
+	static inline gpa_t hva2gpa(hva_t hva) { return spa2gpa(hva2spa(hva)); }
+#else
+	#define hva2spa(x)		(x)
+	#define spa2hva(x)		(x)
+	#define gpa2spa(x)		(x)
+	#define spa2gpa(x)		(x)
+	#define gpa2hva(x)		(x)
+	#define hva2gpa(x)		(x)
+#endif //__EMHF_VERIFICATION__
 
 #endif	//__ASSEMBLY__
 
