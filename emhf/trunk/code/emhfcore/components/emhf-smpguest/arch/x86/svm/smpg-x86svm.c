@@ -49,13 +49,14 @@ static u32 g_svm_lapic_op __attribute__(( section(".data") )) = LAPIC_OP_RSVD;
 
 //--NPT manipulation routines---------------------------------------------------
 static void npt_changemapping(VCPU *vcpu, u32 dest_paddr, u32 new_paddr, u64 protflags){
-	pt_t pts;
-	u32 page;
+  u64 *pts;
+  u32 page;
 	//printf("\n%s: pts addr=0x%08x, dp=0x%08x, np=0x%08x", __FUNCTION__, vcpu->npt_vaddr_pts,
   //  dest_paddr, new_paddr);
-  pts = (pt_t)vcpu->npt_vaddr_pts;
+  assert(vcpu->npt_vaddr_pts == 0xC8000000);
+  pts = (u64 *)vcpu->npt_vaddr_pts;
 
-	page=dest_paddr/PAGE_SIZE_4K;
+  page=dest_paddr/PAGE_SIZE_4K;
   //printf("\n  page=0x%08x", page);
   pts[page] = pae_make_pte(new_paddr, protflags);
 }
@@ -329,8 +330,10 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
     npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
 	  vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
   }else{
-    npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, 0);
-	  vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
+	  //npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, 0);
+	  //vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
+	  emhf_memprot_arch_x86svm_setprot(vcpu, g_svm_lapic_base, MEMP_PROT_NOTPRESENT);
+	  emhf_memprot_arch_x86svm_flushmappings(vcpu);
 	}
   
   //enable interrupts on this CPU
