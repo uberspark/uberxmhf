@@ -107,12 +107,13 @@ void emhf_xcphandler_arch_initialize(void){
 
 	printf("\n%s: setting up runtime IDT...", __FUNCTION__);
 	
-	pexceptionstubs=(u32 *)&emhf_xcphandler_exceptionstubs;
+	//pexceptionstubs=(u32 *)&emhf_xcphandler_exceptionstubs;
+	pexceptionstubs=emhf_xcphandler_exceptionstubs;
 	
 	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
 		idtentry_t *idtentry=(idtentry_t *)((u32)emhf_xcphandler_arch_get_idt_start()+ (i*8));
-		//idtentry->isrLow= (u16)pexceptionstubs[i];
-		//idtentry->isrHigh= (u16) ( (u32)pexceptionstubs[i] >> 16 );
+		idtentry->isrLow= (u16)pexceptionstubs[i];
+		idtentry->isrHigh= (u16) ( (u32)pexceptionstubs[i] >> 16 );
 		idtentry->isrSelector = __CS;
 		idtentry->count=0x0;
 		idtentry->type=0x8E;	//32-bit interrupt gate
