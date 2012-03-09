@@ -83,11 +83,11 @@ typedef struct _pcpu {
 //exported DATA 
 //----------------------------------------------------------------------
 //system e820 map
-#if defined(__EMHF_VERIFICATION__)
-	extern u8 g_e820map[] __attribute__(( section(".data") ));
-#else
+//#if defined(__EMHF_VERIFICATION__)
+//	extern u8 g_e820map[] __attribute__(( section(".data") ));
+//#else
 	extern GRUBE820 g_e820map[] __attribute__(( section(".data") ));
-#endif //__EMHF_VERIFICATION__
+//#endif //__EMHF_VERIFICATION__
 
 //SMP CPU map; lapic id, base, ver and bsp indication for each available core
 extern PCPU	g_cpumap[] __attribute__(( section(".data") ));
