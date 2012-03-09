@@ -49,7 +49,7 @@
 //exported DATA 
 
 //array of exception handler stubs
-extern u32 *emhf_xcphandler_exceptionstubs; 
+extern u8 emhf_xcphandler_exceptionstubs[]; 
 
 //IDT descriptor
 extern u8 emhf_xcphandler_idt[];

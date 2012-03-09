@@ -108,7 +108,7 @@ void emhf_xcphandler_arch_initialize(void){
 	printf("\n%s: setting up runtime IDT...", __FUNCTION__);
 	
 	//pexceptionstubs=(u32 *)&emhf_xcphandler_exceptionstubs;
-	pexceptionstubs=emhf_xcphandler_exceptionstubs;
+	pexceptionstubs=(u32 *)&emhf_xcphandler_exceptionstubs;
 	
 	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
 		idtentry_t *idtentry=(idtentry_t *)((u32)emhf_xcphandler_arch_get_idt_start()+ (i*8));
