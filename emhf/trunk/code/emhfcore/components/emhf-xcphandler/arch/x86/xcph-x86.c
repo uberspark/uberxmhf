@@ -45,6 +45,7 @@
 //XXX: TODO, move this into baseplatform as backend
 //note: this always returns a valid VCPU pointer
 static VCPU *_svm_getvcpu(void){
+  
   int i;
   u32 eax, edx, *lapic_reg;
   u32 lapic_id;
@@ -65,7 +66,8 @@ static VCPU *_svm_getvcpu(void){
   }
 
   printf("\n%s: fatal, unable to retrieve vcpu for id=0x%02x", __FUNCTION__, lapic_id);
-  HALT(); return NULL; /* will never return presently */
+  HALT(); return NULL; // will never return presently 
+  
 }
 
 //---function to obtain the vcpu of the currently executing core----------------
@@ -93,7 +95,8 @@ static VCPU *_vmx_getvcpu(void){
 
   printf("\n%s: fatal, unable to retrieve vcpu for id=0x%02x", __FUNCTION__, lapic_id);
   HALT();
-  return NULL; /* currently unreachable */
+  return NULL; // currently unreachable 
+  
 }
 
 
@@ -108,8 +111,8 @@ void emhf_xcphandler_arch_initialize(void){
 	
 	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
 		idtentry_t *idtentry=(idtentry_t *)((u32)emhf_xcphandler_arch_get_idt_start()+ (i*8));
-		idtentry->isrLow= (u16)pexceptionstubs[i];
-		idtentry->isrHigh= (u16) ( (u32)pexceptionstubs[i] >> 16 );
+		//idtentry->isrLow= (u16)pexceptionstubs[i];
+		//idtentry->isrHigh= (u16) ( (u32)pexceptionstubs[i] >> 16 );
 		idtentry->isrSelector = __CS;
 		idtentry->count=0x0;
 		idtentry->type=0x8E;	//32-bit interrupt gate
@@ -122,7 +125,7 @@ void emhf_xcphandler_arch_initialize(void){
 
 //get IDT start address
 u8 * emhf_xcphandler_arch_get_idt_start(void){
-	return (u8 *)&emhf_xcphandler_idt_start;
+	//return (u8 *)&emhf_xcphandler_idt_start;
 }
 
 
