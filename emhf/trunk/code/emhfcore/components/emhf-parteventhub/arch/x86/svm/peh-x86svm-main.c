@@ -295,7 +295,8 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
   //SVM stores guest EAX in VMCB, so move that into struct regs r->eax 
   //to reflect true guest EAX value
   //r->eax = (u32)vmcb->rax;
-    
+
+#if 0    
   switch(vmcb->exitcode){
 		//IO interception
 		case VMEXIT_IOIO:{
@@ -377,5 +378,6 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 	//to reflect true guest EAX value
 	//vmcb->rax = r->eax;
 
+#endif
 	return 0;
 }
