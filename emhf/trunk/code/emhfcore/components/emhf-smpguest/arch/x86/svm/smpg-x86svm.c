@@ -335,17 +335,31 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
   //make LAPIC page inaccessible and flush TLB
   if(delink_lapic_interception){
     printf("\n%s: delinking LAPIC interception since all cores have SIPI", __FUNCTION__);
-    npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
-	  vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
-	//emhf_memprot_arch_x86svm_setprot(vcpu, g_svm_lapic_base, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE);
-	//emhf_memprot_arch_x86svm_flushmappings(vcpu);
+    #ifndef __EMHF_VERIFICATION__
+		npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+		vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
+		//emhf_memprot_arch_x86svm_setprot(vcpu, g_svm_lapic_base, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE);
+		//emhf_memprot_arch_x86svm_flushmappings(vcpu);
+	#else
+		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
+		//constant index > runtime_base+runtime_size
+		//since npt_changemapping above is a direct 64-bit assignment, it should
+		//be ok to skip it for verification with manual inspection
+	#endif
 	
   }else{
+    #ifndef __EMHF_VERIFICATION__
 	  npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, 0);
 	  vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
 	  //emhf_memprot_arch_x86svm_setprot(vcpu, g_svm_lapic_base, MEMP_PROT_NOTPRESENT);
 	  //emhf_memprot_arch_x86svm_flushmappings(vcpu);
-	}
+	#else
+		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
+		//constant index > runtime_base+runtime_size
+		//since npt_changemapping above is a direct 64-bit assignment, it should
+		//be ok to skip it for verification with manual inspection
+	#endif
+  }
   
   //enable interrupts on this CPU
   stgi();
