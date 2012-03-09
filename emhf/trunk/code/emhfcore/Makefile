@@ -193,5 +193,6 @@ install-dev:
 .PHONY: verify
 verify:
 	# verify emhf-memprot 
-	cd components/emhf-memprot && $(MAKE) -w verify
+	# cd components/emhf-memprot && $(MAKE) -w verify
+	cd verification/ && $(MAKE) -w verify
 	
