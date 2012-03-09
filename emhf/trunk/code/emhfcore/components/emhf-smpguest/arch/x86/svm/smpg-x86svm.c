@@ -189,6 +189,13 @@ void emhf_smpguest_arch_x86svm_initialize(VCPU *vcpu){
   //emhf_memprot_arch_x86svm_flushmappings(vcpu);
 }
 
+
+#ifdef __EMHF_VERIFICATION__
+	bool g_svm_lapic_npf_verification_coreprotected = false;
+	bool g_svm_lapic_npf_verification_pre = false;
+#endif
+
+
 //if there is a read request, store the register accessed
 //store request as READ
 //map npt entry of the physical LAPIC page with g_svm_lapic_base and single-step
@@ -202,10 +209,15 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
   //get LAPIC register being accessed
   g_svm_lapic_reg = (paddr - g_svm_lapic_base);
 
+#ifdef __EMHF_VERIFICATION__
+  g_svm_lapic_npf_verification_pre = (errorcode & PF_ERRORCODE_WRITE) &&
+	((g_svm_lapic_reg == LAPIC_ICR_LOW) || (g_svm_lapic_reg == LAPIC_ICR_HIGH));
+#endif
+  
   if(errorcode & PF_ERRORCODE_WRITE){
     if(g_svm_lapic_reg == LAPIC_ICR_LOW || g_svm_lapic_reg == LAPIC_ICR_HIGH ){
       g_svm_lapic_op = LAPIC_OP_WRITE;
-
+      
       //change LAPIC physical address NPT mapping to point to physical 
       //address of virtual_LAPIC_base
       //printf("\nvirtual_LAPIC_base, v=0x%08x, p=0x%08x",  
@@ -244,6 +256,11 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
     vmcb->rflags |= (u64)EFLAGS_TF;
   
     clgi();
+    
+    #ifdef __EMHF_VERIFICATION__
+		g_svm_lapic_npf_verification_coreprotected = true;
+	#endif
+
     
   }else{
     //printf("\nREAD from LAPIC register");
@@ -292,6 +309,12 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
     //lapic_access_dbexception after a DB exception
     clgi();
   }
+
+#ifdef __EMHF_VERIFICATION__
+  assert(!g_svm_lapic_npf_verification_pre || g_svm_lapic_npf_verification_coreprotected);
+#endif
+
+
   return 0; /* XXX TODO: dummy; currently meaningless */
 }
 
