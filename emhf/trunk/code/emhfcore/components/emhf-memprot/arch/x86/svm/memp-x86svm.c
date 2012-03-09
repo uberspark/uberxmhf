@@ -150,7 +150,6 @@ void emhf_memprot_arch_x86svm_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
   	
   pt[pfn] &= ~(u64)0x8000000000000003ULL; //clear all previous flags
   pt[pfn] |= flags; 					  //set new flags
-  assert(0);
 }
 	
 //get protection for a given physical memory address
