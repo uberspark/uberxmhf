@@ -184,7 +184,8 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 	u16 cs, ip;
 	u8 *bdamemory = (u8 *)0x4AC;
 	struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
-	
+
+#if 0	
 	//printf("\nCPU(0x%02x): BDA dump in intercept: %02x %02x %02x %02x %02x %02x %02x %02x", vcpu->id,
 	//		bdamemory[0], bdamemory[1], bdamemory[2], bdamemory[3], bdamemory[4],
 	//			bdamemory[5], bdamemory[6], bdamemory[7]);
@@ -324,7 +325,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 
 		return;
 	} //E820 service
-	
+#endif	
 	
 	//ok, this is some other INT 15h service, so simply chain to the original
 	//INT 15h handler
