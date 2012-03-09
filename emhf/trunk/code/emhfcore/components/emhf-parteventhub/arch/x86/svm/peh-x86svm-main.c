@@ -413,10 +413,15 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 				vmcb->rip == VMX_UG_E820HOOK_IP){
 				//assertions, we need to be either in real-mode or in protected
 				//mode with paging and EFLAGS.VM bit set (virtual-8086 mode)
-				//ASSERT( !(vmcb->cr0 & CR0_PE)  ||
-				//	( (vmcb->cr0 & CR0_PE) && (vmcb->cr0 & CR0_PG) &&
-				//		(vmcb->rflags & EFLAGS_VM)  ) );
-				//_svm_int15_handleintercept(vcpu, r);	
+				if( !(vmcb->cr0 & CR0_PE)  ||
+					( (vmcb->cr0 & CR0_PE) && (vmcb->cr0 & CR0_PG) &&
+						(vmcb->rflags & EFLAGS_VM)  ) ){
+					_svm_int15_handleintercept(vcpu, r);	
+				}else{
+						printf("\nCPU(0x%02x): unhandled INT 15h request from protected mode", vcpu->id);
+						printf("\nHalting!");
+						HALT();
+				}
 			}else{	//if not E820 hook, give app a chance to handle the hypercall
 				if( emhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
 					printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", vcpu->id, r->eax);
