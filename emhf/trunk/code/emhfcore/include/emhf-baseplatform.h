@@ -176,7 +176,7 @@ void emhf_baseplatform_reboot(VCPU *vcpu);
 	static inline gpa_t hva2gpa(hva_t hva) { return spa2gpa(hva2spa(hva)); }
 #else
 	static inline spa_t hva2spa(void *hva) { return (uintptr_t)hva; }
-	static inline void * spa2hva(spa_t spa) { (void *)(uintptr_t)(spa) };
+	static inline void * spa2hva(spa_t spa) { (void *)(uintptr_t)(spa); }
 	static inline spa_t gpa2spa(gpa_t gpa) { return gpa; }
 	static inline gpa_t spa2gpa(spa_t spa) { return spa; }
 	static inline void* gpa2hva(gpa_t gpa) { return spa2hva(gpa2spa(gpa)); }

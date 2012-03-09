@@ -58,7 +58,8 @@ static void npt_changemapping(VCPU *vcpu, u32 dest_paddr, u32 new_paddr, u64 pro
 
   page=dest_paddr/PAGE_SIZE_4K;
   //printf("\n  page=0x%08x", page);
-  pts[page] = pae_make_pte(new_paddr, protflags);
+  //pts[page] = pae_make_pte(new_paddr, protflags);
+  *(pts+page) = pae_make_pte(new_paddr, protflags);
 }
 
 //------------------------------------------------------------------------------
