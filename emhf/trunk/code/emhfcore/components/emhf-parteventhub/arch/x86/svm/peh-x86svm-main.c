@@ -368,13 +368,13 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 		}
 		break;
 
+#endif
+
 		//Nested Page Fault (NPF)
 		case VMEXIT_NPF:{
 		 _svm_handle_npf(vcpu, r);
 		}
 		break;
-
-#endif
 
 		case VMEXIT_EXCEPTION_DB:{
 			if(vcpu->isbsp == 1){											//LAPIC SIPI detection only happens on BSP
