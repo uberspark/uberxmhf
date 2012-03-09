@@ -48,8 +48,13 @@
 //EV => EMHF Verify
 //FNCONTRACT => Function Contract Primitive
 
-#define	EV_FNCONTRACT_DOMAIN(x)		assert((x));
-#define EV_FNCONTRACT_RANGE(x)		assert((x));
+#ifdef __EMHF_VERIFICATION__
+	#define	EV_FNCONTRACT_DOMAIN(x)		assert((x));
+	#define EV_FNCONTRACT_RANGE(x)		assert((x));
+#else
+	#define	EV_FNCONTRACT_DOMAIN(x)		
+	#define EV_FNCONTRACT_RANGE(x)		
+#endif
 
 #endif
 
