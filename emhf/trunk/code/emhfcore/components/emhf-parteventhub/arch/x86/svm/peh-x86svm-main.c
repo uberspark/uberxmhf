@@ -198,88 +198,120 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		printf("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", vcpu->id, 
 		(u16)vmcb->rax, r->edx, r->ebx, r->ecx, (u16)vmcb->es.sel, (u16)r->edi);
 		
-		ASSERT(r->edx == 0x534D4150UL);  //'SMAP' should be specified by guest
-		ASSERT(r->ebx < rpb->XtVmmE820NumEntries); //invalid continuation value specified by guest!
+		//ASSERT(r->edx == 0x534D4150UL);  //'SMAP' should be specified by guest
+		//ASSERT(r->ebx < rpb->XtVmmE820NumEntries); //invalid continuation value specified by guest!
+		if( (r->edx == 0x534D4150UL) && (r->ebx < rpb->XtVmmE820NumEntries) ){
 			
-		//copy the e820 descriptor and return its size in ECX
-		{
-			GRUBE820 *pe820entry;
-			pe820entry = (GRUBE820 *)((u32)((vmcb->es.base)+(u16)r->edi));
-			pe820entry->baseaddr_low = g_e820map[r->ebx].baseaddr_low;
-			pe820entry->baseaddr_high = g_e820map[r->ebx].baseaddr_high;
-			pe820entry->length_low = g_e820map[r->ebx].length_low;
-			pe820entry->length_high = g_e820map[r->ebx].length_high;
-			pe820entry->type = g_e820map[r->ebx].type;
+			//copy the e820 descriptor and return its size in ECX
+			{
+				GRUBE820 *pe820entry;
+				pe820entry = (GRUBE820 *)((u32)((vmcb->es.base)+(u16)r->edi));
+				pe820entry->baseaddr_low = g_e820map[r->ebx].baseaddr_low;
+				pe820entry->baseaddr_high = g_e820map[r->ebx].baseaddr_high;
+				pe820entry->length_low = g_e820map[r->ebx].length_low;
+				pe820entry->length_high = g_e820map[r->ebx].length_high;
+				pe820entry->type = g_e820map[r->ebx].type;
+				
+				//memcpy((void *)((u32)((vmcb->es.base)+(u16)r->edi)), (void *)&g_e820map[r->ebx],
+				//		sizeof(GRUBE820));
+						
+			}
+			r->ecx=20;
+
+			//set EAX to 'SMAP' as required by the service call				
+			vmcb->rax=r->edx;
+
+			//we need to update carry flag in the guest EFLAGS register
+			//however since INT 15 would have pushed the guest FLAGS on stack
+			//we cannot simply reflect the change by modifying vmcb->rflags
+			//instead we need to make the change to the pushed FLAGS register on
+			//the guest stack. the real-mode IRET frame looks like the following 
+			//when viewed at top of stack
+			//guest_ip		(16-bits)
+			//guest_cs		(16-bits)
+			//guest_flags (16-bits)
+			//...
+		
+			{
+				u16 guest_cs, guest_ip, guest_flags;
+				u16 *gueststackregion = (u16 *)( (u32)vmcb->ss.base + (u16)vmcb->rsp );
 			
-			//memcpy((void *)((u32)((vmcb->es.base)+(u16)r->edi)), (void *)&g_e820map[r->ebx],
-			//		sizeof(GRUBE820));
-					
-		}
-		r->ecx=20;
+			
+				//if V86 mode translate the virtual address to physical address
+				if( (vmcb->cr0 & CR0_PE) && (vmcb->cr0 & CR0_PG) &&
+					(vmcb->rflags & EFLAGS_VM) ){
+					u8 *gueststackregionphysical = (u8 *)emhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)gueststackregion);
+					ASSERT( (u32)gueststackregionphysical != 0xFFFFFFFFUL );
+					printf("\nINT15 (E820): V86 mode, gueststackregion translated from %08x to %08x",
+						(u32)gueststackregion, (u32)gueststackregionphysical);
+					gueststackregion = (u16 *)gueststackregionphysical; 		
+				}
+			
+				
+				//printf("\nINT15 (E820): guest_ss=%04x, sp=%04x, stackregion=%08x", (u16)vcpu->vmcs.guest_SS_selector,
+				//		(u16)vcpu->vmcs.guest_RSP, (u32)gueststackregion);
+				
+				//get guest IP, CS and FLAGS from the IRET frame
+				guest_ip = gueststackregion[0];
+				guest_cs = gueststackregion[1];
+				guest_flags = gueststackregion[2];
 
-		//set EAX to 'SMAP' as required by the service call				
-		vmcb->rax=r->edx;
-
-		//we need to update carry flag in the guest EFLAGS register
-		//however since INT 15 would have pushed the guest FLAGS on stack
-		//we cannot simply reflect the change by modifying vmcb->rflags
-		//instead we need to make the change to the pushed FLAGS register on
-		//the guest stack. the real-mode IRET frame looks like the following 
-		//when viewed at top of stack
-		//guest_ip		(16-bits)
-		//guest_cs		(16-bits)
-		//guest_flags (16-bits)
-		//...
-		
-		{
-			u16 guest_cs, guest_ip, guest_flags;
-			u16 *gueststackregion = (u16 *)( (u32)vmcb->ss.base + (u16)vmcb->rsp );
-		
-		
-			//if V86 mode translate the virtual address to physical address
-			if( (vmcb->cr0 & CR0_PE) && (vmcb->cr0 & CR0_PG) &&
-				(vmcb->rflags & EFLAGS_VM) ){
-				u8 *gueststackregionphysical = (u8 *)emhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)gueststackregion);
-				ASSERT( (u32)gueststackregionphysical != 0xFFFFFFFFUL );
-				printf("\nINT15 (E820): V86 mode, gueststackregion translated from %08x to %08x",
-					(u32)gueststackregion, (u32)gueststackregionphysical);
-				gueststackregion = (u16 *)gueststackregionphysical; 		
+				//printf("\nINT15 (E820): guest_flags=%04x, guest_cs=%04x, guest_ip=%04x",
+				//	guest_flags, guest_cs, guest_ip);
+			
+				//increment e820 descriptor continuation value
+				r->ebx=r->ebx+1;
+						
+				if(r->ebx > (rpb->XtVmmE820NumEntries-1) ){
+					//we have reached the last record, so set CF and make EBX=0
+					r->ebx=0;
+					guest_flags |= (u16)EFLAGS_CF;
+					gueststackregion[2] = guest_flags;
+				}else{
+					//we still have more records, so clear CF
+					guest_flags &= ~(u16)EFLAGS_CF;
+					gueststackregion[2] = guest_flags;
+				}
+			  
 			}
 		
+		}else{	//invalid state specified during INT 15 E820, fail by
+				//setting carry flag
+				{
+					u16 guest_cs, guest_ip, guest_flags;
+					u16 *gueststackregion = (u16 *)( (u32)vmcb->ss.base + (u16)vmcb->rsp );
 			
-			//printf("\nINT15 (E820): guest_ss=%04x, sp=%04x, stackregion=%08x", (u16)vcpu->vmcs.guest_SS_selector,
-			//		(u16)vcpu->vmcs.guest_RSP, (u32)gueststackregion);
 			
-			//get guest IP, CS and FLAGS from the IRET frame
-			guest_ip = gueststackregion[0];
-			guest_cs = gueststackregion[1];
-			guest_flags = gueststackregion[2];
+					//if V86 mode translate the virtual address to physical address
+					if( (vmcb->cr0 & CR0_PE) && (vmcb->cr0 & CR0_PG) &&
+						(vmcb->rflags & EFLAGS_VM) ){
+						u8 *gueststackregionphysical = (u8 *)emhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)gueststackregion);
+						ASSERT( (u32)gueststackregionphysical != 0xFFFFFFFFUL );
+						printf("\nINT15 (E820): V86 mode, gueststackregion translated from %08x to %08x",
+							(u32)gueststackregion, (u32)gueststackregionphysical);
+						gueststackregion = (u16 *)gueststackregionphysical; 		
+					}
+			
+				
+					//printf("\nINT15 (E820): guest_ss=%04x, sp=%04x, stackregion=%08x", (u16)vcpu->vmcs.guest_SS_selector,
+					//		(u16)vcpu->vmcs.guest_RSP, (u32)gueststackregion);
+				
+					//get guest IP, CS and FLAGS from the IRET frame
+					guest_ip = gueststackregion[0];
+					guest_cs = gueststackregion[1];
+					guest_flags = gueststackregion[2];
 
-			//printf("\nINT15 (E820): guest_flags=%04x, guest_cs=%04x, guest_ip=%04x",
-			//	guest_flags, guest_cs, guest_ip);
-		
-			//increment e820 descriptor continuation value
-			r->ebx=r->ebx+1;
-					
-			if(r->ebx > (rpb->XtVmmE820NumEntries-1) ){
-				//we have reached the last record, so set CF and make EBX=0
-				r->ebx=0;
-				guest_flags |= (u16)EFLAGS_CF;
-				gueststackregion[2] = guest_flags;
-			}else{
-				//we still have more records, so clear CF
-				guest_flags &= ~(u16)EFLAGS_CF;
-				gueststackregion[2] = guest_flags;
-			}
-		  
+					guest_flags |= (u16)EFLAGS_CF;
+					gueststackregion[2] = guest_flags;
+				}
 		}
-
- 	  //update RIP to execute the IRET following the VMCALL instruction
- 	  //effectively returning from the INT 15 call made by the guest
-	  vmcb->rip += 3;
+		
+		//update RIP to execute the IRET following the VMCALL instruction
+		//effectively returning from the INT 15 call made by the guest
+		vmcb->rip += 3;
 
 		return;
-	}
+	} //E820 service
 	
 	
 	//ok, this is some other INT 15h service, so simply chain to the original
