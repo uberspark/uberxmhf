@@ -314,6 +314,14 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
   assert(!g_svm_lapic_npf_verification_pre || g_svm_lapic_npf_verification_coreprotected);
 #endif
 
+  EV_FNCONTRACT_RANGE( ((g_svm_lapic_op == LAPIC_OP_RSVD) || 
+					   (g_svm_lapic_op == LAPIC_OP_READ) ||
+					   (g_svm_lapic_op == LAPIC_OP_WRITE))
+					 );	
+
+  EV_FNCONTRACT_RANGE( ((g_svm_lapic_reg >= 0) &&
+					   (g_svm_lapic_reg < PAGE_SIZE_4K))
+					 );	
 
   return 0; /* XXX TODO: dummy; currently meaningless */
 }
