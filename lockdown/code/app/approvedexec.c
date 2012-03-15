@@ -93,38 +93,28 @@ static u32 approvedexec_getguestpcvaddr(VCPU *vcpu){
 	}
 }
 
-//---returns physical address of current guest program counter------------------
+//---returns physical address of current guest program counter----------
 static u32 approvedexec_getguestpcpaddr(VCPU *vcpu){
-  u32 guestpclinearaddress=0;
+	u32 guestpclinearaddress=0;
+	u32 guest_cr0=0;
 
-  //get linear address of guest PC
-  guestpclinearaddress = approvedexec_getguestpcvaddr(vcpu);
+	//get linear address of guest PC
+	guestpclinearaddress = approvedexec_getguestpcvaddr(vcpu);
 
-//if(vcpu->guest_unrestricted){
-	//if paging is enabled, then we walk the guest page-table to obtain
-  //the physical address
-  if( (vcpu->vmcs.guest_CR0 & CR0_PE) &&
-    (vcpu->vmcs.guest_CR0 & CR0_PG) ){
-    u32 guestpcpaddr = (u32)(u32 *)emhf_smpguest_walk_pagetables(vcpu, guestpclinearaddress);
-    ASSERT(guestpcpaddr != 0xFFFFFFFFUL);
-    return (u32)guestpcpaddr;  
-  }else{
-    return (u32)guestpclinearaddress; //linear address is physical address when no paging in effect
-  }
-//}
-/*else{
-	//if paging is enabled, then we walk the guest page-table to obtain
-  //the physical address
-  if( (vcpu->guest_currentstate & GSTATE_PROTECTEDMODE) &&
-    (vcpu->guest_currentstate & GSTATE_PROTECTEDMODE_PG) ){
-    u32 guestpcpaddr = emhf_guestpgtbl_walk(vcpu, guestpclinearaddress);
-    ASSERT(guestpcpaddr != 0xFFFFFFFFUL);
-    return (u32)guestpcpaddr;  
-  }else{
-    return (u32)guestpclinearaddress; //linear address is physical address when no paging in effect
-  }
-}*/  
-  
+	//get guest CR0 value
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
+		guest_cr0 = (u32)((struct vmcb_struct *)vcpu->vmcb_vaddr_ptr)->cr0;
+	else // CPU_VENDOR_INTEL
+		guest_cr0 = (u32) vcpu->vmcs.guest_CR0;
+
+	//if we have paging turned on, then go through the guest page tables
+	if( (guest_cr0 & CR0_PE) && (guest_cr0 & CR0_PG) ){
+		u32 guestpcpaddr = (u32)(u32 *)emhf_smpguest_walk_pagetables(vcpu, guestpclinearaddress);
+		ASSERT(guestpcpaddr != 0xFFFFFFFFUL);
+		return (u32)guestpcpaddr;  
+	}else{ //linear address is physical address when no paging in effect
+		return (u32)guestpclinearaddress; 
+	}
 }
 
 //---returns 1 if code-modifying-data (cmd) falls on the same physical---------- 
