@@ -172,7 +172,6 @@ u32 approvedexec_handleevent(VCPU *vcpu, struct regs *r,
     //windows_verifycodeintegrity(vcpu, (u32)gpa, (u32)gva);
     //give page execute permissions but prevent further writes
     emhf_memprot_setprot(vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READONLY | MEMP_PROT_EXECUTE);
-
   }else{
     //we have a write fault, check if it is cmd on same page
     printf("\n%s: CPU(0x%02x) PF-W, p=0x%08x, v=0x%08x, pcp=0x%08x, pcv=0x%08x",
