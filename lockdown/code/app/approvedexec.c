@@ -82,9 +82,15 @@ u32 approvedexec_checkhashes(u32 pagebase_paddr, u32 *index, u32 *fullhash){
 
 
 
-//---returns virtual address of current guest program counter-------------------
+//---returns virtual address of current guest program counter-----------
 static u32 approvedexec_getguestpcvaddr(VCPU *vcpu){
-  return (u32)vcpu->vmcs.guest_CS_base + (u32)vcpu->vmcs.guest_RIP; 
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
+		struct vmcb_struct *vmcb;
+		vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+		return ((u32)vmcb->cs.base + (u32)vmcb->rip);
+	}else{	//CPU_VENDOR_INTEL
+		return (u32)vcpu->vmcs.guest_CS_base + (u32)vcpu->vmcs.guest_RIP; 		
+	}
 }
 
 //---returns physical address of current guest program counter------------------
