@@ -269,15 +269,18 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
     //enable approved execution
     #if defined(__LDN_APPROVEDEXEC__)
     {
-      u32 endpfn = __runtimephysicalbase / PAGE_SIZE_4K;
+      u32 endpfn = apb->runtimephysmembase / PAGE_SIZE_4K;
       u32 i;
       //setup all guest physical memory region to non-executable to
       //start with
+      printf("\nCPU(0x%02x): Setting guest physical memory 0x%08x-0x%08x (%u pfns) as NX",
+		vcpu->id, 0, apb->runtimephysmembase, endpfn);
+		
       for(i=0; i < endpfn; i++)
         emhf_hwpgtbl_setprot(vcpu, (i*PAGE_SIZE_4K), (emhf_hwpgtbl_getprot(vcpu, (i*PAGE_SIZE_4K)) & ~HWPGTBL_FLAG_EXECUTE));     
   
       emhf_hwpgtbl_flushall(vcpu);  //flush all NPT/EPT mappings
-      printf("\nCPU(0x%02x): Setup trusted execution and flushed all HW pagetable mappings...");
+      printf("\nCPU(0x%02x): Setup trusted execution and flushed all HW pagetable mappings...", vcpu->id);
     }
     #endif
     
