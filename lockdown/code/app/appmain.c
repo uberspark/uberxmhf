@@ -481,34 +481,32 @@ u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
   return APP_IOINTERCEPT_CHAIN; //chain and do the required I/O    
 }
 
-
-
-//for now this always returns APP_SUCCESS
+//----------------------------------------------------------------------
+// nested (extended) page fault handler 
+// used to implement approved execution
+//----------------------------------------------------------------------
 u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
       struct regs *r,
       u64 gpa, u64 gva, u64 violationcode){
-#if defined(__LDN_APPROVEDEXEC__)
-  if(currentenvironment == LDN_ENV_TRUSTED_SIGNATURE){
-	  return( approvedexec_handleevent(vcpu, r, gpa, gva, violationcode) );
-	}else{
-	  printf("\nCPU(0x%02x): Fatal, got HW pgfault in untrusted should never happen", vcpu->id);
-  	printf("\nCPU(0x%02x): gva=0x%08x, gpa=0x%08x, code=0x%08x", vcpu->id,
-			(u32)gva, (u32)gpa, (u32)violationcode);
-  	printf("\nprot is: 0x%08x", emhf_memprot_getprot(vcpu, gpa));
-		HALT();
-	
-	}
-#else
-  (void)r;
-  printf("\nCPU(0x%02x): HW pgtbl handling feature unimplemented. Halting!", vcpu->id);
-  printf("\nCPU(0x%02x): gva=0x%08x, gpa=0x%08x, code=0x%08x", vcpu->id,
-			(u32)gva, (u32)gpa, (u32)violationcode);
-  printf("\nprot is: 0x%08x", emhf_memprot_getprot(vcpu, gpa));
-	HALT();
-#endif
+	(void)r;
 
-  while(1);
+#if defined(__LDN_APPROVEDEXEC__)
+	if(currentenvironment == LDN_ENV_TRUSTED_SIGNATURE)
+	  return( approvedexec_handleevent(vcpu, r, gpa, gva, violationcode) );
+#endif	//__LDN_APPROVEDEXEC__
+
+	//we never handle nested (extended) page faults in the untrusted
+	//environment
+	printf("\nCPU(0x%02x): Unhandled HW page-fault!", 
+		vcpu->id);
+  	printf("\nCPU(0x%02x): gva=0x%08x, gpa=0x%08x, errorcode=0x%08x", 
+		vcpu->id, (u32)gva, (u32)gpa, (u32)violationcode);
+  	printf("\nCPU(0x%02x): current gpa protection is: 0x%08x", 
+		emhf_memprot_getprot(vcpu, gpa));
+	printf("\nCPU(0x%02x): Halting!"); 
+	HALT();
 }
+//----------------------------------------------------------------------
 
 
 
