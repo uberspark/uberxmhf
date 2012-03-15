@@ -508,6 +508,7 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 		emhf_memprot_getprot(vcpu, gpa));
 	printf("\nCPU(0x%02x): Halting!"); 
 	HALT();
+	return APP_ERROR;	//we never get here
 }
 //----------------------------------------------------------------------
 
