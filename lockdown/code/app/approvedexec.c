@@ -117,7 +117,7 @@ static u32 approvedexec_getguestpcpaddr(VCPU *vcpu){
 	}
 }
 
-//---returns 1 if code-modifying-data (cmd) falls on the same physical---------- 
+//---returns 1 if code-modifying-data (cmd) falls on the same physical 
 //memory page, else 0
 u32 approvedexec_iscmdonsamepage(VCPU *vcpu, u64 gpa, u64 gva){
   u32 pagealigned_pc, pagealigned_gpa;
@@ -136,7 +136,7 @@ u32 approvedexec_iscmdonsamepage(VCPU *vcpu, u64 gpa, u64 gva){
     return 0; //not cmd on same page
 }
                   
-//---approved execution violation handler---------------------------------------                                                                   
+//---approved execution violation handler-------------------------------                                                                   
 u32 approvedexec_handleevent(VCPU *vcpu, struct regs *r, 
   u64 gpa, u64 gva, u64 violationcode){
   (void)r;
@@ -152,7 +152,7 @@ u32 approvedexec_handleevent(VCPU *vcpu, struct regs *r,
     // vcpu->id, (u32)gpa, (u32)gva, approvedexec_getguestpcpaddr(vcpu), approvedexec_getguestpcvaddr(vcpu));
     //we had a exec violation, time to check this physical page and lock it
     //TODO: check hash
-    windows_verifycodeintegrity(vcpu, (u32)gpa, (u32)gva);
+    //windows_verifycodeintegrity(vcpu, (u32)gpa, (u32)gva);
     //give page execute permissions but prevent further writes
     //emhf_hwpgtbl_setprot(vcpu, gpa, HWPGTBL_FLAG_READ | HWPGTBL_FLAG_EXECUTE);
     emhf_memprot_setprot(vcpu, gpa, MEMP_PROT_READONLY | MEMP_PROT_EXECUTE);
