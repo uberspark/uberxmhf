@@ -283,7 +283,7 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
       printf("\nCPU(0x%02x): Setting guest physical memory 0x%08x-0x%08x (%u pfns) as NX",
 		vcpu->id, 0, (apb->runtimephysmembase-PAGE_SIZE_2M), endpfn);
 		
-      for(i=0; i < endpfn; i++)
+      for(i=0x100; i < endpfn; i++)
         emhf_memprot_setprot(vcpu, (i*PAGE_SIZE_4K), (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE) );     
   
       emhf_memprot_flushmappings(vcpu);  //flush all NPT/EPT mappings
