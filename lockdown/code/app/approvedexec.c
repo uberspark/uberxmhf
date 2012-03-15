@@ -168,8 +168,8 @@ u32 approvedexec_handleevent(VCPU *vcpu, struct regs *r,
 	//	approvedexec_getguestpcpaddr(vcpu), 
 	//	approvedexec_getguestpcvaddr(vcpu));
 
-    //TODO: check hash
-    //windows_verifycodeintegrity(vcpu, (u32)gpa, (u32)gva);
+    //verify integrity of code page
+    windows_verifycodeintegrity(vcpu, (u32)gpa, (u32)gva);
     //give page execute permissions but prevent further writes
     emhf_memprot_setprot(vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READONLY | MEMP_PROT_EXECUTE);
   }else{
