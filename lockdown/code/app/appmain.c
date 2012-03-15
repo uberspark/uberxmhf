@@ -126,9 +126,16 @@ void vmx_setupEPT2M(VCPU *vcpu){
 //------------------------------------------------------------------------------
 //app main                            
 u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
-  LDNPB *pldnPb;
-  printf("\nCPU(0x%02x): Lockdown initiaizing...", vcpu->id);
+	LDNPB *pldnPb;
+	
+	//we only perform setup on the BSP
+	if(!vcpu->isbsp){	
+		printf("\nCPU(0x%02x): Lockdown initiaizing. Skipping init on AP.", vcpu->id);
+		return APP_INIT_SUCCESS;
+	}
 
+	printf("\nCPU(0x%02x): BSP. Lockdown initiaizing...", vcpu->id);
+	
 	//setup guest environment physical memory size
 	LDN_ENV_PHYSICALMEMORYLIMIT = apb->runtimephysmembase; 
 
