@@ -277,9 +277,9 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 		vcpu->id, 0, apb->runtimephysmembase, endpfn);
 		
       for(i=0; i < endpfn; i++)
-        emhf_hwpgtbl_setprot(vcpu, (i*PAGE_SIZE_4K), (emhf_hwpgtbl_getprot(vcpu, (i*PAGE_SIZE_4K)) & ~HWPGTBL_FLAG_EXECUTE));     
+        emhf_memprot_setprot(vcpu, (i*PAGE_SIZE_4K), (emhf_memprot_getprot(vcpu, (i*PAGE_SIZE_4K)) | MEMP_PROT_NOEXECUTE));     
   
-      emhf_hwpgtbl_flushall(vcpu);  //flush all NPT/EPT mappings
+      emhf_memprot_flushmappings(vcpu);  //flush all NPT/EPT mappings
       printf("\nCPU(0x%02x): Setup trusted execution and flushed all HW pagetable mappings...", vcpu->id);
     }
     #endif
