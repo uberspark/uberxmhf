@@ -135,6 +135,20 @@ u32 approvedexec_iscmdonsamepage(VCPU *vcpu, u64 gpa, u64 gva){
   else
     return 0; //not cmd on same page
 }
+                
+//---return true if a page table fault was due to execute---------------
+bool ispfduetoexec(VCPU *vcpu, u64 violationcode){
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
+		if ( ((u32)violationcode & PF_ERRORCODE_PRESENT ) &&
+			 ((u32)violationcode & PF_ERRORCODE_INST) )
+			 return true;
+	}else{ //CPU_VENDOR_INTEL
+		if ( ((u32)violationcode & EPT_ERRORCODE_EXEC ) )
+			 return true;
+	}
+
+	return false;
+}                
                   
 //---approved execution violation handler-------------------------------                                                                   
 u32 approvedexec_handleevent(VCPU *vcpu, struct regs *r, 
@@ -147,7 +161,7 @@ u32 approvedexec_handleevent(VCPU *vcpu, struct regs *r,
 	approvedexec_getguestpcvaddr(vcpu));
 
   
-  if(violationcode & (1ULL << 2) ){ //XXX: this is EPT specific
+  if(ispfduetoexec(vcpu, violationcode)){
     //printf("\nCPU(0x%02x): EPT/EXEC, p=0x%08x, v=0x%08x, pcp=0x%08x, pcv=0x%08x",
     // vcpu->id, (u32)gpa, (u32)gva, approvedexec_getguestpcpaddr(vcpu), approvedexec_getguestpcvaddr(vcpu));
     //we had a exec violation, time to check this physical page and lock it
