@@ -7,6 +7,7 @@
 #include <lockdown.h>
 #include <lockdown-acpi.h>
 #include <ata-atapi.h>
+#include <approvedexec.h>
 
 #if defined(__LDN_HYPERSWITCHING__)
 u32 acpi_control_portnum=0;
@@ -481,8 +482,6 @@ u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
 }
 
 
-extern u32 approvedexec_handleevent(VCPU *vcpu, struct regs *r, 
-  u64 gpa, u64 gva, u64 violationcode);
 
 //for now this always returns APP_SUCCESS
 u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
