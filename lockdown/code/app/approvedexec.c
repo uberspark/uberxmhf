@@ -163,15 +163,18 @@ u32 approvedexec_handleevent(VCPU *vcpu, struct regs *r,
   
   if(ispfduetoexec(vcpu, violationcode)){
     //we had a exec violation, time to check this physical page and lock it
-    printf("\n%s: CPU(0x%02x) PF-NX, p=0x%08x, v=0x%08x, pcp=0x%08x, pcv=0x%08x",
-		__FUNCTION__, vcpu->id, (u32)gpa, (u32)gva, 
-		approvedexec_getguestpcpaddr(vcpu), 
-		approvedexec_getguestpcvaddr(vcpu));
+    //printf("\n%s: CPU(0x%02x) PF-NX, p=0x%08x, v=0x%08x, pcp=0x%08x, pcv=0x%08x",
+	//	__FUNCTION__, vcpu->id, (u32)gpa, (u32)gva, 
+	//	approvedexec_getguestpcpaddr(vcpu), 
+	//	approvedexec_getguestpcvaddr(vcpu));
 
     //verify integrity of code page
     //windows_verifycodeintegrity(vcpu, (u32)gpa, (u32)gva);
     //give page execute permissions but prevent further writes
-    emhf_memprot_setprot(vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE);
+    emhf_memprot_setprot(vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READONLY | MEMP_PROT_EXECUTE);
+    //printf("\n%s: CPU(0x%02x) PF-NX, getprot=0x%08x",
+	//	__FUNCTION__, vcpu->id, emhf_memprot_getprot(vcpu, gpa));
+
   }else{
     //we have a write fault, check if it is cmd on same page
     printf("\n%s: CPU(0x%02x) PF-W, p=0x%08x, v=0x%08x, pcp=0x%08x, pcv=0x%08x",
