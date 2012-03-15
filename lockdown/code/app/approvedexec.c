@@ -155,36 +155,44 @@ u32 approvedexec_handleevent(VCPU *vcpu, struct regs *r,
   u64 gpa, u64 gva, u64 violationcode){
   (void)r;
 
-  printf("\n%s: CPU(0x%02x) PF, p=0x%08x, v=0x%08x, pcp=0x%08x, pcv=0x%08x",
-	__FUNCTION__, vcpu->id, (u32)gpa, (u32)gva, 
-	approvedexec_getguestpcpaddr(vcpu), 
-	approvedexec_getguestpcvaddr(vcpu));
+  //printf("\n%s: CPU(0x%02x) PF, p=0x%08x, v=0x%08x, pcp=0x%08x, pcv=0x%08x",
+	//__FUNCTION__, vcpu->id, (u32)gpa, (u32)gva, 
+	//approvedexec_getguestpcpaddr(vcpu), 
+	//approvedexec_getguestpcvaddr(vcpu));
 
   
   if(ispfduetoexec(vcpu, violationcode)){
-    //printf("\nCPU(0x%02x): EPT/EXEC, p=0x%08x, v=0x%08x, pcp=0x%08x, pcv=0x%08x",
-    // vcpu->id, (u32)gpa, (u32)gva, approvedexec_getguestpcpaddr(vcpu), approvedexec_getguestpcvaddr(vcpu));
     //we had a exec violation, time to check this physical page and lock it
+    printf("\n%s: CPU(0x%02x) PF-NX, p=0x%08x, v=0x%08x, pcp=0x%08x, pcv=0x%08x",
+		__FUNCTION__, vcpu->id, (u32)gpa, (u32)gva, 
+		approvedexec_getguestpcpaddr(vcpu), 
+		approvedexec_getguestpcvaddr(vcpu));
+
     //TODO: check hash
     //windows_verifycodeintegrity(vcpu, (u32)gpa, (u32)gva);
     //give page execute permissions but prevent further writes
     emhf_memprot_setprot(vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READONLY | MEMP_PROT_EXECUTE);
 
   }else{
-    //printf("\nCPU(0x%02x): EPT/WR, p=0x%08x, v=0x%08x, pcp=0x%08x, pcv=0x%08x",
-    //  vcpu->id, (u32)gpa, (u32)gva, approvedexec_getguestpcpaddr(vcpu), approvedexec_getguestpcvaddr(vcpu));
     //we have a write fault, check if it is cmd on same page
+    printf("\n%s: CPU(0x%02x) PF-W, p=0x%08x, v=0x%08x, pcp=0x%08x, pcv=0x%08x",
+		__FUNCTION__, vcpu->id, (u32)gpa, (u32)gva, 
+		approvedexec_getguestpcpaddr(vcpu), 
+		approvedexec_getguestpcvaddr(vcpu));
+
     if(approvedexec_iscmdonsamepage(vcpu, gpa, gva)){
       //TODO: we will need to single-step or emulate instructions on this
       //page  
-      //printf("\n  CPU(0x%02x): C-M-D on same page", vcpu->id);
+      printf("\n  CPU(0x%02x): C-M-D on same page", vcpu->id);
       //for now give all permissions
       emhf_memprot_setprot(vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE);
     }else{
       //make page read-write and remove execute permission
-      emhf_memprot_setprot(vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE);
+      emhf_memprot_setprot(vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE);
     }
   }
+
+  emhf_memprot_flushmappings(vcpu);  //flush all NPT/EPT mappings
 
   return APP_SUCCESS;    
 }
