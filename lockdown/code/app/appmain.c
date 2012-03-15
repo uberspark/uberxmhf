@@ -480,7 +480,7 @@ u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
   return APP_IOINTERCEPT_CHAIN; //chain and do the required I/O    
 }
 
-#if defined (__NESTED_PAGING__)                       
+
 extern u32 approvedexec_handleevent(VCPU *vcpu, struct regs *r, 
   u64 gpa, u64 gva, u64 violationcode);
 
@@ -510,7 +510,7 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 
   while(1);
 }
-#endif
+
 
 
 void emhf_app_handleshutdown(VCPU *vcpu, struct regs *r){
