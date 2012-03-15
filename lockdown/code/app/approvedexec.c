@@ -144,6 +144,12 @@ u32 approvedexec_iscmdonsamepage(VCPU *vcpu, u64 gpa, u64 gva){
 u32 approvedexec_handleevent(VCPU *vcpu, struct regs *r, 
   u64 gpa, u64 gva, u64 violationcode){
   (void)r;
+
+  printf("\n%s: CPU(0x%02x) PF, p=0x%08x, v=0x%08x, pcp=0x%08x, pcv=0x%08x",
+	__FUNCTION__, vcpu->id, (u32)gpa, (u32)gva, 
+	approvedexec_getguestpcpaddr(vcpu), 
+	approvedexec_getguestpcvaddr(vcpu));
+
   
   if(violationcode & (1ULL << 2) ){ //XXX: this is EPT specific
     //printf("\nCPU(0x%02x): EPT/EXEC, p=0x%08x, v=0x%08x, pcp=0x%08x, pcv=0x%08x",
