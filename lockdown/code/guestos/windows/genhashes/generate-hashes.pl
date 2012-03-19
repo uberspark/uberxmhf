@@ -12,6 +12,6 @@ find(\&wanted, $ARGV[0]);
 
 sub wanted { 
 	# $File::Find::name should have the absolute filename path
-	
+	printf "%s\n", $File::Find::name;
 }
 
