@@ -399,7 +399,7 @@ int sha1_section(char *filename, char *section_name, unsigned long int section_v
 		//read the buffer
 		ret = fread(shabuf, i_size2, 1, fp);
     if (ret <= 0){
-        printf("\nunable to read %u bytes from file %s", i_size2, filename);        
+        //printf("\nunable to read %u bytes from file %s", i_size2, filename);        
         return 0;
     }
   
