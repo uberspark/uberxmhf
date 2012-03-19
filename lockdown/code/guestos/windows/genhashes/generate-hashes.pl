@@ -22,7 +22,9 @@ find(\&wanted, $ARGV[0]);
 
 sub wanted { 
 	# $File::Find::name should have the absolute filename path
-	printf "%s\n", $File::Find::name;
+	$shellcompatible_name = $File::Find::name;
+	$shellcompatible_name =~ s/ /\\ /g;
+	printf "%s -> %s\n", $File::Find::name, $shellcompatible_name;
 }
 
 
