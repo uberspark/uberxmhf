@@ -22,8 +22,6 @@ find( {
     wanted => \&process_wanted,
 }, $ARGV[0]);
 
-#find(\&process_wanted, $ARGV[0]);
-
 
 sub process_wanted { 
 	# $File::Find::name should have the absolute filename path
