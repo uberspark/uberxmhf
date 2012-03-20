@@ -1,44 +1,24 @@
-//windows.c
-//implements windows OS specific approved execution in the trusted environment in lockdown
+//======================================================================
+//approvedexec_windows.c
+//implements windows OS specific approved execution in the trusted 
+//environment in lockdown
 //author(s): amit vasudevan (amitvasudevan@acm.org)
+//======================================================================
 
 #include <emhf.h>
 
 #include <lockdown.h>
-
 #include <approvedexec.h>
 #include <exe_pe.h>
-//#include <sha1.h>
 
-
-#if 0
-//windows: current corner cases for implmentation
-//1. wrkx86.exe: INIT section, overwrites parts of itself 
-//0x001e9000-0x00216000 = rva of INIT
-//2. trampoline page (not sure whats happening there, guess some syscall/dpc stub?)
-//returns:1 if the specified vaddr falls in a corner case else 0
-#define	NTKERNEL_LOADIMAGEBASE	0x80800000	//nt kernel is always loaded at this vaddr
-#define CORNERCASE_1_VADDRSTART	(NTKERNEL_LOADIMAGEBASE + 0x001e9000)
-#define CORNERCASE_1_VADDREND		(NTKERNEL_LOADIMAGEBASE + 0x00216000)
-#define	CORNERCASE_2_VADDRSTART	(0x81711000)
-#define CORNERCASE_2_VADDREND		(0x81712000)
-u32 windows_unrelocate_cornercases(u32 vaddr){
-	if(vaddr >= CORNERCASE_1_VADDRSTART && vaddr < CORNERCASE_1_VADDREND)
-		return 1;
-	if(vaddr >= CORNERCASE_2_VADDRSTART && vaddr < CORNERCASE_2_VADDREND)
-		return 1;
-
-	return 0;
-}
-#endif
-
-//------------------------------------------------------------------------------
-//gets the physical address of a virtual address vaddr
-//return 0xFFFFFFFF on virtual address not mapped else return physical address
+//----------------------------------------------------------------------
+//gets the physical address of a virtual address "vaddr"
+//return 0xFFFFFFFF on virtual address not mapped else 
+//return physical address
 //assumption: the vaddr that is passed to us is a fully qualified vaddr,
-//in other words if paging is disabled, then the vaddr is the Cs.base + offset
+//in other words if paging is disabled, then the vaddr is the 
+//CS.base + offset
 u32 windows_getphysicaladdress(VCPU *vcpu, u32 vaddr){
-//if(vcpu->guest_unrestricted){
 	if( (vcpu->vmcs.guest_CR0 & CR0_PE) &&
 			(vcpu->vmcs.guest_CR0 & CR0_PG) ){	
 		//protected mode and paging enabled, so walk guest page tables
@@ -46,34 +26,14 @@ u32 windows_getphysicaladdress(VCPU *vcpu, u32 vaddr){
 	}else{	//paging is disabled
 		return vaddr;
 	}
-
-/*}else{
-	if( (vcpu->guest_currentstate & GSTATE_PROTECTEDMODE) &&
-			(vcpu->guest_currentstate & GSTATE_PROTECTEDMODE_PG) ){	
-		//protected mode and paging enabled, so walk guest page tables
-		return emhf_guestpgtbl_walk(vcpu, vaddr);
-	}else{	//paging is disabled
-		return vaddr;
-	}
-}*/
 }
 
-//------------------------------------------------------------------------------
-//gets the virtual address of the physical address paddr
-u32 windows_getvirtualaddress(VCPU *vcpu, u32 paddr){
-	(void)paddr;
-	//if( (vcpu->guest_currentstate & GSTATE_PROTECTEDMODE) &&
-	//		(vcpu->guest_currentstate & GSTATE_PROTECTEDMODE_PG) ){	
-		//protected mode and paging enabled
-		//we just use a simple trick, on a NX fault which is the only time
-		//this is called, guest_RIP will contain
-		//the virtual address of the guest memory page causing the fault, which is
-		//the virtual address we need!
-	//	return (u32)vcpu->vmcs.guest_RIP;
-	//}else{	//paging is disabled
-		return (u32)vcpu->vmcs.guest_CS_base + (u32)vcpu->vmcs.guest_RIP;
-	//}
+//----------------------------------------------------------------------
+//gets the current virtual address of the program counter
+u32 windows_getpcvirtualaddress(VCPU *vcpu){
+	return (u32)vcpu->vmcs.guest_CS_base + (u32)vcpu->vmcs.guest_RIP;
 }
+
 
 #define SKIPMEM									(0x00400000)
 #define SCANMZPE_MAXPESIZE			(16*1024*1024) 	//16MB max PE size
@@ -514,7 +474,7 @@ u32 windows_verifycodeintegrity(VCPU *vcpu, u32 paddr, u32 vaddrfromcpu){
 	//so we always get the virtual address and check if the lower 12 bits equal
 	//the lower 12 bits of the paddr. if not, we traverse the guest paging
 	//structures (if loaded) to compute the correct physical address
-	vaddr = windows_getvirtualaddress(vcpu, paddr);
+	vaddr = windows_getpcvirtualaddress(vcpu);
 	if( (vaddr & (u32)0x00000FFF) != (paddr & (u32)0x00000FFF) ){
 	 	//need to adjust paddr
 	 	paddr = windows_getphysicaladdress(vcpu, vaddr);
