@@ -524,19 +524,11 @@ u32 windows_verifycodeintegrity(VCPU *vcpu, u32 paddr, u32 vaddrfromcpu){
 	
 //__step2:	
 	//check for valid PE image if in protected mode
-//if(vcpu->guest_unrestricted){
 	if(! (vcpu->vmcs.guest_CR0 & CR0_PE) ){
 		AX_DEBUG(("\nstep-2: SKIPPED - in real mode"));
 		retval = 0;
 		goto __step5;
 	}
-/*}else{
-	if(! (vcpu->guest_currentstate & GSTATE_PROTECTEDMODE) ){
-		AX_DEBUG(("\nstep-2: SKIPPED - in real mode"));
-		retval = 0;
-		goto __step5;
-	}
-}*/
 	
 	imagebase=windows_scanmzpe(vcpu, vaddr, &ntHeader);
 	
@@ -584,30 +576,24 @@ u32 windows_verifycodeintegrity(VCPU *vcpu, u32 paddr, u32 vaddrfromcpu){
 	
 
 __step4:	
-#if 0
 	//verify the memory page conents with hash list 
 	{
-		//extern struct hashinfo hashlist_full[];
-		//extern struct hashinfo hashlist_partial[];
 		u32 index, fullhash;
 		retval=approvedexec_checkhashes(paligned_paddr, &index, &fullhash);
 
-	#if 0
-			if(!retval){
-				printf("\nPEBase(o:a)=(0x%08x:0x%08x), UNMATCHED, p=0x%08x, v=0x%08x", 
-							ntHeader->OptionalHeader.ImageBase, imagebase, 
-							paddr, vaddr);
-			}else{
-				printf("\nPE base=0x%08x, MATCHED  , p=0x%08x, v=0x%08x", imagebase, PAGE_ALIGN_4K(paddr), paligned_vaddr);
-				if(fullhash)
-					printf("\n  %s", hashlist_full[index].name);
-				else
-					printf("\n  %s", hashlist_partial[index].name);
-			}
-	#endif
-
+		if(!retval){
+			printf("\nPEBase(o:a)=(0x%08x:0x%08x), UNMATCHED, p=0x%08x, v=0x%08x", 
+						ntHeader->OptionalHeader.ImageBase, imagebase, 
+						paddr, vaddr);
+		}else{
+			printf("\nPE base=0x%08x, MATCHED (%u), p=0x%08x, v=0x%08x", 
+				imagebase, (1 ? fullhash : 0), PAGE_ALIGN_4K(paddr), paligned_vaddr);
+				//if(fullhash)
+				//	printf("\n  %s", hashlist_full[index].name);
+				//else
+				//	printf("\n  %s", hashlist_partial[index].name);
+		}
 	}
-#endif
 
 __step5:	
 	if(retval){
