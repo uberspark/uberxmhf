@@ -53,11 +53,8 @@ u32 windows_scanmzpe(VCPU *vcpu, u32 vaddr,
 
 	IMAGE_DOS_HEADER *dosHeader;
 	u32 dosHeader_paddr;
-#if 0	
-
 	IMAGE_NT_HEADERS32 *ntHeader;
 	u32 ntHeader_paddr;
-#endif
 
 	(void)storeNtHeader;
 	(void)vcpu;
@@ -85,9 +82,6 @@ u32 windows_scanmzpe(VCPU *vcpu, u32 vaddr,
 			
 			if((u16)dosHeader->e_magic == (u16)IMAGE_DOS_SIGNATURE){
 				//printf("\nprobable dos header at: 0x%08X, e_lfanew=0x%08X", i_addr, dosHeader->e_lfanew);
-#if 0
-
-
 				if((u32)dosHeader->e_lfanew < (u32)SCANMZPE_MAXPEHEADEROFFSET){			
 					ntHeader_paddr = windows_getphysicaladdress(vcpu, i_addr + (u32)dosHeader->e_lfanew);
 					
@@ -113,11 +107,8 @@ u32 windows_scanmzpe(VCPU *vcpu, u32 vaddr,
 						}
 					}
 				}
-#endif
-			
 			} 
 		}
-
 	}
 
 	//printf("\nwindows_scanmzpe: error exit, scanned until maximum of 0x%08X bytes", end_addr);
