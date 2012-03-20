@@ -39,20 +39,26 @@ u32 windows_getpcvirtualaddress(VCPU *vcpu){
 //scan for a valid MZ/PE header encompassing the given virtual adress
 //return: image base (virtual address) on success, 0xFFFFFFFF on failure
 #define SKIPMEM						(0x00400000)
-#define SCANMZPE_MAXPESIZE			(16*1024*1024) 						//16MB max PE size
+#define SCANMZPE_MAXPESIZE			(4*1024*1024) 						//4MB max PE size
 #define SCANMZPE_MAXPEHEADEROFFSET	0x300								//maximum distance we go until 
 																		//we find a PE from a MZ
 u32 windows_scanmzpe(VCPU *vcpu, u32 vaddr, 
 	IMAGE_NT_HEADERS32 **storeNtHeader){
+	
+	u32 paligned_vaddr;
+	u32 start_addr;
+	u32 end_addr;
+	
+#if 0
 	IMAGE_DOS_HEADER *dosHeader;
 	IMAGE_NT_HEADERS32 *ntHeader;
 	u32 dosHeader_paddr;
 	u32 ntHeader_paddr;
-	u32 paligned_vaddr;
-
-	u32 start_addr;
-	u32 end_addr;
 	u32 i_addr;
+#endif
+
+	(void)storeNtHeader;
+	(void)vcpu;
 	
 	//page-align virtual address
 	paligned_vaddr=PAGE_ALIGN_4K(vaddr);
@@ -65,7 +71,8 @@ u32 windows_scanmzpe(VCPU *vcpu, u32 vaddr,
 		start_addr= SKIPMEM;
 		end_addr = SCANMZPE_MAXPESIZE;
 	}
-	
+
+#if 0	
 	//search for a valid PE header in the virtual range computed
 	for(i_addr=start_addr; i_addr < end_addr; i_addr+=PAGE_SIZE_4K){
 		dosHeader_paddr = windows_getphysicaladdress(vcpu, i_addr);
@@ -103,6 +110,7 @@ u32 windows_scanmzpe(VCPU *vcpu, u32 vaddr,
 			} 
 		}
 	}
+#endif
 
 	//printf("\nwindows_scanmzpe: error exit, scanned until maximum of 0x%08X bytes", end_addr);
 	return (u32)0xFFFFFFFF;
