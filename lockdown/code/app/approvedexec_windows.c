@@ -495,10 +495,10 @@ u32 windows_verifycodeintegrity(VCPU *vcpu, u32 paddr, u32 vaddrfromcpu){
 	IMAGE_NT_HEADERS32 *ntHeader;
 	//int i;
 	u32 paligned_paddr;
-#if 0
+
 	u32 paddr_prevpage, paddr_nextpage;
 	u32 paligned_paddr_prevpage, paligned_paddr_nextpage;
-#endif
+
 	(void)vaddrfromcpu;
 	
 //__step1:	
@@ -544,7 +544,6 @@ u32 windows_verifycodeintegrity(VCPU *vcpu, u32 paddr, u32 vaddrfromcpu){
 	AX_DEBUG(("\nstep-2: PE imagebase(load=0x%08x, orig=0x%08x), image size=0x%08x", 
 		(u32)imagebase, (u32)ntHeader->OptionalHeader.ImageBase, (u32)ntHeader->OptionalHeader.SizeOfImage));
 
-#if 0
 //__step3:	
 	//unrelocate the memory page of the PE image if needed
 	if(imagebase == ntHeader->OptionalHeader.ImageBase){
@@ -598,7 +597,6 @@ __step4:
 	}
 #endif
 
-#endif
 __step5:	
 	if(retval){
 		AX_DEBUG(("\nstep-4: SUCCESS - verified page contents"));
