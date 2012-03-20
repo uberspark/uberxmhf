@@ -137,7 +137,7 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 	printf("\nCPU(0x%02x): BSP. Lockdown initiaizing...", vcpu->id);
 	
 	//setup guest environment physical memory size
-	LDN_ENV_PHYSICALMEMORYLIMIT = apb->runtimephysmembase; 
+	LDN_ENV_PHYSICALMEMORYLIMIT = (apb->runtimephysmembase - PAGE_SIZE_2M); 
 
 #if defined (__LDN_TEST_MLOAD__)
 	//we use the app param. block fields as below
