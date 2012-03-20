@@ -299,15 +299,18 @@ u32 windows_unrelocatepage(VCPU *vcpu, IMAGE_NT_HEADERS32 *ntHeader, u32 imageba
 	//u32 prev_size=0;
 	u32 paligned_vaddr = PAGE_ALIGN_4K(vaddr); 
 	u32 found_relocEntry=0;
-	u32 i;
 	u32 reloc_size, reloc_vaddr;
 	u32 originalimagebase=ntHeader->OptionalHeader.ImageBase;
 	u32 retval;
 	//u32 prevpage_paddr;
+
+#if 0	
+	u32 i;
 	RELOCTYPEOFFSET *relocTypeOffsets;
 	u32 needPreviousPage=0, needNextPage=0;
-	
-	
+#else
+	(void)outputPage;
+#endif
 	
 	AX_DEBUG(("\n windows_unrelocatepage: imagebase=0x%08x, vaddr=0x%08x, paligned=0x%08x", imagebase, vaddr, paligned_vaddr));
 	AX_DEBUG(("\n inputPage(prev, curr, next)=0x%08x, 0x%08x, 0x%08x", (u32)inputPagePrevious, (u32)inputPage, (u32)inputPageNext));
@@ -397,8 +400,8 @@ u32 windows_unrelocatepage(VCPU *vcpu, IMAGE_NT_HEADERS32 *ntHeader, u32 imageba
 		AX_DEBUG(("\n relocEntryNext: rva=0x%08x, size=0x%08x", (u32)relocEntryNext->VirtualAddress, (u32)relocEntryNext->SizeOfBlock));
 	}
 		
+#if 0
 	memset(&unrelocateBuffer, 0, (PAGE_SIZE_4K *3));
-
 
 	//determine if we need the previous page to perform a successful unrelocation
 	if(relocEntryPrevious){
@@ -466,6 +469,7 @@ u32 windows_unrelocatepage(VCPU *vcpu, IMAGE_NT_HEADERS32 *ntHeader, u32 imageba
 	//we dont need to perform unrelocation for inputPageNext
 	
 	memcpy(outputPage, (void *)((u32)unrelocateBuffer+PAGE_SIZE_4K), PAGE_SIZE_4K);
+#endif
 	
 	return UNRELOC_SUCCESS_UNRELOCATED;
 }
