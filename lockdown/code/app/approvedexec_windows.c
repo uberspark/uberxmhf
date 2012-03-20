@@ -116,10 +116,8 @@ u32 windows_scanmzpe(VCPU *vcpu, u32 vaddr,
 }
 
 
-
-#if 1
-//==============================================================================
-//PE relocation routines
+//----------------------------------------------------------------------
+//PE (un)relocation routines
 typedef struct {
 	u32 offset : 12;
 	u32 type : 4;
@@ -129,16 +127,16 @@ typedef struct {
 u8 relocationInfo[MAX_RELOCATIONINFOSIZE];
 
 
-#define	UNRELOC_SUCCESS_UNRELOCATED						0x0
-#define UNRELOC_SUCCESS_NOUNRELOCATIONNEEDED	0x1
-#define	UNRELOC_SUCCESS												0x2
+#define	UNRELOC_SUCCESS_UNRELOCATED							0x0
+#define UNRELOC_SUCCESS_NOUNRELOCATIONNEEDED				0x1
+#define	UNRELOC_SUCCESS										0x2
 #define UNRELOC_ERR_UNHANDLEDTYPE							0x3
-#define UNRELOC_ERR_SECTIONNOTINMEM						0x4
-#define	UNRELOC_ERR_SECTIONNOTONPAGEBOUNDARY	0x5
-#define	UNRELOC_ERR_IMAGEBASE									0x6
+#define UNRELOC_ERR_SECTIONNOTINMEM							0x4
+#define	UNRELOC_ERR_SECTIONNOTONPAGEBOUNDARY				0x5
+#define	UNRELOC_ERR_IMAGEBASE								0x6
 #define	UNRELOC_ERR_BUFEXCEEDED								0x7
-#define UNRELOC_ERR_ZEROBLOCK									0x8
-#define	UNRELOC_ERR_NOPHYSMEM									0x9
+#define UNRELOC_ERR_ZEROBLOCK								0x8
+#define	UNRELOC_ERR_NOPHYSMEM								0x9
 
 u32 windows_getrelocsection(VCPU *vcpu, u32 reloc_section_va, u32 reloc_section_size, u8 *relocBuffer){
 	u32 paligned_reloc_section_va;
@@ -147,12 +145,17 @@ u32 windows_getrelocsection(VCPU *vcpu, u32 reloc_section_va, u32 reloc_section_
 	u32 offset=0;
 	
 	AX_DEBUG(("\n  windows_getrelocsection:"));
-	AX_DEBUG(("\n  reloc_section_va=0x%08x, size=0x%08x, relocBuffer=0x%08x", 
-		reloc_section_va, reloc_section_size, (u32)relocBuffer));
+	AX_DEBUG(("\n  reloc_section_va=0x%08x, size=0x%08x, \
+		relocBuffer=0x%08x", reloc_section_va, reloc_section_size, 
+		(u32)relocBuffer));
 		
-	paligned_reloc_section_va = PAGE_ALIGN_4K(reloc_section_va); 	//page align reloc_section_va
-	paligned_reloc_section_va_end = paligned_reloc_section_va + PAGE_ALIGN_4K(reloc_section_size);
-	AX_DEBUG(("\n  paligned_reloc_section_va=0x%08x, paligned_reloc_section_va_end=0x%08x", paligned_reloc_section_va,
+	paligned_reloc_section_va = PAGE_ALIGN_4K(reloc_section_va); 		//page align reloc_section_va
+	paligned_reloc_section_va_end = paligned_reloc_section_va + 
+		PAGE_ALIGN_4K(reloc_section_size);
+	
+	AX_DEBUG(("\n  paligned_reloc_section_va=0x%08x, \
+		paligned_reloc_section_va_end=0x%08x", 
+		paligned_reloc_section_va,
 		paligned_reloc_section_va_end));
 
 	if(paligned_reloc_section_va != reloc_section_va){
@@ -168,9 +171,9 @@ u32 windows_getrelocsection(VCPU *vcpu, u32 reloc_section_va, u32 reloc_section_
 		}
 		
 		if(vaddr == paligned_reloc_section_va_end)
-			memcpy((void *)((u32)relocBuffer+offset), (void *)paddr, (reloc_section_size % PAGE_SIZE_4K));
+			memcpy((void *)((u32)relocBuffer+offset), (void *)gpa2hva(paddr), (reloc_section_size % PAGE_SIZE_4K));
 		else
-			memcpy((void *)((u32)relocBuffer+offset), (void *)paddr, PAGE_SIZE_4K);
+			memcpy((void *)((u32)relocBuffer+offset), (void *)gpa2hva(paddr), PAGE_SIZE_4K);
 
 		offset+=PAGE_SIZE_4K;		
 	}
@@ -180,7 +183,6 @@ u32 windows_getrelocsection(VCPU *vcpu, u32 reloc_section_va, u32 reloc_section_
 }
 
 u8 unrelocateBuffer[PAGE_SIZE_4K * 3];
-
 
 u32 windows_unrelocatepage_processrelocations(VCPU *vcpu, u32 imagebase, u32 originalimagebase,
 	void *page, IMAGE_BASE_RELOCATION *relocEntry, u8 *relocEntry_relocInfo){
@@ -217,8 +219,6 @@ u32 windows_unrelocatepage_processrelocations(VCPU *vcpu, u32 imagebase, u32 ori
 
 
 
-
-
 //return 0 on error, 1 on success
 //u32 windows_unrelocatepage(IMAGE_NT_HEADERS32 *ntHeader, u32 imagebase, u32 vaddr, void *inputPage, void *outputPage){
 u32 windows_unrelocatepage(VCPU *vcpu, IMAGE_NT_HEADERS32 *ntHeader, u32 imagebase, u32 vaddr, void *inputPagePrevious, void *inputPage, void *inputPageNext, void *outputPage){
@@ -237,13 +237,9 @@ u32 windows_unrelocatepage(VCPU *vcpu, IMAGE_NT_HEADERS32 *ntHeader, u32 imageba
 	u32 retval;
 	//u32 prevpage_paddr;
 
-#if 0	
 	u32 i;
 	RELOCTYPEOFFSET *relocTypeOffsets;
 	u32 needPreviousPage=0, needNextPage=0;
-#else
-	(void)outputPage;
-#endif
 	
 	AX_DEBUG(("\n windows_unrelocatepage: imagebase=0x%08x, vaddr=0x%08x, paligned=0x%08x", imagebase, vaddr, paligned_vaddr));
 	AX_DEBUG(("\n inputPage(prev, curr, next)=0x%08x, 0x%08x, 0x%08x", (u32)inputPagePrevious, (u32)inputPage, (u32)inputPageNext));
@@ -333,7 +329,6 @@ u32 windows_unrelocatepage(VCPU *vcpu, IMAGE_NT_HEADERS32 *ntHeader, u32 imageba
 		AX_DEBUG(("\n relocEntryNext: rva=0x%08x, size=0x%08x", (u32)relocEntryNext->VirtualAddress, (u32)relocEntryNext->SizeOfBlock));
 	}
 		
-#if 0
 	memset(&unrelocateBuffer, 0, (PAGE_SIZE_4K *3));
 
 	//determine if we need the previous page to perform a successful unrelocation
@@ -402,14 +397,9 @@ u32 windows_unrelocatepage(VCPU *vcpu, IMAGE_NT_HEADERS32 *ntHeader, u32 imageba
 	//we dont need to perform unrelocation for inputPageNext
 	
 	memcpy(outputPage, (void *)((u32)unrelocateBuffer+PAGE_SIZE_4K), PAGE_SIZE_4K);
-#endif
 	
 	return UNRELOC_SUCCESS_UNRELOCATED;
 }
-// end PE relocation code
-//==============================================================================
-#endif
-
 
 
 u8 outputPage[PAGE_SIZE_4K];
@@ -433,10 +423,8 @@ u32 windows_verifycodeintegrity(VCPU *vcpu, u32 paddr, u32 vaddrfromcpu){
 	//int i;
 	u32 paligned_paddr;
 
-#if 0
 	u32 paddr_prevpage, paddr_nextpage;
 	u32 paligned_paddr_prevpage, paligned_paddr_nextpage;
-#endif
 
 	(void)vaddrfromcpu;
 	
@@ -483,7 +471,6 @@ u32 windows_verifycodeintegrity(VCPU *vcpu, u32 paddr, u32 vaddrfromcpu){
 	AX_DEBUG(("\nstep-2: PE imagebase(load=0x%08x, orig=0x%08x), image size=0x%08x", 
 		(u32)imagebase, (u32)ntHeader->OptionalHeader.ImageBase, (u32)ntHeader->OptionalHeader.SizeOfImage));
 
-#if 0
 //__step3:	
 	//unrelocate the memory page of the PE image if needed
 	if(imagebase == ntHeader->OptionalHeader.ImageBase){
@@ -512,12 +499,9 @@ u32 windows_verifycodeintegrity(VCPU *vcpu, u32 paddr, u32 vaddrfromcpu){
 		AX_DEBUG(("\nstep-3: SUCCESS - unrelocated memory page"));
 		paligned_paddr=(u32)&outputPage;
 	}
-#endif	
 	
 
-#if 0
 __step4:	
-#endif
 
 #if defined (__LDN_APPROVEDEXEC_CMPHASHES__)
 	//verify the memory page conents with hash list 
