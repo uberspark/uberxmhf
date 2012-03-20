@@ -43,6 +43,7 @@ ASFLAGS = $(CFLAGS) -D__ASSEMBLY__
 export LDN_HYPERSWITCHING := y
 export LDN_HYPERPARTITIONING := n
 export LDN_APPROVEDEXEC := y
+export LDN_APPROVEDEXEC_CMPHASHES := n
 export LDN_SSLPA := n
 # test modes
 	# fwreset, experiment with minimal device reset and cycle through GRUB
@@ -59,6 +60,9 @@ ifeq ($(LDN_HYPERPARTITIONING), y)
 endif
 ifeq ($(LDN_APPROVEDEXEC), y)
   CFLAGS += -D__LDN_APPROVEDEXEC__
+endif
+ifeq ($(LDN_APPROVEDEXEC_CMPHASHES), y)
+  CFLAGS += -D__LDN_APPROVEDEXEC_CMPHASHES__
 endif
 ifeq ($(LDN_SSLPA), y)
   CFLAGS += -D__LDN_SSLPA__

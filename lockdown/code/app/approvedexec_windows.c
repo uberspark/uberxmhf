@@ -576,6 +576,7 @@ u32 windows_verifycodeintegrity(VCPU *vcpu, u32 paddr, u32 vaddrfromcpu){
 	
 
 __step4:	
+#if defined (__LDN_APPROVEDEXEC_CMPHASHES__)
 	//verify the memory page conents with hash list 
 	{
 		u32 index, fullhash;
@@ -594,6 +595,7 @@ __step4:
 				//	printf("\n  %s", hashlist_partial[index].name);
 		}
 	}
+#endif
 
 __step5:	
 	if(retval){
