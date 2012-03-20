@@ -35,32 +35,42 @@ u32 windows_getpcvirtualaddress(VCPU *vcpu){
 }
 
 
-#define SKIPMEM									(0x00400000)
-#define SCANMZPE_MAXPESIZE			(16*1024*1024) 	//16MB max PE size
-//#define	SCANMZPE_PEHEADERGRAN		(PAGE_SIZE_4K)	//header is assumed to start on this multiple always
-#define SCANMZPE_MAXPEHEADEROFFSET	0x300				//maximum distance we go until we find a PE from a MZ
+//----------------------------------------------------------------------
 //scan for a valid MZ/PE header encompassing the given virtual adress
 //return: image base (virtual address) on success, 0xFFFFFFFF on failure
-u32 windows_scanmzpe(VCPU *vcpu, u32 vaddr, IMAGE_NT_HEADERS32 **storeNtHeader){
-//u32 windows_scanmzpe(u32 vaddr){
+#define SKIPMEM						(0x00400000)
+#define SCANMZPE_MAXPESIZE			(16*1024*1024) 						//16MB max PE size
+#define SCANMZPE_MAXPEHEADEROFFSET	0x300								//maximum distance we go until 
+																		//we find a PE from a MZ
+u32 windows_scanmzpe(VCPU *vcpu, u32 vaddr, 
+	IMAGE_NT_HEADERS32 **storeNtHeader){
 	IMAGE_DOS_HEADER *dosHeader;
 	IMAGE_NT_HEADERS32 *ntHeader;
-	u32 addr, dosHeader_paddr, ntHeader_paddr, end_addr, i_addr;
+	u32 dosHeader_paddr;
+	u32 ntHeader_paddr;
+	u32 paligned_vaddr;
+
+	u32 start_addr;
+	u32 end_addr;
+	u32 i_addr;
 	
-	//addr = ((vaddr) & ~(PAGE_SIZE_4K - 1));
-	addr=PAGE_ALIGN_4K(vaddr);
+	//page-align virtual address
+	paligned_vaddr=PAGE_ALIGN_4K(vaddr);
 	
-	if(addr > (SKIPMEM+SCANMZPE_MAXPESIZE))
-		end_addr= addr - SCANMZPE_MAXPESIZE;
-	else
-		end_addr= SKIPMEM;
-		
-	//printf("\nwindows_scanmzpe: enter, vaddr=0x%08X, addr=0x%08X, end_addr=0x%08X", vaddr, addr, end_addr);
+	//compute the virtual range we will be checking within
+	if(paligned_vaddr > (SKIPMEM+SCANMZPE_MAXPESIZE)){
+		start_addr = paligned_vaddr - SCANMZPE_MAXPESIZE;
+		end_addr = paligned_vaddr;
+	}else{
+		start_addr= SKIPMEM;
+		end_addr = SCANMZPE_MAXPESIZE;
+	}
 	
-	for(i_addr=addr; i_addr > end_addr; i_addr-=4096){
+	//search for a valid PE header in the virtual range computed
+	for(i_addr=start_addr; i_addr < end_addr; i_addr+=PAGE_SIZE_4K){
 		dosHeader_paddr = windows_getphysicaladdress(vcpu, i_addr);
 		if(dosHeader_paddr > 0x00100000 && dosHeader_paddr < LDN_ENV_PHYSICALMEMORYLIMIT){
-			dosHeader=(IMAGE_DOS_HEADER *)dosHeader_paddr;
+			dosHeader=(IMAGE_DOS_HEADER *)gpa2hva(dosHeader_paddr);
 			
 			if((u16)dosHeader->e_magic == (u16)IMAGE_DOS_SIGNATURE){
 				//printf("\nprobable dos header at: 0x%08X, e_lfanew=0x%08X", i_addr, dosHeader->e_lfanew);
@@ -69,7 +79,7 @@ u32 windows_scanmzpe(VCPU *vcpu, u32 vaddr, IMAGE_NT_HEADERS32 **storeNtHeader){
 					ntHeader_paddr = windows_getphysicaladdress(vcpu, i_addr + (u32)dosHeader->e_lfanew);
 					
 					if(ntHeader_paddr > 0x00100000 && ntHeader_paddr < LDN_ENV_PHYSICALMEMORYLIMIT){
-						ntHeader= (IMAGE_NT_HEADERS32 *)ntHeader_paddr;
+						ntHeader= (IMAGE_NT_HEADERS32 *)gpa2hva(ntHeader_paddr);
 						
 						//sanity check: check if complete NT Headers is within the physical page
 						//if( (u32)dosHeader->e_lfanew + sizeof(IMAGE_NT_HEADERS32) > 4096)
@@ -98,50 +108,6 @@ u32 windows_scanmzpe(VCPU *vcpu, u32 vaddr, IMAGE_NT_HEADERS32 **storeNtHeader){
 	return (u32)0xFFFFFFFF;
 }
 
-
-
-#if 0
-//------------------------------------------------------------------------------
-//sanity checks PE image in memory and obtains relocation information into
-//provided buffer
-//input: relocinfobuffer __must__ be of size MAX_RELOCATIONINFOSIZE
-//returns: UNRELOC_SUCCESS on success, else one of UNRELOC_ERR_xxx on error
-u32 windows_checkPEandgetrelocsection(IMAGE_NT_HEADERS32 *ntHeader,
-	u32 imagebase, u8 *relocinfobuffer){
-	u32 originalimagebase;
-	u32 reloc_size, reloc_vaddr;
-	u32 retval;
-	
-	//get PE original image base from header
-	originalimagebase=ntHeader->OptionalHeader.ImageBase;
-  	
-	//PE should never be relocated to an address "below" its imagebase
-	if(imagebase < originalimagebase){
-		AX_DEBUG(("\n error: imagebase < originalimagebase"));
-		return UNRELOC_ERR_IMAGEBASE;
-	}
-
-	//get hold of .reloc section base and size
-	reloc_vaddr=ntHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress;
-	reloc_size=ntHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].Size;
-
-	AX_DEBUG(("\n reloc section base=0x%08X, size=0x%08X", reloc_vaddr, reloc_size));
-	if(reloc_size > MAX_RELOCATIONINFOSIZE){
-		AX_DEBUG(("\n error: relocsize > MAX_RELOCATIONINFOSIZE"));
-		return UNRELOC_ERR_BUFEXCEEDED;
-	}
-	
-	//get relocation information from reloc section
-	memset(relocinfobuffer, 0, MAX_RELOCATIONINFOSIZE);
-	retval=windows_getrelocsection(imagebase+reloc_vaddr, reloc_size, relocinfobuffer);
-	if(retval != UNRELOC_SUCCESS){
-		AX_DEBUG(("\n error: unable to get relocation info!"));
-		return retval;
-	}
-	
-	return UNRELOC_SUCCESS;
-}
-#endif
 
 
 #if 1
@@ -460,8 +426,10 @@ u32 windows_verifycodeintegrity(VCPU *vcpu, u32 paddr, u32 vaddrfromcpu){
 	//int i;
 	u32 paligned_paddr;
 
+#if 0
 	u32 paddr_prevpage, paddr_nextpage;
 	u32 paligned_paddr_prevpage, paligned_paddr_nextpage;
+#endif
 
 	(void)vaddrfromcpu;
 	
@@ -508,6 +476,7 @@ u32 windows_verifycodeintegrity(VCPU *vcpu, u32 paddr, u32 vaddrfromcpu){
 	AX_DEBUG(("\nstep-2: PE imagebase(load=0x%08x, orig=0x%08x), image size=0x%08x", 
 		(u32)imagebase, (u32)ntHeader->OptionalHeader.ImageBase, (u32)ntHeader->OptionalHeader.SizeOfImage));
 
+#if 0
 //__step3:	
 	//unrelocate the memory page of the PE image if needed
 	if(imagebase == ntHeader->OptionalHeader.ImageBase){
@@ -536,10 +505,13 @@ u32 windows_verifycodeintegrity(VCPU *vcpu, u32 paddr, u32 vaddrfromcpu){
 		AX_DEBUG(("\nstep-3: SUCCESS - unrelocated memory page"));
 		paligned_paddr=(u32)&outputPage;
 	}
-	
+#endif	
 	
 
+#if 0
 __step4:	
+#endif
+
 #if defined (__LDN_APPROVEDEXEC_CMPHASHES__)
 	//verify the memory page conents with hash list 
 	{
