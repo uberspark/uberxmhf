@@ -43,7 +43,7 @@ ASFLAGS = $(CFLAGS) -D__ASSEMBLY__
 export LDN_HYPERSWITCHING := n
 export LDN_HYPERPARTITIONING := n
 export LDN_APPROVEDEXEC := y
-export LDN_APPROVEDEXEC_CMPHASHES := n
+export LDN_APPROVEDEXEC_CMPHASHES := y
 export LDN_SSLPA := n
 # test modes
 	# fwreset, experiment with minimal device reset and cycle through GRUB
