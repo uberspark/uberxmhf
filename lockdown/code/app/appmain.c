@@ -435,7 +435,14 @@ u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
       //we should never get here
       HALT();  
   }
-#endif
+
+#else //__LDN_HYPERSWITCHING__ 
+	(void)vcpu;
+	(void)r;
+	(void)portnum;
+	(void)access_type;
+	(void)access_size;
+#endif //__LDN_HYPERSWITCHING__
 
 #if defined(__LDN_HYPERPARTITIONING__)  
   if( portnum == ATA_COMMAND(ATA_BUS_PRIMARY) ||
