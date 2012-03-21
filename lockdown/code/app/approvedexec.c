@@ -163,10 +163,10 @@ u32 approvedexec_handleevent(VCPU *vcpu, struct regs *r,
   
   if(ispfduetoexec(vcpu, violationcode)){
     //we had a exec violation, time to check this physical page and lock it
-    printf("\n%s: CPU(0x%02x) PF-NX, p=0x%08x, v=0x%08x, pcp=0x%08x, pcv=0x%08x",
-		__FUNCTION__, vcpu->id, (u32)gpa, (u32)gva, 
-		approvedexec_getguestpcpaddr(vcpu), 
-		approvedexec_getguestpcvaddr(vcpu));
+    //printf("\n%s: CPU(0x%02x) PF-NX, p=0x%08x, v=0x%08x, pcp=0x%08x, pcv=0x%08x",
+	//	__FUNCTION__, vcpu->id, (u32)gpa, (u32)gva, 
+	//	approvedexec_getguestpcpaddr(vcpu), 
+	//	approvedexec_getguestpcvaddr(vcpu));
 
     //verify integrity of code page
     //windows_verifycodeintegrity(vcpu, (u32)gpa, (u32)gva);
