@@ -171,8 +171,8 @@ u32 approvedexec_handleevent(VCPU *vcpu, struct regs *r,
     //verify integrity of code page
     //windows_verifycodeintegrity(vcpu, (u32)gpa, (u32)gva);
     //give page execute permissions but prevent further writes
-    //emhf_memprot_setprot(vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READONLY | MEMP_PROT_EXECUTE);
-    emhf_memprot_setprot(vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE);
+    emhf_memprot_setprot(vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READONLY | MEMP_PROT_EXECUTE);
+    //emhf_memprot_setprot(vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE);
     //printf("\n%s: CPU(0x%02x) PF-NX, getprot=0x%08x",
 	//	__FUNCTION__, vcpu->id, emhf_memprot_getprot(vcpu, gpa));
 
