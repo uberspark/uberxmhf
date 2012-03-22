@@ -209,7 +209,7 @@ TVOperationPerform(INOUT tz_operation_t* psOperation,
 
       TZIEncodeToDecode(psOutBuf);
 
-      free(psInBuf);
+      tz_aligned_free(psInBuf);
       psOperation->sImp.psEncodeBuffer = psOutBuf;
 
       if (*puiServiceReturn != TZ_SUCCESS) {
