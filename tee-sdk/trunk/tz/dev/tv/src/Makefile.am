@@ -6,7 +6,4 @@ AM_CPPFLAGS = -I$(top_srcdir)/include -I$(srcdir)/../include
 
 pkglib_LIBRARIES = libtz-tv.a libsvc-tv.a
 libtz_tv_a_SOURCES = app_vmcalls.c scode.c tv.c
-if !HAVE_POSIX_MEMALIGN
-  libtz_tv_a_SOURCES += $(top_srcdir)/lib/posix_memalign.c
-endif
 libsvc_tv_a_SOURCES = svc_vmcalls.c svc.c

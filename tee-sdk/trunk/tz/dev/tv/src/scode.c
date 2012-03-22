@@ -46,7 +46,7 @@
 
 #include <trustvisor/trustvisor.h>
 
-#include <missing.h>
+#include <tz_platform.h>
 
 size_t tv_ptr_diff(void *end, void *start)
 {
@@ -103,7 +103,7 @@ void tv_pal_sections_init(struct tv_pal_sections *scode_info,
    */
   param_sz = PAGE_ALIGN_UP4K(param_sz);
   stack_sz = PAGE_ALIGN_UP4K(stack_sz);
-  assert(!posix_memalign((void*)&mem, PAGE_SIZE, param_sz+stack_sz));
+  assert(mem = tz_aligned_malloc(param_sz+stack_sz, PAGE_SIZE));
   stack_mem = mem;
   param_mem = stack_mem+stack_sz;
 

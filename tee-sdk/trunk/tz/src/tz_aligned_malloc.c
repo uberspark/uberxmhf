@@ -34,24 +34,47 @@
  */
 
 #include <config.h>
+#include <tz_platform.h>
 
-#ifdef HAVE__ALIGNED_MALLOC
+#if defined HAVE__ALIGNED_MALLOC
+
 #include <malloc.h>
-#include <errno.h>
-int posix_memalign(void **memptr, size_t alignment, size_t size)
+
+void* tz_aligned_malloc(size_t sz, size_t alignment)
 {
-  if (size == 0) {
-    *memptr = NULL;
-    return 0;
+  if (sz==0) {
+    return NULL;
   }
-
-  /* FIXME- should return EINVAL if alignment is non-power-of-two */
-
-  *memptr = (void*)_aligned_malloc(size, alignment);
-  if (!*memptr) {
-    return ENOMEM;
-  }
-
-  return 0;
+  return _aligned_malloc(sz, alignment);
 }
+
+void tz_aligned_free(void *p)
+{
+  if (p) {
+    _aligned_free(p);
+  }
+}
+
+#elif defined HAVE_POSIX_MEMALIGN
+
+#include <malloc.h>
+
+void* tz_aligned_malloc(size_t sz, size_t alignment)
+{
+  void *rv;
+  int err;
+
+  err = posix_memalign(&rv, alignment, sz);
+  if (err) {
+    rv=NULL;
+  }
+
+  return rv;
+}
+
+void tz_aligned_free(void *p)
+{
+  free(p);
+}
+
 #endif

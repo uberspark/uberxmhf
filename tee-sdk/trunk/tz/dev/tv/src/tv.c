@@ -48,7 +48,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include <missing.h>
+#include <tz_platform.h>
 
 typedef struct tzi_session_ext_t {
   pal_fn_t pFn;
@@ -83,11 +83,11 @@ TVOperationPrepareOpen(INOUT tz_device_t* psDevice,
   /* XXX later we'll point to a page to be re-mapped instead of
      copied */
   *puiBufSize = MARSHAL_BUF_SIZE;
-  posix_memalign((void**)ppsBufData, PAGE_SIZE_4K, *puiBufSize);
+  *ppsBufData = tz_aligned_malloc( *puiBufSize, PAGE_SIZE_4K);
   *ppsSessionExt = malloc(sizeof(tzi_session_ext_t));
   *ppsOperationExt = NULL;
   if (*ppsBufData == NULL || *ppsSessionExt == NULL) {
-    free(*ppsBufData);
+    tz_aligned_free( *ppsBufData);
     free(*ppsSessionExt);
     return TZ_ERROR_MEMORY;
   }
@@ -186,7 +186,7 @@ TVOperationPerform(INOUT tz_operation_t* psOperation,
       size_t *shared_lens=NULL;
       size_t shared_count=0;
 
-      posix_memalign((void**)&psOutBuf, PAGE_SIZE_4K, MARSHAL_BUF_SIZE);
+      psOutBuf = tz_aligned_malloc( MARSHAL_BUF_SIZE, PAGE_SIZE_4K);
       if(psOutBuf == NULL) {
         return TZ_ERROR_MEMORY;
       }
@@ -239,10 +239,10 @@ TVOperationPrepareInvoke(INOUT tz_session_t* psSession,
  /* XXX later we'll point to a page to be re-mapped instead of
     copied */
   *puiBufSize = MARSHAL_BUF_SIZE;
-  posix_memalign((void**)ppsBufData, PAGE_SIZE_4K, *puiBufSize);
+  *ppsBufData = tz_aligned_malloc( *puiBufSize, PAGE_SIZE_4K);
   *ppsOperationExt = malloc(sizeof(tzi_operation_invoke_ext_t));
   if (*ppsBufData == NULL || *ppsOperationExt == NULL) {
-    free(*ppsBufData);
+    tz_aligned_free( *ppsBufData);
     free(*ppsOperationExt);
     return TZ_ERROR_MEMORY;
   }
@@ -265,7 +265,7 @@ void
 TVOperationRelease(INOUT tz_operation_t* psOperation)
 {
   free(psOperation->sImp.psExt);
-  free(psOperation->sImp.psEncodeBuffer);
+  tz_aligned_free( psOperation->sImp.psEncodeBuffer);
   return;
 }
 
@@ -388,9 +388,8 @@ TVManagerRemoveService(INOUT tz_session_t* psSession,
 tz_return_t TVsharedMemoryAllocate(INOUT tz_session_t* psSession,
                                    INOUT tz_shared_memory_t* psSharedMem)
 {
-  if(posix_memalign(&psSharedMem->pBlock,
-                    PAGE_SIZE_4K,
-                    PAGE_ALIGN_UP4K(psSharedMem->uiLength))) {
+  if ( !( psSharedMem->pBlock = tz_aligned_malloc( PAGE_ALIGN_UP4K( psSharedMem->uiLength),
+                                                   PAGE_SIZE_4K))) {
     return TZ_ERROR_MEMORY;
   }
   return TZ_SUCCESS;
@@ -411,7 +410,7 @@ tz_return_t TVsharedMemoryRegister(INOUT tz_session_t* psSession,
 void TVsharedMemoryRelease(INOUT tz_shared_memory_t* psSharedMem)
 {
   if(psSharedMem->sImp.bAllocated) {
-    free(psSharedMem->pBlock);
+    tz_aligned_free( psSharedMem->pBlock);
   }
   psSharedMem->pBlock=NULL;
   return;
