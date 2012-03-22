@@ -38,6 +38,7 @@
 
 #if defined HAVE__ALIGNED_MALLOC
 
+#define __MSVCRT_VERSION__ 0x0700 /* minimum API version for _aligned_malloc */
 #include <malloc.h>
 
 void* tz_aligned_malloc(size_t sz, size_t alignment)
