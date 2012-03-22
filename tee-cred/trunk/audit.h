@@ -38,10 +38,6 @@
 
 #include <stdint.h>
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-
 #define AUDIT_TOKEN_MAX 1000
 
 typedef enum {
