@@ -51,13 +51,47 @@
 audit_err_t audit_ctx_init(audit_ctx_t *ctx,
  const char* hostname, const char* svc)
 {
+  audit_err_t rv=0;
   ctx->hostname = hostname;
   ctx->svc = svc;
-  return 0;
+
+#ifdef WIN32
+  {
+    WORD wVersionRequested;
+    WSADATA wsaData;
+
+    /* Use the MAKEWORD(lowbyte, highbyte) macro declared in Windef.h */
+    wVersionRequested = MAKEWORD(2, 2);
+
+    rv = WSAStartup(wVersionRequested, &wsaData);
+    CHECK_RV( rv, AUDIT_ESYSTEM, "WSAStartup");
+
+    /* Confirm that the WinSock DLL supports 2.2.*/
+    /* Note that if the DLL supports versions greater    */
+    /* than 2.2 in addition to 2.2, it will still return */
+    /* 2.2 in wVersion since that is the version we      */
+    /* requested.                                        */
+
+    if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2) {
+      /* Tell the user that we could not find a usable */
+      /* WinSock DLL.                                  */
+      log_err( "Could not find a usable version of Winsock.dll");
+      WSACleanup();
+      rv = AUDIT_ESYSTEM;
+      goto out;
+    }
+  }
+#endif
+
+ out:
+  return rv;
 }
 
 void audit_ctx_release(audit_ctx_t *ctx)
 {
+#ifdef WIN32
+  WSACleanup();
+#endif
 }
 
 static audit_err_t audit_connect(audit_ctx_t* audit_ctx, int *sock)
