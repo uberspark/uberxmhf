@@ -16,6 +16,18 @@ then
 fi
 export CC
 
+if [ -z "$RANLIB" ]
+then
+	RANLIB=${HOST}-ranlib
+fi
+export RANLIB
+
+if [ -z "$AR" ]
+then
+	AR=${HOST}-ar
+fi
+export AR
+
 CFLAGS="-DOPENSSL_NO_DGRAM -DOPENSSL_NO_SOCK -UWINDOWS -UWIN32 -U_WIN32 -DOPENSSL_SYS_LINUX"
 
 cd openssl-1.0.0d
