@@ -651,6 +651,9 @@ do {                                                                          \
 #  include <unistd.h>
 #endif
 
+/* XXX ugly hack for tee-sdk */
+#define malloc_getpagesize (4096)
+
 #ifndef malloc_getpagesize
 #  ifdef _SC_PAGESIZE         /* some SVR4 systems omit an underscore */
 #    ifndef _SC_PAGE_SIZE
