@@ -35,15 +35,20 @@ AC_SUBST([SYSROOT])
 
 # we want these to be absolute for substitution
 # into the wrapper scripts
-AC_PATH_PROG([AR], [ar], [ar])
-AC_PATH_PROG([AS], [as], [as])
-AC_PATH_PROG([CC], [cc], [cc])
-AC_PATH_PROG([LD], [ld], [ld])
-AC_PATH_PROG([NM], [nm], [nm])
-AC_PATH_PROG([OBJDUMP], [objdump], [objdump])
-AC_PATH_PROG([RANLIB], [ranlib], [ranlib])
-AC_PATH_PROG([STRIP], [strip], [strip])
-AC_PATH_PROG([PKG_CONFIG], [pkg-config], [pkg-config])
+
+AS_IF([test "$host" != "$build"],
+      [TOOLPREFIX="${host_alias}-"],
+      [TOOLPREFIX=""])
+
+AC_PATH_PROG([AR], [${TOOLPREFIX}ar])
+AC_PATH_PROG([AS], [${TOOLPREFIX}as])
+AC_PATH_PROG([CC], [${TOOLPREFIX}cc])
+AC_PATH_PROG([LD], [${TOOLPREFIX}ld])
+AC_PATH_PROG([NM], [${TOOLPREFIX}nm])
+AC_PATH_PROG([OBJDUMP], [${TOOLPREFIX}objdump])
+AC_PATH_PROG([RANLIB], [${TOOLPREFIX}ranlib])
+AC_PATH_PROG([STRIP], [${TOOLPREFIX}strip])
+AC_PATH_PROG([PKG_CONFIG], [${TOOLPREFIX}pkg-config])
 
 AC_SUBST([CCLIB], [`$CC -m32 --print-file-name=`])
 
