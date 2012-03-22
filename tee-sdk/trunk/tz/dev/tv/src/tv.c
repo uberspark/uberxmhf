@@ -48,6 +48,8 @@
 #include <assert.h>
 #include <stdio.h>
 
+#include <missing.h>
+
 typedef struct tzi_session_ext_t {
   pal_fn_t pFn;
 } tzi_session_ext_t;

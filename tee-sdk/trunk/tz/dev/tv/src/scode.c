@@ -46,6 +46,8 @@
 
 #include <trustvisor/trustvisor.h>
 
+#include <missing.h>
+
 size_t tv_ptr_diff(void *end, void *start)
 {
   return (uintptr_t)end - (uintptr_t)start;
