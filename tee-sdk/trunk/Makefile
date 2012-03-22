@@ -1,47 +1,49 @@
-TARGET=i586-tsvc
-HOST=i586-tsvc
-BUILD=i686-pc-linux-gnu
-PREFIX=/usr/local
-SYSROOT=$(PREFIX)/$(HOST)
+TARGET=i586-tsvc        # target platform when building a compiler (tsvc)
+TSVC_HOST=$(TARGET)     # machine where software will run (for pal-code)
+HOST=i686-pc-linux-gnu  # machine where software will run (for reg-world code)
+BUILD=i686-pc-linux-gnu # machine where software will be built
+PREFIX=/usr/local       # where reg-world software will be installed
+TSVC_SYSROOT=$(PREFIX)/$(TSVC_HOST) # where pal software (libraries, headers, etc.) will be installed
 
 all: toolchain newlib tz_host tz_cross
 
 toolchain:
 	cd toolchain && \
 	./autogen.sh && \
-	TARGET=$(TARGET) ./configure --prefix=$(PREFIX) && \
+	./configure --prefix=$(PREFIX) --host=$(HOST) --target=$(TARGET) --build=$(BUILD) && \
 	make && \
 	make install
 
 newlib: toolchain
 	export PATH=$(PREFIX)/bin:$(PATH) && \
 	cd ports/newlib && \
-	PREFIX=$(PREFIX) HOST=$(HOST) ./build.sh
+	PREFIX=$(PREFIX) HOST=$(TSVC_HOST) ./build.sh
 
 tz_autoreconf:
 	cd tz && autoreconf -i
 
 tz_host: tz_autoreconf
 	export PKG_CONFIG_PATH=$(PREFIX)/lib/pkgconfig && \
+	export PATH=$(PREFIX)/bin:$(PATH) && \
 	cd tz && \
-	mkdir -p build-host && \
-	cd build-host && \
-	../configure --prefix=$(PREFIX) && \
+	mkdir -p build-$(HOST) && \
+	cd build-$(HOST) && \
+	../configure --prefix=$(PREFIX) --host=$(HOST) --build=$(BUILD) && \
 	make && \
 	make install
 
 tz_cross: tz_autoreconf toolchain newlib
 	export PATH=$(PREFIX)/bin:$(PATH) && \
 	cd tz && \
-	mkdir -p build-cross && \
-	cd build-cross && \
-	../configure --prefix=$(SYSROOT)/usr --host=$(HOST) --build=$(BUILD) && \
+	mkdir -p build-$(TSVC_HOST) && \
+	cd build-$(TSVC_HOST) && \
+	../configure --prefix=$(TSVC_SYSROOT)/usr --host=$(TSVC_HOST) --build=$(BUILD) && \
 	make && \
 	make install
 
 openssl: toolchain newlib
 	export PATH=$(PREFIX)/bin:$(PATH) && \
 	cd ports/openssl && \
-	PREFIX=$(SYSROOT)/usr HOST=$(HOST) ./build.sh
+	PREFIX=$(TSVC_SYSROOT)/usr HOST=$(TSVC_HOST) ./build.sh
 
 .PHONY: toolchain newlib openssl tz_host tz_cross tz_autoreconf
