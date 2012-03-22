@@ -20,8 +20,8 @@ test : FORCE
 proto-gend/%.pb-c.c proto-gend/%.pb-c.h : %.proto $(CURDIR)/proto-gend/.d
 	protoc-c --c_out=proto-gend --proto_path=$(srcdir) $<
 
-CROSS=
-#CROSS=i586-mingw32msvc-
+#CROSS=
+CROSS=i686-pc-mingw32-
 PKG_CONFIG=pkg-config
 CC:=gcc
 LD:=ld
@@ -41,7 +41,8 @@ PROG_OBJS= \
 	proto-gend/audited.pb-c.o \
 	proto-gend/akvp.pb-c.o \
 	proto-gend/storage.pb-c.o
-CFLAGS+=-g -Wall -Werror -I.
+#CFLAGS+=-g -Wall -Werror -I.
+CFLAGS+=-g -Wall -I.
 #LDFLAGS+=--static
 LDLIBS+=/usr/local/lib/libprotobuf-c.a
 CFLAGS+=-DUSERSPACE_ONLY=1
