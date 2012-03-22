@@ -71,7 +71,7 @@ pal-build/%.o : %.c $(CURDIR)/pal-build/proto-gend/.d
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 %.pal.o: pal-build/%.o
-	$(CC) -r -d $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	$(CC) -r -Wl,-d $(LDFLAGS) -o $@ $^ $(LDLIBS)
 	objcopy -G $(subst -,_,$*) $@
 	if test `nm -u $@ | wc -l` -ne 0 ; then echo "undefd symbols in $@:"; nm -u $@; rm $@; false; else true; fi
 
