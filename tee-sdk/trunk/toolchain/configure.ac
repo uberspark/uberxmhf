@@ -2,30 +2,16 @@ AC_INIT([tsvc-toolchain], [0.1])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CANONICAL_HOST
 
-if test -z ${TARGET_CPU}
-then
-        target_cpu=i586
-fi
+AS_IF([test -z ${target}],
+            target_cpu=i586;
+            target_os=tsvc;
+            target="${target_cpu}-${target_os}")
 AC_SUBST([target_cpu])
-
-if test -z ${TARGET_OS}
-then
-        target_os=tsvc
-fi
 AC_SUBST([target_os])
-
-if test -z ${TARGET}
-then
-        target="${target_cpu}-${target_os}"
-else
-        target=${TARGET}
-fi
 AC_SUBST([target])
 
-if test -z ${SYSROOT}
-then
-        SYSROOT='$prefix'/${target}
-fi
+AS_IF([test -z ${SYSROOT}],
+            SYSROOT='${prefix}'/${target})           
 AC_SUBST([SYSROOT])
 
 #AC_SUBST([exec_prefix], [$prefix/$ARCH-$OS/bin]) # wrappers get installed here
