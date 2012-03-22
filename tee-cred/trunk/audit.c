@@ -140,6 +140,9 @@ static int recvall(int s, void *buf, size_t len)
   }
 
  out:
+  if (rv) {
+    return rv;
+  }
   return n==-1?-1:0; // return -1 on failure, 0 on success
 } 
 
@@ -153,7 +156,6 @@ audit_err_t audit_get_token(audit_ctx_t*    audit_ctx,
                             size_t*         audit_token_len)
 {
   int sock=-1;
-  int status=0;
   uint32_t tmp_ui32;
   audit_err_t rv=0;
 
@@ -178,7 +180,7 @@ audit_err_t audit_get_token(audit_ctx_t*    audit_ctx,
   tmp_ui32 = ntohl(tmp_ui32);
   if(tmp_ui32 > *audit_token_len) {
     *audit_token_len = tmp_ui32;
-    status = AUDIT_ESHORT_BUFFER;
+    rv = AUDIT_ESHORT_BUFFER;
     goto out;
   }
 
