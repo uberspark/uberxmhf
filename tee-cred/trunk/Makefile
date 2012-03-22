@@ -65,7 +65,7 @@ PAL_OBJS_BARE= \
 	proto-gend/akvp.pb-c.o \
 	proto-gend/storage.pb-c.o
 PAL_OBJS=$(addprefix pal-build/, $(PAL_OBJS_BARE))
-PAL_CFLAGS+=-g -Wall -Werror -I.
+PAL_CFLAGS+=-g -Wall -Werror -I. -UWINDOWS -UWIN32 -U_WIN32
 
 pal-build/%.o : %.c $(CURDIR)/pal-build/proto-gend/.d
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
