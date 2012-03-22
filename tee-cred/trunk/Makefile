@@ -20,6 +20,15 @@ test : FORCE
 proto-gend/%.pb-c.c proto-gend/%.pb-c.h : %.proto $(CURDIR)/proto-gend/.d
 	protoc-c --c_out=proto-gend --proto_path=$(srcdir) $<
 
+CROSS=
+#CROSS=i586-mingw32msvc-
+PKG_CONFIG=pkg-config
+CC:=gcc
+LD:=ld
+main: CC:=$(CROSS)$(CC)
+main: LD:=$(CROSS)$(LD)
+main: PKG_CONFIG:=$(CROSS)$(PKG_CONFIG)
+
 PROG_NAME=main
 PAL_NAME=audited-kv-pal
 PROG_OBJS= \
