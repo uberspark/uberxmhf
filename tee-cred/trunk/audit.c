@@ -76,7 +76,7 @@ static audit_err_t audit_connect(audit_ctx_t* audit_ctx, int *sock)
 
     // get ready to connect
     err = getaddrinfo(audit_ctx->hostname, audit_ctx->svc, &hints, &servinfo_list);
-    CHECK(!err, AUDIT_ELOOKUP, "getaddrinfo(%s)", audit_ctx->hostname);
+    CHECK_RV(err, AUDIT_ELOOKUP, "getaddrinfo(%s)", audit_ctx->hostname);
   }
 
   servinfo=servinfo_list;
