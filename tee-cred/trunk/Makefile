@@ -25,9 +25,11 @@ CROSS=i686-pc-mingw32-
 PKG_CONFIG=pkg-config
 CC:=gcc
 LD:=ld
+OBJCOPY:=objcopy
 main: CC:=$(CROSS)$(CC)
 main: LD:=$(CROSS)$(LD)
 main: PKG_CONFIG:=$(CROSS)$(PKG_CONFIG)
+main: OBJCOPY:=$(CROSS)$(OBJCOPY)
 
 PROG_NAME=main
 PAL_NAME=audited-kv-pal
@@ -72,7 +74,7 @@ pal-build/%.o : %.c $(CURDIR)/pal-build/proto-gend/.d
 
 %.pal.o: pal-build/%.o
 	$(CC) -r -Wl,-d $(LDFLAGS) -o $@ $^ $(LDLIBS)
-	objcopy -G $(subst -,_,$*) $@
+	$(OBJCOPY) -G $(subst -,_,$*) $@
 	if test `nm -u $@ | wc -l` -ne 0 ; then echo "undefd symbols in $@:"; nm -u $@; rm $@; false; else true; fi
 
 PAL_PKGCONFIG_DEPS=tee-sdk-svc $(PAL_BACKEND) libcrypto libprotobuf-c
