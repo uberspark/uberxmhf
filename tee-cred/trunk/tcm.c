@@ -506,10 +506,67 @@ typedef struct {
   gchar *key;
 } copy_button_handler_ctx_t;
 
+#ifdef WIN32
+/* sadly, the gtk API for pasting to the clipboard seems to be broken
+   on windows.  So, we need to implement our own version using the
+   win32 API directly. */
+#include <windows.h>
+static HWND hwndMain=NULL;
+static int copy_string_to_clipboard(char *str)
+{
+  LPTSTR  lptstrCopy;
+  HGLOBAL hglbCopy;
+  int cch;
+
+  /* Open the clipboard, and empty it. */
+
+  if (!OpenClipboard(hwndMain))
+    return 1;
+  EmptyClipboard();
+
+  cch = strlen(str);
+  hglbCopy = GlobalAlloc(GMEM_MOVEABLE,
+                         (cch + 1) * sizeof(TCHAR));
+  if (hglbCopy == NULL) {
+    CloseClipboard();
+    return 2;
+  }
+
+  /* Lock the handle and copy the text to the buffer. */
+
+  lptstrCopy = GlobalLock(hglbCopy);
+  strcpy(lptstrCopy, str);
+  GlobalUnlock(hglbCopy);
+
+  /* Place the handle on the clipboard.  */
+
+  SetClipboardData(CF_TEXT, hglbCopy);
+
+  /* Close the clipboard. */
+
+  CloseClipboard();
+
+  return 0;
+}
+#else
+static int copy_string_to_clipboard(char *str)
+{
+  GtkClipboard *clipboard;
+
+  clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
+  if( !clipboard) {
+    return 1;
+  }
+  gtk_clipboard_set_text(clipboard, str, strlen(str));
+  gtk_clipboard_store(clipboard);
+  return 0;
+}
+#endif
+
 static void copy_button_handler(copy_button_handler_ctx_t *ctx)
 {
   char *val=NULL;
-  GtkClipboard *clipboard;
+
   {
     tcm_err_t tcm_err;
     tcm_err = tcm_db_get(ctx->tcm_ctx,
@@ -521,9 +578,8 @@ static void copy_button_handler(copy_button_handler_ctx_t *ctx)
     }
   }
 
-  clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
-  gtk_clipboard_set_text(clipboard, val, strlen(val));
-  gtk_clipboard_store(clipboard);
+  copy_string_to_clipboard( val);
+
  out:
   free(val);
 }
@@ -704,6 +760,11 @@ int tcm_gtk_main (int argc, char **argv, tcm_ctx_t *tcm_ctx)
                       G_CALLBACK (gtk_main_quit), NULL);
     gtk_container_set_border_width (GTK_CONTAINER (window), 10);
   }
+
+#ifdef WIN32
+  HWND gdk_win32_drawable_get_handle( GtkWidget *);
+  hwndMain = gdk_win32_drawable_get_handle( window);
+#endif
 
   { /* vbox-window */
     vbox_window = gtk_vbox_new (FALSE, 0);
