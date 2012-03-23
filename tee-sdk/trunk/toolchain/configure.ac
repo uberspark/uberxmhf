@@ -5,13 +5,14 @@ AC_CANONICAL_SYSTEM
 AS_IF([test -z ${target}],
             target_cpu=i586;
             target_os=tsvc;
-            target="${target_cpu}-${target_os}")
+            target="${target_cpu}-${target_os}"
+            target_alias=$target)
 AC_SUBST([target_cpu])
 AC_SUBST([target_os])
-AC_SUBST([target])
+AC_SUBST([target_alias])
 
 AS_IF([test -z ${SYSROOT}],
-            SYSROOT='${prefix}'/${target})           
+            SYSROOT='${prefix}'/${target_alias})           
 AC_SUBST([SYSROOT])
 
 #AC_SUBST([exec_prefix], [$prefix/$ARCH-$OS/bin]) # wrappers get installed here
@@ -41,7 +42,7 @@ AC_SUBST([CCLIB], [`$CC -m32 --print-file-name=`])
 AC_SUBST([LDFLAGS])
 LDFLAGS=""
 LDFLAGS="$LDFLAGS -nostdlib"
-LDFLAGS="$LDFLAGS -L"'$prefix'"/$target/usr/local/lib -L"'$prefix'"/$target/usr/lib -L"'$prefix'"/$target/lib"
+LDFLAGS="$LDFLAGS -L"'$prefix'"/$target_alias/usr/local/lib -L"'$prefix'"/$target_alias/usr/lib -L"'$prefix'"/$target_alias/lib"
 LDFLAGS="$LDFLAGS -L$CCLIB"
 
 AC_SUBST([LDLIBS])
@@ -53,7 +54,7 @@ AC_SUBST([CFLAGS])
 CFLAGS="-march=$target_cpu"
 CFLAGS="$CFLAGS -nostdinc" # drop default include directories
 CFLAGS="$CFLAGS -isystem $CCINC -isystem $CCINC-fixed" # add back compiler-include directories
-CFLAGS="$CFLAGS -I"'$prefix'"/$target/usr/local/include -I"'$prefix'"/$target/usr/include -I"'$prefix'"/$target/include"
+CFLAGS="$CFLAGS -I"'$prefix'"/$target_alias/usr/local/include -I"'$prefix'"/$target_alias/usr/include -I"'$prefix'"/$target_alias/include"
 #CFLAGS="$CFLAGS --sysroot=$prefix" # would replace the above nastiness, but unfortunately ld is not built to support it on ubuntu
 CFLAGS="$CFLAGS -fno-jump-tables" # sometimes conflicts with PAL memory protections. may no longer be needed
 CFLAGS="$CFLAGS -fno-stack-protector" # stack protector results in unresolved symbols
