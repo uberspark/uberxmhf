@@ -38,7 +38,6 @@
 #include <stdlib.h>
 #include "pals.h"
 //#include  "config.h"
-#include  <sys/mman.h>
 #include  <errno.h>
 #include  <string.h>
 #include <inttypes.h>
