@@ -83,6 +83,7 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
                                    &in, &inLen32)))
           break;
         tpmPcrInfoLen = tpmPcrInfoLen32;
+        (void)tpmPcrInfoLen; /* pacify compiler that this is unused */
         inLen = inLen32;
       }
         
