@@ -1,6 +1,6 @@
 AC_INIT([tsvc-toolchain], [0.1])
 AC_CONFIG_AUX_DIR([build-aux])
-AC_CANONICAL_HOST
+AC_CANONICAL_SYSTEM
 
 AS_IF([test -z ${target}],
             target_cpu=i586;
