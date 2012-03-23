@@ -25,9 +25,11 @@ DO_USERSPACE_ONLY=0
 PKG_CONFIG=pkg-config
 CC:=gcc
 LD:=ld
+NM:=nm
 OBJCOPY:=objcopy
 CC:=$(CROSS)$(CC)
 LD:=$(CROSS)$(LD)
+NM:=$(CROSS)$(NM)
 PKG_CONFIG:=$(CROSS)$(PKG_CONFIG)
 OBJCOPY:=$(CROSS)$(OBJCOPY)
 
