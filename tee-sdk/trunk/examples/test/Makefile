@@ -21,6 +21,16 @@ TESTS+=-DTEST_TIME
 # Set to 0 to use TrustVisor backend and run 'for real'
 DO_USERSPACE_ONLY=0
 
+#CROSS=i686-pc-mingw32-
+PKG_CONFIG=pkg-config
+CC:=gcc
+LD:=ld
+OBJCOPY:=objcopy
+CC:=$(CROSS)$(CC)
+LD:=$(CROSS)$(LD)
+PKG_CONFIG:=$(CROSS)$(PKG_CONFIG)
+OBJCOPY:=$(CROSS)$(OBJCOPY)
+
 PROG_NAME=test
 CFLAGS=-g -Wall -Wextra -Werror
 CFLAGS+=-DUSERSPACE_ONLY=$(DO_USERSPACE_ONLY)
