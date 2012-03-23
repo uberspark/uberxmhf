@@ -1,5 +1,7 @@
 # generic pal-building rules. depends on pkgconfig.mk
 
+OBJCOPY ?= objcopy
+NM ?= nm
 PAL_CC ?= i586-tsvc-cc
 PAL_LD ?= i586-tsvc-ld
 PAL_PKG_CONFIG ?= i586-tsvc-pkg-config
