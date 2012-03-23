@@ -458,9 +458,15 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 		break;
 
 		default:{
-				printf("\nUnhandled Intercept:0x%08llx", vmcb->exitcode);
-				printf("\nCS:EIP=0x%04x:0x%08x", (u16)vmcb->cs.sel, (u32)vmcb->rip);
-				HALT();
+			printf("\nUnhandled Intercept:0x%08llx", vmcb->exitcode);
+			printf("\n\tCS:EIP=0x%04x:0x%08x", (u16)vmcb->cs.sel, (u32)vmcb->rip);
+			printf("\n\tedi:%08x esi:%08x ebp:%08x esp:%08x",
+				r->edi, r->esi, r->ebp, r->esp);
+			printf("\n\tebx:%08x edx:%08x ecx:%08x eax:%08x",
+				r->ebx, r->edx, r->ecx, r->eax);
+			printf("\n\tExitInfo1: %llx", vmcb->exitinfo1);
+			printf("\n\tExitInfo2: %llx", vmcb->exitinfo2);
+			HALT();
 		}
 	}	//end switch(vmcb->exitcode)	
 
@@ -472,3 +478,5 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 
 	return 0;
 }
+
+
