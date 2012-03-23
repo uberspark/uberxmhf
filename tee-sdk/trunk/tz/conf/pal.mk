@@ -30,5 +30,5 @@ PAL_LDLIBS+=$(call pkgconfig_ldlibs, $(PAL_PKGCONFIG_DEPS))
 # -r to create a relocatable output, -d to force allocation of 'common' symbols
 %.pal.o: %.o
 	$(CC) -r -Wl,-d $(LDFLAGS) -o $@ $^ $(LDLIBS)
-	objcopy -G $(subst -,_,$*) -G _$(subst -,_,$*) $@
+	$(OBJCOPY) -G $(subst -,_,$*) -G _$(subst -,_,$*) $@
 	if test `nm -u $@ | wc -l` -ne 0 ; then echo "undefd symbols in $@:"; nm -u $@; rm $@; false; else true; fi
