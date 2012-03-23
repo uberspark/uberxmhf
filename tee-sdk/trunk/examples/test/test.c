@@ -747,7 +747,7 @@ int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uin
      * is erased before the memory is returned to the system. */
     if(rsa) { RSA_free(rsa); rsa = NULL; }
     
-    return 0;
+    return rv;
 }
 
 int test_quote(tz_session_t *tzPalSession)
