@@ -943,6 +943,17 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
 
   perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_SCODE], vcpu->idx);
 
+  /* intercept all exceptions. (otherwise they'll result in a triple-fault,
+   *   since the PAL doesn't have any exception handlers installed).
+   */
+  if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+    whitelist[curr].saved_exception_intercepts =
+      ((struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr))->exception_intercepts;
+    ((struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr))->exception_intercepts = 0xffffffff;
+  } else if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+    /* FIXME */
+  }
+
   err=0;
  out:
   if(err) {
@@ -1079,6 +1090,15 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
    */
   rv=0;
  out:
+
+  /* restore exception intercept vector */
+  if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
+    ((struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr))->exception_intercepts
+      = whitelist[curr].saved_exception_intercepts;
+  } else if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
+    /* FIXME */
+  }
+
   /* release shared pages */
   scode_release_all_shared_pages(vcpu, &whitelist[curr]);
 

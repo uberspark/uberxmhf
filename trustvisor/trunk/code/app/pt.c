@@ -62,14 +62,14 @@ hpt_prot_t pal_prot_of_type(int type)
     return HPT_PROTS_RX;
     break;
   case TV_PAL_SECTION_DATA:
-    return HPT_PROTS_RWX;
+    return HPT_PROTS_RW;
     break;
   case TV_PAL_SECTION_PARAM:
   case TV_PAL_SECTION_STACK:
     return HPT_PROTS_RW;
     break;
   case TV_PAL_SECTION_SHARED:
-    return HPT_PROTS_RWX;
+    return HPT_PROTS_RW;
     break;
   case TV_PAL_SECTION_GUEST_PAGE_TABLES:
     return HPT_PROTS_RWX;
