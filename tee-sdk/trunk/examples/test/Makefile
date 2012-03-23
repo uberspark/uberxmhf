@@ -60,7 +60,7 @@ all: $(PROG_NAME) Makefile
 clean:
 	$(RM) .*.cmd *.o *.ko *~ -r .tmp* test test.D
 
-TEESDK_DATA_DIR=$(shell pkg-config --variable=pkgdatadir tee-sdk-app)
+TEESDK_DATA_DIR=$(shell $(PKG_CONFIG) --variable=pkgdatadir tee-sdk-app)
 
 # pkgconfig helpers
 include $(TEESDK_DATA_DIR)/pkgconfig.mk
