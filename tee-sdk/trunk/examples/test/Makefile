@@ -21,7 +21,9 @@ TESTS+=-DTEST_TIME
 # Set to 0 to use TrustVisor backend and run 'for real'
 DO_USERSPACE_ONLY=0
 
-#CROSS=i686-pc-mingw32-
+ifeq ($(MINGW), 1)
+	CROSS=i686-pc-mingw32-
+endif
 PKG_CONFIG=pkg-config
 CC:=gcc
 LD:=ld
@@ -35,6 +37,12 @@ OBJCOPY:=$(CROSS)$(OBJCOPY)
 
 PROG_NAME=test
 CFLAGS=-g -Wall -Wextra -Werror
+ifeq ($(MINGW), 1)
+	# workaround - mingw's format string checking is buggy,
+	# leading to false warnings, which get upgraded to errors
+	CFLAGS += -Wno-format
+endif
+
 CFLAGS+=-DUSERSPACE_ONLY=$(DO_USERSPACE_ONLY)
 CFLAGS+=-m32
 LDFLAGS=-m32 -L/usr/lib32
