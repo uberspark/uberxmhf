@@ -26,10 +26,10 @@ PKG_CONFIG=pkg-config
 CC:=gcc
 LD:=ld
 OBJCOPY:=objcopy
-main: CC:=$(CROSS)$(CC)
-main: LD:=$(CROSS)$(LD)
-main: PKG_CONFIG:=$(CROSS)$(PKG_CONFIG)
-main: OBJCOPY:=$(CROSS)$(OBJCOPY)
+CC:=$(CROSS)$(CC)
+LD:=$(CROSS)$(LD)
+PKG_CONFIG:=$(CROSS)$(PKG_CONFIG)
+OBJCOPY:=$(CROSS)$(OBJCOPY)
 
 PROG_NAME=main
 PAL_NAME=audited-kv-pal
