@@ -26,10 +26,12 @@ PKG_CONFIG=pkg-config
 CC:=gcc
 LD:=ld
 OBJCOPY:=objcopy
+NM:=nm
 CC:=$(CROSS)$(CC)
 LD:=$(CROSS)$(LD)
 PKG_CONFIG:=$(CROSS)$(PKG_CONFIG)
 OBJCOPY:=$(CROSS)$(OBJCOPY)
+NM:=$(CROSS)$(NM)
 
 PROG_NAME=main
 PAL_NAME=audited-kv-pal
@@ -75,7 +77,7 @@ pal-build/%.o : %.c $(CURDIR)/pal-build/proto-gend/.d
 %.pal.o: pal-build/%.o
 	$(CC) -r -Wl,-d $(LDFLAGS) -o $@ $^ $(LDLIBS)
 	$(OBJCOPY) -G $(subst -,_,$*) -G _$(subst -,_,$*) $@
-	if test `nm -u $@ | wc -l` -ne 0 ; then echo "undefd symbols in $@:"; nm -u $@; rm $@; false; else true; fi
+	if test `$(NM) -u $@ | wc -l` -ne 0 ; then echo "undefd symbols in $@:"; $(NM) -u $@; rm $@; false; else true; fi
 
 PAL_PKGCONFIG_DEPS=tee-sdk-svc $(PAL_BACKEND) libcrypto libprotobuf-c
 
