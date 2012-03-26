@@ -100,7 +100,7 @@ paldepend: .paldepend
 	$(PAL_CC) $(CFLAGS) -MM $^ > $@ ; if [ $$? -ne 0 ] ; then rm $@ ; fi
 include .paldepend
 
-TEESDK_DATA_DIR=$(shell pkg-config --variable=pkgdatadir tee-sdk-app)
+TEESDK_DATA_DIR=$(shell $(PKG_CONFIG) --variable=pkgdatadir tee-sdk-app)
 
 # pkgconfig helpers
 include $(TEESDK_DATA_DIR)/pkgconfig.mk
