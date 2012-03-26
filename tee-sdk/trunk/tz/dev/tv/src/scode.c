@@ -83,12 +83,6 @@ void tv_pal_sections_init(struct tv_pal_sections *scode_info,
   tv_pal_sections_add(scode_info, TV_PAL_SECTION_CODE, &__scode_start,
                       tv_ptr_diff(&__scode_end, &__scode_start));
 
-  /* add stext section */
-  if (&__stext_end != &__stext_start) {
-    tv_pal_sections_add(scode_info, TV_PAL_SECTION_SHARED_CODE, &__stext_start,
-                        tv_ptr_diff(&__stext_end, &__stext_start));
-  }
-
   /* add sdata section */
   if (&__sdata_end != &__sdata_start) {
     tv_pal_sections_add(scode_info, TV_PAL_SECTION_DATA, &__sdata_start,

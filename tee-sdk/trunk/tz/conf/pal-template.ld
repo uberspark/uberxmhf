@@ -17,15 +17,6 @@ SECTIONS
     ___scode_end = .;
   } =0x90909090 /* fill padding space with no-ops */
 
-  .STEXT ALIGN(0x1000):
-  {
-    __stext_start = .;
-    ___stext_start = .; /* accomodate name mangling on windows */
-    . = ALIGN(0x1000);
-    __stext_end = .;
-    ___stext_end = .;
-  } =0x90909090 /* fill padding space with no-ops */
-
   .SDATA ALIGN(0x1000):
   {
     __sdata_start = .;
