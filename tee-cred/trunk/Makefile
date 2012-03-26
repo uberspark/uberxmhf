@@ -48,7 +48,7 @@ PROG_OBJS= \
 #CFLAGS+=-g -Wall -Werror -I.
 CFLAGS+=-g -Wall -I.
 LDFLAGS+=--static
-CFLAGS+=-DUSERSPACE_ONLY=1
+#CFLAGS+=-DUSERSPACE_ONLY=1
 PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv libprotobuf-c gtk+-2.0
 
 #PAL_BACKEND=tee-sdk-svc-tv
