@@ -33,6 +33,7 @@ SECTIONS
     PAL_NAME.pal.o(.sdata) /* backwards compat */
     PAL_NAME.pal.o(.SDATA) /* backwards compat */
     PAL_NAME.pal.o(.rodata*)
+    PAL_NAME.pal.o(.rdata) /* win32 read-only data */
     PAL_NAME.pal.o(.data)
     PAL_NAME.pal.o(.bss)
     . = ALIGN(0x1000);
