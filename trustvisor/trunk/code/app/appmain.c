@@ -52,13 +52,10 @@ u32 tv_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
   eu_trace("CPU(0x%02x)", vcpu->id);
   (void)apb; /* unused */
 
-#ifdef __MP_VERSION__
-  if (vcpu->isbsp) 
-#endif
-    {
-      eu_trace("CPU(0x%02x): init\n", vcpu->id);
-      init_scode(vcpu);
-    }
+  if (vcpu->isbsp) {
+    eu_trace("CPU(0x%02x): init\n", vcpu->id);
+    init_scode(vcpu);
+  }
 
   /* force these to be linked in */
   emhfc_log_error("");
