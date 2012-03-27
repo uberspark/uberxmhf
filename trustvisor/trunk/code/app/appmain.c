@@ -52,7 +52,7 @@ void setuplinuxboot(VCPU *vcpu, u32 vmlinuz_base, u32 vmlinuz_size,
                     u32 initrd_base, u32 initrd_size);
 
 // a placeholder for now...
-u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
+u32 tv_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
   eu_trace("CPU(0x%02x)", vcpu->id);
 
 #ifdef __MP_VERSION__
@@ -423,7 +423,7 @@ static u32 do_TV_HC_TPMNVRAM_WRITEALL(VCPU *vcpu, struct regs *r)
   return ret;
 }
 
-u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
+u32 tv_app_handlehypercall(VCPU *vcpu, struct regs *r)
 {	
   struct vmcb_struct * linux_vmcb;
   u32 cmd;
@@ -493,8 +493,8 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 }
 
 /* EPT violation handler */
-u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
-                                              struct regs __attribute__((unused)) *r, u64 gpa, u64 gva, u64 violationcode)
+u32 tv_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
+                                            struct regs __attribute__((unused)) *r, u64 gpa, u64 gva, u64 violationcode)
 {
   u32 ret;
 
@@ -516,8 +516,8 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
   return ret;
 }
 
-u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs __attribute__((unused)) *r, 
-                                        u32 portnum, u32 access_type, u32 access_size)
+u32 tv_app_handleintercept_portaccess(VCPU *vcpu, struct regs __attribute__((unused)) *r, 
+                                      u32 portnum, u32 access_type, u32 access_size)
 {
 #ifdef __MP_VERSION__
   emhf_smpguest_quiesce(vcpu);
@@ -537,7 +537,7 @@ u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs __attribute__((u
   return 0; /* XXX DUMMY; keeps compiler happy */
 }
 
-void emhf_app_handleshutdown(VCPU *vcpu, struct regs __attribute__((unused)) *r)
+void tv_app_handleshutdown(VCPU *vcpu, struct regs __attribute__((unused)) *r)
 {
   eu_trace("CPU(0x%02x): Shutdown intercept!", vcpu->id);
   //g_libemhf->emhf_reboot(vcpu);
