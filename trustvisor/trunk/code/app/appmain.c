@@ -45,15 +45,12 @@
 #include <nv.h>
 
 #include <tv_log.h>
-
-/* Declared in linuxrelc.c.  TODO: figure out an approriate header
- * file for it. */
-void setuplinuxboot(VCPU *vcpu, u32 vmlinuz_base, u32 vmlinuz_size, 
-                    u32 initrd_base, u32 initrd_size);
+#include <tv_emhf.h>
 
 // a placeholder for now...
 u32 tv_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
   eu_trace("CPU(0x%02x)", vcpu->id);
+  (void)apb; /* unused */
 
 #ifdef __MP_VERSION__
   if (vcpu->isbsp) 
@@ -61,20 +58,6 @@ u32 tv_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
     {
       eu_trace("CPU(0x%02x): init\n", vcpu->id);
       init_scode(vcpu);
-
-      //sanity checks
-      //	ASSERT( apb->bootsector_size > 0 && apb->optionalmodule_size > 0 );
-
-      if (apb->optionalmodule_ptr) {
-        eu_trace("CPU(0x%02x): vmlinuz b=0x%08x, size=%u bytes", vcpu->id,
-                 apb->bootsector_ptr, apb->bootsector_size);
-        eu_trace("CPU(0x%02x): initramfs b=0x%08x, size=%u bytes", vcpu->id,
-                 apb->optionalmodule_ptr, apb->optionalmodule_size);
-
-        setuplinuxboot(vcpu, apb->bootsector_ptr, apb->bootsector_size, 
-                       apb->optionalmodule_ptr, apb->optionalmodule_size);
-      }
-
     }
 
   /* force these to be linked in */
