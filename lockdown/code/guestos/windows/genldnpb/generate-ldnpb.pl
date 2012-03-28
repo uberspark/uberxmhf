@@ -43,6 +43,12 @@ or die "\nCan't open $ldnpbfilename for writing: $!\n";
 # switch to binary mode
 binmode( LDNPBBIN );
 
+# write the TE parameter block header TRUE
+print( LDNPBBIN "TRUE");
+
+# write the full and partial hash list element counts
+print( LDNPBBIN pack( "L", $full_hashlist_count) );
+print( LDNPBBIN pack( "L", $partial_hashlist_count) );
 
 # open full hash list file and iterate through all the hashes there
 $full_hashlist_totalelements = 0;
