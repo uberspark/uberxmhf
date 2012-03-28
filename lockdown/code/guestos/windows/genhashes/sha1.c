@@ -330,9 +330,9 @@ static const char _sha1_src[] = "_sha1_src";
 #define PAGE_SIZE_4K (1UL << 12)
 #define PAGE_ALIGN_4K(size)	((size) & ~(PAGE_SIZE_4K - 1))
 
-#define	__OUTPUT_BINARY__	1
+#define	__OUTPUT_HASHONLY__	1
 
-#ifndef __OUTPUT_BINARY__
+#ifndef __OUTPUT_HASHONLY__
 
 void sha1_section_print(char *filename, char *section_name, unsigned long int pagenum, unsigned long int pagebase,
 	unsigned long int pageoffset, unsigned long int size, unsigned char *sha1sum, int partial){
@@ -361,9 +361,34 @@ void sha1_section_print(char *filename, char *section_name, unsigned long int pa
 
 #else
 
+void sha1_section_print(char *filename, char *section_name, unsigned long int pagenum, unsigned long int pagebase,
+	unsigned long int pageoffset, unsigned long int size, unsigned char *sha1sum, int partial){
+	int i;
+
+	if(size != PAGE_SIZE_4K && !partial)
+		return;
+		
+	if(size == PAGE_SIZE_4K && partial)
+		return;
+		
+	printf("{");
+	printf("\"%s!%s!page(%u)\", 0x%08x, 0x%08x, 0x%08x, 0x%08x, ", filename, section_name, pagenum,
+		pagenum, pagebase, pageoffset, size);
+		
+  printf("{");
+  for (i = 0; i < 20; i ++){
+        if (i < 19)
+            printf("0x%02x, ", sha1sum[i]);
+        else 
+            printf("0x%02x", sha1sum[i]);
+  }
+  printf("}");
+	printf("},\r\n");
+}
 
 
-#endif //__OUTPUT_BINARY__
+
+#endif //__OUTPUT_HASHONLY__
 
 
 int sha1_section(char *filename, char *section_name, unsigned long int section_vma, unsigned long int section_size,
