@@ -409,7 +409,9 @@ int sha1_section(char *filename, char *section_name, unsigned long int section_v
 		return 0;
 	}
 
+#ifndef __OUTPUT_HASHONLY__
 	printf("/* filename=%s, section_name=%s */\r\n", filename, section_name);
+#endif //__OUTPUT_HASHONLY__
 	
 	i_pagenum=0;
 	i_pagebase=section_vma;
