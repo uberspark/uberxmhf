@@ -19,10 +19,10 @@ print "partial hash list file: $partial_hashlist\n";
 # open full hashlist file and iterate through all the hashes there
 $full_hashlist_totalelements = 0;
 
-open MYINPUTFILE, $full_hashlist
+open FHASHFULL, $full_hashlist
 or die "\nCan't open $full_hashlist for reading: $!\n";
 
-while(<MYINPUTFILE>)
+while(<FHASHFULL>)
 {
 	my($line) = $_;
 
@@ -36,5 +36,5 @@ while(<MYINPUTFILE>)
 	}
  }
 
-close MYINPUTFILE
+close FHASHFULL
 or die "Can't close $full_hashlist: $!\n";
