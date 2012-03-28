@@ -5,12 +5,15 @@
 # trusted environment (TE) which includes the TE signature and full and
 # partial code page hashes
 
-use bignum qw/hex/;
+use lib '..';
+use bignum;
 
 if ($#ARGV != 1 ) {
 	print "usage: generate-ldnpb.pl full_hashlist partial_hashlist\n";
 	exit;
 }
+
+
 
 $full_hashlist=$ARGV[0];
 $partial_hashlist=$ARGV[1];
@@ -24,6 +27,7 @@ open LDNPBBIN, ">", $ldnpbfilename
 or die "\nCan't open $ldnpbfilename for writing: $!\n";
 binmode( LDNPBBIN );
 
+#print( LDNPBBIN pack("H8", "c8403020") );
 
 
 # open full hashlist file and iterate through all the hashes there
@@ -44,10 +48,14 @@ while(<FHASHFULL>)
 	if($line ne ""){
 		 # Print the line to the screen and add a newline
 		print "$line\n";
-		my $output = pack( "N", hex($line));
+
+		# 160-bit hash = 20 bytes = 40 hex characters
+		# input $line is little endian
+        my $output = pack( "H40", $line);
+		
 		print( LDNPBBIN $output );
 	}
- }
+}
 
 close FHASHFULL
 or die "Can't close $full_hashlist: $!\n";
