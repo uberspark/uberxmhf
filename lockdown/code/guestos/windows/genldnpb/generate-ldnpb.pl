@@ -51,11 +51,9 @@ print( LDNPBBIN pack( "L", $full_hashlist_count) );
 print( LDNPBBIN pack( "L", $partial_hashlist_count) );
 
 # open full hash list file and iterate through all the hashes there
-$full_hashlist_totalelements = 0;
-
+# writing them out as a 160-bit value to the TE parameter block blob
 open FHASHFULL, $full_hashlist
 or die "\nCan't open $full_hashlist for reading: $!\n";
-
 
 while(<FHASHFULL>)
 {
@@ -66,13 +64,9 @@ while(<FHASHFULL>)
 	
 	#skip empty lines
 	if($line ne ""){
-		 # Print the line to the screen and add a newline
-		#print "$line\n";
-
 		# 160-bit hash = 20 bytes = 40 hex characters
 		# input $line is little endian
         my $output = pack( "H40", $line);
-		
 		print( LDNPBBIN $output );
 	}
 }
@@ -80,6 +74,30 @@ while(<FHASHFULL>)
 close FHASHFULL
 or die "Can't close $full_hashlist: $!\n";
 
+
+# open partial hash list file and iterate through all the hashes there
+# writing them out as a 160-bit value to the TE parameter block blob
+open FHASHPART, $partial_hashlist
+or die "\nCan't open $partial_hashlist for reading: $!\n";
+
+while(<FHASHPART>)
+{
+	my($line) = $_;
+
+	#strip the trailing from the line
+	chomp($line);
+	
+	#skip empty lines
+	if($line ne ""){
+		# 160-bit hash = 20 bytes = 40 hex characters
+		# input $line is little endian
+        my $output = pack( "H40", $line);
+		print( LDNPBBIN $output );
+	}
+}
+
+close FHASHPART
+or die "Can't close $partial_hashlist: $!\n";
 
 close LDNPBBIN
 or die "Can't close $ldnpbfilename: $!\n";
