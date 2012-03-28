@@ -5,6 +5,8 @@
 # trusted environment (TE) which includes the TE signature and full and
 # partial code page hashes
 
+use bignum qw/hex/;
+
 if ($#ARGV != 1 ) {
 	print "usage: generate-ldnpb.pl full_hashlist partial_hashlist\n";
 	exit;
