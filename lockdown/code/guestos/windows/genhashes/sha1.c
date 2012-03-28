@@ -371,19 +371,10 @@ void sha1_section_print(char *filename, char *section_name, unsigned long int pa
 	if(size == PAGE_SIZE_4K && partial)
 		return;
 		
-	printf("{");
-	printf("\"%s!%s!page(%u)\", 0x%08x, 0x%08x, 0x%08x, 0x%08x, ", filename, section_name, pagenum,
-		pagenum, pagebase, pageoffset, size);
-		
-  printf("{");
   for (i = 0; i < 20; i ++){
-        if (i < 19)
-            printf("0x%02x, ", sha1sum[i]);
-        else 
-            printf("0x%02x", sha1sum[i]);
+	printf("%02x", sha1sum[i]);
   }
-  printf("}");
-	printf("},\r\n");
+  printf("\r\n");
 }
 
 
