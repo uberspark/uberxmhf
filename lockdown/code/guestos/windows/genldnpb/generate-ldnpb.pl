@@ -16,11 +16,26 @@ $partial_hashlist=$ARGV[1];
 print "full hash list file: $full_hashlist\n";
 print "partial hash list file: $partial_hashlist\n";
 
+$ldnpbfilename = "ldnpb_te.bin";
+$hexnumber = hex("c040f040");
+
+open LDNPBBIN, ">", $ldnpbfilename
+or die "\nCan't open $ldnpbfilename for writing: $!\n";
+binmode( LDNPBBIN );
+
+my $output = pack( "N", $hexnumber);
+print( LDNPBBIN $output );
+
+close LDNPBBIN
+or die "Can't close $ldnpbfilename: $!\n";
+
+
 # open full hashlist file and iterate through all the hashes there
 $full_hashlist_totalelements = 0;
 
 open FHASHFULL, $full_hashlist
 or die "\nCan't open $full_hashlist for reading: $!\n";
+
 
 while(<FHASHFULL>)
 {
