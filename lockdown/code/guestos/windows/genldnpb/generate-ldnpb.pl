@@ -17,17 +17,11 @@ print "full hash list file: $full_hashlist\n";
 print "partial hash list file: $partial_hashlist\n";
 
 $ldnpbfilename = "ldnpb_te.bin";
-$hexnumber = hex("c040f040");
 
 open LDNPBBIN, ">", $ldnpbfilename
 or die "\nCan't open $ldnpbfilename for writing: $!\n";
 binmode( LDNPBBIN );
 
-my $output = pack( "N", $hexnumber);
-print( LDNPBBIN $output );
-
-close LDNPBBIN
-or die "Can't close $ldnpbfilename: $!\n";
 
 
 # open full hashlist file and iterate through all the hashes there
@@ -48,8 +42,14 @@ while(<FHASHFULL>)
 	if($line ne ""){
 		 # Print the line to the screen and add a newline
 		print "$line\n";
+		my $output = pack( "N", hex($line));
+		print( LDNPBBIN $output );
 	}
  }
 
 close FHASHFULL
 or die "Can't close $full_hashlist: $!\n";
+
+
+close LDNPBBIN
+or die "Can't close $ldnpbfilename: $!\n";
