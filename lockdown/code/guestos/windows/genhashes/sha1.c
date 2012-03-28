@@ -330,6 +330,10 @@ static const char _sha1_src[] = "_sha1_src";
 #define PAGE_SIZE_4K (1UL << 12)
 #define PAGE_ALIGN_4K(size)	((size) & ~(PAGE_SIZE_4K - 1))
 
+#define	__OUTPUT_BINARY__	1
+
+#ifndef __OUTPUT_BINARY__
+
 void sha1_section_print(char *filename, char *section_name, unsigned long int pagenum, unsigned long int pagebase,
 	unsigned long int pageoffset, unsigned long int size, unsigned char *sha1sum, int partial){
 	int i;
@@ -354,6 +358,13 @@ void sha1_section_print(char *filename, char *section_name, unsigned long int pa
   printf("}");
 	printf("},\r\n");
 }
+
+#else
+
+
+
+#endif //__OUTPUT_BINARY__
+
 
 int sha1_section(char *filename, char *section_name, unsigned long int section_vma, unsigned long int section_size,
 	unsigned long int section_fileoffset, int partial){
