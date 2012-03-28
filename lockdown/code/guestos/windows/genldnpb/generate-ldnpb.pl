@@ -14,14 +14,26 @@ if ($#ARGV != 1 ) {
 }
 
 
-
 $full_hashlist=$ARGV[0];
 $partial_hashlist=$ARGV[1];
 
-print "full hash list file: $full_hashlist\n";
-print "partial hash list file: $partial_hashlist\n";
+$full_hashlist_count = `wc -l < $full_hashlist`;
+die "wc failed: $?" if $?;
+chomp($full_hashlist_count);
+
+$partial_hashlist_count = `wc -l < $partial_hashlist`;
+die "wc failed: $?" if $?;
+chomp($partial_hashlist_count);
+
+print "full hash list file: $full_hashlist, $full_hashlist_count hashes\n";
+print "partial hash list file: $partial_hashlist, $partial_hashlist_count hashes\n";
 
 $ldnpbfilename = "ldnpb_te.bin";
+
+$full_hashlist_count = `wc -l < $full_hashlist`;
+die "wc failed: $?" if $?;
+chomp($full_hashlist_count);
+
 
 open LDNPBBIN, ">", $ldnpbfilename
 or die "\nCan't open $ldnpbfilename for writing: $!\n";
@@ -47,7 +59,7 @@ while(<FHASHFULL>)
 	#skip empty lines
 	if($line ne ""){
 		 # Print the line to the screen and add a newline
-		print "$line\n";
+		#print "$line\n";
 
 		# 160-bit hash = 20 bytes = 40 hex characters
 		# input $line is little endian
