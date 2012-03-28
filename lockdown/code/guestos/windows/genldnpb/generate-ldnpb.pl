@@ -15,3 +15,26 @@ $partial_hashlist=$ARGV[1];
 
 print "full hash list file: $full_hashlist\n";
 print "partial hash list file: $partial_hashlist\n";
+
+# open full hashlist file and iterate through all the hashes there
+$full_hashlist_totalelements = 0;
+
+open MYINPUTFILE, $full_hashlist
+or die "\nCan't open $full_hashlist for reading: $!\n";
+
+while(<MYINPUTFILE>)
+{
+	my($line) = $_;
+
+	#strip the trailing from the line
+	chomp($line);
+	
+	#skip empty lines
+	if($line ne ""){
+		 # Print the line to the screen and add a newline
+		print "$line\n";
+	}
+ }
+
+close MYINPUTFILE
+or die "Can't close $full_hashlist: $!\n";
