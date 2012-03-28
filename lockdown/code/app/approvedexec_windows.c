@@ -509,7 +509,7 @@ __step4:
 		u32 index, fullhash;
 		retval=approvedexec_checkhashes(paligned_paddr, &index, &fullhash);
 
-		/*if(!retval){
+		if(!retval){
 			printf("\nPEBase(o:a)=(0x%08x:0x%08x), UNMATCHED, p=0x%08x, v=0x%08x", 
 						ntHeader->OptionalHeader.ImageBase, imagebase, 
 						paddr, vaddr);
@@ -520,7 +520,7 @@ __step4:
 				//	printf("\n  %s", hashlist_full[index].name);
 				//else
 				//	printf("\n  %s", hashlist_partial[index].name);
-		}*/
+		}
 	}
 #endif
 
