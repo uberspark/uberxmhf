@@ -5,7 +5,15 @@
 #version of library 
 VERSION=0.42.0
 
-CFLAGS  +=  -I./ -Wall -W -Wshadow -Wsign-compare
+CFLAGS += -I./
+
+ifneq ($(CC), armcc)
+CFLAGS  +=  -Wall -W -Wshadow -Wsign-compare
+endif
+
+ifeq ($(CC), armcc)
+CFLAGS += --cpu=Cortex-A8 --fpu=None --fpmode=none
+endif
 
 ifndef MAKE
    MAKE=make
@@ -14,13 +22,17 @@ endif
 ifndef IGNORE_SPEED
 
 #for speed 
+ifneq ($(CC), armcc)
 CFLAGS += -O3 -funroll-loops
+endif
 
 #for size 
 #CFLAGS += -Os
 
 #x86 optimizations [should be valid for any GCC install though]
+ifneq ($(CC), armcc)
 CFLAGS  += -fomit-frame-pointer
+endif
 
 #debug
 #CFLAGS += -g3
