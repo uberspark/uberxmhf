@@ -3,6 +3,9 @@
 # Tom St Denis
 # Modified by Clay Culver
 
+srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
+VPATH = $(srcdir)
+
 # The version
 VERSION=1.17
 
@@ -30,7 +33,7 @@ endif
 endif
 
 # Compilation flags. Note the += does not write over the user's CFLAGS!
-CFLAGS += -c -I./testprof/ -I./src/headers/ -DLTC_SOURCE
+CFLAGS += -c -I./testprof/ -I$(srcdir)src/headers/ -DLTC_SOURCE
 
 ifneq ($(CC), armcc)
 CFLAGS += -Wall -Wsign-compare -W -Wshadow -Wno-unused-parameter
@@ -251,7 +254,8 @@ default:library
 
 #ciphers come in two flavours... enc+dec and enc 
 src/ciphers/aes/aes_enc.o: src/ciphers/aes/aes.c src/ciphers/aes/aes_tab.c
-	$(CC) $(CFLAGS) -DENCRYPT_ONLY -c src/ciphers/aes/aes.c -o src/ciphers/aes/aes_enc.o
+	mkdir -p $(dir $@)
+	$(CC) -c $(CFLAGS) -DENCRYPT_ONLY $(CPPFLAGS) -o $@ $<
 
 #These are the rules to make certain object files.
 src/ciphers/aes/aes.o: src/ciphers/aes/aes.c src/ciphers/aes/aes_tab.c
@@ -393,6 +397,9 @@ zipup: no_oops docs
 	gpg -b -a crypt-$(VERSION).tar.bz2 ; gpg -b -a crypt-$(VERSION).zip ; \
 	mv -fv crypt* ~ ; rm -rf libtomcrypt-$(VERSION)
 
+%.o : %.c
+	mkdir -p $(dir $@)
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) -o $@ $<
 
 # $Source: /cvs/libtom/libtomcrypt/makefile,v $ 
 # $Revision: 1.150 $ 
