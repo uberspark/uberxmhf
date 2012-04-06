@@ -2,10 +2,13 @@
 #
 #Tom St Denis
 
+srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
+VPATH = $(srcdir)
+
 #version of library 
 VERSION=0.42.0
 
-CFLAGS += -I./
+CFLAGS += -I$(srcdir)
 
 ifneq ($(CC), armcc)
 CFLAGS  +=  -Wall -W -Wshadow -Wsign-compare
@@ -60,6 +63,7 @@ endif
 default: ${LIBNAME}
 
 HEADERS=tommath.h tommath_class.h tommath_superclass.h
+HEADERS:=$(patsubst %, $(srcdir)/%, $(HEADERS))
 
 #LIBPATH-The directory for libtommath to be installed to.
 #INCPATH-The directory to install the header files for libtommath.
