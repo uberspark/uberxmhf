@@ -14,10 +14,6 @@ ifneq ($(CC), armcc)
 CFLAGS  +=  -Wall -W -Wshadow -Wsign-compare
 endif
 
-ifeq ($(CC), armcc)
-CFLAGS += --cpu=Cortex-A8 --fpu=None --fpmode=none
-endif
-
 ifndef MAKE
    MAKE=make
 endif
