@@ -11,7 +11,7 @@
 
 u32 ax_debug_flag = 0;
 
-
+/*
 //the trusted environment hash-lists
 struct hashinfo hashlist_full[] = {
 	#include "hashlist_full.dat"
@@ -22,17 +22,27 @@ struct hashinfo hashlist_partial[] = {
 	#include "hashlist_partial.dat"
 };
 u32 hashlist_partial_totalelements= (sizeof(hashlist_partial)/sizeof(struct hashinfo));
+*/
+
+//the trusted environment hash-lists
+struct hashinfo hashlist_full[MAX_FULL_HASHLIST_ELEMENTS];
+u32 hashlist_full_totalelements = 0;
+
+struct hashinfo hashlist_partial[MAX_PARTIAL_HASHLIST_ELEMENTS];
+u32 hashlist_partial_totalelements=0;
+
 
 //----------------------------------------------------------------------
 // setup approved execution
 //----------------------------------------------------------------------
 void approvedexec_setup(VCPU *vcpu, APP_PARAM_BLOCK *apb){
-
-      u32 endpfn = (apb->runtimephysmembase-PAGE_SIZE_2M) / PAGE_SIZE_4K;
-      u32 i;
+    u32 endpfn = (apb->runtimephysmembase-PAGE_SIZE_2M) / PAGE_SIZE_4K;
+    u32 i;
 
       printf("\nCPU(0x%02x): %s: starting...", 
 		vcpu->id, __FUNCTION__);
+
+	
 
       //start with all guest physical memory pages as non-executable
       printf("\nCPU(0x%02x): %s: setting guest physical memory \
@@ -57,6 +67,7 @@ void approvedexec_setup(VCPU *vcpu, APP_PARAM_BLOCK *apb){
       emhf_memprot_flushmappings(vcpu);  //flush all NPT/EPT mappings
       printf("\nCPU(0x%02x): %s: setup approved execution.", 
 			vcpu->id, __FUNCTION__);
+
 }
 
 //checks the sha-1 hash of the provided 4K memory page with physical address
