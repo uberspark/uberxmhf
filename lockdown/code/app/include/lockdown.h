@@ -4,8 +4,6 @@
 #ifndef __LOCKDOWN_H__
 #define __LOCKDOWN_H__
 
-#define LDN_ENV_TRUSTED_SIGNATURE  0x45555254   //"TRUE"
-#define LDN_ENV_UNTRUSTED_SIGNATURE 0x45544E55  //"UNTE"
 
 //specific defines for VT BOX
 //#define LDN_ENV_TRUSTED_STARTSECTOR  (63)
@@ -43,9 +41,16 @@ extern u32 LDN_ENV_PHYSICALMEMORYLIMIT;
 
 #ifndef __ASSEMBLY__
 
-typedef struct {
-  u32 signature;  //trusted or untrusted env. being switched to
+#define LDN_ENV_TRUSTED_SIGNATURE  0x45555254   //"TRUE"
+#define LDN_ENV_UNTRUSTED_SIGNATURE 0x45544E55  //"UNTE"
 
+
+typedef struct {
+	u32 signature;  				//trusted or untrusted env. being switched to
+	u32 full_hashlist_count;		//no. of full code page hashes
+	u32 partial_hashlist_count;		//no. of partial code page hashes
+									//full and partial hash list follow
+									//20 bytes (160-bits) per entry
 } __attribute__((packed)) LDNPB;
 
 
