@@ -281,31 +281,20 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 	}
 
 
-  //check if we are going to the trusted environment, if so enable
-  //approved execution and mask off any network interfaces
-  if(currentenvironment == LDN_ENV_TRUSTED_SIGNATURE){
-    //enable approved execution
-    #if defined(__LDN_APPROVEDEXEC__)
-		approvedexec_setup(vcpu, apb);
-    #endif
+	//check if we are going to the trusted environment, if so enable
+	//approved execution and mask off any network interfaces
+	if(currentenvironment == LDN_ENV_TRUSTED_SIGNATURE){
+		//enable approved execution
+		#if defined(__LDN_APPROVEDEXEC__)
+			approvedexec_setup(vcpu, apb);
+		#endif
     
-    //mask off all network interfaces by interposing on PCI bus accesses
-    #if defined(__LDN_SSLPA__)
-    emhf_iopm_set_write(vcpu, PCI_CONFIG_DATA_PORT, 2); //16-bit port
-    #endif
-
-
-		/*#if 0
-		//TODO:make EPT entries such that they map 2M pages for the untrusted
-		//environment in order to achieve greatest speedup during EPT
-		//translation
-		vmx_setupEPT2M(vcpu);
-		emhf_hwpgtbl_flushall(vcpu);
-		printf("\nCPU(0x%02x): setup 2M EPT pages");
-		#endif*/
-  
-  }else{	//we are going to run the untrusted environment
-  	ASSERT( currentenvironment == LDN_ENV_UNTRUSTED_SIGNATURE);
+		//mask off all network interfaces by interposing on PCI bus accesses
+		#if defined(__LDN_SSLPA__)
+			emhf_iopm_set_write(vcpu, PCI_CONFIG_DATA_PORT, 2); //16-bit port
+		#endif
+	}else{	//we are going to run the untrusted environment
+		ASSERT( currentenvironment == LDN_ENV_UNTRUSTED_SIGNATURE);
 	
 		/*//TODO:make EPT entries such that they map 2M pages for the untrusted
 		//environment in order to achieve greatest speedup during EPT
