@@ -79,6 +79,27 @@ void approvedexec_setup(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 		memcpy( (void *)&hashlist_full, (void *)addr_hashlist_full, (hashlist_full_totalelements * sizeof(struct hashinfo)) );
 		memcpy( (void *)&hashlist_partial, (void *)addr_hashlist_partial, (hashlist_partial_totalelements * sizeof(struct hashinfo)) );
 	
+	  //[DEBUG]
+	  {
+		u32 i, j;
+		printf("\nCPU(0x%02x): %s: full hash list dump follows...",
+			vcpu->id, __FUNCTION__);
+		for(i=(hashlist_full_totalelements-1); i > (hashlist_full_totalelements-16); i--){
+			printf("\n%08x:%08x:", hashlist_full[i].pageoffset, 
+							hashlist_full[i].size);
+			for(j=0; j < 20; j++)
+				printf("%02x", hashlist_full[i].shanum[j]);
+		}
+		printf("\nCPU(0x%02x): %s: partial hash list dump follows...",
+			vcpu->id, __FUNCTION__);
+		for(i=(hashlist_partial_totalelements-1); i > (hashlist_partial_totalelements-16); i--){
+			printf("\n%08x:%08x:", hashlist_partial[i].pageoffset, 
+							hashlist_partial[i].size);
+			for(j=0; j < 20; j++)
+				printf("%02x", hashlist_partial[i].shanum[j]);
+		}
+		HALT();
+	  }
 		
       //start with all guest physical memory pages as non-executable
       printf("\nCPU(0x%02x): %s: setting guest physical memory \
