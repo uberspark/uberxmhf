@@ -370,6 +370,8 @@ void sha1_section_print(char *filename, char *section_name, unsigned long int pa
 		
 	if(size == PAGE_SIZE_4K && partial)
 		return;
+
+  printf("%08x:%08x:", pageoffset, size);
 		
   for (i = 0; i < 20; i ++){
 	printf("%02x", sha1sum[i]);
