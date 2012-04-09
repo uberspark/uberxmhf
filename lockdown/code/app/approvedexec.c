@@ -46,30 +46,38 @@ void approvedexec_setup(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 
 	//populate full and partial hash lists using the TE parameter
 	//block, sanity check along the way
-	hashlist_full_totalelements = pldnPb->full_hashlist_count;
-	hashlist_partial_totalelements = pldnPb->partial_hashlist_count;
 	
-	printf("\nCPU(0x%02x): %s: populating hash lists (full=%u, \
-		partial=%u elements)", vcpu->id, __FUNCTION__,
-		hashlist_full_totalelements, hashlist_partial_totalelements);
+		//grab total elements for full and partial hash lists
+		hashlist_full_totalelements = pldnPb->full_hashlist_count;
+		hashlist_partial_totalelements = pldnPb->partial_hashlist_count;
 	
-	if( (hashlist_full_totalelements > MAX_FULL_HASHLIST_ELEMENTS) ||
-		(hashlist_partial_totalelements > MAX_PARTIAL_HASHLIST_ELEMENTS) ){
-		printf("\nCPU(0x%02x): %s: total no. of hash list elements \
-			exceeds max. supported value. Halting!", vcpu->id,
-			__FUNCTION__);
-		HALT();
-	}
+		printf("\nCPU(0x%02x): %s: populating hash lists (full=%u, \
+			partial=%u elements)", vcpu->id, __FUNCTION__,
+			hashlist_full_totalelements, hashlist_partial_totalelements);
 	
-	memset( (void *)&hashlist_full, 0, (sizeof(hashlist_full) * MAX_FULL_HASHLIST_ELEMENTS) );
-	memset( (void *)&hashlist_partial, 0, (sizeof(hashlist_partial) * MAX_PARTIAL_HASHLIST_ELEMENTS) );
+		//sanity check
+		if( (hashlist_full_totalelements > MAX_FULL_HASHLIST_ELEMENTS) ||
+			(hashlist_partial_totalelements > MAX_PARTIAL_HASHLIST_ELEMENTS) ){
+			printf("\nCPU(0x%02x): %s: total no. of hash list elements \
+				exceeds max. supported value. Halting!", vcpu->id,
+				__FUNCTION__);
+			HALT();
+		}
 	
-	addr_hashlist_full = (u8 *)((u32)&pldnPb->partial_hashlist_count + sizeof(u32));
-	addr_hashlist_partial = (u8 *)( ((u32)&pldnPb->partial_hashlist_count + sizeof(u32)) + 
-			(hashlist_full_totalelements * sizeof(struct hashinfo)) );
+		//zero initialize hashlist_full and hashlist_partial arrays
+		memset( (void *)&hashlist_full, 0, (sizeof(hashlist_full) * MAX_FULL_HASHLIST_ELEMENTS) );
+		memset( (void *)&hashlist_partial, 0, (sizeof(hashlist_partial) * MAX_PARTIAL_HASHLIST_ELEMENTS) );
 	
-	memcpy( (void *)&hashlist_full, (void *)addr_hashlist_full, (hashlist_full_totalelements * sizeof(struct hashinfo)) );
-	memcpy( (void *)&hashlist_partial, (void *)addr_hashlist_partial, (hashlist_partial_totalelements * sizeof(struct hashinfo)) );
+		//compute address of full and partial struct hashinfo lists
+		//within the TE parameter block
+		addr_hashlist_full = (u8 *)((u32)&pldnPb->partial_hashlist_count + sizeof(u32));
+		addr_hashlist_partial = (u8 *)( ((u32)&pldnPb->partial_hashlist_count + sizeof(u32)) + 
+				(hashlist_full_totalelements * sizeof(struct hashinfo)) );
+	
+		//copy the full and partial struct hashinfo lists to our
+		//arrays
+		memcpy( (void *)&hashlist_full, (void *)addr_hashlist_full, (hashlist_full_totalelements * sizeof(struct hashinfo)) );
+		memcpy( (void *)&hashlist_partial, (void *)addr_hashlist_partial, (hashlist_partial_totalelements * sizeof(struct hashinfo)) );
 	
 		
       //start with all guest physical memory pages as non-executable
