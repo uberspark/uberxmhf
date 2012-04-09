@@ -526,9 +526,10 @@ __step4:
 
 __step5:	
 	if(retval){
-		AX_DEBUG(("\nstep-4: SUCCESS - verified page contents"));
+		//AX_DEBUG(("\nstep-4: SUCCESS - verified page contents"));
+		printf("\nstep-4: SUCCESS - verified page contents");
 	}else{
-		AX_DEBUG(("\nstep-4: ERROR - could not verify page contents"));
+		printf("\nstep-4: ERROR - could not verify page contents");
 	}
 	
 	return retval;
