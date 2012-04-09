@@ -256,14 +256,27 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 
 #endif
 
-  //grab the ldn parameter block from verifier, this tells us the
-  //destination environment characteristics
-  //TODO: verifier integration, for now we just take it from the apb
-  ASSERT( apb->optionalmodule_size > 0 );
-  pldnPb = (LDNPB *) apb->optionalmodule_ptr;
-  printf("\nCPU(0x%02x): destination environment signature = 0x%08x", 
-      vcpu->id, pldnPb->signature);
-  currentenvironment = pldnPb->signature;  
+	//grab the ldn parameter block from verifier, this tells us the
+	//destination environment characteristics
+	//TODO: verifier integration, for now we just take it from the apb
+	if(apb->optionalmodule_size == 0){
+		//if we don't have an optional module then load the untrusted
+		//environment
+		currentenvironment = LDN_ENV_UNTRUSTED_SIGNATURE;
+	}else{
+		//an optional module was specified, so load the trusted 
+		//environment
+		pldnPb = (LDNPB *) apb->optionalmodule_ptr;
+		currentenvironment = LDN_ENV_TRUSTED_SIGNATURE;
+		
+		//sanity check we have a good TE parameter block
+		if(pldnPb->signature != LDN_ENV_TRUSTED_SIGNATURE){
+			printf("\nCPU(0x%02x): unknown destination environment signature (0x%08x), halting!", 
+				vcpu->id, pldnPb->signature);
+			HALT();
+		}
+	}
+
 
   if(currentenvironment == LDN_ENV_TRUSTED_SIGNATURE)
     printf("\nCPU(0x%02x): booting TRUSTED environment...", vcpu->id);
