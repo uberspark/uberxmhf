@@ -22,6 +22,7 @@ struct hashinfo {
 extern struct hashinfo hashlist[];
 extern u32 hashlist_totalelements;
 
+void approvedexec_setup(VCPU *vcpu, APP_PARAM_BLOCK *apb);
 //u32 approvedexec_checkhashes(u32 pagebase_paddr);
 u32 approvedexec_checkhashes(u32 pagebase_paddr, u32 *index, u32 *fullhash);
 u32 windows_verifycodeintegrity(VCPU *vcpu, u32 paddr, u32 vaddrfromcpu);
