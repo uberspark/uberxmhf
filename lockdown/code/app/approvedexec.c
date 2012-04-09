@@ -39,6 +39,7 @@ void approvedexec_setup(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 	LDNPB *pldnPb = (LDNPB *) apb->optionalmodule_ptr;
     u32 endpfn = (apb->runtimephysmembase-PAGE_SIZE_2M) / PAGE_SIZE_4K;
     u32 i;
+	u8 *addr_hashlist_full, *addr_hashlist_partial;
 	
 	printf("\nCPU(0x%02x): %s: starting...", 
 		vcpu->id, __FUNCTION__);
@@ -63,7 +64,14 @@ void approvedexec_setup(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 	memset( (void *)&hashlist_full, 0, (sizeof(hashlist_full) * MAX_FULL_HASHLIST_ELEMENTS) );
 	memset( (void *)&hashlist_partial, 0, (sizeof(hashlist_partial) * MAX_PARTIAL_HASHLIST_ELEMENTS) );
 	
+	addr_hashlist_full = (u8 *)((u32)&pldnPb->partial_hashlist_count + sizeof(u32));
+	addr_hashlist_partial = (u8 *)( ((u32)&pldnPb->partial_hashlist_count + sizeof(u32)) + 
+			(hashlist_full_totalelements * sizeof(struct hashinfo)) );
 	
+	memcpy( (void *)&hashlist_full, (void *)addr_hashlist_full, (hashlist_full_totalelements * sizeof(struct hashinfo)) );
+	memcpy( (void *)&hashlist_partial, (void *)addr_hashlist_partial, (hashlist_partial_totalelements * sizeof(struct hashinfo)) );
+	
+		
       //start with all guest physical memory pages as non-executable
       printf("\nCPU(0x%02x): %s: setting guest physical memory \
 		0x%08x-0x%08x (%u pfns) as NX",
