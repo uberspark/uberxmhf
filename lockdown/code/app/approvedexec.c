@@ -36,14 +36,34 @@ u32 hashlist_partial_totalelements=0;
 // setup approved execution
 //----------------------------------------------------------------------
 void approvedexec_setup(VCPU *vcpu, APP_PARAM_BLOCK *apb){
+	LDNPB *pldnPb = (LDNPB *) apb->optionalmodule_ptr;
     u32 endpfn = (apb->runtimephysmembase-PAGE_SIZE_2M) / PAGE_SIZE_4K;
     u32 i;
-
-      printf("\nCPU(0x%02x): %s: starting...", 
+	
+	printf("\nCPU(0x%02x): %s: starting...", 
 		vcpu->id, __FUNCTION__);
 
+	//populate full and partial hash lists using the TE parameter
+	//block, sanity check along the way
+	hashlist_full_totalelements = pldnPb->full_hashlist_count;
+	hashlist_partial_totalelements = pldnPb->partial_hashlist_count;
 	
-
+	printf("\nCPU(0x%02x): %s: populating hash lists (full=%u, \
+		partial=%u elements)", vcpu->id, __FUNCTION__,
+		hashlist_full_totalelements, hashlist_partial_totalelements);
+	
+	if( (hashlist_full_totalelements > MAX_FULL_HASHLIST_ELEMENTS) ||
+		(hashlist_partial_totalelements > MAX_PARTIAL_HASHLIST_ELEMENTS) ){
+		printf("\nCPU(0x%02x): %s: total no. of hash list elements \
+			exceeds max. supported value. Halting!", vcpu->id,
+			__FUNCTION__);
+		HALT();
+	}
+	
+	memset( (void *)&hashlist_full, 0, (sizeof(hashlist_full) * MAX_FULL_HASHLIST_ELEMENTS) );
+	memset( (void *)&hashlist_partial, 0, (sizeof(hashlist_partial) * MAX_PARTIAL_HASHLIST_ELEMENTS) );
+	
+	
       //start with all guest physical memory pages as non-executable
       printf("\nCPU(0x%02x): %s: setting guest physical memory \
 		0x%08x-0x%08x (%u pfns) as NX",
