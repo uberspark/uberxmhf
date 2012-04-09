@@ -99,6 +99,16 @@ while(<FHASHPART>)
 	
 	#skip empty lines
 	if($line ne ""){
+		@info=split(/:/, $line);
+		
+		$hashinfo_pageoffset= hex($info[0]);
+		$hashinfo_size = hex($info[1]);
+		$hashinfo_shanum = $info[2];
+
+		# 32-bit page offset and size fields
+		print( LDNPBBIN pack( "L", $hashinfo_pageoffset) );
+		print( LDNPBBIN pack( "L", $hashinfo_size) );
+
 		# 160-bit hash = 20 bytes = 40 hex characters
 		# input $line is little endian
         my $output = pack( "H40", $line);
