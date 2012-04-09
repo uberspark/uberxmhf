@@ -79,7 +79,7 @@ void approvedexec_setup(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 		memcpy( (void *)&hashlist_full, (void *)addr_hashlist_full, (hashlist_full_totalelements * sizeof(struct hashinfo)) );
 		memcpy( (void *)&hashlist_partial, (void *)addr_hashlist_partial, (hashlist_partial_totalelements * sizeof(struct hashinfo)) );
 	
-	  //[DEBUG]
+	  /*//[DEBUG]
 	  {
 		u32 i, j;
 		printf("\nCPU(0x%02x): %s: full hash list dump follows...",
@@ -99,7 +99,7 @@ void approvedexec_setup(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 				printf("%02x", hashlist_partial[i].shanum[j]);
 		}
 		HALT();
-	  }
+	  }*/
 		
       //start with all guest physical memory pages as non-executable
       printf("\nCPU(0x%02x): %s: setting guest physical memory \
