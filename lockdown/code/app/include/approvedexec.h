@@ -4,6 +4,12 @@
 #ifndef __APPROVEDEXEC_H__
 #define __APPROVEDEXEC_H__
 
+#define	MAX_FULL_HASHLIST_ELEMENTS		(75000)							//maximum no. of 20-byte SHA-1 records for
+																		//full code-page hashes
+
+#define	MAX_PARTIAL_HASHLIST_ELEMENTS	(15000)							//maximum no. of 20-byte SHA-1 records for
+																		//partial code-page hashes
+
 
 extern u32 ax_debug_flag;
 
