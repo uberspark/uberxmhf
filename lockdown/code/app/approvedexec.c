@@ -65,8 +65,8 @@ void approvedexec_setup(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 		}
 	
 		//zero initialize hashlist_full and hashlist_partial arrays
-		memset( (void *)&hashlist_full, 0, (sizeof(hashlist_full) * MAX_FULL_HASHLIST_ELEMENTS) );
-		memset( (void *)&hashlist_partial, 0, (sizeof(hashlist_partial) * MAX_PARTIAL_HASHLIST_ELEMENTS) );
+		memset( (void *)&hashlist_full, 0, (sizeof(struct hashinfo) * MAX_FULL_HASHLIST_ELEMENTS) );
+		memset( (void *)&hashlist_partial, 0, (sizeof(struct hashinfo) * MAX_PARTIAL_HASHLIST_ELEMENTS) );
 	
 		//compute address of full and partial struct hashinfo lists
 		//within the TE parameter block
