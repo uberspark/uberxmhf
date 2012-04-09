@@ -23,6 +23,40 @@ struct hashinfo hashlist_partial[] = {
 };
 u32 hashlist_partial_totalelements= (sizeof(hashlist_partial)/sizeof(struct hashinfo));
 
+//----------------------------------------------------------------------
+// setup approved execution
+//----------------------------------------------------------------------
+u32 approvedexec_setup(VCPU *vcpu, APP_PARAM_BLOCK *apb){
+{
+      u32 endpfn = (apb->runtimephysmembase-PAGE_SIZE_2M) / PAGE_SIZE_4K;
+      u32 i;
+
+      printf("\nCPU(0x%02x): %s: starting...", 
+		vcpu->id, __FUNCTION__);
+
+      //setup all guest physical memory region to non-executable to
+      //start with
+      printf("\nCPU(0x%02x): %s: setting guest physical memory 0x%08x-0x%08x (%u pfns) as NX",
+		vcpu->id, 0, (apb->runtimephysmembase-PAGE_SIZE_2M), endpfn);
+		
+      for(i=0x0; i < endpfn; i++){
+		//note: we really only support approved execution for 32-bit
+		//protected mode guest code, so we skip the first 1MB of guest
+		//physical memory where 16-bit boot-strap code executes
+		//we also skip the nt kernel physical memory region as 
+		//the hibernation resume code does not seem to like NX
+		//trapping (causes a restart) 
+		if(i < 0x100 || (i >=0x800 && i <= 0x1000) )
+			continue;
+
+        emhf_memprot_setprot(vcpu, (i*PAGE_SIZE_4K), (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE) );     
+	  }
+	
+      emhf_memprot_flushmappings(vcpu);  //flush all NPT/EPT mappings
+      printf("\nCPU(0x%02x): %s: setup approved execution.", 
+			vcpu->id, __FUNCTION__);
+}
+
 //checks the sha-1 hash of the provided 4K memory page with physical address
 //pagebase_paddr (assumed to be page-aligned). 
 //return: 1 if there is a matching hash for this page else 0
