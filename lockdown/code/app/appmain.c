@@ -263,6 +263,7 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 		//if we don't have an optional module then load the untrusted
 		//environment
 		currentenvironment = LDN_ENV_UNTRUSTED_SIGNATURE;
+		printf("\nCPU(0x%02x): booting UNTRUSTED environment...", vcpu->id);
 	}else{
 		//an optional module was specified, so load the trusted 
 		//environment
@@ -275,13 +276,10 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 				vcpu->id, pldnPb->signature);
 			HALT();
 		}
+
+	    printf("\nCPU(0x%02x): booting TRUSTED environment...", vcpu->id);
 	}
 
-
-  if(currentenvironment == LDN_ENV_TRUSTED_SIGNATURE)
-    printf("\nCPU(0x%02x): booting TRUSTED environment...", vcpu->id);
-  else
-    printf("\nCPU(0x%02x): booting UNTRUSTED environment...", vcpu->id);
 
   //check if we are going to the trusted environment, if so enable
   //approved execution and mask off any network interfaces
