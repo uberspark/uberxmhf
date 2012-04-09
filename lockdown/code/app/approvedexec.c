@@ -120,7 +120,7 @@ u32 approvedexec_checkhashes(u32 pagebase_paddr, u32 *index, u32 *fullhash){
 		if (memcmp(hashlist_full[i].shanum, sha1sum, SHA_DIGEST_LENGTH) == 0){
      	*index = i;
      	*fullhash = 1;     	
-			 AX_DEBUG(("\nSUCCESS(Full Hash List) for %s", hashlist_full[i].name));
+			 //AX_DEBUG(("\nSUCCESS(Full Hash List) for %s", hashlist_full[i].name));
 		  return 1;
     }
 	}
@@ -138,7 +138,7 @@ u32 approvedexec_checkhashes(u32 pagebase_paddr, u32 *index, u32 *fullhash){
 		if (memcmp(hashlist_partial[i].shanum, sha1sum, SHA_DIGEST_LENGTH) == 0){
      	 *index = i;
      	 *fullhash=0;     	 
-			 AX_DEBUG(("\nSUCCESS(Part Hash List) for %s", hashlist_partial[i].name));
+			 //AX_DEBUG(("\nSUCCESS(Part Hash List) for %s", hashlist_partial[i].name));
 		  return 1;
     }
 	}

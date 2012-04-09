@@ -17,9 +17,9 @@ extern u32 ax_debug_flag;
 #define AX_DEBUG(x) {if (ax_debug_flag) printf x;}
 
 struct hashinfo {
-	char *name;
-	u32 pagenum;
-	u32 pagebase;
+	//char *name;
+	//u32 pagenum;
+	//u32 pagebase;
 	u32 pageoffset;
 	u32 size;
 	u8  shanum[20];
