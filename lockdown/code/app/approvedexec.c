@@ -34,9 +34,9 @@ void approvedexec_setup(VCPU *vcpu, APP_PARAM_BLOCK *apb){
       printf("\nCPU(0x%02x): %s: starting...", 
 		vcpu->id, __FUNCTION__);
 
-      //setup all guest physical memory region to non-executable to
-      //start with
-      printf("\nCPU(0x%02x): %s: setting guest physical memory 0x%08x-0x%08x (%u pfns) as NX",
+      //start with all guest physical memory pages as non-executable
+      printf("\nCPU(0x%02x): %s: setting guest physical memory \
+		0x%08x-0x%08x (%u pfns) as NX",
 		vcpu->id, 0, (apb->runtimephysmembase-PAGE_SIZE_2M), endpfn);
 		
       for(i=0x0; i < endpfn; i++){
@@ -49,7 +49,9 @@ void approvedexec_setup(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 		if(i < 0x100 || (i >=0x800 && i <= 0x1000) )
 			continue;
 
-        emhf_memprot_setprot(vcpu, (i*PAGE_SIZE_4K), (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE) );     
+        emhf_memprot_setprot(vcpu, (i*PAGE_SIZE_4K), 
+					(MEMP_PROT_PRESENT | 
+						MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE) );     
 	  }
 	
       emhf_memprot_flushmappings(vcpu);  //flush all NPT/EPT mappings
