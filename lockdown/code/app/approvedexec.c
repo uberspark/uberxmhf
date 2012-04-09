@@ -27,7 +27,7 @@ u32 hashlist_partial_totalelements= (sizeof(hashlist_partial)/sizeof(struct hash
 // setup approved execution
 //----------------------------------------------------------------------
 u32 approvedexec_setup(VCPU *vcpu, APP_PARAM_BLOCK *apb){
-{
+
       u32 endpfn = (apb->runtimephysmembase-PAGE_SIZE_2M) / PAGE_SIZE_4K;
       u32 i;
 
