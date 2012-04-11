@@ -2,7 +2,7 @@
 
 # MCU name and submodel
 # MCU      = arm7tdmi-s
-MCU = armv5te
+MCU = arm7tdmi
 SUBMDL   = LPC2148
 #THUMB    = -mthumb
 
@@ -82,6 +82,7 @@ CFLAGS += -Wall -Wcast-align -Wimplicit
 CFLAGS += -Wpointer-arith -Wswitch
 CFLAGS += -Wredundant-decls -Wreturn-type -Wshadow -Wunused
 CFLAGS += -Wa,-adhlns=$(subst $(suffix $<),.lst,$<) 
+#CFLAGS += -mhard-float
 
 # flags only for C
 CONLYFLAGS += -Wnested-externs 
@@ -149,8 +150,8 @@ GENDEPFLAGS = -MD -MP -MF .dep/$(@F).d
 
 # Combine all necessary flags and optional flags.
 # Add target processor to flags.
-ALL_CFLAGS  = -march=$(MCU) $(THUMB_IW) -I. $(CFLAGS) $(GENDEPFLAGS)
-ALL_ASFLAGS = -march=$(MCU) $(THUMB_IW) -I. -x assembler-with-cpp $(ASFLAGS)
+ALL_CFLAGS  = -mcpu=$(MCU) $(THUMB_IW) -I. $(CFLAGS) $(GENDEPFLAGS)
+ALL_ASFLAGS = -mcpu=$(MCU) $(THUMB_IW) -I. -x assembler-with-cpp $(ASFLAGS)
 
 # Default target.
 # all: begin gccversion sizebefore build sizeafter finished end
