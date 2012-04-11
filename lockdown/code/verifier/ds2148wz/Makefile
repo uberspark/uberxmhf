@@ -158,7 +158,7 @@ ALL_ASFLAGS = -mcpu=$(MCU) $(THUMB_IW) -I. -x assembler-with-cpp $(ASFLAGS)
 all: gccversion build finished
 	
 installfirmware:
-	lpc21isp -donotstart -control $(TARGET).hex /dev/ttyS0 9600 14745
+	lpc21isp -donotstart -control $(TARGET).hex /dev/ttyS0 38400 12000
 
 
 # cleanup target
