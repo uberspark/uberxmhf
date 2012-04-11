@@ -6,8 +6,8 @@ Author: Amit Vasudevan (amitvasudevan@acm.org)
 Note: Operating environment for this writing was 
 Ubuntu 10.04/10.10. 
 
-Build Instructions
-==================
+Build and Install Instructions
+==============================
 
 1. build lpc21isp in /tools/verifier/ds2148wz/lpc21isp
    using the command: make
