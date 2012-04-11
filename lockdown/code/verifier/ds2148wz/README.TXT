@@ -9,4 +9,35 @@ Ubuntu 10.04/10.10.
 Build Instructions
 ==================
 
-1. 
+1. build lpc21isp in /tools/verifier/ds2148wz/lpc21isp
+   using the command: make
+
+   add lpc21isp executable to PATH
+   
+2. install GNU ARM toolchain 3.4.3. Found in
+	/tools/verifier/ds2148wz/bu-2.15_gcc-3.4.3-c-c++-java_nl-1.12.0_gi-6.1.tar.gz
+	
+   after unzipping, add ./gnuarm-3.4.3/bin to PATH
+   
+3. change into /code/verifier/ds2148wz/ and issue:
+   make
+   
+   if all goes well, you should get ldnverifiermag.hex
+   
+   
+4. locate the "programming jumper" on the dsw2148wz board. this is
+	a black switch just next to the serial port on the verifier with
+	a "Load ->" marked on the board. Flip the switch to the 
+	side of the ->. This will put the bootloader on the board to 
+	"program mode" and will allow you to flash a new firmware.
+
+5. connect the verifier to a USB port and connect the serial port
+   on the verifier to an available COM port on the host
+	
+6. install the firmware 
+   make installfirmware
+   
+   if all goes well, firmware download finished message appears.
+   
+7. switch the "programming jumper" to the opposite direction of
+  the "Load ->" marked on the board.
