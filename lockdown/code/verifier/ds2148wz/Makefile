@@ -1,7 +1,8 @@
 #	BOOTLOADER Makefile
 
 # MCU name and submodel
-MCU      = arm7tdmi-s
+# MCU      = arm7tdmi-s
+MCU = armv5te
 SUBMDL   = LPC2148
 #THUMB    = -mthumb
 
@@ -50,8 +51,8 @@ OPT = s
 #OPT = 0
 
 # Debugging format.
-#DEBUG = stabs
-DEBUG = dwarf-2
+DEBUG = stabs
+#DEBUG = dwarf-2
 
 # Compiler flag to set the C Standard level.
 CSTANDARD = -std=gnu99
@@ -148,8 +149,8 @@ GENDEPFLAGS = -MD -MP -MF .dep/$(@F).d
 
 # Combine all necessary flags and optional flags.
 # Add target processor to flags.
-ALL_CFLAGS  = -mcpu=$(MCU) $(THUMB_IW) -I. $(CFLAGS) $(GENDEPFLAGS)
-ALL_ASFLAGS = -mcpu=$(MCU) $(THUMB_IW) -I. -x assembler-with-cpp $(ASFLAGS)
+ALL_CFLAGS  = -march=$(MCU) $(THUMB_IW) -I. $(CFLAGS) $(GENDEPFLAGS)
+ALL_ASFLAGS = -march=$(MCU) $(THUMB_IW) -I. -x assembler-with-cpp $(ASFLAGS)
 
 # Default target.
 # all: begin gccversion sizebefore build sizeafter finished end
