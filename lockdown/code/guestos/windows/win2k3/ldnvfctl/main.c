@@ -303,8 +303,8 @@ int main(int argc, char *argv[]){
 		#endif  
 	}
 
-    printf("\npress any key to quit...");
-	while(!_kbhit()){
+    //printf("\npress any key to quit...");
+	while(1){
 		printf("\nWaiting for lockdown device command...");
 
 		//set the LED for this environment
