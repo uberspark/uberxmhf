@@ -44,6 +44,9 @@ typedef struct {
 //forward prototypes
 struct usb_dev_handle * ldn_find_verifier(void);
 
+//set to 1 if we are operating in the trusted environment
+int ldn_trusted_environment= 0;
+
 
 static struct usb_device * find_device(int iVendor, int iProduct)
 {
@@ -251,8 +254,6 @@ struct usb_dev_handle * ldn_find_verifier(void){
 }
 
 
-//set to 1 if we are operating in the trusted environment
-int ldn_trusted_environment= 0;
 
 //======================================================================
 //lockdown monitor main function
