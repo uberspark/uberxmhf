@@ -60,6 +60,8 @@ static struct usb_device * find_device(int iVendor, int iProduct)
 	return NULL;
 }
 
+
+
 //----------------------------------------------------------------------
 //set device state (TRUSTED=1, UNTRUSTED=0)
 //return 1 if success, 0 if failure
@@ -78,6 +80,27 @@ int usbdevice_setdevicestate(struct usb_dev_handle *hdl, int state){
 	else
 		return 1;
 }
+
+
+//----------------------------------------------------------------------
+//set lockdown verifier device state
+void ldn_verifier_setstate(int state){
+	struct usb_dev_handle *hdl;
+	int status=0;
+	
+	do{
+		Sleep(100);
+		
+		hdl = ldn_find_verifier();	//discover our verifier
+
+		status = usbdevice_setdevicestate(hdl, state);
+			
+		usb_release_interface(hdl, 0);
+		usb_close(hdl);
+		
+	}while(!status);
+}
+
 
 
 //return 1 if the button was pressed, else 0
@@ -237,13 +260,11 @@ if(ldn_trusted_environment){
     usb_find_devices();
     printf("[SUCCESS].");
 	
-	hdl = ldn_find_verifier();
-
     //set the LED for this environment
 	if(ldn_trusted_environment)
-		usbdevice_setdevicestate(hdl,GREEN_LED)); //now force to trusted
+		ldn_verifier_setstate(GREEN_LED); //now force to trusted
 	else
-		usbdevice_setdevicestate(hdl,RED_LED)); //now force to untrusted
+		ldn_verifier_setstate(RED_LED); //now force to untrusted
 
 //#if defined(BUILD_FOR_TRUSTED)
 if(ldn_trusted_environment){
