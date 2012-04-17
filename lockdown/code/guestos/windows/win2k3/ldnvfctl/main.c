@@ -40,6 +40,10 @@ typedef struct {
 } TMemoryCmd;
 
 
+//forward prototypes
+struct usb_dev_handle * ldn_find_verifier(void);
+
+
 static struct usb_device * find_device(int iVendor, int iProduct)
 {
 	struct usb_bus	*usb_bus;
@@ -145,6 +149,14 @@ int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
  
    return rxframesize;
   }
+
+//----------------------------------------------------------------------
+struct usb_dev_handle * ldn_find_verifier(void){
+
+
+	return NULL;
+}
+
 
 //set to 1 if we are operating in the trusted environment
 int ldn_trusted_environment= 0;
