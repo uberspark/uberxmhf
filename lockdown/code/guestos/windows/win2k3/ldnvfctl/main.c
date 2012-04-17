@@ -5,6 +5,7 @@
 #include <windows.h>
 #include <powrprof.h>
 #include <stdio.h>
+#include <conio.h>
 
 #include "usb.h"
 #include "public.h"
@@ -272,7 +273,7 @@ int main(int argc, char *argv[]){
 	}
 
     printf("\npress any key to quit...");
-	while(!kbhit()){
+	while(!_kbhit()){
 		printf("\nWaiting for lockdown device command...");
 
 		while(!usbdevice_checkbuttonstatus(hdl)){
