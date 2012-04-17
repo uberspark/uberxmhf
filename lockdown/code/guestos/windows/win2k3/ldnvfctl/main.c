@@ -173,14 +173,14 @@ struct usb_dev_handle * ldn_find_verifier(void){
     printf("\nlockdown verifier configuration selected.");
   
   	i = usb_claim_interface(hdl, 0);
-	  if (i < 0) {
-		  printf("\nFATAL: usb_claim_interface failed %d", i);
-		  return -1;
-	  }                                       
+	if (i < 0) {
+		usb_close(hdl);
+		return NULL; //usb_claim_interface failed
+	}                                       
+    
     printf("\nclaimed lockdown USB interface.");
 
-
-	return NULL;
+	return hdl;
 }
 
 
