@@ -60,22 +60,25 @@ static struct usb_device * find_device(int iVendor, int iProduct)
 	return NULL;
 }
 
+//----------------------------------------------------------------------
 //set device state (TRUSTED=1, UNTRUSTED=0)
 //return 1 if success, 0 if failure
-int usbdevice_setdevicestate(struct usb_dev_handle *hdl, int state){
+void usbdevice_setdevicestate(struct usb_dev_handle *hdl, int state){
 	int i;
 	TMemoryCmd MemCmd;
 
-	// send a vendor request to check button status
-	MemCmd.dwAddress = state; 
-	MemCmd.dwLength = 0x0;
-	i = usb_control_msg(hdl, BM_REQUEST_TYPE, 0xB0, 0, 0, (char *)&MemCmd, sizeof(MemCmd), 1000);
-	if (i < 0){
-		fprintf(stderr, "usb_control_msg failed %d\n", i);
-		return 0;		
-	}
+	do{
+		//sleep for 100ms
+		Sleep(100);
+		
+		// send a vendor request to check button status
+		MemCmd.dwAddress = state; 
+		MemCmd.dwLength = 0x0;
+		
+		i = usb_control_msg(hdl, BM_REQUEST_TYPE, 0xB0, 0, 0, (char *)&MemCmd, sizeof(MemCmd), 1000);
+	}while(i < 0); //usb_control_msg failed (verifier was removed?)
 
-	return 1;
+	return;
 }
 
 
@@ -239,20 +242,10 @@ if(ldn_trusted_environment){
 	hdl = ldn_find_verifier();
 
     //set the LED for this environment
-//#if defined (BUILD_FOR_TRUSTED)
-if(ldn_trusted_environment){
-	if(!usbdevice_setdevicestate(hdl,GREEN_LED)){ //now force to trusted
-		printf("\nFATAL: unable to set device state");
-		return -1;
-	}
-}else{
-//#else
-	if(!usbdevice_setdevicestate(hdl,RED_LED)){ //now force to untrusted
-		printf("\nFATAL: unable to set device state");
-		return -1;
-	}
-//#endif
-}
+	if(ldn_trusted_environment)
+		usbdevice_setdevicestate(hdl,GREEN_LED)); //now force to trusted
+	else
+		usbdevice_setdevicestate(hdl,RED_LED)); //now force to untrusted
 
 //#if defined(BUILD_FOR_TRUSTED)
 if(ldn_trusted_environment){
