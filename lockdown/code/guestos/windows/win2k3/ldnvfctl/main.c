@@ -156,6 +156,12 @@ int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
 	  int i;
 		 TMemoryCmd MemCmd;
 
+	if(argc < 2){
+		printf("\ninsufficient arguments: specify either 'true' or 'unte'");
+		exit(0);
+	}
+	
+
 #if defined (BUILD_FOR_TRUSTED)	
     printf("\nOpening device...");
 		drvh = CreateFile ( "\\\\.\\LDNVNET", 
