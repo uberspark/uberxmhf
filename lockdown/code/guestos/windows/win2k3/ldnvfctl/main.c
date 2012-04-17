@@ -146,6 +146,9 @@ int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
    return rxframesize;
   }
 
+//set to 1 if we are operating in the trusted environment
+int ldn_trusted_environment= 0;
+
 
 	//ldnvnet driver communication test
 	int main(int argc, char *argv[]){
@@ -160,8 +163,18 @@ int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
 		printf("\ninsufficient arguments: specify either 'true' or 'unte'");
 		exit(0);
 	}
-	
 
+	if(!strcmp(argv[1], "true"))
+		ldn_trusted_environment=1;
+	else
+		ldn_trusted_environment=0;
+	
+	
+	if(ldn_trusted_environment)
+		printf("\ntrusted environment selected");
+		
+	exit(0);
+	
 #if defined (BUILD_FOR_TRUSTED)	
     printf("\nOpening device...");
 		drvh = CreateFile ( "\\\\.\\LDNVNET", 
