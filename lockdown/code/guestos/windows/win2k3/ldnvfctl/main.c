@@ -236,7 +236,7 @@ if(ldn_trusted_environment){
     usb_find_devices();
     printf("[SUCCESS].");
 	
-
+	hdl = ldn_find_verifier();
 
     //set the LED for this environment
 //#if defined (BUILD_FOR_TRUSTED)
