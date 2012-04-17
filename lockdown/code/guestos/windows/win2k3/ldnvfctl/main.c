@@ -116,7 +116,7 @@ int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
 	i = usb_control_msg(hdl, BM_REQUEST_TYPE, 0xA0, 0, 0, (char *)&MemCmd, sizeof(MemCmd), 1000);
 	if (i < 0){
 		fprintf(stderr, "usb_control_msg failed %d\n", i);
-		return 0;		
+		return -1;		
 	}
 
 	//fprintf(stderr, "request success!\n");
@@ -124,7 +124,7 @@ int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
 	i = usb_bulk_read(hdl, 0x82, (char *)&buttonstatus, sizeof(buttonstatus), 2000);
 	if (i < 0) {
 		fprintf(stderr, "usb_bulk_read failed %d\n", i);
-		return 0;
+		return -1;
 	}
 
 	if(buttonstatus){
@@ -135,6 +135,30 @@ int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
 
 	return 0;
 }
+
+
+//----------------------------------------------------------------------
+//check lockdown verifier button status
+int ldn_verifier_checkbuttonstatus(void){
+	struct usb_dev_handle *hdl;
+	int status=-1;
+	
+	do{
+		Sleep(100);
+		
+		hdl = ldn_find_verifier();	//discover our verifier
+
+		status = usbdevice_checkbuttonstatus(hdl);
+			
+		usb_release_interface(hdl, 0);
+		usb_close(hdl);
+		
+	}while(status < 0);
+	
+	return status;
+}
+
+
 
 	UCHAR packetbuffer[1514];
 	UCHAR rxpacketbuffer[1514];
@@ -276,7 +300,7 @@ int main(int argc, char *argv[]){
 	while(!_kbhit()){
 		printf("\nWaiting for lockdown device command...");
 
-		while(!usbdevice_checkbuttonstatus(hdl)){
+		while(!ldn_verifier_checkbuttonstatus()){
 			if(ldn_trusted_environment){
 				#if defined (LDNVNET)
 					memset(packetbuffer, 0, sizeof(packetbuffer));
