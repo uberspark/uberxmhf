@@ -272,113 +272,105 @@ int main(int argc, char *argv[]){
 	}
 
     printf("\npress any key to quit...");
-		while(!kbhit()){
+	while(!kbhit()){
+		printf("\nWaiting for lockdown device command...");
 
-      		printf("\nWaiting for lockdown device command...");
-		    while(!usbdevice_checkbuttonstatus(hdl)){
-
-			 if(ldn_trusted_environment){
-              #if defined (LDNVNET)
-              			memset(packetbuffer, 0, sizeof(packetbuffer));
-              			memset(rxpacketbuffer, 0, sizeof(rxpacketbuffer));
-              			
-                    if(!DeviceIoControl(drvh, IOCTL_LDNVNET_READ_DATA,
-              					NULL, 0,
-              					&packetbuffer, sizeof(packetbuffer),
-              					&bytes, NULL)){
-              				printf("\nFATAL: could not send IOCTL!\n");
-              				return -1;
-              			}
-              
-              			if(bytes){
-                  		int j;
-              				//printf("\nTX: %u bytes successfully (dump follows):\n", bytes);
-                  		//for(j=0; j < bytes; j++)
-                  		//	printf("0x%02x ", packetbuffer[j]);
-                  		
-                  		 //first send a vendor request confirming size of TX packet
-                    	 MemCmd.dwAddress = 0x0;
-                    	 MemCmd.dwLength = bytes;
-                    	 i = usb_control_msg(hdl, BM_REQUEST_TYPE, 0xE0, 0, 0, (char *)&MemCmd, sizeof(MemCmd), 1000);
-                    	 if (i < 0){
-                    		  printf("%s: usb_control_msg failed %d\n", __FUNCTION__, i);
-                    		  return -1;		
-                    	 }
-                        
-                       //pass packet through analyzer
-                       #if defined(SSLPA)
-                       ssl_pa_analyze((unsigned char *)&packetbuffer, bytes);
-                       #endif
-                  		 
-                  		 //now write out the TX packet
-                    	 i = usb_bulk_write(hdl, NETIF_SEND_EP, (char *)&packetbuffer, bytes, 2000);
-              	       if (i < 0) {
-              	 	       printf("\nFATAL: usb_bulk_write failed %d", i);
-              	 	       return -1;
-              	       }
-                  	}
-                  	
-                  	
-                    //see if we have any RX packets to receive
-                    bytes=ldnvf_read_packet(&rxpacketbuffer, hdl);
-                    if(bytes){
-                      int j;
-                      //printf("\nRX: %u bytes, dump follows:\n", bytes);
-                      //for(j=0; j < packetlength; j++)
-                  		//	printf("0x%02x ", packetbuffer[j]);
-                    
-                       //pass packet through analyzer
-                       #if defined(SSLPA)
-                       ssl_pa_analyze((unsigned char *)&rxpacketbuffer, bytes);
-                       #endif
-
-                    
-                      if(!DeviceIoControl(drvh, IOCTL_LDNVNET_WRITE_DATA,
-              					&rxpacketbuffer, bytes,
-              					NULL, 0,
-              					&rxbytes, NULL)){
-              				printf("\nFATAL: could not send IOCTL!\n");
-              				return -1;
-                			}
-              
-                    
-                    }
-              #endif // LDNVNET
-			 }
-			}	
-			
-			printf("\ngot button press");
-
-			//#if defined (BUILD_FOR_TRUSTED)
+		while(!usbdevice_checkbuttonstatus(hdl)){
 			if(ldn_trusted_environment){
-				#if 0
-				if(!CopyFile("e:\\grub\\grub_untrusted_windows.conf", "e:\\grub\\grub.conf", FALSE)){
-					printf("\nfailed to set destination environment!");
-					exit(1);
-				}
-				#endif
-			}else{
-				//#else
-				#if 0
-				if(!CopyFile("e:\\grub\\grub_trusted_windows.conf", "e:\\grub\\grub.conf", FALSE)){
-					printf("\nfailed to set destination environment!");
-					exit(1);
-				}
-				#endif
-		    //#endif
-			}
-			
-      		SetSuspendState(TRUE, FALSE,FALSE);
-      	
-      		printf("\ngot awake...");
+				#if defined (LDNVNET)
+					memset(packetbuffer, 0, sizeof(packetbuffer));
+					memset(rxpacketbuffer, 0, sizeof(rxpacketbuffer));
 
-		
-		  if(ldn_trusted_environment)
+					if(!DeviceIoControl(drvh, IOCTL_LDNVNET_READ_DATA,
+							NULL, 0,
+							&packetbuffer, sizeof(packetbuffer),
+							&bytes, NULL)){
+						printf("\nFATAL: could not send IOCTL!\n");
+						return -1;
+					}
+
+					if(bytes){
+						int j;
+						//printf("\nTX: %u bytes successfully (dump follows):\n", bytes);
+						//for(j=0; j < bytes; j++)
+						//	printf("0x%02x ", packetbuffer[j]);
+
+						//first send a vendor request confirming size of TX packet
+						MemCmd.dwAddress = 0x0;
+						MemCmd.dwLength = bytes;
+						i = usb_control_msg(hdl, BM_REQUEST_TYPE, 0xE0, 0, 0, (char *)&MemCmd, sizeof(MemCmd), 1000);
+						if (i < 0){
+							  printf("%s: usb_control_msg failed %d\n", __FUNCTION__, i);
+							  return -1;		
+						 }
+
+						//pass packet through analyzer
+						#if defined(SSLPA)
+						ssl_pa_analyze((unsigned char *)&packetbuffer, bytes);
+						#endif
+						 
+						//now write out the TX packet
+						i = usb_bulk_write(hdl, NETIF_SEND_EP, (char *)&packetbuffer, bytes, 2000);
+						if (i < 0) {
+					   printf("\nFATAL: usb_bulk_write failed %d", i);
+					   return -1;
+					}
+					}
+
+
+					//see if we have any RX packets to receive
+					bytes=ldnvf_read_packet(&rxpacketbuffer, hdl);
+					if(bytes){
+						int j;
+						//printf("\nRX: %u bytes, dump follows:\n", bytes);
+						//for(j=0; j < packetlength; j++)
+						//	printf("0x%02x ", packetbuffer[j]);
+
+						//pass packet through analyzer
+						#if defined(SSLPA)
+						ssl_pa_analyze((unsigned char *)&rxpacketbuffer, bytes);
+						#endif
+
+
+						if(!DeviceIoControl(drvh, IOCTL_LDNVNET_WRITE_DATA,
+								&rxpacketbuffer, bytes,
+								NULL, 0,
+								&rxbytes, NULL)){
+							printf("\nFATAL: could not send IOCTL!\n");
+							return -1;
+						}
+					}
+				#endif // LDNVNET
+			}
+		}	
+			
+		printf("\ngot button press");
+
+		if(ldn_trusted_environment){
+			#if 0
+			if(!CopyFile("e:\\grub\\grub_untrusted_windows.conf", "e:\\grub\\grub.conf", FALSE)){
+				printf("\nfailed to set destination environment!");
+				exit(1);
+			}
+			#endif
+		}else{
+			#if 0
+			if(!CopyFile("e:\\grub\\grub_trusted_windows.conf", "e:\\grub\\grub.conf", FALSE)){
+				printf("\nfailed to set destination environment!");
+				exit(1);
+			}
+			#endif
+		}
+			
+      	SetSuspendState(TRUE, FALSE,FALSE);
+      	
+      	printf("\ngot awake...");
+
+		if(ldn_trusted_environment)
 			ldn_verifier_setstate(GREEN_LED); //now force to trusted
-		  else
+		else
 			ldn_verifier_setstate(RED_LED); //now force to untrusted
-          
-    }
+	}
 
 
 	if(ldn_trusted_environment){
