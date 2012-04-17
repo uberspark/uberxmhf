@@ -374,20 +374,11 @@ int main(int argc, char *argv[]){
       		printf("\ngot awake...");
 
 		
-		  if(ldn_trusted_environment){
-		  //#if defined (BUILD_FOR_TRUSTED)
-      		if(!usbdevice_setdevicestate(hdl, GREEN_LED)){ //now force to trusted
-      			printf("\nFATAL: unable to set device state");
-      			return -1;
-      		}
-		   }else{
-			//#else
-      		if(!usbdevice_setdevicestate(hdl, RED_LED)){ //now force to untrusted
-      			printf("\nFATAL: unable to set device state");
-      			return -1;
-      		}
-      	   }
-          //#endif
+		  if(ldn_trusted_environment)
+			ldn_verifier_setstate(GREEN_LED); //now force to trusted
+		  else
+			ldn_verifier_setstate(RED_LED); //now force to untrusted
+          
     }
 
 
