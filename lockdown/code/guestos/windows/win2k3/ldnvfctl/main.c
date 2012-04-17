@@ -17,7 +17,7 @@ typedef unsigned int U32;
 typedef unsigned char U8;
 
 //#define SSLPA   1                 //define this to use SSL protocol analyzer
-#define LDNVNET	  1					//define this to use lockdown virtual network driver
+//#define LDNVNET	  1					//define this to use lockdown virtual network driver
 
 #define MAX_TIME 3000
 
