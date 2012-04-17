@@ -152,6 +152,28 @@ int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
 
 //----------------------------------------------------------------------
 struct usb_dev_handle * ldn_find_verifier(void){
+	  dev = find_device(VENDOR_ID, PRODUCT_ID);
+	  if (dev == NULL) {
+	  	printf("\nFATAL: lockdown verifier not found!");
+		  return -1;
+	  }  
+	  printf("\nlockdown verifier found.");
+	
+	  hdl = usb_open(dev);
+	
+	  i = usb_set_configuration(hdl, 1);
+	  if (i < 0) {
+		 printf("\nFATAL: usb_set_configuration failed");
+		 return -1;
+	  }
+    printf("\nlockdown verifier configuration selected.");
+  
+  	i = usb_claim_interface(hdl, 0);
+	  if (i < 0) {
+		  printf("\nFATAL: usb_claim_interface failed %d", i);
+		  return -1;
+	  }                                       
+    printf("\nclaimed lockdown USB interface.");
 
 
 	return NULL;
@@ -211,28 +233,6 @@ if(ldn_trusted_environment){
     usb_find_devices();
     printf("[SUCCESS].");
 	
-	  dev = find_device(VENDOR_ID, PRODUCT_ID);
-	  if (dev == NULL) {
-	  	printf("\nFATAL: lockdown verifier not found!");
-		  return -1;
-	  }  
-	  printf("\nlockdown verifier found.");
-	
-	  hdl = usb_open(dev);
-	
-	  i = usb_set_configuration(hdl, 1);
-	  if (i < 0) {
-		 printf("\nFATAL: usb_set_configuration failed");
-		 return -1;
-	  }
-    printf("\nlockdown verifier configuration selected.");
-  
-  	i = usb_claim_interface(hdl, 0);
-	  if (i < 0) {
-		  printf("\nFATAL: usb_claim_interface failed %d", i);
-		  return -1;
-	  }                                       
-    printf("\nclaimed lockdown USB interface.");
 
 
     //set the LED for this environment
