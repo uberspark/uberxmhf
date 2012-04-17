@@ -152,14 +152,17 @@ int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
 
 //----------------------------------------------------------------------
 struct usb_dev_handle * ldn_find_verifier(void){
-	  dev = find_device(VENDOR_ID, PRODUCT_ID);
-	  if (dev == NULL) {
-	  	printf("\nFATAL: lockdown verifier not found!");
-		  return -1;
-	  }  
-	  printf("\nlockdown verifier found.");
+	struct usb_device *dev;	
+	struct usb_dev_handle *hdl;
+	int i;
+			
+	dev = find_device(VENDOR_ID, PRODUCT_ID);
+	if (dev == NULL) 
+		return NULL;  //lockdown verifier not found!
+
+    printf("\nlockdown verifier found.");
 	
-	  hdl = usb_open(dev);
+	hdl = usb_open(dev);
 	
 	  i = usb_set_configuration(hdl, 1);
 	  if (i < 0) {
@@ -188,8 +191,7 @@ int ldn_trusted_environment= 0;
 	int main(int argc, char *argv[]){
 		HANDLE drvh;
 		DWORD bytes, rxbytes;
-   	struct usb_device *dev;	
-	  struct usb_dev_handle *hdl;
+    struct usb_dev_handle *hdl;
 	  int i;
 		 TMemoryCmd MemCmd;
 
