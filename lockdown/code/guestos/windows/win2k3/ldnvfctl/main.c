@@ -16,7 +16,6 @@
 typedef unsigned int U32;
 typedef unsigned char U8;
 
-//#define BUILD_FOR_TRUSTED   1     //define this to build monitor for trusted environment
 //#define SSLPA   1                 //define this to hook into SSL protocol analyzer
 
 #define MAX_TIME 3000
