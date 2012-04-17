@@ -141,11 +141,23 @@ int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
 int ldn_verifier_checkbuttonstatus(void){
 	struct usb_dev_handle *hdl;
 	int status=-1;
+	int verifier_was_unplugged=0;
 	
 	do{
-		while( (hdl = ldn_find_verifier()) == NULL)
+		while( (hdl = ldn_find_verifier()) == NULL){
+			verifier_was_unplugged=1;
 			Sleep(100);	//discover our verifier
-
+		}
+		
+		if(verifier_was_unplugged){
+			verifier_was_unplugged=0;
+			
+			if(ldn_trusted_environment)
+				usbdevice_setdevicestate(hdl, GREEN_LED); 
+			else
+				usbdevice_setdevicestate(hdl, RED_LED); 
+		}
+		
 		status = usbdevice_checkbuttonstatus(hdl);
 			
 		usb_release_interface(hdl, 0);
