@@ -329,16 +329,20 @@ if(ldn_trusted_environment){
 
 			//#if defined (BUILD_FOR_TRUSTED)
 			if(ldn_trusted_environment){
+				#if 0
 				if(!CopyFile("e:\\grub\\grub_untrusted_windows.conf", "e:\\grub\\grub.conf", FALSE)){
 					printf("\nfailed to set destination environment!");
 					exit(1);
 				}
+				#endif
 			}else{
 				//#else
+				#if 0
 				if(!CopyFile("e:\\grub\\grub_trusted_windows.conf", "e:\\grub\\grub.conf", FALSE)){
 					printf("\nfailed to set destination environment!");
 					exit(1);
 				}
+				#endif
 		    //#endif
 			}
 			
