@@ -172,6 +172,8 @@ int ldn_trusted_environment= 0;
 	
 //#if defined (BUILD_FOR_TRUSTED)	
 if(ldn_trusted_environment){
+#if defined (LDNVNET)	
+
     printf("\nOpening device...");
 		drvh = CreateFile ( "\\\\.\\LDNVNET", 
 								GENERIC_READ | GENERIC_WRITE,
@@ -186,8 +188,9 @@ if(ldn_trusted_environment){
 		}	
 			
 		printf("\nOpened ldnvnet successfully.");
+#endif
 }
-//#endif
+
 
     //[USB initialization]
     printf("\ninitializing USB communication...");
@@ -238,11 +241,12 @@ if(ldn_trusted_environment){
 
 //#if defined(BUILD_FOR_TRUSTED)
 if(ldn_trusted_environment){
-  #if defined(SSLPA)
-  //initialize sslpa
-  ssl_pa_init();
-  #endif
-//#endif  
+  #if defined(LDNVNET)
+	#if defined(SSLPA)
+	//initialize sslpa
+	ssl_pa_init();
+	#endif
+  #endif  
 }
 
     printf("\npress any key to quit...");
@@ -252,7 +256,7 @@ if(ldn_trusted_environment){
 		    while(!usbdevice_checkbuttonstatus(hdl)){
 
 			 if(ldn_trusted_environment){
-              //#if defined (BUILD_FOR_TRUSTED)
+              #if defined (LDNVNET)
               			memset(packetbuffer, 0, sizeof(packetbuffer));
               			memset(rxpacketbuffer, 0, sizeof(rxpacketbuffer));
               			
@@ -317,7 +321,7 @@ if(ldn_trusted_environment){
               
                     
                     }
-              //#endif
+              #endif // LDNVNET
 			 }
 			}	
 			
@@ -361,9 +365,9 @@ if(ldn_trusted_environment){
 
 
 	if(ldn_trusted_environment){
-		//#if defined (BUILD_FOR_TRUSTED)		
+		#if defined (LDNVNET)		
 		CloseHandle(drvh);	
-		//#endif
+		#endif
 	}
 
   	usb_release_interface(hdl, 0);
