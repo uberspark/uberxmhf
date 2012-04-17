@@ -105,8 +105,8 @@ sslpa_linkobjs = $(OUTDIR)\network.obj \
 $(OUTDIR)\ldnvfctl.exe: $(ldnvfctl_objs) $(sslpa_objs)
     $(link) $(ldebug) $(conlflags) $(ldnvfctl_objs) $(sslpa_linkobjs)\
     -out:$(OUTDIR)\ldnvfctl.exe  $(conlibsmt) $(SSLPA_LIBS) advapi32.lib kernel32.lib powrprof.lib .\libusb-win32-device-bin-0.1.12.1\lib\msvc\libusb.lib
-		copy $(OUTDIR)\ldnvfctl.exe $(LDNVFCTL_INSTALLDIR)\.
-		copy .\libusb-win32-device-bin-0.1.12.1\bin\libusb0.dll $(LDNVFCTL_INSTALLDIR)\. 
+#		copy $(OUTDIR)\ldnvfctl.exe $(LDNVFCTL_INSTALLDIR)\.
+#		copy .\libusb-win32-device-bin-0.1.12.1\bin\libusb0.dll $(LDNVFCTL_INSTALLDIR)\. 
 
 clean:
 	del $(OUTDIR)\*.exe
