@@ -90,9 +90,8 @@ void ldn_verifier_setstate(int state){
 	int status=0;
 	
 	do{
-		Sleep(100);
-		
-		hdl = ldn_find_verifier();	//discover our verifier
+		while( (hdl = ldn_find_verifier()) == NULL)
+			Sleep(100);	//discover our verifier
 
 		status = usbdevice_setdevicestate(hdl, state);
 			
@@ -216,7 +215,7 @@ struct usb_dev_handle * ldn_find_verifier(void){
 	if (dev == NULL) 
 		return NULL;  //lockdown verifier not found!
 
-    printf("\nlockdown verifier found.");
+    //printf("\nlockdown verifier found.");
 	
 	hdl = usb_open(dev);
 	
@@ -226,7 +225,7 @@ struct usb_dev_handle * ldn_find_verifier(void){
 		return NULL; //usb_set_configuration failed;
 	}
     
-    printf("\nlockdown verifier configuration selected.");
+    //printf("\nlockdown verifier configuration selected.");
   
   	i = usb_claim_interface(hdl, 0);
 	if (i < 0) {
@@ -234,7 +233,7 @@ struct usb_dev_handle * ldn_find_verifier(void){
 		return NULL; //usb_claim_interface failed
 	}                                       
     
-    printf("\nclaimed lockdown USB interface.");
+    //printf("\nclaimed lockdown USB interface.");
 
 	return hdl;
 }
