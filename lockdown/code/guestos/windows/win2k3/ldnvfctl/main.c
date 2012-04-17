@@ -144,9 +144,8 @@ int ldn_verifier_checkbuttonstatus(void){
 	int status=-1;
 	
 	do{
-		Sleep(100);
-		
-		hdl = ldn_find_verifier();	//discover our verifier
+		while( (hdl = ldn_find_verifier()) == NULL)
+			Sleep(100);	//discover our verifier
 
 		status = usbdevice_checkbuttonstatus(hdl);
 			
@@ -204,6 +203,14 @@ struct usb_dev_handle * ldn_find_verifier(void){
 	struct usb_device *dev;	
 	struct usb_dev_handle *hdl;
 	int i;
+	
+	//[USB initialization]
+    //printf("\ninitializing USB communication...");
+	usb_init();
+	usb_find_busses();                            
+    usb_find_devices();
+    //printf("[SUCCESS].");
+	
 			
 	dev = find_device(VENDOR_ID, PRODUCT_ID);
 	if (dev == NULL) 
@@ -274,13 +281,7 @@ int main(int argc, char *argv[]){
 		#endif
 	}
 
-    //[USB initialization]
-    printf("\ninitializing USB communication...");
-	usb_init();
-	usb_find_busses();                            
-    usb_find_devices();
-    printf("[SUCCESS].");
-	
+    
     //set the LED for this environment
 	if(ldn_trusted_environment)
 		ldn_verifier_setstate(GREEN_LED); //now force to trusted
