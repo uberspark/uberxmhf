@@ -386,19 +386,15 @@ int main(int argc, char *argv[]){
 		printf("\ngot button press");
 
 		if(ldn_trusted_environment){
-			#if 0
-			if(!CopyFile("e:\\grub\\grub_untrusted_windows.conf", "e:\\grub\\grub.conf", FALSE)){
+			if(!CopyFile("e:\\grub\\menu_ue.lst", "e:\\grub\\menu.lst", FALSE)){
 				printf("\nfailed to set destination environment!");
 				exit(1);
 			}
-			#endif
 		}else{
-			#if 0
-			if(!CopyFile("e:\\grub\\grub_trusted_windows.conf", "e:\\grub\\grub.conf", FALSE)){
+			if(!CopyFile("e:\\grub\\menu_te.lst", "e:\\grub\\menu.lst", FALSE)){
 				printf("\nfailed to set destination environment!");
 				exit(1);
 			}
-			#endif
 		}
 			
       	SetSuspendState(TRUE, FALSE,FALSE);
