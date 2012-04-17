@@ -114,7 +114,7 @@ int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
 	MemCmd.dwLength = 0x0;
 	i = usb_control_msg(hdl, BM_REQUEST_TYPE, 0xA0, 0, 0, (char *)&MemCmd, sizeof(MemCmd), 1000);
 	if (i < 0){
-		fprintf(stderr, "usb_control_msg failed %d\n", i);
+		//fprintf(stderr, "usb_control_msg failed %d\n", i);
 		return -1;		
 	}
 
@@ -122,12 +122,12 @@ int usbdevice_checkbuttonstatus(struct usb_dev_handle *hdl){
 
 	i = usb_bulk_read(hdl, 0x82, (char *)&buttonstatus, sizeof(buttonstatus), 2000);
 	if (i < 0) {
-		fprintf(stderr, "usb_bulk_read failed %d\n", i);
+		//fprintf(stderr, "usb_bulk_read failed %d\n", i);
 		return -1;
 	}
 
 	if(buttonstatus){
-		printf("\nbutton press detected...");
+		//printf("\nbutton press detected...");
 		return 1;
 	}
 
