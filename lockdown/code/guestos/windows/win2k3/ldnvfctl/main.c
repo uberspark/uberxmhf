@@ -170,12 +170,8 @@ int ldn_trusted_environment= 0;
 		ldn_trusted_environment=0;
 	
 	
-	if(ldn_trusted_environment)
-		printf("\ntrusted environment selected");
-		
-	exit(0);
-	
-#if defined (BUILD_FOR_TRUSTED)	
+//#if defined (BUILD_FOR_TRUSTED)	
+if(ldn_trusted_environment){
     printf("\nOpening device...");
 		drvh = CreateFile ( "\\\\.\\LDNVNET", 
 								GENERIC_READ | GENERIC_WRITE,
@@ -190,7 +186,8 @@ int ldn_trusted_environment= 0;
 		}	
 			
 		printf("\nOpened ldnvnet successfully.");
-#endif
+}
+//#endif
 
     //[USB initialization]
     printf("\ninitializing USB communication...");
@@ -224,33 +221,38 @@ int ldn_trusted_environment= 0;
 
 
     //set the LED for this environment
-#if defined (BUILD_FOR_TRUSTED)
+//#if defined (BUILD_FOR_TRUSTED)
+if(ldn_trusted_environment){
 	if(!usbdevice_setdevicestate(hdl,GREEN_LED)){ //now force to trusted
 		printf("\nFATAL: unable to set device state");
 		return -1;
 	}
-#else
+}else{
+//#else
 	if(!usbdevice_setdevicestate(hdl,RED_LED)){ //now force to untrusted
 		printf("\nFATAL: unable to set device state");
 		return -1;
 	}
-#endif
+//#endif
+}
 
-
-#if defined(BUILD_FOR_TRUSTED)
+//#if defined(BUILD_FOR_TRUSTED)
+if(ldn_trusted_environment){
   #if defined(SSLPA)
   //initialize sslpa
   ssl_pa_init();
   #endif
-#endif  
+//#endif  
+}
 
     printf("\npress any key to quit...");
 		while(!kbhit()){
 
       		printf("\nWaiting for lockdown device command...");
-		      while(!usbdevice_checkbuttonstatus(hdl)){
+		    while(!usbdevice_checkbuttonstatus(hdl)){
 
-              #if defined (BUILD_FOR_TRUSTED)
+			 if(ldn_trusted_environment){
+              //#if defined (BUILD_FOR_TRUSTED)
               			memset(packetbuffer, 0, sizeof(packetbuffer));
               			memset(rxpacketbuffer, 0, sizeof(rxpacketbuffer));
               			
@@ -315,42 +317,54 @@ int ldn_trusted_environment= 0;
               
                     
                     }
-              #endif
-          }	
-					printf("\ngot button press");
+              //#endif
+			 }
+			}	
+			
+			printf("\ngot button press");
 
-          #if defined (BUILD_FOR_TRUSTED)
-      		if(!CopyFile("e:\\grub\\grub_untrusted_windows.conf", "e:\\grub\\grub.conf", FALSE)){
-      			printf("\nfailed to set destination environment!");
-      			exit(1);
-      		}
-		      #else
-      		if(!CopyFile("e:\\grub\\grub_trusted_windows.conf", "e:\\grub\\grub.conf", FALSE)){
-      			printf("\nfailed to set destination environment!");
-      			exit(1);
-      		}
-		      #endif
-
+			//#if defined (BUILD_FOR_TRUSTED)
+			if(ldn_trusted_environment){
+				if(!CopyFile("e:\\grub\\grub_untrusted_windows.conf", "e:\\grub\\grub.conf", FALSE)){
+					printf("\nfailed to set destination environment!");
+					exit(1);
+				}
+			}else{
+				//#else
+				if(!CopyFile("e:\\grub\\grub_trusted_windows.conf", "e:\\grub\\grub.conf", FALSE)){
+					printf("\nfailed to set destination environment!");
+					exit(1);
+				}
+		    //#endif
+			}
+			
       		SetSuspendState(TRUE, FALSE,FALSE);
       	
       		printf("\ngot awake...");
 
-          #if defined (BUILD_FOR_TRUSTED)
+		
+		  if(ldn_trusted_environment){
+		  //#if defined (BUILD_FOR_TRUSTED)
       		if(!usbdevice_setdevicestate(hdl, GREEN_LED)){ //now force to trusted
       			printf("\nFATAL: unable to set device state");
       			return -1;
       		}
-          #else
+		   }else{
+			//#else
       		if(!usbdevice_setdevicestate(hdl, RED_LED)){ //now force to untrusted
       			printf("\nFATAL: unable to set device state");
       			return -1;
       		}
-          #endif
+      	   }
+          //#endif
     }
 
-#if defined (BUILD_FOR_TRUSTED)		
+
+	if(ldn_trusted_environment){
+		//#if defined (BUILD_FOR_TRUSTED)		
 		CloseHandle(drvh);	
-#endif
+		//#endif
+	}
 
   	usb_release_interface(hdl, 0);
   	usb_close(hdl);
