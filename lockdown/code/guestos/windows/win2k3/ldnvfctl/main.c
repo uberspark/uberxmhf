@@ -281,12 +281,6 @@ int main(int argc, char *argv[]){
 	}
 
     
-    //set the LED for this environment
-	if(ldn_trusted_environment)
-		ldn_verifier_setstate(GREEN_LED); //now force to trusted
-	else
-		ldn_verifier_setstate(RED_LED); //now force to untrusted
-
 	if(ldn_trusted_environment){
 		#if defined(LDNVNET)
 			#if defined(SSLPA)
@@ -299,6 +293,13 @@ int main(int argc, char *argv[]){
     printf("\npress any key to quit...");
 	while(!_kbhit()){
 		printf("\nWaiting for lockdown device command...");
+
+		//set the LED for this environment
+		if(ldn_trusted_environment)
+			ldn_verifier_setstate(GREEN_LED); 
+		else
+			ldn_verifier_setstate(RED_LED); 
+
 
 		while(!ldn_verifier_checkbuttonstatus()){
 			if(ldn_trusted_environment){
@@ -390,11 +391,6 @@ int main(int argc, char *argv[]){
       	SetSuspendState(TRUE, FALSE,FALSE);
       	
       	printf("\ngot awake...");
-
-		if(ldn_trusted_environment)
-			ldn_verifier_setstate(GREEN_LED); //now force to trusted
-		else
-			ldn_verifier_setstate(RED_LED); //now force to untrusted
 	}
 
 
