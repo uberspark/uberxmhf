@@ -164,11 +164,12 @@ struct usb_dev_handle * ldn_find_verifier(void){
 	
 	hdl = usb_open(dev);
 	
-	  i = usb_set_configuration(hdl, 1);
-	  if (i < 0) {
-		 printf("\nFATAL: usb_set_configuration failed");
-		 return -1;
-	  }
+	i = usb_set_configuration(hdl, 1);
+	if (i < 0){
+		usb_close(hdl);
+		return NULL; //usb_set_configuration failed;
+	}
+    
     printf("\nlockdown verifier configuration selected.");
   
   	i = usb_claim_interface(hdl, 0);
