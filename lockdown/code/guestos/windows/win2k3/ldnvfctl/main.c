@@ -216,7 +216,6 @@ int ldn_trusted_environment= 0;
 int main(int argc, char *argv[]){
 	HANDLE drvh;
 	DWORD bytes, rxbytes;
-    struct usb_dev_handle *hdl;
 	int i;
 	TMemoryCmd MemCmd;
 
@@ -388,11 +387,8 @@ int main(int argc, char *argv[]){
 		#endif
 	}
 
-  	usb_release_interface(hdl, 0);
-  	usb_close(hdl);
-
 	
-		return 0;
-	}
+	return 0;
+}
 	
 
