@@ -211,14 +211,14 @@ struct usb_dev_handle * ldn_find_verifier(void){
 //set to 1 if we are operating in the trusted environment
 int ldn_trusted_environment= 0;
 
-
-	//ldnvnet driver communication test
-	int main(int argc, char *argv[]){
-		HANDLE drvh;
-		DWORD bytes, rxbytes;
+//======================================================================
+//lockdown monitor main function
+int main(int argc, char *argv[]){
+	HANDLE drvh;
+	DWORD bytes, rxbytes;
     struct usb_dev_handle *hdl;
-	  int i;
-		 TMemoryCmd MemCmd;
+	int i;
+	TMemoryCmd MemCmd;
 
 	if(argc < 2){
 		printf("\ninsufficient arguments: specify either 'true' or 'unte'");
@@ -231,32 +231,29 @@ int ldn_trusted_environment= 0;
 		ldn_trusted_environment=0;
 	
 	
-//#if defined (BUILD_FOR_TRUSTED)	
-if(ldn_trusted_environment){
-#if defined (LDNVNET)	
-
-    printf("\nOpening device...");
-		drvh = CreateFile ( "\\\\.\\LDNVNET", 
+	if(ldn_trusted_environment){
+		#if defined (LDNVNET)	
+			printf("\nOpening device...");
+			drvh = CreateFile ( "\\\\.\\LDNVNET", 
 								GENERIC_READ | GENERIC_WRITE,
 								FILE_SHARE_READ,
 								NULL,
 								OPEN_EXISTING,
 								FILE_ATTRIBUTE_NORMAL,
 								NULL);
-		if(drvh == INVALID_HANDLE_VALUE){
-		  printf("\nFATAL: could not open handle to virtual ethernet driver!");
-		  return -1;
-		}	
+			if(drvh == INVALID_HANDLE_VALUE){
+				printf("\nFATAL: could not open handle to virtual ethernet driver!");
+				return -1;
+			}	
 			
-		printf("\nOpened ldnvnet successfully.");
-#endif
-}
-
+			printf("\nOpened ldnvnet successfully.");
+		#endif
+	}
 
     //[USB initialization]
     printf("\ninitializing USB communication...");
-	  usb_init();
-	  usb_find_busses();                            
+	usb_init();
+	usb_find_busses();                            
     usb_find_devices();
     printf("[SUCCESS].");
 	
@@ -266,15 +263,14 @@ if(ldn_trusted_environment){
 	else
 		ldn_verifier_setstate(RED_LED); //now force to untrusted
 
-//#if defined(BUILD_FOR_TRUSTED)
-if(ldn_trusted_environment){
-  #if defined(LDNVNET)
-	#if defined(SSLPA)
-	//initialize sslpa
-	ssl_pa_init();
-	#endif
-  #endif  
-}
+	if(ldn_trusted_environment){
+		#if defined(LDNVNET)
+			#if defined(SSLPA)
+			//initialize sslpa
+			ssl_pa_init();
+			#endif
+		#endif  
+	}
 
     printf("\npress any key to quit...");
 		while(!kbhit()){
