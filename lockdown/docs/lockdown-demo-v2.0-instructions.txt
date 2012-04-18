@@ -29,15 +29,17 @@ Initial Setup
 
 5. Build the Lockdown hypervisor (see xxx)
 
-6. Build the Lockdown environment monitor (see xxx)
+6. Generate trusted environment parameter block binary blob (see xxx)
 
-7. Copy hypervisor and monitor binary images to 
+7. Build the Lockdown environment monitor (see xxx)
+
+8. Copy hypervisor and monitor binary images to 
    /mnt/bootpartition/boot
 
-8. Copy /mnt/bootpartition/grub/menu_ue.lst 
+9. Copy /mnt/bootpartition/grub/menu_ue.lst 
 	to /mnt/boot/partition/grub/menu.lst
 
-9. Power down the laptop. You are now ready for the demo 
+10. Power down the laptop. You are now ready for the demo 
 
 Running the demo
 ----------------
