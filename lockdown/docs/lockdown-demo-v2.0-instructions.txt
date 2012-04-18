@@ -39,30 +39,41 @@ Initial Setup
 
 9. Power down the laptop. You are now ready for the demo 
 
+Running the demo
+----------------
 
-running the demo
+1. Connect the Lockdown verifier to the laptop and ensure 
+   that the switch is set to the untrusted environment (red)
 
-connect the verifier to the laptop and ensure its button is set to
-untrusted environment (red)
+2. Power on the laptop. You will notice the verifier will 
+   start a blinking red light
 
-power on the laptop 
+3. You will automatically boot using the Lockdown hypervisor 
+   into the untrusted environment. Once the environment has 
+   loaded, the blinking red will glow solid red
 
-it will automatically boot into the untrusted environment
-once you are in the blinking red will glow solid red
+4. Do required operations in the untrusted environment
+   (e.g., visit a website, browse facebook etc.)
+   
+5. Slide the verifier switch to trusted (green) and Lockdown 
+   will start the environment switch. The Lockdown verifier
+   light will switch to blinking red and system will automatically
+   boot into the trusted environment. (Note: do not interact with
+   the GRUB menu that you will see as part of the platform reset
+   sequence)
 
-do your ops in the untrusted environment
+6. Once the trusted environment has booted up, the Lockdown 
+   verifier will glow soild green signifying you are ready to
+   perform required sensitive operations.
 
-slide the verifier switch to trusted and lockdown will prepare
-to switch, verifier light will switch to blinking red and system
-will boot into the trusted environment
-
-once trusted environment has booted up, verifier will glow soild green
-signifying you are ready for sensitive ops.
+7. Slide the verifier switch back to untrusted to switch back to
+   the untrusted environment.
 
 
-note: the first time you do the untrusted to trusted cycle it might
-take a little longer since the hibernation images are not built up
-subsequent transitions should be much faster.
+Note: The first time you do the untrusted to trusted cycle it might
+take a little longer since the hibernation images are not built up 
+yet (the OS goes through the complete boot sequence). Subsequent 
+transitions should be much faster.
 
 tinkering with hypervisor/verifier/monitor once you have a demo going
 
