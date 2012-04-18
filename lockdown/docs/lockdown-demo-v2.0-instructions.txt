@@ -88,10 +88,14 @@ the following steps:
 2. On the GRUB menu press <up-arrow> to disengage autoboot
 
 3. Select Lockdown(Trusted), boot and "restart" the OS (e.g., Win 2K3)
+   This will ensure that the trusted environment
+   hibernation image is deleted.
 
 4. Upon restart on the GRUB menu press <up-arrow> to disengage autoboot
 
 5. Select Lockdown (Untrusted), boot and "restart" the OS (e.g., Win XP)
+   This will ensure that the untrusted environment
+   hibernation image is deleted.
 
 6. Continue from Step-3 in section "Initial Setup" above
 
