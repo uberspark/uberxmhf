@@ -1,0 +1,32 @@
+Lockdown Monitor Build Guide
+
+Author: Amit Vasudevan (amitvasudevan@acm.org)
+========================================================================
+
+Note: Repository pathnames are relative to the top-level Lockdown
+    project repository
+
+Requirements:
+	Windows host machine (Windows 2003 was used for this writeup)
+
+1. Install MS Platform SDK.
+
+   MS Platform SDK for Windows 2003 SP1 was used for this writeup
+   http://www.microsoft.com/download/en/details.aspx?id=6510
+   (last accessed on 04/18/2012)
+
+
+2. You also need MS Visual Studio/Visual C++ Express. 
+   MS Visual Studio 2005 was used for this writeup. 
+   
+
+3. Open up a Windows XP 32-bit retail command line build environment
+   Start -> Programs -> MS Platform SDK -> Build Environment Window
+   -> Windows XP 32-bit Retail
+   
+4. cd /trunk/code/guestos/windows/win2k3/ldnvfctl
+
+5. nmake /a
+
+6. If all goes well, you end up with the binary ldnvfctl.exe
+   
