@@ -1,3 +1,0 @@
-ARM2148/armVIC.o: ARM2148/armVIC.c ARM2148/armVIC.h
-
-ARM2148/armVIC.h:
