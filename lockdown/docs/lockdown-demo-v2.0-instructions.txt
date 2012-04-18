@@ -75,21 +75,26 @@ take a little longer since the hibernation images are not built up
 yet (the OS goes through the complete boot sequence). Subsequent 
 transitions should be much faster.
 
-tinkering with hypervisor/verifier/monitor once you have a demo going
 
-1. power up the laptop
+Updating the hypervisor/verifier/monitor/trusted-environment
+------------------------------------------------------------
 
-2. on the grub menu press up arrow to disengage auto boot
+If you wish to update the Lockdown hypervisor, verifier, monitor
+and/or the trusted environment contents, you will need to follow
+the following steps:
 
-3. select Lockdown(Trusted), boot and "restart" the OS (e.g., winxp)
+1. Power up the laptop
 
-4. upon restart on the grub menu press up arrow to disengage auto boot
+2. On the GRUB menu press <up-arrow> to disengage autoboot
 
-5. select Lockdown (Untrusted), boot and "restart" the OS (e.g., win2k3)
+3. Select Lockdown(Trusted), boot and "restart" the OS (e.g., Win 2K3)
 
-6. uopn restart on the grub menu press up arrow and select 
-	"ubuntu service parition..." and follow from step 4. in the
-	previous section
+4. Upon restart on the GRUB menu press <up-arrow> to disengage autoboot
+
+5. Select Lockdown (Untrusted), boot and "restart" the OS (e.g., Win XP)
+
+6. Continue from Step-3 in section "Initial Setup" above
+
 
 
 
