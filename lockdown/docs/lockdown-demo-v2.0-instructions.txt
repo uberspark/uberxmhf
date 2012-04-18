@@ -29,7 +29,7 @@ Initial Setup
    autoboot and select the "Ubuntu 10.04.3 LTS Service Console"
    and boot into it
 	
-4. Program the Lockdown Verifier (see /trunk/docs/lockdown-verifier-dsw2148wz-instructions.txt)
+4. Program the Lockdown Verifier (see /trunk/docs/lockdown-verifier-ds2148wz-instructions.txt)
 
 5. Build the Lockdown hypervisor (see xxx)
 
