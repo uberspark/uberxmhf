@@ -13,26 +13,31 @@ Requirements
 		DS2148WZ board)
 3. HP 8540p Laptop
 4. 120GB SATA laptop hard-disk
+
+Initial Setup
+-------------	
+1. Burn Lockdown demo disk image to the 120GB SATA laptop hard-disk
+   e.g., using dd on a different machine
 	
-1. burn lockdown demo disk image to 120gb sata laptop hard-disk
-	e.g. using dd on a different machine
+2. Plug in the 120GB SATA hard-disk into the HP 8540p laptop and boot
+
+3. At the first GRUB menu, press the <up-arrow> key to disengage
+   autoboot and select the "Ubuntu 10.04.3 LTS Service Console"
+   and boot into it
 	
-2. plug in the 120gb sata hard-disk into the hp8540p laptop and boot
+4. Program the Lockdown Verifier (see xxx)
 
-3. when u get the first grub menu, press the up arrow key to select
-	the "ubuntu service partition..."
-	
-4. program the lockdown verifier (see xxx)
+5. Build the Lockdown hypervisor (see xxx)
 
-5. build the lockdown hypervisor 
+6. Build the Lockdown environment monitor (see xxx)
 
-6. build the lockdown monitor
+7. Copy hypervisor and monitor binary images to 
+   /mnt/bootpartition/boot
 
-7. copy hypervisor and monitor images to /mnt/bootpartition/boot
+8. Copy /mnt/bootpartition/grub/menu_ue.lst 
+	to /mnt/boot/partition/grub/menu.lst
 
-8. copy /mnt/bootpartition/grub/menu_ue.lst to /mnt/boot/partition/grub/menu.lst
-
-you are now ready for the demo. power down the laptop
+9. Power down the laptop. You are now ready for the demo 
 
 
 running the demo
