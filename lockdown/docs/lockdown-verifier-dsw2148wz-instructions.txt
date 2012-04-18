@@ -1,4 +1,5 @@
 Lockdown Verifier Firmware Implementation
+on DS2148WZ ARM development board
 
 Author: Amit Vasudevan (amitvasudevan@acm.org)
 ------------------------------------------------------------------------
