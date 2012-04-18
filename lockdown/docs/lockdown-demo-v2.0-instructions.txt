@@ -3,8 +3,12 @@ Lockdown Demo Guide v2.0
 Author: Amit Vasudevan (amitvasudevan@acm.org)
 ========================================================================
 
-Note: The disk-image used for the demo is designed to work 
-only on the hp8540p laptop
+Notes: 
+(a) The disk-image used for the demo is designed to work 
+    only on the hp8540p laptop
+(b) Repository pathnames are relative to the top-level Lockdown
+    project repository
+
 
 Requirements
 ------------
@@ -25,7 +29,7 @@ Initial Setup
    autoboot and select the "Ubuntu 10.04.3 LTS Service Console"
    and boot into it
 	
-4. Program the Lockdown Verifier (see xxx)
+4. Program the Lockdown Verifier (see /trunk/docs/lockdown-verifier-dsw2148wz-instructions.txt)
 
 5. Build the Lockdown hypervisor (see xxx)
 
