@@ -1,0 +1,89 @@
+Lockdown Demo Guide v2.0
+
+Author: Amit Vasudevan (amitvasudevan@acm.org)
+------------------------------------------------------------------------
+
+designed to work only on hp8540p, although it is not difficult to
+adapt to other platforms
+
+stuff required
+	lockdown demo disk image
+		service parition (ubuntu): username: root, password: root
+		untrusted (win xp): automatic logon with username: guestuser
+		trusted (win 2k3): username: Administrator, password: root
+	
+	lockdown verifier device
+	hp8540p laptop
+	a 120 gb sata laptop hard-disk
+	
+1. burn lockdown demo disk image to 120gb sata laptop hard-disk
+	e.g. using dd on a different machine
+	
+2. plug in the 120gb sata hard-disk into the hp8540p laptop and boot
+
+3. when u get the first grub menu, press the up arrow key to select
+	the "ubuntu service partition..."
+	
+4. program the lockdown verifier (see xxx)
+
+5. build the lockdown hypervisor 
+
+6. build the lockdown monitor
+
+7. copy hypervisor and monitor images to /mnt/bootpartition/boot
+
+8. copy /mnt/bootpartition/grub/menu_ue.lst to /mnt/boot/partition/grub/menu.lst
+
+you are now ready for the demo. power down the laptop
+
+
+running the demo
+
+connect the verifier to the laptop and ensure its button is set to
+untrusted environment (red)
+
+power on the laptop 
+
+it will automatically boot into the untrusted environment
+once you are in the blinking red will glow solid red
+
+do your ops in the untrusted environment
+
+slide the verifier switch to trusted and lockdown will prepare
+to switch, verifier light will switch to blinking red and system
+will boot into the trusted environment
+
+once trusted environment has booted up, verifier will glow soild green
+signifying you are ready for sensitive ops.
+
+
+note: the first time you do the untrusted to trusted cycle it might
+take a little longer since the hibernation images are not built up
+subsequent transitions should be much faster.
+
+tinkering with hypervisor/verifier/monitor once you have a demo going
+
+1. power up the laptop
+
+2. on the grub menu press up arrow to disengage auto boot
+
+3. select Lockdown(Trusted), boot and "restart" the OS (e.g., winxp)
+
+4. upon restart on the grub menu press up arrow to disengage auto boot
+
+5. select Lockdown (Untrusted), boot and "restart" the OS (e.g., win2k3)
+
+6. uopn restart on the grub menu press up arrow and select 
+	"ubuntu service parition..." and follow from step 4. in the
+	previous section
+
+
+
+
+
+
+
+
+
+
+
