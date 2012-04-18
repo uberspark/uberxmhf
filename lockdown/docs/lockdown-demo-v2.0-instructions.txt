@@ -1,20 +1,18 @@
 Lockdown Demo Guide v2.0
 
 Author: Amit Vasudevan (amitvasudevan@acm.org)
-------------------------------------------------------------------------
+========================================================================
 
-designed to work only on hp8540p, although it is not difficult to
-adapt to other platforms
+Note: The disk-image used for the demo is designed to work 
+only on the hp8540p laptop
 
-stuff required
-	lockdown demo disk image
-		service parition (ubuntu): username: root, password: root
-		untrusted (win xp): automatic logon with username: guestuser
-		trusted (win 2k3): username: Administrator, password: root
-	
-	lockdown verifier device
-	hp8540p laptop
-	a 120 gb sata laptop hard-disk
+Requirements
+------------
+1. Lockdown demo disk image
+2. Lockdown verifier device (as of this writing based on a 
+		DS2148WZ board)
+3. HP 8540p Laptop
+4. 120GB SATA laptop hard-disk
 	
 1. burn lockdown demo disk image to 120gb sata laptop hard-disk
 	e.g. using dd on a different machine
