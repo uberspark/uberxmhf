@@ -31,7 +31,7 @@ Initial Setup
 	
 4. Program the Lockdown Verifier (see /trunk/docs/lockdown-verifier-ds2148wz-instructions.txt)
 
-5. Build the Lockdown hypervisor (see xxx)
+5. Build the Lockdown hypervisor (see /trunk/docs/lockdown-hypervisor-instructions.txt)
 
 6. Generate trusted environment parameter block binary blob (see xxx)
 
