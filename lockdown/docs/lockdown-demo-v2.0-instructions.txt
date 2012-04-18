@@ -33,12 +33,13 @@ Initial Setup
 
 5. Build the Lockdown hypervisor (see /trunk/docs/lockdown-hypervisor-instructions.txt)
 
-6. Generate trusted environment parameter block binary blob (see xxx)
+6. Generate trusted environment parameter block binary blob (see /trunk/docs/lockdown-teparameterblock-instructions.txt)
 
 7. Build the Lockdown environment monitor (see /trunk/docs/lockdown-monitor-instructions.txt)
 
-8. Copy hypervisor and monitor binary images to 
-   /mnt/bootpartition/boot
+8. Copy hypervisor (init-x86.bin and hypervisor-x86.bin.gz),
+   monitor (ldnvfctl.exe) and trusted environment parameter block
+   (ldnpb_te.bin) binary images to /mnt/bootpartition/boot
 
 9. Copy /mnt/bootpartition/grub/menu_ue.lst 
 	to /mnt/boot/partition/grub/menu.lst
