@@ -35,7 +35,7 @@ Initial Setup
 
 6. Generate trusted environment parameter block binary blob (see xxx)
 
-7. Build the Lockdown environment monitor (see xxx)
+7. Build the Lockdown environment monitor (see /trunk/docs/lockdown-monitor-instructions.txt)
 
 8. Copy hypervisor and monitor binary images to 
    /mnt/bootpartition/boot
