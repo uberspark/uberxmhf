@@ -12,7 +12,7 @@ Notes:
 
 Requirements
 ------------
-1. Lockdown demo disk image
+1. Lockdown demo disk image (see /trunk/docs/lockdown-demo-v2.0-diskimage.txt)
 2. Lockdown verifier device (as of this writing based on a 
 		DS2148WZ board)
 3. HP 8540p Laptop
