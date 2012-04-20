@@ -53,10 +53,36 @@
 #include <error.h>
 #include <shadow_paging_npae.h>
 
+//GPL is the maximum physical memory address for the guest
+//currently 512MB
+#define GUEST_PHYSICALMEMORY_LIMIT	 (512*1024*1024)  
+
+//holds the original guest CR3 for a given context during shadow paging
 u32 shadow_guest_CR3=0;
 
-//GPL is the maximum physical memory address that is valid during the validity check
-#define GUEST_PHYSICALMEMORY_LIMIT	 (512*1024*1024)  //512MB guest PA range
+
+//----------------------------------------------------------------------
+//shadow paging primary interfaces follow
+
+//----------------------------------------------------------------------
+//new context, CR3 load
+//returns our shadow page table root
+u32 shadow_new_context(u32 guest_CR3){
+
+	//store original guest CR3 in our shadow variable
+	shadow_guest_CR3 = guest_CR3;
+
+	//zero out the entire shadow page directory table, we will
+	//build shadow by processing page (not-present) faults
+	memset((void *)__shadow_npae_pd_table, 0, PAGE_SIZE_4K);
+
+	//return our shadow pd table address which will be the new CR3
+	//for the guest
+	return (u32)__shadow_npae_pd_table; 
+}
+
+
+
 
 
 /*
@@ -613,24 +639,4 @@ u32 shadow_checkcontext(u32 root){
 
 
 
-
-//------------------------------------------------------------------------------
-//new context, CR3 load
-//returns our shadow page table root
-//we always get here only when CR4.PAE is enabled 
-u32 shadow_new_context(u32 guest_CR3){
-	//(void)guest_CR3;
-	//printf("\n0x%04x:0x%08x: MOV CR3, x (CR3 value=0x%08x)", 
-	//	(unsigned short)guest_CS_selector, (unsigned int)guest_RIP, 
-	//	(unsigned int)guest_CR3);
-	
-	//store original guest CR3 in our shadow variable
-	shadow_guest_CR3 = guest_CR3;
-
-	memset((void *)__shadow_npae_pd_table, 0, PAGE_SIZE_4K);
-
-	//return our shadow pd table address which will be the new CR3
-	//for the guest
-	return (u32)__shadow_npae_pd_table; 
-}
 
