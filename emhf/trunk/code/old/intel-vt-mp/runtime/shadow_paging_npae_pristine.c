@@ -53,6 +53,13 @@
 #include <error.h>
 #include <shadow_paging_npae.h>
 
+//----------------------------------------------------------------------
+//PDT = page directory table
+//PT = page table
+//PDE = page directory table entry
+//PTE = page table entry
+
+
 //GPL is the maximum physical memory address for the guest
 //currently 512MB
 #define GUEST_PHYSICALMEMORY_LIMIT	 (512*1024*1024)  
@@ -66,17 +73,17 @@ u32 shadow_guest_CR3=0;
 
 //----------------------------------------------------------------------
 //new context, CR3 load
-//returns our shadow page table root
+//returns our shadow PDT base address
 u32 shadow_new_context(u32 guest_CR3){
 
 	//store original guest CR3 in our shadow variable
 	shadow_guest_CR3 = guest_CR3;
 
-	//zero out the entire shadow page directory table, we will
-	//build shadow by processing page (not-present) faults
+	//zero out the entire shadow PDT, we will
+	//build shadow entries by processing page (not-present) faults
 	memset((void *)__shadow_npae_pd_table, 0, PAGE_SIZE_4K);
 
-	//return our shadow pd table address which will be the new CR3
+	//return our shadow PDT address which will be the new CR3
 	//for the guest
 	return (u32)__shadow_npae_pd_table; 
 }
@@ -89,8 +96,8 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
 	//cr2 = linear address of the fault
 	//error_code = fault type (not-present, write fault etc.)
 	
-	u32 *gPDE, *gPTE;	//guest PD and PT entries corresponding to cr2
-	u32 *sPDE, *sPTE;	//shadow PD and PT entries corresponding to cr2
+	u32 *gPDE, *gPTE;	//guest PDE and PTE corresponding to cr2
+	u32 *sPDE, *sPTE;	//shadow PDE and PTE corresponding to cr2
 	
 	//[debug]
 	//sdbg_dumppfdetails(cr2, error_code);
@@ -160,10 +167,10 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
 void shadow_invalidate_page(u32 address){
 	//address = 32-bit linear address to invalidate entries for
 	
-	u32 *gPDE, *gPTE; //guest PD and PT entries for address
-	u32 *sPDE, *sPTE; //shadow PD and PT entries for address
+	u32 *gPDE, *gPTE; //guest PDE and PTE for address
+	u32 *sPDE, *sPTE; //shadow PDE and PTE for address
 	
-	//grab SHADOW and GUEST PD and PT entries for address
+	//grab SHADOW and GUEST PDT and PT entries for address
 	shadow_get_guestentry(address, shadow_guest_CR3, &gPDE, &gPTE);
 	shadow_get_shadowentry(address, &sPDE, &sPTE);
 	//sdbg_dumpentries(gPDE, gPTE, sPDE, sPTE);
@@ -172,24 +179,24 @@ void shadow_invalidate_page(u32 address){
 	ASSERT( gPDE != (u32 *)0 );
 	ASSERT( sPDE != (u32 *)0 );
 
-	//bail out if we dont have a SHADOW page-directory, we wil sync on
+	//bail out if we dont have a SHADOW PDE, we wil sync on
 	//the page-fault
 	if( !(*sPDE & _PAGE_PRESENT) )
 		return;
 	
 	//invalidation logic below...
 	if( !(*gPDE & _PAGE_PRESENT) ){
-		*sPDE = 0;	//if GUEST PD entry is not-present, zero out corresponding SHADOW PD entry to invalidate
-	}else{ //GUEST PD entry is present
+		*sPDE = 0;	//if GUEST PDE is not-present, zero out corresponding SHADOW PDE to invalidate
+	}else{ //GUEST PDE is present
 		if( ((*gPDE & _PAGE_PSE) && !(*sPDE & _PAGE_PSE)) ||
 				(!(*gPDE & _PAGE_PSE) && (*sPDE & _PAGE_PSE)) ){
-			//mismatch in guest and shadow structures 4M vs 4K, zero out shadow PD entry to invalidate
+			//mismatch in guest and shadow structures 4M vs 4K, zero out shadow PDE to invalidate
 			*sPDE = 0;
 		}else{
 			//both guest and shadow are same structure, so invalidate required shadow entry
-			if(sPTE){	//if there is a shadow page table entry for address, zero it out to invalidate
+			if(sPTE){	//if there is a shadow PTE for address, zero it out to invalidate
 				*sPTE=0;
-			}else{	    //if no, then it means that shadow PD entry pointed to a 4M page
+			}else{	    //if no, then it means that shadow PDE pointed to a 4M page
 				ASSERT(*sPDE & _PAGE_PSE);	//sanity check that
 				*sPDE=0;					//zero it out to invalidate
 			}		
@@ -214,24 +221,24 @@ void shadow_get_shadowentry(u32 gva, u32 **pdt_entry, u32 **pt_entry){
 	npt_t s_pt;
 	u32 s_pdt_entry, s_pt_entry;
 	
-	//compute pde and pte index based on gva
+	//compute PDE and PTE index based on gva
 	index_pdt= (gva >> 22);							//bits 22-31 of gva
 	index_pt  = ((gva & (u32)0x003FFFFF) >> 12);	//bits 12-21 of gva
 	
 	*pdt_entry = *pt_entry = (u32 *)0;	//zero initialize pde and pte pointers
 	
-	//store the shadow pde pointer for gva
+	//store the shadow PDE pointer for gva
 	s_pdt_entry = s_pdt[index_pdt];
 	*pdt_entry = (u32 *)&s_pdt[index_pdt];
 	
 	if( !(s_pdt_entry & _PAGE_PRESENT) )
-		return; //this pde is not-present, so just return the pde pointer
+		return; //this PDE is not-present, so just return the PDE pointer
 	
 	if(s_pdt_entry & _PAGE_PSE)
-		return; //this is a 4M page directory entry, so there is no pt, 
-				//just return the pde pointer
+		return; //this is a 4M PDE, so there is no PT, 
+				//just return the PDE pointer
 		
-	//this is a regular page directory entry, so store the page table entry pointer
+	//this is a regular PDE, so store the PTE pointer
 	s_pt = (npt_t)(u32)npae_get_addr_from_pde(s_pdt_entry);
 	*pt_entry = (u32 *)&s_pt[index_pt]; 
 	
@@ -250,27 +257,27 @@ void shadow_get_guestentry(u32 gva, u32 gCR3, u32 **pdt_entry, u32 **pt_entry){
 	npt_t g_pt;
 	u32 g_pdt_entry, g_pt_entry;
 	
-	//compute pde and pte index based on gva
+	//compute PDE and PT index based on gva
 	index_pdt= (gva >> 22);							//bits 22-31 of gva
 	index_pt  = ((gva & (u32)0x003FFFFF) >> 12);	//bits 12-21 of gva
 	
-	*pdt_entry = *pt_entry = (u32 *)0;	//zero initialize pde and pte pointers
+	*pdt_entry = *pt_entry = (u32 *)0;	//zero initialize PDE and PTE pointers
 	
-	//store the guest pde pointer for gva
+	//store the guest PDE pointer for gva
 	g_pdt_entry = g_pdt[index_pdt];
 	*pdt_entry = (u32 *)&g_pdt[index_pdt];
 
 	if( !(g_pdt_entry & _PAGE_PRESENT) )
-		return; //this pde is not-present, so just return the pde pointer
+		return; //this PDE is not-present, so just return the PDE pointer
 
 	//set ACCESSED bit on this pdt entry
 	//g_pdt[index_pdt] |= _PAGE_ACCESSED;
 
 	if(g_pdt_entry & _PAGE_PSE)
-		return; //this is a 4M page directory entry, so no pt present
-				//just return the pde pointer
+		return; //this is a 4M PDE entry, so no PT present
+				//just return the PDE pointer
 				
-	//this is a regular page directory entry, so store the page table entry pointer
+	//this is a regular PDE, so store the PTE entry pointer
 	g_pt = (npt_t)gpa_to_hpa((u32)pae_get_addr_from_pde(g_pdt_entry));
 	*pt_entry = (u32 *)&g_pt[index_pt]; 
 
@@ -288,7 +295,7 @@ void shadow_get_guestentry(u32 gva, u32 gCR3, u32 **pdt_entry, u32 **pt_entry){
 u32 shadow_alloc_pt(u32 gva){
 	u32 index_pdt;
 	
-	//grab the PD index for gva (bits 22-31)
+	//grab the PDT index for gva (bits 22-31)
 	index_pdt= (gva >> 22);
 	
 	//zero out PT for gva
@@ -309,17 +316,17 @@ void shadow_updateshadowentries(u32 gva, u32 **sPDE, u32 **sPTE,
 	u32 flags;
 	u32 paddr;
 
-	//compute pde and pte index based on gva
+	//compute PDE and PTE index based on gva
 	index_pdt= (gva >> 22);							//bits 22-31 of gva
 	index_pt  = ((gva & (u32)0x003FFFFF) >> 12);	//bits 12-21 of gva
 	
 	//sanity check:
-	//gPDE MUST be valid, either a 4M page or point to a PT
+	//guest PDE MUST be valid, either a 4M page or point to a PT
 	ASSERT( *gPDE != (u32 *)0 ); 
 	ASSERT( **gPDE & _PAGE_PRESENT );
 
-	if( **gPDE & _PAGE_PSE){	//4M guest pde
-		//copy the entire guest pde into shadow	while checking for
+	if( **gPDE & _PAGE_PSE){	//4M guest PDE
+		//copy the entire guest PDE into shadow	while checking for
 		//invalid mapping
 		if( npae_get_addr_from_pde(**gPDE) < GUEST_PHYSICALMEMORY_LIMIT){
 			**sPDE = **gPDE;
@@ -327,9 +334,9 @@ void shadow_updateshadowentries(u32 gva, u32 **sPDE, u32 **sPTE,
 			printf("\nillegal mapping!");
 			HALT();
 		}
-	}else{	//guest PDE points to 4K guest pt
-		flags=npae_get_flags_from_pde(**gPDE);	//get flags for guest pde
-		paddr=npae_get_addr_from_pde(**sPDE);	//get address for shadow pde (pointing to shadow pt if one is allocated)
+	}else{	//guest PDE points to 4K guest PT
+		flags=npae_get_flags_from_pde(**gPDE);	//get flags for guest PDE
+		paddr=npae_get_addr_from_pde(**sPDE);	//get address for shadow PDE (pointing to shadow PT if one is allocated)
 		
 		//propagate guest PDE flags to shadow PDE
 		**sPDE = npae_make_pde(paddr, flags);
