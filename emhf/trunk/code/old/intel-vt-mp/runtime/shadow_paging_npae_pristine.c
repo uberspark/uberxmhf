@@ -250,26 +250,29 @@ void shadow_get_guestentry(u32 gva, u32 gCR3, u32 **pdt_entry, u32 **pt_entry){
 	npt_t g_pt;
 	u32 g_pdt_entry, g_pt_entry;
 	
-	index_pdt= (gva >> 22);
-	index_pt  = ((gva & (u32)0x003FFFFF) >> 12);
+	//compute pde and pte index based on gva
+	index_pdt= (gva >> 22);							//bits 22-31 of gva
+	index_pt  = ((gva & (u32)0x003FFFFF) >> 12);	//bits 12-21 of gva
 	
-	*pdt_entry = *pt_entry = (u32 *)0;	//zero all
+	*pdt_entry = *pt_entry = (u32 *)0;	//zero initialize pde and pte pointers
 	
+	//store the guest pde pointer for gva
 	g_pdt_entry = g_pdt[index_pdt];
 	*pdt_entry = (u32 *)&g_pdt[index_pdt];
 
-
 	if( !(g_pdt_entry & _PAGE_PRESENT) )
-		return; 
+		return; //this pde is not-present, so just return the pde pointer
 
 	//set ACCESSED bit on this pdt entry
 	//g_pdt[index_pdt] |= _PAGE_ACCESSED;
 
 	if(g_pdt_entry & _PAGE_PSE)
 		return; //this is a 4M page directory entry, so no pt present
-		
-	//this is a regular page directory entry, so get the page table
+				//just return the pde pointer
+				
+	//this is a regular page directory entry, so store the page table entry pointer
 	g_pt = (npt_t)gpa_to_hpa((u32)pae_get_addr_from_pde(g_pdt_entry));
+	*pt_entry = (u32 *)&g_pt[index_pt]; 
 
 	
 	//set ACCESSED bit on this pt entry
@@ -277,7 +280,6 @@ void shadow_get_guestentry(u32 gva, u32 gCR3, u32 **pdt_entry, u32 **pt_entry){
 	//	g_pt[index_pt] |= _PAGE_ACCESSED;
 	
 	
-	*pt_entry = (u32 *)&g_pt[index_pt]; 
 	return;
 }
 
