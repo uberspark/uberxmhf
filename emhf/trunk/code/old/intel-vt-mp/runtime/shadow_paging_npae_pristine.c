@@ -81,6 +81,79 @@ u32 shadow_new_context(u32 guest_CR3){
 	return (u32)__shadow_npae_pd_table; 
 }
 
+//----------------------------------------------------------------------
+//shadow page-fault handler
+//returns VMX_EVENT_INJECT if the page-fault has to be
+//injected into the guest, else VMX_EVENT_CANCEL
+u32 shadow_page_fault(u32 cr2, u32 error_code){
+	//cr2 = linear address of the fault
+	//error_code = fault type (not-present, write fault etc.)
+	
+	u32 *gPDE, *gPTE;	//guest PD and PT entries corresponding to cr2
+	u32 *sPDE, *sPTE;	//shadow PD and PT entries corresponding to cr2
+	
+	//[debug]
+	//sdbg_dumppfdetails(cr2, error_code);
+	
+	//sanity check:
+	//RSVD bit set, should never happen during normal execution
+	if(error_code & PFERR_RSVD_MASK){
+		printf("\nRSVD bit set on page-fault, Halt!");
+		HALT();
+	}
+
+	//sanity check:
+	//we assume CR0.WP=1 always
+	ASSERT( ((guest_CR0 & CR0_WP) && (control_CR0_shadow & CR0_WP)) );
+
+	//get SHADOW and GUEST paging entries for the fault-address (CR2)
+	shadow_get_guestentry(cr2, shadow_guest_CR3, &gPDE, &gPTE);
+	shadow_get_shadowentry(cr2, &sPDE, &sPTE);
+	//sdbg_dumpentries(gPDE, gPTE, sPDE, sPTE);
+
+	if( !(error_code & PFERR_PRESENT_MASK) ){	//SHADOW entry not-present
+			if(is_present_guest(gPDE, gPTE)){
+				//printf("\n	SHADOW-NOT-PRESENT (GUEST-PRESENT): syncing...");
+
+				shadow_updateshadowentries(cr2, &sPDE, &sPTE,
+					&gPDE, &gPTE);
+				
+				//set_guestentry_accessed(gPDE, gPTE);
+				//set_shadowentry_dirtywaiting(sPDE, sPTE, gPDE, gPTE);
+
+				//sdbg_dumpentries(gPDE, gPTE, sPDE, sPTE);
+				return VMX_EVENT_CANCEL;	//mask the page-fault, guest should never have seen it
+			}else{
+				//set_guestentry_accessed(gPDE, gPTE);
+				//printf("\n	SHADOW-NOT-PRESENT (GUEST-NOT-PRESENT): injecting #PF into guest (NP fault).");
+				return VMX_EVENT_INJECT;	//inject the page-fault back to guest, give it a chance to bring the page in if needed
+			}
+	}else if (error_code & PFERR_WR_MASK){	//SHADOW accessed/dirty bit propagation
+			ASSERT(is_present_guest(gPDE, gPTE));
+
+			//if(is_shadowentry_dirtywaiting(sPDE, sPTE)){
+			//	printf("\n	SHADOW-PRESENT (GUEST-PRESENT): processing dirty-waiting...");
+			//	clear_shadowentry_dirtywaiting(sPDE, sPTE);
+			//	if(is_shadowentry_writable(sPDE, sPTE))
+			//		set_guestentry_dirty(gPDE, gPTE);			
+			//	set_guestentry_accessed(gPDE, gPTE);
+			//	return VMX_EVENT_CANCEL;
+			//}else{
+				
+				//printf("\n	SHADOW-PRESENT (GUEST-PRESENT): injecting #PF into guest (R/W fault).");
+				//sdbg_dumpentries(gPDE, gPTE, sPDE, sPTE);
+				//set_guestentry_accessed(gPDE, gPTE);
+				//return VMX_EVENT_INJECT;
+			//}
+			
+			return VMX_EVENT_INJECT;
+	}else{
+			//printf("\n	SHADOW-PRESENT (GUEST-PRESENT): injecting #PF into guest (other fault).");
+			//set_guestentry_accessed(gPDE, gPTE);
+			return VMX_EVENT_INJECT;
+	}
+	
+}
 
 
 
@@ -469,84 +542,6 @@ void set_guestentry_dirty(u32 *gPDE, u32 *gPTE){
 
 
 
-//------------------------------------------------------------------------------
-// #PF handling
-//should return VMX_EVENT_INJECT if the page-fault has to be
-//injected into the guest, else VMX_EVENT_CANCEL
-u32 shadow_page_fault(u32 cr2, u32 error_code){
-
-	u32 *gPDE, *gPTE;
-	u32 *sPDE, *sPTE;
-	
-	//[debug]
-	//sdbg_dumppfdetails(cr2, error_code);
-	
-	//[scheck] RSVD bit set, should never happen during normal execution
-	if(error_code & PFERR_RSVD_MASK){
-		printf("\nRSVD bit set on page-fault, Halt!");
-		HALT();
-	}
-
-	//[scheck] we assume CR0.WP=1 always
-	ASSERT( ((guest_CR0 & CR0_WP) && (control_CR0_shadow & CR0_WP)) );
-
-	//get SHADOW and GUEST paging entries for the fault-address (CR2)
-	shadow_get_guestentry(cr2, shadow_guest_CR3, &gPDE, &gPTE);
-	shadow_get_shadowentry(cr2, &sPDE, &sPTE);
-	//sdbg_dumpentries(gPDE, gPTE, sPDE, sPTE);
-
-	//if(!shadow_checkcontext( (u32)npae_get_addr_from_32bit_cr3((u32)shadow_guest_CR3) ) ){
-	//		printf("\nPF: Halting, reserved bits set in GUEST paging structures!");
-	//		HALT();
-	//}	
-
-	
-	if( !(error_code & PFERR_PRESENT_MASK) ){
-			if(is_present_guest(gPDE, gPTE)){
-				//printf("\n	SHADOW-NOT-PRESENT (GUEST-PRESENT): syncing...");
-
-				shadow_updateshadowentries(cr2, &sPDE, &sPTE,
-					&gPDE, &gPTE);
-				
-				//set_guestentry_accessed(gPDE, gPTE);
-				//set_shadowentry_dirtywaiting(sPDE, sPTE, gPDE, gPTE);
-				
-				if(!shadow_checkcontext((u32)__shadow_npae_pd_table)){
-					printf("\nPF: Halting, reserved bits set in SHADOW paging structures!");
-					HALT();
-				}	
-
-				//sdbg_dumpentries(gPDE, gPTE, sPDE, sPTE);
-				return VMX_EVENT_CANCEL;
-			}else{
-				//set_guestentry_accessed(gPDE, gPTE);
-				//printf("\n	SHADOW-NOT-PRESENT (GUEST-NOT-PRESENT): injecting #PF into guest (NP fault).");
-				return VMX_EVENT_INJECT;
-			}
-	}else if (error_code & PFERR_WR_MASK){
-			ASSERT(is_present_guest(gPDE, gPTE));
-
-			//if(is_shadowentry_dirtywaiting(sPDE, sPTE)){
-			//	printf("\n	SHADOW-PRESENT (GUEST-PRESENT): processing dirty-waiting...");
-			//	clear_shadowentry_dirtywaiting(sPDE, sPTE);
-			//	if(is_shadowentry_writable(sPDE, sPTE))
-			//		set_guestentry_dirty(gPDE, gPTE);			
-			//	set_guestentry_accessed(gPDE, gPTE);
-			//	return VMX_EVENT_CANCEL;
-			//}else{
-				
-				//printf("\n	SHADOW-PRESENT (GUEST-PRESENT): injecting #PF into guest (R/W fault).");
-				//sdbg_dumpentries(gPDE, gPTE, sPDE, sPTE);
-				//set_guestentry_accessed(gPDE, gPTE);
-				return VMX_EVENT_INJECT;
-			//}
-	}else{
-			//printf("\n	SHADOW-PRESENT (GUEST-PRESENT): injecting #PF into guest (other fault).");
-			//set_guestentry_accessed(gPDE, gPTE);
-			return VMX_EVENT_INJECT;
-	}
-	
-}
 
 //------------------------------------------------------------------------------
 //invalidate a shadow paging structure
