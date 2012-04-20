@@ -308,41 +308,47 @@ void shadow_updateshadowentries(u32 gva, u32 **sPDE, u32 **sPTE,
 	u32 index_pdt, index_pt; 
 	u32 flags;
 	u32 paddr;
+
+	//compute pde and pte index based on gva
+	index_pdt= (gva >> 22);							//bits 22-31 of gva
+	index_pt  = ((gva & (u32)0x003FFFFF) >> 12);	//bits 12-21 of gva
 	
-	index_pdt= (gva >> 22);
-	index_pt  = ((gva & (u32)0x003FFFFF) >> 12);
-	
-	//printf("\n	index_pdt=%u, index_pt=%u", index_pdt, index_pt);
-	
-	ASSERT( *gPDE != (u32 *)0 ); //gPDE MUST be valid, either a 4M page or point to a PT
+	//sanity check:
+	//gPDE MUST be valid, either a 4M page or point to a PT
+	ASSERT( *gPDE != (u32 *)0 ); 
 	ASSERT( **gPDE & _PAGE_PRESENT );
 
-	if( **gPDE & _PAGE_PSE){	//4M page
-		//copy the entire entry into shadow	
+	if( **gPDE & _PAGE_PSE){	//4M guest pde
+		//copy the entire guest pde into shadow	while checking for
+		//invalid mapping
 		if( npae_get_addr_from_pde(**gPDE) < GUEST_PHYSICALMEMORY_LIMIT){
 			**sPDE = **gPDE;
 		}else{
 			printf("\nillegal mapping!");
 			HALT();
 		}
-	}else{	//4K page table
-		flags=npae_get_flags_from_pde(**gPDE);
-		paddr=npae_get_addr_from_pde(**sPDE);
+	}else{	//guest PDE points to 4K guest pt
+		flags=npae_get_flags_from_pde(**gPDE);	//get flags for guest pde
+		paddr=npae_get_addr_from_pde(**sPDE);	//get address for shadow pde (pointing to shadow pt if one is allocated)
+		
 		//propagate guest PDE flags to shadow PDE
 		**sPDE = npae_make_pde(paddr, flags);
 			
-		ASSERT( *gPTE != (u32 *)0 ); //gPTE MUST be valid and present
+		//sanity check:
+		//guest PTE MUST be valid and present
+		ASSERT( *gPTE != (u32 *)0 ); 
 		ASSERT( **gPTE & _PAGE_PRESENT );
 
 		//check if we have a valid shadow PT
-		if(*sPTE == (u32 *)0){	//no shadow PT, so assign one
-			ASSERT(paddr == 0);
-			paddr = shadow_alloc_pt(gva);
-			**sPDE = npae_make_pde(paddr, flags);
-			*sPTE = (u32 *)(paddr + (index_pt * sizeof(u32))); 			
+		if(*sPTE == (u32 *)0){	//no shadow PT, so allocate one
+			ASSERT(paddr == 0); //sanity check: paddr = 0 if there was no shadow PT
+			paddr = shadow_alloc_pt(gva);	//allocate the shadow PT
+			**sPDE = npae_make_pde(paddr, flags);	//set shadow PDE to point to allocated shadow PT
+			*sPTE = (u32 *)(paddr + (index_pt * sizeof(u32))); //get shadow PTE for gva
 		}	
 			
-	    //copy the entire entry into shadow	
+	    //copy the entire guest PTE into shadow	PTE while checking for
+	    //invalid mapping
 	    if( npae_get_addr_from_pte(**gPTE) < GUEST_PHYSICALMEMORY_LIMIT){
 			**sPTE = **gPTE;
 		}else{
