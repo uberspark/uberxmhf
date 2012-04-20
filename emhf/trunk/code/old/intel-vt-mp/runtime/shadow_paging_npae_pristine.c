@@ -155,6 +155,50 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
 	
 }
 
+//----------------------------------------------------------------------
+//invalidate a shadow paging entry corresponding to linear address
+void shadow_invalidate_page(u32 address){
+	//address = 32-bit linear address to invalidate entries for
+	
+	u32 *gPDE, *gPTE; //guest PD and PT entries for address
+	u32 *sPDE, *sPTE; //shadow PD and PT entries for address
+	
+	//grab SHADOW and GUEST PD and PT entries for address
+	shadow_get_guestentry(address, shadow_guest_CR3, &gPDE, &gPTE);
+	shadow_get_shadowentry(address, &sPDE, &sPTE);
+	//sdbg_dumpentries(gPDE, gPTE, sPDE, sPTE);
+
+	//sanity check on NULL pointer variables
+	ASSERT( gPDE != (u32 *)0 );
+	ASSERT( sPDE != (u32 *)0 );
+
+	//bail out if we dont have a SHADOW page-directory, we wil sync on
+	//the page-fault
+	if( !(*sPDE & _PAGE_PRESENT) )
+		return;
+	
+	//invalidation logic below...
+	if( !(*gPDE & _PAGE_PRESENT) ){
+		*sPDE = 0;	//if GUEST PD entry is not-present, zero out corresponding SHADOW PD entry to invalidate
+	}else{ //GUEST PD entry is present
+		if( ((*gPDE & _PAGE_PSE) && !(*sPDE & _PAGE_PSE)) ||
+				(!(*gPDE & _PAGE_PSE) && (*sPDE & _PAGE_PSE)) ){
+			//mismatch in guest and shadow structures 4M vs 4K, zero out shadow PD entry to invalidate
+			*sPDE = 0;
+		}else{
+			//both guest and shadow are same structure, so invalidate required shadow entry
+			if(sPTE){	//if there is a shadow page table entry for address, zero it out to invalidate
+				*sPTE=0;
+			}else{	    //if no, then it means that shadow PD entry pointed to a 4M page
+				ASSERT(*sPDE & _PAGE_PSE);	//sanity check that
+				*sPDE=0;					//zero it out to invalidate
+			}		
+		}
+	}
+
+	//sdbg_dumpentries(gPDE, gPTE, sPDE, sPTE);
+	return;
+}
 
 
 
@@ -532,52 +576,6 @@ void set_guestentry_dirty(u32 *gPDE, u32 *gPTE){
 
 
 
-//------------------------------------------------------------------------------
-//invalidate a shadow paging structure
-void shadow_invalidate_page(u32 address){
-
-	u32 *gPDE, *gPTE;
-	u32 *sPDE, *sPTE;
-	
-	//printf("\n0x%04x:0x%08x: INVLPG (address=0x%08x)", 
-	//	(unsigned short)guest_CS_selector, (unsigned int)guest_RIP, 
-	//	(unsigned int)address);
-
-	shadow_get_guestentry(address, shadow_guest_CR3, &gPDE, &gPTE);
-	shadow_get_shadowentry(address, &sPDE, &sPTE);
-	//sdbg_dumpentries(gPDE, gPTE, sPDE, sPTE);
-
-	ASSERT( gPDE != (u32 *)0 );
-	ASSERT( sPDE != (u32 *)0 );
-
-	//control for conservative/actual policy of INVLPG 1=actual policy	
-	//bail out if we dont have a SHADOW page-directory, we wil sync on
-	//the page-fault
-	if( !(*sPDE & _PAGE_PRESENT) )
-		return;
-	
-	if( !(*gPDE & _PAGE_PRESENT) ){
-		*sPDE = 0;
-	}else{
-		if( ((*gPDE & _PAGE_PSE) && !(*sPDE & _PAGE_PSE)) ||
-				(!(*gPDE & _PAGE_PSE) && (*sPDE & _PAGE_PSE)) ){
-			//mismatch in guest and shadow structures 4M vs 4K
-			*sPDE = 0;
-		}else{
-			//both guest and shadow are same structure
-			if(sPTE){
-				*sPTE=0;
-			}else{
-				ASSERT(*sPDE & _PAGE_PSE);
-				*sPDE=0;
-			}		
-		}
-	}
-
-	//sdbg_dumpentries(gPDE, gPTE, sPDE, sPTE);
-
-	return;
-}
 
 
 
