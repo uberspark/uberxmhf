@@ -214,22 +214,27 @@ void shadow_get_shadowentry(u32 gva, u32 **pdt_entry, u32 **pt_entry){
 	npt_t s_pt;
 	u32 s_pdt_entry, s_pt_entry;
 	
-	index_pdt= (gva >> 22);
-	index_pt  = ((gva & (u32)0x003FFFFF) >> 12);
+	//compute pde and pte index based on gva
+	index_pdt= (gva >> 22);							//bits 22-31 of gva
+	index_pt  = ((gva & (u32)0x003FFFFF) >> 12);	//bits 12-21 of gva
 	
-	*pdt_entry = *pt_entry = (u32 *)0;	//zero all
+	*pdt_entry = *pt_entry = (u32 *)0;	//zero initialize pde and pte pointers
 	
+	//store the shadow pde pointer for gva
 	s_pdt_entry = s_pdt[index_pdt];
 	*pdt_entry = (u32 *)&s_pdt[index_pdt];
+	
 	if( !(s_pdt_entry & _PAGE_PRESENT) )
-		return; 
+		return; //this pde is not-present, so just return the pde pointer
 	
 	if(s_pdt_entry & _PAGE_PSE)
-		return; //this is a 4M page directory entry, so there is no pt
+		return; //this is a 4M page directory entry, so there is no pt, 
+				//just return the pde pointer
 		
-	//this is a regular page directory entry, so get the page table
+	//this is a regular page directory entry, so store the page table entry pointer
 	s_pt = (npt_t)(u32)npae_get_addr_from_pde(s_pdt_entry);
 	*pt_entry = (u32 *)&s_pt[index_pt]; 
+	
 	return;
 }
 
