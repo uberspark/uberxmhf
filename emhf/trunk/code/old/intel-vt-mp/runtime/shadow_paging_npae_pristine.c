@@ -158,17 +158,6 @@ u32 shadow_page_fault(u32 cr2, u32 error_code){
 
 
 
-/*
-	A note of all events that cause TLB flushes on the IA-32
-	
-	1. Writing to a MTRR with WRMSR -> ALL TLB 
-	2. Writing to CR0 to modify PG or PE flags -> ALL TLB
-	3. Writing to CR4 to modify PSE, PGE or PAE flags -> ALL TLB
-	4. INVLPG ->  TLB of address including global
-	5. MOV to CR3 -> ALL TLB except global
-	6. Task Switch changing value of CR3 -> ALL TLB except global
-	7. VMX transitions -> ALL TLB 
-*/
 
 //------------------------------------------------------------------------------
 //return pointers to the 32-bit SHADOW pde and pte for a given guest
@@ -633,5 +622,16 @@ u32 shadow_checkcontext(u32 root){
 }
 
 
+/*
+	A note of all events that cause TLB flushes on the IA-32
+	
+	1. Writing to a MTRR with WRMSR -> ALL TLB 
+	2. Writing to CR0 to modify PG or PE flags -> ALL TLB
+	3. Writing to CR4 to modify PSE, PGE or PAE flags -> ALL TLB
+	4. INVLPG ->  TLB of address including global
+	5. MOV to CR3 -> ALL TLB except global
+	6. Task Switch changing value of CR3 -> ALL TLB except global
+	7. VMX transitions -> ALL TLB 
+*/
 
 
