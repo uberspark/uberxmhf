@@ -287,8 +287,14 @@ void shadow_get_guestentry(u32 gva, u32 gCR3, u32 **pdt_entry, u32 **pt_entry){
 //allocate, zero and return the address of a page table
 u32 shadow_alloc_pt(u32 gva){
 	u32 index_pdt;
+	
+	//grab the PD index for gva (bits 22-31)
 	index_pdt= (gva >> 22);
+	
+	//zero out PT for gva
 	memset( (void *)((index_pdt * PAGE_SIZE_4K) + (u32)__shadow_npae_p_tables), 0, PAGE_SIZE_4K);
+	
+	//allocate PT for gva
 	return ( ((index_pdt * PAGE_SIZE_4K) + (u32)__shadow_npae_p_tables) );
 }
 
