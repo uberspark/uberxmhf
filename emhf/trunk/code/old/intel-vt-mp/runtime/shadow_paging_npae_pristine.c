@@ -201,9 +201,10 @@ void shadow_invalidate_page(u32 address){
 }
 
 
+//----------------------------------------------------------------------
+//helper functions for primary shadow paging interfaces follow
 
-
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------
 //return pointers to the 32-bit SHADOW pde and pte for a given guest
 //virtual address
 //an entry will be null (0) if not present or applicable
@@ -232,7 +233,7 @@ void shadow_get_shadowentry(u32 gva, u32 **pdt_entry, u32 **pt_entry){
 	return;
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------
 //return pointers to the 32-bit GUEST pde and pte for a given guest
 //virtual address
 //an entry will be null (0) if not present or applicable
@@ -275,7 +276,7 @@ void shadow_get_guestentry(u32 gva, u32 gCR3, u32 **pdt_entry, u32 **pt_entry){
 	return;
 }
 
-
+//----------------------------------------------------------------------
 //allocate, zero and return the address of a page table
 u32 shadow_alloc_pt(u32 gva){
 	u32 index_pdt;
@@ -285,46 +286,8 @@ u32 shadow_alloc_pt(u32 gva){
 }
 
 
-//returns 1 if the page is present in guest, else 0
-u32 is_present_guest(u32 *gPDE, u32 *gPTE){
-	ASSERT ( gPDE != (u32 *)0 );
-	
-	if( !(*gPDE & _PAGE_PRESENT) )
-		return 0;
-	
-	if( *gPDE & _PAGE_PSE )
-		return 1;
-	
-	ASSERT ( gPTE != (u32 *)0 );
-	
-	if( !(*gPTE & _PAGE_PRESENT) )
-		return 0;
-	else
-		return 1;
-}
-
-
-void set_guestentry_accessed(u32 *gPDE, u32 *gPTE){
-	u32 *guest_entry;
-	
-	ASSERT( gPDE != (u32 *)0 );
-	
-	if( ! (*gPDE & _PAGE_PRESENT) )
-		return;
-
-	*gPDE |= _PAGE_ACCESSED;
-	
-	if(*gPDE & _PAGE_PSE)
-		return;
-		
-	ASSERT( gPTE != (u32 *)0 );
-	
-	if ( *gPTE & _PAGE_PRESENT)
-		*gPTE |= _PAGE_ACCESSED;
-	
-}
-
-
+//----------------------------------------------------------------------
+//sync shadow and guest page entries
 //never called for a non-present guest page
 void shadow_updateshadowentries(u32 gva, u32 **sPDE, u32 **sPTE,
 	u32 **gPDE, u32 **gPTE){
@@ -377,6 +340,8 @@ void shadow_updateshadowentries(u32 gva, u32 **sPDE, u32 **sPTE,
 
 }
 
+//----------------------------------------------------------------------
+//debugging interfaces
 
 //[DEBUG]: dump the page table entries for both shadow and guest
 void sdbg_dumpentries(u32 *gPDE, u32 *gPTE,
@@ -433,6 +398,53 @@ void sdbg_dumppfdetails(u32 cr2, u32 error_code){
 
 	return;
 }
+
+
+
+//======================================================================
+//work-in-progress below, accessed-dirty bit handling logic
+//======================================================================
+
+//returns 1 if the page is present in guest, else 0
+u32 is_present_guest(u32 *gPDE, u32 *gPTE){
+	ASSERT ( gPDE != (u32 *)0 );
+	
+	if( !(*gPDE & _PAGE_PRESENT) )
+		return 0;
+	
+	if( *gPDE & _PAGE_PSE )
+		return 1;
+	
+	ASSERT ( gPTE != (u32 *)0 );
+	
+	if( !(*gPTE & _PAGE_PRESENT) )
+		return 0;
+	else
+		return 1;
+}
+
+
+void set_guestentry_accessed(u32 *gPDE, u32 *gPTE){
+	u32 *guest_entry;
+	
+	ASSERT( gPDE != (u32 *)0 );
+	
+	if( ! (*gPDE & _PAGE_PRESENT) )
+		return;
+
+	*gPDE |= _PAGE_ACCESSED;
+	
+	if(*gPDE & _PAGE_PSE)
+		return;
+		
+	ASSERT( gPTE != (u32 *)0 );
+	
+	if ( *gPTE & _PAGE_PRESENT)
+		*gPTE |= _PAGE_ACCESSED;
+	
+}
+
+
 
 
 //------------------------------------------------------------------------------
@@ -572,12 +584,6 @@ void set_guestentry_dirty(u32 *gPDE, u32 *gPTE){
 	//mark dirty
 	*guest_entry |= _PAGE_DIRTY;
 }
-
-
-
-
-
-
 
 // assuming 36-bit physical addresses and PAT supported
 //PDE reserved mask
