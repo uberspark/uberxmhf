@@ -1,9 +1,15 @@
-TARGET=i586-tsvc        # target platform when building a compiler (tsvc)
-TSVC_HOST=$(TARGET)     # machine where software will run (for pal-code)
-HOST=i686-pc-linux-gnu  # machine where software will run (for reg-world code)
-BUILD=i686-pc-linux-gnu # machine where software will be built
-PREFIX=/usr/local       # where reg-world software will be installed
-TSVC_SYSROOT=$(PREFIX)/$(TSVC_HOST) # where pal software (libraries, headers, etc.) will be installed
+# target platform when building a compiler (tsvc)
+TARGET=i586-tsvc
+# machine where software will run (for pal-code)
+TSVC_HOST=$(TARGET)
+# machine where software will run (for reg-world code)
+HOST=i686-pc-linux-gnu
+# machine where software will be built
+BUILD=i686-pc-linux-gnu
+# where reg-world software will be installed
+PREFIX=/usr/local
+# where pal software (libraries, headers, etc.) will be installed
+TSVC_SYSROOT=$(PREFIX)/$(TSVC_HOST)
 
 all: toolchain newlib tz_host tz_cross
 
