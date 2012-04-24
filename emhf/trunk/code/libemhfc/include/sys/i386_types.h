@@ -136,6 +136,8 @@ typedef __uint32_t      __uint_least32_t;
 typedef __uint64_t      __uint_least64_t;
 typedef __uint32_t      __u_register_t;
 
+typedef __uint32_t off_t;
+
 /* varargs stuff removed */
 
 #endif /* !_MACHINE__TYPES_H_ */
