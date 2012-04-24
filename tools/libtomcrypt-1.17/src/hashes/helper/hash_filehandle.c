@@ -15,6 +15,7 @@
    Hash open files, Tom St Denis
 */
 
+#ifndef LTC_NO_FILE
 /** 
   Hash data from an open file handle.  
   @param hash   The index of the hash you want to use
@@ -64,7 +65,7 @@ int hash_filehandle(int hash, FILE *in, unsigned char *out, unsigned long *outle
     return err;
 #endif
 }
-
+#endif
 
 /* $Source: /cvs/libtom/libtomcrypt/src/hashes/helper/hash_filehandle.c,v $ */
 /* $Revision: 1.6 $ */
