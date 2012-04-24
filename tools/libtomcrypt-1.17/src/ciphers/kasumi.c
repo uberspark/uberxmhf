@@ -19,7 +19,8 @@
 
 #ifdef LTC_KASUMI
 
-typedef unsigned u16;
+#include <stdint.h>
+/* typedef unsigned u16; */
 
 #define ROL16(x, y) ((((x)<<(y)) | ((x)>>(16-(y)))) & 0xFFFF)
 
@@ -36,10 +37,10 @@ const struct ltc_cipher_descriptor kasumi_desc = {
    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
 };
 
-static u16 FI( u16 in, u16 subkey )
+static uint16_t FI( uint16_t in, uint16_t subkey )
 {
-   u16 nine, seven;
-   static const u16 S7[128] = {
+   uint16_t nine, seven;
+   static const uint16_t S7[128] = {
       54, 50, 62, 56, 22, 34, 94, 96, 38, 6, 63, 93, 2, 18,123, 33,
       55,113, 39,114, 21, 67, 65, 12, 47, 73, 46, 27, 25,111,124, 81,
       53, 9,121, 79, 52, 60, 58, 48,101,127, 40,120,104, 70, 71, 43,
@@ -48,7 +49,7 @@ static u16 FI( u16 in, u16 subkey )
       112, 51, 17, 5, 95, 14, 90, 84, 91, 8, 35,103, 32, 97, 28, 66,
       102, 31, 26, 45, 75, 4, 85, 92, 37, 74, 80, 49, 68, 29,115, 44,
       64,107,108, 24,110, 83, 36, 78, 42, 19, 15, 41, 88,119, 59, 3 };
-  static const u16 S9[512] = {
+  static const uint16_t S9[512] = {
       167,239,161,379,391,334, 9,338, 38,226, 48,358,452,385, 90,397,
       183,253,147,331,415,340, 51,362,306,500,262, 82,216,159,356,177,
       175,241,489, 37,206, 17, 0,333, 44,254,378, 58,143,220, 81,400,
@@ -85,26 +86,26 @@ static u16 FI( u16 in, u16 subkey )
   /* The sixteen bit input is split into two unequal halves, *
    * nine bits and seven bits - as is the subkey            */
 
-  nine  = (u16)(in>>7)&0x1FF;
-  seven = (u16)(in&0x7F);
+  nine  = (uint16_t)(in>>7)&0x1FF;
+  seven = (uint16_t)(in&0x7F);
 
   /* Now run the various operations */
-  nine   = (u16)(S9[nine] ^ seven);
-  seven  = (u16)(S7[seven] ^ (nine & 0x7F));
+  nine   = (uint16_t)(S9[nine] ^ seven);
+  seven  = (uint16_t)(S7[seven] ^ (nine & 0x7F));
   seven ^= (subkey>>9);
   nine  ^= (subkey&0x1FF);
-  nine   = (u16)(S9[nine] ^ seven);
-  seven  = (u16)(S7[seven] ^ (nine & 0x7F));
-  return (u16)(seven<<9) + nine;
+  nine   = (uint16_t)(S9[nine] ^ seven);
+  seven  = (uint16_t)(S7[seven] ^ (nine & 0x7F));
+  return (uint16_t)(seven<<9) + nine;
 }
 
 static ulong32 FO( ulong32 in, int round_no, symmetric_key *key)
 {
-   u16 left, right;
+   uint16_t left, right;
 
   /* Split the input into two 16-bit words */
-  left = (u16)(in>>16);
-  right = (u16) in&0xFFFF;
+  left = (uint16_t)(in>>16);
+  right = (uint16_t) in&0xFFFF;
 
   /* Now apply the same basic transformation three times */
   left ^= key->kasumi.KOi1[round_no];
@@ -124,14 +125,14 @@ static ulong32 FO( ulong32 in, int round_no, symmetric_key *key)
 
 static ulong32 FL( ulong32 in, int round_no, symmetric_key *key )
 {
-    u16 l, r, a, b;
+    uint16_t l, r, a, b;
     /* split out the left and right halves */
-    l = (u16)(in>>16);
-    r = (u16)(in)&0xFFFF;
+    l = (uint16_t)(in>>16);
+    r = (uint16_t)(in)&0xFFFF;
     /* do the FL() operations           */
-    a = (u16) (l & key->kasumi.KLi1[round_no]);
+    a = (uint16_t) (l & key->kasumi.KLi1[round_no]);
     r ^= ROL16(a,1);
-    b = (u16)(r | key->kasumi.KLi2[round_no]);
+    b = (uint16_t)(r | key->kasumi.KLi2[round_no]);
     l ^= ROL16(b,1);
     /* put the two halves back together */
 
@@ -194,8 +195,8 @@ int kasumi_ecb_decrypt(const unsigned char *ct, unsigned char *pt, symmetric_key
 
 int kasumi_setup(const unsigned char *key, int keylen, int num_rounds, symmetric_key *skey)
 {
-    static const u16 C[8] = { 0x0123,0x4567,0x89AB,0xCDEF, 0xFEDC,0xBA98,0x7654,0x3210 };
-    u16 ukey[8], Kprime[8];
+    static const uint16_t C[8] = { 0x0123,0x4567,0x89AB,0xCDEF, 0xFEDC,0xBA98,0x7654,0x3210 };
+    uint16_t ukey[8], Kprime[8];
     int n;
 
     LTC_ARGCHK(key  != NULL);
@@ -211,7 +212,7 @@ int kasumi_setup(const unsigned char *key, int keylen, int num_rounds, symmetric
 
     /* Start by ensuring the subkeys are endian correct on a 16-bit basis */
     for (n = 0; n < 8; n++ ) {
-        ukey[n] = (((u16)key[2*n]) << 8) | key[2*n+1];
+        ukey[n] = (((uint16_t)key[2*n]) << 8) | key[2*n+1];
     }
 
     /* Now build the K'[] keys */
