@@ -42,8 +42,10 @@
 #define BN_MP_EXPTMOD_C
 #define BN_MP_EXPTMOD_FAST_C
 #define BN_MP_EXTEUCLID_C
+#if !defined(LTM_NO_FILE)
 #define BN_MP_FREAD_C
 #define BN_MP_FWRITE_C
+#endif
 #define BN_MP_GCD_C
 #define BN_MP_GET_INT_C
 #define BN_MP_GROW_C
@@ -992,6 +994,7 @@
 #include <tommath_class.h>
 #else
 #define LTM_LAST
+
 #endif
 
 /* $Source$ */
