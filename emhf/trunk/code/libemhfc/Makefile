@@ -1,10 +1,13 @@
-C_SOURCES = $(wildcard *.c)
+srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
+VPATH:=$(srcdir)
 
+C_SOURCES:= $(wildcard $(srcdir)/*.c)
+C_SOURCES:= $(patsubst $(srcdir)/%, %, $(C_SOURCES))
 OBJECTS = $(patsubst %.c, %.o, $(C_SOURCES))
 
-I_SOURCES =  $(wildcard ./include/*.h)
+I_SOURCES :=  $(wildcard $(srcdir)/include/*.h)
 
-CFLAGS += -I./include -nostdinc -fno-builtin -nostdlib -Wall -Werror
+CFLAGS += -I$(srcdir)/include -nostdinc -fno-builtin -nostdlib -Wall -Werror
 CFLAGS += -m32
 
 THE_ARCHIVE = libemhfc.a
@@ -16,8 +19,8 @@ all: $(THE_ARCHIVE)
 $(THE_ARCHIVE): $(OBJECTS)
 	$(AR) -rcs $(THE_ARCHIVE) $(OBJECTS)
 
-%.o: %.c $(C_SOURCES) $(I_SOURCES) Makefile ../Makefile
-	$(CC) -c $(CFLAGS) -o $@ $<
+#%.o: %.c $(C_SOURCES) $(I_SOURCES) Makefile ../Makefile
+#	$(CC) -c $(CFLAGS) -o $@ $<
 
 .PHONY: clean
 clean:
