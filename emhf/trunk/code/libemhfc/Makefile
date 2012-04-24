@@ -1,5 +1,5 @@
 srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
-VPATH:=$(srcdir)
+vpath %.c $(srcdir)
 
 C_SOURCES:= $(wildcard $(srcdir)/*.c)
 C_SOURCES:= $(patsubst $(srcdir)/%, %, $(C_SOURCES))
