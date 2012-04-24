@@ -49,7 +49,7 @@ void *memmove(void *dst_void, const void *src_void, uint32_t length);
 char *strchr(const char *s, int c);
 u32 strnlen(const char * s, uint32_t count);
 void *memcpy(void * to, const void * from, uint32_t n);
-void *memset (void *str, uint32_t c, uint32_t len);
+void *memset (void *str, int c, size_t len);
 int strncmp(const char *s1, const char *s2, size_t n);
 int strcmp(const char * cs,const char * ct);
 char *strncpy(char * dst, const char * src, size_t n);

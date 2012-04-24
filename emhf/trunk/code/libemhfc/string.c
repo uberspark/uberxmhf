@@ -119,7 +119,7 @@ void *memcpy(void * to, const void * from, u32 n)
 }
 #endif
 
-void *memset (void *str, u32 c, u32 len){
+void *memset (void *str, int c, size_t len) {
   register u8 *st = str;
 
   while (len-- > 0)
