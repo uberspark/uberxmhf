@@ -3,7 +3,8 @@
 #Tom St Denis
 
 srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
-VPATH = $(srcdir)
+vpath %.c $(srcdir)
+vpath %.h $(srcdir)
 
 #version of library 
 VERSION=0.42.0

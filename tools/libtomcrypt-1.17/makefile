@@ -4,7 +4,8 @@
 # Modified by Clay Culver
 
 srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
-VPATH = $(srcdir)
+vpath %.c $(srcdir)
+vpath %.h $(srcdir)
 
 # The version
 VERSION=1.17
