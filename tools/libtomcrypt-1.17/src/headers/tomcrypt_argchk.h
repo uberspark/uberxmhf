@@ -2,7 +2,7 @@
 /* ARGTYPE is defined in mycrypt_cfg.h */
 #if ARGTYPE == 0
 
-#include <signal.h>
+/* #include <signal.h> */
 
 /* this is the default LibTomCrypt macro  */
 void crypt_argchk(char *v, char *s, int d);
