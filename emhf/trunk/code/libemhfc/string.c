@@ -56,7 +56,7 @@ void *memmove(void *dst_void, const void *src_void, u32 length){
   return dst_void;
 }
 
-
+#if ARCH_X86 /* FIXME - currently never enabled */
 char *strchr(const char *s, int c)
 {
     long d0;
@@ -74,7 +74,14 @@ char *strchr(const char *s, int c)
         : "=a" (__res), "=&S" (d0) : "1" (s), "0" (c) );
     return __res;
 }
-
+#else
+char *strchr(const char *s, int c)
+{
+  while(*s != (char)c && *s != '\0')
+    s++;
+  return (char*)s;
+}
+#endif
 
 u32 strnlen(const char * s, u32 count){
 	const char *sc;
@@ -83,7 +90,7 @@ u32 strnlen(const char * s, u32 count){
 	return (u32)(sc - s);
 }
 
-
+#if ARCH_X86 /* FIXME - currently never enabled */
 void *memcpy(void * to, const void * from, u32 n){
   int d0, d1, d2;
 
@@ -101,6 +108,16 @@ void *memcpy(void * to, const void * from, u32 n){
   	: "memory");
   return (to);
 }
+#else
+void *memcpy(void * to, const void * from, u32 n)
+{
+  size_t i;
+  for(i=0; i<n; i++) {
+    ((uint8_t*)to)[i] = ((uint8_t*)from)[i];
+  }
+  return to;
+}
+#endif
 
 void *memset (void *str, u32 c, u32 len){
   register u8 *st = str;
