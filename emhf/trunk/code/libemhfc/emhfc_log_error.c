@@ -37,4 +37,5 @@
 
 void emhfc_log_error(const char *format, ...)
 {
+  (void)format;
 }
