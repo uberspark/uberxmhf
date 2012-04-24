@@ -77,9 +77,15 @@ char *strchr(const char *s, int c)
 #else
 char *strchr(const char *s, int c)
 {
-  while(*s != (char)c && *s != '\0')
+  char *rv=NULL;
+  while(*s != '\0') {
+    if (*s == c) {
+      rv=(char*)s;
+      break;
+    }
     s++;
-  return (char*)s;
+  }
+  return (char*)rv;
 }
 #endif
 
