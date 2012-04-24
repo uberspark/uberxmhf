@@ -71,6 +71,8 @@ export CCLIB = @CCLIB@
 ### END Variables controlled using autoconf
 ##################################################################################
 
+# FIXME- this should be configurable
+export CFLAGS=-m32
 
 .PHONY: all
 # all: $(APP_ARCHIVE) subdirs init-late
