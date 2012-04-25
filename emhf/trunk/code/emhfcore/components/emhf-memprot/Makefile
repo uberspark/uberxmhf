@@ -42,9 +42,6 @@ clean:
 	$(RM) -rf ./arch/vmx/*.o
 	$(RM) -rf ./arch/svm/*.o
  
-.PHONY: verify 
-verify: 
-	cbmc $(VFLAGS) -D__EMHF_VERIFICATION__ --bounds-check --pointer-check ./verification/emhf-memprot-vdriver.c $(C_SOURCES)
 	
   
 
