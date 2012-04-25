@@ -31,50 +31,38 @@
 	CFLAGS += -nostdinc -pipe
 	
 	CFLAGS += $(ADDL_INCLUDES)
-	VFLAGS = $(ADDL_INCLUDES)
 
 	#-----generate compiler/assembler defines from configuration options selected
 	ifeq ($(NESTED_PAGING), y)
 		CFLAGS += -D__NESTED_PAGING__
-		VFLAGS += -D__NESTED_PAGING__	
 	endif
 	ifeq ($(DEBUG_SERIAL), y)
 		CFLAGS += -D__DEBUG_SERIAL__
-		VFLAGS += -D__DEBUG_SERIAL__
 		CFLAGS += -DDEBUG_PORT=$(DEBUG_SERIAL_PORT)
-		VFLAGS += -DDEBUG_PORT=$(DEBUG_SERIAL_PORT)
 	endif
 	ifeq ($(DEBUG_VGA), y)
 		CFLAGS += -D__DEBUG_VGA__
-		VFLAGS += -D__DEBUG_VGA__
 	endif
 	ifeq ($(MP_VERSION), y)
 		CFLAGS += -D__MP_VERSION__
-		VFLAGS += -D__MP_VERSION__
 	endif
 
 	CFLAGS += -D__DO_SENTER__
-	VFLAGS += -D__DO_SENTER__
 
 	ifeq ($(DMAPROT), y)
 		CFLAGS += -D__DMAPROT__	
-		VFLAGS += -D__DMAPROT__	
 	endif
 	ifeq ($(E820_UG_TEST), y)
 		CFLAGS += -D__E820_UG_TEST__
-		VFLAGS += -D__E820_UG_TEST__
 	endif
 	ifeq ($(TEST_CPU_QUIESCE), y)
 		CFLAGS += -D__TEST_CPU_QUIESCE__
-		VFLAGS += -D__TEST_CPU_QUIESCE__
 	endif
 
 	# late initialization support (experimental)
 	ifeq ($(INIT_LATE), y)
 		CFLAGS += -D__INIT_LATE__ 
-		VFLAGS += -D__INIT_LATE__ 
 		CFLAGS += -DPERF_CRIT
-		VFLAGS += -DPERF_CRIT
 	endif
 
 
@@ -83,7 +71,6 @@
 
 	export CFLAGS
 	export ASFLAGS
-	export VFLAGS
 
 #-----build rules
 .PHONY: all
@@ -190,9 +177,4 @@ init-late-clean:
 install-dev:
 	# Nothing to do here
 
-.PHONY: verify
-verify:
-	# verify emhf-memprot 
-	# cd components/emhf-memprot && $(MAKE) -w verify
-	cd verification/ && $(MAKE) -w verify
 	
