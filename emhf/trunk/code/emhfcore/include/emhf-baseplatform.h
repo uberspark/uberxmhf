@@ -83,11 +83,7 @@ typedef struct _pcpu {
 //exported DATA 
 //----------------------------------------------------------------------
 //system e820 map
-//#if defined(__EMHF_VERIFICATION__)
-//	extern u8 g_e820map[] __attribute__(( section(".data") ));
-//#else
 	extern GRUBE820 g_e820map[] __attribute__(( section(".data") ));
-//#endif //__EMHF_VERIFICATION__
 
 //SMP CPU map; lapic id, base, ver and bsp indication for each available core
 extern PCPU	g_cpumap[] __attribute__(( section(".data") ));
@@ -140,7 +136,6 @@ void emhf_baseplatform_initialize(void);
 void emhf_baseplatform_reboot(VCPU *vcpu);
 
 
-#ifndef __EMHF_VERIFICATION__
 	/* hypervisor-virtual-address to system-physical-address. this fn is
 	 * used when creating the hypervisor's page tables, and hence
 	 * represents ground truth (assuming they haven't since been modified)
@@ -174,14 +169,6 @@ void emhf_baseplatform_reboot(VCPU *vcpu);
 	static inline gpa_t spa2gpa(spa_t spa) { return spa; }
 	static inline void* gpa2hva(gpa_t gpa) { return spa2hva(gpa2spa(gpa)); }
 	static inline gpa_t hva2gpa(hva_t hva) { return spa2gpa(hva2spa(hva)); }
-#else
-	static inline spa_t hva2spa(void *hva) { return (uintptr_t)hva; }
-	static inline void * spa2hva(spa_t spa) { (void *)(uintptr_t)(spa); }
-	static inline spa_t gpa2spa(gpa_t gpa) { return gpa; }
-	static inline gpa_t spa2gpa(spa_t spa) { return spa; }
-	static inline void* gpa2hva(gpa_t gpa) { return spa2hva(gpa2spa(gpa)); }
-	static inline gpa_t hva2gpa(hva_t hva) { return spa2gpa(hva2spa(hva)); }	
-#endif //__EMHF_VERIFICATION__
 
 #endif	//__ASSEMBLY__
 

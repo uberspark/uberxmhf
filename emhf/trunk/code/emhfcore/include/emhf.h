@@ -52,9 +52,7 @@
 	#include <stdio.h>
 	#include <string.h>
 	#include <ctype.h>
-	#ifndef __EMHF_VERIFICATION__
-		#include <assert.h>
-	#endif
+	#include <assert.h>
 #endif /* __ASSEMBLY__ */
 
 //pull in required crypto (SHA-1)
@@ -73,8 +71,6 @@
 
 #include <emhf-types.h>			//EMHF specific base types
 
-//include verification related primitives
-#include <emhf-verification.h>
 
 
 //forward declaration of runtime parameter block
