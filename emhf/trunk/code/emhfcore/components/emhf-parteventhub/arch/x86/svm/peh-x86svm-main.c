@@ -224,14 +224,6 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 			{
 				
 				if(((u32)((vmcb->es.base)+(u16)r->edi)) < rpb->XtVmmRuntimePhysBase){
-					#ifdef __EMHF_VERIFICATION__
-						GRUBE820 pe820entry;
-						pe820entry.baseaddr_low = g_e820map[r->ebx].baseaddr_low;
-						pe820entry.baseaddr_high = g_e820map[r->ebx].baseaddr_high;
-						pe820entry.length_low = g_e820map[r->ebx].length_low;
-						pe820entry.length_high = g_e820map[r->ebx].length_high;
-						pe820entry.type = g_e820map[r->ebx].type;
-					#else
 						GRUBE820 *pe820entry;
 						pe820entry = (GRUBE820 *)((u32)((vmcb->es.base)+(u16)r->edi));
 					
@@ -243,7 +235,6 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 					
 						//memcpy((void *)((u32)((vmcb->es.base)+(u16)r->edi)), (void *)&g_e820map[r->ebx],
 						//		sizeof(GRUBE820));
-					#endif //__EMHF_VERIFICATION__
 				}else{
 						printf("\nCPU(0x%02x): INT15 E820. Guest buffer is beyond guest \
 							physical memory bounds. Halting!", vcpu->id);
@@ -292,15 +283,9 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 				//		(u16)vcpu->vmcs.guest_RSP, (u32)gueststackregion);
 				
 				//get guest IP, CS and FLAGS from the IRET frame
-				#ifdef __EMHF_VERIFICATION__
-					guest_ip = nondet_u16();
-					guest_cs = nondet_u16();
-					guest_flags = nondet_u16();
-				#else
 					guest_ip = gueststackregion[0];
 					guest_cs = gueststackregion[1];
 					guest_flags = gueststackregion[2];
-				#endif	//__EMHF_VERIFICATION__
 
 				//printf("\nINT15 (E820): guest_flags=%04x, guest_cs=%04x, guest_ip=%04x",
 				//	guest_flags, guest_cs, guest_ip);
@@ -312,15 +297,11 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 					//we have reached the last record, so set CF and make EBX=0
 					r->ebx=0;
 					guest_flags |= (u16)EFLAGS_CF;
-					#ifndef __EMHF_VERIFICATION__
 						gueststackregion[2] = guest_flags;
-					#endif
 				}else{
 					//we still have more records, so clear CF
 					guest_flags &= ~(u16)EFLAGS_CF;
-					#ifndef __EMHF_VERIFICATION__
 						gueststackregion[2] = guest_flags;
-					#endif
 				}
 			  
 			}
@@ -342,15 +323,9 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 	//ok, this is some other INT 15h service, so simply chain to the original
 	//INT 15h handler
 
-#ifdef __EMHF_VERIFICATION__	
-	//get IP and CS of the original INT 15h handler
-	ip = nondet_u16();
-	cs = nondet_u16();
-#else
 	//get IP and CS of the original INT 15h handler
 	ip = *((u16 *)((u32)bdamemory + 4));
 	cs = *((u16 *)((u32)bdamemory + 6));
-#endif
 	
 	//printf("\nCPU(0x%02x): INT 15, transferring control to 0x%04x:0x%04x", vcpu->id,
 	//	cs, ip);
