@@ -79,7 +79,12 @@ export CFLAGS=-m32
 
 .PHONY: all
 # all: $(APP_ARCHIVE) subdirs init-late
-all: $(APP_ARCHIVE) subdirs 
+all: $(SECONDARYAPP_ARCHIVE) $(APP_ARCHIVE) subdirs 
+
+.PHONY: $(SECONDARYAPP_ARCHIVE)
+$(SECONDARYAPP_ARCHIVE):
+	cd $(SECONDARYAPP_ROOT) && $(MAKE) -w all
+
 
 .PHONY: $(APP_ARCHIVE)
 $(APP_ARCHIVE):
