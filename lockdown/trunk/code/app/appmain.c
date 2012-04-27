@@ -187,11 +187,6 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 }
 
 
-
-extern u32 hp(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size);
-
-
-
 #if defined(__LDN_SSLPA__)
 struct __machine_networkdevices {
   u32 bus;

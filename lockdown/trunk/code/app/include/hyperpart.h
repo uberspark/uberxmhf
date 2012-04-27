@@ -41,6 +41,8 @@
 
 #ifndef __ASSEMBLY__
 
+extern u32 hp(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size);
+
 
 #endif //__ASSEMBLY__
 
