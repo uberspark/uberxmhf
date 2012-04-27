@@ -133,6 +133,9 @@ endif
 # Currently the only tests we have are in the TrustVisor tree
 .PHONY: test
 test:
+ifneq ('$(SECONDARYAPP_ROOT)','./app')
+	cd $(SECONDARYAPP_ROOT) && $(MAKE) -w install-dev
+endif
 	cd $(APP_ROOT) && $(MAKE) -w test
 
 .PHONY: clean distclean init-late-clean
