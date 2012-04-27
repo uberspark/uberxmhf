@@ -134,7 +134,7 @@ endif
 .PHONY: test
 test:
 ifneq ('$(SECONDARYAPP_ROOT)','./app')
-	cd $(SECONDARYAPP_ROOT) && $(MAKE) -w install-dev
+	cd $(SECONDARYAPP_ROOT) && $(MAKE) -w test
 endif
 	cd $(APP_ROOT) && $(MAKE) -w test
 
