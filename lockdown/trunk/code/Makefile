@@ -45,11 +45,6 @@ export LDN_HYPERPARTITIONING := n
 export LDN_APPROVEDEXEC := y
 export LDN_APPROVEDEXEC_CMPHASHES := y
 export LDN_SSLPA := n
-# test modes
-	# fwreset, experiment with minimal device reset and cycle through GRUB
-	export LDN_TEST_FWRESET	:=	n
-	# mload, experiment with manual bzImage/initrd-ramfs load without GRUB
-	export LDN_TEST_MLOAD	:=	n
 	
 
 ifeq ($(LDN_HYPERSWITCHING), y)
@@ -68,12 +63,6 @@ ifeq ($(LDN_SSLPA), y)
   CFLAGS += -D__LDN_SSLPA__
 endif
 
-ifeq ($(LDN_TEST_FWRESET), y)
-  CFLAGS += -D__LDN_TEST_FWRESET__
-endif
-ifeq ($(LDN_TEST_MLOAD), y)
-  CFLAGS += -D__LDN_TEST_MLOAD__
-endif
 #-----------------------------------------------------------------------
 
 export CFLAGS

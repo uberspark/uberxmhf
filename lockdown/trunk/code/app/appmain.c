@@ -53,58 +53,6 @@ u32 LDN_ENV_PHYSICALMEMORYLIMIT=0; //max physical memory address permissible
  
 u32 currentenvironment = LDN_ENV_UNTRUSTED_SIGNATURE; //default to untrusted env.
 
-#if 0
-//linux hibernation related
-#define	LDN_HYPERCALL_HIB_READWRITE	(0xDEADF00D)
-#define LDN_HYPERCALL_HIB_TOTALPAGES (0xF00DDEAD)
-#define HIB_READ		0x0
-#define HIB_WRITE		0x1
-#define TEST_MLOAD_HIB_BUFFER_SIZE (512*1024*1024)
-u8 test_mload_hib_buffer[TEST_MLOAD_HIB_BUFFER_SIZE];	//512MB test buffer
-struct swsusp_header {
-	u8 reserved[PAGE_SIZE_4K - 20 - 4 - 4];
-	u32	image;
-	u32 flags;
-	u8 orig_sig[10];
-	u8 sig[10];
-} __attribute__((packed));
-
-struct swsusp_header *swsusp_header;
-
-
-//------------------------------------------------------------------------------
-//memcmp implementation
-int memcmp (const unsigned char *str1, const unsigned char *str2, int count){
-  register const unsigned char *s1 = (const unsigned char*)str1;
-  register const unsigned char *s2 = (const unsigned char*)str2;
-
-  while (count-- > 0)
-    {
-      if (*s1++ != *s2++)
-	  return s1[-1] < s2[-1] ? -1 : 1;
-    }
-  return 0;
-}
-#endif
-
-#if defined (__LDN_TEST_FWRESET__)
-//our boot-sector buffer to restore between switches
-u8 test_bootsectorbuffer[512];
-u8 test_first1024[1024]; //the first 1K of low memory
-#endif
-
-#if defined (__LDN_TEST_MLOAD__)
-	#define MAX_VMLINUZ_BUFFER_SIZE		(8*1024*1024)		//8MB max vmlinuz size (compressed)
-	#define MAX_INITRD_BUFFER_SIZE		(16*1024*1024)	//16MB max initrd size (compressed)
-
-	u8 test_mload_vmlinuz_buffer[MAX_VMLINUZ_BUFFER_SIZE];
-	u8 test_mload_initrd_buffer[MAX_INITRD_BUFFER_SIZE];
-	u32 test_mload_vmlinuz_size;
-	u32 test_mload_initrd_size;
-#endif
-
-
-
 
 /*
 //---setup 2M pages in EPT
@@ -173,95 +121,6 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 	
 	//setup guest environment physical memory size
 	LDN_ENV_PHYSICALMEMORYLIMIT = (apb->runtimephysmembase - PAGE_SIZE_2M); 
-
-#if defined (__LDN_TEST_MLOAD__)
-	//we use the app param. block fields as below
-	//bootsector_ptr and bootsector_size now become vmlinuz_ptr and vmlinuz_size
-	//optionalmodule_ptr and optionalmodule_size become initramfs_ptr and initramfs_size
-	
-	//sanity checks
-	ASSERT( apb->bootsector_size > 0 && apb->bootsector_size < MAX_VMLINUZ_BUFFER_SIZE ); 
-	ASSERT( apb->optionalmodule_size > 0 && apb->optionalmodule_size < MAX_INITRD_BUFFER_SIZE );
-	
-	printf("\nCPU(0x%02x): vmlinuz b=0x%08x, size=%u bytes", vcpu->id,
-			apb->bootsector_ptr, apb->bootsector_size);
-	printf("\nCPU(0x%02x): initramfs b=0x%08x, size=%u bytes", vcpu->id,
-			apb->optionalmodule_ptr, apb->optionalmodule_size);
-	
-	memcpy((void *)test_mload_vmlinuz_buffer, (void *)apb->bootsector_ptr, apb->bootsector_size);
-	memcpy((void *)test_mload_initrd_buffer, (void *)apb->optionalmodule_ptr, apb->optionalmodule_size);
-	printf("\nCPU(0x%02x): copied vmlinuz and initramfs to internal buffer.");
-	test_mload_vmlinuz_size = apb->bootsector_size;
-	test_mload_initrd_size = apb->optionalmodule_size;
-
-	//hw_disk_savepciconf();
-	//printf("\nCPU(0x%02x): saved PCI configuration of disk controller..", vcpu->id);
-	
-	setuplinuxboot(vcpu, (u32)&test_mload_vmlinuz_buffer, test_mload_vmlinuz_size, 
-		(u32)&test_mload_initrd_buffer, test_mload_initrd_size);
-	printf("\nCPU(0x%02x): manual loading of linux vmlinuz/initramfs done.", vcpu->id);
-	
-	//clear our hibernation RAM space
-	printf("\nCPU(0x%02x): clearing HIB RAM...", vcpu->id);
-	memset((void *)&test_mload_hib_buffer, 0, TEST_MLOAD_HIB_BUFFER_SIZE);
-	printf("\nCPU(0x%02x): HIB RAM cleared.", vcpu->id);
-
-	//setup SWSUSP header at offset 0
-	ASSERT(sizeof(struct swsusp_header) == PAGE_SIZE_4K);
-	swsusp_header = (struct swsusp_header *)&test_mload_hib_buffer;
-	swsusp_header->image=2;
-	swsusp_header->orig_sig[0]='S';
-	swsusp_header->orig_sig[1]='W';
-	swsusp_header->orig_sig[2]='A';
-	swsusp_header->orig_sig[3]='P';
-	swsusp_header->orig_sig[4]='S';
-	swsusp_header->orig_sig[5]='P';
-	swsusp_header->orig_sig[6]='A';
-	swsusp_header->orig_sig[7]='C';
-	swsusp_header->orig_sig[8]='E';
-	swsusp_header->orig_sig[9]='2';
-	swsusp_header->sig[0]='S';
-	swsusp_header->sig[1]='W';
-	swsusp_header->sig[2]='A';
-	swsusp_header->sig[3]='P';
-	swsusp_header->sig[4]='S';
-	swsusp_header->sig[5]='P';
-	swsusp_header->sig[6]='A';
-	swsusp_header->sig[7]='C';
-	swsusp_header->sig[8]='E';
-	swsusp_header->sig[9]='2';
-#endif
-
-
-#if defined (__LDN_TEST_FWRESET__)
-	//some sanity checks
-	ASSERT( apb->bootsector_size == 512 );
-	#if defined (__MP_VERSION__)
-		#error TEST code is not designed to work with MP version (yet?)
-	#endif
-	//copy the boot-sector into our buffer
-	memcpy((void *)&test_bootsectorbuffer, (void *)apb->bootsector_ptr, apb->bootsector_size);
-	printf("\nCPU(0x%02x): saved guest boot-sector, sig=0x%02x%02x", vcpu->id, test_bootsectorbuffer[510], 
-				test_bootsectorbuffer[511]);
-	memcpy((void *)&test_first1024, (void *)0x00000000, 1024);
-	printf("\nCPU(0x%02x): saved low 1K of mem", vcpu->id);
-	
-	//initialize pci subsystem
-	if(!pci_initialize()){
-		printf("\nCPU(0x%02x): fatal error, could not initialze PCI subsystem. Halting!", vcpu->id);
-		HALT();
-	}
-	
-	hw_disk_printpciconf();
-	hw_disk_savepciconf();
-	hw_disk_restorepciconf();
-	hw_disk_printpciconf();
-	hw_vga_reset();
-	printf("\nCPU(0x%02x): sent VGA compatible reset sequence...", vcpu->id);
-	hw_disk_reset();
-	printf("\nCPU(0x%02x): sent ATA/ATAPI compatible reset sequence...", vcpu->id);
-	
-#endif
 
 
 #if defined(__LDN_HYPERSWITCHING__)  
@@ -551,31 +410,9 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 
 
 void emhf_app_handleshutdown(VCPU *vcpu, struct regs *r){
-			#if defined (__LDN_TEST_MLOAD__)
-			{
-				extern void initunrestrictedguestVMCS(VCPU *vcpu);
-				extern void dumpVMCS(VCPU *vcpu);
-				
-				ASSERT(vcpu->guest_unrestricted);
-				initunrestrictedguestVMCS(vcpu);
-				printf("\nCPU(0x%02x): Now restarting guest again...", vcpu->id);
-				vcpu->vmcs.info_vmexit_instruction_length=0; //needed since when we return APP_IOINTERCEPT_SKIP
-						//islayer will add this to RIP
-				setuplinuxboot(vcpu, (u32)&test_mload_vmlinuz_buffer, test_mload_vmlinuz_size, 
-					(u32)&test_mload_initrd_buffer, test_mload_initrd_size);
-				printf("\nCPU(0x%02x): manual loading of linux vmlinuz/initramfs done.", vcpu->id);
-				//hw_disk_restorepciconf();
-				//printf("\nCPU(0x%02x): restored PCI configuration of disk controller..", vcpu->id);
-				hw_vga_reset();
-				printf("\nCPU(0x%02x): sent VGA compatible reset sequence...", vcpu->id);
-				return;
-			}
-			#else
-				(void)r;
-				emhf_baseplatform_reboot(vcpu);
-			#endif
+	(void)r;
+	emhf_baseplatform_reboot(vcpu);
 }
-
 
 
 
@@ -586,49 +423,5 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 		(void)r;
 		(void)vcpu;
 
-
-/*			u32 call_id= (u32)r->eax;
-      if(call_id == 0xDEADBEEF){
-        printf("\nCPU(0x%02x): marker message.", vcpu->id);
-      }else if(call_id == LDN_HYPERCALL_HIB_READWRITE){
-				switch(r->edx){
-					case HIB_READ:
-						//ebx is the offset starting from 0 in multiples of 8
-						//r->edi is the physical address of the page, so sanity check it
-		      	if(r->ebx == 0)
-							printf("\nCPU(0x%02x): HIB(R), o=%u, s=%u, rw=%u, v=0x%08x, p=0x%08x", vcpu->id,
-								r->ebx, r->ecx, r->edx, r->esi, r->edi);
-
-						ASSERT( (u32)(u32 *)emhf_smpguest_walk_pagetables(vcpu, r->esi) == r->edi );
-						memcpy( (void *)r->edi,
-										(void *) ((u32)&test_mload_hib_buffer + ((r->ebx/8)*PAGE_SIZE_4K) ),
-									 PAGE_SIZE_4K);
-						break;
-
-					case HIB_WRITE:
-						//ebx is the offset starting from 0 in multiples of 8
-		      	if(r->ebx == 0)
-							printf("\nCPU(0x%02x): HIB(W), o=%u, s=%u, rw=%u, v=0x%08x, p=0x%08x", vcpu->id,
-									r->ebx, r->ecx, r->edx, r->esi, r->edi);
-
-						ASSERT( (u32)(u32 *)emhf_smpguest_walk_pagetables(vcpu, r->esi) == r->edi );
-
-						memcpy( (void *) ((u32)&test_mload_hib_buffer + ((r->ebx/8)*PAGE_SIZE_4K) ),
-									(void *)r->edi, PAGE_SIZE_4K);
-						break;
-				
-					default:
-						printf("\nCPU(0x%02x): error(halt), HIB(RW) unknown rw value!", vcpu->id);
-						HALT();	
-				}
-					
-			}else if(call_id == LDN_HYPERCALL_HIB_TOTALPAGES){
-				printf("\nCPU(0x%02x): HIB(TP), total pages=%u", vcpu->id,
-					r->ebx);
-				ASSERT( (r->ebx * PAGE_SIZE_4K) < TEST_MLOAD_HIB_BUFFER_SIZE );
-			}else{ 	
-				status=APP_ERROR; //unknown hypercall
-      }*/
-
-			return status;
+		return status;
 }      
