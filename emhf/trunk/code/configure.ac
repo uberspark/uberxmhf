@@ -91,6 +91,15 @@ AC_ARG_WITH([secondaryapproot],
                 , [with_secondaryapproot=./app])
 SECONDARYAPP_ROOT=$[]with_secondaryapproot
 
+# EMHF secondary app archive name
+AC_SUBST([SECONDARYAPP_ARCHIVE])
+AC_ARG_WITH([secondaryapparchive],
+        AS_HELP_STRING([--with-secondaryapparchive=@<:@name@:>@],
+                [(optional) name of secondary EMHF app archive (e.g., emhfsecapp.a)]),
+                , [with_secondaryapparchive=emhfsecapp.a])
+SECONDARYAPP_ARCHIVE=$[]with_secondaryapparchive
+
+
 # make absolute
 dnl AS_IF([test "x${APP_ROOT:0:1}" != "x/"],
 dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$APP_ROOT])
