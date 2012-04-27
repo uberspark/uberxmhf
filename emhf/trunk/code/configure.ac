@@ -90,6 +90,9 @@ AC_ARG_WITH([secondaryapproot],
                 [(optional) path to secondary EMHF app source directory]),
                 , [with_secondaryapproot=./app])
 SECONDARYAPP_ROOT=$[]with_secondaryapproot
+# make absolute
+dnl AS_IF([test "x${SECONDARYAPP_ROOT:0:1}" != "x/"],
+dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$SECONDARYAPP_ROOT])
 
 # EMHF secondary app archive name
 AC_SUBST([SECONDARYAPP_ARCHIVE])
@@ -100,9 +103,6 @@ AC_ARG_WITH([secondaryapparchive],
 SECONDARYAPP_ARCHIVE=$[]with_secondaryapparchive
 
 
-# make absolute
-dnl AS_IF([test "x${APP_ROOT:0:1}" != "x/"],
-dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$APP_ROOT])
 
 
 # todo- maybe test here if configured path actually has emhfcore in it
