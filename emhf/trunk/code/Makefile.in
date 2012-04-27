@@ -120,6 +120,10 @@ install-bin:
 
 .PHONY: install-dev
 install-dev:
+ifneq ('$(SECONDARYAPP_ROOT)','./app')
+	cd $(SECONDARYAPP_ROOT) && $(MAKE) -w install-dev
+endif
+
 	cd $(APP_ROOT) && $(MAKE) -w install-dev
 	@for i in $(SUBDIRS) ;\
 	do \
