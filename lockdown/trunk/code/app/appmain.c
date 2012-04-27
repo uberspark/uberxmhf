@@ -40,9 +40,6 @@
 #include <emhf.h>
 
 #include <lockdown.h>
-#include <lockdown-acpi.h>
-#include <ata-atapi.h>
-#include <approvedexec.h>
 
 #if defined(__LDN_HYPERSWITCHING__)
 u32 acpi_control_portnum=0;

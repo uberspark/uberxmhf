@@ -91,4 +91,11 @@ typedef struct {
 
 #endif //__ASSEMBLY__
 
+
+#include <lockdown-acpi.h>
+#include <lockdown-atapi.h>
+#include <lockdown-exepe.h>
+#include <approvedexec.h>
+
+
 #endif //__LOCKDOWN_H__

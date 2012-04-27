@@ -40,9 +40,6 @@
 
 #include <lockdown.h>
 
-#include <approvedexec.h>
-#include <exe_pe.h>
-//#include <sha1.h>
 
 u32 ax_debug_flag = 0;
 

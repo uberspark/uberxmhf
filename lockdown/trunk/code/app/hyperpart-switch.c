@@ -38,7 +38,7 @@
 
 #include <emhf.h>
 
-#include <lockdown-acpi.h>
+#include <lockdown.h>
 
 
 //------------------------------------------------------------------------------

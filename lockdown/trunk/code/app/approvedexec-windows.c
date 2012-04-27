@@ -43,8 +43,6 @@
 #include <emhf.h>
 
 #include <lockdown.h>
-#include <approvedexec.h>
-#include <exe_pe.h>
 
 //----------------------------------------------------------------------
 //gets the physical address of a virtual address "vaddr"

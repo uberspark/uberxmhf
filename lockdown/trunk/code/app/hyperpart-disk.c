@@ -42,7 +42,6 @@
 #include <emhf.h>
 
 #include <lockdown.h>
-#include <ata-atapi.h>
 
 //extern struct vmcb_struct *win_vmcb;
 //extern u32 guest_RAX;
