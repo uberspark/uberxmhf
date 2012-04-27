@@ -477,6 +477,9 @@ u32 tv_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
                                             struct regs __attribute__((unused)) *r, u64 gpa, u64 gva, u64 violationcode)
 {
   u32 ret;
+#if defined(__LDN_TV_INTEGRATION__)  
+  (void)gva;
+#endif //__LDN_TV_INTEGRATION__
 
 #ifdef __MP_VERSION__
   emhf_smpguest_quiesce(vcpu);
