@@ -98,9 +98,15 @@ I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 .PHONY: all
 all: runtime.bin
 
+ifneq ('$(SECONDARYAPP_ROOT)','./app')
+runtime.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) ../../../$(APP_ARCHIVE) ../../../$(SECONDARYAPP_ARCHIVE) $(OBJECTS_PRECOMPILED_LIBBACKENDS) runtime.lds.S
+	$(LD) -T runtime.lds.S -o runtime.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) ../../../$(APP_ARCHIVE) ../../../$(SECONDARYAPP_ARCHIVE) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
+	$(OBJCOPY) --output-format=binary runtime.exe runtime.bin
+else
 runtime.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) ../../../$(APP_ARCHIVE) $(OBJECTS_PRECOMPILED_LIBBACKENDS) runtime.lds.S
 	$(LD) -T runtime.lds.S -o runtime.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) ../../../$(APP_ARCHIVE) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
 	$(OBJCOPY) --output-format=binary runtime.exe runtime.bin
+endif
 
 %.o: %.S $(I_SOURCES) Makefile ../../Makefile
 	$(CC) -c $(ASFLAGS) -o $@ $<
