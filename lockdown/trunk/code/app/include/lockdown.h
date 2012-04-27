@@ -95,6 +95,7 @@ typedef struct {
 #include <lockdown-acpi.h>
 #include <lockdown-atapi.h>
 #include <lockdown-exepe.h>
+#include <hyperpart.h>
 #include <approvedexec.h>
 
 
