@@ -116,10 +116,10 @@ typedef struct whitelist_entry{
 
   pte_t * pte_page;  /* holder for guest page table entry to access scode and GDT */
   u32 pte_size;	/* total size of all PTE pages */
-#ifdef __MP_VERSION__
+//#ifdef __MP_VERSION__
   u32 pal_running_lock; /* PAL running lock */
   u32 pal_running_vcpu_id; /* the cpu that is running this PAL */
-#endif
+//#endif
 
   /* Micro-TPM related */
   utpm_master_state_t utpm;
