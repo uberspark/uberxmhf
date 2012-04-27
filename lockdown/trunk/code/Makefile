@@ -45,6 +45,7 @@ export LDN_HYPERPARTITIONING := n
 export LDN_APPROVEDEXEC := y
 export LDN_APPROVEDEXEC_CMPHASHES := y
 export LDN_SSLPA := n
+export LDN_TV_INTEGRATION := y
 	
 
 ifeq ($(LDN_HYPERSWITCHING), y)
@@ -62,6 +63,12 @@ endif
 ifeq ($(LDN_SSLPA), y)
   CFLAGS += -D__LDN_SSLPA__
 endif
+
+#lockdown-trustvisor integration demo
+ifeq ($(LDN_TV_INTEGRATION), y)
+  CFLAGS += -D__LDN_TV_INTEGRATION__
+endif
+
 
 #-----------------------------------------------------------------------
 
