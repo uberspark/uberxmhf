@@ -1132,6 +1132,7 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
   return rv;
 }
 
+#if !defined(__LDN_TV_INTEGRATION__)  
 static bool hpt_error_wasInsnFetch(VCPU *vcpu, u64 errorcode)
 {
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
@@ -1141,6 +1142,7 @@ static bool hpt_error_wasInsnFetch(VCPU *vcpu, u64 errorcode)
   }	
   return (errorcode & PF_ERRORCODE_INST);
 }
+#endif //__LDN_TV_INTEGRATION__
 
 /*  EPT violation handler */
 u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
@@ -1151,6 +1153,10 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
   u64 gcr3 = VCPU_gcr3(vcpu);
   u32 rip = (u32)VCPU_grip(vcpu);
   u32 err=1;
+
+#if defined(__LDN_TV_INTEGRATION__)  
+	(void)errorcode;
+#endif //__LDN_TV_INTEGRATION__
 
   perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_NPF], vcpu->idx);
 
