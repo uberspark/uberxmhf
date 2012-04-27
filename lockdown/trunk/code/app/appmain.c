@@ -55,6 +55,13 @@ u32 currentenvironment = LDN_ENV_UNTRUSTED_SIGNATURE; //default to untrusted env
 //----------------------------------------------------------------------
 u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 	LDNPB *pldnPb;
+
+	#if defined(__LDN_TV_INTEGRATION__)  
+	{	
+		extern u32 tv_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb);
+		tv_app_main(vcpu, apb);
+	}
+	#endif
 	
 	//we only perform setup on the BSP
 	if(!vcpu->isbsp){	
