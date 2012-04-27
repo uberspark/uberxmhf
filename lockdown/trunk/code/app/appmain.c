@@ -318,6 +318,11 @@ u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
 //hyperapp platform shutdown handler
 //----------------------------------------------------------------------
 void emhf_app_handleshutdown(VCPU *vcpu, struct regs *r){
+	#if defined(__LDN_TV_INTEGRATION__)  
+	extern void tv_app_handleshutdown(VCPU *vcpu, struct regs *r);
+	tv_app_handleshutdown(vcpu, r);
+	#else
 	(void)r;
 	emhf_baseplatform_reboot(vcpu);
+	#endif //__LDN_TV_INTEGRATION__
 }
