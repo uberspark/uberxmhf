@@ -82,6 +82,20 @@ AC_ARG_WITH([emhfcore],
         AS_HELP_STRING([--with-emhfcore=@<:@path@:>@],
                 [path to NO emhfcore XXX FIXME app]),
                 , [with_emhfcore=./emhfcore/x86])
+
+#EMHF secondary app root directory
+AC_SUBST([SECONDARYAPP_ROOT])
+AC_ARG_WITH([secondaryapproot],
+        AS_HELP_STRING([--with-secondaryapproot=@<:@path@:>@],
+                [(optional) path to secondary EMHF app source directory]),
+                , [with_secondaryapproot=./app])
+SECONDARYAPP_ROOT=$[]with_secondaryapproot
+
+# make absolute
+dnl AS_IF([test "x${APP_ROOT:0:1}" != "x/"],
+dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$APP_ROOT])
+
+
 # todo- maybe test here if configured path actually has emhfcore in it
 EMHFCOREDIR=$[]with_emhfcore
 # make absolute
