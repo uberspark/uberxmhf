@@ -157,12 +157,17 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 //returns APP_SUCCESS if we handled the hypercall else APP_ERROR
 //----------------------------------------------------------------------
 u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
+	#if defined(__LDN_TV_INTEGRATION__)  
+	extern u32 tv_app_handlehypercall(VCPU *vcpu, struct regs *r);
+	return tv_app_handlehypercall(vcpu, r);
+	#else
 	u32 status=APP_SUCCESS;
 			
 	(void)r;
 	(void)vcpu;
 
 	return status;
+	#endif //__LDN_TV_INTEGRATION__
 }      
 
 
