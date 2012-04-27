@@ -140,6 +140,10 @@ endif
 
 .PHONY: clean distclean init-late-clean
 clean:
+ifneq ('$(SECONDARYAPP_ROOT)','./app')
+	cd $(SECONDARYAPP_ROOT) && $(MAKE) -w clean
+endif
+
 	cd $(APP_ROOT) && $(MAKE) -w clean
 	@for i in $(SUBDIRS) ;\
 	do \
