@@ -41,6 +41,14 @@ endif
 
 ASFLAGS = $(CFLAGS) -D__ASSEMBLY__
 
+# app-specific configuration options
+export LDN_TV_INTEGRATION := y
+
+#lockdown-trustvisor integration demo
+ifeq ($(LDN_TV_INTEGRATION), y)
+  CFLAGS += -D__LDN_TV_INTEGRATION__
+endif
+
 export CFLAGS
 export ASFLAGS
 
