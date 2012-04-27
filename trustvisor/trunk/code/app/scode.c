@@ -186,7 +186,9 @@ int scode_in_list(u64 gcr3, u32 gvaddr)
         }
       }
     }
+#if !defined(__LDN_TV_INTEGRATION__)  
   eu_trace("no matching scode found for gvaddr %#x!", gvaddr);
+#endif //__LDN_TV_INTEGRATION__
   return -1;
 }
 
@@ -1152,10 +1154,12 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
 
   perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_NPF], vcpu->idx);
 
+#if !defined(__LDN_TV_INTEGRATION__)  
   eu_trace("CPU(%02x): nested page fault!(rip %#x, gcr3 %#llx, gpaddr %#x, errorcode %llx)",
           vcpu->id, rip, gcr3, gpaddr, errorcode);
 
   EU_CHK( hpt_error_wasInsnFetch(vcpu, errorcode));
+#endif //__LDN_TV_INTEGRATION__
 
   index = scode_in_list(gcr3, rip);
   if ((*curr == -1) && (index >= 0)) {
@@ -1188,8 +1192,10 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
       eu_err("SECURITY: invalid access to scode mem region from other scodes!"); 
     goto out;	
   } else {
+#if !defined(__LDN_TV_INTEGRATION__)  
     /* regular code to regular code */
     eu_err("incorrect regular code EPT configuration!"); 
+#endif //__LDN_TV_INTEGRATION__
     goto out;
   }
 
