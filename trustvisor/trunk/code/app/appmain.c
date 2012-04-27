@@ -484,10 +484,14 @@ u32 tv_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 
   eu_trace("CPU(0x%02x): gva=%#llx, gpa=%#llx, code=%#llx", (int)vcpu->id,
           gva, gpa, violationcode);
+#if !defined(__LDN_TV_INTEGRATION__)  
   if ((ret = hpt_scode_npf(vcpu, gpa, violationcode)) != 0) {
     eu_trace("FATAL ERROR: Unexpected return value from page fault handling");
     HALT();
   }
+#else
+	ret = hpt_scode_npf(vcpu, gpa, violationcode);
+#endif //__LDN_TV_INTEGRATION__
 
 #ifdef __MP_VERSION__
   emhf_smpguest_endquiesce(vcpu);
