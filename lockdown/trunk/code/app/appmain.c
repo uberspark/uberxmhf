@@ -179,6 +179,18 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 	struct regs *r,
 	u64 gpa, u64 gva, u64 violationcode){
 	(void)r;
+	
+	#if defined(__LDN_TV_INTEGRATION__)  
+	{
+		extern u32 tv_app_handleintercept_hwpgtblviolation(VCPU *vcpu, struct regs *r, u64 gpa, u64 gva, u64 violationcode);
+		u32 status;
+		status = tv_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, gva, violationcode);
+		if(!status)
+			return APP_SUCCESS;	//TV returns ero in case it handled the pf
+								//if so we don't perform the lockdown logic on this pf
+	}
+	#endif //__LDN_TV_INTEGRATION__
+	
 
 	#if defined(__LDN_APPROVEDEXEC__)
 	if(currentenvironment == LDN_ENV_TRUSTED_SIGNATURE)
