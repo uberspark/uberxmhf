@@ -185,9 +185,10 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 		extern u32 tv_app_handleintercept_hwpgtblviolation(VCPU *vcpu, struct regs *r, u64 gpa, u64 gva, u64 violationcode);
 		u32 status;
 		status = tv_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, gva, violationcode);
-		if(!status)
-			return APP_SUCCESS;	//TV returns zero in case it handled the pf
+		//if(!status)
+		//	return APP_SUCCESS;	//TV returns zero in case it handled the pf
 								//if so we don't perform the lockdown logic on this pf
+		return status;
 	}
 	#endif //__LDN_TV_INTEGRATION__
 	

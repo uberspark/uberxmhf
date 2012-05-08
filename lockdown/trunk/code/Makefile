@@ -42,7 +42,7 @@ ASFLAGS = $(CFLAGS) -D__ASSEMBLY__
 # app-specific configuration options
 export LDN_HYPERSWITCHING := y
 export LDN_HYPERPARTITIONING := n
-export LDN_APPROVEDEXEC := y
+export LDN_APPROVEDEXEC := n
 export LDN_APPROVEDEXEC_CMPHASHES := y
 export LDN_SSLPA := n
 export LDN_TV_INTEGRATION := y
