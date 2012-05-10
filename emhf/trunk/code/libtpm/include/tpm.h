@@ -337,7 +337,7 @@ static inline void _reverse_copy(uint8_t *out, const uint8_t *in, uint32_t count
 
 
 /* un-comment to enable detailed command tracing */
-#define noTPM_TRACE
+#define TPM_TRACE
 
 /* ~5 secs are required for Infineon that requires this, so leave some extra */
 #define MAX_SAVESTATE_RETRIES       60

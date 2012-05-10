@@ -375,7 +375,7 @@ uint32_t hc_tpmnvram_getsize(VCPU* vcpu, uint32_t size_addr) {
 
 uint32_t hc_tpmnvram_readall(VCPU* vcpu, uint32_t out_addr) {
   uint32_t rv = 1;
-  uint32_t data_size;
+  uint32_t data_size = HW_TPM_ROLLBACK_PROT_SIZE;
   uint8_t data[HW_TPM_ROLLBACK_PROT_SIZE];
   bool opened_tpm = false;
 
