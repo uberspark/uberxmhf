@@ -396,7 +396,8 @@ uint32_t hc_tpmnvram_readall(VCPU* vcpu, uint32_t out_addr) {
                                   &data_size));
 
   EU_CHK( HW_TPM_ROLLBACK_PROT_SIZE == data_size,
-          eu_err_e("HW_TPM_ROLLBACK_PROT_SIZE (%d) !="
+          rv = 1, /* TODO: define some meaningful error values */
+          eu_err_e("ERROR: HW_TPM_ROLLBACK_PROT_SIZE (%d) !="
                    " data_size (%d)",
                    HW_TPM_ROLLBACK_PROT_SIZE, data_size));
 
