@@ -427,7 +427,7 @@ u32 tv_app_handlehypercall(VCPU *vcpu, struct regs *r)
     HALT();
   }
 
-#define HANDLE(hc) case hc: do_ ## hc (vcpu, r); break
+#define HANDLE(hc) case hc: ret = do_ ## hc (vcpu, r); break
 
   switch (cmd) {
     HANDLE( TV_HC_TEST );
