@@ -389,6 +389,7 @@ static u32 do_TV_HC_TPMNVRAM_READALL(VCPU *vcpu, struct regs *r)
   eu_trace("TV_HC_TPMNVRAM_READALL invoked.");
   out_addr = r->ecx;
   ret = hc_tpmnvram_readall(vcpu, out_addr);
+  eu_trace("TV_HC_TPMNVRAM_READALL returning %d (%s)", ret, ret ? "FAILURE" : "Success");
   return ret;
 }
 
@@ -422,7 +423,7 @@ u32 tv_app_handlehypercall(VCPU *vcpu, struct regs *r)
     linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
     cmd = (u32)linux_vmcb->rax;
   } else {
-    printf("unknow cpu vendor type!\n");
+    printf("unknown cpu vendor type!\n");
     HALT();
   }
 
