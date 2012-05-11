@@ -75,7 +75,7 @@ char *strchr(const char *s, int c)
     return __res;
 }
 #else
-char *strchr(const char *s, int c)
+char *strchr(register const char *s, int c)
 {
   char *rv=NULL;
   while(*s != '\0') {
