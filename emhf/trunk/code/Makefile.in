@@ -53,7 +53,7 @@ export APP_ARCHIVE := $(builddir)/$(APP_ROOT)/@APP_ARCHIVE@
 export SECONDARYAPP_ARCHIVE := $(builddir)/$(SECONDARYAPP_ROOT)/@SECONDARYAPP_ARCHIVE@
 
 # export ADDL_LIBS := $(foreach lib,$(LIBDIRS),$(CURDIR)/$(lib)/$(lib).a)
-export ADDL_LIBS := $(foreach lib,$(LIBDIRS),$(CURDIR)/$(lib)/$(lib).a)
+export ADDL_LIBS := $(LIBBAREMETAL_BUILD)/$(LIBBAREMETAL_ARCHIVE)
 
 # export ADDL_INCLUDES := -I$(APP_ROOT)/app/include $(foreach dir,$(SUBDIRS),-I$(CURDIR)/$(dir)/include)
 # export ADDL_INCLUDES := -I$(CURDIR)/emhfcore/include -I$(APP_ROOT)/app/include $(foreach dir,$(SUBLIBS),-I$(dir)/include)
