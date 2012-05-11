@@ -27,8 +27,8 @@ export HYPOUTDIR = $(CURDIR)
 # TODO: specify via configure
 LIBBAREMETAL = $(CURDIR)/libbaremetal
 
-SUBLIBS = $(wildcard $(CURDIR)/$(LIBDIRS)/lib*)
-SUBDIRS = $(LIBDIRS) emhfcore
+# SUBLIBS = $(wildcard $(CURDIR)/$(LIBDIRS)/lib*)
+# SUBDIRS = $(LIBDIRS) emhfcore
 
 # App's source tree root (
 export APP_ROOT := @APP_ROOT@
