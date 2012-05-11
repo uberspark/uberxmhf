@@ -42,6 +42,16 @@
 #include <stdio.h>
 #include <print_hex.h>
 
+void dprintf(u32 log_type, const char *fmt, ...)
+{
+    va_list       args;
+	(void)log_type;
+    va_start(args, fmt);
+    vprintf(fmt, args);
+    va_end(args);
+}
+
+
 /*
  * if 'prefix' != NULL, print it before each line of hex string
  */
