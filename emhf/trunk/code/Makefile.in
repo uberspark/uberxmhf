@@ -18,11 +18,6 @@ export NESTED_PAGING := y
 #where you want loader and runtime binaries to go
 export HYPOUTDIR = $(CURDIR)
 
-# TODO: Consider automating discovery of subdirs (presence of Makefile*?)
-# E.g., have a target architecure and include that version of the core
-# LIBDIRS = libtv_utpm libemhfcrypto libemhfutil libemhfc libtpm
-# LIBDIRS = libbaremetal
-
 # libbaremetal "source" location, currently hard-coded
 # TODO: specify via configure
 LIBBAREMETAL_SRC = $(CURDIR)/libbaremetal
@@ -38,10 +33,6 @@ LIBBAREMETAL_INC = $(foreach dir,$(LIBBAREMETAL_SUBLIBS),-I$(dir)/include)
 # libbaremetal build directory 
 LIBBAREMETAL_BUILD = $(CURDIR)/_build_libbaremetal
 
-
-# SUBLIBS = $(wildcard $(CURDIR)/$(LIBDIRS)/lib*)
-# SUBDIRS = $(LIBDIRS) emhfcore
-
 # App's source tree root (
 export APP_ROOT := @APP_ROOT@
 export SECONDARYAPP_ROOT := @SECONDARYAPP_ROOT@
@@ -52,11 +43,7 @@ export builddir=@builddir@
 export APP_ARCHIVE := $(builddir)/$(APP_ROOT)/@APP_ARCHIVE@
 export SECONDARYAPP_ARCHIVE := $(builddir)/$(SECONDARYAPP_ROOT)/@SECONDARYAPP_ARCHIVE@
 
-# export ADDL_LIBS := $(foreach lib,$(LIBDIRS),$(CURDIR)/$(lib)/$(lib).a)
 export ADDL_LIBS := $(LIBBAREMETAL_BUILD)/_objects/$(LIBBAREMETAL_ARCHIVE)
-
-# export ADDL_INCLUDES := -I$(APP_ROOT)/app/include $(foreach dir,$(SUBDIRS),-I$(CURDIR)/$(dir)/include)
-# export ADDL_INCLUDES := -I$(CURDIR)/emhfcore/include -I$(APP_ROOT)/app/include $(foreach dir,$(SUBLIBS),-I$(dir)/include)
 export ADDL_INCLUDES := -I$(CURDIR)/emhfcore/include -I$(APP_ROOT)/app/include $(LIBBAREMETAL_INC)
 
 ##################################################################################
@@ -172,12 +159,6 @@ export CCLIB = @CCLIB@
 
 	export CFLAGS
 	export ASFLAGS
-
-
-
-
-
-
 
 
 .PHONY: all
