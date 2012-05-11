@@ -207,6 +207,19 @@ $(APP_ARCHIVE):
 #		(cd $$i && echo "Making all in $$i..." && $(MAKE) -w all) || exit 1; \
 #	done;
 
+.PHONY: subdirs
+subdirs: $(LIBBAREMETAL_SRC) 
+	echo ---------------------------------------------------------------
+	echo Building libbaremetal...
+	echo ---------------------------------------------------------------
+	mkdir -p $(LIBBAREMETAL_BUILD)
+	cd $(LIBBAREMETAL_BUILD) && $(MAKE) -f $(LIBBAREMETAL_SRC)/Makefile -w all
+	echo ---------------------------------------------------------------
+	echo libbaremetal.a build SUCCESS
+	echo ---------------------------------------------------------------
+	
+
+
 .PHONY: init-late
 init-late: $(APP_ARCHIVE) subdirs
 	cd emhfcore && make -w init-late
