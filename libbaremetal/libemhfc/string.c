@@ -64,25 +64,6 @@ u32 strnlen(const char * s, u32 count){
 	return (u32)(sc - s);
 }
 
-#if ARCH_X86 /* FIXME - currently never enabled */
-void *memcpy(void * to, const void * from, u32 n){
-  int d0, d1, d2;
-
-  __asm__ __volatile__(
-  	"rep ; movsl\n\t"
-  	"movl %4,%%ecx\n\t"
-  	"andl $3,%%ecx\n\t"
-#if 1	/* want to pay 2 byte penalty for a chance to skip microcoded rep? */
-  	"jz 1f\n\t"
-#endif
-  	"rep ; movsb\n\t"
-  	"1:"
-  	: "=&c" (d0), "=&D" (d1), "=&S" (d2)
-  	: "0" (n/4), "g" (n), "1" ((long) to), "2" ((long) from)
-  	: "memory");
-  return (to);
-}
-#else
 void *memcpy(void * to, const void * from, u32 n)
 {
   size_t i;
@@ -91,7 +72,6 @@ void *memcpy(void * to, const void * from, u32 n)
   }
   return to;
 }
-#endif
 
 void *memset (void *str, int c, size_t len) {
   register u8 *st = str;
