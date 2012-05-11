@@ -53,14 +53,6 @@ void dvprintf(u32 log_type, const char *fmt, va_list args)
     }
 }
 
-void dprintf(u32 log_type, const char *fmt, ...)
-{
-    va_list       args;
-	(void)log_type;
-    va_start(args, fmt);
-    vprintf(fmt, args);
-    va_end(args);
-}
 
 #endif 
 
