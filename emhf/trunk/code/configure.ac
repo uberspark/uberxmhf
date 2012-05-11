@@ -63,7 +63,7 @@ AC_ARG_WITH([libbaremetalsrc],
         AS_HELP_STRING([--with-libbaremetalsrc=@<:@path@:>@],
                 [path to libbaremetal source directory]),
                 , [with_libbaremetalsrc=./libbaremetal])
-LIBBAREMETAL_SRC=$[]libbaremetal_src
+LIBBAREMETAL_SRC=$[]with_libbaremetalsrc
 # make absolute
 dnl AS_IF([test "x${LIBBAREMETAL_SRC:0:1}" != "x/"],
 dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$LIBBAREMETAL_SRC])

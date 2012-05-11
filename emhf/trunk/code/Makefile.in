@@ -20,7 +20,8 @@ export HYPOUTDIR = $(CURDIR)
 
 # libbaremetal "source" location, currently hard-coded
 # TODO: specify via configure
-LIBBAREMETAL_SRC = $(CURDIR)/libbaremetal
+# LIBBAREMETAL_SRC = $(CURDIR)/libbaremetal
+export LIBBAREMETAL_SRC := @LIBBAREMETAL_SRC@
 
 # libbaremetal archive
 # TODO: specify via configure
