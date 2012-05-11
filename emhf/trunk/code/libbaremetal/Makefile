@@ -20,8 +20,17 @@ subdirs: $(LIBDIRS)
 	do \
 		(cd $$i && echo "Making all in $$i..." && $(MAKE) -w all) || exit 1; \
 	done;
-	$(AR) q libbaremetal.a libtv_utpm/libtv_utpm.a libemhfcrypto/libemhfcrypto.a libemhfutil/libemhfutil.a libemhfc/libemhfc.a libtpm/libtpm.a
-
+	mkdir -p tempobjs
+	cd tempobjs && rm -rf *
+	cd tempobjs && ar -x ../libtv_utpm/libtv_utpm.a
+	cd tempobjs && ar -x ../libemhfcrypto/libemhfcrypto.a
+	cd tempobjs && ar -x ../libemhfutil/libemhfutil.a
+	cd tempobjs && ar -x ../libemhfc/libemhfc.a
+	cd tempobjs && ar -x ../libtpm/libtpm.a
+	cd tempobjs && ar -rcs libbaremetal.a *.o
+	cp tempobjs/libbaremetal.a .
+	rm -rf tempobjs
+	
 .PHONY: clean
 clean:
 	@for i in $(LIBDIRS) ;\
