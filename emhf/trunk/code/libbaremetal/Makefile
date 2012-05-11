@@ -11,7 +11,7 @@
 srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
 
 # grab all the sub-library directories
-LIBDIRS = $(wildcard $(srcdir)/lib*)
+LIBDIRS = $(wildcard $(srcdir)lib*)
 
 # TODO: Tool settings; our project is not unique in this aspect
 
@@ -25,7 +25,8 @@ all: subdirs
 subdirs: $(LIBDIRS)
 	@for i in $(LIBDIRS); \
 	do \
-		(cd $$i && echo "Making all in $$i..." && $(MAKE) -w all) || exit 1; \
+		#(cd $$i && echo "Making all in $$i..." && $(MAKE) -w all) || exit 1; \
+		(echo "Making all in $$i..." && $(MAKE) -f $$i/Makefile -w all) || exit 1; \
 	done;
 	# mkdir -p tempobjs
 	# cd tempobjs && rm -rf *
@@ -42,6 +43,7 @@ subdirs: $(LIBDIRS)
 clean:
 	@for i in $(LIBDIRS) ;\
 	do \
-		(cd $$i && echo "making clean in $$i..." && $(MAKE) -w clean) || exit 1; \
+		#(cd $$i && echo "making clean in $$i..." && $(MAKE) -w clean) || exit 1; \
+		(echo "making clean in $$i..." && $(MAKE) -f $$i/Makefile -w clean) || exit 1; \
 	done;
 	$(RM) -rf *.a
