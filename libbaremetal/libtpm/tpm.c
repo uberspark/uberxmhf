@@ -79,7 +79,9 @@
  * by Amit Vasudevan amitvasudevan@acm.org 
  */
  
-
+#include <stddef.h>
+#include <string.h>
+#include <stdio.h>
 #include <tpm.h>
 
 
