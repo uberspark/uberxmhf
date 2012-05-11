@@ -38,8 +38,9 @@
 			Jim Newsome 
 */
 
+#include <stddef.h>
 #include <stdio.h>
-#include <print-hex.h>
+#include <print_hex.h>
 
 /*
  * if 'prefix' != NULL, print it before each line of hex string
