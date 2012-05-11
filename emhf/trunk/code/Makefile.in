@@ -25,7 +25,7 @@ export HYPOUTDIR = $(CURDIR)
 
 # libbaremetal location, currently hard-coded
 # TODO: specify via configure
-LIBBAREMETAL = $(CURDIR)/libbaremetal
+LIBBAREMETAL_SRC = $(CURDIR)/libbaremetal
 
 # SUBLIBS = $(wildcard $(CURDIR)/$(LIBDIRS)/lib*)
 # SUBDIRS = $(LIBDIRS) emhfcore
