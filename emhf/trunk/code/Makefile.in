@@ -181,24 +181,36 @@ export CCLIB = @CCLIB@
 
 
 .PHONY: all
-# all: $(APP_ARCHIVE) subdirs init-late
 ifneq ('$(SECONDARYAPP_ROOT)','./app')
 all: $(SECONDARYAPP_ARCHIVE) $(APP_ARCHIVE) subdirs 
 else
 all: $(APP_ARCHIVE) subdirs 
 endif
 
+
 ifneq ('$(SECONDARYAPP_ROOT)','./app')
 .PHONY: $(SECONDARYAPP_ARCHIVE)
 $(SECONDARYAPP_ARCHIVE):
-		cd $(SECONDARYAPP_ROOT) && $(MAKE) -w all
+	@echo ---------------------------------------------------------------
+	@echo Building secondary hyperapp...
+	@echo ---------------------------------------------------------------
+	cd $(SECONDARYAPP_ROOT) && $(MAKE) -w all
+	@echo ---------------------------------------------------------------
+	@echo secondary hyperapp build SUCCESS
+	@echo ---------------------------------------------------------------
 endif
-	
 	
 
 .PHONY: $(APP_ARCHIVE)
 $(APP_ARCHIVE):
+	@echo ---------------------------------------------------------------
+	@echo Building primary hyperapp...
+	@echo ---------------------------------------------------------------
 	cd $(APP_ROOT) && $(MAKE) -w all
+	@echo ---------------------------------------------------------------
+	@echo primary hyperapp build SUCCESS
+	@echo ---------------------------------------------------------------
+
 
 .PHONY: subdirs
 subdirs: $(LIBBAREMETAL_SRC) 
