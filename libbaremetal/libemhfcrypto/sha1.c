@@ -79,6 +79,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 #include <sha1.h> 
 
 #undef BIG_ENDIAN
