@@ -57,6 +57,19 @@ AS_IF([test "x${enable_mp}" != "xno"],
       [MP_VERSION=y],
       [MP_VERSION=n])
 
+# libbaremetal source directory
+AC_SUBST([LIBBAREMETAL_SRC])
+AC_ARG_WITH([libbaremetalsrc],
+        AS_HELP_STRING([--with-libbaremetalsrc=@<:@path@:>@],
+                [path to libbaremetal source directory]),
+                , [with_libbaremetalsrc=./libbaremetal])
+LIBBAREMETAL_SRC=$[]libbaremetal_src
+# make absolute
+dnl AS_IF([test "x${LIBBAREMETAL_SRC:0:1}" != "x/"],
+dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$LIBBAREMETAL_SRC])
+
+
+
 # EMHF app root directory
 AC_SUBST([APP_ROOT])
 AC_ARG_WITH([approot],
