@@ -57,7 +57,12 @@ void *malloc(size_t);
 void free(void *);
 
 //#include <random.h>
-uint8_t rand_byte_or_die(void);
+
+//XXX: FIXME, these are defined in TrustVisor hyperapp 
+//if we intend libtv_utpm to be generic we need to find a way to
+//get rid of this dependency
+extern int rand_bytes(uint8_t *out, unsigned int *len);
+extern uint8_t rand_byte_or_die(void);
 
 /* TODO: Fix this hack! */
 #define LOG_PROFILE (1<<0)
