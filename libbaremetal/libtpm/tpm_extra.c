@@ -74,6 +74,10 @@
  * "Extra" functions unnecessary in SL denoted as such.
  */
 
+#include <stddef.h>
+#include <stdio.h>
+#include <string.h>
+#include <print_hex.h>
 #include <tpm.h>
 #include <sha1.h>
 
