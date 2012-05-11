@@ -43,6 +43,7 @@
 
 #ifndef __ASSEMBLY__
 
+void print_hex(const char *prefix, const void *prtptr, size_t size);
 
 #endif //__ASSEMBLY__
 
