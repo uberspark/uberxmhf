@@ -7,7 +7,7 @@ OBJECTS = $(patsubst %.c, %.o, $(C_SOURCES))
 
 I_SOURCES :=  $(wildcard $(srcdir)/include/*.h)
 
-CFLAGS += -I$(srcdir)/include -nostdinc -fno-builtin -nostdlib -Wall -Werror
+CFLAGS += -I$(srcdir)/include -nostdinc -fno-builtin -nostdlib -Wall 
 
 THE_ARCHIVE = libemhfc.a
 
