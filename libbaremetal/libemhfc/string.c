@@ -56,38 +56,6 @@ void *memmove(void *dst_void, const void *src_void, u32 length){
   return dst_void;
 }
 
-#if ARCH_X86 /* FIXME - currently never enabled */
-char *strchr(const char *s, int c)
-{
-    long d0;
-    register char *__res;
-    __asm__ __volatile__ (
-        "   mov  %%al,%%ah  \n"
-        "1: lodsb           \n"
-        "   cmp  %%ah,%%al  \n"
-        "   je   2f         \n"
-        "   test %%al,%%al  \n"
-        "   jne  1b         \n"
-        "   mov  $1,%1      \n"
-        "2: mov  %1,%0      \n"
-        "   dec  %0         \n"
-        : "=a" (__res), "=&S" (d0) : "1" (s), "0" (c) );
-    return __res;
-}
-#else
-char *strchr(register const char *s, int c)
-{
-  char *rv=NULL;
-  while(*s != '\0') {
-    if (*s == c) {
-      rv=(char*)s;
-      break;
-    }
-    s++;
-  }
-  return (char*)rv;
-}
-#endif
 
 u32 strnlen(const char * s, u32 count){
 	const char *sc;
