@@ -23,12 +23,10 @@ all: subdirs
 
 .PHONY: subdirs
 subdirs: $(LIBDIRS)
-	echo $(srcdir)
-	echo $(LIBDIRS)
-	# @for i in $(LIBDIRS); \
-	# do \
-	#	(cd $$i && echo "Making all in $$i..." && $(MAKE) -w all) || exit 1; \
-	# done;
+	@for i in $(LIBDIRS); \
+	do \
+		(cd $$i && echo "Making all in $$i..." && $(MAKE) -w all) || exit 1; \
+	done;
 	# mkdir -p tempobjs
 	# cd tempobjs && rm -rf *
 	# cd tempobjs && ar -x ../libtv_utpm/libtv_utpm.a
@@ -46,4 +44,4 @@ clean:
 	do \
 		(cd $$i && echo "making clean in $$i..." && $(MAKE) -w clean) || exit 1; \
 	done;
-	$(RM) -rf libbaremetal.a
+	$(RM) -rf *.a
