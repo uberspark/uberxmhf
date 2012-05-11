@@ -9,7 +9,7 @@ LIBDIRS = libtv_utpm libemhfcrypto libemhfutil libemhfc libtpm
 # TODO: Tool settings; our project is not unique in this aspect
 
 # FIXME- this should be configurable
-export CFLAGS=-m32
+#export CFLAGS=-m32
 
 .PHONY: all
 all: subdirs
