@@ -87,7 +87,7 @@ void *memcpy(void * to, const void * from, u32 n)
 {
   size_t i;
   for(i=0; i<n; i++) {
-    ((uint8_t*)to)[i] = ((uint8_t*)from)[i];
+    ((uint8_t*)to)[i] = ((const uint8_t*)from)[i];
   }
   return to;
 }
