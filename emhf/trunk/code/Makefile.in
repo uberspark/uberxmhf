@@ -209,14 +209,14 @@ $(APP_ARCHIVE):
 
 .PHONY: subdirs
 subdirs: $(LIBBAREMETAL_SRC) 
-	echo ---------------------------------------------------------------
-	echo Building libbaremetal...
-	echo ---------------------------------------------------------------
+	@echo ---------------------------------------------------------------
+	@echo Building libbaremetal...
+	@echo ---------------------------------------------------------------
 	mkdir -p $(LIBBAREMETAL_BUILD)
 	cd $(LIBBAREMETAL_BUILD) && $(MAKE) -f $(LIBBAREMETAL_SRC)/Makefile -w all
-	echo ---------------------------------------------------------------
-	echo libbaremetal.a build SUCCESS
-	echo ---------------------------------------------------------------
+	@echo ---------------------------------------------------------------
+	@echo libbaremetal.a build SUCCESS
+	@echo ---------------------------------------------------------------
 	
 
 
