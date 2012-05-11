@@ -307,7 +307,7 @@ int sha1_buffer(const unsigned char *buffer, size_t len,
 }
 
 /* misc utility functions; probably belong elsewhere */
-void hashandprint(const char* prefix, const u8 *bytes, size_t len) {
+void hashandprint(const char* prefix __attribute__((unused)), const u8 *bytes, size_t len) {
     SHA_CTX ctx;
     u8 digest[SHA_DIGEST_LENGTH];
     //u64 start, end;
