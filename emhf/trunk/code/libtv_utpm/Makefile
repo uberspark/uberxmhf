@@ -7,7 +7,7 @@ OBJECTS = $(patsubst %.c, %.o, $(C_SOURCES))
 
 I_SOURCES :=  $(wildcard $(srcdir)/include/*.h)
 
-CFLAGS += -I$(srcdir)/../libemhfc/include -I$(srcdir)/include -nostdinc -fno-builtin -nostdlib -Wall -Werror
+CFLAGS += -I$(srcdir)/../libemhfc/include -I$(srcdir)/../libemhfcrypto/include -I$(srcdir)/include -nostdinc -fno-builtin -nostdlib -Wall -Werror
 
 THE_ARCHIVE = libtv_utpm.a
 
