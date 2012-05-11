@@ -45,7 +45,7 @@ export APP_ARCHIVE := $(builddir)/$(APP_ROOT)/@APP_ARCHIVE@
 export SECONDARYAPP_ARCHIVE := $(builddir)/$(SECONDARYAPP_ROOT)/@SECONDARYAPP_ARCHIVE@
 
 export ADDL_LIBS := $(LIBBAREMETAL_BUILD)/_objects/$(LIBBAREMETAL_ARCHIVE)
-export ADDL_INCLUDES := -I$(CURDIR)/emhfcore/include -I$(APP_ROOT)/app/include $(LIBBAREMETAL_INC)
+export ADDL_INCLUDES := -I$(CURDIR)/emhfcore/include $(LIBBAREMETAL_INC)
 
 ##################################################################################
 ### BEGIN Variables controlled using autoconf
