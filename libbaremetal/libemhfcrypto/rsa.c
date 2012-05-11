@@ -62,6 +62,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 
 #include <rsa.h>
 #include <bignum.h>
