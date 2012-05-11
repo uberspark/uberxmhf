@@ -28,4 +28,4 @@ clean:
 	do \
 		(cd $$i && echo "making clean in $$i..." && $(MAKE) -w clean) || exit 1; \
 	done;
-
+	$(RM) -rf libbaremetal.a
