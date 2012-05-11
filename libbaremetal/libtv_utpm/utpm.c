@@ -42,6 +42,8 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <print_hex.h>
 
 #include <tv_utpm.h> 
 #include <aes.h>
