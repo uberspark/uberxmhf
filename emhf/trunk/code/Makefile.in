@@ -200,13 +200,6 @@ endif
 $(APP_ARCHIVE):
 	cd $(APP_ROOT) && $(MAKE) -w all
 
-#.PHONY: subdirs
-#subdirs: $(SUBDIRS)
-#	@for i in $(SUBDIRS); \
-#	do \
-#		(cd $$i && echo "Making all in $$i..." && $(MAKE) -w all) || exit 1; \
-#	done;
-
 .PHONY: subdirs
 subdirs: $(LIBBAREMETAL_SRC) 
 	@echo ---------------------------------------------------------------
@@ -224,8 +217,6 @@ subdirs: $(LIBBAREMETAL_SRC)
 	@echo ---------------------------------------------------------------
 	@echo EMHF core build SUCCESS
 	@echo ---------------------------------------------------------------
-	
-
 
 .PHONY: init-late
 init-late: $(APP_ARCHIVE) subdirs
@@ -268,10 +259,6 @@ ifneq ('$(SECONDARYAPP_ROOT)','./app')
 endif
 
 	cd $(APP_ROOT) && $(MAKE) -w clean
-#	@for i in $(SUBDIRS) ;\
-#	do \
-#		(cd $$i && echo "making clean in $$i..." && $(MAKE) -w clean) || exit 1; \
-#	done;
 	@echo ---------------------------------------------------------------
 	@echo Cleaning libbaremetal...
 	@echo ---------------------------------------------------------------
