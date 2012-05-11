@@ -23,10 +23,11 @@ all: subdirs
 
 .PHONY: subdirs
 subdirs: $(LIBDIRS)
+	mkdir -p _objects
 	@for i in $(LIBDIRS); \
 	do \
 		#(cd $$i && echo "Making all in $$i..." && $(MAKE) -w all) || exit 1; \
-		(echo "Making all in $$i..." && $(MAKE) -f $$i/Makefile -w all) || exit 1; \
+		(cd _objects &&	echo "Making all in $$i..." && $(MAKE) -f ../$$i/Makefile -w all) || exit 1; \
 	done;
 	# mkdir -p tempobjs
 	# cd tempobjs && rm -rf *
@@ -41,9 +42,10 @@ subdirs: $(LIBDIRS)
 	
 .PHONY: clean
 clean:
+	mkdir -p _objects
 	@for i in $(LIBDIRS) ;\
 	do \
 		#(cd $$i && echo "making clean in $$i..." && $(MAKE) -w clean) || exit 1; \
-		(echo "making clean in $$i..." && $(MAKE) -f $$i/Makefile -w clean) || exit 1; \
+		(cd _objects && echo "making clean in $$i..." && $(MAKE) -f ../$$i/Makefile -w clean) || exit 1; \
 	done;
-	$(RM) -rf *.a
+	rm -rf _objects
