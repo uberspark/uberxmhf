@@ -21,7 +21,12 @@ export HYPOUTDIR = $(CURDIR)
 # TODO: Consider automating discovery of subdirs (presence of Makefile*?)
 # E.g., have a target architecure and include that version of the core
 # LIBDIRS = libtv_utpm libemhfcrypto libemhfutil libemhfc libtpm
-LIBDIRS = libbaremetal
+# LIBDIRS = libbaremetal
+
+# libbaremetal location, currently hard-coded
+# TODO: specify via configure
+LIBBAREMETAL = $(CURDIR)/libbaremetal
+
 SUBLIBS = $(wildcard $(CURDIR)/$(LIBDIRS)/lib*)
 SUBDIRS = $(LIBDIRS) emhfcore
 
