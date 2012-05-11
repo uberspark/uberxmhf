@@ -31,10 +31,12 @@ LIBBAREMETAL_SRC = $(CURDIR)/libbaremetal
 # TODO: specify via configure
 LIBBAREMETAL_ARCHIVE = libbaremetal.a
 
-
 # libbaremetal includes
 LIBBAREMETAL_SUBLIBS = $(wildcard $(LIBBAREMETAL_SRC)/lib*)
 LIBBAREMETAL_INC = $(foreach dir,$(LIBBAREMETAL_SUBLIBS),-I$(dir)/include)
+
+# libbaremetal build directory 
+LIBBAREMETAL_BUILD = $(CURDIR)/_build_libbaremetal
 
 
 # SUBLIBS = $(wildcard $(CURDIR)/$(LIBDIRS)/lib*)
