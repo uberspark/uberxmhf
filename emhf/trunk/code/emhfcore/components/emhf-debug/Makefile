@@ -20,11 +20,6 @@ OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 
-# FIXME: This is a hack.  During build-process refactoring, do
-# something more sensible to pickup all in-tree library
-# subdirectories.
-CFLAGS += -I../../libemhfutil/include -I../../libemhfc/include
-
 # targets
 .PHONY: all
 all: lib.a
