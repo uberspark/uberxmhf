@@ -200,12 +200,12 @@ endif
 $(APP_ARCHIVE):
 	cd $(APP_ROOT) && $(MAKE) -w all
 
-.PHONY: subdirs
-subdirs: $(SUBDIRS)
-	@for i in $(SUBDIRS); \
-	do \
-		(cd $$i && echo "Making all in $$i..." && $(MAKE) -w all) || exit 1; \
-	done;
+#.PHONY: subdirs
+#subdirs: $(SUBDIRS)
+#	@for i in $(SUBDIRS); \
+#	do \
+#		(cd $$i && echo "Making all in $$i..." && $(MAKE) -w all) || exit 1; \
+#	done;
 
 .PHONY: init-late
 init-late: $(APP_ARCHIVE) subdirs
