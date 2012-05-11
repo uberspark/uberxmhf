@@ -279,7 +279,8 @@ int mpi_size( mpi *X )
 /*
  * Convert an ASCII character to digit value
  */
-static int mpi_get_digit( t_int *d, int radix, char c )
+static int mpi_get_digit( t_int *d, int radix, char c ) __attribute__((unused));
+static int mpi_get_digit( t_int *d, int radix, char c ) 
 {
     *d = 255;
 
