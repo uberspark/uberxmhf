@@ -261,10 +261,10 @@ ifneq ('$(SECONDARYAPP_ROOT)','./app')
 endif
 
 	cd $(APP_ROOT) && $(MAKE) -w clean
-	@for i in $(SUBDIRS) ;\
-	do \
-		(cd $$i && echo "making clean in $$i..." && $(MAKE) -w clean) || exit 1; \
-	done;
+#	@for i in $(SUBDIRS) ;\
+#	do \
+#		(cd $$i && echo "making clean in $$i..." && $(MAKE) -w clean) || exit 1; \
+#	done;
 
 distclean: clean
 	$(RM) config.log config.status
