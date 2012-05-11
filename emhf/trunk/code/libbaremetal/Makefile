@@ -5,10 +5,10 @@
 
 # get the "source" directory of this Makefile (useful for
 # out-of-tree build)
-srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
+srcdir := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
 # grab all the sub-library directories
-LIBDIRS = $(wildcard $(srcdir)lib*)
+LIBDIRS = $(wildcard $(srcdir)/lib*)
 
 
 .PHONY: all
@@ -19,7 +19,7 @@ subdirs: $(LIBDIRS)
 	mkdir -p _objects
 	@for i in $(LIBDIRS); \
 	do \
-		(cd _objects &&	echo "Making all in $$i..." && $(MAKE) -f ../$$i/Makefile -w all) || exit 1; \
+		(cd _objects &&	echo "Making all in $$i..." && $(MAKE) -f $$i/Makefile -w all) || exit 1; \
 	done;
 	cd _objects && ar -rcs libbaremetal.a *.o
 	
@@ -28,6 +28,6 @@ clean:
 	mkdir -p _objects
 	@for i in $(LIBDIRS) ;\
 	do \
-		(cd _objects && echo "making clean in $$i..." && $(MAKE) -f ../$$i/Makefile -w clean) || exit 1; \
+		(cd _objects && echo "making clean in $$i..." && $(MAKE) -f $$i/Makefile -w clean) || exit 1; \
 	done;
 	rm -rf _objects
