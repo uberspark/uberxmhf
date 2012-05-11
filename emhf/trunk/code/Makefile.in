@@ -265,6 +265,17 @@ endif
 #	do \
 #		(cd $$i && echo "making clean in $$i..." && $(MAKE) -w clean) || exit 1; \
 #	done;
+	@echo ---------------------------------------------------------------
+	@echo Cleaning libbaremetal...
+	@echo ---------------------------------------------------------------
+	mkdir -p $(LIBBAREMETAL_BUILD)
+	cd $(LIBBAREMETAL_BUILD) && $(MAKE) -f $(LIBBAREMETAL_SRC)/Makefile -w clean
+	rm -rf $(LIBBAREMETAL_BUILD)
+	@echo ---------------------------------------------------------------
+	@echo libbaremetal.a clean SUCCESS
+	@echo ---------------------------------------------------------------
+
+
 
 distclean: clean
 	$(RM) config.log config.status
