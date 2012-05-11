@@ -394,6 +394,8 @@ static hpt_pme_t hpt_pme_set_pat(hpt_type_t t, int lvl, hpt_pme_t pme, bool pat)
 }
 
 /* "internal". use hpt_pme_get_pmt instead */
+static bool hpt_pme_get_pat(hpt_type_t t, int lvl, hpt_pme_t pme) __attribute__((unused));
+
 static bool hpt_pme_get_pat(hpt_type_t t, int lvl, hpt_pme_t pme)
 {
   if (t == HPT_TYPE_NORM) {
