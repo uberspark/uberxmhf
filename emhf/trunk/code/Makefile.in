@@ -211,11 +211,11 @@ subdirs: $(LIBBAREMETAL_SRC)
 	@echo libbaremetal.a build SUCCESS
 	@echo ---------------------------------------------------------------
 	@echo ---------------------------------------------------------------
-	@echo Building EMHF core...
+	@echo Building EMHF core/hyperapp...
 	@echo ---------------------------------------------------------------
 	cd emhfcore && $(MAKE) -w all
 	@echo ---------------------------------------------------------------
-	@echo EMHF core build SUCCESS
+	@echo EMHF core/hyperapp build SUCCESS
 	@echo ---------------------------------------------------------------
 
 .PHONY: init-late
@@ -280,11 +280,11 @@ endif
 	@echo libbaremetal.a clean SUCCESS
 	@echo ---------------------------------------------------------------
 	@echo ---------------------------------------------------------------
-	@echo Cleaning EMHF core...
+	@echo Cleaning EMHF core/hyperapp...
 	@echo ---------------------------------------------------------------
 	cd emhfcore && $(MAKE) -w clean
 	@echo ---------------------------------------------------------------
-	@echo EMHF core cleanup SUCCESS
+	@echo EMHF core/hyperapp cleanup SUCCESS
 	@echo ---------------------------------------------------------------
 
 
