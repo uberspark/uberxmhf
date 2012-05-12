@@ -15,6 +15,7 @@ EMHF_ABSPATH=`( cd "$MY_PATH/$EMHF_RELPATH" && pwd )`
 # and these are TrustVisor and tee-sdk's paths
 TV_RELPATH=../../../trustvisor/trunk/code
 TEESDK_RELPATH=../../../tee-sdk/trunk
+TEESDK_ABSPATH=`( cd "$MY_PATH/$TEESDK_RELPATH" && pwd )`
 TESTPAL_RELPATH=../../../tee-sdk/trunk/examples/test
 
 # and these are libbaremetal's paths
@@ -60,7 +61,7 @@ popd
 ## 4. Build and install tee-sdk
 
 # now trustvisor headers are in place and can build & install tee-sdk
-pushd $TEESDK_RELPATH
+pushd $TEESDK_ABSPATH
 make PREFIX=$TEMPDIR
 popd
 
