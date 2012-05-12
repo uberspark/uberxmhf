@@ -72,6 +72,7 @@ install-dev:
 
 	install -d $(DESTDIR)$(includedir)/trustvisor
 	install app/include/trustvisor.h $(DESTDIR)$(includedir)/trustvisor
+	install $(LIBBAREMETAL_SRC)/libtv_utpm/include/tv_utpm.h $(DESTDIR)$(includedir)/trustvisor
 
 .PHONY: test
 test:
