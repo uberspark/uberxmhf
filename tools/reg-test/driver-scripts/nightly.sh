@@ -12,6 +12,31 @@
 #
 ###
 
+# This function takes one parameter: the full path of a logfile.
+# That file is then augmented with some additional information,
+# URLs are constructed, and an email is sent out announcing the
+# completion of testing.
+function email_logs () {
+  STATUS_REPORT_FILE=/tmp/test-email.txt
+  WEB_URL_BASE='mccune.ece.cmu.edu:8080'
+  JON_URL_BASE=squid
+  echo -e "Primary nightly build and test administration log:\n" > $STATUS_REPORT_FILE
+  if [ -z $1 ]; then
+      echo "ERROR: Function email_logs invoked without a log to email!" >> $STATUS_REPORT_FILE
+  else
+      echo $1 >> $STATUS_REPORT_FILE
+  fi
+  echo -e "\n\nIndividual test host results:\n" >> $STATUS_REPORT_FILE
+  for i in `find /var/www/logger -type l`; do 
+      find $i/ -name "*$TIMESTAMP*"; 
+  done >> $STATUS_REPORT_FILE
+  SUBJECT="[reg-test] squid test report for $TIMESTAMP"
+
+  # Include convenient links in the email
+  perl -pe "s/\/var\/www/http:\/\/$JON_URL_BASE/" < $STATUS_REPORT_FILE | mailx -s "$SUBJECT" jonmccune@cmu.edu
+  perl -pe "s/\/var\/www/http:\/\/$WEB_URL_BASE/" < $STATUS_REPORT_FILE | mailx -s "$SUBJECT" jonmccune@cmu.edu jnewsome@cmu.edu amitvasudevan@gmail.com
+}
+
 ## 0. Basic Setup
 
 # Find the absolute path of this script and cd there.
@@ -31,6 +56,7 @@ echo "" >> $BUILD_LOG
 ## Make sure the current user is in groups logger and dialout
 if [ `groups | grep logger | grep dialout | wc -l` -lt 1 ]; then
     echo -e "\nERROR: CURRENT USER NOT IN GROUPS logger, dialout!!!\n" >> $BUILD_LOG
+    email_logs $BUILD_LOG
     exit 1
 fi
 
@@ -41,6 +67,7 @@ bash build-tv.sh >> $BUILD_LOG 2>&1
 rc=$?
 if [[ $rc != 0 ]] ; then
     echo -e "\nERROR: BUILD FAILED; ABORTING REMAINING REGRESSION TESTING!!!\n" >> $BUILD_LOG
+    email_logs $BUILD_LOG
     exit $rc
 fi
 
@@ -50,6 +77,8 @@ fi
 EMHF_RELPATH=../../../emhf/trunk/code
 if [ ! -d "$EMHF_RELPATH" ]; then
     echo -e "\nERROR: EMHF_RELPATH $EMHF_RELPATH DOES NOT EXIST; ABORTING REMAINING REGRESSION TESTING!!!\n" >> $BUILD_LOG
+    email_logs $BUILD_LOG
+    exit 1
 fi
 
 # TODO: Perhaps somehow stop requiring 'driver' to be a no-password
@@ -58,6 +87,7 @@ sudo -n true
 rc=$?
 if [[ $rc != 0 ]] ; then
     echo -e "\nERROR: CANNOT sudo FOR ./copy_to_slashboots.sh; ABORTING REMAINING REGRESSION TESTING!!!\n" >> $BUILD_LOG
+    email_logs $BUILD_LOG
     exit $rc
 fi
 
@@ -65,6 +95,7 @@ sudo bash copy_to_slashboots.sh $EMHF_RELPATH/init-x86.bin $EMHF_RELPATH/hypervi
 rc=$?
 if [[ $rc != 0 ]] ; then
     echo -e "\nERROR: ./copy_to_slashboots.sh FAILED; ABORTING REMAINING REGRESSION TESTING!!!\n" >> $BUILD_LOG
+    email_logs $BUILD_LOG
     exit $rc
 fi
 
@@ -73,6 +104,7 @@ fi
 CLI_SCR_PATH=../client-scripts
 if [ ! -d $CLI_SCR_PATH ]; then
     echo -e "\nERROR: DIRECTORY $CLI_SCR_PATH DOES NOT EXIST; ABORTING REMAINING REGRESSION TESTING!!!\n" >> $BUILD_LOG
+    email_logs $BUILD_LOG
     exit $rc
 fi
 
@@ -88,6 +120,7 @@ popd
 TEST_PAL_PATH=../../../tee-sdk/trunk/examples/test/test
 if [ ! -e $TEST_PAL_PATH ]; then
     echo -e "\nERROR: TEST PAL $TEST_PAL_PATH DOES NOT EXIST; ABORTING REMAINING REGRESSION TESTING!!!\n" >> $BUILD_LOG
+    email_logs $BUILD_LOG
     exit $rc
 fi
 cp -av $TEST_PAL_PATH /home/driver/public_html >> $BUILD_LOG 2>&1
@@ -100,6 +133,7 @@ echo -e "\nBEGINNING sequence-tests.sh\n" >> $BUILD_LOG
 rc=$?
 if [[ $rc != 0 ]] ; then
     echo -e "\nERROR: sequence-tests.sh FAILED!!!\n" >> $BUILD_LOG
+    email_logs $BUILD_LOG
     exit $rc
 fi
 cat time.log >> $BUILD_LOG
@@ -108,17 +142,6 @@ echo -e "\nCOMPLETED sequence-tests.sh\n" >> $BUILD_LOG
 
 echo -e "\nCOMPLETED $0; SUCCESS!!!\n" | tee -a $BUILD_LOG
 
-## 6. Prepare an email with convenient links to test results
-STATUS_REPORT_FILE=/tmp/test-email.txt
-WEB_URL_BASE='mccune.ece.cmu.edu:8080'
-JON_URL_BASE=squid
-echo -e "Primary nightly build and test administration log:\n" > $STATUS_REPORT_FILE
-echo $BUILD_LOG >> $STATUS_REPORT_FILE
-echo -e "\n\nIndividual test host results:\n" >> $STATUS_REPORT_FILE
-for i in `find /var/www/logger -type l`; do 
-    find $i/ -name "*$TIMESTAMP*"; 
-done >> $STATUS_REPORT_FILE
-SUBJECT="[reg-test] squid test report for $TIMESTAMP"
+## 6. Send an email announcing new test results are available
+email_logs $BUILD_LOG
 
-perl -pe "s/\/var\/www/http:\/\/$JON_URL_BASE/" < $STATUS_REPORT_FILE | mailx -s "$SUBJECT" jonmccune@cmu.edu
-perl -pe "s/\/var\/www/http:\/\/$WEB_URL_BASE/" < $STATUS_REPORT_FILE | mailx -s "$SUBJECT" jonmccune@cmu.edu jnewsome@cmu.edu amitvasudevan@gmail.com
