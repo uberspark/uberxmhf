@@ -27,18 +27,16 @@ TEMPDIR=/tmp/build/tee-sdk
 rm -rf $TEMPDIR
 mkdir -p $TEMPDIR
 
+# 0. Pull the latest source code.
 pushd $EMHF_ABSPATH
 git svn rebase
-
-## 0. autogen.sh in TrustVisor path
-pushd $TV_RELPATH
+# Note: this comes _after_ rebase because we want rebase to fail if
+# one of us developers has been tinkering around and forgot to commit
+# things.  Otherwise, this 'git clean' will clobber our work.
 git clean -d -f -x .
-./autogen.sh
-popd
 
 ## 1. Build EMHF + TrustVisor
 
-git clean -d -f -x .
 ./autogen.sh
 ./configure --prefix=$TEMPDIR --with-approot=$TV_RELPATH --with-libbaremetalsrc=$LIBBAREMETAL_ABSPATH
 make clean
