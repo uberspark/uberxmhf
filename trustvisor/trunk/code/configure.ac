@@ -12,3 +12,15 @@ AC_SUBST([pkgincludedir], ['${includedir}/AC_PACKAGE_NAME'])
 
 AC_CONFIG_FILES([trustvisor.pc])
 AC_OUTPUT
+
+# libbaremetal source directory
+AC_SUBST([LIBBAREMETAL_SRC])
+AC_ARG_WITH([libbaremetalsrc],
+        AS_HELP_STRING([--with-libbaremetalsrc=@<:@path@:>@],
+                [path to libbaremetal source directory]),
+                , [with_libbaremetalsrc=./libbaremetal])
+LIBBAREMETAL_SRC=$[]with_libbaremetalsrc
+# make absolute
+dnl AS_IF([test "x${LIBBAREMETAL_SRC:0:1}" != "x/"],
+dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$LIBBAREMETAL_SRC])
+
