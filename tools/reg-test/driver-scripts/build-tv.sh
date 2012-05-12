@@ -17,6 +17,10 @@ TV_RELPATH=../../../trustvisor/trunk/code
 TEESDK_RELPATH=../../../tee-sdk/trunk
 TESTPAL_RELPATH=../../../tee-sdk/trunk/examples/test
 
+# and these are libbaremetal's paths
+LIBBAREMETAL_RELPATH=../../../libbaremetal
+LIBBAREMETAL_ABSPATH=`( cd "$MY_PATH/$LIBBAREMETAL_RELPATH" && pwd )`
+
 # Temporary directory to place build results
 TEMPDIR=/tmp/build/tee-sdk
 rm -rf $TEMPDIR
@@ -35,7 +39,7 @@ popd
 
 git clean -d -f -x .
 ./autogen.sh
-./configure --prefix=$TEMPDIR --with-approot=$TV_RELPATH
+./configure --prefix=$TEMPDIR --with-approot=$TV_RELPATH --with-libbaremetalsrc=$LIBBAREMETAL_ABSPATH
 make clean
 make
 #DESTDIR=$TEMPDIR make install
@@ -45,7 +49,7 @@ ls -l init-x86.bin hypervisor-x86.bin.gz
 make install-dev
 
 ## 3. Install TrustVisor cross-compile development files
-./configure --prefix=$TEMPDIR/i586-tsvc --with-approot=$TV_RELPATH
+./configure --prefix=$TEMPDIR/i586-tsvc --with-approot=$TV_RELPATH --with-libbaremetalsrc=$LIBBAREMETAL_ABSPATH
 make install-dev
 
 popd
