@@ -1118,7 +1118,7 @@ tz_return_t test_nv_rollback(tz_session_t *tzPalSession) {
   int rv = 0;
   uint32_t i, len = 32; /* XXX get this from somewhere (sizeof sha-256) */
 
-  printf("NV_ROLLBACK\n");
+  printf("\nNV_ROLLBACK\n");
 
   /* prep operation */
   tzRet = TZOperationPrepareInvoke(tzPalSession,
