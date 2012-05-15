@@ -60,13 +60,12 @@ const cmdline_option_t gc_trustvisor_available_cmdline_options[] = {
   { NULL, NULL }
 };
 
-static char g_trustvisor_param_values[ARRAY_SIZE(gc_trustvisor_available_cmdline_options)][MAX_VALUE_LEN];
 uint8_t g_nvpalpcr0[20];
 bool g_nvenforce = true;
 
-bool cmdline_get_nvenforce(void) {
+bool cmdline_get_nvenforce(char param_vals[][MAX_VALUE_LEN]) {
     const char *nvenforce = cmdline_get_option_val(gc_trustvisor_available_cmdline_options,
-                                                   g_trustvisor_param_values,
+                                                   param_vals,
                                                    "nvenforce");
     if ( nvenforce == NULL || *nvenforce == '\0' )
         return true; /* desired default behavior is YES, DO ENFORCE */
@@ -90,10 +89,11 @@ const uint8_t gc_asc2nib[] = {
 
 /* allow caller to query whether param exists on cmdline by invoking
  * with NULL reqd_pcr0 */
-bool cmdline_get_nvpalpcr0(uint8_t *reqd_pcr0) { /* out */
+bool cmdline_get_nvpalpcr0(char param_vals[][MAX_VALUE_LEN], /* in */
+                           uint8_t *reqd_pcr0) {   /* out */
     int i;
     const char *ascii = cmdline_get_option_val(gc_trustvisor_available_cmdline_options,
-                                               g_trustvisor_param_values,
+                                               param_vals,
                                                "nvpalpcr0");
     if ( ascii == NULL || *ascii == '\0' )
         return false; /* no param found */
@@ -108,9 +108,11 @@ bool cmdline_get_nvpalpcr0(uint8_t *reqd_pcr0) { /* out */
 }
 
 void parse_boot_cmdline(const char *cmdline) {
-  cmdline_parse(cmdline, gc_trustvisor_available_cmdline_options, g_trustvisor_param_values);
-  g_nvenforce = cmdline_get_nvenforce();
-  if(!cmdline_get_nvpalpcr0(g_nvpalpcr0) && g_nvenforce) {
+  char param_vals[ARRAY_SIZE(gc_trustvisor_available_cmdline_options)][MAX_VALUE_LEN];
+
+  cmdline_parse(cmdline, gc_trustvisor_available_cmdline_options, param_vals);
+  g_nvenforce = cmdline_get_nvenforce(param_vals);
+  if(!cmdline_get_nvpalpcr0(param_vals, g_nvpalpcr0) && g_nvenforce) {
     /* Emit warning that enforcing uPCR[0] for NV access doesn't make
      * sense without specifying which PAL _should_ have access */
     eu_warn("WARNING: NV enforcement ENABLED, but NVPAL's uPCR[0] UNSPECIFIED!");
