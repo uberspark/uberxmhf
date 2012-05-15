@@ -316,8 +316,6 @@ int trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
  * trying to make one of those hypercalls is actually the PAL that is
  * authorized to do so.
  *
- * TODO: ACTUALLY CHECK THIS!
- *
  * Returns: 0 on success, non-zero otherwise.
  * TODO: Define some more meaningful failure codes.
  */
