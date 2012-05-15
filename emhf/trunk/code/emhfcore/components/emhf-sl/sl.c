@@ -94,7 +94,7 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	printf("\n	OS bootmodule at 0x%08x, size=%u bytes", 
 		slpb.runtime_osbootmodule_base, slpb.runtime_osbootmodule_size);
     printf("\n\tnvenforce = %s", slpb.nvenforce ? "true" : "false");
-    printf("\n\tnvpalpcr0: %*D", slpb.nvpalpcr0, 20);
+    printf("\n\tnvpalpcr0: %*D", 20, slpb.nvpalpcr0);
 
 	//debug: if we are doing some performance measurements
     slpb.rdtsc_after_drtm = (u64)rdtsc_eax | ((u64)rdtsc_edx << 32);
