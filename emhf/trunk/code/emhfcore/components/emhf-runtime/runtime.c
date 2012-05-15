@@ -54,10 +54,8 @@ void emhf_runtime_entry(void){
 	emhf_debug_init((char *)&rpb->RtmUartConfig);
 	printf("\nruntime initializing...");
 
-
   	//initialize basic platform elements
 	emhf_baseplatform_initialize();
-
 
     //[debug] dump E820 and MP table
  	printf("\nNumber of E820 entries = %u", rpb->XtVmmE820NumEntries);
@@ -146,6 +144,7 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
   	appParamBlock.optionalmodule_ptr = (u32)rpb->runtime_appmodule_base;
   	appParamBlock.optionalmodule_size = (u32)rpb->runtime_appmodule_size;
 	appParamBlock.runtimephysmembase = (u32)rpb->XtVmmRuntimePhysBase;  
+    strncpy(appParamBlock.cmdline, rpb->cmdline, sizeof(appParamBlock.cmdline));
 
   	//call app main
   	if(emhf_app_main(vcpu, &appParamBlock)){

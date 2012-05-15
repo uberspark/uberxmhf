@@ -50,8 +50,9 @@
 // a placeholder for now...
 u32 tv_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
   eu_trace("CPU(0x%02x)", vcpu->id);
-  (void)apb; /* unused */
 
+  eu_trace("apb->cmdline: \"%s\"", apb->cmdline);
+  
   if (vcpu->isbsp) {
     eu_trace("CPU(0x%02x): init\n", vcpu->id);
     init_scode(vcpu);

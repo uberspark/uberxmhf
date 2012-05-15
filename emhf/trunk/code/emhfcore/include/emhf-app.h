@@ -66,6 +66,7 @@ typedef struct {
   u32 optionalmodule_ptr;
   u32 optionalmodule_size;
   u32 runtimephysmembase;
+  char cmdline[1024];
 } __attribute__((packed)) APP_PARAM_BLOCK;
 
 

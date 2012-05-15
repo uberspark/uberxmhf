@@ -93,8 +93,7 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	printf("\n	runtime size= %u bytes", slpb.runtime_size);
 	printf("\n	OS bootmodule at 0x%08x, size=%u bytes", 
 		slpb.runtime_osbootmodule_base, slpb.runtime_osbootmodule_size);
-    printf("\n\tnvenforce = %s", slpb.nvenforce ? "true" : "false");
-    printf("\n\tnvpalpcr0: %*D", 20, slpb.nvpalpcr0);
+    printf("\n\tcmdline = \"%s\"", slpb.cmdline);
 
 	//debug: if we are doing some performance measurements
     slpb.rdtsc_after_drtm = (u64)rdtsc_eax | ((u64)rdtsc_edx << 32);
@@ -181,8 +180,8 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		rpb->RtmUartConfig = g_uart_config;
 
 		//pass command line configuration forward 
-//        COMPILE_TIME_ASSERT(sizeof(slpb.options) == sizeof(rpb->RtmOptions));
-		memcpy((void *)&rpb->RtmOptions, (void *)&slpb.options, sizeof(slpb.options));
+//COMPILE_TIME_ASSERT(sizeof(slpb.cmdline) == sizeof(rpb->cmdline));
+		strncpy(rpb->cmdline, slpb.cmdline, sizeof(slpb.cmdline));
 
 		////debug dump uart_config field
 		//printf("\nrpb->uart_config.port = %x", rpb->uart_config.port);

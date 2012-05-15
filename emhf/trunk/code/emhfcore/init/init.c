@@ -844,9 +844,6 @@ void cstartup(multiboot_info_t *mbi){
         slpb->runtime_osbootmodule_base = mod_array[1].mod_start;
         slpb->runtime_osbootmodule_size = (mod_array[1].mod_end - mod_array[1].mod_start); 
 
-        slpb->nvenforce = cmdline_get_nvenforce();
-        cmdline_get_nvpalpcr0(slpb->nvpalpcr0); /* should we check for failure here? */
-
 		//check if we have an optional app module and if so populate relevant SLPB
 		//fields
 		{
@@ -869,8 +866,7 @@ void cstartup(multiboot_info_t *mbi){
 		}
 
         slpb->uart_config = g_uart_config;
-        strncpy((char *)slpb->options, (const char *)mbi->cmdline, sizeof(slpb->options));
-        
+        strncpy(slpb->cmdline, (const char *)mbi->cmdline, sizeof(slpb->cmdline));
     }
    
     //switch to MP mode
