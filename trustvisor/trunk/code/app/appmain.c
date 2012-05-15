@@ -60,9 +60,6 @@ const cmdline_option_t gc_trustvisor_available_cmdline_options[] = {
   { NULL, NULL }
 };
 
-uint8_t g_nvpalpcr0[20];
-bool g_nvenforce = true;
-
 bool cmdline_get_nvenforce(char param_vals[][MAX_VALUE_LEN]) {
     const char *nvenforce = cmdline_get_option_val(gc_trustvisor_available_cmdline_options,
                                                    param_vals,
@@ -119,10 +116,7 @@ void parse_boot_cmdline(const char *cmdline) {
   }
 
   eu_trace("NV Enforcement %s", g_nvenforce ? "ENABLED" : "DISABLED");
-  eu_trace("NV uPCR[0] set to %*D", sizeof(g_nvpalpcr0), g_nvpalpcr0);
-  printf("printf: NV uPCR[0] set to %*D\n", sizeof(g_nvpalpcr0), g_nvpalpcr0);
-  print_hex("print_hex: ", g_nvpalpcr0, sizeof(g_nvpalpcr0));
-  eu_trace("NV uPCR[0] set to %*D", sizeof(g_nvpalpcr0), g_nvpalpcr0);
+  print_hex("NV uPCR[0] required to be: ", g_nvpalpcr0, sizeof(g_nvpalpcr0));
 }
 
 /**

@@ -59,6 +59,13 @@
 /* extern */ bool g_master_prng_init_completed = false;
 /* extern */ bool g_master_crypto_init_completed = false;
 
+/**
+ * These two are set by the boot cmdline-parsing code in appmain.c,
+ * and used primarily from within nv.c.  Defining them here so as to
+ * have such globals in one place. */
+/* extern */ bool g_nvenforce = true;
+/* extern */ uint8_t g_nvpalpcr0[20];
+
 /* XXX FIXME: needs spinlock protection in MP mode */
 /* extern */ NIST_CTR_DRBG g_drbg; 
 

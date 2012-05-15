@@ -43,6 +43,8 @@
 
 extern bool g_master_prng_init_completed;
 extern bool g_master_crypto_init_completed;
+extern bool g_nvenforce;
+extern uint8_t g_nvpalpcr0[20];
 
 extern NIST_CTR_DRBG g_drbg;
 
