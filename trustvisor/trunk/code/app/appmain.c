@@ -51,7 +51,7 @@
 u32 tv_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
   eu_trace("CPU(0x%02x)", vcpu->id);
 
-  eu_trace("apb->cmdline: \"%s\"", apb->cmdline);
+  eu_trace("CPU(0x%02x) apb->cmdline: \"%s\"", vcpu->id, apb->cmdline);
   
   if (vcpu->isbsp) {
     eu_trace("CPU(0x%02x): init\n", vcpu->id);
