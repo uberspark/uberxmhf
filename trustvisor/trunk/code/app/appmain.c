@@ -49,8 +49,14 @@
 
 // a placeholder for now...
 u32 tv_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
+  ASSERT(NULL != vcpu);
+
   eu_trace("CPU(0x%02x)", vcpu->id);
 
+  if(NULL == apb) {
+    eu_err("ERROR: NULL apb (hyper-app parameter block) should never happen!");
+    return APP_INIT_FAIL;
+  }
   eu_trace("CPU(0x%02x) apb->cmdline: \"%s\"", vcpu->id, apb->cmdline);
   
   if (vcpu->isbsp) {
