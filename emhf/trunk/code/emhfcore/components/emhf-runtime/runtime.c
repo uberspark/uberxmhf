@@ -144,6 +144,7 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
   	appParamBlock.optionalmodule_ptr = (u32)rpb->runtime_appmodule_base;
   	appParamBlock.optionalmodule_size = (u32)rpb->runtime_appmodule_size;
 	appParamBlock.runtimephysmembase = (u32)rpb->XtVmmRuntimePhysBase;  
+    COMPILE_TIME_ASSERT(sizeof(appParamBlock.cmdline) >= sizeof(rpb->cmdline));
     strncpy(appParamBlock.cmdline, rpb->cmdline, sizeof(appParamBlock.cmdline));
 
   	//call app main

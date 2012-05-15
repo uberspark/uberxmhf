@@ -180,7 +180,7 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		rpb->RtmUartConfig = g_uart_config;
 
 		//pass command line configuration forward 
-//COMPILE_TIME_ASSERT(sizeof(slpb.cmdline) == sizeof(rpb->cmdline));
+        COMPILE_TIME_ASSERT(sizeof(slpb.cmdline) == sizeof(rpb->cmdline));
 		strncpy(rpb->cmdline, slpb.cmdline, sizeof(slpb.cmdline));
 
 		////debug dump uart_config field
