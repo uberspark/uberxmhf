@@ -73,8 +73,7 @@
  */
 
 #include <emhf.h> 
-
-#define ARRAY_SIZE(a)     (sizeof(a) / sizeof((a)[0]))
+#include <cmdline.h>
 
 /*
  * copy of original command line
@@ -82,14 +81,6 @@
  * FIXME - is this getting measured?
  */
 char g_cmdline[CMDLINE_SIZE] = { 0 };
-
-/* Used for kernel command line parameter setup */
-typedef struct {
-    const char *name;          /* set to NULL for last item in list */
-    const char *def_val;
-} cmdline_option_t;
-
-#define MAX_VALUE_LEN 64
 
 /*
  * the option names and default values must be separate from the actual
@@ -118,120 +109,6 @@ static const cmdline_option_t g_linux_cmdline_options[] = {
 /* static char g_linux_param_values[ARRAY_SIZE(g_linux_cmdline_options)][MAX_VALUE_LEN]; */
 static char g_tboot_param_values[ARRAY_SIZE(g_tboot_cmdline_options)][MAX_VALUE_LEN];
 
-static const char* get_option_val(const cmdline_option_t *options,
-                                  char vals[][MAX_VALUE_LEN],
-                                  const char *opt_name)
-{
-    int i;
-    for ( i = 0; options[i].name != NULL; i++ ) {
-        if ( strcmp(options[i].name, opt_name) == 0 )
-            return vals[i];
-    }
-    printf("requested unknown option: %s\n", opt_name);
-    return NULL;
-}
-
-static void cmdline_parse(char *cmdline, const cmdline_option_t *options,
-                          char vals[][MAX_VALUE_LEN])
-{
-    const char *p = cmdline;
-    int i;
-
-    /* copy default values to vals[] */
-    for ( i = 0; options[i].name != NULL; i++ ) {
-        strncpy(vals[i], options[i].def_val, MAX_VALUE_LEN-1);
-        vals[i][MAX_VALUE_LEN-1] = '\0';
-    }
-
-    if ( p == NULL )
-        return;
-
-    /* parse options */
-    while ( true )
-    {
-        /* skip whitespace */
-        while ( isspace(*p) )
-            p++;
-        if ( *p == '\0' )
-            break;
-
-        {
-            /* find end of current option */
-            const char *opt_start = p;
-            const char *opt_end = strchr(opt_start, ' ');
-            if ( opt_end == NULL )
-                opt_end = opt_start + strlen(opt_start);
-            p = opt_end;
-
-            {
-                /* find value part; if no value found, use default and continue */
-                const char *val_start = strchr(opt_start, '=');
-                if ( val_start == NULL || val_start > opt_end )
-                    continue;
-                val_start++;
-
-                {
-                    unsigned int opt_name_size = val_start - opt_start - 1;
-                    unsigned int copy_size = opt_end - val_start;
-                    if ( copy_size > MAX_VALUE_LEN - 1 )
-                        copy_size = MAX_VALUE_LEN - 1;
-                    if ( opt_name_size == 0 || copy_size == 0 )
-                        continue;
-
-                    /* value found, so copy it */
-                    for ( i = 0; options[i].name != NULL; i++ ) {
-                        if ( strncmp(options[i].name, opt_start, opt_name_size ) == 0 ) {
-                            strncpy(vals[i], val_start, copy_size);
-                            vals[i][copy_size] = '\0'; /* add '\0' to the end of string */
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-bool cmdline_get_nvenforce(void) {
-    const char *nvenforce = get_option_val(g_tboot_cmdline_options,
-                                           g_tboot_param_values, "nvenforce");
-    if ( nvenforce == NULL || *nvenforce == '\0' )
-        return true; /* desired default behavior is YES, DO ENFORCE */
-
-    if ( strncmp(nvenforce, "false", 6 ) == 0 )
-        return false;
-
-    return true;
-}
-
-/* lazy translation table to go from ascii hex to binary, one nibble
- * at a time */
-const uint8_t asc2nib[] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0,
-    0, 0, 0, 0, 0, 10, 11, 12, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 11, 12,
-    13, 14, 15 }; /* don't bother going past 'f' */
-#define ASC2NIB(x) ((x) < 103 ? asc2nib[x] : 0)
-
-/* allow caller to query whether param exists on cmdline by invoking
- * with NULL */
-bool cmdline_get_nvpalpcr0(uint8_t *reqd_pcr0) {
-    int i;
-    const char *ascii = get_option_val(g_tboot_cmdline_options,
-                                       g_tboot_param_values, "nvpalpcr0");
-    if ( ascii == NULL || *ascii == '\0' )
-        return false; /* no param found */
-
-    if ( reqd_pcr0 == NULL )
-        return true;
-
-    for(i=0; i<20; i++)
-        reqd_pcr0[i] = (ASC2NIB((uint8_t)ascii[2*i]) << 4) | ASC2NIB((uint8_t)ascii[2*i+1]);
-
-    return true;
-}
 
 void tboot_parse_cmdline(void)
 {
@@ -245,7 +122,7 @@ void tboot_parse_cmdline(void)
 
 void get_tboot_loglvl(void)
 {
-    const char *loglvl = get_option_val(g_tboot_cmdline_options,
+    const char *loglvl = cmdline_get_option_val(g_tboot_cmdline_options,
                                         g_tboot_param_values, "loglvl");
     if ( loglvl == NULL )
         return;
@@ -256,7 +133,7 @@ void get_tboot_loglvl(void)
 
 void get_tboot_log_targets(void)
 {
-    const char *targets = get_option_val(g_tboot_cmdline_options,
+    const char *targets = cmdline_get_option_val(g_tboot_cmdline_options,
                                          g_tboot_param_values, "logging");
 
     /* nothing set, leave defaults */
@@ -445,7 +322,7 @@ static bool parse_serial_param(const char *com)
 
 bool get_tboot_serial(void)
 {
-    const char *serial = get_option_val(g_tboot_cmdline_options,
+    const char *serial = cmdline_get_option_val(g_tboot_cmdline_options,
                                         g_tboot_param_values, "serial");
     if ( serial == NULL || *serial == '\0' )
         return false;
@@ -455,7 +332,7 @@ bool get_tboot_serial(void)
 
 /* void get_tboot_vga_delay(void) */
 /* { */
-/*     const char *vga_delay = get_option_val(g_tboot_cmdline_options, */
+/*     const char *vga_delay = cmdline_get_option_val(g_tboot_cmdline_options, */
 /*                                            g_tboot_param_values, "vga_delay"); */
 /*     if ( vga_delay == NULL ) */
 /*         return; */
@@ -465,7 +342,7 @@ bool get_tboot_serial(void)
 
 /* void get_tboot_no_usb(void) */
 /* { */
-/*     const char *no_usb = get_option_val(g_tboot_cmdline_options, */
+/*     const char *no_usb = cmdline_get_option_val(g_tboot_cmdline_options, */
 /*                                         g_tboot_param_values, "no_usb"); */
 /*     if ( no_usb == NULL ) */
 /*         return; */
@@ -480,7 +357,7 @@ bool get_tboot_serial(void)
 
 /* bool get_linux_vga(int *vid_mode) */
 /* { */
-/*     const char *vga = get_option_val(g_linux_cmdline_options, */
+/*     const char *vga = cmdline_get_option_val(g_linux_cmdline_options, */
 /*                                      g_linux_param_values, "vga"); */
 /*     if ( vga == NULL || vid_mode == NULL ) */
 /*         return false; */
@@ -500,7 +377,7 @@ bool get_tboot_serial(void)
 /* bool get_linux_mem(uint64_t *max_mem) */
 /* { */
 /*     char *last = NULL; */
-/*     const char *mem = get_option_val(g_linux_cmdline_options, */
+/*     const char *mem = cmdline_get_option_val(g_linux_cmdline_options, */
 /*                                      g_linux_param_values, "mem"); */
 /*     if ( mem == NULL || max_mem == NULL ) */
 /*         return false; */

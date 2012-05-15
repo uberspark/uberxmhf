@@ -34,7 +34,7 @@
  */
 
 /*
- * cmdline.h: support functions for command line parsing
+ * cmdline.c: command line parsing fns
  *
  * Copyright (c) 2006-2010, Intel Corporation
  * All rights reserved.
@@ -68,25 +68,87 @@
  *
  */
 
-#ifndef __CMDLINE_H__
-#define __CMDLINE_H__
+/**
+ * Modified for EMHF.
+ */
 
-#define CMDLINE_SIZE   512
+#include <emhf.h> 
+#include <cmdline.h>
 
-#ifndef __ASSEMBLY__
+const char* cmdline_get_option_val(const cmdline_option_t *options,
+                                   char vals[][MAX_VALUE_LEN],
+                                   const char *opt_name)
+{
+    int i;
+    for ( i = 0; options[i].name != NULL; i++ ) {
+        if ( strcmp(options[i].name, opt_name) == 0 )
+            return vals[i];
+    }
+    printf("requested unknown option: %s\n", opt_name);
+    return NULL;
+}
 
-extern char g_cmdline[CMDLINE_SIZE];
+void cmdline_parse(char *cmdline, const cmdline_option_t *options,
+                          char vals[][MAX_VALUE_LEN])
+{
+    const char *p = cmdline;
+    int i;
 
-extern void tboot_parse_cmdline(void);
-extern void get_tboot_loglvl(void);
-extern void get_tboot_log_targets(void);
-extern bool get_tboot_serial(void);
-extern void get_tboot_baud(void);
-extern void get_tboot_fmt(void);
+    /* copy default values to vals[] */
+    for ( i = 0; options[i].name != NULL; i++ ) {
+        strncpy(vals[i], options[i].def_val, MAX_VALUE_LEN-1);
+        vals[i][MAX_VALUE_LEN-1] = '\0';
+    }
 
-#endif // __ASSEMBLY__
+    if ( p == NULL )
+        return;
 
-#endif    /* __CMDLINE_H__ */
+    /* parse options */
+    while ( true )
+    {
+        /* skip whitespace */
+        while ( isspace(*p) )
+            p++;
+        if ( *p == '\0' )
+            break;
+
+        {
+            /* find end of current option */
+            const char *opt_start = p;
+            const char *opt_end = strchr(opt_start, ' ');
+            if ( opt_end == NULL )
+                opt_end = opt_start + strlen(opt_start);
+            p = opt_end;
+
+            {
+                /* find value part; if no value found, use default and continue */
+                const char *val_start = strchr(opt_start, '=');
+                if ( val_start == NULL || val_start > opt_end )
+                    continue;
+                val_start++;
+
+                {
+                    unsigned int opt_name_size = val_start - opt_start - 1;
+                    unsigned int copy_size = opt_end - val_start;
+                    if ( copy_size > MAX_VALUE_LEN - 1 )
+                        copy_size = MAX_VALUE_LEN - 1;
+                    if ( opt_name_size == 0 || copy_size == 0 )
+                        continue;
+
+                    /* value found, so copy it */
+                    for ( i = 0; options[i].name != NULL; i++ ) {
+                        if ( strncmp(options[i].name, opt_start, opt_name_size ) == 0 ) {
+                            strncpy(vals[i], val_start, copy_size);
+                            vals[i][copy_size] = '\0'; /* add '\0' to the end of string */
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 
 /*
