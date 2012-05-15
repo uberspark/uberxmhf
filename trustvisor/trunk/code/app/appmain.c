@@ -120,6 +120,9 @@ void parse_boot_cmdline(const char *cmdline) {
 
   eu_trace("NV Enforcement %s", g_nvenforce ? "ENABLED" : "DISABLED");
   eu_trace("NV uPCR[0] set to %*D", sizeof(g_nvpalpcr0), g_nvpalpcr0);
+  printf("printf: NV uPCR[0] set to %*D\n", sizeof(g_nvpalpcr0), g_nvpalpcr0);
+  print_hex("print_hex: ", g_nvpalpcr0, sizeof(g_nvpalpcr0));
+  eu_trace("NV uPCR[0] set to %*D", sizeof(g_nvpalpcr0), g_nvpalpcr0);
 }
 
 /**
