@@ -35,12 +35,14 @@ echo "Fetching http://10.0.0.1/~driver/test" >> $LOGFILE
 wget http://10.0.0.1/~driver/test
 chmod +x test
 echo "Invoking ./test" >> $LOGFILE
-./test >> $LOGFILE 2>&1
-if [ $? -eq 0 ] ; then
-    echo "./test exited successfully with exit code $?" >> $LOGFILE
-else
-    echo "./test FAILED with exit code $?" >> $LOGFILE
-fi
+for i in `seq 1 20`; do
+    ./test >> $LOGFILE 2>&1
+    if [ $? -eq 0 ] ; then
+        echo "./test iteration $i exited successfully with exit code $?" >> $LOGFILE
+    else
+        echo "./test iteration $i FAILED with exit code $?" >> $LOGFILE
+    fi
+done
 
 popd
 scp -o StrictHostKeyChecking=no $TESTDIR/* logger@10.0.0.1:/var/www/logger/$TESTDIR >> $LOGFILE 2>&1
