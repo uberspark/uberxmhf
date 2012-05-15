@@ -323,23 +323,50 @@ int trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
  */
 static uint32_t authenticate_nv_mux_pal(VCPU *vcpu) {
   uint32_t rv = 1;
+  TPM_DIGEST pcr;
+  const int pcr_idx = 0;
   eu_pulse();
 
   /* make sure that this vmmcall can only be executed when a PAL is
    * running */
   EU_CHK( scode_curr[vcpu->id] != -1,
           eu_err_e("GenRandom ERROR: no PAL is running!"));
-    
-  eu_err("\n\n"
-         "VULNERABILITY:VULNERABILITY:VULNERABILITY:VULNERABILITY\n"
-         "   NvMuxPal Authentication Unimplemented!!!\n"
-         "   Any PAL can manipulate sensitive NV areas!!!\n"
-         "   Continuing anyways...\n"
-         "VULNERABILITY:VULNERABILITY:VULNERABILITY:VULNERABILITY\n");
 
+  /* Read uTPM PCR[0] */
+  EU_CHKN( rv = utpm_pcrread(&pcr, &whitelist[scode_curr[vcpu->id]].utpm, pcr_idx));
+
+  if(!g_nvenforce) {
+    /* Boot param (cmdline) explicitly said not to enforce that only
+     * one anointed PAL shall be the NvMuxPal.  Make some warning
+     * noise in the log anyways, just in case this is accidental. */
+    eu_warn("\n\n"
+            "WARNING:WARNING:WARNING:WARNING:WARNING:WARNING\n"
+            "   NvMuxPal Authentication DISABLED!!!\n"
+            "   Any PAL can manipulate sensitive NV areas!!!\n"
+            "   This may be a VULNERABILITY!!!\n"
+            "   Continuing anyways...\n"
+            "WARNING:WARNING:WARNING:WARNING:WARNING:WARNING\n");
+
+    /* Useful to see whether enforcement would have allowed access */
+    print_hex("g_nvpalpcr0:  ", g_nvpalpcr0, sizeof(g_nvpalpcr0));
+    print_hex("actual PCR[0]: ", pcr.value, sizeof(pcr.value));
+
+    return 0; /* "success" */
+  }
+
+  /**
+   * If we are here, then g_nvenforce is true, and we must ensure that
+   * the PAL attempting to access the hardware TPM's NV-RAM matches
+   * the one specified in g_nvpalpcr0.
+   */
+
+  EU_CHKN( rv = memcmp(g_nvpalpcr0, pcr.value, sizeof(pcr.value)),
+           eu_warn_e("SECURITY WARNING: Disallowed PAL Attempted to access TPM NV-RAM"));
+
+  eu_trace("Attempt to access TPM NV-RAM APPROVED.");
   rv = 0;
  out:
-  return rv; /* XXX Actual check unimplemented XXX */
+  return rv;
 }
 
 uint32_t hc_tpmnvram_getsize(VCPU* vcpu, uint32_t size_addr) {
