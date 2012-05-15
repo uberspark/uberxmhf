@@ -68,6 +68,10 @@
  *
  */
 
+/**
+ * Modified for EMHF.
+ */
+
 #include <emhf.h> 
 
 #define ARRAY_SIZE(a)     (sizeof(a) / sizeof((a)[0]))
@@ -103,6 +107,7 @@ static const cmdline_option_t g_tboot_cmdline_options[] = {
 
     /* { "vga_delay",  "0" },      /\* # secs *\/ */
     /* { "no_usb",     "true" },   /\* true|false *\/ */
+    { "nvpal", "0000000000000000000000000000000000000000"}
     { NULL, NULL }
 };
 
