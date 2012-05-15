@@ -68,7 +68,7 @@
 	#include <tpm.h>
 #endif /* __ASSEMBLY__ */
 
-
+#include <emhf-debug.h>			//EMHF debug component 
 #include <emhf-types.h>			//EMHF specific base types
 
 
@@ -81,7 +81,6 @@ extern RPB *rpb;
 
 //----------------------------------------------------------------------
 // component headers
-#include <emhf-debug.h>			//EMHF debug component 
 #include <emhf-baseplatform.h>	//EMHF base platform component
 #include <emhf-memprot.h>		//EMHF memory protection component
 #include <emhf-dmaprot.h>		//EMHF DMA protection component
