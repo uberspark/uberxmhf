@@ -107,7 +107,8 @@ static const cmdline_option_t g_tboot_cmdline_options[] = {
 
     /* { "vga_delay",  "0" },      /\* # secs *\/ */
     /* { "no_usb",     "true" },   /\* true|false *\/ */
-    { "nvpal", "0000000000000000000000000000000000000000"}
+    { "nvpalpcr0", "0000000000000000000000000000000000000000"}, /* Req'd PCR[0] of NvMuxPal */
+    { "nvenforce", "true" }, /* true|false - actually enforce nvpalpcr0? */
     { NULL, NULL }
 };
 
