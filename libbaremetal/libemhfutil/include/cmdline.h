@@ -33,8 +33,8 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#ifndef __CMDLINE_H__
-#define __CMDLINE_H__
+#ifndef __COMMAND_LINE_H__
+#define __COMMAND_LINE_H__
 
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
@@ -54,4 +54,4 @@ const char* cmdline_get_option_val(const cmdline_option_t *options,
 void cmdline_parse(char *cmdline, const cmdline_option_t *options,
                    char vals[][MAX_VALUE_LEN]);
 
-#endif /* __CMDLINE_H__ */
+#endif /* __COMMAND_LINE_H__ */
