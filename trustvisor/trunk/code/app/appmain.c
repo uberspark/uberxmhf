@@ -53,7 +53,31 @@
 #include <tv_log.h>
 #include <tv_emhf.h>
 
-// a placeholder for now...
+/**
+ * NOTE: All of this command-line parsing code is redundant.  Much of
+ * it is copied from the EMHF core.  TODO: Refactor into libemhfutil?
+ */
+
+/* XXX Redundant definition; repeats what is already in
+ * emhfcore/init/cmdline.c. TODO: cleanup. */
+typedef struct {
+  const char *name;          /* set to NULL for last item in list */
+  const char *def_val;
+} cmdline_option_t;
+
+const cmdline_option_t trustvisor_available_cmdline_options[] = {
+  { "nvpalpcr0", "0000000000000000000000000000000000000000"}, /* Req'd PCR[0] of NvMuxPal */
+  { "nvenforce", "true" }, /* true|false|tofu - actually enforce nvpalpcr0? */
+  { NULL, NULL }
+};
+
+void parse_boot_cmdline(const char *cmdline) {
+}
+
+/**
+ * This is the primary entry-point from the EMHF Core during
+ * hypervisor initialization.
+ */
 u32 tv_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
   ASSERT(NULL != vcpu);
   ASSERT(NULL != apb);
