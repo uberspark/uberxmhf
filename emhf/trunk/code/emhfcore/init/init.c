@@ -762,7 +762,8 @@ void cstartup(multiboot_info_t *mbi){
     {
       uart_config_t uart_config_backup = g_uart_config;
       if(!get_tboot_serial()) {
-        g_uart_config = uart_config_backup;
+          /* TODO: What's going on here? Redundant? */
+          g_uart_config = uart_config_backup;
       }
     }
 
