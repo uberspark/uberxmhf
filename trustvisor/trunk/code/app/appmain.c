@@ -33,9 +33,15 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// appmain.c
-// emhf application main module
-// author: amit vasudevan (amitvasudevan@acm.org)
+/*
+ */
+
+/**
+ * appmain.c
+ * Primary TrustVisor entry point from the EMHF core
+ * authors: amit vasudevan (amitvasudevan@acm.org)
+ * jnewsome@cmu.edu, jonmccune@cmu.edu
+ */
 
 #include <emhf.h> 
 
