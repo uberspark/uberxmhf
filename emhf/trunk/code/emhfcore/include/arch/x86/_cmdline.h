@@ -85,6 +85,9 @@ extern bool get_tboot_serial(void);
 extern void get_tboot_baud(void);
 extern void get_tboot_fmt(void);
 
+extern bool cmdline_get_nvenforce(void);
+extern bool cmdline_get_nvpalpcr0(uint8_t *reqd_pcr0);
+
 #endif // __ASSEMBLY__
 
 #endif    /* __CMDLINE_H__ */
