@@ -52,26 +52,72 @@
 
 #include <tv_log.h>
 #include <tv_emhf.h>
+#include <cmdline.h>
 
-/**
- * NOTE: All of this command-line parsing code is redundant.  Much of
- * it is copied from the EMHF core.  TODO: Refactor into libemhfutil?
- */
-
-/* XXX Redundant definition; repeats what is already in
- * emhfcore/init/cmdline.c. TODO: cleanup. */
-typedef struct {
-  const char *name;          /* set to NULL for last item in list */
-  const char *def_val;
-} cmdline_option_t;
-
-const cmdline_option_t trustvisor_available_cmdline_options[] = {
+const cmdline_option_t gc_trustvisor_available_cmdline_options[] = {
   { "nvpalpcr0", "0000000000000000000000000000000000000000"}, /* Req'd PCR[0] of NvMuxPal */
-  { "nvenforce", "true" }, /* true|false|tofu - actually enforce nvpalpcr0? */
+  { "nvenforce", "true" }, /* true|false - actually enforce nvpalpcr0? */
   { NULL, NULL }
 };
 
+static char g_trustvisor_param_values[ARRAY_SIZE(gc_trustvisor_available_cmdline_options)][MAX_VALUE_LEN];
+uint8_t g_nvpalpcr0[20];
+bool g_nvenforce = true;
+
+bool cmdline_get_nvenforce(void) {
+    const char *nvenforce = cmdline_get_option_val(gc_trustvisor_available_cmdline_options,
+                                                   g_trustvisor_param_values,
+                                                   "nvenforce");
+    if ( nvenforce == NULL || *nvenforce == '\0' )
+        return true; /* desired default behavior is YES, DO ENFORCE */
+
+    if ( strncmp(nvenforce, "false", 6 ) == 0 )
+        return false;
+
+    return true;
+}
+
+/* lazy translation table to go from ascii hex to binary, one nibble
+ * at a time */
+const uint8_t gc_asc2nib[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0,
+    0, 0, 0, 0, 0, 10, 11, 12, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 11, 12,
+    13, 14, 15 }; /* don't bother going past 'f' */
+#define ASC2NIB(x) ((x) < 103 ? gc_asc2nib[x] : 0)
+
+/* allow caller to query whether param exists on cmdline by invoking
+ * with NULL reqd_pcr0 */
+bool cmdline_get_nvpalpcr0(uint8_t *reqd_pcr0) { /* out */
+    int i;
+    const char *ascii = cmdline_get_option_val(gc_trustvisor_available_cmdline_options,
+                                               g_trustvisor_param_values,
+                                               "nvpalpcr0");
+    if ( ascii == NULL || *ascii == '\0' )
+        return false; /* no param found */
+
+    if ( reqd_pcr0 == NULL )
+        return true;
+
+    for(i=0; i<20; i++)
+        reqd_pcr0[i] = (ASC2NIB((uint8_t)ascii[2*i]) << 4) | ASC2NIB((uint8_t)ascii[2*i+1]);
+
+    return true;
+}
+
 void parse_boot_cmdline(const char *cmdline) {
+  cmdline_parse(cmdline, gc_trustvisor_available_cmdline_options, g_trustvisor_param_values);
+  g_nvenforce = cmdline_get_nvenforce();
+  if(!cmdline_get_nvpalpcr0(g_nvpalpcr0) && g_nvenforce) {
+    /* Emit warning that enforcing uPCR[0] for NV access doesn't make
+     * sense without specifying which PAL _should_ have access */
+    eu_warn("WARNING: NV enforcement ENABLED, but NVPAL's uPCR[0] UNSPECIFIED!");
+  }
+
+  eu_trace("NV Enforcement %s", g_nvenforce ? "ENABLED" : "DISABLED");
+  eu_trace("NV uPCR[0] set to %*D", sizeof(g_nvpalpcr0), g_nvpalpcr0);
 }
 
 /**
@@ -88,7 +134,7 @@ u32 tv_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
     eu_trace("CPU(0x%02x): init\n", vcpu->id);
 
     eu_trace("CPU(0x%02x) apb->cmdline: \"%s\"", vcpu->id, apb->cmdline);
-    //    parse_boot_cmdline(apb->cmdline);
+    parse_boot_cmdline(apb->cmdline);
 
     init_scode(vcpu);
   }

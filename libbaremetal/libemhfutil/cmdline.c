@@ -88,7 +88,7 @@ const char* cmdline_get_option_val(const cmdline_option_t *options,
     return NULL;
 }
 
-void cmdline_parse(char *cmdline, const cmdline_option_t *options,
+void cmdline_parse(const char *cmdline, const cmdline_option_t *options,
                           char vals[][MAX_VALUE_LEN])
 {
     const char *p = cmdline;

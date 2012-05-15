@@ -48,10 +48,10 @@ typedef struct {
 #define MAX_VALUE_LEN 64
 
 const char* cmdline_get_option_val(const cmdline_option_t *options,
-                           char vals[][MAX_VALUE_LEN],
-                           const char *opt_name);
+                                   char vals[][MAX_VALUE_LEN],
+                                   const char *opt_name);
 
-void cmdline_parse(char *cmdline, const cmdline_option_t *options,
+void cmdline_parse(const char *cmdline, const cmdline_option_t *options,
                    char vals[][MAX_VALUE_LEN]);
 
 #endif /* __COMMAND_LINE_H__ */
