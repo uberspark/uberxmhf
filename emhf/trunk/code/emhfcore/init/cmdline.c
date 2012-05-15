@@ -194,6 +194,47 @@ static void cmdline_parse(char *cmdline, const cmdline_option_t *options,
     }
 }
 
+bool cmdline_get_nvenforce(void) {
+    const char *nvenforce = get_option_val(g_tboot_cmdline_options,
+                                           g_tboot_param_values, "nvenforce");
+    if ( nvenforce == NULL || *nvenforce == '\0' )
+        return true; /* desired default behavior is YES, DO ENFORCE */
+
+    if ( strncmp(nvenforce, "false", 6 ) == 0 )
+        return false;
+
+    return true;
+}
+
+/* lazy translation table to go from ascii hex to binary, one nibble
+ * at a time */
+const uint8_t asc2nib[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0,
+    0, 0, 0, 0, 0, 10, 11, 12, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 11, 12,
+    13, 14, 15 }; /* don't bother going past 'f' */
+#define ASC2NIB(x) ((x) < 103 ? asc2nib[x] : 0)
+
+/* allow caller to query whether param exists on cmdline by invoking
+ * with NULL */
+bool cmdline_get_nvpalpcr0(uint8_t *reqd_pcr0) {
+    int i;
+    const char *ascii = get_option_val(g_tboot_cmdline_options,
+                                       g_tboot_param_values, "nvpalpcr0");
+    if ( ascii == NULL || *ascii == '\0' )
+        return false; /* no param found */
+
+    if ( reqd_pcr0 == NULL )
+        return true;
+
+    for(i=0; i<20; i++)
+        reqd_pcr0[i] = (ASC2NIB((uint8_t)ascii[2*i]) << 4) | ASC2NIB((uint8_t)ascii[2*i+1]);
+
+    return true;
+}
+
 void tboot_parse_cmdline(void)
 {
     cmdline_parse(g_cmdline, g_tboot_cmdline_options, g_tboot_param_values);

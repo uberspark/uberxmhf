@@ -127,6 +127,8 @@ typedef struct _sl_parameter_block {
     /* runtime options parsed in init and passed forward */
     //uart_config_t uart_config;
     u8	options[1024]; /* runtime options parsed in init and passed forward */
+    u8 nvpalpcr0[20]; /* TODO: ensure this is consistent with hash function size (currently SHA-1) */
+    bool nvenforce;
 } __attribute__((packed)) SL_PARAMETER_BLOCK;
 
 
