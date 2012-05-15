@@ -94,7 +94,7 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	printf("\n	OS bootmodule at 0x%08x, size=%u bytes", 
 		slpb.runtime_osbootmodule_base, slpb.runtime_osbootmodule_size);
     printf("\n\tnvenforce = %s", slpb.nvenforce ? "true" : "false");
-    print_hex("\tnvpalpcr0: ", slpb.nvpalpcr0, 20);
+    printf("\n\tnvpalpcr0: %*D", slpb.nvpalpcr0, 20);
 
 	//debug: if we are doing some performance measurements
     slpb.rdtsc_after_drtm = (u64)rdtsc_eax | ((u64)rdtsc_edx << 32);
@@ -180,6 +180,10 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		//pass command line configuration forward 
 		//rpb->uart_config = g_uart_config;
 		memcpy((void *)&rpb->RtmOptions, (void *)&slpb.options, sizeof(slpb.options));
+
+        //command line options relevant to TPM NV-RAM and state continuity
+        rpb->nvenforce = slpb.nvenforce;
+        memcpy(rpb->nvpalpcr0, slpb.nvpalpcr0, sizeof(slpb.nvpalpcr0));
 
 		////debug dump uart_config field
 		//printf("\nrpb->uart_config.port = %x", rpb->uart_config.port);
