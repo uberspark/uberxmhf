@@ -46,6 +46,10 @@
 #define ASSERT(_p) { if ( !(_p) ) { printf("\nAssertion '%s' failed, line %d, file %s\n", #_p , __LINE__, __FILE__); HALT(); } }
 #define WARNING(_p) { if ( !(_p) ) { printf("\nWarning Assertion '%s' failed, line %d, file %s\n", #_p , __LINE__, __FILE__);} }
 
+/* awesome trick from http://www.jaggersoft.com/pubs/CVu11_3.html */
+#define COMPILE_TIME_ASSERT(pred)               \
+  switch(0){case 0:case pred:;}
+
 /* Overflow functions from tboot-20101005/tboot/include/misc.h */
 
 /*

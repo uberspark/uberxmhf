@@ -55,10 +55,6 @@
 
 #include <tv_log.h>
 
-/* awesome trick from http://www.jaggersoft.com/pubs/CVu11_3.html */
-#define COMPILE_TIME_ASSERT(pred)               \
-  switch(0){case 0:case pred:;}
-
 /* FIXME: make them static (i.e., only inside this file) */
 /* extern */ bool g_master_prng_init_completed = false;
 /* extern */ bool g_master_crypto_init_completed = false;
