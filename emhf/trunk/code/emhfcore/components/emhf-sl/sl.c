@@ -69,7 +69,7 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	ASSERT (cpu_vendor == CPU_VENDOR_AMD || cpu_vendor == CPU_VENDOR_INTEL);
 	
 	//initialize debugging early on
-	emhf_debug_init((char *)&slpb.options);
+	emhf_debug_init((char *)&slpb.uart_config);
 	
 
 	//initialze sl_baseaddr variable and print its value out
@@ -177,13 +177,12 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		rpb->runtime_appmodule_base = slpb.runtime_appmodule_base;
 		rpb->runtime_appmodule_size = slpb.runtime_appmodule_size;
 
-		//pass command line configuration forward 
-		//rpb->uart_config = g_uart_config;
-		memcpy((void *)&rpb->RtmOptions, (void *)&slpb.options, sizeof(slpb.options));
+        //pass along UART config for serial debug output
+		rpb->RtmUartConfig = g_uart_config;
 
-        //command line options relevant to TPM NV-RAM and state continuity
-        rpb->nvenforce = slpb.nvenforce;
-        memcpy(rpb->nvpalpcr0, slpb.nvpalpcr0, sizeof(slpb.nvpalpcr0));
+		//pass command line configuration forward 
+//        COMPILE_TIME_ASSERT(sizeof(slpb.options) == sizeof(rpb->RtmOptions));
+		memcpy((void *)&rpb->RtmOptions, (void *)&slpb.options, sizeof(slpb.options));
 
 		////debug dump uart_config field
 		//printf("\nrpb->uart_config.port = %x", rpb->uart_config.port);

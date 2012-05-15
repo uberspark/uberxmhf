@@ -51,7 +51,7 @@ void emhf_runtime_entry(void){
 	rpb = (RPB *)&arch_rpb;
 
 	//setup debugging	
-	emhf_debug_init((char *)&rpb->RtmOptions);
+	emhf_debug_init((char *)&rpb->RtmUartConfig);
 	printf("\nruntime initializing...");
 
 

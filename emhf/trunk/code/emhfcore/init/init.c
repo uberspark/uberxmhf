@@ -868,11 +868,8 @@ void cstartup(multiboot_info_t *mbi){
 			}
 		}
 
-        //slpb->uart_config = g_uart_config;
-        /* TODO: matchup types and max sizes for slpb->options and
-         * g_uart_config (emhf-types.h currently hard-codes u8
-         * options[1024]) */
-        memcpy((void *)&slpb->options, (void *)&g_uart_config, sizeof(g_uart_config));
+        slpb->uart_config = g_uart_config;
+        strncpy((char *)slpb->options, (const char *)mbi->cmdline, sizeof(slpb->options));
         
     }
    

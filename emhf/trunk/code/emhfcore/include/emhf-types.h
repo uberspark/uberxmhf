@@ -98,12 +98,9 @@ typedef struct {
 	u32 RtmVMXVTdPts;
 	u32 RtmVMXVTdRET;
 	u32 RtmVMXVTdCET;
-    //uart_config_t uart_config;	        /* runtime options parsed in init and passed forward */
+    uart_config_t RtmUartConfig;	        /* runtime options parsed in init and passed forward */
     u8	RtmOptions[1024]; 				/* runtime options parsed in init and passed forward */
 	u32 isEarlyInit;					//1 for an "early init" else 0 (late-init)
-    /* XXX RtmOptions above is broken; explicitly placing NV-related options here. */
-    u8 nvpalpcr0[20]; /* TODO: ensure this is consistent with hash function size (currently SHA-1) */
-    bool nvenforce;
 } __attribute__((packed)) RPB, *PRPB;
 
 
@@ -128,7 +125,7 @@ typedef struct _sl_parameter_block {
     u64 rdtsc_after_drtm;
 
     /* runtime options parsed in init and passed forward */
-    //uart_config_t uart_config;
+    uart_config_t uart_config;
     u8	options[1024]; /* runtime options parsed in init and passed forward */
     u8 nvpalpcr0[20]; /* TODO: ensure this is consistent with hash function size (currently SHA-1) */
     bool nvenforce;
