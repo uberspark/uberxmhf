@@ -107,7 +107,6 @@ typedef struct {
 //"sl" parameter block structure 
 typedef struct _sl_parameter_block {
 	u32 magic;	//magic identifier
-	u32 hashSL;	//hash of the secure loader
 	u32 errorHandler;	//error handler
 	u32 isEarlyInit;	//"early" or "late" init
 	u32 numE820Entries;		//number of E820 entries

@@ -832,7 +832,6 @@ void cstartup(multiboot_info_t *mbi){
         //"sl" parameter block is at hypervisor_image_baseaddress + 0x10000
         slpb = (SL_PARAMETER_BLOCK *)((u32)hypervisor_image_baseaddress + 0x10000);
         ASSERT(slpb->magic == SL_PARAMETER_BLOCK_MAGIC);
-        slpb->hashSL = 0;
         slpb->errorHandler = 0;
         slpb->isEarlyInit = 1;    //this is an "early" init
         slpb->numE820Entries = grube820list_numentries;

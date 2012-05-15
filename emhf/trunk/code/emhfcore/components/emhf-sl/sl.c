@@ -84,7 +84,6 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		
 	//debug: dump SL parameter block
 	printf("\nSL: slpb at = 0x%08x", (u32)&slpb);
-	printf("\n	hashSL=0x%08x", slpb.hashSL);
 	printf("\n	errorHandler=0x%08x", slpb.errorHandler);
 	printf("\n	isEarlyInit=0x%08x", slpb.isEarlyInit);
 	printf("\n	numE820Entries=%u", slpb.numE820Entries);
