@@ -38,6 +38,10 @@ git clean -d -f -x .
 
 ## 1. Build EMHF + TrustVisor
 
+pushd $TV_RELPATH
+./autogen.sh
+popd
+
 ./autogen.sh
 ./configure --prefix=$TEMPDIR --with-approot=$TV_RELPATH --with-libbaremetalsrc=$LIBBAREMETAL_ABSPATH
 make clean
