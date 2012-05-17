@@ -49,18 +49,24 @@
 #define EU_LOG_LVL EU_TRACE
 #endif
 
+#ifndef EU_LOG_PRINTLN
+#define EU_LOG_PRINTLN( prefix, fmt, args...) printf( "%-50s " fmt "\n", prefix, ## args)
+#endif
+
 #include <stdio.h>
 #include <stdarg.h>
 
+#define EU_PREFIX_LEN 256
 #define EU_LOG(pri, fmt, args...)                                        \
   do {                                                                  \
-    char _eulogbuf[128];                                                \
+    char _eulogbuf[EU_PREFIX_LEN];                                                \
     if (EU_LOG_LVL <= pri) {                                             \
-      snprintf(_eulogbuf, 128, "%s[%d]:%s:%s:%d:", EU_LOG_PREFIX, pri, __FILE__, __FUNCTION__, __LINE__); \
-      _eulogbuf[127] = '\0';                                            \
-      printf("%-50s " fmt "\n", _eulogbuf, ## args);                    \
+      snprintf(_eulogbuf, EU_PREFIX_LEN, "%s[%d]:%s:%s:%d:", EU_LOG_PREFIX, pri, __FILE__, __FUNCTION__, __LINE__); \
+      _eulogbuf[EU_PREFIX_LEN-1] = '\0';                                            \
+      EU_LOG_PRINTLN( _eulogbuf, fmt, ## args);                         \
     }                                                                   \
   } while(0)
+#undef EU_PREFIX_LEN
 
 #define eu_trace(fmt, args...) EU_LOG(EU_TRACE, fmt, ## args)
 #define eu_perf(fmt, args...) EU_LOG(EU_PERF, fmt, ## args)

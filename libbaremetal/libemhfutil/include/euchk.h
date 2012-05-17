@@ -39,6 +39,11 @@
 #include <eulog.h>
 #include <stdlib.h>
 
+/* normally use eu_log, but give option for client to override */
+#ifndef EU_CHK_LOG
+#define EU_CHK_LOG( pri, fmt, args...) EU_LOG( pri, fmt, ## args)
+#endif
+
 /* EU_CHK(cond) - if condition is false, will log an error, including
  * the stringified condition, and goto label 'out'. Use above variants
  * if a different logging priority is desired.
@@ -72,7 +77,7 @@
   do {                                                                  \
     int _eu_chk_cond = (int)(cond);                                     \
     if (_eu_chk_cond) {                                                 \
-      EU_LOG(priority, "EU_CHKN( %s) failed with: %d", #cond, _eu_chk_cond); \
+      EU_CHK_LOG(priority, "EU_CHKN( %s) failed with: %d", #cond, _eu_chk_cond); \
       (void)0, ## args;                                                 \
       goto out;                                                         \
     }                                                                   \
@@ -81,7 +86,7 @@
 #define EU_CHK_PRI(cond, priority, args...)             \
   do {                                                  \
     if (!(cond)) {                                      \
-      EU_LOG(priority, "EU_CHK( %s) failed", #cond);    \
+      EU_CHK_LOG(priority, "EU_CHK( %s) failed", #cond);    \
       (void)0, ## args;                                 \
       goto out;                                         \
     }                                                   \
@@ -103,7 +108,7 @@
 #define EU_VERIFY(cond, args...)                \
   do {                                          \
     if (!(cond)) {                              \
-      eu_err("EU_VERIFY( %s) failed", #cond);   \
+      EU_CHK_LOG( EU_ERR, "EU_VERIFY( %s) failed", #cond);       \
       (void)0, ## args;                         \
       abort();                                  \
     }                                           \
@@ -114,7 +119,7 @@
   do {                                                                  \
     int _eu_chk_cond = (int)(cond);                                     \
     if (_eu_chk_cond) {                                                 \
-      eu_err("EU_VERIFYN( %s) failed with %d", #cond, _eu_chk_cond);    \
+      EU_CHK_LOG( EU_ERR, "EU_VERIFYN( %s) failed with %d", #cond, _eu_chk_cond); \
       (void)0, ## args;                                                 \
       abort();                                                          \
     }                                                                   \
