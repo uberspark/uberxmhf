@@ -17,6 +17,7 @@ TV_RELPATH=../../../trustvisor/trunk/code
 TEESDK_RELPATH=../../../tee-sdk/trunk
 TEESDK_ABSPATH=`( cd "$MY_PATH/$TEESDK_RELPATH" && pwd )`
 TESTPAL_RELPATH=../../../tee-sdk/trunk/examples/test
+TESTPAL_ABSPATH=`( cd "$MY_PATH/$TESTPAL_RELPATH" && pwd )`
 
 # and these are libbaremetal's paths
 LIBBAREMETAL_RELPATH=../../../libbaremetal
@@ -64,7 +65,7 @@ make PREFIX=$TEMPDIR
 popd
 
 # Now to build the examples/test PAL:
-pushd $TESTPAL_RELPATH
+pushd $TESTPAL_ABSPATH
 PATH=$PATH:$TEMPDIR/bin PKG_CONFIG_PATH=$TEMPDIR/lib/pkgconfig make clean
 PATH=$PATH:$TEMPDIR/bin PKG_CONFIG_PATH=$TEMPDIR/lib/pkgconfig make
 popd
