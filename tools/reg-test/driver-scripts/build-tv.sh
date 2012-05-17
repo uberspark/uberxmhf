@@ -8,12 +8,16 @@ set -e
 MY_PATH=`dirname "$0"`
 MY_PATH=`( cd "$MY_PATH" && pwd )`
 
+REPO_ROOT_RELPATH=../../..
+REPO_ROOT_ABSPATH=`( cd "$MY_PATH/$REPO_ROOT_RELPATH" && pwd )`
+
 # These are the relative & absolute paths of EMHF
 EMHF_RELPATH=../../../emhf/trunk/code
 EMHF_ABSPATH=`( cd "$MY_PATH/$EMHF_RELPATH" && pwd )`
 
 # and these are TrustVisor and tee-sdk's paths
 TV_RELPATH=../../../trustvisor/trunk/code
+TV_ABSPATH=`( cd "$MY_PATH/$TV_RELPATH" && pwd )`
 TEESDK_RELPATH=../../../tee-sdk/trunk
 TEESDK_ABSPATH=`( cd "$MY_PATH/$TEESDK_RELPATH" && pwd )`
 TESTPAL_RELPATH=../../../tee-sdk/trunk/examples/test
@@ -29,7 +33,7 @@ rm -rf $TEMPDIR
 mkdir -p $TEMPDIR
 
 # 0. Pull the latest source code.
-pushd $EMHF_ABSPATH
+pushd $REPO_ROOT_ABSPATH
 git svn rebase
 # Note: this comes _after_ rebase because we want rebase to fail if
 # one of us developers has been tinkering around and forgot to commit
@@ -38,10 +42,11 @@ git clean -d -f -x .
 
 ## 1. Build EMHF + TrustVisor
 
-pushd $TV_RELPATH
+pushd $TV_ABSPATH
 ./autogen.sh
 popd
 
+pushd $EMHF_ABSPATH
 ./autogen.sh
 ./configure --prefix=$TEMPDIR --with-approot=$TV_RELPATH --with-libbaremetalsrc=$LIBBAREMETAL_ABSPATH
 make clean
