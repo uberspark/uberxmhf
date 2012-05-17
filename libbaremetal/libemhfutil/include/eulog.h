@@ -56,17 +56,19 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#define EU_PREFIX_LEN 256
+#ifndef EU_PREFIX_MAX_LEN
+#define EU_PREFIX_MAX_LEN 256
+#endif
+
 #define EU_LOG(pri, fmt, args...)                                        \
   do {                                                                  \
-    char _eulogbuf[EU_PREFIX_LEN];                                                \
+    char _eulogbuf[EU_PREFIX_MAX_LEN];                                                \
     if (EU_LOG_LVL <= pri) {                                             \
-      snprintf(_eulogbuf, EU_PREFIX_LEN, "%s[%d]:%s:%s:%d:", EU_LOG_PREFIX, pri, __FILE__, __FUNCTION__, __LINE__); \
-      _eulogbuf[EU_PREFIX_LEN-1] = '\0';                                            \
+      snprintf(_eulogbuf, EU_PREFIX_MAX_LEN, "%s[%d]:%s:%s:%d:", EU_LOG_PREFIX, pri, __FILE__, __FUNCTION__, __LINE__); \
+      _eulogbuf[EU_PREFIX_MAX_LEN-1] = '\0';                                            \
       EU_LOG_PRINTLN( _eulogbuf, fmt, ## args);                         \
     }                                                                   \
   } while(0)
-#undef EU_PREFIX_LEN
 
 #define eu_trace(fmt, args...) EU_LOG(EU_TRACE, fmt, ## args)
 #define eu_perf(fmt, args...) EU_LOG(EU_PERF, fmt, ## args)
