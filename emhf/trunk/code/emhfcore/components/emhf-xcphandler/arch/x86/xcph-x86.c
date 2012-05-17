@@ -182,6 +182,17 @@ void emhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 					(u16)read_segreg_fs(), (u16)read_segreg_gs());
 				printf("\nTR=0x%04x", (u16)read_tr_sel());
 				
+				//do a stack dump in the hopes of getting more info.
+				{
+					//vcpu->esp is the TOS
+					uint32_t i;
+					uint32_t stack_start = (r->esp+(3*sizeof(uint32_t)));
+					printf("\n-----stack dump-----");
+					for(i=stack_start; i < vcpu->esp; i+=sizeof(uint32_t)){
+						printf("\n  Stack(0x%08x) -> 0x%08x", i, *(uint32_t *)i);
+					}
+					printf("\n-----end------------");
+				}
 				HALT();
 			}
 	}
