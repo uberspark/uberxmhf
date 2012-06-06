@@ -45,6 +45,7 @@ void rand_bytes_or_die(uint8_t *out, unsigned int len);
 int rand_bytes(uint8_t *out, unsigned int *len);
 
 /* libtomcrypt prng. this is just a wrapper for our internal drbg */
+extern const struct ltc_prng_descriptor tv_sprng_desc;
 extern prng_state g_ltc_prng;
 extern int g_ltc_prng_id;
 
