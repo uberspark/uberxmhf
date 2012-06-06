@@ -487,11 +487,6 @@ uint32_t hc_utpm_utpm_id_getpub(VCPU * vcpu, uint32_t gvaddr)
 	EU_CHK( scode_curr[vcpu->id] != -1,
 		eu_err_e("ID_GETPUB ERROR: no PAL is running!"));
 
-	EU_CHKN( utpm_id_getpub(NULL, &len));
-	EU_CHK( len <= sizeof(rsaModulus),
-		eu_err_e("Buffer is size %d but needs size %d",
-			 sizeof(rsaModulus), len));
-
 	EU_CHKN( rv = utpm_id_getpub(rsaModulus, &len));
 	EU_CHK( len == TPM_RSA_KEY_LEN); /* XXX userspace allocations assume this size */
 
