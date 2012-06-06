@@ -50,6 +50,8 @@
 #include <crypto_init.h>
 #include <nv.h>
 
+#include <tommath.h>
+
 #include <tv_log.h>
 
 /* FIXME: make them static (i.e., only inside this file) */
@@ -146,7 +148,7 @@ static int master_prng_init(void) {
 static int trustvisor_measure_qnd_bridge_signing_pubkey(rsa_key *rsa) {
   int rv=1;
   uint8_t serial_pubkey[SERIAL_BUFSIZE];
-  unsigned long serial_pubkey_len=SERIAL_BUFSIZE;
+  /* unsigned long serial_pubkey_len=SERIAL_BUFSIZE; */
   tpm_digest_t digest;
   tpm_pcr_value_t pcr_out;
 
@@ -155,10 +157,21 @@ static int trustvisor_measure_qnd_bridge_signing_pubkey(rsa_key *rsa) {
   /**
    * 1. Serialize RSA key into byte blob for purposes of measurement.
    */
-  memset( serial_pubkey, 0, SERIAL_BUFSIZE);
+  /* len (4 bytes, big endian) | E (4 bytes, big endian) | N (XXX bytes, big endian)*/
+  memset(serial_pubkey, 0, SERIAL_BUFSIZE);
+  /* rsa->len */
+  *((uint32_t*)&serial_pubkey[0]) = NIST_HTONL( mp_unsigned_bin_size(rsa->N));
+  /* rsa->E */
+  EU_CHK( (size_t)mp_unsigned_bin_size(rsa->e) <= sizeof(uint32_t));
+  EU_CHKN( mp_to_unsigned_bin( rsa->e, &serial_pubkey[0]+sizeof(uint32_t)));
+  /* rsa->N */
+  EU_CHK( mp_unsigned_bin_size(rsa->N) == TPM_RSA_KEY_LEN);
+  EU_CHKN( mp_to_unsigned_bin( rsa->N, &serial_pubkey[0]+2*sizeof(uint32_t)));
 
-  EU_CHKN( rsa_export( serial_pubkey, &serial_pubkey_len, PK_PUBLIC, rsa),
-           eu_err_e("needed length %ul", serial_pubkey_len));
+  /* XXX temporarily keeping old serialized format for compatibility */
+  /* memset( serial_pubkey, 0, SERIAL_BUFSIZE); */
+  /* EU_CHKN( rsa_export( serial_pubkey, &serial_pubkey_len, PK_PUBLIC, rsa), */
+  /*          eu_err_e("needed length %ul", serial_pubkey_len)); */
 
   eu_trace("Serialized RSA key: %*D", SERIAL_BUFSIZE, serial_pubkey, " ");
 
