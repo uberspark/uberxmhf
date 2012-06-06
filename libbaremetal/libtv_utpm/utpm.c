@@ -1006,8 +1006,8 @@ TPM_RESULT utpm_id_getpub(uint8_t *N, uint32_t *len) {
   /* tcrv = rsa_export( N, &len_long, PK_PUBLIC, &g_rsa_key); */
   *len = len_long;
 
-  if ( tcrv != 0 && !(len_check && tcrv == CRYPT_BUFFER_OVERFLOW)) {
-    dprintf( LOG_ERROR, "rsa_export failed with %d\n", tcrv);
+  if ( tcrv != 0 && !(len_check && tcrv == MP_RANGE)) {
+    dprintf( LOG_ERROR, "mp_to_unsigned_bin_n failed with %d\n", tcrv);
     return UTPM_ERR;
   }
 
