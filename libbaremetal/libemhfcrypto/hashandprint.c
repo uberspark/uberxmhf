@@ -45,7 +45,7 @@ void hashandprint(const char* prefix, const u8 *bytes, size_t len) {
 
     EU_VERIFYN( sha1_buffer(bytes, len, digest));
 
-    printf("%s: %*D\n", prefix, SHA_DIGEST_LENGTH, digest);
+    printf("%s: %*D\n", prefix, SHA_DIGEST_LENGTH, digest, " ");
     /* print_hex( prefix, digest, SHA_DIGEST_LENGTH); */
 
     /* Simulate PCR 17 value on AMD processor */
