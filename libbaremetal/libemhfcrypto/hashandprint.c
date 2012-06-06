@@ -34,6 +34,9 @@
  */
 
 #include <tomcrypt.h>
+#include <euchk.h>
+
+#include <sha1.h> 
 
 void hashandprint(const char* prefix, const u8 *bytes, size_t len) {
     u8 digest[SHA_DIGEST_LENGTH];
@@ -42,19 +45,20 @@ void hashandprint(const char* prefix, const u8 *bytes, size_t len) {
 
     EU_VERIFYN( sha1_buffer(bytes, len, digest));
 
-    print_hex( prefix, digest, SHA_DIGEST_LENGTH);
+    printf("%s: %*D\n", prefix, digest, len);
+    /* print_hex( prefix, digest, SHA_DIGEST_LENGTH); */
 
     /* Simulate PCR 17 value on AMD processor */
-    if(len == 0x10000) {
-        u8 zeros[SHA_DIGEST_LENGTH];
-        u8 pcr17[SHA_DIGEST_LENGTH];
-        memset(zeros, 0, SHA_DIGEST_LENGTH);
+    /* if(len == 0x10000) { */
+        /* u8 zeros[SHA_DIGEST_LENGTH]; */
+        /* u8 pcr17[SHA_DIGEST_LENGTH]; */
+        /* memset(zeros, 0, SHA_DIGEST_LENGTH); */
         
         /* SHA1_Init(&ctx); */
         /* SHA1_Update(&ctx, zeros, SHA_DIGEST_LENGTH); */
         /* SHA1_Update(&ctx, digest, SHA_DIGEST_LENGTH); */
         /* SHA1_Final(pcr17, &ctx); */
 
-        //print_hex("[AMD] Expected PCR-17: ", pcr17, SHA_DIGEST_LENGTH);
-    }    
+        /* print_hex("[AMD] Expected PCR-17: ", pcr17, SHA_DIGEST_LENGTH); */
+    /* }     */
 }

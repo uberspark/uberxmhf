@@ -34,13 +34,14 @@
  */
 
 #include <tomcrypt.h>
-#include <euerr.h>
+#include <sha1.h> 
+
+#include <euchk.h>
 
 int sha1_buffer(const unsigned char *buffer, size_t len,
                 unsigned char md[SHA_DIGEST_LENGTH])
 {
   int rv=0;
-  unsigned long out_len;
   hash_state hs;
   
   EU_CHKN( rv = sha1_init( &hs));
