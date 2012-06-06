@@ -48,6 +48,7 @@
 #define BN_MP_TORADIX_C
 #define BN_MP_WRITE_RADIX_C
 #define BN_MP_MONTGOMERY_REDUCE_C
+#define BN_MP_TO_UNSIGNED_BIN_N_C
 
 /* For reference.... On an Athlon64 optimizing for speed...
 
