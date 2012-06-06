@@ -27,6 +27,14 @@ TESTPAL_ABSPATH=`( cd "$MY_PATH/$TESTPAL_RELPATH" && pwd )`
 LIBBAREMETAL_RELPATH=../../../libbaremetal
 LIBBAREMETAL_ABSPATH=`( cd "$MY_PATH/$LIBBAREMETAL_RELPATH" && pwd )`
 
+# libtomcrypt
+LIBTOMCRYPT_RELPATH=../../../tools/libtomcrypt-1.17
+LIBTOMCRYPT_ABSPATH=`( cd "$MY_PATH/$LIBTOMCRYPT_RELPATH" && pwd )`
+
+# libtommath
+LIBTOMMATH_RELPATH=../../../tools/libtommath-0.42.0
+LIBTOMMATH_ABSPATH=`( cd "$MY_PATH/$LIBTOMMATH_RELPATH" && pwd )`
+
 # Temporary directory to place build results
 TEMPDIR=/tmp/build/tee-sdk
 rm -rf $TEMPDIR
@@ -48,7 +56,7 @@ popd
 
 pushd $EMHF_ABSPATH
 ./autogen.sh
-./configure --prefix=$TEMPDIR --with-approot=$TV_RELPATH --with-libbaremetalsrc=$LIBBAREMETAL_ABSPATH
+./configure --prefix=$TEMPDIR --with-approot=$TV_RELPATH --with-libbaremetalsrc=$LIBBAREMETAL_ABSPATH --with-libtomcryptsrc=$LIBTOMCRYPT_ABSPATH --with-libtommathsrc=$LIBTOMMATH_ABSPATH
 make clean
 make
 #DESTDIR=$TEMPDIR make install
