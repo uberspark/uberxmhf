@@ -146,6 +146,11 @@ TPM_RESULT utpm_init_master_entropy(uint8_t *aeskey,
       abort();
     }
 
+    /* ensure libtomcrypto's math descriptor is initialized */
+    if (!ltc_mp.name) {
+      ltc_mp = ltm_desc;
+    }
+
     return UTPM_SUCCESS;
 }
 
