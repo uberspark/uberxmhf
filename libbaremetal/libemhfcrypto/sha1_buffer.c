@@ -33,15 +33,21 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#include <tomcrypt.h>
+#include <euerr.h>
+
 int sha1_buffer(const unsigned char *buffer, size_t len,
                 unsigned char md[SHA_DIGEST_LENGTH])
 {
-    SHA_CTX c;
+  int rv=0;
+  unsigned long out_len;
+  hash_state hs;
+  
+  EU_CHKN( rv = sha1_init( &hs));
+  EU_CHKN( rv = sha1_process( &hs, buffer, len));
+  EU_CHKN( rv = sha1_done( &hs, md));
 
-    if (md == NULL)
-        return 1;
-    SHA1_Init(&c);
-    SHA1_Update(&c,buffer,len);
-    SHA1_Final(md,&c);
-    return 0;
+ out:
+  return rv;
 }
+

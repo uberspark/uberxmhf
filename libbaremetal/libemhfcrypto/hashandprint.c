@@ -33,26 +33,16 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* misc utility functions; probably belong elsewhere */
-void hashandprint(const char* prefix __attribute__((unused)), const u8 *bytes, size_t len) {
-    SHA_CTX ctx;
+#include <tomcrypt.h>
+
+void hashandprint(const char* prefix, const u8 *bytes, size_t len) {
     u8 digest[SHA_DIGEST_LENGTH];
-    //u64 start, end;
 
     printf("\nhashandprint: processing 0x%08x bytes at addr 0x%08x", len, (u32)bytes);
-    
-    //start = rdtsc64();
-    //printf("\n%s (%u)", __FUNCTION__, __LINE__);
-    SHA1_Init(&ctx);
-    //printf("\n%s (%u)", __FUNCTION__, __LINE__);
-    SHA1_Update(&ctx, bytes, len);
-    //printf("\n%s (%u)", __FUNCTION__, __LINE__);
-    SHA1_Final(digest, &ctx);
-    //printf("\n%s (%u)", __FUNCTION__, __LINE__);
-    //end = rdtsc64();
-    //printf("\n%s (%u)", __FUNCTION__, __LINE__);
-    //print_hex(prefix, digest, SHA_DIGEST_LENGTH);
-    //printf("\n[PERF] hashandprint: elapsed CPU cycles 0x%016llx", end-start);    
+
+    EU_VERIFYN( sha1_buffer(bytes, len, digest));
+
+    print_hex( prefix, digest, SHA_DIGEST_LENGTH);
 
     /* Simulate PCR 17 value on AMD processor */
     if(len == 0x10000) {
@@ -60,10 +50,10 @@ void hashandprint(const char* prefix __attribute__((unused)), const u8 *bytes, s
         u8 pcr17[SHA_DIGEST_LENGTH];
         memset(zeros, 0, SHA_DIGEST_LENGTH);
         
-        SHA1_Init(&ctx);
-        SHA1_Update(&ctx, zeros, SHA_DIGEST_LENGTH);
-        SHA1_Update(&ctx, digest, SHA_DIGEST_LENGTH);
-        SHA1_Final(pcr17, &ctx);
+        /* SHA1_Init(&ctx); */
+        /* SHA1_Update(&ctx, zeros, SHA_DIGEST_LENGTH); */
+        /* SHA1_Update(&ctx, digest, SHA_DIGEST_LENGTH); */
+        /* SHA1_Final(pcr17, &ctx); */
 
         //print_hex("[AMD] Expected PCR-17: ", pcr17, SHA_DIGEST_LENGTH);
     }    
