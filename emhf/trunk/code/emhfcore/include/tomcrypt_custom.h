@@ -39,6 +39,7 @@
 #define LTC_NO_WCHAR
 #define LTC_NO_FILE
 #define LTC_NO_ROLC /* optimized rotate-left macros that don't always compile correctly */
+#define ARGTYPE 1 /* have argchk macros use assert instead of custom check with fprintf */
 
 /* macros for various libc functions you can change for embedded targets */
 #ifndef XMALLOC
