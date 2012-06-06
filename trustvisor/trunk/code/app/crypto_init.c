@@ -140,7 +140,8 @@ static int master_prng_init(void) {
  * returns 0 on success.
  */
 #define QND_BRIDGE_PUBKEY_PCR     19
-#define SERIAL_BUFSIZE (TPM_RSA_KEY_LEN + 2*sizeof(uint32_t))
+
+#define SERIAL_BUFSIZE (TPM_RSA_KEY_LEN + 50) /* XXX fudge-factor for ASN.1 metadata */
 
 static int trustvisor_measure_qnd_bridge_signing_pubkey(rsa_key *rsa) {
   int rv=1;
@@ -155,7 +156,10 @@ static int trustvisor_measure_qnd_bridge_signing_pubkey(rsa_key *rsa) {
    * 1. Serialize RSA key into byte blob for purposes of measurement.
    */
   memset( serial_pubkey, 0, SERIAL_BUFSIZE);
-  EU_CHKN( rsa_export( serial_pubkey, &serial_pubkey_len, PK_PUBLIC, rsa));
+
+  EU_CHKN( rsa_export( serial_pubkey, &serial_pubkey_len, PK_PUBLIC, rsa),
+           eu_err_e("needed length %ul", serial_pubkey_len));
+
   eu_trace("Serialized RSA key: %*D", SERIAL_BUFSIZE, serial_pubkey, " ");
 
   /**
