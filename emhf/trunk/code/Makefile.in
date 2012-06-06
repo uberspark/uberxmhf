@@ -63,6 +63,9 @@ export ADDL_INCLUDES += -I$(LIBTOMCRYPT_SRC)/src/headers/
 export ADDL_LIBS += $(LIBTOMMATH_BUILD)/$(LIBTOMMATH_ARCHIVE)
 export ADDL_INCLUDES += -I$(LIBTOMMATH_SRC)
 
+# link libbaremetal *again* to resolve more dependencies
+ADDL_LIBS += $(LIBBAREMETAL_BUILD)/_objects/$(LIBBAREMETAL_ARCHIVE)
+
 ##################################################################################
 ### BEGIN Variables controlled using autoconf
 ##################################################################################
