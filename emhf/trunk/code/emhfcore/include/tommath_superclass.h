@@ -36,10 +36,12 @@
 /* super class file for PK algos */
 
 /* default ... include all MPI */
-#define LTM_ALL
+/* #define LTM_ALL */
 
 /* RSA only (does not support DH/DSA/ECC) */
-/* #define SC_RSA_1 */
+#define SC_RSA_1
+
+#define LTM_NO_FILE
 
 /* For reference.... On an Athlon64 optimizing for speed...
 
