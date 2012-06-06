@@ -506,7 +506,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     p += *outlen - outlen_beforepad;
     
     /* encrypt (1-4) data using g_aeskey in AES-CBC mode */
-    if (cbc_start( find_cipher( "aes"), iv, g_aeskey, TPM_AES_KEY_LEN, 0, &cbc_ctx)) {
+    if ( cbc_start( find_cipher( "aes"), iv, g_aeskey, TPM_AES_KEY_LEN_BYTES, 0, &cbc_ctx)) {
       abort();
     }
         
@@ -597,7 +597,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
     
     if (cbc_start( find_cipher("aes"),
                    input, /* iv is at beginning of input */
-                   g_aeskey, TPM_AES_KEY_LEN,
+                   g_aeskey, TPM_AES_KEY_LEN_BYTES,
                    0,
                    &cbc_ctx)) {
       abort();
@@ -736,7 +736,7 @@ TPM_RESULT utpm_seal_deprecated(uint8_t* pcrAtRelease, uint8_t* input, uint32_t 
 	memcpy(output+TPM_CONFOUNDER_SIZE, hashdata, TPM_HASH_SIZE);
 	
 	/* encrypt data using sealAesKey by AES-CBC mode */
-        if (cbc_start( find_cipher( "aes"), iv, g_aeskey, TPM_AES_KEY_LEN, 0, &cbc_ctx)) {
+        if (cbc_start( find_cipher( "aes"), iv, g_aeskey, TPM_AES_KEY_LEN_BYTES, 0, &cbc_ctx)) {
           abort();
         }
         if (cbc_encrypt( output,
@@ -764,7 +764,7 @@ TPM_RESULT utpm_unseal_deprecated(utpm_master_state_t *utpm, uint8_t* input, uin
 	memset(iv, 0, 16);
 
 	/* decrypt data */
-        if (cbc_start( find_cipher( "aes"), iv, g_aeskey, TPM_AES_KEY_LEN, 0, &cbc_ctx)) {
+        if (cbc_start( find_cipher( "aes"), iv, g_aeskey, TPM_AES_KEY_LEN_BYTES, 0, &cbc_ctx)) {
           abort();
         }
         if (cbc_decrypt( input,
