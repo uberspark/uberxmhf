@@ -58,7 +58,7 @@
 //pull in required crypto (SHA-1)
 //libemhfcrypto
 #ifndef __ASSEMBLY__
-	#include <sha1.h>
+	#include <tomcrypt.h>
 #endif /* __ASSEMBLY__ */
 
 
