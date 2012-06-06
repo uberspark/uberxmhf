@@ -137,8 +137,12 @@ u64 hpt_eptp_set_address(hpt_type_t t, u64 eptp, hpt_pa_t a);
 hpt_pa_t hpt_eptp_get_address(hpt_type_t t, u64 eptp);
 
 /* XXX move into hpt.c */
+#ifndef MAX
 #define MAX(x, y) (((y) > (x)) ? (y) : (x))
+#endif
+#ifndef MIN
 #define MIN(x, y) (((y) < (x)) ? (y) : (x))
+#endif
 
 typedef enum {
   HPT_PMT_UC=0, HPT_PMT_WC=1, HPT_PMT_WT=4, HPT_PMT_WP=5, HPT_PMT_WB=6
