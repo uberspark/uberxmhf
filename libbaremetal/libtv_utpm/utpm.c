@@ -48,6 +48,7 @@
 #include <tv_utpm.h> 
 
 #include <tomcrypt.h>
+#include <tommath.h>
 
 /* TODO: Fix this hack! */
 //#include <malloc.h>
@@ -507,6 +508,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 		*outlen = outlen_beforepad;
 	}
 	memset(p, 0, *outlen-outlen_beforepad);
+        
     print_hex("padding: ", p, *outlen - outlen_beforepad);
     p += *outlen - outlen_beforepad;
     
@@ -984,23 +986,32 @@ TPM_RESULT utpm_quote_deprecated(uint8_t* externalnonce, uint8_t* output, uint32
 
 TPM_RESULT utpm_id_getpub(uint8_t *N, uint32_t *len) {
   unsigned long len_long;
+  int tcrv;
+  uint8_t buf[1];
+  bool len_check;
 
-    if(!len) { return UTPM_ERR_BAD_PARAM; }
+  if(!len) { return UTPM_ERR_BAD_PARAM; }
 
-    *len = TPM_RSA_KEY_LEN;
-    if(!N) {
-        /* treat as an inquiry into how many bytes are needed */
-        return UTPM_SUCCESS;
-    }
+  if (!N) {
+    /* treat as an inquiry into how many bytes are needed */
+    len_check = true;
+    *len = 1;
+    N = buf;
+  } else {
+    len_check = false;
+  }
 
-    len_long = *len;
-    if ( rsa_export( N, &len_long, PK_PUBLIC, &g_rsa_key)) {
-      dprintf(LOG_ERROR, "rsa_export ERROR\n");
-      return UTPM_ERR_BAD_PARAM;
-    }
-    *len = len_long;
+  len_long = *len;
+  tcrv = mp_to_unsigned_bin_n (g_rsa_key.N, N, &len_long);
+  /* tcrv = rsa_export( N, &len_long, PK_PUBLIC, &g_rsa_key); */
+  *len = len_long;
 
-    return UTPM_SUCCESS;
+  if ( tcrv != 0 && !(len_check && tcrv == CRYPT_BUFFER_OVERFLOW)) {
+    dprintf( LOG_ERROR, "rsa_export failed with %d\n", tcrv);
+    return UTPM_ERR;
+  }
+
+  return UTPM_SUCCESS;
 }
 
 

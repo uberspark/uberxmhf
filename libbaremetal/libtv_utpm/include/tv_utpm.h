@@ -78,6 +78,7 @@
 #define UTPM_ERR_BAD_PARAM 1
 #define UTPM_ERR_PCR_OUT_OF_RANGE 2
 #define UTPM_ERR_INSUFFICIENT_ENTROPY 3
+#define UTPM_ERR 4
 
 /* MicroTPM related definitions */
 #define TPM_PCR_SIZE                   20
