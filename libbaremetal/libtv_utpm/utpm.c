@@ -896,7 +896,11 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
 
     {
       unsigned long outlen_long = *outlen;
-      if( (rv = rsa_sign_hash_ex( (uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO),
+      uint8_t md[SHA_DIGEST_LENGTH];
+
+      sha1_buffer( (uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO), md);
+
+      if( (rv = rsa_sign_hash_ex( md, sizeof(md),
                                   output, &outlen_long,
                                   LTC_LTC_PKCS_1_V1_5,
                                   NULL, 0, /* no prng for v1.5 padding */
