@@ -47,6 +47,7 @@
 #include <tv_log.h>
 
 /* libtomcrypt prng. this is just a wrapper for our internal drbg */
+prng_state g_ltc_prng;
 int g_ltc_prng_id;
 
 /**
