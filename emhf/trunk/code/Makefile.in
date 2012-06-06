@@ -18,13 +18,15 @@ export NESTED_PAGING := y
 #where you want loader and runtime binaries to go
 export HYPOUTDIR = $(CURDIR)
 
+# libtomcrypt
+export LIBTOMCRYPT_SRC := $(realpath @LIBTOMCRYPT_SRC@)
+LIBTOMCRYPT_BUILD = $(CURDIR)/_build_libtomcrypt
+LIBTOMCRYPT_ARCHIVE = libtomcrypt.a
+
 # libbaremetal "source" location, currently hard-coded
 # TODO: specify via configure
 # LIBBAREMETAL_SRC = $(CURDIR)/libbaremetal
 export LIBBAREMETAL_SRC := @LIBBAREMETAL_SRC@
-
-# libtomcrypt source location
-export LIBTOMCRYPT_SRC := $(realpath @LIBTOMCRYPT_SRC@)
 
 # libbaremetal archive
 # TODO: specify via configure
@@ -50,6 +52,7 @@ export SECONDARYAPP_ARCHIVE := $(builddir)/$(SECONDARYAPP_ROOT)/@SECONDARYAPP_AR
 export ADDL_LIBS := $(LIBBAREMETAL_BUILD)/_objects/$(LIBBAREMETAL_ARCHIVE)
 export ADDL_INCLUDES := -I$(CURDIR)/emhfcore/include $(LIBBAREMETAL_INC)
 
+export ADDL_LIBS += $(LIBTOMCRYPT_BUILD)/$(LIBTOMCRYPT_ARCHIVE)
 export ADDL_INCLUDES += -I$(LIBTOMCRYPT_SRC)/src/headers/
 
 ##################################################################################
@@ -201,6 +204,14 @@ $(APP_ARCHIVE):
 
 .PHONY: subdirs
 subdirs: $(LIBBAREMETAL_SRC) 
+	@echo ---------------------------------------------------------------
+	@echo Building libtomcrypt...
+	@echo ---------------------------------------------------------------
+	mkdir -p $(LIBTOMCRYPT_BUILD)
+	cd $(LIBTOMCRYPT_BUILD) && $(MAKE) -f $(LIBTOMCRYPT_SRC)/makefile -w libtomcrypt.a
+	@echo ---------------------------------------------------------------
+	@echo libtomcrypt.a build SUCCESS
+	@echo ---------------------------------------------------------------
 	@echo ---------------------------------------------------------------
 	@echo Building libbaremetal...
 	@echo ---------------------------------------------------------------
