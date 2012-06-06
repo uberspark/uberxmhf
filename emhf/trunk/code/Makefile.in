@@ -23,6 +23,9 @@ export HYPOUTDIR = $(CURDIR)
 # LIBBAREMETAL_SRC = $(CURDIR)/libbaremetal
 export LIBBAREMETAL_SRC := @LIBBAREMETAL_SRC@
 
+# libtomcrypt source location
+export LIBTOMCRYPT_SRC := $(realpath @LIBTOMCRYPT_SRC@)
+
 # libbaremetal archive
 # TODO: specify via configure
 LIBBAREMETAL_ARCHIVE = libbaremetal.a
@@ -46,6 +49,8 @@ export SECONDARYAPP_ARCHIVE := $(builddir)/$(SECONDARYAPP_ROOT)/@SECONDARYAPP_AR
 
 export ADDL_LIBS := $(LIBBAREMETAL_BUILD)/_objects/$(LIBBAREMETAL_ARCHIVE)
 export ADDL_INCLUDES := -I$(CURDIR)/emhfcore/include $(LIBBAREMETAL_INC)
+
+export ADDL_INCLUDES += -I$(LIBTOMCRYPT_SRC)/src/headers/
 
 ##################################################################################
 ### BEGIN Variables controlled using autoconf

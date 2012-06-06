@@ -68,7 +68,13 @@ LIBBAREMETAL_SRC=$[]with_libbaremetalsrc
 dnl AS_IF([test "x${LIBBAREMETAL_SRC:0:1}" != "x/"],
 dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$LIBBAREMETAL_SRC])
 
-
+# libtomcrypt source directory
+AC_SUBST([LIBTOMCRYPT_SRC])
+AC_ARG_WITH([libtomcryptsrc],
+        AS_HELP_STRING([--with-libtomcryptsrc=@<:@path@:>@],
+                [path to libtomcrypt source directory]),
+                , [with_libtomcryptsrc=./libtomcrypt])
+LIBTOMCRYPT_SRC=$[]with_libtomcryptsrc
 
 # EMHF app root directory
 AC_SUBST([APP_ROOT])
