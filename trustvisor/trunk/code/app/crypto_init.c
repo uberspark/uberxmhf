@@ -126,6 +126,12 @@ static int master_prng_init(void) {
                                         &Nonce, sizeof(Nonce), NULL, 0),
               eu_err_e("FATAL ERROR: nist_ctr_drbg_instantiate FAILED."));
 
+  /* set up the libtomcrypt prng wrapper */
+  g_ltc_prng_id = register_prng( &sprng_desc);
+  EU_CHK( g_ltc_prng_id >= 0);
+  EU_CHKN( sprng_start( &g_ltc_prng));
+  EU_CHKN( sprng_ready( &g_ltc_prng));
+
   rv=0;
  out:
   return rv;

@@ -33,19 +33,21 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#ifndef _RANDOM_H_
-#define _RANDOM_H_
+#include <random.h>
 
-#include <emhf.h> 
-#include <tomcrypt.h>
+/* this function overrides libtomcrypt's internal rng with our own */
 
-/* interface exposed to the rest of TrustVisor */
-uint8_t rand_byte_or_die(void);
-void rand_bytes_or_die(uint8_t *out, unsigned int len);
-int rand_bytes(uint8_t *out, unsigned int *len);
-
-/* libtomcrypt prng. this is just a wrapper for our internal drbg */
-extern prng_state g_ltc_prng;
-extern int g_ltc_prng_id;
-
-#endif /* _RANDOM_H_ */
+/**
+  Read the system RNG
+  @param out       Destination
+  @param outlen    Length desired (octets)
+  @param callback  Pointer to void function to act as "callback" when RNG is slow.  This can be NULL
+  @return Number of octets read
+*/
+unsigned long rng_get_bytes(unsigned char *out, unsigned long outlen,
+                            void (*callback)(void))
+{
+  (void)callback;
+  rand_bytes_or_die( out, outlen);
+  return outlen;
+}

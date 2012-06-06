@@ -46,6 +46,9 @@
 
 #include <tv_log.h>
 
+/* libtomcrypt prng. this is just a wrapper for our internal drbg */
+int g_ltc_prng_id;
+
 /**
  * Reseed the CTR_DRBG if needed.  This function is structured to do
  * nothing if a reseed is not required, to simplify the logic in the
