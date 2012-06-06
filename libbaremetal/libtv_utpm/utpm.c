@@ -50,6 +50,8 @@
 #include <tomcrypt.h>
 #include <tommath.h>
 
+#include <sha1.h>
+
 /* TODO: Fix this hack! */
 //#include <malloc.h>
 void *malloc(size_t);
@@ -87,20 +89,6 @@ static void HMAC_SHA1( uint8_t* secret, size_t secret_len,
 
   rv = hmac_memory( hash_id,
                     secret, secret_len,
-                    in, in_len,
-                    out, &out_len);
-  if (rv) {
-    abort();
-  }
-}
-
-static void sha1_buffer( uint8_t* in, size_t in_len, uint8_t *out)
-{
-  int rv;
-  int hash_id = find_hash("sha1");
-  unsigned long out_len = hash_descriptor[hash_id].hashsize;
-
-  rv = hash_memory( hash_id,
                     in, in_len,
                     out, &out_len);
   if (rv) {
