@@ -62,11 +62,14 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD: src/sys/libkern/qsort.c,v 1.15.30.1.6.1 2010/12/21 17:09:25 kensmith Exp $");
+/* #include <sys/cdefs.h> */
+/* __FBSDID("$FreeBSD: src/sys/libkern/qsort.c,v 1.15.30.1.6.1 2010/12/21 17:09:25 kensmith Exp $"); */
 
-#include <sys/param.h>
-#include <sys/libkern.h>
+/* #include <sys/param.h> */
+/* #include <sys/libkern.h> */
+
+#include <stddef.h>
+#include <stdint.h>
 
 #ifdef	I_AM_QSORT_R
 typedef int		cmp_t(void *, const void *, const void *);
