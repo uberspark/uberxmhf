@@ -301,7 +301,7 @@
 #endif
 
 /* a PRNG that simply reads from an available system source */
-#define LTC_SPRNG
+/* #define LTC_SPRNG */
 
 /* The LTC_RC4 stream cipher */
 /* #define LTC_RC4 */
