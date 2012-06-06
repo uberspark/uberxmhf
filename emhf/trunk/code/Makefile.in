@@ -224,7 +224,7 @@ subdirs: $(LIBBAREMETAL_SRC)
 	@echo Building libtomcrypt...
 	@echo ---------------------------------------------------------------
 	mkdir -p $(LIBTOMCRYPT_BUILD)
-	cd $(LIBTOMCRYPT_BUILD) && $(MAKE) -f $(LIBTOMCRYPT_SRC)/makefile CFLAGS="$(filter-out -Werror,$(CFLAGS))" -w libtomcrypt.a
+	cd $(LIBTOMCRYPT_BUILD) && $(MAKE) -f $(LIBTOMCRYPT_SRC)/makefile CFLAGS="$(filter-out -Werror,$(CFLAGS)) -DLTC_SOURCE" -w libtomcrypt.a
 	@echo ---------------------------------------------------------------
 	@echo libtomcrypt.a build SUCCESS
 	@echo ---------------------------------------------------------------
