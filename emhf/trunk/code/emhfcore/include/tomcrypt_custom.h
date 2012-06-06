@@ -38,6 +38,7 @@
 
 #define LTC_NO_WCHAR
 #define LTC_NO_FILE
+#define LTC_NO_ROLC /* optimized rotate-left macros that don't always compile correctly */
 
 /* macros for various libc functions you can change for embedded targets */
 #ifndef XMALLOC
@@ -166,34 +167,34 @@
 /* ---> Symmetric Block Ciphers <--- */
 #ifndef LTC_NO_CIPHERS
 
-#define LTC_BLOWFISH
-#define LTC_RC2
-#define LTC_RC5
-#define LTC_RC6
-#define LTC_SAFERP
+/* #define LTC_BLOWFISH */
+/* #define LTC_RC2 */
+/* #define LTC_RC5 */
+/* #define LTC_RC6 */
+/* #define LTC_SAFERP */
 #define LTC_RIJNDAEL
-#define LTC_XTEA
+/* #define LTC_XTEA */
 /* _TABLES tells it to use tables during setup, _SMALL means to use the smaller scheduled key format
  * (saves 4KB of ram), _ALL_TABLES enables all tables during setup */
-#define LTC_TWOFISH
-#ifndef LTC_NO_TABLES
-   #define LTC_TWOFISH_TABLES
-   /* #define LTC_TWOFISH_ALL_TABLES */
-#else
-   #define LTC_TWOFISH_SMALL
-#endif
+/* #define LTC_TWOFISH */
+/* #ifndef LTC_NO_TABLES */
+/*    #define LTC_TWOFISH_TABLES */
+/*    /\* #define LTC_TWOFISH_ALL_TABLES *\/ */
+/* #else */
+/*    #define LTC_TWOFISH_SMALL */
+/* #endif */
 /* #define LTC_TWOFISH_SMALL */
 /* LTC_DES includes EDE triple-LTC_DES */
-#define LTC_DES
-#define LTC_CAST5
-#define LTC_NOEKEON
-#define LTC_SKIPJACK
-#define LTC_SAFER
-#define LTC_KHAZAD
-#define LTC_ANUBIS
-#define LTC_ANUBIS_TWEAK
-#define LTC_KSEED
-#define LTC_KASUMI
+/* #define LTC_DES */
+/* #define LTC_CAST5 */
+/* #define LTC_NOEKEON */
+/* #define LTC_SKIPJACK */
+/* #define LTC_SAFER */
+/* #define LTC_KHAZAD */
+/* #define LTC_ANUBIS */
+/* #define LTC_ANUBIS_TWEAK */
+/* #define LTC_KSEED */
+/* #define LTC_KASUMI */
 
 #endif /* LTC_NO_CIPHERS */
 
@@ -201,47 +202,47 @@
 /* ---> Block Cipher Modes of Operation <--- */
 #ifndef LTC_NO_MODES
 
-#define LTC_CFB_MODE
-#define LTC_OFB_MODE
-#define LTC_ECB_MODE
+/* #define LTC_CFB_MODE */
+/* #define LTC_OFB_MODE */
+/* #define LTC_ECB_MODE */
 #define LTC_CBC_MODE
-#define LTC_CTR_MODE
+/* #define LTC_CTR_MODE */
 
 /* F8 chaining mode */
-#define LTC_F8_MODE
+/* #define LTC_F8_MODE */
 
 /* LRW mode */
-#define LTC_LRW_MODE
-#ifndef LTC_NO_TABLES
-   /* like GCM mode this will enable 16 8x128 tables [64KB] that make
-    * seeking very fast.  
-    */
-   #define LRW_TABLES
-#endif
+/* #define LTC_LRW_MODE */
+/* #ifndef LTC_NO_TABLES */
+/*    /\* like GCM mode this will enable 16 8x128 tables [64KB] that make */
+/*     * seeking very fast.   */
+/*     *\/ */
+/*    #define LRW_TABLES */
+/* #endif */
 
 /* XTS mode */
-#define LTC_XTS_MODE
+/* #define LTC_XTS_MODE */
 
 #endif /* LTC_NO_MODES */
 
 /* ---> One-Way Hash Functions <--- */
 #ifndef LTC_NO_HASHES 
 
-#define LTC_CHC_HASH
-#define LTC_WHIRLPOOL
-#define LTC_SHA512
-#define LTC_SHA384
-#define LTC_SHA256
-#define LTC_SHA224
-#define LTC_TIGER
+/* #define LTC_CHC_HASH */
+/* #define LTC_WHIRLPOOL */
+/* #define LTC_SHA512 */
+/* #define LTC_SHA384 */
+/* #define LTC_SHA256 */
+/* #define LTC_SHA224 */
+/* #define LTC_TIGER */
 #define LTC_SHA1
-#define LTC_MD5
-#define LTC_MD4
-#define LTC_MD2
-#define LTC_RIPEMD128
-#define LTC_RIPEMD160
-#define LTC_RIPEMD256
-#define LTC_RIPEMD320
+/* #define LTC_MD5 */
+/* #define LTC_MD4 */
+/* #define LTC_MD2 */
+/* #define LTC_RIPEMD128 */
+/* #define LTC_RIPEMD160 */
+/* #define LTC_RIPEMD256 */
+/* #define LTC_RIPEMD320 */
 
 #endif /* LTC_NO_HASHES */
 
@@ -249,11 +250,11 @@
 #ifndef LTC_NO_MACS
 
 #define LTC_HMAC
-#define LTC_OMAC
-#define LTC_PMAC
-#define LTC_XCBC
-#define LTC_F9_MODE
-#define LTC_PELICAN
+/* #define LTC_OMAC */
+/* #define LTC_PMAC */
+/* #define LTC_XCBC */
+/* #define LTC_F9_MODE */
+/* #define LTC_PELICAN */
 
 #if defined(LTC_PELICAN) && !defined(LTC_RIJNDAEL)
    #error Pelican-MAC requires LTC_RIJNDAEL
@@ -261,14 +262,14 @@
 
 /* ---> Encrypt + Authenticate Modes <--- */
 
-#define LTC_EAX_MODE
+/* #define LTC_EAX_MODE */
 #if defined(LTC_EAX_MODE) && !(defined(LTC_CTR_MODE) && defined(LTC_OMAC))
    #error LTC_EAX_MODE requires CTR and LTC_OMAC mode
 #endif
 
-#define LTC_OCB_MODE
-#define LTC_CCM_MODE
-#define LTC_GCM_MODE
+/* #define LTC_OCB_MODE */
+/* #define LTC_CCM_MODE */
+/* #define LTC_GCM_MODE */
 
 /* Use 64KiB tables */
 #ifndef LTC_NO_TABLES
@@ -283,16 +284,16 @@
 #endif /* LTC_NO_MACS */
 
 /* Various tidbits of modern neatoness */
-#define LTC_BASE64
+/* #define LTC_BASE64 */
 
 /* --> Pseudo Random Number Generators <--- */
 #ifndef LTC_NO_PRNGS
 
 /* Yarrow */
-#define LTC_YARROW
+/* #define LTC_YARROW */
 /* which descriptor of AES to use?  */
 /* 0 = rijndael_enc 1 = aes_enc, 2 = rijndael [full], 3 = aes [full] */
-#define LTC_YARROW_AES 0
+/* #define LTC_YARROW_AES 0 */
 
 #if defined(LTC_YARROW) && !defined(LTC_CTR_MODE)
    #error LTC_YARROW requires LTC_CTR_MODE chaining mode to be defined!
@@ -302,22 +303,22 @@
 #define LTC_SPRNG
 
 /* The LTC_RC4 stream cipher */
-#define LTC_RC4
+/* #define LTC_RC4 */
 
 /* Fortuna PRNG */
-#define LTC_FORTUNA
+/* #define LTC_FORTUNA */
 /* reseed every N calls to the read function */
 #define LTC_FORTUNA_WD    10
 /* number of pools (4..32) can save a bit of ram by lowering the count */
 #define LTC_FORTUNA_POOLS 32
 
 /* Greg's LTC_SOBER128 PRNG ;-0 */
-#define LTC_SOBER128
+/* #define LTC_SOBER128 */
 
 /* the *nix style /dev/random device */
-#define LTC_DEVRANDOM
+/* #define LTC_DEVRANDOM */
 /* try /dev/urandom before trying /dev/random */
-#define TRY_URANDOM_FIRST
+/* #define TRY_URANDOM_FIRST */
 
 #endif /* LTC_NO_PRNGS */
 
@@ -342,10 +343,10 @@
 /* #define MKAT */ 
 
 /* Digital Signature Algorithm */
-#define LTC_MDSA
+/* #define LTC_MDSA */
 
 /* ECC */
-#define LTC_MECC
+/* #define LTC_MECC */
 
 /* use Shamir's trick for point mul (speeds up signature verification) */
 #define LTC_ECC_SHAMIR
@@ -366,7 +367,7 @@
 #ifndef LTC_NO_PKCS
 
 #define LTC_PKCS_1
-#define LTC_PKCS_5
+/* #define LTC_PKCS_5 */
 
 /* Include ASN.1 DER (required by DSA/RSA) */
 #define LTC_DER
