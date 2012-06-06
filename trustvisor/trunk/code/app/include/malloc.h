@@ -39,6 +39,8 @@
 #define HEAPMEM_POOLSIZE (4*(1<<20))
 
 void *malloc(size_t);
+void *calloc(size_t nmemb, size_t size);
+void *realloc(void *ptr, size_t size);
 void free(void *);
 
 void mem_init(void); 

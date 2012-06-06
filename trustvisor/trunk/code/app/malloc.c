@@ -70,6 +70,16 @@ void *malloc(size_t size)
   return p;
 }
 
+void *calloc(size_t nmemb, size_t size)
+{
+  return tlsf_calloc( nmemb, size);
+}
+
+void *realloc(void *ptr, size_t size)
+{
+  return tlsf_realloc( ptr, size);
+}
+
 void free(void *ptr)
 {
   if (ptr) {
