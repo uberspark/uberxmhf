@@ -59,6 +59,7 @@
 //libemhfcrypto
 #ifndef __ASSEMBLY__
 	#include <tomcrypt.h>
+	#include <sha1.h>
 #endif /* __ASSEMBLY__ */
 
 
