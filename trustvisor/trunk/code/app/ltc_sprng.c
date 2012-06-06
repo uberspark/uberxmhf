@@ -33,50 +33,20 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* LibTomCrypt, modular cryptographic library -- Tom St Denis
- *
- * LibTomCrypt is a library that provides various cryptographic
- * algorithms in a highly modular and flexible manner.
- *
- * The library is free for all purposes without any express
- * guarantee it works.
- *
- * Tom St Denis, tomstdenis@gmail.com, http://libtom.org
+#include <tomcrypt.h>
+#include <random.h>
+
+/* A secure PRNG using trustvisor's internal RNG
  */
-#include "tomcrypt.h"
-
-/**
-   @file sprng.c
-   Secure PRNG, Tom St Denis
-*/
-   
-/* A secure PRNG using the RNG functions.  Basically this is a
- * wrapper that allows you to use a secure RNG as a PRNG
- * in the various other functions.
- */
-
-#ifdef LTC_SPRNG
-
-const struct ltc_prng_descriptor sprng_desc =
-{
-    "sprng", 0,
-    &sprng_start,
-    &sprng_add_entropy,
-    &sprng_ready,
-    &sprng_read,
-    &sprng_done,
-    &sprng_export,
-    &sprng_import,
-    &sprng_test
-};
 
 /**
   Start the PRNG
   @param prng     [out] The PRNG state to initialize
   @return CRYPT_OK if successful
 */  
-int sprng_start(prng_state *prng)
+static int tv_sprng_start(prng_state *prng)
 {
+   (void)prng;
    return CRYPT_OK;  
 }
 
@@ -87,8 +57,11 @@ int sprng_start(prng_state *prng)
   @param prng     PRNG state to update
   @return CRYPT_OK if successful
 */  
-int sprng_add_entropy(const unsigned char *in, unsigned long inlen, prng_state *prng)
+static int tv_sprng_add_entropy(const unsigned char *in, unsigned long inlen, prng_state *prng)
 {
+   (void)prng;
+   (void)in;
+   (void)inlen;
    return CRYPT_OK;
 }
 
@@ -97,8 +70,9 @@ int sprng_add_entropy(const unsigned char *in, unsigned long inlen, prng_state *
   @param prng   The PRNG to make active
   @return CRYPT_OK if successful
 */  
-int sprng_ready(prng_state *prng)
+static int tv_sprng_ready(prng_state *prng)
 {
+   (void)prng;
    return CRYPT_OK;
 }
 
@@ -109,10 +83,14 @@ int sprng_ready(prng_state *prng)
   @param prng     The active PRNG to read from
   @return Number of octets read
 */  
-unsigned long sprng_read(unsigned char *out, unsigned long outlen, prng_state *prng)
+static unsigned long tv_sprng_read(unsigned char *out, unsigned long outlen, prng_state *prng)
 {
+   (void)prng;
    LTC_ARGCHK(out != NULL);
-   return rng_get_bytes(out, outlen, NULL);
+
+   rand_bytes_or_die( out, outlen);
+
+   return outlen;
 }
 
 /**
@@ -120,8 +98,9 @@ unsigned long sprng_read(unsigned char *out, unsigned long outlen, prng_state *p
   @param prng   The PRNG to terminate
   @return CRYPT_OK if successful
 */  
-int sprng_done(prng_state *prng)
+static int tv_sprng_done(prng_state *prng)
 {
+   (void)prng;
    return CRYPT_OK;
 }
 
@@ -132,8 +111,10 @@ int sprng_done(prng_state *prng)
   @param prng      The PRNG to export
   @return CRYPT_OK if successful
 */  
-int sprng_export(unsigned char *out, unsigned long *outlen, prng_state *prng)
+static int tv_sprng_export(unsigned char *out, unsigned long *outlen, prng_state *prng)
 {
+   (void)prng;
+   (void)out;
    LTC_ARGCHK(outlen != NULL);
 
    *outlen = 0;
@@ -147,8 +128,12 @@ int sprng_export(unsigned char *out, unsigned long *outlen, prng_state *prng)
   @param prng     The PRNG to import
   @return CRYPT_OK if successful
 */  
-int sprng_import(const unsigned char *in, unsigned long inlen, prng_state *prng)
+static int tv_sprng_import(const unsigned char *in, unsigned long inlen, prng_state *prng)
 {
+  (void)in;
+  (void)inlen;
+  (void)prng;
+
    return CRYPT_OK;
 }
 
@@ -156,16 +141,21 @@ int sprng_import(const unsigned char *in, unsigned long inlen, prng_state *prng)
   PRNG self-test
   @return CRYPT_OK if successful, CRYPT_NOP if self-testing has been disabled
 */  
-int sprng_test(void)
+static int tv_sprng_test(void)
 {
    return CRYPT_OK;
 }
 
-#endif
+const struct ltc_prng_descriptor tv_sprng_desc =
+{
+    "tv_sprng", 0,
+    &tv_sprng_start,
+    &tv_sprng_add_entropy,
+    &tv_sprng_ready,
+    &tv_sprng_read,
+    &tv_sprng_done,
+    &tv_sprng_export,
+    &tv_sprng_import,
+    &tv_sprng_test
+};
 
-
- 
-
-/* $Source: /cvs/libtom/libtomcrypt/src/prngs/sprng.c,v $ */
-/* $Revision: 1.6 $ */
-/* $Date: 2007/05/12 14:32:35 $ */
