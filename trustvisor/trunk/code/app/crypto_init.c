@@ -204,9 +204,8 @@ static int trustvisor_long_term_secret_init(void) {
   const uint8_t sealinghmac[11] = {0x73, 0x65, 0x61, 0x6c, 0x69, 0x6e,
                                    0x67,	0x68, 0x6d, 0x61, 0x63};
   rsa_key rsakey;
-  int hash_id = find_hash("sha1");
+  int hash_id = register_hash( &sha1_desc);
   
-
   EU_VERIFY( g_master_prng_init_completed);
 
   rv = trustvisor_nv_get_mss(CRYPTO_INIT_LOCALITY,
