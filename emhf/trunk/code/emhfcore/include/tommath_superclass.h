@@ -42,6 +42,12 @@
 #define SC_RSA_1
 
 #define LTM_NO_FILE
+#define BN_MP_NEG_C
+#define BN_MP_GET_INT_C
+#define BN_MP_READ_RADIX_C
+#define BN_MP_TORADIX_C
+#define BN_MP_WRITE_RADIX_C
+#define BN_MP_MONTGOMERY_REDUCE_C
 
 /* For reference.... On an Athlon64 optimizing for speed...
 
@@ -103,7 +109,7 @@
     */
    #undef  BN_S_MP_MUL_DIGS_C
    #undef  BN_S_MP_SQR_C
-   #undef  BN_MP_MONTGOMERY_REDUCE_C
+   /* #undef  BN_MP_MONTGOMERY_REDUCE_C */
 #endif
 
 #endif
