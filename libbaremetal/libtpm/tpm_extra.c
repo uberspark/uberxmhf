@@ -85,16 +85,23 @@
 extern uint8_t     cmd_buf[TPM_CMD_SIZE_MAX];
 extern uint8_t     rsp_buf[TPM_RSP_SIZE_MAX];
 
+
+static int sha1_id = -1;
+
 /* compatibility wrapper */
 static void HMAC_SHA1( uint8_t* secret, size_t secret_len,
                        uint8_t* in, size_t in_len,
                        uint8_t* out)
 {
   int rv;
-  int hash_id = find_hash("sha1");
-  unsigned long out_len = hash_descriptor[hash_id].hashsize;
+  unsigned long out_len;
 
-  rv = hmac_memory( hash_id,
+  if (sha1_id < 0) {
+    sha1_id = register_hash( &sha1_desc);
+  }
+
+  out_len = hash_descriptor[sha1_id].hashsize;
+  rv = hmac_memory( sha1_id,
                     secret, secret_len,
                     in, in_len,
                     out, &out_len);
@@ -106,10 +113,14 @@ static void HMAC_SHA1( uint8_t* secret, size_t secret_len,
 static void sha1_buffer( uint8_t* in, size_t in_len, uint8_t *out)
 {
   int rv;
-  int hash_id = find_hash("sha1");
-  unsigned long out_len = hash_descriptor[hash_id].hashsize;
+  unsigned long out_len;
 
-  rv = hash_memory( hash_id,
+  if (sha1_id < 0) {
+    sha1_id = register_hash( &sha1_desc);
+  }
+  
+  out_len = hash_descriptor[sha1_id].hashsize;
+  rv = hash_memory( sha1_id,
                     in, in_len,
                     out, &out_len);
   if (rv) {
