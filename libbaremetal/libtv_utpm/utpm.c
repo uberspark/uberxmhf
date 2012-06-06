@@ -1006,6 +1006,12 @@ TPM_RESULT utpm_id_getpub(uint8_t *N, uint32_t *len) {
   /* tcrv = rsa_export( N, &len_long, PK_PUBLIC, &g_rsa_key); */
   *len = len_long;
 
+  /* XXX TEMP while we're using mp_to_unsigned_bin_n instead of
+     rsa_export */
+  if ( len_check) {
+    *len = mp_unsigned_bin_size( g_rsa_key.N);
+  }
+
   if ( tcrv != 0 && !(len_check && tcrv == MP_RANGE)) {
     dprintf( LOG_ERROR, "mp_to_unsigned_bin_n failed with %d\n", tcrv);
     return UTPM_ERR;
