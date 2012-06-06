@@ -46,10 +46,8 @@
 #include <print_hex.h>
 
 #include <tv_utpm.h> 
-#include <aes.h>
-#include <rsa.h>
-#include <sha1.h>
-#include <hmac.h>
+
+#include <tomcrypt.h>
 
 /* TODO: Fix this hack! */
 //#include <malloc.h>
@@ -75,7 +73,39 @@ extern uint8_t rand_byte_or_die(void);
  * secrets are well-identified and therefore easy to wipe, etc. */
 uint8_t g_aeskey[TPM_AES_KEY_LEN_BYTES];
 uint8_t g_hmackey[TPM_HMAC_KEY_LEN];
-rsa_context g_rsa;
+rsa_key g_rsa_key;
+
+/* compatibility wrapper */
+static void HMAC_SHA1( uint8_t* secret, size_t secret_len,
+                       uint8_t* in, size_t in_len,
+                       uint8_t* out)
+{
+  int rv;
+  int hash_id = find_hash("sha1");
+  unsigned long out_len = hash_descriptor[hash_id].hashsize;
+
+  rv = hmac_memory( hash_id,
+                    secret, secret_len,
+                    in, in_len,
+                    out, &out_len);
+  if (rv) {
+    abort();
+  }
+}
+
+static void sha1_buffer( uint8_t* in, size_t in_len, uint8_t *out)
+{
+  int rv;
+  int hash_id = find_hash("sha1");
+  unsigned long out_len = hash_descriptor[hash_id].hashsize;
+
+  rv = hash_memory( hash_id,
+                    in, in_len,
+                    out, &out_len);
+  if (rv) {
+    abort();
+  }
+}
 
 /**
  * This function is expected to only be called once during the life of
@@ -106,7 +136,7 @@ TPM_RESULT utpm_init_master_entropy(uint8_t *aeskey,
      * NB: userspace testing of this uTPM may reveal the leak and lead
      * to earlier implementation of some kind of free()ing behavior.
      */
-    memcpy(&g_rsa, rsa, sizeof(rsa_context));
+    memcpy(&g_rsa_key, rsa, sizeof(g_rsa_key));
 
     return UTPM_SUCCESS;
 }
@@ -132,7 +162,8 @@ TPM_RESULT utpm_pcrread(TPM_DIGEST* pcr_value /* output */,
 /* software tpm pcr extend */
 TPM_RESULT utpm_extend(TPM_DIGEST *measurement, utpm_master_state_t *utpm, uint32_t pcr_num)
 {
-    SHA_CTX ctx;
+    unsigned long outlen;
+    int rv;
 
     if(!measurement || !utpm) { return UTPM_ERR_BAD_PARAM; }
     if(pcr_num >= TPM_PCR_NUM) { return UTPM_ERR_PCR_OUT_OF_RANGE; }
@@ -142,14 +173,17 @@ TPM_RESULT utpm_extend(TPM_DIGEST *measurement, utpm_master_state_t *utpm, uint3
     //print_hex("utpm_extend: PCR before: ", utpm->pcr_bank[pcr_num].value, TPM_HASH_SIZE);
     //print_hex("utpm_extend: measurement: ", measurement->value, TPM_HASH_SIZE);
 
-    SHA1_Init( &ctx );
-    /* existing PCR value */
-    SHA1_Update( &ctx, utpm->pcr_bank[pcr_num].value, TPM_HASH_SIZE);
-    /* new measurement */
-    SHA1_Update( &ctx, measurement->value, TPM_HASH_SIZE);
-    /* write new PCR value */
-    SHA1_Final( utpm->pcr_bank[pcr_num].value, &ctx );
-
+    /* pcr = H( pcr || measurement) */
+    outlen = sizeof(utpm->pcr_bank[pcr_num].value);
+    rv = hash_memory_multi( find_hash("sha1"),
+                            utpm->pcr_bank[pcr_num].value, &outlen,
+                            utpm->pcr_bank[pcr_num].value, TPM_HASH_SIZE,
+                            measurement->value, TPM_HASH_SIZE,
+                            NULL, NULL);
+    if (rv) {
+      abort();
+    }
+    
     //print_hex("utpm_extend: PCR after: ", utpm->pcr_bank[pcr_num].value, TPM_HASH_SIZE);
     
 	return UTPM_SUCCESS;
@@ -352,7 +386,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 	uint8_t* p;
 	uint8_t *iv;
     uint32_t bytes_consumed_by_pcrInfo;
-	aes_context ctx;
+    symmetric_CBC cbc_ctx;
     TPM_PCR_INFO tpmPcrInfo_internal;
     uint8_t *plaintext = NULL;
     uint32_t bytes_of_entropy = 0;
@@ -463,13 +497,21 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     print_hex("padding: ", p, *outlen - outlen_beforepad);
     p += *outlen - outlen_beforepad;
     
-	/* encrypt (1-4) data using g_aeskey in AES-CBC mode */
-	aes_setkey_enc(&ctx, g_aeskey, TPM_AES_KEY_LEN);
+    /* encrypt (1-4) data using g_aeskey in AES-CBC mode */
+    if (cbc_start( find_cipher( "aes"), iv, g_aeskey, TPM_AES_KEY_LEN, 0, &cbc_ctx)) {
+      abort();
+    }
+        
     print_hex(" plaintext (including IV) just prior to AES encrypt: ", plaintext, *outlen);
-	aes_crypt_cbc(&ctx, AES_ENCRYPT, *outlen - TPM_AES_KEY_LEN_BYTES,
-                  iv,
-                  plaintext + TPM_AES_KEY_LEN_BYTES, /* skip IV */
-                  output + TPM_AES_KEY_LEN_BYTES); /* don't clobber IV */
+    if (cbc_encrypt( plaintext + TPM_AES_KEY_LEN_BYTES, /* skip IV */ 
+                     output + TPM_AES_KEY_LEN_BYTES, /* don't clobber IV */
+                     *outlen - TPM_AES_KEY_LEN_BYTES,
+                     &cbc_ctx)) {
+      abort();
+    }
+    if (cbc_done( &cbc_ctx)) {
+      abort();
+    }
 
     print_hex(" freshly encrypted ciphertext: ", output, *outlen);
     
@@ -500,8 +542,8 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
                        TPM_COMPOSITE_HASH *digestAtCreation) /* out */
 {
 	uint8_t hmacCalculated[TPM_HASH_SIZE];
-	aes_context ctx;
 	uint32_t rv;
+        symmetric_CBC cbc_ctx;
 
     if(!utpm || !input || !output || !outlen || !digestAtCreation) { return 1; }
     
@@ -545,16 +587,24 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
         - TPM_AES_KEY_LEN_BYTES /* iv */
         - TPM_HASH_SIZE;        /* hmac */
     
-	aes_setkey_dec(&ctx, g_aeskey, TPM_AES_KEY_LEN);
-	aes_crypt_cbc(&ctx, AES_DECRYPT,
-                  *outlen,
-                  input /* iv comes first */,
-                  input+TPM_AES_KEY_LEN_BYTES /* offset to ciphertext just beyond iv */,
-                  output);
-
+    if (cbc_start( find_cipher("aes"),
+                   input, /* iv is at beginning of input */
+                   g_aeskey, TPM_AES_KEY_LEN,
+                   0,
+                   &cbc_ctx)) {
+      abort();
+    }
+    if (cbc_decrypt( input+TPM_AES_KEY_LEN_BYTES, /* offset to ciphertext just beyond iv */
+                     output,
+                     *outlen,
+                     &cbc_ctx)) {
+      abort();
+    }
+    if (cbc_done( &cbc_ctx)) {
+      abort();
+    }
 
     print_hex("  Unsealed plaintext: ", output, *outlen);
-
 
     /**
      * Step 3. Verify that PCR values match.
@@ -639,7 +689,7 @@ TPM_RESULT utpm_seal_deprecated(uint8_t* pcrAtRelease, uint8_t* input, uint32_t 
 	uint8_t iv[16]; 
 	uint8_t confounder[TPM_CONFOUNDER_SIZE];
 	uint8_t hashdata[TPM_HASH_SIZE];
-	aes_context ctx;
+        symmetric_CBC cbc_ctx;
     uint32_t confounder_size;
 
 	/* IV can be 0 because we have confounder */
@@ -678,8 +728,18 @@ TPM_RESULT utpm_seal_deprecated(uint8_t* pcrAtRelease, uint8_t* input, uint32_t 
 	memcpy(output+TPM_CONFOUNDER_SIZE, hashdata, TPM_HASH_SIZE);
 	
 	/* encrypt data using sealAesKey by AES-CBC mode */
-	aes_setkey_enc(&ctx, g_aeskey, TPM_AES_KEY_LEN);
-	aes_crypt_cbc(&ctx, AES_ENCRYPT, len, iv, output, output); 
+        if (cbc_start( find_cipher( "aes"), iv, g_aeskey, TPM_AES_KEY_LEN, 0, &cbc_ctx)) {
+          abort();
+        }
+        if (cbc_encrypt( output,
+                         output,
+                         len,
+                         &cbc_ctx)) {
+          abort();
+        }
+        if (cbc_done( &cbc_ctx)) {
+          abort();
+        }
 
 	return 0;
 }
@@ -690,14 +750,24 @@ TPM_RESULT utpm_unseal_deprecated(utpm_master_state_t *utpm, uint8_t* input, uin
 	uint8_t hashdata[TPM_HASH_SIZE];
 	uint8_t oldhmac[TPM_HASH_SIZE];
 	uint8_t iv[16];
-	aes_context ctx;
+	symmetric_CBC cbc_ctx;
 	int i;
 
 	memset(iv, 0, 16);
 
 	/* decrypt data */
-	aes_setkey_dec(&ctx,g_aeskey, TPM_AES_KEY_LEN);
-	aes_crypt_cbc(&ctx, AES_DECRYPT, (s32)inlen, iv, input, output);
+        if (cbc_start( find_cipher( "aes"), iv, g_aeskey, TPM_AES_KEY_LEN, 0, &cbc_ctx)) {
+          abort();
+        }
+        if (cbc_decrypt( input,
+                         output,
+                         inlen,
+                         &cbc_ctx)) {
+          abort();
+        }
+        if (cbc_done( &cbc_ctx)) {
+          abort();
+        }
 
 	/* compare the current pcr (default pcr 0) with pcrHashAtRelease */
     /* XXX TODO: this code implicitly uses PCR 0, and assumes that it
@@ -821,13 +891,22 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
     *outlen = TPM_RSA_KEY_LEN;
     dprintf(LOG_TRACE, "required output size = *outlen = %d\n", *outlen);
 
-	if ((rv = tpm_pkcs1_sign(&g_rsa,
-                             sizeof(TPM_QUOTE_INFO),
-                             (uint8_t*)&quote_info,
-                             output)) != 0) {
-		printf("[TV:UTPM] ERROR: tpm_pkcs1_sign FAILED\n");
-		goto out;
-	}
+    {
+      unsigned long outlen_long = *outlen;
+      if( (rv = rsa_sign_hash_ex( (uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO),
+                                  output, &outlen_long,
+                                  LTC_LTC_PKCS_1_V1_5,
+                                  NULL, 0, /* no prng for v1.5 padding */
+                                  find_hash("sha1"),
+                                  0, /* no salt for v1.5 padding */
+                                  &g_rsa_key))) {
+        printf("[TV:UTPM] ERROR: tpm_pkcs1_sign FAILED\n");
+        goto out;
+      }
+      if (outlen_long != *outlen) {
+        abort();
+      }
+    }
     
     dprintf(LOG_TRACE, "[TV:UTPM] Success!\n");
     
@@ -871,16 +950,28 @@ TPM_RESULT utpm_quote_deprecated(uint8_t* externalnonce, uint8_t* output, uint32
 	/* sign the quoteInfo and add the signature to output 
 	 * get the outlen
 	 */
-	if (0 != (ret = tpm_pkcs1_sign(&g_rsa, datalen, output, (output + datalen)))) {
-		printf("[TV] Quote ERROR: rsa sign fail\n");
-		return 1;
-	}
+        {
+          unsigned long outlen_long = TPM_RSA_KEY_LEN;
+          if( (ret = rsa_sign_hash_ex( output, datalen,
+                                       output+datalen, &outlen_long,
+                                       LTC_LTC_PKCS_1_V1_5,
+                                       NULL, 0, /* no prng for v1.5 padding */
+                                       find_hash("sha1"),
+                                       0, /* no salt for v1.5 padding */
+                                       &g_rsa_key))) {
+            printf("[TV] Quote ERROR: rsa sign fail\n");
+            return 1;
+          }
+        }
+
 	*outlen = TPM_RSA_KEY_LEN + datalen;
 
 	return 0; 
 }
 
 TPM_RESULT utpm_id_getpub(uint8_t *N, uint32_t *len) {
+  unsigned long len_long;
+
     if(!len) { return UTPM_ERR_BAD_PARAM; }
 
     *len = TPM_RSA_KEY_LEN;
@@ -889,13 +980,13 @@ TPM_RESULT utpm_id_getpub(uint8_t *N, uint32_t *len) {
         return UTPM_SUCCESS;
     }
 
-    /* assume N is big enough and do the work */
-	/* Must use MPI export function to get big endian N */
-	if(mpi_write_binary(&g_rsa.N, N, TPM_RSA_KEY_LEN) != 0) {
-        dprintf(LOG_ERROR, "mpi_write_binary ERROR\n");
-        return UTPM_ERR_BAD_PARAM;
-	}
-    
+    len_long = *len;
+    if ( rsa_export( N, &len_long, PK_PUBLIC, &g_rsa_key)) {
+      dprintf(LOG_ERROR, "rsa_export ERROR\n");
+      return UTPM_ERR_BAD_PARAM;
+    }
+    *len = len_long;
+
     return UTPM_SUCCESS;
 }
 
