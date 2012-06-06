@@ -138,6 +138,14 @@ TPM_RESULT utpm_init_master_entropy(uint8_t *aeskey,
      */
     memcpy(&g_rsa_key, rsa, sizeof(g_rsa_key));
 
+    /* register libtomcrypt algorithms */
+    if (register_hash( &sha1_desc) < 0) {
+      abort();
+    }
+    if (register_cipher( &aes_desc) < 0) {
+      abort();
+    }
+
     return UTPM_SUCCESS;
 }
 
