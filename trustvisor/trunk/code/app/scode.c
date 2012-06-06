@@ -45,10 +45,8 @@
 #include <scode.h>
 #include <malloc.h>
 #include <tv_utpm.h> /* formerly utpm.h */
-#include <rsa.h>
 #include <random.h>
 #include <crypto_init.h>
-#include <sha1.h>
 
 #include <tv_log.h>
 #include <hptw_emhf.h>
@@ -209,14 +207,15 @@ int scode_measure_section(utpm_master_state_t *utpm,
                           whitelist_entry_t *wle,
                           const tv_pal_section_int_t *section)
 {
-  SHA_CTX ctx;
+  hash_state ctx;
   TPM_DIGEST sha1sum;
+  int rv=1;
 
-  SHA1_Init(&ctx);
+  EU_CHKN( sha1_init( &ctx));
 
   /* always measure the section type, which determines permissions and
      how the section is used. */
-  SHA1_Update(&ctx, (const uint8_t*)&section->section_type, sizeof(section->section_type));
+  EU_CHKN( sha1_process( &ctx, (const uint8_t*)&section->section_type, sizeof(section->section_type)));
 
   /* measure the address where the section is mapped. this prevents,
      for example, that a section is mapped with a different alignment
@@ -230,14 +229,14 @@ int scode_measure_section(utpm_master_state_t *utpm,
   */
   if (section->section_type != TV_PAL_SECTION_STACK
       && section->section_type != TV_PAL_SECTION_PARAM) {
-    SHA1_Update(&ctx, (const uint8_t*)&section->pal_gva, sizeof(section->pal_gva));
+    EU_CHKN( sha1_process( &ctx, (const uint8_t*)&section->pal_gva, sizeof(section->pal_gva)));
   }
 
   /* measure section size. not clear that this is strictly necessary,
      since giving a pal more memory shouldn't hurt anything, and less
      memory should result in no worse than the pal crashing, but seems
      like good hygiene. */
-  SHA1_Update(&ctx, (const uint8_t*)&section->size, sizeof(section->size));
+  EU_CHKN( sha1_process( &ctx, (const uint8_t*)&section->size, sizeof(section->size)));
 
   /* measure contents. we could consider making this optional for,
      e.g., PARAM and STACK sections, but seems like good hygiene to
@@ -262,17 +261,19 @@ int scode_measure_section(utpm_master_state_t *utpm,
                                                section->size - measured,
                                                &to_measure));
 
-      SHA1_Update(&ctx, ptr, to_measure);
+      EU_CHKN( sha1_process( &ctx, ptr, to_measure));
       measured += to_measure;
     }
   }
 
-  SHA1_Final(sha1sum.value, &ctx);
+  EU_CHKN( sha1_done( &ctx, sha1sum.value));
 
   /* extend pcr 0 */
   utpm_extend(&sha1sum, utpm, 0);
 
-  return 0;
+  rv=0;
+ out:
+  return rv;
 }
 
 int scode_measure_sections(utpm_master_state_t *utpm,
