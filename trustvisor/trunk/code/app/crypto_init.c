@@ -283,6 +283,11 @@ int trustvisor_master_crypto_init(void) {
   int rv=1;
   bool opened_tpm=false;
 
+  /* ensure libtomcrypto's math descriptor is initialized */
+  if (!ltc_mp.name) {
+    ltc_mp = ltm_desc;
+  }
+
   EU_CHKN( rv = emhf_tpm_open_locality(CRYPTO_INIT_LOCALITY),
            eu_err_e( "FATAL ERROR: Could not access HW TPM."));
   opened_tpm=true;
