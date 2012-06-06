@@ -49,9 +49,6 @@
 
 #include <crypto_init.h>
 #include <nv.h>
-#include <sha1.h>
-#include <hmac.h>
-#include <rsa.h>
 
 #include <tv_log.h>
 
@@ -147,9 +144,10 @@ static int master_prng_init(void) {
 #define QND_BRIDGE_PUBKEY_PCR     19
 #define SERIAL_BUFSIZE (TPM_RSA_KEY_LEN + 2*sizeof(uint32_t))
 
-static int trustvisor_measure_qnd_bridge_signing_pubkey(rsa_context *rsa) {
+static int trustvisor_measure_qnd_bridge_signing_pubkey(rsa_key *rsa) {
   int rv=1;
   uint8_t serial_pubkey[SERIAL_BUFSIZE];
+  unsigned long serial_pubkey_len=SERIAL_BUFSIZE;
   tpm_digest_t digest;
   tpm_pcr_value_t pcr_out;
 
@@ -158,24 +156,21 @@ static int trustvisor_measure_qnd_bridge_signing_pubkey(rsa_context *rsa) {
   /**
    * 1. Serialize RSA key into byte blob for purposes of measurement.
    */
-  /* len (4 bytes, big endian) | E (4 bytes, big endian) | N (XXX bytes, big endian)*/
-  memset(serial_pubkey, 0, SERIAL_BUFSIZE);
-  /* rsa->len */
-  *((uint32_t*)&serial_pubkey[0]) = NIST_HTONL(rsa->len);
-  /* rsa->E */
-  EU_CHKN( mpi_write_binary( &rsa->E, &serial_pubkey[0]+sizeof(uint32_t), sizeof(uint32_t)));
-
-  /* rsa->N */
-  EU_CHK( rsa->len == TPM_RSA_KEY_LEN);
-
-  EU_CHKN( mpi_write_binary( &rsa->N, &serial_pubkey[0]+2*sizeof(uint32_t), rsa->len));
+  memset( serial_pubkey, 0, SERIAL_BUFSIZE);
+  EU_CHKN( rsa_export( serial_pubkey, &serial_pubkey_len, PK_PUBLIC, rsa));
   eu_trace("Serialized RSA key: %*D", SERIAL_BUFSIZE, serial_pubkey, " ");
 
   /**
    * 2. Hash serialized RSA key.
    */
-  EU_CHKN( sha1_buffer(serial_pubkey, SERIAL_BUFSIZE, digest.digest));
-  eu_trace("Hashed serialized RSA key: %*D", TPM_HASH_SIZE, digest.digest, " ");
+  {
+    hash_state md;
+    EU_CHKN( sha1_init( &md));
+    EU_CHKN( sha1_process( &md, serial_pubkey, SERIAL_BUFSIZE));
+    EU_CHKN( sha1_done( &md, digest.digest));
+    eu_trace("Hashed serialized RSA key: %*D", TPM_HASH_SIZE, digest.digest, " ");
+  }
+  /* EU_CHKN( sha1_buffer(serial_pubkey, SERIAL_BUFSIZE, digest.digest)); */
 		
   /**
    * 3. Extend PCR with hash.
@@ -201,12 +196,16 @@ static int trustvisor_long_term_secret_init(void) {
   /* The actual AES key is smaller than this, so we need a temporary
    * buffer. */
   uint8_t aeskey_temp[HW_TPM_MASTER_SEALING_SECRET_SIZE];
+  unsigned long aeskey_temp_len = sizeof(aeskey_temp);
   uint8_t hmackey_temp[HW_TPM_MASTER_SEALING_SECRET_SIZE];
+  unsigned long hmackey_temp_len = sizeof(hmackey_temp);
   const uint8_t sealingaes[10] = {0x73, 0x65, 0x61, 0x6c, 0x69, 0x6e,
                                   0x67, 0x61, 0x65, 0x73};
   const uint8_t sealinghmac[11] = {0x73, 0x65, 0x61, 0x6c, 0x69, 0x6e,
                                    0x67,	0x68, 0x6d, 0x61, 0x63};
-  rsa_context rsa;
+  rsa_key rsakey;
+  int hash_id = find_hash("sha1");
+  
 
   EU_VERIFY( g_master_prng_init_completed);
 
@@ -226,15 +225,19 @@ static int trustvisor_long_term_secret_init(void) {
             "VULNERABILITY:VULNERABILITY:VULNERABILITY:VULNERABILITY\n");
   }
 
-  COMPILE_TIME_ASSERT(HW_TPM_MASTER_SEALING_SECRET_SIZE == SHA1_RESULTLEN);
+  ASSERT( HW_TPM_MASTER_SEALING_SECRET_SIZE == hash_descriptor[hash_id].hashsize);
 
   /* Derive encryption and MAC keys for sealed storage */
-  HMAC_SHA1(mss, HW_TPM_MASTER_SEALING_SECRET_SIZE,
-            sealingaes, sizeof(sealingaes),
-            hmackey_temp);
-  HMAC_SHA1(mss, HW_TPM_MASTER_SEALING_SECRET_SIZE,
-            sealinghmac, sizeof(sealinghmac),
-            aeskey_temp);
+  EU_VERIFYN( hmac_memory( hash_id,
+                           mss, HW_TPM_MASTER_SEALING_SECRET_SIZE,
+                           sealingaes, sizeof(sealingaes),
+                           aeskey_temp, &aeskey_temp_len));
+
+  EU_VERIFYN( hmac_memory( hash_id,
+                           mss, HW_TPM_MASTER_SEALING_SECRET_SIZE,
+                           sealinghmac, sizeof(sealinghmac),
+                           hmackey_temp, &hmackey_temp_len));
+
   EU_VERIFY( TPM_AES_KEY_LEN_BYTES <= HW_TPM_MASTER_SEALING_SECRET_SIZE);
 	
   eu_trace( "Sealing AES key derived from MSS.");
@@ -250,17 +253,15 @@ static int trustvisor_long_term_secret_init(void) {
    * session-linkable, PAL-linkable hack to get things off the
    * ground. */
   eu_trace( "Generating RSA keypair...");
-  rsa_init(&rsa, RSA_PKCS_V15, RSA_SHA1);
 
   /* If someday, somebody decides to keep things going during
      development or debugging, don't forget that we MUST zero
      sensitive keys upon failure. */
-  EU_VERIFYN( rsa_gen_key(&rsa, (TPM_RSA_KEY_LEN<<3), 65537));
-
+  EU_VERIFYN( rsa_make_key( &g_ltc_prng, g_ltc_prng_id, TPM_RSA_KEY_LEN, 65537, &rsakey));
   eu_trace("RSA key pair generated");
 
   /* same story as above. */
-  EU_VERIFYN( utpm_init_master_entropy(aeskey_temp, hmackey_temp, &rsa));
+  EU_VERIFYN( utpm_init_master_entropy(aeskey_temp, hmackey_temp, &rsakey));
 
   rv = 0;
  /* out: */
@@ -269,12 +270,12 @@ static int trustvisor_long_term_secret_init(void) {
   memset(hmackey_temp, 0, HW_TPM_MASTER_SEALING_SECRET_SIZE);
   /* Measure the Identity key used to sign Micro-TPM Quotes. */
   /* prefer not to depend on the globals */
-  if(0 != (rv = trustvisor_measure_qnd_bridge_signing_pubkey(&rsa))) {
+  if(0 != (rv = trustvisor_measure_qnd_bridge_signing_pubkey(&rsakey))) {
     eu_err("trustvisor_long_term_secret_init FAILED with rv %d!!!!", rv);
   }
   /* Intentionally not a proper free. Responsibility for this
    * structure has been transferred to the utpm implementation. */
-  memset(&rsa, 0, sizeof(rsa_context));
+  memset(&rsakey, 0, sizeof(rsakey));
 
   return rv;
 }
