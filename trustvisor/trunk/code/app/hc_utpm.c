@@ -477,8 +477,8 @@ u32 hc_utpm_quote(VCPU * vcpu, u32 nonce_addr, u32 tpmsel_addr, u32 sig_addr, u3
 
 uint32_t hc_utpm_utpm_id_getpub(VCPU * vcpu, uint32_t gvaddr)
 {
-	uint32_t len;
-	uint8_t rsaModulus[TPM_RSA_KEY_LEN];
+	uint8_t rsaModulus[TPM_RSA_KEY_LEN + 50]; /* XXX */
+	uint32_t len = sizeof(rsaModulus);
 	uint32_t rv = 1;
 
 	eu_trace("********** uTPM id_getpub **********");
@@ -488,13 +488,16 @@ uint32_t hc_utpm_utpm_id_getpub(VCPU * vcpu, uint32_t gvaddr)
 		eu_err_e("ID_GETPUB ERROR: no PAL is running!"));
 
 	EU_CHKN( utpm_id_getpub(NULL, &len));
-	EU_CHK( len <= TPM_RSA_KEY_LEN);
+	EU_CHK( len <= sizeof(rsaModulus),
+		eu_err_e("Buffer is size %d but needs size %d",
+			 sizeof(rsaModulus), len));
 
 	EU_CHKN( rv = utpm_id_getpub(rsaModulus, &len));
+	EU_CHK( len == TPM_RSA_KEY_LEN); /* XXX userspace allocations assume this size */
 
 	//print_hex("  N  : ", rsaModulus, TPM_RSA_KEY_LEN);
-	EU_CHKN( copy_to_current_guest(vcpu, gvaddr, rsaModulus, TPM_RSA_KEY_LEN));
-	
+	EU_CHKN( copy_to_current_guest(vcpu, gvaddr, rsaModulus, len));
+
 	rv = 0;
  out:
 	return rv;
