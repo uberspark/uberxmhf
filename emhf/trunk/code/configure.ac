@@ -68,6 +68,14 @@ LIBBAREMETAL_SRC=$[]with_libbaremetalsrc
 dnl AS_IF([test "x${LIBBAREMETAL_SRC:0:1}" != "x/"],
 dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$LIBBAREMETAL_SRC])
 
+# libtommath source directory
+AC_SUBST([LIBTOMMATH_SRC])
+AC_ARG_WITH([libtommathsrc],
+        AS_HELP_STRING([--with-libtommathsrc=@<:@path@:>@],
+                [path to libtommath source directory]),
+                , [with_libtommathsrc=./libtommath])
+LIBTOMMATH_SRC=$[]with_libtommathsrc
+
 # libtomcrypt source directory
 AC_SUBST([LIBTOMCRYPT_SRC])
 AC_ARG_WITH([libtomcryptsrc],

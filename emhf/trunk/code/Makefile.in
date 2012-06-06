@@ -18,6 +18,11 @@ export NESTED_PAGING := y
 #where you want loader and runtime binaries to go
 export HYPOUTDIR = $(CURDIR)
 
+# libtommath
+export LIBTOMMATH_SRC := $(realpath @LIBTOMMATH_SRC@)
+LIBTOMMATH_BUILD = $(CURDIR)/_build_libtommath
+LIBTOMMATH_ARCHIVE = libtommath.a
+
 # libtomcrypt
 export LIBTOMCRYPT_SRC := $(realpath @LIBTOMCRYPT_SRC@)
 LIBTOMCRYPT_BUILD = $(CURDIR)/_build_libtomcrypt
@@ -54,6 +59,9 @@ export ADDL_INCLUDES := -I$(CURDIR)/emhfcore/include $(LIBBAREMETAL_INC)
 
 export ADDL_LIBS += $(LIBTOMCRYPT_BUILD)/$(LIBTOMCRYPT_ARCHIVE)
 export ADDL_INCLUDES += -I$(LIBTOMCRYPT_SRC)/src/headers/
+
+export ADDL_LIBS += $(LIBTOMMATH_BUILD)/$(LIBTOMMATH_ARCHIVE)
+export ADDL_INCLUDES += -I$(LIBTOMMATH_SRC)
 
 ##################################################################################
 ### BEGIN Variables controlled using autoconf
@@ -204,6 +212,14 @@ $(APP_ARCHIVE):
 
 .PHONY: subdirs
 subdirs: $(LIBBAREMETAL_SRC) 
+	@echo ---------------------------------------------------------------
+	@echo Building libtommath...
+	@echo ---------------------------------------------------------------
+	mkdir -p $(LIBTOMMATH_BUILD)
+	cd $(LIBTOMMATH_BUILD) && $(MAKE) -f $(LIBTOMMATH_SRC)/makefile CFLAGS="$(filter-out -Werror,$(CFLAGS))" -w libtommath.a
+	@echo ---------------------------------------------------------------
+	@echo libtommath.a build SUCCESS
+	@echo ---------------------------------------------------------------
 	@echo ---------------------------------------------------------------
 	@echo Building libtomcrypt...
 	@echo ---------------------------------------------------------------
