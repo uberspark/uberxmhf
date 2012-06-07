@@ -4,7 +4,7 @@ JSON library for data encoding / decoding
 TrouSerS / tpm-tools for interacting with TPM in untrusted world
 OpenSSL development for crypto and base64 encoding and decoding
 
-aptitude install libtspi-dev libtspi1 trousers tpm-tools libjson0-dbg libjson0-dev python-json python-m2crypto
+aptitude install libtspi-dev libtspi1 trousers tpm-tools libjson0-dbg libjson0-dev python-json python-m2crypto libtpm-unseal-dev
 ...and OpenSSL development packages
 
 Also required is OpenPlatformTrustServices-tools-0.1.2, as it provides
