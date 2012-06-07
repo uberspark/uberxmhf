@@ -146,6 +146,19 @@ static int master_prng_init(void) {
 /* #define SERIAL_BUFSIZE (TPM_RSA_KEY_LEN + 50) /\* XXX fudge-factor for ASN.1 metadata *\/ */
 #define SERIAL_BUFSIZE (TPM_RSA_KEY_LEN + 2*sizeof(uint32_t))
 
+/* serialize to *exactly* sz bytes, even if it could be smaller.
+ * Assumes destination buffer is pre-zeroed- i.e., skips bytes, doesn't zero them.
+ */
+static int mp_to_unsigned_bin_sz( mp_int *a, uint8_t *buf, size_t sz)
+{
+  size_t actual_size = mp_unsigned_bin_size( a);
+  size_t skip = sz - actual_size;
+  if (actual_size > sz) {
+    return MP_VAL;
+  }
+  return mp_to_unsigned_bin( a, buf+skip);
+}
+
 static int trustvisor_measure_qnd_bridge_signing_pubkey(rsa_key *rsa) {
   int rv=1;
   uint8_t serial_pubkey[SERIAL_BUFSIZE];
@@ -163,11 +176,9 @@ static int trustvisor_measure_qnd_bridge_signing_pubkey(rsa_key *rsa) {
   /* rsa->len */
   *((uint32_t*)&serial_pubkey[0]) = NIST_HTONL( mp_unsigned_bin_size(rsa->N));
   /* rsa->E */
-  EU_CHK( (size_t)mp_unsigned_bin_size(rsa->e) <= sizeof(uint32_t));
-  EU_CHKN( mp_to_unsigned_bin( rsa->e, &serial_pubkey[0]+sizeof(uint32_t)));
+  EU_CHKN( mp_to_unsigned_bin_sz( rsa->e, &serial_pubkey[0]+sizeof(uint32_t), sizeof(uint32_t)));
   /* rsa->N */
-  EU_CHK( mp_unsigned_bin_size(rsa->N) == TPM_RSA_KEY_LEN);
-  EU_CHKN( mp_to_unsigned_bin( rsa->N, &serial_pubkey[0]+2*sizeof(uint32_t)));
+  EU_CHKN( mp_to_unsigned_bin_sz( rsa->N, &serial_pubkey[0]+2*sizeof(uint32_t), TPM_RSA_KEY_LEN));
 
   /* XXX temporarily keeping old serialized format for compatibility */
   /* memset( serial_pubkey, 0, SERIAL_BUFSIZE); */
