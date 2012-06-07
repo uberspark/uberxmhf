@@ -143,7 +143,8 @@ static int master_prng_init(void) {
  */
 #define QND_BRIDGE_PUBKEY_PCR     19
 
-#define SERIAL_BUFSIZE (TPM_RSA_KEY_LEN + 50) /* XXX fudge-factor for ASN.1 metadata */
+/* #define SERIAL_BUFSIZE (TPM_RSA_KEY_LEN + 50) /\* XXX fudge-factor for ASN.1 metadata *\/ */
+#define SERIAL_BUFSIZE (TPM_RSA_KEY_LEN + 2*sizeof(uint32_t))
 
 static int trustvisor_measure_qnd_bridge_signing_pubkey(rsa_key *rsa) {
   int rv=1;
