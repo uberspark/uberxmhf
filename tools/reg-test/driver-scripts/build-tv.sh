@@ -42,7 +42,7 @@ mkdir -p $TEMPDIR
 
 # 0. Pull the latest source code.
 pushd $REPO_ROOT_ABSPATH
-git svn rebase
+#git svn rebase
 # Note: this comes _after_ rebase because we want rebase to fail if
 # one of us developers has been tinkering around and forgot to commit
 # things.  Otherwise, this 'git clean' will clobber our work.
