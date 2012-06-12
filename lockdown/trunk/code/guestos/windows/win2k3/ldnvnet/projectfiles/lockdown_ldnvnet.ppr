@@ -1,0 +1,85 @@
+[Config]
+Compilator.SaveAll=0
+Compilator.Capture=0
+Compilator.HideOutput=0
+Compilator.LogType=0
+DefaultDir=E:\amit\projects\lockdown\code\guestos\win2k3\ldnvnet
+DefaultCPIndex=0
+LogtoEnd=1
+DontOpen=0
+AbsolutePath=0
+FileFormat=0
+ProjectFilesOnly=0
+[Project tree]
+lockdown_ldnvnet
+	+src
+		..\Makefile
+		..\mksys.bat
+		..\sys\request.c
+		..\sys\miniport.h
+		..\sys\miniport.c
+		..\sys\ldnvnet.rc
+		..\sys\ldnvnet.inf
+		..\sys\ioctl.c
+		..\sys\init.c
+		..\sys\sendrcv.c
+[Open project files]
+0=..\mksys.bat
+1=..\Makefile
+2=..\sys\sendrcv.c
+3=..\sys\init.c
+4=..\sys\ioctl.c
+5=..\sys\ldnvnet.inf
+6=..\sys\ldnvnet.rc
+7=..\sys\miniport.c
+8=..\sys\miniport.h
+9=..\sys\request.c
+10=..\sys\txrxfifo.c
+11=..\sys\sources
+12=..\sys\txrxfifo.h
+13=..\sys\public.h
+[Selected Project Files]
+Main=
+Selected=..\mksys.bat
+[..\mksys.bat]
+TopLine=1
+Caret=65,4
+[..\Makefile]
+TopLine=1
+Caret=45,13
+[..\sys\sendrcv.c]
+TopLine=277
+Caret=45,291
+[..\sys\init.c]
+TopLine=1
+Caret=1,1
+[..\sys\ioctl.c]
+TopLine=196
+Caret=14,196
+[..\sys\ldnvnet.inf]
+TopLine=1
+Caret=1,1
+[..\sys\ldnvnet.rc]
+TopLine=1
+Caret=1,1
+[..\sys\miniport.c]
+TopLine=716
+Caret=5,742
+[..\sys\miniport.h]
+TopLine=552
+Caret=32,563
+[..\sys\request.c]
+TopLine=1
+Caret=19,25
+[..\sys\txrxfifo.c]
+TopLine=70
+Caret=25,98
+[..\sys\sources]
+TopLine=4
+Caret=21,30
+[..\sys\txrxfifo.h]
+TopLine=1
+Caret=58,18
+[..\sys\public.h]
+TopLine=7
+Caret=29,15

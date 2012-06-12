@@ -1,0 +1,94 @@
+[Config]
+Compilator.SaveAll=0
+Compilator.Capture=0
+Compilator.HideOutput=0
+Compilator.LogType=0
+DefaultDir=C:\amit\projects\lockdown\code\verifier\ds2148wz
+DefaultCPIndex=0
+LogtoEnd=1
+DontOpen=0
+AbsolutePath=0
+FileFormat=1
+ProjectFilesOnly=0
+[Project tree]
+ldnverifiermag
+	+src
+		..\usbstdreq.c
+		..\usbinit.c
+		..\usbhw_lpc.h
+		..\usbhw_lpc.c
+		..\usbdebug.h
+		..\usbcontrol.c
+		..\usbapi.h
+		..\type.h
+		..\timerC.h
+		..\timerC.c
+		..\startup.c
+		..\printf.c
+		..\Makefile
+		..\lpcVIC.h
+		..\lpcTMR.h
+		..\lpcGPIO.h
+		..\lpc2148-rom.ld
+		..\LPC21xx.h
+		..\console.h
+		..\console.c
+		..\usbstruct.h
+		..\main.c
+		..\netif_w5300.c
+		..\netif_sockutil.c
+		..\netif_socket.c
+		..\netif_ds5300.c
+		..\include_netif\sockutil.h
+		..\include_netif\socket.h
+		..\include_netif\iinchip_conf.h
+		..\include_netif\ds5300.h
+		..\include_netif\w5300.h
+[Open project files]
+0=..\main.c
+1=..\Makefile
+2=..\include_netif\w5300.h
+3=..\include_netif\ds5300.h
+4=..\include_netif\iinchip_conf.h
+5=..\include_netif\socket.h
+6=..\include_netif\sockutil.h
+7=..\netif_ds5300.c
+8=..\netif_socket.c
+9=..\netif_sockutil.c
+10=..\netif_w5300.c
+[Selected Project Files]
+Main=
+Selected=..\main.c
+[..\main.c]
+TopLine=556
+Caret=64,578
+[..\Makefile]
+TopLine=146
+Caret=46,157
+[..\include_netif\w5300.h]
+TopLine=1
+Caret=1,1
+[..\include_netif\ds5300.h]
+TopLine=1
+Caret=11,13
+[..\include_netif\iinchip_conf.h]
+TopLine=1
+Caret=1,1
+[..\include_netif\socket.h]
+TopLine=1
+Caret=1,1
+[..\include_netif\sockutil.h]
+TopLine=1
+Caret=1,1
+[..\netif_ds5300.c]
+TopLine=1
+Caret=1,1
+[..\netif_socket.c]
+TopLine=139
+Caret=18,165
+[..\netif_sockutil.c]
+TopLine=121
+Caret=49,128
+[..\netif_w5300.c]
+TopLine=388
+Caret=23,405
