@@ -51,8 +51,8 @@ CFLAGS+=-g -Wall -I.
 #CFLAGS+=-DUSERSPACE_ONLY=1
 PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv libprotobuf-c gtk+-2.0
 
-#PAL_BACKEND=tee-sdk-svc-tv
-PAL_BACKEND=tee-sdk-svc-null
+PAL_BACKEND=tee-sdk-svc-tv
+#PAL_BACKEND=tee-sdk-svc-null
 PAL_NAME=audited-kv-pal
 PAL_OBJS_BARE= \
 	audited-kv-pal.o \
