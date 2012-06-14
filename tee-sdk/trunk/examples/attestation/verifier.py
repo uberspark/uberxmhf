@@ -61,7 +61,7 @@ pal_output_dict = response_dict["pal_part"]
 pal_TopLevelTitle = pal_output_dict["TopLevelTitle"] # TODO: kill me
 pal_DataStructureVersion = pal_output_dict["DataStructureVersion"] # TODO: kill me
 pal_externalnonce     = base64.b64decode(pal_output_dict["externalnonce"])
-pal_rsaMod            = base64.b64decode(pal_output_dict["rsaMod"])
+pal_rsaPub            = base64.b64decode(pal_output_dict["rsaPub"])
 pal_tpm_pcr_composite = base64.b64decode(pal_output_dict["tpm_pcr_composite"])
 pal_sig               = base64.b64decode(pal_output_dict["sig"])
 
@@ -166,13 +166,13 @@ print >>sys.stderr, "Step 2: Verifying TrustVisor pubkey is measured into HW TPM
 
 pcr19_hash_payload = binascii.unhexlify("0000000000000000000000000000000000000000")
 tv_serialized_rsa_prefix = binascii.unhexlify("0000010000010001") # len(N) | E
-pcr19_hash_payload += hashlib.sha1(tv_serialized_rsa_prefix + pal_rsaMod).digest()
+# FIXME pcr19_hash_payload += hashlib.sha1(tv_serialized_rsa_prefix + pal_rsaMod).digest()
 pcr19_computed_value = hashlib.sha1(pcr19_hash_payload).digest()
 
 if(tpm_pcr19.find(pcr19_computed_value) != 0):
     print >>sys.stderr, "ERROR: PCR-19 does not match pal_rsaMod"
     print >>sys.stderr, "pcr-19:", binascii.hexlify(tpm_pcr19)
-    print >>sys.stderr, "pal_rsaMod:", binascii.hexlify(pal_rsaMod)
+    print >>sys.stderr, "pal_rsaPub:", binascii.hexlify(pal_rsaPub)
     sys.exit(1)
 
 print >>sys.stderr, "  Verifying PCRs 17, 18 represent a known-good launch of TrustVisor"
@@ -187,12 +187,10 @@ print >>sys.stderr, "  XXX UNIMPLEMENTED XXX"
 #####################################################################
 
 print >>sys.stderr, "Step 3a: Verifying uTPM Quote RSA signature with TrustVisor pubkey"
-
-n = M2Crypto.m2.bn_to_mpi(M2Crypto.m2.bin_to_bn(pal_rsaMod))
-e = M2Crypto.m2.bn_to_mpi(M2Crypto.m2.hex_to_bn("10001"))
-#print >>sys.stderr, "e: ", binascii.hexlify(e)
-#print >>sys.stderr, "n: ", binascii.hexlify(n)
-rsa = M2Crypto.RSA.new_pub_key((e, n))
+rsa = M2Crypto.RSA.load_key_string(der2pem(rsaPub))
+if not rsa:
+    print >>sys.stderr, "FAILED to decode rsaPub"
+    sys.exit(1)
 
 # Assemble PAL QuoteInfo
 print >>sys.stderr, "Step 3b: Verifying uTPM QuoteInfo contains our nonce"
@@ -241,4 +239,13 @@ print >>sys.stderr, "****** VERIFICATION SUCCESSFUL! ******"
 print >>sys.stderr, "**************************************"
 
 #
+
+def der2pem(der):
+    TEMPLATE = """
+-----BEGIN RSA PRIVATE KEY-----
+%s
+-----END RSA PRIVATE KEY-----
+"""
+    rsa_pem = TEMPLATE % base64.encodestring(der).rstrip()
+    return rsa_pem
 
