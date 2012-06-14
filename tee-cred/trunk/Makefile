@@ -47,7 +47,7 @@ PROG_OBJS= \
 	proto-gend/storage.pb-c.o
 #CFLAGS+=-g -Wall -Werror -I.
 CFLAGS+=-g -Wall -I.
-LDFLAGS+=--static
+#LDFLAGS+=--static
 #CFLAGS+=-DUSERSPACE_ONLY=1
 PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv libprotobuf-c gtk+-2.0
 
