@@ -11,10 +11,21 @@
  *               VDG Inc.
  *               http://xmhf.org
  *
- * This file is part of the EMHF historical reference
- * codebase, and is released under the terms of the
- * GNU General Public License (GPL) version 2.
- * Please see the LICENSE file for details.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in
+ * the documentation and/or other materials provided with the
+ * distribution.
+ *
+ * Neither the names of Carnegie Mellon or VDG Inc, nor the names of
+ * its contributors may be used to endorse or promote products derived
+ * from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
  * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
@@ -124,4 +135,3 @@ size_t hpt_remaining_on_page(const hpt_pmeo_t *pmeo, hpt_va_t va)
   offset_on_page = va & MASKRANGE64(page_size_log_2-1, 0);
   return page_size - offset_on_page;
 }
-

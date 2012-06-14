@@ -1,7 +1,0 @@
-Dec 13th, 2010:
-
-Verifications are due to fact that guest page tables aren't present
-and hence critical functions are not being entered.  Remove assumes
-and remember that cprover defaults most variables to zero.  There seem
-to be some bugs associated with pointer arithmetic and the alias
-analysis.

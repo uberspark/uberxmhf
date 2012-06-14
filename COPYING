@@ -1,0 +1,37 @@
+All source code Copyright Carnegie Mellon University / VDG Inc is
+covered by a BSD-style license; please see the LICENSE file for
+details.
+
+Additional code in this repository comes from other sources.  Each
+file may have its own copyright/license that is embedded in the source
+file, or in the directory where related source files reside.
+Third-party code is summarized below.
+
+In history somewhere
+********************
+
+OSLO (GPLv2), 
+Putty (MIT license), 
+OpenSSH (BSD), 
+Linux kernel (GPLv2), 
+Xen (GPLv2)
+amtterm (GPLv2) *** PROBLEM *** <- got updated with our headers
+
+In current HEAD as of 2012-06-11
+*****************************
+
+libtommath (WTFPL)
+libtomcrypto (WTFPL)
+Tboot (BSD-style)
+OpenSSL (BSD-style), 
+Google Protocol Buffers (Apache 2.0)
+tlsf_malloc (special LGPL)
+newlib (GPL)
+
+Lockdown-specific:
+
+PolarSSL (lockdown/trunk/code/guestos/windows/genhashes/sha1.c) (LGPL 2.1)
+winpcap ("Packet Capture Driver Developer's Pack") (LGPL 2+ and some BSD)
+RTFM Inc SSL Protocol Analyzer (BSD)
+LIBUSB-WIN32, Generic Windows USB Library (LGPL)
+LPCUSB, an USB device driver for LPC microcontrollers  (BSD)

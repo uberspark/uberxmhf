@@ -1,3 +1,0 @@
-#!/bin/bash
-
-./cbmc -I ../include  minimal_sp_ptr_free.c
