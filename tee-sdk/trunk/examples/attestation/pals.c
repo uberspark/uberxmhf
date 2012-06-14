@@ -70,9 +70,9 @@ tz_return_t pal_quote(IN TPM_NONCE *nonce,
 }
 
 __attribute__ ((section (".scode")))
-tz_return_t pal_id_getpub(OUT uint8_t* rsaModulus)
+tz_return_t pal_id_getpub(OUT uint8_t* rsaModulus, INOUT size_t *sz)
 {
-    if(!svc_utpm_id_getpub(rsaModulus)) {
+    if(!svc_utpm_id_getpub(rsaModulus, sz)) {
         return TZ_SUCCESS;
     } else {
         return TZ_ERROR_GENERIC;
@@ -132,6 +132,7 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
     uint8_t *pcrComp = NULL;
     uint32_t pcrCompLen = 47; /* 3+4+20+20 XXX */
     uint8_t *rsaModulus = NULL;
+    size_t rsaModulusLen = TPM_RSA_KEY_LEN + 100;
 
     /* massaged / computed */
     TPM_DIGEST inpAsciiDigest;
@@ -153,7 +154,7 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
     }
 
     /* Prepare the output buffer to hold the response back to userspace. */
-    rsaModulus = TZIEncodeArraySpace(psOutBuf, TPM_RSA_KEY_LEN);
+    rsaModulus = TZIEncodeArraySpace(psOutBuf, rsaModulusLen);
     pcrComp = TZIEncodeArraySpace(psOutBuf, pcrCompLen);
     quote = TZIEncodeArraySpace(psOutBuf, TPM_RSA_KEY_LEN);
 
@@ -172,7 +173,7 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
     if((*puiRv = pal_pcr_extend(1, inpAsciiDigest.value))) return;
 
     /* Read the public key modulus for the keypair that signs the quote */
-    if((*puiRv = pal_id_getpub(rsaModulus))) return;
+    if((*puiRv = pal_id_getpub(rsaModulus, &rsaModulusLen))) return;
 
     /* Request the actual uPCR quote from the uTPM */
     actualQuoteLen = maxQuoteLen;
@@ -180,4 +181,7 @@ void pals(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t 
     
     /* Also encode the _actual_ length of the quote */
     TZIEncodeUint32(psOutBuf, actualQuoteLen);
+
+    /* Encode _actual_ length of pub key */
+    TZIEncodeUint32(psOutBuf, rsaModulusLen);
 }

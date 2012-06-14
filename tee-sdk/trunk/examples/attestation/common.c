@@ -107,7 +107,7 @@ static char *base64(const unsigned char *input, int length)
 }
 
 int output_as_json(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uint32_t sig_len,
-                   TPM_NONCE *externalnonce, uint8_t* rsaMod) {
+                   TPM_NONCE *externalnonce, uint8_t* rsaMod, uint32_t rsaModLen) {
     /* base64-encoded representations of binary variables */
     char *tpm_pcr_composite_b64 = NULL;
     char *sig_b64 = NULL;
@@ -132,7 +132,7 @@ int output_as_json(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, u
     tpm_pcr_composite_b64 = base64(tpm_pcr_composite, tpc_len);
     sig_b64 = base64(sig, sig_len);
     externalnonce_b64 = base64((uint8_t*)externalnonce, TPM_HASH_SIZE);
-    rsaMod_b64 = base64(rsaMod, TPM_RSA_KEY_LEN);
+    rsaMod_b64 = base64(rsaMod, rsaModLen);
 
     /* create json objects with base64-encoded stings */
     jtpm_pcr_composite = json_object_new_string(tpm_pcr_composite_b64);

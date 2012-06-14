@@ -158,17 +158,17 @@ int invoke_pal(tz_session_t *tzPalSession, const unsigned char* uTpmQuoteNonce) 
 
   /* get quote */
   if((tzRet = TZIDecodeF(&tz_quoteOp,
-                         "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DU32,
-                         &rsaMod, &rsaModLen,
+                         "%"TZI_DARRSPC_NOLEN "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DU32 "%"TZI_DU32,
+                         &rsaMod,
                          &pcrComp, &pcrCompLen,
                          &quote, &maxQuoteLen,
-                         &quoteLen))) {
+                         &quoteLen,
+                         &rsaModLen))) {
       rv = 1;
       goto out;
   }
 
   fprintf(stderr, "  actual quoteLen = %d\n", quoteLen);
-  assert(rsaModLen == TPM_RSA_KEY_LEN);
   assert(quoteLen == TPM_RSA_KEY_LEN);
 
   fprintf(stderr, "  pcrCompLen = %d\n", pcrCompLen);
@@ -186,7 +186,7 @@ int invoke_pal(tz_session_t *tzPalSession, const unsigned char* uTpmQuoteNonce) 
   //print_hex("  rsaMod: ", rsaMod, TPM_RSA_KEY_LEN);
 
   /* Format attestation results for external verifier */
-  output_as_json(pcrComp, pcrCompLen, quote, quoteLen, nonce, rsaMod);
+  output_as_json(pcrComp, pcrCompLen, quote, quoteLen, nonce, rsaMod, rsaModLen);
 
   /* For now, also check the signature locally (sanity check) */
   if((rv = verify_quote(pcrComp, pcrCompLen, quote, quoteLen, nonce, rsaMod)) != 0) {
