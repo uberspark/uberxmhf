@@ -154,49 +154,21 @@ static int master_prng_init(void) {
  */
 #define QND_BRIDGE_PUBKEY_PCR     19
 
-/* #define SERIAL_BUFSIZE (TPM_RSA_KEY_LEN + 50) /\* XXX fudge-factor for ASN.1 metadata *\/ */
-#define SERIAL_BUFSIZE (TPM_RSA_KEY_LEN + 2*sizeof(uint32_t))
-
-/* serialize to *exactly* sz bytes, even if it could be smaller.
- * Assumes destination buffer is pre-zeroed- i.e., skips bytes, doesn't zero them.
- */
-static int mp_to_unsigned_bin_sz( mp_int *a, uint8_t *buf, size_t sz)
-{
-  size_t actual_size = mp_unsigned_bin_size( a);
-  size_t skip = sz - actual_size;
-  if (actual_size > sz) {
-    return MP_VAL;
-  }
-  return mp_to_unsigned_bin( a, buf+skip);
-}
-
-static int trustvisor_measure_qnd_bridge_signing_pubkey(rsa_key *rsa) {
+static int trustvisor_measure_qnd_bridge_signing_pubkey( void ) {
   int rv=1;
-  uint8_t serial_pubkey[SERIAL_BUFSIZE];
-  /* unsigned long serial_pubkey_len=SERIAL_BUFSIZE; */
+  uint32_t serial_pubkey_len=0;
+  uint8_t *serial_pubkey = NULL;
   tpm_digest_t digest;
   tpm_pcr_value_t pcr_out;
-
-  EU_CHK( rsa);
 
   /**
    * 1. Serialize RSA key into byte blob for purposes of measurement.
    */
-  /* len (4 bytes, big endian) | E (4 bytes, big endian) | N (XXX bytes, big endian)*/
-  memset(serial_pubkey, 0, SERIAL_BUFSIZE);
-  /* rsa->len */
-  *((uint32_t*)&serial_pubkey[0]) = NIST_HTONL( mp_unsigned_bin_size(rsa->N));
-  /* rsa->E */
-  EU_CHKN( mp_to_unsigned_bin_sz( rsa->e, &serial_pubkey[0]+sizeof(uint32_t), sizeof(uint32_t)));
-  /* rsa->N */
-  EU_CHKN( mp_to_unsigned_bin_sz( rsa->N, &serial_pubkey[0]+2*sizeof(uint32_t), TPM_RSA_KEY_LEN));
+  EU_CHKN( utpm_id_getpub( NULL, &serial_pubkey_len)); /* query for size needed */
+  EU_CHK( serial_pubkey = malloc(serial_pubkey_len));
+  EU_CHKN( utpm_id_getpub( serial_pubkey, &serial_pubkey_len));
 
-  /* XXX temporarily keeping old serialized format for compatibility */
-  /* memset( serial_pubkey, 0, SERIAL_BUFSIZE); */
-  /* EU_CHKN( rsa_export( serial_pubkey, &serial_pubkey_len, PK_PUBLIC, rsa), */
-  /*          eu_err_e("needed length %ul", serial_pubkey_len)); */
-
-  eu_trace("Serialized RSA key: %*D", SERIAL_BUFSIZE, serial_pubkey, " ");
+  eu_trace("Serialized RSA key: %*D", serial_pubkey_len, serial_pubkey, " ");
 
   /**
    * 2. Hash serialized RSA key.
@@ -204,7 +176,7 @@ static int trustvisor_measure_qnd_bridge_signing_pubkey(rsa_key *rsa) {
   {
     hash_state md;
     EU_CHKN( sha1_init( &md));
-    EU_CHKN( sha1_process( &md, serial_pubkey, SERIAL_BUFSIZE));
+    EU_CHKN( sha1_process( &md, serial_pubkey, serial_pubkey_len));
     EU_CHKN( sha1_done( &md, digest.digest));
     eu_trace("Hashed serialized RSA key: %*D", TPM_HASH_SIZE, digest.digest, " ");
   }
@@ -222,6 +194,7 @@ static int trustvisor_measure_qnd_bridge_signing_pubkey(rsa_key *rsa) {
 
   rv=0;
  out:
+  free( serial_pubkey);
   return rv;
 }
 
@@ -307,7 +280,7 @@ static int trustvisor_long_term_secret_init(void) {
   memset(hmackey_temp, 0, HW_TPM_MASTER_SEALING_SECRET_SIZE);
   /* Measure the Identity key used to sign Micro-TPM Quotes. */
   /* prefer not to depend on the globals */
-  if(0 != (rv = trustvisor_measure_qnd_bridge_signing_pubkey(&rsakey))) {
+  if(0 != (rv = trustvisor_measure_qnd_bridge_signing_pubkey())) {
     eu_err("trustvisor_long_term_secret_init FAILED with rv %d!!!!", rv);
   }
   /* Intentionally not a proper free. Responsibility for this
