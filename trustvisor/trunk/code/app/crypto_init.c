@@ -165,22 +165,14 @@ static int trustvisor_measure_qnd_bridge_signing_pubkey( void ) {
    * 1. Serialize RSA key into byte blob for purposes of measurement.
    */
   EU_CHKN( utpm_id_getpub( NULL, &serial_pubkey_len)); /* query for size needed */
-  EU_CHK( serial_pubkey = malloc(serial_pubkey_len));
+  EU_CHK(  serial_pubkey = malloc(serial_pubkey_len));
   EU_CHKN( utpm_id_getpub( serial_pubkey, &serial_pubkey_len));
-
   eu_trace("Serialized RSA key: %*D", serial_pubkey_len, serial_pubkey, " ");
 
   /**
    * 2. Hash serialized RSA key.
    */
-  {
-    hash_state md;
-    EU_CHKN( sha1_init( &md));
-    EU_CHKN( sha1_process( &md, serial_pubkey, serial_pubkey_len));
-    EU_CHKN( sha1_done( &md, digest.digest));
-    eu_trace("Hashed serialized RSA key: %*D", TPM_HASH_SIZE, digest.digest, " ");
-  }
-  /* EU_CHKN( sha1_buffer(serial_pubkey, SERIAL_BUFSIZE, digest.digest)); */
+  EU_CHKN( sha1_buffer( serial_pubkey, serial_pubkey_len, &digest.digest));
 		
   /**
    * 3. Extend PCR with hash.
