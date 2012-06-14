@@ -446,11 +446,11 @@ int test_seal(tz_session_t *tzPalSession)
 }
 
 
-int test_id_getpub(tz_session_t *tzPalSession, uint8_t *rsaMod)
+int test_id_getpub(tz_session_t *tzPalSession, uint8_t *rsaMod, uint32_t *rsaModLen)
 {
   tz_return_t tzRet, serviceReturn;
   tz_operation_t tzOp;
-  uint32_t rsaModLen;
+  uint8_t *buf;
   uint32_t rv = 0;
   
   printf("ID_GETPUB\n");
@@ -474,17 +474,16 @@ int test_id_getpub(tz_session_t *tzPalSession, uint8_t *rsaMod)
   }
 
   /* read out RSA public key modulus */
-  rsaModLen = TPM_RSA_KEY_LEN;
-  tzRet = TZIDecodeF(&tzOp, "%"TZI_DARR,
-                     rsaMod, &rsaModLen);
+  tzRet = TZIDecodeF(&tzOp, "%"TZI_DARRSPC_NOLEN "%"TZI_DU32,
+                     &buf,
+                     rsaModLen);
   if (tzRet) {
     rv = 1;
     goto out;
   }
+  memcpy( rsaMod, buf, *rsaModLen);
 
-  assert(rsaModLen == TPM_RSA_KEY_LEN);
-
-  print_hex("  rsaMod: ", rsaMod, TPM_RSA_KEY_LEN);
+  print_hex("  rsaMod: ", rsaMod, *rsaModLen);
   
  out:
   TZOperationRelease(&tzOp);
@@ -777,13 +776,16 @@ int test_quote(tz_session_t *tzPalSession)
   unsigned int i;
   int rv = 0;
   
-  uint8_t rsaMod[TPM_RSA_KEY_LEN];
+  uint32_t rsaModLen = TPM_RSA_KEY_LEN + 100;
+  uint8_t *rsaMod = NULL;
 
   /**
    * First get the public key that will eventually be used to verify the quote.
    */
   
-  if(0 != test_id_getpub(tzPalSession, rsaMod)) {
+  rsaMod = malloc(rsaModLen);
+  assert(rsaMod);
+  if(0 != test_id_getpub(tzPalSession, rsaMod, &rsaModLen)) {
       printf("test_id_getpub FAILED!\n");
       goto out;
   }
@@ -846,6 +848,7 @@ int test_quote(tz_session_t *tzPalSession)
   }
 
   out:
+  free(rsaMod);
   TZOperationRelease(&tz_quoteOp);
   
   return rv;
