@@ -112,11 +112,12 @@ int svc_utpm_pcr_extend(uint32_t idx,   /* in */
                   0);
 }
 
-int svc_utpm_id_getpub(uint8_t *N) /* out */
+int svc_utpm_id_getpub(uint8_t *N,
+                       size_t *out_len) /* out */
 {
     return vmcall(TV_HC_UTPM_ID_GETPUB,
                   (uint32_t)N,
-                  0,
+                  (uint32_t)out_len,
                   0,
                   0);
 }
