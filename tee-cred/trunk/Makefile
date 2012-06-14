@@ -20,8 +20,8 @@ test : FORCE
 proto-gend/%.pb-c.c proto-gend/%.pb-c.h : %.proto $(CURDIR)/proto-gend/.d
 	protoc-c --c_out=proto-gend --proto_path=$(srcdir) $<
 
-#CROSS=
-CROSS=i686-pc-mingw32-
+CROSS=
+#CROSS=i686-pc-mingw32-
 PKG_CONFIG=pkg-config
 CC:=gcc
 LD:=ld
