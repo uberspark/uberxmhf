@@ -181,9 +181,8 @@ if tpm_quoteinfo.find(tpm_composite_hash) != 8:
 print >>sys.stderr, "Step 2: Verifying TrustVisor pubkey is measured into HW TPM PCR-19"
 
 pcr19_hash_payload = binascii.unhexlify("0000000000000000000000000000000000000000")
-tv_serialized_rsa_prefix = binascii.unhexlify("0000010000010001") # len(N) | E
-# FIXME pcr19_hash_payload += hashlib.sha1(tv_serialized_rsa_prefix + pal_rsaMod).digest()
-pcr19_computed_value = hashlib.sha1(pcr19_hash_payload).digest()
+pcr19_hash_payload += hashlib.sha1( pal_rsaPub).digest()
+pcr19_computed_value = hashlib.sha1( pcr19_hash_payload).digest()
 
 if(tpm_pcr19.find(pcr19_computed_value) != 0):
     print >>sys.stderr, "ERROR: PCR-19 does not match pal_rsaMod"
