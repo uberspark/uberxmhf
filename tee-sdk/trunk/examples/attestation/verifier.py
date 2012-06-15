@@ -6,6 +6,22 @@ import base64, binascii, hashlib, json, sys, M2Crypto
 # Our own modules
 import common
 
+# Need to convert to PEM for m2crypto
+# XXX currently unused, but will be when\if the pubkey format
+# is compatible with m2crypto
+def der2pem(der):
+    TEMPLATE = """-----BEGIN PUBLIC KEY-----
+%s
+-----END PUBLIC KEY-----
+"""
+    rsa_pem = TEMPLATE % base64.encodestring(der).rstrip()
+    return rsa_pem
+
+# convert a long integer to m2crypto mpi
+def long_to_mpi(x):
+    h = hex(x)[2:].rstrip('L')
+    return M2Crypto.m2.bn_to_mpi(M2Crypto.m2.hex_to_bn(h))
+
 # Read two 20-byte nonces from /dev/urandom
 urand = open('/dev/urandom', 'rb')
 utpm_nonce_bytes = urand.read(20)
@@ -61,7 +77,7 @@ pal_output_dict = response_dict["pal_part"]
 pal_TopLevelTitle = pal_output_dict["TopLevelTitle"] # TODO: kill me
 pal_DataStructureVersion = pal_output_dict["DataStructureVersion"] # TODO: kill me
 pal_externalnonce     = base64.b64decode(pal_output_dict["externalnonce"])
-pal_rsaMod            = base64.b64decode(pal_output_dict["rsaMod"])
+pal_rsaPub            = base64.b64decode(pal_output_dict["rsaPub"])
 pal_tpm_pcr_composite = base64.b64decode(pal_output_dict["tpm_pcr_composite"])
 pal_sig               = base64.b64decode(pal_output_dict["sig"])
 
@@ -165,14 +181,13 @@ if tpm_quoteinfo.find(tpm_composite_hash) != 8:
 print >>sys.stderr, "Step 2: Verifying TrustVisor pubkey is measured into HW TPM PCR-19"
 
 pcr19_hash_payload = binascii.unhexlify("0000000000000000000000000000000000000000")
-tv_serialized_rsa_prefix = binascii.unhexlify("0000010000010001") # len(N) | E
-pcr19_hash_payload += hashlib.sha1(tv_serialized_rsa_prefix + pal_rsaMod).digest()
-pcr19_computed_value = hashlib.sha1(pcr19_hash_payload).digest()
+pcr19_hash_payload += hashlib.sha1( pal_rsaPub).digest()
+pcr19_computed_value = hashlib.sha1( pcr19_hash_payload).digest()
 
 if(tpm_pcr19.find(pcr19_computed_value) != 0):
     print >>sys.stderr, "ERROR: PCR-19 does not match pal_rsaMod"
     print >>sys.stderr, "pcr-19:", binascii.hexlify(tpm_pcr19)
-    print >>sys.stderr, "pal_rsaMod:", binascii.hexlify(pal_rsaMod)
+    print >>sys.stderr, "pal_rsaPub:", binascii.hexlify(pal_rsaPub)
     sys.exit(1)
 
 print >>sys.stderr, "  Verifying PCRs 17, 18 represent a known-good launch of TrustVisor"
@@ -188,11 +203,26 @@ print >>sys.stderr, "  XXX UNIMPLEMENTED XXX"
 
 print >>sys.stderr, "Step 3a: Verifying uTPM Quote RSA signature with TrustVisor pubkey"
 
-n = M2Crypto.m2.bn_to_mpi(M2Crypto.m2.bin_to_bn(pal_rsaMod))
-e = M2Crypto.m2.bn_to_mpi(M2Crypto.m2.hex_to_bn("10001"))
-#print >>sys.stderr, "e: ", binascii.hexlify(e)
-#print >>sys.stderr, "n: ", binascii.hexlify(n)
+# reconstruct rsa pubkey
+from pyasn1.codec.der import decoder as der_decoder
+pal_rsaPub_decoder = der_decoder.decode( pal_rsaPub)
+n = pal_rsaPub_decoder[0].getComponentByPosition(0)._value
+e = pal_rsaPub_decoder[0].getComponentByPosition(1)._value
+print >>sys.stderr, "e: ", hex(n)
+print >>sys.stderr, "n: ", hex(e)
+n = long_to_mpi(n)
+e = long_to_mpi(e)
 rsa = M2Crypto.RSA.new_pub_key((e, n))
+
+# above block can be replaced with below when
+# trustvisor encodes in SubjectPublicKeyInfo (which newest libtomcrypt does).
+# (Or, when M2Crypto supports PKCS#1 RSAPublicKey. The underlying libcrypto
+# supports it, but M2Crypto doesn't wrap that API.)
+# pal_rsaPub_pem = der2pem(pal_rsaPub)
+# print >>sys.stderr, "TrustVisor pubkey PEM:"
+# print >>sys.stderr, pal_rsaPub_pem
+# pal_rsaPub_pem_bio = M2Crypto.BIO.MemoryBuffer( pal_rsaPub_pem)
+# rsa = M2Crypto.RSA.load_pub_key_bio(pal_rsaPub_pem_bio)
 
 # Assemble PAL QuoteInfo
 print >>sys.stderr, "Step 3b: Verifying uTPM QuoteInfo contains our nonce"

@@ -998,25 +998,18 @@ TPM_RESULT utpm_id_getpub(uint8_t *N, uint32_t *len) {
   if (!N) {
     /* treat as an inquiry into how many bytes are needed */
     len_check = true;
-    *len = 1;
+    *len = 0;
     N = buf;
   } else {
     len_check = false;
   }
 
   len_long = *len;
-  tcrv = mp_to_unsigned_bin_n (g_rsa_key.N, N, &len_long);
-  /* tcrv = rsa_export( N, &len_long, PK_PUBLIC, &g_rsa_key); */
+  tcrv = rsa_export( N, &len_long, PK_PUBLIC, &g_rsa_key);
   *len = len_long;
 
-  /* XXX TEMP while we're using mp_to_unsigned_bin_n instead of
-     rsa_export */
-  if ( len_check) {
-    *len = mp_unsigned_bin_size( g_rsa_key.N);
-  }
-
-  if ( tcrv != 0 && !(len_check && tcrv == MP_RANGE)) {
-    dprintf( LOG_ERROR, "mp_to_unsigned_bin_n failed with %d\n", tcrv);
+  if ( tcrv != 0 && !(len_check)) {
+    dprintf( LOG_ERROR, "rsa_export failed with %d\n", tcrv);
     return UTPM_ERR;
   }
 

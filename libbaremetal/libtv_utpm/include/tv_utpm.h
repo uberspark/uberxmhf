@@ -282,7 +282,9 @@ TPM_RESULT utpm_quote_deprecated(uint8_t* externalnonce, uint8_t* output, uint32
 
 TPM_RESULT utpm_rand(uint8_t* buffer, uint32_t *numbytes);
 
+/* return public key in PKCS #1 v2.1 (ASN.1 DER) */
 TPM_RESULT utpm_id_getpub(uint8_t *N, uint32_t *len);
+
 void utpm_init_instance(utpm_master_state_t *utpm);
 
 /**

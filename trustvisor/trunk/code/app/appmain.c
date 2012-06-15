@@ -389,11 +389,13 @@ static u32 do_TV_HC_UTPM_QUOTE(VCPU *vcpu, struct regs *r)
 
 static u32 do_TV_HC_UTPM_ID_GETPUB(VCPU *vcpu, struct regs *r)
 {
-  u32 addr;
+  u32 dst_gva;
+  u32 dst_sz_gva;
   u32 ret;
 
-  addr = r->ecx;
-  ret = hc_utpm_utpm_id_getpub(vcpu, addr);
+  dst_gva = r->ecx;
+  dst_sz_gva = r->edx;
+  ret = hc_utpm_utpm_id_getpub( vcpu, dst_gva, dst_sz_gva);
 
   return ret;
 }

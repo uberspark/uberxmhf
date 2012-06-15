@@ -141,7 +141,8 @@ int svc_utpm_pcr_read(uint32_t idx,  /* in */
  *
  * Returns 0 on success, nonzero on failure.
  */
-int svc_utpm_id_getpub(uint8_t *N); /* out */
+int svc_utpm_id_getpub(uint8_t *N,      /* out */
+                       size_t *out_len  /* in, out*/ );
 
 /* Request out_len secure-random bytes. The TEE will use some secure
  * source of true entropy, either directly, or to seed a secure PRNG.

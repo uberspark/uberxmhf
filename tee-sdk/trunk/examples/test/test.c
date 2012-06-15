@@ -446,16 +446,16 @@ int test_seal(tz_session_t *tzPalSession)
 }
 
 
-int test_id_getpub(tz_session_t *tzPalSession, uint8_t *rsaMod)
+int test_id_getpub(tz_session_t *tzPalSession, uint8_t *rsaPubDER, uint32_t *rsaPubDER_sz)
 {
   tz_return_t tzRet, serviceReturn;
   tz_operation_t tzOp;
-  uint32_t rsaModLen;
+  uint8_t *buf;
   uint32_t rv = 0;
   
   printf("ID_GETPUB\n");
 
-  assert(NULL != rsaMod);
+  assert(NULL != rsaPubDER);
   
   /* prep operation */
   tzRet = TZOperationPrepareInvoke(tzPalSession,
@@ -474,17 +474,16 @@ int test_id_getpub(tz_session_t *tzPalSession, uint8_t *rsaMod)
   }
 
   /* read out RSA public key modulus */
-  rsaModLen = TPM_RSA_KEY_LEN;
-  tzRet = TZIDecodeF(&tzOp, "%"TZI_DARR,
-                     rsaMod, &rsaModLen);
+  tzRet = TZIDecodeF(&tzOp, "%"TZI_DARRSPC_NOLEN "%"TZI_DU32,
+                     &buf,
+                     rsaPubDER_sz);
   if (tzRet) {
     rv = 1;
     goto out;
   }
+  memcpy( rsaPubDER, buf, *rsaPubDER_sz);
 
-  assert(rsaModLen == TPM_RSA_KEY_LEN);
-
-  print_hex("  rsaMod: ", rsaMod, TPM_RSA_KEY_LEN);
+  print_hex("  rsaMod: ", rsaPubDER, *rsaPubDER_sz);
   
  out:
   TZOperationRelease(&tzOp);
@@ -692,7 +691,7 @@ int test_longterm_seal(tz_session_t *tzPalSession)
 }
 
 int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uint32_t sig_len,
-                 TPM_NONCE *externalnonce, uint8_t* rsaMod) {
+                 TPM_NONCE *externalnonce, uint8_t* rsaPubDER, long rsaPubDER_sz) {
     TPM_QUOTE_INFO quote_info;
     RSA *rsa = NULL;
     int rv=0;
@@ -715,25 +714,13 @@ int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uin
     print_hex("  quote_info: ", (uint8_t*)&quote_info, sizeof(TPM_QUOTE_INFO));    
 
     /**
-     * Assemble the public key used to check the quote.
+     * Import the public key used to check the quote.
      */    
-
-    if(NULL == (rsa = RSA_new())) {
-        printf("ERROR: RSA_new() failed\n");
-        return 1;
+    if (NULL == d2i_RSAPublicKey( &rsa, (const unsigned char**)&rsaPubDER, rsaPubDER_sz)) {
+      printf("ERROR: d2i_RSAPublicKey failed\n");
+      rv = 1;
+      goto out;
     }
-
-    /* N */
-    if(NULL == (rsa->n = BN_bin2bn(rsaMod, TPM_RSA_KEY_LEN, NULL))) {
-        printf("ERROR: BN_bin2bn() failed\n");
-        goto out;
-    }
-
-    /* E */
-    if(0 == BN_dec2bn(&rsa->e, "65537")) {
-        printf("ERROR: BN_dec2bn() failed\n");
-        goto out;
-    }        
 
     /**
      * Verify the signature!
@@ -777,13 +764,16 @@ int test_quote(tz_session_t *tzPalSession)
   unsigned int i;
   int rv = 0;
   
-  uint8_t rsaMod[TPM_RSA_KEY_LEN];
+  uint32_t rsaPubDER_sz = TPM_RSA_KEY_LEN + 100;
+  uint8_t *rsaPubDER = NULL;
 
   /**
    * First get the public key that will eventually be used to verify the quote.
    */
   
-  if(0 != test_id_getpub(tzPalSession, rsaMod)) {
+  rsaPubDER = malloc(rsaPubDER_sz);
+  assert(rsaPubDER);
+  if(0 != test_id_getpub(tzPalSession, rsaPubDER, &rsaPubDER_sz)) {
       printf("test_id_getpub FAILED!\n");
       goto out;
   }
@@ -841,11 +831,12 @@ int test_quote(tz_session_t *tzPalSession)
   /* Verify the signature in the Quote */
   print_hex("  sig: ", quote, quoteLen);
   
-  if((rv = verify_quote(pcrComp, pcrCompLen, quote, quoteLen, nonce, rsaMod)) != 0) {
+  if((rv = verify_quote(pcrComp, pcrCompLen, quote, quoteLen, nonce, rsaPubDER, rsaPubDER_sz)) != 0) {
       printf("verify_quote FAILED\n");
   }
 
   out:
+  free(rsaPubDER);
   TZOperationRelease(&tz_quoteOp);
   
   return rv;

@@ -142,7 +142,8 @@ int svc_utpm_pcr_read(uint32_t idx,
   return 0;
 }
 
-int svc_utpm_id_getpub(uint8_t *N)
+int svc_utpm_id_getpub(uint8_t *N,
+											 size_t *out_len)
 {
   return 0;
 }

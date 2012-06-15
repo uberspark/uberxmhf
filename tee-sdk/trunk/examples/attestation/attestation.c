@@ -98,8 +98,8 @@ int invoke_pal(tz_session_t *tzPalSession, const unsigned char* uTpmQuoteNonce) 
   uint8_t *quote = NULL;
   uint32_t quoteLen = TPM_MAX_QUOTE_LEN;
   uint32_t maxQuoteLen = TPM_MAX_QUOTE_LEN;
-  uint8_t *rsaMod = NULL;
-  uint32_t rsaModLen = 0;
+  uint8_t *rsaPub = NULL;
+  uint32_t rsaPubLen = 0;
   uint8_t *pcrComp = NULL;
   uint32_t pcrCompLen = 0;
 
@@ -158,17 +158,20 @@ int invoke_pal(tz_session_t *tzPalSession, const unsigned char* uTpmQuoteNonce) 
 
   /* get quote */
   if((tzRet = TZIDecodeF(&tz_quoteOp,
-                         "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DU32,
-                         &rsaMod, &rsaModLen,
+                         "%"TZI_DARRSPC_NOLEN "%"TZI_DARRSPC "%"TZI_DARRSPC "%"TZI_DU32 "%"TZI_DU32,
+                         &rsaPub,
                          &pcrComp, &pcrCompLen,
                          &quote, &maxQuoteLen,
-                         &quoteLen))) {
+                         &quoteLen,
+                         &rsaPubLen))) {
       rv = 1;
       goto out;
   }
 
+  print_hex("pubkey: ", rsaPub, rsaPubLen);
+  fprintf(stderr, "  actual rsaPubLen = %d\n", rsaPubLen);
+
   fprintf(stderr, "  actual quoteLen = %d\n", quoteLen);
-  assert(rsaModLen == TPM_RSA_KEY_LEN);
   assert(quoteLen == TPM_RSA_KEY_LEN);
 
   fprintf(stderr, "  pcrCompLen = %d\n", pcrCompLen);
@@ -183,13 +186,13 @@ int invoke_pal(tz_session_t *tzPalSession, const unsigned char* uTpmQuoteNonce) 
   //SHA1((uint8_t*)palInpData, strlen(PALINPDATA)+1, digest);
   //print_hex("  palInpData digest: ", digest, 20);
   //}
-  //print_hex("  rsaMod: ", rsaMod, TPM_RSA_KEY_LEN);
+  //print_hex("  rsaPub: ", rsaPub, TPM_RSA_KEY_LEN);
 
   /* Format attestation results for external verifier */
-  output_as_json(pcrComp, pcrCompLen, quote, quoteLen, nonce, rsaMod);
+  output_as_json(pcrComp, pcrCompLen, quote, quoteLen, nonce, rsaPub, rsaPubLen);
 
   /* For now, also check the signature locally (sanity check) */
-  if((rv = verify_quote(pcrComp, pcrCompLen, quote, quoteLen, nonce, rsaMod)) != 0) {
+  if((rv = verify_quote(pcrComp, pcrCompLen, quote, quoteLen, nonce, rsaPub, rsaPubLen)) != 0) {
       fprintf(stderr, "verify_quote FAILED\n");
   }
 

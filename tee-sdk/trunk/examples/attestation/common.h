@@ -51,9 +51,9 @@
 
 void print_hex(const char *prefix, const void *prtptr, size_t size);
 int output_as_json(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uint32_t sig_len,
-                   TPM_NONCE *externalnonce, uint8_t* rsaMod);
+                   TPM_NONCE *externalnonce, uint8_t* rsaPub, uint32_t rsaPubLen);
 int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uint32_t sig_len,
-                 TPM_NONCE *externalnonce, uint8_t* rsaMod);
+                 TPM_NONCE *externalnonce, uint8_t* rsaPub, uint32_t rsaPubLen);
 
 
 #endif /* __JSON_H__ */

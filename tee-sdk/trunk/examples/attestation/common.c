@@ -107,18 +107,18 @@ static char *base64(const unsigned char *input, int length)
 }
 
 int output_as_json(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uint32_t sig_len,
-                   TPM_NONCE *externalnonce, uint8_t* rsaMod) {
+                   TPM_NONCE *externalnonce, uint8_t* rsaPub, uint32_t rsaPubLen) {
     /* base64-encoded representations of binary variables */
     char *tpm_pcr_composite_b64 = NULL;
     char *sig_b64 = NULL;
     char *externalnonce_b64 = NULL;
-    char *rsaMod_b64 = NULL;
+    char *rsaPub_b64 = NULL;
 
     /* json objects to hold strings containing base64-encoded binary variables */
     json_object *jtpm_pcr_composite = NULL;
     json_object *jsig = NULL;
     json_object *jexternalnonce = NULL;
-    json_object *jrsaMod = NULL;
+    json_object *jrsaPub = NULL;
 
     /* json objects to form semantic structure around the above */
     json_object *jobj = json_object_new_object(); 
@@ -132,18 +132,18 @@ int output_as_json(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, u
     tpm_pcr_composite_b64 = base64(tpm_pcr_composite, tpc_len);
     sig_b64 = base64(sig, sig_len);
     externalnonce_b64 = base64((uint8_t*)externalnonce, TPM_HASH_SIZE);
-    rsaMod_b64 = base64(rsaMod, TPM_RSA_KEY_LEN);
+    rsaPub_b64 = base64(rsaPub, rsaPubLen);
 
     /* create json objects with base64-encoded stings */
     jtpm_pcr_composite = json_object_new_string(tpm_pcr_composite_b64);
     jsig = json_object_new_string(sig_b64);
     jexternalnonce = json_object_new_string(externalnonce_b64);
-    jrsaMod = json_object_new_string(rsaMod_b64);
+    jrsaPub = json_object_new_string(rsaPub_b64);
 
     json_object_object_add(jobj, "tpm_pcr_composite", jtpm_pcr_composite);
     json_object_object_add(jobj, "sig", jsig);
     json_object_object_add(jobj, "externalnonce", jexternalnonce);
-    json_object_object_add(jobj, "rsaMod", jrsaMod);
+    json_object_object_add(jobj, "rsaPub", jrsaPub);
 
     fprintf(stderr, "The json object created: \n");
     printf("%s\n", json_object_to_json_string(jobj));
@@ -152,7 +152,7 @@ int output_as_json(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, u
     free(tpm_pcr_composite_b64); tpm_pcr_composite_b64 = NULL;
     free(sig_b64); sig_b64 = NULL;
     free(externalnonce_b64); externalnonce_b64 = NULL;
-    free(rsaMod_b64); rsaMod_b64 = NULL;
+    free(rsaPub_b64); rsaPub_b64 = NULL;
 
     /* free json stuff */
     json_object_put(jobj); /* recursively frees other objects */
@@ -161,7 +161,7 @@ int output_as_json(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, u
 }
 
 int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uint32_t sig_len,
-                 TPM_NONCE *externalnonce, uint8_t* rsaMod) {
+                 TPM_NONCE *externalnonce, uint8_t* rsaPub, uint32_t rsaPubLen) {
     TPM_QUOTE_INFO quote_info;
     RSA *rsa = NULL;
     int rv=0;
@@ -184,23 +184,11 @@ int verify_quote(uint8_t *tpm_pcr_composite, uint32_t tpc_len, uint8_t *sig, uin
     /**
      * Assemble the public key used to check the quote.
      */    
-
-    if(NULL == (rsa = RSA_new())) {
-        fprintf(stderr, "ERROR: RSA_new() failed\n");
-        return 1;
+    if (NULL == d2i_RSAPublicKey( &rsa, (const unsigned char**)&rsaPub, rsaPubLen)) {
+      fprintf(stderr, "ERROR: d2i_RSAPublicKey() failed\n");
+      rv = 1;
+      goto out;
     }
-
-    /* N */
-    if(NULL == (rsa->n = BN_bin2bn(rsaMod, TPM_RSA_KEY_LEN, NULL))) {
-        fprintf(stderr, "ERROR: BN_bin2bn() failed\n");
-        goto out;
-    }
-
-    /* E */
-    if(0 == BN_dec2bn(&rsa->e, "65537")) {
-        fprintf(stderr, "ERROR: BN_dec2bn() failed\n");
-        goto out;
-    }        
 
     /**
      * Verify the signature!
