@@ -6,6 +6,22 @@ import base64, binascii, hashlib, json, sys, M2Crypto
 # Our own modules
 import common
 
+# Need to convert to PEM for m2crypto
+# XXX currently unused, but will be when\if the pubkey format
+# is compatible with m2crypto
+def der2pem(der):
+    TEMPLATE = """-----BEGIN PUBLIC KEY-----
+%s
+-----END PUBLIC KEY-----
+"""
+    rsa_pem = TEMPLATE % base64.encodestring(der).rstrip()
+    return rsa_pem
+
+# convert a long integer to m2crypto mpi
+def long_to_mpi(x):
+    h = hex(x)[2:].rstrip('L')
+    return M2Crypto.m2.bn_to_mpi(M2Crypto.m2.hex_to_bn(h))
+
 # Read two 20-byte nonces from /dev/urandom
 urand = open('/dev/urandom', 'rb')
 utpm_nonce_bytes = urand.read(20)
@@ -187,10 +203,27 @@ print >>sys.stderr, "  XXX UNIMPLEMENTED XXX"
 #####################################################################
 
 print >>sys.stderr, "Step 3a: Verifying uTPM Quote RSA signature with TrustVisor pubkey"
-rsa = M2Crypto.RSA.load_key_string(der2pem(rsaPub))
-if not rsa:
-    print >>sys.stderr, "FAILED to decode rsaPub"
-    sys.exit(1)
+
+# reconstruct rsa pubkey
+from pyasn1.codec.der import decoder as der_decoder
+pal_rsaPub_decoder = der_decoder.decode( pal_rsaPub)
+n = pal_rsaPub_decoder[0].getComponentByPosition(0)._value
+e = pal_rsaPub_decoder[0].getComponentByPosition(1)._value
+print >>sys.stderr, "e: ", hex(n)
+print >>sys.stderr, "n: ", hex(e)
+n = long_to_mpi(n)
+e = long_to_mpi(e)
+rsa = M2Crypto.RSA.new_pub_key((e, n))
+
+# above block can be replaced with below when
+# trustvisor encodes in SubjectPublicKeyInfo (which newest libtomcrypt does).
+# (Or, when M2Crypto supports PKCS#1 RSAPublicKey. The underlying libcrypto
+# supports it, but M2Crypto doesn't wrap that API.)
+# pal_rsaPub_pem = der2pem(pal_rsaPub)
+# print >>sys.stderr, "TrustVisor pubkey PEM:"
+# print >>sys.stderr, pal_rsaPub_pem
+# pal_rsaPub_pem_bio = M2Crypto.BIO.MemoryBuffer( pal_rsaPub_pem)
+# rsa = M2Crypto.RSA.load_pub_key_bio(pal_rsaPub_pem_bio)
 
 # Assemble PAL QuoteInfo
 print >>sys.stderr, "Step 3b: Verifying uTPM QuoteInfo contains our nonce"
@@ -239,13 +272,4 @@ print >>sys.stderr, "****** VERIFICATION SUCCESSFUL! ******"
 print >>sys.stderr, "**************************************"
 
 #
-
-def der2pem(der):
-    TEMPLATE = """
------BEGIN RSA PRIVATE KEY-----
-%s
------END RSA PRIVATE KEY-----
-"""
-    rsa_pem = TEMPLATE % base64.encodestring(der).rstrip()
-    return rsa_pem
 

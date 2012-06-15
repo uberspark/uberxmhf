@@ -168,6 +168,9 @@ int invoke_pal(tz_session_t *tzPalSession, const unsigned char* uTpmQuoteNonce) 
       goto out;
   }
 
+  print_hex("pubkey: ", rsaPub, rsaPubLen);
+  fprintf(stderr, "  actual rsaPubLen = %d\n", rsaPubLen);
+
   fprintf(stderr, "  actual quoteLen = %d\n", quoteLen);
   assert(quoteLen == TPM_RSA_KEY_LEN);
 
