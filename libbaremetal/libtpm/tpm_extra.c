@@ -91,6 +91,7 @@
 #include <print_hex.h>
 #include <tpm.h>
 #include <tomcrypt.h>
+#include <sha1.h>
 
 /* These go with _tpm_submit_cmd in tpm.c */
 extern uint8_t     cmd_buf[TPM_CMD_SIZE_MAX];
@@ -114,24 +115,6 @@ static void HMAC_SHA1( uint8_t* secret, size_t secret_len,
   out_len = hash_descriptor[sha1_id].hashsize;
   rv = hmac_memory( sha1_id,
                     secret, secret_len,
-                    in, in_len,
-                    out, &out_len);
-  if (rv) {
-    abort();
-  }
-}
-
-static void sha1_buffer( uint8_t* in, size_t in_len, uint8_t *out)
-{
-  int rv;
-  unsigned long out_len;
-
-  if (sha1_id < 0) {
-    sha1_id = register_hash( &sha1_desc);
-  }
-  
-  out_len = hash_descriptor[sha1_id].hashsize;
-  rv = hash_memory( sha1_id,
                     in, in_len,
                     out, &out_len);
   if (rv) {
