@@ -443,7 +443,7 @@ static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gp
 
   #if defined (__NESTED_PAGING__)
   //we need to flush EPT mappings as we emulated CR4 load above
-  __vmx_invvpid(VMX_VPID_EXTENT_SINGLE_CONTEXT, 1, 0);
+  __vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0);
   #endif
 
 }
