@@ -702,23 +702,40 @@ static inline u32 __vmx_invvpid(int invalidation_type, u16 vpid, u32 linearaddre
 }
 
 
-#define ASM_VMX_INVEPT		  ".byte 0x66, 0x0f, 0x38, 0x80, 0x08"
-#define VMX_EPT_SINGLE_CONTEXT		1
-#define VMX_EPT_GLOBAL		2
+// VMX instruction INVEPT
+//		Invalidate Translations Derived from EPT
+// INVEPT r32, m128
+//returns 1 on success, 0 on failure
 
+#define	VMX_INVEPT_SINGLECONTEXT			1
+#define VMX_INVEPT_GLOBAL					2
 
-static inline void __vmx_invept(int ext, u64 eptp, u64 gpa)
-{
-    struct {
-	u64 eptp;
-	u64 gpa;
-    } operand = { eptp, gpa };
+static inline u32 __vmx_invept(int invalidation_type, u64 eptp){
+	//return status (1 or 0)
+	u32 status;
 
-    asm volatile (ASM_VMX_INVEPT
-		  /* CF==1 or ZF==1 --> rc = -1 */
-		  "; ja 1f ; ud2 ; 1:\n"
-		  : : "a"(&operand), "c"(ext) : "cc", "memory");
+	//invvpid descriptor
+	struct {
+		u64 eptp;
+		u64 reserved;
+    } inveptdescriptor = { eptp, 0};
+
+	//issue invept instruction
+	//note: GCC does not seem to support this instruction directly
+	//so we encode it as hex
+	__asm__(".byte 0x66, 0x0f, 0x38, 0x80, 0x08 \r\n"
+          "movl $1, %%eax \r\n"
+		  "ja	1f    	  \r\n"
+		  "movl $0, %%eax \r\n"
+		  "1: movl %%eax, %0 \r\n" 
+    : "=m" (status)
+    : "a"(&inveptdescriptor), "c"(invalidation_type)
+	: "cc", "memory");
+
+	return status;	
 }
+
+
 
 
 #endif
