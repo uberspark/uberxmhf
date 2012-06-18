@@ -50,7 +50,7 @@
 //----------------------------------------------------------------------
 void emhf_debug_arch_init(char *params);
 void emhf_debug_arch_putstr(const char *str);
-void emhf_debug_arch_putc(int c);
+void emhf_debug_arch_putc(char c);
 
 //----------------------------------------------------------------------
 //x86 ARCH. INTERFACES
@@ -59,7 +59,7 @@ extern uart_config_t g_uart_config;
 
 //#ifdef __DEBUG_SERIAL__
 void dbg_x86_uart_init(char *params);
-void dbg_x86_uart_putc(int x);
+void dbg_x86_uart_putc(char ch);
 void dbg_x86_uart_putstr(const char *str);
 
 //#ifdef __DEBUG_VGA__
