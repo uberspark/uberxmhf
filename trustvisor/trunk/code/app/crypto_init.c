@@ -172,7 +172,7 @@ static int trustvisor_measure_qnd_bridge_signing_pubkey( void ) {
   /**
    * 2. Hash serialized RSA key.
    */
-  EU_CHKN( sha1_buffer( serial_pubkey, serial_pubkey_len, &digest.digest));
+  EU_CHKN( sha1_buffer( serial_pubkey, serial_pubkey_len, digest.digest));
 		
   /**
    * 3. Extend PCR with hash.
