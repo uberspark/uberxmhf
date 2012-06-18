@@ -665,24 +665,40 @@ static inline u32 __vmx_vmptrld(u64 vmcs){
   return status;
 }
 
+// VMX instruction INVVPID
+//		Invalidate Translations Based on VPID
+// INVVPID r32, m128
+//returns 1 on success, 0 on failure
 
-#define ASM_VMX_INVVPID		  ".byte 0x66, 0x0f, 0x38, 0x81, 0x08"
-#define VMX_VPID_EXTENT_SINGLE_CONTEXT		1
-#define VMX_VPID_EXTENT_ALL_CONTEXT		2
+#define	VMX_INVVPID_INDIVIDUALADDRESS		0
+#define VMX_INVVPID_SINGLECONTEXT			1
+#define VMX_INVVPID_ALLCONTEXTS				2
+#define VMX_INVVPID_SINGLECONTEXTGLOBAL		3
 
+static inline u32 __vmx_invvpid(int invalidation_type, u16 vpid, u32 linearaddress){
+	//return status (1 or 0)
+	u32 status;
 
-static inline void __vmx_invvpid(int ext, u16 vpid, u32 gva)
-{
-    struct {
-	u64 vpid : 16;
-	u64 rsvd : 48;
-	u64 gva;
-    } operand = { vpid, 0, gva };
+	//invvpid descriptor
+	struct {
+		u64 vpid 	 : 16;
+		u64 reserved : 48;
+		u64 linearaddress;
+    } invvpiddescriptor = { vpid, 0, linearaddress };
 
-    asm volatile (ASM_VMX_INVVPID
-		  /* CF==1 or ZF==1 --> rc = -1 */
-		  "; ja 1f ; ud2 ; 1:"
-		  : : "a"(&operand), "c"(ext) : "cc", "memory");
+	//issue invvpid instruction
+	//note: GCC does not seem to support this instruction directly
+	//so we encode it as hex
+	__asm__(".byte 0x66, 0x0f, 0x38, 0x81, 0x08 \r\n"
+          "movl $1, %%eax \r\n"
+		  "ja	1f    	  \r\n"
+		  "movl $0, %%eax \r\n"
+		  "1: movl %%eax, %0 \r\n" 
+    : "=m" (status)
+    : "a"(&invvpiddescriptor), "c"(invalidation_type)
+	: "cc", "memory");
+
+	return status;
 }
 
 
