@@ -84,6 +84,7 @@ clean:
 	cd components/emhf-partition && $(MAKE) -w clean
 	cd components/emhf-tpm && $(MAKE) -w clean
 	cd components/emhf-debug && $(MAKE) -w clean
+	cd components/emhf-emhfcbackend && $(MAKE) -w clean
 
 	cd components/emhf-runtime && $(MAKE) -w clean
 
