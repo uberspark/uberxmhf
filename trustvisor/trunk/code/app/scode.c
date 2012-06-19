@@ -952,7 +952,7 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
      now */
   if(vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     /* set the sensitive code to run in ring 3 */
-    ((struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr))->cpl = 3;
+    ((struct _svm_vmcbfields *)(vcpu->vmcb_vaddr_ptr))->cpl = 3;
   }
 
   perf_ctr_timer_record(&g_tv_perf_ctrs[TV_PERF_CTR_SWITCH_SCODE], vcpu->idx);
@@ -962,8 +962,8 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
    */
   if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
     whitelist[curr].saved_exception_intercepts =
-      ((struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr))->exception_intercepts_bitmask;
-    ((struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr))->exception_intercepts_bitmask = 0xffffffff;
+      ((struct _svm_vmcbfields *)(vcpu->vmcb_vaddr_ptr))->exception_intercepts_bitmask;
+    ((struct _svm_vmcbfields *)(vcpu->vmcb_vaddr_ptr))->exception_intercepts_bitmask = 0xffffffff;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     /* FIXME */
   }
@@ -1107,7 +1107,7 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
 
   /* restore exception intercept vector */
   if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    ((struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr))->exception_intercepts_bitmask
+    ((struct _svm_vmcbfields *)(vcpu->vmcb_vaddr_ptr))->exception_intercepts_bitmask
       = whitelist[curr].saved_exception_intercepts;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     /* FIXME */
@@ -1219,7 +1219,7 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
 
   /* no errors, pseodu page fault canceled by nested paging */
   if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->eventinj.v = 0;
+    ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->eventinj.v = 0;
   } /* FIXME - equivalent for intel? */
 
   err=0;
@@ -1228,7 +1228,7 @@ u32 hpt_scode_npf(VCPU * vcpu, u32 gpaddr, u64 errorcode)
   if(err) {
     if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
       /* errors, inject segfault to guest */
-      struct vmcb_struct* vmcb = (struct vmcb_struct*)(vcpu->vmcb_vaddr_ptr);
+      struct _svm_vmcbfields* vmcb = (struct _svm_vmcbfields*)(vcpu->vmcb_vaddr_ptr);
       vmcb->eventinj.vector=0xd;
       vmcb->eventinj.type=EVENTINJ_TYPE_EXCEPTION;
       vmcb->eventinj.ev=0x1;
