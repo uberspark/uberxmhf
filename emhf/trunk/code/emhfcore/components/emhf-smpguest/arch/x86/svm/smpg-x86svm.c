@@ -230,7 +230,7 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
     }    
     
     //setup #DB intercept in vmcb
-    vmcb->exception_intercepts |= (u32)EXCEPTION_INTERCEPT_DB;
+    vmcb->exception_intercepts_bitmask |= (u32)EXCEPTION_INTERCEPT_DB;
   
     //set guest TF
     vmcb->rflags |= (u64)EFLAGS_TF;
@@ -263,7 +263,7 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
     }  
 
     //setup #DB intercept in vmcb
-    vmcb->exception_intercepts |= (u32)EXCEPTION_INTERCEPT_DB;
+    vmcb->exception_intercepts_bitmask |= (u32)EXCEPTION_INTERCEPT_DB;
   
     //set guest TF
     vmcb->rflags |= (u64)EFLAGS_TF;
@@ -340,7 +340,7 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
 
 //fallthrough:  
   //clear #DB intercept in VMCB
-  vmcb->exception_intercepts &= ~(u32)EXCEPTION_INTERCEPT_DB;
+  vmcb->exception_intercepts_bitmask &= ~(u32)EXCEPTION_INTERCEPT_DB;
   
   //clear guest TF
   vmcb->rflags &= ~(u64)EFLAGS_TF;

@@ -233,9 +233,7 @@ static void _svm_initVMCB(VCPU *vcpu){
   vmcb->dr6 = 0xffff0ff0ULL;
   vmcb->dr7 = 0x00000400ULL;
  
-  vmcb->cr_intercepts = 0;
-  vmcb->dr_intercepts = 0;
-  
+ 
   // intercept all SVM instructions 
   vmcb->general2_intercepts |= (u32)(GENERAL2_INTERCEPT_VMRUN |
 					  GENERAL2_INTERCEPT_VMMCALL |
