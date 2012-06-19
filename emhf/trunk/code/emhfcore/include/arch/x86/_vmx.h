@@ -156,18 +156,6 @@
 
 #ifndef __ASSEMBLY__
 
-/*struct regs
-{
-  u32 eax;
-  u32 ecx;
-  u32 edx;
-  u32 ebx;
-  u32 esp;
-  u32 ebp;
-  u32 esi;
-  u32 edi;
-}__attribute__ ((packed));*/
-
 
 typedef struct {
   u32 writable;
@@ -190,15 +178,6 @@ typedef struct {
 	u32 res2: 15;
 } __attribute__ ((packed)) segment_desc_accessrights;
 
-
-/*enum PFErrorcode
-{
-  PF_ERRORCODE_PRESENT   = 1 << 0,
-  PF_ERRORCODE_WRITE     = 1 << 1,
-  PF_ERRORCODE_USER      = 1 << 2,
-  PF_ERRORCODE_RSV       = 1 << 3,
-  PF_ERRORCODE_INST      = 1 << 4,
-};*/
 
 /* cf. IA32_SDM_Vol3B table 24-7 */
 enum EPTViolationCode
@@ -378,29 +357,6 @@ typedef struct {
 	};
 } __attribute__ ((packed)) segment_desc;
 
-
-/*typedef union segment_attributes {
-  u16 bytes;
-  struct
-  {
-    u16 type:4;    // 0;  Bit 40-43 
-    u16 s:   1;    // 4;  Bit 44 
-    u16 dpl: 2;    // 5;  Bit 45-46 
-    u16 p:   1;    // 7;  Bit 47 
-    u16 avl: 1;    // 8;  Bit 52 
-    u16 l:   1;    // 9;  Bit 53 
-    u16 db:  1;    // 10; Bit 54 
-    u16 g:   1;    // 11; Bit 55 
-  } fields;
-} __attribute__ ((packed)) segment_attributes_t;*/
-
-
-/*typedef struct segment_register {
-  u16        sel;
-  segment_attributes_t attr;
-  u32        limit;
-  u64        base;
-} __attribute__ ((packed)) segment_register_t;*/
 
 typedef struct msr_entry {
 	u32 index;
@@ -665,44 +621,77 @@ static inline u32 __vmx_vmptrld(u64 vmcs){
   return status;
 }
 
+// VMX instruction INVVPID
+//		Invalidate Translations Based on VPID
+// INVVPID r32, m128
+//returns 1 on success, 0 on failure
 
-#define ASM_VMX_INVVPID		  ".byte 0x66, 0x0f, 0x38, 0x81, 0x08"
-#define VMX_VPID_EXTENT_SINGLE_CONTEXT		1
-#define VMX_VPID_EXTENT_ALL_CONTEXT		2
+#define	VMX_INVVPID_INDIVIDUALADDRESS		0
+#define VMX_INVVPID_SINGLECONTEXT			1
+#define VMX_INVVPID_ALLCONTEXTS				2
+#define VMX_INVVPID_SINGLECONTEXTGLOBAL		3
 
+static inline u32 __vmx_invvpid(int invalidation_type, u16 vpid, u32 linearaddress){
+	//return status (1 or 0)
+	u32 status;
 
-static inline void __vmx_invvpid(int ext, u16 vpid, u32 gva)
-{
-    struct {
-	u64 vpid : 16;
-	u64 rsvd : 48;
-	u64 gva;
-    } operand = { vpid, 0, gva };
+	//invvpid descriptor
+	struct {
+		u64 vpid 	 : 16;
+		u64 reserved : 48;
+		u64 linearaddress;
+    } invvpiddescriptor = { vpid, 0, linearaddress };
 
-    asm volatile (ASM_VMX_INVVPID
-		  /* CF==1 or ZF==1 --> rc = -1 */
-		  "; ja 1f ; ud2 ; 1:"
-		  : : "a"(&operand), "c"(ext) : "cc", "memory");
+	//issue invvpid instruction
+	//note: GCC does not seem to support this instruction directly
+	//so we encode it as hex
+	__asm__(".byte 0x66, 0x0f, 0x38, 0x81, 0x08 \r\n"
+          "movl $1, %%eax \r\n"
+		  "ja	1f    	  \r\n"
+		  "movl $0, %%eax \r\n"
+		  "1: movl %%eax, %0 \r\n" 
+    : "=m" (status)
+    : "a"(&invvpiddescriptor), "c"(invalidation_type)
+	: "cc", "memory");
+
+	return status;
 }
 
 
-#define ASM_VMX_INVEPT		  ".byte 0x66, 0x0f, 0x38, 0x80, 0x08"
-#define VMX_EPT_SINGLE_CONTEXT		1
-#define VMX_EPT_GLOBAL		2
+// VMX instruction INVEPT
+//		Invalidate Translations Derived from EPT
+// INVEPT r32, m128
+//returns 1 on success, 0 on failure
 
+#define	VMX_INVEPT_SINGLECONTEXT			1
+#define VMX_INVEPT_GLOBAL					2
 
-static inline void __vmx_invept(int ext, u64 eptp, u64 gpa)
-{
-    struct {
-	u64 eptp;
-	u64 gpa;
-    } operand = { eptp, gpa };
+static inline u32 __vmx_invept(int invalidation_type, u64 eptp){
+	//return status (1 or 0)
+	u32 status;
 
-    asm volatile (ASM_VMX_INVEPT
-		  /* CF==1 or ZF==1 --> rc = -1 */
-		  "; ja 1f ; ud2 ; 1:\n"
-		  : : "a"(&operand), "c"(ext) : "cc", "memory");
+	//invvpid descriptor
+	struct {
+		u64 eptp;
+		u64 reserved;
+    } inveptdescriptor = { eptp, 0};
+
+	//issue invept instruction
+	//note: GCC does not seem to support this instruction directly
+	//so we encode it as hex
+	__asm__(".byte 0x66, 0x0f, 0x38, 0x80, 0x08 \r\n"
+          "movl $1, %%eax \r\n"
+		  "ja	1f    	  \r\n"
+		  "movl $0, %%eax \r\n"
+		  "1: movl %%eax, %0 \r\n" 
+    : "=m" (status)
+    : "a"(&inveptdescriptor), "c"(invalidation_type)
+	: "cc", "memory");
+
+	return status;	
 }
+
+
 
 
 #endif

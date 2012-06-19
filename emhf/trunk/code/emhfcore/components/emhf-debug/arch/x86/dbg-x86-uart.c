@@ -33,133 +33,87 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* uart.c: A simple transmit-only driver for 16550-series UARTs. 
- *   Hardwired to use COM0 (0x3f8)
- *   No interrupt support 
- * Useful for debugging using a remote serial console and for
- * displaying SecVisor messages.
- * Written by Arvind Seshadri
- */
+/*
+ * low-level UART comms.
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */ 
 
 #include <emhf.h> 
 
-/* Register offsets */
-#define RBR             0x00    /* receive buffer       */
-#define THR             0x00    /* transmit holding     */
-#define IER             0x01    /* interrupt enable     */
-#define IIR             0x02    /* interrupt identity   */
-#define FCR             0x02    /* FIFO control         */
-#define LCR             0x03    /* line control         */
-#define MCR             0x04    /* Modem control        */
-#define LSR             0x05    /* line status          */
-#define MSR             0x06    /* Modem status         */
-#define DLL             0x00    /* divisor latch (lsb) (DLAB=1) */
-#define DLH             0x01    /* divisor latch (msb) (DLAB=1) */
+// frequency of UART clock source
+#define UART_CLOCKFREQ   1843200
 
-/* FIFO Control Register */
-#define FCR_ENABLE      0x01    /* enable FIFO          */
-#define FCR_CLRX        0x02    /* clear Rx FIFO        */
-#define FCR_CLTX        0x04    /* clear Tx FIFO        */
+// default config parameters for serial port 
+uart_config_t g_uart_config = {115200, 
+							   8, 
+							   PARITY_NONE, 
+							   1, 
+							   0, 
+							   UART_CLOCKFREQ, 
+							   DEBUG_PORT};
 
-/* Line Control Register */
-#define LCR_DLAB        0x80    /* Divisor Latch Access */
-
-/* Modem Control Register */
-#define MCR_DTR         0x01    /* Data Terminal Ready  */
-#define MCR_RTS         0x02    /* Request to Send      */
-#define MCR_OUT2        0x08    /* OUT2: interrupt mask */
-#define MCR_LOOP        0x10    /* Enable loopback test mode */
-
-/* Line Status Register */
-#define LSR_THRE        0x20    /* Xmit hold reg empty  */
-#define LSR_TEMT        0x40    /* Xmitter empty        */
-
-/* Frequency of external clock source. This definition assumes PC platform. */
-#define UART_CLOCK_HZ   1843200
-
-/* Config parameters for serial port */
-uart_config_t g_uart_config = {115200, 8, PARITY_NONE, 1, 0, UART_CLOCK_HZ, DEBUG_PORT};
-
-#define UART_READ_REG(x) \
-    inb(g_uart_config.port+(x));
-
-#define UART_WRITE_REG(x, y)                        \
-    outb((x), g_uart_config.port+(y));
-
-//static
-inline u32 uart_tx_empty(void)
-{
-  u8 x;
-  x = UART_READ_REG(LSR)
-  return (x & LSR_THRE);
-}
-
-static void dbg_x86_uart_putc_bare(int x)
-{
-
-  while ( !uart_tx_empty() )
-    ;
-  UART_WRITE_REG((u8)x, THR);
+//low-level UART character output
+static void dbg_x86_uart_putc_bare(char ch){
+  //wait for xmit hold register to be empty
+  while ( ! (inb(g_uart_config.port+0x5) & 0x20) );
+  
+  //write the character
+  outb((u8)ch, g_uart_config.port);
 
   return;
 }
 
-/* write character to serial port, translating '\n' to '\r\n' */
-void dbg_x86_uart_putc(int x)
-{
-  if ((char)x == '\n') {
+
+// write character to serial port, translating '\n' to '\r\n' 
+void dbg_x86_uart_putc(char ch){
+  if (ch == '\n') {
     dbg_x86_uart_putc_bare('\r');
   }
-  dbg_x86_uart_putc_bare(x);
+  dbg_x86_uart_putc_bare(ch);
 }
 
-/* print a null-terminated string to the serial port */
-void dbg_x86_uart_putstr(const char *str)
-{
-  u8 tmp;
 
-  while ((tmp = (u8)*str++) != '\0')
-  {
-    dbg_x86_uart_putc(tmp);
-  }
-
-  return;
+// write string to serial port 
+void dbg_x86_uart_putstr(const char *s){
+	while (*s)
+		dbg_x86_uart_putc(*s++);
 }
 
+
+//initialize UART comms.
 void dbg_x86_uart_init(char *params){
-  u16 divisor;
-  u8 x;
 
-  //store uart parameters passed to us
+  //override default UART parameters with the one passed via the
+  //command line
   memcpy((void *)&g_uart_config, params, sizeof(uart_config_t));
 
+  // FIXME: work-around for issue #143 
+  g_uart_config.fifo = 0; 
 
-  g_uart_config.fifo = 0; // FIXME: work-around for issue #143 
+  // disable UART interrupts
+  outb((u8)0, g_uart_config.port+0x1); //clear interrupt enable register
+  
+  //compute divisor latch data from baud-rate and set baud-rate
+  {
+	u16 divisor_latch_data = g_uart_config.clock_hz / (g_uart_config.baud * 16);
+  
+	outb(0x80, g_uart_config.port+0x3); //enable divisor latch access by
+									    //writing to line control register
 
-  /* write divisor latch to set baud rate */
-  divisor = g_uart_config.clock_hz / (g_uart_config.baud * 16);
-  UART_WRITE_REG(LCR_DLAB, LCR);
-  UART_WRITE_REG((u8)divisor, DLL);
-  UART_WRITE_REG((u8)(divisor >> 8), DLH);
-
-  /* Disable all serial port interrupt sources */
-  UART_WRITE_REG((u8)0, IER);
-
-  /* Enable and clear Tx and Rx FIFOs */
-  UART_WRITE_REG((u8)(FCR_ENABLE | FCR_CLRX | FCR_CLTX), FCR);
-
-  /* Check if it a 16550 or higher UART. Otherwise we have no FIFOs */
-  x = UART_READ_REG(IIR);
-  if ( x == 0x0c)
-    g_uart_config.fifo = 1;
-
-  /* Set data format */
-  UART_WRITE_REG((u8)((g_uart_config.data_bits - 5) | 
+	outb((u8)divisor_latch_data, g_uart_config.port); //write low 8-bits of divisor latch data
+	outb((u8)(divisor_latch_data >> 8), g_uart_config.port+0x1); //write high 8-bits of divisor latch data 
+	
+   }
+   
+  //set data bits, stop bits and parity info. by writing to
+  //line control register
+  outb((u8)((g_uart_config.data_bits - 5) | 
                ((g_uart_config.stop_bits - 1) << 2) |
-                      g_uart_config.parity), LCR);
+                      g_uart_config.parity), g_uart_config.port+0x3);
 
-  /* Keep DTR and RTS high to keep remote happy */
-  UART_WRITE_REG( MCR_DTR | MCR_RTS, MCR);
+  //signal ready by setting DTR and RTS high in
+  //modem control register
+  outb((u8)0x3, g_uart_config.port+0x4);
 
   return;
 }

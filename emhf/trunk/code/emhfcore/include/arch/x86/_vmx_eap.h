@@ -296,18 +296,6 @@ typedef union {
   } bits;
 } __attribute__ ((packed)) VTD_PMEN_REG;
 
-
-//initialize VMX EAP a.k.a VT-d
-//returns 1 if all went well, else 0
-//u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
-//		u32 vtd_pdts_paddr, u32 vtd_pdts_vaddr,
-//		u32 vtd_pts_paddr, u32 vtd_pts_vaddr,
-//		u32 vtd_ret_paddr, u32 vtd_ret_vaddr,
-//		u32 vtd_cet_paddr, u32 vtd_cet_vaddr, u32 isbootstrap);
-		
-//vt-d protect/unprotect a given region of memory, start_paddr is
-//assumed to be page aligned physical memory address
-//void vmx_eap_vtd_protect(u32 start_paddr, u32 size);		
 		
 #endif //__ASSEMBLY__
 

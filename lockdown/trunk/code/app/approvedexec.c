@@ -163,20 +163,12 @@ void approvedexec_setup(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 //pagebase_paddr (assumed to be page-aligned). 
 //return: 1 if there is a matching hash for this page else 0
 u32 approvedexec_checkhashes(u32 pagebase_paddr, u32 *index, u32 *fullhash){
-  //sha1_context ctx;
-  //unsigned char sha1sum[SHA1_CHECKSUM_LEN];
-  SHA_CTX ctx;
   u8 sha1sum[SHA_DIGEST_LENGTH];
 
 	u32 i;
 
 	//start by computing a sha-1 on the complete page
-  //sha1_starts(&ctx);
-  //sha1_update(&ctx, (const unsigned char *)pagebase_paddr, PAGE_SIZE_4K);
-  //sha1_finish(&ctx, sha1sum);
-  SHA1_Init(&ctx);
-  SHA1_Update(&ctx, (const u8 *)pagebase_paddr, PAGE_SIZE_4K);
-  SHA1_Final(sha1sum, &ctx);
+  sha1_buffer((const u8 *)pagebase_paddr, PAGE_SIZE_4K, sha1sum);
 
 
 	//printf("\nSHA-1 = ");
@@ -197,12 +189,8 @@ u32 approvedexec_checkhashes(u32 pagebase_paddr, u32 *index, u32 *fullhash){
 #if 1
 	//now scan the partial hashlist computing checksum for each 
 	for(i=0; i <hashlist_partial_totalelements;i++){
-	  //sha1_starts(&ctx);
-  	//sha1_update(&ctx, (const unsigned char *)hashlist_partial[i].pageoffset+pagebase_paddr, hashlist_partial[i].size);
-	//sha1_finish(&ctx, sha1sum);
-	SHA1_Init(&ctx);
-	SHA1_Update(&ctx, (const u8 *)hashlist_partial[i].pageoffset+pagebase_paddr, hashlist_partial[i].size);
-	SHA1_Final(sha1sum, &ctx);
+		sha1_buffer((const u8 *)hashlist_partial[i].pageoffset+pagebase_paddr, hashlist_partial[i].size,
+                sha1sum);
 
 		if (memcmp(hashlist_partial[i].shanum, sha1sum, SHA_DIGEST_LENGTH) == 0){
      	 *index = i;
@@ -221,8 +209,8 @@ u32 approvedexec_checkhashes(u32 pagebase_paddr, u32 *index, u32 *fullhash){
 //---returns virtual address of current guest program counter-----------
 static u32 approvedexec_getguestpcvaddr(VCPU *vcpu){
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
-		struct vmcb_struct *vmcb;
-		vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+		struct _svm_vmcbfields *vmcb;
+		vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
 		return ((u32)vmcb->cs.base + (u32)vmcb->rip);
 	}else{	//CPU_VENDOR_INTEL
 		return (u32)vcpu->vmcs.guest_CS_base + (u32)vcpu->vmcs.guest_RIP; 		
@@ -239,7 +227,7 @@ static u32 approvedexec_getguestpcpaddr(VCPU *vcpu){
 
 	//get guest CR0 value
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-		guest_cr0 = (u32)((struct vmcb_struct *)vcpu->vmcb_vaddr_ptr)->cr0;
+		guest_cr0 = (u32)((struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr)->cr0;
 	else // CPU_VENDOR_INTEL
 		guest_cr0 = (u32) vcpu->vmcs.guest_CR0;
 
@@ -275,8 +263,8 @@ u32 approvedexec_iscmdonsamepage(VCPU *vcpu, u64 gpa, u64 gva){
 //---return true if a page table fault was due to execute---------------
 bool ispfduetoexec(VCPU *vcpu, u64 violationcode){
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
-		if ( ((u32)violationcode & PF_ERRORCODE_PRESENT ) &&
-			 ((u32)violationcode & PF_ERRORCODE_INST) )
+		if ( ((u32)violationcode & VMCB_NPT_ERRORCODE_P ) &&
+			 ((u32)violationcode & VMCB_NPT_ERRORCODE_ID) )
 			 return true;
 	}else{ //CPU_VENDOR_INTEL
 		if ( ((u32)violationcode & EPT_ERRORCODE_EXEC ) )

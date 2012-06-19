@@ -500,7 +500,7 @@ static u32 do_TV_HC_TPMNVRAM_WRITEALL(VCPU *vcpu, struct regs *r)
 
 u32 tv_app_handlehypercall(VCPU *vcpu, struct regs *r)
 {	
-  struct vmcb_struct * linux_vmcb;
+  struct _svm_vmcbfields * linux_vmcb;
   u32 cmd;
 
   u32 status = APP_SUCCESS;
@@ -514,7 +514,7 @@ u32 tv_app_handlehypercall(VCPU *vcpu, struct regs *r)
     cmd = (u32)r->eax;
     linux_vmcb = 0;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-    linux_vmcb = (struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr);
+    linux_vmcb = (struct _svm_vmcbfields *)(vcpu->vmcb_vaddr_ptr);
     cmd = (u32)linux_vmcb->rax;
   } else {
     printf("unknown cpu vendor type!\n");

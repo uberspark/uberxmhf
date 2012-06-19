@@ -153,46 +153,46 @@ static void	_svm_int15_initializehook(VCPU *vcpu){
 //---setup VMCB-----------------------------------------------------------------
 static void _svm_initVMCB(VCPU *vcpu){
   
-  struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+  struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
   
   printf("\nCPU(0x%02x): VMCB at 0x%08x", vcpu->id, (u32)vmcb);
-  memset(vmcb, 0, sizeof(struct vmcb_struct));
+  memset(vmcb, 0, sizeof(struct _svm_vmcbfields));
   
   // set up CS descr 
-  vmcb->cs.sel = 0x0;
+  vmcb->cs.selector = 0x0;
   vmcb->cs.base = 0x0;
   vmcb->cs.limit = 0x0ffff; // 64K limit since g=0 
-  vmcb->cs.attr.bytes = 0x009b;
+  vmcb->cs.attrib = 0x009b;
   
   // set up DS descr 
-  vmcb->ds.sel = 0x0;
+  vmcb->ds.selector = 0x0;
   vmcb->ds.base = 0x0;
   vmcb->ds.limit = 0x0ffff; // 64K limit since g=0 
-  vmcb->ds.attr.bytes = 0x0093; // read/write 
+  vmcb->ds.attrib = 0x0093; // read/write 
   
   // set up ES descr 
-  vmcb->es.sel = 0x0;
+  vmcb->es.selector = 0x0;
   vmcb->es.base = 0x0;
   vmcb->es.limit = 0x0ffff; // 64K limit since g=0 
-  vmcb->es.attr.bytes = 0x0093; // read/write 
+  vmcb->es.attrib = 0x0093; // read/write 
 
   // set up FS descr 
-  vmcb->fs.sel = 0x0;
+  vmcb->fs.selector = 0x0;
   vmcb->fs.base = 0x0;
   vmcb->fs.limit = 0x0ffff; // 64K limit since g=0 
-  vmcb->fs.attr.bytes = 0x0093; // read/write 
+  vmcb->fs.attrib = 0x0093; // read/write 
 
   // set up GS descr 
-  vmcb->gs.sel = 0x0;
+  vmcb->gs.selector = 0x0;
   vmcb->gs.base = 0x0;
   vmcb->gs.limit = 0x0ffff; // 64K limit since g=0 
-  vmcb->gs.attr.bytes = 0x0093; // read/write 
+  vmcb->gs.attrib = 0x0093; // read/write 
 
   // set up SS descr 
-  vmcb->ss.sel = 0x0;
+  vmcb->ss.selector = 0x0;
   vmcb->ss.base = 0x0;
   vmcb->ss.limit = 0x0ffff; // 64K limit since g=0 
-  vmcb->ss.attr.bytes = 0x0093; // read/write 
+  vmcb->ss.attrib = 0x0093; // read/write 
 
   vmcb->idtr.limit = 0x03ff;
 
@@ -217,7 +217,7 @@ static void _svm_initVMCB(VCPU *vcpu){
   }else{
 
 #ifdef __NESTED_PAGING__
-      vmcb->cs.sel = (vcpu->sipivector * PAGE_SIZE_4K) >> 4;
+      vmcb->cs.selector = (vcpu->sipivector * PAGE_SIZE_4K) >> 4;
       vmcb->cs.base = (vcpu->sipivector * PAGE_SIZE_4K);
       vmcb->rip = 0x0ULL;
 #endif
@@ -233,18 +233,16 @@ static void _svm_initVMCB(VCPU *vcpu){
   vmcb->dr6 = 0xffff0ff0ULL;
   vmcb->dr7 = 0x00000400ULL;
  
-  vmcb->cr_intercepts = 0;
-  vmcb->dr_intercepts = 0;
-  
+ 
   // intercept all SVM instructions 
-  vmcb->general2_intercepts |= (u32)(GENERAL2_INTERCEPT_VMRUN |
-					  GENERAL2_INTERCEPT_VMMCALL |
-					  GENERAL2_INTERCEPT_VMLOAD |
-					  GENERAL2_INTERCEPT_VMSAVE |
-					  GENERAL2_INTERCEPT_STGI |
-					  GENERAL2_INTERCEPT_CLGI |
-					  GENERAL2_INTERCEPT_SKINIT |
-					  GENERAL2_INTERCEPT_ICEBP);
+  vmcb->class2_intercepts_bitmask |= (u32)(SVM_CLASS2_INTERCEPT_VMRUN |
+					  SVM_CLASS2_INTERCEPT_VMMCALL |
+					  SVM_CLASS2_INTERCEPT_VMLOAD |
+					  SVM_CLASS2_INTERCEPT_VMSAVE |
+					  SVM_CLASS2_INTERCEPT_STGI |
+					  SVM_CLASS2_INTERCEPT_CLGI |
+					  SVM_CLASS2_INTERCEPT_SKINIT |
+					  SVM_CLASS2_INTERCEPT_ICEBP);
 
 	//INT 15h E820 hook enablement for VMX unrestricted guest mode
 	//note: this only happens for the BSP
@@ -255,17 +253,17 @@ static void _svm_initVMCB(VCPU *vcpu){
 
 
   //intercept NMIs, required for core quiescing support
-  vmcb->general1_intercepts |= (u32) GENERAL1_INTERCEPT_NMI;
+  vmcb->class1_intercepts_bitmask |= (u32) SVM_CLASS1_INTERCEPT_NMI;
 
   //setup IO interception
   //memset((void *)g_svm_iopm, 0, SIZEOF_IOPM_BITMAP);   //clear bitmap buffer
   vmcb->iopm_base_pa = hva2spa((void *)vcpu->svm_vaddr_iobitmap);   //setup vmcb iopm
-  vmcb->general1_intercepts |= (u32) GENERAL1_INTERCEPT_IOIO_PROT;
+  vmcb->class1_intercepts_bitmask |= (u32) SVM_CLASS1_INTERCEPT_IOIO_PROT;
 
   //setup MSR interception
   memset((void *)g_svm_msrpm, 0, SIZEOF_MSRPM_BITMAP);   //clear bitmap buffer
   vmcb->msrpm_base_pa = hva2spa(g_svm_msrpm);   //setup vmcb msrpm
-  vmcb->general1_intercepts |= (u32) GENERAL1_INTERCEPT_MSR_PROT;
+  vmcb->class1_intercepts_bitmask |= (u32) SVM_CLASS1_INTERCEPT_MSR_PROT;
 
 
   return;
@@ -289,10 +287,10 @@ void emhf_partition_arch_x86svm_setupguestOSstate(VCPU *vcpu){
 
 //start executing the partition and guest OS
 void emhf_partition_arch_x86svm_start(VCPU *vcpu){
-    struct vmcb_struct *vmcb;
-    vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+    struct _svm_vmcbfields *vmcb;
+    vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
     printf("\nCPU(0x%02x): Starting HVM using CS:EIP=0x%04x:0x%08x...", vcpu->id,
-			(u16)vmcb->cs.sel, (u32)vmcb->rip);
+			(u16)vmcb->cs.selector, (u32)vmcb->rip);
     __svm_start_hvm(vcpu, hva2spa((void*)vcpu->vmcb_vaddr_ptr));
 	//we never get here, if we do, we just return and our caller is responsible
 	//for halting the core as something really bad happened!

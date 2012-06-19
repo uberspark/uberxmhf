@@ -43,7 +43,7 @@
 
 #include <lockdown.h>
 
-//extern struct vmcb_struct *win_vmcb;
+//extern struct _svm_vmcbfields *win_vmcb;
 //extern u32 guest_RAX;
 
 u8 ata_sector_count_buf[2], ata_lbalow_buf[2], ata_lbamid_buf[2];
@@ -144,7 +144,7 @@ u32 check_if_LBA_outofbounds(u64 lbaaddr){
 //return guest EAX value 
 static inline u32 hp_getguesteaxvalue(VCPU *vcpu, struct regs *r){
 		if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-			return (u32) ((struct vmcb_struct *)vcpu->vmcb_vaddr_ptr)->rax;
+			return (u32) ((struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr)->rax;
 		else
 			return r->eax;
 }
@@ -152,7 +152,7 @@ static inline u32 hp_getguesteaxvalue(VCPU *vcpu, struct regs *r){
 //set guest EAX value 
 static inline void hp_setguesteaxvalue(VCPU *vcpu, struct regs *r, u32 value){
 		if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-			((struct vmcb_struct *)vcpu->vmcb_vaddr_ptr)->rax = value;
+			((struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr)->rax = value;
 		else
 			r->eax=value;
 }

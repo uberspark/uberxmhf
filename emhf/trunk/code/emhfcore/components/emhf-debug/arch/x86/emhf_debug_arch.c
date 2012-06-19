@@ -47,7 +47,7 @@ void emhf_debug_arch_init(char *params)
 #endif
 }
 
-void emhf_debug_arch_putc(int c)
+void emhf_debug_arch_putc(char c)
 {
 	(void)c;
 #ifdef __DEBUG_SERIAL__

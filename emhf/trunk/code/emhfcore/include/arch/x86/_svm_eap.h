@@ -180,30 +180,6 @@ typedef union dev_err_addr_hi {
 } __attribute__((packed)) dev_err_addr_hi_t;
 
 
-//early initialization of SVM EAP a.k.a DEV
-//returns 1 if all went well, else 0
-//inputs: physical and virtual addresses of a buffer that is
-//already DMA protected, starting address and size (in bytes) 
-//of the physical memory region to be DMA protected 
-//Note: this function exists since we need to bootstrap DEV
-//protections early on. We cannot afford to have the entire DEV bitmap
-//(128K) within the SL, so we use a DMA-protected buffer 
-//(capable of DMA protecting a contiguous physical memory range)
-//that lies within the initially DMA-protected SL region to protect 
-//the runtime physical memory.
-//The runtime then re-initializes DEV once it gets control after a 
-//successful integrity check.
-//u32 svm_eap_early_initialize(u32 protected_buffer_paddr, 
-//			u32 protected_buffer_vaddr, u32 memregion_paddr_start, 
-//				u32 memregion_size);
-
-//initialize SVM EAP a.k.a DEV
-//returns 1 if all went well, else 0
-//inputs: physical and virtual addresses of the DEV bitmap area
-//u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr);
-
-
-
 #endif //__ASSEMBLY__
 
 #endif	//__SVM_EAP_H__

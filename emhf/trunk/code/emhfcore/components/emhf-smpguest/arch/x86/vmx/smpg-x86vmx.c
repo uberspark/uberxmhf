@@ -51,10 +51,9 @@ static u32 g_vmx_lapic_guest_eflags_tfifmask __attribute__(( section(".data") ))
 
 //---hardware pagetable flush-all routine---------------------------------------
 static void vmx_apic_hwpgtbl_flushall(VCPU *vcpu){
-  __vmx_invept(VMX_EPT_SINGLE_CONTEXT, 
-          (u64)vcpu->vmcs.control_EPT_pointer_full, 
-          0);
-  __vmx_invvpid(VMX_VPID_EXTENT_SINGLE_CONTEXT, 1, 0);
+  __vmx_invept(VMX_INVEPT_SINGLECONTEXT, 
+          (u64)vcpu->vmcs.control_EPT_pointer_full);
+  __vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0);
 
 }
 

@@ -247,7 +247,7 @@ u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
 	u32 acpi_sleep_en;
 
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-		acpi_sleep_en = (u16)(((struct vmcb_struct *)vcpu->vmcb_vaddr_ptr)->rax) & (u16)(1 << 13);
+		acpi_sleep_en = (u16)(((struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr)->rax) & (u16)(1 << 13);
 	else
 		acpi_sleep_en = ((u16)r->eax & (u16)(1 << 13));
 

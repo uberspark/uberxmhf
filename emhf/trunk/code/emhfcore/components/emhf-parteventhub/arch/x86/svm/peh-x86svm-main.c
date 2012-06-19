@@ -40,12 +40,12 @@
 
 
 //---IO Intercept handling------------------------------------------------------
-static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs __attribute__((unused)) *r){
-  ioio_info_t ioinfo;
+static void _svm_handle_ioio(VCPU *vcpu, struct _svm_vmcbfields *vmcb, struct regs __attribute__((unused)) *r){
+  union svmioiointerceptinfo ioinfo;
   u32 app_ret_status = APP_IOINTERCEPT_CHAIN;
   u32 access_size, access_type;
 
-  ioinfo.bytes = vmcb->exitinfo1;
+  ioinfo.rawbits = vmcb->exitinfo1;
   
   if (ioinfo.fields.rep || ioinfo.fields.str){
     printf("\nCPU(0x%02x): Fatal, unsupported batch I/O ops!", vcpu->id);
@@ -111,7 +111,7 @@ static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs _
 
 
 //---MSR intercept handling-----------------------------------------------------
-static void _svm_handle_msr(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *r){
+static void _svm_handle_msr(VCPU *vcpu, struct _svm_vmcbfields *vmcb, struct regs *r){
   ASSERT( (vmcb->exitinfo1 == 0) || (vmcb->exitinfo1 == 1) );
   printf("\nCPU(0x%02x): MSR intercept, type=%u, MSR=0x%08x", vcpu->id,
     (u32)vmcb->exitinfo1, r->ecx);
@@ -137,7 +137,7 @@ static void _svm_handle_msr(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *r
 //win_vmcb->exitinfo1 = error code similar to PF
 //win_vmcb->exitinfo2 = faulting guest OS physical address
 static void _svm_handle_npf(VCPU *vcpu, struct regs *r){
-  struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+  struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
   u32 gpa = vmcb->exitinfo2;
   u32 errorcode = vmcb->exitinfo1;
   
@@ -163,7 +163,7 @@ static void _svm_handle_npf(VCPU *vcpu, struct regs *r){
 //---NMI handling---------------------------------------------------------------
 // note: we use NMI for core quiescing, we simply inject the others back
 // into the guest in the normal case
-static void _svm_handle_nmi(VCPU *vcpu, struct vmcb_struct __attribute__((unused)) *vmcb, struct regs __attribute__((unused)) *r){
+static void _svm_handle_nmi(VCPU *vcpu, struct _svm_vmcbfields __attribute__((unused)) *vmcb, struct regs __attribute__((unused)) *r){
     //now we adopt a simple trick, this NMI is pending, the only
     //way we can dismiss it is if we set GIF=0 and make GIF=1 so that
     //the core thinks it must dispatch the pending NMI :p
@@ -183,7 +183,7 @@ static void _svm_handle_nmi(VCPU *vcpu, struct vmcb_struct __attribute__((unused
 static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 	u16 cs, ip;
 	u8 *bdamemory = (u8 *)0x4AC;
-	struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+	struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
 
 	//printf("\nCPU(0x%02x): BDA dump in intercept: %02x %02x %02x %02x %02x %02x %02x %02x", vcpu->id,
 	//		bdamemory[0], bdamemory[1], bdamemory[2], bdamemory[3], bdamemory[4],
@@ -214,7 +214,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		//ES:DI left untouched, ECX=size returned, EBX=next continuation value
 		//EBX=0 if last descriptor
 		printf("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", vcpu->id, 
-		(u16)vmcb->rax, r->edx, r->ebx, r->ecx, (u16)vmcb->es.sel, (u16)r->edi);
+		(u16)vmcb->rax, r->edx, r->ebx, r->ecx, (u16)vmcb->es.selector, (u16)r->edi);
 		
 		//ASSERT(r->edx == 0x534D4150UL);  //'SMAP' should be specified by guest
 		//ASSERT(r->ebx < rpb->XtVmmE820NumEntries); //invalid continuation value specified by guest!
@@ -333,15 +333,15 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 	//update VMCB with the CS and IP and let go
 	vmcb->rip = ip;
 	vmcb->cs.base = cs * 16;
-	vmcb->cs.sel = cs;		 
+	vmcb->cs.selector = cs;		 
 }
 
 
 //---SVM intercept handler hub--------------------------------------------------
 u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
-  struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+  struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
   
-  vmcb->tlb_control = TLB_CONTROL_NOTHING;
+  vmcb->tlb_control = VMCB_TLB_CONTROL_NOTHING;
 
   //SVM stores guest EAX in VMCB, so move that into struct regs r->eax 
   //to reflect true guest EAX value
@@ -350,25 +350,25 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 
   switch(vmcb->exitcode){
 		//IO interception
-		case VMEXIT_IOIO:{
+		case SVM_VMEXIT_IOIO:{
 			_svm_handle_ioio(vcpu, vmcb, r);
 		}
 		break;
 
 		//MSR interception
-		case VMEXIT_MSR:{
+		case SVM_VMEXIT_MSR:{
 		  _svm_handle_msr(vcpu, vmcb, r);
 		}
 		break;
 
 
 		//Nested Page Fault (NPF)
-		case VMEXIT_NPF:{
+		case SVM_VMEXIT_NPF:{
 		 _svm_handle_npf(vcpu, r);
 		}
 		break;
 
-		case VMEXIT_EXCEPTION_DB:{
+		case SVM_VMEXIT_EXCEPTION_DB:{
 			if(vcpu->isbsp == 1){											//LAPIC SIPI detection only happens on BSP
 				emhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
 			}else{															//TODO: reflect back to guest
@@ -380,9 +380,9 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 		break;
 
 
-		case VMEXIT_INIT:{
+		case SVM_VMEXIT_INIT:{
 		printf("\nCPU(0x%02x): INIT intercepted, halting.", vcpu->id);
-		printf("\nGuest CS:EIP=0x%04x:0x%08x", (u16)vmcb->cs.sel, (u32)vmcb->rip);
+		printf("\nGuest CS:EIP=0x%04x:0x%08x", (u16)vmcb->cs.selector, (u32)vmcb->rip);
 		printf("\nHalting!");
 		HALT();
 			/*{
@@ -401,7 +401,7 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 		break;
 
 
-		case VMEXIT_VMMCALL:{
+		case SVM_VMEXIT_VMMCALL:{
 			//check to see if this is a hypercall for INT 15h hooking
 			if(vmcb->cs.base == (VMX_UG_E820HOOK_CS << 4) &&
 				vmcb->rip == VMX_UG_E820HOOK_IP){
@@ -427,14 +427,14 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 		break;
 
 
-		case VMEXIT_NMI:{
+		case SVM_VMEXIT_NMI:{
 			_svm_handle_nmi(vcpu, vmcb, r);
 		}
 		break;
 
 		default:{
 			printf("\nUnhandled Intercept:0x%08llx", vmcb->exitcode);
-			printf("\n\tCS:EIP=0x%04x:0x%08x", (u16)vmcb->cs.sel, (u32)vmcb->rip);
+			printf("\n\tCS:EIP=0x%04x:0x%08x", (u16)vmcb->cs.selector, (u32)vmcb->rip);
 			printf("\n\tedi:%08x esi:%08x ebp:%08x esp:%08llx",
 				r->edi, r->esi, r->ebp, vmcb->rsp);
 			printf("\n\tebx:%08x edx:%08x ecx:%08x eax:%08llx",
