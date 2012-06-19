@@ -45,7 +45,7 @@ export LDN_HYPERPARTITIONING := n
 export LDN_APPROVEDEXEC := n
 export LDN_APPROVEDEXEC_CMPHASHES := y
 export LDN_SSLPA := n
-export LDN_TV_INTEGRATION := y
+export LDN_TV_INTEGRATION := n
 	
 
 ifeq ($(LDN_HYPERSWITCHING), y)

@@ -263,8 +263,8 @@ u32 approvedexec_iscmdonsamepage(VCPU *vcpu, u64 gpa, u64 gva){
 //---return true if a page table fault was due to execute---------------
 bool ispfduetoexec(VCPU *vcpu, u64 violationcode){
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
-		if ( ((u32)violationcode & PF_ERRORCODE_PRESENT ) &&
-			 ((u32)violationcode & PF_ERRORCODE_INST) )
+		if ( ((u32)violationcode & VMCB_NPT_ERRORCODE_P ) &&
+			 ((u32)violationcode & VMCB_NPT_ERRORCODE_ID) )
 			 return true;
 	}else{ //CPU_VENDOR_INTEL
 		if ( ((u32)violationcode & EPT_ERRORCODE_EXEC ) )
