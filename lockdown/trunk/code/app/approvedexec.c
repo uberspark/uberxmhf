@@ -163,20 +163,12 @@ void approvedexec_setup(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 //pagebase_paddr (assumed to be page-aligned). 
 //return: 1 if there is a matching hash for this page else 0
 u32 approvedexec_checkhashes(u32 pagebase_paddr, u32 *index, u32 *fullhash){
-  //sha1_context ctx;
-  //unsigned char sha1sum[SHA1_CHECKSUM_LEN];
-  SHA_CTX ctx;
   u8 sha1sum[SHA_DIGEST_LENGTH];
 
 	u32 i;
 
 	//start by computing a sha-1 on the complete page
-  //sha1_starts(&ctx);
-  //sha1_update(&ctx, (const unsigned char *)pagebase_paddr, PAGE_SIZE_4K);
-  //sha1_finish(&ctx, sha1sum);
-  SHA1_Init(&ctx);
-  SHA1_Update(&ctx, (const u8 *)pagebase_paddr, PAGE_SIZE_4K);
-  SHA1_Final(sha1sum, &ctx);
+  sha1_buffer((const u8 *)pagebase_paddr, PAGE_SIZE_4K, sha1sum);
 
 
 	//printf("\nSHA-1 = ");
@@ -197,12 +189,8 @@ u32 approvedexec_checkhashes(u32 pagebase_paddr, u32 *index, u32 *fullhash){
 #if 1
 	//now scan the partial hashlist computing checksum for each 
 	for(i=0; i <hashlist_partial_totalelements;i++){
-	  //sha1_starts(&ctx);
-  	//sha1_update(&ctx, (const unsigned char *)hashlist_partial[i].pageoffset+pagebase_paddr, hashlist_partial[i].size);
-	//sha1_finish(&ctx, sha1sum);
-	SHA1_Init(&ctx);
-	SHA1_Update(&ctx, (const u8 *)hashlist_partial[i].pageoffset+pagebase_paddr, hashlist_partial[i].size);
-	SHA1_Final(sha1sum, &ctx);
+		sha1_buffer((const u8 *)hashlist_partial[i].pageoffset+pagebase_paddr, hashlist_partial[i].size,
+                sha1sum);
 
 		if (memcmp(hashlist_partial[i].shanum, sha1sum, SHA_DIGEST_LENGTH) == 0){
      	 *index = i;
