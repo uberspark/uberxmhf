@@ -36,17 +36,24 @@ LIBTOMMATH_RELPATH=../../../tools/libtommath-0.42.0
 LIBTOMMATH_ABSPATH=`( cd "$MY_PATH/$LIBTOMMATH_RELPATH" && pwd )`
 
 # Temporary directory to place build results
-TEMPDIR=/tmp/build/tee-sdk
-rm -rf $TEMPDIR
+TEMPROOT=`mktemp -d --tmpdir=/tmp build-tv.XXXXXXXXXX`
+TEMPDIR=$TEMPROOT/tee-sdk
 mkdir -p $TEMPDIR
 
 # 0. Pull the latest source code.
 pushd $REPO_ROOT_ABSPATH
-#git svn rebase
-# Note: this comes _after_ rebase because we want rebase to fail if
-# one of us developers has been tinkering around and forgot to commit
-# things.  Otherwise, this 'git clean' will clobber our work.
+# If anything besides untracked files (denoted by '??' at the
+# beginning of the line; see 'git help status') exists, then bail out.
+# That usually happens when one of us developers has been tinkering
+# around and forgot to commit things.  Otherwise, the 'git clean' will
+# clobber our work.
+IS_DIRTY=`git status --porcelain | perl -n -e 'if ($_ !~ /^\?\?/) { print "DIRTY\n"; exit; }'`
+if [ "$IS_DIRTY" == "DIRTY" ]; then
+    echo "ERROR: working directory dirty. Did you forget to commit something?" >&2
+    exit 1
+fi
 git clean -d -f -x .
+git pull
 
 ## 1. Build EMHF + TrustVisor
 
@@ -86,5 +93,7 @@ pushd $TESTPAL_ABSPATH
 PATH=$PATH:$TEMPDIR/bin PKG_CONFIG_PATH=$TEMPDIR/lib/pkgconfig make clean
 PATH=$PATH:$TEMPDIR/bin PKG_CONFIG_PATH=$TEMPDIR/lib/pkgconfig make
 popd
+
+rm -rf $TEMPDIR
 
 echo -e "\nTRUSTVISOR BUILD COMPLETED SUCCESSFULLY\n"
