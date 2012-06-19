@@ -94,4 +94,6 @@ PATH=$PATH:$TEMPDIR/bin PKG_CONFIG_PATH=$TEMPDIR/lib/pkgconfig make clean
 PATH=$PATH:$TEMPDIR/bin PKG_CONFIG_PATH=$TEMPDIR/lib/pkgconfig make
 popd
 
+rm -rf $TEMPDIR
+
 echo -e "\nTRUSTVISOR BUILD COMPLETED SUCCESSFULLY\n"
