@@ -36,8 +36,8 @@ LIBTOMMATH_RELPATH=../../../tools/libtommath-0.42.0
 LIBTOMMATH_ABSPATH=`( cd "$MY_PATH/$LIBTOMMATH_RELPATH" && pwd )`
 
 # Temporary directory to place build results
-TEMPDIR=/tmp/build/tee-sdk
-rm -rf $TEMPDIR
+TEMPROOT=`mktemp -d --tmpdir=/tmp build-tv.XXXXXXXXXX`
+TEMPDIR=$TEMPROOT/tee-sdk
 mkdir -p $TEMPDIR
 
 # 0. Pull the latest source code.
