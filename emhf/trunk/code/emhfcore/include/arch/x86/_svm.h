@@ -127,20 +127,23 @@ struct svmeventinj {
 
 //SVM I/O Intercept Information Structure
 //Sec. 15.10.2, AMD SDM
-struct svmioiointerceptinfo {
-    u64 type: 1;
-    u64 rsv0: 1;
-    u64 str:  1;
-    u64 rep:  1;
-    u64 sz8:  1;
-    u64 sz16: 1;
-    u64 sz32: 1;
-    u64 a16:  1;
-    u64 a32:  1;
-    u64 a64:  1;
-    u64 seg:  3;
-    u64 rsv1: 3;
-    u64 port: 16;
+union svmioiointerceptinfo {
+    u64 rawbits;
+    struct {
+		u64 type: 1;
+		u64 rsv0: 1;
+		u64 str:  1;
+		u64 rep:  1;
+		u64 sz8:  1;
+		u64 sz16: 1;
+		u64 sz32: 1;
+		u64 a16:  1;
+		u64 a32:  1;
+		u64 a64:  1;
+		u64 seg:  3;
+		u64 rsv1: 3;
+		u64 port: 16;
+	} __attribute__ ((packed)) fields;
 } __attribute__ ((packed));
 
 //SVM Virtual Machine Control Block Structure

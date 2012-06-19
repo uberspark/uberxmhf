@@ -41,11 +41,11 @@
 
 //---IO Intercept handling------------------------------------------------------
 static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs __attribute__((unused)) *r){
-  ioio_info_t ioinfo;
+  union svmioiointerceptinfo ioinfo;
   u32 app_ret_status = APP_IOINTERCEPT_CHAIN;
   u32 access_size, access_type;
 
-  ioinfo.bytes = vmcb->exitinfo1;
+  ioinfo.rawbits = vmcb->exitinfo1;
   
   if (ioinfo.fields.rep || ioinfo.fields.str){
     printf("\nCPU(0x%02x): Fatal, unsupported batch I/O ops!", vcpu->id);
