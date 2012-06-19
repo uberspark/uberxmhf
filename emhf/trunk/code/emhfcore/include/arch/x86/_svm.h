@@ -193,9 +193,9 @@ struct vmcb_struct {
   u64 rsp;
   u8 __reserved8[24];
   u64 rax;
-  u8 __currently_unused1[64];
+  u8 __currently_unused3[64];
   u64 cr2;
-  u8 __currently_unused2[32];
+  u8 __currently_unused4[32];
   u64 g_pat;
   u8 __reserved9[2448];
 } __attribute__ ((packed));
