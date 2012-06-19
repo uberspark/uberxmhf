@@ -48,13 +48,13 @@ static void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts
 
 // initialize memory protection structures for a given core (vcpu)
 void emhf_memprot_arch_x86svm_initialize(VCPU *vcpu){
-	struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+	struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
 	
 	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD);
 	
 	_svm_nptinitialize(vcpu->npt_vaddr_ptr, vcpu->npt_vaddr_pdts, vcpu->npt_vaddr_pts);
-	vmcb->h_cr3 = hva2spa((void*)vcpu->npt_vaddr_ptr);
-	vmcb->np_enable |= (1ULL << NP_ENABLE);
+	vmcb->n_cr3 = hva2spa((void*)vcpu->npt_vaddr_ptr);
+	vmcb->np_enable |= 1ULL;
 	vmcb->guest_asid = vcpu->npt_asid;
 }
 
@@ -106,7 +106,7 @@ static void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts
 
 //flush hardware page table mappings (TLB) 
 void emhf_memprot_arch_x86svm_flushmappings(VCPU *vcpu){
-	((struct vmcb_struct *)(vcpu->vmcb_vaddr_ptr))->tlb_control=TLB_CONTROL_FLUSHALL;	
+	((struct _svm_vmcbfields *)(vcpu->vmcb_vaddr_ptr))->tlb_control=VMCB_TLB_CONTROL_FLUSHALL;	
 }
 
 //set protection for a given physical memory address
@@ -168,10 +168,10 @@ u32 emhf_memprot_arch_x86svm_getprot(VCPU *vcpu, u64 gpa){
 u64 emhf_memprot_arch_x86svm_get_h_cr3(VCPU *vcpu)
 {
   ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD);
-  return ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3; 
+  return ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->n_cr3; 
 }
-void emhf_memprot_arch_x86svm_set_h_cr3(VCPU *vcpu, u64 h_cr3)
+void emhf_memprot_arch_x86svm_set_h_cr3(VCPU *vcpu, u64 n_cr3)
 {
   ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD);
-  ((struct vmcb_struct*)vcpu->vmcb_vaddr_ptr)->h_cr3 = h_cr3;
+  ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->n_cr3 = n_cr3;
 }
