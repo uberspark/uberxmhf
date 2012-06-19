@@ -43,8 +43,6 @@
 
 #include <lockdown.h>
 
-//extern struct _svm_vmcbfields *win_vmcb;
-//extern u32 guest_RAX;
 
 u8 ata_sector_count_buf[2], ata_lbalow_buf[2], ata_lbamid_buf[2];
 u8 ata_lbahigh_buf[2];

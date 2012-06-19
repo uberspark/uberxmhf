@@ -43,18 +43,6 @@
 
 u32 ax_debug_flag = 0;
 
-/*
-//the trusted environment hash-lists
-struct hashinfo hashlist_full[] = {
-	#include "hashlist_full.dat"
-};
-u32 hashlist_full_totalelements= (sizeof(hashlist_full)/sizeof(struct hashinfo));
-
-struct hashinfo hashlist_partial[] = {
-	#include "hashlist_partial.dat"
-};
-u32 hashlist_partial_totalelements= (sizeof(hashlist_partial)/sizeof(struct hashinfo));
-*/
 
 //the trusted environment hash-lists
 struct hashinfo hashlist_full[MAX_FULL_HASHLIST_ELEMENTS];
