@@ -198,11 +198,6 @@ typedef struct{
 }__attribute__ ((packed)) ACPI_FADT;
 
 
-//get the physical address of the root system description pointer (rsdp)
-//return 0 in case of error (ACPI RSDP not found)
-u32 acpi_getRSDP(ACPI_RSDP *rsdp);
-
-
 #endif	//__ASSEMBLY__
 
 #endif //__ACPI_H__

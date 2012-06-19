@@ -323,21 +323,6 @@
 #define GET_LCR_VALUE(data, stop, parity)      \
     (GET_LCR_DATABIT(data) | GET_LCR_STOPBIT(stop) | GET_LCR_PARITY(parity))
 
-//typedef struct {
-//    uint32_t bus;
-//    uint32_t slot;
-//    uint32_t func;
-//} bdf_t;
-
-/* typedef struct { */
-/*     uint32_t comc_curspeed;  /\* baud rate *\/ */
-/*     uint32_t comc_clockhz;   /\* clock hz *\/ */
-/*     uint8_t  comc_fmt;       /\* lcr value *\/ */
-/*     uint32_t comc_port;      /\* serial port, COM[1|2|3|4] *\/  */
-/*     uint32_t comc_irq;       /\* irq *\/ */
-/*     bdf_t    comc_psbdf;     /\* PCI serial controller bdf *\/ */
-/*     bdf_t    comc_pbbdf;     /\* PCI bridge bdf *\/ */
-/* } serial_port_t; */
 
 typedef struct {
     u32 baud;
@@ -349,8 +334,6 @@ typedef struct {
     u32 port;
 } __attribute__((packed)) uart_config_t;
 
-//extern void comc_init(void);
-//extern void comc_puts(const char*, unsigned int);
 
 #endif // __ASSEMBLY__
 

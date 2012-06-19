@@ -156,18 +156,6 @@
 
 #ifndef __ASSEMBLY__
 
-/*struct regs
-{
-  u32 eax;
-  u32 ecx;
-  u32 edx;
-  u32 ebx;
-  u32 esp;
-  u32 ebp;
-  u32 esi;
-  u32 edi;
-}__attribute__ ((packed));*/
-
 
 typedef struct {
   u32 writable;
@@ -190,15 +178,6 @@ typedef struct {
 	u32 res2: 15;
 } __attribute__ ((packed)) segment_desc_accessrights;
 
-
-/*enum PFErrorcode
-{
-  PF_ERRORCODE_PRESENT   = 1 << 0,
-  PF_ERRORCODE_WRITE     = 1 << 1,
-  PF_ERRORCODE_USER      = 1 << 2,
-  PF_ERRORCODE_RSV       = 1 << 3,
-  PF_ERRORCODE_INST      = 1 << 4,
-};*/
 
 /* cf. IA32_SDM_Vol3B table 24-7 */
 enum EPTViolationCode
@@ -378,29 +357,6 @@ typedef struct {
 	};
 } __attribute__ ((packed)) segment_desc;
 
-
-/*typedef union segment_attributes {
-  u16 bytes;
-  struct
-  {
-    u16 type:4;    // 0;  Bit 40-43 
-    u16 s:   1;    // 4;  Bit 44 
-    u16 dpl: 2;    // 5;  Bit 45-46 
-    u16 p:   1;    // 7;  Bit 47 
-    u16 avl: 1;    // 8;  Bit 52 
-    u16 l:   1;    // 9;  Bit 53 
-    u16 db:  1;    // 10; Bit 54 
-    u16 g:   1;    // 11; Bit 55 
-  } fields;
-} __attribute__ ((packed)) segment_attributes_t;*/
-
-
-/*typedef struct segment_register {
-  u16        sel;
-  segment_attributes_t attr;
-  u32        limit;
-  u64        base;
-} __attribute__ ((packed)) segment_register_t;*/
 
 typedef struct msr_entry {
 	u32 index;
