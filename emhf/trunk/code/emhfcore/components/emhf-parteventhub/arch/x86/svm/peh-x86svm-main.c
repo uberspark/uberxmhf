@@ -40,7 +40,7 @@
 
 
 //---IO Intercept handling------------------------------------------------------
-static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs __attribute__((unused)) *r){
+static void _svm_handle_ioio(VCPU *vcpu, struct _svm_vmcbfields *vmcb, struct regs __attribute__((unused)) *r){
   union svmioiointerceptinfo ioinfo;
   u32 app_ret_status = APP_IOINTERCEPT_CHAIN;
   u32 access_size, access_type;
@@ -111,7 +111,7 @@ static void _svm_handle_ioio(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs _
 
 
 //---MSR intercept handling-----------------------------------------------------
-static void _svm_handle_msr(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *r){
+static void _svm_handle_msr(VCPU *vcpu, struct _svm_vmcbfields *vmcb, struct regs *r){
   ASSERT( (vmcb->exitinfo1 == 0) || (vmcb->exitinfo1 == 1) );
   printf("\nCPU(0x%02x): MSR intercept, type=%u, MSR=0x%08x", vcpu->id,
     (u32)vmcb->exitinfo1, r->ecx);
@@ -137,7 +137,7 @@ static void _svm_handle_msr(VCPU *vcpu, struct vmcb_struct *vmcb, struct regs *r
 //win_vmcb->exitinfo1 = error code similar to PF
 //win_vmcb->exitinfo2 = faulting guest OS physical address
 static void _svm_handle_npf(VCPU *vcpu, struct regs *r){
-  struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+  struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
   u32 gpa = vmcb->exitinfo2;
   u32 errorcode = vmcb->exitinfo1;
   
@@ -163,7 +163,7 @@ static void _svm_handle_npf(VCPU *vcpu, struct regs *r){
 //---NMI handling---------------------------------------------------------------
 // note: we use NMI for core quiescing, we simply inject the others back
 // into the guest in the normal case
-static void _svm_handle_nmi(VCPU *vcpu, struct vmcb_struct __attribute__((unused)) *vmcb, struct regs __attribute__((unused)) *r){
+static void _svm_handle_nmi(VCPU *vcpu, struct _svm_vmcbfields __attribute__((unused)) *vmcb, struct regs __attribute__((unused)) *r){
     //now we adopt a simple trick, this NMI is pending, the only
     //way we can dismiss it is if we set GIF=0 and make GIF=1 so that
     //the core thinks it must dispatch the pending NMI :p
@@ -183,7 +183,7 @@ static void _svm_handle_nmi(VCPU *vcpu, struct vmcb_struct __attribute__((unused
 static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 	u16 cs, ip;
 	u8 *bdamemory = (u8 *)0x4AC;
-	struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+	struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
 
 	//printf("\nCPU(0x%02x): BDA dump in intercept: %02x %02x %02x %02x %02x %02x %02x %02x", vcpu->id,
 	//		bdamemory[0], bdamemory[1], bdamemory[2], bdamemory[3], bdamemory[4],
@@ -339,7 +339,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 
 //---SVM intercept handler hub--------------------------------------------------
 u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
-  struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+  struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
   
   vmcb->tlb_control = VMCB_TLB_CONTROL_NOTHING;
 

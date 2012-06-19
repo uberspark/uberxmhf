@@ -141,7 +141,7 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
 }
 
 
-static void _svm_send_quiesce_signal(VCPU *vcpu, struct vmcb_struct __attribute__((unused)) *vmcb){
+static void _svm_send_quiesce_signal(VCPU *vcpu, struct _svm_vmcbfields __attribute__((unused)) *vmcb){
   volatile u32 *icr_low = (u32 *)(0xFEE00000 + 0x300);
   volatile u32 *icr_high = (u32 *)(0xFEE00000 + 0x310);
   u32 icr_high_value= 0xFFUL << 24;
@@ -171,7 +171,7 @@ static void _svm_send_quiesce_signal(VCPU *vcpu, struct vmcb_struct __attribute_
 //GLOBALS
 void emhf_smpguest_arch_x86svm_initialize(VCPU *vcpu){
   u32 eax, edx;
-  struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+  struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
   
   //read APIC base address from MSR
   rdmsr(MSR_APIC_BASE, &eax, &edx);
@@ -200,7 +200,7 @@ void emhf_smpguest_arch_x86svm_initialize(VCPU *vcpu){
 //register accessed, store request as WRITE and single-step
 // XXX TODO: return value currently meaningless
 u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode){
-  struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+  struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
   
   //get LAPIC register being accessed
   g_svm_lapic_reg = (paddr - g_svm_lapic_base);
@@ -290,7 +290,7 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 
 void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, 
 	struct regs *r){
-  struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+  struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
   u32 delink_lapic_interception=0;
 
   (void)r;	
@@ -369,7 +369,7 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
 
 //quiesce interface to switch all guest cores into hypervisor mode
 void emhf_smpguest_arch_x86svm_quiesce(VCPU *vcpu){
-	struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+	struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
         
 	printf("\nCPU(0x%02x): got quiesce signal...", vcpu->id);
     //grab hold of quiesce lock
@@ -417,7 +417,7 @@ void emhf_smpguest_arch_x86svm_endquiesce(VCPU *vcpu){
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
 void emhf_smpguest_arch_x86svm_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
-  struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+  struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
   (void)r;
 	
   if( (!vcpu->nmiinhvm) && (!g_svm_quiesce) ){
@@ -466,9 +466,9 @@ void emhf_smpguest_arch_x86svm_eventhandler_nmiexception(VCPU *vcpu, struct regs
 //perform required setup after a guest awakens a new CPU
 void emhf_smpguest_arch_x86svm_postCPUwakeup(VCPU *vcpu){
 	//setup guest CS and EIP as specified by the SIPI vector
-	struct vmcb_struct *vmcb;
+	struct _svm_vmcbfields *vmcb;
 
-	vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr; 
+	vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr; 
 	vmcb->cs.selector = ((vcpu->sipivector * PAGE_SIZE_4K) >> 4); 
 	vmcb->cs.base = (vcpu->sipivector * PAGE_SIZE_4K); 
 	vmcb->rip = 0x0ULL;
@@ -477,7 +477,7 @@ void emhf_smpguest_arch_x86svm_postCPUwakeup(VCPU *vcpu){
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping
 u8 * emhf_smpguest_arch_x86svm_walk_pagetables(VCPU *vcpu, u32 vaddr){
-	struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+	struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
 	
   if((u32)vmcb->cr4 & CR4_PAE ){
     //PAE paging used by guest

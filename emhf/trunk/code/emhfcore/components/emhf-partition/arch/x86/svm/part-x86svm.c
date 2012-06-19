@@ -153,10 +153,10 @@ static void	_svm_int15_initializehook(VCPU *vcpu){
 //---setup VMCB-----------------------------------------------------------------
 static void _svm_initVMCB(VCPU *vcpu){
   
-  struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+  struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
   
   printf("\nCPU(0x%02x): VMCB at 0x%08x", vcpu->id, (u32)vmcb);
-  memset(vmcb, 0, sizeof(struct vmcb_struct));
+  memset(vmcb, 0, sizeof(struct _svm_vmcbfields));
   
   // set up CS descr 
   vmcb->cs.selector = 0x0;
@@ -287,8 +287,8 @@ void emhf_partition_arch_x86svm_setupguestOSstate(VCPU *vcpu){
 
 //start executing the partition and guest OS
 void emhf_partition_arch_x86svm_start(VCPU *vcpu){
-    struct vmcb_struct *vmcb;
-    vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+    struct _svm_vmcbfields *vmcb;
+    vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
     printf("\nCPU(0x%02x): Starting HVM using CS:EIP=0x%04x:0x%08x...", vcpu->id,
 			(u16)vmcb->cs.selector, (u32)vmcb->rip);
     __svm_start_hvm(vcpu, hva2spa((void*)vcpu->vmcb_vaddr_ptr));

@@ -148,7 +148,7 @@ union svmioiointerceptinfo {
 
 //SVM Virtual Machine Control Block Structure
 //Appendix B-1, AMD SDM
-struct vmcb_struct {
+struct _svm_vmcbfields {
   u8 __currently_unused0[8];          						
   u32 exception_intercepts_bitmask;   				//byte offset 0x08
   u32 class1_intercepts_bitmask;    				//byte offset 0x0C 
