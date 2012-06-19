@@ -76,7 +76,7 @@
 #define	 SVM_VMEXIT_NMI                 97
 #define  SVM_VMEXIT_INIT                99
 #define  SVM_VMEXIT_IOIO             	123
-#define	 SVM_VMEXIT__MSR                124
+#define	 SVM_VMEXIT_MSR                124
 #define  SVM_VMEXIT_SHUTDOWN         	127
 #define  SVM_VMEXIT_VMMCALL          	129
 #define  SVM_VMEXIT_NPF              	1024

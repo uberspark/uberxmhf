@@ -184,7 +184,7 @@ void emhf_smpguest_arch_x86svm_initialize(VCPU *vcpu){
   //handled by lapic_access_handler
   //XXX: change this to access emhf-memprot interfaces
   npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, 0);
-  vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
+  vmcb->tlb_control = VMCB_TLB_CONTROL_FLUSHALL;  
   //emhf_memprot_arch_x86svm_setprot(vcpu, g_svm_lapic_base, MEMP_PROT_NOTPRESENT);
   //emhf_memprot_arch_x86svm_flushmappings(vcpu);
 }
@@ -206,7 +206,7 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
   g_svm_lapic_reg = (paddr - g_svm_lapic_base);
 
   
-  if(errorcode & PF_ERRORCODE_WRITE){
+  if(errorcode & VMCB_NPT_ERRORCODE_RW){
     if(g_svm_lapic_reg == LAPIC_ICR_LOW || g_svm_lapic_reg == LAPIC_ICR_HIGH ){
       g_svm_lapic_op = LAPIC_OP_WRITE;
       
@@ -215,7 +215,7 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
       //printf("\nvirtual_LAPIC_base, v=0x%08x, p=0x%08x",  
       //  (u32)virtual_LAPIC_base, hva2spa(virtual_LAPIC_base));
 		npt_changemapping(vcpu, g_svm_lapic_base, hva2spa(g_svm_virtual_LAPIC_base), (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
-		vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
+		vmcb->tlb_control = VMCB_TLB_CONTROL_FLUSHALL;  
 
 
 
@@ -224,7 +224,7 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 
       //change LAPIC physical address NPT mapping to point to physical LAPIC
 		npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
-			vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
+			vmcb->tlb_control = VMCB_TLB_CONTROL_FLUSHALL;  
 		//emhf_memprot_arch_x86svm_setprot(vcpu, g_svm_lapic_base, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE);
 		//emhf_memprot_arch_x86svm_flushmappings(vcpu);
     }    
@@ -249,7 +249,7 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
       //printf("\nvirtual_LAPIC_base, v=0x%08x, p=0x%08x",  
       //  (u32)virtual_LAPIC_base, hva2spa(virtual_LAPIC_base));
 		  npt_changemapping(vcpu, g_svm_lapic_base, hva2spa(g_svm_virtual_LAPIC_base), (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
-		  vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
+		  vmcb->tlb_control = VMCB_TLB_CONTROL_FLUSHALL;  
 
     }else{
 
@@ -257,7 +257,7 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 
       //change LAPIC physical address NPT mapping to point to physical LAPIC
 		npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
-			vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
+			vmcb->tlb_control = VMCB_TLB_CONTROL_FLUSHALL;
 		//emhf_memprot_arch_x86svm_setprot(vcpu, g_svm_lapic_base, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE);
 		//emhf_memprot_arch_x86svm_flushmappings(vcpu);
     }  
@@ -311,12 +311,12 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
       if ( (value_tobe_written & 0x00000F00) == 0x500){
         //this is an INIT IPI, we just void it
         printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) INIT IPI detected and skipped, value=0x%08x", 
-          (u16)vmcb->cs.sel, (u32)vmcb->rip, g_svm_lapic_reg, value_tobe_written);
+          (u16)vmcb->cs.selector, (u32)vmcb->rip, g_svm_lapic_reg, value_tobe_written);
       }else if( (value_tobe_written & 0x00000F00) == 0x600 ){
         //this is a STARTUP IPI
         u32 icr_value_high = *((u32 *)((u32)g_svm_virtual_LAPIC_base + (u32)LAPIC_ICR_HIGH));
         printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) STARTUP IPI detected, value=0x%08x", 
-          (u16)vmcb->cs.sel, (u32)vmcb->rip, g_svm_lapic_reg, value_tobe_written);
+          (u16)vmcb->cs.selector, (u32)vmcb->rip, g_svm_lapic_reg, value_tobe_written);
 			delink_lapic_interception=processSIPI(vcpu, value_tobe_written, icr_value_high);
       }else{
         //neither an INIT or SIPI, just propagate this IPI to physical LAPIC
@@ -350,13 +350,13 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
   if(delink_lapic_interception){
     printf("\n%s: delinking LAPIC interception since all cores have SIPI", __FUNCTION__);
 		npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
-		vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
+		vmcb->tlb_control = VMCB_TLB_CONTROL_FLUSHALL;
 		//emhf_memprot_arch_x86svm_setprot(vcpu, g_svm_lapic_base, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE);
 		//emhf_memprot_arch_x86svm_flushmappings(vcpu);
 	
   }else{
 	  npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, 0);
-	  vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
+	  vmcb->tlb_control = VMCB_TLB_CONTROL_FLUSHALL;
 	  //emhf_memprot_arch_x86svm_setprot(vcpu, g_svm_lapic_base, MEMP_PROT_NOTPRESENT);
 	  //emhf_memprot_arch_x86svm_flushmappings(vcpu);
   }
@@ -431,7 +431,7 @@ void emhf_smpguest_arch_x86svm_eventhandler_nmiexception(VCPU *vcpu, struct regs
     //this. however, since g_svm_quiesce=1, we can handle this NMI as a g_svm_quiesce NMI
     //and rely on the platform h/w to reissue the NMI later
     printf("\nCPU(0x%02x): NMI for core g_svm_quiesce", vcpu->id);
-    printf("\nCPU(0x%02x): CS:EIP=0x%04x:0x%08x", vcpu->id, (u16)vmcb->cs.sel, (u32)vmcb->rip);
+    printf("\nCPU(0x%02x): CS:EIP=0x%04x:0x%08x", vcpu->id, (u16)vmcb->cs.selector, (u32)vmcb->rip);
   
     printf("\nCPU(0x%02x): quiesced, updating counter. awaiting EOQ...", vcpu->id);
     spin_lock(&g_svm_lock_quiesce_counter);
@@ -452,11 +452,11 @@ void emhf_smpguest_arch_x86svm_eventhandler_nmiexception(VCPU *vcpu, struct regs
     //we are not in quiesce, so simply inject this NMI back to guest
     ASSERT( vcpu->nmiinhvm == 1 );
     printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
-    vmcb->eventinj.fields.vector=0;
-    vmcb->eventinj.fields.type = EVENTTYPE_NMI;
-    vmcb->eventinj.fields.ev=0;
-    vmcb->eventinj.fields.v=1;
-    vmcb->eventinj.fields.errorcode=0;
+    vmcb->eventinj.vector=0;
+    vmcb->eventinj.type = EVENTINJ_TYPE_NMI;
+    vmcb->eventinj.ev=0;
+    vmcb->eventinj.v=1;
+    vmcb->eventinj.errorcode=0;
   }
   
   vcpu->nmiinhvm=0;
@@ -469,7 +469,7 @@ void emhf_smpguest_arch_x86svm_postCPUwakeup(VCPU *vcpu){
 	struct vmcb_struct *vmcb;
 
 	vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr; 
-	vmcb->cs.sel = ((vcpu->sipivector * PAGE_SIZE_4K) >> 4); 
+	vmcb->cs.selector = ((vcpu->sipivector * PAGE_SIZE_4K) >> 4); 
 	vmcb->cs.base = (vcpu->sipivector * PAGE_SIZE_4K); 
 	vmcb->rip = 0x0ULL;
 }

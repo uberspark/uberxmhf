@@ -214,7 +214,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		//ES:DI left untouched, ECX=size returned, EBX=next continuation value
 		//EBX=0 if last descriptor
 		printf("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", vcpu->id, 
-		(u16)vmcb->rax, r->edx, r->ebx, r->ecx, (u16)vmcb->es.sel, (u16)r->edi);
+		(u16)vmcb->rax, r->edx, r->ebx, r->ecx, (u16)vmcb->es.selector, (u16)r->edi);
 		
 		//ASSERT(r->edx == 0x534D4150UL);  //'SMAP' should be specified by guest
 		//ASSERT(r->ebx < rpb->XtVmmE820NumEntries); //invalid continuation value specified by guest!
@@ -333,7 +333,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 	//update VMCB with the CS and IP and let go
 	vmcb->rip = ip;
 	vmcb->cs.base = cs * 16;
-	vmcb->cs.sel = cs;		 
+	vmcb->cs.selector = cs;		 
 }
 
 
@@ -341,7 +341,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
   struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
   
-  vmcb->tlb_control = TLB_CONTROL_NOTHING;
+  vmcb->tlb_control = VMCB_TLB_CONTROL_NOTHING;
 
   //SVM stores guest EAX in VMCB, so move that into struct regs r->eax 
   //to reflect true guest EAX value
@@ -350,25 +350,25 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 
   switch(vmcb->exitcode){
 		//IO interception
-		case VMEXIT_IOIO:{
+		case SVM_VMEXIT_IOIO:{
 			_svm_handle_ioio(vcpu, vmcb, r);
 		}
 		break;
 
 		//MSR interception
-		case VMEXIT_MSR:{
+		case SVM_VMEXIT_MSR:{
 		  _svm_handle_msr(vcpu, vmcb, r);
 		}
 		break;
 
 
 		//Nested Page Fault (NPF)
-		case VMEXIT_NPF:{
+		case SVM_VMEXIT_NPF:{
 		 _svm_handle_npf(vcpu, r);
 		}
 		break;
 
-		case VMEXIT_EXCEPTION_DB:{
+		case SVM_VMEXIT_EXCEPTION_DB:{
 			if(vcpu->isbsp == 1){											//LAPIC SIPI detection only happens on BSP
 				emhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
 			}else{															//TODO: reflect back to guest
@@ -380,9 +380,9 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 		break;
 
 
-		case VMEXIT_INIT:{
+		case SVM_VMEXIT_INIT:{
 		printf("\nCPU(0x%02x): INIT intercepted, halting.", vcpu->id);
-		printf("\nGuest CS:EIP=0x%04x:0x%08x", (u16)vmcb->cs.sel, (u32)vmcb->rip);
+		printf("\nGuest CS:EIP=0x%04x:0x%08x", (u16)vmcb->cs.selector, (u32)vmcb->rip);
 		printf("\nHalting!");
 		HALT();
 			/*{
@@ -401,7 +401,7 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 		break;
 
 
-		case VMEXIT_VMMCALL:{
+		case SVM_VMEXIT_VMMCALL:{
 			//check to see if this is a hypercall for INT 15h hooking
 			if(vmcb->cs.base == (VMX_UG_E820HOOK_CS << 4) &&
 				vmcb->rip == VMX_UG_E820HOOK_IP){
@@ -427,14 +427,14 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 		break;
 
 
-		case VMEXIT_NMI:{
+		case SVM_VMEXIT_NMI:{
 			_svm_handle_nmi(vcpu, vmcb, r);
 		}
 		break;
 
 		default:{
 			printf("\nUnhandled Intercept:0x%08llx", vmcb->exitcode);
-			printf("\n\tCS:EIP=0x%04x:0x%08x", (u16)vmcb->cs.sel, (u32)vmcb->rip);
+			printf("\n\tCS:EIP=0x%04x:0x%08x", (u16)vmcb->cs.selector, (u32)vmcb->rip);
 			printf("\n\tedi:%08x esi:%08x ebp:%08x esp:%08llx",
 				r->edi, r->esi, r->ebp, vmcb->rsp);
 			printf("\n\tebx:%08x edx:%08x ecx:%08x eax:%08llx",
