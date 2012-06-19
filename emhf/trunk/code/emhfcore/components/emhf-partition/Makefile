@@ -31,6 +31,7 @@ all: $(OBJECTS)
 .PHONY: clean 
 clean: 
 	$(RM) -rf *.o
+	$(RM) -rf ./arch/x86/*.o
 	$(RM) -rf ./arch/x86/svm/*.o
 	$(RM) -rf ./arch/x86/vmx/*.o
  

@@ -12,12 +12,6 @@ C_SOURCES += ./arch/x86/vmx/memp-x86vmx-data.c
 C_SOURCES += ./arch/x86/svm/memp-x86svm.c
 C_SOURCES += ./arch/x86/svm/memp-x86svm-data.c
 
-# component sources "excluding" data
-V_SOURCES = memp-interface.c
-V_SOURCES += ./arch/x86/memp-x86.c
-V_SOURCES += ./arch/x86/vmx/memp-x86vmx.c
-V_SOURCES += ./arch/x86/svm/memp-x86svm.c
-
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
@@ -36,8 +30,9 @@ all: $(OBJECTS)
 .PHONY: clean 
 clean: 
 	$(RM) -rf *.o
-	$(RM) -rf ./arch/vmx/*.o
-	$(RM) -rf ./arch/svm/*.o
+	$(RM) -rf ./arch/x86/*.o
+	$(RM) -rf ./arch/x86/vmx/*.o
+	$(RM) -rf ./arch/x86/svm/*.o
  
 	
   
