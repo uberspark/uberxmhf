@@ -80,7 +80,7 @@
  */
 
 /*
- * Modified for EMHF by jonmccune@cmu.edu, 2011.01.04
+ * Modified for XMHF by jonmccune@cmu.edu, 2011.01.04
  */
 
 #ifndef __HASH_H__

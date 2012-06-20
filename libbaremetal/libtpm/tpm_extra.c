@@ -80,7 +80,7 @@
  */
 
 /*
- * Modified for EMHF by jonmccune@cmu.edu, 2011.01.18
+ * Modified for XMHF by jonmccune@cmu.edu, 2011.01.18
  *
  * "Extra" functions unnecessary in SL denoted as such.
  */
