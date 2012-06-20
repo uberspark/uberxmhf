@@ -37,7 +37,7 @@
  */
 
 /**
- * Modified for EMHF to remove cdefs.h requirement.
+ * Modified for XMHF to remove cdefs.h requirement.
  */
 
 #ifndef _MACHINE__TYPES_H_

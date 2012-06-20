@@ -30,7 +30,7 @@
  */
 
 /**
- * Modified for EMHF.
+ * Modified for XMHF.
  */
 
 #ifndef _SYS_LIMITS_H_

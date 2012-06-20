@@ -27,7 +27,7 @@
  */
 
 /**
- * Modified for EMHF.
+ * Modified for XMHF.
  */
 
 #ifndef _SYS_ENDIAN_H_

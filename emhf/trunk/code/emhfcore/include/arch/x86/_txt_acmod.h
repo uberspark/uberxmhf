@@ -81,7 +81,7 @@
  */
 
 /*
- * Modified for EMHF by jonmccune@cmu.edu, 2011.01.04
+ * Modified for XMHF by jonmccune@cmu.edu, 2011.01.04
  *
  * XXX TODO: [Almost?] All of this is only needed in init; pull out of
  * common include directory to reduce SL/Runtime TCB.

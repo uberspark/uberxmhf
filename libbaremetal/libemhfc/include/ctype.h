@@ -35,7 +35,7 @@
  */
 
 /**
- * Modified for EMHF.
+ * Modified for XMHF.
  */
 
 #ifndef _SYS_CTYPE_H_

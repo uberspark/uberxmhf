@@ -80,7 +80,7 @@
  */
 
 /**
- * Modified for EMHF.
+ * Modified for XMHF.
  */
 
 #include <emhf.h> 

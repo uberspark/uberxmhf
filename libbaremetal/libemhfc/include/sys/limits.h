@@ -31,7 +31,7 @@
  */
 
 /**
-  * Modified for EMHF.
+  * Modified for XMHF.
   */
 
 #ifndef _MACHINE_LIMITS_H_

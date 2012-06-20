@@ -31,7 +31,7 @@
  */
 
 /**
- * Modified for EMHF.
+ * Modified for XMHF.
  */
 
 #ifndef _MACHINE_ENDIAN_H_
