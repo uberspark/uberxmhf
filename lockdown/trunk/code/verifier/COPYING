@@ -1,3 +1,13 @@
+Additional (supporting) code for the lockdown verifier comes from other 
+sources as summarized below:
+
+1. LPCUSB, an USB device driver for LPC microcontrollers  (BSD)
+2. LPC ARM processor runtime environment (public-domain with 
+   copyright, see below)
+3. CRC module (public-domain with copyright, see below)
+
+------------------------------------------------------------------------
+
 /*-
 	LPCUSB, an USB device driver for LPC microcontrollers	
 	Copyright (C) 2006 Bertrik Sikken (bertrik@sikken.nl)
