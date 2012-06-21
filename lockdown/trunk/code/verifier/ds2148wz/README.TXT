@@ -1,10 +1,75 @@
+/*
+ * @XMHF_LICENSE_HEADER_START@
+ *
+ * eXtensible, Modular Hypervisor Framework (XMHF)
+ * Copyright (c) 2009-2012 Carnegie Mellon University
+ * Copyright (c) 2010-2012 VDG Inc.
+ * All Rights Reserved.
+ *
+ * Developed by: XMHF Team
+ *               Carnegie Mellon University / CyLab
+ *               VDG Inc.
+ *               http://xmhf.org
+ *
+ * This file is part of the EMHF historical reference
+ * codebase, and is released under the terms of the
+ * GNU General Public License (GPL) version 2.
+ * Please see the LICENSE file for details.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ * @XMHF_LICENSE_HEADER_END@
+ */
+
 Lockdown Verifier Firmware Implementation
+on DS2148WZ ARM development board
 
 Author: Amit Vasudevan (amitvasudevan@acm.org)
-========================================================================
+------------------------------------------------------------------------
 
-Note: Repository pathnames are relative to the top-level Lockdown
-    project repository
+Note: Operating environment for this writing was 
+Ubuntu 10.04/10.10. 
 
+Build and Install Instructions
+==============================
 
-see /trunk/docs/lockdown-verifier-ds2148wz-instructions.txt 
+1. install lpc21isp and ensure it is added to PATH
+   
+2. install GNU ARM toolchain 3.4.3
+	
+   add ./gnuarm-3.4.3/bin to PATH
+   
+3. issue:
+   make
+   
+   if all goes well, you should get ldnverifiermag.hex
+   
+   
+4. locate the "programming jumper" on the dsw2148wz board. this is
+	a black switch just next to the serial port on the verifier with
+	a "Load ->" marked on the board. Flip the switch to the 
+	side of the ->. This will put the bootloader on the board to 
+	"program mode" and will allow you to flash a new firmware.
+
+5. connect the verifier to a USB port and connect the serial port
+   on the verifier to an available COM port on the host
+	
+6. install the firmware 
+   make installfirmware
+   
+   if all goes well, firmware download finished message appears.
+   
+7. switch the "programming jumper" to the opposite direction of
+  the "Load ->" marked on the board.
