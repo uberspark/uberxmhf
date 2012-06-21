@@ -45,13 +45,18 @@ Ubuntu 10.04/10.10.
 Build and Install Instructions
 ==============================
 
-1. install lpc21isp and ensure it is added to PATH
+1. install lpc21isp flash programming utility from:
+   http://sourceforge.net/projects/lpc21isp
+  
+   note: ensure lpc21isp accessible via system PATH
    
-2. install GNU ARM toolchain 3.4.3
+2. install GNU ARM toolchain v3.4.3 from:
+   http://www.gnuarm.com
 	
-   add ./gnuarm-3.4.3/bin to PATH
+   note: ensure gnuarm-3.4.3/bin is in system PATH
    
 3. cd into ds2148wz and issue:
+   
    make
    
    if all goes well, you should get ldnverifiermag.hex
