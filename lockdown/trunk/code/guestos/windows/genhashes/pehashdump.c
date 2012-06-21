@@ -58,6 +58,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "sha1.h"
+
 #define PAGE_SIZE_4K (1UL << 12)
 #define PAGE_ALIGN_4K(size)	((size) & ~(PAGE_SIZE_4K - 1))
 
