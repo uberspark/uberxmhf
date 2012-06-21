@@ -121,9 +121,9 @@ sub dumphashesforfile
 		$section_size = $info[3];
 		$section_fileoffset = $info[4];
 		print "\t", "Full Hashes..." ,"\n";
- 		system("./sha1 $_[0] $section_name $section_vma $section_size $section_fileoffset 0 >> $hlistfull_filename");
+ 		system("./pehashdump $_[0] $section_name $section_vma $section_size $section_fileoffset 0 >> $hlistfull_filename");
 		print "\t", "Partial Hashes..." ,"\n";
-		system("./sha1 $_[0] $section_name $section_vma $section_size $section_fileoffset 1 >> $hlistpart_filename");
+		system("./pehashdump $_[0] $section_name $section_vma $section_size $section_fileoffset 1 >> $hlistpart_filename");
 	}
 
 	return 1;
