@@ -1,4 +1,4 @@
-/**
+/***
  * \file    w5300.c
  * Implementation of W5300 I/O fucntions
  *
