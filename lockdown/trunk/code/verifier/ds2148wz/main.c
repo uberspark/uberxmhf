@@ -167,7 +167,7 @@ uint16 netif_recvnextframe(unsigned char *recvbuf, uint16 length);
 
 
 
-volatile unsigned int	Event; // for timer
+//volatile unsigned int	Event; // for timer
 
 
 #define LF	10
@@ -259,7 +259,7 @@ void magnetron_amberled_off(void){
 #define GreenLed_Off magnetron_greenled_off
 
 
-void msec_delay(unsigned int msecs){
+/*void msec_delay(unsigned int msecs){
 	unsigned int t_msecs=0;
 	while(1){
 		if(Event){
@@ -270,7 +270,8 @@ void msec_delay(unsigned int msecs){
 		if(t_msecs > msecs)
 			break;
 	}
-}
+}*/
+}*/
 
 unsigned int isredon=0;
 //test blink green and red led alternatively
@@ -1043,8 +1044,8 @@ int main(void)
 	printf("Author: Amit Vasudevan (amitvasudevan@acm.org)\n");
 	
 	
-	timerInit();
-	Event=0;
+	//timerInit();
+	//Event=0;
 	
 	InitGPIO();
 	
@@ -1061,9 +1062,9 @@ int main(void)
 	
   ldnverifier_netif_initialize();
 	printf("NETIF initialized.\n");
-  printf("Waiting for switch...\n");
+  /*printf("Waiting for switch...\n");
   msec_delay(5000); //5 second wait
-  printf("Done.\n");  
+  printf("Done.\n");  */
   
 
 #if 0
