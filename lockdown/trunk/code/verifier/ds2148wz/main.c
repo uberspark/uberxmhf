@@ -643,32 +643,6 @@ static BOOL HandleVendorRequest(TSetupPacket *pSetup, int *piLen, U8 **ppbData)
 }
 
 //---crc32 routine--------------------------------------------------------------
-#if 0
-unsigned long crc32_table[256];
-#define CRC32_POLY 0x04c11db7 /* AUTODIN II, Ethernet, & FDDI */
-
-void init_crc32(){
-  int i, j;
-  unsigned long c;
- 
-  for (i = 0; i < 256; ++i) {
-    for (c = i << 24, j = 8; j > 0; --j)
-      c = c & 0x80000000 ? (c << 1) ^ CRC32_POLY : (c << 1);
-   crc32_table[i] = c;
-  }
-}
-
-unsigned long crc32(unsigned char *buf, int len){
-  unsigned char *p;
-  unsigned long crc;
-
-  crc = 0xffffffff; /* preload shift register, per CRC-32 spec */
-  for (p = buf; len > 0; ++p, --len)
-   crc = (crc << 8) ^ crc32_table[(crc >> 24) ^ *p];
-  return ~crc; /* transmit complement, per CRC-32 spec */
-}
-#endif
-
 static unsigned long crc32_tab[] = {
       0x00000000L, 0x77073096L, 0xee0e612cL, 0x990951baL, 0x076dc419L,
       0x706af48fL, 0xe963a535L, 0x9e6495a3L, 0x0edb8832L, 0x79dcb8a4L,
@@ -1068,10 +1042,6 @@ int main(void)
 	printf("Lockdown verifier (Magnetron)...\n");
 	printf("Author: Amit Vasudevan (amitvasudevan@acm.org)\n");
 	
-#if 0	
-  //crc init
-	init_crc32();
-#endif	
 	
 	timerInit();
 	Event=0;
