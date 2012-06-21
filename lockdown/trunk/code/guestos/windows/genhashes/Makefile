@@ -1,8 +1,9 @@
 
-all: sha1 
+all: pehashdump 
 
-sha1: sha1.h sha1.c 
+pehashdump: sha1.h pehashdump.c 
 	$(CC) $(HOSTCFLAGS) -I. $@.c -o $@ 
 
 clean:
-	$(RM) -f sha1.exe
+	$(RM) -rf *.o
+	$(RM) -rf pehashdump
