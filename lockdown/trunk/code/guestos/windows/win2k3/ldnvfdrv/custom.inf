@@ -25,7 +25,7 @@ HKR,,Icon,,"-20"
 ;--------------------------------------------------------------------------
 
 [SourceDisksNames]
-1 = "Libusb-Win32 Driver Installation Disk",,
+1 = "Libusb-Win32 (Lockdown Verifier) Driver Installation Disk",,
 
 [SourceDisksFiles]
 libusb0.sys = 1,,
@@ -73,7 +73,7 @@ HKR,,"LowerFilters"
 ;--------------------------------------------------------------------------
 
 [LIBUSB.AddService]
-DisplayName    = "LibUsb-Win32 - Kernel Driver 03/09/2005, 0.1.10.1"
+DisplayName    = "LibUsb-Win32 (Lockdown Verifier) - Kernel Driver 03/09/2005, 0.1.10.1"
 ServiceType    = 1
 StartType      = 3
 ErrorControl   = 0
