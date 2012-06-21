@@ -8,6 +8,7 @@
  *
  * Tom St Denis, tomstdenis@gmail.com, http://libtom.org
  */
+#include "tomcrypt_custom.h"
 #include "tomcrypt.h"
 
 /**

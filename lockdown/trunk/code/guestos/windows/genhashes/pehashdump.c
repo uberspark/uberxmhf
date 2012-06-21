@@ -59,6 +59,8 @@
 #include <unistd.h>
 
 #include "sha1.h"
+#include "tomcrypt_custom.h"
+#include "tomcrypt.h"
 
 #define PAGE_SIZE_4K (1UL << 12)
 #define PAGE_ALIGN_4K(size)	((size) & ~(PAGE_SIZE_4K - 1))
@@ -126,8 +128,11 @@ int sha1_section(char *filename, char *section_name, unsigned long int section_v
 	unsigned char *shabuf;
   unsigned char sha1sum[20];
   int ret;
-  sha1_context ctx;
-	
+//  sha1_context ctx;
+  int rv=0;
+  hash_state hs;
+  
+
 	
 	fp=fopen(filename, "rb");
 	if(!fp){
@@ -167,9 +172,13 @@ int sha1_section(char *filename, char *section_name, unsigned long int section_v
         return 0;
     }
   
-    sha1_starts(&ctx);
-    sha1_update(&ctx, shabuf, i_size2);
-    sha1_finish(&ctx, sha1sum);
+    //sha1_starts(&ctx);
+    //sha1_update(&ctx, shabuf, i_size2);
+    //sha1_finish(&ctx, sha1sum);
+    rv = sha1_init( &hs);
+    rv = sha1_process( &hs, shabuf, i_size2);
+    rv = sha1_done( &hs, sha1sum);
+
 		
 		sha1_section_print(filename,
 		section_name,

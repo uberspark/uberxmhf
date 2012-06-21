@@ -53,7 +53,5 @@
 int sha1_buffer(const unsigned char *buffer, size_t len,
                 unsigned char md[SHA_DIGEST_LENGTH]);
 
-// utility function to perform a SHA-1 hash and print result 
-void hashandprint(const char* prefix, const u8 *bytes, size_t len);
 
 #endif /* __SHA1_H__ */
