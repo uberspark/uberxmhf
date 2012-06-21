@@ -11,10 +11,21 @@
  *               VDG Inc.
  *               http://xmhf.org
  *
- * This file is part of the EMHF historical reference
- * codebase, and is released under the terms of the
- * GNU General Public License (GPL) version 2.
- * Please see the LICENSE file for details.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in
+ * the documentation and/or other materials provided with the
+ * distribution.
+ *
+ * Neither the names of Carnegie Mellon or VDG Inc, nor the names of
+ * its contributors may be used to endorse or promote products derived
+ * from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
  * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
@@ -291,66 +302,3 @@ void ACPIInitializeRegisters(void){
 
 }
 
-/*
-//------------------------------------------------------------------------------
-u32 _ACPIGetRSDPComputeChecksum(u32 spaddr, u32 size){
-  char *p;
-  char checksum=0;
-  u32 i;
-
-  p=(char *)spaddr;
-  
-  for(i=0; i< size; i++)
-    checksum+= (char)(*(p+i));
-  
-  return (u32)checksum;
-}
-
-//get the physical address of the root system description pointer (rsdp)
-//return 0 if not found
-ACPI_RSDP * ACPIGetRSDP(void){
-  u16 ebdaseg;
-  u32 ebdaphys;
-  u32 i, found=0;
-  ACPI_RSDP *rsdp;
-  
-  //get EBDA segment from 040E:0000h in BIOS data area
-  ebdaseg= * ((u16 *)0x0000040E);
-  //convert it to its 32-bit physical address
-  ebdaphys=(u32)(ebdaseg * 16);
-  //search first 1KB of ebda for rsdp signature (8 bytes long)
-  for(i=0; i < (1024-8); i+=16){
-    rsdp=(ACPI_RSDP *)(ebdaphys+i);
-    if(rsdp->signature == ACPI_RSDP_SIGNATURE){
-      if(!_ACPIGetRSDPComputeChecksum((u32)rsdp, 20)){
-        found=1;
-        break;
-      }
-    }
-  }
-  
-  if(found)
-    return rsdp;
-  
-  //search within BIOS areas 0xE0000 to 0xFFFFF
-  for(i=0xE0000; i < (0xFFFFF-8); i+=16){
-    rsdp=(ACPI_RSDP *)i;
-    if(rsdp->signature == ACPI_RSDP_SIGNATURE){
-      if(!_ACPIGetRSDPComputeChecksum((u32)rsdp, 20)){
-        found=1;
-        break;
-      }
-    }
-  }
-
-  if(found)
-    return rsdp;
-  
-  return (ACPI_RSDP *)NULL;  
-}*/
-//------------------------------------------------------------------------------
-
-//non-zero is success, else no ACPI
-//u32 ACPIIsSystemACPI(void){
-//	return(ACPIGetRSDP());
-//}

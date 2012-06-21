@@ -1,4 +1,4 @@
-/**
+/***
  * \file    socket.c
  *   Implemetation of WIZnet SOCKET API fucntions
  *

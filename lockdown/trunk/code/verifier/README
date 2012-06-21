@@ -44,34 +44,48 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// Advanced Configuration and Power-management Interface (ACPI) definitions
-// author: amit vasudevan (amitvasudevan@acm.org)
+Lockdown Verifier Firmware Implementation
+on DS2148WZ ARM development board
 
-#ifndef __LOCKDOWN_ACPI_H__
-#define __LOCKDOWN_ACPI_H__
+Author: Amit Vasudevan (amitvasudevan@acm.org)
+------------------------------------------------------------------------
 
-#ifndef __ASSEMBLY__
+Note: Operating environment for this writing was 
+Ubuntu 10.04/10.10. 
 
-extern u64 __PM1a_STS, __PM1a_EN, __PM1b_STS, __PM1b_EN;
-extern u64 __PM1_CNTa, __PM1_CNTb;
-extern u32 __PM1a_STS_size, __PM1a_EN_size, __PM1b_STS_size, __PM1b_EN_size;
-extern u32 __PM1_CNTa_size, __PM1_CNTb_size;
+Build and Install Instructions
+==============================
 
-#define PM1a_STS			__PM1a_STS
-#define PM1a_STS_SIZE	__PM1a_STS_size
-#define PM1a_EN				__PM1a_EN
-#define PM1a_EN_SIZE	__PM1a_EN_size
-#define PM1b_STS			__PM1b_STS
-#define PM1b_STS_SIZE	__PM1b_STS_size
-#define PM1b_EN				__PM1b_EN
-#define PM1b_EN_SIZE	__PM1b_EN_size
-#define PM1_CNTa			__PM1_CNTa
-#define PM1_CNTa_SIZE	__PM1_CNTa_size
-#define PM1_CNTb			__PM1_CNTb
-#define PM1_CNTb_SIZE	__PM1_CNTb_size
+1. install lpc21isp flash programming utility from:
+   http://sourceforge.net/projects/lpc21isp
+  
+   note: ensure lpc21isp accessible via system PATH
+   
+2. install GNU ARM toolchain v3.4.3 from:
+   http://www.gnuarm.com
+	
+   note: ensure gnuarm-3.4.3/bin is in system PATH
+   
+3. cd into ds2148wz and issue:
+   
+   make
+   
+   if all goes well, you should get ldnverifiermag.hex
+   
+   
+4. locate the "programming jumper" on the dsw2148wz board. this is
+	a black switch just next to the serial port on the verifier with
+	a "Load ->" marked on the board. Flip the switch to the 
+	side of the ->. This will put the bootloader on the board to 
+	"program mode" and will allow you to flash a new firmware.
 
-void ACPIInitializeRegisters(void);
-
-#endif //__ASSEMBLY__
-
-#endif //__LOCKDOWN_ACPI_H__
+5. connect the verifier to a USB port and connect the serial port
+   on the verifier to an available COM port on the host
+	
+6. install the firmware 
+   make installfirmware
+   
+   if all goes well, firmware download finished message appears.
+   
+7. switch the "programming jumper" to the opposite direction of
+  the "Load ->" marked on the board.

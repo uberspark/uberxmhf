@@ -1,8 +1,9 @@
 
-all: sha1 
+all: pehashdump 
 
-sha1: sha1.h sha1.c 
-	$(CC) $(HOSTCFLAGS) -I. $@.c -o $@ 
+pehashdump: sha1.h pehashdump.c sha1.c 
+	$(CC) $(HOSTCFLAGS) -I. -I../../../../../../tools/libtomcrypt-1.17/src/headers/ pehashdump.c sha1.c -o pehashdump
 
 clean:
-	$(RM) -f sha1.exe
+	$(RM) -rf *.o
+	$(RM) -rf pehashdump

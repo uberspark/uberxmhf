@@ -11,10 +11,21 @@
  *               VDG Inc.
  *               http://xmhf.org
  *
- * This file is part of the EMHF historical reference
- * codebase, and is released under the terms of the
- * GNU General Public License (GPL) version 2.
- * Please see the LICENSE file for details.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in
+ * the documentation and/or other materials provided with the
+ * distribution.
+ *
+ * Neither the names of Carnegie Mellon or VDG Inc, nor the names of
+ * its contributors may be used to endorse or promote products derived
+ * from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
  * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
@@ -76,7 +87,7 @@ u32 windows_getpcvirtualaddress(VCPU *vcpu){
 #define SCANMZPE_MAXPEHEADEROFFSET	0x300								//maximum distance we go until 
 																		//we find a PE from a MZ
 u32 windows_scanmzpe(VCPU *vcpu, u32 vaddr, 
-	IMAGE_NT_HEADERS32 **storeNtHeader){
+	image_nt_headers32_t **storeNtHeader){
 	
 	u32 paligned_vaddr;
 	u32 start_addr;
@@ -84,9 +95,9 @@ u32 windows_scanmzpe(VCPU *vcpu, u32 vaddr,
 
 	u32 i_addr;
 
-	IMAGE_DOS_HEADER *dosHeader;
+	image_dos_header_t *dosHeader;
 	u32 dosHeader_paddr;
-	IMAGE_NT_HEADERS32 *ntHeader;
+	image_nt_headers32_t *ntHeader;
 	u32 ntHeader_paddr;
 
 	(void)storeNtHeader;
@@ -110,8 +121,8 @@ u32 windows_scanmzpe(VCPU *vcpu, u32 vaddr,
 	//search for a valid PE header in the virtual range computed
 	for(i_addr=start_addr; i_addr < end_addr; i_addr+=PAGE_SIZE_4K){
 		dosHeader_paddr = windows_getphysicaladdress(vcpu, i_addr);
-		if(dosHeader_paddr > 0x00100000 && dosHeader_paddr < (LDN_ENV_PHYSICALMEMORYLIMIT - sizeof(IMAGE_DOS_HEADER) - 1)){
-			dosHeader=(IMAGE_DOS_HEADER *)gpa2hva(dosHeader_paddr);
+		if(dosHeader_paddr > 0x00100000 && dosHeader_paddr < (LDN_ENV_PHYSICALMEMORYLIMIT - sizeof(image_dos_header_t) - 1)){
+			dosHeader=(image_dos_header_t *)gpa2hva(dosHeader_paddr);
 			
 			if((u16)dosHeader->e_magic == (u16)IMAGE_DOS_SIGNATURE){
 				//printf("\nprobable dos header at: 0x%08X, e_lfanew=0x%08X", i_addr, dosHeader->e_lfanew);
@@ -119,10 +130,10 @@ u32 windows_scanmzpe(VCPU *vcpu, u32 vaddr,
 					ntHeader_paddr = windows_getphysicaladdress(vcpu, i_addr + (u32)dosHeader->e_lfanew);
 					
 					if(ntHeader_paddr > 0x00100000 && ntHeader_paddr < LDN_ENV_PHYSICALMEMORYLIMIT){
-						ntHeader= (IMAGE_NT_HEADERS32 *)gpa2hva(ntHeader_paddr);
+						ntHeader= (image_nt_headers32_t *)gpa2hva(ntHeader_paddr);
 						
 						//sanity check: check if complete NT Headers is within the physical page
-						//if( (u32)dosHeader->e_lfanew + sizeof(IMAGE_NT_HEADERS32) > 4096)
+						//if( (u32)dosHeader->e_lfanew + sizeof(image_nt_headers32_t) > 4096)
 							//printf("\nNT Headers are not contained within a single physical page..may get undefined behavior");
 						
 						if(ntHeader->Signature == IMAGE_NT_SIGNATURE){
@@ -154,7 +165,7 @@ u32 windows_scanmzpe(VCPU *vcpu, u32 vaddr,
 typedef struct {
 	u32 offset : 12;
 	u32 type : 4;
-} RELOCTYPEOFFSET;
+} reloctypeoffset_t;
 
 #define MAX_RELOCATIONINFOSIZE	(0x20000)
 u8 relocationInfo[MAX_RELOCATIONINFOSIZE];
@@ -218,22 +229,22 @@ u32 windows_getrelocsection(VCPU *vcpu, u32 reloc_section_va, u32 reloc_section_
 u8 unrelocateBuffer[PAGE_SIZE_4K * 3];
 
 u32 windows_unrelocatepage_processrelocations(VCPU *vcpu, u32 imagebase, u32 originalimagebase,
-	void *page, IMAGE_BASE_RELOCATION *relocEntry, u8 *relocEntry_relocInfo){
+	void *page, image_base_relocation_t *relocEntry, u8 *relocEntry_relocInfo){
 	
 	u32 i;
-	RELOCTYPEOFFSET *relocTypeOffsets;
+	reloctypeoffset_t *relocTypeOffsets;
 	u32 relocvalue, *relocaddr;
 	
 	(void)vcpu;
 	
 	for(i=0; i < ((relocEntry->SizeOfBlock-8)/sizeof(unsigned short int)); i++){
-		relocTypeOffsets = (RELOCTYPEOFFSET *)( (u8 *)relocEntry_relocInfo + (i*2));
+		relocTypeOffsets = (reloctypeoffset_t *)( (u8 *)relocEntry_relocInfo + (i*2));
 		//if(vaddr == 0x8084d426)
 		//	AX_DEBUG(("\nEntry %u: Type=%x, Offset=%x", i, relocTypeOffsets->type, relocTypeOffsets->offset));
 		
 		if(relocTypeOffsets->type == 3){
 			relocvalue=	imagebase-originalimagebase;
-			relocaddr = (u32 *)( (ULONG)page + relocTypeOffsets->offset);
+			relocaddr = (u32 *)( (u32)page + relocTypeOffsets->offset);
 			//if(vaddr == 0x8084d426)
 			//	AX_DEBUG(("\nrelocaddr value, before=0x%08x,", *relocaddr));
 			*relocaddr -= relocvalue;	//relocvalue would have been added to relocaddr to perform the reloc, we thus subtract to perform unrelc
@@ -253,11 +264,11 @@ u32 windows_unrelocatepage_processrelocations(VCPU *vcpu, u32 imagebase, u32 ori
 
 
 //return 0 on error, 1 on success
-//u32 windows_unrelocatepage(IMAGE_NT_HEADERS32 *ntHeader, u32 imagebase, u32 vaddr, void *inputPage, void *outputPage){
-u32 windows_unrelocatepage(VCPU *vcpu, IMAGE_NT_HEADERS32 *ntHeader, u32 imagebase, u32 vaddr, void *inputPagePrevious, void *inputPage, void *inputPageNext, void *outputPage){
-	IMAGE_BASE_RELOCATION *relocEntry;
-	IMAGE_BASE_RELOCATION	*relocEntryPrevious=NULL;
-	IMAGE_BASE_RELOCATION *relocEntryNext=NULL;
+//u32 windows_unrelocatepage(image_nt_headers32_t *ntHeader, u32 imagebase, u32 vaddr, void *inputPage, void *outputPage){
+u32 windows_unrelocatepage(VCPU *vcpu, image_nt_headers32_t *ntHeader, u32 imagebase, u32 vaddr, void *inputPagePrevious, void *inputPage, void *inputPageNext, void *outputPage){
+	image_base_relocation_t *relocEntry;
+	image_base_relocation_t	*relocEntryPrevious=NULL;
+	image_base_relocation_t *relocEntryNext=NULL;
 	u8 *relocEntry_relocInfo=NULL;
 	u8 *relocEntryPrevious_relocInfo=NULL;
 	u8 *relocEntryNext_relocInfo=NULL;
@@ -271,7 +282,7 @@ u32 windows_unrelocatepage(VCPU *vcpu, IMAGE_NT_HEADERS32 *ntHeader, u32 imageba
 	//u32 prevpage_paddr;
 
 	u32 i;
-	RELOCTYPEOFFSET *relocTypeOffsets;
+	reloctypeoffset_t *relocTypeOffsets;
 	u32 needPreviousPage=0, needNextPage=0;
 	
 	AX_DEBUG(("\n windows_unrelocatepage: imagebase=0x%08x, vaddr=0x%08x, paligned=0x%08x", imagebase, vaddr, paligned_vaddr));
@@ -303,7 +314,7 @@ u32 windows_unrelocatepage(VCPU *vcpu, IMAGE_NT_HEADERS32 *ntHeader, u32 imageba
 	//get base reloc entries for inputPage, inputPagePrevious and inputPageNext
 	//what we know from the PECOFF spec is relocEntry->VirtualAddress is always page-aligned 
 	//what we know from the Windows Loader is imagebase is always page-aligned
-	relocEntry = (IMAGE_BASE_RELOCATION *)relocationInfo;
+	relocEntry = (image_base_relocation_t *)relocationInfo;
 	relocEntry_relocInfo = (u8 *)((u8 *)relocationInfo + 8);
 	while(current_size < reloc_size){
 		if(relocEntry->SizeOfBlock == 0){
@@ -323,7 +334,7 @@ u32 windows_unrelocatepage(VCPU *vcpu, IMAGE_NT_HEADERS32 *ntHeader, u32 imageba
 
 			current_size+=relocEntry->SizeOfBlock;
 			if(current_size < reloc_size){
-				relocEntryNext = (IMAGE_BASE_RELOCATION *)( (u8 *)relocationInfo + current_size);
+				relocEntryNext = (image_base_relocation_t *)( (u8 *)relocationInfo + current_size);
 				if(relocEntryNext->SizeOfBlock){
 					relocEntryNext_relocInfo = (u8 *) ((u8 *)relocationInfo + current_size + 8);
 				}else{
@@ -342,7 +353,7 @@ u32 windows_unrelocatepage(VCPU *vcpu, IMAGE_NT_HEADERS32 *ntHeader, u32 imageba
 		relocEntryPrevious = relocEntry;
 		relocEntryPrevious_relocInfo = relocEntry_relocInfo;
 		current_size+=relocEntry->SizeOfBlock;
-		relocEntry = (IMAGE_BASE_RELOCATION *)( (u8 *)relocationInfo + current_size);
+		relocEntry = (image_base_relocation_t *)( (u8 *)relocationInfo + current_size);
 		relocEntry_relocInfo = (u8 *) ((u8 *)relocationInfo + current_size + 8);
 	}
 	
@@ -367,7 +378,7 @@ u32 windows_unrelocatepage(VCPU *vcpu, IMAGE_NT_HEADERS32 *ntHeader, u32 imageba
 	//determine if we need the previous page to perform a successful unrelocation
 	if(relocEntryPrevious){
 		for(i=0; i < ((relocEntryPrevious->SizeOfBlock-8)/sizeof(unsigned short int)); i++){
-			relocTypeOffsets = (RELOCTYPEOFFSET *)( (u8 *)relocEntryPrevious_relocInfo + (i*2));
+			relocTypeOffsets = (reloctypeoffset_t *)( (u8 *)relocEntryPrevious_relocInfo + (i*2));
 			if(((u32)relocTypeOffsets->offset + 4) >= PAGE_SIZE_4K){
 				needPreviousPage=1;
 				break;
@@ -391,7 +402,7 @@ u32 windows_unrelocatepage(VCPU *vcpu, IMAGE_NT_HEADERS32 *ntHeader, u32 imageba
 	//determine if we need the next page to perform a successful unrelocation
 	if(relocEntryNext){
 		for(i=0; i < ((relocEntryNext->SizeOfBlock-8)/sizeof(unsigned short int)); i++){
-			relocTypeOffsets = (RELOCTYPEOFFSET *)( (u8 *)relocEntryNext_relocInfo + (i*2));
+			relocTypeOffsets = (reloctypeoffset_t *)( (u8 *)relocEntryNext_relocInfo + (i*2));
 			if(((u32)relocTypeOffsets->offset + 4) >= PAGE_SIZE_4K){
 				needNextPage=1;
 				break;
@@ -452,7 +463,7 @@ u32 windows_verifycodeintegrity(VCPU *vcpu, u32 paddr, u32 vaddrfromcpu){
 	u32 vaddr, paligned_vaddr;
 	u32 imagebase, retval;
 	//u8 *p;	
-	IMAGE_NT_HEADERS32 *ntHeader;
+	image_nt_headers32_t *ntHeader;
 	//int i;
 	u32 paligned_paddr;
 

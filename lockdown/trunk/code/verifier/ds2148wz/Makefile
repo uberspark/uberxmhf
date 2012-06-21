@@ -20,11 +20,8 @@ TARGET = ldnverifiermag
 # List C source files here. (C dependencies are automatically generated.)
 # use file-extension c for "c-only"-files
 SRC  = main.c
-# SRC = main_custom.c 
 SRC += startup.c
 SRC += console.c
-SRC += printf.c
-SRC += timerC.c
 SRC += usbcontrol.c
 SRC += usbhw_lpc.c
 SRC += usbinit.c
