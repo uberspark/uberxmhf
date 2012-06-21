@@ -51,7 +51,7 @@ Build and Install Instructions
 	
    add ./gnuarm-3.4.3/bin to PATH
    
-3. issue:
+3. cd into ds2148wz and issue:
    make
    
    if all goes well, you should get ldnverifiermag.hex
