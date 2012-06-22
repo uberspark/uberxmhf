@@ -6,15 +6,17 @@
 !include <Win32.Mak>
 
 OUTDIR = .
-# LDNVFCTL_INSTALLDIR = e:\vpcvms\sharedfolder
-LDNVFCTL_INSTALLDIR = c:\ldnvf
-
-# the ssl protocol analyzer 
-# global variables
+LDNVFCTL_INSTALLDIR = c:\ldnvfctl
 SSLPA_ROOT= $(OUTDIR)\sslpa
-WINPCAP_DEV_DIR=$(SSLPA_ROOT)\win32\WPdpack
-WINPCAP_SRC_DIR=$(SSLPA_ROOT)\win32\winpcap
-WINPCAP_LIB_DIR=$(SSLPA_ROOT)\win32\wpcaplibs\WpdPack
+
+########################################################################
+# external dependencies
+########################################################################
+SSLDUMP_SRC_DIR=c:\ssldump
+WINPCAP_DEV_DIR=$(SSLDUMP_SRC_DIR)\win32\WPdpack
+WINPCAP_SRC_DIR=$(SSLDUMP_SRC_DIR)\win32\winpcap
+WINPCAP_LIB_DIR=$(SSLDUMP_SRC_DIR)\win32\wpcaplibs\WpdPack
+########################################################################
 
 
 # include dependencies
