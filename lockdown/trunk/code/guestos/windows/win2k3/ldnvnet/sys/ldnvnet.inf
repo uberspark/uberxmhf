@@ -92,7 +92,7 @@ ldnvnet.CopyFiles = 12
 ; Localizable Strings
 ;
 [Strings]
-Msft                       = "NoFuss Inc."                      
+Msft                       = "Lockdown"                      
 ldnvnet.DeviceDesc        = "LockDown Virtual Ethernet Adapter"
 ldnvnet.Service.DispName    = "LockDown Virtual Ethernet Adapter Driver"
 DiskId1 = "LockDown Virtual Ethernet Adapter Driver Installation Disk #1"

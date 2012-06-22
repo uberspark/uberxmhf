@@ -1,10 +1,11 @@
+# Makefile for cygwin environments to build the 
+# lockdown birtual network adapter driver
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 #external scripts
 BUILD_SCRIPT = mksys.bat
 
-# export DRV_INSTALL_DIR := /cygdrive/e/vpcvms/sharedfolder
-export DRV_INSTALL_DIR := /cygdrive/c/ldnvf
+export DRV_INSTALL_DIR := .
  
 
 # targets
@@ -15,7 +16,6 @@ all:
 	cp ./sys/objchk_wnet_x86/i386/ldnvnet.pdb $(DRV_INSTALL_DIR)/ldnvnet.pdb
 	cp ./sys/ldnvnet.inf $(DRV_INSTALL_DIR)/ldnvnet.inf
 	
-
 
 .PHONY: clean 
 clean: 
