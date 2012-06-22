@@ -66,3 +66,9 @@ Microsoft Platform SDK and Visual Studio (Express)
    the directory where you unpacked WinPcap sources
    (e.g., c:\winpcap)
 
+5. Download and unpack libusb-win32 binaries from:
+	http://libusb-win32.sourceforge.net
+ 
+6. Set variable LIBUSB_WIN32_DIR in Makefile to
+   the directory where you unpacked libusb-win32 binaries
+   (e.g., c:\libusb-win32-device-bin-0.1.12.1)	
