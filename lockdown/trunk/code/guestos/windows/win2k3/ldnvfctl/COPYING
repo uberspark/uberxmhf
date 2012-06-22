@@ -1,4 +1,4 @@
-Third-party libraries we "link" against:
+Third-party libraries we "dynamically link" against:
 
 1. WinPcap (wpcap.lib) (http://www.winpcap.org/) - BSD
 
