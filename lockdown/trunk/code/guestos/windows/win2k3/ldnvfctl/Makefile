@@ -6,15 +6,19 @@
 !include <Win32.Mak>
 
 OUTDIR = .
-# LDNVFCTL_INSTALLDIR = e:\vpcvms\sharedfolder
-LDNVFCTL_INSTALLDIR = c:\ldnvf
-
-# the ssl protocol analyzer 
-# global variables
+LDNVFCTL_INSTALLDIR = c:\ldnvfctl
 SSLPA_ROOT= $(OUTDIR)\sslpa
-WINPCAP_DEV_DIR=$(SSLPA_ROOT)\win32\WPdpack
-WINPCAP_SRC_DIR=$(SSLPA_ROOT)\win32\winpcap
-WINPCAP_LIB_DIR=$(SSLPA_ROOT)\win32\wpcaplibs\WpdPack
+
+########################################################################
+# external dependencies
+########################################################################
+# Windows PCAP developers pack and sources (BSD)
+WINPCAP_DEV_DIR=c:\WPdpack
+WINPCAP_SRC_DIR=c:\winpcap
+WINPCAP_LIB_DIR=$(WINPCAP_DEV_DIR)\lib
+# Libusb (LGPLv2.1)
+LIBUSB_WIN32_DIR=c:\libusb-win32-device-bin-0.1.12.1
+########################################################################
 
 
 # include dependencies
@@ -44,7 +48,7 @@ SSLPA_CFLAGS = /MT /nologo /W3 $(SSLPA_INCLUDES) $(SSLPA_DEFINES) /c
 
 
 # ldnvfctl include paths
-LDNVFCTL_INCLUDES = /I..\ldnvnet\sys /I.\libusb-win32-device-bin-0.1.12.1\include 
+LDNVFCTL_INCLUDES = /I..\ldnvnet\sys /I$(LIBUSB_WIN32_DIR)\include 
 
 all: $(OUTDIR) $(OUTDIR)\ldnvfctl.exe 
 
@@ -104,7 +108,7 @@ sslpa_linkobjs = $(OUTDIR)\network.obj \
 
 $(OUTDIR)\ldnvfctl.exe: $(ldnvfctl_objs) $(sslpa_objs)
     $(link) $(ldebug) $(conlflags) $(ldnvfctl_objs) $(sslpa_linkobjs)\
-    -out:$(OUTDIR)\ldnvfctl.exe  $(conlibsmt) $(SSLPA_LIBS) advapi32.lib kernel32.lib powrprof.lib .\libusb-win32-device-bin-0.1.12.1\lib\msvc\libusb.lib
+    -out:$(OUTDIR)\ldnvfctl.exe  $(conlibsmt) $(SSLPA_LIBS) advapi32.lib kernel32.lib powrprof.lib $(LIBUSB_WIN32_DIR)\lib\msvc\libusb.lib
 #		copy $(OUTDIR)\ldnvfctl.exe $(LDNVFCTL_INSTALLDIR)\.
 #		copy .\libusb-win32-device-bin-0.1.12.1\bin\libusb0.dll $(LDNVFCTL_INSTALLDIR)\. 
 

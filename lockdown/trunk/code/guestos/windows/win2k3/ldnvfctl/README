@@ -44,21 +44,31 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-Lockdown Verifier Windows Driver Installation
-
+Lockdown Monitor Application
 Author: Amit Vasudevan (amitvasudevan@acm.org)
-------------------------------------------------------------------------
 
-We use the libusb-win32 USB driver within Windows for the Lockdown Verifier.
+Build Requirements: 
+Microsoft Platform SDK and Visual Studio (Express)
 
+1. Download and unpack WinPcap Developer's pack from:
+	http://www.winpcap.org/devel.htm
+   (version as of this writing was 4.1.2)
 
-1. Download and unpack libusb-win32 binaries from:
+2. Set variable WINPCAP_DEV_DIR in Makefile to
+   the directory where you unpacked WinPcap Developer's pack
+   (e.g., c:\Wpdpack)
+   
+3. Download and unpack WinPcap sources from:
+	http://www.winpcap.org/devel.htm
+   (version as of this writing was 4.1.2)   
+
+4. Set variable WINPCAP_SRC_DIR in Makefile to
+   the directory where you unpacked WinPcap sources
+   (e.g., c:\winpcap)
+
+5. Download and unpack libusb-win32 binaries from:
 	http://libusb-win32.sourceforge.net
-
-2. Copy libusb0.dll and libusb0.sys redistributables to the same
-folder as ldnvfdrv.inf. 
-
-3. Plug in the Lockdown Verifier and when prompted for the device
-driver installation .inf, select ldnvfdrv.inf. 
-
-This will enable access to the Lockdown Verifier from within Windows
+ 
+6. Set variable LIBUSB_WIN32_DIR in Makefile to
+   the directory where you unpacked libusb-win32 binaries
+   (e.g., c:\libusb-win32-device-bin-0.1.12.1)	
