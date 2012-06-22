@@ -12,10 +12,10 @@ SSLPA_ROOT= $(OUTDIR)\sslpa
 ########################################################################
 # external dependencies
 ########################################################################
-SSLDUMP_SRC_DIR=c:\ssldump
-WINPCAP_DEV_DIR=$(SSLDUMP_SRC_DIR)\win32\WPdpack
-WINPCAP_SRC_DIR=$(SSLDUMP_SRC_DIR)\win32\winpcap
-WINPCAP_LIB_DIR=$(SSLDUMP_SRC_DIR)\win32\wpcaplibs\WpdPack
+# Windows PCAP developers pack and sources (BSD)
+WINPCAP_DEV_DIR=c:\WPdpack
+WINPCAP_SRC_DIR=c:\winpcap
+WINPCAP_LIB_DIR=$(WINPCAP_DEV_DIR)\lib
 ########################################################################
 
 
