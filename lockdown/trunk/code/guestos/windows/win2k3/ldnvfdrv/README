@@ -49,10 +49,11 @@ Lockdown Verifier Windows Driver Installation
 Author: Amit Vasudevan (amitvasudevan@acm.org)
 ------------------------------------------------------------------------
 
-We use the Libusb USB driver within Windows for the Lockdown Verifier.
+We use the libusb-win32 USB driver within Windows for the Lockdown Verifier.
 
 
-1. Download and unpack libusb from http://libusb.org
+1. Download and unpack libusb-win32 binaries from:
+	http://libusb-win32.sourceforge.net
 
 2. Copy libusb0.dll and libusb0.sys redistributables to the same
 folder as ldnvfdrv.inf. 
