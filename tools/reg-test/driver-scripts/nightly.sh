@@ -74,7 +74,7 @@ fi
 ## 2. Copy the hypervisor files to all the test hosts' /boot's
 
 # TODO: Centralize all path settings
-EMHF_RELPATH=../../../emhf/trunk/code
+EMHF_RELPATH=../../../xmhf/src
 if [ ! -d "$EMHF_RELPATH" ]; then
     echo -e "\nERROR: EMHF_RELPATH $EMHF_RELPATH DOES NOT EXIST; ABORTING REMAINING REGRESSION TESTING!!!\n" >> $BUILD_LOG
     email_logs $BUILD_LOG
@@ -117,7 +117,7 @@ popd
 ## 4. Copy test PAL into place
 ## TODO: Get more PALs!!!
 ## TODO: Bundle PALs into tests.tgz
-TEST_PAL_PATH=../../../tee-sdk/trunk/examples/test/test
+TEST_PAL_PATH=../../../tee-sdk/examples/test/test
 if [ ! -e $TEST_PAL_PATH ]; then
     echo -e "\nERROR: TEST PAL $TEST_PAL_PATH DOES NOT EXIST; ABORTING REMAINING REGRESSION TESTING!!!\n" >> $BUILD_LOG
     email_logs $BUILD_LOG
