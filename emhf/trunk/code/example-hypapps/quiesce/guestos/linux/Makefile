@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-# Makefile for quiesce EMHF hyperapp - guest OS control
+# Makefile for quiesce XMHF hypapp - guest OS control
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # target arch: valid values are x86svm and x86vmx

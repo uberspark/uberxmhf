@@ -1,9 +1,9 @@
 #-------------------------------------------------------------------------------
-# Makefile for EMHF apps
+# Makefile for XMHF apps
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # change this to whatever you want your EMHF app to be called
-export TARGET_ARCHIVE = ../emhfapp_quiesce.a
+export TARGET_ARCHIVE = ../xmhfapp_quiesce.a
 
 # generate app INCLUDE and OBJECT directories
 export APP_INCLUDEDIR = $(CURDIR)/app/include
@@ -51,7 +51,7 @@ all:
 	mkdir -p $(APPOBJECTSDIR)
 	cd app && $(MAKE) -w all
 
-# There is no binary installation; only the EMHF core
+# There is no binary installation; only the XMHF core
 # produces a complete binary of some sort.  All libraries
 # are at the root level as well.
 .PHONY: install

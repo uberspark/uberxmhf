@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-# makefile for EMHF apps
+# makefile for XMHF apps
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files

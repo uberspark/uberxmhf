@@ -45,44 +45,27 @@
  */
 
 // appmain.c
-// emhf application main module
+// xmhf application main module
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <emhf.h>
 
-#define	QUIESCE_HYPERCALL		0x44550002
-
 // application main
 u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
   (void)apb;	//unused
-  printf("\nCPU(0x%02x): Hello world from Quiesce EMHF hyperapp!", vcpu->id);
+  printf("\nCPU(0x%02x): Hello world from XMHF hyperapp!", vcpu->id);
   return APP_INIT_SUCCESS;  //successful
 }
 
 //returns APP_SUCCESS if we handled the hypercall else APP_ERROR
 u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
-	u32 status=APP_SUCCESS;
-	u32 hypercall_number = r->ebx;
-
-	switch(hypercall_number){
-		case QUIESCE_HYPERCALL:
-			printf("\nCPU(0x%02x): quiesce test hypercall received...", vcpu->id);
-			printf("\nCPU(0x%02x): proceeding to call emhf_smpguest_quiesce...", vcpu->id);
-			emhf_smpguest_quiesce(vcpu);
-			printf("\nCPU(0x%02x): this is an ATOMIC printf :)", vcpu->id);
-			printf("\nCPU(0x%02x): proceeding to call emhf_smpguest_endquiesce...", vcpu->id);
-			emhf_smpguest_endquiesce(vcpu);
-			break;
-			
-		default:
-			printf("\nCPU(0x%02x): unhandled hypercall (0x%08x)!", vcpu->id, r->ebx);
-			break;
-	}
-	
-	return status;
+			u32 status=APP_SUCCESS;
+			(void)r; //unused
+			printf("\nCPU(0x%02x): hypercall unhandled, simply returning!", vcpu->id);
+			return status;
 }
 
-//handles EMHF shutdown callback
+//handles XMHF shutdown callback
 //note: should not return
 void emhf_app_handleshutdown(VCPU *vcpu, struct regs *r){
 	(void)r; //unused

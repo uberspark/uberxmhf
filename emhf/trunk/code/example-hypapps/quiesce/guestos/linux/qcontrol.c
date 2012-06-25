@@ -45,7 +45,7 @@
  */
 
 /*
- * Quiesce EMHF hyperapp guest OS controller for Linux
+ * Quiesce XMHF hyperapp guest OS controller for Linux
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 #include <stdio.h>
