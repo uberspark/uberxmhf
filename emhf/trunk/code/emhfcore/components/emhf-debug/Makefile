@@ -34,5 +34,6 @@ lib.a: $(OBJECTS)
 
 .PHONY: clean 
 clean: 
+	$(RM) -rf lib.a
 	$(RM) -rf *.o
 	$(RM) -rf ./arch/x86/*.o
