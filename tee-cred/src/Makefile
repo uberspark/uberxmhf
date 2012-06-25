@@ -20,19 +20,6 @@ test : FORCE
 proto-gend/%.pb-c.c proto-gend/%.pb-c.h : %.proto $(CURDIR)/proto-gend/.d
 	protoc-c --c_out=proto-gend --proto_path=$(srcdir) $<
 
-CROSS=
-#CROSS=i686-pc-mingw32-
-PKG_CONFIG=pkg-config
-CC:=gcc
-LD:=ld
-OBJCOPY:=objcopy
-NM:=nm
-CC:=$(CROSS)$(CC)
-LD:=$(CROSS)$(LD)
-PKG_CONFIG:=$(CROSS)$(PKG_CONFIG)
-OBJCOPY:=$(CROSS)$(OBJCOPY)
-NM:=$(CROSS)$(NM)
-
 PROG_NAME=main
 PAL_NAME=audited-kv-pal
 PROG_OBJS= \
@@ -45,10 +32,6 @@ PROG_OBJS= \
 	proto-gend/audited.pb-c.o \
 	proto-gend/akvp.pb-c.o \
 	proto-gend/storage.pb-c.o
-#CFLAGS+=-g -Wall -Werror -I.
-CFLAGS+=-g -Wall -I.
-#LDFLAGS+=--static
-#CFLAGS+=-DUSERSPACE_ONLY=1
 PKGCONFIG_DEPS=tee-sdk-app tee-sdk-app-tv libprotobuf-c gtk+-2.0
 
 PAL_BACKEND=tee-sdk-svc-tv
@@ -69,7 +52,6 @@ PAL_OBJS_BARE= \
 	proto-gend/akvp.pb-c.o \
 	proto-gend/storage.pb-c.o
 PAL_OBJS=$(addprefix pal-build/, $(PAL_OBJS_BARE))
-PAL_CFLAGS+=-g -Wall -Werror -I. -UWINDOWS -UWIN32 -U_WIN32
 
 pal-build/%.o : %.c $(CURDIR)/pal-build/proto-gend/.d
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
@@ -87,7 +69,7 @@ all: $(PROG_NAME)
 
 clean:
 	$(RM) .*.cmd *.o *.ko *~ -r .tmp* $(PROG_NAME) $(PROG_OBJS) $(PAL_OBJS) .depend .paldepend proto-gend/*.pb-c.[ch]
-	cd tests ; make clean
+
 .PHONY: clean all
 
 SRCS=$(patsubst %.o,%.c,$(PROG_OBJS))
