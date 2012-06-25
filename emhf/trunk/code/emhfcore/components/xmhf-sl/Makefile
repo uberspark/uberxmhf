@@ -14,31 +14,31 @@ OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
 
 #tie components used by SL
-OBJECTS_PRECOMPILED = ../emhf-debug/lib.a
+OBJECTS_PRECOMPILED = ../xmhf-debug/lib.a
 
-OBJECTS_PRECOMPILED += ../emhf-tpm/tpm-interface.o 
-OBJECTS_PRECOMPILED += ../emhf-tpm/arch/x86/tpm-x86.o 
-OBJECTS_PRECOMPILED += ../emhf-tpm/arch/x86/svm/tpm-x86svm.o 
-OBJECTS_PRECOMPILED += ../emhf-tpm/arch/x86/vmx/tpm-x86vmx.o 
+OBJECTS_PRECOMPILED += ../xmhf-tpm/tpm-interface.o 
+OBJECTS_PRECOMPILED += ../xmhf-tpm/arch/x86/tpm-x86.o 
+OBJECTS_PRECOMPILED += ../xmhf-tpm/arch/x86/svm/tpm-x86svm.o 
+OBJECTS_PRECOMPILED += ../xmhf-tpm/arch/x86/vmx/tpm-x86vmx.o 
 
 
-OBJECTS_PRECOMPILED += ../emhf-dmaprot/dmap-interface.o 
-OBJECTS_PRECOMPILED += ../emhf-dmaprot/arch/x86/dmap-x86.o 
-OBJECTS_PRECOMPILED += ../emhf-dmaprot/arch/x86/svm/dmap-x86svm.o 
-OBJECTS_PRECOMPILED += ../emhf-dmaprot/arch/x86/vmx/dmap-x86vmx.o
+OBJECTS_PRECOMPILED += ../xmhf-dmaprot/dmap-interface.o 
+OBJECTS_PRECOMPILED += ../xmhf-dmaprot/arch/x86/dmap-x86.o 
+OBJECTS_PRECOMPILED += ../xmhf-dmaprot/arch/x86/svm/dmap-x86svm.o 
+OBJECTS_PRECOMPILED += ../xmhf-dmaprot/arch/x86/vmx/dmap-x86vmx.o
 
-OBJECTS_PRECOMPILED += ../emhf-baseplatform/bplt-interface.o
-OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86.o
-OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86-pci.o
-OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86-acpi.o
-OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86-smplock.o
-OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/bplt-x86-addressing.o
+OBJECTS_PRECOMPILED += ../xmhf-baseplatform/bplt-interface.o
+OBJECTS_PRECOMPILED += ../xmhf-baseplatform/arch/x86/bplt-x86.o
+OBJECTS_PRECOMPILED += ../xmhf-baseplatform/arch/x86/bplt-x86-pci.o
+OBJECTS_PRECOMPILED += ../xmhf-baseplatform/arch/x86/bplt-x86-acpi.o
+OBJECTS_PRECOMPILED += ../xmhf-baseplatform/arch/x86/bplt-x86-smplock.o
+OBJECTS_PRECOMPILED += ../xmhf-baseplatform/arch/x86/bplt-x86-addressing.o
 
-OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/vmx/bplt-x86vmx.o
-OBJECTS_PRECOMPILED += ../emhf-baseplatform/arch/x86/vmx/bplt-x86vmx-mtrrs.o
+OBJECTS_PRECOMPILED += ../xmhf-baseplatform/arch/x86/vmx/bplt-x86vmx.o
+OBJECTS_PRECOMPILED += ../xmhf-baseplatform/arch/x86/vmx/bplt-x86vmx-mtrrs.o
 
 # separate from OBJECTS_PRECOMPILED becasue needs to come after libs on link line
-OBJECTS_PRECOMPILED_LIBBACKENDS = ../emhf-emhfcbackend/emhfc_putchar.o
+OBJECTS_PRECOMPILED_LIBBACKENDS = ../xmhf-emhfcbackend/emhfc_putchar.o
 
 # FIXME: ADDL_INCLUDES is overly general; sl/ doesn't need all of them
 CFLAGS += $(ADDL_INCLUDES)
