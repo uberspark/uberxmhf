@@ -80,8 +80,8 @@
 	#include <tpm.h>
 #endif /* __ASSEMBLY__ */
 
-#include <emhf-debug.h>			//EMHF debug component 
-#include <emhf-types.h>			//EMHF specific base types
+#include <xmhf-debug.h>			//EMHF debug component 
+#include <xmhf-types.h>			//EMHF specific base types
 
 
 
@@ -93,17 +93,17 @@ extern RPB *rpb;
 
 //----------------------------------------------------------------------
 // component headers
-#include <emhf-baseplatform.h>	//EMHF base platform component
-#include <emhf-memprot.h>		//EMHF memory protection component
-#include <emhf-dmaprot.h>		//EMHF DMA protection component
-#include <emhf-partition.h>		//EMHF partition component
-#include <emhf-smpguest.h>		//EMHF SMP guest component
-#include <emhf-parteventhub.h>	//EMHF partition event-hub component
-#include <emhf-xcphandler.h>	//EMHF exception handler component
-#include <emhf-tpm.h>			//EMHF Trusted Platform Module component
-#include <emhf-sl.h>			//EMHF secure loader component
-#include <emhf-runtime.h>		//EMHF secure loader component
-#include <emhf-app.h>			//EMHF Application callback declarations
+#include <xmhf-baseplatform.h>	//EMHF base platform component
+#include <xmhf-memprot.h>		//EMHF memory protection component
+#include <xmhf-dmaprot.h>		//EMHF DMA protection component
+#include <xmhf-partition.h>		//EMHF partition component
+#include <xmhf-smpguest.h>		//EMHF SMP guest component
+#include <xmhf-parteventhub.h>	//EMHF partition event-hub component
+#include <xmhf-xcphandler.h>	//EMHF exception handler component
+#include <xmhf-tpm.h>			//EMHF Trusted Platform Module component
+#include <xmhf-sl.h>			//EMHF secure loader component
+#include <xmhf-runtime.h>		//EMHF secure loader component
+#include <xmhf-app.h>			//EMHF Application callback declarations
 
 
 #endif /* __EMHF_H_ */

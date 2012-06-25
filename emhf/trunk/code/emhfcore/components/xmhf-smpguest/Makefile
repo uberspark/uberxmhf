@@ -1,4 +1,4 @@
-# makefile for emhf-smpguest (EMHF SMP guest component)
+# makefile for xmhf-smpguest (EMHF SMP guest component)
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files

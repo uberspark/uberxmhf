@@ -57,7 +57,7 @@
 //XXX: this file needs to include the appropriate arch. specific
 //header using either preprocessor directives, could be a 
 //symlink or use configure
-#include <arch/x86/emhf-smpguest-arch-x86.h>
+#include <arch/x86/xmhf-smpguest-arch-x86.h>
 
 #endif	//__ASSEMBLY__
 

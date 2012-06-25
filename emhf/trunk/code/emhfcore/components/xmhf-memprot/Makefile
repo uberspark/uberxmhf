@@ -1,4 +1,4 @@
-# makefile for emhf-memprot (EMHF memory protection component)
+# makefile for xmhf-memprot (EMHF memory protection component)
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files

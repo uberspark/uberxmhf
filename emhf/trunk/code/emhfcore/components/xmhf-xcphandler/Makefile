@@ -1,4 +1,4 @@
-# makefile for emhf-xcphandler (EMHF exception handler component)
+# makefile for xmhf-xcphandler (EMHF exception handler component)
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files

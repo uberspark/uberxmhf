@@ -52,7 +52,7 @@
 #define __EMHF_BASEPLATFORM_H__
 
 //bring in arch. specific declarations
-#include <arch/emhf-baseplatform-arch.h>
+#include <arch/xmhf-baseplatform-arch.h>
 
 
 #ifndef __ASSEMBLY__

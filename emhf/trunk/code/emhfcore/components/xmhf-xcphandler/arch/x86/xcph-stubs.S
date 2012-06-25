@@ -49,7 +49,7 @@
  */
  
 #include <emhf.h>
-#include <emhf-xcphandler.h>
+#include <xmhf-xcphandler.h>
 
 .altmacro
 .macro XtRtmEmitIdtStub vector

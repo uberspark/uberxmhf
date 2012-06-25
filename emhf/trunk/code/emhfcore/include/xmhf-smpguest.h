@@ -52,7 +52,7 @@
 #define __EMHF_SMPGUEST_H__
 
 //bring in arch. specific declarations
-#include <arch/emhf-smpguest-arch.h>
+#include <arch/xmhf-smpguest-arch.h>
 
 
 #ifndef __ASSEMBLY__

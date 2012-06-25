@@ -1,4 +1,4 @@
-# makefile for emhf-parteventhub (EMHF partition event-hub component)
+# makefile for xmhf-parteventhub (EMHF partition event-hub component)
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files

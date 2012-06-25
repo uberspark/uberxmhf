@@ -52,7 +52,7 @@
 
 
 //bring in arch. specific declarations
-#include <arch/emhf-tpm-arch.h>
+#include <arch/xmhf-tpm-arch.h>
 
 
 #ifndef __ASSEMBLY__

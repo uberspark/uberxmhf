@@ -1,4 +1,4 @@
-# makefile for emhf-baseplatform (EMHF base platform component)
+# makefile for xmhf-baseplatform (EMHF base platform component)
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files

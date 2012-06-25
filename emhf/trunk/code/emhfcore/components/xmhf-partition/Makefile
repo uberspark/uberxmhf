@@ -1,4 +1,4 @@
-# makefile for emhf-partition (EMHF component for handling partition
+# makefile for xmhf-partition (EMHF component for handling partition
 # setup and instantiation)
 # author: amit vasudevan (amitvasudevan@acm.org)
 

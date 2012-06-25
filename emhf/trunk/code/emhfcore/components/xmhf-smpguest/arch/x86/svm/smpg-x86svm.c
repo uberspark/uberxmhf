@@ -193,7 +193,7 @@ void emhf_smpguest_arch_x86svm_initialize(VCPU *vcpu){
   //set physical 4K page of APIC base address to not-present
   //this will cause NPF on access to the APIC page which is then
   //handled by lapic_access_handler
-  //XXX: change this to access emhf-memprot interfaces
+  //XXX: change this to access xmhf-memprot interfaces
   npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, 0);
   vmcb->tlb_control = VMCB_TLB_CONTROL_FLUSHALL;  
   //emhf_memprot_arch_x86svm_setprot(vcpu, g_svm_lapic_base, MEMP_PROT_NOTPRESENT);
