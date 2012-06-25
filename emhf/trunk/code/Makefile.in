@@ -1,7 +1,7 @@
-# Rootest Makefile for EMHF and an App
+# Rootest Makefile for XMHF and an App
 # Builds a bunch of subdirectories here, and then builds the app
 
-# define EMHF root directory and EMHF core include directory for
+# define XMHF root directory and XMHF core include directory for
 # apps
 export EMHF_ROOT := $(CURDIR)
 export EMHF_INCLUDE := $(CURDIR)/x86/include
@@ -55,7 +55,7 @@ export APP_ARCHIVE := $(builddir)/$(APP_ROOT)/@APP_ARCHIVE@
 export SECONDARYAPP_ARCHIVE := $(builddir)/$(SECONDARYAPP_ROOT)/@SECONDARYAPP_ARCHIVE@
 
 export ADDL_LIBS := $(LIBBAREMETAL_BUILD)/_objects/$(LIBBAREMETAL_ARCHIVE)
-export ADDL_INCLUDES := -I$(CURDIR)/emhfcore/include $(LIBBAREMETAL_INC)
+export ADDL_INCLUDES := -I$(CURDIR)/xmhf-core/include $(LIBBAREMETAL_INC)
 
 export ADDL_LIBS += $(LIBTOMCRYPT_BUILD)/$(LIBTOMCRYPT_ARCHIVE)
 export ADDL_INCLUDES += -I$(LIBTOMCRYPT_SRC)/src/headers/
@@ -240,16 +240,16 @@ subdirs: $(LIBBAREMETAL_SRC)
 	@echo libbaremetal.a build SUCCESS
 	@echo ---------------------------------------------------------------
 	@echo ---------------------------------------------------------------
-	@echo Building EMHF core/hyperapp...
+	@echo Building XMHF core/hyperapp...
 	@echo ---------------------------------------------------------------
-	cd emhfcore && $(MAKE) -w all
+	cd xmhf-core && $(MAKE) -w all
 	@echo ---------------------------------------------------------------
-	@echo EMHF core/hyperapp build SUCCESS
+	@echo XMHF core/hyperapp build SUCCESS
 	@echo ---------------------------------------------------------------
 
 .PHONY: init-late
 init-late: $(APP_ARCHIVE) subdirs
-	cd emhfcore && make -w init-late
+	cd xmhf-core && make -w init-late
 
 .PHONY: install
 install: install-dev install-bin
@@ -317,11 +317,11 @@ endif
 	@echo libtommath and libtomcrypt clean SUCCESS...
 	@echo ---------------------------------------------------------------
 	@echo ---------------------------------------------------------------
-	@echo Cleaning EMHF core/hyperapp...
+	@echo Cleaning XMHF core/hyperapp...
 	@echo ---------------------------------------------------------------
-	cd emhfcore && $(MAKE) -w clean
+	cd xmhf-core && $(MAKE) -w clean
 	@echo ---------------------------------------------------------------
-	@echo EMHF core/hyperapp cleanup SUCCESS
+	@echo XMHF core/hyperapp cleanup SUCCESS
 	@echo ---------------------------------------------------------------
 
 
@@ -331,7 +331,7 @@ distclean: clean
 	$(RM) -rf Makefile
 
 init-late-clean:
-	cd emhfcore && make -w init-late-clean
+	cd xmhf-core && make -w init-late-clean
 
 	
 #-----autoconf rules
