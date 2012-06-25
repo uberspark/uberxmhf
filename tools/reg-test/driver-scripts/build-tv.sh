@@ -48,13 +48,13 @@ pushd $REPO_ROOT_ABSPATH
 # That usually happens when one of us developers has been tinkering
 # around and forgot to commit things.  Otherwise, the 'git clean' will
 # clobber our work.
-#IS_DIRTY=`git status --porcelain | perl -n -e 'if ($_ !~ /^\?\?/) { print "DIRTY\n"; exit; }'`
-#if [ "$IS_DIRTY" == "DIRTY" ]; then
-#    echo "ERROR: working directory dirty. Did you forget to commit something?" >&2
-#    exit 1
-#fi
-#git clean -d -f -x .
-#git pull
+IS_DIRTY=`git status --porcelain | perl -n -e 'if ($_ !~ /^\?\?/) { print "DIRTY\n"; exit; }'`
+if [ "$IS_DIRTY" == "DIRTY" ]; then
+    echo "ERROR: working directory dirty. Did you forget to commit something?" >&2
+    exit 1
+fi
+git clean -d -f -x .
+git pull
 
 ## 1. Build XMHF + TrustVisor
 
