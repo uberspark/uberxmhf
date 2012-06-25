@@ -28,11 +28,11 @@ LIBBAREMETAL_RELPATH=../../../libbaremetal
 LIBBAREMETAL_ABSPATH=`( cd "$MY_PATH/$LIBBAREMETAL_RELPATH" && pwd )`
 
 # libtomcrypt
-LIBTOMCRYPT_RELPATH=../../../tools/libtomcrypt-1.17
+LIBTOMCRYPT_RELPATH=../../../third-party/libtomcrypt
 LIBTOMCRYPT_ABSPATH=`( cd "$MY_PATH/$LIBTOMCRYPT_RELPATH" && pwd )`
 
 # libtommath
-LIBTOMMATH_RELPATH=../../../tools/libtommath-0.42.0
+LIBTOMMATH_RELPATH=../../../third-party/libtommath
 LIBTOMMATH_ABSPATH=`( cd "$MY_PATH/$LIBTOMMATH_RELPATH" && pwd )`
 
 # Temporary directory to place build results
