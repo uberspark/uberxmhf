@@ -27,7 +27,7 @@ components:
 	#EMHF debug component
 	cd components/xmhf-debug && $(MAKE) -w all
 	#EMHF libemhfc environment callbacks
-	cd components/xmhf-emhfcbackend && $(MAKE) -w all
+	cd components/xmhf-xmhfcbackend && $(MAKE) -w all
 
 .PHONY: runtime
 runtime: 
@@ -84,7 +84,7 @@ clean:
 	cd components/xmhf-partition && $(MAKE) -w clean
 	cd components/xmhf-tpm && $(MAKE) -w clean
 	cd components/xmhf-debug && $(MAKE) -w clean
-	cd components/xmhf-emhfcbackend && $(MAKE) -w clean
+	cd components/xmhf-xmhfcbackend && $(MAKE) -w clean
 
 	cd components/xmhf-runtime && $(MAKE) -w clean
 

@@ -90,7 +90,7 @@ OBJECTS_PRECOMPILED += ../xmhf-partition/arch/x86/vmx/part-x86vmx.o
 OBJECTS_PRECOMPILED += ../xmhf-partition/arch/x86/vmx/part-x86vmx-sup.o
 
 # separate from OBJECTS_PRECOMPILED becasue needs to come after libs on link line
-OBJECTS_PRECOMPILED_LIBBACKENDS = ../xmhf-emhfcbackend/emhfc_putchar.o
+OBJECTS_PRECOMPILED_LIBBACKENDS = ../xmhf-xmhfcbackend/xmhfc-putchar.o
 
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 

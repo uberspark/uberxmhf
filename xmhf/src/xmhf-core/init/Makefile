@@ -26,7 +26,7 @@ OBJECTS_PRECOMPILED += ../components/xmhf-baseplatform/arch/x86/vmx/bplt-x86vmx-
 CFLAGS += $(ADDL_INCLUDES)
 
 # separate from OBJECTS_PRECOMPILED becasue needs to come after libs on link line
-OBJECTS_PRECOMPILED_LIBBACKENDS = ../components/xmhf-emhfcbackend/emhfc_putchar.o
+OBJECTS_PRECOMPILED_LIBBACKENDS = ../components/xmhf-xmhfcbackend/xmhfc-putchar.o
 
 I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 

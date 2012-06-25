@@ -1,9 +1,9 @@
-# makefile for xmhf-memprot (EMHF memory protection component)
+# makefile for xmhf-xmhfcbackend (libxmhfc backend component)
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # source files
 AS_SOURCES =  
-C_SOURCES = emhfc_putchar.c
+C_SOURCES = xmhfc-putchar.c
 
 OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
 OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))

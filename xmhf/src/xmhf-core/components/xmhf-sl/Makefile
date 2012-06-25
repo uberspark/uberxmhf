@@ -38,7 +38,7 @@ OBJECTS_PRECOMPILED += ../xmhf-baseplatform/arch/x86/vmx/bplt-x86vmx.o
 OBJECTS_PRECOMPILED += ../xmhf-baseplatform/arch/x86/vmx/bplt-x86vmx-mtrrs.o
 
 # separate from OBJECTS_PRECOMPILED becasue needs to come after libs on link line
-OBJECTS_PRECOMPILED_LIBBACKENDS = ../xmhf-emhfcbackend/emhfc_putchar.o
+OBJECTS_PRECOMPILED_LIBBACKENDS = ../xmhf-xmhfcbackend/xmhfc-putchar.o
 
 # FIXME: ADDL_INCLUDES is overly general; sl/ doesn't need all of them
 CFLAGS += $(ADDL_INCLUDES)
