@@ -87,7 +87,7 @@ all: $(PROG_NAME)
 
 clean:
 	$(RM) .*.cmd *.o *.ko *~ -r .tmp* $(PROG_NAME) $(PROG_OBJS) $(PAL_OBJS) .depend .paldepend proto-gend/*.pb-c.[ch]
-	cd tests ; make clean
+
 .PHONY: clean all
 
 SRCS=$(patsubst %.o,%.c,$(PROG_OBJS))
