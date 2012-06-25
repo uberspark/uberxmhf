@@ -309,6 +309,14 @@ endif
 	@echo libbaremetal.a clean SUCCESS
 	@echo ---------------------------------------------------------------
 	@echo ---------------------------------------------------------------
+	@echo Cleaning libtommath and libtomcrypt...
+	@echo ---------------------------------------------------------------
+	rm -rf $(LIBTOMMATH_BUILD)
+	rm -rf $(LIBTOMCRYPT_BUILD)
+	@echo ---------------------------------------------------------------
+	@echo libtommath and libtomcrypt clean SUCCESS...
+	@echo ---------------------------------------------------------------
+	@echo ---------------------------------------------------------------
 	@echo Cleaning EMHF core/hyperapp...
 	@echo ---------------------------------------------------------------
 	cd emhfcore && $(MAKE) -w clean
