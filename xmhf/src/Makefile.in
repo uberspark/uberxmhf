@@ -1,0 +1,346 @@
+# Rootest Makefile for XMHF and an App
+# Builds a bunch of subdirectories here, and then builds the app
+
+# define XMHF root directory and XMHF core include directory for
+# apps
+export EMHF_ROOT := $(CURDIR)
+export EMHF_INCLUDE := $(CURDIR)/x86/include
+
+# define CMOCK and UNITY for app unit test support
+export CMOCKDIR := @CMOCKDIR@
+export UNITYDIR := @UNITYDIR@
+
+# Options that aspire to be automatically controlled, but are currently
+# basically required and everything breaks without them. FIXME!
+export TARGET_HWPLATFORM := x86
+export NESTED_PAGING := y
+
+#where you want loader and runtime binaries to go
+export HYPOUTDIR = $(CURDIR)
+
+# libtommath
+export LIBTOMMATH_SRC := $(realpath @LIBTOMMATH_SRC@)
+LIBTOMMATH_BUILD = $(CURDIR)/_build_libtommath
+LIBTOMMATH_ARCHIVE = libtommath.a
+
+# libtomcrypt
+export LIBTOMCRYPT_SRC := $(realpath @LIBTOMCRYPT_SRC@)
+LIBTOMCRYPT_BUILD = $(CURDIR)/_build_libtomcrypt
+LIBTOMCRYPT_ARCHIVE = libtomcrypt.a
+
+# libbaremetal "source" location, currently hard-coded
+# TODO: specify via configure
+# LIBBAREMETAL_SRC = $(CURDIR)/libbaremetal
+export LIBBAREMETAL_SRC := @LIBBAREMETAL_SRC@
+
+# libbaremetal archive
+# TODO: specify via configure
+LIBBAREMETAL_ARCHIVE = libbaremetal.a
+
+# libbaremetal includes
+LIBBAREMETAL_SUBLIBS = $(wildcard $(LIBBAREMETAL_SRC)/lib*)
+LIBBAREMETAL_INC = $(foreach dir,$(LIBBAREMETAL_SUBLIBS),-I$(dir)/include)
+
+# libbaremetal build directory 
+LIBBAREMETAL_BUILD = $(CURDIR)/_build_libbaremetal
+
+# App's source tree root (
+export APP_ROOT := @APP_ROOT@
+export SECONDARYAPP_ROOT := @SECONDARYAPP_ROOT@
+
+# The APP_ARCHIVE is what MUST contain ALL of the App's binary code
+# 'make install-dev' is handled indepdendently
+export builddir=@builddir@
+export APP_ARCHIVE := $(builddir)/$(APP_ROOT)/@APP_ARCHIVE@
+export SECONDARYAPP_ARCHIVE := $(builddir)/$(SECONDARYAPP_ROOT)/@SECONDARYAPP_ARCHIVE@
+
+export ADDL_LIBS := $(LIBBAREMETAL_BUILD)/_objects/$(LIBBAREMETAL_ARCHIVE)
+export ADDL_INCLUDES := -I$(CURDIR)/xmhf-core/include $(LIBBAREMETAL_INC)
+
+export ADDL_LIBS += $(LIBTOMCRYPT_BUILD)/$(LIBTOMCRYPT_ARCHIVE)
+export ADDL_INCLUDES += -I$(LIBTOMCRYPT_SRC)/src/headers/
+
+export ADDL_LIBS += $(LIBTOMMATH_BUILD)/$(LIBTOMMATH_ARCHIVE)
+export ADDL_INCLUDES += -I$(LIBTOMMATH_SRC)
+
+# link libbaremetal *again* to resolve more dependencies
+ADDL_LIBS += $(LIBBAREMETAL_BUILD)/_objects/$(LIBBAREMETAL_ARCHIVE)
+
+##################################################################################
+### BEGIN Variables controlled using autoconf
+##################################################################################
+# Build-time configuration options; our project IS UNIQUE in this aspect
+# For an explanation of these options, see configure.ac or run:
+# ./configure --help
+export MP_VERSION := @MP_VERSION@
+export DEBUG_SERIAL := @DEBUG_SERIAL@
+export DEBUG_SERIAL_PORT := @DEBUG_SERIAL_PORT@
+export DEBUG_VGA := @DEBUG_VGA@
+
+# Path settings; our project is not unique in this aspect
+export prefix=@prefix@
+export exec_prefix=@exec_prefix@
+export libdir=@libdir@
+export includedir=@includedir@
+export pkgconfigdir=@pkgconfigdir@
+export pkgincludedir=@pkgincludedir@
+
+# Tool settings; our project is not unique in this aspect
+export CC = @CC@
+export AS = @AS@
+export LD = @LD@
+export OBJDUMP = @OBJDUMP@
+export OBJCOPY = @OBJCOPY@
+export STRIP = @STRIP@
+export RM = @RM@
+export CP = @CP@
+export TAR = @TAR@
+export SED = @SED@
+export MKDIR = @MKDIR@
+export CAT = @CAT@
+
+export CCLIB = @CCLIB@
+##################################################################################
+### END Variables controlled using autoconf
+##################################################################################
+
+# FIXME- this should be configurable
+# export CFLAGS=-m32
+
+##CFLAGS and ASFLAGS population
+# experimental support
+	export INIT_LATE := n
+	export E820_UG_TEST := n
+	export TEST_CPU_QUIESCE := n
+
+# relatively stable support
+# TODO: FIXME: Build breaks with some combinations of these options.
+# They aren't really "options" anymore
+# TODO: Control these with autoconf
+	export DMAPROT := y
+	export NESTED_PAGING := y
+
+
+#-----build configuration
+	#-----basic flags for compiling and assembling
+	CFLAGS = -fno-builtin -fno-common -fno-strict-aliasing -iwithprefix include
+	CFLAGS += -fno-stack-protector
+	CFLAGS += -Wstrict-prototypes -Wdeclaration-after-statement 
+	CFLAGS += -Wno-pointer-arith -Wextra -Wfloat-equal 
+	CFLAGS += -Werror
+	CFLAGS += -Wcast-qual -Wsign-compare
+	CFLAGS += -Wno-bad-function-cast -Wall
+	CFLAGS += -Waggregate-return
+	CFLAGS += -Winline
+	CFLAGS += -m32 -march=k8 
+	CFLAGS += -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-ssse3 
+	CFLAGS += -mno-sse4.1 -mno-sse4.2 -mno-sse4 -mno-avx -mno-aes 
+	CFLAGS += -mno-pclmul -mno-sse4a -mno-sse5 -mno-3dnow -mno-popcnt -mno-abm
+	CFLAGS += -nostdinc -pipe
+	
+	CFLAGS += $(ADDL_INCLUDES)
+
+	#-----generate compiler/assembler defines from configuration options selected
+	ifeq ($(NESTED_PAGING), y)
+		CFLAGS += -D__NESTED_PAGING__
+	endif
+	ifeq ($(DEBUG_SERIAL), y)
+		CFLAGS += -D__DEBUG_SERIAL__
+		CFLAGS += -DDEBUG_PORT=$(DEBUG_SERIAL_PORT)
+	endif
+	ifeq ($(DEBUG_VGA), y)
+		CFLAGS += -D__DEBUG_VGA__
+	endif
+	ifeq ($(MP_VERSION), y)
+		CFLAGS += -D__MP_VERSION__
+	endif
+
+	CFLAGS += -D__DO_SENTER__
+
+	ifeq ($(DMAPROT), y)
+		CFLAGS += -D__DMAPROT__	
+	endif
+	ifeq ($(E820_UG_TEST), y)
+		CFLAGS += -D__E820_UG_TEST__
+	endif
+	ifeq ($(TEST_CPU_QUIESCE), y)
+		CFLAGS += -D__TEST_CPU_QUIESCE__
+	endif
+
+	# late initialization support (experimental)
+	ifeq ($(INIT_LATE), y)
+		CFLAGS += -D__INIT_LATE__ 
+		CFLAGS += -DPERF_CRIT
+	endif
+
+
+	#-----export CFLAGS and ASFLAGS
+	ASFLAGS = $(CFLAGS) -D__ASSEMBLY__
+
+	export CFLAGS
+	export ASFLAGS
+
+
+.PHONY: all
+ifneq ('$(SECONDARYAPP_ROOT)','./app')
+all: $(SECONDARYAPP_ARCHIVE) $(APP_ARCHIVE) subdirs 
+else
+all: $(APP_ARCHIVE) subdirs 
+endif
+
+
+ifneq ('$(SECONDARYAPP_ROOT)','./app')
+.PHONY: $(SECONDARYAPP_ARCHIVE)
+$(SECONDARYAPP_ARCHIVE):
+	@echo ---------------------------------------------------------------
+	@echo Building secondary hyperapp...
+	@echo ---------------------------------------------------------------
+	cd $(SECONDARYAPP_ROOT) && $(MAKE) -w all
+	@echo ---------------------------------------------------------------
+	@echo secondary hyperapp build SUCCESS
+	@echo ---------------------------------------------------------------
+endif
+	
+
+.PHONY: $(APP_ARCHIVE)
+$(APP_ARCHIVE):
+	@echo ---------------------------------------------------------------
+	@echo Building primary hyperapp...
+	@echo ---------------------------------------------------------------
+	cd $(APP_ROOT) && $(MAKE) -w all
+	@echo ---------------------------------------------------------------
+	@echo primary hyperapp build SUCCESS
+	@echo ---------------------------------------------------------------
+
+
+.PHONY: subdirs
+subdirs: $(LIBBAREMETAL_SRC) 
+	@echo ---------------------------------------------------------------
+	@echo Building libtommath...
+	@echo ---------------------------------------------------------------
+	mkdir -p $(LIBTOMMATH_BUILD)
+	cd $(LIBTOMMATH_BUILD) && $(MAKE) -f $(LIBTOMMATH_SRC)/makefile CFLAGS="$(filter-out -Werror,$(CFLAGS))" -w libtommath.a
+	@echo ---------------------------------------------------------------
+	@echo libtommath.a build SUCCESS
+	@echo ---------------------------------------------------------------
+	@echo ---------------------------------------------------------------
+	@echo Building libtomcrypt...
+	@echo ---------------------------------------------------------------
+	mkdir -p $(LIBTOMCRYPT_BUILD)
+	cd $(LIBTOMCRYPT_BUILD) && $(MAKE) -f $(LIBTOMCRYPT_SRC)/makefile CFLAGS="$(filter-out -Werror,$(CFLAGS)) -DLTC_SOURCE" -w libtomcrypt.a
+	@echo ---------------------------------------------------------------
+	@echo libtomcrypt.a build SUCCESS
+	@echo ---------------------------------------------------------------
+	@echo ---------------------------------------------------------------
+	@echo Building libbaremetal...
+	@echo ---------------------------------------------------------------
+	mkdir -p $(LIBBAREMETAL_BUILD)
+	cd $(LIBBAREMETAL_BUILD) && $(MAKE) -f $(LIBBAREMETAL_SRC)/Makefile -w all
+	@echo ---------------------------------------------------------------
+	@echo libbaremetal.a build SUCCESS
+	@echo ---------------------------------------------------------------
+	@echo ---------------------------------------------------------------
+	@echo Building XMHF core/hyperapp...
+	@echo ---------------------------------------------------------------
+	cd xmhf-core && $(MAKE) -w all
+	@echo ---------------------------------------------------------------
+	@echo XMHF core/hyperapp build SUCCESS
+	@echo ---------------------------------------------------------------
+
+.PHONY: init-late
+init-late: $(APP_ARCHIVE) subdirs
+	cd xmhf-core && make -w init-late
+
+.PHONY: install
+install: install-dev install-bin
+
+.PHONY: install-bin
+install-bin:
+	# Install the _actual_ final product
+	install -d $(DESTDIR)boot
+	install --mode=644 $(HYPOUTDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz $(DESTDIR)boot
+	install --mode=644 $(HYPOUTDIR)/init-$(TARGET_HWPLATFORM).bin $(DESTDIR)boot
+
+.PHONY: install-dev
+install-dev:
+ifneq ('$(SECONDARYAPP_ROOT)','./app')
+	cd $(SECONDARYAPP_ROOT) && $(MAKE) -w install-dev
+endif
+
+	cd $(APP_ROOT) && $(MAKE) -w install-dev
+	@for i in $(SUBDIRS) ;\
+	do \
+		(cd $$i && echo "making install-dev in $$i..." && $(MAKE) -w install-dev) || exit 1; \
+	done;
+
+# Currently the only tests we have are in the TrustVisor tree
+.PHONY: test
+test:
+ifneq ('$(SECONDARYAPP_ROOT)','./app')
+	cd $(SECONDARYAPP_ROOT) && $(MAKE) -w test
+endif
+	cd $(APP_ROOT) && $(MAKE) -w test
+
+.PHONY: clean distclean init-late-clean
+clean:
+ifneq ('$(SECONDARYAPP_ROOT)','./app')
+	@echo ---------------------------------------------------------------
+	@echo Cleaning secondary hyperapp...
+	@echo ---------------------------------------------------------------
+	cd $(SECONDARYAPP_ROOT) && $(MAKE) -w clean
+	@echo ---------------------------------------------------------------
+	@echo secondary hyperapp clean SUCCESS
+	@echo ---------------------------------------------------------------
+endif
+	@echo ---------------------------------------------------------------
+	@echo Cleaning primary hyperapp...
+	@echo ---------------------------------------------------------------
+	cd $(APP_ROOT) && $(MAKE) -w clean
+	@echo ---------------------------------------------------------------
+	@echo primary hyperapp clean SUCCESS
+	@echo ---------------------------------------------------------------
+	@echo ---------------------------------------------------------------
+	@echo Cleaning libbaremetal...
+	@echo ---------------------------------------------------------------
+	mkdir -p $(LIBBAREMETAL_BUILD)
+	cd $(LIBBAREMETAL_BUILD) && $(MAKE) -f $(LIBBAREMETAL_SRC)/Makefile -w clean
+	rm -rf $(LIBBAREMETAL_BUILD)
+	@echo ---------------------------------------------------------------
+	@echo libbaremetal.a clean SUCCESS
+	@echo ---------------------------------------------------------------
+	@echo ---------------------------------------------------------------
+	@echo Cleaning libtommath and libtomcrypt...
+	@echo ---------------------------------------------------------------
+	rm -rf $(LIBTOMMATH_BUILD)
+	rm -rf $(LIBTOMCRYPT_BUILD)
+	@echo ---------------------------------------------------------------
+	@echo libtommath and libtomcrypt clean SUCCESS...
+	@echo ---------------------------------------------------------------
+	@echo ---------------------------------------------------------------
+	@echo Cleaning XMHF core/hyperapp...
+	@echo ---------------------------------------------------------------
+	cd xmhf-core && $(MAKE) -w clean
+	@echo ---------------------------------------------------------------
+	@echo XMHF core/hyperapp cleanup SUCCESS
+	@echo ---------------------------------------------------------------
+
+
+distclean: clean
+	$(RM) config.log config.status
+	# http://www.gnu.org/software/automake/manual/automake.html#Clean
+	$(RM) -rf Makefile
+
+init-late-clean:
+	cd xmhf-core && make -w init-late-clean
+
+	
+#-----autoconf rules
+Makefile: Makefile.in config.status
+	./config.status $@
+
+config.status: configure
+	./config.status --recheck
+
+configure: configure.ac
+	./autogen.sh
+

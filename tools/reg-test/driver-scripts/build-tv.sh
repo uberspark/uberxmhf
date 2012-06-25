@@ -11,12 +11,13 @@ MY_PATH=`( cd "$MY_PATH" && pwd )`
 REPO_ROOT_RELPATH=../../..
 REPO_ROOT_ABSPATH=`( cd "$MY_PATH/$REPO_ROOT_RELPATH" && pwd )`
 
-# These are the relative & absolute paths of EMHF
-EMHF_RELPATH=../../../emhf/trunk/code
-EMHF_ABSPATH=`( cd "$MY_PATH/$EMHF_RELPATH" && pwd )`
+# These are the relative & absolute paths of XMHF
+XMHF_RELPATH=../../../xmhf/src
+XMHF_ABSPATH=`( cd "$MY_PATH/$XMHF_RELPATH" && pwd )`
 
 # and these are TrustVisor and tee-sdk's paths
 TV_RELPATH=../../../trustvisor
+TV_XMHF_RELPATH=../../trustvisor
 TV_ABSPATH=`( cd "$MY_PATH/$TV_RELPATH" && pwd )`
 TEESDK_RELPATH=../../../tee-sdk
 TEESDK_ABSPATH=`( cd "$MY_PATH/$TEESDK_RELPATH" && pwd )`
@@ -24,7 +25,7 @@ TESTPAL_RELPATH=../../../tee-sdk/examples/test
 TESTPAL_ABSPATH=`( cd "$MY_PATH/$TESTPAL_RELPATH" && pwd )`
 
 # and these are libbaremetal's paths
-LIBBAREMETAL_RELPATH=../../../libbaremetal
+LIBBAREMETAL_RELPATH=../../../libbaremetal/src
 LIBBAREMETAL_ABSPATH=`( cd "$MY_PATH/$LIBBAREMETAL_RELPATH" && pwd )`
 
 # libtomcrypt
@@ -55,15 +56,15 @@ fi
 git clean -d -f -x .
 git pull
 
-## 1. Build EMHF + TrustVisor
+## 1. Build XMHF + TrustVisor
 
 pushd $TV_ABSPATH
 ./autogen.sh
 popd
 
-pushd $EMHF_ABSPATH
+pushd $XMHF_ABSPATH
 ./autogen.sh
-./configure --prefix=$TEMPDIR --with-approot=$TV_RELPATH --with-libbaremetalsrc=$LIBBAREMETAL_ABSPATH --with-libtomcryptsrc=$LIBTOMCRYPT_ABSPATH --with-libtommathsrc=$LIBTOMMATH_ABSPATH
+./configure --prefix=$TEMPDIR --with-approot=$TV_XMHF_RELPATH --with-libbaremetalsrc=$LIBBAREMETAL_ABSPATH --with-libtomcryptsrc=$LIBTOMCRYPT_ABSPATH --with-libtommathsrc=$LIBTOMMATH_ABSPATH
 make clean
 make
 #DESTDIR=$TEMPDIR make install
@@ -73,7 +74,7 @@ ls -l init-x86.bin hypervisor-x86.bin.gz
 make install-dev
 
 ## 3. Install TrustVisor cross-compile development files
-./configure --prefix=$TEMPDIR/i586-tsvc --with-approot=$TV_RELPATH --with-libbaremetalsrc=$LIBBAREMETAL_ABSPATH
+./configure --prefix=$TEMPDIR/i586-tsvc --with-approot=$TV_XMHF_RELPATH --with-libbaremetalsrc=$LIBBAREMETAL_ABSPATH
 make install-dev
 
 popd
