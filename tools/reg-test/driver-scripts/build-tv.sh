@@ -16,7 +16,7 @@ EMHF_RELPATH=../../../emhf/trunk/code
 EMHF_ABSPATH=`( cd "$MY_PATH/$EMHF_RELPATH" && pwd )`
 
 # and these are TrustVisor and tee-sdk's paths
-TV_RELPATH=../../../trustvisor/trunk/code
+TV_RELPATH=../../../trustvisor
 TV_ABSPATH=`( cd "$MY_PATH/$TV_RELPATH" && pwd )`
 TEESDK_RELPATH=../../../tee-sdk/trunk
 TEESDK_ABSPATH=`( cd "$MY_PATH/$TEESDK_RELPATH" && pwd )`
