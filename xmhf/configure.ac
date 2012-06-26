@@ -101,6 +101,9 @@ AC_ARG_WITH([approot],
                 [path to EMHF app source directory]),
                 , [with_approot=./app])
 APP_ROOT=$[]with_approot
+# AC_CONFIG_SUBDIRS fails silently on absolute paths
+AS_IF([test "x${APP_ROOT:0:1}" == "x/"],
+            AC_MSG_FAILURE([approot must be a relative path.]))
 # make absolute
 dnl AS_IF([test "x${APP_ROOT:0:1}" != "x/"],
 dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$APP_ROOT])
@@ -127,6 +130,9 @@ AC_ARG_WITH([secondaryapproot],
                 [(optional) path to secondary EMHF app source directory]),
                 , [with_secondaryapproot=])
 SECONDARYAPP_ROOT=$[]with_secondaryapproot
+# AC_CONFIG_SUBDIRS fails silently on absolute paths
+AS_IF([test "x${SECONDARYAPP_ROOT:0:1}" == "x/"],
+            AC_MSG_FAILURE([secondaryapproot must be a relative path.]))
 # make absolute
 dnl AS_IF([test "x${SECONDARYAPP_ROOT:0:1}" != "x/"],
 dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$SECONDARYAPP_ROOT])
