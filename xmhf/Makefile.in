@@ -47,14 +47,14 @@ LIBBAREMETAL_INC = $(foreach dir,$(LIBBAREMETAL_SUBLIBS),-I$(dir)/include)
 LIBBAREMETAL_BUILD = $(CURDIR)/_build_libbaremetal
 
 # App's source tree root (
-export APP_ROOT := @APP_ROOT@
+export APP_ROOT := $(realpath @APP_ROOT@)
 export SECONDARYAPP_ROOT := @SECONDARYAPP_ROOT@
 
 # The APP_ARCHIVE is what MUST contain ALL of the App's binary code
 # 'make install-dev' is handled indepdendently
 export builddir=@builddir@
-export APP_ARCHIVE := $(builddir)/$(APP_ROOT)/@APP_ARCHIVE@
-export SECONDARYAPP_ARCHIVE := $(builddir)/$(SECONDARYAPP_ROOT)/@SECONDARYAPP_ARCHIVE@
+export APP_ARCHIVE := $(APP_ROOT)/@APP_ARCHIVE@
+export SECONDARYAPP_ARCHIVE := $(SECONDARYAPP_ROOT)/@SECONDARYAPP_ARCHIVE@
 
 export ADDL_LIBS := $(LIBBAREMETAL_BUILD)/_objects/$(LIBBAREMETAL_ARCHIVE)
 export ADDL_INCLUDES := -I$(EMHF_INCLUDE) $(LIBBAREMETAL_INC)
