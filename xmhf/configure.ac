@@ -115,7 +115,7 @@ AC_SUBST([SECONDARYAPP_ROOT])
 AC_ARG_WITH([secondaryapproot],
         AS_HELP_STRING([--with-secondaryapproot=@<:@path@:>@],
                 [(optional) path to secondary EMHF app source directory]),
-                , [with_secondaryapproot=./app])
+                , [with_secondaryapproot=])
 SECONDARYAPP_ROOT=$[]with_secondaryapproot
 # make absolute
 dnl AS_IF([test "x${SECONDARYAPP_ROOT:0:1}" != "x/"],

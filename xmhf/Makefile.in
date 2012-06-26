@@ -46,18 +46,26 @@ LIBBAREMETAL_INC = $(foreach dir,$(LIBBAREMETAL_SUBLIBS),-I$(dir)/include)
 # libbaremetal build directory 
 LIBBAREMETAL_BUILD = $(CURDIR)/_build_libbaremetal
 
+export ADDL_LIBS :=
+export ADDL_INCLUDES :=
+
 # App's source tree root (
 export APP_ROOT := $(realpath @APP_ROOT@)
-export SECONDARYAPP_ROOT := @SECONDARYAPP_ROOT@
+export SECONDARYAPP_ROOT := $(realpath @SECONDARYAPP_ROOT@)
 
 # The APP_ARCHIVE is what MUST contain ALL of the App's binary code
 # 'make install-dev' is handled indepdendently
 export builddir=@builddir@
-export APP_ARCHIVE := $(APP_ROOT)/@APP_ARCHIVE@
-export SECONDARYAPP_ARCHIVE := $(SECONDARYAPP_ROOT)/@SECONDARYAPP_ARCHIVE@
 
-export ADDL_LIBS := $(LIBBAREMETAL_BUILD)/_objects/$(LIBBAREMETAL_ARCHIVE)
-export ADDL_INCLUDES := -I$(EMHF_INCLUDE) $(LIBBAREMETAL_INC)
+export APP_ARCHIVE := $(APP_ROOT)/@APP_ARCHIVE@
+
+export SECONDARYAPP_ARCHIVE := $(SECONDARYAPP_ROOT)/@SECONDARYAPP_ARCHIVE@
+ifneq ('$(SECONDARYAPP_ROOT)','')
+ADDL_LIBS += $(SECONDARYAPP_ARCHIVE)
+endif
+
+export ADDL_LIBS += $(LIBBAREMETAL_BUILD)/_objects/$(LIBBAREMETAL_ARCHIVE)
+export ADDL_INCLUDES += -I$(EMHF_INCLUDE) $(LIBBAREMETAL_INC)
 
 export ADDL_LIBS += $(LIBTOMCRYPT_BUILD)/$(LIBTOMCRYPT_ARCHIVE)
 export ADDL_INCLUDES += -I$(LIBTOMCRYPT_SRC)/src/headers/
@@ -178,14 +186,12 @@ export CFLAGS
 export ASFLAGS
 
 .PHONY: all
-ifneq ('$(SECONDARYAPP_ROOT)','./app')
+ifneq ('$(SECONDARYAPP_ROOT)','')
 all: $(SECONDARYAPP_ARCHIVE) $(APP_ARCHIVE) subdirs 
 else
 all: $(APP_ARCHIVE) subdirs 
 endif
 
-
-ifneq ('$(SECONDARYAPP_ROOT)','./app')
 .PHONY: $(SECONDARYAPP_ARCHIVE)
 $(SECONDARYAPP_ARCHIVE):
 	@echo ---------------------------------------------------------------
@@ -195,8 +201,6 @@ $(SECONDARYAPP_ARCHIVE):
 	@echo ---------------------------------------------------------------
 	@echo secondary hyperapp build SUCCESS
 	@echo ---------------------------------------------------------------
-endif
-
 
 .PHONY: $(APP_ARCHIVE)
 $(APP_ARCHIVE):
@@ -207,7 +211,6 @@ $(APP_ARCHIVE):
 	@echo ---------------------------------------------------------------
 	@echo primary hyperapp build SUCCESS
 	@echo ---------------------------------------------------------------
-
 
 .PHONY: subdirs
 subdirs: $(LIBBAREMETAL_SRC) 
@@ -259,7 +262,7 @@ install-bin:
 
 .PHONY: install-dev
 install-dev:
-ifneq ('$(SECONDARYAPP_ROOT)','./app')
+ifneq ('$(SECONDARYAPP_ROOT)','')
 	cd $(SECONDARYAPP_ROOT) && $(MAKE) -w install-dev
 endif
 
@@ -272,14 +275,14 @@ endif
 # Currently the only tests we have are in the TrustVisor tree
 .PHONY: test
 test:
-ifneq ('$(SECONDARYAPP_ROOT)','./app')
+ifneq ('$(SECONDARYAPP_ROOT)','')
 	cd $(SECONDARYAPP_ROOT) && $(MAKE) -w test
 endif
 	cd $(APP_ROOT) && $(MAKE) -w test
 
 .PHONY: clean distclean init-late-clean
 clean:
-ifneq ('$(SECONDARYAPP_ROOT)','./app')
+ifneq ('$(SECONDARYAPP_ROOT)','')
 	@echo ---------------------------------------------------------------
 	@echo Cleaning secondary hyperapp...
 	@echo ---------------------------------------------------------------
