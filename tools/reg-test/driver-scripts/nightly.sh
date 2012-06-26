@@ -74,7 +74,7 @@ fi
 ## 2. Copy the hypervisor files to all the test hosts' /boot's
 
 # TODO: Centralize all path settings
-EMHF_RELPATH=../../../xmhf/src
+EMHF_RELPATH=../../../xmhf
 if [ ! -d "$EMHF_RELPATH" ]; then
     echo -e "\nERROR: EMHF_RELPATH $EMHF_RELPATH DOES NOT EXIST; ABORTING REMAINING REGRESSION TESTING!!!\n" >> $BUILD_LOG
     email_logs $BUILD_LOG
