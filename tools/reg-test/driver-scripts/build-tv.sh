@@ -17,7 +17,7 @@ XMHF_ABSPATH=`( cd "$MY_PATH/$XMHF_RELPATH" && pwd )`
 
 # and these are TrustVisor and tee-sdk's paths
 TV_RELPATH=../../../trustvisor
-TV_XMHF_RELPATH=../../trustvisor
+TV_XMHF_RELPATH=../trustvisor
 TV_ABSPATH=`( cd "$MY_PATH/$TV_RELPATH" && pwd )`
 TEESDK_RELPATH=../../../tee-sdk
 TEESDK_ABSPATH=`( cd "$MY_PATH/$TEESDK_RELPATH" && pwd )`
