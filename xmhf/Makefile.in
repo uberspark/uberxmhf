@@ -1,10 +1,12 @@
 # Rootest Makefile for XMHF and an App
 # Builds a bunch of subdirectories here, and then builds the app
 
+EMHF_TOPDIR := $(dir $(lastword $(MAKEFILE_LIST)))
+EMHF_ABSTOPDIR := $(realpath $(EMHF_TOPDIR))
+
 # define XMHF root directory and XMHF core include directory for
 # apps
-export EMHF_ROOT := $(CURDIR)
-export EMHF_INCLUDE := $(CURDIR)/x86/include
+export EMHF_INCLUDE := $(EMHF_ABSTOPDIR)/src/xmhf-core/include
 
 # define CMOCK and UNITY for app unit test support
 export CMOCKDIR := @CMOCKDIR@
@@ -55,7 +57,7 @@ export APP_ARCHIVE := $(builddir)/$(APP_ROOT)/@APP_ARCHIVE@
 export SECONDARYAPP_ARCHIVE := $(builddir)/$(SECONDARYAPP_ROOT)/@SECONDARYAPP_ARCHIVE@
 
 export ADDL_LIBS := $(LIBBAREMETAL_BUILD)/_objects/$(LIBBAREMETAL_ARCHIVE)
-export ADDL_INCLUDES := -I$(CURDIR)/xmhf-core/include $(LIBBAREMETAL_INC)
+export ADDL_INCLUDES := -I$(EMHF_INCLUDE) $(LIBBAREMETAL_INC)
 
 export ADDL_LIBS += $(LIBTOMCRYPT_BUILD)/$(LIBTOMCRYPT_ARCHIVE)
 export ADDL_INCLUDES += -I$(LIBTOMCRYPT_SRC)/src/headers/
@@ -100,86 +102,80 @@ export MKDIR = @MKDIR@
 export CAT = @CAT@
 
 export CCLIB = @CCLIB@
-##################################################################################
-### END Variables controlled using autoconf
-##################################################################################
 
 # FIXME- this should be configurable
 # export CFLAGS=-m32
 
 ##CFLAGS and ASFLAGS population
 # experimental support
-	export INIT_LATE := n
-	export E820_UG_TEST := n
-	export TEST_CPU_QUIESCE := n
+export INIT_LATE := n
+export E820_UG_TEST := n
+export TEST_CPU_QUIESCE := n
 
 # relatively stable support
 # TODO: FIXME: Build breaks with some combinations of these options.
 # They aren't really "options" anymore
 # TODO: Control these with autoconf
-	export DMAPROT := y
-	export NESTED_PAGING := y
+export DMAPROT := y
+export NESTED_PAGING := y
 
 
 #-----build configuration
-	#-----basic flags for compiling and assembling
-	CFLAGS = -fno-builtin -fno-common -fno-strict-aliasing -iwithprefix include
-	CFLAGS += -fno-stack-protector
-	CFLAGS += -Wstrict-prototypes -Wdeclaration-after-statement 
-	CFLAGS += -Wno-pointer-arith -Wextra -Wfloat-equal 
-	CFLAGS += -Werror
-	CFLAGS += -Wcast-qual -Wsign-compare
-	CFLAGS += -Wno-bad-function-cast -Wall
-	CFLAGS += -Waggregate-return
-	CFLAGS += -Winline
-	CFLAGS += -m32 -march=k8 
-	CFLAGS += -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-ssse3 
-	CFLAGS += -mno-sse4.1 -mno-sse4.2 -mno-sse4 -mno-avx -mno-aes 
-	CFLAGS += -mno-pclmul -mno-sse4a -mno-sse5 -mno-3dnow -mno-popcnt -mno-abm
-	CFLAGS += -nostdinc -pipe
-	
-	CFLAGS += $(ADDL_INCLUDES)
+#-----basic flags for compiling and assembling
+CFLAGS = -fno-builtin -fno-common -fno-strict-aliasing -iwithprefix include
+CFLAGS += -fno-stack-protector
+CFLAGS += -Wstrict-prototypes -Wdeclaration-after-statement 
+CFLAGS += -Wno-pointer-arith -Wextra -Wfloat-equal 
+CFLAGS += -Werror
+CFLAGS += -Wcast-qual -Wsign-compare
+CFLAGS += -Wno-bad-function-cast -Wall
+CFLAGS += -Waggregate-return
+CFLAGS += -Winline
+CFLAGS += -m32 -march=k8 
+CFLAGS += -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-ssse3 
+CFLAGS += -mno-sse4.1 -mno-sse4.2 -mno-sse4 -mno-avx -mno-aes 
+CFLAGS += -mno-pclmul -mno-sse4a -mno-sse5 -mno-3dnow -mno-popcnt -mno-abm
+CFLAGS += -nostdinc -pipe
 
-	#-----generate compiler/assembler defines from configuration options selected
-	ifeq ($(NESTED_PAGING), y)
-		CFLAGS += -D__NESTED_PAGING__
-	endif
-	ifeq ($(DEBUG_SERIAL), y)
-		CFLAGS += -D__DEBUG_SERIAL__
-		CFLAGS += -DDEBUG_PORT=$(DEBUG_SERIAL_PORT)
-	endif
-	ifeq ($(DEBUG_VGA), y)
-		CFLAGS += -D__DEBUG_VGA__
-	endif
-	ifeq ($(MP_VERSION), y)
-		CFLAGS += -D__MP_VERSION__
-	endif
+CFLAGS += $(ADDL_INCLUDES)
 
-	CFLAGS += -D__DO_SENTER__
+#-----generate compiler/assembler defines from configuration options selected
+ifeq ($(NESTED_PAGING), y)
+	CFLAGS += -D__NESTED_PAGING__
+endif
+ifeq ($(DEBUG_SERIAL), y)
+	CFLAGS += -D__DEBUG_SERIAL__
+	CFLAGS += -DDEBUG_PORT=$(DEBUG_SERIAL_PORT)
+endif
+ifeq ($(DEBUG_VGA), y)
+	CFLAGS += -D__DEBUG_VGA__
+endif
+ifeq ($(MP_VERSION), y)
+	CFLAGS += -D__MP_VERSION__
+endif
 
-	ifeq ($(DMAPROT), y)
-		CFLAGS += -D__DMAPROT__	
-	endif
-	ifeq ($(E820_UG_TEST), y)
-		CFLAGS += -D__E820_UG_TEST__
-	endif
-	ifeq ($(TEST_CPU_QUIESCE), y)
-		CFLAGS += -D__TEST_CPU_QUIESCE__
-	endif
+CFLAGS += -D__DO_SENTER__
 
+ifeq ($(DMAPROT), y)
+	CFLAGS += -D__DMAPROT__	
+endif
+ifeq ($(E820_UG_TEST), y)
+	CFLAGS += -D__E820_UG_TEST__
+endif
+ifeq ($(TEST_CPU_QUIESCE), y)
+	CFLAGS += -D__TEST_CPU_QUIESCE__
+endif
 	# late initialization support (experimental)
-	ifeq ($(INIT_LATE), y)
-		CFLAGS += -D__INIT_LATE__ 
-		CFLAGS += -DPERF_CRIT
-	endif
+ifeq ($(INIT_LATE), y)
+	CFLAGS += -D__INIT_LATE__ 
+	CFLAGS += -DPERF_CRIT
+endif
 
+#-----export CFLAGS and ASFLAGS
+ASFLAGS = $(CFLAGS) -D__ASSEMBLY__
 
-	#-----export CFLAGS and ASFLAGS
-	ASFLAGS = $(CFLAGS) -D__ASSEMBLY__
-
-	export CFLAGS
-	export ASFLAGS
-
+export CFLAGS
+export ASFLAGS
 
 .PHONY: all
 ifneq ('$(SECONDARYAPP_ROOT)','./app')
@@ -200,7 +196,7 @@ $(SECONDARYAPP_ARCHIVE):
 	@echo secondary hyperapp build SUCCESS
 	@echo ---------------------------------------------------------------
 endif
-	
+
 
 .PHONY: $(APP_ARCHIVE)
 $(APP_ARCHIVE):
@@ -242,14 +238,14 @@ subdirs: $(LIBBAREMETAL_SRC)
 	@echo ---------------------------------------------------------------
 	@echo Building XMHF core/hyperapp...
 	@echo ---------------------------------------------------------------
-	cd xmhf-core && $(MAKE) -w all
+	cd src/xmhf-core && $(MAKE) -w all
 	@echo ---------------------------------------------------------------
 	@echo XMHF core/hyperapp build SUCCESS
 	@echo ---------------------------------------------------------------
 
 .PHONY: init-late
 init-late: $(APP_ARCHIVE) subdirs
-	cd xmhf-core && make -w init-late
+	cd src/xmhf-core && make -w init-late
 
 .PHONY: install
 install: install-dev install-bin
@@ -319,7 +315,7 @@ endif
 	@echo ---------------------------------------------------------------
 	@echo Cleaning XMHF core/hyperapp...
 	@echo ---------------------------------------------------------------
-	cd xmhf-core && $(MAKE) -w clean
+	cd src/xmhf-core && $(MAKE) -w clean
 	@echo ---------------------------------------------------------------
 	@echo XMHF core/hyperapp cleanup SUCCESS
 	@echo ---------------------------------------------------------------
@@ -331,9 +327,9 @@ distclean: clean
 	$(RM) -rf Makefile
 
 init-late-clean:
-	cd xmhf-core && make -w init-late-clean
+	cd src/xmhf-core && make -w init-late-clean
 
-	
+
 #-----autoconf rules
 Makefile: Makefile.in config.status
 	./config.status $@
