@@ -12,7 +12,7 @@ REPO_ROOT_RELPATH=../../..
 REPO_ROOT_ABSPATH=`( cd "$MY_PATH/$REPO_ROOT_RELPATH" && pwd )`
 
 # These are the relative & absolute paths of XMHF
-XMHF_RELPATH=../../../xmhf/src
+XMHF_RELPATH=../../../xmhf
 XMHF_ABSPATH=`( cd "$MY_PATH/$XMHF_RELPATH" && pwd )`
 
 # and these are TrustVisor and tee-sdk's paths
