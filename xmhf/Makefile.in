@@ -33,7 +33,7 @@ LIBTOMCRYPT_ARCHIVE = libtomcrypt.a
 # libbaremetal "source" location, currently hard-coded
 # TODO: specify via configure
 # LIBBAREMETAL_SRC = $(CURDIR)/libbaremetal
-export LIBBAREMETAL_SRC := @LIBBAREMETAL_SRC@
+export LIBBAREMETAL_SRC := $(realpath @LIBBAREMETAL_SRC@)
 
 # libbaremetal archive
 # TODO: specify via configure
