@@ -68,6 +68,10 @@ LIBBAREMETAL_SRC=$[]with_libbaremetalsrc
 dnl AS_IF([test "x${LIBBAREMETAL_SRC:0:1}" != "x/"],
 dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$LIBBAREMETAL_SRC])
 
+AC_CHECK_FILE([${LIBBAREMETAL_SRC}/libxmhfc],
+        ,
+        AC_MSG_FAILURE([libbaremetal not found at "${LIBBAREMETAL_SRC}"]))
+
 # libtommath source directory
 AC_SUBST([LIBTOMMATH_SRC])
 AC_ARG_WITH([libtommathsrc],
@@ -75,6 +79,9 @@ AC_ARG_WITH([libtommathsrc],
                 [path to libtommath source directory]),
                 , [with_libtommathsrc=../third-party/libtommath])
 LIBTOMMATH_SRC=$[]with_libtommathsrc
+AC_CHECK_FILE([${LIBTOMMATH_SRC}/tommath.h],
+        ,
+        AC_MSG_FAILURE([libtommath not found at "${LIBTOMMATH_SRC}"]))
 
 # libtomcrypt source directory
 AC_SUBST([LIBTOMCRYPT_SRC])
@@ -83,6 +90,9 @@ AC_ARG_WITH([libtomcryptsrc],
                 [path to libtomcrypt source directory]),
                 , [with_libtomcryptsrc=../third-party/libtomcrypt])
 LIBTOMCRYPT_SRC=$[]with_libtomcryptsrc
+AC_CHECK_FILE([${LIBTOMCRYPT_SRC}/src/headers/tomcrypt.h],
+        ,
+        AC_MSG_FAILURE([libtomcrypt not found at "${LIBTOMCRYPT_SRC}"]))
 
 # EMHF app root directory
 AC_SUBST([APP_ROOT])
