@@ -49,7 +49,7 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#include <emhf.h>
+#include <xmhf.h>
 
 //get CPU vendor
 u32 emhf_baseplatform_getcpuvendor(void){

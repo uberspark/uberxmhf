@@ -51,7 +51,7 @@
  * Edited for TrustVisor on EMHF by Zongwei Zhou
  */
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 #include <scode.h>
 #include <malloc.h>

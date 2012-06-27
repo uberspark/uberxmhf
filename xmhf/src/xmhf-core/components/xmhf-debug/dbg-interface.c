@@ -48,7 +48,7 @@
 // Author(s): Amit Vasudevan (amitvasudevan@acm.org)
 //			  James Newsome
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 uint8_t g_log_targets=LOG_TARGET_NONE;
 uint8_t g_log_level=LOG_LEVEL_NONE;

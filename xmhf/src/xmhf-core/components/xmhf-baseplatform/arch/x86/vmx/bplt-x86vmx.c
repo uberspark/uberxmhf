@@ -49,7 +49,7 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#include <emhf.h>
+#include <xmhf.h>
 
 //initialize CPU state
 void emhf_baseplatform_arch_x86vmx_cpuinitialize(void){

@@ -47,7 +47,7 @@
 //peh-x86vmx-entry.S
 //entry point for EMHF partition event-hub component for Intel x86 vmx
 //author: amit vasudevan (amitvasudevan@acm.org)
-#include <emhf.h>
+#include <xmhf.h>
 
 //----------------------------------------------------------------------
 //globals referenced

@@ -11,38 +11,7 @@ export APP_INCLUDEDIR = $(SRCDIR)/src/include
 export APPOBJECTSDIR = $(SRCDIR)/src/objects
 
 #-----basic flags for compiling
-CFLAGS = -fno-builtin -fno-common -fno-strict-aliasing -iwithprefix include
-CFLAGS += -fno-stack-protector
-CFLAGS += -Wimplicit-function-declaration
-CFLAGS += -Wall
-CFLAGS += -Wparentheses
-CFLAGS += -Wunused
-CFLAGS += -Wstrict-prototypes -Wdeclaration-after-statement 
-CFLAGS += -Werror -Wno-pointer-arith -Wextra -Wfloat-equal 
-CFLAGS += -Wbad-function-cast -Wcast-qual -Wsign-compare 
-CFLAGS += -Waggregate-return
-CFLAGS += -Winline
-CFLAGS += -m32 -march=k8
-CFLAGS += -mno-sse2
-# CFLAGS += -nostdinc -pipe -I$(EMHF_INCLUDEDIR) -I$(APP_INCLUDEDIR) $(ADDL_INCLUDES)
-CFLAGS += -nostdinc -pipe -I$(EMHF_INCLUDE) -I$(APP_INCLUDEDIR) $(ADDL_INCLUDES)
-
-#-----generate compiler/assembler defines from configuration options selected
-ifeq ($(NESTED_PAGING), y)
-CFLAGS += -D__NESTED_PAGING__
-endif
-ifeq ($(DEBUG_SERIAL), y)
-CFLAGS += -D__DEBUG_SERIAL__
-CFLAGS += -DDEBUG_PORT=$(DEBUG_SERIAL_PORT)
-endif
-ifeq ($(DEBUG_VGA), y)
-CFLAGS += -D__DEBUG_VGA__
-endif
-ifeq ($(MP_VERSION), y)
-CFLAGS += -D__MP_VERSION__
-endif
-
-ASFLAGS = $(CFLAGS) -D__ASSEMBLY__
+CFLAGS += -I$(APP_INCLUDEDIR)
 
 # app-specific configuration options
 export LDN_TV_INTEGRATION := n

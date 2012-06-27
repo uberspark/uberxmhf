@@ -48,7 +48,7 @@
 //secure loader implementation
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 RPB * rpb;
 u32 sl_baseaddr=0;	

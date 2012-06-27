@@ -47,7 +47,7 @@
 // peh-x86vmx-main.c
 // EMHF partition event-hub for Intel x86 vmx
 // author: amit vasudevan (amitvasudevan@acm.org)
-#include <emhf.h> 
+#include <xmhf.h> 
 
 
 //---VMX decode assist----------------------------------------------------------

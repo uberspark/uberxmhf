@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <emhf.h>
+#include <xmhf.h>
 #include <tv_emhf.h>
 
 u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb)

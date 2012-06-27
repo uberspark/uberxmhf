@@ -62,27 +62,37 @@ AC_SUBST([LIBBAREMETAL_SRC])
 AC_ARG_WITH([libbaremetalsrc],
         AS_HELP_STRING([--with-libbaremetalsrc=@<:@path@:>@],
                 [path to libbaremetal source directory]),
-                , [with_libbaremetalsrc=./libbaremetal])
+                , [with_libbaremetalsrc=../libbaremetal/src])
 LIBBAREMETAL_SRC=$[]with_libbaremetalsrc
 # make absolute
 dnl AS_IF([test "x${LIBBAREMETAL_SRC:0:1}" != "x/"],
 dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$LIBBAREMETAL_SRC])
+
+AC_CHECK_FILE([${LIBBAREMETAL_SRC}/libxmhfc],
+        ,
+        AC_MSG_FAILURE([libbaremetal not found at "${LIBBAREMETAL_SRC}"]))
 
 # libtommath source directory
 AC_SUBST([LIBTOMMATH_SRC])
 AC_ARG_WITH([libtommathsrc],
         AS_HELP_STRING([--with-libtommathsrc=@<:@path@:>@],
                 [path to libtommath source directory]),
-                , [with_libtommathsrc=./libtommath])
+                , [with_libtommathsrc=../third-party/libtommath])
 LIBTOMMATH_SRC=$[]with_libtommathsrc
+AC_CHECK_FILE([${LIBTOMMATH_SRC}/tommath.h],
+        ,
+        AC_MSG_FAILURE([libtommath not found at "${LIBTOMMATH_SRC}"]))
 
 # libtomcrypt source directory
 AC_SUBST([LIBTOMCRYPT_SRC])
 AC_ARG_WITH([libtomcryptsrc],
         AS_HELP_STRING([--with-libtomcryptsrc=@<:@path@:>@],
                 [path to libtomcrypt source directory]),
-                , [with_libtomcryptsrc=./libtomcrypt])
+                , [with_libtomcryptsrc=../third-party/libtomcrypt])
 LIBTOMCRYPT_SRC=$[]with_libtomcryptsrc
+AC_CHECK_FILE([${LIBTOMCRYPT_SRC}/src/headers/tomcrypt.h],
+        ,
+        AC_MSG_FAILURE([libtomcrypt not found at "${LIBTOMCRYPT_SRC}"]))
 
 # EMHF app root directory
 AC_SUBST([APP_ROOT])
@@ -91,6 +101,9 @@ AC_ARG_WITH([approot],
                 [path to EMHF app source directory]),
                 , [with_approot=./app])
 APP_ROOT=$[]with_approot
+# AC_CONFIG_SUBDIRS fails silently on absolute paths
+AS_IF([test "x${APP_ROOT:0:1}" == "x/"],
+            AC_MSG_FAILURE([approot must be a relative path.]))
 # make absolute
 dnl AS_IF([test "x${APP_ROOT:0:1}" != "x/"],
 dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$APP_ROOT])
@@ -115,8 +128,11 @@ AC_SUBST([SECONDARYAPP_ROOT])
 AC_ARG_WITH([secondaryapproot],
         AS_HELP_STRING([--with-secondaryapproot=@<:@path@:>@],
                 [(optional) path to secondary EMHF app source directory]),
-                , [with_secondaryapproot=./app])
+                , [with_secondaryapproot=])
 SECONDARYAPP_ROOT=$[]with_secondaryapproot
+# AC_CONFIG_SUBDIRS fails silently on absolute paths
+AS_IF([test "x${SECONDARYAPP_ROOT:0:1}" == "x/"],
+            AC_MSG_FAILURE([secondaryapproot must be a relative path.]))
 # make absolute
 dnl AS_IF([test "x${SECONDARYAPP_ROOT:0:1}" != "x/"],
 dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$SECONDARYAPP_ROOT])

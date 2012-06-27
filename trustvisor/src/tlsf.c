@@ -156,7 +156,7 @@
 #endif
 
 #include <tv_log.h>
-#include <emhf.h> /* needed for spin_lock etc. */
+#include <xmhf.h> /* needed for spin_lock etc. */
 
 #include "tlsf.h"
 

@@ -91,7 +91,7 @@
  * wheel when the time comes.
  */
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 extern SL_PARAMETER_BLOCK *slpb; /* Ugh; ugly global from init.c */
 

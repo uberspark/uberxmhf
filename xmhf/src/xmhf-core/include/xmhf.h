@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//emhf.h - main EMHF core header file 
+//xmhf.h - main EMHF core header file 
 // this orchestrates the inclusion of other core component specific
 // headers
 //author: amit vasudevan (amitvasudevan@acm.org)

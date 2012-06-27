@@ -48,7 +48,7 @@
 // xmhf application main module
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <emhf.h>
+#include <xmhf.h>
 
 // application main
 u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){

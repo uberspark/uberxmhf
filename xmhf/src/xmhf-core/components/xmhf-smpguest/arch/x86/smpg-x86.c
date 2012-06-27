@@ -48,7 +48,7 @@
 // x86 arch. backend implementation
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 //initialize SMP guest logic
 void emhf_smpguest_arch_initialize(VCPU *vcpu){

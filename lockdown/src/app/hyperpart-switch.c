@@ -47,7 +47,7 @@
 // ACPI interface implementation
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <emhf.h>
+#include <xmhf.h>
 
 #include <lockdown.h>
 

@@ -47,7 +47,7 @@
 // smpg-x86svm - EMHF SMP guest component x86 (SVM) backend
 // implementation
 // author: amit vasudevan (amitvasudevan@acm.org)
-#include <emhf.h> 
+#include <xmhf.h> 
 
 //======================================================================
 //LOCALS

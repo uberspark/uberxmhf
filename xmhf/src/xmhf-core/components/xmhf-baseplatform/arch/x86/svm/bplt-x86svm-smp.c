@@ -50,7 +50,7 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#include <emhf.h>
+#include <xmhf.h>
 
 //allocate and setup VCPU structure for all the CPUs
 void emhf_baseplatform_arch_x86svm_allocandsetupvcpus(u32 cpu_vendor){

@@ -48,7 +48,7 @@
  * EMHF exception handler component low-level stubs
  */
  
-#include <emhf.h>
+#include <xmhf.h>
 #include <xmhf-xcphandler.h>
 
 .altmacro

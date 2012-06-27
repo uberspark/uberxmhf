@@ -49,7 +49,7 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#include <emhf.h>
+#include <xmhf.h>
 
 //---init SVM-------------------------------------------------------------------
 static void _svm_initSVM(VCPU *vcpu){

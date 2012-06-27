@@ -48,7 +48,7 @@
 //implements supporting low-level routines for SVM isolation layer
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 //---globals referenced by this module------------------------------------------
 .extern g_midtable_numentries
