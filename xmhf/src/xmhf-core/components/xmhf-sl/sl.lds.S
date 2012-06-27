@@ -86,11 +86,6 @@ SECTIONS
     *(.rodata)
   } >low
 
-  /* discard? */
-  .eh_frame : {
-    *(.eh_frame)
-  } >low
-
   .bss : {
     *(.bss)
     /*. = ALIGN(4096);*/    
@@ -115,6 +110,13 @@ SECTIONS
     *(.comment)
     . = ALIGN(0x200000);
   } >high
+
+  /* .eh_frame overflows our memory limits when building on some platforms.
+   * Shouldn't be necessary since we don't use exceptions.
+   */
+  /DISCARD/ : {
+    *(.eh_frame)
+  } >low
 
   /* this is to cause the link to fail if there is
    * anything we didn't explicitly place.

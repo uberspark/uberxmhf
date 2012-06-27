@@ -298,6 +298,8 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 					guest_cs = gueststackregion[1];
 					guest_flags = gueststackregion[2];
 
+				(void)guest_cs;
+				(void)guest_ip;
 				//printf("\nINT15 (E820): guest_flags=%04x, guest_cs=%04x, guest_ip=%04x",
 				//	guest_flags, guest_cs, guest_ip);
 			

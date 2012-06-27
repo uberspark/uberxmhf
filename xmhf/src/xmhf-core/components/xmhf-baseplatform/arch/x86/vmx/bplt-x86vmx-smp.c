@@ -139,6 +139,7 @@ void emhf_baseplatform_arch_x86vmx_wakeupAPs(void){
         txt_heap = get_txt_heap();
         //printf("\ntxt_heap = 0x%08x", (u32)txt_heap);
         os_mle_data = get_os_mle_data_start(txt_heap);
+        (void)os_mle_data;
         //printf("\nos_mle_data = 0x%08x", (u32)os_mle_data);
         sinit_mle_data = get_sinit_mle_data_start(txt_heap);
         //printf("\nsinit_mle_data = 0x%08x", (u32)sinit_mle_data);
