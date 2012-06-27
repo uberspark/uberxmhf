@@ -61,17 +61,18 @@
 
 //open TPM locality
 int emhf_tpm_open_locality(int locality){
-	int status;
-
     /* We expect locality 1 or 2 */
     if(locality < 1 || locality > 2) {
         return 1;
     }
 	
-	status = emhf_tpm_arch_open_locality(locality);
+    if(emhf_tpm_arch_open_locality(locality)) {
+      printf("\n%s: FAILED to open TPM locality %d\n", __FUNCTION__, locality);
+      return 1;
+    };
 
     if(!emhf_tpm_is_tpm_ready(locality)) {
-        printf("\n%s: FAILED to open TPM locality %d\n", __FUNCTION__, locality);
+        printf("\n%s: ERROR TPM is not ready, failed to open locality %d\n", __FUNCTION__, locality);
         return 1;
     } 
 
