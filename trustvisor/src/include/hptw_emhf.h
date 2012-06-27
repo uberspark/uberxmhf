@@ -48,7 +48,7 @@
 #define HPTW_EMHF_H
 
 #include <hptw.h>
-#include <emhf.h>
+#include <xmhf.h>
 #include <pages.h>
 
 typedef struct {

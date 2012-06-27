@@ -48,7 +48,7 @@
 // xmhf application main module
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <emhf.h>
+#include <xmhf.h>
 
 #define	QUIESCE_HYPERCALL		0x44550002
 

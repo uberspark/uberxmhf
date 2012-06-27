@@ -47,7 +47,7 @@
 #ifndef TV_EMHF_H
 #define TV_EMHF_H
 
-#include <emhf.h>
+#include <xmhf.h>
 
 u32 tv_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb);
 u32 tv_app_handlehypercall(VCPU *vcpu, struct regs *r);

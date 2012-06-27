@@ -49,7 +49,7 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#include <emhf.h>
+#include <xmhf.h>
 
 //SVM specific platform reboot
 void emhf_baseplatform_arch_x86svm_reboot(VCPU *vcpu){

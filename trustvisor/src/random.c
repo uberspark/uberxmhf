@@ -50,7 +50,7 @@
  * TODO: Support re-seeding.
  */
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 #include <random.h>
 #include <crypto_init.h>

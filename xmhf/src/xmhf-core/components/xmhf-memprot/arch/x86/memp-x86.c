@@ -48,7 +48,7 @@
 // generic x86 arch. backend implementation
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 // initialize memory protection structures for a given core (vcpu)
 void emhf_memprot_arch_initialize(VCPU *vcpu){

@@ -47,7 +47,7 @@
 // EMHF DMA protection component implementation
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 //return size (in bytes) of the memory buffer required for
 //DMA protection for a given physical memory limit

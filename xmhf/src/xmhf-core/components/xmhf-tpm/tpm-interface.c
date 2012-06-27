@@ -57,7 +57,7 @@
  * Author: Jonathan McCune and Amit Vasudevan (amitvasudevan@acm.org)
  */
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 //open TPM locality
 int emhf_tpm_open_locality(int locality){

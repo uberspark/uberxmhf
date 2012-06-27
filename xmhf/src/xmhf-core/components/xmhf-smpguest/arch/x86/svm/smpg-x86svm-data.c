@@ -50,7 +50,7 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
  
-#include <emhf.h> 
+#include <xmhf.h> 
 
 //the BSP LAPIC base address - smpguest x86svm
 u32 g_svm_lapic_base __attribute__(( section(".data") )) = 0;

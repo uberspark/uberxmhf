@@ -47,7 +47,7 @@
 // EMHF DMA protection component implementation for x86 SVM
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 //static variables 
 //SVM EAP container structure, contains the DEV registers and the DEV bitmap 

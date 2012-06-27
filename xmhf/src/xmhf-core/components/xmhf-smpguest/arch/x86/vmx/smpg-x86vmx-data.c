@@ -50,7 +50,7 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
  
-#include <emhf.h> 
+#include <xmhf.h> 
 
 //the BSP LAPIC base address
 //smpguest x86vmx

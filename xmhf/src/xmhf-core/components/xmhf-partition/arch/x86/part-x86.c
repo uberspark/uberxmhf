@@ -50,7 +50,7 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#include <emhf.h>
+#include <xmhf.h>
 
 //initialize partition monitor for a given CPU
 void emhf_partition_arch_initializemonitor(VCPU *vcpu){

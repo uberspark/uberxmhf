@@ -47,7 +47,7 @@
 // EMHF DMA protection component implementation for x86 VMX
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 //maximum number of RSDT entries we support
 #define	ACPI_MAX_RSDT_ENTRIES		(256)

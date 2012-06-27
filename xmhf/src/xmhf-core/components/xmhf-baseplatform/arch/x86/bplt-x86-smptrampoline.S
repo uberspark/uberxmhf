@@ -49,7 +49,7 @@
  * SMP initialization low-level trampoline
  */
  
-#include <emhf.h>
+#include <xmhf.h>
 
 	.extern g_midtable
 	.extern g_midtable_numentries

@@ -49,7 +49,7 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#include <emhf.h>
+#include <xmhf.h>
 
 //---globals referenced by this module------------------------------------------
 //TODO: need to remove these direct references

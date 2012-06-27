@@ -47,7 +47,7 @@
 // smpg-x86vmx - EMHF SMP guest component x86 (VMX) backend
 // implementation
 // author: amit vasudevan (amitvasudevan@acm.org)
-#include <emhf.h> 
+#include <xmhf.h> 
 
 //the LAPIC register that is being accessed during emulation
 static u32 g_vmx_lapic_reg __attribute__(( section(".data") )) = 0;

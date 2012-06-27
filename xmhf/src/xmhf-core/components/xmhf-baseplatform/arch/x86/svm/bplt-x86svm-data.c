@@ -49,7 +49,7 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#include <emhf.h>
+#include <xmhf.h>
 
 //SVM VM_HSAVE buffers 
 u8 g_svm_hsave_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES]__attribute__(( section(".palign_data") ));

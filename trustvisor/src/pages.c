@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 #include <malloc.h>
 #include <pages.h>

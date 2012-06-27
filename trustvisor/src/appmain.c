@@ -54,7 +54,7 @@
  * jnewsome@cmu.edu, jonmccune@cmu.edu
  */
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 #include <malloc.h>
 #include <scode.h>

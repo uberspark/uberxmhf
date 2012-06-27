@@ -49,7 +49,7 @@
  * author: amit vasudevan (amitvasudevan@acm.org) and Jonathan M. McCune
  */
 
-#include <emhf.h>
+#include <xmhf.h>
 
 //open TPM locality
 int emhf_tpm_arch_x86svm_open_locality(int locality){

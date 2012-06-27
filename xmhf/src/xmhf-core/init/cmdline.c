@@ -83,7 +83,7 @@
  * Modified for XMHF.
  */
 
-#include <emhf.h> 
+#include <xmhf.h> 
 #include <cmdline.h>
 
 /*

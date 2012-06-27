@@ -48,7 +48,7 @@
 // implementation
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 // we implement the smp guest component in a way that if
 // we run a uniprocessor guest then we can safely do away

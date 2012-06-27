@@ -83,7 +83,7 @@
  * Modified for XMHF by jonmccune@cmu.edu, 2011.01.04
  */
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 static inline void print_heap_hash(sha1_hash_t hash)
 {

@@ -83,7 +83,7 @@
  * Modified for XMHF by jonmccune@cmu.edu, 2011.01.05
  */
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 #define MTRR_TYPE_MIXED         -1
 #define MMIO_APIC_BASE          0xFEE00000

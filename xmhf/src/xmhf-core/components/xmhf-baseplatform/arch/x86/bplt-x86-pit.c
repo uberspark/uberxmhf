@@ -52,7 +52,7 @@
 // be called when a guest OS has been booted up on the physical PIT without
 // saving/restoring the PIT registers
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 //---microsecond delay----------------------------------------------------------
 void emhf_baseplatform_arch_x86_udelay(u32 usecs){

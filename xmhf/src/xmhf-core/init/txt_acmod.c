@@ -84,7 +84,7 @@
  * Modified for XMHF by jonmccune@cmu.edu, 2011.01.04
  */
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 static acm_info_table_t *get_acmod_info_table(acm_hdr_t* hdr)
 {

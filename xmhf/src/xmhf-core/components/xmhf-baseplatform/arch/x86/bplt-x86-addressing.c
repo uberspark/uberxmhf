@@ -49,7 +49,7 @@
 //  authors: amit vasudevan (amitvasudevan@acm.org) and
 // 			jonathan m. mccune
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 //functions to read/write memory using flat selector so that they
 //can be used from both within the SL and runtime

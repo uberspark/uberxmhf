@@ -1,7 +1,7 @@
 // EMHF secure loader component entry point
 // authors: amit vasudevan (amitvasudevan@acm.org) and jonmccune@cmu.edu
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 ///--- ALL COMMENTS BEGINNING WITH ///--- ARE RELATED TO JON'S
 ///--- EFFORTS TO DEBUG SENTER SUPPORT.  LEAVING THEM IN FOR NOW.

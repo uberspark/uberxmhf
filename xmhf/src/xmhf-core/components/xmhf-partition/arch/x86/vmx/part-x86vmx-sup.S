@@ -47,7 +47,7 @@
 // islayer low-level support for VMX
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 //---globals and externs referenced by this module------------------------------------------
 .extern x_gdt_start

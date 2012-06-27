@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <emhf.h>
+#include <xmhf.h>
 
 void *emhfc_putchar_arg;
 

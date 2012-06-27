@@ -47,7 +47,7 @@
 #ifndef _RANDOM_H_
 #define _RANDOM_H_
 
-#include <emhf.h> 
+#include <xmhf.h> 
 #include <tomcrypt.h>
 
 /* interface exposed to the rest of TrustVisor */

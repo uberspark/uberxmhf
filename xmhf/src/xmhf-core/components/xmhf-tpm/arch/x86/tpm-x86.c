@@ -49,7 +49,7 @@
  * author: amit vasudevan (amitvasudevan@acm.org) and Jonathan M. McCune
  */
 
-#include <emhf.h>
+#include <xmhf.h>
 
 
 //======================================================================

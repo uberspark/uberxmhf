@@ -47,7 +47,7 @@
 //	pci.c - peripheral component interconnect (PCI) interface implementation
 //  author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 /*
 	note on the two different types of PCI config space access methods

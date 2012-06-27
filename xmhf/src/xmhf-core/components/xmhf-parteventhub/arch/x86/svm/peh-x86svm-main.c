@@ -47,7 +47,7 @@
 // peh-x86svm-main.c
 // EMHF partition event-hub for AMD x86 svm
 // author: amit vasudevan (amitvasudevan@acm.org)
-#include <emhf.h> 
+#include <xmhf.h> 
 
 
 //---IO Intercept handling------------------------------------------------------

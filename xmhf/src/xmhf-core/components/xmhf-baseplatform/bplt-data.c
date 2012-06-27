@@ -50,7 +50,7 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#include <emhf.h>
+#include <xmhf.h>
 
 //system e820 map
 GRUBE820 g_e820map[MAX_E820_ENTRIES] __attribute__(( section(".data") ));

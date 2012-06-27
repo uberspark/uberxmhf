@@ -60,7 +60,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 #include "nist_ctr_drbg.h"
 

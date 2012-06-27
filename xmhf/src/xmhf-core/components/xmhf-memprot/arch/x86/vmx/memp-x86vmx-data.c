@@ -50,7 +50,7 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#include <emhf.h>
+#include <xmhf.h>
 
 //VMX EPT PML4 table buffers
 //memprot

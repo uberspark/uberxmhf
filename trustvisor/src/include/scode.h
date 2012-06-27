@@ -52,7 +52,7 @@
 #ifndef __SCODE_H_
 #define __SCODE_H_
 
-#include <emhf.h> 
+#include <xmhf.h> 
 
 #include <pages.h>
 

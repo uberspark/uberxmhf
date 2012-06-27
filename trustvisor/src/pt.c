@@ -52,7 +52,7 @@
  * EPT or NPT page table operations
  * guest page table operations
  */
-#include <emhf.h> 
+#include <xmhf.h> 
 #include <malloc.h>
 #include  "./include/scode.h"
 #include <pages.h>

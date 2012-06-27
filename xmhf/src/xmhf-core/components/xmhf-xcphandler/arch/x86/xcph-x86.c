@@ -50,7 +50,7 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#include <emhf.h>
+#include <xmhf.h>
 
 //---function to obtain the vcpu of the currently executing core----------------
 //XXX: TODO, move this into baseplatform as backend

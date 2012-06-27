@@ -50,7 +50,7 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#include <emhf.h>
+#include <xmhf.h>
 
 //return 1 if the calling CPU is the BSP
 u32 emhf_baseplatform_arch_x86_isbsp(void){
