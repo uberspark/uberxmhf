@@ -338,6 +338,7 @@ void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
     src_registeraddress = (u32)&g_vmx_virtual_LAPIC_base + g_vmx_lapic_reg;
    
     value_read = *((u32 *)src_registeraddress);
+    (void)value_read;
   }
 
 //fallthrough:  

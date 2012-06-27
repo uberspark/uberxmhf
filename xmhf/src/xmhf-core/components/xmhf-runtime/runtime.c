@@ -57,6 +57,7 @@ void emhf_runtime_entry(void){
 
 	//get CPU vendor
 	cpu_vendor = emhf_baseplatform_getcpuvendor();
+        (void)cpu_vendor;
 
 	//initialize Runtime Parameter Block (rpb)
 	rpb = (RPB *)&arch_rpb;
