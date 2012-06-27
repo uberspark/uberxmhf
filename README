@@ -132,8 +132,6 @@ which environment is active and to switch between them.
 = KNOWN ISSUES =
 ================
 
-Some (L)GPL third-party library code remains.
-
 Aesthetics and software engineering principles may have taken a back
 seat to having running, working code before a deadline. We're trying
 to incrementally improve the situation.
