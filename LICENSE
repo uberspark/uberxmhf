@@ -1,3 +1,8 @@
+New code written for this project is generally placed under the
+following license, included here for informational purposes. Notices
+in individual sub-project directories and source files should be
+considered authoritative. See COPYING for more information.
+
 eXtensible, Modular Hypervisor Framework (XMHF)
 Copyright (c) 2009-2012 Carnegie Mellon University
 Copyright (c) 2010-2012 VDG Inc.
