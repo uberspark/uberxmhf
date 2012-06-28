@@ -144,6 +144,7 @@ static void _vtd_setupRETCET(u32 vtd_pdpt_paddr,
   u64 *value;
   
   retphysaddr=vtd_ret_paddr;
+  (void)retphysaddr;
   cetphysaddr=vtd_cet_paddr;
 
 	//sanity check that pdpt base address is page-aligned

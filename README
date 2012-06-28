@@ -132,8 +132,6 @@ which environment is active and to switch between them.
 = KNOWN ISSUES =
 ================
 
-Some (L)GPL third-party library code remains.
-
 Aesthetics and software engineering principles may have taken a back
 seat to having running, working code before a deadline. We're trying
 to incrementally improve the situation.
@@ -170,6 +168,7 @@ xmhf-1.0: initial public release.
     Ning Qu and Virgil D. Gligor and Adrian Perrig. Technical Report
     CMU-CyLab-09-011, June 2009.
     http://www.cylab.cmu.edu/files/pdfs/tech_reports/CMUCyLab09011.pdf
+
 
 
 

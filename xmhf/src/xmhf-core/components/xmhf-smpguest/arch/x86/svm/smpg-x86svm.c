@@ -344,7 +344,9 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
 
     src_registeraddress = (u32)g_svm_virtual_LAPIC_base + g_svm_lapic_reg;
    
-		value_read = *((u32 *)src_registeraddress);
+    value_read = *((u32 *)src_registeraddress);
+
+    (void)value_read;            
     //printf("\n0x%04x:0x%08x -> (ICR=0x%08x read), value=0x%08x", 
     //  (u16)vmcb->cs.sel, (u32)vmcb->rip, g_svm_lapic_reg, value_read);
   }
