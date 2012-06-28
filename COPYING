@@ -1,14 +1,79 @@
-All source code Copyright Carnegie Mellon University / VDG Inc is
-covered by a BSD-style license; please see the LICENSE file for
-details.
+This repository includes several sub-projects, many of which use code
+from multiple sources, under different licenses. The AUTHORITATIVE
+licenses and conditions are in file-headers and notices in the
+individual sub-projects.
 
-Additional code in this repository comes from other sources.  Each
-file may have its own copyright/license that is embedded in the source
-file, or in the directory where related source files reside.
-Third-party code is summarized below.
+For CONVENIENCE, we here attempt to summarize the state of
+licensing.
 
-In history somewhere
-********************
+Our preference is for permissive licenses allowing binary
+distribution, though possibly requiring attribution. Content generated
+by the XMHF team is generally put under the license in the
+accompanying LICENSE file, though again you should consider individual
+file headers to be authoritative.
+
+Unmodified distribution
+***********************
+
+All software in this repository is under some form of open source
+license. You are free to use and distribute the unmodified repository.
+
+Derived works
+*************
+
+Most of the source licenses have some form of attribution clause
+requiring that any modifications leave the copyright and license
+information place, and that distributed binaries be accompanied with
+that copyright and license information.
+
+We attempt to avoid GPL-style licenses requiring that derived works
+also be under GPL-style licenses. However, there is currently some GPL
+code in this repository. See below.
+
+Binary distribution
+*******************
+
+We attempt to avoid GPL-style licenses requiring that distribution of
+binaries must be accompanied by source code. However, there currently
+is some GPL code in this repository. See below.
+
+GPL status of sub-projects
+**************************
+
+* xmhf:
+  No GPL.
+
+* trustvisor:
+  Statically links tlsf malloc, which has a modified LGPL license.
+  Net result is that a binary distribution must include a 'partially
+  linked' version which could be linked with updated or modified tlsf
+  malloc.
+
+* libbaremetal:
+  No GPL.
+
+* lockdown:
+  The lockdown hypervisor itself is not GPL. Some of the related
+  tools are, though. See lockdown/src/COPYING for a summary.
+
+* tee-sdk:
+  tee-sdk/ports/newlib is GPLv2. Therefore, PALs that link with newlib
+  are infected, including some of the examples in tee-sdk/examples.
+
+* tee-cred:
+  The TEE-Cred PAL links with newlib, causing it to fall under the GPLv2.
+
+* tools:
+  No GPL.
+
+* third-party:
+  No GPL.
+
+Third party code in repository history
+**************************************
+
+We attempt to summarize third-party code and their respective
+licenses that appear somewhere in the history of this repository.
 
 OSLO (GPLv2), 
 Putty (MIT license), 
@@ -17,8 +82,11 @@ Linux kernel (GPLv2),
 Xen (GPLv2)
 amtterm (GPLv2) *** PROBLEM *** <- got updated with our headers
 
-In current HEAD as of 2012-06-23
-********************************
+Third party code in current HEAD as of 2012-06-23
+*************************************************
+
+We attempt to summarize third-party code and their respective
+license that appear in the current repository HEAD.
 
 libtommath (WTFPL)
 libtomcrypto (WTFPL)
@@ -34,10 +102,13 @@ LPCUSB, an USB device driver for LPC microcontrollers  (BSD)
 LPC ARM processor runtime environment (no license, only copyright)
 Generic ARM CRC module by Gary S. Brown (no license, no restrictions)
 
-----------------------------------------------------------------------
-License headers that reside in source files that are required to be
-included in any binary-only distribution (i.e., typical BSD-style
-requirement):
+Notices that must be reproduced
+*******************************
+
+We attempt to catalogue license headers in source files that are
+required to be included in any binary-only distribution (i.e., typical
+BSD-style requirement):
+
 ----------------------------------------------------------------------
 
 Copyright (c) 2003-2010, Intel Corporation
