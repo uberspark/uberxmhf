@@ -4,13 +4,33 @@ licenses and conditions are in file-headers and notices in the
 individual sub-projects.
 
 For CONVENIENCE, we here attempt to summarize the state of
-licensing.
+licensing for this repository.
+
+Our view on licensing
+*********************
 
 Our preference is for permissive licenses allowing binary
-distribution, though possibly requiring attribution. Content generated
-by the XMHF team is generally put under the license in the
-accompanying LICENSE file, though again you should consider individual
-file headers to be authoritative.
+distribution, though possibly requiring attribution. This is motivated
+by several factors:
+
+1) This project is partially sponsored with government funding. For
+this reason it makes sense to make it a "public good" with very few
+restrictions.
+
+2) This project is partially sponsored by independent corporations. We
+would like them to be able to view and use the code without fear of
+legal entanglements.
+
+3) We believe that placing fewer restrictions on this code will help
+it be used more widely and have greater impact.
+
+For these reasons, code generated specifically for this project is
+placed under a BSD-style license, as in the accompanying LICENSE file.
+
+We have attempted to minimize the incorporation of third party code
+that would place additional restrictions on how our code is used.  We
+currently use some GPL code, though we continue to seek non-GPL
+alternatives. See below for more details.
 
 Unmodified distribution
 ***********************
