@@ -1,5 +1,5 @@
-***WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING***
-=====================================================================
+WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+===============================================================
 
 You can ruin your motherboard on Intel hardware if your BIOS is
 buggy. MAKE SURE YOUR BIOS IS UP TO DATE, and use the newest available
