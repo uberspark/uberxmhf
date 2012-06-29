@@ -76,12 +76,12 @@ The core team: Amit Vasudevan, Jonathan M. McCune and James Newsome.
   Implementation of an eXtensible and Modular Hypervisor
   Framework. Amit Vasudevan, Jonathan M. McCune, and James
   Newsome. Technical Report CMU-CyLab-12-014, June
-  2012. http://www.cylab.cmu.edu/files/pdfs/tech_reports/CMUCyLab12014.pdf
+  2012. <http://www.cylab.cmu.edu/files/pdfs/tech_reports/CMUCyLab12014.pdf>
     
 * TrustVisor: Efficient TCB Reduction and Attestation.  Jonathan
   M. McCune, Yanlin Li, Ning Qu, Zongwei Zhou, Anupam Datta, Virgil
   Gligor, and Adrian Perrig. IEEE Symposium on Security and Privacy,
-  May 2010. http://www.ece.cmu.edu/~jmmccune/papers/MLQZDGP2010.pdf
+  May 2010. <http://www.ece.cmu.edu/~jmmccune/papers/MLQZDGP2010.pdf>
 
 * Lockdown: Towards a Safe and Practical Architecture for Security
   Applications on Commodity Platforms.  Amit Vasudevan and Bryan Parno
@@ -93,4 +93,4 @@ The core team: Amit Vasudevan, Jonathan M. McCune and James Newsome.
   (CMU-CyLab-09-011) Amit Vasudevan and Bryan Parno and Ning Qu and
   Virgil D. Gligor and Adrian Perrig. Technical Report
   CMU-CyLab-09-011, June
-  2009. http://www.cylab.cmu.edu/files/pdfs/tech_reports/CMUCyLab09011.pdf
+  2009. <http://www.cylab.cmu.edu/files/pdfs/tech_reports/CMUCyLab09011.pdf>
