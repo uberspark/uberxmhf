@@ -12,7 +12,8 @@ code will be installed. The default is `$(PREFIX)/$(HOST)`
 Ensure that the trustvisor headers are installed for both the host and
 the cross-development `SYSROOT`.
 
-~~~~~ {.sh}
+~~~~~
+:::sh
 cd $(TRUSTVISOR_CODE_DIR)
 ./configure --prefix=$(SYSROOT)/usr
 make install-dev
@@ -23,7 +24,8 @@ make install-dev
 Run `make` in the same directory as this README. If you would like to
 override the default paths, specify your overrides as parameters to `make`:
 
-~~~~~ {.sh}
+~~~~~
+:::sh
 make PREFIX=$(PREFIX) HOST=$(HOST) SYSROOT=$(SYSROOT)
 ~~~~~
 
@@ -89,7 +91,8 @@ Device
 
 You will need to build and install in [tz](tz):
 
-~~~~~ {.sh}
+~~~~~
+:::sh
 cd tz
 autoreconf -i # Generates configure script
 ./configure
@@ -179,7 +182,8 @@ non-system directory.
 
 Services are loaded and unloaded through the TrustZone service manager:
 
-~~~~~ {.c}
+~~~~~
+:::c
   tz_return_t tzRet;
   tz_device_t tzDevice;
   tz_session_t tzManagerSession;
@@ -227,7 +231,8 @@ Services are loaded and unloaded through the TrustZone service manager:
 The TrustVisor back-end provides some convenience functions for an
 application to load an unload a single PAL:
 
-~~~~~ {.c}
+~~~~~
+:::c
   tz_device_t tzDevice;
   tz_session_t tzPalSession;
   tz_uuid_t tzSvcId;
@@ -294,7 +299,8 @@ identify the beginning and end of the relevant sections. See
 
 The service entry point should have the following prototype:
 
-~~~~~ {.c}
+~~~~~
+:::c
 void pal_entry(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
 ~~~~~
 
