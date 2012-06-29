@@ -1,7 +1,7 @@
 # Configure hardware
 
-Check the [XMHF Hardware Requirements], and be sure to enable the
-corresponding BIOS options.
+Check the [XMHF Hardware Requirements](hardware-requirements.md), and
+be sure to enable the corresponding BIOS options.
 
 # Supported guest operating systems
 
@@ -18,16 +18,16 @@ The following guest OSes are known to work:
 * Windows XP
 * Windows Server 2003
 * Ubuntu 10.04 (with custom kernel to disable MTRRs. See [Custom Linux
-  Kernels])
+  Kernels](custom-linux-kernels.md))
 
 # Obtain XMHF binaries
 
-If you haven't already built XMHF, see [Building XMHF]
+If you haven't already built XMHF, see [Building XMHF](building-xmhf.md)
 
 # Install XMHF binaries
 
-If you have a .deb, use @dpkg -i@ to install it. Otherwise, copy
-@init-x86.bin@ and @hypervisor-x86.bin.gz@ to @/boot@.
+If you have a .deb, use `dpkg -i` to install it. Otherwise, copy
+`init-x86.bin` and `hypervisor-x86.bin.gz` to `/boot`.
 
 # Configure your system to boot XMHF
 
@@ -38,4 +38,5 @@ install Grub. This can be done by installing a minimal Linux
 installation, which will typically take care of non-destructively
 repartitioning for you.
 
-See [Configuring Grub] for how to add an XMHF entry to Grub.
+See [Configuring Grub](configuring-grub.md) for how to add an XMHF
+entry to Grub.
