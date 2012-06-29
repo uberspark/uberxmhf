@@ -12,22 +12,18 @@ code will be installed. The default is `$(PREFIX)/$(HOST)`
 Ensure that the trustvisor headers are installed for both the host and
 the cross-development `SYSROOT`.
 
-~~~~~~
-:::sh
-cd $(TRUSTVISOR_CODE_DIR)
-./configure --prefix=$(SYSROOT)/usr
-make install-dev
-./configure --prefix=$(PREFIX)
-make install-dev
-~~~~~~
+    :::sh
+    cd $(TRUSTVISOR_CODE_DIR)
+    ./configure --prefix=$(SYSROOT)/usr
+    make install-dev
+    ./configure --prefix=$(PREFIX)
+    make install-dev
 
 Run `make` in the same directory as this README. If you would like to
 override the default paths, specify your overrides as parameters to `make`:
 
-~~~~~~
-:::sh
-make PREFIX=$(PREFIX) HOST=$(HOST) SYSROOT=$(SYSROOT)
-~~~~~~
+    :::sh
+    make PREFIX=$(PREFIX) HOST=$(HOST) SYSROOT=$(SYSROOT)
 
 Of course, you may install each component individually, if you prefer,
 either by specifying a target to 'make', or by manually performing the
@@ -91,14 +87,12 @@ Device
 
 You will need to build and install in [tz](tz):
 
-~~~~~~
-:::sh
-cd tz
-autoreconf -i # Generates configure script
-./configure
-make
-sudo make install
-~~~~~~
+    :::sh
+    cd tz
+    autoreconf -i # Generates configure script
+    ./configure
+    make
+    sudo make install
 
 By default, everything will install into `/usr/local`. You can of course
 change this by passing `--prefix=$tzinstallprefix` to the configure
@@ -182,58 +176,56 @@ non-system directory.
 
 Services are loaded and unloaded through the TrustZone service manager:
 
-~~~~~~
-:::c
-  tz_return_t tzRet;
-  tz_device_t tzDevice;
-  tz_session_t tzManagerSession;
-  tz_uuid_t tzSvcId;
+    :::c
+    tz_return_t tzRet;
+    tz_device_t tzDevice;
+    tz_session_t tzManagerSession;
+    tz_uuid_t tzSvcId;
 
-  /* open isolated execution environment device */
-  /* Use NULL for default device, or 'tv' to specify trustvisor */
-  tzRet = TZDeviceOpen(NULL, NULL, &tzDevice);
-  assert(tzRet == TZ_SUCCESS);
+    /* open isolated execution environment device */
+    /* Use NULL for default device, or 'tv' to specify trustvisor */
+    tzRet = TZDeviceOpen(NULL, NULL, &tzDevice);
+    assert(tzRet == TZ_SUCCESS);
 
-  /* prepare service descriptor */
-  /* this is currently device-specific (i.e., trustvisor-specific).
-     eventually it'd be good to provide a common abstraction here. */
-  scode_sections_info_init(&scode_info,
-                           &__scode_start, scode_ptr_diff(&__scode_end, &__scode_start),
-                           NULL, 0,
-                           PAGE_SIZE, PAGE_SIZE);
+    /* prepare service descriptor */
+    /* this is currently device-specific (i.e., trustvisor-specific).
+       eventually it'd be good to provide a common abstraction here. */
+    scode_sections_info_init(&scode_info,
+                             &__scode_start, scode_ptr_diff(&__scode_end, &__scode_start),
+                             NULL, 0,
+                             PAGE_SIZE, PAGE_SIZE);
 
-  /* open session with device manager */
-  tzRet = TZManagerOpen(&tzDevice, NULL, &tzManagerSession);
-  assert(tzRet == TZ_SUCCESS);
+    /* open session with device manager */
+    tzRet = TZManagerOpen(&tzDevice, NULL, &tzManagerSession);
+    assert(tzRet == TZ_SUCCESS);
 
-  /* download */
-  tzRet = TZManagerDownloadService(&tzManagerSession,
-                                   &pal,
-                                   sizeof(pal),
-                                   &tzSvcId);
-  assert(tzRet == TZ_SUCCESS);
+    /* download */
+    tzRet = TZManagerDownloadService(&tzManagerSession,
+                                     &pal,
+                                     sizeof(pal),
+                                     &tzSvcId);
+    assert(tzRet == TZ_SUCCESS);
 
-  /* do useful work with the service */
+    /* do useful work with the service */
   
-  /* unload the service. */
-  /* This is currently CRITICAL when using TrustVisor. Exiting the
-     application without unloading the service will lead to system
-     instability. */
-  tzRet = TZManagerRemoveService(&tzManagerSession,
-                                 &tzSvcId);
-  assert(tzRet == TZ_SUCCESS);
+    /* unload the service. */
+    /* This is currently CRITICAL when using TrustVisor. Exiting the
+       application without unloading the service will lead to system
+       instability. */
+    tzRet = TZManagerRemoveService(&tzManagerSession,
+                                   &tzSvcId);
+    assert(tzRet == TZ_SUCCESS);
 
-  /* close session */
-  tzRet = TZManagerClose(&tzManagerSession);
-  assert(tzRet == TZ_SUCCESS);
-~~~~~~ 
+    /* close session */
+    tzRet = TZManagerClose(&tzManagerSession);
+    assert(tzRet == TZ_SUCCESS);
 
 The TrustVisor back-end provides some convenience functions for an
 application to load an unload a single PAL:
 
 ~~~~~~
 :::c
-  tz_device_t tzDevice;
+tz_device_t tzDevice;
   tz_session_t tzPalSession;
   tz_uuid_t tzSvcId;
   tz_return_t rv;
