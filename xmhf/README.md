@@ -6,10 +6,10 @@ XMHF takes a developer-centric approach to hypervisor design and implementation,
 
 # Quick start to using XMHF
 
-* [XMHF Hardware Requirements]
-* [Building XMHF]
-* [Installing XMHF]
-* [Configuring Grub] How to boot XMHF from Grub, along with some tricks for remote\unattended boot.
-* [Custom Linux Kernels]
-* [Debugging XMHF]
+* [XMHF Hardware Requirements](doc/hardware-requirements.md)
+* [Building XMHF](doc/building-xmhf.md)
+* [Installing XMHF](doc/installing-xmhf.md)
+* [Configuring Grub](doc/configuring-grub.md) How to boot XMHF from Grub, along with some tricks for remote\unattended boot.
+* [Custom Linux Kernels](doc/custom-linux-kernels.md)
+* [Debugging XMHF](doc/debugging-xmhf.md)
 
