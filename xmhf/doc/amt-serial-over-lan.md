@@ -3,8 +3,7 @@
 Intel Active Management Technology (AMT) includes a virtual serial
 port, called Serial-Over-LAN (SOL).
 
-A general guide to AMT can be found here:
-http://linux.die.net/man/7/amt-howto AMT Howto
+linux.die has a useful [AMT Howto](http://linux.die.net/man/7/amt-howto).
 
 Following is a concrete set of steps for enabling and using AMT SOL on
 an HP 8540p. These instruction likely apply to other hardware, as
