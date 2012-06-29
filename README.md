@@ -59,7 +59,7 @@ tee-sdk
 The Trusted Execution Environment Software Development Kit (tee-sdk)
 is intended to make the life of a PAL developer significantly less
 painful than it might otherwise be.  Example PALs leveraging tee-sdk
-can be found in tee-sdk/trunk/examples/.
+can be found in [tee-sdk/trunk/examples/](tee-sdk/trunk/examples/).
 
 tee-cred
 --------
@@ -88,7 +88,7 @@ to incrementally improve the situation.
 
 There are a substantial number of known technical issues with this
 codebase, many of them with implications for security.  Please see the
-issue tracker linked from http://xmhf.org/ for full details.  This
+issue tracker linked from <http://xmhf.org/> for full details.  This
 absolutely remains EXPERIMENTAL software.  If you trust your data to
 this software, that is your problem.
 
@@ -103,7 +103,7 @@ References
 [1] TrustVisor: Efficient TCB Reduction and Attestation.  Jonathan
     M. McCune, Yanlin Li, Ning Qu, Zongwei Zhou, Anupam Datta, Virgil
     Gligor, and Adrian Perrig. IEEE Symposium on Security and Privacy,
-    May 2010. http://www.ece.cmu.edu/~jmmccune/papers/MLQZDGP2010.pdf
+    May 2010. <http://www.ece.cmu.edu/~jmmccune/papers/MLQZDGP2010.pdf>
 
 [2] Lockdown: Towards a Safe and Practical Architecture for Security
     Applications on Commodity Platforms.  Amit Vasudevan and Bryan
@@ -115,7 +115,7 @@ References
     Applications (CMU-CyLab-09-011) Amit Vasudevan and Bryan Parno and
     Ning Qu and Virgil D. Gligor and Adrian Perrig. Technical Report
     CMU-CyLab-09-011, June 2009.
-    http://www.cylab.cmu.edu/files/pdfs/tech_reports/CMUCyLab09011.pdf
+    <http://www.cylab.cmu.edu/files/pdfs/tech_reports/CMUCyLab09011.pdf>
 
 
 
