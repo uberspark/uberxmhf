@@ -337,12 +337,3 @@ limitations of a trusted environment. This would help a lot with
 debugging. A clean way to simulate this would be to fork a new process
 to run the service code, passing data through shared mmap regions.
 
-# Other resources
-
-  * [Redmine Project](https://plover.pdl.cmu.local/projects/tee-sdk/) 
-
-This file is written in [Pandoc] Markdown for easy conversion to other
-formats.
-
-[Pandoc]: http://johnmacfarlane.net/pandoc/README.html
-
