@@ -1,6 +1,5 @@
-###################################################################
-# WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING #
-###################################################################
+***WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING***
+=====================================================================
 
 You can ruin your motherboard on Intel hardware if your BIOS is
 buggy. MAKE SURE YOUR BIOS IS UP TO DATE, and use the newest available
@@ -9,9 +8,8 @@ http://software.intel.com/en-us/articles/intel-trusted-execution-technology/
 If you want to be sure your hardware is working, we suggest starting
 with Intel's tboot project: http://tboot.sourceforge.net/
 
-================
-= Introduction =
-================
+Introduction
+============
 
 XMHF is a modular hypervisor platform for recent multicore x86
 hardware with support for dynamic root of trust and nested
@@ -33,16 +31,15 @@ Intel hardware, e.g., CONFIG_MTRR not set), and two "hyper-apps"
 Two interesting hypapps are included: TrustVisor[1] and Lockdown[2,3].
 
 libbaremetal
-************
+============
 
 In keeping with our desire for small size and modularity, we break out
 many basic utility functions that nearly any practical C program will
 employ.
 
 
-==============
-= TrustVisor =
-==============
+TrustVisor
+==========
 
 TrustVisor is a special-purpose hypervisor that provides code
 integrity as well as data integrity and secrecy for userspace Pieces
@@ -56,7 +53,7 @@ that can be used to generate subsequent attestations to the isolation
 and execution of individual PALs.
 
 tee-sdk
-*******
+-------
 
 The Trusted Execution Environment Software Development Kit (tee-sdk)
 is intended to make the life of a PAL developer significantly less
@@ -64,16 +61,15 @@ painful than it might otherwise be.  Example PALs leveraging tee-sdk
 can be found in tee-sdk/trunk/examples/.
 
 tee-cred
-********
+--------
 
 The TEE Credential Manager (tee-cred) is an audited key-value store
 that is useful as a credential (e.g., password) manager.  It is
 implemented in a PAL leveraging tee-sdk, and as a stand-alone audit
 server.
 
-============
-= Lockdown =
-============
+Lockdown
+========
 
 Lockdown provides the user with a red/green system: an isolated and
 constrained environment for performing online transactions, as well as
@@ -82,9 +78,8 @@ a high-performance, general-purpose environment for all other
 which environment is active and allows the user to securely learn
 which environment is active and to switch between them.
 
-================
-= KNOWN ISSUES =
-================
+KNOWN ISSUES
+============
 
 Aesthetics and software engineering principles may have taken a back
 seat to having running, working code before a deadline. We're trying
@@ -96,15 +91,13 @@ issue tracker linked from http://xmhf.org/ for full details.  This
 absolutely remains EXPERIMENTAL software.  If you trust your data to
 this software, that is your problem.
 
-=============
-= CHANGELOG =
-=============
+CHANGELOG
+=========
 
 xmhf-1.0: initial public release.
 
-==============
-= References =
-==============
+References
+==========
 
 [1] TrustVisor: Efficient TCB Reduction and Attestation.  Jonathan
     M. McCune, Yanlin Li, Ning Qu, Zongwei Zhou, Anupam Datta, Virgil
