@@ -71,7 +71,6 @@ Device
 
 # Files
 
-  * [README.md](README.md) This file.
   * [tz](tz) TrustZone API. This library is to be used by _clients_
     to communicate with _services_. This library supports multiple
     _device_ back-ends, abstracting them in such a way that most _client_
