@@ -14,6 +14,8 @@ newer Intel or AMD processor will have the necessary capabilities.
   Virtualization™ (AMD-V™) Technology With Rapid Virtualization
   Indexing capability for the desired CPU model)
 
+--------------------------------------------------------------------
+
     Requirement                  | AMD name                                                   | Intel name                                                                         | comments
     -----------                  | --------                                                   | ----------                                                                         | --------
     a TPM                        |                                                            |                                                                                    | Often called something like 'embedded security device' in BIOS
