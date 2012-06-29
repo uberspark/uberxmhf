@@ -1,9 +1,9 @@
 WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
 ===============================================================
 
-You can ruin your motherboard on Intel hardware if your BIOS is
+You can ruin your motherboard if your BIOS is
 buggy. MAKE SURE YOUR BIOS IS UP TO DATE, and use the newest available
-SINIT module from Intel:
+SINIT module from Intel (if using an Intel CPU):
 <http://software.intel.com/en-us/articles/intel-trusted-execution-technology/>
 If you want to be sure your hardware is working, we suggest starting
 with Intel's tboot project: <http://tboot.sourceforge.net/>
