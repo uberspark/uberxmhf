@@ -59,7 +59,7 @@ tee-sdk
 The Trusted Execution Environment Software Development Kit (tee-sdk)
 is intended to make the life of a PAL developer significantly less
 painful than it might otherwise be.  Example PALs leveraging tee-sdk
-can be found in [tee-sdk/trunk/examples/](tee-sdk/trunk/examples/).
+can be found in [tee-sdk/examples/](tee-sdk/examples/).
 
 tee-cred
 --------
