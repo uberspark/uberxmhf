@@ -223,39 +223,35 @@ Services are loaded and unloaded through the TrustZone service manager:
 The TrustVisor back-end provides some convenience functions for an
 application to load an unload a single PAL:
 
-~~~~~~
-:::c
-tz_device_t tzDevice;
-  tz_session_t tzPalSession;
-  tz_uuid_t tzSvcId;
-  tz_return_t rv;
-  int rv=0;
+    :::c
+    tz_device_t tzDevice;
+    tz_session_t tzPalSession;
+    tz_uuid_t tzSvcId;
+    tz_return_t rv;
+    int rv=0;
   
-  /* configurable options */
-  pal_fn_t *pal_fn = &pal_entry_point;
-  size_t param_size = PAGE_SIZE;
-  size_t stack_size = PAGE_SIZE;
+    /* configurable options */
+    pal_fn_t *pal_fn = &pal_entry_point;
+    size_t param_size = PAGE_SIZE;
+    size_t stack_size = PAGE_SIZE;
 
-  /* register the pal */
-  rv = tv_tz_init(&tzDevice,
-                  &tzPalSession,
-                  &tzSvcId,
-                  pal_entry_point,
-                  param_size,
-                  stack_size);
-  assert(rv == TZ_SUCCESS);
+    /* register the pal */
+    rv = tv_tz_init(&tzDevice,
+                    &tzPalSession,
+                    &tzSvcId,
+                    pal_entry_point,
+                    param_size,
+                    stack_size);
+    assert(rv == TZ_SUCCESS);
 
-  /* do useful work with the pal */
-  /* .... */
+    /* do useful work with the pal */
+    /* .... */
 
-  /* register the pal */
-  rv = tv_tz_teardown(&tzDevice,
-                      &tzPalSession,
-                      &tzSvcId));
-  assert(rv == TZ_SUCCESS);
-} 
-
-~~~~~~
+    /* register the pal */
+    rv = tv_tz_teardown(&tzDevice,
+                        &tzPalSession,
+                        &tzSvcId);
+    assert(rv == TZ_SUCCESS);
 
 # Calling services
 
@@ -291,10 +287,11 @@ identify the beginning and end of the relevant sections. See
 
 The service entry point should have the following prototype:
 
-~~~~~~
-:::c
-void pal_entry(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
-~~~~~~
+    :::c
+    void pal_entry(uint32_t uiCommand,
+                   tzi_encode_buffer_t *psInBuf,
+                   tzi_encode_buffer_t *psOutBuf,
+                   tz_return_t *puiRv)
 
  * `uiCommand` will contain command specified in the call to
    `TZOperationPrepareInvoke`
