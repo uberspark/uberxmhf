@@ -21,7 +21,8 @@ Requirements:
 * **Virtualization extensions**
     * **AMD**: Secure Virtual Machine (SVM) or AMD Virtualization (AMD-V)
     * **Intel**: Virtualization Technology (VT-x)
-* **2nd-level page tables** Typically turned on implicitly along with Virtualization extensions, if the processor supports it.
+* **2nd-level page tables** Typically turned on implicitly along with
+    Virtualization extensions, if the processor supports it.
     * **AMD**: Nested Page Tables (NPT)
     * **Intel**: Extended Page Tables (EPT)
 * **Dynamic root of trust**
