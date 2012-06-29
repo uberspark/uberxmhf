@@ -27,8 +27,9 @@ Requirements:
     * **Intel**: Extended Page Tables (EPT)
 * **Dynamic root of trust**
     * **AMD**: Late-launch (default with AMD-V)
-    * **Intel**: Trusted Execution Technology (TXT)
-* **Has a published SINIT module** Intel's dynamic root of
-  trust feature is implemented partially as a signed software module
-  called the SINIT module. Does not apply to AMD processors.
-    * **Intel**: Check <http://software.intel.com/en-us/articles/intel-trusted-execution-technology/>
+    * **Intel**: Trusted Execution Technology (TXT). This feature is
+        implemented partially by a signed software module, called an
+        SINIT module. Some processors exist that have the TXT hardware
+        support but do not (yet) have an SINIT module. Look for the
+        SINIT module here:
+        <http://software.intel.com/en-us/articles/intel-trusted-execution-technology/>
