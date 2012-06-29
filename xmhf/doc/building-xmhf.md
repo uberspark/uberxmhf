@@ -9,15 +9,12 @@ and 64 bit.
 
 A (partial) list of packages to install:
 
-~~~~~
-aptitude install pbuilder texinfo ruby build-essential autoconf libtool
-~~~~~
+    aptitude install pbuilder texinfo ruby build-essential autoconf libtool
 
-On 64-bit platforms, you will also need to install 32-bit libraries. On Ubuntu 12:
+On 64-bit platforms, you will also need to install 32-bit
+libraries. On Ubuntu 12:
 
-~~~~~
-aptitude install gcc-multilib
-~~~~~
+    aptitude install gcc-multilib
 
 # High-level Build Summary
 
@@ -25,49 +22,50 @@ One "drives" the build from `xmhf/xmhf`.
 
 The interesting high-level build commands include:
 
-~~~~~
-:::bash
-cd xmhf/xmhf
-./autogen.sh           # creates ./configure
-./configure            # creates Makefile from Makefile.in
-make                   # Builds the selected hypapp and the XMHF core
-make install           # Installs both binaries and dev headers and libs
-make install-dev       # Installs just dev headers and libs
-make test              # Runs various automated tests
-make clean             # Deletes all object files
-make init-late         # Explicitly builds the Linux kernel module for
-                       # a dynamic late launch
-~~~~~
+    cd xmhf/xmhf
+    ./autogen.sh           # creates ./configure
+    ./configure            # creates Makefile from Makefile.in
+    make                   # Builds the selected hypapp and the XMHF core
+    make install           # Installs both binaries and dev headers and libs
+    make install-dev       # Installs just dev headers and libs
+    make test              # Runs various automated tests
+    make clean             # Deletes all object files
+    make init-late         # Explicitly builds the Linux kernel module for
+                           # a dynamic late launch
 
-The functioning of 'make install-dev' and 'make test' are hypapp-specific. For example, in TrustVisor, the primary prerequisite for tee-sdk and PAL development is having successfully run 'make install-dev' in `xmhf/xmhf`.
+The functioning of `make install-dev` and `make test` are
+hypapp-specific. For example, in TrustVisor, the primary prerequisite
+for tee-sdk and PAL development is having successfully run `make
+install-dev` in `xmhf/xmhf`.
 
 ## How do I build an XMHF hypapp?
 
-The preferred method for building different hypapps (e.g., TrustVisor, Lockdown) is by specifying which hypapp to build using ./configure.  The following describes the sequence of steps for building a XMHF hypapp using the helloworld hypapp as a running example.
+The preferred method for building different hypapps (e.g., TrustVisor,
+Lockdown) is by specifying which hypapp to build using `./configure`.
+The following describes the sequence of steps for building a XMHF
+hypapp using the helloworld hypapp as a running example.
 
-checkout the XMHF project source tree
+Checkout the XMHF project source tree.
 
     cd $WORK
     git clone git://git.code.sf.net/p/xmhf/xmhf xmhf
 
-change working directory to the XMHF source tree root
+Change working directory to the XMHF source tree root.
 
     cd $WORK/xmhf/xmhf
 
-generate the ./configure script 
+Generate the `./configure` script.
 
     ./autogen.sh
 
-configure the XMHF hypapp
+Configure the XMHF hypapp.
 
     ./configure --with-approot=src/example-hypapps/helloworld --with-apparchive=xmhfapp-helloworld.a
    
-generate and install the binaries (note: default install path is specified with the `--prefix=` flag to `configure`)
+Generate and install the binaries (note: default install path is specified with the `--prefix=` flag to `configure`).
 
-~~~~~
-make
-make install
-make install-dev        # optional (hypapp-specific)
-make test                 # optional (hypapp-specific)
-~~~~~
+    make
+    make install
+    make install-dev        # optional (hypapp-specific)
+    make test                 # optional (hypapp-specific)
 
