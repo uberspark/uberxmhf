@@ -15,33 +15,33 @@ allows others to build custom hypervisor-based solutions (called
 
 The XMHF project includes several components:
 
-* [XMHF]: The eXtensible Hypervisor Framework.
+* [XMHF](xmhf): The eXtensible Hypervisor Framework.
 
-* [TrustVisor]: A special-purpose hypervisor that provides code
-  integrity as well as data integrity and secrecy for userspace Pieces
-  of Application Logic (PALs).
+* [TrustVisor](trustvisor): A special-purpose hypervisor that provides
+  code integrity as well as data integrity and secrecy for userspace
+  Pieces of Application Logic (PALs).
 
-    * [tee-sdk]: The Trusted Execution Environment Software
+    * [tee-sdk](tee-sdk): The Trusted Execution Environment Software
       Development Kit. This is a set of tools and APIs for developing
       PALs and applications that use them.
 
-    * [tee-cred]: The TEE Credential Manager (tee-cred) is an audited
-      key-value store that is useful as a credential (e.g., password)
-      manager.  It is implemented in a PAL leveraging tee-sdk, and as
-      a stand-alone audit server.
+    * [tee-cred](tee-cred): The TEE Credential Manager (tee-cred) is
+      an audited key-value store that is useful as a credential (e.g.,
+      password) manager.  It is implemented in a PAL leveraging
+      tee-sdk, and as a stand-alone audit server.
 
-* [Lockdown]: Lockdown provides the user with a red/green system: an
-  isolated and constrained environment for performing online
-  transactions, as well as a high-performance, general-purpose
+* [Lockdown](lockdown): Lockdown provides the user with a red/green
+  system: an isolated and constrained environment for performing
+  online transactions, as well as a high-performance, general-purpose
   environment for all other (non-security-sensitive) applications. An
   external device verifies which environment is active and allows the
   user to securely learn which environment is active and to switch
   between them.
 
-* [libbaremetal]: Utility functions used across modules, including
-  many utility function from libc, error-handling, logging, etc.  As
-  the name implies, this library is intended primarily for use in
-  "bare metal" environments.
+* [libbaremetal](libbaremetal): Utility functions used across modules,
+  including many utility function from libc, error-handling, logging,
+  etc.  As the name implies, this library is intended primarily for
+  use in "bare metal" environments.
 
 # Contact and support
 
