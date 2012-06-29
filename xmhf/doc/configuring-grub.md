@@ -1,6 +1,6 @@
 # Downgrade from Grub 2 to Grub 1
 
-[XMHF] is currently only supported using Grub 1. If Grub 2 is already
+[XMHF](..) is currently only supported using Grub 1. If Grub 2 is already
 installed (as it typically is on recent Linux distributions), you will
 need to downgrade to Grub 1.
 
