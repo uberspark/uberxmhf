@@ -28,7 +28,8 @@ Windows XP and Windows Server 2003; MTRR support must be disabled on
 Intel hardware, e.g., CONFIG_MTRR not set), and two "hyper-apps"
 (hypapps): a primary and a secondary.
 
-Two interesting hypapps are included: TrustVisor[1] and Lockdown[2,3].
+Two interesting hypapps are included: [TrustVisor](trustvisor) and
+[Lockdown](lockdown).
 
 libbaremetal
 ============
