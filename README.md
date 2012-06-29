@@ -4,9 +4,9 @@ WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
 You can ruin your motherboard on Intel hardware if your BIOS is
 buggy. MAKE SURE YOUR BIOS IS UP TO DATE, and use the newest available
 SINIT module from Intel:
-http://software.intel.com/en-us/articles/intel-trusted-execution-technology/
+<http://software.intel.com/en-us/articles/intel-trusted-execution-technology/>
 If you want to be sure your hardware is working, we suggest starting
-with Intel's tboot project: http://tboot.sourceforge.net/
+with Intel's tboot project: <http://tboot.sourceforge.net/>
 
 Introduction
 ============
@@ -15,7 +15,7 @@ XMHF is a modular hypervisor platform for recent multicore x86
 hardware with support for dynamic root of trust and nested
 (2-dimensional) paging.  It is NOT a full virtual machine monitor.
 The best place to get support and the most recent documentation is on
-the XMHF web page: http://xmhf.org/
+the XMHF web page: <http://xmhf.org/>
 
 XMHF takes a developer-centric approach to hypervisor design and
 implementation, and strives to be a comprehensible and flexible
