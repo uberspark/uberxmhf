@@ -14,28 +14,12 @@ newer Intel or AMD processor will have the necessary capabilities.
   Virtualization™ (AMD-V™) Technology With Rapid Virtualization
   Indexing capability for the desired CPU model)
 
-<table>
-  <tr>
-    <td>Requirement</td>
-    <td>AMD name</td>
-    <td>Intel name</td>
-    <td>comments</td>
-  </tr>
-  <tr>
-    <td>a TPM</td>
-    <td></td>
-    <td></td>
-    <td>Often called something like 'embedded security device' in BIOS</tr>
-  </tr>
-  <tr>
-    <td>Virtualization extensions</td>
-    <td>Secure Virtual Machine (SVM) or AMD Virtualization (AMD-V)</td>
-    <td>Virtualization Technology (VT-x)</td>
-    <td></td>
-  </tr>
-</table>
+--------------------------------------------------------------------
 
-
+    Requirement                  | AMD name                                                   | Intel name                                                                         | comments
+    -----------                  | --------                                                   | ----------                                                                         | --------
+    a TPM                        |                                                            |                                                                                    | Often called something like 'embedded security device' in BIOS
+    Virtualization extensions    | Secure Virtual Machine (SVM) or AMD Virtualization (AMD-V) | Virtualization Technology (VT-x)                                                   |
     2nd-level page tables        | Nested Page Tables (NPT)                                   | Extended Page Tables (EPT)                                                         | Typically turned on implicitly along with Virtualization extensions, if the processor supports it
     Dynamic root of trust        | Late-launch (default with AMD-V)                           | Trusted Execution Technology (TXT)                                                 |
     Has a published SINIT module | N/A                                                        | Check http://software.intel.com/en-us/articles/intel-trusted-execution-technology/ | Intel only. AMD does not require an SINIT module
