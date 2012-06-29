@@ -4,21 +4,19 @@
 installed (as it typically is on recent Linux distributions), you will
 need to downgrade to Grub 1.
 
-On Ubuntu: http://ubuntuforums.org/showthread.php?t=1298932
+On Ubuntu: <http://ubuntuforums.org/showthread.php?t=1298932>
 
-On Debian: http://forums.debian.net/viewtopic.php?f=17&t=50132
+On Debian: <http://forums.debian.net/viewtopic.php?f=17&t=50132>
 
 Quick and dirty instructions, on Ubuntu:
 
-~~~~~
-sudo apt-get purge grub* os-prober
-sudo apt-get purge grub-gfxpayload-lists
-sudo apt-get install grub
-sudo update-grub
-grub-install /dev/sda
-~~~~~
+    sudo apt-get purge grub* os-prober
+    sudo apt-get purge grub-gfxpayload-lists
+    sudo apt-get install grub
+    sudo update-grub
+    grub-install /dev/sda
  
-And remove lines from /boot/grub/menu.lst
+And remove lines from `/boot/grub/menu.lst`:
 
     title          Chainload into GRUB 2
     root           b5912383-7f9e-4911-b51d-b14ce8cea70b
@@ -26,11 +24,11 @@ And remove lines from /boot/grub/menu.lst
 
 # Get the correct SINIT module (Intel only)
 
-[XMHF] launches itself with a *dynamic root of trust*. On Intel
+[XMHF](..) launches itself with a *dynamic root of trust*. On Intel
 platforms, this requires a signed SINIT module provided by Intel.
 
 SINIT modules can be found here:
-http://software.intel.com/en-us/articles/intel-trusted-execution-technology/
+<http://software.intel.com/en-us/articles/intel-trusted-execution-technology/>
 
 # Grub settings
 
@@ -61,8 +59,7 @@ line. E.g.,
         module /i5_i7_DUAL_SINIT_18.BIN
 
 SINIT modules can be found here:
-
-http://software.intel.com/en-us/articles/intel-trusted-execution-technology/
+<http://software.intel.com/en-us/articles/intel-trusted-execution-technology/>
 
 This will boot XMHF with debug output going to the specified serial
 port, and then reload grub.
@@ -71,9 +68,9 @@ port, and then reload grub.
 
 To boot Windows, configure XMHF to load the Windows boot sector
 instead of recursively loading grub. Do this by modifying the
-@modulenounzip@ line to point to the partition where Windows is
+`modulenounzip` line to point to the partition where Windows is
 installed instead of pointing to the MBR. For example, if Windows is
-installed on @/dev/sda3@:
+installed on `/dev/sda3`:
 
     title Windows on XMHF
         rootnoverify (hd0,1)                         # should point to /boot
