@@ -19,13 +19,13 @@ Requirements:
 * **A TPM (v1.2)** The BIOS feature is often called something like
     "embedded security device"
 * **Virtualization extensions**:
-  * **AMD**: Secure Virtual Machine (SVM) or AMD Virtualization (AMD-V)
-  * **Intel**: Virtualization Technology (VT-x)
+    * **AMD**: Secure Virtual Machine (SVM) or AMD Virtualization (AMD-V)
+    * **Intel**: Virtualization Technology (VT-x)
 * **2nd-level page tables** (Typically turned on implicitly along with Virtualization extensions, if the processor supports it)
-  * **AMD**: Nested Page Tables (NPT)
-  * **Intel**: Extended Page Tables (EPT)
+    * **AMD**: Nested Page Tables (NPT)
+    * **Intel**: Extended Page Tables (EPT)
 * Dynamic root of trust
-  * **AMD**: Late-launch (default with AMD-V)
-  * **Intel**: Trusted Execution Technology (TXT)
+    * **AMD**: Late-launch (default with AMD-V)
+    * **Intel**: Trusted Execution Technology (TXT)
 * **Has a published SINIT module**
-  * **Intel**: Check <http://software.intel.com/en-us/articles/intel-trusted-execution-technology/>
+    * **Intel**: Check <http://software.intel.com/en-us/articles/intel-trusted-execution-technology/>
