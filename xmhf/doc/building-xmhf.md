@@ -66,6 +66,6 @@ Generate and install the binaries (note: default install path is specified with 
 
     make
     make install
-    make install-dev        # optional (hypapp-specific)
-    make test                 # optional (hypapp-specific)
+    make install-dev  # optional (hypapp-specific)
+    make test         # optional (hypapp-specific)
 
