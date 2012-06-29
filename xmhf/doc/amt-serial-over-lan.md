@@ -21,9 +21,9 @@ well.
      password "admin" and disable AMT in the BIOS.
 
 * ***A compromised AMT password is bad news***. AMT gives the power to
-     update firmware, boot from a chosen device ''or network
-     location'', power cycle, and more. Choose a good password and be
-     careful that it's not compromised.
+     update firmware, boot from a chosen device or network location,
+     power cycle, and more. Choose a good password and be careful that
+     it's not compromised.
 
 * ***Using the directions below on an open network will compromise
      your AMT password***. We are using plaintext password
@@ -45,8 +45,7 @@ Once AMT is enabled, you should see an AMT prompt during boot. Hit
 
 * **You'll be forced to change the admin password**. Again, do not
     lose or compromise this password! The system will enforce some
-    password rules. See this [http://linux.die.net/man/7/amt-howto AMT
-    Howto].
+    password rules. See the [AMT Howto](http://linux.die.net/man/7/amt-howto).
 * **Setup the network**. It's best not to make AMT accessible from the
     open network, if possible. In my case, I'm using a direct ethernet
     connection between my two machines, so I statically configured the
@@ -67,7 +66,9 @@ as `ttyS0`, but is at address `0x6080` instead of the usual `0x3f8`.
 
 # Getting amtterm
 
-Your best bet is to use amtterm 1.3 or higher. It is available from
+Use amtterm 1.3 or higher. Older versions have bugs that effect
+the ability to log output, and had more frequent disconnections.
+It is available from
 the author's [git repository](http://www.kraxel.org/cgit/amtterm/) or
 [releases directory](http://www.kraxel.org/releases/amtterm/ releases
 directory).
