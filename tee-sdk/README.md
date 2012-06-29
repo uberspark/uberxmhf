@@ -1,16 +1,16 @@
 # Quick Start
 
-Optionally, choose a PREFIX where you will install various utilities,
-libraries, and headers. The default PREFIX is /usr/local.
+Optionally, choose a `PREFIX` where you will install various utilities,
+libraries, and headers. The default `PREFIX` is `/usr/local`.
 
-Optionally, choose a host-name to use for PAL code. The default HOST
-is i586-tsvc.
+Optionally, choose a host-name to use for PAL code. The default `HOST`
+is `i586-tsvc`.
 
-Optionally, choose a SYSROOT, where libraries to be linked against PAL
-code will be installed. The default is $(PREFIX)/$(HOST)
+Optionally, choose a `SYSROOT`, where libraries to be linked against PAL
+code will be installed. The default is `$(PREFIX)/$(HOST)`
 
 Ensure that the trustvisor headers are installed for both the host and
-the cross-development SYSROOT.
+the cross-development `SYSROOT`.
 
 ~~~ {.sh}
 cd $(TRUSTVISOR_CODE_DIR)
@@ -20,8 +20,8 @@ make install-dev
 make install-dev
 ~~~
 
-Run 'make' in the same directory as this README. If you would like to
-override the default paths, specify your overrides as parameters to make:
+Run `make` in the same directory as this README. If you would like to
+override the default paths, specify your overrides as parameters to `make`:
 
 ~~~ {.sh}
 make PREFIX=$(PREFIX) HOST=$(HOST) SYSROOT=$(SYSROOT)
@@ -33,13 +33,13 @@ steps in the corresponding 'make' recipe. At the time of this writing,
 the components installed by make are:
 
 * toolchain : these are wrappers to utilities such as gcc, with names
-  like i586-tsvc-gcc. They mostly serve to override the system paths
-  with paths in $(SYSROOT).
+  like `i586-tsvc-gcc`. They mostly serve to override the system paths
+  with paths in `$(SYSROOT)`.
 
 * newlib : this is an implementation of libc targeted for
   PALs. Functions that don't involve IO should work as expected. IO
-  functions currently fail gracefully. The toolchain i586-tsvc-gcc
-  will link against this library by default, unless -nostdlib is used.
+  functions currently fail gracefully. The toolchain `i586-tsvc-gcc`
+  will link against this library by default, unless `-nostdlib` is used.
 
 * tz : This implements the TrustZone API for managing and
   communicating with services (pals) running the trusted execution
@@ -47,7 +47,7 @@ the components installed by make are:
 
 * openssl : This is the well-known openssl library, ported for use
   with pals. It is not installed by default, but can be installed with
-  'make openssl'
+  `make openssl`
 
 # Overview
 
@@ -73,7 +73,7 @@ Device
 
 # Files
 
-  * [README](README) This file.
+  * [README.md](README.md) This file.
   * [tz](tz) TrustZone API. This library is to be used by _clients_
     to communicate with _services_. This library supports multiple
     _device_ back-ends, abstracting them in such a way that most _client_
@@ -97,8 +97,8 @@ make
 sudo make install
 ~~~
 
-By default, everything will install into /usr/local. You can of course
-change this by passing --prefix=$tzinstallprefix to the configure
+By default, everything will install into `/usr/local`. You can of course
+change this by passing `--prefix=$tzinstallprefix` to the configure
 script.
 
 # Compiling applications
@@ -109,15 +109,15 @@ services (tee-sdk-svc), and for each device there are application and
 service back-end libraries (tee-sdk-app-devname and
 tee-sdk-svc-devname). 
 
-We use [pkgconfig] to simplify management of these libraries.  The
+We use [pkgconfig][1] to simplify management of these libraries.  The
 compile time flags needed to link against a package can be obtained
 using `pkg-config --cflags packagename`. The linking flags can be
 obtained using `pkg-config --libs --static packagename`. Note that we
 only support static linking for now. If you installed [tz](tz) to a
 non-standard location $tzinstallprefix, you may need to set
-PKG_CONFIG_LIBDIR to include $tzinstallprefix/lib/pkgconfig.
+`PKG_CONFIG_LIBDIR` to include `$tzinstallprefix/lib/pkgconfig`.
 
-[pkgconfig]: http://pkg-config.freedesktop.org/wiki/
+[1]: http://pkg-config.freedesktop.org/wiki/
 
 An application using the tee-sdk to communicate with a service running
 in a trusted environment must link against at least one application
@@ -129,8 +129,8 @@ devices.
 
 You must compile and link using exactly one service back-end
 package. At the time of this writing, there is only one anyways:
-'tee-sdk-svc-tv'. pkgconfig will automatically pull in the service
-front-end 'tee-sdk-svc' as a dependency. Using the compile and link
+`tee-sdk-svc-tv`. pkgconfig will automatically pull in the service
+front-end `tee-sdk-svc` as a dependency. Using the compile and link
 flags from those packages is important not only to link against the
 corresponding libraries; they also reference compiler options to
 eliminate code-constructs that are unsupported inside services, and
@@ -158,21 +158,21 @@ mapping the PAL's code and data to special page-aligned sections. The
 TrustVisor back-end provides simplified functions for registering a
 PAL that has been built and linked this way.
 
-The TEE-SDK includes pkg-config files that specify the necessary
+The TEE-SDK includes `pkg-config` files that specify the necessary
 compilation and link flags, and Makefile snippets that can be included
 in your own Makefiles to automate most of the process. Pointing your
-makefile at those makefile snippets and\or pkg-config files (rather
+makefile at those makefile snippets and\or `pkg-config` files (rather
 than copying and modifying a monolithic Makefile with these things
 hard-coded) will help keep your pal up to date as the build process
-evolves. See `examples/newlib/Makefile` for a good starting point of a
-Makefile that dynamically incorporates the TEE-SDK-provided Makefile
-snippets and pkg-config files.
+evolves. See [examples/newlib/Makefile](examples/newlib/Makefile) for
+a good starting point of a Makefile that dynamically incorporates the
+TEE-SDK-provided Makefile snippets and pkg-config files.
 
 # Compiling and running the test example
 
 After installation in [tz](tz), you should be able to compile and run
 the test example in [examples/test](examples/test). Remember to set
-the PKG_CONFIG_LIBDIR environment variable if you installed to a
+the `PKG_CONFIG_LIBDIR` environment variable if you installed to a
 non-system directory.
 
 # Loading and unloading services
