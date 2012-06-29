@@ -75,6 +75,8 @@ Device
     to communicate with _services_. This library supports multiple
     _device_ back-ends, abstracting them in such a way that most _client_
     code can be oblivious to which back-end is in use.
+  * [toolchain](toolchain) A cross-compiling toolchain for compiling
+    and linking PALs. Implemented as wrappers around gcc.
   * [ports](ports) Support libraries for _services_. These have been
     ported to run in a trusted environment provided by some _device_.
     i.e., they do not make system calls, and all dependencies should
