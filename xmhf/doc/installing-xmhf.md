@@ -1,9 +1,11 @@
-# Configure hardware
+Configure hardware
+==================
 
 Check the [XMHF Hardware Requirements](hardware-requirements.md), and
 be sure to enable the corresponding BIOS options.
 
-# Supported guest operating systems
+Supported guest operating systems
+=================================
 
 In principle, any guest should be supported so long as it:
 
@@ -20,16 +22,19 @@ The following guest OSes are known to work:
 * Ubuntu 10.04 (with custom kernel to disable MTRRs. See [Custom Linux
   Kernels](custom-linux-kernels.md))
 
-# Obtain XMHF binaries
+Obtain XMHF binaries
+====================
 
 If you haven't already built XMHF, see [Building XMHF](building-xmhf.md)
 
-# Install XMHF binaries
+Install XMHF binaries
+=====================
 
 If you have a .deb, use `dpkg -i` to install it. Otherwise, copy
 `init-x86.bin` and `hypervisor-x86.bin.gz` to `/boot`.
 
-# Configure your system to boot XMHF
+Configure your system to boot XMHF
+==================================
 
 You will need to install Grub 1, if you haven't already. On most
 modern Linux distributions, you will need to downgrade from Grub 2. On

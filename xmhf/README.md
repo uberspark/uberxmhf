@@ -1,4 +1,5 @@
-# Introduction
+Introduction
+============
 
 XMHF is a modular hypervisor platform for recent multicore x86
 hardware with support for dynamic root of trust and nested
@@ -11,7 +12,8 @@ encapsulates common hypervisor core functionality in a framework that
 allows others to build custom hypervisor-based solutions (called
 "hypapps"). It currently supports only a single "rich" guest OS.
 
-# Quick start to using XMHF
+Quick start to using XMHF
+=========================
 
 * [XMHF Hardware Requirements](doc/hardware-requirements.md)
 * [Building XMHF](doc/building-xmhf.md)

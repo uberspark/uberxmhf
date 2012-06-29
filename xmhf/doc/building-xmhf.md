@@ -1,11 +1,13 @@
-# Development Environment
+Development Environment
+=======================
 
 [XMHF](..) and its Apps (e.g., [TrustVisor](../../trustvisor)) get
 built in a Linux environment with a recent version of gcc. [XMHF](..)
 has been verified to build on Ubuntu 10, 11, and 12 series, both 32
 and 64 bit.
 
-# Build tools
+Build tools
+===========
 
 A (partial) list of packages to install:
 
@@ -16,7 +18,8 @@ libraries. On Ubuntu 12:
 
     aptitude install gcc-multilib
 
-# High-level Build Summary
+High-level Build Summary
+========================
 
 One "drives" the build from `xmhf/xmhf`.  
 
@@ -38,7 +41,8 @@ hypapp-specific. For example, in TrustVisor, the primary prerequisite
 for tee-sdk and PAL development is having successfully run `make
 install-dev` in `xmhf/xmhf`.
 
-## How do I build an XMHF hypapp?
+How do I build an XMHF hypapp?
+==============================
 
 The preferred method for building different hypapps (e.g., TrustVisor,
 Lockdown) is by specifying which hypapp to build using `./configure`.

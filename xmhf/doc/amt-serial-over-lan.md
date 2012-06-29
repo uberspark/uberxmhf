@@ -1,4 +1,5 @@
-# Introduction
+Introduction
+============
 
 Intel Active Management Technology (AMT) includes a virtual serial
 port, called Serial-Over-LAN (SOL).
@@ -9,7 +10,8 @@ Following is a concrete set of steps for enabling and using AMT SOL on
 an HP 8540p. These instruction likely apply to other hardware, as
 well.
 
-# DISCLAIMERS
+DISCLAIMERS
+===========
 
 * ***A lost AMT password cannot be reset***. AMT is implemented in the
      firmware and chipset of the machine, and is designed to allow an
@@ -31,13 +33,15 @@ well.
      it's possible to enable encryption and stronger authentication;
      we should look into it.
 
-# Enable AMT in firmware
+Enable AMT in firmware
+======================
 
 You may need to enable AMT in the firmware. On the 8540p, you need to
 go to turn on `system_config.amt_options.firmware_verbosity` and
 `setup_prompt`.
 
-# Configure AMT
+Configure AMT
+=============
 
 Once AMT is enabled, you should see an AMT prompt during boot. Hit
 `Ctrl-p` to enter AMT configuration. The default password is
@@ -58,13 +62,15 @@ Once AMT is enabled, you should see an AMT prompt during boot. Hit
     means we're doing password authentication and sending the password
     in the clear.
 
-# Point your code at the AMT serial port
+Point your code at the AMT serial port
+======================================
 
 You can use `dmesg | grep ttyS` to examine the serial ports that your
 system now recognizes. On the 8540p the AMT serial port is recognized
 as `ttyS0`, but is at address `0x6080` instead of the usual `0x3f8`.
 
-# Getting amtterm
+Get amtterm
+===========
 
 Use amtterm 1.3 or higher. Older versions have bugs that effect
 the ability to log output, and had more frequent disconnections.
@@ -73,7 +79,8 @@ the author's [git repository](http://www.kraxel.org/cgit/amtterm/) or
 [releases directory](http://www.kraxel.org/releases/amtterm/ releases
 directory).
 
-# Connect from the client
+Connect from the client
+=======================
 
 In my case, since I'm using a direct ethernet connection, I need to
 bring up the ethernet interface: `sudo ifconfig eth0

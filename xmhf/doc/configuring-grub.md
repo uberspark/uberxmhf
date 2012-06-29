@@ -1,4 +1,5 @@
-# Downgrade from Grub 2 to Grub 1
+Downgrade from Grub 2 to Grub 1
+===============================
 
 [XMHF](..) is currently only supported using Grub 1. If Grub 2 is already
 installed (as it typically is on recent Linux distributions), you will
@@ -22,7 +23,8 @@ And remove lines from `/boot/grub/menu.lst`:
     root           b5912383-7f9e-4911-b51d-b14ce8cea70b
     kernel         /boot/grub/core.img
 
-# Get the correct SINIT module (Intel only)
+Get the correct SINIT module (Intel only)
+=========================================
 
 [XMHF](..) launches itself with a *dynamic root of trust*. On Intel
 platforms, this requires a signed SINIT module provided by Intel.
@@ -30,9 +32,11 @@ platforms, this requires a signed SINIT module provided by Intel.
 SINIT modules can be found here:
 <http://software.intel.com/en-us/articles/intel-trusted-execution-technology/>
 
-# Grub settings
+Grub settings
+=============
 
-## Adding a Grub entry
+Adding a Grub entry
+-------------------
 
 You will need to add a Grub entry to `/boot/grub/menu.lst`. To ensure
 that it doesn't get clobbered, put it ***outside the AUTOMAGIC KERNEL
@@ -81,7 +85,8 @@ installed on `/dev/sda3`:
 The rest of the settings are the same as for Linux, above. Again, you
 will need to add a line for the SINIT module on Intel platforms.
 
-## savedefault for unattended boot
+savedefault for unattended boot
+-------------------------------
 
 Booting linux involves loading the grub menu twice. The first time you
 must select the XMHF entry, and the second time you must select an OS
@@ -103,7 +108,8 @@ each-other as the new default:
 The parameter to savedefault is the menu entry that you would like as
 the new default.
 
-## controlling grub remotely using the serial port
+controlling grub remotely using the serial port
+-----------------------------------------------
 
 You'll need another machine that is connected to the target machine
 with a serial connection. Note that if the target machine supports

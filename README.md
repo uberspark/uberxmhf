@@ -1,4 +1,5 @@
-# Introduction
+Introduction
+============
 
 XMHF is a modular hypervisor platform for recent multicore x86
 hardware with support for dynamic root of trust and nested
@@ -11,7 +12,8 @@ encapsulates common hypervisor core functionality in a framework that
 allows others to build custom hypervisor-based solutions (called
 "hypapps"). It currently supports only a single "rich" guest OS.
 
-# Included modules
+Included modules
+================
 
 The XMHF project includes several components:
 
@@ -43,7 +45,8 @@ The XMHF project includes several components:
   etc.  As the name implies, this library is intended primarily for
   use in "bare metal" environments.
 
-# Contact and support
+Contact and support
+===================
 
 For bug reports, feature requests, etc., please use the sourceforge
 [tickets](https://sourceforge.net/p/xmhf/tickets/) tool.
@@ -59,18 +62,21 @@ such notification messages, and start new threads by sending mail to
 <general@discussion.xmhf.p.re.sf.net>. **Posts via email must
 originate from a sourceforge account's primary email address**.
 
-# Contributing
+Contributing
+============
 
 We are open to contributions. The easiest mechanism is probably to
 `fork` our [git repository](https://sourceforge.net/p/xmhf/xmhf/)
 through the web UI, make the changes on your fork, and then issue a
 `merge request` through the sourceforge web UI.
 
-# Contributors
+Contributors
+============
 
 The core team: Amit Vasudevan, Jonathan M. McCune and James Newsome.
 
-# Related Publications
+Related Publications
+====================
 
 * "It’s an app. It’s a hypervisor. It’s a hypapp.": Design and
   Implementation of an eXtensible and Modular Hypervisor
