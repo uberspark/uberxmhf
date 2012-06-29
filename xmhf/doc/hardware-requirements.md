@@ -7,11 +7,11 @@ also be called different things.
 When purchasing a new machine, do *not* take it for granted that any
 newer Intel or AMD processor will have the necessary capabilities.
 
-Check Intel processor capabilities: http://ark.intel.com/
+Check Intel processor capabilities: <http://ark.intel.com/>
 
 Check AMD processor capabilities:
-http://www.amd.com/us/products/pages/processors.aspx (Look for AMD
-Virtualization™ (AMD-V™) Technology With Rapid Virtualization
+<http://www.amd.com/us/products/pages/processors.aspx>
+(Look for AMD Virtualization™ (AMD-V™) Technology With Rapid Virtualization
 Indexing capability for the desired CPU model)
 
 Requirements:
