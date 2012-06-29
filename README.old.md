@@ -76,11 +76,6 @@ Aesthetics and software engineering principles may have taken a back
 seat to having running, working code before a deadline. We're trying
 to incrementally improve the situation.
 
-There are a substantial number of known technical issues with this
-codebase, many of them with implications for security.  Please see the
-issue tracker linked from <http://xmhf.org/> for full details.  This
-absolutely remains EXPERIMENTAL software.  If you trust your data to
-this software, that is your problem.
 
 CHANGELOG
 =========

@@ -48,6 +48,12 @@ The XMHF project includes several components:
 Contact and support
 ===================
 
+There are a substantial number of known technical issues with this
+codebase, many of them with implications for security.  Please see the
+[ticket tracker](https://sourceforge.net/p/xmhf/tickets/) for full
+details. This absolutely remains EXPERIMENTAL software. Do not trust
+important data to this software.
+
 For bug reports, feature requests, etc., please use the sourceforge
 [tickets](https://sourceforge.net/p/xmhf/tickets/) tool.
 
