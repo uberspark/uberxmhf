@@ -114,7 +114,7 @@ compile time flags needed to link against a package can be obtained
 using `pkg-config --cflags packagename`. The linking flags can be
 obtained using `pkg-config --libs --static packagename`. Note that we
 only support static linking for now. If you installed [tz](tz) to a
-non-standard location $tzinstallprefix, you may need to set
+non-standard location `$tzinstallprefix`, you may need to set
 `PKG_CONFIG_LIBDIR` to include `$tzinstallprefix/lib/pkgconfig`.
 
 [1]: http://pkg-config.freedesktop.org/wiki/
