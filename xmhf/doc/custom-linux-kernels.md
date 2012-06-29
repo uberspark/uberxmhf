@@ -1,6 +1,6 @@
-[XMHF] currently does not virtualize MTRRs (on Intel Platforms). On
+[XMHF](..) currently does not virtualize MTRRs (on Intel Platforms). On
 Linux, you will need to build or obtain a kernel with MTRR
-(CONFIG_MTRR) features disabled.
+(`CONFIG_MTRR`) features disabled.
 
 Get a 2.6.32.X version, in this case we used 2.6.32.46
  
