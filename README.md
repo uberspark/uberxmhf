@@ -85,7 +85,7 @@ through the web UI, make the changes on your fork, and then issue a
 Contributors
 ============
 
-The core team: Amit Vasudevan, Jonathan M. McCune and James Newsome.
+The core team: Amit Vasudevan, Jonathan McCune, and James Newsome.
 
 Related Publications
 ====================
