@@ -89,7 +89,7 @@ Related Publications
   Framework. Amit Vasudevan, Jonathan M. McCune, and James
   Newsome. Technical Report CMU-CyLab-12-014, June
   2012. [pdf](http://www.cylab.cmu.edu/files/pdfs/tech_reports/CMUCyLab12014.pdf)
-    
+
 * TrustVisor: Efficient TCB Reduction and Attestation.  Jonathan
   M. McCune, Yanlin Li, Ning Qu, Zongwei Zhou, Anupam Datta, Virgil
   Gligor, and Adrian Perrig. IEEE Symposium on Security and Privacy,
