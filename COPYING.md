@@ -129,6 +129,9 @@ We attempt to catalogue license headers in source files that are
 required to be included in any binary-only distribution (i.e., typical
 BSD-style requirement):
 
+XMHF
+----
+
 ----------------------------------------------------------------------
 
     Copyright (c) 2003-2010, Intel Corporation
@@ -178,9 +181,10 @@ BSD-style requirement):
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
     
 ----------------------------------------------------------------------
-    
-    ---lockdown---
-    
+
+lockdown
+--------    
+
 ----------------------------------------------------------------------
     /**
     
@@ -267,15 +271,19 @@ BSD-style requirement):
     	THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     */
     
-    
-    ======================================================================
-    = Automatically extracted headers from files with FreeBSD-style C-style
-    = license header comments starting with /*- (note the dash).
-    = One way to identify such files: egrep -rl '^\/\*-' > filelist.txt
-    = One way to do most of the heavy lifting (w/ a few false positives):
-    = for i in `cat filelist.txt`
-    = do perl -n -e 'print "$_" if /\/\*-/ .. /\*\//;' $i; done
-    ======================================================================
+-------------------------------------------------------------------
+
+Automatically extracted
+-----------------------
+
+The following are automatically extracted headers from files with
+FreeBSD-style C-style license header comments starting with `/*-` (note
+the dash).  One way to identify such files: `egrep -rl '^\/\*-' >
+filelist.txt` One way to do most of the heavy lifting (w/ a few false
+positives): `for i in `cat filelist.txt` do perl -n -e 'print "$_" if
+/\/\*-/ .. /\*\//;' $i; done`
+
+--------------------------------------------------------------------
     
     /*-
     * Copyright (c) 1990 The Regents of the University of California.
