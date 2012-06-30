@@ -49,7 +49,7 @@ Copying
 =======
 
 The XMHF project comprises code from multiple sources, under multiple
-open source licenses. See [COPYING](COPYING) for details.
+open source licenses. See [COPYING.md](COPYING.md) for details.
 
 Contact and support
 ===================
