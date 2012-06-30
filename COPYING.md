@@ -37,7 +37,7 @@ Unmodified distribution
 =======================
 
 All software in this repository is under some form of open source
-license. You are free to use and distribute the unmodified repository.
+license. You are free to use and distribute the unmodified source code.
 
 Derived works
 =============
@@ -54,9 +54,7 @@ code in this repository. See below.
 Binary distribution
 ===================
 
-We attempt to avoid GPL-style licenses requiring that distribution of
-binaries must be accompanied by source code. However, there currently
-is some GPL code in this repository. See below.
+There is currently some GPL-licensed code in this repository. See below.
 
 GPL status of sub-projects
 ==========================
@@ -74,12 +72,12 @@ GPL status of sub-projects
   No GPL.
 
 * lockdown:
-  The lockdown hypervisor itself is not GPL. Some of the related
-  tools are, though. See lockdown/src/COPYING for a summary.
+  The lockdown hypervisor itself is not GPL. Some third-party
+  tools may be, though. See lockdown/src/COPYING for a summary.
 
 * tee-sdk:
   tee-sdk/ports/newlib is GPLv2. Therefore, PALs that link with newlib
-  are infected, including some of the examples in tee-sdk/examples.
+  are necessarily GPLv2, including some of the examples in tee-sdk/examples.
 
 * tee-cred:
   The TEE-Cred PAL links with newlib, causing it to fall under the GPLv2.
@@ -95,13 +93,17 @@ Third party code in repository history
 
 We attempt to summarize third-party code and their respective
 licenses that appear somewhere in the history of this repository.
+Note that these are no longer present in a checkout of the current
+HEAD of the repository, but git always retrieves the exhaustive history.
 
-OSLO (GPLv2), 
-Putty (MIT license), 
-OpenSSH (BSD), 
-Linux kernel (GPLv2), 
-Xen (GPLv2)
-amtterm (GPLv2) *** PROBLEM *** <- got updated with our headers
+* OSLO (GPLv2), 
+* Putty (MIT license), 
+* OpenSSH (BSD), 
+* Linux kernel (GPLv2), 
+* Xen (GPLv2)
+* amtterm (GPLv2) (NOTE: A copy of amtterm's source code was accidentally 
+  updated with our own headers in a now-defunct demo subdirectory of 
+  TrustVisor.  This was in error.)
 
 Third party code in current HEAD as of 2012-06-23
 =================================================
@@ -109,19 +111,20 @@ Third party code in current HEAD as of 2012-06-23
 We attempt to summarize third-party code and their respective
 license that appear in the current repository HEAD.
 
-libtommath (WTFPL)
-libtomcrypto (WTFPL)
-Tboot (BSD-style)
-OpenSSL (BSD-style), 
-Google Protocol Buffers (Apache 2.0)
-tlsf_malloc (special LGPL)
-newlib (GPL)
+* libtommath (WTFPL)
+* libtomcrypto (WTFPL)
+* Tboot (BSD-style)
+* OpenSSL (BSD-style), 
+* Google Protocol Buffers (Apache 2.0)
+* tlsf_malloc (special LGPL)
+* newlib (GPL)
 
----lockdown---
-RTFM Inc ssldump (http://www.rtfm.com/ssldump/) (BSD)
-LPCUSB, an USB device driver for LPC microcontrollers  (BSD)
-LPC ARM processor runtime environment (no license, only copyright)
-Generic ARM CRC module by Gary S. Brown (no license, no restrictions)
+Lockdown-specific:
+
+* RTFM Inc ssldump (http://www.rtfm.com/ssldump/) (BSD)
+* LPCUSB, an USB device driver for LPC microcontrollers  (BSD)
+* LPC ARM processor runtime environment (no restrictions)
+* Generic ARM CRC module by Gary S. Brown (no restrictions)
 
 Notices that must be reproduced
 ===============================
@@ -183,7 +186,7 @@ XMHF
     
 ----------------------------------------------------------------------
 
-lockdown
+Lockdown
 --------    
 
 ----------------------------------------------------------------------
