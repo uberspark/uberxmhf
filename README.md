@@ -45,6 +45,12 @@ The XMHF project includes several components:
   etc.  As the name implies, this library is intended primarily for
   use in "bare metal" environments.
 
+Copying
+=======
+
+The XMHF project comprises code from multiple sources, under multiple
+open source licenses. See [COPYING](COPYING) for details.
+
 Contact and support
 ===================
 
