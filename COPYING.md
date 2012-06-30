@@ -25,7 +25,8 @@ legal entanglements.
 it be used more widely and have greater impact.
 
 For these reasons, code generated specifically for this project is
-placed under a BSD-style license, as in the accompanying LICENSE file.
+placed under a BSD-style license, as in the accompanying [LICENSE](LICENSE)
+file.
 
 We have attempted to minimize the incorporation of third party code
 that would place additional restrictions on how our code is used.  We
