@@ -280,8 +280,11 @@ The following are automatically extracted headers from files with
 FreeBSD-style C-style license header comments starting with `/*-` (note
 the dash).  One way to identify such files: `egrep -rl '^\/\*-' >
 filelist.txt` One way to do most of the heavy lifting (w/ a few false
-positives): `for i in `cat filelist.txt` do perl -n -e 'print "$_" if
-/\/\*-/ .. /\*\//;' $i; done`
+positives): 
+
+    for i in `cat filelist.txt` do \
+        perl -n -e 'print "$_" if /\/\*-/ .. /\*\//;' $i; \
+    done
 
 --------------------------------------------------------------------
     
