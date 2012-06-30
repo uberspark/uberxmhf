@@ -1,4 +1,5 @@
-# Introduction
+Introduction
+============
 
 TrustVisor is a special-purpose hypervisor that provides code
 integrity as well as data integrity and secrecy for userspace Pieces
@@ -18,7 +19,8 @@ M. McCune, Yanlin Li, Ning Qu, Zongwei Zhou, Anupam Datta, Virgil
 Gligor, and Adrian Perrig. IEEE Symposium on Security and Privacy, May
 2010. [pdf](http://www.ece.cmu.edu/~jmmccune/papers/MLQZDGP2010.pdf)
 
-# DISCLAIMER
+DISCLAIMER
+==========
 
 TrustVisor is a ***research prototype***.
 
@@ -33,7 +35,8 @@ crashes with the risk of data loss for the guest OS. In particular,
 there are a number of [KNOWN STABILITY
 ISSUES](https://sourceforge.net/p/xmhf/tickets/search/?q=_instability%3ATrue).
 
-# Documentation
+Documentation
+=============
 
 * [Building TrustVisor](doc/building-trustvisor.md)
 * [Installing TrustVisor](doc/installing-trustvisor.md)
