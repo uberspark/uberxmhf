@@ -283,7 +283,7 @@ the dash).  One way to identify such files: `egrep -rl '^\/\*-' >
 filelist.txt` One way to do most of the heavy lifting (w/ a few false
 positives): 
 
-    for i in `cat filelist.txt` do \
+    for i in `cat filelist.txt`; do \
         perl -n -e 'print "$_" if /\/\*-/ .. /\*\//;' $i; \
     done
 
