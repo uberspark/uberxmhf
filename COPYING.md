@@ -13,15 +13,15 @@ Our preference is for permissive licenses allowing binary
 distribution, though possibly requiring attribution. This is motivated
 by several factors:
 
-1) This project is partially sponsored with government funding. For
+1. This project is partially sponsored with government funding. For
 this reason it makes sense to make it a "public good" with very few
 restrictions.
 
-2) This project is partially sponsored by independent corporations. We
+2. This project is partially sponsored by independent corporations. We
 would like them to be able to view and use the code without fear of
 legal entanglements.
 
-3) We believe that placing fewer restrictions on this code will help
+3. We believe that placing fewer restrictions on this code will help
 it be used more widely and have greater impact.
 
 For these reasons, code generated specifically for this project is
