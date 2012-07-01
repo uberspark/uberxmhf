@@ -1,31 +1,29 @@
 # Quick Start
 
-Optionally, choose a PREFIX where you will install various utilities,
-libraries, and headers. The default PREFIX is /usr/local.
+Optionally, choose a `PREFIX` where you will install various utilities,
+libraries, and headers. The default `PREFIX` is `/usr/local`.
 
-Optionally, choose a host-name to use for PAL code. The default HOST
-is i586-tsvc.
+Optionally, choose a host-name to use for PAL code. The default `HOST`
+is `i586-tsvc`.
 
-Optionally, choose a SYSROOT, where libraries to be linked against PAL
-code will be installed. The default is $(PREFIX)/$(HOST)
+Optionally, choose a `SYSROOT`, where libraries to be linked against PAL
+code will be installed. The default is `$(PREFIX)/$(HOST)`
 
 Ensure that the trustvisor headers are installed for both the host and
-the cross-development SYSROOT.
+the cross-development `SYSROOT`.
 
-~~~ {.sh}
-cd $(TRUSTVISOR_CODE_DIR)
-./configure --prefix=$(SYSROOT)/usr
-make install-dev
-./configure --prefix=$(PREFIX)
-make install-dev
-~~~
+    :::sh
+    cd $(TRUSTVISOR_CODE_DIR)
+    ./configure --prefix=$(SYSROOT)/usr
+    make install-dev
+    ./configure --prefix=$(PREFIX)
+    make install-dev
 
-Run 'make' in the same directory as this README. If you would like to
-override the default paths, specify your overrides as parameters to make:
+Run `make` in the same directory as this README. If you would like to
+override the default paths, specify your overrides as parameters to `make`:
 
-~~~ {.sh}
-make PREFIX=$(PREFIX) HOST=$(HOST) SYSROOT=$(SYSROOT)
-~~~
+    :::sh
+    make PREFIX=$(PREFIX) HOST=$(HOST) SYSROOT=$(SYSROOT)
 
 Of course, you may install each component individually, if you prefer,
 either by specifying a target to 'make', or by manually performing the
@@ -33,13 +31,13 @@ steps in the corresponding 'make' recipe. At the time of this writing,
 the components installed by make are:
 
 * toolchain : these are wrappers to utilities such as gcc, with names
-  like i586-tsvc-gcc. They mostly serve to override the system paths
-  with paths in $(SYSROOT).
+  like `i586-tsvc-gcc`. They mostly serve to override the system paths
+  with paths in `$(SYSROOT)`.
 
 * newlib : this is an implementation of libc targeted for
   PALs. Functions that don't involve IO should work as expected. IO
-  functions currently fail gracefully. The toolchain i586-tsvc-gcc
-  will link against this library by default, unless -nostdlib is used.
+  functions currently fail gracefully. The toolchain `i586-tsvc-gcc`
+  will link against this library by default, unless `-nostdlib` is used.
 
 * tz : This implements the TrustZone API for managing and
   communicating with services (pals) running the trusted execution
@@ -47,7 +45,7 @@ the components installed by make are:
 
 * openssl : This is the well-known openssl library, ported for use
   with pals. It is not installed by default, but can be installed with
-  'make openssl'
+  `make openssl`
 
 # Overview
 
@@ -73,11 +71,12 @@ Device
 
 # Files
 
-  * [README](README) This file.
   * [tz](tz) TrustZone API. This library is to be used by _clients_
     to communicate with _services_. This library supports multiple
     _device_ back-ends, abstracting them in such a way that most _client_
     code can be oblivious to which back-end is in use.
+  * [toolchain](toolchain) A cross-compiling toolchain for compiling
+    and linking PALs. Implemented as wrappers around gcc.
   * [ports](ports) Support libraries for _services_. These have been
     ported to run in a trusted environment provided by some _device_.
     i.e., they do not make system calls, and all dependencies should
@@ -89,16 +88,15 @@ Device
 
 You will need to build and install in [tz](tz):
 
-~~~ {.sh}
-cd tz
-autoreconf -i # Generates configure script
-./configure
-make
-sudo make install
-~~~
+    :::sh
+    cd tz
+    autoreconf -i # Generates configure script
+    ./configure
+    make
+    sudo make install
 
-By default, everything will install into /usr/local. You can of course
-change this by passing --prefix=$tzinstallprefix to the configure
+By default, everything will install into `/usr/local`. You can of course
+change this by passing `--prefix=$tzinstallprefix` to the configure
 script.
 
 # Compiling applications
@@ -109,15 +107,15 @@ services (tee-sdk-svc), and for each device there are application and
 service back-end libraries (tee-sdk-app-devname and
 tee-sdk-svc-devname). 
 
-We use [pkgconfig] to simplify management of these libraries.  The
+We use [pkgconfig][1] to simplify management of these libraries.  The
 compile time flags needed to link against a package can be obtained
 using `pkg-config --cflags packagename`. The linking flags can be
 obtained using `pkg-config --libs --static packagename`. Note that we
 only support static linking for now. If you installed [tz](tz) to a
-non-standard location $tzinstallprefix, you may need to set
-PKG_CONFIG_LIBDIR to include $tzinstallprefix/lib/pkgconfig.
+non-standard location `$tzinstallprefix`, you may need to set
+`PKG_CONFIG_LIBDIR` to include `$tzinstallprefix/lib/pkgconfig`.
 
-[pkgconfig]: http://pkg-config.freedesktop.org/wiki/
+[1]: http://pkg-config.freedesktop.org/wiki/
 
 An application using the tee-sdk to communicate with a service running
 in a trusted environment must link against at least one application
@@ -129,8 +127,8 @@ devices.
 
 You must compile and link using exactly one service back-end
 package. At the time of this writing, there is only one anyways:
-'tee-sdk-svc-tv'. pkgconfig will automatically pull in the service
-front-end 'tee-sdk-svc' as a dependency. Using the compile and link
+`tee-sdk-svc-tv`. pkgconfig will automatically pull in the service
+front-end `tee-sdk-svc` as a dependency. Using the compile and link
 flags from those packages is important not only to link against the
 corresponding libraries; they also reference compiler options to
 eliminate code-constructs that are unsupported inside services, and
@@ -158,107 +156,103 @@ mapping the PAL's code and data to special page-aligned sections. The
 TrustVisor back-end provides simplified functions for registering a
 PAL that has been built and linked this way.
 
-The TEE-SDK includes pkg-config files that specify the necessary
+The TEE-SDK includes `pkg-config` files that specify the necessary
 compilation and link flags, and Makefile snippets that can be included
 in your own Makefiles to automate most of the process. Pointing your
-makefile at those makefile snippets and\or pkg-config files (rather
+makefile at those makefile snippets and\or `pkg-config` files (rather
 than copying and modifying a monolithic Makefile with these things
 hard-coded) will help keep your pal up to date as the build process
-evolves. See `examples/newlib/Makefile` for a good starting point of a
-Makefile that dynamically incorporates the TEE-SDK-provided Makefile
-snippets and pkg-config files.
+evolves. See [examples/newlib/Makefile](examples/newlib/Makefile) for
+a good starting point of a Makefile that dynamically incorporates the
+TEE-SDK-provided Makefile snippets and pkg-config files.
 
 # Compiling and running the test example
 
 After installation in [tz](tz), you should be able to compile and run
 the test example in [examples/test](examples/test). Remember to set
-the PKG_CONFIG_LIBDIR environment variable if you installed to a
+the `PKG_CONFIG_LIBDIR` environment variable if you installed to a
 non-system directory.
 
 # Loading and unloading services
 
 Services are loaded and unloaded through the TrustZone service manager:
 
-~~~ {.c}
-  tz_return_t tzRet;
-  tz_device_t tzDevice;
-  tz_session_t tzManagerSession;
-  tz_uuid_t tzSvcId;
+    :::c
+    tz_return_t tzRet;
+    tz_device_t tzDevice;
+    tz_session_t tzManagerSession;
+    tz_uuid_t tzSvcId;
 
-  /* open isolated execution environment device */
-  /* Use NULL for default device, or 'tv' to specify trustvisor */
-  tzRet = TZDeviceOpen(NULL, NULL, &tzDevice);
-  assert(tzRet == TZ_SUCCESS);
+    /* open isolated execution environment device */
+    /* Use NULL for default device, or 'tv' to specify trustvisor */
+    tzRet = TZDeviceOpen(NULL, NULL, &tzDevice);
+    assert(tzRet == TZ_SUCCESS);
 
-  /* prepare service descriptor */
-  /* this is currently device-specific (i.e., trustvisor-specific).
-     eventually it'd be good to provide a common abstraction here. */
-  scode_sections_info_init(&scode_info,
-                           &__scode_start, scode_ptr_diff(&__scode_end, &__scode_start),
-                           NULL, 0,
-                           PAGE_SIZE, PAGE_SIZE);
+    /* prepare service descriptor */
+    /* this is currently device-specific (i.e., trustvisor-specific).
+       eventually it'd be good to provide a common abstraction here. */
+    scode_sections_info_init(&scode_info,
+                             &__scode_start, scode_ptr_diff(&__scode_end, &__scode_start),
+                             NULL, 0,
+                             PAGE_SIZE, PAGE_SIZE);
 
-  /* open session with device manager */
-  tzRet = TZManagerOpen(&tzDevice, NULL, &tzManagerSession);
-  assert(tzRet == TZ_SUCCESS);
+    /* open session with device manager */
+    tzRet = TZManagerOpen(&tzDevice, NULL, &tzManagerSession);
+    assert(tzRet == TZ_SUCCESS);
 
-  /* download */
-  tzRet = TZManagerDownloadService(&tzManagerSession,
-                                   &pal,
-                                   sizeof(pal),
-                                   &tzSvcId);
-  assert(tzRet == TZ_SUCCESS);
+    /* download */
+    tzRet = TZManagerDownloadService(&tzManagerSession,
+                                     &pal,
+                                     sizeof(pal),
+                                     &tzSvcId);
+    assert(tzRet == TZ_SUCCESS);
 
-  /* do useful work with the service */
+    /* do useful work with the service */
   
-  /* unload the service. */
-  /* This is currently CRITICAL when using TrustVisor. Exiting the
-     application without unloading the service will lead to system
-     instability. */
-  tzRet = TZManagerRemoveService(&tzManagerSession,
-                                 &tzSvcId);
-  assert(tzRet == TZ_SUCCESS);
+    /* unload the service. */
+    /* This is currently CRITICAL when using TrustVisor. Exiting the
+       application without unloading the service will lead to system
+       instability. */
+    tzRet = TZManagerRemoveService(&tzManagerSession,
+                                   &tzSvcId);
+    assert(tzRet == TZ_SUCCESS);
 
-  /* close session */
-  tzRet = TZManagerClose(&tzManagerSession);
-  assert(tzRet == TZ_SUCCESS);
-~~~ 
+    /* close session */
+    tzRet = TZManagerClose(&tzManagerSession);
+    assert(tzRet == TZ_SUCCESS);
 
 The TrustVisor back-end provides some convenience functions for an
 application to load an unload a single PAL:
 
-~~~ {.c}
-  tz_device_t tzDevice;
-  tz_session_t tzPalSession;
-  tz_uuid_t tzSvcId;
-  tz_return_t rv;
-  int rv=0;
+    :::c
+    tz_device_t tzDevice;
+    tz_session_t tzPalSession;
+    tz_uuid_t tzSvcId;
+    tz_return_t rv;
+    int rv=0;
   
-  /* configurable options */
-  pal_fn_t *pal_fn = &pal_entry_point;
-  size_t param_size = PAGE_SIZE;
-  size_t stack_size = PAGE_SIZE;
+    /* configurable options */
+    pal_fn_t *pal_fn = &pal_entry_point;
+    size_t param_size = PAGE_SIZE;
+    size_t stack_size = PAGE_SIZE;
 
-  /* register the pal */
-  rv = tv_tz_init(&tzDevice,
-                  &tzPalSession,
-                  &tzSvcId,
-                  pal_entry_point,
-                  param_size,
-                  stack_size);
-  assert(rv == TZ_SUCCESS);
+    /* register the pal */
+    rv = tv_tz_init(&tzDevice,
+                    &tzPalSession,
+                    &tzSvcId,
+                    pal_entry_point,
+                    param_size,
+                    stack_size);
+    assert(rv == TZ_SUCCESS);
 
-  /* do useful work with the pal */
-  /* .... */
+    /* do useful work with the pal */
+    /* .... */
 
-  /* register the pal */
-  rv = tv_tz_teardown(&tzDevice,
-                      &tzPalSession,
-                      &tzSvcId));
-  assert(rv == TZ_SUCCESS);
-} 
-
-~~~
+    /* register the pal */
+    rv = tv_tz_teardown(&tzDevice,
+                        &tzPalSession,
+                        &tzSvcId);
+    assert(rv == TZ_SUCCESS);
 
 # Calling services
 
@@ -294,9 +288,11 @@ identify the beginning and end of the relevant sections. See
 
 The service entry point should have the following prototype:
 
-~~~ {.c}
-void pal_entry(uint32_t uiCommand, tzi_encode_buffer_t *psInBuf, tzi_encode_buffer_t *psOutBuf, tz_return_t *puiRv)
-~~~
+    :::c
+    void pal_entry(uint32_t uiCommand,
+                   tzi_encode_buffer_t *psInBuf,
+                   tzi_encode_buffer_t *psOutBuf,
+                   tz_return_t *puiRv)
 
  * `uiCommand` will contain command specified in the call to
    `TZOperationPrepareInvoke`
@@ -336,13 +332,4 @@ service in user-space, while emulating both the functionality and
 limitations of a trusted environment. This would help a lot with
 debugging. A clean way to simulate this would be to fork a new process
 to run the service code, passing data through shared mmap regions.
-
-# Other resources
-
-  * [Redmine Project](https://plover.pdl.cmu.local/projects/tee-sdk/) 
-
-This file is written in [Pandoc] Markdown for easy conversion to other
-formats.
-
-[Pandoc]: http://johnmacfarlane.net/pandoc/README.html
 
