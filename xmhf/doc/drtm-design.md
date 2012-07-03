@@ -21,6 +21,7 @@ AMD
 * AMD calls the launched environment a Secure Loader Block (SLB).
 * It is necessary to clear any microcode patches on all APs (and BSP) before attempting SKINIT.
 * The SLB must start on a 64KB-aligned physical address.
+* The first 4 bytes of the SLB are its header (size and entry point).
 * Execution of the SLB starts in 32-bit flat protected mode.  Only CS and SS are valid.  EAX contains the SL base address.  EDX contains some CPU information. ESP initialized to the top of 64K.
 * **Important**: Upon entry into the SLB, CS and SS are valid. DS is not.
 * It is possible for launch to fail.  The SLB will still get control but PCR 17 will not hold the correct value.
@@ -35,6 +36,7 @@ Intel
 
 * The CPU instruction for a dynamic launch is `GETSEC[SENTER]`.
 * Intel calls the launched environment the Measured Launched Environment (MLE).
+* The MLE's header can appear at an arbitrary offset and is identified using a UUID.
 * `TXT.*` MSRs (model-specific registers) control aspects of DRTM
     * TXT.ERRORCODE, TXT.STS, TXT.ESTS, TXT.E2STS registers contain status information.
     * In the event of a failed launch, TXT.ERRORCODE is our best chance of understanding what went wrong.
@@ -52,25 +54,30 @@ Intel
 Secure Loader Design / Implementation
 =====================================
 
-* SL header must somehow remain compatible with both AMD and Intel.
-    * SL starts with 3 empty pages, except for the first 4 bytes.  These are initialized to contain the SLB header for an AMD system.  The entry point points beyond these three pages to the true entry point on the fourth page.  On an Intel system these three pages will be overwritten with the MLE page tables.  The MLE header will be written into the MLE at the beginning of the fourth page.
-* To determine the SL's base addresses, the best cross-processor solution is to do:
+* We only want to have one SL, that will work on either of AMD or Intel platforms.
+* The SL header must therefore remain compatible with both AMD's and Intel's requirements.
+* ***Current Design***: SL starts with 3 empty pages, except for the first 4 bytes.  These are initialized to contain the SLB header for an AMD system.  The entry point points beyond these three pages to the true entry point on the fourth page.  On an Intel system these three pages will be overwritten with the MLE page tables.  The MLE header will be written into the MLE at the beginning of the fourth page.
+* To determine the SL's base addresses, a functioning cross-processor solution is to do:
     * `call 1f`
     * `1: pop eax`
-    * This might introduce a problem if the default Intel stack pointer points into the runtime, where some important memory contents could be clobbered.  Likely work-around will be to manually set the stack pointer to 64K.  It will have to come after the type of processor is detected.  Again, I don't think this causes any trouble.
-* Because writing memory can only be done with SS on AMD, and DS on Intel, we have to write differently depending on the processor.  This affects 3 locations in the code where the SL's GDT is dynamically updated.
-* TODO: If GETSEC[CAPABILITIES] indicates that ECX will contain the MLE base address pointer upon entry into the MLE, we can use ECX as the base address on Intel systems.  This prevents errant memory writes from a not-entirely-understood SS on Intel.  Thus, we can scrap the call/pop/align and use EAX on AMD, and ECX on Intel.
+    * Intel's stack is not technically guaranteed to be valid according to the manual, so it would be nice to move away from this.  It does work so far in practice.
+    * Because writing memory can only be done with SS on AMD, and DS on Intel, we have to write differently depending on the processor until the GDT is initialized and new segment descriptors can be loaded.  This affects 3 locations in the code where the SL's GDT is dynamically updated.
+    * TODO: If GETSEC[CAPABILITIES] indicates that ECX will contain the MLE base address pointer upon entry into the MLE, we can use ECX as the base address on Intel systems.  This prevents errant memory writes and possible vulnerabilities from dangerous reads from a not-entirely-understood SS on Intel.  Thus, we can scrap the `call/pop/align` idiom and use EAX on AMD, and ECX on Intel.
+* The SL currently hashes the entire XMHF Runtime memory image and compares it with a *golden* hash value imprinted within the SL at build time.  Look for the following environment variable defined during the XMHF build process:
+* The SL may become bigger than 64 KB.  This means that DMA protections must be extended by code inside the first 64 KB, and then the above-64 KB region must be measured and extended into a TPM PCR.  See the following environment variables defined in various Makefiles:
+    * SLBELOW64K_INTEGRITY_HASH
+    * SLABOVE64K_INTEGRITY_HASH
 
 Additional Intel-related issues
 -------------------------------
 
 * MTRRs must be set with caching disabled for SINIT to run, so system performance post-launch is poor.  These are currently restored in `runtime.c:allcpus_common_start()`.
     * NOTE: This may be too late to get good boot performance, since the SL runs (and builds page tables) without appropriate caching.
-* Bringing APs online requires TXT-specific mechanisms.
+* Bringing APs online requires TXT-specific mechanisms.  This is nice in that there is no need to enter 16-bit real mode to bring up an AP, but we still require such support for AMD systems, so it doesn't actually simplify anything for us.
 
 TODOs
 =====
 
-* Block guest access to TPM localities > 1.
-* Understand STM and use it
-* Understand DMA protections and use them
+* Ensure that we do in fact block guest access to TPM localities > 1. See [tickets:#71].
+* Understand STM (SMM Transfer Monitor; still a work-in-progress from Intel) and use it. See [tickets:#70].
+* Ensure that all necessary memory regions are DMA-protected.  See [tickets:#38].
