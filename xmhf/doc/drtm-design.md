@@ -63,10 +63,7 @@ Secure Loader Design / Implementation
     * Intel's stack is not technically guaranteed to be valid according to the manual, so it would be nice to move away from this.  It does work so far in practice.
     * Because writing memory can only be done with SS on AMD, and DS on Intel, we have to write differently depending on the processor until the GDT is initialized and new segment descriptors can be loaded.  This affects 3 locations in the code where the SL's GDT is dynamically updated.
     * TODO: If GETSEC[CAPABILITIES] indicates that ECX will contain the MLE base address pointer upon entry into the MLE, we can use ECX as the base address on Intel systems.  This prevents errant memory writes and possible vulnerabilities from dangerous reads from a not-entirely-understood SS on Intel.  Thus, we can scrap the `call/pop/align` idiom and use EAX on AMD, and ECX on Intel.
-* The SL currently hashes the entire XMHF Runtime memory image and compares it with a *golden* hash value imprinted within the SL at build time.  Look for the following environment variable defined during the XMHF build process:
-* The SL may become bigger than 64 KB.  This means that DMA protections must be extended by code inside the first 64 KB, and then the above-64 KB region must be measured and extended into a TPM PCR.  See the following environment variables defined in various Makefiles:
-    * SLBELOW64K_INTEGRITY_HASH
-    * SLABOVE64K_INTEGRITY_HASH
+* The SL currently hashes the entire XMHF Runtime memory image and compares it with a *golden* hash value imprinted within the SL at build time.  See [Memory Layout](memory-layout.md).
 
 Additional Intel-related issues
 -------------------------------
