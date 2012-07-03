@@ -1,45 +1,53 @@
 DRTM Design
 ===========
 
+XMHF includes three significant components: an untrusted `init`
+module, the trusted Secure Loader (SL), and the hypervisor runtime.
+`init` is engineered to dynamically launch the SL.
+
 Fundamental to XMHF's design is support for a ***measured launch***.
 Presently we insist that it be a dynamic launch, on a platform that
 supports Dynamic Root of Trust for Measurement (DRTM).  AMD and Intel
 implement this differently, so we first point out some
 platform-specific issues before discussing our design.
 
-* First, mention significant requirements on each of AMD and Intel hardware platforms.
-** AMD calls the launched environment an SLB.  Intel calls the launched environment an MLE.
-** We call our secure loader the SL.
-* Then, describe our SL design.
-
 AMD
 ---
 
-* Clear Microcode on all APs (and BSP) before attempting SKINIT
-* SL(Secure Loader) must start on a 64K-aligned physical address
-* SL starts in 32-bit flat protected mode.  Only CS and SS are valid.  EAX contains SL base address.  EDX contains some CPU information. ESP initialized to top of 64K.
+* Reference manuals:
+    * [AMD64 Architecture Programmer’s Manual Volume 2: System Programming](http://support.amd.com/us/Processor_TechDocs/24593_APM_v2.pdf)
+
+* The CPU instruction for a dynamic launch is `SKINIT`.
+* AMD calls the launched environment a Secure Loader Block (SLB).
+* It is necessary to clear any microcode patches on all APs (and BSP) before attempting SKINIT.
+* The SLB must start on a 64KB-aligned physical address.
+* Execution of the SLB starts in 32-bit flat protected mode.  Only CS and SS are valid.  EAX contains the SL base address.  EDX contains some CPU information. ESP initialized to the top of 64K.
+* **Important**: Upon entry into the SLB, CS and SS are valid. DS is not.
 * It is possible for launch to fail.  The SLB will still get control but PCR 17 will not hold the correct value.
     * TODO: Check for this failure and respond accordingly (retry launch).
-* Upon entry into SLB, CS and SS are valid. DS is not.
 
 Intel
 -----
 
-* [Intel MLE Developer's Guide](http://download.intel.com/technology/security/downloads/315168.pdf)
-* [Intel SW Dev Guide Vol 2B, Ch. 6: Safer Mode Extensions](http://www.intel.com/Assets/PDF/manual/253667.pdf)
+* Reference manuals:
+    * [Intel MLE Developer's Guide](http://download.intel.com/technology/security/downloads/315168.pdf)
+    * [Intel SW Dev Guide Vol 2B, Ch. 6: Safer Mode Extensions](http://www.intel.com/Assets/PDF/manual/253667.pdf)
 
-
-* TXT.* MSRs control aspects of DRTM
-    * TXT.ERRORCODE, TXT.STS, TXT.ESTS, TXT.E2STS registers contain status information
+* The CPU instruction for a dynamic launch is `GETSEC[SENTER]`.
+* Intel calls the launched environment the Measured Launched Environment (MLE).
+* `TXT.*` MSRs (model-specific registers) control aspects of DRTM
+    * TXT.ERRORCODE, TXT.STS, TXT.ESTS, TXT.E2STS registers contain status information.
     * In the event of a failed launch, TXT.ERRORCODE is our best chance of understanding what went wrong.
-    * [tboot](http://tboot.sourceforge.net) contains some code to do this.  Indeed, it contains a lot of (BSD-licensed) code that we can leverage.
-* We must be able to learn the start address and size of the SL from within init.
-* We must be able to construct page tables that map the MLE so that Intel's Authenticated Code Module (ACMod, also known as SINIT) can address it properly.  In practice 3 4K pages should suffice.  These are PAE-formatted page tables.
-* We must be able to access the appropriate SINIT module (start address and size) for the current chipset.
-Initially I will hard-code this into x86/init for the HP 8540p laptops.
-* This module will need to be copied to the physical addresses specified in some of the TXT MSR's; future systems may already include an SINIT module that was put in place by the BIOS.  I have yet to see one in the wild.
-* No base address available in a register (AMD put it in EAX).  call/pop/align may be needed to learn base address.  However, newer systems will but the base of the MLE page tables into ECX.  We can determine if a system supports this by using GETSEC[CAPABILITIES].
-* Upon entry into MLE, CS and DS are valid.  SS is not (opposite of AMD).  Can read memory with CS but must use DS to write.
+    * [tboot](http://tboot.sourceforge.net) contains some utilities to read this information.
+* We must be able to learn the start address and size of the SL from within `init`.
+* We must be able to construct page tables that map the MLE so that Intel's [Authenticated Code Module](http://software.intel.com/en-us/articles/intel-trusted-execution-technology/) (ACMod, also known as SINIT) can address it properly.  In practice three 4KB pages should suffice.  These are PAE-formatted page tables.
+* We must be able to access the appropriate SINIT module (start address and size) for the current chipset. This gets configured in the bootloader (i.e., `grub`).
+* This module will need to be copied to the physical addresses specified in some of the TXT MSR's; future systems may already include an SINIT module that was put in place by the BIOS.  We have yet to see one in the wild.
+* No base address available in a register (AMD put it in EAX).  call/pop/align may be needed to learn base address.  However, newer systems will put the base of the MLE page tables into ECX.  We can determine if a system supports this by using GETSEC[CAPABILITIES].
+    * TODO: Is it reasonable to depend on this support? Suspect that all newer SINIT modules do provide this feature. Obviously we want to fail with meaningful output if this assumption turns out to be invalid.
+* Upon entry into MLE, CS and DS are valid.  SS is not (opposite of AMD).  One can read memory with CS but must use DS to write.
+    * Experimentally, it appears that SS is actually valid, but it still points into the segment described by the SINIT module's GDT.  The SINIT module must protect itself from all of the same attacks (i.e., DMA and other CPUs), so it may not be unreasonable to use SS.
+    * TODO: Reach a conclusion regarding the use of SS prior to initialization.
 
 Secure Loader Design / Implementation
 =====================================
