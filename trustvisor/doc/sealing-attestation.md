@@ -41,31 +41,33 @@ Long-term TrustVisor state
     * I don't think this matters at all.  If the actions taken in the set of identical PALs are thread-safe and hence serializable, then they are equivalent to some number of individual Flicker sessions.  Coping with "parallel session" types of attacks is necessary at a higher level, i.e., the PAL developer must take responsibility for this.  It would be great to develop a library to relieve the actual non-expert developer from this burden, but with respect to layers of abstraction from TrustVisor's perspective handling this interleaving securely is the PAL's responsibility.
     * Well, it probably means the Micro-TPM interface needs to be thread-safe.
 
-h2. Hardware TPM Attestation
+Hardware TPM Attestation
+------------------------
 
 * Ordinary TPM-based attestation to the dynamic launch of TrustVisor convinces a remote party that a particular host is running TrustVisor.  Hosts are authenticated via a TPM AIK.  It can be certified using a PrivacyCA or we can short-circuit the Privacy CA path and use the EK Cert directly as the platform ID.
     *  This does not require much new development at all.  Existing attestation protocols should work just fine. Further, the desired security properties of secrecy and integrity are maintained even if AIK(s) and TPM Quote generation are entirely managed by untrusted code (this is the beauty of a dedicated hardware root of trust).
-* See hyp.git/tee-sdk/trunk/examples/attestation for an example
+* See `tee-sdk/examples/attestation` for an example.
 
-h2. Certifying a Micro-TPM
+Certifying a Micro-TPM
+----------------------
 
 * The ability to certify a micro-TPM as a valid micro-TPM instance running on top of TrustVisor.
-* Unlinkability of Micro-TPM attestation / privacy protection that is at least as good as that available to hardware TPM via an AIK.
+* GOAL: Unlinkability of Micro-TPM attestation (between potentially mutually distrusting PALs) / privacy protection that is at least as good as that available to hardware TPM via an AIK.
 * The Micro-TPM needs its own signing keypair(s) that will be used to sign attestations.  This suggests some level of key generation support.
     * TrustVisor needs to be able to sign something indicating that a micro-TPM is valid.  TrustVisor could (1) use a TPM-based key for this, or (2) generate its own software-based keypair, or (3) generate an ephemeral software-based or TPM-based keypair.
         * Call this keypair *TvHwSwBridgeSigner*.
     * *Privacy Concern*: A single *TvHwSwBridgeSigner* links all PAL attestations to the same physical platform.  Thus, with a single *TvHwSwBridgeSigner*, there is no advantage to having a separate signing keypair for each micro-TPM instance.
-        * (1) is compelling because it provides maximal protection for the private key, but it is slow.  This is only viable if such signatures are expected to be rare.
-        * (2) is compelling because *TvHwSwBridgeSigner* can be derived from a single 20~40 byte master secret, which enables the only non-volatile state required by TrustVisor to be the master-secret, instead of the output of one or more TPM Seal operations (e.g., if we used a TPM-based key nested under the SRK).  Let's call this the *Small-State-Trick*. This space-saving is important in the case where we use the TPM's limited non-volatile storage to persist trustvisor's state. Pros: smaller state, faster private key operations.  Cons: key lives in DRAM, not in TPM. (Summarized another way: Actual TPM keys end up as ciphertext that must be persisted; using our own key generated based on the small MasterSecret that is easier to persist might be more practical for now.)
-        * (3) is compelling because it simplifies development for the time being.  A new attestation would be required every time the platform running EMHF reboots. With  dynamic re-loading (someday, when it's implemented), we have a presence (e.g., daemon) in the untrusted OS that can seal/unseal the per-physical-boot ephemeral keypair, thereby eliminating the cost.
-
-    * *Quick and Dirty* If we relax the Privacy / Unlinkability requirement, we can collapse the certification chain for a micro-TPM quote into a single signature from a single keypair maintained inside TrustVisor.  Because there is only one, it can be extended directly into one of the dynamic PCRs inside of TrustVisor itself. We can persist it across dynamic reloads (a la (3) above) if desired as a performance optimization.
-
-    * *Don't Forget*
+        * Soln (1) is compelling because it provides maximal protection for the private key, but it is slow.  This is only viable if such signatures are expected to be rare.
+            * A further challenge is dealing with finite TPM keyslots while playing nice with legacy OS TPM drivers.  See [tickets:#15].
+        * Soln (2) is compelling because *TvHwSwBridgeSigner* can be derived from a single 20~40 byte master secret, which enables the only non-volatile state required by TrustVisor to be the master-secret, instead of the output of one or more TPM Seal operations (e.g., if we used a TPM-based key nested under the SRK).  Let's call this the *Small-State-Trick*. This space-saving is important in the case where we use the TPM's limited non-volatile storage to persist trustvisor's state. Pros: smaller state, faster private key operations.  Cons: key lives in DRAM, not in TPM. (Summarized another way: Actual TPM keys end up as ciphertext that must be persisted; using our own key generated based on the small MasterSecret that is easier to persist might be more practical for now.)
+        * Soln (3) is compelling because it simplifies development for the time being.  A new attestation would be required every time the platform running TrustVisor reboots. With  dynamic re-loading (someday, when it's implemented), we have a presence (e.g., daemon) in the untrusted OS that can seal/unseal the per-physical-boot ephemeral keypair, thereby eliminating the cost.
+    * *Quick and Dirty*: If we relax the Privacy / Unlinkability requirement, we can collapse the certification chain for a micro-TPM quote into a single signature from a single keypair maintained inside TrustVisor.  Because there is only one, it can be extended directly into one of the dynamic PCRs inside of TrustVisor itself. We can persist it across dynamic reloads (a la (3) above) if desired as a performance optimization.
+    * *Don't Forget*:
         * Hard part of uTPM quote signing key certification is to link it to the physical TPM's active AIK without allowing quotes from different uTPM instances to be linked, and without trusting the code running on the untrusted OS. (This invalidates solutions such as hashing the active public AIK and using that as part of the quote nonce.)
         * This gives rise to the requirement of a per-micro-TPM-instance TrustVisor signing ability, since any unified signing ability would implicitly link uTPM instances to the same TrustVisor instance.
 
-h2. Micro-TPM Identity Key Design Challenges
+Micro-TPM Identity Key Design Challenges
+----------------------------------------
 
 * How many identity keys can a micro-TPM have? (The answer will be either "exactly one" or "an arbitrary number".)
     * With the *Quick and Dirty* trick, a micro-TPM will only ever have one active identity key, and that keypair is dictated by TrustVisor itself. The micro-TPM has no say in it.
@@ -77,78 +79,88 @@ h2. Micro-TPM Identity Key Design Challenges
 * What if the identical PAL is registered multiple times?
 * How do we isolate the relevant micro-TPM instances?
 
-h1. Micro-TPM Design and API
+Micro-TPM Design and API
+========================
 
-h2. Hardware TPM Compatibility
+Hardware TPM Compatibility
+--------------------------
 
 * *Design Question:* Should the uTPM look like a stripped down TPM, or should we break compatibility with existing TPM software?
 * *Decision: Break compatibility*.  We are interested in minimal size and design simplicity above all for the uTPM.  A "compatibility layer" to bridge things to, e.g., an application compiled against a TSS library, can be written later. newlib + libnosys + ibmswtpm can likely provide a full software v1.2 TPM implementation with manageable effort.
 
-h2. Micro-TPM API / Provided Functionality
+Micro-TPM API / Provided Functionality
+--------------------------------------
 
-h3. PCR Read / Extend (easy)
+### PCR Read / Extend (easy) ###
 
 * Read or extend the appropriate uPCR in the proper uTPM instance. *Done.*
 
-h3. GetRandom (easy)
+### GetRandom (easy) ###
 
 * A PAL needs a source of random numbers to use as nonces, keys, etc.
 * These random numbers are provided by TrustVisor.  The most likely design is to seed a PRNG with high-quality randomness from the v1.2 hardware TPM's GetRandom facility when TrustVisor boots / initializes (if it is launched late).
     * A shortcut with a performance hit is just to call the real TPM's GetRandom facility every time.  This may introduce contention with the TSS (e.g., TrouSerS / tcsd) in the legacy OS though.
 * Implemented CTR_DRBG with AES-256 as PRNG, using TPM Entropy for instantiation and reseeding. *Done.*
 
-h3. Quote (Moderate)
+### Quote (Moderate) ###
 
-* This one is tricky. Many of the issues mentioned here: [[Hardware TPM Usage and Design]]
+* This one is tricky. Many of the issues mentioned here: [Hardware TPM Usage and Design]
 * *Quick and Dirty* version (one single, ephemeral, bridge signing keypair for a TrustVisor boot cycle) *Done.*
 
 
-h3. Seal / Unseal (Moderate)
+### Seal / Unseal (Moderate) ###
 
-* Sealing is performed using long-term symmetric keys maintained by logic that is part of TrustVisor.  Ciphertexts sealed by different PALs will be encrypted and integrity protected using the same keys, though the associated PCRs will be different.
+* Sealing is performed using long-term symmetric keys maintained by logic that is part of TrustVisor.  Ciphertexts sealed by different PALs will be encrypted and integrity protected using the same keys, though the associated uPCRs will be different.
 * We mimic the v1.2 hardware TPM's DigestAtCreation and DigestAtRelease data structures, leveraging the individual PAL's uTPM's bank of uPCRs. *Done.*
 
-> Internal rollback prevention for TrustVisor
+Internal rollback prevention for TrustVisor
+===========================================
 
 * *Design Question:* Does TrustVisor need to protect its own long-term sealing encryption and MAC keys (which are derived from a single master secret) from a rollback attack?
-* *Decision: No.* The long-term sealing encryption and MAC keys fulfill the same role as the Storage Root Key (SRK) in the hardware TPM.  The semantics here should be similar.  "Initializing" TrustVisor on a platform (in practice: defining a TPM NVRAM index and locking it to the relevant measurement of TrustVisor, and generating and writing the above-mentioned master secret) is similar to "Taking Ownership" of a hardware TPM.  There is no way to refresh the SRK in a hardware TPM without taking ownership again and losing all previously sealed data.  And so it shall be with Initializing NVRAM for TrustVisor.
+* *Decision: No.* The long-term sealing encryption and MAC keys fulfill the same role as the Storage Root Key (SRK) in the hardware TPM.  The semantics here should be similar.  "Initializing" TrustVisor on a platform (in practice: defining a TPM NVRAM index and locking it to the relevant measurement of TrustVisor, and generating and writing the above-mentioned master secret) is similar to "Taking Ownership" of a hardware TPM.  There is no way to refresh the SRK in a hardware TPM without taking ownership again and losing all previously sealed data.  And so it shall be with Initializing NVRAM for TrustVisor.  Otherwise we have a "turtles all the way down" situation.
 
-h3. NV DefineSpace / Read / Write (Moderate)
+### NV DefineSpace / Read / Write (Moderate) ###
 
-* Micro-TPM Seal / Unseal are vulnerable to state rollback attacks.  ["Memoir":http://www.ece.cmu.edu/~jmmccune/memoir/]
-    * Note that the protocols in Memoir do not directly apply.  Memoir as described in the paper assumes all PAL state must be serialized and sealed between every invocation.  That is not that case for a PAL on top of TrustVisor, since invocations and registration are distinct.  Such rollback protections are only necessary between *Registrations*, since PAL state cannot be manipulated by untrusted code between *Invocations*.
+* Micro-TPM Seal / Unseal are vulnerable to state rollback attacks.
+    * Note that the protocols in [Memoir](http://www.ece.cmu.edu/~jmmccune/memoir/) do not directly apply.  Memoir as described in the paper assumes all PAL state must be serialized and sealed between every invocation.  That is not that case for a PAL on top of TrustVisor, since invocations and registration are distinct.  Such rollback protections are only necessary between *Registrations*, since PAL state cannot be manipulated by untrusted code between *Invocations*.
 * The availability of some NV space dedicated to a single PAL can alleviate this, e.g., using a hash chain to keep track of previous state updates while retaining crash resilience.
 * *Design Question*: How much responsibility should TrustVisor have to resist rollback attacks against PAL state?
 * *Decision: Bare Minimum*. If TrustVisor can expose a small amount of the actual TPM's NV space and offer it to a PAL then that PAL can implement its own Rollback protection.  In practice this can easily be a library against which other PAL authors can link.
 
-> *NV Multiplexing ("Mux") PAL*
+NV Multiplexing ("Mux") PAL
+---------------------------
 
 * There is very little NV RAM available in today's TPMs.  It is unreasonable to assume that the available TPM NV space is sufficient for a practical number of PALs.  Thus, one of the first PALs to implement is one to offer virtual NV space. There will be a performance hit and the NV PAL will require an untrusted userspace daemon to help serialize and persist things to disk in the untrusted world, but things should scale much better.
-* *TODO*: Design and implement such a PAL.  This can be off the critical path for now.
+* `tee-sdk/examples/rollback` is where this development is taking place.  *Work-in-progress*
 
-h2. PAL-to-PAL communication
+PAL-to-PAL communication
+------------------------
 
 * The above Seal / Unseal design implies that one PAL *can* seal data for another PAL on the same platform.  Indeed, at the present time, that is the best PAL-to-PAL communication mechanism that we have.  It involves sending the ciphertext from "PAL A" out to "App A", then from "App A" to "App B", then from "App B" to "PAL B".  It's circuitous and likely bad for performance, but for the moment it maintains the desired security properties and the PAL code itself can remain uncomplicated.
 
-h1. Hardware TPM NVRAM
+Hardware TPM NVRAM
+==================
 
 * We use NVRAM for several purposes, which are summarized here.
     * Store the long-term master seed from which encryption and MAC keys for Micro-TPM sealing are derived.
     * Implement rollback protection for the state of one privileged PAL (the "NV Mux PAL")
-        * Integrity-checking mechanisms for identifying this PAL are still to be fleshed out.  Basically a hash of it should get embedded in TrustVisor somewhere, or perhaps a public key gets embedded in TrustVisor and a suitable NV Mux PAL gets "blessed" by being signed.  This is probably a decent design for TrustVisor upgrades / patches as well, so it should get worked out in that larger context.
+        * Integrity-checking mechanisms for identifying this PAL are currently based on boot-time command-line parameters to TrustVisor.
+        * A reasonable alternative may be that a public key gets embedded in TrustVisor and a suitable NV Mux PAL gets "blessed" by being signed.  This is probably a decent design for TrustVisor upgrades / patches as well, so it should get worked out in that larger context.
 
-h1. Fallen Stars (Stuff that sounded good but turns out to not work)
+Fallen Stars (Stuff that sounded good but turns out to not work)
+================================================================
 
 * What do we need to persist micro-TPM instances?
     * This is the wrong question.  A micro-TPM instance lasts only as long as a PAL is registered.  For sealed data to persist, the relevant "storage key(s)" need to somehow persist.  For TrustVisor, this is the symmetric encryption / MAC keys derived from a long-term master seed kept in TPM NVRAM accessible only to TrustVisor.
     * *Rich identity key support for PALs may revive this question.*
 
 * OpenPTS: Open Platform Trust Services [http://sourceforge.jp/projects/openpts/] is the most mature open source project for exchanging additional data with a TPM Quote (i.e., really doing attestations).  It is also worth familiarizing oneself with the TrouSerS "testsuite": [http://trousers.cvs.sourceforge.net/trousers/].  However, neither of these offer sufficient functionality as to solve any of our problems directly.
+    * Intel has recently released their [OpenAttestation](https://github.com/OpenAttestation/OpenAttestation) project, which is similar in spirit.  Worth investigating.
 
 * Attempts to mitigate Linkability of multiple Micro-TPM instances via Certification process (we're currently using the Quick and Dirty solution, proposed above, which suffers from this problem)
     * Can we use the single resettable PCR in the hardware TPM?  Likely would would require manipulation of (1) the TOSPresent bit inside the hardware TPM, and (2) the ability of TrustVisor to block the guest OS from invoking any hardware TPM commands while the resettable PCR was reset and re-extended with the current (per-PAL)  TvHwSwBridgeSigner keypair.
         * (Zongwei) *A possible way of doing this may be relying on TPM locality*. TPM locality 2 can reset and extend PCR 20-22, while locality 1 can only extend PCR 20. TrustVisor can protect the I/O physical page (see below) of locality 2 (and above) from the guest OS, and let OS only access locality 1. TrustVisor also need to interpose all guest os access to higher locality and return errors.
-        * Some information about TPM locality
+        * Some (unverified) information about TPM locality
 <pre>
 Locality   I/O address    Resettable PCRs  Extendable PCRs
   Any       -             16,23            16,23
@@ -161,14 +173,3 @@ Locality   I/O address    Resettable PCRs  Extendable PCRs
     * TOS bit: According to TPM PC client spec, it is used to control the behavior of resettable PCRs (17-22). If TOS bit is false, PCR 17-22 will be reset to -1; otherwise, 0.
     * *Can TPM audit session help us in detecting unintended PCR extend?* No, TPM has an internal audit digest (AD), an internal audit monotonic counter (AMC), and an external audit log (AL). AL records the hashes of all audited events since audit session starts. AD holds the hash of external AL. AMC is for sequencing audited events. When an audit session closes, the TPM will sign the concatenation of AD, AMC and AL. The owner of TPM can change which event is audited. With the audit session, we can detect PCR extend operation. However, *because the PCR extend operations is not authenticated, we still don't know whether an extend to PCR 20 of locality 2 is from TV or untrusted OS*. In addition, OS is the owner of TPM, so it can change the behavior of audit session. Thus, audit session may not help us here.
 
-* Bit-rotted master / long-term secret key / seed ideas.  Too hard to keep in sync with code.  Let the code be the one and only specification for precisely how these secrets are manipulated for the time being.
-    * TrustVisor needs the ability to output some data to non-volatile storage so that sealed storage and other micro-TPM features continue to work after reboots, etc. However, to fully provide these properties and provide crash resilience, etc., is a good bit of work.  We want PAL developers to be able to proceed even while the backend may be in flux.  First, we need to know what data needs to be saved:
-
-    * Determine the set of "secrets" that TrustVisor needs to maintain:
-        * MasterSecret (e.g., 20 bytes, kept in NV RAM). In the *Small State Trick* implementation, this is the only long-term state (other than counters for freshness which is currently a big *XXX TODO XXX*). Let's call this the *Level 0 Secret*
-        * Backup MasterSecret.  When TrustVisor gets upgraded, it needs to be able to recover if the upgrade fails.  Thus, we need a way to retain the old MasterSecret until the first successful startup with the new version of TrustVisor.
-        * 8-byte master counter.  Used to provide system-wide rollback protection.
-        * Derived Level 1 Secrets, *L1Secrets*:
-    *    * *L1 Secret symmetric encryption key* for encrypting sealed storage (e.g., `SHA1(MasterSecret||"SymEncSSKey")`).
-    *    * *L1 Secret symmetric MAC key* for integrity protecting (e.g., via HMAC) sealed storage (e.g., `SHA1(MasterSecret||"SymHmacSSKey")`).  Note that this effectively binds micro-TPM seal ciphertexts to the physical platform where they were created, and prevents the same PAL on a different physical host from unsealing micro-TPM-sealed data.
-    *    * *L1 Secret PRNG Seed* (random value) for seeding PRNG (e.g., `SHA1(MasterSecret||"PrngSeed")`).  This PRNG could optionally be used to generate the RSA signing keypair *TvHwSwBridgeSigner*. Note: we only need this to support the *Small State Trick* described above. With the *Quick and Dirty* *UnifiedTvHwSwBridgeSigner* there is no need for this.
