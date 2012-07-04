@@ -33,3 +33,8 @@ Quick start to using XMHF
 * [Custom Linux Kernels](doc/custom-linux-kernels.md)
 * [Debugging XMHF](doc/debugging-xmhf.md)
 
+Design Concepts
+===============
+
+* [Dynamic Root of Trust for XMHF Launch Integrity](doc/drtm-design.md)
+* [Memory Layout and Integrity Checking](doc/memory-layout.md)
