@@ -31,10 +31,13 @@ Diskless / LiveCD-style Linux is commonplace, and there are a multitude of possi
     * 'savedefault' writes to the MBR and I worry this could clobber the partition table in a particular race between multiple hosts, 
     * The iSCSI Initiator "iqn..." needs to be unique per Initiator
     * ***UPDATE*** Driving the grub config across the serial connection using [`expect`](http://www.linux-mag.com/id/699/) works with a real serial connection or with `amtterm`.  That solves all three of these problems.  ***TODO***: ditch the myriad `/boot` partitions. 
-* DHCP presents gPXE with a per-test-host URL from which gPXE will fetch the iSCSI configuration information.  This iSCSI configuration information provides root filesystem (/, and includes `/boot`).
+        * As of 2012-07-05, AMD systems boot directly out of the root filesystem without a distinct `/boot` device, while Intel systems still use a per-host `/boot` partition.  This is not necessary, so long as all of the relevant SINIT modules reside in the root filesystem's `/boot` directory.
+* DHCP presents gPXE with a per-test-host (identified based on Ethernet MAC address) URL from which gPXE fetches iSCSI configuration information.  This iSCSI configuration information provides root filesystem (/, and includes `/boot`).
+    * See `/home/driver/public_html/gpxe_slashboot_script*` on host `squid`.
 * We use aufs (Another UnionFS; the "magic" filesystem overlay mechanism that lets LiveCDs appear to have writeable storage) and a ramdisk to present the illusion of volatile disk storage (with [aufsRootFileSystemOnUsbFlash](https://help.ubuntu.com/community/aufsRootFileSystemOnUsbFlash) script).  
 * Test scripts that run on the individual test hosts are responsible for persisting interesting test results.
     * It is important that each test uploads its results right away, in case the next test crashes the system.
+    * Test results get copied via `scp` to `logger@squid:/var/www/logger`.
 
 ### Theory of [iSCSI boot](http://www.held.org.il/blog/2010/10/booting-linux-from-iscsi/) ###
 
