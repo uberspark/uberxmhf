@@ -158,7 +158,8 @@ After mounting the root filesystem somewhere (e.g., `/mnt`):
 * `initrd.img-2.6.32.26+drm33.12emhf-jm1`
   This is a typical initramfs, but the important point is that it was regenerated from within the diskless client's filesystem (e.g., a `chroot` environment) AFTER the necessary tweaks (described above) have been made in `/etc/initramfs-tools/`.
 
-h2. Disk image management
+Disk image management
+---------------------
 
 What different root filesystem images do we want / need? Variables:
 
@@ -166,7 +167,8 @@ What different root filesystem images do we want / need? Variables:
 * (Ubuntu 10.04 LTS with *custom* kernel, Ubuntu 10.04 LTS with *stock* kernel, Windows 7)
 * (Do, We, Need, a, Different, Windows, Image, For, Each, Hardware, Platform?)
 
-h2. Recovery
+Recovery
+--------
 
 A crashed test system is no problem.  All test runs in `nightly.sh` start by power-cycling the relevant systems (either via Intel AMT or using a remotely controlled outlet attached to squid).
 * For systems that support *Intel AMT*, a crashed system can easily be remotely rebooted.
