@@ -13,27 +13,28 @@ All of the documentation below tries to describe the environment where these scr
 Disk image support
 ------------------
 
-It is desirable to be able to boot a consistent configuration for testing.  Using network boot and a diskless test host, this can be achieved.  Using iSCSI and gPXE, the network block device (note: iSCSI is a protocol for network block devices, to be contrasted with something like NFS, which is a network file-system.  Block device is a lower-level abstraction than file-system) appears as a BIOS drive and grub 1.x and EMHF are confirmed to work just fine.
+It is desirable to be able to boot a consistent configuration for testing.  Using network boot and a diskless test host, this can be achieved.  Using iSCSI and gPXE, the network block device (note: iSCSI is a protocol for network block devices, to be contrasted with something like NFS, which is a network file-system.  Block device is a lower-level abstraction than file-system) appears as a BIOS drive and grub 1.x and XMHF are confirmed to work just fine.
 
 Using Linux as an iSCSI target (server) allows us to use Linux LVM2 (Logical Volume Management) to maintain snapshots of "golden" configurations, which can readily be cloned for individual test systems.  Separating /boot from / allows / to be common across many hosts, with per-host configuration only for /boot, resulting in easier maintenance and better performance (though no benchmarks have been run to confirm this).
 
 Diskless / LiveCD-style Linux is commonplace, and there are a multitude of possibilities for the root filesystem (entire system in ramdisk, NFS, iSCSI, AFS, SAMBA, etc).  Linux really does not constrain how the root filesystem image is maintained.  Thus, let's allow the design we settle on for Linux to be influenced by the requirements that Windows imposes here.
 
-For Windows:
-* Windows 7 / Windows Server 2008 can be booted in a diskless configuration using "iSCSI":http://en.wikipedia.org/wiki/ISCSI for the root filesystem.  
-* There are ways to make this work for older versions of Windows as well, but they are more labor-intensive.  Jon is working on writing up a consolidated HOWTO on his "blog":http://jonmccune.wordpress.com/2011/12/19/diskless-windows-7-with-iscsi-and-gpxe/.
+### For Windows ###
+* Windows 7 / Windows Server 2008 can be booted in a diskless configuration using [iSCSI](http://en.wikipedia.org/wiki/ISCSI) for the root filesystem.  
+* There are ways to make this work for older versions of Windows as well, but they are more labor-intensive.  [Jon's consolidated HOWTO](http://jonmccune.wordpress.com/2011/12/19/diskless-windows-7-with-iscsi-and-gpxe/).
 * So far a clean design for something in the spirit of aufs/custom-boot-partition is elusive.  So far the best option is to take advantage of LVM support in Linux to image the backend of the Windows filesystem that gets mounted via iSCSI.
+* ***Windows is not currently supported for automated regression testing.***
 
-For Linux:
-* Use PXE to grab gPXE to boot via an iSCSI block device.  /boot iSCSI block device is unique per test host for three reasons:
+### For Linux ###
+* Use PXE to grab gPXE to boot via an iSCSI block device.  `/boot` iSCSI block device is unique per test host for three reasons:
     * Intel systems require a specific SINIT module, 
     * 'savedefault' writes to the MBR and I worry this could clobber the partition table in a particular race between multiple hosts, 
     * The iSCSI Initiator "iqn..." needs to be unique per Initiator
-    * *UPDATE* Driving the grub config across the serial connection using `expect` http://www.linux-mag.com/id/699/ seems to work with a real serial connection.  That solves all three of these problems.  If `expect` can be wired up to `amtterm`, then I think we're in business to ditch the myriad /boot partitions. 
-* DHCP presents gPXE with a per-test-host URL from which gPXE will fetch the iSCSI configuration information.  This iSCSI configuration information provides root filesystem (/, and includes /boot).
-* The grub installation and configuration in /boot will include information about the iSCSI root filesystem for the Linux test environment (presently the SAME filesystem; considered using a different one).
-* Use aufs (Another UnionFS; the "magic" filesystem overlay mechanism that lets LiveCDs appear to have writeable storage) and a ramdisk to present the illusion of volatile disk storage (with script from https://help.ubuntu.com/community/aufsRootFileSystemOnUsbFlash).  
-* Test scripts will be responsible for persisting interesting test results; it will be important that each test uploads its results right away, in case the next test borks the system.
+    * ***UPDATE*** Driving the grub config across the serial connection using [`expect`](http://www.linux-mag.com/id/699/) works with a real serial connection or with `amtterm`.  That solves all three of these problems.  ***TODO***: ditch the myriad `/boot` partitions. 
+* DHCP presents gPXE with a per-test-host URL from which gPXE will fetch the iSCSI configuration information.  This iSCSI configuration information provides root filesystem (/, and includes `/boot`).
+* We use aufs (Another UnionFS; the "magic" filesystem overlay mechanism that lets LiveCDs appear to have writeable storage) and a ramdisk to present the illusion of volatile disk storage (with [aufsRootFileSystemOnUsbFlash](https://help.ubuntu.com/community/aufsRootFileSystemOnUsbFlash) script).  
+* Test scripts that run on the individual test hosts are responsible for persisting interesting test results.
+    * It is important that each test uploads its results right away, in case the next test crashes the system.
 
 ### Theory of [iSCSI boot](http://www.held.org.il/blog/2010/10/booting-linux-from-iscsi/) ###
 
@@ -43,7 +44,7 @@ For Linux:
 + grub loads the kernel and initrd
 + initrd sends yet another DHCP request, sets up the IP network, and uses the iscsistart script, which sets up the iscsi initiator and logins (yes, again) to the iscsi target.
 + iscsistart script then mounts this disk and uses pivot_root (as usual) to make it the new root
-boot process starts from the real root now, running /sbin/init
++ boot process starts from the real root now, running /sbin/init
 
 ### iSCSI cheat sheet ###
 
