@@ -462,10 +462,22 @@ static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gp
 }
 
 
+//hypprocessing is true if we are already processing within the
+//hypervisor, else false
+bool g_hypprocessing __attribute__(( section(".data") )) = false;
+
+//SMP lock for hypprocessing
+u32 g_lock_hypprocessing __attribute__(( section(".data") )) = 1; 
+
 
 //---hvm_intercept_handler------------------------------------------------------
 u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
-  //read VMCS from physical CPU/core
+    //serialize intercept handling
+    spin_lock(&g_lock_hypprocessing);
+    g_hypprocessing=true;
+    
+
+	//read VMCS from physical CPU/core
 	emhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
 
 	//sanity check for VM-entry errors
@@ -670,5 +682,9 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		printf("\nCPU(0x%02x): We are starting at guest boot-sector...", vcpu->id);
 	}
 	
+	//remove serialization constraint
+	g_hypprocessing = false;
+    spin_unlock(&g_lock_hypprocessing);
+
 	return 1;
 }
