@@ -77,11 +77,17 @@
 
 #endif
 
+#define	MAX_ITERATIONS	512
 
 int main(void){
+	int i;
 	printf("\nStarting qcontrol...");
 	
-	do_quiescehypercall();
+	for(i=0; i < MAX_ITERATIONS; i++){
+		printf("\n#%u --> quiesce-call", i);
+		do_quiescehypercall();
+		printf(" --> done");
+	}
 	printf("\nDone.");
 	printf("\n");
 }
