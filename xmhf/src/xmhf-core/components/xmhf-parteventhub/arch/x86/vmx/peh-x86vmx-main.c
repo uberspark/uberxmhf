@@ -474,18 +474,11 @@ extern VCPU *g_vmx_quiesce_vcpu __attribute__(( section(".data") ));
 
 //---hvm_intercept_handler------------------------------------------------------
 u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
-	//if there was a previous quiesce, ensure that all the APs get
-	//a chance to handle the NMIs
-	if( (g_vmx_quiesce != 0) && vcpu == g_vmx_quiesce_vcpu )
-		return 1;
-		
 	//signal that this processor is in hyp mode
 	vcpu->inhypervisor = true;
-
+		
     //serialize intercept handling
     spin_lock(&g_lock_hypprocessing);
-    g_hypprocessing=true;
-    
 
 	//read VMCS from physical CPU/core
 	emhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
@@ -494,47 +487,41 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 	if( (u32)vcpu->vmcs.info_vmexit_reason & 0x80000000UL ){
 		printf("\nVM-ENTRY error: reason=0x%08x, qualification=0x%016llx", 
 			(u32)vcpu->vmcs.info_vmexit_reason, (u64)vcpu->vmcs.info_exit_qualification);
-    emhf_baseplatform_arch_x86vmx_dumpVMCS(vcpu);
-    HALT();
-  }
+		emhf_baseplatform_arch_x86vmx_dumpVMCS(vcpu);
+		HALT();
+	}
   
-  //handle intercepts
-  switch((u32)vcpu->vmcs.info_vmexit_reason){
-		case VMX_VMEXIT_IOIO:
-			{
-				_vmx_handle_intercept_ioportaccess(vcpu, r);
-			}
-			break;
+	//handle intercepts
+	switch((u32)vcpu->vmcs.info_vmexit_reason){
+		case VMX_VMEXIT_IOIO:{
+			_vmx_handle_intercept_ioportaccess(vcpu, r);
+		}
+		break;
 
-      case VMX_VMEXIT_EPT_VIOLATION:{
-		    _vmx_handle_intercept_eptviolation(vcpu, r);
-    	}
-			break;  	
+		case VMX_VMEXIT_EPT_VIOLATION:{
+			_vmx_handle_intercept_eptviolation(vcpu, r);
+		}
+		break;  	
 
-    case VMX_VMEXIT_HLT:
+		case VMX_VMEXIT_HLT:
 			if(!vcpu->vmx_guest_unrestricted){
 				//isl_handleintercept_hlt(vcpu, r);
 				printf("\nCPU(0x%02x): V86 monitor based real-mode exec. unsupported!", vcpu->id);
 				HALT();
 			}else{
-			 	printf("\nCPU(0x%02x): Unexpected HLT intercept in UG, Halting!", vcpu->id);
+				printf("\nCPU(0x%02x): Unexpected HLT intercept in UG, Halting!", vcpu->id);
 				HALT();
 			}
-			break;
+		break;
 
  		case VMX_VMEXIT_EXCEPTION:{
 			switch( ((u32)vcpu->vmcs.info_vmexit_interrupt_information & INTR_INFO_VECTOR_MASK) ){
-				//case 0x0D: //v86monitor only
-				//	_vmx_handle_intercept_exception_0D(vcpu, r);
-				//	break;
-
 				case 0x01:
 					emhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
 					break;				
 				
 				case 0x02:	//NMI
 					vcpu->nmiinhvm=1;	//this NMI occured when the core was in guest (HVM)
-					//_vmx_processNMI(vcpu, r);
 					emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(vcpu, r);
 					vcpu->nmiinhvm=0;
 					break;
@@ -563,10 +550,6 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			(u32) (((u64)vcpu->vmcs.info_exit_qualification & 0x0000000000000030ULL) >> (u64)4); 
 			//printf("\ncrx=%u, gpr=%u, tofrom=%u", crx, gpr, tofrom);
 			switch(crx){
-				//case 0x3: //CR3 access (v86monitor only)
-				//	_vmx_handle_intercept_cr3access(vcpu, r, gpr, tofrom);
-				//	break;
-				
 				case 0x4: //CR4 access
 					if(!vcpu->vmx_guest_unrestricted){
 						printf("\nHALT: v86 monitor based real-mode exec. unsupported!");
@@ -576,10 +559,6 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 						vmx_handle_intercept_cr4access_ug(vcpu, r, gpr, tofrom);	
 					}
 					break;
-				
-				//case 0x0: //CR0 access (v86monitor only)
-				//	_vmx_handle_intercept_cr0access(vcpu, r, gpr, tofrom);
-				//	break;
 			
 				default:
 					printf("\nunhandled crx, halting!");
@@ -688,6 +667,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 
 	//write updated VMCS back to CPU
   emhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
+
   if(vcpu->vmcs.guest_RIP == 0x7c00){
 		printf("\nCPU(0x%02x): We are starting at guest boot-sector...", vcpu->id);
 	}
@@ -696,7 +676,6 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 	vcpu->inhypervisor = false;
 	
 	//remove serialization constraint
-	g_hypprocessing = false;
     spin_unlock(&g_lock_hypprocessing);
 
 	return 1;
