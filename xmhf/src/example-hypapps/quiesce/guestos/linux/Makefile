@@ -3,7 +3,7 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # target arch: valid values are x86svm and x86vmx
-export TARGET_CPU = x86svm
+export TARGET_CPU = x86vmx
 
 #-----generate compiler/assembler defines from configuration options selected
 ifeq ($(TARGET_CPU), x86vmx)
