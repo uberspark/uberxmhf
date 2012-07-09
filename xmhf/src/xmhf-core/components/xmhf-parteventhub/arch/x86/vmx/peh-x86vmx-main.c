@@ -470,8 +470,15 @@ bool g_hypprocessing __attribute__(( section(".data") )) = false;
 u32 g_lock_hypprocessing __attribute__(( section(".data") )) = 1; 
 
 
+extern VCPU *g_vmx_quiesce_vcpu __attribute__(( section(".data") ));      
+
 //---hvm_intercept_handler------------------------------------------------------
 u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
+	//if there was a previous quiesce, ensure that all the APs get
+	//a chance to handle the NMIs
+	if( (g_vmx_quiesce != 0) && vcpu == g_vmx_quiesce_vcpu )
+		return 1;
+		
 	//signal that this processor is in hyp mode
 	vcpu->inhypervisor = true;
 

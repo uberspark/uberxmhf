@@ -77,7 +77,7 @@
 
 #endif
 
-#define	MAX_ITERATIONS	512
+#define	MAX_ITERATIONS	1
 
 int main(void){
 	int i;

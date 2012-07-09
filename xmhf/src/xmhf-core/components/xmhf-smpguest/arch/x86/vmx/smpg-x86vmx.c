@@ -376,6 +376,27 @@ static bool _vmx_cpus_quiesced(void){
 	return true;
 }
 
+static bool _vmx_cpus_resumedexcluding(VCPU *vcpu)__attribute__((unused));
+static bool _vmx_cpus_resumedexcluding(VCPU *vcpu){
+	VCPU *temp_vcpu;
+	u32 i;
+  
+	//iterate through all processors in master-id table
+	for(i=0; i < g_midtable_numentries; i++){
+		temp_vcpu = (VCPU *)g_midtable[i].vcpu_vaddr_ptr;
+		if(temp_vcpu == vcpu)
+			continue;
+		
+		if(vcpu->inhypervisor)
+			return false;
+	}
+	
+	return true;
+}
+
+VCPU *g_vmx_quiesce_vcpu __attribute__(( section(".data") )) = NULL;;      
+
+
 //quiesce interface to switch all guest cores into hypervisor mode
 void emhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
         printf("\nCPU(0x%02x): got quiesce signal...", vcpu->id);
@@ -389,7 +410,8 @@ void emhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
         //spin_unlock(&g_vmx_lock_quiesce_counter);
         
         //send all the other CPUs the quiesce signal
-        g_vmx_quiesce=1;  //we are now processing quiesce
+        g_vmx_quiesce=g_midtable_numentries-1;  //we are now processing quiesce
+		g_vmx_quiesce_vcpu = vcpu;
         _vmx_send_quiesce_signal(vcpu);
         
         //wait for all the remaining CPUs to quiesce
@@ -412,7 +434,8 @@ void emhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
         
         //while(g_vmx_quiesce_resume_counter < (g_midtable_numentries-1) );
 
-        g_vmx_quiesce=0;  // we are out of quiesce at this point
+		//while(!_vmx_cpus_resumedexcluding(vcpu));
+        //g_vmx_quiesce=0;  // we are out of quiesce at this point
 
         //printf("\nCPU(0x%02x): all CPUs resumed successfully.", vcpu->id);
         
@@ -424,6 +447,8 @@ void emhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
         ////release quiesce lock
         //printf("\nCPU(0x%02x): releasing quiesce lock.", vcpu->id);
         //spin_unlock(&g_vmx_lock_quiesce);
+
+        printf("\nCPU(0x%02x): ending quiesce.", vcpu->id);
          
 }
 
@@ -436,6 +461,9 @@ void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		printf("\nCPU(0x%02x): Spurious NMI within hypervisor. halt!", vcpu->id);
 		HALT();
 	}
+
+	g_vmx_quiesce--;
+	printf("\nCPU(0x%02x): Handled NMI (%u)", vcpu->id, g_vmx_quiesce);
 
 	//if(g_vmx_quiesce){
     ////ok this NMI is because of g_vmx_quiesce. note: g_vmx_quiesce can be 1 and
