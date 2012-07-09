@@ -472,6 +472,9 @@ u32 g_lock_hypprocessing __attribute__(( section(".data") )) = 1;
 
 //---hvm_intercept_handler------------------------------------------------------
 u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
+	//signal that this processor is in hyp mode
+	vcpu->inhypervisor = true;
+
     //serialize intercept handling
     spin_lock(&g_lock_hypprocessing);
     g_hypprocessing=true;
@@ -681,6 +684,9 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
   if(vcpu->vmcs.guest_RIP == 0x7c00){
 		printf("\nCPU(0x%02x): We are starting at guest boot-sector...", vcpu->id);
 	}
+
+	//signal that this processor is not in hyp mode any longer
+	vcpu->inhypervisor = false;
 	
 	//remove serialization constraint
 	g_hypprocessing = false;
