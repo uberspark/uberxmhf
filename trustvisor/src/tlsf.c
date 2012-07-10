@@ -648,6 +648,8 @@ static void integrity_walker(void* ptr, size_t size, int used, void* user)
 
 	integ->prev_status = this_status;
 	integ->status += status;
+
+    used = used; /* appease compiler */
 }
 
 int tlsf_check_heap(tlsf_pool tlsf)
