@@ -493,15 +493,15 @@ void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 	if(vcpu->nmiinhvm){
 		printf("\nCPU(0x%02x): Quiesce from HVM", vcpu->id);
 	}else{
-				u32 exception_cs, exception_eip, exception_eflags;
+				/*u32 exception_cs, exception_eip, exception_eflags;
 
 				exception_eip = *(uint32_t *)(r->esp+0);
 				exception_cs = *(uint32_t *)(r->esp+sizeof(uint32_t));
-				exception_eflags = *(uint32_t *)(r->esp+(2*sizeof(uint32_t)));
+				exception_eflags = *(uint32_t *)(r->esp+(2*sizeof(uint32_t)));*/
 
 				printf("\nCPU(0x%02x): Quiesce from HYP mode", vcpu->id);
 				
-				if(exception_cs != 0x10 || 
+				/*if(exception_cs != 0x10 || 
 				  !(exception_eip >= 0xc000f54c && exception_eip <= 0xc000f55f) )
 				{
 					printf("\n%s: state dump follows...", __FUNCTION__);
@@ -532,7 +532,7 @@ void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 						printf("\n-----end------------");
 					}
 					HALT();
-				}
+				}*/
 	}
 		
 	//increment quiesce counter
