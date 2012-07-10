@@ -499,35 +499,40 @@ void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 				exception_cs = *(uint32_t *)(r->esp+sizeof(uint32_t));
 				exception_eflags = *(uint32_t *)(r->esp+(2*sizeof(uint32_t)));
 
-				printf("\n%s: Quiesce from HYP mode", __FUNCTION__);
-				printf("\n%s: state dump follows...", __FUNCTION__);
-				//things to dump
-				printf("\nat CS:EIP 0x%04x:0x%08x with EFLAGS=0x%08x",
-					(u16)exception_cs, exception_eip, exception_eflags);
-				printf("\nVCPU at 0x%08x, core=0x%02x", (u32)vcpu, vcpu->id);
-				printf("\nEAX=0x%08x EBX=0x%08x ECX=0x%08x EDX=0x%08x",
-						r->eax, r->ebx, r->ecx, r->edx);
-				printf("\nESI=0x%08x EDI=0x%08x EBP=0x%08x ESP=0x%08x",
-						r->esi, r->edi, r->ebp, r->esp);
-				printf("\nCS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x",
-					(u16)read_segreg_cs(), (u16)read_segreg_ds(),
-					(u16)read_segreg_es(), (u16)read_segreg_ss());
-				printf("\nFS=0x%04x, GS=0x%04x",
-					(u16)read_segreg_fs(), (u16)read_segreg_gs());
-				printf("\nTR=0x%04x", (u16)read_tr_sel());
+				printf("\nCPU(0x%02x): Quiesce from HYP mode", vcpu->id);
 				
-				//do a stack dump in the hopes of getting more info.
+				if(exception_cs != 0x10 || 
+				  !(exception_eip >= 0xc000f54c && exception_eip <= 0xc000f55f) )
 				{
-					//vcpu->esp is the TOS
-					uint32_t i;
-					uint32_t stack_start = (r->esp+(3*sizeof(uint32_t)));
-					printf("\n-----stack dump-----");
-					for(i=stack_start; i < vcpu->esp; i+=sizeof(uint32_t)){
-						printf("\n  Stack(0x%08x) -> 0x%08x", i, *(uint32_t *)i);
+					printf("\n%s: state dump follows...", __FUNCTION__);
+					//things to dump
+					printf("\nat CS:EIP 0x%04x:0x%08x with EFLAGS=0x%08x",
+						(u16)exception_cs, exception_eip, exception_eflags);
+					printf("\nVCPU at 0x%08x, core=0x%02x", (u32)vcpu, vcpu->id);
+					printf("\nEAX=0x%08x EBX=0x%08x ECX=0x%08x EDX=0x%08x",
+							r->eax, r->ebx, r->ecx, r->edx);
+					printf("\nESI=0x%08x EDI=0x%08x EBP=0x%08x ESP=0x%08x",
+							r->esi, r->edi, r->ebp, r->esp);
+					printf("\nCS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x",
+						(u16)read_segreg_cs(), (u16)read_segreg_ds(),
+						(u16)read_segreg_es(), (u16)read_segreg_ss());
+					printf("\nFS=0x%04x, GS=0x%04x",
+						(u16)read_segreg_fs(), (u16)read_segreg_gs());
+					printf("\nTR=0x%04x", (u16)read_tr_sel());
+					
+					//do a stack dump in the hopes of getting more info.
+					{
+						//vcpu->esp is the TOS
+						uint32_t i;
+						uint32_t stack_start = (r->esp+(3*sizeof(uint32_t)));
+						printf("\n-----stack dump-----");
+						for(i=stack_start; i < vcpu->esp; i+=sizeof(uint32_t)){
+							printf("\n  Stack(0x%08x) -> 0x%08x", i, *(uint32_t *)i);
+						}
+						printf("\n-----end------------");
 					}
-					printf("\n-----end------------");
+					HALT();
 				}
-				HALT();
 	}
 		
 	//increment quiesce counter
