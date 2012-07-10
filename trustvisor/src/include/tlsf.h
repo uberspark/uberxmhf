@@ -16,6 +16,7 @@
 ** of the document, therefore no GPL restrictions apply.
 */
 
+#include <stdio.h>
 #include <stddef.h>
 
 #if defined(__cplusplus)
