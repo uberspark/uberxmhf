@@ -56,29 +56,6 @@
 	.extern emhf_parteventhub_arch_x86vmx_intercept_handler
 
 //----------------------------------------------------------------------
-//macros to save and restore GPRs
-#define SAVEALL_GPRS \
-        pushl	%edi	; \
-        pushl	%esi	; \
-				pushl	%ebp	; \
-				pushl	%esp    ; \
-        pushl	%ebx	; \
-        pushl	%edx	; \
-        pushl	%ecx	; \
-        pushl	%eax	; 
-	
-#define RESTOREALL_GPRS \
-				popl	%eax	; \
-        popl	%ecx	; \
-        popl	%edx	; \
-        popl	%ebx	; \
-				popl	%esp	; \
-        popl	%ebp	; \
-        popl	%esi	; \
-        popl	%edi	; 
-
-
-//----------------------------------------------------------------------
 // emhf_parteventhub_entry_x86vmx
 // we get control here right after any event within a partition
 // note: the h/w is the "caller" so we never actually "return"
@@ -86,10 +63,12 @@
 .global emhf_parteventhub_arch_x86vmx_entry
 emhf_parteventhub_arch_x86vmx_entry:
 	//step-1: save all CPU GPRs
-	//SAVEALL_GPRS
 	pushal
+	
+	//step-2: grab VCPU *
+	movl 32(%esp), %esi
 	      
-    //step-2: get hold of local APIC id
+    /*//step-2: get hold of local APIC id
     mov $(MSR_APIC_BASE), %ecx
     rdmsr
     andl $0xFFFFF000, %eax
@@ -112,6 +91,7 @@ emhf_parteventhub_arch_x86vmx_entry:
         hlt
     gotvcpu:
 		movl 0x4(%ebx, %ecx, 8), %esi //esi contains vcpu pointer
+	*/
 
    	//step-4: get hold of pointer to saved GPR on stack
    	movl %esp, %eax
