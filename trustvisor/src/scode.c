@@ -717,7 +717,11 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
             perf_ctr_get_total_time(&g_tv_perf_ctrs[j]),
             perf_ctr_get_count(&g_tv_perf_ctrs[j]));
   }
-  eu_perf("total mem mallocd: %u", heapmem_get_used_size());
+
+  /* Disabled when we switched tlsf implementations; would now require
+   * manual accounting to track accurately (i.e., account for calls to
+   * free). */
+  /* eu_perf("total mem mallocd: %u", heapmem_get_used_size()); */
 
   /* restore permissions for remapped sections */
   for(j = 0; j < whitelist[i].sections_num; j++) {
