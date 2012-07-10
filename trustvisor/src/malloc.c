@@ -45,7 +45,7 @@
  */
 
 /**
- * heap.[ch] serve as a layer of indirection between the specific
+ * malloc.[ch] serve as a layer of indirection between the specific
  * malloc implementation used, and actual calls to malloc() and
  * free().
  *
@@ -58,22 +58,23 @@
 
 #include <tv_log.h>
 
-static u8 memory_pool[HEAPMEM_POOLSIZE];
+tlsf_pool g_pool;
 void mem_init(void){
-  init_memory_pool(HEAPMEM_POOLSIZE, memory_pool);
+    static uint8_t memory_pool[HEAPMEM_POOLSIZE];
+    g_pool = tlsf_create(memory_pool, HEAPMEM_POOLSIZE);
 }
 
-size_t heapmem_get_used_size(void)
-{
-  return get_used_size(memory_pool);
-}
+/* size_t heapmem_get_used_size(void) */
+/* { */
+/*   return get_used_size(memory_pool); */
+/* } */
 
 void *malloc(size_t size)
 {
   void *p;
   perf_ctr_timer_start(&g_tv_perf_ctrs[TV_PERF_CTR_SAFEMALLOC], 0/*FIXME*/);
 
-  EU_CHK_W( p = tlsf_malloc(size),
+  EU_CHK_W( p = tlsf_malloc(g_pool, size),
             eu_warn_e( "malloc: allocation of size %d failed.", size));
 
  out:
@@ -83,17 +84,22 @@ void *malloc(size_t size)
 
 void *calloc(size_t nmemb, size_t size)
 {
-  return tlsf_calloc( nmemb, size);
+  void *p;
+  p = tlsf_malloc(g_pool, nmemb * size);
+
+  if(NULL != p) {
+    memset(p, 0, nmemb * size);
+  }
+
+  return p;
 }
 
 void *realloc(void *ptr, size_t size)
 {
-  return tlsf_realloc( ptr, size);
+  return tlsf_realloc(g_pool, ptr, size);
 }
 
 void free(void *ptr)
 {
-  if (ptr) {
-    tlsf_free(ptr);
-  }
+  tlsf_free(g_pool, ptr);
 }

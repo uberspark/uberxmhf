@@ -63,10 +63,7 @@ GPL status of sub-projects
   No GPL.
 
 * trustvisor:
-  Statically links tlsf malloc, which has a modified LGPL license.
-  Net result is that a binary distribution must include a 'partially
-  linked' version which could be linked with updated or modified tlsf
-  malloc.
+  No GPL.
 
 * libbaremetal:
   No GPL.
@@ -292,6 +289,20 @@ positives):
 
 --------------------------------------------------------------------
     
+/*-
+** Two Level Segregated Fit memory allocator, version 1.9.
+** Written by Matthew Conte, and placed in the Public Domain.
+**	http://tlsf.baisoku.org
+**
+** Based on the original documentation by Miguel Masmano:
+**	http://rtportal.upv.es/rtmalloc/allocators/tlsf/index.shtml
+**
+** Please see the accompanying Readme.txt for implementation
+** notes and caveats.
+**
+** This implementation was written to the specification
+** of the document, therefore no GPL restrictions apply.
+*/
     /*-
     * Copyright (c) 1990 The Regents of the University of California.
     * All rights reserved.
