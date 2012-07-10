@@ -8,6 +8,25 @@
 #include "tlsf.h"
 #include "tlsfbits.h"
 
+/*-
+** Two Level Segregated Fit memory allocator, version 1.9.
+** Written by Matthew Conte, and placed in the Public Domain.
+**	http://tlsf.baisoku.org
+**
+** Based on the original documentation by Miguel Masmano:
+**	http://rtportal.upv.es/rtmalloc/allocators/tlsf/index.shtml
+**
+** Please see the accompanying Readme.txt for implementation
+** notes and caveats.
+**
+** This implementation was written to the specification
+** of the document, therefore no GPL restrictions apply.
+*/
+
+/**
+ * Modified for TrustVisor.
+ */
+
 /*
 ** Constants.
 */
