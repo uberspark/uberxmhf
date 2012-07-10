@@ -106,6 +106,7 @@ Related Publications
   and Ning Qu and Virgil D. Gligor and Adrian Perrig. Proceedings of
   the 5th International Conference on Trust and Trustworthy Computing
   (TRUST), June 2012.
+  [pdf](https://sparrow.ece.cmu.edu/group/pub/lockdown.pdf)
 
 * Lockdown: A Safe and Practical Environment for Security Applications
   (CMU-CyLab-09-011) Amit Vasudevan and Bryan Parno and Ning Qu and
