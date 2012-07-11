@@ -91,8 +91,8 @@ popd
 
 # Now to build the examples/test PAL:
 pushd $TESTPAL_ABSPATH
-PATH=$PATH:$TEMPDIR/bin PKG_CONFIG_PATH=$TEMPDIR/lib/pkgconfig make clean
-PATH=$PATH:$TEMPDIR/bin PKG_CONFIG_PATH=$TEMPDIR/lib/pkgconfig make
+PATH=$PATH:$TEMPDIR/bin PKG_CONFIG_PATH=$TEMPDIR/lib/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig/ make clean
+PATH=$PATH:$TEMPDIR/bin PKG_CONFIG_PATH=$TEMPDIR/lib/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig/ make
 popd
 
 rm -rf $TEMPDIR
