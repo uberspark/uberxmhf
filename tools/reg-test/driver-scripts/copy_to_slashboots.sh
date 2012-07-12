@@ -34,7 +34,7 @@ for i in /dev/vg0/iscsi.slashboot.* ; do
     #break
 done
 
-for i in /dev/vg0/oneiric_rootfs /dev/vg0/lucid_rootfs; do
+for i in /dev/vg0/oneiric_rootfs /dev/vg0/lucid_rootfs /dev/vg0/precise_rootfs; do
     echo "*** Copying $1 to $i ***"
     #break
     $DRYRUN losetup /dev/loop0 $i
