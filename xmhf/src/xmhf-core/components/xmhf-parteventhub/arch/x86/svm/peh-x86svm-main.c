@@ -75,9 +75,12 @@ static void _svm_handle_ioio(VCPU *vcpu, struct _svm_vmcbfields *vmcb, struct re
   else
 	access_size = IO_SIZE_DWORD;
 	
-  //call our app handler
-  app_ret_status=emhf_app_handleintercept_portaccess(vcpu, r, ioinfo.fields.port, access_type, 
+	//call our app handler
+	emhf_smpguest_arch_x86svm_quiesce(vcpu);
+	app_ret_status=emhf_app_handleintercept_portaccess(vcpu, r, ioinfo.fields.port, access_type, 
           access_size);
+    emhf_smpguest_arch_x86svm_endquiesce(vcpu);
+	
   
   if(app_ret_status == APP_IOINTERCEPT_CHAIN){
 	  if (ioinfo.fields.type){
@@ -164,7 +167,9 @@ static void _svm_handle_npf(VCPU *vcpu, struct regs *r){
 	//note: AMD does not provide guest virtual address on a #NPF
 	//so we pass zero always
 	// call EMHF app hook
+	emhf_smpguest_arch_x86svm_quiesce(vcpu);
 	emhf_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, 0, errorcode);
+	emhf_smpguest_arch_x86svm_endquiesce(vcpu);
   }
   
   return;
@@ -356,63 +361,12 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
   
   vmcb->tlb_control = VMCB_TLB_CONTROL_NOTHING;
 
-  //SVM stores guest EAX in VMCB, so move that into struct regs r->eax 
-  //to reflect true guest EAX value
-  //r->eax = (u32)vmcb->rax;
-
-
-  switch(vmcb->exitcode){
-		//IO interception
-		case SVM_VMEXIT_IOIO:{
-			_svm_handle_ioio(vcpu, vmcb, r);
-		}
-		break;
-
-		//MSR interception
-		case SVM_VMEXIT_MSR:{
-		  _svm_handle_msr(vcpu, vmcb, r);
-		}
-		break;
-
-
-		//Nested Page Fault (NPF)
-		case SVM_VMEXIT_NPF:{
-		 _svm_handle_npf(vcpu, r);
-		}
-		break;
-
-		case SVM_VMEXIT_EXCEPTION_DB:{
-			if(vcpu->isbsp == 1){											//LAPIC SIPI detection only happens on BSP
-				emhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
-			}else{															//TODO: reflect back to guest
-				printf("\nUnexpected DB exception on non-BSP core (0x%02x)", vcpu->id);
-				printf("\nHalting!");
-				HALT();
-			}
-		}
-		break;
-
-
-		case SVM_VMEXIT_INIT:{
-		printf("\nCPU(0x%02x): INIT intercepted, halting.", vcpu->id);
-		printf("\nGuest CS:EIP=0x%04x:0x%08x", (u16)vmcb->cs.selector, (u32)vmcb->rip);
-		printf("\nHalting!");
-		HALT();
-			/*{
-				u8 *code;
-				u32 paddr;
-				int i;
-				paddr= (u32)emhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)vmcb->rip); 
-				code = (u8 *)paddr; 
-				printf("\nCode physical address=0x%08x\n", (u32)code);
-				for(i=0; i < 16; i++)
-					printf("0x%02x ", code[i]);
-				HALT();
-			}*/
+	//handle intercepts
+	switch(vmcb->exitcode){
 		
-		}
-		break;
-
+		//--------------------------------------------------------------
+		//xmhf-core and hypapp intercepts
+		//--------------------------------------------------------------
 
 		case SVM_VMEXIT_VMMCALL:{
 			//check to see if this is a hypercall for INT 15h hooking
@@ -430,15 +384,57 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 						HALT();
 				}
 			}else{	//if not E820 hook, give app a chance to handle the hypercall
+				emhf_smpguest_arch_x86svm_quiesce(vcpu);
 				if( emhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
 					printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", vcpu->id, r->eax);
 					HALT();
 				}
+				emhf_smpguest_arch_x86svm_endquiesce(vcpu);
 				vmcb->rip += 3;
 			}
 		}
 		break;
+		
+		//IO interception
+		case SVM_VMEXIT_IOIO:{
+			_svm_handle_ioio(vcpu, vmcb, r);
+		}
+		break;
 
+		//Nested Page Fault (NPF)
+		case SVM_VMEXIT_NPF:{
+		 _svm_handle_npf(vcpu, r);
+		}
+		break;
+
+		case SVM_VMEXIT_INIT:{
+			printf("\n***** INIT emhf_app_handleshutdown\n");
+			emhf_app_handleshutdown(vcpu, r);      
+			printf("\nCPU(0x%02x): Fatal, emhf_app_handleshutdown returned. Halting!", vcpu->id);
+			HALT();
+		}
+		break;
+
+		//--------------------------------------------------------------
+		//xmhf-core only intercepts
+		//--------------------------------------------------------------
+
+		//MSR interception
+		case SVM_VMEXIT_MSR:{
+		  _svm_handle_msr(vcpu, vmcb, r);
+		}
+		break;
+
+		case SVM_VMEXIT_EXCEPTION_DB:{
+			if(vcpu->isbsp == 1){											//LAPIC SIPI detection only happens on BSP
+				emhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
+			}else{															//TODO: reflect back to guest
+				printf("\nUnexpected DB exception on non-BSP core (0x%02x)", vcpu->id);
+				printf("\nHalting!");
+				HALT();
+			}
+		}
+		break;
 
 		case SVM_VMEXIT_NMI:{
 			_svm_handle_nmi(vcpu, vmcb, r);
@@ -457,11 +453,6 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 			HALT();
 		}
 	}	//end switch(vmcb->exitcode)	
-
-
-	//SVM stores guest EAX in VMCB, so move struct regs r->eax 
-	//to reflect true guest EAX value
-	//vmcb->rax = r->eax;
 
 
 	return 0;
