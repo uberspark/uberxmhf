@@ -403,11 +403,12 @@ VCPU *g_vmx_quiesce_vcpu __attribute__(( section(".data") )) = NULL;;
 void emhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
 
 #if 1	//non-serialized implementation
-        printf("\nCPU(0x%02x): got quiesce signal...", vcpu->id);
+        //printf("\nCPU(0x%02x): got quiesce signal...", vcpu->id);
         //grab hold of quiesce lock
         spin_lock(&g_vmx_lock_quiesce);
-        printf("\nCPU(0x%02x): grabbed quiesce lock.", vcpu->id);
+        //printf("\nCPU(0x%02x): grabbed quiesce lock.", vcpu->id);
 
+		//reset quiesce counter
         spin_lock(&g_vmx_lock_quiesce_counter);
         g_vmx_quiesce_counter=0;
         spin_unlock(&g_vmx_lock_quiesce_counter);
@@ -417,9 +418,9 @@ void emhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
         _vmx_send_quiesce_signal(vcpu);
         
         //wait for all the remaining CPUs to quiesce
-        printf("\nCPU(0x%02x): waiting for other CPUs to respond...", vcpu->id);
+        //printf("\nCPU(0x%02x): waiting for other CPUs to respond...", vcpu->id);
         while(g_vmx_quiesce_counter < (g_midtable_numentries-1) );
-        printf("\nCPU(0x%02x): all CPUs quiesced successfully.", vcpu->id);
+        //printf("\nCPU(0x%02x): all CPUs quiesced successfully.", vcpu->id);
 
 #else   //serialized implementation
         printf("\nCPU(0x%02x): Quiesce [START]...", vcpu->id);
@@ -447,14 +448,14 @@ void emhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
         //Note: we do not need a spinlock for this since we are in any
         //case the only core active until this point
         g_vmx_quiesce_resume_counter=0;
-        printf("\nCPU(0x%02x): waiting for other CPUs to resume...", vcpu->id);
+        //printf("\nCPU(0x%02x): waiting for other CPUs to resume...", vcpu->id);
         g_vmx_quiesce_resume_signal=1;
         
         while(g_vmx_quiesce_resume_counter < (g_midtable_numentries-1) );
 
         g_vmx_quiesce=0;  // we are out of quiesce at this point
 
-        printf("\nCPU(0x%02x): all CPUs resumed successfully.", vcpu->id);
+        //printf("\nCPU(0x%02x): all CPUs resumed successfully.", vcpu->id);
         
         //reset resume signal
         spin_lock(&g_vmx_lock_quiesce_resume_signal);
@@ -462,7 +463,7 @@ void emhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
         spin_unlock(&g_vmx_lock_quiesce_resume_signal);
                 
         //release quiesce lock
-        printf("\nCPU(0x%02x): releasing quiesce lock.", vcpu->id);
+        //printf("\nCPU(0x%02x): releasing quiesce lock.", vcpu->id);
         spin_unlock(&g_vmx_lock_quiesce);
 
 #else   //serialized implementation
@@ -502,9 +503,9 @@ void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		spin_unlock(&g_vmx_lock_quiesce_counter);
 
 		//wait until quiesceing is finished
-		printf("\nCPU(0x%02x): Quiesced", vcpu->id);
+		//printf("\nCPU(0x%02x): Quiesced", vcpu->id);
 		while(!g_vmx_quiesce_resume_signal);
-		printf("\nCPU(0x%02x): EOQ received, resuming...", vcpu->id);
+		//printf("\nCPU(0x%02x): EOQ received, resuming...", vcpu->id);
 
 		spin_lock(&g_vmx_lock_quiesce_resume_counter);
 		g_vmx_quiesce_resume_counter++;
