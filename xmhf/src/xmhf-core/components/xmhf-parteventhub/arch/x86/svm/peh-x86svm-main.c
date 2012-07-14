@@ -181,12 +181,12 @@ static void _svm_handle_nmi(VCPU *vcpu, struct _svm_vmcbfields __attribute__((un
     //set nmiinhvm to 1 since this NMI was when the core was in HVM 
     vcpu->nmiinhvm=1;
     
-    printf("\nCPU(0x%02x): triggering local NMI in CPU...", vcpu->id);
+    //printf("\nCPU(0x%02x): triggering local NMI in CPU...", vcpu->id);
     
     __asm__ __volatile__("clgi\r\n");
     __asm__ __volatile__("stgi\r\n"); //at this point we get control in
                                       //our exception handler which handles the rest
-    printf("\nCPU(0x%02x): resuming guest...", vcpu->id);
+    //printf("\nCPU(0x%02x): resuming guest...", vcpu->id);
 }
 
 
