@@ -476,9 +476,11 @@ extern VCPU *g_vmx_quiesce_vcpu __attribute__(( section(".data") ));
 u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 	//signal that this processor is in hyp mode
 	vcpu->inhypervisor = true;
-		
-    //serialize intercept handling
-    spin_lock(&g_lock_hypprocessing);
+
+#if 1	//serialized implementation		
+		//serialize intercept handling
+		spin_lock(&g_lock_hypprocessing);
+#endif
 
 	//read VMCS from physical CPU/core
 	emhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
@@ -674,9 +676,11 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 
 	//signal that this processor is not in hyp mode any longer
 	vcpu->inhypervisor = false;
-	
-	//remove serialization constraint
-    spin_unlock(&g_lock_hypprocessing);
+
+#if 1	//serialized implementation	
+		//remove serialization constraint
+		spin_unlock(&g_lock_hypprocessing);
+#endif
 
 	return 1;
 }
