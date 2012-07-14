@@ -66,12 +66,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 
 	switch(hypercall_number){
 		case QUIESCE_HYPERCALL:
-			printf("\nCPU(0x%02x): quiesce test hypercall received...", vcpu->id);
-			printf("\nCPU(0x%02x): proceeding to call emhf_smpguest_quiesce...", vcpu->id);
-			emhf_smpguest_quiesce(vcpu);
 			printf("\nCPU(0x%02x): this is an ATOMIC printf :)", vcpu->id);
-			printf("\nCPU(0x%02x): proceeding to call emhf_smpguest_endquiesce...", vcpu->id);
-			emhf_smpguest_endquiesce(vcpu);
 			break;
 			
 		default:
