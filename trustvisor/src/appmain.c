@@ -506,9 +506,9 @@ u32 tv_app_handlehypercall(VCPU *vcpu, struct regs *r)
   u32 status = APP_SUCCESS;
   u32 ret = 0;
 
-#ifdef __MP_VERSION__
-  emhf_smpguest_quiesce(vcpu);
-#endif
+//#ifdef __MP_VERSION__
+//  emhf_smpguest_quiesce(vcpu);
+//#endif
 
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     cmd = (u32)r->eax;
@@ -560,9 +560,9 @@ u32 tv_app_handlehypercall(VCPU *vcpu, struct regs *r)
     HALT();
   }
 
-#ifdef __MP_VERSION__
-  emhf_smpguest_endquiesce(vcpu);
-#endif
+//#ifdef __MP_VERSION__
+//  emhf_smpguest_endquiesce(vcpu);
+//#endif
 
   return status;
 }
@@ -576,9 +576,9 @@ u32 tv_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
   (void)gva;
 #endif //__LDN_TV_INTEGRATION__
 
-#ifdef __MP_VERSION__
-  emhf_smpguest_quiesce(vcpu);
-#endif
+//#ifdef __MP_VERSION__
+//  emhf_smpguest_quiesce(vcpu);
+//#endif
 
 #if !defined(__LDN_TV_INTEGRATION__)  
   eu_trace("CPU(0x%02x): gva=%#llx, gpa=%#llx, code=%#llx", (int)vcpu->id,
@@ -591,9 +591,9 @@ u32 tv_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 	ret = hpt_scode_npf(vcpu, gpa, violationcode);
 #endif //__LDN_TV_INTEGRATION__
 
-#ifdef __MP_VERSION__
-  emhf_smpguest_endquiesce(vcpu);
-#endif
+//#ifdef __MP_VERSION__
+//  emhf_smpguest_endquiesce(vcpu);
+//#endif
 
   return ret;
 }
@@ -601,9 +601,9 @@ u32 tv_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 u32 tv_app_handleintercept_portaccess(VCPU *vcpu, struct regs __attribute__((unused)) *r, 
                                       u32 portnum, u32 access_type, u32 access_size)
 {
-#ifdef __MP_VERSION__
-  emhf_smpguest_quiesce(vcpu);
-#endif
+//#ifdef __MP_VERSION__
+//  emhf_smpguest_quiesce(vcpu);
+//#endif
 
   eu_err("CPU(0x%02x): Port access intercept feature unimplemented. Halting!", vcpu->id);
   eu_trace("CPU(0x%02x): portnum=0x%08x, access_type=0x%08x, access_size=0x%08x", vcpu->id,
@@ -612,9 +612,9 @@ u32 tv_app_handleintercept_portaccess(VCPU *vcpu, struct regs __attribute__((unu
   //return APP_IOINTERCEPT_SKIP;
   //return APP_IOINTERCEPT_CHAIN; //chain and do the required I/O    
 
-#ifdef __MP_VERSION__
-  emhf_smpguest_endquiesce(vcpu);
-#endif
+//#ifdef __MP_VERSION__
+//  emhf_smpguest_endquiesce(vcpu);
+//#endif
 
   return 0; /* XXX DUMMY; keeps compiler happy */
 }

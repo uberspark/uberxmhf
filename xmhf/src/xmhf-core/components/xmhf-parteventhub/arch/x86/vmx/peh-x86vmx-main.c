@@ -380,19 +380,21 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 }
 
 
-//---intercept handler (EPT voilation)------------------------------------------
+//---intercept handler (EPT voilation)----------------------------------
 static void _vmx_handle_intercept_eptviolation(VCPU *vcpu, struct regs *r){
-  u32 errorcode, gpa, gva;
+	u32 errorcode, gpa, gva;
 	errorcode = (u32)vcpu->vmcs.info_exit_qualification;
 	gpa = (u32) vcpu->vmcs.guest_paddr_full;
 	gva = (u32) vcpu->vmcs.info_guest_linear_address;
 
 	//check if EPT violation is due to LAPIC interception
 	if(vcpu->isbsp && (gpa >= g_vmx_lapic_base) && (gpa < (g_vmx_lapic_base + PAGE_SIZE_4K)) ){
-    emhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
-  }else{ //no, pass it to emhf app  
-	  emhf_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, gva,
-  	  (errorcode & 7));
+		emhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
+	}else{ //no, pass it to hypapp 
+		emhf_smpguest_arch_x86vmx_quiesce(vcpu);
+		emhf_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, gva,
+				(errorcode & 7));
+		emhf_smpguest_arch_x86vmx_endquiesce(vcpu);
 	}		
 }
 
@@ -411,8 +413,10 @@ static void _vmx_handle_intercept_ioportaccess(VCPU *vcpu, struct regs *r){
 
   //call our app handler, TODO: it should be possible for an app to
   //NOT want a callback by setting up some parameters during appmain
-  app_ret_status=emhf_app_handleintercept_portaccess(vcpu, r, portnum, access_type, 
+	emhf_smpguest_arch_x86vmx_quiesce(vcpu);
+	app_ret_status=emhf_app_handleintercept_portaccess(vcpu, r, portnum, access_type, 
           access_size);
+    emhf_smpguest_arch_x86vmx_endquiesce(vcpu);
 
   if(app_ret_status == APP_IOINTERCEPT_CHAIN){
    	if(access_type == IO_TYPE_OUT){
@@ -495,6 +499,32 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
   
 	//handle intercepts
 	switch((u32)vcpu->vmcs.info_vmexit_reason){
+		//--------------------------------------------------------------
+		//xmhf-core and hypapp intercepts
+		//--------------------------------------------------------------
+		
+		case VMX_VMEXIT_VMCALL:{
+			//if INT 15h E820 hypercall, then let the xmhf-core handle it
+			if(vcpu->vmcs.guest_CS_base == (VMX_UG_E820HOOK_CS << 4) &&
+				vcpu->vmcs.guest_RIP == VMX_UG_E820HOOK_IP){
+				//assertions, we need to be either in real-mode or in protected
+				//mode with paging and EFLAGS.VM bit set (virtual-8086 mode)
+				ASSERT( !(vcpu->vmcs.guest_CR0 & CR0_PE)  ||
+					( (vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG) &&
+						(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM)  ) );
+				_vmx_int15_handleintercept(vcpu, r);	
+			}else{	//if not E820 hook, give hypapp a chance to handle the hypercall
+				emhf_smpguest_arch_x86vmx_quiesce(vcpu);
+				if( emhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
+					printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", vcpu->id, r->eax);
+					HALT();
+				}
+				emhf_smpguest_arch_x86vmx_endquiesce(vcpu);
+				vcpu->vmcs.guest_RIP += 3;
+			}
+		}
+		break;
+
 		case VMX_VMEXIT_IOIO:{
 			_vmx_handle_intercept_ioportaccess(vcpu, r);
 		}
@@ -504,6 +534,18 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			_vmx_handle_intercept_eptviolation(vcpu, r);
 		}
 		break;  	
+
+		case VMX_VMEXIT_INIT:{
+			printf("\n***** VMEXIT_INIT emhf_app_handleshutdown\n");
+			emhf_app_handleshutdown(vcpu, r);      
+			printf("\nCPU(0x%02x): Fatal, emhf_app_handleshutdown returned. Halting!", vcpu->id);
+			HALT();
+		}
+		break;
+
+		//--------------------------------------------------------------
+		//xmhf-core only intercepts
+		//--------------------------------------------------------------
 
 		case VMX_VMEXIT_HLT:
 			if(!vcpu->vmx_guest_unrestricted){
@@ -582,35 +624,6 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			_vmx_handle_intercept_cpuid(vcpu, r);
 			break;
 
-    case VMX_VMEXIT_INIT:{
-        printf("\n***** VMEXIT_INIT emhf_app_handleshutdown\n");
-      emhf_app_handleshutdown(vcpu, r);      
-      printf("\nCPU(0x%02x): warning, emhf_app_handleshutdown returned!", vcpu->id);
-      HALT();
-    }
-    break;
-
-    case VMX_VMEXIT_VMCALL:{
-			//check to see if this is a hypercall for INT 15h hooking
-			if(vcpu->vmcs.guest_CS_base == (VMX_UG_E820HOOK_CS << 4) &&
-				vcpu->vmcs.guest_RIP == VMX_UG_E820HOOK_IP){
-				//assertions, we need to be either in real-mode or in protected
-				//mode with paging and EFLAGS.VM bit set (virtual-8086 mode)
-				ASSERT( !(vcpu->vmcs.guest_CR0 & CR0_PE)  ||
-					( (vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG) &&
-						(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM)  ) );
-				_vmx_int15_handleintercept(vcpu, r);	
-			}else{	//if not E820 hook, give app a chance to handle the hypercall
-				if( emhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
-					printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", vcpu->id, r->eax);
-					HALT();
-				}
-      	vcpu->vmcs.guest_RIP += 3;
-			}
-    }
-    break;
-
-
 		case VMX_VMEXIT_TASKSWITCH:{
 			u32 idt_v = vcpu->vmcs.info_IDT_vectoring_information & VECTORING_INFO_VALID_MASK;
 			u32 type = vcpu->vmcs.info_IDT_vectoring_information & VECTORING_INFO_TYPE_MASK;
@@ -618,24 +631,24 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			u16 tss_selector = (u16)vcpu->vmcs.info_exit_qualification;
 			
 			if(reason == TASK_SWITCH_GATE && type == INTR_TYPE_NMI){
-	      printf("\nCPU(0x%02x): NMI received (MP guest shutdown?)", vcpu->id);
-				emhf_app_handleshutdown(vcpu, r);      
-  	    printf("\nCPU(0x%02x): warning, emhf_app_handleshutdown returned!", vcpu->id);
-    		printf("\nCPU(0x%02x): HALTING!", vcpu->id);
-	      HALT();
+				printf("\nCPU(0x%02x): NMI received (MP guest shutdown?)", vcpu->id);
+					emhf_app_handleshutdown(vcpu, r);      
+				printf("\nCPU(0x%02x): warning, emhf_app_handleshutdown returned!", vcpu->id);
+				printf("\nCPU(0x%02x): HALTING!", vcpu->id);
+				HALT();
 			}else{
 				printf("\nCPU(0x%02x): Unhandled Task Switch. Halt!", vcpu->id);
 				printf("\n	idt_v=0x%08x, type=0x%08x, reason=0x%08x, tsssel=0x%04x",
 					idt_v, type, reason, tss_selector); 
 			}
-    	HALT();
+			HALT();
 		}
 		break;
 
     
-    default:{
-      printf("\nCPU(0x%02x): Unhandled intercept: 0x%08x", vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason);
-      printf("\n	CPU(0x%02x): EFLAGS=0x%08x", vcpu->id, (u32)vcpu->vmcs.guest_RFLAGS);
+		default:{
+			printf("\nCPU(0x%02x): Unhandled intercept: 0x%08x", vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason);
+			printf("\n	CPU(0x%02x): EFLAGS=0x%08x", vcpu->id, (u32)vcpu->vmcs.guest_RFLAGS);
 			printf("\n	SS:ESP =0x%04x:0x%08x", (u16)vcpu->vmcs.guest_SS_selector, (u32)vcpu->vmcs.guest_RSP);
 			printf("\n	CS:EIP =0x%04x:0x%08x", (u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP);
 			printf("\n	IDTR base:limit=0x%08x:0x%04x", (u32)vcpu->vmcs.guest_IDTR_base,
@@ -644,15 +657,14 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			printf("\n	GDTR base:limit=0x%08x:0x%04x", (u32)vcpu->vmcs.guest_GDTR_base,
 					(u16)vcpu->vmcs.guest_GDTR_limit);
 			//printf("\n 	runtime_v86_idt_base=0x%08x", (u32)__runtime_v86_idt);
-     	if(vcpu->vmcs.info_IDT_vectoring_information & 0x80000000){
+			if(vcpu->vmcs.info_IDT_vectoring_information & 0x80000000){
 				printf("\nCPU(0x%02x): HALT; Nested events unhandled 0x%08x",
 					vcpu->id, vcpu->vmcs.info_IDT_vectoring_information);
 			}
-
-
 			HALT();
-    }
-  }
+		}
+	} //end switch((u32)vcpu->vmcs.info_vmexit_reason)
+	
 
  	//check and clear guest interruptibility state
 	if(vcpu->vmcs.guest_interruptibility != 0){
@@ -662,17 +674,13 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 
 	//make sure we have no nested events
 	if(vcpu->vmcs.info_IDT_vectoring_information & 0x80000000){
-				printf("\nCPU(0x%02x): HALT; Nested events unhandled with hwp:0x%08x",
-					vcpu->id, vcpu->vmcs.info_IDT_vectoring_information);
-				HALT();
+		printf("\nCPU(0x%02x): HALT; Nested events unhandled with hwp:0x%08x",
+			vcpu->id, vcpu->vmcs.info_IDT_vectoring_information);
+		HALT();
 	}
 
 	//write updated VMCS back to CPU
-  emhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
-
-  if(vcpu->vmcs.guest_RIP == 0x7c00){
-		printf("\nCPU(0x%02x): We are starting at guest boot-sector...", vcpu->id);
-	}
+	emhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
 
 	//signal that this processor is not in hyp mode any longer
 	vcpu->inhypervisor = false;
