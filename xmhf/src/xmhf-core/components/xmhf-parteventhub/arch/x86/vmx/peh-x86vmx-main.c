@@ -466,26 +466,8 @@ static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gp
 }
 
 
-//hypprocessing is true if we are already processing within the
-//hypervisor, else false
-bool g_hypprocessing __attribute__(( section(".data") )) = false;
-
-//SMP lock for hypprocessing
-u32 g_lock_hypprocessing __attribute__(( section(".data") )) = 1; 
-
-
-extern VCPU *g_vmx_quiesce_vcpu __attribute__(( section(".data") ));      
-
 //---hvm_intercept_handler------------------------------------------------------
 u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
-	//signal that this processor is in hyp mode
-	vcpu->inhypervisor = true;
-
-#if 0	//serialized implementation		
-		//serialize intercept handling
-		spin_lock(&g_lock_hypprocessing);
-#endif
-
 	//read VMCS from physical CPU/core
 	emhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
 
@@ -681,14 +663,6 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 
 	//write updated VMCS back to CPU
 	emhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
-
-	//signal that this processor is not in hyp mode any longer
-	vcpu->inhypervisor = false;
-
-#if 0	//serialized implementation	
-		//remove serialization constraint
-		spin_unlock(&g_lock_hypprocessing);
-#endif
 
 	return 1;
 }

@@ -51,8 +51,6 @@
 
 //----------------------------------------------------------------------
 //globals referenced
-	.extern g_midtable_numentries
-	.extern g_midtable
 	.extern emhf_parteventhub_arch_x86vmx_intercept_handler
 
 //----------------------------------------------------------------------
@@ -68,31 +66,6 @@ emhf_parteventhub_arch_x86vmx_entry:
 	//step-2: grab VCPU *
 	movl 32(%esp), %esi
 	      
-    /*//step-2: get hold of local APIC id
-    mov $(MSR_APIC_BASE), %ecx
-    rdmsr
-    andl $0xFFFFF000, %eax
-    addl $0x20, %eax
-    movl (%eax), %eax
-    shr $24, %eax
-
-    //step-3: get VCPU * for this CPU/core
-    movl g_midtable_numentries, %edx
-    movl $(g_midtable), %ebx
-    xorl %ecx, %ecx
-    getvcpuloop:
-        movl 0x0(%ebx, %ecx, 8), %ebp  //ebp contains the lapic id
-        cmpl %eax, %ebp
-        jz gotvcpu
-        incl %ecx
-        cmpl %edx, %ecx
-        jb getvcpuloop
-        //we should never get here, if so just halt
-        hlt
-    gotvcpu:
-		movl 0x4(%ebx, %ecx, 8), %esi //esi contains vcpu pointer
-	*/
-
    	//step-4: get hold of pointer to saved GPR on stack
    	movl %esp, %eax
 
@@ -104,7 +77,6 @@ emhf_parteventhub_arch_x86vmx_entry:
     addl $0x08, %esp
 
     //step-6; restore all CPU GPRs
-    //  RESTOREALL_GPRS
     popal
 
     //resume partition
