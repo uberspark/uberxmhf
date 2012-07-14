@@ -177,7 +177,7 @@ static void _vmx_send_quiesce_signal(VCPU *vcpu){
   *icr_low = 0x000C0400UL;      //send NMI        
   
   //check if IPI has been delivered successfully
-  printf("\n%s: CPU(0x%02x): firing NMIs...", __FUNCTION__, vcpu->id);
+  //printf("\n%s: CPU(0x%02x): firing NMIs...", __FUNCTION__, vcpu->id);
   do{
 	delivered = *icr_high;
 	delivered &= 0x00001000;
@@ -186,7 +186,7 @@ static void _vmx_send_quiesce_signal(VCPU *vcpu){
   //restore icr high
   *icr_high = prev_icr_high_value;
     
-  printf("\n%s: CPU(0x%02x): NMIs fired!", __FUNCTION__, vcpu->id);
+  //printf("\n%s: CPU(0x%02x): NMIs fired!", __FUNCTION__, vcpu->id);
 }
 
 
@@ -403,6 +403,10 @@ VCPU *g_vmx_quiesce_vcpu __attribute__(( section(".data") )) = NULL;;
 void emhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
 
 #if 1	//non-serialized implementation
+		//return immediately if we are already within quiesce
+		if(g_vmx_quiesce)
+			return;
+    
         //printf("\nCPU(0x%02x): got quiesce signal...", vcpu->id);
         //grab hold of quiesce lock
         spin_lock(&g_vmx_lock_quiesce);
