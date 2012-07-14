@@ -477,7 +477,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 	//signal that this processor is in hyp mode
 	vcpu->inhypervisor = true;
 
-#if 1	//serialized implementation		
+#if 0	//serialized implementation		
 		//serialize intercept handling
 		spin_lock(&g_lock_hypprocessing);
 #endif
@@ -677,7 +677,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 	//signal that this processor is not in hyp mode any longer
 	vcpu->inhypervisor = false;
 
-#if 1	//serialized implementation	
+#if 0	//serialized implementation	
 		//remove serialization constraint
 		spin_unlock(&g_lock_hypprocessing);
 #endif

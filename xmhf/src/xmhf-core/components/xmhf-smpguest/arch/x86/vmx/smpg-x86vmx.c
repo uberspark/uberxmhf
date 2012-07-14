@@ -402,7 +402,7 @@ VCPU *g_vmx_quiesce_vcpu __attribute__(( section(".data") )) = NULL;;
 //note: we are in atomic processsing mode here
 void emhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
 
-#if 0	//non-serialized implementation
+#if 1	//non-serialized implementation
         printf("\nCPU(0x%02x): got quiesce signal...", vcpu->id);
         //grab hold of quiesce lock
         spin_lock(&g_vmx_lock_quiesce);
@@ -441,7 +441,7 @@ void emhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
 void emhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
 		(void)vcpu;
 
-#if 0	//non-serialized implementation
+#if 1	//non-serialized implementation
 
         //set resume signal to resume the cores that are quiesced
         //Note: we do not need a spinlock for this since we are in any
@@ -478,7 +478,7 @@ void emhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
 void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
     (void)r;
 
-#if 0	//non-serialized implementation
+#if 1	//non-serialized implementation
 		
 		//check if we are quiescing, if not reflect NMI back to guest
 		//(if NMI originated from guest) else halt reporting a spurious
