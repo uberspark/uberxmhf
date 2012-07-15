@@ -122,6 +122,14 @@ void emhf_runtime_entry(void){
 	}
 #endif //__DMAPROT__
 
+	printf("\nPreSelectors CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", 
+			(u16)read_segreg_cs(), (u16)read_segreg_ds(),
+			(u16)read_segreg_es(), (u16)read_segreg_ss());
+	printf("\nPreSelectors FS=0x%04x, GS=0x%04x", 
+			(u16)read_segreg_fs(), (u16)read_segreg_gs());
+	printf("\nPreSelectors TR=0x%04x", (u16)read_tr_sel());
+
+
 	//initialize base platform with SMP 
 	emhf_baseplatform_smpinitialize();
 	
@@ -189,6 +197,17 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 
   //initialize support for SMP guests
   emhf_smpguest_initialize(vcpu);
+
+  //XXX: debug
+  //__asm__ __volatile__("int $0x02\r\n");
+  //printf("\nCPU(0x%02x): Halting!", vcpu->id);
+	printf("\n[%02x]Selectors CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", vcpu->id,
+			(u16)read_segreg_cs(), (u16)read_segreg_ds(),
+			(u16)read_segreg_es(), (u16)read_segreg_ss());
+	printf("\n[%02x]Selectors FS=0x%04x, GS=0x%04x", vcpu->id,
+			(u16)read_segreg_fs(), (u16)read_segreg_gs());
+	printf("\n[%02x]Selectors TR=0x%04x", vcpu->id, (u16)read_tr_sel());
+  	
 	
   //start partition
   emhf_partition_start(vcpu);

@@ -262,7 +262,7 @@ static inline void skinit(unsigned long eax) {
 //segment register access
 static inline u32 read_segreg_cs(void){
   u32 __cs;
-  __asm__("mov %%es, %0 \r\n" :"=r" (__cs));
+  __asm__("mov %%cs, %0 \r\n" :"=r" (__cs));
   return __cs;
 }
 

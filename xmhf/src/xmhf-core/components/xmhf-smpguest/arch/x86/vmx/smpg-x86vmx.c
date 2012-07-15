@@ -164,20 +164,20 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
 }
 
 
-static void _vmx_send_quiesce_signal(VCPU *vcpu){
+static void _vmx_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu){
   volatile u32 *icr_low = (u32 *)(0xFEE00000 + 0x300);
   volatile u32 *icr_high = (u32 *)(0xFEE00000 + 0x310);
   u32 icr_high_value= 0xFFUL << 24;
   u32 prev_icr_high_value;
   u32 delivered;
-    
+  
   prev_icr_high_value = *icr_high;
   
   *icr_high = icr_high_value;    //send to all but self
   *icr_low = 0x000C0400UL;      //send NMI        
   
   //check if IPI has been delivered successfully
-  printf("\n%s: CPU(0x%02x): firing NMIs...", __FUNCTION__, vcpu->id);
+  //printf("\n%s: CPU(0x%02x): firing NMIs...", __FUNCTION__, vcpu->id);
   do{
 	delivered = *icr_high;
 	delivered &= 0x00001000;
@@ -186,7 +186,7 @@ static void _vmx_send_quiesce_signal(VCPU *vcpu){
   //restore icr high
   *icr_high = prev_icr_high_value;
     
-  printf("\n%s: CPU(0x%02x): NMIs fired!", __FUNCTION__, vcpu->id);
+  //printf("\n%s: CPU(0x%02x): NMIs fired!", __FUNCTION__, vcpu->id);
 }
 
 
@@ -363,12 +363,15 @@ void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
 
 
 //quiesce interface to switch all guest cores into hypervisor mode
+//note: we are in atomic processsing mode here
 void emhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
-        printf("\nCPU(0x%02x): got quiesce signal...", vcpu->id);
+
+        //printf("\nCPU(0x%02x): got quiesce signal...", vcpu->id);
         //grab hold of quiesce lock
         spin_lock(&g_vmx_lock_quiesce);
-        printf("\nCPU(0x%02x): grabbed quiesce lock.", vcpu->id);
+        //printf("\nCPU(0x%02x): grabbed quiesce lock.", vcpu->id);
 
+		//reset quiesce counter
         spin_lock(&g_vmx_lock_quiesce_counter);
         g_vmx_quiesce_counter=0;
         spin_unlock(&g_vmx_lock_quiesce_counter);
@@ -378,25 +381,27 @@ void emhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
         _vmx_send_quiesce_signal(vcpu);
         
         //wait for all the remaining CPUs to quiesce
-        printf("\nCPU(0x%02x): waiting for other CPUs to respond...", vcpu->id);
+        //printf("\nCPU(0x%02x): waiting for other CPUs to respond...", vcpu->id);
         while(g_vmx_quiesce_counter < (g_midtable_numentries-1) );
-        printf("\nCPU(0x%02x): all CPUs quiesced successfully.", vcpu->id);
-	
+        //printf("\nCPU(0x%02x): all CPUs quiesced successfully.", vcpu->id);
+
 }
 
 void emhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
+		(void)vcpu;
+
         //set resume signal to resume the cores that are quiesced
         //Note: we do not need a spinlock for this since we are in any
         //case the only core active until this point
         g_vmx_quiesce_resume_counter=0;
-        printf("\nCPU(0x%02x): waiting for other CPUs to resume...", vcpu->id);
+        //printf("\nCPU(0x%02x): waiting for other CPUs to resume...", vcpu->id);
         g_vmx_quiesce_resume_signal=1;
         
         while(g_vmx_quiesce_resume_counter < (g_midtable_numentries-1) );
 
         g_vmx_quiesce=0;  // we are out of quiesce at this point
 
-        printf("\nCPU(0x%02x): all CPUs resumed successfully.", vcpu->id);
+        //printf("\nCPU(0x%02x): all CPUs resumed successfully.", vcpu->id);
         
         //reset resume signal
         spin_lock(&g_vmx_lock_quiesce_resume_signal);
@@ -404,51 +409,49 @@ void emhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
         spin_unlock(&g_vmx_lock_quiesce_resume_signal);
                 
         //release quiesce lock
-        printf("\nCPU(0x%02x): releasing quiesce lock.", vcpu->id);
+        //printf("\nCPU(0x%02x): releasing quiesce lock.", vcpu->id);
         spin_unlock(&g_vmx_lock_quiesce);
-}        
+
+        
+}
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
 void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
     (void)r;
 
-	if( (!vcpu->nmiinhvm) && (!g_vmx_quiesce) ){
-    printf("\nCPU(0x%02x): Spurious NMI within hypervisor. halt!", vcpu->id);
-    HALT();
-  }
+		//check if we are quiescing, if not reflect NMI back to guest
+		//(if NMI originated from guest) else halt reporting a spurious
+		//NMI within hypervisor
+		if(!g_vmx_quiesce){
+			if( (!vcpu->nmiinhvm) ){
+				printf("\nCPU(0x%02x): Fatal - spurious NMI within hypervisor. halt!", vcpu->id);
+				HALT();
+			}else{
+				printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
+				vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
+				vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
+					INTR_TYPE_NMI |
+					INTR_INFO_VALID_MASK;
+			}
+		}
+	
+		//increment quiesce counter
+		spin_lock(&g_vmx_lock_quiesce_counter);
+		g_vmx_quiesce_counter++;
+		spin_unlock(&g_vmx_lock_quiesce_counter);
 
-	if(g_vmx_quiesce){
-    //ok this NMI is because of g_vmx_quiesce. note: g_vmx_quiesce can be 1 and
-    //this could be a NMI for the guest. we have no way of distinguising
-    //this. however, since g_vmx_quiesce=1, we can handle this NMI as a quiesce NMI
-    //and rely on the platform h/w to reissue the NMI later
-    printf("\nCPU(0x%02x): NMI for core quiesce", vcpu->id);
-    printf("\nCPU(0x%02x): CS:EIP=0x%04x:0x%08x", vcpu->id, (u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP);
-  
-    printf("\nCPU(0x%02x): quiesced, updating counter. awaiting EOQ...", vcpu->id);
-    spin_lock(&g_vmx_lock_quiesce_counter);
-    g_vmx_quiesce_counter++;
-    spin_unlock(&g_vmx_lock_quiesce_counter);
-    
-    while(!g_vmx_quiesce_resume_signal);
-    printf("\nCPU(0x%02x): EOQ received, resuming...", vcpu->id);
-    
-    spin_lock(&g_vmx_lock_quiesce_resume_counter);
-    g_vmx_quiesce_resume_counter++;
-    spin_unlock(&g_vmx_lock_quiesce_resume_counter);
-    
-    //printf("\nCPU(0x%08x): Halting!", vcpu->id);
-    //HALT();
-    
-  }else{
-    //we are not in quiesce, so simply inject this NMI back to guest
-    ASSERT( vcpu->nmiinhvm == 1 );
-    printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
-		vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
-					vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
-			     INTR_TYPE_NMI |
-			     INTR_INFO_VALID_MASK;
-  }
+		//wait until quiesceing is finished
+		//printf("\nCPU(0x%02x): Quiesced", vcpu->id);
+		while(!g_vmx_quiesce_resume_signal);
+		//printf("\nCPU(0x%02x): EOQ received, resuming...", vcpu->id);
+
+		spin_lock(&g_vmx_lock_quiesce_resume_counter);
+		g_vmx_quiesce_resume_counter++;
+		spin_unlock(&g_vmx_lock_quiesce_resume_counter);
+
+		//flush EPT mappings on this core 
+		emhf_memprot_flushmappings(vcpu);
+
 }
 
 //perform required setup after a guest awakens a new CPU
