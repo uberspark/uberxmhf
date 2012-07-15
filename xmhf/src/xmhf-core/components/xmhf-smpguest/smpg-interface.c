@@ -67,12 +67,14 @@ void emhf_smpguest_initialize(VCPU *vcpu){
 
 
 //quiesce interface to switch all guest cores into hypervisor mode
-void emhf_smpguest_quiesce(VCPU *vcpu){
+static void emhf_smpguest_quiesce(VCPU *vcpu) __attribute__((unused));
+static void emhf_smpguest_quiesce(VCPU *vcpu){
 	emhf_smpguest_arch_quiesce(vcpu);
 }
 
 //endquiesce interface to resume all guest cores after a quiesce
-void emhf_smpguest_endquiesce(VCPU *vcpu){
+static void emhf_smpguest_endquiesce(VCPU *vcpu) __attribute__((unused));
+static void emhf_smpguest_endquiesce(VCPU *vcpu){
 	emhf_smpguest_arch_endquiesce(vcpu);
 }
 
