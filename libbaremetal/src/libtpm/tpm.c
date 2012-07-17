@@ -180,12 +180,28 @@ uint32_t _tpm_submit_cmd(uint32_t locality, uint16_t tag, uint32_t cmd,
     return ret;
 }
 
+/* from emhf's processor.h */
+static inline uint64_t rdtsc64(void)
+{
+  uint64_t rv;
+
+  __asm__ __volatile__ ("rdtsc" : "=A" (rv));
+  return (rv);
+}
+
 /*static inline*/
 uint32_t tpm_submit_cmd(uint32_t locality, uint32_t cmd,
                                       uint32_t arg_size, uint32_t *out_size)
 {
-   return  _tpm_submit_cmd(locality, TPM_TAG_RQU_COMMAND, cmd,
-                           arg_size, out_size);
+    uint32_t rv;
+    uint64_t start, end;
+
+    start = rdtsc64();
+    rv = _tpm_submit_cmd(locality, TPM_TAG_RQU_COMMAND, cmd,
+                         arg_size, out_size);
+    end = rdtsc64();
+    printf("TPM: PERF: Command 0x%08x consumed %lld cycles\n", cmd, end-start);
+    return rv;
 }
 
 
