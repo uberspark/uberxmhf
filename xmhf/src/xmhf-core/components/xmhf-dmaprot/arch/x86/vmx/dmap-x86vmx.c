@@ -336,6 +336,23 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
   }
 	printf("Done.");
 
+	//check VT-d snoop control capabilities
+	{
+		VTD_ECAP_REG ecap;
+		//read ECAP register
+		_vtd_reg(drhd, VTD_REG_READ, VTD_ECAP_REG_OFF, (void *)&ecap.value);
+		
+		if(ecap.bits.sc)
+			printf("\n	VT-d hardware Snoop Control (SC) capabilities present");
+		else
+			printf("\n	VT-d hardware Snoop Control (SC) unavailable");
+
+		if(ecap.bits.c)
+			printf("\n	VT-d hardware access to remapping structures COHERENT");
+		else
+			printf("\n	VT-d hardware access to remapping structures NON-COHERENT");
+	}
+	
 	  
   //2. disable device
   /*disabling DRHD is optional as the steps below initialize required
