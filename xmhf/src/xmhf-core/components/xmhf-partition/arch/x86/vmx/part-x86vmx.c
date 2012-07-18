@@ -309,7 +309,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 					//store initial values of the MSRs
 					for(i=0; i < vmx_msr_area_msrs_count; i++){
 						u32 msr, eax, edx;
-	          msr = vmx_msr_area_msrs[i];						
+						msr = vmx_msr_area_msrs[i];						
 						rdmsr(msr, &eax, &edx);
 						hmsr[i].index = gmsr[i].index = msr;
 						hmsr[i].data = gmsr[i].data = ((u64)edx << 32) | (u64)eax;
@@ -324,7 +324,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 					vcpu->vmcs.control_VM_entry_MSR_load_address_full=(u32)hva2spa((void*)vcpu->vmx_vaddr_msr_area_guest);
 					vcpu->vmcs.control_VM_entry_MSR_load_address_high=0;
 					vcpu->vmcs.control_VM_entry_MSR_load_count=vmx_msr_area_msrs_count;
-				  vcpu->vmcs.control_VM_exit_MSR_store_address_full=(u32)hva2spa((void*)vcpu->vmx_vaddr_msr_area_guest);
+					vcpu->vmcs.control_VM_exit_MSR_store_address_full=(u32)hva2spa((void*)vcpu->vmx_vaddr_msr_area_guest);
 					vcpu->vmcs.control_VM_exit_MSR_store_address_high=0;
 					vcpu->vmcs.control_VM_exit_MSR_store_count=vmx_msr_area_msrs_count;
 			}
@@ -511,7 +511,7 @@ void emhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu){
   //clear VMCS
   memset((void *)&vcpu->vmcs, 0, sizeof(struct _vmx_vmcsfields));
 
-
+#if 0
 	//initialize CPU MTRRs for guest local copy
 	memset((void *)&vcpu->vmx_guestmtrrmsrs, 0, sizeof(struct _guestmtrrmsrs) * NUM_MTRR_MSRS);
 	
@@ -576,6 +576,8 @@ void emhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu){
 		rdmsr(IA32_MTRR_PHYSMASK7, &eax, &edx);
 		vcpu->vmx_guestmtrrmsrs[28].lodword = eax; vcpu->vmx_guestmtrrmsrs[28].hidword=edx;
 	}
+
+#endif
 	
 	//INT 15h E820 hook enablement for VMX unrestricted guest mode
 	//note: this only happens for the BSP

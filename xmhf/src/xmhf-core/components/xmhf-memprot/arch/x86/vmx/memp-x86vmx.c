@@ -52,9 +52,9 @@
 
 //----------------------------------------------------------------------
 // local (static) support function forward declarations
-static void _vmx_gathermemorytypes(VCPU *vcpu);
+void _vmx_gathermemorytypes(VCPU *vcpu);
 static u32 _vmx_getmemorytypeforphysicalpage(VCPU *vcpu, u64 pagebaseaddr);
-static void _vmx_setupEPT(VCPU *vcpu);
+void _vmx_setupEPT(VCPU *vcpu);
 
 //======================================================================
 // global interfaces (functions) exported by this component
@@ -79,7 +79,7 @@ void emhf_memprot_arch_x86vmx_initialize(VCPU *vcpu){
 // local (static) support functions follow
 
 //---gather memory types for system physical memory------------------------------
-static void _vmx_gathermemorytypes(VCPU *vcpu){
+void _vmx_gathermemorytypes(VCPU *vcpu){
  	u32 eax, ebx, ecx, edx;
   u32 index=0;
   
@@ -321,7 +321,7 @@ static u32 _vmx_getmemorytypeforphysicalpage(VCPU *vcpu, u64 pagebaseaddr){
 
 
 //---setup EPT for VMX----------------------------------------------------------
-static void _vmx_setupEPT(VCPU *vcpu){
+void _vmx_setupEPT(VCPU *vcpu){
 	//step-1: tie in EPT PML4 structures
 	//note: the default memory type (usually WB) should be determined using 
 	//IA32_MTRR_DEF_TYPE_MSR. If MTRR's are not enabled (really?)

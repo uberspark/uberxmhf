@@ -228,7 +228,7 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
   
 //---intercept handler (WRMSR)--------------------------------------------------
 static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
-	//printf("\nCPU(0x%02x): WRMSR 0x%08x", vcpu->id, r->ecx);
+	printf("\nCPU(0x%02x): WRMSR 0x%08x", vcpu->id, r->ecx);
 
 	switch(r->ecx){
 		case IA32_SYSENTER_CS_MSR:
@@ -240,6 +240,8 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 		case IA32_SYSENTER_ESP_MSR:
 			vcpu->vmcs.guest_SYSENTER_ESP = (unsigned long long)r->eax;
 			break;
+
+#if 0
 		//MTRR MSR handling
 		case IA32_MTRRCAP: 					vcpu->vmx_guestmtrrmsrs[0].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[0].lodword= r->eax;  break;
 		case IA32_MTRR_DEF_TYPE: 		vcpu->vmx_guestmtrrmsrs[1].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[1].lodword= r->eax;  break;  
@@ -270,7 +272,7 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 		case IA32_MTRR_PHYSMASK6:		vcpu->vmx_guestmtrrmsrs[26].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[26].lodword= r->eax;  break;			
 		case IA32_MTRR_PHYSBASE7:		vcpu->vmx_guestmtrrmsrs[27].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[27].lodword= r->eax;  break;			
 		case IA32_MTRR_PHYSMASK7:		vcpu->vmx_guestmtrrmsrs[28].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[28].lodword= r->eax;  break;	
-
+#endif
 		default:{
 			asm volatile ("wrmsr\r\n"
           : //no outputs
@@ -278,6 +280,16 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 			break;
 		}
 	}
+	
+	//sync EPT mappings with new MTRR changes (if any)
+	{
+		extern void _vmx_gathermemorytypes(VCPU *vcpu);
+		extern void _vmx_setupEPT(VCPU *vcpu);
+		_vmx_gathermemorytypes(vcpu);
+		_vmx_setupEPT(vcpu);
+		printf("\nCPU(0x%02x): WRMSR - synced EPT mappings");
+	}
+	
 	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 	//printf("\nCPU(0x%02x): WRMSR end", vcpu->id);
 
@@ -285,7 +297,7 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 
 //---intercept handler (RDMSR)--------------------------------------------------
 static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
-	//printf("\nCPU(0x%02x): RDMSR 0x%08x", vcpu->id, r->ecx);
+	printf("\nCPU(0x%02x): RDMSR 0x%08x", vcpu->id, r->ecx);
 
 	switch(r->ecx){
 		case IA32_SYSENTER_CS_MSR:
@@ -301,6 +313,7 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 			r->edx = 0;
 			break;
 
+#if 0
 		//MTRR MSR handling
 		case IA32_MTRRCAP: 					r->edx = vcpu->vmx_guestmtrrmsrs[0].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[0].lodword;  break;
 		case IA32_MTRR_DEF_TYPE: 		r->edx = vcpu->vmx_guestmtrrmsrs[1].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[1].lodword;  break;  
@@ -331,42 +344,8 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 		case IA32_MTRR_PHYSMASK6:		r->edx = vcpu->vmx_guestmtrrmsrs[26].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[26].lodword;  break;			
 		case IA32_MTRR_PHYSBASE7:		r->edx = vcpu->vmx_guestmtrrmsrs[27].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[27].lodword;  break;			
 		case IA32_MTRR_PHYSMASK7:		r->edx = vcpu->vmx_guestmtrrmsrs[28].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[28].lodword;  break;	
+#endif
 
-
-/*    case IA32_MTRRCAP: 					
-		case IA32_MTRR_DEF_TYPE: 		  
-		case IA32_MTRR_FIX64K_00000:
-		case IA32_MTRR_FIX16K_80000:	
-		case IA32_MTRR_FIX16K_A0000:	
-		case IA32_MTRR_FIX4K_C0000:			
-		case IA32_MTRR_FIX4K_C8000:			
-		case IA32_MTRR_FIX4K_D0000:			
-		case IA32_MTRR_FIX4K_D8000:			
-		case IA32_MTRR_FIX4K_E0000:			
-		case IA32_MTRR_FIX4K_E8000:			
-		case IA32_MTRR_FIX4K_F0000:			
-		case IA32_MTRR_FIX4K_F8000:			
-		case IA32_MTRR_PHYSBASE0:					
-		case IA32_MTRR_PHYSMASK0:					
-		case IA32_MTRR_PHYSBASE1:					
-		case IA32_MTRR_PHYSMASK1:					
-		case IA32_MTRR_PHYSBASE2:					
-		case IA32_MTRR_PHYSMASK2:					
-		case IA32_MTRR_PHYSBASE3:					
-		case IA32_MTRR_PHYSMASK3:					
-		case IA32_MTRR_PHYSBASE4:					
-		case IA32_MTRR_PHYSMASK4:					
-		case IA32_MTRR_PHYSBASE5:					
-		case IA32_MTRR_PHYSMASK5:					
-		case IA32_MTRR_PHYSBASE6:					
-		case IA32_MTRR_PHYSMASK6:					
-		case IA32_MTRR_PHYSBASE7:					
-		case IA32_MTRR_PHYSMASK7:			
-			_vmx_lib_reboot(vcpu);
-			//we never get here
-			printf("\nCPU(0x%02x): halting on RDMSR!");
-			HALT();
-	*/
 		default:{
 			asm volatile ("rdmsr\r\n"
           : "=a"(r->eax), "=d"(r->edx)
@@ -375,7 +354,10 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 		}
 	}
 	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
-	//printf("\nCPU(0x%02x): RDMSR (0x%08x)=0x%08x%08x", vcpu->id, r->ecx, r->edx, r->eax);
+
+
+
+	printf("\nCPU(0x%02x): RDMSR (0x%08x)=0x%08x%08x", vcpu->id, r->ecx, r->edx, r->eax);
 
 }
 
