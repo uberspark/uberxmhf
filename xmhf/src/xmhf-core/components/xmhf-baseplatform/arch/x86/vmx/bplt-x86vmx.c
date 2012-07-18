@@ -54,14 +54,15 @@
 //initialize CPU state
 void emhf_baseplatform_arch_x86vmx_cpuinitialize(void){
     	u32 bcr0;
-	    txt_heap_t *txt_heap;
-        os_mle_data_t *os_mle_data;
+	    txt_heap_t  __attribute__((unused)) *txt_heap;
+        os_mle_data_t __attribute__((unused)) *os_mle_data ;
   
 	    //set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
 		bcr0 = read_cr0();
 		bcr0 |= 0x20;
 		write_cr0(bcr0);
 
+#if 0
         // restore pre-SENTER MTRRs that were overwritten for SINIT launch 
         // NOTE: XXX TODO; BSP MTRRs ALREADY RESTORED IN SL; IS IT
         //   DANGEROUS TO DO THIS TWICE? 
@@ -76,4 +77,6 @@ void emhf_baseplatform_arch_x86vmx_cpuinitialize(void){
              HALT();
         }
         restore_mtrrs(&(os_mle_data->saved_mtrr_state));
+#endif
+      
 }

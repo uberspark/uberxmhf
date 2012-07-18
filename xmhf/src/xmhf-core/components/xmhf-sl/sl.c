@@ -147,6 +147,7 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 	//sanitize cache/MTRR/SMRAM (most important is to ensure that MTRRs 
 	//do not contain weird mappings)
+#if 0
     emhf_sl_arch_sanitize_post_launch();
     
     //check SL integrity
@@ -154,14 +155,17 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
         printf("\nsl_intergrity_check SUCCESS");
     else
         printf("\nsl_intergrity_check FAILURE");
+#endif
 
 	//get a pointer to the runtime header and make sure its sane
  	rpb=(RPB *)PAGE_SIZE_2M;	//runtime starts at offset 2M from sl base
 	printf("\nSL: RPB, magic=0x%08x", rpb->magic);
 	ASSERT(rpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
-    
+
+#if 0    
 	//setup DMA protection on runtime (secure loader is already DMA protected)
 	emhf_sl_arch_early_dmaprot_init(slpb.runtime_size);
+#endif
 		
 	//populate runtime parameter block fields
 		rpb->isEarlyInit = slpb.isEarlyInit; //tell runtime if we started "early" or "late"

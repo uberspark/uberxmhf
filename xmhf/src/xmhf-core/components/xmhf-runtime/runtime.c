@@ -96,7 +96,7 @@ void emhf_runtime_entry(void){
 	//__asm__ __volatile__ ("int $0x03\r\n");
 
 
-
+#if 0
 #if defined (__DMAPROT__)
 	{
 			u64 protectedbuffer_paddr;
@@ -121,6 +121,7 @@ void emhf_runtime_entry(void){
 				rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
 	}
 #endif //__DMAPROT__
+#endif
 
 	printf("\nPreSelectors CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", 
 			(u16)read_segreg_cs(), (u16)read_segreg_ds(),
