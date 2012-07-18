@@ -121,6 +121,13 @@ void emhf_runtime_entry(void){
 				rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
 	}
 #endif //__DMAPROT__
+
+#else
+	{
+		extern void vmx_eap_zap(void);
+		vmx_eap_zap();
+	}
+
 #endif
 
 	printf("\nPreSelectors CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", 
