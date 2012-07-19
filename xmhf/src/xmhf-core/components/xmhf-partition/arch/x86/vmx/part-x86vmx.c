@@ -414,7 +414,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 				vcpu->vmcs.guest_SS_access_rights = 0x93; //present, system, read-write accessed
 
 			//activate secondary processor controls
-      vcpu->vmcs.control_VMX_seccpu_based = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR];
+			vcpu->vmcs.control_VMX_seccpu_based = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR];
 			vcpu->vmcs.control_VMX_cpu_based |= (1 << 31); //activate secondary processor controls
 
 			//setup unrestricted guest
@@ -424,12 +424,19 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 			vcpu->vmcs.control_VMX_seccpu_based |= (1 << 6); 
 			
 			//setup VMCS link pointer
-		  vcpu->vmcs.guest_VMCS_link_pointer_full = (u32)0xFFFFFFFFUL;
+			vcpu->vmcs.guest_VMCS_link_pointer_full = (u32)0xFFFFFFFFUL;
 			vcpu->vmcs.guest_VMCS_link_pointer_high = (u32)0xFFFFFFFFUL;
 	
 			//setup NMI intercept for core-quiescing
 			vcpu->vmcs.control_VMX_pin_based |= (1 << 3);	//intercept NMIs
 	
+			//trap access to CR0 fixed 1-bits
+			vcpu->vmcs.control_CR0_mask = vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR];
+			vcpu->vmcs.control_CR0_mask &= ~(CR0_PE);
+			vcpu->vmcs.control_CR0_mask &= ~(CR0_PG);
+			vcpu->vmcs.control_CR0_mask |= CR0_CD;
+			vcpu->vmcs.control_CR0_mask |= CR0_NW;
+			vcpu->vmcs.control_CR0_shadow = vcpu->vmcs.guest_CR0;
 			
 			//trap access to CR4 fixed bits (this includes the VMXE bit)
 			vcpu->vmcs.control_CR4_mask = vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR];  

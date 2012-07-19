@@ -430,6 +430,24 @@ static void _vmx_handle_intercept_ioportaccess(VCPU *vcpu, struct regs *r){
 }
 
 
+//---CR0 access handler-------------------------------------------------
+static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gpr, u32 tofrom){
+	u32 cr0_value;
+	
+	ASSERT(tofrom == VMX_CRX_ACCESS_TO);
+	
+	cr0_value = *((u32 *)_vmx_decode_reg(gpr, vcpu, r));
+
+	printf("\n[cr0-%02x] MOV TO, current=0x%08x, proposed=0x%08x", vcpu->id,
+		(u32)vcpu->vmcs.guest_CR0, cr0_value);
+
+	vcpu->vmcs.control_CR0_shadow = cr0_value;
+	vcpu->vmcs.guest_CR0 = cr0_value;
+	
+	//flush mappings
+	emhf_memprot_arch_x86vmx_flushmappings(vcpu);
+}
+
 //---CR4 access handler---------------------------------------------------------
 static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gpr, u32 tofrom){
 	ASSERT(tofrom == VMX_CRX_ACCESS_TO);
@@ -564,6 +582,10 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			(u32) (((u64)vcpu->vmcs.info_exit_qualification & 0x0000000000000030ULL) >> (u64)4); 
 			//printf("\ncrx=%u, gpr=%u, tofrom=%u", crx, gpr, tofrom);
 			switch(crx){
+				case 0x0: //CR0 access
+					vmx_handle_intercept_cr0access_ug(vcpu, r, gpr, tofrom);	
+					break;
+				
 				case 0x4: //CR4 access
 					if(!vcpu->vmx_guest_unrestricted){
 						printf("\nHALT: v86 monitor based real-mode exec. unsupported!");
