@@ -282,13 +282,13 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 	}
 	
 	//sync EPT mappings with new MTRR changes (if any)
-	{
+	/*{
 		extern void _vmx_gathermemorytypes(VCPU *vcpu);
 		extern void _vmx_setupEPT(VCPU *vcpu);
 		_vmx_gathermemorytypes(vcpu);
 		_vmx_setupEPT(vcpu);
 		printf("\nCPU(0x%02x): WRMSR - synced EPT mappings");
-	}
+	}*/
 	
 	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 	//printf("\nCPU(0x%02x): WRMSR end", vcpu->id);
@@ -442,7 +442,7 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 		(u32)vcpu->vmcs.guest_CR0, cr0_value);
 
 	vcpu->vmcs.control_CR0_shadow = cr0_value;
-	vcpu->vmcs.guest_CR0 = cr0_value;
+	vcpu->vmcs.guest_CR0 = cr0_value & ~(CR0_CD | CR0_NW);
 	
 	//flush mappings
 	emhf_memprot_arch_x86vmx_flushmappings(vcpu);
