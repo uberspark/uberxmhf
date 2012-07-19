@@ -609,7 +609,9 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			break;
 			
 		case VMX_VMEXIT_WRMSR:
+			emhf_smpguest_arch_x86vmx_quiesce(vcpu);
 			_vmx_handle_intercept_wrmsr(vcpu, r);
+			emhf_smpguest_arch_x86vmx_endquiesce(vcpu);
 			break;
 			
 		case VMX_VMEXIT_CPUID:
