@@ -228,7 +228,7 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
   
 //---intercept handler (WRMSR)--------------------------------------------------
 static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
-	printf("\nCPU(0x%02x): WRMSR 0x%08x", vcpu->id, r->ecx);
+	//printf("\nCPU(0x%02x): WRMSR 0x%08x", vcpu->id, r->ecx);
 
 	switch(r->ecx){
 		case IA32_SYSENTER_CS_MSR:
@@ -240,39 +240,6 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 		case IA32_SYSENTER_ESP_MSR:
 			vcpu->vmcs.guest_SYSENTER_ESP = (unsigned long long)r->eax;
 			break;
-
-#if 0
-		//MTRR MSR handling
-		case IA32_MTRRCAP: 					vcpu->vmx_guestmtrrmsrs[0].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[0].lodword= r->eax;  break;
-		case IA32_MTRR_DEF_TYPE: 		vcpu->vmx_guestmtrrmsrs[1].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[1].lodword= r->eax;  break;  
-		case IA32_MTRR_FIX64K_00000:vcpu->vmx_guestmtrrmsrs[2].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[2].lodword= r->eax;  break;
-		case IA32_MTRR_FIX16K_80000:vcpu->vmx_guestmtrrmsrs[3].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[3].lodword= r->eax;  break;	
-		case IA32_MTRR_FIX16K_A0000:vcpu->vmx_guestmtrrmsrs[4].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[4].lodword= r->eax;  break;	
-		case IA32_MTRR_FIX4K_C0000:	vcpu->vmx_guestmtrrmsrs[5].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[5].lodword= r->eax;  break;		
-		case IA32_MTRR_FIX4K_C8000:	vcpu->vmx_guestmtrrmsrs[6].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[6].lodword= r->eax;  break;		
-		case IA32_MTRR_FIX4K_D0000:	vcpu->vmx_guestmtrrmsrs[7].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[7].lodword= r->eax;  break;		
-		case IA32_MTRR_FIX4K_D8000:	vcpu->vmx_guestmtrrmsrs[8].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[8].lodword= r->eax;  break;		
-		case IA32_MTRR_FIX4K_E0000:	vcpu->vmx_guestmtrrmsrs[9].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[9].lodword= r->eax;  break;		
-		case IA32_MTRR_FIX4K_E8000:	vcpu->vmx_guestmtrrmsrs[10].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[10].lodword= r->eax;  break;		
-		case IA32_MTRR_FIX4K_F0000:	vcpu->vmx_guestmtrrmsrs[11].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[11].lodword= r->eax;  break;		
-		case IA32_MTRR_FIX4K_F8000:	vcpu->vmx_guestmtrrmsrs[12].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[12].lodword= r->eax;  break;		
-		case IA32_MTRR_PHYSBASE0:		vcpu->vmx_guestmtrrmsrs[13].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[13].lodword= r->eax;  break;			
-		case IA32_MTRR_PHYSMASK0:		vcpu->vmx_guestmtrrmsrs[14].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[14].lodword= r->eax;  break;			
-		case IA32_MTRR_PHYSBASE1:		vcpu->vmx_guestmtrrmsrs[15].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[15].lodword= r->eax;  break;			
-		case IA32_MTRR_PHYSMASK1:		vcpu->vmx_guestmtrrmsrs[16].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[16].lodword= r->eax;  break;			
-		case IA32_MTRR_PHYSBASE2:		vcpu->vmx_guestmtrrmsrs[17].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[17].lodword= r->eax;  break;			
-		case IA32_MTRR_PHYSMASK2:		vcpu->vmx_guestmtrrmsrs[18].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[18].lodword= r->eax;  break;			
-		case IA32_MTRR_PHYSBASE3:		vcpu->vmx_guestmtrrmsrs[19].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[19].lodword= r->eax;  break;			
-		case IA32_MTRR_PHYSMASK3:		vcpu->vmx_guestmtrrmsrs[20].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[20].lodword= r->eax;  break;			
-		case IA32_MTRR_PHYSBASE4:		vcpu->vmx_guestmtrrmsrs[21].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[21].lodword= r->eax;  break;			
-		case IA32_MTRR_PHYSMASK4:		vcpu->vmx_guestmtrrmsrs[22].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[22].lodword= r->eax;  break;			
-		case IA32_MTRR_PHYSBASE5:		vcpu->vmx_guestmtrrmsrs[23].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[23].lodword= r->eax;  break;			
-		case IA32_MTRR_PHYSMASK5:		vcpu->vmx_guestmtrrmsrs[24].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[24].lodword= r->eax;  break;			
-		case IA32_MTRR_PHYSBASE6:		vcpu->vmx_guestmtrrmsrs[25].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[25].lodword= r->eax;  break;			
-		case IA32_MTRR_PHYSMASK6:		vcpu->vmx_guestmtrrmsrs[26].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[26].lodword= r->eax;  break;			
-		case IA32_MTRR_PHYSBASE7:		vcpu->vmx_guestmtrrmsrs[27].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[27].lodword= r->eax;  break;			
-		case IA32_MTRR_PHYSMASK7:		vcpu->vmx_guestmtrrmsrs[28].hidword= r->edx;  vcpu->vmx_guestmtrrmsrs[28].lodword= r->eax;  break;	
-#endif
 		default:{
 			asm volatile ("wrmsr\r\n"
           : //no outputs
@@ -292,12 +259,11 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 	
 	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 	//printf("\nCPU(0x%02x): WRMSR end", vcpu->id);
-
 }
 
 //---intercept handler (RDMSR)--------------------------------------------------
 static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
-	printf("\nCPU(0x%02x): RDMSR 0x%08x", vcpu->id, r->ecx);
+	//printf("\nCPU(0x%02x): RDMSR 0x%08x", vcpu->id, r->ecx);
 
 	switch(r->ecx){
 		case IA32_SYSENTER_CS_MSR:
@@ -312,40 +278,6 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 			r->eax = (u32)vcpu->vmcs.guest_SYSENTER_ESP;
 			r->edx = 0;
 			break;
-
-#if 0
-		//MTRR MSR handling
-		case IA32_MTRRCAP: 					r->edx = vcpu->vmx_guestmtrrmsrs[0].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[0].lodword;  break;
-		case IA32_MTRR_DEF_TYPE: 		r->edx = vcpu->vmx_guestmtrrmsrs[1].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[1].lodword;  break;  
-		case IA32_MTRR_FIX64K_00000:r->edx = vcpu->vmx_guestmtrrmsrs[2].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[2].lodword;  break;
-		case IA32_MTRR_FIX16K_80000:r->edx = vcpu->vmx_guestmtrrmsrs[3].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[3].lodword;  break;	
-		case IA32_MTRR_FIX16K_A0000:r->edx = vcpu->vmx_guestmtrrmsrs[4].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[4].lodword;  break;	
-		case IA32_MTRR_FIX4K_C0000:	r->edx = vcpu->vmx_guestmtrrmsrs[5].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[5].lodword;  break;		
-		case IA32_MTRR_FIX4K_C8000:	r->edx = vcpu->vmx_guestmtrrmsrs[6].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[6].lodword;  break;		
-		case IA32_MTRR_FIX4K_D0000:	r->edx = vcpu->vmx_guestmtrrmsrs[7].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[7].lodword;  break;		
-		case IA32_MTRR_FIX4K_D8000:	r->edx = vcpu->vmx_guestmtrrmsrs[8].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[8].lodword;  break;		
-		case IA32_MTRR_FIX4K_E0000:	r->edx = vcpu->vmx_guestmtrrmsrs[9].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[9].lodword;  break;		
-		case IA32_MTRR_FIX4K_E8000:	r->edx = vcpu->vmx_guestmtrrmsrs[10].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[10].lodword;  break;		
-		case IA32_MTRR_FIX4K_F0000:	r->edx = vcpu->vmx_guestmtrrmsrs[11].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[11].lodword;  break;		
-		case IA32_MTRR_FIX4K_F8000:	r->edx = vcpu->vmx_guestmtrrmsrs[12].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[12].lodword;  break;		
-		case IA32_MTRR_PHYSBASE0:		r->edx = vcpu->vmx_guestmtrrmsrs[13].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[13].lodword;  break;			
-		case IA32_MTRR_PHYSMASK0:		r->edx = vcpu->vmx_guestmtrrmsrs[14].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[14].lodword;  break;			
-		case IA32_MTRR_PHYSBASE1:		r->edx = vcpu->vmx_guestmtrrmsrs[15].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[15].lodword;  break;			
-		case IA32_MTRR_PHYSMASK1:		r->edx = vcpu->vmx_guestmtrrmsrs[16].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[16].lodword;  break;			
-		case IA32_MTRR_PHYSBASE2:		r->edx = vcpu->vmx_guestmtrrmsrs[17].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[17].lodword;  break;			
-		case IA32_MTRR_PHYSMASK2:		r->edx = vcpu->vmx_guestmtrrmsrs[18].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[18].lodword;  break;			
-		case IA32_MTRR_PHYSBASE3:		r->edx = vcpu->vmx_guestmtrrmsrs[19].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[19].lodword;  break;			
-		case IA32_MTRR_PHYSMASK3:		r->edx = vcpu->vmx_guestmtrrmsrs[20].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[20].lodword;  break;			
-		case IA32_MTRR_PHYSBASE4:		r->edx = vcpu->vmx_guestmtrrmsrs[21].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[21].lodword;  break;			
-		case IA32_MTRR_PHYSMASK4:		r->edx = vcpu->vmx_guestmtrrmsrs[22].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[22].lodword;  break;			
-		case IA32_MTRR_PHYSBASE5:		r->edx = vcpu->vmx_guestmtrrmsrs[23].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[23].lodword;  break;			
-		case IA32_MTRR_PHYSMASK5:		r->edx = vcpu->vmx_guestmtrrmsrs[24].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[24].lodword;  break;			
-		case IA32_MTRR_PHYSBASE6:		r->edx = vcpu->vmx_guestmtrrmsrs[25].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[25].lodword;  break;			
-		case IA32_MTRR_PHYSMASK6:		r->edx = vcpu->vmx_guestmtrrmsrs[26].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[26].lodword;  break;			
-		case IA32_MTRR_PHYSBASE7:		r->edx = vcpu->vmx_guestmtrrmsrs[27].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[27].lodword;  break;			
-		case IA32_MTRR_PHYSMASK7:		r->edx = vcpu->vmx_guestmtrrmsrs[28].hidword;  r->eax = vcpu->vmx_guestmtrrmsrs[28].lodword;  break;	
-#endif
-
 		default:{
 			asm volatile ("rdmsr\r\n"
           : "=a"(r->eax), "=d"(r->edx)
@@ -355,10 +287,7 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 	}
 	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 
-
-
-	printf("\nCPU(0x%02x): RDMSR (0x%08x)=0x%08x%08x", vcpu->id, r->ecx, r->edx, r->eax);
-
+	//printf("\nCPU(0x%02x): RDMSR (0x%08x)=0x%08x%08x", vcpu->id, r->ecx, r->edx, r->eax);
 }
 
 
