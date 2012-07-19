@@ -367,11 +367,12 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	
 	cr0_value = *((u32 *)_vmx_decode_reg(gpr, vcpu, r));
 
-	printf("\n[cr0-%02x] MOV TO, current=0x%08x, proposed=0x%08x", vcpu->id,
-		(u32)vcpu->vmcs.guest_CR0, cr0_value);
+	//printf("\n[cr0-%02x] MOV TO, current=0x%08x, proposed=0x%08x", vcpu->id,
+	//	(u32)vcpu->vmcs.guest_CR0, cr0_value);
 
 	vcpu->vmcs.control_CR0_shadow = cr0_value;
 	vcpu->vmcs.guest_CR0 = cr0_value & ~(CR0_CD | CR0_NW);
+	//vcpu->vmcs.guest_CR0 = cr0_value;
 	
 	//flush mappings
 	emhf_memprot_arch_x86vmx_flushmappings(vcpu);
@@ -531,9 +532,9 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			break;
 			
 		case VMX_VMEXIT_WRMSR:
-			emhf_smpguest_arch_x86vmx_quiesce(vcpu);
+			//emhf_smpguest_arch_x86vmx_quiesce(vcpu);
 			_vmx_handle_intercept_wrmsr(vcpu, r);
-			emhf_smpguest_arch_x86vmx_endquiesce(vcpu);
+			//emhf_smpguest_arch_x86vmx_endquiesce(vcpu);
 			break;
 			
 		case VMX_VMEXIT_CPUID:
