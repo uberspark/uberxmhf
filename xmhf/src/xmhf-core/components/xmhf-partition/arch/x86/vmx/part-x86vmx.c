@@ -420,9 +420,6 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 			//setup unrestricted guest
 			vcpu->vmcs.control_VMX_seccpu_based |= (1 << 7); //enable unrestricted guest
 
-			//intercept WBINVD
-			vcpu->vmcs.control_VMX_seccpu_based |= (1 << 6); 
-			
 			//setup VMCS link pointer
 			vcpu->vmcs.guest_VMCS_link_pointer_full = (u32)0xFFFFFFFFUL;
 			vcpu->vmcs.guest_VMCS_link_pointer_high = (u32)0xFFFFFFFFUL;

@@ -528,13 +528,6 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		//--------------------------------------------------------------
 		//xmhf-core only intercepts
 		//--------------------------------------------------------------
-		case VMX_VMEXIT_WBINVD:{
-			printf("\nCPU(0x%02x): WBINVD", vcpu->id);
-			emhf_memprot_arch_x86vmx_flushmappings(vcpu);
-			vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
-		}
-		break;
-
 		case VMX_VMEXIT_HLT:
 			if(!vcpu->vmx_guest_unrestricted){
 				//isl_handleintercept_hlt(vcpu, r);
