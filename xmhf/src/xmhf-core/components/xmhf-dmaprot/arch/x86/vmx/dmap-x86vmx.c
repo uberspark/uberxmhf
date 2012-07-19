@@ -622,8 +622,7 @@ static void _vtd_invalidatecaches(void){
 #define PAE_get_ptaddress(x) ( (u32) ( (u64)(x) & (u64)0x3FFFFFFFFFFFF000ULL ))
 
 
-//selective DRTM/DMAPROT 
-#if 1
+#if !defined (__DRTM_DMA_PROTECTION__)
 void vmx_eap_zap(void){
 	ACPI_RSDP rsdp;
 	ACPI_RSDT rsdt;
@@ -633,52 +632,52 @@ void vmx_eap_zap(void){
 	VTD_DMAR dmar;
 	u32 i, dmarfound;
 	u32 dmaraddrphys, remappingstructuresaddrphys;
-	
-	
+
+
 	//zero out rsdp and rsdt structures
 	memset(&rsdp, 0, sizeof(ACPI_RSDP));
 	memset(&rsdt, 0, sizeof(ACPI_RSDT));
 
-  //get ACPI RSDP
-  status=emhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
-  ASSERT(status != 0);	//we need a valid RSDP to proceed
-  printf("\n%s: RSDP at %08x", __FUNCTION__, status);
-  
+	//get ACPI RSDP
+	status=emhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
+	ASSERT(status != 0);	//we need a valid RSDP to proceed
+	printf("\n%s: RSDP at %08x", __FUNCTION__, status);
+
 	//grab ACPI RSDT
 	emhf_baseplatform_arch_flat_copy((u8 *)&rsdt, (u8 *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
 	printf("\n%s: RSDT at %08x, len=%u bytes, hdrlen=%u bytes", 
 		__FUNCTION__, rsdp.rsdtaddress, rsdt.length, sizeof(ACPI_RSDT));
-	
+
 	//get the RSDT entry list
 	num_rsdtentries = (rsdt.length - sizeof(ACPI_RSDT))/ sizeof(u32);
 	ASSERT(num_rsdtentries < ACPI_MAX_RSDT_ENTRIES);
 	emhf_baseplatform_arch_flat_copy((u8 *)&rsdtentries, (u8 *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
 			sizeof(u32)*num_rsdtentries);			
-  printf("\n%s: RSDT entry list at %08x, len=%u", __FUNCTION__,
+	printf("\n%s: RSDT entry list at %08x, len=%u", __FUNCTION__,
 		(rsdp.rsdtaddress + sizeof(ACPI_RSDT)), num_rsdtentries);
 
 
 	//find the VT-d DMAR table in the list (if any)
-  for(i=0; i< num_rsdtentries; i++){
-  	emhf_baseplatform_arch_flat_copy((u8 *)&dmar, (u8 *)rsdtentries[i], sizeof(VTD_DMAR));  
-    if(dmar.signature == VTD_DMAR_SIGNATURE){
-      dmarfound=1;
-      break;
-    }
-  }     	
-  
-  //if no DMAR table, bail out
+	for(i=0; i< num_rsdtentries; i++){
+		emhf_baseplatform_arch_flat_copy((u8 *)&dmar, (u8 *)rsdtentries[i], sizeof(VTD_DMAR));  
+		if(dmar.signature == VTD_DMAR_SIGNATURE){
+		  dmarfound=1;
+		  break;
+		}
+	}     	
+
+	//if no DMAR table, bail out
 	if(!dmarfound)
-    return;  
+		return;  
 
 	dmaraddrphys = rsdtentries[i]; //DMAR table physical memory address;
-  printf("\n%s: DMAR at %08x", __FUNCTION__, dmaraddrphys);
-  
-  i=0;
-  remappingstructuresaddrphys=dmaraddrphys+sizeof(VTD_DMAR);
-  printf("\n%s: remapping structures at %08x", __FUNCTION__, remappingstructuresaddrphys);
-  
-  //zap VT-d presence in ACPI table...
+	printf("\n%s: DMAR at %08x", __FUNCTION__, dmaraddrphys);
+
+	i=0;
+	remappingstructuresaddrphys=dmaraddrphys+sizeof(VTD_DMAR);
+	printf("\n%s: remapping structures at %08x", __FUNCTION__, remappingstructuresaddrphys);
+
+	//zap VT-d presence in ACPI table...
 	//TODO: we need to be a little elegant here. eventually need to setup 
 	//EPT/NPTs such that the DMAR pages are unmapped for the guest
 	emhf_baseplatform_arch_flat_writeu32(dmaraddrphys, 0UL);

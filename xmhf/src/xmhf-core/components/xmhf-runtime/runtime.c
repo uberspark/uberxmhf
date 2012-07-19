@@ -96,38 +96,37 @@ void emhf_runtime_entry(void){
 	//__asm__ __volatile__ ("int $0x03\r\n");
 
 
-#if 0
-#if defined (__DMAPROT__)
-	{
-			u64 protectedbuffer_paddr;
-			u32 protectedbuffer_vaddr;
-			u32 protectedbuffer_size;
-			
-			protectedbuffer_paddr = hva2spa(&g_rntm_dmaprot_buffer);
-			protectedbuffer_vaddr = (u32)&g_rntm_dmaprot_buffer;
-			protectedbuffer_size = emhf_dmaprot_getbuffersize(ADDR_4GB);
-			ASSERT(protectedbuffer_size <= SIZE_G_RNTM_DMAPROT_BUFFER);
-			
-			printf("\nRuntime: Re-initializing DMA protection...");
-			if(!emhf_dmaprot_initialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size)){
-				printf("\nRuntime: Unable to re-initialize DMA protection. HALT!");
-				HALT();
-			}
+#if defined (__DRTM_DMA_PROTECTION__)
+	#if defined (__DMAPROT__)
+		{
+				u64 protectedbuffer_paddr;
+				u32 protectedbuffer_vaddr;
+				u32 protectedbuffer_size;
+				
+				protectedbuffer_paddr = hva2spa(&g_rntm_dmaprot_buffer);
+				protectedbuffer_vaddr = (u32)&g_rntm_dmaprot_buffer;
+				protectedbuffer_size = emhf_dmaprot_getbuffersize(ADDR_4GB);
+				ASSERT(protectedbuffer_size <= SIZE_G_RNTM_DMAPROT_BUFFER);
+				
+				printf("\nRuntime: Re-initializing DMA protection...");
+				if(!emhf_dmaprot_initialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size)){
+					printf("\nRuntime: Unable to re-initialize DMA protection. HALT!");
+					HALT();
+				}
 
-			//protect SL and runtime memory regions
-			emhf_dmaprot_protect(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimeSize+PAGE_SIZE_2M);
-			printf("\nRuntime: Protected SL+Runtime (%08lx-%08x) from DMA.", 
-				rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M,
-				rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
-	}
-#endif //__DMAPROT__
-
-#else
+				//protect SL and runtime memory regions
+				emhf_dmaprot_protect(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimeSize+PAGE_SIZE_2M);
+				printf("\nRuntime: Protected SL+Runtime (%08lx-%08x) from DMA.", 
+					rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M,
+					rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
+		}
+	#endif //__DMAPROT__
+#else //!__DRTM_DMA_PROTECTION__
+	if(cpu_vendor == CPU_VENDOR_INTEL)
 	{
 		extern void vmx_eap_zap(void);
 		vmx_eap_zap();
 	}
-
 #endif
 
 	printf("\nPreSelectors CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", 

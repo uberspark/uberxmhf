@@ -86,6 +86,7 @@ export MP_VERSION := @MP_VERSION@
 export DEBUG_SERIAL := @DEBUG_SERIAL@
 export DEBUG_SERIAL_PORT := @DEBUG_SERIAL_PORT@
 export DEBUG_VGA := @DEBUG_VGA@
+export DRTM_DMA_PROTECTION := @DRTM_DMA_PROTECTION@
 
 # Path settings; our project is not unique in this aspect
 export prefix=@prefix@
@@ -161,6 +162,11 @@ endif
 ifeq ($(MP_VERSION), y)
 	CFLAGS += -D__MP_VERSION__
 endif
+ifeq ($(DRTM_DMA_PROTECTION), y)
+	CFLAGS += -D__DRTM_DMA_PROTECTION__
+endif
+
+
 
 CFLAGS += -D__DO_SENTER__
 

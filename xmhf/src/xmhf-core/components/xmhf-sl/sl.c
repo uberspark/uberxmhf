@@ -147,7 +147,7 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 	//sanitize cache/MTRR/SMRAM (most important is to ensure that MTRRs 
 	//do not contain weird mappings)
-#if 0
+#if defined (__DRTM_DMA_PROTECTION__)
     emhf_sl_arch_sanitize_post_launch();
     
     //check SL integrity
@@ -162,7 +162,7 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	printf("\nSL: RPB, magic=0x%08x", rpb->magic);
 	ASSERT(rpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
 
-#if 0    
+#if defined (__DRTM_DMA_PROTECTION__)    
 	//setup DMA protection on runtime (secure loader is already DMA protected)
 	emhf_sl_arch_early_dmaprot_init(slpb.runtime_size);
 #endif

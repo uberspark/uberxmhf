@@ -617,7 +617,7 @@ void do_drtm(VCPU __attribute__((unused))*vcpu, u32 slbase){
     printf("\nINIT(early): sent INIT IPI to APs");
 #endif
 
-#if 0
+#if defined (__DRTM_DMA_PROTECTION__)
 
     if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
         if(!svm_verify_platform()) {
@@ -651,7 +651,7 @@ void do_drtm(VCPU __attribute__((unused))*vcpu, u32 slbase){
         HALT();
     }
     
-#else
+#else  //!__DRTM_DMA_PROTECTION__
 	//don't use SKINIT or SENTER
 	{
 		u32 sl_entry_point;
