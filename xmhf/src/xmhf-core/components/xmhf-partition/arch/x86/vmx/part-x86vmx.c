@@ -59,6 +59,7 @@ extern u32 x_gdt_start[], x_idt_start[]; //runtimesup.S
 //critical MSRs that need to be saved/restored across guest VM switches
 static const u32 vmx_msr_area_msrs[] = {
 	MSR_EFER, 
+	MSR_IA32_PAT,
 	MSR_K6_STAR,
 };
 //count of critical MSRs that need to be saved/restored across VM switches
