@@ -510,6 +510,7 @@ static bool txt_parse_sinit(module_t *mod_array, unsigned int mods_count) {
 
 //---svm_verify_platform-------------------------------------------------------
 //do some basic checks on SVM platform to ensure DRTM should work as expected
+static bool svm_verify_platform(void) __attribute__((unused));
 static bool svm_verify_platform(void)
 {
     uint32_t eax, edx, ebx, ecx;
@@ -547,6 +548,7 @@ static bool svm_verify_platform(void)
 //---svm_platform_checks--------------------------------------------------------
 //attempt to detect if there is a platform issue that will prevent
 //successful invocation of skinit
+static bool svm_prepare_cpu(void) __attribute__((unused));
 static bool svm_prepare_cpu(void)
 {
     uint64_t mcg_cap, mcg_stat;
@@ -607,13 +609,15 @@ static bool svm_prepare_cpu(void)
 //inputs: 
 //cpu_vendor = intel or amd
 //slbase= physical memory address of start of sl
-void do_drtm(VCPU *vcpu, u32 slbase){
+void do_drtm(VCPU __attribute__((unused))*vcpu, u32 slbase){
 #ifdef __MP_VERSION__
     ASSERT(vcpu->id == 0);
     //send INIT IPI to all APs 
     send_init_ipi_to_all_APs();
     printf("\nINIT(early): sent INIT IPI to APs");
 #endif
+
+#if defined (__DRTM_DMA_PROTECTION__)
 
     if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
         if(!svm_verify_platform()) {
@@ -646,6 +650,26 @@ void do_drtm(VCPU *vcpu, u32 slbase){
         printf("\nINIT(early): error(fatal), should never come here!");
         HALT();
     }
+    
+#else  //!__DRTM_DMA_PROTECTION__
+	//don't use SKINIT or SENTER
+	{
+		u32 sl_entry_point;
+		u16 *sl_entry_point_offset = (u16 *)slbase;
+		typedef void(*FCALL)(void);
+		FCALL invokesl;
+		
+		printf("\n****** NO DRTM startup ******\n");
+		printf("\nslbase=0x%08x, sl_entry_point_offset=0x%08x", (u32)slbase, *sl_entry_point_offset);
+		sl_entry_point = (u32)slbase + (u32) (*sl_entry_point_offset);
+		invokesl = (FCALL)(u32)sl_entry_point;
+		printf("\nSL entry point to transfer control to: 0x%08x", invokesl);
+		invokesl();
+        printf("\nINIT(early): error(fatal), should never come here!");
+        HALT();
+	}	
+#endif    
+ 
 }
 
 

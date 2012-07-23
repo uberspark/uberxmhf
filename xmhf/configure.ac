@@ -57,6 +57,18 @@ AS_IF([test "x${enable_mp}" != "xno"],
       [MP_VERSION=y],
       [MP_VERSION=n])
 
+
+# selectively disable DRTM/DMA protection
+AC_SUBST([DRTM_DMA_PROTECTION])
+AC_ARG_ENABLE([drtmdmaprotection],
+        AS_HELP_STRING([--enable-drtmdmaprotection@<:@=yes|no@:>@],
+                [enable DRTM and DMA protection]),
+                , [enable_drtmdmaprotection=yes])
+AS_IF([test "x${enable_drtmdmaprotection}" != "xno"],
+      [DRTM_DMA_PROTECTION=y],
+      [DRTM_DMA_PROTECTION=n])
+
+
 # libbaremetal source directory
 AC_SUBST([LIBBAREMETAL_SRC])
 AC_ARG_WITH([libbaremetalsrc],

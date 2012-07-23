@@ -350,11 +350,15 @@ static void _vmx_setupEPT(VCPU *vcpu){
 				//of (rpb->XtVmmRuntimeSize+PAGE_SIZE_2M)
 				//make EMHF physical pages inaccessible
 				if( (paddr >= (rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M)) &&
-					(paddr < (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) )
+					(paddr < (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) ){
 					p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) | (u64)0x0 ;	//not-present
-				else
-					p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) | (u64)0x7 ;	//present
-					
+				}else{
+					if(memorytype == 0)
+						p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) |  (u64)0x7 ;	//present, UC
+					else
+						p_table[k] = (u64) (paddr)  | ((u64)6 << 3) | (u64)0x7 ;	//present, WB, track host MTRR
+				}
+				
 				paddr += PAGE_SIZE_4K;
 			}
 		}

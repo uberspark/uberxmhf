@@ -59,6 +59,7 @@ extern u32 x_gdt_start[], x_idt_start[]; //runtimesup.S
 //critical MSRs that need to be saved/restored across guest VM switches
 static const u32 vmx_msr_area_msrs[] = {
 	MSR_EFER, 
+	MSR_IA32_PAT,
 	MSR_K6_STAR,
 };
 //count of critical MSRs that need to be saved/restored across VM switches
@@ -245,196 +246,187 @@ static void	_vmx_int15_initializehook(VCPU *vcpu){
 
 //--initunrestrictedguestVMCS: initializes VMCS for unrestricted guest ---------
 void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
-		u32 lodword, hidword;
+	u32 lodword, hidword;
 
-			//setup host state
-			vcpu->vmcs.host_CR0 = read_cr0();
-			vcpu->vmcs.host_CR4 = read_cr4();
-			vcpu->vmcs.host_CR3 = read_cr3();
-			vcpu->vmcs.host_CS_selector = read_segreg_cs();
-			vcpu->vmcs.host_DS_selector = read_segreg_ds();
-			vcpu->vmcs.host_ES_selector = read_segreg_es();
-			vcpu->vmcs.host_FS_selector = read_segreg_fs();
-			vcpu->vmcs.host_GS_selector = read_segreg_gs();
-			vcpu->vmcs.host_SS_selector = read_segreg_ss();
-			vcpu->vmcs.host_TR_selector = read_tr_sel();
-			vcpu->vmcs.host_GDTR_base = (u64)(u32)x_gdt_start;
-			vcpu->vmcs.host_IDTR_base = (u64)(u32)emhf_xcphandler_get_idt_start();
-			vcpu->vmcs.host_TR_base = (u64)(u32)g_runtime_TSS;
-			vcpu->vmcs.host_RIP = (u64)(u32)emhf_parteventhub_arch_x86vmx_entry;
-			//store vcpu at TOS
-			vcpu->esp = vcpu->esp - sizeof(u32);
-			*(u32 *)vcpu->esp = (u32)vcpu;
-			vcpu->vmcs.host_RSP = (u64)vcpu->esp;
+	//setup host state
+	vcpu->vmcs.host_CR0 = read_cr0();
+	vcpu->vmcs.host_CR4 = read_cr4();
+	vcpu->vmcs.host_CR3 = read_cr3();
+	vcpu->vmcs.host_CS_selector = read_segreg_cs();
+	vcpu->vmcs.host_DS_selector = read_segreg_ds();
+	vcpu->vmcs.host_ES_selector = read_segreg_es();
+	vcpu->vmcs.host_FS_selector = read_segreg_fs();
+	vcpu->vmcs.host_GS_selector = read_segreg_gs();
+	vcpu->vmcs.host_SS_selector = read_segreg_ss();
+	vcpu->vmcs.host_TR_selector = read_tr_sel();
+	vcpu->vmcs.host_GDTR_base = (u64)(u32)x_gdt_start;
+	vcpu->vmcs.host_IDTR_base = (u64)(u32)emhf_xcphandler_get_idt_start();
+	vcpu->vmcs.host_TR_base = (u64)(u32)g_runtime_TSS;
+	vcpu->vmcs.host_RIP = (u64)(u32)emhf_parteventhub_arch_x86vmx_entry;
+	//store vcpu at TOS
+	vcpu->esp = vcpu->esp - sizeof(u32);
+	*(u32 *)vcpu->esp = (u32)vcpu;
+	vcpu->vmcs.host_RSP = (u64)vcpu->esp;
 			
 			
-			rdmsr(IA32_SYSENTER_CS_MSR, &lodword, &hidword);
-      vcpu->vmcs.host_SYSENTER_CS = lodword;
-      rdmsr(IA32_SYSENTER_ESP_MSR, &lodword, &hidword);
-      vcpu->vmcs.host_SYSENTER_ESP = (u64) (((u64)hidword << 32) | (u64)lodword);
-      rdmsr(IA32_SYSENTER_EIP_MSR, &lodword, &hidword);
-      vcpu->vmcs.host_SYSENTER_EIP = (u64) (((u64)hidword << 32) | (u64)lodword);
-      rdmsr(IA32_MSR_FS_BASE, &lodword, &hidword);
-      vcpu->vmcs.host_FS_base = (u64) (((u64)hidword << 32) | (u64)lodword);
-      rdmsr(IA32_MSR_GS_BASE, &lodword, &hidword);
-      vcpu->vmcs.host_GS_base = (u64) (((u64)hidword << 32) | (u64)lodword);
+	rdmsr(IA32_SYSENTER_CS_MSR, &lodword, &hidword);
+	vcpu->vmcs.host_SYSENTER_CS = lodword;
+	rdmsr(IA32_SYSENTER_ESP_MSR, &lodword, &hidword);
+	vcpu->vmcs.host_SYSENTER_ESP = (u64) (((u64)hidword << 32) | (u64)lodword);
+	rdmsr(IA32_SYSENTER_EIP_MSR, &lodword, &hidword);
+	vcpu->vmcs.host_SYSENTER_EIP = (u64) (((u64)hidword << 32) | (u64)lodword);
+	rdmsr(IA32_MSR_FS_BASE, &lodword, &hidword);
+	vcpu->vmcs.host_FS_base = (u64) (((u64)hidword << 32) | (u64)lodword);
+	rdmsr(IA32_MSR_GS_BASE, &lodword, &hidword);
+	vcpu->vmcs.host_GS_base = (u64) (((u64)hidword << 32) | (u64)lodword);
 
-      //setup default VMX controls
- 			vcpu->vmcs.control_VMX_pin_based = vcpu->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR];
-      vcpu->vmcs.control_VMX_cpu_based = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR];
-			vcpu->vmcs.control_VM_exit_controls = vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR];
- 			vcpu->vmcs.control_VM_entry_controls = vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR];
+	//setup default VMX controls
+	vcpu->vmcs.control_VMX_pin_based = vcpu->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR];
+	vcpu->vmcs.control_VMX_cpu_based = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR];
+	vcpu->vmcs.control_VM_exit_controls = vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR];
+	vcpu->vmcs.control_VM_entry_controls = vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR];
+
+	//IO bitmap support
+	vcpu->vmcs.control_IO_BitmapA_address_full = (u32)hva2spa((void*)vcpu->vmx_vaddr_iobitmap);
+	vcpu->vmcs.control_IO_BitmapA_address_high = 0;
+	vcpu->vmcs.control_IO_BitmapB_address_full = (u32)hva2spa( ((void*)vcpu->vmx_vaddr_iobitmap + PAGE_SIZE_4K) );
+	vcpu->vmcs.control_IO_BitmapB_address_high = 0;
+	vcpu->vmcs.control_VMX_cpu_based |= (1 << 25); //enable use IO Bitmaps
+
+	//Critical MSR load/store
+	{
+		u32 i;
+		msr_entry_t *hmsr = (msr_entry_t *)vcpu->vmx_vaddr_msr_area_host;
+		msr_entry_t *gmsr = (msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest;
+
+		//store initial values of the MSRs
+		for(i=0; i < vmx_msr_area_msrs_count; i++){
+			u32 msr, eax, edx;
+			msr = vmx_msr_area_msrs[i];						
+			rdmsr(msr, &eax, &edx);
+			hmsr[i].index = gmsr[i].index = msr;
+			hmsr[i].data = gmsr[i].data = ((u64)edx << 32) | (u64)eax;
+		}
+
+		//host MSR load on exit, we store it ourselves before entry
+		vcpu->vmcs.control_VM_exit_MSR_load_address_full=(u32)hva2spa((void*)vcpu->vmx_vaddr_msr_area_host);
+		vcpu->vmcs.control_VM_exit_MSR_load_address_high=0;
+		vcpu->vmcs.control_VM_exit_MSR_load_count= vmx_msr_area_msrs_count;
+
+		//guest MSR load on entry, store on exit
+		vcpu->vmcs.control_VM_entry_MSR_load_address_full=(u32)hva2spa((void*)vcpu->vmx_vaddr_msr_area_guest);
+		vcpu->vmcs.control_VM_entry_MSR_load_address_high=0;
+		vcpu->vmcs.control_VM_entry_MSR_load_count=vmx_msr_area_msrs_count;
+		vcpu->vmcs.control_VM_exit_MSR_store_address_full=(u32)hva2spa((void*)vcpu->vmx_vaddr_msr_area_guest);
+		vcpu->vmcs.control_VM_exit_MSR_store_address_high=0;
+		vcpu->vmcs.control_VM_exit_MSR_store_count=vmx_msr_area_msrs_count;
+	}
+
+
+	vcpu->vmcs.control_pagefault_errorcode_mask  = 0x00000000;	//dont be concerned with 
+	vcpu->vmcs.control_pagefault_errorcode_match = 0x00000000; //guest page-faults
+	vcpu->vmcs.control_exception_bitmap = 0;
+	vcpu->vmcs.control_CR3_target_count = 0;
       
- 			//IO bitmap support
-			vcpu->vmcs.control_IO_BitmapA_address_full = (u32)hva2spa((void*)vcpu->vmx_vaddr_iobitmap);
-			vcpu->vmcs.control_IO_BitmapA_address_high = 0;
-			vcpu->vmcs.control_IO_BitmapB_address_full = (u32)hva2spa( ((void*)vcpu->vmx_vaddr_iobitmap + PAGE_SIZE_4K) );
-			vcpu->vmcs.control_IO_BitmapB_address_high = 0;
-			vcpu->vmcs.control_VMX_cpu_based |= (1 << 25); //enable use IO Bitmaps
+	//setup guest state
+	//CR0, real-mode, PE and PG bits cleared
+	vcpu->vmcs.guest_CR0 = vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR];
+	vcpu->vmcs.guest_CR0 &= ~(CR0_PE);
+	vcpu->vmcs.guest_CR0 &= ~(CR0_PG);
+	//CR4, required bits set (usually VMX enabled bit)
+	vcpu->vmcs.guest_CR4 = vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR];
+	//CR3 set to 0, does not matter
+	vcpu->vmcs.guest_CR3 = 0;
+	//IDTR
+	vcpu->vmcs.guest_IDTR_base = 0;
+	vcpu->vmcs.guest_IDTR_limit = 0x3ff;	//16-bit IVT
+	//GDTR
+	vcpu->vmcs.guest_GDTR_base = 0;
+	vcpu->vmcs.guest_GDTR_limit = 0;	//no GDT
+	//LDTR, unusable
+	vcpu->vmcs.guest_LDTR_base = 0;
+	vcpu->vmcs.guest_LDTR_limit = 0;
+	vcpu->vmcs.guest_LDTR_selector = 0;
+	vcpu->vmcs.guest_LDTR_access_rights = 0x10000;
+	//TR, should be usable for VMX to work, but not used by guest
+	vcpu->vmcs.guest_TR_base = 0;
+	vcpu->vmcs.guest_TR_limit = 0;
+	vcpu->vmcs.guest_TR_selector = 0;
+	vcpu->vmcs.guest_TR_access_rights = 0x83; //present, 16-bit busy TSS
+	//RSP
+	vcpu->vmcs.guest_RSP = 0x0;
+	//RIP
+	if(vcpu->isbsp){
+		printf("\nBSP(0x%02x): copying boot-module to boot guest", vcpu->id);
+		memcpy((void *)__GUESTOSBOOTMODULE_BASE, (void *)rpb->XtGuestOSBootModuleBase, rpb->XtGuestOSBootModuleSize);
+			vcpu->vmcs.guest_CS_selector = 0;
+			vcpu->vmcs.guest_CS_base = 0;
+		vcpu->vmcs.guest_RIP = 0x7c00ULL;
+	}else{
+		vcpu->vmcs.guest_CS_selector = (vcpu->sipivector * PAGE_SIZE_4K) >> 4;
+		vcpu->vmcs.guest_CS_base = (vcpu->sipivector * PAGE_SIZE_4K);
+		vcpu->vmcs.guest_RIP = 0x0ULL;
+	}
 
- 			//MSR bitmap support
-			//memset( (void *)vcpu->vmx_vaddr_msrbitmaps, 0xFFFFFFFFUL, PAGE_SIZE_4K); //trap all MSR accesses
-			//vcpu->vmcs.control_MSR_Bitmaps_address_full = (u32)hva2spa((void*)vcpu->vmx_vaddr_msrbitmaps);	 							
-			//vcpu->vmcs.control_MSR_Bitmaps_address_high = 0;
-			//vcpu->vmcs.control_VMX_cpu_based |= (1 << 28); //enable use MSR Bitmaps 
+	vcpu->vmcs.guest_CS_limit = 0xFFFF;	//64K
+	vcpu->vmcs.guest_CS_access_rights = 0x93; //present, system, read-write accessed
 
+	//RFLAGS
+	vcpu->vmcs.guest_RFLAGS = 0; 
+	vcpu->vmcs.guest_RFLAGS &= ~((1<<3)|(1<<5)|(1<<15));	// reserved 0-bits
+	vcpu->vmcs.guest_RFLAGS |= (1<<1);				// reserved 1-bits
+	vcpu->vmcs.guest_RFLAGS |= (1<<9);				// IF = enable 
+	vcpu->vmcs.guest_RFLAGS &= ~(1<<14);			// Nested Task = disable
+	//CS, DS, ES, FS, GS and SS segments
+	vcpu->vmcs.guest_DS_selector = 0;
+	vcpu->vmcs.guest_DS_base = 0;
+	vcpu->vmcs.guest_DS_limit = 0xFFFF;	//64K
+	vcpu->vmcs.guest_DS_access_rights = 0x93; //present, system, read-write accessed
+	vcpu->vmcs.guest_ES_selector = 0;
+	vcpu->vmcs.guest_ES_base = 0;
+	vcpu->vmcs.guest_ES_limit = 0xFFFF;	//64K
+	vcpu->vmcs.guest_ES_access_rights = 0x93; //present, system, read-write accessed
+	vcpu->vmcs.guest_FS_selector = 0;
+	vcpu->vmcs.guest_FS_base = 0;
+	vcpu->vmcs.guest_FS_limit = 0xFFFF;	//64K
+	vcpu->vmcs.guest_FS_access_rights = 0x93; //present, system, read-write accessed
+	vcpu->vmcs.guest_GS_selector = 0;
+	vcpu->vmcs.guest_GS_base = 0;
+	vcpu->vmcs.guest_GS_limit = 0xFFFF;	//64K
+	vcpu->vmcs.guest_GS_access_rights = 0x93; //present, system, read-write accessed
+	vcpu->vmcs.guest_SS_selector = 0x0;
+	vcpu->vmcs.guest_SS_base = 0x0;
+	vcpu->vmcs.guest_SS_limit = 0xFFFF;	//64K
+	vcpu->vmcs.guest_SS_access_rights = 0x93; //present, system, read-write accessed
 
-#if 1
-			//Critical MSR load/store
-			{
-					u32 i;
-  				msr_entry_t *hmsr = (msr_entry_t *)vcpu->vmx_vaddr_msr_area_host;
-					msr_entry_t *gmsr = (msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest;
+	//activate secondary processor controls
+	vcpu->vmcs.control_VMX_seccpu_based = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR];
+	vcpu->vmcs.control_VMX_cpu_based |= (1 << 31); //activate secondary processor controls
 
-					//store initial values of the MSRs
-					for(i=0; i < vmx_msr_area_msrs_count; i++){
-						u32 msr, eax, edx;
-	          msr = vmx_msr_area_msrs[i];						
-						rdmsr(msr, &eax, &edx);
-						hmsr[i].index = gmsr[i].index = msr;
-						hmsr[i].data = gmsr[i].data = ((u64)edx << 32) | (u64)eax;
-					}
-					
-					//host MSR load on exit, we store it ourselves before entry
-					vcpu->vmcs.control_VM_exit_MSR_load_address_full=(u32)hva2spa((void*)vcpu->vmx_vaddr_msr_area_host);
-					vcpu->vmcs.control_VM_exit_MSR_load_address_high=0;
-					vcpu->vmcs.control_VM_exit_MSR_load_count= vmx_msr_area_msrs_count;
-					
-					//guest MSR load on entry, store on exit
-					vcpu->vmcs.control_VM_entry_MSR_load_address_full=(u32)hva2spa((void*)vcpu->vmx_vaddr_msr_area_guest);
-					vcpu->vmcs.control_VM_entry_MSR_load_address_high=0;
-					vcpu->vmcs.control_VM_entry_MSR_load_count=vmx_msr_area_msrs_count;
-				  vcpu->vmcs.control_VM_exit_MSR_store_address_full=(u32)hva2spa((void*)vcpu->vmx_vaddr_msr_area_guest);
-					vcpu->vmcs.control_VM_exit_MSR_store_address_high=0;
-					vcpu->vmcs.control_VM_exit_MSR_store_count=vmx_msr_area_msrs_count;
-			}
-#endif
+	//setup unrestricted guest
+	vcpu->vmcs.control_VMX_seccpu_based |= (1 << 7); //enable unrestricted guest
 
-
-			vcpu->vmcs.control_pagefault_errorcode_mask  = 0x00000000;	//dont be concerned with 
-			vcpu->vmcs.control_pagefault_errorcode_match = 0x00000000; //guest page-faults
-			vcpu->vmcs.control_exception_bitmap = 0;
-			vcpu->vmcs.control_CR3_target_count = 0;
-      
-      //setup guest state
-      	//CR0, real-mode, PE and PG bits cleared
-     		vcpu->vmcs.guest_CR0 = vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR];
-     		vcpu->vmcs.guest_CR0 &= ~(CR0_PE);
-     		vcpu->vmcs.guest_CR0 &= ~(CR0_PG);
-     		//CR4, required bits set (usually VMX enabled bit)
-   			vcpu->vmcs.guest_CR4 = vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR];
-				//CR3 set to 0, does not matter
-				vcpu->vmcs.guest_CR3 = 0;
-				//IDTR
-				vcpu->vmcs.guest_IDTR_base = 0;
-				vcpu->vmcs.guest_IDTR_limit = 0x3ff;	//16-bit IVT
-				//GDTR
-				vcpu->vmcs.guest_GDTR_base = 0;
-				vcpu->vmcs.guest_GDTR_limit = 0;	//no GDT
-				//LDTR, unusable
-				vcpu->vmcs.guest_LDTR_base = 0;
-				vcpu->vmcs.guest_LDTR_limit = 0;
-				vcpu->vmcs.guest_LDTR_selector = 0;
-				vcpu->vmcs.guest_LDTR_access_rights = 0x10000;
-				//TR, should be usable for VMX to work, but not used by guest
-				vcpu->vmcs.guest_TR_base = 0;
-				vcpu->vmcs.guest_TR_limit = 0;
-				vcpu->vmcs.guest_TR_selector = 0;
-				vcpu->vmcs.guest_TR_access_rights = 0x83; //present, 16-bit busy TSS
-				//RSP
-				vcpu->vmcs.guest_RSP = 0x0;
-				//RIP
-			  if(vcpu->isbsp){
-			    printf("\nBSP(0x%02x): copying boot-module to boot guest", vcpu->id);
-  				memcpy((void *)__GUESTOSBOOTMODULE_BASE, (void *)rpb->XtGuestOSBootModuleBase, rpb->XtGuestOSBootModuleSize);
-					vcpu->vmcs.guest_CS_selector = 0;
-					vcpu->vmcs.guest_CS_base = 0;
-    			vcpu->vmcs.guest_RIP = 0x7c00ULL;
-  			}else{
-      		vcpu->vmcs.guest_CS_selector = (vcpu->sipivector * PAGE_SIZE_4K) >> 4;
-      		vcpu->vmcs.guest_CS_base = (vcpu->sipivector * PAGE_SIZE_4K);
-      		vcpu->vmcs.guest_RIP = 0x0ULL;
-				}
-			
-			
-				//vcpu->vmcs.guest_RIP = 0x7c00;
-				//vcpu->vmcs.guest_CS_selector = 0;
-				//vcpu->vmcs.guest_CS_base = 0;
-				
-				vcpu->vmcs.guest_CS_limit = 0xFFFF;	//64K
-				vcpu->vmcs.guest_CS_access_rights = 0x93; //present, system, read-write accessed
-				
-				//RFLAGS
-				vcpu->vmcs.guest_RFLAGS = 0; 
-				vcpu->vmcs.guest_RFLAGS &= ~((1<<3)|(1<<5)|(1<<15));	// reserved 0-bits
-				vcpu->vmcs.guest_RFLAGS |= (1<<1);				// reserved 1-bits
-				vcpu->vmcs.guest_RFLAGS |= (1<<9);				// IF = enable 
-				vcpu->vmcs.guest_RFLAGS &= ~(1<<14);			// Nested Task = disable
-				//CS, DS, ES, FS, GS and SS segments
-				vcpu->vmcs.guest_DS_selector = 0;
-				vcpu->vmcs.guest_DS_base = 0;
-				vcpu->vmcs.guest_DS_limit = 0xFFFF;	//64K
-				vcpu->vmcs.guest_DS_access_rights = 0x93; //present, system, read-write accessed
-				vcpu->vmcs.guest_ES_selector = 0;
-				vcpu->vmcs.guest_ES_base = 0;
-				vcpu->vmcs.guest_ES_limit = 0xFFFF;	//64K
-				vcpu->vmcs.guest_ES_access_rights = 0x93; //present, system, read-write accessed
-				vcpu->vmcs.guest_FS_selector = 0;
-				vcpu->vmcs.guest_FS_base = 0;
-				vcpu->vmcs.guest_FS_limit = 0xFFFF;	//64K
-				vcpu->vmcs.guest_FS_access_rights = 0x93; //present, system, read-write accessed
-				vcpu->vmcs.guest_GS_selector = 0;
-				vcpu->vmcs.guest_GS_base = 0;
-				vcpu->vmcs.guest_GS_limit = 0xFFFF;	//64K
-				vcpu->vmcs.guest_GS_access_rights = 0x93; //present, system, read-write accessed
-				vcpu->vmcs.guest_SS_selector = 0x0;
-				vcpu->vmcs.guest_SS_base = 0x0;
-				vcpu->vmcs.guest_SS_limit = 0xFFFF;	//64K
-				vcpu->vmcs.guest_SS_access_rights = 0x93; //present, system, read-write accessed
-
-			//activate secondary processor controls
-      vcpu->vmcs.control_VMX_seccpu_based = vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR];
-			vcpu->vmcs.control_VMX_cpu_based |= (1 << 31); //activate secondary processor controls
-
-			//setup unrestricted guest
-			vcpu->vmcs.control_VMX_seccpu_based |= (1 << 7); //enable unrestricted guest
-			
-			//setup VMCS link pointer
-		  vcpu->vmcs.guest_VMCS_link_pointer_full = (u32)0xFFFFFFFFUL;
-			vcpu->vmcs.guest_VMCS_link_pointer_high = (u32)0xFFFFFFFFUL;
+	//setup VMCS link pointer
+	vcpu->vmcs.guest_VMCS_link_pointer_full = (u32)0xFFFFFFFFUL;
+	vcpu->vmcs.guest_VMCS_link_pointer_high = (u32)0xFFFFFFFFUL;
 	
-			//setup NMI intercept for core-quiescing
-			vcpu->vmcs.control_VMX_pin_based |= (1 << 3);	//intercept NMIs
+	//setup NMI intercept for core-quiescing
+	vcpu->vmcs.control_VMX_pin_based |= (1 << 3);	//intercept NMIs
 	
+	//trap access to CR0 fixed 1-bits
+	vcpu->vmcs.control_CR0_mask = vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR];
+	vcpu->vmcs.control_CR0_mask &= ~(CR0_PE);
+	vcpu->vmcs.control_CR0_mask &= ~(CR0_PG);
+	vcpu->vmcs.control_CR0_mask |= CR0_CD;
+	vcpu->vmcs.control_CR0_mask |= CR0_NW;
+	vcpu->vmcs.control_CR0_shadow = vcpu->vmcs.guest_CR0;
 			
-			//trap access to CR4 fixed bits (this includes the VMXE bit)
-			vcpu->vmcs.control_CR4_mask = vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR];  
-			vcpu->vmcs.control_CR4_shadow = CR4_VMXE; //let guest know we have VMX enabled
+	//trap access to CR4 fixed bits (this includes the VMXE bit)
+	vcpu->vmcs.control_CR4_mask = vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR];  
+	vcpu->vmcs.control_CR4_shadow = CR4_VMXE; //let guest know we have VMX enabled
 
-	
-			//flush guest TLB to start with
-			__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0);
-
+	//flush guest TLB to start with
+	emhf_memprot_arch_x86vmx_flushmappings(vcpu);
 }
 
 
@@ -511,72 +503,6 @@ void emhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu){
   //clear VMCS
   memset((void *)&vcpu->vmcs, 0, sizeof(struct _vmx_vmcsfields));
 
-
-	//initialize CPU MTRRs for guest local copy
-	memset((void *)&vcpu->vmx_guestmtrrmsrs, 0, sizeof(struct _guestmtrrmsrs) * NUM_MTRR_MSRS);
-	
-	{
-		u32 eax, edx;
-		rdmsr(IA32_MTRRCAP, &eax, &edx); 						
-		vcpu->vmx_guestmtrrmsrs[0].lodword = eax; vcpu->vmx_guestmtrrmsrs[0].hidword=edx;
-		rdmsr(IA32_MTRR_DEF_TYPE, &eax, &edx); 			
-		vcpu->vmx_guestmtrrmsrs[1].lodword = eax; vcpu->vmx_guestmtrrmsrs[1].hidword=edx;
-		rdmsr(IA32_MTRR_FIX64K_00000, &eax, &edx);
-		vcpu->vmx_guestmtrrmsrs[2].lodword = eax; vcpu->vmx_guestmtrrmsrs[2].hidword=edx;
-		rdmsr(IA32_MTRR_FIX16K_80000, &eax, &edx);
-		vcpu->vmx_guestmtrrmsrs[3].lodword = eax; vcpu->vmx_guestmtrrmsrs[3].hidword=edx;
-		rdmsr(IA32_MTRR_FIX16K_A0000, &eax, &edx);
-		vcpu->vmx_guestmtrrmsrs[4].lodword = eax; vcpu->vmx_guestmtrrmsrs[4].hidword=edx;
-		rdmsr(IA32_MTRR_FIX4K_C0000, &eax, &edx);	
-		vcpu->vmx_guestmtrrmsrs[5].lodword = eax; vcpu->vmx_guestmtrrmsrs[5].hidword=edx;
-		rdmsr(IA32_MTRR_FIX4K_C8000, &eax, &edx);	
-		vcpu->vmx_guestmtrrmsrs[6].lodword = eax; vcpu->vmx_guestmtrrmsrs[6].hidword=edx;
-		rdmsr(IA32_MTRR_FIX4K_D0000, &eax, &edx);	
-		vcpu->vmx_guestmtrrmsrs[7].lodword = eax; vcpu->vmx_guestmtrrmsrs[7].hidword=edx;
-		rdmsr(IA32_MTRR_FIX4K_D8000, &eax, &edx);	
-		vcpu->vmx_guestmtrrmsrs[8].lodword = eax; vcpu->vmx_guestmtrrmsrs[8].hidword=edx;
-		rdmsr(IA32_MTRR_FIX4K_E0000, &eax, &edx);	
-		vcpu->vmx_guestmtrrmsrs[9].lodword = eax; vcpu->vmx_guestmtrrmsrs[9].hidword=edx;
-		rdmsr(IA32_MTRR_FIX4K_E8000, &eax, &edx);	
-		vcpu->vmx_guestmtrrmsrs[10].lodword = eax; vcpu->vmx_guestmtrrmsrs[10].hidword=edx;
-		rdmsr(IA32_MTRR_FIX4K_F0000, &eax, &edx);	
-		vcpu->vmx_guestmtrrmsrs[11].lodword = eax; vcpu->vmx_guestmtrrmsrs[11].hidword=edx;
-		rdmsr(IA32_MTRR_FIX4K_F8000, &eax, &edx);	
-		vcpu->vmx_guestmtrrmsrs[12].lodword = eax; vcpu->vmx_guestmtrrmsrs[12].hidword=edx;
-		rdmsr(IA32_MTRR_PHYSBASE0, &eax, &edx);		
-		vcpu->vmx_guestmtrrmsrs[13].lodword = eax; vcpu->vmx_guestmtrrmsrs[13].hidword=edx;
-		rdmsr(IA32_MTRR_PHYSMASK0, &eax, &edx);		
-		vcpu->vmx_guestmtrrmsrs[14].lodword = eax; vcpu->vmx_guestmtrrmsrs[14].hidword=edx;
-		rdmsr(IA32_MTRR_PHYSBASE1, &eax, &edx);		
-		vcpu->vmx_guestmtrrmsrs[15].lodword = eax; vcpu->vmx_guestmtrrmsrs[15].hidword=edx;
-		rdmsr(IA32_MTRR_PHYSMASK1, &eax, &edx);		
-		vcpu->vmx_guestmtrrmsrs[16].lodword = eax; vcpu->vmx_guestmtrrmsrs[16].hidword=edx;
-		rdmsr(IA32_MTRR_PHYSBASE2, &eax, &edx);		
-		vcpu->vmx_guestmtrrmsrs[17].lodword = eax; vcpu->vmx_guestmtrrmsrs[17].hidword=edx;
-		rdmsr(IA32_MTRR_PHYSMASK2, &eax, &edx);		
-		vcpu->vmx_guestmtrrmsrs[18].lodword = eax; vcpu->vmx_guestmtrrmsrs[18].hidword=edx;
-		rdmsr(IA32_MTRR_PHYSBASE3, &eax, &edx);		
-		vcpu->vmx_guestmtrrmsrs[19].lodword = eax; vcpu->vmx_guestmtrrmsrs[19].hidword=edx;
-		rdmsr(IA32_MTRR_PHYSMASK3, &eax, &edx);		
-		vcpu->vmx_guestmtrrmsrs[20].lodword = eax; vcpu->vmx_guestmtrrmsrs[20].hidword=edx;
-		rdmsr(IA32_MTRR_PHYSBASE4, &eax, &edx);		
-		vcpu->vmx_guestmtrrmsrs[21].lodword = eax; vcpu->vmx_guestmtrrmsrs[21].hidword=edx;
-		rdmsr(IA32_MTRR_PHYSMASK4, &eax, &edx);		
-		vcpu->vmx_guestmtrrmsrs[22].lodword = eax; vcpu->vmx_guestmtrrmsrs[22].hidword=edx;
-		rdmsr(IA32_MTRR_PHYSBASE5, &eax, &edx);		
-		vcpu->vmx_guestmtrrmsrs[23].lodword = eax; vcpu->vmx_guestmtrrmsrs[23].hidword=edx;
-		rdmsr(IA32_MTRR_PHYSMASK5, &eax, &edx);		
-		vcpu->vmx_guestmtrrmsrs[24].lodword = eax; vcpu->vmx_guestmtrrmsrs[24].hidword=edx;
-		rdmsr(IA32_MTRR_PHYSBASE6, &eax, &edx);		
-		vcpu->vmx_guestmtrrmsrs[25].lodword = eax; vcpu->vmx_guestmtrrmsrs[25].hidword=edx;
-		rdmsr(IA32_MTRR_PHYSMASK6, &eax, &edx);		
-		vcpu->vmx_guestmtrrmsrs[26].lodword = eax; vcpu->vmx_guestmtrrmsrs[26].hidword=edx;
-		rdmsr(IA32_MTRR_PHYSBASE7, &eax, &edx);		
-		vcpu->vmx_guestmtrrmsrs[27].lodword = eax; vcpu->vmx_guestmtrrmsrs[27].hidword=edx;
-		rdmsr(IA32_MTRR_PHYSMASK7, &eax, &edx);
-		vcpu->vmx_guestmtrrmsrs[28].lodword = eax; vcpu->vmx_guestmtrrmsrs[28].hidword=edx;
-	}
-	
 	//INT 15h E820 hook enablement for VMX unrestricted guest mode
 	//note: this only happens for the BSP
 	if(vcpu->isbsp){
