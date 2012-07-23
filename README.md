@@ -113,3 +113,15 @@ Related Publications
   Virgil D. Gligor and Adrian Perrig. Technical Report
   CMU-CyLab-09-011, June 2009.
   [pdf](http://www.cylab.cmu.edu/files/pdfs/tech_reports/CMUCyLab09011.pdf)
+
+Changelog
+=========
+
+ * 0.1 Initial Release
+ * 0.1.1
+    * Added TPM performance profiling.
+    * Stability improvements (ticket-28 fixed).
+    * Intercept handling now serialized in the core.
+    * XMHF now builds and runs on Ubuntu 12.04 (precise).
+    * Replaced LGPL tlsf implementation with public domain implementation.
+    * Added design-documents.
