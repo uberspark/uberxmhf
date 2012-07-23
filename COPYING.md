@@ -101,8 +101,9 @@ HEAD of the repository, but git always retrieves the exhaustive history.
 * amtterm (GPLv2) (NOTE: A copy of amtterm's source code was accidentally 
   updated with our own headers in a now-defunct demo subdirectory of 
   TrustVisor.  This was in error.)
+* tlsf_malloc (special LGPL)
 
-Third party code in current HEAD as of 2012-06-23
+Third party code in current HEAD as of 2012-07-23
 =================================================
 
 We attempt to summarize third-party code and their respective
@@ -113,8 +114,8 @@ license that appear in the current repository HEAD.
 * Tboot (BSD-style)
 * OpenSSL (BSD-style), 
 * Google Protocol Buffers (Apache 2.0)
-* tlsf_malloc (special LGPL)
 * newlib (GPL)
+* tlsf.baisoku.org (public domain)
 
 Lockdown-specific:
 
