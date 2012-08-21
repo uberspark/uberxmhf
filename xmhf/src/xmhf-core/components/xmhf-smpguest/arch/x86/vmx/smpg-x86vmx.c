@@ -436,6 +436,8 @@ void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		//(if NMI originated from guest) else halt reporting a spurious
 		//NMI within hypervisor
 		if(!g_vmx_quiesce){
+			vmx_apic_dumpregs(vcpu);
+			
 			if( (!vcpu->nmiinhvm) ){
 				printf("\nCPU(0x%02x): Fatal - spurious NMI within hypervisor. halt!", vcpu->id);
 				HALT();
