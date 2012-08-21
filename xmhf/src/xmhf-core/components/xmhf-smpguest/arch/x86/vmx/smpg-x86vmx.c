@@ -93,6 +93,17 @@ static u64 __attribute__((unused)) vmx_apic_hwpgtbl_getprot(VCPU *vcpu, u64 gpa)
   return (pt[pfn] & (u64)7) ;
 }
 
+static void vmx_apic_dumpregs(VCPU *vcpu){
+	printf("\n%s[%02x]: APIC register dump follows...", __FUNCTION__,
+		vcpu->id);
+		
+	printf("\n    CMCI=0x%08x", *((volatile u32 *)0xfee002f0));
+	printf("\n    Timer=0x%08x", *((volatile u32 *)0xfee00320));
+	printf("\n    LINT0=0x%08x", *((volatile u32 *)0xfee00350));
+	printf("\n    LINT1=0x%08x", *((volatile u32 *)0xfee00360));
+	printf("\n    Error=0x%08x", *((volatile u32 *)0xfee00370));
+	printf("\n----");
+}
 
 //---checks if all logical cores have received SIPI
 //returns 1 if yes, 0 if no
