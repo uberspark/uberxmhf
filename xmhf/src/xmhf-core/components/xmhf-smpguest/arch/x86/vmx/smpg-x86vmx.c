@@ -439,8 +439,11 @@ void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 			vmx_apic_dumpregs(vcpu);
 			
 			if( (!vcpu->nmiinhvm) ){
-				printf("\nCPU(0x%02x): Fatal - spurious NMI within hypervisor. halt!", vcpu->id);
-				HALT();
+				//XXX: TODO, check if APIC LVT registers have been setup
+				//to generate periodic NMIs and if so inject this into
+				//the guest
+				printf("\nCPU(0x%02x): Warning - spurious NMI within hypervisor, ignoring", vcpu->id);
+				return;
 			}else{
 				#if 1
 				printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
