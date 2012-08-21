@@ -459,21 +459,22 @@ void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 				#endif
 				
 			}
-		}
+		}else{	//we are processing a quiesce request
 	
-		//increment quiesce counter
-		spin_lock(&g_vmx_lock_quiesce_counter);
-		g_vmx_quiesce_counter++;
-		spin_unlock(&g_vmx_lock_quiesce_counter);
+			//increment quiesce counter
+			spin_lock(&g_vmx_lock_quiesce_counter);
+			g_vmx_quiesce_counter++;
+			spin_unlock(&g_vmx_lock_quiesce_counter);
 
-		//wait until quiesceing is finished
-		//printf("\nCPU(0x%02x): Quiesced", vcpu->id);
-		while(!g_vmx_quiesce_resume_signal);
-		//printf("\nCPU(0x%02x): EOQ received, resuming...", vcpu->id);
+			//wait until quiesceing is finished
+			//printf("\nCPU(0x%02x): Quiesced", vcpu->id);
+			while(!g_vmx_quiesce_resume_signal);
+			//printf("\nCPU(0x%02x): EOQ received, resuming...", vcpu->id);
 
-		spin_lock(&g_vmx_lock_quiesce_resume_counter);
-		g_vmx_quiesce_resume_counter++;
-		spin_unlock(&g_vmx_lock_quiesce_resume_counter);
+			spin_lock(&g_vmx_lock_quiesce_resume_counter);
+			g_vmx_quiesce_resume_counter++;
+			spin_unlock(&g_vmx_lock_quiesce_resume_counter);
+		}
 
 		//flush EPT mappings on this core 
 		emhf_memprot_flushmappings(vcpu);
