@@ -411,7 +411,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.guest_VMCS_link_pointer_high = (u32)0xFFFFFFFFUL;
 	
 	//setup NMI intercept for core-quiescing
-	#if 0
+	#if 1
 	vcpu->vmcs.control_VMX_pin_based |= (1 << 3);	//intercept NMIs
 	#endif
 	

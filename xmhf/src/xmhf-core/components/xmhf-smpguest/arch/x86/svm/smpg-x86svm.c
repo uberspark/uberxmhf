@@ -433,6 +433,9 @@ void emhf_smpguest_arch_x86svm_eventhandler_nmiexception(VCPU *vcpu, struct regs
   struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
   (void)r;
 	
+	//printf("\n%s[%02x]: nmiinhvm=%u, g_svm_quiesce=%u", __FUNCTION__, vcpu->id,
+	//	vcpu->nmiinhvm, g_svm_quiesce);
+	
   if( (!vcpu->nmiinhvm) && (!g_svm_quiesce) ){
     printf("\nCPU(0x%02x): warning, ignoring spurious NMI within hypervisor!", vcpu->id);
     return;

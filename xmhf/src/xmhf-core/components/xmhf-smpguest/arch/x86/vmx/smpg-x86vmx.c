@@ -433,6 +433,11 @@ void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 				vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
 					INTR_TYPE_NMI |
 					INTR_INFO_VALID_MASK;
+				//vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
+				//vcpu->vmcs.control_VM_entry_interruption_information = 0x0D |
+				//	INTR_TYPE_HW_EXCEPTION |
+				//	INTR_INFO_VALID_MASK;
+				
 				#else
 				printf("\nCPU(0x%02x): Regular NMI, ignoring...", vcpu->id);
 				
