@@ -436,7 +436,7 @@ void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		//(if NMI originated from guest) else halt reporting a spurious
 		//NMI within hypervisor
 		if(!g_vmx_quiesce){
-			vmx_apic_dumpregs(vcpu);
+			//vmx_apic_dumpregs(vcpu);
 			
 			if( (!vcpu->nmiinhvm) ){
 				//XXX: TODO, check if APIC LVT registers have been setup
@@ -445,22 +445,11 @@ void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 				printf("\nCPU(0x%02x): Warning - spurious NMI within hypervisor, ignoring", vcpu->id);
 				return;
 			}else{
-				#if 1
 				printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
 				vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
 				vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
 					INTR_TYPE_NMI |
 					INTR_INFO_VALID_MASK;
-				//vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
-				//vcpu->vmcs.control_VM_entry_interruption_information = 0x0D |
-				//	INTR_TYPE_HW_EXCEPTION |
-				//	INTR_INFO_VALID_MASK;
-				
-				#else
-				printf("\nCPU(0x%02x): Regular NMI, ignoring...", vcpu->id);
-				
-				#endif
-				
 			}
 		}else{	//we are processing a quiesce request
 	
@@ -481,7 +470,6 @@ void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 
 		//flush EPT mappings on this core 
 		emhf_memprot_flushmappings(vcpu);
-
 }
 
 //perform required setup after a guest awakens a new CPU
