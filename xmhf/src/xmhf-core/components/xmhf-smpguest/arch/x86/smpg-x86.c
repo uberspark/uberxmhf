@@ -83,11 +83,11 @@ void emhf_smpguest_arch_initialize(VCPU *vcpu){
 	if(vcpu->isbsp)
 		return;
 	
-	#if 0		
+	/*#if 0*/		
 	//we are an AP, so just lockup
 	printf("\nCPU(0x%02x): AP, locked!", vcpu->id);
 	while(1);
-	#else
+	/*#else
 		if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
 			//we are an AP, so just lockup
 			printf("\nCPU(0x%02x): AP, locked!", vcpu->id);
@@ -95,7 +95,7 @@ void emhf_smpguest_arch_initialize(VCPU *vcpu){
 		}else{	//CPU_VENDOR_INTEL
 			printf("\nCPU(0x%02x): x86vmx test-UP: proceeding to lock APs in guest-mode", vcpu->id);
 		}
-	#endif
+	#endif*/
 #endif
 
 	

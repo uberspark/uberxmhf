@@ -510,11 +510,11 @@ void emhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu){
 		_vmx_int15_initializehook(vcpu);
 	}
 	
-	//ticket-73: test
+	/*
 	//setup VMCS such that guest activity state is wait-for-SIPI
 	if(!vcpu->isbsp){
 		vcpu->vmcs.guest_activity_state = 3; //wait-for-SIPI, SDM 24.4.2
-	}
+	}*/
 	
 }
 
