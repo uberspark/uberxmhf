@@ -225,6 +225,8 @@ void emhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu){
   //this will cause EPT violation which is then
   //handled by vmx_lapic_access_handler
 	vmx_apic_hwpgtbl_setprot(vcpu, g_vmx_lapic_base, 0);
+	
+  vmx_apic_dumpregs(vcpu);
 }
 
 
