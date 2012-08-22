@@ -384,6 +384,7 @@ void emhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
         spin_lock(&g_vmx_lock_quiesce);
         //printf("\nCPU(0x%02x): grabbed quiesce lock.", vcpu->id);
 
+		vcpu->quiesced = 1;
 		//reset quiesce counter
         spin_lock(&g_vmx_lock_quiesce_counter);
         g_vmx_quiesce_counter=0;
@@ -412,6 +413,7 @@ void emhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
         
         while(g_vmx_quiesce_resume_counter < (g_midtable_numentries-1) );
 
+		vcpu->quiesced=0;
         g_vmx_quiesce=0;  // we are out of quiesce at this point
 
         //printf("\nCPU(0x%02x): all CPUs resumed successfully.", vcpu->id);
@@ -452,6 +454,11 @@ void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 					INTR_INFO_VALID_MASK;
 			}
 		}else{	//we are processing a quiesce request
+			//if this core has been quiesced, simply return
+			if(vcpu->quiesced)
+				return;
+				
+			vcpu->quiesced=1;
 	
 			//increment quiesce counter
 			spin_lock(&g_vmx_lock_quiesce_counter);
@@ -466,6 +473,8 @@ void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 			spin_lock(&g_vmx_lock_quiesce_resume_counter);
 			g_vmx_quiesce_resume_counter++;
 			spin_unlock(&g_vmx_lock_quiesce_resume_counter);
+			
+			vcpu->quiesced=0;
 		}
 
 		//flush EPT mappings on this core 
