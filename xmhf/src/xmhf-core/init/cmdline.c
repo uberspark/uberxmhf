@@ -221,6 +221,8 @@ void get_tboot_log_targets(void)
 /*     return g_pbbdf_enabled; */
 /* } */
 
+#if defined (__DEBUG_SERIAL__)
+
 static bool parse_com_fmt(const char **fmt)
 {
     /* fmt:  <5|6|7|8><n|o|e|m|s><0|1> */
@@ -340,6 +342,8 @@ bool get_tboot_serial(void)
 
     return parse_serial_param(serial);
 }
+
+#endif
 
 /* void get_tboot_vga_delay(void) */
 /* { */

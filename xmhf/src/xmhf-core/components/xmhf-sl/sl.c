@@ -191,8 +191,10 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		rpb->runtime_appmodule_base = slpb.runtime_appmodule_base;
 		rpb->runtime_appmodule_size = slpb.runtime_appmodule_size;
 
+#if defined (__DEBUG_SERIAL__)
         //pass along UART config for serial debug output
 		rpb->RtmUartConfig = g_uart_config;
+#endif
 
 		//pass command line configuration forward 
         COMPILE_TIME_ASSERT(sizeof(slpb.cmdline) == sizeof(rpb->cmdline));

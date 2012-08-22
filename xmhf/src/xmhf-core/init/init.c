@@ -793,6 +793,7 @@ void cstartup(multiboot_info_t *mbi){
     g_cmdline[sizeof(g_cmdline)-1] = '\0'; /* in case strncpy truncated */
     tboot_parse_cmdline();
 
+#if defined (__DEBUG_SERIAL__)
     /* parse serial port params */
     {
       uart_config_t uart_config_backup = g_uart_config;
@@ -804,6 +805,7 @@ void cstartup(multiboot_info_t *mbi){
 
     //initialize debugging early on
 	emhf_debug_init((char *)&g_uart_config);
+#endif
 
     mod_array = (module_t*)mbi->mods_addr;
     mods_count = mbi->mods_count;
@@ -900,7 +902,9 @@ void cstartup(multiboot_info_t *mbi){
 			}
 		}
 
+#if defined (__DEBUG_SERIAL)
         slpb->uart_config = g_uart_config;
+#endif
         strncpy(slpb->cmdline, (const char *)mbi->cmdline, sizeof(slpb->cmdline));
     }
    
