@@ -445,7 +445,7 @@ void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 				printf("\nCPU(0x%02x): Warning - spurious NMI within hypervisor, ignoring", vcpu->id);
 				return;
 			}else{
-				printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
+				//printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
 				vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
 				vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
 					INTR_TYPE_NMI |

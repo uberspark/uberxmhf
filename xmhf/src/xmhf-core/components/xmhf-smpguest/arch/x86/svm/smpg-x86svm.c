@@ -467,7 +467,7 @@ void emhf_smpguest_arch_x86svm_eventhandler_nmiexception(VCPU *vcpu, struct regs
   }else{
     //we are not in quiesce, so simply inject this NMI back to guest
     ASSERT( vcpu->nmiinhvm == 1 );
-    printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
+    //printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
     vmcb->eventinj.vector=0;
     vmcb->eventinj.type = EVENTINJ_TYPE_NMI;
     vmcb->eventinj.ev=0;
