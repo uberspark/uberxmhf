@@ -3,7 +3,7 @@
 set -e
 
 # This script copies files to the LVM /boot partition for the
-# specified test host
+# specified test host, in the /grub subdirectory
 
 if [ -z "$1" -o -z "$2" ] ; then
     echo "Usage: $0 hostname file1 file2 .. filen" 1>&2
@@ -34,7 +34,7 @@ echo "$0: Source files exist. Here goes!"
 $DRYRUN losetup /dev/loop0 /dev/vg0/iscsi.slashboot.$TESTHOSTNAME
 $DRYRUN kpartx -av /dev/loop0
 $DRYRUN mount /dev/mapper/loop0p1 $TARGET
-$DRYRUN cp -v $@ $TARGET
+$DRYRUN cp -v $@ $TARGET/grub
 $DRYRUN sync
 $DRYRUN umount $TARGET
 $DRYRUN kpartx -dv /dev/loop0
