@@ -17,6 +17,11 @@ if [ $MAPPER_MOUNTS -gt 0 ]; then
     exit 1
 fi
 
+if [ `whoami` != "root" ]; then
+    echo "ERROR: must be run as root!" 1>&2
+    exit 1
+fi
+
 TESTHOSTNAME="$1"
 # Drop hostname from arglist
 shift

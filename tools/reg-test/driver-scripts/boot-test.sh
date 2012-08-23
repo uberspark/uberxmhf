@@ -175,7 +175,7 @@ savedefault 0
 boot
 EOF
 
-bash copy_to_grubdir.sh $TEST_HOSTNAME /tmp/default /tmp/menu.lst
+sudo bash copy_to_grubdir.sh $TEST_HOSTNAME /tmp/default /tmp/menu.lst
 
 if [ $TEST_CONNECTION = "serial" ]; then
     # Turn this machine's outlet off (just in case it's on), pause, then turn it on
