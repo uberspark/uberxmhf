@@ -133,6 +133,50 @@ echo "SECOND_ROOT:   $SECOND_ROOT"
 echo "SECOND_KERNEL: $SECOND_KERNEL"
 echo "SECOND_MOD1:   $SECOND_MOD1"
 
+# Now prepare the menu.lst entry for grub, and set grub's default appropriately
+cat <<EOF > /tmp/default
+0
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+# WARNING: If you want to edit this file directly, do not remove any line
+# from this file, including this warning. Using `grub-set-default\' is
+# strongly recommended.
+EOF
+
+cat <<EOF > /tmp/menu.lst
+default         saved
+timeout         5
+
+serial --port=$SERIAL_ADDR --speed=115200
+terminal serial console
+
+title XMHF/TrustVisor
+$FIRST_ROOT
+$FIRST_KERNEL
+$FIRST_MOD1
+$FIRST_MOD2
+$FIRST_MOD3
+savedefault 1
+boot
+
+title GNU/Linux
+$SECOND_ROOT
+$SECOND_KERNEL
+$SECOND_MOD1
+savedefault 0
+boot
+EOF
+
+bash copy_to_grubdir.sh $TEST_HOSTNAME /tmp/default /tmp/menu.lst
+
 if [ $TEST_CONNECTION = "serial" ]; then
     # Turn this machine's outlet off (just in case it's on), pause, then turn it on
     echo "Powering off outlet"
