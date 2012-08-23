@@ -379,7 +379,7 @@ void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
 //note: we are in atomic processsing mode here
 void emhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
 
-        printf("\nCPU(0x%02x): got quiesce signal...", vcpu->id);
+        //printf("\nCPU(0x%02x): got quiesce signal...", vcpu->id);
         //grab hold of quiesce lock
         spin_lock(&g_vmx_lock_quiesce);
         //printf("\nCPU(0x%02x): grabbed quiesce lock.", vcpu->id);
@@ -397,7 +397,7 @@ void emhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
         //wait for all the remaining CPUs to quiesce
         //printf("\nCPU(0x%02x): waiting for other CPUs to respond...", vcpu->id);
         while(g_vmx_quiesce_counter < (g_midtable_numentries-1) );
-        printf("\nCPU(0x%02x): all CPUs quiesced successfully.", vcpu->id);
+        //printf("\nCPU(0x%02x): all CPUs quiesced successfully.", vcpu->id);
 
 }
 
@@ -444,10 +444,10 @@ void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 				//XXX: TODO, check if APIC LVT registers have been setup
 				//to generate periodic NMIs and if so inject this into
 				//the guest
-				printf("\nCPU(0x%02x): Warning - spurious NMI within hypervisor, ignoring", vcpu->id);
+				//printf("\nCPU(0x%02x): Warning - spurious NMI within hypervisor, ignoring", vcpu->id);
 				return;
 			}else{
-				printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
+				//printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
 				vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
 				vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
 					INTR_TYPE_NMI |
