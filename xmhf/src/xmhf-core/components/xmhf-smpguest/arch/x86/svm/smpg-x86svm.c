@@ -389,6 +389,8 @@ void emhf_smpguest_arch_x86svm_quiesce(VCPU *vcpu){
     spin_lock(&g_svm_lock_quiesce);
     //printf("\nCPU(0x%02x): grabbed quiesce lock.", vcpu->id);
 
+	vcpu->quiesced = 1;
+
     spin_lock(&g_svm_lock_quiesce_counter);
     g_svm_quiesce_counter=0;
     spin_unlock(&g_svm_lock_quiesce_counter);
@@ -414,7 +416,9 @@ void emhf_smpguest_arch_x86svm_endquiesce(VCPU __attribute__((unused)) *vcpu){
         
         while(g_svm_quiesce_resume_counter < (g_midtable_numentries-1) );
 
+		vcpu->quiesced = 0;
         g_svm_quiesce=0;  // we are out of quiesce at this point
+
 
         //printf("\nCPU(0x%02x): all CPUs resumed successfully.", vcpu->id);
         
@@ -437,11 +441,17 @@ void emhf_smpguest_arch_x86svm_eventhandler_nmiexception(VCPU *vcpu, struct regs
 	//	vcpu->nmiinhvm, g_svm_quiesce);
 	
   if( (!vcpu->nmiinhvm) && (!g_svm_quiesce) ){
-    printf("\nCPU(0x%02x): warning, ignoring spurious NMI within hypervisor!", vcpu->id);
+    //printf("\nCPU(0x%02x): warning, ignoring spurious NMI within hypervisor!", vcpu->id);
     return;
   }
 
   if(g_svm_quiesce){
+	if(vcpu->quiesced)
+		return;
+				
+	vcpu->quiesced=1;
+
+    
     //ok this NMI is because of g_svm_quiesce. note: g_svm_quiesce can be 1 and
     //this could be a NMI for the guest. we have no way of distinguising
     //this. however, since g_svm_quiesce=1, we can handle this NMI as a g_svm_quiesce NMI
@@ -463,6 +473,7 @@ void emhf_smpguest_arch_x86svm_eventhandler_nmiexception(VCPU *vcpu, struct regs
     
     //printf("\nCPU(0x%08x): Halting!", vcpu->id);
     //HALT();
+    vcpu->quiesced=0;
     
   }else{
     //we are not in quiesce, so simply inject this NMI back to guest

@@ -146,8 +146,6 @@ void emhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
 	VCPU *vcpu;
 	
-	//printf("\n%s: got exception %u...", __FUNCTION__, vector);
-
 	if(cpu_vendor == CPU_VENDOR_AMD){
 		vcpu=_svm_getvcpu();
 	}else{	//CPU_VENDOR_INTEL

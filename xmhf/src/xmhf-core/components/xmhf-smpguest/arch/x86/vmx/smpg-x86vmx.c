@@ -376,7 +376,7 @@ void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
 
 
 //quiesce interface to switch all guest cores into hypervisor mode
-//note: we are in atomic processsing mode here
+//note: we are in atomic processsing mode for this "vcpu"
 void emhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
 
         //printf("\nCPU(0x%02x): got quiesce signal...", vcpu->id);
@@ -431,6 +431,7 @@ void emhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
 }
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
+//note: we are in atomic processsing mode for this "vcpu"
 void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
     (void)r;
 
