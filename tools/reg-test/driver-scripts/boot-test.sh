@@ -147,7 +147,7 @@ cat <<EOF > /tmp/default
 #
 #
 # WARNING: If you want to edit this file directly, do not remove any line
-# from this file, including this warning. Using `grub-set-default\' is
+# from this file, including this warning. Using \`grub-set-default\' is
 # strongly recommended.
 EOF
 
