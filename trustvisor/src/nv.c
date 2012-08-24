@@ -293,7 +293,7 @@ int trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
      * if random keys are not available.
      */
     eu_err("MasterSealingSeed initialization FAILED!\n"
-           "Continuing to operate in degraded mode. EMPHEMERAL SEALING ONLY!");
+           "Continuing to operate in degraded mode. EPHEMERAL SEALING ONLY!");
     rand_bytes_or_die(mss, mss_size);
   
     /* XXX TODO: Eliminate degraded mode once we are sufficiently robust
