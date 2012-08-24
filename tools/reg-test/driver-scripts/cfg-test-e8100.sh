@@ -8,7 +8,7 @@ TEST_CONNECTION=amtterm
 TEST_CONNECTION_OUTLET_NUMBER=
 TEST_CONNECTION_SERIAL_PORT=
 SERIAL_ADDR=0x1188
-BOOT_ROOT_UUID=c2a09e3b-08ba-409a-a896-bac38e8a8347
+BOOT_ROOT_UUID="uuid c2a09e3b-08ba-409a-a896-bac38e8a8347"
 
 # The nr_uarts=0 work-around below is DISABLED because
 # grub-generic.exp has been taught how to detect the death of amtterm
