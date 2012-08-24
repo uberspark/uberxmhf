@@ -15,6 +15,8 @@ for i in test-6555b test-e8100 creeper pratt; do
     ls -l $TARGET/grub/menu.lst
     cat $TARGET/grub/menu.lst
     mount | grep mapper
+    sha1sum $TARGET/vmlinuz-3.0.4-jm2
+    sha1sum $TARGET/initrd.img-3.0.4-jm2
 
     umount $TARGET
     kpartx -dv /dev/loop0
