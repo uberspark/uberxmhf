@@ -10,6 +10,9 @@ for i in test-6555b test-e8100 creeper pratt; do
     echo
     echo "HOST $i grub/default file"
     hd $TARGET/grub/default
+    echo "HOST $i grub/menu.lst file"
+    cat $TARGET/grub/menu.lst
+    mount | grep mapper
 
     umount $TARGET
     kpartx -dv /dev/loop0
