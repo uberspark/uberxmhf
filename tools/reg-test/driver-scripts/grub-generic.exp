@@ -190,6 +190,16 @@ while {1} {
         "Press any key to continue." {
             send -s "Q"
         }
+        eof {
+            if {[string compare "amtterm" [lindex $argv 0]] == 0} {
+                puts "\r\nDETECTED eof FROM amtterm. I NEED TO RESTART amtterm!\r\n"
+                set spawned [spawn /usr/local/bin/amtterm [lindex $argv 1]]
+            } else {
+                puts "\r\nDETECTED eof BUT I DO NOT KNOW HOW TO DEAL WITH THIS\r\n"
+                puts "\r\nAIEEEEEE!!!!\r\n"
+                exit
+            }
+        }
         "\n" {
             puts "[timeStamp]: [string trim $expect_out(buffer) \r\n]"
             # send_log -- "[timeStamp]: [string trim $expect_out(buffer) \r\n]"
