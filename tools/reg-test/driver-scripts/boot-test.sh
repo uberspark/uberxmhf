@@ -171,7 +171,6 @@ title GNU/Linux
 $SECOND_ROOT
 $SECOND_KERNEL
 $SECOND_MOD1
-savedefault 0
 boot
 EOF
 
