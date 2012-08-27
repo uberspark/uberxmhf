@@ -13,9 +13,10 @@
 for f in `find . -name '*.md'`;
 do
     cat $f | sed 's/.md/.md.html/g' | pandoc -s -o $f.html;
+    if [ x`basename $f` = x"README.md" ]; then cp $f.html `dirname $f`/index.html; fi
 done
 
 # copy just the generated html files to another directory.
 # Links to other resources in the repo will be broken, but
 # this can be easily hosted or distributed.
-find . -name '*.md.html' -exec rsync -R \{\} xmhf-doc/ \;
+find . \( -name '*.md.html' -o -name index.html \) -exec rsync -R \{\} xmhf-doc/ \;
