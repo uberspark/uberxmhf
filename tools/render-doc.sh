@@ -7,7 +7,15 @@
 #
 # XXX probably ought to be more selective with the sed find/replace
 
+# generated html files are left in-place. The ideal solution is
+# to view these directly, in case links in these refer to other
+# resources in the repository.
 for f in `find . -name '*.md'`;
 do
     cat $f | sed 's/.md/.md.html/g' | pandoc -s -o $f.html;
 done
+
+# copy just the generated html files to another directory.
+# Links to other resources in the repo will be broken, but
+# this can be easily hosted or distributed.
+find . -name '*.md.html' -exec rsync -R \{\} xmhf-doc/ \;
