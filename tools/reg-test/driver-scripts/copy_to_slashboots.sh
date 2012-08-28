@@ -2,7 +2,7 @@
 
 set -e
 
-# This script copies one file to all of the different /boot partitions for test hosts
+# This script copies files (provided as args) to all of the different /boot partitions for test hosts
 MAPPER_MOUNTS=`mount | grep mapper | wc -l`
 
 if [ $MAPPER_MOUNTS -gt 0 ]; then

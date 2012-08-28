@@ -54,7 +54,7 @@ if [ "$IS_DIRTY" == "DIRTY" ]; then
     exit 1
 fi
 git clean -d -f -x .
-git pull
+#git pull
 
 ## 1. Build XMHF + TrustVisor
 

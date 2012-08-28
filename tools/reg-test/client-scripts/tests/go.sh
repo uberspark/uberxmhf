@@ -35,7 +35,7 @@ echo "Fetching http://10.0.0.1/~driver/test" >> $LOGFILE
 wget http://10.0.0.1/~driver/test
 chmod +x test
 echo "Invoking ./test" >> $LOGFILE
-for i in `seq 1 20`; do
+for i in `seq 1 1`; do
     ./test >> $LOGFILE 2>&1
     if [ $? -eq 0 ] ; then
         echo "./test iteration $i exited successfully with exit code $?" >> $LOGFILE

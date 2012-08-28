@@ -60,6 +60,7 @@ if {[string compare "serial" [lindex $argv 0]] == 0} {
     stty ispeed $baud ospeed $baud raw -echo cs8 -parenb -cstopb onlcr < $port
 } elseif {[string compare "amtterm" [lindex $argv 0]] == 0} {
     puts "AMTTERM MODE"
+    set amt_retry_ctr 10
     while {1} {
         set spawned [spawn /usr/local/bin/amtterm [lindex $argv 1]]
         puts "[timeStamp]: [string trim $spawned \r\n]"
@@ -71,6 +72,11 @@ if {[string compare "serial" [lindex $argv 0]] == 0} {
             "amtterm: ERROR:" {
                 puts "[timeStamp]: [string trim $expect_out(buffer) \r\n]"
                 puts "*** Retrying amtterm launch"
+                incr $amt_retry_ctr -1
+                if {$amt_retry_ctr == 0} {
+                    puts "[timeStamp]: TOO MANY amtterm LAUNCH FAILURES. EXITING!\r\n]"
+                    exit
+                }
                 # while will loop and try again,
                 # but don't cycle too fast
                 sleep 1 
@@ -118,35 +124,35 @@ set send_slow {1 .05}
 #log_file foo.log
 log_user 1
 
-expect "Press any key to continue."
-send -s "c"
+# expect "Press any key to continue."
+# send -s "c"
 
-expect "command-line."
-send -s "c"
+# expect "command-line."
+# send -s "c"
 
-expect "grub>"
-send -s "$env(FIRST_ROOT)\r\n"
+# expect "grub>"
+# send -s "$env(FIRST_ROOT)\r\n"
 
-expect "grub>"
-send -s "$env(FIRST_KERNEL)\r\n"
+# expect "grub>"
+# send -s "$env(FIRST_KERNEL)\r\n"
 
-expect "grub>"
-send -s "$env(FIRST_MOD1)\r\n"
+# expect "grub>"
+# send -s "$env(FIRST_MOD1)\r\n"
 
-expect "grub>"
-send -s "$env(FIRST_MOD2)\r\n"
+# expect "grub>"
+# send -s "$env(FIRST_MOD2)\r\n"
 
-expect "grub>"
-send -s "$env(FIRST_MOD3)\r\n"
+# expect "grub>"
+# send -s "$env(FIRST_MOD3)\r\n"
 
-expect "grub>"
-send -s "boot\r\n"
+# expect "grub>"
+# send -s "boot\r\n"
 
 log_user 0
 while {1} {
     expect {
         "Press any key to continue." {
-            send -s "c"
+            send -s "Q"
             break
         }
         "\n" {
@@ -158,20 +164,20 @@ while {1} {
 
 log_user 1
 
-expect "command-line."
-send -s "c"
+# expect "command-line."
+# send -s "c"
 
-expect "grub>"
-send -s "$env(SECOND_ROOT)\r\n"
+# expect "grub>"
+# send -s "$env(SECOND_ROOT)\r\n"
 
-expect "grub>"
-send -s "$env(SECOND_KERNEL)\r\n"
+# expect "grub>"
+# send -s "$env(SECOND_KERNEL)\r\n"
 
-expect "grub>"
-send -s "$env(SECOND_MOD1)\r\n"
+# expect "grub>"
+# send -s "$env(SECOND_MOD1)\r\n"
 
-expect "grub>"
-send -s "boot\r\n"
+# expect "grub>"
+# send -s "boot\r\n"
 
 log_user 0
 while {1} {
@@ -180,6 +186,19 @@ while {1} {
             puts "\r\n\r\n[timeStamp]: [string trim $expect_out(buffer) \r\n]"
             puts "\r\n[timeStamp]: OUTPUT MONITORING COMPLETED; GOODBYE!\r\n"
             exit
+        }
+        "Press any key to continue." {
+            send -s "Q"
+        }
+        eof {
+            if {[string compare "amtterm" [lindex $argv 0]] == 0} {
+                puts "\r\nDETECTED eof FROM amtterm. I NEED TO RESTART amtterm!\r\n"
+                set spawned [spawn /usr/local/bin/amtterm [lindex $argv 1]]
+            } else {
+                puts "\r\nDETECTED eof BUT I DO NOT KNOW HOW TO DEAL WITH THIS\r\n"
+                puts "\r\nAIEEEEEE!!!!\r\n"
+                exit
+            }
         }
         "\n" {
             puts "[timeStamp]: [string trim $expect_out(buffer) \r\n]"
