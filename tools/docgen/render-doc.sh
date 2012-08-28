@@ -1,5 +1,7 @@
 #!/bin/sh
 
+EXPORT_PREFIX=doc
+
 # quick and dirty offline documentation generator. Note that to be
 # compatible with the dynamically rendered documentation in the
 # sourceforge repository viewer, we have to rewrite links to other
@@ -12,11 +14,18 @@
 # resources in the repository.
 for f in `find . -name '*.md'`;
 do
-    cat $f | sed 's/.md/.md.html/g' | pandoc -s -o $f.html;
-    if [ x`basename $f` = x"README.md" ]; then cp $f.html `dirname $f`/index.html; fi
-done
+    DATE=`date`
+    cat $f | sed 's/.md/.md.html/g' | pandoc --template=tools/docgen/template/template.html -s -V DATE="`date`" -V SOURCE="$f" -o $f.html
 
-# copy just the generated html files to another directory.
-# Links to other resources in the repo will be broken, but
-# this can be easily hosted or distributed.
-find . \( -name '*.md.html' -o -name index.html \) -exec rsync -R \{\} xmhf-doc/ \;
+    # copy to EXPORT_PREFIX
+    mkdir -p $EXPORT_PREFIX/`dirname $f`
+    cp $f.html $EXPORT_PREFIX/`dirname $f`
+
+    # generate index.html from any README.md,
+    # and copy to EXPORT_PREFIX
+    if [ x`basename $f` = x"README.md" ];
+    then
+        cp $f.html `dirname $f`/index.html
+        cp `dirname $f`/index.html $EXPORT_PREFIX/`dirname $f`
+    fi
+done
