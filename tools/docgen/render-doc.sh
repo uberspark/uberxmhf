@@ -14,8 +14,8 @@ EXPORT_PREFIX=doc
 # resources in the repository.
 for f in `find . -name '*.md'`;
 do
-    GENLINE="Generated `date` from <a href=\"http://xmhf.org\">xmhf's</a> $f"
-    cat $f | sed 's/.md/.md.html/g' | pandoc --template=tools/docgen/template/template.html -s -V GENLINE="$GENLINE" -o $f.html
+    DATE=`date`
+    cat $f | sed 's/.md/.md.html/g' | pandoc --template=tools/docgen/template/template.html -s -V DATE="`date`" -V SOURCE="$f" -o $f.html
 
     # copy to EXPORT_PREFIX
     mkdir -p $EXPORT_PREFIX/`dirname $f`
