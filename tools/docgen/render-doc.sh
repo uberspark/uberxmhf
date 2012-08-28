@@ -14,7 +14,7 @@ EXPORT_PREFIX=doc
 # resources in the repository.
 for f in `find . -name '*.md'`;
 do
-    cat $f | sed 's/.md/.md.html/g' | pandoc -s -o $f.html
+    cat $f | sed 's/.md/.md.html/g' | pandoc --template=tools/docgen/template/template.html -s -o $f.html
 
     # copy to EXPORT_PREFIX
     mkdir -p $EXPORT_PREFIX/`dirname $f`
