@@ -43,7 +43,7 @@ Diskless / LiveCD-style Linux is commonplace, and there are a multitude of possi
 
 1. The BIOS or NIC send a DHCP request to set-up the IP network settings and find a network bootable server, using the PXE-UNDI mechanisms
 + gPXE image is found, and downloaded using TFTP. gPXE sends yet another DHCP request and should now find the iSCSI address of the remote boot disk
-+ gPXE starts as an iSCSI initiator that logs in to the iSCSI target, reads the remote boot disk’s MBR and starts its boot loader (grub)
++ gPXE starts as an iSCSI initiator that logs in to the iSCSI target, reads the remote boot disk's MBR and starts its boot loader (grub)
 + grub loads the kernel and initrd
 + initrd sends yet another DHCP request, sets up the IP network, and uses the iscsistart script, which sets up the iscsi initiator and logins (yes, again) to the iscsi target.
 + iscsistart script then mounts this disk and uses pivot_root (as usual) to make it the new root

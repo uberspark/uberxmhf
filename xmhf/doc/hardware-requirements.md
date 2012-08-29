@@ -11,7 +11,7 @@ Check Intel processor capabilities: <http://ark.intel.com/>
 
 Check AMD processor capabilities:
 <http://www.amd.com/us/products/pages/processors.aspx>.
-Look for AMD Virtualization™ (AMD-V™) Technology With Rapid Virtualization
+Look for AMD Virtualization (AMD-V) Technology With Rapid Virtualization
 Indexing capability for the desired CPU model.
 
 Requirements:
