@@ -34,7 +34,7 @@ function email_logs () {
 
   # Include convenient links in the email
   perl -pe "s/\/var\/www/http:\/\/$JON_URL_BASE/" < $STATUS_REPORT_FILE | mailx -s "$SUBJECT" jonmccune@cmu.edu
-#  perl -pe "s/\/var\/www/http:\/\/$WEB_URL_BASE/" < $STATUS_REPORT_FILE | mailx -s "$SUBJECT" jonmccune@cmu.edu jnewsome@cmu.edu amitvasudevan@gmail.com
+  perl -pe "s/\/var\/www/http:\/\/$WEB_URL_BASE/" < $STATUS_REPORT_FILE | mailx -s "$SUBJECT" jonmccune@cmu.edu jnewsome@cmu.edu amitvasudevan@gmail.com
 }
 
 ## 0. Basic Setup
