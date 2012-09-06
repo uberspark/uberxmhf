@@ -15,7 +15,7 @@ AMD
 ---
 
 * Reference manuals:
-    * [AMD64 Architecture Programmer’s Manual Volume 2: System Programming](http://support.amd.com/us/Processor_TechDocs/24593_APM_v2.pdf)
+    * [AMD64 Architecture Programmer's Manual Volume 2: System Programming](http://support.amd.com/us/Processor_TechDocs/24593_APM_v2.pdf)
 
 * The CPU instruction for a dynamic launch is `SKINIT`.
 * AMD calls the launched environment a Secure Loader Block (SLB).

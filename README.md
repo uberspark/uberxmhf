@@ -90,7 +90,7 @@ The core team: Amit Vasudevan, Jonathan McCune, and James Newsome.
 Related Publications
 ====================
 
-* "It’s an app. It’s a hypervisor. It’s a hypapp.": Design and
+* "It's an app. It's a hypervisor. It's a hypapp.": Design and
   Implementation of an eXtensible and Modular Hypervisor
   Framework. Amit Vasudevan, Jonathan M. McCune, and James
   Newsome. Technical Report CMU-CyLab-12-014, June 2012.
