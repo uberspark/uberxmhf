@@ -2,7 +2,7 @@
 
 export TARGET=/mnt
 
-for i in test-6555b test-e8100 creeper pratt; do 
+for i in test-6555b test-e8100 creeper pratt cowabunga caisson; do 
     losetup /dev/loop0 /dev/vg0/iscsi.slashboot.$i
     kpartx -av /dev/loop0
     mount /dev/mapper/loop0p1 $TARGET

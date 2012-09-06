@@ -2,7 +2,8 @@
 
 set -e
 
-HOSTS="test-e8100 pratt test-6555b creeper"
+#HOSTS="test-e8100 pratt test-6555b creeper"
+HOSTS="caisson cowabunga pratt test-6555b creeper"
 
 LOGDIR_ROOT=/var/www/logger
 
