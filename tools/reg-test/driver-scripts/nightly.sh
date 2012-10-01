@@ -18,8 +18,7 @@
 # completion of testing.
 function email_logs () {
   STATUS_REPORT_FILE=/tmp/test-email.txt
-  WEB_URL_BASE='mccune.ece.cmu.edu:8080'
-  JON_URL_BASE=squid
+  WEB_URL_BASE='emperor.pdl.cmu.local:8080'
   echo -e "Primary nightly build and test administration log:\n" > $STATUS_REPORT_FILE
   if [ -z $1 ]; then
       echo "ERROR: Function email_logs invoked without a log to email!" >> $STATUS_REPORT_FILE
@@ -33,8 +32,7 @@ function email_logs () {
   SUBJECT="[reg-test] squid test report for $TIMESTAMP"
 
   # Include convenient links in the email
-  perl -pe "s/\/var\/www/http:\/\/$JON_URL_BASE/" < $STATUS_REPORT_FILE | mailx -s "$SUBJECT" jonmccune@cmu.edu
-  perl -pe "s/\/var\/www/http:\/\/$WEB_URL_BASE/" < $STATUS_REPORT_FILE | mailx -s "$SUBJECT" jonmccune@cmu.edu jnewsome@cmu.edu amitvasudevan@gmail.com
+  perl -pe "s/\/var\/www/http:\/\/$WEB_URL_BASE/" < $STATUS_REPORT_FILE | mailx -s "$SUBJECT" jonmccune@gmail.com jdnewsome@gmail.com amitvasudevan@gmail.com
 }
 
 ## 0. Basic Setup
