@@ -185,7 +185,7 @@ typedef struct _vcpu {
   u32 idx;                //this vcpu's index in the g_vcpubuffers array
   u32 sipivector;         //SIPI vector 
   u32 sipireceived;       //SIPI received indicator, 1 if yes
-  u32 nmiinhvm;           //this is 1 if there was a NMI when in HVM, else 0        
+  //u32 nmiinhvm;           //this is 1 if there was a NMI when in HVM, else 0        
 	u32 cpu_vendor;					//Intel or AMD
 	u32 isbsp;							//1 if this core is BSP else 0
   u32 quiesced;				//1 if this core is currently quiesced
