@@ -183,8 +183,9 @@ static void _svm_handle_nmi(VCPU *vcpu, struct _svm_vmcbfields __attribute__((un
     //now we adopt a simple trick, this NMI is pending, the only
     //way we can dismiss it is if we set GIF=0 and make GIF=1 so that
     //the core thinks it must dispatch the pending NMI :p
-    //set nmiinhvm to 1 since this NMI was when the core was in HVM 
-    vcpu->nmiinhvm=1;
+    ////set nmiinhvm to 1 since this NMI was when the core was in HVM 
+    //vcpu->nmiinhvm=1;
+    (void)vcpu;
     
     //printf("\nCPU(0x%02x): triggering local NMI in CPU...", vcpu->id);
     
