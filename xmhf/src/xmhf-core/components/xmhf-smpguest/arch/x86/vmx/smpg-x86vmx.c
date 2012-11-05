@@ -476,15 +476,15 @@ void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		//inject the NMI if it was triggered in guest mode
 		
 		if(nmiinhvm){
-			//if(){
-			//	//TODO: hypapp has chosen to intercept NMI so callback
-			//}else{
+			if(vcpu->vmcs.control_exception_bitmap & CPU_EXCEPTION_NMI){
+				//TODO: hypapp has chosen to intercept NMI so callback
+			}else{
 				//printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
 				vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
 				vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
 					INTR_TYPE_NMI |
 					INTR_INFO_VALID_MASK;
-			//}
+			}
 		}
 	}
 	
