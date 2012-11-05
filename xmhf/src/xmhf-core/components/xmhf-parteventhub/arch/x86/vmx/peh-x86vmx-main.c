@@ -476,9 +476,9 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 					break;				
 				
 				case 0x02:	//NMI
-					vcpu->nmiinhvm=1;	//this NMI occured when the core was in guest (HVM)
+					//vcpu->nmiinhvm=1;	//this NMI occured when the core was in guest (HVM)
 					emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(vcpu, r);
-					vcpu->nmiinhvm=0;
+					//vcpu->nmiinhvm=0;
 					break;
 				
 				default:
