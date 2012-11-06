@@ -440,10 +440,12 @@ void emhf_smpguest_arch_x86svm_eventhandler_nmiexception(VCPU *vcpu, struct regs
   u32 nmiinhvm;		//1 if NMI was triggered while in hypervisor, 0 if it was triggered in guest
   (void)r;
 	
-	//printf("\n%s[%02x]: nmiinhvm=%u, g_svm_quiesce=%u", __FUNCTION__, vcpu->id,
-	//	vcpu->nmiinhvm, g_svm_quiesce);
 	
 	nmiinhvm = (vmcb->exitcode == SVM_VMEXIT_NMI) ? 0 : 1; 
+
+	//printf("\n%s[%02x]: nmiinhvm=%u, g_svm_quiesce=%u", __FUNCTION__, vcpu->id,
+	//	nmiinhvm, g_svm_quiesce);
+
 	
   if(g_svm_quiesce){ //if g_svm_quiesce is 1 we process quiesce regardless of where NMI originated from
 	if(vcpu->quiesced)
@@ -481,14 +483,18 @@ void emhf_smpguest_arch_x86svm_eventhandler_nmiexception(VCPU *vcpu, struct regs
     if(nmiinhvm){
 		if(vmcb->exception_intercepts_bitmask & CPU_EXCEPTION_NMI){
 			//TODO: hypapp has chosen to intercept NMI so callback
+			printf("%s[%02x]:NMI handler: hypapp intercepts NMI, ignoring for now", __FUNCTION__, vcpu->id);
+
 		}else{
-			//printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
+			printf("%s[%02x]:NMI handler: injecting NMI into guest", __FUNCTION__, vcpu->id);
 			vmcb->eventinj.vector=0;
 			vmcb->eventinj.type = EVENTINJ_TYPE_NMI;
 			vmcb->eventinj.ev=0;
 			vmcb->eventinj.v=1;
 			vmcb->eventinj.errorcode=0;
 		}
+	}else{
+		printf("%s[%02x]:NMI handler: NMI in hypervisor, ignoring", __FUNCTION__, vcpu->id);
 	}
   }
   

@@ -360,6 +360,21 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
   
   vmcb->tlb_control = VMCB_TLB_CONTROL_NOTHING;
 
+	/*//check APIC timer local vector table entry
+	{
+	  volatile u32 *tlvt = (u32 *)(0xFEE00000 + 0x320);
+	  u32 mt = (*tlvt & 0x00000700) >> 8;
+	  u32 mask = (*tlvt & 0x00010000) >> 16;
+	  u32 tmm = (*tlvt & 0x00020000) >> 17;
+	  if(mask == 0){
+		printf("\n%s[%02x]: APIC TIMER mode with NMI detected %u %u %u", __FUNCTION__, vcpu->id,mt,mask,tmm);
+		HALT();
+	  
+	  }
+	
+	}*/
+
+
 	//handle intercepts
 	switch(vmcb->exitcode){
 		
