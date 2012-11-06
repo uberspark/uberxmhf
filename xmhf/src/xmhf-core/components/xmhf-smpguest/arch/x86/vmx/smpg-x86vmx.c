@@ -439,7 +439,6 @@ void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 
     (void)r;
 
-	
 	//determine if the NMI originated within the HVM or within the
 	//hypervisor. we use VMCS fields for this purpose. note that we
 	//use vmread directly instead of relying on vcpu-> to avoid 
@@ -488,57 +487,6 @@ void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		}
 	}
 	
-	
-	
-	
-	
-/*	
-		//check if we are quiescing, if not reflect NMI back to guest
-		//(if NMI originated from guest) else halt reporting a spurious
-		//NMI within hypervisor
-		if(!g_vmx_quiesce){
-			//vmx_apic_dumpregs(vcpu);
-			
-			if( (!vcpu->nmiinhvm) ){
-				//XXX: TODO, check if APIC LVT registers have been setup
-				//to generate periodic NMIs and if so inject this into
-				//the guest
-				//printf("\nCPU(0x%02x): Warning - spurious NMI within hypervisor, ignoring", vcpu->id);
-				return;
-			}else{
-				//printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
-				vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
-				vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
-					INTR_TYPE_NMI |
-					INTR_INFO_VALID_MASK;
-			}
-		}else{	//we are processing a quiesce request
-			//if this core has been quiesced, simply return
-			if(vcpu->quiesced)
-				return;
-				
-			vcpu->quiesced=1;
-	
-			//increment quiesce counter
-			spin_lock(&g_vmx_lock_quiesce_counter);
-			g_vmx_quiesce_counter++;
-			spin_unlock(&g_vmx_lock_quiesce_counter);
-
-			//wait until quiesceing is finished
-			//printf("\nCPU(0x%02x): Quiesced", vcpu->id);
-			while(!g_vmx_quiesce_resume_signal);
-			//printf("\nCPU(0x%02x): EOQ received, resuming...", vcpu->id);
-
-			spin_lock(&g_vmx_lock_quiesce_resume_counter);
-			g_vmx_quiesce_resume_counter++;
-			spin_unlock(&g_vmx_lock_quiesce_resume_counter);
-			
-			vcpu->quiesced=0;
-		}
-
-		//flush EPT mappings on this core 
-		emhf_memprot_flushmappings(vcpu);
-*/
 }
 
 //perform required setup after a guest awakens a new CPU

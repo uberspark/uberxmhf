@@ -445,18 +445,12 @@ void emhf_smpguest_arch_x86svm_eventhandler_nmiexception(VCPU *vcpu, struct regs
 	
 	nmiinhvm = (vmcb->exitcode == SVM_VMEXIT_NMI) ? 0 : 1; 
 	
-  //if( (!nmiinhvm) && (!g_svm_quiesce) ){
-    //printf("\nCPU(0x%02x): warning, ignoring spurious NMI within hypervisor!", vcpu->id);
-    //return;
-  //}
-
   if(g_svm_quiesce){ //if g_svm_quiesce is 1 we process quiesce regardless of where NMI originated from
 	if(vcpu->quiesced)
 		return;
 				
 	vcpu->quiesced=1;
 
-    
     //ok this NMI is because of g_svm_quiesce. note: g_svm_quiesce can be 1 and
     //this could be a NMI for the guest. we have no way of distinguising
     //this. however, since g_svm_quiesce=1, we can handle this NMI as a g_svm_quiesce NMI
