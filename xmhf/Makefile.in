@@ -338,6 +338,9 @@ distclean: clean
 init-late-clean:
 	cd src/xmhf-core && make -w init-late-clean
 
+verify:
+	cd src/xmhf-core && make -w verify
+
 
 #-----autoconf rules
 Makefile: Makefile.in config.status
