@@ -217,6 +217,7 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
   	
 	
   //start partition
+  printf("\n%s[%02x]: starting partition...", __FUNCTION__, vcpu->id);
   emhf_partition_start(vcpu);
 
   printf("\nCPU(0x%02x): FATAL, should not be here. HALTING!", vcpu->id);

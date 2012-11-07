@@ -969,7 +969,8 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
       ((struct _svm_vmcbfields *)(vcpu->vmcb_vaddr_ptr))->exception_intercepts_bitmask;
     ((struct _svm_vmcbfields *)(vcpu->vmcb_vaddr_ptr))->exception_intercepts_bitmask = 0xffffffff;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    /* FIXME */
+    whitelist[curr].saved_exception_intercepts =  vcpu->vmcs.control_exception_bitmap;
+    vcpu->vmcs.control_exception_bitmap = 0xffffffff;
   }
 
   err=0;
@@ -1114,7 +1115,8 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
     ((struct _svm_vmcbfields *)(vcpu->vmcb_vaddr_ptr))->exception_intercepts_bitmask
       = whitelist[curr].saved_exception_intercepts;
   } else if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
-    /* FIXME */
+    vcpu->vmcs.control_exception_bitmap
+      = whitelist[curr].saved_exception_intercepts;
   }
 
   /* release shared pages */

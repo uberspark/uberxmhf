@@ -509,7 +509,7 @@ void emhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu){
 		printf("\nCPU(0x%02x, BSP): initializing INT 15 hook for UG mode...", vcpu->id);
 		_vmx_int15_initializehook(vcpu);
 	}
-	
+
 }
 
 

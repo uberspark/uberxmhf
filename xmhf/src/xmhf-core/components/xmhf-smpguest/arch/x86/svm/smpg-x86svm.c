@@ -389,6 +389,8 @@ void emhf_smpguest_arch_x86svm_quiesce(VCPU *vcpu){
     spin_lock(&g_svm_lock_quiesce);
     //printf("\nCPU(0x%02x): grabbed quiesce lock.", vcpu->id);
 
+	vcpu->quiesced = 1;
+
     spin_lock(&g_svm_lock_quiesce_counter);
     g_svm_quiesce_counter=0;
     spin_unlock(&g_svm_lock_quiesce_counter);
@@ -414,7 +416,9 @@ void emhf_smpguest_arch_x86svm_endquiesce(VCPU __attribute__((unused)) *vcpu){
         
         while(g_svm_quiesce_resume_counter < (g_midtable_numentries-1) );
 
+		vcpu->quiesced = 0;
         g_svm_quiesce=0;  // we are out of quiesce at this point
+
 
         //printf("\nCPU(0x%02x): all CPUs resumed successfully.", vcpu->id);
         
@@ -429,16 +433,26 @@ void emhf_smpguest_arch_x86svm_endquiesce(VCPU __attribute__((unused)) *vcpu){
 }
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
+//this function executes atomically. i.e., other NMIs (if any) are
+//held pending by the platform until we return
 void emhf_smpguest_arch_x86svm_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
   struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
+  u32 nmiinhvm;		//1 if NMI was triggered while in hypervisor, 0 if it was triggered in guest
   (void)r;
 	
-  if( (!vcpu->nmiinhvm) && (!g_svm_quiesce) ){
-    printf("\nCPU(0x%02x): warning, ignoring spurious NMI within hypervisor!", vcpu->id);
-    return;
-  }
+	
+	nmiinhvm = (vmcb->exitcode == SVM_VMEXIT_NMI) ? 0 : 1; 
 
-  if(g_svm_quiesce){
+	//printf("\n%s[%02x]: nmiinhvm=%u, g_svm_quiesce=%u", __FUNCTION__, vcpu->id,
+	//	nmiinhvm, g_svm_quiesce);
+
+	
+  if(g_svm_quiesce){ //if g_svm_quiesce is 1 we process quiesce regardless of where NMI originated from
+	if(vcpu->quiesced)
+		return;
+				
+	vcpu->quiesced=1;
+
     //ok this NMI is because of g_svm_quiesce. note: g_svm_quiesce can be 1 and
     //this could be a NMI for the guest. we have no way of distinguising
     //this. however, since g_svm_quiesce=1, we can handle this NMI as a g_svm_quiesce NMI
@@ -460,19 +474,30 @@ void emhf_smpguest_arch_x86svm_eventhandler_nmiexception(VCPU *vcpu, struct regs
     
     //printf("\nCPU(0x%08x): Halting!", vcpu->id);
     //HALT();
+    vcpu->quiesced=0;
     
   }else{
-    //we are not in quiesce, so simply inject this NMI back to guest
-    ASSERT( vcpu->nmiinhvm == 1 );
-    printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
-    vmcb->eventinj.vector=0;
-    vmcb->eventinj.type = EVENTINJ_TYPE_NMI;
-    vmcb->eventinj.ev=0;
-    vmcb->eventinj.v=1;
-    vmcb->eventinj.errorcode=0;
+    //we are not in quiesce
+    //inject the NMI if it was triggered in guest mode
+    
+    if(nmiinhvm){
+		if(vmcb->exception_intercepts_bitmask & CPU_EXCEPTION_NMI){
+			//TODO: hypapp has chosen to intercept NMI so callback
+			printf("%s[%02x]:NMI handler: hypapp intercepts NMI, ignoring for now", __FUNCTION__, vcpu->id);
+
+		}else{
+			printf("%s[%02x]:NMI handler: injecting NMI into guest", __FUNCTION__, vcpu->id);
+			vmcb->eventinj.vector=0;
+			vmcb->eventinj.type = EVENTINJ_TYPE_NMI;
+			vmcb->eventinj.ev=0;
+			vmcb->eventinj.v=1;
+			vmcb->eventinj.errorcode=0;
+		}
+	}else{
+		printf("%s[%02x]:NMI handler: NMI in hypervisor, ignoring", __FUNCTION__, vcpu->id);
+	}
   }
   
-  vcpu->nmiinhvm=0;
 }
 
 

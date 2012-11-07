@@ -93,6 +93,17 @@ static u64 __attribute__((unused)) vmx_apic_hwpgtbl_getprot(VCPU *vcpu, u64 gpa)
   return (pt[pfn] & (u64)7) ;
 }
 
+static void vmx_apic_dumpregs(VCPU *vcpu){
+	printf("\n%s[%02x]: APIC register dump follows...", __FUNCTION__,
+		vcpu->id);
+		
+	printf("\n    CMCI=0x%08x", *((volatile u32 *)0xfee002f0));
+	printf("\n    Timer=0x%08x", *((volatile u32 *)0xfee00320));
+	printf("\n    LINT0=0x%08x", *((volatile u32 *)0xfee00350));
+	printf("\n    LINT1=0x%08x", *((volatile u32 *)0xfee00360));
+	printf("\n    Error=0x%08x", *((volatile u32 *)0xfee00370));
+	printf("\n----");
+}
 
 //---checks if all logical cores have received SIPI
 //returns 1 if yes, 0 if no
@@ -214,6 +225,8 @@ void emhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu){
   //this will cause EPT violation which is then
   //handled by vmx_lapic_access_handler
 	vmx_apic_hwpgtbl_setprot(vcpu, g_vmx_lapic_base, 0);
+	
+  vmx_apic_dumpregs(vcpu);
 }
 
 
@@ -363,7 +376,7 @@ void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
 
 
 //quiesce interface to switch all guest cores into hypervisor mode
-//note: we are in atomic processsing mode here
+//note: we are in atomic processsing mode for this "vcpu"
 void emhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
 
         //printf("\nCPU(0x%02x): got quiesce signal...", vcpu->id);
@@ -371,6 +384,7 @@ void emhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
         spin_lock(&g_vmx_lock_quiesce);
         //printf("\nCPU(0x%02x): grabbed quiesce lock.", vcpu->id);
 
+		vcpu->quiesced = 1;
 		//reset quiesce counter
         spin_lock(&g_vmx_lock_quiesce_counter);
         g_vmx_quiesce_counter=0;
@@ -399,6 +413,7 @@ void emhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
         
         while(g_vmx_quiesce_resume_counter < (g_midtable_numentries-1) );
 
+		vcpu->quiesced=0;
         g_vmx_quiesce=0;  // we are out of quiesce at this point
 
         //printf("\nCPU(0x%02x): all CPUs resumed successfully.", vcpu->id);
@@ -416,42 +431,62 @@ void emhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
 }
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
+//note: we are in atomic processsing mode for this "vcpu"
 void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
+	u32 nmiinhvm;	//1 if NMI originated from the HVM else 0 if within the hypervisor
+	u32 _vmx_vmcs_info_vmexit_interrupt_information;
+	u32 _vmx_vmcs_info_vmexit_reason;
+
     (void)r;
 
-		//check if we are quiescing, if not reflect NMI back to guest
-		//(if NMI originated from guest) else halt reporting a spurious
-		//NMI within hypervisor
-		if(!g_vmx_quiesce){
-			if( (!vcpu->nmiinhvm) ){
-				printf("\nCPU(0x%02x): Fatal - spurious NMI within hypervisor. halt!", vcpu->id);
-				HALT();
+	//determine if the NMI originated within the HVM or within the
+	//hypervisor. we use VMCS fields for this purpose. note that we
+	//use vmread directly instead of relying on vcpu-> to avoid 
+	//race conditions
+	__vmx_vmread(0x4404, &_vmx_vmcs_info_vmexit_interrupt_information);
+	__vmx_vmread(0x4402, &_vmx_vmcs_info_vmexit_reason);
+	
+	nmiinhvm = ( (_vmx_vmcs_info_vmexit_reason == VMX_VMEXIT_EXCEPTION) && ((_vmx_vmcs_info_vmexit_interrupt_information & INTR_INFO_VECTOR_MASK) == 2) ) ? 1 : 0;
+	
+	if(g_vmx_quiesce){ //if g_vmx_quiesce =1 process quiesce regardless of where NMI originated from
+		//if this core has been quiesced, simply return
+			if(vcpu->quiesced)
+				return;
+				
+			vcpu->quiesced=1;
+	
+			//increment quiesce counter
+			spin_lock(&g_vmx_lock_quiesce_counter);
+			g_vmx_quiesce_counter++;
+			spin_unlock(&g_vmx_lock_quiesce_counter);
+
+			//wait until quiesceing is finished
+			//printf("\nCPU(0x%02x): Quiesced", vcpu->id);
+			while(!g_vmx_quiesce_resume_signal);
+			//printf("\nCPU(0x%02x): EOQ received, resuming...", vcpu->id);
+
+			spin_lock(&g_vmx_lock_quiesce_resume_counter);
+			g_vmx_quiesce_resume_counter++;
+			spin_unlock(&g_vmx_lock_quiesce_resume_counter);
+			
+			vcpu->quiesced=0;
+	}else{
+		//we are not in quiesce
+		//inject the NMI if it was triggered in guest mode
+		
+		if(nmiinhvm){
+			if(vcpu->vmcs.control_exception_bitmap & CPU_EXCEPTION_NMI){
+				//TODO: hypapp has chosen to intercept NMI so callback
 			}else{
-				printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
+				//printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
 				vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
 				vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
 					INTR_TYPE_NMI |
 					INTR_INFO_VALID_MASK;
 			}
 		}
+	}
 	
-		//increment quiesce counter
-		spin_lock(&g_vmx_lock_quiesce_counter);
-		g_vmx_quiesce_counter++;
-		spin_unlock(&g_vmx_lock_quiesce_counter);
-
-		//wait until quiesceing is finished
-		//printf("\nCPU(0x%02x): Quiesced", vcpu->id);
-		while(!g_vmx_quiesce_resume_signal);
-		//printf("\nCPU(0x%02x): EOQ received, resuming...", vcpu->id);
-
-		spin_lock(&g_vmx_lock_quiesce_resume_counter);
-		g_vmx_quiesce_resume_counter++;
-		spin_unlock(&g_vmx_lock_quiesce_resume_counter);
-
-		//flush EPT mappings on this core 
-		emhf_memprot_flushmappings(vcpu);
-
 }
 
 //perform required setup after a guest awakens a new CPU

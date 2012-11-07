@@ -82,7 +82,7 @@ void emhf_smpguest_arch_initialize(VCPU *vcpu){
 	//UP version, we just let the BSP continue and stall the APs
 	if(vcpu->isbsp)
 		return;
-		
+	
 	//we are an AP, so just lockup
 	printf("\nCPU(0x%02x): AP, locked!", vcpu->id);
 	while(1);
