@@ -108,4 +108,7 @@ init-late-clean:
 install-dev:
 	# Nothing to do here
 
+.PHONY: verify
+verify:
+	cd verification/ && $(MAKE) -w verify
 	
