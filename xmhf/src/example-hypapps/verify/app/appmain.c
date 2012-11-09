@@ -63,9 +63,11 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 u32 v_hypercall_handler(VCPU *vcpu, struct regs *r){
 	
 	//invoke setprot to set memory protections
+	//assume that gpa and prottype are passed using GPR
+	//ECX and EDX respectively (under attacker's control)
 	{
-		u32 gpa=nondet_u32();
-		u32 prottype=nondet_u32();
+		u32 gpa=r->ecx;
+		u32 prottype=r->edx;
 		
 		if( ((gpa < rpb->XtVmmRuntimePhysBase) || 
 		    (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize))) 
@@ -94,7 +96,7 @@ u32 v_hypercall_handler(VCPU *vcpu, struct regs *r){
 }
 
 u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
-	struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+	struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
 	u32 status=APP_SUCCESS;
 	u32 call_id= (u32)vmcb->rax;
 
