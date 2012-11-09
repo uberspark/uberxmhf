@@ -16,10 +16,11 @@ C_SOURCES += `find ../components/xmhf-tpm/ -type f -name "*.c" -print`
 C_SOURCES += `find ../components/xmhf-xcphandler/ -type f -name "*.c" -print`
 C_SOURCES += `find ../components/xmhf-xmhfcbackend/ -type f -name "*.c" -print`
 
+HYPAPP_SOURCES = `find $(APP_ROOT)/ -type f -name "*.c" -print`
 
 .PHONY: verify 
 verify: 
-	cbmc $(VFLAGS) -D__XMHF_VERIFICATION__ --bounds-check --pointer-check xmhf-core-vdriver.c $(C_SOURCES)
+	cbmc $(VFLAGS) -D__XMHF_VERIFICATION__ --bounds-check --pointer-check xmhf-core-vdriver.c $(C_SOURCES) $(HYPAPP_SOURCES)
 	
   
 
