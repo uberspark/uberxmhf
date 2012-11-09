@@ -180,6 +180,16 @@ static inline u8 readb(u32 addr) {
                        );
     return (u8)ret;        
 }
+
+#else
+static inline void writeb(u32 addr, u8 val) {
+ 
+}
+
+static inline u8 readb(u32 addr) {
+ return 0;
+}
+
 #endif
 
 //TPM timeouts
