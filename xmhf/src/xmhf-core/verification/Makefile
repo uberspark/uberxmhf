@@ -5,16 +5,16 @@
 AS_SOURCES =  
 
 C_SOURCES = `find ../components/xmhf-baseplatform/ -type f -name "*.c" -print`
-#C_SOURCES += `find ../components/xmhf-debug/ -type f -name "*.c" -print`
-#C_SOURCES += `find ../components/xmhf-dmaprot/ -type f -name "*.c" -print`
-#C_SOURCES += `find ../components/xmhf-memprot/ -type f -name "*.c" -print`
-#C_SOURCES += `find ../components/xmhf-parteventhub/ -type f -name "*.c" -print`
-#C_SOURCES += `find ../components/xmhf-partition/ -type f -name "*.c" -print`
-#C_SOURCES += `find ../components/xmhf-runtime/ -type f -name "*.c" -print`
-#C_SOURCES += `find ../components/xmhf-smpguest/ -type f -name "*.c" -print`
-#C_SOURCES += `find ../components/xmhf-tpm/ -type f -name "*.c" -print`
-#C_SOURCES += `find ../components/xmhf-xcphandler/ -type f -name "*.c" -print`
-#C_SOURCES += `find ../components/xmhf-xmhfcbackend/ -type f -name "*.c" -print`
+C_SOURCES += `find ../components/xmhf-debug/ -type f -name "*.c" -print`
+C_SOURCES += `find ../components/xmhf-dmaprot/ -type f -name "*.c" -print`
+C_SOURCES += `find ../components/xmhf-memprot/ -type f -name "*.c" -print`
+C_SOURCES += `find ../components/xmhf-parteventhub/ -type f -name "*.c" -print`
+C_SOURCES += `find ../components/xmhf-partition/ -type f -name "*.c" -print`
+C_SOURCES += `find ../components/xmhf-runtime/ -type f -name "*.c" -print`
+C_SOURCES += `find ../components/xmhf-smpguest/ -type f -name "*.c" -print`
+C_SOURCES += `find ../components/xmhf-tpm/ -type f -name "*.c" -print`
+C_SOURCES += `find ../components/xmhf-xcphandler/ -type f -name "*.c" -print`
+C_SOURCES += `find ../components/xmhf-xmhfcbackend/ -type f -name "*.c" -print`
 
 
 .PHONY: verify 
