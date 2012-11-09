@@ -166,10 +166,16 @@ static void _svm_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu, struct 
   *icr_low = 0x000C0400UL;      //send NMI        
   
   //check if IPI has been delivered successfully
+#ifndef __XMHF_VERIFICATION__
   do{
 	delivered = *icr_high;
 	delivered &= 0x00001000;
   }while(delivered);
+#else
+	//TODO: plug in h/w model of LAPIC, for now assume hardware just
+	//works
+#endif
+
   
   //restore icr high
   *icr_high = prev_icr_high_value;

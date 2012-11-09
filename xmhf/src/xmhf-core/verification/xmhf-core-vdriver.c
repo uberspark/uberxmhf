@@ -76,6 +76,8 @@ void main() {
 		vcpu.npt_vaddr_pts = 0xC8000000;								//where our NPTs reside
 		vcpu.vmcb_vaddr_ptr = (u32)&_xvmcb;								//set vcpu VMCB virtual address to something meaningful
 
+		g_midtable_numentries=1;
+
 		//globals
 		g_svm_lapic_base = 0xFEE00000;
 		

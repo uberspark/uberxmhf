@@ -55,6 +55,7 @@
 //generic x86 platform reboot
 void emhf_baseplatform_arch_x86_reboot(void){
 	unsigned char flush = 0x02;
+#ifndef __XMHF_VERIFICATION__
 	while ((flush & 0x02) != 0)
 		flush = inb(0x64);
 	outb(0xFE, 0x64);
@@ -62,6 +63,10 @@ void emhf_baseplatform_arch_x86_reboot(void){
 	//never get here
 	printf("\n%s: should never get here. halt!", __FUNCTION__);
 	HALT();
+#else
+	//TODO: plug in a 8042 controller/reset h/w model
+	
+#endif
 }
 
 
