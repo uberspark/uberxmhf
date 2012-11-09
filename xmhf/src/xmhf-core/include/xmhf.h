@@ -85,6 +85,8 @@
 #include <xmhf-debug.h>			//EMHF debug component 
 #include <xmhf-types.h>			//EMHF specific base types
 
+//include verification related primitives
+#include <xmhf-verification.h>
 
 
 //forward declaration of runtime parameter block
