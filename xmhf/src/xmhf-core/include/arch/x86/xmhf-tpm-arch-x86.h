@@ -163,6 +163,7 @@ typedef union {
 /* #define readb(va)       (*(volatile uint8_t *) (va)) */
 /* #define writeb(va, d)   (*(volatile uint8_t *) (va) = (d)) */
 
+#ifndef __XMHF_VERIFICATION__
 static inline void writeb(u32 addr, u8 val) {
     __asm__ __volatile__("movb %%al, %%fs:(%%ebx)\r\n"
                          :
@@ -179,6 +180,7 @@ static inline u8 readb(u32 addr) {
                        );
     return (u8)ret;        
 }
+#endif
 
 //TPM timeouts
 #define TIMEOUT_UNIT    (0x100000 / 330) /* ~1ms, 1 tpm r/w need > 330ns */
