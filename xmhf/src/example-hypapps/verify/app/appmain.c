@@ -53,17 +53,65 @@
 // application main
 u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
   (void)apb;	//unused
-  printf("\nCPU(0x%02x): Hello world from XMHF hyperapp!", vcpu->id);
+  printf("\nCPU(0x%02x): XMHF core verification hypapp!", vcpu->id);
   return APP_INIT_SUCCESS;  //successful
 }
 
-//returns APP_SUCCESS if we handled the hypercall else APP_ERROR
-u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
-			u32 status=APP_SUCCESS;
-			(void)r; //unused
-			printf("\nCPU(0x%02x): hypercall unhandled, simply returning!", vcpu->id);
-			return status;
+u32 v_hypercall_handler(VCPU *vcpu, struct regs *r){
+	
+	//invoke setprot to set memory protections
+	{
+		u32 gpa=nondet_u32();
+		u32 prottype=nondet_u32();
+		
+		if( ((gpa < rpb->XtVmmRuntimePhysBase) || 
+		    (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize))) 
+			&&
+			( (prottype > 0) && 
+	          (prottype <= MEMP_PROT_MAXVALUE) 
+	        )
+			&&	
+			(	(prottype == MEMP_PROT_NOTPRESENT) ||
+				((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_EXECUTE)) ||
+				((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_EXECUTE)) ||
+				((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_NOEXECUTE)) ||
+				((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_NOEXECUTE)) 
+			)
+		  ){
+			//emhf_memprot_setprot(&vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE);	   
+			emhf_memprot_setprot(vcpu, gpa, prottype);	   
+		}else{
+			printf("\nSecurity Exception: Trying to set protections on EMHF memory regions, Halting!");
+			HALT();
+		}
+	}
+
+	
+		return APP_SUCCESS;
 }
+
+u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
+	struct vmcb_struct *vmcb = (struct vmcb_struct *)vcpu->vmcb_vaddr_ptr;
+	u32 status=APP_SUCCESS;
+	u32 call_id= (u32)vmcb->rax;
+
+	switch(call_id){
+		
+		case V_HYPERCALL:{
+			status=v_hypercall_handler(vcpu, r);
+		}
+		break;
+		
+		default:
+			printf("\nCPU(0x%02x): unsupported hypercall (0x%08x)!!", 
+			  vcpu->id, call_id);
+			status=APP_ERROR;
+			break;
+	}
+
+	return status;			
+}
+
 
 //handles XMHF shutdown callback
 //note: should not return
@@ -101,3 +149,4 @@ u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
 
  	return APP_IOINTERCEPT_CHAIN;
 }
+
