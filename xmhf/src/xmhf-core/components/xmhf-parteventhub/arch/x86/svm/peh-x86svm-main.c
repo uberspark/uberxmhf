@@ -161,7 +161,7 @@ static void _svm_handle_npf(VCPU *vcpu, struct regs *r){
     //  (u16)vmcb->cs.sel, (u32)vmcb->rip, gpa, errorcode);
     ASSERT( vcpu->isbsp == 1); //only BSP gets a NPF during LAPIC SIPI detection
     //svm_lapic_access_handler(vcpu, gpa, errorcode);
-    emhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
+    //emhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
     //HALT();
   } else {
 	//note: AMD does not provide guest virtual address on a #NPF
@@ -624,7 +624,7 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 
 		case SVM_VMEXIT_EXCEPTION_DB:{
 			if(vcpu->isbsp == 1){											//LAPIC SIPI detection only happens on BSP
-				emhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
+				//emhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
 			}else{															//TODO: reflect back to guest
 				printf("\nUnexpected DB exception on non-BSP core (0x%02x)", vcpu->id);
 				printf("\nHalting!");
