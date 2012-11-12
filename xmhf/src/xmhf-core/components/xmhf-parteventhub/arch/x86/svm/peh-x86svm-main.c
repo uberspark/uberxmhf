@@ -367,7 +367,11 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 	if( (vmcb->cr0 & CR0_PE) && (vmcb->cr0 & CR0_PG) &&
 			(vmcb->rflags & EFLAGS_VM) ){
 		u8 *bdamemoryphysical;
-		bdamemoryphysical = (u8 *)emhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)bdamemory);
+		#ifdef __XMHF_VERIFICATION__
+			bdamemoryphysical = (u8 *)nondet_u32();
+		#else
+			bdamemoryphysical = (u8 *)emhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)bdamemory);
+		#endif
 		if((u32)bdamemoryphysical < rpb->XtVmmRuntimePhysBase){
 			printf("\nINT15 (E820): V86 mode, bdamemory translated from %08x to %08x",
 				(u32)bdamemory, (u32)bdamemoryphysical);
@@ -449,7 +453,11 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 				//if V86 mode translate the virtual address to physical address
 				if( (vmcb->cr0 & CR0_PE) && (vmcb->cr0 & CR0_PG) &&
 					(vmcb->rflags & EFLAGS_VM) ){
-					u8 *gueststackregionphysical = (u8 *)emhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)gueststackregion);
+					#ifdef __XMHF_VERIFICATION__
+						u8 *gueststackregionphysical = (u8 *)nondet_u32();
+					#else
+						u8 *gueststackregionphysical = (u8 *)emhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)gueststackregion);
+					#endif
 					if((u32)gueststackregionphysical < rpb->XtVmmRuntimePhysBase){
 						printf("\nINT15 (E820): V86 mode, gueststackregion translated from %08x to %08x",
 							(u32)gueststackregion, (u32)gueststackregionphysical);
@@ -574,19 +582,19 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 				if( !(vmcb->cr0 & CR0_PE)  ||
 					( (vmcb->cr0 & CR0_PE) && (vmcb->cr0 & CR0_PG) &&
 						(vmcb->rflags & EFLAGS_VM)  ) ){
-					_svm_int15_handleintercept(vcpu, r);	
+					//_svm_int15_handleintercept(vcpu, r);	
 				}else{
 						printf("\nCPU(0x%02x): unhandled INT 15h request from protected mode", vcpu->id);
 						printf("\nHalting!");
 						HALT();
 				}
 			}else{	//if not E820 hook, give app a chance to handle the hypercall
-				emhf_smpguest_arch_x86svm_quiesce(vcpu);
+				//emhf_smpguest_arch_x86svm_quiesce(vcpu);
 				if( emhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
 					printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", vcpu->id, r->eax);
 					HALT();
 				}
-				emhf_smpguest_arch_x86svm_endquiesce(vcpu);
+				//emhf_smpguest_arch_x86svm_endquiesce(vcpu);
 				vmcb->rip += 3;
 			}
 		}
@@ -594,13 +602,13 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 		
 		//IO interception
 		case SVM_VMEXIT_IOIO:{
-			_svm_handle_ioio(vcpu, vmcb, r);
+			//_svm_handle_ioio(vcpu, vmcb, r);
 		}
 		break;
 
 		//Nested Page Fault (NPF)
 		case SVM_VMEXIT_NPF:{
-		 _svm_handle_npf(vcpu, r);
+		 //_svm_handle_npf(vcpu, r);
 		}
 		break;
 
@@ -618,7 +626,7 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 
 		//MSR interception
 		case SVM_VMEXIT_MSR:{
-		  _svm_handle_msr(vcpu, vmcb, r);
+		  //_svm_handle_msr(vcpu, vmcb, r);
 		}
 		break;
 
@@ -634,7 +642,7 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 		break;
 
 		case SVM_VMEXIT_NMI:{
-			_svm_handle_nmi(vcpu, vmcb, r);
+			//_svm_handle_nmi(vcpu, vmcb, r);
 		}
 		break;
 
