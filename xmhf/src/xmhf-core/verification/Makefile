@@ -20,7 +20,7 @@ HYPAPP_SOURCES = `find $(APP_ROOT)/ -type f -name "*.c" -print`
 
 .PHONY: verify 
 verify: 
-	cbmc $(VFLAGS) -D__XMHF_VERIFICATION__ --bounds-check --pointer-check xmhf-core-vdriver.c $(C_SOURCES) $(HYPAPP_SOURCES)
+	cbmc $(VFLAGS) -D__XMHF_VERIFICATION__ --bounds-check --pointer-check xmhf-core-vdriver.c  $(HYPAPP_SOURCES) $(C_SOURCES)
 	
   
 

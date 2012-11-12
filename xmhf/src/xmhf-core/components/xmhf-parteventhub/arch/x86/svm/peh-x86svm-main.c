@@ -540,7 +540,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 //---SVM intercept handler hub--------------------------------------------------
 u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
   struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
-  
+
   vmcb->tlb_control = VMCB_TLB_CONTROL_NOTHING;
 
 	/*//check APIC timer local vector table entry

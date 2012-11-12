@@ -69,7 +69,8 @@ u32 v_hypercall_handler(VCPU *vcpu, struct regs *r){
 		u32 gpa=r->ecx;
 		u32 prottype=r->edx;
 		
-		if( ((gpa < rpb->XtVmmRuntimePhysBase) || 
+		
+		/*if( ((gpa < rpb->XtVmmRuntimePhysBase) || 
 		    (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize))) 
 			&&
 			( (prottype > 0) && 
@@ -82,13 +83,13 @@ u32 v_hypercall_handler(VCPU *vcpu, struct regs *r){
 				((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_NOEXECUTE)) ||
 				((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_NOEXECUTE)) 
 			)
-		  ){
+		  ){*/
 			//emhf_memprot_setprot(&vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE);	   
 			emhf_memprot_setprot(vcpu, gpa, prottype);	   
-		}else{
+		/*}else{
 			printf("\nSecurity Exception: Trying to set protections on EMHF memory regions, Halting!");
 			HALT();
-		}
+		}*/
 	}
 
 	

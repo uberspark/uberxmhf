@@ -51,6 +51,8 @@
 //----------------------------------------------------------------------
 #include <xmhf.h>
 
+
+
 #define V_HYPERCALL		0xDEADBEEF
 
 VCPU vcpu;
