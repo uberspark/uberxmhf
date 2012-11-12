@@ -614,7 +614,7 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 
 		case SVM_VMEXIT_INIT:{
 			printf("\n***** INIT emhf_app_handleshutdown\n");
-			emhf_app_handleshutdown(vcpu, r);      
+			//emhf_app_handleshutdown(vcpu, r);      
 			printf("\nCPU(0x%02x): Fatal, emhf_app_handleshutdown returned. Halting!", vcpu->id);
 			HALT();
 		}
