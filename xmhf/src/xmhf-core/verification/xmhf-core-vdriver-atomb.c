@@ -153,7 +153,10 @@ void main() {
 			r.eax = r.ebx = r.ecx= r.edx = r.esi = r.edi = r.ebp = r.esp = nondet_u32(); 
 		}
 
-		emhf_parteventhub_arch_x86svm_intercept_handler(&vcpu, &r);
+		//emhf_parteventhub_arch_x86svm_intercept_handler(&vcpu, &r);
+		
+		//focus on x86svm
+		emhf_smpguest_arch_x86svm_quiesce(vcpu);						//send in quiesce request
 		
 		assert(1);
 }

@@ -152,36 +152,6 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
 }
 
 
-static void _svm_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu, struct _svm_vmcbfields __attribute__((unused)) *vmcb){
-  volatile u32 *icr_low = (u32 *)(0xFEE00000 + 0x300);
-  volatile u32 *icr_high = (u32 *)(0xFEE00000 + 0x310);
-  u32 icr_high_value= 0xFFUL << 24;
-  u32 prev_icr_high_value;
-  u32 delivered;
-    
-  prev_icr_high_value = *icr_high;
-  
-  *icr_high = icr_high_value;    //send to all but self
-  //printf("\n%s: CPU(0x%02x): firing NMIs...", __FUNCTION__, vcpu->id);
-  *icr_low = 0x000C0400UL;      //send NMI        
-  
-  //check if IPI has been delivered successfully
-#ifndef __XMHF_VERIFICATION__
-  do{
-	delivered = *icr_high;
-	delivered &= 0x00001000;
-  }while(delivered);
-#else
-	//TODO: plug in h/w model of LAPIC, for now assume hardware just
-	//works
-#endif
-
-  
-  //restore icr high
-  *icr_high = prev_icr_high_value;
-    
-  //printf("\n%s: CPU(0x%02x): NMIs fired!", __FUNCTION__, vcpu->id);
-}
 
 
 //======================================================================
@@ -497,6 +467,42 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
 
 }
 
+//----------------------------------------------------------------------
+//Queiscing interfaces
+//----------------------------------------------------------------------
+
+static void _svm_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu, struct _svm_vmcbfields __attribute__((unused)) *vmcb){
+  volatile u32 *icr_low = (u32 *)(0xFEE00000 + 0x300);
+  volatile u32 *icr_high = (u32 *)(0xFEE00000 + 0x310);
+  u32 icr_high_value= 0xFFUL << 24;
+  u32 prev_icr_high_value;
+  u32 delivered;
+    
+  prev_icr_high_value = *icr_high;
+  
+  *icr_high = icr_high_value;    //send to all but self
+  //printf("\n%s: CPU(0x%02x): firing NMIs...", __FUNCTION__, vcpu->id);
+  *icr_low = 0x000C0400UL;      //send NMI        
+  
+  //check if IPI has been delivered successfully
+#ifndef __XMHF_VERIFICATION__
+  do{
+	delivered = *icr_high;
+	delivered &= 0x00001000;
+  }while(delivered);
+#else
+	//TODO: plug in h/w model of LAPIC, for now assume hardware just
+	//works
+#endif
+
+  
+  //restore icr high
+  *icr_high = prev_icr_high_value;
+    
+  //printf("\n%s: CPU(0x%02x): NMIs fired!", __FUNCTION__, vcpu->id);
+}
+
+
 //quiesce interface to switch all guest cores into hypervisor mode
 void emhf_smpguest_arch_x86svm_quiesce(VCPU *vcpu){
 	struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
@@ -616,6 +622,8 @@ void emhf_smpguest_arch_x86svm_eventhandler_nmiexception(VCPU *vcpu, struct regs
   }
   
 }
+
+//----------------------------------------------------------------------
 
 
 //perform required setup after a guest awakens a new CPU
