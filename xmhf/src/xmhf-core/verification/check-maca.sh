@@ -17,5 +17,15 @@ pdts_success=$(objdump --syms ../components/xmhf-runtime/runtime.exe | awk '{pri
 pts_success=$(objdump --syms ../components/xmhf-runtime/runtime.exe | awk '{print $4,$6}' | grep ".palign_data g_svm_npt_pts_buffers" | wc -l)
 
 # echo Return value: $pdpt_success, $pdts_success, $pts_success
- 
+
+if [ $pdpt_success -eq 1 ] && [ $pdts_success -eq 1 ] && [ $pts_success -eq 1 ]
+then
+	echo "VERIFICATION SUCCESS: NPT data structures are where they should be in the executable!"
+	# success
+	exit 0
+else
+	echo "VERIFICATION FAIL: NPT data structures are not in the required section!"
+	# fail
+	exit 1
+fi 
 
