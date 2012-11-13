@@ -156,7 +156,7 @@ void main() {
 		//emhf_parteventhub_arch_x86svm_intercept_handler(&vcpu, &r);
 		
 		//focus on x86svm
-		emhf_smpguest_arch_x86svm_quiesce(vcpu);						//send in quiesce request
+		emhf_smpguest_arch_x86svm_quiesce(&vcpu);						//send in quiesce request
 		
 		
 		assert(1);
