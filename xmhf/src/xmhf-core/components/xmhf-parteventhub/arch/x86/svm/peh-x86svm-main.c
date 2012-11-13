@@ -608,7 +608,7 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 
 		//Nested Page Fault (NPF)
 		case SVM_VMEXIT_NPF:{
-		 //_svm_handle_npf(vcpu, r);
+		 _svm_handle_npf(vcpu, r);
 		}
 		break;
 
@@ -632,7 +632,7 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 
 		case SVM_VMEXIT_EXCEPTION_DB:{
 			if(vcpu->isbsp == 1){											//LAPIC SIPI detection only happens on BSP
-				//emhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
+				emhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
 			}else{															//TODO: reflect back to guest
 				printf("\nUnexpected DB exception on non-BSP core (0x%02x)", vcpu->id);
 				printf("\nHalting!");
