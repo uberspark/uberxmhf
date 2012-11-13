@@ -158,6 +158,7 @@ void main() {
 		//focus on x86svm
 		emhf_smpguest_arch_x86svm_quiesce(vcpu);						//send in quiesce request
 		
+		
 		assert(1);
 }
 //----------------------------------------------------------------------
