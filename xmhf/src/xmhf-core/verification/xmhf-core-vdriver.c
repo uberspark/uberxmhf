@@ -74,7 +74,7 @@ void main() {
 		vcpu.isbsp = 1;													//assume BSP
 		vcpu.id = 0;													//give a LAPIC id
 		vcpu.cpu_vendor = CPU_VENDOR_AMD;								//stick with AMD now
-		vcpu.npt_vaddr_pts = (u64 *)0xC8000000;							//where our NPTs reside
+		vcpu.npt_vaddr_pts = 0xC8000000;							//where our NPTs reside
 		vcpu.vmcb_vaddr_ptr = &_xvmcb;									//set vcpu VMCB virtual address to something meaningful
 
 		g_midtable_numentries=1;

@@ -88,7 +88,7 @@ void emhf_baseplatform_arch_x86svm_allocandsetupvcpus(u32 cpu_vendor){
     
     vcpu->esp = ((u32)g_cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;    
     vcpu->hsave_vaddr_ptr = ((u32)g_svm_hsave_buffers + (i * 8192));
-    vcpu->vmcb_vaddr_ptr = ((u32)g_svm_vmcb_buffers + (i * 8192));
+    vcpu->vmcb_vaddr_ptr = (struct _svm_vmcbfields *)((u32)g_svm_vmcb_buffers + (i * 8192));
 
 	//allocate SVM IO bitmap region and clear it
 	vcpu->svm_vaddr_iobitmap = (u32)g_svm_iobitmap_buffer; 

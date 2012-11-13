@@ -242,7 +242,8 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
       //  (u32)virtual_LAPIC_base, hva2spa(virtual_LAPIC_base));
       #ifndef __XMHF_VERIFICATION__
 		npt_changemapping(vcpu, g_svm_lapic_base, hva2spa(g_svm_virtual_LAPIC_base), (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
-		vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
+		//vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
+		emhf_memprot_arch_x86svm_flushmappings(vcpu);
 	  #else
 		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
 		//constant index > runtime_base+runtime_size
@@ -259,9 +260,9 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
       //change LAPIC physical address NPT mapping to point to physical LAPIC
       #ifndef __XMHF_VERIFICATION__
 		npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
-			vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
+		//	vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
 		//emhf_memprot_arch_x86svm_setprot(vcpu, g_svm_lapic_base, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE);
-		//emhf_memprot_arch_x86svm_flushmappings(vcpu);
+		emhf_memprot_arch_x86svm_flushmappings(vcpu);
 	  #else
 		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
 		//constant index > runtime_base+runtime_size
@@ -291,7 +292,8 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
       //  (u32)virtual_LAPIC_base, hva2spa(virtual_LAPIC_base));
       #ifndef __XMHF_VERIFICATION__
 		  npt_changemapping(vcpu, g_svm_lapic_base, hva2spa(g_svm_virtual_LAPIC_base), (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
-		  vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
+		  //vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
+		  emhf_memprot_arch_x86svm_flushmappings(vcpu);
 	  #else
 		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
 		//constant index > runtime_base+runtime_size
@@ -306,9 +308,9 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
       //change LAPIC physical address NPT mapping to point to physical LAPIC
       #ifndef __XMHF_VERIFICATION__
 		npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
-			vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
+			//vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
 		//emhf_memprot_arch_x86svm_setprot(vcpu, g_svm_lapic_base, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE);
-		//emhf_memprot_arch_x86svm_flushmappings(vcpu);
+		emhf_memprot_arch_x86svm_flushmappings(vcpu);
 	  #else
 		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
 		//constant index > runtime_base+runtime_size
@@ -462,9 +464,9 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
     printf("\n%s: delinking LAPIC interception since all cores have SIPI", __FUNCTION__);
     #ifndef __XMHF_VERIFICATION__
 		npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
-		vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
+		//vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
 		//emhf_memprot_arch_x86svm_setprot(vcpu, g_svm_lapic_base, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE);
-		//emhf_memprot_arch_x86svm_flushmappings(vcpu);
+		emhf_memprot_arch_x86svm_flushmappings(vcpu);
 	#else
 		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
 		//constant index > runtime_base+runtime_size
@@ -475,9 +477,9 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
   }else{
     #ifndef __XMHF_VERIFICATION__
 	  npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, 0);
-	  vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
+	  //vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
 	  //emhf_memprot_arch_x86svm_setprot(vcpu, g_svm_lapic_base, MEMP_PROT_NOTPRESENT);
-	  //emhf_memprot_arch_x86svm_flushmappings(vcpu);
+	  emhf_memprot_arch_x86svm_flushmappings(vcpu);
 	#else
 		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
 		//constant index > runtime_base+runtime_size
