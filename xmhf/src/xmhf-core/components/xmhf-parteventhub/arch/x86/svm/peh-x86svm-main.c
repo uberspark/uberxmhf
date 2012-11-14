@@ -664,11 +664,12 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
     printf("\nCPU(0x%02x): Starting HVM using CS:EIP=0x%04x:0x%08x...", vcpu->id,
 			(u16)vmcb->cs.selector, (u32)vmcb->rip);
 
+
 #ifdef __XMHF_VERIFICATION__
 	{
 		//ensure that whenever a partition is resumed on a vcpu, we have nested paging
 		//enabled and that the base points to the nested page tables we have initialized
-		assert( (vmcb->np_enable == 1) && (vmcb->n_cr3 == 0xC7F00000) );
+		assert( (vmcb->np_enable == 1) && (vmcb->n_cr3 == vcpu->npt_vaddr_ptr) );
 	}
 #endif	
 
