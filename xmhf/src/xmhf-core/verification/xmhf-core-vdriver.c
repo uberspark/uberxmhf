@@ -69,12 +69,15 @@ void main() {
 		rpb->XtVmmE820NumEntries = 1; 									//lets worry about E820 later
 		rpb->XtVmmRuntimePhysBase = 0xC0000000;
 		rpb->XtVmmRuntimeSize = 0x8800000;								//128 MB + 8MB (NPTs) runtime size
+		rpb->XtGuestOSBootModuleBase = 0x20000;
+		rpb->XtGuestOSBootModuleSize = 512;
 
 		//setup bare minimum vcpu
 		vcpu.isbsp = 1;													//assume BSP
 		vcpu.id = 0;													//give a LAPIC id
+		vcpu.esp = 0xC6000000;											//give a stack
 
-#if 0
+#if 1
 		vcpu.cpu_vendor = CPU_VENDOR_INTEL;								
 #else
 		vcpu.cpu_vendor = CPU_VENDOR_AMD;
@@ -95,7 +98,7 @@ void main() {
 		g_svm_lapic_base = 0xFEE00000;
 
 
-#if 0
+#if 1
 		emhf_runtime_main(&vcpu, 0);									//call "init" function
 		
 #else
@@ -109,8 +112,6 @@ void main() {
 		_xvmcb.n_cr3 = hva2spa((void*)vcpu.npt_vaddr_ptr);
 		_xvmcb.np_enable |= 1ULL;
 
-#endif		
-	
 
 		//setup CPU general purpose register state (non-deterministic)
 		r.eax = r.ebx = r.ecx= r.edx = r.esi = r.edi = r.ebp = r.esp = nondet_u32(); 
@@ -209,6 +210,7 @@ void main() {
 		emhf_parteventhub_arch_x86svm_intercept_handler(&vcpu, &r);
 
 		//emhf_parteventhub_arch_x86vmx_intercept_handler(&vcpu, &r);
+#endif 
 		
 		assert(1);
 }

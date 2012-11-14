@@ -161,10 +161,10 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
   emhf_partition_initializemonitor(vcpu);
 #endif
 
-#ifndef __XMHF_VERIFICATION__
+//#ifndef __XMHF_VERIFICATION__
   //setup guest OS state for partition
   emhf_partition_setupguestOSstate(vcpu);
-#endif
+//#endif
 
   //initialize memory protection for this core
   emhf_memprot_initialize(vcpu);
