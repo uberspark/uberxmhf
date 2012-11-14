@@ -77,7 +77,7 @@ void main() {
 		vcpu.id = 0;													//give a LAPIC id
 		vcpu.esp = 0xC6000000;											//give a stack
 
-#if 1
+#if 0
 		vcpu.cpu_vendor = CPU_VENDOR_INTEL;								
 #else
 		vcpu.cpu_vendor = CPU_VENDOR_AMD;
@@ -99,7 +99,7 @@ void main() {
 		g_svm_lapic_base = 0xFEE00000;
 
 
-#if 1
+#if 0
 		emhf_runtime_main(&vcpu, 0);									//call "init" function
 		
 		assert(vcpu.vmcs.host_RIP == (u64)0xF00DDEAD);
