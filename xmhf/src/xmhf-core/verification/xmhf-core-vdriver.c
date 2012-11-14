@@ -91,6 +91,10 @@ void main() {
 
 
 		//emhf_runtime_main(&vcpu, 0);									//call "init" function
+		vcpu.vmcs.control_VMX_seccpu_based |= (1 << 1); //enable EPT
+		vcpu.vmcs.control_EPT_pointer_high = 0;
+		vcpu.vmcs.control_EPT_pointer_full = hva2spa((void*)vcpu.vmx_vaddr_ept_pml4_table) | 0x1E; //page walk of 4 and WB memory
+	
 
 		//setup CPU general purpose register state (non-deterministic)
 		r.eax = r.ebx = r.ecx= r.edx = r.esi = r.edi = r.ebp = r.esp = nondet_u32(); 
