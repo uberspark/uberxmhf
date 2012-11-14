@@ -526,6 +526,19 @@ void emhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu){
 void emhf_partition_arch_x86vmx_start(VCPU *vcpu){
     printf("\nCPU(0x%02x): Starting HVM using CS:EIP=0x%04x:0x%08x...", vcpu->id,
 			(u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP);
+
+#ifdef __XMHF_VERIFICATION__
+	//ensure that whenever a partition is started on a vcpu, we have extended paging
+	//enabled and that the base points to the extended page tables we have initialized
+	
+	//vcpu->vmcs.control_VMX_seccpu_based |= (1 << 1); //enable EPT
+	//vcpu->vmcs.control_EPT_pointer_high = 0;
+	//vcpu->vmcs.control_EPT_pointer_full = hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E; //page walk of 4 and WB memory
+
+	assert( (vcpu->vmcs.control_VMX_seccpu_based & 0x2) && (vcpu->vmcs.control_EPT_pointer_high == 0) &&
+		(vcpu->vmcs.control_EPT_pointer_full == (hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E)) );
+#endif	
+
     _vmx_start_hvm(vcpu, hva2spa((void*)vcpu->vmx_vmcs_vaddr));
 	//we never get here, if we do, we just return and our caller is responsible
 	//for halting the core as something really bad happened!
