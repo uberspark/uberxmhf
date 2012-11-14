@@ -409,7 +409,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		HALT();
 	}
   
-	//handle intercepts
+/*	//handle intercepts
 	switch((u32)vcpu->vmcs.info_vmexit_reason){
 		//--------------------------------------------------------------
 		//xmhf-core and hypapp intercepts
@@ -579,7 +579,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			HALT();
 		}
 	} //end switch((u32)vcpu->vmcs.info_vmexit_reason)
-	
+*/	
 
  	//check and clear guest interruptibility state
 	if(vcpu->vmcs.guest_interruptibility != 0){

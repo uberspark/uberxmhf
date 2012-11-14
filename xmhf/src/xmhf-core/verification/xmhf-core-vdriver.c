@@ -90,7 +90,11 @@ void main() {
 		g_svm_lapic_base = 0xFEE00000;
 
 
-		emhf_runtime_main(&vcpu, 0);									//call "init" function
+		//emhf_runtime_main(&vcpu, 0);									//call "init" function
+
+		//setup CPU general purpose register state (non-deterministic)
+		r.eax = r.ebx = r.ecx= r.edx = r.esi = r.edi = r.ebp = r.esp = nondet_u32(); 
+
 		
 /*		//state under the control of attacker, we need these to be
 		//non-deterministic
@@ -162,11 +166,12 @@ void main() {
 			_xvmcb.g_pat = (u64)nondet_u64();
 			_xvmcb.efer = (u64)nondet_u64();                   
 
-			r.eax = r.ebx = r.ecx= r.edx = r.esi = r.edi = r.ebp = r.esp = nondet_u32(); 
 		}
 
 		emhf_parteventhub_arch_x86svm_intercept_handler(&vcpu, &r);
 */
+		
+		emhf_parteventhub_arch_x86vmx_intercept_handler(&vcpu, &r);
 		
 		assert(1);
 }
