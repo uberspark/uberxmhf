@@ -435,17 +435,17 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 				vcpu->vmcs.guest_RIP += 3;
 			}
 		}
-		break;*/
+		break;
 
 		case VMX_VMEXIT_IOIO:{
 			_vmx_handle_intercept_ioportaccess(vcpu, r);
 		}
 		break;
 
-		/*case VMX_VMEXIT_EPT_VIOLATION:{
+		case VMX_VMEXIT_EPT_VIOLATION:{
 			_vmx_handle_intercept_eptviolation(vcpu, r);
 		}
-		break;*/  	
+		break;  	
 
 		case VMX_VMEXIT_INIT:{
 			printf("\n***** VMEXIT_INIT emhf_app_handleshutdown\n");
@@ -476,7 +476,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 					break;				
 				
 				case 0x02:	//NMI
-					emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(vcpu, r);
+					//emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(vcpu, r);
 					break;
 				
 				default:
@@ -577,7 +577,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 					vcpu->id, vcpu->vmcs.info_IDT_vectoring_information);
 			}
 			HALT();
-		}
+		}*/		
 	} //end switch((u32)vcpu->vmcs.info_vmexit_reason)
 	
 
@@ -596,6 +596,13 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 
 	//write updated VMCS back to CPU
 	emhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
+
+#ifdef __XMHF_VERIFICATION__
+	//ensure that whenever a partition is resumed on a vcpu, we have extended paging
+	//enabled and that the base points to the extended page tables we have initialized
+	assert( (vcpu->vmcs.control_VMX_seccpu_based & 0x2) && (vcpu->vmcs.control_EPT_pointer_high == 0) &&
+		(vcpu->vmcs.control_EPT_pointer_full == (hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E)) );
+#endif	
 
 	return 1;
 }
