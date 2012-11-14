@@ -183,7 +183,7 @@ void emhf_baseplatform_reboot(VCPU *vcpu);
 
 #else
 
-	static inline spa_t hva2spa(void *hva) { return (uintptr_t)hva; }
+	#define hva2spa(x) (u32)(x)
 	static inline void * spa2hva(spa_t spa) { (void *)(uintptr_t)(spa); }
 	static inline spa_t gpa2spa(gpa_t gpa) { return gpa; }
 	static inline gpa_t spa2gpa(spa_t spa) { return spa; }

@@ -162,8 +162,12 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
   //setup guest OS state for partition
   emhf_partition_setupguestOSstate(vcpu);
 
+#endif  	
+
   //initialize memory protection for this core
   emhf_memprot_initialize(vcpu);
+
+#ifndef __XMHF_VERIFICATION__
 
   //initialize application parameter block and call app main
   {
@@ -217,7 +221,7 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 	printf("\n[%02x]Selectors FS=0x%04x, GS=0x%04x", vcpu->id,
 			(u16)read_segreg_fs(), (u16)read_segreg_gs());
 	printf("\n[%02x]Selectors TR=0x%04x", vcpu->id, (u16)read_tr_sel());
-#endif  	
+#endif
 	
   //start partition
   printf("\n%s[%02x]: starting partition...", __FUNCTION__, vcpu->id);
