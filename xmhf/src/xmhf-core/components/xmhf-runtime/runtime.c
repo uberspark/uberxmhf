@@ -156,8 +156,12 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
   //initialize CPU
   emhf_baseplatform_cpuinitialize();
 
+#endif
+
   //initialize partition monitor (i.e., hypervisor) for this CPU
   emhf_partition_initializemonitor(vcpu);
+
+#ifndef __XMHF_VERIFICATION__
 
   //setup guest OS state for partition
   emhf_partition_setupguestOSstate(vcpu);
@@ -208,6 +212,7 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 		printf("\nCPU(0x%02x): Late-initialization, WiP, HALT!", vcpu->id);
 		HALT();
 	}
+#endif
 
   //initialize support for SMP guests
   emhf_smpguest_initialize(vcpu);
@@ -221,7 +226,6 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 	printf("\n[%02x]Selectors FS=0x%04x, GS=0x%04x", vcpu->id,
 			(u16)read_segreg_fs(), (u16)read_segreg_gs());
 	printf("\n[%02x]Selectors TR=0x%04x", vcpu->id, (u16)read_tr_sel());
-#endif
 	
   //start partition
   printf("\n%s[%02x]: starting partition...", __FUNCTION__, vcpu->id);

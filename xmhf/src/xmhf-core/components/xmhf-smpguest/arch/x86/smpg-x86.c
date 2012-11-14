@@ -69,7 +69,9 @@ void emhf_smpguest_arch_initialize(VCPU *vcpu){
 		}
 	}else{ //we are an AP, so just wait for SIPI signal
 			printf("\nCPU(0x%02x): AP, waiting for SIPI signal...", vcpu->id);
+			#ifndef __XMHF_VERIFICATION__
 			while(!vcpu->sipireceived);
+			#endif
 			printf("\nCPU(0x%02x): SIPI signal received, vector=0x%02x", vcpu->id, vcpu->sipivector);
 	
 			//g_isl->hvm_initialize_csrip(vcpu, ((vcpu->sipivector * PAGE_SIZE_4K) >> 4),
