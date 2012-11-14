@@ -409,13 +409,13 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		HALT();
 	}
   
-/*	//handle intercepts
+	//handle intercepts
 	switch((u32)vcpu->vmcs.info_vmexit_reason){
 		//--------------------------------------------------------------
 		//xmhf-core and hypapp intercepts
 		//--------------------------------------------------------------
 		
-		case VMX_VMEXIT_VMCALL:{
+		/*case VMX_VMEXIT_VMCALL:{
 			//if INT 15h E820 hypercall, then let the xmhf-core handle it
 			if(vcpu->vmcs.guest_CS_base == (VMX_UG_E820HOOK_CS << 4) &&
 				vcpu->vmcs.guest_RIP == VMX_UG_E820HOOK_IP){
@@ -435,17 +435,17 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 				vcpu->vmcs.guest_RIP += 3;
 			}
 		}
-		break;
+		break;*/
 
 		case VMX_VMEXIT_IOIO:{
 			_vmx_handle_intercept_ioportaccess(vcpu, r);
 		}
 		break;
 
-		case VMX_VMEXIT_EPT_VIOLATION:{
+		/*case VMX_VMEXIT_EPT_VIOLATION:{
 			_vmx_handle_intercept_eptviolation(vcpu, r);
 		}
-		break;  	
+		break;*/  	
 
 		case VMX_VMEXIT_INIT:{
 			printf("\n***** VMEXIT_INIT emhf_app_handleshutdown\n");
@@ -472,7 +472,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
  		case VMX_VMEXIT_EXCEPTION:{
 			switch( ((u32)vcpu->vmcs.info_vmexit_interrupt_information & INTR_INFO_VECTOR_MASK) ){
 				case 0x01:
-					emhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
+					//emhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
 					break;				
 				
 				case 0x02:	//NMI
@@ -579,7 +579,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			HALT();
 		}
 	} //end switch((u32)vcpu->vmcs.info_vmexit_reason)
-*/	
+	
 
  	//check and clear guest interruptibility state
 	if(vcpu->vmcs.guest_interruptibility != 0){

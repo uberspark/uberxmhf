@@ -171,6 +171,24 @@ void main() {
 		emhf_parteventhub_arch_x86svm_intercept_handler(&vcpu, &r);
 */
 		
+		//VMX non-deterministic state
+		{
+			vcpu.vmcs.info_vminstr_error = nondet_u32();
+			vcpu.vmcs.info_vmexit_reason= nondet_u32();
+			vcpu.vmcs.info_vmexit_interrupt_information=nondet_u32();
+			vcpu.vmcs.info_vmexit_interrupt_error_code=nondet_u32();
+			vcpu.vmcs.info_IDT_vectoring_information=nondet_u32();
+			vcpu.vmcs.info_IDT_vectoring_error_code=nondet_u32();
+			vcpu.vmcs.info_vmexit_instruction_length=nondet_u32();
+			vcpu.vmcs.info_vmx_instruction_information=nondet_u32();
+			vcpu.vmcs.info_exit_qualification=nondet_u64();
+			vcpu.vmcs.info_IO_RCX=nondet_u64();
+			vcpu.vmcs.info_IO_RSI=nondet_u64();
+			vcpu.vmcs.info_IO_RDI=nondet_u64();
+			vcpu.vmcs.info_IO_RIP=nondet_u64();
+			vcpu.vmcs.info_guest_linear_address=nondet_u64();		
+		}
+		
 		emhf_parteventhub_arch_x86vmx_intercept_handler(&vcpu, &r);
 		
 		assert(1);
