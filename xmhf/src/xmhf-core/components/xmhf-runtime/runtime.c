@@ -150,6 +150,9 @@ void emhf_runtime_entry(void){
 //isEarlyInit = 1 if we were boot-strapped by the BIOS and is 0
 //in the event we were launched from a running OS
 void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
+
+#ifndef __XMHF_VERIFICATION__
+
   //initialize CPU
   emhf_baseplatform_cpuinitialize();
 
@@ -214,7 +217,7 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 	printf("\n[%02x]Selectors FS=0x%04x, GS=0x%04x", vcpu->id,
 			(u16)read_segreg_fs(), (u16)read_segreg_gs());
 	printf("\n[%02x]Selectors TR=0x%04x", vcpu->id, (u16)read_tr_sel());
-  	
+#endif  	
 	
   //start partition
   printf("\n%s[%02x]: starting partition...", __FUNCTION__, vcpu->id);
