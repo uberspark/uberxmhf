@@ -262,7 +262,11 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.host_GDTR_base = (u64)(u32)x_gdt_start;
 	vcpu->vmcs.host_IDTR_base = (u64)(u32)emhf_xcphandler_get_idt_start();
 	vcpu->vmcs.host_TR_base = (u64)(u32)g_runtime_TSS;
+#ifdef __XMHF_VERIFICATION__
+	vcpu->vmcs.host_RIP = (u64)0xF00DDEAD;
+#else
 	vcpu->vmcs.host_RIP = (u64)(u32)emhf_parteventhub_arch_x86vmx_entry;
+#endif
 	//store vcpu at TOS
 	vcpu->esp = vcpu->esp - sizeof(u32);
 	*(u32 *)vcpu->esp = (u32)vcpu;

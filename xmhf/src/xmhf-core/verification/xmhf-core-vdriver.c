@@ -91,6 +91,7 @@ void main() {
 		//Intel specific fields
 		vcpu.vmx_vmcs_vaddr = 0xC7000000;								//VMCS address
 		vcpu.vmx_vaddr_ept_pml4_table = 0xC7F00000;						//EPT PML4 table 		
+		vcpu.vmx_guest_unrestricted = nondet_bool();
 		
 		//globals
 		g_midtable_numentries=1;
@@ -101,6 +102,7 @@ void main() {
 #if 1
 		emhf_runtime_main(&vcpu, 0);									//call "init" function
 		
+		assert(vcpu.vmcs.host_RIP == (u64)0xF00DDEAD);
 #else
 		
 		//VMX "init" values for MAC(b)
