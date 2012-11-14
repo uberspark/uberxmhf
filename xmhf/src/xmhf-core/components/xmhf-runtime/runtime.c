@@ -152,27 +152,24 @@ void emhf_runtime_entry(void){
 void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 
 #ifndef __XMHF_VERIFICATION__
-
   //initialize CPU
   emhf_baseplatform_cpuinitialize();
-
 #endif
 
+#ifndef __XMHF_VERIFICATION__
   //initialize partition monitor (i.e., hypervisor) for this CPU
   emhf_partition_initializemonitor(vcpu);
+#endif
 
 #ifndef __XMHF_VERIFICATION__
-
   //setup guest OS state for partition
   emhf_partition_setupguestOSstate(vcpu);
-
 #endif
 
   //initialize memory protection for this core
   emhf_memprot_initialize(vcpu);
 
 #ifndef __XMHF_VERIFICATION__
-
   //initialize application parameter block and call app main
   {
   	APP_PARAM_BLOCK appParamBlock;
@@ -214,8 +211,10 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 	}
 #endif
 
+#ifndef __XMHF_VERIFICATION__
   //initialize support for SMP guests
   emhf_smpguest_initialize(vcpu);
+#endif
 
   //XXX: debug
   //__asm__ __volatile__("int $0x02\r\n");

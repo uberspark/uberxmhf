@@ -62,9 +62,12 @@ static void _vmx_setupEPT(VCPU *vcpu);
 // initialize memory protection structures for a given core (vcpu)
 void emhf_memprot_arch_x86vmx_initialize(VCPU *vcpu){
 	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-	
+
+#ifndef __XMHF_VERIFICATION__	
 	_vmx_gathermemorytypes(vcpu);
 	_vmx_setupEPT(vcpu);
+#endif
+
 	vcpu->vmcs.control_VMX_seccpu_based |= (1 << 1); //enable EPT
 	vcpu->vmcs.control_VMX_seccpu_based |= (1 << 5); //enable VPID
 	vcpu->vmcs.control_vpid = 1; //VPID=0 is reserved for hypervisor

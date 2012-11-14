@@ -73,20 +73,26 @@ void main() {
 		//setup bare minimum vcpu
 		vcpu.isbsp = 1;													//assume BSP
 		vcpu.id = 0;													//give a LAPIC id
-		vcpu.cpu_vendor = CPU_VENDOR_AMD;								//stick with AMD now
+		vcpu.cpu_vendor = CPU_VENDOR_INTEL;								//stick with AMD now
+
+		//AMD specific fields
 		vcpu.npt_vaddr_ptr = 0xC7F00000;								//NPT PDPT page
 		vcpu.npt_vaddr_pts = 0xC8000000;								//where our NPTs reside
 		vcpu.vmcb_vaddr_ptr = &_xvmcb;									//set vcpu VMCB virtual address to something meaningful
 
+		//Intel specific fields
+		vcpu.vmx_vmcs_vaddr = 0xC7000000;								//VMCS address
+		
+		
+		//globals
 		g_midtable_numentries=1;
 
-		//globals
 		g_svm_lapic_base = 0xFEE00000;
 
 
-		emhf_runtime_main(&vcpu, 0);
+		emhf_runtime_main(&vcpu, 0);									//call "init" function
 		
-		//state under the control of attacker, we need these to be
+/*		//state under the control of attacker, we need these to be
 		//non-deterministic
 		{
 			_xvmcb.exitcode = (u64)nondet_u64();
@@ -160,6 +166,7 @@ void main() {
 		}
 
 		emhf_parteventhub_arch_x86svm_intercept_handler(&vcpu, &r);
+*/
 		
 		assert(1);
 }
