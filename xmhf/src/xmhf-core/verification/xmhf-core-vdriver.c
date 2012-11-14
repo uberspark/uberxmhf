@@ -90,10 +90,17 @@ void main() {
 		g_svm_lapic_base = 0xFEE00000;
 
 
-		//emhf_runtime_main(&vcpu, 0);									//call "init" function
+#if 0
+		emhf_runtime_main(&vcpu, 0);									//call "init" function
+		
+#else
+		
+		//VMX "init" values for MAC(b)
 		vcpu.vmcs.control_VMX_seccpu_based |= (1 << 1); //enable EPT
 		vcpu.vmcs.control_EPT_pointer_high = 0;
 		vcpu.vmcs.control_EPT_pointer_full = hva2spa((void*)vcpu.vmx_vaddr_ept_pml4_table) | 0x1E; //page walk of 4 and WB memory
+	
+#endif		
 	
 
 		//setup CPU general purpose register state (non-deterministic)
