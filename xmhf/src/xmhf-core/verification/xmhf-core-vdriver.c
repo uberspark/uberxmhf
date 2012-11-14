@@ -73,8 +73,13 @@ void main() {
 		//setup bare minimum vcpu
 		vcpu.isbsp = 1;													//assume BSP
 		vcpu.id = 0;													//give a LAPIC id
-		vcpu.cpu_vendor = CPU_VENDOR_INTEL;								//stick with AMD now
 
+#if 0
+		vcpu.cpu_vendor = CPU_VENDOR_INTEL;								
+#else
+		vcpu.cpu_vendor = CPU_VENDOR_AMD;
+#endif		
+		
 		//AMD specific fields
 		vcpu.npt_vaddr_ptr = 0xC7F00000;								//NPT PDPT page
 		vcpu.npt_vaddr_pts = 0xC8000000;								//where our NPTs reside
@@ -99,7 +104,11 @@ void main() {
 		vcpu.vmcs.control_VMX_seccpu_based |= (1 << 1); //enable EPT
 		vcpu.vmcs.control_EPT_pointer_high = 0;
 		vcpu.vmcs.control_EPT_pointer_full = hva2spa((void*)vcpu.vmx_vaddr_ept_pml4_table) | 0x1E; //page walk of 4 and WB memory
-	
+
+		//SVM "init" values for MAC(b)
+		_xvmcb.n_cr3 = hva2spa((void*)vcpu.npt_vaddr_ptr);
+		_xvmcb.np_enable |= 1ULL;
+
 #endif		
 	
 
@@ -107,8 +116,7 @@ void main() {
 		r.eax = r.ebx = r.ecx= r.edx = r.esi = r.edi = r.ebp = r.esp = nondet_u32(); 
 
 		
-/*		//state under the control of attacker, we need these to be
-		//non-deterministic
+		//SVM non-deterministic state
 		{
 			_xvmcb.exitcode = (u64)nondet_u64();
 			_xvmcb.exitinfo1 = (u64)nondet_u64();
@@ -179,9 +187,7 @@ void main() {
 
 		}
 
-		emhf_parteventhub_arch_x86svm_intercept_handler(&vcpu, &r);
-*/
-		
+
 		//VMX non-deterministic state
 		{
 			vcpu.vmcs.info_vminstr_error = nondet_u32();
@@ -199,8 +205,10 @@ void main() {
 			vcpu.vmcs.info_IO_RIP=nondet_u64();
 			vcpu.vmcs.info_guest_linear_address=nondet_u64();		
 		}
-		
-		emhf_parteventhub_arch_x86vmx_intercept_handler(&vcpu, &r);
+
+		emhf_parteventhub_arch_x86svm_intercept_handler(&vcpu, &r);
+
+		//emhf_parteventhub_arch_x86vmx_intercept_handler(&vcpu, &r);
 		
 		assert(1);
 }
