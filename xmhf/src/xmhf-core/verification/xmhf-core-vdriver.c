@@ -81,6 +81,9 @@ void main() {
 
 		//globals
 		g_svm_lapic_base = 0xFEE00000;
+
+
+		emhf_runtime_main(&vcpu, 0);
 		
 		//state under the control of attacker, we need these to be
 		//non-deterministic
