@@ -123,7 +123,7 @@ void main() {
 
 
 		//setup CPU general purpose register state (non-deterministic)
-		r.eax = r.ebx = r.ecx= r.edx = r.esi = r.edi = r.ebp = r.esp = nondet_u32(); 
+		//r.eax = r.ebx = r.ecx= r.edx = r.esi = r.edi = r.ebp = r.esp = nondet_u32(); 
 
 		#if 0
 		//VMX non-deterministic state
@@ -146,7 +146,7 @@ void main() {
 
 		#else
 		//SVM non-deterministic state
-		{
+		/*{
 			_xvmcb.exitcode = (u64)nondet_u64();
 			_xvmcb.exitinfo1 = (u64)nondet_u64();
 			_xvmcb.exitinfo2 = (u64)nondet_u64();
@@ -214,7 +214,7 @@ void main() {
 			_xvmcb.g_pat = (u64)nondet_u64();
 			_xvmcb.efer = (u64)nondet_u64();                   
 
-		}	
+		}*/	
 		#endif
 
 
