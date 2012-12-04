@@ -582,19 +582,19 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 				if( !(vmcb->cr0 & CR0_PE)  ||
 					( (vmcb->cr0 & CR0_PE) && (vmcb->cr0 & CR0_PG) &&
 						(vmcb->rflags & EFLAGS_VM)  ) ){
-					_svm_int15_handleintercept(vcpu, r);	
+					//_svm_int15_handleintercept(vcpu, r);	
 				}else{
 						printf("\nCPU(0x%02x): unhandled INT 15h request from protected mode", vcpu->id);
 						printf("\nHalting!");
 						HALT();
 				}
 			}else{	//if not E820 hook, give app a chance to handle the hypercall
-				emhf_smpguest_arch_x86svm_quiesce(vcpu);
+				//emhf_smpguest_arch_x86svm_quiesce(vcpu);
 				if( emhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
 					printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", vcpu->id, r->eax);
 					HALT();
 				}
-				emhf_smpguest_arch_x86svm_endquiesce(vcpu);
+				//emhf_smpguest_arch_x86svm_endquiesce(vcpu);
 				vmcb->rip += 3;
 			}
 		}
@@ -602,19 +602,19 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 		
 		//IO interception
 		case SVM_VMEXIT_IOIO:{
-			_svm_handle_ioio(vcpu, vmcb, r);
+			//_svm_handle_ioio(vcpu, vmcb, r);
 		}
 		break;
 
 		//Nested Page Fault (NPF)
 		case SVM_VMEXIT_NPF:{
-		 _svm_handle_npf(vcpu, r);
+		 //_svm_handle_npf(vcpu, r);
 		}
 		break;
 
 		case SVM_VMEXIT_INIT:{
 			printf("\n***** INIT emhf_app_handleshutdown\n");
-			emhf_app_handleshutdown(vcpu, r);      
+			//emhf_app_handleshutdown(vcpu, r);      
 			printf("\nCPU(0x%02x): Fatal, emhf_app_handleshutdown returned. Halting!", vcpu->id);
 			HALT();
 		}
@@ -626,13 +626,13 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 
 		//MSR interception
 		case SVM_VMEXIT_MSR:{
-		  _svm_handle_msr(vcpu, vmcb, r);
+		  //_svm_handle_msr(vcpu, vmcb, r);
 		}
 		break;
 
 		case SVM_VMEXIT_EXCEPTION_DB:{
 			if(vcpu->isbsp == 1){											//LAPIC SIPI detection only happens on BSP
-				emhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
+				//emhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
 			}else{															//TODO: reflect back to guest
 				printf("\nUnexpected DB exception on non-BSP core (0x%02x)", vcpu->id);
 				printf("\nHalting!");
@@ -642,7 +642,7 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 		break;
 
 		case SVM_VMEXIT_NMI:{
-			_svm_handle_nmi(vcpu, vmcb, r);
+			//_svm_handle_nmi(vcpu, vmcb, r);
 		}
 		break;
 

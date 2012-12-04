@@ -63,6 +63,8 @@ RPB *rpb; 	//runtime parameter block pointer
 //actual definitions
 RPB _xrpb;	
 
+u8 tables[8*1024*1024];
+
 void main() {
 		//setup RPB pointer and required runtime parameter block values
 		rpb = (RPB *)&_xrpb;
@@ -77,48 +79,72 @@ void main() {
 		vcpu.id = 0;													//give a LAPIC id
 		vcpu.esp = 0xC6000000;											//give a stack
 
+		//globals
+		g_midtable_numentries=1;
+		g_svm_lapic_base = 0xFEE00000;
+
 #if 0
 		vcpu.cpu_vendor = CPU_VENDOR_INTEL;								
 #else
 		vcpu.cpu_vendor = CPU_VENDOR_AMD;
 #endif		
 		
-		//AMD specific fields
-		vcpu.npt_vaddr_ptr = 0xC7F00000;								//NPT PDPT page
-		vcpu.npt_vaddr_pts = 0xC8000000;								//where our NPTs reside
-		vcpu.vmcb_vaddr_ptr = &_xvmcb;									//set vcpu VMCB virtual address to something meaningful
 
+#if 0
 		//Intel specific fields
 		vcpu.vmx_vmcs_vaddr = 0xC7000000;								//VMCS address
 		vcpu.vmx_vaddr_ept_pml4_table = 0xC7F00000;						//EPT PML4 table 		
 		vcpu.vmx_guest_unrestricted = nondet_bool();
+#else
+		//AMD specific fields
+		vcpu.npt_vaddr_ptr = 0xC7F00000;								//NPT PDPT page
+		//vcpu.npt_vaddr_pts = 0xC8000000;								//where our NPTs reside
+		vcpu.npt_vaddr_pts = (u32)&tables;								//where our NPTs reside
+		vcpu.vmcb_vaddr_ptr = &_xvmcb;									//set vcpu VMCB virtual address to something meaningful
+#endif
 		
-		//globals
-		g_midtable_numentries=1;
-
-		g_svm_lapic_base = 0xFEE00000;
-
 
 #if 0
 		emhf_runtime_main(&vcpu, 0);									//call "init" function
 		
 		assert(vcpu.vmcs.host_RIP == (u64)0xF00DDEAD);
 #else
-		
-		//VMX "init" values for MAC(b)
-		vcpu.vmcs.control_VMX_seccpu_based |= (1 << 1); //enable EPT
-		vcpu.vmcs.control_EPT_pointer_high = 0;
-		vcpu.vmcs.control_EPT_pointer_full = hva2spa((void*)vcpu.vmx_vaddr_ept_pml4_table) | 0x1E; //page walk of 4 and WB memory
 
-		//SVM "init" values for MAC(b)
-		_xvmcb.n_cr3 = hva2spa((void*)vcpu.npt_vaddr_ptr);
-		_xvmcb.np_enable |= 1ULL;
+		#if 0
+			//VMX "init" values for MAC(b)
+			vcpu.vmcs.control_VMX_seccpu_based |= (1 << 1); //enable EPT
+			vcpu.vmcs.control_EPT_pointer_high = 0;
+			vcpu.vmcs.control_EPT_pointer_full = hva2spa((void*)vcpu.vmx_vaddr_ept_pml4_table) | 0x1E; //page walk of 4 and WB memory
+		#else
+			//SVM "init" values for MAC(b)
+			_xvmcb.n_cr3 = hva2spa((void*)vcpu.npt_vaddr_ptr);
+			_xvmcb.np_enable |= 1ULL;
+		#endif
 
 
 		//setup CPU general purpose register state (non-deterministic)
 		r.eax = r.ebx = r.ecx= r.edx = r.esi = r.edi = r.ebp = r.esp = nondet_u32(); 
 
-		
+		#if 0
+		//VMX non-deterministic state
+		{
+			vcpu.vmcs.info_vminstr_error = nondet_u32();
+			vcpu.vmcs.info_vmexit_reason= nondet_u32();
+			vcpu.vmcs.info_vmexit_interrupt_information=nondet_u32();
+			vcpu.vmcs.info_vmexit_interrupt_error_code=nondet_u32();
+			vcpu.vmcs.info_IDT_vectoring_information=nondet_u32();
+			vcpu.vmcs.info_IDT_vectoring_error_code=nondet_u32();
+			vcpu.vmcs.info_vmexit_instruction_length=nondet_u32();
+			vcpu.vmcs.info_vmx_instruction_information=nondet_u32();
+			vcpu.vmcs.info_exit_qualification=nondet_u64();
+			vcpu.vmcs.info_IO_RCX=nondet_u64();
+			vcpu.vmcs.info_IO_RSI=nondet_u64();
+			vcpu.vmcs.info_IO_RDI=nondet_u64();
+			vcpu.vmcs.info_IO_RIP=nondet_u64();
+			vcpu.vmcs.info_guest_linear_address=nondet_u64();		
+		}
+
+		#else
 		//SVM non-deterministic state
 		{
 			_xvmcb.exitcode = (u64)nondet_u64();
@@ -188,26 +214,9 @@ void main() {
 			_xvmcb.g_pat = (u64)nondet_u64();
 			_xvmcb.efer = (u64)nondet_u64();                   
 
-		}
+		}	
+		#endif
 
-
-		//VMX non-deterministic state
-		{
-			vcpu.vmcs.info_vminstr_error = nondet_u32();
-			vcpu.vmcs.info_vmexit_reason= nondet_u32();
-			vcpu.vmcs.info_vmexit_interrupt_information=nondet_u32();
-			vcpu.vmcs.info_vmexit_interrupt_error_code=nondet_u32();
-			vcpu.vmcs.info_IDT_vectoring_information=nondet_u32();
-			vcpu.vmcs.info_IDT_vectoring_error_code=nondet_u32();
-			vcpu.vmcs.info_vmexit_instruction_length=nondet_u32();
-			vcpu.vmcs.info_vmx_instruction_information=nondet_u32();
-			vcpu.vmcs.info_exit_qualification=nondet_u64();
-			vcpu.vmcs.info_IO_RCX=nondet_u64();
-			vcpu.vmcs.info_IO_RSI=nondet_u64();
-			vcpu.vmcs.info_IO_RDI=nondet_u64();
-			vcpu.vmcs.info_IO_RIP=nondet_u64();
-			vcpu.vmcs.info_guest_linear_address=nondet_u64();		
-		}
 
 		emhf_parteventhub_arch_x86svm_intercept_handler(&vcpu, &r);
 
