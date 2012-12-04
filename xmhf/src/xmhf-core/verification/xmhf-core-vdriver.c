@@ -98,8 +98,8 @@ void main() {
 #else
 		//AMD specific fields
 		vcpu.npt_vaddr_ptr = 0xC7F00000;								//NPT PDPT page
-		//vcpu.npt_vaddr_pts = 0xC8000000;								//where our NPTs reside
-		vcpu.npt_vaddr_pts = (u32)&tables;								//where our NPTs reside
+		vcpu.npt_vaddr_pts = 0xC8000000;								//where our NPTs reside
+		//vcpu.npt_vaddr_pts = (u32)&tables;								//where our NPTs reside
 		vcpu.vmcb_vaddr_ptr = &_xvmcb;									//set vcpu VMCB virtual address to something meaningful
 #endif
 		
@@ -147,7 +147,7 @@ void main() {
 		#else
 		//SVM non-deterministic state
 		{
-			/*_xvmcb.exitcode = (u64)nondet_u32();
+			_xvmcb.exitcode = (u64)nondet_u64();
 			_xvmcb.exitinfo1 = (u64)nondet_u64();
 			_xvmcb.exitinfo2 = (u64)nondet_u64();
 
@@ -212,7 +212,7 @@ void main() {
 			_xvmcb.rax = (u64)nondet_u64();
 			_xvmcb.cr2 = (u64)nondet_u64();
 			_xvmcb.g_pat = (u64)nondet_u64();
-			_xvmcb.efer = (u64)nondet_u64();*/                   
+			_xvmcb.efer = (u64)nondet_u64();                   
 
 		}	
 		#endif
