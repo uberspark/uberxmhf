@@ -51,19 +51,17 @@
 //----------------------------------------------------------------------
 #include <xmhf.h>
 
-
-
 #define V_HYPERCALL		0xDEADBEEF
 
 VCPU vcpu;
 struct regs r;
 struct _svm_vmcbfields _xvmcb;
+
 //globals referenced by this module
 RPB *rpb; 	//runtime parameter block pointer
+
 //actual definitions
 RPB _xrpb;	
-
-u8 tables[8*1024*1024];
 
 void main() {
 		//setup RPB pointer and required runtime parameter block values
@@ -99,7 +97,6 @@ void main() {
 		//AMD specific fields
 		vcpu.npt_vaddr_ptr = 0xC7F00000;								//NPT PDPT page
 		vcpu.npt_vaddr_pts = 0xC8000000;								//where our NPTs reside
-		//vcpu.npt_vaddr_pts = (u32)&tables;								//where our NPTs reside
 		vcpu.vmcb_vaddr_ptr = &_xvmcb;									//set vcpu VMCB virtual address to something meaningful
 #endif
 		
