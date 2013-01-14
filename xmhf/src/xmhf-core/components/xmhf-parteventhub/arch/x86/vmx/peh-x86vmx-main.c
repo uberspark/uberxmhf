@@ -54,20 +54,24 @@
 //map a CPU register index into appropriate VCPU *vcpu or struct regs *r field 
 //and return the address of the field
 static u32 * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
-  ASSERT ( ((int)gpr >=0) && ((int)gpr <= 7) );
+  if ( ((int)gpr >=0) && ((int)gpr <= 7) ){
   
-  switch(gpr){
-    case 0: return ( (u32 *)&r->eax );
-    case 1: return ( (u32 *)&r->ecx );
-    case 2: return ( (u32 *)&r->edx );
-    case 3: return ( (u32 *)&r->ebx );
-    case 4: return ( (u32 *)&vcpu->vmcs.guest_RSP);
-    case 5: return ( (u32 *)&r->ebp );
-    case 6: return ( (u32 *)&r->esi );
-    case 7: return ( (u32 *)&r->edi );
-  }
+	  switch(gpr){
+		case 0: return ( (u32 *)&r->eax );
+		case 1: return ( (u32 *)&r->ecx );
+		case 2: return ( (u32 *)&r->edx );
+		case 3: return ( (u32 *)&r->ebx );
+		case 4: return ( (u32 *)&vcpu->vmcs.guest_RSP);
+		case 5: return ( (u32 *)&r->ebp );
+		case 6: return ( (u32 *)&r->esi );
+		case 7: return ( (u32 *)&r->edi );
+	  }
+   }else{
+		printf("\n[%02x]%s: invalid gpr value (%u). halting!", vcpu->id,
+			__FUNCTION__, gpr);
+		HALT();
+   }
 
-  return NULL; /* unreachable */
 }
 
 
