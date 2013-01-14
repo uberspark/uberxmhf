@@ -714,7 +714,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			}
 			vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 		}
-		break;	
+		break;	*/
 
  		case VMX_VMEXIT_RDMSR:
 			_vmx_handle_intercept_rdmsr(vcpu, r);
@@ -768,7 +768,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 					vcpu->id, vcpu->vmcs.info_IDT_vectoring_information);
 			}
 			HALT();
-		}*/		
+		}		
 	} //end switch((u32)vcpu->vmcs.info_vmexit_reason)
 	
 
