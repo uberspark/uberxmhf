@@ -419,8 +419,6 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 						pe820entry->length_high = g_e820map[r->ebx].length_high;
 						pe820entry->type = g_e820map[r->ebx].type;
 					
-						//memcpy((void *)((u32)((vmcb->es.base)+(u16)r->edi)), (void *)&g_e820map[r->ebx],
-						//		sizeof(GRUBE820));
 					#endif //__XMHF_VERIFICATION__
 				}else{
 						printf("\nCPU(0x%02x): INT15 E820. Guest buffer is beyond guest \
