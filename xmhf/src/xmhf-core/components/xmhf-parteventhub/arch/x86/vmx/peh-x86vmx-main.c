@@ -399,8 +399,9 @@ static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gp
 //---hvm_intercept_handler------------------------------------------------------
 u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 	//read VMCS from physical CPU/core
-	//emhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
-
+#ifndef __XMHF_VERIFICATION__
+	emhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
+#endif __XMHF_VERIFICATION__
 	//sanity check for VM-entry errors
 	if( (u32)vcpu->vmcs.info_vmexit_reason & 0x80000000UL ){
 		printf("\nVM-ENTRY error: reason=0x%08x, qualification=0x%016llx", 
@@ -595,7 +596,10 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 	}
 
 	//write updated VMCS back to CPU
-	//emhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
+#ifndef __XMHF_VERIFICATION__
+	emhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
+#endif // __XMHF_VERIFICATION__
+
 
 #ifdef __XMHF_VERIFICATION__
 	//ensure that whenever a partition is resumed on a vcpu, we have extended paging
