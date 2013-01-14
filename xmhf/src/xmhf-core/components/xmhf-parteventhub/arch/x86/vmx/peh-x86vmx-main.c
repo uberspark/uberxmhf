@@ -574,18 +574,22 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 
 //---CR4 access handler---------------------------------------------------------
 static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gpr, u32 tofrom){
-	ASSERT(tofrom == VMX_CRX_ACCESS_TO);
-
-  printf("\nCPU(0x%02x): CS:EIP=0x%04x:0x%08x MOV CR4, xx", vcpu->id,
-    (u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP);
+  if(tofrom == VMX_CRX_ACCESS_TO){
+	u32 cr4_proposed_value;
+	
+	cr4_proposed_value = *((u32 *)_vmx_decode_reg(gpr, vcpu, r));
+	
+	printf("\nCPU(0x%02x): CS:EIP=0x%04x:0x%08x MOV CR4, xx", vcpu->id,
+		(u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP);
   
 	printf("\nMOV TO CR4 (flush TLB?), current=0x%08x, proposed=0x%08x",
-			(u32)vcpu->vmcs.guest_CR4, *((u32 *)_vmx_decode_reg(gpr, vcpu, r)) );
+			(u32)vcpu->vmcs.guest_CR4, cr4_proposed_value);
 
-  #if defined (__NESTED_PAGING__)
-  //we need to flush EPT mappings as we emulated CR4 load above
-  __vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0);
-  #endif
+	#if defined (__NESTED_PAGING__)
+	//we need to flush EPT mappings as we emulated CR4 load above
+	__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0);
+	#endif
+  }
 
 }
 
