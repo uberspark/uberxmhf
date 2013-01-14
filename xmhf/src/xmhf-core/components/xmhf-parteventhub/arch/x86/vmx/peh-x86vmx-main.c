@@ -628,15 +628,15 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		}
 		break;
 
-		/*case VMX_VMEXIT_IOIO:{
+		case VMX_VMEXIT_IOIO:{
 			_vmx_handle_intercept_ioportaccess(vcpu, r);
 		}
 		break;
 
-		case VMX_VMEXIT_EPT_VIOLATION:{
+		/*case VMX_VMEXIT_EPT_VIOLATION:{
 			_vmx_handle_intercept_eptviolation(vcpu, r);
 		}
-		break;  	
+		break;*/  
 
 		case VMX_VMEXIT_INIT:{
 			printf("\n***** VMEXIT_INIT emhf_app_handleshutdown\n");
@@ -660,7 +660,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			}
 		break;
 
- 		case VMX_VMEXIT_EXCEPTION:{
+ 		/*case VMX_VMEXIT_EXCEPTION:{
 			switch( ((u32)vcpu->vmcs.info_vmexit_interrupt_information & INTR_INFO_VECTOR_MASK) ){
 				case 0x01:
 					//emhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
@@ -681,7 +681,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 					HALT();
 			}
 		}
-		break;
+		break;*/
 
  		case VMX_VMEXIT_CRX_ACCESS:{
 			u32 tofrom, gpr, crx; 
@@ -714,7 +714,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			}
 			vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 		}
-		break;	*/
+		break;	
 
  		case VMX_VMEXIT_RDMSR:
 			_vmx_handle_intercept_rdmsr(vcpu, r);
