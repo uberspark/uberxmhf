@@ -446,7 +446,8 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 			//...
 		
 			{
-				u16 guest_cs, guest_ip, guest_flags;
+				//u16 guest_cs, guest_ip, guest_flags;
+				u16 guest_cs __attribute__((unused)), guest_ip __attribute__((unused)), guest_flags;
 				u16 *gueststackregion = (u16 *)( (u32)vmcb->ss.base + (u16)vmcb->rsp );
 			
 			
