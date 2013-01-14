@@ -399,7 +399,7 @@ static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gp
 //---hvm_intercept_handler------------------------------------------------------
 u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 	//read VMCS from physical CPU/core
-	emhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
+	//emhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
 
 	//sanity check for VM-entry errors
 	if( (u32)vcpu->vmcs.info_vmexit_reason & 0x80000000UL ){
@@ -424,7 +424,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 				ASSERT( !(vcpu->vmcs.guest_CR0 & CR0_PE)  ||
 					( (vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG) &&
 						(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM)  ) );
-				_vmx_int15_handleintercept(vcpu, r);	
+				//_vmx_int15_handleintercept(vcpu, r);	
 			}else{	//if not E820 hook, give hypapp a chance to handle the hypercall
 				emhf_smpguest_arch_x86vmx_quiesce(vcpu);
 				if( emhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
@@ -437,7 +437,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		}
 		break;
 
-		case VMX_VMEXIT_IOIO:{
+		/*case VMX_VMEXIT_IOIO:{
 			_vmx_handle_intercept_ioportaccess(vcpu, r);
 		}
 		break;
@@ -577,7 +577,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 					vcpu->id, vcpu->vmcs.info_IDT_vectoring_information);
 			}
 			HALT();
-		}		
+		}*/		
 	} //end switch((u32)vcpu->vmcs.info_vmexit_reason)
 	
 
@@ -595,7 +595,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 	}
 
 	//write updated VMCS back to CPU
-	emhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
+	//emhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
 
 #ifdef __XMHF_VERIFICATION__
 	//ensure that whenever a partition is resumed on a vcpu, we have extended paging
