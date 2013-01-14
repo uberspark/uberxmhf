@@ -599,7 +599,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 	//read VMCS from physical CPU/core
 #ifndef __XMHF_VERIFICATION__
 	emhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
-#endif __XMHF_VERIFICATION__
+#endif //__XMHF_VERIFICATION__
 	//sanity check for VM-entry errors
 	if( (u32)vcpu->vmcs.info_vmexit_reason & 0x80000000UL ){
 		printf("\nVM-ENTRY error: reason=0x%08x, qualification=0x%016llx", 
