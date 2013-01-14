@@ -701,26 +701,33 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			tofrom = 
 			(u32) (((u64)vcpu->vmcs.info_exit_qualification & 0x0000000000000030ULL) >> (u64)4); 
 			//printf("\ncrx=%u, gpr=%u, tofrom=%u", crx, gpr, tofrom);
-			switch(crx){
-				case 0x0: //CR0 access
-					vmx_handle_intercept_cr0access_ug(vcpu, r, gpr, tofrom);	
-					break;
+
+			if ( ((int)gpr >=0) && ((int)gpr <= 7) ){
+				switch(crx){
+					case 0x0: //CR0 access
+						vmx_handle_intercept_cr0access_ug(vcpu, r, gpr, tofrom);	
+						break;
+					
+					case 0x4: //CR4 access
+						if(!vcpu->vmx_guest_unrestricted){
+							printf("\nHALT: v86 monitor based real-mode exec. unsupported!");
+							HALT();
+							//handle_intercept_cr4access(vcpu, r, gpr, tofrom);
+						}else{
+							vmx_handle_intercept_cr4access_ug(vcpu, r, gpr, tofrom);	
+						}
+						break;
 				
-				case 0x4: //CR4 access
-					if(!vcpu->vmx_guest_unrestricted){
-						printf("\nHALT: v86 monitor based real-mode exec. unsupported!");
+					default:
+						printf("\nunhandled crx, halting!");
 						HALT();
-						//handle_intercept_cr4access(vcpu, r, gpr, tofrom);
-					}else{
-						vmx_handle_intercept_cr4access_ug(vcpu, r, gpr, tofrom);	
-					}
-					break;
-			
-				default:
-					printf("\nunhandled crx, halting!");
-					HALT();
+				}
+				vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+			}else{
+				printf("\n[%02x]%s: invalid gpr value (%u). halting!", vcpu->id,
+					__FUNCTION__, gpr);
+				HALT();
 			}
-			vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
 		}
 		break;	
 
