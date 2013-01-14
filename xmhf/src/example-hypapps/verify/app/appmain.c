@@ -99,7 +99,12 @@ u32 v_hypercall_handler(VCPU *vcpu, struct regs *r){
 u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 	struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
 	u32 status=APP_SUCCESS;
-	u32 call_id= (u32)vmcb->rax;
+	u32 call_id;
+	
+	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
+		call_id = (u32)vmcb->rax;
+	else
+		call_id = r->eax;
 
 	switch(call_id){
 		
