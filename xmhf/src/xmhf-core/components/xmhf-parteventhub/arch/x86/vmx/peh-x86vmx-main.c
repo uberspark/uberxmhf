@@ -494,7 +494,7 @@ static void _vmx_handle_intercept_eptviolation(VCPU *vcpu, struct regs *r){
 
 	//check if EPT violation is due to LAPIC interception
 	if(vcpu->isbsp && (gpa >= g_vmx_lapic_base) && (gpa < (g_vmx_lapic_base + PAGE_SIZE_4K)) ){
-		//emhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
+		emhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
 	}else{ //no, pass it to hypapp 
 		//emhf_smpguest_arch_x86vmx_quiesce(vcpu);
 		emhf_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, gva,

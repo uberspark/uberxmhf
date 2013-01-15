@@ -228,17 +228,35 @@ u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 		if(g_vmx_lapic_reg == LAPIC_ICR_LOW || g_vmx_lapic_reg == LAPIC_ICR_HIGH ){
       g_vmx_lapic_op = LAPIC_OP_WRITE;
 
-      //change LAPIC physical address in EPT to point to physical address 
+      #ifndef __XMHF_VERIFICATION__
+		//change LAPIC physical address in EPT to point to physical address 
 			//of memregion_virtual_LAPIC
 			vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
 					(u64)hva2spa(&g_vmx_virtual_LAPIC_base) | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
+	  #else
+		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
+		//constant index > runtime_base+runtime_size
+		//since npt_changemapping above is a direct 64-bit assignment, it should
+		//be ok to skip it for verification with manual inspection
+	  #endif
+
 
     }else{
       g_vmx_lapic_op = LAPIC_OP_RSVD;
 
+
+      #ifndef __XMHF_VERIFICATION__
       //change LAPIC physical address in EPT to point to physical LAPIC
       vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
 					(u64)g_vmx_lapic_base | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
+
+	  #else
+		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
+		//constant index > runtime_base+runtime_size
+		//since npt_changemapping above is a direct 64-bit assignment, it should
+		//be ok to skip it for verification with manual inspection
+	  #endif
+
     }    
   }else{
     //printf("\nCPU(0x%02x): LAPIC[READ] reg=0x%08x", vcpu->id,
@@ -247,17 +265,36 @@ u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
     if(g_vmx_lapic_reg == LAPIC_ICR_LOW || g_vmx_lapic_reg == LAPIC_ICR_HIGH ){
       g_vmx_lapic_op = LAPIC_OP_READ;
 
+
+      #ifndef __XMHF_VERIFICATION__
       //change LAPIC physical address in EPT to point to physical address 
 			//of memregion_virtual_LAPIC
 			vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
 					(u64)hva2spa(&g_vmx_virtual_LAPIC_base) | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
 
+	  #else
+		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
+		//constant index > runtime_base+runtime_size
+		//since npt_changemapping above is a direct 64-bit assignment, it should
+		//be ok to skip it for verification with manual inspection
+	  #endif
+
+
     }else{
       g_vmx_lapic_op = LAPIC_OP_RSVD;
 
+      #ifndef __XMHF_VERIFICATION__
       //change LAPIC physical address in EPT to point to physical LAPIC
       vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
 					(u64)g_vmx_lapic_base | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
+
+	  #else
+		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
+		//constant index > runtime_base+runtime_size
+		//since npt_changemapping above is a direct 64-bit assignment, it should
+		//be ok to skip it for verification with manual inspection
+	  #endif
+
     }  
   }
 
