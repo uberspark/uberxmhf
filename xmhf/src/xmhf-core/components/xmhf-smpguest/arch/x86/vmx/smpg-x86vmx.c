@@ -206,6 +206,12 @@ void emhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu){
 }
 
 
+#ifdef __XMHF_VERIFICATION__
+	bool g_vmx_lapic_npf_verification_coreprotected = false;
+	bool g_vmx_lapic_npf_verification_pre = false;
+#endif
+
+
 //------------------------------------------------------------------------------
 //if there is a read request, store the register accessed
 //store request as READ
@@ -220,6 +226,12 @@ u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 
   //get LAPIC register being accessed
   g_vmx_lapic_reg = (paddr - g_vmx_lapic_base);
+
+#ifdef __XMHF_VERIFICATION__
+  g_vmx_lapic_npf_verification_pre = (errorcode & EPT_ERRORCODE_WRITE) &&
+	((g_vmx_lapic_reg == LAPIC_ICR_LOW) || (g_vmx_lapic_reg == LAPIC_ICR_HIGH));
+#endif
+
 
   if(errorcode & EPT_ERRORCODE_WRITE){
     //printf("\nCPU(0x%02x): LAPIC[WRITE] reg=0x%08x", vcpu->id,
@@ -238,6 +250,7 @@ u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 		//constant index > runtime_base+runtime_size
 		//since npt_changemapping above is a direct 64-bit assignment, it should
 		//be ok to skip it for verification with manual inspection
+		g_vmx_lapic_npf_verification_coreprotected = true;
 	  #endif
 
 
@@ -311,8 +324,26 @@ u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 	//control in lapic_access_dbexception after a DB exception
 	vcpu->vmcs.guest_RFLAGS &= ~(EFLAGS_IF);
 
+#ifdef __XMHF_VERIFICATION__
+  assert(!g_vmx_lapic_npf_verification_pre || g_vmx_lapic_npf_verification_coreprotected);
+#endif
+
+  EV_FNCONTRACT_RANGE( ((g_vmx_lapic_op == LAPIC_OP_RSVD) || 
+					   (g_vmx_lapic_op == LAPIC_OP_READ) ||
+					   (g_vmx_lapic_op == LAPIC_OP_WRITE))
+					 );	
+
+  EV_FNCONTRACT_RANGE( ((g_vmx_lapic_reg >= 0) &&
+					   (g_vmx_lapic_reg < PAGE_SIZE_4K))
+					 );	
+
     return 0; /* dummy; currently meaningless */
 }
+
+#ifdef __XMHF_VERIFICATION__
+	bool g_vmx_lapic_db_verification_coreprotected = false;
+	bool g_vmx_lapic_db_verification_pre = false;
+#endif
 
 
 //------------------------------------------------------------------------------
@@ -326,6 +357,17 @@ void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
   u32 delink_lapic_interception=0;
   
   (void)r;
+
+#ifdef	__XMHF_VERIFICATION__
+	//this handler relies on two global symbols apart from the
+	//parameters, set them to non-deterministic values with
+	//correct range. note: LAPIC #npf handler has a function contract
+	//which ensures this
+	g_vmx_lapic_op = (nondet_u32() % 3) + 1;
+	g_vmx_lapic_reg = (nondet_u32() % PAGE_SIZE_4K);
+#endif
+
+
   if(g_vmx_lapic_op == LAPIC_OP_WRITE){
     u32 src_registeraddress, dst_registeraddress;
     u32 value_tobe_written;
@@ -337,6 +379,12 @@ void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
     
 	#ifdef __XMHF_VERIFICATION__
 		value_tobe_written= nondet_u32();
+
+		g_vmx_lapic_db_verification_pre = (g_vmx_lapic_op == LAPIC_OP_WRITE) &&
+		(g_vmx_lapic_reg == LAPIC_ICR_LOW) &&
+		(((value_tobe_written & 0x00000F00) == 0x500) || ( (value_tobe_written & 0x00000F00) == 0x600 ));
+
+
 	#else
 		value_tobe_written= *((u32 *)src_registeraddress);
 	#endif
@@ -347,6 +395,10 @@ void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
         //this is an INIT IPI, we just void it
         printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) INIT IPI detected and skipped, value=0x%08x", 
           (u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP, g_vmx_lapic_reg, value_tobe_written);
+        #ifdef __XMHF_VERIFICATION__
+			g_vmx_lapic_db_verification_coreprotected = true;
+		#endif
+
       }else if( (value_tobe_written & 0x00000F00) == 0x600 ){
         //this is a STARTUP IPI
         u32 icr_value_high = *((u32 *)((u32)&g_vmx_virtual_LAPIC_base + (u32)LAPIC_ICR_HIGH));
@@ -354,7 +406,7 @@ void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
           (u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP, g_vmx_lapic_reg, value_tobe_written);        
 		
 		#ifdef __XMHF_VERIFICATION__
-		
+			g_vmx_lapic_db_verification_coreprotected = true;
 		#else
 			delink_lapic_interception=processSIPI(vcpu, value_tobe_written, icr_value_high);
 		#endif
@@ -427,6 +479,11 @@ void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
   vcpu->vmcs.guest_RFLAGS &= ~(EFLAGS_IF);
   vcpu->vmcs.guest_RFLAGS &= ~(EFLAGS_TF);
   vcpu->vmcs.guest_RFLAGS |= g_vmx_lapic_guest_eflags_tfifmask;
+
+#ifdef __XMHF_VERIFICATION__
+  assert(!g_vmx_lapic_db_verification_pre || g_vmx_lapic_db_verification_coreprotected);
+#endif
+
 }
 
 //----------------------------------------------------------------------
