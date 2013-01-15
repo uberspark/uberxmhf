@@ -668,7 +668,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			}
 		break;
 
- 		/*case VMX_VMEXIT_EXCEPTION:{
+ 		case VMX_VMEXIT_EXCEPTION:{
 			switch( ((u32)vcpu->vmcs.info_vmexit_interrupt_information & INTR_INFO_VECTOR_MASK) ){
 				case 0x01:
 					//emhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
@@ -689,7 +689,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 					HALT();
 			}
 		}
-		break;*/
+		break;
 
  		case VMX_VMEXIT_CRX_ACCESS:{
 			u32 tofrom, gpr, crx; 
