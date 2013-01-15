@@ -335,7 +335,12 @@ void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
     src_registeraddress = (u32)&g_vmx_virtual_LAPIC_base + g_vmx_lapic_reg;
     dst_registeraddress = (u32)g_vmx_lapic_base + g_vmx_lapic_reg;
     
-    value_tobe_written= *((u32 *)src_registeraddress);
+	#ifdef __XMHF_VERIFICATION__
+		value_tobe_written= nondet_u32();
+	#else
+		value_tobe_written= *((u32 *)src_registeraddress);
+	#endif
+
     
     if(g_vmx_lapic_reg == LAPIC_ICR_LOW){
       if ( (value_tobe_written & 0x00000F00) == 0x500){
@@ -347,13 +352,26 @@ void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
         u32 icr_value_high = *((u32 *)((u32)&g_vmx_virtual_LAPIC_base + (u32)LAPIC_ICR_HIGH));
         printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) STARTUP IPI detected, value=0x%08x", 
           (u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP, g_vmx_lapic_reg, value_tobe_written);        
-				delink_lapic_interception=processSIPI(vcpu, value_tobe_written, icr_value_high);
+		
+		#ifdef __XMHF_VERIFICATION__
+		
+		#else
+			delink_lapic_interception=processSIPI(vcpu, value_tobe_written, icr_value_high);
+		#endif
       }else{
-        //neither an INIT or SIPI, just propagate this IPI to physical LAPIC
-        *((u32 *)dst_registeraddress) = value_tobe_written;
+        #ifndef __XMHF_VERIFICATION__
+			//neither an INIT or SIPI, just propagate this IPI to physical LAPIC
+			*((u32 *)dst_registeraddress) = value_tobe_written;
+		#else
+			//we currently don't have an I/O model for CBMC
+		#endif
       }
     }else{
-      *((u32 *)dst_registeraddress) = value_tobe_written;
+       #ifndef __XMHF_VERIFICATION__
+			*((u32 *)dst_registeraddress) = value_tobe_written;
+	   #else
+			//we currently don't have an I/O model for CBMC	   
+	   #endif
     }
                 
   }else if( g_vmx_lapic_op == LAPIC_OP_READ){
@@ -363,7 +381,11 @@ void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
 
     src_registeraddress = (u32)&g_vmx_virtual_LAPIC_base + g_vmx_lapic_reg;
    
-    value_read = *((u32 *)src_registeraddress);
+    #ifndef __XMHF_VERIFICATION__
+		value_read = *((u32 *)src_registeraddress);
+	#else
+		value_read = nondet_u32();
+	#endif
     (void)value_read;
   }
 
@@ -374,11 +396,31 @@ void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
   //make LAPIC page inaccessible and flush TLB
   if(delink_lapic_interception){
     printf("\n%s: delinking LAPIC interception since all cores have SIPI", __FUNCTION__);
-    vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
+
+      #ifndef __XMHF_VERIFICATION__
+			vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
 					(u64)g_vmx_lapic_base | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
+
+	  #else
+		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
+		//constant index > runtime_base+runtime_size
+		//since npt_changemapping above is a direct 64-bit assignment, it should
+		//be ok to skip it for verification with manual inspection
+	  #endif
+
   }else{
-    vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
+
+      #ifndef __XMHF_VERIFICATION__
+			vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
 					(u64)g_vmx_lapic_base);			
+
+	  #else
+		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
+		//constant index > runtime_base+runtime_size
+		//since npt_changemapping above is a direct 64-bit assignment, it should
+		//be ok to skip it for verification with manual inspection
+	  #endif
+
 	}
 
   //restore guest IF and TF

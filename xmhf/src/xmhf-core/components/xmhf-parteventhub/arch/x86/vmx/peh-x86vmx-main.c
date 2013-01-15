@@ -671,7 +671,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
  		case VMX_VMEXIT_EXCEPTION:{
 			switch( ((u32)vcpu->vmcs.info_vmexit_interrupt_information & INTR_INFO_VECTOR_MASK) ){
 				case 0x01:
-					//emhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
+					emhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
 					break;				
 				
 				case 0x02:	//NMI
