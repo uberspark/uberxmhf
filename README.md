@@ -125,3 +125,10 @@ Changelog
     * XMHF now builds and runs on Ubuntu 12.04 (precise).
     * Replaced LGPL tlsf implementation with public domain implementation.
     * Added design-documents.
+ * 0.1.2
+    * xmhf-core: stability improvements (ticket-73 fixed) - we can now handle guest NMIs gracefully
+    * xmhf-core: stability improvements (ticket-10 fixed) - we now support stock MTRR-enabled (linux) guest kernels on Intel platforms
+    * test-bed fixes, refactoring and improvements - now supporting 3.2.0-27-generic (and below) with ubuntu
+    * added documentation generator which takes in-tree markdown files and generates html output
+    * fixed build target install-bin to include correct destination path
+
