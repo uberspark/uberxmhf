@@ -72,6 +72,8 @@ static u32 * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
 		HALT();
    }
 
+	//we will never get here, appease the compiler
+	return (u32 *)&r->eax;
 }
 
 
