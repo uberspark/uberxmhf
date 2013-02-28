@@ -52,6 +52,8 @@
  
 #include <xmhf.h>
 
+#ifndef __XMHF_VERIFICATION__
+
 //we only have confidence in the runtime's expected value here in the SL
 static INTEGRITY_MEASUREMENT_VALUES g_sl_gold /* __attribute__(( section("") )) */ = {
     .sha_runtime = ___RUNTIME_INTEGRITY_HASH___,
@@ -269,3 +271,5 @@ void emhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 				rpb->XtVmmEntryPoint, (rpb->XtVmmStackBase+rpb->XtVmmStackSize), ptba);
 	
 }
+
+#endif //__XMHF_VERIFICATION__

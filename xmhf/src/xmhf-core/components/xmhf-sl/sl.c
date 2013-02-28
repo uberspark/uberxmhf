@@ -65,6 +65,8 @@ struct _sl_parameter_block slpb __attribute__(( section(".sl_untrusted_params") 
 // rdtsc_* are valid only if PERF_CRIT is not defined.  slheader.S
 // sets them to 0 otherwise.
 void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
+
+
 	u32 runtime_physical_base;
 	u32 runtime_size_2Maligned;
 	
@@ -81,8 +83,9 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	
 	//initialize debugging early on
 	emhf_debug_init((char *)&slpb.uart_config);
-	
 
+#ifndef __XMHF_VERIFICATION__
+	
 	//initialze sl_baseaddr variable and print its value out
 	sl_baseaddr = baseaddr;
 	
@@ -216,6 +219,9 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	//we should never get here
 	printf("\nSL: Fatal, should never be here!");
 	HALT();
+
+#endif // __XMHF_VERIFICATION__
+
 } 
 
 

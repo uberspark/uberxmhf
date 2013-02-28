@@ -76,6 +76,7 @@ void main(){
 			cpu_vendor = CPU_VENDOR_AMD;
 		#endif		
 
+		extern void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx);
 		emhf_sl_main(cpu_vendor, 0xB8000000, 0, 0);
 		assert(1);
 }
