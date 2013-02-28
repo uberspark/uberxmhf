@@ -4,7 +4,8 @@
 # source files
 AS_SOURCES =  
 
-C_SOURCES = `find ../components/xmhf-baseplatform/ -type f -name "*.c" -print`
+C_SOURCES = `find ../components/xmhf-sl/ -type f -name "*.c" -print`
+C_SOURCES += `find ../components/xmhf-baseplatform/ -type f -name "*.c" -print`
 C_SOURCES += `find ../components/xmhf-debug/ -type f -name "*.c" -print`
 C_SOURCES += `find ../components/xmhf-dmaprot/ -type f -name "*.c" -print`
 C_SOURCES += `find ../components/xmhf-memprot/ -type f -name "*.c" -print`
