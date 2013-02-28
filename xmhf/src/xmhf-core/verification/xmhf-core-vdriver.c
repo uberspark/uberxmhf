@@ -55,7 +55,7 @@
 
 //if the following is defined, we will excercise the VMX backend
 //for ihub during verification
-//#define X86_VMX			1
+#define X86_VMX			1
 
 VCPU vcpu;
 struct regs r;
