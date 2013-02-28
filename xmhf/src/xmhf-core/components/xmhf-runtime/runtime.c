@@ -70,7 +70,7 @@ void emhf_runtime_entry(void){
 	emhf_baseplatform_initialize();
 
     //[debug] dump E820 and MP table
- 	printf("\nNumber of E820 entries = %u", rpb->XtVmmE820NumEntries);
+ 	/*printf("\nNumber of E820 entries = %u", rpb->XtVmmE820NumEntries);
 	{
 		int i;
 		for(i=0; i < (int)rpb->XtVmmE820NumEntries; i++){
@@ -85,7 +85,7 @@ void emhf_runtime_entry(void){
 		int i;
 		for(i=0; i < (int)rpb->XtVmmMPCpuinfoNumEntries; i++)
 			printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x", i, g_cpumap[i].isbsp, g_cpumap[i].lapic_id);
-	}
+	}*/
 
 
 	//setup EMHF exception handler component
@@ -116,9 +116,7 @@ void emhf_runtime_entry(void){
 
 				//protect SL and runtime memory regions
 				emhf_dmaprot_protect(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimeSize+PAGE_SIZE_2M);
-				printf("\nRuntime: Protected SL+Runtime (%08lx-%08x) from DMA.", 
-					rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M,
-					rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
+				printf("\nRuntime: Protected SL+Runtime (%08lx-%08x) from DMA.", rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
 		}
 	#endif //__DMAPROT__
 #else //!__DRTM_DMA_PROTECTION__
@@ -129,12 +127,12 @@ void emhf_runtime_entry(void){
 	}
 #endif
 
-	printf("\nPreSelectors CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", 
+	/*printf("\nPreSelectors CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", 
 			(u16)read_segreg_cs(), (u16)read_segreg_ds(),
 			(u16)read_segreg_es(), (u16)read_segreg_ss());
 	printf("\nPreSelectors FS=0x%04x, GS=0x%04x", 
 			(u16)read_segreg_fs(), (u16)read_segreg_gs());
-	printf("\nPreSelectors TR=0x%04x", (u16)read_tr_sel());
+	printf("\nPreSelectors TR=0x%04x", (u16)read_tr_sel());*/
 
 
 	//initialize base platform with SMP 
@@ -151,25 +149,18 @@ void emhf_runtime_entry(void){
 //in the event we were launched from a running OS
 void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 
-#ifndef __XMHF_VERIFICATION__
   //initialize CPU
   emhf_baseplatform_cpuinitialize();
-#endif
 
-#ifndef __XMHF_VERIFICATION__
   //initialize partition monitor (i.e., hypervisor) for this CPU
   emhf_partition_initializemonitor(vcpu);
-#endif
 
-//#ifndef __XMHF_VERIFICATION__
   //setup guest OS state for partition
   emhf_partition_setupguestOSstate(vcpu);
-//#endif
 
   //initialize memory protection for this core
   emhf_memprot_initialize(vcpu);
 
-#ifndef __XMHF_VERIFICATION__
   //initialize application parameter block and call app main
   {
   	APP_PARAM_BLOCK appParamBlock;
@@ -203,20 +194,17 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 		printf("\nCPU(0x%02x): All cores have successfully been through appmain.", vcpu->id);
   }
 
-	//late initialization is still WiP and we can get only this far 
-	//currently
+  //late initialization is still WiP and we can get only this far 
+  //currently
 	if(!isEarlyInit){
 		printf("\nCPU(0x%02x): Late-initialization, WiP, HALT!", vcpu->id);
 		HALT();
 	}
-#endif
 
-#ifndef __XMHF_VERIFICATION__
   //initialize support for SMP guests
   emhf_smpguest_initialize(vcpu);
-#endif
 
-  //XXX: debug
+  /*//XXX: debug
   //__asm__ __volatile__("int $0x02\r\n");
   //printf("\nCPU(0x%02x): Halting!", vcpu->id);
 	printf("\n[%02x]Selectors CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", vcpu->id,
@@ -224,7 +212,7 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 			(u16)read_segreg_es(), (u16)read_segreg_ss());
 	printf("\n[%02x]Selectors FS=0x%04x, GS=0x%04x", vcpu->id,
 			(u16)read_segreg_fs(), (u16)read_segreg_gs());
-	printf("\n[%02x]Selectors TR=0x%04x", vcpu->id, (u16)read_tr_sel());
+	printf("\n[%02x]Selectors TR=0x%04x", vcpu->id, (u16)read_tr_sel());*/
 	
   //start partition
   printf("\n%s[%02x]: starting partition...", __FUNCTION__, vcpu->id);

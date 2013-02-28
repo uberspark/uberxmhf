@@ -199,7 +199,6 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
 			printf("\n	DEV: enabled protections.");
       	
 		}
-
 		
 		return 1;  	
 }
@@ -351,19 +350,6 @@ static void svm_eap_dev_set_page_protection(u32 pfn, u8 *bit_vector){
   return;
 }
 
-/*static void svm_eap_dev_clear_page_protection(u32 pfn, u8 *bit_vector){
-  u32 byte_offset, bit_offset;
-
- 	//sanity check
-	ASSERT ( bit_vector != NULL );
-
-  byte_offset = pfn / 8;
-  bit_offset = pfn & 7;
-  bit_vector[byte_offset] &= ~(1 << bit_offset);
-
-  return;
-}*/
-
 
 //invalidate DEV cache
 static void svm_eap_dev_invalidate_cache(void){
@@ -382,24 +368,6 @@ static void svm_eap_dev_invalidate_cache(void){
 
   return;
 }
-
-/*
-//clear DEV protection for a range of physical pages
-//input: paddr is the address of the first page and size
-//is the size of the memory region (rounded to a page) in bytes
-static void svm_eap_dev_unprotect(u32 paddr, u32 size){
-	u32 paligned_paddr_start, paligned_paddr_end, i;
-	
-	//compute page-aligned physical start and end addresses
-	paligned_paddr_start = PAGE_ALIGN_4K(paddr);
-	paligned_paddr_end = PAGE_ALIGN_4K((paddr+size));
-	
-	//protect pages from paligned_paddr_start through paligned_paddr_end inclusive
-	for(i=paligned_paddr_start; i <= paligned_paddr_end; i+= PAGE_SIZE_4K){
-		svm_eap_dev_clear_page_protection(i >> PAGE_SHIFT_4K, (u8 *)_svm_eap.dev_bitmap_vaddr);
-		svm_eap_dev_invalidate_cache();	//flush DEV cache
-	}
-}*/
 
 
 ////////////////////////////////////////////////////////////////////////

@@ -44,17 +44,18 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// secure loader low-level support routines
-// authors: amit vasudevan (amitvasudevan@acm.org)
+/* secure loader low-level support routines
+   authors: amit vasudevan (amitvasudevan@acm.org)
+*/
 
 #include <xmhf.h> 
 
 .section .text
-//------------------------------------------------------------------------------	
+/*------------------------------------------------------------------------------*/	
 	.global emhf_sl_arch_x86_invoke_runtime_entrypoint
 emhf_sl_arch_x86_invoke_runtime_entrypoint:
-//------------------------------------------------------------------------------
-	//turn on paging
+/*------------------------------------------------------------------------------*/
+	/*turn on paging*/
 	movl	$(0x00000030), %eax	//CR4_PAE | CR4_PSE
 	movl	%eax, %cr4
 	movl	0x14(%esp), %edi	//EDI = page table base address
@@ -62,11 +63,11 @@ emhf_sl_arch_x86_invoke_runtime_entrypoint:
 	movl	$(0x80000015), %eax	 // ET, EM, PE, PG
 	movl	%eax, %cr0			 //turn on paging
 
-	//grab gdtbase and idtbase parameters
+	/*grab gdtbase and idtbase parameters*/
 	movl 	0x4(%esp), %esi
 	movl 	0x8(%esp), %edi
 
-	//load runtime gdt and idt
+	/*load runtime gdt and idt*/
 	subl  $0x8, %esp
 	
 	movw  %fs:(%esi), %ax
@@ -85,26 +86,26 @@ emhf_sl_arch_x86_invoke_runtime_entrypoint:
 
 	addl  $0x8, %esp
 	
-	//grab entrypoint and topofstack parameters
+	/*grab entrypoint and topofstack parameters*/
 	movl 	0xC(%esp), %edi
 	movl  	0x10(%esp), %esi
 
-	//load runtime segment selectors
+	/*load runtime segment selectors*/
 	movw	$(__DS), %ax
 	movw	%ax, %ds	
 	movw	%ax, %es
 	movw	%ax, %fs
 	movw	%ax, %gs
 	
-	//initialize runtime stack
+	/*initialize runtime stack*/
 	movw  %ax, %ss
 	movl  %esi,%esp
 
-	//clear flags
+	/*clear flags*/
 	pushl	$0
 	popf
 	
-	//far jump to runtime entry point
+	/*far jump to runtime entry point*/
 	pushl	$(__CS)
 	pushl	%edi
 	lret

@@ -135,11 +135,8 @@ static void _vtd_setuppagetables(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 //each CE points to a PDPT type paging structure. 
 //in our implementation, every CE will point to a single PDPT type paging
 //structure for the whole system
-static void _vtd_setupRETCET(u32 vtd_pdpt_paddr, 
-		u32 vtd_ret_paddr, u32 vtd_ret_vaddr,
-		u32 vtd_cet_paddr, u32 vtd_cet_vaddr){
-  
-	u32 retphysaddr, cetphysaddr;
+static void _vtd_setupRETCET(u32 vtd_pdpt_paddr, u32 vtd_ret_paddr, u32 vtd_ret_vaddr,	u32 vtd_cet_paddr, u32 vtd_cet_vaddr){
+  u32 retphysaddr, cetphysaddr;
   u32 i, j;
   u64 *value;
   
@@ -189,9 +186,7 @@ static void _vtd_setupRETCET(u32 vtd_pdpt_paddr,
 //we ensure that every entry in the RET is 0 which means that the DRHD will
 //not allow any DMA requests for PCI bus 0-255 (Sec 3.3.2, IVTD Spec. v1.2)
 //we zero out the CET just for sanity 
-static void _vtd_setupRETCET_bootstrap( 
-		u32 vtd_ret_paddr, u32 vtd_ret_vaddr,
-		u32 vtd_cet_paddr, u32 vtd_cet_vaddr){
+static void _vtd_setupRETCET_bootstrap(u32 vtd_ret_paddr, u32 vtd_ret_vaddr, u32 vtd_cet_paddr, u32 vtd_cet_vaddr){
   
 	//sanity check that RET and CET are page-aligned
 	ASSERT( !(vtd_ret_paddr & 0x00000FFFUL) && !(vtd_cet_paddr & 0x00000FFFUL) );
@@ -790,27 +785,18 @@ static u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 
   //initialize VT-d page tables (not done if we are bootstrapping)
 	if(!isbootstrap){
-		_vtd_setuppagetables(vtd_pdpt_paddr, vtd_pdpt_vaddr,
-			vtd_pdts_paddr, vtd_pdts_vaddr,
-			vtd_pts_paddr, vtd_pts_vaddr);
-		printf("\n%s: setup VT-d page tables (pdpt=%08x, pdts=%08x, pts=%08x).", 
-			__FUNCTION__, vtd_pdpt_paddr, vtd_pdts_paddr, vtd_pts_paddr);
+		_vtd_setuppagetables(vtd_pdpt_paddr, vtd_pdpt_vaddr, vtd_pdts_paddr, vtd_pdts_vaddr, vtd_pts_paddr, vtd_pts_vaddr);
+		printf("\n%s: setup VT-d page tables (pdpt=%08x, pdts=%08x, pts=%08x).", __FUNCTION__, vtd_pdpt_paddr, vtd_pdts_paddr, vtd_pts_paddr);
 	}	
 		
 	//initialize VT-d RET and CET
 	if(!isbootstrap){
-		_vtd_setupRETCET(vtd_pdpt_paddr, 
-			vtd_ret_paddr, vtd_ret_vaddr,
-			vtd_cet_paddr, vtd_cet_vaddr);
-		printf("\n%s: setup VT-d RET (%08x) and CET (%08x).", 
-			__FUNCTION__, vtd_ret_paddr, vtd_cet_paddr);
+		_vtd_setupRETCET(vtd_pdpt_paddr, vtd_ret_paddr, vtd_ret_vaddr, vtd_cet_paddr, vtd_cet_vaddr);
+		printf("\n%s: setup VT-d RET (%08x) and CET (%08x).", __FUNCTION__, vtd_ret_paddr, vtd_cet_paddr);
 	}else{
 		//bootstrapping
-		_vtd_setupRETCET_bootstrap(
-			vtd_ret_paddr, vtd_ret_vaddr,
-			vtd_cet_paddr, vtd_cet_vaddr);
-		printf("\n%s: setup VT-d RET (%08x) and CET (%08x) for bootstrap.", 
-			__FUNCTION__, vtd_ret_paddr, vtd_cet_paddr);
+		_vtd_setupRETCET_bootstrap(vtd_ret_paddr, vtd_ret_vaddr, vtd_cet_paddr, vtd_cet_vaddr);
+		printf("\n%s: setup VT-d RET (%08x) and CET (%08x) for bootstrap.", __FUNCTION__, vtd_ret_paddr, vtd_cet_paddr);
 	}
 
  	//initialize all DRHD units
@@ -837,15 +823,11 @@ static u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 //"early" DMA protection initialization to setup minimal
 //structures to protect a range of physical memory
 //return 1 on success 0 on failure
-u32 emhf_dmaprot_arch_x86vmx_earlyinitialize(u64 protectedbuffer_paddr,
-	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
-	u64 memregionbase_paddr, u32 memregion_size){
-	u32 vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr;
-	u32 vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr;
-	u32 vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr;
+u32 emhf_dmaprot_arch_x86vmx_earlyinitialize(u64 protectedbuffer_paddr, u32 protectedbuffer_vaddr, u32 protectedbuffer_size, u64 __attribute__((unused))memregionbase_paddr, u32 __attribute__((unused))memregion){
+	u32 vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr, vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr, vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr;
 
-	(void)memregionbase_paddr;
-	(void)memregion_size;
+	//(void)memregionbase_paddr;
+	//(void)memregion_size;
 	
 	printf("\nSL: Bootstrapping VMX DMA protection...");
 			
@@ -859,11 +841,7 @@ u32 emhf_dmaprot_arch_x86vmx_earlyinitialize(u64 protectedbuffer_paddr,
 	vmx_eap_vtd_cet_paddr = protectedbuffer_paddr + (2*PAGE_SIZE_4K); 
 	vmx_eap_vtd_cet_vaddr = protectedbuffer_vaddr + (2*PAGE_SIZE_4K); 
 			
-	return vmx_eap_initialize(vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr,
-					0, 0,
-					0, 0,
-					vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr,
-					vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr, 1);
+	return vmx_eap_initialize(vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr, 0, 0,	0, 0, vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr,	vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr, 1);
 }
 
 //"normal" DMA protection initialization to setup required
@@ -895,11 +873,7 @@ u32 emhf_dmaprot_arch_x86vmx_initialize(u64 protectedbuffer_paddr,
 	vmx_eap_vtd_cet_paddr = vmx_eap_vtd_ret_paddr + PAGE_SIZE_4K; 
 	vmx_eap_vtd_cet_vaddr = vmx_eap_vtd_ret_vaddr + PAGE_SIZE_4K; 
 			
-	return vmx_eap_initialize(vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr,
-					vmx_eap_vtd_pdts_paddr, vmx_eap_vtd_pdts_vaddr,
-					vmx_eap_vtd_pts_paddr, vmx_eap_vtd_pts_vaddr,
-					vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr,
-					vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr, 0);
+	return vmx_eap_initialize(vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr, vmx_eap_vtd_pdts_paddr, vmx_eap_vtd_pdts_vaddr, vmx_eap_vtd_pts_paddr, vmx_eap_vtd_pts_vaddr, vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr, vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr, 0);
 }
 
 //DMA protect a given region of memory, start_paddr is
@@ -907,7 +881,7 @@ u32 emhf_dmaprot_arch_x86vmx_initialize(u64 protectedbuffer_paddr,
 void emhf_dmaprot_arch_x86vmx_protect(u32 start_paddr, u32 size){
   pt_t pt;
   u32 vaddr, end_paddr;
-u32 pdptindex, pdtindex, ptindex;
+  u32 pdptindex, pdtindex, ptindex;
   
   //compute page aligned end
   end_paddr = PAGE_ALIGN_4K(start_paddr + size);

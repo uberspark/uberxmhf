@@ -57,13 +57,13 @@
 	.extern emhf_baseplatform_arch_x86_smpinitialize_commonstart
 	.extern emhf_xcphandler_idt	
 
-//------------------------------------------------------------------------------
-//CODE
-//------------------------------------------------------------------------------
+/*------------------------------------------------------------------------------
+CODE
+------------------------------------------------------------------------------*/
 
 .section .text
 
-	//---AP boot-strap code-------------------------------------------------------
+	/*--AP boot-strap code-------------------------------------------------------*/
 	.code16
   .global _ap_bootstrap_start
   _ap_bootstrap_start:
@@ -142,16 +142,16 @@
     nop
     nop
 
-	//---AP common low-level entry point with paging enabled----------------------
+	/*---AP common low-level entry point with paging enabled----------------------*/
   .global _ap_pmode_entry_with_paging
   _ap_pmode_entry_with_paging:
-    //load our gdt and idt
+    /*load our gdt and idt*/
     lgdt x_gdt
     lidt emhf_xcphandler_idt
     
 
     
-    //get hold of local APIC id
+    /*get hold of local APIC id*/
     mov $(MSR_APIC_BASE), %ecx
     rdmsr
     andl $0xFFFFF000, %eax
@@ -160,11 +160,11 @@
     shr $24, %eax
 
     movl g_midtable_numentries, %edx
-    //movl g_runtime, %edx
+    /*movl g_runtime, %edx*/
     
     
-    //get vcpu virtual address of this CPU/core
-    //movl $(__midtable), %ebx
+    /*get vcpu virtual address of this CPU/core*/
+    /*movl $(__midtable), %ebx*/
     movl $(g_midtable), %ebx
     xorl %ecx, %ecx
 getvcpuloop:
@@ -174,14 +174,14 @@ getvcpuloop:
     incl %ecx
     cmpl %edx, %ecx
     jb getvcpuloop
-    //we should never get here, if so just halt
+    /*we should never get here, if so just halt*/
     hlt
 gotvcpu:
    movl 0x4(%ebx, %ecx, 8), %esi //esi contains vcpu pointer
    movl 0x0(%esi), %esp     //load stack for this CPU
    pushl %esi
    call emhf_baseplatform_arch_x86_smpinitialize_commonstart
-   //we should never get here, if so just halt
+   /*we should never get here, if so just halt*/
    hlt  
 
 
