@@ -55,7 +55,7 @@
 
 //if the following is defined, we will excercise the VMX backend
 //for ihub during verification
-#define X86_VMX			1
+//#define X86_VMX			1
 
 VCPU vcpu;
 struct regs r;
@@ -68,8 +68,15 @@ RPB *rpb; 	//runtime parameter block pointer
 RPB _xrpb;	
 
 void main(){
-	
-	
+		u32 cpu_vendor;
+		
+		#if defined (X86_VMX)
+			cpu_vendor = CPU_VENDOR_INTEL;								
+		#else
+			cpu_vendor = CPU_VENDOR_AMD;
+		#endif		
+
+		
 	
 	
 }
