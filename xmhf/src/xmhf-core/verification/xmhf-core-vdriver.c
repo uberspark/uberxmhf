@@ -67,7 +67,15 @@ RPB *rpb; 	//runtime parameter block pointer
 //actual definitions
 RPB _xrpb;	
 
-void main() {
+void main(){
+	
+	
+	
+	
+}
+
+
+void runtime_main() {
 		//setup RPB pointer and required runtime parameter block values
 		rpb = (RPB *)&_xrpb;
 		rpb->XtVmmE820NumEntries = 1; 									//lets worry about E820 later
