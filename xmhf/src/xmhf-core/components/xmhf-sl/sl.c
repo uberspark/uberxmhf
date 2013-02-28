@@ -171,7 +171,6 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	printf("\nSL: RPB, magic=0x%08x", rpb->magic);
 	ASSERT(rpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
 
-#ifndef __XMHF_VERIFICATION__
 
 #if defined (__DRTM_DMA_PROTECTION__)    
 	//setup DMA protection on runtime (secure loader is already DMA protected)
@@ -179,6 +178,7 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 #endif
 
 
+#ifndef __XMHF_VERIFICATION__
 		
 	//populate runtime parameter block fields
 		rpb->isEarlyInit = slpb.isEarlyInit; //tell runtime if we started "early" or "late"

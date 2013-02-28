@@ -331,6 +331,7 @@ static inline void enable_intr(void)
 }
 
 
+#ifndef __XMHF_VERIFICATION__
 static inline u32 get_cpu_vendor_or_die(void) {
     u32 dummy;
     u32 vendor_dword1, vendor_dword2, vendor_dword3;
@@ -347,6 +348,13 @@ static inline u32 get_cpu_vendor_or_die(void) {
 
     return 0; /* never reached */
 }
+#else
+static inline u32 get_cpu_vendor_or_die(void) {
+		extern u32 xmhf_verify_cpu_vendor;
+		return xmhf_verify_cpu_vendor;
+}
+#endif //__XMHF_VERIFICATION__
+
 
 void spin_lock(volatile u32 *);
 void spin_unlock(volatile u32 *);
