@@ -192,6 +192,9 @@ void emhf_sl_arch_sanitize_post_launch(void){
 
 }
 
+#endif //__XMHF_VERIFICATION__
+
+#ifndef __XMHF_VERIFICATION__
 
 void emhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 {
@@ -236,6 +239,10 @@ void emhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 #endif //__DMAPROT__
 	
 }
+
+#endif //__XMHF_VERIFICATION__
+
+#ifndef __XMHF_VERIFICATION__
 
 void emhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 	u32 ptba;	//page table base address

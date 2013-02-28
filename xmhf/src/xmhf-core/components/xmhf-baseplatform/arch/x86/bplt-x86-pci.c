@@ -154,7 +154,7 @@
 //static (local) functions
 //==============================================================================
 
-//enumerates the PCI bus on the system
+/*//enumerates the PCI bus on the system
 static void _pci_enumeratebus(void){
 	u32 b, d, f;
 
@@ -175,7 +175,7 @@ static void _pci_enumeratebus(void){
 	}
 
   	
-}
+}*/
 
 
 //does a PCI type-1 read of PCI config space for a given bus, device, 
@@ -268,7 +268,7 @@ void emhf_baseplatform_arch_x86_pci_initialize(void){
 	//say we are good to go and enumerate the PCI bus 
 	printf("\n%s: PCI type-1 access supported.", __FUNCTION__);
 	printf("\n%s: PCI bus enumeration follows:", __FUNCTION__);
-	_pci_enumeratebus();
+	//_pci_enumeratebus();
 	printf("\n%s: Done with PCI bus enumeration.", __FUNCTION__);
 
 	return;
