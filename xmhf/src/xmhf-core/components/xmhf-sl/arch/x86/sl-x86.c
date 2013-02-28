@@ -200,7 +200,6 @@ void emhf_sl_arch_sanitize_post_launch(void){
 }
 
 
-#ifndef __XMHF_VERIFICATION__
 
 void emhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 {
@@ -231,6 +230,7 @@ void emhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 
 			printf("\nSL: Initializing DMA protections...");
 			
+			
 			if(!emhf_dmaprot_earlyinitialize(protectedbuffer_paddr,
 				protectedbuffer_vaddr, protectedbuffer_size,
 				memregionbase_paddr, memregion_size)){
@@ -246,7 +246,6 @@ void emhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 	
 }
 
-#endif //__XMHF_VERIFICATION__
 
 #ifndef __XMHF_VERIFICATION__
 

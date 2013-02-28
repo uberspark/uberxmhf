@@ -285,7 +285,8 @@ static u32 svm_eap_early_initialize(u32 protected_buffer_paddr,
 	
 	
 	//setup DEV 
-	return svm_eap_initialize(dev_bitmap_paddr, dev_bitmap_paddr);
+	//return svm_eap_initialize(dev_bitmap_paddr, dev_bitmap_paddr);
+	return dev_bitmap_paddr;
 }
 
 
@@ -380,6 +381,8 @@ u32 emhf_dmaprot_arch_x86svm_earlyinitialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
 	u64 memregionbase_paddr, u32 memregion_size){
 
+	u32 dev_bitmap_paddr;
+	
 	//sanity check: protected DEV buffer MUST be page-aligned
 	ASSERT(!(protectedbuffer_paddr & 0x00000FFF));
 	ASSERT(!(protectedbuffer_vaddr & 0x00000FFF));
@@ -387,9 +390,16 @@ u32 emhf_dmaprot_arch_x86svm_earlyinitialize(u64 protectedbuffer_paddr,
 	
 	printf("\nSL: initializing SVM DMA protection...");
 
-	return svm_eap_early_initialize(protectedbuffer_paddr, protectedbuffer_vaddr,
+	#ifndef __XMHF_VERIFICATION__
+	dev_bitmap_paddr=svm_eap_early_initialize(protectedbuffer_paddr, protectedbuffer_vaddr,
 					memregionbase_paddr, memregion_size);
+	#endif
+
+	//setup DEV 
+	assert(0);
+	//return svm_eap_initialize(dev_bitmap_paddr, dev_bitmap_paddr);
 }
+
 
 //"normal" DMA protection initialization to setup required
 //structures for DMA protection

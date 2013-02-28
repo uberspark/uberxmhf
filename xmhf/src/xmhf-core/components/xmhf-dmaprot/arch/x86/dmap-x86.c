@@ -70,11 +70,13 @@ u32 emhf_dmaprot_arch_getbuffersize(u64 physical_memory_limit){
 u32 emhf_dmaprot_arch_earlyinitialize(u64 protectedbuffer_paddr, u32 protectedbuffer_vaddr, u32 protectedbuffer_size, u64 memregionbase_paddr, u32 memregion_size){
 	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
 	
+	
 	if(cpu_vendor == CPU_VENDOR_AMD){
 	  return emhf_dmaprot_arch_x86svm_earlyinitialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size, memregionbase_paddr,	memregion_size);
-	}else{	//CPU_VENDOR_INTEL
-	  return emhf_dmaprot_arch_x86vmx_earlyinitialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size, memregionbase_paddr, 	memregion_size);
 	}
+	/*else{	//CPU_VENDOR_INTEL
+	  return emhf_dmaprot_arch_x86vmx_earlyinitialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size, memregionbase_paddr, 	memregion_size);
+	}*/
 }
 
 //"normal" DMA protection initialization to setup required
