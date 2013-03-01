@@ -501,6 +501,7 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
 //initialize partition monitor for a given CPU
 void emhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu){
 
+#ifndef __XMHF_VERIFICATION__
   //initialize VT
   _vmx_initVT(vcpu);
 
@@ -513,6 +514,8 @@ void emhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu){
 		printf("\nCPU(0x%02x, BSP): initializing INT 15 hook for UG mode...", vcpu->id);
 		_vmx_int15_initializehook(vcpu);
 	}
+	
+#endif
 
 }
 
