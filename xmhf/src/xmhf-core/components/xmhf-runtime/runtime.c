@@ -156,6 +156,7 @@ void emhf_runtime_entry(void){
 //in the event we were launched from a running OS
 void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 
+#ifndef __XMHF_VERIFICATION__
   //initialize CPU
   emhf_baseplatform_cpuinitialize();
 
@@ -228,4 +229,5 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
   printf("\nCPU(0x%02x): FATAL, should not be here. HALTING!", vcpu->id);
   HALT();
 
+#endif
 }

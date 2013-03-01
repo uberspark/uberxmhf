@@ -68,8 +68,22 @@ RPB *rpb; 	//runtime parameter block pointer
 RPB _xrpb;	
 
 u32 xmhf_verify_cpu_vendor = CPU_VENDOR_INTEL;
-	
+
+
 void main(){
+		/* emhf_runtime_main */
+		extern void emhf_runtime_main(void);
+		//setup bare minimum vcpu
+		vcpu.isbsp = 1;													//assume BSP
+		vcpu.id = 0;													//give a LAPIC id
+		vcpu.esp = 0xC6000000;											//give a stack
+
+		emhf_runtime_main(&vcpu, 0);									//call "init" function
+
+}
+
+	
+void runtime_entry_main(){
 		/* emhf_runtime_entry */
 		extern void emhf_runtime_entry(void);
 		emhf_runtime_entry();
