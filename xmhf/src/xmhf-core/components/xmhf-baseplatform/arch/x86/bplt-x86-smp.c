@@ -81,31 +81,42 @@ void emhf_baseplatform_arch_x86_wakeupAPs(void){
 	//so use 0x10 as the vector (0x10000/0x1000 = 0x10)
 
   //send INIT
+  #ifndef __XMHF_VERIFICATION__
   *icr = 0x000c4500UL;
+  #endif
+
   emhf_baseplatform_arch_x86_udelay(10000);
+
   //wait for command completion
+  #ifndef __XMHF_VERIFICATION__
   {
     u32 val;
     do{
       val = *icr;
     }while( (val & 0x1000) );
   }
-
+  #endif
+  
   //send SIPI (twice as per the MP protocol)
   {
     int i;
     for(i=0; i < 2; i++){
+      #ifndef __XMHF_VERIFICATION__
       *icr = 0x000c4610UL;
+      #endif
       emhf_baseplatform_arch_x86_udelay(200);
         //wait for command completion
+        #ifndef __XMHF_VERIFICATION__
         {
           u32 val;
           do{
             val = *icr;
           }while( (val & 0x1000) );
         }
+        #endif
       }
   }    
+
 }
 
 
@@ -116,16 +127,22 @@ void emhf_baseplatform_arch_smpinitialize(void){
   //grab CPU vendor
   cpu_vendor = emhf_baseplatform_arch_getcpuvendor();
   ASSERT(cpu_vendor == CPU_VENDOR_AMD || cpu_vendor == CPU_VENDOR_INTEL);
+
   
   //setup Master-ID Table (MIDTABLE)
   {
     int i;
-    for(i=0; i < (int)rpb->XtVmmMPCpuinfoNumEntries; i++){
+    #ifndef __XMHF_VERIFICATION__
+	for(i=0; i < (int)rpb->XtVmmMPCpuinfoNumEntries; i++){
+	#else
+	for(i=0; i < 2; i++){
+	#endif
        g_midtable[g_midtable_numentries].cpu_lapic_id = g_cpumap[i].lapic_id;
        g_midtable[g_midtable_numentries].vcpu_vaddr_ptr = 0;
        g_midtable_numentries++;
     }
   }
+
 
   //allocate and setup VCPU structure on each CPU
   if(cpu_vendor == CPU_VENDOR_AMD)
@@ -133,7 +150,7 @@ void emhf_baseplatform_arch_smpinitialize(void){
   else //CPU_VENDOR_INTEL
 	emhf_baseplatform_arch_x86vmx_allocandsetupvcpus(cpu_vendor);
 	
-  
+
   //wake up APS
   if(g_midtable_numentries > 1){
     if(cpu_vendor == CPU_VENDOR_AMD)
@@ -141,6 +158,7 @@ void emhf_baseplatform_arch_smpinitialize(void){
     else //CPU_VENDOR_INTEL
 	  emhf_baseplatform_arch_x86vmx_wakeupAPs();
   }
+
 
   //fall through to common code  
   {
@@ -151,7 +169,6 @@ void emhf_baseplatform_arch_smpinitialize(void){
    printf("\nBSP must never get here. HALT!");
    HALT();
   }
-
 }
 
 

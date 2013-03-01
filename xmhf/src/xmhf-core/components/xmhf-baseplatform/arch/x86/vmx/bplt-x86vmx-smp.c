@@ -56,11 +56,13 @@
 void emhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor){
   u32 i;
   VCPU *vcpu;
-  
+	
   for(i=0; i < g_midtable_numentries; i++){
     //allocate VCPU structure
 	vcpu = (VCPU *)((u32)g_vcpubuffers + (u32)(i * SIZE_STRUCT_VCPU));
+    #ifndef __XMHF_VERIFICATION__
     memset((void *)vcpu, 0, sizeof(VCPU));
+    #endif
     
     vcpu->cpu_vendor = cpu_vendor;
     
@@ -69,26 +71,38 @@ void emhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor){
 
     //allocate VMXON memory region
     vcpu->vmx_vmxonregion_vaddr = ((u32)g_vmx_vmxon_buffers + (i * PAGE_SIZE_4K)) ;
+    #ifndef __XMHF_VERIFICATION__
     memset((void *)vcpu->vmx_vmxonregion_vaddr, 0, PAGE_SIZE_4K);
+    #endif
     
 	//allocate VMCS memory region
 	vcpu->vmx_vmcs_vaddr = ((u32)g_vmx_vmcs_buffers + (i * PAGE_SIZE_4K)) ;
+    #ifndef __XMHF_VERIFICATION__
     memset((void *)vcpu->vmx_vmcs_vaddr, 0, PAGE_SIZE_4K);
-		
+	#endif
+	
 	//allocate VMX IO bitmap region
 	vcpu->vmx_vaddr_iobitmap = (u32)g_vmx_iobitmap_buffer; 
+	#ifndef __XMHF_VERIFICATION__
 	memset( (void *)vcpu->vmx_vaddr_iobitmap, 0, (2*PAGE_SIZE_4K));
-		
+	#endif
+	
 	//allocate VMX guest and host MSR save areas
 	vcpu->vmx_vaddr_msr_area_host = ((u32)g_vmx_msr_area_host_buffers + (i * (2*PAGE_SIZE_4K))) ; 
+	#ifndef __XMHF_VERIFICATION__
 	memset( (void *)vcpu->vmx_vaddr_msr_area_host, 0, (2*PAGE_SIZE_4K));
+	#endif
 	vcpu->vmx_vaddr_msr_area_guest = ((u32)g_vmx_msr_area_guest_buffers + (i * (2*PAGE_SIZE_4K))) ; 
+	#ifndef __XMHF_VERIFICATION__
 	memset( (void *)vcpu->vmx_vaddr_msr_area_guest, 0, (2*PAGE_SIZE_4K));
-
+	#endif
+	
 	//allocate VMX MSR bitmap region
 	vcpu->vmx_vaddr_msrbitmaps = ((u32)g_vmx_msrbitmap_buffers + (i * PAGE_SIZE_4K)) ; 
+	#ifndef __XMHF_VERIFICATION__
 	memset( (void *)vcpu->vmx_vaddr_msrbitmaps, 0, PAGE_SIZE_4K);
-		
+	#endif
+	
 	//allocate EPT paging structures
 	#ifdef __NESTED_PAGING__		
 	{
@@ -118,7 +132,9 @@ void emhf_baseplatform_arch_x86vmx_wakeupAPs(void){
     {
         _ap_cr3_value = read_cr3();
         _ap_cr4_value = read_cr4();
+        #ifndef __XMHF_VERIFICATION__
         memcpy((void *)0x10000, (void *)_ap_bootstrap_start, (u32)_ap_bootstrap_end - (u32)_ap_bootstrap_start + 1);
+        #endif
     }
 
 #if defined (__DRTM_DMA_PROTECTION__)	
@@ -136,7 +152,8 @@ void emhf_baseplatform_arch_x86vmx_wakeupAPs(void){
         sinit_mle_data_t *sinit_mle_data;
         os_sinit_data_t *os_sinit_data;
 
-        /* sl.c unity-maps 0xfed00000 for 2M so these should work fine */
+        // sl.c unity-maps 0xfed00000 for 2M so these should work fine 
+        #ifndef __XMHF_VERIFICATION__
         txt_heap = get_txt_heap();
         //printf("\ntxt_heap = 0x%08x", (u32)txt_heap);
         os_mle_data = get_os_mle_data_start(txt_heap);
@@ -146,6 +163,7 @@ void emhf_baseplatform_arch_x86vmx_wakeupAPs(void){
         //printf("\nsinit_mle_data = 0x%08x", (u32)sinit_mle_data);
         os_sinit_data = get_os_sinit_data_start(txt_heap);
         //printf("\nos_sinit_data = 0x%08x", (u32)os_sinit_data);
+		#endif
             
         // Start APs.  Choose wakeup mechanism based on
         // capabilities used. MLE Dev Guide says MLEs should
@@ -164,14 +182,17 @@ void emhf_baseplatform_arch_x86vmx_wakeupAPs(void){
         //__getsec_smctrl();
                 
         // MLE Join structure constructed in runtimesup.S. Debug print. 
+        #ifndef __XMHF_VERIFICATION__
         mle_join = (mle_join_t*)((u32)_mle_join_start - (u32)_ap_bootstrap_start + 0x10000); // XXX magic number
-        printf("\nBSP: mle_join.gdt_limit = %x", mle_join->gdt_limit);
-        printf("\nBSP: mle_join.gdt_base = %x", mle_join->gdt_base);
-        printf("\nBSP: mle_join.seg_sel = %x", mle_join->seg_sel);
-        printf("\nBSP: mle_join.entry_point = %x", mle_join->entry_point);                
+        #endif
+        //printf("\nBSP: mle_join.gdt_limit = %x", mle_join->gdt_limit);
+        //printf("\nBSP: mle_join.gdt_base = %x", mle_join->gdt_base);
+        //printf("\nBSP: mle_join.seg_sel = %x", mle_join->seg_sel);
+        //printf("\nBSP: mle_join.entry_point = %x", mle_join->entry_point);                
 
+		#ifndef __XMHF_VERIFICATION__
         write_priv_config_reg(TXTCR_MLE_JOIN, (uint64_t)(unsigned long)mle_join);
-
+		
         if (os_sinit_data->capabilities.rlp_wake_monitor) {
             printf("\nBSP: joining RLPs to MLE with MONITOR wakeup");
             printf("\nBSP: rlp_wakeup_addr = 0x%x", sinit_mle_data->rlp_wakeup_addr);
@@ -181,6 +202,8 @@ void emhf_baseplatform_arch_x86vmx_wakeupAPs(void){
             __getsec_wakeup();
             printf("\nBSP: GETSEC[WAKEUP] completed");
         }
+		#endif
+
 		
 	}
 	
@@ -190,5 +213,6 @@ void emhf_baseplatform_arch_x86vmx_wakeupAPs(void){
         printf("\nBSP: APs should be awake.");
 
 #endif 
-	
+
+
 }

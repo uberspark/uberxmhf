@@ -77,8 +77,10 @@ void emhf_baseplatform_arch_x86_udelay(u32 usecs){
   val = (u8)((u32)latchregval >> (u32)8);
   outb(val , 0x42);
   
+  #ifndef __XMHF_VERIFICATION__
   //wait for countdown
   while(!(inb(0x61) & 0x20));
+  #endif
   
   //disable ch-2 counter
   val = inb(0x61);

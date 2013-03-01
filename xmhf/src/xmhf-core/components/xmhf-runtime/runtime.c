@@ -138,10 +138,10 @@ void emhf_runtime_entry(void){
 	printf("\nPreSelectors TR=0x%04x", (u16)read_tr_sel());*/
 
 
-	#ifndef __XMHF_VERIFICATION__
+	//#ifndef __XMHF_VERIFICATION__
 	//initialize base platform with SMP 
 	emhf_baseplatform_smpinitialize();
-	#endif
+	//#endif
 	
 	printf("\nRuntime: We should NEVER get here!");
 	ASSERT(0);

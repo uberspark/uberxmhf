@@ -82,7 +82,9 @@ void emhf_baseplatform_arch_x86svm_allocandsetupvcpus(u32 cpu_vendor){
           
   for(i=0; i < g_midtable_numentries; i++){
     vcpu = (VCPU *)((u32)g_vcpubuffers + (u32)(i * SIZE_STRUCT_VCPU));
+    #ifndef __XMHF_VERIFICATION__
     memset((void *)vcpu, 0, sizeof(VCPU));
+    #endif
     
     vcpu->cpu_vendor = cpu_vendor;
     
@@ -92,8 +94,9 @@ void emhf_baseplatform_arch_x86svm_allocandsetupvcpus(u32 cpu_vendor){
 
 	//allocate SVM IO bitmap region and clear it
 	vcpu->svm_vaddr_iobitmap = (u32)g_svm_iobitmap_buffer; 
+	#ifndef __XMHF_VERIFICATION__
 	memset( (void *)vcpu->svm_vaddr_iobitmap, 0, (3*PAGE_SIZE_4K));
-
+	#endif
 
     {
       u32 npt_pdpt_base, npt_pdts_base, npt_pts_base;
@@ -128,7 +131,9 @@ void emhf_baseplatform_arch_x86svm_wakeupAPs(void){
   {
     _ap_cr3_value = read_cr3();
     _ap_cr4_value = read_cr4();
+    #ifndef __XMHF_VERIFICATION__
     memcpy((void *)0x10000, (void *)_ap_bootstrap_start, (u32)_ap_bootstrap_end - (u32)_ap_bootstrap_start + 1);
+	#endif
   }
 	
 	//step-2: wake up the APs sending the INIT-SIPI-SIPI sequence as per the
