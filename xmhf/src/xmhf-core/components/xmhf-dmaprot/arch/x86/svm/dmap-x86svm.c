@@ -71,6 +71,12 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
 	u32 mc_caplist_nextptr;
 	u32 mc_caplist_id;
 	u32 found_dev=0;
+			dev_cap_t dev_cap;
+  		dev_map_t dev_map;
+  		dev_base_lo_t dev_base_lo;
+  		dev_base_hi_t dev_base_hi;
+  		dev_cr_t dev_cr;
+  		u32 i;
 
 	
 	//clear the SVM EAP container structure members including the DEV
@@ -151,37 +157,35 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
 		
 		
 		//setup DEV
-		{
-			dev_cap_t dev_cap;
-  		dev_map_t dev_map;
-  		dev_base_lo_t dev_base_lo;
-  		dev_base_hi_t dev_base_hi;
-  		dev_cr_t dev_cr;
-  		u32 i;
+		//{
 
 			//0. populate the DEV bitmap physical address in the EAP structure
+			#ifndef __XMHF_VERIFICATION__
 			_svm_eap.dev_bitmap_vaddr = dev_bitmap_vaddr;
+			#endif
 			printf("\n	DEV: bitmap at v:p addr %08x:%08x", _svm_eap.dev_bitmap_vaddr,
 					dev_bitmap_paddr);
-
-		assert(0);
-
-#ifndef __XMHF_VERIFICATION__
-
-  		//1. read the DEV revision, and the number of maps and domains supported 
-  		dev_cap.bytes = svm_eap_dev_read(DEV_CAP, 0);
 		
 
+			//1. read the DEV revision, and the number of maps and domains supported 
+			dev_cap.bytes = svm_eap_dev_read(DEV_CAP, 0);
+		
+		
   		printf("\n	DEV:rev=%u, n_doms=%u, n_maps=%u", dev_cap.fields.rev, dev_cap.fields.n_doms, dev_cap.fields.n_maps);
   		
 			//2. disable all the DEV maps. AMD manuals do not mention anything about
 			//the reset state of the map registers
   		dev_map.fields.valid0 = 0;
   		dev_map.fields.valid1 = 0;
+  		#ifndef __XMHF_VERIFICATION__
   		for (i = 0; i < dev_cap.fields.n_maps; i++)
     		svm_eap_dev_write(DEV_MAP, i, dev_map.bytes);
+    	#else
+			svm_eap_dev_write(DEV_MAP, 0, dev_map.bytes);
+    	#endif
 			printf("\n	DEV: cleared map registers.");
-			
+
+		
 			//3. set the DEV_BASE_HI and DEV_BASE_LO registers of domain 0 
   		dev_base_hi.bytes = 0; //our DEV bitmap is within 4GB physical 
 		  svm_eap_dev_write(DEV_BASE_HI, 0, dev_base_hi.bytes);
@@ -193,14 +197,22 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
   		svm_eap_dev_write(DEV_BASE_LO, 0, dev_base_lo.bytes);
   		printf("\n	DEV: set DEV_BASE_LO and DEV_BASE_HI.");
 
+
 			//4. invalidate the DEV_BASE_HIGH and DEV_BASE_LOW registers of all other
    		//domains.
 		  dev_base_lo.fields.valid = 0;
   		dev_base_lo.fields.base_addr = 0;
-  		for (i = 1; i < dev_cap.fields.n_doms; i ++){
-    		svm_eap_dev_write(DEV_BASE_HI, i, dev_base_hi.bytes);
-    		svm_eap_dev_write(DEV_BASE_LO, i, dev_base_lo.bytes);
-  		}
+		#ifndef __XMHF_VERIFICATION__
+			for (i = 1; i < dev_cap.fields.n_doms; i ++){
+				svm_eap_dev_write(DEV_BASE_HI, i, dev_base_hi.bytes);
+				svm_eap_dev_write(DEV_BASE_LO, i, dev_base_lo.bytes);
+			}
+		#else
+			for (i = 1; i < 2; i ++){
+				svm_eap_dev_write(DEV_BASE_HI, i, dev_base_hi.bytes);
+				svm_eap_dev_write(DEV_BASE_LO, i, dev_base_lo.bytes);
+			}
+		#endif
       printf("\n	DEV: invalidated other domains.");
       
       
@@ -216,9 +228,8 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
   		svm_eap_dev_write(DEV_CR, 0, dev_cr.bytes);
 			printf("\n	DEV: enabled protections.");
 
-#endif
       	
-		}
+		//}
 
 		return 1;  	
 }
@@ -318,7 +329,7 @@ static u32 svm_eap_early_initialize(u32 protected_buffer_paddr,
 static u32 svm_eap_dev_read(u32 function, u32 index){
 	u32 value;
 
-/*
+
 	//sanity check on DEV registers
 	ASSERT(_svm_eap.dev_hdr_reg != 0 && _svm_eap.dev_fnidx_reg !=0 && _svm_eap.dev_data_reg != 0);
 
@@ -330,7 +341,7 @@ static u32 svm_eap_dev_read(u32 function, u32 index){
 	//step-2: read 32-bit value from dev_data_reg
 	emhf_baseplatform_arch_x86_pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
 		_svm_eap.dev_data_reg, sizeof(u32), &value);
-*/
+
   
   return value;
 }
@@ -420,7 +431,8 @@ u32 emhf_dmaprot_arch_x86svm_earlyinitialize(u64 protectedbuffer_paddr,
 	dev_bitmap_paddr=svm_eap_early_initialize(protectedbuffer_paddr, protectedbuffer_vaddr,
 					memregionbase_paddr, memregion_size);
 	#else
-		dev_bitmap_paddr=nondet_u32();
+		//dev_bitmap_paddr=nondet_u32();
+		dev_bitmap_paddr=0;
 	#endif
 
 	//setup DEV 
