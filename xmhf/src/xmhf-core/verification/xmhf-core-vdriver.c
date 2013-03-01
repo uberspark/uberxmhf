@@ -73,6 +73,17 @@ u32 xmhf_verify_cpu_vendor = CPU_VENDOR_INTEL;
 void main(){
 		/* emhf_runtime_main */
 		extern void emhf_runtime_main(void);
+		//setup RPB pointer and required runtime parameter block values
+		rpb = (RPB *)&_xrpb;
+		rpb->XtVmmE820NumEntries = 1; 									//lets worry about E820 later
+		rpb->XtVmmRuntimePhysBase = 0xC0000000;
+		rpb->XtVmmRuntimeSize = 0x8800000;								//128 MB + 8MB (NPTs) runtime size
+		rpb->XtGuestOSBootModuleBase = 0x20000;
+		rpb->XtGuestOSBootModuleSize = 512;
+		rpb->runtime_appmodule_base = 0;
+		rpb->runtime_appmodule_size = 0;
+
+
 		//setup bare minimum vcpu
 		vcpu.isbsp = 1;													//assume BSP
 		vcpu.id = 0;													//give a LAPIC id

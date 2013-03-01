@@ -168,9 +168,6 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
   //initialize memory protection for this core
   emhf_memprot_initialize(vcpu);
 
-	assert(0);
-#ifndef __XMHF_VERIFICATION__
-
   //initialize application parameter block and call app main
   {
   	APP_PARAM_BLOCK appParamBlock;
@@ -181,8 +178,10 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
   	appParamBlock.optionalmodule_size = (u32)rpb->runtime_appmodule_size;
 	appParamBlock.runtimephysmembase = (u32)rpb->XtVmmRuntimePhysBase;  
     COMPILE_TIME_ASSERT(sizeof(appParamBlock.cmdline) >= sizeof(rpb->cmdline));
+	#ifndef __XMHF_VERIFICATION__
     strncpy(appParamBlock.cmdline, rpb->cmdline, sizeof(appParamBlock.cmdline));
-
+	#endif
+	
   	//call app main
   	if(emhf_app_main(vcpu, &appParamBlock)){
     	printf("\nCPU(0x%02x): EMHF app. failed to initialize. HALT!", vcpu->id);
@@ -190,6 +189,7 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
   	}
   }   	
 
+#ifndef __XMHF_VERIFICATION__
   //increment app main success counter
   spin_lock(&g_lock_appmain_success_counter);
   g_appmain_success_counter++;
@@ -203,6 +203,7 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 		while(g_appmain_success_counter < g_midtable_numentries);	
 		printf("\nCPU(0x%02x): All cores have successfully been through appmain.", vcpu->id);
   }
+#endif
 
   //late initialization is still WiP and we can get only this far 
   //currently
@@ -211,8 +212,10 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 		HALT();
 	}
 
+#ifndef __XMHF_VERIFICATION__
   //initialize support for SMP guests
   emhf_smpguest_initialize(vcpu);
+#endif
 
   /*//XXX: debug
   //__asm__ __volatile__("int $0x02\r\n");
@@ -225,11 +228,11 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 	printf("\n[%02x]Selectors TR=0x%04x", vcpu->id, (u16)read_tr_sel());*/
 	
   //start partition
+#ifndef __XMHF_VERIFICATION__
   printf("\n%s[%02x]: starting partition...", __FUNCTION__, vcpu->id);
   emhf_partition_start(vcpu);
+#endif //__XMHF_VERIFICATION__
 
   printf("\nCPU(0x%02x): FATAL, should not be here. HALTING!", vcpu->id);
   HALT();
-
-#endif
 }
