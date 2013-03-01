@@ -571,14 +571,22 @@ static void _vtd_invalidatecaches(void){
   u32 i;
   VTD_CCMD_REG ccmd;
   VTD_IOTLB_REG iotlb;
-  
-  
-  for(i=0; i < vtd_num_drhd; i++){
+
+  #ifdef __XMHF_VERIFICATION__
+	for(i=0; i < 1; i++){
+  #else
+	for(i=0; i < vtd_num_drhd; i++){
+  #endif
     //1. invalidate CET cache
+  	
+  	#ifndef __XMHF_VERIFICATION__
   	//wait for context cache invalidation request to send
     do{
       _vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_CCMD_REG_OFF, (void *)&ccmd.value);
     }while(ccmd.bits.icc);    
+	#else
+	 _vtd_reg(&vtd_drhd[0], VTD_REG_READ, VTD_CCMD_REG_OFF, (void *)&ccmd.value);
+	#endif
 
 		//initialize CCMD to perform a global invalidation       
     ccmd.value=0;
@@ -588,11 +596,15 @@ static void _vtd_invalidatecaches(void){
     //perform the invalidation
     _vtd_reg(&vtd_drhd[i], VTD_REG_WRITE, VTD_CCMD_REG_OFF, (void *)&ccmd.value);
 
-		//wait for context cache invalidation completion status
+	#ifndef __XMHF_VERIFICATION__
+	//wait for context cache invalidation completion status
     do{
       _vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_CCMD_REG_OFF, (void *)&ccmd.value);
     }while(ccmd.bits.icc);    
-
+	#else
+	  _vtd_reg(&vtd_drhd[0], VTD_REG_READ, VTD_CCMD_REG_OFF, (void *)&ccmd.value);
+	#endif
+	
 		//if all went well CCMD CAIG = CCMD CIRG (i.e., actual = requested invalidation granularity)
     if(ccmd.bits.caig != 0x1){
       printf("\n	Invalidatation of CET failed. Halting! (%u)", ccmd.bits.caig);
@@ -608,10 +620,15 @@ static void _vtd_invalidatecaches(void){
     //perform the invalidation
 		_vtd_reg(&vtd_drhd[i], VTD_REG_WRITE, VTD_IOTLB_REG_OFF, (void *)&iotlb.value);
     
+    #ifndef __XMHF_VERIFICATION__
     //wait for the invalidation to complete
     do{
       _vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_IOTLB_REG_OFF, (void *)&iotlb.value);
     }while(iotlb.bits.ivt);    
+    #else
+      _vtd_reg(&vtd_drhd[0], VTD_REG_READ, VTD_IOTLB_REG_OFF, (void *)&iotlb.value);
+    #endif
+    
     
     //if all went well IOTLB IAIG = IOTLB IIRG (i.e., actual = requested invalidation granularity)
 		if(iotlb.bits.iaig != 0x1){
@@ -917,6 +934,7 @@ void emhf_dmaprot_arch_x86vmx_protect(u32 start_paddr, u32 size){
   ASSERT( (l_vtd_pdts_paddr != 0) && (l_vtd_pdts_vaddr != 0) );
   ASSERT( (l_vtd_pts_paddr != 0) && (l_vtd_pts_vaddr != 0) );
   
+  #ifndef __XMHF_VERIFICATION__
   for(vaddr=start_paddr; vaddr <= end_paddr; vaddr+=PAGE_SIZE_4K){
   
 		//compute pdpt, pdt and pt indices
@@ -932,6 +950,7 @@ void emhf_dmaprot_arch_x86vmx_protect(u32 start_paddr, u32 size){
   	pt[ptindex] &= ~((u64)VTD_READ | (u64)VTD_WRITE);
   
   }
+  #endif
   
   //flush the caches
 	_vtd_invalidatecaches();  

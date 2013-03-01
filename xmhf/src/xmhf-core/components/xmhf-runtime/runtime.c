@@ -53,7 +53,6 @@
 
 //---runtime main---------------------------------------------------------------
 void emhf_runtime_entry(void){
-#ifndef __XMHF_VERIFICATION__
 	u32 cpu_vendor;
 
 	//get CPU vendor
@@ -89,8 +88,10 @@ void emhf_runtime_entry(void){
 	}*/
 
 
+	#ifndef __XMHF_VERIFICATION__
 	//setup EMHF exception handler component
 	emhf_xcphandler_initialize();
+	#endif
 
 
 	//[debug]: test IDT/exception routing
@@ -128,6 +129,7 @@ void emhf_runtime_entry(void){
 	}
 #endif
 
+
 	/*printf("\nPreSelectors CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", 
 			(u16)read_segreg_cs(), (u16)read_segreg_ds(),
 			(u16)read_segreg_es(), (u16)read_segreg_ss());
@@ -136,14 +138,16 @@ void emhf_runtime_entry(void){
 	printf("\nPreSelectors TR=0x%04x", (u16)read_tr_sel());*/
 
 
+	#ifndef __XMHF_VERIFICATION__
 	//initialize base platform with SMP 
 	emhf_baseplatform_smpinitialize();
+	#endif
 	
 	printf("\nRuntime: We should NEVER get here!");
 	ASSERT(0);
 	HALT();
-	
-#endif //__XMHF_VERIFICATION__	
+
+
 }
 
 //we get control here in the context of *each* physical CPU core 

@@ -394,11 +394,15 @@ static void svm_eap_dev_invalidate_cache(void){
   dev_cr.fields.deven = 1;										//ensure DEV is enabled
   svm_eap_dev_write(DEV_CR, 0, dev_cr.bytes);	//write modified DEV_CR to invalidate caches
 
+  #ifndef __XMHF_VERIFICATION__
   //wait until DEV h/w completes invalidation, seems like this may
   //not be fast enough for us to skip the wait!
-  do{
+   do{
 		dev_cr.bytes = svm_eap_dev_read(DEV_CR, 0);	//read DEV_CR value
 	}while(dev_cr.fields.devinv == 1);	//h/w clears the devinv bit when done
+  #else
+		dev_cr.bytes = svm_eap_dev_read(DEV_CR, 0);	//read DEV_CR value
+  #endif
 
   return;
 }
@@ -456,10 +460,14 @@ void emhf_dmaprot_arch_x86svm_protect(u32 start_paddr, u32 size){
 	//compute page-aligned physical start and end addresses
 	paligned_paddr_start = PAGE_ALIGN_4K(start_paddr);
 	paligned_paddr_end = PAGE_ALIGN_4K((start_paddr+size));
-	
+
+	#ifndef __XMHF_VERIFICATION__
 	//protect pages from paligned_paddr_start through paligned_paddr_end inclusive
 	for(i=paligned_paddr_start; i <= paligned_paddr_end; i+= PAGE_SIZE_4K){
 		svm_eap_dev_set_page_protection(i >> PAGE_SHIFT_4K, (u8 *)_svm_eap.dev_bitmap_vaddr);
-		svm_eap_dev_invalidate_cache();	//flush DEV cache
 	}
+	#endif
+
+	svm_eap_dev_invalidate_cache();	//flush DEV cache
+
 }
