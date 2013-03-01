@@ -313,7 +313,9 @@ void emhf_partition_arch_x86svm_start(VCPU *vcpu){
 	//ensure that whenever a partition is started on a vcpu, we have nested paging
 	//enabled and that the base points to the nested page tables we have initialized
 	assert( (vmcb->np_enable == 1) && (vmcb->n_cr3 == vcpu->npt_vaddr_ptr) );
+#endif
 
+#ifndef __XMHF_VERIFICATION__
     __svm_start_hvm(vcpu, hva2spa((void*)vcpu->vmcb_vaddr_ptr));
 	//we never get here, if we do, we just return and our caller is responsible
 	//for halting the core as something really bad happened!
