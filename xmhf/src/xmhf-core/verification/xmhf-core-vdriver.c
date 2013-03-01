@@ -67,7 +67,7 @@ RPB *rpb; 	//runtime parameter block pointer
 //actual definitions
 RPB _xrpb;	
 
-u32 xmhf_verify_cpu_vendor = CPU_VENDOR_AMD;
+u32 xmhf_verify_cpu_vendor = CPU_VENDOR_INTEL;
 	
 
 void main(){
