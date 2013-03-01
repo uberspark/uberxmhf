@@ -156,9 +156,10 @@ void emhf_runtime_entry(void){
 //in the event we were launched from a running OS
 void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 
-#ifndef __XMHF_VERIFICATION__
   //initialize CPU
   emhf_baseplatform_cpuinitialize();
+
+#ifndef __XMHF_VERIFICATION__
 
   //initialize partition monitor (i.e., hypervisor) for this CPU
   emhf_partition_initializemonitor(vcpu);
