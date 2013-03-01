@@ -703,7 +703,7 @@ static u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 	u32 i, dmarfound;
 	u32 dmaraddrphys, remappingstructuresaddrphys;
 	
-	
+#ifndef __XMHF_VERIFICATION__	
 	//zero out rsdp and rsdt structures
 	memset(&rsdp, 0, sizeof(ACPI_RSDP));
 	memset(&rsdt, 0, sizeof(ACPI_RSDT));
@@ -814,6 +814,9 @@ static u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 
 	//success
 	printf("\n%s: success, leaving...", __FUNCTION__);
+
+#endif //__XMHF_VERIFICATION__
+
 	return 1;
 }
 
@@ -841,7 +844,7 @@ u32 emhf_dmaprot_arch_x86vmx_earlyinitialize(u64 protectedbuffer_paddr, u32 prot
 	vmx_eap_vtd_cet_paddr = protectedbuffer_paddr + (2*PAGE_SIZE_4K); 
 	vmx_eap_vtd_cet_vaddr = protectedbuffer_vaddr + (2*PAGE_SIZE_4K); 
 			
-	//return vmx_eap_initialize(vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr, 0, 0,	0, 0, vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr,	vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr, 1);
+	return vmx_eap_initialize(vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr, 0, 0,	0, 0, vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr,	vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr, 1);
 	return 1;
 }
 
@@ -874,7 +877,7 @@ u32 emhf_dmaprot_arch_x86vmx_initialize(u64 protectedbuffer_paddr,
 	vmx_eap_vtd_cet_paddr = vmx_eap_vtd_ret_paddr + PAGE_SIZE_4K; 
 	vmx_eap_vtd_cet_vaddr = vmx_eap_vtd_ret_vaddr + PAGE_SIZE_4K; 
 			
-	//return vmx_eap_initialize(vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr, vmx_eap_vtd_pdts_paddr, vmx_eap_vtd_pdts_vaddr, vmx_eap_vtd_pts_paddr, vmx_eap_vtd_pts_vaddr, vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr, vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr, 0);
+	return vmx_eap_initialize(vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr, vmx_eap_vtd_pdts_paddr, vmx_eap_vtd_pdts_vaddr, vmx_eap_vtd_pts_paddr, vmx_eap_vtd_pts_vaddr, vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr, vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr, 0);
 }
 
 //DMA protect a given region of memory, start_paddr is
