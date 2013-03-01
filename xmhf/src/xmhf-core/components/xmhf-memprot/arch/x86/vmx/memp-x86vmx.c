@@ -101,7 +101,6 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
   		HALT();
   	}
 
-#ifndef __XMHF_VERIFICATION__
   	//check MTRR caps
   	rdmsr(IA32_MTRRCAP, &eax, &edx);
   	printf("\nIA32_MTRRCAP: VCNT=%u, FIX=%u, WC=%u, SMRR=%u",
@@ -110,8 +109,11 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
   	//we need VCNT=8, FIX=1
   	ASSERT( ((eax & (u32)0x000000FF) == 0x8) && ((eax & (1 << 8)) >> 8) );
 
+  #ifndef __XMHF_VERIFICATION__
   //1. clear memorytypes array
   memset((void *)&vcpu->vmx_ept_memorytypes, 0, sizeof(struct _memorytype) * MAX_MEMORYTYPE_ENTRIES);
+  #endif
+
   
   //2. grab memory types using FIXED MTRRs
     //0x00000000-0x0007FFFF
@@ -224,6 +226,7 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
     vcpu->vmx_ept_memorytypes[index].startaddr = 0x000FD000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000FDFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x0000FF00) >> 8);
     vcpu->vmx_ept_memorytypes[index].startaddr = 0x000FE000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000FEFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
     vcpu->vmx_ept_memorytypes[index].startaddr = 0x000FF000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000FFFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
+
 	       
   //3. grab memory types using variable length MTRRs  
   {
@@ -252,7 +255,6 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
 	}
 
   ASSERT( index == MAX_MEMORYTYPE_ENTRIES);
-#endif
 
   //[debug: dump the contents of vcpu->vmx_ept_memorytypes]
   //{
