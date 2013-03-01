@@ -63,8 +63,8 @@ static void _vmx_setupEPT(VCPU *vcpu);
 void emhf_memprot_arch_x86vmx_initialize(VCPU *vcpu){
 	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
-#ifndef __XMHF_VERIFICATION__	
 	_vmx_gathermemorytypes(vcpu);
+#ifndef __XMHF_VERIFICATION__	
 	_vmx_setupEPT(vcpu);
 #endif
 
@@ -90,14 +90,18 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
   	//check MTRR support
   	eax=0x00000001;
   	ecx=0x00000000;
+	#ifndef __XMHF_VERIFICATION__
   	asm volatile ("cpuid\r\n"
             :"=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx)
             :"a"(eax), "c" (ecx));
+  	#endif
+  	
   	if( !(edx & (u32)(1 << 12)) ){
   		printf("\nCPU(0x%02x): CPU does not support MTRRs!", vcpu->id);
   		HALT();
   	}
 
+#ifndef __XMHF_VERIFICATION__
   	//check MTRR caps
   	rdmsr(IA32_MTRRCAP, &eax, &edx);
   	printf("\nIA32_MTRRCAP: VCNT=%u, FIX=%u, WC=%u, SMRR=%u",
@@ -248,7 +252,7 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
 	}
 
   ASSERT( index == MAX_MEMORYTYPE_ENTRIES);
-
+#endif
 
   //[debug: dump the contents of vcpu->vmx_ept_memorytypes]
   //{
