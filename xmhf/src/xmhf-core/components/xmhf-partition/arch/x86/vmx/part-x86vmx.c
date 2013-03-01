@@ -287,10 +287,13 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 #endif
 	//store vcpu at TOS
 	vcpu->esp = vcpu->esp - sizeof(u32);
+#ifndef __XMHF_VERIFICATION__
 	*(u32 *)vcpu->esp = (u32)vcpu;
+#endif
 	vcpu->vmcs.host_RSP = (u64)vcpu->esp;
 			
-			
+
+#ifndef __XMHF_VERIFICATION__			
 	rdmsr(IA32_SYSENTER_CS_MSR, &lodword, &hidword);
 	vcpu->vmcs.host_SYSENTER_CS = lodword;
 	rdmsr(IA32_SYSENTER_ESP_MSR, &lodword, &hidword);
@@ -301,6 +304,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.host_FS_base = (u64) (((u64)hidword << 32) | (u64)lodword);
 	rdmsr(IA32_MSR_GS_BASE, &lodword, &hidword);
 	vcpu->vmcs.host_GS_base = (u64) (((u64)hidword << 32) | (u64)lodword);
+#endif
 
 	//setup default VMX controls
 	vcpu->vmcs.control_VMX_pin_based = vcpu->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR];
@@ -321,6 +325,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 		msr_entry_t *hmsr = (msr_entry_t *)vcpu->vmx_vaddr_msr_area_host;
 		msr_entry_t *gmsr = (msr_entry_t *)vcpu->vmx_vaddr_msr_area_guest;
 
+		#ifndef __XMHF_VERIFICATION__
 		//store initial values of the MSRs
 		for(i=0; i < vmx_msr_area_msrs_count; i++){
 			u32 msr, eax, edx;
@@ -329,6 +334,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 			hmsr[i].index = gmsr[i].index = msr;
 			hmsr[i].data = gmsr[i].data = ((u64)edx << 32) | (u64)eax;
 		}
+		#endif
 
 		//host MSR load on exit, we store it ourselves before entry
 		vcpu->vmcs.control_VM_exit_MSR_load_address_full=(u32)hva2spa((void*)vcpu->vmx_vaddr_msr_area_host);
@@ -380,7 +386,9 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	//RIP
 	if(vcpu->isbsp){
 		printf("\nBSP(0x%02x): copying boot-module to boot guest", vcpu->id);
+		#ifndef __XMHF_VERIFICATION__
 		memcpy((void *)__GUESTOSBOOTMODULE_BASE, (void *)rpb->XtGuestOSBootModuleBase, rpb->XtGuestOSBootModuleSize);
+		#endif
 			vcpu->vmcs.guest_CS_selector = 0;
 			vcpu->vmcs.guest_CS_base = 0;
 		vcpu->vmcs.guest_RIP = 0x7c00ULL;
@@ -450,6 +458,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	//flush guest TLB to start with
 	emhf_memprot_arch_x86vmx_flushmappings(vcpu);
 }
+
 
 
 //---initVMCS - intialize VMCS for guest boot-----------------------------------

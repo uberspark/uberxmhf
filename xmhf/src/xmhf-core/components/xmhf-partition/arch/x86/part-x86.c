@@ -70,9 +70,9 @@ void emhf_partition_arch_setupguestOSstate(VCPU *vcpu){
 	
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
 		emhf_partition_arch_x86svm_setupguestOSstate(vcpu);
-	}/*else{ //CPU_VENDOR_INTEL
+	}else{ //CPU_VENDOR_INTEL
 		emhf_partition_arch_x86vmx_setupguestOSstate(vcpu);
-	}*/
+	}
 }
 
 //start executing the partition and guest OS
