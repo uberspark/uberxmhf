@@ -74,6 +74,7 @@ static void _vmx_initVT(VCPU *vcpu){
 	{
 	  u32 gdtstart = (u32)&x_gdt_start;
 	  u16 trselector = 	__TRSEL;
+	  #ifndef __XMHF_VERIFICATION__
 	  asm volatile("movl %0, %%edi\r\n"
 		"xorl %%eax, %%eax\r\n"
 		"movw %1, %%ax\r\n"
@@ -86,6 +87,7 @@ static void _vmx_initVT(VCPU *vcpu){
 	     : "m"(gdtstart), "m"(trselector)
 	     : "edi", "eax"
 	  );
+	  #endif
 	}
 	
 
@@ -93,6 +95,7 @@ static void _vmx_initVT(VCPU *vcpu){
   //step-1: check if intel CPU
   {
     char cpu_oemid[12];
+	  #ifndef __XMHF_VERIFICATION__
 	  asm(	"xor	%%eax, %%eax \n"
 				  "cpuid \n"		
 				  "mov	%%ebx, %0 \n"
@@ -104,11 +107,13 @@ static void _vmx_initVT(VCPU *vcpu){
    	  printf("\nCPU(0x%02x) is not an Intel CPU. Halting!", vcpu->id);
    	  HALT();
    	}
+   	#endif
   }
   
   //step-2: check VT support
   {
   	u32	cpu_features;
+    #ifndef __XMHF_VERIFICATION__
     asm("mov	$1, %%eax \n"
 				"cpuid \n"
 				"mov	%%ecx, %0	\n"
@@ -117,6 +122,7 @@ static void _vmx_initVT(VCPU *vcpu){
 			printf("CPU(0x%02x) does not support VT. Halting!", vcpu->id);
       HALT();
 		}
+	#endif
   }
 
   //step-3: save contents of VMX MSRs as well as MSR EFER and EFCR 
@@ -124,7 +130,11 @@ static void _vmx_initVT(VCPU *vcpu){
   {
     u32 i;
     u32 eax, edx;
+    #ifndef __XMHF_VERIFICATION__
     for(i=0; i < IA32_VMX_MSRCOUNT; i++){
+	#else
+	for(i=0; i < 1; i++){
+	#endif
         rdmsr( (IA32_VMX_BASIC_MSR + i), &eax, &edx);
         vcpu->vmx_msrs[i] = (u64)edx << 32 | (u64) eax;        
     }
@@ -135,9 +145,9 @@ static void _vmx_initVT(VCPU *vcpu){
     vcpu->vmx_msr_efcr = (u64)edx << 32 | (u64) eax;
   
     //[debug: dump contents of MSRs]
-    for(i=0; i < IA32_VMX_MSRCOUNT; i++)
-       printf("\nCPU(0x%02x): VMX MSR 0x%08x = 0x%08x%08x", vcpu->id, IA32_VMX_BASIC_MSR+i, 
-          (u32)((u64)vcpu->vmx_msrs[i] >> 32), (u32)vcpu->vmx_msrs[i]);
+    //for(i=0; i < IA32_VMX_MSRCOUNT; i++)
+    //  printf("\nCPU(0x%02x): VMX MSR 0x%08x = 0x%08x%08x", vcpu->id, IA32_VMX_BASIC_MSR+i, 
+    //      (u32)((u64)vcpu->vmx_msrs[i] >> 32), (u32)vcpu->vmx_msrs[i]);
     
 		//check if VMX supports unrestricted guest, if so we don't need the
 		//v86 monitor and the associated state transition handling
@@ -163,9 +173,11 @@ static void _vmx_initVT(VCPU *vcpu){
   }
 
   //step-4: enable VMX by setting CR4
+	#ifndef __XMHF_VERIFICATION__
 	asm(	" mov  %%cr4, %%eax	\n"\
 		" bts  $13, %%eax	\n"\
 		" mov  %%eax, %%cr4	" ::: "eax" );
+	#endif
   printf("\nCPU(0x%02x): enabled VMX", vcpu->id);
 
 	  //step-5:enter VMX root operation using VMXON
@@ -173,8 +185,11 @@ static void _vmx_initVT(VCPU *vcpu){
 	  	u32 retval=0;
 	  	u64 vmxonregion_paddr = hva2spa((void*)vcpu->vmx_vmxonregion_vaddr);
 	    //set VMCS rev id
+	  	#ifndef __XMHF_VERIFICATION__
 	  	*((u32 *)vcpu->vmx_vmxonregion_vaddr) = (u32)vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
+	    #endif
 	    
+	    #ifndef __XMHF_VERIFICATION__
 	   	asm( "vmxon %1 \n"
 				 "jbe vmfail \n"
 				 "movl $0x1, %%eax \n" 
@@ -187,6 +202,7 @@ static void _vmx_initVT(VCPU *vcpu){
 	       : "=m" (retval)
 	       : "m"(vmxonregion_paddr) 
 	       : "eax");
+		#endif
 		
 	    if(!retval){
 	      printf("\nCPU(0x%02x): Fatal, unable to enter VMX root operation", vcpu->id);
@@ -200,6 +216,7 @@ static void _vmx_initVT(VCPU *vcpu){
 
 //---vmx int 15 hook enabling function------------------------------------------
 static void	_vmx_int15_initializehook(VCPU *vcpu){
+//#ifnfdef __XMHF_VERIFICATION__
 	//we should only be called from the BSP
 	ASSERT(vcpu->isbsp);
 	
@@ -241,6 +258,7 @@ static void	_vmx_int15_initializehook(VCPU *vcpu){
 		ivt_int15[0]=0x00AC;
 		ivt_int15[1]=0x0040;					
 	}
+//#endif	
 }
 
 
@@ -501,21 +519,21 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
 //initialize partition monitor for a given CPU
 void emhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu){
 
-#ifndef __XMHF_VERIFICATION__
   //initialize VT
   _vmx_initVT(vcpu);
 
-  //clear VMCS
-  memset((void *)&vcpu->vmcs, 0, sizeof(struct _vmx_vmcsfields));
 
+	#ifndef __XMHF_VERIFICATION__
+   //clear VMCS
+  memset((void *)&vcpu->vmcs, 0, sizeof(struct _vmx_vmcsfields));
+   #endif
+   
 	//INT 15h E820 hook enablement for VMX unrestricted guest mode
 	//note: this only happens for the BSP
 	if(vcpu->isbsp){
 		printf("\nCPU(0x%02x, BSP): initializing INT 15 hook for UG mode...", vcpu->id);
 		_vmx_int15_initializehook(vcpu);
 	}
-	
-#endif
 
 }
 
