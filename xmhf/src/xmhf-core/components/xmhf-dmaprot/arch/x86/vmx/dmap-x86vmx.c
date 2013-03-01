@@ -799,13 +799,21 @@ static u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 		printf("\n%s: setup VT-d RET (%08x) and CET (%08x) for bootstrap.", __FUNCTION__, vtd_ret_paddr, vtd_cet_paddr);
 	}
 
+#endif //__XMHF_VERIFICATION__
+
+
+#ifndef __XMHF_VERIFICATION__
  	//initialize all DRHD units
   for(i=0; i < vtd_num_drhd; i++){
   	printf("\n%s: initializing DRHD unit %u...", __FUNCTION__, i);
   	_vtd_drhd_initialize(&vtd_drhd[i], vtd_ret_paddr);
   }
+#else
+  	printf("\n%s: initializing DRHD unit %u...", __FUNCTION__, i);
+  	//_vtd_drhd_initialize(&vtd_drhd[0], vtd_ret_paddr);
+#endif
 
-  //zap VT-d presence in ACPI table...
+	//zap VT-d presence in ACPI table...
 	//TODO: we need to be a little elegant here. eventually need to setup 
 	//EPT/NPTs such that the DMAR pages are unmapped for the guest
 	if(!isbootstrap)
@@ -814,8 +822,6 @@ static u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 
 	//success
 	printf("\n%s: success, leaving...", __FUNCTION__);
-
-#endif //__XMHF_VERIFICATION__
 
 	return 1;
 }
