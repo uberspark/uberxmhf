@@ -178,7 +178,6 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 #endif
 
 
-#ifndef __XMHF_VERIFICATION__
 		
 	//populate runtime parameter block fields
 		rpb->isEarlyInit = slpb.isEarlyInit; //tell runtime if we started "early" or "late"
@@ -189,11 +188,15 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		rpb->XtVmmRuntimeSize = slpb.runtime_size;
 
 		//store revised E820 map and number of entries
+		#ifndef __XMHF_VERIFICATION__
 		memcpy(emhf_sl_arch_hva2sla(rpb->XtVmmE820Buffer), (void *)&slpb.memmapbuffer, (sizeof(slpb.memmapbuffer)) );
+		#endif
 		rpb->XtVmmE820NumEntries = slpb.numE820Entries; 
 
 		//store CPU table and number of CPUs
+		#ifndef __XMHF_VERIFICATION__
 		memcpy(emhf_sl_arch_hva2sla(rpb->XtVmmMPCpuinfoBuffer), (void *)&slpb.cpuinfobuffer, (sizeof(slpb.cpuinfobuffer)) );
+		#endif
 		rpb->XtVmmMPCpuinfoNumEntries = slpb.numCPUEntries; 
 
 		//setup guest OS boot module info in LPB	
@@ -211,7 +214,9 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 		//pass command line configuration forward 
         COMPILE_TIME_ASSERT(sizeof(slpb.cmdline) == sizeof(rpb->cmdline));
+		#ifndef __XMHF_VERIFICATION__
 		strncpy(rpb->cmdline, slpb.cmdline, sizeof(slpb.cmdline));
+		#endif
 
 		////debug dump uart_config field
 		//printf("\nrpb->uart_config.port = %x", rpb->uart_config.port);
@@ -220,17 +225,17 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		//printf("\nrpb->uart_config.data_bits, parity, stop_bits, fifo = %x %x %x %x", 
 			//	rpb->uart_config.data_bits, rpb->uart_config.parity, rpb->uart_config.stop_bits, rpb->uart_config.fifo);*/
 
-		
-		
-
+	
 	//transfer control to runtime
 	emhf_sl_arch_xfer_control_to_runtime(rpb);
 
+#ifndef __XMHF_VERIFICATION__
 	//we should never get here
 	printf("\nSL: Fatal, should never be here!");
 	HALT();
-
-#endif // __XMHF_VERIFICATION__
+#else
+	return;
+#endif
 
 } 
 

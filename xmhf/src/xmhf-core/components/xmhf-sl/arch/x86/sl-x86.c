@@ -52,7 +52,6 @@
  
 #include <xmhf.h>
 
-#ifndef __XMHF_VERIFICATION__
 
 //we only have confidence in the runtime's expected value here in the SL
 static INTEGRITY_MEASUREMENT_VALUES g_sl_gold /* __attribute__(( section("") )) */ = {
@@ -72,6 +71,7 @@ u64 emhf_sl_arch_sla2spa(void* x) {
   return (u64)(uintptr_t)(x) + sl_baseaddr;
 }
 
+#ifndef __XMHF_VERIFICATION__
 
 //---runtime paging setup-------------------------------------------------------
 //physaddr and virtaddr are assumed to be 2M aligned
@@ -129,14 +129,16 @@ u32 emhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime
 
   return emhf_sl_arch_sla2spa(xpdpt);
 }
+#endif //__XMHF_VERIFICATION__
+
 
 /* XXX TODO Read PCR values and sanity-check that DRTM was successful
  * (i.e., measurements match expectations), and integrity-check the
  * runtime. */
 /* Note: calling this *before* paging is enabled is important. */
-bool emhf_sl_arch_integrity_check(u8* runtime_base_addr, size_t runtime_len) {
+/*bool emhf_sl_arch_integrity_check(u8* runtime_base_addr, size_t runtime_len) {
     int ret;
-    u32 locality = EMHF_TPM_LOCALITY_PREF; /* target.h */
+    u32 locality = EMHF_TPM_LOCALITY_PREF; 
     tpm_pcr_value_t pcr17, pcr18;    
 	(void)g_sl_gold;
 
@@ -163,12 +165,12 @@ bool emhf_sl_arch_integrity_check(u8* runtime_base_addr, size_t runtime_len) {
     }
     print_hex("PCR-18: ", &pcr18, sizeof(pcr18));    
 
-    /* free TPM so that OS driver works as expected */
+    // free TPM so that OS driver works as expected 
     emhf_tpm_arch_deactivate_all_localities();
     
     return true;    
 }
-#endif //__XMHF_VERIFICATION__
+*/
 
 
 
@@ -247,41 +249,49 @@ void emhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 }
 
 
-#ifndef __XMHF_VERIFICATION__
 
 void emhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 	u32 ptba;	//page table base address
-//	u32 rtm_gdt, rtm_idt, rtm_ep, rtm_tos;
+	TSSENTRY *t;
+	u32 tss_base;
+	u32 gdt_base;
 	
-	//setup runtime TSS
-	{
-			TSSENTRY *t;
-	  	u32 tss_base=(u32)rpb->XtVmmTSSBase;
-	  	u32 gdt_base= *(u32 *)(emhf_sl_arch_hva2sla(rpb->XtVmmGdt + 2));
+	#ifndef __XMHF_VERIFICATION__
+		//setup runtime TSS
+		tss_base=(u32)rpb->XtVmmTSSBase;
+		gdt_base= *(u32 *)(emhf_sl_arch_hva2sla(rpb->XtVmmGdt + 2));
+	#else
+		tss_base=PAGE_SIZE_2M+PAGE_SIZE_4K;
+		gdt_base=PAGE_SIZE_2M+PAGE_SIZE_4K;
+	#endif
 	
-			//fix TSS descriptor, 18h
-			t= (TSSENTRY *)((u32)gdt_base + __TRSEL );
-		  t->attributes1= 0x89;
-		  t->limit16_19attributes2= 0x10;
-		  t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
-		  t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
-		  t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);      
-		  t->limit0_15=0x67;
-	}
+		//fix TSS descriptor, 18h
+		t= (TSSENTRY *)((u32)gdt_base + __TRSEL );
+		t->attributes1= 0x89;
+		t->limit16_19attributes2= 0x10;
+		t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
+		t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
+		t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);      
+		t->limit0_15=0x67;
 	printf("\nSL: setup runtime TSS.");	
 
+	#ifndef __XMHF_VERIFICATION__
 	//setup paging structures for runtime 
 	ptba=emhf_sl_arch_x86_setup_runtime_paging(rpb, rpb->XtVmmRuntimePhysBase, __TARGET_BASE, PAGE_ALIGN_UP2M(rpb->XtVmmRuntimeSize));
+	#endif
+	
 	printf("\nSL: setup runtime paging structures.");        
 
 	printf("\nTransferring control to runtime");
-	printf("\nGDT=%08x, IDT=%08x, EntryPoint=%08x", rpb->XtVmmGdt, rpb->XtVmmIdt, rpb->XtVmmEntryPoint);
-	printf("\nTop-of-stack=%08x, CR3=%08x", (rpb->XtVmmStackBase+rpb->XtVmmStackSize), ptba);
+	//printf("\nGDT=%08x, IDT=%08x, EntryPoint=%08x", rpb->XtVmmGdt, rpb->XtVmmIdt, rpb->XtVmmEntryPoint);
+	//printf("\nTop-of-stack=%08x, CR3=%08x", (rpb->XtVmmStackBase+rpb->XtVmmStackSize), ptba);
 
+	#ifndef __XMHF_VERIFICATION__
 	//transfer control to runtime and never return
 	emhf_sl_arch_x86_invoke_runtime_entrypoint(rpb->XtVmmGdt, rpb->XtVmmIdt, 
 				rpb->XtVmmEntryPoint, (rpb->XtVmmStackBase+rpb->XtVmmStackSize), ptba);
-	
+	#else
+	return;
+	#endif
 }
 
-#endif //__XMHF_VERIFICATION__
