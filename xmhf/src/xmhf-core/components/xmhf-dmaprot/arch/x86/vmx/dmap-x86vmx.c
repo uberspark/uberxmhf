@@ -348,7 +348,8 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
 			printf("\n	VT-d hardware access to remapping structures NON-COHERENT");
 	}
 	
-	  
+
+  
   //2. disable device
   /*disabling DRHD is optional as the steps below initialize required
     registers irrespective of their reset state. however, some machines
@@ -423,13 +424,16 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
   }
   printf("Done.");
 
+
   //5. invalidate CET cache
   printf("\n	Invalidating CET cache...");
 	{
 		//wait for context cache invalidation request to send
+	#ifndef __XMHF_VERIFICATION__
     do{
       _vtd_reg(drhd, VTD_REG_READ, VTD_CCMD_REG_OFF, (void *)&ccmd.value);
     }while(ccmd.bits.icc);    
+    #endif
 
 		//initialize CCMD to perform a global invalidation       
     ccmd.value=0;
@@ -440,9 +444,11 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
     _vtd_reg(drhd, VTD_REG_WRITE, VTD_CCMD_REG_OFF, (void *)&ccmd.value);
 
 		//wait for context cache invalidation completion status
+    #ifndef __XMHF_VERIFICATION__
     do{
       _vtd_reg(drhd, VTD_REG_READ, VTD_CCMD_REG_OFF, (void *)&ccmd.value);
     }while(ccmd.bits.icc);    
+	#endif
 
 		//if all went well CCMD CAIG = CCMD CIRG (i.e., actual = requested invalidation granularity)
     if(ccmd.bits.caig != 0x1){
@@ -451,6 +457,7 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
     }
   }
   printf("Done.");
+
 
 	//6. invalidate IOTLB
   printf("\n	Invalidating IOTLB...");
@@ -463,10 +470,12 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
     //perform the invalidation
 		_vtd_reg(drhd, VTD_REG_WRITE, VTD_IOTLB_REG_OFF, (void *)&iotlb.value);
     
+	#ifndef __XMHF_VERIFICATION__
     //wait for the invalidation to complete
     do{
       _vtd_reg(drhd, VTD_REG_READ, VTD_IOTLB_REG_OFF, (void *)&iotlb.value);
     }while(iotlb.bits.ivt);    
+    #endif
     
     //if all went well IOTLB IAIG = IOTLB IIRG (i.e., actual = requested invalidation granularity)
 		if(iotlb.bits.iaig != 0x1){
@@ -475,6 +484,7 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
     }
   }
 	printf("Done.");
+
 
 	//7. disable options we dont support
   printf("\n	Disabling unsupported options...");
@@ -510,6 +520,7 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
     }
 	}
 	printf("Done.");
+
 	
   //8. enable device
   printf("\n	Enabling device...");
@@ -521,9 +532,11 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
       
 			//wait for translation enabled status to go green...
 			_vtd_reg(drhd, VTD_REG_READ, VTD_GSTS_REG_OFF, (void *)&gsts.value);
+	#ifndef __XMHF_VERIFICATION__
       while(!gsts.bits.tes){
         _vtd_reg(drhd, VTD_REG_READ, VTD_GSTS_REG_OFF, (void *)&gsts.value);
       }
+     #endif
   }
   printf("Done.");
   
@@ -538,13 +551,16 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
       _vtd_reg(drhd, VTD_REG_READ, VTD_PMEN_REG_OFF, (void *)&pmen.value);
       pmen.bits.epm=0;	//disable PMR
       _vtd_reg(drhd, VTD_REG_WRITE, VTD_PMEN_REG_OFF, (void *)&pmen.value);
+      #ifndef __XMHF_VERIFICATION__
       //wait for PMR disabled...
 			do{
         _vtd_reg(drhd, VTD_REG_READ, VTD_PMEN_REG_OFF, (void *)&pmen.value);
       }while(pmen.bits.prs);
+      #endif
   	}
 	}
 	printf("Done.");
+
 
 }
 
@@ -810,7 +826,7 @@ static u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
   }
 #else
   	printf("\n%s: initializing DRHD unit %u...", __FUNCTION__, i);
-  	//_vtd_drhd_initialize(&vtd_drhd[0], vtd_ret_paddr);
+  	_vtd_drhd_initialize(&vtd_drhd[0], vtd_ret_paddr);
 #endif
 
 	//zap VT-d presence in ACPI table...
