@@ -66,19 +66,25 @@ static u32 svm_eap_dev_read(u32 function, u32 index);
 //returns 1 if all went well, else 0
 //inputs: physical and virtual addresses of the DEV bitmap area
 static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
+
 	u32 mc_capabilities_pointer;
 	u32 mc_caplist_nextptr;
 	u32 mc_caplist_id;
 	u32 found_dev=0;
+
 	
 	//clear the SVM EAP container structure members including the DEV
 	//bitmap
-	memset((void *)&_svm_eap, 0, sizeof(struct _svm_eap));
+	//memset((void *)(u32)&_svm_eap, 0, sizeof(struct _svm_eap));
+	_svm_eap.dev_hdr_reg=0;			//DEV header register (32-bit)
+ 	_svm_eap.dev_fnidx_reg=0;		//DEV function/index register (32-bit)
+	_svm_eap.dev_data_reg=0;			//DEV data register (32-bit)
+	_svm_eap.dev_bitmap_vaddr=0;	//DEV bitmap virtual address
+
 
 	//ensure dev_bitmap_paddr is PAGE_ALIGNED
 	ASSERT( (dev_bitmap_paddr & 0xFFF) == 0 );
 
-	
 	//we first need to detect the DEV capability block
 	//the DEV capability block is in the PCI configuration space 
 	//(15.24.4, AMD Dev. Vol2)
@@ -108,10 +114,15 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
 		  emhf_baseplatform_arch_x86_pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, mc_caplist_nextptr, sizeof(u8), &mc_caplist_id);
 		  
 			//check if this is a DEV capability ID block
-			if((u8)mc_caplist_id == PCI_CAPABILITIES_POINTER_ID_DEV){
+			#ifdef __XMHF_VERIFICATION__
 				found_dev = 1;
 				break;
-			}
+			#else
+				if((u8)mc_caplist_id == PCI_CAPABILITIES_POINTER_ID_DEV){
+					found_dev = 1;
+					break;
+				}
+			#endif
 		  
 		  //get the index of the next capability block
 			emhf_baseplatform_arch_x86_pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, mc_caplist_nextptr, sizeof(u8), &mc_caplist_nextptr);
@@ -121,6 +132,7 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
   	//did we find a DEV capability block above? if no simply return
   	if(!found_dev)
   		return 0;
+
   		
   	//okay, we found a DEV capability block at index mc_caplist_nextptr
 		printf("\n%s: found DEV capability block at index %04x", __FUNCTION__, mc_caplist_nextptr);
@@ -152,8 +164,14 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
 			printf("\n	DEV: bitmap at v:p addr %08x:%08x", _svm_eap.dev_bitmap_vaddr,
 					dev_bitmap_paddr);
 
+		assert(0);
+
+#ifndef __XMHF_VERIFICATION__
+
   		//1. read the DEV revision, and the number of maps and domains supported 
   		dev_cap.bytes = svm_eap_dev_read(DEV_CAP, 0);
+		
+
   		printf("\n	DEV:rev=%u, n_doms=%u, n_maps=%u", dev_cap.fields.rev, dev_cap.fields.n_doms, dev_cap.fields.n_maps);
   		
 			//2. disable all the DEV maps. AMD manuals do not mention anything about
@@ -197,9 +215,11 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
   		dev_cr.fields.resv1 = 0;
   		svm_eap_dev_write(DEV_CR, 0, dev_cr.bytes);
 			printf("\n	DEV: enabled protections.");
+
+#endif
       	
 		}
-		
+
 		return 1;  	
 }
 
@@ -298,6 +318,7 @@ static u32 svm_eap_early_initialize(u32 protected_buffer_paddr,
 static u32 svm_eap_dev_read(u32 function, u32 index){
 	u32 value;
 
+/*
 	//sanity check on DEV registers
 	ASSERT(_svm_eap.dev_hdr_reg != 0 && _svm_eap.dev_fnidx_reg !=0 && _svm_eap.dev_data_reg != 0);
 
@@ -309,6 +330,7 @@ static u32 svm_eap_dev_read(u32 function, u32 index){
 	//step-2: read 32-bit value from dev_data_reg
 	emhf_baseplatform_arch_x86_pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
 		_svm_eap.dev_data_reg, sizeof(u32), &value);
+*/
   
   return value;
 }
@@ -370,6 +392,9 @@ static void svm_eap_dev_invalidate_cache(void){
   return;
 }
 
+u32 myfunc(u32 paddr, u32 vaddr){
+	return 1;
+}
 
 ////////////////////////////////////////////////////////////////////////
 // GLOBALS
@@ -382,6 +407,7 @@ u32 emhf_dmaprot_arch_x86svm_earlyinitialize(u64 protectedbuffer_paddr,
 	u64 memregionbase_paddr, u32 memregion_size){
 
 	u32 dev_bitmap_paddr;
+	u32 status;
 	
 	//sanity check: protected DEV buffer MUST be page-aligned
 	ASSERT(!(protectedbuffer_paddr & 0x00000FFF));
@@ -393,11 +419,13 @@ u32 emhf_dmaprot_arch_x86svm_earlyinitialize(u64 protectedbuffer_paddr,
 	#ifndef __XMHF_VERIFICATION__
 	dev_bitmap_paddr=svm_eap_early_initialize(protectedbuffer_paddr, protectedbuffer_vaddr,
 					memregionbase_paddr, memregion_size);
+	#else
+		dev_bitmap_paddr=nondet_u32();
 	#endif
 
 	//setup DEV 
-	assert(0);
-	//return svm_eap_initialize(dev_bitmap_paddr, dev_bitmap_paddr);
+	//return myfunc(dev_bitmap_paddr, dev_bitmap_paddr);
+	return svm_eap_initialize(dev_bitmap_paddr, dev_bitmap_paddr);
 }
 
 
