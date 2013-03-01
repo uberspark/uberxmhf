@@ -162,10 +162,11 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
   //initialize partition monitor (i.e., hypervisor) for this CPU
   emhf_partition_initializemonitor(vcpu);
 
-#ifndef __XMHF_VERIFICATION__
-
   //setup guest OS state for partition
   emhf_partition_setupguestOSstate(vcpu);
+
+	assert(0);
+#ifndef __XMHF_VERIFICATION__
 
   //initialize memory protection for this core
   emhf_memprot_initialize(vcpu);

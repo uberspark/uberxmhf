@@ -167,7 +167,9 @@ static void _svm_initVMCB(VCPU *vcpu){
   struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
   
   printf("\nCPU(0x%02x): VMCB at 0x%08x", vcpu->id, (u32)vmcb);
+  #ifndef __XMHF_VERIFICATION__
   memset(vmcb, 0, sizeof(struct _svm_vmcbfields));
+  #endif
   
   // set up CS descr 
   vmcb->cs.selector = 0x0;
@@ -223,7 +225,9 @@ static void _svm_initVMCB(VCPU *vcpu){
 
   if(vcpu->isbsp){
     printf("\nBSP(0x%02x): copying boot-module to boot guest", vcpu->id);
+  	#ifndef __XMHF_VERIFICATION__
   	memcpy((void *)__GUESTOSBOOTMODULE_BASE, (void *)rpb->XtGuestOSBootModuleBase, rpb->XtGuestOSBootModuleSize);
+    #endif
     vmcb->rip = 0x7c00ULL;
   }else{
 
@@ -272,7 +276,9 @@ static void _svm_initVMCB(VCPU *vcpu){
   vmcb->class1_intercepts_bitmask |= (u32) SVM_CLASS1_INTERCEPT_IOIO_PROT;
 
   //setup MSR interception
+  #ifndef __XMHF_VERIFICATION__
   memset((void *)g_svm_msrpm, 0, SIZEOF_MSRPM_BITMAP);   //clear bitmap buffer
+  #endif
   vmcb->msrpm_base_pa = hva2spa(g_svm_msrpm);   //setup vmcb msrpm
   vmcb->class1_intercepts_bitmask |= (u32) SVM_CLASS1_INTERCEPT_MSR_PROT;
 

@@ -77,7 +77,9 @@ void main(){
 		vcpu.isbsp = 1;													//assume BSP
 		vcpu.id = 0;													//give a LAPIC id
 		vcpu.esp = 0xC6000000;											//give a stack
-
+		vcpu.vmcb_vaddr_ptr = &_xvmcb;									//set vcpu VMCB virtual address to something meaningful
+		vcpu.vmx_vmcs_vaddr = 0xC7000000;								//VMCS address
+				
 		emhf_runtime_main(&vcpu, 0);									//call "init" function
 
 }
