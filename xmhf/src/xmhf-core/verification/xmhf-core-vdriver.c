@@ -71,7 +71,8 @@ u32 xmhf_verify_cpu_vendor = CPU_VENDOR_INTEL;
 	
 void main(){
 		/* emhf_runtime_entry */
-	
+		extern void emhf_runtime_entry(void);
+		emhf_runtime_entry();
 }
 
 void sl_main(){

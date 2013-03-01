@@ -53,6 +53,7 @@
 
 //---runtime main---------------------------------------------------------------
 void emhf_runtime_entry(void){
+#ifndef __XMHF_VERIFICATION__
 	u32 cpu_vendor;
 
 	//get CPU vendor
@@ -141,6 +142,8 @@ void emhf_runtime_entry(void){
 	printf("\nRuntime: We should NEVER get here!");
 	ASSERT(0);
 	HALT();
+	
+#endif //__XMHF_VERIFICATION__	
 }
 
 //we get control here in the context of *each* physical CPU core 
