@@ -403,9 +403,6 @@ static void svm_eap_dev_invalidate_cache(void){
   return;
 }
 
-u32 myfunc(u32 paddr, u32 vaddr){
-	return 1;
-}
 
 ////////////////////////////////////////////////////////////////////////
 // GLOBALS
@@ -418,7 +415,6 @@ u32 emhf_dmaprot_arch_x86svm_earlyinitialize(u64 protectedbuffer_paddr,
 	u64 memregionbase_paddr, u32 memregion_size){
 
 	u32 dev_bitmap_paddr;
-	u32 status;
 	
 	//sanity check: protected DEV buffer MUST be page-aligned
 	ASSERT(!(protectedbuffer_paddr & 0x00000FFF));

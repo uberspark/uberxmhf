@@ -54,11 +54,11 @@
 
 
 //we only have confidence in the runtime's expected value here in the SL
-static INTEGRITY_MEASUREMENT_VALUES g_sl_gold /* __attribute__(( section("") )) */ = {
-    .sha_runtime = ___RUNTIME_INTEGRITY_HASH___,
-    .sha_slabove64K = BAD_INTEGRITY_HASH,
-    .sha_slbelow64K = BAD_INTEGRITY_HASH
-};
+//static INTEGRITY_MEASUREMENT_VALUES g_sl_gold /* __attribute__(( section("") )) */ = {
+//    .sha_runtime = ___RUNTIME_INTEGRITY_HASH___,
+//    .sha_slabove64K = BAD_INTEGRITY_HASH,
+//    .sha_slbelow64K = BAD_INTEGRITY_HASH
+//};
 
 
 /* hypervisor (runtime) virtual address to sl-address. */
