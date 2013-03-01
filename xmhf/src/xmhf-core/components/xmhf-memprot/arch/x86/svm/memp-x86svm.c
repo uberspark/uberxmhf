@@ -81,8 +81,7 @@ static void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts
 	u32 paddr=0, i, j, k, y, z;
 	u64 flags;
 
-	printf("\n%s: pdpt=0x%08x, pdts=0x%08x, pts=0x%08x",
-	__FUNCTION__, npt_pdpt_base, npt_pdts_base, npt_pts_base);
+	printf("\n%s: pdpt=0x%08x, pdts=0x%08x, pts=0x%08x", __FUNCTION__, npt_pdpt_base, npt_pdts_base, npt_pts_base);
 
 	pdpt=(pdpt_t)npt_pdpt_base;
 

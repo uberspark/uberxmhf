@@ -165,11 +165,11 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
   //setup guest OS state for partition
   emhf_partition_setupguestOSstate(vcpu);
 
-	assert(0);
-#ifndef __XMHF_VERIFICATION__
-
   //initialize memory protection for this core
   emhf_memprot_initialize(vcpu);
+
+	assert(0);
+#ifndef __XMHF_VERIFICATION__
 
   //initialize application parameter block and call app main
   {
