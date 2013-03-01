@@ -228,10 +228,8 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 	printf("\n[%02x]Selectors TR=0x%04x", vcpu->id, (u16)read_tr_sel());*/
 	
   //start partition
-#ifndef __XMHF_VERIFICATION__
   printf("\n%s[%02x]: starting partition...", __FUNCTION__, vcpu->id);
   emhf_partition_start(vcpu);
-#endif //__XMHF_VERIFICATION__
 
   printf("\nCPU(0x%02x): FATAL, should not be here. HALTING!", vcpu->id);
   HALT();
