@@ -391,6 +391,7 @@ void emhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
   u64 *pt;
   u32 flags =0;
   
+  
   pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
   pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
   

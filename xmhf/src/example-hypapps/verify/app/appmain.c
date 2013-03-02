@@ -66,11 +66,12 @@ u32 v_hypercall_handler(VCPU *vcpu, struct regs *r){
 	//assume that gpa and prottype are passed using GPR
 	//ECX and EDX respectively (under attacker's control)
 	{
-		u32 gpa=r->ecx;
-		u32 prottype=r->edx;
+		//u32 gpa=r->ecx;
+		//u32 prottype=r->edx;
+		u32 gpa=nondet_u32();
+		u32 prottype=nondet_u32();
 		
-		
-		/*if( ((gpa < rpb->XtVmmRuntimePhysBase) || 
+		if( ((gpa < rpb->XtVmmRuntimePhysBase) || 
 		    (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize))) 
 			&&
 			( (prottype > 0) && 
@@ -83,13 +84,13 @@ u32 v_hypercall_handler(VCPU *vcpu, struct regs *r){
 				((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_NOEXECUTE)) ||
 				((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_NOEXECUTE)) 
 			)
-		  ){*/
+		  ){
 			//emhf_memprot_setprot(&vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE);	   
 			emhf_memprot_setprot(vcpu, gpa, prottype);	   
-		/*}else{
+		}else{
 			printf("\nSecurity Exception: Trying to set protections on EMHF memory regions, Halting!");
 			HALT();
-		}*/
+		}
 	}
 
 	
@@ -105,6 +106,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 		call_id = (u32)vmcb->rax;
 	else
 		call_id = r->eax;
+
 
 	switch(call_id){
 		
