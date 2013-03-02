@@ -321,7 +321,7 @@ u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 	vcpu->vmcs.guest_RFLAGS |= EFLAGS_TF;
 
 	#ifdef __XMHF_VERIFICATION__
-	g_vmx_lapic_npf_verification_guesttrapping = true;
+	g_vmx_lapic_npf_verification_guesttrapping = false;
 	#endif
 	
   //disable interrupts by clearing guest IF on this CPU until we get 
