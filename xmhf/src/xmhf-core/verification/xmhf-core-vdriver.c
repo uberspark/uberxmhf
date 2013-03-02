@@ -56,6 +56,7 @@
 //if the following is defined, we will excercise the VMX backend
 //for ihub during verification
 #define X86_VMX			1
+u32 xmhf_verify_cpu_vendor = CPU_VENDOR_INTEL;
 
 VCPU vcpu;
 struct regs r;
@@ -67,7 +68,6 @@ RPB *rpb; 	//runtime parameter block pointer
 //actual definitions
 RPB _xrpb;	
 
-u32 xmhf_verify_cpu_vendor = CPU_VENDOR_INTEL;
 
 
 void main(){
@@ -90,6 +90,12 @@ void main(){
 		vcpu.esp = 0xC6000000;											//give a stack
 		vcpu.vmcb_vaddr_ptr = &_xvmcb;									//set vcpu VMCB virtual address to something meaningful
 		vcpu.vmx_vmcs_vaddr = 0xC7000000;								//VMCS address
+
+#if defined (X86_VMX)
+		vcpu.cpu_vendor = CPU_VENDOR_INTEL;								
+#else
+		vcpu.cpu_vendor = CPU_VENDOR_AMD;
+#endif		
 				
 		emhf_runtime_main(&vcpu, 0);									//call "init" function
 
