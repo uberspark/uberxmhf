@@ -391,7 +391,7 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
         printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) STARTUP IPI detected, value=0x%08x", 
           (u16)vmcb->cs.selector, (u32)vmcb->rip, g_svm_lapic_reg, value_tobe_written);
         #ifdef __XMHF_VERIFICATION__
-			g_svm_lapic_db_verification_coreprotected = true;
+			g_svm_lapic_db_verification_coreprotected = false;
 		#else
 			delink_lapic_interception=processSIPI(vcpu, value_tobe_written, icr_value_high);
 		#endif
