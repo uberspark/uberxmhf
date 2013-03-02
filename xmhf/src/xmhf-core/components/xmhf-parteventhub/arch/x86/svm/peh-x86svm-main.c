@@ -667,7 +667,8 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 	{
 		//ensure that whenever a partition is resumed on a vcpu, we have nested paging
 		//enabled and that the base points to the nested page tables we have initialized
-		assert( (vmcb->np_enable == 1) && (vmcb->n_cr3 == vcpu->npt_vaddr_ptr) );
+		assert( (vmcb->np_enable == 1) );
+		assert( (vmcb->n_cr3 == vcpu->npt_vaddr_ptr) );
 	}
 #endif	
 
