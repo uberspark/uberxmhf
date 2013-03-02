@@ -241,6 +241,7 @@ void emhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 			}
 			
 			printf("\nSL: Initialized DMA protections successfully");
+		
 		}
 		
 		
