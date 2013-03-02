@@ -66,10 +66,13 @@ u32 v_hypercall_handler(VCPU *vcpu, struct regs *r){
 	//assume that gpa and prottype are passed using GPR
 	//ECX and EDX respectively (under attacker's control)
 	{
-		//u32 gpa=r->ecx;
-		//u32 prottype=r->edx;
-		u32 gpa=nondet_u32();
-		u32 prottype=nondet_u32();
+		#ifndef __XMHF_VERIFICATION__
+			u32 gpa=r->ecx;
+			u32 prottype=r->edx;
+		#else
+			u32 gpa=nondet_u32();
+			u32 prottype=nondet_u32();
+		#endif
 		
 		if( ((gpa < rpb->XtVmmRuntimePhysBase) || 
 		    (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize))) 
