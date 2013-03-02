@@ -106,13 +106,14 @@ void runtime_main(){
 }
 
 	
-void runtime_entry_main(){
+//void runtime_entry_main(){
+void main(){
 		/* emhf_runtime_entry */
 		extern void emhf_runtime_entry(void);
 		emhf_runtime_entry();
 }
 
-void main(){
+void sl_main(){
 		extern void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx);
 		emhf_sl_main(xmhf_verify_cpu_vendor, 0xB8000000, 0, 0);
 		assert(1);

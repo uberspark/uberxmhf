@@ -458,9 +458,17 @@ u32 emhf_dmaprot_arch_x86svm_earlyinitialize(u64 protectedbuffer_paddr,
 u32 emhf_dmaprot_arch_x86svm_initialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size){
 
+	u32 status;
+	
 	ASSERT(protectedbuffer_size >= 131072);	//we need 128K 
 
-	return svm_eap_initialize(protectedbuffer_paddr, protectedbuffer_vaddr);
+	status=svm_eap_initialize(protectedbuffer_paddr, protectedbuffer_vaddr);
+	
+	#ifdef __XMHF_VERIFICATION__
+	g_dmaprot_activated=1;
+	#endif
+	
+	return status;
 }
 
 //DMA protect a given region of memory, start_paddr is

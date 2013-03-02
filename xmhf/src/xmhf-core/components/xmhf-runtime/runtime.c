@@ -50,6 +50,10 @@
 //---includes-------------------------------------------------------------------
 #include <xmhf.h> 
 
+#ifdef __XMHF_VERIFICATION__
+u32 g_dmaprot_activated = 0;
+#endif
+
 
 //---runtime main---------------------------------------------------------------
 void emhf_runtime_entry(void){
@@ -115,6 +119,10 @@ void emhf_runtime_entry(void){
 					printf("\nRuntime: Unable to re-initialize DMA protection. HALT!");
 					HALT();
 				}
+
+				#ifdef __XMHF_VERIFICATION__
+				assert(g_dmaprot_activated == 1);
+				#endif
 
 				//protect SL and runtime memory regions
 				emhf_dmaprot_protect(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimeSize+PAGE_SIZE_2M);
