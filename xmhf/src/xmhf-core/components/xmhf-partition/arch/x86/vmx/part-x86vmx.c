@@ -286,7 +286,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.host_IDTR_base = (u64)(u32)emhf_xcphandler_get_idt_start();
 	vcpu->vmcs.host_TR_base = (u64)(u32)g_runtime_TSS;
 #ifdef __XMHF_VERIFICATION__
-	//g_xmhf_verification_ihubaddress = 1;
+	g_xmhf_verification_ihubaddress = 1;
 #else
 	vcpu->vmcs.host_RIP = (u64)(u32)emhf_parteventhub_arch_x86vmx_entry;
 #endif
