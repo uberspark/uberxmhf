@@ -55,10 +55,10 @@
 
 //if the following is defined, we will excercise the VMX backend
 //for ihub during verification
-//#define X86_VMX			1
-//u32 xmhf_verify_cpu_vendor = CPU_VENDOR_INTEL;
+#define X86_VMX			1
+u32 xmhf_verify_cpu_vendor = CPU_VENDOR_INTEL;
 
-u32 xmhf_verify_cpu_vendor = CPU_VENDOR_AMD;
+//u32 xmhf_verify_cpu_vendor = CPU_VENDOR_AMD;
 
 VCPU vcpu;
 struct regs r;
@@ -106,8 +106,8 @@ void runtime_main(){
 }
 
 	
-//void runtime_entry_main(){
-void main(){
+void runtime_entry_main(){
+//void main(){
 		/* emhf_runtime_entry */
 		extern void emhf_runtime_entry(void);
 		emhf_runtime_entry();
@@ -121,8 +121,8 @@ void sl_main(){
 }
 
 
-void ihub_main() {
-//void main() {
+//void ihub_main() {
+void main() {
 		//setup RPB pointer and required runtime parameter block values
 		rpb = (RPB *)&_xrpb;
 		rpb->XtVmmE820NumEntries = 1; 									//lets worry about E820 later
