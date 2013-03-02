@@ -338,6 +338,7 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
 
   (void)r;	
 
+
 #ifdef	__XMHF_VERIFICATION__
 	//this handler relies on two global symbols apart from the
 	//parameters, set them to non-deterministic values with

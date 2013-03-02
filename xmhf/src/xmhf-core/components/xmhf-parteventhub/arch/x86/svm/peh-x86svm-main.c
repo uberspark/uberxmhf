@@ -154,14 +154,14 @@ static void _svm_handle_npf(VCPU *vcpu, struct regs *r){
   struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
   u32 gpa = vmcb->exitinfo2;
   u32 errorcode = vmcb->exitinfo1;
-  
+
   if(gpa >= g_svm_lapic_base && gpa < (g_svm_lapic_base + PAGE_SIZE_4K)){
     //LAPIC access, xfer control to apropriate handler
     //printf("\n0x%04x:0x%08x -> LAPIC access, gpa=0x%08x, errorcode=0x%08x", 
     //  (u16)vmcb->cs.sel, (u32)vmcb->rip, gpa, errorcode);
     ASSERT( vcpu->isbsp == 1); //only BSP gets a NPF during LAPIC SIPI detection
     //svm_lapic_access_handler(vcpu, gpa, errorcode);
-    //emhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
+    emhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
     //HALT();
   } else {
 	//note: AMD does not provide guest virtual address on a #NPF

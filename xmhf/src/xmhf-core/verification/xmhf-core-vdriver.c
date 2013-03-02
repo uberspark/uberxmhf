@@ -72,7 +72,7 @@ RPB _xrpb;
 
 
 
-void main(){
+void runtime_main(){
 		/* emhf_runtime_main */
 		extern void emhf_runtime_main(void);
 		//setup RPB pointer and required runtime parameter block values
@@ -119,7 +119,8 @@ void sl_main(){
 }
 
 
-void ihub_main() {
+//void ihub_main() {
+void main() {
 		//setup RPB pointer and required runtime parameter block values
 		rpb = (RPB *)&_xrpb;
 		rpb->XtVmmE820NumEntries = 1; 									//lets worry about E820 later
