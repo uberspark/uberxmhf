@@ -568,8 +568,8 @@ void emhf_partition_arch_x86vmx_start(VCPU *vcpu){
 #ifdef __XMHF_VERIFICATION__
 	//ensure that whenever a partition is started on a vcpu, we have extended paging
 	//enabled and that the base points to the extended page tables we have initialized
-	assert( (vcpu->vmcs.control_VMX_seccpu_based & 0x2) && (vcpu->vmcs.control_EPT_pointer_high == 0) &&
-		(vcpu->vmcs.control_EPT_pointer_full == (hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E)) );
+	assert( (vcpu->vmcs.control_EPT_pointer_high == 0) && (vcpu->vmcs.control_EPT_pointer_full == (hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E)) );
+	assert( (vcpu->vmcs.control_VMX_seccpu_based & 0x2) );
 	assert( g_xmhf_verification_ihubaddress == 1);
 #endif
 
