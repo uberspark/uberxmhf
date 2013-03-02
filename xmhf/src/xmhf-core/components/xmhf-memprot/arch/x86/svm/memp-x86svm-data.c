@@ -54,7 +54,8 @@
 
 //SVM NPT PDPT buffers
 //memprot
-u8 g_svm_npt_pdpt_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
+//u8 g_svm_npt_pdpt_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
+u8 g_svm_npt_pdpt_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".data") ));
   
 //SVM NPT PDT buffers
 //memprot

@@ -56,8 +56,7 @@
 RPB *rpb __attribute__(( section(".data") )); 
 
 //runtime DMA protection buffer
-//u8 g_rntm_dmaprot_buffer[SIZE_G_RNTM_DMAPROT_BUFFER] __attribute__(( section(".palign_data") ));
-u8 g_rntm_dmaprot_buffer[SIZE_G_RNTM_DMAPROT_BUFFER] __attribute__(( section(".data") ));
+u8 g_rntm_dmaprot_buffer[SIZE_G_RNTM_DMAPROT_BUFFER] __attribute__(( section(".palign_data") ));
 
 //variable that is incremented by 1 by all cores that cycle through appmain
 //successfully, this should be finally equal to g_midtable_numentries at
