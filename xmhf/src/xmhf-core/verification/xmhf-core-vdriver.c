@@ -137,6 +137,7 @@ void main() {
 		//globals
 		g_midtable_numentries=1;
 		g_svm_lapic_base = 0xFEE00000;
+		g_vmx_lapic_base = 0xFEE00000;
 
 #if defined (X86_VMX)
 		vcpu.cpu_vendor = CPU_VENDOR_INTEL;								
@@ -196,6 +197,7 @@ void main() {
 			vcpu.vmcs.info_IO_RDI=nondet_u64();
 			vcpu.vmcs.info_IO_RIP=nondet_u64();
 			vcpu.vmcs.info_guest_linear_address=nondet_u64();		
+			vcpu.vmcs.guest_paddr_full=nondet_u64();
 		}
 
 		#else
