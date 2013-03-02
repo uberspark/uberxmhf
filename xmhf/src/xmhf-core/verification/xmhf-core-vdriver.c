@@ -55,10 +55,10 @@
 
 //if the following is defined, we will excercise the VMX backend
 //for ihub during verification
-#define X86_VMX			1
-u32 xmhf_verify_cpu_vendor = CPU_VENDOR_INTEL;
+//#define X86_VMX			1
+//u32 xmhf_verify_cpu_vendor = CPU_VENDOR_INTEL;
 
-//u32 xmhf_verify_cpu_vendor = CPU_VENDOR_AMD;
+u32 xmhf_verify_cpu_vendor = CPU_VENDOR_AMD;
 
 VCPU vcpu;
 struct regs r;
@@ -114,6 +114,7 @@ void main(){
 }
 
 void sl_main(){
+//void main(){
 		extern void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx);
 		emhf_sl_main(xmhf_verify_cpu_vendor, 0xB8000000, 0, 0);
 		assert(1);
