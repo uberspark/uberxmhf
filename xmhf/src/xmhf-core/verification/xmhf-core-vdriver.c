@@ -172,7 +172,7 @@ void main() {
 		#else
 			//SVM "init" values for MAC(b)
 			_xvmcb.n_cr3 = hva2spa((void*)vcpu.npt_vaddr_ptr);
-			_xvmcb.np_enable |= 1ULL;
+			//_xvmcb.np_enable |= 1ULL;
 		#endif
 
 
