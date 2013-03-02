@@ -262,6 +262,11 @@ static void	_vmx_int15_initializehook(VCPU *vcpu){
 }
 
 
+#ifdef __XMHF_VERIFICATION__
+u32 g_xmhf_verification_ihubaddress = 0;
+#endif
+
+
 //--initunrestrictedguestVMCS: initializes VMCS for unrestricted guest ---------
 void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	u32 lodword, hidword;
@@ -281,7 +286,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.host_IDTR_base = (u64)(u32)emhf_xcphandler_get_idt_start();
 	vcpu->vmcs.host_TR_base = (u64)(u32)g_runtime_TSS;
 #ifdef __XMHF_VERIFICATION__
-	vcpu->vmcs.host_RIP = (u64)0xF00DDEAD;
+	g_xmhf_verification_ihubaddress = 1;
 #else
 	vcpu->vmcs.host_RIP = (u64)(u32)emhf_parteventhub_arch_x86vmx_entry;
 #endif
@@ -463,12 +468,12 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 
 //---initVMCS - intialize VMCS for guest boot-----------------------------------
 static void _vmx_initVMCS(VCPU *vcpu){
-  if(vcpu->vmx_guest_unrestricted){
+  //if(vcpu->vmx_guest_unrestricted){
   	vmx_initunrestrictedguestVMCS(vcpu);
-  }else{
-		printf("\nHALT: Fatal, v86 monitor based real-mode exec. unsupported!");
-		HALT();
-	}
+  //}else{
+  //		printf("\nHALT: Fatal, v86 monitor based real-mode exec. unsupported!");
+  //		HALT();
+  //	}
 }
 
 
@@ -553,7 +558,6 @@ void emhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu){
 		//initialize VMCS
 		_vmx_initVMCS(vcpu);
 	
-	
 }
 
 //start executing the partition and guest OS
@@ -566,6 +570,7 @@ void emhf_partition_arch_x86vmx_start(VCPU *vcpu){
 	//enabled and that the base points to the extended page tables we have initialized
 	assert( (vcpu->vmcs.control_VMX_seccpu_based & 0x2) && (vcpu->vmcs.control_EPT_pointer_high == 0) &&
 		(vcpu->vmcs.control_EPT_pointer_full == (hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E)) );
+	assert( g_xmhf_verification_ihubaddress == 1);
 #endif
 
 #ifndef __XMHF_VERIFICATION__

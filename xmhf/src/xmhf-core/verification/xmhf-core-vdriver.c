@@ -55,7 +55,7 @@
 
 //if the following is defined, we will excercise the VMX backend
 //for ihub during verification
-//#define X86_VMX			1
+#define X86_VMX			1
 
 VCPU vcpu;
 struct regs r;
@@ -109,7 +109,7 @@ void sl_main(){
 }
 
 
-void runtime_main() {
+void ihub_main() {
 		//setup RPB pointer and required runtime parameter block values
 		rpb = (RPB *)&_xrpb;
 		rpb->XtVmmE820NumEntries = 1; 									//lets worry about E820 later
