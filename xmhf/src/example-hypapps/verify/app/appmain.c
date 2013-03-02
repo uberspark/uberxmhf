@@ -71,9 +71,9 @@ u32 v_hypercall_handler(VCPU *vcpu, struct regs *r){
 		u32 gpa=nondet_u32();
 		u32 prottype=nondet_u32();
 		
-		if( /*((gpa < rpb->XtVmmRuntimePhysBase) || 
+		if( ((gpa < rpb->XtVmmRuntimePhysBase) || 
 		    (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize))) 
-			&&*/
+			&&
 			( (prottype > 0) && 
 	          (prottype <= MEMP_PROT_MAXVALUE) 
 	        )
