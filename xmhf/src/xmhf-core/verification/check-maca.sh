@@ -45,13 +45,20 @@ else
 fi
 
 
-if [ $svm_success -eq 1 ] && [ $vmx_success -eq 1 ]
+echo -------------------------------------------------------------------
+echo Checking DMA data structure location...
+echo -------------------------------------------------------------------
+
+dma_success=$(objdump --syms ../components/xmhf-runtime/runtime.exe | awk '{print $4,$6}' | grep ".palign_data g_rntm_dmaprot_buffer" | wc -l)
+
+
+if [ $svm_success -eq 1 ] && [ $vmx_success -eq 1 ] && [ $dma_success -eq 1 ]
 then
-	echo "VERIFICATION SUCCESS: NPT/EPT data structures are where they should be in the executable!"
+	echo "VERIFICATION SUCCESS: NPT/EPT and DMA data structures are where they should be in the executable!"
 	# success
 	exit 0
 else
-	echo "VERIFICATION FAIL: NPT/EPT data structures are not in the required section!"
+	echo "VERIFICATION FAIL: NPT/EPT and/or DMA data structures are not in the required section!"
 	# fail
 	exit 1
 fi 
