@@ -207,7 +207,7 @@ void emhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu){
 
 
 #ifdef __XMHF_VERIFICATION__
-	bool g_vmx_lapic_npf_verification_coreprotected = false;
+	bool g_vmx_lapic_npf_verification_guesttrapping = false;
 	bool g_vmx_lapic_npf_verification_pre = false;
 #endif
 
@@ -250,7 +250,6 @@ u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 		//constant index > runtime_base+runtime_size
 		//since npt_changemapping above is a direct 64-bit assignment, it should
 		//be ok to skip it for verification with manual inspection
-		g_vmx_lapic_npf_verification_coreprotected = true;
 	  #endif
 
 
@@ -319,13 +318,17 @@ u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 
   //set guest TF
 	vcpu->vmcs.guest_RFLAGS |= EFLAGS_TF;
+
+	#ifdef __XMHF_VERIFICATION__
+	g_vmx_lapic_npf_verification_guesttrapping = true;
+	#endif
 	
   //disable interrupts by clearing guest IF on this CPU until we get 
 	//control in lapic_access_dbexception after a DB exception
 	vcpu->vmcs.guest_RFLAGS &= ~(EFLAGS_IF);
 
 #ifdef __XMHF_VERIFICATION__
-  assert(!g_vmx_lapic_npf_verification_pre || g_vmx_lapic_npf_verification_coreprotected);
+  assert(!g_vmx_lapic_npf_verification_pre || g_vmx_lapic_npf_verification_guesttrapping);
 #endif
 
   EV_FNCONTRACT_RANGE( ((g_vmx_lapic_op == LAPIC_OP_RSVD) || 
