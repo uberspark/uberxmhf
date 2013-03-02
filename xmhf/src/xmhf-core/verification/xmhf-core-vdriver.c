@@ -167,7 +167,7 @@ void main() {
 
 		#if defined (X86_VMX)
 			//VMX "init" values for MAC(b)
-			vcpu.vmcs.control_VMX_seccpu_based |= (1 << 1); //enable EPT
+			//vcpu.vmcs.control_VMX_seccpu_based |= (1 << 1); //enable EPT
 			vcpu.vmcs.control_EPT_pointer_high = 0;
 			vcpu.vmcs.control_EPT_pointer_full = hva2spa((void*)vcpu.vmx_vaddr_ept_pml4_table) | 0x1E; //page walk of 4 and WB memory
 		#else
