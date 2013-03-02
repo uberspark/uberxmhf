@@ -96,6 +96,8 @@ void main(){
 #if defined (X86_VMX)
 		vcpu.cpu_vendor = CPU_VENDOR_INTEL;								
 #else
+		vcpu.npt_vaddr_ptr = 0xC7F00000;								//NPT PDPT page
+		vcpu.npt_vaddr_pts = 0xC8000000;								//where our NPTs reside
 		vcpu.cpu_vendor = CPU_VENDOR_AMD;
 #endif		
 				
