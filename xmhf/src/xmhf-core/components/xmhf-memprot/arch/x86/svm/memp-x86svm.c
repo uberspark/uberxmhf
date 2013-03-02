@@ -126,7 +126,8 @@ void emhf_memprot_arch_x86svm_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
   u32 pfn;
   u64 *pt;
   u64 flags=0;
-  
+
+assert(0);  
    	EV_FNCONTRACT_DOMAIN ( (vcpu != NULL) );
 	EV_FNCONTRACT_DOMAIN ( ( (gpa < rpb->XtVmmRuntimePhysBase) || 
 							 (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) 
