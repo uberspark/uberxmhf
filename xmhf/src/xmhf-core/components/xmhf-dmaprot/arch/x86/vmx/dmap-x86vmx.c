@@ -532,6 +532,11 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
       //enable translation
 			gcmd.value=0;
       gcmd.bits.te=1;
+	   #ifdef __XMHF_VERIFICATION__
+	   assert(gcmd.bits.te == 1);
+	   g_dmaprot_activated=1;
+	   #endif
+	   
       _vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
       
 			//wait for translation enabled status to go green...
@@ -543,10 +548,6 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
      #endif
   }
   printf("Done.");
-
-	#ifdef __XMHF_VERIFICATION__
-	g_dmaprot_activated=1;
-	#endif
 
   
   //9. disable protected memory regions (PMR) if available
