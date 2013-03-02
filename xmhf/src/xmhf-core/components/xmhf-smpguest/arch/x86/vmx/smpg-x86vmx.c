@@ -321,7 +321,7 @@ u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 	vcpu->vmcs.guest_RFLAGS |= EFLAGS_TF;
 
 	#ifdef __XMHF_VERIFICATION__
-	g_vmx_lapic_npf_verification_guesttrapping = false;
+	g_vmx_lapic_npf_verification_guesttrapping = true;
 	#endif
 	
   //disable interrupts by clearing guest IF on this CPU until we get 
@@ -410,7 +410,7 @@ void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
           (u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP, g_vmx_lapic_reg, value_tobe_written);        
 		
 		#ifdef __XMHF_VERIFICATION__
-			g_vmx_lapic_db_verification_coreprotected = true;
+			g_vmx_lapic_db_verification_coreprotected = false;
 		#else
 			delink_lapic_interception=processSIPI(vcpu, value_tobe_written, icr_value_high);
 		#endif
