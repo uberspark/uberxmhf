@@ -248,7 +248,7 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
     vmcb->rflags |= (u64)EFLAGS_TF;
 
 	#ifdef __XMHF_VERIFICATION__
-		g_svm_lapic_npf_verification_guesttrapping = true;
+		g_svm_lapic_npf_verification_guesttrapping = false;
 	#endif
   
     clgi();
