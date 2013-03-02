@@ -60,6 +60,10 @@ struct _sl_parameter_block slpb __attribute__(( section(".sl_untrusted_params") 
 	.magic = SL_PARAMETER_BLOCK_MAGIC,
 };
 
+#ifdef __XMHF_VERIFICATION__
+u32 g_dmaprot_activated=0;
+#endif
+
 
 //we get here from slheader.S
 // rdtsc_* are valid only if PERF_CRIT is not defined.  slheader.S
@@ -176,8 +180,10 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	//setup DMA protection on runtime (secure loader is already DMA protected)
 	emhf_sl_arch_early_dmaprot_init(slpb.runtime_size);
 #endif
-
-
+	
+	#ifdef __XMHF_VERIFICATION__
+	assert(g_dmaprot_activated == 1);
+	#endif
 		
 	//populate runtime parameter block fields
 		rpb->isEarlyInit = slpb.isEarlyInit; //tell runtime if we started "early" or "late"
@@ -224,6 +230,7 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		//printf("\nrpb->uart_config.baud = %u", rpb->uart_config.baud);
 		//printf("\nrpb->uart_config.data_bits, parity, stop_bits, fifo = %x %x %x %x", 
 			//	rpb->uart_config.data_bits, rpb->uart_config.parity, rpb->uart_config.stop_bits, rpb->uart_config.fifo);*/
+
 
 	
 	//transfer control to runtime

@@ -286,6 +286,7 @@ void emhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 	//printf("\nGDT=%08x, IDT=%08x, EntryPoint=%08x", rpb->XtVmmGdt, rpb->XtVmmIdt, rpb->XtVmmEntryPoint);
 	//printf("\nTop-of-stack=%08x, CR3=%08x", (rpb->XtVmmStackBase+rpb->XtVmmStackSize), ptba);
 
+
 	#ifndef __XMHF_VERIFICATION__
 	//transfer control to runtime and never return
 	emhf_sl_arch_x86_invoke_runtime_entrypoint(rpb->XtVmmGdt, rpb->XtVmmIdt, 

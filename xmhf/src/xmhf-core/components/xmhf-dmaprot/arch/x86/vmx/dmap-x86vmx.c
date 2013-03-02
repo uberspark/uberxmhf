@@ -276,6 +276,10 @@ static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
   return;
 }
 
+#ifdef __XMHF_VERIFICATION__
+extern u32 g_dmaprot_activated;
+#endif
+
 //------------------------------------------------------------------------------
 //initialize a DRHD unit
 //note that the VT-d documentation does not describe the precise sequence of
@@ -539,6 +543,11 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
      #endif
   }
   printf("Done.");
+
+	#ifdef __XMHF_VERIFICATION__
+	g_dmaprot_activated=1;
+	#endif
+
   
   //9. disable protected memory regions (PMR) if available
   printf("\n	Checking and disabling PMR...");
