@@ -67,7 +67,7 @@ void emhf_memprot_arch_x86svm_initialize(VCPU *vcpu){
 	_svm_nptinitialize((u32)vcpu->npt_vaddr_ptr, vcpu->npt_vaddr_pdts, vcpu->npt_vaddr_pts);
 #endif
 	vmcb->n_cr3 = hva2spa((void*)vcpu->npt_vaddr_ptr);
-	//vmcb->np_enable |= 1ULL;
+	vmcb->np_enable |= 1ULL;
 	vmcb->guest_asid = vcpu->npt_asid;
 }
 
