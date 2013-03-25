@@ -150,8 +150,6 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	//initialize basic platform elements
 	emhf_baseplatform_initialize();
 
-	assert(0);
-#if 0
 
 	//sanitize cache/MTRR/SMRAM (most important is to ensure that MTRRs 
 	//do not contain weird mappings)
@@ -170,9 +168,16 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 #endif
 
 
-
+#ifndef __XMHF_VERIFICATION__
 	//get a pointer to the runtime header and make sure its sane
  	rpb=(RPB *)PAGE_SIZE_2M;	//runtime starts at offset 2M from sl base
+#else
+	//setup runtime parameter block pointer
+	//actual definitions
+	extern RPB _xrpb;	
+	rpb = (RPB *)&_xrpb;
+#endif
+
 	printf("\nSL: RPB, magic=0x%08x", rpb->magic);
 	ASSERT(rpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
 
@@ -185,6 +190,10 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	#ifdef __XMHF_VERIFICATION__
 	assert(g_dmaprot_activated == 1);
 	#endif
+
+	assert(0);
+#if 0
+
 		
 	//populate runtime parameter block fields
 		rpb->isEarlyInit = slpb.isEarlyInit; //tell runtime if we started "early" or "late"

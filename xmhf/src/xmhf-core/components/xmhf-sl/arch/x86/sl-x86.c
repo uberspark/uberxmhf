@@ -217,6 +217,7 @@ void emhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 			
 			ASSERT(cpu_vendor == CPU_VENDOR_AMD || cpu_vendor == CPU_VENDOR_INTEL);
 			
+			
 			if(cpu_vendor == CPU_VENDOR_AMD){
 				protectedbuffer_paddr = sl_baseaddr + (u32)&g_sl_protected_dmabuffer;
 				protectedbuffer_vaddr = (u32)&g_sl_protected_dmabuffer;
@@ -232,7 +233,7 @@ void emhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 
 			printf("\nSL: Initializing DMA protections...");
 			
-			
+
 			if(!emhf_dmaprot_earlyinitialize(protectedbuffer_paddr,
 				protectedbuffer_vaddr, protectedbuffer_size,
 				memregionbase_paddr, memregion_size)){

@@ -229,7 +229,9 @@ static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
     case  VTD_IOTLB_REG_OFF:{
       VTD_ECAP_REG  t_vtd_ecap_reg;
       regtype=VTD_REG_64BITS;
+      #ifndef __XMHF_VERIFICATION__
       _vtd_reg(dmardevice, VTD_REG_READ, VTD_ECAP_REG_OFF, (void *)&t_vtd_ecap_reg.value);
+      #endif
       regaddr=dmardevice->regbaseaddr+(t_vtd_ecap_reg.bits.iro*16)+0x8;
       break;
     }
@@ -237,7 +239,9 @@ static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
     case  VTD_IVA_REG_OFF:{
       VTD_ECAP_REG  t_vtd_ecap_reg;
       regtype=VTD_REG_64BITS;
+      #ifndef __XMHF_VERIFICATION__
       _vtd_reg(dmardevice, VTD_REG_READ, VTD_ECAP_REG_OFF, (void *)&t_vtd_ecap_reg.value);
+      #endif
       regaddr=dmardevice->regbaseaddr+(t_vtd_ecap_reg.bits.iro*16);
       break;
     }
@@ -297,7 +301,7 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
   //sanity check
 	ASSERT(drhd != NULL);
 
-
+	
 	//1. verify required capabilities
 	//more specifically...
 	//	verify supported MGAW to ensure our host address width is supported (32-bits)
@@ -894,7 +898,7 @@ u32 emhf_dmaprot_arch_x86vmx_earlyinitialize(u64 protectedbuffer_paddr, u32 prot
 	vmx_eap_vtd_cet_vaddr = protectedbuffer_vaddr + (2*PAGE_SIZE_4K); 
 			
 	return vmx_eap_initialize(vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr, 0, 0,	0, 0, vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr,	vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr, 1);
-	return 1;
+	//return 1;
 }
 
 //"normal" DMA protection initialization to setup required
