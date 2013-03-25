@@ -137,6 +137,9 @@ void emhf_runtime_entry(void){
 	}
 #endif
 
+	assert(0);
+#if 0
+
 
 	/*printf("\nPreSelectors CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", 
 			(u16)read_segreg_cs(), (u16)read_segreg_ds(),
@@ -155,7 +158,7 @@ void emhf_runtime_entry(void){
 	ASSERT(0);
 	HALT();
 
-
+#endif // #if 0
 }
 
 //we get control here in the context of *each* physical CPU core 
