@@ -68,11 +68,12 @@ void emhf_memprot_arch_x86vmx_initialize(VCPU *vcpu){
 	_vmx_setupEPT(vcpu);
 #endif
 
-	//vcpu->vmcs.control_VMX_seccpu_based |= (1 << 1); //enable EPT
+	vcpu->vmcs.control_VMX_seccpu_based |= (1 << 1); //enable EPT
 	vcpu->vmcs.control_VMX_seccpu_based |= (1 << 5); //enable VPID
 	vcpu->vmcs.control_vpid = 1; //VPID=0 is reserved for hypervisor
 	vcpu->vmcs.control_EPT_pointer_high = 0;
-	vcpu->vmcs.control_EPT_pointer_full = hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E; //page walk of 4 and WB memory
+	//vcpu->vmcs.control_EPT_pointer_full = hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E; //page walk of 4 and WB memory
+	vcpu->vmcs.control_EPT_pointer_full = 0;
 	vcpu->vmcs.control_VMX_cpu_based &= ~(1 << 15); //disable CR3 load exiting
 	vcpu->vmcs.control_VMX_cpu_based &= ~(1 << 16); //disable CR3 store exiting
 }
