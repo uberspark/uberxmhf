@@ -468,7 +468,7 @@ u32 emhf_dmaprot_arch_x86svm_initialize(u64 protectedbuffer_paddr,
 	status=svm_eap_initialize(protectedbuffer_paddr, protectedbuffer_vaddr);
 	
 	#ifdef __XMHF_VERIFICATION__
-	//g_dmaprot_activated=1;
+	g_dmaprot_activated=1;
 	#endif
 	
 	return status;
