@@ -88,7 +88,6 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	//initialize debugging early on
 	emhf_debug_init((char *)&slpb.uart_config);
 
-
 	//initialze sl_baseaddr variable and print its value out
 	sl_baseaddr = baseaddr;
 	
@@ -151,6 +150,8 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	//initialize basic platform elements
 	emhf_baseplatform_initialize();
 
+	assert(0);
+#if 0
 
 	//sanitize cache/MTRR/SMRAM (most important is to ensure that MTRRs 
 	//do not contain weird mappings)
@@ -244,6 +245,8 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	return;
 #endif
 
+
+#endif // #if 0
 } 
 
 
