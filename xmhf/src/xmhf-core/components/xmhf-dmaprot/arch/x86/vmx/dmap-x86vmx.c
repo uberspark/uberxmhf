@@ -538,7 +538,7 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
       gcmd.bits.te=1;
 	   #ifdef __XMHF_VERIFICATION__
 	   assert(gcmd.bits.te == 1);
-	   g_dmaprot_activated=1;
+	   //g_dmaprot_activated=1;
 	   #endif
 	   
       _vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
