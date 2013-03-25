@@ -191,9 +191,6 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	assert(g_dmaprot_activated == 1);
 	#endif
 
-	assert(0);
-#if 0
-
 		
 	//populate runtime parameter block fields
 		rpb->isEarlyInit = slpb.isEarlyInit; //tell runtime if we started "early" or "late"
@@ -253,9 +250,6 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 #else
 	return;
 #endif
-
-
-#endif // #if 0
 } 
 
 
