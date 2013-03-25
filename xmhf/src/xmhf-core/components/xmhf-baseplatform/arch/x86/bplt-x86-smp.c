@@ -135,7 +135,7 @@ void emhf_baseplatform_arch_smpinitialize(void){
     #ifndef __XMHF_VERIFICATION__
 	for(i=0; i < (int)rpb->XtVmmMPCpuinfoNumEntries; i++){
 	#else
-	for(i=0; i < 2; i++){
+	for(i=0; i < 1; i++){
 	#endif
        g_midtable[g_midtable_numentries].cpu_lapic_id = g_cpumap[i].lapic_id;
        g_midtable[g_midtable_numentries].vcpu_vaddr_ptr = 0;
@@ -149,7 +149,6 @@ void emhf_baseplatform_arch_smpinitialize(void){
 	emhf_baseplatform_arch_x86svm_allocandsetupvcpus(cpu_vendor);
   else //CPU_VENDOR_INTEL
 	emhf_baseplatform_arch_x86vmx_allocandsetupvcpus(cpu_vendor);
-	
 
   //wake up APS
   if(g_midtable_numentries > 1){

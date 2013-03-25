@@ -58,8 +58,9 @@ void emhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor){
   VCPU *vcpu;
 	
   for(i=0; i < g_midtable_numentries; i++){
-    //allocate VCPU structure
+	//allocate VCPU structure
 	vcpu = (VCPU *)((u32)g_vcpubuffers + (u32)(i * SIZE_STRUCT_VCPU));
+
     #ifndef __XMHF_VERIFICATION__
     memset((void *)vcpu, 0, sizeof(VCPU));
     #endif
