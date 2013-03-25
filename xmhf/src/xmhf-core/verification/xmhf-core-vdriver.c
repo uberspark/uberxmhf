@@ -72,7 +72,8 @@ RPB _xrpb;
 
 
 
-void runtime_main(){
+//void runtime_main(){
+void main(){
 		/* emhf_runtime_main */
 		extern void emhf_runtime_main(void);
 		//setup RPB pointer and required runtime parameter block values
@@ -106,8 +107,8 @@ void runtime_main(){
 }
 
 	
-//void runtime_entry_main(){
-void main(){
+void runtime_entry_main(){
+//void main(){
 		/* emhf_runtime_entry */
 		extern void emhf_runtime_entry(void);
 		emhf_runtime_entry();
