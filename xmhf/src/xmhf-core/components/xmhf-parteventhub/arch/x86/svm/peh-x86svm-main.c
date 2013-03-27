@@ -660,8 +660,8 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 
 
 
-    printf("\nCPU(0x%02x): Starting HVM using CS:EIP=0x%04x:0x%08x...", vcpu->id,
-			(u16)vmcb->cs.selector, (u32)vmcb->rip);
+    //printf("\nCPU(0x%02x): Starting HVM using CS:EIP=0x%04x:0x%08x...", vcpu->id,
+	//		(u16)vmcb->cs.selector, (u32)vmcb->rip);
 
 #ifdef __XMHF_VERIFICATION__
 	{
