@@ -588,12 +588,12 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 						HALT();
 				}
 			}else{	//if not E820 hook, give app a chance to handle the hypercall
-				//emhf_smpguest_arch_x86svm_quiesce(vcpu);
+				emhf_smpguest_arch_x86svm_quiesce(vcpu);
 				if( emhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
 					printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", vcpu->id, r->eax);
 					HALT();
 				}
-				//emhf_smpguest_arch_x86svm_endquiesce(vcpu);
+				emhf_smpguest_arch_x86svm_endquiesce(vcpu);
 				vmcb->rip += 3;
 			}
 		}
