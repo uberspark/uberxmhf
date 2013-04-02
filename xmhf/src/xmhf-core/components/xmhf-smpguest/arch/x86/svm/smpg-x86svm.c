@@ -58,23 +58,6 @@ static u32 g_svm_lapic_reg __attribute__(( section(".data") )) = 0;
 static u32 g_svm_lapic_op __attribute__(( section(".data") )) = LAPIC_OP_RSVD;
 
 
-////--NPT manipulation routines---------------------------------------------------
-//static void npt_changemapping(VCPU *vcpu, u32 dest_paddr, u32 new_paddr, u64 protflags){
-//  u64 *pts;
-//  u32 page;
-//  
-//  //printf("\n%s: pts addr=0x%08x, dp=0x%08x, np=0x%08x", __FUNCTION__, vcpu->npt_vaddr_pts,
-//  //  dest_paddr, new_paddr);
-//  pts = (u64 *)vcpu->npt_vaddr_pts;
-
-//  page=dest_paddr/PAGE_SIZE_4K;
-//  //printf("\n  page=0x%08x", page);
-//  pts[page] &= ~(u64)0xFFFFFFFFFFFFFFFFULL;
-//  pts[page] |= pae_make_pte(new_paddr, protflags);
-//  //*(pts+page) = pae_make_pte(new_paddr, protflags);
-//}
-
-
 //----------------------------------------------------------------------
 //svm_lapic_changemapping
 //change LAPIC mappings to handle SMP guest bootup
