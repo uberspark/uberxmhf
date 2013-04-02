@@ -58,21 +58,21 @@ static u32 g_svm_lapic_reg __attribute__(( section(".data") )) = 0;
 static u32 g_svm_lapic_op __attribute__(( section(".data") )) = LAPIC_OP_RSVD;
 
 
-//--NPT manipulation routines---------------------------------------------------
-static void npt_changemapping(VCPU *vcpu, u32 dest_paddr, u32 new_paddr, u64 protflags){
-  u64 *pts;
-  u32 page;
-  
-  //printf("\n%s: pts addr=0x%08x, dp=0x%08x, np=0x%08x", __FUNCTION__, vcpu->npt_vaddr_pts,
-  //  dest_paddr, new_paddr);
-  pts = (u64 *)vcpu->npt_vaddr_pts;
+////--NPT manipulation routines---------------------------------------------------
+//static void npt_changemapping(VCPU *vcpu, u32 dest_paddr, u32 new_paddr, u64 protflags){
+//  u64 *pts;
+//  u32 page;
+//  
+//  //printf("\n%s: pts addr=0x%08x, dp=0x%08x, np=0x%08x", __FUNCTION__, vcpu->npt_vaddr_pts,
+//  //  dest_paddr, new_paddr);
+//  pts = (u64 *)vcpu->npt_vaddr_pts;
 
-  page=dest_paddr/PAGE_SIZE_4K;
-  //printf("\n  page=0x%08x", page);
-  pts[page] &= ~(u64)0xFFFFFFFFFFFFFFFFULL;
-  pts[page] |= pae_make_pte(new_paddr, protflags);
-  //*(pts+page) = pae_make_pte(new_paddr, protflags);
-}
+//  page=dest_paddr/PAGE_SIZE_4K;
+//  //printf("\n  page=0x%08x", page);
+//  pts[page] &= ~(u64)0xFFFFFFFFFFFFFFFFULL;
+//  pts[page] |= pae_make_pte(new_paddr, protflags);
+//  //*(pts+page) = pae_make_pte(new_paddr, protflags);
+//}
 
 
 //----------------------------------------------------------------------
@@ -90,7 +90,7 @@ static void svm_lapic_changemapping(VCPU *vcpu, u32 lapic_paddr, u32 new_lapic_p
 
   lapic_page=lapic_paddr/PAGE_SIZE_4K;
   pts[lapic_page] &= ~(u64)0xFFFFFFFFFFFFFFFFULL;
-  pts[lapic_page] |= pae_make_pte(new_lapic_addr, mapflag);
+  pts[lapic_page] |= pae_make_pte(new_lapic_paddr, mapflag);
 }
 //----------------------------------------------------------------------
 
@@ -191,7 +191,8 @@ void emhf_smpguest_arch_x86svm_initialize(VCPU *vcpu){
   //this will cause NPF on access to the APIC page which is then
   //handled by lapic_access_handler
   //XXX: change this to access xmhf-memprot interfaces
-  npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, 0);
+  //npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, 0);
+  svm_lapic_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, SVM_LAPIC_UNMAP);
   vmcb->tlb_control = VMCB_TLB_CONTROL_FLUSHALL;  
   //emhf_memprot_arch_x86svm_setprot(vcpu, g_svm_lapic_base, MEMP_PROT_NOTPRESENT);
   //emhf_memprot_arch_x86svm_flushmappings(vcpu);
@@ -232,7 +233,8 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
       //printf("\nvirtual_LAPIC_base, v=0x%08x, p=0x%08x",  
       //  (u32)virtual_LAPIC_base, hva2spa(virtual_LAPIC_base));
       #ifndef __XMHF_VERIFICATION__
-		npt_changemapping(vcpu, g_svm_lapic_base, hva2spa(g_svm_virtual_LAPIC_base), (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+		//npt_changemapping(vcpu, g_svm_lapic_base, hva2spa(g_svm_virtual_LAPIC_base), (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+		svm_lapic_changemapping(vcpu, g_svm_lapic_base, hva2spa(g_svm_virtual_LAPIC_base), SVM_LAPIC_MAP);
 		//vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
 		emhf_memprot_arch_x86svm_flushmappings(vcpu);
 	  #else
@@ -250,7 +252,8 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 
       //change LAPIC physical address NPT mapping to point to physical LAPIC
       #ifndef __XMHF_VERIFICATION__
-		npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+		//npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+		svm_lapic_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, SVM_LAPIC_MAP);
 		//	vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
 		//emhf_memprot_arch_x86svm_setprot(vcpu, g_svm_lapic_base, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE);
 		emhf_memprot_arch_x86svm_flushmappings(vcpu);
@@ -286,7 +289,8 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
       //printf("\nvirtual_LAPIC_base, v=0x%08x, p=0x%08x",  
       //  (u32)virtual_LAPIC_base, hva2spa(virtual_LAPIC_base));
       #ifndef __XMHF_VERIFICATION__
-		  npt_changemapping(vcpu, g_svm_lapic_base, hva2spa(g_svm_virtual_LAPIC_base), (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+		  //npt_changemapping(vcpu, g_svm_lapic_base, hva2spa(g_svm_virtual_LAPIC_base), (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+		  svm_lapic_changemapping(vcpu, g_svm_lapic_base, hva2spa(g_svm_virtual_LAPIC_base), SVM_LAPIC_MAP);
 		  //vmcb->tlb_control = TLB_CONTROL_FLUSHALL;  
 		  emhf_memprot_arch_x86svm_flushmappings(vcpu);
 	  #else
@@ -302,7 +306,8 @@ u32 emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 
       //change LAPIC physical address NPT mapping to point to physical LAPIC
       #ifndef __XMHF_VERIFICATION__
-		npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+		//npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+		svm_lapic_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, SVM_LAPIC_MAP);
 			//vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
 		//emhf_memprot_arch_x86svm_setprot(vcpu, g_svm_lapic_base, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE);
 		emhf_memprot_arch_x86svm_flushmappings(vcpu);
@@ -462,7 +467,8 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
   if(delink_lapic_interception){
     printf("\n%s: delinking LAPIC interception since all cores have SIPI", __FUNCTION__);
     #ifndef __XMHF_VERIFICATION__
-		npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+		//npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+		svm_lapic_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, SVM_LAPIC_MAP);
 		//vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
 		//emhf_memprot_arch_x86svm_setprot(vcpu, g_svm_lapic_base, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE);
 		emhf_memprot_arch_x86svm_flushmappings(vcpu);
@@ -475,7 +481,8 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu,
 	
   }else{
     #ifndef __XMHF_VERIFICATION__
-	  npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, 0);
+	  //npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, 0);
+	  svm_lapic_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, SVM_LAPIC_UNMAP);
 	  //vmcb->tlb_control = TLB_CONTROL_FLUSHALL;
 	  //emhf_memprot_arch_x86svm_setprot(vcpu, g_svm_lapic_base, MEMP_PROT_NOTPRESENT);
 	  emhf_memprot_arch_x86svm_flushmappings(vcpu);
