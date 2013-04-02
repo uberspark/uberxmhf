@@ -181,7 +181,7 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
 //GLOBALS
 void emhf_smpguest_arch_x86svm_initialize(VCPU *vcpu){
   u32 eax, edx;
-  struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
+  //struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
   
   //read APIC base address from MSR
   rdmsr(MSR_APIC_BASE, &eax, &edx);
