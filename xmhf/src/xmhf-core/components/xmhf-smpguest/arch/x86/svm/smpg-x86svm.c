@@ -74,6 +74,27 @@ static void npt_changemapping(VCPU *vcpu, u32 dest_paddr, u32 new_paddr, u64 pro
   //*(pts+page) = pae_make_pte(new_paddr, protflags);
 }
 
+
+//----------------------------------------------------------------------
+//svm_lapic_changemapping
+//change LAPIC mappings to handle SMP guest bootup
+
+#define SVM_LAPIC_MAP			((u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER))
+#define SVM_LAPIC_UNMAP			0
+
+static void svm_lapic_changemapping(VCPU *vcpu, u32 lapic_paddr, u32 new_lapic_paddr, u64 mapflag){
+  u64 *pts;
+  u32 lapic_page;
+  
+  pts = (u64 *)vcpu->npt_vaddr_pts;
+
+  lapic_page=lapic_paddr/PAGE_SIZE_4K;
+  pts[lapic_page] &= ~(u64)0xFFFFFFFFFFFFFFFFULL;
+  pts[lapic_page] |= pae_make_pte(new_lapic_addr, mapflag);
+}
+//----------------------------------------------------------------------
+
+
 //------------------------------------------------------------------------------
 static inline void clgi(void){
   __asm__ __volatile__ ("clgi\r\n");
