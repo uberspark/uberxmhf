@@ -195,7 +195,7 @@ void emhf_smpguest_arch_x86svm_initialize(VCPU *vcpu){
   //XXX: change this to access xmhf-memprot interfaces
   //npt_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, 0);
   svm_lapic_changemapping(vcpu, g_svm_lapic_base, g_svm_lapic_base, SVM_LAPIC_UNMAP);
-  vmcb->tlb_control = VMCB_TLB_CONTROL_FLUSHALL;  
+  //vmcb->tlb_control = VMCB_TLB_CONTROL_FLUSHALL;  
   //emhf_memprot_arch_x86svm_setprot(vcpu, g_svm_lapic_base, MEMP_PROT_NOTPRESENT);
   //emhf_memprot_arch_x86svm_flushmappings(vcpu);
 }
