@@ -91,6 +91,8 @@ static void svm_lapic_changemapping(VCPU *vcpu, u32 lapic_paddr, u32 new_lapic_p
   lapic_page=lapic_paddr/PAGE_SIZE_4K;
   pts[lapic_page] &= ~(u64)0xFFFFFFFFFFFFFFFFULL;
   pts[lapic_page] |= pae_make_pte(new_lapic_paddr, mapflag);
+
+  emhf_memprot_arch_x86svm_flushmappings(vcpu);
 }
 //----------------------------------------------------------------------
 
