@@ -82,51 +82,6 @@ static void vmx_lapic_changemapping(VCPU *vcpu, u32 lapic_paddr, u32 new_lapic_p
 }
 //----------------------------------------------------------------------
 
-/*
-//---hardware pagetable flush-all routine---------------------------------------
-static void vmx_apic_hwpgtbl_flushall(VCPU *vcpu){
-  __vmx_invept(VMX_INVEPT_SINGLECONTEXT, 
-          (u64)vcpu->vmcs.control_EPT_pointer_full);
-  __vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0);
-
-}
-
-//---hardware pagetable protection manipulation routine-------------------------
-static void vmx_apic_hwpgtbl_setprot(VCPU *vcpu, u64 gpa, u64 flags){
-  u32 pfn = (u32)gpa / PAGE_SIZE_4K;
-  u64 *pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
-  pt[pfn] &= ~(u64)7; //clear all previous flags
-  pt[pfn] |= flags; //set new flags
-  //flush the EPT mappings for new protections to take effect
-  vmx_apic_hwpgtbl_flushall(vcpu);
-}
-
-static void vmx_apic_hwpgtbl_setentry(VCPU *vcpu, u64 gpa, u64 value){
-  u32 pfn = (u32)gpa / PAGE_SIZE_4K;
-  u64 *pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
-  pt[pfn] = value; //set new value
-  //flush the EPT mappings for new protections to take effect
-  vmx_apic_hwpgtbl_flushall(vcpu);
-}
-
-
-static u64 __attribute__((unused)) vmx_apic_hwpgtbl_getprot(VCPU *vcpu, u64 gpa){
-  u32 pfn = (u32)gpa / PAGE_SIZE_4K;
-  u64 *pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
-  return (pt[pfn] & (u64)7) ;
-}*/
-
-static void vmx_apic_dumpregs(VCPU *vcpu){
-	printf("\n%s[%02x]: APIC register dump follows...", __FUNCTION__,
-		vcpu->id);
-		
-	printf("\n    CMCI=0x%08x", *((volatile u32 *)0xfee002f0));
-	printf("\n    Timer=0x%08x", *((volatile u32 *)0xfee00320));
-	printf("\n    LINT0=0x%08x", *((volatile u32 *)0xfee00350));
-	printf("\n    LINT1=0x%08x", *((volatile u32 *)0xfee00360));
-	printf("\n    Error=0x%08x", *((volatile u32 *)0xfee00370));
-	printf("\n----");
-}
 
 //---checks if all logical cores have received SIPI
 //returns 1 if yes, 0 if no
@@ -219,23 +174,17 @@ void emhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu){
 //----------------------------------------------------------------------
 
 
+
+
+
 #ifdef __XMHF_VERIFICATION__
 	bool g_vmx_lapic_npf_verification_guesttrapping = false;
 	bool g_vmx_lapic_npf_verification_pre = false;
 #endif
-
-
-//------------------------------------------------------------------------------
-//if there is a read request, store the register accessed
-//store request as READ
-//map npt entry of the physical LAPIC page with lapic_base and single-step
-//if there is a write request, map npt entry of physical LAPIC
-//page with physical address of virtual_LAPIC page, store the
-//register accessed, store request as WRITE and single-step
-//XXX TODO: return value currently meaningless
+//----------------------------------------------------------------------
+//emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation
+//handle LAPIC accesses by the guest, used for SMP guest boot
 u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode){
-	//printf("\nCPU(0x%02x): LAPIC: p=0x%08x, ecode=0x%08x", vcpu->id,
-	//		paddr, errorcode);
 
   //get LAPIC register being accessed
   g_vmx_lapic_reg = (paddr - g_vmx_lapic_base);
@@ -246,104 +195,42 @@ u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 #endif
 
 
-  if(errorcode & EPT_ERRORCODE_WRITE){
-    //printf("\nCPU(0x%02x): LAPIC[WRITE] reg=0x%08x", vcpu->id,
-		//	g_vmx_lapic_reg);
+	if(errorcode & EPT_ERRORCODE_WRITE){			//LAPIC write
 
 		if(g_vmx_lapic_reg == LAPIC_ICR_LOW || g_vmx_lapic_reg == LAPIC_ICR_HIGH ){
-      g_vmx_lapic_op = LAPIC_OP_WRITE;
-
-      #ifndef __XMHF_VERIFICATION__
-		//change LAPIC physical address in EPT to point to physical address 
-			//of memregion_virtual_LAPIC
-			//vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
-			//		(u64)hva2spa(&g_vmx_virtual_LAPIC_base) | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
+			g_vmx_lapic_op = LAPIC_OP_WRITE;
 			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, hva2spa(&g_vmx_virtual_LAPIC_base), VMX_LAPIC_MAP);
-	  #else
-		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
-		//constant index > runtime_base+runtime_size
-		//since npt_changemapping above is a direct 64-bit assignment, it should
-		//be ok to skip it for verification with manual inspection
-
-	  #endif
-
-
-    }else{
-      g_vmx_lapic_op = LAPIC_OP_RSVD;
-
-
-      #ifndef __XMHF_VERIFICATION__
-      //change LAPIC physical address in EPT to point to physical LAPIC
-      //vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
-		//			(u64)g_vmx_lapic_base | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
-		vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
-
-	  #else
-		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
-		//constant index > runtime_base+runtime_size
-		//since npt_changemapping above is a direct 64-bit assignment, it should
-		//be ok to skip it for verification with manual inspection
-	  #endif
-
-    }    
-  }else{
-    //printf("\nCPU(0x%02x): LAPIC[READ] reg=0x%08x", vcpu->id,
-		//	g_vmx_lapic_reg);
-
-    if(g_vmx_lapic_reg == LAPIC_ICR_LOW || g_vmx_lapic_reg == LAPIC_ICR_HIGH ){
-      g_vmx_lapic_op = LAPIC_OP_READ;
-
-
-      #ifndef __XMHF_VERIFICATION__
-      //change LAPIC physical address in EPT to point to physical address 
-			//of memregion_virtual_LAPIC
-			//vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
-			//		(u64)hva2spa(&g_vmx_virtual_LAPIC_base) | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
+		}else{
+			g_vmx_lapic_op = LAPIC_OP_RSVD;
+			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
+		}    
+	
+	}else{											//LAPIC read
+		if(g_vmx_lapic_reg == LAPIC_ICR_LOW || g_vmx_lapic_reg == LAPIC_ICR_HIGH ){
+			g_vmx_lapic_op = LAPIC_OP_READ;
 			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, hva2spa(&g_vmx_virtual_LAPIC_base), VMX_LAPIC_MAP);
-
-	  #else
-		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
-		//constant index > runtime_base+runtime_size
-		//since npt_changemapping above is a direct 64-bit assignment, it should
-		//be ok to skip it for verification with manual inspection
-	  #endif
-
-
-    }else{
-      g_vmx_lapic_op = LAPIC_OP_RSVD;
-
-      #ifndef __XMHF_VERIFICATION__
-      //change LAPIC physical address in EPT to point to physical LAPIC
-      //vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
-		//			(u64)g_vmx_lapic_base | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
-		vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
-
-	  #else
-		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
-		//constant index > runtime_base+runtime_size
-		//since npt_changemapping above is a direct 64-bit assignment, it should
-		//be ok to skip it for verification with manual inspection
-	  #endif
-
-    }  
-  }
+		}else{
+			g_vmx_lapic_op = LAPIC_OP_RSVD;
+			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
+		}  
+	}
 
   //setup #DB intercept 
-	vcpu->vmcs.control_exception_bitmap |= (1UL << 1); //enable INT 1 intercept (#DB fault)
+  vcpu->vmcs.control_exception_bitmap |= (1UL << 1); //enable INT 1 intercept (#DB fault)
   
-	//save guest IF and TF masks
+  //save guest IF and TF masks
   g_vmx_lapic_guest_eflags_tfifmask = (u32)vcpu->vmcs.guest_RFLAGS & ((u32)EFLAGS_IF | (u32)EFLAGS_TF);	
 
   //set guest TF
-	vcpu->vmcs.guest_RFLAGS |= EFLAGS_TF;
+  vcpu->vmcs.guest_RFLAGS |= EFLAGS_TF;
 
-	#ifdef __XMHF_VERIFICATION__
+  #ifdef __XMHF_VERIFICATION__
 	g_vmx_lapic_npf_verification_guesttrapping = true;
-	#endif
+  #endif
 	
   //disable interrupts by clearing guest IF on this CPU until we get 
-	//control in lapic_access_dbexception after a DB exception
-	vcpu->vmcs.guest_RFLAGS &= ~(EFLAGS_IF);
+  //control in lapic_access_dbexception after a DB exception
+  vcpu->vmcs.guest_RFLAGS &= ~(EFLAGS_IF);
 
 #ifdef __XMHF_VERIFICATION__
   assert(!g_vmx_lapic_npf_verification_pre || g_vmx_lapic_npf_verification_guesttrapping);
@@ -358,38 +245,34 @@ u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 					   (g_vmx_lapic_reg < PAGE_SIZE_4K))
 					 );	
 
-    return 0; /* dummy; currently meaningless */
+    return 0; // TODO: currently meaningless
 }
+//----------------------------------------------------------------------
+
+
 
 #ifdef __XMHF_VERIFICATION__
 	bool g_vmx_lapic_db_verification_coreprotected = false;
 	bool g_vmx_lapic_db_verification_pre = false;
 #endif
-
-
 //------------------------------------------------------------------------------
-//within single-step
-//if request was READ, we can get the value read by reading from
-//the LAPIC register 
-//if request was WRITE, we get the value from reading virtual_LAPIC_vaddr
-//to propagate we just write to the physical LAPIC
-
+//emhf_smpguest_arch_x86vmx_eventhandler_dbexception
+//handle instruction that performed the LAPIC operation
 void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs *r){
   u32 delink_lapic_interception=0;
   
   (void)r;
 
 #ifdef	__XMHF_VERIFICATION__
-	//this handler relies on two global symbols apart from the
-	//parameters, set them to non-deterministic values with
-	//correct range. note: LAPIC #npf handler has a function contract
-	//which ensures this
+	//this handler relies on two global symbols apart from the parameters, set them 
+	//to non-deterministic values with correct range
+	//note: LAPIC #npf handler ensures this at runtime
 	g_vmx_lapic_op = (nondet_u32() % 3) + 1;
 	g_vmx_lapic_reg = (nondet_u32() % PAGE_SIZE_4K);
 #endif
 
 
-  if(g_vmx_lapic_op == LAPIC_OP_WRITE){
+  if(g_vmx_lapic_op == LAPIC_OP_WRITE){			//LAPIC write
     u32 src_registeraddress, dst_registeraddress;
     u32 value_tobe_written;
     
@@ -399,13 +282,12 @@ void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
     dst_registeraddress = (u32)g_vmx_lapic_base + g_vmx_lapic_reg;
     
 	#ifdef __XMHF_VERIFICATION__
+		//TODO: hardware modeling
 		value_tobe_written= nondet_u32();
 
 		g_vmx_lapic_db_verification_pre = (g_vmx_lapic_op == LAPIC_OP_WRITE) &&
 		(g_vmx_lapic_reg == LAPIC_ICR_LOW) &&
 		(((value_tobe_written & 0x00000F00) == 0x500) || ( (value_tobe_written & 0x00000F00) == 0x600 ));
-
-
 	#else
 		value_tobe_written= *((u32 *)src_registeraddress);
 	#endif
@@ -435,68 +317,39 @@ void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
         #ifndef __XMHF_VERIFICATION__
 			//neither an INIT or SIPI, just propagate this IPI to physical LAPIC
 			*((u32 *)dst_registeraddress) = value_tobe_written;
-		#else
-			//we currently don't have an I/O model for CBMC
-		#endif
+		#endif //TODO: hardware modeling
       }
     }else{
        #ifndef __XMHF_VERIFICATION__
 			*((u32 *)dst_registeraddress) = value_tobe_written;
-	   #else
-			//we currently don't have an I/O model for CBMC	   
-	   #endif
+	   #endif  //TODO: hardware modeling
     }
                 
-  }else if( g_vmx_lapic_op == LAPIC_OP_READ){
+  }else if( g_vmx_lapic_op == LAPIC_OP_READ){		//LAPIC read
     u32 src_registeraddress;
     u32 value_read;
     ASSERT( (g_vmx_lapic_reg == LAPIC_ICR_LOW) || (g_vmx_lapic_reg == LAPIC_ICR_HIGH) );
 
     src_registeraddress = (u32)&g_vmx_virtual_LAPIC_base + g_vmx_lapic_reg;
    
+    //TODO: hardware modeling
     #ifndef __XMHF_VERIFICATION__
 		value_read = *((u32 *)src_registeraddress);
 	#else
 		value_read = nondet_u32();
 	#endif
-    (void)value_read;
   }
 
-//fallthrough:  
   //clear #DB intercept 
-	vcpu->vmcs.control_exception_bitmap &= ~(1UL << 1); 
+  vcpu->vmcs.control_exception_bitmap &= ~(1UL << 1); 
 
-  //make LAPIC page inaccessible and flush TLB
+  //remove LAPIC interception if all cores have booted up
   if(delink_lapic_interception){
     printf("\n%s: delinking LAPIC interception since all cores have SIPI", __FUNCTION__);
-
-      #ifndef __XMHF_VERIFICATION__
-			//vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
-			//		(u64)g_vmx_lapic_base | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
-			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
-
-	  #else
-		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
-		//constant index > runtime_base+runtime_size
-		//since npt_changemapping above is a direct 64-bit assignment, it should
-		//be ok to skip it for verification with manual inspection
-	  #endif
-
+	vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
   }else{
-
-      #ifndef __XMHF_VERIFICATION__
-			//vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
-			//		(u64)g_vmx_lapic_base);			
-			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_UNMAP);
-
-	  #else
-		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
-		//constant index > runtime_base+runtime_size
-		//since npt_changemapping above is a direct 64-bit assignment, it should
-		//be ok to skip it for verification with manual inspection
-	  #endif
-
-	}
+	vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_UNMAP);
+  }
 
   //restore guest IF and TF
   vcpu->vmcs.guest_RFLAGS &= ~(EFLAGS_IF);
@@ -508,6 +361,8 @@ void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
 #endif
 
 }
+//----------------------------------------------------------------------
+
 
 //----------------------------------------------------------------------
 //Queiscing interfaces
