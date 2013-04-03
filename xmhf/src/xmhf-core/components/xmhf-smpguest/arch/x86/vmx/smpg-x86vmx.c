@@ -58,6 +58,29 @@ static u32 g_vmx_lapic_op __attribute__(( section(".data") )) = LAPIC_OP_RSVD;
 //guest TF and IF bit values during LAPIC emulation
 static u32 g_vmx_lapic_guest_eflags_tfifmask __attribute__(( section(".data") )) = 0;	 
 
+//----------------------------------------------------------------------
+//vmx_lapic_changemapping
+//change LAPIC mappings to handle SMP guest bootup
+
+#define VMX_LAPIC_MAP			((u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE)
+#define VMX_LAPIC_UNMAP			0
+
+static void vmx_lapic_changemapping(VCPU *vcpu, u32 lapic_paddr, u32 new_lapic_paddr, u64 mapflag){
+#ifndef __XMHF_VERIFICATION__
+  u64 *pts;
+  u32 lapic_page;
+  u64 value;
+  
+  pts = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
+  lapic_page=lapic_paddr/PAGE_SIZE_4K;
+  value = (u64)new_lapic_paddr | mapflag;
+  
+  pts[lapic_page] = value;
+
+  emhf_memprot_arch_x86vmx_flushmappings(vcpu);
+#endif //__XMHF_VERIFICATION__
+}
+//----------------------------------------------------------------------
 
 
 //---hardware pagetable flush-all routine---------------------------------------
