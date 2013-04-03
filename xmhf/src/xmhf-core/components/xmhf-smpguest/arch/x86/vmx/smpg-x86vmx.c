@@ -82,7 +82,7 @@ static void vmx_lapic_changemapping(VCPU *vcpu, u32 lapic_paddr, u32 new_lapic_p
 }
 //----------------------------------------------------------------------
 
-
+/*
 //---hardware pagetable flush-all routine---------------------------------------
 static void vmx_apic_hwpgtbl_flushall(VCPU *vcpu){
   __vmx_invept(VMX_INVEPT_SINGLECONTEXT, 
@@ -114,7 +114,7 @@ static u64 __attribute__((unused)) vmx_apic_hwpgtbl_getprot(VCPU *vcpu, u64 gpa)
   u32 pfn = (u32)gpa / PAGE_SIZE_4K;
   u64 *pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
   return (pt[pfn] & (u64)7) ;
-}
+}*/
 
 static void vmx_apic_dumpregs(VCPU *vcpu){
 	printf("\n%s[%02x]: APIC register dump follows...", __FUNCTION__,
@@ -223,7 +223,8 @@ void emhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu){
   //set physical 4K page of LAPIC base address to not-present
   //this will cause EPT violation which is then
   //handled by vmx_lapic_access_handler
-	vmx_apic_hwpgtbl_setprot(vcpu, g_vmx_lapic_base, 0);
+	//vmx_apic_hwpgtbl_setprot(vcpu, g_vmx_lapic_base, 0);
+	vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_UNMAP);
 	
   vmx_apic_dumpregs(vcpu);
 }
@@ -266,8 +267,9 @@ u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
       #ifndef __XMHF_VERIFICATION__
 		//change LAPIC physical address in EPT to point to physical address 
 			//of memregion_virtual_LAPIC
-			vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
-					(u64)hva2spa(&g_vmx_virtual_LAPIC_base) | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
+			//vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
+			//		(u64)hva2spa(&g_vmx_virtual_LAPIC_base) | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
+			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, hva2spa(&g_vmx_virtual_LAPIC_base), VMX_LAPIC_MAP);
 	  #else
 		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
 		//constant index > runtime_base+runtime_size
@@ -283,8 +285,9 @@ u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 
       #ifndef __XMHF_VERIFICATION__
       //change LAPIC physical address in EPT to point to physical LAPIC
-      vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
-					(u64)g_vmx_lapic_base | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
+      //vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
+		//			(u64)g_vmx_lapic_base | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
+		vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
 
 	  #else
 		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
@@ -305,8 +308,9 @@ u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
       #ifndef __XMHF_VERIFICATION__
       //change LAPIC physical address in EPT to point to physical address 
 			//of memregion_virtual_LAPIC
-			vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
-					(u64)hva2spa(&g_vmx_virtual_LAPIC_base) | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
+			//vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
+			//		(u64)hva2spa(&g_vmx_virtual_LAPIC_base) | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
+			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, hva2spa(&g_vmx_virtual_LAPIC_base), VMX_LAPIC_MAP);
 
 	  #else
 		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
@@ -321,8 +325,9 @@ u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 
       #ifndef __XMHF_VERIFICATION__
       //change LAPIC physical address in EPT to point to physical LAPIC
-      vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
-					(u64)g_vmx_lapic_base | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
+      //vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
+		//			(u64)g_vmx_lapic_base | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
+		vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
 
 	  #else
 		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
@@ -477,8 +482,9 @@ void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
     printf("\n%s: delinking LAPIC interception since all cores have SIPI", __FUNCTION__);
 
       #ifndef __XMHF_VERIFICATION__
-			vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
-					(u64)g_vmx_lapic_base | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
+			//vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
+			//		(u64)g_vmx_lapic_base | (u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE);			
+			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
 
 	  #else
 		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
@@ -490,8 +496,9 @@ void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
   }else{
 
       #ifndef __XMHF_VERIFICATION__
-			vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
-					(u64)g_vmx_lapic_base);			
+			//vmx_apic_hwpgtbl_setentry(vcpu, g_vmx_lapic_base, 
+			//		(u64)g_vmx_lapic_base);			
+			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_UNMAP);
 
 	  #else
 		//TODO: CBMC currenty does not seem to handle indexing into NPT with a 
