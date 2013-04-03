@@ -199,35 +199,24 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
 
 
 
-
-//---VMX APIC setup-------------------------------------------------------------
-//this function sets up the EPT for the vcpu core to intercept LAPIC
-//accesses.
-//NOTE: this function MUST be called only from the BSP and the vcpu
-//passed in should also be that of the BSP
+//----------------------------------------------------------------------
+//emhf_smpguest_arch_x86vmx_initialize
+//initialize LAPIC interception machinery
+//note: called from the BSP
 void emhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu){
   u32 eax, edx;
 
-	//we should only be called from the BSP
-	ASSERT( vcpu->isbsp == 1 );	
-  
-  //clear virtual LAPIC page
-  memset((void *)&g_vmx_virtual_LAPIC_base, 0, PAGE_SIZE_4K);
-  
   //read LAPIC base address from MSR
   rdmsr(MSR_APIC_BASE, &eax, &edx);
   ASSERT( edx == 0 ); //APIC should be below 4G
+
   g_vmx_lapic_base = eax & 0xFFFFF000UL;
   //printf("\nBSP(0x%02x): LAPIC base=0x%08x", vcpu->id, g_vmx_lapic_base);
   
-  //set physical 4K page of LAPIC base address to not-present
-  //this will cause EPT violation which is then
-  //handled by vmx_lapic_access_handler
-	//vmx_apic_hwpgtbl_setprot(vcpu, g_vmx_lapic_base, 0);
-	vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_UNMAP);
-	
-  vmx_apic_dumpregs(vcpu);
+  //unmap LAPIC page
+  vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_UNMAP);
 }
+//----------------------------------------------------------------------
 
 
 #ifdef __XMHF_VERIFICATION__
