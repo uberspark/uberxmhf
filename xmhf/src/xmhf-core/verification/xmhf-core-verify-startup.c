@@ -122,8 +122,8 @@ void sl_main(){
 }
 
 
-//void ihub_main() {
-void main() {
+void ihub_main() {
+//void main() {
 		//setup RPB pointer and required runtime parameter block values
 		rpb = (RPB *)&_xrpb;
 		rpb->XtVmmE820NumEntries = 1; 									//lets worry about E820 later
@@ -288,3 +288,9 @@ void main() {
 		assert(1);
 }
 //----------------------------------------------------------------------
+
+void main(){
+		runtime_entry_main();
+		
+		runtime_main();
+}
