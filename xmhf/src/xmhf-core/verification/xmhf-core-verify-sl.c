@@ -114,16 +114,16 @@ void runtime_entry_main(){
 		emhf_runtime_entry();
 }
 
-void sl_main(){
-//void main(){
+//void sl_main(){
+void main(){
 		extern void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx);
 		emhf_sl_main(xmhf_verify_cpu_vendor, 0xB8000000, 0, 0);
 		assert(1);
 }
 
 
-//void ihub_main() {
-void main() {
+void ihub_main() {
+//void main() {
 		//setup RPB pointer and required runtime parameter block values
 		rpb = (RPB *)&_xrpb;
 		rpb->XtVmmE820NumEntries = 1; 									//lets worry about E820 later
