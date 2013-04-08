@@ -356,6 +356,11 @@ init-late-clean:
 verify:
 	cd src/xmhf-core && make -w verify
 
+verifyinit:
+	cd src/xmhf-core && make -w verifyinit
+	
+verifyall: 
+	cd src/xmhf-core && make -w verifyall
 
 #-----autoconf rules
 Makefile: Makefile.in config.status

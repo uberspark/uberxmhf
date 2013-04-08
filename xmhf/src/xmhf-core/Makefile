@@ -112,3 +112,10 @@ install-dev:
 verify:
 	cd verification/ && $(MAKE) -w verify
 	
+.PHONY: verifyinit
+verifyinit:
+	cd verification/ && $(MAKE) -w verifyinit
+
+.PHONY: verifyall
+verifyall:
+	cd verification/ && $(MAKE) -w verifyall

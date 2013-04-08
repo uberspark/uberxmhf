@@ -21,10 +21,15 @@ HYPAPP_SOURCES = `find $(APP_ROOT)/ -type f -name "*.c" -print`
 
 .PHONY: verify 
 verify: 
-	./check-mprot.sh
-	cbmc $(VFLAGS) -D__XMHF_VERIFICATION__ --bounds-check --pointer-check xmhf-core-verify-sl.c  $(HYPAPP_SOURCES) $(C_SOURCES)
-	cbmc $(VFLAGS) -D__XMHF_VERIFICATION__ --bounds-check --pointer-check xmhf-core-verify-startup.c  $(HYPAPP_SOURCES) $(C_SOURCES)
 	cbmc $(VFLAGS) -D__XMHF_VERIFICATION__ --bounds-check --pointer-check xmhf-core-verify-eventhub.c  $(HYPAPP_SOURCES) $(C_SOURCES)
   
+.PHONY: verifyinit 
+verifyinit: 
+	cbmc $(VFLAGS) -D__XMHF_VERIFICATION__ --bounds-check --pointer-check xmhf-core-verify-sl.c  $(HYPAPP_SOURCES) $(C_SOURCES)
+	cbmc $(VFLAGS) -D__XMHF_VERIFICATION__ --bounds-check --pointer-check xmhf-core-verify-startup.c  $(HYPAPP_SOURCES) $(C_SOURCES)
+
+.PHONY: verifyall 
+verifyall: verifyinit verify
+	./check-mprot.sh
 
   
