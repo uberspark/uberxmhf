@@ -480,7 +480,7 @@ bool txt_prepare_cpu(void)
     for ( i = 0; i < (mcg_cap & 0xff); i++ ) {
         mcg_stat = rdmsr64(MSR_MC0_STATUS + 4*i);
         if ( mcg_stat & (1ULL << 63) ) {
-            printf("MCG[%u] = %Lx ERROR\n", i, mcg_stat);
+            printf("MCG[%u] = %llx ERROR\n", i, mcg_stat);
             if ( !params.preserve_mce )
                 return false;
         }

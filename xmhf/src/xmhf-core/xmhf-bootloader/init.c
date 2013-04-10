@@ -443,7 +443,7 @@ void txt_status_regs(void) {
     acmod_error_t acmod_err;
 
     err = (txt_errorcode_t)read_pub_config_reg(TXTCR_ERRORCODE);
-    printf("TXT.ERRORCODE=%Lx\n", err._raw);
+    printf("TXT.ERRORCODE=%llx\n", err._raw);
 
     /* AC module error (don't know how to parse other errors) */
     if ( err.valid ) {
@@ -469,7 +469,7 @@ void txt_status_regs(void) {
      * display LT.ESTS error
      */
     ests = (txt_ests_t)read_pub_config_reg(TXTCR_ESTS);
-    printf("LT.ESTS=%Lx\n", ests._raw);
+    printf("LT.ESTS=%llx\n", ests._raw);
 
     /*
      * display LT.E2STS error
@@ -477,7 +477,7 @@ void txt_status_regs(void) {
      */
     if ( ests.txt_wake_error_sts ) {
         e2sts = (txt_e2sts_t)read_pub_config_reg(TXTCR_E2STS);
-        printf("LT.E2STS=%Lx\n", e2sts._raw);
+        printf("LT.E2STS=%llx\n", e2sts._raw);
     }    
 }
 
@@ -627,7 +627,7 @@ static bool svm_prepare_cpu(void)
     for (i = 0; i < bound; i++) {
         mcg_stat = rdmsr64(MSR_MC0_STATUS + 4*i);               
         if (mcg_stat & (1ULL << 63)) {
-            printf("MCG[%d] = %Lx ERROR\n", i, mcg_stat);
+            printf("MCG[%d] = %llx ERROR\n", i, mcg_stat);
             return false;
         }
     }
