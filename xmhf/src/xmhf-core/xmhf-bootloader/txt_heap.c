@@ -102,7 +102,7 @@ static void print_bios_data(bios_data_t *bios_data)
            bios_data->lcp_pd_size);
     printf("\t num_logical_procs: %u\n", bios_data->num_logical_procs);
     if ( bios_data->version >= 3 )
-        printf("\t flags: 0x%08Lx\n", bios_data->flags);
+        printf("\t flags: 0x%08llx\n", bios_data->flags);
 }
 
 bool verify_bios_data(txt_heap_t *txt_heap)
@@ -277,7 +277,7 @@ static void print_sinit_mdrs(sinit_mdr_t mdrs[], uint32_t num_mdrs)
 
     printf("\t sinit_mdrs:\n");
     for ( i = 0; i < num_mdrs; i++ ) {
-        printf("\t\t %016Lx - %016Lx ", mdrs[i].base,
+        printf("\t\t %016llx - %016llx ", mdrs[i].base,
                mdrs[i].base + mdrs[i].length);
         if ( mdrs[i].mem_type < sizeof(mem_types)/sizeof(mem_types[0]) )
             printf("(%s)\n", mem_types[mdrs[i].mem_type]);

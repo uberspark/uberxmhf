@@ -419,7 +419,7 @@ tb_error_t txt_verify_platform(void)
     /* check is TXT_RESET.STS is set, since if it is SENTER will fail */
     ests = (txt_ests_t)read_pub_config_reg(TXTCR_ESTS);
     if ( ests.txt_reset_sts ) {
-        printf("TXT_RESET.STS is set and SENTER is disabled (0x%02Lx)\n",
+        printf("TXT_RESET.STS is set and SENTER is disabled (%llx)\n",
                ests._raw);
         return TB_ERR_SMX_NOT_SUPPORTED;
     }
