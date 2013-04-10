@@ -107,7 +107,7 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
   		(u8)eax, ((eax & (1 << 8)) >> 8),  ((eax & (1 << 10)) >> 10),
   			((eax & (1 << 11)) >> 11));
   	//we need VCNT=8, FIX=1
-  	HALT_ON_ERRORCOND( ((eax & (u32)0x000000FF) == 0x8) && ((eax & (1 << 8)) >> 8) );
+  	//HALT_ON_ERRORCOND( ((eax & (u32)0x000000FF) == 0x8) && ((eax & (1 << 8)) >> 8) );
 
   #ifndef __XMHF_VERIFICATION__
   //1. clear memorytypes array
@@ -235,7 +235,8 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
 		u32 msrval=IA32_MTRR_PHYSBASE0;
 		u32 i;
 		
-		for(i=0; i < 8; i++){
+		//for(i=0; i < 8; i++){
+		for(i=0; i < MAX_VARIABLE_MEMORYTYPE_ENTRIES; i++){
 			rdmsr(msrval, &eax, &edx);
 			vMTRR_base = ((u64)edx << 32) | (u64)eax;
 			msrval++;
