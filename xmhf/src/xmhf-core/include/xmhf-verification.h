@@ -60,8 +60,8 @@
 //FNCONTRACT => Function Contract Primitive
 
 #ifdef __XMHF_VERIFICATION__
-	#define	EV_FNCONTRACT_DOMAIN(x)		assert((x));
-	#define EV_FNCONTRACT_RANGE(x)		assert((x));
+	//#define	EV_FNCONTRACT_DOMAIN(x)		assert((x));
+	//#define EV_FNCONTRACT_RANGE(x)		assert((x));
 
 	//CBMC SATABS internal functions for non-deterministic values
 	u32 nondet_u32();
@@ -71,8 +71,8 @@
 	u16 nondet_u16();
 
 #else
-	#define	EV_FNCONTRACT_DOMAIN(x)		
-	#define EV_FNCONTRACT_RANGE(x)		
+	//#define	EV_FNCONTRACT_DOMAIN(x)		
+	//#define EV_FNCONTRACT_RANGE(x)		
 #endif
 
 #endif
