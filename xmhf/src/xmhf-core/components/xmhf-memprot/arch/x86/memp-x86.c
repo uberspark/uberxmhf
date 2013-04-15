@@ -123,20 +123,22 @@ void emhf_memprot_arch_flushmappings(VCPU *vcpu){
 
 //set protection for a given physical memory address
 void emhf_memprot_arch_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
-	EV_FNCONTRACT_DOMAIN ( (vcpu != NULL) );
-	EV_FNCONTRACT_DOMAIN ( ( (gpa < rpb->XtVmmRuntimePhysBase) || 
+#ifdef __XMHF_VERIFICATION__
+	assert ( (vcpu != NULL) );
+	assert ( ( (gpa < rpb->XtVmmRuntimePhysBase) || 
 							 (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) 
 						   ) );
-	EV_FNCONTRACT_DOMAIN ( ( (prottype > 0)	&& 
+	assert ( ( (prottype > 0)	&& 
 	                         (prottype <= MEMP_PROT_MAXVALUE) 
 	                       ) );						
-	EV_FNCONTRACT_DOMAIN(
+	assert (
 	 (prottype == MEMP_PROT_NOTPRESENT) ||
 	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_EXECUTE)) ||
 	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_EXECUTE)) ||
 	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_NOEXECUTE)) ||
 	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_NOEXECUTE)) 
 	);
+#endif
 
 	//invoke appropriate sub arch. backend
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
