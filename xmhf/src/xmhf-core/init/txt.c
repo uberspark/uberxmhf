@@ -278,7 +278,7 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
     os_sinit_data->mle_ptab = (uint64_t)(unsigned long)ptab_base;
     os_sinit_data->mle_size = g_mle_hdr.mle_end_off - g_mle_hdr.mle_start_off;
     /* Copy populated MLE header into SL */
-    ASSERT(sizeof(mle_hdr_t) < TEMPORARY_MAX_MLE_HEADER_SIZE);
+    HALT_ON_ERRORCOND(sizeof(mle_hdr_t) < TEMPORARY_MAX_MLE_HEADER_SIZE);
     memcpy(phys_mle_start, &g_mle_hdr, sizeof(mle_hdr_t));
     printf("Copied mle_hdr (0x%08x, 0x%x bytes) into SL (0x%08x)\n",
            (u32)&g_mle_hdr, sizeof(mle_hdr_t), (u32)phys_mle_start);

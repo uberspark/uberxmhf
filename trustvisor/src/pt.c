@@ -86,7 +86,7 @@ hpt_prot_t pal_prot_of_type(int type)
     return HPT_PROTS_RWX;
     break;
   }
-  ASSERT(0); return 0; /* unreachable; appeases compiler */
+  HALT_ON_ERRORCOND(0); return 0; /* unreachable; appeases compiler */
 }
 
 hpt_prot_t reg_prot_of_type(int type)
@@ -112,7 +112,7 @@ hpt_prot_t reg_prot_of_type(int type)
     return HPT_PROTS_RWX;
     break;
   }
-  ASSERT(0); return 0; /* unreachable; appeases compiler */
+  HALT_ON_ERRORCOND(0); return 0; /* unreachable; appeases compiler */
 }
 
 int copy_from_current_guest(VCPU * vcpu, void *dst, gva_t gvaddr, u32 len)
@@ -211,7 +211,7 @@ void scode_lend_section( hptw_ctx_t *reg_npm_ctx,
   
   /* XXX don't hard-code page size here. */
   /* XXX fail gracefully */
-  ASSERT((section->size % PAGE_SIZE_4K) == 0); 
+  HALT_ON_ERRORCOND((section->size % PAGE_SIZE_4K) == 0); 
 
   for (offset=0; offset < section->size; offset += PAGE_SIZE_4K) {
     hpt_va_t page_reg_gva = section->reg_gva + offset;
@@ -235,14 +235,14 @@ void scode_lend_section( hptw_ctx_t *reg_npm_ctx,
                       page_reg_gva);
     eu_trace("got pme %016llx, level %d, type %d",
              page_reg_gpmeo.pme, page_reg_gpmeo.lvl, page_reg_gpmeo.t);
-    ASSERT(page_reg_gpmeo.lvl==1); /* we don't handle large pages */
+    HALT_ON_ERRORCOND(page_reg_gpmeo.lvl==1); /* we don't handle large pages */
     page_reg_gpa = hpt_pmeo_get_address(&page_reg_gpmeo);
 
     hptw_get_pmeo(&page_reg_npmeo,
                       reg_npm_ctx,
                       1,
                       page_reg_gpa);
-    ASSERT(page_reg_npmeo.lvl==1); /* we don't handle large pages */
+    HALT_ON_ERRORCOND(page_reg_npmeo.lvl==1); /* we don't handle large pages */
 
     /* no reason to go with a different mapping */
     page_pal_gpa = page_reg_gpa;
@@ -337,7 +337,7 @@ void scode_return_section(hptw_ctx_t *reg_npm_ctx,
                       pal_gpm_ctx,
                       1,
                       page_pal_gva);
-    ASSERT(page_pal_gpmeo.lvl==1); /* we don't handle large pages */
+    HALT_ON_ERRORCOND(page_pal_gpmeo.lvl==1); /* we don't handle large pages */
     page_pal_gpa = hpt_pmeo_get_address(&page_pal_gpmeo);
 
     /* lend_section always uses the same gpas between reg and pal */

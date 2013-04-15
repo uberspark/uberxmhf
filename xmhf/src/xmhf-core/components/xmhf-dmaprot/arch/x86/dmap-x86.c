@@ -54,7 +54,7 @@
 //DMA protection for a given physical memory limit
 u32 emhf_dmaprot_arch_getbuffersize(u64 physical_memory_limit){
 	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
-	ASSERT( physical_memory_limit <= ADDR_4GB ); 	//we only support 4GB physical memory currently
+	HALT_ON_ERRORCOND( physical_memory_limit <= ADDR_4GB ); 	//we only support 4GB physical memory currently
 	
 	if(cpu_vendor == CPU_VENDOR_AMD){
 		return ((physical_memory_limit / PAGE_SIZE_4K) / 8); //each page takes up 1-bit with AMD DEV

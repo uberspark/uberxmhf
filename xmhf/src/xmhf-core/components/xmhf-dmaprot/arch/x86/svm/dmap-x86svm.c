@@ -93,7 +93,7 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
 
 
 	//ensure dev_bitmap_paddr is PAGE_ALIGNED
-	ASSERT( (dev_bitmap_paddr & 0xFFF) == 0 );
+	HALT_ON_ERRORCOND( (dev_bitmap_paddr & 0xFFF) == 0 );
 
 	//we first need to detect the DEV capability block
 	//the DEV capability block is in the PCI configuration space 
@@ -114,7 +114,7 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
 		if(mc_capabilities_pointer == 0)
 			return 0;	//DEV support unavailable
 	
-		ASSERT ( (u8)(mc_capabilities_pointer) == 0xF0 ); //p. 286, AMD BKDG
+		HALT_ON_ERRORCOND ( (u8)(mc_capabilities_pointer) == 0xF0 ); //p. 286, AMD BKDG
 	
 	  //traverse the capabilities list as per the PCI spec.
 	  mc_caplist_nextptr = (u32)(u8)mc_capabilities_pointer;
@@ -266,7 +266,7 @@ static u32 svm_eap_early_initialize(u32 protected_buffer_paddr,
 		protected_buffer_paddr, protected_buffer_vaddr);
 
 	//sanity check: the protected buffer MUST be page aligned
-	ASSERT( !(protected_buffer_paddr & 0x00000FFF) &&
+	HALT_ON_ERRORCOND( !(protected_buffer_paddr & 0x00000FFF) &&
 					!(protected_buffer_vaddr & 0x00000FFF) );	
 
 
@@ -275,7 +275,7 @@ static u32 svm_eap_early_initialize(u32 protected_buffer_paddr,
 	//region
 	//Note: we assume the protected buffer size to be 8K on AMD 
 	//sanity check: memregion size cannot be greater than 128MB
-	ASSERT( memregion_size < (PAGE_SIZE_4K * 8 * PAGE_SIZE_4K) );
+	HALT_ON_ERRORCOND( memregion_size < (PAGE_SIZE_4K * 8 * PAGE_SIZE_4K) );
 	
 	{
 		u32 memregion_paligned_paddr_start;
@@ -313,7 +313,7 @@ static u32 svm_eap_early_initialize(u32 protected_buffer_paddr,
 	  }
 	  
 	  //sanity check: dev_bitmap_paddr MUST be page aligned
-	  ASSERT(!(dev_bitmap_paddr & 0x00000FFF));
+	  HALT_ON_ERRORCOND(!(dev_bitmap_paddr & 0x00000FFF));
 	  
 	  //now make sure the protected buffer (4K in our case) is set to all 1's
 		//effectively preventing DMA reads and writes from memregion_paligned_paddr_start
@@ -338,7 +338,7 @@ static u32 svm_eap_dev_read(u32 function, u32 index){
 
 
 	//sanity check on DEV registers
-	ASSERT(_svm_eap.dev_hdr_reg != 0 && _svm_eap.dev_fnidx_reg !=0 && _svm_eap.dev_data_reg != 0);
+	HALT_ON_ERRORCOND(_svm_eap.dev_hdr_reg != 0 && _svm_eap.dev_fnidx_reg !=0 && _svm_eap.dev_data_reg != 0);
 
 	//step-1: write function and index to dev_fnidx_reg
 	//format of dev_fnidx_reg is in AMD Dev. Vol2 (p. 407)
@@ -361,7 +361,7 @@ static u32 svm_eap_dev_read(u32 function, u32 index){
 static void svm_eap_dev_write(u32 function, u32 index, u32 value){
 	
 	//sanity check on DEV registers
-	ASSERT(_svm_eap.dev_hdr_reg != 0 && _svm_eap.dev_fnidx_reg !=0 && _svm_eap.dev_data_reg != 0);
+	HALT_ON_ERRORCOND(_svm_eap.dev_hdr_reg != 0 && _svm_eap.dev_fnidx_reg !=0 && _svm_eap.dev_data_reg != 0);
 
 	//step-1: write function and index to dev_fnidx_reg
 	//format of dev_fnidx_reg is in AMD Dev. Vol2 (p. 407)
@@ -382,7 +382,7 @@ static void svm_eap_dev_set_page_protection(u32 pfn, u8 *bit_vector){
   u32 byte_offset, bit_offset;
 
 	//sanity check
-	ASSERT ( bit_vector != NULL );
+	HALT_ON_ERRORCOND ( bit_vector != NULL );
 
   byte_offset = pfn / 8;
   bit_offset = pfn & 7;
@@ -429,9 +429,9 @@ u32 emhf_dmaprot_arch_x86svm_earlyinitialize(u64 protectedbuffer_paddr,
 	u32 status;
 	
 	//sanity check: protected DEV buffer MUST be page-aligned
-	ASSERT(!(protectedbuffer_paddr & 0x00000FFF));
-	ASSERT(!(protectedbuffer_vaddr & 0x00000FFF));
-	ASSERT(protectedbuffer_size >= (PAGE_SIZE_4K * 2));
+	HALT_ON_ERRORCOND(!(protectedbuffer_paddr & 0x00000FFF));
+	HALT_ON_ERRORCOND(!(protectedbuffer_vaddr & 0x00000FFF));
+	HALT_ON_ERRORCOND(protectedbuffer_size >= (PAGE_SIZE_4K * 2));
 	
 	printf("\nSL: initializing SVM DMA protection...");
 
@@ -463,7 +463,7 @@ u32 emhf_dmaprot_arch_x86svm_initialize(u64 protectedbuffer_paddr,
 
 	u32 status;
 	
-	ASSERT(protectedbuffer_size >= 131072);	//we need 128K 
+	HALT_ON_ERRORCOND(protectedbuffer_size >= 131072);	//we need 128K 
 
 	status=svm_eap_initialize(protectedbuffer_paddr, protectedbuffer_vaddr);
 	

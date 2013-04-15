@@ -52,7 +52,7 @@
 
 //initialize SMP guest logic
 void emhf_smpguest_arch_initialize(VCPU *vcpu){
-	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
 #if defined(__MP_VERSION__)	
 	//TODOs:
@@ -97,7 +97,7 @@ void emhf_smpguest_arch_initialize(VCPU *vcpu){
 //handle LAPIC access #DB (single-step) exception event
 void emhf_smpguest_arch_x86_eventhandler_dbexception(VCPU *vcpu, 
 	struct regs *r){
-	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
 		emhf_smpguest_arch_x86svm_eventhandler_dbexception(vcpu, r);
 	}else{	//CPU_VENDOR_INTEL
@@ -107,7 +107,7 @@ void emhf_smpguest_arch_x86_eventhandler_dbexception(VCPU *vcpu,
 
 //handle LAPIC access #NPF (nested page fault) event
 void emhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 gpa, u32 errorcode){
-	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
 		emhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
 	}else{	//CPU_VENDOR_INTEL
@@ -118,7 +118,7 @@ void emhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 gpa, u
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
 void emhf_smpguest_arch_x86_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
-	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
 		emhf_smpguest_arch_x86svm_eventhandler_nmiexception(vcpu, r);
 	}else{	//CPU_VENDOR_INTEL
@@ -128,7 +128,7 @@ void emhf_smpguest_arch_x86_eventhandler_nmiexception(VCPU *vcpu, struct regs *r
 
 //perform required setup after a guest awakens a new CPU
 void emhf_smpguest_arch_x86_postCPUwakeup(VCPU *vcpu){
-	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
 		emhf_smpguest_arch_x86svm_postCPUwakeup(vcpu);
@@ -141,7 +141,7 @@ void emhf_smpguest_arch_x86_postCPUwakeup(VCPU *vcpu){
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping
 u8 * emhf_smpguest_arch_walk_pagetables(VCPU *vcpu, u32 vaddr){
-	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
 		return emhf_smpguest_arch_x86svm_walk_pagetables(vcpu, vaddr);
@@ -152,7 +152,7 @@ u8 * emhf_smpguest_arch_walk_pagetables(VCPU *vcpu, u32 vaddr){
 
 //quiesce interface to switch all guest cores into hypervisor mode
 void emhf_smpguest_arch_quiesce(VCPU *vcpu){
-	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
 		emhf_smpguest_arch_x86svm_quiesce(vcpu);
 	}else{	//CPU_VENDOR_INTEL
@@ -162,7 +162,7 @@ void emhf_smpguest_arch_quiesce(VCPU *vcpu){
 
 //endquiesce interface to resume all guest cores after a quiesce
 void emhf_smpguest_arch_endquiesce(VCPU *vcpu){
-	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
 		emhf_smpguest_arch_x86svm_endquiesce(vcpu);
 	}else{	//CPU_VENDOR_INTEL

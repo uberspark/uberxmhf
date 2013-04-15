@@ -118,7 +118,7 @@ static void _svm_initSVM(VCPU *vcpu){
 //---svm int 15 hook enabling function------------------------------------------
 static void	_svm_int15_initializehook(VCPU *vcpu){
 	//we should only be called from the BSP
-	ASSERT(vcpu->isbsp);
+	HALT_ON_ERRORCOND(vcpu->isbsp);
 	
 	{
 		u8 *bdamemory = (u8 *)0x4AC;				//use BDA reserved memory at 0040:00AC

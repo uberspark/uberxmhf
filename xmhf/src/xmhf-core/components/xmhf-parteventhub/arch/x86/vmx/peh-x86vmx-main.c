@@ -100,7 +100,7 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 			(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM) ){
 		u8 *bdamemoryphysical;
 		bdamemoryphysical = (u8 *)emhf_smpguest_arch_x86vmx_walk_pagetables(vcpu, (u32)bdamemory);
-		ASSERT( (u32)bdamemoryphysical != 0xFFFFFFFFUL );
+		HALT_ON_ERRORCOND( (u32)bdamemoryphysical != 0xFFFFFFFFUL );
 		printf("\nINT15 (E820): V86 mode, bdamemory translated from %08x to %08x",
 			(u32)bdamemory, (u32)bdamemoryphysical);
 		bdamemory = bdamemoryphysical; 		
@@ -116,8 +116,8 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		printf("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", vcpu->id, 
 		(u16)r->eax, r->edx, r->ebx, r->ecx, (u16)vcpu->vmcs.guest_ES_selector, (u16)r->edi);
 		
-		ASSERT(r->edx == 0x534D4150UL);  //'SMAP' should be specified by guest
-		ASSERT(r->ebx < rpb->XtVmmE820NumEntries); //invalid continuation value specified by guest!
+		HALT_ON_ERRORCOND(r->edx == 0x534D4150UL);  //'SMAP' should be specified by guest
+		HALT_ON_ERRORCOND(r->ebx < rpb->XtVmmE820NumEntries); //invalid continuation value specified by guest!
 			
 		//copy the e820 descriptor and return its size in ECX
 		memcpy((void *)((u32)((vcpu->vmcs.guest_ES_base)+(u16)r->edi)), (void *)&g_e820map[r->ebx],
@@ -147,7 +147,7 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 			if( (vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG) &&
 					(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM) ){
 				u8 *gueststackregionphysical = (u8 *)emhf_smpguest_arch_x86vmx_walk_pagetables(vcpu, (u32)gueststackregion);
-				ASSERT( (u32)gueststackregionphysical != 0xFFFFFFFFUL );
+				HALT_ON_ERRORCOND( (u32)gueststackregionphysical != 0xFFFFFFFFUL );
 				printf("\nINT15 (E820): V86 mode, gueststackregion translated from %08x to %08x",
 					(u32)gueststackregion, (u32)gueststackregionphysical);
 				gueststackregion = (u16 *)gueststackregionphysical; 		
@@ -247,8 +247,8 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		printf("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", vcpu->id, 
 		(u16)r->eax, r->edx, r->ebx, r->ecx, (u16)vcpu->vmcs.guest_ES_selector, (u16)r->edi);
 		
-		//ASSERT(r->edx == 0x534D4150UL);  //'SMAP' should be specified by guest
-		//ASSERT(r->ebx < rpb->XtVmmE820NumEntries); //invalid continuation value specified by guest!
+		//HALT_ON_ERRORCOND(r->edx == 0x534D4150UL);  //'SMAP' should be specified by guest
+		//HALT_ON_ERRORCOND(r->ebx < rpb->XtVmmE820NumEntries); //invalid continuation value specified by guest!
 		if( (r->edx == 0x534D4150UL) && (r->ebx < rpb->XtVmmE820NumEntries) ){
 			
 			//copy the e820 descriptor and return its size in ECX
@@ -516,7 +516,7 @@ static void _vmx_handle_intercept_ioportaccess(VCPU *vcpu, struct regs *r){
 	portnum =  ((u32)vcpu->vmcs.info_exit_qualification & 0xFFFF0000UL) >> 16;
 	stringio = ((u32)vcpu->vmcs.info_exit_qualification & 0x00000010UL) >> 4;
 	
-  ASSERT(!stringio);	//we dont handle string IO intercepts
+  HALT_ON_ERRORCOND(!stringio);	//we dont handle string IO intercepts
 
   //call our app handler, TODO: it should be possible for an app to
   //NOT want a callback by setting up some parameters during appmain
@@ -559,7 +559,7 @@ static void _vmx_handle_intercept_ioportaccess(VCPU *vcpu, struct regs *r){
 static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gpr, u32 tofrom){
 	u32 cr0_value;
 	
-	ASSERT(tofrom == VMX_CRX_ACCESS_TO);
+	HALT_ON_ERRORCOND(tofrom == VMX_CRX_ACCESS_TO);
 	
 	cr0_value = *((u32 *)_vmx_decode_reg(gpr, vcpu, r));
 
@@ -622,7 +622,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 				vcpu->vmcs.guest_RIP == VMX_UG_E820HOOK_IP){
 				//assertions, we need to be either in real-mode or in protected
 				//mode with paging and EFLAGS.VM bit set (virtual-8086 mode)
-				ASSERT( !(vcpu->vmcs.guest_CR0 & CR0_PE)  ||
+				HALT_ON_ERRORCOND( !(vcpu->vmcs.guest_CR0 & CR0_PE)  ||
 					( (vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG) &&
 						(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM)  ) );
 				_vmx_int15_handleintercept(vcpu, r);	

@@ -97,7 +97,7 @@ NTSTATUS txrxfifo_free(void){
 NTSTATUS txrxfifo_txfifo_add(UCHAR *payload, ULONG length){
 	PTXRXFIFOENTRY pTxEntry;
 	
-	ASSERT(payload != NULL && length <= ETH_MAX_PACKET_SIZE );
+	HALT_ON_ERRORCOND(payload != NULL && length <= ETH_MAX_PACKET_SIZE );
 	
 	//allocate memory for a Tx FIFO entry
 	pTxEntry = (PTXRXFIFOENTRY) ExAllocatePoolWithTag( NonPagedPool, 
@@ -126,7 +126,7 @@ NTSTATUS txrxfifo_txfifo_add(UCHAR *payload, ULONG length){
 NTSTATUS txrxfifo_txfifo_remove(UCHAR *buffer, ULONG *length){
 	PTXRXFIFOENTRY pTxEntry;
 	
-	ASSERT(buffer != NULL && length != NULL);
+	HALT_ON_ERRORCOND(buffer != NULL && length != NULL);
 		
 	pTxEntry = (PTXRXFIFOENTRY) ExInterlockedRemoveHeadList(&pTxfifohead->ListEntry, 
 																&txfifoLock);
@@ -148,7 +148,7 @@ NTSTATUS txrxfifo_txfifo_remove(UCHAR *buffer, ULONG *length){
 NTSTATUS txrxfifo_rxfifo_add(UCHAR *payload, ULONG length){
 	PTXRXFIFOENTRY pRxEntry;
 	
-	ASSERT(payload != NULL && length <= ETH_MAX_PACKET_SIZE );
+	HALT_ON_ERRORCOND(payload != NULL && length <= ETH_MAX_PACKET_SIZE );
 	
 	//allocate memory for a Tx FIFO entry
 	pRxEntry = (PTXRXFIFOENTRY) ExAllocatePoolWithTag( NonPagedPool, 
@@ -176,7 +176,7 @@ NTSTATUS txrxfifo_rxfifo_add(UCHAR *payload, ULONG length){
 NTSTATUS txrxfifo_rxfifo_remove(UCHAR *buffer, ULONG *length){
 	PTXRXFIFOENTRY pRxEntry;
 	
-	ASSERT(buffer != NULL && length != NULL);
+	HALT_ON_ERRORCOND(buffer != NULL && length != NULL);
 		
 	pRxEntry = (PTXRXFIFOENTRY) ExInterlockedRemoveHeadList(&pRxfifohead->ListEntry, 
 																&rxfifoLock);

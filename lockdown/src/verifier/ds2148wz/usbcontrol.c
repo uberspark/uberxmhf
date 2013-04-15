@@ -209,7 +209,7 @@ void USBHandleControlTransfer(U8 bEP, U8 bEPStat)
 		DataIn();
 	}
 	else {
-		ASSERT(FALSE);
+		HALT_ON_ERRORCOND(FALSE);
 	}
 }
 
@@ -223,8 +223,8 @@ void USBHandleControlTransfer(U8 bEP, U8 bEPStat)
  */
 void USBRegisterRequestHandler(int iType, TFnHandleRequest *pfnHandler, U8 *pbDataStore)
 {
-	ASSERT(iType >= 0);
-	ASSERT(iType < 4);
+	HALT_ON_ERRORCOND(iType >= 0);
+	HALT_ON_ERRORCOND(iType < 4);
 	apfnReqHandlers[iType] = pfnHandler;
 	apbDataStore[iType] = pbDataStore;
 }

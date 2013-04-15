@@ -67,7 +67,7 @@ extern whitelist_entry_t *whitelist;
  * TODO: Consolidate.
  */
 static inline bool pcr_is_selected(tpm_pcr_selection_t *tpmsel, uint32_t i) {
-  ASSERT(NULL != tpmsel);
+  HALT_ON_ERRORCOND(NULL != tpmsel);
 		
   if(i/8 >= tpmsel->size_of_select) return false;
 
@@ -76,7 +76,7 @@ static inline bool pcr_is_selected(tpm_pcr_selection_t *tpmsel, uint32_t i) {
 
 static void dump_pcr_info_short(tpm_pcr_info_short_t *info) {
   unsigned int i;
-  ASSERT(NULL != info);
+  HALT_ON_ERRORCOND(NULL != info);
 
   /* pcr_selection */
   eu_trace("selected PCRs:");
@@ -102,7 +102,7 @@ static void dump_pcr_info_short(tpm_pcr_info_short_t *info) {
 }
 
 static void dump_nv_data_public(tpm_nv_data_public_t *pub) {
-  ASSERT(NULL != pub);
+  HALT_ON_ERRORCOND(NULL != pub);
 
   eu_trace("nvIndex              "
           "0x%08x", pub->nv_index);
@@ -140,7 +140,7 @@ static int validate_nv_access_controls(unsigned int locality,
   /* Basic sanity-check to protect logic below; we really don't ever
    * expect anything outside of 1--3, and we will probably only ever
    * use 2. */
-  ASSERT(locality <= 4);
+  HALT_ON_ERRORCOND(locality <= 4);
 
   EU_CHKN( rv = tpm_get_nv_data_public(locality, idx, &pub));
 
@@ -265,8 +265,8 @@ int trustvisor_nv_get_mss(unsigned int locality, uint32_t idx,
                           uint8_t *mss, unsigned int mss_size) {
   int rv = 1;
 
-  ASSERT(NULL != mss);
-  ASSERT(mss_size >= 20); /* Sanity-check security level wrt SHA-1 */
+  HALT_ON_ERRORCOND(NULL != mss);
+  HALT_ON_ERRORCOND(mss_size >= 20); /* Sanity-check security level wrt SHA-1 */
 
   eu_trace("locality %d, idx 0x%08x, mss@%p, mss_size %d",
            locality, idx, mss, mss_size);

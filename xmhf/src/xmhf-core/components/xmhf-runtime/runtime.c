@@ -112,7 +112,7 @@ void emhf_runtime_entry(void){
 				protectedbuffer_paddr = hva2spa(&g_rntm_dmaprot_buffer);
 				protectedbuffer_vaddr = (u32)&g_rntm_dmaprot_buffer;
 				protectedbuffer_size = emhf_dmaprot_getbuffersize(ADDR_4GB);
-				ASSERT(protectedbuffer_size <= SIZE_G_RNTM_DMAPROT_BUFFER);
+				HALT_ON_ERRORCOND(protectedbuffer_size <= SIZE_G_RNTM_DMAPROT_BUFFER);
 				
 				printf("\nRuntime: Re-initializing DMA protection...");
 				if(!emhf_dmaprot_initialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size)){
@@ -154,7 +154,7 @@ void emhf_runtime_entry(void){
 
 
 	printf("\nRuntime: We should NEVER get here!");
-	ASSERT(0);
+	HALT_ON_ERRORCOND(0);
 	HALT();
 
 }

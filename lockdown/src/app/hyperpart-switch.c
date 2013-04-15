@@ -263,7 +263,7 @@ void ACPIInitializeRegisters(void){
 	//	gas->address_space_id, gas->register_bit_width, gas->register_bit_offset,
 	//			gas->access_size, gas->address);
 	//printf("\nRESET VALUE=0x%02x", fadt->reset_value);
-	ASSERT(gas->address && gas->address_space_id && (gas->register_bit_width == 8) &&
+	HALT_ON_ERRORCOND(gas->address && gas->address_space_id && (gas->register_bit_width == 8) &&
 			(gas->register_bit_offset == 0) );
 	__acpi_reset_reg = (u32)gas->address;
 	__acpi_reset_reg_val = 	fadt->reset_value;		

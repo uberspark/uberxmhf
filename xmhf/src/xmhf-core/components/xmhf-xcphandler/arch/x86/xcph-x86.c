@@ -63,7 +63,7 @@ static VCPU *_svm_getvcpu(void){
   
   //read LAPIC id of this core
   rdmsr(MSR_APIC_BASE, &eax, &edx);
-  ASSERT( edx == 0 ); //APIC is below 4G
+  HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
   eax &= (u32)0xFFFFF000UL;
   lapic_reg = (u32 *)((u32)eax+ (u32)LAPIC_ID);
   lapic_id = *lapic_reg;
@@ -91,7 +91,7 @@ static VCPU *_vmx_getvcpu(void){
   
   //read LAPIC id of this core
   rdmsr(MSR_APIC_BASE, &eax, &edx);
-  ASSERT( edx == 0 ); //APIC is below 4G
+  HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
   eax &= (u32)0xFFFFF000UL;
   lapic_reg = (u32 *)((u32)eax+ (u32)LAPIC_ID);
   lapic_id = *lapic_reg;

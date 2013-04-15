@@ -159,7 +159,7 @@ void send_init_ipi_to_all_APs(void) {
   
     //read LAPIC base address from MSR
     rdmsr(MSR_APIC_BASE, &eax, &edx);
-    ASSERT( edx == 0 ); //APIC is below 4G
+    HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
     printf("\nLAPIC base and status=0x%08x", eax);
     
     icr = (u32 *) (((u32)eax & 0xFFFFF000UL) + 0x300);
@@ -611,7 +611,7 @@ static bool svm_prepare_cpu(void)
 //slbase= physical memory address of start of sl
 void do_drtm(VCPU __attribute__((unused))*vcpu, u32 slbase){
 #ifdef __MP_VERSION__
-    ASSERT(vcpu->id == 0);
+    HALT_ON_ERRORCOND(vcpu->id == 0);
     //send INIT IPI to all APs 
     send_init_ipi_to_all_APs();
     printf("\nINIT(early): sent INIT IPI to APs");
@@ -707,7 +707,7 @@ void wakeupAPs(void){
   
     //read LAPIC base address from MSR
     rdmsr(MSR_APIC_BASE, &eax, &edx);
-    ASSERT( edx == 0 ); //APIC is below 4G
+    HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
     //printf("\nLAPIC base and status=0x%08x", eax);
     
     icr = (u32 *) (((u32)eax & 0xFFFFF000UL) + 0x300);
@@ -840,7 +840,7 @@ void cstartup(multiboot_info_t *mbi){
     //relocate the hypervisor binary to the above calculated address
     memcpy((void*)hypervisor_image_baseaddress, (void*)mod_array[0].mod_start, sl_rt_size);
 
-    ASSERT(sl_rt_size > 0x200000); /* 2M */
+    HALT_ON_ERRORCOND(sl_rt_size > 0x200000); /* 2M */
 
     /* runtime */
     print_hex("    INIT(early): *UNTRUSTED* gold runtime: ",
@@ -868,7 +868,7 @@ void cstartup(multiboot_info_t *mbi){
     {
         //"sl" parameter block is at hypervisor_image_baseaddress + 0x10000
         slpb = (SL_PARAMETER_BLOCK *)((u32)hypervisor_image_baseaddress + 0x10000);
-        ASSERT(slpb->magic == SL_PARAMETER_BLOCK_MAGIC);
+        HALT_ON_ERRORCOND(slpb->magic == SL_PARAMETER_BLOCK_MAGIC);
         slpb->errorHandler = 0;
         slpb->isEarlyInit = 1;    //this is an "early" init
         slpb->numE820Entries = grube820list_numentries;
@@ -939,7 +939,7 @@ u32 isbsp(void){
     u32 eax, edx;
     //read LAPIC base address from MSR
     rdmsr(MSR_APIC_BASE, &eax, &edx);
-    ASSERT( edx == 0 ); //APIC is below 4G
+    HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
   
     if(eax & 0x100)
         return 1;
@@ -974,7 +974,7 @@ u32 lock_cpus_active=1; //spinlock to access the above
 //all cores enter here 
 void mp_cstartup (VCPU *vcpu){
     //sanity, we should be an Intel or AMD core
-    ASSERT(vcpu->cpu_vendor == CPU_VENDOR_INTEL ||
+    HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL ||
            vcpu->cpu_vendor == CPU_VENDOR_AMD);
 
     if(isbsp()){

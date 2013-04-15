@@ -186,9 +186,9 @@ void emhf_baseplatform_arch_x86_pci_type1_read(u32 bus, u32 device, u32 function
 			u32 *value){
         
 	//sanity checks
-	ASSERT( bus <= 255 );
-  ASSERT( PCI_DEVICE_FN(device,function) <= 255 );
-  ASSERT( index <= 4095 );
+	HALT_ON_ERRORCOND( bus <= 255 );
+  HALT_ON_ERRORCOND( PCI_DEVICE_FN(device,function) <= 255 );
+  HALT_ON_ERRORCOND( index <= 4095 );
   
   //encode and send the 32-bit type-1 address to PCI address port
 	outl(PCI_TYPE1_ADDRESS(bus, device, function, index), PCI_CONFIG_ADDR_PORT);
@@ -218,9 +218,9 @@ void emhf_baseplatform_arch_x86_pci_type1_write(u32 bus, u32 device, u32 functio
 	u32 value){
 
  	//sanity checks
-	ASSERT( bus <= 255 );
-  ASSERT( PCI_DEVICE_FN(device,function) <= 255 );
-  ASSERT( index <= 4095 );
+	HALT_ON_ERRORCOND( bus <= 255 );
+  HALT_ON_ERRORCOND( PCI_DEVICE_FN(device,function) <= 255 );
+  HALT_ON_ERRORCOND( index <= 4095 );
 
   //encode and send the 32-bit type-1 address to PCI address port
 	outl(PCI_TYPE1_ADDRESS(bus, device, function, index), PCI_CONFIG_ADDR_PORT);

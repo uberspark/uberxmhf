@@ -88,7 +88,7 @@ static void _vtd_setuppagetables(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
   ptphysaddr=vtd_pts_paddr;
   
   //ensure PDPT, PDTs and PTs are all page-aligned
-  ASSERT( !(pdptphysaddr & 0x00000FFFUL) && !(pdtphysaddr & 0x00000FFFUL) && !((ptphysaddr & 0x00000FFFUL)) );
+  HALT_ON_ERRORCOND( !(pdptphysaddr & 0x00000FFFUL) && !(pdtphysaddr & 0x00000FFFUL) && !((ptphysaddr & 0x00000FFFUL)) );
 
 	//initialize our local variables 
 	l_vtd_pdpt_paddr = vtd_pdpt_paddr;
@@ -145,7 +145,7 @@ static void _vtd_setupRETCET(u32 vtd_pdpt_paddr, u32 vtd_ret_paddr, u32 vtd_ret_
   cetphysaddr=vtd_cet_paddr;
 
 	//sanity check that pdpt base address is page-aligned
-	ASSERT( !(vtd_pdpt_paddr & 0x00000FFFUL) );
+	HALT_ON_ERRORCOND( !(vtd_pdpt_paddr & 0x00000FFFUL) );
 	
   //initialize RET  
   for(i=0; i < PCI_BUS_MAX; i++){
@@ -154,7 +154,7 @@ static void _vtd_setupRETCET(u32 vtd_pdpt_paddr, u32 vtd_ret_paddr, u32 vtd_ret_
     *value=(u64) (cetphysaddr +(i * PAGE_SIZE_4K));
     
     //sanity check that CET is page aligned
-    ASSERT( !(*value & 0x0000000000000FFFULL) );
+    HALT_ON_ERRORCOND( !(*value & 0x0000000000000FFFULL) );
 
 		//set it to present
     *value |= 0x1ULL;
@@ -189,7 +189,7 @@ static void _vtd_setupRETCET(u32 vtd_pdpt_paddr, u32 vtd_ret_paddr, u32 vtd_ret_
 static void _vtd_setupRETCET_bootstrap(u32 vtd_ret_paddr, u32 vtd_ret_vaddr, u32 vtd_cet_paddr, u32 vtd_cet_vaddr){
   
 	//sanity check that RET and CET are page-aligned
-	ASSERT( !(vtd_ret_paddr & 0x00000FFFUL) && !(vtd_cet_paddr & 0x00000FFFUL) );
+	HALT_ON_ERRORCOND( !(vtd_ret_paddr & 0x00000FFFUL) && !(vtd_cet_paddr & 0x00000FFFUL) );
 	
 	//zero out CET, we dont require it for bootstrapping
 	memset((void *)vtd_cet_vaddr, 0, PAGE_SIZE_4K);
@@ -299,7 +299,7 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
   VTD_IOTLB_REG iotlb;
   
   //sanity check
-	ASSERT(drhd != NULL);
+	HALT_ON_ERRORCOND(drhd != NULL);
 
 	
 	//1. verify required capabilities
@@ -325,7 +325,7 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
     }
 
 		//sanity check number of domains (if unsupported we bail out)
-    ASSERT(cap.bits.nd != 0x7);
+    HALT_ON_ERRORCOND(cap.bits.nd != 0x7);
     
     #if 0	//unfortunately this support is not mainstream yet, unsupported on HP8540p-corei5
     //check for super-page support (at least 2M page mapping support)
@@ -367,7 +367,7 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
 	printf("\n	Disabling DRHD...");
   {
 		gcmd.value=0;	//disable translation
-	  ASSERT( gcmd.bits.te == 0);	
+	  HALT_ON_ERRORCOND( gcmd.bits.te == 0);	
 	  _vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
 	  _vtd_reg(drhd, VTD_REG_READ, VTD_GSTS_REG_OFF, (void *)&gsts.value);
 	    
@@ -682,7 +682,7 @@ void vmx_eap_zap(void){
 
 	//get ACPI RSDP
 	status=emhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
-	ASSERT(status != 0);	//we need a valid RSDP to proceed
+	HALT_ON_ERRORCOND(status != 0);	//we need a valid RSDP to proceed
 	printf("\n%s: RSDP at %08x", __FUNCTION__, status);
 
 	//grab ACPI RSDT
@@ -692,7 +692,7 @@ void vmx_eap_zap(void){
 
 	//get the RSDT entry list
 	num_rsdtentries = (rsdt.length - sizeof(ACPI_RSDT))/ sizeof(u32);
-	ASSERT(num_rsdtentries < ACPI_MAX_RSDT_ENTRIES);
+	HALT_ON_ERRORCOND(num_rsdtentries < ACPI_MAX_RSDT_ENTRIES);
 	emhf_baseplatform_arch_flat_copy((u8 *)&rsdtentries, (u8 *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
 			sizeof(u32)*num_rsdtentries);			
 	printf("\n%s: RSDT entry list at %08x, len=%u", __FUNCTION__,
@@ -757,7 +757,7 @@ static u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 
   //get ACPI RSDP
   status=emhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
-  ASSERT(status != 0);	//we need a valid RSDP to proceed
+  HALT_ON_ERRORCOND(status != 0);	//we need a valid RSDP to proceed
   printf("\n%s: RSDP at %08x", __FUNCTION__, status);
   
 	//grab ACPI RSDT
@@ -767,7 +767,7 @@ static u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 	
 	//get the RSDT entry list
 	num_rsdtentries = (rsdt.length - sizeof(ACPI_RSDT))/ sizeof(u32);
-	ASSERT(num_rsdtentries < ACPI_MAX_RSDT_ENTRIES);
+	HALT_ON_ERRORCOND(num_rsdtentries < ACPI_MAX_RSDT_ENTRIES);
 	emhf_baseplatform_arch_flat_copy((u8 *)&rsdtentries, (u8 *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
 			sizeof(u32)*num_rsdtentries);			
   printf("\n%s: RSDT entry list at %08x, len=%u", __FUNCTION__,
@@ -802,7 +802,7 @@ static u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
     switch(type){
       case  0:  //DRHD
         printf("\nDRHD at %08x, len=%u bytes", (u32)(remappingstructuresaddrphys+i), length);
-        ASSERT(vtd_num_drhd < VTD_MAX_DRHD);
+        HALT_ON_ERRORCOND(vtd_num_drhd < VTD_MAX_DRHD);
 				emhf_baseplatform_arch_flat_copy((u8 *)&vtd_drhd[vtd_num_drhd], (u8 *)(remappingstructuresaddrphys+i), length);
         vtd_num_drhd++;
         i+=(u32)length;
@@ -888,7 +888,7 @@ u32 emhf_dmaprot_arch_x86vmx_earlyinitialize(u64 protectedbuffer_paddr, u32 prot
 	printf("\nSL: Bootstrapping VMX DMA protection...");
 			
 	//we use 3 pages for Vt-d bootstrapping
-	ASSERT(protectedbuffer_size >= (3*PAGE_SIZE_4K));
+	HALT_ON_ERRORCOND(protectedbuffer_size >= (3*PAGE_SIZE_4K));
 		
 	vmx_eap_vtd_pdpt_paddr = protectedbuffer_paddr; 
 	vmx_eap_vtd_pdpt_vaddr = protectedbuffer_vaddr; 
@@ -915,7 +915,7 @@ u32 emhf_dmaprot_arch_x86vmx_initialize(u64 protectedbuffer_paddr,
 	u32 vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr;
 	u32 vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr;
 
-	ASSERT(protectedbuffer_size >= (PAGE_SIZE_4K + (PAGE_SIZE_4K * PAE_PTRS_PER_PDPT) 
+	HALT_ON_ERRORCOND(protectedbuffer_size >= (PAGE_SIZE_4K + (PAGE_SIZE_4K * PAE_PTRS_PER_PDPT) 
 					+ (PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT) + PAGE_SIZE_4K +
 					(PAGE_SIZE_4K * PCI_BUS_MAX)) );
 	
@@ -944,9 +944,9 @@ void emhf_dmaprot_arch_x86vmx_protect(u32 start_paddr, u32 size){
   end_paddr = PAGE_ALIGN_4K(start_paddr + size);
   
   //sanity check
-  ASSERT( (l_vtd_pdpt_paddr != 0) && (l_vtd_pdpt_vaddr != 0) );
-  ASSERT( (l_vtd_pdts_paddr != 0) && (l_vtd_pdts_vaddr != 0) );
-  ASSERT( (l_vtd_pts_paddr != 0) && (l_vtd_pts_vaddr != 0) );
+  HALT_ON_ERRORCOND( (l_vtd_pdpt_paddr != 0) && (l_vtd_pdpt_vaddr != 0) );
+  HALT_ON_ERRORCOND( (l_vtd_pdts_paddr != 0) && (l_vtd_pdts_vaddr != 0) );
+  HALT_ON_ERRORCOND( (l_vtd_pts_paddr != 0) && (l_vtd_pts_vaddr != 0) );
   
   #ifndef __XMHF_VERIFICATION__
   for(vaddr=start_paddr; vaddr <= end_paddr; vaddr+=PAGE_SIZE_4K){

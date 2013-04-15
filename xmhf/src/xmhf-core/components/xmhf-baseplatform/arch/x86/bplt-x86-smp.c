@@ -57,7 +57,7 @@ u32 emhf_baseplatform_arch_x86_isbsp(void){
   u32 eax, edx;
   //read LAPIC base address from MSR
   rdmsr(MSR_APIC_BASE, &eax, &edx);
-  ASSERT( edx == 0 ); //APIC is below 4G
+  HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
   
   if(eax & 0x100)
     return 1;
@@ -72,7 +72,7 @@ void emhf_baseplatform_arch_x86_wakeupAPs(void){
   
   //read LAPIC base address from MSR
   rdmsr(MSR_APIC_BASE, &eax, &edx);
-  ASSERT( edx == 0 ); //APIC is below 4G
+  HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
 
 	//construct the command register address (offset 0x300)    
   icr = (u32 *) (((u32)eax & 0xFFFFF000UL) + 0x300);
@@ -126,7 +126,7 @@ void emhf_baseplatform_arch_smpinitialize(void){
   
   //grab CPU vendor
   cpu_vendor = emhf_baseplatform_arch_getcpuvendor();
-  ASSERT(cpu_vendor == CPU_VENDOR_AMD || cpu_vendor == CPU_VENDOR_INTEL);
+  HALT_ON_ERRORCOND(cpu_vendor == CPU_VENDOR_AMD || cpu_vendor == CPU_VENDOR_INTEL);
 
   
   //setup Master-ID Table (MIDTABLE)

@@ -590,14 +590,14 @@ Return Value:
         {
             DEBUGP(MP_ERROR, ("Halt timed out!!!\n"));
             DEBUGP(MP_ERROR, ("RecvWaitList = %p\n", &Adapter->RecvWaitList));
-            ASSERT(FALSE);       
+            HALT_ON_ERRORCOND(FALSE);       
         }
         
         DEBUGP(MP_INFO, ("MPHalt - waiting ...\n"));
         NdisMSleep(1000);*/        
     }
 
-    ASSERT(bDone);
+    HALT_ON_ERRORCOND(bDone);
     
 #ifdef NDIS50_MINIPORT
     //
@@ -674,7 +674,7 @@ Return Value:
 
     do
     {
-        ASSERT(!MP_TEST_FLAG(Adapter, fMP_ADAPTER_HALT_IN_PROGRESS));
+        HALT_ON_ERRORCOND(!MP_TEST_FLAG(Adapter, fMP_ADAPTER_HALT_IN_PROGRESS));
         
         if(MP_TEST_FLAG(Adapter, fMP_RESET_IN_PROGRESS))
         {
@@ -776,7 +776,7 @@ Return Value:
 
     PAGED_CODE();
 
-    ASSERT(IsListEmpty(&GlobalData.AdapterList));
+    HALT_ON_ERRORCOND(IsListEmpty(&GlobalData.AdapterList));
     NdisFreeSpinLock(&GlobalData.Lock);
     
     DEBUGP(MP_TRACE, ("<--- MPUnload\n"));   

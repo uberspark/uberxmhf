@@ -112,7 +112,7 @@ extern u32 currentenvironment;
 
 u32 check_if_LBA_outofbounds(u64 lbaaddr){
 	u32 i;
-  ASSERT(currentenvironment == LDN_ENV_TRUSTED_SIGNATURE ||
+  HALT_ON_ERRORCOND(currentenvironment == LDN_ENV_TRUSTED_SIGNATURE ||
       currentenvironment == LDN_ENV_UNTRUSTED_SIGNATURE);
 
 #if 1 

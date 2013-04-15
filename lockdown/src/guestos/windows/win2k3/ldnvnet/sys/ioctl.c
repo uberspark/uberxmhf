@@ -354,7 +354,7 @@ Return Value:
 
     NIC_ACQUIRE_MUTEX(&ControlDeviceMutex);
 
-    ASSERT(MiniportCount > 0);
+    HALT_ON_ERRORCOND(MiniportCount > 0);
 
     --MiniportCount;
     

@@ -339,8 +339,8 @@ void NICFreeAdapter(
 
     PAGED_CODE();
 
-    ASSERT(Adapter);
-    ASSERT(!Adapter->RefCount);
+    HALT_ON_ERRORCOND(Adapter);
+    HALT_ON_ERRORCOND(!Adapter->RefCount);
     
     /*//
     // Free all the resources we allocated for send.
@@ -367,9 +367,9 @@ void NICFreeAdapter(
     }
 
     NdisFreeMemory(Adapter->TCBMem, sizeof(TCB) * NIC_MAX_BUSY_SENDS, 0);
-    ASSERT(IsListEmpty(&Adapter->SendFreeList));                  
-    ASSERT(IsListEmpty(&Adapter->RecvWaitList));                  
-    ASSERT(IsListEmpty(&Adapter->SendWaitList)); */                 
+    HALT_ON_ERRORCOND(IsListEmpty(&Adapter->SendFreeList));                  
+    HALT_ON_ERRORCOND(IsListEmpty(&Adapter->RecvWaitList));                  
+    HALT_ON_ERRORCOND(IsListEmpty(&Adapter->SendWaitList)); */                 
     NdisFreeSpinLock(&Adapter->SendLock);
 
     //
@@ -399,7 +399,7 @@ void NICFreeAdapter(
         NdisFreePacketPool(Adapter->RecvPacketPoolHandle);
     }
 
-    ASSERT(IsListEmpty(&Adapter->RecvFreeList));*/                  
+    HALT_ON_ERRORCOND(IsListEmpty(&Adapter->RecvFreeList));*/                  
     NdisFreeSpinLock(&Adapter->RecvLock);
 
     //

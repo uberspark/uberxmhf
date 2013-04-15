@@ -485,7 +485,7 @@ u32 windows_verifycodeintegrity(VCPU *vcpu, u32 paddr, u32 vaddrfromcpu){
 	if( (vaddr & (u32)0x00000FFF) != (paddr & (u32)0x00000FFF) ){
 	 	//need to adjust paddr
 	 	paddr = windows_getphysicaladdress(vcpu, vaddr);
-	 	ASSERT(paddr != 0xFFFFFFFFUL);
+	 	HALT_ON_ERRORCOND(paddr != 0xFFFFFFFFUL);
 	}
 	
 	AX_DEBUG(("\nstep-1: paddr=0x%08x, vaddr=0x%08x", paddr, vaddr));

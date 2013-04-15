@@ -150,7 +150,7 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 		emhf_iopm_set_write(vcpu, PCI_CONFIG_DATA_PORT, 2); //16-bit port
 		#endif
 	}else{	//we are going to run the untrusted environment
-		ASSERT( currentenvironment == LDN_ENV_UNTRUSTED_SIGNATURE);
+		HALT_ON_ERRORCOND( currentenvironment == LDN_ENV_UNTRUSTED_SIGNATURE);
 	
 		/*//TODO:make EPT entries such that they map 2M pages for the untrusted
 		//environment in order to achieve greatest speedup during EPT
@@ -317,7 +317,7 @@ u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
 				else
 					retval=0; //null value for all other configuration registers
 
-				ASSERT( (access_size == IO_SIZE_BYTE) || (access_size == IO_SIZE_WORD) ||
+				HALT_ON_ERRORCOND( (access_size == IO_SIZE_BYTE) || (access_size == IO_SIZE_WORD) ||
 					(access_size == IO_SIZE_DWORD) );
 				switch(access_size){
 					case IO_SIZE_BYTE: r->eax &= 0xFFFFFF00UL; r->eax |= (u8)retval; break;

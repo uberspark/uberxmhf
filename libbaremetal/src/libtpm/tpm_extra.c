@@ -1008,7 +1008,7 @@ uint32_t tpm_save_state(uint32_t locality)
             break;
 
         retries++;
-        //ASSERT(false); // XXX need delay support
+        //HALT_ON_ERRORCOND(false); // XXX need delay support
         //delay(100);
         //delay support; should probably end up using udelay (EMHF) or
         //environment specific delay routine

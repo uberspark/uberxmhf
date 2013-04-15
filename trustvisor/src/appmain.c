@@ -135,8 +135,8 @@ void parse_boot_cmdline(const char *cmdline) {
  * hypervisor initialization.
  */
 u32 tv_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
-  ASSERT(NULL != vcpu);
-  ASSERT(NULL != apb);
+  HALT_ON_ERRORCOND(NULL != vcpu);
+  HALT_ON_ERRORCOND(NULL != apb);
 
   eu_trace("CPU(0x%02x)", vcpu->id);
 

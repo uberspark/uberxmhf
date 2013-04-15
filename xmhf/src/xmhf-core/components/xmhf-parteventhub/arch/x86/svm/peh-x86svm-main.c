@@ -126,7 +126,7 @@ static void _svm_handle_ioio(VCPU *vcpu, struct _svm_vmcbfields *vmcb, struct re
 
 //---MSR intercept handling-----------------------------------------------------
 static void _svm_handle_msr(VCPU *vcpu, struct _svm_vmcbfields *vmcb, struct regs *r){
-  ASSERT( (vmcb->exitinfo1 == 0) || (vmcb->exitinfo1 == 1) );
+  HALT_ON_ERRORCOND( (vmcb->exitinfo1 == 0) || (vmcb->exitinfo1 == 1) );
   printf("\nCPU(0x%02x): MSR intercept, type=%u, MSR=0x%08x", vcpu->id,
     (u32)vmcb->exitinfo1, r->ecx);
   switch(vmcb->exitinfo1){
@@ -159,7 +159,7 @@ static void _svm_handle_npf(VCPU *vcpu, struct regs *r){
     //LAPIC access, xfer control to apropriate handler
     //printf("\n0x%04x:0x%08x -> LAPIC access, gpa=0x%08x, errorcode=0x%08x", 
     //  (u16)vmcb->cs.sel, (u32)vmcb->rip, gpa, errorcode);
-    ASSERT( vcpu->isbsp == 1); //only BSP gets a NPF during LAPIC SIPI detection
+    HALT_ON_ERRORCOND( vcpu->isbsp == 1); //only BSP gets a NPF during LAPIC SIPI detection
     //svm_lapic_access_handler(vcpu, gpa, errorcode);
     emhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
     //HALT();
@@ -231,8 +231,8 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		printf("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", vcpu->id, 
 		(u16)vmcb->rax, r->edx, r->ebx, r->ecx, (u16)vmcb->es.selector, (u16)r->edi);
 		
-		//ASSERT(r->edx == 0x534D4150UL);  //'SMAP' should be specified by guest
-		//ASSERT(r->ebx < rpb->XtVmmE820NumEntries); //invalid continuation value specified by guest!
+		//HALT_ON_ERRORCOND(r->edx == 0x534D4150UL);  //'SMAP' should be specified by guest
+		//HALT_ON_ERRORCOND(r->ebx < rpb->XtVmmE820NumEntries); //invalid continuation value specified by guest!
 		if( (r->edx == 0x534D4150UL) && (r->ebx < rpb->XtVmmE820NumEntries) ){
 			
 			//copy the e820 descriptor and return its size in ECX
@@ -394,8 +394,8 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		printf("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", vcpu->id, 
 		(u16)vmcb->rax, r->edx, r->ebx, r->ecx, (u16)vmcb->es.selector, (u16)r->edi);
 		
-		//ASSERT(r->edx == 0x534D4150UL);  //'SMAP' should be specified by guest
-		//ASSERT(r->ebx < rpb->XtVmmE820NumEntries); //invalid continuation value specified by guest!
+		//HALT_ON_ERRORCOND(r->edx == 0x534D4150UL);  //'SMAP' should be specified by guest
+		//HALT_ON_ERRORCOND(r->ebx < rpb->XtVmmE820NumEntries); //invalid continuation value specified by guest!
 		if( (r->edx == 0x534D4150UL) && (r->ebx < rpb->XtVmmE820NumEntries) ){
 			
 			//copy the e820 descriptor and return its size in ECX

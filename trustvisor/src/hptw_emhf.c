@@ -67,8 +67,8 @@ static void* hptw_emhf_host_ctx_gzp(void *vctx, size_t alignment, size_t sz)
 {
   hptw_emhf_host_ctx_t *ctx = vctx;
   pagelist_t *pl = ctx->pl;
-  ASSERT(PAGE_SIZE_4K % alignment == 0);
-  ASSERT(sz <= PAGE_SIZE_4K);
+  HALT_ON_ERRORCOND(PAGE_SIZE_4K % alignment == 0);
+  HALT_ON_ERRORCOND(sz <= PAGE_SIZE_4K);
   return pagelist_get_zeroedpage(pl);
 }
 
@@ -95,7 +95,7 @@ static hpt_pa_t hptw_emhf_checked_guest_ctx_ptr2pa(void __attribute__((unused)) 
 static void* hptw_emhf_checked_guest_ctx_pa2ptr(void *vctx, hpt_pa_t gpa, size_t sz, hpt_prot_t access_type, hptw_cpl_t cpl, size_t *avail_sz)
 {
   hptw_emhf_checked_guest_ctx_t *ctx = vctx;
-  ASSERT(ctx);
+  HALT_ON_ERRORCOND(ctx);
 
   return hptw_checked_access_va(&ctx->hptw_host_ctx.super,
                                 access_type,
@@ -109,8 +109,8 @@ static void* hptw_emhf_checked_guest_ctx_gzp(void *vctx, size_t alignment, size_
 {
   hptw_emhf_checked_guest_ctx_t *ctx = vctx;
   pagelist_t *pl = ctx->pl;
-  ASSERT(PAGE_SIZE_4K % alignment == 0);
-  ASSERT(sz <= PAGE_SIZE_4K);
+  HALT_ON_ERRORCOND(PAGE_SIZE_4K % alignment == 0);
+  HALT_ON_ERRORCOND(sz <= PAGE_SIZE_4K);
   return pagelist_get_zeroedpage(pl);
 }
 

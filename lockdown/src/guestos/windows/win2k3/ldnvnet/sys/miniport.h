@@ -146,7 +146,7 @@ extern INT MPDebugLevel;
 
 #define MP_DEC_REF(_A) {\
                             NdisInterlockedDecrement(&(_A)->RefCount);\
-                            ASSERT(_A->RefCount >= 0);\
+                            HALT_ON_ERRORCOND(_A->RefCount >= 0);\
                             if((_A)->RefCount == 0){\
                                 NdisSetEvent(&(_A)->RemoveEvent);\
                             }\

@@ -77,13 +77,13 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	
 	//linker relocates sl image starting from 0, so
     //parameter block must be at offset 0x10000    
-	ASSERT( (u32)&slpb == 0x10000 ); 
+	HALT_ON_ERRORCOND( (u32)&slpb == 0x10000 ); 
 
 	//do we have the required MAGIC?
-	ASSERT( slpb.magic == SL_PARAMETER_BLOCK_MAGIC);
+	HALT_ON_ERRORCOND( slpb.magic == SL_PARAMETER_BLOCK_MAGIC);
 	
 	//we currently only support x86 (AMD and Intel)
-	ASSERT (cpu_vendor == CPU_VENDOR_AMD || cpu_vendor == CPU_VENDOR_INTEL);
+	HALT_ON_ERRORCOND (cpu_vendor == CPU_VENDOR_AMD || cpu_vendor == CPU_VENDOR_INTEL);
 	
 	//initialize debugging early on
 	emhf_debug_init((char *)&slpb.uart_config);
@@ -179,7 +179,7 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 #endif
 
 	printf("\nSL: RPB, magic=0x%08x", rpb->magic);
-	ASSERT(rpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
+	HALT_ON_ERRORCOND(rpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
 
 
 #if defined (__DRTM_DMA_PROTECTION__)    

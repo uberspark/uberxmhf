@@ -194,7 +194,7 @@ void USBHwRegisterEPIntHandler(U8 bEP, TFnEPIntHandler *pfnHandler)
 	
 	idx = EP2IDX(bEP);
 
-	ASSERT(idx<32);
+	HALT_ON_ERRORCOND(idx<32);
 
 	//printf("%s: EP=0x%02x, IDX=%d", __FUNCTION__,  bEP, idx);
 	/* add handler to list of EP handlers */

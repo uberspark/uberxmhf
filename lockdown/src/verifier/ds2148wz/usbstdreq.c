@@ -107,7 +107,7 @@ BOOL USBGetDescriptor(U16 wTypeIndex, U16 wLangID, int *piLen, U8 **ppbData)
 	U8	*pab;
 	int iCurIndex;
 	
-	ASSERT(pabDescrip != NULL);
+	HALT_ON_ERRORCOND(pabDescrip != NULL);
 
 	bType = GET_DESC_TYPE(wTypeIndex);
 	bIndex = GET_DESC_INDEX(wTypeIndex);
@@ -162,7 +162,7 @@ static BOOL USBSetConfiguration(U8 bConfigIndex, U8 bAltSetting)
 	U8	bEP;
 	U16	wMaxPktSize;
 	
-	ASSERT(pabDescrip != NULL);
+	HALT_ON_ERRORCOND(pabDescrip != NULL);
 
 	if (bConfigIndex == 0) {
 		// unconfigure device

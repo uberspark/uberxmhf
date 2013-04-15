@@ -233,7 +233,7 @@ static u32 approvedexec_getguestpcpaddr(VCPU *vcpu){
 	//if we have paging turned on, then go through the guest page tables
 	if( (guest_cr0 & CR0_PE) && (guest_cr0 & CR0_PG) ){
 		u32 guestpcpaddr = (u32)(u32 *)emhf_smpguest_walk_pagetables(vcpu, guestpclinearaddress);
-		ASSERT(guestpcpaddr != 0xFFFFFFFFUL);
+		HALT_ON_ERRORCOND(guestpcpaddr != 0xFFFFFFFFUL);
 		return (u32)guestpcpaddr;  
 	}else{ //linear address is physical address when no paging in effect
 		return (u32)guestpclinearaddress; 

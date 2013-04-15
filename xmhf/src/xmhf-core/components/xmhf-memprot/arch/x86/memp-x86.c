@@ -52,7 +52,7 @@
 
 // initialize memory protection structures for a given core (vcpu)
 void emhf_memprot_arch_initialize(VCPU *vcpu){
-	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
 		emhf_memprot_arch_x86svm_initialize(vcpu);
 		printf("\nCPU(0x%02x): Activated SVM NPTs.", vcpu->id);
@@ -64,7 +64,7 @@ void emhf_memprot_arch_initialize(VCPU *vcpu){
 
 // get level-1 page map address
 u64 * emhf_memprot_arch_get_lvl1_pagemap_address(VCPU *vcpu){
-	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
 	if (vcpu->cpu_vendor == CPU_VENDOR_AMD)
 		return (u64 *)vcpu->npt_vaddr_pts;
@@ -74,7 +74,7 @@ u64 * emhf_memprot_arch_get_lvl1_pagemap_address(VCPU *vcpu){
 
 //get level-2 page map address
 u64 * emhf_memprot_arch_get_lvl2_pagemap_address(VCPU *vcpu){
-	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
 	if (vcpu->cpu_vendor == CPU_VENDOR_AMD)
 		return (u64 *)vcpu->npt_vaddr_pdts;
@@ -84,7 +84,7 @@ u64 * emhf_memprot_arch_get_lvl2_pagemap_address(VCPU *vcpu){
 
 //get level-3 page map address
 u64 * emhf_memprot_arch_get_lvl3_pagemap_address(VCPU *vcpu){
-	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
 	if (vcpu->cpu_vendor == CPU_VENDOR_AMD)
 		return (u64 *)vcpu->npt_vaddr_ptr;
@@ -94,14 +94,14 @@ u64 * emhf_memprot_arch_get_lvl3_pagemap_address(VCPU *vcpu){
 
 //get level-4 page map address
 u64 * emhf_memprot_arch_get_lvl4_pagemap_address(VCPU *vcpu){
-	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_INTEL);	//we don;t have a level-4 pagemap for AMD
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);	//we don;t have a level-4 pagemap for AMD
 
     return (u64 *)vcpu->vmx_vaddr_ept_pml4_table;
 }
 
 //get default root page map address
 u64 * emhf_memprot_arch_get_default_root_pagemap_address(VCPU *vcpu){
-  ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+  HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
 		return (u64*)vcpu->npt_vaddr_ptr;
@@ -112,7 +112,7 @@ u64 * emhf_memprot_arch_get_default_root_pagemap_address(VCPU *vcpu){
 
 //flush hardware page table mappings (TLB) 
 void emhf_memprot_arch_flushmappings(VCPU *vcpu){
-	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
 		emhf_memprot_arch_x86svm_flushmappings(vcpu);

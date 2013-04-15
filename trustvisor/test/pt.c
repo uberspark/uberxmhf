@@ -70,7 +70,7 @@ static u64 get_addr(u64 entry, u32 hi, u32 lo)
 }
 static u64 set_addr(u64 entry, u32 hi, u32 lo, u64 val)
 {
-	ASSERT((BR64_GET_HL(val, hi, lo) << lo) == val);
+	HALT_ON_ERRORCOND((BR64_GET_HL(val, hi, lo) << lo) == val);
 	return BR64_SET_HL(entry, hi, lo, val >> lo);
 }
 

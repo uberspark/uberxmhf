@@ -86,7 +86,7 @@
 #include <sha2.h> 
 #include <assert.h>
 /*
- * ASSERT NOTE:
+ * HALT_ON_ERRORCOND NOTE:
  * Some sanity checking code is included using assert().  On my FreeBSD
  * system, this additional code can be removed by compiling with NDEBUG
  * defined.  Check your own systems manpage on assert() to see how to

@@ -80,7 +80,7 @@ static inline hpt_type_t hpt_emhf_get_hpt_type(VCPU *vcpu)
     return HPT_TYPE_PAE;
   }
 
-  ASSERT(0);
+  HALT_ON_ERRORCOND(0);
   return HPT_TYPE_INVALID;
 }
 
@@ -99,7 +99,7 @@ static inline hpt_pa_t hpt_emhf_get_root_pm_pa(VCPU *vcpu)
     return hpt_cr3_get_address(t,
                                emhf_memprot_arch_x86svm_get_h_cr3(vcpu));
   } else {
-    ASSERT(0);
+    HALT_ON_ERRORCOND(0);
     return 0;
   }
 }
@@ -116,7 +116,7 @@ static inline void hpt_emhf_set_root_pm_pa(VCPU *vcpu, hpt_pa_t root_pa)
                                                                   emhf_memprot_arch_x86svm_get_h_cr3(vcpu),
                                                                   root_pa));
   } else {
-    ASSERT(0);
+    HALT_ON_ERRORCOND(0);
   }
 }
 

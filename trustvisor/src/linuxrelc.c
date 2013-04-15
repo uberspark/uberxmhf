@@ -126,8 +126,8 @@ void linux_store_setupandinitrd(u32 setupbase, u32 setupsize, u32 initrdbase,
 	extern u32 __linux_setup_image[], __linux_initrd_image[];
 	extern u32 __linux_kernel_cmdline_untrusted[], __linux_kernel_cmdline_trusted[];		
 	
-	ASSERT(setupsize < __LINUX_OS_SETUP_SIZE);
-	ASSERT(initrdsize < __LINUX_OS_INITRD_SIZE);
+	HALT_ON_ERRORCOND(setupsize < __LINUX_OS_SETUP_SIZE);
+	HALT_ON_ERRORCOND(initrdsize < __LINUX_OS_INITRD_SIZE);
 	
 	memcpy((void *)__linux_setup_image, setupbase, setupsize);
 	memcpy((void *)__linux_initrd_image, initrdbase, initrdsize);
@@ -172,7 +172,7 @@ void relocate_kernel(u32 vmlinuz_base, u32 vmlinuz_size,
     setup_size = h->setup_sects + 1;
   setup_size *= SECTOR_SIZE;
 
-	ASSERT(setup_size < (64*1024) );	//setup_size _MUST_ be within 64K
+	HALT_ON_ERRORCOND(setup_size < (64*1024) );	//setup_size _MUST_ be within 64K
 	printf("\n	setup at 0x%08x, size=0x%08x", setup_base, setup_size);
 
 	//copy 16-bit setup code to setup_base

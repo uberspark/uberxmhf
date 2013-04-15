@@ -736,7 +736,7 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
       /* should only fail if insufficient permissions in the guest
          page tables, which TV constructed and the PAL should not have
          been able to modify */
-      ASSERT(!err);
+      HALT_ON_ERRORCOND(!err);
     }
 
     scode_return_section( &g_hptw_reg_host_ctx.super,
@@ -1156,7 +1156,7 @@ static bool hpt_error_wasInsnFetch(VCPU *vcpu, u64 errorcode)
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     return (errorcode & EPT_ERRORCODE_EXEC);
   } else if (vcpu->cpu_vendor != CPU_VENDOR_AMD) {
-    ASSERT(0);
+    HALT_ON_ERRORCOND(0);
   }	
   return (errorcode & VMCB_NPT_ERRORCODE_ID);
 }

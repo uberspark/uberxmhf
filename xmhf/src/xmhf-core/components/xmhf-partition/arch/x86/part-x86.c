@@ -54,7 +54,7 @@
 
 //initialize partition monitor for a given CPU
 void emhf_partition_arch_initializemonitor(VCPU *vcpu){
-	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
 		emhf_partition_arch_x86svm_initializemonitor(vcpu);
@@ -66,7 +66,7 @@ void emhf_partition_arch_initializemonitor(VCPU *vcpu){
 
 //setup guest OS state for the partition
 void emhf_partition_arch_setupguestOSstate(VCPU *vcpu){
-	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
 		emhf_partition_arch_x86svm_setupguestOSstate(vcpu);
@@ -77,7 +77,7 @@ void emhf_partition_arch_setupguestOSstate(VCPU *vcpu){
 
 //start executing the partition and guest OS
 void emhf_partition_arch_start(VCPU *vcpu){
-	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
 		emhf_partition_arch_x86svm_start(vcpu);

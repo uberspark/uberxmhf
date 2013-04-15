@@ -61,7 +61,7 @@ static void _vmx_setupEPT(VCPU *vcpu);
 
 // initialize memory protection structures for a given core (vcpu)
 void emhf_memprot_arch_x86vmx_initialize(VCPU *vcpu){
-	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
 	_vmx_gathermemorytypes(vcpu);
 #ifndef __XMHF_VERIFICATION__	
@@ -107,7 +107,7 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
   		(u8)eax, ((eax & (1 << 8)) >> 8),  ((eax & (1 << 10)) >> 10),
   			((eax & (1 << 11)) >> 11));
   	//we need VCNT=8, FIX=1
-  	ASSERT( ((eax & (u32)0x000000FF) == 0x8) && ((eax & (1 << 8)) >> 8) );
+  	HALT_ON_ERRORCOND( ((eax & (u32)0x000000FF) == 0x8) && ((eax & (1 << 8)) >> 8) );
 
   #ifndef __XMHF_VERIFICATION__
   //1. clear memorytypes array
@@ -254,7 +254,7 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
 		}
 	}
 
-  ASSERT( index == MAX_MEMORYTYPE_ENTRIES);
+  HALT_ON_ERRORCOND( index == MAX_MEMORYTYPE_ENTRIES);
 
   //[debug: dump the contents of vcpu->vmx_ept_memorytypes]
   //{
@@ -315,7 +315,7 @@ static u32 _vmx_getmemorytypeforphysicalpage(VCPU *vcpu, u64 pagebaseaddr){
             prev_type = vcpu->vmx_ept_memorytypes[i].type;
           }else{
             printf("\nprev_type=%u, vcpu->vmx_ept_memorytypes=%u", prev_type, vcpu->vmx_ept_memorytypes[i].type);
-            ASSERT ( prev_type == vcpu->vmx_ept_memorytypes[i].type);
+            HALT_ON_ERRORCOND ( prev_type == vcpu->vmx_ept_memorytypes[i].type);
           }
         }
        }        
@@ -460,14 +460,14 @@ u32 emhf_memprot_arch_x86vmx_getprot(VCPU *vcpu, u64 gpa){
 
 u64 emhf_memprot_arch_x86vmx_get_EPTP(VCPU *vcpu)
 {
-  ASSERT(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+  HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
   return
     ((u64)(vcpu->vmcs.control_EPT_pointer_high) << 32)
     | (u64)(vcpu->vmcs.control_EPT_pointer_full);
 }
 void emhf_memprot_arch_x86vmx_set_EPTP(VCPU *vcpu, u64 eptp)
 {
-  ASSERT(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+  HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
   vcpu->vmcs.control_EPT_pointer_full = (u32)eptp;
   vcpu->vmcs.control_EPT_pointer_high = (u32)(eptp >> 32);
 }

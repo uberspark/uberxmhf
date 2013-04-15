@@ -102,8 +102,8 @@ u32 emhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime
 
   /* we don't cope if the hypervisor virtual location overlaps with
      its physical location. See bug #145. */
-  ASSERT(!((runtime_sva - runtime_spa) < totalsize));
-  ASSERT(!((runtime_spa - runtime_sva) < totalsize));
+  HALT_ON_ERRORCOND(!((runtime_sva - runtime_spa) < totalsize));
+  HALT_ON_ERRORCOND(!((runtime_spa - runtime_sva) < totalsize));
 
   //init pdts with unity mappings
   default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE);
@@ -119,7 +119,7 @@ u32 emhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime
        * ...but 0xfec00000 is the closest 2M-aligned addr 
        * 0xfee00000 contains APIC base 
        */
-      ASSERT(hva==spa); /* expecting these to be unity-mapped */
+      HALT_ON_ERRORCOND(hva==spa); /* expecting these to be unity-mapped */
       flags |= (u64)(_PAGE_PCD);
       printf("\nSL: updating flags for hva 0x%08x", hva);
     }
@@ -215,7 +215,7 @@ void emhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 			u32 memregion_size;
 			u32 cpu_vendor = get_cpu_vendor_or_die();
 			
-			ASSERT(cpu_vendor == CPU_VENDOR_AMD || cpu_vendor == CPU_VENDOR_INTEL);
+			HALT_ON_ERRORCOND(cpu_vendor == CPU_VENDOR_AMD || cpu_vendor == CPU_VENDOR_INTEL);
 			
 			
 			if(cpu_vendor == CPU_VENDOR_AMD){

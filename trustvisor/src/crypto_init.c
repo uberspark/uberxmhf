@@ -220,14 +220,14 @@ static int trustvisor_long_term_secret_init(void) {
            rv);
     /* TODO: Support degraded operation during development. */
     /* XXX SECURITY XXX: continuing anyways for now */
-    //ASSERT(false);
+    //HALT_ON_ERRORCOND(false);
     eu_err( "VULNERABILITY:VULNERABILITY:VULNERABILITY:VULNERABILITY\n"
             "   Reading / initializing master sealing secret FAILED!!\n"
             "   Continuing anyways...\n"
             "VULNERABILITY:VULNERABILITY:VULNERABILITY:VULNERABILITY\n");
   }
 
-  ASSERT( HW_TPM_MASTER_SEALING_SECRET_SIZE == hash_descriptor[hash_id].hashsize);
+  HALT_ON_ERRORCOND( HW_TPM_MASTER_SEALING_SECRET_SIZE == hash_descriptor[hash_id].hashsize);
 
   /* Derive encryption and MAC keys for sealed storage */
   EU_VERIFYN( hmac_memory( hash_id,

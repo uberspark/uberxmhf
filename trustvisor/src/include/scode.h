@@ -68,8 +68,8 @@
 #include <hptw_emhf.h>
 
 /* XXX TEMP */
-#define CHK(x) ASSERT(x)
-#define CHK_RV(x) ASSERT(!(x))
+#define CHK(x) HALT_ON_ERRORCOND(x)
+#define CHK_RV(x) HALT_ON_ERRORCOND(!(x))
 
 /* 
  * definition for scode whitelist 

@@ -161,7 +161,7 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
 			if(apicrecord->type == 0x0 && (apicrecord->flags & 0x1)){ //processor record
 
 		    foundcores=1;
-				ASSERT( *num_pcpus < MAX_PCPU_ENTRIES);		        
+				HALT_ON_ERRORCOND( *num_pcpus < MAX_PCPU_ENTRIES);		        
 				i = *num_pcpus;
 				pcpus[i].lapic_id = apicrecord->lapicid;
 		    pcpus[i].lapic_ver = 0;
@@ -201,9 +201,9 @@ fallthrough:
   		printf("\nMP feature info2=0x%02x", mpfp->mpfeatureinfo2);
   		printf("\nMP Configuration table at 0x%08x", mpfp->paddrpointer);
   
-  		ASSERT( mpfp->paddrpointer != 0 );
+  		HALT_ON_ERRORCOND( mpfp->paddrpointer != 0 );
 			mpctable = (MPCONFTABLE *)mpfp->paddrpointer;
-  		ASSERT(mpctable->signature == MPCONFTABLE_SIGNATURE);
+  		HALT_ON_ERRORCOND(mpctable->signature == MPCONFTABLE_SIGNATURE);
   
 		  {//debug
 		    int i;
@@ -232,7 +232,7 @@ fallthrough:
 		        break;
 		      
 		      if(cpu->cpuflags & 0x1){
- 		        ASSERT( *num_pcpus < MAX_PCPU_ENTRIES);		        
+ 		        HALT_ON_ERRORCOND( *num_pcpus < MAX_PCPU_ENTRIES);		        
 						printf("\nCPU (0x%08x) #%u: lapic id=0x%02x, ver=0x%02x, cpusig=0x%08x", 
 		          (u32)cpu, i, cpu->lapicid, cpu->lapicver, cpu->cpusig);
 		        pcpus[i].lapic_id = cpu->lapicid;

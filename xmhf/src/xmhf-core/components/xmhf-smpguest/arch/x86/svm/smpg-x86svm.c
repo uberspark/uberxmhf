@@ -119,7 +119,7 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
   u32 dest_lapic_id;
   VCPU *dest_vcpu = (VCPU *)0;
   
-  ASSERT( (icr_low_value & 0x000C0000) == 0x0 );
+  HALT_ON_ERRORCOND( (icr_low_value & 0x000C0000) == 0x0 );
   
   dest_lapic_id= icr_high_value >> 24;
   
@@ -131,12 +131,12 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
     for(i=0; i < (int)g_midtable_numentries; i++){
       if(g_midtable[i].cpu_lapic_id == dest_lapic_id){
         dest_vcpu = (VCPU *)g_midtable[i].vcpu_vaddr_ptr;
-        ASSERT( dest_vcpu->id == dest_lapic_id );
+        HALT_ON_ERRORCOND( dest_vcpu->id == dest_lapic_id );
         break;        
       }
     }
     
-    ASSERT( dest_vcpu != (VCPU *)0 );
+    HALT_ON_ERRORCOND( dest_vcpu != (VCPU *)0 );
   }
 
   printf("\nfound AP to pass SIPI to; id=0x%02x, vcpu=0x%08x",
@@ -169,7 +169,7 @@ void emhf_smpguest_arch_x86svm_initialize(VCPU *vcpu){
   
   //read APIC base address from MSR
   rdmsr(MSR_APIC_BASE, &eax, &edx);
-  ASSERT( edx == 0 ); //APIC is below 4G
+  HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
 
   g_svm_lapic_base = eax & 0xFFFFF000UL;
   printf("\nBSP(0x%02x): Local APIC base=0x%08x", vcpu->id, g_svm_lapic_base);
@@ -294,7 +294,7 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, struct regs 
     u32 src_registeraddress, dst_registeraddress;
     u32 value_tobe_written;
     
-    ASSERT( (g_svm_lapic_reg == LAPIC_ICR_LOW) || (g_svm_lapic_reg == LAPIC_ICR_HIGH) );
+    HALT_ON_ERRORCOND( (g_svm_lapic_reg == LAPIC_ICR_LOW) || (g_svm_lapic_reg == LAPIC_ICR_HIGH) );
    
     src_registeraddress = (u32)g_svm_virtual_LAPIC_base + g_svm_lapic_reg;
     dst_registeraddress = (u32)g_svm_lapic_base + g_svm_lapic_reg;
@@ -345,7 +345,7 @@ void emhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, struct regs 
   }else if( g_svm_lapic_op == LAPIC_OP_READ){		//LAPIC read
     u32 src_registeraddress;
     u32 value_read;
-    ASSERT( (g_svm_lapic_reg == LAPIC_ICR_LOW) || (g_svm_lapic_reg == LAPIC_ICR_HIGH) );
+    HALT_ON_ERRORCOND( (g_svm_lapic_reg == LAPIC_ICR_LOW) || (g_svm_lapic_reg == LAPIC_ICR_HIGH) );
 
     src_registeraddress = (u32)g_svm_virtual_LAPIC_base + g_svm_lapic_reg;
    

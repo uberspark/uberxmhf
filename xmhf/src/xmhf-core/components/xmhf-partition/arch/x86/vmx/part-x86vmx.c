@@ -218,7 +218,7 @@ static void _vmx_initVT(VCPU *vcpu){
 static void	_vmx_int15_initializehook(VCPU *vcpu){
 //#ifnfdef __XMHF_VERIFICATION__
 	//we should only be called from the BSP
-	ASSERT(vcpu->isbsp);
+	HALT_ON_ERRORCOND(vcpu->isbsp);
 	
 	{
 		u8 *bdamemory = (u8 *)0x4AC;				//use BDA reserved memory at 0040:00AC
@@ -501,12 +501,12 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
   //put VMCS to CPU
   emhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
   printf("\nCPU(0x%02x): VMWRITEs success.", vcpu->id);
-  ASSERT( vcpu->vmcs.guest_VMCS_link_pointer_full == 0xFFFFFFFFUL );
+  HALT_ON_ERRORCOND( vcpu->vmcs.guest_VMCS_link_pointer_full == 0xFFFFFFFFUL );
 
   {
     u32 errorcode;
     errorcode=__vmx_start_hvm();
-    ASSERT(errorcode != 2);	//this means the VMLAUNCH implementation violated the specs.
+    HALT_ON_ERRORCOND(errorcode != 2);	//this means the VMLAUNCH implementation violated the specs.
     //get CPU VMCS into VCPU structure
     emhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
     

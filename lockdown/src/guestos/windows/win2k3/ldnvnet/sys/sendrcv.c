@@ -243,7 +243,7 @@ Return Value:
         //
         // Check for a zero pointer
         //
-        ASSERT(PacketArray[PacketCount]);
+        HALT_ON_ERRORCOND(PacketArray[PacketCount]);
 
         Status = NICSendPacket(Adapter, PacketArray[PacketCount]);
 
@@ -680,8 +680,8 @@ Return Value:
     DEBUGP(MP_INFO, ("Adapter= %p FreePkt= %p Ref=%d\n", 
                             SendAdapter, SendPacket, pTCB->Ref));
 
-    ASSERT(pTCB->Ref > 0);
-    ASSERT(Adapter);
+    HALT_ON_ERRORCOND(pTCB->Ref > 0);
+    HALT_ON_ERRORCOND(Adapter);
 
 
 /*    //
@@ -694,7 +694,7 @@ Return Value:
         (PLIST_ENTRY)&Packet->MiniportReserved[0]);
     
     Adapter->nBusyRecv--;     
-    ASSERT(Adapter->nBusyRecv >= 0);
+    HALT_ON_ERRORCOND(Adapter->nBusyRecv >= 0);
     
     NdisReleaseSpinLock(&Adapter->RecvLock);    
 

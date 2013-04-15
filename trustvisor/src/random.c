@@ -71,7 +71,7 @@ int g_ltc_prng_id;
 int reseed_ctr_drbg_using_tpm_entropy_if_needed(void) {
     uint8_t EntropyInput[CTR_DRBG_SEED_BITS/8];
 
-    ASSERT(true == g_master_prng_init_completed);
+    HALT_ON_ERRORCOND(true == g_master_prng_init_completed);
     
     if (g_drbg.reseed_counter < NIST_CTR_DRBG_RESEED_INTERVAL)
         return 0; /* nothing to do */

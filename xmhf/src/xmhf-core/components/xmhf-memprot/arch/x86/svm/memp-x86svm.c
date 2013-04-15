@@ -61,7 +61,7 @@ static void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts
 void emhf_memprot_arch_x86svm_initialize(VCPU *vcpu){
 	struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
 	
-	ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD);
+	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD);
 	
 #ifndef __XMHF_VERIFICATION__
 	_svm_nptinitialize((u32)vcpu->npt_vaddr_ptr, vcpu->npt_vaddr_pdts, vcpu->npt_vaddr_pts);
@@ -196,11 +196,11 @@ u32 emhf_memprot_arch_x86svm_getprot(VCPU *vcpu, u64 gpa){
 
 u64 emhf_memprot_arch_x86svm_get_h_cr3(VCPU *vcpu)
 {
-  ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD);
+  HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD);
   return ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->n_cr3; 
 }
 void emhf_memprot_arch_x86svm_set_h_cr3(VCPU *vcpu, u64 n_cr3)
 {
-  ASSERT(vcpu->cpu_vendor == CPU_VENDOR_AMD);
+  HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD);
   ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->n_cr3 = n_cr3;
 }

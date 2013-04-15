@@ -72,7 +72,7 @@ void emhf_baseplatform_arch_x86_reboot(void){
 
 //reboot platform
 void emhf_baseplatform_arch_reboot(VCPU *vcpu){
-	ASSERT (vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	HALT_ON_ERRORCOND (vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
 		emhf_baseplatform_arch_x86svm_reboot(vcpu);
