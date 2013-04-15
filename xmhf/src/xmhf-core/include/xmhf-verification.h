@@ -53,28 +53,17 @@
 #ifndef __XMHF_VERIFICATION_H__
 #define __XMHF_VERIFICATION_H__
 
-
 #ifndef __ASSEMBLY__
 
-//EV => EMHF Verify
-//FNCONTRACT => Function Contract Primitive
-
 #ifdef __XMHF_VERIFICATION__
-	//#define	EV_FNCONTRACT_DOMAIN(x)		assert((x));
-	//#define EV_FNCONTRACT_RANGE(x)		assert((x));
-
 	//CBMC SATABS internal functions for non-deterministic values
 	u32 nondet_u32();
 	u64 nondet_u64();
 	int nondet_int();
 	u32* nondet_u32_ptr();
 	u16 nondet_u16();
-
-#else
-	//#define	EV_FNCONTRACT_DOMAIN(x)		
-	//#define EV_FNCONTRACT_RANGE(x)		
 #endif
 
-#endif
+#endif //__ASSEMBLY__
 
 #endif //__XMHF_VERIFICATION_H__
