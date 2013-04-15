@@ -54,8 +54,8 @@
 	.extern g_midtable
 	.extern g_midtable_numentries
 	.extern x_gdt
-	.extern emhf_baseplatform_arch_x86_smpinitialize_commonstart
-	.extern emhf_xcphandler_idt	
+	.extern xmhf_baseplatform_arch_x86_smpinitialize_commonstart
+	.extern xmhf_xcphandler_idt	
 
 /*------------------------------------------------------------------------------
 CODE
@@ -147,7 +147,7 @@ CODE
   _ap_pmode_entry_with_paging:
     /*load our gdt and idt*/
     lgdt x_gdt
-    lidt emhf_xcphandler_idt
+    lidt xmhf_xcphandler_idt
     
 
     
@@ -180,7 +180,7 @@ gotvcpu:
    movl 0x4(%ebx, %ecx, 8), %esi //esi contains vcpu pointer
    movl 0x0(%esi), %esp     //load stack for this CPU
    pushl %esi
-   call emhf_baseplatform_arch_x86_smpinitialize_commonstart
+   call xmhf_baseplatform_arch_x86_smpinitialize_commonstart
    /*we should never get here, if so just halt*/
    hlt  
 

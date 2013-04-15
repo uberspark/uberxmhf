@@ -132,19 +132,19 @@ extern u32 g_lock_ap_go_signal __attribute__(( section(".data") ));
 //----------------------------------------------------------------------
 
 //get CPU vendor
-u32 emhf_baseplatform_getcpuvendor(void);
+u32 xmhf_baseplatform_getcpuvendor(void);
 
 //initialize CPU state
-void emhf_baseplatform_cpuinitialize(void);
+void xmhf_baseplatform_cpuinitialize(void);
 
 //initialize SMP
-void emhf_baseplatform_smpinitialize(void);
+void xmhf_baseplatform_smpinitialize(void);
 
 //initialize basic platform elements
-void emhf_baseplatform_initialize(void);
+void xmhf_baseplatform_initialize(void);
 
 //reboot platform
-void emhf_baseplatform_reboot(VCPU *vcpu);
+void xmhf_baseplatform_reboot(VCPU *vcpu);
 
 #ifndef __XMHF_VERIFICATION__
 	/* hypervisor-virtual-address to system-physical-address. this fn is

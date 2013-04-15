@@ -76,10 +76,10 @@ static void _svm_handle_ioio(VCPU *vcpu, struct _svm_vmcbfields *vmcb, struct re
 	access_size = IO_SIZE_DWORD;
 	
 	//call our app handler
-	emhf_smpguest_arch_x86svm_quiesce(vcpu);
-	app_ret_status=emhf_app_handleintercept_portaccess(vcpu, r, ioinfo.fields.port, access_type, 
+	xmhf_smpguest_arch_x86svm_quiesce(vcpu);
+	app_ret_status=xmhf_app_handleintercept_portaccess(vcpu, r, ioinfo.fields.port, access_type, 
           access_size);
-    emhf_smpguest_arch_x86svm_endquiesce(vcpu);
+    xmhf_smpguest_arch_x86svm_endquiesce(vcpu);
 	
   
   if(app_ret_status == APP_IOINTERCEPT_CHAIN){
@@ -161,15 +161,15 @@ static void _svm_handle_npf(VCPU *vcpu, struct regs *r){
     //  (u16)vmcb->cs.sel, (u32)vmcb->rip, gpa, errorcode);
     HALT_ON_ERRORCOND( vcpu->isbsp == 1); //only BSP gets a NPF during LAPIC SIPI detection
     //svm_lapic_access_handler(vcpu, gpa, errorcode);
-    emhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
+    xmhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
     //HALT();
   } else {
 	//note: AMD does not provide guest virtual address on a #NPF
 	//so we pass zero always
 	// call EMHF app hook
-	emhf_smpguest_arch_x86svm_quiesce(vcpu);
-	emhf_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, 0, errorcode);
-	emhf_smpguest_arch_x86svm_endquiesce(vcpu);
+	xmhf_smpguest_arch_x86svm_quiesce(vcpu);
+	xmhf_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, 0, errorcode);
+	xmhf_smpguest_arch_x86svm_endquiesce(vcpu);
   }
   
   return;
@@ -208,7 +208,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 	if( (vmcb->cr0 & CR0_PE) && (vmcb->cr0 & CR0_PG) &&
 			(vmcb->rflags & EFLAGS_VM) ){
 		u8 *bdamemoryphysical;
-		bdamemoryphysical = (u8 *)emhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)bdamemory);
+		bdamemoryphysical = (u8 *)xmhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)bdamemory);
 		if((u32)bdamemoryphysical < rpb->XtVmmRuntimePhysBase){
 			printf("\nINT15 (E820): V86 mode, bdamemory translated from %08x to %08x",
 				(u32)bdamemory, (u32)bdamemoryphysical);
@@ -281,7 +281,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 				//if V86 mode translate the virtual address to physical address
 				if( (vmcb->cr0 & CR0_PE) && (vmcb->cr0 & CR0_PG) &&
 					(vmcb->rflags & EFLAGS_VM) ){
-					u8 *gueststackregionphysical = (u8 *)emhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)gueststackregion);
+					u8 *gueststackregionphysical = (u8 *)xmhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)gueststackregion);
 					if((u32)gueststackregionphysical < rpb->XtVmmRuntimePhysBase){
 						printf("\nINT15 (E820): V86 mode, gueststackregion translated from %08x to %08x",
 							(u32)gueststackregion, (u32)gueststackregionphysical);
@@ -370,7 +370,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		#ifdef __XMHF_VERIFICATION__
 			bdamemoryphysical = (u8 *)nondet_u32();
 		#else
-			bdamemoryphysical = (u8 *)emhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)bdamemory);
+			bdamemoryphysical = (u8 *)xmhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)bdamemory);
 		#endif
 		if((u32)bdamemoryphysical < rpb->XtVmmRuntimePhysBase){
 			printf("\nINT15 (E820): V86 mode, bdamemory translated from %08x to %08x",
@@ -455,7 +455,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 					#ifdef __XMHF_VERIFICATION__
 						u8 *gueststackregionphysical = (u8 *)nondet_u32();
 					#else
-						u8 *gueststackregionphysical = (u8 *)emhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)gueststackregion);
+						u8 *gueststackregionphysical = (u8 *)xmhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)gueststackregion);
 					#endif
 					if((u32)gueststackregionphysical < rpb->XtVmmRuntimePhysBase){
 						printf("\nINT15 (E820): V86 mode, gueststackregion translated from %08x to %08x",
@@ -545,7 +545,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 
 
 //---SVM intercept handler hub--------------------------------------------------
-u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
+u32 xmhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
   struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
 
   vmcb->tlb_control = VMCB_TLB_CONTROL_NOTHING;
@@ -588,12 +588,12 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 						HALT();
 				}
 			}else{	//if not E820 hook, give app a chance to handle the hypercall
-				emhf_smpguest_arch_x86svm_quiesce(vcpu);
-				if( emhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
+				xmhf_smpguest_arch_x86svm_quiesce(vcpu);
+				if( xmhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
 					printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", vcpu->id, r->eax);
 					HALT();
 				}
-				emhf_smpguest_arch_x86svm_endquiesce(vcpu);
+				xmhf_smpguest_arch_x86svm_endquiesce(vcpu);
 				vmcb->rip += 3;
 			}
 		}
@@ -612,9 +612,9 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 		break;
 
 		case SVM_VMEXIT_INIT:{
-			printf("\n***** INIT emhf_app_handleshutdown\n");
-			emhf_app_handleshutdown(vcpu, r);      
-			printf("\nCPU(0x%02x): Fatal, emhf_app_handleshutdown returned. Halting!", vcpu->id);
+			printf("\n***** INIT xmhf_app_handleshutdown\n");
+			xmhf_app_handleshutdown(vcpu, r);      
+			printf("\nCPU(0x%02x): Fatal, xmhf_app_handleshutdown returned. Halting!", vcpu->id);
 			HALT();
 		}
 		break;
@@ -631,7 +631,7 @@ u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 
 		case SVM_VMEXIT_EXCEPTION_DB:{
 			if(vcpu->isbsp == 1){											//LAPIC SIPI detection only happens on BSP
-				emhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
+				xmhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
 			}else{															//TODO: reflect back to guest
 				printf("\nUnexpected DB exception on non-BSP core (0x%02x)", vcpu->id);
 				printf("\nHalting!");

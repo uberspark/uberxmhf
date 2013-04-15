@@ -67,19 +67,19 @@ extern u32 sl_baseaddr;
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
-void* emhf_sl_arch_hva2sla(uintptr_t x);
-u64 emhf_sl_arch_sla2spa(void* x);
-bool emhf_sl_arch_integrity_check(u8* runtime_base_addr, size_t runtime_len);
-void emhf_sl_arch_sanitize_post_launch(void);
-void emhf_sl_arch_early_dmaprot_init(u32 runtime_size);
-void emhf_sl_arch_xfer_control_to_runtime(RPB * rpb);
+void* xmhf_sl_arch_hva2sla(uintptr_t x);
+u64 xmhf_sl_arch_sla2spa(void* x);
+bool xmhf_sl_arch_integrity_check(u8* runtime_base_addr, size_t runtime_len);
+void xmhf_sl_arch_sanitize_post_launch(void);
+void xmhf_sl_arch_early_dmaprot_init(u32 runtime_size);
+void xmhf_sl_arch_xfer_control_to_runtime(RPB * rpb);
 
 
 //----------------------------------------------------------------------
 //x86 ARCH. INTERFACES
 //----------------------------------------------------------------------
-u32 emhf_sl_arch_x86_setup_runtime_paging(RPB * rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsize);
-void emhf_sl_arch_x86_invoke_runtime_entrypoint(u32 gdtbase, u32 idtbase,
+u32 xmhf_sl_arch_x86_setup_runtime_paging(RPB * rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsize);
+void xmhf_sl_arch_x86_invoke_runtime_entrypoint(u32 gdtbase, u32 idtbase,
 	u32 entrypoint, u32 stacktop, u32 cr3)__attribute__((cdecl)); 
 
 

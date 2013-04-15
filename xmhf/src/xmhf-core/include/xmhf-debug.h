@@ -129,7 +129,7 @@ static inline unsigned char __toupper(unsigned char c)
 
 //----------------------------------------------------------------------
 //exported FUNCTIONS 
-void emhf_debug_init(char *params);
+void xmhf_debug_init(char *params);
 
 #include <stdio.h>
 #if defined (__DEBUG_SERIAL__) || defined (__DEBUG_VGA__)

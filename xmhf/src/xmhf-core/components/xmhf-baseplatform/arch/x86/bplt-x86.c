@@ -52,7 +52,7 @@
 #include <xmhf.h>
 
 //get CPU vendor
-u32 emhf_baseplatform_arch_getcpuvendor(void){
+u32 xmhf_baseplatform_arch_getcpuvendor(void){
 	u32 vendor_dword1, vendor_dword2, vendor_dword3;
 	u32 cpu_vendor;
 	asm(	"xor	%%eax, %%eax \n"
@@ -81,15 +81,15 @@ u32 emhf_baseplatform_arch_getcpuvendor(void){
 
 
 //initialize basic platform elements
-void emhf_baseplatform_arch_initialize(void){
+void xmhf_baseplatform_arch_initialize(void){
 	//initialize PCI subsystem
-	emhf_baseplatform_arch_x86_pci_initialize();
+	xmhf_baseplatform_arch_x86_pci_initialize();
 	
 	//check ACPI subsystem
 	{
 		ACPI_RSDP rsdp;
 		#ifndef __XMHF_VERIFICATION__
-		if(!emhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp)){
+		if(!xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp)){
 			printf("\n%s: ACPI RSDP not found, Halting!", __FUNCTION__);
 			HALT();
 		}
@@ -100,9 +100,9 @@ void emhf_baseplatform_arch_initialize(void){
 
 
 //initialize CPU state
-void emhf_baseplatform_arch_cpuinitialize(void){
-	u32 cpu_vendor = emhf_baseplatform_arch_getcpuvendor();
+void xmhf_baseplatform_arch_cpuinitialize(void){
+	u32 cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
 	
 	if(cpu_vendor == CPU_VENDOR_INTEL)
-		emhf_baseplatform_arch_x86vmx_cpuinitialize();
+		xmhf_baseplatform_arch_x86vmx_cpuinitialize();
 }

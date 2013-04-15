@@ -112,17 +112,17 @@ static VCPU *_vmx_getvcpu(void){
 
 
 //initialize EMHF core exception handlers
-void emhf_xcphandler_arch_initialize(void){
+void xmhf_xcphandler_arch_initialize(void){
 	u32 *pexceptionstubs;
 	u32 i;
 
 	printf("\n%s: setting up runtime IDT...", __FUNCTION__);
 	
-	//pexceptionstubs=(u32 *)&emhf_xcphandler_exceptionstubs;
-	pexceptionstubs=(u32 *)&emhf_xcphandler_exceptionstubs;
+	//pexceptionstubs=(u32 *)&xmhf_xcphandler_exceptionstubs;
+	pexceptionstubs=(u32 *)&xmhf_xcphandler_exceptionstubs;
 	
 	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
-		idtentry_t *idtentry=(idtentry_t *)((u32)emhf_xcphandler_arch_get_idt_start()+ (i*8));
+		idtentry_t *idtentry=(idtentry_t *)((u32)xmhf_xcphandler_arch_get_idt_start()+ (i*8));
 		idtentry->isrLow= (u16)pexceptionstubs[i];
 		idtentry->isrHigh= (u16) ( (u32)pexceptionstubs[i] >> 16 );
 		idtentry->isrSelector = __CS;
@@ -136,13 +136,13 @@ void emhf_xcphandler_arch_initialize(void){
 
 
 //get IDT start address
-u8 * emhf_xcphandler_arch_get_idt_start(void){
-	return (u8 *)&emhf_xcphandler_idt_start;
+u8 * xmhf_xcphandler_arch_get_idt_start(void){
+	return (u8 *)&xmhf_xcphandler_idt_start;
 }
 
 
 //EMHF exception handler hub
-void emhf_xcphandler_arch_hub(u32 vector, struct regs *r){
+void xmhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 	u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
 	VCPU *vcpu;
 	
@@ -154,7 +154,7 @@ void emhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 	
 	switch(vector){
 			case CPU_EXCEPTION_NMI:
-				emhf_smpguest_arch_x86_eventhandler_nmiexception(vcpu, r);
+				xmhf_smpguest_arch_x86_eventhandler_nmiexception(vcpu, r);
 				break;
 
 			default:{

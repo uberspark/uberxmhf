@@ -82,13 +82,13 @@ typedef struct {
 
 
 //EMHF application callbacks
-extern u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb);
-extern u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size); 
-extern u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
+extern u32 xmhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb);
+extern u32 xmhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size); 
+extern u32 xmhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
       struct regs *r,
       u64 gpa, u64 gva, u64 violationcode);
-extern void emhf_app_handleshutdown(VCPU *vcpu, struct regs *r);
-extern u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r);	//returns APP_SUCCESS if handled, else APP_ERROR      
+extern void xmhf_app_handleshutdown(VCPU *vcpu, struct regs *r);
+extern u32 xmhf_app_handlehypercall(VCPU *vcpu, struct regs *r);	//returns APP_SUCCESS if handled, else APP_ERROR      
 
 #endif	//__ASSEMBLY__
 

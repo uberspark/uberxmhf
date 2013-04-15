@@ -54,7 +54,7 @@
 
 //---putVMCS--------------------------------------------------------------------
 // routine takes vcpu vmcsfields and stores it in the CPU VMCS 
-void emhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu){
+void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu){
     unsigned int i;
     for(i=0; i < g_vmx_vmcsrwfields_encodings_count; i++){
       u32 *field = (u32 *)((u32)&vcpu->vmcs + (u32)g_vmx_vmcsrwfields_encodings[i].fieldoffset);
@@ -69,7 +69,7 @@ void emhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu){
 
 //---getVMCS--------------------------------------------------------------------
 // routine takes CPU VMCS and stores it in vcpu vmcsfields  
-void emhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu){
+void xmhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu){
   unsigned int i;
   for(i=0; i < g_vmx_vmcsrwfields_encodings_count; i++){
       u32 *field = (u32 *)((u32)&vcpu->vmcs + (u32)g_vmx_vmcsrwfields_encodings[i].fieldoffset);
@@ -82,7 +82,7 @@ void emhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu){
 }
 
 //--debug: dumpVMCS dumps VMCS contents-----------------------------------------
-void emhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu){
+void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu){
   		printf("\nGuest State follows:");
 		printf("\nguest_CS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_CS_selector);
 		printf("\nguest_DS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_DS_selector);

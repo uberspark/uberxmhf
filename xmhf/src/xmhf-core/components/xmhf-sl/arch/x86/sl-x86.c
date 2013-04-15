@@ -62,12 +62,12 @@
 
 
 /* hypervisor (runtime) virtual address to sl-address. */
-void* emhf_sl_arch_hva2sla(uintptr_t x) {
+void* xmhf_sl_arch_hva2sla(uintptr_t x) {
   return (void*)(x - __TARGET_BASE + PAGE_SIZE_2M);
 }
 
 /* sl-address to system-physical-address */
-u64 emhf_sl_arch_sla2spa(void* x) {
+u64 xmhf_sl_arch_sla2spa(void* x) {
   return (u64)(uintptr_t)(x) + sl_baseaddr;
 }
 
@@ -76,7 +76,7 @@ u64 emhf_sl_arch_sla2spa(void* x) {
 //---runtime paging setup-------------------------------------------------------
 //physaddr and virtaddr are assumed to be 2M aligned
 //returns 32-bit base address of page table root (can be loaded into CR3)
-u32 emhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsize){
+u32 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsize){
   pdpt_t xpdpt;
   pdt_t xpdt;
   u32 hva=0, i;
@@ -87,8 +87,8 @@ u32 emhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime
   printf("\nSL (%s): runtime_spa=%08x, runtime_sva=%08x, totalsize=%08x",
          __FUNCTION__, runtime_spa, runtime_sva, totalsize);
 	
-  xpdpt= emhf_sl_arch_hva2sla(rpb->XtVmmPdptBase);
-  xpdt = emhf_sl_arch_hva2sla(rpb->XtVmmPdtsBase);
+  xpdpt= xmhf_sl_arch_hva2sla(rpb->XtVmmPdptBase);
+  xpdt = xmhf_sl_arch_hva2sla(rpb->XtVmmPdtsBase);
 	
   printf("\n	pa xpdpt=0x%p, xpdt=0x%p", xpdpt, xpdt);
 	
@@ -96,7 +96,7 @@ u32 emhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime
 
   //init pdpt
   for(i = 0; i < PAE_PTRS_PER_PDPT; i++) {
-    u64 pdt_spa = emhf_sl_arch_sla2spa(xpdt) + (i << PAGE_SHIFT_4K);
+    u64 pdt_spa = xmhf_sl_arch_sla2spa(xpdt) + (i << PAGE_SHIFT_4K);
     xpdpt[i] = pae_make_pdpe(pdt_spa, default_flags);
   }
 
@@ -127,7 +127,7 @@ u32 emhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime
     xpdt[i] = pae_make_pde_big(spa, flags);
   }
 
-  return emhf_sl_arch_sla2spa(xpdpt);
+  return xmhf_sl_arch_sla2spa(xpdpt);
 }
 #endif //__XMHF_VERIFICATION__
 
@@ -136,7 +136,7 @@ u32 emhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime
  * (i.e., measurements match expectations), and integrity-check the
  * runtime. */
 /* Note: calling this *before* paging is enabled is important. */
-/*bool emhf_sl_arch_integrity_check(u8* runtime_base_addr, size_t runtime_len) {
+/*bool xmhf_sl_arch_integrity_check(u8* runtime_base_addr, size_t runtime_len) {
     int ret;
     u32 locality = EMHF_TPM_LOCALITY_PREF; 
     tpm_pcr_value_t pcr17, pcr18;    
@@ -148,7 +148,7 @@ u32 emhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime
     hashandprint("SL: Computed Runtime SHA-1: ",
                  runtime_base_addr, runtime_len);    
 
-    if(emhf_tpm_open_locality(locality)) {
+    if(xmhf_tpm_open_locality(locality)) {
         printf("SL: FAILED to open TPM locality %d\n", locality);
         return false;
     }
@@ -166,7 +166,7 @@ u32 emhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime
     print_hex("PCR-18: ", &pcr18, sizeof(pcr18));    
 
     // free TPM so that OS driver works as expected 
-    emhf_tpm_arch_deactivate_all_localities();
+    xmhf_tpm_arch_deactivate_all_localities();
     
     return true;    
 }
@@ -174,7 +174,7 @@ u32 emhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime
 
 
 
-void emhf_sl_arch_sanitize_post_launch(void){
+void xmhf_sl_arch_sanitize_post_launch(void){
 	#ifndef __XMHF_VERIFICATION__
         
     if(get_cpu_vendor_or_die() == CPU_VENDOR_INTEL) {
@@ -203,7 +203,7 @@ void emhf_sl_arch_sanitize_post_launch(void){
 
 
 
-void emhf_sl_arch_early_dmaprot_init(u32 runtime_size)
+void xmhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 {
 
 #if defined(__DMAPROT__)	
@@ -234,7 +234,7 @@ void emhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 			printf("\nSL: Initializing DMA protections...");
 			
 
-			if(!emhf_dmaprot_earlyinitialize(protectedbuffer_paddr,
+			if(!xmhf_dmaprot_earlyinitialize(protectedbuffer_paddr,
 				protectedbuffer_vaddr, protectedbuffer_size,
 				memregionbase_paddr, memregion_size)){
 				printf("\nSL: Fatal, could not initialize DMA protections. Halting!");
@@ -252,7 +252,7 @@ void emhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 
 
 
-void emhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
+void xmhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 	u32 ptba;	//page table base address
 	TSSENTRY *t;
 	u32 tss_base;
@@ -261,7 +261,7 @@ void emhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 	#ifndef __XMHF_VERIFICATION__
 		//setup runtime TSS
 		tss_base=(u32)rpb->XtVmmTSSBase;
-		gdt_base= *(u32 *)(emhf_sl_arch_hva2sla(rpb->XtVmmGdt + 2));
+		gdt_base= *(u32 *)(xmhf_sl_arch_hva2sla(rpb->XtVmmGdt + 2));
 	#else
 		tss_base=PAGE_SIZE_2M+PAGE_SIZE_4K;
 		gdt_base=PAGE_SIZE_2M+PAGE_SIZE_4K;
@@ -279,7 +279,7 @@ void emhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 
 	#ifndef __XMHF_VERIFICATION__
 	//setup paging structures for runtime 
-	ptba=emhf_sl_arch_x86_setup_runtime_paging(rpb, rpb->XtVmmRuntimePhysBase, __TARGET_BASE, PAGE_ALIGN_UP2M(rpb->XtVmmRuntimeSize));
+	ptba=xmhf_sl_arch_x86_setup_runtime_paging(rpb, rpb->XtVmmRuntimePhysBase, __TARGET_BASE, PAGE_ALIGN_UP2M(rpb->XtVmmRuntimeSize));
 	#endif
 	
 	printf("\nSL: setup runtime paging structures.");        
@@ -291,7 +291,7 @@ void emhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 
 	#ifndef __XMHF_VERIFICATION__
 	//transfer control to runtime and never return
-	emhf_sl_arch_x86_invoke_runtime_entrypoint(rpb->XtVmmGdt, rpb->XtVmmIdt, 
+	xmhf_sl_arch_x86_invoke_runtime_entrypoint(rpb->XtVmmGdt, rpb->XtVmmIdt, 
 				rpb->XtVmmEntryPoint, (rpb->XtVmmStackBase+rpb->XtVmmStackSize), ptba);
 	#else
 	return;

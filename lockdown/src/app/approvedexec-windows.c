@@ -66,7 +66,7 @@ u32 windows_getphysicaladdress(VCPU *vcpu, u32 vaddr){
 	if( (vcpu->vmcs.guest_CR0 & CR0_PE) &&
 			(vcpu->vmcs.guest_CR0 & CR0_PG) ){	
 		//protected mode and paging enabled, so walk guest page tables
-		return (u32)(u32 *)emhf_smpguest_walk_pagetables(vcpu, vaddr);
+		return (u32)(u32 *)xmhf_smpguest_walk_pagetables(vcpu, vaddr);
 	}else{	//paging is disabled
 		return vaddr;
 	}

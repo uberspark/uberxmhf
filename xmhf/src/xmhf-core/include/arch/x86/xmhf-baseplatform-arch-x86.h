@@ -239,38 +239,38 @@ typedef struct _vcpu {
 //----------------------------------------------------------------------
 #ifndef __ASSEMBLY__
 //get CPU vendor
-u32 emhf_baseplatform_arch_getcpuvendor(void);
+u32 xmhf_baseplatform_arch_getcpuvendor(void);
 
 //initialize CPU state
-void emhf_baseplatform_arch_cpuinitialize(void);
+void xmhf_baseplatform_arch_cpuinitialize(void);
 
 //initialize SMP
-void emhf_baseplatform_arch_smpinitialize(void);
+void xmhf_baseplatform_arch_smpinitialize(void);
 
 //initialize basic platform elements
-void emhf_baseplatform_arch_initialize(void);
+void xmhf_baseplatform_arch_initialize(void);
 
 //read 8-bits from absolute physical address
-u8 emhf_baseplatform_arch_flat_readu8(u32 addr);
+u8 xmhf_baseplatform_arch_flat_readu8(u32 addr);
 
 //read 32-bits from absolute physical address
-u32 emhf_baseplatform_arch_flat_readu32(u32 addr);
+u32 xmhf_baseplatform_arch_flat_readu32(u32 addr);
 
 //read 64-bits from absolute physical address
-u64 emhf_baseplatform_arch_flat_readu64(u32 addr);
+u64 xmhf_baseplatform_arch_flat_readu64(u32 addr);
 
 //write 32-bits to absolute physical address
-void emhf_baseplatform_arch_flat_writeu32(u32 addr, u32 val);
+void xmhf_baseplatform_arch_flat_writeu32(u32 addr, u32 val);
 
 //write 64-bits to absolute physical address
-void emhf_baseplatform_arch_flat_writeu64(u32 addr, u64 val);
+void xmhf_baseplatform_arch_flat_writeu64(u32 addr, u64 val);
 
 //memory copy from absolute physical address (src) to
 //data segment relative address (dest)
-void emhf_baseplatform_arch_flat_copy(u8 *dest, u8 *src, u32 size);
+void xmhf_baseplatform_arch_flat_copy(u8 *dest, u8 *src, u32 size);
 
 //reboot platform
-void emhf_baseplatform_arch_reboot(VCPU *vcpu);
+void xmhf_baseplatform_arch_reboot(VCPU *vcpu);
 
 #endif //__ASSEMBLY__
 
@@ -311,32 +311,32 @@ extern u32 _ap_cr4_value;
 
 
 //return 1 if the calling CPU is the BSP
-u32 emhf_baseplatform_arch_x86_isbsp(void);
+u32 xmhf_baseplatform_arch_x86_isbsp(void);
 
 //wake up APs using the LAPIC by sending the INIT-SIPI-SIPI IPI sequence
-void emhf_baseplatform_arch_x86_wakeupAPs(void);
+void xmhf_baseplatform_arch_x86_wakeupAPs(void);
 
 //generic x86 platform reboot
-void emhf_baseplatform_arch_x86_reboot(void);
+void xmhf_baseplatform_arch_x86_reboot(void);
 
 //get the physical address of the root system description pointer (rsdp)
-u32 emhf_baseplatform_arch_x86_acpi_getRSDP(ACPI_RSDP *rsdp);
+u32 xmhf_baseplatform_arch_x86_acpi_getRSDP(ACPI_RSDP *rsdp);
 
 //PCI subsystem initialization
-void emhf_baseplatform_arch_x86_pci_initialize(void);
+void xmhf_baseplatform_arch_x86_pci_initialize(void);
 
 //does a PCI type-1 write of PCI config space for a given bus, device, 
 //function and index
-void emhf_baseplatform_arch_x86_pci_type1_write(u32 bus, u32 device, u32 function, u32 index, u32 len,
+void xmhf_baseplatform_arch_x86_pci_type1_write(u32 bus, u32 device, u32 function, u32 index, u32 len,
 	u32 value);
 	
 //does a PCI type-1 read of PCI config space for a given bus, device, 
 //function and index
-void emhf_baseplatform_arch_x86_pci_type1_read(u32 bus, u32 device, u32 function, u32 index, u32 len,
+void xmhf_baseplatform_arch_x86_pci_type1_read(u32 bus, u32 device, u32 function, u32 index, u32 len,
 			u32 *value);
 
 //microsecond delay
-void emhf_baseplatform_arch_x86_udelay(u32 usecs);
+void xmhf_baseplatform_arch_x86_udelay(u32 usecs);
 
 
 static inline u64 VCPU_gdtr_base(VCPU *vcpu)
@@ -508,25 +508,25 @@ extern u8 g_vmx_msrbitmap_buffers[] __attribute__(( section(".palign_data") ));
 
 
 //initialize CPU state
-void emhf_baseplatform_arch_x86vmx_cpuinitialize(void);
+void xmhf_baseplatform_arch_x86vmx_cpuinitialize(void);
 
 //wake up application processors (cores) in the system
-void emhf_baseplatform_arch_x86vmx_wakeupAPs(void);
+void xmhf_baseplatform_arch_x86vmx_wakeupAPs(void);
 
 //allocate and setup VCPU structure for all the CPUs
-void emhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor);
+void xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor);
 
 // routine takes vcpu vmcsfields and stores it in the CPU VMCS 
-void emhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu);
+void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu);
 
 // routine takes CPU VMCS and stores it in vcpu vmcsfields  
-void emhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu);
+void xmhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu);
 
 //--debug: dumpVMCS dumps VMCS contents
-void emhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu);
+void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu);
 
 //VMX specific platform reboot
-void emhf_baseplatform_arch_x86vmx_reboot(VCPU *vcpu);
+void xmhf_baseplatform_arch_x86vmx_reboot(VCPU *vcpu);
 
 //----------------------------------------------------------------------
 //x86svm SUBARCH. INTERFACES
@@ -550,13 +550,13 @@ extern u8 g_svm_msrpm[]__attribute__(( section(".palign_data") ));
 
 
 //wake up application processors (cores) in the system
-void emhf_baseplatform_arch_x86svm_wakeupAPs(void);
+void xmhf_baseplatform_arch_x86svm_wakeupAPs(void);
 
 //allocate and setup VCPU structure for all the CPUs
-void emhf_baseplatform_arch_x86svm_allocandsetupvcpus(u32 cpu_vendor);
+void xmhf_baseplatform_arch_x86svm_allocandsetupvcpus(u32 cpu_vendor);
 
 //SVM specific platform reboot
-void emhf_baseplatform_arch_x86svm_reboot(VCPU *vcpu);
+void xmhf_baseplatform_arch_x86svm_reboot(VCPU *vcpu);
 
 
 

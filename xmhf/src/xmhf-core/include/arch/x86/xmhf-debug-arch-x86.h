@@ -59,9 +59,9 @@
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
-void emhf_debug_arch_init(char *params);
-void emhf_debug_arch_putstr(const char *str);
-void emhf_debug_arch_putc(char c);
+void xmhf_debug_arch_init(char *params);
+void xmhf_debug_arch_putstr(const char *str);
+void xmhf_debug_arch_putc(char c);
 
 //----------------------------------------------------------------------
 //x86 ARCH. INTERFACES

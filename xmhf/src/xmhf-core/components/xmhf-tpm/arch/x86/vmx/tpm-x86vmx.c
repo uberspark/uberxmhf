@@ -52,7 +52,7 @@
 #include <xmhf.h>
 
 //open TPM locality
-int emhf_tpm_arch_x86vmx_open_locality(int locality){
+int xmhf_tpm_arch_x86vmx_open_locality(int locality){
         txt_didvid_t didvid;
         txt_ver_fsbif_emif_t ver;
 

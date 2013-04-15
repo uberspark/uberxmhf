@@ -110,7 +110,7 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
 
 	//step-1: we read capabilities pointer (PCI_CONF_HDR_IDX_CAPABILITIES_POINTER)
 	//in b:d.f 0:24.3. If its 0, then DEV support is not available
-		emhf_baseplatform_arch_x86_pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, PCI_CONF_HDR_IDX_CAPABILITIES_POINTER, sizeof(u32), &mc_capabilities_pointer);
+		xmhf_baseplatform_arch_x86_pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, PCI_CONF_HDR_IDX_CAPABILITIES_POINTER, sizeof(u32), &mc_capabilities_pointer);
 		if(mc_capabilities_pointer == 0)
 			return 0;	//DEV support unavailable
 	
@@ -121,7 +121,7 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
 	  
 	  do{
 		  //get the ID of this capability block
-		  emhf_baseplatform_arch_x86_pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, mc_caplist_nextptr, sizeof(u8), &mc_caplist_id);
+		  xmhf_baseplatform_arch_x86_pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, mc_caplist_nextptr, sizeof(u8), &mc_caplist_id);
 		  
 			//check if this is a DEV capability ID block
 			#ifdef __XMHF_VERIFICATION__
@@ -135,7 +135,7 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
 			#endif
 		  
 		  //get the index of the next capability block
-			emhf_baseplatform_arch_x86_pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, mc_caplist_nextptr, sizeof(u8), &mc_caplist_nextptr);
+			xmhf_baseplatform_arch_x86_pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION, mc_caplist_nextptr, sizeof(u8), &mc_caplist_nextptr);
 		}while(mc_caplist_nextptr != 0);
 	
 
@@ -342,11 +342,11 @@ static u32 svm_eap_dev_read(u32 function, u32 index){
 
 	//step-1: write function and index to dev_fnidx_reg
 	//format of dev_fnidx_reg is in AMD Dev. Vol2 (p. 407)
-	emhf_baseplatform_arch_x86_pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
+	xmhf_baseplatform_arch_x86_pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
 		_svm_eap.dev_fnidx_reg, sizeof(u32), (u32)(((function & 0xff) << 8) + (index & 0xff)) );
 
 	//step-2: read 32-bit value from dev_data_reg
-	emhf_baseplatform_arch_x86_pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
+	xmhf_baseplatform_arch_x86_pci_type1_read(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
 		_svm_eap.dev_data_reg, sizeof(u32), &value);
 
   
@@ -365,11 +365,11 @@ static void svm_eap_dev_write(u32 function, u32 index, u32 value){
 
 	//step-1: write function and index to dev_fnidx_reg
 	//format of dev_fnidx_reg is in AMD Dev. Vol2 (p. 407)
-	emhf_baseplatform_arch_x86_pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
+	xmhf_baseplatform_arch_x86_pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
 		_svm_eap.dev_fnidx_reg, sizeof(u32), (u32)(((function & 0xff) << 8) + (index & 0xff)) );
 
 	//step-2: write 32-bit value to dev_data_reg
-	emhf_baseplatform_arch_x86_pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
+	xmhf_baseplatform_arch_x86_pci_type1_write(DEV_PCI_BUS, DEV_PCI_DEVICE, DEV_PCI_FUNCTION,
 		_svm_eap.dev_data_reg, sizeof(u32), value);
 }
 
@@ -421,7 +421,7 @@ static void svm_eap_dev_invalidate_cache(void){
 //"early" DMA protection initialization to setup minimal
 //structures to protect a range of physical memory
 //return 1 on success 0 on failure
-u32 emhf_dmaprot_arch_x86svm_earlyinitialize(u64 protectedbuffer_paddr,
+u32 xmhf_dmaprot_arch_x86svm_earlyinitialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
 	u64 memregionbase_paddr, u32 memregion_size){
 
@@ -458,7 +458,7 @@ u32 emhf_dmaprot_arch_x86svm_earlyinitialize(u64 protectedbuffer_paddr,
 //"normal" DMA protection initialization to setup required
 //structures for DMA protection
 //return 1 on success 0 on failure
-u32 emhf_dmaprot_arch_x86svm_initialize(u64 protectedbuffer_paddr,
+u32 xmhf_dmaprot_arch_x86svm_initialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size){
 
 	u32 status;
@@ -476,7 +476,7 @@ u32 emhf_dmaprot_arch_x86svm_initialize(u64 protectedbuffer_paddr,
 
 //DMA protect a given region of memory, start_paddr is
 //assumed to be page aligned physical memory address
-void emhf_dmaprot_arch_x86svm_protect(u32 start_paddr, u32 size){
+void xmhf_dmaprot_arch_x86svm_protect(u32 start_paddr, u32 size){
 	u32 paligned_paddr_start, paligned_paddr_end, i;
 	
 	//compute page-aligned physical start and end addresses

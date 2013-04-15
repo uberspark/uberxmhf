@@ -51,19 +51,19 @@
 #include <xmhf.h> 
 
 // initialize memory protection structures for a given core (vcpu)
-void emhf_memprot_arch_initialize(VCPU *vcpu){
+void xmhf_memprot_arch_initialize(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
-		emhf_memprot_arch_x86svm_initialize(vcpu);
+		xmhf_memprot_arch_x86svm_initialize(vcpu);
 		printf("\nCPU(0x%02x): Activated SVM NPTs.", vcpu->id);
 	}else{	//CPU_VENDOR_INTEL
-		emhf_memprot_arch_x86vmx_initialize(vcpu);
+		xmhf_memprot_arch_x86vmx_initialize(vcpu);
 		printf("\nCPU(0x%02x): Activated VMX EPTs.", vcpu->id);
 	}
 }
 
 // get level-1 page map address
-u64 * emhf_memprot_arch_get_lvl1_pagemap_address(VCPU *vcpu){
+u64 * xmhf_memprot_arch_get_lvl1_pagemap_address(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
 	if (vcpu->cpu_vendor == CPU_VENDOR_AMD)
@@ -73,7 +73,7 @@ u64 * emhf_memprot_arch_get_lvl1_pagemap_address(VCPU *vcpu){
 }
 
 //get level-2 page map address
-u64 * emhf_memprot_arch_get_lvl2_pagemap_address(VCPU *vcpu){
+u64 * xmhf_memprot_arch_get_lvl2_pagemap_address(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
 	if (vcpu->cpu_vendor == CPU_VENDOR_AMD)
@@ -83,7 +83,7 @@ u64 * emhf_memprot_arch_get_lvl2_pagemap_address(VCPU *vcpu){
 }
 
 //get level-3 page map address
-u64 * emhf_memprot_arch_get_lvl3_pagemap_address(VCPU *vcpu){
+u64 * xmhf_memprot_arch_get_lvl3_pagemap_address(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
 	if (vcpu->cpu_vendor == CPU_VENDOR_AMD)
@@ -93,14 +93,14 @@ u64 * emhf_memprot_arch_get_lvl3_pagemap_address(VCPU *vcpu){
 }
 
 //get level-4 page map address
-u64 * emhf_memprot_arch_get_lvl4_pagemap_address(VCPU *vcpu){
+u64 * xmhf_memprot_arch_get_lvl4_pagemap_address(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);	//we don;t have a level-4 pagemap for AMD
 
     return (u64 *)vcpu->vmx_vaddr_ept_pml4_table;
 }
 
 //get default root page map address
-u64 * emhf_memprot_arch_get_default_root_pagemap_address(VCPU *vcpu){
+u64 * xmhf_memprot_arch_get_default_root_pagemap_address(VCPU *vcpu){
   HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
@@ -111,18 +111,18 @@ u64 * emhf_memprot_arch_get_default_root_pagemap_address(VCPU *vcpu){
 
 
 //flush hardware page table mappings (TLB) 
-void emhf_memprot_arch_flushmappings(VCPU *vcpu){
+void xmhf_memprot_arch_flushmappings(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-		emhf_memprot_arch_x86svm_flushmappings(vcpu);
+		xmhf_memprot_arch_x86svm_flushmappings(vcpu);
 	else //CPU_VENDOR_INTEL
-		emhf_memprot_arch_x86vmx_flushmappings(vcpu);
+		xmhf_memprot_arch_x86vmx_flushmappings(vcpu);
 
 }
 
 //set protection for a given physical memory address
-void emhf_memprot_arch_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
+void xmhf_memprot_arch_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
 #ifdef __XMHF_VERIFICATION__
 	assert ( (vcpu != NULL) );
 	assert ( ( (gpa < rpb->XtVmmRuntimePhysBase) || 
@@ -142,16 +142,16 @@ void emhf_memprot_arch_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
 
 	//invoke appropriate sub arch. backend
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-		emhf_memprot_arch_x86svm_setprot(vcpu, gpa, prottype);
+		xmhf_memprot_arch_x86svm_setprot(vcpu, gpa, prottype);
 	else //CPU_VENDOR_INTEL
-		emhf_memprot_arch_x86vmx_setprot(vcpu, gpa, prottype);
+		xmhf_memprot_arch_x86vmx_setprot(vcpu, gpa, prottype);
 }
 
 //get protection for a given physical memory address
-u32 emhf_memprot_arch_getprot(VCPU *vcpu, u64 gpa){
+u32 xmhf_memprot_arch_getprot(VCPU *vcpu, u64 gpa){
 	//invoke appropriate sub arch. backend
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-		return emhf_memprot_arch_x86svm_getprot(vcpu, gpa);
+		return xmhf_memprot_arch_x86svm_getprot(vcpu, gpa);
 	else //CPU_VENDOR_INTEL
-		return emhf_memprot_arch_x86vmx_getprot(vcpu, gpa);
+		return xmhf_memprot_arch_x86vmx_getprot(vcpu, gpa);
 }

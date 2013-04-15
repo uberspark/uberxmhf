@@ -60,7 +60,7 @@ VCPU g_vcpubuffers[0];
 #define BR64_SET(x64, name, val) BR64_SET_HL(x64, name##_HI, name##_LO, val)
 
 /* do-nothing mock */
-void emhf_hwpgtbl_flushall(VCPU *vcpu)
+void xmhf_hwpgtbl_flushall(VCPU *vcpu)
 {
 }
 

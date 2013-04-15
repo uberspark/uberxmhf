@@ -52,16 +52,16 @@
 #include <xmhf.h>
 
 //get CPU vendor
-u32 emhf_baseplatform_getcpuvendor(void){
-	return emhf_baseplatform_arch_getcpuvendor();
+u32 xmhf_baseplatform_getcpuvendor(void){
+	return xmhf_baseplatform_arch_getcpuvendor();
 }
 
 //initialize basic platform elements
-void emhf_baseplatform_initialize(void){
-	emhf_baseplatform_arch_initialize();	
+void xmhf_baseplatform_initialize(void){
+	xmhf_baseplatform_arch_initialize();	
 }
 
 //initialize CPU state
-void emhf_baseplatform_cpuinitialize(void){
-	emhf_baseplatform_arch_cpuinitialize();
+void xmhf_baseplatform_cpuinitialize(void){
+	xmhf_baseplatform_arch_cpuinitialize();
 }

@@ -77,7 +77,7 @@ u8 x_init_stack[RUNTIME_STACK_SIZE] __attribute__(( section(".stack") ));
 
 RPB arch_rpb __attribute__(( section(".s_rpb") )) = {
 	.magic= RUNTIME_PARAMETER_BLOCK_MAGIC,
-	.XtVmmEntryPoint= (u32)emhf_runtime_entry,
+	.XtVmmEntryPoint= (u32)xmhf_runtime_entry,
 	.XtVmmPdptBase= (u32)x_3level_pdpt,
 	.XtVmmPdtsBase= (u32)x_3level_pdt,
 	//.XtVmmNpdtBase= 0,
@@ -96,8 +96,8 @@ RPB arch_rpb __attribute__(( section(".s_rpb") )) = {
 	//.XtVmmNestedPdptBase= 0,
 	//.XtVmmNestedPdtsBase= 0,
 	//.XtVmmNestedPtsBase= 0,
-	.XtVmmIdt= (u32)emhf_xcphandler_idt,
-	.XtVmmIdtFunctionPointers= (u32)emhf_xcphandler_exceptionstubs,
+	.XtVmmIdt= (u32)xmhf_xcphandler_idt,
+	.XtVmmIdtFunctionPointers= (u32)xmhf_xcphandler_exceptionstubs,
 	.XtVmmIdtEntries= 32,
 	//.XtVmmE1000DescBase= 0,
 	//.XtVmmE1000HeaderBase= 0,

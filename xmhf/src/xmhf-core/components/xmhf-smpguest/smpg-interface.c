@@ -61,26 +61,26 @@
 
 
 //initialize SMP guest logic
-void emhf_smpguest_initialize(VCPU *vcpu){
-	emhf_smpguest_arch_initialize(vcpu);
+void xmhf_smpguest_initialize(VCPU *vcpu){
+	xmhf_smpguest_arch_initialize(vcpu);
 }
 
 
 //quiesce interface to switch all guest cores into hypervisor mode
-static void emhf_smpguest_quiesce(VCPU *vcpu) __attribute__((unused));
-static void emhf_smpguest_quiesce(VCPU *vcpu){
-	emhf_smpguest_arch_quiesce(vcpu);
+static void xmhf_smpguest_quiesce(VCPU *vcpu) __attribute__((unused));
+static void xmhf_smpguest_quiesce(VCPU *vcpu){
+	xmhf_smpguest_arch_quiesce(vcpu);
 }
 
 //endquiesce interface to resume all guest cores after a quiesce
-static void emhf_smpguest_endquiesce(VCPU *vcpu) __attribute__((unused));
-static void emhf_smpguest_endquiesce(VCPU *vcpu){
-	emhf_smpguest_arch_endquiesce(vcpu);
+static void xmhf_smpguest_endquiesce(VCPU *vcpu) __attribute__((unused));
+static void xmhf_smpguest_endquiesce(VCPU *vcpu){
+	xmhf_smpguest_arch_endquiesce(vcpu);
 }
 
 
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping
-u8 * emhf_smpguest_walk_pagetables(VCPU *vcpu, u32 vaddr){
-	return emhf_smpguest_arch_walk_pagetables(vcpu, vaddr);
+u8 * xmhf_smpguest_walk_pagetables(VCPU *vcpu, u32 vaddr){
+	return xmhf_smpguest_arch_walk_pagetables(vcpu, vaddr);
 }

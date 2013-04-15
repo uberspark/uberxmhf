@@ -64,7 +64,7 @@ u32 currentenvironment = LDN_ENV_UNTRUSTED_SIGNATURE; //default to untrusted env
 //----------------------------------------------------------------------
 //hyperapp main                            
 //----------------------------------------------------------------------
-u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
+u32 xmhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 	LDNPB *pldnPb;
 
 	#if defined(__LDN_TV_INTEGRATION__)  
@@ -96,17 +96,17 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 		vcpu->id, acpi_control_portnum);
 	  
 	//set I/O port intercept for ACPI control port
-	emhf_partition_legacyIO_setprot(vcpu, acpi_control_portnum, 2, PART_LEGACYIO_NOACCESS); //16-bit port
+	xmhf_partition_legacyIO_setprot(vcpu, acpi_control_portnum, 2, PART_LEGACYIO_NOACCESS); //16-bit port
 #endif
 
 #if defined(__LDN_HYPERPARTITIONING__)
 	//set IDE port intercepts for hyper-partitioning
 
-	emhf_partition_legacyIO_setprot(vcpu, ATA_COMMAND(ATA_BUS_PRIMARY), 1, PART_LEGACYIO_NOACCESS); //8-bit port
-	emhf_partition_legacyIO_setprot(vcpu, ATA_SECTOR_COUNT(ATA_BUS_PRIMARY), 1, PART_LEGACYIO_NOACCESS); //8-bit port
-	emhf_partition_legacyIO_setprot(vcpu, ATA_LBALOW(ATA_BUS_PRIMARY), 1, PART_LEGACYIO_NOACCESS); //8-bit port
-	emhf_partition_legacyIO_setprot(vcpu, ATA_LBAMID(ATA_BUS_PRIMARY), 1, PART_LEGACYIO_NOACCESS); //8-bit port
-	emhf_partition_legacyIO_setprot(vcpu, ATA_LBAHIGH(ATA_BUS_PRIMARY), 1, PART_LEGACYIO_NOACCESS); //8-bit port
+	xmhf_partition_legacyIO_setprot(vcpu, ATA_COMMAND(ATA_BUS_PRIMARY), 1, PART_LEGACYIO_NOACCESS); //8-bit port
+	xmhf_partition_legacyIO_setprot(vcpu, ATA_SECTOR_COUNT(ATA_BUS_PRIMARY), 1, PART_LEGACYIO_NOACCESS); //8-bit port
+	xmhf_partition_legacyIO_setprot(vcpu, ATA_LBALOW(ATA_BUS_PRIMARY), 1, PART_LEGACYIO_NOACCESS); //8-bit port
+	xmhf_partition_legacyIO_setprot(vcpu, ATA_LBAMID(ATA_BUS_PRIMARY), 1, PART_LEGACYIO_NOACCESS); //8-bit port
+	xmhf_partition_legacyIO_setprot(vcpu, ATA_LBAHIGH(ATA_BUS_PRIMARY), 1, PART_LEGACYIO_NOACCESS); //8-bit port
 
 	printf("\nCPU(0x%02x): Lockdown; Setup hyperpartitioning on \
 	ATA/SATA device at 0x%08x", vcpu->id, ATA_BUS_PRIMARY);
@@ -147,7 +147,7 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 
 		#if defined(__LDN_SSLPA__)
 		//mask off all network interfaces by interposing on PCI bus accesses
-		emhf_iopm_set_write(vcpu, PCI_CONFIG_DATA_PORT, 2); //16-bit port
+		xmhf_iopm_set_write(vcpu, PCI_CONFIG_DATA_PORT, 2); //16-bit port
 		#endif
 	}else{	//we are going to run the untrusted environment
 		HALT_ON_ERRORCOND( currentenvironment == LDN_ENV_UNTRUSTED_SIGNATURE);
@@ -156,7 +156,7 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 		//environment in order to achieve greatest speedup during EPT
 		//translation
 		vmx_setupEPT2M(vcpu);
-		emhf_hwpgtbl_flushall(vcpu);
+		xmhf_hwpgtbl_flushall(vcpu);
 		printf("\nCPU(0x%02x): setup 2M EPT pages");*/
 	}
   
@@ -167,7 +167,7 @@ u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 //hyperapp hypercall handler
 //returns APP_SUCCESS if we handled the hypercall else APP_ERROR
 //----------------------------------------------------------------------
-u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
+u32 xmhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 	#if defined(__LDN_TV_INTEGRATION__)  
 	extern u32 tv_app_handlehypercall(VCPU *vcpu, struct regs *r);
 	return tv_app_handlehypercall(vcpu, r);
@@ -186,7 +186,7 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 // hyperapp nested (extended) page fault handler 
 // used to implement approved execution
 //----------------------------------------------------------------------
-u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
+u32 xmhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 	struct regs *r,
 	u64 gpa, u64 gva, u64 violationcode){
 	(void)r;
@@ -216,7 +216,7 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 	printf("\nCPU(0x%02x): gva=0x%08x, gpa=0x%08x, errorcode=0x%08x", 
 		vcpu->id, (u32)gva, (u32)gpa, (u32)violationcode);
 	printf("\nCPU(0x%02x): current gpa protection is: 0x%08x", 
-		emhf_memprot_getprot(vcpu, gpa));
+		xmhf_memprot_getprot(vcpu, gpa));
 	printf("\nCPU(0x%02x): Halting!"); 
 	HALT();
 	return APP_ERROR;	//we never get here
@@ -251,7 +251,7 @@ u32 sslpa_isnetworkdevice(u32 bus, u32 device, u32 function){
 //----------------------------------------------------------------------
 //hyperapp I/O port intercept handler
 //----------------------------------------------------------------------
-u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, 
+u32 xmhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, 
   u32 portnum, u32 access_type, u32 access_size){
 
 	#if defined(__LDN_HYPERSWITCHING__)  
@@ -271,7 +271,7 @@ u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
 		  vcpu->id);
 		
 		//reset platform
-		emhf_baseplatform_reboot(vcpu);
+		xmhf_baseplatform_reboot(vcpu);
 
 		//we should never get here
 		HALT();  
@@ -341,12 +341,12 @@ u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r,
 //----------------------------------------------------------------------
 //hyperapp platform shutdown handler
 //----------------------------------------------------------------------
-void emhf_app_handleshutdown(VCPU *vcpu, struct regs *r){
+void xmhf_app_handleshutdown(VCPU *vcpu, struct regs *r){
 	#if defined(__LDN_TV_INTEGRATION__)  
 	extern void tv_app_handleshutdown(VCPU *vcpu, struct regs *r);
 	tv_app_handleshutdown(vcpu, r);
 	#else
 	(void)r;
-	emhf_baseplatform_reboot(vcpu);
+	xmhf_baseplatform_reboot(vcpu);
 	#endif //__LDN_TV_INTEGRATION__
 }

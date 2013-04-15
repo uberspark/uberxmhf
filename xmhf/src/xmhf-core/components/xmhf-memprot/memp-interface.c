@@ -51,44 +51,44 @@
 #include <xmhf.h> 
 
 // initialize memory protection structures for a given core (vcpu)
-void emhf_memprot_initialize(VCPU *vcpu){
-	emhf_memprot_arch_initialize(vcpu);
+void xmhf_memprot_initialize(VCPU *vcpu){
+	xmhf_memprot_arch_initialize(vcpu);
 }
 
 // get level-1 page map address
-u64 * emhf_memprot_get_lvl1_pagemap_address(VCPU *vcpu){
-	return emhf_memprot_arch_get_lvl1_pagemap_address(vcpu);
+u64 * xmhf_memprot_get_lvl1_pagemap_address(VCPU *vcpu){
+	return xmhf_memprot_arch_get_lvl1_pagemap_address(vcpu);
 }
 
 //get level-2 page map address
-u64 * emhf_memprot_get_lvl2_pagemap_address(VCPU *vcpu){
-	return emhf_memprot_arch_get_lvl2_pagemap_address(vcpu);
+u64 * xmhf_memprot_get_lvl2_pagemap_address(VCPU *vcpu){
+	return xmhf_memprot_arch_get_lvl2_pagemap_address(vcpu);
 }
 
 //get level-3 page map address
-u64 * emhf_memprot_get_lvl3_pagemap_address(VCPU *vcpu){
-	return emhf_memprot_arch_get_lvl3_pagemap_address(vcpu);
+u64 * xmhf_memprot_get_lvl3_pagemap_address(VCPU *vcpu){
+	return xmhf_memprot_arch_get_lvl3_pagemap_address(vcpu);
 }
 
 //get level-4 page map address
-u64 * emhf_memprot_get_lvl4_pagemap_address(VCPU *vcpu){
-	return emhf_memprot_arch_get_lvl4_pagemap_address(vcpu);
+u64 * xmhf_memprot_get_lvl4_pagemap_address(VCPU *vcpu){
+	return xmhf_memprot_arch_get_lvl4_pagemap_address(vcpu);
 }
 
 //get default root page map address
-u64 * emhf_memprot_get_default_root_pagemap_address(VCPU *vcpu){
-	return emhf_memprot_arch_get_default_root_pagemap_address(vcpu);
+u64 * xmhf_memprot_get_default_root_pagemap_address(VCPU *vcpu){
+	return xmhf_memprot_arch_get_default_root_pagemap_address(vcpu);
 } 
 
 
 //flush hardware page table mappings (TLB) 
-void emhf_memprot_flushmappings(VCPU *vcpu){
-	emhf_memprot_arch_flushmappings(vcpu);
+void xmhf_memprot_flushmappings(VCPU *vcpu){
+	xmhf_memprot_arch_flushmappings(vcpu);
 }
 
 
 //set protection for a given physical memory address
-void emhf_memprot_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
+void xmhf_memprot_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
 #ifdef __XMHF_VERIFICATION__
 	assert ( (vcpu != NULL) );
 	assert ( ( (gpa < rpb->XtVmmRuntimePhysBase) || 
@@ -106,11 +106,11 @@ void emhf_memprot_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
 	);
 #endif
 
-	emhf_memprot_arch_setprot(vcpu, gpa, prottype);
+	xmhf_memprot_arch_setprot(vcpu, gpa, prottype);
 }
 
 
 //get protection for a given physical memory address
-u32 emhf_memprot_getprot(VCPU *vcpu, u64 gpa){
-	return emhf_memprot_arch_getprot(vcpu, gpa);
+u32 xmhf_memprot_getprot(VCPU *vcpu, u64 gpa){
+	return xmhf_memprot_arch_getprot(vcpu, gpa);
 }

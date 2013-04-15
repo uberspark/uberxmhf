@@ -147,12 +147,12 @@ void approvedexec_setup(VCPU *vcpu, APP_PARAM_BLOCK *apb){
 		if(i < 0x100 || (i >=0x800 && i <= 0x1000) )
 			continue;
 
-        emhf_memprot_setprot(vcpu, (i*PAGE_SIZE_4K), 
+        xmhf_memprot_setprot(vcpu, (i*PAGE_SIZE_4K), 
 					(MEMP_PROT_PRESENT | 
 						MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE) );     
 	  }
 	
-      emhf_memprot_flushmappings(vcpu);  //flush all NPT/EPT mappings
+      xmhf_memprot_flushmappings(vcpu);  //flush all NPT/EPT mappings
       printf("\nCPU(0x%02x): %s: setup approved execution.", 
 			vcpu->id, __FUNCTION__);
 
@@ -232,7 +232,7 @@ static u32 approvedexec_getguestpcpaddr(VCPU *vcpu){
 
 	//if we have paging turned on, then go through the guest page tables
 	if( (guest_cr0 & CR0_PE) && (guest_cr0 & CR0_PG) ){
-		u32 guestpcpaddr = (u32)(u32 *)emhf_smpguest_walk_pagetables(vcpu, guestpclinearaddress);
+		u32 guestpcpaddr = (u32)(u32 *)xmhf_smpguest_walk_pagetables(vcpu, guestpclinearaddress);
 		HALT_ON_ERRORCOND(guestpcpaddr != 0xFFFFFFFFUL);
 		return (u32)guestpcpaddr;  
 	}else{ //linear address is physical address when no paging in effect
@@ -294,10 +294,10 @@ u32 approvedexec_handleevent(VCPU *vcpu, struct regs *r,
     //verify integrity of code page
     windows_verifycodeintegrity(vcpu, (u32)gpa, (u32)gva);
     //give page execute permissions but prevent further writes
-    emhf_memprot_setprot(vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READONLY | MEMP_PROT_EXECUTE);
-    //emhf_memprot_setprot(vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE);
+    xmhf_memprot_setprot(vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READONLY | MEMP_PROT_EXECUTE);
+    //xmhf_memprot_setprot(vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE);
     //printf("\n%s: CPU(0x%02x) PF-NX, getprot=0x%08x",
-	//	__FUNCTION__, vcpu->id, emhf_memprot_getprot(vcpu, gpa));
+	//	__FUNCTION__, vcpu->id, xmhf_memprot_getprot(vcpu, gpa));
 
   }else{
     //we have a write fault, check if it is cmd on same page
@@ -310,14 +310,14 @@ u32 approvedexec_handleevent(VCPU *vcpu, struct regs *r,
       //TODO: we will need to single-step or emulate instructions on this page  
       //for now give all permissions and move on...
       //printf("\n  CPU(0x%02x): C-M-D on same page", vcpu->id);
-      emhf_memprot_setprot(vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE);
+      xmhf_memprot_setprot(vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE);
     }else{
       //make page read-write and remove execute permission
-      emhf_memprot_setprot(vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE);
+      xmhf_memprot_setprot(vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE);
     }
   }
 
-  emhf_memprot_flushmappings(vcpu);  //flush all NPT/EPT mappings
+  xmhf_memprot_flushmappings(vcpu);  //flush all NPT/EPT mappings
 
   return APP_SUCCESS;    
 }

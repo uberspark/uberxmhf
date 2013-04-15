@@ -99,7 +99,7 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 	if( (vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG) &&
 			(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM) ){
 		u8 *bdamemoryphysical;
-		bdamemoryphysical = (u8 *)emhf_smpguest_arch_x86vmx_walk_pagetables(vcpu, (u32)bdamemory);
+		bdamemoryphysical = (u8 *)xmhf_smpguest_arch_x86vmx_walk_pagetables(vcpu, (u32)bdamemory);
 		HALT_ON_ERRORCOND( (u32)bdamemoryphysical != 0xFFFFFFFFUL );
 		printf("\nINT15 (E820): V86 mode, bdamemory translated from %08x to %08x",
 			(u32)bdamemory, (u32)bdamemoryphysical);
@@ -146,7 +146,7 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 			//if V86 mode translate the virtual address to physical address
 			if( (vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG) &&
 					(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM) ){
-				u8 *gueststackregionphysical = (u8 *)emhf_smpguest_arch_x86vmx_walk_pagetables(vcpu, (u32)gueststackregion);
+				u8 *gueststackregionphysical = (u8 *)xmhf_smpguest_arch_x86vmx_walk_pagetables(vcpu, (u32)gueststackregion);
 				HALT_ON_ERRORCOND( (u32)gueststackregionphysical != 0xFFFFFFFFUL );
 				printf("\nINT15 (E820): V86 mode, gueststackregion translated from %08x to %08x",
 					(u32)gueststackregion, (u32)gueststackregionphysical);
@@ -223,7 +223,7 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		#ifdef __XMHF_VERIFICATION__
 			bdamemoryphysical = (u8 *)nondet_u32();
 		#else
-			bdamemoryphysical = (u8 *)emhf_smpguest_arch_x86vmx_walk_pagetables(vcpu, (u32)bdamemory);
+			bdamemoryphysical = (u8 *)xmhf_smpguest_arch_x86vmx_walk_pagetables(vcpu, (u32)bdamemory);
 		#endif
 		if((u32)bdamemoryphysical < rpb->XtVmmRuntimePhysBase){
 			printf("\nINT15 (E820): V86 mode, bdamemory translated from %08x to %08x",
@@ -308,7 +308,7 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 					#ifdef __XMHF_VERIFICATION__
 						u8 *gueststackregionphysical = (u8 *)nondet_u32();
 					#else
-						u8 *gueststackregionphysical = (u8 *)emhf_smpguest_arch_x86vmx_walk_pagetables(vcpu, (u32)gueststackregion);
+						u8 *gueststackregionphysical = (u8 *)xmhf_smpguest_arch_x86vmx_walk_pagetables(vcpu, (u32)gueststackregion);
 					#endif
 					if((u32)gueststackregionphysical < rpb->XtVmmRuntimePhysBase){
 						printf("\nINT15 (E820): V86 mode, gueststackregion translated from %08x to %08x",
@@ -496,12 +496,12 @@ static void _vmx_handle_intercept_eptviolation(VCPU *vcpu, struct regs *r){
 
 	//check if EPT violation is due to LAPIC interception
 	if(vcpu->isbsp && (gpa >= g_vmx_lapic_base) && (gpa < (g_vmx_lapic_base + PAGE_SIZE_4K)) ){
-		emhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
+		xmhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
 	}else{ //no, pass it to hypapp 
-		emhf_smpguest_arch_x86vmx_quiesce(vcpu);
-		emhf_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, gva,
+		xmhf_smpguest_arch_x86vmx_quiesce(vcpu);
+		xmhf_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, gva,
 				(errorcode & 7));
-		emhf_smpguest_arch_x86vmx_endquiesce(vcpu);
+		xmhf_smpguest_arch_x86vmx_endquiesce(vcpu);
 	}		
 }
 
@@ -520,10 +520,10 @@ static void _vmx_handle_intercept_ioportaccess(VCPU *vcpu, struct regs *r){
 
   //call our app handler, TODO: it should be possible for an app to
   //NOT want a callback by setting up some parameters during appmain
-	emhf_smpguest_arch_x86vmx_quiesce(vcpu);
-	app_ret_status=emhf_app_handleintercept_portaccess(vcpu, r, portnum, access_type, 
+	xmhf_smpguest_arch_x86vmx_quiesce(vcpu);
+	app_ret_status=xmhf_app_handleintercept_portaccess(vcpu, r, portnum, access_type, 
           access_size);
-    emhf_smpguest_arch_x86vmx_endquiesce(vcpu);
+    xmhf_smpguest_arch_x86vmx_endquiesce(vcpu);
 
   if(app_ret_status == APP_IOINTERCEPT_CHAIN){
    	if(access_type == IO_TYPE_OUT){
@@ -571,7 +571,7 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	//vcpu->vmcs.guest_CR0 = cr0_value;
 	
 	//flush mappings
-	emhf_memprot_arch_x86vmx_flushmappings(vcpu);
+	xmhf_memprot_arch_x86vmx_flushmappings(vcpu);
 }
 
 //---CR4 access handler---------------------------------------------------------
@@ -597,16 +597,16 @@ static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gp
 
 
 //---hvm_intercept_handler------------------------------------------------------
-u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
+u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 	//read VMCS from physical CPU/core
 #ifndef __XMHF_VERIFICATION__
-	emhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
+	xmhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
 #endif //__XMHF_VERIFICATION__
 	//sanity check for VM-entry errors
 	if( (u32)vcpu->vmcs.info_vmexit_reason & 0x80000000UL ){
 		printf("\nVM-ENTRY error: reason=0x%08x, qualification=0x%016llx", 
 			(u32)vcpu->vmcs.info_vmexit_reason, (u64)vcpu->vmcs.info_exit_qualification);
-		emhf_baseplatform_arch_x86vmx_dumpVMCS(vcpu);
+		xmhf_baseplatform_arch_x86vmx_dumpVMCS(vcpu);
 		HALT();
 	}
   
@@ -627,12 +627,12 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 						(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM)  ) );
 				_vmx_int15_handleintercept(vcpu, r);	
 			}else{	//if not E820 hook, give hypapp a chance to handle the hypercall
-				emhf_smpguest_arch_x86vmx_quiesce(vcpu);
-				if( emhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
+				xmhf_smpguest_arch_x86vmx_quiesce(vcpu);
+				if( xmhf_app_handlehypercall(vcpu, r) != APP_SUCCESS){
 					printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", vcpu->id, r->eax);
 					HALT();
 				}
-				emhf_smpguest_arch_x86vmx_endquiesce(vcpu);
+				xmhf_smpguest_arch_x86vmx_endquiesce(vcpu);
 				vcpu->vmcs.guest_RIP += 3;
 			}
 		}
@@ -649,9 +649,9 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		break;  
 
 		case VMX_VMEXIT_INIT:{
-			printf("\n***** VMEXIT_INIT emhf_app_handleshutdown\n");
-			emhf_app_handleshutdown(vcpu, r);      
-			printf("\nCPU(0x%02x): Fatal, emhf_app_handleshutdown returned. Halting!", vcpu->id);
+			printf("\n***** VMEXIT_INIT xmhf_app_handleshutdown\n");
+			xmhf_app_handleshutdown(vcpu, r);      
+			printf("\nCPU(0x%02x): Fatal, xmhf_app_handleshutdown returned. Halting!", vcpu->id);
 			HALT();
 		}
 		break;
@@ -673,13 +673,13 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
  		case VMX_VMEXIT_EXCEPTION:{
 			switch( ((u32)vcpu->vmcs.info_vmexit_interrupt_information & INTR_INFO_VECTOR_MASK) ){
 				case 0x01:
-					emhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
+					xmhf_smpguest_arch_x86_eventhandler_dbexception(vcpu, r);
 					break;				
 				
 				case 0x02:	//NMI
 					#ifndef __XMHF_VERIFICATION__
 					//we currently discharge quiescing via manual inspection
-					emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(vcpu, r);
+					xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(vcpu, r);
 					#endif // __XMHF_VERIFICATION__
 					break;
 				
@@ -741,9 +741,9 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			break;
 			
 		case VMX_VMEXIT_WRMSR:
-			//emhf_smpguest_arch_x86vmx_quiesce(vcpu);
+			//xmhf_smpguest_arch_x86vmx_quiesce(vcpu);
 			_vmx_handle_intercept_wrmsr(vcpu, r);
-			//emhf_smpguest_arch_x86vmx_endquiesce(vcpu);
+			//xmhf_smpguest_arch_x86vmx_endquiesce(vcpu);
 			break;
 			
 		case VMX_VMEXIT_CPUID:
@@ -758,8 +758,8 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			
 			if(reason == TASK_SWITCH_GATE && type == INTR_TYPE_NMI){
 				printf("\nCPU(0x%02x): NMI received (MP guest shutdown?)", vcpu->id);
-					emhf_app_handleshutdown(vcpu, r);      
-				printf("\nCPU(0x%02x): warning, emhf_app_handleshutdown returned!", vcpu->id);
+					xmhf_app_handleshutdown(vcpu, r);      
+				printf("\nCPU(0x%02x): warning, xmhf_app_handleshutdown returned!", vcpu->id);
 				printf("\nCPU(0x%02x): HALTING!", vcpu->id);
 				HALT();
 			}else{
@@ -807,7 +807,7 @@ u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 
 	//write updated VMCS back to CPU
 #ifndef __XMHF_VERIFICATION__
-	emhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
+	xmhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
 #endif // __XMHF_VERIFICATION__
 
 

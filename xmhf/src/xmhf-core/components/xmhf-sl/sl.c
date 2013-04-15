@@ -68,7 +68,7 @@ u32 g_dmaprot_activated=0;
 //we get here from slheader.S
 // rdtsc_* are valid only if PERF_CRIT is not defined.  slheader.S
 // sets them to 0 otherwise.
-void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
+void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 
 	u32 runtime_physical_base;
@@ -86,7 +86,7 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	HALT_ON_ERRORCOND (cpu_vendor == CPU_VENDOR_AMD || cpu_vendor == CPU_VENDOR_INTEL);
 	
 	//initialize debugging early on
-	emhf_debug_init((char *)&slpb.uart_config);
+	xmhf_debug_init((char *)&slpb.uart_config);
 
 	//initialze sl_baseaddr variable and print its value out
 	sl_baseaddr = baseaddr;
@@ -148,18 +148,18 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 
 	//initialize basic platform elements
-	emhf_baseplatform_initialize();
+	xmhf_baseplatform_initialize();
 
 
 	//sanitize cache/MTRR/SMRAM (most important is to ensure that MTRRs 
 	//do not contain weird mappings)
 #if defined (__DRTM_DMA_PROTECTION__)
-    emhf_sl_arch_sanitize_post_launch();
+    xmhf_sl_arch_sanitize_post_launch();
 
 	
 	/*
     //check SL integrity
-    if(emhf_sl_arch_integrity_check((u8*)PAGE_SIZE_2M, slpb.runtime_size)) // XXX base addr
+    if(xmhf_sl_arch_integrity_check((u8*)PAGE_SIZE_2M, slpb.runtime_size)) // XXX base addr
         printf("\nsl_intergrity_check SUCCESS");
     else
         printf("\nsl_intergrity_check FAILURE");
@@ -184,7 +184,7 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 #if defined (__DRTM_DMA_PROTECTION__)    
 	//setup DMA protection on runtime (secure loader is already DMA protected)
-	emhf_sl_arch_early_dmaprot_init(slpb.runtime_size);
+	xmhf_sl_arch_early_dmaprot_init(slpb.runtime_size);
 #endif
 	
 	#ifdef __XMHF_VERIFICATION__
@@ -202,13 +202,13 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 		//store revised E820 map and number of entries
 		#ifndef __XMHF_VERIFICATION__
-		memcpy(emhf_sl_arch_hva2sla(rpb->XtVmmE820Buffer), (void *)&slpb.memmapbuffer, (sizeof(slpb.memmapbuffer)) );
+		memcpy(xmhf_sl_arch_hva2sla(rpb->XtVmmE820Buffer), (void *)&slpb.memmapbuffer, (sizeof(slpb.memmapbuffer)) );
 		#endif
 		rpb->XtVmmE820NumEntries = slpb.numE820Entries; 
 
 		//store CPU table and number of CPUs
 		#ifndef __XMHF_VERIFICATION__
-		memcpy(emhf_sl_arch_hva2sla(rpb->XtVmmMPCpuinfoBuffer), (void *)&slpb.cpuinfobuffer, (sizeof(slpb.cpuinfobuffer)) );
+		memcpy(xmhf_sl_arch_hva2sla(rpb->XtVmmMPCpuinfoBuffer), (void *)&slpb.cpuinfobuffer, (sizeof(slpb.cpuinfobuffer)) );
 		#endif
 		rpb->XtVmmMPCpuinfoNumEntries = slpb.numCPUEntries; 
 
@@ -241,7 +241,7 @@ void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 	
 	//transfer control to runtime
-	emhf_sl_arch_xfer_control_to_runtime(rpb);
+	xmhf_sl_arch_xfer_control_to_runtime(rpb);
 
 #ifndef __XMHF_VERIFICATION__
 	//we should never get here

@@ -52,7 +52,7 @@
 #include <xmhf.h>
 
 //SVM specific platform reboot
-void emhf_baseplatform_arch_x86svm_reboot(VCPU *vcpu){
+void xmhf_baseplatform_arch_x86svm_reboot(VCPU *vcpu){
 	u32 eax, edx;
 	
 	(void)vcpu;
@@ -65,5 +65,5 @@ void emhf_baseplatform_arch_x86svm_reboot(VCPU *vcpu){
 
 	
 	//fall back on generic x86 reboot
-	emhf_baseplatform_arch_x86_reboot();
+	xmhf_baseplatform_arch_x86_reboot();
 }

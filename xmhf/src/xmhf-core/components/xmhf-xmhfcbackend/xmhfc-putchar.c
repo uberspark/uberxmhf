@@ -54,7 +54,7 @@ void *emhfc_putchar_linelock_arg = &emhfc_putchar_linelock_spinlock;
 void emhfc_putchar(int ch, void *arg)
 {
   (void)arg;
-  emhf_debug_arch_putc(ch);
+  xmhf_debug_arch_putc(ch);
 }
 
 void emhfc_putchar_linelock(void *arg)

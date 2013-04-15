@@ -60,16 +60,16 @@
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
 //open TPM locality
-int emhf_tpm_arch_open_locality(int locality);
+int xmhf_tpm_arch_open_locality(int locality);
 
 //check if TPM is ready for use
-bool emhf_tpm_arch_is_tpm_ready(uint32_t locality);
+bool xmhf_tpm_arch_is_tpm_ready(uint32_t locality);
 
 //deactivate all TPM localities
-void emhf_tpm_arch_deactivate_all_localities(void);
+void xmhf_tpm_arch_deactivate_all_localities(void);
 
 //prepare TPM for use
-bool emhf_tpm_arch_prepare_tpm(void);
+bool xmhf_tpm_arch_prepare_tpm(void);
 
 
 
@@ -223,14 +223,14 @@ typedef struct __attribute__ ((packed)) {
 //x86vmx SUBARCH. INTERFACES
 //----------------------------------------------------------------------
 //open TPM locality
-int emhf_tpm_arch_x86vmx_open_locality(int locality);
+int xmhf_tpm_arch_x86vmx_open_locality(int locality);
 
 
 //----------------------------------------------------------------------
 //x86vmx SUBARCH. INTERFACES
 //----------------------------------------------------------------------
 //open TPM locality
-int emhf_tpm_arch_x86svm_open_locality(int locality);
+int xmhf_tpm_arch_x86svm_open_locality(int locality);
 
 
 

@@ -47,29 +47,29 @@
 #include <xmhf.h>
 #include <tv_emhf.h>
 
-u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb)
+u32 xmhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb)
 {
   return tv_app_main(vcpu, apb);
 }
 
-u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
+u32 xmhf_app_handlehypercall(VCPU *vcpu, struct regs *r)
 {
   return tv_app_handlehypercall(vcpu, r);
 }
 
-u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
+u32 xmhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
                                               struct regs *r, u64 gpa, u64 gva, u64 violationcode)
 {
   return tv_app_handleintercept_hwpgtblviolation(vcpu, r, gpa, gva, violationcode);
 }
 
-u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, 
+u32 xmhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, 
                                         u32 portnum, u32 access_type, u32 access_size)
 {
   return tv_app_handleintercept_portaccess(vcpu, r, portnum, access_type, access_size);
 }
 
-void emhf_app_handleshutdown(VCPU *vcpu, struct regs *r)
+void xmhf_app_handleshutdown(VCPU *vcpu, struct regs *r)
 {
   tv_app_handleshutdown(vcpu, r);
 }

@@ -67,8 +67,8 @@ RPB *rpb; 	//runtime parameter block pointer
 RPB _xrpb;	
 
 void runtime_main(){
-		/* emhf_runtime_main */
-		extern void emhf_runtime_main(void);
+		/* xmhf_runtime_main */
+		extern void xmhf_runtime_main(void);
 		//setup RPB pointer and required runtime parameter block values
 		rpb = (RPB *)&_xrpb;
 		rpb->XtVmmE820NumEntries = 1; 									//lets worry about E820 later
@@ -95,15 +95,15 @@ void runtime_main(){
 		vcpu.cpu_vendor = CPU_VENDOR_AMD;
 #endif		
 				
-		emhf_runtime_main(&vcpu, 0);									//call "init" function
+		xmhf_runtime_main(&vcpu, 0);									//call "init" function
 
 }
 
 	
 void runtime_entry_main(){
-		/* emhf_runtime_entry */
-		extern void emhf_runtime_entry(void);
-		emhf_runtime_entry();
+		/* xmhf_runtime_entry */
+		extern void xmhf_runtime_entry(void);
+		xmhf_runtime_entry();
 }
 
 //----------------------------------------------------------------------

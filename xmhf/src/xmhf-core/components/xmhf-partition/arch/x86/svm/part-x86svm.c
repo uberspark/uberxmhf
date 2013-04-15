@@ -289,21 +289,21 @@ static void _svm_initVMCB(VCPU *vcpu){
 
 
 //initialize partition monitor for a given CPU
-void emhf_partition_arch_x86svm_initializemonitor(VCPU *vcpu){
+void xmhf_partition_arch_x86svm_initializemonitor(VCPU *vcpu){
   //initialize SVM
   _svm_initSVM(vcpu);
 
 }
 
 //setup guest OS state for the partition
-void emhf_partition_arch_x86svm_setupguestOSstate(VCPU *vcpu){
+void xmhf_partition_arch_x86svm_setupguestOSstate(VCPU *vcpu){
 	//setup VMCB
 	_svm_initVMCB(vcpu);
 	
 }
 
 //start executing the partition and guest OS
-void emhf_partition_arch_x86svm_start(VCPU *vcpu){
+void xmhf_partition_arch_x86svm_start(VCPU *vcpu){
     struct _svm_vmcbfields *vmcb;
     vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
     printf("\nCPU(0x%02x): Starting HVM using CS:EIP=0x%04x:0x%08x...", vcpu->id,
@@ -325,7 +325,7 @@ void emhf_partition_arch_x86svm_start(VCPU *vcpu){
 }
 	
 //set legacy I/O protection for the partition
-void emhf_partition_arch_x86svm_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype){
+void xmhf_partition_arch_x86svm_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype){
 	u8 *bit_vector = (u8 *)vcpu->svm_vaddr_iobitmap;
 	u32 byte_offset, bit_offset;
 	u32 i;

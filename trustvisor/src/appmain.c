@@ -507,7 +507,7 @@ u32 tv_app_handlehypercall(VCPU *vcpu, struct regs *r)
   u32 ret = 0;
 
 //#ifdef __MP_VERSION__
-//  emhf_smpguest_quiesce(vcpu);
+//  xmhf_smpguest_quiesce(vcpu);
 //#endif
 
   if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
@@ -561,7 +561,7 @@ u32 tv_app_handlehypercall(VCPU *vcpu, struct regs *r)
   }
 
 //#ifdef __MP_VERSION__
-//  emhf_smpguest_endquiesce(vcpu);
+//  xmhf_smpguest_endquiesce(vcpu);
 //#endif
 
   return status;
@@ -577,7 +577,7 @@ u32 tv_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 #endif //__LDN_TV_INTEGRATION__
 
 //#ifdef __MP_VERSION__
-//  emhf_smpguest_quiesce(vcpu);
+//  xmhf_smpguest_quiesce(vcpu);
 //#endif
 
 #if !defined(__LDN_TV_INTEGRATION__)  
@@ -592,7 +592,7 @@ u32 tv_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 #endif //__LDN_TV_INTEGRATION__
 
 //#ifdef __MP_VERSION__
-//  emhf_smpguest_endquiesce(vcpu);
+//  xmhf_smpguest_endquiesce(vcpu);
 //#endif
 
   return ret;
@@ -602,7 +602,7 @@ u32 tv_app_handleintercept_portaccess(VCPU *vcpu, struct regs __attribute__((unu
                                       u32 portnum, u32 access_type, u32 access_size)
 {
 //#ifdef __MP_VERSION__
-//  emhf_smpguest_quiesce(vcpu);
+//  xmhf_smpguest_quiesce(vcpu);
 //#endif
 
   eu_err("CPU(0x%02x): Port access intercept feature unimplemented. Halting!", vcpu->id);
@@ -613,7 +613,7 @@ u32 tv_app_handleintercept_portaccess(VCPU *vcpu, struct regs __attribute__((unu
   //return APP_IOINTERCEPT_CHAIN; //chain and do the required I/O    
 
 //#ifdef __MP_VERSION__
-//  emhf_smpguest_endquiesce(vcpu);
+//  xmhf_smpguest_endquiesce(vcpu);
 //#endif
 
   return 0; /* XXX DUMMY; keeps compiler happy */
@@ -622,8 +622,8 @@ u32 tv_app_handleintercept_portaccess(VCPU *vcpu, struct regs __attribute__((unu
 void tv_app_handleshutdown(VCPU *vcpu, struct regs __attribute__((unused)) *r)
 {
   eu_trace("CPU(0x%02x): Shutdown intercept!", vcpu->id);
-  //g_libemhf->emhf_reboot(vcpu);
-  emhf_baseplatform_reboot(vcpu);
+  //g_libemhf->xmhf_reboot(vcpu);
+  xmhf_baseplatform_reboot(vcpu);
 }
 
 /* Local Variables: */

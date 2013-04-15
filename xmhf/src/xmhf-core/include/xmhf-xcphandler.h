@@ -60,38 +60,38 @@
 //exported DATA 
 
 //array of exception handler stubs
-extern u8 emhf_xcphandler_exceptionstubs[]; 
+extern u8 xmhf_xcphandler_exceptionstubs[]; 
 
 //IDT descriptor
-extern u8 emhf_xcphandler_idt[];
+extern u8 xmhf_xcphandler_idt[];
 
 //start of interrupt descriptor table 
-extern u8 emhf_xcphandler_idt_start[];
+extern u8 xmhf_xcphandler_idt_start[];
 
 //----------------------------------------------------------------------
 //exported FUNCTIONS 
 
 //initialize EMHF core exception handlers
-void emhf_xcphandler_initialize(void);
+void xmhf_xcphandler_initialize(void);
 
 //get IDT start address
-u8 * emhf_xcphandler_get_idt_start(void);
+u8 * xmhf_xcphandler_get_idt_start(void);
 
 //EMHF exception handler hub
-void emhf_xcphandler_hub(u32 vector, struct regs *r);
+void xmhf_xcphandler_hub(u32 vector, struct regs *r);
 
 
 //----------------------------------------------------------------------
 // generic arch. interfaces
 
 //initialize EMHF core exception handlers
-void emhf_xcphandler_arch_initialize(void);
+void xmhf_xcphandler_arch_initialize(void);
 
 //get IDT start address
-u8 * emhf_xcphandler_arch_get_idt_start(void);
+u8 * xmhf_xcphandler_arch_get_idt_start(void);
 
 //EMHF exception handler hub
-void emhf_xcphandler_arch_hub(u32 vector, struct regs *r);
+void xmhf_xcphandler_arch_hub(u32 vector, struct regs *r);
 
 
 

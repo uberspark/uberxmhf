@@ -52,11 +52,11 @@
 #include <xmhf.h>
 
 //initialize SMP
-void emhf_baseplatform_smpinitialize(void){
-	emhf_baseplatform_arch_smpinitialize();
+void xmhf_baseplatform_smpinitialize(void){
+	xmhf_baseplatform_arch_smpinitialize();
 }
 
 //reboot platform
-void emhf_baseplatform_reboot(VCPU *vcpu){
-	emhf_baseplatform_arch_reboot(vcpu);
+void xmhf_baseplatform_reboot(VCPU *vcpu){
+	xmhf_baseplatform_arch_reboot(vcpu);
 }

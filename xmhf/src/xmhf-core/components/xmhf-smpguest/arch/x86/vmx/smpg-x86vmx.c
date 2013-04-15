@@ -77,7 +77,7 @@ static void vmx_lapic_changemapping(VCPU *vcpu, u32 lapic_paddr, u32 new_lapic_p
   
   pts[lapic_page] = value;
 
-  emhf_memprot_arch_x86vmx_flushmappings(vcpu);
+  xmhf_memprot_arch_x86vmx_flushmappings(vcpu);
 #endif //__XMHF_VERIFICATION__
 }
 //----------------------------------------------------------------------
@@ -155,10 +155,10 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
 
 
 //----------------------------------------------------------------------
-//emhf_smpguest_arch_x86vmx_initialize
+//xmhf_smpguest_arch_x86vmx_initialize
 //initialize LAPIC interception machinery
 //note: called from the BSP
-void emhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu){
+void xmhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu){
   u32 eax, edx;
 
   //read LAPIC base address from MSR
@@ -182,9 +182,9 @@ void emhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu){
 	bool g_vmx_lapic_npf_verification_pre = false;
 #endif
 //----------------------------------------------------------------------
-//emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation
+//xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation
 //handle LAPIC accesses by the guest, used for SMP guest boot
-u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode){
+u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode){
 
   //get LAPIC register being accessed
   g_vmx_lapic_reg = (paddr - g_vmx_lapic_base);
@@ -258,9 +258,9 @@ u32 emhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 	bool g_vmx_lapic_db_verification_pre = false;
 #endif
 //------------------------------------------------------------------------------
-//emhf_smpguest_arch_x86vmx_eventhandler_dbexception
+//xmhf_smpguest_arch_x86vmx_eventhandler_dbexception
 //handle instruction that performed the LAPIC operation
-void emhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs *r){
+void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs *r){
   u32 delink_lapic_interception=0;
   
   (void)r;
@@ -403,7 +403,7 @@ static void _vmx_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu){
 
 //quiesce interface to switch all guest cores into hypervisor mode
 //note: we are in atomic processsing mode for this "vcpu"
-void emhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
+void xmhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
 
         //printf("\nCPU(0x%02x): got quiesce signal...", vcpu->id);
         //grab hold of quiesce lock
@@ -427,7 +427,7 @@ void emhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
 
 }
 
-void emhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
+void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
 		(void)vcpu;
 
         //set resume signal to resume the cores that are quiesced
@@ -458,7 +458,7 @@ void emhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
 //note: we are in atomic processsing mode for this "vcpu"
-void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
+void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
 	u32 nmiinhvm;	//1 if NMI originated from the HVM else 0 if within the hypervisor
 	u32 _vmx_vmcs_info_vmexit_interrupt_information;
 	u32 _vmx_vmcs_info_vmexit_reason;
@@ -519,7 +519,7 @@ void emhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 
 
 //perform required setup after a guest awakens a new CPU
-void emhf_smpguest_arch_x86vmx_postCPUwakeup(VCPU *vcpu){
+void xmhf_smpguest_arch_x86vmx_postCPUwakeup(VCPU *vcpu){
 	//setup guest CS and EIP as specified by the SIPI vector
 	vcpu->vmcs.guest_CS_selector = ((vcpu->sipivector * PAGE_SIZE_4K) >> 4); 
 	vcpu->vmcs.guest_CS_base = (vcpu->sipivector * PAGE_SIZE_4K); 
@@ -528,7 +528,7 @@ void emhf_smpguest_arch_x86vmx_postCPUwakeup(VCPU *vcpu){
 
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping
-u8 * emhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr){
+u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr){
   if((u32)vcpu->vmcs.guest_CR4 & CR4_PAE ){
     //PAE paging used by guest
     u32 kcr3 = (u32)vcpu->vmcs.guest_CR3;

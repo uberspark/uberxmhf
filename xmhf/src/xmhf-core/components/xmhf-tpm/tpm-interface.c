@@ -60,18 +60,18 @@
 #include <xmhf.h> 
 
 //open TPM locality
-int emhf_tpm_open_locality(int locality){
+int xmhf_tpm_open_locality(int locality){
     /* We expect locality 1 or 2 */
     if(locality < 1 || locality > 2) {
         return 1;
     }
 	
-    if(emhf_tpm_arch_open_locality(locality)) {
+    if(xmhf_tpm_arch_open_locality(locality)) {
       printf("\n%s: FAILED to open TPM locality %d\n", __FUNCTION__, locality);
       return 1;
     };
 
-    if(!emhf_tpm_is_tpm_ready(locality)) {
+    if(!xmhf_tpm_is_tpm_ready(locality)) {
         printf("\n%s: ERROR TPM is not ready, failed to open locality %d\n", __FUNCTION__, locality);
         return 1;
     } 
@@ -81,18 +81,18 @@ int emhf_tpm_open_locality(int locality){
 }
 
 //check if TPM is ready for use
-bool emhf_tpm_is_tpm_ready(uint32_t locality){
-		return emhf_tpm_arch_is_tpm_ready(locality);
+bool xmhf_tpm_is_tpm_ready(uint32_t locality){
+		return xmhf_tpm_arch_is_tpm_ready(locality);
 }
 
 //deactivate all TPM localities
-void emhf_tpm_deactivate_all_localities(void){
-	emhf_tpm_arch_deactivate_all_localities();
+void xmhf_tpm_deactivate_all_localities(void){
+	xmhf_tpm_arch_deactivate_all_localities();
 }
 
 //prepare TPM for use
-bool emhf_tpm_prepare_tpm(void){
-	return emhf_tpm_arch_prepare_tpm();
+bool xmhf_tpm_prepare_tpm(void){
+	return xmhf_tpm_arch_prepare_tpm();
 }
 
 

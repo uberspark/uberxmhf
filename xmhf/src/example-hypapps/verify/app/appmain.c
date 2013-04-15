@@ -54,7 +54,7 @@
 
 
 // application main
-u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
+u32 xmhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
   (void)apb;	//unused
   printf("\nCPU(0x%02x): XMHF core verification hypapp!", vcpu->id);
   return APP_INIT_SUCCESS;  //successful
@@ -88,8 +88,8 @@ u32 v_hypercall_handler(VCPU *vcpu, struct regs *r){
 				((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_NOEXECUTE)) 
 			)
 		  ){
-			//emhf_memprot_setprot(&vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE);	   
-			emhf_memprot_setprot(vcpu, gpa, prottype);	   
+			//xmhf_memprot_setprot(&vcpu, gpa, MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE);	   
+			xmhf_memprot_setprot(vcpu, gpa, prottype);	   
 		}else{
 			printf("\nSecurity Exception: Trying to set protections on EMHF memory regions, Halting!");
 			HALT();
@@ -100,7 +100,7 @@ u32 v_hypercall_handler(VCPU *vcpu, struct regs *r){
 		return APP_SUCCESS;
 }
 
-u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
+u32 xmhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 	struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
 	u32 status=APP_SUCCESS;
 	u32 call_id;
@@ -131,14 +131,14 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 
 //handles XMHF shutdown callback
 //note: should not return
-void emhf_app_handleshutdown(VCPU *vcpu, struct regs *r){
+void xmhf_app_handleshutdown(VCPU *vcpu, struct regs *r){
 	(void)r; //unused
-	emhf_baseplatform_reboot(vcpu);				
+	xmhf_baseplatform_reboot(vcpu);				
 }
 
 //handles h/w pagetable violations
 //for now this always returns APP_SUCCESS
-u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
+u32 xmhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
       struct regs *r,
       u64 gpa, u64 gva, u64 violationcode){
 	u32 status = APP_SUCCESS;
@@ -155,7 +155,7 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 
 //handles i/o port intercepts
 //returns either APP_IOINTERCEPT_SKIP or APP_IOINTERCEPT_CHAIN
-u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, 
+u32 xmhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, 
   u32 portnum, u32 access_type, u32 access_size){
 	(void)vcpu; //unused
 	(void)r; //unused

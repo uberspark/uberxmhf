@@ -56,7 +56,7 @@
 
 our C main*/
 
-.extern emhf_sl_main
+.extern xmhf_sl_main
 
 /* The first 3 pages of the SL serve different purposes depending on
    whether the system has an AMD or Intel CPU.  On an AMD system, the
@@ -309,7 +309,7 @@ sl_startnew:
               
     pushl %ebp			/*SL base address*/
     pushl %esi			/*cpu vendor*/
-    call emhf_sl_main	/*call SL main routine*/
+    call xmhf_sl_main	/*call SL main routine*/
 
     /* We should never get here*/
     spinforever:

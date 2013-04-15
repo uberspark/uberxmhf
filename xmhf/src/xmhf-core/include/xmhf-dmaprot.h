@@ -65,36 +65,36 @@
 
 //return size (in bytes) of the memory buffer required for
 //DMA protection for a given physical memory limit
-u32 emhf_dmaprot_getbuffersize(u64 physical_memory_limit);
+u32 xmhf_dmaprot_getbuffersize(u64 physical_memory_limit);
 
 
 //"early" DMA protection initialization to setup minimal
 //structures to protect a range of physical memory
 //return 1 on success 0 on failure
-u32 emhf_dmaprot_earlyinitialize(u64 protectedbuffer_paddr,
+u32 xmhf_dmaprot_earlyinitialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
 	u64 memregionbase_paddr, u32 memregion_size);
 
 //"normal" DMA protection initialization to setup required
 //structures for DMA protection
 //return 1 on success 0 on failure
-u32 emhf_dmaprot_initialize(u64 protectedbuffer_paddr,
+u32 xmhf_dmaprot_initialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size);
 
 //DMA protect a given region of memory, start_paddr is
 //assumed to be page aligned physical memory address
-void emhf_dmaprot_protect(u32 start_paddr, u32 size);
+void xmhf_dmaprot_protect(u32 start_paddr, u32 size);
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
-u32 emhf_dmaprot_arch_getbuffersize(u64 physical_memory_limit);
-u32 emhf_dmaprot_arch_earlyinitialize(u64 protectedbuffer_paddr,
+u32 xmhf_dmaprot_arch_getbuffersize(u64 physical_memory_limit);
+u32 xmhf_dmaprot_arch_earlyinitialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
 	u64 memregionbase_paddr, u32 memregion_size);
-u32 emhf_dmaprot_arch_initialize(u64 protectedbuffer_paddr,
+u32 xmhf_dmaprot_arch_initialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size);
-void emhf_dmaprot_arch_protect(u32 start_paddr, u32 size);
+void xmhf_dmaprot_arch_protect(u32 start_paddr, u32 size);
 
 
 //----------------------------------------------------------------------
@@ -105,23 +105,23 @@ void emhf_dmaprot_arch_protect(u32 start_paddr, u32 size);
 //----------------------------------------------------------------------
 //x86vmx SUBARCH. INTERFACES
 //----------------------------------------------------------------------
-u32 emhf_dmaprot_arch_x86svm_earlyinitialize(u64 protectedbuffer_paddr,
+u32 xmhf_dmaprot_arch_x86svm_earlyinitialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
 	u64 memregionbase_paddr, u32 memregion_size);
-u32 emhf_dmaprot_arch_x86svm_initialize(u64 protectedbuffer_paddr,
+u32 xmhf_dmaprot_arch_x86svm_initialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size);
-void emhf_dmaprot_arch_x86svm_protect(u32 start_paddr, u32 size);
+void xmhf_dmaprot_arch_x86svm_protect(u32 start_paddr, u32 size);
 
 
 //----------------------------------------------------------------------
 //x86vmx SUBARCH. INTERFACES
 //----------------------------------------------------------------------
-u32 emhf_dmaprot_arch_x86vmx_earlyinitialize(u64 protectedbuffer_paddr,
+u32 xmhf_dmaprot_arch_x86vmx_earlyinitialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
 	u64 memregionbase_paddr, u32 memregion_size);
-u32 emhf_dmaprot_arch_x86vmx_initialize(u64 protectedbuffer_paddr,
+u32 xmhf_dmaprot_arch_x86vmx_initialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size);
-void emhf_dmaprot_arch_x86vmx_protect(u32 start_paddr, u32 size);
+void xmhf_dmaprot_arch_x86vmx_protect(u32 start_paddr, u32 size);
 
 //VMX VT-d page table buffers; we support a 3 level page-table walk, 
 //4kb pdpt, 4kb pdt and 4kb pt and each entry in pdpt, pdt and pt is 64-bits

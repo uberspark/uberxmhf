@@ -58,7 +58,7 @@ static void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts
 // global interfaces (functions) exported by this component
 
 // initialize memory protection structures for a given core (vcpu)
-void emhf_memprot_arch_x86svm_initialize(VCPU *vcpu){
+void xmhf_memprot_arch_x86svm_initialize(VCPU *vcpu){
 	struct _svm_vmcbfields *vmcb = (struct _svm_vmcbfields *)vcpu->vmcb_vaddr_ptr;
 	
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD);
@@ -117,12 +117,12 @@ static void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts
 }
 
 //flush hardware page table mappings (TLB) 
-void emhf_memprot_arch_x86svm_flushmappings(VCPU *vcpu){
+void xmhf_memprot_arch_x86svm_flushmappings(VCPU *vcpu){
 	((struct _svm_vmcbfields *)(vcpu->vmcb_vaddr_ptr))->tlb_control=VMCB_TLB_CONTROL_FLUSHALL;	
 }
 
 //set protection for a given physical memory address
-void emhf_memprot_arch_x86svm_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
+void xmhf_memprot_arch_x86svm_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
   u32 pfn;
   u64 *pt;
   u64 flags=0;
@@ -166,9 +166,9 @@ void emhf_memprot_arch_x86svm_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
 }
 	
 //get protection for a given physical memory address
-u32 emhf_memprot_arch_x86svm_getprot(VCPU *vcpu, u64 gpa){
+u32 xmhf_memprot_arch_x86svm_getprot(VCPU *vcpu, u64 gpa){
   u32 pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
-  //u64 *pt = (u64 *)(u32)emhf_memprot_arch_x86svm_get_h_cr3(vcpu); //TODO: push into svm sub arch. backend
+  //u64 *pt = (u64 *)(u32)xmhf_memprot_arch_x86svm_get_h_cr3(vcpu); //TODO: push into svm sub arch. backend
   u64 *pt = (u64 *)vcpu->npt_vaddr_pts;
   
   u64 entry = pt[pfn];
@@ -194,12 +194,12 @@ u32 emhf_memprot_arch_x86svm_getprot(VCPU *vcpu, u64 gpa){
   return prottype;
 }
 
-u64 emhf_memprot_arch_x86svm_get_h_cr3(VCPU *vcpu)
+u64 xmhf_memprot_arch_x86svm_get_h_cr3(VCPU *vcpu)
 {
   HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD);
   return ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->n_cr3; 
 }
-void emhf_memprot_arch_x86svm_set_h_cr3(VCPU *vcpu, u64 n_cr3)
+void xmhf_memprot_arch_x86svm_set_h_cr3(VCPU *vcpu, u64 n_cr3)
 {
   HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD);
   ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->n_cr3 = n_cr3;

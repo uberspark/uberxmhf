@@ -53,7 +53,7 @@
 
 
 //VMX specific platform reboot
-void emhf_baseplatform_arch_x86vmx_reboot(VCPU *vcpu){
+void xmhf_baseplatform_arch_x86vmx_reboot(VCPU *vcpu){
 	(void)vcpu;
 
 	//shut VMX off, else CPU ignores INIT signal!
@@ -61,5 +61,5 @@ void emhf_baseplatform_arch_x86vmx_reboot(VCPU *vcpu){
 	write_cr4(read_cr4() & ~(CR4_VMXE));
 	
 	//fall back on generic x86 reboot
-	emhf_baseplatform_arch_x86_reboot();
+	xmhf_baseplatform_arch_x86_reboot();
 }

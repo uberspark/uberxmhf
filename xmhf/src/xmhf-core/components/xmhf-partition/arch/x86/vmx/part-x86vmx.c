@@ -283,13 +283,13 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.host_SS_selector = read_segreg_ss();
 	vcpu->vmcs.host_TR_selector = read_tr_sel();
 	vcpu->vmcs.host_GDTR_base = (u64)(u32)x_gdt_start;
-	vcpu->vmcs.host_IDTR_base = (u64)(u32)emhf_xcphandler_get_idt_start();
+	vcpu->vmcs.host_IDTR_base = (u64)(u32)xmhf_xcphandler_get_idt_start();
 	vcpu->vmcs.host_TR_base = (u64)(u32)g_runtime_TSS;
 #ifdef __XMHF_VERIFICATION__
 	g_xmhf_verification_ihubaddress = 1;
 	vcpu->vmcs.host_RIP = 0xDEADBEEF;
 #else
-	vcpu->vmcs.host_RIP = (u64)(u32)emhf_parteventhub_arch_x86vmx_entry;
+	vcpu->vmcs.host_RIP = (u64)(u32)xmhf_parteventhub_arch_x86vmx_entry;
 #endif
 	//store vcpu at TOS
 	vcpu->esp = vcpu->esp - sizeof(u32);
@@ -462,7 +462,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.control_CR4_shadow = CR4_VMXE; //let guest know we have VMX enabled
 
 	//flush guest TLB to start with
-	emhf_memprot_arch_x86vmx_flushmappings(vcpu);
+	xmhf_memprot_arch_x86vmx_flushmappings(vcpu);
 }
 
 
@@ -499,7 +499,7 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
   printf("\nCPU(0x%02x): VMPTRLD success.", vcpu->id);
   
   //put VMCS to CPU
-  emhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
+  xmhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
   printf("\nCPU(0x%02x): VMWRITEs success.", vcpu->id);
   HALT_ON_ERRORCOND( vcpu->vmcs.guest_VMCS_link_pointer_full == 0xFFFFFFFFUL );
 
@@ -508,7 +508,7 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
     errorcode=__vmx_start_hvm();
     HALT_ON_ERRORCOND(errorcode != 2);	//this means the VMLAUNCH implementation violated the specs.
     //get CPU VMCS into VCPU structure
-    emhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
+    xmhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
     
     switch(errorcode){
 			case 0:	//no error code, VMCS pointer is invalid
@@ -518,7 +518,7 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
 				u32 code=5;
 				__vmx_vmread(0x4400, &code);
 			    printf("\nCPU(0x%02x): VMLAUNCH error; code=0x%x. HALT!", vcpu->id, code);
-			    emhf_baseplatform_arch_x86vmx_dumpVMCS(vcpu);
+			    xmhf_baseplatform_arch_x86vmx_dumpVMCS(vcpu);
 				break;
 			}
 	}
@@ -532,7 +532,7 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
 
 
 //initialize partition monitor for a given CPU
-void emhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu){
+void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu){
 
   //initialize VT
   _vmx_initVT(vcpu);
@@ -555,14 +555,14 @@ void emhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu){
 
 
 //setup guest OS state for the partition
-void emhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu){
+void xmhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu){
 		//initialize VMCS
 		_vmx_initVMCS(vcpu);
 	
 }
 
 //start executing the partition and guest OS
-void emhf_partition_arch_x86vmx_start(VCPU *vcpu){
+void xmhf_partition_arch_x86vmx_start(VCPU *vcpu){
     //printf("\nCPU(0x%02x): Starting HVM using CS:EIP=0x%04x:0x%08x...", vcpu->id,
 	//		(u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP);
 	
@@ -584,7 +584,7 @@ void emhf_partition_arch_x86vmx_start(VCPU *vcpu){
 }
 
 //set legacy I/O protection for the partition
-void emhf_partition_arch_x86vmx_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype){
+void xmhf_partition_arch_x86vmx_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype){
 	u8 *bit_vector = (u8 *)vcpu->vmx_vaddr_iobitmap;
 	u32 byte_offset, bit_offset;
 	u32 i;

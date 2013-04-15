@@ -88,7 +88,7 @@
 		
 		pushl 	%eax				//struct regs *r
 		pushl	$0x&vector&			//vector
-		call	emhf_xcphandler_hub	//call C-land hub
+		call	xmhf_xcphandler_hub	//call C-land hub
 		addl  	$0x08, %esp			//remove params from stack
 		
 		//restore GPRs
@@ -143,20 +143,20 @@ XtRtmEmitIdtStub 1f
 
 .section .data
 	//EMHF interrupt descriptor table
-	.global emhf_xcphandler_idt
-	emhf_xcphandler_idt:
-	.word emhf_xcphandler_idt_end - emhf_xcphandler_idt_start - 1
-	.long emhf_xcphandler_idt_start
+	.global xmhf_xcphandler_idt
+	xmhf_xcphandler_idt:
+	.word xmhf_xcphandler_idt_end - xmhf_xcphandler_idt_start - 1
+	.long xmhf_xcphandler_idt_start
 	.align 16
-	.global emhf_xcphandler_idt_start
-	emhf_xcphandler_idt_start:
+	.global xmhf_xcphandler_idt_start
+	xmhf_xcphandler_idt_start:
 	.fill	1024, 1, 0
-	emhf_xcphandler_idt_end:
+	xmhf_xcphandler_idt_end:
 
 
 	.align 16
-	.global emhf_xcphandler_exceptionstubs
-	emhf_xcphandler_exceptionstubs:
+	.global xmhf_xcphandler_exceptionstubs
+	xmhf_xcphandler_exceptionstubs:
 	.long XtRtmIdtStub0
 	.long XtRtmIdtStub1
 	.long XtRtmIdtStub2

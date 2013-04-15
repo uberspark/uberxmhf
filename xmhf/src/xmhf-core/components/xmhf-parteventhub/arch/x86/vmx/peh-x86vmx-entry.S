@@ -51,15 +51,15 @@
 
 //----------------------------------------------------------------------
 //globals referenced
-	.extern emhf_parteventhub_arch_x86vmx_intercept_handler
+	.extern xmhf_parteventhub_arch_x86vmx_intercept_handler
 
 //----------------------------------------------------------------------
-// emhf_parteventhub_entry_x86vmx
+// xmhf_parteventhub_entry_x86vmx
 // we get control here right after any event within a partition
 // note: the h/w is the "caller" so we never actually "return"
 .section .text
-.global emhf_parteventhub_arch_x86vmx_entry
-emhf_parteventhub_arch_x86vmx_entry:
+.global xmhf_parteventhub_arch_x86vmx_entry
+xmhf_parteventhub_arch_x86vmx_entry:
 	//step-1: save all CPU GPRs
 	pushal
 	
@@ -73,7 +73,7 @@ emhf_parteventhub_arch_x86vmx_entry:
    	//1st argument is VCPU * followed by pointer to saved GPRs
 	pushl %eax
 	pushl %esi
-	call emhf_parteventhub_arch_x86vmx_intercept_handler
+	call xmhf_parteventhub_arch_x86vmx_intercept_handler
     addl $0x08, %esp
 
     //step-6; restore all CPU GPRs

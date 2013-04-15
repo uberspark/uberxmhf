@@ -74,8 +74,8 @@ RPB _xrpb;
 
 void runtime_main(){
 //void main(){
-		/* emhf_runtime_main */
-		extern void emhf_runtime_main(void);
+		/* xmhf_runtime_main */
+		extern void xmhf_runtime_main(void);
 		//setup RPB pointer and required runtime parameter block values
 		rpb = (RPB *)&_xrpb;
 		rpb->XtVmmE820NumEntries = 1; 									//lets worry about E820 later
@@ -102,22 +102,22 @@ void runtime_main(){
 		vcpu.cpu_vendor = CPU_VENDOR_AMD;
 #endif		
 				
-		emhf_runtime_main(&vcpu, 0);									//call "init" function
+		xmhf_runtime_main(&vcpu, 0);									//call "init" function
 
 }
 
 	
 void runtime_entry_main(){
 //void main(){
-		/* emhf_runtime_entry */
-		extern void emhf_runtime_entry(void);
-		emhf_runtime_entry();
+		/* xmhf_runtime_entry */
+		extern void xmhf_runtime_entry(void);
+		xmhf_runtime_entry();
 }
 
 void sl_main(){
 //void main(){
-		extern void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx);
-		emhf_sl_main(xmhf_verify_cpu_vendor, 0xB8000000, 0, 0);
+		extern void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx);
+		xmhf_sl_main(xmhf_verify_cpu_vendor, 0xB8000000, 0, 0);
 		assert(1);
 }
 
@@ -164,7 +164,7 @@ void main() {
 		
 
 #if 0
-		emhf_runtime_main(&vcpu, 0);									//call "init" function
+		xmhf_runtime_main(&vcpu, 0);									//call "init" function
 		
 		assert(vcpu.vmcs.host_RIP == (u64)0xF00DDEAD);
 #else
@@ -278,9 +278,9 @@ void main() {
 		#endif
 
 		#if defined (X86_VMX)
-			emhf_parteventhub_arch_x86vmx_intercept_handler(&vcpu, &r);
+			xmhf_parteventhub_arch_x86vmx_intercept_handler(&vcpu, &r);
 		#else
-			emhf_parteventhub_arch_x86svm_intercept_handler(&vcpu, &r);
+			xmhf_parteventhub_arch_x86svm_intercept_handler(&vcpu, &r);
 		#endif
 		
 #endif 

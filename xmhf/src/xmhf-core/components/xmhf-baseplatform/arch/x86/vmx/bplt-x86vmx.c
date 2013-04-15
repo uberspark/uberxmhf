@@ -52,7 +52,7 @@
 #include <xmhf.h>
 
 //initialize CPU state
-void emhf_baseplatform_arch_x86vmx_cpuinitialize(void){
+void xmhf_baseplatform_arch_x86vmx_cpuinitialize(void){
     	u32 bcr0;
 	    txt_heap_t  __attribute__((unused)) *txt_heap;
         os_mle_data_t __attribute__((unused)) *os_mle_data ;

@@ -56,22 +56,22 @@ u32 g_dmaprot_activated = 0;
 
 
 //---runtime main---------------------------------------------------------------
-void emhf_runtime_entry(void){
+void xmhf_runtime_entry(void){
 	u32 cpu_vendor;
 
 	//get CPU vendor
-	cpu_vendor = emhf_baseplatform_getcpuvendor();
+	cpu_vendor = xmhf_baseplatform_getcpuvendor();
         (void)cpu_vendor;
 
 	//initialize Runtime Parameter Block (rpb)
 	rpb = (RPB *)&arch_rpb;
 
 	//setup debugging	
-	emhf_debug_init((char *)&rpb->RtmUartConfig);
+	xmhf_debug_init((char *)&rpb->RtmUartConfig);
 	printf("\nruntime initializing...");
 
   	//initialize basic platform elements
-	emhf_baseplatform_initialize();
+	xmhf_baseplatform_initialize();
 
     //[debug] dump E820 and MP table
  	/*printf("\nNumber of E820 entries = %u", rpb->XtVmmE820NumEntries);
@@ -94,7 +94,7 @@ void emhf_runtime_entry(void){
 
 	#ifndef __XMHF_VERIFICATION__
 	//setup EMHF exception handler component
-	emhf_xcphandler_initialize();
+	xmhf_xcphandler_initialize();
 	#endif
 
 
@@ -111,11 +111,11 @@ void emhf_runtime_entry(void){
 				
 				protectedbuffer_paddr = hva2spa(&g_rntm_dmaprot_buffer);
 				protectedbuffer_vaddr = (u32)&g_rntm_dmaprot_buffer;
-				protectedbuffer_size = emhf_dmaprot_getbuffersize(ADDR_4GB);
+				protectedbuffer_size = xmhf_dmaprot_getbuffersize(ADDR_4GB);
 				HALT_ON_ERRORCOND(protectedbuffer_size <= SIZE_G_RNTM_DMAPROT_BUFFER);
 				
 				printf("\nRuntime: Re-initializing DMA protection...");
-				if(!emhf_dmaprot_initialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size)){
+				if(!xmhf_dmaprot_initialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size)){
 					printf("\nRuntime: Unable to re-initialize DMA protection. HALT!");
 					HALT();
 				}
@@ -125,7 +125,7 @@ void emhf_runtime_entry(void){
 				#endif
 
 				//protect SL and runtime memory regions
-				emhf_dmaprot_protect(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimeSize+PAGE_SIZE_2M);
+				xmhf_dmaprot_protect(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimeSize+PAGE_SIZE_2M);
 				printf("\nRuntime: Protected SL+Runtime (%08lx-%08x) from DMA.", rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
 		}
 	#endif //__DMAPROT__
@@ -149,7 +149,7 @@ void emhf_runtime_entry(void){
 
 	//#ifndef __XMHF_VERIFICATION__
 	//initialize base platform with SMP 
-	emhf_baseplatform_smpinitialize();
+	xmhf_baseplatform_smpinitialize();
 	//#endif
 
 
@@ -163,19 +163,19 @@ void emhf_runtime_entry(void){
 //vcpu->isbsp = 1 if the core is a BSP or 0 if its an AP
 //isEarlyInit = 1 if we were boot-strapped by the BIOS and is 0
 //in the event we were launched from a running OS
-void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
+void xmhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 
   //initialize CPU
-  emhf_baseplatform_cpuinitialize();
+  xmhf_baseplatform_cpuinitialize();
 
   //initialize partition monitor (i.e., hypervisor) for this CPU
-  emhf_partition_initializemonitor(vcpu);
+  xmhf_partition_initializemonitor(vcpu);
 
   //setup guest OS state for partition
-  emhf_partition_setupguestOSstate(vcpu);
+  xmhf_partition_setupguestOSstate(vcpu);
 
   //initialize memory protection for this core
-  emhf_memprot_initialize(vcpu);
+  xmhf_memprot_initialize(vcpu);
 
   //initialize application parameter block and call app main
   {
@@ -192,7 +192,7 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 	#endif
 	
   	//call app main
-  	if(emhf_app_main(vcpu, &appParamBlock)){
+  	if(xmhf_app_main(vcpu, &appParamBlock)){
     	printf("\nCPU(0x%02x): EMHF app. failed to initialize. HALT!", vcpu->id);
     	HALT();
   	}
@@ -206,7 +206,7 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 	
   //if BSP, wait for all cores to go through app main successfully
   //TODO: conceal g_midtable_numentries behind interface
-  //emhf_baseplatform_getnumberofcpus
+  //xmhf_baseplatform_getnumberofcpus
   if(vcpu->isbsp && (g_midtable_numentries > 1)){
 		printf("\nCPU(0x%02x): Waiting for all cores to cycle through appmain...", vcpu->id);
 		while(g_appmain_success_counter < g_midtable_numentries);	
@@ -223,7 +223,7 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 
 #ifndef __XMHF_VERIFICATION__
   //initialize support for SMP guests
-  emhf_smpguest_initialize(vcpu);
+  xmhf_smpguest_initialize(vcpu);
 #endif
 
   /*//XXX: debug
@@ -238,7 +238,7 @@ void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
 	
   //start partition
   printf("\n%s[%02x]: starting partition...", __FUNCTION__, vcpu->id);
-  emhf_partition_start(vcpu);
+  xmhf_partition_start(vcpu);
 
   printf("\nCPU(0x%02x): FATAL, should not be here. HALTING!", vcpu->id);
   HALT();

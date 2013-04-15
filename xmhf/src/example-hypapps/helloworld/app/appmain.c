@@ -51,14 +51,14 @@
 #include <xmhf.h>
 
 // application main
-u32 emhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
+u32 xmhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
   (void)apb;	//unused
   printf("\nCPU(0x%02x): Hello world from XMHF hyperapp!", vcpu->id);
   return APP_INIT_SUCCESS;  //successful
 }
 
 //returns APP_SUCCESS if we handled the hypercall else APP_ERROR
-u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
+u32 xmhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 			u32 status=APP_SUCCESS;
 			(void)r; //unused
 			printf("\nCPU(0x%02x): hypercall unhandled, simply returning!", vcpu->id);
@@ -67,14 +67,14 @@ u32 emhf_app_handlehypercall(VCPU *vcpu, struct regs *r){
 
 //handles XMHF shutdown callback
 //note: should not return
-void emhf_app_handleshutdown(VCPU *vcpu, struct regs *r){
+void xmhf_app_handleshutdown(VCPU *vcpu, struct regs *r){
 	(void)r; //unused
-	emhf_baseplatform_reboot(vcpu);				
+	xmhf_baseplatform_reboot(vcpu);				
 }
 
 //handles h/w pagetable violations
 //for now this always returns APP_SUCCESS
-u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
+u32 xmhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
       struct regs *r,
       u64 gpa, u64 gva, u64 violationcode){
 	u32 status = APP_SUCCESS;
@@ -91,7 +91,7 @@ u32 emhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
 
 //handles i/o port intercepts
 //returns either APP_IOINTERCEPT_SKIP or APP_IOINTERCEPT_CHAIN
-u32 emhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, 
+u32 xmhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, 
   u32 portnum, u32 access_type, u32 access_size){
 	(void)vcpu; //unused
 	(void)r; //unused

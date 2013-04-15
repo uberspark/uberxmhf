@@ -67,6 +67,6 @@ void dvprintf(u32 log_type, const char *fmt, va_list args)
 
 #endif 
 
-void emhf_debug_init(char *params){
-	emhf_debug_arch_init(params);
+void xmhf_debug_init(char *params){
+	xmhf_debug_arch_init(params);
 }

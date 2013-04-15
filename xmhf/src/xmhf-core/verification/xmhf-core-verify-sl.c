@@ -58,8 +58,8 @@ u32 xmhf_verify_cpu_vendor = CPU_VENDOR_INTEL;
 
 //u32 xmhf_verify_cpu_vendor = CPU_VENDOR_AMD;
 void main(){
-		extern void emhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx);
-		emhf_sl_main(xmhf_verify_cpu_vendor, 0xB8000000, 0, 0);
+		extern void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx);
+		xmhf_sl_main(xmhf_verify_cpu_vendor, 0xB8000000, 0, 0);
 		assert(1);
 }
 //----------------------------------------------------------------------

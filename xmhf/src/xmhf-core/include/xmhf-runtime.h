@@ -84,10 +84,10 @@ extern u32 g_lock_appmain_success_counter __attribute__(( section(".data") ));
 //----------------------------------------------------------------------
 
 //entry point of EMHF runtime; this is where we get control from the SL
-void emhf_runtime_entry(void);
+void xmhf_runtime_entry(void);
 
 //EMHF runtime main function; gets control in the context of each core
-void emhf_runtime_main(VCPU *vcpu, u32 isEarlyInit);
+void xmhf_runtime_main(VCPU *vcpu, u32 isEarlyInit);
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS

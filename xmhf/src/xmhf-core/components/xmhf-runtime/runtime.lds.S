@@ -46,7 +46,7 @@
 
 OUTPUT_ARCH(i386)
 
-ENTRY(emhf_runtime_entry)
+ENTRY(xmhf_runtime_entry)
 
 MEMORY
 {

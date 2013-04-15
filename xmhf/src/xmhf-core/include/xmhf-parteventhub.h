@@ -82,14 +82,14 @@ extern void _vmx_dumpVMCS(VCPU *vcpu);
 //----------------------------------------------------------------------
 //x86vmx SUBARCH. INTERFACES
 //----------------------------------------------------------------------
-void emhf_parteventhub_arch_x86vmx_entry(void);
-u32 emhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r);
+void xmhf_parteventhub_arch_x86vmx_entry(void);
+u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r);
 
 //----------------------------------------------------------------------
 //x86svm SUBARCH. INTERFACES
 //----------------------------------------------------------------------
-void emhf_parteventhub_arch_x86svm_entry(void);
-u32 emhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r);
+void xmhf_parteventhub_arch_x86svm_entry(void);
+u32 xmhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r);
 
 
 

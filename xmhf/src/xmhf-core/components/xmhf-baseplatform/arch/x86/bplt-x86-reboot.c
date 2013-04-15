@@ -53,7 +53,7 @@
 
 
 //generic x86 platform reboot
-void emhf_baseplatform_arch_x86_reboot(void){
+void xmhf_baseplatform_arch_x86_reboot(void){
 	unsigned char flush = 0x02;
 #ifndef __XMHF_VERIFICATION__
 	while ((flush & 0x02) != 0)
@@ -71,11 +71,11 @@ void emhf_baseplatform_arch_x86_reboot(void){
 
 
 //reboot platform
-void emhf_baseplatform_arch_reboot(VCPU *vcpu){
+void xmhf_baseplatform_arch_reboot(VCPU *vcpu){
 	HALT_ON_ERRORCOND (vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	
 	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-		emhf_baseplatform_arch_x86svm_reboot(vcpu);
+		xmhf_baseplatform_arch_x86svm_reboot(vcpu);
 	else //CPU_VENDOR_INTEL
-		emhf_baseplatform_arch_x86vmx_reboot(vcpu);
+		xmhf_baseplatform_arch_x86vmx_reboot(vcpu);
 }

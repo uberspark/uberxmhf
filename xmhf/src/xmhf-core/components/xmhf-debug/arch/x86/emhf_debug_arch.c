@@ -46,7 +46,7 @@
 
 #include <xmhf.h>
 
-void emhf_debug_arch_init(char *params)
+void xmhf_debug_arch_init(char *params)
 {
 	(void)params;
 #ifdef __DEBUG_SERIAL__
@@ -58,7 +58,7 @@ void emhf_debug_arch_init(char *params)
 #endif
 }
 
-void emhf_debug_arch_putc(char c)
+void xmhf_debug_arch_putc(char c)
 {
 	(void)c;
 #ifdef __DEBUG_SERIAL__
@@ -70,7 +70,7 @@ void emhf_debug_arch_putc(char c)
 #endif
 }
 
-void emhf_debug_arch_putstr(const char *str)
+void xmhf_debug_arch_putstr(const char *str)
 {
 	(void)str;
 #ifdef __DEBUG_SERIAL__
