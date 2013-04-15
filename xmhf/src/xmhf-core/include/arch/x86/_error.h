@@ -54,7 +54,7 @@
 #ifndef __ASSEMBLY__
 
 #define HALT()	__asm__ __volatile__ ("hlt\r\n");
-#define ASSERT(_p) { if ( !(_p) ) { printf("\nAssertion '%s' failed, line %d, file %s\n", #_p , __LINE__, __FILE__); HALT(); } }
+#define HALT_ON_ERRORCOND(_p) { if ( !(_p) ) { printf("\nFatal: Halting! Condition '%s' failed, line %d, file %s\n", #_p , __LINE__, __FILE__); HALT(); } }
 //#define WARNING(_p) { if ( !(_p) ) { printf("\nWarning Assertion '%s' failed, line %d, file %s\n", #_p , __LINE__, __FILE__);} }
 
 /* awesome trick from http://www.jaggersoft.com/pubs/CVu11_3.html */
