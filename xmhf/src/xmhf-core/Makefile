@@ -11,7 +11,7 @@ runtime:
 	#EMHF memory protection component
 	cd xmhf-runtime/xmhf-memprot && $(MAKE) -w all
 	#EMHF partition event-hub component
-	cd xmhf-runtime/xmhf-parteventhub && $(MAKE) -w all
+	cd xmhf-runtime/xmhf-eventhub && $(MAKE) -w all
 	#EMHF SMP guest component
 	cd xmhf-runtime/xmhf-smpguest && $(MAKE) -w all
 	#EMHF DMA protection component
@@ -72,7 +72,7 @@ hypervisor-$(TARGET_HWPLATFORM).bin.gz: xmhf-secureloader/sl.bin xmhf-runtime/xm
 .PHONY: clean 
 clean: 
 	cd xmhf-runtime/xmhf-memprot && $(MAKE) -w clean
-	cd xmhf-runtime/xmhf-parteventhub && $(MAKE) -w clean
+	cd xmhf-runtime/xmhf-eventhub && $(MAKE) -w clean
 	cd xmhf-runtime/xmhf-dmaprot && $(MAKE) -w clean
 	cd xmhf-runtime/xmhf-smpguest && $(MAKE) -w clean
 	cd xmhf-runtime/xmhf-xcphandler && $(MAKE) -w clean
