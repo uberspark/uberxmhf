@@ -62,17 +62,18 @@ hypervisor-$(TARGET_HWPLATFORM).bin.gz: components/xmhf-sl/sl.bin components/xmh
 	$(CP) ./hypervisor-$(TARGET_HWPLATFORM).bin.gz $(HYPOUTDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz
 
 # late initialization support
-.PHONY: init-late
-init-late: hypervisor-$(TARGET_HWPLATFORM).bin.gz
-	#make late initialization, currently defaults to linux os support
-	cd ./init-late/os/linux && $(MAKE)
-	#TODO: needs OS selection via configuration option
-	$(CP) ./init-late/os/linux/emhfil.ko $(HYPOUTDIR)/emhfil.ko
-	$(CP) ./init-late/os/linux/emhfil.sh $(HYPOUTDIR)/emhfil.sh
+#.PHONY: init-late
+#init-late: hypervisor-$(TARGET_HWPLATFORM).bin.gz
+#	#make late initialization, currently defaults to linux os support
+#	cd ./init-late/os/linux && $(MAKE)
+#	#TODO: needs OS selection via configuration option
+#	$(CP) ./init-late/os/linux/emhfil.ko $(HYPOUTDIR)/emhfil.ko
+#	$(CP) ./init-late/os/linux/emhfil.sh $(HYPOUTDIR)/emhfil.sh
 
 
 # cleanup rules
-.PHONY: clean init-late-clean
+#.PHONY: clean init-late-clean
+.PHONY: clean 
 clean: 
 	cd components/xmhf-memprot && $(MAKE) -w clean
 	cd components/xmhf-parteventhub && $(MAKE) -w clean
@@ -97,10 +98,10 @@ clean:
 	$(RM) -rf $(HYPOUTDIR)/init-$(TARGET_HWPLATFORM).bin
 	$(RM) -rf $(HYPOUTDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz
 
-init-late-clean:
-	cd ./init-late/os/linux && $(MAKE) clean
-	$(RM) -rf $(HYPOUTDIR)/emhfil.ko
-	$(RM) -rf $(HYPOUTDIR)/emhfil.sh
+#init-late-clean:
+#	cd ./init-late/os/linux && $(MAKE) clean
+#	$(RM) -rf $(HYPOUTDIR)/emhfil.ko
+#	$(RM) -rf $(HYPOUTDIR)/emhfil.sh
 
 
 .PHONY: install-dev
