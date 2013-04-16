@@ -617,6 +617,13 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		}
 		break;
 
+		case VMX_VMEXIT_XSETBV:{
+			
+			
+			
+		}
+		break;
+
     
 		default:{
 			printf("\nCPU(0x%02x): Unhandled intercept: 0x%08x", vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason);
