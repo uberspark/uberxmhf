@@ -51,8 +51,6 @@
 //----------------------------------------------------------------------
 #include <xmhf.h>
 
-#define V_HYPERCALL		0xDEADBEEF
-
 //if the following is defined, we will excercise the VMX backend
 //for ihub during verification
 #define X86_VMX			1
@@ -71,28 +69,31 @@ void runtime_main(){
 		extern void xmhf_runtime_main(void);
 		//setup RPB pointer and required runtime parameter block values
 		rpb = (RPB *)&_xrpb;
-		rpb->XtVmmE820NumEntries = 1; 									//lets worry about E820 later
-		rpb->XtVmmRuntimePhysBase = 0xC0000000;
+		rpb->XtVmmE820NumEntries = 1; 									//number of E820 entries
+		rpb->XtVmmRuntimePhysBase = 0xC0000000;							//runtime physical base address
 		rpb->XtVmmRuntimeSize = 0x8800000;								//128 MB + 8MB (NPTs) runtime size
-		rpb->XtGuestOSBootModuleBase = 0x20000;
-		rpb->XtGuestOSBootModuleSize = 512;
-		rpb->runtime_appmodule_base = 0;
-		rpb->runtime_appmodule_size = 0;
+		rpb->XtGuestOSBootModuleBase = 0x20000;							//guest OS boot module base address
+		rpb->XtGuestOSBootModuleSize = 512;								//guest OS boot module size
+		rpb->runtime_appmodule_base = 0;								//optional hypapp module base
+		rpb->runtime_appmodule_size = 0;								//optional hypapp module size
 
 
 		//setup bare minimum vcpu
 		vcpu.isbsp = 1;													//assume BSP
 		vcpu.id = 0;													//give a LAPIC id
 		vcpu.esp = 0xC6000000;											//give a stack
-		vcpu.vmcb_vaddr_ptr = &_xvmcb;									//set vcpu VMCB virtual address to something meaningful
-		vcpu.vmx_vmcs_vaddr = 0xC7000000;								//VMCS address
 
 #if defined (X86_VMX)
 		vcpu.cpu_vendor = CPU_VENDOR_INTEL;								
+		vcpu.vmx_vmcs_vaddr = 0xC7000000;								//VMCS address
+		vcpu.vmx_vaddr_ept_pml4_table = 0xC7F00000;						//EPT PML4 table 		
+		vcpu.vmx_guest_unrestricted = 1;								//VMX unrestricted guest support
+		vcpu.vmx_vaddr_ept_p_tables = 0xC8000000;						//EPT page tables
 #else
+		vcpu.cpu_vendor = CPU_VENDOR_AMD;
+		vcpu.vmcb_vaddr_ptr = &_xvmcb;									//set vcpu VMCB virtual address to something meaningful
 		vcpu.npt_vaddr_ptr = 0xC7F00000;								//NPT PDPT page
 		vcpu.npt_vaddr_pts = 0xC8000000;								//where our NPTs reside
-		vcpu.cpu_vendor = CPU_VENDOR_AMD;
 #endif		
 				
 		xmhf_runtime_main(&vcpu, 0);									//call "init" function
