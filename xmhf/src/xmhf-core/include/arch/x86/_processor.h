@@ -138,6 +138,11 @@
 #define CPU_EXCEPTION_MC				18			//machine check
 #define CPU_EXCEPTION_XM				19			//SIMD floating point exception
 
+
+//extended control registers
+#define XCR_XFEATURE_ENABLED_MASK       0x00000000
+
+
 #ifndef __ASSEMBLY__
 
 //x86 GPR set definition (follows the order enforced by PUSHAD/POPAD
@@ -330,6 +335,26 @@ static inline void enable_intr(void)
     __asm__ __volatile__ ("sti");
 }
 
+//get extended control register (xcr)
+static inline u64 xgetbv(u32 xcr_reg){
+	u32 eax, edx;
+
+	asm volatile(".byte 0x0f,0x01,0xd0"
+			: "=a" (eax), "=d" (edx)
+			: "c" (xcr_reg));
+
+	return ((u64)edx << 32) + (u64)eax;
+}
+
+//set extended control register (xcr)
+static inline void xsetbv(u32 xcr_reg, u64 value){
+	u32 eax = (u32)value;
+	u32 edx = value >> 32;
+
+	asm volatile(".byte 0x0f,0x01,0xd1"
+			:
+			: "a" (eax), "d" (edx), "c" (xcr_reg));
+}
 
 #ifndef __XMHF_VERIFICATION__
 static inline u32 get_cpu_vendor_or_die(void) {
