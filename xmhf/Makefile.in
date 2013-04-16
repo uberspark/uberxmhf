@@ -267,10 +267,6 @@ subdirs: $(LIBBAREMETAL_SRC)
 	@echo XMHF core/hyperapp build SUCCESS
 	@echo ---------------------------------------------------------------
 
-#.PHONY: init-late
-#init-late: $(APP_ARCHIVE) subdirs
-#	cd src/xmhf-core && make -w init-late
-
 .PHONY: install
 install: install-dev install-bin
 
@@ -351,8 +347,6 @@ distclean: clean
 	# http://www.gnu.org/software/automake/manual/automake.html#Clean
 	$(RM) -rf Makefile
 
-#init-late-clean:
-#	cd src/xmhf-core && make -w init-late-clean
 
 verify:
 	cd src/xmhf-core && make -w verify

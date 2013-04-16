@@ -1,4 +1,4 @@
-# top-level makefile for emhf x86 platform 
+# top-level makefile for XMHF x86 platform 
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 
@@ -8,27 +8,27 @@ all: runtime secureloader bootloader hypervisor-$(TARGET_HWPLATFORM).bin.gz
 
 .PHONY: runtime
 runtime:
-	#EMHF memory protection component
+	#XMHF memory protection component
 	cd xmhf-runtime/xmhf-memprot && $(MAKE) -w all
-	#EMHF partition event-hub component
+	#XMHF partition event-hub component
 	cd xmhf-runtime/xmhf-eventhub && $(MAKE) -w all
-	#EMHF SMP guest component
+	#XMHF SMP guest component
 	cd xmhf-runtime/xmhf-smpguest && $(MAKE) -w all
-	#EMHF DMA protection component
+	#XMHF DMA protection component
 	cd xmhf-runtime/xmhf-dmaprot && $(MAKE) -w all
-	#EMHF exception handler component
+	#XMHF exception handler component
 	cd xmhf-runtime/xmhf-xcphandler && $(MAKE) -w all
-	#EMHF base platform component
+	#XMHF base platform component
 	cd xmhf-runtime/xmhf-baseplatform && $(MAKE) -w all
-	#EMHF partition component
+	#XMHF partition component
 	cd xmhf-runtime/xmhf-partition && $(MAKE) -w all
-	#EMHF TPM component
+	#XMHF TPM component
 	cd xmhf-runtime/xmhf-tpm && $(MAKE) -w all
-	#EMHF debug component
+	#XMHF debug component
 	cd xmhf-runtime/xmhf-debug && $(MAKE) -w all
-	#EMHF libemhfc environment callbacks
+	#XMHF libxmhfc environment callbacks
 	cd xmhf-runtime/xmhf-xmhfcbackend && $(MAKE) -w all
-	#EMHF runtime component
+	#XMHF startup component
 	cd xmhf-runtime/xmhf-startup && $(MAKE) -w all
 
 .PHONY: secureloader
@@ -57,15 +57,6 @@ hypervisor-$(TARGET_HWPLATFORM).bin.gz: xmhf-secureloader/sl.bin xmhf-runtime/xm
 	$(CP) ./xmhf-bootloader/init-$(TARGET_HWPLATFORM).bin $(HYPOUTDIR)/init-$(TARGET_HWPLATFORM).bin
 	$(CP) ./hypervisor-$(TARGET_HWPLATFORM).bin.gz $(HYPOUTDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz
 
-# late initialization support
-#.PHONY: init-late
-#init-late: hypervisor-$(TARGET_HWPLATFORM).bin.gz
-#	#make late initialization, currently defaults to linux os support
-#	cd ./init-late/os/linux && $(MAKE)
-#	#TODO: needs OS selection via configuration option
-#	$(CP) ./init-late/os/linux/emhfil.ko $(HYPOUTDIR)/emhfil.ko
-#	$(CP) ./init-late/os/linux/emhfil.sh $(HYPOUTDIR)/emhfil.sh
-
 
 # cleanup rules
 #.PHONY: clean init-late-clean
@@ -93,11 +84,6 @@ clean:
 	rm -rf ./hypervisor-$(TARGET_HWPLATFORM).bin.gz
 	$(RM) -rf $(HYPOUTDIR)/init-$(TARGET_HWPLATFORM).bin
 	$(RM) -rf $(HYPOUTDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz
-
-#init-late-clean:
-#	cd ./init-late/os/linux && $(MAKE) clean
-#	$(RM) -rf $(HYPOUTDIR)/emhfil.ko
-#	$(RM) -rf $(HYPOUTDIR)/emhfil.sh
 
 
 .PHONY: install-dev
