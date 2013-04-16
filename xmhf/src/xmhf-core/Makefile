@@ -4,7 +4,7 @@
 
 #-----build rules
 .PHONY: all
-all: components runtime sl init hypervisor-$(TARGET_HWPLATFORM).bin.gz
+all: components runtime sl bootloader hypervisor-$(TARGET_HWPLATFORM).bin.gz
 
 .PHONY: components
 components:
@@ -43,23 +43,22 @@ sl: runtime
 	cd components/xmhf-sl && $(MAKE) -w all \
 		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum ./components/xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
 
-.PHONY: init
-init: sl runtime 
-	#make init	
-	cd init && $(MAKE) -w all \
+.PHONY: bootloader
+bootloader: sl runtime 
+	cd xmhf-bootloader && $(MAKE) -w all \
 		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum ./components/xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
 		SLBELOW64K_INTEGRITY_HASH=\""$(shell ( dd if=./components/xmhf-sl/sl.bin bs=1024 count=64 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
 		SLABOVE64K_INTEGRITY_HASH=\""$(shell ( dd if=./components/xmhf-sl/sl.bin bs=1024 skip=64 count=1984 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
 
 sl/sl.bin: sl
 runtime/runtime.bin: runtime
-hypervisor-$(TARGET_HWPLATFORM).bin.gz: components/xmhf-sl/sl.bin components/xmhf-runtime/runtime.bin init/init-$(TARGET_HWPLATFORM).bin
+hypervisor-$(TARGET_HWPLATFORM).bin.gz: components/xmhf-sl/sl.bin components/xmhf-runtime/runtime.bin xmhf-bootloader/init-$(TARGET_HWPLATFORM).bin
 	# concatenate sl image and runtime image 
 	$(CAT) ./components/xmhf-sl/sl.bin ./components/xmhf-runtime/runtime.bin > ./hypervisor.tmp.img
 	gzip -c ./hypervisor.tmp.img > ./hypervisor-$(TARGET_HWPLATFORM).bin.gz
 	$(RM) -rf ./hypervisor.tmp.img 
 	# install loader and runtime images to INSTALLDIR
-	$(CP) ./init/init-$(TARGET_HWPLATFORM).bin $(HYPOUTDIR)/init-$(TARGET_HWPLATFORM).bin
+	$(CP) ./xmhf-bootloader/init-$(TARGET_HWPLATFORM).bin $(HYPOUTDIR)/init-$(TARGET_HWPLATFORM).bin
 	$(CP) ./hypervisor-$(TARGET_HWPLATFORM).bin.gz $(HYPOUTDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz
 
 # late initialization support
