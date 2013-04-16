@@ -4,7 +4,7 @@
 
 #-----build rules
 .PHONY: all
-all: components runtime sl bootloader hypervisor-$(TARGET_HWPLATFORM).bin.gz
+all: components runtime secureloader bootloader hypervisor-$(TARGET_HWPLATFORM).bin.gz
 
 .PHONY: components
 components:
@@ -34,27 +34,26 @@ runtime:
 	#EMHF runtime component
 	cd components/xmhf-runtime && $(MAKE) -w all
 
-.PHONY: sl
-sl: runtime 
-	#EMHF secure loader component
+.PHONY: secureloader
+secureloader: runtime 
 	# Double-dollar-sign required to cause make to provide literal dollar sign to perl
 	# Objective: Create an escaped ASCII string containing the SHA-1 hash of the
 	# runtime and pass it to the SL's makefile
-	cd components/xmhf-sl && $(MAKE) -w all \
+	cd xmhf-secureloader && $(MAKE) -w all \
 		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum ./components/xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
 
 .PHONY: bootloader
-bootloader: sl runtime 
+bootloader: secureloader runtime 
 	cd xmhf-bootloader && $(MAKE) -w all \
 		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum ./components/xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
-		SLBELOW64K_INTEGRITY_HASH=\""$(shell ( dd if=./components/xmhf-sl/sl.bin bs=1024 count=64 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
-		SLABOVE64K_INTEGRITY_HASH=\""$(shell ( dd if=./components/xmhf-sl/sl.bin bs=1024 skip=64 count=1984 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
+		SLBELOW64K_INTEGRITY_HASH=\""$(shell ( dd if=./xmhf-secureloader/sl.bin bs=1024 count=64 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
+		SLABOVE64K_INTEGRITY_HASH=\""$(shell ( dd if=./xmhf-secureloader/sl.bin bs=1024 skip=64 count=1984 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
 
-sl/sl.bin: sl
+secureloader/sl.bin: secureloader
 runtime/runtime.bin: runtime
-hypervisor-$(TARGET_HWPLATFORM).bin.gz: components/xmhf-sl/sl.bin components/xmhf-runtime/runtime.bin xmhf-bootloader/init-$(TARGET_HWPLATFORM).bin
+hypervisor-$(TARGET_HWPLATFORM).bin.gz: xmhf-secureloader/sl.bin components/xmhf-runtime/runtime.bin xmhf-bootloader/init-$(TARGET_HWPLATFORM).bin
 	# concatenate sl image and runtime image 
-	$(CAT) ./components/xmhf-sl/sl.bin ./components/xmhf-runtime/runtime.bin > ./hypervisor.tmp.img
+	$(CAT) ./xmhf-secureloader/sl.bin ./components/xmhf-runtime/runtime.bin > ./hypervisor.tmp.img
 	gzip -c ./hypervisor.tmp.img > ./hypervisor-$(TARGET_HWPLATFORM).bin.gz
 	$(RM) -rf ./hypervisor.tmp.img 
 	# install loader and runtime images to INSTALLDIR
@@ -88,7 +87,7 @@ clean:
 
 	cd components/xmhf-runtime && $(MAKE) -w clean
 
-	cd components/xmhf-sl && $(MAKE) -w clean
+	cd xmhf-secureloader && $(MAKE) -w clean
 	
 	cd xmhf-bootloader && $(MAKE) -w clean
 
