@@ -103,6 +103,7 @@
 #define CR4_OSXMMEXCPT	0x0400	/* enable unmasked SSE exceptions */
 #define CR4_VMXE		0x2000  /* enable VMX */
 #define CR4_SMXE		0x4000  /* enable SMX */
+#define CR4_OSXSAVE	(1UL << 18)	// XSAVE and Processor Extended States Enable bit
 
 //CPUID related
 #define EDX_PAE 6

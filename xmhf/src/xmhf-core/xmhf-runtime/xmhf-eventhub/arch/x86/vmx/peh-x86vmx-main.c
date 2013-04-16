@@ -460,6 +460,13 @@ static void _vmx_handle_intercept_xsetbv(VCPU *vcpu, struct regs *r){
 	
 	printf("\n%s: xcr_value=%llx", __FUNCTION__, xcr_value);
 	
+	//XXX: debug: dump CR4 contents
+	{
+		u32 t_cr4;
+		t_cr4 = read_cr4();
+		printf("\n%s: host cr4 value=%08x", __FUNCTION__, t_cr4);
+	}
+	
 	//set XCR with supplied value
 	xsetbv(XCR_XFEATURE_ENABLED_MASK, xcr_value);
 

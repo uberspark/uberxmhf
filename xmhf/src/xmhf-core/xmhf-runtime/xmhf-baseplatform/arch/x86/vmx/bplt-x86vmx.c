@@ -62,6 +62,15 @@ void xmhf_baseplatform_arch_x86vmx_cpuinitialize(void){
 		bcr0 |= 0x20;
 		write_cr0(bcr0);
 
+		//XXX: ticket-74: set OSXSAVE bit in CR4 to enable us to
+		//pass-thru XSETBV intercepts
+		{
+			u32 t_cr4;
+			t_cr4 = read_cr4();
+			t_cr4 |= CR4_OSXSAVE;
+			write_cr4(t_cr4);
+		}
+
 #if defined (__DRTM_DMA_PROTECTION__)
         // restore pre-SENTER MTRRs that were overwritten for SINIT launch 
         // NOTE: XXX TODO; BSP MTRRs ALREADY RESTORED IN SL; IS IT
