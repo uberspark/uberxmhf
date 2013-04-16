@@ -355,10 +355,18 @@ static inline u32 get_cpu_vendor_or_die(void) {
 }
 #endif //__XMHF_VERIFICATION__
 
-
+#ifndef __XMHF_VERIFICATION__
 void spin_lock(volatile u32 *);
 void spin_unlock(volatile u32 *);
+#else
+inline void spin_lock(volatile u32 *lock){
+		(void)lock;
+}
 
+inline void spin_unlock(volatile u32 *lock){
+		(void)lock;
+}
+#endif
 
 #endif
 
