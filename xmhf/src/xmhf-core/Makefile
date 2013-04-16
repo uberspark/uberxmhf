@@ -4,35 +4,32 @@
 
 #-----build rules
 .PHONY: all
-all: components runtime secureloader bootloader hypervisor-$(TARGET_HWPLATFORM).bin.gz
-
-.PHONY: components
-components:
-	#EMHF memory protection component
-	cd components/xmhf-memprot && $(MAKE) -w all
-	#EMHF partition event-hub component
-	cd components/xmhf-parteventhub && $(MAKE) -w all
-	#EMHF SMP guest component
-	cd components/xmhf-smpguest && $(MAKE) -w all
-	#EMHF DMA protection component
-	cd components/xmhf-dmaprot && $(MAKE) -w all
-	#EMHF exception handler component
-	cd components/xmhf-xcphandler && $(MAKE) -w all
-	#EMHF base platform component
-	cd components/xmhf-baseplatform && $(MAKE) -w all
-	#EMHF partition component
-	cd components/xmhf-partition && $(MAKE) -w all
-	#EMHF TPM component
-	cd components/xmhf-tpm && $(MAKE) -w all
-	#EMHF debug component
-	cd components/xmhf-debug && $(MAKE) -w all
-	#EMHF libemhfc environment callbacks
-	cd components/xmhf-xmhfcbackend && $(MAKE) -w all
+all: runtime secureloader bootloader hypervisor-$(TARGET_HWPLATFORM).bin.gz
 
 .PHONY: runtime
-runtime: 
+runtime:
+	#EMHF memory protection component
+	cd xmhf-runtime/xmhf-memprot && $(MAKE) -w all
+	#EMHF partition event-hub component
+	cd xmhf-runtime/xmhf-parteventhub && $(MAKE) -w all
+	#EMHF SMP guest component
+	cd xmhf-runtime/xmhf-smpguest && $(MAKE) -w all
+	#EMHF DMA protection component
+	cd xmhf-runtime/xmhf-dmaprot && $(MAKE) -w all
+	#EMHF exception handler component
+	cd xmhf-runtime/xmhf-xcphandler && $(MAKE) -w all
+	#EMHF base platform component
+	cd xmhf-runtime/xmhf-baseplatform && $(MAKE) -w all
+	#EMHF partition component
+	cd xmhf-runtime/xmhf-partition && $(MAKE) -w all
+	#EMHF TPM component
+	cd xmhf-runtime/xmhf-tpm && $(MAKE) -w all
+	#EMHF debug component
+	cd xmhf-runtime/xmhf-debug && $(MAKE) -w all
+	#EMHF libemhfc environment callbacks
+	cd xmhf-runtime/xmhf-xmhfcbackend && $(MAKE) -w all
 	#EMHF runtime component
-	cd components/xmhf-runtime && $(MAKE) -w all
+	cd xmhf-runtime/xmhf-runtime && $(MAKE) -w all
 
 .PHONY: secureloader
 secureloader: runtime 
@@ -51,9 +48,9 @@ bootloader: secureloader runtime
 
 secureloader/sl.bin: secureloader
 runtime/runtime.bin: runtime
-hypervisor-$(TARGET_HWPLATFORM).bin.gz: xmhf-secureloader/sl.bin components/xmhf-runtime/runtime.bin xmhf-bootloader/init-$(TARGET_HWPLATFORM).bin
+hypervisor-$(TARGET_HWPLATFORM).bin.gz: xmhf-secureloader/sl.bin xmhf-runtime/xmhf-runtime/runtime.bin xmhf-bootloader/init-$(TARGET_HWPLATFORM).bin
 	# concatenate sl image and runtime image 
-	$(CAT) ./xmhf-secureloader/sl.bin ./components/xmhf-runtime/runtime.bin > ./hypervisor.tmp.img
+	$(CAT) ./xmhf-secureloader/sl.bin ./xmhf-runtime/xmhf-runtime/runtime.bin > ./hypervisor.tmp.img
 	gzip -c ./hypervisor.tmp.img > ./hypervisor-$(TARGET_HWPLATFORM).bin.gz
 	$(RM) -rf ./hypervisor.tmp.img 
 	# install loader and runtime images to INSTALLDIR
@@ -74,18 +71,18 @@ hypervisor-$(TARGET_HWPLATFORM).bin.gz: xmhf-secureloader/sl.bin components/xmhf
 #.PHONY: clean init-late-clean
 .PHONY: clean 
 clean: 
-	cd components/xmhf-memprot && $(MAKE) -w clean
-	cd components/xmhf-parteventhub && $(MAKE) -w clean
-	cd components/xmhf-dmaprot && $(MAKE) -w clean
-	cd components/xmhf-smpguest && $(MAKE) -w clean
-	cd components/xmhf-xcphandler && $(MAKE) -w clean
-	cd components/xmhf-baseplatform && $(MAKE) -w clean
-	cd components/xmhf-partition && $(MAKE) -w clean
-	cd components/xmhf-tpm && $(MAKE) -w clean
-	cd components/xmhf-debug && $(MAKE) -w clean
-	cd components/xmhf-xmhfcbackend && $(MAKE) -w clean
+	cd xmhf-runtime/xmhf-memprot && $(MAKE) -w clean
+	cd xmhf-runtime/xmhf-parteventhub && $(MAKE) -w clean
+	cd xmhf-runtime/xmhf-dmaprot && $(MAKE) -w clean
+	cd xmhf-runtime/xmhf-smpguest && $(MAKE) -w clean
+	cd xmhf-runtime/xmhf-xcphandler && $(MAKE) -w clean
+	cd xmhf-runtime/xmhf-baseplatform && $(MAKE) -w clean
+	cd xmhf-runtime/xmhf-partition && $(MAKE) -w clean
+	cd xmhf-runtime/xmhf-tpm && $(MAKE) -w clean
+	cd xmhf-runtime/xmhf-debug && $(MAKE) -w clean
+	cd xmhf-runtime/xmhf-xmhfcbackend && $(MAKE) -w clean
 
-	cd components/xmhf-runtime && $(MAKE) -w clean
+	cd xmhf-runtime/xmhf-runtime && $(MAKE) -w clean
 
 	cd xmhf-secureloader && $(MAKE) -w clean
 	
