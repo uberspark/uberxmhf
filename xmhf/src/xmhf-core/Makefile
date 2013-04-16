@@ -89,7 +89,7 @@ clean:
 
 	cd components/xmhf-sl && $(MAKE) -w clean
 	
-	cd init && $(MAKE) -w clean
+	cd xmhf-bootloader && $(MAKE) -w clean
 
 	rm -rf $(APPOBJECTSDIR)
 
