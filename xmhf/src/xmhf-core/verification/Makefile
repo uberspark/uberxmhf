@@ -4,18 +4,18 @@
 # source files
 AS_SOURCES =  
 
-C_SOURCES = `find ../components/xmhf-sl/ -type f -name "*.c" -print`
-C_SOURCES += `find ../components/xmhf-baseplatform/ -type f -name "*.c" -print`
-C_SOURCES += `find ../components/xmhf-debug/ -type f -name "*.c" -print`
-C_SOURCES += `find ../components/xmhf-dmaprot/ -type f -name "*.c" -print`
-C_SOURCES += `find ../components/xmhf-memprot/ -type f -name "*.c" -print`
-C_SOURCES += `find ../components/xmhf-parteventhub/ -type f -name "*.c" -print`
-C_SOURCES += `find ../components/xmhf-partition/ -type f -name "*.c" -print`
-C_SOURCES += `find ../components/xmhf-runtime/ -type f -name "*.c" -print`
-C_SOURCES += `find ../components/xmhf-smpguest/ -type f -name "*.c" -print`
-C_SOURCES += `find ../components/xmhf-tpm/ -type f -name "*.c" -print`
-C_SOURCES += `find ../components/xmhf-xcphandler/ -type f -name "*.c" -print`
-C_SOURCES += `find ../components/xmhf-xmhfcbackend/ -type f -name "*.c" -print`
+C_SOURCES = `find ../xmhf-secureloader/ -type f -name "*.c" -print`
+C_SOURCES += `find ../xmhf-runtime/xmhf-baseplatform/ -type f -name "*.c" -print`
+C_SOURCES += `find ../xmhf-runtime/xmhf-debug/ -type f -name "*.c" -print`
+C_SOURCES += `find ../xmhf-runtime/xmhf-dmaprot/ -type f -name "*.c" -print`
+C_SOURCES += `find ../xmhf-runtime/xmhf-memprot/ -type f -name "*.c" -print`
+C_SOURCES += `find ../xmhf-runtime/xmhf-eventhub/ -type f -name "*.c" -print`
+C_SOURCES += `find ../xmhf-runtime/xmhf-partition/ -type f -name "*.c" -print`
+C_SOURCES += `find ../xmhf-runtime/xmhf-startup/ -type f -name "*.c" -print`
+C_SOURCES += `find ../xmhf-runtime/xmhf-smpguest/ -type f -name "*.c" -print`
+C_SOURCES += `find ../xmhf-runtime/xmhf-tpm/ -type f -name "*.c" -print`
+C_SOURCES += `find ../xmhf-runtime/xmhf-xcphandler/ -type f -name "*.c" -print`
+C_SOURCES += `find ../xmhf-runtime/xmhf-xmhfcbackend/ -type f -name "*.c" -print`
 
 HYPAPP_SOURCES = `find $(APP_ROOT)/ -type f -name "*.c" -print`
 

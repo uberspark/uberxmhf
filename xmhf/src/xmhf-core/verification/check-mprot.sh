@@ -12,9 +12,9 @@ echo -------------------------------------------------------------------
 echo Checking x86svm HPT data structure locations...
 echo -------------------------------------------------------------------
 
-pdpt_success=$(objdump --syms ../components/xmhf-runtime/runtime.exe | awk '{print $4,$6}' | grep ".palign_data g_svm_npt_pdpt_buffers" | wc -l)
-pdts_success=$(objdump --syms ../components/xmhf-runtime/runtime.exe | awk '{print $4,$6}' | grep ".palign_data g_svm_npt_pdts_buffers" | wc -l)
-pts_success=$(objdump --syms ../components/xmhf-runtime/runtime.exe | awk '{print $4,$6}' | grep ".palign_data g_svm_npt_pts_buffers" | wc -l)
+pdpt_success=$(objdump --syms ../xmhf-runtime/xmhf-startup/runtime.exe | awk '{print $4,$6}' | grep ".palign_data g_svm_npt_pdpt_buffers" | wc -l)
+pdts_success=$(objdump --syms ../xmhf-runtime/xmhf-startup/runtime.exe | awk '{print $4,$6}' | grep ".palign_data g_svm_npt_pdts_buffers" | wc -l)
+pts_success=$(objdump --syms ../xmhf-runtime/xmhf-startup/runtime.exe | awk '{print $4,$6}' | grep ".palign_data g_svm_npt_pts_buffers" | wc -l)
 
 # echo Return value: $pdpt_success, $pdts_success, $pts_success
 svm_success=0;
@@ -30,10 +30,10 @@ echo -------------------------------------------------------------------
 echo Checking x86vmx HPT data structure locations...
 echo -------------------------------------------------------------------
 
-vmx_pml4_success=$(objdump --syms ../components/xmhf-runtime/runtime.exe | awk '{print $4,$6}' | grep ".palign_data g_vmx_ept_pml4_table_buffers" | wc -l)
-vmx_pdpt_success=$(objdump --syms ../components/xmhf-runtime/runtime.exe | awk '{print $4,$6}' | grep ".palign_data g_vmx_ept_pdp_table_buffers" | wc -l)
-vmx_pdt_success=$(objdump --syms ../components/xmhf-runtime/runtime.exe | awk '{print $4,$6}' | grep ".palign_data g_vmx_ept_pd_table_buffers" | wc -l)
-vmx_pt_success=$(objdump --syms ../components/xmhf-runtime/runtime.exe | awk '{print $4,$6}' | grep ".palign_data g_vmx_ept_p_table_buffers" | wc -l)
+vmx_pml4_success=$(objdump --syms ../xmhf-runtime/xmhf-startup/runtime.exe | awk '{print $4,$6}' | grep ".palign_data g_vmx_ept_pml4_table_buffers" | wc -l)
+vmx_pdpt_success=$(objdump --syms ../xmhf-runtime/xmhf-startup/runtime.exe | awk '{print $4,$6}' | grep ".palign_data g_vmx_ept_pdp_table_buffers" | wc -l)
+vmx_pdt_success=$(objdump --syms ../xmhf-runtime/xmhf-startup/runtime.exe | awk '{print $4,$6}' | grep ".palign_data g_vmx_ept_pd_table_buffers" | wc -l)
+vmx_pt_success=$(objdump --syms ../xmhf-runtime/xmhf-startup/runtime.exe | awk '{print $4,$6}' | grep ".palign_data g_vmx_ept_p_table_buffers" | wc -l)
 
 vmx_success=0;
 
@@ -49,7 +49,7 @@ echo -------------------------------------------------------------------
 echo Checking DMA data structure location...
 echo -------------------------------------------------------------------
 
-dma_success=$(objdump --syms ../components/xmhf-runtime/runtime.exe | awk '{print $4,$6}' | grep ".palign_data g_rntm_dmaprot_buffer" | wc -l)
+dma_success=$(objdump --syms ../xmhf-runtime/xmhf-startup/runtime.exe | awk '{print $4,$6}' | grep ".palign_data g_rntm_dmaprot_buffer" | wc -l)
 
 
 if [ $svm_success -eq 1 ] && [ $vmx_success -eq 1 ] && [ $dma_success -eq 1 ]
