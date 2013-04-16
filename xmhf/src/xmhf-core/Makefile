@@ -29,7 +29,7 @@ runtime:
 	#EMHF libemhfc environment callbacks
 	cd xmhf-runtime/xmhf-xmhfcbackend && $(MAKE) -w all
 	#EMHF runtime component
-	cd xmhf-runtime/xmhf-runtime && $(MAKE) -w all
+	cd xmhf-runtime/xmhf-startup && $(MAKE) -w all
 
 .PHONY: secureloader
 secureloader: runtime 
@@ -48,9 +48,9 @@ bootloader: secureloader runtime
 
 secureloader/sl.bin: secureloader
 runtime/runtime.bin: runtime
-hypervisor-$(TARGET_HWPLATFORM).bin.gz: xmhf-secureloader/sl.bin xmhf-runtime/xmhf-runtime/runtime.bin xmhf-bootloader/init-$(TARGET_HWPLATFORM).bin
+hypervisor-$(TARGET_HWPLATFORM).bin.gz: xmhf-secureloader/sl.bin xmhf-runtime/xmhf-startup/runtime.bin xmhf-bootloader/init-$(TARGET_HWPLATFORM).bin
 	# concatenate sl image and runtime image 
-	$(CAT) ./xmhf-secureloader/sl.bin ./xmhf-runtime/xmhf-runtime/runtime.bin > ./hypervisor.tmp.img
+	$(CAT) ./xmhf-secureloader/sl.bin ./xmhf-runtime/xmhf-startup/runtime.bin > ./hypervisor.tmp.img
 	gzip -c ./hypervisor.tmp.img > ./hypervisor-$(TARGET_HWPLATFORM).bin.gz
 	$(RM) -rf ./hypervisor.tmp.img 
 	# install loader and runtime images to INSTALLDIR
@@ -82,7 +82,7 @@ clean:
 	cd xmhf-runtime/xmhf-debug && $(MAKE) -w clean
 	cd xmhf-runtime/xmhf-xmhfcbackend && $(MAKE) -w clean
 
-	cd xmhf-runtime/xmhf-runtime && $(MAKE) -w clean
+	cd xmhf-runtime/xmhf-startup && $(MAKE) -w clean
 
 	cd xmhf-secureloader && $(MAKE) -w clean
 	
