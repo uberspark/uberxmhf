@@ -70,67 +70,14 @@ RPB *rpb; 	//runtime parameter block pointer
 //actual definitions
 RPB _xrpb;	
 
-
-
-void runtime_main(){
-//void main(){
-		/* xmhf_runtime_main */
-		extern void xmhf_runtime_main(void);
-		//setup RPB pointer and required runtime parameter block values
-		rpb = (RPB *)&_xrpb;
-		rpb->XtVmmE820NumEntries = 1; 									//lets worry about E820 later
-		rpb->XtVmmRuntimePhysBase = 0xC0000000;
-		rpb->XtVmmRuntimeSize = 0x8800000;								//128 MB + 8MB (NPTs) runtime size
-		rpb->XtGuestOSBootModuleBase = 0x20000;
-		rpb->XtGuestOSBootModuleSize = 512;
-		rpb->runtime_appmodule_base = 0;
-		rpb->runtime_appmodule_size = 0;
-
-
-		//setup bare minimum vcpu
-		vcpu.isbsp = 1;													//assume BSP
-		vcpu.id = 0;													//give a LAPIC id
-		vcpu.esp = 0xC6000000;											//give a stack
-		vcpu.vmcb_vaddr_ptr = &_xvmcb;									//set vcpu VMCB virtual address to something meaningful
-		vcpu.vmx_vmcs_vaddr = 0xC7000000;								//VMCS address
-
-#if defined (X86_VMX)
-		vcpu.cpu_vendor = CPU_VENDOR_INTEL;								
-#else
-		vcpu.npt_vaddr_ptr = 0xC7F00000;								//NPT PDPT page
-		vcpu.npt_vaddr_pts = 0xC8000000;								//where our NPTs reside
-		vcpu.cpu_vendor = CPU_VENDOR_AMD;
-#endif		
-				
-		xmhf_runtime_main(&vcpu, 0);									//call "init" function
-
-}
-
-	
-void runtime_entry_main(){
-//void main(){
-		/* xmhf_runtime_entry */
-		extern void xmhf_runtime_entry(void);
-		xmhf_runtime_entry();
-}
-
-void sl_main(){
-//void main(){
-		extern void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx);
-		xmhf_sl_main(xmhf_verify_cpu_vendor, 0xB8000000, 0, 0);
-		assert(1);
-}
-
-
-//void ihub_main() {
 void main() {
 		//setup RPB pointer and required runtime parameter block values
 		rpb = (RPB *)&_xrpb;
-		rpb->XtVmmE820NumEntries = 1; 									//lets worry about E820 later
-		rpb->XtVmmRuntimePhysBase = 0xC0000000;
+		rpb->XtVmmE820NumEntries = 1; 									//number of E820 entries
+		rpb->XtVmmRuntimePhysBase = 0xC0000000;							//runtime physical base address
 		rpb->XtVmmRuntimeSize = 0x8800000;								//128 MB + 8MB (NPTs) runtime size
-		rpb->XtGuestOSBootModuleBase = 0x20000;
-		rpb->XtGuestOSBootModuleSize = 512;
+		rpb->XtGuestOSBootModuleBase = 0x20000;							//guest OS boot module base address
+		rpb->XtGuestOSBootModuleSize = 512;								//guest OS boot module size
 
 		//setup bare minimum vcpu
 		vcpu.isbsp = 1;													//assume BSP
@@ -138,8 +85,8 @@ void main() {
 		vcpu.esp = 0xC6000000;											//give a stack
 
 		//globals
-		g_midtable_numentries=1;
-		g_svm_lapic_base = 0xFEE00000;
+		g_midtable_numentries=1;										//number of CPU table entries
+		g_svm_lapic_base = 0xFEE00000;									//CPU LAPIC physical addresses
 		g_vmx_lapic_base = 0xFEE00000;
 
 #if defined (X86_VMX)
@@ -153,7 +100,7 @@ void main() {
 		//Intel specific fields
 		vcpu.vmx_vmcs_vaddr = 0xC7000000;								//VMCS address
 		vcpu.vmx_vaddr_ept_pml4_table = 0xC7F00000;						//EPT PML4 table 		
-		vcpu.vmx_guest_unrestricted = 1;
+		vcpu.vmx_guest_unrestricted = 1;								//VMX unrestricted guest support
 		vcpu.vmx_vaddr_ept_p_tables = 0xC8000000;						//EPT page tables
 #else
 		//AMD specific fields
@@ -162,12 +109,6 @@ void main() {
 		vcpu.vmcb_vaddr_ptr = &_xvmcb;									//set vcpu VMCB virtual address to something meaningful
 #endif
 		
-
-#if 0
-		xmhf_runtime_main(&vcpu, 0);									//call "init" function
-		
-		assert(vcpu.vmcs.host_RIP == (u64)0xF00DDEAD);
-#else
 
 		#if defined (X86_VMX)
 			//VMX "init" values for MAC(b)
@@ -283,8 +224,7 @@ void main() {
 			xmhf_parteventhub_arch_x86svm_intercept_handler(&vcpu, &r);
 		#endif
 		
-#endif 
-		
+	
 		assert(1);
 }
 //----------------------------------------------------------------------
