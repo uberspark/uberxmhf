@@ -153,7 +153,7 @@ void main() {
 		//Intel specific fields
 		vcpu.vmx_vmcs_vaddr = 0xC7000000;								//VMCS address
 		vcpu.vmx_vaddr_ept_pml4_table = 0xC7F00000;						//EPT PML4 table 		
-		vcpu.vmx_guest_unrestricted = nondet_bool();
+		vcpu.vmx_guest_unrestricted = 1;
 		vcpu.vmx_vaddr_ept_p_tables = 0xC8000000;						//EPT page tables
 #else
 		//AMD specific fields
