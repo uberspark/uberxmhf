@@ -60,10 +60,6 @@ struct _sl_parameter_block slpb __attribute__(( section(".sl_untrusted_params") 
 	.magic = SL_PARAMETER_BLOCK_MAGIC,
 };
 
-#ifdef __XMHF_VERIFICATION__
-u32 g_dmaprot_activated=0;
-#endif
-
 
 //we get here from slheader.S
 // rdtsc_* are valid only if PERF_CRIT is not defined.  slheader.S
@@ -187,10 +183,6 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	xmhf_sl_arch_early_dmaprot_init(slpb.runtime_size);
 #endif
 	
-	#ifdef __XMHF_VERIFICATION__
-	assert(g_dmaprot_activated == 1);
-	#endif
-
 		
 	//populate runtime parameter block fields
 		rpb->isEarlyInit = slpb.isEarlyInit; //tell runtime if we started "early" or "late"

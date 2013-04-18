@@ -280,10 +280,6 @@ static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
   return;
 }
 
-#ifdef __XMHF_VERIFICATION__
-extern u32 g_dmaprot_activated;
-#endif
-
 //------------------------------------------------------------------------------
 //initialize a DRHD unit
 //note that the VT-d documentation does not describe the precise sequence of
@@ -538,7 +534,6 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
       gcmd.bits.te=1;
 	   #ifdef __XMHF_VERIFICATION__
 	   assert(gcmd.bits.te == 1);
-	   g_dmaprot_activated=1;
 	   #endif
 	   
       _vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);

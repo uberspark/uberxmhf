@@ -62,10 +62,6 @@ static struct _svm_eap _svm_eap __attribute__(( section(".data") ));
 static void svm_eap_dev_write(u32 function, u32 index, u32 value);
 static u32 svm_eap_dev_read(u32 function, u32 index);
 
-#ifdef __XMHF_VERIFICATION__
-extern u32 g_dmaprot_activated;
-#endif
-
 //initialize SVM EAP a.k.a DEV
 //returns 1 if all went well, else 0
 //inputs: physical and virtual addresses of the DEV bitmap area
@@ -233,7 +229,7 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
 		assert(dev_cr.fields.deven == 1);
 		#endif
   		svm_eap_dev_write(DEV_CR, 0, dev_cr.bytes);
-			printf("\n	DEV: enabled protections.");
+		printf("\n	DEV: enabled protections.");
 
      	
 		//}
@@ -447,10 +443,6 @@ u32 xmhf_dmaprot_arch_x86svm_earlyinitialize(u64 protectedbuffer_paddr,
 	//return myfunc(dev_bitmap_paddr, dev_bitmap_paddr);
 	status=svm_eap_initialize(dev_bitmap_paddr, dev_bitmap_paddr);
 	
-	#ifdef __XMHF_VERIFICATION__
-	g_dmaprot_activated=1;
-	#endif
-
 	return status;
 }
 
@@ -466,10 +458,6 @@ u32 xmhf_dmaprot_arch_x86svm_initialize(u64 protectedbuffer_paddr,
 	HALT_ON_ERRORCOND(protectedbuffer_size >= 131072);	//we need 128K 
 
 	status=svm_eap_initialize(protectedbuffer_paddr, protectedbuffer_vaddr);
-	
-	#ifdef __XMHF_VERIFICATION__
-	g_dmaprot_activated=1;
-	#endif
 	
 	return status;
 }
