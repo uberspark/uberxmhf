@@ -54,7 +54,7 @@ void emhf_debug_arch_init(char *params)
 #endif
 
 #ifdef __DEBUG_VGA__
-  dbx_x86_vgamem_init(NULL);
+  dbg_x86_vgamem_init(NULL);
 #endif
 }
 
@@ -66,7 +66,7 @@ void emhf_debug_arch_putc(char c)
 #endif
 
 #ifdef __DEBUG_VGA__
-  dbx_x86_vgamem_putc(c);
+  dbg_x86_vgamem_putc(c);
 #endif
 }
 
@@ -78,6 +78,6 @@ void emhf_debug_arch_putstr(const char *str)
 #endif
 
 #ifdef __DEBUG_VGA__
-  dbx_x86_vgamem_putstr(str);
+  dbg_x86_vgamem_putstr(str);
 #endif
 }

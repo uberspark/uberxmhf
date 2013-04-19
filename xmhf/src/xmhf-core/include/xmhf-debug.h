@@ -132,7 +132,7 @@ static inline unsigned char __toupper(unsigned char c)
 void emhf_debug_init(char *params);
 
 #include <stdio.h>
-#ifdef __DEBUG_SERIAL__
+#if defined (__DEBUG_SERIAL__) || defined (__DEBUG_VGA__)
 	/* void printf(const char *format, ...) */
 	/*   __attribute__ ((format (printf, 1, 2))); */
 	void dprintf(u32 log_type, const char *format, ...)
