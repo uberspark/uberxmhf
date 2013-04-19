@@ -64,7 +64,7 @@ Generate the `./configure` script.
 
 Configure the XMHF hypapp.
 
-    ./configure --with-approot=src/example-hypapps/helloworld --with-apparchive=xmhfapp-helloworld.a
+    ./configure --with-approot=src/example-hypapps/helloworld --with-apparchive=xmhfapp_helloworld.a
    
 Generate and install the binaries (note: default install path is specified with the `--prefix=` flag to `configure`).
 
