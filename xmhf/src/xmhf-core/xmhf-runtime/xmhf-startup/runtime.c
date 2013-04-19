@@ -70,7 +70,8 @@ void xmhf_runtime_entry(void){
 	xmhf_baseplatform_initialize();
 
     //[debug] dump E820 and MP table
- 	/*printf("\nNumber of E820 entries = %u", rpb->XtVmmE820NumEntries);
+ 	#ifndef __XMHF_VERIFICATION__
+ 	printf("\nNumber of E820 entries = %u", rpb->XtVmmE820NumEntries);
 	{
 		int i;
 		for(i=0; i < (int)rpb->XtVmmE820NumEntries; i++){
@@ -85,18 +86,14 @@ void xmhf_runtime_entry(void){
 		int i;
 		for(i=0; i < (int)rpb->XtVmmMPCpuinfoNumEntries; i++)
 			printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x", i, g_cpumap[i].isbsp, g_cpumap[i].lapic_id);
-	}*/
+	}
+	#endif //__XMHF_VERIFICATION__
 
 
 	#ifndef __XMHF_VERIFICATION__
 	//setup EMHF exception handler component
 	xmhf_xcphandler_initialize();
 	#endif
-
-
-	//[debug]: test IDT/exception routing
-	//__asm__ __volatile__ ("int $0x03\r\n");
-
 
 #if defined (__DRTM_DMA_PROTECTION__)
 	#if defined (__DMAPROT__)
@@ -129,26 +126,11 @@ void xmhf_runtime_entry(void){
 	}
 #endif
 
-
-
-	/*printf("\nPreSelectors CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", 
-			(u16)read_segreg_cs(), (u16)read_segreg_ds(),
-			(u16)read_segreg_es(), (u16)read_segreg_ss());
-	printf("\nPreSelectors FS=0x%04x, GS=0x%04x", 
-			(u16)read_segreg_fs(), (u16)read_segreg_gs());
-	printf("\nPreSelectors TR=0x%04x", (u16)read_tr_sel());*/
-
-
-	//#ifndef __XMHF_VERIFICATION__
 	//initialize base platform with SMP 
 	xmhf_baseplatform_smpinitialize();
-	//#endif
-
 
 	printf("\nRuntime: We should NEVER get here!");
 	HALT_ON_ERRORCOND(0);
-	HALT();
-
 }
 
 //we get control here in the context of *each* physical CPU core 
@@ -218,17 +200,7 @@ void xmhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
   xmhf_smpguest_initialize(vcpu);
 #endif
 
-  /*//XXX: debug
-  //__asm__ __volatile__("int $0x02\r\n");
-  //printf("\nCPU(0x%02x): Halting!", vcpu->id);
-	printf("\n[%02x]Selectors CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", vcpu->id,
-			(u16)read_segreg_cs(), (u16)read_segreg_ds(),
-			(u16)read_segreg_es(), (u16)read_segreg_ss());
-	printf("\n[%02x]Selectors FS=0x%04x, GS=0x%04x", vcpu->id,
-			(u16)read_segreg_fs(), (u16)read_segreg_gs());
-	printf("\n[%02x]Selectors TR=0x%04x", vcpu->id, (u16)read_tr_sel());*/
-	
-  //start partition
+  //start partition (guest)
   printf("\n%s[%02x]: starting partition...", __FUNCTION__, vcpu->id);
   xmhf_partition_start(vcpu);
 
