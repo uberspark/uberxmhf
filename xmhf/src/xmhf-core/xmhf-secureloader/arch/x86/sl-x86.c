@@ -264,7 +264,7 @@ void xmhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 		gdt_base= *(u32 *)(xmhf_sl_arch_hva2sla(rpb->XtVmmGdt + 2));
 	#else
 		tss_base=PAGE_SIZE_2M+PAGE_SIZE_4K;
-		gdt_base=PAGE_SIZE_2M+PAGE_SIZE_4K;
+		gdt_base=PAGE_SIZE_2M+PAGE_SIZE_4K+2048;
 	#endif
 	
 		//fix TSS descriptor, 18h

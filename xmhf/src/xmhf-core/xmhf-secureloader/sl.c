@@ -114,25 +114,6 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
     printf("\nSL: [PERF] RDTSC DRTM elapsed cycles: 0x%llx",
            slpb.rdtsc_after_drtm - slpb.rdtsc_before_drtm);
     
-	/*//debug: dump E820 and MP table
- 	printf("\n	e820map:\n");
-	{
-		u32 i;
-		for(i=0; i < slpb.numE820Entries; i++){
-		  printf("\n		0x%08x%08x, size=0x%08x%08x (%u)", 
-			  slpb.e820map[i].baseaddr_high, slpb.e820map[i].baseaddr_low,
-			  slpb.e820map[i].length_high, slpb.e820map[i].length_low,
-			  slpb.e820map[i].type);
-		}
-	}*/
-	
-	/*printf("\n	pcpus:\n");
-	{
-		u32 i;
-		for(i=0; i < slpb.numCPUEntries; i++)
-		printf("\n		CPU #%u: bsp=%u, lapic_id=0x%02x", i, slpb.pcpus[i].isbsp, slpb.pcpus[i].lapic_id);
-	}*/
-
 	//get runtime physical base
 	runtime_physical_base = sl_baseaddr + PAGE_SIZE_2M;	//base of SL + 2M
 	
@@ -146,21 +127,10 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	//initialize basic platform elements
 	xmhf_baseplatform_initialize();
 
-
 	//sanitize cache/MTRR/SMRAM (most important is to ensure that MTRRs 
 	//do not contain weird mappings)
 #if defined (__DRTM_DMA_PROTECTION__)
     xmhf_sl_arch_sanitize_post_launch();
-
-	
-	/*
-    //check SL integrity
-    if(xmhf_sl_arch_integrity_check((u8*)PAGE_SIZE_2M, slpb.runtime_size)) // XXX base addr
-        printf("\nsl_intergrity_check SUCCESS");
-    else
-        printf("\nsl_intergrity_check FAILURE");
-    */
-    
 #endif
 
 
@@ -177,7 +147,6 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	printf("\nSL: RPB, magic=0x%08x", rpb->magic);
 	HALT_ON_ERRORCOND(rpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
 
-
 #if defined (__DRTM_DMA_PROTECTION__)    
 	//setup DMA protection on runtime (secure loader is already DMA protected)
 	xmhf_sl_arch_early_dmaprot_init(slpb.runtime_size);
@@ -185,53 +154,44 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	
 		
 	//populate runtime parameter block fields
-		rpb->isEarlyInit = slpb.isEarlyInit; //tell runtime if we started "early" or "late"
+	rpb->isEarlyInit = slpb.isEarlyInit; //tell runtime if we started "early" or "late"
 	
-		//store runtime physical and virtual base addresses along with size
-		rpb->XtVmmRuntimePhysBase = runtime_physical_base; 
-		rpb->XtVmmRuntimeVirtBase = __TARGET_BASE;
-		rpb->XtVmmRuntimeSize = slpb.runtime_size;
+	//store runtime physical and virtual base addresses along with size
+	rpb->XtVmmRuntimePhysBase = runtime_physical_base; 
+	rpb->XtVmmRuntimeVirtBase = __TARGET_BASE;
+	rpb->XtVmmRuntimeSize = slpb.runtime_size;
 
-		//store revised E820 map and number of entries
-		#ifndef __XMHF_VERIFICATION__
-		memcpy(xmhf_sl_arch_hva2sla(rpb->XtVmmE820Buffer), (void *)&slpb.memmapbuffer, (sizeof(slpb.memmapbuffer)) );
-		#endif
-		rpb->XtVmmE820NumEntries = slpb.numE820Entries; 
+	//store revised E820 map and number of entries
+	#ifndef __XMHF_VERIFICATION__
+	memcpy(xmhf_sl_arch_hva2sla(rpb->XtVmmE820Buffer), (void *)&slpb.memmapbuffer, (sizeof(slpb.memmapbuffer)) );
+	#endif
+	rpb->XtVmmE820NumEntries = slpb.numE820Entries; 
 
-		//store CPU table and number of CPUs
-		#ifndef __XMHF_VERIFICATION__
-		memcpy(xmhf_sl_arch_hva2sla(rpb->XtVmmMPCpuinfoBuffer), (void *)&slpb.cpuinfobuffer, (sizeof(slpb.cpuinfobuffer)) );
-		#endif
-		rpb->XtVmmMPCpuinfoNumEntries = slpb.numCPUEntries; 
+	//store CPU table and number of CPUs
+	#ifndef __XMHF_VERIFICATION__
+	memcpy(xmhf_sl_arch_hva2sla(rpb->XtVmmMPCpuinfoBuffer), (void *)&slpb.cpuinfobuffer, (sizeof(slpb.cpuinfobuffer)) );
+	#endif
+	rpb->XtVmmMPCpuinfoNumEntries = slpb.numCPUEntries; 
 
-		//setup guest OS boot module info in LPB	
-		rpb->XtGuestOSBootModuleBase=slpb.runtime_osbootmodule_base;
-		rpb->XtGuestOSBootModuleSize=slpb.runtime_osbootmodule_size;
+	//setup guest OS boot module info in LPB	
+	rpb->XtGuestOSBootModuleBase=slpb.runtime_osbootmodule_base;
+	rpb->XtGuestOSBootModuleSize=slpb.runtime_osbootmodule_size;
 
-		//pass optional app module if any
-		rpb->runtime_appmodule_base = slpb.runtime_appmodule_base;
-		rpb->runtime_appmodule_size = slpb.runtime_appmodule_size;
+	//pass optional app module if any
+	rpb->runtime_appmodule_base = slpb.runtime_appmodule_base;
+	rpb->runtime_appmodule_size = slpb.runtime_appmodule_size;
 
 #if defined (__DEBUG_SERIAL__)
-        //pass along UART config for serial debug output
-		rpb->RtmUartConfig = g_uart_config;
+    //pass along UART config for serial debug output
+	rpb->RtmUartConfig = g_uart_config;
 #endif
 
-		//pass command line configuration forward 
-        COMPILE_TIME_ASSERT(sizeof(slpb.cmdline) == sizeof(rpb->cmdline));
-		#ifndef __XMHF_VERIFICATION__
-		strncpy(rpb->cmdline, slpb.cmdline, sizeof(slpb.cmdline));
-		#endif
+	//pass command line configuration forward 
+    COMPILE_TIME_ASSERT(sizeof(slpb.cmdline) == sizeof(rpb->cmdline));
+#ifndef __XMHF_VERIFICATION__
+	strncpy(rpb->cmdline, slpb.cmdline, sizeof(slpb.cmdline));
+#endif
 
-		////debug dump uart_config field
-		//printf("\nrpb->uart_config.port = %x", rpb->uart_config.port);
-		//printf("\nrpb->uart_config.clock_hz = %u", rpb->uart_config.clock_hz);
-		//printf("\nrpb->uart_config.baud = %u", rpb->uart_config.baud);
-		//printf("\nrpb->uart_config.data_bits, parity, stop_bits, fifo = %x %x %x %x", 
-			//	rpb->uart_config.data_bits, rpb->uart_config.parity, rpb->uart_config.stop_bits, rpb->uart_config.fifo);*/
-
-
-	
 	//transfer control to runtime
 	xmhf_sl_arch_xfer_control_to_runtime(rpb);
 
@@ -244,21 +204,3 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 #endif
 } 
 
-
-/*#define SERIAL_BASE 0x3f8
-void raw_serial_init(void){
-    // enable DLAB and set baudrate 115200
-    outb(SERIAL_BASE+0x3, 0x80);
-    outb(SERIAL_BASE+0x0, 0x01);
-    outb(SERIAL_BASE+0x1, 0x00);
-    // disable DLAB and set 8N1
-    outb(SERIAL_BASE+0x3, 0x03);
-    // reset IRQ register
-    outb(SERIAL_BASE+0x1, 0x00);
-    // enable fifo, flush buffer, enable fifo
-    outb(SERIAL_BASE+0x2, 0x01);
-    outb(SERIAL_BASE+0x2, 0x07);
-    outb(SERIAL_BASE+0x2, 0x01);
-    // set RTS,DTR
-    outb(SERIAL_BASE+0x4, 0x03);
-}*/
