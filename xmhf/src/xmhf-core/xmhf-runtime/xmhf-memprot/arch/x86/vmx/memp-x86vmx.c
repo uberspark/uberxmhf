@@ -265,11 +265,6 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
   //  }
   //}
   
-  //[test]
-  //printf("\ntype for page base 0x00000000 = %u", vmx_getmemorytypeforphysicalpage((u64)0) );
-  //printf("\ntype for page base 0x000F0000 = %u", vmx_getmemorytypeforphysicalpage((u64)0x000F0000) );
-  //printf("\ntype for page base 0xC0000000 = %u", vmx_getmemorytypeforphysicalpage((u64)0xC0000000) );
-  
 }
 
 //---get memory type for a given physical page address--------------------------
@@ -353,11 +348,11 @@ static void _vmx_setupEPT(VCPU *vcpu){
 			
 			for(k=0; k < PAE_PTRS_PER_PT; k++){
 				u32 memorytype = _vmx_getmemorytypeforphysicalpage(vcpu, (u64)paddr);
-				//the EMHF memory region includes the secure loader +
+				//the XMHF memory region includes the secure loader +
 				//the runtime (core + app). this runs from 
 				//(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M) with a size
 				//of (rpb->XtVmmRuntimeSize+PAGE_SIZE_2M)
-				//make EMHF physical pages inaccessible
+				//make XMHF physical pages inaccessible
 				if( (paddr >= (rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M)) &&
 					(paddr < (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) ){
 					p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) | (u64)0x0 ;	//not-present
@@ -380,10 +375,7 @@ static void _vmx_setupEPT(VCPU *vcpu){
 void xmhf_memprot_arch_x86vmx_flushmappings(VCPU *vcpu){
   __vmx_invept(VMX_INVEPT_SINGLECONTEXT, 
           (u64)vcpu->vmcs.control_EPT_pointer_full);
-  //__vmx_invvpid(VMX_VPID_EXTENT_SINGLE_CONTEXT, 1, 0);
-
 }
-
 
 //set protection for a given physical memory address
 void xmhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
@@ -433,7 +425,6 @@ void xmhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
 //get protection for a given physical memory address
 u32 xmhf_memprot_arch_x86vmx_getprot(VCPU *vcpu, u64 gpa){
   u32 pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
-  //u64 *pt = (u64 *)(u32)xmhf_memprot_arch_x86vmx_get_EPTP(vcpu); //TODO: push into vmx sub arch. backend
   u64 *pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
   u64 entry = pt[pfn];
   u32 prottype;

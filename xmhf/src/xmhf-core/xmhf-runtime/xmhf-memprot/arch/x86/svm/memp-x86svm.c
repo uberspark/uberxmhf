@@ -98,11 +98,11 @@ static void _svm_nptinitialize(u32 npt_pdpt_base, u32 npt_pdts_base, u32 npt_pts
 			pt=(pt_t)((u32)npt_pts_base + ((i * PAE_PTRS_PER_PDT + j) << (PAGE_SHIFT_4K)));
 			
 			for(k=0; k < PAE_PTRS_PER_PT; k++){
-				//the EMHF memory region includes the secure loader +
+				//the XMHF memory region includes the secure loader +
 				//the runtime (core + app). this runs from 
 				//(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M) with a size
 				//of (rpb->XtVmmRuntimeSize+PAGE_SIZE_2M)
-				//make EMHF physical pages inaccessible
+				//make XMHF physical pages inaccessible
 				if( (paddr >= (rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M)) &&
 					(paddr < (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) )
 					flags = 0;	//not-present
@@ -168,7 +168,6 @@ void xmhf_memprot_arch_x86svm_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
 //get protection for a given physical memory address
 u32 xmhf_memprot_arch_x86svm_getprot(VCPU *vcpu, u64 gpa){
   u32 pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
-  //u64 *pt = (u64 *)(u32)xmhf_memprot_arch_x86svm_get_h_cr3(vcpu); //TODO: push into svm sub arch. backend
   u64 *pt = (u64 *)vcpu->npt_vaddr_pts;
   
   u64 entry = pt[pfn];
