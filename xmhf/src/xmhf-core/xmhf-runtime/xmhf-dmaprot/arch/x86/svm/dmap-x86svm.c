@@ -53,11 +53,6 @@
 //SVM EAP container structure, contains the DEV registers and the DEV bitmap 
 static struct _svm_eap _svm_eap __attribute__(( section(".data") ));
 
-//SVM DEV Bitmap. Currently covers 0-4GB physical memory range. Should
-//be fine since our hypervisor is loaded within this range.
-//u8	dev_bitmap[131072];
-
-
 //forward declarations for some static (local) functions
 static void svm_eap_dev_write(u32 function, u32 index, u32 value);
 static u32 svm_eap_dev_read(u32 function, u32 index);
@@ -157,7 +152,6 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
 		
 		
 		//setup DEV
-		//{
 
 			//0. populate the DEV bitmap physical address in the EAP structure
 			#ifndef __XMHF_VERIFICATION__
@@ -231,8 +225,6 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
   		svm_eap_dev_write(DEV_CR, 0, dev_cr.bytes);
 		printf("\n	DEV: enabled protections.");
 
-     	
-		//}
 
 		return 1;  	
 }
@@ -250,8 +242,7 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
 //(capable of DMA protecting a contiguous physical memory range)
 //that lies within the initially DMA-protected SL region to protect 
 //the runtime physical memory.
-//The runtime then re-initializes DEV once it gets control after a 
-//successful integrity check.
+//The runtime then re-initializes DEV once it gets control 
 static u32 svm_eap_early_initialize(u32 protected_buffer_paddr, 
 			u32 protected_buffer_vaddr, u32 memregion_paddr_start, 
 				u32 memregion_size){
@@ -317,12 +308,8 @@ static u32 svm_eap_early_initialize(u32 protected_buffer_paddr,
 		memset((void *)((u32)protected_buffer_vaddr+(u32)offset), 0xFF, PAGE_SIZE_4K);
 	}
 	
-	
-	//setup DEV 
-	//return svm_eap_initialize(dev_bitmap_paddr, dev_bitmap_paddr);
 	return dev_bitmap_paddr;
 }
-
 
 
 //DEV "read" function
@@ -432,15 +419,13 @@ u32 xmhf_dmaprot_arch_x86svm_earlyinitialize(u64 protectedbuffer_paddr,
 	printf("\nSL: initializing SVM DMA protection...");
 
 	#ifndef __XMHF_VERIFICATION__
-	dev_bitmap_paddr=svm_eap_early_initialize(protectedbuffer_paddr, protectedbuffer_vaddr,
+		dev_bitmap_paddr=svm_eap_early_initialize(protectedbuffer_paddr, protectedbuffer_vaddr,
 					memregionbase_paddr, memregion_size);
 	#else
-		//dev_bitmap_paddr=nondet_u32();
 		dev_bitmap_paddr=0xB8100000;
 	#endif
 
 	//setup DEV 
-	//return myfunc(dev_bitmap_paddr, dev_bitmap_paddr);
 	status=svm_eap_initialize(dev_bitmap_paddr, dev_bitmap_paddr);
 	
 	return status;
@@ -479,5 +464,4 @@ void xmhf_dmaprot_arch_x86svm_protect(u32 start_paddr, u32 size){
 	#endif
 
 	svm_eap_dev_invalidate_cache();	//flush DEV cache
-
 }

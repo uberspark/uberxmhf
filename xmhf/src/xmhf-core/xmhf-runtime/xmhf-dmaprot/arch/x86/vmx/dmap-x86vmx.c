@@ -323,15 +323,6 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
 		//sanity check number of domains (if unsupported we bail out)
     HALT_ON_ERRORCOND(cap.bits.nd != 0x7);
     
-    #if 0	//unfortunately this support is not mainstream yet, unsupported on HP8540p-corei5
-    //check for super-page support (at least 2M page mapping support)
-    printf("\n	SPS=%x", cap.bits.sps);
-		if(!(cap.bits.sps & 0x1)){
-			printf("\n	SPS does not support 2M page size. Halting!");
-			HALT();
-		}
-		#endif
-    
   }
 	printf("Done.");
 
@@ -352,31 +343,6 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
 			printf("\n	VT-d hardware access to remapping structures NON-COHERENT");
 	}
 	
-
-  
-  //2. disable device
-  /*disabling DRHD is optional as the steps below initialize required
-    registers irrespective of their reset state. however, some machines
-    e.g., HP 8100 and on Lenovo x201 (bug #116) actually freeze if we
-    try to disable DRHD. so we just omit this step*/
-	/*
-	printf("\n	Disabling DRHD...");
-  {
-		gcmd.value=0;	//disable translation
-	  HALT_ON_ERRORCOND( gcmd.bits.te == 0);	
-	  _vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
-	  _vtd_reg(drhd, VTD_REG_READ, VTD_GSTS_REG_OFF, (void *)&gsts.value);
-	    
-	  //translation enabled status must be cleared on success
-	  if(gsts.bits.tes){
-	    printf("\n	Disable op. failed. Halting!");
-	    HALT();
-	  }
-	}
-  printf("Done.");
-  */
-  
-
   //3. setup fault logging
   printf("\n	Setting Fault-reporting to NON-INTERRUPT mode...");
   {
@@ -893,7 +859,6 @@ u32 xmhf_dmaprot_arch_x86vmx_earlyinitialize(u64 protectedbuffer_paddr, u32 prot
 	vmx_eap_vtd_cet_vaddr = protectedbuffer_vaddr + (2*PAGE_SIZE_4K); 
 			
 	return vmx_eap_initialize(vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr, 0, 0,	0, 0, vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr,	vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr, 1);
-	//return 1;
 }
 
 //"normal" DMA protection initialization to setup required
@@ -962,6 +927,6 @@ void xmhf_dmaprot_arch_x86vmx_protect(u32 start_paddr, u32 size){
   #endif
   
   //flush the caches
-	_vtd_invalidatecaches();  
+_vtd_invalidatecaches();  
 
 }
