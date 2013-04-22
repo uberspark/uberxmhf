@@ -356,9 +356,6 @@ void xmhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, struct regs 
 		value_read = nondet_u32();
 	#endif
 
-    //(void)value_read;            
-    //printf("\n0x%04x:0x%08x -> (ICR=0x%08x read), value=0x%08x", 
-    //  (u16)vmcb->cs.sel, (u32)vmcb->rip, g_svm_lapic_reg, value_read);
   }
 
   //clear #DB intercept in VMCB
