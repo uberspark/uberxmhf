@@ -125,20 +125,12 @@ static void	_svm_int15_initializehook(VCPU *vcpu){
 		
 		u16 *ivt_int15 = (u16 *)(0x54);			//32-bit CS:IP for IVT INT 15 handler
 		
-		//printf("\nCPU(0x%02x): original BDA dump: %02x %02x %02x %02x %02x %02x %02x %02x", vcpu->id,
-		//	bdamemory[0], bdamemory[1], bdamemory[2], bdamemory[3], bdamemory[4],
-		//		bdamemory[5], bdamemory[6], bdamemory[7]);
-		
 		printf("\nCPU(0x%02x): original INT 15h handler at 0x%04x:0x%04x", vcpu->id,
 			ivt_int15[1], ivt_int15[0]);
 
 		//we need 8 bytes (4 for the VMCALL followed by IRET and 4 for he original 
 		//IVT INT 15h handler address, zero them to start off
 		memset(bdamemory, 0x0, 8);		
-
-		//printf("\nCPU(0x%02x): BDA dump after clear: %02x %02x %02x %02x %02x %02x %02x %02x", vcpu->id,
-		//	bdamemory[0], bdamemory[1], bdamemory[2], bdamemory[3], bdamemory[4],
-		//		bdamemory[5], bdamemory[6], bdamemory[7]);
 
 		//implant VMMCALL followed by IRET at 0040:04AC
 		bdamemory[0]= 0x0f;	//VMMCALL						
@@ -149,10 +141,6 @@ static void	_svm_int15_initializehook(VCPU *vcpu){
 		//store original INT 15h handler CS:IP following VMCALL and IRET
 		*((u16 *)(&bdamemory[4])) = ivt_int15[0];	//original INT 15h IP
 		*((u16 *)(&bdamemory[6])) = ivt_int15[1];	//original INT 15h CS
-
-		//printf("\nCPU(0x%02x): BDA dump after hook implant: %02x %02x %02x %02x %02x %02x %02x %02x", vcpu->id,
-		//	bdamemory[0], bdamemory[1], bdamemory[2], bdamemory[3], bdamemory[4],
-		//		bdamemory[5], bdamemory[6], bdamemory[7]);
 
 		//point IVT INT15 handler to the VMCALL instruction
 		ivt_int15[0]=0x00AC;
@@ -271,7 +259,6 @@ static void _svm_initVMCB(VCPU *vcpu){
   vmcb->class1_intercepts_bitmask |= (u32) SVM_CLASS1_INTERCEPT_NMI;
 
   //setup IO interception
-  //memset((void *)g_svm_iopm, 0, SIZEOF_IOPM_BITMAP);   //clear bitmap buffer
   vmcb->iopm_base_pa = hva2spa((void *)vcpu->svm_vaddr_iobitmap);   //setup vmcb iopm
   vmcb->class1_intercepts_bitmask |= (u32) SVM_CLASS1_INTERCEPT_IOIO_PROT;
 

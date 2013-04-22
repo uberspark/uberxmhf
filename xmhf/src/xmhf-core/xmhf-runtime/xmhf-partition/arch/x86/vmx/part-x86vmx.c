@@ -216,7 +216,6 @@ static void _vmx_initVT(VCPU *vcpu){
 
 //---vmx int 15 hook enabling function------------------------------------------
 static void	_vmx_int15_initializehook(VCPU *vcpu){
-//#ifnfdef __XMHF_VERIFICATION__
 	//we should only be called from the BSP
 	HALT_ON_ERRORCOND(vcpu->isbsp);
 	
@@ -225,20 +224,12 @@ static void	_vmx_int15_initializehook(VCPU *vcpu){
 		
 		u16 *ivt_int15 = (u16 *)(0x54);			//32-bit CS:IP for IVT INT 15 handler
 		
-		//printf("\nCPU(0x%02x): original BDA dump: %02x %02x %02x %02x %02x %02x %02x %02x", vcpu->id,
-		//	bdamemory[0], bdamemory[1], bdamemory[2], bdamemory[3], bdamemory[4],
-		//		bdamemory[5], bdamemory[6], bdamemory[7]);
-		
 		printf("\nCPU(0x%02x): original INT 15h handler at 0x%04x:0x%04x", vcpu->id,
 			ivt_int15[1], ivt_int15[0]);
 
 		//we need 8 bytes (4 for the VMCALL followed by IRET and 4 for he original 
 		//IVT INT 15h handler address, zero them to start off
 		memset(bdamemory, 0x0, 8);		
-
-		//printf("\nCPU(0x%02x): BDA dump after clear: %02x %02x %02x %02x %02x %02x %02x %02x", vcpu->id,
-		//	bdamemory[0], bdamemory[1], bdamemory[2], bdamemory[3], bdamemory[4],
-		//		bdamemory[5], bdamemory[6], bdamemory[7]);
 
 		//implant VMCALL followed by IRET at 0040:04AC
 		bdamemory[0]= 0x0f;	//VMCALL						
@@ -250,21 +241,12 @@ static void	_vmx_int15_initializehook(VCPU *vcpu){
 		*((u16 *)(&bdamemory[4])) = ivt_int15[0];	//original INT 15h IP
 		*((u16 *)(&bdamemory[6])) = ivt_int15[1];	//original INT 15h CS
 
-		//printf("\nCPU(0x%02x): BDA dump after hook implant: %02x %02x %02x %02x %02x %02x %02x %02x", vcpu->id,
-		//	bdamemory[0], bdamemory[1], bdamemory[2], bdamemory[3], bdamemory[4],
-		//		bdamemory[5], bdamemory[6], bdamemory[7]);
 
 		//point IVT INT15 handler to the VMCALL instruction
 		ivt_int15[0]=0x00AC;
 		ivt_int15[1]=0x0040;					
 	}
-//#endif	
 }
-
-
-#ifdef __XMHF_VERIFICATION__
-u32 g_xmhf_verification_ihubaddress = 0;
-#endif
 
 
 //--initunrestrictedguestVMCS: initializes VMCS for unrestricted guest ---------
@@ -285,12 +267,13 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.host_GDTR_base = (u64)(u32)x_gdt_start;
 	vcpu->vmcs.host_IDTR_base = (u64)(u32)xmhf_xcphandler_get_idt_start();
 	vcpu->vmcs.host_TR_base = (u64)(u32)g_runtime_TSS;
-#ifdef __XMHF_VERIFICATION__
-	g_xmhf_verification_ihubaddress = 1;
-	vcpu->vmcs.host_RIP = 0xDEADBEEF;
-#else
 	vcpu->vmcs.host_RIP = (u64)(u32)xmhf_parteventhub_arch_x86vmx_entry;
-#endif
+
+#ifdef __XMHF_VERIFICATION__
+	if( vcpu->vmcs.host_RIP == (u64)(u32)xmhf_parteventhub_arch_x86vmx_entry)
+		vcpu->vmcs.host_RIP = 0xDEADBEEF;
+#endif //__XMHF_VERIFICATION__
+
 	//store vcpu at TOS
 	vcpu->esp = vcpu->esp - sizeof(u32);
 #ifndef __XMHF_VERIFICATION__
@@ -469,12 +452,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 
 //---initVMCS - intialize VMCS for guest boot-----------------------------------
 static void _vmx_initVMCS(VCPU *vcpu){
-  //if(vcpu->vmx_guest_unrestricted){
-  	vmx_initunrestrictedguestVMCS(vcpu);
-  //}else{
-  //		printf("\nHALT: Fatal, v86 monitor based real-mode exec. unsupported!");
-  //		HALT();
-  //	}
+ 	vmx_initunrestrictedguestVMCS(vcpu);
 }
 
 
@@ -563,15 +541,12 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu){
 
 //start executing the partition and guest OS
 void xmhf_partition_arch_x86vmx_start(VCPU *vcpu){
-    //printf("\nCPU(0x%02x): Starting HVM using CS:EIP=0x%04x:0x%08x...", vcpu->id,
-	//		(u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP);
-	
+    
 #ifdef __XMHF_VERIFICATION__
 	//ensure that whenever a partition is started on a vcpu, we have extended paging
 	//enabled and that the base points to the extended page tables we have initialized
 	assert( (vcpu->vmcs.control_EPT_pointer_high == 0) && (vcpu->vmcs.control_EPT_pointer_full == (hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E)) );
 	assert( (vcpu->vmcs.control_VMX_seccpu_based & 0x2) );
-	//assert( g_xmhf_verification_ihubaddress == 1);
 	assert( vcpu->vmcs.host_RIP == 0xDEADBEEF);
 #endif
 
