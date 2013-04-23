@@ -143,6 +143,59 @@ void main() {
 			vcpu.vmcs.info_IO_RIP=nondet_u64();
 			vcpu.vmcs.info_guest_linear_address=nondet_u64();		
 			vcpu.vmcs.guest_paddr_full=nondet_u64();
+
+			vcpu.vmcs.guest_CR0=nondet_u64();
+			vcpu.vmcs.guest_CR3=nondet_u64();
+			vcpu.vmcs.guest_CR4=nondet_u64();
+			vcpu.vmcs.guest_ES_base=nondet_u64();
+			vcpu.vmcs.guest_CS_base=nondet_u64(); 
+			vcpu.vmcs.guest_SS_base=nondet_u64();
+			vcpu.vmcs.guest_DS_base=nondet_u64();
+			vcpu.vmcs.guest_FS_base=nondet_u64();
+			vcpu.vmcs.guest_GS_base=nondet_u64();
+			vcpu.vmcs.guest_LDTR_base=nondet_u64();
+			vcpu.vmcs.guest_TR_base=nondet_u64();
+			vcpu.vmcs.guest_GDTR_base=nondet_u64();
+			vcpu.vmcs.guest_IDTR_base=nondet_u64();
+			vcpu.vmcs.guest_DR7=nondet_u64();
+			vcpu.vmcs.guest_RSP=nondet_u64(); 
+			vcpu.vmcs.guest_RIP=nondet_u64(); 
+			vcpu.vmcs.guest_RFLAGS=nondet_u64(); 
+			vcpu.vmcs.guest_pending_debug_x=nondet_u64();
+			vcpu.vmcs.guest_SYSENTER_ESP=nondet_u64();
+			vcpu.vmcs.guest_SYSENTER_EIP=nondet_u64();
+
+			vcpu.vmcs.guest_ES_limit=nondet_u32();
+			vcpu.vmcs.guest_CS_limit=nondet_u32();
+			vcpu.vmcs.guest_SS_limit=nondet_u32();
+			vcpu.vmcs.guest_DS_limit=nondet_u32();
+			vcpu.vmcs.guest_FS_limit=nondet_u32();
+			vcpu.vmcs.guest_GS_limit=nondet_u32();
+			vcpu.vmcs.guest_LDTR_limit=nondet_u32(); 
+			vcpu.vmcs.guest_TR_limit=nondet_u32();
+			vcpu.vmcs.guest_GDTR_limit=nondet_u32();
+			vcpu.vmcs.guest_IDTR_limit=nondet_u32();
+			vcpu.vmcs.guest_ES_access_rights=nondet_u32(); 
+			vcpu.vmcs.guest_CS_access_rights=nondet_u32();
+			vcpu.vmcs.guest_SS_access_rights=nondet_u32();
+			vcpu.vmcs.guest_DS_access_rights=nondet_u32();
+			vcpu.vmcs.guest_FS_access_rights=nondet_u32();
+			vcpu.vmcs.guest_GS_access_rights=nondet_u32();
+			vcpu.vmcs.guest_LDTR_access_rights=nondet_u32();
+			vcpu.vmcs.guest_TR_access_rights=nondet_u32();
+			vcpu.vmcs.guest_interruptibility=nondet_u32(); 
+			vcpu.vmcs.guest_activity_state=nondet_u32(); 
+			vcpu.vmcs.guest_SMBASE=nondet_u32();	
+			vcpu.vmcs.guest_SYSENTER_CS=nondet_u32(); 
+
+			vcpu.vmcs.guest_ES_selector=nondet_u16();
+			vcpu.vmcs.guest_CS_selector=nondet_u16();
+			vcpu.vmcs.guest_SS_selector=nondet_u16();
+			vcpu.vmcs.guest_DS_selector=nondet_u16();
+			vcpu.vmcs.guest_FS_selector=nondet_u16();
+			vcpu.vmcs.guest_GS_selector=nondet_u16();
+			vcpu.vmcs.guest_LDTR_selector=nondet_u16();
+			vcpu.vmcs.guest_TR_selector=nondet_u16();
 		}
 
 		#else
