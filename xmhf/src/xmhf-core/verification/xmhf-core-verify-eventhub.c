@@ -75,7 +75,7 @@ void main() {
 		rpb = (RPB *)&_xrpb;
 		rpb->XtVmmE820NumEntries = 1; 									//number of E820 entries
 		rpb->XtVmmRuntimePhysBase = 0xC0000000;							//runtime physical base address
-		rpb->XtVmmRuntimeSize = 0x8800000;								//128 MB + 8MB (NPTs) runtime size
+		rpb->XtVmmRuntimeSize = 0x8800000;								//128 MB + 8MB (HPTs) runtime size
 		rpb->XtGuestOSBootModuleBase = 0x20000;							//guest OS boot module base address
 		rpb->XtGuestOSBootModuleSize = 512;								//guest OS boot module size
 
@@ -105,27 +105,26 @@ void main() {
 #else
 		//AMD specific fields
 		vcpu.npt_vaddr_ptr = 0xC7F00000;								//NPT PDPT page
-		vcpu.npt_vaddr_pts = 0xC8000000;								//where our NPTs reside
+		vcpu.npt_vaddr_pts = 0xC8000000;								//NPT page tables
 		vcpu.vmcb_vaddr_ptr = &_xvmcb;									//set vcpu VMCB virtual address to something meaningful
 #endif
 		
 
-		#if defined (X86_VMX)
-			//VMX "init" values for MAC(b)
-			vcpu.vmcs.control_VMX_seccpu_based |= (1 << 1); //enable EPT
-			vcpu.vmcs.control_EPT_pointer_high = 0;
-			vcpu.vmcs.control_EPT_pointer_full = hva2spa((void*)vcpu.vmx_vaddr_ept_pml4_table) | 0x1E; //page walk of 4 and WB memory
-		#else
-			//SVM "init" values for MAC(b)
-			_xvmcb.n_cr3 = hva2spa((void*)vcpu.npt_vaddr_ptr);
-			_xvmcb.np_enable |= 1ULL;
-		#endif
-
+#if defined (X86_VMX)
+		//VMX propMED values after init()
+		vcpu.vmcs.control_VMX_seccpu_based |= (1 << 1); //enable EPT
+		vcpu.vmcs.control_EPT_pointer_high = 0;
+		vcpu.vmcs.control_EPT_pointer_full = hva2spa((void*)vcpu.vmx_vaddr_ept_pml4_table) | 0x1E; //page walk of 4 and WB memory
+#else
+		//SVM propMED values after init()
+		_xvmcb.n_cr3 = hva2spa((void*)vcpu.npt_vaddr_ptr);
+		_xvmcb.np_enable |= 1ULL;
+#endif
 
 		//setup CPU general purpose register state (non-deterministic)
 		r.eax = r.ebx = r.ecx= r.edx = r.esi = r.edi = r.ebp = r.esp = nondet_u32(); 
 
-		#if defined (X86_VMX)
+#if defined (X86_VMX)
 		//VMX non-deterministic state
 		{
 			vcpu.vmcs.info_vminstr_error = nondet_u32();
@@ -198,7 +197,7 @@ void main() {
 			vcpu.vmcs.guest_TR_selector=nondet_u16();
 		}
 
-		#else
+#else
 		//SVM non-deterministic state
 		{
 			_xvmcb.exitcode = (u64)nondet_u64();
@@ -269,15 +268,14 @@ void main() {
 			_xvmcb.efer = (u64)nondet_u64();                   
 
 		}	
-		#endif
+#endif
 
-		#if defined (X86_VMX)
+#if defined (X86_VMX)
 			xmhf_parteventhub_arch_x86vmx_intercept_handler(&vcpu, &r);
-		#else
+#else
 			xmhf_parteventhub_arch_x86svm_intercept_handler(&vcpu, &r);
-		#endif
+#endif
 		
-	
 		assert(1);
 }
 //----------------------------------------------------------------------
