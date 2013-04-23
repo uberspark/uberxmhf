@@ -56,9 +56,8 @@
 //if the following is defined, we will excercise the VMX backend
 //for ihub during verification
 #define X86_VMX			1
-u32 xmhf_verify_cpu_vendor = CPU_VENDOR_INTEL;
 
-//u32 xmhf_verify_cpu_vendor = CPU_VENDOR_AMD;
+u32 xmhf_verify_cpu_vendor;
 
 VCPU vcpu;
 struct regs r;
@@ -90,8 +89,10 @@ void main() {
 		g_vmx_lapic_base = 0xFEE00000;
 
 #if defined (X86_VMX)
+		xmhf_verify_cpu_vendor = CPU_VENDOR_INTEL;
 		vcpu.cpu_vendor = CPU_VENDOR_INTEL;								
 #else
+		xmhf_verify_cpu_vendor = CPU_VENDOR_AMD;
 		vcpu.cpu_vendor = CPU_VENDOR_AMD;
 #endif		
 		

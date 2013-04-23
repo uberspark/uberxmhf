@@ -54,9 +54,8 @@
 //if the following is defined, we will excercise the VMX backend
 //for ihub during verification
 #define X86_VMX			1
-u32 xmhf_verify_cpu_vendor = CPU_VENDOR_INTEL;
 
-//u32 xmhf_verify_cpu_vendor = CPU_VENDOR_AMD;
+u32 xmhf_verify_cpu_vendor;
 
 //globals referenced by this module
 VCPU vcpu;
@@ -110,6 +109,12 @@ void runtime_entry_main(){
 //----------------------------------------------------------------------
 
 void main(){
+#if defined (X86_VMX)
+		xmhf_verify_cpu_vendor = CPU_VENDOR_INTEL;
+#else
+		xmhf_verify_cpu_vendor = CPU_VENDOR_AMD;
+#endif
+
 		runtime_entry_main();
 		
 		runtime_main();
