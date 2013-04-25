@@ -51,17 +51,13 @@
 //----------------------------------------------------------------------
 #include <xmhf.h>
 
-//if the following is defined, we will excercise the VMX backend
-//for ihub during verification
-#define X86_VMX			1
-
 u32 xmhf_verify_cpu_vendor;
 
 //u32 xmhf_verify_cpu_vendor = CPU_VENDOR_AMD;
 void main(){
 		extern void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx);
 
-#if defined (X86_VMX)
+#if defined (__XMHF_TARGET_ARCH_X86_VMX__)
 		xmhf_verify_cpu_vendor = CPU_VENDOR_INTEL;
 #else
 		xmhf_verify_cpu_vendor = CPU_VENDOR_AMD;

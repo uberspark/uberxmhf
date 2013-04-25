@@ -87,8 +87,8 @@ export DEBUG_SERIAL := @DEBUG_SERIAL@
 export DEBUG_SERIAL_PORT := @DEBUG_SERIAL_PORT@
 export DEBUG_VGA := @DEBUG_VGA@
 export DRTM_DMA_PROTECTION := @DRTM_DMA_PROTECTION@
-export XMHF_TARGET_PLATFORM := @XMHF_TARGET_PLATFORM@
-export XMHF_TARGET_ARCH := @XMHF_TARGET_ARCH@
+export XMHF_TARGET_PLATFORM := @TARGET_PLATFORM@
+export XMHF_TARGET_ARCH := @TARGET_ARCH@
 
 # Path settings; our project is not unique in this aspect
 export prefix=@prefix@

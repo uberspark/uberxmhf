@@ -51,10 +51,6 @@
 //----------------------------------------------------------------------
 #include <xmhf.h>
 
-//if the following is defined, we will excercise the VMX backend
-//for ihub during verification
-#define X86_VMX			1
-
 u32 xmhf_verify_cpu_vendor;
 
 //globals referenced by this module
@@ -82,7 +78,7 @@ void runtime_main(){
 		vcpu.id = 0;													//give a LAPIC id
 		vcpu.esp = 0xC6000000;											//give a stack
 
-#if defined (X86_VMX)
+#if defined (__XMHF_TARGET_ARCH_X86_VMX__)
 		vcpu.cpu_vendor = CPU_VENDOR_INTEL;								
 		vcpu.vmx_vmcs_vaddr = 0xC7000000;								//VMCS address
 		vcpu.vmx_vaddr_ept_pml4_table = 0xC7F00000;						//EPT PML4 table 		
@@ -109,7 +105,7 @@ void runtime_entry_main(){
 //----------------------------------------------------------------------
 
 void main(){
-#if defined (X86_VMX)
+#if defined (__XMHF_TARGET_ARCH_X86_VMX__)
 		xmhf_verify_cpu_vendor = CPU_VENDOR_INTEL;
 #else
 		xmhf_verify_cpu_vendor = CPU_VENDOR_AMD;
