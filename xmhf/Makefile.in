@@ -153,6 +153,13 @@ VFLAGS = $(ADDL_INCLUDES)
 
 
 #-----generate compiler/assembler defines from configuration options selected
+ifeq ($(TARGET_ARCH), x86-svm)
+	VFLAGS += -D__TARGET_ARCH_X86_SVM__
+endif
+ifeq ($(TARGET_ARCH), x86-vmx)
+	VFLAGS += -D__TARGET_ARCH_X86_VMX__
+endif
+
 ifeq ($(NESTED_PAGING), y)
 	CFLAGS += -D__NESTED_PAGING__
 	VFLAGS += -D__NESTED_PAGING__
