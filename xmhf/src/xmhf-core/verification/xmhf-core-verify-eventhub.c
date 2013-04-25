@@ -53,10 +53,6 @@
 
 #define V_HYPERCALL		0xDEADBEEF
 
-//if the following is defined, we will excercise the VMX backend
-//for ihub during verification
-#define X86_VMX			1
-
 u32 xmhf_verify_cpu_vendor;
 
 VCPU vcpu;
@@ -88,7 +84,7 @@ void main() {
 		g_svm_lapic_base = 0xFEE00000;									//CPU LAPIC physical addresses
 		g_vmx_lapic_base = 0xFEE00000;
 
-#if defined (X86_VMX)
+#if defined (__XMHF_TARGET_ARCH_X86_VMX__)
 		xmhf_verify_cpu_vendor = CPU_VENDOR_INTEL;
 		vcpu.cpu_vendor = CPU_VENDOR_INTEL;								
 #else
@@ -97,7 +93,7 @@ void main() {
 #endif		
 		
 
-#if defined (X86_VMX)
+#if defined (__XMHF_TARGET_ARCH_X86_VMX__)
 		//Intel specific fields
 		vcpu.vmx_vmcs_vaddr = 0xC7000000;								//VMCS address
 		vcpu.vmx_vaddr_ept_pml4_table = 0xC7F00000;						//EPT PML4 table 		
@@ -111,7 +107,7 @@ void main() {
 #endif
 		
 
-#if defined (X86_VMX)
+#if defined (__XMHF_TARGET_ARCH_X86_VMX__)
 		//VMX propMED values after init()
 		vcpu.vmcs.control_VMX_seccpu_based |= (1 << 1); //enable EPT
 		vcpu.vmcs.control_EPT_pointer_high = 0;
@@ -125,7 +121,7 @@ void main() {
 		//setup CPU general purpose register state (non-deterministic)
 		r.eax = r.ebx = r.ecx= r.edx = r.esi = r.edi = r.ebp = r.esp = nondet_u32(); 
 
-#if defined (X86_VMX)
+#if defined (__XMHF_TARGET_ARCH_X86_VMX__)
 		//VMX non-deterministic state
 		{
 			vcpu.vmcs.info_vminstr_error = nondet_u32();
@@ -271,7 +267,7 @@ void main() {
 		}	
 #endif
 
-#if defined (X86_VMX)
+#if defined (__XMHF_TARGET_ARCH_X86_VMX__)
 			xmhf_parteventhub_arch_x86vmx_intercept_handler(&vcpu, &r);
 #else
 			xmhf_parteventhub_arch_x86svm_intercept_handler(&vcpu, &r);
