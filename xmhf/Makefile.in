@@ -87,8 +87,8 @@ export DEBUG_SERIAL := @DEBUG_SERIAL@
 export DEBUG_SERIAL_PORT := @DEBUG_SERIAL_PORT@
 export DEBUG_VGA := @DEBUG_VGA@
 export DRTM_DMA_PROTECTION := @DRTM_DMA_PROTECTION@
-export TARGET_PLATFORM := @TARGET_PLATFORM@
-export TARGET_ARCH := @TARGET_ARCH@
+export XMHF_TARGET_PLATFORM := @XMHF_TARGET_PLATFORM@
+export XMHF_TARGET_ARCH := @XMHF_TARGET_ARCH@
 
 # Path settings; our project is not unique in this aspect
 export prefix=@prefix@
@@ -153,11 +153,11 @@ VFLAGS = $(ADDL_INCLUDES)
 
 
 #-----generate compiler/assembler defines from configuration options selected
-ifeq ($(TARGET_ARCH), x86-svm)
-	VFLAGS += -D__TARGET_ARCH_X86_SVM__
+ifeq ($(XMHF_TARGET_ARCH), x86-svm)
+	VFLAGS += -D__XMHF_TARGET_ARCH_X86_SVM__
 endif
-ifeq ($(TARGET_ARCH), x86-vmx)
-	VFLAGS += -D__TARGET_ARCH_X86_VMX__
+ifeq ($(XMHF_TARGET_ARCH), x86-vmx)
+	VFLAGS += -D__XMHF_TARGET_ARCH_X86_VMX__
 endif
 
 ifeq ($(NESTED_PAGING), y)
