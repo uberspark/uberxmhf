@@ -71,3 +71,22 @@ Generate and install the binaries (note: default install path is specified with 
     make install-dev  # optional (hypapp-specific)
     make test         # optional (hypapp-specific)
 
+Build configuration options
+===========================
+
+* --with-approot=[HYPAPPPATH]
+  specifies the hypapp source root; must be provided
+  
+* --with-apparchive=[HYPAPPARCHIVE]
+  specifies the hypapp name; optional, defaults to emhfapp.a
+
+* --with-target-platform=[PLATFORM]
+  specifies the target platform for the build; optional, current options are: x86pc (x86 hardware virtualized platforms, default)
+
+* --with-target-arch=[ARCH]
+  specifies the target CPU architecture; optional, current options are: x86vmx (Intel, default), x86svm (AMD)
+
+* --disable-drtmdmaprotection
+  disables dynamic root of trust and DMA protection features; useful for builds targeting platforms that do not have support for
+  dynamic root of trust, TPM and/or DMA protection
+  
