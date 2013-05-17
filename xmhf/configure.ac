@@ -77,11 +77,11 @@ AS_IF([test "x${enable_mp}" != "xno"],
 
 # selectively disable DRTM/DMA protection
 AC_SUBST([DRTM_DMA_PROTECTION])
-AC_ARG_ENABLE([drtmdmaprotection],
-        AS_HELP_STRING([--enable-drtmdmaprotection@<:@=yes|no@:>@],
+AC_ARG_ENABLE([drtdmaprotection],
+        AS_HELP_STRING([--enable-drtdmaprotection@<:@=yes|no@:>@],
                 [enable DRTM and DMA protection]),
-                , [enable_drtmdmaprotection=yes])
-AS_IF([test "x${enable_drtmdmaprotection}" != "xno"],
+                , [enable_drtdmaprotection=yes])
+AS_IF([test "x${enable_drtdmaprotection}" != "xno"],
       [DRTM_DMA_PROTECTION=y],
       [DRTM_DMA_PROTECTION=n])
 
