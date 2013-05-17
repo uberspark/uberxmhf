@@ -43,6 +43,7 @@ Quick start to using XMHF
 
 * [XMHF Hardware Requirements](doc/hardware-requirements.md)
 * [Building XMHF](doc/building-xmhf.md)
+* [Verifying XMHF](doc/verifying-xmhf.md)
 * [Installing XMHF](doc/installing-xmhf.md)
 * [Configuring Grub](doc/configuring-grub.md) How to boot XMHF from
   Grub, along with some tricks for remote\unattended boot.
