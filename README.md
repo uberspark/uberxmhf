@@ -1,25 +1,38 @@
 Introduction
 ============
 
-XMHF is a modular hypervisor platform for recent multicore x86
-hardware with support for dynamic root of trust and nested
-(2-dimensional) paging.  It is NOT a full virtual machine monitor.
+XMHF is a modular and extensible hypervisor platform for recent 
+multicore x86 hardware with support for dynamic root of trust 
+and nested (2-dimensional) paging.  
+XMHF strives to be a
+comprehensible and flexible platform for performing 
+hypervisor research and development that allows others to build
+custom (security-sensitive) hypervisor-based 
+solutions (called "hypapps").
 
-XMHF takes a developer-centric approach to hypervisor design and
-implementation, and strives to be a comprehensible and flexible
-platform for performing hypervisor research and development. XMHF
-encapsulates common hypervisor core functionality in a framework that
-allows others to build custom hypervisor-based solutions (called
-"hypapps"). It currently supports only a single "rich" guest OS.
+XMHF is designed to achieve three goals – modular extensibility,
+automated verification, and high performance. XMHF includes a
+core that provides functionality common to many hypervisor-based security
+architectures and supports extensions that augment the core with
+additional security or functional properties while preserving the 
+fundamental hypervisor security property of memory integrity 
+(i.e., ensuring that the hypervisor’s memory is not modified by 
+software running at a lower privilege level).
+
+XMHF advocates a "rich" single-guest execution model where the 
+hypervisor framework supports only a single-guest and allows the 
+guest direct access to all performance-critical system devices and 
+device interrupts.
 
 Included modules
 ================
 
 The XMHF project includes several components:
 
-* [XMHF](xmhf): The eXtensible Hypervisor Framework.
+* [XMHF](xmhf): The eXtensible and Modular Hypervisor Framework 
+  supporting custom hypervisor-based solutions (called "hypapps").
 
-* [TrustVisor](trustvisor): A special-purpose hypervisor that provides
+* [TrustVisor](trustvisor): A special-purpose hypapp that provides
   code integrity as well as data integrity and secrecy for userspace
   Pieces of Application Logic (PALs).
 
@@ -32,7 +45,7 @@ The XMHF project includes several components:
       password) manager.  It is implemented in a PAL leveraging
       tee-sdk, and as a stand-alone audit server.
 
-* [Lockdown](lockdown): Lockdown provides the user with a red/green
+* [Lockdown](lockdown): A hypapp that provides the user with a red/green
   system: an isolated and constrained environment for performing
   online transactions, as well as a high-performance, general-purpose
   environment for all other (non-security-sensitive) applications. An
@@ -90,6 +103,12 @@ The core team: Amit Vasudevan, Jonathan McCune, and James Newsome.
 Related Publications
 ====================
 
+* Design, Implementation and Verification of an eXtensible and 
+  Modular Hypervisor Framework. Amit Vasudevan, Sagar Chaki, Limin Jia,
+  Jonathan M. McCune, James Newsome, and Anupam Datta. 
+  IEEE Symposium on Security and Privacy, 
+  May 2013. [pdf](http://hypcode.org/paper-xmhf-IEEES&P-2013.pdf)
+
 * "It's an app. It's a hypervisor. It's a hypapp.": Design and
   Implementation of an eXtensible and Modular Hypervisor
   Framework. Amit Vasudevan, Jonathan M. McCune, and James
@@ -106,7 +125,7 @@ Related Publications
   and Ning Qu and Virgil D. Gligor and Adrian Perrig. Proceedings of
   the 5th International Conference on Trust and Trustworthy Computing
   (TRUST), June 2012.
-  [pdf](https://sparrow.ece.cmu.edu/group/pub/lockdown.pdf)
+  [pdf](http://hypcode.org/paper-lockdown-TRUST-2012.pdf)
 
 * Lockdown: A Safe and Practical Environment for Security Applications
   (CMU-CyLab-09-011) Amit Vasudevan and Bryan Parno and Ning Qu and
