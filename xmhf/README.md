@@ -11,14 +11,12 @@ with Intel's tboot project: <http://tboot.sourceforge.net/>
 Introduction
 ============
 
-XMHF is a modular and extensible hypervisor platform for recent 
-multicore x86 hardware with support for dynamic root of trust 
-and nested (2-dimensional) paging.  
-XMHF strives to be a
+XMHF is an eXtensible and Modular Hypervisor Framework 
+that strives to be a
 comprehensible and flexible platform for performing 
-hypervisor research and development that allows others to build
-custom (security-sensitive) hypervisor-based 
-solutions (called "hypapps").
+hypervisor research and development. The framework allows others to 
+build custom (security-sensitive) hypervisor-based solutions 
+(called "hypapps").
 
 XMHF is designed to achieve three goals – modular extensibility,
 automated verification, and high performance. XMHF includes a
@@ -33,6 +31,12 @@ XMHF advocates a "rich" single-guest execution model where the
 hypervisor framework supports only a single-guest and allows the 
 guest direct access to all performance-critical system devices and 
 device interrupts.
+
+XMHF currently runs on recent multicore x86 hardware 
+virtualized platforms with support for dynamic root of trust 
+and nested (2-dimensional) paging. The framework is capable of
+running unmodified legacy multiprocessor capable OSes such as 
+Windows and Linux.  
 
 Quick start to using XMHF
 =========================
