@@ -1,8 +1,8 @@
 Development Environment
 =======================
 
-[XMHF](..) and its Apps (e.g., [TrustVisor](../../trustvisor)) get
-built in a Linux environment with a recent version of gcc. [XMHF](..)
+[XMHF](..) and hypapps (e.g., [TrustVisor](../../trustvisor), [Lockdown](../../lockdown)) 
+get built in a Linux environment with a recent version of gcc. [XMHF](..)
 has been verified to build on Ubuntu 10, 11, and 12 series, both 32
 and 64 bit.
 
@@ -33,8 +33,6 @@ The interesting high-level build commands include:
     make install-dev       # Installs just dev headers and libs
     make test              # Runs various automated tests
     make clean             # Deletes all object files
-    make init-late         # Explicitly builds the Linux kernel module for
-                           # a dynamic late launch
 
 The functioning of `make install-dev` and `make test` are
 hypapp-specific. For example, in TrustVisor, the primary prerequisite
