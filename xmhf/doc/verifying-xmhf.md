@@ -6,10 +6,29 @@ fundamental hypervisor security property of memory integrity
 (i.e., ensuring that the hypervisor’s memory is not modified by 
 software running at a lower privilege level).
 
+We have verified the memory integrity of the XMHF core
+using a combination of automated and manual techniques.
+The model checker CBMC(http://www.cprover.org/cbmc) is employed for 
+automatic verification.
+Manual audits apply to a small portion of the code which we anticipate 
+to remain mostly unchanged as
+development proceeds. The manual audits include constructs
+that CBMC cannot verify, including loops that iterate over
+entire page tables, platform hardware initialization and interaction,
+and concurrent threads coordinating multiple CPUs during initialization
+that are challenging for current model-checkers.
+
 Verification Environment and Tools
 ==================================
 
-Ubuntu 10.10, 32-bit, CBMC 4.1 32-bit
+OS: Ubuntu 10.10, 32-bit; Available here (http://old-releases.ubuntu.com/releases/maverick/ubuntu-10.10-desktop-i386.iso)
+
+Verification Tools: 
+CBMC: v4.1 32-bit; Available here (http://www.cprover.org/cbmc/download/cbmc_4.1_i386.deb)
+
+Install using: 
+
+	sudo dpkg -i cbmc_4.1_i386.deb
 
 How do I verify XMHF and/or a hypapp?
 =====================================
