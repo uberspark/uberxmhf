@@ -155,4 +155,9 @@ Changelog
     * test-bed fixes, refactoring and improvements - now supporting 3.2.0-27-generic (and below) with ubuntu
     * added documentation generator which takes in-tree markdown files and generates html output
     * fixed build target install-bin to include correct destination path
-
+ * 0.2
+	* xmhf-core: clarify documentation and add description for build configuration options and verification
+	* xmhf-core: add build configuration options --with-target-platform and --with-target-arch to choose target platform and CPU arch.
+	* xmhf-core: restructure core components and general cleanup
+	* xmhf-core: add XMHF/hypapp verification harness for verifying core memory integrity
+	* xmhf-core: fix build error with --enable-debug-vga configure option
