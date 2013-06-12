@@ -61,16 +61,6 @@
 //};
 
 
-/* hypervisor (runtime) virtual address to sl-address. */
-void* xmhf_sl_arch_hva2sla(uintptr_t x) {
-  return (void*)(x - __TARGET_BASE + PAGE_SIZE_2M);
-}
-
-/* sl-address to system-physical-address */
-u64 xmhf_sl_arch_sla2spa(void* x) {
-  return (u64)(uintptr_t)(x) + sl_baseaddr;
-}
-
 #ifndef __XMHF_VERIFICATION__
 
 //---runtime paging setup-------------------------------------------------------

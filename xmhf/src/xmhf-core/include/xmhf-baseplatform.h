@@ -147,6 +147,20 @@ void xmhf_baseplatform_initialize(void);
 void xmhf_baseplatform_reboot(VCPU *vcpu);
 
 #ifndef __XMHF_VERIFICATION__
+	//hypervisor runtime virtual address to secure loader address
+	//note: secure loader runs in a DS relative addressing mode and
+	//rest of hypervisor runtime is at secure loader base address + 2MB
+	static inline void * hva2sla(void *hva){
+		return (void*)((u32)hva - rpb->XtVmmRuntimeVirtBase + PAGE_SIZE_2M)	
+	}
+	
+	//secure loader address to system physical address
+	//note: secure loader runs in a DS relative addressing mode 
+	//(relative to secure loader base address)
+	static inline spa_t sla2spa(void *sla){
+		return (spa_t) ((u32)sla + (rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M));
+	}
+	
 	/* hypervisor-virtual-address to system-physical-address. this fn is
 	 * used when creating the hypervisor's page tables, and hence
 	 * represents ground truth (assuming they haven't since been modified)
