@@ -151,7 +151,7 @@ void xmhf_baseplatform_reboot(VCPU *vcpu);
 	//note: secure loader runs in a DS relative addressing mode and
 	//rest of hypervisor runtime is at secure loader base address + 2MB
 	static inline void * hva2sla(void *hva){
-		return (void*)((u32)hva - rpb->XtVmmRuntimeVirtBase + PAGE_SIZE_2M)	
+		return (void*)((u32)hva - rpb->XtVmmRuntimeVirtBase + PAGE_SIZE_2M);	
 	}
 	
 	//secure loader address to system physical address
