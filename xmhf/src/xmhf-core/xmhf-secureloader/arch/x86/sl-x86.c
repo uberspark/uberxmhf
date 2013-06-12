@@ -77,8 +77,8 @@ u32 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime
   printf("\nSL (%s): runtime_spa=%08x, runtime_sva=%08x, totalsize=%08x",
          __FUNCTION__, runtime_spa, runtime_sva, totalsize);
 	
-  xpdpt= xmhf_sl_arch_hva2sla(rpb->XtVmmPdptBase);
-  xpdt = xmhf_sl_arch_hva2sla(rpb->XtVmmPdtsBase);
+  xpdpt= hva2sla((void *)rpb->XtVmmPdptBase);
+  xpdt = hva2sla((void *)rpb->XtVmmPdtsBase);
 	
   printf("\n	pa xpdpt=0x%p, xpdt=0x%p", xpdpt, xpdt);
 	
@@ -86,7 +86,7 @@ u32 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime
 
   //init pdpt
   for(i = 0; i < PAE_PTRS_PER_PDPT; i++) {
-    u64 pdt_spa = xmhf_sl_arch_sla2spa(xpdt) + (i << PAGE_SHIFT_4K);
+    u64 pdt_spa = sla2spa((void *)xpdt) + (i << PAGE_SHIFT_4K);
     xpdpt[i] = pae_make_pdpe(pdt_spa, default_flags);
   }
 
@@ -117,7 +117,7 @@ u32 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime
     xpdt[i] = pae_make_pde_big(spa, flags);
   }
 
-  return xmhf_sl_arch_sla2spa(xpdpt);
+  return sla2spa((void *)xpdpt);
 }
 #endif //__XMHF_VERIFICATION__
 
@@ -251,7 +251,7 @@ void xmhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 	#ifndef __XMHF_VERIFICATION__
 		//setup runtime TSS
 		tss_base=(u32)rpb->XtVmmTSSBase;
-		gdt_base= *(u32 *)(xmhf_sl_arch_hva2sla(rpb->XtVmmGdt + 2));
+		gdt_base= *(u32 *)(hva2sla((void *)(rpb->XtVmmGdt + 2)));
 	#else
 		tss_base=PAGE_SIZE_2M+PAGE_SIZE_4K;
 		gdt_base=PAGE_SIZE_2M+PAGE_SIZE_4K+2048;
