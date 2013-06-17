@@ -116,7 +116,7 @@ RPB arch_rpb __attribute__(( section(".s_rpb") )) = {
 	//.RtmVMXVTdPts= (u32)g_vmx_vtd_p_tables,
 	//.RtmVMXVTdRET= (u32)g_vmx_vtd_ret,
 	//.RtmVMXVTdCET= (u32)g_vmx_vtd_cet,
-	//.uart_config=(u32)&g_uart_config,
+	.RtmUartConfig = {0, 0, 0, 0, 0, 0, 0},
 	.isEarlyInit=1,					//1 for an "early init" else 0 (late-init)
 };
  
