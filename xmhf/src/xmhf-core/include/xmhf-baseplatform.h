@@ -161,34 +161,48 @@ void xmhf_baseplatform_reboot(VCPU *vcpu);
 		return (spa_t) ((u32)sla + (rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M));
 	}
 	
-	/* hypervisor-virtual-address to system-physical-address. this fn is
-	 * used when creating the hypervisor's page tables, and hence
-	 * represents ground truth (assuming they haven't since been modified)
-	 */
-	static inline spa_t hva2spa(void *hva)
-	{
-	  uintptr_t hva_ui = (uintptr_t)hva;
-	  uintptr_t offset = rpb->XtVmmRuntimeVirtBase - rpb->XtVmmRuntimePhysBase;
+	// XMHF runtime virtual-address to system-physical-address and vice-versa
+	// NOTE: gpareclaim area is the guest physical address region that is occupied by XMHF runtime
+	// virtual addresses. we calculate and map this region to XMHF virtual address range that falls in 
+	// the XMHF runtime physical memory range (which is inaccesible to the guest)
+
+	static inline spa_t hva2spa(void *hva){
+		uintptr_t hva_ui = (uintptr_t)hva;
+	  	if(hva_ui >= rpb->rtm_virt_start && hva_ui <= rpb->rtm_virt_end)
+			return rpb->rtm_phys_start + (hva_ui - rpb->rtm_virt_start);
+		else if (hva_ui >= rpb->gpareclaim_virt_start && hva_ui <= rpb->gpareclaim_virt_end)
+			return rpb->gpareclaim_phys_start + (hva_ui - rpb->gpareclaim_virt_start);
+		else
+			return hva_ui;
+	}
+	  
+	  /*uintptr_t offset = rpb->XtVmmRuntimeVirtBase - rpb->XtVmmRuntimePhysBase;
 	  if (hva_ui >= rpb->XtVmmRuntimePhysBase && hva_ui < rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize){
 		return hva_ui + offset;
 	  } else if (hva_ui >= rpb->XtVmmRuntimeVirtBase && hva_ui < rpb->XtVmmRuntimeVirtBase+rpb->XtVmmRuntimeSize) {
 		return hva_ui - offset;
 	  } else {
 		return hva_ui;
-	  }
-	}
+	  }*/
 
-	static inline void * spa2hva(spa_t spa)
-	{
-	  uintptr_t offset = rpb->XtVmmRuntimeVirtBase - rpb->XtVmmRuntimePhysBase;
+
+	static inline void * spa2hva(spa_t spa){
+	  	if(spa >= rpb->rtm_phys_start && spa <= rpb->rtm_phys_end)
+			return (void *)(uintptr_t)(rpb->rtm_virt_start + (spa - rpb->rtm_phys_start));
+		else if (spa >= rpb->gpareclaim_phys_start && spa <= rpb->gpareclaim_phys_end)
+			return (void *)(uintptr_t)(rpb->gpareclaim_virt_start + (spa - rpb->gpareclaim_phys_start));
+		else
+			return (void *)(uintptr_t)spa;
+	}
+	
+	/*uintptr_t offset = rpb->XtVmmRuntimeVirtBase - rpb->XtVmmRuntimePhysBase;
 	  if (spa >= rpb->XtVmmRuntimePhysBase && spa < rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize){
 		return (void *)(uintptr_t)(spa + offset);
 	  } else if (spa >= rpb->XtVmmRuntimeVirtBase && spa < rpb->XtVmmRuntimeVirtBase+rpb->XtVmmRuntimeSize) {
 		return (void *)(uintptr_t)(spa - offset);
 	  } else {
 		return (void *)(uintptr_t)(spa);
-	  }
-	}
+	  }*/
 
 	static inline spa_t gpa2spa(gpa_t gpa) { return gpa; }
 	static inline gpa_t spa2gpa(spa_t spa) { return spa; }
