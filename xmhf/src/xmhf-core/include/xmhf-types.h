@@ -100,22 +100,19 @@ typedef struct {
 
 //"sl" parameter block structure 
 typedef struct _sl_parameter_block {
-	u32 magic;	//magic identifier
-	u32 errorHandler;	//error handler
-	u32 isEarlyInit;	//"early" or "late" init
-	u32 numE820Entries;		//number of E820 entries
-	//GRUBE820 e820map[MAX_E820_ENTRIES];	//E820 memory-map buffer
+	u32 magic;						//magic identifier
+	u32 errorHandler;				//error handler (currently unused)
+	u32 isEarlyInit;				//"early" or "late" init
+	u32 numE820Entries;				//number of E820 entries
 	u8  memmapbuffer[1280];			//max. 64 entries of 20 bytes each describing the system memory map
-	u32 numCPUEntries;	//number of cores
-	//PCPU pcpus[MAX_PCPU_ENTRIES];	//CPU table buffer
+	u32 numCPUEntries;				//number of cores
 	u8  cpuinfobuffer[64];			//max. 4 entries of 16 bytes each describing each physical core in the system
-	u32 runtime_size;			//size of the runtime image
+	u32 runtime_size;				//size of the runtime image
 	u32 runtime_osbootmodule_base;	//guest OS bootmodule base
 	u32 runtime_osbootmodule_size;	//guest OS bootmodule size
-	u32 runtime_appmodule_base;		//EMHF hyperapp optional module base
-	u32 runtime_appmodule_size;		//EMHF hyperapp optional module size
-    // Performance measurements related to DRTM
-    u64 rdtsc_before_drtm;
+	u32 runtime_appmodule_base;		//XMHF hypapp optional module base
+	u32 runtime_appmodule_size;		//XMHF hypapp optional module size
+    u64 rdtsc_before_drtm;			// Performance measurements related to DRTM
     u64 rdtsc_after_drtm;
 
     /* runtime options parsed in init and passed forward */
