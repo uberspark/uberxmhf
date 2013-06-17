@@ -87,6 +87,21 @@ typedef struct {
 	u32 XtVmmRuntimePhysBase;
 	u32 XtVmmRuntimeVirtBase;
 	u32 XtVmmRuntimeSize;
+	
+	// variables to help XMHF runtime/guest logical/physical adressing macros in xmhf-baseplatform.h 
+	// gpareclaim area is the guest physical address region that is occupied by XMHF runtime
+	// virtual addresses. we calculate and map this region to XMHF virtual address range that falls in 
+	// the XMHF runtime physical memory range (which is inaccesible to the guest)
+
+	u32 rtm_phys_start;			//physical memory page base of XMHF runtime start
+	u32 rtm_phys_end; 			//physical memory page base of XMHF runtime end
+	u32 rtm_virt_start;			//virtual memory page base of XMHF runtime start
+	u32 rtm_virt_end;			//virtual memory page base of XMHF runtime end
+	u32 gpareclaim_phys_start;  //physcial memory page base of gpa reclaim area start
+	u32 gpareclaim_phys_end;	//physical memory page base of gpa reclaim area end
+	u32 gpareclaim_virt_start;  //virtual memory page base of gpa reclaim area start
+	u32 gpareclaim_virt_end; 	//virtual memory page base of gpa reclaim area end
+			
 	u32 XtVmmE820Buffer;
 	u32 XtVmmE820NumEntries;
 	u32 XtVmmMPCpuinfoBuffer;
