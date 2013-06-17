@@ -176,16 +176,6 @@ void xmhf_baseplatform_reboot(VCPU *vcpu);
 			return hva_ui;
 	}
 	  
-	  /*uintptr_t offset = rpb->XtVmmRuntimeVirtBase - rpb->XtVmmRuntimePhysBase;
-	  if (hva_ui >= rpb->XtVmmRuntimePhysBase && hva_ui < rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize){
-		return hva_ui + offset;
-	  } else if (hva_ui >= rpb->XtVmmRuntimeVirtBase && hva_ui < rpb->XtVmmRuntimeVirtBase+rpb->XtVmmRuntimeSize) {
-		return hva_ui - offset;
-	  } else {
-		return hva_ui;
-	  }*/
-
-
 	static inline void * spa2hva(spa_t spa){
 	  	if(spa >= rpb->rtm_phys_start && spa <= rpb->rtm_phys_end)
 			return (void *)(uintptr_t)(rpb->rtm_virt_start + (spa - rpb->rtm_phys_start));
@@ -195,15 +185,6 @@ void xmhf_baseplatform_reboot(VCPU *vcpu);
 			return (void *)(uintptr_t)spa;
 	}
 	
-	/*uintptr_t offset = rpb->XtVmmRuntimeVirtBase - rpb->XtVmmRuntimePhysBase;
-	  if (spa >= rpb->XtVmmRuntimePhysBase && spa < rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize){
-		return (void *)(uintptr_t)(spa + offset);
-	  } else if (spa >= rpb->XtVmmRuntimeVirtBase && spa < rpb->XtVmmRuntimeVirtBase+rpb->XtVmmRuntimeSize) {
-		return (void *)(uintptr_t)(spa - offset);
-	  } else {
-		return (void *)(uintptr_t)(spa);
-	  }*/
-
 	static inline spa_t gpa2spa(gpa_t gpa) { return gpa; }
 	static inline gpa_t spa2gpa(spa_t spa) { return spa; }
 	static inline void* gpa2hva(gpa_t gpa) { return spa2hva(gpa2spa(gpa)); }
