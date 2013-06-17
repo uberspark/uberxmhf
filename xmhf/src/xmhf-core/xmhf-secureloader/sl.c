@@ -177,6 +177,15 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		strncpy(rpb->cmdline, slpb.cmdline, sizeof(slpb.cmdline));
 	#endif
 		
+		//setup XMHF runtime physical/virtual start/end page base addresses
+		rpb->rtm_phys_start= rpb->XtVmmRuntimePhysBase;
+		rpb->rtm_phys_end= rpb->XtVmmRuntimePhysBase + runtime_size_2Maligned - PAGE_SIZE_4K;
+		rpb->rtm_virt_start= __TARGET_BASE;
+		rpb->rtm_virt_end= __TARGET_BASE + runtime_size_2Maligned - PAGE_SIZE_4K;
+		
+		printf("\nSL: runtime phys(0x%08x-0x%08x) virt(0x%08x-0x%08x)", 
+			rpb->rtm_phys_start, rpb->rtm_phys_end, rpb->rtm_virt_start, rpb->rtm_virt_end);
+	
 	}
 	
 	//initialize basic platform elements
