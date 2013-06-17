@@ -168,7 +168,7 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 	#if defined (__DEBUG_SERIAL__)
 		//pass along UART config for serial debug output
-		rpb->RtmUartConfig = g_uart_config;
+		rpb->RtmUartConfig = slpb.uart_config;
 	#endif
 
 		//pass command line configuration forward 
