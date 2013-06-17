@@ -67,14 +67,13 @@ typedef struct _integrity_measurement_values {
 } INTEGRITY_MEASUREMENT_VALUES;
 
 
-//NOTE: The declaration here _MUST_ match definition of RPB in runtimesup.S	
+//"runtime" parameter block structure; arch_rpb (in startup component) 
+//is the default definition
 typedef struct {
 	u32 magic;
 	u32 XtVmmEntryPoint;
 	u32 XtVmmPdptBase;
 	u32 XtVmmPdtsBase;
-	//u32 XtVmmNpdtBase;
-	//u32 XtVmmNestedNpdtBase;
 	u32 XtGuestOSBootModuleBase;
 	u32 XtGuestOSBootModuleSize;
 	u32 runtime_appmodule_base;
@@ -82,19 +81,9 @@ typedef struct {
 	u32 XtVmmStackBase;
 	u32 XtVmmStackSize;
 	u32 XtVmmGdt;
-	//u32 XtVmmNetworkAdapterStructureBase;
-	//u32 XtVmmHsaveBase;
-	//u32 XtVmmVMCBBase;
-	//u32 XtVmmIopmBase;
-	//u32 XtVmmNestedPdptBase;
-	//u32 XtVmmNestedPdtsBase;
-	//u32 XtVmmNestedPtsBase;
 	u32 XtVmmIdt;
 	u32 XtVmmIdtFunctionPointers;
 	u32 XtVmmIdtEntries;
-	//u32 XtVmmE1000DescBase;
-	//u32 XtVmmE1000HeaderBase;
-	//u32 XtVmmE1000BodyBase;
 	u32 XtVmmRuntimePhysBase;
 	u32 XtVmmRuntimeVirtBase;
 	u32 XtVmmRuntimeSize;
@@ -103,12 +92,6 @@ typedef struct {
 	u32 XtVmmMPCpuinfoBuffer;
 	u32 XtVmmMPCpuinfoNumEntries;
 	u32 XtVmmTSSBase;
-	//u32 RtmSVMDevBitmapBase;
-	//u32 RtmVMXVTdPdpt;
-	//u32 RtmVMXVTdPdts;
-	//u32 RtmVMXVTdPts;
-	//u32 RtmVMXVTdRET;
-	//u32 RtmVMXVTdCET;
     uart_config_t RtmUartConfig;	        /* runtime options parsed in init and passed forward */
     char cmdline[1024]; 				/* runtime options parsed in init and passed forward */
 	u32 isEarlyInit;					//1 for an "early init" else 0 (late-init)
