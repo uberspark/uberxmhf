@@ -250,8 +250,8 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
 			 	//align SL+runtime at 128MB, this is to make it easy to compute the
 			 	//DEV bitmap base during DEV boot-strapping for AMD platforms
 				#define PAGE_ALIGN_128M(size)	((size) & ~((PAGE_SIZE_4K * 8 * PAGE_SIZE_4K) - 1))
-				//runtimephysicalbase = PAGE_ALIGN_128M((u32)baseaddr + size - runtimesize);
-				runtimephysicalbase = __TARGET_BASE;
+				runtimephysicalbase = PAGE_ALIGN_128M((u32)baseaddr + size - runtimesize);
+				//runtimephysicalbase = __TARGET_BASE;
 
                 if( runtimephysicalbase >= baseaddr ){
                     foundentry=1;
