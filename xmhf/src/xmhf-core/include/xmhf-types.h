@@ -74,6 +74,7 @@ typedef struct {
 	u32 XtVmmEntryPoint;
 	u32 XtVmmPdptBase;
 	u32 XtVmmPdtsBase;
+	u32 XtVmmPtsBase;
 	u32 XtGuestOSBootModuleBase;
 	u32 XtGuestOSBootModuleSize;
 	u32 runtime_appmodule_base;
