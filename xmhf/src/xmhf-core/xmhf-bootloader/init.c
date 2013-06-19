@@ -185,7 +185,7 @@ void send_init_ipi_to_all_APs(void) {
 
 //---E820 parsing and handling--------------------------------------------------
 //runtimesize is assumed to be 2M aligned
-u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize){
+u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused))){
     //check if GRUB has a valid E820 map
     if(!(mbi->flags & MBI_MEMMAP)){
         printf("\n%s: FATAL error, no E820 map provided!", __FUNCTION__);
@@ -247,12 +247,11 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize){
                     HALT();
                 }
 
-							 	//align SL+runtime at 128MB, this is to make it easy to compute the
-							 	//DEV bitmap base during DEV boot-strapping for AMD platforms
-								#define PAGE_ALIGN_128M(size)	((size) & ~((PAGE_SIZE_4K * 8 * PAGE_SIZE_4K) - 1))
-							  runtimephysicalbase = PAGE_ALIGN_128M((u32)baseaddr + size - runtimesize);
-							  
-								//runtimephysicalbase = PAGE_ALIGN_2M((u32)baseaddr + size) - runtimesize;
+			 	//align SL+runtime at 128MB, this is to make it easy to compute the
+			 	//DEV bitmap base during DEV boot-strapping for AMD platforms
+				#define PAGE_ALIGN_128M(size)	((size) & ~((PAGE_SIZE_4K * 8 * PAGE_SIZE_4K) - 1))
+				//runtimephysicalbase = PAGE_ALIGN_128M((u32)baseaddr + size - runtimesize);
+				runtimephysicalbase = __TARGET_BASE;
 
                 if( runtimephysicalbase >= baseaddr ){
                     foundentry=1;
