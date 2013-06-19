@@ -63,6 +63,7 @@
 
 #ifndef __XMHF_VERIFICATION__
 
+#if 0
 //---runtime paging setup-------------------------------------------------------
 //physaddr and virtaddr are assumed to be 2M aligned
 //returns 32-bit base address of page table root (can be loaded into CR3)
@@ -119,6 +120,60 @@ u32 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime
 
   return sla2spa((void *)xpdpt);
 }
+#endif
+
+//---runtime paging setup-------------------------------------------------------
+//physaddr and virtaddr are assumed to be 2M aligned
+//returns 32-bit base address of page table root (can be loaded into CR3)
+u32 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa __attribute__((unused)), u32 runtime_sva __attribute__((unused)), u32 totalsize __attribute__((unused))){
+	pdpt_t pdpt;
+	pdt_t pdt;
+	pt_t pt;
+	u32 vaddr=0, i, j, k, y, z;
+	u64 flags;
+	u32 rtm_pdpt_base, rtm_pdts_base, rtm_pts_base;
+	
+	rtm_pdpt_base= (u32)hva2sla((void *)rpb->XtVmmPdptBase);
+	rtm_pdts_base = (u32)hva2sla((void *)rpb->XtVmmPdtsBase);
+	rtm_pts_base = (u32)hva2sla((void *)rpb->XtVmmPtsBase);
+
+	printf("\n%s: pdpt=0x%08x, pdts=0x%08x, pts=0x%08x", __FUNCTION__, rtm_pdpt_base, rtm_pdts_base, rtm_pts_base);
+
+	pdpt=(pdpt_t)rtm_pdpt_base;
+
+	for(i = 0; i < PAE_PTRS_PER_PDPT; i++){
+		y = (u32)sla2spa((void*)(rtm_pdts_base + (i << PAGE_SHIFT_4K)));
+		flags = (u64)(_PAGE_PRESENT);
+		pdpt[i] = pae_make_pdpe((u64)y, flags);
+		pdt=(pdt_t)((u32)rtm_pdts_base + (i << PAGE_SHIFT_4K));
+			
+		for(j=0; j < PAE_PTRS_PER_PDT; j++){
+			z=(u32)sla2spa((void*)(rtm_pts_base + ((i * PAE_PTRS_PER_PDT + j) << (PAGE_SHIFT_4K))));
+			flags = (u64)(_PAGE_PRESENT | _PAGE_RW);
+			pdt[j] = pae_make_pde((u64)z, flags);
+			pt=(pt_t)((u32)rtm_pts_base + ((i * PAE_PTRS_PER_PDT + j) << (PAGE_SHIFT_4K)));
+			
+			for(k=0; k < PAE_PTRS_PER_PT; k++){
+				flags = (u64)(_PAGE_PRESENT | _PAGE_RW);	//present
+			
+				if(vaddr == 0xfee00000 || vaddr == 0xfed00000){
+					//map some MMIO regions with Page Cache disabled 
+					//0xfed00000 contains Intel TXT config regs & TPM MMIO 
+					//0xfee00000 contains LAPIC base 
+					flags |= (u64)(_PAGE_PCD);
+				}
+    
+				pt[k] = pae_make_pte((u64)hva2spa((void *)vaddr), flags);
+				vaddr+= PAGE_SIZE_4K;
+			}
+		}
+	}
+
+  return sla2spa((void *)pdpt);
+}
+
+
+
 #endif //__XMHF_VERIFICATION__
 
 
