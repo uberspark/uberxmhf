@@ -92,8 +92,8 @@ u32 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime
 
   /* we don't cope if the hypervisor virtual location overlaps with
      its physical location. See bug #145. */
-  HALT_ON_ERRORCOND(!((runtime_sva - runtime_spa) < totalsize));
-  HALT_ON_ERRORCOND(!((runtime_spa - runtime_sva) < totalsize));
+  //HALT_ON_ERRORCOND(!((runtime_sva - runtime_spa) < totalsize));
+  //HALT_ON_ERRORCOND(!((runtime_spa - runtime_sva) < totalsize));
 
   //init pdts with unity mappings
   default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE);
