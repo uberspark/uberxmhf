@@ -54,7 +54,7 @@
 //EMHF arch. specific configurable constant definitions
 
 //runtime base address (virtual)
-#define __TARGET_BASE					0xC0000000
+#define __TARGET_BASE					0x08200000
 
 //"sl" parameter block magic value
 #define SL_PARAMETER_BLOCK_MAGIC		0xDEADBEEF

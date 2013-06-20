@@ -63,7 +63,7 @@
 
 #ifndef __XMHF_VERIFICATION__
 
-#if 0
+#if 1
 //---runtime paging setup-------------------------------------------------------
 //physaddr and virtaddr are assumed to be 2M aligned
 //returns 32-bit base address of page table root (can be loaded into CR3)
@@ -122,6 +122,8 @@ u32 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime
 }
 #endif
 
+
+#if 0
 //---runtime paging setup-------------------------------------------------------
 //physaddr and virtaddr are assumed to be 2M aligned
 //returns 32-bit base address of page table root (can be loaded into CR3)
@@ -171,6 +173,7 @@ u32 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa __attribute_
 
   return sla2spa((void *)pdpt);
 }
+#endif
 
 
 
