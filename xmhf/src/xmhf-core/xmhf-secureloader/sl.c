@@ -177,48 +177,6 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 		strncpy(rpb->cmdline, slpb.cmdline, sizeof(slpb.cmdline));
 	#endif
 		
-		//setup XMHF runtime physical/virtual start/end page base addresses
-		rpb->rtm_phys_start= rpb->XtVmmRuntimePhysBase;
-		rpb->rtm_phys_end= rpb->XtVmmRuntimePhysBase + runtime_size_2Maligned - PAGE_SIZE_4K;
-		rpb->rtm_virt_start= __TARGET_BASE;
-		rpb->rtm_virt_end= __TARGET_BASE + runtime_size_2Maligned - PAGE_SIZE_4K;
-		
-		printf("\nSL: runtime phys(0x%08x-0x%08x) virt(0x%08x-0x%08x)", 
-			rpb->rtm_phys_start, rpb->rtm_phys_end, rpb->rtm_virt_start, rpb->rtm_virt_end);
-	
-		//compute gpareclaim area physical/virtual start/end page base addresses
-		if(  ( (rpb->rtm_phys_start > rpb->rtm_virt_end) && (rpb->rtm_phys_end > rpb->rtm_virt_end) ) ||
-			 ( (rpb->rtm_phys_end < rpb->rtm_virt_start) && (rpb->rtm_phys_start < rpb->rtm_virt_start) ) ){ 
-			//XMHF runtime physical and virtual addresses don’t overlap
-			rpb->gpareclaim_phys_start= rpb->rtm_virt_start;
-			rpb->gpareclaim_phys_end= rpb->rtm_virt_end;
-			rpb->gpareclaim_virt_start= rpb->rtm_phys_start;
-			rpb->gpareclaim_virt_end =  rpb->rtm_phys_end;
-		}else if ( ( (rpb->rtm_phys_start == rpb->rtm_virt_start) && (rpb->rtm_phys_end == rpb->rtm_virt_end) ) ){
-			//XMHF runtime physical and virtual address overlap exactly
-			rpb->gpareclaim_phys_start= 0;
-			rpb->gpareclaim_phys_end= 0;
-			rpb->gpareclaim_virt_start= 0;
-			rpb->gpareclaim_virt_end =  0;
-		}else if( (rpb->rtm_phys_start > rpb->rtm_virt_start) && (rpb->rtm_phys_start <= rpb->rtm_virt_end) ){
-			//XMHF runtime physical and virtual address overlap with physical address range start greater
-			//than virtual address start range
-			rpb->gpareclaim_phys_start= rpb->rtm_virt_start;
-			rpb->gpareclaim_phys_end= rpb->gpareclaim_phys_start + (rpb->rtm_phys_start - rpb->rtm_virt_start) - PAGE_SIZE_4K;
-			rpb->gpareclaim_virt_start= rpb->rtm_virt_end + PAGE_SIZE_4K;
-			rpb->gpareclaim_virt_end =  rpb->gpareclaim_virt_start + (rpb->rtm_phys_end - rpb->rtm_virt_end - PAGE_SIZE_4K);
-		}else if ( (rpb->rtm_phys_end >=  rpb->rtm_virt_start) && (rpb->rtm_phys_end < rpb->rtm_virt_end) ){
-			//XMHF runtime physical and virtual address overlap with physical address range start less than
-			//virtual address start range
-			rpb->gpareclaim_phys_start= rpb->rtm_phys_end + PAGE_SIZE_4K ;
-			rpb->gpareclaim_phys_end= rpb->gpareclaim_phys_start + (rpb->rtm_virt_end - rpb->rtm_phys_end) - PAGE_SIZE_4K;
-			rpb->gpareclaim_virt_start= rpb->rtm_phys_start;
-			rpb->gpareclaim_virt_end = rpb->gpareclaim_virt_start + ( rpb->rtm_virt_start - rpb->rtm_phys_start - PAGE_SIZE_4K) ;
-		}
-		
-		printf("\nSL: gpareclaim area phys(0x%08x-0x%08x) virt(0x%08x-0x%08x)", 
-			rpb->gpareclaim_phys_start, rpb->gpareclaim_phys_end, rpb->gpareclaim_virt_start, rpb->gpareclaim_virt_end);
-	
 	}
 	
 	//initialize basic platform elements
