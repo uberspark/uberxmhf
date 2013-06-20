@@ -53,7 +53,10 @@
 //======================================================================
 //EMHF arch. specific configurable constant definitions
 
-//runtime base address (virtual)
+//SL + runtime base addresses
+//SL currently sits at absolute address 128MB (0x08000000). runtime is
+//at an offset of 2M from this SL base address
+#define __TARGET_BASE_SL				0x08000000
 #define __TARGET_BASE					0x08200000
 
 //"sl" parameter block magic value
