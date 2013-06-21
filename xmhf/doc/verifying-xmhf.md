@@ -58,11 +58,11 @@ Configure the XMHF verify hypapp.
 
 Verify
 	
-	make verify-all
+	make verifyall
 	or
 	make verify
 	
-make verify-all will perform full verification of the XMHF core
+make verifyall will perform full verification of the XMHF core
 as well as the hypapp. Subsequently, you can use make verify to 
 verify the hypapp assuming there are no further changes to the 
 XMHF core.
@@ -78,7 +78,7 @@ required of any new hypapp to ensure the memory integrity
 property of XMHF. In the current XMHF implementation, a single 
 XMHF core API function xmhf_memprot_setprot
 allows manipulating guest memory protections
-via the HPTs. 
+via 2nd level hardware page tables. 
 
 
 
