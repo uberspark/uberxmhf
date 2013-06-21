@@ -224,14 +224,15 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
   
     }
   
-    //traverse e820 list backwards to find an entry with type=0x1 (free)
+    //traverse e820 list forward to find an entry with type=0x1 (free)
     //with free amount of memory for runtime
     {
         u32 foundentry=0;
         u32 slruntimephysicalbase=__TARGET_BASE_SL;	//SL + runtime base
-        int i;
+        u32 i;
      
-        for(i= (int)(grube820list_numentries-1); i >=0; i--){
+        //for(i= (int)(grube820list_numentries-1); i >=0; i--){
+		for(i= 0; i < grube820list_numentries; i++){
             u32 baseaddr, size;
             baseaddr = grube820list[i].baseaddr_low;
             size = grube820list[i].length_low;
@@ -258,6 +259,7 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
             HALT();
         }
 
+#if 0
         //entry number we need to split is indexed by i, we need to
         //make place for 1 extra entry at position i
         if(grube820list_numentries == MAX_E820_ENTRIES){
@@ -285,6 +287,86 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
             }
         }
         grube820list_numentries++;
+#endif
+
+#if 1
+		//entry number we need to split is indexed by i
+		printf("\nproceeding to revise E820...");
+		
+		{
+				
+				//temporary E820 table with index
+				GRUBE820 te820[MAX_E820_ENTRIES];
+				u32 j=0;
+				
+				//copy all entries from original E820 table until index i
+				for(j=0; j < i; j++)
+					memcpy((void *)&te820[j], (void *)&grube820list[j], sizeof(GRUBE820));
+
+				//we need a maximum of 2 extra entries for the final table, make a sanity check
+				HALT_ON_ERRORCOND( (grube820list_numentries+2) < MAX_E820_ENTRIES );
+
+				//split entry i into required number of entries depending on the memory range alignments
+				if( (slruntimephysicalbase == grube820list[i].baseaddr_low) && ((slruntimephysicalbase+runtimesize) == (grube820list[i].baseaddr_low+grube820list[i].length_low)) ){
+						//exact match, no split
+						te820[j].baseaddr_high=0; te820[j].length_high=0; te820[j].baseaddr_low=grube820list[i].baseaddr_low; te820[j].length_low=grube820list[i].length_low; te820[j].type=grube820list[i].type;
+						j++;
+						i++;
+				}else if ( (slruntimephysicalbase == grube820list[i].baseaddr_low) && (runtimesize < grube820list[i].length_low) ){
+						//left aligned, split into 2
+						te820[j].baseaddr_high=0; te820[j].length_high=0; te820[j].baseaddr_low=grube820list[i].baseaddr_low; te820[j].length_low=runtimesize; te820[j].type=0x2;
+						j++;
+						te820[j].baseaddr_high=0; te820[j].length_high=0; te820[j].baseaddr_low=grube820list[i].baseaddr_low+runtimesize; te820[j].length_low=grube820list[i].length_low-runtimesize; te820[j].type=1;
+						j++;
+						i++;
+				}else if ( ((slruntimephysicalbase+runtimesize) == (grube820list[i].baseaddr_low+grube820list[i].length_low)) && slruntimephysicalbase > grube820list[i].baseaddr_low ){
+						//right aligned, split into 2
+						te820[j].baseaddr_high=0; te820[j].length_high=0; te820[j].baseaddr_low=grube820list[i].baseaddr_low; te820[j].length_low=slruntimephysicalbase-grube820list[i].baseaddr_low; te820[j].type=0x1;
+						j++;
+						te820[j].baseaddr_high=0; te820[j].length_high=0; te820[j].baseaddr_low= slruntimephysicalbase; te820[j].length_low=runtimesize; te820[j].type=0x1;
+						j++;
+						i++;
+				}else{
+						//range in the middle, split into 3
+						te820[j].baseaddr_high=0; te820[j].length_high=0; te820[j].baseaddr_low=grube820list[i].baseaddr_low; te820[j].length_low=slruntimephysicalbase-grube820list[i].baseaddr_low; te820[j].type=0x1;
+						j++;
+						te820[j].baseaddr_high=0; te820[j].length_high=0; te820[j].baseaddr_low=slruntimephysicalbase; te820[j].length_low=runtimesize; te820[j].type=0x2;
+						j++;
+						te820[j].baseaddr_high=0; te820[j].length_high=0; te820[j].baseaddr_low=slruntimephysicalbase+runtimesize; te820[j].length_low=grube820list[i].length_low-runtimesize-(slruntimephysicalbase-grube820list[i].baseaddr_low); te820[j].type=1;
+						j++;
+						i++;
+				}
+				
+				//copy entries i through end of original E820 list into temporary E820 list starting at index j
+				while(i < grube820list_numentries){
+					memcpy((void *)&te820[j], (void *)&grube820list[i], sizeof(GRUBE820));
+					i++;
+					j++;
+				}
+
+				//copy temporary E820 list into global E20 list and setup final E820 entry count
+				grube820list_numentries = j;
+				memcpy((void *)&grube820list, (void *)&te820, (grube820list_numentries * sizeof(GRUBE820)) );
+
+	
+		}
+
+		printf("\nE820 revision complete.");
+			
+		//debug: print grube820list
+		{
+			u32 i;
+			printf("\nrevised system E820 map follows:\n");
+			for(i=0; i < grube820list_numentries; i++){
+				printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
+					   grube820list[i].baseaddr_high, grube820list[i].baseaddr_low,
+					   grube820list[i].length_high, grube820list[i].length_low,
+					   grube820list[i].type);
+			}
+		}
+
+
+#endif
     
         return slruntimephysicalbase;
     }
