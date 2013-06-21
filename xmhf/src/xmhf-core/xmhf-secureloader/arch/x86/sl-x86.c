@@ -61,16 +61,6 @@
 //};
 
 
-/* hypervisor (runtime) virtual address to sl-address. */
-void* xmhf_sl_arch_hva2sla(uintptr_t x) {
-  return (void*)(x - __TARGET_BASE + PAGE_SIZE_2M);
-}
-
-/* sl-address to system-physical-address */
-u64 xmhf_sl_arch_sla2spa(void* x) {
-  return (u64)(uintptr_t)(x) + sl_baseaddr;
-}
-
 #ifndef __XMHF_VERIFICATION__
 
 //---runtime paging setup-------------------------------------------------------
@@ -80,15 +70,13 @@ u32 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime
   pdpt_t xpdpt;
   pdt_t xpdt;
   u32 hva=0, i;
- // u32 l_cr0, l_cr3, l_cr4;
   u64 default_flags;
-  //u32 runtime_image_offset = PAGE_SIZE_2M;
 	
   printf("\nSL (%s): runtime_spa=%08x, runtime_sva=%08x, totalsize=%08x",
          __FUNCTION__, runtime_spa, runtime_sva, totalsize);
 	
-  xpdpt= xmhf_sl_arch_hva2sla(rpb->XtVmmPdptBase);
-  xpdt = xmhf_sl_arch_hva2sla(rpb->XtVmmPdtsBase);
+  xpdpt= hva2sla((void *)rpb->XtVmmPdptBase);
+  xpdt = hva2sla((void *)rpb->XtVmmPdtsBase);
 	
   printf("\n	pa xpdpt=0x%p, xpdt=0x%p", xpdpt, xpdt);
 	
@@ -96,14 +84,9 @@ u32 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime
 
   //init pdpt
   for(i = 0; i < PAE_PTRS_PER_PDPT; i++) {
-    u64 pdt_spa = xmhf_sl_arch_sla2spa(xpdt) + (i << PAGE_SHIFT_4K);
+    u64 pdt_spa = sla2spa((void *)xpdt) + (i << PAGE_SHIFT_4K);
     xpdpt[i] = pae_make_pdpe(pdt_spa, default_flags);
   }
-
-  /* we don't cope if the hypervisor virtual location overlaps with
-     its physical location. See bug #145. */
-  HALT_ON_ERRORCOND(!((runtime_sva - runtime_spa) < totalsize));
-  HALT_ON_ERRORCOND(!((runtime_spa - runtime_sva) < totalsize));
 
   //init pdts with unity mappings
   default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE);
@@ -114,21 +97,20 @@ u32 xmhf_sl_arch_x86_setup_runtime_paging(RPB *rpb, u32 runtime_spa, u32 runtime
     u64 flags = default_flags;
 
     if(spa == 0xfee00000 || spa == 0xfec00000) {
-      /* Unity-map some MMIO regions with Page Cache disabled 
-       * 0xfed00000 contains Intel TXT config regs & TPM MMIO 
-       * ...but 0xfec00000 is the closest 2M-aligned addr 
-       * 0xfee00000 contains APIC base 
-       */
-      HALT_ON_ERRORCOND(hva==spa); /* expecting these to be unity-mapped */
+      //Unity-map some MMIO regions with Page Cache disabled 
+      //0xfed00000 contains Intel TXT config regs & TPM MMIO 
+      //0xfee00000 contains LAPIC base 
+      HALT_ON_ERRORCOND(hva==spa); // expecting these to be unity-mapped
       flags |= (u64)(_PAGE_PCD);
-      printf("\nSL: updating flags for hva 0x%08x", hva);
     }
 
     xpdt[i] = pae_make_pde_big(spa, flags);
   }
 
-  return xmhf_sl_arch_sla2spa(xpdpt);
+  return sla2spa((void *)xpdpt);
 }
+
+
 #endif //__XMHF_VERIFICATION__
 
 
@@ -261,7 +243,7 @@ void xmhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 	#ifndef __XMHF_VERIFICATION__
 		//setup runtime TSS
 		tss_base=(u32)rpb->XtVmmTSSBase;
-		gdt_base= *(u32 *)(xmhf_sl_arch_hva2sla(rpb->XtVmmGdt + 2));
+		gdt_base= *(u32 *)(hva2sla((void *)(rpb->XtVmmGdt + 2)));
 	#else
 		tss_base=PAGE_SIZE_2M+PAGE_SIZE_4K;
 		gdt_base=PAGE_SIZE_2M+PAGE_SIZE_4K+2048;

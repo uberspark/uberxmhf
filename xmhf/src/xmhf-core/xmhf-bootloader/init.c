@@ -185,10 +185,10 @@ void send_init_ipi_to_all_APs(void) {
 
 //---E820 parsing and handling--------------------------------------------------
 //runtimesize is assumed to be 2M aligned
-u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize){
+u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused))){
     //check if GRUB has a valid E820 map
     if(!(mbi->flags & MBI_MEMMAP)){
-        printf("\n%s: FATAL error, no E820 map provided!", __FUNCTION__);
+        printf("\n%s: no E820 map provided. HALT!", __FUNCTION__);
         HALT();
     }
   
@@ -214,7 +214,7 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize){
     //debug: print grube820list
     {
         u32 i;
-        printf("\nOriginal E820 map follows:\n");
+        printf("\noriginal system E820 map follows:\n");
         for(i=0; i < grube820list_numentries; i++){
             printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
                    grube820list[i].baseaddr_high, grube820list[i].baseaddr_low,
@@ -228,14 +228,12 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize){
     //with free amount of memory for runtime
     {
         u32 foundentry=0;
-        u32 runtimephysicalbase=0;
+        u32 slruntimephysicalbase=__TARGET_BASE_SL;	//SL + runtime base
         int i;
      
-        //#define ADDR_4GB  (0xFFFFFFFFUL)
         for(i= (int)(grube820list_numentries-1); i >=0; i--){
             u32 baseaddr, size;
             baseaddr = grube820list[i].baseaddr_low;
-            //size = PAGE_ALIGN_4K(grube820list[i].length_low);  
             size = grube820list[i].length_low;
     
             if(grube820list[i].type == 0x1){ //free memory?
@@ -243,18 +241,12 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize){
                     continue; 
 
                 if(grube820list[i].length_high){
-                    printf("\noops 64-bit length unhandled!");
+                    printf("\n%s: E820 parsing error (64-bit length for < 4GB). HALT!");
                     HALT();
                 }
 
-							 	//align SL+runtime at 128MB, this is to make it easy to compute the
-							 	//DEV bitmap base during DEV boot-strapping for AMD platforms
-								#define PAGE_ALIGN_128M(size)	((size) & ~((PAGE_SIZE_4K * 8 * PAGE_SIZE_4K) - 1))
-							  runtimephysicalbase = PAGE_ALIGN_128M((u32)baseaddr + size - runtimesize);
-							  
-								//runtimephysicalbase = PAGE_ALIGN_2M((u32)baseaddr + size) - runtimesize;
-
-                if( runtimephysicalbase >= baseaddr ){
+			 	//check if this E820 range can accomodate SL + runtime
+			 	if( slruntimephysicalbase >= baseaddr && (slruntimephysicalbase + runtimesize) < (baseaddr + size) ){
                     foundentry=1;
                     break;
                 }
@@ -262,7 +254,7 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize){
         } 
     
         if(!foundentry){
-            printf("\nFatal: unable to find E820 memory for runtime!");
+            printf("\n%s: unable to find E820 memory for SL+runtime. HALT!");
             HALT();
         }
 
@@ -283,10 +275,10 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize){
             //deal with i and i+1 
             {
                 u32 sizetosplit= grube820list[i].length_low;
-                u32 newsizeofiplusone = grube820list[i].baseaddr_low + sizetosplit - runtimephysicalbase;
-                u32 newsizeofi = runtimephysicalbase - grube820list[i].baseaddr_low;
+                u32 newsizeofiplusone = grube820list[i].baseaddr_low + sizetosplit - slruntimephysicalbase;
+                u32 newsizeofi = slruntimephysicalbase - grube820list[i].baseaddr_low;
                 grube820list[i].length_low = newsizeofi;
-                grube820list[i+1].baseaddr_low = runtimephysicalbase;
+                grube820list[i+1].baseaddr_low = slruntimephysicalbase;
                 grube820list[i+1].type = 0x2;// reserved
                 grube820list[i+1].length_low = newsizeofiplusone;
       
@@ -294,7 +286,7 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize){
         }
         grube820list_numentries++;
     
-        return runtimephysicalbase;
+        return slruntimephysicalbase;
     }
   
 }

@@ -120,10 +120,65 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 	//compute 2M aligned runtime size
 	runtime_size_2Maligned = PAGE_ALIGN_UP2M(slpb.runtime_size);
 
-	printf("\nSL: runtime at 0x%08x (2M aligned size= %u bytes)", 
-			runtime_physical_base, runtime_size_2Maligned);
+	printf("\nSL: runtime at 0x%08x; size=0x%08x bytes adjusted to 0x%08x bytes (2M aligned)", 
+			runtime_physical_base, slpb.runtime_size, runtime_size_2Maligned);
 
+	//setup runtime parameter block with required parameters
+	{
+	#ifndef __XMHF_VERIFICATION__
+		//get a pointer to the runtime header and make sure its sane
+		rpb=(RPB *)PAGE_SIZE_2M;	//runtime starts at offset 2M from sl base
+	#else
+		//setup runtime parameter block pointer
+		//actual definitions
+		extern RPB _xrpb;	
+		rpb = (RPB *)&_xrpb;
+	#endif
 
+		printf("\nSL: RPB, magic=0x%08x", rpb->magic);
+		HALT_ON_ERRORCOND(rpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
+			
+		//populate runtime parameter block fields
+		rpb->isEarlyInit = slpb.isEarlyInit; //tell runtime if we started "early" or "late"
+		
+		//store runtime physical and virtual base addresses along with size
+		rpb->XtVmmRuntimePhysBase = runtime_physical_base; 
+		rpb->XtVmmRuntimeVirtBase = __TARGET_BASE;
+		rpb->XtVmmRuntimeSize = slpb.runtime_size;
+
+		//store revised E820 map and number of entries
+		#ifndef __XMHF_VERIFICATION__
+		memcpy(hva2sla((void *)rpb->XtVmmE820Buffer), (void *)&slpb.memmapbuffer, (sizeof(slpb.memmapbuffer)) );
+		#endif
+		rpb->XtVmmE820NumEntries = slpb.numE820Entries; 
+
+		//store CPU table and number of CPUs
+		#ifndef __XMHF_VERIFICATION__
+		memcpy(hva2sla((void *)rpb->XtVmmMPCpuinfoBuffer), (void *)&slpb.cpuinfobuffer, (sizeof(slpb.cpuinfobuffer)) );
+		#endif
+		rpb->XtVmmMPCpuinfoNumEntries = slpb.numCPUEntries; 
+
+		//setup guest OS boot module info in LPB	
+		rpb->XtGuestOSBootModuleBase=slpb.runtime_osbootmodule_base;
+		rpb->XtGuestOSBootModuleSize=slpb.runtime_osbootmodule_size;
+
+		//pass optional app module if any
+		rpb->runtime_appmodule_base = slpb.runtime_appmodule_base;
+		rpb->runtime_appmodule_size = slpb.runtime_appmodule_size;
+
+	#if defined (__DEBUG_SERIAL__)
+		//pass along UART config for serial debug output
+		rpb->RtmUartConfig = slpb.uart_config;
+	#endif
+
+		//pass command line configuration forward 
+		COMPILE_TIME_ASSERT(sizeof(slpb.cmdline) == sizeof(rpb->cmdline));
+	#ifndef __XMHF_VERIFICATION__
+		strncpy(rpb->cmdline, slpb.cmdline, sizeof(slpb.cmdline));
+	#endif
+		
+	}
+	
 	//initialize basic platform elements
 	xmhf_baseplatform_initialize();
 
@@ -133,65 +188,11 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
     xmhf_sl_arch_sanitize_post_launch();
 #endif
 
-
-#ifndef __XMHF_VERIFICATION__
-	//get a pointer to the runtime header and make sure its sane
- 	rpb=(RPB *)PAGE_SIZE_2M;	//runtime starts at offset 2M from sl base
-#else
-	//setup runtime parameter block pointer
-	//actual definitions
-	extern RPB _xrpb;	
-	rpb = (RPB *)&_xrpb;
-#endif
-
-	printf("\nSL: RPB, magic=0x%08x", rpb->magic);
-	HALT_ON_ERRORCOND(rpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
-
 #if defined (__DRTM_DMA_PROTECTION__)    
 	//setup DMA protection on runtime (secure loader is already DMA protected)
 	xmhf_sl_arch_early_dmaprot_init(slpb.runtime_size);
 #endif
 	
-		
-	//populate runtime parameter block fields
-	rpb->isEarlyInit = slpb.isEarlyInit; //tell runtime if we started "early" or "late"
-	
-	//store runtime physical and virtual base addresses along with size
-	rpb->XtVmmRuntimePhysBase = runtime_physical_base; 
-	rpb->XtVmmRuntimeVirtBase = __TARGET_BASE;
-	rpb->XtVmmRuntimeSize = slpb.runtime_size;
-
-	//store revised E820 map and number of entries
-	#ifndef __XMHF_VERIFICATION__
-	memcpy(xmhf_sl_arch_hva2sla(rpb->XtVmmE820Buffer), (void *)&slpb.memmapbuffer, (sizeof(slpb.memmapbuffer)) );
-	#endif
-	rpb->XtVmmE820NumEntries = slpb.numE820Entries; 
-
-	//store CPU table and number of CPUs
-	#ifndef __XMHF_VERIFICATION__
-	memcpy(xmhf_sl_arch_hva2sla(rpb->XtVmmMPCpuinfoBuffer), (void *)&slpb.cpuinfobuffer, (sizeof(slpb.cpuinfobuffer)) );
-	#endif
-	rpb->XtVmmMPCpuinfoNumEntries = slpb.numCPUEntries; 
-
-	//setup guest OS boot module info in LPB	
-	rpb->XtGuestOSBootModuleBase=slpb.runtime_osbootmodule_base;
-	rpb->XtGuestOSBootModuleSize=slpb.runtime_osbootmodule_size;
-
-	//pass optional app module if any
-	rpb->runtime_appmodule_base = slpb.runtime_appmodule_base;
-	rpb->runtime_appmodule_size = slpb.runtime_appmodule_size;
-
-#if defined (__DEBUG_SERIAL__)
-    //pass along UART config for serial debug output
-	rpb->RtmUartConfig = g_uart_config;
-#endif
-
-	//pass command line configuration forward 
-    COMPILE_TIME_ASSERT(sizeof(slpb.cmdline) == sizeof(rpb->cmdline));
-#ifndef __XMHF_VERIFICATION__
-	strncpy(rpb->cmdline, slpb.cmdline, sizeof(slpb.cmdline));
-#endif
-
 	//transfer control to runtime
 	xmhf_sl_arch_xfer_control_to_runtime(rpb);
 

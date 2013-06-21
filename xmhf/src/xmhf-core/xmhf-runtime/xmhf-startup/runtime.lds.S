@@ -50,7 +50,7 @@ ENTRY(xmhf_runtime_entry)
 
 MEMORY
 {
-  all (rwxai) : ORIGIN = 0xC0000000, LENGTH = 128M /* length is arbitrary */
+  all (rwxai) : ORIGIN = 0x08200000, LENGTH = 128M /* length is arbitrary */
   unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 

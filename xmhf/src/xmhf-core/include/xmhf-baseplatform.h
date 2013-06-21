@@ -147,35 +147,31 @@ void xmhf_baseplatform_initialize(void);
 void xmhf_baseplatform_reboot(VCPU *vcpu);
 
 #ifndef __XMHF_VERIFICATION__
-	/* hypervisor-virtual-address to system-physical-address. this fn is
-	 * used when creating the hypervisor's page tables, and hence
-	 * represents ground truth (assuming they haven't since been modified)
-	 */
-	static inline spa_t hva2spa(void *hva)
-	{
-	  uintptr_t hva_ui = (uintptr_t)hva;
-	  uintptr_t offset = rpb->XtVmmRuntimeVirtBase - rpb->XtVmmRuntimePhysBase;
-	  if (hva_ui >= rpb->XtVmmRuntimePhysBase && hva_ui < rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize){
-		return hva_ui + offset;
-	  } else if (hva_ui >= rpb->XtVmmRuntimeVirtBase && hva_ui < rpb->XtVmmRuntimeVirtBase+rpb->XtVmmRuntimeSize) {
-		return hva_ui - offset;
-	  } else {
+	//hypervisor runtime virtual address to secure loader address
+	//note: secure loader runs in a DS relative addressing mode and
+	//rest of hypervisor runtime is at secure loader base address + 2MB
+	static inline void * hva2sla(void *hva){
+		return (void*)((u32)hva - rpb->XtVmmRuntimeVirtBase + PAGE_SIZE_2M);	
+	}
+	
+	//secure loader address to system physical address
+	//note: secure loader runs in a DS relative addressing mode 
+	//(relative to secure loader base address)
+	static inline spa_t sla2spa(void *sla){
+		return (spa_t) ((u32)sla + (rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M));
+	}
+	
+	// XMHF runtime virtual-address to system-physical-address and vice-versa
+	// Note: since we are unity mapped, runtime VA = system PA
+	static inline spa_t hva2spa(void *hva){
+		uintptr_t hva_ui = (uintptr_t)hva;
 		return hva_ui;
-	  }
 	}
-
-	static inline void * spa2hva(spa_t spa)
-	{
-	  uintptr_t offset = rpb->XtVmmRuntimeVirtBase - rpb->XtVmmRuntimePhysBase;
-	  if (spa >= rpb->XtVmmRuntimePhysBase && spa < rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize){
-		return (void *)(uintptr_t)(spa + offset);
-	  } else if (spa >= rpb->XtVmmRuntimeVirtBase && spa < rpb->XtVmmRuntimeVirtBase+rpb->XtVmmRuntimeSize) {
-		return (void *)(uintptr_t)(spa - offset);
-	  } else {
-		return (void *)(uintptr_t)(spa);
-	  }
+	  
+	static inline void * spa2hva(spa_t spa){
+		return (void *)(uintptr_t)spa;
 	}
-
+	
 	static inline spa_t gpa2spa(gpa_t gpa) { return gpa; }
 	static inline gpa_t spa2gpa(spa_t spa) { return spa; }
 	static inline void* gpa2hva(gpa_t gpa) { return spa2hva(gpa2spa(gpa)); }
