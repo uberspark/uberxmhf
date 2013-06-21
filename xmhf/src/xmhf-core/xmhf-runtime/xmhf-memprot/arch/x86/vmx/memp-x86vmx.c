@@ -84,9 +84,10 @@ void xmhf_memprot_arch_x86vmx_initialize(VCPU *vcpu){
 //---gather memory types for system physical memory------------------------------
 static void _vmx_gathermemorytypes(VCPU *vcpu){
  	u32 eax, ebx, ecx, edx;
-  u32 index=0;
+	u32 index=0;
+	u32 num_vmtrrs=0;	//number of variable length MTRRs supported by the CPU
   
-  //0. sanity check
+	//0. sanity check
   	//check MTRR support
   	eax=0x00000001;
   	ecx=0x00000000;
@@ -103,19 +104,20 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
 
   	//check MTRR caps
   	rdmsr(IA32_MTRRCAP, &eax, &edx);
+	num_vmtrrs = (u8)eax;
   	printf("\nIA32_MTRRCAP: VCNT=%u, FIX=%u, WC=%u, SMRR=%u",
-  		(u8)eax, ((eax & (1 << 8)) >> 8),  ((eax & (1 << 10)) >> 10),
+  		num_vmtrrs, ((eax & (1 << 8)) >> 8),  ((eax & (1 << 10)) >> 10),
   			((eax & (1 << 11)) >> 11));
-  	//we need VCNT=8, FIX=1
-  	//HALT_ON_ERRORCOND( ((eax & (u32)0x000000FF) == 0x8) && ((eax & (1 << 8)) >> 8) );
+	//sanity check that fixed MTRRs are supported
+  	HALT_ON_ERRORCOND( ((eax & (1 << 8)) >> 8) );
 
-  #ifndef __XMHF_VERIFICATION__
-  //1. clear memorytypes array
-  memset((void *)&vcpu->vmx_ept_memorytypes, 0, sizeof(struct _memorytype) * MAX_MEMORYTYPE_ENTRIES);
-  #endif
+	#ifndef __XMHF_VERIFICATION__
+	//1. clear memorytypes array
+	memset((void *)&vcpu->vmx_ept_memorytypes, 0, sizeof(struct _memorytype) * MAX_MEMORYTYPE_ENTRIES);
+	#endif
 
   
-  //2. grab memory types using FIXED MTRRs
+	//2. grab memory types using FIXED MTRRs
     //0x00000000-0x0007FFFF
     rdmsr(IA32_MTRR_FIX64K_00000, &eax, &edx);
     vcpu->vmx_ept_memorytypes[index].startaddr = 0x00000000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x0000FFFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
@@ -228,15 +230,14 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
     vcpu->vmx_ept_memorytypes[index].startaddr = 0x000FF000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000FFFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
 
 	       
-  //3. grab memory types using variable length MTRRs  
-  {
+	//3. grab memory types using variable length MTRRs  
+	{
 		u64 paddrmask = 0x0000000FFFFFFFFFULL; //36-bits physical address, TODO: need to make this dynamic
 		u64 vMTRR_base, vMTRR_mask;
 		u32 msrval=IA32_MTRR_PHYSBASE0;
 		u32 i;
-		
-		//for(i=0; i < 8; i++){
-		for(i=0; i < MAX_VARIABLE_MEMORYTYPE_ENTRIES; i++){
+
+		for(i=0; i < num_vmtrrs; i++){
 			rdmsr(msrval, &eax, &edx);
 			vMTRR_base = ((u64)edx << 32) | (u64)eax;
 			msrval++;
@@ -244,14 +245,14 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
 			vMTRR_mask = ((u64)edx << 32) | (u64)eax;
 			msrval++;
 			if( (vMTRR_mask & ((u64)1 << 11)) ){
-        vcpu->vmx_ept_memorytypes[index].startaddr = (vMTRR_base & (u64)0xFFFFFFFFFFFFF000ULL);
-        vcpu->vmx_ept_memorytypes[index].endaddr = (vMTRR_base & (u64)0xFFFFFFFFFFFFF000ULL) + 
+				vcpu->vmx_ept_memorytypes[index].startaddr = (vMTRR_base & (u64)0xFFFFFFFFFFFFF000ULL);
+				vcpu->vmx_ept_memorytypes[index].endaddr = (vMTRR_base & (u64)0xFFFFFFFFFFFFF000ULL) + 
 					(u64) (~(vMTRR_mask & (u64)0xFFFFFFFFFFFFF000ULL) &
 						paddrmask);
-        vcpu->vmx_ept_memorytypes[index++].type = ((u32)vMTRR_base & (u32)0x000000FF);       
-      }else{
-        vcpu->vmx_ept_memorytypes[index++].invalid = 1;
-      }
+				vcpu->vmx_ept_memorytypes[index++].type = ((u32)vMTRR_base & (u32)0x000000FF);       
+			}else{
+				vcpu->vmx_ept_memorytypes[index++].invalid = 1;
+			}
 		}
 	}
 
