@@ -111,7 +111,7 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
 	//sanity check that fixed MTRRs are supported
   	HALT_ON_ERRORCOND( ((eax & (1 << 8)) >> 8) );
   	//ensure number of variable MTRRs are within the maximum supported
-  	HALT_ON_ERRORCOND( (num_vmtrrs <= MAX_VARIABLE_MEMORYTYPE_ENTRIES);
+  	HALT_ON_ERRORCOND( (num_vmtrrs <= MAX_VARIABLE_MEMORYTYPE_ENTRIES) );
   	
 
 	#ifndef __XMHF_VERIFICATION__
