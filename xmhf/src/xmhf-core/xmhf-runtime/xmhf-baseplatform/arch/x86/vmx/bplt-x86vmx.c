@@ -62,9 +62,9 @@ void xmhf_baseplatform_arch_x86vmx_cpuinitialize(void){
 		bcr0 |= 0x20;
 		write_cr0(bcr0);
 
-		//XXX: ticket-74: set OSXSAVE bit in CR4 to enable us to
-		//pass-thru XSETBV intercepts
-		{
+		//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
+		//when the CPU supports XSAVE feature
+		if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature()){
 			u32 t_cr4;
 			t_cr4 = read_cr4();
 			t_cr4 |= CR4_OSXSAVE;
