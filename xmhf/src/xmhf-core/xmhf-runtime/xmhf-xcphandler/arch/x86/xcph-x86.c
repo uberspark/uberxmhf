@@ -174,7 +174,7 @@ void xmhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 				exception_cs = *(uint32_t *)(r->esp+sizeof(uint32_t));
 				exception_eflags = *(uint32_t *)(r->esp+(2*sizeof(uint32_t)));
 
-				printf("\n[%02x]: unhandled exception, halting!", vcpu->id);
+				printf("\n[%02x]: unhandled exception %x, halting!", vcpu->id, vector);
 				printf("\n[%02x]: state dump follows...", vcpu->id);
 				//things to dump
 				printf("\n[%02x] CS:EIP 0x%04x:0x%08x with EFLAGS=0x%08x", vcpu->id,
