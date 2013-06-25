@@ -102,7 +102,16 @@ void xmhf_baseplatform_arch_initialize(void){
 //initialize CPU state
 void xmhf_baseplatform_arch_cpuinitialize(void){
 	u32 cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
-	
+
+	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
+	//when the CPU supports XSAVE feature
+	if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature()){
+		u32 t_cr4;
+		t_cr4 = read_cr4();
+		t_cr4 |= CR4_OSXSAVE;	
+		write_cr4(t_cr4);
+	}
+
 	if(cpu_vendor == CPU_VENDOR_INTEL)
 		xmhf_baseplatform_arch_x86vmx_cpuinitialize();
 }
