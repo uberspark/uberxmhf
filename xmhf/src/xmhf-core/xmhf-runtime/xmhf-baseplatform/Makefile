@@ -17,6 +17,7 @@ C_SOURCES += ./arch/x86/bplt-x86-pit.c
 C_SOURCES += ./arch/x86/bplt-x86-smp.c
 C_SOURCES += ./arch/x86/bplt-x86-addressing.c
 C_SOURCES += ./arch/x86/bplt-x86-reboot.c
+C_SOURCES += ./arch/x86/bplt-x86-cpu.c
 
 
 C_SOURCES += ./arch/x86/vmx/bplt-x86vmx.c
