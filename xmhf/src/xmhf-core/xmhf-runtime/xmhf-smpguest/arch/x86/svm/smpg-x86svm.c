@@ -344,7 +344,7 @@ void xmhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, struct regs 
                 
   }else if( g_svm_lapic_op == LAPIC_OP_READ){		//LAPIC read
     u32 src_registeraddress;
-    u32 value_read;
+    u32 value_read __attribute__((unused));
     HALT_ON_ERRORCOND( (g_svm_lapic_reg == LAPIC_ICR_LOW) || (g_svm_lapic_reg == LAPIC_ICR_HIGH) );
 
     src_registeraddress = (u32)g_svm_virtual_LAPIC_base + g_svm_lapic_reg;
