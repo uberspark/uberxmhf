@@ -259,37 +259,6 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
             HALT();
         }
 
-#if 0
-        //entry number we need to split is indexed by i, we need to
-        //make place for 1 extra entry at position i
-        if(grube820list_numentries == MAX_E820_ENTRIES){
-            printf("\noops, exhausted max E820 entries!");
-            HALT();
-        }
-
-        if(i == (int)(grube820list_numentries-1)){
-            //if this is the last entry, we dont need memmove
-            //deal with i and i+1
-      
-        }else{
-            memmove( (void *)&grube820list[i+2], (void *)&grube820list[i+1], (grube820list_numentries-i-1)*sizeof(GRUBE820));
-            memset (&grube820list[i+1], 0, sizeof(GRUBE820));
-            //deal with i and i+1 
-            {
-                u32 sizetosplit= grube820list[i].length_low;
-                u32 newsizeofiplusone = grube820list[i].baseaddr_low + sizetosplit - slruntimephysicalbase;
-                u32 newsizeofi = slruntimephysicalbase - grube820list[i].baseaddr_low;
-                grube820list[i].length_low = newsizeofi;
-                grube820list[i+1].baseaddr_low = slruntimephysicalbase;
-                grube820list[i+1].type = 0x2;// reserved
-                grube820list[i+1].length_low = newsizeofiplusone;
-      
-            }
-        }
-        grube820list_numentries++;
-#endif
-
-#if 1
 		//entry number we need to split is indexed by i
 		printf("\nproceeding to revise E820...");
 		
@@ -347,8 +316,6 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
 				//copy temporary E820 list into global E20 list and setup final E820 entry count
 				grube820list_numentries = j;
 				memcpy((void *)&grube820list, (void *)&te820, (grube820list_numentries * sizeof(GRUBE820)) );
-
-	
 		}
 
 		printf("\nE820 revision complete.");
@@ -366,8 +333,6 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
 		}
 
 
-#endif
-    
         return slruntimephysicalbase;
     }
   
