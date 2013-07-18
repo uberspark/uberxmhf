@@ -259,7 +259,8 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
 		}
 	}
 
-  HALT_ON_ERRORCOND( index == MAX_MEMORYTYPE_ENTRIES);
+	printf("\n%s: gathered MTRR details, number of entries=%u", __FUNCTION__, index);
+	HALT_ON_ERRORCOND( index <= (MAX_MEMORYTYPE_ENTRIES+1) );
 
   //[debug: dump the contents of vcpu->vmx_ept_memorytypes]
   //{
