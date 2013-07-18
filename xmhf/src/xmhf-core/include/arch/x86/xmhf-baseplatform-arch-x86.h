@@ -140,13 +140,14 @@ struct _memorytype {
 #endif //__ASSEMBLY__
 
 //---platform
-#define MAX_MEMORYTYPE_ENTRIES    96    //8*11 fixed MTRRs and 8 variable MTRRs
+#define MAX_MEMORYTYPE_ENTRIES    98    //8*11 fixed MTRRs and 10 variable MTRRs
 #define MAX_FIXED_MEMORYTYPE_ENTRIES  88
-#define MAX_VARIABLE_MEMORYTYPE_ENTRIES 8
+#define MAX_VARIABLE_MEMORYTYPE_ENTRIES 10
+
 
 //---platform
 //total number of FIXED and VARIABLE MTRRs on current x86 platforms
-#define NUM_MTRR_MSRS		29
+#define NUM_MTRR_MSRS		31
 
 #ifndef __ASSEMBLY__
 //---platform
