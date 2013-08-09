@@ -273,6 +273,9 @@ void xmhf_baseplatform_arch_flat_copy(u8 *dest, u8 *src, u32 size);
 //reboot platform
 void xmhf_baseplatform_arch_reboot(VCPU *vcpu);
 
+//returns true if CPU has support for XSAVE/XRSTOR
+bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void);
+
 #endif //__ASSEMBLY__
 
 //----------------------------------------------------------------------

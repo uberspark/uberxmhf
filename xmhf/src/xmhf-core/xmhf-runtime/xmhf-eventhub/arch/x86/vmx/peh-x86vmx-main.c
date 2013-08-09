@@ -445,6 +445,36 @@ static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gp
 
 }
 
+//---XSETBV intercept handler-------------------------------------------
+static void _vmx_handle_intercept_xsetbv(VCPU *vcpu, struct regs *r){
+	u64 xcr_value;
+	
+	xcr_value = ((u64)r->edx << 32) + (u64)r->eax;
+	
+	if(r->ecx != XCR_XFEATURE_ENABLED_MASK){
+			printf("\n%s: unhandled XCR register %u", __FUNCTION__, r->ecx);
+			HALT();
+	}
+
+	//XXX: TODO: check for invalid states and inject GP accordingly
+	
+	printf("\n%s: xcr_value=%llx", __FUNCTION__, xcr_value);
+	
+	//XXX: debug: dump CR4 contents
+	{
+		u32 t_cr4;
+		t_cr4 = read_cr4();
+		printf("\n%s: host cr4 value=%08x", __FUNCTION__, t_cr4);
+	}
+	
+	//set XCR with supplied value
+	xsetbv(XCR_XFEATURE_ENABLED_MASK, xcr_value);
+
+	//skip the emulated XSETBV instruction
+	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+}						
+			
+
 
 //---hvm_intercept_handler------------------------------------------------------
 u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
@@ -614,6 +644,11 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 					idt_v, type, reason, tss_selector); 
 			}
 			HALT();
+		}
+		break;
+
+		case VMX_VMEXIT_XSETBV:{
+			_vmx_handle_intercept_xsetbv(vcpu, r);
 		}
 		break;
 

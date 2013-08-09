@@ -45,73 +45,26 @@
  */
 
 /*
- * EMHF base platform component interface, x86 common backend
+ * XMHF base platform component interface, x86 common backend
+ * general CPU functions
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
 #include <xmhf.h>
 
-//get CPU vendor
-u32 xmhf_baseplatform_arch_getcpuvendor(void){
-	u32 vendor_dword1, vendor_dword2, vendor_dword3;
-	u32 cpu_vendor;
-	asm(	"xor	%%eax, %%eax \n"
-				  "cpuid \n"		
-				  "mov	%%ebx, %0 \n"
-				  "mov	%%edx, %1 \n"
-				  "mov	%%ecx, %2 \n"
-			     :	//no inputs
-					 : "m"(vendor_dword1), "m"(vendor_dword2), "m"(vendor_dword3)
-					 : "eax", "ebx", "ecx", "edx" );
-
-	if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
-			&& vendor_dword3 == AMD_STRING_DWORD3)
-		cpu_vendor = CPU_VENDOR_AMD;
-	else if(vendor_dword1 == INTEL_STRING_DWORD1 && vendor_dword2 == INTEL_STRING_DWORD2
-			&& vendor_dword3 == INTEL_STRING_DWORD3)
-		cpu_vendor = CPU_VENDOR_INTEL;
-	else{
-		printf("\n%s: unrecognized x86 CPU (0x%08x:0x%08x:0x%08x). HALT!",
-			__FUNCTION__, vendor_dword1, vendor_dword2, vendor_dword3);
-		HALT();
-	}   	 	
-
-	return cpu_vendor;
-}
-
-
-//initialize basic platform elements
-void xmhf_baseplatform_arch_initialize(void){
-	//initialize PCI subsystem
-	xmhf_baseplatform_arch_x86_pci_initialize();
+//returns true if CPU has support for XSAVE/XRSTOR
+bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void){
+	u32 eax, ebx, ecx, edx;
 	
-	//check ACPI subsystem
-	{
-		ACPI_RSDP rsdp;
-		#ifndef __XMHF_VERIFICATION__
-		if(!xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp)){
-			printf("\n%s: ACPI RSDP not found, Halting!", __FUNCTION__);
-			HALT();
-		}
-		#endif
-	}
-
+	//bit 26 of ECX is 1 in CPUID function 0x00000001 if
+	//XSAVE/XRSTOR feature is available
+	
+	cpuid(0x00000001, &eax, &ebx, &ecx, &edx);
+	
+	if((ecx & (1UL << 26)))
+		return true;
+	else
+		return false;
+	
 }
 
-
-//initialize CPU state
-void xmhf_baseplatform_arch_cpuinitialize(void){
-	u32 cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
-
-	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
-	//when the CPU supports XSAVE feature
-	if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature()){
-		u32 t_cr4;
-		t_cr4 = read_cr4();
-		t_cr4 |= CR4_OSXSAVE;	
-		write_cr4(t_cr4);
-	}
-
-	if(cpu_vendor == CPU_VENDOR_INTEL)
-		xmhf_baseplatform_arch_x86vmx_cpuinitialize();
-}
