@@ -106,7 +106,7 @@ typedef struct _sl_parameter_block {
 	u32 numE820Entries;				//number of E820 entries
 	u8  memmapbuffer[1280];			//max. 64 entries of 20 bytes each describing the system memory map
 	u32 numCPUEntries;				//number of cores
-	u8  cpuinfobuffer[64];			//max. 4 entries of 16 bytes each describing each physical core in the system
+	u8  cpuinfobuffer[128];			//max. 8 entries of 16 bytes each describing each physical core in the system
 	u32 runtime_size;				//size of the runtime image
 	u32 runtime_osbootmodule_base;	//guest OS bootmodule base
 	u32 runtime_osbootmodule_size;	//guest OS bootmodule size

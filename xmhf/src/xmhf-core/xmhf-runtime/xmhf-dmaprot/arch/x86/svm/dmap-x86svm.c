@@ -262,7 +262,7 @@ static u32 svm_eap_early_initialize(u32 protected_buffer_paddr,
 	//region
 	//Note: we assume the protected buffer size to be 8K on AMD 
 	//sanity check: memregion size cannot be greater than 128MB
-	HALT_ON_ERRORCOND( memregion_size < (PAGE_SIZE_4K * 8 * PAGE_SIZE_4K) );
+	HALT_ON_ERRORCOND( memregion_size < (8192 * 8 * PAGE_SIZE_4K) );
 	
 	{
 		u32 memregion_paligned_paddr_start;

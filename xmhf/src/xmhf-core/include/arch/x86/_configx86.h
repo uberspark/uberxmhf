@@ -72,7 +72,7 @@
 #define INIT_STACK_SIZE					(8192)					
 
 //max. cores/vcpus we support currently
-#define MAX_MIDTAB_ENTRIES  			(4)
+#define MAX_MIDTAB_ENTRIES  			(8)
 #define MAX_PCPU_ENTRIES  				(MAX_MIDTAB_ENTRIES)
 #define MAX_VCPU_ENTRIES    			(MAX_PCPU_ENTRIES)
 

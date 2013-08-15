@@ -92,17 +92,17 @@ static inline void print_heap_hash(sha1_hash_t hash)
 
 static void print_bios_data(bios_data_t *bios_data)
 {
-    printf("bios_data (@%p, %Lx):\n", bios_data,
+    printf("bios_data (@%p, %llx):\n", bios_data,
            *((uint64_t *)bios_data - 1));
     printf("\t version: %u\n", bios_data->version);
     printf("\t bios_sinit_size: 0x%x (%u)\n", bios_data->bios_sinit_size,
            bios_data->bios_sinit_size);
-    printf("\t lcp_pd_base: 0x%Lx\n", bios_data->lcp_pd_base);
-    printf("\t lcp_pd_size: 0x%Lx (%Lu)\n", bios_data->lcp_pd_size,
+    printf("\t lcp_pd_base: 0x%llx\n", bios_data->lcp_pd_base);
+    printf("\t lcp_pd_size: 0x%llx (%llu)\n", bios_data->lcp_pd_size,
            bios_data->lcp_pd_size);
     printf("\t num_logical_procs: %u\n", bios_data->num_logical_procs);
     if ( bios_data->version >= 3 )
-        printf("\t flags: 0x%08Lx\n", bios_data->flags);
+        printf("\t flags: 0x%08llx\n", bios_data->flags);
 }
 
 bool verify_bios_data(txt_heap_t *txt_heap)
@@ -119,7 +119,7 @@ bool verify_bios_data(txt_heap_t *txt_heap)
     }
     if ( size > heap_size ) {
         printf("BIOS data size is larger than heap size "
-               "(%Lx, heap size=%Lx)\n", size, heap_size);
+               "(%llx, heap size=%llx)\n", size, heap_size);
         return false;
     }
 
@@ -154,7 +154,7 @@ bool verify_bios_data(txt_heap_t *txt_heap)
 
 static void print_os_mle_data(os_mle_data_t *os_mle_data)
 {
-    printf("os_mle_data (@%p, %Lx):\n", os_mle_data,
+    printf("os_mle_data (@%p, %llx):\n", os_mle_data,
            *((uint64_t *)os_mle_data - 1));
     printf("\t version: %u\n", os_mle_data->version);
     /* TBD: perhaps eventually print saved_mtrr_state field */
@@ -175,11 +175,11 @@ static bool verify_os_mle_data(txt_heap_t *txt_heap)
     }
     if ( size > heap_size ) {
         printf("OS to MLE data size is larger than heap size "
-               "(%Lx, heap size=%Lx)\n", size, heap_size);
+               "(%llx, heap size=%llx)\n", size, heap_size);
         return false;
     }
     if ( size != (sizeof(os_mle_data_t) + sizeof(size)) ) {
-        printf("OS to MLE data size (%Lx) is not equal to "
+        printf("OS to MLE data size (%llx) is not equal to "
                "os_mle_data_t size (%x)\n", size, sizeof(os_mle_data_t));
         return false;
     }
@@ -208,23 +208,23 @@ static bool verify_os_mle_data(txt_heap_t *txt_heap)
 
 void print_os_sinit_data(os_sinit_data_t *os_sinit_data)
 {
-    printf("os_sinit_data (@%p, %Lx):\n", os_sinit_data,
+    printf("os_sinit_data (@%p, %llx):\n", os_sinit_data,
            *((uint64_t *)os_sinit_data - 1));
     printf("\t version: %u\n", os_sinit_data->version);
-    printf("\t mle_ptab: 0x%Lx\n", os_sinit_data->mle_ptab);
-    printf("\t mle_size: 0x%Lx (%Lu)\n", os_sinit_data->mle_size,
+    printf("\t mle_ptab: 0x%llx\n", os_sinit_data->mle_ptab);
+    printf("\t mle_size: 0x%llx (%llu)\n", os_sinit_data->mle_size,
            os_sinit_data->mle_size);
-    printf("\t mle_hdr_base: 0x%Lx\n", os_sinit_data->mle_hdr_base);
-    printf("\t vtd_pmr_lo_base: 0x%Lx\n", os_sinit_data->vtd_pmr_lo_base);
-    printf("\t vtd_pmr_lo_size: 0x%Lx\n", os_sinit_data->vtd_pmr_lo_size);
-    printf("\t vtd_pmr_hi_base: 0x%Lx\n", os_sinit_data->vtd_pmr_hi_base);
-    printf("\t vtd_pmr_hi_size: 0x%Lx\n", os_sinit_data->vtd_pmr_hi_size);
-    printf("\t lcp_po_base: 0x%Lx\n", os_sinit_data->lcp_po_base);
-    printf("\t lcp_po_size: 0x%Lx (%Lu)\n", os_sinit_data->lcp_po_size,
+    printf("\t mle_hdr_base: 0x%llx\n", os_sinit_data->mle_hdr_base);
+    printf("\t vtd_pmr_lo_base: 0x%llx\n", os_sinit_data->vtd_pmr_lo_base);
+    printf("\t vtd_pmr_lo_size: 0x%llx\n", os_sinit_data->vtd_pmr_lo_size);
+    printf("\t vtd_pmr_hi_base: 0x%llx\n", os_sinit_data->vtd_pmr_hi_base);
+    printf("\t vtd_pmr_hi_size: 0x%llx\n", os_sinit_data->vtd_pmr_hi_size);
+    printf("\t lcp_po_base: 0x%llx\n", os_sinit_data->lcp_po_base);
+    printf("\t lcp_po_size: 0x%llx (%llu)\n", os_sinit_data->lcp_po_size,
            os_sinit_data->lcp_po_size);
     print_txt_caps("\t ", os_sinit_data->capabilities);
     if ( os_sinit_data->version >= 5 )
-        printf("\t efi_rsdt_ptr: 0x%Lx\n", os_sinit_data->efi_rsdt_ptr);
+        printf("\t efi_rsdt_ptr: 0x%llx\n", os_sinit_data->efi_rsdt_ptr);
 }
 
 static bool verify_os_sinit_data(txt_heap_t *txt_heap)
@@ -241,7 +241,7 @@ static bool verify_os_sinit_data(txt_heap_t *txt_heap)
     }
     if ( size > heap_size ) {
         printf("OS to SINIT data size is larger than heap size "
-               "(%Lx, heap size=%Lx)\n", size, heap_size);
+               "(%llx, heap size=%llx)\n", size, heap_size);
         return false;
     }
 
@@ -258,7 +258,7 @@ static bool verify_os_sinit_data(txt_heap_t *txt_heap)
           size != offsetof(os_sinit_data_t, efi_rsdt_ptr) + sizeof(uint64_t))
          || (os_sinit_data->version == 5 &&
              size != sizeof(os_sinit_data_t) + sizeof(uint64_t)) ) {
-        printf("OS to SINIT data size (%Lx) does not match for version (%x)\n",
+        printf("OS to SINIT data size (%llx) does not match for version (%x)\n",
                size, sizeof(os_sinit_data_t));
         return false;
     }
@@ -277,7 +277,7 @@ static void print_sinit_mdrs(sinit_mdr_t mdrs[], uint32_t num_mdrs)
 
     printf("\t sinit_mdrs:\n");
     for ( i = 0; i < num_mdrs; i++ ) {
-        printf("\t\t %016Lx - %016Lx ", mdrs[i].base,
+        printf("\t\t %016llx - %016llx ", mdrs[i].base,
                mdrs[i].base + mdrs[i].length);
         if ( mdrs[i].mem_type < sizeof(mem_types)/sizeof(mem_types[0]) )
             printf("(%s)\n", mem_types[mdrs[i].mem_type]);
@@ -288,14 +288,14 @@ static void print_sinit_mdrs(sinit_mdr_t mdrs[], uint32_t num_mdrs)
 
 static void print_sinit_mle_data(sinit_mle_data_t *sinit_mle_data)
 {
-    printf("sinit_mle_data (@%p, %Lx):\n", sinit_mle_data,
+    printf("sinit_mle_data (@%p, %llx):\n", sinit_mle_data,
            *((uint64_t *)sinit_mle_data - 1));
     printf("\t version: %u\n", sinit_mle_data->version);
     printf("\t bios_acm_id: \n\t");
     print_heap_hash(sinit_mle_data->bios_acm_id);
     printf("\t edx_senter_flags: 0x%08x\n",
            sinit_mle_data->edx_senter_flags);
-    printf("\t mseg_valid: 0x%Lx\n", sinit_mle_data->mseg_valid);
+    printf("\t mseg_valid: 0x%llx\n", sinit_mle_data->mseg_valid);
     printf("\t sinit_hash:\n\t"); print_heap_hash(sinit_mle_data->sinit_hash);
     printf("\t mle_hash:\n\t"); print_heap_hash(sinit_mle_data->mle_hash);
     printf("\t stm_hash:\n\t"); print_heap_hash(sinit_mle_data->stm_hash);
@@ -330,7 +330,7 @@ static bool verify_sinit_mle_data(txt_heap_t *txt_heap)
     }
     if ( size > heap_size ) {
         printf("SINIT to MLE data size is larger than heap size\n"
-               "(%Lx, heap size=%Lx)\n", size, heap_size);
+               "(%llx, heap size=%llx)\n", size, heap_size);
         return false;
     }
 
@@ -389,8 +389,8 @@ bool verify_txt_heap(txt_heap_t *txt_heap, bool bios_data_only)
 
     if ( (size1 + size2 + size3 + size4) >
          read_priv_config_reg(TXTCR_HEAP_SIZE) ) {
-        printf("TXT heap data sizes (%Lx, %Lx, %Lx, %Lx) are larger than\n"
-               "heap total size (%Lx)\n", size1, size2, size3, size4,
+        printf("TXT heap data sizes (%llx, %llx, %llx, %llx) are larger than\n"
+               "heap total size (%llx)\n", size1, size2, size3, size4,
                read_priv_config_reg(TXTCR_HEAP_SIZE));
         return false;
     }

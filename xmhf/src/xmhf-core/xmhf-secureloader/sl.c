@@ -154,7 +154,7 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 		//store CPU table and number of CPUs
 		#ifndef __XMHF_VERIFICATION__
-		memcpy(hva2sla((void *)rpb->XtVmmMPCpuinfoBuffer), (void *)&slpb.cpuinfobuffer, (sizeof(slpb.cpuinfobuffer)) );
+		memcpy(hva2sla((void *)rpb->XtVmmMPCpuinfoBuffer), (void *)&slpb.cpuinfobuffer, (sizeof(PCPU) * slpb.numCPUEntries) );
 		#endif
 		rpb->XtVmmMPCpuinfoNumEntries = slpb.numCPUEntries; 
 
