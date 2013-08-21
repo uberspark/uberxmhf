@@ -75,7 +75,7 @@ AS_IF([test "x${enable_mp}" != "xno"],
       [MP_VERSION=n])
 
 
-# selectively disable Dynamic Root-of-Trust (DRT)
+# selectively enable/disable Dynamic Root-of-Trust (DRT)
 AC_SUBST([DRT])
 AC_ARG_ENABLE([drt],
         AS_HELP_STRING([--enable-drt@<:@=yes|no@:>@],
@@ -85,7 +85,7 @@ AS_IF([test "x${enable_drt}" != "xno"],
       [DRT=y],
       [DRT=n])
 
-# selectively disable DMA protection (DMAP)
+# selectively enable/disable DMA protection (DMAP)
 AC_SUBST([DMAP])
 AC_ARG_ENABLE([dmap],
         AS_HELP_STRING([--enable-dmap@<:@=yes|no@:>@],
