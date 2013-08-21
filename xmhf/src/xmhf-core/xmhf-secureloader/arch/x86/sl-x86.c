@@ -188,7 +188,7 @@ void xmhf_sl_arch_sanitize_post_launch(void){
 void xmhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 {
 
-#if defined(__DMAPROT__)	
+#if defined(__DMAP__)	
 		{
 			u64 protectedbuffer_paddr;
 			u32 protectedbuffer_vaddr;
@@ -228,7 +228,7 @@ void xmhf_sl_arch_early_dmaprot_init(u32 runtime_size)
 		}
 		
 		
-#endif //__DMAPROT__
+#endif //__DMAP__
 	
 }
 
