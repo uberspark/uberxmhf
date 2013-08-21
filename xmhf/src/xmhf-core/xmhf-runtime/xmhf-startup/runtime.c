@@ -119,11 +119,16 @@ void xmhf_runtime_entry(void){
 		}
 	#endif //__DMAPROT__
 #else //!__DRTM_DMA_PROTECTION__
-	if(cpu_vendor == CPU_VENDOR_INTEL)
-	{
+	
+	#if defined (__DRT__)
+	//if __DRT__ is enabled without DMA protections, zap DMAR device
+	//from ACPI tables
+	if(cpu_vendor == CPU_VENDOR_INTEL){
 		extern void vmx_eap_zap(void);
 		vmx_eap_zap();
 	}
+	#endif	//__DRT__
+	
 #endif
 
 	//initialize base platform with SMP 
