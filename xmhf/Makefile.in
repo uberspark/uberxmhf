@@ -127,7 +127,6 @@ export TEST_CPU_QUIESCE := n
 # TODO: FIXME: Build breaks with some combinations of these options.
 # They aren't really "options" anymore
 # TODO: Control these with autoconf
-export DMAPROT := y
 export NESTED_PAGING := y
 
 
@@ -192,10 +191,6 @@ endif
 CFLAGS += -D__DO_SENTER__
 VFLAGS += -D__DO_SENTER__
 
-ifeq ($(DMAPROT), y)
-	CFLAGS += -D__DMAPROT__	
-	VFLAGS += -D__DMAPROT__	
-endif
 ifeq ($(E820_UG_TEST), y)
 	CFLAGS += -D__E820_UG_TEST__
 	VFLAGS += -D__E820_UG_TEST__
