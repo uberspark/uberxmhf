@@ -178,6 +178,10 @@ ifeq ($(MP_VERSION), y)
 	CFLAGS += -D__MP_VERSION__
 	VFLAGS += -D__MP_VERSION__
 endif
+ifeq ($(DRT), y)
+	CFLAGS += -D__DRT__
+	VFLAGS += -D__DRT__
+endif
 ifeq ($(DRTM_DMA_PROTECTION), y)
 	CFLAGS += -D__DRTM_DMA_PROTECTION__
 	VFLAGS += -D__DRTM_DMA_PROTECTION__
