@@ -85,15 +85,15 @@ AS_IF([test "x${enable_drt}" != "xno"],
       [DRT=y],
       [DRT=n])
 
-# selectively disable DRTM/DMA protection
-AC_SUBST([DRTM_DMA_PROTECTION])
-AC_ARG_ENABLE([drtdmaprotection],
-        AS_HELP_STRING([--enable-drtdmaprotection@<:@=yes|no@:>@],
-                [enable DRTM and DMA protection]),
-                , [enable_drtdmaprotection=yes])
-AS_IF([test "x${enable_drtdmaprotection}" != "xno"],
-      [DRTM_DMA_PROTECTION=y],
-      [DRTM_DMA_PROTECTION=n])
+# selectively disable DMA protection (DMAP)
+AC_SUBST([DMAP])
+AC_ARG_ENABLE([dmap],
+        AS_HELP_STRING([--enable-dmap@<:@=yes|no@:>@],
+                [enable DMA protection]),
+                , [enable_dmap=yes])
+AS_IF([test "x${enable_dmap}" != "xno"],
+      [DMAP=y],
+      [DMAP=n])
 
 
 # libbaremetal source directory
