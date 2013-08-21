@@ -625,7 +625,7 @@ static void _vtd_invalidatecaches(void){
 #define PAE_get_ptaddress(x) ( (u32) ( (u64)(x) & (u64)0x3FFFFFFFFFFFF000ULL ))
 
 
-#if !defined (__DRTM_DMA_PROTECTION__)
+#if !defined (__DMAP__)
 void vmx_eap_zap(void){
 	ACPI_RSDP rsdp;
 	ACPI_RSDT rsdt;
@@ -689,7 +689,7 @@ void vmx_eap_zap(void){
 	//success
 	printf("\n%s: success, leaving...", __FUNCTION__);
 }
-#endif
+#endif	//__DMAP__
 
 //initialize VMX EAP a.k.a VT-d
 //returns 1 if all went well, else 0
