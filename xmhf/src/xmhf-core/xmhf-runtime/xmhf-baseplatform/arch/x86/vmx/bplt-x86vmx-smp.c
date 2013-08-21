@@ -138,7 +138,7 @@ void xmhf_baseplatform_arch_x86vmx_wakeupAPs(void){
         #endif
     }
 
-#if defined (__DRTM_DMA_PROTECTION__)	
+#if defined (__DRT__)	
     //step-2: wake up the APs sending the INIT-SIPI-SIPI sequence as per the
     //MP protocol. Use the APIC for IPI purposes.
     if(!txt_is_launched()) { // XXX TODO: Do actual GETSEC[WAKEUP] in here?
@@ -208,7 +208,7 @@ void xmhf_baseplatform_arch_x86vmx_wakeupAPs(void){
 		
 	}
 	
-#else //!__DRTM_DMA_PROTECTION__
+#else //!__DRT__
         printf("\nBSP: Using APIC to awaken APs...");
         xmhf_baseplatform_arch_x86_wakeupAPs();
         printf("\nBSP: APs should be awake.");
