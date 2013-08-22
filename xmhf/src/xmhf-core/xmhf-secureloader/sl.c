@@ -184,11 +184,11 @@ void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx){
 
 	//sanitize cache/MTRR/SMRAM (most important is to ensure that MTRRs 
 	//do not contain weird mappings)
-#if defined (__DRTM_DMA_PROTECTION__)
+#if defined (__DRT__)
     xmhf_sl_arch_sanitize_post_launch();
-#endif
+#endif	//__DRT__
 
-#if defined (__DRTM_DMA_PROTECTION__)    
+#if defined (__DMAP__)    
 	//setup DMA protection on runtime (secure loader is already DMA protected)
 	xmhf_sl_arch_early_dmaprot_init(slpb.runtime_size);
 #endif

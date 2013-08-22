@@ -95,8 +95,7 @@ void xmhf_runtime_entry(void){
 	xmhf_xcphandler_initialize();
 	#endif
 
-#if defined (__DRTM_DMA_PROTECTION__)
-	#if defined (__DMAPROT__)
+#if defined (__DMAP__)
 		{
 				u64 protectedbuffer_paddr;
 				u32 protectedbuffer_vaddr;
@@ -117,13 +116,18 @@ void xmhf_runtime_entry(void){
 				xmhf_dmaprot_protect(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimeSize+PAGE_SIZE_2M);
 				printf("\nRuntime: Protected SL+Runtime (%08lx-%08x) from DMA.", rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
 		}
-	#endif //__DMAPROT__
-#else //!__DRTM_DMA_PROTECTION__
-	if(cpu_vendor == CPU_VENDOR_INTEL)
-	{
+
+#else //!__DMAP__
+	
+	#if defined (__DRT__)
+	//if __DRT__ is enabled without DMA protections, zap DMAR device
+	//from ACPI tables
+	if(cpu_vendor == CPU_VENDOR_INTEL){
 		extern void vmx_eap_zap(void);
 		vmx_eap_zap();
 	}
+	#endif	//__DRT__
+	
 #endif
 
 	//initialize base platform with SMP 

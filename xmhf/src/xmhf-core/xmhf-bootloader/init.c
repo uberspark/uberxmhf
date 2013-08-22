@@ -656,7 +656,7 @@ void do_drtm(VCPU __attribute__((unused))*vcpu, u32 slbase){
     printf("\nINIT(early): sent INIT IPI to APs");
 #endif
 
-#if defined (__DRTM_DMA_PROTECTION__)
+#if defined (__DRT__)
 
     if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
         if(!svm_verify_platform()) {
@@ -670,7 +670,7 @@ void do_drtm(VCPU __attribute__((unused))*vcpu, u32 slbase){
         //issue SKINIT
         //our secure loader is the first 64K of the hypervisor image
         printf("\nINIT(early): transferring control to SL via SKINIT...");
-#ifndef PERF_CRIT
+		#ifndef PERF_CRIT
         if(NULL != slpb) {
             __asm__ __volatile__ (
                 "cpuid\r\n"
@@ -681,7 +681,7 @@ void do_drtm(VCPU __attribute__((unused))*vcpu, u32 slbase){
                 : /* no inputs */
                 : "ebx","ecx");
         }
-#endif
+		#endif
         skinit((u32)slbase);
     } else {
         printf("\n******  INIT(early): Begin TXT Stuff  ******\n");        
@@ -690,7 +690,7 @@ void do_drtm(VCPU __attribute__((unused))*vcpu, u32 slbase){
         HALT();
     }
     
-#else  //!__DRTM_DMA_PROTECTION__
+#else  //!__DRT__
 	//don't use SKINIT or SENTER
 	{
 		u32 sl_entry_point;

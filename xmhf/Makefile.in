@@ -86,7 +86,8 @@ export MP_VERSION := @MP_VERSION@
 export DEBUG_SERIAL := @DEBUG_SERIAL@
 export DEBUG_SERIAL_PORT := @DEBUG_SERIAL_PORT@
 export DEBUG_VGA := @DEBUG_VGA@
-export DRTM_DMA_PROTECTION := @DRTM_DMA_PROTECTION@
+export DRT := @DRT@
+export DMAP := @DMAP@
 export XMHF_TARGET_PLATFORM := @TARGET_PLATFORM@
 export XMHF_TARGET_ARCH := @TARGET_ARCH@
 
@@ -127,7 +128,6 @@ export TEST_CPU_QUIESCE := n
 # TODO: FIXME: Build breaks with some combinations of these options.
 # They aren't really "options" anymore
 # TODO: Control these with autoconf
-export DMAPROT := y
 export NESTED_PAGING := y
 
 
@@ -178,9 +178,13 @@ ifeq ($(MP_VERSION), y)
 	CFLAGS += -D__MP_VERSION__
 	VFLAGS += -D__MP_VERSION__
 endif
-ifeq ($(DRTM_DMA_PROTECTION), y)
-	CFLAGS += -D__DRTM_DMA_PROTECTION__
-	VFLAGS += -D__DRTM_DMA_PROTECTION__
+ifeq ($(DRT), y)
+	CFLAGS += -D__DRT__
+	VFLAGS += -D__DRT__
+endif
+ifeq ($(DMAP), y)
+	CFLAGS += -D__DMAP__
+	VFLAGS += -D__DMAP__
 endif
 
 
@@ -188,10 +192,6 @@ endif
 CFLAGS += -D__DO_SENTER__
 VFLAGS += -D__DO_SENTER__
 
-ifeq ($(DMAPROT), y)
-	CFLAGS += -D__DMAPROT__	
-	VFLAGS += -D__DMAPROT__	
-endif
 ifeq ($(E820_UG_TEST), y)
 	CFLAGS += -D__E820_UG_TEST__
 	VFLAGS += -D__E820_UG_TEST__

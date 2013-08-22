@@ -625,7 +625,7 @@ static void _vtd_invalidatecaches(void){
 #define PAE_get_ptaddress(x) ( (u32) ( (u64)(x) & (u64)0x3FFFFFFFFFFFF000ULL ))
 
 
-#if !defined (__DRTM_DMA_PROTECTION__)
+#if !defined (__DMAP__)
 void vmx_eap_zap(void){
 	ACPI_RSDP rsdp;
 	ACPI_RSDT rsdt;
@@ -689,7 +689,7 @@ void vmx_eap_zap(void){
 	//success
 	printf("\n%s: success, leaving...", __FUNCTION__);
 }
-#endif
+#endif	//__DMAP__
 
 //initialize VMX EAP a.k.a VT-d
 //returns 1 if all went well, else 0
@@ -782,12 +782,12 @@ static u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
   for(i=0; i < vtd_num_drhd; i++){
     VTD_CAP_REG cap;    
     VTD_ECAP_REG ecap;
-    printf("\n	Device %u on PCI seg %04x; base=0x%016LX", i, 
+    printf("\n	Device %u on PCI seg %04x; base=0x%016llx", i, 
 				vtd_drhd[i].pcisegment, vtd_drhd[i].regbaseaddr);
     _vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_CAP_REG_OFF, (void *)&cap.value);
-    printf("\n		cap=0x%016LX", (u64)cap.value);
+    printf("\n		cap=0x%016llx", (u64)cap.value);
     _vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_ECAP_REG_OFF, (void *)&ecap.value);
-    printf("\n		ecap=0x%016LX", (u64)ecap.value);
+    printf("\n		ecap=0x%016llx", (u64)ecap.value);
   }
 
 
