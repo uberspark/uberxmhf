@@ -293,6 +293,7 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
 		os_sinit_data->vtd_pmr_lo_base = (u64)PAGE_ALIGN_2M((u32)phys_mle_start);
 		os_sinit_data->vtd_pmr_lo_size = (u64)PAGE_ALIGN_UP2M(mle_size); // XXX Dangerous??? Does not precisely match SL size.  Goes well into hypervisor.  TODO: coordinate to DMA-protect hypervisor in one easy stroke. 2MB alignment required.
     #else
+		(void)mle_size;
 		os_sinit_data->vtd_pmr_lo_base = (u64)0x10000000;
 		os_sinit_data->vtd_pmr_lo_size = (u64)0x09600000;
     #endif
