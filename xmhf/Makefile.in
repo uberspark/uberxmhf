@@ -157,6 +157,9 @@ VFLAGS = $(ADDL_INCLUDES)
 
 
 #-----generate compiler/assembler defines from configuration options selected
+CFLAGS += -D___XMHF_BUILD_VERSION___=\"$(XMHF_BUILD_VERSION)\"
+VFLAGS += -D___XMHF_BUILD_VERSION___=\"$(XMHF_BUILD_VERSION)\"
+
 ifeq ($(XMHF_TARGET_ARCH), x86-svm)
 	VFLAGS += -D__XMHF_TARGET_ARCH_X86_SVM__
 endif
