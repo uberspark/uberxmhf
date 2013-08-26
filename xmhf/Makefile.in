@@ -132,6 +132,15 @@ export NESTED_PAGING := y
 
 
 #-----build configuration
+
+#----- build information (version)
+export XMHF_BUILD_VERSION := $(shell git describe --abbrev=0)
+
+#----- build information (revision)
+export XMHF_BUILD_REVISION_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
+export XMHF_BUILD_REVISION_COMMIT := $(shell git log --pretty=format:'%H' -n 1)
+export XMHF_BUILD_REVISION := $(XMHF_BUILD_REVISION_BRANCH)-$(XMHF_BUILD_REVISION_COMMIT)
+
 #-----basic flags for compiling and assembling
 CFLAGS = -fno-builtin -fno-common -fno-strict-aliasing -iwithprefix include
 CFLAGS += -fno-stack-protector
@@ -153,6 +162,12 @@ VFLAGS = $(ADDL_INCLUDES)
 
 
 #-----generate compiler/assembler defines from configuration options selected
+CFLAGS += -D___XMHF_BUILD_VERSION___=\"$(XMHF_BUILD_VERSION)\"
+VFLAGS += -D___XMHF_BUILD_VERSION___=\"$(XMHF_BUILD_VERSION)\"
+
+CFLAGS += -D___XMHF_BUILD_REVISION___=\"$(XMHF_BUILD_REVISION)\"
+VFLAGS += -D___XMHF_BUILD_REVISION___=\"$(XMHF_BUILD_REVISION)\"
+
 ifeq ($(XMHF_TARGET_ARCH), x86-svm)
 	VFLAGS += -D__XMHF_TARGET_ARCH_X86_SVM__
 endif

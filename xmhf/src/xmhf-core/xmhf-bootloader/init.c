@@ -849,6 +849,10 @@ void cstartup(multiboot_info_t *mbi){
     mod_array = (module_t*)mbi->mods_addr;
     mods_count = mbi->mods_count;
 
+	//welcome banner
+	printf("\neXtensible Modular Hypervisor Framework (XMHF) %s", ___XMHF_BUILD_VERSION___);
+	printf("\nBuild revision: %s\n", ___XMHF_BUILD_REVISION___);
+	
     printf("\nINIT(early): initializing, total modules=%u", mods_count);
 
     //check CPU type (Intel vs AMD)
