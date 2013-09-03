@@ -87,10 +87,36 @@ OBJECTS_PRECOMPILED_LIBBACKENDS = ./xmhf-xmhfcbackend/xmhfc-putchar.o
 
 
 # targets
-.PHONY: all
-all: runtime.bin
+.PHONY: runtimecomponents
+runtimecomponents:
+	#XMHF memory protection component
+	cd xmhf-memprot && $(MAKE) -w all
+	#XMHF partition event-hub component
+	cd xmhf-eventhub && $(MAKE) -w all
+	#XMHF SMP guest component
+	cd xmhf-smpguest && $(MAKE) -w all
+	#XMHF DMA protection component
+	cd xmhf-dmaprot && $(MAKE) -w all
+	#XMHF exception handler component
+	cd xmhf-xcphandler && $(MAKE) -w all
+	#XMHF base platform component
+	cd xmhf-baseplatform && $(MAKE) -w all
+	#XMHF partition component
+	cd xmhf-partition && $(MAKE) -w all
+	#XMHF TPM component
+	cd xmhf-tpm && $(MAKE) -w all
+	#XMHF debug component
+	cd xmhf-debug && $(MAKE) -w all
+	#XMHF libxmhfc environment callbacks
+	cd xmhf-xmhfcbackend && $(MAKE) -w all
+	#XMHF startup component
+	cd xmhf-startup && $(MAKE) -w all
 
-runtime.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(OBJECTS_PRECOMPILED_LIBBACKENDS) runtime.lds.S
+
+.PHONY: all
+all: runtimecomponents runtime.bin
+
+runtime.bin: runtimecomponents $(OBJECTS) $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(OBJECTS_PRECOMPILED_LIBBACKENDS) runtime.lds.S
 	$(LD) -T runtime.lds.S -o runtime.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
 	$(OBJCOPY) --output-format=binary runtime.exe runtime.bin
 
@@ -101,8 +127,18 @@ runtime.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(OBJECTS_PRECOMPI
 
 .PHONY: clean 
 clean: 
-	$(RM) -rf *.o
-	$(RM) -rf ./arch/x86/*.o
 	$(RM) -rf *.exe
 	$(RM) -rf *.bin
 	$(RM) -rf *.gz
+
+	cd xmhf-memprot && $(MAKE) -w clean
+	cd xmhf-eventhub && $(MAKE) -w clean
+	cd xmhf-dmaprot && $(MAKE) -w clean
+	cd xmhf-smpguest && $(MAKE) -w clean
+	cd xmhf-xcphandler && $(MAKE) -w clean
+	cd xmhf-baseplatform && $(MAKE) -w clean
+	cd xmhf-partition && $(MAKE) -w clean
+	cd xmhf-tpm && $(MAKE) -w clean
+	cd xmhf-debug && $(MAKE) -w clean
+	cd xmhf-xmhfcbackend && $(MAKE) -w clean
+	cd xmhf-runtime/xmhf-startup && $(MAKE) -w clean
