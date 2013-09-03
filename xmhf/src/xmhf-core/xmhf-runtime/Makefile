@@ -77,6 +77,11 @@ OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/svm/part-x86svm-sup.o
 OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/vmx/part-x86vmx.o
 OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/vmx/part-x86vmx-sup.o
 
+OBJECTS_PRECOMPILED += ./xmhf-startup/runtime.o
+OBJECTS_PRECOMPILED += ./xmhf-startup/rntm-data.o
+OBJECTS_PRECOMPILED += ./xmhf-startup/arch/x86/rntm-x86-data.o
+
+
 # separate from OBJECTS_PRECOMPILED becasue needs to come after libs on link line
 OBJECTS_PRECOMPILED_LIBBACKENDS = ./xmhf-xmhfcbackend/xmhfc-putchar.o
 
