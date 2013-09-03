@@ -141,4 +141,4 @@ clean:
 	cd xmhf-tpm && $(MAKE) -w clean
 	cd xmhf-debug && $(MAKE) -w clean
 	cd xmhf-xmhfcbackend && $(MAKE) -w clean
-	cd xmhf-runtime/xmhf-startup && $(MAKE) -w clean
+	cd xmhf-startup && $(MAKE) -w clean
