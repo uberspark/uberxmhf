@@ -4,11 +4,10 @@
 
 #-----build rules
 .PHONY: all
-#all: runtime secureloader bootloader hypervisor-$(TARGET_HWPLATFORM).bin.gz
-
 all: runtime 
 
 .PHONY: runtime
+runtime:
 	cd xmhf-runtime && $(MAKE) -w all
 
 .PHONY: secureloader
