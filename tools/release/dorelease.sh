@@ -32,3 +32,12 @@ if [ ! -f $CHANGELOGFILE ]; then
 	exit
 fi
 
+# check if we are on the "master" branch, if not bail out
+# XMHFBRANCHNAME=`git rev-parse --abbrev-ref HEAD`
+# if [ $XMHFBRANCHNAME != "master" ]; then
+#	echo "Release can only be done on the master branch."
+#	echo "Current branch: $XMHFBRANCHNAME"
+#	exit
+# fi
+
+
