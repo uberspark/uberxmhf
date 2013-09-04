@@ -4,32 +4,11 @@
 
 #-----build rules
 .PHONY: all
-all: runtime secureloader bootloader hypervisor-$(TARGET_HWPLATFORM).bin.gz
+all: runtime secureloader bootloader hypervisor-$(TARGET_HWPLATFORM).bin.gz 
 
 .PHONY: runtime
 runtime:
-	#XMHF memory protection component
-	cd xmhf-runtime/xmhf-memprot && $(MAKE) -w all
-	#XMHF partition event-hub component
-	cd xmhf-runtime/xmhf-eventhub && $(MAKE) -w all
-	#XMHF SMP guest component
-	cd xmhf-runtime/xmhf-smpguest && $(MAKE) -w all
-	#XMHF DMA protection component
-	cd xmhf-runtime/xmhf-dmaprot && $(MAKE) -w all
-	#XMHF exception handler component
-	cd xmhf-runtime/xmhf-xcphandler && $(MAKE) -w all
-	#XMHF base platform component
-	cd xmhf-runtime/xmhf-baseplatform && $(MAKE) -w all
-	#XMHF partition component
-	cd xmhf-runtime/xmhf-partition && $(MAKE) -w all
-	#XMHF TPM component
-	cd xmhf-runtime/xmhf-tpm && $(MAKE) -w all
-	#XMHF debug component
-	cd xmhf-runtime/xmhf-debug && $(MAKE) -w all
-	#XMHF libxmhfc environment callbacks
-	cd xmhf-runtime/xmhf-xmhfcbackend && $(MAKE) -w all
-	#XMHF startup component
-	cd xmhf-runtime/xmhf-startup && $(MAKE) -w all
+	cd xmhf-runtime && $(MAKE) -w all
 
 .PHONY: secureloader
 secureloader: runtime 
@@ -48,9 +27,9 @@ bootloader: secureloader runtime
 
 secureloader/sl.bin: secureloader
 runtime/runtime.bin: runtime
-hypervisor-$(TARGET_HWPLATFORM).bin.gz: xmhf-secureloader/sl.bin xmhf-runtime/xmhf-startup/runtime.bin xmhf-bootloader/init-$(TARGET_HWPLATFORM).bin
+hypervisor-$(TARGET_HWPLATFORM).bin.gz: xmhf-secureloader/sl.bin xmhf-runtime/runtime.bin xmhf-bootloader/init-$(TARGET_HWPLATFORM).bin
 	# concatenate sl image and runtime image 
-	$(CAT) ./xmhf-secureloader/sl.bin ./xmhf-runtime/xmhf-startup/runtime.bin > ./hypervisor.tmp.img
+	$(CAT) ./xmhf-secureloader/sl.bin ./xmhf-runtime/runtime.bin > ./hypervisor.tmp.img
 	gzip -c ./hypervisor.tmp.img > ./hypervisor-$(TARGET_HWPLATFORM).bin.gz
 	$(RM) -rf ./hypervisor.tmp.img 
 	# install loader and runtime images to INSTALLDIR
@@ -62,18 +41,7 @@ hypervisor-$(TARGET_HWPLATFORM).bin.gz: xmhf-secureloader/sl.bin xmhf-runtime/xm
 #.PHONY: clean init-late-clean
 .PHONY: clean 
 clean: 
-	cd xmhf-runtime/xmhf-memprot && $(MAKE) -w clean
-	cd xmhf-runtime/xmhf-eventhub && $(MAKE) -w clean
-	cd xmhf-runtime/xmhf-dmaprot && $(MAKE) -w clean
-	cd xmhf-runtime/xmhf-smpguest && $(MAKE) -w clean
-	cd xmhf-runtime/xmhf-xcphandler && $(MAKE) -w clean
-	cd xmhf-runtime/xmhf-baseplatform && $(MAKE) -w clean
-	cd xmhf-runtime/xmhf-partition && $(MAKE) -w clean
-	cd xmhf-runtime/xmhf-tpm && $(MAKE) -w clean
-	cd xmhf-runtime/xmhf-debug && $(MAKE) -w clean
-	cd xmhf-runtime/xmhf-xmhfcbackend && $(MAKE) -w clean
-
-	cd xmhf-runtime/xmhf-startup && $(MAKE) -w clean
+	cd xmhf-runtime && $(MAKE) -w clean
 
 	cd xmhf-secureloader && $(MAKE) -w clean
 	
