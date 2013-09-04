@@ -40,4 +40,11 @@ fi
 #	exit
 # fi
 
+# check if the branch is dirty (uncommitted changes) and if so bail
+# out with a warning
+IS_DIRTY=`git status --porcelain | perl -n -e 'if ($_ !~ /^\?\?/) { print "DIRTY\n"; exit; }'`
+if [ "$IS_DIRTY" == "DIRTY" ]; then
+    echo "Branch dirty. Did you forget to commit something?" >&2
+    exit 1
+fi
 
