@@ -4,9 +4,10 @@
 # tie components used by the runtime
 # WARNING: if both Serial & VGA are enabled, you actually get neither. 
 # TODO: Fix it.
-OBJECTS_PRECOMPILED = ./xmhf-debug/lib.a
+# OBJECTS_PRECOMPILED = ./xmhf-debug/lib.a
 
-OBJECTS_PRECOMPILED += ./xmhf-tpm/tpm-interface.o 
+# OBJECTS_PRECOMPILED += ./xmhf-tpm/tpm-interface.o 
+OBJECTS_PRECOMPILED = ./xmhf-tpm/tpm-interface.o 
 OBJECTS_PRECOMPILED += ./xmhf-tpm/arch/x86/tpm-x86.o 
 OBJECTS_PRECOMPILED += ./xmhf-tpm/arch/x86/svm/tpm-x86svm.o 
 OBJECTS_PRECOMPILED += ./xmhf-tpm/arch/x86/vmx/tpm-x86vmx.o 
@@ -81,6 +82,8 @@ OBJECTS_PRECOMPILED += ./xmhf-startup/runtime.o
 OBJECTS_PRECOMPILED += ./xmhf-startup/rntm-data.o
 OBJECTS_PRECOMPILED += ./xmhf-startup/arch/x86/rntm-x86-data.o
 
+OBJECTS_PRECOMPILED += ./xmhf-debug/lib.a
+
 
 # separate from OBJECTS_PRECOMPILED becasue needs to come after libs on link line
 OBJECTS_PRECOMPILED_LIBBACKENDS = ./xmhf-xmhfcbackend/xmhfc-putchar.o
@@ -116,8 +119,8 @@ runtimecomponents:
 .PHONY: all
 all: runtimecomponents runtime.bin
 
-runtime.bin: runtimecomponents $(OBJECTS) $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(OBJECTS_PRECOMPILED_LIBBACKENDS) runtime.lds.S
-	$(LD) -T runtime.lds.S -o runtime.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
+runtime.bin: runtimecomponents $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(OBJECTS_PRECOMPILED_LIBBACKENDS) runtime.lds.S
+	$(LD) -T runtime.lds.S -o runtime.exe $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
 	$(OBJCOPY) --output-format=binary runtime.exe runtime.bin
 
 %.o: %.S $(I_SOURCES) Makefile ../../Makefile
