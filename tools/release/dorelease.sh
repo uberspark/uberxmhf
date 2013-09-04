@@ -26,3 +26,9 @@ echo Preparing XMHF release: $XMHFRELEASE
 echo Using Changelog file: $CHANGELOGFILE
 echo -------------------------------------------------------------------
 
+# check if we can stat the changelog file, if not bail out
+if [ ! -f $CHANGELOGFILE ]; then
+	echo "Could not find/stat changelog file: $CHANGELOGFILE"
+	exit
+fi
+
