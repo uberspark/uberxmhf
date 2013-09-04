@@ -4,7 +4,7 @@
 
 #-----build rules
 .PHONY: all
-all: runtime 
+all: runtime secureloader bootloader hypervisor-$(TARGET_HWPLATFORM).bin.gz 
 
 .PHONY: runtime
 runtime:
@@ -27,9 +27,9 @@ bootloader: secureloader runtime
 
 secureloader/sl.bin: secureloader
 runtime/runtime.bin: runtime
-hypervisor-$(TARGET_HWPLATFORM).bin.gz: xmhf-secureloader/sl.bin xmhf-runtime/xmhf-startup/runtime.bin xmhf-bootloader/init-$(TARGET_HWPLATFORM).bin
+hypervisor-$(TARGET_HWPLATFORM).bin.gz: xmhf-secureloader/sl.bin xmhf-runtime/runtime.bin xmhf-bootloader/init-$(TARGET_HWPLATFORM).bin
 	# concatenate sl image and runtime image 
-	$(CAT) ./xmhf-secureloader/sl.bin ./xmhf-runtime/xmhf-startup/runtime.bin > ./hypervisor.tmp.img
+	$(CAT) ./xmhf-secureloader/sl.bin ./xmhf-runtime/runtime.bin > ./hypervisor.tmp.img
 	gzip -c ./hypervisor.tmp.img > ./hypervisor-$(TARGET_HWPLATFORM).bin.gz
 	$(RM) -rf ./hypervisor.tmp.img 
 	# install loader and runtime images to INSTALLDIR
