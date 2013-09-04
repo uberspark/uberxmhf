@@ -10,3 +10,11 @@
 # status from a child process)
 set -e
 
+# check for exactly two command line parameters, else bail out with
+# an usage banner
+if [ $# -ne 2  ]
+then
+        echo "Usage: dorelease.sh <release number> <changelog file>"
+        exit
+fi
+
