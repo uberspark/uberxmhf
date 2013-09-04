@@ -18,3 +18,11 @@ then
         exit
 fi
 
+XMHFRELEASE=v$1
+CHANGELOGFILE=$2
+
+echo -------------------------------------------------------------------
+echo Preparing XMHF release: $XMHFRELEASE
+echo Using Changelog file: $CHANGELOGFILE
+echo -------------------------------------------------------------------
+
