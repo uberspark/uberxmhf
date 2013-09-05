@@ -144,3 +144,5 @@ echo Proceeding to create README.md incorporating release information...
 	fi
 cp -f CHANGELOG.md  $XMHFRELEASETMPDIR/README.md
 
+# copy README.md to public download
+scp $XMHFRELEASETMPDIR/README.md amitvasudevan@frs.sourceforge.net:/home/frs/project/xmhf/README.md
