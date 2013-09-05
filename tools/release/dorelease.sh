@@ -29,6 +29,7 @@ then
         exit
 fi
 
+XMHFRELEASENUM=$1
 XMHFRELEASE=v$1
 CHANGELOGFILE="CHANGELOG.md"
 
@@ -89,6 +90,14 @@ echo Proceeding to cleanup up untracked files on branch $XMHFBRANCHNAME ...
 git clean -fdx
 echo Cleaned up untracked files.
 
+# make a tarball for the release 
+XMHFRELEASENAME="xmhf-$XMHFRELEASENUM"
+XMHFRELEASETMPDIR="/tmp/xmhfrelease"
+echo Proceeding to build release tarball $XMHFRELEASENAME.tar.gz...
+rm -rf $XMHFRELEASETMPDIR
+mkdir -p $XMHFRELEASETMPDIR
+git archive --prefix=$XMHFRELEASENAME/ --format=tar HEAD | gzip >$XMHFRELEASETMPDIR/$XMHFRELEASENAME.tar.gz
+echo Built $XMHFRELEASENAME.tar.gz
 
 
 
