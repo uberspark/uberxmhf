@@ -61,6 +61,13 @@ if [ "$IS_DIRTY" == "DIRTY" ]; then
     exit 1
 fi
 
+# barf out the CHANGELOG so we are happy with its content before 
+# proceeding
+echo CHANGELOG.md...
+cat $CHANGELOGFILE
+echo -------------------------------------------------------------------
+
+
 # no return after this point, so make absolutely sure we are good with
 # making the release
 
