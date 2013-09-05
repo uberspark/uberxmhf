@@ -12,14 +12,26 @@ set -e
 
 # check for exactly two command line parameters, else bail out with
 # an usage banner
-if [ $# -ne 2  ]
+# if [ $# -ne 2  ]
+# then
+#        echo "Usage: dorelease.sh <release number> <changelog file>"
+#        exit
+# fi
+
+# XMHFRELEASE=v$1
+# CHANGELOGFILE=$2
+
+# check for correct command line parameters, else bail out with
+# an usage banner
+if [ $# -ne 1  ]
 then
-        echo "Usage: dorelease.sh <release number> <changelog file>"
+        echo "Usage: dorelease.sh <release number>"
         exit
 fi
 
 XMHFRELEASE=v$1
-CHANGELOGFILE=$2
+CHANGELOGFILE="CHANGELOG.md"
+
 
 echo -------------------------------------------------------------------
 echo Preparing XMHF release: $XMHFRELEASE
@@ -29,6 +41,7 @@ echo -------------------------------------------------------------------
 # check if we can stat the changelog file, if not bail out
 if [ ! -f $CHANGELOGFILE ]; then
 	echo "Could not find/stat changelog file: $CHANGELOGFILE"
+	echo "Are you forgetting to run the release script rom the XMHF git repo root?"
 	exit
 fi
 
