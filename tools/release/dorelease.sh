@@ -61,3 +61,18 @@ if [ "$IS_DIRTY" == "DIRTY" ]; then
     exit 1
 fi
 
+# no return after this point, so make absolutely sure we are good with
+# making the release
+
+while true; do
+    read -p "Do you wish to continue with the release (yes/no)?" yn
+    case $yn in
+        [Yy][eE][sS] ) break;;
+        [Nn]* ) exit;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+
+echo
+echo Proceeding with release $XMHFRELEASE...
+echo
