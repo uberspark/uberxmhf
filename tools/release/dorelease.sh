@@ -107,30 +107,32 @@ echo Built $XMHFRELEASENAME.tar.gz
 
 # implant release version and prepare for release build
 echo Proceeding to implant release version information...
-	pushd $XMHFRELEASETMPDIR
-
 	# untar the created tarball
+	pushd $XMHFRELEASETMPDIR
 	tar -xvzf $XMHFRELEASENAME.tar.gz
+	popd
 	
 	# check if we can stat Makefile.in within XMHF core, if not bail out
-	if [ ! -f ./$XMHFRELEASENAME/xmhf/Makefile.in ]; then
+	if [ ! -f $XMHFRELEASETMPDIR/$XMHFRELEASENAME/xmhf/Makefile.in ]; then
 		echo "Could not find/stat XMHF core Makefile.in"
 		echo "Do we have a (corrupted) tarball at $XMHFRELEASETMPDIR/$XMHFRELEASENAME.tar.gz?"
 		exit
 	fi
 
 	# customize Makefile.in with the release details
-	sed '/export XMHF_BUILD_VERSION/c export XMHF_BUILD_VERSION := '"$XMHFRELEASE"'' ./$XMHFRELEASENAME/xmhf/Makefile.in >$XMHFRELEASETMPDIR/Makefile.in.release0
+	sed '/export XMHF_BUILD_VERSION/c export XMHF_BUILD_VERSION := '"$XMHFRELEASE"'' $XMHFRELEASETMPDIR/$XMHFRELEASENAME/xmhf/Makefile.in >$XMHFRELEASETMPDIR/Makefile.in.release0
 	sed '/export XMHF_BUILD_REVISION_BRANCH/c export XMHF_BUILD_REVISION_BRANCH := '"$XMHFBRANCHNAME"'' $XMHFRELEASETMPDIR/Makefile.in.release0 >$XMHFRELEASETMPDIR/Makefile.in.release1
 	sed '/export XMHF_BUILD_REVISION_COMMIT/c export XMHF_BUILD_REVISION_COMMIT := release' $XMHFRELEASETMPDIR/Makefile.in.release1 >$XMHFRELEASETMPDIR/Makefile.in.release
-	cp -f $XMHFRELEASETMPDIR/Makefile.in.release ./$XMHFRELEASENAME/xmhf/Makefile.in
+	cp -f $XMHFRELEASETMPDIR/Makefile.in.release $XMHFRELEASETMPDIR/$XMHFRELEASENAME/xmhf/Makefile.in
 	rm -rf $XMHFRELEASETMPDIR/Makefile.in.*
 	
 	# re-create tarball
+	pushd $XMHFRELEASETMPDIR
+	rm -rf *.tar.gz
 	tar -cvzf $XMHFRELEASENAME.tar.gz $XMHFRELEASENAME/
-	rm -rf $XMHFRELEASENAME/*
-	
+	rm -rf $XMHFRELEASENAME
 	popd
+	
 echo Release version information embedded.
 
 
