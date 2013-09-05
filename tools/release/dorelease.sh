@@ -90,14 +90,25 @@ echo Proceeding to cleanup up untracked files on branch $XMHFBRANCHNAME ...
 git clean -fdx
 echo Cleaned up untracked files.
 
-# make a tarball for the release 
-XMHFRELEASENAME="xmhf-$XMHFRELEASENUM"
-XMHFRELEASETMPDIR="/tmp/xmhfrelease"
-echo Proceeding to build release tarball $XMHFRELEASENAME.tar.gz...
-rm -rf $XMHFRELEASETMPDIR
-mkdir -p $XMHFRELEASETMPDIR
-git archive --prefix=$XMHFRELEASENAME/ --format=tar HEAD | gzip >$XMHFRELEASETMPDIR/$XMHFRELEASENAME.tar.gz
-echo Built $XMHFRELEASENAME.tar.gz
+# implant release version and prepare for release build
+	# check if we can stat Makefile.in within XMHF core, if not bail out
+	if [ ! -f ./xmhf/Makefile.in ]; then
+		echo "Could not find/stat XMHF core Makefile.in"
+		echo "Are you forgetting to run the release script rom the XMHF git repo root?"
+		exit
+	fi
 
+	# customize Makefile.in with the release details
+	sed '/export XMHF_BUILD_VERSION/c export XMHF_BUILD_VERSION := $XMHFRELEASE' ./xmhf/Makefile.in > ./xmhf/Makefile.in
+
+
+# make a tarball for the release 
+#XMHFRELEASENAME="xmhf-$XMHFRELEASENUM"
+#XMHFRELEASETMPDIR="/tmp/xmhfrelease"
+#echo Proceeding to build release tarball $XMHFRELEASENAME.tar.gz...
+#rm -rf $XMHFRELEASETMPDIR
+#mkdir -p $XMHFRELEASETMPDIR
+#git archive --prefix=$XMHFRELEASENAME/ --format=tar HEAD | gzip >$XMHFRELEASETMPDIR/$XMHFRELEASENAME.tar.gz
+#echo Built $XMHFRELEASENAME.tar.gz
 
 
