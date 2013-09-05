@@ -135,4 +135,12 @@ echo Proceeding to implant release version information...
 	
 echo Release version information embedded.
 
+# create README.md for release
+echo Proceeding to create README.md incorporating release information...
+	if [ ! -f CHANGELOG.md ]; then
+		echo "Could not find/stat CHANGELOG.md"
+		echo "Are you forgetting to run the release script rom the XMHF git repo root?"
+		exit
+	fi
+cp -f CHANGELOG.md  $XMHFRELEASETMPDIR/README.md
 
