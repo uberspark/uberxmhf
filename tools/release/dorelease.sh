@@ -32,6 +32,8 @@ fi
 XMHFRELEASENUM=$1
 XMHFRELEASE=v$1
 CHANGELOGFILE="CHANGELOG.md"
+XMHFRELEASENAME="xmhf-$XMHFRELEASENUM"
+XMHFRELEASETMPDIR="/tmp/xmhfrelease"
 
 
 echo -------------------------------------------------------------------
@@ -90,7 +92,14 @@ echo Proceeding to cleanup up untracked files on branch $XMHFBRANCHNAME ...
 git clean -fdx
 echo Cleaned up untracked files.
 
+# make temporary release folder
+echo Proceeding to make temporary release folder $XMHFRELEASETMPDIR...
+rm -rf $XMHFRELEASETMPDIR
+mkdir -p $XMHFRELEASETMPDIR
+echo Temporary release folder created.
+
 # implant release version and prepare for release build
+echo Proceeding to implant release version information...
 	# check if we can stat Makefile.in within XMHF core, if not bail out
 	if [ ! -f ./xmhf/Makefile.in ]; then
 		echo "Could not find/stat XMHF core Makefile.in"
@@ -99,16 +108,18 @@ echo Cleaned up untracked files.
 	fi
 
 	# customize Makefile.in with the release details
-	sed '/export XMHF_BUILD_VERSION/c export XMHF_BUILD_VERSION := $XMHFRELEASE' ./xmhf/Makefile.in > ./xmhf/Makefile.in
-
+	sed '/export XMHF_BUILD_VERSION/c export XMHF_BUILD_VERSION := '"$XMHFRELEASE"'' ./xmhf/Makefile.in >$XMHFRELEASETMPDIR/Makefile.in.release0
+	sed '/export XMHF_BUILD_REVISION_BRANCH/c export XMHF_BUILD_REVISION_BRANCH := '"$XMHFBRANCHNAME"'' $XMHFRELEASETMPDIR/Makefile.in.release0 >$XMHFRELEASETMPDIR/Makefile.in.release1
+	sed '/export XMHF_BUILD_REVISION_COMMIT/c export XMHF_BUILD_REVISION_COMMIT := release' $XMHFRELEASETMPDIR/Makefile.in.release1 >$XMHFRELEASETMPDIR/Makefile.in.release
+	cp -f $XMHFRELEASETMPDIR/Makefile.in.release ./xmhf/Makefile.in
+	rm -rf $XMHFRELEASETMPDIR/Makefile.in.*
+echo Release version information embedded.
 
 # make a tarball for the release 
-#XMHFRELEASENAME="xmhf-$XMHFRELEASENUM"
-#XMHFRELEASETMPDIR="/tmp/xmhfrelease"
-#echo Proceeding to build release tarball $XMHFRELEASENAME.tar.gz...
-#rm -rf $XMHFRELEASETMPDIR
-#mkdir -p $XMHFRELEASETMPDIR
-#git archive --prefix=$XMHFRELEASENAME/ --format=tar HEAD | gzip >$XMHFRELEASETMPDIR/$XMHFRELEASENAME.tar.gz
-#echo Built $XMHFRELEASENAME.tar.gz
+echo Proceeding to build release tarball $XMHFRELEASENAME.tar.gz...
+rm -rf $XMHFRELEASETMPDIR
+mkdir -p $XMHFRELEASETMPDIR
+git archive --prefix=$XMHFRELEASENAME/ --format=tar HEAD | gzip >$XMHFRELEASETMPDIR/$XMHFRELEASENAME.tar.gz
+echo Built $XMHFRELEASENAME.tar.gz
 
 
