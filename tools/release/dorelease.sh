@@ -147,6 +147,12 @@ echo Proceeding to generate HTML documentation and upload for public consumption
 git clean -fdx
 echo Documentation generated and uploaded.
 
+# tag our release and push it to the repo.
+echo Proceeding to tag release $XMHFRELEASE..
+git tag -a $XMHFRELEASE -m 'Version '"$XMHFRELEASE"''
+git push origin $XMHFRELEASE
+echo Release tagging done.
+
 # show where we can find the release tarball and README.md files
 echo All Done! Release tarball and README.md in: $XMHFRELEASETMPDIR
 
