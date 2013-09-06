@@ -12,13 +12,18 @@ set -e
 
 # check for correct command line parameters, else bail out with
 # an usage banner
-if [ $# -ne 1  ]
+if [ $# -ne 2  ]
 then
-        echo "Usage: dorelease.sh <release number>"
+        echo "Usage: dorelease.sh <release number> <username>"
         exit
 fi
 
 # prepare some global variables
+USER=$2
+if [ -z "$USER" ]
+then
+    USER=`whoami`
+fi
 XMHFRELEASENUM=$1
 XMHFRELEASE=v$1
 CHANGELOGFILE="CHANGELOG.md"
@@ -138,12 +143,12 @@ echo README.md created for release.
 # generate and upload documentation for public consumption
 echo Proceeding to generate HTML documentation and upload for public consumption...
 ./tools/docgen/render-doc.sh
-./tools/docgen/deploy.sh amitvasudevan
+./tools/docgen/deploy.sh $USER
 git clean -fdx
 echo Documentation generated and uploaded.
 
 # show where we can find the release tarball and README.md files
-echo Release tarball and README.md in: $XMHFRELEASETMPDIR
+echo All Done! Release tarball and README.md in: $XMHFRELEASETMPDIR
 
 
 
