@@ -34,7 +34,7 @@ XMHFRELEASE=v$1
 CHANGELOGFILE="CHANGELOG.md"
 XMHFRELEASENAME="xmhf-$XMHFRELEASENUM"
 XMHFRELEASETMPDIR="/tmp/xmhfrelease"
-
+XMHFRELEASECOMMIT=`git log --pretty=format:'%H' -n 1`
 
 echo -------------------------------------------------------------------
 echo Preparing XMHF release: $XMHFRELEASE
@@ -122,7 +122,7 @@ echo Proceeding to implant release version information...
 	# customize Makefile.in with the release details
 	sed '/export XMHF_BUILD_VERSION/c export XMHF_BUILD_VERSION := '"$XMHFRELEASE"'' $XMHFRELEASETMPDIR/$XMHFRELEASENAME/xmhf/Makefile.in >$XMHFRELEASETMPDIR/Makefile.in.release0
 	sed '/export XMHF_BUILD_REVISION_BRANCH/c export XMHF_BUILD_REVISION_BRANCH := '"$XMHFBRANCHNAME"'' $XMHFRELEASETMPDIR/Makefile.in.release0 >$XMHFRELEASETMPDIR/Makefile.in.release1
-	sed '/export XMHF_BUILD_REVISION_COMMIT/c export XMHF_BUILD_REVISION_COMMIT := release' $XMHFRELEASETMPDIR/Makefile.in.release1 >$XMHFRELEASETMPDIR/Makefile.in.release
+	sed '/export XMHF_BUILD_REVISION_COMMIT/c export XMHF_BUILD_REVISION_COMMIT := release['"$XMHFRELEASECOMMIT"']' $XMHFRELEASETMPDIR/Makefile.in.release1 >$XMHFRELEASETMPDIR/Makefile.in.release
 	cp -f $XMHFRELEASETMPDIR/Makefile.in.release $XMHFRELEASETMPDIR/$XMHFRELEASENAME/xmhf/Makefile.in
 	rm -rf $XMHFRELEASETMPDIR/Makefile.in.*
 	
