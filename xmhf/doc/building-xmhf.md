@@ -82,6 +82,6 @@ Build configuration options
 
 * --with-target-arch=[ARCH], specifies the target CPU architecture; optional, current options are: x86vmx (Intel, default), x86svm (AMD)
 
-* --disable-drtdmaprotection, disables dynamic root of trust and DMA protection features; useful for builds targeting platforms that do not have support for
-  dynamic root of trust, TPM and/or DMA protection
-  
+* --disable-drt, disables Dynamic Root-of-Trust (DRT); useful for builds targeting platforms without support for DRT and/or TPM
+
+* --disable-dmap, disables DMA protection; useful for builds targeting platforms without DMA protection capabilities
