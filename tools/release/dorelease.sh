@@ -109,7 +109,7 @@ echo Built $XMHFRELEASENAME.tar.gz
 echo Proceeding to implant release version information...
 	# untar the created tarball
 	pushd $XMHFRELEASETMPDIR
-	tar -xvzf $XMHFRELEASENAME.tar.gz
+	tar -xzf $XMHFRELEASENAME.tar.gz
 	popd
 	
 	# check if we can stat Makefile.in within XMHF core, if not bail out
@@ -129,7 +129,7 @@ echo Proceeding to implant release version information...
 	# re-create tarball
 	pushd $XMHFRELEASETMPDIR
 	rm -rf *.tar.gz
-	tar -cvzf $XMHFRELEASENAME.tar.gz $XMHFRELEASENAME/
+	tar -czf $XMHFRELEASENAME.tar.gz $XMHFRELEASENAME/
 	rm -rf $XMHFRELEASENAME
 	popd
 	
