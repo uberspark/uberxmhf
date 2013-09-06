@@ -45,19 +45,19 @@ if [ ! -f $CHANGELOGFILE ]; then
 fi
 
 # check if we are on the "master" branch, if not bail out
-# if [ $XMHFBRANCHNAME != "master" ]; then
-#	echo "Release can only be done on the master branch."
-#	echo "Current branch: $XMHFBRANCHNAME"
-#	exit
-# fi
+if [ $XMHFBRANCHNAME != "master" ]; then
+	echo "Release can only be done on the master branch."
+	echo "Current branch: $XMHFBRANCHNAME"
+	exit
+fi
 
 # check if the branch is dirty (uncommitted changes) and if so bail
 # out with a warning
-#IS_DIRTY=`git status --porcelain | perl -n -e 'if ($_ !~ /^\?\?/) { print "DIRTY\n"; exit; }'`
-#if [ "$IS_DIRTY" == "DIRTY" ]; then
-#    echo "Branch dirty. Did you forget to commit something?" >&2
-#    exit 1
-#fi
+IS_DIRTY=`git status --porcelain | perl -n -e 'if ($_ !~ /^\?\?/) { print "DIRTY\n"; exit; }'`
+if [ "$IS_DIRTY" == "DIRTY" ]; then
+    echo "Branch dirty. Did you forget to commit something?" >&2
+    exit 1
+fi
 
 # barf out the CHANGELOG so we are happy with its content before 
 # proceeding
