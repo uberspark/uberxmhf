@@ -143,5 +143,17 @@ echo Proceeding to create README.md incorporating release information...
 		exit
 	fi
 cp -f CHANGELOG.md  $XMHFRELEASETMPDIR/README.md
+echo README.md created for release.
+
+# generate and upload documentation for public consumption
+echo Proceeding to generate HTML documentation and upload for public consumption...
+./tools/docgen/render-doc.sh
+./tools/docgen/deploy.sh amitvasudevan
+git clean -fdx
+echo Documentation generated and uploaded.
+
+# show where we can find the release tarball and README.md files
+echo Release tarball and README.md in: $XMHFRELEASETMPDIR
+
 
 
