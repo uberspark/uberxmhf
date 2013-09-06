@@ -15,7 +15,7 @@ set -e
 if [ $# -ne 2  ]
 then
         echo "Usage: dorelease.sh <release number> <username>"
-        exit
+        exit 1
 fi
 
 # prepare some global variables
@@ -41,14 +41,14 @@ echo -------------------------------------------------------------------
 if [ ! -f $CHANGELOGFILE ]; then
 	echo "Could not find/stat changelog file: $CHANGELOGFILE"
 	echo "Are you forgetting to run the release script rom the XMHF git repo root?"
-	exit
+	exit 1
 fi
 
 # check if we are on the "master" branch, if not bail out
 if [ $XMHFBRANCHNAME != "master" ]; then
 	echo "Release can only be done on the master branch."
 	echo "Current branch: $XMHFBRANCHNAME"
-	exit
+	exit 1
 fi
 
 # check if the branch is dirty (uncommitted changes) and if so bail
@@ -111,7 +111,7 @@ echo Proceeding to implant release version information...
 	if [ ! -f $XMHFRELEASETMPDIR/$XMHFRELEASENAME/xmhf/Makefile.in ]; then
 		echo "Could not find/stat XMHF core Makefile.in"
 		echo "Do we have a (corrupted) tarball at $XMHFRELEASETMPDIR/$XMHFRELEASENAME.tar.gz?"
-		exit
+		exit 1
 	fi
 
 	# customize Makefile.in with the release details
@@ -135,7 +135,7 @@ echo Proceeding to create README.md incorporating release information...
 	if [ ! -f CHANGELOG.md ]; then
 		echo "Could not find/stat CHANGELOG.md"
 		echo "Are you forgetting to run the release script rom the XMHF git repo root?"
-		exit
+		exit 1
 	fi
 cp -f CHANGELOG.md  $XMHFRELEASETMPDIR/README.md
 echo README.md created for release.
