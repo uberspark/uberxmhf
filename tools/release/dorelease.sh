@@ -10,17 +10,6 @@
 # status from a child process)
 set -e
 
-# check for exactly two command line parameters, else bail out with
-# an usage banner
-# if [ $# -ne 2  ]
-# then
-#        echo "Usage: dorelease.sh <release number> <changelog file>"
-#        exit
-# fi
-
-# XMHFRELEASE=v$1
-# CHANGELOGFILE=$2
-
 # check for correct command line parameters, else bail out with
 # an usage banner
 if [ $# -ne 1  ]
@@ -29,12 +18,14 @@ then
         exit
 fi
 
+# prepare some global variables
 XMHFRELEASENUM=$1
 XMHFRELEASE=v$1
 CHANGELOGFILE="CHANGELOG.md"
 XMHFRELEASENAME="xmhf-$XMHFRELEASENUM"
 XMHFRELEASETMPDIR="/tmp/xmhfrelease"
 XMHFRELEASECOMMIT=`git log --pretty=format:'%H' -n 1`
+XMHFBRANCHNAME=`git rev-parse --abbrev-ref HEAD`
 
 echo -------------------------------------------------------------------
 echo Preparing XMHF release: $XMHFRELEASE
@@ -49,7 +40,6 @@ if [ ! -f $CHANGELOGFILE ]; then
 fi
 
 # check if we are on the "master" branch, if not bail out
-XMHFBRANCHNAME=`git rev-parse --abbrev-ref HEAD`
 # if [ $XMHFBRANCHNAME != "master" ]; then
 #	echo "Release can only be done on the master branch."
 #	echo "Current branch: $XMHFBRANCHNAME"
