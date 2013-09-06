@@ -149,7 +149,7 @@ echo Documentation generated and uploaded.
 
 # tag our release and push it to the repo.
 echo Proceeding to tag release $XMHFRELEASE..
-git tag -a $XMHFRELEASE -m 'Version '"$XMHFRELEASE"''
+git tag -a $XMHFRELEASE -m "Version $XMHFRELEASENUM"
 git push origin $XMHFRELEASE
 echo Release tagging done.
 
