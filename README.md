@@ -165,3 +165,12 @@ Changelog
 	* xmhf-core: restructure core components and general cleanup
 	* xmhf-core: add XMHF/hypapp verification harness for verifying core memory integrity
 	* xmhf-core: fix build error with --enable-debug-vga configure option
+ * 0.2.1
+	* tools: add scripts to deal with release tasks
+	* xmhf-core: refactor runtime build harness
+	* xmhf-core: add build debug information within generated binaries
+	* xmhf-core: segregate Dynamic Root-of-Trust and DMA protection logic and build configuration options
+	* xmhf-core: add support for upto 8 CPU cores (ticket-74)
+	* xmhf-core: add XSETBV intercept handling on Intel platforms for CPUs with XSAVE capabilities (ticket-74)
+	* xmhf-core: fix MTRR logic on Intel platforms to obtain required variable range MTRRs (ticket-74)
+	* xmhf-core: fix issue related to physical/virtual address overlap for runtime (ticket-31)
