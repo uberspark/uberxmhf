@@ -105,6 +105,10 @@ Contributors
 
 The core team: Amit Vasudevan, Jonathan McCune, and James Newsome.
 
+Other contributors: Ning Qu (TrustVisor and Lockdown), 
+Zongwei Zhou (TrustVisor) and Yanlin Li (TrustVisor)
+
+
 Related Publications
 ====================
 
