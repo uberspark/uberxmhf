@@ -6,7 +6,7 @@ EMHF_ABSTOPDIR := $(realpath $(EMHF_TOPDIR))
 
 # define XMHF root directory and XMHF core include directory for
 # apps
-export EMHF_INCLUDE := $(EMHF_ABSTOPDIR)/src/xmhf-core/include
+export EMHF_INCLUDE := $(EMHF_ABSTOPDIR)/xmhf/src/xmhf-core/include
 
 # define CMOCK and UNITY for app unit test support
 export CMOCKDIR := @CMOCKDIR@
@@ -373,13 +373,13 @@ distclean: clean
 
 
 verify:
-	cd src/xmhf-core && make -w verify
+	cd xmhf/src/xmhf-core && make -w verify
 
 verifyinit:
-	cd src/xmhf-core && make -w verifyinit
+	cd xmhf/src/xmhf-core && make -w verifyinit
 	
 verifyall: 
-	cd src/xmhf-core && make -w verifyall
+	cd xmhf/src/xmhf-core && make -w verifyall
 
 #-----autoconf rules
 Makefile: Makefile.in config.status

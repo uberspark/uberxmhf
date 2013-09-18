@@ -101,7 +101,7 @@ AC_SUBST([LIBBAREMETAL_SRC])
 AC_ARG_WITH([libbaremetalsrc],
         AS_HELP_STRING([--with-libbaremetalsrc=@<:@path@:>@],
                 [path to libbaremetal source directory]),
-                , [with_libbaremetalsrc=../libbaremetal/src])
+                , [with_libbaremetalsrc=./xmhf/src/libbaremetal])
 LIBBAREMETAL_SRC=$[]with_libbaremetalsrc
 # make absolute
 dnl AS_IF([test "x${LIBBAREMETAL_SRC:0:1}" != "x/"],
@@ -116,7 +116,7 @@ AC_SUBST([LIBTOMMATH_SRC])
 AC_ARG_WITH([libtommathsrc],
         AS_HELP_STRING([--with-libtommathsrc=@<:@path@:>@],
                 [path to libtommath source directory]),
-                , [with_libtommathsrc=../third-party/libtommath])
+                , [with_libtommathsrc=./xmhf/third-party/libtommath])
 LIBTOMMATH_SRC=$[]with_libtommathsrc
 AC_CHECK_FILE([${LIBTOMMATH_SRC}/tommath.h],
         ,
@@ -127,7 +127,7 @@ AC_SUBST([LIBTOMCRYPT_SRC])
 AC_ARG_WITH([libtomcryptsrc],
         AS_HELP_STRING([--with-libtomcryptsrc=@<:@path@:>@],
                 [path to libtomcrypt source directory]),
-                , [with_libtomcryptsrc=../third-party/libtomcrypt])
+                , [with_libtomcryptsrc=./xmhf/third-party/libtomcrypt])
 LIBTOMCRYPT_SRC=$[]with_libtomcryptsrc
 AC_CHECK_FILE([${LIBTOMCRYPT_SRC}/src/headers/tomcrypt.h],
         ,
@@ -138,7 +138,7 @@ AC_SUBST([APP_ROOT])
 AC_ARG_WITH([approot],
         AS_HELP_STRING([--with-approot=@<:@path@:>@],
                 [path to EMHF app source directory]),
-                , [with_approot=./app])
+                , [with_approot=./hypapps/helloworld])
 APP_ROOT=$[]with_approot
 # AC_CONFIG_SUBDIRS fails silently on absolute paths
 AS_IF([test "x${APP_ROOT:0:1}" == "x/"],
@@ -197,14 +197,14 @@ AC_SUBST([CMOCKDIR])
 AC_ARG_WITH([cmock],
         AS_HELP_STRING([--with-cmock=@<:@path@:>@],
                 [path to cmock]),
-                , [with_cmock=../../../tools/cmock])
+                , [with_cmock=./tools/cmock])
 CMOCKDIR=$[]with_cmock
 
 AC_SUBST([UNITYDIR])
 AC_ARG_WITH([unity],
         AS_HELP_STRING([--with-unity=@<:@path@:>@],
                 [path to unity]),
-                , [with_unity=../../../tools/cmock/vendor/unity])
+                , [with_unity=./tools/cmock/vendor/unity])
 UNITYDIR=$[]with_unity
 
 AC_SUBST([prefix])
