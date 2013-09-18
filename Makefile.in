@@ -360,7 +360,7 @@ endif
 	@echo ---------------------------------------------------------------
 	@echo Cleaning XMHF core/hyperapp...
 	@echo ---------------------------------------------------------------
-	cd src/xmhf-core && $(MAKE) -w clean
+	cd xmhf/src/xmhf-core && $(MAKE) -w clean
 	@echo ---------------------------------------------------------------
 	@echo XMHF core/hyperapp cleanup SUCCESS
 	@echo ---------------------------------------------------------------
