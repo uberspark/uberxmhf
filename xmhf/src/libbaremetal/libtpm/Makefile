@@ -7,7 +7,7 @@ OBJECTS = $(patsubst %.c, %.o, $(C_SOURCES))
 
 I_SOURCES :=  $(wildcard $(srcdir)/include/*.h)
 
-CFLAGS += -I$(srcdir)/../libemhfc/include -I$(srcdir)/../libemhfcrypto/include -I$(srcdir)/include -nostdinc -fno-builtin -nostdlib -Wall 
+CFLAGS += -I$(srcdir)/../libxmhfc/include -I$(srcdir)/../libxmhfcrypto/include -I$(srcdir)/../libxmhfutil/include -I$(srcdir)/include -nostdinc -fno-builtin -nostdlib -Wall 
 
 THE_ARCHIVE = libtpm.a
 
