@@ -286,7 +286,7 @@ subdirs: $(LIBBAREMETAL_SRC)
 	@echo ---------------------------------------------------------------
 	@echo Building XMHF core/hyperapp...
 	@echo ---------------------------------------------------------------
-	cd src/xmhf-core && $(MAKE) -w all
+	cd xmhf/src/xmhf-core && $(MAKE) -w all
 	@echo ---------------------------------------------------------------
 	@echo XMHF core/hyperapp build SUCCESS
 	@echo ---------------------------------------------------------------

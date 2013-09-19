@@ -138,7 +138,7 @@ AC_SUBST([APP_ROOT])
 AC_ARG_WITH([approot],
         AS_HELP_STRING([--with-approot=@<:@path@:>@],
                 [path to EMHF app source directory]),
-                , [with_approot=./hypapps/helloworld])
+                , [with_approot=./hypapps/app])
 APP_ROOT=$[]with_approot
 # AC_CONFIG_SUBDIRS fails silently on absolute paths
 AS_IF([test "x${APP_ROOT:0:1}" == "x/"],
