@@ -6,7 +6,7 @@ EMHF_ABSTOPDIR := $(realpath $(EMHF_TOPDIR))
 
 # define XMHF root directory and XMHF core include directory for
 # apps
-export EMHF_INCLUDE := $(EMHF_ABSTOPDIR)/src/xmhf-core/include
+export EMHF_INCLUDE := $(EMHF_ABSTOPDIR)/xmhf/src/xmhf-core/include
 
 # define CMOCK and UNITY for app unit test support
 export CMOCKDIR := @CMOCKDIR@
@@ -286,7 +286,7 @@ subdirs: $(LIBBAREMETAL_SRC)
 	@echo ---------------------------------------------------------------
 	@echo Building XMHF core/hyperapp...
 	@echo ---------------------------------------------------------------
-	cd src/xmhf-core && $(MAKE) -w all
+	cd xmhf/src/xmhf-core && $(MAKE) -w all
 	@echo ---------------------------------------------------------------
 	@echo XMHF core/hyperapp build SUCCESS
 	@echo ---------------------------------------------------------------
@@ -360,11 +360,18 @@ endif
 	@echo ---------------------------------------------------------------
 	@echo Cleaning XMHF core/hyperapp...
 	@echo ---------------------------------------------------------------
-	cd src/xmhf-core && $(MAKE) -w clean
+	cd xmhf/src/xmhf-core && $(MAKE) -w clean
 	@echo ---------------------------------------------------------------
 	@echo XMHF core/hyperapp cleanup SUCCESS
 	@echo ---------------------------------------------------------------
-
+	@echo ---------------------------------------------------------------
+	@echo Cleaning auto-generated docs...
+	@echo ---------------------------------------------------------------
+	rm -rf *.html
+	rm -rf doc
+	@echo ---------------------------------------------------------------
+	@echo auto-generated docs cleanup SUCCESS
+	@echo ---------------------------------------------------------------
 
 distclean: clean
 	$(RM) config.log config.status
@@ -373,13 +380,18 @@ distclean: clean
 
 
 verify:
-	cd src/xmhf-core && make -w verify
+	cd xmhf/src/xmhf-core && make -w verify
 
 verifyinit:
-	cd src/xmhf-core && make -w verifyinit
+	cd xmhf/src/xmhf-core && make -w verifyinit
 	
 verifyall: 
-	cd src/xmhf-core && make -w verifyall
+	cd xmhf/src/xmhf-core && make -w verifyall
+
+.PHONY: htmldoc
+htmldoc:
+	tools/docgen/render-doc.sh
+
 
 #-----autoconf rules
 Makefile: Makefile.in config.status
