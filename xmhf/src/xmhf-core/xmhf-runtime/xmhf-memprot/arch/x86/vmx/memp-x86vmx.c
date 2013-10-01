@@ -389,7 +389,7 @@ void xmhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
   u64 *pt;
   u32 flags =0;
   
-#ifdef __XMHF_VERIFICATION__
+#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
    	assert ( (vcpu != NULL) );
 	assert ( ( (gpa < rpb->XtVmmRuntimePhysBase) || 
 							 (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) 

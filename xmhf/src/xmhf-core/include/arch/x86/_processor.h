@@ -358,42 +358,47 @@ static inline void xsetbv(u32 xcr_reg, u64 value){
 }
 
 #ifndef __XMHF_VERIFICATION__
-static inline u32 get_cpu_vendor_or_die(void) {
-    u32 dummy;
-    u32 vendor_dword1, vendor_dword2, vendor_dword3;
-    
-    cpuid(0, &dummy, &vendor_dword1, &vendor_dword3, &vendor_dword2);
-    if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
-       && vendor_dword3 == AMD_STRING_DWORD3)
-        return CPU_VENDOR_AMD;
-    else if(vendor_dword1 == INTEL_STRING_DWORD1 && vendor_dword2 == INTEL_STRING_DWORD2
-            && vendor_dword3 == INTEL_STRING_DWORD3)
-        return CPU_VENDOR_INTEL;
-    else
-        HALT();
 
-    return 0; /* never reached */
-}
-#else
-static inline u32 get_cpu_vendor_or_die(void) {
-		extern u32 xmhf_verify_cpu_vendor;
-		return xmhf_verify_cpu_vendor;
-}
+	static inline u32 get_cpu_vendor_or_die(void) {
+	    u32 dummy;
+	    u32 vendor_dword1, vendor_dword2, vendor_dword3;
+	    
+	    cpuid(0, &dummy, &vendor_dword1, &vendor_dword3, &vendor_dword2);
+	    if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
+	       && vendor_dword3 == AMD_STRING_DWORD3)
+		return CPU_VENDOR_AMD;
+	    else if(vendor_dword1 == INTEL_STRING_DWORD1 && vendor_dword2 == INTEL_STRING_DWORD2
+		    && vendor_dword3 == INTEL_STRING_DWORD3)
+		return CPU_VENDOR_INTEL;
+	    else
+		HALT();
+
+	    return 0; // never reached 
+	}
+
+
+	void spin_lock(volatile u32 *);
+	void spin_unlock(volatile u32 *);
+
+#else //__XMHF_VERIFICATION__
+
+	static inline u32 get_cpu_vendor_or_die(void) {
+			extern u32 xmhf_verify_cpu_vendor;
+			return xmhf_verify_cpu_vendor;
+	}
+
+	inline void spin_lock(volatile u32 *lock){
+			(void)lock;
+	}
+
+	inline void spin_unlock(volatile u32 *lock){
+			(void)lock;
+	}
+
 #endif //__XMHF_VERIFICATION__
 
-#ifndef __XMHF_VERIFICATION__
-void spin_lock(volatile u32 *);
-void spin_unlock(volatile u32 *);
-#else
-inline void spin_lock(volatile u32 *lock){
-		(void)lock;
-}
 
-inline void spin_unlock(volatile u32 *lock){
-		(void)lock;
-}
-#endif
 
-#endif
+#endif //__ASSEMBLY__
 
 #endif /* __PROCESSOR_H */

@@ -463,7 +463,7 @@ u32 xmhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r){
 	}	//end switch(vmcb->exitcode)	
 
 
-#ifdef __XMHF_VERIFICATION__
+#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 	{
 		//ensure that whenever a partition is resumed on a vcpu, we have nested paging
 		//enabled and that the base points to the nested page tables we have initialized

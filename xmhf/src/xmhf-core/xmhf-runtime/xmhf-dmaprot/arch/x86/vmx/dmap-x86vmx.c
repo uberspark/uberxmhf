@@ -498,7 +498,7 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
       //enable translation
 			gcmd.value=0;
       gcmd.bits.te=1;
-	   #ifdef __XMHF_VERIFICATION__
+	   #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 	   assert(gcmd.bits.te == 1);
 	   #endif
 	   

@@ -269,7 +269,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.host_TR_base = (u64)(u32)g_runtime_TSS;
 	vcpu->vmcs.host_RIP = (u64)(u32)xmhf_parteventhub_arch_x86vmx_entry;
 
-#ifdef __XMHF_VERIFICATION__
+#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 	if( vcpu->vmcs.host_RIP == (u64)(u32)xmhf_parteventhub_arch_x86vmx_entry)
 		vcpu->vmcs.host_RIP = 0xDEADBEEF;
 #endif //__XMHF_VERIFICATION__
@@ -542,7 +542,7 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu){
 //start executing the partition and guest OS
 void xmhf_partition_arch_x86vmx_start(VCPU *vcpu){
     
-#ifdef __XMHF_VERIFICATION__
+#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 	//ensure that whenever a partition is started on a vcpu, we have extended paging
 	//enabled and that the base points to the extended page tables we have initialized
 	assert( (vcpu->vmcs.control_EPT_pointer_high == 0) && (vcpu->vmcs.control_EPT_pointer_full == (hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E)) );

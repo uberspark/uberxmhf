@@ -21,12 +21,12 @@ HYPAPP_SOURCES = `find $(APP_ROOT)/ -type f -name "*.c" -print`
 
 .PHONY: verify 
 verify: 
-	cbmc $(VFLAGS) -D__XMHF_VERIFICATION__ --bounds-check --pointer-check xmhf-core-verify-eventhub.c  $(HYPAPP_SOURCES) $(C_SOURCES)
+	cbmc --32 --ILP32 --little-endian --i386-linux $(VFLAGS) -D__XMHF_VERIFICATION__ -D__XMHF_VERIFICATION_DRIVEASSERTS__ --bounds-check --pointer-check xmhf-core-verify-eventhub.c  $(HYPAPP_SOURCES) $(C_SOURCES)
   
 .PHONY: verifyinit 
 verifyinit: 
-	cbmc $(VFLAGS) -D__XMHF_VERIFICATION__ --bounds-check --pointer-check xmhf-core-verify-sl.c  $(HYPAPP_SOURCES) $(C_SOURCES)
-	cbmc $(VFLAGS) -D__XMHF_VERIFICATION__ --bounds-check --pointer-check xmhf-core-verify-startup.c  $(HYPAPP_SOURCES) $(C_SOURCES)
+	cbmc --32 --ILP32 --little-endian --i386-linux $(VFLAGS) -D__XMHF_VERIFICATION__ -D__XMHF_VERIFICATION_DRIVEASSERTS__ --bounds-check --pointer-check xmhf-core-verify-sl.c  $(HYPAPP_SOURCES) $(C_SOURCES)
+	cbmc --32 --ILP32 --little-endian --i386-linux $(VFLAGS) -D__XMHF_VERIFICATION__ -D__XMHF_VERIFICATION_DRIVEASSERTS__ --bounds-check --pointer-check xmhf-core-verify-startup.c  $(HYPAPP_SOURCES) $(C_SOURCES)
 
 .PHONY: verifyall 
 verifyall: verifyinit verify

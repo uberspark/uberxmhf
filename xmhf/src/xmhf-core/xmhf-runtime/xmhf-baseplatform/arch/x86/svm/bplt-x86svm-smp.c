@@ -133,7 +133,7 @@ void xmhf_baseplatform_arch_x86svm_wakeupAPs(void){
     _ap_cr4_value = read_cr4();
     #ifndef __XMHF_VERIFICATION__
     memcpy((void *)0x10000, (void *)_ap_bootstrap_start, (u32)_ap_bootstrap_end - (u32)_ap_bootstrap_start + 1);
-	#endif
+    #endif
   }
 	
 	//step-2: wake up the APs sending the INIT-SIPI-SIPI sequence as per the

@@ -67,7 +67,7 @@ void xmhf_baseplatform_arch_x86vmx_cpuinitialize(void){
         // NOTE: XXX TODO; BSP MTRRs ALREADY RESTORED IN SL; IS IT
         //   DANGEROUS TO DO THIS TWICE? 
         // sl.c unity-maps 0xfed00000 for 2M so these should work fine 
-		#ifndef __XMHF_VERIFICATION__
+	#ifndef __XMHF_VERIFICATION__
         txt_heap = get_txt_heap();
         printf("\ntxt_heap = 0x%08x", (u32)txt_heap);
         os_mle_data = get_os_mle_data_start(txt_heap);

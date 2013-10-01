@@ -82,19 +82,21 @@ void xmhf_baseplatform_arch_x86_wakeupAPs(void){
 
   //send INIT
   #ifndef __XMHF_VERIFICATION__
-  *icr = 0x000c4500UL;
+	//TODO: plug in LAPIC h/w model
+	*icr = 0x000c4500UL;
   #endif
 
   xmhf_baseplatform_arch_x86_udelay(10000);
 
   //wait for command completion
   #ifndef __XMHF_VERIFICATION__
-  {
-    u32 val;
-    do{
-      val = *icr;
-    }while( (val & 0x1000) );
-  }
+	//TODO: plug in LAPIC h/w model
+	  {
+	    u32 val;
+	    do{
+	      val = *icr;
+	    }while( (val & 0x1000) );
+	  }
   #endif
   
   //send SIPI (twice as per the MP protocol)
@@ -102,17 +104,19 @@ void xmhf_baseplatform_arch_x86_wakeupAPs(void){
     int i;
     for(i=0; i < 2; i++){
       #ifndef __XMHF_VERIFICATION__
-      *icr = 0x000c4610UL;
+	//TODO: plug in LAPIC h/w model
+	*icr = 0x000c4610UL;
       #endif
       xmhf_baseplatform_arch_x86_udelay(200);
         //wait for command completion
         #ifndef __XMHF_VERIFICATION__
-        {
-          u32 val;
-          do{
-            val = *icr;
-          }while( (val & 0x1000) );
-        }
+		//TODO: plug in LAPIC h/w model
+		{
+		  u32 val;
+		  do{
+		    val = *icr;
+		  }while( (val & 0x1000) );
+		}
         #endif
       }
   }    
@@ -132,10 +136,10 @@ void xmhf_baseplatform_arch_smpinitialize(void){
   //setup Master-ID Table (MIDTABLE)
   {
     int i;
-    #ifndef __XMHF_VERIFICATION__
-	for(i=0; i < (int)rpb->XtVmmMPCpuinfoNumEntries; i++){
+	#ifndef __XMHF_VERIFICATION__
+		for(i=0; i < (int)rpb->XtVmmMPCpuinfoNumEntries; i++){
 	#else
-	for(i=0; i < 1; i++){
+		for(i=0; i < 1; i++){
 	#endif
        g_midtable[g_midtable_numentries].cpu_lapic_id = g_cpumap[i].lapic_id;
        g_midtable[g_midtable_numentries].vcpu_vaddr_ptr = 0;

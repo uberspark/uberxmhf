@@ -89,7 +89,7 @@ void xmhf_memprot_flushmappings(VCPU *vcpu){
 
 //set protection for a given physical memory address
 void xmhf_memprot_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
-#ifdef __XMHF_VERIFICATION__
+#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 	assert ( (vcpu != NULL) );
 	assert ( ( (gpa < rpb->XtVmmRuntimePhysBase) || 
 							 (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) 
