@@ -78,9 +78,10 @@ void xmhf_baseplatform_arch_x86_udelay(u32 usecs){
   outb(val , 0x42);
   
   #ifndef __XMHF_VERIFICATION__
-  //wait for countdown
-  while(!(inb(0x61) & 0x20));
-  #endif
+	//TODO: plug in a 8254 programmable interval timer h/w model
+	//wait for countdown
+	while(!(inb(0x61) & 0x20));
+  #endif //__XMHF_VERIFICATION__
   
   //disable ch-2 counter
   val = inb(0x61);

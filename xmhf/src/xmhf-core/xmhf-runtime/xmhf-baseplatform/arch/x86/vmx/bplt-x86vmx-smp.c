@@ -164,7 +164,7 @@ void xmhf_baseplatform_arch_x86vmx_wakeupAPs(void){
         //printf("\nsinit_mle_data = 0x%08x", (u32)sinit_mle_data);
         os_sinit_data = get_os_sinit_data_start(txt_heap);
         //printf("\nos_sinit_data = 0x%08x", (u32)os_sinit_data);
-		#endif
+	#endif
             
         // Start APs.  Choose wakeup mechanism based on
         // capabilities used. MLE Dev Guide says MLEs should
@@ -191,7 +191,7 @@ void xmhf_baseplatform_arch_x86vmx_wakeupAPs(void){
         //printf("\nBSP: mle_join.seg_sel = %x", mle_join->seg_sel);
         //printf("\nBSP: mle_join.entry_point = %x", mle_join->entry_point);                
 
-		#ifndef __XMHF_VERIFICATION__
+	#ifndef __XMHF_VERIFICATION__
         write_priv_config_reg(TXTCR_MLE_JOIN, (uint64_t)(unsigned long)mle_join);
 		
         if (os_sinit_data->capabilities.rlp_wake_monitor) {
@@ -203,7 +203,7 @@ void xmhf_baseplatform_arch_x86vmx_wakeupAPs(void){
             __getsec_wakeup();
             printf("\nBSP: GETSEC[WAKEUP] completed");
         }
-		#endif
+	#endif
 
 		
 	}
