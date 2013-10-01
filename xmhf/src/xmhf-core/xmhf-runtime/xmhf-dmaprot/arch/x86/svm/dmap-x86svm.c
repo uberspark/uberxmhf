@@ -219,7 +219,7 @@ static u32 svm_eap_initialize(u32 dev_bitmap_paddr, u32 dev_bitmap_vaddr){
   		dev_cr.fields.walkprobe = 0;
   		dev_cr.fields.resv0 = 0;
   		dev_cr.fields.resv1 = 0;
-		#ifdef __XMHF_VERIFICATION__
+		#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 		assert(dev_cr.fields.deven == 1);
 		#endif
   		svm_eap_dev_write(DEV_CR, 0, dev_cr.bytes);
