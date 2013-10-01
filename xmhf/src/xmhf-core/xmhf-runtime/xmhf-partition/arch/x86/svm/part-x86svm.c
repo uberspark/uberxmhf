@@ -296,7 +296,7 @@ void xmhf_partition_arch_x86svm_start(VCPU *vcpu){
     printf("\nCPU(0x%02x): Starting HVM using CS:EIP=0x%04x:0x%08x...", vcpu->id,
 			(u16)vmcb->cs.selector, (u32)vmcb->rip);
 
-#ifdef __XMHF_VERIFICATION__
+#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 	//ensure that whenever a partition is started on a vcpu, we have nested paging
 	//enabled and that the base points to the nested page tables we have initialized
 	assert( (vmcb->np_enable == 1) );
