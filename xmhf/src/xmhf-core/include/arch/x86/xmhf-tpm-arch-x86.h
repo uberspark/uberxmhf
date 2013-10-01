@@ -48,8 +48,8 @@
 // x86 arch. specific declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __EMHF_TPM_ARCH_X86_H__
-#define __EMHF_TPM_ARCH_X86_H__
+#ifndef __XMHF_TPM_ARCH_X86_H__
+#define __XMHF_TPM_ARCH_X86_H__
 
 
 
@@ -164,33 +164,35 @@ typedef union {
 /* #define writeb(va, d)   (*(volatile uint8_t *) (va) = (d)) */
 
 #ifndef __XMHF_VERIFICATION__
-static inline void writeb(u32 addr, u8 val) {
-    __asm__ __volatile__("movb %%al, %%fs:(%%ebx)\r\n"
-                         :
-                         : "b"(addr), "a"((u32)val)
-                         );
-}
 
-static inline u8 readb(u32 addr) {
-    u32 ret;
-    __asm__ __volatile("xor %%eax, %%eax\r\n"        
-                       "movb %%fs:(%%ebx), %%al\r\n"
-                       : "=a"(ret)
-                       : "b"(addr)
-                       );
-    return (u8)ret;        
-}
+	static inline void writeb(u32 addr, u8 val) {
+	    __asm__ __volatile__("movb %%al, %%fs:(%%ebx)\r\n"
+				 :
+				 : "b"(addr), "a"((u32)val)
+				 );
+	}
 
-#else
-static inline void writeb(u32 addr, u8 val) {
- 
-}
+	static inline u8 readb(u32 addr) {
+	    u32 ret;
+	    __asm__ __volatile("xor %%eax, %%eax\r\n"        
+			       "movb %%fs:(%%ebx), %%al\r\n"
+			       : "=a"(ret)
+			       : "b"(addr)
+			       );
+	    return (u8)ret;        
+	}
 
-static inline u8 readb(u32 addr) {
- return 0;
-}
+#else //__XMHF_VERIFICATION__
 
-#endif
+	static inline void writeb(u32 addr, u8 val) {
+	 
+	}
+
+	static inline u8 readb(u32 addr) {
+	 return 0;
+	}
+
+#endif //__XMHF_VERIFICATION__
 
 //TPM timeouts
 #define TIMEOUT_UNIT    (0x100000 / 330) /* ~1ms, 1 tpm r/w need > 330ns */
@@ -236,4 +238,4 @@ int xmhf_tpm_arch_x86svm_open_locality(int locality);
 
 #endif	//__ASSEMBLY__
 
-#endif //__EMHF_TPM_ARCH_X86_H__
+#endif //__XMHF_TPM_ARCH_X86_H__

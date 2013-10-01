@@ -52,82 +52,81 @@
 #ifndef __ASSEMBLY__
 
 #ifndef __XMHF_VERIFICATION__
-static inline void outl(u32 val, u32 port){
-  __asm__ __volatile__("out %0, %w1"
-		     : /* no outputs */
-		     :"a"(val), "Nd"((u16)port)); 
-}
 
-static inline void outw (u32 value, u32 port){
-  __asm__ __volatile__ ("outw %w0,%w1": :"a" ((u16)value), "Nd" ((u16)port));
-}
+	static inline void outl(u32 val, u32 port){
+	  __asm__ __volatile__("out %0, %w1"
+			     : /* no outputs */
+			     :"a"(val), "Nd"((u16)port)); 
+	}
 
-static inline void outb (u32 value, u32 port){                        
-  __asm__ __volatile__ ("outb %b0,%w1": :"a" ((u8)value), "Nd" ((u16)port));
-}
+	static inline void outw (u32 value, u32 port){
+	  __asm__ __volatile__ ("outw %w0,%w1": :"a" ((u16)value), "Nd" ((u16)port));
+	}
 
-static inline u32 inl(u32 port){
-  u32 val;
-  
-  __asm__ __volatile__("in %w1, %0"
-		       :"=a"(val)
-		       :"Nd"((u16)port));
-  return val;
-}
+	static inline void outb (u32 value, u32 port){                        
+	  __asm__ __volatile__ ("outb %b0,%w1": :"a" ((u8)value), "Nd" ((u16)port));
+	}
 
-static inline unsigned short inw (u32 port){ 
-  unsigned short _v;
+	static inline u32 inl(u32 port){
+	  u32 val;
+	  
+	  __asm__ __volatile__("in %w1, %0"
+			       :"=a"(val)
+			       :"Nd"((u16)port));
+	  return val;
+	}
 
-  __asm__ __volatile__ ("inw %w1,%0":"=a" (_v):"Nd" ((u16)port));
-  return _v;
-}
+	static inline unsigned short inw (u32 port){ 
+	  unsigned short _v;
 
-static inline unsigned char inb (u32 port){ 
-  unsigned char _v;
-  
-  __asm__ __volatile__ ("inb %w1,%0":"=a" (_v):"Nd" ((u16)port));
-  return _v;
-}
-#else
+	  __asm__ __volatile__ ("inw %w1,%0":"=a" (_v):"Nd" ((u16)port));
+	  return _v;
+	}
 
-static inline void outl(u32 val, u32 port){
-  (void)val;
-  (void)port;
-}
+	static inline unsigned char inb (u32 port){ 
+	  unsigned char _v;
+	  
+	  __asm__ __volatile__ ("inb %w1,%0":"=a" (_v):"Nd" ((u16)port));
+	  return _v;
+	}
 
-static inline void outw (u32 value, u32 port){
-  (void)value;
-  (void)port;
-}
+#else //__XMHF_VERIFICATION__
 
-static inline void outb (u32 value, u32 port){                        
-  (void)value;
-  (void)port;
-}
+	static inline void outl(u32 val, u32 port){
+	  (void)val;
+	  (void)port;
+	}
 
-static inline u32 inl(u32 port){
-  u32 val;
-  val = nondet_u32();
-  return val;
-}
+	static inline void outw (u32 value, u32 port){
+	  (void)value;
+	  (void)port;
+	}
 
-static inline unsigned short inw (u32 port){ 
-  unsigned short _v;
-  _v = nondet_u16();
-  return _v;
-}
+	static inline void outb (u32 value, u32 port){                        
+	  (void)value;
+	  (void)port;
+	}
 
-static inline unsigned char inb (u32 port){ 
-  unsigned char _v;
+	static inline u32 inl(u32 port){
+	  u32 val;
+	  val = nondet_u32();
+	  return val;
+	}
 
-  _v = (u8)nondet_u16();
-  return _v;
-}
+	static inline unsigned short inw (u32 port){ 
+	  unsigned short _v;
+	  _v = nondet_u16();
+	  return _v;
+	}
 
+	static inline unsigned char inb (u32 port){ 
+	  unsigned char _v;
 
+	  _v = (u8)nondet_u16();
+	  return _v;
+	}
 
-
-#endif
+#endif //__XMHF_VERIFICATION__
 
 void udelay(u32 usecs);
 

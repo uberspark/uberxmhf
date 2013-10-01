@@ -44,12 +44,12 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF base platform component 
+// XMHF base platform component 
 // declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __EMHF_BASEPLATFORM_H__
-#define __EMHF_BASEPLATFORM_H__
+#ifndef __XMHF_BASEPLATFORM_H__
+#define __XMHF_BASEPLATFORM_H__
 
 //bring in arch. specific declarations
 #include <arch/xmhf-baseplatform-arch.h>
@@ -147,6 +147,7 @@ void xmhf_baseplatform_initialize(void);
 void xmhf_baseplatform_reboot(VCPU *vcpu);
 
 #ifndef __XMHF_VERIFICATION__
+
 	//hypervisor runtime virtual address to secure loader address
 	//note: secure loader runs in a DS relative addressing mode and
 	//rest of hypervisor runtime is at secure loader base address + 2MB
@@ -177,7 +178,7 @@ void xmhf_baseplatform_reboot(VCPU *vcpu);
 	static inline void* gpa2hva(gpa_t gpa) { return spa2hva(gpa2spa(gpa)); }
 	static inline gpa_t hva2gpa(hva_t hva) { return spa2gpa(hva2spa(hva)); }
 
-#else
+#else //__XMHF_VERIFICATION__
 
 	#define hva2spa(x) (u32)(x)
 	static inline void * spa2hva(spa_t spa) { (void *)(uintptr_t)(spa); }
@@ -192,4 +193,4 @@ void xmhf_baseplatform_reboot(VCPU *vcpu);
 
 
 
-#endif //__EMHF_BASEPLATFORM_H__
+#endif //__XMHF_BASEPLATFORM_H__

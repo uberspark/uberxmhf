@@ -44,17 +44,17 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//xmhf.h - main EMHF core header file 
+//xmhf.h - main XMHF core header file 
 // this orchestrates the inclusion of other core component specific
 // headers
 //author: amit vasudevan (amitvasudevan@acm.org)
 //
-#ifndef __EMHF_H_
-#define __EMHF_H_
+#ifndef __XMHF_H_
+#define __XMHF_H_
 
 
 //pull in required C99 compatible C-library interfaces
-//libemhfc
+//libXMHFc
 #ifndef __ASSEMBLY__
 	
 	#include <stdint.h>
@@ -70,7 +70,7 @@
 #endif /* __ASSEMBLY__ */
 
 //pull in required crypto (SHA-1)
-//libemhfcrypto
+//libXMHFcrypto
 #ifndef __ASSEMBLY__
 	#include <tomcrypt.h>
 	#include <sha1.h>
@@ -83,12 +83,13 @@
 	#include <tpm.h>
 #endif /* __ASSEMBLY__ */
 
-#include <xmhf-debug.h>			//EMHF debug component 
-#include <xmhf-types.h>			//EMHF specific base types
+#include <xmhf-debug.h>			//XMHF debug component 
+#include <xmhf-types.h>			//XMHF specific base types
 
-//include verification related primitives
-#include <xmhf-verification.h>
-
+#ifdef __XMHF_VERIFICATION__
+	//include verification related primitives
+	#include <xmhf-verification.h>
+#endif //__XMHF_VERIFICATION__
 
 //forward declaration of runtime parameter block
 #ifndef __ASSEMBLY__
@@ -98,17 +99,17 @@ extern RPB *rpb;
 
 //----------------------------------------------------------------------
 // component headers
-#include <xmhf-baseplatform.h>	//EMHF base platform component
-#include <xmhf-memprot.h>		//EMHF memory protection component
-#include <xmhf-dmaprot.h>		//EMHF DMA protection component
-#include <xmhf-partition.h>		//EMHF partition component
-#include <xmhf-smpguest.h>		//EMHF SMP guest component
-#include <xmhf-parteventhub.h>	//EMHF partition event-hub component
-#include <xmhf-xcphandler.h>	//EMHF exception handler component
-#include <xmhf-tpm.h>			//EMHF Trusted Platform Module component
-#include <xmhf-sl.h>			//EMHF secure loader component
-#include <xmhf-runtime.h>		//EMHF secure loader component
-#include <xmhf-app.h>			//EMHF Application callback declarations
+#include <xmhf-baseplatform.h>	//XMHF base platform component
+#include <xmhf-memprot.h>		//XMHF memory protection component
+#include <xmhf-dmaprot.h>		//XMHF DMA protection component
+#include <xmhf-partition.h>		//XMHF partition component
+#include <xmhf-smpguest.h>		//XMHF SMP guest component
+#include <xmhf-parteventhub.h>	//XMHF partition event-hub component
+#include <xmhf-xcphandler.h>	//XMHF exception handler component
+#include <xmhf-tpm.h>			//XMHF Trusted Platform Module component
+#include <xmhf-sl.h>			//XMHF secure loader component
+#include <xmhf-runtime.h>		//XMHF secure loader component
+#include <xmhf-app.h>			//XMHF Application callback declarations
 
 
-#endif /* __EMHF_H_ */
+#endif /* __XMHF_H_ */
