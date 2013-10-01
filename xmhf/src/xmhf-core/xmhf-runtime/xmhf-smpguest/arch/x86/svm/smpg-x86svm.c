@@ -179,7 +179,7 @@ void xmhf_smpguest_arch_x86svm_initialize(VCPU *vcpu){
 }
 
 
-#ifdef __XMHF_VERIFICATION__
+#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 	bool g_svm_lapic_npf_verification_guesttrapping = false;
 	bool g_svm_lapic_npf_verification_pre = false;
 #endif
@@ -193,7 +193,7 @@ u32 xmhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
   //get LAPIC register being accessed
   g_svm_lapic_reg = (paddr - g_svm_lapic_base);
 
-#ifdef __XMHF_VERIFICATION__
+#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
   g_svm_lapic_npf_verification_pre = (errorcode & VMCB_NPT_ERRORCODE_RW) &&
 	((g_svm_lapic_reg == LAPIC_ICR_LOW) || (g_svm_lapic_reg == LAPIC_ICR_HIGH));
 #endif
@@ -214,7 +214,7 @@ u32 xmhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
     //set guest TF
     vmcb->rflags |= (u64)EFLAGS_TF;
 
-	#ifdef __XMHF_VERIFICATION__
+	#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 		g_svm_lapic_npf_verification_guesttrapping = true;
 	#endif
 
@@ -237,7 +237,7 @@ u32 xmhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
     //set guest TF
     vmcb->rflags |= (u64)EFLAGS_TF;
 
-	#ifdef __XMHF_VERIFICATION__
+	#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 		g_svm_lapic_npf_verification_guesttrapping = true;
 	#endif
 
@@ -246,11 +246,11 @@ u32 xmhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
     clgi();
   }
 
-#ifdef __XMHF_VERIFICATION__
+#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
   assert(!g_svm_lapic_npf_verification_pre || g_svm_lapic_npf_verification_guesttrapping);
 #endif
 
-#ifdef __XMHF_VERIFICATION__
+#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
   assert ( ((g_svm_lapic_op == LAPIC_OP_RSVD) || 
 					   (g_svm_lapic_op == LAPIC_OP_READ) ||
 					   (g_svm_lapic_op == LAPIC_OP_WRITE))
@@ -264,7 +264,7 @@ u32 xmhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
   return 0; // XXX TODO: currently meaningless
 }
 
-#ifdef __XMHF_VERIFICATION__
+#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 	bool g_svm_lapic_db_verification_coreprotected = false;
 	bool g_svm_lapic_db_verification_pre = false;
 #endif
@@ -281,7 +281,7 @@ void xmhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, struct regs 
 
   (void)r;	
 
-#ifdef	__XMHF_VERIFICATION__
+#ifdef	__XMHF_VERIFICATION_DRIVEASSERTS__
 	//this handler relies on two global symbols apart from the parameters, set them 
 	//to non-deterministic values with correct range
 	//note: LAPIC #npf handler ensures this at runtime
@@ -304,9 +304,12 @@ void xmhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, struct regs 
     //TODO: hardware modeling
     value_tobe_written= nondet_u32();
 
+	#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 	g_svm_lapic_db_verification_pre = (g_svm_lapic_op == LAPIC_OP_WRITE) &&
 		(g_svm_lapic_reg == LAPIC_ICR_LOW) &&
 		(((value_tobe_written & 0x00000F00) == 0x500) || ( (value_tobe_written & 0x00000F00) == 0x600 ));
+	#endif
+	
 #else
     value_tobe_written= *((u32 *)src_registeraddress);
 #endif 
@@ -316,7 +319,7 @@ void xmhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, struct regs 
         //this is an INIT IPI, we just void it
         printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) INIT IPI detected and skipped, value=0x%08x", 
           (u16)vmcb->cs.selector, (u32)vmcb->rip, g_svm_lapic_reg, value_tobe_written);
-        #ifdef __XMHF_VERIFICATION__
+        #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 			g_svm_lapic_db_verification_coreprotected = true;
 		#endif
 
@@ -326,7 +329,9 @@ void xmhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, struct regs 
         printf("\n0x%04x:0x%08x -> (ICR=0x%08x write) STARTUP IPI detected, value=0x%08x", 
           (u16)vmcb->cs.selector, (u32)vmcb->rip, g_svm_lapic_reg, value_tobe_written);
         #ifdef __XMHF_VERIFICATION__
+			#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 			g_svm_lapic_db_verification_coreprotected = true;
+			#endif
 		#else
 			delink_lapic_interception=processSIPI(vcpu, value_tobe_written, icr_value_high);
 		#endif
@@ -375,7 +380,7 @@ void xmhf_smpguest_arch_x86svm_eventhandler_dbexception(VCPU *vcpu, struct regs 
   //enable interrupts on this CPU
   stgi();
 
-#ifdef __XMHF_VERIFICATION__
+#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
   assert(!g_svm_lapic_db_verification_pre || g_svm_lapic_db_verification_coreprotected);
 #endif
 
