@@ -252,6 +252,8 @@ $(APP_ARCHIVE):
 	@echo ---------------------------------------------------------------
 	@echo Building primary hyperapp...
 	@echo ---------------------------------------------------------------
+	[ -f $(APP_ROOT)/autogen.sh ] && (cd ${APP_ROOT} && ./autogen.sh)
+	[ -f $(APP_ROOT)/configure ] && (cd ${APP_ROOT} && ./configure)
 	cd $(APP_ROOT) && $(MAKE) -w all
 	@echo ---------------------------------------------------------------
 	@echo primary hyperapp build SUCCESS
