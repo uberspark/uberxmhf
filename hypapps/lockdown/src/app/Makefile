@@ -1,6 +1,3 @@
-# TODO: Control via configuration
-THE_ARCHIVE = ../emhfapp_lockdown.a
-
 # source files
 AS_SOURCES = 
 C_SOURCES = $(wildcard *.c)
