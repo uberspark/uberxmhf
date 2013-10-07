@@ -51,19 +51,12 @@ export ADDL_INCLUDES :=
 
 # App's source tree root (
 export APP_ROOT := $(realpath @APP_ROOT@)
-#export SECONDARYAPP_ROOT := $(realpath @SECONDARYAPP_ROOT@)
 
 # The APP_ARCHIVE is what MUST contain ALL of the App's binary code
 # 'make install-dev' is handled indepdendently
 export builddir=@builddir@
 
-# export APP_ARCHIVE := $(APP_ROOT)/@APP_ARCHIVE@
 export APP_ARCHIVE := $(APP_ROOT)/xmhfhypapp.a
-
-#export SECONDARYAPP_ARCHIVE := $(SECONDARYAPP_ROOT)/@SECONDARYAPP_ARCHIVE@
-#ifneq ('$(SECONDARYAPP_ROOT)','')
-#ADDL_LIBS += $(SECONDARYAPP_ARCHIVE)
-#endif
 
 ADDL_LIBS += $(LIBBAREMETAL_BUILD)/_objects/$(LIBBAREMETAL_ARCHIVE)
 ADDL_INCLUDES += -I$(EMHF_INCLUDE) $(LIBBAREMETAL_INC)
@@ -232,21 +225,7 @@ export ASFLAGS
 export VFLAGS
 
 .PHONY: all
-#ifneq ('$(SECONDARYAPP_ROOT)','')
-#all: $(SECONDARYAPP_ARCHIVE) $(APP_ARCHIVE) subdirs 
-#else
 all: $(APP_ARCHIVE) subdirs 
-#endif
-
-#.PHONY: $(SECONDARYAPP_ARCHIVE)
-#$(SECONDARYAPP_ARCHIVE):
-#	@echo ---------------------------------------------------------------
-#	@echo Building secondary hyperapp...
-#	@echo ---------------------------------------------------------------
-#	cd $(SECONDARYAPP_ROOT) && $(MAKE) -w all
-#	@echo ---------------------------------------------------------------
-#	@echo secondary hyperapp build SUCCESS
-#	@echo ---------------------------------------------------------------
 
 .PHONY: $(APP_ARCHIVE)
 $(APP_ARCHIVE):
@@ -306,10 +285,6 @@ install-bin:
 
 .PHONY: install-dev
 install-dev:
-#ifneq ('$(SECONDARYAPP_ROOT)','')
-#	cd $(SECONDARYAPP_ROOT) && $(MAKE) -w install-dev
-#endif
-
 	cd $(APP_ROOT) && $(MAKE) -w install-dev
 	@for i in $(SUBDIRS) ;\
 	do \
@@ -319,23 +294,11 @@ install-dev:
 # Currently the only tests we have are in the TrustVisor tree
 .PHONY: test
 test:
-#ifneq ('$(SECONDARYAPP_ROOT)','')
-#	cd $(SECONDARYAPP_ROOT) && $(MAKE) -w test
-#endif
 	cd $(APP_ROOT) && $(MAKE) -w test
 
 #.PHONY: clean distclean init-late-clean
 .PHONY: clean distclean 
 clean:
-#ifneq ('$(SECONDARYAPP_ROOT)','')
-#	@echo ---------------------------------------------------------------
-#	@echo Cleaning secondary hyperapp...
-#	@echo ---------------------------------------------------------------
-#	cd $(SECONDARYAPP_ROOT) && $(MAKE) -w clean
-#	@echo ---------------------------------------------------------------
-#	@echo secondary hyperapp clean SUCCESS
-#	@echo ---------------------------------------------------------------
-#endif
 	@echo ---------------------------------------------------------------
 	@echo Cleaning primary hyperapp...
 	@echo ---------------------------------------------------------------

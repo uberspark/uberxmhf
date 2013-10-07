@@ -147,44 +147,11 @@ AS_IF([test "x${APP_ROOT:0:1}" == "x/"],
 dnl AS_IF([test "x${APP_ROOT:0:1}" != "x/"],
 dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$APP_ROOT])
 
-# EMHF app archive name
-#AC_SUBST([APP_ARCHIVE])
-#AC_ARG_WITH([apparchive],
-#        AS_HELP_STRING([--with-apparchive=@<:@name@:>@],
-#                [name of EMHF app archive (e.g., emhfapp.a)]),
-#                , [with_apparchive=xmhfhypapp.a])
-#APP_ARCHIVE=$[]with_apparchive
-
-
 AC_SUBST([EMHFCOREDIR])
 AC_ARG_WITH([emhfcore],
         AS_HELP_STRING([--with-emhfcore=@<:@path@:>@],
                 [path to NO emhfcore XXX FIXME app]),
                 , [with_emhfcore=./emhfcore/x86])
-
-#EMHF secondary app root directory
-#AC_SUBST([SECONDARYAPP_ROOT])
-#AC_ARG_WITH([secondaryapproot],
-#        AS_HELP_STRING([--with-secondaryapproot=@<:@path@:>@],
-#                [(optional) path to secondary EMHF app source directory]),
-#                , [with_secondaryapproot=])
-#SECONDARYAPP_ROOT=$[]with_secondaryapproot
-# AC_CONFIG_SUBDIRS fails silently on absolute paths
-#AS_IF([test "x${SECONDARYAPP_ROOT:0:1}" == "x/"],
-#            AC_MSG_FAILURE([secondaryapproot must be a relative path.]))
-## make absolute
-#dnl AS_IF([test "x${SECONDARYAPP_ROOT:0:1}" != "x/"],
-#dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$SECONDARYAPP_ROOT])
-
-# EMHF secondary app archive name
-#AC_SUBST([SECONDARYAPP_ARCHIVE])
-#AC_ARG_WITH([secondaryapparchive],
-#        AS_HELP_STRING([--with-secondaryapparchive=@<:@name@:>@],
-#                [(optional) name of secondary EMHF app archive (e.g., emhfsecapp.a)]),
-#                , [with_secondaryapparchive=emhfsecapp.a])
-#SECONDARYAPP_ARCHIVE=$[]with_secondaryapparchive
-
-
 
 
 # todo- maybe test here if configured path actually has emhfcore in it
@@ -215,10 +182,6 @@ AC_SUBST([includedir])
 AC_SUBST([pkgdatadir], ['${datadir}/AC_PACKAGE_NAME'])
 AC_SUBST([pkgconfigdir], ['${libdir}/pkgconfig'])
 AC_SUBST([pkgincludedir], ['${includedir}/AC_PACKAGE_NAME'])
-
-# AC_CONFIG_SUBDIRS([${APP_ROOT}])
-# AC_CONFIG_SUBDIRS([${APP_ROOT}])
-
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
