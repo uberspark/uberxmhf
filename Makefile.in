@@ -57,7 +57,8 @@ export SECONDARYAPP_ROOT := $(realpath @SECONDARYAPP_ROOT@)
 # 'make install-dev' is handled indepdendently
 export builddir=@builddir@
 
-export APP_ARCHIVE := $(APP_ROOT)/@APP_ARCHIVE@
+# export APP_ARCHIVE := $(APP_ROOT)/@APP_ARCHIVE@
+export APP_ARCHIVE := $(APP_ROOT)/xmhfhypapp.a
 
 export SECONDARYAPP_ARCHIVE := $(SECONDARYAPP_ROOT)/@SECONDARYAPP_ARCHIVE@
 ifneq ('$(SECONDARYAPP_ROOT)','')

@@ -148,12 +148,12 @@ dnl AS_IF([test "x${APP_ROOT:0:1}" != "x/"],
 dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$APP_ROOT])
 
 # EMHF app archive name
-AC_SUBST([APP_ARCHIVE])
-AC_ARG_WITH([apparchive],
-        AS_HELP_STRING([--with-apparchive=@<:@name@:>@],
-                [name of EMHF app archive (e.g., emhfapp.a)]),
-                , [with_apparchive=xmhfhypapp.a])
-APP_ARCHIVE=$[]with_apparchive
+#AC_SUBST([APP_ARCHIVE])
+#AC_ARG_WITH([apparchive],
+#        AS_HELP_STRING([--with-apparchive=@<:@name@:>@],
+#                [name of EMHF app archive (e.g., emhfapp.a)]),
+#                , [with_apparchive=xmhfhypapp.a])
+#APP_ARCHIVE=$[]with_apparchive
 
 
 AC_SUBST([EMHFCOREDIR])
