@@ -460,7 +460,7 @@ u8 outputPage[PAGE_SIZE_4K];
 //memory page with physical address paddr under the windows OS
 //return: 1 on success, 0 on failure
 u32 windows_verifycodeintegrity(VCPU *vcpu, u32 paddr, u32 vaddrfromcpu){
-	u32 vaddr, paligned_vaddr;
+	u32 vaddr, paligned_vaddr __attribute__((unused));
 	u32 imagebase, retval;
 	//u8 *p;	
 	image_nt_headers32_t *ntHeader;
