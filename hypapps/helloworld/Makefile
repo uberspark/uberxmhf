@@ -19,6 +19,7 @@ all:
 	# make app components
 	mkdir -p $(APPOBJECTSDIR)
 	cd app && $(MAKE) -w all
+	mv ./app/$(TARGET_ARCHIVE) .
 
 # There is no binary installation; only the XMHF core
 # produces a complete binary of some sort.  All libraries
@@ -41,4 +42,8 @@ clean:
 	rm -rf $(APPOBJECTSDIR) $(TARGET_ARCHIVE)
 	rm -f *.bin
 	rm -f *.bin.gz
+
+.PHONY: distclean
+distclean: clean
+ 
 

@@ -58,3 +58,7 @@ clean:
 	rm -f *.bin
 	rm -f *.bin.gz
 
+.PHONY: distclean
+distclean: clean
+	$(RM) config.log config.status
+	$(RM) -rf trustvisor.pc

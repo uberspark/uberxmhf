@@ -253,8 +253,8 @@ $(APP_ARCHIVE):
 	@echo ---------------------------------------------------------------
 	@echo Building primary hyperapp...
 	@echo ---------------------------------------------------------------
-	[ -f $(APP_ROOT)/autogen.sh ] && (cd ${APP_ROOT} && ./autogen.sh)
-	[ -f $(APP_ROOT)/configure ] && (cd ${APP_ROOT} && ./configure)
+	[ -f $(APP_ROOT)/autogen.sh ] && (cd ${APP_ROOT} && ./autogen.sh) || echo No $(APP_ROOT)/autogen.sh, skipping...
+	[ -f $(APP_ROOT)/configure ] && (cd ${APP_ROOT} && ./configure) || echo No $(APP_ROOT)/configure, skipping...
 	cd $(APP_ROOT) && $(MAKE) -w all
 	@echo ---------------------------------------------------------------
 	@echo primary hyperapp build SUCCESS
@@ -380,6 +380,7 @@ distclean: clean
 	$(RM) config.log config.status
 	# http://www.gnu.org/software/automake/manual/automake.html#Clean
 	$(RM) -rf Makefile
+	cd $(APP_ROOT) && $(MAKE) -w distclean
 
 
 verify:
