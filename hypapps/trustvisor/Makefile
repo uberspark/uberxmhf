@@ -5,7 +5,7 @@ SRCDIR := $(dir $(lastword $(MAKEFILE_LIST)))
 SRCDIR := $(realpath $(SRCDIR))
 
 # TODO: Control via configuration
-export THE_ARCHIVE = emhfapp.a
+export THE_ARCHIVE = xmhfhypapp.a
 
 export APP_INCLUDEDIR = $(SRCDIR)/src/include
 export APPOBJECTSDIR = $(SRCDIR)/src/objects
@@ -58,3 +58,7 @@ clean:
 	rm -f *.bin
 	rm -f *.bin.gz
 
+.PHONY: distclean
+distclean: clean
+	$(RM) config.log config.status
+	$(RM) -rf trustvisor.pc

@@ -3,7 +3,7 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # change this to whatever you want your EMHF app to be called
-export TARGET_ARCHIVE = ../xmhfapp_quiesce.a
+export TARGET_ARCHIVE = xmhfhypapp.a
 
 # generate app INCLUDE and OBJECT directories
 export APP_INCLUDEDIR = $(CURDIR)/app/include
@@ -19,6 +19,7 @@ all:
 	# make app components
 	mkdir -p $(APPOBJECTSDIR)
 	cd app && $(MAKE) -w all
+	mv ./app/$(TARGET_ARCHIVE) .
 
 # There is no binary installation; only the XMHF core
 # produces a complete binary of some sort.  All libraries
@@ -42,3 +43,5 @@ clean:
 	rm -f *.bin
 	rm -f *.bin.gz
 
+.PHONY: distclean
+distclean: clean
