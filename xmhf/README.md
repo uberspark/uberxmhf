@@ -47,7 +47,6 @@ Quick start to using XMHF
 * [Installing XMHF](doc/installing-xmhf.md)
 * [Configuring Grub](doc/configuring-grub.md) How to boot XMHF from
   Grub, along with some tricks for remote\unattended boot.
-* [Custom Linux Kernels](doc/custom-linux-kernels.md)
 * [Debugging XMHF](doc/debugging-xmhf.md)
 
 Design Concepts
