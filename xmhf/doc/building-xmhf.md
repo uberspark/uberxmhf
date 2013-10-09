@@ -1,10 +1,10 @@
 Development Environment
 =======================
 
-[XMHF](..) and hypapps (e.g., [TrustVisor](../../trustvisor), [Lockdown](../../lockdown)) 
-get built in a Linux environment with a recent version of gcc. [XMHF](..)
-has been verified to build on Ubuntu 10, 11, and 12 series, both 32
-and 64 bit.
+[XMHF](..) and hypapps (e.g., [TrustVisor](../../hypapps/trustvisor), 
+[Lockdown](../../hypapps/lockdown)) get built in a Linux environment with 
+a recent version of gcc. [XMHF](..) has been verified to build on Ubuntu 
+10, 11, and 12 series, both 32 and 64 bit.
 
 Build tools
 ===========
@@ -21,11 +21,10 @@ libraries. On Ubuntu 12:
 High-level Build Summary
 ========================
 
-One "drives" the build from `xmhf/xmhf`.  
+One "drives" the build from the root directory of XMHF package.  
 
 The interesting high-level build commands include:
 
-    cd xmhf/xmhf
     ./autogen.sh           # creates ./configure
     ./configure            # creates Makefile from Makefile.in
     make                   # Builds the selected hypapp and the XMHF core
@@ -52,9 +51,9 @@ Checkout the XMHF project source tree.
     cd $WORK
     git clone git://git.code.sf.net/p/xmhf/xmhf xmhf
 
-Change working directory to the XMHF source tree root.
+Change working directory to the root directory.
 
-    cd $WORK/xmhf/xmhf
+    cd $WORK/xmhf
 
 Generate the `./configure` script.
 
@@ -62,7 +61,7 @@ Generate the `./configure` script.
 
 Configure the XMHF hypapp.
 
-    ./configure --with-approot=src/example-hypapps/helloworld --with-apparchive=xmhfapp_helloworld.a
+    ./configure --with-approot=hypapps/helloworld
    
 Generate and install the binaries (note: default install path is specified with the `--prefix=` flag to `configure`).
 
@@ -75,13 +74,11 @@ Build configuration options
 ===========================
 
 * --with-approot=[HYPAPPPATH], specifies the hypapp source root; must be provided
-  
-* --with-apparchive=[HYPAPPARCHIVE], specifies the hypapp name; optional, defaults to emhfapp.a
 
 * --with-target-platform=[PLATFORM], specifies the target platform for the build; optional, current options are: x86pc (x86 hardware virtualized platforms, default)
 
 * --with-target-arch=[ARCH], specifies the target CPU architecture; optional, current options are: x86vmx (Intel, default), x86svm (AMD)
 
-* --disable-drt, disables Dynamic Root-of-Trust (DRT); useful for builds targeting platforms without support for DRT and/or TPM
+* --disable-drt, disables Dynamic Root-of-Trust (DRT); optional, useful for builds targeting platforms without support for DRT and/or TPM
 
-* --disable-dmap, disables DMA protection; useful for builds targeting platforms without DMA protection capabilities
+* --disable-dmap, disables DMA protection; optional, useful for builds targeting platforms without DMA protection capabilities

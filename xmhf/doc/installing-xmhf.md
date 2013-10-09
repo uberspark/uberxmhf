@@ -11,16 +11,13 @@ In principle, any guest should be supported so long as it:
 
 * Uses 'normal' 32-bit page tables. PAE is also supported on
   AMD. 64-bit is not yet supported.
-* Does not use MTRRs. XMHF does not yet virtualize these (on Intel
-  platforms), and an attempt by the guest to access MTRRs will trap
-  and halt the system.
 
 The following guest OSes are known to work:
 
 * Windows XP
 * Windows Server 2003
-* Ubuntu 10.04 (with custom kernel to disable MTRRs. See [Custom Linux
-  Kernels](custom-linux-kernels.md))
+* Ubuntu 10.04
+* Ubuntu 12.04 with kernel 3.2.0-27-generic and below
 
 Obtain XMHF binaries
 ====================

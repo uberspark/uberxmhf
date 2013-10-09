@@ -27,7 +27,8 @@ Get the correct SINIT module (Intel only)
 =========================================
 
 [XMHF](..) launches itself with a *dynamic root of trust*. On Intel
-platforms, this requires a signed SINIT module provided by Intel.
+platforms, this requires a signed SINIT module provided by Intel, that
+matches your platform CPU and chipset.
 
 SINIT modules can be found here:
 <http://software.intel.com/en-us/articles/intel-trusted-execution-technology/>
@@ -61,9 +62,6 @@ Authenticated Code module, or "ACmod". This should be the *last*
 line. E.g.,
 
         module /i5_i7_DUAL_SINIT_18.BIN
-
-SINIT modules can be found here:
-<http://software.intel.com/en-us/articles/intel-trusted-execution-technology/>
 
 This will boot XMHF with debug output going to the specified serial
 port, and then reload grub.
