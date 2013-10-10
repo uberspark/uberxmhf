@@ -19,8 +19,11 @@ XMHF package, go to the root directory and run the following commands:
 cross-compilation environment (e.g., i586-tsvc by default), 
 and install the headers again:
 
-    ./configure --with-approot=/path/to/tv --prefix=/usr/local/i586-tsvc
+    ./configure --with-approot=/path/to/tv --prefix=$(SYSROOT)/usr
     make install-dev
+
+Note: $(SYSROOT) depends on your configuration of building TEE-SDK,
+see below for more details. The default $(SYSROOT) is /usr/local/i586-tsvc
 
 
 Building and Installing TEE-SDK
