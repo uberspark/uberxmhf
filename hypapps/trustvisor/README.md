@@ -4,7 +4,7 @@ Introduction
 TrustVisor is a special-purpose hypervisor that provides code
 integrity as well as data integrity and secrecy for userspace Pieces
 of Application Logic (PALs). The implementation of TrustVisor
-contained herein leverages [XMHF](../xmhf).  TrustVisor produces evidence of
+contained herein leverages [XMHF](../../xmhf).  TrustVisor produces evidence of
 its initialization in the TPM's Platform Configuration Registers.
 This evidence (in the form of a hash chain) can be used to generate a
 TPM-based attestation that TrustVisor has loaded on a platform.

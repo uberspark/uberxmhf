@@ -100,8 +100,8 @@ Contributors
 
 The core team: Amit Vasudevan, Jonathan McCune, and James Newsome.
 
-Current maintainer:
-Amit Vasudevan (XMHF and Lockdown), Zongwei Zhou (Trustvisor)
+Current maintainers:
+Amit Vasudevan (XMHF and Lockdown), Zongwei Zhou (Trustvisor and TEE-SDK)
 
 Other contributors: Ning Qu (TrustVisor and Lockdown), 
 and Yanlin Li (TrustVisor)
@@ -115,6 +115,11 @@ Related Publications
   Jonathan M. McCune, James Newsome, and Anupam Datta. 
   IEEE Symposium on Security and Privacy, 
   May 2013. [pdf](http://hypcode.org/paper-xmhf-IEEES&P-2013.pdf)
+
+* Building Verifiable Trusted Path on Commodity x86 Computers.
+  Zongwei Zhou, Virgil Gligor, James Newsome, and Jonathan M. McCune. 
+  IEEE Symposium on Security and Privacy (IEEE S&P), 2012.
+  [pdf](http://users.ece.cmu.edu/~zongweiz/media/TP_Oakland12.pdf)
 
 * "It's an app. It's a hypervisor. It's a hypapp.": Design and
   Implementation of an eXtensible and Modular Hypervisor

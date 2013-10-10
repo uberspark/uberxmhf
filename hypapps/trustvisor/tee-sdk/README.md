@@ -4,7 +4,7 @@ This is the Trusted-Execution-Environment Software-Development-Kit
 (tee-sdk). It comprises tools and documentation for developing
 _services_ that run in a trusted environments, and _clients_ that
 communicate with those services. Initially, this means writing PALs
-that run under TrustVisor, and applications that use PALs. However,
+that run under [TrustVisor](../), and applications that use PALs. However,
 the APIs provided here are intended to provide sufficient abstraction
 such that additional back-ends can be implemented, allowing services
 and applications to be ported to use alternative trusted environments
@@ -41,6 +41,7 @@ Device
 
   * [Installing SDK](doc/installing-sdk.md)
   * [Using SDK](doc/using-sdk.md)
+
 
 # Roadmap
 

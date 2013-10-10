@@ -55,14 +55,14 @@ the components installed by make are:
   like `i586-tsvc-gcc`. They mostly serve to override the system paths
   with paths in `$(SYSROOT)`.
 
+* tz : This implements the TrustZone API for managing and
+  communicating with services (pals) running the trusted execution
+  environment (trustvisor).
+
 * newlib : this is an implementation of libc targeted for
   PALs. Functions that don't involve IO should work as expected. IO
   functions currently fail gracefully. The toolchain `i586-tsvc-gcc`
   will link against this library by default, unless `-nostdlib` is used.
-
-* tz : This implements the TrustZone API for managing and
-  communicating with services (pals) running the trusted execution
-  environment (trustvisor).
 
 * openssl : This is the well-known openssl library, ported for use
   with pals. It is not installed by default, but can be installed with

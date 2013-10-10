@@ -1,39 +1,34 @@
 Sealing and Attestation
 =======================
 
-Last updated: 2012-07-03.
+Last updated: 2013-10-10.
 
 TrustVisor support for Micro-TPM Sealing: Initialization and Steady-State
 -------------------------------------------------------------------------
 
-* The NV Index is defined by untrusted code running on the ordinary OS.  For example, using the open-source jTpmTools + jTSS.
-
-    `jtt nv_definespace --index 0x00011337 --size 20 -o tpm -e ASCII -p 17,18 -w --permission 0x00000000 --writelocality 2 --readlocality 2`
-
-* Inside TrustVisor, we need some default NV index to use if none is supplied.  Let's use 0x00015213 as a tribute to CMU's zip code.
-    * No problem with the index being overridden on the boot command line (and really, it's an input parameter for the SL/Runtime, so during dynamic launch it can be a component of whatever parameter block definition we eventually choose).
+* Symmetric cryptographic keys that provide secrecy and integrity-protection for micro-TPM sealed storage. Both derived from a master secret that resides in hardware TPM NVRAM and accessible only to TrustVisor.
 
 * During TrustVisor runtime initialization's master crypto initialization, we deal with the long-term Micro-TPM sealing keys.
     1. If no index is provided or the provided index does not point to a defined space, *goto Handle-Failure*.
     + Interrogate the defined region for appropriate size and access controls.  These should be: 20 bytes; and the value of PCRs 17 and 18, and precisely Locality 2 for both reading and writing.  If anything else is detected, ***goto Handle-Failure***.
     + Read the value from the defined region.  If it is "all bits set" (0xff repeating), this is an indication that the index is newly defined and has never been written.
-    + ***Handle-Failure:*** Either (1) *Halt* or (2) *Print a loud warning* and continue in "ephemeral mode", where PALs will operate but sealed data will become irretrievable across reboots.
+    + ***Handle-Failure:*** Either (1) *Halt* or (2) *Print a loud warning* and continue in "ephemeral mode", where PALs will operate but sealed data will become irretrievable across reboots (because the MasterSealingSecret is ephemeral and is lost at reboot).
     + Get some random bytes from the hardware TPM and write them into the region (unless we're in ephemeral mode). Call them the *MasterSealingSecret*.
     + Derive the sealing encryption and MAC keys from the MasterSealingSecret.
 
-
 * During TrustVisor startup, if no NVRAM Index containing the master seed for Micro-TPM sealing support is found (may be necessary to specify this as a boot parameter, or have some default that can be overridden by a boot parameter), then generate a new MasterSecret and derive the long-term encryption and MAC keys.
 
-### Convenience / Streamlining feature possibilities for the future ###
+* TrustVisor doesn't know the TPM's owner secret so it cannot create the
+relevant NVRAM index on its own. For the time being we have decided against
+this strategy and require a Linux guest OS to define the relevant regions in a
+trust-on-first-use model, see [nv-storage](nv-storage.md).
+	* If a special hypercall is invoked that includes the TPM's Owner Secret (or if it is provided on the command line to TrustVisor at boot time), then TrustVisor can setup the necessary NVRAM index based on TrustVisor's own code identity and access-controlled by physical TPM PCR values.  This will require significant additional implementation of hardware TPM commands inside TrustVisor. 
+	* Inside TrustVisor, we need some default NV index to use if none is supplied. Let's use 0x00015213 as a tribute to CMU's zip code. No problem with the index being overridden on the boot command line (and really, it's an input parameter for the SL/Runtime, so during dynamic launch it can be a component of whatever parameter block definition we eventually choose).
 
-* TrustVisor doesn't know the TPM's owner secret so it cannot create the relevant NVRAM index on its own.
-    * If no NV Index is defined (or if it is defined incorrectly), development can proceed and PALs using Micro-TPM sealed storage will work, but sealed data will become irretrievable after a platform reboot (because the MasterSealingSecret is ephemeral and is lost at reboot).
-* If a special hypercall is invoked that includes the TPM's Owner Secret (or if it is provided on the command line to TrustVisor at boot time), then TrustVisor can setup the necessary NVRAM index based on TrustVisor's own code identity and access-controlled by physical TPM PCR values.  This will require significant additional implementation of hardware TPM commands inside TrustVisor. For the time being we have decided against this strategy and require a Linux guest OS to define the relevant regions in a trust-on-first-use model.
 
-Long-term TrustVisor state
---------------------------
+Micro-TPM Sealing
+-----------------
 
-* Symmetric cryptographic keys that provide secrecy and integrity-protection for micro-TPM sealed storage. Both derived from a master secret that resides in hardware TPM NVRAM and accessible only to TrustVisor.
 * No automated tagging of sealed data with the registered code for the corresponding PAL.  A PAL should include the uPCR-0 that represents its own code identity if this property is desired.
     * Because a micro-TPM instance is always created through registration which resembles dynamic root of trust, we always have a code-identity measurement that we can depend on.
 * Data sealed on one platform will never unseal on a different physical platform (much like real TPM-sealed data) because the sealing encryption/MAC keys are secret, unique, and platform-specific.
@@ -78,6 +73,7 @@ Micro-TPM Identity Key Design Challenges
         * ImportSigningKey: Cause the micro-TPM to reload a previously exported signing keypair.
 * What if the identical PAL is registered multiple times?
 * How do we isolate the relevant micro-TPM instances?
+
 
 Micro-TPM Design and API
 ========================

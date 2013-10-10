@@ -63,7 +63,8 @@ Configure the XMHF hypapp.
 
     ./configure --with-approot=hypapps/helloworld
    
-Generate and install the binaries (note: default install path is specified with the `--prefix=` flag to `configure`).
+Generate and install the binaries (note: default install path is specified 
+with the `--prefix=` flag to `configure`).
 
     make
     make install
@@ -75,10 +76,14 @@ Build configuration options
 
 * --with-approot=[HYPAPPPATH], specifies the hypapp source root; must be provided
 
-* --with-target-platform=[PLATFORM], specifies the target platform for the build; optional, current options are: x86pc (x86 hardware virtualized platforms, default)
+* --with-target-platform=[PLATFORM], specifies the target platform for the build; 
+optional, current options are: x86pc (x86 hardware virtualized platforms, default)
 
-* --with-target-arch=[ARCH], specifies the target CPU architecture; optional, current options are: x86vmx (Intel, default), x86svm (AMD)
+* --with-target-arch=[ARCH], specifies the target CPU architecture; 
+optional, current options are: x86vmx (Intel, default), x86svm (AMD)
 
-* --disable-drt, disables Dynamic Root-of-Trust (DRT); optional, useful for builds targeting platforms without support for DRT and/or TPM
+* --disable-drt, disables Dynamic Root-of-Trust (DRT); optional, useful for builds 
+targeting platforms without support for DRT and/or TPM
 
-* --disable-dmap, disables DMA protection; optional, useful for builds targeting platforms without DMA protection capabilities
+* --disable-dmap, disables DMA protection; optional, useful for builds targeting 
+platforms without DMA protection capabilities
