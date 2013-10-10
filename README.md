@@ -50,11 +50,6 @@ The XMHF project includes several components:
       Development Kit. This is a set of tools and APIs for developing
       PALs and applications that use them.
 
-    * [tee-cred](hypapps/trustvisor/tee-cred): The TEE Credential Manager (tee-cred) is
-      an audited key-value store that is useful as a credential (e.g.,
-      password) manager.  It is implemented in a PAL leveraging
-      tee-sdk, and as a stand-alone audit server.
-
 * [Lockdown](hypapps/lockdown): A hypapp that provides the user with a red/green
   system: an isolated and constrained environment for performing
   online transactions, as well as a high-performance, general-purpose
