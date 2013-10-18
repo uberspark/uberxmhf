@@ -23,6 +23,6 @@ The original design and implementation of Lockdown is described in:
   <http://www.cylab.cmu.edu/files/pdfs/tech_reports/CMUCyLab09011.pdf>
 
 The implementation of Lockdown contained herein leverages
-[XMHF](../xmhf). Note that the implementation is a ***research
+[XMHF](../../xmhf). Note that the implementation is a ***research
 prototype*** and does not yet fully provide the security properties of
 the design.
