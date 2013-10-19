@@ -33,11 +33,9 @@ Quick start to using XMHF
 =========================
 
 * [XMHF Hardware Requirements](doc/hardware-requirements.md)
-* [XMHF Supported Guest Operating Systems](doc/supported-OS.md)
+* [Guest Operating Systems supported by XMHF](doc/supported-OS.md)
 * [Building XMHF](doc/building-xmhf.md)
 * [Verifying XMHF](doc/verifying-xmhf.md)
 * [Installing XMHF](doc/installing-xmhf.md)
-* [Configuring Grub](doc/configuring-grub.md) How to boot XMHF from
-  Grub, along with some tricks for remote\unattended boot.
 * [Debugging XMHF](doc/debugging-xmhf.md)
 
