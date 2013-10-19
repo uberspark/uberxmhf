@@ -1,13 +1,3 @@
-WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
-===============================================================
-
-You can ruin your motherboard if your BIOS is
-buggy. MAKE SURE YOUR BIOS IS UP TO DATE, and use the newest available
-SINIT module from Intel (if using an Intel CPU):
-<http://software.intel.com/en-us/articles/intel-trusted-execution-technology/>
-If you want to be sure your hardware is working, we suggest starting
-with Intel's tboot project: <http://tboot.sourceforge.net/>
-
 Introduction
 ============
 
@@ -38,6 +28,7 @@ and nested (2-dimensional) paging. The framework is capable of
 running unmodified legacy multiprocessor capable OSes such as 
 Windows and Linux.  
 
+
 Quick start to using XMHF
 =========================
 
@@ -49,8 +40,3 @@ Quick start to using XMHF
   Grub, along with some tricks for remote\unattended boot.
 * [Debugging XMHF](doc/debugging-xmhf.md)
 
-Design Concepts
-===============
-
-* [Dynamic Root of Trust for XMHF Launch Integrity](doc/drtm-design.md)
-* [Memory Layout and Integrity Checking](doc/memory-layout.md)
