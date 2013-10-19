@@ -33,6 +33,7 @@ Quick start to using XMHF
 =========================
 
 * [XMHF Hardware Requirements](doc/hardware-requirements.md)
+* [XMHF Supported Guest Operating Systems](doc/supported-OS.md)
 * [Building XMHF](doc/building-xmhf.md)
 * [Verifying XMHF](doc/verifying-xmhf.md)
 * [Installing XMHF](doc/installing-xmhf.md)
