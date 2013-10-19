@@ -1,4 +1,4 @@
-XMHF requires an enabled TPM to be enabled, as well as several
+XMHF requires a Trusted Platform Module (TPM), as well as several
 advanced processor capabilities that typically need to be enabled in
 the BIOS. Unfortunately, every BIOS is different, so you may need to
 poke around a bit to find where these settings are located. They may
