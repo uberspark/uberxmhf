@@ -32,16 +32,20 @@ Windows and Linux.
 Included modules
 ================
 
-The XMHF project includes several components:
+The XMHF project includes the hypervisor framework and supporting 
+libraries along with several example hypapps:
 
 * [XMHF](xmhf): The eXtensible and Modular Hypervisor Framework 
   supporting custom hypervisor-based solutions (called "hypapps").
 
     * [libbaremetal](xmhf/src/libbaremetal): Utility functions used across modules,
-     including many utility function from libc, error-handling, logging,
-     etc.  As the name implies, this library is intended primarily for
+     including minimal libc functionality, error-handling, TPM functions, 
+     cryptographic routines, etc. As the name implies, this library is intended primarily for
      use in "bare metal" environments.
 
+XMHF includes several example hypapps including 
+full-fledged hypapps such as TrustVisor and Lockdown:
+ 
 * [TrustVisor](hypapps/trustvisor): A special-purpose hypapp that provides
   code integrity as well as data integrity and secrecy for userspace
   Pieces of Application Logic (PALs).
@@ -58,11 +62,13 @@ The XMHF project includes several components:
   user to securely learn which environment is active and to switch
   between them.
 
+
 Copying
 =======
 
 The XMHF project comprises code from multiple sources, under multiple
 open source licenses. See [COPYING.md](COPYING.md) for details.
+
 
 Contact and support
 ===================
@@ -87,6 +93,7 @@ such notification messages, and start new threads by sending mail to
 <general@discussion.xmhf.p.re.sf.net>. **Posts via email must
 originate from a sourceforge account's primary email address**.
 
+
 Contributing
 ============
 
@@ -95,16 +102,14 @@ We are open to contributions. The easiest mechanism is probably to
 through the web UI, make the changes on your fork, and then issue a
 `merge request` through the sourceforge web UI.
 
+
 Contributors
 ============
 
-The core team: Amit Vasudevan, Jonathan McCune, and James Newsome.
+Maintainers:
+Amit Vasudevan (XMHF, libbaremetal and Lockdown), Zongwei Zhou (TrustVisor and tee-sdk)
 
-Current maintainers:
-Amit Vasudevan (XMHF and Lockdown), Zongwei Zhou (Trustvisor and TEE-SDK)
-
-Other contributors: Ning Qu (TrustVisor and Lockdown), 
-and Yanlin Li (TrustVisor)
+Other contributors: Jonathan McCune, James Newsome, Ning Qu, and Yanlin Li
 
 
 Related Publications
@@ -144,6 +149,7 @@ Related Publications
   Virgil D. Gligor and Adrian Perrig. Technical Report
   CMU-CyLab-09-011, June 2009.
   [pdf](http://www.cylab.cmu.edu/files/pdfs/tech_reports/CMUCyLab09011.pdf)
+
 
 Changelog
 =========
