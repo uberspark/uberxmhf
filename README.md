@@ -37,7 +37,7 @@ The XMHF project includes several components:
 * [XMHF](xmhf): The eXtensible and Modular Hypervisor Framework 
   supporting custom hypervisor-based solutions (called "hypapps").
 
-   * [libbaremetal](xmhf/src/libbaremetal): Utility functions used across modules,
+    * [libbaremetal](xmhf/src/libbaremetal): Utility functions used across modules,
      including many utility function from libc, error-handling, logging,
      etc.  As the name implies, this library is intended primarily for
      use in "bare metal" environments.
