@@ -96,6 +96,7 @@ HEAD of the repository, but git always retrieves the exhaustive history.
 * OpenSSH (BSD), 
 * Linux kernel (GPLv2), 
 * Xen (GPLv2)
+* Google Protocol Buffers (Apache 2.0)
 * amtterm (GPLv2) (NOTE: A copy of amtterm's source code was accidentally 
   updated with our own headers in a now-defunct demo subdirectory of 
   TrustVisor.  This was in error.)
@@ -111,7 +112,6 @@ license that appear in the current repository HEAD.
 * libtomcrypto (WTFPL)
 * Tboot (BSD-style)
 * OpenSSL (BSD-style), 
-* Google Protocol Buffers (Apache 2.0)
 * newlib (GPL)
 * tlsf.baisoku.org (public domain)
 
