@@ -46,9 +46,12 @@ untar it to ../ports/openssl/ directory, then execute the following commands:
 
 	cd ../ports/openssl/openssl-1.0.0d
 	patch -p1 < ../openssl-tee-sdk-131021.patch
-Note that you would have prompt as follows:
+
+Note that you would have prompts as follows:
+
 	Reversed (or previously applied) patch detected!  Assume -R? [n] 
 	Apply anyway? [n]
+
 This is caused by trying to patch the symbolic link file in
 include/openssl/opensslconf.h, which is unnecessary. 
 Just press Enter twice to skip them, and ignore the .rej file created.
