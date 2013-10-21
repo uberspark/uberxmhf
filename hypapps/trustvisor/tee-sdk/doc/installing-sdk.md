@@ -24,7 +24,7 @@ cross-compilation environment and install the headers again:
     make install-dev
 
 Note: $(SYSROOT) depends on your configuration of building TEE-SDK,
-see below for more details. The default $(SYSROOT) is /usr/local/i586-tsvc
+see below for more details. The default $(SYSROOT) is `/usr/local/i586-tsvc`
 
 
 Building and Installing TEE-SDK
@@ -49,12 +49,12 @@ code will be installed. The default $(SYSROOT) is `$(PREFIX)/$(HOST)`
 
 Of course, you may install each tee-sdk component individually, 
 either by specifying a target to `make`, or by manually performing the
-steps in the corresponding `make` recipe. At the time of this writing,
+steps in the corresponding make recipe. At the time of this writing,
 the components installed by `make` are:
 
 * toolchain : these are wrappers to utilities such as gcc, with names
   like `i586-tsvc-gcc`. They mostly serve to override the system paths
-  with paths in `$(SYSROOT)`.
+  with paths in $(SYSROOT).
 
 * tz : This implements the TrustZone API for managing and
   communicating with services (pals) running the trusted execution
@@ -62,7 +62,7 @@ the components installed by `make` are:
 
 * newlib : this is an implementation of libc targeted for
   PALs. Functions that do not involve IO should work as expected. IO
-  functions currently fail gracefully. The toolchain 'i586-tsvc-gcc'
+  functions currently fail gracefully. The toolchain `i586-tsvc-gcc`
   will link against this library by default, unless `-nostdlib` is used.
 
 * openssl : This is the well-known openssl library, ported for use

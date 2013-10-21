@@ -39,7 +39,7 @@ Software Development Kit (TEE-SDK)
 TrustVisor is released with a Trusted-Execution-Environment Software-Development-Kit
 (TEE-SDK), which comprises tools and documentation for developing
 PALs and integrating them to applications. Please install [TEE-SDK](tee-sdk) and
-try out some TrustVisor-specific PAL [examples](tee-sdk/examples). Note that
+try out some TrustVisor-specific PAL examples at 'tee-sdk/examples'. Note that
 the APIs provided in TEE-SDK are intended to provide sufficient abstraction
 such that PALs and applications can be ported to use alternative trusted 
 environments, other than TrustVisor, with little or no modification.
