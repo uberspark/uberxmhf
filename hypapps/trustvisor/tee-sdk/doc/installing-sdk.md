@@ -34,7 +34,7 @@ libraries (e.g., newlib, openssl), and apply patches to them so
 that they could be used for PAL development.
 
 For newlib library, we use newlib-1.19.0 version. 
-Download the `newlib-1.19.0.tar.gz` from http://sourceforge.net/projects/devkitpro/files/sources/newlib/, 
+Download the `newlib-1.19.0.tar.gz` from ftp://sourceware.org/pub/newlib/index.html, 
 untar it to ../ports/newlib/ directory, then execute the following commands:
 
 	cd ../ports/newlib/newlib-1.19.0
