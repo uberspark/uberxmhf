@@ -3,8 +3,9 @@ Development Environment
 
 [XMHF](..) and hypapps (e.g., [TrustVisor](../../hypapps/trustvisor), 
 [Lockdown](../../hypapps/lockdown)) get built in a Linux environment with 
-a recent version of gcc. [XMHF](..) has been verified to build on Ubuntu 
+a recent version of gcc. XMHF has been verified to build on Ubuntu 
 10, 11, and 12 series, both 32 and 64 bit.
+
 
 Build tools
 ===========
@@ -18,6 +19,7 @@ libraries. On Ubuntu 12:
 
     aptitude install gcc-multilib
 
+
 High-level Build Summary
 ========================
 
@@ -27,21 +29,22 @@ The interesting high-level build commands include:
 
     ./autogen.sh           # creates ./configure
     ./configure            # creates Makefile from Makefile.in
-    make                   # Builds the selected hypapp and the XMHF core
-    make install           # Installs both binaries and dev headers and libs
-    make install-dev       # Installs just dev headers and libs
-    make test              # Runs various automated tests
-    make clean             # Deletes all object files
+    make                   # builds the selected hypapp and the XMHF core
+    make install           # installs binaries
+    make install-dev       # (hypapp specific) installs dev headers and libs
+    make test              # (hypapp specific) runs various automated tests
+    make clean             # cleanup
 
 The functioning of `make install-dev` and `make test` are
 hypapp-specific. For example, in TrustVisor, the primary prerequisite
 for tee-sdk and PAL development is having successfully run `make
-install-dev` in `xmhf/xmhf`.
+install-dev`.
+
 
 How do I build an XMHF hypapp?
 ==============================
 
-The preferred method for building different hypapps (e.g., TrustVisor,
+The method for building different hypapps (e.g., TrustVisor,
 Lockdown) is by specifying which hypapp to build using `./configure`.
 The following describes the sequence of steps for building a XMHF
 hypapp using the helloworld hypapp as a running example.
@@ -63,13 +66,19 @@ Configure the XMHF hypapp.
 
     ./configure --with-approot=hypapps/helloworld
    
-Generate and install the binaries (note: default install path is specified 
-with the `--prefix=` flag to `configure`).
+Generate and install the binaries:
 
     make
     make install
     make install-dev  # optional (hypapp-specific)
     make test         # optional (hypapp-specific)
+
+Note that `make install` is only useful if the development system and 
+the target system (on which XMHF is installed) are the same. If not, 
+you will need to manually copy the files `$WORK/xmhf/init-x86.bin` 
+and `$WORK/xmhf/hypervisor-x86.bin.gz` to the `/boot` folder of the
+target system (see [Installing XMHF](./installing-xmhf.md)).  
+
 
 Build configuration options
 ===========================

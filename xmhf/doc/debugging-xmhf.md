@@ -1,94 +1,86 @@
-XMHF debugging is done primarily via the serial port.
-See [Configuring Grub](configuring-grub.md) for how to tell XMHF how
-to configure the serial port.
-
-For machines without a physical serial port, you may leverage Intel 
-Active Management Technology (AMT) Serial-Over-LAN (SOL). linux.die 
-has a useful [AMT Howto](http://linux.die.net/man/7/amt-howto).
-
-Following is a concrete set of steps for enabling and using AMT SOL on
-an HP EliteBook 8540p/2540p. These instruction likely apply to other hardware, as
-well.
-
-DISCLAIMERS
+Terminology
 ===========
 
-* ***A lost AMT password cannot be reset***. AMT is implemented in the
-     firmware and chipset of the machine, and is designed to allow an
-     IT department to control a company's machines, *overriding the
-     physically present user*. By design, physical presence is
-     insufficient to reset the password if you lose it. When
-     relinquishing ownership of a machine, make sure to tell the new
-     owner the AMT password, or better-yet revert to the default
-     password "admin" and disable AMT in the BIOS.
+* `host system` -- system where the serial log is collected and examined.
+* `target system` -- system where XMHF runs and ouputs debug information via the serial port.
 
-* ***A compromised AMT password is bad news***. AMT gives the power to
-     update firmware, boot from a chosen device or network location,
-     power cycle, and more. Choose a good password and be careful that
-     it's not compromised.
+Debugging Setup
+===============
 
-* ***Using the directions below on an open network will compromise
-     your AMT password***. We are using plaintext password
-     authentication. An eavesdropper can easily grab it. I believe
-     it's possible to enable encryption and stronger authentication;
-     we should look into it.
+XMHF debugging is done primarily via the serial port.
+See [Installing XMHF](./installing-xmhf.md) for how to pass serial
+port configuration parameters to XMHF. 
+You can use `dmesg | grep ttyS` on a Linux guest OS on the target 
+system to examine the serial ports that the target system recognizes.
 
-Enable AMT in firmware
-======================
+For machines without a physical 
+serial port (e.g., laptops), you may leverage Intel Active Management 
+Technology (AMT) Serial-Over-LAN (SOL) capability. AMT SOL exposes 
+a serial port to the underlying platform once enabled (typically in
+the BIOS).
 
-You may need to enable AMT in the firmware. On the 8540p, you need to
-go to turn on `system_config.amt_options.firmware_verbosity` and
-`setup_prompt`.
+Serial Debuging without AMT
+---------------------------
 
-Configure AMT
-=============
+* Connect the `host system` and the `target system` via a NULL serial
+cable. 
 
-Once AMT is enabled, you should see an AMT prompt during boot. Hit
+* On the `target system` ensure that you pass the correct serial port
+configuration parameters to XMHF (see [Installing XMHF](./installing-xmhf.md)).
+A typical non-AMT configuration parameter will be similar to this: `serial=115200,8n1,0x3f8`
+
+* On the `host system` run a terminal emulation program such as `minicom` (Ubuntu)
+or `hyperterminal` (Windows). Ensure that the serial port configuration baud rate, parity, data and stop bits match (e.g., `115200, 8n1`)
+
+Serial Debugging with AMT
+-------------------------
+
+You will typically need to enable AMT in the BIOS/firmware of the `target system` . 
+Since various BIOSes expose AMT in different ways, we will use the 
+HP EliteBook 8540p/2540p laptop as a running example; the AMT specific instructions 
+probably need a little adaptation on other platforms running AMT.
+
+* Connect the `host system` and the `target system` via an ethernet
+cable. This can be a cross-over cable (for direct connection) or a 
+straight cable (if going via a switch/router).
+
+* It is best not to make AMT accessible from an open network, since by default there is no encryption for password authentication. 
+It seems possible to enable encryption and stronger authentication, but for our example we will assume a private network setup.
+In our example, we statically configure the `host system` and 
+`target system` to be on the private `192.168.0.0` network.
+
+* Enable AMT in the BIOS/firmware on the `target system`. On the 8540p, you need to turn on 
+`system_config -> amt_options -> firmware_verbosity -> setup_prompt`.
+
+* Once AMT is enabled, you should see an AMT prompt during boot of the `target system`. 
+Enter the AMT configuration; on the 8540p, hit
 `Ctrl-p` to enter AMT configuration. The default password is
 'admin'. Once you've logged in:
 
-* **You'll be forced to change the admin password**. Again, do not
+    * **You'll be forced to change the admin password**. Take care not
     lose or compromise this password! The system will enforce some
-    password rules. See the [AMT Howto](http://linux.die.net/man/7/amt-howto).
-* **Setup the network**. It's best not to make AMT accessible from the
-    open network, if possible. In my case, I'm using a direct ethernet
-    connection between my two machines, so I statically configured the
-    host machine to 192.168.0.2.
-* **Activate the network**
-* **Ensure serial-over-lan (SOL) is enabled**
-* **Enable `legacy redirection mode` (or `SMB (Small Business)
+    password rules. See this [AMT Howto](http://linux.die.net/man/7/amt-howto) for more information.
+    * **Setup the AMT IP**. In our example, we statically configure the
+    `target system` to have the IP `192.168.0.2`
+    * **Activate the network**
+    * **Ensure serial-over-lan (SOL) is enabled**
+    * **Enable `legacy redirection mode` (or `SMB (Small Business)
     management mode`)** This enables a simpler network
-    protocol. You'll need it to use `amtterm`. Unfortunately this also
-    means we're doing password authentication and sending the password
-    in the clear.
+    protocol. You'll need it to use `amtterm`. 
+    
+* On the `target system` ensure that you pass the correct serial port
+configuration parameters to XMHF (see [Installing XMHF](./installing-xmhf.md)).
+A typical AMT serial configuration parameter will be similar to this: `serial=115200,8n1,0x6080`
 
-Point your code at the AMT serial port
-======================================
-
-You can use `dmesg | grep ttyS` to examine the serial ports that your
-system now recognizes. On the 8540p the AMT serial port is recognized
-as `ttyS0`, but is at address `0x6080` instead of the usual `0x3f8`.
-
-Get amtterm
-===========
-
-Use amtterm 1.3 or higher. Older versions have bugs that effect
-the ability to log output, and had more frequent disconnections.
-It is available from
-the author's [git repository](http://www.kraxel.org/cgit/amtterm/) or
-[releases directory](http://www.kraxel.org/releases/amtterm/ releases
-directory).
-
-Connect from the client
-=======================
-
-In my case, since I'm using a direct ethernet connection, I need to
-bring up the ethernet interface: `sudo ifconfig eth0
-192.168.0.1`. You'll need to repeat this whenever the link goes down,
-such as if the cable is unplugged, or either NIC resets (as on
-reboot).
-
-I use: `./amtterm 192.168.0.2 -p 'YourAMTpassword' | tee output-log.txt`
-
-***CAUTION***: your AMT password gets sent in plaintext over the
-   network. Do not do this on an open network.
+* On the `host system`, install `amtterm` to obtain the serial debugging
+messages
+    
+    * Use amtterm 1.3 or higher. Older versions have bugs that effect
+the ability to log output, and have more frequent disconnections.
+It is available from the [amtterm git repository](http://www.kraxel.org/cgit/amtterm/)
+or [amtterm releases directory](http://www.kraxel.org/releases/amtterm/).
+	
+	* Connect to the `target system` by using the following command: `./amtterm 192.168.0.2 -p 'YourAMTpassword' | tee output-log.txt`. 
+	Note: you may have to bring up the ethernet interface on the `host system` prior to issuing the above command. This can be done
+	via `sudo ifconfig eth0 192.168.0.1` (assuming the `host system` IP is `192.168.0.1`).
+	
