@@ -274,7 +274,7 @@ subdirs: $(LIBBAREMETAL_SRC)
 	@echo ---------------------------------------------------------------
 
 .PHONY: install
-install: install-dev install-bin
+install: install-bin
 
 .PHONY: install-bin
 install-bin:
