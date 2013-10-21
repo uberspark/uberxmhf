@@ -62,27 +62,25 @@ GPL status of sub-projects
 * xmhf:
   No GPL.
 
+	* libbaremetal:
+  	  No GPL.
+
+	* third-party:
+      No GPL.
+
 * trustvisor:
   No GPL.
 
-* libbaremetal:
-  No GPL.
+	* tee-sdk:
+  	  hypapps/trustvisor/tee-sdk/ports/newlib is GPLv2. Therefore, PALs 
+	  that link with newlib are necessarily GPLv2, including some of the 
+	  examples in hypapps/trustvisor/tee-sdk/examples.
 
 * lockdown:
   The lockdown hypervisor itself is not GPL. Some third-party
   tools may be, though. See lockdown/src/COPYING for a summary.
 
-* tee-sdk:
-  tee-sdk/ports/newlib is GPLv2. Therefore, PALs that link with newlib
-  are necessarily GPLv2, including some of the examples in tee-sdk/examples.
-
-* tee-cred:
-  The TEE-Cred PAL links with newlib, causing it to fall under the GPLv2.
-
 * tools:
-  No GPL.
-
-* third-party:
   No GPL.
 
 Third party code in repository history
@@ -98,12 +96,13 @@ HEAD of the repository, but git always retrieves the exhaustive history.
 * OpenSSH (BSD), 
 * Linux kernel (GPLv2), 
 * Xen (GPLv2)
+* Google Protocol Buffers (Apache 2.0)
 * amtterm (GPLv2) (NOTE: A copy of amtterm's source code was accidentally 
   updated with our own headers in a now-defunct demo subdirectory of 
   TrustVisor.  This was in error.)
 * tlsf_malloc (special LGPL)
 
-Third party code in current HEAD as of 2012-07-23
+Third party code in current HEAD as of 2013-10-21
 =================================================
 
 We attempt to summarize third-party code and their respective
@@ -113,7 +112,6 @@ license that appear in the current repository HEAD.
 * libtomcrypto (WTFPL)
 * Tboot (BSD-style)
 * OpenSSL (BSD-style), 
-* Google Protocol Buffers (Apache 2.0)
 * newlib (GPL)
 * tlsf.baisoku.org (public domain)
 
