@@ -26,11 +26,26 @@ cross-compilation environment and install the headers again:
 Note: $(SYSROOT) depends on your configuration of building TEE-SDK,
 see below for more details. The default $(SYSROOT) is `/usr/local/i586-tsvc`
 
+Downloading and Patching Third Party Libraries
+==============================================
+
+Before installing TEE-SDK, you need to download a few third party
+libraries (e.g., newlib, openssl), and apply patches to them so 
+that they could be used for PAL development.
+
+For newlib library, we use newlib-1.19.0 version. 
+Dowload the `newlib-1.19.0.tar.gz` from http://sourceforge.net/projects/devkitpro/files/sources/newlib/, 
+untar it to ../ports/newlib/ directory, then execute the following commands:
+
+	cd ../ports/newlib/newlib-1.19.0
+	patch -p1 < ../newlib-tee-sdk-131021.patch
+
 
 Building and Installing TEE-SDK
 ===============================
 
-After installing TrustVisor headers, go to TEE-SDK directory and run
+After installing TrustVisor headers, downloading and patching third party
+libraries, go to TEE-SDK directory and run
 `make` to build and install TEE-SDK.
 
 If you would like to override the default paths, specify your overrides 
