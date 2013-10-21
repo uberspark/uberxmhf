@@ -32,6 +32,19 @@ Documentation
 * [Building TrustVisor](doc/building-trustvisor.md)
 * [Installing TrustVisor](doc/installing-trustvisor.md)
 
+
+Software Development Kit (TEE-SDK)
+==================================
+
+TrustVisor is released with a Trusted-Execution-Environment Software-Development-Kit
+(TEE-SDK), which comprises tools and documentation for developing
+PALs and integrating them to applications. Please install [TEE-SDK](tee-sdk) and
+try out some TrustVisor-specific PAL [examples](tee-sdk/examples). Note that
+the APIs provided in TEE-SDK are intended to provide sufficient abstraction
+such that PALs and applications can be ported to use alternative trusted 
+environments, other than TrustVisor, with little or no modification.
+
+
 DISCLAIMER
 ==========
 
@@ -45,4 +58,5 @@ You will likely experience full system
 crashes with the risk of data loss for the guest OS. In particular,
 there are a number of [KNOWN STABILITY
 ISSUES](https://sourceforge.net/p/xmhf/tickets/search/?q=_instability%3ATrue).
+
 
