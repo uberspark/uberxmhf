@@ -40,9 +40,3 @@ Documentation
 
 * [Building TrustVisor](doc/building-trustvisor.md)
 * [Installing TrustVisor](doc/installing-trustvisor.md)
-* [NV Storage for TrustVisor](doc/nv-storage.md)
-
-Design Concepts
-===============
-
-* [Sealing and Attestation](doc/sealing-attestation.md)
