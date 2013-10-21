@@ -34,11 +34,24 @@ libraries (e.g., newlib, openssl), and apply patches to them so
 that they could be used for PAL development.
 
 For newlib library, we use newlib-1.19.0 version. 
-Dowload the `newlib-1.19.0.tar.gz` from http://sourceforge.net/projects/devkitpro/files/sources/newlib/, 
+Download the `newlib-1.19.0.tar.gz` from http://sourceforge.net/projects/devkitpro/files/sources/newlib/, 
 untar it to ../ports/newlib/ directory, then execute the following commands:
 
 	cd ../ports/newlib/newlib-1.19.0
 	patch -p1 < ../newlib-tee-sdk-131021.patch
+
+For openssl library, we use openssl-1.0.0d version.
+Download the `openssl-1.0.0d.tar.gz` from http://www.openssl.org/source/,
+untar it to ../ports/openssl/ directory, then execute the following commands:
+
+	cd ../ports/openssl/openssl-1.0.0d
+	patch -p1 < ../openssl-tee-sdk-131021.patch
+Note that you would have prompt as follows:
+	Reversed (or previously applied) patch detected!  Assume -R? [n] 
+	Apply anyway? [n]
+This is caused by trying to patch the symbolic link file in
+include/openssl/opensslconf.h, which is unnecessary. 
+Just press Enter twice to skip them, and ignore the .rej file created.
 
 
 Building and Installing TEE-SDK
