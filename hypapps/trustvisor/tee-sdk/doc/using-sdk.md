@@ -37,13 +37,13 @@ Services to be run under TrustVisor need to be compiled somewhat
 specially. A PAL is linked together into the same binary with the
 application that runs it. At run-time, the application registers the
 PAL with TrustVisor. Using the raw TrustVisor interfaces for PAL
-management, you'd need to keep track of which address ranges belong to
+management, you would need to keep track of which address ranges belong to
 PAL code, data, etc., and make sure those sections are page-aligned.
 Things can get tricky if you want some code to be accessible to both
 the PAL code and the application code, and trickier still if you want
 to use different implementations for the same function in PAL and
 application code (such as linking the PAL against a version of libc
-that doesn't make system calls while linking the regular code with the
+that does not make system calls while linking the regular code with the
 standard version of libc).
 
 The TEE-SDK has some tools to take care of these details for you. The
@@ -51,7 +51,7 @@ basic approach is use _partial linking_ to link all PAL code into a
 single object file (.o), rewrite all symbols except for the PAL
 entry-point in that object file to be private, and then use a linker
 script to link this object file with the regular application while
-mapping the PAL's code and data to special page-aligned sections. The
+mapping the code and data of the PAL to special page-aligned sections. The
 TrustVisor back-end provides simplified functions for registering a
 PAL that has been built and linked this way.
 
@@ -65,10 +65,10 @@ evolves. See `examples/newlib/Makefile` for
 a good starting point of a Makefile that dynamically incorporates the
 TEE-SDK-provided Makefile snippets and pkg-config files.
 
-# Compiling and running the test example
+## Compiling and running the test example
 
 After installation in `tz`, you should be able to compile and run
-the test example in `examples/test`. Remember to set
+the test example in `../examples/test`. Remember to set
 the `PKG_CONFIG_LIBDIR` environment variable if you installed to a
 non-system directory.
 
@@ -89,7 +89,7 @@ Services are loaded and unloaded through the TrustZone service manager:
 
     /* prepare service descriptor */
     /* this is currently device-specific (i.e., trustvisor-specific).
-       eventually it'd be good to provide a common abstraction here. */
+       eventually it would be good to provide a common abstraction here. */
     scode_sections_info_init(&scode_info,
                              &__scode_start, scode_ptr_diff(&__scode_end, &__scode_start),
                              NULL, 0,
@@ -161,11 +161,9 @@ invocations of a service. See the
 [TrustZone API specification](../tz/TrustZone_API_3.0_Specification.pdf)
 for details.
 
-# Developing a service
+# Developing services
 
-Unfortunately this area still needs a lot of work. It is currently
-very trustvisor-specific and fragile. Everything here is likely to
-change significantly.
+Service development is currently very trustvisor-specific. 
 
 ## Memory Layout
 
@@ -178,10 +176,9 @@ pages from application code and data, and that you must be able to identify
 the relevant memory ranges. This is most easily done by putting service
 code in separate object files or in separate sections, e.g.
 
-
 A linker script must then be used to ensure page-alignment, and to
 identify the beginning and end of the relevant sections. See
-[examples/test/inject.ld] for an example of such a linker script.
+`../tz/conf/pal-template.ld` for an example of such a linker script.
 
 ## Service entry point
 
