@@ -71,9 +71,9 @@ LIST***.
 
 To boot a Linux guest, we create a grub entry that loads the
 hypervisor, and then re-loads grub. When booting the machine, first
-choose the EMHF entry, and then choose a normal Linux entry.
+choose the XMHF entry, and then choose a normal Linux entry.
 
-A grub entry for emhf should look something like this:
+A grub entry for XMHF should look something like this:
 
     title XMHF
         rootnoverify (hd0,1)                         # should point to /boot

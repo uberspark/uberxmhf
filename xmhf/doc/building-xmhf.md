@@ -3,7 +3,7 @@ Development Environment
 
 [XMHF](..) and hypapps (e.g., [TrustVisor](../../hypapps/trustvisor), 
 [Lockdown](../../hypapps/lockdown)) get built in a Linux environment with 
-a recent version of gcc. [XMHF](..) has been verified to build on Ubuntu 
+a recent version of gcc. XMHF has been verified to build on Ubuntu 
 10, 11, and 12 series, both 32 and 64 bit.
 
 

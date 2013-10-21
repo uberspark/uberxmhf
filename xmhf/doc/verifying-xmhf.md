@@ -1,13 +1,13 @@
-One of the main design goals of [XMHF](..) is to achieve automated verification
+One of the main design goals of XMHF is to achieve automated verification
 while coping with implementation changes as a result of development.
-The [XMHF](..) core provides functionality common to many hypervisor-based 
+The XMHF core provides functionality common to many hypervisor-based 
 security architectures and supports hypapps that augment the core with
 additional security or functional properties while preserving the 
 fundamental hypervisor security property of memory integrity 
 (i.e., ensuring that the hypervisor’s memory is not modified by 
 software running at a lower privilege level).
 
-We have verified the memory integrity of the [XMHF](..) core
+We have verified the memory integrity of the XMHF core
 using a combination of automated and manual techniques.
 The model checker [CBMC](http://www.cprover.org/cbmc) is employed for 
 automatic verification.
@@ -46,7 +46,7 @@ Checkout the XMHF project source tree.
 
 Change working directory to the XMHF source tree root.
 
-    cd $WORK/xmhf/xmhf
+    cd $WORK/xmhf
 
 Generate the `./configure` script.
 
@@ -54,7 +54,7 @@ Generate the `./configure` script.
 
 Configure the XMHF verify hypapp.
 
-    ./configure --with-approot=src/example-hypapps/verify --with-apparchive=xmhfapp-verify.a
+    ./configure --with-approot=hypapps/verify 
 
 Verify
 	

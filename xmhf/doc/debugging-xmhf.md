@@ -8,7 +8,7 @@ Debugging Setup
 ===============
 
 XMHF debugging is done primarily via the serial port.
-See [Configuring Grub](configuring-grub.md) for how to pass serial
+See [Installing XMHF](./installing-xmhf.md) for how to pass serial
 port configuration parameters to XMHF. 
 You can use `dmesg | grep ttyS` on a Linux guest OS on the target 
 system to examine the serial ports that the target system recognizes.
@@ -16,7 +16,7 @@ system to examine the serial ports that the target system recognizes.
 For machines without a physical 
 serial port (e.g., laptops), you may leverage Intel Active Management 
 Technology (AMT) Serial-Over-LAN (SOL) capability. AMT SOL exposes 
-a serial port (.to the underlying platform once enabled (typically in
+a serial port to the underlying platform once enabled (typically in
 the BIOS).
 
 Serial Debuging without AMT
@@ -30,8 +30,7 @@ configuration parameters to XMHF (see [Installing XMHF](./installing-xmhf.md)).
 A typical non-AMT configuration parameter will be similar to this: `serial=115200,8n1,0x3f8`
 
 * On the `host system` run a terminal emulation program such as `minicom` (Ubuntu)
-or `hyperterminal` (Windows). Ensure that the serial port configuration baud rate
-and parity, data and stop bits match (e.g., `115200, 8n1`)
+or `hyperterminal` (Windows). Ensure that the serial port configuration baud rate, parity, data and stop bits match (e.g., `115200, 8n1`)
 
 Serial Debugging with AMT
 -------------------------
@@ -41,7 +40,7 @@ Since various BIOSes expose AMT in different ways, we will use the
 HP EliteBook 8540p/2540p laptop as a running example; the AMT specific instructions 
 probably need a little adaptation on other platforms running AMT.
 
-* Connect the `host system` and the `target system` via a regular ethernet
+* Connect the `host system` and the `target system` via an ethernet
 cable. This can be a cross-over cable (for direct connection) or a 
 straight cable (if going via a switch/router).
 
