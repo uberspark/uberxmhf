@@ -10,7 +10,7 @@ We use [pkgconfig][1] to simplify management of these libraries.  The
 compile time flags needed to link against a package can be obtained
 using `pkg-config --cflags packagename`. The linking flags can be
 obtained using `pkg-config --libs --static packagename`. Note that we
-only support static linking for now. If you installed [tz](tz) to a
+only support static linking for now. If you installed `tz` to a
 non-standard location `$tzinstallprefix`, you may need to set
 `PKG_CONFIG_LIBDIR` to include `$tzinstallprefix/lib/pkgconfig`.
 
@@ -61,14 +61,14 @@ in your own Makefiles to automate most of the process. Pointing your
 makefile at those makefile snippets and\or `pkg-config` files (rather
 than copying and modifying a monolithic Makefile with these things
 hard-coded) will help keep your pal up to date as the build process
-evolves. See [examples/newlib/Makefile](examples/newlib/Makefile) for
+evolves. See `examples/newlib/Makefile` for
 a good starting point of a Makefile that dynamically incorporates the
 TEE-SDK-provided Makefile snippets and pkg-config files.
 
 # Compiling and running the test example
 
-After installation in [tz](tz), you should be able to compile and run
-the test example in [examples/test](examples/test). Remember to set
+After installation in `tz`, you should be able to compile and run
+the test example in `examples/test`. Remember to set
 the `PKG_CONFIG_LIBDIR` environment variable if you installed to a
 non-system directory.
 
@@ -158,7 +158,7 @@ application to load an unload a single PAL:
 Services are called through the TrustZone API. You must open a session
 with a currently-loaded service. A session can be used for multiple
 invocations of a service. See the
-[TrustZone API specification](tz/TrustZone_API_3.0_Specification.pdf)
+[TrustZone API specification](../tz/TrustZone_API_3.0_Specification.pdf)
 for details.
 
 # Developing a service
