@@ -68,6 +68,6 @@ Changelog
     * various general documentation fixes and cleanup
     * tee-sdk: added patches for newlib and openssl libraries and removed deprecated/non-working examples 
     * re-organized framework components and revised configuration/build harness and related documentation	
-	* fixed build errors with gcc 4.6.3
-	* xmhf-core: re-factored verification harness and added support for 64-bit CBMC
+    * fixed build errors with gcc 4.6.3
+    * xmhf-core: re-factored verification harness and added support for 64-bit CBMC
 	
