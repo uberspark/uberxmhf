@@ -34,9 +34,10 @@ The interesting high-level build commands include:
     make install-dev       # (hypapp specific) installs dev headers and libs
     make test              # (hypapp specific) runs various automated tests
     make clean             # cleanup
+	make htmldoc		   # generates the HTML documentation you are reading in the `./doc` sub-folder
 
 The functioning of `make install-dev` and `make test` are
-hypapp-specific. For example, in TrustVisor, the primary prerequisite
+hypapp-specific. For example, in the TrustVisor hypapp, the primary prerequisite
 for tee-sdk and PAL development is having successfully run `make
 install-dev`.
 
