@@ -183,3 +183,9 @@ Changelog
 	* xmhf-core: add XSETBV intercept handling on Intel platforms for CPUs with XSAVE capabilities (ticket-74)
 	* xmhf-core: fix MTRR logic on Intel platforms to obtain required variable range MTRRs (ticket-74)
 	* xmhf-core: fix issue related to physical/virtual address overlap for runtime (ticket-31)
+ * 0.2.2
+    * various general documentation fixes and cleanup
+    * tee-sdk: added patches for newlib and openssl libraries and removed deprecated/non-working examples 
+    * re-organized framework components and revised configuration/build harness and related documentation	
+	* fixed build errors with gcc 4.6.3
+	* xmhf-core: re-factored verification harness and added support for 64-bit CBMC
