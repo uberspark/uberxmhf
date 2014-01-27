@@ -55,19 +55,22 @@
 
 u32 xmhf_verify_cpu_vendor;
 
-VCPU vcpu;
+//VCPU vcpu;
 struct regs r;
-struct _svm_vmcbfields _xvmcb;
+//struct _svm_vmcbfields _xvmcb;
 
 //globals referenced by this module
-RPB *rpb; 	//runtime parameter block pointer
+//RPB *rpb; 	//runtime parameter block pointer
 
 //actual definitions
-RPB _xrpb;	
+//RPB _xrpb;	
 
 void main() {
+		RPB *rpb;
+		
 		//setup RPB pointer and required runtime parameter block values
-		rpb = (RPB *)&_xrpb;
+		rpb = (RPB *)&arch_rpb;
+		
 		rpb->XtVmmE820NumEntries = 1; 									//number of E820 entries
 		rpb->XtVmmRuntimePhysBase = 0xC0000000;							//runtime physical base address
 		rpb->XtVmmRuntimeSize = 0x8800000;								//128 MB + 8MB (HPTs) runtime size
@@ -75,9 +78,9 @@ void main() {
 		rpb->XtGuestOSBootModuleSize = 512;								//guest OS boot module size
 
 		//setup bare minimum vcpu
-		vcpu.isbsp = 1;													//assume BSP
-		vcpu.id = 0;													//give a LAPIC id
-		vcpu.esp = 0xC6000000;											//give a stack
+		g_bplt_vcpu[0].isbsp = 1;													//assume BSP
+		g_bplt_vcpu[0].id = 0;													//give a LAPIC id
+		g_bplt_vcpu[0].esp = 0xC6000000;											//give a stack
 
 		//globals
 		g_midtable_numentries=1;										//number of CPU table entries
@@ -86,35 +89,35 @@ void main() {
 
 #if defined (__XMHF_TARGET_ARCH_X86_VMX__)
 		xmhf_verify_cpu_vendor = CPU_VENDOR_INTEL;
-		vcpu.cpu_vendor = CPU_VENDOR_INTEL;								
+		g_bplt_vcpu[0].cpu_vendor = CPU_VENDOR_INTEL;								
 #else
 		xmhf_verify_cpu_vendor = CPU_VENDOR_AMD;
-		vcpu.cpu_vendor = CPU_VENDOR_AMD;
+		g_bplt_vcpu[0].cpu_vendor = CPU_VENDOR_AMD;
 #endif		
 		
 
 #if defined (__XMHF_TARGET_ARCH_X86_VMX__)
 		//Intel specific fields
-		vcpu.vmx_vmcs_vaddr = 0xC7000000;								//VMCS address
-		vcpu.vmx_vaddr_ept_pml4_table = 0xC7F00000;						//EPT PML4 table 		
-		vcpu.vmx_guest_unrestricted = 1;								//VMX unrestricted guest support
-		vcpu.vmx_vaddr_ept_p_tables = 0xC8000000;						//EPT page tables
+		g_bplt_vcpu[0].vmx_vmcs_vaddr = 0xC7000000;								//VMCS address
+		g_bplt_vcpu[0].vmx_vaddr_ept_pml4_table = 0xC7F00000;						//EPT PML4 table 		
+		g_bplt_vcpu[0].vmx_guest_unrestricted = 1;								//VMX unrestricted guest support
+		g_bplt_vcpu[0].vmx_vaddr_ept_p_tables = 0xC8000000;						//EPT page tables
 #else
 		//AMD specific fields
-		vcpu.npt_vaddr_ptr = 0xC7F00000;								//NPT PDPT page
-		vcpu.npt_vaddr_pts = 0xC8000000;								//NPT page tables
-		vcpu.vmcb_vaddr_ptr = &_xvmcb;									//set vcpu VMCB virtual address to something meaningful
+		g_bplt_vcpu[0].npt_vaddr_ptr = 0xC7F00000;								//NPT PDPT page
+		g_bplt_vcpu[0].npt_vaddr_pts = 0xC8000000;								//NPT page tables
+		g_bplt_vcpu[0].vmcb_vaddr_ptr = &_xvmcb;									//set vcpu VMCB virtual address to something meaningful
 #endif
 		
 
 #if defined (__XMHF_TARGET_ARCH_X86_VMX__)
 		//VMX propMED values after init()
-		vcpu.vmcs.control_VMX_seccpu_based |= (1 << 1); //enable EPT
-		vcpu.vmcs.control_EPT_pointer_high = 0;
-		vcpu.vmcs.control_EPT_pointer_full = hva2spa((void*)vcpu.vmx_vaddr_ept_pml4_table) | 0x1E; //page walk of 4 and WB memory
+		g_bplt_vcpu[0].vmcs.control_VMX_seccpu_based |= (1 << 1); //enable EPT
+		g_bplt_vcpu[0].vmcs.control_EPT_pointer_high = 0;
+		g_bplt_vcpu[0].vmcs.control_EPT_pointer_full = hva2spa((void*)g_bplt_vcpu[0].vmx_vaddr_ept_pml4_table) | 0x1E; //page walk of 4 and WB memory
 #else
 		//SVM propMED values after init()
-		_xvmcb.n_cr3 = hva2spa((void*)vcpu.npt_vaddr_ptr);
+		_xvmcb.n_cr3 = hva2spa((void*)g_bplt_vcpu[0].npt_vaddr_ptr);
 		_xvmcb.np_enable |= 1ULL;
 #endif
 
@@ -124,74 +127,74 @@ void main() {
 #if defined (__XMHF_TARGET_ARCH_X86_VMX__)
 		//VMX non-deterministic state
 		{
-			vcpu.vmcs.info_vminstr_error = nondet_u32();
-			vcpu.vmcs.info_vmexit_reason= nondet_u32();
-			vcpu.vmcs.info_vmexit_interrupt_information=nondet_u32();
-			vcpu.vmcs.info_vmexit_interrupt_error_code=nondet_u32();
-			vcpu.vmcs.info_IDT_vectoring_information=nondet_u32();
-			vcpu.vmcs.info_IDT_vectoring_error_code=nondet_u32();
-			vcpu.vmcs.info_vmexit_instruction_length=nondet_u32();
-			vcpu.vmcs.info_vmx_instruction_information=nondet_u32();
-			vcpu.vmcs.info_exit_qualification=nondet_u64();
-			vcpu.vmcs.info_IO_RCX=nondet_u64();
-			vcpu.vmcs.info_IO_RSI=nondet_u64();
-			vcpu.vmcs.info_IO_RDI=nondet_u64();
-			vcpu.vmcs.info_IO_RIP=nondet_u64();
-			vcpu.vmcs.info_guest_linear_address=nondet_u64();		
-			vcpu.vmcs.guest_paddr_full=nondet_u64();
+			g_bplt_vcpu[0].vmcs.info_vminstr_error = nondet_u32();
+			g_bplt_vcpu[0].vmcs.info_vmexit_reason= nondet_u32();
+			g_bplt_vcpu[0].vmcs.info_vmexit_interrupt_information=nondet_u32();
+			g_bplt_vcpu[0].vmcs.info_vmexit_interrupt_error_code=nondet_u32();
+			g_bplt_vcpu[0].vmcs.info_IDT_vectoring_information=nondet_u32();
+			g_bplt_vcpu[0].vmcs.info_IDT_vectoring_error_code=nondet_u32();
+			g_bplt_vcpu[0].vmcs.info_vmexit_instruction_length=nondet_u32();
+			g_bplt_vcpu[0].vmcs.info_vmx_instruction_information=nondet_u32();
+			g_bplt_vcpu[0].vmcs.info_exit_qualification=nondet_u64();
+			g_bplt_vcpu[0].vmcs.info_IO_RCX=nondet_u64();
+			g_bplt_vcpu[0].vmcs.info_IO_RSI=nondet_u64();
+			g_bplt_vcpu[0].vmcs.info_IO_RDI=nondet_u64();
+			g_bplt_vcpu[0].vmcs.info_IO_RIP=nondet_u64();
+			g_bplt_vcpu[0].vmcs.info_guest_linear_address=nondet_u64();		
+			g_bplt_vcpu[0].vmcs.guest_paddr_full=nondet_u64();
 
-			vcpu.vmcs.guest_CR0=nondet_u64();
-			vcpu.vmcs.guest_CR3=nondet_u64();
-			vcpu.vmcs.guest_CR4=nondet_u64();
-			vcpu.vmcs.guest_ES_base=nondet_u64();
-			vcpu.vmcs.guest_CS_base=nondet_u64(); 
-			vcpu.vmcs.guest_SS_base=nondet_u64();
-			vcpu.vmcs.guest_DS_base=nondet_u64();
-			vcpu.vmcs.guest_FS_base=nondet_u64();
-			vcpu.vmcs.guest_GS_base=nondet_u64();
-			vcpu.vmcs.guest_LDTR_base=nondet_u64();
-			vcpu.vmcs.guest_TR_base=nondet_u64();
-			vcpu.vmcs.guest_GDTR_base=nondet_u64();
-			vcpu.vmcs.guest_IDTR_base=nondet_u64();
-			vcpu.vmcs.guest_DR7=nondet_u64();
-			vcpu.vmcs.guest_RSP=nondet_u64(); 
-			vcpu.vmcs.guest_RIP=nondet_u64(); 
-			vcpu.vmcs.guest_RFLAGS=nondet_u64(); 
-			vcpu.vmcs.guest_pending_debug_x=nondet_u64();
-			vcpu.vmcs.guest_SYSENTER_ESP=nondet_u64();
-			vcpu.vmcs.guest_SYSENTER_EIP=nondet_u64();
+			g_bplt_vcpu[0].vmcs.guest_CR0=nondet_u64();
+			g_bplt_vcpu[0].vmcs.guest_CR3=nondet_u64();
+			g_bplt_vcpu[0].vmcs.guest_CR4=nondet_u64();
+			g_bplt_vcpu[0].vmcs.guest_ES_base=nondet_u64();
+			g_bplt_vcpu[0].vmcs.guest_CS_base=nondet_u64(); 
+			g_bplt_vcpu[0].vmcs.guest_SS_base=nondet_u64();
+			g_bplt_vcpu[0].vmcs.guest_DS_base=nondet_u64();
+			g_bplt_vcpu[0].vmcs.guest_FS_base=nondet_u64();
+			g_bplt_vcpu[0].vmcs.guest_GS_base=nondet_u64();
+			g_bplt_vcpu[0].vmcs.guest_LDTR_base=nondet_u64();
+			g_bplt_vcpu[0].vmcs.guest_TR_base=nondet_u64();
+			g_bplt_vcpu[0].vmcs.guest_GDTR_base=nondet_u64();
+			g_bplt_vcpu[0].vmcs.guest_IDTR_base=nondet_u64();
+			g_bplt_vcpu[0].vmcs.guest_DR7=nondet_u64();
+			g_bplt_vcpu[0].vmcs.guest_RSP=nondet_u64(); 
+			g_bplt_vcpu[0].vmcs.guest_RIP=nondet_u64(); 
+			g_bplt_vcpu[0].vmcs.guest_RFLAGS=nondet_u64(); 
+			g_bplt_vcpu[0].vmcs.guest_pending_debug_x=nondet_u64();
+			g_bplt_vcpu[0].vmcs.guest_SYSENTER_ESP=nondet_u64();
+			g_bplt_vcpu[0].vmcs.guest_SYSENTER_EIP=nondet_u64();
 
-			vcpu.vmcs.guest_ES_limit=nondet_u32();
-			vcpu.vmcs.guest_CS_limit=nondet_u32();
-			vcpu.vmcs.guest_SS_limit=nondet_u32();
-			vcpu.vmcs.guest_DS_limit=nondet_u32();
-			vcpu.vmcs.guest_FS_limit=nondet_u32();
-			vcpu.vmcs.guest_GS_limit=nondet_u32();
-			vcpu.vmcs.guest_LDTR_limit=nondet_u32(); 
-			vcpu.vmcs.guest_TR_limit=nondet_u32();
-			vcpu.vmcs.guest_GDTR_limit=nondet_u32();
-			vcpu.vmcs.guest_IDTR_limit=nondet_u32();
-			vcpu.vmcs.guest_ES_access_rights=nondet_u32(); 
-			vcpu.vmcs.guest_CS_access_rights=nondet_u32();
-			vcpu.vmcs.guest_SS_access_rights=nondet_u32();
-			vcpu.vmcs.guest_DS_access_rights=nondet_u32();
-			vcpu.vmcs.guest_FS_access_rights=nondet_u32();
-			vcpu.vmcs.guest_GS_access_rights=nondet_u32();
-			vcpu.vmcs.guest_LDTR_access_rights=nondet_u32();
-			vcpu.vmcs.guest_TR_access_rights=nondet_u32();
-			vcpu.vmcs.guest_interruptibility=nondet_u32(); 
-			vcpu.vmcs.guest_activity_state=nondet_u32(); 
-			vcpu.vmcs.guest_SMBASE=nondet_u32();	
-			vcpu.vmcs.guest_SYSENTER_CS=nondet_u32(); 
+			g_bplt_vcpu[0].vmcs.guest_ES_limit=nondet_u32();
+			g_bplt_vcpu[0].vmcs.guest_CS_limit=nondet_u32();
+			g_bplt_vcpu[0].vmcs.guest_SS_limit=nondet_u32();
+			g_bplt_vcpu[0].vmcs.guest_DS_limit=nondet_u32();
+			g_bplt_vcpu[0].vmcs.guest_FS_limit=nondet_u32();
+			g_bplt_vcpu[0].vmcs.guest_GS_limit=nondet_u32();
+			g_bplt_vcpu[0].vmcs.guest_LDTR_limit=nondet_u32(); 
+			g_bplt_vcpu[0].vmcs.guest_TR_limit=nondet_u32();
+			g_bplt_vcpu[0].vmcs.guest_GDTR_limit=nondet_u32();
+			g_bplt_vcpu[0].vmcs.guest_IDTR_limit=nondet_u32();
+			g_bplt_vcpu[0].vmcs.guest_ES_access_rights=nondet_u32(); 
+			g_bplt_vcpu[0].vmcs.guest_CS_access_rights=nondet_u32();
+			g_bplt_vcpu[0].vmcs.guest_SS_access_rights=nondet_u32();
+			g_bplt_vcpu[0].vmcs.guest_DS_access_rights=nondet_u32();
+			g_bplt_vcpu[0].vmcs.guest_FS_access_rights=nondet_u32();
+			g_bplt_vcpu[0].vmcs.guest_GS_access_rights=nondet_u32();
+			g_bplt_vcpu[0].vmcs.guest_LDTR_access_rights=nondet_u32();
+			g_bplt_vcpu[0].vmcs.guest_TR_access_rights=nondet_u32();
+			g_bplt_vcpu[0].vmcs.guest_interruptibility=nondet_u32(); 
+			g_bplt_vcpu[0].vmcs.guest_activity_state=nondet_u32(); 
+			g_bplt_vcpu[0].vmcs.guest_SMBASE=nondet_u32();	
+			g_bplt_vcpu[0].vmcs.guest_SYSENTER_CS=nondet_u32(); 
 
-			vcpu.vmcs.guest_ES_selector=nondet_u16();
-			vcpu.vmcs.guest_CS_selector=nondet_u16();
-			vcpu.vmcs.guest_SS_selector=nondet_u16();
-			vcpu.vmcs.guest_DS_selector=nondet_u16();
-			vcpu.vmcs.guest_FS_selector=nondet_u16();
-			vcpu.vmcs.guest_GS_selector=nondet_u16();
-			vcpu.vmcs.guest_LDTR_selector=nondet_u16();
-			vcpu.vmcs.guest_TR_selector=nondet_u16();
+			g_bplt_vcpu[0].vmcs.guest_ES_selector=nondet_u16();
+			g_bplt_vcpu[0].vmcs.guest_CS_selector=nondet_u16();
+			g_bplt_vcpu[0].vmcs.guest_SS_selector=nondet_u16();
+			g_bplt_vcpu[0].vmcs.guest_DS_selector=nondet_u16();
+			g_bplt_vcpu[0].vmcs.guest_FS_selector=nondet_u16();
+			g_bplt_vcpu[0].vmcs.guest_GS_selector=nondet_u16();
+			g_bplt_vcpu[0].vmcs.guest_LDTR_selector=nondet_u16();
+			g_bplt_vcpu[0].vmcs.guest_TR_selector=nondet_u16();
 		}
 
 #else
@@ -268,7 +271,7 @@ void main() {
 #endif
 
 #if defined (__XMHF_TARGET_ARCH_X86_VMX__)
-			xmhf_parteventhub_arch_x86vmx_intercept_handler(&vcpu, &r);
+			xmhf_parteventhub_arch_x86vmx_intercept_handler(&g_bplt_vcpu[0], &r);
 #else
 			xmhf_parteventhub_arch_x86svm_intercept_handler(&vcpu, &r);
 #endif
