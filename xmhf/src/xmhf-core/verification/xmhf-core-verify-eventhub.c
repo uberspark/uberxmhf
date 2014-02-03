@@ -80,7 +80,7 @@ void main() {
 		//setup bare minimum vcpu
 		g_bplt_vcpu[0].isbsp = 1;													//assume BSP
 		g_bplt_vcpu[0].id = 0;													//give a LAPIC id
-		g_bplt_vcpu[0].esp = 0xC6000000;											//give a stack
+		//g_bplt_vcpu[0].esp = 0xC6000000;											//give a stack
 
 		//globals
 		g_midtable_numentries=1;										//number of CPU table entries
@@ -98,10 +98,11 @@ void main() {
 
 #if defined (__XMHF_TARGET_ARCH_X86_VMX__)
 		//Intel specific fields
-		g_bplt_vcpu[0].vmx_vmcs_vaddr = 0xC7000000;								//VMCS address
-		g_bplt_vcpu[0].vmx_vaddr_ept_pml4_table = 0xC7F00000;						//EPT PML4 table 		
+		//g_bplt_vcpu[0].vmx_vmcs_vaddr = 0xC7000000;								//VMCS address
+		//g_bplt_vcpu[0].vmx_vaddr_ept_pml4_table = 0xC7F00000;						//EPT PML4 table 		
 		g_bplt_vcpu[0].vmx_guest_unrestricted = 1;								//VMX unrestricted guest support
-		g_bplt_vcpu[0].vmx_vaddr_ept_p_tables = 0xC8000000;						//EPT page tables
+		//g_bplt_vcpu[0].vmx_vaddr_ept_p_tables = 0xC8000000;						//EPT page tables
+		g_bplt_vcpu[0].vmx_vaddr_ept_p_tables = &g_vmx_ept_p_table_buffers;
 #else
 		//AMD specific fields
 		g_bplt_vcpu[0].npt_vaddr_ptr = 0xC7F00000;								//NPT PDPT page
