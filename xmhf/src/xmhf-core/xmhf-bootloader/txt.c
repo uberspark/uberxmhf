@@ -295,8 +295,7 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
     #else
 		(void)mle_size;
 		os_sinit_data->vtd_pmr_lo_base = (u64)__TARGET_BASE_SL;
-		os_sinit_data->vtd_pmr_lo_size = (u64)0x09600000;
-		//os_sinit_data->vtd_pmr_lo_size = (u64)0x09a00000;
+		os_sinit_data->vtd_pmr_lo_size = (u64)mle_size;
     #endif
     /* hi range is >4GB; unused for us */
     os_sinit_data->vtd_pmr_hi_base = 0;
