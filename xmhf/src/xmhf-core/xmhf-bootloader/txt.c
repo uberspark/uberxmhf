@@ -289,14 +289,18 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
     /* Must protect MLE, o/w get: TXT.ERRORCODE=c0002871
        AC module error : acm_type=1, progress=07, error=a
        "page is not covered by DPR nor PMR regions" */
-    #if 0
+    {
+		extern u32 sl_rt_size;	//XXX: Ugly hack to bring in SL + runtime size; ideally this should be passed in as another parameter
+	#if 0
 		os_sinit_data->vtd_pmr_lo_base = (u64)PAGE_ALIGN_2M((u32)phys_mle_start);
 		os_sinit_data->vtd_pmr_lo_size = (u64)PAGE_ALIGN_UP2M(mle_size); // XXX Dangerous??? Does not precisely match SL size.  Goes well into hypervisor.  TODO: coordinate to DMA-protect hypervisor in one easy stroke. 2MB alignment required.
     #else
 		(void)mle_size;
 		os_sinit_data->vtd_pmr_lo_base = (u64)__TARGET_BASE_SL;
-		os_sinit_data->vtd_pmr_lo_size = (u64)mle_size;
+		os_sinit_data->vtd_pmr_lo_size = (u64)sl_rt_size;
     #endif
+	}
+
     /* hi range is >4GB; unused for us */
     os_sinit_data->vtd_pmr_hi_base = 0;
     os_sinit_data->vtd_pmr_hi_size = 0;

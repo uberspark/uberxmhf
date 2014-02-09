@@ -651,7 +651,7 @@ static bool svm_prepare_cpu(void)
 //inputs: 
 //cpu_vendor = intel or amd
 //slbase= physical memory address of start of sl
-void do_drtm(VCPU __attribute__((unused))*vcpu, u32 slbase, size_t mle_size){
+void do_drtm(VCPU __attribute__((unused))*vcpu, u32 slbase, size_t mle_size __attribute__((unused))){
 #ifdef __MP_VERSION__
     HALT_ON_ERRORCOND(vcpu->id == 0);
     //send INIT IPI to all APs 
@@ -688,8 +688,8 @@ void do_drtm(VCPU __attribute__((unused))*vcpu, u32 slbase, size_t mle_size){
         skinit((u32)slbase);
     } else {
         printf("\n******  INIT(early): Begin TXT Stuff  ******\n");        
-        //txt_do_senter((void*)(slbase+3*PAGE_SIZE_4K), TEMPORARY_HARDCODED_MLE_SIZE);
-        txt_do_senter((void*)(slbase+3*PAGE_SIZE_4K), mle_size);
+        txt_do_senter((void*)(slbase+3*PAGE_SIZE_4K), TEMPORARY_HARDCODED_MLE_SIZE);
+        //txt_do_senter((void*)(slbase+3*PAGE_SIZE_4K), mle_size);
         printf("\nINIT(early): error(fatal), should never come here!");
         HALT();
     }
