@@ -689,7 +689,6 @@ void do_drtm(VCPU __attribute__((unused))*vcpu, u32 slbase, size_t mle_size __at
     } else {
         printf("\n******  INIT(early): Begin TXT Stuff  ******\n");        
         txt_do_senter((void*)(slbase+3*PAGE_SIZE_4K), TEMPORARY_HARDCODED_MLE_SIZE);
-        //txt_do_senter((void*)(slbase+3*PAGE_SIZE_4K), mle_size);
         printf("\nINIT(early): error(fatal), should never come here!");
         HALT();
     }
