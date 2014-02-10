@@ -96,7 +96,6 @@ void xmhf_runtime_entry(void){
 	#endif
 
 #if defined (__DMAP__)
-		#if 0
 		{
 				u64 protectedbuffer_paddr;
 				u32 protectedbuffer_vaddr;
@@ -117,7 +116,6 @@ void xmhf_runtime_entry(void){
 				xmhf_dmaprot_protect(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimeSize+PAGE_SIZE_2M);
 				printf("\nRuntime: Protected SL+Runtime (%08lx-%08x) from DMA.", rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
 		}
-		#endif
 
 #else //!__DMAP__
 	

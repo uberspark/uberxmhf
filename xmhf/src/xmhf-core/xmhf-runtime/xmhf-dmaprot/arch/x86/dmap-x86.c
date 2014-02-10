@@ -89,7 +89,8 @@ u32 xmhf_dmaprot_arch_initialize(u64 protectedbuffer_paddr,
 	if(cpu_vendor == CPU_VENDOR_AMD){
 	  return xmhf_dmaprot_arch_x86svm_initialize(protectedbuffer_paddr,	protectedbuffer_vaddr, protectedbuffer_size);
 	}else{	//CPU_VENDOR_INTEL
-	  return xmhf_dmaprot_arch_x86vmx_initialize(protectedbuffer_paddr,	protectedbuffer_vaddr, protectedbuffer_size);
+	  //return xmhf_dmaprot_arch_x86vmx_initialize(protectedbuffer_paddr,	protectedbuffer_vaddr, protectedbuffer_size);
+	  return 1; //we use Vtd PMRs to protect the SL + runtime during SL launch
 	}
 		
 }
