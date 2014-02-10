@@ -104,6 +104,7 @@ void xmhf_dmaprot_arch_protect(u32 start_paddr, u32 size){
 	if(cpu_vendor == CPU_VENDOR_AMD){
 	  return xmhf_dmaprot_arch_x86svm_protect(start_paddr, size);
 	}else{	//CPU_VENDOR_INTEL
-	  return xmhf_dmaprot_arch_x86vmx_protect(start_paddr, size);	
+	  //return xmhf_dmaprot_arch_x86vmx_protect(start_paddr, size);	
+	  return; //we use Vtd PMRs to protect the SL + runtime during SL launch
 	} 
 }
