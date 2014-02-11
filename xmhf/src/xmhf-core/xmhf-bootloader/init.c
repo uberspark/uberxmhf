@@ -108,6 +108,9 @@ INTEGRITY_MEASUREMENT_VALUES g_init_gold /* __attribute__(( section("") )) */ = 
     .sha_slbelow64K = ___SLBELOW64K_INTEGRITY_HASH___
 };
 
+//size of SL + runtime in bytes
+size_t sl_rt_size;
+
 
 //---MP config table handling---------------------------------------------------
 void dealwithMP(void){
@@ -648,7 +651,7 @@ static bool svm_prepare_cpu(void)
 //inputs: 
 //cpu_vendor = intel or amd
 //slbase= physical memory address of start of sl
-void do_drtm(VCPU __attribute__((unused))*vcpu, u32 slbase){
+void do_drtm(VCPU __attribute__((unused))*vcpu, u32 slbase, size_t mle_size __attribute__((unused))){
 #ifdef __MP_VERSION__
     HALT_ON_ERRORCOND(vcpu->id == 0);
     //send INIT IPI to all APs 
@@ -824,7 +827,6 @@ bool svm_prepare_tpm(void) {
 void cstartup(multiboot_info_t *mbi){
     module_t *mod_array;
     u32 mods_count;
-    size_t sl_rt_size;
     
     /* parse command line */
     memset(g_cmdline, '\0', sizeof(g_cmdline));
@@ -1048,7 +1050,7 @@ void mp_cstartup (VCPU *vcpu){
         //put all APs in INIT state
         
         printf("\nBSP(0x%02x): APs ready, doing DRTM...", vcpu->id);
-        do_drtm(vcpu, hypervisor_image_baseaddress); // this function will not return
+        do_drtm(vcpu, hypervisor_image_baseaddress, sl_rt_size); // this function will not return
     
         printf("\nBSP(0x%02x): FATAL, should never be here!", vcpu->id);
         HALT();
