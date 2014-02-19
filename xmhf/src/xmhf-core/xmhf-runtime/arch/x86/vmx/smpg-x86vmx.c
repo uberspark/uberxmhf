@@ -664,37 +664,23 @@ u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr){
 void xmhf_smpguest_arch_initialize(context_desc_t context_desc){
 	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
 	
-	//HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-
 #if defined(__MP_VERSION__)	
-	//TODOs:
-	//1. conceal g_midtable_numentries behind "baseplatform" component interface
-	//2. remove g_isl dependency
+
 	//if we are the BSP and platform has more than 1 CPU, setup SIPI interception to tackle SMP guests
 	if(vcpu->isbsp && (g_midtable_numentries > 1)){
-		//if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
-		//	xmhf_smpguest_arch_x86svm_initialize(vcpu);
-		//	printf("\nCPU(0x%02x): setup x86svm SMP guest capabilities", vcpu->id);
-		//}else{	//CPU_VENDOR_INTEL
 			xmhf_smpguest_arch_x86vmx_initialize(vcpu);
 			printf("\nCPU(0x%02x): setup x86vmx SMP guest capabilities", vcpu->id);
-		//}
 	}else{ //we are an AP, so just wait for SIPI signal
 			printf("\nCPU(0x%02x): AP, waiting for SIPI signal...", vcpu->id);
 			#ifndef __XMHF_VERIFICATION__
 			while(!vcpu->sipireceived);
 			#endif
 			printf("\nCPU(0x%02x): SIPI signal received, vector=0x%02x", vcpu->id, vcpu->sipivector);
-	
-			//g_isl->hvm_initialize_csrip(vcpu, ((vcpu->sipivector * PAGE_SIZE_4K) >> 4),
-			//	 (vcpu->sipivector * PAGE_SIZE_4K), 0x0ULL);
-			
-			//perform required setup after a guest awakens a new CPU
-			//xmhf_smpguest_arch_x86_postCPUwakeup(vcpu);
-			//xmhf_smpguest_arch_postCPUwakeup(vcpu);
 			xmhf_smpguest_arch_postCPUwakeup(context_desc);
 	}
+
 #else
+
 	//UP version, we just let the BSP continue and stall the APs
 	if(vcpu->isbsp)
 		return;
@@ -702,9 +688,8 @@ void xmhf_smpguest_arch_initialize(context_desc_t context_desc){
 	//we are an AP, so just lockup
 	printf("\nCPU(0x%02x): AP, locked!", vcpu->id);
 	while(1);
-#endif
 
-	
+#endif
 }
 
 //handle LAPIC access #DB (single-step) exception event
