@@ -88,7 +88,7 @@ static void vmx_lapic_changemapping(context_desc_t context_desc, u32 lapic_paddr
   
   xmhf_memprot_arch_hpt_setentry(context_desc, (u64)lapic_paddr, value);
 
-  xmhf_memprot_arch_x86vmx_flushmappings(vcpu);
+  xmhf_memprot_arch_flushmappings(context_desc);
 }
 
 //----------------------------------------------------------------------
@@ -211,7 +211,6 @@ static VCPU *_vmx_getvcpu(void){
 //note: called from the BSP
 static void xmhf_smpguest_arch_x86vmx_initialize(context_desc_t context_desc){
 	u32 eax, edx;
-	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
 
 	//read LAPIC base address from MSR
 	rdmsr(MSR_APIC_BASE, &eax, &edx);
