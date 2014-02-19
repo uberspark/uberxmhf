@@ -312,8 +312,9 @@ u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(context_desc_t conte
 //------------------------------------------------------------------------------
 //xmhf_smpguest_arch_x86vmx_eventhandler_dbexception
 //handle instruction that performed the LAPIC operation
-void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs *r){
-  u32 delink_lapic_interception=0;
+void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(context_desc_t context_desc, struct regs *r){
+	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
+	u32 delink_lapic_interception=0;
   
   (void)r;
 
@@ -406,9 +407,9 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
   //remove LAPIC interception if all cores have booted up
   if(delink_lapic_interception){
     printf("\n%s: delinking LAPIC interception since all cores have SIPI", __FUNCTION__);
-	vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
+	vmx_lapic_changemapping(context_desc, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
   }else{
-	vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_UNMAP);
+	vmx_lapic_changemapping(context_desc, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_UNMAP);
   }
 
   //restore guest IF and TF
@@ -706,13 +707,13 @@ void xmhf_smpguest_arch_initialize(context_desc_t context_desc){
 
 //handle LAPIC access #DB (single-step) exception event
 //void xmhf_smpguest_arch_x86_eventhandler_dbexception(VCPU *vcpu, 
-void xmhf_smpguest_arch_eventhandler_dbexception(VCPU *vcpu, 
+void xmhf_smpguest_arch_eventhandler_dbexception(context_desc_t context_desc, 
 	struct regs *r){
 	//HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	//if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
 	//	xmhf_smpguest_arch_x86svm_eventhandler_dbexception(vcpu, r);
 	//}else{	//CPU_VENDOR_INTEL
-		xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(vcpu, r);
+		xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(context_desc, r);
 	//}
 }
 
