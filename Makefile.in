@@ -1,0 +1,388 @@
+# Rootest Makefile for XMHF and an App
+# Builds a bunch of subdirectories here, and then builds the app
+
+EMHF_TOPDIR := $(dir $(lastword $(MAKEFILE_LIST)))
+EMHF_ABSTOPDIR := $(realpath $(EMHF_TOPDIR))
+
+# define XMHF root directory and XMHF core include directory for
+# apps
+export EMHF_INCLUDE := $(EMHF_ABSTOPDIR)/xmhf/src/xmhf-core/include
+
+# define CMOCK and UNITY for app unit test support
+export CMOCKDIR := @CMOCKDIR@
+export UNITYDIR := @UNITYDIR@
+
+# Options that aspire to be automatically controlled, but are currently
+# basically required and everything breaks without them. FIXME!
+export TARGET_HWPLATFORM := x86
+export NESTED_PAGING := y
+
+#where you want loader and runtime binaries to go
+export HYPOUTDIR = $(CURDIR)
+
+# objects directory (used for building binaries without polluting source namespace)
+export XMHF_OBJDIR = $(CURDIR)/_objects
+
+# verification directory (used for verification without polluting source namespace)
+export XMHF_VERIFYDIR := $(CURDIR)/_verify
+
+# libbaremetal "source" location, currently hard-coded
+# TODO: specify via configure
+# LIBBAREMETAL_SRC = $(CURDIR)/libbaremetal
+export LIBBAREMETAL_SRC := $(realpath @LIBBAREMETAL_SRC@)
+
+# XMHF core source location
+export XMHFCORE_SRC := $(realpath xmhf/src/xmhf-core)
+
+# libxmhfcore source location
+export LIBXMHFCORE_SRC := $(realpath xmhf/src/xmhf-core/libxmhfcore)
+
+# libxmhfhw source location
+export LIBXMHFHW_SRC := $(realpath xmhf/src/xmhf-core/libxmhfhw)
+LIBXMHFHW_INC = $(realpath xmhf/src/xmhf-core/libxmhfhw)
+
+# libbaremetal-xmhfbackends source location
+export LIBBAREMETAL_XMHFBACKENDS_SRC := $(realpath xmhf/src/xmhf-core/libbaremetal-xmhfbackends)
+
+# XMHF runtime source location
+export XMHF_RUNTIME_SRC := $(realpath xmhf/src/xmhf-core/xmhf-runtime)
+
+# XMHF secureloader source location
+export XMHF_SECURELOADER_SRC := $(realpath xmhf/src/xmhf-core/xmhf-secureloader)
+
+# XMHF bootloader source location
+export XMHF_BOOTLOADER_SRC := $(realpath xmhf/src/xmhf-core/xmhf-bootloader)
+
+# libbaremetal archive
+# TODO: specify via configure
+LIBBAREMETAL_ARCHIVE = libbaremetal.a
+
+# libbaremetal includes
+LIBBAREMETAL_SUBLIBS = $(wildcard $(LIBBAREMETAL_SRC)/lib*)
+LIBBAREMETAL_INC = $(foreach dir,$(LIBBAREMETAL_SUBLIBS),-I$(dir)/include)
+
+# populate library and include paths
+export ADDL_LIBS :=
+export ADDL_INCLUDES :=
+
+#ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_xmhf-runtime/_objs_libxmhfruntimearch/libxmhfruntimearch.a
+
+ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a
+
+ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_libbaremetal-xmhfbackends/libbaremetal-xmhfbackends.a
+ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_libxmhfhw/libxmhfhw.a
+#ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_xmhf-runtime/_objs_libxmhfruntimearch/libxmhfruntimearch.a
+ADDL_INCLUDES += -I$(EMHF_INCLUDE) -I$(LIBXMHFHW_INC) $(LIBBAREMETAL_INC)
+
+# link libbaremetal *again* to resolve more dependencies
+ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a
+
+
+# App's source tree root (
+export APP_ROOT := $(realpath @APP_ROOT@)
+
+# The APP_ARCHIVE is what MUST contain ALL of the App's binary code
+# 'make install-dev' is handled indepdendently
+export builddir=@builddir@
+
+export APP_ARCHIVE := $(APP_ROOT)/xmhfhypapp.a
+
+
+##################################################################################
+### BEGIN Variables controlled using autoconf
+##################################################################################
+# Build-time configuration options; our project IS UNIQUE in this aspect
+# For an explanation of these options, see configure.ac or run:
+# ./configure --help
+export MP_VERSION := @MP_VERSION@
+export DEBUG_SERIAL := @DEBUG_SERIAL@
+export DEBUG_SERIAL_PORT := @DEBUG_SERIAL_PORT@
+export DEBUG_VGA := @DEBUG_VGA@
+export DRT := @DRT@
+export DMAP := @DMAP@
+export XMHF_TARGET_PLATFORM := @TARGET_PLATFORM@
+export XMHF_TARGET_ARCH := @TARGET_ARCH@
+
+# Path settings; our project is not unique in this aspect
+export prefix=@prefix@
+export exec_prefix=@exec_prefix@
+export libdir=@libdir@
+export includedir=@includedir@
+export pkgconfigdir=@pkgconfigdir@
+export pkgincludedir=@pkgincludedir@
+
+# Tool settings; our project is not unique in this aspect
+export CC = @CC@
+export AS = @AS@
+export LD = @LD@
+export OBJDUMP = @OBJDUMP@
+export OBJCOPY = @OBJCOPY@
+export STRIP = @STRIP@
+export RM = @RM@
+export CP = @CP@
+export TAR = @TAR@
+export SED = @SED@
+export MKDIR = @MKDIR@
+export CAT = @CAT@
+
+export CCLIB = @CCLIB@
+
+# FIXME- this should be configurable
+# export CFLAGS=-m32
+
+##CFLAGS and ASFLAGS population
+# experimental support
+export INIT_LATE := n
+export E820_UG_TEST := n
+export TEST_CPU_QUIESCE := n
+export XMHF_CORE_APIHUB_ARCH := @COREAPIHUB_ARCH@
+
+# relatively stable support
+# TODO: FIXME: Build breaks with some combinations of these options.
+# They aren't really "options" anymore
+# TODO: Control these with autoconf
+export NESTED_PAGING := y
+
+
+#-----build configuration
+
+#----- build information (version)
+export XMHF_BUILD_VERSION := $(shell git describe --abbrev=0)
+
+#----- build information (revision)
+export XMHF_BUILD_REVISION_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
+export XMHF_BUILD_REVISION_COMMIT := $(shell git log --pretty=format:'%H' -n 1)
+export XMHF_BUILD_REVISION := $(XMHF_BUILD_REVISION_BRANCH)-$(XMHF_BUILD_REVISION_COMMIT)
+
+#-----basic flags for compiling and assembling
+FLAGS = -O0 -fno-builtin -fno-common -fno-strict-aliasing -iwithprefix include
+FLAGS += -fno-stack-protector
+FLAGS += -Wstrict-prototypes -Wdeclaration-after-statement 
+FLAGS += -Wno-pointer-arith -Wextra -Wfloat-equal 
+#FLAGS += -Werror
+FLAGS += -Wsign-compare
+FLAGS += -Wno-bad-function-cast -Wall
+FLAGS += -Waggregate-return
+FLAGS += -Winline
+FLAGS += -m32 -march=k8 
+FLAGS += -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-ssse3 
+FLAGS += -mno-sse4.1 -mno-sse4.2 -mno-sse4 -mno-avx -mno-aes 
+FLAGS += -mno-pclmul -mno-sse4a -mno-sse5 -mno-3dnow -mno-popcnt -mno-abm
+FLAGS += -nostdinc -pipe
+
+FLAGS += $(ADDL_INCLUDES)
+VFLAGS = $(ADDL_INCLUDES)
+
+
+#-----generate compiler/assembler defines from configuration options selected
+FLAGS += -D___XMHF_BUILD_VERSION___=\"$(XMHF_BUILD_VERSION)\"
+VFLAGS += -D___XMHF_BUILD_VERSION___=\"$(XMHF_BUILD_VERSION)\"
+
+FLAGS += -D___XMHF_BUILD_REVISION___=\"$(XMHF_BUILD_REVISION)\"
+VFLAGS += -D___XMHF_BUILD_REVISION___=\"$(XMHF_BUILD_REVISION)\"
+
+ifeq ($(XMHF_TARGET_ARCH), x86-svm)
+	VFLAGS += -D__XMHF_TARGET_ARCH_X86_SVM__
+endif
+ifeq ($(XMHF_TARGET_ARCH), x86-vmx)
+	VFLAGS += -D__XMHF_TARGET_ARCH_X86_VMX__
+endif
+
+ifeq ($(NESTED_PAGING), y)
+	FLAGS += -D__NESTED_PAGING__
+	VFLAGS += -D__NESTED_PAGING__
+endif
+ifeq ($(DEBUG_SERIAL), y)
+	FLAGS += -D__DEBUG_SERIAL__
+	VFLAGS += -D__DEBUG_SERIAL__
+	FLAGS += -DDEBUG_PORT=$(DEBUG_SERIAL_PORT)
+	VFLAGS += -DDEBUG_PORT=$(DEBUG_SERIAL_PORT)
+endif
+ifeq ($(DEBUG_VGA), y)
+	FLAGS += -D__DEBUG_VGA__
+	VFLAGS += -D__DEBUG_VGA__
+endif
+ifeq ($(MP_VERSION), y)
+	FLAGS += -D__MP_VERSION__
+	VFLAGS += -D__MP_VERSION__
+endif
+ifeq ($(DRT), y)
+	FLAGS += -D__DRT__
+	VFLAGS += -D__DRT__
+endif
+ifeq ($(DMAP), y)
+	FLAGS += -D__DMAP__
+	VFLAGS += -D__DMAP__
+endif
+
+ifeq ($(XMHF_CORE_APIHUB_ARCH), swfp)
+	FLAGS += -D__XMHF_CORE_APIHUB_SWFP__
+endif
+
+
+FLAGS += -D__DO_SENTER__
+VFLAGS += -D__DO_SENTER__
+
+ifeq ($(E820_UG_TEST), y)
+	FLAGS += -D__E820_UG_TEST__
+	VFLAGS += -D__E820_UG_TEST__
+endif
+ifeq ($(TEST_CPU_QUIESCE), y)
+	FLAGS += -D__TEST_CPU_QUIESCE__
+	VFLAGS += -D__TEST_CPU_QUIESCE__
+endif
+	# late initialization support (experimental)
+ifeq ($(INIT_LATE), y)
+	FLAGS += -D__INIT_LATE__ 
+	VFLAGS += -D__INIT_LATE__ 
+	FLAGS += -DPERF_CRIT
+	VFLAGS += -DPERF_CRIT
+endif
+
+#-----export CFLAGS and ASFLAGS
+ASFLAGS = $(FLAGS) -D__ASSEMBLY__
+export ASFLAGS
+
+export VFLAGS
+
+#CFLAGS = $(FLAGS) -no-integrated-as
+CFLAGS = $(FLAGS)
+export CFLAGS
+
+.PHONY: all
+all: subdirs 
+
+
+.PHONY: subdirs
+subdirs: $(LIBBAREMETAL_SRC) $(XMHFCORE_SRC)
+	mkdir -p $(XMHF_OBJDIR)
+	@echo **************************************************************
+	@echo Building libbaremetal...
+	@echo **************************************************************
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBBAREMETAL_SRC)/Makefile -w all
+	@echo **************************************************************
+	@echo libbaremetal.a build SUCCESS
+	@echo **************************************************************
+	@echo **************************************************************
+	@echo Building XMHF core...
+	@echo **************************************************************
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFCORE_SRC)/Makefile -w all
+	@echo **************************************************************
+	@echo XMHF core build SUCCESS
+	@echo **************************************************************
+
+.PHONY: install
+install: install-bin
+
+.PHONY: install-bin
+install-bin:
+	# Install the _actual_ final product
+	install -d $(DESTDIR)/boot
+	install --mode=644 $(XMHF_OBJDIR)/_objs_xmhf-core/xmhf-$(TARGET_HWPLATFORM).bin.gz $(DESTDIR)/boot
+
+.PHONY: install-dev
+install-dev:
+	@echo --------------------------------------------------------------
+	@echo installing development lib/headers to: $(prefix)
+	@echo -------------------------------------------------------------- 
+	$(RM) -rf $(prefix)/lib/xmhf
+	$(RM) -rf $(prefix)/include/xmhf
+	@echo cleaned up target folders $(prefix)/lib/xmhf and $(prefix)/include/xmhf
+	$(MKDIR) -p $(prefix)/lib/xmhf
+	$(MKDIR) -p $(prefix)/include/xmhf
+	@echo prepared target folders $(prefix)/lib/xmhf and $(prefix)/include/xmhf
+	$(CP) -f $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_libxmhfcore/libxmhfcore.a $(prefix)/lib/xmhf/libxmhfcore.a
+	$(CP) -f $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a $(prefix)/lib/xmhf/libbaremetal.a
+	@echo installed XMHF development libraries to $(prefix)/lib/xmhf/
+	$(MKDIR) -p $(prefix)/include/xmhf/xmhf-core/include
+	$(MKDIR) -p $(prefix)/include/xmhf/platform/x86pc/include
+	$(MKDIR) -p $(prefix)/include/xmhf/cpu/x86/include
+	$(CP) -rf ./xmhf/src/xmhf-core/include/* $(prefix)/include/xmhf/xmhf-core/include/.
+	$(CP) -rf ./xmhf/src/xmhf-core/libxmhfhw/platform/x86pc/include/* $(prefix)/include/xmhf/platform/x86pc/include/.
+	$(CP) -rf ./xmhf/src/xmhf-core/libxmhfhw/cpu/x86/include/* $(prefix)/include/xmhf/cpu/x86/include/.
+	@echo installed XMHF core development headers
+	$(MKDIR) -p $(prefix)/include/xmhf/libbaremetal/libtpm/include
+	$(MKDIR) -p $(prefix)/include/xmhf/libbaremetal/libtv_utpm/include
+	$(MKDIR) -p $(prefix)/include/xmhf/libbaremetal/libxmhfc/include
+	$(MKDIR) -p $(prefix)/include/xmhf/libbaremetal/libxmhfcrypto/include
+	$(MKDIR) -p $(prefix)/include/xmhf/libbaremetal/libxmhfutil/include
+	$(CP) -rf ./xmhf/src/libbaremetal/libtpm/include/* $(prefix)/include/xmhf/libbaremetal/libtpm/include/.
+	$(CP) -rf ./xmhf/src/libbaremetal/libtv_utpm/include/* $(prefix)/include/xmhf/libbaremetal/libtv_utpm/include/.
+	$(CP) -rf ./xmhf/src/libbaremetal/libxmhfc/include/* $(prefix)/include/xmhf/libbaremetal/libxmhfc/include/.
+	$(CP) -rf ./xmhf/src/libbaremetal/libxmhfcrypto/include/* $(prefix)/include/xmhf/libbaremetal/libxmhfcrypto/include/.
+	$(CP) -rf ./xmhf/src/libbaremetal/libxmhfutil/include/* $(prefix)/include/xmhf/libbaremetal/libxmhfutil/include/.
+	@echo installed XMHF libbaremetal development headers
+	$(MKDIR) -p $(prefix)/share/xmhf
+	install --mode=644 ./xmhfhypapp.lds $(prefix)/share/xmhf
+	install --mode=644 ./xmhfhypapp.mk $(prefix)/share/xmhf
+	@echo installed XMHF hypapp build and linker scripts
+	install --mode=644 ./xmhf.pc $(pkgconfigdir)
+	@echo installed XMHF pkg-config meta information
+	@echo INSTALL SUCCESS
+	@echo --------------------------------------------------------------
+
+# Currently the only tests we have are in the TrustVisor tree
+.PHONY: test
+test:
+	cd $(APP_ROOT) && $(MAKE) -w test
+
+#.PHONY: clean distclean init-late-clean
+.PHONY: clean distclean 
+clean:
+	@echo **************************************************************
+	@echo Cleaning libbaremetal...
+	@echo **************************************************************
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBBAREMETAL_SRC)/Makefile -w clean
+	@echo **************************************************************
+	@echo libbaremetal.a clean SUCCESS
+	@echo **************************************************************
+	@echo **************************************************************
+	@echo cleaning XMHF core...
+	@echo **************************************************************
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFCORE_SRC)/Makefile -w clean
+	@echo **************************************************************
+	@echo XMHF core cleanup SUCCESS
+	@echo **************************************************************
+	rm -rf *.html
+	rm -rf doc
+	$(RM) -rf $(XMHF_OBJDIR)
+
+distclean: clean
+	$(RM) config.log config.status
+	# http://www.gnu.org/software/automake/manual/automake.html#Clean
+	$(RM) -rf Makefile
+	$(RM) -rf xmhf.pc
+
+
+verify:
+	#cd xmhf/src/xmhf-core && make -w verify
+	mkdir -p $(XMHF_VERIFYDIR)
+	@echo **************************************************************
+	@echo Starting verification...
+	@echo **************************************************************
+	cd $(XMHF_VERIFYDIR) && $(MAKE) -f $(XMHFCORE_SRC)/Makefile -w verify
+
+verifyinit:
+	cd xmhf/src/xmhf-core && make -w verifyinit
+	
+verifyall: 
+	cd xmhf/src/xmhf-core && make -w verifyall
+
+verifysafeupd: 
+	cd xmhf/src/xmhf-core && make -w verifysafeupd
+
+.PHONY: htmldoc
+htmldoc:
+	tools/docgen/render-doc.sh
+
+
+#-----autoconf rules
+Makefile: Makefile.in config.status
+	./config.status $@
+
+config.status: configure
+	./config.status --recheck
+
+configure: configure.ac
+	./autogen.sh
+

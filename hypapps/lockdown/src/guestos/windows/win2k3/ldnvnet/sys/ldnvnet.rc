@@ -1,0 +1,98 @@
+/*
+ * @XMHF_LICENSE_HEADER_START@
+ *
+ * eXtensible, Modular Hypervisor Framework (XMHF)
+ * Copyright (c) 2009-2012 Carnegie Mellon University
+ * Copyright (c) 2010-2012 VDG Inc.
+ * All Rights Reserved.
+ *
+ * Developed by: XMHF Team
+ *               Carnegie Mellon University / CyLab
+ *               VDG Inc.
+ *               http://xmhf.org
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in
+ * the documentation and/or other materials provided with the
+ * distribution.
+ *
+ * Neither the names of Carnegie Mellon or VDG Inc, nor the names of
+ * its contributors may be used to endorse or promote products derived
+ * from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ * @XMHF_LICENSE_HEADER_END@
+ */
+
+/*++
+
+Copyright (c) Microsoft Corporation.  All rights reserved.
+
+    THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
+    KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
+    PURPOSE.
+
+Module Name:
+
+	netvmini.rc
+
+Abstract:
+
+    Internal resource file for driver.
+
+--*/
+
+#include <windows.h>
+#include <ntverp.h>
+
+#define VER_FILETYPE                VFT_DRV
+#define VER_FILESUBTYPE             VFT2_DRV_SYSTEM
+#define VER_FILEDESCRIPTION_STR     "Lockdown Virtual Network Adapter Driver"
+#define VER_INTERNALNAME_STR        "ldnvnet.sys"
+#define VER_ORIGINALFILENAME_STR    "ldnvnet.sys"
+
+
+
+#define VER_FILEVERSION             1,00,00,0000
+#define VER_FILEVERSION_STR         "1.00.00.0000"
+
+#undef VER_PRODUCTVERSION
+#define VER_PRODUCTVERSION          VER_FILEVERSION
+
+#undef VER_PRODUCTVERSION_STR
+#define VER_PRODUCTVERSION_STR      VER_FILEVERSION_STR
+
+#define VER_LEGALCOPYRIGHT_STR      "Copyright (c) (2009-2012)Carnegie Mellon University/(2010-2012)VDG Inc." 
+#ifdef VER_COMPANYNAME_STR
+#undef VER_COMPANYNAME_STR
+#define VER_COMPANYNAME_STR         "XMHF/Lockdown"
+#endif
+
+#undef VER_PRODUCTNAME_STR
+#define VER_PRODUCTNAME_STR         "Lockdown Virtual Network Adapter"
+#define VER_LANGNEUTRAL
+
+#include "common.ver"
+
+

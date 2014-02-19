@@ -1,0 +1,20 @@
+#!/usr/bin/perl
+#
+# the main CIL driver for XMHF verification
+#
+# author: amit vasudevan (amitvasudevan@acm.org)
+#
+
+use strict;
+
+use FindBin;
+use lib "$FindBin::RealBin/.";
+use App::Cilly::CilConfig;
+use xmhfcildrv;
+
+$::xmhfcildrvhome = "$FindBin::RealBin";
+
+xmhfcildrv->new(@ARGV)->doit();
+
+exit(0);
+

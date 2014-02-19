@@ -1,0 +1,3 @@
+This directory contains the core implementation of the "MicroTPM" as proposed
+for TrustVisor.  It is intended to be independent of TrustVisor, and equally
+amenable to testing entirely within userspace from a suitable test harness.

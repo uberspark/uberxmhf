@@ -1,0 +1,15 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+datarootdir=@datarootdir@
+datadir=@datadir@
+svc_link_script=@SVC_LINK_SCRIPT@
+
+Name: @PACKAGE_NAME@-svc
+Description: library for interacting with tz services
+Requires:
+Version: @PACKAGE_VERSION@
+Libs: -L${libdir}/tee-sdk -lsvc
+Cflags: -I${includedir}
+
