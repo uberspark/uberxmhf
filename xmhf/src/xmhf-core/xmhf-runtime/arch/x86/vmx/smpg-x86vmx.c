@@ -198,7 +198,7 @@ static VCPU *_vmx_getvcpu(void){
 //xmhf_smpguest_arch_x86vmx_initialize
 //initialize LAPIC interception machinery
 //note: called from the BSP
-static void xmhf_smpguest_arch_x86vmx_initialize(context_desct_t context_desc){
+static void xmhf_smpguest_arch_x86vmx_initialize(context_desc_t context_desc){
 	u32 eax, edx;
 	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
 
