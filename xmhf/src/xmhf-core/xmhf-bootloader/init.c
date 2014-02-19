@@ -827,7 +827,8 @@ bool svm_prepare_tpm(void) {
 void cstartup(multiboot_info_t *mbi){
     module_t *mod_array;
     u32 mods_count;
-    
+	size_t hypapp_size;
+	
     /* parse command line */
     memset(g_cmdline, '\0', sizeof(g_cmdline));
     strncpy(g_cmdline, (char*)mbi->cmdline, sizeof(g_cmdline)-1);
