@@ -107,8 +107,10 @@ u32 xmhf_sl_arch_x86vmx_earlyinitialize(u64 protectedbuffer_paddr, u32 protected
 
 
 void xmhf_sl_arch_early_dmaprot_init(u32 membase, u32 size){
+		(void)membase;
+		(void)size;
 
-		{
+		/*{
 			u64 protectedbuffer_paddr;
 			u32 protectedbuffer_vaddr;
 			u32 protectedbuffer_size;
@@ -134,7 +136,7 @@ void xmhf_sl_arch_early_dmaprot_init(u32 membase, u32 size){
 			
 			printf("SL: Initialized DMA protections successfully\n");
 		
-		}
+		}*/
 
 }
 
