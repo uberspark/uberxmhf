@@ -1,0 +1,47 @@
+Building analysis modules into cil (notes):
+Author: Amit Vasudevan (amitvasudevan@acm.org)
+
+The official CIL documentation:
+http://kerneis.github.io/cil/doc/html/cil/
+
+	1. Download the latest CIL package from the distribution site:
+		a. http://sourceforge.net/projects/cil/files/cil/
+		b. Version as of this writing was: cil-1.7.3.tar.gz
+	2. Unpack cil-1.7.3.tar.gz which unpacks the sources into ./cil-1.7.3/
+	3. Install ocaml (and dependencies)
+		a. Sudo  apt-get install ocaml
+	4. Cd ./cil-1.7.3
+	5. ./configure
+		a. Gave an error initially:
+			checking for ocamlfind... no
+			configure: error: You must install OCaml findlib (the ocamlfind command)
+		b. Sudo apt-get install ocaml-findlib 
+		c. The above command resolved the problem and configuration went smooth after that
+	6. Make
+	7. Make install
+
+	
+To add additional analysis modules (E.g., logmwrite.ml)
+
+cd ./cil-1.7.3/
+./configure EXTRASRCDIRS=/home/amit/repos/xmhf.git/xmhf/src/xmhf-core/verification/safeupd EXTRAFEATURES=logmwrite
+make
+make install
+
+This resulted in a build failure.
+It so happens that this is a known bug with cil versions (> 1.7.0)
+see: http://sourceforge.net/mailarchive/message.php?msg_id=31297356
+
+downgrading to v1.7.0 or v1.6.0 did not make any difference.
+
+cd ./cil-1.7.0/
+./configure EXTRASRCDIRS=/home/amit/repos/xmhf.git/xmhf/src/xmhf-core/verification/safeupd EXTRAFEATURES=logmwrite
+make
+sudo make install
+
+make[1]: Leaving directory `/home/amit/tools/cil/cil-1.7.0'
+make: *** No rule to make target `/home/amit/repos/xmhf.git/xmhf/src/xmhf-core/verification/safeupd/*.mli', needed by `install-findlib'.  Stop.
+
+It does seem like the final executable/libraries get generated in the 
+obj/ folder, but logmwrite.mli is missing. 
+

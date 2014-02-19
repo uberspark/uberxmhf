@@ -56,13 +56,14 @@
 //----------------------------------------------------------------------
 //exported DATA 
 //----------------------------------------------------------------------
-extern u32 sl_baseaddr;	
+extern u8 xmhf_rpb_start[];
 
 
 //----------------------------------------------------------------------
 //exported FUNCTIONS 
 //----------------------------------------------------------------------
-
+void xmhf_sl_main(void);
+void _xmhf_sl_entry(void);
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
@@ -71,8 +72,10 @@ void* xmhf_sl_arch_hva2sla(uintptr_t x);
 u64 xmhf_sl_arch_sla2spa(void* x);
 bool xmhf_sl_arch_integrity_check(u8* runtime_base_addr, size_t runtime_len);
 void xmhf_sl_arch_sanitize_post_launch(void);
-void xmhf_sl_arch_early_dmaprot_init(u32 runtime_size);
+//void xmhf_sl_arch_early_dmaprot_init(u32 runtime_size);
+void xmhf_sl_arch_early_dmaprot_init(u32 membase, u32 size);
 void xmhf_sl_arch_xfer_control_to_runtime(RPB * rpb);
+void xmhf_sl_arch_baseplatform_initialize(void);
 
 
 //----------------------------------------------------------------------

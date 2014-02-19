@@ -5,9 +5,9 @@
 AS_SOURCES =  
 C_SOURCES = dmap-interface.c
 C_SOURCES += ./arch/x86/dmap-x86.c
-C_SOURCES += ./arch/x86/svm/dmap-x86svm.c
+#C_SOURCES += ./arch/x86/svm/dmap-x86svm.c
 
-C_SOURCES += ./arch/x86/vmx/dmap-x86vmx.c
+#C_SOURCES += ./arch/x86/vmx/dmap-x86vmx.c
 C_SOURCES += ./arch/x86/vmx/dmap-x86vmx-data.c
 
 

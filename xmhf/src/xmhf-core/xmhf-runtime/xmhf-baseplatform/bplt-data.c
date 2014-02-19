@@ -62,7 +62,9 @@ PCPU	g_cpumap[MAX_PCPU_ENTRIES] __attribute__(( section(".data") ));
 u8 g_cpustacks[RUNTIME_STACK_SIZE * MAX_PCPU_ENTRIES] __attribute__(( section(".stack") ));
 
 //VCPU structure for each "guest OS" core
-VCPU g_vcpubuffers[MAX_VCPU_ENTRIES] __attribute__(( section(".data") ));
+//VCPU g_vcpubuffers[MAX_VCPU_ENTRIES] __attribute__(( section(".data") ));
+VCPU g_bplt_vcpu[MAX_VCPU_ENTRIES] __attribute__(( section(".data") ));
+
 
 //master id table, contains core lapic id to VCPU mapping information
 MIDTAB g_midtable[MAX_MIDTAB_ENTRIES] __attribute__(( section(".data") ));

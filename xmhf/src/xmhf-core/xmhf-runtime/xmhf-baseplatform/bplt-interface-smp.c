@@ -57,6 +57,23 @@ void xmhf_baseplatform_smpinitialize(void){
 }
 
 //reboot platform
-void xmhf_baseplatform_reboot(VCPU *vcpu){
-	xmhf_baseplatform_arch_reboot(vcpu);
+//void xmhf_baseplatform_reboot(VCPU *vcpu){
+//	xmhf_baseplatform_arch_reboot(vcpu);
+//}
+void xmhf_baseplatform_reboot(context_desc_t context_desc){
+	xmhf_baseplatform_arch_reboot(context_desc);
+}
+
+//get info. on the number of CPUs in the platform and their IDs
+//u32 xmhf_baseplatform_getcputable(void *buffer, u32 sizeofbuffer){
+//	HALT_ON_ERRORCOND ( (sizeofbuffer >= (g_midtable_numentries * sizeof(MIDTAB))) );
+//	memcpy(buffer, (void *)&g_midtable, (g_midtable_numentries * sizeof(MIDTAB)) );
+//	return g_midtable_numentries; 
+//}
+
+xmhfcoreapiretval_t xmhf_baseplatform_getcputable(void){
+	xmhfcoreapiretval_t retval;
+	retval.returnval = (u32) g_midtable_numentries;
+	retval.returnptr1 = (void *)&g_midtable;
+	return retval;
 }

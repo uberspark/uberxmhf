@@ -51,7 +51,7 @@
 #ifndef __EMHF_DEBUG_ARCH_X86_H__
 #define __EMHF_DEBUG_ARCH_X86_H__
 
-#include "_com.h"		//serial UART as debugging backend
+#include "platform/x86pc/include/common/_com.h"		//serial UART as debugging backend
 #include "_div64.h"		//arch. specific do_div definition
 
 #ifndef __ASSEMBLY__
@@ -75,7 +75,7 @@ void dbg_x86_uart_putstr(const char *str);
 
 //#ifdef __DEBUG_VGA__
 void dbg_x86_vgamem_init(char *params);
-void dbg_x86_vgamem_putc(int c);
+void dbg_x86_vgamem_putc(char ch);
 void dbg_x86_vgamem_putstr(const char *str);
 
 

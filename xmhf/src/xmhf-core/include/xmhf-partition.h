@@ -73,13 +73,16 @@
 //----------------------------------------------------------------------
 
 //initialize partition monitor for a given CPU
-void xmhf_partition_initializemonitor(VCPU *vcpu);
+//void xmhf_partition_initializemonitor(VCPU *vcpu);
+void xmhf_partition_initializemonitor(context_desc_t context_desc);
 
 //setup guest OS state for the partition
-void xmhf_partition_setupguestOSstate(VCPU *vcpu);
+//void xmhf_partition_setupguestOSstate(VCPU *vcpu);
+void xmhf_partition_setupguestOSstate(context_desc_t context_desc);
 
 //start executing the partition and guest OS
-void xmhf_partition_start(VCPU *vcpu);
+//void xmhf_partition_start(VCPU *vcpu);
+void xmhf_partition_start(context_desc_t context_desc);
 
 //set legacy I/O protection for the partition
 void xmhf_partition_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype);
@@ -89,13 +92,17 @@ void xmhf_partition_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottyp
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
 //initialize partition monitor for a given CPU
-void xmhf_partition_arch_initializemonitor(VCPU *vcpu);
+//void xmhf_partition_arch_initializemonitor(VCPU *vcpu);
+void xmhf_partition_arch_initializemonitor(context_desc_t context_desc);
+
 
 //setup guest OS state for the partition
-void xmhf_partition_arch_setupguestOSstate(VCPU *vcpu);
+//void xmhf_partition_arch_setupguestOSstate(VCPU *vcpu);
+void xmhf_partition_arch_setupguestOSstate(context_desc_t context_desc);
 
 //start executing the partition and guest OS
-void xmhf_partition_arch_start(VCPU *vcpu);
+//void xmhf_partition_arch_start(VCPU *vcpu);
+void xmhf_partition_arch_start(context_desc_t context_desc);
 
 //set legacy I/O protection for the partition
 void xmhf_partition_arch_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype);
@@ -109,13 +116,13 @@ void xmhf_partition_arch_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 pr
 //x86vmx SUBARCH. INTERFACES
 //----------------------------------------------------------------------
 //initialize partition monitor for a given CPU
-void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu);
+//void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu);
 
 //setup guest OS state for the partition
-void xmhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu);
+//void xmhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu);
 
 //start executing the partition and guest OS
-void xmhf_partition_arch_x86vmx_start(VCPU *vcpu);
+//void xmhf_partition_arch_x86vmx_start(VCPU *vcpu);
 
 //low-level HVM start routine (part-x86vmx-sup.S)
 u32 __vmx_start_hvm(void);

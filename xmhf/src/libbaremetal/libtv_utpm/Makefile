@@ -9,6 +9,7 @@ I_SOURCES :=  $(wildcard $(srcdir)/include/*.h)
 
 CFLAGS += -I$(srcdir)/../libemhfc/include -I$(srcdir)/../libemhfcrypto/include -I$(srcdir)/include -nostdinc -fno-builtin -nostdlib -Wall 
 
+LIBTV_UTPM_OBJECTS_DIR = _objs_libtv_utpm
 THE_ARCHIVE = libtv_utpm.a
 
 # targets
@@ -16,16 +17,15 @@ THE_ARCHIVE = libtv_utpm.a
 all: $(THE_ARCHIVE)
 
 $(THE_ARCHIVE): $(OBJECTS)
-	$(AR) -rcs $(THE_ARCHIVE) $(OBJECTS)
+	cd $(LIBTV_UTPM_OBJECTS_DIR) && $(AR) -rcs $(THE_ARCHIVE) $(OBJECTS)
 
-#%.o: %.c $(C_SOURCES) $(I_SOURCES) Makefile ../Makefile
-#	$(CC) -c $(CFLAGS) -o $@ $<
+%.o: %.c 
+	#mkdir -p "$(@D)"
+	mkdir -p $(LIBTV_UTPM_OBJECTS_DIR)
+	@echo Building "$@" from "$<" 
+	$(CC) -c $(CFLAGS) -o $(LIBTV_UTPM_OBJECTS_DIR)/$@ $<
 
 .PHONY: clean
 clean:
-	$(RM) $(OBJECTS) $(THE_ARCHIVE)
-
-.PHONY: install-dev
-install-dev:
-	# Nothing to do here
+	$(RM) -rf $(LIBTV_UTPM_OBJECTS_DIR)
 

@@ -1,26 +1,60 @@
+#-------------------------------------------------------------------------------
+# makefile for XMHF apps
+# author: amit vasudevan (amitvasudevan@acm.org)
+
 # source files
 AS_SOURCES = 
 C_SOURCES = $(wildcard *.c)
+I_SOURCES =  $(wildcard ./include/*.h)
 
-OBJECTS = $(patsubst %.S, $(APPOBJECTSDIR)/%.o, $(AS_SOURCES))
-OBJECTS += $(patsubst %.c, $(APPOBJECTSDIR)/%.o, $(C_SOURCES))
+OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
+OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
 
-I_SOURCES  =  $(wildcard $(EMHF_INCLUDE)/*.h)
-I_SOURCES  +=  $(wildcard $(APP_INCLUDEDIR)/*.h)
+CFLAGS += -I./include
 
-# targets
+# app-specific configuration options
+export LDN_TV_INTEGRATION := n
+
+#lockdown-trustvisor integration demo
+ifeq ($(LDN_TV_INTEGRATION), y)
+  CFLAGS += -D__LDN_TV_INTEGRATION__
+endif
+
+
+#-----------------------------------------------------------------------
+# build targets
+# all, install, install-dev, test, clean and distclean
+
 .PHONY: all
-all: ../$(THE_ARCHIVE)
+all: $(OBJECTS) 
 
-../$(THE_ARCHIVE): $(OBJECTS)
-	mkdir -p $(APPOBJECTSDIR)
-	$(AR) -rcs ../$(THE_ARCHIVE) $(OBJECTS)
-
-$(APPBOJECTSDIR)/%.o: %.S $(I_SOURCES) Makefile ../Makefile
+%.o: %.S $(I_SOURCES) Makefile ../Makefile 
 	$(CC) -c $(ASFLAGS) -o $@ $<
-$(APPOBJECTSDIR)/%.o: %.c $(I_SOURCES) Makefile ../Makefile
+%.o: %.c $(I_SOURCES) Makefile ../Makefile
 	$(CC) -c $(CFLAGS) -o $@ $<
 
+# nothing that is trustvisor specific
+.PHONY: install
+install: 
+
+# install trustvisor development components
+.PHONY: install-dev
+install-dev:
+	install -d $(DESTDIR)$(pkgconfigdir)
+	install --mode=644 ../trustvisor.pc $(DESTDIR)$(pkgconfigdir)
+	install -d $(DESTDIR)$(includedir)/trustvisor
+	install ./include/trustvisor.h $(DESTDIR)$(includedir)/trustvisor
+	install /usr/local/include/xmhf/libbaremetal/libtv_utpm/include/tv_utpm.h $(DESTDIR)$(includedir)/trustvisor
+
+.PHONY: test
+test:
+	cd test && $(MAKE) -w all
+
 .PHONY: clean 
-clean:
-	$(RM) -f $(OBJECTS)
+clean: 
+	$(RM) -rf *.o
+	cd test && $(MAKE) -w clean
+
+# nothing that is trustvisor specific
+.PHONY: distclean
+distclean: 

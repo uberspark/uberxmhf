@@ -51,13 +51,27 @@
 #define __EMHF_CONFIGX86_H__
 
 //======================================================================
-//EMHF arch. specific configurable constant definitions
+//XMHF platform/arch. specific configurable constant definitions
 
-//SL + runtime base addresses
-//SL currently sits at absolute address 128MB (0x08000000). runtime is
-//at an offset of 2M from this SL base address
-#define __TARGET_BASE_SL				0x10000000
-#define __TARGET_BASE					0x10200000
+//----------------------------------------------------------------------
+// XMHF platform memory map
+
+	//physical address where the XMHF boot-loader is loaded (e.g., via GRUB)
+	#define __TARGET_BASE_BOOTLOADER		0x01E00000		//30MB
+	#define __TARGET_SIZE_BOOTLOADER		0x00200000		//2MB
+
+	//physical address of XMHF secure loader + core runtime
+	//SL currently sits at absolute address 256MB (0x10000000). 
+	//core runtime is at an offset of 2M from this SL base address
+	#define __TARGET_BASE_SL				0x10000000		//256MB
+	#define __TARGET_SIZE_SL				0x00200000
+	
+	#define __TARGET_BASE_CORE				0x10200000		//258M
+
+	//physical address of XMHF hypapp
+	#define __TARGET_BASE_XMHFHYPAPP		0x1D000000      //480M
+	#define __TARGET_SIZE_XMHFHYPAPP		0x02000000		//32M
+//----------------------------------------------------------------------	
 
 //"sl" parameter block magic value
 #define SL_PARAMETER_BLOCK_MAGIC		0xDEADBEEF
@@ -72,7 +86,13 @@
 #define INIT_STACK_SIZE					(8192)					
 
 //max. cores/vcpus we support currently
-#define MAX_MIDTAB_ENTRIES  			(8)
+#ifndef __XMHF_VERIFICATION__
+	#define MAX_MIDTAB_ENTRIES  			(8)
+#else
+	#define MAX_MIDTAB_ENTRIES				(1)
+#endif
+
+
 #define MAX_PCPU_ENTRIES  				(MAX_MIDTAB_ENTRIES)
 #define MAX_VCPU_ENTRIES    			(MAX_PCPU_ENTRIES)
 

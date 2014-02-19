@@ -1,0 +1,27 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+includedir=@includedir@
+libdir=@libdir@
+cclibdir=@CCLIB@
+
+xmhf_datarootdir=${prefix}/share
+xmhf_datadir=${xmhf_datarootdir}/xmhf
+xmhf_libdir=${libdir}/xmhf
+xmhf_includedir=${includedir}/xmhf
+
+xmhf_buildconf_mp_version=@MP_VERSION@
+xmhf_buildconf_target_platform=@TARGET_PLATFORM@
+xmhf_buildconf_target_arch=@TARGET_ARCH@
+xmhf_buildconf_nested_paging=y
+xmhf_buildconf_coreapihub_arch=@COREAPIHUB_ARCH@
+
+
+
+
+Name: xmhf
+Description: eXtensible Modular Hypervisor Framework
+Requires:
+Version: @PACKAGE_VERSION@
+Libs: -L${xmhf_libdir} -lbaremetal -lxmhfcore -lbaremetal -L${cclibdir} 
+Cflags: -I${xmhf_includedir} -I${xmhf_includedir}/xmhf-core/include -I${xmhf_includedir}/libbaremetal/libtpm/include	-I${xmhf_includedir}/libbaremetal/libtv_utpm/include -I${xmhf_includedir}/libbaremetal/libxmhfc/include	-I${xmhf_includedir}/libbaremetal/libxmhfcrypto/include -I${xmhf_includedir}/libbaremetal/libxmhfutil/include  
+

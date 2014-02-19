@@ -65,3 +65,4 @@ void xmhf_baseplatform_initialize(void){
 void xmhf_baseplatform_cpuinitialize(void){
 	xmhf_baseplatform_arch_cpuinitialize();
 }
+

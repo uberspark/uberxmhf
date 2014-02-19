@@ -54,6 +54,7 @@
 //---runtime main---------------------------------------------------------------
 void xmhf_runtime_entry(void){
 	u32 cpu_vendor;
+	//XMHF_HYPAPP_HEADER *hypappheader;
 
 	//get CPU vendor
 	cpu_vendor = xmhf_baseplatform_getcpuvendor();
@@ -130,6 +131,51 @@ void xmhf_runtime_entry(void){
 	
 #endif
 
+
+	//invoke XMHF api hub initialization function to initialize core API
+	//interface layer
+	xmhf_apihub_initialize();
+
+
+	//paramhypapp->param1 = 0;	//write to hypapp parameter region, should trgger a #pf
+	//*((u32 *)0x1D000000) = 0;	//write to hypapp code/data/stack region, shoulod trigger a #pf
+	//{
+	//		typedef void (*testfun)(void);
+	//		testfun fun = (testfun)0x1D000000;
+	//		fun();	//execute code in hypapp memory region, should trigger a #pf
+	//}
+	
+	//call hypapp main function
+	{
+		//APP_PARAM_BLOCK appParamBlock;
+  	
+		//appParamBlock.bootsector_ptr = (u32)rpb->XtGuestOSBootModuleBase;
+		//appParamBlock.bootsector_size = (u32)rpb->XtGuestOSBootModuleSize;
+		//appParamBlock.optionalmodule_ptr = (u32)rpb->runtime_appmodule_base;
+		//appParamBlock.optionalmodule_size = (u32)rpb->runtime_appmodule_size;
+		//appParamBlock.runtimephysmembase = (u32)rpb->XtVmmRuntimePhysBase;  
+		//appParamBlock.runtimesize = (u32)rpb->XtVmmRuntimeSize;
+		//COMPILE_TIME_ASSERT(sizeof(appParamBlock.cmdline) >= sizeof(rpb->cmdline));
+		//#ifndef __XMHF_VERIFICATION__
+		//strncpy(appParamBlock.cmdline, rpb->cmdline, sizeof(appParamBlock.cmdline));
+		//#endif
+		hypapp_env_block_t hypappenvb;
+		hypappenvb.runtimephysmembase = (u32)rpb->XtVmmRuntimePhysBase;  
+		hypappenvb.runtimesize = (u32)rpb->XtVmmRuntimeSize;
+	
+		//call app main
+		printf("\n%s: proceeding to call xmhfhypapp_main on BSP", __FUNCTION__);
+		//xmhfhypapp_main(&appParamBlock);
+		xmhfhypapp_main(hypappenvb);
+		printf("\n%s: came back into core", __FUNCTION__);
+
+	}   	
+
+	//[]debug
+	//printf("\n%s: Halting", __FUNCTION__);
+	//printf("\n%s: XMHF Tester Finished!", __FUNCTION__);
+	//HALT();
+
 	//initialize base platform with SMP 
 	xmhf_baseplatform_smpinitialize();
 
@@ -138,76 +184,22 @@ void xmhf_runtime_entry(void){
 }
 
 //we get control here in the context of *each* physical CPU core 
-//vcpu->isbsp = 1 if the core is a BSP or 0 if its an AP
-//isEarlyInit = 1 if we were boot-strapped by the BIOS and is 0
-//in the event we were launched from a running OS
-void xmhf_runtime_main(VCPU *vcpu, u32 isEarlyInit){
+void xmhf_runtime_main(context_desc_t context_desc){ 
+	//[debug]
+	printf("\n%s: partdesc.id=%u, cpudesc.id=%u, cpudesc.isbsp=%u", __FUNCTION__, context_desc.partition_desc.id, context_desc.cpu_desc.id, context_desc.cpu_desc.isbsp);
 
-  //initialize CPU
-  xmhf_baseplatform_cpuinitialize();
+	//TODO: check if this CPU is allocated to the "rich" guest. if so, pass it on to
+	//the rich guest initialization procedure. if the CPU is not allocated to the
+	//rich guest, enter it into a CPU pool for use by other partitions
+	
+	//initialize and boot "rich" guest
+	xmhf_smpguest_initialize(context_desc);
 
-  //initialize partition monitor (i.e., hypervisor) for this CPU
-  xmhf_partition_initializemonitor(vcpu);
-
-  //setup guest OS state for partition
-  xmhf_partition_setupguestOSstate(vcpu);
-
-  //initialize memory protection for this core
-  xmhf_memprot_initialize(vcpu);
-
-  //initialize application parameter block and call app main
-  {
-  	APP_PARAM_BLOCK appParamBlock;
-  	
-	appParamBlock.bootsector_ptr = (u32)rpb->XtGuestOSBootModuleBase;
-  	appParamBlock.bootsector_size = (u32)rpb->XtGuestOSBootModuleSize;
-  	appParamBlock.optionalmodule_ptr = (u32)rpb->runtime_appmodule_base;
-  	appParamBlock.optionalmodule_size = (u32)rpb->runtime_appmodule_size;
-	appParamBlock.runtimephysmembase = (u32)rpb->XtVmmRuntimePhysBase;  
-    COMPILE_TIME_ASSERT(sizeof(appParamBlock.cmdline) >= sizeof(rpb->cmdline));
+	//TODO: implement CPU pooling for use by other partitions
+	
 	#ifndef __XMHF_VERIFICATION__
-    strncpy(appParamBlock.cmdline, rpb->cmdline, sizeof(appParamBlock.cmdline));
-	#endif
+	printf("\nCPU(0x%02x): FATAL, should not be here. HALTING!", context_desc.cpu_desc.id);
+	HALT();
+	#endif //__XMHF_VERIFICATION__
 	
-  	//call app main
-  	if(xmhf_app_main(vcpu, &appParamBlock)){
-    	printf("\nCPU(0x%02x): EMHF app. failed to initialize. HALT!", vcpu->id);
-    	HALT();
-  	}
-  }   	
-
-#ifndef __XMHF_VERIFICATION__
-  //increment app main success counter
-  spin_lock(&g_lock_appmain_success_counter);
-  g_appmain_success_counter++;
-  spin_unlock(&g_lock_appmain_success_counter);
-	
-  //if BSP, wait for all cores to go through app main successfully
-  //TODO: conceal g_midtable_numentries behind interface
-  //xmhf_baseplatform_getnumberofcpus
-  if(vcpu->isbsp && (g_midtable_numentries > 1)){
-		printf("\nCPU(0x%02x): Waiting for all cores to cycle through appmain...", vcpu->id);
-		while(g_appmain_success_counter < g_midtable_numentries);	
-		printf("\nCPU(0x%02x): All cores have successfully been through appmain.", vcpu->id);
-  }
-#endif
-
-  //late initialization is still WiP and we can get only this far 
-  //currently
-	if(!isEarlyInit){
-		printf("\nCPU(0x%02x): Late-initialization, WiP, HALT!", vcpu->id);
-		HALT();
-	}
-
-#ifndef __XMHF_VERIFICATION__
-  //initialize support for SMP guests
-  xmhf_smpguest_initialize(vcpu);
-#endif
-
-  //start partition (guest)
-  printf("\n%s[%02x]: starting partition...", __FUNCTION__, vcpu->id);
-  xmhf_partition_start(vcpu);
-
-  printf("\nCPU(0x%02x): FATAL, should not be here. HALTING!", vcpu->id);
-  HALT();
 }

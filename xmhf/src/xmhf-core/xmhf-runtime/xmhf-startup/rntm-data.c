@@ -55,8 +55,12 @@
 //runtime parameter block pointer 
 RPB *rpb __attribute__(( section(".data") )); 
 
+#ifndef __XMHF_VERIFICATION__
 //runtime DMA protection buffer
 u8 g_rntm_dmaprot_buffer[SIZE_G_RNTM_DMAPROT_BUFFER] __attribute__(( section(".palign_data") ));
+#else //__XMHF_VERIFICATION__
+//DMA table initialization is currently audited manually
+#endif
 
 //variable that is incremented by 1 by all cores that cycle through appmain
 //successfully, this should be finally equal to g_midtable_numentries at

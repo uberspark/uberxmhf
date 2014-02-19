@@ -51,8 +51,11 @@
 #include <xmhf.h> 
 
 // initialize memory protection structures for a given core (vcpu)
-void xmhf_memprot_initialize(VCPU *vcpu){
-	xmhf_memprot_arch_initialize(vcpu);
+//void xmhf_memprot_initialize(VCPU *vcpu){
+//	xmhf_memprot_arch_initialize(vcpu);
+//}
+void xmhf_memprot_initialize(context_desc_t context_desc){
+	xmhf_memprot_arch_initialize(context_desc);
 }
 
 // get level-1 page map address
@@ -82,14 +85,14 @@ u64 * xmhf_memprot_get_default_root_pagemap_address(VCPU *vcpu){
 
 
 //flush hardware page table mappings (TLB) 
-void xmhf_memprot_flushmappings(VCPU *vcpu){
-	xmhf_memprot_arch_flushmappings(vcpu);
+void xmhf_memprot_flushmappings(context_desc_t context_desc){
+	xmhf_memprot_arch_flushmappings(context_desc);
 }
 
 
 //set protection for a given physical memory address
-void xmhf_memprot_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
-#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
+void xmhf_memprot_setprot(context_desc_t context_desc, u64 gpa, u32 prottype){
+/*#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 	assert ( (vcpu != NULL) );
 	assert ( ( (gpa < rpb->XtVmmRuntimePhysBase) || 
 							 (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) 
@@ -104,9 +107,9 @@ void xmhf_memprot_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
 	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_NOEXECUTE)) ||
 	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_NOEXECUTE)) 
 	);
-#endif
+#endif*/
 
-	xmhf_memprot_arch_setprot(vcpu, gpa, prottype);
+	xmhf_memprot_arch_setprot(context_desc, gpa, prottype);
 }
 
 
@@ -114,3 +117,14 @@ void xmhf_memprot_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
 u32 xmhf_memprot_getprot(VCPU *vcpu, u64 gpa){
 	return xmhf_memprot_arch_getprot(vcpu, gpa);
 }
+
+//set singular HPT
+void xmhf_memprot_setsingularhpt(u64 hpt){
+		xmhf_memprot_arch_setsingularhpt(hpt);
+}
+
+//get HPT root pointer
+u64 xmhf_memprot_getHPTroot(context_desc_t context_desc){
+	return xmhf_memprot_arch_getHPTroot(context_desc);
+}
+

@@ -28,7 +28,7 @@ then
 fi
 export AR
 
-CFLAGS="-DOPENSSL_NO_DGRAM -DOPENSSL_NO_SOCK -UWINDOWS -UWIN32 -U_WIN32 -DOPENSSL_SYS_LINUX"
+CFLAGS="-m32 -DOPENSSL_NO_DGRAM -DOPENSSL_NO_SOCK -UWINDOWS -UWIN32 -U_WIN32 -DOPENSSL_SYS_LINUX"
 
 cd openssl-1.0.0d
 ./Configure tsvc-elf --prefix="$PREFIX" no-threads no-zlib no-shared no-sse2 no-dso no-hw no-asm $CFLAGS

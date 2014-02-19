@@ -1,81 +1,85 @@
 # makefile for "sl"
 # author: amit vasudevan (amitvasudevan@acm.org)
 
-# source files
-AS_SOURCES = ./arch/x86/sl-x86-entry.S  
-AS_SOURCES += ./arch/x86/sl-x86-sup.S
+srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
+vpath %.c $(srcdir)
+vpath %.S $(srcdir)
 
-C_SOURCES = sl.c 
-C_SOURCES += ./arch/x86/sl-x86.c 
-
-
-OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
-OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
+export XMHF_SECURELOADER_ARCH_SRC := $(realpath $(srcdir)/arch)
 
 
-#tie components used by SL
-OBJECTS_PRECOMPILED = ../xmhf-runtime/xmhf-debug/lib.a
+# grab list of all source files
+C_SOURCES := $(wildcard $(srcdir)/*.c)
 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/tpm-interface.o 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/arch/x86/tpm-x86.o 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/arch/x86/svm/tpm-x86svm.o 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/arch/x86/vmx/tpm-x86vmx.o 
+C_SOURCES := $(patsubst $(srcdir)/%, %, $(C_SOURCES))
 
+# grab list of file names only for binary generation
+C_SOURCES_FILENAMEONLY := $(notdir $(C_SOURCES))
 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-dmaprot/dmap-interface.o 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-dmaprot/arch/x86/dmap-x86.o 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-dmaprot/arch/x86/svm/dmap-x86svm.o 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-dmaprot/arch/x86/vmx/dmap-x86vmx.o
+OBJECTS_ARCHIVE := $(patsubst %.c, %.o, $(C_SOURCES_FILENAMEONLY))
 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/bplt-interface.o
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86.o
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-pci.o
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-acpi.o
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-smplock.o
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-addressing.o
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-cpu.o
+# list of object dependencies
+OBJECTS := $(patsubst %.c, %.o, $(C_SOURCES))
 
+OBJECTS_VERIFY := $(patsubst %.c, %.v, $(C_SOURCES))
 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/vmx/bplt-x86vmx.o
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/vmx/bplt-x86vmx-mtrrs.o
-
-# separate from OBJECTS_PRECOMPILED becasue needs to come after libs on link line
-OBJECTS_PRECOMPILED_LIBBACKENDS = ../xmhf-runtime/xmhf-xmhfcbackend/xmhfc-putchar.o
-
-# FIXME: ADDL_INCLUDES is overly general; sl/ doesn't need all of them
-CFLAGS += $(ADDL_INCLUDES)
-
-I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
-
-# CFLAGS += -fPIC
-
+# additional CFLAGS
+# CFLAGS += 
 # RUNTIME_INTEGRITY_HASH should be set by parent Makefile
 ifdef RUNTIME_INTEGRITY_HASH
 CFLAGS += -D___RUNTIME_INTEGRITY_HASH___=\"$(RUNTIME_INTEGRITY_HASH)\"
 endif
 
+# folder where objects go
+XMHF_SECURELOADER_OBJECTS_DIR = _objs_xmhf-secureloader
+
+# archive name
+THE_ARCHIVE = xmhf-secureloader
+
+
 # targets
 .PHONY: all
+all: $(THE_ARCHIVE)
 
-all: sl.bin
+$(THE_ARCHIVE): libxmhfslarch $(OBJECTS) 
+	cd $(XMHF_SECURELOADER_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(srcdir)/sl.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) ./_objs_libxmhfslarch/libxmhfslarch.a $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
+	#cd $(XMHF_SECURELOADER_OBJECTS_DIR) && $(STRIP) -s $(THE_ARCHIVE).exe
+	cd $(XMHF_SECURELOADER_OBJECTS_DIR) && $(OBJCOPY) --output-format=binary $(THE_ARCHIVE).exe $(THE_ARCHIVE).bin
 
-# FIXME: ADDL_LIBS is overly general; sl/ doesn't need all of them
-sl.bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) sl.lds.S
-	$(LD) -T sl.lds.S -o sl.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
-	$(CP) sl.exe sl_syms.exe
-	$(STRIP) -s sl.exe
-	$(OBJCOPY) --output-format=binary sl.exe sl.bin
 
-%.o: %.S $(I_SOURCES) Makefile ../Makefile
-	$(CC) -c $(ASFLAGS) -o $@ $<
-%.o: %.c $(I_SOURCES) Makefile ../Makefile
-	$(CC) -c $(CFLAGS) -o $@ $<
+%.o: %.S  
+	mkdir -p $(XMHF_SECURELOADER_OBJECTS_DIR)
+	#mkdir -p "$(@D)"
+	@echo Building "$(@F)" from "$<" 
+	gcc -c $(ASFLAGS) -o $(XMHF_SECURELOADER_OBJECTS_DIR)/$(@F) $<
 
-.PHONY: clean 
-clean: 
-	$(RM) -rf *.o
-	$(RM) -rf ./arch/x86/*.o
-	$(RM) -rf *.exe
-	$(RM) -rf *.bin
-	$(RM) -rf *.gz
+%.o: %.c   
+	mkdir -p $(XMHF_SECURELOADER_OBJECTS_DIR)
+	#mkdir -p "$(@D)"
+	@echo Building "$(@F)" from "$<" 
+	$(CC) -c $(CFLAGS) -o $(XMHF_SECURELOADER_OBJECTS_DIR)/$(@F) $<
 
+
+.PHONY: clean
+clean:
+	$(RM) -rf $(XMHF_SECURELOADER_OBJECTS_DIR)
+
+
+.PHONY: verify
+verify: $(OBJECTS_VERIFY)
+	mkdir -p $(XMHF_SECURELOADER_OBJECTS_DIR)
+	cd $(XMHF_SECURELOADER_OBJECTS_DIR) && $(MAKE) -f $(XMHF_SECURELOADER_ARCH_SRC)/Makefile -w verify
+	cd $(XMHF_SECURELOADER_OBJECTS_DIR) && echo $(CFLAGS) >CFLAGS
+	
+%.v: %.c  
+	mkdir -p $(XMHF_SECURELOADER_OBJECTS_DIR)
+	#mkdir -p "$(@D)"
+	#@echo Building "$(@F)" from "$<" 
+	$(CP) -f $< $(XMHF_SECURELOADER_OBJECTS_DIR)/$(@F).c
+
+.PHONY: libxmhfslarch
+libxmhfslarch: 
+	@echo building libxmhfslarch...
+	mkdir -p $(XMHF_SECURELOADER_OBJECTS_DIR)
+	cd $(XMHF_SECURELOADER_OBJECTS_DIR) && $(MAKE) -f $(XMHF_SECURELOADER_ARCH_SRC)/Makefile -w all
+	@echo libxmhfslarch build SUCCESS

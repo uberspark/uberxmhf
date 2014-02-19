@@ -1,0 +1,83 @@
+########################################################################
+#
+# Makefile for trustvisor hypapp
+# author: amit vasudevan (amitvasudevan@acm.org)
+#
+########################################################################
+
+export PKG_CONFIG ?= pkg-config
+export XMHF_PKG_CONFIG_MODNAME=xmhf
+XMHF_DATA_DIR=$(shell $(PKG_CONFIG) $(XMHF_PKG_CONFIG_MODNAME) --variable=xmhf_datadir)
+include $(XMHF_DATA_DIR)/xmhfhypapp.mk
+
+########################################################################
+# begin hypapp specific build harness
+
+########################################################################
+### BEGIN Variables controlled using autoconf
+########################################################################
+
+# Path settings; our project is not unique in this aspect
+export prefix=@prefix@
+export exec_prefix=@exec_prefix@
+export libdir=@libdir@
+export includedir=@includedir@
+export pkgconfigdir=@pkgconfigdir@
+export pkgincludedir=@pkgincludedir@
+
+# Tool settings; our project is not unique in this aspect
+export CC = @CC@
+export AS = @AS@
+export LD = @LD@
+export OBJDUMP = @OBJDUMP@
+export OBJCOPY = @OBJCOPY@
+export STRIP = @STRIP@
+export RM = @RM@
+export CP = @CP@
+export TAR = @TAR@
+export SED = @SED@
+export MKDIR = @MKDIR@
+export CAT = @CAT@
+
+export CCLIB = @CCLIB@
+########################################################################
+
+
+export XMHF_HYPAPP_NAME=trustvisor
+
+C_SOURCES :=  $(wildcard ./src/*.c)
+export XMHF_HYPAPP_OBJS := $(patsubst %.c, %.o, $(C_SOURCES))
+
+.PHONY: xmhfhypappall
+xmhfhypappall:
+		cd src && $(MAKE) -w all
+
+.PHONY: xmhfhypappclean
+xmhfhypappclean:
+		cd src && $(MAKE) -w clean
+
+.PHONY: install
+install: 
+	cd src && $(MAKE) -w install
+
+.PHONY: install-dev
+install-dev: 
+	cd src && $(MAKE) -w install-dev
+
+.PHONY: distclean 
+distclean: clean
+	cd src && $(MAKE) -w distclean
+	$(RM) config.log config.status
+	# http://www.gnu.org/software/automake/manual/automake.html#Clean
+	$(RM) -rf Makefile
+
+#-----autoconf rules
+Makefile: Makefile.in config.status
+	./config.status $@
+
+config.status: configure
+	./config.status --recheck
+
+configure: configure.ac
+	./autogen.sh
+

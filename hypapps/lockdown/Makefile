@@ -1,34 +1,28 @@
-# lockdown hypapp makefile
+########################################################################
+#
+# Makefile for lockdown hypapp
 # author: amit vasudevan (amitvasudevan@acm.org)
+#
+########################################################################
 
-SRCDIR := $(dir $(lastword $(MAKEFILE_LIST)))
-SRCDIR := $(realpath $(SRCDIR))
+export PKG_CONFIG ?= pkg-config
+export XMHF_PKG_CONFIG_MODNAME=xmhf
+XMHF_DATA_DIR=$(shell $(PKG_CONFIG) $(XMHF_PKG_CONFIG_MODNAME) --variable=xmhf_datadir)
+include $(XMHF_DATA_DIR)/xmhfhypapp.mk
 
-export THE_ARCHIVE = xmhfhypapp.a
+########################################################################
+# begin hypapp specific build harness
 
-export APP_INCLUDEDIR = $(SRCDIR)/src/app/include
-export APPOBJECTSDIR = $(SRCDIR)/src/app/objects
+export XMHF_HYPAPP_NAME=lockdown
 
-#-----basic flags for compiling
-CFLAGS += -I$(APP_INCLUDEDIR)
+C_SOURCES :=  $(wildcard ./src/*.c)
+export XMHF_HYPAPP_OBJS := $(patsubst %.c, %.o, $(C_SOURCES))
 
-export CFLAGS
-export ASFLAGS
+.PHONY: xmhfhypappall
+xmhfhypappall:
+		cd src && $(MAKE) -w all
 
-.PHONY: all
-all:
-	# make app components
-	mkdir -p $(APPOBJECTSDIR)
-	cd src && $(MAKE) -w all
-	mv ./src/app/$(THE_ARCHIVE) .
-
-.PHONY: clean
-clean: 
-	cd src && $(MAKE) -w clean
-	rm -rf $(APPOBJECTSDIR) $(THE_ARCHIVE)
-	rm -f *.bin
-	rm -f *.bin.gz
-
-.PHONY: distclean
-distclean: clean
+.PHONY: xmhfhypappclean
+xmhfhypappclean:
+		cd src && $(MAKE) -w clean
 

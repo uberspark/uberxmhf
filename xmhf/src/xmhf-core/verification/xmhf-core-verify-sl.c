@@ -51,19 +51,38 @@
 //----------------------------------------------------------------------
 #include <xmhf.h>
 
-u32 xmhf_verify_cpu_vendor;
+extern struct _sl_parameter_block slpb;
+u8 xmhf_rpb_start[sizeof(RPB)];
+u8 _rpb_e820buffer[1280];
+u8 _rpb_cpuinfobuffer[128];
 
-//u32 xmhf_verify_cpu_vendor = CPU_VENDOR_AMD;
 void main(){
-		extern void xmhf_sl_main(u32 cpu_vendor, u32 baseaddr, u32 rdtsc_eax, u32 rdtsc_edx);
+		//populate slpb
+		slpb.magic = SL_PARAMETER_BLOCK_MAGIC;
+		slpb.errorHandler = 0;
+		slpb.isEarlyInit = 1;
+		slpb.numE820Entries = 2;
+		//slpb.memmapbuffer;
+		slpb.numCPUEntries = 1;
+		//slpb.cpuinfobuffer;
+		slpb.runtime_size = (80*1024*1024);				//size of the runtime image
+		slpb.runtime_osbootmodule_base = 0;				//guest OS bootmodule base
+		slpb.runtime_osbootmodule_size = 512;			//guest OS bootmodule size
+		slpb.runtime_appmodule_base=0;	
+		slpb.runtime_appmodule_size=0;
+		slpb.rdtsc_before_drtm=0;
+		slpb.rdtsc_after_drtm=0;
+		//slpb.uart_config;
+		//slpb.cmdline;
 
-#if defined (__XMHF_TARGET_ARCH_X86_VMX__)
-		xmhf_verify_cpu_vendor = CPU_VENDOR_INTEL;
-#else
-		xmhf_verify_cpu_vendor = CPU_VENDOR_AMD;
-#endif
+		//setup RPB
+		{
+				RPB *rpb = (RPB *)&xmhf_rpb_start;
+				rpb->XtVmmE820Buffer = (u32)&_rpb_e820buffer;
+				rpb->XtVmmMPCpuinfoBuffer = (u32)&_rpb_cpuinfobuffer;
+		}
 
-		xmhf_sl_main(xmhf_verify_cpu_vendor, 0xB8000000, 0, 0);
+		_xmhf_sl_entry();
 		assert(1);
 }
 //----------------------------------------------------------------------

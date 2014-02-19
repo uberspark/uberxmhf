@@ -44,7 +44,8 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <tomcrypt.h>
+#include <xmhfcrypto.h>
+//#include <tomcrypt.h>
 #include <random.h>
 
 /* A secure PRNG using trustvisor's internal RNG

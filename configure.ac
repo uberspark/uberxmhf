@@ -1,4 +1,4 @@
-AC_INIT([emhf], [0.2])
+AC_INIT([xmhf], [0.2.2])
 AC_CONFIG_AUX_DIR([build-aux]) # use this if\when switching to automake
 
 AC_PROG_INSTALL
@@ -10,7 +10,8 @@ AC_PROG_INSTALL
 
 # simple configuration of tools. (just looks for matching binary
 # on PATH)
-AC_CHECK_PROG([CC], [gcc], [gcc])
+#AC_CHECK_PROG([CC], [gcc], [gcc])
+AC_CHECK_PROG([CC], [clang], [clang])
 AC_CHECK_PROG([AS], [as], [as])
 AC_CHECK_PROG([LD], [ld], [ld])
 AC_CHECK_PROG([OBJDUMP], [objdump], [objdump])
@@ -43,6 +44,14 @@ AC_ARG_WITH([target_arch],
                 [select target architecture (x86-vmx, x86-svm)]),
                 , [with_target_arch=x86-vmx])
 TARGET_ARCH=$[]with_target_arch
+
+# XMHF core API hub architecture
+AC_SUBST([COREAPIHUB_ARCH])
+AC_ARG_WITH([coreapihub_arch],
+        AS_HELP_STRING([--with-coreapihub-arch=@<:@ARCH@:>@],
+                [select XMHF core API hub architecture (swfp)]),
+                , [with_coreapihub_arch=swfp])
+COREAPIHUB_ARCH=$[]with_coreapihub_arch
 
 
 AC_SUBST([DEBUG_SERIAL])
@@ -133,20 +142,6 @@ AC_CHECK_FILE([${LIBTOMCRYPT_SRC}/src/headers/tomcrypt.h],
         ,
         AC_MSG_FAILURE([libtomcrypt not found at "${LIBTOMCRYPT_SRC}"]))
 
-# EMHF app root directory
-AC_SUBST([APP_ROOT])
-AC_ARG_WITH([approot],
-        AS_HELP_STRING([--with-approot=@<:@path@:>@],
-                [path to EMHF app source directory]),
-                , [with_approot=./hypapps/app])
-APP_ROOT=$[]with_approot
-# AC_CONFIG_SUBDIRS fails silently on absolute paths
-AS_IF([test "x${APP_ROOT:0:1}" == "x/"],
-            AC_MSG_FAILURE([approot must be a relative path.]))
-# make absolute
-dnl AS_IF([test "x${APP_ROOT:0:1}" != "x/"],
-dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$APP_ROOT])
-
 AC_SUBST([EMHFCOREDIR])
 AC_ARG_WITH([emhfcore],
         AS_HELP_STRING([--with-emhfcore=@<:@path@:>@],
@@ -183,5 +178,5 @@ AC_SUBST([pkgdatadir], ['${datadir}/AC_PACKAGE_NAME'])
 AC_SUBST([pkgconfigdir], ['${libdir}/pkgconfig'])
 AC_SUBST([pkgincludedir], ['${includedir}/AC_PACKAGE_NAME'])
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile xmhf.pc])
 AC_OUTPUT

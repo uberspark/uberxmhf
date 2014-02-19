@@ -855,7 +855,14 @@ void cstartup(multiboot_info_t *mbi){
 	printf("\neXtensible Modular Hypervisor Framework (XMHF) %s", ___XMHF_BUILD_VERSION___);
 	printf("\nBuild revision: %s\n", ___XMHF_BUILD_REVISION___);
 	
-    printf("\nINIT(early): initializing, total modules=%u", mods_count);
+    printf("\nXMHF boot-loader: initializing, total modules=%u", mods_count);
+
+	//we need at least 2 modules passed to us via GRUB, the hypapp binary and the guest OS boot-sector. 
+	//If we don't have the bare minimum, bail out early
+	if(mods_count < 2){
+		printf("\nXMHF boot-loader: Halting, you need a hypapp and the guest OS boot sector at bare minimum!");
+		HALT(); 		
+	}
 
     //check CPU type (Intel vs AMD)
     cpu_vendor = get_cpu_vendor_or_die(); // HALT()'s if unrecognized    
@@ -877,15 +884,41 @@ void cstartup(multiboot_info_t *mbi){
     //deal with MP and get CPU table
     dealwithMP();
 
-    //find highest 2MB aligned physical memory address that the hypervisor
-    //binary must be moved to
-    sl_rt_size = mod_array[0].mod_end - mod_array[0].mod_start;
-    hypervisor_image_baseaddress = dealwithE820(mbi, PAGE_ALIGN_UP2M((sl_rt_size))); 
+    //check (and revise) platform E820 memory map to see if we can
+    //load at __TARGET_BASE_SL 
+    sl_rt_size = mod_array[0].mod_start - __TARGET_BASE_BOOTLOADER + __TARGET_SIZE_BOOTLOADER;
+    hypapp_size = mod_array[0].mod_end - mod_array[0].mod_start;
+    hypervisor_image_baseaddress = dealwithE820(mbi, PAGE_ALIGN_UP2M(sl_rt_size) + PAGE_ALIGN_UP2M(hypapp_size) ); 
 
-    //relocate the hypervisor binary to the above calculated address
-    memcpy((void*)hypervisor_image_baseaddress, (void*)mod_array[0].mod_start, sl_rt_size);
+	//sanity check memory map and limits
+		//ensure we are loading at 256M
+		HALT_ON_ERRORCOND( (hypervisor_image_baseaddress == __TARGET_BASE_SL) );
+		
+		//load address of XMHF bootloader = 30MB
+		//sizeof ( XMHF bootloader) = 2MB
+		//sizeof ( XMHF secureloader+ XMHF runtime + hypapp binary + guest OS boot-sector + SINIT module (if any) + hypapp specific modules (if any) ) 
+		//should not be greater than 224MB since we will be loading our system at absolute address 256MB and our current memcpy does not tackle overlaps
+		if ( mod_array[mods_count-1].mod_end >= __TARGET_BASE_SL ){
+			printf("\nXMHF boot-loader: Halting! XMHF load memory map limits violated. TOMM=0x%08x", mod_array[mods_count-1].mod_end);
+			HALT();
+		}
 
-    HALT_ON_ERRORCOND(sl_rt_size > 0x200000); /* 2M */
+		//SL+core memory map is from 0x10000000-0x1D000000
+		if(sl_rt_size > (__TARGET_BASE_XMHFHYPAPP - __TARGET_BASE_SL) ){
+			printf("\nXMHF boot-loader: Halting! XMHF SL + core memory limit overflow. size=%08x (max:%08x)", sl_rt_size, (__TARGET_BASE_XMHFHYPAPP - __TARGET_BASE_SL));
+			HALT();
+		}
+		
+		//hypapp memory map is from 0x1D000000-0x20000000
+		if( hypapp_size > __TARGET_SIZE_XMHFHYPAPP ){
+			printf("\nXMHF boot-loader: Halting! XMHF hypapp memory limit overflow. size=%08x (max:%08x)", hypapp_size, __TARGET_SIZE_XMHFHYPAPP);
+			HALT();
+		}
+		
+
+    //relocate the SL+core runtime+hyypapp binaries to corresponding memory regions
+    memcpy((void*)__TARGET_BASE_SL, (void*)(__TARGET_BASE_BOOTLOADER+__TARGET_SIZE_BOOTLOADER), sl_rt_size);
+	memcpy((void*)__TARGET_BASE_XMHFHYPAPP, (void *)mod_array[0].mod_start, hypapp_size);
 
     /* runtime */
     print_hex("    INIT(early): *UNTRUSTED* gold runtime: ",
@@ -922,7 +955,8 @@ void cstartup(multiboot_info_t *mbi){
         slpb->numCPUEntries = pcpus_numentries;
         //memcpy((void *)&slpb->pcpus, (void *)&pcpus, (sizeof(PCPU) * pcpus_numentries));
         memcpy((void *)&slpb->cpuinfobuffer, (void *)&pcpus, (sizeof(PCPU) * pcpus_numentries));
-        slpb->runtime_size = (mod_array[0].mod_end - mod_array[0].mod_start) - PAGE_SIZE_2M;      
+        //slpb->runtime_size = (mod_array[0].mod_end - mod_array[0].mod_start) - PAGE_SIZE_2M;      
+        slpb->runtime_size = sl_rt_size - PAGE_SIZE_2M;
         slpb->runtime_osbootmodule_base = mod_array[1].mod_start;
         slpb->runtime_osbootmodule_size = (mod_array[1].mod_end - mod_array[1].mod_start); 
 

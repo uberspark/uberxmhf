@@ -1,7 +1,17 @@
 #-----------------------------------------------------------------------
-# lockdown EMHF hyperapp top-level makefile
+# makefile for Lockdown XMHF hypapp
 # author: amit vasudevan (amitvasudevan@acm.org)
+#
 
+# source files
+AS_SOURCES = 
+C_SOURCES = appmain.c approvedexec.c hyperpart-switch.c hyperpart-disk.c approvedexec-windows.c
+I_SOURCES =  $(wildcard ./include/*.h)
+
+OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
+OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
+
+CFLAGS += -I./include
 
 #-----------------------------------------------------------------------
 # app-specific configuration options
@@ -36,20 +46,16 @@ endif
 
 
 #-----------------------------------------------------------------------
-
-export CFLAGS
-export ASFLAGS
-
+# targets
 .PHONY: all
-all:
-	# make app components
-	mkdir -p $(APPOBJECTSDIR)
-	cd app && $(MAKE) -w all
+all: $(OBJECTS) 
 
-.PHONY: clean
+%.o: %.S $(I_SOURCES) Makefile  
+	$(CC) -c $(ASFLAGS) -o $@ $<
+%.o: %.c $(I_SOURCES) Makefile 
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+.PHONY: clean 
 clean: 
-	cd app && $(MAKE) -w clean
-	rm -f *.bin
-	rm -f *.bin.gz
+	$(RM) -	f *.o
 
- 

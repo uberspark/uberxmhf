@@ -51,6 +51,38 @@
 
 #ifndef __ASSEMBLY__
 
+//define a pseudo attribute definition that allows us to annotate 
+//core API/hypapp callbacks function parameters
+//core-ro = parameter in core and is read-only within hypapp
+//hypapp-ro = parameter in hypapp area is read-only in core
+//core-rw = parameter in core and is read-write within core
+//hypapp-rw = parameter in hypapp area and is rad-write in hypapp
+#define __xmhfattribute__(x)
+
+//define XMHF core API aggregate return type
+//allows us to return multiple values without using pointers to pointers
+typedef struct xmhfcoreapiretval {
+	u64 returnval;
+	void *returnptr1;
+} xmhfcoreapiretval_t;
+
+//XMHF CPU descriptor type
+typedef struct {
+	uint32_t id;
+	bool isbsp;
+} cpu_desc_t;
+	
+//XMHF partition descriptor type
+typedef struct {
+	uint32_t id;
+} partition_desc_t;
+
+//XMHF context descriptor type (context = partition + cpu pair)
+typedef struct {
+	partition_desc_t partition_desc;
+	cpu_desc_t cpu_desc;
+} context_desc_t;
+
 typedef u32 	paddr_t;		//physical address
 typedef void* 	hva_t; 			//hypervisor virtual address 
 typedef u64 	spa_t; 			//system physical address 
@@ -93,7 +125,7 @@ typedef struct {
 	u32 XtVmmMPCpuinfoNumEntries;
 	u32 XtVmmTSSBase;
     uart_config_t RtmUartConfig;	        /* runtime options parsed in init and passed forward */
-    char cmdline[1024]; 				/* runtime options parsed in init and passed forward */
+    char cmdline[128]; 				/* runtime options parsed in init and passed forward */
 	u32 isEarlyInit;					//1 for an "early init" else 0 (late-init)
 } __attribute__((packed)) RPB, *PRPB;
 
@@ -117,7 +149,7 @@ typedef struct _sl_parameter_block {
 
     /* runtime options parsed in init and passed forward */
     uart_config_t uart_config;
-    char cmdline[1024]; /* runtime options parsed in init and passed forward */
+    char cmdline[128]; /* runtime options parsed in init and passed forward */
 } __attribute__((packed)) SL_PARAMETER_BLOCK;
 
 

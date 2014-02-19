@@ -1,42 +1,30 @@
 # makefile for "init"
 # author: amit vasudevan (amitvasudevan@acm.org)
 
-# source files
-AS_SOURCES = header.S initsup.S
-C_SOURCES = init.c smp.c txt_heap.c txt_hash.c txt_acmod.c txt.c cmdline.c
+srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
+vpath %.c $(srcdir)
+vpath %.S $(srcdir)
 
-OBJECTS = $(patsubst %.S, %.o, $(AS_SOURCES))
-OBJECTS += $(patsubst %.c, %.o, $(C_SOURCES))
+# grab list of all source files
+C_SOURCES := $(shell find $(srcdir)/ -type f -name '*.c')
+A_SOURCES := $(shell find $(srcdir)/ -type f -name '*.S')
 
-OBJECTS_PRECOMPILED = ../xmhf-runtime/xmhf-debug/lib.a
+C_SOURCES := $(patsubst $(srcdir)/%, %, $(C_SOURCES))
+A_SOURCES := $(patsubst $(srcdir)/%, %, $(A_SOURCES))
 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/tpm-interface.o 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/arch/x86/tpm-x86.o 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/arch/x86/svm/tpm-x86svm.o 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-tpm/arch/x86/vmx/tpm-x86vmx.o 
+# grab list of file names only for binary generation
+C_SOURCES_FILENAMEONLY := $(notdir $(C_SOURCES))
+A_SOURCES_FILENAMEONLY := $(notdir $(A_SOURCES))
 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-pci.o
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-acpi.o
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-smplock.o
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-addressing.o
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/bplt-x86-cpu.o
+OBJECTS_ARCHIVE := $(patsubst %.c, %.o, $(C_SOURCES_FILENAMEONLY))
+OBJECTS_ARCHIVE += $(patsubst %.S, %.o, $(A_SOURCES_FILENAMEONLY))
 
+# list of object dependencies
+OBJECTS := $(patsubst %.c, %.o, $(C_SOURCES))
+OBJECTS += $(patsubst %.S, %.o, $(A_SOURCES))
 
-OBJECTS_PRECOMPILED += ../xmhf-runtime/xmhf-baseplatform/arch/x86/vmx/bplt-x86vmx-mtrrs.o
-
-# FIXME: This is overly general; init/ doesn't need all of these
-CFLAGS += $(ADDL_INCLUDES)
-
-# separate from OBJECTS_PRECOMPILED becasue needs to come after libs on link line
-OBJECTS_PRECOMPILED_LIBBACKENDS = ../xmhf-runtime/xmhf-xmhfcbackend/xmhfc-putchar.o
-
-I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
-
-
-# NOTE: THIS IS THE init MODULE.  IT IS COMPLETELY UNTRUSTED.  THESE
-# VALUES ARE HERE SIMPLY TO AID IN DEVELOPMENT AND DEBUGGING, TO STOP
-# EARLY IN THE EVENT OF MISTAKES.  DO NOT RELY ON THEM!
-
+# additional CFLAGS
+# CFLAGS += 
 # RUNTIME_INTEGRITY_HASH should be set by parent Makefile
 ifdef RUNTIME_INTEGRITY_HASH
 CFLAGS += -D___RUNTIME_INTEGRITY_HASH___=\"$(RUNTIME_INTEGRITY_HASH)\"
@@ -50,27 +38,40 @@ ifdef SLBELOW64K_INTEGRITY_HASH
 CFLAGS += -D___SLBELOW64K_INTEGRITY_HASH___=\"$(SLBELOW64K_INTEGRITY_HASH)\"
 endif
 
+# folder where objects go
+XMHF_BOOTLOADER_OBJECTS_DIR = _objs_xmhf-bootloader
+
+# archive name
+THE_ARCHIVE = xmhf-bootloader
+
 
 # targets
 .PHONY: all
-all: init-$(TARGET_HWPLATFORM).bin
+all: $(THE_ARCHIVE)
 
-# FIXME: ADDL_LIBS is overly general; init/ doesn't need all of them
-init-$(TARGET_HWPLATFORM).bin: $(OBJECTS) $(OBJECTS_PRECOMPILED) init.lds.S
-	$(LD) -T init.lds.S -o init.exe $(OBJECTS) $(OBJECTS_PRECOMPILED) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
-	$(CP) init.exe init_syms.exe
-	$(STRIP) -s init.exe
-	$(OBJCOPY) --output-format=binary init.exe init-$(TARGET_HWPLATFORM).bin
+$(THE_ARCHIVE): $(OBJECTS) 
+	cd $(XMHF_BOOTLOADER_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(srcdir)/init.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
+	cd $(XMHF_BOOTLOADER_OBJECTS_DIR) && $(STRIP) -s $(THE_ARCHIVE).exe
+	cd $(XMHF_BOOTLOADER_OBJECTS_DIR) && $(OBJCOPY) --output-format=binary $(THE_ARCHIVE).exe $(THE_ARCHIVE).bin
 
-%.o: %.S $(I_SOURCES) Makefile ../Makefile  ../../../Makefile
-	$(CC) -c $(ASFLAGS) -o $@ $<
-%.o: %.c $(I_SOURCES) Makefile ../Makefile	../../../Makefile
-	$(CC) -c $(CFLAGS) -o $@ $<
 
-.PHONY: clean 
-clean: 
-	$(RM) -rf *.o
-	$(RM) -rf *.exe
-	$(RM) -rf *.bin
-	$(RM) -rf *.gz
+%.o: %.S  
+	mkdir -p $(XMHF_BOOTLOADER_OBJECTS_DIR)
+	#mkdir -p "$(@D)"
+	@echo Building "$(@F)" from "$<" 
+	gcc -c $(ASFLAGS) -o $(XMHF_BOOTLOADER_OBJECTS_DIR)/$(@F) $<
+
+%.o: %.c   
+	mkdir -p $(XMHF_BOOTLOADER_OBJECTS_DIR)
+	#mkdir -p "$(@D)"
+	@echo Building "$(@F)" from "$<" 
+	$(CC) -c $(CFLAGS) -o $(XMHF_BOOTLOADER_OBJECTS_DIR)/$(@F) $<
+
+
+.PHONY: clean
+clean:
+	$(RM) -rf $(XMHF_BOOTLOADER_OBJECTS_DIR)
+
+
+
 

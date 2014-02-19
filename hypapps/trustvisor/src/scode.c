@@ -648,7 +648,7 @@ u32 scode_register(VCPU *vcpu, u32 scode_info, u32 scode_pm, u32 gventry)
                                                 whitelist_new.hptw_pal_checked_guest_ctx.super.root_pa);
 
   /* flush TLB for page table modifications to take effect */
-  xmhf_memprot_flushmappings(vcpu);
+  xmhfcore_memprot_flushmappings(vcpu);
 
   /* initialize Micro-TPM instance */
   utpm_init_instance(&whitelist_new.utpm);
@@ -745,7 +745,7 @@ u32 scode_unregister(VCPU * vcpu, u32 gvaddr)
                           &whitelist[i].sections[j]);
   }
   /* flush TLB for page table modifications to take effect */
-  xmhf_memprot_flushmappings(vcpu);
+  xmhfcore_memprot_flushmappings(vcpu);
 
   /* delete entry from scode whitelist */
   /* CRITICAL SECTION in MP scenario: need to quiesce other CPUs or at least acquire spinlock */
@@ -946,7 +946,7 @@ u32 hpt_scode_switch_scode(VCPU * vcpu)
   eu_trace("change NPT permission to run PAL!");
   hpt_emhf_set_root_pm_pa( vcpu, whitelist[curr].hptw_pal_host_ctx.super.root_pa);
   VCPU_gcr3_set(vcpu, whitelist[curr].pal_gcr3);
-  xmhf_memprot_flushmappings(vcpu); /* XXX */
+  xmhfcore_memprot_flushmappings(vcpu); /* XXX */
 
   /* disable interrupts */
   VCPU_grflags_set(vcpu, VCPU_grflags(vcpu) & ~EFLAGS_IF);
@@ -1126,7 +1126,7 @@ u32 hpt_scode_switch_regular(VCPU * vcpu)
   eu_trace("change NPT permission to exit PAL!"); 
   hpt_emhf_set_root_pm(vcpu, g_reg_npmo_root.pm);
   VCPU_gcr3_set(vcpu, whitelist[curr].gcr3);
-  xmhf_memprot_flushmappings(vcpu); /* XXX */
+  xmhfcore_memprot_flushmappings(vcpu); /* XXX */
 
   /* switch back to regular stack */
   eu_trace("switch from scode stack %#x back to regular stack %#x", (u32)VCPU_grsp(vcpu), (u32)whitelist[curr].grsp);
@@ -1312,7 +1312,7 @@ u32 scode_share_ranges(VCPU * vcpu, u32 scode_entry, u32 gva_base[], u32 gva_len
   }
 
   /* flush TLB for page table modifications to take effect */
-  xmhf_memprot_flushmappings(vcpu);
+  xmhfcore_memprot_flushmappings(vcpu);
   
   err=0;
 out:

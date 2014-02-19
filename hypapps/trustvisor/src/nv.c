@@ -389,7 +389,7 @@ uint32_t hc_tpmnvram_getsize(VCPU* vcpu, uint32_t size_addr) {
 
   /* Open TPM */
   /* TODO: Make sure this plays nice with guest OS */
-  EU_CHKN( rv = xmhf_tpm_open_locality(TRUSTVISOR_HWTPM_NV_LOCALITY),
+  EU_CHKN( rv = xmhfcore_tpm_open_locality(TRUSTVISOR_HWTPM_NV_LOCALITY),
            eu_err_e("FATAL ERROR: Could not access HW TPM."));
 
   /* Make the actual TPM call */
@@ -397,7 +397,7 @@ uint32_t hc_tpmnvram_getsize(VCPU* vcpu, uint32_t size_addr) {
                                      HW_TPM_ROLLBACK_PROT_INDEX, &actual_size));
 
   /* Close TPM */
-  xmhf_tpm_deactivate_all_localities();
+  xmhfcore_tpm_deactivate_all_localities();
 
   eu_trace("HW_TPM_ROLLBACK_PROT_INDEX 0x%08x size"
           " = %d", HW_TPM_ROLLBACK_PROT_INDEX, actual_size);
@@ -422,7 +422,7 @@ uint32_t hc_tpmnvram_readall(VCPU* vcpu, uint32_t out_addr) {
 
   /* Open TPM */
   /* TODO: Make sure this plays nice with guest OS */
-  EU_CHKN( rv = xmhf_tpm_open_locality(TRUSTVISOR_HWTPM_NV_LOCALITY));
+  EU_CHKN( rv = xmhfcore_tpm_open_locality(TRUSTVISOR_HWTPM_NV_LOCALITY));
   opened_tpm = true;
 
   /* Make the actual TPM call */
@@ -443,7 +443,7 @@ uint32_t hc_tpmnvram_readall(VCPU* vcpu, uint32_t out_addr) {
  out:
   /* Close TPM */
   if (opened_tpm) {
-    xmhf_tpm_deactivate_all_localities();
+    xmhfcore_tpm_deactivate_all_localities();
   }
 
   return rv;
@@ -461,7 +461,7 @@ uint32_t hc_tpmnvram_writeall(VCPU* vcpu, uint32_t in_addr) {
 
   /* Open TPM */
   /* TODO: Make sure this plays nice with guest OS */
-  EU_CHKN( rv = xmhf_tpm_open_locality(TRUSTVISOR_HWTPM_NV_LOCALITY));
+  EU_CHKN( rv = xmhfcore_tpm_open_locality(TRUSTVISOR_HWTPM_NV_LOCALITY));
   opened_tpm = true;
 
   /* copy input data to host */
@@ -477,7 +477,7 @@ uint32_t hc_tpmnvram_writeall(VCPU* vcpu, uint32_t in_addr) {
  out:
   /* Close TPM */
   if (opened_tpm) {
-    xmhf_tpm_deactivate_all_localities();
+    xmhfcore_tpm_deactivate_all_localities();
   }
 		
   return rv;

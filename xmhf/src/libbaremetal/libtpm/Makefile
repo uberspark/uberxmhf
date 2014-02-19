@@ -9,6 +9,7 @@ I_SOURCES :=  $(wildcard $(srcdir)/include/*.h)
 
 CFLAGS += -I$(srcdir)/../libxmhfc/include -I$(srcdir)/../libxmhfcrypto/include -I$(srcdir)/../libxmhfutil/include -I$(srcdir)/include -nostdinc -fno-builtin -nostdlib -Wall 
 
+LIBTPM_OBJECTS_DIR = _objs_libtpm
 THE_ARCHIVE = libtpm.a
 
 # targets
@@ -16,16 +17,15 @@ THE_ARCHIVE = libtpm.a
 all: $(THE_ARCHIVE)
 
 $(THE_ARCHIVE): $(OBJECTS)
-	$(AR) -rcs $(THE_ARCHIVE) $(OBJECTS)
+	cd $(LIBTPM_OBJECTS_DIR) && $(AR) -rcs $(THE_ARCHIVE) $(OBJECTS)
 
-#%.o: %.c $(C_SOURCES) $(I_SOURCES) Makefile ../Makefile
-#	$(CC) -c $(CFLAGS) -o $@ $<
+%.o: %.c 
+	#mkdir -p "$(@D)"
+	mkdir -p $(LIBTPM_OBJECTS_DIR)
+	@echo Building "$@" from "$<" 
+	$(CC) -c $(CFLAGS) -o $(LIBTPM_OBJECTS_DIR)/$@ $<
 
 .PHONY: clean
 clean:
-	$(RM) $(OBJECTS) $(THE_ARCHIVE)
-
-.PHONY: install-dev
-install-dev:
-	# Nothing to do here
+	$(RM) -rf $(LIBTPM_OBJECTS_DIR)
 

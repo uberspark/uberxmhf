@@ -54,14 +54,17 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <print_hex.h>
 
 #include <tv_utpm.h> 
 
-#include <tomcrypt.h>
-#include <tommath.h>
-
+#include <xmhfcrypto.h>
 #include <sha1.h>
+#include <hmac.h>
+#include <aes.h>
+#include <cbc.h>
+#include <rsa.h>
 
 /* TODO: Fix this hack! */
 //#include <malloc.h>

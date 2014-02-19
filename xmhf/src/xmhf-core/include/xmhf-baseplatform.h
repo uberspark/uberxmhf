@@ -103,7 +103,9 @@ extern PCPU	g_cpumap[] __attribute__(( section(".data") ));
 extern u8 g_cpustacks[] __attribute__(( section(".stack") ));
 
 //VCPU structure for each "guest OS" core
-extern VCPU g_vcpubuffers[] __attribute__(( section(".data") ));
+//extern VCPU g_vcpubuffers[] __attribute__(( section(".data") ));
+extern VCPU g_bplt_vcpu[] __attribute__(( section(".data") ));
+
 
 //master id table, contains core lapic id to VCPU mapping information
 extern MIDTAB g_midtable[] __attribute__(( section(".data") ));
@@ -137,6 +139,10 @@ u32 xmhf_baseplatform_getcpuvendor(void);
 //initialize CPU state
 void xmhf_baseplatform_cpuinitialize(void);
 
+//get info. on the number of CPUs in the platform and their IDs
+//u32 xmhf_baseplatform_getcputable(void *buffer, u32 sizeofbuffer);
+xmhfcoreapiretval_t xmhf_baseplatform_getcputable(void);
+
 //initialize SMP
 void xmhf_baseplatform_smpinitialize(void);
 
@@ -144,26 +150,22 @@ void xmhf_baseplatform_smpinitialize(void);
 void xmhf_baseplatform_initialize(void);
 
 //reboot platform
-void xmhf_baseplatform_reboot(VCPU *vcpu);
+void xmhf_baseplatform_reboot(context_desc_t context_desc);
 
 #ifndef __XMHF_VERIFICATION__
+	// Note: since we are unity mapped, runtime VA = system PA
 
 	//hypervisor runtime virtual address to secure loader address
-	//note: secure loader runs in a DS relative addressing mode and
-	//rest of hypervisor runtime is at secure loader base address + 2MB
 	static inline void * hva2sla(void *hva){
-		return (void*)((u32)hva - rpb->XtVmmRuntimeVirtBase + PAGE_SIZE_2M);	
+		return (void*)((u32)hva);	
 	}
 	
 	//secure loader address to system physical address
-	//note: secure loader runs in a DS relative addressing mode 
-	//(relative to secure loader base address)
 	static inline spa_t sla2spa(void *sla){
-		return (spa_t) ((u32)sla + (rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M));
+		return (spa_t) ((u32)sla );
 	}
 	
 	// XMHF runtime virtual-address to system-physical-address and vice-versa
-	// Note: since we are unity mapped, runtime VA = system PA
 	static inline spa_t hva2spa(void *hva){
 		uintptr_t hva_ui = (uintptr_t)hva;
 		return hva_ui;
@@ -180,6 +182,8 @@ void xmhf_baseplatform_reboot(VCPU *vcpu);
 
 #else //__XMHF_VERIFICATION__
 
+	static inline void * hva2sla(void *hva){ return (void*)((u32)hva);	}
+	static inline spa_t sla2spa(void *sla){	return (spa_t) ((u32)sla ); }
 	#define hva2spa(x) (u32)(x)
 	static inline void * spa2hva(spa_t spa) { (void *)(uintptr_t)(spa); }
 	static inline spa_t gpa2spa(gpa_t gpa) { return gpa; }

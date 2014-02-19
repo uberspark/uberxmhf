@@ -72,7 +72,7 @@
 //pull in required crypto (SHA-1)
 //libXMHFcrypto
 #ifndef __ASSEMBLY__
-	#include <tomcrypt.h>
+	#include <xmhfcrypto.h>
 	#include <sha1.h>
 #endif /* __ASSEMBLY__ */
 
@@ -110,6 +110,7 @@ extern RPB *rpb;
 #include <xmhf-sl.h>			//XMHF secure loader component
 #include <xmhf-runtime.h>		//XMHF secure loader component
 #include <xmhf-app.h>			//XMHF Application callback declarations
+#include <xmhf-apihub.h>		//XMHF core API interface component
 
 
 #endif /* __XMHF_H_ */

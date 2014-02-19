@@ -52,18 +52,27 @@
 #include <xmhf.h>
 
 //initialize partition monitor for a given CPU
-void xmhf_partition_initializemonitor(VCPU *vcpu){
-	xmhf_partition_arch_initializemonitor(vcpu);
+//void xmhf_partition_initializemonitor(VCPU *vcpu){
+//	xmhf_partition_arch_initializemonitor(vcpu);
+//}
+void xmhf_partition_initializemonitor(context_desc_t context_desc){
+	xmhf_partition_arch_initializemonitor(context_desc);
 }
 
 //setup guest OS state for the partition
-void xmhf_partition_setupguestOSstate(VCPU *vcpu){
-	xmhf_partition_arch_setupguestOSstate(vcpu);
+//void xmhf_partition_setupguestOSstate(VCPU *vcpu){
+//	xmhf_partition_arch_setupguestOSstate(vcpu);
+//}
+void xmhf_partition_setupguestOSstate(context_desc_t context_desc){
+	xmhf_partition_arch_setupguestOSstate(context_desc);
 }
 
 //start executing the partition and guest OS
-void xmhf_partition_start(VCPU *vcpu){
-	xmhf_partition_arch_start(vcpu);
+//void xmhf_partition_start(VCPU *vcpu){
+//	xmhf_partition_arch_start(vcpu);
+//}
+void xmhf_partition_start(context_desc_t context_desc){
+	xmhf_partition_arch_start(context_desc);
 }
 
 //set legacy I/O protection for the partition

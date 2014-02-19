@@ -32,4 +32,6 @@ verifyinit:
 verifyall: verifyinit verify
 	./check-mprot.sh
 
-  
+.PHONY: verifysafeupd
+verifysafeupd:
+	cd safeupd && $(MAKE) -w all

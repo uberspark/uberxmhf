@@ -572,13 +572,15 @@ bool verify_acmod(acm_hdr_t *acm_hdr)
 /*         return false; */
 /*     } */
 
-    if ( size > params.acm_max_size ) {
+	//TODO: need to see if this check needs to be in place
+    /*if ( size > params.acm_max_size ) {
         printf("AC mod size too large: %x (max=%x)\n", size,
                params.acm_max_size);
         return false;
     }
 
-    printf("AC mod size OK\n");
+    printf("AC mod size OK\n");*/
+    
 
     /*
      * perform checks on AC mod structure

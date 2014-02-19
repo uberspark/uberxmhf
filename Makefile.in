@@ -20,20 +20,38 @@ export NESTED_PAGING := y
 #where you want loader and runtime binaries to go
 export HYPOUTDIR = $(CURDIR)
 
-# libtommath
-export LIBTOMMATH_SRC := $(realpath @LIBTOMMATH_SRC@)
-LIBTOMMATH_BUILD = $(CURDIR)/_build_libtommath
-LIBTOMMATH_ARCHIVE = libtommath.a
+# objects directory (used for building binaries without polluting source namespace)
+export XMHF_OBJDIR = $(CURDIR)/_objects
 
-# libtomcrypt
-export LIBTOMCRYPT_SRC := $(realpath @LIBTOMCRYPT_SRC@)
-LIBTOMCRYPT_BUILD = $(CURDIR)/_build_libtomcrypt
-LIBTOMCRYPT_ARCHIVE = libtomcrypt.a
+# verification directory (used for verification without polluting source namespace)
+export XMHF_VERIFYDIR := $(CURDIR)/_verify
 
 # libbaremetal "source" location, currently hard-coded
 # TODO: specify via configure
 # LIBBAREMETAL_SRC = $(CURDIR)/libbaremetal
 export LIBBAREMETAL_SRC := $(realpath @LIBBAREMETAL_SRC@)
+
+# XMHF core source location
+export XMHFCORE_SRC := $(realpath xmhf/src/xmhf-core)
+
+# libxmhfcore source location
+export LIBXMHFCORE_SRC := $(realpath xmhf/src/xmhf-core/libxmhfcore)
+
+# libxmhfhw source location
+export LIBXMHFHW_SRC := $(realpath xmhf/src/xmhf-core/libxmhfhw)
+LIBXMHFHW_INC = $(realpath xmhf/src/xmhf-core/libxmhfhw)
+
+# libbaremetal-xmhfbackends source location
+export LIBBAREMETAL_XMHFBACKENDS_SRC := $(realpath xmhf/src/xmhf-core/libbaremetal-xmhfbackends)
+
+# XMHF runtime source location
+export XMHF_RUNTIME_SRC := $(realpath xmhf/src/xmhf-core/xmhf-runtime)
+
+# XMHF secureloader source location
+export XMHF_SECURELOADER_SRC := $(realpath xmhf/src/xmhf-core/xmhf-secureloader)
+
+# XMHF bootloader source location
+export XMHF_BOOTLOADER_SRC := $(realpath xmhf/src/xmhf-core/xmhf-bootloader)
 
 # libbaremetal archive
 # TODO: specify via configure
@@ -43,11 +61,22 @@ LIBBAREMETAL_ARCHIVE = libbaremetal.a
 LIBBAREMETAL_SUBLIBS = $(wildcard $(LIBBAREMETAL_SRC)/lib*)
 LIBBAREMETAL_INC = $(foreach dir,$(LIBBAREMETAL_SUBLIBS),-I$(dir)/include)
 
-# libbaremetal build directory 
-LIBBAREMETAL_BUILD = $(CURDIR)/_build_libbaremetal
-
+# populate library and include paths
 export ADDL_LIBS :=
 export ADDL_INCLUDES :=
+
+#ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_xmhf-runtime/_objs_libxmhfruntimearch/libxmhfruntimearch.a
+
+ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a
+
+ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_libbaremetal-xmhfbackends/libbaremetal-xmhfbackends.a
+ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_libxmhfhw/libxmhfhw.a
+#ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_xmhf-runtime/_objs_libxmhfruntimearch/libxmhfruntimearch.a
+ADDL_INCLUDES += -I$(EMHF_INCLUDE) -I$(LIBXMHFHW_INC) $(LIBBAREMETAL_INC)
+
+# link libbaremetal *again* to resolve more dependencies
+ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a
+
 
 # App's source tree root (
 export APP_ROOT := $(realpath @APP_ROOT@)
@@ -58,17 +87,6 @@ export builddir=@builddir@
 
 export APP_ARCHIVE := $(APP_ROOT)/xmhfhypapp.a
 
-ADDL_LIBS += $(LIBBAREMETAL_BUILD)/_objects/$(LIBBAREMETAL_ARCHIVE)
-ADDL_INCLUDES += -I$(EMHF_INCLUDE) $(LIBBAREMETAL_INC)
-
-ADDL_LIBS += $(LIBTOMCRYPT_BUILD)/$(LIBTOMCRYPT_ARCHIVE)
-ADDL_INCLUDES += -I$(LIBTOMCRYPT_SRC)/src/headers/
-
-ADDL_LIBS += $(LIBTOMMATH_BUILD)/$(LIBTOMMATH_ARCHIVE)
-ADDL_INCLUDES += -I$(LIBTOMMATH_SRC)
-
-# link libbaremetal *again* to resolve more dependencies
-ADDL_LIBS += $(LIBBAREMETAL_BUILD)/_objects/$(LIBBAREMETAL_ARCHIVE)
 
 ##################################################################################
 ### BEGIN Variables controlled using autoconf
@@ -117,6 +135,7 @@ export CCLIB = @CCLIB@
 export INIT_LATE := n
 export E820_UG_TEST := n
 export TEST_CPU_QUIESCE := n
+export XMHF_CORE_APIHUB_ARCH := @COREAPIHUB_ARCH@
 
 # relatively stable support
 # TODO: FIXME: Build breaks with some combinations of these options.
@@ -136,30 +155,30 @@ export XMHF_BUILD_REVISION_COMMIT := $(shell git log --pretty=format:'%H' -n 1)
 export XMHF_BUILD_REVISION := $(XMHF_BUILD_REVISION_BRANCH)-$(XMHF_BUILD_REVISION_COMMIT)
 
 #-----basic flags for compiling and assembling
-CFLAGS = -fno-builtin -fno-common -fno-strict-aliasing -iwithprefix include
-CFLAGS += -fno-stack-protector
-CFLAGS += -Wstrict-prototypes -Wdeclaration-after-statement 
-CFLAGS += -Wno-pointer-arith -Wextra -Wfloat-equal 
-CFLAGS += -Werror
-CFLAGS += -Wsign-compare
-CFLAGS += -Wno-bad-function-cast -Wall
-CFLAGS += -Waggregate-return
-CFLAGS += -Winline
-CFLAGS += -m32 -march=k8 
-CFLAGS += -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-ssse3 
-CFLAGS += -mno-sse4.1 -mno-sse4.2 -mno-sse4 -mno-avx -mno-aes 
-CFLAGS += -mno-pclmul -mno-sse4a -mno-sse5 -mno-3dnow -mno-popcnt -mno-abm
-CFLAGS += -nostdinc -pipe
+FLAGS = -O0 -fno-builtin -fno-common -fno-strict-aliasing -iwithprefix include
+FLAGS += -fno-stack-protector
+FLAGS += -Wstrict-prototypes -Wdeclaration-after-statement 
+FLAGS += -Wno-pointer-arith -Wextra -Wfloat-equal 
+#FLAGS += -Werror
+FLAGS += -Wsign-compare
+FLAGS += -Wno-bad-function-cast -Wall
+FLAGS += -Waggregate-return
+FLAGS += -Winline
+FLAGS += -m32 -march=k8 
+FLAGS += -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-ssse3 
+FLAGS += -mno-sse4.1 -mno-sse4.2 -mno-sse4 -mno-avx -mno-aes 
+FLAGS += -mno-pclmul -mno-sse4a -mno-sse5 -mno-3dnow -mno-popcnt -mno-abm
+FLAGS += -nostdinc -pipe
 
-CFLAGS += $(ADDL_INCLUDES)
+FLAGS += $(ADDL_INCLUDES)
 VFLAGS = $(ADDL_INCLUDES)
 
 
 #-----generate compiler/assembler defines from configuration options selected
-CFLAGS += -D___XMHF_BUILD_VERSION___=\"$(XMHF_BUILD_VERSION)\"
+FLAGS += -D___XMHF_BUILD_VERSION___=\"$(XMHF_BUILD_VERSION)\"
 VFLAGS += -D___XMHF_BUILD_VERSION___=\"$(XMHF_BUILD_VERSION)\"
 
-CFLAGS += -D___XMHF_BUILD_REVISION___=\"$(XMHF_BUILD_REVISION)\"
+FLAGS += -D___XMHF_BUILD_REVISION___=\"$(XMHF_BUILD_REVISION)\"
 VFLAGS += -D___XMHF_BUILD_REVISION___=\"$(XMHF_BUILD_REVISION)\"
 
 ifeq ($(XMHF_TARGET_ARCH), x86-svm)
@@ -170,108 +189,87 @@ ifeq ($(XMHF_TARGET_ARCH), x86-vmx)
 endif
 
 ifeq ($(NESTED_PAGING), y)
-	CFLAGS += -D__NESTED_PAGING__
+	FLAGS += -D__NESTED_PAGING__
 	VFLAGS += -D__NESTED_PAGING__
 endif
 ifeq ($(DEBUG_SERIAL), y)
-	CFLAGS += -D__DEBUG_SERIAL__
+	FLAGS += -D__DEBUG_SERIAL__
 	VFLAGS += -D__DEBUG_SERIAL__
-	CFLAGS += -DDEBUG_PORT=$(DEBUG_SERIAL_PORT)
+	FLAGS += -DDEBUG_PORT=$(DEBUG_SERIAL_PORT)
 	VFLAGS += -DDEBUG_PORT=$(DEBUG_SERIAL_PORT)
 endif
 ifeq ($(DEBUG_VGA), y)
-	CFLAGS += -D__DEBUG_VGA__
+	FLAGS += -D__DEBUG_VGA__
 	VFLAGS += -D__DEBUG_VGA__
 endif
 ifeq ($(MP_VERSION), y)
-	CFLAGS += -D__MP_VERSION__
+	FLAGS += -D__MP_VERSION__
 	VFLAGS += -D__MP_VERSION__
 endif
 ifeq ($(DRT), y)
-	CFLAGS += -D__DRT__
+	FLAGS += -D__DRT__
 	VFLAGS += -D__DRT__
 endif
 ifeq ($(DMAP), y)
-	CFLAGS += -D__DMAP__
+	FLAGS += -D__DMAP__
 	VFLAGS += -D__DMAP__
 endif
 
+ifeq ($(XMHF_CORE_APIHUB_ARCH), swfp)
+	FLAGS += -D__XMHF_CORE_APIHUB_SWFP__
+endif
 
 
-CFLAGS += -D__DO_SENTER__
+FLAGS += -D__DO_SENTER__
 VFLAGS += -D__DO_SENTER__
 
 ifeq ($(E820_UG_TEST), y)
-	CFLAGS += -D__E820_UG_TEST__
+	FLAGS += -D__E820_UG_TEST__
 	VFLAGS += -D__E820_UG_TEST__
 endif
 ifeq ($(TEST_CPU_QUIESCE), y)
-	CFLAGS += -D__TEST_CPU_QUIESCE__
+	FLAGS += -D__TEST_CPU_QUIESCE__
 	VFLAGS += -D__TEST_CPU_QUIESCE__
 endif
 	# late initialization support (experimental)
 ifeq ($(INIT_LATE), y)
-	CFLAGS += -D__INIT_LATE__ 
+	FLAGS += -D__INIT_LATE__ 
 	VFLAGS += -D__INIT_LATE__ 
-	CFLAGS += -DPERF_CRIT
+	FLAGS += -DPERF_CRIT
 	VFLAGS += -DPERF_CRIT
 endif
 
 #-----export CFLAGS and ASFLAGS
-ASFLAGS = $(CFLAGS) -D__ASSEMBLY__
-
-export CFLAGS
+ASFLAGS = $(FLAGS) -D__ASSEMBLY__
 export ASFLAGS
+
 export VFLAGS
 
-.PHONY: all
-all: $(APP_ARCHIVE) subdirs 
+#CFLAGS = $(FLAGS) -no-integrated-as
+CFLAGS = $(FLAGS)
+export CFLAGS
 
-.PHONY: $(APP_ARCHIVE)
-$(APP_ARCHIVE):
-	@echo ---------------------------------------------------------------
-	@echo Building primary hyperapp...
-	@echo ---------------------------------------------------------------
-	[ -f $(APP_ROOT)/autogen.sh ] && (cd ${APP_ROOT} && ./autogen.sh) || echo No $(APP_ROOT)/autogen.sh, skipping...
-	[ -f $(APP_ROOT)/configure ] && (cd ${APP_ROOT} && ./configure) || echo No $(APP_ROOT)/configure, skipping...
-	cd $(APP_ROOT) && $(MAKE) -w all
-	@echo ---------------------------------------------------------------
-	@echo primary hyperapp build SUCCESS
-	@echo ---------------------------------------------------------------
+.PHONY: all
+all: subdirs 
+
 
 .PHONY: subdirs
-subdirs: $(LIBBAREMETAL_SRC) 
-	@echo ---------------------------------------------------------------
-	@echo Building libtommath...
-	@echo ---------------------------------------------------------------
-	mkdir -p $(LIBTOMMATH_BUILD)
-	cd $(LIBTOMMATH_BUILD) && $(MAKE) -f $(LIBTOMMATH_SRC)/makefile CFLAGS="$(filter-out -Werror,$(CFLAGS))" -w libtommath.a
-	@echo ---------------------------------------------------------------
-	@echo libtommath.a build SUCCESS
-	@echo ---------------------------------------------------------------
-	@echo ---------------------------------------------------------------
-	@echo Building libtomcrypt...
-	@echo ---------------------------------------------------------------
-	mkdir -p $(LIBTOMCRYPT_BUILD)
-	cd $(LIBTOMCRYPT_BUILD) && $(MAKE) -f $(LIBTOMCRYPT_SRC)/makefile CFLAGS="$(filter-out -Werror,$(CFLAGS)) -DLTC_SOURCE" -w libtomcrypt.a
-	@echo ---------------------------------------------------------------
-	@echo libtomcrypt.a build SUCCESS
-	@echo ---------------------------------------------------------------
-	@echo ---------------------------------------------------------------
+subdirs: $(LIBBAREMETAL_SRC) $(XMHFCORE_SRC)
+	mkdir -p $(XMHF_OBJDIR)
+	@echo **************************************************************
 	@echo Building libbaremetal...
-	@echo ---------------------------------------------------------------
-	mkdir -p $(LIBBAREMETAL_BUILD)
-	cd $(LIBBAREMETAL_BUILD) && $(MAKE) -f $(LIBBAREMETAL_SRC)/Makefile -w all
-	@echo ---------------------------------------------------------------
+	@echo **************************************************************
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBBAREMETAL_SRC)/Makefile -w all
+	@echo **************************************************************
 	@echo libbaremetal.a build SUCCESS
-	@echo ---------------------------------------------------------------
-	@echo ---------------------------------------------------------------
-	@echo Building XMHF core/hyperapp...
-	@echo ---------------------------------------------------------------
-	cd xmhf/src/xmhf-core && $(MAKE) -w all
-	@echo ---------------------------------------------------------------
-	@echo XMHF core/hyperapp build SUCCESS
-	@echo ---------------------------------------------------------------
+	@echo **************************************************************
+	@echo **************************************************************
+	@echo Building XMHF core...
+	@echo **************************************************************
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFCORE_SRC)/Makefile -w all
+	@echo **************************************************************
+	@echo XMHF core build SUCCESS
+	@echo **************************************************************
 
 .PHONY: install
 install: install-bin
@@ -280,16 +278,48 @@ install: install-bin
 install-bin:
 	# Install the _actual_ final product
 	install -d $(DESTDIR)/boot
-	install --mode=644 $(HYPOUTDIR)/hypervisor-$(TARGET_HWPLATFORM).bin.gz $(DESTDIR)/boot
-	install --mode=644 $(HYPOUTDIR)/init-$(TARGET_HWPLATFORM).bin $(DESTDIR)/boot
+	install --mode=644 $(XMHF_OBJDIR)/_objs_xmhf-core/xmhf-$(TARGET_HWPLATFORM).bin.gz $(DESTDIR)/boot
 
 .PHONY: install-dev
 install-dev:
-	cd $(APP_ROOT) && $(MAKE) -w install-dev
-	@for i in $(SUBDIRS) ;\
-	do \
-		(cd $$i && echo "making install-dev in $$i..." && $(MAKE) -w install-dev) || exit 1; \
-	done;
+	@echo --------------------------------------------------------------
+	@echo installing development lib/headers to: $(prefix)
+	@echo -------------------------------------------------------------- 
+	$(RM) -rf $(prefix)/lib/xmhf
+	$(RM) -rf $(prefix)/include/xmhf
+	@echo cleaned up target folders $(prefix)/lib/xmhf and $(prefix)/include/xmhf
+	$(MKDIR) -p $(prefix)/lib/xmhf
+	$(MKDIR) -p $(prefix)/include/xmhf
+	@echo prepared target folders $(prefix)/lib/xmhf and $(prefix)/include/xmhf
+	$(CP) -f $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_libxmhfcore/libxmhfcore.a $(prefix)/lib/xmhf/libxmhfcore.a
+	$(CP) -f $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a $(prefix)/lib/xmhf/libbaremetal.a
+	@echo installed XMHF development libraries to $(prefix)/lib/xmhf/
+	$(MKDIR) -p $(prefix)/include/xmhf/xmhf-core/include
+	$(MKDIR) -p $(prefix)/include/xmhf/platform/x86pc/include
+	$(MKDIR) -p $(prefix)/include/xmhf/cpu/x86/include
+	$(CP) -rf ./xmhf/src/xmhf-core/include/* $(prefix)/include/xmhf/xmhf-core/include/.
+	$(CP) -rf ./xmhf/src/xmhf-core/libxmhfhw/platform/x86pc/include/* $(prefix)/include/xmhf/platform/x86pc/include/.
+	$(CP) -rf ./xmhf/src/xmhf-core/libxmhfhw/cpu/x86/include/* $(prefix)/include/xmhf/cpu/x86/include/.
+	@echo installed XMHF core development headers
+	$(MKDIR) -p $(prefix)/include/xmhf/libbaremetal/libtpm/include
+	$(MKDIR) -p $(prefix)/include/xmhf/libbaremetal/libtv_utpm/include
+	$(MKDIR) -p $(prefix)/include/xmhf/libbaremetal/libxmhfc/include
+	$(MKDIR) -p $(prefix)/include/xmhf/libbaremetal/libxmhfcrypto/include
+	$(MKDIR) -p $(prefix)/include/xmhf/libbaremetal/libxmhfutil/include
+	$(CP) -rf ./xmhf/src/libbaremetal/libtpm/include/* $(prefix)/include/xmhf/libbaremetal/libtpm/include/.
+	$(CP) -rf ./xmhf/src/libbaremetal/libtv_utpm/include/* $(prefix)/include/xmhf/libbaremetal/libtv_utpm/include/.
+	$(CP) -rf ./xmhf/src/libbaremetal/libxmhfc/include/* $(prefix)/include/xmhf/libbaremetal/libxmhfc/include/.
+	$(CP) -rf ./xmhf/src/libbaremetal/libxmhfcrypto/include/* $(prefix)/include/xmhf/libbaremetal/libxmhfcrypto/include/.
+	$(CP) -rf ./xmhf/src/libbaremetal/libxmhfutil/include/* $(prefix)/include/xmhf/libbaremetal/libxmhfutil/include/.
+	@echo installed XMHF libbaremetal development headers
+	$(MKDIR) -p $(prefix)/share/xmhf
+	install --mode=644 ./xmhfhypapp.lds $(prefix)/share/xmhf
+	install --mode=644 ./xmhfhypapp.mk $(prefix)/share/xmhf
+	@echo installed XMHF hypapp build and linker scripts
+	install --mode=644 ./xmhf.pc $(pkgconfigdir)
+	@echo installed XMHF pkg-config meta information
+	@echo INSTALL SUCCESS
+	@echo --------------------------------------------------------------
 
 # Currently the only tests we have are in the TrustVisor tree
 .PHONY: test
@@ -299,61 +329,47 @@ test:
 #.PHONY: clean distclean init-late-clean
 .PHONY: clean distclean 
 clean:
-	@echo ---------------------------------------------------------------
-	@echo Cleaning primary hyperapp...
-	@echo ---------------------------------------------------------------
-	cd $(APP_ROOT) && $(MAKE) -w clean
-	@echo ---------------------------------------------------------------
-	@echo primary hyperapp clean SUCCESS
-	@echo ---------------------------------------------------------------
-	@echo ---------------------------------------------------------------
+	@echo **************************************************************
 	@echo Cleaning libbaremetal...
-	@echo ---------------------------------------------------------------
-	mkdir -p $(LIBBAREMETAL_BUILD)
-	cd $(LIBBAREMETAL_BUILD) && $(MAKE) -f $(LIBBAREMETAL_SRC)/Makefile -w clean
-	rm -rf $(LIBBAREMETAL_BUILD)
-	@echo ---------------------------------------------------------------
+	@echo **************************************************************
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBBAREMETAL_SRC)/Makefile -w clean
+	@echo **************************************************************
 	@echo libbaremetal.a clean SUCCESS
-	@echo ---------------------------------------------------------------
-	@echo ---------------------------------------------------------------
-	@echo Cleaning libtommath and libtomcrypt...
-	@echo ---------------------------------------------------------------
-	rm -rf $(LIBTOMMATH_BUILD)
-	rm -rf $(LIBTOMCRYPT_BUILD)
-	@echo ---------------------------------------------------------------
-	@echo libtommath and libtomcrypt clean SUCCESS...
-	@echo ---------------------------------------------------------------
-	@echo ---------------------------------------------------------------
-	@echo Cleaning XMHF core/hyperapp...
-	@echo ---------------------------------------------------------------
-	cd xmhf/src/xmhf-core && $(MAKE) -w clean
-	@echo ---------------------------------------------------------------
-	@echo XMHF core/hyperapp cleanup SUCCESS
-	@echo ---------------------------------------------------------------
-	@echo ---------------------------------------------------------------
-	@echo Cleaning auto-generated docs...
-	@echo ---------------------------------------------------------------
+	@echo **************************************************************
+	@echo **************************************************************
+	@echo cleaning XMHF core...
+	@echo **************************************************************
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFCORE_SRC)/Makefile -w clean
+	@echo **************************************************************
+	@echo XMHF core cleanup SUCCESS
+	@echo **************************************************************
 	rm -rf *.html
 	rm -rf doc
-	@echo ---------------------------------------------------------------
-	@echo auto-generated docs cleanup SUCCESS
-	@echo ---------------------------------------------------------------
+	$(RM) -rf $(XMHF_OBJDIR)
 
 distclean: clean
 	$(RM) config.log config.status
 	# http://www.gnu.org/software/automake/manual/automake.html#Clean
 	$(RM) -rf Makefile
-	cd $(APP_ROOT) && $(MAKE) -w distclean
+	$(RM) -rf xmhf.pc
 
 
 verify:
-	cd xmhf/src/xmhf-core && make -w verify
+	#cd xmhf/src/xmhf-core && make -w verify
+	mkdir -p $(XMHF_VERIFYDIR)
+	@echo **************************************************************
+	@echo Starting verification...
+	@echo **************************************************************
+	cd $(XMHF_VERIFYDIR) && $(MAKE) -f $(XMHFCORE_SRC)/Makefile -w verify
 
 verifyinit:
 	cd xmhf/src/xmhf-core && make -w verifyinit
 	
 verifyall: 
 	cd xmhf/src/xmhf-core && make -w verifyall
+
+verifysafeupd: 
+	cd xmhf/src/xmhf-core && make -w verifysafeupd
 
 .PHONY: htmldoc
 htmldoc:

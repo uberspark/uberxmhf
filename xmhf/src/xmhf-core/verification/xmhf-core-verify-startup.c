@@ -51,20 +51,22 @@
 //----------------------------------------------------------------------
 #include <xmhf.h>
 
+
 u32 xmhf_verify_cpu_vendor;
 
 //globals referenced by this module
-VCPU vcpu;
-struct _svm_vmcbfields _xvmcb;
-RPB *rpb; 	//runtime parameter block pointer
-RPB _xrpb;	
+//VCPU vcpu;
+//struct _svm_vmcbfields _xvmcb;
+//RPB *rpb; 	//runtime parameter block pointer
+//RPB _xrpb;	
 
 void runtime_main(){
-		/* xmhf_runtime_main */
-		extern void xmhf_runtime_main(void);
+		//  xmhf_runtime_main 
+		//extern void xmhf_runtime_main(void);
+
 		//setup RPB pointer and required runtime parameter block values
-		rpb = (RPB *)&_xrpb;
-		rpb->XtVmmE820NumEntries = 1; 									//number of E820 entries
+		rpb = (RPB *)&arch_rpb;
+		rpb->XtVmmE820NumEntries = 2; 									//number of E820 entries
 		rpb->XtVmmRuntimePhysBase = 0xC0000000;							//runtime physical base address
 		rpb->XtVmmRuntimeSize = 0x8800000;								//128 MB + 8MB (NPTs) runtime size
 		rpb->XtGuestOSBootModuleBase = 0x20000;							//guest OS boot module base address
@@ -74,30 +76,40 @@ void runtime_main(){
 
 
 		//setup bare minimum vcpu
-		vcpu.isbsp = 1;													//assume BSP
-		vcpu.id = 0;													//give a LAPIC id
-		vcpu.esp = 0xC6000000;											//give a stack
+		g_bplt_vcpu[0].isbsp = 1;													//assume BSP
+		g_bplt_vcpu[0].id = 0;													//give a LAPIC id
+		g_bplt_vcpu[0].esp = 0xC6000000;											//give a stack
 
 #if defined (__XMHF_TARGET_ARCH_X86_VMX__)
-		vcpu.cpu_vendor = CPU_VENDOR_INTEL;								
-		vcpu.vmx_vmcs_vaddr = 0xC7000000;								//VMCS address
-		vcpu.vmx_vaddr_ept_pml4_table = 0xC7F00000;						//EPT PML4 table 		
-		vcpu.vmx_guest_unrestricted = 1;								//VMX unrestricted guest support
-		vcpu.vmx_vaddr_ept_p_tables = 0xC8000000;						//EPT page tables
+		g_bplt_vcpu[0].cpu_vendor = CPU_VENDOR_INTEL;								
+		g_bplt_vcpu[0].vmx_vmcs_vaddr = 0xC7000000;								//VMCS address
+		g_bplt_vcpu[0].vmx_vaddr_ept_pml4_table = 0xC7F00000;						//EPT PML4 table 		
+		g_bplt_vcpu[0].vmx_guest_unrestricted = 1;								//VMX unrestricted guest support
+		g_bplt_vcpu[0].vmx_vaddr_ept_p_tables = 0xC8000000;						//EPT page tables
 #else
-		vcpu.cpu_vendor = CPU_VENDOR_AMD;
-		vcpu.vmcb_vaddr_ptr = &_xvmcb;									//set vcpu VMCB virtual address to something meaningful
-		vcpu.npt_vaddr_ptr = 0xC7F00000;								//NPT PDPT page
-		vcpu.npt_vaddr_pts = 0xC8000000;								//where our NPTs reside
+		//g_bplt_vcpu[0].cpu_vendor = CPU_VENDOR_AMD;
+		//g_bplt_vcpu[0].vmcb_vaddr_ptr = &_xvmcb;									//set vcpu VMCB virtual address to something meaningful
+		//g_bplt_vcpu[0].npt_vaddr_ptr = 0xC7F00000;								//NPT PDPT page
+		//g_bplt_vcpu[0].npt_vaddr_pts = 0xC8000000;								//where our NPTs reside
 #endif		
+		
+		g_midtable_numentries = 1;
+	
+		{
+			context_desc_t context;
+			context.cpu_desc.id = 0;
+			context.cpu_desc.isbsp = true;
+			context.partition_desc.id = 0;
+			xmhf_runtime_main(context);
+		}
 				
-		xmhf_runtime_main(&vcpu, 0);									//call "init" function
+		//xmhf_runtime_main(&vcpu, 0);									//call "init" function
 
 }
 
 	
 void runtime_entry_main(){
-		/* xmhf_runtime_entry */
+		// xmhf_runtime_entry 
 		extern void xmhf_runtime_entry(void);
 		xmhf_runtime_entry();
 }

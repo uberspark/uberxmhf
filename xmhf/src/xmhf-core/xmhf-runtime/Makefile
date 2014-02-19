@@ -1,147 +1,114 @@
 # makefile for "runtime"
 # author: amit vasudevan (amitvasudevan@acm.org)
 
-# tie components used by the runtime
-# WARNING: if both Serial & VGA are enabled, you actually get neither. 
-# TODO: Fix it.
-# OBJECTS_PRECOMPILED = ./xmhf-debug/lib.a
+srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
+vpath %.c $(srcdir)
+vpath %.S $(srcdir)
 
-# OBJECTS_PRECOMPILED += ./xmhf-tpm/tpm-interface.o 
-OBJECTS_PRECOMPILED = ./xmhf-tpm/tpm-interface.o 
-OBJECTS_PRECOMPILED += ./xmhf-tpm/arch/x86/tpm-x86.o 
-OBJECTS_PRECOMPILED += ./xmhf-tpm/arch/x86/svm/tpm-x86svm.o 
-OBJECTS_PRECOMPILED += ./xmhf-tpm/arch/x86/vmx/tpm-x86vmx.o 
+export XMHF_RUNTIME_ARCH_SRC := $(realpath $(srcdir)/arch)
 
+# grab list of all source files
+C_SOURCES := $(shell find $(srcdir)/xmhf-memprot/ -type f -name '*.c')
+A_SOURCES := $(shell find $(srcdir)/xmhf-memprot/ -type f -name '*.S')
+C_SOURCES += $(shell find $(srcdir)/xmhf-eventhub/ -type f -name '*.c')
+A_SOURCES += $(shell find $(srcdir)/xmhf-eventhub/ -type f -name '*.S')
+C_SOURCES += $(shell find $(srcdir)/xmhf-smpguest/ -type f -name '*.c')
+A_SOURCES += $(shell find $(srcdir)/xmhf-smpguest/ -type f -name '*.S')
+C_SOURCES += $(shell find $(srcdir)/xmhf-dmaprot/ -type f -name '*.c')
+A_SOURCES += $(shell find $(srcdir)/xmhf-dmaprot/ -type f -name '*.S')
+C_SOURCES += $(shell find $(srcdir)/xmhf-xcphandler/ -type f -name '*.c')
+A_SOURCES += $(shell find $(srcdir)/xmhf-xcphandler/ -type f -name '*.S')
+C_SOURCES += $(shell find $(srcdir)/xmhf-baseplatform/ -type f -name '*.c')
+A_SOURCES += $(shell find $(srcdir)/xmhf-baseplatform/ -type f -name '*.S')
+C_SOURCES += $(shell find $(srcdir)/xmhf-partition/ -type f -name '*.c')
+A_SOURCES += $(shell find $(srcdir)/xmhf-partition/ -type f -name '*.S')
+C_SOURCES += $(shell find $(srcdir)/xmhf-startup/ -type f -name '*.c')
+A_SOURCES += $(shell find $(srcdir)/xmhf-startup/ -type f -name '*.S')
+C_SOURCES += $(wildcard $(srcdir)/xmhf-apihub/*.c)
+A_SOURCES += $(wildcard $(srcdir)/xmhf-apihub/*.S)
+C_SOURCES += $(shell find $(srcdir)/xmhf-apihub/arch/$(XMHF_CORE_APIHUB_ARCH)/ -type f -name '*.c')
+A_SOURCES += $(shell find $(srcdir)/xmhf-apihub/arch/$(XMHF_CORE_APIHUB_ARCH)/ -type f -name '*.S')
 
-OBJECTS_PRECOMPILED += ./xmhf-memprot/memp-interface.o
-OBJECTS_PRECOMPILED += ./xmhf-memprot/arch/x86/memp-x86.o
-OBJECTS_PRECOMPILED += ./xmhf-memprot/arch/x86/vmx/memp-x86vmx.o
-OBJECTS_PRECOMPILED += ./xmhf-memprot/arch/x86/vmx/memp-x86vmx-data.o
-OBJECTS_PRECOMPILED += ./xmhf-memprot/arch/x86/svm/memp-x86svm.o
-OBJECTS_PRECOMPILED += ./xmhf-memprot/arch/x86/svm/memp-x86svm-data.o
-
-OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/svm/peh-x86svm-entry.o
-OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/svm/peh-x86svm-main.o
-OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/vmx/peh-x86vmx-entry.o
-OBJECTS_PRECOMPILED += ./xmhf-eventhub/arch/x86/vmx/peh-x86vmx-main.o
-
-OBJECTS_PRECOMPILED += ./xmhf-smpguest/smpg-interface.o
-OBJECTS_PRECOMPILED += ./xmhf-smpguest/arch/x86/smpg-x86.o
-OBJECTS_PRECOMPILED += ./xmhf-smpguest/arch/x86/svm/smpg-x86svm.o
-OBJECTS_PRECOMPILED += ./xmhf-smpguest/arch/x86/svm/smpg-x86svm-data.o
-OBJECTS_PRECOMPILED += ./xmhf-smpguest/arch/x86/vmx/smpg-x86vmx.o
-OBJECTS_PRECOMPILED += ./xmhf-smpguest/arch/x86/vmx/smpg-x86vmx-data.o
-
-OBJECTS_PRECOMPILED += ./xmhf-dmaprot/dmap-interface.o
-OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/dmap-x86.o
-OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/svm/dmap-x86svm.o
-OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/vmx/dmap-x86vmx.o
-OBJECTS_PRECOMPILED += ./xmhf-dmaprot/arch/x86/vmx/dmap-x86vmx-data.o
-
-OBJECTS_PRECOMPILED += ./xmhf-xcphandler/xcph-interface.o
-OBJECTS_PRECOMPILED += ./xmhf-xcphandler/arch/x86/xcph-x86.o
-OBJECTS_PRECOMPILED += ./xmhf-xcphandler/arch/x86/xcph-stubs.o
-
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/bplt-interface.o
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/bplt-interface-smp.o
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/bplt-data.o
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/bplt-x86.o
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/bplt-x86-data.o
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/bplt-x86-pci.o
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/bplt-x86-acpi.o
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/bplt-x86-pit.o
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/bplt-x86-smp.o
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/bplt-x86-smptrampoline.o
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/bplt-x86-smplock.o
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/bplt-x86-addressing.o
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/bplt-x86-reboot.o
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/bplt-x86-cpu.o
+# grab arch. specific sources
+#C_SOURCES += $(shell find $(srcdir)/arch/x86/common/ -type f -name '*.c')
+#A_SOURCES += $(shell find $(srcdir)/arch/x86/common/ -type f -name '*.S')
+#C_SOURCES += $(shell find $(srcdir)/arch/x86/vmx/ -type f -name '*.c')
+#A_SOURCES += $(shell find $(srcdir)/arch/x86/vmx/ -type f -name '*.S')
+#C_SOURCES += $(shell find $(srcdir)/arch/x86/svm/ -type f -name '*.c')
+#A_SOURCES += $(shell find $(srcdir)/arch/x86/svm/ -type f -name '*.S')
 
 
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/vmx/bplt-x86vmx.o
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/vmx/bplt-x86vmx-data.o
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/vmx/bplt-x86vmx-smp.o
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/vmx/bplt-x86vmx-vmcs.o
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/vmx/bplt-x86vmx-mtrrs.o
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/vmx/bplt-x86vmx-reboot.o
+C_SOURCES := $(patsubst $(srcdir)/%, %, $(C_SOURCES))
+A_SOURCES := $(patsubst $(srcdir)/%, %, $(A_SOURCES))
+
+# grab list of file names only for binary generation
+#C_SOURCES_FILENAMEONLY := $(shell find $(srcdir)/ -type f -name '*.c' -printf '%f\n')
+#A_SOURCES_FILENAMEONLY := $(shell find $(srcdir)/ -type f -name '*.S' -printf '%f\n')
+C_SOURCES_FILENAMEONLY := $(notdir $(C_SOURCES))
+A_SOURCES_FILENAMEONLY := $(notdir $(A_SOURCES))
+
+OBJECTS_ARCHIVE := $(patsubst %.c, %.o, $(C_SOURCES_FILENAMEONLY))
+OBJECTS_ARCHIVE += $(patsubst %.S, %.o, $(A_SOURCES_FILENAMEONLY))
+
+# list of object dependencies
+OBJECTS := $(patsubst %.c, %.o, $(C_SOURCES))
+OBJECTS += $(patsubst %.S, %.o, $(A_SOURCES))
 
 
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/svm/bplt-x86svm.o
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/svm/bplt-x86svm-data.o
-OBJECTS_PRECOMPILED += ./xmhf-baseplatform/arch/x86/svm/bplt-x86svm-smp.o
+OBJECTS_VERIFY := $(patsubst %.c, %.v, $(C_SOURCES))
 
+# additional CFLAGS
+# CFLAGS += 
 
-OBJECTS_PRECOMPILED += ./xmhf-partition/part-interface.o
-OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/part-x86.o
-OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/svm/part-x86svm.o
-OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/svm/part-x86svm-sup.o
-OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/vmx/part-x86vmx.o
-OBJECTS_PRECOMPILED += ./xmhf-partition/arch/x86/vmx/part-x86vmx-sup.o
+# folder where objects go
+XMHF_RUNTIME_OBJECTS_DIR = _objs_xmhf-runtime
 
-OBJECTS_PRECOMPILED += ./xmhf-startup/runtime.o
-OBJECTS_PRECOMPILED += ./xmhf-startup/rntm-data.o
-OBJECTS_PRECOMPILED += ./xmhf-startup/arch/x86/rntm-x86-data.o
-
-OBJECTS_PRECOMPILED += ./xmhf-debug/lib.a
-
-
-# separate from OBJECTS_PRECOMPILED becasue needs to come after libs on link line
-OBJECTS_PRECOMPILED_LIBBACKENDS = ./xmhf-xmhfcbackend/xmhfc-putchar.o
-
+# archive name
+THE_ARCHIVE = xmhf-runtime
 
 # targets
-.PHONY: runtimecomponents
-runtimecomponents:
-	#XMHF memory protection component
-	cd xmhf-memprot && $(MAKE) -w all
-	#XMHF partition event-hub component
-	cd xmhf-eventhub && $(MAKE) -w all
-	#XMHF SMP guest component
-	cd xmhf-smpguest && $(MAKE) -w all
-	#XMHF DMA protection component
-	cd xmhf-dmaprot && $(MAKE) -w all
-	#XMHF exception handler component
-	cd xmhf-xcphandler && $(MAKE) -w all
-	#XMHF base platform component
-	cd xmhf-baseplatform && $(MAKE) -w all
-	#XMHF partition component
-	cd xmhf-partition && $(MAKE) -w all
-	#XMHF TPM component
-	cd xmhf-tpm && $(MAKE) -w all
-	#XMHF debug component
-	cd xmhf-debug && $(MAKE) -w all
-	#XMHF libxmhfc environment callbacks
-	cd xmhf-xmhfcbackend && $(MAKE) -w all
-	#XMHF startup component
-	cd xmhf-startup && $(MAKE) -w all
-
-
 .PHONY: all
-all: runtimecomponents runtime.bin
+all: $(THE_ARCHIVE)
 
-runtime.bin: runtimecomponents $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(OBJECTS_PRECOMPILED_LIBBACKENDS) runtime.lds.S
-	$(LD) -T runtime.lds.S -o runtime.exe $(OBJECTS_PRECOMPILED) $(APP_ARCHIVE) $(ADDL_LIBS) $(OBJECTS_PRECOMPILED_LIBBACKENDS) -L$(CCLIB) -lgcc
-	$(OBJCOPY) --output-format=binary runtime.exe runtime.bin
+$(THE_ARCHIVE): libxmhfruntimearch $(OBJECTS) 
+	cd $(XMHF_RUNTIME_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(srcdir)/runtime.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) ./_objs_libxmhfruntimearch/libxmhfruntimearch.a $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
+	cd $(XMHF_RUNTIME_OBJECTS_DIR) && $(OBJCOPY) --output-format=binary $(THE_ARCHIVE).exe $(THE_ARCHIVE).bin
 
-%.o: %.S $(I_SOURCES) Makefile ../../Makefile
-	$(CC) -c $(ASFLAGS) -o $@ $<
-%.o: %.c $(I_SOURCES) Makefile ../../Makefile 
-	$(CC) -c $(CFLAGS) -o $@ $<
 
-.PHONY: clean 
-clean: 
-	$(RM) -rf *.exe
-	$(RM) -rf *.bin
-	$(RM) -rf *.gz
+%.o: %.S  
+	mkdir -p $(XMHF_RUNTIME_OBJECTS_DIR)
+	#mkdir -p "$(@D)"
+	@echo Building "$(@F)" from "$<" 
+	gcc -c $(ASFLAGS) -o $(XMHF_RUNTIME_OBJECTS_DIR)/$(@F) $<
 
-	cd xmhf-memprot && $(MAKE) -w clean
-	cd xmhf-eventhub && $(MAKE) -w clean
-	cd xmhf-dmaprot && $(MAKE) -w clean
-	cd xmhf-smpguest && $(MAKE) -w clean
-	cd xmhf-xcphandler && $(MAKE) -w clean
-	cd xmhf-baseplatform && $(MAKE) -w clean
-	cd xmhf-partition && $(MAKE) -w clean
-	cd xmhf-tpm && $(MAKE) -w clean
-	cd xmhf-debug && $(MAKE) -w clean
-	cd xmhf-xmhfcbackend && $(MAKE) -w clean
-	cd xmhf-startup && $(MAKE) -w clean
+%.o: %.c   
+	mkdir -p $(XMHF_RUNTIME_OBJECTS_DIR)
+	#mkdir -p "$(@D)"
+	@echo Building "$(@F)" from "$<" 
+	$(CC) -c $(CFLAGS) -o $(XMHF_RUNTIME_OBJECTS_DIR)/$(@F) $<
+
+
+.PHONY: clean
+clean:
+	$(RM) -rf $(XMHF_RUNTIME_OBJECTS_DIR)
+
+
+.PHONY: verify
+verify: $(OBJECTS_VERIFY)
+	mkdir -p $(XMHF_RUNTIME_OBJECTS_DIR)
+	cd $(XMHF_RUNTIME_OBJECTS_DIR) && $(MAKE) -f $(XMHF_RUNTIME_ARCH_SRC)/Makefile -w verify
+	cd $(XMHF_RUNTIME_OBJECTS_DIR) && echo $(CFLAGS) >CFLAGS
+	
+%.v: %.c  
+	mkdir -p $(XMHF_RUNTIME_OBJECTS_DIR)
+	#mkdir -p "$(@D)"
+	#@echo Building "$(@F)" from "$<" 
+	$(CP) -f $< $(XMHF_RUNTIME_OBJECTS_DIR)/$(@F).c
+	
+
+.PHONY: libxmhfruntimearch
+libxmhfruntimearch: 
+	@echo building libxmhfruntimearch...
+	mkdir -p $(XMHF_RUNTIME_OBJECTS_DIR)
+	cd $(XMHF_RUNTIME_OBJECTS_DIR) && $(MAKE) -f $(XMHF_RUNTIME_ARCH_SRC)/Makefile -w all
+	@echo libxmhfruntimearch build SUCCESS

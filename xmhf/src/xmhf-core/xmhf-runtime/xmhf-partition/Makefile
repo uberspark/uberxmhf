@@ -23,8 +23,8 @@ I_SOURCES =  $(wildcard $(INCLUDEDIR)/*.h)
 .PHONY: all
 all: $(OBJECTS) 
 
-%.o: %.S $(I_SOURCES) Makefile ../Makefile ../../../Makefile 
-	$(CC) -c $(ASFLAGS) -o $@ $<
+%.o: %.S  
+	gcc -c $(ASFLAGS) -o $@ $<
 %.o: %.c $(I_SOURCES) Makefile ../Makefile ../../../Makefile
 	$(CC) -c $(CFLAGS) -o $@ $<
 

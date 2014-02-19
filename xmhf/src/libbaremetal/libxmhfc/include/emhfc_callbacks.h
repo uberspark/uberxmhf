@@ -44,20 +44,15 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#ifndef __EMHFC_CALLBACKS__
-#define __EMHFC_CALLBACKS__
+#ifndef __XMHFC_CALLBACKS__
+#define __XMHFC_CALLBACKS__
 
-/* These are functions that are intended to be overriden by the emhfc
-   user */
+/* These are functions that are intended to be overriden by the 
+ * libxmhfc user */
 
 void emhfc_log_error(const char *format, ...);
 void emhfc_abort(void);
 
-void emhfc_putchar(int ch, void *arg);
-extern void *emhfc_putchar_arg;
+void xmhfc_puts(const char *s);
 
-void emhfc_putchar_linelock(void *arg);
-void emhfc_putchar_lineunlock(void *arg);
-extern void *emhfc_putchar_linelock_arg;
-
-#endif
+#endif	//__XMHFC_CALLBACKS__

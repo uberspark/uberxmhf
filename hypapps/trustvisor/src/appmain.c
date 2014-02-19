@@ -65,6 +65,10 @@
 #include <tv_emhf.h>
 #include <cmdline.h>
 
+u32 g_midtable_numentries=0;	//number of CPUs in the platform
+MIDTAB g_midtable[MAX_MIDTAB_ENTRIES]; //CPU ID table
+
+
 const cmdline_option_t gc_trustvisor_available_cmdline_options[] = {
   { "nvpalpcr0", "0000000000000000000000000000000000000000"}, /* Req'd PCR[0] of NvMuxPal */
   { "nvenforce", "true" }, /* true|false - actually enforce nvpalpcr0? */
@@ -146,6 +150,17 @@ u32 tv_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb){
     eu_trace("CPU(0x%02x) apb->cmdline: \"%s\"", vcpu->id, apb->cmdline);
     parse_boot_cmdline(apb->cmdline);
 
+	eu_trace("CPU(0x%02x): %s: proceeding to grab CPU table...", vcpu->id, __FUNCTION__);
+	g_midtable_numentries=xmhfcore_baseplatform_getcputable(&g_midtable, sizeof(g_midtable));
+	eu_trace("CPU(0x%02x): %s: g_midtable_numentries=%u", vcpu->id, __FUNCTION__, g_midtable_numentries);
+	{
+			u32 i;
+			for(i=0; i < g_midtable_numentries; i++)
+				eu_trace("  cpu %02u: lapic id=%08x, vcpuptr=%08x", i, g_midtable[i].cpu_lapic_id, g_midtable[i].vcpu_vaddr_ptr);
+				
+			eu_trace("CPU table dumped");
+	}
+	
     init_scode(vcpu);
   }
 
@@ -623,7 +638,7 @@ void tv_app_handleshutdown(VCPU *vcpu, struct regs __attribute__((unused)) *r)
 {
   eu_trace("CPU(0x%02x): Shutdown intercept!", vcpu->id);
   //g_libemhf->xmhf_reboot(vcpu);
-  xmhf_baseplatform_reboot(vcpu);
+  xmhfcore_reboot(vcpu);
 }
 
 /* Local Variables: */

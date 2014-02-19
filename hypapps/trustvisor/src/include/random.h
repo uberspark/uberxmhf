@@ -48,7 +48,8 @@
 #define _RANDOM_H_
 
 #include <xmhf.h> 
-#include <tomcrypt.h>
+//#include <tomcrypt.h>
+#include <xmhfcrypto.h>
 
 /* interface exposed to the rest of TrustVisor */
 uint8_t rand_byte_or_die(void);

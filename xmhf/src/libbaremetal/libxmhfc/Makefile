@@ -9,22 +9,23 @@ I_SOURCES :=  $(wildcard $(srcdir)/include/*.h)
 
 CFLAGS += -I$(srcdir)/include -nostdinc -fno-builtin -nostdlib -Wall 
 
-THE_ARCHIVE = libemhfc.a
+LIBXMHFC_OBJECTS_DIR = _objs_libxmhfc
+THE_ARCHIVE = libxmhfc.a
 
 # targets
 .PHONY: all
 all: $(THE_ARCHIVE)
 
 $(THE_ARCHIVE): $(OBJECTS)
-	$(AR) -rcs $(THE_ARCHIVE) $(OBJECTS)
+	cd $(LIBXMHFC_OBJECTS_DIR) && $(AR) -rcs $(THE_ARCHIVE) $(OBJECTS)
 
-#%.o: %.c $(C_SOURCES) $(I_SOURCES) Makefile ../Makefile
-#	$(CC) -c $(CFLAGS) -o $@ $<
+%.o: %.c 
+	#mkdir -p "$(@D)"
+	mkdir -p $(LIBXMHFC_OBJECTS_DIR)
+	@echo Building "$@" from "$<" 
+	$(CC) -c $(CFLAGS) -o $(LIBXMHFC_OBJECTS_DIR)/$@ $<
 
 .PHONY: clean
 clean:
-	$(RM) $(OBJECTS) $(THE_ARCHIVE)
+	$(RM) -rf $(LIBXMHFC_OBJECTS_DIR)
 
-.PHONY: install-dev
-install-dev:
-	# Nothing to do here

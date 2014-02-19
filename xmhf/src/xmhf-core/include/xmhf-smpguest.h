@@ -67,7 +67,8 @@
 //----------------------------------------------------------------------
 
 //initialize SMP guest logic
-void xmhf_smpguest_initialize(VCPU *vcpu);
+//void xmhf_smpguest_initialize(VCPU *vcpu);
+void xmhf_smpguest_initialize(context_desc_t context_desc);
 
 //quiesce interface to switch all guest cores into hypervisor mode
 //void xmhf_smpguest_quiesce(VCPU *vcpu);
@@ -77,7 +78,7 @@ void xmhf_smpguest_initialize(VCPU *vcpu);
 
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping
-u8 * xmhf_smpguest_walk_pagetables(VCPU *vcpu, u32 vaddr);
+u8 * xmhf_smpguest_walk_pagetables(context_desc_t context_desc, u32 vaddr);
 
 
 

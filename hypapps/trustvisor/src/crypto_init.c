@@ -61,7 +61,7 @@
 #include <crypto_init.h>
 #include <nv.h>
 
-#include <tommath.h>
+//#include <tommath.h>
 
 #include <tv_log.h>
 
@@ -293,7 +293,7 @@ int trustvisor_master_crypto_init(void) {
     ltc_mp = ltm_desc;
   }
 
-  EU_CHKN( rv = xmhf_tpm_open_locality(CRYPTO_INIT_LOCALITY),
+  EU_CHKN( rv = xmhfcore_tpm_open_locality(CRYPTO_INIT_LOCALITY),
            eu_err_e( "FATAL ERROR: Could not access HW TPM."));
   opened_tpm=true;
 		
@@ -334,7 +334,7 @@ int trustvisor_master_crypto_init(void) {
   rv=0;
  out:
   if (opened_tpm) {
-    xmhf_tpm_deactivate_all_localities();
+    xmhfcore_tpm_deactivate_all_localities();
   }
 		
   return rv;

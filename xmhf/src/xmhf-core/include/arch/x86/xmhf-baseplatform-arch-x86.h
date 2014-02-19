@@ -55,18 +55,18 @@
 #include "_multiboot.h"  	//boot manager (multiboot)
 #include "_cmdline.h"		//GRUB command line handling functions
 #include "_error.h"      	//error handling and assertions
-#include "_processor.h"  	//CPU
-#include "_msr.h"        	//model specific registers
-#include "_paging.h"     	//MMU
-#include "_io.h"         	//legacy I/O
-#include "_apic.h"       	//APIC
-#include "_svm.h"        	//SVM extensions
-#include "_vmx.h"			//VMX extensions
-#include "_txt.h"			//Trusted eXecution Technology (SENTER support)
-#include "_pci.h"        	//PCI bus glue
-#include "_acpi.h"			//ACPI glue
-#include "_svm_eap.h"		//SVM DMA protection
-#include "_vmx_eap.h"		//VMX DMA protection
+#include "cpu/x86/include/common/_processor.h"  	//CPU
+#include "cpu/x86/include/common/_msr.h"        	//model specific registers
+#include "cpu/x86/include/common/_paging.h"     	//MMU
+#include "cpu/x86/include/common/_io.h"         	//legacy I/O
+#include "cpu/x86/include/common/_apic.h"       	//APIC
+#include "cpu/x86/include/amd/svm/_svm.h"        	//SVM extensions
+#include "cpu/x86/include/intel/vmx/_vmx.h"			//VMX extensions
+#include "cpu/x86/include/intel/txt/_txt.h"			//Trusted eXecution Technology (SENTER support)
+#include "platform/x86pc/include/common/_pci.h"        	//PCI bus glue
+#include "platform/x86pc/include/common/_acpi.h"			//ACPI glue
+#include "platform/x86pc/include/amd/dev/_svm_eap.h"		//SVM DMA protection
+#include "platform/x86pc/include/intel/vtd/_vmx_eap.h"		//VMX DMA protection
 
 
 //SMP configuration table signatures on x86 platforms
@@ -251,39 +251,23 @@ void xmhf_baseplatform_arch_smpinitialize(void);
 //initialize basic platform elements
 void xmhf_baseplatform_arch_initialize(void);
 
-//read 8-bits from absolute physical address
-u8 xmhf_baseplatform_arch_flat_readu8(u32 addr);
-
-//read 32-bits from absolute physical address
-u32 xmhf_baseplatform_arch_flat_readu32(u32 addr);
-
-//read 64-bits from absolute physical address
-u64 xmhf_baseplatform_arch_flat_readu64(u32 addr);
-
-//write 32-bits to absolute physical address
-void xmhf_baseplatform_arch_flat_writeu32(u32 addr, u32 val);
-
-//write 64-bits to absolute physical address
-void xmhf_baseplatform_arch_flat_writeu64(u32 addr, u64 val);
-
-//memory copy from absolute physical address (src) to
-//data segment relative address (dest)
-void xmhf_baseplatform_arch_flat_copy(u8 *dest, u8 *src, u32 size);
-
 //reboot platform
-void xmhf_baseplatform_arch_reboot(VCPU *vcpu);
+void xmhf_baseplatform_arch_reboot(context_desc_t context_desc);
 
 //returns true if CPU has support for XSAVE/XRSTOR
 bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void);
+
 
 #endif //__ASSEMBLY__
 
 //----------------------------------------------------------------------
 //x86 ARCH. INTERFACES
 //----------------------------------------------------------------------
-#define 	__CS 	0x0008 	//runtime code segment selector
-#define 	__DS 	0x0010 	//runtime data segment selector
-#define 	__TRSEL 0x0018  //runtime TSS (task) selector
+#define 	__CS_CPL0 	0x0008 	//CPL-0 code segment selector
+#define 	__DS_CPL0 	0x0010 	//CPL-0 data segment selector
+#define		__CS_CPL3	0x001b	//CPL-3 code segment selector
+#define		__DS_CPL3	0x0023  //CPL-3 data segment selector
+#define 	__TRSEL 	0x0028  //TSS (task) selector
 
 
 #ifndef __ASSEMBLY__
@@ -294,9 +278,22 @@ typedef struct {
 		u32 base;
 } __attribute__((packed)) arch_x86_gdtdesc_t;
 
+//x86 IDT descriptor type
+typedef struct {
+		u16 size;
+		u32 base;
+} __attribute__((packed)) arch_x86_idtdesc_t;
+
 
 //runtime TSS
 extern u8 g_runtime_TSS[PAGE_SIZE_4K] __attribute__(( section(".data") ));
+
+//signal that basic base platform data structure initialization is complete 
+//(used by the exception handler component)
+extern bool g_bplt_initiatialized __attribute__(( section(".data") ));
+
+
+//----------------------------------------------------------------------
 
 //this is the start of the real-mode AP bootstrap code (bplt-x86-smptrampoline.S)
 extern u32 _ap_bootstrap_start[];
@@ -312,7 +309,28 @@ extern u32 _ap_cr3_value;
 //variable by the runtime before waking up the APs (bplt-x86-smptrampoline.S)
 extern u32 _ap_cr4_value;
 
+extern void _ap_pmode_entry_with_paging(void);
 
+extern u32 _ap_runtime_entrypoint;
+
+
+extern u8 _ap_bootstrap_blob[256];
+
+extern u32 * _ap_bootstrap_blob_cr3;
+
+extern u32 * _ap_bootstrap_blob_cr4;
+
+extern u32 * _ap_bootstrap_blob_runtime_entrypoint;
+
+extern u8 * _ap_bootstrap_blob_mle_join_start;
+
+
+
+//----------------------------------------------------------------------
+
+u32 xmhf_baseplatform_arch_x86_getcpuvendor(void);
+
+void xmhf_baseplatform_arch_x86_cpuinitialize(void);
 
 //return 1 if the calling CPU is the BSP
 u32 xmhf_baseplatform_arch_x86_isbsp(void);
@@ -472,6 +490,75 @@ static inline u64 VCPU_gcr4(VCPU *vcpu)
 }
 
 
+//functions to read/write memory using flat selector so that they
+//can be used from both within the SL and runtime
+
+//read 8-bits from absolute physical address
+static inline u8 xmhf_baseplatform_arch_flat_readu8(u32 addr){
+    u32 ret;
+    __asm__ __volatile("xor %%eax, %%eax\r\n"        
+                       "movl %%fs:(%%ebx), %%eax\r\n"
+                       : "=a"(ret)
+                       : "b"(addr)
+                       );
+    return (u8)ret;        
+}
+
+//read 32-bits from absolute physical address
+static inline u32 xmhf_baseplatform_arch_flat_readu32(u32 addr){
+    u32 ret;
+    __asm__ __volatile("xor %%eax, %%eax\r\n"        
+                       "movl %%fs:(%%ebx), %%eax\r\n"
+                       : "=a"(ret)
+                       : "b"(addr)
+                       );
+    return ret;        
+}
+
+//read 64-bits from absolute physical address
+static inline u64 xmhf_baseplatform_arch_flat_readu64(u32 addr){
+    u32 highpart, lowpart;
+    __asm__ __volatile("xor %%eax, %%eax\r\n"        
+    									 "xor %%edx, %%edx\r\n"
+                       "movl %%fs:(%%ebx), %%eax\r\n"
+                       "movl %%fs:0x4(%%ebx), %%edx\r\n"
+                       : "=a"(lowpart), "=d"(highpart)
+                       : "b"(addr)
+                       );
+    return  ((u64)highpart << 32) | (u64)lowpart;        
+}
+
+//write 32-bits to absolute physical address
+static inline void xmhf_baseplatform_arch_flat_writeu32(u32 addr, u32 val) {
+    __asm__ __volatile__("movl %%eax, %%fs:(%%ebx)\r\n"
+                         :
+                         : "b"(addr), "a"((u32)val)
+                         );
+}
+
+//write 64-bits to absolute physical address
+static inline void xmhf_baseplatform_arch_flat_writeu64(u32 addr, u64 val) {
+    u32 highpart, lowpart;
+    lowpart = (u32)val;
+    highpart = (u32)((u64)val >> 32);
+    
+		__asm__ __volatile__("movl %%eax, %%fs:(%%ebx)\r\n"
+												"movl %%edx, %%fs:0x4(%%ebx)\r\n"	
+                         :
+                         : "b"(addr), "a"(lowpart), "d"(highpart)
+                         );
+}
+
+//memory copy from absolute physical address (src) to
+//data segment relative address (dest)
+static inline void xmhf_baseplatform_arch_flat_copy(u8 *dest, u8 *src, u32 size){
+	u32 i;
+	u8 val;
+	for(i=0; i < size; i++){
+		val = xmhf_baseplatform_arch_flat_readu8((u32)src + i);
+		dest[i] = val;
+	}
+}
 
 
 //----------------------------------------------------------------------

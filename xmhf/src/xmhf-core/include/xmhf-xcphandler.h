@@ -63,10 +63,10 @@
 extern u8 xmhf_xcphandler_exceptionstubs[]; 
 
 //IDT descriptor
-extern u8 xmhf_xcphandler_idt[];
+extern arch_x86_idtdesc_t xmhf_xcphandler_idt;
 
 //start of interrupt descriptor table 
-extern u8 xmhf_xcphandler_idt_start[];
+//extern u8 xmhf_xcphandler_idt_start[];
 
 //----------------------------------------------------------------------
 //exported FUNCTIONS 

@@ -77,18 +77,89 @@ typedef struct {
   u32 optionalmodule_ptr;
   u32 optionalmodule_size;
   u32 runtimephysmembase;
+  u32 runtimesize;
   char cmdline[1024];
 } __attribute__((packed)) APP_PARAM_BLOCK;
 
+//revised app parameter block; will replace the above decl. when done
+typedef struct {
+  u32 runtimephysmembase;
+  u32 runtimesize;
+} __attribute__((packed)) hypapp_env_block_t;
 
-//EMHF application callbacks
-extern u32 xmhf_app_main(VCPU *vcpu, APP_PARAM_BLOCK *apb);
-extern u32 xmhf_app_handleintercept_portaccess(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size); 
-extern u32 xmhf_app_handleintercept_hwpgtblviolation(VCPU *vcpu,
-      struct regs *r,
-      u64 gpa, u64 gva, u64 violationcode);
-extern void xmhf_app_handleshutdown(VCPU *vcpu, struct regs *r);
-extern u32 xmhf_app_handlehypercall(VCPU *vcpu, struct regs *r);	//returns APP_SUCCESS if handled, else APP_ERROR      
+
+//hypapp binary header 
+typedef struct {
+  u32 magic;
+  u32 addr_hypappfromcore;	//address is hypapp where control is transferred to from the core
+  u32 addr_hypapptocore;	//address is where control is transferred to the core when hypapp calls into core
+  u32 addr_tos;				//hypapp top-of-stack address
+  APP_PARAM_BLOCK apb;		//hypapp parameter block
+  void *optionalparam1;
+  void *optionalparam2;
+} __attribute__((packed)) XMHF_HYPAPP_HEADER;
+
+#define XMHF_HYPAPP_HEADER_MAGIC	0xDEADBEEF
+
+
+//XMHF hypapp callback declarations 
+//TODO: need to go into libxmhfcore dev headers
+//extern u32 xmhf_app_main(__xmhfattribute__(input-pbv-ro) VCPU *vcpu, __xmhfattribute__(input-pbv-ro) APP_PARAM_BLOCK *apb);
+//extern u32 xmhf_app_main(__xmhfattribute__(input-pbv-ro) APP_PARAM_BLOCK *apb);
+extern u32 xmhf_app_main(hypapp_env_block_t hypappenvb);
+//extern u32 xmhf_app_handlehypercall(__xmhfattribute__(input-pbv-ro) VCPU *vcpu, __xmhfattribute__(input-pbv) u32 callno, __xmhfattribute__(input-pbv-ro) struct regs *r);	
+extern u32 xmhf_app_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param);	
+
+extern u32 xmhf_app_handleintercept_portaccess(context_desc_t context_desc, u32 portnum, u32 access_type, u32 access_size);  
+extern u32 xmhf_app_handleintercept_hwpgtblviolation(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code);
+extern void xmhf_app_handleshutdown(context_desc_t context_desc);
+
+
+#if !(defined __XMHF_CORE_APIHUB_SWFP__)
+
+//XMHF hypapp callbacks referenced by the XMHF core
+//note: these are the interfaces core uses to invoke hypapp callbacks
+//extern u32 xmhfhypapp_main(__xmhfattribute__(input-pbv-ro) VCPU *vcpu, __xmhfattribute__(input-pbv-ro) APP_PARAM_BLOCK *apb);
+//extern u32 xmhfhypapp_main(__xmhfattribute__(input-pbv-ro) APP_PARAM_BLOCK *apb);
+extern u32 xmhfhypapp_main(hypapp_env_block_t hypappenvb);
+//extern u32 xmhfhypapp_handlehypercall(__xmhfattribute__(input-pbv-ro) VCPU *vcpu, __xmhfattribute__(input-pbv) u32 callno, __xmhfattribute__(input-pbv-ro) struct regs *r);	
+extern u32 xmhfhypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param);	
+
+extern u32 xmhfhypapp_handleintercept_portaccess(context_desc_t context_desc, u32 portnum, u32 access_type, u32 access_size); 
+extern u32 xmhfhypapp_handleintercept_hwpgtblviolation(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code);
+extern void xmhfhypapp_handleshutdown(context_desc_t context_desc);
+
+
+#else //SWFP backend
+
+// hypapp main (initialization) function
+//typedef u32 (*XMHFAPPMAIN)(VCPU *vcpu, APP_PARAM_BLOCK *apb);
+typedef u32 (*XMHFAPPMAIN)(APP_PARAM_BLOCK *apb);
+
+//hypapp hypercall handler
+//returns APP_SUCCESS if we handled the hypercall else APP_ERROR
+typedef u32 (*XMHFAPPHANDLEHYPERCALL)(VCPU *vcpu, u32 callno, struct regs *r);
+
+//handles XMHF shutdown callback
+//note: should not return
+typedef void (*XMHFAPPHANDLESHUTDOWN)(VCPU *vcpu, struct regs *r);
+
+//handles h/w pagetable violations
+//for now this always returns APP_SUCCESS
+typedef u32 (*XMHFAPPHANDLEINTERCEPTHWPGTBLVIOLATION)(VCPU *vcpu, struct regs *r, u64 gpa, u64 gva, u64 violationcode);
+
+//handles i/o port intercepts
+//returns either APP_IOINTERCEPT_SKIP or APP_IOINTERCEPT_CHAIN
+typedef u32 (*XMHFAPPHANDLEINTERCEPTPORTACCESS)(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size);
+
+
+extern XMHFAPPMAIN xmhfhypapp_main;
+extern XMHFAPPHANDLEHYPERCALL xmhfhypapp_handlehypercall;
+extern XMHFAPPHANDLESHUTDOWN xmhfhypapp_handleshutdown;
+extern XMHFAPPHANDLEINTERCEPTHWPGTBLVIOLATION xmhfhypapp_handleintercept_hwpgtblviolation;
+extern XMHFAPPHANDLEINTERCEPTPORTACCESS xmhfhypapp_handleintercept_portaccess;
+
+#endif
 
 #endif	//__ASSEMBLY__
 
