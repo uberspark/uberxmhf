@@ -236,6 +236,7 @@ static void xmhf_smpguest_arch_x86vmx_initialize(context_desc_t context_desc){
 //xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation
 //handle LAPIC accesses by the guest, used for SMP guest boot
 u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(context_desc_t context_desc, u32 paddr, u32 errorcode){
+	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
 
   //get LAPIC register being accessed
   g_vmx_lapic_reg = (paddr - g_vmx_lapic_base);
@@ -250,19 +251,19 @@ u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(context_desc_t conte
 
 		if(g_vmx_lapic_reg == LAPIC_ICR_LOW || g_vmx_lapic_reg == LAPIC_ICR_HIGH ){
 			g_vmx_lapic_op = LAPIC_OP_WRITE;
-			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, hva2spa(&g_vmx_virtual_LAPIC_base), VMX_LAPIC_MAP);
+			vmx_lapic_changemapping(context_desc, g_vmx_lapic_base, hva2spa(&g_vmx_virtual_LAPIC_base), VMX_LAPIC_MAP);
 		}else{
 			g_vmx_lapic_op = LAPIC_OP_RSVD;
-			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
+			vmx_lapic_changemapping(context_desc, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
 		}    
 	
 	}else{											//LAPIC read
 		if(g_vmx_lapic_reg == LAPIC_ICR_LOW || g_vmx_lapic_reg == LAPIC_ICR_HIGH ){
 			g_vmx_lapic_op = LAPIC_OP_READ;
-			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, hva2spa(&g_vmx_virtual_LAPIC_base), VMX_LAPIC_MAP);
+			vmx_lapic_changemapping(context_desc, g_vmx_lapic_base, hva2spa(&g_vmx_virtual_LAPIC_base), VMX_LAPIC_MAP);
 		}else{
 			g_vmx_lapic_op = LAPIC_OP_RSVD;
-			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
+			vmx_lapic_changemapping(context_desc, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
 		}  
 	}
 
@@ -717,12 +718,12 @@ void xmhf_smpguest_arch_eventhandler_dbexception(VCPU *vcpu,
 
 //handle LAPIC access #NPF (nested page fault) event
 //void xmhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 gpa, u32 errorcode){
-void xmhf_smpguest_arch_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 gpa, u32 errorcode){
+void xmhf_smpguest_arch_eventhandler_hwpgtblviolation(context_desc_t context_desc, u32 gpa, u32 errorcode){
 	//HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	//if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
 	//	xmhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
 	//}else{	//CPU_VENDOR_INTEL
-		xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
+		xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(context_desc, gpa, errorcode);
 	//}	
 	
 }
