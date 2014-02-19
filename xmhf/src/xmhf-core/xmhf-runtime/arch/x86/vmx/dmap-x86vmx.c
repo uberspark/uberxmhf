@@ -75,7 +75,7 @@ u32 xmhf_dmaprot_arch_earlyinitialize(u64 protectedbuffer_paddr, u32 protectedbu
 	//  return xmhf_dmaprot_arch_x86svm_earlyinitialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size, memregionbase_paddr,	memregion_size);
 	//}
 	//else{	//CPU_VENDOR_INTEL
-	  return xmhf_dmaprot_arch_x86vmx_earlyinitialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size, memregionbase_paddr, 	memregion_size);
+	  return 1;
 	//}
 }
 
