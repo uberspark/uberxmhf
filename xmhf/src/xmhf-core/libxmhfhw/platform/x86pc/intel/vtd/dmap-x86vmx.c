@@ -912,7 +912,111 @@ _vtd_invalidatecaches();
 
 //protect a given physical range of memory (membase to membase+size)
 //using VT-d PMRs
-u32 vtd_dmaprotect(u32 membase, u32 size){
+//return true if everything went fine, else false
+bool vtd_dmaprotect(u32 membase, u32 size){
+	ACPI_RSDP rsdp;
+	ACPI_RSDT rsdt;
+	u32 num_rsdtentries;
+	u32 rsdtentries[ACPI_MAX_RSDT_ENTRIES];
+	u32 status;
+	VTD_DMAR dmar;
+	u32 i, dmarfound;
+	u32 dmaraddrphys, remappingstructuresaddrphys;
 	
+#ifndef __XMHF_VERIFICATION__	
+
+	//zero out rsdp and rsdt structures
+	memset(&rsdp, 0, sizeof(ACPI_RSDP));
+	memset(&rsdt, 0, sizeof(ACPI_RSDT));
+
+	//get ACPI RSDP
+	status=xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
+	HALT_ON_ERRORCOND(status != 0);	//we need a valid RSDP to proceed
+	printf("\n%s: RSDP at %08x", __FUNCTION__, status);
+  
+	//grab ACPI RSDT
+	xmhf_baseplatform_arch_flat_copy((u8 *)&rsdt, (u8 *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
+	printf("\n%s: RSDT at %08x, len=%u bytes, hdrlen=%u bytes", 
+		__FUNCTION__, rsdp.rsdtaddress, rsdt.length, sizeof(ACPI_RSDT));
 	
+	//get the RSDT entry list
+	num_rsdtentries = (rsdt.length - sizeof(ACPI_RSDT))/ sizeof(u32);
+	HALT_ON_ERRORCOND(num_rsdtentries < ACPI_MAX_RSDT_ENTRIES);
+	xmhf_baseplatform_arch_flat_copy((u8 *)&rsdtentries, (u8 *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
+			sizeof(u32)*num_rsdtentries);			
+	printf("\n%s: RSDT entry list at %08x, len=%u", __FUNCTION__,
+		(rsdp.rsdtaddress + sizeof(ACPI_RSDT)), num_rsdtentries);
+
+	//find the VT-d DMAR table in the list (if any)
+	for(i=0; i< num_rsdtentries; i++){
+		xmhf_baseplatform_arch_flat_copy((u8 *)&dmar, (u8 *)rsdtentries[i], sizeof(VTD_DMAR));  
+		if(dmar.signature == VTD_DMAR_SIGNATURE){
+		  dmarfound=1;
+		  break;
+		}
+	}     	
+  
+	//if no DMAR table, bail out
+	if(!dmarfound)
+		return false;  
+
+	dmaraddrphys = rsdtentries[i]; //DMAR table physical memory address;
+	printf("\n%s: DMAR at %08x", __FUNCTION__, dmaraddrphys);
+
+	//detect DRHDs in the DMAR table
+	i=0;
+	remappingstructuresaddrphys=dmaraddrphys+sizeof(VTD_DMAR);
+	printf("\n%s: remapping structures at %08x", __FUNCTION__, remappingstructuresaddrphys);
+  
+	while(i < (dmar.length-sizeof(VTD_DMAR))){
+		u16 type, length;
+		xmhf_baseplatform_arch_flat_copy((u8 *)&type, (u8 *)(remappingstructuresaddrphys+i), sizeof(u16));
+		xmhf_baseplatform_arch_flat_copy((u8 *)&length, (u8 *)(remappingstructuresaddrphys+i+sizeof(u16)), sizeof(u16));     
+
+		switch(type){
+			case  0:  //DRHD
+				printf("\nDRHD at %08x, len=%u bytes", (u32)(remappingstructuresaddrphys+i), length);
+				HALT_ON_ERRORCOND(vtd_num_drhd < VTD_MAX_DRHD);
+				xmhf_baseplatform_arch_flat_copy((u8 *)&vtd_drhd[vtd_num_drhd], (u8 *)(remappingstructuresaddrphys+i), length);
+				vtd_num_drhd++;
+				i+=(u32)length;
+				break;
+
+			default:	//unknown type, we skip this
+`				i += (u32)length;
+				break;
+		}
+	}
+    printf("\n%s: total DRHDs detected= %u units", __FUNCTION__, vtd_num_drhd);
+
+	//be a little verbose about what we found
+	printf("\n%s: DMAR Devices:", __FUNCTION__);
+	for(i=0; i < vtd_num_drhd; i++){
+		VTD_CAP_REG cap;    
+		VTD_ECAP_REG ecap;
+		printf("\n	Device %u on PCI seg %04x; base=0x%016llx", i, 
+					vtd_drhd[i].pcisegment, vtd_drhd[i].regbaseaddr);
+		_vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_CAP_REG_OFF, (void *)&cap.value);
+		printf("\n		cap=0x%016llx", (u64)cap.value);
+		_vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_ECAP_REG_OFF, (void *)&ecap.value);
+		printf("\n		ecap=0x%016llx", (u64)ecap.value);
+	}
+
+	//initialize all DRHD units
+	for(i=0; i < vtd_num_drhd; i++){
+		printf("\n%s: initializing DRHD unit %u...", __FUNCTION__, i);
+		_vtd_drhd_initialize(&vtd_drhd[i], PAGE_ALIGN_2M(membase), PAGE_ALIGN_UP2M(size));
+	}
+
+#endif //__XMHF_VERIFICATION__
+
+	//zap VT-d presence in ACPI table...
+	//TODO: we need to be a little elegant here. eventually need to setup 
+	//EPT/NPTs such that the DMAR pages are unmapped for the guest
+	xmhf_baseplatform_arch_flat_writeu32(dmaraddrphys, 0UL);
+
+	//success
+	printf("\n%s: success, leaving...", __FUNCTION__);
+
+	return true;
 }
