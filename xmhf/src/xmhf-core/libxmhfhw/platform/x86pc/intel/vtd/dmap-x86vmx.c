@@ -696,7 +696,7 @@ void vmx_eap_zap(void){
 //if input parameter bootstrap is 1 then we perform minimal translation
 //structure initialization, else we do the full DMA translation structure
 //initialization at a page-granularity
-static u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
+u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 		u32 vtd_pdts_paddr, u32 vtd_pdts_vaddr,
 		u32 vtd_pts_paddr, u32 vtd_pts_vaddr,
 		u32 vtd_ret_paddr, u32 vtd_ret_vaddr,
@@ -837,29 +837,6 @@ static u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 ////////////////////////////////////////////////////////////////////////
 // GLOBALS
 
-//"early" DMA protection initialization to setup minimal
-//structures to protect a range of physical memory
-//return 1 on success 0 on failure
-u32 xmhf_dmaprot_arch_x86vmx_earlyinitialize(u64 protectedbuffer_paddr, u32 protectedbuffer_vaddr, u32 protectedbuffer_size, u64 __attribute__((unused))memregionbase_paddr, u32 __attribute__((unused))memregion){
-	u32 vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr, vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr, vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr;
-
-	//(void)memregionbase_paddr;
-	//(void)memregion_size;
-	
-	printf("\nSL: Bootstrapping VMX DMA protection...");
-			
-	//we use 3 pages for Vt-d bootstrapping
-	HALT_ON_ERRORCOND(protectedbuffer_size >= (3*PAGE_SIZE_4K));
-		
-	vmx_eap_vtd_pdpt_paddr = protectedbuffer_paddr; 
-	vmx_eap_vtd_pdpt_vaddr = protectedbuffer_vaddr; 
-	vmx_eap_vtd_ret_paddr = protectedbuffer_paddr + PAGE_SIZE_4K; 
-	vmx_eap_vtd_ret_vaddr = protectedbuffer_vaddr + PAGE_SIZE_4K; 
-	vmx_eap_vtd_cet_paddr = protectedbuffer_paddr + (2*PAGE_SIZE_4K); 
-	vmx_eap_vtd_cet_vaddr = protectedbuffer_vaddr + (2*PAGE_SIZE_4K); 
-			
-	return vmx_eap_initialize(vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr, 0, 0,	0, 0, vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr,	vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr, 1);
-}
 
 //"normal" DMA protection initialization to setup required
 //structures for DMA protection

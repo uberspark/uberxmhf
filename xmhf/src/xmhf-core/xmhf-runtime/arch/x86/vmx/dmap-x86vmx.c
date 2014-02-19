@@ -64,6 +64,7 @@ u32 xmhf_dmaprot_arch_getbuffersize(u64 physical_memory_limit){
 }
 
 
+
 //"early" DMA protection initialization to setup minimal
 //structures to protect a range of physical memory
 //return 1 on success 0 on failure
