@@ -198,18 +198,18 @@ static VCPU *_vmx_getvcpu(void){
 //xmhf_smpguest_arch_x86vmx_initialize
 //initialize LAPIC interception machinery
 //note: called from the BSP
-static void xmhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu){
-  u32 eax, edx;
+static void xmhf_smpguest_arch_x86vmx_initialize(context_desct_t context_desc){
+	u32 eax, edx;
+	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
 
-  //read LAPIC base address from MSR
-  rdmsr(MSR_APIC_BASE, &eax, &edx);
-  HALT_ON_ERRORCOND( edx == 0 ); //APIC should be below 4G
+	//read LAPIC base address from MSR
+	rdmsr(MSR_APIC_BASE, &eax, &edx);
+	HALT_ON_ERRORCOND( edx == 0 ); //APIC should be below 4G
 
-  g_vmx_lapic_base = eax & 0xFFFFF000UL;
-  //printf("\nBSP(0x%02x): LAPIC base=0x%08x", vcpu->id, g_vmx_lapic_base);
+	g_vmx_lapic_base = eax & 0xFFFFF000UL;
   
-  //unmap LAPIC page
-  vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_UNMAP);
+	//unmap LAPIC page
+	vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_UNMAP);
 }
 //----------------------------------------------------------------------
 
@@ -668,7 +668,7 @@ void xmhf_smpguest_arch_initialize(context_desc_t context_desc){
 
 	//if we are the BSP and platform has more than 1 CPU, setup SIPI interception to tackle SMP guests
 	if(vcpu->isbsp && (g_midtable_numentries > 1)){
-			xmhf_smpguest_arch_x86vmx_initialize(vcpu);
+			xmhf_smpguest_arch_x86vmx_initialize(context_desc);
 			printf("\nCPU(0x%02x): setup x86vmx SMP guest capabilities", vcpu->id);
 	}else{ //we are an AP, so just wait for SIPI signal
 			printf("\nCPU(0x%02x): AP, waiting for SIPI signal...", vcpu->id);
