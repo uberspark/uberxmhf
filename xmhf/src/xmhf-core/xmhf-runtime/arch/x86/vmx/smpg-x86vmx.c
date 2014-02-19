@@ -220,7 +220,7 @@ static void xmhf_smpguest_arch_x86vmx_initialize(context_desc_t context_desc){
 	g_vmx_lapic_base = eax & 0xFFFFF000UL;
   
 	//unmap LAPIC page
-	vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_UNMAP);
+	vmx_lapic_changemapping(context_desc, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_UNMAP);
 }
 //----------------------------------------------------------------------
 
