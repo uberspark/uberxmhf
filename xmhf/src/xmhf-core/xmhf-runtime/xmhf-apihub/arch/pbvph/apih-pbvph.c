@@ -136,6 +136,11 @@ void xmhf_apihub_arch_fromhypapp(u32 callnum){
 				break;
 			}
 
+			case XMHF_APIHUB_COREAPI_HPT_SETENTRY:{ //void xmhf_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u64 entry)
+				xmhf_memprot_hpt_setentry(paramhypapp->context_desc, paramhypapp->param1, paramhypapp->param2);
+				break;
+			}
+
 //-----------------------------------------------------------------------
 
 			/*
