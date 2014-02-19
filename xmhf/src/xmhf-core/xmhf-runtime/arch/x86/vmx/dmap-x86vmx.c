@@ -86,11 +86,11 @@ u32 xmhf_dmaprot_arch_initialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size){
 	//u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
 
-	if(cpu_vendor == CPU_VENDOR_AMD){
-	  return xmhf_dmaprot_arch_x86svm_initialize(protectedbuffer_paddr,	protectedbuffer_vaddr, protectedbuffer_size);
-	}else{	//CPU_VENDOR_INTEL
+	//if(cpu_vendor == CPU_VENDOR_AMD){
+	//  return xmhf_dmaprot_arch_x86svm_initialize(protectedbuffer_paddr,	protectedbuffer_vaddr, protectedbuffer_size);
+	//}else{	//CPU_VENDOR_INTEL
 	  return 1; //we use Vtd PMRs to protect the SL + runtime during SL launch
-	}
+	//}
 		
 }
 
@@ -100,9 +100,9 @@ u32 xmhf_dmaprot_arch_initialize(u64 protectedbuffer_paddr,
 void xmhf_dmaprot_arch_protect(u32 start_paddr, u32 size){
 	//u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
 
-	if(cpu_vendor == CPU_VENDOR_AMD){
-	  return xmhf_dmaprot_arch_x86svm_protect(start_paddr, size);
-	}else{	//CPU_VENDOR_INTEL
+	//if(cpu_vendor == CPU_VENDOR_AMD){
+	//  return xmhf_dmaprot_arch_x86svm_protect(start_paddr, size);
+	//}else{	//CPU_VENDOR_INTEL
 	  return; //we use Vtd PMRs to protect the SL + runtime during SL launch
-	} 
+	//} 
 }
