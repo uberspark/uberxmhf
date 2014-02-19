@@ -682,11 +682,11 @@ void xmhf_smpguest_arch_initialize(context_desc_t context_desc){
 #else
 
 	//UP version, we just let the BSP continue and stall the APs
-	if(vcpu->isbsp)
+	if(context_desc.cpu_desc.isbsp)
 		return;
 	
 	//we are an AP, so just lockup
-	printf("\nCPU(0x%02x): AP, locked!", vcpu->id);
+	printf("\nCPU(0x%02x): AP, locked!", context_desc.cpu_desc.id);
 	while(1);
 
 #endif
