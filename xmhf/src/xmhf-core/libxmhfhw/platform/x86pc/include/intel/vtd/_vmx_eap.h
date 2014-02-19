@@ -307,6 +307,12 @@ typedef union {
   } bits;
 } __attribute__ ((packed)) VTD_PMEN_REG;
 
+u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
+		u32 vtd_pdts_paddr, u32 vtd_pdts_vaddr,
+		u32 vtd_pts_paddr, u32 vtd_pts_vaddr,
+		u32 vtd_ret_paddr, u32 vtd_ret_vaddr,
+		u32 vtd_cet_paddr, u32 vtd_cet_vaddr, u32 isbootstrap);
+
 		
 #endif //__ASSEMBLY__
 
