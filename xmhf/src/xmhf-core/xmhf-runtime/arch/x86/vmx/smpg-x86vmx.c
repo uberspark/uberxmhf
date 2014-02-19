@@ -66,7 +66,7 @@ static u32 g_vmx_lapic_guest_eflags_tfifmask __attribute__(( section(".data") ))
 #define VMX_LAPIC_UNMAP			0
 
 static void vmx_lapic_changemapping(VCPU *vcpu, u32 lapic_paddr, u32 new_lapic_paddr, u64 mapflag){
-#ifndef __XMHF_VERIFICATION__
+//#ifndef __XMHF_VERIFICATION__
   u64 *pts;
   u32 lapic_page;
   u64 value;
@@ -78,7 +78,7 @@ static void vmx_lapic_changemapping(VCPU *vcpu, u32 lapic_paddr, u32 new_lapic_p
   pts[lapic_page] = value;
 
   xmhf_memprot_arch_x86vmx_flushmappings(vcpu);
-#endif //__XMHF_VERIFICATION__
+//#endif //__XMHF_VERIFICATION__
 }
 //----------------------------------------------------------------------
 
