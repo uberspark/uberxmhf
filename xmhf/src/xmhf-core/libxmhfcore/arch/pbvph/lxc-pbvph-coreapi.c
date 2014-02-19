@@ -161,6 +161,15 @@ u64 xmhfcore_memprot_getHPTroot(context_desc_t context_desc){
 	return result;
 }
 
+void xmhfcore_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u64 entry){
+	u64 result;
+	paramhypapp->context_desc = context_desc;
+	paramhypapp->param1 = hpt_paddr;
+	paramhypapp->param2 = entry;
+	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_HPT_SETENTRY);
+	return;
+}
+
 
 /*
 

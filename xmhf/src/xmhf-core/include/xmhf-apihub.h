@@ -86,6 +86,8 @@
 #define XMHF_APIHUB_COREAPI_MEMPROT_SETSINGULARHPT			(16)
 #define XMHF_APIHUB_COREAPI_MEMPROT_GETHPTROOT			(17)
 
+#define XMHF_APIHUB_COREAPI_HPT_SETENTRY					(18)
+
 #define XMHF_APIHUB_COREAPI_HYPAPPCBRETURN					(0xFFFF)
 
 
@@ -153,7 +155,7 @@ u8 * xmhfcore_smpguest_walk_pagetables(context_desc_t context_desc, u32 vaddr);
 //xmhfcoreapiretval_t xmhfcore_baseplatform_getcputable(void);
 void xmhfcore_memprot_setsingularhpt(u64 hpt);
 u64 xmhfcore_memprot_getHPTroot(context_desc_t context_desc);
-
+void xmhfcore_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u64 entry);
 //uint32_t xmhfcore_tpm_write_cmd_fifo(uint32_t locality, uint8_t *in,
 //                                   uint32_t in_size, uint8_t *out,
 //                                   uint32_t *out_size);
