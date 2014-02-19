@@ -907,3 +907,12 @@ void xmhf_dmaprot_arch_x86vmx_protect(u32 start_paddr, u32 size){
 _vtd_invalidatecaches();  
 
 }
+
+////////////////////////////////////////////////////////////////////////
+
+//protect a given physical range of memory (membase to membase+size)
+//using VT-d PMRs
+u32 vtd_dmaprotect(u32 membase, u32 size){
+	
+	
+}
