@@ -294,6 +294,7 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size
   VTD_RTADDR_REG rtaddr;
   VTD_CCMD_REG ccmd;
   VTD_IOTLB_REG iotlb;
+  VTD_PMEN_REG pmen;
   
 	//sanity check
 	HALT_ON_ERRORCOND(drhd != NULL);
@@ -311,8 +312,26 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size
 		}
 
 		printf("\nDRHD unit has all required capabilities");
-		HALT();
 	}
+	
+	//read protected memory enable register (PMEN) to sanity check
+	//that PMEN is enabled (due to SENTER)
+	{
+		printf("\nSanity checking PMEN is enabled...");
+
+		//read PMEN register
+		_vtd_reg(drhd, VTD_REG_READ, VTD_PMEN_REG_OFF, (void *)&pmen.value);
+		
+		if(!pmen.bits.prs){
+			printf("\n  Fatal: PMEN is disabled. Halting!");
+			HALT();
+		}
+		
+		printf("\nPMEN sanity check passed");
+	}
+	
+	HALT();
+	
 	
 /*	//1. verify required capabilities
 	//more specifically...
