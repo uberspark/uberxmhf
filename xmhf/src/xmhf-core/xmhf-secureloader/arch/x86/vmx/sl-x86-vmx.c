@@ -79,7 +79,7 @@ void xmhf_sl_arch_sanitize_post_launch(void){
 }
 
 
-//"early" DMA protection initialization to setup minimal
+/*//"early" DMA protection initialization to setup minimal
 //structures to protect a range of physical memory
 //return 1 on success 0 on failure
 u32 xmhf_sl_arch_x86vmx_earlyinitialize(u64 protectedbuffer_paddr, u32 protectedbuffer_vaddr, u32 protectedbuffer_size, u64 __attribute__((unused))memregionbase_paddr, u32 __attribute__((unused))memregion){
@@ -103,11 +103,11 @@ u32 xmhf_sl_arch_x86vmx_earlyinitialize(u64 protectedbuffer_paddr, u32 protected
 	vmx_eap_vtd_cet_vaddr = protectedbuffer_vaddr + (2*PAGE_SIZE_4K); 
 			
 	return vmx_eap_initialize(vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr, 0, 0,	0, 0, vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr,	vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr, 1);
-}
+}*/
 
 
 void xmhf_sl_arch_early_dmaprot_init(u32 membase, u32 size){
-		(void)membase;
+		/*(void)membase;
 		(void)size;
 
 		{
@@ -136,7 +136,15 @@ void xmhf_sl_arch_early_dmaprot_init(u32 membase, u32 size){
 			
 			printf("SL: Initialized DMA protections successfully\n");
 		
+		}*/
+		
+		printf("SL: Initializing DMA protections...\n");
+		
+		if(!vtd_dmaprotect(membase, size)){
+			printf("SL: Fatal, could not initialize DMA protections. Halting!\n");
+			HALT();	
 		}
 
+		printf("SL: Initialized DMA protections successfully\n");
 }
 
