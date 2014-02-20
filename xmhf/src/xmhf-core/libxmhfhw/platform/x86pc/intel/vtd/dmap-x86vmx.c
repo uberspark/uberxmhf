@@ -285,7 +285,8 @@ static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
 //note that the VT-d documentation does not describe the precise sequence of
 //steps that need to be followed to initialize a DRHD unit!. we use our
 //common sense instead...:p
-static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
+//static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
+static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size_2Maligned){	
 	VTD_GCMD_REG gcmd;
   VTD_GSTS_REG gsts;
   VTD_FECTL_REG fectl;
@@ -830,11 +831,11 @@ u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
  	//initialize all DRHD units
   for(i=0; i < vtd_num_drhd; i++){
   	printf("\n%s: initializing DRHD unit %u...", __FUNCTION__, i);
-  	_vtd_drhd_initialize(&vtd_drhd[i], vtd_ret_paddr);
+  	//_vtd_drhd_initialize(&vtd_drhd[i], vtd_ret_paddr);
   }
 #else
   	printf("\n%s: initializing DRHD unit %u...", __FUNCTION__, i);
-  	_vtd_drhd_initialize(&vtd_drhd[0], vtd_ret_paddr);
+  	//_vtd_drhd_initialize(&vtd_drhd[0], vtd_ret_paddr);
 #endif
 
 	//zap VT-d presence in ACPI table...
