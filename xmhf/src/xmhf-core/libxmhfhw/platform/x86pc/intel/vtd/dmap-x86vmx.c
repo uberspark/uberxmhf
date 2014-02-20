@@ -294,11 +294,26 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
   VTD_CCMD_REG ccmd;
   VTD_IOTLB_REG iotlb;
   
-  //sanity check
+	//sanity check
 	HALT_ON_ERRORCOND(drhd != NULL);
 
+	//verify required capabilities
+	{
+		printf("\nVerifying DRHD capabilities...");
 	
-	//1. verify required capabilities
+		//read CAP register
+		_vtd_reg(drhd, VTD_REG_READ, VTD_CAP_REG_OFF, (void *)&cap.value);
+		
+		if(!cap.bits.plmr){
+			printf("\n	PLMR unsupported. Halting!");
+			HALT();
+		}
+
+		printf("\nDRHD unit has all required capabilities");
+		HALT();
+	}
+	
+/*	//1. verify required capabilities
 	//more specifically...
 	//	verify supported MGAW to ensure our host address width is supported (32-bits)
   //	verify supported AGAW, must support 39-bits for 3 level page-table walk
@@ -325,6 +340,7 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
     
   }
 	printf("Done.");
+*/
 
 	//check VT-d snoop control capabilities
 	{
