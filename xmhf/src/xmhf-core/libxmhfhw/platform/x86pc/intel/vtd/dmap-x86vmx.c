@@ -343,7 +343,7 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size
 	printf("Done.");
 */
 
-	//check VT-d snoop control capabilities
+/*	//check VT-d snoop control capabilities
 	{
 		VTD_ECAP_REG ecap;
 		//read ECAP register
@@ -552,7 +552,7 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size
   	}
 	}
 	printf("Done.");
-
+*/
 
 }
 
