@@ -64,6 +64,7 @@
 #define VTD_FSTS_REG_OFF  	0x034				//report fault/error status (32-bit)
 #define VTD_FECTL_REG_OFF 	0x038				//interrupt control (32-bit)
 #define VTD_PMEN_REG_OFF  	0x064				//enable DMA protected memory regions (32-bits)
+#define VTD_PLMBASE_REG_OFF	0x068				//protected low memory base register (32-bits)
 #define VTD_IVA_REG_OFF  		0x0DEAD  		//invalidate address register (64-bits)
 																				//note: the offset of this register is computed
                                     		//at runtime for a specified DMAR device
@@ -306,6 +307,13 @@ typedef union {
     u32 epm:1;			//enable protected memory
   } bits;
 } __attribute__ ((packed)) VTD_PMEN_REG;
+
+
+//VTD_PLMBASE_REG (sec. 10.4.17)
+typedef struct {
+  u32 value;
+} __attribute__ ((packed)) VTD_PLMBASE_REG;
+
 
 u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 		u32 vtd_pdts_paddr, u32 vtd_pdts_vaddr,
