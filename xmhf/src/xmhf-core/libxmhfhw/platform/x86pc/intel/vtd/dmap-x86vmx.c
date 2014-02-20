@@ -1000,7 +1000,7 @@ bool vtd_dmaprotect(u32 membase, u32 size){
 				break;
 
 			default:	//unknown type, we skip this
-`				i += (u32)length;
+				i += (u32)length;
 				break;
 		}
 	}
