@@ -213,6 +213,7 @@ static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
     case  VTD_FSTS_REG_OFF:
     case  VTD_FECTL_REG_OFF:
     case  VTD_PMEN_REG_OFF:
+    case  VTD_PLMBASE_REG_OFF:
       regtype=VTD_REG_32BITS;
       regaddr=dmardevice->regbaseaddr+reg;
       break;
@@ -295,6 +296,7 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size
   VTD_CCMD_REG ccmd;
   VTD_IOTLB_REG iotlb;
   VTD_PMEN_REG pmen;
+  VTD_PLMBASE_REG plmbase;
   
 	//sanity check
 	HALT_ON_ERRORCOND(drhd != NULL);
@@ -328,6 +330,21 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size
 		}
 		
 		printf("\nPMEN sanity check passed");
+	}
+	
+	//sanity check protected low memory base register (PLMBASE)
+	{
+		printf("\nSanity checking PLMBASE...");
+
+		//read PLMBASE register
+		_vtd_reg(drhd, VTD_REG_READ, VTD_PLMBASE_REG_OFF, (void *)&plmbase.value);
+		
+		if(plmbase.value != membase_2Maligned){
+			printf("\n Fatal: PLMBASE (%08x) does not contain expected value (%08x)", plmbase.value, membase_2Maligned);
+			HALT();
+		}
+
+		printf("\nPLMBASE sanity check passed");
 	}
 	
 	HALT();
