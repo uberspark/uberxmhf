@@ -357,11 +357,10 @@ static bool _vtd_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size
 		//read PLMLIMIT register
 		_vtd_reg(drhd, VTD_REG_READ, VTD_PLMLIMIT_REG_OFF, (void *)&plmlimit.value);
 		
-		printf("\nPLMLIMIT=%08x", plmlimit.value);
-		//if(plmlimit.value != (membase_2Maligned+size_2Maligned)){
-		//	printf("\n Fatal: PLMLIMIT (%08x) does not contain expected value (%08x)", plmlimit.value, (membase_2Maligned+size_2Maligned));
-		//	HALT();
-		//}
+		if(plmlimit.value != (membase_2Maligned+size_2Maligned)){
+			printf("\n Fatal: PLMLIMIT (%08x) does not contain expected value (%08x)", plmlimit.value, (membase_2Maligned+size_2Maligned));
+			HALT();
+		}
 
 		printf("\nPLMLIMIT sanity check passed");
 	}
