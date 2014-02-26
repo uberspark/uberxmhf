@@ -80,6 +80,8 @@ static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
     //64-bit registers
     case  VTD_CAP_REG_OFF:
     case  VTD_ECAP_REG_OFF:
+    case VTD_PHMBASE_REG_OFF:
+    case VTD_PHMLIMIT_REG_OFF:
       regtype=VTD_REG_64BITS;
       regaddr=dmardevice->regbaseaddr+reg;
       break;
@@ -124,6 +126,8 @@ static bool vtdinit_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 s
 	VTD_PMEN_REG pmen;
 	VTD_PLMBASE_REG plmbase;
 	VTD_PLMLIMIT_REG plmlimit;
+	VTD_PHMBASE_REG phmbase;
+	VTD_PHMLIMIT_REG phmlimit;
   
 	//sanity check
 	HALT_ON_ERRORCOND(drhd != NULL);
@@ -153,9 +157,25 @@ static bool vtdinit_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 s
     //load PLMLIMIT
     plmlimit.value=membase_2Maligned+size_2Maligned;
      _vtd_reg(drhd, VTD_REG_WRITE, VTD_PLMLIMIT_REG_OFF, (void *)&plmlimit.value);
+    //load PHMBASE
+    phmbase.value=membase_2Maligned;
+     _vtd_reg(drhd, VTD_REG_WRITE, VTD_PHMBASE_REG_OFF, (void *)&phmbase.value);
+    //load PHMLIMIT
+    phmlimit.value=membase_2Maligned+size_2Maligned;
+     _vtd_reg(drhd, VTD_REG_WRITE, VTD_PHMLIMIT_REG_OFF, (void *)&phmlimit.value);
+
+
     //enable PMEN
      pmen.bits.epm=1;
 	 _vtd_reg(drhd, VTD_REG_WRITE, VTD_PMEN_REG_OFF, (void *)&pmen.value);
+
+
+	//debug dump:
+	 _vtd_reg(drhd, VTD_REG_READ, VTD_PLMBASE_REG_OFF, (void *)&plmbase.value);
+     _vtd_reg(drhd, VTD_REG_READ, VTD_PLMLIMIT_REG_OFF, (void *)&plmlimit.value);
+	 _vtd_reg(drhd, VTD_REG_READ, VTD_PMEN_REG_OFF, (void *)&pmen.value);
+	printf("\n%s: PMEN=%08x, PLMBASE=%08x, PLMLIMIT=%08x", __FUNCTION__, pmen.value, plmbase.value, plmlimit.value);
+
 
 	return true;
 }
