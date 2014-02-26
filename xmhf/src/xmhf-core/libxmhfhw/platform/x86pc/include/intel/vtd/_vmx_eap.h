@@ -66,6 +66,8 @@
 #define VTD_PMEN_REG_OFF  	0x064				//enable DMA protected memory regions (32-bits)
 #define VTD_PLMBASE_REG_OFF	0x068				//protected low memory base register (32-bits)
 #define VTD_PLMLIMIT_REG_OFF	0x6C			//protected low memory limit register (32-bits)
+#define VTD_PHMBASE_REG_OFF	0x070				//protected high memory base register (64-bits)
+#define VTD_PHMLIMIT_REG_OFF	0x78			//protected high memory limit register (64-bits)
 
 #define VTD_IVA_REG_OFF  		0x0DEAD  		//invalidate address register (64-bits)
 																				//note: the offset of this register is computed
@@ -320,6 +322,17 @@ typedef struct {
 typedef struct {
   u32 value;
 } __attribute__ ((packed)) VTD_PLMLIMIT_REG;
+
+//VTD_PHMBASE_REG (sec. 10.4.19)
+typedef struct {
+  u64 value;
+} __attribute__ ((packed)) VTD_PHMBASE_REG;
+
+//VTD_PHMLIMIT_REG (sec. 10.4.20)
+typedef struct {
+  u64 value;
+} __attribute__ ((packed)) VTD_PHMLIMIT_REG;
+
 
 u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
 		u32 vtd_pdts_paddr, u32 vtd_pdts_vaddr,

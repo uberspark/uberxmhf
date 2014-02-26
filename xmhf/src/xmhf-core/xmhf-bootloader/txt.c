@@ -294,12 +294,19 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
 		(void)mle_size;
 		os_sinit_data->vtd_pmr_lo_base = (u64)__TARGET_BASE_SL;
 		os_sinit_data->vtd_pmr_lo_size = (u64)PAGE_ALIGN_UP2M(sl_rt_size);
+		//os_sinit_data->vtd_pmr_lo_base = 0;
+		//os_sinit_data->vtd_pmr_lo_size = 0;
+
+		/* hi range is >4GB; unused for us */
+		//os_sinit_data->vtd_pmr_hi_base = 0;
+		//os_sinit_data->vtd_pmr_hi_size = 0;
+		os_sinit_data->vtd_pmr_hi_base = (u64)__TARGET_BASE_SL;
+		os_sinit_data->vtd_pmr_hi_size = (u64)PAGE_ALIGN_UP2M(sl_rt_size);
+		
 		printf("\n%s: sl_rt_size=%08x, padded=%08x", __FUNCTION__, sl_rt_size, (u32)PAGE_ALIGN_UP2M(sl_rt_size));
 	}
 
-    /* hi range is >4GB; unused for us */
-    os_sinit_data->vtd_pmr_hi_base = 0;
-    os_sinit_data->vtd_pmr_hi_size = 0;
+
 
     /* LCP owner policy data -- DELETED */
     
