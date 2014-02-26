@@ -121,7 +121,7 @@ static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
 }
 
 
-static bool vtdinit_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size_2Maligned){	
+static bool vtdinit_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned __attribute__((unused)), u32 size_2Maligned __attribute__((unused))){	
 	VTD_CAP_REG cap;
 	VTD_PMEN_REG pmen;
 	VTD_PLMBASE_REG plmbase;
@@ -139,8 +139,8 @@ static bool vtdinit_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 s
 		//read CAP register
 		_vtd_reg(drhd, VTD_REG_READ, VTD_CAP_REG_OFF, (void *)&cap.value);
 		
-		if(!cap.bits.plmr){
-			printf("\nWarning:	PLMR unsupported. Halting!");
+		if(! (cap.bits.plmr && cap.bits.phmr) ){
+			printf("\nWarning:	PL/HMR unsupported. Halting!");
 			HALT();
 		}
 		
@@ -151,30 +151,33 @@ static bool vtdinit_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 s
 	//disable PMEN
 	 pmen.bits.epm=0;
 	 _vtd_reg(drhd, VTD_REG_WRITE, VTD_PMEN_REG_OFF, (void *)&pmen.value);
+    
     //load PLMBASE
-    plmbase.value=membase_2Maligned;
+    plmbase.value= __TARGET_BASE_SL;
      _vtd_reg(drhd, VTD_REG_WRITE, VTD_PLMBASE_REG_OFF, (void *)&plmbase.value);
     //load PLMLIMIT
-    plmlimit.value=membase_2Maligned+size_2Maligned;
+    plmlimit.value=__TARGET_BASE_SL + __TARGET_SIZE_SL;
      _vtd_reg(drhd, VTD_REG_WRITE, VTD_PLMLIMIT_REG_OFF, (void *)&plmlimit.value);
     //load PHMBASE
-    phmbase.value=membase_2Maligned;
+    phmbase.value=(__TARGET_BASE_SL + __TARGET_SIZE_SL);
      _vtd_reg(drhd, VTD_REG_WRITE, VTD_PHMBASE_REG_OFF, (void *)&phmbase.value);
     //load PHMLIMIT
-    phmlimit.value=membase_2Maligned+size_2Maligned;
-     _vtd_reg(drhd, VTD_REG_WRITE, VTD_PHMLIMIT_REG_OFF, (void *)&phmlimit.value);
+    phmlimit.value= (__TARGET_BASE_SL + __TARGET_SIZE_SL) + (size_2Maligned - __TARGET_SIZE_SL);
+    _vtd_reg(drhd, VTD_REG_WRITE, VTD_PHMLIMIT_REG_OFF, (void *)&phmlimit.value);
+
+	//enable PMEN
+    pmen.bits.epm=1;
+	_vtd_reg(drhd, VTD_REG_WRITE, VTD_PMEN_REG_OFF, (void *)&pmen.value);
 
 
-    //enable PMEN
-     pmen.bits.epm=1;
-	 _vtd_reg(drhd, VTD_REG_WRITE, VTD_PMEN_REG_OFF, (void *)&pmen.value);
-
-
-	//debug dump:
+	//debug dump
 	 _vtd_reg(drhd, VTD_REG_READ, VTD_PLMBASE_REG_OFF, (void *)&plmbase.value);
      _vtd_reg(drhd, VTD_REG_READ, VTD_PLMLIMIT_REG_OFF, (void *)&plmlimit.value);
-	 _vtd_reg(drhd, VTD_REG_READ, VTD_PMEN_REG_OFF, (void *)&pmen.value);
+	 _vtd_reg(drhd, VTD_REG_READ, VTD_PHMBASE_REG_OFF, (void *)&phmbase.value);
+     _vtd_reg(drhd, VTD_REG_READ, VTD_PHMLIMIT_REG_OFF, (void *)&phmlimit.value);
+	_vtd_reg(drhd, VTD_REG_READ, VTD_PMEN_REG_OFF, (void *)&pmen.value);
 	printf("\n%s: PMEN=%08x, PLMBASE=%08x, PLMLIMIT=%08x", __FUNCTION__, pmen.value, plmbase.value, plmlimit.value);
+	printf("\n%s: PHMBASE=%016llx, PLMLIMIT=%016llx", __FUNCTION__, phmbase.value, phmlimit.value);
 
 
 	return true;

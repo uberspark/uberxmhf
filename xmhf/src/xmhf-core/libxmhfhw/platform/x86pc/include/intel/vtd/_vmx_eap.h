@@ -63,9 +63,12 @@
 #define VTD_CCMD_REG_OFF  	0x028				//manage context-entry cache (64-bit) 
 #define VTD_FSTS_REG_OFF  	0x034				//report fault/error status (32-bit)
 #define VTD_FECTL_REG_OFF 	0x038				//interrupt control (32-bit)
+
 #define VTD_PMEN_REG_OFF  	0x064				//enable DMA protected memory regions (32-bits)
+
 #define VTD_PLMBASE_REG_OFF	0x068				//protected low memory base register (32-bits)
 #define VTD_PLMLIMIT_REG_OFF	0x6C			//protected low memory limit register (32-bits)
+
 #define VTD_PHMBASE_REG_OFF	0x070				//protected high memory base register (64-bits)
 #define VTD_PHMLIMIT_REG_OFF	0x78			//protected high memory limit register (64-bits)
 
