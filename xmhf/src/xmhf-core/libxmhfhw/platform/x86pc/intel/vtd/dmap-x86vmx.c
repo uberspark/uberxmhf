@@ -288,7 +288,7 @@ static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
 //steps that need to be followed to initialize a DRHD unit!. we use our
 //common sense instead...:p
 //static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
-static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size_2Maligned){	
+static bool _vtd_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size_2Maligned){	
 	VTD_GCMD_REG gcmd;
   VTD_GSTS_REG gsts;
   VTD_FECTL_REG fectl;
@@ -312,7 +312,7 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size
 		
 		if(!cap.bits.plmr){
 			printf("\nWarning:	PLMR unsupported. Halting!");
-			HALT();
+			return false;
 		}
 		
 		printf("\nDRHD unit has all required capabilities");
@@ -328,7 +328,7 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size
 		
 		if(!pmen.bits.prs){
 			printf("\n  Fatal: PMEN is disabled. Halting!");
-			HALT();
+			return false;
 		}
 		
 		printf("\nPMEN sanity check passed");
@@ -343,7 +343,7 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size
 		
 		if(plmbase.value != membase_2Maligned){
 			printf("\n Fatal: PLMBASE (%08x) does not contain expected value (%08x)", plmbase.value, membase_2Maligned);
-			HALT();
+			return false;
 		}
 
 		printf("\nPLMBASE sanity check passed");
@@ -366,6 +366,8 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size
 		printf("\nPLMLIMIT sanity check passed");
 	}
 	
+	
+	return true;
 	//HALT();
 	
 	
@@ -1079,7 +1081,8 @@ bool vtd_dmaprotect(u32 membase, u32 size){
 	//initialize all DRHD units
 	for(i=0; i < vtd_num_drhd; i++){
 		printf("\n%s: initializing DRHD unit %u...", __FUNCTION__, i);
-		_vtd_drhd_initialize(&vtd_drhd[i], PAGE_ALIGN_2M(membase), PAGE_ALIGN_UP2M(size));
+		if(!_vtd_drhd_initialize(&vtd_drhd[i], PAGE_ALIGN_2M(membase), PAGE_ALIGN_UP2M(size)) )
+			return false;
 	}
 
 #endif //__XMHF_VERIFICATION__
