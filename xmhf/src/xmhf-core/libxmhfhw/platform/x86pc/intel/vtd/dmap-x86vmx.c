@@ -312,9 +312,10 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size
 		
 		if(!cap.bits.plmr){
 			printf("\nWarning:	PLMR unsupported. Halting!");
-		}else{
-			printf("\nDRHD unit has all required capabilities");
+			HALT();
 		}
+		
+		printf("\nDRHD unit has all required capabilities");
 	}
 	
 	//read protected memory enable register (PMEN) to sanity check
@@ -325,11 +326,10 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size
 		//read PMEN register
 		_vtd_reg(drhd, VTD_REG_READ, VTD_PMEN_REG_OFF, (void *)&pmen.value);
 		
-		printf("\nPMEN.prs = %u", pmen.bits.prs);
-		//if(!pmen.bits.prs){
-		//	printf("\n  Fatal: PMEN is disabled. Halting!");
-		//	HALT();
-		//}
+		if(!pmen.bits.prs){
+			printf("\n  Fatal: PMEN is disabled. Halting!");
+			HALT();
+		}
 		
 		printf("\nPMEN sanity check passed");
 	}
@@ -341,11 +341,10 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size
 		//read PLMBASE register
 		_vtd_reg(drhd, VTD_REG_READ, VTD_PLMBASE_REG_OFF, (void *)&plmbase.value);
 		
-		printf("\nPLMBASE=%08x", plmbase.value);
-		//if(plmbase.value != membase_2Maligned){
-		//	printf("\n Fatal: PLMBASE (%08x) does not contain expected value (%08x)", plmbase.value, membase_2Maligned);
-		//	HALT();
-		//}
+		if(plmbase.value != membase_2Maligned){
+			printf("\n Fatal: PLMBASE (%08x) does not contain expected value (%08x)", plmbase.value, membase_2Maligned);
+			HALT();
+		}
 
 		printf("\nPLMBASE sanity check passed");
 	}
