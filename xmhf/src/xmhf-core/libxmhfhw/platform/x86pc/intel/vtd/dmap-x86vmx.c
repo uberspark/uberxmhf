@@ -214,6 +214,7 @@ static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
     case  VTD_FECTL_REG_OFF:
     case  VTD_PMEN_REG_OFF:
     case  VTD_PLMBASE_REG_OFF:
+    case  VTD_PLMLIMIT_REG_OFF:
       regtype=VTD_REG_32BITS;
       regaddr=dmardevice->regbaseaddr+reg;
       break;
@@ -297,6 +298,7 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size
   VTD_IOTLB_REG iotlb;
   VTD_PMEN_REG pmen;
   VTD_PLMBASE_REG plmbase;
+  VTD_PLMLIMIT_REG plmlimit;
   
 	//sanity check
 	HALT_ON_ERRORCOND(drhd != NULL);
@@ -345,6 +347,22 @@ static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size
 		}
 
 		printf("\nPLMBASE sanity check passed");
+	}
+	
+	//sanity check protected low memory limit register (PLMLIMIT)
+	
+	{
+		printf("\nSanity checking PLMLIMIT...");
+
+		//read PLMLIMIT register
+		_vtd_reg(drhd, VTD_REG_READ, VTD_PLMLIMIT_REG_OFF, (void *)&plmlimit.value);
+		
+		if(plmlimit.value != (membase_2Maligned+size_2Maligned)){
+			printf("\n Fatal: PLMLIMIT (%08x) does not contain expected value (%08x)", plmlimit.value, (membase_2Maligned+size_2Maligned));
+			HALT();
+		}
+
+		printf("\nPLMLIMIT sanity check passed");
 	}
 	
 	HALT();
@@ -978,6 +996,8 @@ bool vtd_dmaprotect(u32 membase, u32 size){
 	
 #ifndef __XMHF_VERIFICATION__	
 
+	printf("\n%s: size=%08x", __FUNCTION__, size);
+	
 	//zero out rsdp and rsdt structures
 	memset(&rsdp, 0, sizeof(ACPI_RSDP));
 	memset(&rsdt, 0, sizeof(ACPI_RSDT));
