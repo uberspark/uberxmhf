@@ -147,7 +147,5 @@ void xmhf_sl_arch_early_dmaprot_init(u32 membase, u32 size){
 
 		printf("SL: Initialized DMA protections successfully\n");
 		
-		printf("\nXMHF Tester Finished!");
-		HALT();
 }
 
