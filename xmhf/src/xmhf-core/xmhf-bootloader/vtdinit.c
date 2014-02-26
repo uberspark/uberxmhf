@@ -119,6 +119,48 @@ static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
 }
 
 
+static bool vtdinit_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size_2Maligned){	
+	VTD_CAP_REG cap;
+	VTD_PMEN_REG pmen;
+	VTD_PLMBASE_REG plmbase;
+	VTD_PLMLIMIT_REG plmlimit;
+  
+	//sanity check
+	HALT_ON_ERRORCOND(drhd != NULL);
+
+	//verify required capabilities
+	{
+		printf("\nVerifying DRHD capabilities...");
+	
+		//read CAP register
+		_vtd_reg(drhd, VTD_REG_READ, VTD_CAP_REG_OFF, (void *)&cap.value);
+		
+		if(!cap.bits.plmr){
+			printf("\nWarning:	PLMR unsupported. Halting!");
+			HALT();
+		}
+		
+		printf("\nDRHD unit has all required capabilities");
+	}
+	
+	
+	//disable PMEN
+	 pmen.bits.epm=0;
+	 _vtd_reg(drhd, VTD_REG_WRITE, VTD_PMEN_REG_OFF, (void *)&pmen.value);
+    //load PLMBASE
+    plmbase.value=membase_2Maligned;
+     _vtd_reg(drhd, VTD_REG_WRITE, VTD_PLMBASE_REG_OFF, (void *)&plmbase.value);
+    //load PLMLIMIT
+    plmlimit.value=membase_2Maligned+size_2Maligned;
+     _vtd_reg(drhd, VTD_REG_WRITE, VTD_PLMLIMIT_REG_OFF, (void *)&plmlimit.value);
+    //enable PMEN
+     pmen.bits.epm=1;
+	 _vtd_reg(drhd, VTD_REG_WRITE, VTD_PMEN_REG_OFF, (void *)&pmen.value);
+
+	return true;
+}
+
+
 //protect a given physical range of memory (membase to membase+size)
 //using VT-d PMRs
 //return true if everything went fine, else false
@@ -213,11 +255,11 @@ bool vtdinit_dmaprotect(u32 membase __attribute__((unused)), u32 size __attribut
 	}
 
 	//initialize all DRHD units
-	//for(i=0; i < vtd_num_drhd; i++){
-	//	printf("\n%s: initializing DRHD unit %u...", __FUNCTION__, i);
-	//	if(!_vtd_drhd_initialize(&vtd_drhd[i], PAGE_ALIGN_2M(membase), PAGE_ALIGN_UP2M(size)) )
-	//		return false;
-	//}
+	for(i=0; i < vtd_num_drhd; i++){
+		printf("\n%s: initializing DRHD unit %u...", __FUNCTION__, i);
+		if(!vtdinit_drhd_initialize(&vtd_drhd[i], PAGE_ALIGN_2M(membase), PAGE_ALIGN_UP2M(size)) )
+			return false;
+	}
 
 	//zap VT-d presence in ACPI table...
 	//TODO: we need to be a little elegant here. eventually need to setup 
