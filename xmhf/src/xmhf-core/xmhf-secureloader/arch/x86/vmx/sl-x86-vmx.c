@@ -141,12 +141,11 @@ void xmhf_sl_arch_early_dmaprot_init(u32 membase, u32 size){
 		printf("SL: Initializing DMA protections...\n");
 		
 		if(!vtd_dmaprotect(membase, size)){
-			printf("SL: Fatal, could not initialize DMA protections. Halting!\n");
-			HALT();	
+			printf("Warning: SL: Fatal, could not initialize DMA protections. Moving on regardless...\n");
+			//HALT();	
+		}else{
+			printf("SL: Initialized DMA protections successfully\n");
 		}
-
-		printf("SL: Initialized DMA protections successfully\n");
-
 	
 }
 

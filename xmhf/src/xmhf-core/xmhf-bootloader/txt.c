@@ -296,11 +296,11 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
 		os_sinit_data->vtd_pmr_lo_base = (u64)__TARGET_BASE_SL;
 		os_sinit_data->vtd_pmr_lo_size = (u64)__TARGET_SIZE_SL;
 
-		os_sinit_data->vtd_pmr_hi_base = (u64)(__TARGET_BASE_SL+ __TARGET_SIZE_SL);
-		os_sinit_data->vtd_pmr_hi_size = (u64)PAGE_ALIGN_UP2M(sl_rt_size) - (u64)__TARGET_SIZE_SL;
+		//os_sinit_data->vtd_pmr_hi_base = (u64)(__TARGET_BASE_SL+ __TARGET_SIZE_SL);
+		//os_sinit_data->vtd_pmr_hi_size = (u64)PAGE_ALIGN_UP2M(sl_rt_size) - (u64)__TARGET_SIZE_SL;
 		
 		printf("\nvtd_pmr_lo_base=%016llx, size=%016llx", os_sinit_data->vtd_pmr_lo_base, os_sinit_data->vtd_pmr_lo_size);
-		printf("\nvtd_pmr_hi_base=%016llx, size=%016llx", os_sinit_data->vtd_pmr_hi_base, os_sinit_data->vtd_pmr_hi_size);
+		//printf("\nvtd_pmr_hi_base=%016llx, size=%016llx", os_sinit_data->vtd_pmr_hi_base, os_sinit_data->vtd_pmr_hi_size);
 
 	}
 
