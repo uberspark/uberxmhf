@@ -62,7 +62,7 @@ static u32 vtd_num_drhd=0;	//total number of DMAR h/w units
 static u32 vtd_dmar_table_physical_address; //DMAR table physical memory address
 static u8 vtd_ret_table[PAGE_SIZE_4K]; //4KB Vt-d Root-Entry table
 
-//VT-d 3-level DMA protection page table data structure addresses
+/*//VT-d 3-level DMA protection page table data structure addresses
 static u32 l_vtd_pdpt_paddr=0;
 static u32 l_vtd_pdpt_vaddr=0;
 static u32 l_vtd_pdts_paddr=0;
@@ -199,7 +199,7 @@ static void _vtd_setupRETCET_bootstrap(u32 vtd_ret_paddr, u32 vtd_ret_vaddr, u32
 	//zero out RET, effectively preventing DMA reads and writes in the system
 	memset((void *)vtd_ret_vaddr, 0, PAGE_SIZE_4K);
 }
-
+*/
 
 //------------------------------------------------------------------------------
 
@@ -535,7 +535,7 @@ static void _vtd_setupRETCET_bootstrap(u32 vtd_ret_paddr, u32 vtd_ret_vaddr, u32
 
 
 //------------------------------------------------------------------------------
-
+/*
 
 //==============================================================================
 //global (exported) functions
@@ -546,7 +546,7 @@ static void _vtd_setupRETCET_bootstrap(u32 vtd_ret_paddr, u32 vtd_ret_vaddr, u32
 #define PAE_get_pdtaddress(x) ( (u32) ( (u64)(x) & (u64)0x3FFFFFFFFFFFF000ULL ))
 #define PAE_get_ptaddress(x) ( (u32) ( (u64)(x) & (u64)0x3FFFFFFFFFFFF000ULL ))
 
-
+*/
 #if !defined (__DMAP__)
 void vmx_eap_zap(void){
 	ACPI_RSDP rsdp;
@@ -613,6 +613,7 @@ void vmx_eap_zap(void){
 }
 #endif	//__DMAP__
 
+/*
 //initialize VMX EAP a.k.a VT-d
 //returns 1 if all went well, else 0
 //if input parameter bootstrap is 1 then we perform minimal translation
@@ -830,7 +831,7 @@ _vtd_invalidatecaches();
 
 }
 
-
+*/
 
 ////////////////////////////////////////////////////////////////////////
 // local helper functions
@@ -1081,7 +1082,6 @@ static bool _vtd_drhd_initialize(VTD_DRHD *drhd){
 //note: we do global invalidation currently
 //returns: true if all went well, else false
 static bool _vtd_drhd_invalidatecaches(VTD_DRHD *drhd){
-	u32 i;
 	VTD_CCMD_REG ccmd;
 	VTD_IOTLB_REG iotlb;
 
