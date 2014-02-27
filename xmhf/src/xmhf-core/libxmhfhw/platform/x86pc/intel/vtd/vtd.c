@@ -1142,48 +1142,6 @@ static bool _vtd_drhd_initialize(VTD_DRHD *drhd){
 	}
 	printf("\nDRHD Fault-reporting set to NON-INTERRUPT mode.");
 	
-    //disable advanced fault logging (AFL)
-	printf("\nDisabling DRHD AFL...");
-	{
-		gcmd.value=0;
-		gcmd.bits.eafl=0;
-		_vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
-		_vtd_reg(drhd, VTD_REG_WRITE, VTD_GSTS_REG_OFF, (void *)&gsts.value);
-		if(gsts.bits.afls){
-			printf("\n%s: Error: Could not disable AFL");
-			return false;
-		}
-	}
-	printf("\nDRHD AFL disabled.");
-
-    //disable queued invalidation (QI)
-	printf("\nDisabling DRHD QI...");
-	{
-		gcmd.value=0;
-		gcmd.bits.qie=0;
-		_vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
-		_vtd_reg(drhd, VTD_REG_WRITE, VTD_GSTS_REG_OFF, (void *)&gsts.value);
-		if(gsts.bits.qies){
-			printf("\n%s: Error: Could not disable QI");
-			return false;
-		}
-	}
-	printf("\nDRHD QI disabled.");
-
-    //disable interrupt remapping (IR)
-	printf("\nDisabling DRHD IR...");
-	{
-		gcmd.value=0;
-		gcmd.bits.ire=0;
-		_vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
-		_vtd_reg(drhd, VTD_REG_WRITE, VTD_GSTS_REG_OFF, (void *)&gsts.value);
-		if(gsts.bits.ires){
-			printf("\n%s: Error: Could not disable IR");
-			return false;
-		}
-	}
-	printf("\nDRHD IR disabled.");
-	
 	return true;
 }
 
