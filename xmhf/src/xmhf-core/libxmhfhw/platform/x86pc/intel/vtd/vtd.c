@@ -1182,8 +1182,28 @@ static bool _vtd_drhd_blanket_dmaprot_via_translation(VTD_DRHD *drhd){
 	//invalidate caches
 	if(!_vtd_drhd_invalidatecaches(drhd))
 		return false;
-	else
-		return true;
+
+
+	//turn on translation
+	printf("\nEnabling VT-d translation...");
+	{
+		gcmd.value=0;
+		gcmd.bits.te=1;
+		#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
+		assert(gcmd.bits.te == 1);
+		#endif
+
+		_vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
+
+		//wait for translation enabled status to go green...
+		_vtd_reg(drhd, VTD_REG_READ, VTD_GSTS_REG_OFF, (void *)&gsts.value);
+		while(!gsts.bits.tes){
+			_vtd_reg(drhd, VTD_REG_READ, VTD_GSTS_REG_OFF, (void *)&gsts.value);
+		}
+	}
+	printf("\nVT-d translation enabled.");
+
+	return true;
 }
 
 
