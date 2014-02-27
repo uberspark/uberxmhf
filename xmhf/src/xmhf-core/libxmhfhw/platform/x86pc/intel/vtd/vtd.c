@@ -1179,7 +1179,11 @@ static bool _vtd_drhd_blanket_dmaprot_via_translation(VTD_DRHD *drhd){
 	}
 	printf("\nDRHD RET initialized.");
 	
-	return true;
+	//invalidate caches
+	if(!_vtd_drhd_invalidatecaches(drhd))
+		return false;
+	else
+		return true;
 }
 
 
