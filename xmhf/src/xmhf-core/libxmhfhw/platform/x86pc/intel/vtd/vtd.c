@@ -59,6 +59,7 @@
 //DMA Remapping Hardware Unit Definitions
 static VTD_DRHD vtd_drhd[VTD_MAX_DRHD];
 static u32 vtd_num_drhd=0;	//total number of DMAR h/w units
+static u32 vtd_dmar_table_physical_address; //DMAR table physical memory address
 
 //VT-d 3-level DMA protection page table data structure addresses
 static u32 l_vtd_pdpt_paddr=0;
@@ -981,12 +982,19 @@ _vtd_invalidatecaches();
 
 }
 
-////////////////////////////////////////////////////////////////////////
 
-//protect a given physical range of memory (membase to membase+size)
-//using VT-d PMRs
-//return true if everything went fine, else false
-bool vtd_dmaprotect(u32 membase, u32 size){
+
+////////////////////////////////////////////////////////////////////////
+// local helper functions
+
+
+//scan for available DRHD units on the platform and populate the 
+//global variables set:
+//vtd_drhd[] (struct representing a DRHD unit) 
+//vtd_num_drhd (number of DRHD units detected)
+//vtd_dmar_table_physical_address (physical address of the DMAR table)
+//returns: true if all is fine else false
+static bool _vtd_scanfor_drhd_units(void){
 	ACPI_RSDP rsdp;
 	ACPI_RSDT rsdt;
 	u32 num_rsdtentries;
@@ -994,19 +1002,18 @@ bool vtd_dmaprotect(u32 membase, u32 size){
 	u32 status;
 	VTD_DMAR dmar;
 	u32 i, dmarfound;
-	u32 dmaraddrphys, remappingstructuresaddrphys;
-	
-#ifndef __XMHF_VERIFICATION__	
+	u32 remappingstructuresaddrphys;
 
-	printf("\n%s: size=%08x", __FUNCTION__, size);
-	
 	//zero out rsdp and rsdt structures
-	memset(&rsdp, 0, sizeof(ACPI_RSDP));
-	memset(&rsdt, 0, sizeof(ACPI_RSDT));
+	//memset(&rsdp, 0, sizeof(ACPI_RSDP));
+	//memset(&rsdt, 0, sizeof(ACPI_RSDT));
 
 	//get ACPI RSDP
 	status=xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
-	HALT_ON_ERRORCOND(status != 0);	//we need a valid RSDP to proceed
+	//HALT_ON_ERRORCOND(status != 0);	//we need a valid RSDP to proceed
+	if(status != 0)
+		return false;
+		
 	printf("\n%s: RSDP at %08x", __FUNCTION__, status);
   
 	//grab ACPI RSDT
@@ -1016,7 +1023,12 @@ bool vtd_dmaprotect(u32 membase, u32 size){
 	
 	//get the RSDT entry list
 	num_rsdtentries = (rsdt.length - sizeof(ACPI_RSDT))/ sizeof(u32);
-	HALT_ON_ERRORCOND(num_rsdtentries < ACPI_MAX_RSDT_ENTRIES);
+	//HALT_ON_ERRORCOND(num_rsdtentries < ACPI_MAX_RSDT_ENTRIES);
+	if(num_rsdtentries >= ACPI_MAX_RSDT_ENTRIES){
+			printf("\n%s: Error num_rsdtentries(%u) > ACPI_MAX_RSDT_ENTRIES (%u)", __FUNCTION__, num_rsdtentries, ACPI_MAX_RSDT_ENTRIES);
+			return false;
+	}
+		
 	xmhf_baseplatform_arch_flat_copy((u8 *)&rsdtentries, (u8 *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
 			sizeof(u32)*num_rsdtentries);			
 	printf("\n%s: RSDT entry list at %08x, len=%u", __FUNCTION__,
@@ -1032,15 +1044,17 @@ bool vtd_dmaprotect(u32 membase, u32 size){
 	}     	
   
 	//if no DMAR table, bail out
-	if(!dmarfound)
+	if(!dmarfound){
+		printf("\n%s: Error No DMAR table", __FUNCTION__);
 		return false;  
-
-	dmaraddrphys = rsdtentries[i]; //DMAR table physical memory address;
-	printf("\n%s: DMAR at %08x", __FUNCTION__, dmaraddrphys);
+	}
+	
+	vtd_dmar_table_physical_address = rsdtentries[i]; //DMAR table physical memory address;
+	printf("\n%s: DMAR at %08x", __FUNCTION__, vtd_dmar_table_physical_address);
 
 	//detect DRHDs in the DMAR table
 	i=0;
-	remappingstructuresaddrphys=dmaraddrphys+sizeof(VTD_DMAR);
+	remappingstructuresaddrphys=vtd_dmar_table_physical_address+sizeof(VTD_DMAR);
 	printf("\n%s: remapping structures at %08x", __FUNCTION__, remappingstructuresaddrphys);
   
 	while(i < (dmar.length-sizeof(VTD_DMAR))){
@@ -1051,7 +1065,10 @@ bool vtd_dmaprotect(u32 membase, u32 size){
 		switch(type){
 			case  0:  //DRHD
 				printf("\nDRHD at %08x, len=%u bytes", (u32)(remappingstructuresaddrphys+i), length);
-				HALT_ON_ERRORCOND(vtd_num_drhd < VTD_MAX_DRHD);
+				if(vtd_num_drhd >= VTD_MAX_DRHD){
+						printf("\n%s: Error vtd_num_drhd (%u) > VTD_MAX_DRHD (%u)", __FUNCTION__, vtd_num_drhd, VTD_MAX_DRHD);
+						return false;
+				}
 				xmhf_baseplatform_arch_flat_copy((u8 *)&vtd_drhd[vtd_num_drhd], (u8 *)(remappingstructuresaddrphys+i), length);
 				vtd_num_drhd++;
 				i+=(u32)length;
@@ -1064,7 +1081,7 @@ bool vtd_dmaprotect(u32 membase, u32 size){
 	}
     printf("\n%s: total DRHDs detected= %u units", __FUNCTION__, vtd_num_drhd);
 
-	//be a little verbose about what we found
+	//[DEBUG]: be a little verbose about what we found
 	printf("\n%s: DMAR Devices:", __FUNCTION__);
 	for(i=0; i < vtd_num_drhd; i++){
 		VTD_CAP_REG cap;    
@@ -1076,7 +1093,28 @@ bool vtd_dmaprotect(u32 membase, u32 size){
 		_vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_ECAP_REG_OFF, (void *)&ecap.value);
 		printf("\n		ecap=0x%016llx", (u64)ecap.value);
 	}
+	
+	return true;
+}
 
+
+
+////////////////////////////////////////////////////////////////////////
+
+//protect a given physical range of memory (membase to membase+size)
+//using VT-d PMRs
+//return true if everything went fine, else false
+bool vtd_dmaprotect(u32 membase, u32 size){
+	u32 i;
+	
+#ifndef __XMHF_VERIFICATION__	
+
+	printf("\n%s: size=%08x", __FUNCTION__, size);
+	
+	//scan for available DRHD units in the platform
+	if(!_vtd_scanfor_drhd_units())
+		return false;
+	
 	//initialize all DRHD units
 	for(i=0; i < vtd_num_drhd; i++){
 		printf("\n%s: initializing DRHD unit %u...", __FUNCTION__, i);
@@ -1089,7 +1127,7 @@ bool vtd_dmaprotect(u32 membase, u32 size){
 	//zap VT-d presence in ACPI table...
 	//TODO: we need to be a little elegant here. eventually need to setup 
 	//EPT/NPTs such that the DMAR pages are unmapped for the guest
-	xmhf_baseplatform_arch_flat_writeu32(dmaraddrphys, 0UL);
+	xmhf_baseplatform_arch_flat_writeu32(vtd_dmar_table_physical_address, 0UL);
 
 	//success
 	printf("\n%s: success, leaving...", __FUNCTION__);
