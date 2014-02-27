@@ -922,11 +922,11 @@ void cstartup(multiboot_info_t *mbi){
     memcpy((void*)__TARGET_BASE_SL, (void*)(__TARGET_BASE_BOOTLOADER+__TARGET_SIZE_BOOTLOADER), sl_rt_size);
 	memcpy((void*)__TARGET_BASE_XMHFHYPAPP, (void *)mod_array[0].mod_start, hypapp_size);
 
-	//DMA protect SL+runtime via VTd PMRs
-	if(cpu_vendor == CPU_VENDOR_INTEL){
-		extern bool vtdinit_dmaprotect(u32 membase, u32 size);
-		vtdinit_dmaprotect(__TARGET_BASE_SL, sl_rt_size);
-	}
+	////DMA protect SL+runtime via VTd PMRs
+	//if(cpu_vendor == CPU_VENDOR_INTEL){
+	//	extern bool vtdinit_dmaprotect(u32 membase, u32 size);
+	//	vtdinit_dmaprotect(__TARGET_BASE_SL, sl_rt_size);
+	//}
 	
     /* runtime */
     print_hex("    INIT(early): *UNTRUSTED* gold runtime: ",
