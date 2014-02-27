@@ -289,7 +289,7 @@ static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
 //steps that need to be followed to initialize a DRHD unit!. we use our
 //common sense instead...:p
 //static void _vtd_drhd_initialize(VTD_DRHD *drhd, u32 vtd_ret_paddr){
-static bool _vtd_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size_2Maligned){	
+/*static bool _vtd_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size_2Maligned){	
 	VTD_GCMD_REG gcmd;
   VTD_GSTS_REG gsts;
   VTD_FECTL_REG fectl;
@@ -371,7 +371,7 @@ static bool _vtd_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size
 	//HALT();
 	
 	
-/*	//1. verify required capabilities
+	//1. verify required capabilities
 	//more specifically...
 	//	verify supported MGAW to ensure our host address width is supported (32-bits)
   //	verify supported AGAW, must support 39-bits for 3 level page-table walk
@@ -398,9 +398,9 @@ static bool _vtd_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size
     
   }
 	printf("Done.");
-*/
 
-/*	//check VT-d snoop control capabilities
+
+	//check VT-d snoop control capabilities
 	{
 		VTD_ECAP_REG ecap;
 		//read ECAP register
@@ -609,9 +609,9 @@ static bool _vtd_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned, u32 size
   	}
 	}
 	printf("Done.");
-*/
 
-}
+
+}*/
 
 
 //------------------------------------------------------------------------------
@@ -987,7 +987,6 @@ _vtd_invalidatecaches();
 ////////////////////////////////////////////////////////////////////////
 // local helper functions
 
-
 //scan for available DRHD units on the platform and populate the 
 //global variables set:
 //vtd_drhd[] (struct representing a DRHD unit) 
@@ -1011,7 +1010,7 @@ static bool _vtd_scanfor_drhd_units(void){
 	//get ACPI RSDP
 	status=xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
 	//HALT_ON_ERRORCOND(status != 0);	//we need a valid RSDP to proceed
-	if(status != 0)
+	if(status == 0)
 		return false;
 		
 	printf("\n%s: RSDP at %08x", __FUNCTION__, status);
@@ -1097,9 +1096,99 @@ static bool _vtd_scanfor_drhd_units(void){
 	return true;
 }
 
+//initialize a given DRHD unit to meet our requirements
+static bool _vtd_drhd_initialize(VTD_DRHD *drhd){
+	VTD_GCMD_REG gcmd;
+	VTD_GSTS_REG gsts;
+	VTD_FECTL_REG fectl;
+	VTD_CAP_REG cap;
+  
+	//sanity check
+	HALT_ON_ERRORCOND(drhd != NULL);
 
+	//verify required capabilities
+	{
+		printf("\nVerifying DRHD capabilities...");
+
+		//read CAP register
+		_vtd_reg(drhd, VTD_REG_READ, VTD_CAP_REG_OFF, (void *)&cap.value);
+		
+		if(! (cap.bits.plmr && cap.bits.phmr) ){
+			printf("\n%s: Error: PLMR unsupported", __FUNCTION__);
+			return false;
+		}
+		
+		printf("\nDRHD unit has all required capabilities");
+	}
+	
+	//setup fault logging
+	printf("\nSetting DRHD Fault-reporting to NON-INTERRUPT mode...");
+	{
+		//read FECTL
+		  fectl.value=0;
+		_vtd_reg(drhd, VTD_REG_READ, VTD_FECTL_REG_OFF, (void *)&fectl.value);
+
+		//set interrupt mask bit and write
+		fectl.bits.im=1;
+		_vtd_reg(drhd, VTD_REG_WRITE, VTD_FECTL_REG_OFF, (void *)&fectl.value);
+
+		//check to see if the IM bit actually stuck
+		_vtd_reg(drhd, VTD_REG_READ, VTD_FECTL_REG_OFF, (void *)&fectl.value);
+
+		if(!fectl.bits.im){
+		  printf("\n%s: Error: Failed to set fault-reporting.", __FUNCTION__);
+		  return false;
+		}
+	}
+	printf("\nDRHD Fault-reporting set to NON-INTERRUPT mode.");
+	
+    //disable advanced fault logging (AFL)
+	printf("\nDisabling DRHD AFL...");
+	{
+		gcmd.value=0;
+		gcmd.bits.eafl=0;
+		_vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
+		_vtd_reg(drhd, VTD_REG_WRITE, VTD_GSTS_REG_OFF, (void *)&gsts.value);
+		if(gsts.bits.afls){
+			printf("\n%s: Error: Could not disable AFL");
+			return false;
+		}
+	}
+	printf("\nDRHD AFL disabled.");
+
+    //disable queued invalidation (QI)
+	printf("\nDisabling DRHD QI...");
+	{
+		gcmd.value=0;
+		gcmd.bits.qie=0;
+		_vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
+		_vtd_reg(drhd, VTD_REG_WRITE, VTD_GSTS_REG_OFF, (void *)&gsts.value);
+		if(gsts.bits.qies){
+			printf("\n%s: Error: Could not disable QI");
+			return false;
+		}
+	}
+	printf("\nDRHD QI disabled.");
+
+    //disable interrupt remapping (IR)
+	printf("\nDisabling DRHD IR...");
+	{
+		gcmd.value=0;
+		gcmd.bits.ire=0;
+		_vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
+		_vtd_reg(drhd, VTD_REG_WRITE, VTD_GSTS_REG_OFF, (void *)&gsts.value);
+		if(gsts.bits.ires){
+			printf("\n%s: Error: Could not disable IR");
+			return false;
+		}
+	}
+	printf("\nDRHD IR disabled.");
+	
+	return true;
+}
 
 ////////////////////////////////////////////////////////////////////////
+// globals (exported) interfaces
 
 //protect a given physical range of memory (membase to membase+size)
 //using VT-d PMRs
@@ -1117,9 +1206,12 @@ bool vtd_dmaprotect(u32 membase, u32 size){
 	
 	//initialize all DRHD units
 	for(i=0; i < vtd_num_drhd; i++){
-		printf("\n%s: initializing DRHD unit %u...", __FUNCTION__, i);
-		if(!_vtd_drhd_initialize(&vtd_drhd[i], PAGE_ALIGN_2M(membase), PAGE_ALIGN_UP2M(size)) )
+		printf("\n%s: Setting up DRHD unit %u...", __FUNCTION__, i);
+		
+		
+		if(!_vtd_drhd_initialize(&vtd_drhd[i]) )
 			return false;
+	
 	}
 
 #endif //__XMHF_VERIFICATION__
