@@ -1213,6 +1213,8 @@ bool vtd_dmaprotect(u32 membase, u32 size){
 		if(!_vtd_drhd_initialize(&vtd_drhd[i]) )
 			return false;
 	
+		if(!_vtd_drhd_blanket_dmaprot_via_translation(&vtd_drhd[i]))
+			return false;
 	}
 
 #endif //__XMHF_VERIFICATION__
