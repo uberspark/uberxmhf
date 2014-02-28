@@ -59,6 +59,7 @@
 //DMA Remapping Hardware Unit Definitions
 static VTD_DRHD vtd_drhd[VTD_MAX_DRHD];
 static u32 vtd_num_drhd=0;	//total number of DMAR h/w units
+static bool vtd_drhd_scanned=false;	//set to true once DRHD units have been scanned in the system
 //static u32 vtd_dmar_table_physical_address; //DMAR table physical memory address
 //static u8 vtd_ret_table[PAGE_SIZE_4K]; //4KB Vt-d Root-Entry table
 
@@ -921,6 +922,19 @@ static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
 }
 
 
+static VTD_DRHD *_vtd_get_drhd_struct(vtd_drhd_handle_t drhd_handle){
+		VTD_DRHD *drhd = NULL;
+		
+		if(!vtd_drhd_scanned)
+				return;
+		
+		if(drhd_handle >= vtd_num_drhd)
+			return;
+			
+		return (VTD_DRHD *)&vtd_drhd[drhd_handle];
+	
+}
+
 //scan for available DRHD units on the platform and populate the 
 //global variables set:
 //vtd_drhd[] (struct representing a DRHD unit) 
@@ -1040,6 +1054,7 @@ bool vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, u32 *dmar_phys_addr_va
 	}
 	
 	*maxhandle = vtd_num_drhd;
+	vtd_drhd_scanned = true;
 	
 	return true;
 }
@@ -1050,7 +1065,7 @@ bool vtd_drhd_initialize(VTD_DRHD *drhd){
 	VTD_GSTS_REG gsts;
 	VTD_FECTL_REG fectl;
 	VTD_CAP_REG cap;
-  
+	VTD_DRHD *drhd = &vtd_drhd[
 	//sanity check
 	HALT_ON_ERRORCOND(drhd != NULL);
 
