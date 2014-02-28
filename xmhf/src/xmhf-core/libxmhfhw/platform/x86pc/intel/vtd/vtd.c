@@ -1299,15 +1299,15 @@ bool vtd_dmaprotect(u32 membase, u32 size){
 		//(Sec 3.3.2, VT-d Spec. v1.2)
 	
 		//set DRHD root entry table
-		if(!_vtd_drhd_set_root_entry_table(drhd, (u8 *)&vtd_ret_table))
+		if(!_vtd_drhd_set_root_entry_table(&vtd_drhd[i], (u8 *)&vtd_ret_table))
 			return false;
 	
 		//invalidate caches
-		if(!_vtd_drhd_invalidatecaches(drhd))
+		if(!_vtd_drhd_invalidatecaches(&vtd_drhd[i]))
 			return false;
 
 		//enable VT-d translation
-		_vtd_drhd_enable_translation(drhd);
+		_vtd_drhd_enable_translation(&vtd_drhd[i]);
 	
 	}
 
