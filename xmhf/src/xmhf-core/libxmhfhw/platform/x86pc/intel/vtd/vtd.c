@@ -1339,6 +1339,25 @@ bool vtd_dmaprotect(u32 membase, u32 size){
 		//enable VT-d translation
 		_vtd_drhd_enable_translation(&vtd_drhd[i]);
 	
+		//disable PMRs now (since DMA protection is active via translation)
+		_vtd_drhd_disable_pmr(&vtd_drhd[i]);
+		
+		//set PMR low base and limit to cover SL+runtime
+		_vtd_drhd_set_plm_base_and_limit(&vtd_drhd[i], (u32)PAGE_ALIGN_2M(membase), (u32)(PAGE_ALIGN_2M(membase) + PAGE_ALIGN_UP2M(size)) );
+		
+		//set PMR high base and limit to cover SL+runtime
+		_vtd_drhd_set_phm_base_and_limit(&vtd_drhd[i], (u64)PAGE_ALIGN_2M(membase), (u64)(PAGE_ALIGN_2M(membase) + PAGE_ALIGN_UP2M(size)) );
+		
+		//enable PMRs
+		_vtd_drhd_enable_pmr(&vtd_drhd[i]);
+		
+		//invalidate caches
+		if(!_vtd_drhd_invalidatecaches(&vtd_drhd[i]))
+			return false;
+
+		//disable translation (now that PMRs are active and protect SL+runtime)
+		_vtd_drhd_disable_translation(&vtd_drhd[i]);
+	
 	}
 
 #endif //__XMHF_VERIFICATION__
