@@ -860,6 +860,8 @@ static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
     case  VTD_ECAP_REG_OFF:
     case  VTD_RTADDR_REG_OFF:
     case  VTD_CCMD_REG_OFF:
+    case  VTD_PHMBASE_REG_OFF:
+    case  VTD_PHMLIMIT_REG_OFF:
       regtype=VTD_REG_64BITS;
       regaddr=dmardevice->regbaseaddr+reg;
       break;
@@ -1261,6 +1263,34 @@ static void _vtd_drhd_disable_pmr(VTD_DRHD *drhd){
 	
 }
 
+//set DRHD PLMBASE and PLMLIMIT PMRs
+static void _vtd_drhd_set_plm_base_and_limit(VTD_DRHD *drhd, u32 base, u32 limit){
+	VTD_PLMBASE_REG plmbase;
+	VTD_PLMLIMIT_REG plmlimit;
+
+	//set PLMBASE register
+	plmbase.value = base;
+	_vtd_reg(drhd, VTD_REG_WRITE, VTD_PLMBASE_REG_OFF, (void *)&plmbase.value);
+		
+	//set PLMLIMIT register
+	plmlimit.value = limit;
+	_vtd_reg(drhd, VTD_REG_WRITE, VTD_PLMLIMIT_REG_OFF, (void *)&plmlimit.value);
+}
+
+
+//set DRHD PHMBASE and PHMLIMIT PMRs
+static void _vtd_drhd_set_phm_base_and_limit(VTD_DRHD *drhd, u64 base, u64 limit){
+	VTD_PHMBASE_REG phmbase;
+	VTD_PHMLIMIT_REG phmlimit;
+
+	//set PHMBASE register
+	phmbase.value = base;
+	_vtd_reg(drhd, VTD_REG_WRITE, VTD_PHMBASE_REG_OFF, (void *)&phmbase.value);
+		
+	//set PLMLIMIT register
+	phmlimit.value = limit;
+	_vtd_reg(drhd, VTD_REG_WRITE, VTD_PHMLIMIT_REG_OFF, (void *)&phmlimit.value);
+}
 
 ////////////////////////////////////////////////////////////////////////
 // globals (exported) interfaces
