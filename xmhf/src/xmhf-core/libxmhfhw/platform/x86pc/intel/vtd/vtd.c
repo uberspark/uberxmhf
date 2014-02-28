@@ -60,7 +60,7 @@
 static VTD_DRHD vtd_drhd[VTD_MAX_DRHD];
 static u32 vtd_num_drhd=0;	//total number of DMAR h/w units
 //static u32 vtd_dmar_table_physical_address; //DMAR table physical memory address
-static u8 vtd_ret_table[PAGE_SIZE_4K]; //4KB Vt-d Root-Entry table
+//static u8 vtd_ret_table[PAGE_SIZE_4K]; //4KB Vt-d Root-Entry table
 
 /*//VT-d 3-level DMA protection page table data structure addresses
 static u32 l_vtd_pdpt_paddr=0;
@@ -928,7 +928,7 @@ static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
 //vtd_dmar_table_physical_address (physical address of the DMAR table)
 //returns: true if all is fine else false; dmar_phys_addr_var contains
 //physical address of the DMAR table in the system
-static bool _vtd_scanfor_drhd_units(u32 *dmar_phys_addr_var){
+bool vtd_scanfor_drhd_units(u32 *dmar_phys_addr_var){
 	ACPI_RSDP rsdp;
 	ACPI_RSDT rsdt;
 	u32 num_rsdtentries;
@@ -1036,7 +1036,7 @@ static bool _vtd_scanfor_drhd_units(u32 *dmar_phys_addr_var){
 }
 
 //initialize a given DRHD unit to meet our requirements
-static bool _vtd_drhd_initialize(VTD_DRHD *drhd){
+bool vtd_drhd_initialize(VTD_DRHD *drhd){
 	VTD_GCMD_REG gcmd;
 	VTD_GSTS_REG gsts;
 	VTD_FECTL_REG fectl;
@@ -1088,7 +1088,7 @@ static bool _vtd_drhd_initialize(VTD_DRHD *drhd){
 //invalidate DRHD caches
 //note: we do global invalidation currently
 //returns: true if all went well, else false
-static bool _vtd_drhd_invalidatecaches(VTD_DRHD *drhd){
+bool vtd_drhd_invalidatecaches(VTD_DRHD *drhd){
 	VTD_CCMD_REG ccmd;
 	VTD_IOTLB_REG iotlb;
 
@@ -1149,7 +1149,7 @@ static bool _vtd_drhd_invalidatecaches(VTD_DRHD *drhd){
 //the CET, accounting for 32 devices with 8 functions each as per the 
 //PCI spec.
 //each CE points to a PDPT type paging structure for  device
-static bool _vtd_drhd_set_root_entry_table(VTD_DRHD *drhd, u8 *retbuffer){
+bool vtd_drhd_set_root_entry_table(VTD_DRHD *drhd, u8 *retbuffer){
 	VTD_RTADDR_REG rtaddr;
 	VTD_GCMD_REG gcmd;
 	VTD_GSTS_REG gsts;
@@ -1182,7 +1182,7 @@ static bool _vtd_drhd_set_root_entry_table(VTD_DRHD *drhd, u8 *retbuffer){
 
 
 //enable VT-d translation
-static void _vtd_drhd_enable_translation(VTD_DRHD *drhd){
+void vtd_drhd_enable_translation(VTD_DRHD *drhd){
 	VTD_GCMD_REG gcmd;
 	VTD_GSTS_REG gsts;
 	
@@ -1209,7 +1209,7 @@ static void _vtd_drhd_enable_translation(VTD_DRHD *drhd){
 }
 
 //disable VT-d translation
-static void _vtd_drhd_disable_translation(VTD_DRHD *drhd){
+void vtd_drhd_disable_translation(VTD_DRHD *drhd){
 	VTD_GCMD_REG gcmd;
 	VTD_GSTS_REG gsts;
 	
@@ -1233,7 +1233,7 @@ static void _vtd_drhd_disable_translation(VTD_DRHD *drhd){
 }
 
 //enable protected memory region (PMR)
-static void _vtd_drhd_enable_pmr(VTD_DRHD *drhd){
+void vtd_drhd_enable_pmr(VTD_DRHD *drhd){
     VTD_PMEN_REG pmen;
 
 	printf("\nEnabling PMR...");
@@ -1251,7 +1251,7 @@ static void _vtd_drhd_enable_pmr(VTD_DRHD *drhd){
 }
 
 //disable protected memory region (PMR)
-static void _vtd_drhd_disable_pmr(VTD_DRHD *drhd){
+void vtd_drhd_disable_pmr(VTD_DRHD *drhd){
     VTD_PMEN_REG pmen;
 
 	printf("\nDisabling PMR...");
@@ -1269,7 +1269,7 @@ static void _vtd_drhd_disable_pmr(VTD_DRHD *drhd){
 }
 
 //set DRHD PLMBASE and PLMLIMIT PMRs
-static void _vtd_drhd_set_plm_base_and_limit(VTD_DRHD *drhd, u32 base, u32 limit){
+void vtd_drhd_set_plm_base_and_limit(VTD_DRHD *drhd, u32 base, u32 limit){
 	VTD_PLMBASE_REG plmbase;
 	VTD_PLMLIMIT_REG plmlimit;
 
@@ -1284,7 +1284,7 @@ static void _vtd_drhd_set_plm_base_and_limit(VTD_DRHD *drhd, u32 base, u32 limit
 
 
 //set DRHD PHMBASE and PHMLIMIT PMRs
-static void _vtd_drhd_set_phm_base_and_limit(VTD_DRHD *drhd, u64 base, u64 limit){
+void vtd_drhd_set_phm_base_and_limit(VTD_DRHD *drhd, u64 base, u64 limit){
 	VTD_PHMBASE_REG phmbase;
 	VTD_PHMLIMIT_REG phmlimit;
 
@@ -1300,81 +1300,3 @@ static void _vtd_drhd_set_phm_base_and_limit(VTD_DRHD *drhd, u64 base, u64 limit
 ////////////////////////////////////////////////////////////////////////
 // globals (exported) interfaces
 
-//protect a given physical range of memory (membase to membase+size)
-//using VT-d PMRs
-//return true if everything went fine, else false
-bool vtd_dmaprotect(u32 membase, u32 size){
-	u32 i;
-	u32 vtd_dmar_table_physical_address=0;
-	
-#ifndef __XMHF_VERIFICATION__	
-
-	printf("\n%s: size=%08x", __FUNCTION__, size);
-	
-	//scan for available DRHD units in the platform
-	if(!_vtd_scanfor_drhd_units(&vtd_dmar_table_physical_address))
-		return false;
-
-	//zero out RET; will be used to prevent DMA reads and writes 
-	//for the entire system
-	memset((void *)&vtd_ret_table, 0, sizeof(vtd_ret_table));
-
-
-	
-	//initialize all DRHD units
-	for(i=0; i < vtd_num_drhd; i++){
-		printf("\n%s: Setting up DRHD unit %u...", __FUNCTION__, i);
-		
-		if(!_vtd_drhd_initialize(&vtd_drhd[i]) )
-			return false;
-
-		//setup blanket (full system) DMA protection using VT-d translation
-		//we just employ the RET and ensure that every entry in the RET is 0 
-		//which means that the DRHD will
-		//not allow any DMA requests for PCI bus 0-255 
-		//(Sec 3.3.2, VT-d Spec. v1.2)
-	
-		//set DRHD root entry table
-		if(!_vtd_drhd_set_root_entry_table(&vtd_drhd[i], (u8 *)&vtd_ret_table))
-			return false;
-	
-		//invalidate caches
-		if(!_vtd_drhd_invalidatecaches(&vtd_drhd[i]))
-			return false;
-
-		//enable VT-d translation
-		_vtd_drhd_enable_translation(&vtd_drhd[i]);
-	
-		//disable PMRs now (since DMA protection is active via translation)
-		_vtd_drhd_disable_pmr(&vtd_drhd[i]);
-		
-		//set PMR low base and limit to cover SL+runtime
-		_vtd_drhd_set_plm_base_and_limit(&vtd_drhd[i], (u32)PAGE_ALIGN_2M(membase), (u32)(PAGE_ALIGN_2M(membase) + PAGE_ALIGN_UP2M(size)) );
-		
-		//set PMR high base and limit to cover SL+runtime
-		_vtd_drhd_set_phm_base_and_limit(&vtd_drhd[i], (u64)PAGE_ALIGN_2M(membase), (u64)(PAGE_ALIGN_2M(membase) + PAGE_ALIGN_UP2M(size)) );
-		
-		//enable PMRs
-		_vtd_drhd_enable_pmr(&vtd_drhd[i]);
-		
-		//invalidate caches
-		if(!_vtd_drhd_invalidatecaches(&vtd_drhd[i]))
-			return false;
-
-		//disable translation (now that PMRs are active and protect SL+runtime)
-		_vtd_drhd_disable_translation(&vtd_drhd[i]);
-	
-	}
-
-#endif //__XMHF_VERIFICATION__
-
-	//zap VT-d presence in ACPI table...
-	//TODO: we need to be a little elegant here. eventually need to setup 
-	//EPT/NPTs such that the DMAR pages are unmapped for the guest
-	xmhf_baseplatform_arch_flat_writeu32(vtd_dmar_table_physical_address, 0UL);
-
-	//success
-	printf("\n%s: success, leaving...", __FUNCTION__);
-
-	return true;
-}

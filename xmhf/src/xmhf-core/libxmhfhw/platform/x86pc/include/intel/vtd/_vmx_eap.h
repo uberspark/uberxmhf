@@ -337,11 +337,17 @@ typedef struct {
 } __attribute__ ((packed)) VTD_PHMLIMIT_REG;
 
 
-u32 vmx_eap_initialize(u32 vtd_pdpt_paddr, u32 vtd_pdpt_vaddr,
-		u32 vtd_pdts_paddr, u32 vtd_pdts_vaddr,
-		u32 vtd_pts_paddr, u32 vtd_pts_vaddr,
-		u32 vtd_ret_paddr, u32 vtd_ret_vaddr,
-		u32 vtd_cet_paddr, u32 vtd_cet_vaddr, u32 isbootstrap);
+
+bool vtd_scanfor_drhd_units(u32 *dmar_phys_addr_var);
+bool vtd_drhd_initialize(VTD_DRHD *drhd);
+bool vtd_drhd_invalidatecaches(VTD_DRHD *drhd);
+bool vtd_drhd_set_root_entry_table(VTD_DRHD *drhd, u8 *retbuffer);
+void vtd_drhd_enable_translation(VTD_DRHD *drhd);
+void vtd_drhd_disable_translation(VTD_DRHD *drhd);
+void vtd_drhd_enable_pmr(VTD_DRHD *drhd);
+void vtd_drhd_disable_pmr(VTD_DRHD *drhd);
+void vtd_drhd_set_plm_base_and_limit(VTD_DRHD *drhd, u32 base, u32 limit);
+void vtd_drhd_set_phm_base_and_limit(VTD_DRHD *drhd, u64 base, u64 limit);
 
 		
 #endif //__ASSEMBLY__
