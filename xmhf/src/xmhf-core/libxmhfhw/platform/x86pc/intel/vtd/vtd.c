@@ -59,7 +59,7 @@
 //DMA Remapping Hardware Unit Definitions
 static VTD_DRHD vtd_drhd[VTD_MAX_DRHD];
 static u32 vtd_num_drhd=0;	//total number of DMAR h/w units
-static u32 vtd_dmar_table_physical_address; //DMAR table physical memory address
+//static u32 vtd_dmar_table_physical_address; //DMAR table physical memory address
 static u8 vtd_ret_table[PAGE_SIZE_4K]; //4KB Vt-d Root-Entry table
 
 /*//VT-d 3-level DMA protection page table data structure addresses
@@ -926,8 +926,9 @@ static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
 //vtd_drhd[] (struct representing a DRHD unit) 
 //vtd_num_drhd (number of DRHD units detected)
 //vtd_dmar_table_physical_address (physical address of the DMAR table)
-//returns: true if all is fine else false
-static bool _vtd_scanfor_drhd_units(void){
+//returns: true if all is fine else false; dmar_phys_addr_var contains
+//physical address of the DMAR table in the system
+static bool _vtd_scanfor_drhd_units(u32 *dmar_phys_addr_var){
 	ACPI_RSDP rsdp;
 	ACPI_RSDT rsdt;
 	u32 num_rsdtentries;
@@ -936,10 +937,13 @@ static bool _vtd_scanfor_drhd_units(void){
 	VTD_DMAR dmar;
 	u32 i, dmarfound;
 	u32 remappingstructuresaddrphys;
-
+	u32 vtd_dmar_table_physical_address;
+	
 	//zero out rsdp and rsdt structures
 	//memset(&rsdp, 0, sizeof(ACPI_RSDP));
 	//memset(&rsdt, 0, sizeof(ACPI_RSDT));
+	//sanity check NULL parameter
+	HALT_ON_ERRORCOND(dmar_phys_addr_var != NULL);
 
 	//get ACPI RSDP
 	status=xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
@@ -983,6 +987,7 @@ static bool _vtd_scanfor_drhd_units(void){
 	}
 	
 	vtd_dmar_table_physical_address = rsdtentries[i]; //DMAR table physical memory address;
+	*dmar_phys_addr_var = vtd_dmar_table_physical_address; //store it in supplied argument
 	printf("\n%s: DMAR at %08x", __FUNCTION__, vtd_dmar_table_physical_address);
 
 	//detect DRHDs in the DMAR table
@@ -1300,13 +1305,14 @@ static void _vtd_drhd_set_phm_base_and_limit(VTD_DRHD *drhd, u64 base, u64 limit
 //return true if everything went fine, else false
 bool vtd_dmaprotect(u32 membase, u32 size){
 	u32 i;
+	u32 vtd_dmar_table_physical_address=0;
 	
 #ifndef __XMHF_VERIFICATION__	
 
 	printf("\n%s: size=%08x", __FUNCTION__, size);
 	
 	//scan for available DRHD units in the platform
-	if(!_vtd_scanfor_drhd_units())
+	if(!_vtd_scanfor_drhd_units(&vtd_dmar_table_physical_address))
 		return false;
 
 	//zero out RET; will be used to prevent DMA reads and writes 
