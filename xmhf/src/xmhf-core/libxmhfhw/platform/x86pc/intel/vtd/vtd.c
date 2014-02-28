@@ -1202,32 +1202,6 @@ static void _vtd_drhd_enable_translation(VTD_DRHD *drhd){
 }
 
 
-//setup blanket (full system) DMA protection using VT-d translation
-//we just employ the RET and ensure that every entry in the RET is 0 
-//which means that the DRHD will
-//not allow any DMA requests for PCI bus 0-255 
-//(Sec 3.3.2, VT-d Spec. v1.2)
-//return: true if everthing went well, else false
-static bool _vtd_drhd_blanket_dmaprot_via_translation(VTD_DRHD *drhd){
-	
-	//zero out RET, effectively preventing DMA reads and writes in the system
-	memset((void *)&vtd_ret_table, 0, sizeof(vtd_ret_table));
-	
-	//set DRHD root entry table
-	if(!_vtd_drhd_set_root_entry_table(drhd, (u8 *)&vtd_ret_table))
-		return false;
-	
-	//invalidate caches
-	if(!_vtd_drhd_invalidatecaches(drhd))
-		return false;
-
-	//enable VT-d translation
-	_vtd_drhd_enable_translation(drhd);
-
-	return true;
-}
-
-
 
 ////////////////////////////////////////////////////////////////////////
 // globals (exported) interfaces
@@ -1245,17 +1219,37 @@ bool vtd_dmaprotect(u32 membase, u32 size){
 	//scan for available DRHD units in the platform
 	if(!_vtd_scanfor_drhd_units())
 		return false;
+
+	//zero out RET; will be used to prevent DMA reads and writes 
+	//for the entire system
+	memset((void *)&vtd_ret_table, 0, sizeof(vtd_ret_table));
+
+
 	
 	//initialize all DRHD units
 	for(i=0; i < vtd_num_drhd; i++){
 		printf("\n%s: Setting up DRHD unit %u...", __FUNCTION__, i);
 		
-		
 		if(!_vtd_drhd_initialize(&vtd_drhd[i]) )
 			return false;
+
+		//setup blanket (full system) DMA protection using VT-d translation
+		//we just employ the RET and ensure that every entry in the RET is 0 
+		//which means that the DRHD will
+		//not allow any DMA requests for PCI bus 0-255 
+		//(Sec 3.3.2, VT-d Spec. v1.2)
 	
-		if(!_vtd_drhd_blanket_dmaprot_via_translation(&vtd_drhd[i]))
+		//set DRHD root entry table
+		if(!_vtd_drhd_set_root_entry_table(drhd, (u8 *)&vtd_ret_table))
 			return false;
+	
+		//invalidate caches
+		if(!_vtd_drhd_invalidatecaches(drhd))
+			return false;
+
+		//enable VT-d translation
+		_vtd_drhd_enable_translation(drhd);
+	
 	}
 
 #endif //__XMHF_VERIFICATION__
