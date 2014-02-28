@@ -52,6 +52,8 @@
 #include <xmhf.h>
 
 static u8 vtd_ret_table[PAGE_SIZE_4K]; //4KB Vt-d Root-Entry table
+//static VTD_DRHD vtd_drhd[VTD_MAX_DRHD];
+//static u32 vtd_num_drhd=0;	//total number of DMAR h/w units
 
 void xmhf_sl_arch_sanitize_post_launch(void){
 	#ifndef __XMHF_VERIFICATION__
@@ -113,13 +115,14 @@ u32 xmhf_sl_arch_x86vmx_earlyinitialize(u64 protectedbuffer_paddr, u32 protected
 static bool vtd_dmaprotect(u32 membase, u32 size){
 	u32 i;
 	u32 vtd_dmar_table_physical_address=0;
+	vtd_drhd_handle_t vtd_drhd_maxhandle;
 	
 #ifndef __XMHF_VERIFICATION__	
 
 	printf("\n%s: size=%08x", __FUNCTION__, size);
 	
 	//scan for available DRHD units in the platform
-	if(!_vtd_scanfor_drhd_units(&vtd_dmar_table_physical_address))
+	if(!_vtd_scanfor_drhd_units(&vtd_drhd_maxhandle, &vtd_dmar_table_physical_address))
 		return false;
 
 	//zero out RET; will be used to prevent DMA reads and writes 
