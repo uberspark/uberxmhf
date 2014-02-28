@@ -1134,8 +1134,6 @@ static bool _vtd_drhd_invalidatecaches(VTD_DRHD *drhd){
 }
 
 
-
-//setup blanket (full system) DMA protection using VT-d translation
 //VT-d translation has 1 root entry table (RET) of 4kb
 //each root entry (RE) is 128-bits which gives us 256 entries in the 
 //RET, each corresponding to a PCI bus num. (0-255)
@@ -1144,40 +1142,54 @@ static bool _vtd_drhd_invalidatecaches(VTD_DRHD *drhd){
 //the CET, accounting for 32 devices with 8 functions each as per the 
 //PCI spec.
 //each CE points to a PDPT type paging structure for  device
-//we just employ the RET and ensure that every entry in the RET is 0 
-//which means that the DRHD will
-//not allow any DMA requests for PCI bus 0-255 
-//(Sec 3.3.2, VT-d Spec. v1.2)
-//return: true if everthing went well, else false
-static bool _vtd_drhd_blanket_dmaprot_via_translation(VTD_DRHD *drhd){
+static bool _vtd_drhd_set_root_entry_table(VTD_DRHD *drhd, u8 *retbuffer){
 	VTD_RTADDR_REG rtaddr;
 	VTD_GCMD_REG gcmd;
 	VTD_GSTS_REG gsts;
-	
-	//zero out RET, effectively preventing DMA reads and writes in the system
-	memset((void *)&vtd_ret_table, 0, sizeof(vtd_ret_table));
-	
+	u32 retbuffer_paddr = hva2spa((u32)retbuffer);
+
 	//setup DRHD RET (root-entry)
 	printf("\nSetting up DRHD RET...");
 	{
 		//setup RTADDR with base of RET 
-		rtaddr.value=(u64)&vtd_ret_table;
+		rtaddr.value=(u64)retbuffer_paddr;
 		_vtd_reg(drhd, VTD_REG_WRITE, VTD_RTADDR_REG_OFF, (void *)&rtaddr.value);
-    
+
 		//latch RET address by using GCMD.SRTP
 		gcmd.value=0;
 		gcmd.bits.srtp=1;
 		_vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
-    
+
 		//ensure the RET address was latched by the h/w
 		_vtd_reg(drhd, VTD_REG_READ, VTD_GSTS_REG_OFF, (void *)&gsts.value);
-    
+
 		if(!gsts.bits.rtps){
 			printf("\n%s: Error	Failed to latch RTADDR");
 			return false;
 		}
 	}
 	printf("\nDRHD RET initialized.");
+	
+	return true;
+}
+
+
+//setup blanket (full system) DMA protection using VT-d translation
+//we just employ the RET and ensure that every entry in the RET is 0 
+//which means that the DRHD will
+//not allow any DMA requests for PCI bus 0-255 
+//(Sec 3.3.2, VT-d Spec. v1.2)
+//return: true if everthing went well, else false
+static bool _vtd_drhd_blanket_dmaprot_via_translation(VTD_DRHD *drhd){
+	VTD_GCMD_REG gcmd;
+	VTD_GSTS_REG gsts;
+	
+	//zero out RET, effectively preventing DMA reads and writes in the system
+	memset((void *)&vtd_ret_table, 0, sizeof(vtd_ret_table));
+	
+	//set DRHD root entry table
+	if(!_vtd_drhd_set_root_entry_table(drhd, (u8 *)&vtd_ret_table))
+		return false;
 	
 	//invalidate caches
 	if(!_vtd_drhd_invalidatecaches(drhd))
