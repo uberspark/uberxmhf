@@ -1225,6 +1225,42 @@ static void _vtd_drhd_disable_translation(VTD_DRHD *drhd){
 	return;
 }
 
+//enable protected memory region (PMR)
+static void _vtd_drhd_enable_pmr(VTD_DRHD *drhd){
+    VTD_PMEN_REG pmen;
+
+	printf("\nEnabling PMR...");
+	{
+		pmen.bits.epm=1;	//enable PMR
+		_vtd_reg(drhd, VTD_REG_WRITE, VTD_PMEN_REG_OFF, (void *)&pmen.value);
+
+		//wait for PMR enabled...
+		do{
+			_vtd_reg(drhd, VTD_REG_READ, VTD_PMEN_REG_OFF, (void *)&pmen.value);
+		}while(!pmen.bits.prs);
+	}
+	printf("\nDRHD PMR enabled.");
+	
+}
+
+//disable protected memory region (PMR)
+static void _vtd_drhd_disable_pmr(VTD_DRHD *drhd){
+    VTD_PMEN_REG pmen;
+
+	printf("\nDisabling PMR...");
+	{
+		pmen.bits.epm=0;	//disable PMR
+		_vtd_reg(drhd, VTD_REG_WRITE, VTD_PMEN_REG_OFF, (void *)&pmen.value);
+
+		//wait for PMR disabled...
+		do{
+			_vtd_reg(drhd, VTD_REG_READ, VTD_PMEN_REG_OFF, (void *)&pmen.value);
+		}while(pmen.bits.prs);
+	}
+	printf("\nDRHD PMR disabled.");
+	
+}
+
 
 ////////////////////////////////////////////////////////////////////////
 // globals (exported) interfaces
