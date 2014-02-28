@@ -113,7 +113,7 @@ u32 xmhf_sl_arch_x86vmx_earlyinitialize(u64 protectedbuffer_paddr, u32 protected
 //using VT-d PMRs
 //return true if everything went fine, else false
 static bool vtd_dmaprotect(u32 membase, u32 size){
-	u32 i;
+	vtd_drhd_handle_t drhd_handle;
 	u32 vtd_dmar_table_physical_address=0;
 	vtd_drhd_handle_t vtd_drhd_maxhandle;
 	
@@ -122,7 +122,7 @@ static bool vtd_dmaprotect(u32 membase, u32 size){
 	printf("\n%s: size=%08x", __FUNCTION__, size);
 	
 	//scan for available DRHD units in the platform
-	if(!_vtd_scanfor_drhd_units(&vtd_drhd_maxhandle, &vtd_dmar_table_physical_address))
+	if(!vtd_scanfor_drhd_units(&vtd_drhd_maxhandle, &vtd_dmar_table_physical_address))
 		return false;
 
 	//zero out RET; will be used to prevent DMA reads and writes 
@@ -132,10 +132,10 @@ static bool vtd_dmaprotect(u32 membase, u32 size){
 
 	
 	//initialize all DRHD units
-	for(i=0; i < vtd_num_drhd; i++){
-		printf("\n%s: Setting up DRHD unit %u...", __FUNCTION__, i);
+	for(drhd_handle=0; drhd_handle < vtd_drhd_maxhandle; drhd_handle++){
+		printf("\n%s: Setting up DRHD unit %u...", __FUNCTION__, drhd_handle);
 		
-		if(!_vtd_drhd_initialize(&vtd_drhd[i]) )
+		if(!vtd_drhd_initialize(drhd_handle) )
 			return false;
 
 		//setup blanket (full system) DMA protection using VT-d translation
@@ -145,34 +145,34 @@ static bool vtd_dmaprotect(u32 membase, u32 size){
 		//(Sec 3.3.2, VT-d Spec. v1.2)
 	
 		//set DRHD root entry table
-		if(!_vtd_drhd_set_root_entry_table(&vtd_drhd[i], (u8 *)&vtd_ret_table))
+		if(!vtd_drhd_set_root_entry_table(drhd_handle, (u8 *)&vtd_ret_table))
 			return false;
 	
 		//invalidate caches
-		if(!_vtd_drhd_invalidatecaches(&vtd_drhd[i]))
+		if(!vtd_drhd_invalidatecaches(drhd_handle))
 			return false;
 
 		//enable VT-d translation
-		_vtd_drhd_enable_translation(&vtd_drhd[i]);
+		vtd_drhd_enable_translation(drhd_handle);
 	
 		//disable PMRs now (since DMA protection is active via translation)
-		_vtd_drhd_disable_pmr(&vtd_drhd[i]);
+		vtd_drhd_disable_pmr(drhd_handle);
 		
 		//set PMR low base and limit to cover SL+runtime
-		_vtd_drhd_set_plm_base_and_limit(&vtd_drhd[i], (u32)PAGE_ALIGN_2M(membase), (u32)(PAGE_ALIGN_2M(membase) + PAGE_ALIGN_UP2M(size)) );
+		vtd_drhd_set_plm_base_and_limit(drhd_handle, (u32)PAGE_ALIGN_2M(membase), (u32)(PAGE_ALIGN_2M(membase) + PAGE_ALIGN_UP2M(size)) );
 		
 		//set PMR high base and limit to cover SL+runtime
-		_vtd_drhd_set_phm_base_and_limit(&vtd_drhd[i], (u64)PAGE_ALIGN_2M(membase), (u64)(PAGE_ALIGN_2M(membase) + PAGE_ALIGN_UP2M(size)) );
+		vtd_drhd_set_phm_base_and_limit(drhd_handle, (u64)PAGE_ALIGN_2M(membase), (u64)(PAGE_ALIGN_2M(membase) + PAGE_ALIGN_UP2M(size)) );
 		
 		//enable PMRs
-		_vtd_drhd_enable_pmr(&vtd_drhd[i]);
+		vtd_drhd_enable_pmr(drhd_handle);
 		
 		//invalidate caches
-		if(!_vtd_drhd_invalidatecaches(&vtd_drhd[i]))
+		if(!vtd_drhd_invalidatecaches(drhd_handle))
 			return false;
 
 		//disable translation (now that PMRs are active and protect SL+runtime)
-		_vtd_drhd_disable_translation(&vtd_drhd[i]);
+		vtd_drhd_disable_translation(drhd_handle);
 	
 	}
 
