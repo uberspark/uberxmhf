@@ -1201,6 +1201,29 @@ static void _vtd_drhd_enable_translation(VTD_DRHD *drhd){
 	return;
 }
 
+//disable VT-d translation
+static void _vtd_drhd_disable_translation(VTD_DRHD *drhd){
+	VTD_GCMD_REG gcmd;
+	VTD_GSTS_REG gsts;
+	
+	//disable translation
+	printf("\nDisabling VT-d translation...");
+	{
+		gcmd.value=0;
+		gcmd.bits.te=0;
+
+		_vtd_reg(drhd, VTD_REG_WRITE, VTD_GCMD_REG_OFF, (void *)&gcmd.value);
+
+		//wait for translation enabled status to go red...
+		_vtd_reg(drhd, VTD_REG_READ, VTD_GSTS_REG_OFF, (void *)&gsts.value);
+		while(gsts.bits.tes){
+			_vtd_reg(drhd, VTD_REG_READ, VTD_GSTS_REG_OFF, (void *)&gsts.value);
+		}
+	}
+	printf("\nVT-d translation disabled.");
+	
+	return;
+}
 
 
 ////////////////////////////////////////////////////////////////////////
