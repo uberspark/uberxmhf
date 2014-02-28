@@ -339,7 +339,7 @@ typedef struct {
 
 
 
-bool vtd_scanfor_drhd_units(u32 *dmar_phys_addr_var);
+bool vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, u32 *dmar_phys_addr_var);
 bool vtd_drhd_initialize(VTD_DRHD *drhd);
 bool vtd_drhd_invalidatecaches(VTD_DRHD *drhd);
 bool vtd_drhd_set_root_entry_table(VTD_DRHD *drhd, u8 *retbuffer);
