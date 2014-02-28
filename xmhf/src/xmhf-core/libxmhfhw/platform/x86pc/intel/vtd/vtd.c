@@ -1174,28 +1174,11 @@ static bool _vtd_drhd_set_root_entry_table(VTD_DRHD *drhd, u8 *retbuffer){
 }
 
 
-//setup blanket (full system) DMA protection using VT-d translation
-//we just employ the RET and ensure that every entry in the RET is 0 
-//which means that the DRHD will
-//not allow any DMA requests for PCI bus 0-255 
-//(Sec 3.3.2, VT-d Spec. v1.2)
-//return: true if everthing went well, else false
-static bool _vtd_drhd_blanket_dmaprot_via_translation(VTD_DRHD *drhd){
+//enable VT-d translation
+static void _vtd_drhd_enable_translation(VTD_DRHD *drhd){
 	VTD_GCMD_REG gcmd;
 	VTD_GSTS_REG gsts;
 	
-	//zero out RET, effectively preventing DMA reads and writes in the system
-	memset((void *)&vtd_ret_table, 0, sizeof(vtd_ret_table));
-	
-	//set DRHD root entry table
-	if(!_vtd_drhd_set_root_entry_table(drhd, (u8 *)&vtd_ret_table))
-		return false;
-	
-	//invalidate caches
-	if(!_vtd_drhd_invalidatecaches(drhd))
-		return false;
-
-
 	//turn on translation
 	printf("\nEnabling VT-d translation...");
 	{
@@ -1214,6 +1197,32 @@ static bool _vtd_drhd_blanket_dmaprot_via_translation(VTD_DRHD *drhd){
 		}
 	}
 	printf("\nVT-d translation enabled.");
+	
+	return;
+}
+
+
+//setup blanket (full system) DMA protection using VT-d translation
+//we just employ the RET and ensure that every entry in the RET is 0 
+//which means that the DRHD will
+//not allow any DMA requests for PCI bus 0-255 
+//(Sec 3.3.2, VT-d Spec. v1.2)
+//return: true if everthing went well, else false
+static bool _vtd_drhd_blanket_dmaprot_via_translation(VTD_DRHD *drhd){
+	
+	//zero out RET, effectively preventing DMA reads and writes in the system
+	memset((void *)&vtd_ret_table, 0, sizeof(vtd_ret_table));
+	
+	//set DRHD root entry table
+	if(!_vtd_drhd_set_root_entry_table(drhd, (u8 *)&vtd_ret_table))
+		return false;
+	
+	//invalidate caches
+	if(!_vtd_drhd_invalidatecaches(drhd))
+		return false;
+
+	//enable VT-d translation
+	_vtd_drhd_enable_translation(drhd);
 
 	return true;
 }
