@@ -927,8 +927,10 @@ static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
 //vtd_num_drhd (number of DRHD units detected)
 //vtd_dmar_table_physical_address (physical address of the DMAR table)
 //returns: true if all is fine else false; dmar_phys_addr_var contains
+//max. value of DRHD unit handle (0 through maxhandle-1 are valid handles
+//that can subsequently be passed to any of the other vtd drhd functions)
 //physical address of the DMAR table in the system
-bool vtd_scanfor_drhd_units(u32 *dmar_phys_addr_var){
+bool vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, u32 *dmar_phys_addr_var){
 	ACPI_RSDP rsdp;
 	ACPI_RSDT rsdt;
 	u32 num_rsdtentries;
@@ -944,7 +946,12 @@ bool vtd_scanfor_drhd_units(u32 *dmar_phys_addr_var){
 	//memset(&rsdt, 0, sizeof(ACPI_RSDT));
 	//sanity check NULL parameter
 	HALT_ON_ERRORCOND(dmar_phys_addr_var != NULL);
-
+	HALT_ON_ERRORCOND(maxhandle != NULL);
+	
+	//set maxhandle to 0 to start with. if we have any errors before
+	//we finalize maxhandle we can just bail out
+	*maxhandle=0;
+	
 	//get ACPI RSDP
 	status=xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
 	//HALT_ON_ERRORCOND(status != 0);	//we need a valid RSDP to proceed
@@ -1031,6 +1038,8 @@ bool vtd_scanfor_drhd_units(u32 *dmar_phys_addr_var){
 		_vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_ECAP_REG_OFF, (void *)&ecap.value);
 		printf("\n		ecap=0x%016llx", (u64)ecap.value);
 	}
+	
+	*maxhandle = vtd_num_drhd;
 	
 	return true;
 }

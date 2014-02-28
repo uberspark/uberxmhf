@@ -122,6 +122,7 @@ typedef struct{
   u64 regbaseaddr;
 }__attribute__ ((packed)) VTD_DRHD;
 
+typedef u32 vtd_drhd_handle_t;
 
 //------------------------------------------------------------------------------
 //VT-d register structure definitions
