@@ -1060,12 +1060,13 @@ bool vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, u32 *dmar_phys_addr_va
 }
 
 //initialize a given DRHD unit to meet our requirements
-bool vtd_drhd_initialize(VTD_DRHD *drhd){
+bool vtd_drhd_initialize(vtd_drhd_handle_t drhd_handle){
 	VTD_GCMD_REG gcmd;
 	VTD_GSTS_REG gsts;
 	VTD_FECTL_REG fectl;
 	VTD_CAP_REG cap;
-	VTD_DRHD *drhd = &vtd_drhd[
+	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
+	
 	//sanity check
 	HALT_ON_ERRORCOND(drhd != NULL);
 
@@ -1112,9 +1113,13 @@ bool vtd_drhd_initialize(VTD_DRHD *drhd){
 //invalidate DRHD caches
 //note: we do global invalidation currently
 //returns: true if all went well, else false
-bool vtd_drhd_invalidatecaches(VTD_DRHD *drhd){
+bool vtd_drhd_invalidatecaches(vtd_drhd_handle_t drhd_handle){
 	VTD_CCMD_REG ccmd;
 	VTD_IOTLB_REG iotlb;
+	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
+
+	//sanity check
+	HALT_ON_ERRORCOND(drhd != NULL);
 
 	//invalidate CET cache
   	//wait for context cache invalidation request to send
@@ -1173,11 +1178,15 @@ bool vtd_drhd_invalidatecaches(VTD_DRHD *drhd){
 //the CET, accounting for 32 devices with 8 functions each as per the 
 //PCI spec.
 //each CE points to a PDPT type paging structure for  device
-bool vtd_drhd_set_root_entry_table(VTD_DRHD *drhd, u8 *retbuffer){
+bool vtd_drhd_set_root_entry_table(vtd_drhd_handle_t drhd_handle,  u8 *retbuffer){
 	VTD_RTADDR_REG rtaddr;
 	VTD_GCMD_REG gcmd;
 	VTD_GSTS_REG gsts;
 	u32 retbuffer_paddr = hva2spa((u32)retbuffer);
+	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
+	
+	//sanity check
+	HALT_ON_ERRORCOND(drhd != NULL);
 
 	//setup DRHD RET (root-entry)
 	printf("\nSetting up DRHD RET...");
@@ -1206,9 +1215,14 @@ bool vtd_drhd_set_root_entry_table(VTD_DRHD *drhd, u8 *retbuffer){
 
 
 //enable VT-d translation
-void vtd_drhd_enable_translation(VTD_DRHD *drhd){
+void vtd_drhd_enable_translation(vtd_drhd_handle_t drhd_handle){
 	VTD_GCMD_REG gcmd;
 	VTD_GSTS_REG gsts;
+	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
+	
+	//sanity check
+	HALT_ON_ERRORCOND(drhd != NULL);
+
 	
 	//turn on translation
 	printf("\nEnabling VT-d translation...");
@@ -1233,9 +1247,13 @@ void vtd_drhd_enable_translation(VTD_DRHD *drhd){
 }
 
 //disable VT-d translation
-void vtd_drhd_disable_translation(VTD_DRHD *drhd){
+void vtd_drhd_disable_translation(vtd_drhd_handle_t drhd_handle){
 	VTD_GCMD_REG gcmd;
 	VTD_GSTS_REG gsts;
+	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
+	
+	//sanity check
+	HALT_ON_ERRORCOND(drhd != NULL);
 	
 	//disable translation
 	printf("\nDisabling VT-d translation...");
@@ -1257,8 +1275,12 @@ void vtd_drhd_disable_translation(VTD_DRHD *drhd){
 }
 
 //enable protected memory region (PMR)
-void vtd_drhd_enable_pmr(VTD_DRHD *drhd){
+void vtd_drhd_enable_pmr(vtd_drhd_handle_t drhd_handle){
     VTD_PMEN_REG pmen;
+	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
+	
+	//sanity check
+	HALT_ON_ERRORCOND(drhd != NULL);
 
 	printf("\nEnabling PMR...");
 	{
@@ -1275,8 +1297,12 @@ void vtd_drhd_enable_pmr(VTD_DRHD *drhd){
 }
 
 //disable protected memory region (PMR)
-void vtd_drhd_disable_pmr(VTD_DRHD *drhd){
+void vtd_drhd_disable_pmr(vtd_drhd_handle_t drhd_handle){
     VTD_PMEN_REG pmen;
+	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
+	
+	//sanity check
+	HALT_ON_ERRORCOND(drhd != NULL);
 
 	printf("\nDisabling PMR...");
 	{
@@ -1293,9 +1319,13 @@ void vtd_drhd_disable_pmr(VTD_DRHD *drhd){
 }
 
 //set DRHD PLMBASE and PLMLIMIT PMRs
-void vtd_drhd_set_plm_base_and_limit(VTD_DRHD *drhd, u32 base, u32 limit){
+void vtd_drhd_set_plm_base_and_limit(vtd_drhd_handle_t drhd_handle, u32 base, u32 limit){
 	VTD_PLMBASE_REG plmbase;
 	VTD_PLMLIMIT_REG plmlimit;
+	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
+	
+	//sanity check
+	HALT_ON_ERRORCOND(drhd != NULL);
 
 	//set PLMBASE register
 	plmbase.value = base;
@@ -1308,9 +1338,13 @@ void vtd_drhd_set_plm_base_and_limit(VTD_DRHD *drhd, u32 base, u32 limit){
 
 
 //set DRHD PHMBASE and PHMLIMIT PMRs
-void vtd_drhd_set_phm_base_and_limit(VTD_DRHD *drhd, u64 base, u64 limit){
+void vtd_drhd_set_phm_base_and_limit(vtd_drhd_handle_t drhd_handle, u64 base, u64 limit){
 	VTD_PHMBASE_REG phmbase;
 	VTD_PHMLIMIT_REG phmlimit;
+	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
+	
+	//sanity check
+	HALT_ON_ERRORCOND(drhd != NULL);
 
 	//set PHMBASE register
 	phmbase.value = base;

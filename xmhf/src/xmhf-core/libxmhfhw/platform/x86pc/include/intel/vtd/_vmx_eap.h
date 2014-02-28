@@ -340,15 +340,15 @@ typedef struct {
 
 
 bool vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, u32 *dmar_phys_addr_var);
-bool vtd_drhd_initialize(VTD_DRHD *drhd);
-bool vtd_drhd_invalidatecaches(VTD_DRHD *drhd);
-bool vtd_drhd_set_root_entry_table(VTD_DRHD *drhd, u8 *retbuffer);
-void vtd_drhd_enable_translation(VTD_DRHD *drhd);
-void vtd_drhd_disable_translation(VTD_DRHD *drhd);
-void vtd_drhd_enable_pmr(VTD_DRHD *drhd);
-void vtd_drhd_disable_pmr(VTD_DRHD *drhd);
-void vtd_drhd_set_plm_base_and_limit(VTD_DRHD *drhd, u32 base, u32 limit);
-void vtd_drhd_set_phm_base_and_limit(VTD_DRHD *drhd, u64 base, u64 limit);
+bool vtd_drhd_initialize(vtd_drhd_handle_t drhd_handle);
+bool vtd_drhd_invalidatecaches(vtd_drhd_handle_t drhd_handle);
+bool vtd_drhd_set_root_entry_table(vtd_drhd_handle_t drhd_handle, u8 *retbuffer);
+void vtd_drhd_enable_translation(vtd_drhd_handle_t drhd_handle);
+void vtd_drhd_disable_translation(vtd_drhd_handle_t drhd_handle);
+void vtd_drhd_enable_pmr(vtd_drhd_handle_t drhd_handle);
+void vtd_drhd_disable_pmr(vtd_drhd_handle_t drhd_handle);
+void vtd_drhd_set_plm_base_and_limit(vtd_drhd_handle_t drhd_handle, u32 base, u32 limit);
+void vtd_drhd_set_phm_base_and_limit(vtd_drhd_handle_t drhd_handle, u64 base, u64 limit);
 
 		
 #endif //__ASSEMBLY__
