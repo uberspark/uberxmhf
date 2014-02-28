@@ -926,10 +926,10 @@ static VTD_DRHD *_vtd_get_drhd_struct(vtd_drhd_handle_t drhd_handle){
 		VTD_DRHD *drhd = NULL;
 		
 		if(!vtd_drhd_scanned)
-				return;
+				return drhd;
 		
 		if(drhd_handle >= vtd_num_drhd)
-			return;
+			return drhd;
 			
 		return (VTD_DRHD *)&vtd_drhd[drhd_handle];
 	
