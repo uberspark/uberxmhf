@@ -97,27 +97,7 @@ void xmhf_runtime_entry(void){
 	#endif
 
 #if defined (__DMAP__)
-		{
-				u64 protectedbuffer_paddr;
-				u32 protectedbuffer_vaddr;
-				u32 protectedbuffer_size;
-				
-				protectedbuffer_paddr = hva2spa(&g_rntm_dmaprot_buffer);
-				protectedbuffer_vaddr = (u32)&g_rntm_dmaprot_buffer;
-				protectedbuffer_size = xmhf_dmaprot_getbuffersize(ADDR_4GB);
-				HALT_ON_ERRORCOND(protectedbuffer_size <= SIZE_G_RNTM_DMAPROT_BUFFER);
-				
-				printf("\nRuntime: Re-initializing DMA protection...");
-				if(!xmhf_dmaprot_initialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size)){
-					printf("\nRuntime: Unable to re-initialize DMA protection. HALT!");
-					HALT();
-				}
-
-				//protect SL and runtime memory regions
-				xmhf_dmaprot_protect(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimeSize+PAGE_SIZE_2M);
-				printf("\nRuntime: Protected SL+Runtime (%08lx-%08x) from DMA.", rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
-		}
-
+	xmhf_dmaprot_reinitialize();
 #endif
 
 
