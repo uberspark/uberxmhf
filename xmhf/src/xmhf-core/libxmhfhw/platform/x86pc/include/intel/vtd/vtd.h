@@ -44,11 +44,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//vmx_eap.h - VMX VT-d (External Access Protection) declarations/definitions
+//Intel VT-d declarations/definitions
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __VMX_EAP_H__
-#define __VMX_EAP_H__
+#ifndef __VTD_H__
+#define __VTD_H__
 
 #define VTD_DMAR_SIGNATURE  (0x52414D44) //"DMAR"
 #define VTD_MAX_DRHD   8		//maximum number of DMAR h/w units   
@@ -353,4 +353,4 @@ void vtd_drhd_set_phm_base_and_limit(vtd_drhd_handle_t drhd_handle, u64 base, u6
 		
 #endif //__ASSEMBLY__
 
-#endif //__VMX_EAP_H__
+#endif //__VTD_H__
