@@ -118,17 +118,6 @@ void xmhf_runtime_entry(void){
 				printf("\nRuntime: Protected SL+Runtime (%08lx-%08x) from DMA.", rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M, rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize);
 		}
 
-#else //!__DMAP__
-	
-	#if defined (__DRT__)
-	//if __DRT__ is enabled without DMA protections, zap DMAR device
-	//from ACPI tables
-	if(cpu_vendor == CPU_VENDOR_INTEL){
-		extern void vmx_eap_zap(void);
-		vmx_eap_zap();
-	}
-	#endif	//__DRT__
-	
 #endif
 
 
