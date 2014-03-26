@@ -51,8 +51,8 @@
 
 
 //re-initialize DMA protections (if needed) for the runtime
-bool xmhf_dmaprot_reinitialize_dmaprot(void){
-	return xmhf_dmaprot_arch_reinitialize_dmaprot();	
+bool xmhf_dmaprot_reinitialize(void){
+	return xmhf_dmaprot_arch_reinitialize();	
 }
 
 //return size (in bytes) of the memory buffer required for
