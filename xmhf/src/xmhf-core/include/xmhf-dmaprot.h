@@ -63,6 +63,9 @@
 //exported FUNCTIONS 
 //----------------------------------------------------------------------
 
+//re-initialize DMA protections (if needed) for the runtime
+bool xmhf_dmaprot_reinitialize_dmaprot(void);
+
 //return size (in bytes) of the memory buffer required for
 //DMA protection for a given physical memory limit
 u32 xmhf_dmaprot_getbuffersize(u64 physical_memory_limit);
@@ -88,6 +91,9 @@ void xmhf_dmaprot_protect(u32 start_paddr, u32 size);
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
+//re-initialize DMA protections (if needed) for the runtime
+bool xmhf_dmaprot_arch_reinitialize_dmaprot(void);
+
 u32 xmhf_dmaprot_arch_getbuffersize(u64 physical_memory_limit);
 u32 xmhf_dmaprot_arch_earlyinitialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
