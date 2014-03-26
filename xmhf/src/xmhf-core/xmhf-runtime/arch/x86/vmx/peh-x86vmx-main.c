@@ -371,7 +371,7 @@ static void _vmx_handle_intercept_eptviolation(context_desc_t context_desc, stru
 
 	//check if EPT violation is due to LAPIC interception
 	if(vcpu->isbsp && (gpa >= g_vmx_lapic_base) && (gpa < (g_vmx_lapic_base + PAGE_SIZE_4K)) ){
-		xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
+		xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(context_desc, gpa, errorcode);
 	}else{ //no, pass it to hypapp 
 		xmhf_smpguest_arch_x86vmx_quiesce(vcpu);
 		xmhfhypapp_handleintercept_hwpgtblviolation(context_desc, gpa, gva,	(errorcode & 7));
@@ -592,7 +592,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
  		case VMX_VMEXIT_EXCEPTION:{
 			switch( ((u32)vcpu->vmcs.info_vmexit_interrupt_information & INTR_INFO_VECTOR_MASK) ){
 				case 0x01:
-					xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(vcpu, r);
+					xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(context_desc, r);
 					break;				
 				
 				case 0x02:	//NMI

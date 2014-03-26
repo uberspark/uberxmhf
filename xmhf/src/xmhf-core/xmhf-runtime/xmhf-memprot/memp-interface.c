@@ -128,3 +128,7 @@ u64 xmhf_memprot_getHPTroot(context_desc_t context_desc){
 	return xmhf_memprot_arch_getHPTroot(context_desc);
 }
 
+//set HPT entry
+void xmhf_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u64 entry){
+	return xmhf_memprot_arch_hpt_setentry(context_desc, hpt_paddr, entry);	
+}

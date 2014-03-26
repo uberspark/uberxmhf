@@ -79,11 +79,11 @@ u8 * xmhf_smpguest_arch_walk_pagetables(context_desc_t context_desc, u32 vaddr);
 void xmhf_smpguest_arch_postCPUwakeup(context_desc_t context_desc);
 
 //handle LAPIC access #DB (single-step) exception event
-void xmhf_smpguest_arch_eventhandler_dbexception(VCPU *vcpu, 
+void xmhf_smpguest_arch_eventhandler_dbexception(context_desc_t context_desc, 
 	struct regs *r);
 
 //handle LAPIC access #NPF (nested page fault) event
-void xmhf_smpguest_arch_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 gpa, u32 errorcode);
+void xmhf_smpguest_arch_eventhandler_hwpgtblviolation(context_desc_t context_desc, u32 gpa, u32 errorcode);
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
 void xmhf_smpguest_arch_eventhandler_nmiexception(struct regs *r);
@@ -112,10 +112,10 @@ void xmhf_smpguest_arch_eventhandler_nmiexception(struct regs *r);
 //----------------------------------------------------------------------
 
 //void xmhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu);
-void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, 
+void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(context_desc_t context_desc, 
 	struct regs *r);
 void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r);
-u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode);
+u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(context_desc_t context_desc, u32 paddr, u32 errorcode);
 void xmhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu);
 void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu);
 
