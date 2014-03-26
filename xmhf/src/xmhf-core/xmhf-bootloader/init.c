@@ -827,7 +827,8 @@ bool svm_prepare_tpm(void) {
 void cstartup(multiboot_info_t *mbi){
     module_t *mod_array;
     u32 mods_count;
-    
+	size_t hypapp_size;
+	
     /* parse command line */
     memset(g_cmdline, '\0', sizeof(g_cmdline));
     strncpy(g_cmdline, (char*)mbi->cmdline, sizeof(g_cmdline)-1);
@@ -886,7 +887,8 @@ void cstartup(multiboot_info_t *mbi){
 
     //check (and revise) platform E820 memory map to see if we can
     //load at __TARGET_BASE_SL 
-    sl_rt_size = mod_array[0].mod_start - __TARGET_BASE_BOOTLOADER + __TARGET_SIZE_BOOTLOADER;
+    //sl_rt_size = mod_array[0].mod_start - __TARGET_BASE_BOOTLOADER + __TARGET_SIZE_BOOTLOADER;
+    sl_rt_size = (mod_array[0].mod_start - __TARGET_BASE_BOOTLOADER) - __TARGET_SIZE_BOOTLOADER;
     hypapp_size = mod_array[0].mod_end - mod_array[0].mod_start;
     hypervisor_image_baseaddress = dealwithE820(mbi, PAGE_ALIGN_UP2M(sl_rt_size) + PAGE_ALIGN_UP2M(hypapp_size) ); 
 
@@ -920,6 +922,12 @@ void cstartup(multiboot_info_t *mbi){
     memcpy((void*)__TARGET_BASE_SL, (void*)(__TARGET_BASE_BOOTLOADER+__TARGET_SIZE_BOOTLOADER), sl_rt_size);
 	memcpy((void*)__TARGET_BASE_XMHFHYPAPP, (void *)mod_array[0].mod_start, hypapp_size);
 
+	////DMA protect SL+runtime via VTd PMRs
+	//if(cpu_vendor == CPU_VENDOR_INTEL){
+	//	extern bool vtdinit_dmaprotect(u32 membase, u32 size);
+	//	vtdinit_dmaprotect(__TARGET_BASE_SL, sl_rt_size);
+	//}
+	
     /* runtime */
     print_hex("    INIT(early): *UNTRUSTED* gold runtime: ",
               g_init_gold.sha_runtime, SHA_DIGEST_LENGTH);

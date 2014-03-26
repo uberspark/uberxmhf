@@ -284,6 +284,7 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
            (u32)&g_mle_hdr, sizeof(mle_hdr_t), (u32)phys_mle_start);
     /* this is linear addr (offset from MLE base) of mle header, in MLE page tables */
     os_sinit_data->mle_hdr_base = 0;
+        
     //- (uint64_t)(unsigned long)&_mle_start;
     /* VT-d PMRs */
     /* Must protect MLE, o/w get: TXT.ERRORCODE=c0002871
@@ -293,12 +294,17 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
 		extern u32 sl_rt_size;	//XXX: Ugly hack to bring in SL + runtime size; ideally this should be passed in as another parameter
 		(void)mle_size;
 		os_sinit_data->vtd_pmr_lo_base = (u64)__TARGET_BASE_SL;
-		os_sinit_data->vtd_pmr_lo_size = (u64)PAGE_ALIGN_UP2M(sl_rt_size);
+		os_sinit_data->vtd_pmr_lo_size = (u64)__TARGET_SIZE_SL;
+
+		//os_sinit_data->vtd_pmr_hi_base = (u64)(__TARGET_BASE_SL+ __TARGET_SIZE_SL);
+		//os_sinit_data->vtd_pmr_hi_size = (u64)PAGE_ALIGN_UP2M(sl_rt_size) - (u64)__TARGET_SIZE_SL;
+		
+		printf("\nvtd_pmr_lo_base=%016llx, size=%016llx", os_sinit_data->vtd_pmr_lo_base, os_sinit_data->vtd_pmr_lo_size);
+		//printf("\nvtd_pmr_hi_base=%016llx, size=%016llx", os_sinit_data->vtd_pmr_hi_base, os_sinit_data->vtd_pmr_hi_size);
+
 	}
 
-    /* hi range is >4GB; unused for us */
-    os_sinit_data->vtd_pmr_hi_base = 0;
-    os_sinit_data->vtd_pmr_hi_size = 0;
+
 
     /* LCP owner policy data -- DELETED */
     
