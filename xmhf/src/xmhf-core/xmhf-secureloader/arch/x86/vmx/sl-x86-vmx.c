@@ -52,8 +52,6 @@
 #include <xmhf.h>
 
 static u8 vtd_ret_table[PAGE_SIZE_4K]; //4KB Vt-d Root-Entry table
-//static VTD_DRHD vtd_drhd[VTD_MAX_DRHD];
-//static u32 vtd_num_drhd=0;	//total number of DMAR h/w units
 
 void xmhf_sl_arch_sanitize_post_launch(void){
 	#ifndef __XMHF_VERIFICATION__
@@ -80,33 +78,6 @@ void xmhf_sl_arch_sanitize_post_launch(void){
     
 	#endif
 }
-
-
-/*//"early" DMA protection initialization to setup minimal
-//structures to protect a range of physical memory
-//return 1 on success 0 on failure
-u32 xmhf_sl_arch_x86vmx_earlyinitialize(u64 protectedbuffer_paddr, u32 protectedbuffer_vaddr, u32 protectedbuffer_size, u64 __attribute__((unused))memregionbase_paddr, u32 __attribute__((unused))memregion){
-	u32 vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr;
-	u32 vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr;
-	u32 vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr;
-
-	//(void)memregionbase_paddr;
-	//(void)memregion_size;
-	
-	printf("\nSL: Bootstrapping VMX DMA protection...");
-			
-	//we use 3 pages for Vt-d bootstrapping
-	HALT_ON_ERRORCOND(protectedbuffer_size >= (3*PAGE_SIZE_4K));
-		
-	vmx_eap_vtd_pdpt_paddr = protectedbuffer_paddr; 
-	vmx_eap_vtd_pdpt_vaddr = protectedbuffer_vaddr; 
-	vmx_eap_vtd_ret_paddr = protectedbuffer_paddr + PAGE_SIZE_4K; 
-	vmx_eap_vtd_ret_vaddr = protectedbuffer_vaddr + PAGE_SIZE_4K; 
-	vmx_eap_vtd_cet_paddr = protectedbuffer_paddr + (2*PAGE_SIZE_4K); 
-	vmx_eap_vtd_cet_vaddr = protectedbuffer_vaddr + (2*PAGE_SIZE_4K); 
-			
-	return vmx_eap_initialize(vmx_eap_vtd_pdpt_paddr, vmx_eap_vtd_pdpt_vaddr, 0, 0,	0, 0, vmx_eap_vtd_ret_paddr, vmx_eap_vtd_ret_vaddr,	vmx_eap_vtd_cet_paddr, vmx_eap_vtd_cet_vaddr, 1);
-}*/
 
 
 //protect a given physical range of memory (membase to membase+size)
@@ -191,45 +162,13 @@ static bool vtd_dmaprotect(u32 membase, u32 size){
 
 
 void xmhf_sl_arch_early_dmaprot_init(u32 membase, u32 size){
-		/*(void)membase;
-		(void)size;
-
-		{
-			u64 protectedbuffer_paddr;
-			u32 protectedbuffer_vaddr;
-			u32 protectedbuffer_size;
-			u64 memregionbase_paddr;
-			u32 memregion_size;
-
-				protectedbuffer_paddr = __TARGET_BASE_SL + 0x100000;
-				protectedbuffer_vaddr = protectedbuffer_paddr;
-				protectedbuffer_size = (3 * PAGE_SIZE_4K);
-
-			memregionbase_paddr = membase;
-			memregion_size = size;
-
-			printf("SL: Initializing DMA protections...\n");
-			
-
-			if(!xmhf_sl_arch_x86vmx_earlyinitialize(protectedbuffer_paddr,
-				protectedbuffer_vaddr, protectedbuffer_size,
-				memregionbase_paddr, memregion_size)){
-				printf("SL: Fatal, could not initialize DMA protections. Halting!\n");
-				HALT();	
-			}
-			
-			printf("SL: Initialized DMA protections successfully\n");
-		
-		}*/
-		
 		printf("SL: Initializing DMA protections...\n");
 		
 		if(!vtd_dmaprotect(membase, size)){
-			printf("Warning: SL: Fatal, could not initialize DMA protections. Moving on regardless...\n");
-			//HALT();	
+			printf("SL: Fatal, could not initialize DMA protections. Halting!\n");
+			HALT();	
 		}else{
 			printf("SL: Initialized DMA protections successfully\n");
 		}
-	
 }
 
