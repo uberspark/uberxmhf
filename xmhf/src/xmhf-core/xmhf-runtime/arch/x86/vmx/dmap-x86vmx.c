@@ -64,6 +64,7 @@ u32 xmhf_dmaprot_arch_getbuffersize(u64 physical_memory_limit){
 }
 
 
+
 //"early" DMA protection initialization to setup minimal
 //structures to protect a range of physical memory
 //return 1 on success 0 on failure
@@ -75,7 +76,7 @@ u32 xmhf_dmaprot_arch_earlyinitialize(u64 protectedbuffer_paddr, u32 protectedbu
 	//  return xmhf_dmaprot_arch_x86svm_earlyinitialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size, memregionbase_paddr,	memregion_size);
 	//}
 	//else{	//CPU_VENDOR_INTEL
-	  return xmhf_dmaprot_arch_x86vmx_earlyinitialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size, memregionbase_paddr, 	memregion_size);
+	  return 1;
 	//}
 }
 
@@ -86,11 +87,11 @@ u32 xmhf_dmaprot_arch_initialize(u64 protectedbuffer_paddr,
 	u32 protectedbuffer_vaddr, u32 protectedbuffer_size){
 	//u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
 
-	if(cpu_vendor == CPU_VENDOR_AMD){
-	  return xmhf_dmaprot_arch_x86svm_initialize(protectedbuffer_paddr,	protectedbuffer_vaddr, protectedbuffer_size);
-	}else{	//CPU_VENDOR_INTEL
+	//if(cpu_vendor == CPU_VENDOR_AMD){
+	//  return xmhf_dmaprot_arch_x86svm_initialize(protectedbuffer_paddr,	protectedbuffer_vaddr, protectedbuffer_size);
+	//}else{	//CPU_VENDOR_INTEL
 	  return 1; //we use Vtd PMRs to protect the SL + runtime during SL launch
-	}
+	//}
 		
 }
 
@@ -100,9 +101,9 @@ u32 xmhf_dmaprot_arch_initialize(u64 protectedbuffer_paddr,
 void xmhf_dmaprot_arch_protect(u32 start_paddr, u32 size){
 	//u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
 
-	if(cpu_vendor == CPU_VENDOR_AMD){
-	  return xmhf_dmaprot_arch_x86svm_protect(start_paddr, size);
-	}else{	//CPU_VENDOR_INTEL
+	//if(cpu_vendor == CPU_VENDOR_AMD){
+	//  return xmhf_dmaprot_arch_x86svm_protect(start_paddr, size);
+	//}else{	//CPU_VENDOR_INTEL
 	  return; //we use Vtd PMRs to protect the SL + runtime during SL launch
-	} 
+	//} 
 }

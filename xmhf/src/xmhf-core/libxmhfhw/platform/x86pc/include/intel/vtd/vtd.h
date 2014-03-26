@@ -44,11 +44,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//vmx_eap.h - VMX VT-d (External Access Protection) declarations/definitions
+//Intel VT-d declarations/definitions
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __VMX_EAP_H__
-#define __VMX_EAP_H__
+#ifndef __VTD_H__
+#define __VTD_H__
 
 #define VTD_DMAR_SIGNATURE  (0x52414D44) //"DMAR"
 #define VTD_MAX_DRHD   8		//maximum number of DMAR h/w units   
@@ -63,7 +63,15 @@
 #define VTD_CCMD_REG_OFF  	0x028				//manage context-entry cache (64-bit) 
 #define VTD_FSTS_REG_OFF  	0x034				//report fault/error status (32-bit)
 #define VTD_FECTL_REG_OFF 	0x038				//interrupt control (32-bit)
+
 #define VTD_PMEN_REG_OFF  	0x064				//enable DMA protected memory regions (32-bits)
+
+#define VTD_PLMBASE_REG_OFF	0x068				//protected low memory base register (32-bits)
+#define VTD_PLMLIMIT_REG_OFF	0x6C			//protected low memory limit register (32-bits)
+
+#define VTD_PHMBASE_REG_OFF	0x070				//protected high memory base register (64-bits)
+#define VTD_PHMLIMIT_REG_OFF	0x78			//protected high memory limit register (64-bits)
+
 #define VTD_IVA_REG_OFF  		0x0DEAD  		//invalidate address register (64-bits)
 																				//note: the offset of this register is computed
                                     		//at runtime for a specified DMAR device
@@ -114,6 +122,7 @@ typedef struct{
   u64 regbaseaddr;
 }__attribute__ ((packed)) VTD_DRHD;
 
+typedef u32 vtd_drhd_handle_t;
 
 //------------------------------------------------------------------------------
 //VT-d register structure definitions
@@ -307,7 +316,41 @@ typedef union {
   } bits;
 } __attribute__ ((packed)) VTD_PMEN_REG;
 
+
+//VTD_PLMBASE_REG (sec. 10.4.17)
+typedef struct {
+  u32 value;
+} __attribute__ ((packed)) VTD_PLMBASE_REG;
+
+//VTD_PLMLIMIT_REG (sec. 10.4.18)
+typedef struct {
+  u32 value;
+} __attribute__ ((packed)) VTD_PLMLIMIT_REG;
+
+//VTD_PHMBASE_REG (sec. 10.4.19)
+typedef struct {
+  u64 value;
+} __attribute__ ((packed)) VTD_PHMBASE_REG;
+
+//VTD_PHMLIMIT_REG (sec. 10.4.20)
+typedef struct {
+  u64 value;
+} __attribute__ ((packed)) VTD_PHMLIMIT_REG;
+
+
+
+bool vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, u32 *dmar_phys_addr_var);
+bool vtd_drhd_initialize(vtd_drhd_handle_t drhd_handle);
+bool vtd_drhd_invalidatecaches(vtd_drhd_handle_t drhd_handle);
+bool vtd_drhd_set_root_entry_table(vtd_drhd_handle_t drhd_handle, u8 *retbuffer);
+void vtd_drhd_enable_translation(vtd_drhd_handle_t drhd_handle);
+void vtd_drhd_disable_translation(vtd_drhd_handle_t drhd_handle);
+void vtd_drhd_enable_pmr(vtd_drhd_handle_t drhd_handle);
+void vtd_drhd_disable_pmr(vtd_drhd_handle_t drhd_handle);
+void vtd_drhd_set_plm_base_and_limit(vtd_drhd_handle_t drhd_handle, u32 base, u32 limit);
+void vtd_drhd_set_phm_base_and_limit(vtd_drhd_handle_t drhd_handle, u64 base, u64 limit);
+
 		
 #endif //__ASSEMBLY__
 
-#endif //__VMX_EAP_H__
+#endif //__VTD_H__

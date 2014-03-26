@@ -51,6 +51,7 @@
  
 #include <xmhf.h>
 
+static u8 vtd_ret_table[PAGE_SIZE_4K]; //4KB Vt-d Root-Entry table
 
 void xmhf_sl_arch_sanitize_post_launch(void){
 	#ifndef __XMHF_VERIFICATION__
@@ -79,35 +80,95 @@ void xmhf_sl_arch_sanitize_post_launch(void){
 }
 
 
-void xmhf_sl_arch_early_dmaprot_init(u32 membase, u32 size){
+//protect a given physical range of memory (membase to membase+size)
+//using VT-d PMRs
+//return true if everything went fine, else false
+static bool vtd_dmaprotect(u32 membase, u32 size){
+	vtd_drhd_handle_t drhd_handle;
+	u32 vtd_dmar_table_physical_address=0;
+	vtd_drhd_handle_t vtd_drhd_maxhandle;
+	
+#ifndef __XMHF_VERIFICATION__	
 
-		{
-			u64 protectedbuffer_paddr;
-			u32 protectedbuffer_vaddr;
-			u32 protectedbuffer_size;
-			u64 memregionbase_paddr;
-			u32 memregion_size;
+	printf("\n%s: size=%08x", __FUNCTION__, size);
+	
+	//scan for available DRHD units in the platform
+	if(!vtd_scanfor_drhd_units(&vtd_drhd_maxhandle, &vtd_dmar_table_physical_address))
+		return false;
 
-				protectedbuffer_paddr = __TARGET_BASE_SL + 0x100000;
-				protectedbuffer_vaddr = protectedbuffer_paddr;
-				protectedbuffer_size = (3 * PAGE_SIZE_4K);
+	//zero out RET; will be used to prevent DMA reads and writes 
+	//for the entire system
+	memset((void *)&vtd_ret_table, 0, sizeof(vtd_ret_table));
 
-			memregionbase_paddr = membase;
-			memregion_size = size;
 
-			printf("SL: Initializing DMA protections...\n");
-			
-
-			if(!xmhf_dmaprot_arch_x86vmx_earlyinitialize(protectedbuffer_paddr,
-				protectedbuffer_vaddr, protectedbuffer_size,
-				memregionbase_paddr, memregion_size)){
-				printf("SL: Fatal, could not initialize DMA protections. Halting!\n");
-				HALT();	
-			}
-			
-			printf("SL: Initialized DMA protections successfully\n");
+	
+	//initialize all DRHD units
+	for(drhd_handle=0; drhd_handle < vtd_drhd_maxhandle; drhd_handle++){
+		printf("\n%s: Setting up DRHD unit %u...", __FUNCTION__, drhd_handle);
 		
-		}
+		if(!vtd_drhd_initialize(drhd_handle) )
+			return false;
 
+		//setup blanket (full system) DMA protection using VT-d translation
+		//we just employ the RET and ensure that every entry in the RET is 0 
+		//which means that the DRHD will
+		//not allow any DMA requests for PCI bus 0-255 
+		//(Sec 3.3.2, VT-d Spec. v1.2)
+	
+		//set DRHD root entry table
+		if(!vtd_drhd_set_root_entry_table(drhd_handle, (u8 *)&vtd_ret_table))
+			return false;
+	
+		//invalidate caches
+		if(!vtd_drhd_invalidatecaches(drhd_handle))
+			return false;
+
+		//enable VT-d translation
+		vtd_drhd_enable_translation(drhd_handle);
+	
+		//disable PMRs now (since DMA protection is active via translation)
+		vtd_drhd_disable_pmr(drhd_handle);
+		
+		//set PMR low base and limit to cover SL+runtime
+		vtd_drhd_set_plm_base_and_limit(drhd_handle, (u32)PAGE_ALIGN_2M(membase), (u32)(PAGE_ALIGN_2M(membase) + PAGE_ALIGN_UP2M(size)) );
+		
+		//set PMR high base and limit to cover SL+runtime
+		vtd_drhd_set_phm_base_and_limit(drhd_handle, (u64)PAGE_ALIGN_2M(membase), (u64)(PAGE_ALIGN_2M(membase) + PAGE_ALIGN_UP2M(size)) );
+		
+		//enable PMRs
+		vtd_drhd_enable_pmr(drhd_handle);
+		
+		//invalidate caches
+		if(!vtd_drhd_invalidatecaches(drhd_handle))
+			return false;
+
+		//disable translation (now that PMRs are active and protect SL+runtime)
+		vtd_drhd_disable_translation(drhd_handle);
+	
+	}
+
+#endif //__XMHF_VERIFICATION__
+
+	//zap VT-d presence in ACPI table...
+	//TODO: we need to be a little elegant here. eventually need to setup 
+	//EPT/NPTs such that the DMAR pages are unmapped for the guest
+	xmhf_baseplatform_arch_flat_writeu32(vtd_dmar_table_physical_address, 0UL);
+
+	//success
+	printf("\n%s: success, leaving...", __FUNCTION__);
+
+	return true;
+}
+
+
+void xmhf_sl_arch_early_dmaprot_init(u32 membase, u32 size){
+		printf("SL: Initializing DMA protections...\n");
+		
+		if(!vtd_dmaprotect(membase, size)){
+			printf("SL: Fatal, could not initialize DMA protections. Halting!\n");
+			HALT();	
+		}else{
+			printf("SL: Initialized DMA protections successfully\n");
+		}
 }
 

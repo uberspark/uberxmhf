@@ -66,7 +66,7 @@
 #include "platform/x86pc/include/common/_pci.h"        	//PCI bus glue
 #include "platform/x86pc/include/common/_acpi.h"			//ACPI glue
 #include "platform/x86pc/include/amd/dev/_svm_eap.h"		//SVM DMA protection
-#include "platform/x86pc/include/intel/vtd/_vmx_eap.h"		//VMX DMA protection
+#include "platform/x86pc/include/intel/vtd/vtd.h"		//VMX DMA protection
 
 
 //SMP configuration table signatures on x86 platforms
