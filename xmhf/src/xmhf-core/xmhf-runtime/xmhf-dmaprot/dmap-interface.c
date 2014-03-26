@@ -49,6 +49,12 @@
 
 #include <xmhf.h> 
 
+
+//re-initialize DMA protections (if needed) for the runtime
+bool xmhf_dmaprot_reinitialize_dmaprot(void){
+	return xmhf_dmaprot_arch_reinitialize_dmaprot();	
+}
+
 //return size (in bytes) of the memory buffer required for
 //DMA protection for a given physical memory limit
 u32 xmhf_dmaprot_getbuffersize(u64 physical_memory_limit){
