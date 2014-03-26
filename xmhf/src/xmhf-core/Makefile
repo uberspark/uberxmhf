@@ -119,8 +119,8 @@ verify:
 	@echo xmhf-runtime prepared
 	@echo --------------------------------------------------------------
 	#cbmc --ILP32 --little-endian --i386-linux -D__XMHF_VERIFICATION__ -D__XMHF_VERIFICATION_DRIVEASSERTS__ $(VFLAGS) $(srcdir)/verification/xmhf-core-verify-sl.c $(XMHFCORE_OBJECTS_DIR)/_objs_libbaremetal-xmhfbackends/*.v.c $(XMHFCORE_OBJECTS_DIR)/_objs_libxmhfhw/*.v.c $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-secureloader/*.v.c $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-secureloader/_objs_libxmhfslarch/*.v.c
-	cbmc --ILP32 --little-endian --i386-linux -D__XMHF_VERIFICATION__ -D__XMHF_VERIFICATION_DRIVEASSERTS__ $(VFLAGS) $(srcdir)/verification/xmhf-core-verify-startup.c $(XMHFCORE_OBJECTS_DIR)/_objs_libbaremetal-xmhfbackends/*.v.c $(XMHFCORE_OBJECTS_DIR)/_objs_libxmhfhw/*.v.c $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/*.v.c $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/_objs_libxmhfruntimearch/*.v.c
-	
+	#cbmc --ILP32 --little-endian --i386-linux -D__XMHF_VERIFICATION__ -D__XMHF_VERIFICATION_DRIVEASSERTS__ $(VFLAGS) $(srcdir)/verification/xmhf-core-verify-startup.c $(XMHFCORE_OBJECTS_DIR)/_objs_libbaremetal-xmhfbackends/*.v.c $(XMHFCORE_OBJECTS_DIR)/_objs_libxmhfhw/*.v.c $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/*.v.c $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/_objs_libxmhfruntimearch/*.v.c
+	cbmc --ILP32 --little-endian --i386-linux -D__XMHF_VERIFICATION__ -D__XMHF_VERIFICATION_DRIVEASSERTS__ $(VFLAGS) $(srcdir)/verification/xmhf-core-verify-eventhub.c $(XMHFCORE_OBJECTS_DIR)/_objs_libbaremetal-xmhfbackends/*.v.c $(XMHFCORE_OBJECTS_DIR)/_objs_libxmhfhw/*.v.c $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/*.v.c $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/_objs_libxmhfruntimearch/*.v.c
 .PHONY: verifyinit
 verifyinit:
 	cd verification/ && $(MAKE) -w verifyinit

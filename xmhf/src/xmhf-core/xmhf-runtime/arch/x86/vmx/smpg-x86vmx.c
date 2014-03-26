@@ -65,8 +65,8 @@ static u32 g_vmx_lapic_guest_eflags_tfifmask __attribute__(( section(".data") ))
 #define VMX_LAPIC_MAP			((u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE)
 #define VMX_LAPIC_UNMAP			0
 
-static void vmx_lapic_changemapping(VCPU *vcpu, u32 lapic_paddr, u32 new_lapic_paddr, u64 mapflag){
-#ifndef __XMHF_VERIFICATION__
+/*static void vmx_lapic_changemapping(VCPU *vcpu, u32 lapic_paddr, u32 new_lapic_paddr, u64 mapflag){
+//#ifndef __XMHF_VERIFICATION__
   u64 *pts;
   u32 lapic_page;
   u64 value;
@@ -78,8 +78,19 @@ static void vmx_lapic_changemapping(VCPU *vcpu, u32 lapic_paddr, u32 new_lapic_p
   pts[lapic_page] = value;
 
   xmhf_memprot_arch_x86vmx_flushmappings(vcpu);
-#endif //__XMHF_VERIFICATION__
+//#endif //__XMHF_VERIFICATION__
+}*/
+
+static void vmx_lapic_changemapping(context_desc_t context_desc, u32 lapic_paddr, u32 new_lapic_paddr, u64 mapflag){
+  u64 value;
+  
+  value = (u64)new_lapic_paddr | mapflag;
+  
+  xmhf_memprot_arch_hpt_setentry(context_desc, (u64)lapic_paddr, value);
+
+  xmhf_memprot_arch_flushmappings(context_desc);
 }
+
 //----------------------------------------------------------------------
 
 
@@ -198,18 +209,17 @@ static VCPU *_vmx_getvcpu(void){
 //xmhf_smpguest_arch_x86vmx_initialize
 //initialize LAPIC interception machinery
 //note: called from the BSP
-static void xmhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu){
-  u32 eax, edx;
+static void xmhf_smpguest_arch_x86vmx_initialize(context_desc_t context_desc){
+	u32 eax, edx;
 
-  //read LAPIC base address from MSR
-  rdmsr(MSR_APIC_BASE, &eax, &edx);
-  HALT_ON_ERRORCOND( edx == 0 ); //APIC should be below 4G
+	//read LAPIC base address from MSR
+	rdmsr(MSR_APIC_BASE, &eax, &edx);
+	HALT_ON_ERRORCOND( edx == 0 ); //APIC should be below 4G
 
-  g_vmx_lapic_base = eax & 0xFFFFF000UL;
-  //printf("\nBSP(0x%02x): LAPIC base=0x%08x", vcpu->id, g_vmx_lapic_base);
+	g_vmx_lapic_base = eax & 0xFFFFF000UL;
   
-  //unmap LAPIC page
-  vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_UNMAP);
+	//unmap LAPIC page
+	vmx_lapic_changemapping(context_desc, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_UNMAP);
 }
 //----------------------------------------------------------------------
 
@@ -224,7 +234,8 @@ static void xmhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu){
 //----------------------------------------------------------------------
 //xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation
 //handle LAPIC accesses by the guest, used for SMP guest boot
-u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 paddr, u32 errorcode){
+u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(context_desc_t context_desc, u32 paddr, u32 errorcode){
+	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
 
   //get LAPIC register being accessed
   g_vmx_lapic_reg = (paddr - g_vmx_lapic_base);
@@ -239,19 +250,19 @@ u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 
 		if(g_vmx_lapic_reg == LAPIC_ICR_LOW || g_vmx_lapic_reg == LAPIC_ICR_HIGH ){
 			g_vmx_lapic_op = LAPIC_OP_WRITE;
-			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, hva2spa(&g_vmx_virtual_LAPIC_base), VMX_LAPIC_MAP);
+			vmx_lapic_changemapping(context_desc, g_vmx_lapic_base, hva2spa(&g_vmx_virtual_LAPIC_base), VMX_LAPIC_MAP);
 		}else{
 			g_vmx_lapic_op = LAPIC_OP_RSVD;
-			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
+			vmx_lapic_changemapping(context_desc, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
 		}    
 	
 	}else{											//LAPIC read
 		if(g_vmx_lapic_reg == LAPIC_ICR_LOW || g_vmx_lapic_reg == LAPIC_ICR_HIGH ){
 			g_vmx_lapic_op = LAPIC_OP_READ;
-			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, hva2spa(&g_vmx_virtual_LAPIC_base), VMX_LAPIC_MAP);
+			vmx_lapic_changemapping(context_desc, g_vmx_lapic_base, hva2spa(&g_vmx_virtual_LAPIC_base), VMX_LAPIC_MAP);
 		}else{
 			g_vmx_lapic_op = LAPIC_OP_RSVD;
-			vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
+			vmx_lapic_changemapping(context_desc, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
 		}  
 	}
 
@@ -300,8 +311,9 @@ u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 padd
 //------------------------------------------------------------------------------
 //xmhf_smpguest_arch_x86vmx_eventhandler_dbexception
 //handle instruction that performed the LAPIC operation
-void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs *r){
-  u32 delink_lapic_interception=0;
+void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(context_desc_t context_desc, struct regs *r){
+	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
+	u32 delink_lapic_interception=0;
   
   (void)r;
 
@@ -394,9 +406,9 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(VCPU *vcpu, struct regs 
   //remove LAPIC interception if all cores have booted up
   if(delink_lapic_interception){
     printf("\n%s: delinking LAPIC interception since all cores have SIPI", __FUNCTION__);
-	vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
+	vmx_lapic_changemapping(context_desc, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_MAP);
   }else{
-	vmx_lapic_changemapping(vcpu, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_UNMAP);
+	vmx_lapic_changemapping(context_desc, g_vmx_lapic_base, g_vmx_lapic_base, VMX_LAPIC_UNMAP);
   }
 
   //restore guest IF and TF
@@ -664,69 +676,54 @@ u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr){
 void xmhf_smpguest_arch_initialize(context_desc_t context_desc){
 	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
 	
-	//HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-
 #if defined(__MP_VERSION__)	
-	//TODOs:
-	//1. conceal g_midtable_numentries behind "baseplatform" component interface
-	//2. remove g_isl dependency
+
 	//if we are the BSP and platform has more than 1 CPU, setup SIPI interception to tackle SMP guests
 	if(vcpu->isbsp && (g_midtable_numentries > 1)){
-		//if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
-		//	xmhf_smpguest_arch_x86svm_initialize(vcpu);
-		//	printf("\nCPU(0x%02x): setup x86svm SMP guest capabilities", vcpu->id);
-		//}else{	//CPU_VENDOR_INTEL
-			xmhf_smpguest_arch_x86vmx_initialize(vcpu);
+			xmhf_smpguest_arch_x86vmx_initialize(context_desc);
 			printf("\nCPU(0x%02x): setup x86vmx SMP guest capabilities", vcpu->id);
-		//}
 	}else{ //we are an AP, so just wait for SIPI signal
 			printf("\nCPU(0x%02x): AP, waiting for SIPI signal...", vcpu->id);
 			#ifndef __XMHF_VERIFICATION__
 			while(!vcpu->sipireceived);
 			#endif
 			printf("\nCPU(0x%02x): SIPI signal received, vector=0x%02x", vcpu->id, vcpu->sipivector);
-	
-			//g_isl->hvm_initialize_csrip(vcpu, ((vcpu->sipivector * PAGE_SIZE_4K) >> 4),
-			//	 (vcpu->sipivector * PAGE_SIZE_4K), 0x0ULL);
-			
-			//perform required setup after a guest awakens a new CPU
-			//xmhf_smpguest_arch_x86_postCPUwakeup(vcpu);
-			//xmhf_smpguest_arch_postCPUwakeup(vcpu);
 			xmhf_smpguest_arch_postCPUwakeup(context_desc);
 	}
+
 #else
+
 	//UP version, we just let the BSP continue and stall the APs
-	if(vcpu->isbsp)
+	if(context_desc.cpu_desc.isbsp)
 		return;
 	
 	//we are an AP, so just lockup
-	printf("\nCPU(0x%02x): AP, locked!", vcpu->id);
+	printf("\nCPU(0x%02x): AP, locked!", context_desc.cpu_desc.id);
 	while(1);
-#endif
 
-	
+#endif
 }
 
 //handle LAPIC access #DB (single-step) exception event
 //void xmhf_smpguest_arch_x86_eventhandler_dbexception(VCPU *vcpu, 
-void xmhf_smpguest_arch_eventhandler_dbexception(VCPU *vcpu, 
+void xmhf_smpguest_arch_eventhandler_dbexception(context_desc_t context_desc, 
 	struct regs *r){
 	//HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	//if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
 	//	xmhf_smpguest_arch_x86svm_eventhandler_dbexception(vcpu, r);
 	//}else{	//CPU_VENDOR_INTEL
-		xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(vcpu, r);
+		xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(context_desc, r);
 	//}
 }
 
 //handle LAPIC access #NPF (nested page fault) event
 //void xmhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 gpa, u32 errorcode){
-void xmhf_smpguest_arch_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 gpa, u32 errorcode){
+void xmhf_smpguest_arch_eventhandler_hwpgtblviolation(context_desc_t context_desc, u32 gpa, u32 errorcode){
 	//HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	//if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
 	//	xmhf_smpguest_arch_x86svm_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
 	//}else{	//CPU_VENDOR_INTEL
-		xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(vcpu, gpa, errorcode);
+		xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(context_desc, gpa, errorcode);
 	//}	
 	
 }

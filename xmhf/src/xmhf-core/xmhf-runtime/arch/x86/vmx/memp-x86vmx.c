@@ -605,3 +605,15 @@ u64 xmhf_memprot_arch_getHPTroot(context_desc_t context_desc){
 	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
 	return xmhf_memprot_arch_x86vmx_get_EPTP(vcpu);
 }
+
+
+//set HPT entry
+void xmhf_memprot_arch_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u64 entry){
+	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
+	u64 *hpt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
+	u32 hpt_index = (u32)hpt_paddr / PAGE_SIZE_4K;
+	
+	hpt[hpt_index] = entry;
+
+	return;
+}
