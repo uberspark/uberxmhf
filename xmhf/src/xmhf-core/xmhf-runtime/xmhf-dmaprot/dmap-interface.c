@@ -49,28 +49,9 @@
 
 #include <xmhf.h> 
 
-//return size (in bytes) of the memory buffer required for
-//DMA protection for a given physical memory limit
-u32 xmhf_dmaprot_getbuffersize(u64 physical_memory_limit){
-	return xmhf_dmaprot_arch_getbuffersize(physical_memory_limit);
+
+//re-initialize DMA protections (if needed) for the runtime
+bool xmhf_dmaprot_reinitialize(void){
+	return xmhf_dmaprot_arch_reinitialize();	
 }
 
-//"early" DMA protection initialization to setup minimal
-//structures to protect a range of physical memory
-//return 1 on success 0 on failure
-u32 xmhf_dmaprot_earlyinitialize(u64 protectedbuffer_paddr,	u32 protectedbuffer_vaddr, u32 protectedbuffer_size, u64 memregionbase_paddr, u32 memregion_size){
-	return xmhf_dmaprot_arch_earlyinitialize(protectedbuffer_paddr,	protectedbuffer_vaddr, protectedbuffer_size, memregionbase_paddr, memregion_size);
-}
-
-//"normal" DMA protection initialization to setup required
-//structures for DMA protection
-//return 1 on success 0 on failure
-u32 xmhf_dmaprot_initialize(u64 protectedbuffer_paddr, u32 protectedbuffer_vaddr, u32 protectedbuffer_size){
-	return xmhf_dmaprot_arch_initialize(protectedbuffer_paddr, protectedbuffer_vaddr, protectedbuffer_size);
-}
-
-//DMA protect a given region of memory, start_paddr is
-//assumed to be page aligned physical memory address
-void xmhf_dmaprot_protect(u32 start_paddr, u32 size){
-	return xmhf_dmaprot_arch_protect(start_paddr, size);
-}
