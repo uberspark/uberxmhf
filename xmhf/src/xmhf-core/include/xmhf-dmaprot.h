@@ -44,11 +44,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF DMA protection component declarations
+// XMHF DMA protection component declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __EMHF_DMAPROT_H__
-#define __EMHF_DMAPROT_H__
+#ifndef __XMHF_DMAPROT_H__
+#define __XMHF_DMAPROT_H__
 
 
 #ifndef __ASSEMBLY__
@@ -66,27 +66,6 @@
 //re-initialize DMA protections (if needed) for the runtime
 bool xmhf_dmaprot_reinitialize(void);
 
-//return size (in bytes) of the memory buffer required for
-//DMA protection for a given physical memory limit
-u32 xmhf_dmaprot_getbuffersize(u64 physical_memory_limit);
-
-
-//"early" DMA protection initialization to setup minimal
-//structures to protect a range of physical memory
-//return 1 on success 0 on failure
-u32 xmhf_dmaprot_earlyinitialize(u64 protectedbuffer_paddr,
-	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
-	u64 memregionbase_paddr, u32 memregion_size);
-
-//"normal" DMA protection initialization to setup required
-//structures for DMA protection
-//return 1 on success 0 on failure
-u32 xmhf_dmaprot_initialize(u64 protectedbuffer_paddr,
-	u32 protectedbuffer_vaddr, u32 protectedbuffer_size);
-
-//DMA protect a given region of memory, start_paddr is
-//assumed to be page aligned physical memory address
-void xmhf_dmaprot_protect(u32 start_paddr, u32 size);
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
@@ -94,61 +73,8 @@ void xmhf_dmaprot_protect(u32 start_paddr, u32 size);
 //re-initialize DMA protections (if needed) for the runtime
 bool xmhf_dmaprot_arch_reinitialize(void);
 
-u32 xmhf_dmaprot_arch_getbuffersize(u64 physical_memory_limit);
-u32 xmhf_dmaprot_arch_earlyinitialize(u64 protectedbuffer_paddr,
-	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
-	u64 memregionbase_paddr, u32 memregion_size);
-u32 xmhf_dmaprot_arch_initialize(u64 protectedbuffer_paddr,
-	u32 protectedbuffer_vaddr, u32 protectedbuffer_size);
-void xmhf_dmaprot_arch_protect(u32 start_paddr, u32 size);
-
-
-//----------------------------------------------------------------------
-//x86 ARCH. INTERFACES
-//----------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------
-//x86vmx SUBARCH. INTERFACES
-//----------------------------------------------------------------------
-u32 xmhf_dmaprot_arch_x86svm_earlyinitialize(u64 protectedbuffer_paddr,
-	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
-	u64 memregionbase_paddr, u32 memregion_size);
-u32 xmhf_dmaprot_arch_x86svm_initialize(u64 protectedbuffer_paddr,
-	u32 protectedbuffer_vaddr, u32 protectedbuffer_size);
-void xmhf_dmaprot_arch_x86svm_protect(u32 start_paddr, u32 size);
-
-
-//----------------------------------------------------------------------
-//x86vmx SUBARCH. INTERFACES
-//----------------------------------------------------------------------
-u32 xmhf_dmaprot_arch_x86vmx_earlyinitialize(u64 protectedbuffer_paddr,
-	u32 protectedbuffer_vaddr, u32 protectedbuffer_size,
-	u64 memregionbase_paddr, u32 memregion_size);
-u32 xmhf_dmaprot_arch_x86vmx_initialize(u64 protectedbuffer_paddr,
-	u32 protectedbuffer_vaddr, u32 protectedbuffer_size);
-void xmhf_dmaprot_arch_x86vmx_protect(u32 start_paddr, u32 size);
-
-//VMX VT-d page table buffers; we support a 3 level page-table walk, 
-//4kb pdpt, 4kb pdt and 4kb pt and each entry in pdpt, pdt and pt is 64-bits
-extern u8 g_vmx_vtd_pdp_table[] __attribute__(( section(".palign_data") )); 
-extern u8 g_vmx_vtd_pd_tables[] __attribute__(( section(".palign_data") ));
-extern u8 g_vmx_vtd_p_tables[] __attribute__(( section(".palign_data") ));
-
-//VMX VT-d Root Entry Table (RET)
-//the RET is 4kb, each root entry (RE) is 128-bits
-//this gives us 256 entries in the RET, each corresponding to a PCI bus num. (0-255)
-extern u8 g_vmx_vtd_ret[] __attribute__(( section(".palign_data") )); 
-
-//VMX VT-d Context Entry Table (CET)
-//each RE points to a context entry table (CET) of 4kb, each context entry (CE)
-//is 128-bits which gives us 256 entries in the CET, accounting for 32 devices
-//with 8 functions each as per the PCI spec.
-extern u8 g_vmx_vtd_cet[] __attribute__(( section(".palign_data") ));
-
-
 
 
 #endif	//__ASSEMBLY__
 
-#endif //__EMHF_DMAPROT_H__
+#endif //__XMHF_DMAPROT_H__
