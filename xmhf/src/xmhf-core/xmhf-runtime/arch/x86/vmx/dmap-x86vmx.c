@@ -50,6 +50,13 @@
 
 #include <xmhf.h> 
 
+//re-initialize DMA protections (if needed) for the runtime
+bool xmhf_dmaprot_arch_reinitialize(void){
+	//we don't need to reinitialize DMA protections since we setup
+	//VT-d PMRs in the secure loader
+	return true;
+}
+
 //return size (in bytes) of the memory buffer required for
 //DMA protection for a given physical memory limit
 u32 xmhf_dmaprot_arch_getbuffersize(u64 physical_memory_limit){
