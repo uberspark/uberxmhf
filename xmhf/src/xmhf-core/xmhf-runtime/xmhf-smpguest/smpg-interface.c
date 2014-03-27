@@ -65,10 +65,10 @@ void xmhf_smpguest_initialize(context_desc_t context_desc){
 
   //initialize memory protection for this core
   //xmhf_memprot_initialize(vcpu);
-  if(context_desc.cpu_desc.isbsp){
-	printf("\n%s: BSP initializing HPT", __FUNCTION__);
+  //if(context_desc.cpu_desc.isbsp){
+	//printf("\n%s: BSP initializing HPT", __FUNCTION__);
 	xmhf_memprot_initialize(context_desc);		
- }
+ //}
 
 #ifndef __XMHF_VERIFICATION__
   //initialize support for SMP guests

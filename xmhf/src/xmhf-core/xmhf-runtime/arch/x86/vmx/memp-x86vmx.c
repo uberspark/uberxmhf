@@ -358,10 +358,13 @@ static void _vmx_setupEPT(VCPU *vcpu){
 static void xmhf_memprot_arch_x86vmx_initialize(VCPU *vcpu){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
+	if(vcpu->isbsp){
+	 printf("\n%s: BSP initializing HPT", __FUNCTION__);
 	_vmx_gathermemorytypes(vcpu);
 #ifndef __XMHF_VERIFICATION__	
 	_vmx_setupEPT(vcpu);
 #endif
+	}
 
 	vcpu->vmcs.control_VMX_seccpu_based |= (1 << 1); //enable EPT
 	vcpu->vmcs.control_VMX_seccpu_based |= (1 << 5); //enable VPID
