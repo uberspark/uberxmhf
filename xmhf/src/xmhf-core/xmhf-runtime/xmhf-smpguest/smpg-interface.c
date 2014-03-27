@@ -72,7 +72,7 @@ void xmhf_smpguest_initialize(context_desc_t context_desc){
 
 #ifndef __XMHF_VERIFICATION__
   //initialize support for SMP guests
-  xmhf_smpguest_arch_initialize(context_desc);
+  //xmhf_smpguest_arch_initialize(context_desc);
 #endif
 
   //start partition (guest)
