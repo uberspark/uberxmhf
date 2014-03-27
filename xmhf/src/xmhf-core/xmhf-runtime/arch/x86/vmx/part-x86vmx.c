@@ -424,7 +424,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 		vcpu->vmcs.guest_CS_selector = 0;
 		vcpu->vmcs.guest_CS_base = 0;
 		vcpu->vmcs.guest_RIP = (u64)(0x7c00-0x2);
-
+		vcpu->vmcs.guest_activity_state=3;	//Wait-for-SIPI
 	}
 
 	vcpu->vmcs.guest_CS_limit = 0xFFFF;	//64K
