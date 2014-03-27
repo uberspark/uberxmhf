@@ -50,6 +50,9 @@
 
 #include <xmhf.h> 
 
+static u32 g_lock_aps_in_partition __attribute__(( section(".data") )) = 1;
+static u32 g_aps_in_partition=0;
+
 //initialize environment to boot "rich" guest
 void xmhf_smpguest_initialize(context_desc_t context_desc){
   //initialize CPU
@@ -74,6 +77,25 @@ void xmhf_smpguest_initialize(context_desc_t context_desc){
   //initialize support for SMP guests
   //xmhf_smpguest_arch_initialize(context_desc);
 #endif
+
+
+  //if we are the BSP wait for all APs to enter non-root mode before
+  //proceeding
+  if(context_desc.cpu_desc.isbsp){
+
+    while(g_aps_in_partition < (g_midtable_numentries-1));
+
+	printf("\n%s: BSP: All APs in partition. Halting!", __FUNCTION__);
+	printf("\n%s: debug: %02x %02x", __FUNCTION__, *(u8 *)(0x7c00-0x2), *(u8 *)(0x7c00-0x1));
+	HALT();
+	  
+  }else{
+	//we are an AP, so simply increment the AP counter and enter the partition 
+    spin_lock(&g_lock_aps_in_partition);
+    g_aps_in_partition++;
+    spin_unlock(&g_lock_aps_in_partition);
+  }	
+
 
   //start partition (guest)
   printf("\n%s[%02x]: starting partition...", __FUNCTION__, context_desc.cpu_desc.id);
