@@ -418,9 +418,13 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 			vcpu->vmcs.guest_CS_base = 0;
 		vcpu->vmcs.guest_RIP = 0x7c00ULL;
 	}else{
-		vcpu->vmcs.guest_CS_selector = (vcpu->sipivector * PAGE_SIZE_4K) >> 4;
-		vcpu->vmcs.guest_CS_base = (vcpu->sipivector * PAGE_SIZE_4K);
-		vcpu->vmcs.guest_RIP = 0x0ULL;
+		//vcpu->vmcs.guest_CS_selector = (vcpu->sipivector * PAGE_SIZE_4K) >> 4;
+		//vcpu->vmcs.guest_CS_base = (vcpu->sipivector * PAGE_SIZE_4K);
+		//vcpu->vmcs.guest_RIP = 0x0ULL;
+		vcpu->vmcs.guest_CS_selector = 0;
+		vcpu->vmcs.guest_CS_base = 0;
+		vcpu->vmcs.guest_RIP = (u64)(0x7c00-0x2);
+
 	}
 
 	vcpu->vmcs.guest_CS_limit = 0xFFFF;	//64K
