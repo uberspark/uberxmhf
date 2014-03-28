@@ -423,7 +423,8 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 		//vcpu->vmcs.guest_RIP = 0x0ULL;
 		vcpu->vmcs.guest_CS_selector = 0;
 		vcpu->vmcs.guest_CS_base = 0;
-		vcpu->vmcs.guest_RIP = (u64)(0x7c00-0x2);
+		//vcpu->vmcs.guest_RIP = (u64)(0x7c00-0x2);
+		vcpu->vmcs.guest_RIP = 0;
 		vcpu->vmcs.guest_activity_state=3;	//Wait-for-SIPI
 	}
 
@@ -546,12 +547,12 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
   HALT();
 }
 
-static void _plant_spinloop_in_bda(void){
-	u8 *spinloopmemory = (u8 *)(0x7C00 - 0x2);				//use two bytes just before boot module address at 0x0000: 0x7C00
-	
-	spinloopmemory[0]=0xEB;
-	spinloopmemory[1]=0xFE;		//plant a jmp eip to spin forever
-}
+//static void _plant_spinloop_in_bda(void){
+//	u8 *spinloopmemory = (u8 *)(0x7C00 - 0x2);				//use two bytes just before boot module address at 0x0000: 0x7C00
+//	
+//	spinloopmemory[0]=0xEB;
+//	spinloopmemory[1]=0xFE;		//plant a jmp eip to spin forever
+//}
 
 
 //initialize partition monitor for a given CPU
@@ -572,8 +573,8 @@ static void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu){
 		printf("\nCPU(0x%02x, BSP): initializing INT 15 hook for UG mode...", vcpu->id);
 		_vmx_int15_initializehook(vcpu);
 
-		_plant_spinloop_in_bda();
-		printf("\nCPU(0x%02x, BSP): planted spinloop for APs...", vcpu->id);
+		//_plant_spinloop_in_bda();
+		//printf("\nCPU(0x%02x, BSP): planted spinloop for APs...", vcpu->id);
 		
 	}
 

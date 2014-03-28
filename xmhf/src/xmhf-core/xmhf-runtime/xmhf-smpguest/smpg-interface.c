@@ -86,7 +86,7 @@ void xmhf_smpguest_initialize(context_desc_t context_desc){
 		while(g_aps_in_partition < (g_midtable_numentries-1));
 
 		printf("\n%s: BSP: All APs in partition. Halting!", __FUNCTION__);
-		printf("\n%s: debug: %02x %02x", __FUNCTION__, *(u8 *)(0x7c00-0x2), *(u8 *)(0x7c00-0x1));
+		//printf("\n%s: debug: %02x %02x", __FUNCTION__, *(u8 *)(0x7c00-0x2), *(u8 *)(0x7c00-0x1));
 	  
   }else{
 		//we are an AP, wait for BSP to signal that it is safe for us to proceed
