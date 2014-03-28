@@ -693,8 +693,12 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		break;
 
 		case VMX_VMEXIT_SIPI:{
-			printf("\nCPU(%02x): SIPI vector=0x%02x, Halting!", vcpu->id, (u8)vcpu->vmcs.info_exit_qualification);
-			HALT();
+			u32 sipivector = (u8)vcpu->vmcs.info_exit_qualification;
+			printf("\nCPU(%02x): SIPI vector=0x%08x, Halting!", vcpu->id, sipivector);
+			vcpu->vmcs.guest_CS_selector = ((sipivector * PAGE_SIZE_4K) >> 4); 
+			vcpu->vmcs.guest_CS_base = (sipivector * PAGE_SIZE_4K); 
+			vcpu->vmcs.guest_RIP = 0x0ULL;
+			vcpu->vmcs.guest_activity_state=0;	//active
 		}
 		break;
 
