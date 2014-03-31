@@ -910,7 +910,7 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 
 
 //handle guest memory reporting (via INT 15h redirection)
-void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desct_t context_desc, struct regs *r){
+void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t context_desc, struct regs *r){
 	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
 	_vmx_int15_handleintercept(vcpu, r);
 }
