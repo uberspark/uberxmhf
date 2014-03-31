@@ -370,13 +370,13 @@ static void _vmx_handle_intercept_eptviolation(context_desc_t context_desc, stru
 	gva = (u32) vcpu->vmcs.info_guest_linear_address;
 
 	//check if EPT violation is due to LAPIC interception
-	if(vcpu->isbsp && (gpa >= g_vmx_lapic_base) && (gpa < (g_vmx_lapic_base + PAGE_SIZE_4K)) ){
-		xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(context_desc, gpa, errorcode);
-	}else{ //no, pass it to hypapp 
+	//if(vcpu->isbsp && (gpa >= g_vmx_lapic_base) && (gpa < (g_vmx_lapic_base + PAGE_SIZE_4K)) ){
+	//	xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(context_desc, gpa, errorcode);
+	//}else{ //no, pass it to hypapp 
 		xmhf_smpguest_arch_x86vmx_quiesce(vcpu);
 		xmhfhypapp_handleintercept_hwpgtblviolation(context_desc, gpa, gva,	(errorcode & 7));
 		xmhf_smpguest_arch_x86vmx_endquiesce(vcpu);
-	}		
+	//}		
 }
 
 
@@ -591,9 +591,9 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 
  		case VMX_VMEXIT_EXCEPTION:{
 			switch( ((u32)vcpu->vmcs.info_vmexit_interrupt_information & INTR_INFO_VECTOR_MASK) ){
-				case 0x01:
-					xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(context_desc, r);
-					break;				
+				//case 0x01:
+				//	xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(context_desc, r);
+				//	break;				
 				
 				case 0x02:	//NMI
 					#ifndef __XMHF_VERIFICATION__
@@ -689,6 +689,16 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 
 		case VMX_VMEXIT_XSETBV:{
 			_vmx_handle_intercept_xsetbv(vcpu, r);
+		}
+		break;
+
+		case VMX_VMEXIT_SIPI:{
+			u32 sipivector = (u8)vcpu->vmcs.info_exit_qualification;
+			printf("\nCPU(%02x): SIPI vector=0x%08x, Halting!", vcpu->id, sipivector);
+			vcpu->vmcs.guest_CS_selector = ((sipivector * PAGE_SIZE_4K) >> 4); 
+			vcpu->vmcs.guest_CS_base = (sipivector * PAGE_SIZE_4K); 
+			vcpu->vmcs.guest_RIP = 0x0ULL;
+			vcpu->vmcs.guest_activity_state=0;	//active
 		}
 		break;
 
