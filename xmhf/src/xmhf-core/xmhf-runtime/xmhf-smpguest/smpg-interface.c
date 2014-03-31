@@ -55,12 +55,7 @@ static u32 g_aps_in_partition=0;
 static u32 g_lock_initaps_for_rich_guest __attribute__(( section(".data") )) = 1;
 static bool g_initaps_for_rich_guest=false;
 
-//initialize environment to boot "rich" guest
-void xmhf_smpguest_initialize(context_desc_t context_desc){
-
-  //BSP
-  if(context_desc.cpu_desc.isbsp){
-
+static void xmhf_smpguest_initialize_helper(context_desc_t context_desc){
 		//initialize CPU
 		xmhf_baseplatform_cpuinitialize();
 
@@ -74,6 +69,16 @@ void xmhf_smpguest_initialize(context_desc_t context_desc){
 
 		//initialize memory protection for this core
 		xmhf_memprot_initialize(context_desc);		
+}
+
+
+//initialize environment to boot "rich" guest
+void xmhf_smpguest_initialize(context_desc_t context_desc){
+
+  //BSP
+  if(context_desc.cpu_desc.isbsp){
+		//setup CPU for rich-guest
+		xmhf_smpguest_initialize_helper(context_desc);
 
 		//ok now that we are done initializing on BSP, let APs start their
 		//initialization and get into the partition
@@ -84,35 +89,19 @@ void xmhf_smpguest_initialize(context_desc_t context_desc){
 		//wait for APs to finish initialization just before getting
 		//into the partition
 		while(g_aps_in_partition < (g_midtable_numentries-1));
-
-		printf("\n%s: BSP: All APs in partition. Halting!", __FUNCTION__);
-		//printf("\n%s: debug: %02x %02x", __FUNCTION__, *(u8 *)(0x7c00-0x2), *(u8 *)(0x7c00-0x1));
-	  
+  
   }else{
 		//we are an AP, wait for BSP to signal that it is safe for us to proceed
 		while(!g_initaps_for_rich_guest);
 		
-		//initialize CPU
-		xmhf_baseplatform_cpuinitialize();
-
-		//initialize partition monitor (i.e., hypervisor) for this CPU
-		//xmhf_partition_initializemonitor(vcpu);
-		xmhf_partition_initializemonitor(context_desc);
-
-		//setup guest OS state for partition
-		//xmhf_partition_setupguestOSstate(vcpu);
-		xmhf_partition_setupguestOSstate(context_desc);
-
-		//initialize memory protection for this core
-		xmhf_memprot_initialize(context_desc);		
-
+		//setup CPU for rich-guest
+		xmhf_smpguest_initialize_helper(context_desc);
 	  
 		//we are an AP, so simply increment the AP counter and enter the partition 
 		spin_lock(&g_lock_aps_in_partition);
 		g_aps_in_partition++;
 		spin_unlock(&g_lock_aps_in_partition);
   }	
-
 
   //start partition (guest)
   printf("\n%s[%02x]: starting partition...", __FUNCTION__, context_desc.cpu_desc.id);
