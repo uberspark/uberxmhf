@@ -49,6 +49,7 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 #include <xmhf.h> 
 
+/*
 //the LAPIC register that is being accessed during emulation
 static u32 g_vmx_lapic_reg __attribute__(( section(".data") )) = 0;
 
@@ -64,6 +65,7 @@ static u32 g_vmx_lapic_guest_eflags_tfifmask __attribute__(( section(".data") ))
 
 #define VMX_LAPIC_MAP			((u64)EPT_PROT_READ | (u64)EPT_PROT_WRITE)
 #define VMX_LAPIC_UNMAP			0
+*/
 
 /*static void vmx_lapic_changemapping(VCPU *vcpu, u32 lapic_paddr, u32 new_lapic_paddr, u64 mapflag){
 //#ifndef __XMHF_VERIFICATION__
@@ -81,6 +83,7 @@ static u32 g_vmx_lapic_guest_eflags_tfifmask __attribute__(( section(".data") ))
 //#endif //__XMHF_VERIFICATION__
 }*/
 
+/*
 static void vmx_lapic_changemapping(context_desc_t context_desc, u32 lapic_paddr, u32 new_lapic_paddr, u64 mapflag){
   u64 value;
   
@@ -162,6 +165,7 @@ static u32 processSIPI(VCPU *vcpu, u32 icr_low_value, u32 icr_high_value){
 	else
 		return 0;	//some cores are still to receive SIPI, continue LAPIC interception  
 }
+*/
 
 //---function to obtain the vcpu of the currently executing core----------------
 //XXX: move this into baseplatform as backend
@@ -205,6 +209,7 @@ static VCPU *_vmx_getvcpu(void){
 }
 
 
+/*
 //----------------------------------------------------------------------
 //xmhf_smpguest_arch_x86vmx_initialize
 //initialize LAPIC interception machinery
@@ -422,7 +427,7 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(context_desc_t context_d
 
 }
 //----------------------------------------------------------------------
-
+*/
 
 //----------------------------------------------------------------------
 //Queiscing interfaces
@@ -575,14 +580,14 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 
 //----------------------------------------------------------------------
 
-
+/*
 //perform required setup after a guest awakens a new CPU
 static void xmhf_smpguest_arch_x86vmx_postCPUwakeup(VCPU *vcpu){
 	//setup guest CS and EIP as specified by the SIPI vector
 	vcpu->vmcs.guest_CS_selector = ((vcpu->sipivector * PAGE_SIZE_4K) >> 4); 
 	vcpu->vmcs.guest_CS_base = (vcpu->sipivector * PAGE_SIZE_4K); 
 	vcpu->vmcs.guest_RIP = 0x0ULL;
-}
+}*/
 
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping
@@ -673,7 +678,7 @@ u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr){
 //======================================================================
 //initialize SMP guest logic
 //void xmhf_smpguest_arch_initialize(VCPU *vcpu){
-void xmhf_smpguest_arch_initialize(context_desc_t context_desc){
+/*void xmhf_smpguest_arch_initialize(context_desc_t context_desc){
 	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
 	
 #if defined(__MP_VERSION__)	
@@ -702,8 +707,9 @@ void xmhf_smpguest_arch_initialize(context_desc_t context_desc){
 	while(1);
 
 #endif
-}
+}*/
 
+/*
 //handle LAPIC access #DB (single-step) exception event
 //void xmhf_smpguest_arch_x86_eventhandler_dbexception(VCPU *vcpu, 
 void xmhf_smpguest_arch_eventhandler_dbexception(context_desc_t context_desc, 
@@ -715,7 +721,9 @@ void xmhf_smpguest_arch_eventhandler_dbexception(context_desc_t context_desc,
 		xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(context_desc, r);
 	//}
 }
+*/
 
+/*
 //handle LAPIC access #NPF (nested page fault) event
 //void xmhf_smpguest_arch_x86_eventhandler_hwpgtblviolation(VCPU *vcpu, u32 gpa, u32 errorcode){
 void xmhf_smpguest_arch_eventhandler_hwpgtblviolation(context_desc_t context_desc, u32 gpa, u32 errorcode){
@@ -727,6 +735,7 @@ void xmhf_smpguest_arch_eventhandler_hwpgtblviolation(context_desc_t context_des
 	//}	
 	
 }
+*/
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
 //void xmhf_smpguest_arch_x86_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
@@ -742,7 +751,7 @@ void xmhf_smpguest_arch_eventhandler_nmiexception(struct regs *r){
 	//}		
 }	
 
-//perform required setup after a guest awakens a new CPU
+/*//perform required setup after a guest awakens a new CPU
 //void xmhf_smpguest_arch_x86_postCPUwakeup(VCPU *vcpu){
 //void xmhf_smpguest_arch_postCPUwakeup(VCPU *vcpu){
 void xmhf_smpguest_arch_postCPUwakeup(context_desc_t context_desc){
@@ -754,7 +763,7 @@ void xmhf_smpguest_arch_postCPUwakeup(context_desc_t context_desc){
 		xmhf_smpguest_arch_x86vmx_postCPUwakeup(vcpu);
 	//}
 	
-}
+}*/
 
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping
