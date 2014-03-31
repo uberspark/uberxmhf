@@ -50,10 +50,6 @@
 
 #include <xmhf.h> 
 
-static u32 g_lock_aps_in_partition __attribute__(( section(".data") )) = 1;
-static u32 g_aps_in_partition=0;
-static u32 g_lock_initaps_for_rich_guest __attribute__(( section(".data") )) = 1;
-static bool g_initaps_for_rich_guest=false;
 
 static void xmhf_smpguest_initialize_helper(context_desc_t context_desc){
 		//initialize CPU
@@ -74,6 +70,10 @@ static void xmhf_smpguest_initialize_helper(context_desc_t context_desc){
 
 //initialize environment to boot "rich" guest
 void xmhf_smpguest_initialize(context_desc_t context_desc){
+	static u32 lock_aps_in_partition = 1;
+	static u32 aps_in_partition=0;
+	static u32 lock_initaps_for_rich_guest = 1;
+	static bool initaps_for_rich_guest=false;
 
   //BSP
   if(context_desc.cpu_desc.isbsp){
@@ -82,25 +82,25 @@ void xmhf_smpguest_initialize(context_desc_t context_desc){
 
 		//ok now that we are done initializing on BSP, let APs start their
 		//initialization and get into the partition
-		spin_lock(&g_lock_initaps_for_rich_guest);
-		g_initaps_for_rich_guest=true;
-		spin_unlock(&g_lock_initaps_for_rich_guest);
+		spin_lock(&lock_initaps_for_rich_guest);
+		initaps_for_rich_guest=true;
+		spin_unlock(&lock_initaps_for_rich_guest);
 
 		//wait for APs to finish initialization just before getting
 		//into the partition
-		while(g_aps_in_partition < (g_midtable_numentries-1));
+		while(aps_in_partition < (g_midtable_numentries-1));
   
   }else{
 		//we are an AP, wait for BSP to signal that it is safe for us to proceed
-		while(!g_initaps_for_rich_guest);
+		while(!initaps_for_rich_guest);
 		
 		//setup CPU for rich-guest
 		xmhf_smpguest_initialize_helper(context_desc);
 	  
 		//we are an AP, so simply increment the AP counter and enter the partition 
-		spin_lock(&g_lock_aps_in_partition);
-		g_aps_in_partition++;
-		spin_unlock(&g_lock_aps_in_partition);
+		spin_lock(&lock_aps_in_partition);
+		aps_in_partition++;
+		spin_unlock(&lock_aps_in_partition);
   }	
 
   //start partition (guest)
