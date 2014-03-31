@@ -737,6 +737,17 @@ void xmhf_smpguest_arch_eventhandler_hwpgtblviolation(context_desc_t context_des
 }
 */
 
+
+//handle guest memory reporting (via INT 15h redirection)
+void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desct_t context_desc, struct regs *r){
+
+
+
+}
+
+
+//----------------------------------------------------------------------
+
 //quiescing handler for #NMI (non-maskable interrupt) exception event
 //void xmhf_smpguest_arch_x86_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
 void xmhf_smpguest_arch_eventhandler_nmiexception(struct regs *r){
