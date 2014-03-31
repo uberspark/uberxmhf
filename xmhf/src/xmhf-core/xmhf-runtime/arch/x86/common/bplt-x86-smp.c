@@ -187,6 +187,9 @@ void xmhf_baseplatform_arch_smpinitialize(void){
 }
 */
 
+static mtrr_state_t g_mtrrs;
+
+
 //common function which is entered by all CPUs upon SMP initialization
 //note: this is specific to the x86 architecture backend
 void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
@@ -197,6 +200,10 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
     
 	printf("\nBSP rallying APs...");
     printf("\nBSP(0x%02x): My ESP is 0x%08x", vcpu->id, vcpu->esp);
+
+	save_mtrrs(&g_mtrrs);
+	printf("\nBSP MTRRs");
+	print_mtrrs(&g_mtrrs);
 
     //increment a CPU to account for the BSP
     spin_lock(&g_lock_cpus_active);
@@ -226,6 +233,9 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
     while(!g_ap_go_signal); //Just wait for the BSP to tell us all is well.
  
     printf("\nAP(0x%02x): My ESP is 0x%08x, proceeding...", vcpu->id, vcpu->esp);
+  
+	restore_mtrrs(&g_mtrrs);
+	printf("\nAP(0x%02x): MTRRs synced with BSP", vcpu->id);
   }
 	
   //invoke EMHF runtime component main function for this CPU
