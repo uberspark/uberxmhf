@@ -762,8 +762,8 @@ void xmhf_smpguest_arch_eventhandler_hwpgtblviolation(context_desc_t context_des
 
 
 
-//---vmx int 15 intercept handler-----------------------------------------------
-static void _vmx_int15_handleintercept(context_desc_t context_desc, struct regs *r){
+//handle guest memory reporting (via INT 15h redirection)
+void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t context_desc, struct regs *r){
 	u16 cs, ip;
 	u16 guest_flags;
 	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
@@ -852,12 +852,6 @@ static void _vmx_int15_handleintercept(context_desc_t context_desc, struct regs 
 	vcpu->vmcs.guest_RIP = ip;
 	vcpu->vmcs.guest_CS_base = cs * 16;
 	vcpu->vmcs.guest_CS_selector = cs;		 
-}
-
-
-//handle guest memory reporting (via INT 15h redirection)
-void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t context_desc, struct regs *r){
-	_vmx_int15_handleintercept(context_desc, r);
 }
 
 
