@@ -765,11 +765,11 @@ void xmhf_smpguest_arch_eventhandler_hwpgtblviolation(context_desc_t context_des
 //---vmx int 15 intercept handler-----------------------------------------------
 static void _vmx_int15_handleintercept(context_desc_t context_desc, struct regs *r){
 	u16 cs, ip;
-	u8 *bdamemory = (u8 *)0x4AC;
+	//u8 *bdamemory = (u8 *)0x4AC;
 	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
 
 
-	//if in V86 mode translate the virtual address to physical address
+	/*//if in V86 mode translate the virtual address to physical address
 	if( (vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG) &&
 			(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM) ){
 		u8 *bdamemoryphysical;
@@ -787,7 +787,7 @@ static void _vmx_int15_handleintercept(context_desc_t context_desc, struct regs 
 				guest physical memory space. Halting!", vcpu->id);
 			HALT();
 		}
-	}
+	}*/
 
 
 	//if E820 service then...
@@ -807,7 +807,7 @@ static void _vmx_int15_handleintercept(context_desc_t context_desc, struct regs 
 			//copy the e820 descriptor and return its size in ECX
 			{
 				
-				if( ((u32)(vcpu->vmcs.guest_ES_base+(u16)r->edi)) < rpb->XtVmmRuntimePhysBase){
+				/*if( ((u32)(vcpu->vmcs.guest_ES_base+(u16)r->edi)) < rpb->XtVmmRuntimePhysBase){
 					#ifdef __XMHF_VERIFICATION__
 						//TODO: encapsulate guest memory writes within its own container. for example
 						//copy_to_guest and copy_from_guest
@@ -824,7 +824,12 @@ static void _vmx_int15_handleintercept(context_desc_t context_desc, struct regs 
 						printf("\nCPU(0x%02x): INT15 E820. Guest buffer is beyond guest \
 							physical memory bounds. Halting!", vcpu->id);
 						HALT();
-				}
+				}*/
+				if(!xmhf_smpguest_memcpyto(context_desc, (const void *)((u32)(vcpu->vmcs.guest_ES_base+(u16)r->edi)), (void *)&g_e820map[r->ebx], sizeof(GRUBE820)) ){
+					printf("\n%s: Error in copying e820 descriptor to guest. Halting!", __FUNCTION__);
+					HALT();
+				}	
+				
 						
 			}
 			r->ecx=20;
@@ -847,9 +852,8 @@ static void _vmx_int15_handleintercept(context_desc_t context_desc, struct regs 
 				//u16 guest_cs, guest_ip, guest_flags;
 				//u16 guest_cs __attribute__((unused)), guest_ip __attribute__((unused));
 				u16 guest_flags;
-				u16 *gueststackregion = (u16 *)( (u32)vcpu->vmcs.guest_SS_base + (u16)vcpu->vmcs.guest_RSP );
+				/*u16 *gueststackregion = (u16 *)( (u32)vcpu->vmcs.guest_SS_base + (u16)vcpu->vmcs.guest_RSP );
 			
-				//xmhf_smpguest_readu16(context_desc, (const void *)((u32)vcpu->vmcs.guest_SS_base + (u16)vcpu->vmcs.guest_RSP), 
 			
 				//if V86 mode translate the virtual address to physical address
 				if( (vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG) &&
@@ -881,7 +885,12 @@ static void _vmx_int15_handleintercept(context_desc_t context_desc, struct regs 
 					//guest_cs = gueststackregion[1];
 					guest_flags = gueststackregion[2];
 				#endif	//__XMHF_VERIFICATION__
-
+				*/
+				
+				if(!xmhf_smpguest_readu16(context_desc, (const void *)((u32)vcpu->vmcs.guest_SS_base + (u16)vcpu->vmcs.guest_RSP + 0x4), &guest_flags)){
+					printf("\n%s: Error in reading guest_flags. Halting!", __FUNCTION__);
+					HALT();
+				}
 		
 				//increment e820 descriptor continuation value
 				r->ebx=r->ebx+1;
@@ -890,15 +899,20 @@ static void _vmx_int15_handleintercept(context_desc_t context_desc, struct regs 
 					//we have reached the last record, so set CF and make EBX=0
 					r->ebx=0;
 					guest_flags |= (u16)EFLAGS_CF;
-					#ifndef __XMHF_VERIFICATION__
-						gueststackregion[2] = guest_flags;
-					#endif
+					//#ifndef __XMHF_VERIFICATION__
+					//	gueststackregion[2] = guest_flags;
+					//#endif
 				}else{
 					//we still have more records, so clear CF
 					guest_flags &= ~(u16)EFLAGS_CF;
-					#ifndef __XMHF_VERIFICATION__
-						gueststackregion[2] = guest_flags;
-					#endif
+					//#ifndef __XMHF_VERIFICATION__
+					//	gueststackregion[2] = guest_flags;
+					//#endif
+				}
+			  
+				if(!xmhf_smpguest_writeu16(context_desc, (const void *)((u32)vcpu->vmcs.guest_SS_base + (u16)vcpu->vmcs.guest_RSP + 0x4), guest_flags)){
+					printf("\n%s: Error in updating guest_flags. Halting!", __FUNCTION__);
+					HALT();
 				}
 			  
 			}
