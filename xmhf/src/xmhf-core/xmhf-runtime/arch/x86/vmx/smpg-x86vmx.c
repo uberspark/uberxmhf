@@ -763,9 +763,11 @@ void xmhf_smpguest_arch_eventhandler_hwpgtblviolation(context_desc_t context_des
 
 
 //---vmx int 15 intercept handler-----------------------------------------------
-static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
+static void _vmx_int15_handleintercept(context_desc_t context_desc, struct regs *r){
 	u16 cs, ip;
 	u8 *bdamemory = (u8 *)0x4AC;
+	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
+
 
 	//if in V86 mode translate the virtual address to physical address
 	if( (vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG) &&
@@ -935,8 +937,7 @@ static void _vmx_int15_handleintercept(VCPU *vcpu, struct regs *r){
 
 //handle guest memory reporting (via INT 15h redirection)
 void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t context_desc, struct regs *r){
-	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
-	_vmx_int15_handleintercept(vcpu, r);
+	_vmx_int15_handleintercept(context_desc, r);
 }
 
 
