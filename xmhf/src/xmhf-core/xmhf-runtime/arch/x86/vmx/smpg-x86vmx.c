@@ -592,6 +592,12 @@ static void xmhf_smpguest_arch_x86vmx_postCPUwakeup(VCPU *vcpu){
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping
 u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr){
+  
+  //if rich guest has paging disabled then physical address is the 
+  //supplied virtual address itself
+	if( !((vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG)) )
+		return (u8 *)gpa2hva(vaddr);
+
   if((u32)vcpu->vmcs.guest_CR4 & CR4_PAE ){
     //PAE paging used by guest
     u32 kcr3 = (u32)vcpu->vmcs.guest_CR3;
@@ -615,15 +621,24 @@ u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr){
     pdpt_entry = kpdpt[pdpt_index];
   
     //grab pd entry
+    if( !(pae_get_flags_from_pdpe(pdpt_entry) & _PAGE_PRESENT) )
+		return (u8 *)0xFFFFFFFFUL;
     tmp = pae_get_addr_from_pdpe(pdpt_entry);
     kpd = (pdt_t)((u32)tmp); 
     pd_entry = kpd[pd_index];
+
+    if( !(pae_get_flags_from_pde(pd_entry) & _PAGE_PRESENT) )
+		return (u8 *)0xFFFFFFFFUL;
+
 
     if ( (pd_entry & _PAGE_PSE) == 0 ) {
       // grab pt entry
       tmp = (u32)pae_get_addr_from_pde(pd_entry);
       kpt = (pt_t)((u32)tmp);  
       pt_entry  = kpt[pt_index];
+
+	  if( !(pae_get_flags_from_pte(pt_entry) & _PAGE_PRESENT) )
+		return (u8 *)0xFFFFFFFFUL;
       
       // find physical page base addr from page table entry 
       paddr = (u64)pae_get_addr_from_pte(pt_entry) + offset;
@@ -634,7 +649,7 @@ u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr){
       paddr += (u64)offset;
     }
   
-    return (u8 *)(u32)paddr;
+    return (u8 *)gpa2hva(paddr);
     
   }else{
     //non-PAE 2 level paging used by guest
@@ -656,12 +671,19 @@ u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr){
     kpd = (npdt_t)((u32)tmp); 
     pd_entry = kpd[pd_index];
   
+  
+    if( !(npae_get_flags_from_pde(pd_entry) & _PAGE_PRESENT) )
+		return (u8 *)0xFFFFFFFFUL;
+
     if ( (pd_entry & _PAGE_PSE) == 0 ) {
       // grab pt entry
       tmp = (u32)npae_get_addr_from_pde(pd_entry);
       kpt = (npt_t)((u32)tmp);  
       pt_entry  = kpt[pt_index];
       
+      if( !(npae_get_flags_from_pte(pt_entry) & _PAGE_PRESENT) )
+		return (u8 *)0xFFFFFFFFUL;
+
       // find physical page base addr from page table entry 
       paddr = (u64)npae_get_addr_from_pte(pt_entry) + offset;
     }
@@ -671,7 +693,7 @@ u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr){
       paddr += (u64)offset;
     }
 
-    return (u8 *)(u32)paddr;
+    return (u8 *)gpa2hva(paddr);
   }
 }
 
@@ -736,6 +758,8 @@ void xmhf_smpguest_arch_eventhandler_hwpgtblviolation(context_desc_t context_des
 	
 }
 */
+
+
 
 
 //---vmx int 15 intercept handler-----------------------------------------------
