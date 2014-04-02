@@ -86,12 +86,13 @@
 #include <xmhf.h> 
 #include <cmdline.h>
 
+
 /*
  * copy of original command line
  * part of tboot measurement (hence in .text section)
  * FIXME - is this getting measured?
  */
-char g_cmdline[CMDLINE_SIZE] = { 0 };
+char g_cmdline[MAX_CMDLINE_SIZE] = { 0 };
 
 /*
  * the option names and default values must be separate from the actual
