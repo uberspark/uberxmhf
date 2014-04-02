@@ -765,30 +765,8 @@ void xmhf_smpguest_arch_eventhandler_hwpgtblviolation(context_desc_t context_des
 //---vmx int 15 intercept handler-----------------------------------------------
 static void _vmx_int15_handleintercept(context_desc_t context_desc, struct regs *r){
 	u16 cs, ip;
-	//u8 *bdamemory = (u8 *)0x4AC;
+	u16 guest_flags;
 	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
-
-
-	/*//if in V86 mode translate the virtual address to physical address
-	if( (vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG) &&
-			(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM) ){
-		u8 *bdamemoryphysical;
-		#ifdef __XMHF_VERIFICATION__
-			bdamemoryphysical = (u8 *)nondet_u32();
-		#else
-			bdamemoryphysical = (u8 *)xmhf_smpguest_arch_x86vmx_walk_pagetables(vcpu, (u32)bdamemory);
-		#endif
-		if((u32)bdamemoryphysical < rpb->XtVmmRuntimePhysBase){
-			printf("\nINT15 (E820): V86 mode, bdamemory translated from %08x to %08x",
-				(u32)bdamemory, (u32)bdamemoryphysical);
-			bdamemory = bdamemoryphysical; 		
-		}else{
-			printf("\nCPU(0x%02x): INT15 (E820) V86 mode, translated bdamemory points beyond \
-				guest physical memory space. Halting!", vcpu->id);
-			HALT();
-		}
-	}*/
-
 
 	//if E820 service then...
 	if((u16)r->eax == 0xE820){
@@ -800,38 +778,14 @@ static void _vmx_int15_handleintercept(context_desc_t context_desc, struct regs 
 		printf("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", vcpu->id, 
 		(u16)r->eax, r->edx, r->ebx, r->ecx, (u16)vcpu->vmcs.guest_ES_selector, (u16)r->edi);
 		
-		//HALT_ON_ERRORCOND(r->edx == 0x534D4150UL);  //'SMAP' should be specified by guest
-		//HALT_ON_ERRORCOND(r->ebx < rpb->XtVmmE820NumEntries); //invalid continuation value specified by guest!
 		if( (r->edx == 0x534D4150UL) && (r->ebx < rpb->XtVmmE820NumEntries) ){
 			
-			//copy the e820 descriptor and return its size in ECX
-			{
+			//copy the E820 descriptor and return its size
+			if(!xmhf_smpguest_memcpyto(context_desc, (const void *)((u32)(vcpu->vmcs.guest_ES_base+(u16)r->edi)), (void *)&g_e820map[r->ebx], sizeof(GRUBE820)) ){
+				printf("\n%s: Error in copying e820 descriptor to guest. Halting!", __FUNCTION__);
+				HALT();
+			}	
 				
-				/*if( ((u32)(vcpu->vmcs.guest_ES_base+(u16)r->edi)) < rpb->XtVmmRuntimePhysBase){
-					#ifdef __XMHF_VERIFICATION__
-						//TODO: encapsulate guest memory writes within its own container. for example
-						//copy_to_guest and copy_from_guest
-					#else
-						GRUBE820 *pe820entry;
-						pe820entry = (GRUBE820 *)((u32)(vcpu->vmcs.guest_ES_base+(u16)r->edi));
-						pe820entry->baseaddr_low = g_e820map[r->ebx].baseaddr_low;
-						pe820entry->baseaddr_high = g_e820map[r->ebx].baseaddr_high;
-						pe820entry->length_low = g_e820map[r->ebx].length_low;
-						pe820entry->length_high = g_e820map[r->ebx].length_high;
-						pe820entry->type = g_e820map[r->ebx].type;
-					#endif //__XMHF_VERIFICATION__
-				}else{
-						printf("\nCPU(0x%02x): INT15 E820. Guest buffer is beyond guest \
-							physical memory bounds. Halting!", vcpu->id);
-						HALT();
-				}*/
-				if(!xmhf_smpguest_memcpyto(context_desc, (const void *)((u32)(vcpu->vmcs.guest_ES_base+(u16)r->edi)), (void *)&g_e820map[r->ebx], sizeof(GRUBE820)) ){
-					printf("\n%s: Error in copying e820 descriptor to guest. Halting!", __FUNCTION__);
-					HALT();
-				}	
-				
-						
-			}
 			r->ecx=20;
 
 			//set EAX to 'SMAP' as required by the service call				
@@ -848,79 +802,33 @@ static void _vmx_int15_handleintercept(context_desc_t context_desc, struct regs 
 			//guest_flags (16-bits)
 			//...
 		
-			{
-				//u16 guest_cs, guest_ip, guest_flags;
-				//u16 guest_cs __attribute__((unused)), guest_ip __attribute__((unused));
-				u16 guest_flags;
-				/*u16 *gueststackregion = (u16 *)( (u32)vcpu->vmcs.guest_SS_base + (u16)vcpu->vmcs.guest_RSP );
-			
-			
-				//if V86 mode translate the virtual address to physical address
-				if( (vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG) &&
-					(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM) ){
-					#ifdef __XMHF_VERIFICATION__
-						u8 *gueststackregionphysical = (u8 *)nondet_u32();
-					#else
-						u8 *gueststackregionphysical = (u8 *)xmhf_smpguest_arch_x86vmx_walk_pagetables(vcpu, (u32)gueststackregion);
-					#endif
-					if((u32)gueststackregionphysical < rpb->XtVmmRuntimePhysBase){
-						printf("\nINT15 (E820): V86 mode, gueststackregion translated from %08x to %08x",
-							(u32)gueststackregion, (u32)gueststackregionphysical);
-						gueststackregion = (u16 *)gueststackregionphysical; 		
-					}else{
-						printf("\nCPU(0x%02x): INT15 (E820) V86 mode, translated gueststackregion points beyond \
-							guest physical memory space. Halting!", vcpu->id);
-						HALT();
-					}
-				}
-			
-				
-				//get guest IP, CS and FLAGS from the IRET frame
-				#ifdef __XMHF_VERIFICATION__
-					//guest_ip = nondet_u16();
-					//guest_cs = nondet_u16();
-					guest_flags = nondet_u16();
-				#else
-					//guest_ip = gueststackregion[0];
-					//guest_cs = gueststackregion[1];
-					guest_flags = gueststackregion[2];
-				#endif	//__XMHF_VERIFICATION__
-				*/
-				
-				if(!xmhf_smpguest_readu16(context_desc, (const void *)((u32)vcpu->vmcs.guest_SS_base + (u16)vcpu->vmcs.guest_RSP + 0x4), &guest_flags)){
-					printf("\n%s: Error in reading guest_flags. Halting!", __FUNCTION__);
-					HALT();
-				}
-		
-				//increment e820 descriptor continuation value
-				r->ebx=r->ebx+1;
-						
-				if(r->ebx > (rpb->XtVmmE820NumEntries-1) ){
-					//we have reached the last record, so set CF and make EBX=0
-					r->ebx=0;
-					guest_flags |= (u16)EFLAGS_CF;
-					//#ifndef __XMHF_VERIFICATION__
-					//	gueststackregion[2] = guest_flags;
-					//#endif
-				}else{
-					//we still have more records, so clear CF
-					guest_flags &= ~(u16)EFLAGS_CF;
-					//#ifndef __XMHF_VERIFICATION__
-					//	gueststackregion[2] = guest_flags;
-					//#endif
-				}
-			  
-				if(!xmhf_smpguest_writeu16(context_desc, (const void *)((u32)vcpu->vmcs.guest_SS_base + (u16)vcpu->vmcs.guest_RSP + 0x4), guest_flags)){
-					printf("\n%s: Error in updating guest_flags. Halting!", __FUNCTION__);
-					HALT();
-				}
-			  
+			//grab guest eflags on guest stack
+			if(!xmhf_smpguest_readu16(context_desc, (const void *)((u32)vcpu->vmcs.guest_SS_base + (u16)vcpu->vmcs.guest_RSP + 0x4), &guest_flags)){
+				printf("\n%s: Error in reading guest_flags. Halting!", __FUNCTION__);
+				HALT();
 			}
+	
+			//increment e820 descriptor continuation value
+			r->ebx=r->ebx+1;
+					
+			if(r->ebx > (rpb->XtVmmE820NumEntries-1) ){
+				//we have reached the last record, so set CF and make EBX=0
+				r->ebx=0;
+				guest_flags |= (u16)EFLAGS_CF;
+			}else{
+				//we still have more records, so clear CF
+				guest_flags &= ~(u16)EFLAGS_CF;
+			}
+
+			//write updated eflags in guest stack
+			if(!xmhf_smpguest_writeu16(context_desc, (const void *)((u32)vcpu->vmcs.guest_SS_base + (u16)vcpu->vmcs.guest_RSP + 0x4), guest_flags)){
+				printf("\n%s: Error in updating guest_flags. Halting!", __FUNCTION__);
+				HALT();
+			}
+			  
 			
-		}else{	//invalid state specified during INT 15 E820, fail by
-				//setting carry flag
-				printf("\nCPU(0x%02x): INT15 (E820), invalid state specified by guest \
-						Halting!", vcpu->id);
+		}else{	//invalid state specified during INT 15 E820, halt
+				printf("\nCPU(0x%02x): INT15 (E820), invalid state specified by guest. Halting!", vcpu->id);
 				HALT();
 		}
 		
@@ -934,15 +842,7 @@ static void _vmx_int15_handleintercept(context_desc_t context_desc, struct regs 
 	//ok, this is some other INT 15h service, so simply chain to the original
 	//INT 15h handler
 
-/*#ifdef __XMHF_VERIFICATION__	
-	//get IP and CS of the original INT 15h handler
-	ip = nondet_u16();
-	cs = nondet_u16();
-#else
-	//get IP and CS of the original INT 15h handler
-	ip = *((u16 *)((u32)bdamemory + 4));
-	cs = *((u16 *)((u32)bdamemory + 6));
-#endif*/
+	//read the original INT 15h handler which is stored right after the VMCALL instruction
 	if(!xmhf_smpguest_readu16(context_desc, 0x4AC+0x4, &ip) || !xmhf_smpguest_readu16(context_desc, 0x4AC+0x6, &cs)){
 		printf("\n%s: Error in reading original INT 15h handler. Halting!", __FUNCTION__);
 		HALT();
