@@ -845,9 +845,11 @@ static void _vmx_int15_handleintercept(context_desc_t context_desc, struct regs 
 		
 			{
 				//u16 guest_cs, guest_ip, guest_flags;
-				u16 guest_cs __attribute__((unused)), guest_ip __attribute__((unused)), guest_flags;
+				//u16 guest_cs __attribute__((unused)), guest_ip __attribute__((unused));
+				u16 guest_flags;
 				u16 *gueststackregion = (u16 *)( (u32)vcpu->vmcs.guest_SS_base + (u16)vcpu->vmcs.guest_RSP );
 			
+				//xmhf_smpguest_readu16(context_desc, (const void *)((u32)vcpu->vmcs.guest_SS_base + (u16)vcpu->vmcs.guest_RSP), 
 			
 				//if V86 mode translate the virtual address to physical address
 				if( (vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG) &&
@@ -871,12 +873,12 @@ static void _vmx_int15_handleintercept(context_desc_t context_desc, struct regs 
 				
 				//get guest IP, CS and FLAGS from the IRET frame
 				#ifdef __XMHF_VERIFICATION__
-					guest_ip = nondet_u16();
-					guest_cs = nondet_u16();
+					//guest_ip = nondet_u16();
+					//guest_cs = nondet_u16();
 					guest_flags = nondet_u16();
 				#else
-					guest_ip = gueststackregion[0];
-					guest_cs = gueststackregion[1];
+					//guest_ip = gueststackregion[0];
+					//guest_cs = gueststackregion[1];
 					guest_flags = gueststackregion[2];
 				#endif	//__XMHF_VERIFICATION__
 
