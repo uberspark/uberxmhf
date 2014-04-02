@@ -918,7 +918,7 @@ static void _vmx_int15_handleintercept(context_desc_t context_desc, struct regs 
 	//ok, this is some other INT 15h service, so simply chain to the original
 	//INT 15h handler
 
-#ifdef __XMHF_VERIFICATION__	
+/*#ifdef __XMHF_VERIFICATION__	
 	//get IP and CS of the original INT 15h handler
 	ip = nondet_u16();
 	cs = nondet_u16();
@@ -926,7 +926,11 @@ static void _vmx_int15_handleintercept(context_desc_t context_desc, struct regs 
 	//get IP and CS of the original INT 15h handler
 	ip = *((u16 *)((u32)bdamemory + 4));
 	cs = *((u16 *)((u32)bdamemory + 6));
-#endif
+#endif*/
+	if(!xmhf_smpguest_readu16(context_desc, 0x4AC+0x4, &ip) || !xmhf_smpguest_readu16(context_desc, 0x4AC+0x6, &cs)){
+		printf("\n%s: Error in reading original INT 15h handler. Halting!", __FUNCTION__);
+		HALT();
+	}
 	
 	//update VMCS with the CS and IP and let go
 	vcpu->vmcs.guest_RIP = ip;
