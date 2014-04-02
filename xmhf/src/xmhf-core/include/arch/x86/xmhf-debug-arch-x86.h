@@ -52,7 +52,7 @@
 #define __EMHF_DEBUG_ARCH_X86_H__
 
 #include "platform/x86pc/include/common/_com.h"		//serial UART as debugging backend
-#include "_div64.h"		//arch. specific do_div definition
+//#include "_div64.h"		//arch. specific do_div definition
 
 #ifndef __ASSEMBLY__
 
