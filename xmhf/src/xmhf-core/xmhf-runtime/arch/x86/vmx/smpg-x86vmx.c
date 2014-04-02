@@ -592,6 +592,12 @@ static void xmhf_smpguest_arch_x86vmx_postCPUwakeup(VCPU *vcpu){
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping
 u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr){
+  
+  //if rich guest has paging disabled then physical address is the 
+  //supplied virtual address itself
+	if( !((vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG)) )
+		return (u8 *)gpa2hva(vaddr);
+
   if((u32)vcpu->vmcs.guest_CR4 & CR4_PAE ){
     //PAE paging used by guest
     u32 kcr3 = (u32)vcpu->vmcs.guest_CR3;
@@ -615,15 +621,24 @@ u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr){
     pdpt_entry = kpdpt[pdpt_index];
   
     //grab pd entry
+    if( !(pae_get_flags_from_pdpe(pdpt_entry) & _PAGE_PRESENT) )
+		return (u8 *)0xFFFFFFFFUL;
     tmp = pae_get_addr_from_pdpe(pdpt_entry);
     kpd = (pdt_t)((u32)tmp); 
     pd_entry = kpd[pd_index];
+
+    if( !(pae_get_flags_from_pde(pd_entry) & _PAGE_PRESENT) )
+		return (u8 *)0xFFFFFFFFUL;
+
 
     if ( (pd_entry & _PAGE_PSE) == 0 ) {
       // grab pt entry
       tmp = (u32)pae_get_addr_from_pde(pd_entry);
       kpt = (pt_t)((u32)tmp);  
       pt_entry  = kpt[pt_index];
+
+	  if( !(pae_get_flags_from_pte(pt_entry) & _PAGE_PRESENT) )
+		return (u8 *)0xFFFFFFFFUL;
       
       // find physical page base addr from page table entry 
       paddr = (u64)pae_get_addr_from_pte(pt_entry) + offset;
@@ -634,7 +649,7 @@ u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr){
       paddr += (u64)offset;
     }
   
-    return (u8 *)(u32)paddr;
+    return (u8 *)gpa2hva(paddr);
     
   }else{
     //non-PAE 2 level paging used by guest
@@ -656,12 +671,19 @@ u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr){
     kpd = (npdt_t)((u32)tmp); 
     pd_entry = kpd[pd_index];
   
+  
+    if( !(npae_get_flags_from_pde(pd_entry) & _PAGE_PRESENT) )
+		return (u8 *)0xFFFFFFFFUL;
+
     if ( (pd_entry & _PAGE_PSE) == 0 ) {
       // grab pt entry
       tmp = (u32)npae_get_addr_from_pde(pd_entry);
       kpt = (npt_t)((u32)tmp);  
       pt_entry  = kpt[pt_index];
       
+      if( !(npae_get_flags_from_pte(pt_entry) & _PAGE_PRESENT) )
+		return (u8 *)0xFFFFFFFFUL;
+
       // find physical page base addr from page table entry 
       paddr = (u64)npae_get_addr_from_pte(pt_entry) + offset;
     }
@@ -671,7 +693,7 @@ u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr){
       paddr += (u64)offset;
     }
 
-    return (u8 *)(u32)paddr;
+    return (u8 *)gpa2hva(paddr);
   }
 }
 
@@ -736,6 +758,104 @@ void xmhf_smpguest_arch_eventhandler_hwpgtblviolation(context_desc_t context_des
 	
 }
 */
+
+
+
+
+//handle guest memory reporting (via INT 15h redirection)
+void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t context_desc, struct regs *r){
+	u16 cs, ip;
+	u16 guest_flags;
+	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
+
+	//if E820 service then...
+	if((u16)r->eax == 0xE820){
+		//AX=0xE820, EBX=continuation value, 0 for first call
+		//ES:DI pointer to buffer, ECX=buffer size, EDX='SMAP'
+		//return value, CF=0 indicated no error, EAX='SMAP'
+		//ES:DI left untouched, ECX=size returned, EBX=next continuation value
+		//EBX=0 if last descriptor
+		printf("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", vcpu->id, 
+		(u16)r->eax, r->edx, r->ebx, r->ecx, (u16)vcpu->vmcs.guest_ES_selector, (u16)r->edi);
+		
+		if( (r->edx == 0x534D4150UL) && (r->ebx < rpb->XtVmmE820NumEntries) ){
+			
+			//copy the E820 descriptor and return its size
+			if(!xmhf_smpguest_memcpyto(context_desc, (const void *)((u32)(vcpu->vmcs.guest_ES_base+(u16)r->edi)), (void *)&g_e820map[r->ebx], sizeof(GRUBE820)) ){
+				printf("\n%s: Error in copying e820 descriptor to guest. Halting!", __FUNCTION__);
+				HALT();
+			}	
+				
+			r->ecx=20;
+
+			//set EAX to 'SMAP' as required by the service call				
+			r->eax=r->edx;
+
+			//we need to update carry flag in the guest EFLAGS register
+			//however since INT 15 would have pushed the guest FLAGS on stack
+			//we cannot simply reflect the change by modifying vmcb->rflags
+			//instead we need to make the change to the pushed FLAGS register on
+			//the guest stack. the real-mode IRET frame looks like the following 
+			//when viewed at top of stack
+			//guest_ip		(16-bits)
+			//guest_cs		(16-bits)
+			//guest_flags (16-bits)
+			//...
+		
+			//grab guest eflags on guest stack
+			if(!xmhf_smpguest_readu16(context_desc, (const void *)((u32)vcpu->vmcs.guest_SS_base + (u16)vcpu->vmcs.guest_RSP + 0x4), &guest_flags)){
+				printf("\n%s: Error in reading guest_flags. Halting!", __FUNCTION__);
+				HALT();
+			}
+	
+			//increment e820 descriptor continuation value
+			r->ebx=r->ebx+1;
+					
+			if(r->ebx > (rpb->XtVmmE820NumEntries-1) ){
+				//we have reached the last record, so set CF and make EBX=0
+				r->ebx=0;
+				guest_flags |= (u16)EFLAGS_CF;
+			}else{
+				//we still have more records, so clear CF
+				guest_flags &= ~(u16)EFLAGS_CF;
+			}
+
+			//write updated eflags in guest stack
+			if(!xmhf_smpguest_writeu16(context_desc, (const void *)((u32)vcpu->vmcs.guest_SS_base + (u16)vcpu->vmcs.guest_RSP + 0x4), guest_flags)){
+				printf("\n%s: Error in updating guest_flags. Halting!", __FUNCTION__);
+				HALT();
+			}
+			  
+			
+		}else{	//invalid state specified during INT 15 E820, halt
+				printf("\nCPU(0x%02x): INT15 (E820), invalid state specified by guest. Halting!", vcpu->id);
+				HALT();
+		}
+		
+		//update RIP to execute the IRET following the VMCALL instruction
+		//effectively returning from the INT 15 call made by the guest
+		vcpu->vmcs.guest_RIP += 3;
+	
+		return;
+	} //E820 service
+	
+	//ok, this is some other INT 15h service, so simply chain to the original
+	//INT 15h handler
+
+	//read the original INT 15h handler which is stored right after the VMCALL instruction
+	if(!xmhf_smpguest_readu16(context_desc, 0x4AC+0x4, &ip) || !xmhf_smpguest_readu16(context_desc, 0x4AC+0x6, &cs)){
+		printf("\n%s: Error in reading original INT 15h handler. Halting!", __FUNCTION__);
+		HALT();
+	}
+	
+	//update VMCS with the CS and IP and let go
+	vcpu->vmcs.guest_RIP = ip;
+	vcpu->vmcs.guest_CS_base = cs * 16;
+	vcpu->vmcs.guest_CS_selector = cs;		 
+}
+
+
+//----------------------------------------------------------------------
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
 //void xmhf_smpguest_arch_x86_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
