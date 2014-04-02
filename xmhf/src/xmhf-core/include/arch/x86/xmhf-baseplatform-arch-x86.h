@@ -53,7 +53,7 @@
 
 #include "_configx86.h"		//EMHF arch. specific configurable definitions
 #include "_multiboot.h"  	//boot manager (multiboot)
-#include "_cmdline.h"		//GRUB command line handling functions
+//#include "_cmdline.h"		//GRUB command line handling functions
 #include "_error.h"      	//error handling and assertions
 #include "cpu/x86/include/common/_processor.h"  	//CPU
 #include "cpu/x86/include/common/_msr.h"        	//model specific registers
