@@ -51,7 +51,7 @@ export LIBXMHFDEBUG_SRC := $(realpath xmhf/src/libxmhfdebug)
 export XMHF_RUNTIME_SRC := $(realpath xmhf/src/xmhf-core/xmhf-runtime)
 
 # XMHF secureloader source location
-export XMHF_SECURELOADER_SRC := $(realpath xmhf/src/xmhf-core/xmhf-secureloader)
+export XMHF_SECURELOADER_SRC := $(realpath xmhf/src/xmhf-secureloader)
 
 # XMHF bootloader source location
 export XMHF_BOOTLOADER_SRC := $(realpath xmhf/src/xmhf-core/xmhf-bootloader)
@@ -297,6 +297,14 @@ subdirs: $(LIBBAREMETAL_SRC) $(XMHFCORE_SRC)
 	@echo XMHF core runtime build SUCCESS
 	@echo **************************************************************
 	@echo **************************************************************
+	@echo Building XMHF secure loader...
+	@echo **************************************************************
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_SECURELOADER_SRC)/Makefile -w all \
+			RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
+	@echo **************************************************************
+	@echo XMHF secure loader build SUCCESS
+	@echo **************************************************************
+	@echo **************************************************************
 	@echo Building XMHF core...
 	@echo **************************************************************
 	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFCORE_SRC)/Makefile -w all
@@ -305,7 +313,7 @@ subdirs: $(LIBBAREMETAL_SRC) $(XMHFCORE_SRC)
 	@echo **************************************************************
 	@echo --------------------------------------------------------------
 	@echo generating final binaries...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin ./_objs_xmhf-secureloader/xmhf-secureloader.bin $(XMHF_OBJDIR)/_objs_xmhf-runtime/xmhf-runtime.bin > ./xmhf.tmp.img
+	cd $(XMHFCORE_OBJECTS_DIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin $(XMHF_OBJDIR)/_objs_xmhf-secureloader/xmhf-secureloader.bin $(XMHF_OBJDIR)/_objs_xmhf-runtime/xmhf-runtime.bin > ./xmhf.tmp.img
 	cd $(XMHFCORE_OBJECTS_DIR) && gzip -c ./xmhf.tmp.img > ./xmhf-$(TARGET_HWPLATFORM).bin.gz
 	cd $(XMHFCORE_OBJECTS_DIR) && $(RM) -rf ./xmhf.tmp.img 
 	@echo xmhf binary generation SUCCESS
@@ -403,6 +411,13 @@ clean:
 	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_RUNTIME_SRC)/Makefile -w clean
 	@echo **************************************************************
 	@echo XMHF core runtime cleanu SUCCESS
+	@echo **************************************************************
+	@echo **************************************************************
+	@echo Cleaning XMHF secure loader...
+	@echo **************************************************************
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_SECURELOADER_SRC)/Makefile -w clean
+	@echo **************************************************************
+	@echo XMHF secure loader clean SUCCESS
 	@echo **************************************************************
 	@echo **************************************************************
 	@echo cleaning XMHF core...
