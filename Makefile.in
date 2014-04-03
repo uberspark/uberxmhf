@@ -48,7 +48,7 @@ LIBXMHFHW_INC = $(realpath xmhf/src/libxmhfhw)
 export LIBXMHFDEBUG_SRC := $(realpath xmhf/src/libxmhfdebug)
 
 # XMHF runtime source location
-export XMHF_RUNTIME_SRC := $(realpath xmhf/src/xmhf-core/xmhf-runtime)
+#export XMHF_CORE_SRC := $(realpath xmhf/src/xmhf-core)
 
 # XMHF secureloader source location
 export XMHF_SECURELOADER_SRC := $(realpath xmhf/src/xmhf-secureloader)
@@ -290,11 +290,11 @@ subdirs: $(LIBBAREMETAL_SRC) $(XMHFCORE_SRC)
 	@echo libxmhfcore.a build SUCCESS
 	@echo **************************************************************
 	@echo **************************************************************
-	@echo Building XMHF core runtime...
+	@echo Building XMHF core...
 	@echo **************************************************************
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_RUNTIME_SRC)/Makefile -w all
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFCORE_SRC)/Makefile -w all
 	@echo **************************************************************
-	@echo XMHF core runtime build SUCCESS
+	@echo XMHF core build SUCCESS
 	@echo **************************************************************
 	@echo **************************************************************
 	@echo Building XMHF secure loader...
@@ -409,11 +409,11 @@ clean:
 	@echo libxmhfcore.a clean SUCCESS
 	@echo **************************************************************
 	@echo **************************************************************
-	@echo Cleaning XMHF core runtime...
+	@echo Cleaning XMHF core...
 	@echo **************************************************************
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_RUNTIME_SRC)/Makefile -w clean
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFCORE_SRC)/Makefile -w clean
 	@echo **************************************************************
-	@echo XMHF core runtime cleanu SUCCESS
+	@echo XMHF core clean SUCCESS
 	@echo **************************************************************
 	@echo **************************************************************
 	@echo Cleaning XMHF secure loader...
