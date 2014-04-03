@@ -133,6 +133,16 @@ extern u64 hypapp_3level_pdt[] __attribute__(( section(".palign_data") ));
 extern u64 core_3level_pdpt[] __attribute__(( section(".palign_data") ));
 extern u64 core_3level_pdt[] __attribute__(( section(".palign_data") ));
 
+//hypapp callback hub entry point and hypapp top of stack
+extern u32 hypapp_cbhub_pc;
+extern u32 hypapp_tos;
+
+//core and hypapp page table base address (PTBA)
+extern u32 core_ptba;
+extern u32 hypapp_ptba;
+
+
+extern XMHF_HYPAPP_HEADER *g_hypappheader;
 
 
 void xmhfcore_outputdebugstring(const char *s);
