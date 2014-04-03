@@ -29,11 +29,11 @@ all:
 	#cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBXMHFDEBUG_SRC)/Makefile -w all
 	#@echo libbaremetal-xmhfbackends.a build SUCCESS
 	#@echo --------------------------------------------------------------
-	@echo --------------------------------------------------------------
-	@echo building runtime...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_RUNTIME_SRC)/Makefile -w all
-	@echo runtime build SUCCESS
-	@echo --------------------------------------------------------------
+	#@echo --------------------------------------------------------------
+	#@echo building runtime...
+	#cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_RUNTIME_SRC)/Makefile -w all
+	#@echo runtime build SUCCESS
+	#@echo --------------------------------------------------------------
 	@echo --------------------------------------------------------------
 	@echo building xmhf-secureloader...
 	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_SECURELOADER_SRC)/Makefile -w all \
@@ -50,7 +50,7 @@ all:
 	@echo --------------------------------------------------------------
 	@echo --------------------------------------------------------------
 	@echo generating final binaries...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin ./_objs_xmhf-secureloader/xmhf-secureloader.bin ./_objs_xmhf-runtime/xmhf-runtime.bin > ./xmhf.tmp.img
+	cd $(XMHFCORE_OBJECTS_DIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin ./_objs_xmhf-secureloader/xmhf-secureloader.bin $(XMHF_OBJDIR)/_objs_xmhf-runtime/xmhf-runtime.bin > ./xmhf.tmp.img
 	cd $(XMHFCORE_OBJECTS_DIR) && gzip -c ./xmhf.tmp.img > ./xmhf-$(TARGET_HWPLATFORM).bin.gz
 	cd $(XMHFCORE_OBJECTS_DIR) && $(RM) -rf ./xmhf.tmp.img 
 	@echo xmhf binary generation SUCCESS
@@ -79,11 +79,11 @@ clean:
 	#cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBXMHFDEBUG_SRC)/Makefile -w clean
 	#@echo libxmhfdebug.a cleanup SUCCESS
 	#@echo --------------------------------------------------------------
-	@echo --------------------------------------------------------------
-	@echo cleaning runtime...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_RUNTIME_SRC)/Makefile -w clean
-	@echo runtime cleanup SUCCESS
-	@echo --------------------------------------------------------------
+	#@echo --------------------------------------------------------------
+	#@echo cleaning runtime...
+	#cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_RUNTIME_SRC)/Makefile -w clean
+	#@echo runtime cleanup SUCCESS
+	#@echo --------------------------------------------------------------
 	@echo --------------------------------------------------------------
 	@echo cleaning xmhf-secureloader...
 	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_SECURELOADER_SRC)/Makefile -w clean

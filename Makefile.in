@@ -289,6 +289,13 @@ subdirs: $(LIBBAREMETAL_SRC) $(XMHFCORE_SRC)
 	@echo libxmhfcore.a build SUCCESS
 	@echo **************************************************************
 	@echo **************************************************************
+	@echo Building XMHF core runtime...
+	@echo **************************************************************
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_RUNTIME_SRC)/Makefile -w all
+	@echo **************************************************************
+	@echo XMHF core runtime build SUCCESS
+	@echo **************************************************************
+	@echo **************************************************************
 	@echo Building XMHF core...
 	@echo **************************************************************
 	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFCORE_SRC)/Makefile -w all
@@ -381,6 +388,13 @@ clean:
 	cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBXMHFCORE_SRC)/Makefile -w clean
 	@echo **************************************************************
 	@echo libxmhfcore.a clean SUCCESS
+	@echo **************************************************************
+	@echo **************************************************************
+	@echo Cleaning XMHF core runtime...
+	@echo **************************************************************
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_RUNTIME_SRC)/Makefile -w clean
+	@echo **************************************************************
+	@echo XMHF core runtime cleanu SUCCESS
 	@echo **************************************************************
 	@echo **************************************************************
 	@echo cleaning XMHF core...
