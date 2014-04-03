@@ -8,9 +8,10 @@ vpath %.S $(srcdir)
 export XMHF_RUNTIME_ARCH_SRC := $(realpath $(srcdir)/arch)
 
 # grab list of all source files
-C_SOURCES := $(shell find $(srcdir)/ -type f -name '*.c')
-C_SOURCES := $(shell find $(srcdir)/xmhf-memprot/ -type f -name '*.c')
-A_SOURCES := $(shell find $(srcdir)/xmhf-memprot/ -type f -name '*.S')
+C_SOURCES := $(wildcard $(srcdir)/*.c)
+A_SOURCES := 
+C_SOURCES += $(shell find $(srcdir)/xmhf-memprot/ -type f -name '*.c')
+A_SOURCES += $(shell find $(srcdir)/xmhf-memprot/ -type f -name '*.S')
 C_SOURCES += $(shell find $(srcdir)/xmhf-eventhub/ -type f -name '*.c')
 A_SOURCES += $(shell find $(srcdir)/xmhf-eventhub/ -type f -name '*.S')
 C_SOURCES += $(shell find $(srcdir)/xmhf-smpguest/ -type f -name '*.c')
