@@ -38,8 +38,8 @@ export XMHFCORE_SRC := $(realpath xmhf/src/xmhf-core)
 export LIBXMHFCORE_SRC := $(realpath xmhf/src/xmhf-core/libxmhfcore)
 
 # libxmhfhw source location
-export LIBXMHFHW_SRC := $(realpath xmhf/src/xmhf-core/libxmhfhw)
-LIBXMHFHW_INC = $(realpath xmhf/src/xmhf-core/libxmhfhw)
+export LIBXMHFHW_SRC := $(realpath xmhf/src/libxmhfhw)
+LIBXMHFHW_INC = $(realpath xmhf/src/libxmhfhw)
 
 # libbaremetal-xmhfbackends source location
 #export LIBBAREMETAL_XMHFBACKENDS_SRC := $(realpath xmhf/src/xmhf-core/libbaremetal-xmhfbackends)
@@ -74,7 +74,7 @@ ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a
 
 #ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_libbaremetal-xmhfbackends/libbaremetal-xmhfbackends.a
 ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libxmhfdebug/libxmhfdebug.a
-ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_libxmhfhw/libxmhfhw.a
+ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libxmhfhw/libxmhfhw.a
 #ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_xmhf-runtime/_objs_libxmhfruntimearch/libxmhfruntimearch.a
 ADDL_INCLUDES += -I$(EMHF_INCLUDE) -I$(LIBXMHFHW_INC) $(LIBBAREMETAL_INC)
 
@@ -268,6 +268,13 @@ subdirs: $(LIBBAREMETAL_SRC) $(XMHFCORE_SRC)
 	@echo libbaremetal.a build SUCCESS
 	@echo **************************************************************
 	@echo **************************************************************
+	@echo Building libxmhfhw...
+	@echo **************************************************************
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBXMHFHW_SRC)/Makefile -w all
+	@echo **************************************************************
+	@echo libxmhfhw.a build SUCCESS
+	@echo **************************************************************
+	@echo **************************************************************
 	@echo Building libxmhfdebug...
 	@echo **************************************************************
 	cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBXMHFDEBUG_SRC)/Makefile -w all
@@ -309,8 +316,8 @@ install-dev:
 	$(MKDIR) -p $(prefix)/include/xmhf/platform/x86pc/include
 	$(MKDIR) -p $(prefix)/include/xmhf/cpu/x86/include
 	$(CP) -rf ./xmhf/src/xmhf-core/include/* $(prefix)/include/xmhf/xmhf-core/include/.
-	$(CP) -rf ./xmhf/src/xmhf-core/libxmhfhw/platform/x86pc/include/* $(prefix)/include/xmhf/platform/x86pc/include/.
-	$(CP) -rf ./xmhf/src/xmhf-core/libxmhfhw/cpu/x86/include/* $(prefix)/include/xmhf/cpu/x86/include/.
+	$(CP) -rf ./xmhf/src/libxmhfhw/platform/x86pc/include/* $(prefix)/include/xmhf/platform/x86pc/include/.
+	$(CP) -rf ./xmhf/src/libxmhfhw/cpu/x86/include/* $(prefix)/include/xmhf/cpu/x86/include/.
 	@echo installed XMHF core development headers
 	$(MKDIR) -p $(prefix)/include/xmhf/libbaremetal/libtpm/include
 	$(MKDIR) -p $(prefix)/include/xmhf/libbaremetal/libtv_utpm/include
@@ -346,6 +353,13 @@ clean:
 	cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBBAREMETAL_SRC)/Makefile -w clean
 	@echo **************************************************************
 	@echo libbaremetal.a clean SUCCESS
+	@echo **************************************************************
+	@echo **************************************************************
+	@echo Cleaning libxmhfhw...
+	@echo **************************************************************
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBXMHFHW_SRC)/Makefile -w clean
+	@echo **************************************************************
+	@echo libxmhfhw.a clean SUCCESS
 	@echo **************************************************************
 	@echo **************************************************************
 	@echo Cleaning libxmhfdebug...
