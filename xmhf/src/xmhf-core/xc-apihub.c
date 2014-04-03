@@ -61,16 +61,6 @@ void xmhf_apihub_initialize (void){
 }
 
 
-//----------------------------------------------------------------------
-XMHF_HYPAPP_HEADER *hypappheader=(XMHF_HYPAPP_HEADER *)__TARGET_BASE_XMHFHYPAPP;
-
-//hypapp callback hub entry point and hypapp top of stack
-u32 hypapp_cbhub_pc=0;
-u32 hypapp_tos=0;
-
-//core and hypapp page table base address (PTBA)
-u32 core_ptba=0;
-u32 hypapp_ptba=0;
 
 /*//function to transfer execution to the hypapp space at the specified
 //entry point
@@ -225,14 +215,14 @@ void xmhf_apihub_arch_initialize (void){
 #ifndef __XMHF_VERIFICATION__
 
 	printf("\n%s: starting...", __FUNCTION__);
-	printf("\n%s: hypappheader at %08x", __FUNCTION__, hypappheader);
-	printf("\n%s: hypappheader->magic is %08x", __FUNCTION__, hypappheader->magic);
+	printf("\n%s: hypappheader at %08x", __FUNCTION__, g_hypappheader);
+	printf("\n%s: hypappheader->magic is %08x", __FUNCTION__, g_hypappheader->magic);
 	
 	printf("\n%s: paramcore at 0x%08x", __FUNCTION__, (u32)paramcore);
 	printf("\n%s: paramhypapp at 0x%08x", __FUNCTION__, (u32)paramhypapp);
 	
-	hypapp_cbhub_pc = (u32)hypappheader->addr_hypappfromcore;
-	hypapp_tos = (u32)hypappheader->addr_tos;
+	hypapp_cbhub_pc = (u32)g_hypappheader->addr_hypappfromcore;
+	hypapp_tos = (u32)g_hypappheader->addr_tos;
 
 	printf("\n%s: hypapp cbhub entry point=%x, TOS=%x", __FUNCTION__, hypapp_cbhub_pc, hypapp_tos);
 
@@ -240,18 +230,18 @@ void xmhf_apihub_arch_initialize (void){
 	//(a data structure of type XMHF_HYPAPP_HEADER) and populate the
 	//hypapp parameter block field
 	{
-		hypappheader->apb.bootsector_ptr = (u32)rpb->XtGuestOSBootModuleBase;
-		hypappheader->apb.bootsector_size = (u32)rpb->XtGuestOSBootModuleSize;
-		hypappheader->apb.optionalmodule_ptr = (u32)rpb->runtime_appmodule_base;
-		hypappheader->apb.optionalmodule_size = (u32)rpb->runtime_appmodule_size;
-		hypappheader->apb.runtimephysmembase = (u32)rpb->XtVmmRuntimePhysBase;  
-		strncpy(hypappheader->apb.cmdline, rpb->cmdline, sizeof(hypappheader->apb.cmdline));
+		g_hypappheader->apb.bootsector_ptr = (u32)rpb->XtGuestOSBootModuleBase;
+		g_hypappheader->apb.bootsector_size = (u32)rpb->XtGuestOSBootModuleSize;
+		g_hypappheader->apb.optionalmodule_ptr = (u32)rpb->runtime_appmodule_base;
+		g_hypappheader->apb.optionalmodule_size = (u32)rpb->runtime_appmodule_size;
+		g_hypappheader->apb.runtimephysmembase = (u32)rpb->XtVmmRuntimePhysBase;  
+		strncpy(g_hypappheader->apb.cmdline, rpb->cmdline, sizeof(g_hypappheader->apb.cmdline));
 		printf("\n%s: sizeof(XMHF_HYPAPP_HEADER)=%u", __FUNCTION__, sizeof(XMHF_HYPAPP_HEADER));
 		printf("\n%s: sizeof(APP_PARAM_BLOCK)=%u", __FUNCTION__, sizeof(APP_PARAM_BLOCK));
 			
 	}
 
-	hypappheader->addr_hypapptocore = (u32)&xmhf_apihub_arch_fromhypapp;
+	g_hypappheader->addr_hypapptocore = (u32)&xmhf_apihub_arch_fromhypapp;
 
 	//check for PCID support (if present)
 	{
@@ -498,29 +488,6 @@ asm volatile(
 
 }
 
-//----------------------------------------------------------------------
-/*
- * 	apih-pbvph-data.c
- * 
- *  XMHF core API interface component pass-by-value parameter handling
- *  backend
- * 
- *  global data variables
- * 
- *  author: amit vasudevan (amitvasudevan@acm.org)
- */
-
-XMHF_HYPAPP_PARAMETERBLOCK *paramcore = (XMHF_HYPAPP_PARAMETERBLOCK *)&paramcore_start;
-
-XMHF_HYPAPP_PARAMETERBLOCK *paramhypapp = (XMHF_HYPAPP_PARAMETERBLOCK *)&paramhypapp_start;
-
-//hypapp PAE page tables
-u64 hypapp_3level_pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( section(".palign_data") ));
-u64 hypapp_3level_pdt[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT] __attribute__(( section(".palign_data") ));
-
-//core PAE page tables
-u64 core_3level_pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( section(".palign_data") ));
-u64 core_3level_pdt[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT] __attribute__(( section(".palign_data") ));
 
 
 //----------------------------------------------------------------------

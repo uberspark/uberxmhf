@@ -110,3 +110,41 @@ u32 g_appmain_success_counter __attribute__(( section(".data") )) = 0;
 
 //SMP lock for the above variable
 u32 g_lock_appmain_success_counter __attribute__(( section(".data") )) = 1;
+
+
+//xc-apihub.c
+
+//----------------------------------------------------------------------
+/*
+ * 	apih-pbvph-data.c
+ * 
+ *  XMHF core API interface component pass-by-value parameter handling
+ *  backend
+ * 
+ *  global data variables
+ * 
+ *  author: amit vasudevan (amitvasudevan@acm.org)
+ */
+
+XMHF_HYPAPP_PARAMETERBLOCK *paramcore = (XMHF_HYPAPP_PARAMETERBLOCK *)&paramcore_start;
+
+XMHF_HYPAPP_PARAMETERBLOCK *paramhypapp = (XMHF_HYPAPP_PARAMETERBLOCK *)&paramhypapp_start;
+
+//hypapp PAE page tables
+u64 hypapp_3level_pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( section(".palign_data") ));
+u64 hypapp_3level_pdt[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT] __attribute__(( section(".palign_data") ));
+
+//core PAE page tables
+u64 core_3level_pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( section(".palign_data") ));
+u64 core_3level_pdt[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT] __attribute__(( section(".palign_data") ));
+
+//----------------------------------------------------------------------
+XMHF_HYPAPP_HEADER *g_hypappheader=(XMHF_HYPAPP_HEADER *)__TARGET_BASE_XMHFHYPAPP;
+
+//hypapp callback hub entry point and hypapp top of stack
+u32 hypapp_cbhub_pc=0;
+u32 hypapp_tos=0;
+
+//core and hypapp page table base address (PTBA)
+u32 core_ptba=0;
+u32 hypapp_ptba=0;
