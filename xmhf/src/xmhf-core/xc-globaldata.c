@@ -44,13 +44,14 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/*
- * EMHF base platform component 
- * arch. independent data definitions
+/**
+ * XMHF core global data module
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
 #include <xmhf.h>
+
+//bplt-data.c
 
 //system e820 map
 GRUBE820 g_e820map[MAX_E820_ENTRIES] __attribute__(( section(".data") ));
