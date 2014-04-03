@@ -45,12 +45,132 @@
  */
 
 /*
- * EMHF base platform component interface, x86 backend
- * implements SMP functionality
+ * XMHF base platform component (x86 common arch. backend)
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
 #include <xmhf.h>
+
+//get CPU vendor
+u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
+	u32 vendor_dword1, vendor_dword2, vendor_dword3;
+	u32 cpu_vendor;
+	asm(	"xor	%%eax, %%eax \n"
+				  "cpuid \n"		
+				  "mov	%%ebx, %0 \n"
+				  "mov	%%edx, %1 \n"
+				  "mov	%%ecx, %2 \n"
+			     :	//no inputs
+					 : "m"(vendor_dword1), "m"(vendor_dword2), "m"(vendor_dword3)
+					 : "eax", "ebx", "ecx", "edx" );
+
+	if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
+			&& vendor_dword3 == AMD_STRING_DWORD3)
+		cpu_vendor = CPU_VENDOR_AMD;
+	else if(vendor_dword1 == INTEL_STRING_DWORD1 && vendor_dword2 == INTEL_STRING_DWORD2
+			&& vendor_dword3 == INTEL_STRING_DWORD3)
+		cpu_vendor = CPU_VENDOR_INTEL;
+	else{
+		printf("\n%s: unrecognized x86 CPU (0x%08x:0x%08x:0x%08x). HALT!",
+			__FUNCTION__, vendor_dword1, vendor_dword2, vendor_dword3);
+		HALT();
+	}   	 	
+
+	return cpu_vendor;
+}
+
+/*//[REFACTOR]
+//move this into bplt-x86-vmx.c
+//initialize basic platform elements
+void xmhf_baseplatform_arch_initialize(void){
+	//initialize PCI subsystem
+	xmhf_baseplatform_arch_x86_pci_initialize();
+	
+	//check ACPI subsystem
+	{
+		ACPI_RSDP rsdp;
+		#ifndef __XMHF_VERIFICATION__
+			//TODO: plug in a BIOS data area map/model
+			if(!xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp)){
+				printf("\n%s: ACPI RSDP not found, Halting!", __FUNCTION__);
+				HALT();
+			}
+		#endif //__XMHF_VERIFICATION__
+	}
+
+}*/
+
+//initialize CPU state
+void xmhf_baseplatform_arch_x86_cpuinitialize(void){
+	u32 cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
+
+	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
+	//when the CPU supports XSAVE feature
+	if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature()){
+		u32 t_cr4;
+		t_cr4 = read_cr4();
+		t_cr4 |= CR4_OSXSAVE;	
+		write_cr4(t_cr4);
+	}
+
+	//turn on NX protections via MSR EFER
+	//note: on BSP NX protections are turned on much before we get here, but on APs this is the place we
+	//set NX protections on
+	{
+		u32 eax, edx;
+		rdmsr(MSR_EFER, &eax, &edx);
+		eax |= (1 << EFER_NXE);
+		wrmsr(MSR_EFER, eax, edx);
+		printf("\n%s: NX protections enabled: MSR_EFER=%08x%08x", __FUNCTION__, edx, eax);
+	}	
+
+}
+
+//initialize TR/TSS
+void xmhf_baseplatform_arch_x86_initializeTR(void){
+
+	{
+		u32 i;
+		u32 tss_base=(u32)&g_runtime_TSS;
+		TSSENTRY *t;
+		extern u64 x_gdt_start[];
+		
+		printf("\ndumping GDT...");
+		for(i=0; i < 6; i++)
+			printf("\n    entry %u -> %016llx", i, x_gdt_start[i]);
+		printf("\nGDT dumped.");
+
+		printf("\nfixing TSS descriptor (TSS base=%x)...", tss_base);
+		t= (TSSENTRY *)(u32)&x_gdt_start[(__TRSEL/sizeof(u64))];
+		t->attributes1= 0xE9;
+		t->limit16_19attributes2= 0x0;
+		t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
+		t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
+		t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);      
+		t->limit0_15=0x67;
+		printf("\nTSS descriptor fixed.");
+
+		printf("\ndumping GDT...");
+		for(i=0; i < 6; i++)
+			printf("\n    entry %u -> %016llx", i, x_gdt_start[i]);
+		printf("\nGDT dumped.");
+
+		printf("\nsetting TR...");
+		  __asm__ __volatile__("movw %0, %%ax\r\n"
+			"ltr %%ax\r\n"				//load TR
+			 : 
+			 : "g"(__TRSEL)
+			 : "eax"
+		  );
+		printf("\nTR set successfully");
+		
+	}
+
+}
+
+
+//----------------------------------------------------------------------
+//bplt-x86-smp
 
 //return 1 if the calling CPU is the BSP
 u32 xmhf_baseplatform_arch_x86_isbsp(void){
@@ -258,3 +378,48 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
 	xmhf_runtime_main(context_desc);
   }
 }
+
+//----------------------------------------------------------------------
+/*
+ * XMHF base platform SMP protected mode trampoline
+ * this is where all CPUs enter in protected mode
+ * 
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
+
+extern arch_x86_gdtdesc_t x_gdt;
+
+void _ap_pmode_entry_with_paging(void) __attribute__((naked)){
+
+    asm volatile(	"lgdt %0\r\n"
+					"lidt %1\r\n"
+					"mov %2, %%ecx\r\n"
+					"rdmsr\r\n"
+					"andl $0xFFFFF000, %%eax\r\n"
+					"addl $0x20, %%eax\r\n"
+					"movl (%%eax), %%eax\r\n"
+					"shr $24, %%eax\r\n"
+					"movl %3, %%edx\r\n"
+					"movl %4, %%ebx\r\n"
+					"xorl %%ecx, %%ecx\r\n"
+					"getvcpuloop:\r\n"
+					"movl 0x0(%%ebx, %%ecx, 8), %%ebp\r\n"  	//ebp contains the lapic id
+					"cmpl %%eax, %%ebp\r\n"
+					"jz gotvcpu\r\n"
+					"incl %%ecx\r\n"
+					"cmpl %%edx, %%ecx\r\n"
+					"jb getvcpuloop\r\n"
+					"hlt\r\n"								//we should never get here, if so just halt
+					"gotvcpu:\r\n"
+					"movl 0x4(%%ebx, %%ecx, 8), %%esi\r\n"	 	//esi contains vcpu pointer
+					"movl 0x0(%%esi), %%esp\r\n"     			//load stack for this CPU
+					"pushl %%esi\r\n"
+					"call xmhf_baseplatform_arch_x86_smpinitialize_commonstart\r\n"
+					"hlt\r\n"								//we should never get here, if so just halt
+					:
+					: "m" (x_gdt), "m" (xmhf_xcphandler_idt), "i" (MSR_APIC_BASE), "m" (g_midtable_numentries), "i" (&g_midtable)
+	);
+
+	
+}
+
