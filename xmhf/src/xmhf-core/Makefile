@@ -21,14 +21,14 @@ all:
 	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBXMHFHW_SRC)/Makefile -w all
 	@echo libxmhfhw.a build SUCCESS
 	@echo --------------------------------------------------------------
-	@echo --------------------------------------------------------------
+	#@echo --------------------------------------------------------------
 	#@echo building libbaremetal-xmhfbackends...
 	#cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBBAREMETAL_XMHFBACKENDS_SRC)/Makefile -w all
 	#@echo libbaremetal-xmhfbackends.a build SUCCESS
-	@echo building libxmhfdebug...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBXMHFDEBUG_SRC)/Makefile -w all
-	@echo libbaremetal-xmhfbackends.a build SUCCESS
-	@echo --------------------------------------------------------------
+	#@echo building libxmhfdebug...
+	#cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBXMHFDEBUG_SRC)/Makefile -w all
+	#@echo libbaremetal-xmhfbackends.a build SUCCESS
+	#@echo --------------------------------------------------------------
 	@echo --------------------------------------------------------------
 	@echo building runtime...
 	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_RUNTIME_SRC)/Makefile -w all
@@ -71,14 +71,14 @@ clean:
 	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBXMHFHW_SRC)/Makefile -w clean
 	@echo libxmhfhw.a cleanup SUCCESS
 	@echo --------------------------------------------------------------
-	@echo --------------------------------------------------------------
+	#@echo --------------------------------------------------------------
 	#@echo cleaning libbaremetal-xmhfbackends...
 	#cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBBAREMETAL_XMHFBACKENDS_SRC)/Makefile -w clean
 	#@echo libbaremetal-xmhfbackends.a cleanup SUCCESS
-	@echo cleaning libxmhfdebug...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBXMHFDEBUG_SRC)/Makefile -w clean
-	@echo libxmhfdebug.a cleanup SUCCESS
-	@echo --------------------------------------------------------------
+	#@echo cleaning libxmhfdebug...
+	#cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBXMHFDEBUG_SRC)/Makefile -w clean
+	#@echo libxmhfdebug.a cleanup SUCCESS
+	#@echo --------------------------------------------------------------
 	@echo --------------------------------------------------------------
 	@echo cleaning runtime...
 	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_RUNTIME_SRC)/Makefile -w clean
