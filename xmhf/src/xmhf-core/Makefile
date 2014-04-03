@@ -22,8 +22,11 @@ all:
 	@echo libxmhfhw.a build SUCCESS
 	@echo --------------------------------------------------------------
 	@echo --------------------------------------------------------------
-	@echo building libbaremetal-xmhfbackends...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBBAREMETAL_XMHFBACKENDS_SRC)/Makefile -w all
+	#@echo building libbaremetal-xmhfbackends...
+	#cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBBAREMETAL_XMHFBACKENDS_SRC)/Makefile -w all
+	#@echo libbaremetal-xmhfbackends.a build SUCCESS
+	@echo building libxmhfdebug...
+	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBXMHFDEBUG_SRC)/Makefile -w all
 	@echo libbaremetal-xmhfbackends.a build SUCCESS
 	@echo --------------------------------------------------------------
 	@echo --------------------------------------------------------------
@@ -69,9 +72,12 @@ clean:
 	@echo libxmhfhw.a cleanup SUCCESS
 	@echo --------------------------------------------------------------
 	@echo --------------------------------------------------------------
-	@echo cleaning libbaremetal-xmhfbackends...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBBAREMETAL_XMHFBACKENDS_SRC)/Makefile -w clean
-	@echo libbaremetal-xmhfbackends.a cleanup SUCCESS
+	#@echo cleaning libbaremetal-xmhfbackends...
+	#cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBBAREMETAL_XMHFBACKENDS_SRC)/Makefile -w clean
+	#@echo libbaremetal-xmhfbackends.a cleanup SUCCESS
+	@echo cleaning libxmhfdebug...
+	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBXMHFDEBUG_SRC)/Makefile -w clean
+	@echo libxmhfdebug.a cleanup SUCCESS
 	@echo --------------------------------------------------------------
 	@echo --------------------------------------------------------------
 	@echo cleaning runtime...

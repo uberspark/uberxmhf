@@ -32,42 +32,44 @@ OBJECTS_VERIFY := $(patsubst %.c, %.v, $(C_SOURCES))
 CFLAGS += -nostdinc -fno-builtin -nostdlib -Wall 
 
 # folder where objects go
-LIBBAREMETAL_XMHFBACKENDS_OBJECTS_DIR = _objs_libbaremetal-xmhfbackends
+#LIBBAREMETAL_XMHFBACKENDS_OBJECTS_DIR = _objs_libbaremetal-xmhfbackends
+LIBXMHFDEBUG_OBJECTS_DIR = _objs_libxmhfdebug
 
 # archive name
-THE_ARCHIVE = libbaremetal-xmhfbackends.a
+#THE_ARCHIVE = libbaremetal-xmhfbackends.a
+THE_ARCHIVE = libxmhfdebug.a
 
 # targets
 .PHONY: all
 all: $(THE_ARCHIVE)
 
 $(THE_ARCHIVE): $(OBJECTS)
-	cd $(LIBBAREMETAL_XMHFBACKENDS_OBJECTS_DIR) && $(AR) -rcs $(THE_ARCHIVE) $(OBJECTS_ARCHIVE)
+	cd $(LIBXMHFDEBUG_OBJECTS_DIR) && $(AR) -rcs $(THE_ARCHIVE) $(OBJECTS_ARCHIVE)
 
 %.o: %.S  
-	mkdir -p $(LIBBAREMETAL_XMHFBACKENDS_OBJECTS_DIR)
+	mkdir -p $(LIBXMHFDEBUG_OBJECTS_DIR)
 	#mkdir -p "$(@D)"
 	@echo Building "$(@F)" from "$<" 
-	gcc -c $(ASFLAGS) -o $(LIBBAREMETAL_XMHFBACKENDS_OBJECTS_DIR)/$(@F) $<
+	gcc -c $(ASFLAGS) -o $(LIBXMHFDEBUG_OBJECTS_DIR)/$(@F) $<
 
 %.o: %.c   
-	mkdir -p $(LIBBAREMETAL_XMHFBACKENDS_OBJECTS_DIR)
+	mkdir -p $(LIBXMHFDEBUG_OBJECTS_DIR)
 	#mkdir -p "$(@D)"
 	@echo Building "$(@F)" from "$<" 
-	$(CC) -c $(CFLAGS) -o $(LIBBAREMETAL_XMHFBACKENDS_OBJECTS_DIR)/$(@F) $<
+	$(CC) -c $(CFLAGS) -o $(LIBXMHFDEBUG_OBJECTS_DIR)/$(@F) $<
 
 
 .PHONY: clean
 clean:
-	$(RM) -rf $(LIBBAREMETAL_XMHFBACKENDS_OBJECTS_DIR)
+	$(RM) -rf $(LIBXMHFDEBUG_OBJECTS_DIR)
 	
 .PHONY: verify
 verify: $(OBJECTS_VERIFY)
-	mkdir -p $(LIBBAREMETAL_XMHFBACKENDS_OBJECTS_DIR)
-	cd $(LIBBAREMETAL_XMHFBACKENDS_OBJECTS_DIR) && echo $(CFLAGS) >CFLAGS
+	mkdir -p $(LIBXMHFDEBUG_OBJECTS_DIR)
+	cd $(LIBXMHFDEBUG_OBJECTS_DIR) && echo $(CFLAGS) >CFLAGS
 	
 %.v: %.c  
-	mkdir -p $(LIBBAREMETAL_XMHFBACKENDS_OBJECTS_DIR)
+	mkdir -p $(LIBXMHFDEBUG_OBJECTS_DIR)
 	#mkdir -p "$(@D)"
 	#@echo Building "$(@F)" from "$<" 
-	$(CP) -f $< $(LIBBAREMETAL_XMHFBACKENDS_OBJECTS_DIR)/$(@F).c
+	$(CP) -f $< $(LIBXMHFDEBUG_OBJECTS_DIR)/$(@F).c
