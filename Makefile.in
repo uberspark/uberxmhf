@@ -316,9 +316,9 @@ subdirs: $(LIBBAREMETAL_SRC) $(XMHFCORE_SRC)
 	@echo **************************************************************
 	@echo --------------------------------------------------------------
 	@echo generating final binaries...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin $(XMHF_OBJDIR)/_objs_xmhf-secureloader/xmhf-secureloader.bin $(XMHF_OBJDIR)/_objs_xmhf-runtime/xmhf-runtime.bin > ./xmhf.tmp.img
-	cd $(XMHFCORE_OBJECTS_DIR) && gzip -c ./xmhf.tmp.img > ./xmhf-$(TARGET_HWPLATFORM).bin.gz
-	cd $(XMHFCORE_OBJECTS_DIR) && $(RM) -rf ./xmhf.tmp.img 
+	cd $(XMHF_OBJDIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin ./_objs_xmhf-secureloader/xmhf-secureloader.bin ./_objs_xmhf-runtime/xmhf-runtime.bin > ./xmhf.tmp.img
+	cd $(XMHF_OBJDIR) && gzip -c ./xmhf.tmp.img > ./xmhf-$(TARGET_HWPLATFORM).bin.gz
+	cd $(XMHF_OBJDIR) && $(RM) -rf ./xmhf.tmp.img 
 	@echo xmhf binary generation SUCCESS
 	@echo --------------------------------------------------------------
 
