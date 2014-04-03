@@ -54,7 +54,7 @@ export XMHF_RUNTIME_SRC := $(realpath xmhf/src/xmhf-core/xmhf-runtime)
 export XMHF_SECURELOADER_SRC := $(realpath xmhf/src/xmhf-secureloader)
 
 # XMHF bootloader source location
-export XMHF_BOOTLOADER_SRC := $(realpath xmhf/src/xmhf-core/xmhf-bootloader)
+export XMHF_BOOTLOADER_SRC := $(realpath xmhf/src/xmhf-bootloader)
 
 # libbaremetal archive
 # TODO: specify via configure
@@ -305,11 +305,14 @@ subdirs: $(LIBBAREMETAL_SRC) $(XMHFCORE_SRC)
 	@echo XMHF secure loader build SUCCESS
 	@echo **************************************************************
 	@echo **************************************************************
-	@echo Building XMHF core...
+	@echo Building XMHF boot loader...
 	@echo **************************************************************
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFCORE_SRC)/Makefile -w all
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_BOOTLOADER_SRC)/Makefile -w all \
+		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
+		SLBELOW64K_INTEGRITY_HASH=\""$(shell ( dd if=$(XMHF_OBJDIR)/_objs_xmhf-secureloader/sl.bin bs=1024 count=64 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
+		SLABOVE64K_INTEGRITY_HASH=\""$(shell ( dd if=$(XMHF_OBJDIR)/_objs_xmhf-secureloader/sl.bin bs=1024 skip=64 count=1984 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
 	@echo **************************************************************
-	@echo XMHF core build SUCCESS
+	@echo XMHF boot loader build SUCCESS
 	@echo **************************************************************
 	@echo --------------------------------------------------------------
 	@echo generating final binaries...
@@ -420,11 +423,11 @@ clean:
 	@echo XMHF secure loader clean SUCCESS
 	@echo **************************************************************
 	@echo **************************************************************
-	@echo cleaning XMHF core...
+	@echo cleaning XMHF boot loader...
 	@echo **************************************************************
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFCORE_SRC)/Makefile -w clean
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_BOOTLOADER_SRC)/Makefile -w clean
 	@echo **************************************************************
-	@echo XMHF core cleanup SUCCESS
+	@echo XMHF boot loader cleanup SUCCESS
 	@echo **************************************************************
 	rm -rf *.html
 	rm -rf doc

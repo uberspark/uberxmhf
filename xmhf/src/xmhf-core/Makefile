@@ -40,14 +40,14 @@ all:
 	#		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
 	#@echo xmhf-secureloader build SUCCESS
 	#@echo --------------------------------------------------------------
-	@echo --------------------------------------------------------------
-	@echo building xmhf-bootloader...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_BOOTLOADER_SRC)/Makefile -w all \
-		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
-		SLBELOW64K_INTEGRITY_HASH=\""$(shell ( dd if=$(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-secureloader/sl.bin bs=1024 count=64 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
-		SLABOVE64K_INTEGRITY_HASH=\""$(shell ( dd if=$(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-secureloader/sl.bin bs=1024 skip=64 count=1984 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
-	@echo xmhf-bootloader build SUCCESS
-	@echo --------------------------------------------------------------
+	#@echo --------------------------------------------------------------
+	#@echo building xmhf-bootloader...
+	#cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_BOOTLOADER_SRC)/Makefile -w all \
+	#	RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
+	#	SLBELOW64K_INTEGRITY_HASH=\""$(shell ( dd if=$(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-secureloader/sl.bin bs=1024 count=64 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
+	#	SLABOVE64K_INTEGRITY_HASH=\""$(shell ( dd if=$(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-secureloader/sl.bin bs=1024 skip=64 count=1984 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
+	#@echo xmhf-bootloader build SUCCESS
+	#@echo --------------------------------------------------------------
 	#@echo --------------------------------------------------------------
 	#@echo generating final binaries...
 	#cd $(XMHFCORE_OBJECTS_DIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin ./_objs_xmhf-secureloader/xmhf-secureloader.bin $(XMHF_OBJDIR)/_objs_xmhf-runtime/xmhf-runtime.bin > ./xmhf.tmp.img
@@ -89,11 +89,11 @@ clean:
 	#cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_SECURELOADER_SRC)/Makefile -w clean
 	#@echo xmhf-secureloader cleanup SUCCESS
 	#@echo --------------------------------------------------------------
-	@echo --------------------------------------------------------------
-	@echo cleaning xmhf-bootloader...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_BOOTLOADER_SRC)/Makefile -w clean
-	@echo xmhf-bootloader cleanup SUCCESS
-	@echo --------------------------------------------------------------
+	#@echo --------------------------------------------------------------
+	#@echo cleaning xmhf-bootloader...
+	#cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_BOOTLOADER_SRC)/Makefile -w clean
+	#@echo xmhf-bootloader cleanup SUCCESS
+	#@echo --------------------------------------------------------------
 	$(RM) -rf $(XMHFCORE_OBJECTS_DIR)
 
 .PHONY: install-dev
