@@ -11,11 +11,11 @@ export XMHFCORE_OBJECTS_DIR = _objs_xmhf-core
 .PHONY: all
 all: 
 	mkdir -p $(XMHFCORE_OBJECTS_DIR)
-	@echo --------------------------------------------------------------
-	@echo building libxmhfcore...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBXMHFCORE_SRC)/Makefile -w all
-	@echo libxmhfcore.a build SUCCESS
-	@echo --------------------------------------------------------------
+	#@echo --------------------------------------------------------------
+	#@echo building libxmhfcore...
+	#cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBXMHFCORE_SRC)/Makefile -w all
+	#@echo libxmhfcore.a build SUCCESS
+	#@echo --------------------------------------------------------------
 	#@echo --------------------------------------------------------------
 	#@echo building libxmhfhw...
 	#cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBXMHFHW_SRC)/Makefile -w all
@@ -61,11 +61,11 @@ all:
 .PHONY: clean 
 clean: 
 	mkdir -p $(XMHFCORE_OBJECTS_DIR)
-	@echo --------------------------------------------------------------
-	@echo cleaning libxmhfcore...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBXMHFCORE_SRC)/Makefile -w clean
-	@echo libxmhfcore.a cleanup SUCCESS
-	@echo --------------------------------------------------------------
+	#@echo --------------------------------------------------------------
+	#@echo cleaning libxmhfcore...
+	#cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBXMHFCORE_SRC)/Makefile -w clean
+	#@echo libxmhfcore.a cleanup SUCCESS
+	#@echo --------------------------------------------------------------
 	#@echo --------------------------------------------------------------
 	#@echo cleaning libxmhfhw...
 	#cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBXMHFHW_SRC)/Makefile -w clean
