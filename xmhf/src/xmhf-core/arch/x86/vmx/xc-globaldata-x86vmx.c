@@ -44,12 +44,14 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/*
- * EMHF base platform component interface, x86 vmx backend data
+/**
+ * XMHF core global data module (x86 vmx arch.)
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
 #include <xmhf.h>
+
+//bplt-x86vmx-data
 
 #ifndef __XMHF_VERIFICATION__
 	#define voffsetof	offsetof	
@@ -253,3 +255,99 @@ u8 g_vmx_msr_area_guest_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute
 
 //VMX MSR bitmap buffers
 u8 g_vmx_msrbitmap_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
+
+
+//dmap-x86vmx-data
+
+#ifndef __XMHF_VERIFICATION__
+
+//VMX VT-d page table buffers; we support a 3 level page-table walk, 
+//4kb pdpt, 4kb pdt and 4kb pt and each entry in pdpt, pdt and pt is 64-bits
+u8 g_vmx_vtd_pdp_table[PAGE_SIZE_4K] __attribute__(( section(".palign_data") )); 
+u8 g_vmx_vtd_pd_tables[PAGE_SIZE_4K * PAE_PTRS_PER_PDPT] __attribute__(( section(".palign_data") ));
+u8 g_vmx_vtd_p_tables[PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT] __attribute__(( section(".palign_data") ));
+
+//VMX VT-d Root Entry Table (RET)
+//the RET is 4kb, each root entry (RE) is 128-bits
+//this gives us 256 entries in the RET, each corresponding to a PCI bus num. (0-255)
+u8 g_vmx_vtd_ret[PAGE_SIZE_4K] __attribute__(( section(".palign_data") )); 
+
+//VMX VT-d Context Entry Table (CET)
+//each RE points to a context entry table (CET) of 4kb, each context entry (CE)
+//is 128-bits which gives us 256 entries in the CET, accounting for 32 devices
+//with 8 functions each as per the PCI spec.
+u8 g_vmx_vtd_cet[PAGE_SIZE_4K * PCI_BUS_MAX] __attribute__(( section(".palign_data") ));
+
+#else //__XMHF_VERIFICATION__
+	//DMA table initialization is currently audited manually
+#endif //__XMHF_VERIFICATION__
+
+
+//memp-x86vmx-data
+
+#ifndef __XMHF_VERIFICATION__
+
+//VMX EPT PML4 table buffers
+//memprot
+u8 g_vmx_ept_pml4_table_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));		
+
+//VMX EPT PDP table buffers
+//memprot
+u8 g_vmx_ept_pdp_table_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
+		
+//VMX EPT PD table buffers
+//memprot
+u8 g_vmx_ept_pd_table_buffers[PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
+
+//VMX EPT P table buffers
+//memprot
+u8 g_vmx_ept_p_table_buffers[PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
+
+#else //__XMHF_VERIFICATION__
+	//HPT initialization is currently audited manually
+#endif //__XMHF_VERIFICATION__
+
+//smpg-x86vmx-data
+
+//the BSP LAPIC base address
+//smpguest x86vmx
+u32 g_vmx_lapic_base __attribute__(( section(".data") )) = 0;
+
+//4k buffer which is the virtual LAPIC page that guest reads and writes from/to
+//during INIT-SIPI-SIPI emulation
+//smpguest x86vmx
+u8 g_vmx_virtual_LAPIC_base[PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
+
+//the quiesce counter, all CPUs except for the one requesting the
+//quiesce will increment this when they get their quiesce signal
+//smpguest x86vmx
+u32 g_vmx_quiesce_counter __attribute__(( section(".data") )) = 0;
+
+//SMP lock to access the above variable
+//smpguest x86vmx
+u32 g_vmx_lock_quiesce_counter __attribute__(( section(".data") )) = 1; 
+
+//resume counter to rally all CPUs after resumption from quiesce
+//smpguest x86vmx
+u32 g_vmx_quiesce_resume_counter __attribute__(( section(".data") )) = 0;
+
+//SMP lock to access the above variable
+//smpguest x86vmx
+u32 g_vmx_lock_quiesce_resume_counter __attribute__(( section(".data") )) = 1; 
+    
+//the "quiesce" variable, if 1, then we have a quiesce in process
+//smpguest x86vmx
+u32 g_vmx_quiesce __attribute__(( section(".data") )) = 0;;      
+
+//SMP lock to access the above variable
+//smpguest x86vmx
+u32 g_vmx_lock_quiesce __attribute__(( section(".data") )) = 1; 
+    
+//resume signal, becomes 1 to signal resume after quiescing
+//smpguest x86vmx
+u32 g_vmx_quiesce_resume_signal __attribute__(( section(".data") )) = 0;  
+
+//SMP lock to access the above variable
+//smpguest x86vmx
+u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") )) = 1; 
+
