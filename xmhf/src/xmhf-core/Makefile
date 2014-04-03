@@ -5,7 +5,7 @@
 # out-of-tree build)
 srcdir := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
-export XMHFCORE_OBJECTS_DIR = _objs_xmhf-core
+# export XMHFCORE_OBJECTS_DIR = _objs_xmhf-core
 
 #-----build rules
 .PHONY: all
@@ -48,13 +48,13 @@ all:
 		SLABOVE64K_INTEGRITY_HASH=\""$(shell ( dd if=$(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-secureloader/sl.bin bs=1024 skip=64 count=1984 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
 	@echo xmhf-bootloader build SUCCESS
 	@echo --------------------------------------------------------------
-	@echo --------------------------------------------------------------
-	@echo generating final binaries...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin ./_objs_xmhf-secureloader/xmhf-secureloader.bin $(XMHF_OBJDIR)/_objs_xmhf-runtime/xmhf-runtime.bin > ./xmhf.tmp.img
-	cd $(XMHFCORE_OBJECTS_DIR) && gzip -c ./xmhf.tmp.img > ./xmhf-$(TARGET_HWPLATFORM).bin.gz
-	cd $(XMHFCORE_OBJECTS_DIR) && $(RM) -rf ./xmhf.tmp.img 
-	@echo xmhf binary generation SUCCESS
-	@echo --------------------------------------------------------------
+	#@echo --------------------------------------------------------------
+	#@echo generating final binaries...
+	#cd $(XMHFCORE_OBJECTS_DIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin ./_objs_xmhf-secureloader/xmhf-secureloader.bin $(XMHF_OBJDIR)/_objs_xmhf-runtime/xmhf-runtime.bin > ./xmhf.tmp.img
+	#cd $(XMHFCORE_OBJECTS_DIR) && gzip -c ./xmhf.tmp.img > ./xmhf-$(TARGET_HWPLATFORM).bin.gz
+	#cd $(XMHFCORE_OBJECTS_DIR) && $(RM) -rf ./xmhf.tmp.img 
+	#@echo xmhf binary generation SUCCESS
+	#@echo --------------------------------------------------------------
 
 # cleanup rules
 #.PHONY: clean init-late-clean

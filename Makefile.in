@@ -81,6 +81,7 @@ ADDL_INCLUDES += -I$(EMHF_INCLUDE) -I$(LIBXMHFHW_INC) $(LIBBAREMETAL_INC)
 # link libbaremetal *again* to resolve more dependencies
 ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a
 
+export XMHFCORE_OBJECTS_DIR = $(XMHF_OBJDIR)/_objs_xmhf-core
 
 # App's source tree root (
 export APP_ROOT := $(realpath @APP_ROOT@)
@@ -302,6 +303,13 @@ subdirs: $(LIBBAREMETAL_SRC) $(XMHFCORE_SRC)
 	@echo **************************************************************
 	@echo XMHF core build SUCCESS
 	@echo **************************************************************
+	@echo --------------------------------------------------------------
+	@echo generating final binaries...
+	cd $(XMHFCORE_OBJECTS_DIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin ./_objs_xmhf-secureloader/xmhf-secureloader.bin $(XMHF_OBJDIR)/_objs_xmhf-runtime/xmhf-runtime.bin > ./xmhf.tmp.img
+	cd $(XMHFCORE_OBJECTS_DIR) && gzip -c ./xmhf.tmp.img > ./xmhf-$(TARGET_HWPLATFORM).bin.gz
+	cd $(XMHFCORE_OBJECTS_DIR) && $(RM) -rf ./xmhf.tmp.img 
+	@echo xmhf binary generation SUCCESS
+	@echo --------------------------------------------------------------
 
 .PHONY: install
 install: install-bin
