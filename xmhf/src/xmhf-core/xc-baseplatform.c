@@ -45,11 +45,26 @@
  */
 
 /*
- * EMHF base platform component interface (SMP exports)
+ * XMHF core base platform component
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
 #include <xmhf.h>
+
+//get CPU vendor
+u32 xmhf_baseplatform_getcpuvendor(void){
+	return xmhf_baseplatform_arch_getcpuvendor();
+}
+
+//initialize basic platform elements
+void xmhf_baseplatform_initialize(void){
+	xmhf_baseplatform_arch_initialize();	
+}
+
+//initialize CPU state
+void xmhf_baseplatform_cpuinitialize(void){
+	xmhf_baseplatform_arch_cpuinitialize();
+}
 
 //initialize SMP
 void xmhf_baseplatform_smpinitialize(void){
@@ -77,3 +92,4 @@ xmhfcoreapiretval_t xmhf_baseplatform_getcputable(void){
 	retval.returnptr1 = (void *)&g_midtable;
 	return retval;
 }
+
