@@ -42,7 +42,10 @@ export LIBXMHFHW_SRC := $(realpath xmhf/src/xmhf-core/libxmhfhw)
 LIBXMHFHW_INC = $(realpath xmhf/src/xmhf-core/libxmhfhw)
 
 # libbaremetal-xmhfbackends source location
-export LIBBAREMETAL_XMHFBACKENDS_SRC := $(realpath xmhf/src/xmhf-core/libbaremetal-xmhfbackends)
+#export LIBBAREMETAL_XMHFBACKENDS_SRC := $(realpath xmhf/src/xmhf-core/libbaremetal-xmhfbackends)
+
+# libxmhfdebug source location
+export LIBXMHFDEBUG_SRC := $(realpath xmhf/src/xmhf-core/libxmhfdebug)
 
 # XMHF runtime source location
 export XMHF_RUNTIME_SRC := $(realpath xmhf/src/xmhf-core/xmhf-runtime)
@@ -69,7 +72,8 @@ export ADDL_INCLUDES :=
 
 ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a
 
-ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_libbaremetal-xmhfbackends/libbaremetal-xmhfbackends.a
+#ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_libbaremetal-xmhfbackends/libbaremetal-xmhfbackends.a
+ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_libxmhfdebug/libxmhfdebug.a
 ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_libxmhfhw/libxmhfhw.a
 #ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_xmhf-runtime/_objs_libxmhfruntimearch/libxmhfruntimearch.a
 ADDL_INCLUDES += -I$(EMHF_INCLUDE) -I$(LIBXMHFHW_INC) $(LIBBAREMETAL_INC)
