@@ -34,12 +34,12 @@ all:
 	#cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_RUNTIME_SRC)/Makefile -w all
 	#@echo runtime build SUCCESS
 	#@echo --------------------------------------------------------------
-	@echo --------------------------------------------------------------
-	@echo building xmhf-secureloader...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_SECURELOADER_SRC)/Makefile -w all \
-			RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
-	@echo xmhf-secureloader build SUCCESS
-	@echo --------------------------------------------------------------
+	#@echo --------------------------------------------------------------
+	#@echo building xmhf-secureloader...
+	#cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_SECURELOADER_SRC)/Makefile -w all \
+	#		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
+	#@echo xmhf-secureloader build SUCCESS
+	#@echo --------------------------------------------------------------
 	@echo --------------------------------------------------------------
 	@echo building xmhf-bootloader...
 	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_BOOTLOADER_SRC)/Makefile -w all \
@@ -84,11 +84,11 @@ clean:
 	#cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_RUNTIME_SRC)/Makefile -w clean
 	#@echo runtime cleanup SUCCESS
 	#@echo --------------------------------------------------------------
-	@echo --------------------------------------------------------------
-	@echo cleaning xmhf-secureloader...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_SECURELOADER_SRC)/Makefile -w clean
-	@echo xmhf-secureloader cleanup SUCCESS
-	@echo --------------------------------------------------------------
+	#@echo --------------------------------------------------------------
+	#@echo cleaning xmhf-secureloader...
+	#cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_SECURELOADER_SRC)/Makefile -w clean
+	#@echo xmhf-secureloader cleanup SUCCESS
+	#@echo --------------------------------------------------------------
 	@echo --------------------------------------------------------------
 	@echo cleaning xmhf-bootloader...
 	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_BOOTLOADER_SRC)/Makefile -w clean
