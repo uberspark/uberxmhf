@@ -49,8 +49,8 @@ TARGET_ARCH=$[]with_target_arch
 AC_SUBST([COREAPIHUB_ARCH])
 AC_ARG_WITH([coreapihub_arch],
         AS_HELP_STRING([--with-coreapihub-arch=@<:@ARCH@:>@],
-                [select XMHF core API hub architecture (swfp)]),
-                , [with_coreapihub_arch=swfp])
+                [select XMHF core API hub architecture (pbvph)]),
+                , [with_coreapihub_arch=pbvph])
 COREAPIHUB_ARCH=$[]with_coreapihub_arch
 
 
