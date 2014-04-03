@@ -45,13 +45,23 @@
  */
 
 /**
- * rntm-x86-data.c
- * EMHF runtime data definitions - x86 specific
+ * XMHF core global data module (x86 common arch.)
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
+//bplt-x86-data
+
+//runtime TSS
+u8 g_runtime_TSS[PAGE_SIZE_4K] __attribute__(( section(".data") ));
+
+//signal that basic base platform data structure initialization is complete 
+//(used by the exception handler component)
+bool g_bplt_initiatialized __attribute__(( section(".data") )) = false;
+
+
+//rntm-x86-data
 //runtime GDT
 u64 x_gdt_start[] __attribute__(( section(".data"), aligned(16) )) = {
 	0x0000000000000000ULL,	//NULL descriptor
