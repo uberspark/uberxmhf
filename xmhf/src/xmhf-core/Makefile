@@ -10,10 +10,10 @@ export XMHF_RUNTIME_ARCH_SRC := $(realpath $(srcdir)/arch)
 # grab list of all source files
 C_SOURCES := $(wildcard $(srcdir)/*.c)
 A_SOURCES := 
-C_SOURCES += $(wildcard $(srcdir)/xmhf-apihub/*.c)
-A_SOURCES += $(wildcard $(srcdir)/xmhf-apihub/*.S)
-C_SOURCES += $(shell find $(srcdir)/xmhf-apihub/arch/$(XMHF_CORE_APIHUB_ARCH)/ -type f -name '*.c')
-A_SOURCES += $(shell find $(srcdir)/xmhf-apihub/arch/$(XMHF_CORE_APIHUB_ARCH)/ -type f -name '*.S')
+#C_SOURCES += $(wildcard $(srcdir)/xmhf-apihub/*.c)
+#A_SOURCES += $(wildcard $(srcdir)/xmhf-apihub/*.S)
+#C_SOURCES += $(shell find $(srcdir)/xmhf-apihub/arch/$(XMHF_CORE_APIHUB_ARCH)/ -type f -name '*.c')
+#A_SOURCES += $(shell find $(srcdir)/xmhf-apihub/arch/$(XMHF_CORE_APIHUB_ARCH)/ -type f -name '*.S')
 
 # grab arch. specific sources
 #C_SOURCES += $(shell find $(srcdir)/arch/x86/common/ -type f -name '*.c')
