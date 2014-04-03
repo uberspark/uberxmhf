@@ -45,7 +45,7 @@ LIBXMHFHW_INC = $(realpath xmhf/src/xmhf-core/libxmhfhw)
 #export LIBBAREMETAL_XMHFBACKENDS_SRC := $(realpath xmhf/src/xmhf-core/libbaremetal-xmhfbackends)
 
 # libxmhfdebug source location
-export LIBXMHFDEBUG_SRC := $(realpath xmhf/src/xmhf-core/libxmhfdebug)
+export LIBXMHFDEBUG_SRC := $(realpath xmhf/src/libxmhfdebug)
 
 # XMHF runtime source location
 export XMHF_RUNTIME_SRC := $(realpath xmhf/src/xmhf-core/xmhf-runtime)
@@ -73,7 +73,7 @@ export ADDL_INCLUDES :=
 ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a
 
 #ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_libbaremetal-xmhfbackends/libbaremetal-xmhfbackends.a
-ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_libxmhfdebug/libxmhfdebug.a
+ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libxmhfdebug/libxmhfdebug.a
 ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_libxmhfhw/libxmhfhw.a
 #ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_xmhf-runtime/_objs_libxmhfruntimearch/libxmhfruntimearch.a
 ADDL_INCLUDES += -I$(EMHF_INCLUDE) -I$(LIBXMHFHW_INC) $(LIBBAREMETAL_INC)
@@ -268,6 +268,13 @@ subdirs: $(LIBBAREMETAL_SRC) $(XMHFCORE_SRC)
 	@echo libbaremetal.a build SUCCESS
 	@echo **************************************************************
 	@echo **************************************************************
+	@echo Building libxmhfdebug...
+	@echo **************************************************************
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBXMHFDEBUG_SRC)/Makefile -w all
+	@echo **************************************************************
+	@echo libxmhfdebug.a build SUCCESS
+	@echo **************************************************************
+	@echo **************************************************************
 	@echo Building XMHF core...
 	@echo **************************************************************
 	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFCORE_SRC)/Makefile -w all
@@ -339,6 +346,13 @@ clean:
 	cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBBAREMETAL_SRC)/Makefile -w clean
 	@echo **************************************************************
 	@echo libbaremetal.a clean SUCCESS
+	@echo **************************************************************
+	@echo **************************************************************
+	@echo Cleaning libxmhfdebug...
+	@echo **************************************************************
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBXMHFDEBUG_SRC)/Makefile -w clean
+	@echo **************************************************************
+	@echo libxmhfdebug.a clean SUCCESS
 	@echo **************************************************************
 	@echo **************************************************************
 	@echo cleaning XMHF core...
