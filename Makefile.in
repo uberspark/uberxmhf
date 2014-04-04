@@ -365,6 +365,9 @@ install-dev:
 	$(CP) -rf ./xmhf/src/libbaremetal/libxmhfcrypto/include/* $(prefix)/include/xmhf/libbaremetal/libxmhfcrypto/include/.
 	$(CP) -rf ./xmhf/src/libbaremetal/libxmhfutil/include/* $(prefix)/include/xmhf/libbaremetal/libxmhfutil/include/.
 	@echo installed XMHF libbaremetal development headers
+	$(MKDIR) -p $(prefix)/include/xmhf/libxmhfdebug/include
+	$(CP) -rf ./xmhf/src/libxmhfdebug/include/* $(prefix)/include/xmhf/libxmhfdebug/include/.
+	@echo installed XMHF libxmhfdebug development headers
 	$(MKDIR) -p $(prefix)/share/xmhf
 	install --mode=644 ./xmhfhypapp.lds $(prefix)/share/xmhf
 	install --mode=644 ./xmhfhypapp.mk $(prefix)/share/xmhf

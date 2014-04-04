@@ -23,5 +23,5 @@ Description: eXtensible Modular Hypervisor Framework
 Requires:
 Version: @PACKAGE_VERSION@
 Libs: -L${xmhf_libdir} -lbaremetal -lxmhfcore -lbaremetal -L${cclibdir} 
-Cflags: -I${xmhf_includedir} -I${xmhf_includedir}/xmhf-core/include -I${xmhf_includedir}/libbaremetal/libtpm/include	-I${xmhf_includedir}/libbaremetal/libtv_utpm/include -I${xmhf_includedir}/libbaremetal/libxmhfc/include	-I${xmhf_includedir}/libbaremetal/libxmhfcrypto/include -I${xmhf_includedir}/libbaremetal/libxmhfutil/include  
+Cflags: -I${xmhf_includedir} -I${xmhf_includedir}/xmhf-core/include -I${xmhf_includedir}/libxmhfdebug/include -I${xmhf_includedir}/libbaremetal/libtpm/include	-I${xmhf_includedir}/libbaremetal/libtv_utpm/include -I${xmhf_includedir}/libbaremetal/libxmhfc/include	-I${xmhf_includedir}/libbaremetal/libxmhfcrypto/include -I${xmhf_includedir}/libbaremetal/libxmhfutil/include  
 
