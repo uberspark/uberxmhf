@@ -45,6 +45,7 @@
  */
 
 #include <xmhf.h>
+#include <xmhf-debug-x86.h>
 
 void xmhf_debug_arch_init(char *params)
 {

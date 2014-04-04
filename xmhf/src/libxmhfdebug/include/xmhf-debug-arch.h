@@ -44,21 +44,23 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF debug component 
+// libxmhfdebug 
 // arch. specific declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __EMHF_DEBUG_ARCH_H__
-#define __EMHF_DEBUG_ARCH_H__
+#ifndef __XMHF_DEBUG_ARCH_H__
+#define __XMHF_DEBUG_ARCH_H__
 
 
 #ifndef __ASSEMBLY__
 
-//XXX: this file needs to include the appropriate arch. specific
-//header using either preprocessor directives, could be a 
-//symlink or use configure
-#include <arch/x86/xmhf-debug-arch-x86.h>
+//----------------------------------------------------------------------
+//ARCH. BACKENDS
+//----------------------------------------------------------------------
+void xmhf_debug_arch_init(char *params);
+void xmhf_debug_arch_putstr(const char *str);
+void xmhf_debug_arch_putc(char c);
 
 #endif	//__ASSEMBLY__
 
-#endif //__EMHF_DEBUG_ARCH_H__
+#endif //__XMHF_DEBUG_ARCH_H__
