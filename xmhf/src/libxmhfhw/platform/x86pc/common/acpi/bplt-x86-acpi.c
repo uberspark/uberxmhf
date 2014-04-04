@@ -51,6 +51,7 @@
 
 #include <xmhf.h> 
 
+#include "platform/x86pc/include/common/_acpi.h"			//ACPI glue
 
 
 //------------------------------------------------------------------------------
