@@ -49,25 +49,11 @@
 // headers
 //author: amit vasudevan (amitvasudevan@acm.org)
 //
-#ifndef __XMHF_H_
-#define __XMHF_H_
+#ifndef __XMHF_CORE_H_
+#define __XMHF_CORE_H_
 
+#include <xmhf.h>
 
-//pull in required C99 compatible C-library interfaces
-//libXMHFc
-#ifndef __ASSEMBLY__
-	
-	#include <stdint.h>
-	#include <stdbool.h>
-	#include <stddef.h>
-	#include <stdarg.h>
-	#include <stdio.h>
-	#include <string.h>
-	#include <ctype.h>
-	#ifndef __XMHF_VERIFICATION__
-		#include <assert.h>
-	#endif
-#endif /* __ASSEMBLY__ */
 
 //pull in required crypto (SHA-1)
 //libXMHFcrypto
@@ -82,14 +68,6 @@
 #ifndef __ASSEMBLY__
 	#include <tpm.h>
 #endif /* __ASSEMBLY__ */
-
-#include <xmhf-debug.h>			//XMHF debug component 
-#include <xmhf-types.h>			//XMHF specific base types
-
-#ifdef __XMHF_VERIFICATION__
-	//include verification related primitives
-	#include <xmhf-verification.h>
-#endif //__XMHF_VERIFICATION__
 
 //forward declaration of runtime parameter block
 #ifndef __ASSEMBLY__
@@ -113,4 +91,4 @@ extern RPB *rpb;
 #include <xmhf-apihub.h>		//XMHF core API interface component
 
 
-#endif /* __XMHF_H_ */
+#endif /* __XMHF_CORE_H_ */
