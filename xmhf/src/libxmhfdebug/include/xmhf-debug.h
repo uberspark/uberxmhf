@@ -48,7 +48,7 @@
 #define __XMHF_DEBUG_H__
 
 //bring in arch. specific declarations
-#include <arch/xmhf-debug-arch.h>
+#include <xmhf-debug-arch.h>
 
 #ifndef __ASSEMBLY__
 
@@ -128,7 +128,7 @@ static inline unsigned char __toupper(unsigned char c)
 //exported FUNCTIONS 
 void xmhf_debug_init(char *params);
 
-#include <stdio.h>
+//#include <stdio.h>
 #if defined (__DEBUG_SERIAL__) || defined (__DEBUG_VGA__)
 	/* void printf(const char *format, ...) */
 	/*   __attribute__ ((format (printf, 1, 2))); */
