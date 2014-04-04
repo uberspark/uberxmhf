@@ -84,6 +84,7 @@
  */
 
 #include <xmhf.h> 
+#include <xmhf-debug-x86.h>
 #include <cmdline.h>
 
 

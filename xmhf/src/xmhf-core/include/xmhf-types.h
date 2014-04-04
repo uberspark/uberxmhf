@@ -48,6 +48,9 @@
 #ifndef __EMHF_TYPES_H_
 #define __EMHF_TYPES_H_
 
+//XXX: temporary, MUST get rid of this as soon as we are done with re-org
+#include "platform/x86pc/include/common/_com.h"		//serial UART as debugging backend
+
 
 #ifndef __ASSEMBLY__
 
