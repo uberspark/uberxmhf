@@ -51,6 +51,46 @@
  
 #include <xmhf.h>
 
+
+/**
+ * XMHF secureloader x86-vmx entry module
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
+ 
+
+/* sl stack, this is just a placeholder and ensures that the linker
+ actually "allocates" the stack up until 0x10000*/
+u8 _sl_stack[1] __attribute__((section(".sl_stack")));
+
+__attribute__((naked)) void _xmhf_sl_entry(void) __attribute__(( section(".sl_header") )) __attribute__(( align(4096) )){
+	
+asm volatile ( 	".global _mle_page_table_start \r\n"
+			   "_mle_page_table_start:\r\n"
+			   ".fill 4096, 1, 0 \r\n" /* first page*/
+			   ".global g_sl_protected_dmabuffer\r\n"
+				"g_sl_protected_dmabuffer:\r\n"
+				".fill 4096, 1, 0 \r\n" /* second page*/
+				".fill 4096, 1, 0 \r\n" /* third page*/
+				".global _mle_page_table_end \r\n"
+				"_mle_page_table_end: \r\n"
+				".global _mle_hdr \r\n"
+				"_mle_hdr:\r\n"
+				".fill 0x80, 1, 0x90\r\n" /* XXX TODO just a guess; should really be sizeof(mle_hdr_t) */
+				".global _sl_start \r\n"
+				"_sl_start: \r\n"
+			    "movw %%ds, %%ax \r\n" 
+				"movw %%ax, %%fs \r\n"
+				"movw %%ax, %%gs \r\n"
+			    "movw %%ax, %%ss \r\n"
+			    "movl $0x10010000, %%esp \r\n" /* XXX TODO Get rid of magic number*/
+			    :
+			    :
+		);
+
+		xmhf_sl_main();
+
+}
+
 static u8 vtd_ret_table[PAGE_SIZE_4K]; //4KB Vt-d Root-Entry table
 
 void xmhf_sl_arch_sanitize_post_launch(void){
