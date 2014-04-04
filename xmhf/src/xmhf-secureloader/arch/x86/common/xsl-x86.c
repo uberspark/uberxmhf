@@ -195,3 +195,50 @@ void xmhf_sl_arch_baseplatform_initialize(void){
 	}
 	
 }
+
+
+void xmhf_sl_arch_x86_invoke_runtime_entrypoint(u32 gdtbase, u32 idtbase,
+	u32 entrypoint, u32 stacktop, u32 cr3) {
+		
+	asm volatile(
+		"movl	$(0x00000030), %%eax \r\n"	//CR4_PAE | CR4_PSE
+		"movl	%%eax, %%cr4 \r\n"
+		"movl	%0, %%edi \r\n"				//EDI = page table base address
+		"movl	%%edi, %%cr3 \r\n"			
+		"movl	$(0x80000015), %%eax \r\n"   // ET, EM, PE, PG
+		"movl	%%eax, %%cr0 \r\n"	    	//turn on paging
+		"movl 	%1, %%esi \r\n"				//gdtbase parameter
+		"movl 	%2, %%edi \r\n"				//idtbase parameter
+		"subl  $0x8, %%esp \r\n"
+		"movw  %%fs:(%%esi), %%ax \r\n"	
+		"movw  %%ax, (%%esp) \r\n"
+		"movl  %%fs:0x2(%%esi), %%eax \r\n"
+		"movl  %%eax, 0x2(%%esp) \r\n"
+		"lgdt	(%%esp) \r\n"
+		"movw  %%fs:(%%edi), %%ax \r\n"
+		"movw  %%ax, (%%esp) \r\n"
+		"movl  %%fs:0x2(%%edi), %%eax \r\n"
+		"movl  %%eax, 0x2(%%esp) \r\n"
+		"lidt	(%%esp) \r\n"
+		"addl  $0x8, %%esp \r\n"
+		"movl 	%3, %%edi \r\n"					//entrypoint parameter
+		"movl  	%4, %%esi \r\n"					//top of stack parameter
+		"movw	%5, %%ax \r\n"
+		"movw	%%ax, %%ds \r\n"	
+		"movw	%%ax, %%es \r\n"
+		"movw	%%ax, %%fs \r\n"
+		"movw	%%ax, %%gs \r\n"
+		"movw  %%ax, %%ss \r\n"
+		"movl  %%esi,%%esp \r\n"
+		"pushl	$0x3000 \r\n"					// clear flags, but set IOPL=3 (CPL-3)
+		"popf \r\n"
+		"pushl	%6 \r\n"				// far jump to runtime entry point
+		"pushl	%%edi \r\n"
+		"lret \r\n"
+		: //no outputs
+		: "m" (cr3), "m" (gdtbase), "m" (idtbase), "m" (entrypoint), "m" (stacktop), "i" (__DS_CPL0), "i" (__CS_CPL0)
+		: "eax", "edi", "esi", "esp"
+	);
+		
+		
+} 
