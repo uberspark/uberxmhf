@@ -89,7 +89,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <print_hex.h>
+//#include <print_hex.h>
 #include <tpm.h>
 #include <xmhfcrypto.h>
 #include <sha1.h>
@@ -185,7 +185,7 @@ uint32_t tpm_nv_read_value(uint32_t locality, tpm_nv_index_t index,
 #ifdef TPM_TRACE
     {
         printf("TPM: ");
-        print_hex(NULL, WRAPPER_OUT_BUF, out_size);
+        //print_hex(NULL, WRAPPER_OUT_BUF, out_size);
     }
 #endif
 
@@ -278,7 +278,7 @@ static uint32_t tpm_oiap(uint32_t locality, tpm_authhandle_t *hauth,
 #ifdef TPM_TRACE
     {
         printf("TPM: ");
-        print_hex(NULL, WRAPPER_OUT_BUF, out_size);
+        //print_hex(NULL, WRAPPER_OUT_BUF, out_size);
     }
 #endif
 
@@ -319,7 +319,7 @@ static uint32_t tpm_osap(uint32_t locality, tpm_entity_type_t ent_type,
 #ifdef TPM_TRACE
     {
         printf("TPM: ");
-        print_hex(NULL, WRAPPER_OUT_BUF, out_size);
+        //print_hex(NULL, WRAPPER_OUT_BUF, out_size);
     }
 #endif
 
@@ -378,7 +378,7 @@ static uint32_t _tpm_seal(uint32_t locality, tpm_key_handle_t hkey,
 #ifdef TPM_TRACE
     {
         printf("TPM: ");
-        print_hex(NULL, WRAPPER_OUT_BUF, out_size);
+        //print_hex(NULL, WRAPPER_OUT_BUF, out_size);
     }
 #endif
 
@@ -449,7 +449,7 @@ static uint32_t _tpm_unseal(uint32_t locality, tpm_key_handle_t hkey,
 #ifdef TPM_TRACE
     {
         printf("TPM: ");
-        print_hex(NULL, WRAPPER_OUT_BUF, out_size);
+        //print_hex(NULL, WRAPPER_OUT_BUF, out_size);
     }
 #endif
 
@@ -843,8 +843,8 @@ bool tpm_cmp_creation_pcrs(uint32_t pcr_nr_create,
         return false;
     if ( memcmp((char*)&composite, (char*)cre_composite, sizeof(composite)) ) {
         printf("TPM: Not equal to creation composition:\n");
-        print_hex(NULL, (uint8_t *)&composite, sizeof(composite));
-        print_hex(NULL, (uint8_t *)cre_composite, sizeof(composite));
+        //print_hex(NULL, (uint8_t *)&composite, sizeof(composite));
+        //print_hex(NULL, (uint8_t *)cre_composite, sizeof(composite));
         return false;
     }
 
@@ -883,7 +883,7 @@ uint32_t tpm_get_nvindex_size(uint32_t locality,
 #ifdef TPM_TRACE
     {
         printf("TPM: ");
-        print_hex(NULL, resp, resp_size);
+        //print_hex(NULL, resp, resp_size);
     }
 #endif
 
@@ -950,7 +950,7 @@ extern uint32_t tpm_get_nv_data_public(uint32_t locality,
 #ifdef TPM_TRACE
     {
         printf("TPM: ");
-        print_hex(NULL, resp, resp_size);
+        //print_hex(NULL, resp, resp_size);
     }
 #endif
 
@@ -982,7 +982,7 @@ extern uint32_t tpm_get_nv_data_public(uint32_t locality,
     offset = 0;
     LOAD_NV_DATA_PUBLIC(resp, offset, pub);
 
-    /*print_hex("  NV pub: ", pub, resp_size);*/
+    /*//print_hex("  NV pub: ", pub, resp_size);*/
 
     return ret;
 }
