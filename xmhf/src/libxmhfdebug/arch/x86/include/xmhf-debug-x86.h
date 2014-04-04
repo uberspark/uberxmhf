@@ -44,12 +44,12 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF debug component 
+// libxmhfdebug 
 // x86 arch. specific declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __EMHF_DEBUG_ARCH_X86_H__
-#define __EMHF_DEBUG_ARCH_X86_H__
+#ifndef __XMHF_DEBUG_X86_H__
+#define __XMHF_DEBUG_X86_H__
 
 #include "platform/x86pc/include/common/_com.h"		//serial UART as debugging backend
 //#include "_div64.h"		//arch. specific do_div definition
@@ -57,23 +57,14 @@
 #ifndef __ASSEMBLY__
 
 //----------------------------------------------------------------------
-//ARCH. BACKENDS
-//----------------------------------------------------------------------
-void xmhf_debug_arch_init(char *params);
-void xmhf_debug_arch_putstr(const char *str);
-void xmhf_debug_arch_putc(char c);
-
-//----------------------------------------------------------------------
 //x86 ARCH. INTERFACES
 //----------------------------------------------------------------------
 extern uart_config_t g_uart_config;
 
-//#ifdef __DEBUG_SERIAL__
 void dbg_x86_uart_init(char *params);
 void dbg_x86_uart_putc(char ch);
 void dbg_x86_uart_putstr(const char *str);
 
-//#ifdef __DEBUG_VGA__
 void dbg_x86_vgamem_init(char *params);
 void dbg_x86_vgamem_putc(char ch);
 void dbg_x86_vgamem_putstr(const char *str);
@@ -81,4 +72,4 @@ void dbg_x86_vgamem_putstr(const char *str);
 
 #endif // __ASSEMBLY__
 
-#endif //__EMHF_DEBUG_ARCH_X86_H__
+#endif //__XMHF_DEBUG_X86_H__

@@ -45,6 +45,7 @@
  */
 
 #include <xmhf.h> 
+#include <xmhf-debug-x86.h>
 
 #define COLS     80
 #define ROWS     25
