@@ -51,7 +51,10 @@
 
 #include <xmhf.h>
 
-
+#include <tpm.h>
+#include "cpu/x86/include/common/_processor.h"  	//CPU
+#include "platform/x86pc/include/common/_tpm.h"        	//TPM
+	 
 //======================================================================
 //static (local) decls./defns.
 //======================================================================

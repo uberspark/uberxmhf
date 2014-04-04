@@ -49,6 +49,9 @@
 
 #include <xmhf.h> 
 
+#include "platform/x86pc/include/common/_acpi.h"			//ACPI glue
+#include "platform/x86pc/include/intel/vtd/vtd.h"		//VMX DMA protection
+
 //maximum number of RSDT entries we support
 #define	ACPI_MAX_RSDT_ENTRIES		(256)
 

@@ -53,6 +53,7 @@
 
 #include "cpu/x86/include/common/_multiboot.h"		//multiboot
 #include "cpu/x86/include/intel/txt/_txt.h"			//Trusted eXecution Technology (SENTER support)
+#include "platform/x86pc/include/common/_tpm.h"        	//TPM
 
 //open TPM locality
 int xmhf_tpm_arch_x86vmx_open_locality(int locality){
