@@ -48,7 +48,7 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 //---includes-------------------------------------------------------------------
-#include <xmhf.h> 
+#include <xmhf-core.h> 
 
 
 //---runtime main---------------------------------------------------------------

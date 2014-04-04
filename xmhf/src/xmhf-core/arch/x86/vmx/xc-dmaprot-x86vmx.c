@@ -48,7 +48,7 @@
 // x86vmx backend
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf.h> 
+#include <xmhf-core.h> 
 
 //re-initialize DMA protections (if needed) for the runtime
 bool xmhf_dmaprot_arch_reinitialize(void){

@@ -49,7 +49,7 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#include <xmhf.h>
+#include <xmhf-core.h>
 
 //initialize CPU state
 void xmhf_baseplatform_arch_x86vmx_cpuinitialize(void){

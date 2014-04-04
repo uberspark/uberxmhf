@@ -124,7 +124,7 @@ typedef struct {
 	u32 XtVmmMPCpuinfoBuffer;
 	u32 XtVmmMPCpuinfoNumEntries;
 	u32 XtVmmTSSBase;
-    uart_config_t RtmUartConfig;	        /* runtime options parsed in init and passed forward */
+    u8 RtmUartConfig[16];	        /* runtime options parsed in init and passed forward */
     char cmdline[128]; 				/* runtime options parsed in init and passed forward */
 	u32 isEarlyInit;					//1 for an "early init" else 0 (late-init)
 } __attribute__((packed)) RPB, *PRPB;
@@ -148,7 +148,7 @@ typedef struct _sl_parameter_block {
     u64 rdtsc_after_drtm;
 
     /* runtime options parsed in init and passed forward */
-    uart_config_t uart_config;
+    u8 uart_config[16];
     char cmdline[128]; /* runtime options parsed in init and passed forward */
 } __attribute__((packed)) SL_PARAMETER_BLOCK;
 

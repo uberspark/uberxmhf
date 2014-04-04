@@ -23,6 +23,8 @@ export HYPOUTDIR = $(CURDIR)
 # objects directory (used for building binaries without polluting source namespace)
 export XMHF_OBJDIR = $(CURDIR)/_objects
 
+XMHF_INC = $(CURDIR)/xmhf/src/include
+
 # verification directory (used for verification without polluting source namespace)
 export XMHF_VERIFYDIR := $(CURDIR)/_verify
 
@@ -79,7 +81,7 @@ ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a
 ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libxmhfdebug/libxmhfdebug.a
 ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libxmhfhw/libxmhfhw.a
 #ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_xmhf-runtime/_objs_libxmhfruntimearch/libxmhfruntimearch.a
-ADDL_INCLUDES += $(LIBXMHFDEBUG_INC) $(XMHF_SECURELOADER_INC) -I$(EMHF_INCLUDE) -I$(LIBXMHFHW_INC) $(LIBBAREMETAL_INC)
+ADDL_INCLUDES += -I$(XMHF_INC) $(LIBXMHFDEBUG_INC) $(XMHF_SECURELOADER_INC) -I$(EMHF_INCLUDE) -I$(LIBXMHFHW_INC) $(LIBBAREMETAL_INC)
 
 # link libbaremetal *again* to resolve more dependencies
 ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a

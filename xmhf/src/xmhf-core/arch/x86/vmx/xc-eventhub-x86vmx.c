@@ -47,7 +47,7 @@
 // peh-x86vmx-main.c
 // EMHF partition event-hub for Intel x86 vmx
 // author: amit vasudevan (amitvasudevan@acm.org)
-#include <xmhf.h> 
+#include <xmhf-core.h> 
 
 void xmhf_parteventhub_arch_x86vmx_entry(void) __attribute__((naked)){
 		//step-1: save all CPU GPRs

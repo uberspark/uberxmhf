@@ -48,7 +48,7 @@
 // implementation
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf.h> 
+#include <xmhf-core.h> 
 
 // initialize memory protection structures for a given core (vcpu)
 //void xmhf_memprot_initialize(VCPU *vcpu){
