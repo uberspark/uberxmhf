@@ -93,7 +93,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdio.h>
-#include <print_hex.h>
+//#include <print_hex.h>
 #include <tpm.h>
 
 
@@ -234,7 +234,7 @@ uint32_t tpm_pcr_read(uint32_t locality, uint32_t pcr, tpm_pcr_value_t *out)
 #ifdef TPM_TRACE
     {
         printf("TPM: ");
-        print_hex(NULL, out->digest, out_size);
+        //print_hex(NULL, out->digest, out_size);
     }
 #endif
 
@@ -279,7 +279,7 @@ uint32_t tpm_pcr_extend(uint32_t locality, uint32_t pcr,
 #ifdef TPM_TRACE
     {
         printf("TPM: ");
-        print_hex(NULL, out->digest, out_size);
+        //print_hex(NULL, out->digest, out_size);
     }
 #endif
 
@@ -319,7 +319,7 @@ uint32_t tpm_get_version(uint8_t *major, uint8_t *minor)
 #ifdef TPM_TRACE
     {
         printf("TPM: ");
-        print_hex(NULL, WRAPPER_OUT_BUF, out_size);
+        //print_hex(NULL, WRAPPER_OUT_BUF, out_size);
     }
 #endif
 
@@ -410,7 +410,7 @@ uint32_t tpm_get_random(uint32_t locality, uint8_t *random_data,
 #ifdef TPM_TRACE
     {
         printf("TPM: ");
-        print_hex(NULL, WRAPPER_OUT_BUF, out_size);
+        //print_hex(NULL, WRAPPER_OUT_BUF, out_size);
     }
 #endif
 
