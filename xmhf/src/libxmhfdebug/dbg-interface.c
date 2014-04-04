@@ -65,6 +65,30 @@ void dvprintf(u32 log_type, const char *fmt, va_list args)
 }
 
 
+void dprintf(u32 log_type, const char *fmt, ...)
+{
+    va_list       args;
+	(void)log_type;
+    va_start(args, fmt);
+    vprintf(fmt, args);
+    va_end(args);
+}
+
+
+/*
+ * if 'prefix' != NULL, print it before each line of hex string
+ */
+void print_hex(const char *prefix, const void *prtptr, size_t size)
+{
+    size_t i;
+    for ( i = 0; i < size; i++ ) {
+        if ( i % 16 == 0 && prefix != NULL )
+            printf("\n%s", prefix);
+        printf("%02x ", *(const uint8_t *)prtptr++);
+    }
+    printf("\n");
+}
+
 #endif 
 
 void xmhf_debug_init(char *params){
