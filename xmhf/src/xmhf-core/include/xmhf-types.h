@@ -49,7 +49,7 @@
 #define __EMHF_TYPES_H_
 
 //XXX: temporary, MUST get rid of this as soon as we are done with re-org
-#include "platform/x86pc/include/common/_com.h"		//serial UART as debugging backend
+//#include "platform/x86pc/include/common/_com.h"		//serial UART as debugging backend
 
 
 #ifndef __ASSEMBLY__
@@ -127,7 +127,8 @@ typedef struct {
 	u32 XtVmmMPCpuinfoBuffer;
 	u32 XtVmmMPCpuinfoNumEntries;
 	u32 XtVmmTSSBase;
-    uart_config_t RtmUartConfig;	        /* runtime options parsed in init and passed forward */
+    //uart_config_t RtmUartConfig;	        /* runtime options parsed in init and passed forward */
+    u8 RtmUartConfig[16];
     char cmdline[128]; 				/* runtime options parsed in init and passed forward */
 	u32 isEarlyInit;					//1 for an "early init" else 0 (late-init)
 } __attribute__((packed)) RPB, *PRPB;
@@ -151,7 +152,8 @@ typedef struct _sl_parameter_block {
     u64 rdtsc_after_drtm;
 
     /* runtime options parsed in init and passed forward */
-    uart_config_t uart_config;
+    //uart_config_t uart_config;
+    u8 uart_config[16];
     char cmdline[128]; /* runtime options parsed in init and passed forward */
 } __attribute__((packed)) SL_PARAMETER_BLOCK;
 

@@ -120,7 +120,8 @@ void xmhf_sl_main(void){
 
 	#if defined (__DEBUG_SERIAL__)
 		//pass along UART config for serial debug output
-		rpb->RtmUartConfig = slpb.uart_config;
+		//rpb->RtmUartConfig = slpb.uart_config;
+		memcpy(&rpb->RtmUartConfig, &slpb.uart_config, sizeof(rpb->RtmUartConfig));
 	#endif
 
 		//pass command line configuration forward 
