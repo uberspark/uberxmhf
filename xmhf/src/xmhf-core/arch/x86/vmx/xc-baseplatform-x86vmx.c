@@ -45,12 +45,109 @@
  */
 
 /*
- * EMHF base platform component interface, x86 vmx backend
- * smp related functions
+ * XMHF core base platform component (x86 vmx arch. backend)
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
 #include <xmhf.h>
+
+//initialize CPU state
+void xmhf_baseplatform_arch_x86vmx_cpuinitialize(void){
+    	u32 bcr0;
+	    txt_heap_t  __attribute__((unused)) *txt_heap;
+        os_mle_data_t __attribute__((unused)) *os_mle_data ;
+  
+	    //set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
+		bcr0 = read_cr0();
+		bcr0 |= 0x20;
+		write_cr0(bcr0);
+
+#if defined (__DRT__)
+        // restore pre-SENTER MTRRs that were overwritten for SINIT launch 
+        // NOTE: XXX TODO; BSP MTRRs ALREADY RESTORED IN SL; IS IT
+        //   DANGEROUS TO DO THIS TWICE? 
+        // sl.c unity-maps 0xfed00000 for 2M so these should work fine 
+	#ifndef __XMHF_VERIFICATION__
+        txt_heap = get_txt_heap();
+        printf("\ntxt_heap = 0x%08x", (u32)txt_heap);
+        os_mle_data = get_os_mle_data_start(txt_heap);
+        printf("\nos_mle_data = 0x%08x", (u32)os_mle_data);
+    
+        if(!validate_mtrrs(&(os_mle_data->saved_mtrr_state))) {
+             printf("\nSECURITY FAILURE: validate_mtrrs() failed.\n");
+             HALT();
+        }
+        restore_mtrrs(&(os_mle_data->saved_mtrr_state));
+        #endif
+#endif	//__DRT__
+      
+}
+
+u32 xmhf_baseplatform_arch_getcpuvendor(void){
+	return xmhf_baseplatform_arch_x86_getcpuvendor();
+}
+
+//initialize basic platform elements
+void xmhf_baseplatform_arch_initialize(void){
+	//initialize PCI subsystem
+	xmhf_baseplatform_arch_x86_pci_initialize();
+	
+	//check ACPI subsystem
+	{
+		ACPI_RSDP rsdp;
+		#ifndef __XMHF_VERIFICATION__
+			//TODO: plug in a BIOS data area map/model
+			if(!xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp)){
+				printf("\n%s: ACPI RSDP not found, Halting!", __FUNCTION__);
+				HALT();
+			}
+		#endif //__XMHF_VERIFICATION__
+	}
+
+	//initialize TR/TSS
+	#ifndef __XMHF_VERIFICATION__
+	xmhf_baseplatform_arch_x86_initializeTR();
+	#endif //__XMHF_VERIFICATION__
+
+}
+
+void xmhf_baseplatform_arch_cpuinitialize(void){
+	xmhf_baseplatform_arch_x86_cpuinitialize();
+
+	//if(cpu_vendor == CPU_VENDOR_INTEL)
+		xmhf_baseplatform_arch_x86vmx_cpuinitialize();
+}
+
+//----------------------------------------------------------------------
+//bplt-x86vmx-reboot
+
+/*//VMX specific platform reboot
+void xmhf_baseplatform_arch_x86vmx_reboot(VCPU *vcpu){
+	(void)vcpu;
+
+	//shut VMX off, else CPU ignores INIT signal!
+	__asm__ __volatile__("vmxoff \r\n");
+	write_cr4(read_cr4() & ~(CR4_VMXE));
+	
+	//fall back on generic x86 reboot
+	xmhf_baseplatform_arch_x86_reboot();
+}*/
+
+//reboot platform
+void xmhf_baseplatform_arch_reboot(context_desc_t context_desc){
+	//HALT_ON_ERRORCOND (vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	
+	//shut VMX off, else CPU ignores INIT signal!
+	__asm__ __volatile__("vmxoff \r\n");
+	write_cr4(read_cr4() & ~(CR4_VMXE));
+	
+	//fall back on generic x86 reboot
+	xmhf_baseplatform_arch_x86_reboot();
+}
+
+
+//----------------------------------------------------------------------
+//bplt-x86vmx-smp
 
 //allocate and setup VCPU structure for all the CPUs
 //note: isbsp is set by xmhf_baseplatform_arch_x86_smpinitialize_commonstart
