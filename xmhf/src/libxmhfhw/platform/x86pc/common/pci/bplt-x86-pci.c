@@ -49,6 +49,10 @@
 
 #include <xmhf.h> 
 
+#include "cpu/x86/include/common/_processor.h"  	//CPU
+#include "platform/x86pc/include/common/_pci.h"        	//PCI bus glue
+
+
 /*
 	note on the two different types of PCI config space access methods
 	(unfortunately only a fraction of this is in the PCI specs...

@@ -51,6 +51,9 @@
 
 #include <xmhf.h>
 
+#include "cpu/x86/include/common/_multiboot.h"		//multiboot
+#include "cpu/x86/include/intel/txt/_txt.h"			//Trusted eXecution Technology (SENTER support)
+
 //open TPM locality
 int xmhf_tpm_arch_x86vmx_open_locality(int locality){
         txt_didvid_t didvid;
