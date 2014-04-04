@@ -49,6 +49,7 @@
 //author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h> 
+#include <xmhf-sl.h>
 
 //this is the SL parameter block and is placed in a seperate (untrusted)
 //section. It is populated by the XMHF bootloader.

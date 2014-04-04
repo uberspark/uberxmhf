@@ -107,7 +107,7 @@ extern RPB *rpb;
 #include <xmhf-parteventhub.h>	//XMHF partition event-hub component
 #include <xmhf-xcphandler.h>	//XMHF exception handler component
 #include <xmhf-tpm.h>			//XMHF Trusted Platform Module component
-#include <xmhf-sl.h>			//XMHF secure loader component
+//#include <xmhf-sl.h>			//XMHF secure loader component
 #include <xmhf-runtime.h>		//XMHF secure loader component
 #include <xmhf-app.h>			//XMHF Application callback declarations
 #include <xmhf-apihub.h>		//XMHF core API interface component

@@ -54,6 +54,7 @@ LIBXMHFDEBUG_INC = -I$(realpath xmhf/src/libxmhfdebug/include) -I$(realpath xmhf
 
 # XMHF secureloader source location
 export XMHF_SECURELOADER_SRC := $(realpath xmhf/src/xmhf-secureloader)
+XMHF_SECURELOADER_INC = -I$(realpath xmhf/src/xmhf-secureloader/include) 
 
 # XMHF bootloader source location
 export XMHF_BOOTLOADER_SRC := $(realpath xmhf/src/xmhf-bootloader)
@@ -78,7 +79,7 @@ ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a
 ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libxmhfdebug/libxmhfdebug.a
 ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libxmhfhw/libxmhfhw.a
 #ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_xmhf-runtime/_objs_libxmhfruntimearch/libxmhfruntimearch.a
-ADDL_INCLUDES += $(LIBXMHFDEBUG_INC) -I$(EMHF_INCLUDE) -I$(LIBXMHFHW_INC) $(LIBBAREMETAL_INC)
+ADDL_INCLUDES += $(LIBXMHFDEBUG_INC) $(XMHF_SECURELOADER_INC) -I$(EMHF_INCLUDE) -I$(LIBXMHFHW_INC) $(LIBBAREMETAL_INC)
 
 # link libbaremetal *again* to resolve more dependencies
 ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a
