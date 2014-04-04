@@ -67,8 +67,8 @@ __attribute__((naked)) void _xmhf_sl_entry(void) __attribute__(( section(".sl_he
 asm volatile ( 	".global _mle_page_table_start \r\n"
 			   "_mle_page_table_start:\r\n"
 			   ".fill 4096, 1, 0 \r\n" /* first page*/
-			   ".global g_sl_protected_dmabuffer\r\n"
-				"g_sl_protected_dmabuffer:\r\n"
+			   //".global g_sl_protected_dmabuffer\r\n"
+				//"g_sl_protected_dmabuffer:\r\n"
 				".fill 4096, 1, 0 \r\n" /* second page*/
 				".fill 4096, 1, 0 \r\n" /* third page*/
 				".global _mle_page_table_end \r\n"
