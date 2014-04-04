@@ -132,7 +132,7 @@ void tboot_parse_cmdline(void)
 /*     cmdline_parse(cmdline, g_linux_cmdline_options, g_linux_param_values); */
 /* } */
 
-void get_tboot_loglvl(void)
+/*void get_tboot_loglvl(void)
 {
     const char *loglvl = cmdline_get_option_val(g_tboot_cmdline_options,
                                         g_tboot_param_values, "loglvl");
@@ -140,25 +140,25 @@ void get_tboot_loglvl(void)
         return;
 
     if ( strcmp(loglvl, "none") == 0 )
-        g_log_level = LOG_LEVEL_NONE; /* print nothing */
-}
+        g_log_level = LOG_LEVEL_NONE; // print nothing 
+}*/
 
-void get_tboot_log_targets(void)
+/*void get_tboot_log_targets(void)
 {
     const char *targets = cmdline_get_option_val(g_tboot_cmdline_options,
                                          g_tboot_param_values, "logging");
 
-    /* nothing set, leave defaults */
+    // nothing set, leave defaults 
     if ( targets == NULL || *targets == '\0' )
         return;
 
-    /* determine if no targets set explicitly */
+    // determine if no targets set explicitly 
     if ( strcmp(targets, "none") == 0 ) {
-        g_log_targets = LOG_TARGET_NONE; /* print nothing */
+        g_log_targets = LOG_TARGET_NONE; // print nothing 
         return;
     }
 
-    /* else init to nothing and parse the possible targets */
+    // else init to nothing and parse the possible targets 
     g_log_targets = LOG_TARGET_NONE;
 
     while ( *targets != '\0' ) {
@@ -175,14 +175,14 @@ void get_tboot_log_targets(void)
             targets += 3;
         }
         else 
-            break; /* unrecognized, end loop */
+            break; // unrecognized, end loop 
 
         if ( *targets == ',' )
             targets++;
         else
-            break; /* unrecognized, end loop */
+            break; // unrecognized, end loop 
     }
-}
+}*/
 
 /* static bool parse_pci_bdf(const char **bdf, uint32_t *bus, uint32_t *slot, */
 /*                           uint32_t *func) */

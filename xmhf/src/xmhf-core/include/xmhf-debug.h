@@ -44,11 +44,8 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF secure loader component declarations
-// author: amit vasudevan (amitvasudevan@acm.org)
-
-#ifndef __EMHF_DEBUG_H__
-#define __EMHF_DEBUG_H__
+#ifndef __XMHF_DEBUG_H__
+#define __XMHF_DEBUG_H__
 
 //bring in arch. specific declarations
 #include <arch/xmhf-debug-arch.h>
@@ -57,8 +54,8 @@
 
 //----------------------------------------------------------------------
 //exported DATA 
-extern uint8_t g_log_targets;
-extern uint8_t g_log_level;
+//extern uint8_t g_log_targets;
+//extern uint8_t g_log_level;
 //extern unsigned char g_dbg_ctype[];
 
 //----------------------------------------------------------------------
@@ -153,4 +150,4 @@ void xmhf_debug_init(char *params);
 
 #endif	//__ASSEMBLY__
 
-#endif //__EMHF_DEBUG_H__
+#endif //__XMHF_DEBUG_H__
