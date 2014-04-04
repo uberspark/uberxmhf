@@ -999,7 +999,8 @@ void cstartup(multiboot_info_t *mbi){
 		}
 
 #if defined (__DEBUG_SERIAL__)
-        slpb->uart_config = g_uart_config;
+        //slpb->uart_config = g_uart_config;
+        memcpy(&slpb->uart_config, &g_uart_config, sizeof(uart_config_t));
 #endif
         strncpy(slpb->cmdline, (const char *)mbi->cmdline, sizeof(slpb->cmdline));
     }

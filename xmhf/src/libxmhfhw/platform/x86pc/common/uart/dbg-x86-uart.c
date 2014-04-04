@@ -50,6 +50,7 @@
  */ 
 
 #include <xmhf.h> 
+#include "platform/x86pc/include/common/_com.h"		//serial UART as debugging backend
 
 // frequency of UART clock source
 #define UART_CLOCKFREQ   1843200

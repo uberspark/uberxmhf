@@ -111,7 +111,7 @@ RPB arch_rpb __attribute__(( section(".s_rpb") )) = {
 	.XtVmmMPCpuinfoBuffer= (u32)g_cpumap,
 	.XtVmmMPCpuinfoNumEntries= 0,
 	.XtVmmTSSBase= (u32)g_runtime_TSS,
-	.RtmUartConfig = {0, 0, 0, 0, 0, 0, 0},
+	.RtmUartConfig = {0},
 	.isEarlyInit=1,					//1 for an "early init" else 0 (late-init)
 };
  
