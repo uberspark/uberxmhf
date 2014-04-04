@@ -50,10 +50,10 @@
 
 #include <xmhf.h> 
 
-uint8_t g_log_targets=LOG_TARGET_NONE;
-uint8_t g_log_level=LOG_LEVEL_NONE;
+//uint8_t g_log_targets=LOG_TARGET_NONE;
+//uint8_t g_log_level=LOG_LEVEL_NONE;
 
-static volatile u32 printf_lock=1;
+//static volatile u32 printf_lock=1;
 
 #if defined (__DEBUG_SERIAL__) || defined (__DEBUG_VGA__)
 
