@@ -44,26 +44,14 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF secure loader component declarations
+// XMHF secure loader arch. declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHF_SL_H__
-#define __XMHF_SL_H__
+#ifndef __XMHF_SL_ARCH_H__
+#define __XMHF_SL_ARCH_H__
 
 
 #ifndef __ASSEMBLY__
-
-//----------------------------------------------------------------------
-//exported DATA 
-//----------------------------------------------------------------------
-extern u8 xmhf_rpb_start[];
-
-
-//----------------------------------------------------------------------
-//exported FUNCTIONS 
-//----------------------------------------------------------------------
-void xmhf_sl_main(void);
-void _xmhf_sl_entry(void);
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
@@ -81,24 +69,11 @@ void xmhf_sl_arch_baseplatform_initialize(void);
 //----------------------------------------------------------------------
 //x86 ARCH. INTERFACES
 //----------------------------------------------------------------------
-u32 xmhf_sl_arch_x86_setup_runtime_paging(RPB * rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsize);
-void xmhf_sl_arch_x86_invoke_runtime_entrypoint(u32 gdtbase, u32 idtbase,
-	u32 entrypoint, u32 stacktop, u32 cr3)__attribute__((cdecl)); 
+//u32 xmhf_sl_arch_x86_setup_runtime_paging(RPB * rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsize);
+//void xmhf_sl_arch_x86_invoke_runtime_entrypoint(u32 gdtbase, u32 idtbase,
+//	u32 entrypoint, u32 stacktop, u32 cr3)__attribute__((cdecl)); 
 
-
-//----------------------------------------------------------------------
-//x86vmx SUBARCH. INTERFACES
-//----------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------
-//x86svm SUBARCH. INTERFACES
-//----------------------------------------------------------------------
-//extern u32 g_sl_protected_dmabuffer[]; //protected DMA-protection buffer 
-									   //for early DMA protection 
-									   //(only used for x86svm)
-									   
 
 #endif	//__ASSEMBLY__
 
-#endif //__XMHF_SL_H__
+#endif //__XMHF_SL_ARCH_H__
