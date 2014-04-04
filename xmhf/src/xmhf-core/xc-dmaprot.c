@@ -47,7 +47,7 @@
 // EMHF DMA protection component implementation
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf.h> 
+#include <xmhf-core.h> 
 
 
 //re-initialize DMA protections (if needed) for the runtime

@@ -49,7 +49,7 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
  
-#include <xmhf.h>
+#include <xmhf-core.h>
 
 
 //initialize EMHF core exception handlers

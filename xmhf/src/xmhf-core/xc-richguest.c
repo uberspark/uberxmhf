@@ -48,7 +48,7 @@
 // takes care of initializing and booting up the "rich" guest
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf.h> 
+#include <xmhf-core.h> 
 
 
 static void xmhf_smpguest_initialize_helper(context_desc_t context_desc){

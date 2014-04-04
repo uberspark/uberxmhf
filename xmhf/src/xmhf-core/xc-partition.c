@@ -49,7 +49,7 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#include <xmhf.h>
+#include <xmhf-core.h>
 
 //initialize partition monitor for a given CPU
 //void xmhf_partition_initializemonitor(VCPU *vcpu){
