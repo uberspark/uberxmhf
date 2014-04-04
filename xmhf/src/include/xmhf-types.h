@@ -45,8 +45,8 @@
  */
 
 //types.h - base types
-#ifndef __EMHF_TYPES_H_
-#define __EMHF_TYPES_H_
+#ifndef __XMHF_TYPES_H_
+#define __XMHF_TYPES_H_
 
 
 #ifndef __ASSEMBLY__
@@ -158,4 +158,4 @@ typedef struct _sl_parameter_block {
 
 #endif /*ifndef __ASSEMBLY__*/
 
-#endif /* __EMHF_TYPES_H_ */
+#endif /* __XMHF_TYPES_H_ */

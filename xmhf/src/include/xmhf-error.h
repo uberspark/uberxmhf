@@ -47,8 +47,8 @@
 //error.h - error handling 
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __ERROR_H_
-#define __ERROR_H_
+#ifndef __XMHF_ERROR_H_
+#define __XMHF_ERROR_H_
 
 
 #ifndef __ASSEMBLY__
@@ -96,4 +96,4 @@ static inline bool multiply_overflow_u32(uint32_t x, uint32_t y)
 
 #endif /*__ASSEMBLY__*/
 
-#endif /* _ERROR_H */
+#endif /* _XMHF_ERROR_H */
