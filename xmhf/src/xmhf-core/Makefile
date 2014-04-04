@@ -57,7 +57,7 @@ THE_ARCHIVE = xmhf-runtime
 all: $(THE_ARCHIVE)
 
 $(THE_ARCHIVE): libxmhfruntimearch $(OBJECTS) 
-	cd $(XMHF_RUNTIME_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(srcdir)/runtime.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) ./_objs_libxmhfruntimearch/libxmhfruntimearch.a $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
+	cd $(XMHF_RUNTIME_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(srcdir)/xc.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) ./_objs_libxmhfruntimearch/libxmhfruntimearch.a $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
 	cd $(XMHF_RUNTIME_OBJECTS_DIR) && $(OBJCOPY) --output-format=binary $(THE_ARCHIVE).exe $(THE_ARCHIVE).bin
 
 
