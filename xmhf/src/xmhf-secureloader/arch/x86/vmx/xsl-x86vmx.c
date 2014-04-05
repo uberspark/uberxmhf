@@ -66,6 +66,7 @@
 //#include "platform/x86pc/include/common/_acpi.h"			//ACPI glue
 //#include "platform/x86pc/include/amd/dev/_svm_eap.h"		//SVM DMA protection
 #include "platform/x86pc/include/intel/vtd/vtd.h"		//VMX DMA protection
+#include "platform/x86pc/include/common/_memaccess.h"	//platform memory access
 
 
 /**
@@ -208,11 +209,7 @@ static bool vtd_dmaprotect(u32 membase, u32 size){
 	//zap VT-d presence in ACPI table...
 	//TODO: we need to be a little elegant here. eventually need to setup 
 	//EPT/NPTs such that the DMAR pages are unmapped for the guest
-	//xmhf_baseplatform_arch_flat_writeu32(vtd_dmar_table_physical_address, 0UL);
-	{
-			u32 *dmaraddress= (u32 *)vtd_dmar_table_physical_address;
-			*dmaraddress=0;		
-	}
+	xmhf_baseplatform_arch_flat_writeu32(vtd_dmar_table_physical_address, 0UL);
 
 	//success
 	printf("\n%s: success, leaving...", __FUNCTION__);
