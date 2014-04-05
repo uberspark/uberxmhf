@@ -50,6 +50,22 @@
  */
  
 #include <xmhf.h>
+#include <xmhf-sl.h>
+#include <xmhf-sl-arch.h>
+
+#include "cpu/x86/include/common/_multiboot.h"		//multiboot
+#include "cpu/x86/include/common/_processor.h"  	//CPU
+//#include "cpu/x86/include/common/_msr.h"        	//model specific registers
+#include "cpu/x86/include/common/_paging.h"     	//MMU
+//#include "cpu/x86/include/common/_io.h"         	//legacy I/O
+//#include "cpu/x86/include/common/_apic.h"       	//APIC
+//#include "cpu/x86/include/amd/svm/_svm.h"        	//SVM extensions
+//#include "cpu/x86/include/intel/vmx/_vmx.h"			//VMX extensions
+#include "cpu/x86/include/intel/txt/_txt.h"			//Trusted eXecution Technology (SENTER support)
+//#include "platform/x86pc/include/common/_pci.h"        	//PCI bus glue
+//#include "platform/x86pc/include/common/_acpi.h"			//ACPI glue
+//#include "platform/x86pc/include/amd/dev/_svm_eap.h"		//SVM DMA protection
+#include "platform/x86pc/include/intel/vtd/vtd.h"		//VMX DMA protection
 
 
 /**
@@ -192,7 +208,11 @@ static bool vtd_dmaprotect(u32 membase, u32 size){
 	//zap VT-d presence in ACPI table...
 	//TODO: we need to be a little elegant here. eventually need to setup 
 	//EPT/NPTs such that the DMAR pages are unmapped for the guest
-	xmhf_baseplatform_arch_flat_writeu32(vtd_dmar_table_physical_address, 0UL);
+	//xmhf_baseplatform_arch_flat_writeu32(vtd_dmar_table_physical_address, 0UL);
+	{
+			u32 *dmaraddress= (u32 *)vtd_dmar_table_physical_address;
+			*dmaraddress=0;		
+	}
 
 	//success
 	printf("\n%s: success, leaving...", __FUNCTION__);

@@ -73,11 +73,12 @@
 	#define __TARGET_SIZE_XMHFHYPAPP		0x02000000		//32M
 //----------------------------------------------------------------------	
 
-//"sl" parameter block magic value
+/*//"sl" parameter block magic value
 #define SL_PARAMETER_BLOCK_MAGIC		0xDEADBEEF
 
 //"runtime" parameter block magic value
 #define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
+*/
 
 //16K stack for each core during runtime
 #define RUNTIME_STACK_SIZE  			(16384)     

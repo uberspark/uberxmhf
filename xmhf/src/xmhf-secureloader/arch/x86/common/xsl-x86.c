@@ -54,6 +54,18 @@
 #include <xmhf-sl.h>
 #include <xmhf-sl-arch.h>
 
+#include "cpu/x86/include/common/_processor.h"  	//CPU
+#include "cpu/x86/include/common/_paging.h"     	//MMU
+#include "platform/x86pc/include/common/_acpi.h"			//ACPI glue
+
+//XXX: The following is an ugly hack and will disappear once we move
+//xmhf_sl_arch_x86_setup_runtime_paging and
+//xmhf_sl_arch_x86_invoke_runtime_entrypoint
+//into xmhf-core 
+#define 	__DS_CPL0 	0x0010 	//CPL-0 data segment selector
+#define 	__CS_CPL0 	0x0008 	//CPL-0 code segment selector
+#define __TARGET_BASE_CORE				0x10200000		//258M
+
 //we only have confidence in the runtime's expected value here in the SL
 //static INTEGRITY_MEASUREMENT_VALUES g_sl_gold /* __attribute__(( section("") )) */ = {
 //    .sha_runtime = ___RUNTIME_INTEGRITY_HASH___,

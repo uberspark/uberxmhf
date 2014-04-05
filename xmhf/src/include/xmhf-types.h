@@ -98,6 +98,27 @@ typedef struct _integrity_measurement_values {
     u8 sha_runtime[20];
 } INTEGRITY_MEASUREMENT_VALUES;
 
+//XXX: this is currently close to GRUB, but is essentially a generic memory map structure
+typedef struct _grube820 {
+  u32 baseaddr_low;
+  u32 baseaddr_high;
+  u32 length_low;
+  u32 length_high;
+  u32 type;  
+} __attribute__((packed)) GRUBE820;
+
+#define SIZE_STRUCT_GRUBE820  (sizeof(struct _grube820))
+
+//XXX: this is currently close to x86 platforms, but is essentially a generic physical CPU structure
+typedef struct _pcpu {
+  u32 lapic_id;
+  u32 lapic_ver;
+  u32 lapic_base;
+  u32 isbsp;
+} __attribute__((packed)) PCPU;
+
+#define SIZE_STRUCT_PCPU  (sizeof(struct _pcpu))
+
 
 //"runtime" parameter block structure; arch_rpb (in startup component) 
 //is the default definition
@@ -152,6 +173,11 @@ typedef struct _sl_parameter_block {
     char cmdline[128]; /* runtime options parsed in init and passed forward */
 } __attribute__((packed)) SL_PARAMETER_BLOCK;
 
+//"sl" parameter block magic value
+#define SL_PARAMETER_BLOCK_MAGIC		0xDEADBEEF
+
+//"runtime" parameter block magic value
+#define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
 
 
 
