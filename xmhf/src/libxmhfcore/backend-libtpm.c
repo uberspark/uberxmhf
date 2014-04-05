@@ -45,6 +45,7 @@
  */
 
 #include <xmhf.h>
+#include <xmhf-core.h>
 
 /*
  * libtpm backend

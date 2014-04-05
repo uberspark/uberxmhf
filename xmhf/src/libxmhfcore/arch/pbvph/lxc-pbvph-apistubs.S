@@ -45,6 +45,7 @@
  */
 
 #include <xmhf.h>
+#include <xmhf-core.h>
 
 //core/hypapp API/callbacks low-level stubs
 //author: amit vasudevan (amitvasudevan@acm.org)

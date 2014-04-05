@@ -45,6 +45,7 @@
  */
 
 #include <xmhf.h>
+#include <xmhf-core.h>
 
 /*
  * XMHF core API calls that hypapps rely on
