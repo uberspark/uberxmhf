@@ -69,7 +69,7 @@ typedef struct _midtab {
 
 #define SIZE_STRUCT_MIDTAB  (sizeof(struct _midtab))
 
-//---platform
+/*//---platform
 typedef struct _grube820 {
   u32 baseaddr_low;
   u32 baseaddr_high;
@@ -89,6 +89,7 @@ typedef struct _pcpu {
 } __attribute__((packed)) PCPU;
 
 #define SIZE_STRUCT_PCPU  (sizeof(struct _pcpu))
+*/
 
 //----------------------------------------------------------------------
 //exported DATA 
