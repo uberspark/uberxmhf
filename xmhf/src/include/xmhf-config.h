@@ -44,11 +44,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF x86 arch. specific configurable definitions
+// XMHF platform/arch configuration header
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __EMHF_CONFIGX86_H__
-#define __EMHF_CONFIGX86_H__
+#ifndef __XMHF_CONFIG_H__
+#define __XMHF_CONFIG_H__
 
 //======================================================================
 //XMHF platform/arch. specific configurable constant definitions
@@ -73,12 +73,12 @@
 	#define __TARGET_SIZE_XMHFHYPAPP		0x02000000		//32M
 //----------------------------------------------------------------------	
 
-/*//"sl" parameter block magic value
+//"sl" parameter block magic value
 #define SL_PARAMETER_BLOCK_MAGIC		0xDEADBEEF
 
 //"runtime" parameter block magic value
 #define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
-*/
+
 
 //16K stack for each core during runtime
 #define RUNTIME_STACK_SIZE  			(16384)     
@@ -136,4 +136,4 @@
 
 
 
-#endif //__EMHF_CONFIGX86_H__
+#endif //__XMHF_CONFIG_H__

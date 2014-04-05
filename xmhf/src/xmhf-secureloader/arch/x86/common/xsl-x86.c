@@ -65,7 +65,7 @@
 //into xmhf-core 
 #define 	__DS_CPL0 	0x0010 	//CPL-0 data segment selector
 #define 	__CS_CPL0 	0x0008 	//CPL-0 code segment selector
-#define __TARGET_BASE_CORE				0x10200000		//258M
+//#define __TARGET_BASE_CORE				0x10200000		//258M
 
 //we only have confidence in the runtime's expected value here in the SL
 //static INTEGRITY_MEASUREMENT_VALUES g_sl_gold /* __attribute__(( section("") )) */ = {
