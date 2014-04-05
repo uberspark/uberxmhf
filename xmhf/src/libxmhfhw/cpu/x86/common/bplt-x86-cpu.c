@@ -52,6 +52,11 @@
 
 #include <xmhf.h>
 
+#include "cpu/x86/include/common/_processor.h"  	//CPU
+#include "cpu/x86/include/common/_msr.h"        	//model specific registers
+#include "cpu/x86/include/common/_paging.h"     	//MMU
+#include "cpu/x86/include/common/_io.h"         	//legacy I/O
+
 //returns true if CPU has support for XSAVE/XRSTOR
 bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void){
 	u32 eax, ebx, ecx, edx;
