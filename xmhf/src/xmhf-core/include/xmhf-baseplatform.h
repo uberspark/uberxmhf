@@ -153,46 +153,6 @@ void xmhf_baseplatform_initialize(void);
 //reboot platform
 void xmhf_baseplatform_reboot(context_desc_t context_desc);
 
-#ifndef __XMHF_VERIFICATION__
-	// Note: since we are unity mapped, runtime VA = system PA
-
-	//hypervisor runtime virtual address to secure loader address
-	static inline void * hva2sla(void *hva){
-		return (void*)((u32)hva);	
-	}
-	
-	//secure loader address to system physical address
-	static inline spa_t sla2spa(void *sla){
-		return (spa_t) ((u32)sla );
-	}
-	
-	// XMHF runtime virtual-address to system-physical-address and vice-versa
-	static inline spa_t hva2spa(void *hva){
-		uintptr_t hva_ui = (uintptr_t)hva;
-		return hva_ui;
-	}
-	  
-	static inline void * spa2hva(spa_t spa){
-		return (void *)(uintptr_t)spa;
-	}
-	
-	static inline spa_t gpa2spa(gpa_t gpa) { return gpa; }
-	static inline gpa_t spa2gpa(spa_t spa) { return spa; }
-	static inline void* gpa2hva(gpa_t gpa) { return spa2hva(gpa2spa(gpa)); }
-	static inline gpa_t hva2gpa(hva_t hva) { return spa2gpa(hva2spa(hva)); }
-
-#else //__XMHF_VERIFICATION__
-
-	static inline void * hva2sla(void *hva){ return (void*)((u32)hva);	}
-	static inline spa_t sla2spa(void *sla){	return (spa_t) ((u32)sla ); }
-	#define hva2spa(x) (u32)(x)
-	static inline void * spa2hva(spa_t spa) { (void *)(uintptr_t)(spa); }
-	static inline spa_t gpa2spa(gpa_t gpa) { return gpa; }
-	static inline gpa_t spa2gpa(spa_t spa) { return spa; }
-	static inline void* gpa2hva(gpa_t gpa) { return spa2hva(gpa2spa(gpa)); }
-	static inline gpa_t hva2gpa(hva_t hva) { return spa2gpa(hva2spa(hva)); }	
-
-#endif //__XMHF_VERIFICATION__
 
 #endif	//__ASSEMBLY__
 

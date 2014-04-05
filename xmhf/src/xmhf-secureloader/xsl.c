@@ -85,7 +85,8 @@ void xmhf_sl_main(void){
 	runtime_physical_base = __TARGET_BASE_CORE;
 	
 	//compute 2M aligned runtime size
-	runtime_size_2Maligned = PAGE_ALIGN_UP2M(slpb.runtime_size);
+	runtime_size_2Maligned = (((slpb.runtime_size) + (1 << 21) - 1) & ~((1 << 21) - 1));
+	
 
 	printf("SL: runtime at 0x%08x; size=0x%08x bytes adjusted to 0x%08x bytes (2M aligned)\n", 
 			runtime_physical_base, slpb.runtime_size, runtime_size_2Maligned);
@@ -104,11 +105,11 @@ void xmhf_sl_main(void){
 		rpb->XtVmmRuntimeSize = slpb.runtime_size;
 
 		//store revised E820 map and number of entries
-		memcpy(hva2sla((void *)rpb->XtVmmE820Buffer), (void *)&slpb.memmapbuffer, (sizeof(GRUBE820) * slpb.numE820Entries) );
+		memcpy((void *)rpb->XtVmmE820Buffer, (void *)&slpb.memmapbuffer, (sizeof(GRUBE820) * slpb.numE820Entries) );
 		rpb->XtVmmE820NumEntries = slpb.numE820Entries; 
 
 		//store CPU table and number of CPUs
-		memcpy(hva2sla((void *)rpb->XtVmmMPCpuinfoBuffer), (void *)&slpb.cpuinfobuffer, (sizeof(PCPU) * slpb.numCPUEntries) );
+		memcpy((void *)rpb->XtVmmMPCpuinfoBuffer, (void *)&slpb.cpuinfobuffer, (sizeof(PCPU) * slpb.numCPUEntries) );
 		rpb->XtVmmMPCpuinfoNumEntries = slpb.numCPUEntries; 
 
 		//setup guest OS boot module info in LPB	
