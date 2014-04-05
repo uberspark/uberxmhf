@@ -50,6 +50,7 @@
 #include <xmhf.h> 
 
 #include "cpu/x86/include/common/_processor.h"  	//CPU
+#include "cpu/x86/include/common/_io.h"         	//legacy I/O
 #include "platform/x86pc/include/common/_pci.h"        	//PCI bus glue
 
 

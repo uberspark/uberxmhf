@@ -54,6 +54,9 @@
 
 #include <xmhf.h> 
 
+#include "cpu/x86/include/common/_processor.h"  	//CPU
+#include "cpu/x86/include/common/_io.h"         	//legacy I/O
+
 //---microsecond delay----------------------------------------------------------
 void xmhf_baseplatform_arch_x86_udelay(u32 usecs){
   u8 val;
