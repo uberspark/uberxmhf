@@ -80,6 +80,7 @@
 //	#include <tpm.h>
 //#endif // __ASSEMBLY__ 
 
+#include <xmhf-config.h>		//XMHF platform/arch config
 #include <xmhf-types.h>			//XMHF specific base types
 #include <xmhf-debug.h>			//libxmhfdebug
 #include <xmhf-error.h> 

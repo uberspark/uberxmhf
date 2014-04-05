@@ -50,12 +50,12 @@
 #ifndef __XMHF_SL_H__
 #define __XMHF_SL_H__
 
-//XXX: the following is more platform specific, will need to be pushed
+/*//XXX: the following is more platform specific, will need to be pushed
 //into some backend
 #define __TARGET_BASE_SL				0x10000000		//256MB
 #define __TARGET_SIZE_SL				0x00200000
 #define __TARGET_BASE_CORE				0x10200000		//258M
-
+*/
 
 #ifndef __ASSEMBLY__
 
