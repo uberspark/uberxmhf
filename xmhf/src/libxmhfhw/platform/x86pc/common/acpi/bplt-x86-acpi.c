@@ -52,6 +52,7 @@
 #include <xmhf.h> 
 
 #include "platform/x86pc/include/common/_acpi.h"			//ACPI glue
+#include "platform/x86pc/include/common/_memaccess.h"	//platform memory access
 
 
 //------------------------------------------------------------------------------
@@ -80,16 +81,16 @@ u32 xmhf_baseplatform_arch_x86_acpi_getRSDP(ACPI_RSDP *rsdp){
   u32 i, found=0;
   
   //get EBDA segment from 040E:0000h in BIOS data area
-  //xmhf_baseplatform_arch_flat_copy((u8 *)&ebdaseg, (u8 *)0x0000040E, sizeof(u16));
-	memcpy((u8 *)&ebdaseg, (u8 *)0x0000040E, sizeof(u16));
+  xmhf_baseplatform_arch_flat_copy((u8 *)&ebdaseg, (u8 *)0x0000040E, sizeof(u16));
+	//memcpy((u8 *)&ebdaseg, (u8 *)0x0000040E, sizeof(u16));
 
   //convert it to its 32-bit physical address
   ebdaphys=(u32)(ebdaseg * 16);
 
   //search first 1KB of ebda for rsdp signature (8 bytes long)
   for(i=0; i < (1024-8); i+=16){
-    //xmhf_baseplatform_arch_flat_copy((u8 *)rsdp, (u8 *)(ebdaphys+i), sizeof(ACPI_RSDP));
-    memcpy((u8 *)rsdp, (u8 *)(ebdaphys+i), sizeof(ACPI_RSDP));
+    xmhf_baseplatform_arch_flat_copy((u8 *)rsdp, (u8 *)(ebdaphys+i), sizeof(ACPI_RSDP));
+    //memcpy((u8 *)rsdp, (u8 *)(ebdaphys+i), sizeof(ACPI_RSDP));
     if(rsdp->signature == ACPI_RSDP_SIGNATURE){
       if(!_acpi_computetablechecksum((u32)rsdp, 20)){
         found=1;
@@ -104,8 +105,8 @@ u32 xmhf_baseplatform_arch_x86_acpi_getRSDP(ACPI_RSDP *rsdp){
   
   //nope, search within BIOS areas 0xE0000 to 0xFFFFF
   for(i=0xE0000; i < (0xFFFFF-8); i+=16){
-    //xmhf_baseplatform_arch_flat_copy((u8 *)rsdp, (u8 *)i, sizeof(ACPI_RSDP));
-    memcpy((u8 *)rsdp, (u8 *)i, sizeof(ACPI_RSDP));
+    xmhf_baseplatform_arch_flat_copy((u8 *)rsdp, (u8 *)i, sizeof(ACPI_RSDP));
+    //memcpy((u8 *)rsdp, (u8 *)i, sizeof(ACPI_RSDP));
     if(rsdp->signature == ACPI_RSDP_SIGNATURE){
       if(!_acpi_computetablechecksum((u32)rsdp, 20)){
         found=1;
