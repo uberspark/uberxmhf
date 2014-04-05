@@ -57,6 +57,7 @@
 #include "cpu/x86/include/common/_processor.h"  	//CPU
 #include "cpu/x86/include/common/_paging.h"     	//MMU
 #include "platform/x86pc/include/common/_acpi.h"			//ACPI glue
+#include "platform/x86pc/include/common/_memaccess.h"	//platform memory access
 
 //XXX: The following is an ugly hack and will disappear once we move
 //xmhf_sl_arch_x86_setup_runtime_paging and

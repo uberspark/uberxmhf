@@ -67,7 +67,7 @@
 #include "platform/x86pc/include/common/_acpi.h"			//ACPI glue
 #include "platform/x86pc/include/amd/dev/_svm_eap.h"		//SVM DMA protection
 #include "platform/x86pc/include/intel/vtd/vtd.h"		//VMX DMA protection
-
+#include "platform/x86pc/include/common/_memaccess.h"	//platform memory access
 
 //SMP configuration table signatures on x86 platforms
 #define MPFP_SIGNATURE 					(0x5F504D5FUL) //"_MP_"
@@ -490,75 +490,6 @@ static inline u64 VCPU_gcr4(VCPU *vcpu)
 }
 
 
-//functions to read/write memory using flat selector so that they
-//can be used from both within the SL and runtime
-
-//read 8-bits from absolute physical address
-static inline u8 xmhf_baseplatform_arch_flat_readu8(u32 addr){
-    u32 ret;
-    __asm__ __volatile("xor %%eax, %%eax\r\n"        
-                       "movl %%fs:(%%ebx), %%eax\r\n"
-                       : "=a"(ret)
-                       : "b"(addr)
-                       );
-    return (u8)ret;        
-}
-
-//read 32-bits from absolute physical address
-static inline u32 xmhf_baseplatform_arch_flat_readu32(u32 addr){
-    u32 ret;
-    __asm__ __volatile("xor %%eax, %%eax\r\n"        
-                       "movl %%fs:(%%ebx), %%eax\r\n"
-                       : "=a"(ret)
-                       : "b"(addr)
-                       );
-    return ret;        
-}
-
-//read 64-bits from absolute physical address
-static inline u64 xmhf_baseplatform_arch_flat_readu64(u32 addr){
-    u32 highpart, lowpart;
-    __asm__ __volatile("xor %%eax, %%eax\r\n"        
-    									 "xor %%edx, %%edx\r\n"
-                       "movl %%fs:(%%ebx), %%eax\r\n"
-                       "movl %%fs:0x4(%%ebx), %%edx\r\n"
-                       : "=a"(lowpart), "=d"(highpart)
-                       : "b"(addr)
-                       );
-    return  ((u64)highpart << 32) | (u64)lowpart;        
-}
-
-//write 32-bits to absolute physical address
-static inline void xmhf_baseplatform_arch_flat_writeu32(u32 addr, u32 val) {
-    __asm__ __volatile__("movl %%eax, %%fs:(%%ebx)\r\n"
-                         :
-                         : "b"(addr), "a"((u32)val)
-                         );
-}
-
-//write 64-bits to absolute physical address
-static inline void xmhf_baseplatform_arch_flat_writeu64(u32 addr, u64 val) {
-    u32 highpart, lowpart;
-    lowpart = (u32)val;
-    highpart = (u32)((u64)val >> 32);
-    
-		__asm__ __volatile__("movl %%eax, %%fs:(%%ebx)\r\n"
-												"movl %%edx, %%fs:0x4(%%ebx)\r\n"	
-                         :
-                         : "b"(addr), "a"(lowpart), "d"(highpart)
-                         );
-}
-
-//memory copy from absolute physical address (src) to
-//data segment relative address (dest)
-static inline void xmhf_baseplatform_arch_flat_copy(u8 *dest, u8 *src, u32 size){
-	u32 i;
-	u8 val;
-	for(i=0; i < size; i++){
-		val = xmhf_baseplatform_arch_flat_readu8((u32)src + i);
-		dest[i] = val;
-	}
-}
 
 
 //----------------------------------------------------------------------
