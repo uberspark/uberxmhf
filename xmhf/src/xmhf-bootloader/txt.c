@@ -93,6 +93,16 @@
 
 #include <xmhf.h> 
 
+#include "cpu/x86/include/common/_multiboot.h"		//multiboot
+#include "cpu/x86/include/common/_processor.h"  	//CPU
+#include "cpu/x86/include/common/_msr.h"        	//model specific registers
+#include "cpu/x86/include/common/_paging.h"     	//MMU
+#include "cpu/x86/include/common/_io.h"         	//legacy I/O
+#include "cpu/x86/include/intel/txt/_txt.h"			//Trusted eXecution Technology (SENTER support)
+#include "platform/x86pc/include/common/_acpi.h"			//ACPI glue
+#include "platform/x86pc/include/common/_memaccess.h"	//platform memory access
+
+
 extern SL_PARAMETER_BLOCK *slpb; /* Ugh; ugly global from init.c */
 
 bool get_parameters(getsec_parameters_t *params);
