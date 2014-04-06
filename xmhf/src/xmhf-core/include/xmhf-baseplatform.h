@@ -57,7 +57,7 @@
 
 #ifndef __ASSEMBLY__
 
-//----------------------------------------------------------------------
+/*//----------------------------------------------------------------------
 //the master-id table, which is used by the AP bootstrap code
 //to locate its own vcpu structure
 //NOTE: The size of this structure _MUST_ be _EXACTLY_EQUAL_ to 8 bytes
@@ -68,6 +68,7 @@ typedef struct _midtab {
 } __attribute__((packed)) MIDTAB;
 
 #define SIZE_STRUCT_MIDTAB  (sizeof(struct _midtab))
+*/
 
 /*//---platform
 typedef struct _grube820 {

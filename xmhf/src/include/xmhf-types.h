@@ -119,6 +119,16 @@ typedef struct _pcpu {
 
 #define SIZE_STRUCT_PCPU  (sizeof(struct _pcpu))
 
+//----------------------------------------------------------------------
+//the master-id table, which is used by the AP bootstrap code
+//to locate its own vcpu structure
+typedef struct _midtab {
+  u32 cpu_lapic_id;       //CPU LAPIC id (unique)
+  u32 vcpu_vaddr_ptr;     //virt. addr. pointer to vcpu struct for this CPU
+} __attribute__((packed)) MIDTAB;
+
+#define SIZE_STRUCT_MIDTAB  (sizeof(struct _midtab))
+
 
 //"runtime" parameter block structure; arch_rpb (in startup component) 
 //is the default definition

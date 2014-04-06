@@ -44,72 +44,60 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// xmhf.h - main XMHF header file 
+// BIOS Data Areas
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHF_H_
-#define __XMHF_H_
+#ifndef __BIOSDATA_H__
+#define __BIOSDATA_H__
+
 
 #ifndef __ASSEMBLY__
 
-//pull in required libxmhfc C includes
-#include <stdint.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#ifndef __XMHF_VERIFICATION__
-		#include <assert.h>
-#endif
-#endif // __ASSEMBLY__ 
+//SMP configuration table signatures on x86 platforms
+#define MPFP_SIGNATURE 					(0x5F504D5FUL) //"_MP_"
+#define MPCONFTABLE_SIGNATURE 			(0x504D4350UL)  //"PCMP"
 
-//pull in required crypto (SHA-1)
-//libXMHFcrypto
-//#ifndef __ASSEMBLY__
-//	#include <xmhfcrypto.h>
-//	#include <sha1.h>
-//#endif // __ASSEMBLY__
+typedef struct {
+  u32 signature;
+  u32 paddrpointer;
+  u8 length;
+  u8 spec_rev;
+  u8 checksum;
+  u8 mpfeatureinfo1;
+  u8 mpfeatureinfo2;
+  u8 mpfeatureinfo3;
+  u8 mpfeatureinfo4;
+  u8 mpfeatureinfo5;
+} __attribute__ ((packed)) MPFP;
+
+typedef struct{
+  u32 signature;
+  u16 length;
+  u8 spec_rev;
+  u8 checksum;
+  u8 oemid[8];
+  u8 productid[12];
+  u32 oemtableptr;
+  u16 oemtablesize;
+  u16 entrycount;
+  u32 lapicaddr;
+  u16 exttablelength;
+  u16 exttablechecksum;
+} __attribute__ ((packed)) MPCONFTABLE;
+
+typedef struct {
+  u8 entrytype;
+  u8 lapicid;
+  u8 lapicver;
+  u8 cpuflags;
+  u32 cpusig;
+  u32 featureflags;
+  u32 res0;
+  u32 res1;
+} __attribute__ ((packed)) MPENTRYCPU;
 
 
-//pull in required TPM library
-//libtpm
-//#ifndef __ASSEMBLY__
-//	#include <tpm.h>
-//#endif // __ASSEMBLY__ 
 
-#include <xmhf-config.h>		//XMHF platform/arch config
-#include <xmhf-types.h>			//XMHF specific base types
-#include <xmhf-debug.h>			//libxmhfdebug
-#include <xmhf-error.h> 
-
-#ifdef __XMHF_VERIFICATION__
-	//include verification related primitives
-	#include <xmhf-verification.h>
-#endif //__XMHF_VERIFICATION__
-
-/*
-//forward declaration of runtime parameter block
-#ifndef __ASSEMBLY__
-extern RPB *rpb;	
 #endif	//__ASSEMBLY__
 
-
-//----------------------------------------------------------------------
-// component headers
-#include <xmhf-baseplatform.h>	//XMHF base platform component
-#include <xmhf-memprot.h>		//XMHF memory protection component
-#include <xmhf-dmaprot.h>		//XMHF DMA protection component
-#include <xmhf-partition.h>		//XMHF partition component
-#include <xmhf-smpguest.h>		//XMHF SMP guest component
-#include <xmhf-parteventhub.h>	//XMHF partition event-hub component
-#include <xmhf-xcphandler.h>	//XMHF exception handler component
-#include <xmhf-tpm.h>			//XMHF Trusted Platform Module component
-#include <xmhf-sl.h>			//XMHF secure loader component
-#include <xmhf-runtime.h>		//XMHF secure loader component
-#include <xmhf-app.h>			//XMHF Application callback declarations
-#include <xmhf-apihub.h>		//XMHF core API interface component
-*/
-
-#endif /* __XMHF_H_ */
+#endif //__BIOSDATA_H__
