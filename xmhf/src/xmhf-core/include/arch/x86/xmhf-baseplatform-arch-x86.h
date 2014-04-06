@@ -52,7 +52,7 @@
 #define __EMHF_BASEPLATFORM_ARCH_X86_H__
 
 //#include "_configx86.h"		//EMHF arch. specific configurable definitions
-#include "cpu/x86/include/common/_multiboot.h"		//multiboot
+#include "platform/x86pc/include/common/_multiboot.h"		//multiboot
 //#include "_cmdline.h"		//GRUB command line handling functions
 //#include "_error.h"      	//error handling and assertions
 #include "cpu/x86/include/common/_processor.h"  	//CPU

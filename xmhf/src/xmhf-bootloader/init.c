@@ -54,7 +54,7 @@
 #include <tpm.h>
 #include <cmdline.h>
 
-#include "cpu/x86/include/common/_multiboot.h"		//multiboot
+#include "platform/x86pc/include/common/_multiboot.h"		//multiboot
 #include "cpu/x86/include/common/_processor.h"  	//CPU
 #include "cpu/x86/include/common/_msr.h"        	//model specific registers
 #include "cpu/x86/include/common/_paging.h"     	//MMU
