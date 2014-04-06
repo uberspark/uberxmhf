@@ -52,6 +52,16 @@
 //author: amit vasudevan (amitvasudevan@acm.org)
 #include <xmhf.h> 
 
+//#include "cpu/x86/include/common/_multiboot.h"		//multiboot
+//#include "cpu/x86/include/common/_processor.h"  	//CPU
+//#include "cpu/x86/include/common/_msr.h"        	//model specific registers
+//#include "cpu/x86/include/common/_paging.h"     	//MMU
+//#include "cpu/x86/include/common/_io.h"         	//legacy I/O
+//#include "cpu/x86/include/intel/txt/_txt.h"			//Trusted eXecution Technology (SENTER support)
+#include "platform/x86pc/include/common/_acpi.h"			//ACPI glue
+#include "platform/x86pc/include/common/_memaccess.h"	//platform memory access
+#include "platform/x86pc/include/common/_biosdata.h"	//BIOS data areas
+
 //forward prototypes
 static int mp_checksum(unsigned char *mp, int len);
 static u32 mp_scan_config(u32 base, u32 length, MPFP **mpfp);

@@ -69,10 +69,10 @@
 #include "platform/x86pc/include/intel/vtd/vtd.h"		//VMX DMA protection
 #include "platform/x86pc/include/common/_memaccess.h"	//platform memory access
 
-//SMP configuration table signatures on x86 platforms
+/*//SMP configuration table signatures on x86 platforms
 #define MPFP_SIGNATURE 					(0x5F504D5FUL) //"_MP_"
 #define MPCONFTABLE_SIGNATURE 			(0x504D4350UL)  //"PCMP"
-
+*/
 
 #ifndef __ASSEMBLY__
 
@@ -90,7 +90,7 @@ typedef struct {
   u32 eflags;
 } __attribute__((packed)) INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE;
 
-typedef struct {
+/*typedef struct {
   u32 signature;
   u32 paddrpointer;
   u8 length;
@@ -128,6 +128,7 @@ typedef struct {
   u32 res0;
   u32 res1;
 } __attribute__ ((packed)) MPENTRYCPU;
+*/
 
 //MTRR memory type structure
 struct _memorytype {

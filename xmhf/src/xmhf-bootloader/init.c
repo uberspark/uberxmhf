@@ -50,16 +50,29 @@
 //---includes-------------------------------------------------------------------
 #include <xmhf.h> 
 #include <xmhf-debug-x86.h>
+#include <xmhfcrypto.h>
+#include <tpm.h>
 #include <cmdline.h>
 
 #include "cpu/x86/include/common/_multiboot.h"		//multiboot
 #include "cpu/x86/include/common/_processor.h"  	//CPU
+#include "cpu/x86/include/common/_msr.h"        	//model specific registers
 #include "cpu/x86/include/common/_paging.h"     	//MMU
 #include "cpu/x86/include/common/_io.h"         	//legacy I/O
 #include "cpu/x86/include/intel/txt/_txt.h"			//Trusted eXecution Technology (SENTER support)
 #include "platform/x86pc/include/common/_acpi.h"			//ACPI glue
 #include "platform/x86pc/include/common/_memaccess.h"	//platform memory access
+#include "platform/x86pc/include/common/_biosdata.h"	//BIOS data areas
 
+//the vcpu structure which holds the current state of a core
+typedef struct _bootvcpu {
+  u32 esp;                //used to establish stack for the CPU
+  u32 id;                 //LAPIC id of the core
+  u32 cpu_vendor;					//Intel or AMD
+  u32 isbsp;							//1 if this core is BSP else 0
+} __attribute__((packed)) BOOTVCPU;
+
+#define SIZE_STRUCT_BOOTVCPU    (sizeof(struct _bootvcpu))
 
 //---forward prototypes---------------------------------------------------------
 u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus);
@@ -78,14 +91,14 @@ GRUBE820 grube820list[MAX_E820_ENTRIES];
 u32 grube820list_numentries=0;        //actual number of e820 entries returned
 //by grub
 
-//master-id table which holds LAPIC ID to VCPU mapping for each physical core
+//master-id table which holds LAPIC ID to BOOTVCPU mapping for each physical core
 MIDTAB midtable[MAX_MIDTAB_ENTRIES] __attribute__(( section(".data") ));
 
 //number of physical cores in the system
 u32 midtable_numentries=0;
 
-//VCPU buffers for all cores
-VCPU vcpubuffers[MAX_VCPU_ENTRIES] __attribute__(( section(".data") ));
+//BOOTVCPU buffers for all cores
+BOOTVCPU vcpubuffers[MAX_VCPU_ENTRIES] __attribute__(( section(".data") ));
 
 //initial stacks for all cores
 u8 cpustacks[RUNTIME_STACK_SIZE * MAX_PCPU_ENTRIES] __attribute__(( section(".stack") ));
@@ -669,7 +682,7 @@ static bool svm_prepare_cpu(void)
 //inputs: 
 //cpu_vendor = intel or amd
 //slbase= physical memory address of start of sl
-void do_drtm(VCPU __attribute__((unused))*vcpu, u32 slbase, size_t mle_size __attribute__((unused))){
+void do_drtm(BOOTVCPU __attribute__((unused))*vcpu, u32 slbase, size_t mle_size __attribute__((unused))){
 #ifdef __MP_VERSION__
     HALT_ON_ERRORCOND(vcpu->id == 0);
     //send INIT IPI to all APs 
@@ -735,18 +748,18 @@ void do_drtm(VCPU __attribute__((unused))*vcpu, u32 slbase, size_t mle_size __at
 
 void setupvcpus(u32 cpu_vendor, MIDTAB *midtable, u32 midtable_numentries){
     u32 i;
-    VCPU *vcpu;
+    BOOTVCPU *vcpu;
   
     printf("\n%s: cpustacks range 0x%08x-0x%08x in 0x%08x chunks",
            __FUNCTION__, (u32)cpustacks, (u32)cpustacks + (RUNTIME_STACK_SIZE * MAX_VCPU_ENTRIES),
            RUNTIME_STACK_SIZE);
     printf("\n%s: vcpubuffers range 0x%08x-0x%08x in 0x%08x chunks",
-           __FUNCTION__, (u32)vcpubuffers, (u32)vcpubuffers + (SIZE_STRUCT_VCPU * MAX_VCPU_ENTRIES),
-           SIZE_STRUCT_VCPU);
+           __FUNCTION__, (u32)vcpubuffers, (u32)vcpubuffers + (SIZE_STRUCT_BOOTVCPU * MAX_VCPU_ENTRIES),
+           SIZE_STRUCT_BOOTVCPU);
           
     for(i=0; i < midtable_numentries; i++){
-        vcpu = (VCPU *)((u32)vcpubuffers + (u32)(i * SIZE_STRUCT_VCPU));
-        memset((void *)vcpu, 0, sizeof(VCPU));
+        vcpu = (BOOTVCPU *)((u32)vcpubuffers + (u32)(i * SIZE_STRUCT_BOOTVCPU));
+        memset((void *)vcpu, 0, sizeof(BOOTVCPU));
     
         vcpu->cpu_vendor = cpu_vendor;
     
@@ -1055,7 +1068,7 @@ u32 isbsp(void){
 
 
 //---CPUs must all have their microcode cleared for SKINIT to be successful-----
-void svm_clear_microcode(VCPU *vcpu){
+void svm_clear_microcode(BOOTVCPU *vcpu){
     u32 ucode_rev;
     u32 dummy=0;
 
@@ -1078,7 +1091,7 @@ u32 lock_cpus_active=1; //spinlock to access the above
 
 //------------------------------------------------------------------------------
 //all cores enter here 
-void mp_cstartup (VCPU *vcpu){
+void mp_cstartup (BOOTVCPU *vcpu){
     //sanity, we should be an Intel or AMD core
     HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL ||
            vcpu->cpu_vendor == CPU_VENDOR_AMD);

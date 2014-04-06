@@ -336,17 +336,6 @@ bool xmhf_tpm_arch_is_tpm_ready(uint32_t locality){
 }
 
 
-//open TPM locality
-int xmhf_tpm_arch_open_locality(int locality){
-	u32 cpu_vendor = get_cpu_vendor_or_die();
-
-    if(cpu_vendor == CPU_VENDOR_INTEL) {
-        return xmhf_tpm_arch_x86vmx_open_locality(locality);
-       
-    } else { /* AMD */        
-		return xmhf_tpm_arch_x86svm_open_locality(locality);
-    }
-}
 
 //prepare TPM for use
 bool xmhf_tpm_arch_prepare_tpm(void){
