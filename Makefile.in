@@ -350,9 +350,11 @@ install-dev:
 	$(CP) -f $(XMHF_OBJDIR)/_objs_libxmhfcore/libxmhfcore.a $(prefix)/lib/xmhf/libxmhfcore.a
 	$(CP) -f $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a $(prefix)/lib/xmhf/libbaremetal.a
 	@echo installed XMHF development libraries to $(prefix)/lib/xmhf/
+	$(MKDIR) -p $(prefix)/include/xmhf/include
 	$(MKDIR) -p $(prefix)/include/xmhf/xmhf-core/include
 	$(MKDIR) -p $(prefix)/include/xmhf/platform/x86pc/include
 	$(MKDIR) -p $(prefix)/include/xmhf/cpu/x86/include
+	$(CP) -rf ./xmhf/src/include/* $(prefix)/include/xmhf/include/.
 	$(CP) -rf ./xmhf/src/xmhf-core/include/* $(prefix)/include/xmhf/xmhf-core/include/.
 	$(CP) -rf ./xmhf/src/libxmhfhw/platform/x86pc/include/* $(prefix)/include/xmhf/platform/x86pc/include/.
 	$(CP) -rf ./xmhf/src/libxmhfhw/cpu/x86/include/* $(prefix)/include/xmhf/cpu/x86/include/.
