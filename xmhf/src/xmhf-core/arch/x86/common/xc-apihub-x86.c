@@ -253,11 +253,6 @@ void xmhf_apihub_arch_initialize (void){
  */
 
 void xmhf_apihub_arch_fromhypapp_stub(void);
-//extern u32 hypapp_cbhub_pc;
-//extern u32 hypapp_tos;
-//extern u32 core_ptba;
-//extern u32 hypapp_ptba;
-
 
 //__attribute__((naked)) void xmhf_apihub_arch_tohypapp_wip(u32 hypappcallnum){
 void xmhf_apihub_arch_tohypapp(u32 hypappcallnum){
