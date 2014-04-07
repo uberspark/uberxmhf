@@ -98,34 +98,57 @@
 #endif //__XMHF_VERIFICATION__
 
 
-//functions to read/write memory using flat selector so that they
-//can be used from both within the SL and runtime
+//functions to read/write memory from "system physical address"
+//all reads and writes to non-framework memory areas (e.g., BIOS
+//data areas, MMIO, rich guest memory etc.) should finally end up
+//here
 
 //read 8-bits from absolute physical address
 static inline u8 xmhf_baseplatform_arch_flat_readu8(u32 addr){
-    u32 ret;
+/*    u32 ret;
     __asm__ __volatile("xor %%eax, %%eax\r\n"        
                        "movl %%fs:(%%ebx), %%eax\r\n"
                        : "=a"(ret)
                        : "b"(addr)
                        );
     return (u8)ret;        
+*/
+    u8 *valueptr = (u8 *)addr;
+    u8 value = *valueptr;
+    return value;
 }
 
-//read 32-bits from absolute physical address
-static inline u32 xmhf_baseplatform_arch_flat_readu32(u32 addr){
-    u32 ret;
+//read 16-bits from absolute physical address
+static inline u16 xmhf_baseplatform_arch_flat_readu16(u32 addr){
+/*    u32 ret;
     __asm__ __volatile("xor %%eax, %%eax\r\n"        
                        "movl %%fs:(%%ebx), %%eax\r\n"
                        : "=a"(ret)
                        : "b"(addr)
                        );
-    return ret;        
+    return ret;        */
+    u16 *valueptr = (u16 *)addr;
+    u16 value = *valueptr;
+    return value;
+}
+
+//read 32-bits from absolute physical address
+static inline u32 xmhf_baseplatform_arch_flat_readu32(u32 addr){
+/*    u32 ret;
+    __asm__ __volatile("xor %%eax, %%eax\r\n"        
+                       "movl %%fs:(%%ebx), %%eax\r\n"
+                       : "=a"(ret)
+                       : "b"(addr)
+                       );
+    return ret;        */
+    u32 *valueptr = (u32 *)addr;
+    u32 value = *valueptr;
+    return value;
 }
 
 //read 64-bits from absolute physical address
 static inline u64 xmhf_baseplatform_arch_flat_readu64(u32 addr){
-    u32 highpart, lowpart;
+/*    u32 highpart, lowpart;
     __asm__ __volatile("xor %%eax, %%eax\r\n"        
     									 "xor %%edx, %%edx\r\n"
                        "movl %%fs:(%%ebx), %%eax\r\n"
@@ -133,20 +156,26 @@ static inline u64 xmhf_baseplatform_arch_flat_readu64(u32 addr){
                        : "=a"(lowpart), "=d"(highpart)
                        : "b"(addr)
                        );
-    return  ((u64)highpart << 32) | (u64)lowpart;        
+    return  ((u64)highpart << 32) | (u64)lowpart;        */
+    u64 *valueptr = (u64 *)addr;
+    u64 value = *valueptr;
+    return value;
 }
 
 //write 32-bits to absolute physical address
 static inline void xmhf_baseplatform_arch_flat_writeu32(u32 addr, u32 val) {
-    __asm__ __volatile__("movl %%eax, %%fs:(%%ebx)\r\n"
+/*    __asm__ __volatile__("movl %%eax, %%fs:(%%ebx)\r\n"
                          :
                          : "b"(addr), "a"((u32)val)
                          );
+*/
+    u32 *valueptr = (u32 *)addr;
+    *valueptr = val;
 }
 
 //write 64-bits to absolute physical address
 static inline void xmhf_baseplatform_arch_flat_writeu64(u32 addr, u64 val) {
-    u32 highpart, lowpart;
+/*    u32 highpart, lowpart;
     lowpart = (u32)val;
     highpart = (u32)((u64)val >> 32);
     
@@ -155,17 +184,21 @@ static inline void xmhf_baseplatform_arch_flat_writeu64(u32 addr, u64 val) {
                          :
                          : "b"(addr), "a"(lowpart), "d"(highpart)
                          );
+*/
+    u64 *valueptr = (u64 *)addr;
+    *valueptr = val;
 }
 
 //memory copy from absolute physical address (src) to
 //data segment relative address (dest)
 static inline void xmhf_baseplatform_arch_flat_copy(u8 *dest, u8 *src, u32 size){
-	u32 i;
+/*	u32 i;
 	u8 val;
 	for(i=0; i < size; i++){
 		val = xmhf_baseplatform_arch_flat_readu8((u32)src + i);
 		dest[i] = val;
-	}
+	}*/
+	memcpy(dest, src, size);
 }
 
 
