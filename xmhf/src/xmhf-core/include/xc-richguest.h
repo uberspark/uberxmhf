@@ -52,10 +52,35 @@
 #define __EMHF_SMPGUEST_H__
 
 //bring in arch. specific declarations
-#include <arch/xmhf-smpguest-arch.h>
+//#include <arch/xmhf-smpguest-arch.h>
 
 
 #ifndef __ASSEMBLY__
+
+//----------------------------------------------------------------------
+//ARCH. BACKENDS
+//----------------------------------------------------------------------
+
+//initialize SMP guest logic
+//void xmhf_smpguest_arch_initialize(VCPU *vcpu);
+void xmhf_smpguest_arch_initialize(context_desc_t context_desc);
+
+
+//walk guest page tables; returns pointer to corresponding guest physical address
+//note: returns 0xFFFFFFFF if there is no mapping
+u8 * xmhf_smpguest_arch_walk_pagetables(context_desc_t context_desc, u32 vaddr);
+
+//perform required setup after a guest awakens a new CPU
+//void xmhf_smpguest_arch_postCPUwakeup(VCPU *vcpu);
+void xmhf_smpguest_arch_postCPUwakeup(context_desc_t context_desc);
+
+//handle LAPIC access #DB (single-step) exception event
+void xmhf_smpguest_arch_eventhandler_dbexception(context_desc_t context_desc, 
+	struct regs *r);
+
+//handle LAPIC access #NPF (nested page fault) event
+void xmhf_smpguest_arch_eventhandler_hwpgtblviolation(context_desc_t context_desc, u32 gpa, u32 errorcode);
+
 
 //----------------------------------------------------------------------
 //exported DATA 
@@ -66,42 +91,6 @@
 //exported FUNCTIONS 
 //----------------------------------------------------------------------
 
-//----------------------------------------------------------------------
-//rich guest memory functions
-
-static inline bool xmhf_smpguest_readu16(context_desc_t context_desc, const void *guestaddress, u16 *valueptr){
-		u16 *tmp = (u16 *)xmhf_smpguest_arch_walk_pagetables(context_desc, guestaddress);
-		if((u32)tmp == 0xFFFFFFFFUL || valueptr == NULL)
-			return false;
-		*valueptr = xmhfhw_sysmemaccess_readu16((u32)tmp);
-		return true;
-}
-
-static inline bool xmhf_smpguest_writeu16(context_desc_t context_desc, const void *guestaddress, u16 value){
-		u16 *tmp = (u16 *)xmhf_smpguest_arch_walk_pagetables(context_desc, guestaddress);
-		if((u32)tmp == 0xFFFFFFFFUL || 
-			( ((u32)tmp >= rpb->XtVmmRuntimePhysBase) && ((u32)tmp <= (rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize)) ) 
-		  )
-			return false;
-		xmhfhw_sysmemaccess_writeu16((u32)tmp, value);
-		return true;
-}
-
-static inline bool xmhf_smpguest_memcpyfrom(context_desc_t context_desc, void *buffer, const void *guestaddress, size_t numbytes){
-	u8 *guestbuffer = (u8 *)xmhf_smpguest_arch_walk_pagetables(context_desc, guestaddress);
-	if((u32)guestbuffer == 0xFFFFFFFFUL)
-		return false;
-	xmhfhw_sysmemaccess_copy(buffer, gpa2hva(guestbuffer), numbytes);
-}
-
-static inline bool xmhf_smpguest_memcpyto(context_desc_t context_desc, void *guestaddress, const void *buffer, size_t numbytes){
-	u8 *guestbuffer = (u8 *)xmhf_smpguest_arch_walk_pagetables(context_desc, guestaddress);
-	if((u32)guestbuffer == 0xFFFFFFFFUL || 
-		( ((u32)guestbuffer >= rpb->XtVmmRuntimePhysBase) && ((u32)guestbuffer <= (rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize)) ) 
-	  )
-		return false;
-	xmhfhw_sysmemaccess_copy(gpa2hva(guestbuffer), buffer, numbytes);
-}
 
 
 

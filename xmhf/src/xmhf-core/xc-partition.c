@@ -76,6 +76,6 @@ void xmhf_partition_start(context_desc_t context_desc){
 }
 
 //set legacy I/O protection for the partition
-void xmhf_partition_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype){
-	xmhf_partition_arch_legacyIO_setprot(vcpu, port, size, prottype);
+void xmhf_partition_legacyIO_setprot(context_desc_t context_desc, u32 port, u32 size, u32 prottype){
+	xmhf_partition_arch_legacyIO_setprot(context_desc, port, size, prottype);
 }

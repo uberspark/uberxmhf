@@ -49,6 +49,8 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf-core.h> 
+#include <xc-x86.h>
+#include <xc-x86vmx.h>
 
 //re-initialize DMA protections (if needed) for the runtime
 bool xmhf_dmaprot_arch_reinitialize(void){

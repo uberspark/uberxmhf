@@ -48,6 +48,8 @@
 // implementation
 // author: amit vasudevan (amitvasudevan@acm.org)
 #include <xmhf-core.h> 
+#include <xc-x86.h>
+#include <xc-x86vmx.h>
 
 /*
 //the LAPIC register that is being accessed during emulation

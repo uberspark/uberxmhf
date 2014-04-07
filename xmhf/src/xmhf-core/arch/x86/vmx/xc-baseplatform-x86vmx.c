@@ -50,6 +50,8 @@
  */
 
 #include <xmhf-core.h>
+#include <xc-x86.h>
+#include <xc-x86vmx.h>
 
 //initialize CPU state
 void xmhf_baseplatform_arch_x86vmx_cpuinitialize(void){

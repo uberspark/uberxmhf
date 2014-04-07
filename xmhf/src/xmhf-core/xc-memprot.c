@@ -59,28 +59,28 @@ void xmhf_memprot_initialize(context_desc_t context_desc){
 }
 
 // get level-1 page map address
-u64 * xmhf_memprot_get_lvl1_pagemap_address(VCPU *vcpu){
-	return xmhf_memprot_arch_get_lvl1_pagemap_address(vcpu);
+u64 * xmhf_memprot_get_lvl1_pagemap_address(context_desc_t context_desc){
+	return xmhf_memprot_arch_get_lvl1_pagemap_address(context_desc);
 }
 
 //get level-2 page map address
-u64 * xmhf_memprot_get_lvl2_pagemap_address(VCPU *vcpu){
-	return xmhf_memprot_arch_get_lvl2_pagemap_address(vcpu);
+u64 * xmhf_memprot_get_lvl2_pagemap_address(context_desc_t context_desc){
+	return xmhf_memprot_arch_get_lvl2_pagemap_address(context_desc);
 }
 
 //get level-3 page map address
-u64 * xmhf_memprot_get_lvl3_pagemap_address(VCPU *vcpu){
-	return xmhf_memprot_arch_get_lvl3_pagemap_address(vcpu);
+u64 * xmhf_memprot_get_lvl3_pagemap_address(context_desc_t context_desc){
+	return xmhf_memprot_arch_get_lvl3_pagemap_address(context_desc);
 }
 
 //get level-4 page map address
-u64 * xmhf_memprot_get_lvl4_pagemap_address(VCPU *vcpu){
-	return xmhf_memprot_arch_get_lvl4_pagemap_address(vcpu);
+u64 * xmhf_memprot_get_lvl4_pagemap_address(context_desc_t context_desc){
+	return xmhf_memprot_arch_get_lvl4_pagemap_address(context_desc);
 }
 
 //get default root page map address
-u64 * xmhf_memprot_get_default_root_pagemap_address(VCPU *vcpu){
-	return xmhf_memprot_arch_get_default_root_pagemap_address(vcpu);
+u64 * xmhf_memprot_get_default_root_pagemap_address(context_desc_t context_desc){
+	return xmhf_memprot_arch_get_default_root_pagemap_address(context_desc);
 } 
 
 
@@ -114,8 +114,8 @@ void xmhf_memprot_setprot(context_desc_t context_desc, u64 gpa, u32 prottype){
 
 
 //get protection for a given physical memory address
-u32 xmhf_memprot_getprot(VCPU *vcpu, u64 gpa){
-	return xmhf_memprot_arch_getprot(vcpu, gpa);
+u32 xmhf_memprot_getprot(context_desc_t context_desc, u64 gpa){
+	return xmhf_memprot_arch_getprot(context_desc, gpa);
 }
 
 //set singular HPT

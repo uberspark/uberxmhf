@@ -109,7 +109,7 @@ void xmhf_smpguest_initialize(context_desc_t context_desc){
 }
 
 
-//quiesce interface to switch all guest cores into hypervisor mode
+/*//quiesce interface to switch all guest cores into hypervisor mode
 static void xmhf_smpguest_quiesce(VCPU *vcpu) __attribute__((unused));
 static void xmhf_smpguest_quiesce(VCPU *vcpu){
 	xmhf_smpguest_arch_quiesce(vcpu);
@@ -119,7 +119,7 @@ static void xmhf_smpguest_quiesce(VCPU *vcpu){
 static void xmhf_smpguest_endquiesce(VCPU *vcpu) __attribute__((unused));
 static void xmhf_smpguest_endquiesce(VCPU *vcpu){
 	xmhf_smpguest_arch_endquiesce(vcpu);
-}
+}*/
 
 
 //walk guest page tables; returns pointer to corresponding guest physical address

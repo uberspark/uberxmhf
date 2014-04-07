@@ -104,16 +104,14 @@ typedef struct {
 	u64 param7;
 	u64 param8;
 	u64 result;
-	VCPU vcpu;
+	//VCPU vcpu;
 	//APP_PARAM_BLOCK apb;
 	context_desc_t context_desc;
 	hypapp_env_block_t hypappenvb;
-	struct regs r;
+	//struct regs r;
 	xmhfcoreapiretval_t retval;
 } __attribute__((packed)) XMHF_HYPAPP_PARAMETERBLOCK;
 
-
-#if !(defined __XMHF_CORE_APIHUB_SWFP__)
 
 // declare paramcore and paramhypapp variables (which are defined in
 // (runtime.lds.S)
@@ -172,51 +170,6 @@ void xmhfcore_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u
 //u32 xmhfcore_baseplatform_arch_x86_acpi_getRSDP(ACPI_RSDP *rsdp);
 
 
-#else //SWFP
-
-typedef void (*COREAPIXMHFCPUTS)(const char *s);
-typedef void (*COREAPIXMHFBASEPLATFORMREBOOT)(VCPU *vcpu);
-typedef void (*COREAPIXMHFSETMEMPROT)(VCPU *vcpu, u64 gpa, u32 prottype);
-typedef u32 (*COREAPIXMHFMEMPROTGETPROT)(VCPU *vcpu, u64 gpa);
-typedef void (*COREAPIXMHFMEMPROTFLUSHMAPPINGS)(VCPU *vcpu);
-typedef u8 * (*COREAPIXMHFSMPGUESTWALKPAGETABLES)(VCPU *vcpu, u32 vaddr);
-typedef void (*COREAPIXMHFPARTITIONLEGACYIOSETPROT)(VCPU *vcpu, u32 port, u32 size, u32 prottype);
-typedef u32 (*COREAPIXMHFBASEPLATFORMARCHX86ACPIGETRSDP)(ACPI_RSDP *rsdp);
-
-typedef int (*COREAPIXMHFTPMOPENLOCALITY)(int locality);
-typedef void (*COREAPIXMHFTPMDEACTIVATEALLLOCALITIES)(void);
-typedef uint32_t (*COREAPIXMHFTPMWRITECMDFIFO)(uint32_t locality, uint8_t *in,
-                                   uint32_t in_size, uint8_t *out,
-                                   uint32_t *out_size);
-
-typedef u64 (*COREAPIXMHFMEMPROTARCHX86SVMGETHCR3)(VCPU *vcpu);
-typedef void (*COREAPIXMHFMEMPROTARCHX86SVMSETHCR3)(VCPU *vcpu, u64 n_cr3);
-typedef u64 (*COREAPIXMHFMEMPROTARCHX86VMXGETEPTP)(VCPU *vcpu);
-typedef void (*COREAPIXMHFMEMPROTARCHX86VMXSETEPTP)(VCPU *vcpu, u64 eptp);
-
-//typedef u32 (*COREAPIXMHFBASEPLATFORMGETCPUTABLE)(void *buffer, u32 sizeofbuffer);
-
-
-extern COREAPIXMHFCPUTS xmhfcore_outputdebugstring;
-extern COREAPIXMHFBASEPLATFORMREBOOT xmhfcore_reboot;
-extern COREAPIXMHFSETMEMPROT xmhfcore_setmemprot;
-extern COREAPIXMHFMEMPROTGETPROT xmhfcore_memprot_getprot;
-extern COREAPIXMHFMEMPROTFLUSHMAPPINGS xmhfcore_memprot_flushmappings;
-extern COREAPIXMHFSMPGUESTWALKPAGETABLES xmhfcore_smpguest_walk_pagetables;
-extern COREAPIXMHFPARTITIONLEGACYIOSETPROT xmhfcore_partition_legacyIO_setprot;
-extern COREAPIXMHFBASEPLATFORMARCHX86ACPIGETRSDP xmhfcore_baseplatform_arch_x86_acpi_getRSDP;
-
-extern COREAPIXMHFTPMOPENLOCALITY xmhfcore_tpm_open_locality;
-extern COREAPIXMHFTPMDEACTIVATEALLLOCALITIES xmhfcore_tpm_deactivate_all_localities;
-extern COREAPIXMHFTPMWRITECMDFIFO xmhfcore_tpm_write_cmd_fifo;
-
-extern COREAPIXMHFMEMPROTARCHX86SVMGETHCR3 xmhfcore_memprot_arch_x86svm_get_h_cr3;
-extern COREAPIXMHFMEMPROTARCHX86SVMSETHCR3 xmhfcore_memprot_arch_x86svm_set_h_cr3;
-extern COREAPIXMHFMEMPROTARCHX86VMXGETEPTP xmhfcore_memprot_arch_x86vmx_get_EPTP;
-extern COREAPIXMHFMEMPROTARCHX86VMXSETEPTP xmhfcore_memprot_arch_x86vmx_set_EPTP;
-
-//extern COREAPIXMHFBASEPLATFORMGETCPUTABLE xmhfcore_baseplatform_getcputable;
-#endif
 
 
 //----------------------------------------------------------------------
@@ -236,19 +189,6 @@ void xmhf_apihub_initialize (void);
 void xmhf_apihub_arch_initialize(void);
 void xmhf_apihub_arch_tohypapp(u32 hypappcallnum);
 
-//----------------------------------------------------------------------
-//x86 ARCH. INTERFACES
-//----------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------
-//x86vmx SUBARCH. INTERFACES
-//----------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------
-//x86svm SUBARCH. INTERFACES
-//----------------------------------------------------------------------
 
 
 

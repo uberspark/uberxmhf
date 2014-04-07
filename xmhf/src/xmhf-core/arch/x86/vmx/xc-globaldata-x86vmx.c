@@ -50,6 +50,8 @@
  */
 
 #include <xmhf-core.h>
+#include <xc-x86.h>
+#include <xc-x86vmx.h>
 
 //bplt-x86vmx-data
 

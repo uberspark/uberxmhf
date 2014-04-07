@@ -77,19 +77,19 @@
 void xmhf_memprot_initialize(context_desc_t context_desc);
 
 // get level-1 page map address
-u64 * xmhf_memprot_get_lvl1_pagemap_address(VCPU *vcpu);
+u64 * xmhf_memprot_get_lvl1_pagemap_address(context_desc_t context_desc);
 
 //get level-2 page map address
-u64 * xmhf_memprot_get_lvl2_pagemap_address(VCPU *vcpu);
+u64 * xmhf_memprot_get_lvl2_pagemap_address(context_desc_t context_desc);
 
 //get level-3 page map address
-u64 * xmhf_memprot_get_lvl3_pagemap_address(VCPU *vcpu);
+u64 * xmhf_memprot_get_lvl3_pagemap_address(context_desc_t context_desc);
 
 //get level-4 page map address
-u64 * xmhf_memprot_get_lvl4_pagemap_address(VCPU *vcpu);
+u64 * xmhf_memprot_get_lvl4_pagemap_address(context_desc_t context_desc);
 
 //get default root page map address
-u64 * xmhf_memprot_get_default_root_pagemap_address(VCPU *vcpu);
+u64 * xmhf_memprot_get_default_root_pagemap_address(context_desc_t context_desc);
 
 //flush hardware page table mappings (TLB) 
 void xmhf_memprot_flushmappings(context_desc_t context_desc);
@@ -98,7 +98,7 @@ void xmhf_memprot_flushmappings(context_desc_t context_desc);
 void xmhf_memprot_setprot(context_desc_t context_desc, u64 gpa, u32 prottype);
 
 //get protection for a given physical memory address
-u32 xmhf_memprot_getprot(VCPU *vcpu, u64 gpa);
+u32 xmhf_memprot_getprot(context_desc_t context_desc, u64 gpa);
 
 //set singular HPT
 void xmhf_memprot_setsingularhpt(u64 hpt);
@@ -117,19 +117,19 @@ void xmhf_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u64 e
 void xmhf_memprot_arch_initialize(context_desc_t context_desc);
 
 // get level-1 page map address
-u64 * xmhf_memprot_arch_get_lvl1_pagemap_address(VCPU *vcpu);
+u64 * xmhf_memprot_arch_get_lvl1_pagemap_address(context_desc_t context_desc);
 
 //get level-2 page map address
-u64 * xmhf_memprot_arch_get_lvl2_pagemap_address(VCPU *vcpu);
+u64 * xmhf_memprot_arch_get_lvl2_pagemap_address(context_desc_t context_desc);
 
 //get level-3 page map address
-u64 * xmhf_memprot_arch_get_lvl3_pagemap_address(VCPU *vcpu);
+u64 * xmhf_memprot_arch_get_lvl3_pagemap_address(context_desc_t context_desc);
 
 //get level-4 page map address
-u64 * xmhf_memprot_arch_get_lvl4_pagemap_address(VCPU *vcpu);
+u64 * xmhf_memprot_arch_get_lvl4_pagemap_address(context_desc_t context_desc);
 
 //get default root page map address
-u64 * xmhf_memprot_arch_get_default_root_pagemap_address(VCPU *vcpu);
+u64 * xmhf_memprot_arch_get_default_root_pagemap_address(context_desc_t context_desc);
 
 //flush hardware page table mappings (TLB) 
 void xmhf_memprot_arch_flushmappings(context_desc_t context_desc);
@@ -138,7 +138,7 @@ void xmhf_memprot_arch_flushmappings(context_desc_t context_desc);
 void xmhf_memprot_arch_setprot(context_desc_t context_desc, u64 gpa, u32 prottype);
 
 //get protection for a given physical memory address
-u32 xmhf_memprot_arch_getprot(VCPU *vcpu, u64 gpa);
+u32 xmhf_memprot_arch_getprot(context_desc_t context_desc, u64 gpa);
 
 //get HPT root pointer
 u64 xmhf_memprot_arch_getHPTroot(context_desc_t context_desc);
@@ -147,65 +147,6 @@ u64 xmhf_memprot_arch_getHPTroot(context_desc_t context_desc);
 void xmhf_memprot_arch_setsingularhpt(u64 hpt);
 
 void xmhf_memprot_arch_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u64 entry);
-
-//----------------------------------------------------------------------
-//x86 ARCH. INTERFACES
-//----------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------
-//x86vmx SUBARCH. INTERFACES
-//----------------------------------------------------------------------
-//void xmhf_memprot_arch_x86vmx_initialize(VCPU *vcpu);	//initialize memory protection for a core
-void xmhf_memprot_arch_x86vmx_flushmappings(VCPU *vcpu); //flush hardware page table mappings (TLB) 
-void xmhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype); //set protection for a given physical memory address
-u32 xmhf_memprot_arch_x86vmx_getprot(VCPU *vcpu, u64 gpa); //get protection for a given physical memory address
-u64 xmhf_memprot_arch_x86vmx_get_EPTP(VCPU *vcpu); // get or set EPTP (only valid on Intel)
-void xmhf_memprot_arch_x86vmx_set_EPTP(VCPU *vcpu, u64 eptp);
-
-//VMX EPT PML4 table buffers
-extern u8 g_vmx_ept_pml4_table_buffers[] __attribute__(( section(".palign_data") ));		
-
-//VMX EPT PDP table buffers
-extern u8 g_vmx_ept_pdp_table_buffers[] __attribute__(( section(".palign_data") ));
-		
-//VMX EPT PD table buffers
-extern u8 g_vmx_ept_pd_table_buffers[] __attribute__(( section(".palign_data") ));
-
-//VMX EPT P table buffers
-extern u8 g_vmx_ept_p_table_buffers[] __attribute__(( section(".palign_data") ));
-
-
-//----------------------------------------------------------------------
-//x86svm SUBARCH. INTERFACES
-//----------------------------------------------------------------------
-
-void xmhf_memprot_arch_x86svm_initialize(VCPU *vcpu);	//initialize memory protection for a core
-void xmhf_memprot_arch_x86svm_flushmappings(VCPU *vcpu); //flush hardware page table mappings (TLB) 
-void xmhf_memprot_arch_x86svm_setprot(VCPU *vcpu, u64 gpa, u32 prottype); //set protection for a given physical memory address
-u32 xmhf_memprot_arch_x86svm_getprot(VCPU *vcpu, u64 gpa); //get protection for a given physical memory address
-u64 xmhf_memprot_arch_x86svm_get_h_cr3(VCPU *vcpu); // get or set host cr3 (only valid on AMD)
-void xmhf_memprot_arch_x86svm_set_h_cr3(VCPU *vcpu, u64 hcr3);
-
-
-//SVM NPT PDPT buffers
-extern u8 g_svm_npt_pdpt_buffers[] __attribute__(( section(".palign_data") ));
-  
-//SVM NPT PDT buffers
-extern u8 g_svm_npt_pdts_buffers[]__attribute__(( section(".palign_data") ));
-
-//SVM NPT PT buffers
-extern u8 g_svm_npt_pts_buffers[]__attribute__(( section(".palign_data") )); 
-
-
-
-
-
-
-
-
-
-
 
 
 

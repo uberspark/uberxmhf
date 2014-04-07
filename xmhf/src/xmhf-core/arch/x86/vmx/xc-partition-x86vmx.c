@@ -50,6 +50,8 @@
  */
 
 #include <xmhf-core.h>
+#include <xc-x86.h>
+#include <xc-x86vmx.h>
 
 //---globals referenced by this module------------------------------------------
 //TODO: need to remove these direct references
@@ -610,6 +612,7 @@ static void xmhf_partition_arch_x86vmx_start(VCPU *vcpu){
 
 //set legacy I/O protection for the partition
 void xmhf_partition_arch_x86vmx_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype){
+
 	u8 *bit_vector = (u8 *)vcpu->vmx_vaddr_iobitmap;
 	u32 byte_offset, bit_offset;
 	u32 i;
@@ -667,7 +670,9 @@ void xmhf_partition_arch_start(context_desc_t context_desc){
 }
 
 //set legacy I/O protection for the partition
-void xmhf_partition_arch_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype){
+void xmhf_partition_arch_legacyIO_setprot(context_desc_t context_desc, u32 port, u32 size, u32 prottype){
+	VCPU *vcpu=(VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
+
 	//if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
 	//	xmhf_partition_arch_x86svm_legacyIO_setprot(vcpu, port, size, prottype);
 	//}else{ //CPU_VENDOR_INTEL
