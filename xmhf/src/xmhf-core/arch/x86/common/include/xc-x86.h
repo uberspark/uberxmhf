@@ -54,28 +54,19 @@
 #include <xmhf-core.h>
 
 //xc-baseplatform
-//#include "_configx86.h"		//EMHF arch. specific configurable definitions
 #include "platform/x86pc/include/common/_multiboot.h"		//multiboot
-//#include "_cmdline.h"		//GRUB command line handling functions
-//#include "_error.h"      	//error handling and assertions
 #include "cpu/x86/include/common/_processor.h"  	//CPU
 #include "cpu/x86/include/common/_msr.h"        	//model specific registers
 #include "cpu/x86/include/common/_paging.h"     	//MMU
 #include "cpu/x86/include/common/_io.h"         	//legacy I/O
 #include "cpu/x86/include/common/_apic.h"       	//APIC
-//#include "cpu/x86/include/amd/svm/_svm.h"        	//SVM extensions
 #include "cpu/x86/include/intel/vmx/_vmx.h"			//VMX extensions
 #include "cpu/x86/include/intel/txt/_txt.h"			//Trusted eXecution Technology (SENTER support)
 #include "platform/x86pc/include/common/_pci.h"        	//PCI bus glue
 #include "platform/x86pc/include/common/_acpi.h"			//ACPI glue
-//#include "platform/x86pc/include/amd/dev/_svm_eap.h"		//SVM DMA protection
 #include "platform/x86pc/include/intel/vtd/vtd.h"		//VMX DMA protection
 #include "platform/x86pc/include/common/_memaccess.h"	//platform memory access
 
-/*//SMP configuration table signatures on x86 platforms
-#define MPFP_SIGNATURE 					(0x5F504D5FUL) //"_MP_"
-#define MPCONFTABLE_SIGNATURE 			(0x504D4350UL)  //"PCMP"
-*/
 
 #ifndef __ASSEMBLY__
 
@@ -93,46 +84,6 @@ typedef struct {
   u32 cs;
   u32 eflags;
 } __attribute__((packed)) INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE;
-
-/*typedef struct {
-  u32 signature;
-  u32 paddrpointer;
-  u8 length;
-  u8 spec_rev;
-  u8 checksum;
-  u8 mpfeatureinfo1;
-  u8 mpfeatureinfo2;
-  u8 mpfeatureinfo3;
-  u8 mpfeatureinfo4;
-  u8 mpfeatureinfo5;
-} __attribute__ ((packed)) MPFP;
-
-typedef struct{
-  u32 signature;
-  u16 length;
-  u8 spec_rev;
-  u8 checksum;
-  u8 oemid[8];
-  u8 productid[12];
-  u32 oemtableptr;
-  u16 oemtablesize;
-  u16 entrycount;
-  u32 lapicaddr;
-  u16 exttablelength;
-  u16 exttablechecksum;
-} __attribute__ ((packed)) MPCONFTABLE;
-
-typedef struct {
-  u8 entrytype;
-  u8 lapicid;
-  u8 lapicver;
-  u8 cpuflags;
-  u32 cpusig;
-  u32 featureflags;
-  u32 res0;
-  u32 res1;
-} __attribute__ ((packed)) MPENTRYCPU;
-*/
 
 //MTRR memory type structure
 struct _memorytype {
@@ -194,17 +145,6 @@ typedef struct _vcpu {
 	u32 isbsp;							//1 if this core is BSP else 0
   u32 quiesced;				//1 if this core is currently quiesced
 	
-  //SVM specific fields
-  //u32 hsave_vaddr_ptr;    //VM_HSAVE area of the CPU
-  //u32 vmcb_vaddr_ptr;     //VMCB of the CPU
-  //struct _svm_vmcbfields *vmcb_vaddr_ptr;
-  ////u32 npt_vaddr_ptr;      //NPT base of the CPU
-  //u32 npt_vaddr_ptr;      //NPT base of the CPU
-  //u32 npt_vaddr_pdts;      
-  //u32 npt_asid;           //NPT ASID for this core
-  //u32 npt_vaddr_pts;      //NPT page-tables for protection manipulation
-  //u32 svm_vaddr_iobitmap;		//virtual address of the I/O Bitmap area
-
   //VMX specific fields
   u64 vmx_msrs[IA32_VMX_MSRCOUNT];  //VMX msr values
   u64 vmx_msr_efer;
@@ -369,130 +309,57 @@ void xmhf_baseplatform_arch_x86_udelay(u32 usecs);
 
 static inline u64 VCPU_gdtr_base(VCPU *vcpu)
 {
-  //if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     return ((struct _vmx_vmcsfields*)&(vcpu->vmcs))->guest_GDTR_base;
-  //} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-  //  return ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->gdtr.base;
-  //} else {
-  //  HALT_ON_ERRORCOND(false);
-  //  return 0;
- // }
 }
 
 static inline size_t VCPU_gdtr_limit(VCPU *vcpu)
 {
-  //if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     return ((struct _vmx_vmcsfields*)&(vcpu->vmcs))->guest_GDTR_limit;
-  //} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-  //  return ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->gdtr.limit;
-  //} else {
-  //  HALT_ON_ERRORCOND(false);
-  //  return 0;
- // }
 }
 
 static inline u64 VCPU_grflags(VCPU *vcpu)
 {
-  //if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     return ((struct _vmx_vmcsfields*)&(vcpu->vmcs))->guest_RFLAGS;
-  //} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-  //  return ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->rflags;
-  //} else {
-  //  HALT_ON_ERRORCOND(false);
-  //  return 0;
- // }
 }
 
 static inline void VCPU_grflags_set(VCPU *vcpu, u64 val)
 {
-  //if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     ((struct _vmx_vmcsfields*)&(vcpu->vmcs))->guest_RFLAGS = val;
-  //} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-  //  ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->rflags = val;
-  //} else {
-  //  HALT_ON_ERRORCOND(false);
- // }
 }
 
 static inline u64 VCPU_grip(VCPU *vcpu)
 {
-  //if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     return ((struct _vmx_vmcsfields*)&(vcpu->vmcs))->guest_RIP;
-  //} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-  //  return ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->rip;
-  //} else {
-  //  HALT_ON_ERRORCOND(false);
-  //  return 0;
-  //}
 }
 
 static inline void VCPU_grip_set(VCPU *vcpu, u64 val)
 {
-  //if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     ((struct _vmx_vmcsfields*)&(vcpu->vmcs))->guest_RIP = val;
-  //} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-  //  ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->rip = val;
-  //} else {
-  //  HALT_ON_ERRORCOND(false);
-  //}
 }
 
 static inline u64 VCPU_grsp(VCPU *vcpu)
 {
-  //if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     return ((struct _vmx_vmcsfields*)&(vcpu->vmcs))->guest_RSP;
-  //} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-  //  return ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->rsp;
-  //} else {
-  //  HALT_ON_ERRORCOND(false);
-  //  return 0;
- // }
 }
 
 static inline void VCPU_grsp_set(VCPU *vcpu, u64 val)
 {
-  //if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     ((struct _vmx_vmcsfields*)&(vcpu->vmcs))->guest_RSP = val;
-  //} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-  //  ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->rsp = val;
-  //} else {
-  //  HALT_ON_ERRORCOND(false);
-  //}
 }
 
 static inline u64 VCPU_gcr3(VCPU *vcpu)
 {
-  //if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     return vcpu->vmcs.guest_CR3;
-  //} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-  //  return ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->cr3;
-  //} else {
-  //  HALT_ON_ERRORCOND(false);
-  //  return 0;
-  //}
 }
 
 static inline void VCPU_gcr3_set(VCPU *vcpu, u64 cr3)
 {
-  //if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     vcpu->vmcs.guest_CR3 = cr3;
-  //} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-  //  ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->cr3 = cr3;
-  //} else {
-  //  HALT_ON_ERRORCOND(false);
- // }
 }
 
 static inline u64 VCPU_gcr4(VCPU *vcpu)
 {
-  //if (vcpu->cpu_vendor == CPU_VENDOR_INTEL) {
     return vcpu->vmcs.guest_CR4;
-  //} else if (vcpu->cpu_vendor == CPU_VENDOR_AMD) {
-  //  return ((struct _svm_vmcbfields*)vcpu->vmcb_vaddr_ptr)->cr4;
-  //} else {
-  //  HALT_ON_ERRORCOND(false);
-  //  return 0;
-  //}
 }
 
 //xc-xcphandler

@@ -344,9 +344,6 @@ void xmhf_baseplatform_arch_smpinitialize(void){
 
 
   ////allocate and setup VCPU structure on each CPU
-  //if(cpu_vendor == CPU_VENDOR_AMD)
-	//xmhf_baseplatform_arch_x86svm_allocandsetupvcpus(cpu_vendor);
-  //else //CPU_VENDOR_INTEL
 	xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(cpu_vendor);
 
 	//signal that basic base platform data structure initialization is complete 
@@ -355,9 +352,6 @@ void xmhf_baseplatform_arch_smpinitialize(void){
 
   //wake up APS
   if(g_midtable_numentries > 1){
-    //if(cpu_vendor == CPU_VENDOR_AMD)
-	 // xmhf_baseplatform_arch_x86svm_wakeupAPs();
-    //else //CPU_VENDOR_INTEL
 	  xmhf_baseplatform_arch_x86vmx_wakeupAPs();
   }
 
