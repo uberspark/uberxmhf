@@ -131,33 +131,42 @@ static inline u64 xmhfhw_sysmemaccess_readu64(u32 addr){
     return value;
 }
 
+// the following four _writexx functions should not be used to write
+// to framework memory areas
 
 //write 8-bits to absolute physical address
 static inline void xmhfhw_sysmemaccess_writeu8(u32 addr, u8 val) {
     u8 *valueptr = (u8 *)addr;
+	assert( ! ( ((u32)valueptr >= rpb->XtVmmRuntimePhysBase) && ((u32)valueptr <= (rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize)) ) ); 
     *valueptr = val;
 }
 
 //write 16-bits to absolute physical address
 static inline void xmhfhw_sysmemaccess_writeu16(u32 addr, u16 val) {
     u16 *valueptr = (u16 *)addr;
+	assert( ! ( ((u32)valueptr >= rpb->XtVmmRuntimePhysBase) && ((u32)valueptr <= (rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize)) ) ); 
     *valueptr = val;
 }
 
 //write 32-bits to absolute physical address
 static inline void xmhfhw_sysmemaccess_writeu32(u32 addr, u32 val) {
     u32 *valueptr = (u32 *)addr;
+	assert( ! ( ((u32)valueptr >= rpb->XtVmmRuntimePhysBase) && ((u32)valueptr <= (rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize)) ) ); 
     *valueptr = val;
 }
 
 //write 64-bits to absolute physical address
 static inline void xmhfhw_sysmemaccess_writeu64(u32 addr, u64 val) {
     u64 *valueptr = (u64 *)addr;
+	assert( ! ( ((u32)valueptr >= rpb->XtVmmRuntimePhysBase) && ((u32)valueptr <= (rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize)) ) ); 
     *valueptr = val;
 }
 
-//memory copy from absolute physical address (src) to
-//data segment relative address (dest)
+//the following function can be used to write to framework data areas
+//only. e.g., copying from rich guest to hypapp data buffer
+//memory copy from absolute physical address (src) to 
+//absolute physical address (dest)
+//TODO: ensure dest does not fall within framework code regions
 static inline void xmhfhw_sysmemaccess_copy(u8 *dest, u8 *src, u32 size){
 	memcpy(dest, src, size);
 }

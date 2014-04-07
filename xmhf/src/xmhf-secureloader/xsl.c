@@ -57,11 +57,12 @@ struct _sl_parameter_block slpb __attribute__(( section(".sl_untrusted_params") 
 	.magic = SL_PARAMETER_BLOCK_MAGIC,
 };
 
+RPB *rpb = (RPB *)&xmhf_rpb_start;
+
 // we get here from _xmhf_sl_entry
 void xmhf_sl_main(void){
 	u32 runtime_physical_base;
 	u32 runtime_size_2Maligned;
-	RPB *rpb = (RPB *)&xmhf_rpb_start;
 
 	//initialize debugging early on
 	xmhf_debug_init((char *)&slpb.uart_config);
