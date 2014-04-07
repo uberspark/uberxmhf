@@ -77,18 +77,17 @@ extern RPB *rpb;
 
 //----------------------------------------------------------------------
 // component headers
-#include <xmhf-baseplatform.h>	//XMHF base platform component
-#include <xmhf-memprot.h>		//XMHF memory protection component
-#include <xmhf-dmaprot.h>		//XMHF DMA protection component
-#include <xmhf-partition.h>		//XMHF partition component
-#include <xmhf-smpguest.h>		//XMHF SMP guest component
-#include <xmhf-parteventhub.h>	//XMHF partition event-hub component
-#include <xmhf-xcphandler.h>	//XMHF exception handler component
-#include <xmhf-tpm.h>			//XMHF Trusted Platform Module component
-//#include <xmhf-sl.h>			//XMHF secure loader component
-#include <xmhf-runtime.h>		//XMHF secure loader component
-#include <xmhf-app.h>			//XMHF Application callback declarations
-#include <xmhf-apihub.h>		//XMHF core API interface component
+#include <xc-baseplatform.h>	//base platform component
+#include <xc-memprot.h>			//memory protection component
+#include <xc-dmaprot.h>			//DMA protection component
+#include <xc-partition.h>		//partition component
+#include <xc-richguest.h>		//rich guest component
+#include <xc-parteventhub.h>	//partition event-hub component
+#include <xc-xcphandler.h>		//exception handler component
+#include <xc-tpm.h>				//Trusted Platform Module component
+#include <xc-startup.h>			//secure loader component
+#include <xc-hypapp.h>			//hypapp callback declarations
+#include <xc-apihub.h>			//core API interface component
 
 
 #endif /* __XMHF_CORE_H_ */
