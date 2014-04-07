@@ -105,14 +105,6 @@
 
 //read 8-bits from absolute physical address
 static inline u8 xmhf_baseplatform_arch_flat_readu8(u32 addr){
-/*    u32 ret;
-    __asm__ __volatile("xor %%eax, %%eax\r\n"        
-                       "movl %%fs:(%%ebx), %%eax\r\n"
-                       : "=a"(ret)
-                       : "b"(addr)
-                       );
-    return (u8)ret;        
-*/
     u8 *valueptr = (u8 *)addr;
     u8 value = *valueptr;
     return value;
@@ -120,13 +112,6 @@ static inline u8 xmhf_baseplatform_arch_flat_readu8(u32 addr){
 
 //read 16-bits from absolute physical address
 static inline u16 xmhf_baseplatform_arch_flat_readu16(u32 addr){
-/*    u32 ret;
-    __asm__ __volatile("xor %%eax, %%eax\r\n"        
-                       "movl %%fs:(%%ebx), %%eax\r\n"
-                       : "=a"(ret)
-                       : "b"(addr)
-                       );
-    return ret;        */
     u16 *valueptr = (u16 *)addr;
     u16 value = *valueptr;
     return value;
@@ -134,13 +119,6 @@ static inline u16 xmhf_baseplatform_arch_flat_readu16(u32 addr){
 
 //read 32-bits from absolute physical address
 static inline u32 xmhf_baseplatform_arch_flat_readu32(u32 addr){
-/*    u32 ret;
-    __asm__ __volatile("xor %%eax, %%eax\r\n"        
-                       "movl %%fs:(%%ebx), %%eax\r\n"
-                       : "=a"(ret)
-                       : "b"(addr)
-                       );
-    return ret;        */
     u32 *valueptr = (u32 *)addr;
     u32 value = *valueptr;
     return value;
@@ -148,15 +126,6 @@ static inline u32 xmhf_baseplatform_arch_flat_readu32(u32 addr){
 
 //read 64-bits from absolute physical address
 static inline u64 xmhf_baseplatform_arch_flat_readu64(u32 addr){
-/*    u32 highpart, lowpart;
-    __asm__ __volatile("xor %%eax, %%eax\r\n"        
-    									 "xor %%edx, %%edx\r\n"
-                       "movl %%fs:(%%ebx), %%eax\r\n"
-                       "movl %%fs:0x4(%%ebx), %%edx\r\n"
-                       : "=a"(lowpart), "=d"(highpart)
-                       : "b"(addr)
-                       );
-    return  ((u64)highpart << 32) | (u64)lowpart;        */
     u64 *valueptr = (u64 *)addr;
     u64 value = *valueptr;
     return value;
@@ -164,27 +133,12 @@ static inline u64 xmhf_baseplatform_arch_flat_readu64(u32 addr){
 
 //write 32-bits to absolute physical address
 static inline void xmhf_baseplatform_arch_flat_writeu32(u32 addr, u32 val) {
-/*    __asm__ __volatile__("movl %%eax, %%fs:(%%ebx)\r\n"
-                         :
-                         : "b"(addr), "a"((u32)val)
-                         );
-*/
     u32 *valueptr = (u32 *)addr;
     *valueptr = val;
 }
 
 //write 64-bits to absolute physical address
 static inline void xmhf_baseplatform_arch_flat_writeu64(u32 addr, u64 val) {
-/*    u32 highpart, lowpart;
-    lowpart = (u32)val;
-    highpart = (u32)((u64)val >> 32);
-    
-		__asm__ __volatile__("movl %%eax, %%fs:(%%ebx)\r\n"
-												"movl %%edx, %%fs:0x4(%%ebx)\r\n"	
-                         :
-                         : "b"(addr), "a"(lowpart), "d"(highpart)
-                         );
-*/
     u64 *valueptr = (u64 *)addr;
     *valueptr = val;
 }
@@ -192,12 +146,6 @@ static inline void xmhf_baseplatform_arch_flat_writeu64(u32 addr, u64 val) {
 //memory copy from absolute physical address (src) to
 //data segment relative address (dest)
 static inline void xmhf_baseplatform_arch_flat_copy(u8 *dest, u8 *src, u32 size){
-/*	u32 i;
-	u8 val;
-	for(i=0; i < size; i++){
-		val = xmhf_baseplatform_arch_flat_readu8((u32)src + i);
-		dest[i] = val;
-	}*/
 	memcpy(dest, src, size);
 }
 
