@@ -50,6 +50,7 @@
  */
 
 #include <xmhf-core.h>
+#include <xc-x86.h>
 
 //get CPU vendor
 u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){

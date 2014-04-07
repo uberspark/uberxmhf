@@ -55,11 +55,12 @@
 //XXX: FIX this
 //extern u8 * _svm_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
 
-//XXX: FIX this
+/*//XXX: FIX this
 //extern u8 * _vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
 extern void _vmx_putVMCS(VCPU *vcpu);
 extern void _vmx_getVMCS(VCPU *vcpu);
 extern void _vmx_dumpVMCS(VCPU *vcpu);
+*/
 
 //----------------------------------------------------------------------
 //exported DATA 
@@ -74,22 +75,6 @@ extern void _vmx_dumpVMCS(VCPU *vcpu);
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
-
-//----------------------------------------------------------------------
-//x86 ARCH. INTERFACES
-//----------------------------------------------------------------------
-
-//----------------------------------------------------------------------
-//x86vmx SUBARCH. INTERFACES
-//----------------------------------------------------------------------
-void xmhf_parteventhub_arch_x86vmx_entry(void);
-u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r);
-
-//----------------------------------------------------------------------
-//x86svm SUBARCH. INTERFACES
-//----------------------------------------------------------------------
-void xmhf_parteventhub_arch_x86svm_entry(void);
-u32 xmhf_parteventhub_arch_x86svm_intercept_handler(VCPU *vcpu, struct regs *r);
 
 
 

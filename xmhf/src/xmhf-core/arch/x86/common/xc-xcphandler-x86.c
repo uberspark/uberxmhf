@@ -50,7 +50,9 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
+#include <xmhf.h>
 #include <xmhf-core.h>
+#include <xc-x86.h>
 
 #define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
 	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\

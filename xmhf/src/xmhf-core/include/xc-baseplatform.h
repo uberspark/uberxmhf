@@ -52,7 +52,7 @@
 #define __XMHF_BASEPLATFORM_H__
 
 //bring in arch. specific declarations
-#include <arch/xmhf-baseplatform-arch.h>
+//#include <arch/xmhf-baseplatform-arch.h>
 
 
 #ifndef __ASSEMBLY__
@@ -104,9 +104,6 @@ extern PCPU	g_cpumap[] __attribute__(( section(".data") ));
 //runtime stacks for individual cores
 extern u8 g_cpustacks[] __attribute__(( section(".stack") ));
 
-//VCPU structure for each "guest OS" core
-//extern VCPU g_vcpubuffers[] __attribute__(( section(".data") ));
-extern VCPU g_bplt_vcpu[] __attribute__(( section(".data") ));
 
 
 //master id table, contains core lapic id to VCPU mapping information

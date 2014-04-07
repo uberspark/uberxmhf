@@ -115,7 +115,6 @@ extern u32 xmhf_app_handleintercept_hwpgtblviolation(context_desc_t context_desc
 extern void xmhf_app_handleshutdown(context_desc_t context_desc);
 
 
-#if !(defined __XMHF_CORE_APIHUB_SWFP__)
 
 //XMHF hypapp callbacks referenced by the XMHF core
 //note: these are the interfaces core uses to invoke hypapp callbacks
@@ -129,37 +128,6 @@ extern u32 xmhfhypapp_handleintercept_portaccess(context_desc_t context_desc, u3
 extern u32 xmhfhypapp_handleintercept_hwpgtblviolation(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code);
 extern void xmhfhypapp_handleshutdown(context_desc_t context_desc);
 
-
-#else //SWFP backend
-
-// hypapp main (initialization) function
-//typedef u32 (*XMHFAPPMAIN)(VCPU *vcpu, APP_PARAM_BLOCK *apb);
-typedef u32 (*XMHFAPPMAIN)(APP_PARAM_BLOCK *apb);
-
-//hypapp hypercall handler
-//returns APP_SUCCESS if we handled the hypercall else APP_ERROR
-typedef u32 (*XMHFAPPHANDLEHYPERCALL)(VCPU *vcpu, u32 callno, struct regs *r);
-
-//handles XMHF shutdown callback
-//note: should not return
-typedef void (*XMHFAPPHANDLESHUTDOWN)(VCPU *vcpu, struct regs *r);
-
-//handles h/w pagetable violations
-//for now this always returns APP_SUCCESS
-typedef u32 (*XMHFAPPHANDLEINTERCEPTHWPGTBLVIOLATION)(VCPU *vcpu, struct regs *r, u64 gpa, u64 gva, u64 violationcode);
-
-//handles i/o port intercepts
-//returns either APP_IOINTERCEPT_SKIP or APP_IOINTERCEPT_CHAIN
-typedef u32 (*XMHFAPPHANDLEINTERCEPTPORTACCESS)(VCPU *vcpu, struct regs *r, u32 portnum, u32 access_type, u32 access_size);
-
-
-extern XMHFAPPMAIN xmhfhypapp_main;
-extern XMHFAPPHANDLEHYPERCALL xmhfhypapp_handlehypercall;
-extern XMHFAPPHANDLESHUTDOWN xmhfhypapp_handleshutdown;
-extern XMHFAPPHANDLEINTERCEPTHWPGTBLVIOLATION xmhfhypapp_handleintercept_hwpgtblviolation;
-extern XMHFAPPHANDLEINTERCEPTPORTACCESS xmhfhypapp_handleintercept_portaccess;
-
-#endif
 
 #endif	//__ASSEMBLY__
 
