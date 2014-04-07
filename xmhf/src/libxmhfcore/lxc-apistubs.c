@@ -50,7 +50,9 @@
 //core/hypapp API/callbacks low-level stubs
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-//----------------------------------------------------------------------
+extern void libxmhfcore_hypappfromcore(u32 callnum);
+
+/*//----------------------------------------------------------------------
 //globals referenced
 	.extern libxmhfcore_hypappfromcore
 
@@ -59,6 +61,7 @@
 // 
 
 .section .text
+
 
 .global libxmhfcore_hypappfromcore_stub
 libxmhfcore_hypappfromcore_stub:
@@ -71,7 +74,48 @@ libxmhfcore_hypappfromcore_stub:
 	
 	int $0x03			//never get here
 	hlt
+*/
+__attribute__((naked)) void libxmhfcore_hypappfromcore_stub(void) {
 
+	asm volatile(
+		"pushl %%esi \r\n"
+		"call libxmhfcore_hypappfromcore \r\n"
+		"addl $0x04, %%esp \r\n"
+		"movl %0, %%esi \r\n"	//signal a return from hypapp callback
+		"sysenter \r\n"
+		"int $0x03 \r\n"		//never get here
+		"hlt \r\n"
+		: //no outputs
+		: "i" (XMHF_APIHUB_COREAPI_HYPAPPCBRETURN)
+		: //no clobber
+	);
+
+}
+
+
+void libxmhfcore_hypapptocore(u32 callnum){
+
+	asm volatile(
+			"pushl 	%%ecx \r\n"										//save GPRs we will clobber
+			"pushl 	%%edx \r\n"
+			"pushl	%%esi \r\n"
+			"movl 	%%esp, %%ecx \r\n"									//store return ESP and EIP for sysexit
+			"movl 	$backfromcore, %%edx \r\n"
+			"movl  %0, %%esi \r\n"									//load core API call number
+			"sysenter \r\n"											//go to the core
+			"backfromcore:	\r\n"
+			"popl	%%esi \r\n"										//restore GPRs we clobbered
+			"popl	%%edx \r\n"
+			"popl	%%ecx \r\n"
+			//"ret \r\n"													//return back to the hypap
+			: // no outputs
+			: "m" (callnum)
+			: //no clobber
+	);
+
+}
+
+/*
 .global libxmhfcore_hypapptocore
 libxmhfcore_hypapptocore:
 	pushl 	%ecx										//save GPRs we will clobber
@@ -92,6 +136,7 @@ backfromcore:
 	
 	ret													//return back to the hypap
 	
+
 //----------------------------------------------------------------------
 // data
 // 
@@ -104,3 +149,4 @@ backfromcore:
 
 .section .stack
 
+*/
