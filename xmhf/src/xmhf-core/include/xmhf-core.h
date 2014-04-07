@@ -69,11 +69,11 @@
 	#include <tpm.h>
 #endif /* __ASSEMBLY__ */
 
-//forward declaration of runtime parameter block
+/*//forward declaration of runtime parameter block
 #ifndef __ASSEMBLY__
 extern RPB *rpb;	
 #endif	//__ASSEMBLY__
-
+*/
 
 //----------------------------------------------------------------------
 // component headers

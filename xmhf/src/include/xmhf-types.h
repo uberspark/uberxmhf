@@ -160,6 +160,9 @@ typedef struct {
 	u32 isEarlyInit;					//1 for an "early init" else 0 (late-init)
 } __attribute__((packed)) RPB, *PRPB;
 
+//forward declaration of runtime parameter block
+extern RPB *rpb;	
+
 
 //"sl" parameter block structure 
 typedef struct _sl_parameter_block {
