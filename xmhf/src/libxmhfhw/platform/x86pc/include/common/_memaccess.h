@@ -106,28 +106,44 @@
 //read 8-bits from absolute physical address
 static inline u8 xmhfhw_sysmemaccess_readu8(u32 addr){
     u8 *valueptr = (u8 *)addr;
+    #ifdef __XMHF_VERIFICATION__
+    u8 value = nondet_u8();
+    #else
     u8 value = *valueptr;
+    #endif
     return value;
 }
 
 //read 16-bits from absolute physical address
 static inline u16 xmhfhw_sysmemaccess_readu16(u32 addr){
     u16 *valueptr = (u16 *)addr;
+    #ifdef __XMHF_VERIFICATION__
+	u16 value = nondet_u16();
+	#else
     u16 value = *valueptr;
+	#endif
     return value;
 }
 
 //read 32-bits from absolute physical address
 static inline u32 xmhfhw_sysmemaccess_readu32(u32 addr){
     u32 *valueptr = (u32 *)addr;
+    #ifdef __XMHF_VERIFICATION__
+    u32 value = nondet_u32();
+    #else
     u32 value = *valueptr;
+	#endif
     return value;
 }
 
 //read 64-bits from absolute physical address
 static inline u64 xmhfhw_sysmemaccess_readu64(u32 addr){
     u64 *valueptr = (u64 *)addr;
+    #ifdef __XMHF_VERIFICATION__
+	u64 value = nondet_u64();
+	#else
     u64 value = *valueptr;
+	#endif
     return value;
 }
 
@@ -138,28 +154,36 @@ static inline u64 xmhfhw_sysmemaccess_readu64(u32 addr){
 static inline void xmhfhw_sysmemaccess_writeu8(u32 addr, u8 val) {
     u8 *valueptr = (u8 *)addr;
 	assert( ! ( ((u32)valueptr >= rpb->XtVmmRuntimePhysBase) && ((u32)valueptr <= (rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize)) ) ); 
+    #ifndef __XMHF_VERIFICATION__
     *valueptr = val;
+    #endif
 }
 
 //write 16-bits to absolute physical address
 static inline void xmhfhw_sysmemaccess_writeu16(u32 addr, u16 val) {
     u16 *valueptr = (u16 *)addr;
 	assert( ! ( ((u32)valueptr >= rpb->XtVmmRuntimePhysBase) && ((u32)valueptr <= (rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize)) ) ); 
+    #ifndef __XMHF_VERIFICATION__
     *valueptr = val;
+	#endif
 }
 
 //write 32-bits to absolute physical address
 static inline void xmhfhw_sysmemaccess_writeu32(u32 addr, u32 val) {
     u32 *valueptr = (u32 *)addr;
 	assert( ! ( ((u32)valueptr >= rpb->XtVmmRuntimePhysBase) && ((u32)valueptr <= (rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize)) ) ); 
+    #ifndef __XMHF_VERIFICATION__
     *valueptr = val;
+	#endif
 }
 
 //write 64-bits to absolute physical address
 static inline void xmhfhw_sysmemaccess_writeu64(u32 addr, u64 val) {
     u64 *valueptr = (u64 *)addr;
 	assert( ! ( ((u32)valueptr >= rpb->XtVmmRuntimePhysBase) && ((u32)valueptr <= (rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize)) ) ); 
+    #ifndef __XMHF_VERIFICATION__
     *valueptr = val;
+	#endif
 }
 
 //the following function can be used to write to framework data areas
@@ -168,7 +192,9 @@ static inline void xmhfhw_sysmemaccess_writeu64(u32 addr, u64 val) {
 //absolute physical address (dest)
 //TODO: ensure dest does not fall within framework code regions
 static inline void xmhfhw_sysmemaccess_copy(u8 *dest, u8 *src, u32 size){
+    #ifndef __XMHF_VERIFICATION__
 	memcpy(dest, src, size);
+	#endif
 }
 
 
