@@ -51,8 +51,6 @@
 
 #include <xmhf-core.h>
 
-#include <xc-x86.h>
-#include <xc-x86vmx.h>
 
 //bplt-data.c
 
@@ -64,8 +62,6 @@ PCPU	g_cpumap[MAX_PCPU_ENTRIES] __attribute__(( section(".data") ));
 
 //runtime stacks for individual cores
 u8 g_cpustacks[RUNTIME_STACK_SIZE * MAX_PCPU_ENTRIES] __attribute__(( section(".stack") ));
-
-
 
 //master id table, contains core lapic id to VCPU mapping information
 MIDTAB g_midtable[MAX_MIDTAB_ENTRIES] __attribute__(( section(".data") ));
@@ -95,12 +91,8 @@ u32 g_lock_ap_go_signal __attribute__(( section(".data") )) = 1;
 //runtime parameter block pointer 
 RPB *rpb __attribute__(( section(".data") )); 
 
-#ifndef __XMHF_VERIFICATION__
-//runtime DMA protection buffer
-u8 g_rntm_dmaprot_buffer[SIZE_G_RNTM_DMAPROT_BUFFER] __attribute__(( section(".palign_data") ));
-#else //__XMHF_VERIFICATION__
-//DMA table initialization is currently audited manually
-#endif
+//core DMA protection buffer (if DMA protections need to be re-initialized on the target platform)
+u8 g_core_dmaprot_buffer[SIZE_CORE_DMAPROT_BUFFER] __attribute__(( section(".palign_data") ));
 
 //variable that is incremented by 1 by all cores that cycle through appmain
 //successfully, this should be finally equal to g_midtable_numentries at
