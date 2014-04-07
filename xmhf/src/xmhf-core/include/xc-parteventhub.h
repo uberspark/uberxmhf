@@ -44,23 +44,14 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF partition event-hub component declarations
+// XMHF partition event-hub component declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __EMHF_PARTEVENTHUB_H__
-#define __EMHF_PARTEVENTHUB_H__
+#ifndef __XMHF_PARTEVENTHUB_H__
+#define __XMHF_PARTEVENTHUB_H__
 
 #ifndef __ASSEMBLY__
 
-//XXX: FIX this
-//extern u8 * _svm_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
-
-/*//XXX: FIX this
-//extern u8 * _vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
-extern void _vmx_putVMCS(VCPU *vcpu);
-extern void _vmx_getVMCS(VCPU *vcpu);
-extern void _vmx_dumpVMCS(VCPU *vcpu);
-*/
 
 //----------------------------------------------------------------------
 //exported DATA 
@@ -80,4 +71,4 @@ extern void _vmx_dumpVMCS(VCPU *vcpu);
 
 #endif	//__ASSEMBLY__
 
-#endif //__EMHF_PARTEVENTHUB_H__
+#endif //__XMHF_PARTEVENTHUB_H__

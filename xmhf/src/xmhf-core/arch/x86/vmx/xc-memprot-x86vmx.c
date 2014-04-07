@@ -475,57 +475,32 @@ u32 xmhf_memprot_arch_x86vmx_getprot(VCPU *vcpu, u64 gpa){
 // initialize memory protection structures for a given core (vcpu)
 //void xmhf_memprot_arch_initialize(VCPU *vcpu){
 void xmhf_memprot_arch_initialize(context_desc_t context_desc){
-	//HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
-	//HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-	
-	//if(vcpu->cpu_vendor == CPU_VENDOR_AMD){ 
-	//	xmhf_memprot_arch_x86svm_initialize(vcpu);
-	//	printf("\nCPU(0x%02x): Activated SVM NPTs.", vcpu->id);
-	//}else{	//CPU_VENDOR_INTEL
 		xmhf_memprot_arch_x86vmx_initialize(vcpu);
-	//	printf("\nCPU(0x%02x): Activated VMX EPTs.", vcpu->id);
-	//}
 }
 
 // get level-1 page map address
 u64 * xmhf_memprot_arch_get_lvl1_pagemap_address(context_desc_t context_desc){
-	//HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-	//HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
-
-	//if (vcpu->cpu_vendor == CPU_VENDOR_AMD)
-	//	return (u64 *)vcpu->npt_vaddr_pts;
-	//else //CPU_VENDOR_INTEL
 		return (u64 *)vcpu->vmx_vaddr_ept_p_tables;
 }
 
 //get level-2 page map address
 u64 * xmhf_memprot_arch_get_lvl2_pagemap_address(context_desc_t context_desc){
-	//HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-	//HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
 
-	//if (vcpu->cpu_vendor == CPU_VENDOR_AMD)
-	//	return (u64 *)vcpu->npt_vaddr_pdts;
-	//else //CPU_VENDOR_INTEL
 		return (u64 *)vcpu->vmx_vaddr_ept_pd_tables;
 }
 
 //get level-3 page map address
 u64 * xmhf_memprot_arch_get_lvl3_pagemap_address(context_desc_t context_desc){
-	//HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
 
-	//if (vcpu->cpu_vendor == CPU_VENDOR_AMD)
-	//	return (u64 *)vcpu->npt_vaddr_ptr;
-	//else //CPU_VENDOR_INTEL
 		return (u64 *)vcpu->vmx_vaddr_ept_pdp_table;
 }
 
 //get level-4 page map address
 u64 * xmhf_memprot_arch_get_lvl4_pagemap_address(context_desc_t context_desc){
-	//HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);	//we don;t have a level-4 pagemap for AMD
 	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
 
     return (u64 *)vcpu->vmx_vaddr_ept_pml4_table;
@@ -533,27 +508,13 @@ u64 * xmhf_memprot_arch_get_lvl4_pagemap_address(context_desc_t context_desc){
 
 //get default root page map address
 u64 * xmhf_memprot_arch_get_default_root_pagemap_address(context_desc_t context_desc){
-  //HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-	//HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
-
-
-	//if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-	//	return (u64*)vcpu->npt_vaddr_ptr;
-	//else //CPU_VENDOR_INTEL
 		return (u64*)vcpu->vmx_vaddr_ept_pml4_table;
 } 
 
 //flush hardware page table mappings (TLB) 
 void xmhf_memprot_arch_flushmappings(context_desc_t context_desc){
     VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
-
-	//HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-	//HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-
-	//if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-	//	xmhf_memprot_arch_x86svm_flushmappings(vcpu);
-	//else //CPU_VENDOR_INTEL
 		xmhf_memprot_arch_x86vmx_flushmappings(vcpu);
 
 }
@@ -562,28 +523,7 @@ void xmhf_memprot_arch_flushmappings(context_desc_t context_desc){
 
 //set protection for a given physical memory address
 void xmhf_memprot_arch_setprot(context_desc_t context_desc, u64 gpa, u32 prottype){
-/*#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
-	assert ( (vcpu != NULL) );
-	assert ( ( (gpa < rpb->XtVmmRuntimePhysBase) || 
-							 (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) 
-						   ) );
-	assert ( ( (prottype > 0)	&& 
-	                         (prottype <= MEMP_PROT_MAXVALUE) 
-	                       ) );						
-	assert (
-	 (prottype == MEMP_PROT_NOTPRESENT) ||
-	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_EXECUTE)) ||
-	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_EXECUTE)) ||
-	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_NOEXECUTE)) ||
-	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_NOEXECUTE)) 
-	);
-#endif*/
 	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
-
-	//invoke appropriate sub arch. backend
-	//if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-	//	xmhf_memprot_arch_x86svm_setprot(vcpu, gpa, prottype);
-	//else //CPU_VENDOR_INTEL
 		xmhf_memprot_arch_x86vmx_setprot(vcpu, gpa, prottype);
 }
 
@@ -592,25 +532,16 @@ void xmhf_memprot_arch_setprot(context_desc_t context_desc, u64 gpa, u32 prottyp
 //get protection for a given physical memory address
 u32 xmhf_memprot_arch_getprot(context_desc_t context_desc, u64 gpa){
 	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
-	
-	//invoke appropriate sub arch. backend
-	//if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-	//	return xmhf_memprot_arch_x86svm_getprot(vcpu, gpa);
-	//else //CPU_VENDOR_INTEL
 		return xmhf_memprot_arch_x86vmx_getprot(vcpu, gpa);
 }
 
 
 void xmhf_memprot_arch_setsingularhpt(u64 hpt){
 		u32 i;
-		//u32 cpu_vendor = get_cpu_vendor_or_die();
 		
 		printf("\n%s: starting...", __FUNCTION__);
         for( i=0 ; i<g_midtable_numentries; i++ )  {
-			//if(cpu_vendor == CPU_VENDOR_INTEL)
 				xmhf_memprot_arch_x86vmx_set_EPTP((VCPU *)g_midtable[i].vcpu_vaddr_ptr, hpt);
-			//else 
-			//	xmhf_memprot_arch_x86svm_set_h_cr3((VCPU *)g_midtable[i].vcpu_vaddr_ptr, hpt);
 
 			printf("\n CPU %02x: set HPT to %x",  i, (u32)hpt);
         }

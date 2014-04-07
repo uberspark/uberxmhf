@@ -632,53 +632,29 @@ void xmhf_partition_arch_x86vmx_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size,
 //initialize partition monitor for a given CPU
 //void xmhf_partition_arch_initializemonitor(VCPU *vcpu){
 void xmhf_partition_arch_initializemonitor(context_desc_t context_desc){
-	//HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	VCPU *vcpu=(VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
 	
-	//if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
-	//	xmhf_partition_arch_x86svm_initializemonitor(vcpu);
-	//}else{ //CPU_VENDOR_INTEL
 		xmhf_partition_arch_x86vmx_initializemonitor(vcpu);
-	//}
-
 }
 
 //setup guest OS state for the partition
 //void xmhf_partition_arch_setupguestOSstate(VCPU *vcpu){
 void xmhf_partition_arch_setupguestOSstate(context_desc_t context_desc){
-	//HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	VCPU *vcpu=(VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
-	
-	//if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
-	//	xmhf_partition_arch_x86svm_setupguestOSstate(vcpu);
-	//}else{ //CPU_VENDOR_INTEL
 		xmhf_partition_arch_x86vmx_setupguestOSstate(vcpu);
-	//}
 }
 
 //start executing the partition and guest OS
 //void xmhf_partition_arch_start(VCPU *vcpu){
 void xmhf_partition_arch_start(context_desc_t context_desc){
-	//HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 	VCPU *vcpu=(VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
-	//if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
-	//	xmhf_partition_arch_x86svm_start(vcpu);
-	//}else{ //CPU_VENDOR_INTEL
 		xmhf_partition_arch_x86vmx_start(vcpu);
-	//}
-	
 }
 
 //set legacy I/O protection for the partition
 void xmhf_partition_arch_legacyIO_setprot(context_desc_t context_desc, u32 port, u32 size, u32 prottype){
 	VCPU *vcpu=(VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
-
-	//if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
-	//	xmhf_partition_arch_x86svm_legacyIO_setprot(vcpu, port, size, prottype);
-	//}else{ //CPU_VENDOR_INTEL
 		xmhf_partition_arch_x86vmx_legacyIO_setprot(vcpu, port, size, prottype);
-	//}
-	
 }
 
 //----------------------------------------------------------------------

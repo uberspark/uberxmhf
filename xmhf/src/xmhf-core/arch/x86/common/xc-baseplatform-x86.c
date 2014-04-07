@@ -80,27 +80,6 @@ u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
 	return cpu_vendor;
 }
 
-/*//[REFACTOR]
-//move this into bplt-x86-vmx.c
-//initialize basic platform elements
-void xmhf_baseplatform_arch_initialize(void){
-	//initialize PCI subsystem
-	xmhf_baseplatform_arch_x86_pci_initialize();
-	
-	//check ACPI subsystem
-	{
-		ACPI_RSDP rsdp;
-		#ifndef __XMHF_VERIFICATION__
-			//TODO: plug in a BIOS data area map/model
-			if(!xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp)){
-				printf("\n%s: ACPI RSDP not found, Halting!", __FUNCTION__);
-				HALT();
-			}
-		#endif //__XMHF_VERIFICATION__
-	}
-
-}*/
-
 //initialize CPU state
 void xmhf_baseplatform_arch_x86_cpuinitialize(void){
 	u32 cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
@@ -244,69 +223,6 @@ void xmhf_baseplatform_arch_x86_wakeupAPs(void){
 
 }
 
-/*//[REFACTOR]
-//move this into bplt-x86-vmx-smp.c
-//initialize SMP
-void xmhf_baseplatform_arch_smpinitialize(void){
-  u32 cpu_vendor;
-  
-  //grab CPU vendor
-  cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
-  HALT_ON_ERRORCOND(cpu_vendor == CPU_VENDOR_AMD || cpu_vendor == CPU_VENDOR_INTEL);
-
-  
-  //setup Master-ID Table (MIDTABLE)
-  {
-    int i;
-	#ifndef __XMHF_VERIFICATION__
-		for(i=0; i < (int)rpb->XtVmmMPCpuinfoNumEntries; i++){
-			g_midtable[g_midtable_numentries].cpu_lapic_id = g_cpumap[i].lapic_id;
-			g_midtable[g_midtable_numentries].vcpu_vaddr_ptr = 0;
-			g_midtable_numentries++;
-		}
-	#else
-	//verification is always done in the context of a single core and vcpu/midtable is 
-	//populated by the verification driver
-	//TODO: incorporate some sort of BIOS data area within the verification harness that will
-	//allow us to populate these tables during verification
-	#endif
-    
-    	
-    
-    
-  }
-
-
-  //allocate and setup VCPU structure on each CPU
-  if(cpu_vendor == CPU_VENDOR_AMD)
-	xmhf_baseplatform_arch_x86svm_allocandsetupvcpus(cpu_vendor);
-  else //CPU_VENDOR_INTEL
-	xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(cpu_vendor);
-
-	//signal that basic base platform data structure initialization is complete 
-	//(used by the exception handler component)
-	g_bplt_initiatialized = true;
-
-  //wake up APS
-  if(g_midtable_numentries > 1){
-    if(cpu_vendor == CPU_VENDOR_AMD)
-	  xmhf_baseplatform_arch_x86svm_wakeupAPs();
-    else //CPU_VENDOR_INTEL
-	  xmhf_baseplatform_arch_x86vmx_wakeupAPs();
-  }
-
-
-  //fall through to common code  
-  {
-	 void _ap_pmode_entry_with_paging(void);
-   printf("\nRelinquishing BSP thread and moving to common...");
-   // Do some low-level init and then call allcpus_common_start() below
-   _ap_pmode_entry_with_paging(); 
-   printf("\nBSP must never get here. HALT!");
-   HALT();
-  }
-}
-*/
 
 static mtrr_state_t g_mtrrs;
 

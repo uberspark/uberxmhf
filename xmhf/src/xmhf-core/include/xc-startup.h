@@ -44,15 +44,12 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF runtime component declarations
+// XMHF core startup component declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __EMHF_RUNTIME_H__
-#define __EMHF_RUNTIME_H__
+#ifndef __XMHF_STARTUP_H__
+#define __XMHF_STARTUP_H__
 
-//#define SIZE_G_RNTM_DMAPROT_BUFFER	(PAGE_SIZE_4K + (PAGE_SIZE_4K * PAE_PTRS_PER_PDPT) \
-//					+ (PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT) + PAGE_SIZE_4K + \
-//					(PAGE_SIZE_4K * PCI_BUS_MAX))
 
 #ifndef __ASSEMBLY__
 
@@ -96,22 +93,7 @@ void xmhf_runtime_main(context_desc_t context_desc);
 //----------------------------------------------------------------------
 
 
-//----------------------------------------------------------------------
-//x86 ARCH. INTERFACES
-//----------------------------------------------------------------------
-
-
-
-//----------------------------------------------------------------------
-//x86vmx SUBARCH. INTERFACES
-//----------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------
-//x86svm SUBARCH. INTERFACES
-//----------------------------------------------------------------------
-
 
 #endif //__ASSEMBLY__
 
-#endif //__EMHF_RUNTIME_H__
+#endif //__XMHF_STARTUP_H__
