@@ -6,7 +6,7 @@ EMHF_ABSTOPDIR := $(realpath $(EMHF_TOPDIR))
 
 # define XMHF root directory and XMHF core include directory for
 # apps
-export EMHF_INCLUDE := $(EMHF_ABSTOPDIR)/xmhf/src/xmhf-core/include
+#export EMHF_INCLUDE := $(EMHF_ABSTOPDIR)/xmhf/src/xmhf-core/include
 
 # define CMOCK and UNITY for app unit test support
 export CMOCKDIR := @CMOCKDIR@
@@ -35,6 +35,7 @@ export LIBBAREMETAL_SRC := $(realpath @LIBBAREMETAL_SRC@)
 
 # XMHF core source location
 export XMHFCORE_SRC := $(realpath xmhf/src/xmhf-core)
+XMHFCORE_INC = -I$(realpath xmhf/src/xmhf-core/include) -I$(realpath xmhf/src/xmhf-core/arch/x86/common/include) -I$(realpath xmhf/src/xmhf-core/arch/x86/vmx/include)
 
 # libxmhfcore source location
 export LIBXMHFCORE_SRC := $(realpath xmhf/src/libxmhfcore)
@@ -81,7 +82,7 @@ ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a
 ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libxmhfdebug/libxmhfdebug.a
 ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libxmhfhw/libxmhfhw.a
 #ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_xmhf-runtime/_objs_libxmhfruntimearch/libxmhfruntimearch.a
-ADDL_INCLUDES += -I$(XMHF_INC) $(LIBXMHFDEBUG_INC) $(XMHF_SECURELOADER_INC) -I$(EMHF_INCLUDE) -I$(LIBXMHFHW_INC) $(LIBBAREMETAL_INC)
+ADDL_INCLUDES += -I$(XMHF_INC) $(LIBXMHFDEBUG_INC) $(XMHF_SECURELOADER_INC) $(XMHFCORE_INC) -I$(LIBXMHFHW_INC) $(LIBBAREMETAL_INC)
 
 # link libbaremetal *again* to resolve more dependencies
 ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a
