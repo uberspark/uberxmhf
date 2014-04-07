@@ -125,18 +125,18 @@ static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
 	switch(regtype){
     case VTD_REG_32BITS:{	//32-bit r/w
       if(access == VTD_REG_READ)
-        *((u32 *)value)= xmhf_baseplatform_arch_flat_readu32(regaddr);
+        *((u32 *)value)= xmhfhw_sysmemaccess_readu32(regaddr);
       else
-        xmhf_baseplatform_arch_flat_writeu32(regaddr, *((u32 *)value));
+        xmhfhw_sysmemaccess_writeu32(regaddr, *((u32 *)value));
         
       break;
     }
     
     case VTD_REG_64BITS:{	//64-bit r/w
       if(access == VTD_REG_READ)
-        *((u64 *)value)=xmhf_baseplatform_arch_flat_readu64(regaddr);
+        *((u64 *)value)=xmhfhw_sysmemaccess_readu64(regaddr);
       else
-        xmhf_baseplatform_arch_flat_writeu64(regaddr, *((u64 *)value));
+        xmhfhw_sysmemaccess_writeu64(regaddr, *((u64 *)value));
     
       break;
     }
@@ -203,7 +203,7 @@ bool vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, u32 *dmar_phys_addr_va
 	printf("\n%s: RSDP at %08x", __FUNCTION__, status);
   
 	//grab ACPI RSDT
-	xmhf_baseplatform_arch_flat_copy((u8 *)&rsdt, (u8 *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
+	xmhfhw_sysmemaccess_copy((u8 *)&rsdt, (u8 *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
 	printf("\n%s: RSDT at %08x, len=%u bytes, hdrlen=%u bytes", 
 		__FUNCTION__, rsdp.rsdtaddress, rsdt.length, sizeof(ACPI_RSDT));
 	
@@ -215,14 +215,14 @@ bool vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, u32 *dmar_phys_addr_va
 			return false;
 	}
 		
-	xmhf_baseplatform_arch_flat_copy((u8 *)&rsdtentries, (u8 *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
+	xmhfhw_sysmemaccess_copy((u8 *)&rsdtentries, (u8 *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
 			sizeof(u32)*num_rsdtentries);			
 	printf("\n%s: RSDT entry list at %08x, len=%u", __FUNCTION__,
 		(rsdp.rsdtaddress + sizeof(ACPI_RSDT)), num_rsdtentries);
 
 	//find the VT-d DMAR table in the list (if any)
 	for(i=0; i< num_rsdtentries; i++){
-		xmhf_baseplatform_arch_flat_copy((u8 *)&dmar, (u8 *)rsdtentries[i], sizeof(VTD_DMAR));  
+		xmhfhw_sysmemaccess_copy((u8 *)&dmar, (u8 *)rsdtentries[i], sizeof(VTD_DMAR));  
 		if(dmar.signature == VTD_DMAR_SIGNATURE){
 		  dmarfound=1;
 		  break;
@@ -246,8 +246,8 @@ bool vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, u32 *dmar_phys_addr_va
   
 	while(i < (dmar.length-sizeof(VTD_DMAR))){
 		u16 type, length;
-		xmhf_baseplatform_arch_flat_copy((u8 *)&type, (u8 *)(remappingstructuresaddrphys+i), sizeof(u16));
-		xmhf_baseplatform_arch_flat_copy((u8 *)&length, (u8 *)(remappingstructuresaddrphys+i+sizeof(u16)), sizeof(u16));     
+		xmhfhw_sysmemaccess_copy((u8 *)&type, (u8 *)(remappingstructuresaddrphys+i), sizeof(u16));
+		xmhfhw_sysmemaccess_copy((u8 *)&length, (u8 *)(remappingstructuresaddrphys+i+sizeof(u16)), sizeof(u16));     
 
 		switch(type){
 			case  0:  //DRHD
@@ -256,7 +256,7 @@ bool vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, u32 *dmar_phys_addr_va
 						printf("\n%s: Error vtd_num_drhd (%u) > VTD_MAX_DRHD (%u)", __FUNCTION__, vtd_num_drhd, VTD_MAX_DRHD);
 						return false;
 				}
-				xmhf_baseplatform_arch_flat_copy((u8 *)&vtd_drhd[vtd_num_drhd], (u8 *)(remappingstructuresaddrphys+i), length);
+				xmhfhw_sysmemaccess_copy((u8 *)&vtd_drhd[vtd_num_drhd], (u8 *)(remappingstructuresaddrphys+i), length);
 				vtd_num_drhd++;
 				i+=(u32)length;
 				break;

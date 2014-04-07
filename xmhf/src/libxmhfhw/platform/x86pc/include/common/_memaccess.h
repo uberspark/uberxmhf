@@ -104,28 +104,28 @@
 //here
 
 //read 8-bits from absolute physical address
-static inline u8 xmhf_baseplatform_arch_flat_readu8(u32 addr){
+static inline u8 xmhfhw_sysmemaccess_readu8(u32 addr){
     u8 *valueptr = (u8 *)addr;
     u8 value = *valueptr;
     return value;
 }
 
 //read 16-bits from absolute physical address
-static inline u16 xmhf_baseplatform_arch_flat_readu16(u32 addr){
+static inline u16 xmhfhw_sysmemaccess_readu16(u32 addr){
     u16 *valueptr = (u16 *)addr;
     u16 value = *valueptr;
     return value;
 }
 
 //read 32-bits from absolute physical address
-static inline u32 xmhf_baseplatform_arch_flat_readu32(u32 addr){
+static inline u32 xmhfhw_sysmemaccess_readu32(u32 addr){
     u32 *valueptr = (u32 *)addr;
     u32 value = *valueptr;
     return value;
 }
 
 //read 64-bits from absolute physical address
-static inline u64 xmhf_baseplatform_arch_flat_readu64(u32 addr){
+static inline u64 xmhfhw_sysmemaccess_readu64(u32 addr){
     u64 *valueptr = (u64 *)addr;
     u64 value = *valueptr;
     return value;
@@ -133,32 +133,32 @@ static inline u64 xmhf_baseplatform_arch_flat_readu64(u32 addr){
 
 
 //write 8-bits to absolute physical address
-static inline void xmhf_baseplatform_arch_flat_writeu8(u32 addr, u8 val) {
+static inline void xmhfhw_sysmemaccess_writeu8(u32 addr, u8 val) {
     u8 *valueptr = (u8 *)addr;
     *valueptr = val;
 }
 
 //write 16-bits to absolute physical address
-static inline void xmhf_baseplatform_arch_flat_writeu16(u32 addr, u16 val) {
+static inline void xmhfhw_sysmemaccess_writeu16(u32 addr, u16 val) {
     u16 *valueptr = (u16 *)addr;
     *valueptr = val;
 }
 
 //write 32-bits to absolute physical address
-static inline void xmhf_baseplatform_arch_flat_writeu32(u32 addr, u32 val) {
+static inline void xmhfhw_sysmemaccess_writeu32(u32 addr, u32 val) {
     u32 *valueptr = (u32 *)addr;
     *valueptr = val;
 }
 
 //write 64-bits to absolute physical address
-static inline void xmhf_baseplatform_arch_flat_writeu64(u32 addr, u64 val) {
+static inline void xmhfhw_sysmemaccess_writeu64(u32 addr, u64 val) {
     u64 *valueptr = (u64 *)addr;
     *valueptr = val;
 }
 
 //memory copy from absolute physical address (src) to
 //data segment relative address (dest)
-static inline void xmhf_baseplatform_arch_flat_copy(u8 *dest, u8 *src, u32 size){
+static inline void xmhfhw_sysmemaccess_copy(u8 *dest, u8 *src, u32 size){
 	memcpy(dest, src, size);
 }
 
