@@ -100,6 +100,9 @@
 //maximum system memory map entries (e.g., E820) currently supported
 #define MAX_E820_ENTRIES    			(64)  
 
+//size of core DMA protection buffer (if platform DMA protections need to be re-initialized within the core)
+#define SIZE_CORE_DMAPROT_BUFFER		(128*1024)
+
 //preferred TPM locality to use for access inside hypervisor
 //needs to be 2 or 1 (4 is hw-only, 3 is sinit-only on Intel)
 #define EMHF_TPM_LOCALITY_PREF 2
