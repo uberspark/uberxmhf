@@ -64,31 +64,17 @@
 #define XMHF_APIHUB_HYPAPPCB_PORTACCESS				(4)
 
 //core APIs
-#define	XMHF_APIHUB_COREAPI_OUTPUTDEBUGSTRING		(0)
-#define XMHF_APIHUB_COREAPI_REBOOT					(1)
-#define XMHF_APIHUB_COREAPI_SETMEMPROT				(2)
-#define XMHF_APIHUB_COREAPI_MEMPROT_GETPROT			(3)
-#define XMHF_APIHUB_COREAPI_MEMPROT_FLUSHMAPPINGS	(4)
+#define	XMHF_APIHUB_COREAPI_OUTPUTDEBUGSTRING			(0)
+#define XMHF_APIHUB_COREAPI_REBOOT						(1)
+#define XMHF_APIHUB_COREAPI_SETMEMPROT					(2)
+#define XMHF_APIHUB_COREAPI_MEMPROT_GETPROT				(3)
+#define XMHF_APIHUB_COREAPI_MEMPROT_FLUSHMAPPINGS		(4)
 #define XMHF_APIHUB_COREAPI_SMPGUEST_WALK_PAGETABLES	(5)
-//#define XMHF_APIHUB_COREAPI_PARTITION_LEGACYIO_SETPROT 	(6)
-//#define XMHF_APIHUB_COREAPI_BASEPLATFORM_ARCH_X86_ACPI_GETRSDP 	(7)
-
-//#define XMHF_APIHUB_COREAPI_TPM_OPEN_LOCALITY		(8)
-//#define XMHF_APIHUB_COREAPI_TPM_DEACTIVATE_ALL_LOCALITIES	(9)
-//#define XMHF_APIHUB_COREAPI_TPM_WRITE_CMD_FIFO		(10)
-
-//#define XMHF_APIHUB_COREAPI_MEMPROT_ARCH_X86SVM_GET_H_CR3	(11)
-//#define XMHF_APIHUB_COREAPI_MEMPROT_ARCH_X86SVM_SET_H_CR3	(12)
-//#define XMHF_APIHUB_COREAPI_MEMPROT_ARCH_X86VMX_GET_EPTP	(13)
-//#define XMHF_APIHUB_COREAPI_MEMPROT_ARCH_X86VMX_SET_EPTP	(14)
-
-#define XMHF_APIHUB_COREAPI_BASEPLATFORM_GETCPUTABLE		(15)
-#define XMHF_APIHUB_COREAPI_MEMPROT_SETSINGULARHPT			(16)
+#define XMHF_APIHUB_COREAPI_BASEPLATFORM_GETCPUTABLE	(15)
+#define XMHF_APIHUB_COREAPI_MEMPROT_SETSINGULARHPT		(16)
 #define XMHF_APIHUB_COREAPI_MEMPROT_GETHPTROOT			(17)
-
-#define XMHF_APIHUB_COREAPI_HPT_SETENTRY					(18)
-
-#define XMHF_APIHUB_COREAPI_HYPAPPCBRETURN					(0xFFFF)
+#define XMHF_APIHUB_COREAPI_HPT_SETENTRY				(18)
+#define XMHF_APIHUB_COREAPI_HYPAPPCBRETURN				(0xFFFF)
 
 
 #ifndef __ASSEMBLY__
@@ -104,17 +90,13 @@ typedef struct {
 	u64 param7;
 	u64 param8;
 	u64 result;
-	//VCPU vcpu;
-	//APP_PARAM_BLOCK apb;
 	context_desc_t context_desc;
 	hypapp_env_block_t hypappenvb;
-	//struct regs r;
 	xmhfcoreapiretval_t retval;
 } __attribute__((packed)) XMHF_HYPAPP_PARAMETERBLOCK;
 
-
 // declare paramcore and paramhypapp variables (which are defined in
-// (runtime.lds.S)
+// (xc.lds.S)
 extern u8 paramcore_start[];
 extern u8 paramhypapp_start[];
 
@@ -123,73 +105,32 @@ extern u8 paramhypapp_start[];
 extern XMHF_HYPAPP_PARAMETERBLOCK *paramcore;
 extern XMHF_HYPAPP_PARAMETERBLOCK *paramhypapp;
 
-// hypapp PAE page tables
-extern u64 hypapp_3level_pdpt[] __attribute__(( section(".palign_data") ));
-extern u64 hypapp_3level_pdt[] __attribute__(( section(".palign_data") ));
-
-//core PAE page tables
-extern u64 core_3level_pdpt[] __attribute__(( section(".palign_data") ));
-extern u64 core_3level_pdt[] __attribute__(( section(".palign_data") ));
-
 //hypapp callback hub entry point and hypapp top of stack
 extern u32 hypapp_cbhub_pc;
 extern u32 hypapp_tos;
 
-//core and hypapp page table base address (PTBA)
-extern u32 core_ptba;
-extern u32 hypapp_ptba;
-
-
 extern XMHF_HYPAPP_HEADER *g_hypappheader;
-
 
 void xmhfcore_outputdebugstring(const char *s);
 void xmhfcore_reboot(context_desc_t context_desc);
-//void xmhfcore_setmemprot(VCPU *vcpu, u64 gpa, u32 prottype);
 void xmhfcore_setmemprot(context_desc_t context_desc, u64 gpa, u32 prottype);
-//u32 xmhfcore_memprot_getprot(VCPU *vcpu, u64 gpa);
 void xmhfcore_memprot_flushmappings(context_desc_t context_desc);
 u8 * xmhfcore_smpguest_walk_pagetables(context_desc_t context_desc, u32 vaddr);
-//void xmhfcore_partition_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype);
-
-//int xmhfcore_tpm_open_locality(int locality);
-//void xmhfcore_tpm_deactivate_all_localities(void);
-
-//u64 xmhfcore_memprot_arch_x86svm_get_h_cr3(VCPU *vcpu);
-//void xmhfcore_memprot_arch_x86svm_set_h_cr3(VCPU *vcpu, u64 n_cr3);
-//u64 xmhfcore_memprot_arch_x86vmx_get_EPTP(VCPU *vcpu);
-//void xmhfcore_memprot_arch_x86vmx_set_EPTP(VCPU *vcpu, u64 eptp);
-
-//xmhfcoreapiretval_t xmhfcore_baseplatform_getcputable(void);
 void xmhfcore_memprot_setsingularhpt(u64 hpt);
 u64 xmhfcore_memprot_getHPTroot(context_desc_t context_desc);
 void xmhfcore_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u64 entry);
-//uint32_t xmhfcore_tpm_write_cmd_fifo(uint32_t locality, uint8_t *in,
-//                                   uint32_t in_size, uint8_t *out,
-//                                   uint32_t *out_size);
-//u32 xmhfcore_baseplatform_arch_x86_acpi_getRSDP(ACPI_RSDP *rsdp);
-
-
-
-
-//----------------------------------------------------------------------
-//exported DATA 
-//----------------------------------------------------------------------
-
 
 //----------------------------------------------------------------------
 //exported FUNCTIONS 
 //----------------------------------------------------------------------
 void xmhf_apihub_initialize (void);
-
+void xmhf_apihub_fromhypapp(u32 callnum);
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
 void xmhf_apihub_arch_initialize(void);
 void xmhf_apihub_arch_tohypapp(u32 hypappcallnum);
-
-
 
 
 #endif	//__ASSEMBLY__
