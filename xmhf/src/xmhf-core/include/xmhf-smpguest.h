@@ -73,11 +73,12 @@ static inline bool xmhf_smpguest_readu16(context_desc_t context_desc, const void
 		u16 *tmp = (u16 *)xmhf_smpguest_arch_walk_pagetables(context_desc, guestaddress);
 		if((u32)tmp == 0xFFFFFFFFUL || valueptr == NULL)
 			return false;
-		#ifdef __XMHF_VERIFICATION__
-			*valueptr = nondet_u32();
-		#else
-			*valueptr = *tmp;
-		#endif
+		//#ifdef __XMHF_VERIFICATION__
+		//	*valueptr = nondet_u32();
+		//#else
+		//	*valueptr = *tmp;
+		//#endif
+		*valueptr = xmhfhw_sysmemaccess_readu16((u32)tmp);
 		return true;
 }
 
@@ -87,9 +88,10 @@ static inline bool xmhf_smpguest_writeu16(context_desc_t context_desc, const voi
 			( ((u32)tmp >= rpb->XtVmmRuntimePhysBase) && ((u32)tmp <= (rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize)) ) 
 		  )
 			return false;
-		#ifndef __XMHF_VERIFICATION__
-		*tmp = value;
-		#endif
+		//#ifndef __XMHF_VERIFICATION__
+		//*tmp = value;
+		//#endif
+		xmhfhw_sysmemaccess_writeu16((u32)tmp, value);
 		return true;
 }
 
@@ -97,9 +99,10 @@ static inline bool xmhf_smpguest_memcpyfrom(context_desc_t context_desc, void *b
 	u8 *guestbuffer = (u8 *)xmhf_smpguest_arch_walk_pagetables(context_desc, guestaddress);
 	if((u32)guestbuffer == 0xFFFFFFFFUL)
 		return false;
-	#ifndef __XMHF_VERIFICATION__
-	memcpy(buffer, gpa2hva(guestbuffer), numbytes);
-	#endif
+	//#ifndef __XMHF_VERIFICATION__
+	//memcpy(buffer, gpa2hva(guestbuffer), numbytes);
+	//#endif
+	xmhfhw_sysmemaccess_copy(buffer, gpa2hva(guestbuffer), numbytes);
 }
 
 static inline bool xmhf_smpguest_memcpyto(context_desc_t context_desc, void *guestaddress, const void *buffer, size_t numbytes){
@@ -108,9 +111,10 @@ static inline bool xmhf_smpguest_memcpyto(context_desc_t context_desc, void *gue
 		( ((u32)guestbuffer >= rpb->XtVmmRuntimePhysBase) && ((u32)guestbuffer <= (rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize)) ) 
 	  )
 		return false;
-	#ifndef __XMHF_VERIFICATION__
-	memcpy(gpa2hva(guestbuffer), buffer, numbytes);
-	#endif
+	//#ifndef __XMHF_VERIFICATION__
+	//memcpy(gpa2hva(guestbuffer), buffer, numbytes);
+	//#endif
+	xmhfhw_sysmemaccess_copy(gpa2hva(guestbuffer), buffer, numbytes);
 }
 
 
