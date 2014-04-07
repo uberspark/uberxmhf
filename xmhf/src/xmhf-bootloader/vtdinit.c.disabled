@@ -209,7 +209,7 @@ bool vtdinit_dmaprotect(u32 membase __attribute__((unused)), u32 size __attribut
 	printf("\n%s: RSDP at %08x", __FUNCTION__, status);
   
 	//grab ACPI RSDT
-	//xmhf_baseplatform_arch_flat_copy((u8 *)&rsdt, (u8 *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
+	//xmhfhw_sysmemaccess_copy((u8 *)&rsdt, (u8 *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
 	memcpy((u8 *)&rsdt, (u8 *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
 	printf("\n%s: RSDT at %08x, len=%u bytes, hdrlen=%u bytes", 
 		__FUNCTION__, rsdp.rsdtaddress, rsdt.length, sizeof(ACPI_RSDT));
@@ -287,7 +287,7 @@ bool vtdinit_dmaprotect(u32 membase __attribute__((unused)), u32 size __attribut
 	//zap VT-d presence in ACPI table...
 	//TODO: we need to be a little elegant here. eventually need to setup 
 	//EPT/NPTs such that the DMAR pages are unmapped for the guest
-	//xmhf_baseplatform_arch_flat_writeu32(dmaraddrphys, 0UL);
+	//xmhfhw_sysmemaccess_writeu32(dmaraddrphys, 0UL);
 
 	//success
 	printf("\n%s: success, leaving...", __FUNCTION__);
