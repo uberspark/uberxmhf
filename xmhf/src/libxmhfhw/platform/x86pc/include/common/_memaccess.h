@@ -131,6 +131,19 @@ static inline u64 xmhf_baseplatform_arch_flat_readu64(u32 addr){
     return value;
 }
 
+
+//write 8-bits to absolute physical address
+static inline void xmhf_baseplatform_arch_flat_writeu8(u32 addr, u8 val) {
+    u8 *valueptr = (u8 *)addr;
+    *valueptr = val;
+}
+
+//write 16-bits to absolute physical address
+static inline void xmhf_baseplatform_arch_flat_writeu16(u32 addr, u16 val) {
+    u16 *valueptr = (u16 *)addr;
+    *valueptr = val;
+}
+
 //write 32-bits to absolute physical address
 static inline void xmhf_baseplatform_arch_flat_writeu32(u32 addr, u32 val) {
     u32 *valueptr = (u32 *)addr;
