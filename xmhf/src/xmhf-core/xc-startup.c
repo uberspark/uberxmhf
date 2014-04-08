@@ -86,11 +86,32 @@ void xmhf_runtime_entry(void){
 	xmhf_xcphandler_initialize();
 	#endif
 
+#if defined (__DMAP__)
+	xmhf_dmaprot_reinitialize();
+#endif
 
-	printf("\nXMHF Tester Finished!");
-	printf("\nHalting");
-	printf("\n");
-	HALT();	
+	//invoke XMHF api hub initialization function to initialize core API
+	//interface layer
+	xmhf_apihub_initialize();
+
+	//call hypapp main function
+	{
+		hypapp_env_block_t hypappenvb;
+		hypappenvb.runtimephysmembase = (u32)rpb->XtVmmRuntimePhysBase;  
+		hypappenvb.runtimesize = (u32)rpb->XtVmmRuntimeSize;
+	
+		//call app main
+		printf("\n%s: proceeding to call xmhfhypapp_main on BSP", __FUNCTION__);
+		xmhfhypapp_main(hypappenvb);
+		printf("\n%s: came back into core", __FUNCTION__);
+
+	}   	
+
+	//initialize base platform with SMP 
+	xmhf_baseplatform_smpinitialize();
+
+	printf("\nRuntime: We should NEVER get here!");
+	HALT_ON_ERRORCOND(0);
 }
 
 //---runtime main---------------------------------------------------------------
