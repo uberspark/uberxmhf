@@ -152,14 +152,6 @@ typedef struct __tss {
 } tss_t;
 
 
-//runtime IDT
-static u64 xmhf_xcphandler_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] __attribute__(( section(".data"), aligned(16) ));
-
-//runtime IDT descriptor
-arch_x86_idtdesc_t xmhf_xcphandler_idt __attribute__(( section(".data"), aligned(16) )) = {
-	.size=sizeof(xmhf_xcphandler_idt_start)-1,
-	.base=(u32)&xmhf_xcphandler_idt_start,
-};
 
 
 /*

@@ -293,3 +293,13 @@ u64 core_3level_pdt[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT] __attribute__(( sectio
 u32 core_ptba=0;
 u32 hypapp_ptba=0;
 
+//xc-xcphandler
+
+//core IDT
+u64 xmhf_xcphandler_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] __attribute__(( section(".data"), aligned(16) ));
+
+//core IDT descriptor
+arch_x86_idtdesc_t xmhf_xcphandler_idt __attribute__(( section(".data"), aligned(16) )) = {
+	.size=sizeof(xmhf_xcphandler_idt_start)-1,
+	.base=(u32)&xmhf_xcphandler_idt_start,
+};

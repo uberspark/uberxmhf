@@ -144,12 +144,12 @@ void xmhf_baseplatform_arch_x86_initializeIOPL(void){
 }
 
 //initialize IDT
-void xmhf_baseplatform_arch_x86_initializeIDT(arch_x86_idtdesc_t *idt){
+void xmhf_baseplatform_arch_x86_initializeIDT(void){
 
 	asm volatile(
 		"lidt  %0 \r\n"
 		: //no outputs
-		: "m" (idt)
+		: "m" (xmhf_xcphandler_idt)
 		: //no clobber
 	);
 	
