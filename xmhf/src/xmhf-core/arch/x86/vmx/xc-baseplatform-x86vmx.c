@@ -91,6 +91,11 @@ u32 xmhf_baseplatform_arch_getcpuvendor(void){
 
 //initialize basic platform elements
 void xmhf_baseplatform_arch_initialize(void){
+	//initialize GDT
+	xmhf_baseplatform_arch_x86_initializeGDT();
+
+	
+	
 	//initialize PCI subsystem
 	xmhf_baseplatform_arch_x86_pci_initialize();
 	

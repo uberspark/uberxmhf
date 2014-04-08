@@ -58,6 +58,9 @@ void xmhf_runtime_entry(void){
 	xmhf_debug_init((char *)&rpb->RtmUartConfig);
 	printf("\nxmhf-core: starting...");
 
+  	//initialize basic platform elements
+	xmhf_baseplatform_initialize();
+
 	printf("\nXMHF Tester Finished!");
 	printf("\nHalting");
 	printf("\n");
