@@ -230,6 +230,8 @@ typedef struct {
 		u32 base;
 } __attribute__((packed)) arch_x86_idtdesc_t;
 
+//core GDT
+extern arch_x86_gdtdesc_t x_gdt;
 
 //runtime TSS
 extern u8 g_runtime_TSS[PAGE_SIZE_4K] __attribute__(( section(".data") ));
@@ -305,6 +307,9 @@ void xmhf_baseplatform_arch_x86_pci_type1_read(u32 bus, u32 device, u32 function
 
 //microsecond delay
 void xmhf_baseplatform_arch_x86_udelay(u32 usecs);
+
+//initialize GDT
+void xmhf_baseplatform_arch_x86_initializeGDT(void);
 
 
 static inline u64 VCPU_gdtr_base(VCPU *vcpu)

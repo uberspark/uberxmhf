@@ -106,6 +106,31 @@ void xmhf_baseplatform_arch_x86_cpuinitialize(void){
 
 }
 
+//initialize GDT
+void xmhf_baseplatform_arch_x86_initializeGDT(void){
+	
+		asm volatile(
+		"lgdt  %0 \r\n"
+		"pushl	%1 \r\n"				// far jump to runtime entry point
+		"pushl	$reloadsegs \r\n"
+		"lret \r\n"
+		"reloadsegs: \r\n"
+		"movw	%2, %%ax \r\n"
+		"movw	%%ax, %%ds \r\n"	
+		"movw	%%ax, %%es \r\n"
+		"movw	%%ax, %%fs \r\n"
+		"movw	%%ax, %%gs \r\n"
+		"movw  %%ax, %%ss \r\n"
+		: //no outputs
+		: "m" (x_gdt), "i" (__CS_CPL0), "i" (__DS_CPL0)
+		: //no clobber
+	);
+
+	
+}
+
+
+
 //initialize TR/TSS
 void xmhf_baseplatform_arch_x86_initializeTR(void){
 
