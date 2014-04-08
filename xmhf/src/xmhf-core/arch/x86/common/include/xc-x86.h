@@ -311,6 +311,9 @@ void xmhf_baseplatform_arch_x86_udelay(u32 usecs);
 //initialize GDT
 void xmhf_baseplatform_arch_x86_initializeGDT(void);
 
+//initialize IO privilege level
+void xmhf_baseplatform_arch_x86_initializeIOPL(void);
+
 
 static inline u64 VCPU_gdtr_base(VCPU *vcpu)
 {
