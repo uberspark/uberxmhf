@@ -261,11 +261,12 @@ void xmhf_sl_arch_x86_invoke_runtime_entrypoint(u32 gdtbase, u32 idtbase,
 	u32 entrypoint, u32 stacktop, u32 cr3) {
 		
 	asm volatile(
-		"movl %0, %%eax \r\n"
+		"movl %0, %%esp \r\n"
+		"movl %1, %%eax \r\n"
 		"jmpl *%%eax \r\n"
 		: //no outputs
-		: "m" (entrypoint)
-		: "eax"
+		: "m" (stacktop), "m" (entrypoint)
+		: "eax", "esp"
 	);
 		
 		
