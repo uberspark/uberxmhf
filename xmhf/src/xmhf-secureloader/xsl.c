@@ -101,7 +101,7 @@ void xmhf_sl_main(void){
 		//store runtime physical and virtual base addresses along with size
 		rpb->XtVmmRuntimePhysBase = runtime_physical_base; 
 		rpb->XtVmmRuntimeVirtBase = __TARGET_BASE_CORE;
-		rpb->XtVmmRuntimeSize = xslbootinfo.size;
+		rpb->XtVmmRuntimeSize = xslbootinfo.size - __TARGET_SIZE_SL;
 
 		//store revised E820 map and number of entries
 		memcpy((void *)rpb->XtVmmE820Buffer, (void *)&xslbootinfo.memmapinfo_buffer, (sizeof(GRUBE820) * xslbootinfo.memmapinfo_numentries) );
@@ -142,7 +142,7 @@ void xmhf_sl_main(void){
 #if defined (__DMAP__)    
 	//setup DMA protection on runtime (secure loader is already DMA protected)
 	//xmhf_sl_arch_early_dmaprot_init(xslbootinfo.runtime_size);
-	xmhf_sl_arch_early_dmaprot_init(__TARGET_BASE_SL, __TARGET_SIZE_SL + xslbootinfo.size);
+	xmhf_sl_arch_early_dmaprot_init(__TARGET_BASE_SL, xslbootinfo.size);
 #endif
 
 	//transfer control to runtime
