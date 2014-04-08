@@ -315,7 +315,7 @@ void xmhf_baseplatform_arch_x86_initializeGDT(void);
 void xmhf_baseplatform_arch_x86_initializeIOPL(void);
 
 //initialize IDT
-void xmhf_baseplatform_arch_x86_initializeIDT(arch_x86_idtdesc_t *idt);
+void xmhf_baseplatform_arch_x86_initializeIDT(void);
 
 static inline u64 VCPU_gdtr_base(VCPU *vcpu)
 {
@@ -373,8 +373,18 @@ static inline u64 VCPU_gcr4(VCPU *vcpu)
 }
 
 //xc-xcphandler
+
+#define	EMHF_XCPHANDLER_MAXEXCEPTIONS	32
+#define EMHF_XCPHANDLER_IDTSIZE			(EMHF_XCPHANDLER_MAXEXCEPTIONS * 8)
+
 //----------------------------------------------------------------------
 //exported DATA 
+
+//core IDT
+extern u64 xmhf_xcphandler_idt_start[];
+
+//core IDT descriptor
+extern arch_x86_idtdesc_t xmhf_xcphandler_idt;
 
 //array of exception handler stubs
 extern u8 xmhf_xcphandler_exceptionstubs[]; 

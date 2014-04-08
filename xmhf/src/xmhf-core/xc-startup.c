@@ -61,6 +61,34 @@ void xmhf_runtime_entry(void){
   	//initialize basic platform elements
 	xmhf_baseplatform_initialize();
 
+    //[debug] dump E820 and MP table
+ 	#ifndef __XMHF_VERIFICATION__
+ 	printf("\nNumber of E820 entries = %u", rpb->XtVmmE820NumEntries);
+	{
+		int i;
+		for(i=0; i < (int)rpb->XtVmmE820NumEntries; i++){
+		printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
+          g_e820map[i].baseaddr_high, g_e820map[i].baseaddr_low,
+          g_e820map[i].length_high, g_e820map[i].length_low,
+          g_e820map[i].type);
+		}
+  	}
+	printf("\nNumber of MP entries = %u", rpb->XtVmmMPCpuinfoNumEntries);
+	{
+		int i;
+		for(i=0; i < (int)rpb->XtVmmMPCpuinfoNumEntries; i++)
+			printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x", i, g_cpumap[i].isbsp, g_cpumap[i].lapic_id);
+	}
+	#endif //__XMHF_VERIFICATION__
+
+	#ifndef __XMHF_VERIFICATION__
+	//setup EMHF exception handler component
+	xmhf_xcphandler_initialize();
+	#endif
+
+	printf("\nproceeding to test IDT\n\n");
+	asm volatile("int $0x03 \r\n");
+
 	printf("\nXMHF Tester Finished!");
 	printf("\nHalting");
 	printf("\n");

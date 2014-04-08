@@ -96,10 +96,13 @@ void xmhf_baseplatform_arch_initialize(void){
 
 	//initialize IO privilege level
 	xmhf_baseplatform_arch_x86_initializeIOPL();
+
+	//initialize IDT
+	xmhf_baseplatform_arch_x86_initializeIDT();
 	
 	//initialize PCI subsystem
 	xmhf_baseplatform_arch_x86_pci_initialize();
-	
+
 	//check ACPI subsystem
 	{
 		ACPI_RSDP rsdp;
