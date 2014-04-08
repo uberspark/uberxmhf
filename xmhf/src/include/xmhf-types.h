@@ -129,6 +129,25 @@ typedef struct _midtab {
 
 #define SIZE_STRUCT_MIDTAB  (sizeof(struct _midtab))
 
+//XMHF_BOOTINFO
+typedef struct {
+	u32 magic;
+	u32 physmem_base;
+	u32 virtmem_base;
+	u32 size;
+	u32 entrypoint;
+	u32 stack_base;
+	u32 stack_size;
+	u32 richguest_bootmodule_base;
+	u32 richguest_bootmodule_size;
+	u32 memmapinfo_numentries;
+	u8 memmapinfo_buffer[1280]; //64 entries each of 20 bytes
+	u32 cpuinfo_numentries;
+	u8 cpuinfo_buffer[128]; //8 entries each of 16 bytes
+	u8 debugcontrol_buffer[16];
+	u8 cmdline_buffer[128];
+} __attribute__((packed)) XMHF_BOOTINFO;
+
 
 //"runtime" parameter block structure; arch_rpb (in startup component) 
 //is the default definition
