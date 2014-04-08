@@ -50,9 +50,19 @@
 //---includes-------------------------------------------------------------------
 #include <xmhf-core.h> 
 
+void xmhf_runtime_entry(void){
+	//initialize Runtime Parameter Block (rpb)
+	rpb = (RPB *)&arch_rpb;
+	
+	//setup debugging	
+	xmhf_debug_init((char *)&rpb->RtmUartConfig);
+	printf("\nruntime here, halting!..\n\n");
+	HALT();
+	
+}
 
 //---runtime main---------------------------------------------------------------
-void xmhf_runtime_entry(void){
+void disabled_xmhf_runtime_entry(void){
 	u32 cpu_vendor;
 	//XMHF_HYPAPP_HEADER *hypappheader;
 
