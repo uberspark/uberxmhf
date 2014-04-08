@@ -272,6 +272,9 @@ extern u32 * _ap_bootstrap_blob_runtime_entrypoint;
 
 extern u8 * _ap_bootstrap_blob_mle_join_start;
 
+//core PAE page tables
+extern u8 x_3level_pdpt[];
+extern u8 x_3level_pdt[];
 
 
 //----------------------------------------------------------------------
@@ -316,6 +319,9 @@ void xmhf_baseplatform_arch_x86_initializeIOPL(void);
 
 //initialize IDT
 void xmhf_baseplatform_arch_x86_initializeIDT(void);
+
+//setup core page tables
+u32 xmhf_baseplatform_arch_x86_setup_pagetables(void);
 
 static inline u64 VCPU_gdtr_base(VCPU *vcpu)
 {

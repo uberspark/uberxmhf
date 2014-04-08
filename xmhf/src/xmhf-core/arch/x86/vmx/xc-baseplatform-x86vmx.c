@@ -91,6 +91,8 @@ u32 xmhf_baseplatform_arch_getcpuvendor(void){
 
 //initialize basic platform elements
 void xmhf_baseplatform_arch_initialize(void){
+	u32 coreptbase;
+	
 	//initialize GDT
 	xmhf_baseplatform_arch_x86_initializeGDT();
 
@@ -99,6 +101,12 @@ void xmhf_baseplatform_arch_initialize(void){
 
 	//initialize IDT
 	xmhf_baseplatform_arch_x86_initializeIDT();
+
+#ifndef __XMHF_VERIFICATION__
+	//setup core page tables
+	coreptbase = xmhf_baseplatform_arch_x86_setup_pagetables();
+	printf("\n%s: coreptbase = %08x", __FUNCTION__, coreptbase);
+#endif //__XMHF_VERIFICATION__
 	
 	//initialize PCI subsystem
 	xmhf_baseplatform_arch_x86_pci_initialize();
