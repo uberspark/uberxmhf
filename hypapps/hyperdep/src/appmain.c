@@ -49,6 +49,7 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
+#include <xmhf-core.h>
 
 #define HYPERDEP_ACTIVATEDEP			0xC0
 #define HYPERDEP_DEACTIVATEDEP			0xC1

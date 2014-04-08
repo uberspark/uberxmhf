@@ -57,6 +57,7 @@ typedef struct {
 } cmdline_option_t;
 
 #define MAX_VALUE_LEN 64
+#define MAX_CMDLINE_SIZE   512
 
 const char* cmdline_get_option_val(const cmdline_option_t *options,
                                    char vals[][MAX_VALUE_LEN],

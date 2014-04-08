@@ -1,134 +1,100 @@
-# top-level makefile for XMHF x86 platform 
+# makefile for "runtime"
 # author: amit vasudevan (amitvasudevan@acm.org)
 
-# get the "source" directory of this Makefile (useful for
-# out-of-tree build)
-srcdir := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
+vpath %.c $(srcdir)
+vpath %.S $(srcdir)
 
-export XMHFCORE_OBJECTS_DIR = _objs_xmhf-core
+export XMHF_RUNTIME_ARCH_SRC := $(realpath $(srcdir)/arch)
 
-#-----build rules
+# grab list of all source files
+C_SOURCES := $(wildcard $(srcdir)/*.c)
+A_SOURCES := 
+#C_SOURCES += $(wildcard $(srcdir)/xmhf-apihub/*.c)
+#A_SOURCES += $(wildcard $(srcdir)/xmhf-apihub/*.S)
+#C_SOURCES += $(shell find $(srcdir)/xmhf-apihub/arch/$(XMHF_CORE_APIHUB_ARCH)/ -type f -name '*.c')
+#A_SOURCES += $(shell find $(srcdir)/xmhf-apihub/arch/$(XMHF_CORE_APIHUB_ARCH)/ -type f -name '*.S')
+
+# grab arch. specific sources
+#C_SOURCES += $(shell find $(srcdir)/arch/x86/common/ -type f -name '*.c')
+#A_SOURCES += $(shell find $(srcdir)/arch/x86/common/ -type f -name '*.S')
+#C_SOURCES += $(shell find $(srcdir)/arch/x86/vmx/ -type f -name '*.c')
+#A_SOURCES += $(shell find $(srcdir)/arch/x86/vmx/ -type f -name '*.S')
+#C_SOURCES += $(shell find $(srcdir)/arch/x86/svm/ -type f -name '*.c')
+#A_SOURCES += $(shell find $(srcdir)/arch/x86/svm/ -type f -name '*.S')
+
+
+C_SOURCES := $(patsubst $(srcdir)/%, %, $(C_SOURCES))
+A_SOURCES := $(patsubst $(srcdir)/%, %, $(A_SOURCES))
+
+# grab list of file names only for binary generation
+#C_SOURCES_FILENAMEONLY := $(shell find $(srcdir)/ -type f -name '*.c' -printf '%f\n')
+#A_SOURCES_FILENAMEONLY := $(shell find $(srcdir)/ -type f -name '*.S' -printf '%f\n')
+C_SOURCES_FILENAMEONLY := $(notdir $(C_SOURCES))
+A_SOURCES_FILENAMEONLY := $(notdir $(A_SOURCES))
+
+OBJECTS_ARCHIVE := $(patsubst %.c, %.o, $(C_SOURCES_FILENAMEONLY))
+OBJECTS_ARCHIVE += $(patsubst %.S, %.o, $(A_SOURCES_FILENAMEONLY))
+
+# list of object dependencies
+OBJECTS := $(patsubst %.c, %.o, $(C_SOURCES))
+OBJECTS += $(patsubst %.S, %.o, $(A_SOURCES))
+
+
+OBJECTS_VERIFY := $(patsubst %.c, %.v, $(C_SOURCES))
+
+# additional CFLAGS
+# CFLAGS += 
+
+# folder where objects go
+XMHF_RUNTIME_OBJECTS_DIR = _objs_xmhf-runtime
+
+# archive name
+THE_ARCHIVE = xmhf-runtime
+
+# targets
 .PHONY: all
-all: 
-	mkdir -p $(XMHFCORE_OBJECTS_DIR)
-	@echo --------------------------------------------------------------
-	@echo building libxmhfcore...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBXMHFCORE_SRC)/Makefile -w all
-	@echo libxmhfcore.a build SUCCESS
-	@echo --------------------------------------------------------------
-	@echo --------------------------------------------------------------
-	@echo building libxmhfhw...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBXMHFHW_SRC)/Makefile -w all
-	@echo libxmhfhw.a build SUCCESS
-	@echo --------------------------------------------------------------
-	@echo --------------------------------------------------------------
-	@echo building libbaremetal-xmhfbackends...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBBAREMETAL_XMHFBACKENDS_SRC)/Makefile -w all
-	@echo libbaremetal-xmhfbackends.a build SUCCESS
-	@echo --------------------------------------------------------------
-	@echo --------------------------------------------------------------
-	@echo building runtime...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_RUNTIME_SRC)/Makefile -w all
-	@echo runtime build SUCCESS
-	@echo --------------------------------------------------------------
-	@echo --------------------------------------------------------------
-	@echo building xmhf-secureloader...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_SECURELOADER_SRC)/Makefile -w all \
-			RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
-	@echo xmhf-secureloader build SUCCESS
-	@echo --------------------------------------------------------------
-	@echo --------------------------------------------------------------
-	@echo building xmhf-bootloader...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_BOOTLOADER_SRC)/Makefile -w all \
-		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
-		SLBELOW64K_INTEGRITY_HASH=\""$(shell ( dd if=$(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-secureloader/sl.bin bs=1024 count=64 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
-		SLABOVE64K_INTEGRITY_HASH=\""$(shell ( dd if=$(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-secureloader/sl.bin bs=1024 skip=64 count=1984 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
-	@echo xmhf-bootloader build SUCCESS
-	@echo --------------------------------------------------------------
-	@echo --------------------------------------------------------------
-	@echo generating final binaries...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin ./_objs_xmhf-secureloader/xmhf-secureloader.bin ./_objs_xmhf-runtime/xmhf-runtime.bin > ./xmhf.tmp.img
-	cd $(XMHFCORE_OBJECTS_DIR) && gzip -c ./xmhf.tmp.img > ./xmhf-$(TARGET_HWPLATFORM).bin.gz
-	cd $(XMHFCORE_OBJECTS_DIR) && $(RM) -rf ./xmhf.tmp.img 
-	@echo xmhf binary generation SUCCESS
-	@echo --------------------------------------------------------------
+all: $(THE_ARCHIVE)
 
-# cleanup rules
-#.PHONY: clean init-late-clean
-.PHONY: clean 
-clean: 
-	mkdir -p $(XMHFCORE_OBJECTS_DIR)
-	@echo --------------------------------------------------------------
-	@echo cleaning libxmhfcore...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBXMHFCORE_SRC)/Makefile -w clean
-	@echo libxmhfcore.a cleanup SUCCESS
-	@echo --------------------------------------------------------------
-	@echo --------------------------------------------------------------
-	@echo cleaning libxmhfhw...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBXMHFHW_SRC)/Makefile -w clean
-	@echo libxmhfhw.a cleanup SUCCESS
-	@echo --------------------------------------------------------------
-	@echo --------------------------------------------------------------
-	@echo cleaning libbaremetal-xmhfbackends...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBBAREMETAL_XMHFBACKENDS_SRC)/Makefile -w clean
-	@echo libbaremetal-xmhfbackends.a cleanup SUCCESS
-	@echo --------------------------------------------------------------
-	@echo --------------------------------------------------------------
-	@echo cleaning runtime...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_RUNTIME_SRC)/Makefile -w clean
-	@echo runtime cleanup SUCCESS
-	@echo --------------------------------------------------------------
-	@echo --------------------------------------------------------------
-	@echo cleaning xmhf-secureloader...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_SECURELOADER_SRC)/Makefile -w clean
-	@echo xmhf-secureloader cleanup SUCCESS
-	@echo --------------------------------------------------------------
-	@echo --------------------------------------------------------------
-	@echo cleaning xmhf-bootloader...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_BOOTLOADER_SRC)/Makefile -w clean
-	@echo xmhf-bootloader cleanup SUCCESS
-	@echo --------------------------------------------------------------
-	$(RM) -rf $(XMHFCORE_OBJECTS_DIR)
+$(THE_ARCHIVE): libxmhfruntimearch $(OBJECTS) 
+	cd $(XMHF_RUNTIME_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(srcdir)/xc.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) ./_objs_libxmhfruntimearch/libxmhfruntimearch.a $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
+	cd $(XMHF_RUNTIME_OBJECTS_DIR) && $(OBJCOPY) --output-format=binary $(THE_ARCHIVE).exe $(THE_ARCHIVE).bin
 
-.PHONY: install-dev
-install-dev:
-	# Nothing to do here
+
+%.o: %.S  
+	mkdir -p $(XMHF_RUNTIME_OBJECTS_DIR)
+	#mkdir -p "$(@D)"
+	@echo Building "$(@F)" from "$<" 
+	gcc -c $(ASFLAGS) -o $(XMHF_RUNTIME_OBJECTS_DIR)/$(@F) $<
+
+%.o: %.c   
+	mkdir -p $(XMHF_RUNTIME_OBJECTS_DIR)
+	#mkdir -p "$(@D)"
+	@echo Building "$(@F)" from "$<" 
+	$(CC) -c $(CFLAGS) -o $(XMHF_RUNTIME_OBJECTS_DIR)/$(@F) $<
+
+
+.PHONY: clean
+clean:
+	$(RM) -rf $(XMHF_RUNTIME_OBJECTS_DIR)
+
 
 .PHONY: verify
-verify:
-	#cd verification/ && $(MAKE) -w verify
-	mkdir -p $(XMHFCORE_OBJECTS_DIR)
-	@echo --------------------------------------------------------------
-	@echo preparing libbaremetal-xmhfbackends...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBBAREMETAL_XMHFBACKENDS_SRC)/Makefile -w verify
-	@echo libbaremetal-xmhfbackends prepared
-	@echo --------------------------------------------------------------
-	@echo --------------------------------------------------------------
-	@echo preparing libxmhfhw...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(LIBXMHFHW_SRC)/Makefile -w verify
-	@echo libxmhfhw prepared
-	@echo --------------------------------------------------------------
-	@echo --------------------------------------------------------------
-	@echo preparing xmhf-secureloader...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_SECURELOADER_SRC)/Makefile -w verify
-	@echo xmhf-secureloader prepared
-	@echo --------------------------------------------------------------
-	@echo --------------------------------------------------------------
-	@echo preparing xmhf-runtime...
-	cd $(XMHFCORE_OBJECTS_DIR) && $(MAKE) -f $(XMHF_RUNTIME_SRC)/Makefile -w verify
-	@echo xmhf-runtime prepared
-	@echo --------------------------------------------------------------
-	#cbmc --ILP32 --little-endian --i386-linux -D__XMHF_VERIFICATION__ -D__XMHF_VERIFICATION_DRIVEASSERTS__ $(VFLAGS) $(srcdir)/verification/xmhf-core-verify-sl.c $(XMHFCORE_OBJECTS_DIR)/_objs_libbaremetal-xmhfbackends/*.v.c $(XMHFCORE_OBJECTS_DIR)/_objs_libxmhfhw/*.v.c $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-secureloader/*.v.c $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-secureloader/_objs_libxmhfslarch/*.v.c
-	#cbmc --ILP32 --little-endian --i386-linux -D__XMHF_VERIFICATION__ -D__XMHF_VERIFICATION_DRIVEASSERTS__ $(VFLAGS) $(srcdir)/verification/xmhf-core-verify-startup.c $(XMHFCORE_OBJECTS_DIR)/_objs_libbaremetal-xmhfbackends/*.v.c $(XMHFCORE_OBJECTS_DIR)/_objs_libxmhfhw/*.v.c $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/*.v.c $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/_objs_libxmhfruntimearch/*.v.c
-	cbmc --ILP32 --little-endian --i386-linux -D__XMHF_VERIFICATION__ -D__XMHF_VERIFICATION_DRIVEASSERTS__ $(VFLAGS) $(srcdir)/verification/xmhf-core-verify-eventhub.c $(XMHFCORE_OBJECTS_DIR)/_objs_libbaremetal-xmhfbackends/*.v.c $(XMHFCORE_OBJECTS_DIR)/_objs_libxmhfhw/*.v.c $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/*.v.c $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/_objs_libxmhfruntimearch/*.v.c
-.PHONY: verifyinit
-verifyinit:
-	cd verification/ && $(MAKE) -w verifyinit
+verify: $(OBJECTS_VERIFY)
+	mkdir -p $(XMHF_RUNTIME_OBJECTS_DIR)
+	cd $(XMHF_RUNTIME_OBJECTS_DIR) && $(MAKE) -f $(XMHF_RUNTIME_ARCH_SRC)/Makefile -w verify
+	cd $(XMHF_RUNTIME_OBJECTS_DIR) && echo $(CFLAGS) >CFLAGS
+	
+%.v: %.c  
+	mkdir -p $(XMHF_RUNTIME_OBJECTS_DIR)
+	#mkdir -p "$(@D)"
+	#@echo Building "$(@F)" from "$<" 
+	$(CP) -f $< $(XMHF_RUNTIME_OBJECTS_DIR)/$(@F).c
+	
 
-.PHONY: verifyall
-verifyall:
-	cd verification/ && $(MAKE) -w verifyall
-
-.PHONY: verifysafeupd
-verifysafeupd:
-	cd verification/ && $(MAKE) -w verifysafeupd
+.PHONY: libxmhfruntimearch
+libxmhfruntimearch: 
+	@echo building libxmhfruntimearch...
+	mkdir -p $(XMHF_RUNTIME_OBJECTS_DIR)
+	cd $(XMHF_RUNTIME_OBJECTS_DIR) && $(MAKE) -f $(XMHF_RUNTIME_ARCH_SRC)/Makefile -w all
+	@echo libxmhfruntimearch build SUCCESS
