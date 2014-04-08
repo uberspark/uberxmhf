@@ -86,8 +86,6 @@ void xmhf_runtime_entry(void){
 	xmhf_xcphandler_initialize();
 	#endif
 
-	printf("\nproceeding to test IDT\n\n");
-	asm volatile("int $0x03 \r\n");
 
 	printf("\nXMHF Tester Finished!");
 	printf("\nHalting");
