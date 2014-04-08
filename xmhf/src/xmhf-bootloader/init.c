@@ -1022,7 +1022,7 @@ void cstartup(multiboot_info_t *mbi){
         //xslbootinfo->uart_config = g_uart_config;
         memcpy(&xslbootinfo->debugcontrol_buffer, &g_uart_config, sizeof(uart_config_t));
 #endif
-        strncpy(xslbootinfo->cmdline_buffer, (const char *)mbi->cmdline, sizeof(xslbootinfo->cmdline));
+        strncpy(xslbootinfo->cmdline_buffer, (const char *)mbi->cmdline, sizeof(xslbootinfo->cmdline_buffer));
     }
    
     //switch to MP mode
