@@ -211,7 +211,7 @@ void xmhf_sl_arch_baseplatform_initialize(void){
 }
 
 
-void xmhf_sl_arch_x86_invoke_runtime_entrypoint(u32 gdtbase, u32 idtbase,
+void disabled_xmhf_sl_arch_x86_invoke_runtime_entrypoint(u32 gdtbase, u32 idtbase,
 	u32 entrypoint, u32 stacktop, u32 cr3) {
 		
 	asm volatile(
@@ -252,6 +252,20 @@ void xmhf_sl_arch_x86_invoke_runtime_entrypoint(u32 gdtbase, u32 idtbase,
 		: //no outputs
 		: "m" (cr3), "m" (gdtbase), "m" (idtbase), "m" (entrypoint), "m" (stacktop), "i" (__DS_CPL0), "i" (__CS_CPL0)
 		: "eax", "edi", "esi", "esp"
+	);
+		
+		
+} 
+
+void xmhf_sl_arch_x86_invoke_runtime_entrypoint(u32 gdtbase, u32 idtbase,
+	u32 entrypoint, u32 stacktop, u32 cr3) {
+		
+	asm volatile(
+		"movl %0, %%eax \r\n"
+		"jmpl *%%eax \r\n"
+		: //no outputs
+		: "m" (entrypoint)
+		: "eax"
 	);
 		
 		
