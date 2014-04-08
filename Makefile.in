@@ -250,6 +250,11 @@ ifeq ($(INIT_LATE), y)
 	VFLAGS += -DPERF_CRIT
 endif
 
+# stub out DRTM PERF profiling for now
+FLAGS += -DPERF_CRIT
+VFLAGS += -DPERF_CRIT
+
+
 #-----export CFLAGS and ASFLAGS
 ASFLAGS = $(FLAGS) -D__ASSEMBLY__
 export ASFLAGS
