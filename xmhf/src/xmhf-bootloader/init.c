@@ -987,10 +987,10 @@ void cstartup(multiboot_info_t *mbi){
         xslbootinfo = (XMHF_BOOTINFO *)((u32)hypervisor_image_baseaddress + 0x10000);
         HALT_ON_ERRORCOND(xslbootinfo->magic == SL_PARAMETER_BLOCK_MAGIC);
         xslbootinfo->memmapinfo_numentries = grube820list_numentries;
-        HALT_ON_ERRORCOND(xslbootinfo->memmapinfo_numentries > 64);
+        HALT_ON_ERRORCOND(xslbootinfo->memmapinfo_numentries <= 64);
 		memcpy((void *)&xslbootinfo->memmapinfo_buffer, (void *)&grube820list, (sizeof(GRUBE820) * grube820list_numentries));         
         xslbootinfo->cpuinfo_numentries = pcpus_numentries;
-        HALT_ON_ERRORCOND(xslbootinfo->cpuinfo_numentries > 8);
+        HALT_ON_ERRORCOND(xslbootinfo->cpuinfo_numentries <= 8);
         memcpy((void *)&xslbootinfo->cpuinfo_buffer, (void *)&pcpus, (sizeof(PCPU) * pcpus_numentries));
         //xslbootinfo->runtime_size = sl_rt_size - PAGE_SIZE_2M;
         xslbootinfo->size = sl_rt_size;
