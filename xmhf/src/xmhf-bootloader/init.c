@@ -103,7 +103,7 @@ BOOTVCPU vcpubuffers[MAX_VCPU_ENTRIES] __attribute__(( section(".data") ));
 //initial stacks for all cores
 u8 cpustacks[RUNTIME_STACK_SIZE * MAX_PCPU_ENTRIES] __attribute__(( section(".stack") ));
 
-SL_PARAMETER_BLOCK *slpb = NULL;
+XMHF_BOOTINFO *xslbootinfo = NULL;
 
 /* TODO: refactor to eliminate a lot of these globals, or at least use
  * static where appropriate */
@@ -705,13 +705,13 @@ void do_drtm(BOOTVCPU __attribute__((unused))*vcpu, u32 slbase, size_t mle_size 
         //our secure loader is the first 64K of the hypervisor image
         printf("\nINIT(early): transferring control to SL via SKINIT...");
 		#ifndef PERF_CRIT
-        if(NULL != slpb) {
+        if(NULL != xslbootinfo) {
             __asm__ __volatile__ (
                 "cpuid\r\n"
                 "cpuid\r\n"
                 "cpuid\r\n"
                 "rdtsc\r\n"
-                : "=A"(slpb->rdtsc_before_drtm)
+                : "=A"(xslbootinfo->rdtsc_before_drtm)
                 : /* no inputs */
                 : "ebx","ecx");
         }
@@ -984,47 +984,45 @@ void cstartup(multiboot_info_t *mbi){
     //fill in "sl" parameter block
     {
         //"sl" parameter block is at hypervisor_image_baseaddress + 0x10000
-        slpb = (SL_PARAMETER_BLOCK *)((u32)hypervisor_image_baseaddress + 0x10000);
-        HALT_ON_ERRORCOND(slpb->magic == SL_PARAMETER_BLOCK_MAGIC);
-        slpb->errorHandler = 0;
-        slpb->isEarlyInit = 1;    //this is an "early" init
-        slpb->numE820Entries = grube820list_numentries;
-        //memcpy((void *)&slpb->e820map, (void *)&grube820list, (sizeof(GRUBE820) * grube820list_numentries));         
-		memcpy((void *)&slpb->memmapbuffer, (void *)&grube820list, (sizeof(GRUBE820) * grube820list_numentries));         
-        slpb->numCPUEntries = pcpus_numentries;
-        //memcpy((void *)&slpb->pcpus, (void *)&pcpus, (sizeof(PCPU) * pcpus_numentries));
-        memcpy((void *)&slpb->cpuinfobuffer, (void *)&pcpus, (sizeof(PCPU) * pcpus_numentries));
-        //slpb->runtime_size = (mod_array[0].mod_end - mod_array[0].mod_start) - PAGE_SIZE_2M;      
-        slpb->runtime_size = sl_rt_size - PAGE_SIZE_2M;
-        slpb->runtime_osbootmodule_base = mod_array[1].mod_start;
-        slpb->runtime_osbootmodule_size = (mod_array[1].mod_end - mod_array[1].mod_start); 
+        xslbootinfo = (XMHF_BOOTINFO *)((u32)hypervisor_image_baseaddress + 0x10000);
+        HALT_ON_ERRORCOND(xslbootinfo->magic == SL_PARAMETER_BLOCK_MAGIC);
+        xslbootinfo->memmapinfo_numentries = grube820list_numentries;
+        HALT_ON_ERRORCOND(xslbootinfo->memmapinfo_numentries > 64);
+		memcpy((void *)&xslbootinfo->memmapinfo_buffer, (void *)&grube820list, (sizeof(GRUBE820) * grube820list_numentries));         
+        xslbootinfo->cpuinfo_numentries = pcpus_numentries;
+        HALT_ON_ERRORCOND(xslbootinfo->cpuinfo_numentries > 8);
+        memcpy((void *)&xslbootinfo->cpuinfo_buffer, (void *)&pcpus, (sizeof(PCPU) * pcpus_numentries));
+        //xslbootinfo->runtime_size = sl_rt_size - PAGE_SIZE_2M;
+        xslbootinfo->size = sl_rt_size;
+        xslbootinfo->richguest_bootmodule_base = mod_array[1].mod_start;
+        xslbootinfo->richguest_bootmodule_size = (mod_array[1].mod_end - mod_array[1].mod_start); 
 
-		//check if we have an optional app module and if so populate relevant SLPB
+		/*//check if we have an optional app module and if so populate relevant SLPB
 		//fields
 		{
 			u32 i, bytes;
-			slpb->runtime_appmodule_base= 0;
-			slpb->runtime_appmodule_size= 0;
+			xslbootinfo->runtime_appmodule_base= 0;
+			xslbootinfo->runtime_appmodule_size= 0;
 
 			//we search from module index 2 upto and including mods_count-1
 			//and grab the first non-SINIT module in the list
 			for(i=2; i < mods_count; i++) {
 				bytes = mod_array[i].mod_end - mod_array[i].mod_start;
 				if(!is_sinit_acmod((void*)mod_array[i].mod_start, bytes, false)){
-						slpb->runtime_appmodule_base= mod_array[i].mod_start;
-						slpb->runtime_appmodule_size= bytes;
+						xslbootinfo->runtime_appmodule_base= mod_array[i].mod_start;
+						xslbootinfo->runtime_appmodule_size= bytes;
 						printf("\nINIT(early): found app module, base=0x%08x, size=0x%08x",
-								slpb->runtime_appmodule_base, slpb->runtime_appmodule_size);
+								xslbootinfo->runtime_appmodule_base, xslbootinfo->runtime_appmodule_size);
 						break;
 				}
 			}
-		}
+		}*/
 
 #if defined (__DEBUG_SERIAL__)
-        //slpb->uart_config = g_uart_config;
-        memcpy(&slpb->uart_config, &g_uart_config, sizeof(uart_config_t));
+        //xslbootinfo->uart_config = g_uart_config;
+        memcpy(&xslbootinfo->debugcontrol_buffer, &g_uart_config, sizeof(uart_config_t));
 #endif
-        strncpy(slpb->cmdline, (const char *)mbi->cmdline, sizeof(slpb->cmdline));
+        strncpy(xslbootinfo->cmdline_buffer, (const char *)mbi->cmdline, sizeof(xslbootinfo->cmdline));
     }
    
     //switch to MP mode
