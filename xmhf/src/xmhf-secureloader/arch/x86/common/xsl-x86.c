@@ -114,8 +114,7 @@ void xmhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
 
 	#ifndef __XMHF_VERIFICATION__
 	//transfer control to runtime and never return
-	xmhf_sl_arch_x86_invoke_runtime_entrypoint(rpb->XtVmmGdt, rpb->XtVmmIdt, 
-				rpb->XtVmmEntryPoint, (rpb->XtVmmStackBase+rpb->XtVmmStackSize), ptba);
+	xmhf_sl_arch_x86_invoke_runtime_entrypoint(rpb->XtVmmEntryPoint, (rpb->XtVmmStackBase+rpb->XtVmmStackSize));
 	#else
 	return;
 	#endif
@@ -141,8 +140,7 @@ void xmhf_sl_arch_baseplatform_initialize(void){
 }
 
 
-void xmhf_sl_arch_x86_invoke_runtime_entrypoint(u32 gdtbase, u32 idtbase,
-	u32 entrypoint, u32 stacktop, u32 cr3) {
+void xmhf_sl_arch_x86_invoke_runtime_entrypoint(u32 entrypoint, u32 stacktop) {
 		
 	asm volatile(
 		"movl %0, %%esp \r\n"

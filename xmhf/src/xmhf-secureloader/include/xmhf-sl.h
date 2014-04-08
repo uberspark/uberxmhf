@@ -89,9 +89,7 @@ void xmhf_sl_arch_baseplatform_initialize(void);
 //----------------------------------------------------------------------
 //x86 ARCH. INTERFACES
 //----------------------------------------------------------------------
-u32 xmhf_sl_arch_x86_setup_runtime_paging(RPB * rpb, u32 runtime_spa, u32 runtime_sva, u32 totalsize);
-void xmhf_sl_arch_x86_invoke_runtime_entrypoint(u32 gdtbase, u32 idtbase,
-	u32 entrypoint, u32 stacktop, u32 cr3)__attribute__((cdecl)); 
+void xmhf_sl_arch_x86_invoke_runtime_entrypoint(u32 entrypoint, u32 stacktop)__attribute__((cdecl)); 
 
 
 //----------------------------------------------------------------------
