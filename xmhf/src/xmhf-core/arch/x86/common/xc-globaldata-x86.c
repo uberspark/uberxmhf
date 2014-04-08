@@ -95,19 +95,12 @@ u8 x_init_stack[RUNTIME_STACK_SIZE] __attribute__(( section(".stack") ));
 RPB arch_rpb __attribute__(( section(".s_rpb") )) = {
 	.magic= RUNTIME_PARAMETER_BLOCK_MAGIC,
 	.XtVmmEntryPoint= (u32)xmhf_runtime_entry,
-	.XtVmmPdptBase= (u32)x_3level_pdpt,
-	.XtVmmPdtsBase= (u32)x_3level_pdt,
 	.XtGuestOSBootModuleBase= 0,
 	.XtGuestOSBootModuleSize= 0, 
 	.runtime_appmodule_base= 0,
 	.runtime_appmodule_size= 0,
 	.XtVmmStackBase= (u32)x_init_stack,
 	.XtVmmStackSize= 8192,
-	.XtVmmGdt= (u32)&x_gdt,
-	.XtVmmIdt= (u32)&xmhf_xcphandler_idt,
-	//.XtVmmIdtFunctionPointers= (u32)xmhf_xcphandler_exceptionstubs,
-	.XtVmmIdtFunctionPointers= 0,
-	.XtVmmIdtEntries= 32,
 	.XtVmmRuntimePhysBase= 0,
 	.XtVmmRuntimeVirtBase= 0,
 	.XtVmmRuntimeSize= 0,
@@ -115,7 +108,6 @@ RPB arch_rpb __attribute__(( section(".s_rpb") )) = {
 	.XtVmmE820NumEntries= 0,
 	.XtVmmMPCpuinfoBuffer= (u32)g_cpumap,
 	.XtVmmMPCpuinfoNumEntries= 0,
-	.XtVmmTSSBase= (u32)g_runtime_TSS,
 	.RtmUartConfig = {0},
 	.isEarlyInit=1,					//1 for an "early init" else 0 (late-init)
 };

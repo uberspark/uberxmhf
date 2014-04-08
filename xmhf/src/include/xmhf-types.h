@@ -135,18 +135,12 @@ typedef struct _midtab {
 typedef struct {
 	u32 magic;
 	u32 XtVmmEntryPoint;
-	u32 XtVmmPdptBase;
-	u32 XtVmmPdtsBase;
 	u32 XtGuestOSBootModuleBase;
 	u32 XtGuestOSBootModuleSize;
 	u32 runtime_appmodule_base;
 	u32 runtime_appmodule_size;
 	u32 XtVmmStackBase;
 	u32 XtVmmStackSize;
-	u32 XtVmmGdt;
-	u32 XtVmmIdt;
-	u32 XtVmmIdtFunctionPointers;
-	u32 XtVmmIdtEntries;
 	u32 XtVmmRuntimePhysBase;
 	u32 XtVmmRuntimeVirtBase;
 	u32 XtVmmRuntimeSize;
@@ -154,7 +148,6 @@ typedef struct {
 	u32 XtVmmE820NumEntries;
 	u32 XtVmmMPCpuinfoBuffer;
 	u32 XtVmmMPCpuinfoNumEntries;
-	u32 XtVmmTSSBase;
     u8 RtmUartConfig[16];	        /* runtime options parsed in init and passed forward */
     char cmdline[128]; 				/* runtime options parsed in init and passed forward */
 	u32 isEarlyInit;					//1 for an "early init" else 0 (late-init)
