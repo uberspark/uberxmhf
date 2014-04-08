@@ -107,6 +107,9 @@ void xmhf_baseplatform_arch_initialize(void){
 	coreptbase = xmhf_baseplatform_arch_x86_setup_pagetables();
 	printf("\n%s: coreptbase = %08x", __FUNCTION__, coreptbase);
 #endif //__XMHF_VERIFICATION__
+
+	//initialize paging
+	xmhf_baseplatform_arch_x86_initialize_paging(coreptbase);
 	
 	//initialize PCI subsystem
 	xmhf_baseplatform_arch_x86_pci_initialize();
