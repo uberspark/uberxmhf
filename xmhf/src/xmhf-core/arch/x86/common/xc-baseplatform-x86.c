@@ -109,7 +109,7 @@ void xmhf_baseplatform_arch_x86_cpuinitialize(void){
 //initialize GDT
 void xmhf_baseplatform_arch_x86_initializeGDT(void){
 	
-		asm volatile(
+	asm volatile(
 		"lgdt  %0 \r\n"
 		"pushl	%1 \r\n"				// far jump to runtime entry point
 		"pushl	$reloadsegs \r\n"
@@ -129,6 +129,19 @@ void xmhf_baseplatform_arch_x86_initializeGDT(void){
 	
 }
 
+//initialize IO privilege level
+void xmhf_baseplatform_arch_x86_initializeIOPL(void){
+	
+	asm volatile(
+		"pushl	$0x3000 \r\n"					// clear flags, but set IOPL=3 (CPL-3)
+		"popf \r\n"
+		: //no outputs
+		: //no inputs
+		: //no clobber
+	);
+	
+	
+}
 
 
 //initialize TR/TSS

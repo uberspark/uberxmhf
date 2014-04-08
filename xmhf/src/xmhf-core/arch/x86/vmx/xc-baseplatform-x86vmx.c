@@ -94,7 +94,8 @@ void xmhf_baseplatform_arch_initialize(void){
 	//initialize GDT
 	xmhf_baseplatform_arch_x86_initializeGDT();
 
-	
+	//initialize IO privilege level
+	xmhf_baseplatform_arch_x86_initializeIOPL();
 	
 	//initialize PCI subsystem
 	xmhf_baseplatform_arch_x86_pci_initialize();
