@@ -53,7 +53,7 @@
 
 //this is the SL parameter block and is placed in a seperate (untrusted)
 //section. It is populated by the XMHF bootloader.
-struct _sl_parameter_block slpb __attribute__(( section(".sl_untrusted_params") )) = {
+XMHF_BOOTINFO xslbootinfo __attribute__(( section(".sl_untrusted_params") )) = {
 	.magic = SL_PARAMETER_BLOCK_MAGIC,
 };
 
@@ -65,32 +65,30 @@ void xmhf_sl_main(void){
 	u32 runtime_size_2Maligned;
 
 	//initialize debugging early on
-	xmhf_debug_init((char *)&slpb.uart_config);
+	xmhf_debug_init((char *)&xslbootinfo.debugcontrol_buffer);
 
 	printf("%s: alive and starting...\n", __FUNCTION__);
 	
 	//debug: dump SL parameter block
-	printf("SL: slpb at = 0x%08x\n", (u32)&slpb);
-	printf("	errorHandler=0x%08x\n", slpb.errorHandler);
-	printf("	isEarlyInit=0x%08x\n", slpb.isEarlyInit);
-	printf("	numE820Entries=%u\n", slpb.numE820Entries);
-	printf("	system memory map buffer at 0x%08x\n", (u32)&slpb.memmapbuffer);
-	printf("	numCPUEntries=%u\n", slpb.numCPUEntries);
-	printf("	cpuinfo buffer at 0x%08x\n", (u32)&slpb.cpuinfobuffer);
-	printf("	runtime size= %u bytes\n", slpb.runtime_size);
+	printf("SL: xslbootinfo at = 0x%08x\n", (u32)&xslbootinfo);
+	printf("	numE820Entries=%u\n", xslbootinfo.memmapinfo_numentries);
+	printf("	system memory map buffer at 0x%08x\n", (u32)&xslbootinfo.memmapinfo_buffer);
+	printf("	numCPUEntries=%u\n", xslbootinfo.cpuinfo_numentries);
+	printf("	cpuinfo buffer at 0x%08x\n", (u32)&xslbootinfo.cpuinfo_buffer);
+	printf("	SL + core size= %u bytes\n", xslbootinfo.size);
 	printf("	OS bootmodule at 0x%08x, size=%u bytes\n", 
-		slpb.runtime_osbootmodule_base, slpb.runtime_osbootmodule_size);
-    printf("\tcmdline = \"%s\"\n", slpb.cmdline);
+		xslbootinfo.richguest_bootmodule_base, xslbootinfo.richguest_bootmodule_size);
+    printf("\tcmdline = \"%s\"\n", xslbootinfo.cmdline_buffer);
 
 	//get runtime physical base
 	runtime_physical_base = __TARGET_BASE_CORE;
 	
 	//compute 2M aligned runtime size
-	runtime_size_2Maligned = (((slpb.runtime_size) + (1 << 21) - 1) & ~((1 << 21) - 1));
+	runtime_size_2Maligned = (((xslbootinfo.runtime_size) + (1 << 21) - 1) & ~((1 << 21) - 1));
 	
 
 	printf("SL: runtime at 0x%08x; size=0x%08x bytes adjusted to 0x%08x bytes (2M aligned)\n", 
-			runtime_physical_base, slpb.runtime_size, runtime_size_2Maligned);
+			runtime_physical_base, xslbootinfo.size, runtime_size_2Maligned);
 
 	//setup runtime parameter block with required parameters
 	{
@@ -98,38 +96,38 @@ void xmhf_sl_main(void){
 		HALT_ON_ERRORCOND(rpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
 			
 		//populate runtime parameter block fields
-		rpb->isEarlyInit = slpb.isEarlyInit; //tell runtime if we started "early" or "late"
+		rpb->isEarlyInit = 1; //tell runtime if we started "early" or "late"
 		
 		//store runtime physical and virtual base addresses along with size
 		rpb->XtVmmRuntimePhysBase = runtime_physical_base; 
 		rpb->XtVmmRuntimeVirtBase = __TARGET_BASE_CORE;
-		rpb->XtVmmRuntimeSize = slpb.runtime_size;
+		rpb->XtVmmRuntimeSize = xslbootinfo.runtime_size;
 
 		//store revised E820 map and number of entries
-		memcpy((void *)rpb->XtVmmE820Buffer, (void *)&slpb.memmapbuffer, (sizeof(GRUBE820) * slpb.numE820Entries) );
-		rpb->XtVmmE820NumEntries = slpb.numE820Entries; 
+		memcpy((void *)rpb->XtVmmE820Buffer, (void *)&xslbootinfo.memmapinfo_buffer, (sizeof(GRUBE820) * xslbootinfo.memmapinfo_numentries) );
+		rpb->XtVmmE820NumEntries = xslbootinfo.memmapinfo_numentries; 
 
 		//store CPU table and number of CPUs
-		memcpy((void *)rpb->XtVmmMPCpuinfoBuffer, (void *)&slpb.cpuinfobuffer, (sizeof(PCPU) * slpb.numCPUEntries) );
-		rpb->XtVmmMPCpuinfoNumEntries = slpb.numCPUEntries; 
+		memcpy((void *)rpb->XtVmmMPCpuinfoBuffer, (void *)&xslbootinfo.cpuinfo_buffer, (sizeof(PCPU) * xslbootinfo.cpuinfo_numentries) );
+		rpb->XtVmmMPCpuinfoNumEntries = xslbootinfo.cpuinfo_numentries; 
 
 		//setup guest OS boot module info in LPB	
-		rpb->XtGuestOSBootModuleBase=slpb.runtime_osbootmodule_base;
-		rpb->XtGuestOSBootModuleSize=slpb.runtime_osbootmodule_size;
+		rpb->XtGuestOSBootModuleBase=xslbootinfo.richguest_bootmodule_base;
+		rpb->XtGuestOSBootModuleSize=xslbootinfo.richguest_bootmodule_size;
 
 		//pass optional app module if any
-		rpb->runtime_appmodule_base = slpb.runtime_appmodule_base;
-		rpb->runtime_appmodule_size = slpb.runtime_appmodule_size;
+		rpb->runtime_appmodule_base = 0;
+		rpb->runtime_appmodule_size = 0;
 
 	#if defined (__DEBUG_SERIAL__)
 		//pass along UART config for serial debug output
-		//rpb->RtmUartConfig = slpb.uart_config;
-		memcpy(&rpb->RtmUartConfig, &slpb.uart_config, sizeof(rpb->RtmUartConfig));
+		//rpb->RtmUartConfig = xslbootinfo.uart_config;
+		memcpy(&rpb->RtmUartConfig, &xslbootinfo.debugcontrol_buffer, sizeof(rpb->RtmUartConfig));
 	#endif
 
 		//pass command line configuration forward 
-		COMPILE_TIME_ASSERT(sizeof(slpb.cmdline) == sizeof(rpb->cmdline));
-		strncpy(rpb->cmdline, (void *)&slpb.cmdline, sizeof(slpb.cmdline));
+		COMPILE_TIME_ASSERT(sizeof(xslbootinfo.cmdline_buffer) == sizeof(rpb->cmdline));
+		strncpy(rpb->cmdline, (void *)&xslbootinfo.cmdline_buffer, sizeof(xslbootinfo.cmdline_buffer));
 	}
 
 	//initialize basic platform elements
@@ -143,8 +141,8 @@ void xmhf_sl_main(void){
 
 #if defined (__DMAP__)    
 	//setup DMA protection on runtime (secure loader is already DMA protected)
-	//xmhf_sl_arch_early_dmaprot_init(slpb.runtime_size);
-	xmhf_sl_arch_early_dmaprot_init(__TARGET_BASE_SL, __TARGET_SIZE_SL + slpb.runtime_size);
+	//xmhf_sl_arch_early_dmaprot_init(xslbootinfo.runtime_size);
+	xmhf_sl_arch_early_dmaprot_init(__TARGET_BASE_SL, __TARGET_SIZE_SL + xslbootinfo.size);
 #endif
 
 	//transfer control to runtime
