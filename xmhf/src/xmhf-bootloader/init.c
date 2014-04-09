@@ -921,7 +921,8 @@ void cstartup(multiboot_info_t *mbi){
     //sl_rt_size = mod_array[0].mod_start - __TARGET_BASE_BOOTLOADER + __TARGET_SIZE_BOOTLOADER;
     sl_rt_size = (mod_array[0].mod_start - __TARGET_BASE_BOOTLOADER) - __TARGET_SIZE_BOOTLOADER;
     hypapp_size = mod_array[0].mod_end - mod_array[0].mod_start;
-    hypervisor_image_baseaddress = dealwithE820(mbi, PAGE_ALIGN_UP2M(sl_rt_size) + PAGE_ALIGN_UP2M(hypapp_size) ); 
+    //hypervisor_image_baseaddress = dealwithE820(mbi, PAGE_ALIGN_UP2M(sl_rt_size) + PAGE_ALIGN_UP2M(hypapp_size) ); 
+	hypervisor_image_baseaddress = dealwithE820(mbi, __TARGET_SIZE_XMHF); 
 
 	//sanity check memory map and limits
 		//ensure we are loading at 256M
