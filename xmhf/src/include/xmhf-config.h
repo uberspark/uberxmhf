@@ -55,6 +55,8 @@
 
 //----------------------------------------------------------------------
 // XMHF platform memory map
+	//size of memory that is pre-allocated by XMHF on the platform (currently 256MB)
+	#define __TARGET_SIZE_XMHF				0x10000000
 
 	//physical address where the XMHF boot-loader is loaded (e.g., via GRUB)
 	#define __TARGET_BASE_BOOTLOADER		0x01E00000		//30MB
