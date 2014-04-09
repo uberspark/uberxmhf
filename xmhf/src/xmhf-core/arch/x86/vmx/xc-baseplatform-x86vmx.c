@@ -349,7 +349,7 @@ void xmhf_baseplatform_arch_smpinitialize(void){
   {
     int i;
 	#ifndef __XMHF_VERIFICATION__
-		for(i=0; i < (int)rpb->XtVmmMPCpuinfoNumEntries; i++){
+		for(i=0; i < (int)xcbootinfo->cpuinfo_numentries; i++){
 			g_midtable[g_midtable_numentries].cpu_lapic_id = g_cpumap[i].lapic_id;
 			g_midtable[g_midtable_numentries].vcpu_vaddr_ptr = 0;
 			g_midtable_numentries++;

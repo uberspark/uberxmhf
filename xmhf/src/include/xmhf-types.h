@@ -148,8 +148,10 @@ typedef struct {
 	u8 cmdline_buffer[128];
 } __attribute__((packed)) XMHF_BOOTINFO;
 
+//forward declaration of core boot info structure
+extern XMHF_BOOTINFO *xcbootinfo;
 
-//"runtime" parameter block structure; arch_rpb (in startup component) 
+/*//"runtime" parameter block structure; arch_rpb (in startup component) 
 //is the default definition
 typedef struct {
 	u32 magic;
@@ -167,14 +169,14 @@ typedef struct {
 	u32 XtVmmE820NumEntries;
 	u32 XtVmmMPCpuinfoBuffer;
 	u32 XtVmmMPCpuinfoNumEntries;
-    u8 RtmUartConfig[16];	        /* runtime options parsed in init and passed forward */
-    char cmdline[128]; 				/* runtime options parsed in init and passed forward */
+    u8 RtmUartConfig[16];	        // runtime options parsed in init and passed forward 
+    char cmdline[128]; 				// runtime options parsed in init and passed forward 
 	u32 isEarlyInit;					//1 for an "early init" else 0 (late-init)
 } __attribute__((packed)) RPB, *PRPB;
 
 //forward declaration of runtime parameter block
 extern RPB *rpb;	
-
+*/
 
 //"sl" parameter block structure 
 typedef struct _sl_parameter_block {

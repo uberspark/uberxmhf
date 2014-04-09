@@ -59,10 +59,12 @@
 
 //runtime parameter block data area 
 //extern u8 arch_rpb[];
-extern RPB arch_rpb;
+//extern RPB arch_rpb;
 
 //runtime parameter block pointer 
-extern RPB *rpb __attribute__(( section(".data") )); 
+//extern RPB *rpb __attribute__(( section(".data") )); 
+//extern XMHF_BOOTINFO xcbootinfo;
+
 
 //runtime DMA protection buffer
 extern u8 g_rntm_dmaprot_buffer[] __attribute__(( section(".palign_data") ));
