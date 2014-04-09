@@ -339,7 +339,9 @@ static void _vmx_setupEPT(VCPU *vcpu){
 				//(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M) with a size
 				//of (rpb->XtVmmRuntimeSize+PAGE_SIZE_2M)
 				//make XMHF physical pages inaccessible
-				if( (paddr >= (rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M)) &&
+				//if( (paddr >= (rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M)) &&
+				//	(paddr < (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) ){
+				if( (paddr >= (rpb->XtVmmRuntimePhysBase)) &&
 					(paddr < (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) ){
 					p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) | (u64)0x0 ;	//not-present
 				}else{
