@@ -177,7 +177,7 @@ typedef struct {
 //forward declaration of runtime parameter block
 extern RPB *rpb;	
 */
-
+/*
 //"sl" parameter block structure 
 typedef struct _sl_parameter_block {
 	u32 magic;						//magic identifier
@@ -195,10 +195,11 @@ typedef struct _sl_parameter_block {
     u64 rdtsc_before_drtm;			// Performance measurements related to DRTM
     u64 rdtsc_after_drtm;
 
-    /* runtime options parsed in init and passed forward */
+    // runtime options parsed in init and passed forward 
     u8 uart_config[16];
-    char cmdline[128]; /* runtime options parsed in init and passed forward */
+    char cmdline[128]; // runtime options parsed in init and passed forward 
 } __attribute__((packed)) SL_PARAMETER_BLOCK;
+*/
 
 //"sl" parameter block magic value
 #define SL_PARAMETER_BLOCK_MAGIC		0xDEADBEEF
