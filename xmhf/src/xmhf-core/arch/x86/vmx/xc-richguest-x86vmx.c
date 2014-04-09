@@ -375,7 +375,7 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 		if( (r->edx == 0x534D4150UL) && (r->ebx < xcbootinfo->memmapinfo_numentries) ){
 			
 			//copy the E820 descriptor and return its size
-			if(!xmhf_smpguest_memcpyto(context_desc, (const void *)((u32)(vcpu->vmcs.guest_ES_base+(u16)r->edi)), (void *)&g_e820map[r->ebx], sizeof(GRUBE820)) ){
+			if(!xmhf_smpguest_memcpyto(context_desc, (const void *)((u32)(vcpu->vmcs.guest_ES_base+(u16)r->edi)), (void *)&xcbootinfo->memmapinfo_buffer[r->ebx], sizeof(GRUBE820)) ){
 				printf("\n%s: Error in copying e820 descriptor to guest. Halting!", __FUNCTION__);
 				HALT();
 			}	

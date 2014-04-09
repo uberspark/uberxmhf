@@ -62,7 +62,7 @@ void xmhf_runtime_entry(void){
 	xmhf_baseplatform_initialize();
 
 	//copy over memmap and cpuinfo buffer
-	memcpy(&g_e820map, &xcbootinfo->memmapinfo_buffer, (sizeof(GRUBE820) * xcbootinfo->memmapinfo_numentries));
+	//memcpy(&xcbootinfo->memmapinfo_buffer, &xcbootinfo->memmapinfo_buffer, (sizeof(GRUBE820) * xcbootinfo->memmapinfo_numentries));
 	memcpy(&g_cpumap, &xcbootinfo->cpuinfo_buffer, (sizeof(PCPU) * xcbootinfo->cpuinfo_numentries));
 	
     //[debug] dump E820 and MP table
@@ -72,9 +72,9 @@ void xmhf_runtime_entry(void){
 		int i;
 		for(i=0; i < (int)xcbootinfo->memmapinfo_numentries; i++){
 			printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
-			  g_e820map[i].baseaddr_high, g_e820map[i].baseaddr_low,
-			  g_e820map[i].length_high, g_e820map[i].length_low,
-			  g_e820map[i].type);
+			  xcbootinfo->memmapinfo_buffer[i].baseaddr_high, xcbootinfo->memmapinfo_buffer[i].baseaddr_low,
+			  xcbootinfo->memmapinfo_buffer[i].length_high, xcbootinfo->memmapinfo_buffer[i].length_low,
+			  xcbootinfo->memmapinfo_buffer[i].type);
 		}
   	}
 	printf("\nNumber of MP entries = %u", xcbootinfo->cpuinfo_numentries);
