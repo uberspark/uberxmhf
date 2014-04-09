@@ -58,7 +58,7 @@
 //GRUBE820 g_e820map[MAX_E820_ENTRIES] __attribute__(( section(".data") ));
 
 //SMP CPU map; lapic id, base, ver and bsp indication for each available core
-PCPU	g_cpumap[MAX_PCPU_ENTRIES] __attribute__(( section(".data") ));
+//PCPU	g_cpumap[MAX_PCPU_ENTRIES] __attribute__(( section(".data") ));
 
 //runtime stacks for individual cores
 u8 g_cpustacks[RUNTIME_STACK_SIZE * MAX_PCPU_ENTRIES] __attribute__(( section(".stack") ));
