@@ -52,7 +52,6 @@
  
 #include <xmhf.h>
 #include <xmhf-sl.h>
-#include <xmhf-sl-arch.h>
 
 #include "cpu/x86/include/common/_processor.h"  	//CPU
 #include "cpu/x86/include/common/_paging.h"     	//MMU
