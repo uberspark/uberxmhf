@@ -63,7 +63,7 @@ void xmhf_runtime_entry(void){
 
 	//copy over memmap and cpuinfo buffer
 	//memcpy(&xcbootinfo->memmapinfo_buffer, &xcbootinfo->memmapinfo_buffer, (sizeof(GRUBE820) * xcbootinfo->memmapinfo_numentries));
-	memcpy(&g_cpumap, &xcbootinfo->cpuinfo_buffer, (sizeof(PCPU) * xcbootinfo->cpuinfo_numentries));
+	//memcpy(&xcbootinfo->cpuinfo_buffer, &xcbootinfo->cpuinfo_buffer, (sizeof(PCPU) * xcbootinfo->cpuinfo_numentries));
 	
     //[debug] dump E820 and MP table
  	#ifndef __XMHF_VERIFICATION__
@@ -81,7 +81,7 @@ void xmhf_runtime_entry(void){
 	{
 		int i;
 		for(i=0; i < (int)xcbootinfo->cpuinfo_numentries; i++)
-			printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x", i, g_cpumap[i].isbsp, g_cpumap[i].lapic_id);
+			printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x", i, xcbootinfo->cpuinfo_buffer[i].isbsp, xcbootinfo->cpuinfo_buffer[i].lapic_id);
 	}
 	#endif //__XMHF_VERIFICATION__
 
