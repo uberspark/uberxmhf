@@ -141,11 +141,13 @@ typedef struct {
 	u32 richguest_bootmodule_base;
 	u32 richguest_bootmodule_size;
 	u32 memmapinfo_numentries;
-	u8 memmapinfo_buffer[1280]; //64 entries each of 20 bytes
+	//u8 memmapinfo_buffer[1280]; //64 entries each of 20 bytes
+	GRUBE820 memmapinfo_buffer[MAX_E820_ENTRIES];
 	u32 cpuinfo_numentries;
-	u8 cpuinfo_buffer[128]; //8 entries each of 16 bytes
+	//u8 cpuinfo_buffer[128]; //8 entries each of 16 bytes
+	PCPU cpuinfo_buffer[MAX_PCPU_ENTRIES];
 	u8 debugcontrol_buffer[16];
-	u8 cmdline_buffer[128];
+	u8 cmdline_buffer[MAX_CMDLINE_BUFFER_SIZE];
 } __attribute__((packed)) XMHF_BOOTINFO;
 
 //forward declaration of core boot info structure

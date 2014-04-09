@@ -88,6 +88,9 @@
 //8K stack for each core in "init"
 #define INIT_STACK_SIZE					(8192)					
 
+//max. size of command line parameter buffer
+#define MAX_CMDLINE_BUFFER_SIZE			(128)
+
 //max. cores/vcpus we support currently
 #ifndef __XMHF_VERIFICATION__
 	#define MAX_MIDTAB_ENTRIES  			(8)
