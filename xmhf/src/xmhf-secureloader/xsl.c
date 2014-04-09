@@ -57,7 +57,7 @@ XMHF_BOOTINFO xslbootinfo __attribute__(( section(".sl_untrusted_params") )) = {
 	.magic = SL_PARAMETER_BLOCK_MAGIC,
 };
 
-RPB *rpb = (RPB *)&xmhf_rpb_start;
+XMHF_BOOTINFO *xcbootinfo = (XMHF_BOOTINFO *)&xmhf_rpb_start;
 
 // we get here from _xmhf_sl_entry
 void xmhf_sl_main(void){
@@ -93,44 +93,44 @@ void xmhf_sl_main(void){
 
 	//setup runtime parameter block with required parameters
 	{
-		printf("SL: RPB at 0x%08x, magic=0x%08x\n", (u32)rpb, rpb->magic);
-		HALT_ON_ERRORCOND(rpb->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
+		printf("SL: XMHF_BOOTINFO at 0x%08x, magic=0x%08x\n", (u32)xcbootinfo, xcbootinfo->magic);
+		HALT_ON_ERRORCOND(xcbootinfo->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
 			
 		//populate runtime parameter block fields
-		rpb->isEarlyInit = 1; //tell runtime if we started "early" or "late"
+		//xcbootinfo->isEarlyInit = 1; //tell runtime if we started "early" or "late"
 		
 		//store runtime physical and virtual base addresses along with size
-		rpb->XtVmmRuntimePhysBase = runtime_physical_base; 
-		//rpb->XtVmmRuntimeVirtBase = __TARGET_BASE_CORE;
-		rpb->XtVmmRuntimeVirtBase = __TARGET_BASE_SL;
-		//rpb->XtVmmRuntimeSize = xslbootinfo.size - __TARGET_SIZE_SL;
-		rpb->XtVmmRuntimeSize = xslbootinfo.size;
+		xcbootinfo->physmem_base = runtime_physical_base; 
+		//xcbootinfo->XtVmmRuntimeVirtBase = __TARGET_BASE_CORE;
+		xcbootinfo->virtmem_base = __TARGET_BASE_SL;
+		//xcbootinfo->XtVmmRuntimeSize = xslbootinfo.size - __TARGET_SIZE_SL;
+		xcbootinfo->size = xslbootinfo.size;
 
 		//store revised E820 map and number of entries
-		memcpy((void *)rpb->XtVmmE820Buffer, (void *)&xslbootinfo.memmapinfo_buffer, (sizeof(GRUBE820) * xslbootinfo.memmapinfo_numentries) );
-		rpb->XtVmmE820NumEntries = xslbootinfo.memmapinfo_numentries; 
+		memcpy((void *)xcbootinfo->memmapinfo_buffer, (void *)&xslbootinfo.memmapinfo_buffer, (sizeof(GRUBE820) * xslbootinfo.memmapinfo_numentries) );
+		xcbootinfo->memmapinfo_numentries = xslbootinfo.memmapinfo_numentries; 
 
 		//store CPU table and number of CPUs
-		memcpy((void *)rpb->XtVmmMPCpuinfoBuffer, (void *)&xslbootinfo.cpuinfo_buffer, (sizeof(PCPU) * xslbootinfo.cpuinfo_numentries) );
-		rpb->XtVmmMPCpuinfoNumEntries = xslbootinfo.cpuinfo_numentries; 
+		memcpy((void *)xcbootinfo->cpuinfo_buffer, (void *)&xslbootinfo.cpuinfo_buffer, (sizeof(PCPU) * xslbootinfo.cpuinfo_numentries) );
+		xcbootinfo->cpuinfo_numentries = xslbootinfo.cpuinfo_numentries; 
 
 		//setup guest OS boot module info in LPB	
-		rpb->XtGuestOSBootModuleBase=xslbootinfo.richguest_bootmodule_base;
-		rpb->XtGuestOSBootModuleSize=xslbootinfo.richguest_bootmodule_size;
+		xcbootinfo->richguest_bootmodule_base=xslbootinfo.richguest_bootmodule_base;
+		xcbootinfo->richguest_bootmodule_size=xslbootinfo.richguest_bootmodule_size;
 
 		//pass optional app module if any
-		rpb->runtime_appmodule_base = 0;
-		rpb->runtime_appmodule_size = 0;
+		//xcbootinfo->runtime_appmodule_base = 0;
+		//xcbootinfo->runtime_appmodule_size = 0;
 
 	#if defined (__DEBUG_SERIAL__)
 		//pass along UART config for serial debug output
-		//rpb->RtmUartConfig = xslbootinfo.uart_config;
-		memcpy(&rpb->RtmUartConfig, &xslbootinfo.debugcontrol_buffer, sizeof(rpb->RtmUartConfig));
+		//xcbootinfo->RtmUartConfig = xslbootinfo.uart_config;
+		memcpy(&xcbootinfo->debugcontrol_buffer, &xslbootinfo.debugcontrol_buffer, sizeof(xcbootinfo->debugcontrol_buffer));
 	#endif
 
 		//pass command line configuration forward 
-		COMPILE_TIME_ASSERT(sizeof(xslbootinfo.cmdline_buffer) == sizeof(rpb->cmdline));
-		strncpy(rpb->cmdline, (void *)&xslbootinfo.cmdline_buffer, sizeof(xslbootinfo.cmdline_buffer));
+		COMPILE_TIME_ASSERT(sizeof(xslbootinfo.cmdline_buffer) == sizeof(xcbootinfo->cmdline_buffer));
+		strncpy(xcbootinfo->cmdline_buffer, (void *)&xslbootinfo.cmdline_buffer, sizeof(xslbootinfo.cmdline_buffer));
 	}
 
 	//initialize basic platform elements
@@ -149,7 +149,7 @@ void xmhf_sl_main(void){
 #endif
 
 	//transfer control to runtime
-	xmhf_sl_arch_xfer_control_to_runtime(rpb);
+	xmhf_sl_arch_xfer_control_to_runtime(xcbootinfo);
 
 #ifndef __XMHF_VERIFICATION__
 	//we should never get here

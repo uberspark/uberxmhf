@@ -52,31 +52,35 @@
 
 void xmhf_runtime_entry(void){
 	//initialize Runtime Parameter Block (rpb)
-	rpb = (RPB *)&arch_rpb;
+	//rpb = (RPB *)&arch_rpb;
 	
 	//setup debugging	
-	xmhf_debug_init((char *)&rpb->RtmUartConfig);
+	xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
 	printf("\nxmhf-core: starting...");
 
   	//initialize basic platform elements
 	xmhf_baseplatform_initialize();
 
+	//copy over memmap and cpuinfo buffer
+	memcpy(&g_e820map, &xcbootinfo->memmapinfo_buffer, (sizeof(GRUBE820) * xcbootinfo->memmapinfo_numentries));
+	memcpy(&g_cpumap, &xcbootinfo->cpuinfo_buffer, (sizeof(PCPU) * xcbootinfo->cpuinfo_numentries));
+	
     //[debug] dump E820 and MP table
  	#ifndef __XMHF_VERIFICATION__
- 	printf("\nNumber of E820 entries = %u", rpb->XtVmmE820NumEntries);
+ 	printf("\nNumber of E820 entries = %u", xcbootinfo->memmapinfo_numentries);
 	{
 		int i;
-		for(i=0; i < (int)rpb->XtVmmE820NumEntries; i++){
-		printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
-          g_e820map[i].baseaddr_high, g_e820map[i].baseaddr_low,
-          g_e820map[i].length_high, g_e820map[i].length_low,
-          g_e820map[i].type);
+		for(i=0; i < (int)xcbootinfo->memmapinfo_numentries; i++){
+			printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
+			  g_e820map[i].baseaddr_high, g_e820map[i].baseaddr_low,
+			  g_e820map[i].length_high, g_e820map[i].length_low,
+			  g_e820map[i].type);
 		}
   	}
-	printf("\nNumber of MP entries = %u", rpb->XtVmmMPCpuinfoNumEntries);
+	printf("\nNumber of MP entries = %u", xcbootinfo->cpuinfo_numentries);
 	{
 		int i;
-		for(i=0; i < (int)rpb->XtVmmMPCpuinfoNumEntries; i++)
+		for(i=0; i < (int)xcbootinfo->cpuinfo_numentries; i++)
 			printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x", i, g_cpumap[i].isbsp, g_cpumap[i].lapic_id);
 	}
 	#endif //__XMHF_VERIFICATION__
@@ -97,8 +101,8 @@ void xmhf_runtime_entry(void){
 	//call hypapp main function
 	{
 		hypapp_env_block_t hypappenvb;
-		hypappenvb.runtimephysmembase = (u32)rpb->XtVmmRuntimePhysBase;  
-		hypappenvb.runtimesize = (u32)rpb->XtVmmRuntimeSize;
+		hypappenvb.runtimephysmembase = (u32)xcbootinfo->physmem_base;  
+		hypappenvb.runtimesize = (u32)xcbootinfo->size;
 	
 		//call app main
 		printf("\n%s: proceeding to call xmhfhypapp_main on BSP", __FUNCTION__);
