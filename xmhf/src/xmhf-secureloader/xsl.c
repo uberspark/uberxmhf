@@ -81,7 +81,8 @@ void xmhf_sl_main(void){
     printf("\tcmdline = \"%s\"\n", xslbootinfo.cmdline_buffer);
 
 	//get runtime physical base
-	runtime_physical_base = __TARGET_BASE_CORE;
+	//runtime_physical_base = __TARGET_BASE_CORE;
+	runtime_physical_base = __TARGET_BASE_SL;
 	
 	//compute 2M aligned runtime size
 	runtime_size_2Maligned = (((xslbootinfo.size) + (1 << 21) - 1) & ~((1 << 21) - 1));
@@ -100,8 +101,10 @@ void xmhf_sl_main(void){
 		
 		//store runtime physical and virtual base addresses along with size
 		rpb->XtVmmRuntimePhysBase = runtime_physical_base; 
-		rpb->XtVmmRuntimeVirtBase = __TARGET_BASE_CORE;
-		rpb->XtVmmRuntimeSize = xslbootinfo.size - __TARGET_SIZE_SL;
+		//rpb->XtVmmRuntimeVirtBase = __TARGET_BASE_CORE;
+		rpb->XtVmmRuntimeVirtBase = __TARGET_BASE_SL;
+		//rpb->XtVmmRuntimeSize = xslbootinfo.size - __TARGET_SIZE_SL;
+		rpb->XtVmmRuntimeSize = xslbootinfo.size;
 
 		//store revised E820 map and number of entries
 		memcpy((void *)rpb->XtVmmE820Buffer, (void *)&xslbootinfo.memmapinfo_buffer, (sizeof(GRUBE820) * xslbootinfo.memmapinfo_numentries) );
