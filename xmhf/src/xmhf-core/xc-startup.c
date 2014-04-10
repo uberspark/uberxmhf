@@ -62,7 +62,7 @@ static void _xc_startup_initialize_cpudata(XMHF_BOOTINFO *bootinfo){
 		g_xc_cpu[i].cpuid = bootinfo->cpuinfo_buffer[i].lapic_id;
 		g_xc_cpu[i].is_bsp = bootinfo->cpuinfo_buffer[i].isbsp;
 		g_xc_cpu[i].is_quiesced = false;
-		g_xc_cpu[i].index_cpuarchdata = XC_INDEX_INVALID;
+		g_xc_cpu[i].index_cpuarchdata = i;	//indexes into g_xc_cpuarchdata[i][] for arch. specific data buffer
 		g_xc_cpu[i].index_partitiondata = XC_INDEX_INVALID;
 	}
 
@@ -86,6 +86,12 @@ void xmhf_runtime_entry(void){
 	//setup debugging	
 	xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
 	printf("\nxmhf-core: starting...");
+
+	//initialize global cpu data structure
+	_xc_startup_initialize_cpudata(xcbootinfo);
+	
+	//initialize global cpu table
+	_xc_startup_initialize_cputable();
 
   	//initialize basic platform elements
 	xmhf_baseplatform_initialize();
