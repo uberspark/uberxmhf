@@ -99,6 +99,7 @@ typedef struct {
 		u32 number_of_cpus;			//number of cpus allocated to the partition
 } xc_partition_t;
 
+#define XC_INDEX_INVALID			(0xFFFFFFFFUL)
 #define XC_PARTITION_PRIMARY		(1)
 #define XC_PARTITION_SECONDARY		(2)
 
@@ -107,6 +108,9 @@ typedef struct {
 
 // platform cpus
 extern xc_cpu_t g_xc_cpu[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
+
+// count of platform cpus
+extern u32 g_xc_cpu_count __attribute__(( section(".data") ));
 
 // partitions
 extern xc_partition_t g_xc_partition[MAX_PARTITIONS] __attribute__(( section(".data") ));

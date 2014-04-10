@@ -152,6 +152,9 @@ u32 hypapp_tos=0;
 // platform cpus
 xc_cpu_t g_xc_cpu[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
 
+// count of platform cpus
+u32 g_xc_cpu_count __attribute__(( section(".data") )) = 0;
+
 // partitions
 xc_partition_t g_xc_partition[MAX_PARTITIONS] __attribute__(( section(".data") ));
 
