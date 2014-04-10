@@ -53,6 +53,29 @@
 
 #ifndef __ASSEMBLY__
 
+//define XMHF core API aggregate return type
+//allows us to return multiple values without using pointers to pointers
+typedef struct xmhfcoreapiretval {
+	u64 returnval;
+	void *returnptr1;
+} xmhfcoreapiretval_t;
+
+//XMHF CPU descriptor type
+typedef struct {
+	uint32_t id;
+	bool isbsp;
+} cpu_desc_t;
+	
+//XMHF partition descriptor type
+typedef struct {
+	uint32_t id;
+} partition_desc_t;
+
+//XMHF context descriptor type (context = partition + cpu pair)
+typedef struct {
+	partition_desc_t partition_desc;
+	cpu_desc_t cpu_desc;
+} context_desc_t;
 
 
 #endif //__ASSEMBLY__
