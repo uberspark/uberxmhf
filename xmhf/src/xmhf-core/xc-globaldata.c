@@ -155,6 +155,9 @@ xc_cpu_t g_xc_cpu[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
 // count of platform cpus
 u32 g_xc_cpu_count __attribute__(( section(".data") )) = 0;
 
+// platform cpu arch. data buffer
+u8 g_xc_cpuarchdata[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUARCHDATA_SIZE] __attribute__(( section(".palign_data") ));
+
 // partitions
 xc_partition_t g_xc_partition[MAX_PARTITIONS] __attribute__(( section(".data") ));
 
