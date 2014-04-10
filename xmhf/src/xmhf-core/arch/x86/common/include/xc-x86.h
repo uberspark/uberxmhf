@@ -327,6 +327,8 @@ u32 xmhf_baseplatform_arch_x86_setup_pagetables(void);
 void xmhf_baseplatform_arch_x86_initialize_paging(u32 pgtblbase);
 
 
+u32 xmhf_baseplatform_arch_x86_getgdtbase(void);
+
 static inline u64 VCPU_gdtr_base(VCPU *vcpu)
 {
     return ((struct _vmx_vmcsfields*)&(vcpu->vmcs))->guest_GDTR_base;

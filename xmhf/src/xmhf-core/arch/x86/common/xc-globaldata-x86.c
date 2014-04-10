@@ -67,7 +67,7 @@ bool g_bplt_initiatialized __attribute__(( section(".data") )) = false;
 
 
 //rntm-x86-data
-//runtime GDT
+/*//runtime GDT
 u64 x_gdt_start[] __attribute__(( section(".data"), aligned(16) )) = {
 	0x0000000000000000ULL,	//NULL descriptor
 	0x00cf9b000000ffffULL,	//CPL-0 code descriptor (CS)
@@ -81,7 +81,7 @@ u64 x_gdt_start[] __attribute__(( section(".data"), aligned(16) )) = {
 arch_x86_gdtdesc_t x_gdt __attribute__(( section(".data"), aligned(16) )) = {
 	.size=sizeof(x_gdt_start)-1,
 	.base=(u32)&x_gdt_start,
-};
+};*/
 
 
 //runtime PAE page tables

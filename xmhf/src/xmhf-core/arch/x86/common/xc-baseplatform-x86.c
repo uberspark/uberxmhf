@@ -106,6 +106,24 @@ void xmhf_baseplatform_arch_x86_cpuinitialize(void){
 
 }
 
+//----------------------------------------------------------------------
+
+// GDT
+static u64 _gdt_start[] __attribute__(( aligned(16) )) = {
+	0x0000000000000000ULL,	//NULL descriptor
+	0x00cf9b000000ffffULL,	//CPL-0 code descriptor (CS)
+	0x00cf93000000ffffULL,	//CPL-0 data descriptor (DS/SS/ES/FS/GS)
+	0x00cffb000000ffffULL,	//CPL-3 code descriptor (CS)
+	0x00cff3000000ffffULL,	//CPL-3 data descriptor (DS/SS/ES/FS/GS)
+	0x0000000000000000ULL	
+};
+
+// GDT descriptor
+static arch_x86_gdtdesc_t _gdt __attribute__(( aligned(16) )) = {
+	.size=sizeof(_gdt_start)-1,
+	.base=(u32)&_gdt_start,
+};
+
 //initialize GDT
 void xmhf_baseplatform_arch_x86_initializeGDT(void){
 	
@@ -122,12 +140,14 @@ void xmhf_baseplatform_arch_x86_initializeGDT(void){
 		"movw	%%ax, %%gs \r\n"
 		"movw  %%ax, %%ss \r\n"
 		: //no outputs
-		: "m" (x_gdt), "i" (__CS_CPL0), "i" (__DS_CPL0)
+		: "m" (_gdt), "i" (__CS_CPL0), "i" (__DS_CPL0)
 		: //no clobber
 	);
 
 	
 }
+//----------------------------------------------------------------------
+
 
 //initialize IO privilege level
 void xmhf_baseplatform_arch_x86_initializeIOPL(void){
@@ -164,15 +184,15 @@ void xmhf_baseplatform_arch_x86_initializeTR(void){
 		u32 i;
 		u32 tss_base=(u32)&g_runtime_TSS;
 		TSSENTRY *t;
-		extern u64 x_gdt_start[];
+		//extern u64 x_gdt_start[];
 		
 		printf("\ndumping GDT...");
 		for(i=0; i < 6; i++)
-			printf("\n    entry %u -> %016llx", i, x_gdt_start[i]);
+			printf("\n    entry %u -> %016llx", i, _gdt_start[i]);
 		printf("\nGDT dumped.");
 
 		printf("\nfixing TSS descriptor (TSS base=%x)...", tss_base);
-		t= (TSSENTRY *)(u32)&x_gdt_start[(__TRSEL/sizeof(u64))];
+		t= (TSSENTRY *)(u32)&_gdt_start[(__TRSEL/sizeof(u64))];
 		t->attributes1= 0xE9;
 		t->limit16_19attributes2= 0x0;
 		t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
@@ -183,7 +203,7 @@ void xmhf_baseplatform_arch_x86_initializeTR(void){
 
 		printf("\ndumping GDT...");
 		for(i=0; i < 6; i++)
-			printf("\n    entry %u -> %016llx", i, x_gdt_start[i]);
+			printf("\n    entry %u -> %016llx", i, _gdt_start[i]);
 		printf("\nGDT dumped.");
 
 		printf("\nsetting TR...");
@@ -421,7 +441,7 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-extern arch_x86_gdtdesc_t x_gdt;
+//extern arch_x86_gdtdesc_t x_gdt;
 
 void _ap_pmode_entry_with_paging(void) __attribute__((naked)){
 
@@ -451,9 +471,12 @@ void _ap_pmode_entry_with_paging(void) __attribute__((naked)){
 					"call xmhf_baseplatform_arch_x86_smpinitialize_commonstart\r\n"
 					"hlt\r\n"								//we should never get here, if so just halt
 					:
-					: "m" (x_gdt), "m" (xmhf_xcphandler_idt), "i" (MSR_APIC_BASE), "m" (g_midtable_numentries), "i" (&g_midtable)
+					: "m" (_gdt), "m" (xmhf_xcphandler_idt), "i" (MSR_APIC_BASE), "m" (g_midtable_numentries), "i" (&g_midtable)
 	);
 
 	
 }
 
+u32 xmhf_baseplatform_arch_x86_getgdtbase(void){
+		return (u32)&_gdt_start;
+}
