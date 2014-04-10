@@ -78,6 +78,40 @@ typedef struct {
 } context_desc_t;
 
 
+typedef struct {
+		u32 cpuid;				//unique CPU id
+		bool is_bsp;			//true if CPU is the boot-strap processor
+		bool is_quiesced;		//true if CPU is quiesced
+		u32 index_cpuarchdata;	//index into CPU arch. specific data buffer
+		u32 index_partitiondata;	//index into partition data buffer
+} xc_cpu_t;
+
+typedef struct {
+		u32 cpuid;				//unique CPU id
+		u32 index_cpudata;		//index into CPU data buffer
+} xc_cputable_t;
+
+typedef struct {
+		u32 partitionid;			//unique partition id
+		u32 partitiontype;			//primary or secondary
+		u32 index_hwpagetabledata;	//index into h/w page table data buffer
+		u32 indices_cpudata[MAX_PLATFORM_CPUS];	//indices into cpu data buffer for all cpus allocated to the partition
+		u32 number_of_cpus;			//number of cpus allocated to the partition
+} xc_partition_t;
+
+//variables
+//XXX: move them into relevant component headers
+
+// platform cpus
+extern xc_cpu_t g_xc_cpu[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
+
+// partitions
+extern xc_partition_t g_xc_partition[MAX_PARTITIONS] __attribute__(( section(".data") ));
+
+// cpu table
+extern xc_cputable_t g_xc_cputable[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
+
+  
 #endif //__ASSEMBLY__
 
 #endif //__XC_TYPES_H__
