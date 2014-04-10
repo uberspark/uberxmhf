@@ -76,13 +76,6 @@ void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu);
 //note: returns 0xFFFFFFFF if there is no mapping
 u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr);
 
-//the BSP LAPIC base address
-extern u32 g_vmx_lapic_base __attribute__(( section(".data") ));
-
-//4k buffer which is the virtual LAPIC page that guest reads and writes from/to
-//during INIT-SIPI-SIPI emulation
-extern u8 g_vmx_virtual_LAPIC_base[] __attribute__(( section(".palign_data") ));
-
 
 //xc-baseplatform
 //----------------------------------------------------------------------
