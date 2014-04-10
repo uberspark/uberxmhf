@@ -89,49 +89,6 @@ u32 xmhf_baseplatform_arch_getcpuvendor(void){
 	return xmhf_baseplatform_arch_x86_getcpuvendor();
 }
 
-//initialize basic platform elements
-void xmhf_baseplatform_arch_initialize(void){
-	u32 coreptbase;
-	
-	//initialize GDT
-	xmhf_baseplatform_arch_x86_initializeGDT();
-
-	//initialize IO privilege level
-	xmhf_baseplatform_arch_x86_initializeIOPL();
-
-	//initialize IDT
-	xmhf_baseplatform_arch_x86_initializeIDT();
-
-#ifndef __XMHF_VERIFICATION__
-	//setup core page tables
-	coreptbase = xmhf_baseplatform_arch_x86_setup_pagetables();
-	printf("\n%s: coreptbase = %08x", __FUNCTION__, coreptbase);
-#endif //__XMHF_VERIFICATION__
-
-	//initialize paging
-	xmhf_baseplatform_arch_x86_initialize_paging(coreptbase);
-	
-	//initialize PCI subsystem
-	xmhf_baseplatform_arch_x86_pci_initialize();
-
-	//check ACPI subsystem
-	{
-		ACPI_RSDP rsdp;
-		#ifndef __XMHF_VERIFICATION__
-			//TODO: plug in a BIOS data area map/model
-			if(!xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp)){
-				printf("\n%s: ACPI RSDP not found, Halting!", __FUNCTION__);
-				HALT();
-			}
-		#endif //__XMHF_VERIFICATION__
-	}
-
-	//initialize TR/TSS
-	#ifndef __XMHF_VERIFICATION__
-	xmhf_baseplatform_arch_x86_initializeTR();
-	#endif //__XMHF_VERIFICATION__
-
-}
 
 void xmhf_baseplatform_arch_cpuinitialize(void){
 	xmhf_baseplatform_arch_x86_cpuinitialize();
@@ -472,4 +429,50 @@ void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu){
 		printf("\nguest_RSP=0x%08lx", (unsigned long)vcpu->vmcs.guest_RSP);
 		printf("\nguest_RIP=0x%08lx", (unsigned long)vcpu->vmcs.guest_RIP);
 		printf("\nguest_RFLAGS=0x%08lx", (unsigned long)vcpu->vmcs.guest_RFLAGS);
+}
+
+
+//----------------------------------------------------------------------
+//initialize basic platform elements
+void xmhf_baseplatform_arch_initialize(void){
+	u32 coreptbase;
+	
+	//initialize GDT
+	xmhf_baseplatform_arch_x86_initializeGDT();
+
+	//initialize IO privilege level
+	xmhf_baseplatform_arch_x86_initializeIOPL();
+
+	//initialize IDT
+	xmhf_baseplatform_arch_x86_initializeIDT();
+
+#ifndef __XMHF_VERIFICATION__
+	//setup core page tables
+	coreptbase = xmhf_baseplatform_arch_x86_setup_pagetables();
+	printf("\n%s: coreptbase = %08x", __FUNCTION__, coreptbase);
+#endif //__XMHF_VERIFICATION__
+
+	//initialize paging
+	xmhf_baseplatform_arch_x86_initialize_paging(coreptbase);
+	
+	//initialize PCI subsystem
+	xmhf_baseplatform_arch_x86_pci_initialize();
+
+	//check ACPI subsystem
+	{
+		ACPI_RSDP rsdp;
+		#ifndef __XMHF_VERIFICATION__
+			//TODO: plug in a BIOS data area map/model
+			if(!xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp)){
+				printf("\n%s: ACPI RSDP not found, Halting!", __FUNCTION__);
+				HALT();
+			}
+		#endif //__XMHF_VERIFICATION__
+	}
+
+	//initialize TR/TSS
+	#ifndef __XMHF_VERIFICATION__
+	xmhf_baseplatform_arch_x86_initializeTR();
+	#endif //__XMHF_VERIFICATION__
+
 }
