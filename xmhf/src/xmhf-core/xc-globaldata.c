@@ -145,3 +145,16 @@ XMHF_HYPAPP_HEADER *g_hypappheader=(XMHF_HYPAPP_HEADER *)__TARGET_BASE_XMHFHYPAP
 u32 hypapp_cbhub_pc=0;
 u32 hypapp_tos=0;
 
+//----------------------------------------------------------------------
+//variables
+//XXX: move them into relevant component headers
+
+// platform cpus
+xc_cpu_t g_xc_cpu[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
+
+// partitions
+xc_partition_t g_xc_partition[MAX_PARTITIONS] __attribute__(( section(".data") ));
+
+// cpu table
+xc_cputable_t g_xc_cputable[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
+

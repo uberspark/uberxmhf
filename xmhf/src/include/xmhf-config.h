@@ -93,14 +93,22 @@
 
 //max. cores/vcpus we support currently
 #ifndef __XMHF_VERIFICATION__
-	#define MAX_MIDTAB_ENTRIES  			(8)
+	#define	MAX_PLATFORM_CPUS					(8)
 #else
-	#define MAX_MIDTAB_ENTRIES				(1)
+	#define	MAX_PLATFORM_CPUS					(1)
 #endif
 
+#define MAX_MIDTAB_ENTRIES  			(MAX_PLATFORM_CPUS)
+#define MAX_PCPU_ENTRIES  				(MAX_PLATFORM_CPUS)
+#define MAX_VCPU_ENTRIES    			(MAX_PLATFORM_CPUS)
 
-#define MAX_PCPU_ENTRIES  				(MAX_MIDTAB_ENTRIES)
-#define MAX_VCPU_ENTRIES    			(MAX_PCPU_ENTRIES)
+//max. partitions we support
+#ifndef __XMHF_VERIFICATION__
+	#define	MAX_PARTITIONS						(1)
+#else
+	#define	MAX_PARTITIONS						(1)
+#endif
+
 
 //maximum system memory map entries (e.g., E820) currently supported
 #define MAX_E820_ENTRIES    			(64)  
