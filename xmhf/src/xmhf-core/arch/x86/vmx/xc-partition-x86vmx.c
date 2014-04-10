@@ -55,7 +55,7 @@
 
 //---globals referenced by this module------------------------------------------
 //TODO: need to remove these direct references
-extern u32 x_gdt_start[], x_idt_start[]; //runtimesup.S
+extern u32 x_idt_start[]; //runtimesup.S
 
 
 //critical MSRs that need to be saved/restored across guest VM switches
@@ -74,7 +74,7 @@ static void _vmx_initVT(VCPU *vcpu){
 	//so load it for this core
 	//__vmx_loadTR();
 	{
-	  u32 gdtstart = (u32)&x_gdt_start;
+	  u32 gdtstart = (u32)xmhf_baseplatform_arch_x86_getgdtbase();
 	  u16 trselector = 	__TRSEL;
 	  #ifndef __XMHF_VERIFICATION__
 	  asm volatile("movl %0, %%edi\r\n"
@@ -284,7 +284,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.host_GS_selector = read_segreg_gs();
 	vcpu->vmcs.host_SS_selector = read_segreg_ss();
 	vcpu->vmcs.host_TR_selector = read_tr_sel();
-	vcpu->vmcs.host_GDTR_base = (u64)(u32)x_gdt_start;
+	vcpu->vmcs.host_GDTR_base = (u64)xmhf_baseplatform_arch_x86_getgdtbase();
 	vcpu->vmcs.host_IDTR_base = (u64)(u32)xmhf_xcphandler_get_idt_start();
 	vcpu->vmcs.host_TR_base = (u64)(u32)g_runtime_TSS;
 	vcpu->vmcs.host_RIP = (u64)(u32)xmhf_parteventhub_arch_x86vmx_entry;
