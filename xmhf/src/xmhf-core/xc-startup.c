@@ -50,6 +50,35 @@
 //---includes-------------------------------------------------------------------
 #include <xmhf-core.h> 
 
+//initialize global core cpu data structure, g_xc_cpu
+//and g_xc_cpu_count;
+static void _xc_startup_initialize_cpudata(XMHF_BOOTINFO *bootinfo){
+	u32 i;
+	
+	printf("\nNo. of CPU entries = %u", bootinfo->cpuinfo_numentries);
+
+	for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
+		printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x", i, bootinfo->cpuinfo_buffer[i].isbsp, bootinfo->cpuinfo_buffer[i].lapic_id);
+		g_xc_cpu[i].cpuid = bootinfo->cpuinfo_buffer[i].lapic_id;
+		g_xc_cpu[i].is_bsp = bootinfo->cpuinfo_buffer[i].isbsp;
+		g_xc_cpu[i].is_quiesced = false;
+		g_xc_cpu[i].index_cpuarchdata = XC_INDEX_INVALID;
+		g_xc_cpu[i].index_partitiondata = XC_INDEX_INVALID;
+	}
+
+	g_xc_cpu_count = bootinfo->cpuinfo_numentries;
+}
+
+// initialize global cpu table (g_xc_cputable)
+static void _xc_startup_initialize_cputable(void){
+	u32 i;
+
+	for(i=0; i < g_xc_cpu_count; i++){
+			g_xc_cputable[i].cpuid = g_xc_cpu[i].cpuid;
+			g_xc_cputable[i].index_cpudata = i;
+	}
+}
+
 void xmhf_runtime_entry(void){
 	//initialize Runtime Parameter Block (rpb)
 	//rpb = (RPB *)&arch_rpb;
@@ -77,12 +106,6 @@ void xmhf_runtime_entry(void){
 			  xcbootinfo->memmapinfo_buffer[i].type);
 		}
   	}
-	printf("\nNumber of MP entries = %u", xcbootinfo->cpuinfo_numentries);
-	{
-		int i;
-		for(i=0; i < (int)xcbootinfo->cpuinfo_numentries; i++)
-			printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x", i, xcbootinfo->cpuinfo_buffer[i].isbsp, xcbootinfo->cpuinfo_buffer[i].lapic_id);
-	}
 	#endif //__XMHF_VERIFICATION__
 
 	#ifndef __XMHF_VERIFICATION__
