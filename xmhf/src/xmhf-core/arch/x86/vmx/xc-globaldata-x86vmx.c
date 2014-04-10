@@ -285,15 +285,6 @@ u8 g_vmx_ept_p_table_buffers[PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT
 
 //smpg-x86vmx-data
 
-//the BSP LAPIC base address
-//smpguest x86vmx
-u32 g_vmx_lapic_base __attribute__(( section(".data") )) = 0;
-
-//4k buffer which is the virtual LAPIC page that guest reads and writes from/to
-//during INIT-SIPI-SIPI emulation
-//smpguest x86vmx
-u8 g_vmx_virtual_LAPIC_base[PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
-
 //the quiesce counter, all CPUs except for the one requesting the
 //quiesce will increment this when they get their quiesce signal
 //smpguest x86vmx
