@@ -99,6 +99,9 @@ typedef struct {
 		u32 number_of_cpus;			//number of cpus allocated to the partition
 } xc_partition_t;
 
+#define XC_PARTITION_PRIMARY		(1)
+#define XC_PARTITION_SECONDARY		(2)
+
 //variables
 //XXX: move them into relevant component headers
 
