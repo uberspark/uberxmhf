@@ -206,7 +206,8 @@ void xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor){
 		vcpu->vmx_vaddr_msr_area_guest = ((u32)g_vmx_msr_area_guest_buffers + (i * (2*PAGE_SIZE_4K))) ; 
 
 		//allocate VMX MSR bitmap region
-		vcpu->vmx_vaddr_msrbitmaps = ((u32)g_vmx_msrbitmap_buffers + (i * PAGE_SIZE_4K)) ; 
+		//vcpu->vmx_vaddr_msrbitmaps = ((u32)g_vmx_msrbitmap_buffers + (i * PAGE_SIZE_4K)) ; 
+		vcpu->vmx_vaddr_msrbitmaps = (u32)g_vmx_msrbitmap_buffer ; 
 
 		//allocate EPT paging structures
 		#ifdef __NESTED_PAGING__		

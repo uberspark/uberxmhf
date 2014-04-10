@@ -112,8 +112,8 @@ extern u8 g_vmx_msr_area_host_buffers[] __attribute__(( section(".palign_data") 
 extern u8 g_vmx_msr_area_guest_buffers[] __attribute__(( section(".palign_data") ));
 
 //VMX MSR bitmap buffers
-extern u8 g_vmx_msrbitmap_buffers[] __attribute__(( section(".palign_data") ));
-
+//extern u8 g_vmx_msrbitmap_buffers[] __attribute__(( section(".palign_data") ));
+extern u8 g_vmx_msrbitmap_buffer[] __attribute__(( section(".palign_data") ));
 
 //initialize CPU state
 void xmhf_baseplatform_arch_x86vmx_cpuinitialize(void);
