@@ -75,12 +75,10 @@ void xmhf_apihub_arch_initialize (void){
 	//(a data structure of type XMHF_HYPAPP_HEADER) and populate the
 	//hypapp parameter block field
 	{
-		g_hypappheader->apb.bootsector_ptr = (u32)rpb->XtGuestOSBootModuleBase;
-		g_hypappheader->apb.bootsector_size = (u32)rpb->XtGuestOSBootModuleSize;
-		g_hypappheader->apb.optionalmodule_ptr = (u32)rpb->runtime_appmodule_base;
-		g_hypappheader->apb.optionalmodule_size = (u32)rpb->runtime_appmodule_size;
-		g_hypappheader->apb.runtimephysmembase = (u32)rpb->XtVmmRuntimePhysBase;  
-		strncpy(g_hypappheader->apb.cmdline, rpb->cmdline, sizeof(g_hypappheader->apb.cmdline));
+		g_hypappheader->apb.bootsector_ptr = (u32)xcbootinfo->richguest_bootmodule_base;
+		g_hypappheader->apb.bootsector_size = (u32)xcbootinfo->richguest_bootmodule_size;
+		g_hypappheader->apb.runtimephysmembase = (u32)xcbootinfo->physmem_base;  
+		strncpy(g_hypappheader->apb.cmdline, xcbootinfo->cmdline_buffer, sizeof(g_hypappheader->apb.cmdline));
 		printf("\n%s: sizeof(XMHF_HYPAPP_HEADER)=%u", __FUNCTION__, sizeof(XMHF_HYPAPP_HEADER));
 		printf("\n%s: sizeof(APP_PARAM_BLOCK)=%u", __FUNCTION__, sizeof(APP_PARAM_BLOCK));
 			

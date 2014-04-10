@@ -153,7 +153,7 @@ static inline u64 xmhfhw_sysmemaccess_readu64(u32 addr){
 //write 8-bits to absolute physical address
 static inline void xmhfhw_sysmemaccess_writeu8(u32 addr, u8 val) {
     u8 *valueptr = (u8 *)addr;
-	assert( ! ( ((u32)valueptr >= rpb->XtVmmRuntimePhysBase) && ((u32)valueptr <= (rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize)) ) ); 
+	assert( ! ( ((u32)valueptr >= xcbootinfo->physmem_base) && ((u32)valueptr <= (xcbootinfo->physmem_base+xcbootinfo->size)) ) ); 
     #ifndef __XMHF_VERIFICATION__
     *valueptr = val;
     #endif
@@ -162,7 +162,7 @@ static inline void xmhfhw_sysmemaccess_writeu8(u32 addr, u8 val) {
 //write 16-bits to absolute physical address
 static inline void xmhfhw_sysmemaccess_writeu16(u32 addr, u16 val) {
     u16 *valueptr = (u16 *)addr;
-	assert( ! ( ((u32)valueptr >= rpb->XtVmmRuntimePhysBase) && ((u32)valueptr <= (rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize)) ) ); 
+	assert( ! ( ((u32)valueptr >= xcbootinfo->physmem_base) && ((u32)valueptr <= (xcbootinfo->physmem_base+xcbootinfo->size)) ) ); 
     #ifndef __XMHF_VERIFICATION__
     *valueptr = val;
 	#endif
@@ -171,7 +171,7 @@ static inline void xmhfhw_sysmemaccess_writeu16(u32 addr, u16 val) {
 //write 32-bits to absolute physical address
 static inline void xmhfhw_sysmemaccess_writeu32(u32 addr, u32 val) {
     u32 *valueptr = (u32 *)addr;
-	assert( ! ( ((u32)valueptr >= rpb->XtVmmRuntimePhysBase) && ((u32)valueptr <= (rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize)) ) ); 
+	assert( ! ( ((u32)valueptr >= xcbootinfo->physmem_base) && ((u32)valueptr <= (xcbootinfo->physmem_base+xcbootinfo->size)) ) ); 
     #ifndef __XMHF_VERIFICATION__
     *valueptr = val;
 	#endif
@@ -180,7 +180,7 @@ static inline void xmhfhw_sysmemaccess_writeu32(u32 addr, u32 val) {
 //write 64-bits to absolute physical address
 static inline void xmhfhw_sysmemaccess_writeu64(u32 addr, u64 val) {
     u64 *valueptr = (u64 *)addr;
-	assert( ! ( ((u32)valueptr >= rpb->XtVmmRuntimePhysBase) && ((u32)valueptr <= (rpb->XtVmmRuntimePhysBase+rpb->XtVmmRuntimeSize)) ) ); 
+	assert( ! ( ((u32)valueptr >= xcbootinfo->physmem_base) && ((u32)valueptr <= (xcbootinfo->physmem_base+xcbootinfo->size)) ) ); 
     #ifndef __XMHF_VERIFICATION__
     *valueptr = val;
 	#endif

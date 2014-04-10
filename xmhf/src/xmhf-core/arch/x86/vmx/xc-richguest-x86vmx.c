@@ -372,10 +372,10 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 		printf("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", vcpu->id, 
 		(u16)r->eax, r->edx, r->ebx, r->ecx, (u16)vcpu->vmcs.guest_ES_selector, (u16)r->edi);
 		
-		if( (r->edx == 0x534D4150UL) && (r->ebx < rpb->XtVmmE820NumEntries) ){
+		if( (r->edx == 0x534D4150UL) && (r->ebx < xcbootinfo->memmapinfo_numentries) ){
 			
 			//copy the E820 descriptor and return its size
-			if(!xmhf_smpguest_memcpyto(context_desc, (const void *)((u32)(vcpu->vmcs.guest_ES_base+(u16)r->edi)), (void *)&g_e820map[r->ebx], sizeof(GRUBE820)) ){
+			if(!xmhf_smpguest_memcpyto(context_desc, (const void *)((u32)(vcpu->vmcs.guest_ES_base+(u16)r->edi)), (void *)&xcbootinfo->memmapinfo_buffer[r->ebx], sizeof(GRUBE820)) ){
 				printf("\n%s: Error in copying e820 descriptor to guest. Halting!", __FUNCTION__);
 				HALT();
 			}	
@@ -405,7 +405,7 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 			//increment e820 descriptor continuation value
 			r->ebx=r->ebx+1;
 					
-			if(r->ebx > (rpb->XtVmmE820NumEntries-1) ){
+			if(r->ebx > (xcbootinfo->memmapinfo_numentries-1) ){
 				//we have reached the last record, so set CF and make EBX=0
 				r->ebx=0;
 				guest_flags |= (u16)EFLAGS_CF;
