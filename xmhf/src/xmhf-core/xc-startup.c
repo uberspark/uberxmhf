@@ -80,9 +80,6 @@ static void _xc_startup_initialize_cputable(void){
 }
 
 void xmhf_runtime_entry(void){
-	//initialize Runtime Parameter Block (rpb)
-	//rpb = (RPB *)&arch_rpb;
-	
 	//setup debugging	
 	xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
 	printf("\nxmhf-core: starting...");
@@ -96,10 +93,6 @@ void xmhf_runtime_entry(void){
   	//initialize basic platform elements
 	xmhf_baseplatform_initialize();
 
-	//copy over memmap and cpuinfo buffer
-	//memcpy(&xcbootinfo->memmapinfo_buffer, &xcbootinfo->memmapinfo_buffer, (sizeof(GRUBE820) * xcbootinfo->memmapinfo_numentries));
-	//memcpy(&xcbootinfo->cpuinfo_buffer, &xcbootinfo->cpuinfo_buffer, (sizeof(PCPU) * xcbootinfo->cpuinfo_numentries));
-	
     //[debug] dump E820 and MP table
  	#ifndef __XMHF_VERIFICATION__
  	printf("\nNumber of E820 entries = %u", xcbootinfo->memmapinfo_numentries);
