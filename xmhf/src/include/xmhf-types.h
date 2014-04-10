@@ -129,8 +129,31 @@ typedef struct _midtab {
 
 #define SIZE_STRUCT_MIDTAB  (sizeof(struct _midtab))
 
+//XMHF_BOOTINFO
+typedef struct {
+	u32 magic;
+	u32 physmem_base;
+	u32 virtmem_base;
+	u32 size;
+	u32 entrypoint;
+	u32 stack_base;
+	u32 stack_size;
+	u32 richguest_bootmodule_base;
+	u32 richguest_bootmodule_size;
+	u32 memmapinfo_numentries;
+	//u8 memmapinfo_buffer[1280]; //64 entries each of 20 bytes
+	GRUBE820 memmapinfo_buffer[MAX_E820_ENTRIES];
+	u32 cpuinfo_numentries;
+	//u8 cpuinfo_buffer[128]; //8 entries each of 16 bytes
+	PCPU cpuinfo_buffer[MAX_PCPU_ENTRIES];
+	u8 debugcontrol_buffer[16];
+	u8 cmdline_buffer[MAX_CMDLINE_BUFFER_SIZE];
+} __attribute__((packed)) XMHF_BOOTINFO;
 
-//"runtime" parameter block structure; arch_rpb (in startup component) 
+//forward declaration of core boot info structure
+extern XMHF_BOOTINFO *xcbootinfo;
+
+/*//"runtime" parameter block structure; arch_rpb (in startup component) 
 //is the default definition
 typedef struct {
 	u32 magic;
@@ -148,15 +171,15 @@ typedef struct {
 	u32 XtVmmE820NumEntries;
 	u32 XtVmmMPCpuinfoBuffer;
 	u32 XtVmmMPCpuinfoNumEntries;
-    u8 RtmUartConfig[16];	        /* runtime options parsed in init and passed forward */
-    char cmdline[128]; 				/* runtime options parsed in init and passed forward */
+    u8 RtmUartConfig[16];	        // runtime options parsed in init and passed forward 
+    char cmdline[128]; 				// runtime options parsed in init and passed forward 
 	u32 isEarlyInit;					//1 for an "early init" else 0 (late-init)
 } __attribute__((packed)) RPB, *PRPB;
 
 //forward declaration of runtime parameter block
 extern RPB *rpb;	
-
-
+*/
+/*
 //"sl" parameter block structure 
 typedef struct _sl_parameter_block {
 	u32 magic;						//magic identifier
@@ -174,10 +197,11 @@ typedef struct _sl_parameter_block {
     u64 rdtsc_before_drtm;			// Performance measurements related to DRTM
     u64 rdtsc_after_drtm;
 
-    /* runtime options parsed in init and passed forward */
+    // runtime options parsed in init and passed forward 
     u8 uart_config[16];
-    char cmdline[128]; /* runtime options parsed in init and passed forward */
+    char cmdline[128]; // runtime options parsed in init and passed forward 
 } __attribute__((packed)) SL_PARAMETER_BLOCK;
+*/
 
 //"sl" parameter block magic value
 #define SL_PARAMETER_BLOCK_MAGIC		0xDEADBEEF

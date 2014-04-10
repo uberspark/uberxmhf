@@ -50,12 +50,6 @@
 #ifndef __XMHF_SL_H__
 #define __XMHF_SL_H__
 
-/*//XXX: the following is more platform specific, will need to be pushed
-//into some backend
-#define __TARGET_BASE_SL				0x10000000		//256MB
-#define __TARGET_SIZE_SL				0x00200000
-#define __TARGET_BASE_CORE				0x10200000		//258M
-*/
 
 #ifndef __ASSEMBLY__
 
@@ -82,7 +76,7 @@ bool xmhf_sl_arch_integrity_check(u8* runtime_base_addr, size_t runtime_len);
 void xmhf_sl_arch_sanitize_post_launch(void);
 //void xmhf_sl_arch_early_dmaprot_init(u32 runtime_size);
 void xmhf_sl_arch_early_dmaprot_init(u32 membase, u32 size);
-void xmhf_sl_arch_xfer_control_to_runtime(RPB * rpb);
+void xmhf_sl_arch_xfer_control_to_runtime(XMHF_BOOTINFO *xcbootinfo);
 void xmhf_sl_arch_baseplatform_initialize(void);
 
 

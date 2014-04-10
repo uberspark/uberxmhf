@@ -52,7 +52,6 @@
  
 #include <xmhf.h>
 #include <xmhf-sl.h>
-#include <xmhf-sl-arch.h>
 
 #include "cpu/x86/include/common/_processor.h"  	//CPU
 #include "cpu/x86/include/common/_paging.h"     	//MMU
@@ -107,14 +106,14 @@
 }
 */
 
-void xmhf_sl_arch_xfer_control_to_runtime(RPB *rpb){
+void xmhf_sl_arch_xfer_control_to_runtime(XMHF_BOOTINFO *xcbootinfo){
 	u32 ptba;	//page table base address
 
 	printf("Transferring control to runtime\n");
 
 	#ifndef __XMHF_VERIFICATION__
 	//transfer control to runtime and never return
-	xmhf_sl_arch_x86_invoke_runtime_entrypoint(rpb->XtVmmEntryPoint, (rpb->XtVmmStackBase+rpb->XtVmmStackSize));
+	xmhf_sl_arch_x86_invoke_runtime_entrypoint(xcbootinfo->entrypoint, (xcbootinfo->stack_base+xcbootinfo->stack_size));
 	#else
 	return;
 	#endif

@@ -336,11 +336,13 @@ static void _vmx_setupEPT(VCPU *vcpu){
 				u32 memorytype = _vmx_getmemorytypeforphysicalpage(vcpu, (u64)paddr);
 				//the XMHF memory region includes the secure loader +
 				//the runtime (core + app). this runs from 
-				//(rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M) with a size
-				//of (rpb->XtVmmRuntimeSize+PAGE_SIZE_2M)
+				//(xcbootinfo->XtVmmRuntimePhysBase - PAGE_SIZE_2M) with a size
+				//of (xcbootinfo->XtVmmRuntimeSize+PAGE_SIZE_2M)
 				//make XMHF physical pages inaccessible
-				if( (paddr >= (rpb->XtVmmRuntimePhysBase - PAGE_SIZE_2M)) &&
-					(paddr < (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) ){
+				//if( (paddr >= (xcbootinfo->XtVmmRuntimePhysBase - PAGE_SIZE_2M)) &&
+				//	(paddr < (xcbootinfo->XtVmmRuntimePhysBase + xcbootinfo->XtVmmRuntimeSize)) ){
+				if( (paddr >= (xcbootinfo->physmem_base)) &&
+					(paddr < (xcbootinfo->physmem_base + xcbootinfo->size)) ){
 					p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) | (u64)0x0 ;	//not-present
 				}else{
 					if(memorytype == 0)
@@ -406,8 +408,8 @@ void xmhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
   
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
    	assert ( (vcpu != NULL) );
-	assert ( ( (gpa < rpb->XtVmmRuntimePhysBase) || 
-							 (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) 
+	assert ( ( (gpa < xcbootinfo->physmem_base) || 
+							 (gpa >= (xcbootinfo->physmem_base + xcbootinfo->size)) 
 						   ) );
 	assert ( ( (prottype > 0)	&& 
 	                         (prottype <= MEMP_PROT_MAXVALUE) 
