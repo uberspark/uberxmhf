@@ -98,6 +98,41 @@ static VCPU *_vmx_getvcpu(void){
 //Queiscing interfaces
 //----------------------------------------------------------------------
 
+//the quiesce counter, all CPUs except for the one requesting the
+//quiesce will increment this when they get their quiesce signal
+//smpguest x86vmx
+static u32 g_vmx_quiesce_counter __attribute__(( section(".data") )) = 0;
+
+//SMP lock to access the above variable
+//smpguest x86vmx
+static u32 g_vmx_lock_quiesce_counter __attribute__(( section(".data") )) = 1; 
+
+//resume counter to rally all CPUs after resumption from quiesce
+//smpguest x86vmx
+static u32 g_vmx_quiesce_resume_counter __attribute__(( section(".data") )) = 0;
+
+//SMP lock to access the above variable
+//smpguest x86vmx
+static u32 g_vmx_lock_quiesce_resume_counter __attribute__(( section(".data") )) = 1; 
+    
+//the "quiesce" variable, if 1, then we have a quiesce in process
+//smpguest x86vmx
+static u32 g_vmx_quiesce __attribute__(( section(".data") )) = 0;;      
+
+//SMP lock to access the above variable
+//smpguest x86vmx
+static u32 g_vmx_lock_quiesce __attribute__(( section(".data") )) = 1; 
+    
+//resume signal, becomes 1 to signal resume after quiescing
+//smpguest x86vmx
+static u32 g_vmx_quiesce_resume_signal __attribute__(( section(".data") )) = 0;  
+
+//SMP lock to access the above variable
+//smpguest x86vmx
+static u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") )) = 1; 
+
+
+
 static void _vmx_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu){
   volatile u32 *icr_low = (u32 *)(0xFEE00000 + 0x300);
   volatile u32 *icr_high = (u32 *)(0xFEE00000 + 0x310);
