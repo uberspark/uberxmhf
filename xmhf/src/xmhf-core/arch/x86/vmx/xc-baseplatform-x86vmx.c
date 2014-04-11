@@ -465,6 +465,4 @@ void xmhf_baseplatform_arch_initialize(void){
 			}
 		#endif //__XMHF_VERIFICATION__
 	}
-
-
 }
