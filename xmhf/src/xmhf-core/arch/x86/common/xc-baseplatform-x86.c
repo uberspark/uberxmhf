@@ -66,7 +66,7 @@ static arch_x86_idtdesc_t _idt __attribute__(( section(".data"), aligned(16) )) 
 };
 
 //runtime TSS
-u8 _tss[PAGE_SIZE_4K] __attribute__(( section(".data") ));
+u8 _tss[PAGE_SIZE_4K] __attribute__(( section(".data") )) = { 0 };
 
 //exclusive exception handling stack, we switch to this stack if there
 //are any exceptions during hypapp execution
@@ -214,7 +214,7 @@ void xmhf_baseplatform_arch_x86_initializeTR(void){
 		
 		//extern u64 x_gdt_start[];
 	
-		memset((void *)_tss, 0, sizeof(_tss));
+		//memset((void *)_tss, 0, sizeof(_tss));
 		tss->ss0 = __DS_CPL0;
 		tss->esp0 = (u32)&_exceptionstack + (u32)sizeof(_exceptionstack);
 		
