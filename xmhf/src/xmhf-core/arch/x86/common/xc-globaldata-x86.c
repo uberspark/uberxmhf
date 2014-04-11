@@ -85,8 +85,8 @@ arch_x86_gdtdesc_t x_gdt __attribute__(( section(".data"), aligned(16) )) = {
 
 
 //runtime PAE page tables
-u8 x_3level_pdpt[PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
-u8 x_3level_pdt[PAE_PTRS_PER_PDPT * PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
+//u8 x_3level_pdpt[PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
+//u8 x_3level_pdt[PAE_PTRS_PER_PDPT * PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
 		
  
 /*

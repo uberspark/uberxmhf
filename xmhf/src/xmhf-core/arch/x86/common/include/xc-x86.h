@@ -281,8 +281,8 @@ extern u32 * _ap_bootstrap_blob_runtime_entrypoint;
 extern u8 * _ap_bootstrap_blob_mle_join_start;
 
 //core PAE page tables
-extern u8 x_3level_pdpt[];
-extern u8 x_3level_pdt[];
+//extern u8 x_3level_pdpt[];
+//extern u8 x_3level_pdt[];
 
 
 //----------------------------------------------------------------------

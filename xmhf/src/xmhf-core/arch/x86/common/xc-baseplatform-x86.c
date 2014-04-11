@@ -260,56 +260,6 @@ void xmhf_baseplatform_arch_x86_initializeTR(void){
 
 }
 
-
-#ifndef __XMHF_VERIFICATION__
-
-//core page table setup
-//physaddr and virtaddr are assumed to be 2M aligned
-//returns 32-bit base address of page table root (can be loaded into CR3)
-u32 xmhf_baseplatform_arch_x86_setup_pagetables(void){
-  pdpt_t xpdpt;
-  pdt_t xpdt;
-  u32 hva=0, i;
-  u64 default_flags;
-	
-  xpdpt= hva2spa((void *)&x_3level_pdpt);
-  xpdt = hva2spa((void *)&x_3level_pdt);
-	
-  printf("\n%s:	pa xpdpt=0x%p, xpdt=0x%p\n", __FUNCTION__, xpdpt, xpdt);
-	
-  default_flags = (u64)(_PAGE_PRESENT);
-
-  //init pdpt
-  for(i = 0; i < PAE_PTRS_PER_PDPT; i++) {
-    u64 pdt_spa = hva2spa((void *)xpdt) + (i << PAGE_SHIFT_4K);
-    xpdpt[i] = pae_make_pdpe(pdt_spa, default_flags);
-  }
-
-  //init pdts with unity mappings
-  default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE | _PAGE_USER);
-  for(i = 0, hva = 0;
-      i < (ADDR_4GB >> (PAE_PDT_SHIFT));
-      i ++, hva += PAGE_SIZE_2M) {
-    u64 spa = hva2spa((void*)hva);
-    u64 flags = default_flags;
-
-    if(spa == 0xfee00000 || spa == 0xfec00000) {
-      //Unity-map some MMIO regions with Page Cache disabled 
-      //0xfed00000 contains Intel TXT config regs & TPM MMIO 
-      //0xfee00000 contains LAPIC base 
-      HALT_ON_ERRORCOND(hva==spa); // expecting these to be unity-mapped
-      flags |= (u64)(_PAGE_PCD);
-    }
-
-    xpdt[i] = pae_make_pde_big(spa, flags);
-  }
-
-  return hva2spa((void *)xpdpt);
-}
-
-
-#endif //__XMHF_VERIFICATION__
-
 //initialize paging
 void xmhf_baseplatform_arch_x86_initialize_paging(u32 pgtblbase){
 	
