@@ -84,16 +84,7 @@ void xmhf_runtime_entry(void){
 	xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
 	printf("\nxmhf-core: starting...");
 
-	//initialize global cpu data structure
-	_xc_startup_initialize_cpudata(xcbootinfo);
-	
-	//initialize global cpu table
-	_xc_startup_initialize_cputable();
-
-  	//initialize basic platform elements
-	xmhf_baseplatform_initialize();
-
-    //[debug] dump E820 and MP table
+    //[debug] dump E820
  	#ifndef __XMHF_VERIFICATION__
  	printf("\nNumber of E820 entries = %u", xcbootinfo->memmapinfo_numentries);
 	{
@@ -107,8 +98,17 @@ void xmhf_runtime_entry(void){
   	}
 	#endif //__XMHF_VERIFICATION__
 
+	//initialize global cpu data structure
+	_xc_startup_initialize_cpudata(xcbootinfo);
+	
+	//initialize global cpu table
+	_xc_startup_initialize_cputable();
+
+  	//initialize basic platform elements
+	xmhf_baseplatform_initialize();
+
 	#ifndef __XMHF_VERIFICATION__
-	//setup EMHF exception handler component
+	//setup XMHF exception handler component
 	xmhf_xcphandler_initialize();
 	#endif
 

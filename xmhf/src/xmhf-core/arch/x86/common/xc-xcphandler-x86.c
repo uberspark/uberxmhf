@@ -141,53 +141,6 @@ static u32 exceptionstubs[] = { 	XMHF_EXCEPTION_HANDLER_ADDROF(0),
 };
 						
 
-
-
-
-
-/*
-//---function to obtain the vcpu of the currently executing core----------------
-//XXX: TODO, move this into baseplatform as backend
-//note: this always returns a valid VCPU pointer
-static VCPU *_svm_getvcpu(void){
-
-#ifndef __XMHF_VERIFICATION__
-  
-  int i;
-  u32 eax, edx, *lapic_reg;
-  u32 lapic_id;
-  
-  //read LAPIC id of this core
-  rdmsr(MSR_APIC_BASE, &eax, &edx);
-  HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
-  eax &= (u32)0xFFFFF000UL;
-  lapic_reg = (u32 *)((u32)eax+ (u32)LAPIC_ID);
-  lapic_id = *lapic_reg;
-  //printf("\n%s: lapic base=0x%08x, id reg=0x%08x", __FUNCTION__, eax, lapic_id);
-  lapic_id = lapic_id >> 24;
-  //printf("\n%s: lapic_id of core=0x%02x", __FUNCTION__, lapic_id);
-  
-  for(i=0; i < (int)g_midtable_numentries; i++){
-    if(g_midtable[i].cpu_lapic_id == lapic_id)
-        return( (VCPU *)g_midtable[i].vcpu_vaddr_ptr );
-  }
-
-  printf("\n%s: fatal, unable to retrieve vcpu for id=0x%02x", __FUNCTION__, lapic_id);
-  HALT(); return NULL; // will never return presently 
-
-#else //__XMHF_VERIFICATION
-
-	//verification is always done in the context of a single core and vcpu/midtable is 
-	//populated by the verification driver
-	//TODO: LAPIC hardware modeling and moving this function as a public
-
-#endif //__XMHF_VERIFICATION
-  
-}
-*/
-
-
-
 //initialize EMHF core exception handlers
 void xmhf_xcphandler_arch_initialize(void){
 	u32 *pexceptionstubs;
@@ -195,14 +148,9 @@ void xmhf_xcphandler_arch_initialize(void){
 
 	printf("\n%s: setting up runtime IDT...", __FUNCTION__);
 	
-	//pexceptionstubs=(u32 *)&xmhf_xcphandler_exceptionstubs;
-	//pexceptionstubs=(u32 *)&xmhf_xcphandler_exceptionstubs;
-	
 	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
 		idtentry_t *idtentry=(idtentry_t *)((u32)xmhf_baseplatform_arch_x86_getidtbase()+ (i*8));
-		//idtentry->isrLow= (u16)pexceptionstubs[i];
 		idtentry->isrLow= (u16)exceptionstubs[i];
-		//idtentry->isrHigh= (u16) ( (u32)pexceptionstubs[i] >> 16 );
 		idtentry->isrHigh= (u16) ( (u32)exceptionstubs[i] >> 16 );
 		idtentry->isrSelector = __CS_CPL0;
 		idtentry->count=0x0;
@@ -211,14 +159,6 @@ void xmhf_xcphandler_arch_initialize(void){
 	}
 	
 	printf("\n%s: IDT setup done.", __FUNCTION__);
-
-	/*memset((void *)g_runtime_TSS, 0, sizeof(g_runtime_TSS));
-	{
-			tss_t *tss= (tss_t *)g_runtime_TSS;
-			tss->ss0 = __DS_CPL0;
-			tss->esp0 = (u32)&exceptionstack + (u32)sizeof(exceptionstack);
-	}*/
-
 }
 
 
