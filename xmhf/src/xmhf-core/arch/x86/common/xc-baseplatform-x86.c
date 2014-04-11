@@ -1,4 +1,5 @@
 /*
+/*
  * @XMHF_LICENSE_HEADER_START@
  *
  * eXtensible, Modular Hypervisor Framework (XMHF)
@@ -51,6 +52,19 @@
 
 #include <xmhf-core.h>
 #include <xc-x86.h>
+
+//----------------------------------------------------------------------
+// local variables
+
+//core IDT
+static u64 _idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] __attribute__(( section(".data"), aligned(16) ));
+
+//core IDT descriptor
+static arch_x86_idtdesc_t _idt __attribute__(( section(".data"), aligned(16) )) = {
+	.size=sizeof(_idt_start)-1,
+	.base=(u32)&_idt_start,
+};
+
 
 //get CPU vendor
 u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
@@ -169,7 +183,7 @@ void xmhf_baseplatform_arch_x86_initializeIDT(void){
 	asm volatile(
 		"lidt  %0 \r\n"
 		: //no outputs
-		: "m" (xmhf_xcphandler_idt)
+		: "m" (_idt)
 		: //no clobber
 	);
 	
@@ -471,7 +485,7 @@ void _ap_pmode_entry_with_paging(void) __attribute__((naked)){
 					"call xmhf_baseplatform_arch_x86_smpinitialize_commonstart\r\n"
 					"hlt\r\n"								//we should never get here, if so just halt
 					:
-					: "m" (_gdt), "m" (xmhf_xcphandler_idt), "i" (MSR_APIC_BASE), "m" (g_midtable_numentries), "i" (&g_midtable)
+					: "m" (_gdt), "m" (_idt), "i" (MSR_APIC_BASE), "m" (g_midtable_numentries), "i" (&g_midtable)
 	);
 
 	
@@ -479,4 +493,8 @@ void _ap_pmode_entry_with_paging(void) __attribute__((naked)){
 
 u32 xmhf_baseplatform_arch_x86_getgdtbase(void){
 		return (u32)&_gdt_start;
+}
+
+u32 xmhf_baseplatform_arch_x86_getidtbase(void){
+		return (u32)&_idt_start;
 }
