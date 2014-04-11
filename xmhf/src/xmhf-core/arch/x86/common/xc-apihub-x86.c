@@ -54,6 +54,27 @@
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
+//----------------------------------------------------------------------
+// local variables
+
+//hypapp PAE page tables
+static u64 hypapp_3level_pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( section(".palign_data") ));
+static u64 hypapp_3level_pdt[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT] __attribute__(( section(".palign_data") ));
+
+//core PAE page tables
+static u64 core_3level_pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( section(".palign_data") ));
+static u64 core_3level_pdt[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT] __attribute__(( section(".palign_data") ));
+
+//core and hypapp page table base address (PTBA)
+static u32 core_ptba=0;
+static u32 hypapp_ptba=0;
+
+
+
+//----------------------------------------------------------------------
+// functions
+
+
 // initialization function for the core API interface
 void xmhf_apihub_arch_initialize (void){
 
