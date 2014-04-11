@@ -176,7 +176,7 @@ arch_x86_gdtdesc_t x_gdt __attribute__(( section(".data"), aligned(16) )) = {
       hlt
 */
 
-u8 _ap_bootstrap_blob[256] = {
+/*u8 _ap_bootstrap_blob[256] = {
 															//0x00: _ap_bootstrap_start
 		0xeb, 0x4e, 										//0x00: jmp ap_bootstrap_bypassdata
 		0x00, 0x00, 0x00, 0x00,								//0x02: _ap_cr3_value
@@ -246,7 +246,7 @@ u32 * _ap_bootstrap_blob_cr4 = (u32 *) &_ap_bootstrap_blob[0x06];
 u32 * _ap_bootstrap_blob_runtime_entrypoint = (u32 *) &_ap_bootstrap_blob[0x0a];
 
 u8 * _ap_bootstrap_blob_mle_join_start = (u8 *) &_ap_bootstrap_blob[0x10];
-
+*/
 
 //xc-apihub
 

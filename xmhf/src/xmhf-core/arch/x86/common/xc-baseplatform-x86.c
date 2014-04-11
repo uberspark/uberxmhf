@@ -73,6 +73,10 @@ u8 _tss[PAGE_SIZE_4K] __attribute__(( section(".data") )) = { 0 };
 static u8 _exceptionstack[PAGE_SIZE_4K] __attribute__((section(".stack")));
 
 
+
+
+
+
 //----------------------------------------------------------------------
 // functions
 

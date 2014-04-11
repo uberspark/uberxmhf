@@ -251,6 +251,9 @@ extern bool g_bplt_initiatialized __attribute__(( section(".data") ));
 
 //----------------------------------------------------------------------
 
+extern void _ap_pmode_entry_with_paging(void);
+
+/*
 //this is the start of the real-mode AP bootstrap code (bplt-x86-smptrampoline.S)
 extern u32 _ap_bootstrap_start[];
 
@@ -265,7 +268,6 @@ extern u32 _ap_cr3_value;
 //variable by the runtime before waking up the APs (bplt-x86-smptrampoline.S)
 extern u32 _ap_cr4_value;
 
-extern void _ap_pmode_entry_with_paging(void);
 
 extern u32 _ap_runtime_entrypoint;
 
@@ -279,6 +281,7 @@ extern u32 * _ap_bootstrap_blob_cr4;
 extern u32 * _ap_bootstrap_blob_runtime_entrypoint;
 
 extern u8 * _ap_bootstrap_blob_mle_join_start;
+*/
 
 //core PAE page tables
 //extern u8 x_3level_pdpt[];
