@@ -141,15 +141,6 @@ static u32 exceptionstubs[] = { 	XMHF_EXCEPTION_HANDLER_ADDROF(0),
 };
 						
 
-//exclusive exception handling stack, we switch to this stack if there
-//are any exceptions during hypapp execution
-u8 exceptionstack[PAGE_SIZE_4K] __attribute__((section(".stack")));
-
-typedef struct __tss {
-	u32 prevlink;
-	u32 esp0;
-	u32 ss0;
-} tss_t;
 
 
 
@@ -221,12 +212,12 @@ void xmhf_xcphandler_arch_initialize(void){
 	
 	printf("\n%s: IDT setup done.", __FUNCTION__);
 
-	memset((void *)g_runtime_TSS, 0, sizeof(g_runtime_TSS));
+	/*memset((void *)g_runtime_TSS, 0, sizeof(g_runtime_TSS));
 	{
 			tss_t *tss= (tss_t *)g_runtime_TSS;
 			tss->ss0 = __DS_CPL0;
 			tss->esp0 = (u32)&exceptionstack + (u32)sizeof(exceptionstack);
-	}
+	}*/
 
 }
 
