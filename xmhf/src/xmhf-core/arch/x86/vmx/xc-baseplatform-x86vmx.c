@@ -436,7 +436,7 @@ void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu){
 //initialize basic platform elements
 void xmhf_baseplatform_arch_initialize(void){
 	u32 coreptbase;
-	
+
 	//initialize GDT
 	xmhf_baseplatform_arch_x86_initializeGDT();
 
@@ -451,15 +451,6 @@ void xmhf_baseplatform_arch_initialize(void){
 	xmhf_baseplatform_arch_x86_initializeTR();
 	#endif //__XMHF_VERIFICATION__
 
-#ifndef __XMHF_VERIFICATION__
-	//setup core page tables
-	coreptbase = xmhf_baseplatform_arch_x86_setup_pagetables();
-	printf("\n%s: coreptbase = %08x", __FUNCTION__, coreptbase);
-#endif //__XMHF_VERIFICATION__
-
-	//initialize paging
-	xmhf_baseplatform_arch_x86_initialize_paging(coreptbase);
-	
 	//initialize PCI subsystem
 	xmhf_baseplatform_arch_x86_pci_initialize();
 

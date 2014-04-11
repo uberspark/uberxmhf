@@ -132,6 +132,14 @@ void xmhf_baseplatform_arch_x86_cpuinitialize(void){
 
 //----------------------------------------------------------------------
 
+//initialize CR0
+void xmhf_baseplatform_arch_x86_initializeCR0(){
+	
+	
+}
+
+
+
 // GDT
 static u64 _gdt_start[] __attribute__(( aligned(16) )) = {
 	0x0000000000000000ULL,	//NULL descriptor

@@ -205,7 +205,7 @@ void xmhf_apihub_arch_initialize (void){
 	}
 
 		
-	//change CR3 to point to core page tables
+	/*//change CR3 to point to core page tables
 	{
 		u32 cr3;
 
@@ -216,7 +216,10 @@ void xmhf_apihub_arch_initialize (void){
 		write_cr3(cr3);
 		cr3 = read_cr3();
 		printf("\n%s: CR3 changed to %08x", __FUNCTION__, cr3);
-	}
+	}*/
+
+	//initialize core paging
+	xmhf_baseplatform_arch_x86_initialize_paging((u32)&core_3level_pdpt);
 
 	//turn on WP bit in CR0 register for supervisor mode read-only permission support
 	{
