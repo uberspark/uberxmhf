@@ -208,7 +208,7 @@ void xmhf_xcphandler_arch_initialize(void){
 	//pexceptionstubs=(u32 *)&xmhf_xcphandler_exceptionstubs;
 	
 	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
-		idtentry_t *idtentry=(idtentry_t *)((u32)xmhf_xcphandler_arch_get_idt_start()+ (i*8));
+		idtentry_t *idtentry=(idtentry_t *)((u32)xmhf_baseplatform_arch_x86_getidtbase()+ (i*8));
 		//idtentry->isrLow= (u16)pexceptionstubs[i];
 		idtentry->isrLow= (u16)exceptionstubs[i];
 		//idtentry->isrHigh= (u16) ( (u32)pexceptionstubs[i] >> 16 );
@@ -232,9 +232,9 @@ void xmhf_xcphandler_arch_initialize(void){
 
 
 //get IDT start address
-u8 * xmhf_xcphandler_arch_get_idt_start(void){
-	return (u8 *)&xmhf_xcphandler_idt_start;
-}
+//u8 * xmhf_xcphandler_arch_get_idt_start(void){
+//	return (u8 *)&xmhf_xcphandler_idt_start;
+//}
 
 static void xmhf_xcphandler_arch_unhandled(u32 vector, struct regs *r){
 	u32 exception_cs, exception_eip, exception_eflags, errorcode=0;

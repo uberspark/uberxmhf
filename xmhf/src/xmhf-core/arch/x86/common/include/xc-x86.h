@@ -328,6 +328,7 @@ void xmhf_baseplatform_arch_x86_initialize_paging(u32 pgtblbase);
 
 
 u32 xmhf_baseplatform_arch_x86_getgdtbase(void);
+u32 xmhf_baseplatform_arch_x86_getidtbase(void);
 
 static inline u64 VCPU_gdtr_base(VCPU *vcpu)
 {
@@ -393,16 +394,16 @@ static inline u64 VCPU_gcr4(VCPU *vcpu)
 //exported DATA 
 
 //core IDT
-extern u64 xmhf_xcphandler_idt_start[];
+//extern u64 xmhf_xcphandler_idt_start[];
 
 //core IDT descriptor
-extern arch_x86_idtdesc_t xmhf_xcphandler_idt;
+//extern arch_x86_idtdesc_t xmhf_xcphandler_idt;
 
 //array of exception handler stubs
 extern u8 xmhf_xcphandler_exceptionstubs[]; 
 
 //IDT descriptor
-extern arch_x86_idtdesc_t xmhf_xcphandler_idt;
+//extern arch_x86_idtdesc_t xmhf_xcphandler_idt;
 
 //start of interrupt descriptor table 
 //extern u8 xmhf_xcphandler_idt_start[];
