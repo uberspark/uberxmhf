@@ -248,7 +248,7 @@ u32 * _ap_bootstrap_blob_runtime_entrypoint = (u32 *) &_ap_bootstrap_blob[0x0a];
 u8 * _ap_bootstrap_blob_mle_join_start = (u8 *) &_ap_bootstrap_blob[0x10];
 */
 
-//xc-apihub
+/*//xc-apihub
 
 //hypapp PAE page tables
 u64 hypapp_3level_pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( section(".palign_data") ));
@@ -261,4 +261,4 @@ u64 core_3level_pdt[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT] __attribute__(( sectio
 //core and hypapp page table base address (PTBA)
 u32 core_ptba=0;
 u32 hypapp_ptba=0;
-
+*/

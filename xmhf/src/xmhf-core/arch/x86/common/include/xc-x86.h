@@ -476,7 +476,7 @@ void xmhf_smpguest_arch_endquiesce(VCPU *vcpu);
 //quiescing handler for #NMI (non-maskable interrupt) exception event
 void xmhf_smpguest_arch_eventhandler_nmiexception(struct regs *r);
 
-
+/*
 //xc-apihub
 // hypapp PAE page tables
 extern u64 hypapp_3level_pdpt[] __attribute__(( section(".palign_data") ));
@@ -489,7 +489,7 @@ extern u64 core_3level_pdt[] __attribute__(( section(".palign_data") ));
 //core and hypapp page table base address (PTBA)
 extern u32 core_ptba;
 extern u32 hypapp_ptba;
-
+*/
 
 #endif //__ASSEMBLY__
 
