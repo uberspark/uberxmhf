@@ -230,11 +230,19 @@ typedef struct {
 		u32 base;
 } __attribute__((packed)) arch_x86_idtdesc_t;
 
+//TSS descriptor (partial)
+typedef struct __tss {
+	u32 prevlink;
+	u32 esp0;
+	u32 ss0;
+} tss_t;
+
+
 //core GDT
 extern arch_x86_gdtdesc_t x_gdt;
 
 //runtime TSS
-extern u8 g_runtime_TSS[PAGE_SIZE_4K] __attribute__(( section(".data") ));
+//extern u8 g_runtime_TSS[PAGE_SIZE_4K] __attribute__(( section(".data") ));
 
 //signal that basic base platform data structure initialization is complete 
 //(used by the exception handler component)
@@ -329,6 +337,7 @@ void xmhf_baseplatform_arch_x86_initialize_paging(u32 pgtblbase);
 
 u32 xmhf_baseplatform_arch_x86_getgdtbase(void);
 u32 xmhf_baseplatform_arch_x86_getidtbase(void);
+u32 xmhf_baseplatform_arch_x86_gettssbase(void);
 
 static inline u64 VCPU_gdtr_base(VCPU *vcpu)
 {

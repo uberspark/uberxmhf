@@ -446,6 +446,11 @@ void xmhf_baseplatform_arch_initialize(void){
 	//initialize IDT
 	xmhf_baseplatform_arch_x86_initializeIDT();
 
+	//initialize TR/TSS
+	#ifndef __XMHF_VERIFICATION__
+	xmhf_baseplatform_arch_x86_initializeTR();
+	#endif //__XMHF_VERIFICATION__
+
 #ifndef __XMHF_VERIFICATION__
 	//setup core page tables
 	coreptbase = xmhf_baseplatform_arch_x86_setup_pagetables();
@@ -470,9 +475,5 @@ void xmhf_baseplatform_arch_initialize(void){
 		#endif //__XMHF_VERIFICATION__
 	}
 
-	//initialize TR/TSS
-	#ifndef __XMHF_VERIFICATION__
-	xmhf_baseplatform_arch_x86_initializeTR();
-	#endif //__XMHF_VERIFICATION__
 
 }

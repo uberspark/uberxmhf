@@ -286,7 +286,7 @@ void vmx_initunrestrictedguestVMCS(VCPU *vcpu){
 	vcpu->vmcs.host_TR_selector = read_tr_sel();
 	vcpu->vmcs.host_GDTR_base = (u64)xmhf_baseplatform_arch_x86_getgdtbase();
 	vcpu->vmcs.host_IDTR_base = (u64)xmhf_baseplatform_arch_x86_getidtbase();
-	vcpu->vmcs.host_TR_base = (u64)(u32)g_runtime_TSS;
+	vcpu->vmcs.host_TR_base = (u64)xmhf_baseplatform_arch_x86_gettssbase();
 	vcpu->vmcs.host_RIP = (u64)(u32)xmhf_parteventhub_arch_x86vmx_entry;
 
 

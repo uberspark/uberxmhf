@@ -65,6 +65,16 @@ static arch_x86_idtdesc_t _idt __attribute__(( section(".data"), aligned(16) )) 
 	.base=(u32)&_idt_start,
 };
 
+//runtime TSS
+u8 _tss[PAGE_SIZE_4K] __attribute__(( section(".data") ));
+
+//exclusive exception handling stack, we switch to this stack if there
+//are any exceptions during hypapp execution
+static u8 _exceptionstack[PAGE_SIZE_4K] __attribute__((section(".stack")));
+
+
+//----------------------------------------------------------------------
+// functions
 
 //get CPU vendor
 u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
@@ -191,15 +201,24 @@ void xmhf_baseplatform_arch_x86_initializeIDT(void){
 
 
 
+
 //initialize TR/TSS
 void xmhf_baseplatform_arch_x86_initializeTR(void){
 
 	{
 		u32 i;
-		u32 tss_base=(u32)&g_runtime_TSS;
+		//u32 tss_base=(u32)&g_runtime_TSS;
+		u32 tss_base=(u32)&_tss;
 		TSSENTRY *t;
-		//extern u64 x_gdt_start[];
+		tss_t *tss= (tss_t *)_tss;
 		
+		//extern u64 x_gdt_start[];
+	
+		memset((void *)_tss, 0, sizeof(_tss));
+		tss->ss0 = __DS_CPL0;
+		tss->esp0 = (u32)&_exceptionstack + (u32)sizeof(_exceptionstack);
+		
+	
 		printf("\ndumping GDT...");
 		for(i=0; i < 6; i++)
 			printf("\n    entry %u -> %016llx", i, _gdt_start[i]);
@@ -497,4 +516,8 @@ u32 xmhf_baseplatform_arch_x86_getgdtbase(void){
 
 u32 xmhf_baseplatform_arch_x86_getidtbase(void){
 		return (u32)&_idt_start;
+}
+
+u32 xmhf_baseplatform_arch_x86_gettssbase(void){
+		return (u32)&_tss;
 }

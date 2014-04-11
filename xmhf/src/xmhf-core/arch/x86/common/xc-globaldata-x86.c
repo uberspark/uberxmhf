@@ -58,8 +58,8 @@
 //VCPU g_vcpubuffers[MAX_VCPU_ENTRIES] __attribute__(( section(".data") ));
 VCPU g_bplt_vcpu[MAX_VCPU_ENTRIES] __attribute__(( section(".data") ));
 
-//runtime TSS
-u8 g_runtime_TSS[PAGE_SIZE_4K] __attribute__(( section(".data") ));
+////runtime TSS
+//u8 g_runtime_TSS[PAGE_SIZE_4K] __attribute__(( section(".data") ));
 
 //signal that basic base platform data structure initialization is complete 
 //(used by the exception handler component)
