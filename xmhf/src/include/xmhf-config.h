@@ -112,6 +112,9 @@
 //max. size of CPU arch. specific data (16K default)
 #define	MAX_PLATFORM_CPUARCHDATA_SIZE			(4*4096)
 
+//max. size of CPU stack (16K default)
+#define MAX_PLATFORM_CPUSTACK_SIZE				(4*4096)
+
 //maximum system memory map entries (e.g., E820) currently supported
 #define MAX_E820_ENTRIES    			(64)  
 
