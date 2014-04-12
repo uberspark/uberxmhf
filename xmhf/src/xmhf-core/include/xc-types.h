@@ -89,7 +89,7 @@ typedef struct {
 typedef struct {
 		u32 cpuid;				//unique CPU id
 		u32 index_cpudata;		//index into CPU data buffer
-} xc_cputable_t;
+} __attribute__((packed)) xc_cputable_t;
 
 typedef struct {
 		u32 partitionid;			//unique partition id
@@ -126,5 +126,6 @@ extern xc_cputable_t g_xc_cputable[MAX_PLATFORM_CPUS] __attribute__(( section(".
 
   
 #endif //__ASSEMBLY__
+
 
 #endif //__XC_TYPES_H__
