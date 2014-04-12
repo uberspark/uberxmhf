@@ -438,7 +438,7 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
 
 //extern arch_x86_gdtdesc_t x_gdt;
 
-void _ap_pmode_entry_with_paging(void) __attribute__((naked)){
+/*void _ap_pmode_entry_with_paging(void) __attribute__((naked)){
 
     asm volatile(	"lgdt %0\r\n"
 					"lidt %1\r\n"
@@ -470,7 +470,45 @@ void _ap_pmode_entry_with_paging(void) __attribute__((naked)){
 	);
 
 	
+}*/
+
+void _ap_pmode_entry_with_paging(void) __attribute__((naked)){
+
+    asm volatile(	"lgdt %0\r\n"
+					"lidt %1\r\n"
+					"mov %2, %%ecx\r\n"
+					"rdmsr\r\n"
+					"andl $0xFFFFF000, %%eax\r\n"
+					"addl $0x20, %%eax\r\n"
+					"movl (%%eax), %%eax\r\n"
+					"shr $24, %%eax\r\n"
+					"movl %3, %%edx\r\n"
+					"movl %4, %%ebx\r\n"
+					"xorl %%ecx, %%ecx\r\n"
+					"xorl %%edi, %%edi\r\n"
+					"getvcpuloop:\r\n"
+					"movl 0x0(%%ebx, %%edi), %%ebp\r\n"  	//ebp contains the lapic id
+					"cmpl %%eax, %%ebp\r\n"
+					"jz gotvcpu\r\n"
+					"incl %%ecx\r\n"
+					"addl %5, %%edi\r\n"
+					"cmpl %%edx, %%ecx\r\n"
+					"jb getvcpuloop\r\n"
+					"hlt\r\n"								//we should never get here, if so just halt
+					"gotvcpu:\r\n"
+					"movl 0x4(%%ebx, %%edi), %%esi\r\n"	 	//esi contains vcpu pointer
+					"movl 0x0(%%esi), %%esp\r\n"     			//load stack for this CPU
+					"pushl %%esi\r\n"
+					"call xmhf_baseplatform_arch_x86_smpinitialize_commonstart\r\n"
+					"hlt\r\n"								//we should never get here, if so just halt
+					:
+					: "m" (_gdt), "m" (_idt), "i" (MSR_APIC_BASE), "m" (g_midtable_numentries), "i" (&g_midtable), "i" (sizeof(MIDTAB))
+	);
+
+	
 }
+
+
 
 u32 xmhf_baseplatform_arch_x86_getgdtbase(void){
 		return (u32)&_gdt_start;
