@@ -359,7 +359,14 @@ void xmhf_baseplatform_arch_x86_wakeupAPs(void){
 static mtrr_state_t g_mtrrs;
 
 
-//common function which is entered by all CPUs upon SMP initialization
+void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(u32 index_cpudata){
+
+	printf("\n%s: index_cpudata=%u, top of stack=%08x, Halting!", __FUNCTION__, index_cpudata, read_esp());
+	HALT();
+}
+
+
+/*//common function which is entered by all CPUs upon SMP initialization
 //note: this is specific to the x86 architecture backend
 void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
 	  //step:1 rally all APs up, make sure all of them started, this is
@@ -426,7 +433,7 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
 	//xmhf_runtime_main(partdesc, cpudesc);  
 	xmhf_runtime_main(context_desc);
   }
-}
+}*/
 
 //----------------------------------------------------------------------
 /*
@@ -486,23 +493,28 @@ void _ap_pmode_entry_with_paging(void) __attribute__((naked)){
 					"movl %4, %%ebx\r\n"
 					"xorl %%ecx, %%ecx\r\n"
 					"xorl %%edi, %%edi\r\n"
-					"getvcpuloop:\r\n"
+					"getidxloop:\r\n"
 					"movl 0x0(%%ebx, %%edi), %%ebp\r\n"  	//ebp contains the lapic id
 					"cmpl %%eax, %%ebp\r\n"
-					"jz gotvcpu\r\n"
+					"jz gotidx\r\n"
 					"incl %%ecx\r\n"
 					"addl %5, %%edi\r\n"
 					"cmpl %%edx, %%ecx\r\n"
-					"jb getvcpuloop\r\n"
+					"jb getidxloop\r\n"
 					"hlt\r\n"								//we should never get here, if so just halt
-					"gotvcpu:\r\n"
-					"movl 0x4(%%ebx, %%edi), %%esi\r\n"	 	//esi contains vcpu pointer
-					"movl 0x0(%%esi), %%esp\r\n"     			//load stack for this CPU
-					"pushl %%esi\r\n"
+					"gotidx:\r\n"
+					"movl 0x4(%%ebx, %%edi), %%esi\r\n"	 	//esi contains index_cpudata
+					"movl %6, %%ebx \r\n"					//ebx = &g_xc_cpustack
+					"movl %7, %%eax \r\n"					//eax = sizeof(g_xc_cpustack[0])
+					"mull %%ecx \r\n"						//ecx = index_cpudata, edx:eax = index_cpudata * sizeof(g_xc_cpustack[0])
+					"addl %%eax, %%ebx \r\n"				//ebx = &g_xc_cpustack[index_cpudata]
+					"addl %7, %%ebx \r\n"					//ebx = &g_xc_cpustack[index_cpudata] + sizeof(g_xc_cpustack[0]) 
+					"movl %%ebx, %%esp \r\n"				//esp = ebx (stack for the cpu with index_cpudata)
+					"pushl %%esi\r\n"						//index_cpudata
 					"call xmhf_baseplatform_arch_x86_smpinitialize_commonstart\r\n"
 					"hlt\r\n"								//we should never get here, if so just halt
 					:
-					: "m" (_gdt), "m" (_idt), "i" (MSR_APIC_BASE), "m" (g_midtable_numentries), "i" (&g_midtable), "i" (sizeof(MIDTAB))
+					: "m" (_gdt), "m" (_idt), "i" (MSR_APIC_BASE), "m" (g_xc_cpu_count), "i" (&g_xc_cputable), "i" (sizeof(MIDTAB)), "i" (&g_xc_cpustack), "i" (sizeof(g_xc_cpustack[0]))
 	);
 
 	
