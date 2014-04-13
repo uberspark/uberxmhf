@@ -359,16 +359,21 @@ void xmhf_baseplatform_arch_x86_wakeupAPs(void){
 static mtrr_state_t g_mtrrs;
 
 
-void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(u32 index_cpudata){
+//void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(u32 index_cpudata){
+//
+//	printf("\n%s: index_cpudata=%u, top of stack=%08x, Halting!", __FUNCTION__, index_cpudata, read_esp());
+//	HALT();
+//}
 
-	printf("\n%s: index_cpudata=%u, top of stack=%08x, Halting!", __FUNCTION__, index_cpudata, read_esp());
-	HALT();
-}
 
-
-/*//common function which is entered by all CPUs upon SMP initialization
+//common function which is entered by all CPUs upon SMP initialization
 //note: this is specific to the x86 architecture backend
-void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
+//void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
+void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(u32 index_cpudata){
+	
+	VCPU *vcpu = &g_bplt_vcpu[index_cpudata];
+	vcpu->idx = index_cpudata;
+	
 	  //step:1 rally all APs up, make sure all of them started, this is
   //a task for the BSP
   if(xmhf_baseplatform_arch_x86_isbsp()){
@@ -433,7 +438,7 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
 	//xmhf_runtime_main(partdesc, cpudesc);  
 	xmhf_runtime_main(context_desc);
   }
-}*/
+}
 
 //----------------------------------------------------------------------
 /*
