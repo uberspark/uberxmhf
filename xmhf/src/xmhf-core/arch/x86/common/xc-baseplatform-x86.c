@@ -390,11 +390,24 @@ u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
 
 //common function which is entered by all CPUs upon SMP initialization
 //note: this is specific to the x86 architecture backend
-//void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
-void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(u32 index_cpudata){
+void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 	context_desc_t context_desc;
-	VCPU *vcpu = &g_bplt_vcpu[index_cpudata];
-
+	VCPU *vcpu = NULL;
+	u32 i, index_cpudata;
+	bool found_index_cpudata=false;
+	u32 cpu_uniqueid = xmhf_baseplatform_arch_x86_getcpulapicid();
+	
+	for(i=0; i < g_xc_cpu_count; i++){
+		if(g_xc_cputable[i].cpuid == cpu_uniqueid){
+			index_cpudata = g_xc_cputable[i].index_cpudata;
+			found_index_cpudata = true;
+			break;
+		}
+	}
+	
+	HALT_ON_ERRORCOND ( found_index_cpudata == true );
+	
+	vcpu = &g_bplt_vcpu[index_cpudata];
 	vcpu->idx = index_cpudata;
 
 	if(xmhf_baseplatform_arch_x86_isbsp()){
@@ -488,13 +501,11 @@ void _ap_pmode_entry_with_paging(void) __attribute__((naked)){
 					"addl %%eax, %%ebx \r\n"				//ebx = &g_xc_cpustack[index_cpudata]
 					"addl %7, %%ebx \r\n"					//ebx = &g_xc_cpustack[index_cpudata] + sizeof(g_xc_cpustack[0]) 
 					"movl %%ebx, %%esp \r\n"				//esp = ebx (stack for the cpu with index_cpudata)
-					"pushl %%esi\r\n"						//index_cpudata
-					"call xmhf_baseplatform_arch_x86_smpinitialize_commonstart\r\n"
-					"hlt\r\n"								//we should never get here, if so just halt
 					:
 					: "m" (_gdt), "m" (_idt), "i" (MSR_APIC_BASE), "m" (g_xc_cpu_count), "i" (&g_xc_cputable), "i" (sizeof(MIDTAB)), "i" (&g_xc_cpustack), "i" (sizeof(g_xc_cpustack[0]))
 	);
 
+	xmhf_baseplatform_arch_x86_smpinitialize_commonstart();
 	
 }
 
