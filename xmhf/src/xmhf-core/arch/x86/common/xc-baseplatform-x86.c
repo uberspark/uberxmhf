@@ -366,6 +366,20 @@ void xmhf_baseplatform_arch_x86_restorecpumtrrstate(void){
 	restore_mtrrs(&_mtrrs);
 }
 
+u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
+  u32 eax, edx, *lapic_reg;
+  u32 lapic_id;
+  
+  //read LAPIC id of this core
+  rdmsr(MSR_APIC_BASE, &eax, &edx);
+  HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
+  eax &= (u32)0xFFFFF000UL;
+  lapic_reg = (u32 *)((u32)eax+ (u32)LAPIC_ID);
+  lapic_id = xmhfhw_sysmemaccess_readu32((u32)lapic_reg);
+  lapic_id = lapic_id >> 24;
+	
+  return lapic_id;
+}
 
 //void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(u32 index_cpudata){
 //
