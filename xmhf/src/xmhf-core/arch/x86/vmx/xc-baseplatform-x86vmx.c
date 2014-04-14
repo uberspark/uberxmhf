@@ -492,6 +492,9 @@ void xmhf_baseplatform_arch_smpinitialize(void){
   ////allocate and setup VCPU structure on each CPU
 	xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(cpu_vendor);
 
+	//save cpu MTRR state which we will later replicate on all APs
+	xmhf_baseplatform_arch_x86_savecpumtrrstate();
+
 	//signal that basic base platform data structure initialization is complete 
 	//(used by the exception handler component)
 	g_bplt_initiatialized = true;

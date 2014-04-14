@@ -337,6 +337,8 @@ u32 xmhf_baseplatform_arch_x86_setup_pagetables(void);
 //initialize paging
 void xmhf_baseplatform_arch_x86_initialize_paging(u32 pgtblbase);
 
+void xmhf_baseplatform_arch_x86_savecpumtrrstate(void);
+void xmhf_baseplatform_arch_x86_restorecpumtrrstate(void);
 
 u32 xmhf_baseplatform_arch_x86_getgdtbase(void);
 u32 xmhf_baseplatform_arch_x86_getidtbase(void);
