@@ -356,7 +356,15 @@ void xmhf_baseplatform_arch_x86_wakeupAPs(void){
 }
 
 
-static mtrr_state_t g_mtrrs;
+static mtrr_state_t _mtrrs;
+
+void xmhf_baseplatform_arch_x86_savecpumtrrstate(void){
+	save_mtrrs(&_mtrrs);
+}
+
+void xmhf_baseplatform_arch_x86_restorecpumtrrstate(void){
+	restore_mtrrs(&_mtrrs);
+}
 
 
 //void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(u32 index_cpudata){
@@ -373,8 +381,13 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(u32 index_cpudata){
 	
 	VCPU *vcpu = &g_bplt_vcpu[index_cpudata];
 	vcpu->idx = index_cpudata;
-	
-	  //step:1 rally all APs up, make sure all of them started, this is
+
+ if(xmhf_baseplatform_arch_x86_isbsp()){
+    vcpu->isbsp = 1;	//this core is a BSP
+  }else{
+	 vcpu->isbsp = 0; // this core is a AP
+}	
+/*	  //step:1 rally all APs up, make sure all of them started, this is
   //a task for the BSP
   if(xmhf_baseplatform_arch_x86_isbsp()){
     vcpu->isbsp = 1;	//this core is a BSP
@@ -418,7 +431,11 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(u32 index_cpudata){
 	restore_mtrrs(&g_mtrrs);
 	printf("\nAP(0x%02x): MTRRs synced with BSP", vcpu->id);
   }
-	
+ */
+ 
+  //replicate common MTRR state on this CPU
+  xmhf_baseplatform_arch_x86_restorecpumtrrstate();
+  	
   //invoke EMHF runtime component main function for this CPU
   //[x] TODO: don't reference rpb->isEarlyInit directly
   //xmhf_runtime_main(vcpu, rpb->isEarlyInit);	
