@@ -378,83 +378,25 @@ void xmhf_baseplatform_arch_x86_restorecpumtrrstate(void){
 //note: this is specific to the x86 architecture backend
 //void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
 void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(u32 index_cpudata){
-	
+	context_desc_t context_desc;
 	VCPU *vcpu = &g_bplt_vcpu[index_cpudata];
+
 	vcpu->idx = index_cpudata;
 
- if(xmhf_baseplatform_arch_x86_isbsp()){
-    vcpu->isbsp = 1;	//this core is a BSP
-  }else{
-	 vcpu->isbsp = 0; // this core is a AP
-}	
-/*	  //step:1 rally all APs up, make sure all of them started, this is
-  //a task for the BSP
-  if(xmhf_baseplatform_arch_x86_isbsp()){
-    vcpu->isbsp = 1;	//this core is a BSP
-    
-	printf("\nBSP rallying APs...");
-    printf("\nBSP(0x%02x): My ESP is 0x%08x", vcpu->id, vcpu->esp);
+	if(xmhf_baseplatform_arch_x86_isbsp()){
+		vcpu->isbsp = 1;	//this core is a BSP
+	}else{
+		vcpu->isbsp = 0; // this core is a AP
+	}	
 
-	save_mtrrs(&g_mtrrs);
-	printf("\nBSP MTRRs");
-	print_mtrrs(&g_mtrrs);
-
-    //increment a CPU to account for the BSP
-    spin_lock(&g_lock_cpus_active);
-    g_cpus_active++;
-    spin_unlock(&g_lock_cpus_active);
-
-    //wait for g_cpus_active to become g_midtable_numentries -1 to indicate
-    //that all APs have been successfully started
-    while(g_cpus_active < g_midtable_numentries);
-    
-    printf("\nAPs all awake...Setting them free...");
-    spin_lock(&g_lock_ap_go_signal);
-    g_ap_go_signal=1;
-    spin_unlock(&g_lock_ap_go_signal);
-
-  
-  }else{
-    //we are an AP, so we need to simply update the AP startup counter
-    //and wait until we are told to proceed
-    //increment active CPUs
-	vcpu->isbsp=0;	//this core is a AP
-
-    spin_lock(&g_lock_cpus_active);
-    g_cpus_active++;
-    spin_unlock(&g_lock_cpus_active);
-
-    while(!g_ap_go_signal); //Just wait for the BSP to tell us all is well.
- 
-    printf("\nAP(0x%02x): My ESP is 0x%08x, proceeding...", vcpu->id, vcpu->esp);
-  
-	restore_mtrrs(&g_mtrrs);
-	printf("\nAP(0x%02x): MTRRs synced with BSP", vcpu->id);
-  }
- */
- 
-  //replicate common MTRR state on this CPU
-  xmhf_baseplatform_arch_x86_restorecpumtrrstate();
+	//replicate common MTRR state on this CPU
+	xmhf_baseplatform_arch_x86_restorecpumtrrstate();
   	
-  //invoke EMHF runtime component main function for this CPU
-  //[x] TODO: don't reference rpb->isEarlyInit directly
-  //xmhf_runtime_main(vcpu, rpb->isEarlyInit);	
-  {
-	//partition_desc_t partdesc;
-	//cpu_desc_t cpudesc;
-	context_desc_t context_desc;
-	
 	context_desc.partition_desc.id = 0;
 	context_desc.cpu_desc.id = vcpu->idx;
 	context_desc.cpu_desc.isbsp = vcpu->isbsp;
-		
-	//partdesc.id = 0;
-	//cpudesc.id = vcpu->idx;
-	//cpudesc.isbsp = vcpu->isbsp;
-	  
-	//xmhf_runtime_main(partdesc, cpudesc);  
+
 	xmhf_runtime_main(context_desc);
-  }
 }
 
 //----------------------------------------------------------------------
