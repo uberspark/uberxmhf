@@ -110,7 +110,7 @@ u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
 
 //initialize CPU state
 void xmhf_baseplatform_arch_x86_cpuinitialize(void){
-	u32 cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
+	//u32 cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
 
 	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
 	//when the CPU supports XSAVE feature
@@ -415,6 +415,9 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 	}else{
 		vcpu->isbsp = 0; // this core is a AP
 	}	
+
+	//initialize base CPU state
+	xmhf_baseplatform_arch_x86_cpuinitialize();
 
 	//replicate common MTRR state on this CPU
 	xmhf_baseplatform_arch_x86_restorecpumtrrstate();

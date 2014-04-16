@@ -59,7 +59,7 @@ void xmhf_richguest_initialize(u32 index_cpudata_bsp){
 //initialize environment to boot "rich" guest
 void xmhf_smpguest_initialize(context_desc_t context_desc){
 	//initialize CPU
-	xmhf_baseplatform_cpuinitialize();
+	//xmhf_baseplatform_cpuinitialize();
 
 	//initialize partition monitor (i.e., hypervisor) for this CPU
 	//xmhf_partition_initializemonitor(vcpu);

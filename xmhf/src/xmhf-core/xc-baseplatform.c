@@ -62,9 +62,9 @@ void xmhf_baseplatform_initialize(void){
 }
 
 //initialize CPU state
-void xmhf_baseplatform_cpuinitialize(void){
-	xmhf_baseplatform_arch_cpuinitialize();
-}
+//void xmhf_baseplatform_cpuinitialize(void){
+//	xmhf_baseplatform_arch_cpuinitialize();
+//}
 
 //initialize SMP
 void xmhf_baseplatform_smpinitialize(void){
