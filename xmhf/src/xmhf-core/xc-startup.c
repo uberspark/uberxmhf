@@ -70,16 +70,24 @@ static void _xc_startup_initialize_cpudata(XMHF_BOOTINFO *bootinfo){
 }
 
 // initialize global cpu table (g_xc_cputable)
-static void _xc_startup_initialize_cputable(void){
+//static void _xc_startup_initialize_cputable(void){
+static u32 _xc_startup_initialize_cputable(void){
 	u32 i;
+	u32 index_cpudata_bsp;
 
 	for(i=0; i < g_xc_cpu_count; i++){
 			g_xc_cputable[i].cpuid = g_xc_cpu[i].cpuid;
 			g_xc_cputable[i].index_cpudata = i;
+			if(g_xc_cpu[i].is_bsp)
+				index_cpudata_bsp = i;
 	}
+	
+	return index_cpudata_bsp;
 }
 
 void xmhf_runtime_entry(void){
+	u32 index_cpudata_bsp;
+	
 	//setup debugging	
 	xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
 	printf("\nxmhf-core: starting...");
@@ -102,7 +110,7 @@ void xmhf_runtime_entry(void){
 	_xc_startup_initialize_cpudata(xcbootinfo);
 	
 	//initialize global cpu table
-	_xc_startup_initialize_cputable();
+	index_cpudata_bsp = _xc_startup_initialize_cputable();
 
   	//initialize basic platform elements
 	xmhf_baseplatform_initialize();
@@ -115,6 +123,9 @@ void xmhf_runtime_entry(void){
 #if defined (__DMAP__)
 	xmhf_dmaprot_reinitialize();
 #endif
+
+	//initialize richguest
+	xmhf_richguest_initialize(index_cpudata_bsp);
 
 	//invoke XMHF api hub initialization function to initialize core API
 	//interface layer
