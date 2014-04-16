@@ -51,6 +51,11 @@
 #include <xmhf-core.h> 
 
 
+void xmhf_richguest_initialize(u32 index_cpudata_bsp){
+	
+	
+}
+
 static void xmhf_smpguest_initialize_helper(context_desc_t context_desc){
 		//initialize CPU
 		xmhf_baseplatform_cpuinitialize();
