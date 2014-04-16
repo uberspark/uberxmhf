@@ -559,6 +559,13 @@ static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
 
 //initialize partition monitor for a given CPU
 static void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu){
+    	u32 bcr0;
+
+	    //set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
+		bcr0 = read_cr0();
+		bcr0 |= 0x20;
+		write_cr0(bcr0);
+
 
   //initialize VT
   _vmx_initVT(vcpu);
