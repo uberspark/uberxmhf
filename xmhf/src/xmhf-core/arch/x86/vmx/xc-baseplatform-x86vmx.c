@@ -463,35 +463,8 @@ void xmhf_baseplatform_arch_x86vmx_wakeupAPs(void){
 
 //initialize SMP
 void xmhf_baseplatform_arch_smpinitialize(void){
-  u32 cpu_vendor;
-  
-  //grab CPU vendor
-  cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
-  //HALT_ON_ERRORCOND(cpu_vendor == CPU_VENDOR_AMD || cpu_vendor == CPU_VENDOR_INTEL);
-  HALT_ON_ERRORCOND(cpu_vendor == CPU_VENDOR_INTEL);
 
   
-  //setup Master-ID Table (MIDTABLE)
-  {
-    int i;
-	#ifndef __XMHF_VERIFICATION__
-		for(i=0; i < (int)xcbootinfo->cpuinfo_numentries; i++){
-			g_midtable[g_midtable_numentries].cpu_lapic_id = xcbootinfo->cpuinfo_buffer[i].lapic_id;
-			g_midtable[g_midtable_numentries].vcpu_vaddr_ptr = 0;
-			g_midtable_numentries++;
-		}
-	#else
-	//verification is always done in the context of a single core and vcpu/midtable is 
-	//populated by the verification driver
-	//TODO: incorporate some sort of BIOS data area within the verification harness that will
-	//allow us to populate these tables during verification
-	#endif
-  }
-
-
-  ////allocate and setup VCPU structure on each CPU
-	xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(cpu_vendor);
-
 	//save cpu MTRR state which we will later replicate on all APs
 	xmhf_baseplatform_arch_x86_savecpumtrrstate();
 
@@ -607,6 +580,11 @@ void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu){
 //initialize basic platform elements
 void xmhf_baseplatform_arch_initialize(void){
 	u32 coreptbase;
+	u32 cpu_vendor;
+
+	//grab CPU vendor
+	cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
+	HALT_ON_ERRORCOND(cpu_vendor == CPU_VENDOR_INTEL);
 
 	//initialize GDT
 	xmhf_baseplatform_arch_x86_initializeGDT();
@@ -636,4 +614,7 @@ void xmhf_baseplatform_arch_initialize(void){
 			}
 		#endif //__XMHF_VERIFICATION__
 	}
+
+  ////allocate and setup VCPU structure on each CPU
+	xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(cpu_vendor);
 }

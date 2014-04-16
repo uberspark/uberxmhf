@@ -112,6 +112,23 @@ void xmhf_runtime_entry(void){
 	//initialize global cpu table
 	index_cpudata_bsp = _xc_startup_initialize_cputable();
 
+	//setup Master-ID Table (MIDTABLE)
+	{
+		int i;
+		#ifndef __XMHF_VERIFICATION__
+			for(i=0; i < (int)xcbootinfo->cpuinfo_numentries; i++){
+				g_midtable[g_midtable_numentries].cpu_lapic_id = xcbootinfo->cpuinfo_buffer[i].lapic_id;
+				g_midtable[g_midtable_numentries].vcpu_vaddr_ptr = 0;
+				g_midtable_numentries++;
+			}
+		#else
+		//verification is always done in the context of a single core and vcpu/midtable is 
+		//populated by the verification driver
+		//TODO: incorporate some sort of BIOS data area within the verification harness that will
+		//allow us to populate these tables during verification
+		#endif
+	}
+
   	//initialize basic platform elements
 	xmhf_baseplatform_initialize();
 
