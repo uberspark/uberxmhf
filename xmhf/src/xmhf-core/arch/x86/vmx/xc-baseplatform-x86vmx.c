@@ -253,12 +253,12 @@ u32 xmhf_baseplatform_arch_getcpuvendor(void){
 }
 
 
-void xmhf_baseplatform_arch_cpuinitialize(void){
-	xmhf_baseplatform_arch_x86_cpuinitialize();
-
-	//if(cpu_vendor == CPU_VENDOR_INTEL)
-	//	xmhf_baseplatform_arch_x86vmx_cpuinitialize();
-}
+//void xmhf_baseplatform_arch_cpuinitialize(void){
+//	xmhf_baseplatform_arch_x86_cpuinitialize();
+//
+//	//if(cpu_vendor == CPU_VENDOR_INTEL)
+//	//	xmhf_baseplatform_arch_x86vmx_cpuinitialize();
+//}
 
 //----------------------------------------------------------------------
 //bplt-x86vmx-reboot
