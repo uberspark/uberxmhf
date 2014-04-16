@@ -513,3 +513,8 @@ void xmhf_smpguest_arch_endquiesce(VCPU *vcpu){
 		xmhf_smpguest_arch_x86vmx_endquiesce(vcpu);
 }
 
+//-------------------------------------------------------------------------
+void xmhf_richguest_arch_initialize(u32 index_cpudata_bsp){
+	printf("\n%s: index_cpudata_bsp = %u", __FUNCTION__, index_cpudata_bsp);	
+	
+}

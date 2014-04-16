@@ -58,6 +58,7 @@
 #ifndef __ASSEMBLY__
 
 void xmhf_richguest_initialize(u32 index_cpudata_bsp);
+void xmhf_richguest_arch_initialize(u32 index_cpudata_bsp);
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
