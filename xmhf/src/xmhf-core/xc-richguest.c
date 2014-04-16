@@ -55,57 +55,22 @@ void xmhf_richguest_initialize(u32 index_cpudata_bsp){
 	xmhf_richguest_arch_initialize(index_cpudata_bsp);	
 }
 
-static void xmhf_smpguest_initialize_helper(context_desc_t context_desc){
-		//initialize CPU
-		xmhf_baseplatform_cpuinitialize();
-
-		//initialize partition monitor (i.e., hypervisor) for this CPU
-		//xmhf_partition_initializemonitor(vcpu);
-		xmhf_partition_initializemonitor(context_desc);
-
-		//setup guest OS state for partition
-		//xmhf_partition_setupguestOSstate(vcpu);
-		xmhf_partition_setupguestOSstate(context_desc);
-
-		//initialize memory protection for this core
-		xmhf_memprot_initialize(context_desc);		
-}
-
 
 //initialize environment to boot "rich" guest
 void xmhf_smpguest_initialize(context_desc_t context_desc){
-	static u32 lock_aps_in_partition = 1;
-	static u32 aps_in_partition=0;
-	static u32 lock_initaps_for_rich_guest = 1;
-	static bool initaps_for_rich_guest=false;
+	//initialize CPU
+	xmhf_baseplatform_cpuinitialize();
 
-  //BSP
-  if(context_desc.cpu_desc.isbsp){
-		//setup CPU for rich-guest
-		xmhf_smpguest_initialize_helper(context_desc);
+	//initialize partition monitor (i.e., hypervisor) for this CPU
+	//xmhf_partition_initializemonitor(vcpu);
+	xmhf_partition_initializemonitor(context_desc);
 
-		//ok now that we are done initializing on BSP, let APs start their
-		//initialization and get into the partition
-		spin_lock(&lock_initaps_for_rich_guest);
-		initaps_for_rich_guest=true;
-		spin_unlock(&lock_initaps_for_rich_guest);
+	//setup guest OS state for partition
+	//xmhf_partition_setupguestOSstate(vcpu);
+	xmhf_partition_setupguestOSstate(context_desc);
 
-		//wait for APs to finish initialization just before getting
-		//into the partition
-		while(aps_in_partition < (g_midtable_numentries-1));
-  
-  }else{
-		//we are an AP, wait for BSP to signal that it is safe for us to proceed
-		while(!initaps_for_rich_guest);
-		
-		//setup CPU for rich-guest
-		xmhf_smpguest_initialize_helper(context_desc);
-	  
-		//we are an AP, so simply increment the AP counter and enter the partition 
-		spin_lock(&lock_aps_in_partition);
-		aps_in_partition++;
-		spin_unlock(&lock_aps_in_partition);
-  }	
+	//initialize memory protection for this core
+	xmhf_memprot_initialize(context_desc);		
 
   //start partition (guest)
   printf("\n%s[%02x]: starting partition...", __FUNCTION__, context_desc.cpu_desc.id);
