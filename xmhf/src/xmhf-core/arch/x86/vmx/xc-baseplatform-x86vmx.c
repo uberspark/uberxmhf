@@ -220,17 +220,12 @@ static u8 * _ap_bootstrap_blob_mle_join_start = (u8 *) &_ap_bootstrap_blob[0x10]
 
 //----------------------------------------------------------------------
 // functions
-
+/*
 //initialize CPU state
 void xmhf_baseplatform_arch_x86vmx_cpuinitialize(void){
-    	u32 bcr0;
 	    txt_heap_t  __attribute__((unused)) *txt_heap;
         os_mle_data_t __attribute__((unused)) *os_mle_data ;
   
-	    //set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
-		bcr0 = read_cr0();
-		bcr0 |= 0x20;
-		write_cr0(bcr0);
 
 #if defined (__DRT__)
         // restore pre-SENTER MTRRs that were overwritten for SINIT launch 
@@ -251,7 +246,7 @@ void xmhf_baseplatform_arch_x86vmx_cpuinitialize(void){
         #endif
 #endif	//__DRT__
       
-}
+}*/
 
 u32 xmhf_baseplatform_arch_getcpuvendor(void){
 	return xmhf_baseplatform_arch_x86_getcpuvendor();
@@ -262,7 +257,7 @@ void xmhf_baseplatform_arch_cpuinitialize(void){
 	xmhf_baseplatform_arch_x86_cpuinitialize();
 
 	//if(cpu_vendor == CPU_VENDOR_INTEL)
-		xmhf_baseplatform_arch_x86vmx_cpuinitialize();
+	//	xmhf_baseplatform_arch_x86vmx_cpuinitialize();
 }
 
 //----------------------------------------------------------------------
