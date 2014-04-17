@@ -113,7 +113,7 @@ static u32 _vmx_getregval(u32 gpr, VCPU *vcpu, struct regs *r){
 		case 1: return r->ecx;
 		case 2: return r->edx;
 		case 3: return r->ebx;
-		case 4: return vcpu->vmcs.guest_RSP;
+		case 4: return xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RSP);
 		case 5: return r->ebp;
 		case 6: return r->esi;
 		case 7: return r->edi;
@@ -132,7 +132,8 @@ static void _vmx_handle_intercept_cpuid(VCPU *vcpu, struct regs *r){
 	asm volatile ("cpuid\r\n"
           :"=a"(r->eax), "=b"(r->ebx), "=c"(r->ecx), "=d"(r->edx)
           :"a"(r->eax), "c" (r->ecx));
-	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+	//vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH)) );
 }
 
 
@@ -164,13 +165,16 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 
 	switch(r->ecx){
 		case IA32_SYSENTER_CS_MSR:
-			vcpu->vmcs.guest_SYSENTER_CS = (unsigned int)r->eax;
+			//vcpu->vmcs.guest_SYSENTER_CS = (unsigned int)r->eax;
+			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SYSENTER_CS, r->eax);
 			break;
 		case IA32_SYSENTER_EIP_MSR:
-			vcpu->vmcs.guest_SYSENTER_EIP = (unsigned long long)r->eax;
+			//vcpu->vmcs.guest_SYSENTER_EIP = (unsigned long long)r->eax;
+			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SYSENTER_EIP, r->eax);
 			break;
 		case IA32_SYSENTER_ESP_MSR:
-			vcpu->vmcs.guest_SYSENTER_ESP = (unsigned long long)r->eax;
+			//vcpu->vmcs.guest_SYSENTER_ESP = (unsigned long long)r->eax;
+			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SYSENTER_ESP, r->eax);
 			break;
 		default:{
 			asm volatile ("wrmsr\r\n"
@@ -180,7 +184,8 @@ static void _vmx_handle_intercept_wrmsr(VCPU *vcpu, struct regs *r){
 		}
 	}
 	
-	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+	//vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH)) );
 	//printf("\nCPU(0x%02x): WRMSR end", vcpu->id);
 }
 
@@ -190,15 +195,18 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 
 	switch(r->ecx){
 		case IA32_SYSENTER_CS_MSR:
-			r->eax = (u32)vcpu->vmcs.guest_SYSENTER_CS;
+			//r->eax = (u32)vcpu->vmcs.guest_SYSENTER_CS;
+			r->eax = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SYSENTER_CS);
 			r->edx = 0;
 			break;
 		case IA32_SYSENTER_EIP_MSR:
-			r->eax = (u32)vcpu->vmcs.guest_SYSENTER_EIP;
+			//r->eax = (u32)vcpu->vmcs.guest_SYSENTER_EIP;
+			r->eax = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SYSENTER_EIP);
 			r->edx = 0;
 			break;
 		case IA32_SYSENTER_ESP_MSR:
-			r->eax = (u32)vcpu->vmcs.guest_SYSENTER_ESP;
+			//r->eax = (u32)vcpu->vmcs.guest_SYSENTER_ESP;
+			r->eax = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SYSENTER_ESP);
 			r->edx = 0;
 			break;
 		default:{
@@ -208,7 +216,8 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 			break;
 		}
 	}
-	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+	//vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH)) );
 
 	//printf("\nCPU(0x%02x): RDMSR (0x%08x)=0x%08x%08x", vcpu->id, r->ecx, r->edx, r->eax);
 }
@@ -218,9 +227,12 @@ static void _vmx_handle_intercept_rdmsr(VCPU *vcpu, struct regs *r){
 static void _vmx_handle_intercept_eptviolation(context_desc_t context_desc, struct regs *r __attribute__((unused))){
 	u32 errorcode, gpa, gva;
 	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
-	errorcode = (u32)vcpu->vmcs.info_exit_qualification;
-	gpa = (u32) vcpu->vmcs.guest_paddr_full;
-	gva = (u32) vcpu->vmcs.info_guest_linear_address;
+	//errorcode = (u32)vcpu->vmcs.info_exit_qualification;
+	errorcode = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION);
+	//gpa = (u32) vcpu->vmcs.guest_paddr_full;
+	gpa = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_GUEST_PADDR_FULL);
+	//gva = (u32) vcpu->vmcs.info_guest_linear_address;
+	gva = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_GUEST_LINEAR_ADDRESS);
 
 	//check if EPT violation is due to LAPIC interception
 	//if(vcpu->isbsp && (gpa >= g_vmx_lapic_base) && (gpa < (g_vmx_lapic_base + PAGE_SIZE_4K)) ){
@@ -239,10 +251,15 @@ static void _vmx_handle_intercept_ioportaccess(context_desc_t context_desc, stru
   u32 access_size, access_type, portnum, stringio;
 	u32 app_ret_status = APP_IOINTERCEPT_CHAIN;
 	
-  access_size = (u32)vcpu->vmcs.info_exit_qualification & 0x00000007UL;
-	access_type = ((u32)vcpu->vmcs.info_exit_qualification & 0x00000008UL) >> 3;
-	portnum =  ((u32)vcpu->vmcs.info_exit_qualification & 0xFFFF0000UL) >> 16;
-	stringio = ((u32)vcpu->vmcs.info_exit_qualification & 0x00000010UL) >> 4;
+	//access_size = (u32)vcpu->vmcs.info_exit_qualification & 0x00000007UL;
+	//access_type = ((u32)vcpu->vmcs.info_exit_qualification & 0x00000008UL) >> 3;
+	//portnum =  ((u32)vcpu->vmcs.info_exit_qualification & 0xFFFF0000UL) >> 16;
+	//stringio = ((u32)vcpu->vmcs.info_exit_qualification & 0x00000010UL) >> 4;
+	
+	access_size = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION) & 0x00000007UL;
+	access_type = ( xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION) & 0x00000008UL) >> 3;
+	portnum =  ( xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION) & 0xFFFF0000UL) >> 16;
+	stringio = ( xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION) & 0x00000010UL) >> 4;
 	
   HALT_ON_ERRORCOND(!stringio);	//we dont handle string IO intercepts
 
@@ -271,11 +288,15 @@ static void _vmx_handle_intercept_ioportaccess(context_desc_t context_desc, stru
   				r->eax = (u32)inl(portnum);	
   		}
   	}
-  	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+  	//vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+  	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH)) );
+
 
   }else{
     //skip the IO instruction, app has taken care of it
-  	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+  	//vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+  	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH)) );
+
   }
 
 	return;
@@ -294,8 +315,10 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	//printf("\n[cr0-%02x] MOV TO, current=0x%08x, proposed=0x%08x", vcpu->id,
 	//	(u32)vcpu->vmcs.guest_CR0, cr0_value);
 
-	vcpu->vmcs.control_CR0_shadow = cr0_value;
-	vcpu->vmcs.guest_CR0 = cr0_value & ~(CR0_CD | CR0_NW);
+	//vcpu->vmcs.control_CR0_shadow = cr0_value;
+	//vcpu->vmcs.guest_CR0 = cr0_value & ~(CR0_CD | CR0_NW);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR0_SHADOW, cr0_value);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, (cr0_value & ~(CR0_CD | CR0_NW)));
 	
 	//flush mappings
 	xmhf_memprot_arch_x86vmx_flushmappings(vcpu);
@@ -309,11 +332,11 @@ static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	//cr4_proposed_value = *((u32 *)_vmx_decode_reg(gpr, vcpu, r));
 	cr4_proposed_value = _vmx_getregval(gpr, vcpu, r);
 	
-	printf("\nCPU(0x%02x): CS:EIP=0x%04x:0x%08x MOV CR4, xx", vcpu->id,
-		(u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP);
+	//printf("\nCPU(0x%02x): CS:EIP=0x%04x:0x%08x MOV CR4, xx", vcpu->id,
+	//	(u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP);
   
-	printf("\nMOV TO CR4 (flush TLB?), current=0x%08x, proposed=0x%08x",
-			(u32)vcpu->vmcs.guest_CR4, cr4_proposed_value);
+	//printf("\nMOV TO CR4 (flush TLB?), current=0x%08x, proposed=0x%08x",
+	//		(u32)vcpu->vmcs.guest_CR4, cr4_proposed_value);
 
 	#if defined (__NESTED_PAGING__)
 	//we need to flush EPT mappings as we emulated CR4 load above
@@ -349,7 +372,8 @@ static void _vmx_handle_intercept_xsetbv(VCPU *vcpu, struct regs *r){
 	xsetbv(XCR_XFEATURE_ENABLED_MASK, xcr_value);
 
 	//skip the emulated XSETBV instruction
-	vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+	//vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+  	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH)) );
 }						
 			
 
@@ -368,9 +392,9 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 #endif //__XMHF_VERIFICATION__
 */
 	//sanity check for VM-entry errors
-	if( (u32)vcpu->vmcs.info_vmexit_reason & 0x80000000UL ){
+	if( xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON) & 0x80000000UL ){
 		printf("\nVM-ENTRY error: reason=0x%08x, qualification=0x%016llx", 
-			(u32)vcpu->vmcs.info_vmexit_reason, (u64)vcpu->vmcs.info_exit_qualification);
+			xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON), xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION));
 		xmhf_baseplatform_arch_x86vmx_dumpVMCS(vcpu);
 		HALT();
 	}
@@ -383,20 +407,20 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 
   
 	//handle intercepts
-	switch((u32)vcpu->vmcs.info_vmexit_reason){
+	switch(xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON)){
 		//--------------------------------------------------------------
 		//xmhf-core and hypapp intercepts
 		//--------------------------------------------------------------
 		
 		case VMX_VMEXIT_VMCALL:{
 			//if INT 15h E820 hypercall, then let the xmhf-core handle it
-			if(vcpu->vmcs.guest_CS_base == (VMX_UG_E820HOOK_CS << 4) &&
-				vcpu->vmcs.guest_RIP == VMX_UG_E820HOOK_IP){
+			if(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CS_BASE) == (VMX_UG_E820HOOK_CS << 4) &&
+				xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP) == VMX_UG_E820HOOK_IP){
 				//we need to be either in real-mode or in protected
 				//mode with paging and EFLAGS.VM bit set (virtual-8086 mode)
-				HALT_ON_ERRORCOND( !(vcpu->vmcs.guest_CR0 & CR0_PE)  ||
-					( (vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG) &&
-						(vcpu->vmcs.guest_RFLAGS & EFLAGS_VM)  ) );
+				HALT_ON_ERRORCOND( !(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PE)  ||
+					( (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PE) && (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PG) &&
+						(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RFLAGS) & EFLAGS_VM)  ) );
 				//_vmx_int15_handleintercept(vcpu, r);	
 				xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc, r);
 
@@ -411,7 +435,8 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 					}
 				}
 				xmhf_smpguest_arch_x86vmx_endquiesce(vcpu);
-				vcpu->vmcs.guest_RIP += 3;
+				//vcpu->vmcs.guest_RIP += 3;
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+3) );
 			}
 		}
 		break;
@@ -448,7 +473,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		break;
 
  		case VMX_VMEXIT_EXCEPTION:{
-			switch( ((u32)vcpu->vmcs.info_vmexit_interrupt_information & INTR_INFO_VECTOR_MASK) ){
+			switch( ( xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION) & INTR_INFO_VECTOR_MASK) ){
 				//case 0x01:
 				//	xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(context_desc, r);
 				//	break;				
@@ -463,11 +488,11 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 				default:
 					printf("\nVMEXIT-EXCEPTION:");
 					printf("\ncontrol_exception_bitmap=0x%08lx",
-						(unsigned long)vcpu->vmcs.control_exception_bitmap);
+						xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EXCEPTION_BITMAP));
 					printf("\ninterruption information=0x%08lx", 
-						(unsigned long)vcpu->vmcs.info_vmexit_interrupt_information);
+						xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION));
 					printf("\nerrorcode=0x%08lx", 
-						(unsigned long)vcpu->vmcs.info_vmexit_interrupt_error_code);
+						xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_ERROR_CODE));
 					HALT();
 			}
 		}
@@ -477,11 +502,11 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			u32 tofrom, gpr, crx; 
 			//printf("\nVMEXIT_CRX_ACCESS:");
 			//printf("\ninstruction length: %u", info_vmexit_instruction_length);
-			crx=(u32) ((u64)vcpu->vmcs.info_exit_qualification & 0x000000000000000FULL);
+			crx=(u32) ((u64)xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION) & 0x000000000000000FULL);
 			gpr=
-			 (u32) (((u64)vcpu->vmcs.info_exit_qualification & 0x0000000000000F00ULL) >> (u64)8);
+			 (u32) (((u64)xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION) & 0x0000000000000F00ULL) >> (u64)8);
 			tofrom = 
-			(u32) (((u64)vcpu->vmcs.info_exit_qualification & 0x0000000000000030ULL) >> (u64)4); 
+			(u32) (((u64)xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION) & 0x0000000000000030ULL) >> (u64)4); 
 			//printf("\ncrx=%u, gpr=%u, tofrom=%u", crx, gpr, tofrom);
 
 			if ( ((int)gpr >=0) && ((int)gpr <= 7) ){
@@ -503,7 +528,9 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 						printf("\nunhandled crx, halting!");
 						HALT();
 				}
-				vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+				//vcpu->vmcs.guest_RIP += vcpu->vmcs.info_vmexit_instruction_length;
+			  	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH)) );
+
 			}else{
 				printf("\n[%02x]%s: invalid gpr value (%u). halting!", vcpu->id,
 					__FUNCTION__, gpr);
@@ -525,10 +552,10 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 			break;
 
 		case VMX_VMEXIT_TASKSWITCH:{
-			u32 idt_v = vcpu->vmcs.info_IDT_vectoring_information & VECTORING_INFO_VALID_MASK;
-			u32 type = vcpu->vmcs.info_IDT_vectoring_information & VECTORING_INFO_TYPE_MASK;
-			u32 reason = vcpu->vmcs.info_exit_qualification >> 30;
-			u16 tss_selector = (u16)vcpu->vmcs.info_exit_qualification;
+			u32 idt_v = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION) & VECTORING_INFO_VALID_MASK;
+			u32 type = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION) & VECTORING_INFO_TYPE_MASK;
+			u32 reason = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION) >> 30;
+			u16 tss_selector = (u16)xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION);
 			
 			if(reason == TASK_SWITCH_GATE && type == INTR_TYPE_NMI){
 				printf("\nCPU(0x%02x): NMI received (MP guest shutdown?)", vcpu->id);
@@ -551,28 +578,32 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		break;
 
 		case VMX_VMEXIT_SIPI:{
-			u32 sipivector = (u8)vcpu->vmcs.info_exit_qualification;
+			u32 sipivector = (u8)xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION);
 			printf("\nCPU(%02x): SIPI vector=0x%08x, Halting!", vcpu->id, sipivector);
-			vcpu->vmcs.guest_CS_selector = ((sipivector * PAGE_SIZE_4K) >> 4); 
-			vcpu->vmcs.guest_CS_base = (sipivector * PAGE_SIZE_4K); 
-			vcpu->vmcs.guest_RIP = 0x0ULL;
-			vcpu->vmcs.guest_activity_state=0;	//active
+			//vcpu->vmcs.guest_CS_selector = ((sipivector * PAGE_SIZE_4K) >> 4); 
+			//vcpu->vmcs.guest_CS_base = (sipivector * PAGE_SIZE_4K); 
+			//vcpu->vmcs.guest_RIP = 0x0ULL;
+			//vcpu->vmcs.guest_activity_state=0;	//active
+			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_SELECTOR, ((sipivector * PAGE_SIZE_4K) >> 4));
+			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_BASE, (sipivector * PAGE_SIZE_4K));
+			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, 0x0ULL);
+			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ACTIVITY_STATE, 0);	//active
 		}
 		break;
 
     
 		default:{
-			printf("\nCPU(0x%02x): Unhandled intercept: 0x%08x", vcpu->id, (u32)vcpu->vmcs.info_vmexit_reason);
-			printf("\n	CPU(0x%02x): EFLAGS=0x%08x", vcpu->id, (u32)vcpu->vmcs.guest_RFLAGS);
-			printf("\n	SS:ESP =0x%04x:0x%08x", (u16)vcpu->vmcs.guest_SS_selector, (u32)vcpu->vmcs.guest_RSP);
-			printf("\n	CS:EIP =0x%04x:0x%08x", (u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP);
-			printf("\n	IDTR base:limit=0x%08x:0x%04x", (u32)vcpu->vmcs.guest_IDTR_base,
-					(u16)vcpu->vmcs.guest_IDTR_limit);
-			printf("\n	GDTR base:limit=0x%08x:0x%04x", (u32)vcpu->vmcs.guest_GDTR_base,
-					(u16)vcpu->vmcs.guest_GDTR_limit);
-			if(vcpu->vmcs.info_IDT_vectoring_information & 0x80000000){
+			printf("\nCPU(0x%02x): Unhandled intercept: 0x%08x", vcpu->id, (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON));
+			printf("\n	CPU(0x%02x): EFLAGS=0x%08x", vcpu->id, (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RFLAGS));
+			printf("\n	SS:ESP =0x%04x:0x%08x", (u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SS_SELECTOR), (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RSP));
+			printf("\n	CS:EIP =0x%04x:0x%08x", (u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CS_SELECTOR), (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP));
+			printf("\n	IDTR base:limit=0x%08x:0x%04x", (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_IDTR_BASE),
+					(u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_IDTR_LIMIT));
+			printf("\n	GDTR base:limit=0x%08x:0x%04x", (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_GDTR_BASE),
+					(u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_GDTR_LIMIT));
+			if(xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION) & 0x80000000){
 				printf("\nCPU(0x%02x): HALT; Nested events unhandled 0x%08x",
-					vcpu->id, vcpu->vmcs.info_IDT_vectoring_information);
+					vcpu->id, xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION));
 			}
 			HALT();
 		}		
@@ -580,14 +611,14 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 	
 
  	//check and clear guest interruptibility state
-	if(vcpu->vmcs.guest_interruptibility != 0){
-		vcpu->vmcs.guest_interruptibility = 0;
+	if(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_INTERRUPTIBILITY) != 0){
+		xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_INTERRUPTIBILITY, 0);
 	}
 
 	//make sure we have no nested events
-	if(vcpu->vmcs.info_IDT_vectoring_information & 0x80000000){
+	if(xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION) & 0x80000000){
 		printf("\nCPU(0x%02x): HALT; Nested events unhandled with hwp:0x%08x",
-			vcpu->id, vcpu->vmcs.info_IDT_vectoring_information);
+			vcpu->id, xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION));
 		HALT();
 	}
 
