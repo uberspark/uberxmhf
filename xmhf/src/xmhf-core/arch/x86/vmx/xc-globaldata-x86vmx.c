@@ -55,6 +55,7 @@
 
 //bplt-x86vmx-data
 
+/*
 #ifndef __XMHF_VERIFICATION__
 	#define voffsetof	offsetof	
 #else //__XMHF_VERIFICATION__
@@ -241,6 +242,7 @@ struct _vmx_vmcsrwfields_encodings g_vmx_vmcsrwfields_encodings[] __attribute__(
 
 //count of VMX VMCS read-write fields
 unsigned int g_vmx_vmcsrwfields_encodings_count __attribute__(( section(".data") )) = sizeof( g_vmx_vmcsrwfields_encodings ) / sizeof( struct _vmx_vmcsrwfields_encodings );
+*/
 
 //VMX VMXON buffers
 u8 g_vmx_vmxon_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
