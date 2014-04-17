@@ -55,25 +55,37 @@
 //void xmhf_partition_initializemonitor(VCPU *vcpu){
 //	xmhf_partition_arch_initializemonitor(vcpu);
 //}
-void xmhf_partition_initializemonitor(context_desc_t context_desc){
-	xmhf_partition_arch_initializemonitor(context_desc);
+//void xmhf_partition_initializemonitor(context_desc_t context_desc){
+//	xmhf_partition_arch_initializemonitor(context_desc);
+//}
+void xmhf_partition_initializemonitor(u32 index_cpudata){
+	xmhf_partition_arch_initializemonitor(index_cpudata);
 }
+
 
 //setup guest OS state for the partition
 //void xmhf_partition_setupguestOSstate(VCPU *vcpu){
 //	xmhf_partition_arch_setupguestOSstate(vcpu);
 //}
-void xmhf_partition_setupguestOSstate(context_desc_t context_desc){
-	xmhf_partition_arch_setupguestOSstate(context_desc);
+//void xmhf_partition_setupguestOSstate(context_desc_t context_desc){
+//	xmhf_partition_arch_setupguestOSstate(context_desc);
+//}
+void xmhf_partition_setupguestOSstate(u32 index_cpudata){
+	xmhf_partition_arch_setupguestOSstate(index_cpudata);
 }
+
 
 //start executing the partition and guest OS
 //void xmhf_partition_start(VCPU *vcpu){
 //	xmhf_partition_arch_start(vcpu);
 //}
-void xmhf_partition_start(context_desc_t context_desc){
-	xmhf_partition_arch_start(context_desc);
+//void xmhf_partition_start(context_desc_t context_desc){
+//	xmhf_partition_arch_start(context_desc);
+//}
+void xmhf_partition_start(u32 index_cpudata){
+	xmhf_partition_arch_start(index_cpudata);
 }
+
 
 //set legacy I/O protection for the partition
 void xmhf_partition_legacyIO_setprot(context_desc_t context_desc, u32 port, u32 size, u32 prottype){

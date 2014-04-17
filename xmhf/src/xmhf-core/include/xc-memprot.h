@@ -74,7 +74,7 @@
 
 //initialize memory protection for a core
 //void xmhf_memprot_initialize(VCPU *vcpu);
-void xmhf_memprot_initialize(context_desc_t context_desc);
+void xmhf_memprot_initialize(u32 index_cpudata);
 
 // get level-1 page map address
 u64 * xmhf_memprot_get_lvl1_pagemap_address(context_desc_t context_desc);
@@ -114,7 +114,7 @@ void xmhf_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u64 e
 
 //initialize memory protection for a core
 //void xmhf_memprot_arch_initialize(VCPU *vcpu);
-void xmhf_memprot_arch_initialize(context_desc_t context_desc);
+void xmhf_memprot_arch_initialize(u32 index_cpudata);
 
 // get level-1 page map address
 u64 * xmhf_memprot_arch_get_lvl1_pagemap_address(context_desc_t context_desc);

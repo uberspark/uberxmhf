@@ -422,11 +422,12 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 	//replicate common MTRR state on this CPU
 	xmhf_baseplatform_arch_x86_restorecpumtrrstate();
   	
-	context_desc.partition_desc.id = 0;
-	context_desc.cpu_desc.id = vcpu->idx;
-	context_desc.cpu_desc.isbsp = vcpu->isbsp;
+	//context_desc.partition_desc.id = 0;
+	//context_desc.cpu_desc.id = vcpu->idx;
+	//context_desc.cpu_desc.isbsp = vcpu->isbsp;
 
-	xmhf_runtime_main(context_desc);
+	//xmhf_runtime_main(context_desc);
+	xmhf_runtime_main(index_cpudata);
 }
 
 //----------------------------------------------------------------------
