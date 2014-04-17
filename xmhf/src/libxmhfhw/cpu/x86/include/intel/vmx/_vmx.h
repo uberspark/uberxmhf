@@ -763,6 +763,30 @@ static inline void __vmx_vmread(u32 encoding, u32 *value){
 	  : "a"(encoding));
 }
 
+static inline u32 xmhfhw_cpu_x86vmx_vmwrite(u32 encoding, u32 value){
+  u32 status;
+  __asm__("vmwrite %%ebx, %%eax \r\n"
+          "jbe 1f \r\n"
+          "movl $1, %%edx \r\n"
+          "jmp 2f \r\n"
+          "1: movl $0, %%edx \r\n"
+          "2: movl %%edx, %0"
+	  : "=m"(status)
+	  : "a"(encoding), "b"(value)
+    : "%edx"
+    );
+	return status;
+}
+
+
+static inline u32 xmhfhw_cpu_x86vmx_vmread(u32 encoding){
+	u32 value;
+	__asm__ __volatile__("vmread %%eax, %%ebx\n\t"
+	  : "=b"(value)
+	  : "a"(encoding));
+	return value;
+}
+
 static inline u32 __vmx_vmclear(u64 vmcs){
   u32 status;
   __asm__("vmclear %1			\r\n"

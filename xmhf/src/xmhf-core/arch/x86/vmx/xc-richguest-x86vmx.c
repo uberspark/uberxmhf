@@ -232,8 +232,8 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 	//hypervisor. we use VMCS fields for this purpose. note that we
 	//use vmread directly instead of relying on vcpu-> to avoid 
 	//race conditions
-	__vmx_vmread(0x4404, &_vmx_vmcs_info_vmexit_interrupt_information);
-	__vmx_vmread(0x4402, &_vmx_vmcs_info_vmexit_reason);
+	_vmx_vmcs_info_vmexit_interrupt_information = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION);
+	_vmx_vmcs_info_vmexit_reason = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON);
 	
 	nmiinhvm = ( (_vmx_vmcs_info_vmexit_reason == VMX_VMEXIT_EXCEPTION) && ((_vmx_vmcs_info_vmexit_interrupt_information & INTR_INFO_VECTOR_MASK) == 2) ) ? 1 : 0;
 	
