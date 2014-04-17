@@ -344,7 +344,7 @@ u32 xmhf_baseplatform_arch_x86_getgdtbase(void);
 u32 xmhf_baseplatform_arch_x86_getidtbase(void);
 u32 xmhf_baseplatform_arch_x86_gettssbase(void);
 
-static inline u64 VCPU_gdtr_base(VCPU *vcpu)
+/*static inline u64 VCPU_gdtr_base(VCPU *vcpu)
 {
     return ((struct _vmx_vmcsfields*)&(vcpu->vmcs))->guest_GDTR_base;
 }
@@ -397,7 +397,7 @@ static inline void VCPU_gcr3_set(VCPU *vcpu, u64 cr3)
 static inline u64 VCPU_gcr4(VCPU *vcpu)
 {
     return vcpu->vmcs.guest_CR4;
-}
+}*/
 
 //xc-xcphandler
 
