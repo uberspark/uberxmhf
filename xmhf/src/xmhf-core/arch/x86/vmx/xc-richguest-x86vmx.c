@@ -264,14 +264,15 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 		//inject the NMI if it was triggered in guest mode
 		
 		if(nmiinhvm){
-			if(vcpu->vmcs.control_exception_bitmap & CPU_EXCEPTION_NMI){
+			if(xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EXCEPTION_BITMAP) & CPU_EXCEPTION_NMI){
 				//TODO: hypapp has chosen to intercept NMI so callback
 			}else{
 				//printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
-				vcpu->vmcs.control_VM_entry_exception_errorcode = 0;
-				vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
-					INTR_TYPE_NMI |
-					INTR_INFO_VALID_MASK;
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_EXCEPTION_ERRORCODE, 0);
+				//vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
+				//	INTR_TYPE_NMI |
+				//	INTR_INFO_VALID_MASK;
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_INTERRUPTION_INFORMATION, (NMI_VECTOR | INTR_TYPE_NMI | INTR_INFO_VALID_MASK));
 			}
 		}
 	}
@@ -287,12 +288,12 @@ u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr){
   
   //if rich guest has paging disabled then physical address is the 
   //supplied virtual address itself
-	if( !((vcpu->vmcs.guest_CR0 & CR0_PE) && (vcpu->vmcs.guest_CR0 & CR0_PG)) )
+	if( !((xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PE) && (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PG)) )
 		return (u8 *)gpa2hva(vaddr);
 
-  if((u32)vcpu->vmcs.guest_CR4 & CR4_PAE ){
+  if((u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR4) & CR4_PAE ){
     //PAE paging used by guest
-    u32 kcr3 = (u32)vcpu->vmcs.guest_CR3;
+    u32 kcr3 = (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR3);
     u32 pdpt_index, pd_index, pt_index, offset;
     u64 paddr;
     pdpt_t kpdpt;
@@ -345,7 +346,7 @@ u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr){
     
   }else{
     //non-PAE 2 level paging used by guest
-    u32 kcr3 = (u32)vcpu->vmcs.guest_CR3;
+    u32 kcr3 = (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR3);
     u32 pd_index, pt_index, offset;
     u64 paddr;
     npdt_t kpd; 
@@ -405,12 +406,12 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 		//ES:DI left untouched, ECX=size returned, EBX=next continuation value
 		//EBX=0 if last descriptor
 		printf("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", vcpu->id, 
-		(u16)r->eax, r->edx, r->ebx, r->ecx, (u16)vcpu->vmcs.guest_ES_selector, (u16)r->edi);
+		(u16)r->eax, r->edx, r->ebx, r->ecx, (u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_ES_SELECTOR), (u16)r->edi);
 		
 		if( (r->edx == 0x534D4150UL) && (r->ebx < xcbootinfo->memmapinfo_numentries) ){
 			
 			//copy the E820 descriptor and return its size
-			if(!xmhf_smpguest_memcpyto(context_desc, (const void *)((u32)(vcpu->vmcs.guest_ES_base+(u16)r->edi)), (void *)&xcbootinfo->memmapinfo_buffer[r->ebx], sizeof(GRUBE820)) ){
+			if(!xmhf_smpguest_memcpyto(context_desc, (const void *)((u32)(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_ES_BASE)+(u16)r->edi)), (void *)&xcbootinfo->memmapinfo_buffer[r->ebx], sizeof(GRUBE820)) ){
 				printf("\n%s: Error in copying e820 descriptor to guest. Halting!", __FUNCTION__);
 				HALT();
 			}	
@@ -432,7 +433,7 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 			//...
 		
 			//grab guest eflags on guest stack
-			if(!xmhf_smpguest_readu16(context_desc, (const void *)((u32)vcpu->vmcs.guest_SS_base + (u16)vcpu->vmcs.guest_RSP + 0x4), &guest_flags)){
+			if(!xmhf_smpguest_readu16(context_desc, (const void *)((u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SS_BASE) + (u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RSP) + 0x4), &guest_flags)){
 				printf("\n%s: Error in reading guest_flags. Halting!", __FUNCTION__);
 				HALT();
 			}
@@ -450,7 +451,7 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 			}
 
 			//write updated eflags in guest stack
-			if(!xmhf_smpguest_writeu16(context_desc, (const void *)((u32)vcpu->vmcs.guest_SS_base + (u16)vcpu->vmcs.guest_RSP + 0x4), guest_flags)){
+			if(!xmhf_smpguest_writeu16(context_desc, (const void *)((u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SS_BASE) + (u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RSP) + 0x4), guest_flags)){
 				printf("\n%s: Error in updating guest_flags. Halting!", __FUNCTION__);
 				HALT();
 			}
@@ -463,7 +464,8 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 		
 		//update RIP to execute the IRET following the VMCALL instruction
 		//effectively returning from the INT 15 call made by the guest
-		vcpu->vmcs.guest_RIP += 3;
+		//vcpu->vmcs.guest_RIP += 3;
+		xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+3));
 	
 		return;
 	} //E820 service
@@ -478,9 +480,12 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 	}
 	
 	//update VMCS with the CS and IP and let go
-	vcpu->vmcs.guest_RIP = ip;
-	vcpu->vmcs.guest_CS_base = cs * 16;
-	vcpu->vmcs.guest_CS_selector = cs;		 
+	//vcpu->vmcs.guest_RIP = ip;
+	//vcpu->vmcs.guest_CS_base = cs * 16;
+	//vcpu->vmcs.guest_CS_selector = cs;		 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, ip);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_BASE, (cs * 16));
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_SELECTOR, cs);
 }
 
 
