@@ -66,19 +66,24 @@ static void xmhf_memprot_arch_x86vmx_initialize(VCPU *vcpu){
 	}
 */
 
-	vcpu->vmcs.control_VMX_seccpu_based |= (1 << 1); //enable EPT
-	vcpu->vmcs.control_VMX_seccpu_based |= (1 << 5); //enable VPID
-	vcpu->vmcs.control_vpid = 1; //VPID=0 is reserved for hypervisor
-	vcpu->vmcs.control_EPT_pointer_high = 0;
-	vcpu->vmcs.control_EPT_pointer_full = hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E; //page walk of 4 and WB memory
-	vcpu->vmcs.control_VMX_cpu_based &= ~(1 << 15); //disable CR3 load exiting
-	vcpu->vmcs.control_VMX_cpu_based &= ~(1 << 16); //disable CR3 store exiting
+	//vcpu->vmcs.control_VMX_seccpu_based |= (1 << 1); //enable EPT
+	//vcpu->vmcs.control_VMX_seccpu_based |= (1 << 5); //enable VPID
+	//vcpu->vmcs.control_vpid = 1; //VPID=0 is reserved for hypervisor
+	//vcpu->vmcs.control_EPT_pointer_high = 0;
+	//vcpu->vmcs.control_EPT_pointer_full = hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E; //page walk of 4 and WB memory
+	//vcpu->vmcs.control_VMX_cpu_based &= ~(1 << 15); //disable CR3 load exiting
+	//vcpu->vmcs.control_VMX_cpu_based &= ~(1 << 16); //disable CR3 store exiting
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_SECCPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_SECCPU_BASED) | (1 <<1) | (1 << 5)) );
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VPID, 1);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, (hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E) );
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_HIGH, 0);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) & ~(1 << 15) & ~(1 << 16)) );
 }
 
 //flush hardware page table mappings (TLB) 
 void xmhf_memprot_arch_x86vmx_flushmappings(VCPU * vcpu){
   __vmx_invept(VMX_INVEPT_SINGLECONTEXT, 
-          (u64)vcpu->vmcs.control_EPT_pointer_full);
+          (u64)xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EPT_POINTER_FULL));
 }
 
 
@@ -86,14 +91,16 @@ u64 xmhf_memprot_arch_x86vmx_get_EPTP(VCPU *vcpu)
 {
   HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
   return
-    ((u64)(vcpu->vmcs.control_EPT_pointer_high) << 32)
-    | (u64)(vcpu->vmcs.control_EPT_pointer_full);
+    ((u64)(xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EPT_POINTER_HIGH)) << 32)
+    | (u64)(xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EPT_POINTER_FULL));
 }
 void xmhf_memprot_arch_x86vmx_set_EPTP(VCPU *vcpu, u64 eptp)
 {
   HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-  vcpu->vmcs.control_EPT_pointer_full = (u32)eptp;
-  vcpu->vmcs.control_EPT_pointer_high = (u32)(eptp >> 32);
+  //vcpu->vmcs.control_EPT_pointer_full = (u32)eptp;
+  //vcpu->vmcs.control_EPT_pointer_high = (u32)(eptp >> 32);
+  xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, (u32)eptp);
+  xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_HIGH, (u32)(eptp >> 32));
 }
 
 //set protection for a given physical memory address
