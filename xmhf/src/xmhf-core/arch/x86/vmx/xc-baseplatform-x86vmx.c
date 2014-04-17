@@ -346,8 +346,8 @@ void xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor){
 		//other VCPU data such as LAPIC id, SIPI vector and receive indication
 		vcpu->id = g_midtable[i].cpu_lapic_id;
 		vcpu->idx = i;
-		vcpu->sipivector = 0;
-		vcpu->sipireceived = 0;
+		//vcpu->sipivector = 0;
+		//vcpu->sipireceived = 0;
 
 		//map LAPIC to VCPU in midtable
 		g_midtable[i].vcpu_vaddr_ptr = (u32)vcpu;	

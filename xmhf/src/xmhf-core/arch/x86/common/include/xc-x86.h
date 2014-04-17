@@ -135,11 +135,11 @@ struct _guestmtrrmsrs {
 typedef struct _vcpu {
   //common fields	
   u32 esp;                //used to establish stack for the CPU
-  u32 sipi_page_vaddr;    //SIPI page of the CPU used for SIPI handling
+  //u32 sipi_page_vaddr;    //SIPI page of the CPU used for SIPI handling
   u32 id;                 //LAPIC id of the core
   u32 idx;                //this vcpu's index in the g_vcpubuffers array
-  u32 sipivector;         //SIPI vector 
-  u32 sipireceived;       //SIPI received indicator, 1 if yes
+  //u32 sipivector;         //SIPI vector 
+  //u32 sipireceived;       //SIPI received indicator, 1 if yes
   //u32 nmiinhvm;           //this is 1 if there was a NMI when in HVM, else 0        
 	u32 cpu_vendor;					//Intel or AMD
 	u32 isbsp;							//1 if this core is BSP else 0
@@ -166,8 +166,8 @@ typedef struct _vcpu {
 	struct _guestmtrrmsrs vmx_guestmtrrmsrs[NUM_MTRR_MSRS];
 
   //guest state fields
-  u32 vmx_guest_currentstate;		//current operating mode of guest
-  u32 vmx_guest_nextstate;		  //next operating mode of guest
+  //u32 vmx_guest_currentstate;		//current operating mode of guest
+  //u32 vmx_guest_nextstate;		  //next operating mode of guest
 	u32 vmx_guest_unrestricted;		//this is 1 if the CPU VMX implementation supports unrestricted guest execution
   struct _vmx_vmcsfields vmcs;   //the VMCS fields
 
