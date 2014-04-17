@@ -79,7 +79,7 @@ void xmhf_parteventhub_arch_x86vmx_entry(void) __attribute__((naked)){
 		asm volatile ("hlt\r\n");
 }
 
-//---VMX decode assist----------------------------------------------------------
+/*//---VMX decode assist----------------------------------------------------------
 //map a CPU register index into appropriate VCPU *vcpu or struct regs *r field 
 //and return the address of the field
 static u32 * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
@@ -103,7 +103,27 @@ static u32 * _vmx_decode_reg(u32 gpr, VCPU *vcpu, struct regs *r){
 
 	//we will never get here, appease the compiler
 	return (u32 *)&r->eax;
+}*/
+
+
+static u32 _vmx_getregval(u32 gpr, VCPU *vcpu, struct regs *r){
+
+	  switch(gpr){
+		case 0: return r->eax;
+		case 1: return r->ecx;
+		case 2: return r->edx;
+		case 3: return r->ebx;
+		case 4: return vcpu->vmcs.guest_RSP;
+		case 5: return r->ebp;
+		case 6: return r->esi;
+		case 7: return r->edi;
+		default:
+			printf("\n%s: warning, invalid gpr value (%u): returning zero value", __FUNCTION__, gpr);
+			return 0;
+	}
 }
+
+
 
 
 //---intercept handler (CPUID)--------------------------------------------------
@@ -268,7 +288,8 @@ static void vmx_handle_intercept_cr0access_ug(VCPU *vcpu, struct regs *r, u32 gp
 	
 	HALT_ON_ERRORCOND(tofrom == VMX_CRX_ACCESS_TO);
 	
-	cr0_value = *((u32 *)_vmx_decode_reg(gpr, vcpu, r));
+	//cr0_value = *((u32 *)_vmx_decode_reg(gpr, vcpu, r));
+	cr0_value = _vmx_getregval(gpr, vcpu, r);
 
 	//printf("\n[cr0-%02x] MOV TO, current=0x%08x, proposed=0x%08x", vcpu->id,
 	//	(u32)vcpu->vmcs.guest_CR0, cr0_value);
@@ -285,7 +306,8 @@ static void vmx_handle_intercept_cr4access_ug(VCPU *vcpu, struct regs *r, u32 gp
   if(tofrom == VMX_CRX_ACCESS_TO){
 	u32 cr4_proposed_value;
 	
-	cr4_proposed_value = *((u32 *)_vmx_decode_reg(gpr, vcpu, r));
+	//cr4_proposed_value = *((u32 *)_vmx_decode_reg(gpr, vcpu, r));
+	cr4_proposed_value = _vmx_getregval(gpr, vcpu, r);
 	
 	printf("\nCPU(0x%02x): CS:EIP=0x%04x:0x%08x MOV CR4, xx", vcpu->id,
 		(u16)vcpu->vmcs.guest_CS_selector, (u32)vcpu->vmcs.guest_RIP);
