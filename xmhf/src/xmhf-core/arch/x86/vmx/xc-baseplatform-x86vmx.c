@@ -484,6 +484,7 @@ void xmhf_baseplatform_arch_smpinitialize(void){
   }
 }
 
+/*
 //---putVMCS--------------------------------------------------------------------
 // routine takes vcpu vmcsfields and stores it in the CPU VMCS 
 void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu){
@@ -511,12 +512,12 @@ void xmhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu){
       u32 *field = (u32 *)((u32)&vcpu->vmcs + (u32)g_vmx_vmcsrofields_encodings[i].fieldoffset);
       __vmx_vmread(g_vmx_vmcsrofields_encodings[i].encoding, field);
   }  
-}
+}*/
 
 //--debug: dumpVMCS dumps VMCS contents-----------------------------------------
 void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu){
   		printf("\nGuest State follows:");
-		printf("\nguest_CS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_CS_selector);
+/*		printf("\nguest_CS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_CS_selector);
 		printf("\nguest_DS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_DS_selector);
 		printf("\nguest_ES_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_ES_selector);
 		printf("\nguest_FS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_FS_selector);
@@ -567,7 +568,7 @@ void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu){
 			(unsigned long)vcpu->vmcs.guest_CR3);
 		printf("\nguest_RSP=0x%08lx", (unsigned long)vcpu->vmcs.guest_RSP);
 		printf("\nguest_RIP=0x%08lx", (unsigned long)vcpu->vmcs.guest_RIP);
-		printf("\nguest_RFLAGS=0x%08lx", (unsigned long)vcpu->vmcs.guest_RFLAGS);
+		printf("\nguest_RFLAGS=0x%08lx", (unsigned long)vcpu->vmcs.guest_RFLAGS);*/
 }
 
 
