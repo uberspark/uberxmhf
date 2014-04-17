@@ -54,8 +54,8 @@
 //void xmhf_memprot_initialize(VCPU *vcpu){
 //	xmhf_memprot_arch_initialize(vcpu);
 //}
-void xmhf_memprot_initialize(context_desc_t context_desc){
-	xmhf_memprot_arch_initialize(context_desc);
+void xmhf_memprot_initialize(u32 index_cpudata){
+	xmhf_memprot_arch_initialize(index_cpudata);
 }
 
 // get level-1 page map address

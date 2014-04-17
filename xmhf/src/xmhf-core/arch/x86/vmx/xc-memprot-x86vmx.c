@@ -172,8 +172,8 @@ u32 xmhf_memprot_arch_x86vmx_getprot(VCPU *vcpu, u64 gpa){
 
 // initialize memory protection structures for a given core (vcpu)
 //void xmhf_memprot_arch_initialize(VCPU *vcpu){
-void xmhf_memprot_arch_initialize(context_desc_t context_desc){
-	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
+void xmhf_memprot_arch_initialize(u32 index_cpudata){
+	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[index_cpudata];
 		xmhf_memprot_arch_x86vmx_initialize(vcpu);
 }
 

@@ -638,23 +638,26 @@ void xmhf_partition_arch_x86vmx_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size,
 
 //initialize partition monitor for a given CPU
 //void xmhf_partition_arch_initializemonitor(VCPU *vcpu){
-void xmhf_partition_arch_initializemonitor(context_desc_t context_desc){
-	VCPU *vcpu=(VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
+//void xmhf_partition_arch_initializemonitor(context_desc_t context_desc){
+void xmhf_partition_arch_initializemonitor(u32 index_cpudata){
+	VCPU *vcpu=&g_bplt_vcpu[index_cpudata];
 	
 		xmhf_partition_arch_x86vmx_initializemonitor(vcpu);
 }
 
 //setup guest OS state for the partition
 //void xmhf_partition_arch_setupguestOSstate(VCPU *vcpu){
-void xmhf_partition_arch_setupguestOSstate(context_desc_t context_desc){
-	VCPU *vcpu=(VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
+//void xmhf_partition_arch_setupguestOSstate(context_desc_t context_desc){
+void xmhf_partition_arch_setupguestOSstate(u32 index_cpudata){
+	VCPU *vcpu=(VCPU *)&g_bplt_vcpu[index_cpudata];
 		xmhf_partition_arch_x86vmx_setupguestOSstate(vcpu);
 }
 
 //start executing the partition and guest OS
 //void xmhf_partition_arch_start(VCPU *vcpu){
-void xmhf_partition_arch_start(context_desc_t context_desc){
-	VCPU *vcpu=(VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
+//void xmhf_partition_arch_start(context_desc_t context_desc){
+void xmhf_partition_arch_start(u32 index_cpudata){
+	VCPU *vcpu=(VCPU *)&g_bplt_vcpu[index_cpudata];
 		xmhf_partition_arch_x86vmx_start(vcpu);
 }
 

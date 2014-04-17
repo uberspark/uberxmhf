@@ -57,24 +57,31 @@ void xmhf_richguest_initialize(u32 index_cpudata_bsp){
 
 
 //initialize environment to boot "rich" guest
-void xmhf_smpguest_initialize(context_desc_t context_desc){
+//void xmhf_smpguest_initialize(context_desc_t context_desc){
+void xmhf_richguest_addcpuandrun(u32 index_cpudata){
+	
 	//initialize CPU
 	//xmhf_baseplatform_cpuinitialize();
 
 	//initialize partition monitor (i.e., hypervisor) for this CPU
 	//xmhf_partition_initializemonitor(vcpu);
-	xmhf_partition_initializemonitor(context_desc);
+	//xmhf_partition_initializemonitor(context_desc);
+	xmhf_partition_initializemonitor(index_cpudata);
+	
 
 	//setup guest OS state for partition
 	//xmhf_partition_setupguestOSstate(vcpu);
-	xmhf_partition_setupguestOSstate(context_desc);
+	//xmhf_partition_setupguestOSstate(context_desc);
+	xmhf_partition_setupguestOSstate(index_cpudata);
 
 	//initialize memory protection for this core
-	xmhf_memprot_initialize(context_desc);		
+	//xmhf_memprot_initialize(context_desc);		
+	xmhf_memprot_initialize(index_cpudata);		
 
-  //start partition (guest)
-  printf("\n%s[%02x]: starting partition...", __FUNCTION__, context_desc.cpu_desc.id);
-  xmhf_partition_start(context_desc);
+	//start partition (guest)
+	printf("\n%s[%u]: starting partition...", __FUNCTION__, index_cpudata);
+	//xmhf_partition_start(context_desc);
+	xmhf_partition_start(index_cpudata);
 }
 
 
