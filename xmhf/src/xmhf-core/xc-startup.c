@@ -58,13 +58,13 @@ static void _xc_startup_initialize_cpudata(XMHF_BOOTINFO *bootinfo){
 	printf("\nNo. of CPU entries = %u", bootinfo->cpuinfo_numentries);
 
 	for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
-		printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x", i, bootinfo->cpuinfo_buffer[i].isbsp, bootinfo->cpuinfo_buffer[i].lapic_id);
 		g_xc_cpu[i].cpuid = bootinfo->cpuinfo_buffer[i].lapic_id;
 		g_xc_cpu[i].is_bsp = bootinfo->cpuinfo_buffer[i].isbsp;
 		g_xc_cpu[i].is_quiesced = false;
 		//g_xc_cpu[i].index_cpuarchdata = i;	//indexes into g_xc_cpuarchdata[i][] for arch. specific data buffer
-		g_xc_cpu[i].cpuarchdata = (xc_cpuarchdata_t)&g_xc_cpuarchdata[i];
+		g_xc_cpu[i].cpuarchdata = (xc_cpuarchdata_t *)&g_xc_cpuarchdata[i][0];
 		g_xc_cpu[i].index_partitiondata = XC_INDEX_INVALID;
+		printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x, cpuarchdata=%08x", i, bootinfo->cpuinfo_buffer[i].isbsp, bootinfo->cpuinfo_buffer[i].lapic_id, (u32)g_xc_cpu[i].cpuarchdata);
 	}
 
 	g_xc_cpu_count = bootinfo->cpuinfo_numentries;
