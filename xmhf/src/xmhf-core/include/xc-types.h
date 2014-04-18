@@ -77,12 +77,14 @@ typedef struct {
 	cpu_desc_t cpu_desc;
 } context_desc_t;
 
+typedef void * xc_cpuarchdata_t;
 
 typedef struct {
 		u32 cpuid;				//unique CPU id
 		bool is_bsp;			//true if CPU is the boot-strap processor
 		bool is_quiesced;		//true if CPU is quiesced
-		u32 index_cpuarchdata;	//index into CPU arch. specific data buffer
+		//u32 index_cpuarchdata;	//index into CPU arch. specific data buffer
+		xc_cpuarchdata_t cpuarchdata;
 		u32 index_partitiondata;	//index into partition data buffer
 } xc_cpu_t;
 

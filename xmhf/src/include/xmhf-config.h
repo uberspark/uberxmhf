@@ -109,8 +109,8 @@
 	#define	MAX_PARTITIONS						(1)
 #endif
 
-//max. size of CPU arch. specific data (16K default)
-#define	MAX_PLATFORM_CPUARCHDATA_SIZE			(4*4096)
+//max. size of CPU arch. specific data (32K default)
+#define	MAX_PLATFORM_CPUARCHDATA_SIZE			(8*4096)
 
 //max. size of CPU stack (16K default)
 #define MAX_PLATFORM_CPUSTACK_SIZE				(4*4096)
