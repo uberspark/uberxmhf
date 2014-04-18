@@ -65,9 +65,10 @@ static const unsigned int vmx_msr_area_msrs_count = (sizeof(vmx_msr_area_msrs)/s
 
 
 //initialize partition monitor for a given CPU
-static void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu){
+static void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu, xc_cpu_t *xc_cpu){
 	u32 bcr0;
 	u64 vmcs_phys_addr = hva2spa((void*)vcpu->vmx_vmcs_vaddr);
+	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)xc_cpu->cpuarchdata;
 
 	//sanity check Intel CPU
 	{
@@ -224,8 +225,9 @@ static void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu){
 
 
 //setup guest OS state for the partition
-void xmhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu){
+void xmhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu, xc_cpu_t *xc_cpu){
 	u32 lodword, hidword;
+	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)xc_cpu->cpuarchdata;
 
 	//setup host state
 
@@ -525,14 +527,17 @@ u32 __vmx_start_hvm(void) __attribute__ ((naked)) {
 //initialize partition monitor for a given CPU
 void xmhf_partition_arch_initializemonitor(u32 index_cpudata){
 	VCPU *vcpu=&g_bplt_vcpu[index_cpudata];
+	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[index_cpudata];
 	
-		xmhf_partition_arch_x86vmx_initializemonitor(vcpu);
+	xmhf_partition_arch_x86vmx_initializemonitor(vcpu, xc_cpu);
 }
 
 //setup guest OS state for the partition
 void xmhf_partition_arch_setupguestOSstate(u32 index_cpudata){
 	VCPU *vcpu=(VCPU *)&g_bplt_vcpu[index_cpudata];
-		xmhf_partition_arch_x86vmx_setupguestOSstate(vcpu);
+	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[index_cpudata];
+
+	xmhf_partition_arch_x86vmx_setupguestOSstate(vcpu, xc_cpu);
 }
 
 //start executing the partition and guest OS
