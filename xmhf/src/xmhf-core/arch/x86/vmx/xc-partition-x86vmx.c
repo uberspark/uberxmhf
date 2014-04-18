@@ -136,7 +136,7 @@ static void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu, xc_cpu_t *x
 		#ifndef __XMHF_VERIFICATION__
 		rdmsr( (IA32_VMX_BASIC_MSR + i), &eax, &edx);
 		#endif
-		vcpu->vmx_msrs[i] = (u64)edx << 32 | (u64) eax;        
+		xc_cpuarchdata_x86vmx->vmx_msrs[i] = (u64)edx << 32 | (u64) eax;        
 	}
 
 	#ifndef __XMHF_VERIFICATION__
@@ -156,7 +156,7 @@ static void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu, xc_cpu_t *x
 	}
 
 	//we required unrestricted guest support, halt if we don;t have it
-	if( !( (u32)((u64)vcpu->vmx_msrs[IA32_VMX_MSRCOUNT-1] >> 32) & 0x80 ) ){
+	if( !( (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msrs[IA32_VMX_MSRCOUNT-1] >> 32) & 0x80 ) ){
 		printf("\n%s: need unrestricted guest support but did not find any. Halting!", __FUNCTION__);
 		HALT();
 	}
@@ -175,7 +175,7 @@ static void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu, xc_cpu_t *x
 	u64 vmxonregion_paddr = hva2spa((void*)vcpu->vmx_vmxonregion_vaddr);
 	//set VMCS rev id
 	#ifndef __XMHF_VERIFICATION__
-	*((u32 *)vcpu->vmx_vmxonregion_vaddr) = (u32)vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
+	*((u32 *)vcpu->vmx_vmxonregion_vaddr) = (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
 	#endif
 
 	#ifndef __XMHF_VERIFICATION__
@@ -211,7 +211,7 @@ static void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu, xc_cpu_t *x
   
   
 	//set VMCS revision id
-	*((u32 *)vcpu->vmx_vmcs_vaddr) = (u32)vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
+	*((u32 *)vcpu->vmx_vmcs_vaddr) = (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
 
 	//load VMPTR
 	if(!__vmx_vmptrld((u64)vmcs_phys_addr)){
@@ -278,10 +278,10 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu, xc_cpu_t *xc_cpu){
 #endif
 
 	//setup default VMX controls
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_PIN_BASED, vcpu->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR]);
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR]);
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_CONTROLS, vcpu->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR]);
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_CONTROLS, vcpu->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_PIN_BASED, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_CONTROLS, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_CONTROLS, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR]);
 
 	//IO bitmap support
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL, (u32)hva2spa((void*)vcpu->vmx_vaddr_iobitmap));
@@ -330,9 +330,9 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu, xc_cpu_t *xc_cpu){
       
 	//setup guest state
 	//CR0, real-mode, PE and PG bits cleared
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, (vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR] & ~(CR0_PE) & ~(CR0_PG)) );
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, (xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR] & ~(CR0_PE) & ~(CR0_PG)) );
 	//CR4, required bits set (usually VMX enabled bit)
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR4, vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR4, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
 	//CR3 set to 0, does not matter
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR3, 0);
 	//IDTR
@@ -399,7 +399,7 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu, xc_cpu_t *xc_cpu){
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SS_ACCESS_RIGHTS, 0x93);
 					
 	//activate secondary processor controls
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_SECCPU_BASED, vcpu->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_SECCPU_BASED, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR]);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) | (1 << 31)) );
 
 	//setup unrestricted guest
@@ -413,11 +413,11 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu, xc_cpu_t *xc_cpu){
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_PIN_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_PIN_BASED) | (1 << 3) ) );
 	
 	//trap access to CR0 fixed 1-bits
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR0_MASK, ((((vcpu->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR] & ~(CR0_PE)) & ~(CR0_PG)) | CR0_CD) | CR0_NW) );
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR0_MASK, ((((xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR] & ~(CR0_PE)) & ~(CR0_PG)) | CR0_CD) | CR0_NW) );
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR0_SHADOW, xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0));
 			
 	//trap access to CR4 fixed bits (this includes the VMXE bit)
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR4_MASK, vcpu->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR4_MASK, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR4_SHADOW, CR4_VMXE);
 
 	//flush guest TLB to start with

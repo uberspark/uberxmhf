@@ -222,7 +222,7 @@ void xmhf_apihub_arch_initialize (void){
 	{
 		core_ptba = (u32)&core_3level_pdpt;
 		hypapp_ptba = (u32)&hypapp_3level_pdpt;
-		printf("\n%s: core_ptba=%08x, hypapp_ptba=%08x", core_ptba, hypapp_ptba);
+		printf("\n%s: core_ptba=%08x, hypapp_ptba=%08x", __FUNCTION__, core_ptba, hypapp_ptba);
 	}
 
 		

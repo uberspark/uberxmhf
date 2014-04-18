@@ -142,7 +142,7 @@ typedef struct _vcpu {
   u32 quiesced;				//1 if this core is currently quiesced
 	
   //XXX: stuff that will go into cpu data structure as arch. specific fields
-  u64 vmx_msrs[IA32_VMX_MSRCOUNT];  //VMX msr values
+  //u64 vmx_msrs[IA32_VMX_MSRCOUNT];  //VMX msr values
   u64 vmx_msr_efer;
   u64 vmx_msr_efcr;
   u32 vmx_vmxonregion_vaddr;    //virtual address of the vmxon region
