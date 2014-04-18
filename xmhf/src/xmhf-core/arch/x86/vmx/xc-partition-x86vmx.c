@@ -356,10 +356,10 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu, xc_cpu_t *xc_cpu){
 	
 	//RIP and activity state
 	if(vcpu->isbsp){
-		printf("\nBSP(0x%02x): copying boot-module to boot guest", vcpu->id);
-		#ifndef __XMHF_VERIFICATION__
-		memcpy((void *)__GUESTOSBOOTMODULE_BASE, (void *)xcbootinfo->richguest_bootmodule_base, xcbootinfo->richguest_bootmodule_size);
-		#endif
+		//printf("\nBSP(0x%02x): copying boot-module to boot guest", vcpu->id);
+		//#ifndef __XMHF_VERIFICATION__
+		//memcpy((void *)__GUESTOSBOOTMODULE_BASE, (void *)xcbootinfo->richguest_bootmodule_base, xcbootinfo->richguest_bootmodule_size);
+		//#endif
 		xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_SELECTOR, 0);
 		xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_BASE, 0);
 		xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, 0x7c00);

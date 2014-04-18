@@ -878,6 +878,12 @@ void xmhf_richguest_arch_initialize(u32 index_cpudata_bsp){
 	VCPU *vcpu = &g_bplt_vcpu[index_cpudata_bsp];
 	
 	printf("\n%s: index_cpudata_bsp = %u", __FUNCTION__, index_cpudata_bsp);	
+
+	printf("\n%s: copying boot-module to boot guest", __FUNCTION__);
+	#ifndef __XMHF_VERIFICATION__
+	memcpy((void *)__GUESTOSBOOTMODULE_BASE, (void *)xcbootinfo->richguest_bootmodule_base, xcbootinfo->richguest_bootmodule_size);
+	#endif
+	
 	printf("\n%s: BSP initializing HPT", __FUNCTION__);
 	_vmx_gathermemorytypes(vcpu);
 	#ifndef __XMHF_VERIFICATION__	
