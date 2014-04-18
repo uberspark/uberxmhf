@@ -53,76 +53,15 @@
 #include <xc-x86.h>
 #include <xc-x86vmx.h>
 
-//---globals referenced by this module------------------------------------------
-//TODO: need to remove these direct references
-extern u32 x_idt_start[]; //runtimesup.S
-
-
 //critical MSRs that need to be saved/restored across guest VM switches
 static const u32 vmx_msr_area_msrs[] = {
 	MSR_EFER, 
 	MSR_IA32_PAT,
 	MSR_K6_STAR,
 };
+
 //count of critical MSRs that need to be saved/restored across VM switches
 static const unsigned int vmx_msr_area_msrs_count = (sizeof(vmx_msr_area_msrs)/sizeof(vmx_msr_area_msrs[0]));
-
-
-//---start a HVM----------------------------------------------------------------
-static void _vmx_start_hvm(VCPU *vcpu, u32 vmcs_phys_addr){
-/*  //clear VMCS
-  if(!__vmx_vmclear((u64)vmcs_phys_addr)){
-    printf("\nCPU(0x%02x): VMCLEAR failed, HALT!", vcpu->id);
-    HALT();
-  }
-  printf("\nCPU(0x%02x): VMCLEAR success.", vcpu->id);
-  
-  
-  //set VMCS revision id
- 	*((u32 *)vcpu->vmx_vmcs_vaddr) = (u32)vcpu->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
-
-  //load VMPTR
-  if(!__vmx_vmptrld((u64)vmcs_phys_addr)){
-    printf("\nCPU(0x%02x): VMPTRLD failed, HALT!", vcpu->id);
-    HALT();
-  }
-  printf("\nCPU(0x%02x): VMPTRLD success.", vcpu->id);
-*/  
-  //put VMCS to CPU
-  //xmhf_baseplatform_arch_x86vmx_putVMCS(vcpu);
-  //printf("\nCPU(0x%02x): VMWRITEs success.", vcpu->id);
-  HALT_ON_ERRORCOND( xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_VMCS_LINK_POINTER_FULL) == 0xFFFFFFFFUL );
-
-  {
-    u32 errorcode;
-    errorcode=__vmx_start_hvm();
-    HALT_ON_ERRORCOND(errorcode != 2);	//this means the VMLAUNCH implementation violated the specs.
-    //get CPU VMCS into VCPU structure
-    //xmhf_baseplatform_arch_x86vmx_getVMCS(vcpu);
-    
-    switch(errorcode){
-			case 0:	//no error code, VMCS pointer is invalid
-			    printf("\nCPU(0x%02x): VMLAUNCH error; VMCS pointer invalid?. HALT!", vcpu->id);
-				break;
-			case 1:{//error code available, so dump it
-				u32 code=xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
-				printf("\nCPU(0x%02x): VMLAUNCH error; code=0x%x. HALT!", vcpu->id, code);
-			    xmhf_baseplatform_arch_x86vmx_dumpVMCS(vcpu);
-				break;
-			}
-	}
-    HALT();
-  }
-
-  HALT();
-}
-
-//static void _plant_spinloop_in_bda(void){
-//	u8 *spinloopmemory = (u8 *)(0x7C00 - 0x2);				//use two bytes just before boot module address at 0x0000: 0x7C00
-//	
-//	spinloopmemory[0]=0xEB;
-//	spinloopmemory[1]=0xFE;		//plant a jmp eip to spin forever
-//}
 
 
 //initialize partition monitor for a given CPU
@@ -485,6 +424,7 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu){
 
 //start executing the partition and guest OS
 static void xmhf_partition_arch_x86vmx_start(VCPU *vcpu){
+	u32 errorcode;
     
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 	//ensure that whenever a partition is started on a vcpu, we have extended paging
@@ -495,9 +435,23 @@ static void xmhf_partition_arch_x86vmx_start(VCPU *vcpu){
 #endif
 
 #ifndef __XMHF_VERIFICATION__
-    _vmx_start_hvm(vcpu, hva2spa((void*)vcpu->vmx_vmcs_vaddr));
-	//we never get here, if we do, we just return and our caller is responsible
-	//for halting the core as something really bad happened!
+	HALT_ON_ERRORCOND( xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_VMCS_LINK_POINTER_FULL) == 0xFFFFFFFFUL );
+
+	errorcode=__vmx_start_hvm();
+	HALT_ON_ERRORCOND(errorcode != 2);	//this means the VMLAUNCH implementation violated the specs.
+
+	switch(errorcode){
+			case 0:	//no error code, VMCS pointer is invalid
+				printf("\nCPU(0x%02x): VMLAUNCH error; VMCS pointer invalid?. HALT!", vcpu->id);
+				break;
+			case 1:{//error code available, so dump it
+				u32 code=xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
+				printf("\nCPU(0x%02x): VMLAUNCH error; code=0x%x. HALT!", vcpu->id, code);
+				xmhf_baseplatform_arch_x86vmx_dumpVMCS(vcpu);
+				break;
+			}
+	}
+	HALT();
 #endif	
 
 }
@@ -521,36 +475,6 @@ void xmhf_partition_arch_x86vmx_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size,
 	}
 }
 
-//initialize partition monitor for a given CPU
-//void xmhf_partition_arch_initializemonitor(VCPU *vcpu){
-//void xmhf_partition_arch_initializemonitor(context_desc_t context_desc){
-void xmhf_partition_arch_initializemonitor(u32 index_cpudata){
-	VCPU *vcpu=&g_bplt_vcpu[index_cpudata];
-	
-		xmhf_partition_arch_x86vmx_initializemonitor(vcpu);
-}
-
-//setup guest OS state for the partition
-//void xmhf_partition_arch_setupguestOSstate(VCPU *vcpu){
-//void xmhf_partition_arch_setupguestOSstate(context_desc_t context_desc){
-void xmhf_partition_arch_setupguestOSstate(u32 index_cpudata){
-	VCPU *vcpu=(VCPU *)&g_bplt_vcpu[index_cpudata];
-		xmhf_partition_arch_x86vmx_setupguestOSstate(vcpu);
-}
-
-//start executing the partition and guest OS
-//void xmhf_partition_arch_start(VCPU *vcpu){
-//void xmhf_partition_arch_start(context_desc_t context_desc){
-void xmhf_partition_arch_start(u32 index_cpudata){
-	VCPU *vcpu=(VCPU *)&g_bplt_vcpu[index_cpudata];
-		xmhf_partition_arch_x86vmx_start(vcpu);
-}
-
-//set legacy I/O protection for the partition
-void xmhf_partition_arch_legacyIO_setprot(context_desc_t context_desc, u32 port, u32 size, u32 prottype){
-	VCPU *vcpu=(VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
-		xmhf_partition_arch_x86vmx_legacyIO_setprot(vcpu, port, size, prottype);
-}
 
 //----------------------------------------------------------------------
 // start HVM on a given physical core
@@ -594,4 +518,31 @@ u32 __vmx_start_hvm(void) __attribute__ ((naked)) {
 				  "ret\r\n"
 	);
 
+}
+
+
+//---------------------------------------------------------------------
+//initialize partition monitor for a given CPU
+void xmhf_partition_arch_initializemonitor(u32 index_cpudata){
+	VCPU *vcpu=&g_bplt_vcpu[index_cpudata];
+	
+		xmhf_partition_arch_x86vmx_initializemonitor(vcpu);
+}
+
+//setup guest OS state for the partition
+void xmhf_partition_arch_setupguestOSstate(u32 index_cpudata){
+	VCPU *vcpu=(VCPU *)&g_bplt_vcpu[index_cpudata];
+		xmhf_partition_arch_x86vmx_setupguestOSstate(vcpu);
+}
+
+//start executing the partition and guest OS
+void xmhf_partition_arch_start(u32 index_cpudata){
+	VCPU *vcpu=(VCPU *)&g_bplt_vcpu[index_cpudata];
+		xmhf_partition_arch_x86vmx_start(vcpu);
+}
+
+//set legacy I/O protection for the partition
+void xmhf_partition_arch_legacyIO_setprot(context_desc_t context_desc, u32 port, u32 size, u32 prottype){
+	VCPU *vcpu=(VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
+		xmhf_partition_arch_x86vmx_legacyIO_setprot(vcpu, port, size, prottype);
 }
