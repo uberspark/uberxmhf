@@ -49,6 +49,7 @@
 
 //---includes-------------------------------------------------------------------
 #include <xmhf-core.h> 
+#include <xc-x86.h>
 
 //initialize global core cpu data structure, g_xc_cpu
 //and g_xc_cpu_count;
@@ -157,7 +158,9 @@ void xmhf_runtime_entry(void){
 	
 		//call app main
 		printf("\n%s: proceeding to call xmhfhypapp_main on BSP", __FUNCTION__);
+		printf("\n%s: CR3 before going in=%08x", __FUNCTION__, read_cr3());
 		xmhfhypapp_main(hypappenvb);
+		printf("\n%s: CR3 after coming back=%08x", __FUNCTION__, read_cr3());
 		printf("\n%s: came back into core", __FUNCTION__);
 
 	}   	
