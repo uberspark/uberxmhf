@@ -462,7 +462,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 		//--------------------------------------------------------------
 		//xmhf-core only intercepts
 		//--------------------------------------------------------------
-		case VMX_VMEXIT_HLT:
+		/*case VMX_VMEXIT_HLT:
 			if(!vcpu->vmx_guest_unrestricted){
 				printf("\nCPU(0x%02x): V86 monitor based real-mode exec. unsupported!", vcpu->id);
 				HALT();
@@ -470,7 +470,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 				printf("\nCPU(0x%02x): Unexpected HLT intercept in UG, Halting!", vcpu->id);
 				HALT();
 			}
-		break;
+		break;*/
 
  		case VMX_VMEXIT_EXCEPTION:{
 			switch( ( xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION) & INTR_INFO_VECTOR_MASK) ){
@@ -516,12 +516,12 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 						break;
 					
 					case 0x4: //CR4 access
-						if(!vcpu->vmx_guest_unrestricted){
-							printf("\nHALT: v86 monitor based real-mode exec. unsupported!");
-							HALT();
-						}else{
+						//if(!vcpu->vmx_guest_unrestricted){
+						//	printf("\nHALT: v86 monitor based real-mode exec. unsupported!");
+						//	HALT();
+						//}else{
 							vmx_handle_intercept_cr4access_ug(vcpu, r, gpr, tofrom);	
-						}
+						//}
 						break;
 				
 					default:

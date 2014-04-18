@@ -169,21 +169,29 @@ static void _vmx_initVT(VCPU *vcpu){
     //  printf("\nCPU(0x%02x): VMX MSR 0x%08x = 0x%08x%08x", vcpu->id, IA32_VMX_BASIC_MSR+i, 
     //      (u32)((u64)vcpu->vmx_msrs[i] >> 32), (u32)vcpu->vmx_msrs[i]);
     
-		//check if VMX supports unrestricted guest, if so we don't need the
+	/*	//check if VMX supports unrestricted guest, if so we don't need the
 		//v86 monitor and the associated state transition handling
 		if( (u32)((u64)vcpu->vmx_msrs[IA32_VMX_MSRCOUNT-1] >> 32) & 0x80 )
 			vcpu->vmx_guest_unrestricted = 1;
 		else
 			vcpu->vmx_guest_unrestricted = 0;
+*/
+
+	//we required unrestricted guest support, halt if we don;t have it
+	if( !( (u32)((u64)vcpu->vmx_msrs[IA32_VMX_MSRCOUNT-1] >> 32) & 0x80 ) ){
+		printf("\n%s: need unrestricted guest support but did not find any. Halting!", __FUNCTION__);
+		HALT();
+	}
+	
 				
-		#if defined(__DISABLE_UG__)
+		/*#if defined(__DISABLE_UG__)
 		//for now disable unrestricted bit, as we still need to intercept
 		//E820 mem-map access and VMX doesnt provide software INT intercept :(
 		vcpu->guest_unrestricted=0;
-		#endif				
+		#endif*/				
 				
-		if(vcpu->vmx_guest_unrestricted)
-			printf("\nCPU(0x%02x): UNRESTRICTED-GUEST supported.", vcpu->id);
+		//if(vcpu->vmx_guest_unrestricted)
+		//	printf("\nCPU(0x%02x): UNRESTRICTED-GUEST supported.", vcpu->id);
 		
 		printf("\nCPU(0x%02x): MSR_EFER=0x%08x%08x", vcpu->id, (u32)((u64)vcpu->vmx_msr_efer >> 32), 
           (u32)vcpu->vmx_msr_efer);
