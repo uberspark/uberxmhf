@@ -52,6 +52,8 @@
 #include <xc-x86vmx.h>
 
 
+static struct _memorytype _vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
+
 //---function to obtain the vcpu of the currently executing core----------------
 //XXX: move this into baseplatform as backend
 //note: this always returns a valid VCPU pointer
@@ -564,121 +566,121 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
 
 	#ifndef __XMHF_VERIFICATION__
 	//1. clear memorytypes array
-	memset((void *)&vcpu->vmx_ept_memorytypes, 0, sizeof(struct _memorytype) * MAX_MEMORYTYPE_ENTRIES);
+	memset((void *)&_vmx_ept_memorytypes, 0, sizeof(struct _memorytype) * MAX_MEMORYTYPE_ENTRIES);
 	#endif
 
   
 	//2. grab memory types using FIXED MTRRs
     //0x00000000-0x0007FFFF
     rdmsr(IA32_MTRR_FIX64K_00000, &eax, &edx);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x00000000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x0000FFFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x00010000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x0001FFFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x00020000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x0002FFFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x00FF0000) >> 16);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x00030000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x0003FFFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0xFF000000) >> 24);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x00040000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x0004FFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x000000FF) >> 0);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x00050000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x0005FFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x0000FF00) >> 8);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x00060000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x0006FFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x00070000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x0007FFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
+    _vmx_ept_memorytypes[index].startaddr = 0x00000000; _vmx_ept_memorytypes[index].endaddr = 0x0000FFFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
+    _vmx_ept_memorytypes[index].startaddr = 0x00010000; _vmx_ept_memorytypes[index].endaddr = 0x0001FFFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
+    _vmx_ept_memorytypes[index].startaddr = 0x00020000; _vmx_ept_memorytypes[index].endaddr = 0x0002FFFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x00FF0000) >> 16);
+    _vmx_ept_memorytypes[index].startaddr = 0x00030000; _vmx_ept_memorytypes[index].endaddr = 0x0003FFFF; _vmx_ept_memorytypes[index++].type= ((eax & 0xFF000000) >> 24);
+    _vmx_ept_memorytypes[index].startaddr = 0x00040000; _vmx_ept_memorytypes[index].endaddr = 0x0004FFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x000000FF) >> 0);
+    _vmx_ept_memorytypes[index].startaddr = 0x00050000; _vmx_ept_memorytypes[index].endaddr = 0x0005FFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x0000FF00) >> 8);
+    _vmx_ept_memorytypes[index].startaddr = 0x00060000; _vmx_ept_memorytypes[index].endaddr = 0x0006FFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
+    _vmx_ept_memorytypes[index].startaddr = 0x00070000; _vmx_ept_memorytypes[index].endaddr = 0x0007FFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
     //0x00080000-0x0009FFFF
   	rdmsr(IA32_MTRR_FIX16K_80000, &eax, &edx);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x00080000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x00083FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x00084000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x00087FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x00088000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x0008BFFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x00FF0000) >> 16);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x0008C000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x0008FFFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0xFF000000) >> 24);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x00090000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x00093FFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x000000FF) >> 0);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x00094000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x00097FFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x0000FF00) >> 8);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x00098000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x0009BFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x0009C000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x0009FFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
+    _vmx_ept_memorytypes[index].startaddr = 0x00080000; _vmx_ept_memorytypes[index].endaddr = 0x00083FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
+    _vmx_ept_memorytypes[index].startaddr = 0x00084000; _vmx_ept_memorytypes[index].endaddr = 0x00087FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
+    _vmx_ept_memorytypes[index].startaddr = 0x00088000; _vmx_ept_memorytypes[index].endaddr = 0x0008BFFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x00FF0000) >> 16);
+    _vmx_ept_memorytypes[index].startaddr = 0x0008C000; _vmx_ept_memorytypes[index].endaddr = 0x0008FFFF; _vmx_ept_memorytypes[index++].type= ((eax & 0xFF000000) >> 24);
+    _vmx_ept_memorytypes[index].startaddr = 0x00090000; _vmx_ept_memorytypes[index].endaddr = 0x00093FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x000000FF) >> 0);
+    _vmx_ept_memorytypes[index].startaddr = 0x00094000; _vmx_ept_memorytypes[index].endaddr = 0x00097FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x0000FF00) >> 8);
+    _vmx_ept_memorytypes[index].startaddr = 0x00098000; _vmx_ept_memorytypes[index].endaddr = 0x0009BFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
+    _vmx_ept_memorytypes[index].startaddr = 0x0009C000; _vmx_ept_memorytypes[index].endaddr = 0x0009FFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
     //0x000A0000-0x000BFFFF
 	  rdmsr(IA32_MTRR_FIX16K_A0000, &eax, &edx);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000A0000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000A3FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000A4000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000A7FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000A8000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000ABFFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x00FF0000) >> 16);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000AC000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000AFFFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0xFF000000) >> 24);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000B0000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000B3FFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x000000FF) >> 0);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000B4000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000B7FFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x0000FF00) >> 8);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000B8000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000BBFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000BC000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000BFFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
+    _vmx_ept_memorytypes[index].startaddr = 0x000A0000; _vmx_ept_memorytypes[index].endaddr = 0x000A3FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
+    _vmx_ept_memorytypes[index].startaddr = 0x000A4000; _vmx_ept_memorytypes[index].endaddr = 0x000A7FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
+    _vmx_ept_memorytypes[index].startaddr = 0x000A8000; _vmx_ept_memorytypes[index].endaddr = 0x000ABFFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x00FF0000) >> 16);
+    _vmx_ept_memorytypes[index].startaddr = 0x000AC000; _vmx_ept_memorytypes[index].endaddr = 0x000AFFFF; _vmx_ept_memorytypes[index++].type= ((eax & 0xFF000000) >> 24);
+    _vmx_ept_memorytypes[index].startaddr = 0x000B0000; _vmx_ept_memorytypes[index].endaddr = 0x000B3FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x000000FF) >> 0);
+    _vmx_ept_memorytypes[index].startaddr = 0x000B4000; _vmx_ept_memorytypes[index].endaddr = 0x000B7FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x0000FF00) >> 8);
+    _vmx_ept_memorytypes[index].startaddr = 0x000B8000; _vmx_ept_memorytypes[index].endaddr = 0x000BBFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
+    _vmx_ept_memorytypes[index].startaddr = 0x000BC000; _vmx_ept_memorytypes[index].endaddr = 0x000BFFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
     //0x000C0000-0x000C7FFF
     rdmsr(IA32_MTRR_FIX4K_C0000, &eax, &edx);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000C0000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000C0FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000C1000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000C1FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000C2000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000C2FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x00FF0000) >> 16);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000C3000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000C3FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0xFF000000) >> 24);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000C4000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000C4FFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x000000FF) >> 0);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000C5000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000C5FFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x0000FF00) >> 8);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000C6000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000C6FFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000C7000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000C7FFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
+    _vmx_ept_memorytypes[index].startaddr = 0x000C0000; _vmx_ept_memorytypes[index].endaddr = 0x000C0FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
+    _vmx_ept_memorytypes[index].startaddr = 0x000C1000; _vmx_ept_memorytypes[index].endaddr = 0x000C1FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
+    _vmx_ept_memorytypes[index].startaddr = 0x000C2000; _vmx_ept_memorytypes[index].endaddr = 0x000C2FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x00FF0000) >> 16);
+    _vmx_ept_memorytypes[index].startaddr = 0x000C3000; _vmx_ept_memorytypes[index].endaddr = 0x000C3FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0xFF000000) >> 24);
+    _vmx_ept_memorytypes[index].startaddr = 0x000C4000; _vmx_ept_memorytypes[index].endaddr = 0x000C4FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x000000FF) >> 0);
+    _vmx_ept_memorytypes[index].startaddr = 0x000C5000; _vmx_ept_memorytypes[index].endaddr = 0x000C5FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x0000FF00) >> 8);
+    _vmx_ept_memorytypes[index].startaddr = 0x000C6000; _vmx_ept_memorytypes[index].endaddr = 0x000C6FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
+    _vmx_ept_memorytypes[index].startaddr = 0x000C7000; _vmx_ept_memorytypes[index].endaddr = 0x000C7FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
     //0x000C8000-0x000C8FFF
 	  rdmsr(IA32_MTRR_FIX4K_C8000, &eax, &edx);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000C8000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000C8FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000C9000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000C9FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000CA000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000CAFFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x00FF0000) >> 16);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000CB000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000CBFFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0xFF000000) >> 24);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000CC000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000CCFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x000000FF) >> 0);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000CD000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000CDFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x0000FF00) >> 8);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000CE000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000CEFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000CF000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000CFFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
+    _vmx_ept_memorytypes[index].startaddr = 0x000C8000; _vmx_ept_memorytypes[index].endaddr = 0x000C8FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
+    _vmx_ept_memorytypes[index].startaddr = 0x000C9000; _vmx_ept_memorytypes[index].endaddr = 0x000C9FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
+    _vmx_ept_memorytypes[index].startaddr = 0x000CA000; _vmx_ept_memorytypes[index].endaddr = 0x000CAFFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x00FF0000) >> 16);
+    _vmx_ept_memorytypes[index].startaddr = 0x000CB000; _vmx_ept_memorytypes[index].endaddr = 0x000CBFFF; _vmx_ept_memorytypes[index++].type= ((eax & 0xFF000000) >> 24);
+    _vmx_ept_memorytypes[index].startaddr = 0x000CC000; _vmx_ept_memorytypes[index].endaddr = 0x000CCFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x000000FF) >> 0);
+    _vmx_ept_memorytypes[index].startaddr = 0x000CD000; _vmx_ept_memorytypes[index].endaddr = 0x000CDFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x0000FF00) >> 8);
+    _vmx_ept_memorytypes[index].startaddr = 0x000CE000; _vmx_ept_memorytypes[index].endaddr = 0x000CEFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
+    _vmx_ept_memorytypes[index].startaddr = 0x000CF000; _vmx_ept_memorytypes[index].endaddr = 0x000CFFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
     //0x000D0000-0x000D7FFF
     rdmsr(IA32_MTRR_FIX4K_D0000, &eax, &edx);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000D0000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000D0FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000D1000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000D1FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000D2000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000D2FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x00FF0000) >> 16);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000D3000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000D3FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0xFF000000) >> 24);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000D4000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000D4FFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x000000FF) >> 0);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000D5000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000D5FFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x0000FF00) >> 8);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000D6000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000D6FFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000D7000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000D7FFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
+    _vmx_ept_memorytypes[index].startaddr = 0x000D0000; _vmx_ept_memorytypes[index].endaddr = 0x000D0FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
+    _vmx_ept_memorytypes[index].startaddr = 0x000D1000; _vmx_ept_memorytypes[index].endaddr = 0x000D1FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
+    _vmx_ept_memorytypes[index].startaddr = 0x000D2000; _vmx_ept_memorytypes[index].endaddr = 0x000D2FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x00FF0000) >> 16);
+    _vmx_ept_memorytypes[index].startaddr = 0x000D3000; _vmx_ept_memorytypes[index].endaddr = 0x000D3FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0xFF000000) >> 24);
+    _vmx_ept_memorytypes[index].startaddr = 0x000D4000; _vmx_ept_memorytypes[index].endaddr = 0x000D4FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x000000FF) >> 0);
+    _vmx_ept_memorytypes[index].startaddr = 0x000D5000; _vmx_ept_memorytypes[index].endaddr = 0x000D5FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x0000FF00) >> 8);
+    _vmx_ept_memorytypes[index].startaddr = 0x000D6000; _vmx_ept_memorytypes[index].endaddr = 0x000D6FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
+    _vmx_ept_memorytypes[index].startaddr = 0x000D7000; _vmx_ept_memorytypes[index].endaddr = 0x000D7FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
     //0x000D8000-0x000DFFFF
   	rdmsr(IA32_MTRR_FIX4K_D8000, &eax, &edx);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000D8000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000D8FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000D9000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000D9FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000DA000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000DAFFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x00FF0000) >> 16);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000DB000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000DBFFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0xFF000000) >> 24);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000DC000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000DCFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x000000FF) >> 0);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000DD000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000DDFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x0000FF00) >> 8);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000DE000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000DEFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000DF000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000DFFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
+    _vmx_ept_memorytypes[index].startaddr = 0x000D8000; _vmx_ept_memorytypes[index].endaddr = 0x000D8FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
+    _vmx_ept_memorytypes[index].startaddr = 0x000D9000; _vmx_ept_memorytypes[index].endaddr = 0x000D9FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
+    _vmx_ept_memorytypes[index].startaddr = 0x000DA000; _vmx_ept_memorytypes[index].endaddr = 0x000DAFFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x00FF0000) >> 16);
+    _vmx_ept_memorytypes[index].startaddr = 0x000DB000; _vmx_ept_memorytypes[index].endaddr = 0x000DBFFF; _vmx_ept_memorytypes[index++].type= ((eax & 0xFF000000) >> 24);
+    _vmx_ept_memorytypes[index].startaddr = 0x000DC000; _vmx_ept_memorytypes[index].endaddr = 0x000DCFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x000000FF) >> 0);
+    _vmx_ept_memorytypes[index].startaddr = 0x000DD000; _vmx_ept_memorytypes[index].endaddr = 0x000DDFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x0000FF00) >> 8);
+    _vmx_ept_memorytypes[index].startaddr = 0x000DE000; _vmx_ept_memorytypes[index].endaddr = 0x000DEFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
+    _vmx_ept_memorytypes[index].startaddr = 0x000DF000; _vmx_ept_memorytypes[index].endaddr = 0x000DFFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
     //0x000E0000-0x000E7FFF
     rdmsr(IA32_MTRR_FIX4K_E0000, &eax, &edx);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000E0000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000E0FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000E1000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000E1FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000E2000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000E2FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x00FF0000) >> 16);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000E3000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000E3FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0xFF000000) >> 24);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000E4000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000E4FFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x000000FF) >> 0);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000E5000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000E5FFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x0000FF00) >> 8);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000E6000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000E6FFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000E7000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000E7FFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
+    _vmx_ept_memorytypes[index].startaddr = 0x000E0000; _vmx_ept_memorytypes[index].endaddr = 0x000E0FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
+    _vmx_ept_memorytypes[index].startaddr = 0x000E1000; _vmx_ept_memorytypes[index].endaddr = 0x000E1FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
+    _vmx_ept_memorytypes[index].startaddr = 0x000E2000; _vmx_ept_memorytypes[index].endaddr = 0x000E2FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x00FF0000) >> 16);
+    _vmx_ept_memorytypes[index].startaddr = 0x000E3000; _vmx_ept_memorytypes[index].endaddr = 0x000E3FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0xFF000000) >> 24);
+    _vmx_ept_memorytypes[index].startaddr = 0x000E4000; _vmx_ept_memorytypes[index].endaddr = 0x000E4FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x000000FF) >> 0);
+    _vmx_ept_memorytypes[index].startaddr = 0x000E5000; _vmx_ept_memorytypes[index].endaddr = 0x000E5FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x0000FF00) >> 8);
+    _vmx_ept_memorytypes[index].startaddr = 0x000E6000; _vmx_ept_memorytypes[index].endaddr = 0x000E6FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
+    _vmx_ept_memorytypes[index].startaddr = 0x000E7000; _vmx_ept_memorytypes[index].endaddr = 0x000E7FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
     //0x000E8000-0x000EFFFF
 	  rdmsr(IA32_MTRR_FIX4K_E8000, &eax, &edx);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000E8000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000E8FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000E9000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000E9FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000EA000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000EAFFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x00FF0000) >> 16);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000EB000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000EBFFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0xFF000000) >> 24);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000EC000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000ECFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x000000FF) >> 0);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000ED000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000EDFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x0000FF00) >> 8);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000EE000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000EEFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000EF000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000EFFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
+    _vmx_ept_memorytypes[index].startaddr = 0x000E8000; _vmx_ept_memorytypes[index].endaddr = 0x000E8FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
+    _vmx_ept_memorytypes[index].startaddr = 0x000E9000; _vmx_ept_memorytypes[index].endaddr = 0x000E9FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
+    _vmx_ept_memorytypes[index].startaddr = 0x000EA000; _vmx_ept_memorytypes[index].endaddr = 0x000EAFFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x00FF0000) >> 16);
+    _vmx_ept_memorytypes[index].startaddr = 0x000EB000; _vmx_ept_memorytypes[index].endaddr = 0x000EBFFF; _vmx_ept_memorytypes[index++].type= ((eax & 0xFF000000) >> 24);
+    _vmx_ept_memorytypes[index].startaddr = 0x000EC000; _vmx_ept_memorytypes[index].endaddr = 0x000ECFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x000000FF) >> 0);
+    _vmx_ept_memorytypes[index].startaddr = 0x000ED000; _vmx_ept_memorytypes[index].endaddr = 0x000EDFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x0000FF00) >> 8);
+    _vmx_ept_memorytypes[index].startaddr = 0x000EE000; _vmx_ept_memorytypes[index].endaddr = 0x000EEFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
+    _vmx_ept_memorytypes[index].startaddr = 0x000EF000; _vmx_ept_memorytypes[index].endaddr = 0x000EFFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
     //0x000F0000-0x000F7FFF
   	rdmsr(IA32_MTRR_FIX4K_F0000, &eax, &edx);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000F0000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000F0FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000F1000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000F1FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000F2000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000F2FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x00FF0000) >> 16);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000F3000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000F3FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0xFF000000) >> 24);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000F4000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000F4FFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x000000FF) >> 0);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000F5000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000F5FFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x0000FF00) >> 8);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000F6000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000F6FFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000F7000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000F7FFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
+    _vmx_ept_memorytypes[index].startaddr = 0x000F0000; _vmx_ept_memorytypes[index].endaddr = 0x000F0FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
+    _vmx_ept_memorytypes[index].startaddr = 0x000F1000; _vmx_ept_memorytypes[index].endaddr = 0x000F1FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
+    _vmx_ept_memorytypes[index].startaddr = 0x000F2000; _vmx_ept_memorytypes[index].endaddr = 0x000F2FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x00FF0000) >> 16);
+    _vmx_ept_memorytypes[index].startaddr = 0x000F3000; _vmx_ept_memorytypes[index].endaddr = 0x000F3FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0xFF000000) >> 24);
+    _vmx_ept_memorytypes[index].startaddr = 0x000F4000; _vmx_ept_memorytypes[index].endaddr = 0x000F4FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x000000FF) >> 0);
+    _vmx_ept_memorytypes[index].startaddr = 0x000F5000; _vmx_ept_memorytypes[index].endaddr = 0x000F5FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x0000FF00) >> 8);
+    _vmx_ept_memorytypes[index].startaddr = 0x000F6000; _vmx_ept_memorytypes[index].endaddr = 0x000F6FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
+    _vmx_ept_memorytypes[index].startaddr = 0x000F7000; _vmx_ept_memorytypes[index].endaddr = 0x000F7FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
     //0x000F8000-0x000FFFFF
   	rdmsr(IA32_MTRR_FIX4K_F8000, &eax, &edx);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000F8000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000F8FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000F9000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000F9FFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000FA000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000FAFFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0x00FF0000) >> 16);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000FB000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000FBFFF; vcpu->vmx_ept_memorytypes[index++].type= ((eax & 0xFF000000) >> 24);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000FC000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000FCFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x000000FF) >> 0);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000FD000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000FDFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x0000FF00) >> 8);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000FE000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000FEFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
-    vcpu->vmx_ept_memorytypes[index].startaddr = 0x000FF000; vcpu->vmx_ept_memorytypes[index].endaddr = 0x000FFFFF; vcpu->vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
+    _vmx_ept_memorytypes[index].startaddr = 0x000F8000; _vmx_ept_memorytypes[index].endaddr = 0x000F8FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
+    _vmx_ept_memorytypes[index].startaddr = 0x000F9000; _vmx_ept_memorytypes[index].endaddr = 0x000F9FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
+    _vmx_ept_memorytypes[index].startaddr = 0x000FA000; _vmx_ept_memorytypes[index].endaddr = 0x000FAFFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x00FF0000) >> 16);
+    _vmx_ept_memorytypes[index].startaddr = 0x000FB000; _vmx_ept_memorytypes[index].endaddr = 0x000FBFFF; _vmx_ept_memorytypes[index++].type= ((eax & 0xFF000000) >> 24);
+    _vmx_ept_memorytypes[index].startaddr = 0x000FC000; _vmx_ept_memorytypes[index].endaddr = 0x000FCFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x000000FF) >> 0);
+    _vmx_ept_memorytypes[index].startaddr = 0x000FD000; _vmx_ept_memorytypes[index].endaddr = 0x000FDFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x0000FF00) >> 8);
+    _vmx_ept_memorytypes[index].startaddr = 0x000FE000; _vmx_ept_memorytypes[index].endaddr = 0x000FEFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
+    _vmx_ept_memorytypes[index].startaddr = 0x000FF000; _vmx_ept_memorytypes[index].endaddr = 0x000FFFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
 
 	       
 	//3. grab memory types using variable length MTRRs  
@@ -696,13 +698,13 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
 			vMTRR_mask = ((u64)edx << 32) | (u64)eax;
 			msrval++;
 			if( (vMTRR_mask & ((u64)1 << 11)) ){
-				vcpu->vmx_ept_memorytypes[index].startaddr = (vMTRR_base & (u64)0xFFFFFFFFFFFFF000ULL);
-				vcpu->vmx_ept_memorytypes[index].endaddr = (vMTRR_base & (u64)0xFFFFFFFFFFFFF000ULL) + 
+				_vmx_ept_memorytypes[index].startaddr = (vMTRR_base & (u64)0xFFFFFFFFFFFFF000ULL);
+				_vmx_ept_memorytypes[index].endaddr = (vMTRR_base & (u64)0xFFFFFFFFFFFFF000ULL) + 
 					(u64) (~(vMTRR_mask & (u64)0xFFFFFFFFFFFFF000ULL) &
 						paddrmask);
-				vcpu->vmx_ept_memorytypes[index++].type = ((u32)vMTRR_base & (u32)0x000000FF);       
+				_vmx_ept_memorytypes[index++].type = ((u32)vMTRR_base & (u32)0x000000FF);       
 			}else{
-				vcpu->vmx_ept_memorytypes[index++].invalid = 1;
+				_vmx_ept_memorytypes[index++].invalid = 1;
 			}
 		}
 	}
@@ -710,12 +712,12 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
 	printf("\n%s: gathered MTRR details, number of entries=%u", __FUNCTION__, index);
 	HALT_ON_ERRORCOND( index <= (MAX_MEMORYTYPE_ENTRIES+1) );
 
-  //[debug: dump the contents of vcpu->vmx_ept_memorytypes]
+  //[debug: dump the contents of _vmx_ept_memorytypes]
   //{
   //  int i;
   //  for(i=0; i < MAX_MEMORYTYPE_ENTRIES; i++){
   //    printf("\nrange  0x%016llx-0x%016llx (type=%u)", 
-  //      vcpu->vmx_ept_memorytypes[i].startaddr, vcpu->vmx_ept_memorytypes[i].endaddr, vcpu->vmx_ept_memorytypes[i].type);
+  //      _vmx_ept_memorytypes[i].startaddr, _vmx_ept_memorytypes[i].endaddr, _vmx_ept_memorytypes[i].type);
   //  }
   //}
   
@@ -742,8 +744,8 @@ static u32 _vmx_getmemorytypeforphysicalpage(VCPU *vcpu, u64 pagebaseaddr){
   //check if page base address under 1M, if so used FIXED MTRRs
   if(pagebaseaddr < (1024*1024)){
     for(i=0; i < MAX_FIXED_MEMORYTYPE_ENTRIES; i++){
-      if( pagebaseaddr >= vcpu->vmx_ept_memorytypes[i].startaddr && (pagebaseaddr+PAGE_SIZE_4K-1) <= vcpu->vmx_ept_memorytypes[i].endaddr )
-        return vcpu->vmx_ept_memorytypes[i].type;    
+      if( pagebaseaddr >= _vmx_ept_memorytypes[i].startaddr && (pagebaseaddr+PAGE_SIZE_4K-1) <= _vmx_ept_memorytypes[i].endaddr )
+        return _vmx_ept_memorytypes[i].type;    
     }
     
     printf("\n%s: endaddr < 1M and unmatched fixed MTRR. Halt!", __FUNCTION__);
@@ -752,19 +754,19 @@ static u32 _vmx_getmemorytypeforphysicalpage(VCPU *vcpu, u64 pagebaseaddr){
  
   //page base address is above 1M, use VARIABLE MTRRs
   for(i= MAX_FIXED_MEMORYTYPE_ENTRIES; i < MAX_MEMORYTYPE_ENTRIES; i++){
-    if( pagebaseaddr >= vcpu->vmx_ept_memorytypes[i].startaddr && (pagebaseaddr+PAGE_SIZE_4K-1) <= vcpu->vmx_ept_memorytypes[i].endaddr && 
-          (!vcpu->vmx_ept_memorytypes[i].invalid) ){
-       if(vcpu->vmx_ept_memorytypes[i].type == MTRR_TYPE_UC){
+    if( pagebaseaddr >= _vmx_ept_memorytypes[i].startaddr && (pagebaseaddr+PAGE_SIZE_4K-1) <= _vmx_ept_memorytypes[i].endaddr && 
+          (!_vmx_ept_memorytypes[i].invalid) ){
+       if(_vmx_ept_memorytypes[i].type == MTRR_TYPE_UC){
         prev_type = MTRR_TYPE_UC;
-       }else if(vcpu->vmx_ept_memorytypes[i].type == MTRR_TYPE_WT && prev_type != MTRR_TYPE_UC){
+       }else if(_vmx_ept_memorytypes[i].type == MTRR_TYPE_WT && prev_type != MTRR_TYPE_UC){
         prev_type = MTRR_TYPE_WT;
        }else{
         if(prev_type != MTRR_TYPE_UC && prev_type != MTRR_TYPE_WT){
           if(prev_type == MTRR_TYPE_RESV){
-            prev_type = vcpu->vmx_ept_memorytypes[i].type;
+            prev_type = _vmx_ept_memorytypes[i].type;
           }else{
-            printf("\nprev_type=%u, vcpu->vmx_ept_memorytypes=%u", prev_type, vcpu->vmx_ept_memorytypes[i].type);
-            HALT_ON_ERRORCOND ( prev_type == vcpu->vmx_ept_memorytypes[i].type);
+            printf("\nprev_type=%u, _vmx_ept_memorytypes=%u", prev_type, _vmx_ept_memorytypes[i].type);
+            HALT_ON_ERRORCOND ( prev_type == _vmx_ept_memorytypes[i].type);
           }
         }
        }        
