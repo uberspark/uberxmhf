@@ -106,10 +106,10 @@ struct _memorytype {
 
 //---platform
 //structure which holds values of guest MTRRs (64-bit)
-struct _guestmtrrmsrs {
-	u32 lodword;
-	u32 hidword;
-} __attribute__((packed));
+//struct _guestmtrrmsrs {
+//	u32 lodword;
+//	u32 hidword;
+//} __attribute__((packed));
 
 
 //---platform
@@ -163,7 +163,7 @@ typedef struct _vcpu {
   u32 vmx_vaddr_ept_p_tables;		//virtual address of base of EPT P tables
   struct _memorytype vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
   //guest MTRR shadow MSRs
-	struct _guestmtrrmsrs vmx_guestmtrrmsrs[NUM_MTRR_MSRS];
+	//struct _guestmtrrmsrs vmx_guestmtrrmsrs[NUM_MTRR_MSRS];
 
   //guest state fields
   //u32 vmx_guest_currentstate;		//current operating mode of guest
