@@ -254,41 +254,6 @@ static void _vmx_initVT(VCPU *vcpu){
 	
 }
 
-//---vmx int 15 hook enabling function------------------------------------------
-static void	_vmx_int15_initializehook(VCPU *vcpu){
-	//we should only be called from the BSP
-	HALT_ON_ERRORCOND(vcpu->isbsp);
-
-	#ifndef __XMHF_VERIFICATION__
-	{
-		u8 *bdamemory = (u8 *)0x4AC;				//use BDA reserved memory at 0040:00AC
-		
-		u16 *ivt_int15 = (u16 *)(0x54);			//32-bit CS:IP for IVT INT 15 handler
-		
-		printf("\nCPU(0x%02x): original INT 15h handler at 0x%04x:0x%04x", vcpu->id,
-			ivt_int15[1], ivt_int15[0]);
-
-		//we need 8 bytes (4 for the VMCALL followed by IRET and 4 for he original 
-		//IVT INT 15h handler address, zero them to start off
-		memset(bdamemory, 0x0, 8);		
-
-		//implant VMCALL followed by IRET at 0040:04AC
-		bdamemory[0]= 0x0f;	//VMCALL						
-		bdamemory[1]= 0x01;
-		bdamemory[2]= 0xc1;																	
-		bdamemory[3]= 0xcf;	//IRET
-		
-		//store original INT 15h handler CS:IP following VMCALL and IRET
-		*((u16 *)(&bdamemory[4])) = ivt_int15[0];	//original INT 15h IP
-		*((u16 *)(&bdamemory[6])) = ivt_int15[1];	//original INT 15h CS
-
-
-		//point IVT INT15 handler to the VMCALL instruction
-		ivt_int15[0]=0x00AC;
-		ivt_int15[1]=0x0040;					
-	}
-	#endif //__XMHF_VERIFICATION__
-}
 
 
 //--initunrestrictedguestVMCS: initializes VMCS for unrestricted guest ---------
@@ -702,7 +667,7 @@ static void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu){
   memset((void *)&vcpu->vmcs, 0, sizeof(struct _vmx_vmcsfields));
    #endif
    */
-	//INT 15h E820 hook enablement for VMX unrestricted guest mode
+	/*//INT 15h E820 hook enablement for VMX unrestricted guest mode
 	//note: this only happens for the BSP
 	if(vcpu->isbsp){
 		printf("\nCPU(0x%02x, BSP): initializing INT 15 hook for UG mode...", vcpu->id);
@@ -711,7 +676,7 @@ static void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu){
 		//_plant_spinloop_in_bda();
 		//printf("\nCPU(0x%02x, BSP): planted spinloop for APs...", vcpu->id);
 		
-	}
+	}*/
 
 }
 
