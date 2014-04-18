@@ -168,7 +168,7 @@ typedef struct _vcpu {
   //guest state fields
   //u32 vmx_guest_currentstate;		//current operating mode of guest
   //u32 vmx_guest_nextstate;		  //next operating mode of guest
-	u32 vmx_guest_unrestricted;		//this is 1 if the CPU VMX implementation supports unrestricted guest execution
+	//u32 vmx_guest_unrestricted;		//this is 1 if the CPU VMX implementation supports unrestricted guest execution
   //struct _vmx_vmcsfields vmcs;   //the VMCS fields
 
 } __attribute__((packed)) VCPU;
