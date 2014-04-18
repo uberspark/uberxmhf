@@ -66,8 +66,8 @@ static u64 core_3level_pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( section(".pali
 static u64 core_3level_pdt[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT] __attribute__(( section(".palign_data") ));
 
 //core and hypapp page table base address (PTBA)
-static u32 core_ptba=0;
-static u32 hypapp_ptba=0;
+static u32 core_ptba __attribute__(( section(".data") )) = 0;
+static u32 hypapp_ptba __attribute__(( section(".data") )) = 0;
 
 
 
@@ -306,7 +306,7 @@ asm volatile ( 	"pushal	\r\n"							//save all GPRs
 				:	//no outputs
 				: "m" (hypappcallnum), "i" (__CS_CPL0), "i" (IA32_SYSENTER_CS_MSR), "i" (IA32_SYSENTER_ESP_MSR), "i" (&xmhf_apihub_arch_fromhypapp_stub), 
 					"i" (IA32_SYSENTER_EIP_MSR), "m" (hypapp_tos), "m" (hypapp_cbhub_pc), "m" (hypapp_ptba), "i" (__DS_CPL3)
-				:   //no clobber list
+				: "esi", "edx", "eax", "ecx"
 		);
 
 }
