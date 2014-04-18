@@ -133,43 +133,31 @@ struct _memorytype {
 
 //the vcpu structure which holds the current state of a core
 typedef struct _vcpu {
-  //common fields	
+  //XXX: stuff that will go into cpu data structure as generic fields
   u32 esp;                //used to establish stack for the CPU
-  //u32 sipi_page_vaddr;    //SIPI page of the CPU used for SIPI handling
   u32 id;                 //LAPIC id of the core
   u32 idx;                //this vcpu's index in the g_vcpubuffers array
-  //u32 sipivector;         //SIPI vector 
-  //u32 sipireceived;       //SIPI received indicator, 1 if yes
-  //u32 nmiinhvm;           //this is 1 if there was a NMI when in HVM, else 0        
-	u32 cpu_vendor;					//Intel or AMD
-	u32 isbsp;							//1 if this core is BSP else 0
+  u32 cpu_vendor;	   	//Intel or AMD
+  u32 isbsp;							//1 if this core is BSP else 0
   u32 quiesced;				//1 if this core is currently quiesced
 	
-  //VMX specific fields
+  //XXX: stuff that will go into cpu data structure as arch. specific fields
   u64 vmx_msrs[IA32_VMX_MSRCOUNT];  //VMX msr values
   u64 vmx_msr_efer;
   u64 vmx_msr_efcr;
   u32 vmx_vmxonregion_vaddr;    //virtual address of the vmxon region
   u32 vmx_vmcs_vaddr;           //virtual address of the VMCS region
-  
-  u32 vmx_vaddr_iobitmap;		//virtual address of the I/O Bitmap area
   u32 vmx_vaddr_msr_area_host;		//virtual address of the host MSR area
   u32 vmx_vaddr_msr_area_guest;		//virtual address of the guest MSR area
+
+  //XXX: stuff that will go into partition data structure as trapmasks and
+  //hpt abstractions
+  u32 vmx_vaddr_iobitmap;		//virtual address of the I/O Bitmap area
   u32 vmx_vaddr_msrbitmaps;				//virtual address of the MSR bitmap area
-  
   u32 vmx_vaddr_ept_pml4_table;	//virtual address of EPT PML4 table
   u32 vmx_vaddr_ept_pdp_table;	//virtual address of EPT PDP table
   u32 vmx_vaddr_ept_pd_tables;	//virtual address of base of EPT PD tables
   u32 vmx_vaddr_ept_p_tables;		//virtual address of base of EPT P tables
-  //struct _memorytype vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
-  //guest MTRR shadow MSRs
-	//struct _guestmtrrmsrs vmx_guestmtrrmsrs[NUM_MTRR_MSRS];
-
-  //guest state fields
-  //u32 vmx_guest_currentstate;		//current operating mode of guest
-  //u32 vmx_guest_nextstate;		  //next operating mode of guest
-	//u32 vmx_guest_unrestricted;		//this is 1 if the CPU VMX implementation supports unrestricted guest execution
-  //struct _vmx_vmcsfields vmcs;   //the VMCS fields
 
 } __attribute__((packed)) VCPU;
 
