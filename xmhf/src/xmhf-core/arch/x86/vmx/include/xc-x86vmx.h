@@ -55,6 +55,19 @@
 
 #ifndef __ASSEMBLY__
 
+typedef struct {
+  u32 vmx_vmxon_region[PAGE_SIZE_4K];    		
+  u32 vmx_vmcs_region[PAGE_SIZE_4K];           
+  u32 vmx_msr_area_host_region[2*PAGE_SIZE_4K];		
+  u32 vmx_msr_area_guest_region[2*PAGE_SIZE_4K];		
+  u64 vmx_msrs[IA32_VMX_MSRCOUNT];  
+  u64 vmx_msr_efer;
+  u64 vmx_msr_efcr;
+} xc_cpuarchdata_x86vmx_t;
+	
+	
+
+
 //xc-richguest
 
 //----------------------------------------------------------------------

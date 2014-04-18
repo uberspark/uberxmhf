@@ -62,7 +62,8 @@ static void _xc_startup_initialize_cpudata(XMHF_BOOTINFO *bootinfo){
 		g_xc_cpu[i].cpuid = bootinfo->cpuinfo_buffer[i].lapic_id;
 		g_xc_cpu[i].is_bsp = bootinfo->cpuinfo_buffer[i].isbsp;
 		g_xc_cpu[i].is_quiesced = false;
-		g_xc_cpu[i].index_cpuarchdata = i;	//indexes into g_xc_cpuarchdata[i][] for arch. specific data buffer
+		//g_xc_cpu[i].index_cpuarchdata = i;	//indexes into g_xc_cpuarchdata[i][] for arch. specific data buffer
+		g_xc_cpu[i].cpuarchdata = (xc_cpuarchdata_t)&g_xc_cpuarchdata[i];
 		g_xc_cpu[i].index_partitiondata = XC_INDEX_INVALID;
 	}
 
