@@ -718,8 +718,8 @@ struct _vmx_vmcsfields {
 #define VMCS_GUEST_LDTR_SELECTOR 0x080C 
 #define VMCS_GUEST_TR_SELECTOR 0x080E 
 
-#define VMCS_GUEST_LINK_POINTER_FULL 0x2800 
-#define VMCS_GUEST_LINK_POINTER_HIGH 0x2801 
+#define VMCS_GUEST_VMCS_LINK_POINTER_FULL 0x2800 
+#define VMCS_GUEST_VMCS_LINK_POINTER_HIGH 0x2801 
 #define VMCS_GUEST_IA32_DEBUGCTL_FULL 0x2802 
 #define VMCS_GUEST_IA32_DEBUGCTL_HIGH  0x2803 
 
@@ -773,7 +773,7 @@ static inline u32 xmhfhw_cpu_x86vmx_vmwrite(u32 encoding, u32 value){
           "2: movl %%edx, %0"
 	  : "=m"(status)
 	  : "a"(encoding), "b"(value)
-    : "%edx"
+    : "%edx", "%eax", "%ebx"
     );
 	return status;
 }
@@ -783,7 +783,9 @@ static inline u32 xmhfhw_cpu_x86vmx_vmread(u32 encoding){
 	u32 value;
 	__asm__ __volatile__("vmread %%eax, %%ebx\n\t"
 	  : "=b"(value)
-	  : "a"(encoding));
+	  : "a"(encoding)
+	  : "%eax","%ebx"
+	  );
 	return value;
 }
 
