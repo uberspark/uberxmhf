@@ -142,16 +142,16 @@ static void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu, xc_cpu_t *x
 	#ifndef __XMHF_VERIFICATION__
 	rdmsr(MSR_EFER, &eax, &edx);
 	#endif
-	vcpu->vmx_msr_efer = (u64)edx << 32 | (u64) eax;
+	xc_cpuarchdata_x86vmx->vmx_msr_efer = (u64)edx << 32 | (u64) eax;
 	#ifndef __XMHF_VERIFICATION__
 	rdmsr(MSR_EFCR, &eax, &edx);
 	#endif
-	vcpu->vmx_msr_efcr = (u64)edx << 32 | (u64) eax;
+	xc_cpuarchdata_x86vmx->vmx_msr_efcr = (u64)edx << 32 | (u64) eax;
 
-	printf("\nCPU(0x%02x): MSR_EFER=0x%08x%08x", vcpu->id, (u32)((u64)vcpu->vmx_msr_efer >> 32), 
-          (u32)vcpu->vmx_msr_efer);
-    printf("\nCPU(0x%02x): MSR_EFCR=0x%08x%08x", vcpu->id, (u32)((u64)vcpu->vmx_msr_efcr >> 32), 
-          (u32)vcpu->vmx_msr_efcr);
+	printf("\nCPU(0x%02x): MSR_EFER=0x%08x%08x", vcpu->id, (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msr_efer >> 32), 
+          (u32)xc_cpuarchdata_x86vmx->vmx_msr_efer);
+    printf("\nCPU(0x%02x): MSR_EFCR=0x%08x%08x", vcpu->id, (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msr_efcr >> 32), 
+          (u32)xc_cpuarchdata_x86vmx->vmx_msr_efcr);
   
 	}
 
