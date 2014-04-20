@@ -94,23 +94,28 @@ static void _xc_startup_initialize_partitiondata(void){
 
 // initialize global cpu table (g_xc_cputable)
 //static void _xc_startup_initialize_cputable(void){
-static u32 _xc_startup_initialize_cputable(void){
+//static u32 _xc_startup_initialize_cputable(void){
+static xc_cpu_t * _xc_startup_initialize_cputable(void){
 	u32 i;
-	u32 index_cpudata_bsp;
+	//u32 index_cpudata_bsp;
+	xc_cpu_t *xc_cpu_bsp;
 
 	for(i=0; i < g_xc_cpu_count; i++){
 			g_xc_cputable[i].cpuid = g_xc_cpu[i].cpuid;
 			g_xc_cputable[i].index_cpudata = i;
 			if(g_xc_cpu[i].is_bsp)
-				index_cpudata_bsp = i;
+				//index_cpudata_bsp = i;
+				xc_cpu_bsp = &g_xc_cpu[i];
 	}
 	
-	return index_cpudata_bsp;
+	//return index_cpudata_bsp;
+	return xc_cpu_bsp;
 }
 
 void xmhf_runtime_entry(void){
-	u32 index_cpudata_bsp;
-	
+	//u32 index_cpudata_bsp;
+	xc_cpu_t *xc_cpu_bsp;
+
 	//setup debugging	
 	xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
 	printf("\nxmhf-core: starting...");
@@ -136,7 +141,8 @@ void xmhf_runtime_entry(void){
 	_xc_startup_initialize_partitiondata();
 	
 	//initialize global cpu table
-	index_cpudata_bsp = _xc_startup_initialize_cputable();
+	//index_cpudata_bsp = _xc_startup_initialize_cputable();
+	xc_cpu_bsp = _xc_startup_initialize_cputable();
 
 	//setup Master-ID Table (MIDTABLE)
 	{
@@ -168,7 +174,8 @@ void xmhf_runtime_entry(void){
 #endif
 
 	//initialize richguest
-	xmhf_richguest_initialize(index_cpudata_bsp);
+	//xmhf_richguest_initialize(index_cpudata_bsp);
+	xmhf_richguest_initialize(xc_cpu_bsp, xc_partition_richguest);
 
 	//invoke XMHF api hub initialization function to initialize core API
 	//interface layer

@@ -66,7 +66,12 @@ typedef struct {
 } __attribute__((packed)) xc_cpuarchdata_x86vmx_t;
 	
 	
-
+typedef struct {
+  u8 vmx_ept_pml4_table[PAGE_SIZE_4K];												//PML4 table
+  u8 vmx_ept_pdp_table[PAGE_SIZE_4K];												//PDP table
+  u8 vmx_ept_pd_tables[PAGE_SIZE_4K * PAE_PTRS_PER_PDPT];					//PD tables
+  u8 vmx_ept_p_tables[PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT];	//P tables
+} __attribute__ ((packed)) xc_partition_hptdata_x86vmx_t;
 
 //xc-richguest
 

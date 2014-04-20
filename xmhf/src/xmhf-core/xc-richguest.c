@@ -51,8 +51,12 @@
 #include <xmhf-core.h> 
 
 
-void xmhf_richguest_initialize(u32 index_cpudata_bsp){
-	xmhf_richguest_arch_initialize(index_cpudata_bsp);	
+//void xmhf_richguest_initialize(u32 index_cpudata_bsp){
+//	xmhf_richguest_arch_initialize(index_cpudata_bsp);	
+//}
+
+void xmhf_richguest_initialize(xc_cpu_t *xc_cpu_bsp, xc_partition_t *xc_partition_richguest){
+	xmhf_richguest_arch_initialize(xc_cpu_bsp, xc_partition_richguest);	
 }
 
 
