@@ -174,6 +174,9 @@ xc_partition_hptdata_t g_xc_primary_partition_hptdata[MAX_PRIMARY_PARTITIONS][MA
 // secondary partition hpt data buffers
 xc_partition_hptdata_t g_xc_secondary_partition_hptdata[MAX_SECONDARY_PARTITIONS][MAX_SECONDARY_PARTITION_HPTDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
 
+// partition data structure pointer for the richguest
+xc_partition_t *xc_partition_richguest = (xc_partition_t *)&g_xc_primary_partition[0];
+
 // cpu table
 xc_cputable_t g_xc_cputable[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
 
