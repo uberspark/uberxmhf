@@ -81,7 +81,7 @@ void xmhf_richguest_addcpuandrun(u32 index_cpudata, xc_partition_t *xc_partition
 
 	//initialize memory protection for this core
 	//xmhf_memprot_initialize(context_desc);		
-	xmhf_memprot_initialize(index_cpudata);		
+	xmhf_memprot_initialize(index_cpudata, xc_partition_richguest);		
 
 	//start partition (guest)
 	printf("\n%s[%u]: starting partition...", __FUNCTION__, index_cpudata);
