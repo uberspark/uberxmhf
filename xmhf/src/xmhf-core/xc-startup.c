@@ -217,7 +217,7 @@ void xmhf_runtime_main(u32 index_cpudata){
 	
 	//initialize and boot "rich" guest
 	//xmhf_smpguest_initialize(context_desc);
-	xmhf_richguest_addcpuandrun(index_cpudata);
+	xmhf_richguest_addcpuandrun(index_cpudata, xc_partition_richguest);
 
 	//TODO: implement CPU pooling for use by other partitions
 	
