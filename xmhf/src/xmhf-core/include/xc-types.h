@@ -94,10 +94,15 @@ typedef struct {
 } __attribute__((packed)) xc_cputable_t;
 
 
+typedef u8 xc_partition_hptdata_t;
+typedef u8 xc_partition_trapmaskdata_t;
+
 typedef struct {
 		u32 partitionid;			//unique partition id
 		u32 partitiontype;			//primary or secondary
-		u32 index_hwpagetabledata;	//index into h/w page table data buffer
+		//u32 index_hwpagetabledata;	//index into h/w page table data buffer
+		xc_partition_hptdata_t *hptdata;
+		xc_partition_trapmaskdata_t *trapmaskdata;
 		u32 indices_cpudata[MAX_PLATFORM_CPUS];	//indices into cpu data buffer for all cpus allocated to the partition
 		u32 number_of_cpus;			//number of cpus allocated to the partition
 } xc_partition_t;
