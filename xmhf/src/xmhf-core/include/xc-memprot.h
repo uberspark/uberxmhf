@@ -83,11 +83,11 @@ void xmhf_memprot_arch_initialize(u32 index_cpudata, xc_partition_t *xc_partitio
 
 
 //set protection for a given physical memory address
-void xmhf_memprot_setprot(context_desc_t context_desc, xc_partition_t *xc_partition, u64 gpa, u32 prottype);
+void xmhf_memprot_setprot(context_desc_t context_desc, u64 gpa, u32 prottype);
 void xmhf_memprot_arch_setprot(context_desc_t context_desc, xc_partition_t *xc_partition, u64 gpa, u32 prottype);
 
 //get protection for a given physical memory address
-u32 xmhf_memprot_getprot(context_desc_t context_desc, xc_partition_t *xc_partition, u64 gpa);
+u32 xmhf_memprot_getprot(context_desc_t context_desc, u64 gpa);
 u32 xmhf_memprot_arch_getprot(context_desc_t context_desc, xc_partition_t *xc_partition, u64 gpa);
 
 /*
@@ -117,7 +117,7 @@ void xmhf_memprot_setsingularhpt(u64 hpt);
 //get HPT root pointer
 u64 xmhf_memprot_getHPTroot(context_desc_t context_desc);
 
-void xmhf_memprot_hpt_setentry(context_desc_t context_desc, xc_partition_t *xc_partition, u64 hpt_paddr, u64 entry);
+void xmhf_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u64 entry);
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
