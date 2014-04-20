@@ -54,7 +54,7 @@
 
 
 // initialize memory protection structures for a given core (vcpu)
-static void xmhf_memprot_arch_x86vmx_initialize(VCPU *vcpu){
+static void xmhf_memprot_arch_x86vmx_initialize(VCPU *vcpu, xc_partition_hptdata_x86vmx_t *eptdata){
 	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
 /*	if(vcpu->isbsp){
@@ -75,7 +75,8 @@ static void xmhf_memprot_arch_x86vmx_initialize(VCPU *vcpu){
 	//vcpu->vmcs.control_VMX_cpu_based &= ~(1 << 16); //disable CR3 store exiting
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_SECCPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_SECCPU_BASED) | (1 <<1) | (1 << 5)) );
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VPID, 1);
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, (hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E) );
+	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, (hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E) );
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, (hva2spa((void*)eptdata->vmx_ept_pml4_table) | 0x1E) );
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_HIGH, 0);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) & ~(1 << 15) & ~(1 << 16)) );
 }
@@ -104,7 +105,7 @@ void xmhf_memprot_arch_x86vmx_set_EPTP(VCPU *vcpu, u64 eptp)
 }
 
 //set protection for a given physical memory address
-void xmhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
+void xmhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, xc_partition_hptdata_x86vmx_t *eptdata, u64 gpa, u32 prottype){
   u32 pfn;
   u64 *pt;
   u32 flags =0;
@@ -127,7 +128,7 @@ void xmhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
 #endif
   
   pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
-  pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
+  pt = (u64 *)eptdata->vmx_ept_p_tables;
   
   //default is not-present, read-only, no-execute	
   pt[pfn] &= ~(u64)7; //clear all previous flags
@@ -148,9 +149,9 @@ void xmhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype){
 }
 
 //get protection for a given physical memory address
-u32 xmhf_memprot_arch_x86vmx_getprot(VCPU *vcpu, u64 gpa){
+u32 xmhf_memprot_arch_x86vmx_getprot(VCPU *vcpu, xc_partition_hptdata_x86vmx_t *eptdata, u64 gpa){
   u32 pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
-  u64 *pt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
+  u64 *pt = (u64 *)eptdata->vmx_ept_p_tables;
   u64 entry = pt[pfn];
   u32 prottype;
   
@@ -179,12 +180,32 @@ u32 xmhf_memprot_arch_x86vmx_getprot(VCPU *vcpu, u64 gpa){
 
 // initialize memory protection structures for a given core (vcpu)
 //void xmhf_memprot_arch_initialize(VCPU *vcpu){
-void xmhf_memprot_arch_initialize(u32 index_cpudata){
+//void xmhf_memprot_arch_initialize(u32 index_cpudata){
+void xmhf_memprot_arch_initialize(u32 index_cpudata, xc_partition_t *xc_partition){
 	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[index_cpudata];
-		xmhf_memprot_arch_x86vmx_initialize(vcpu);
+	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;
+	
+	xmhf_memprot_arch_x86vmx_initialize(vcpu, eptdata);
 }
 
-// get level-1 page map address
+//set protection for a given physical memory address
+void xmhf_memprot_arch_setprot(context_desc_t context_desc, xc_partition_t *xc_partition, u64 gpa, u32 prottype){
+	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
+	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;
+
+	xmhf_memprot_arch_x86vmx_setprot(vcpu, eptdata, gpa, prottype);
+}
+
+//get protection for a given physical memory address
+u32 xmhf_memprot_arch_getprot(context_desc_t context_desc, xc_partition_t *xc_partition, u64 gpa){
+	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
+	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;
+
+	return xmhf_memprot_arch_x86vmx_getprot(vcpu, eptdata, gpa);
+}
+
+
+/*// get level-1 page map address
 u64 * xmhf_memprot_arch_get_lvl1_pagemap_address(context_desc_t context_desc){
 	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
 		return (u64 *)vcpu->vmx_vaddr_ept_p_tables;
@@ -215,7 +236,7 @@ u64 * xmhf_memprot_arch_get_lvl4_pagemap_address(context_desc_t context_desc){
 u64 * xmhf_memprot_arch_get_default_root_pagemap_address(context_desc_t context_desc){
 	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
 		return (u64*)vcpu->vmx_vaddr_ept_pml4_table;
-} 
+} */
 
 //flush hardware page table mappings (TLB) 
 void xmhf_memprot_arch_flushmappings(context_desc_t context_desc){
@@ -226,19 +247,6 @@ void xmhf_memprot_arch_flushmappings(context_desc_t context_desc){
 
 
 
-//set protection for a given physical memory address
-void xmhf_memprot_arch_setprot(context_desc_t context_desc, u64 gpa, u32 prottype){
-	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
-		xmhf_memprot_arch_x86vmx_setprot(vcpu, gpa, prottype);
-}
-
-
-
-//get protection for a given physical memory address
-u32 xmhf_memprot_arch_getprot(context_desc_t context_desc, u64 gpa){
-	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
-		return xmhf_memprot_arch_x86vmx_getprot(vcpu, gpa);
-}
 
 
 void xmhf_memprot_arch_setsingularhpt(u64 hpt){
@@ -261,9 +269,11 @@ u64 xmhf_memprot_arch_getHPTroot(context_desc_t context_desc){
 
 
 //set HPT entry
-void xmhf_memprot_arch_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u64 entry){
+void xmhf_memprot_arch_hpt_setentry(context_desc_t context_desc, xc_partition_t *xc_partition, u64 hpt_paddr, u64 entry){
 	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
-	u64 *hpt = (u64 *)vcpu->vmx_vaddr_ept_p_tables;
+	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;
+	
+	u64 *hpt = (u64 *)eptdata->vmx_ept_p_tables;
 	u32 hpt_index = (u32)hpt_paddr / PAGE_SIZE_4K;
 	
 	hpt[hpt_index] = entry;

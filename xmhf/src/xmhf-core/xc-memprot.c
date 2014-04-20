@@ -54,10 +54,25 @@
 //void xmhf_memprot_initialize(VCPU *vcpu){
 //	xmhf_memprot_arch_initialize(vcpu);
 //}
-void xmhf_memprot_initialize(u32 index_cpudata){
-	xmhf_memprot_arch_initialize(index_cpudata);
+//void xmhf_memprot_initialize(u32 index_cpudata){
+//	xmhf_memprot_arch_initialize(index_cpudata);
+//}
+void xmhf_memprot_initialize(u32 index_cpudata, xc_partition_t *xc_partition){
+	xmhf_memprot_arch_initialize(index_cpudata, xc_partition);
 }
 
+//set protection for a given physical memory address
+void xmhf_memprot_setprot(context_desc_t context_desc, xc_partition_t *xc_partition, u64 gpa, u32 prottype){
+	xmhf_memprot_arch_setprot(context_desc, xc_partition, gpa, prottype);
+}
+
+
+//get protection for a given physical memory address
+u32 xmhf_memprot_getprot(context_desc_t context_desc, xc_partition_t *xc_partition, u64 gpa){
+	return xmhf_memprot_arch_getprot(context_desc, xc_partition, gpa);
+}
+
+/*
 // get level-1 page map address
 u64 * xmhf_memprot_get_lvl1_pagemap_address(context_desc_t context_desc){
 	return xmhf_memprot_arch_get_lvl1_pagemap_address(context_desc);
@@ -81,7 +96,7 @@ u64 * xmhf_memprot_get_lvl4_pagemap_address(context_desc_t context_desc){
 //get default root page map address
 u64 * xmhf_memprot_get_default_root_pagemap_address(context_desc_t context_desc){
 	return xmhf_memprot_arch_get_default_root_pagemap_address(context_desc);
-} 
+} */
 
 
 //flush hardware page table mappings (TLB) 
@@ -90,33 +105,6 @@ void xmhf_memprot_flushmappings(context_desc_t context_desc){
 }
 
 
-//set protection for a given physical memory address
-void xmhf_memprot_setprot(context_desc_t context_desc, u64 gpa, u32 prottype){
-/*#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
-	assert ( (vcpu != NULL) );
-	assert ( ( (gpa < rpb->XtVmmRuntimePhysBase) || 
-							 (gpa >= (rpb->XtVmmRuntimePhysBase + rpb->XtVmmRuntimeSize)) 
-						   ) );
-	assert ( ( (prottype > 0)	&& 
-	                         (prottype <= MEMP_PROT_MAXVALUE) 
-	                       ) );						
-	assert (
-	 (prottype == MEMP_PROT_NOTPRESENT) ||
-	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_EXECUTE)) ||
-	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_EXECUTE)) ||
-	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_NOEXECUTE)) ||
-	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_NOEXECUTE)) 
-	);
-#endif*/
-
-	xmhf_memprot_arch_setprot(context_desc, gpa, prottype);
-}
-
-
-//get protection for a given physical memory address
-u32 xmhf_memprot_getprot(context_desc_t context_desc, u64 gpa){
-	return xmhf_memprot_arch_getprot(context_desc, gpa);
-}
 
 //set singular HPT
 void xmhf_memprot_setsingularhpt(u64 hpt){
@@ -129,6 +117,6 @@ u64 xmhf_memprot_getHPTroot(context_desc_t context_desc){
 }
 
 //set HPT entry
-void xmhf_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u64 entry){
-	return xmhf_memprot_arch_hpt_setentry(context_desc, hpt_paddr, entry);	
+void xmhf_memprot_hpt_setentry(context_desc_t context_desc, xc_partition_t *xc_partition, u64 hpt_paddr, u64 entry){
+	return xmhf_memprot_arch_hpt_setentry(context_desc, xc_partition, hpt_paddr, entry);	
 }
