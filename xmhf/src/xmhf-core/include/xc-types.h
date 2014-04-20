@@ -77,7 +77,7 @@ typedef struct {
 	cpu_desc_t cpu_desc;
 } context_desc_t;
 
-typedef void xc_cpuarchdata_t;
+typedef u8 xc_cpuarchdata_t;
 
 typedef struct {
 		u32 cpuid;				//unique CPU id
@@ -92,6 +92,7 @@ typedef struct {
 		u32 cpuid;				//unique CPU id
 		u32 index_cpudata;		//index into CPU data buffer
 } __attribute__((packed)) xc_cputable_t;
+
 
 typedef struct {
 		u32 partitionid;			//unique partition id
@@ -112,7 +113,7 @@ typedef struct {
 extern xc_cpu_t g_xc_cpu[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
 
 // platform cpu arch. data buffer
-extern u8 g_xc_cpuarchdata[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUARCHDATA_SIZE] __attribute__(( section(".palign_data") ));
+extern xc_cpuarchdata_t g_xc_cpuarchdata[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUARCHDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
 
 // platform cpu stacks
 extern u8 g_xc_cpustack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE] __attribute__(( section(".stack") ));
