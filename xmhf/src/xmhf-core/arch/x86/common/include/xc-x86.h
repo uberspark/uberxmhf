@@ -145,10 +145,10 @@ typedef struct _vcpu {
   //u64 vmx_msrs[IA32_VMX_MSRCOUNT];  //VMX msr values
   //u64 vmx_msr_efer;
   //u64 vmx_msr_efcr;
-  u32 vmx_vmxonregion_vaddr;    //virtual address of the vmxon region
-  u32 vmx_vmcs_vaddr;           //virtual address of the VMCS region
-  u32 vmx_vaddr_msr_area_host;		//virtual address of the host MSR area
-  u32 vmx_vaddr_msr_area_guest;		//virtual address of the guest MSR area
+  //u32 vmx_vmxonregion_vaddr;    //virtual address of the vmxon region
+  //u32 vmx_vmcs_vaddr;           //virtual address of the VMCS region
+  //u32 vmx_vaddr_msr_area_host;		//virtual address of the host MSR area
+  //u32 vmx_vaddr_msr_area_guest;		//virtual address of the guest MSR area
 
   //XXX: stuff that will go into partition data structure as trapmasks and
   //hpt abstractions
