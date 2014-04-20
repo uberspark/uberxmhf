@@ -524,15 +524,16 @@ void xmhf_smpguest_arch_endquiesce(VCPU *vcpu){
 
 //----------------------------------------------------------------------
 // local (static) support function forward declarations
-static void _vmx_gathermemorytypes(VCPU *vcpu);
-static u32 _vmx_getmemorytypeforphysicalpage(VCPU *vcpu, u64 pagebaseaddr);
-static void _vmx_setupEPT(VCPU *vcpu);
+static void _vmx_gathermemorytypes(void);
+static u32 _vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr);
+static void _vmx_setupEPT(xc_partition_hptdata_x86vmx_t *eptdata);
 
 //----------------------------------------------------------------------
 // local (static) support functions follow
 
 //---gather memory types for system physical memory------------------------------
-static void _vmx_gathermemorytypes(VCPU *vcpu){
+//static void _vmx_gathermemorytypes(VCPU *vcpu){
+static void _vmx_gathermemorytypes(void){
  	u32 eax, ebx, ecx, edx;
 	u32 index=0;
 	u32 num_vmtrrs=0;	//number of variable length MTRRs supported by the CPU
@@ -548,7 +549,7 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
   	#endif
   	
   	if( !(edx & (u32)(1 << 12)) ){
-  		printf("\nCPU(0x%02x): CPU does not support MTRRs!", vcpu->id);
+  		printf("\n%s: CPU does not support MTRRs!", __FUNCTION__);
   		HALT();
   	}
 
@@ -737,7 +738,7 @@ static void _vmx_gathermemorytypes(VCPU *vcpu){
      //else
        // return default memory type
 //
-static u32 _vmx_getmemorytypeforphysicalpage(VCPU *vcpu, u64 pagebaseaddr){
+static u32 _vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr){
  int i;
  u32 prev_type= MTRR_TYPE_RESV; 
 
@@ -781,7 +782,8 @@ static u32 _vmx_getmemorytypeforphysicalpage(VCPU *vcpu, u64 pagebaseaddr){
 
 
 //---setup EPT for VMX----------------------------------------------------------
-static void _vmx_setupEPT(VCPU *vcpu){
+//static void _vmx_setupEPT(VCPU *vcpu){
+static void _vmx_setupEPT(xc_partition_hptdata_x86vmx_t *eptdata){
 	//step-1: tie in EPT PML4 structures
 	//note: the default memory type (usually WB) should be determined using 
 	//IA32_MTRR_DEF_TYPE_MSR. If MTRR's are not enabled (really?)
@@ -789,21 +791,21 @@ static void _vmx_setupEPT(VCPU *vcpu){
 	u64 *pml4_table, *pdp_table, *pd_table, *p_table;
 	u32 i, j, k, paddr=0;
 
-	pml4_table = (u64 *)vcpu->vmx_vaddr_ept_pml4_table;
-	pml4_table[0] = (u64) (hva2spa((void*)vcpu->vmx_vaddr_ept_pdp_table) | 0x7); 
+	pml4_table = (u64 *)eptdata->vmx_ept_pml4_table;
+	pml4_table[0] = (u64) (hva2spa((void*)eptdata->vmx_ept_pdp_table) | 0x7); 
 
-	pdp_table = (u64 *)vcpu->vmx_vaddr_ept_pdp_table;
+	pdp_table = (u64 *)eptdata->vmx_ept_pdp_table;
 		
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-		pdp_table[i] = (u64) ( hva2spa((void*)vcpu->vmx_vaddr_ept_pd_tables + (PAGE_SIZE_4K * i)) | 0x7 );
-		pd_table = (u64 *)  ((u32)vcpu->vmx_vaddr_ept_pd_tables + (PAGE_SIZE_4K * i)) ;
+		pdp_table[i] = (u64) ( hva2spa((void*)eptdata->vmx_ept_pd_tables + (PAGE_SIZE_4K * i)) | 0x7 );
+		pd_table = (u64 *)  ((u32)eptdata->vmx_ept_pd_tables + (PAGE_SIZE_4K * i)) ;
 		
 		for(j=0; j < PAE_PTRS_PER_PDT; j++){
-			pd_table[j] = (u64) ( hva2spa((void*)vcpu->vmx_vaddr_ept_p_tables + (PAGE_SIZE_4K * ((i*PAE_PTRS_PER_PDT)+j))) | 0x7 );
-			p_table = (u64 *)  ((u32)vcpu->vmx_vaddr_ept_p_tables + (PAGE_SIZE_4K * ((i*PAE_PTRS_PER_PDT)+j))) ;
+			pd_table[j] = (u64) ( hva2spa((void*)eptdata->vmx_ept_p_tables + (PAGE_SIZE_4K * ((i*PAE_PTRS_PER_PDT)+j))) | 0x7 );
+			p_table = (u64 *)  ((u32)eptdata->vmx_ept_p_tables + (PAGE_SIZE_4K * ((i*PAE_PTRS_PER_PDT)+j))) ;
 			
 			for(k=0; k < PAE_PTRS_PER_PT; k++){
-				u32 memorytype = _vmx_getmemorytypeforphysicalpage(vcpu, (u64)paddr);
+				u32 memorytype = _vmx_getmemorytypeforphysicalpage((u64)paddr);
 				//the XMHF memory region includes the secure loader +
 				//the runtime (core + app). this runs from 
 				//(xcbootinfo->XtVmmRuntimePhysBase - PAGE_SIZE_2M) with a size
@@ -829,7 +831,8 @@ static void _vmx_setupEPT(VCPU *vcpu){
 }
 
 //---vmx int 15 hook enabling function------------------------------------------
-static void	_vmx_int15_initializehook(VCPU *vcpu){
+//static void	_vmx_int15_initializehook(VCPU *vcpu){
+static void	_vmx_int15_initializehook(void){
 	//we should only be called from the BSP
 	//HALT_ON_ERRORCOND(vcpu->isbsp);
 
@@ -874,10 +877,11 @@ static void	_vmx_int15_initializehook(VCPU *vcpu){
 }
 
 //-------------------------------------------------------------------------
-void xmhf_richguest_arch_initialize(u32 index_cpudata_bsp){
-	VCPU *vcpu = &g_bplt_vcpu[index_cpudata_bsp];
+//void xmhf_richguest_arch_initialize(u32 index_cpudata_bsp){
+void xmhf_richguest_arch_initialize(xc_cpu_t *xc_cpu_bsp, xc_partition_t *xc_partition_richguest){
+	//VCPU *vcpu = &g_bplt_vcpu[index_cpudata_bsp];
 	
-	printf("\n%s: index_cpudata_bsp = %u", __FUNCTION__, index_cpudata_bsp);	
+	//printf("\n%s: index_cpudata_bsp = %u", __FUNCTION__, index_cpudata_bsp);	
 
 	printf("\n%s: copying boot-module to boot guest", __FUNCTION__);
 	#ifndef __XMHF_VERIFICATION__
@@ -885,14 +889,17 @@ void xmhf_richguest_arch_initialize(u32 index_cpudata_bsp){
 	#endif
 	
 	printf("\n%s: BSP initializing HPT", __FUNCTION__);
-	_vmx_gathermemorytypes(vcpu);
+	//_vmx_gathermemorytypes(vcpu);
+	_vmx_gathermemorytypes();
 	#ifndef __XMHF_VERIFICATION__	
-	_vmx_setupEPT(vcpu);
+	//_vmx_setupEPT(vcpu);
+	_vmx_setupEPT((xc_partition_hptdata_x86vmx_t *)xc_partition_richguest->hptdata);
 	#endif
 	
 	//INT 15h E820 hook enablement for VMX unrestricted guest mode
 	//note: this only happens for the BSP
 	printf("\n%s: BSP initializing INT 15 hook for UG mode...", __FUNCTION__);
-	_vmx_int15_initializehook(vcpu);
+	//_vmx_int15_initializehook(vcpu);
+	_vmx_int15_initializehook();
 	
 }
