@@ -102,12 +102,17 @@
 #define MAX_PCPU_ENTRIES  				(MAX_PLATFORM_CPUS)
 #define MAX_VCPU_ENTRIES    			(MAX_PLATFORM_CPUS)
 
-//max. partitions we support
-#ifndef __XMHF_VERIFICATION__
-	#define	MAX_PARTITIONS						(1)
-#else
-	#define	MAX_PARTITIONS						(1)
-#endif
+//max. primary partitions we support
+#define	MAX_PRIMARY_PARTITIONS					(1)
+
+//max. secondary partitions we support
+#define	MAX_SECONDARY_PARTITIONS				(4)
+
+//max. size of primary partition HPT data buffer
+#define	MAX_PRIMARY_PARTITION_HPTDATA_SIZE				(2053*4096)
+
+//max. size of primary partition HPT data buffer
+#define	MAX_SECONDARY_PARTITION_HPTDATA_SIZE			(5*4096)
 
 //max. size of CPU arch. specific data (32K default)
 #define	MAX_PLATFORM_CPUARCHDATA_SIZE			(8*4096)
