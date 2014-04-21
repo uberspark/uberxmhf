@@ -428,6 +428,51 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu_t *xc_cpu, xc_partition
 	xmhf_memprot_arch_x86vmx_flushmappings();
 }
 
+
+//----------------------------------------------------------------------
+// start HVM on a given physical core
+// on success: this function will not return
+// on failure: 1 if a valid error code is present, 0 if no error code, 
+// 2 if invalid error info. (should never happen)
+//----------------------------------------------------------------------
+u32 __vmx_start_hvm(void) __attribute__ ((naked)) {
+	//save GPRs
+	asm volatile ("pushal\r\n");
+   
+	//real-mode setup just like the BIOS
+	asm volatile ("movl $0x0, %eax\r\n");
+	asm volatile ("movl $0x0, %ebx\r\n");
+	asm volatile ("movl $0x0, %ecx\r\n");
+	asm volatile ("movl $0x80, %edx\r\n");
+	asm volatile ("movl $0x0, %ebp\r\n");
+	asm volatile ("movl $0x0, %esi\r\n");
+	asm volatile ("movl $0x0, %edi\r\n");
+
+	//attempt to instantiate the HVM
+	asm volatile ("vmlaunch\r\n");
+	 
+	//if we get here then some error happened during the launch
+	
+	//restore stack frame for a return from this procedure
+	asm volatile ("popal\r\n");	
+
+	//there are two possible causes of failure, VMFailInvalid or
+	//VMFailValid (VM instruction error field contains the error code)
+	//check which happened and return appropriate value in eax 
+	asm volatile ("jc __vmx_start_hvm_failinvalid\r\n"
+				  "jnz	__vmx_start_hvm_undefinedimplementation	\r\n"
+				  "movl $0x1, %eax\r\n"
+				  "ret\r\n"					//return 1 as we have error code
+				  "__vmx_start_hvm_undefinedimplementation:\r\n"
+				  "movl $0x2, %eax\r\n"		//violation of VMLAUNCH specs., handle it anyways
+				  "ret\r\n"
+				  "__vmx_start_hvm_failinvalid:\r\n"
+				  "xorl %eax, %eax\r\n"		//return 0 as we have no error code available
+				  "ret\r\n"
+	);
+
+}
+
 //start executing the partition and guest OS
 static void xmhf_partition_arch_x86vmx_start(xc_cpu_t *xc_cpu){
 	u32 errorcode;
@@ -482,49 +527,6 @@ void xmhf_partition_arch_x86vmx_legacyIO_setprot(xc_partition_trapmaskdata_x86vm
 }
 
 
-//----------------------------------------------------------------------
-// start HVM on a given physical core
-// on success: this function will not return
-// on failure: 1 if a valid error code is present, 0 if no error code, 
-// 2 if invalid error info. (should never happen)
-//----------------------------------------------------------------------
-u32 __vmx_start_hvm(void) __attribute__ ((naked)) {
-	//save GPRs
-	asm volatile ("pushal\r\n");
-   
-	//real-mode setup just like the BIOS
-	asm volatile ("movl $0x0, %eax\r\n");
-	asm volatile ("movl $0x0, %ebx\r\n");
-	asm volatile ("movl $0x0, %ecx\r\n");
-	asm volatile ("movl $0x80, %edx\r\n");
-	asm volatile ("movl $0x0, %ebp\r\n");
-	asm volatile ("movl $0x0, %esi\r\n");
-	asm volatile ("movl $0x0, %edi\r\n");
-
-	//attempt to instantiate the HVM
-	asm volatile ("vmlaunch\r\n");
-	 
-	//if we get here then some error happened during the launch
-	
-	//restore stack frame for a return from this procedure
-	asm volatile ("popal\r\n");	
-
-	//there are two possible causes of failure, VMFailInvalid or
-	//VMFailValid (VM instruction error field contains the error code)
-	//check which happened and return appropriate value in eax 
-	asm volatile ("jc __vmx_start_hvm_failinvalid\r\n"
-				  "jnz	__vmx_start_hvm_undefinedimplementation	\r\n"
-				  "movl $0x1, %eax\r\n"
-				  "ret\r\n"					//return 1 as we have error code
-				  "__vmx_start_hvm_undefinedimplementation:\r\n"
-				  "movl $0x2, %eax\r\n"		//violation of VMLAUNCH specs., handle it anyways
-				  "ret\r\n"
-				  "__vmx_start_hvm_failinvalid:\r\n"
-				  "xorl %eax, %eax\r\n"		//return 0 as we have no error code available
-				  "ret\r\n"
-	);
-
-}
 
 
 //---------------------------------------------------------------------

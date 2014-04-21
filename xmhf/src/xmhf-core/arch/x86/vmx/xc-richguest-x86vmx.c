@@ -902,3 +902,37 @@ void xmhf_richguest_arch_initialize(xc_cpu_t *xc_cpu_bsp, xc_partition_t *xc_par
 	_vmx_int15_initializehook();
 	
 }
+
+bool xmhf_smpguest_arch_readu16(context_desc_t context_desc, const void *guestaddress, u16 *valueptr){
+		u16 *tmp = (u16 *)xmhf_smpguest_arch_walk_pagetables(context_desc, guestaddress);
+		if((u32)tmp == 0xFFFFFFFFUL || valueptr == NULL)
+			return false;
+		*valueptr = xmhfhw_sysmemaccess_readu16((u32)tmp);
+		return true;
+}
+
+bool xmhf_smpguest_arch_writeu16(context_desc_t context_desc, const void *guestaddress, u16 value){
+		u16 *tmp = (u16 *)xmhf_smpguest_arch_walk_pagetables(context_desc, guestaddress);
+		if((u32)tmp == 0xFFFFFFFFUL || 
+			( ((u32)tmp >= xcbootinfo->physmem_base) && ((u32)tmp <= (xcbootinfo->physmem_base+xcbootinfo->size)) ) 
+		  )
+			return false;
+		xmhfhw_sysmemaccess_writeu16((u32)tmp, value);
+		return true;
+}
+
+bool xmhf_smpguest_arch_memcpyfrom(context_desc_t context_desc, void *buffer, const void *guestaddress, size_t numbytes){
+	u8 *guestbuffer = (u8 *)xmhf_smpguest_arch_walk_pagetables(context_desc, guestaddress);
+	if((u32)guestbuffer == 0xFFFFFFFFUL)
+		return false;
+	xmhfhw_sysmemaccess_copy(buffer, gpa2hva(guestbuffer), numbytes);
+}
+
+bool xmhf_smpguest_arch_memcpyto(context_desc_t context_desc, void *guestaddress, const void *buffer, size_t numbytes){
+	u8 *guestbuffer = (u8 *)xmhf_smpguest_arch_walk_pagetables(context_desc, guestaddress);
+	if((u32)guestbuffer == 0xFFFFFFFFUL || 
+		( ((u32)guestbuffer >= xcbootinfo->physmem_base) && ((u32)guestbuffer <= (xcbootinfo->physmem_base+xcbootinfo->size)) ) 
+	  )
+		return false;
+	xmhfhw_sysmemaccess_copy(gpa2hva(guestbuffer), buffer, numbytes);
+}
