@@ -51,7 +51,7 @@
 #include <xmhf-core.h> 
 #include <xc-x86.h>
 
-//initialize global core cpu data structure, g_xc_cpu
+/*//initialize global core cpu data structure, g_xc_cpu
 //and g_xc_cpu_count;
 static void _xc_startup_initialize_cpudata(XMHF_BOOTINFO *bootinfo){
 	u32 i;
@@ -70,9 +70,9 @@ static void _xc_startup_initialize_cpudata(XMHF_BOOTINFO *bootinfo){
 	}
 
 	g_xc_cpu_count = bootinfo->cpuinfo_numentries;
-}
+}*/
 
-//setup global partition data structures g_xc_primary_partition and g_xc_secondary_partition
+/*//setup global partition data structures g_xc_primary_partition and g_xc_secondary_partition
 static void _xc_startup_initialize_partitiondata(void){
 		u32 i;
 		
@@ -91,9 +91,9 @@ static void _xc_startup_initialize_partitiondata(void){
 				g_xc_secondary_partition[i].hptdata = &g_xc_secondary_partition_hptdata[i];
 				g_xc_secondary_partition[i].trapmaskdata = NULL;
 		}
-}
+}*/
 
-// initialize global cpu table (g_xc_cputable)
+/*// initialize global cpu table (g_xc_cputable)
 //static void _xc_startup_initialize_cputable(void){
 //static u32 _xc_startup_initialize_cputable(void){
 static xc_cpu_t * _xc_startup_initialize_cputable(void){
@@ -111,7 +111,7 @@ static xc_cpu_t * _xc_startup_initialize_cputable(void){
 	
 	//return index_cpudata_bsp;
 	return xc_cpu_bsp;
-}
+}*/
 
 void xmhf_runtime_entry(void){
 	//u32 index_cpudata_bsp;
@@ -136,14 +136,15 @@ void xmhf_runtime_entry(void){
 	#endif //__XMHF_VERIFICATION__
 
 	//initialize global cpu data structure
-	_xc_startup_initialize_cpudata(xcbootinfo);
+	//_xc_startup_initialize_cpudata(xcbootinfo);
 
 	//initialize partition data structures
-	_xc_startup_initialize_partitiondata();
+	//_xc_startup_initialize_partitiondata();
 	
 	//initialize global cpu table
 	//index_cpudata_bsp = _xc_startup_initialize_cputable();
-	xc_cpu_bsp = _xc_startup_initialize_cputable();
+	//xc_cpu_bsp = _xc_startup_initialize_cputable();
+	xc_cpu_bsp = (xc_cpu_t *)xc_globaldata_initialize((void *)xcbootinfo);
 
 	/*//setup Master-ID Table (MIDTABLE)
 	{

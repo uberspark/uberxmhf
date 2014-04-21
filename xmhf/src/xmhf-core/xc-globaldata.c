@@ -114,3 +114,57 @@ xc_partition_t *xc_partition_richguest = (xc_partition_t *)&g_xc_primary_partiti
 // cpu table
 xc_cputable_t g_xc_cputable[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
 
+//----------------------------------------------------------------------------------
+// global data initialization function
+//----------------------------------------------------------------------------------
+
+void *xc_globaldata_initialize(void *input){
+	u32 i;
+	xc_cpu_t *xc_cpu_bsp;
+	XMHF_BOOTINFO *xcbootinfo = (XMHF_BOOTINFO *)input;
+	
+	//initialize cpu data structure
+	printf("\nNo. of CPU entries = %u", xcbootinfo->cpuinfo_numentries);
+
+	for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
+		g_xc_cpu[i].cpuid = xcbootinfo->cpuinfo_buffer[i].lapic_id;
+		g_xc_cpu[i].is_bsp = xcbootinfo->cpuinfo_buffer[i].isbsp;
+		g_xc_cpu[i].is_quiesced = false;
+		g_xc_cpu[i].cpuarchdata = (xc_cpuarchdata_t *)&g_xc_cpuarchdata[i][0];
+		g_xc_cpu[i].stack = (void *) ( (u32)&g_xc_cpustack[i] + (u32)sizeof(g_xc_cpustack[i]) );
+		g_xc_cpu[i].index_partitiondata = XC_INDEX_INVALID;
+		printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x, cpuarchdata=%08x", i, xcbootinfo->cpuinfo_buffer[i].isbsp, xcbootinfo->cpuinfo_buffer[i].lapic_id, (u32)g_xc_cpu[i].cpuarchdata);
+	}
+
+	g_xc_cpu_count = xcbootinfo->cpuinfo_numentries;
+	
+	//initialize partition data structures
+		//primary partitions
+		for(i=0; i < MAX_PRIMARY_PARTITIONS; i++){
+				g_xc_primary_partition[i].partitionid=i;
+				g_xc_primary_partition[i].partitiontype = XC_PARTITION_PRIMARY;
+				g_xc_primary_partition[i].hptdata = &g_xc_primary_partition_hptdata[i];
+				g_xc_primary_partition[i].trapmaskdata = &g_xc_primary_partition_trapmaskdata[i];
+		}
+
+		//secondary partitions
+		for(i=0; i < MAX_SECONDARY_PARTITIONS; i++){
+				g_xc_secondary_partition[i].partitionid=i;
+				g_xc_secondary_partition[i].partitiontype = XC_PARTITION_SECONDARY;
+				g_xc_secondary_partition[i].hptdata = &g_xc_secondary_partition_hptdata[i];
+				g_xc_secondary_partition[i].trapmaskdata = NULL;
+		}
+	
+	//initialize cpu table
+	for(i=0; i < g_xc_cpu_count; i++){
+			g_xc_cputable[i].cpuid = g_xc_cpu[i].cpuid;
+			g_xc_cputable[i].index_cpudata = i;
+			if(g_xc_cpu[i].is_bsp)
+				xc_cpu_bsp = &g_xc_cpu[i];
+	}
+	
+	//return index_cpudata_bsp;
+	return xc_cpu_bsp;
+}
+
+
