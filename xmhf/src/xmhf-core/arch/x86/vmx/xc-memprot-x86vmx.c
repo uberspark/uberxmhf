@@ -54,58 +54,35 @@
 
 
 // initialize memory protection structures for a given core (vcpu)
-static void xmhf_memprot_arch_x86vmx_initialize(VCPU *vcpu, xc_partition_hptdata_x86vmx_t *eptdata){
-	//HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-
-/*	if(xc_cpu->is_bsp){
-	 printf("\n%s: BSP initializing HPT", __FUNCTION__);
-	_vmx_gathermemorytypes(vcpu);
-#ifndef __XMHF_VERIFICATION__	
-	_vmx_setupEPT(vcpu);
-#endif
-	}
-*/
-
-	//vcpu->vmcs.control_VMX_seccpu_based |= (1 << 1); //enable EPT
-	//vcpu->vmcs.control_VMX_seccpu_based |= (1 << 5); //enable VPID
-	//vcpu->vmcs.control_vpid = 1; //VPID=0 is reserved for hypervisor
-	//vcpu->vmcs.control_EPT_pointer_high = 0;
-	//vcpu->vmcs.control_EPT_pointer_full = hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E; //page walk of 4 and WB memory
-	//vcpu->vmcs.control_VMX_cpu_based &= ~(1 << 15); //disable CR3 load exiting
-	//vcpu->vmcs.control_VMX_cpu_based &= ~(1 << 16); //disable CR3 store exiting
+static void xmhf_memprot_arch_x86vmx_initialize(xc_partition_hptdata_x86vmx_t *eptdata){
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_SECCPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_SECCPU_BASED) | (1 <<1) | (1 << 5)) );
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VPID, 1);
-	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, (hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E) );
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, (hva2spa((void*)eptdata->vmx_ept_pml4_table) | 0x1E) );
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_HIGH, 0);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) & ~(1 << 15) & ~(1 << 16)) );
 }
 
 //flush hardware page table mappings (TLB) 
-void xmhf_memprot_arch_x86vmx_flushmappings(VCPU * vcpu){
+void xmhf_memprot_arch_x86vmx_flushmappings(void){
   __vmx_invept(VMX_INVEPT_SINGLECONTEXT, 
           (u64)xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EPT_POINTER_FULL));
 }
 
 
-u64 xmhf_memprot_arch_x86vmx_get_EPTP(VCPU *vcpu)
+u64 xmhf_memprot_arch_x86vmx_get_EPTP(void)
 {
-  //HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
   return
     ((u64)(xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EPT_POINTER_HIGH)) << 32)
     | (u64)(xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EPT_POINTER_FULL));
 }
-void xmhf_memprot_arch_x86vmx_set_EPTP(VCPU *vcpu, u64 eptp)
+void xmhf_memprot_arch_x86vmx_set_EPTP(u64 eptp)
 {
-  //HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-  //vcpu->vmcs.control_EPT_pointer_full = (u32)eptp;
-  //vcpu->vmcs.control_EPT_pointer_high = (u32)(eptp >> 32);
   xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, (u32)eptp);
   xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_HIGH, (u32)(eptp >> 32));
 }
 
 //set protection for a given physical memory address
-void xmhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, xc_partition_hptdata_x86vmx_t *eptdata, u64 gpa, u32 prottype){
+void xmhf_memprot_arch_x86vmx_setprot(xc_partition_hptdata_x86vmx_t *eptdata, u64 gpa, u32 prottype){
   u32 pfn;
   u64 *pt;
   u32 flags =0;
@@ -149,7 +126,7 @@ void xmhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, xc_partition_hptdata_x86vmx_t 
 }
 
 //get protection for a given physical memory address
-u32 xmhf_memprot_arch_x86vmx_getprot(VCPU *vcpu, xc_partition_hptdata_x86vmx_t *eptdata, u64 gpa){
+u32 xmhf_memprot_arch_x86vmx_getprot(xc_partition_hptdata_x86vmx_t *eptdata, u64 gpa){
   u32 pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
   u64 *pt = (u64 *)eptdata->vmx_ept_p_tables;
   u64 entry = pt[pfn];
@@ -178,75 +155,30 @@ u32 xmhf_memprot_arch_x86vmx_getprot(VCPU *vcpu, xc_partition_hptdata_x86vmx_t *
 //======================================================================
 // global interfaces (functions) exported by this component
 
-// initialize memory protection structures for a given core (vcpu)
-//void xmhf_memprot_arch_initialize(VCPU *vcpu){
-//void xmhf_memprot_arch_initialize(u32 index_cpudata){
 void xmhf_memprot_arch_initialize(u32 index_cpudata, xc_partition_t *xc_partition){
-	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[index_cpudata];
 	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;
 	
-	xmhf_memprot_arch_x86vmx_initialize(vcpu, eptdata);
+	xmhf_memprot_arch_x86vmx_initialize(eptdata);
 }
 
 //set protection for a given physical memory address
 void xmhf_memprot_arch_setprot(context_desc_t context_desc, xc_partition_t *xc_partition, u64 gpa, u32 prottype){
-	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
 	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;
 
-	xmhf_memprot_arch_x86vmx_setprot(vcpu, eptdata, gpa, prottype);
+	xmhf_memprot_arch_x86vmx_setprot(eptdata, gpa, prottype);
 }
 
 //get protection for a given physical memory address
 u32 xmhf_memprot_arch_getprot(context_desc_t context_desc, xc_partition_t *xc_partition, u64 gpa){
-	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
 	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;
 
-	return xmhf_memprot_arch_x86vmx_getprot(vcpu, eptdata, gpa);
+	return xmhf_memprot_arch_x86vmx_getprot(eptdata, gpa);
 }
-
-
-/*// get level-1 page map address
-u64 * xmhf_memprot_arch_get_lvl1_pagemap_address(context_desc_t context_desc){
-	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
-		return (u64 *)vcpu->vmx_vaddr_ept_p_tables;
-}
-
-//get level-2 page map address
-u64 * xmhf_memprot_arch_get_lvl2_pagemap_address(context_desc_t context_desc){
-	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
-
-		return (u64 *)vcpu->vmx_vaddr_ept_pd_tables;
-}
-
-//get level-3 page map address
-u64 * xmhf_memprot_arch_get_lvl3_pagemap_address(context_desc_t context_desc){
-	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
-
-		return (u64 *)vcpu->vmx_vaddr_ept_pdp_table;
-}
-
-//get level-4 page map address
-u64 * xmhf_memprot_arch_get_lvl4_pagemap_address(context_desc_t context_desc){
-	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
-
-    return (u64 *)vcpu->vmx_vaddr_ept_pml4_table;
-}
-
-//get default root page map address
-u64 * xmhf_memprot_arch_get_default_root_pagemap_address(context_desc_t context_desc){
-	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
-		return (u64*)vcpu->vmx_vaddr_ept_pml4_table;
-} */
 
 //flush hardware page table mappings (TLB) 
 void xmhf_memprot_arch_flushmappings(context_desc_t context_desc){
-    VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
-		xmhf_memprot_arch_x86vmx_flushmappings(vcpu);
-
+		xmhf_memprot_arch_x86vmx_flushmappings();
 }
-
-
-
 
 
 void xmhf_memprot_arch_setsingularhpt(u64 hpt){
@@ -254,7 +186,7 @@ void xmhf_memprot_arch_setsingularhpt(u64 hpt){
 		
 		printf("\n%s: starting...", __FUNCTION__);
         for( i=0 ; i<g_midtable_numentries; i++ )  {
-				xmhf_memprot_arch_x86vmx_set_EPTP((VCPU *)g_midtable[i].vcpu_vaddr_ptr, hpt);
+				xmhf_memprot_arch_x86vmx_set_EPTP(hpt);
 
 			printf("\n CPU %02x: set HPT to %x",  i, (u32)hpt);
         }
@@ -263,14 +195,12 @@ void xmhf_memprot_arch_setsingularhpt(u64 hpt){
 
 //get HPT root pointer
 u64 xmhf_memprot_arch_getHPTroot(context_desc_t context_desc){
-	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
-	return xmhf_memprot_arch_x86vmx_get_EPTP(vcpu);
+	return xmhf_memprot_arch_x86vmx_get_EPTP();
 }
 
 
 //set HPT entry
 void xmhf_memprot_arch_hpt_setentry(context_desc_t context_desc, xc_partition_t *xc_partition, u64 hpt_paddr, u64 entry){
-	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
 	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;
 	
 	u64 *hpt = (u64 *)eptdata->vmx_ept_p_tables;

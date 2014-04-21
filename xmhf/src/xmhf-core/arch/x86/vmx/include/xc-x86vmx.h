@@ -78,36 +78,12 @@ typedef struct {
   u8 vmx_msrbitmaps_region[PAGE_SIZE_4K];		//MSR bitmap area
 } __attribute__ ((packed)) xc_partition_trapmaskdata_x86vmx_t;
 
-//xc-richguest
-
-//----------------------------------------------------------------------
-//x86vmx SUBARCH. INTERFACES
-//----------------------------------------------------------------------
-
-//void xmhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu);
-//void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(context_desc_t context_desc, 
-//	struct regs *r);
-//void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r);
-//u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(context_desc_t context_desc, u32 paddr, u32 errorcode);
-//void xmhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu);
-//void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu);
-
-
-//perform required setup after a guest awakens a new CPU
-//void xmhf_smpguest_arch_x86vmx_postCPUwakeup(VCPU *vcpu);
-//walk guest page tables; returns pointer to corresponding guest physical address
-//note: returns 0xFFFFFFFF if there is no mapping
-//u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr);
-
-
-//xc-baseplatform
-//----------------------------------------------------------------------
-//x86vmx SUBARCH. INTERFACES
-//----------------------------------------------------------------------
+//------------------------------------------------------
+// externs
+//------------------------------------------------------
 
 //this is the MLE Join stucture to bring up the APs (bplt-x86-smptrampoline.S)
 extern u32 _mle_join_start[];
-
 
 //VMX VMCS read-only field encodings
 extern struct _vmx_vmcsrofields_encodings g_vmx_vmcsrofields_encodings[] __attribute__(( section(".data") ));
@@ -138,6 +114,10 @@ extern u8 g_vmx_msr_area_guest_buffers[] __attribute__(( section(".palign_data")
 //extern u8 g_vmx_msrbitmap_buffers[] __attribute__(( section(".palign_data") ));
 extern u8 g_vmx_msrbitmap_buffer[] __attribute__(( section(".palign_data") ));
 
+//------------------------------------------------------
+// functions
+//------------------------------------------------------
+
 //initialize CPU state
 void xmhf_baseplatform_arch_x86vmx_cpuinitialize(void);
 
@@ -148,73 +128,28 @@ void xmhf_baseplatform_arch_x86vmx_wakeupAPs(void);
 void xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor);
 
 // routine takes vcpu vmcsfields and stores it in the CPU VMCS 
-void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu);
+//void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu);
 
 // routine takes CPU VMCS and stores it in vcpu vmcsfields  
-void xmhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu);
+//void xmhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu);
 
 //--debug: dumpVMCS dumps VMCS contents
-void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu);
+//void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu);
 
-//VMX specific platform reboot
-void xmhf_baseplatform_arch_x86vmx_reboot(VCPU *vcpu);
 
-//xc-memprot
+void xmhf_memprot_arch_x86vmx_flushmappings(void); //flush hardware page table mappings (TLB) 
+u64 xmhf_memprot_arch_x86vmx_get_EPTP(void); // get or set EPTP (only valid on Intel)
+void xmhf_memprot_arch_x86vmx_set_EPTP(u64 eptp);
 
-//----------------------------------------------------------------------
-//x86vmx SUBARCH. INTERFACES
-//----------------------------------------------------------------------
-//void xmhf_memprot_arch_x86vmx_initialize(VCPU *vcpu);	//initialize memory protection for a core
-void xmhf_memprot_arch_x86vmx_flushmappings(VCPU *vcpu); //flush hardware page table mappings (TLB) 
-//void xmhf_memprot_arch_x86vmx_setprot(VCPU *vcpu, u64 gpa, u32 prottype); //set protection for a given physical memory address
-//u32 xmhf_memprot_arch_x86vmx_getprot(VCPU *vcpu, u64 gpa); //get protection for a given physical memory address
-u64 xmhf_memprot_arch_x86vmx_get_EPTP(VCPU *vcpu); // get or set EPTP (only valid on Intel)
-void xmhf_memprot_arch_x86vmx_set_EPTP(VCPU *vcpu, u64 eptp);
-
-//VMX EPT PML4 table buffers
-//extern u8 g_vmx_ept_pml4_table_buffers[] __attribute__(( section(".palign_data") ));		
-
-//VMX EPT PDP table buffers
-//extern u8 g_vmx_ept_pdp_table_buffers[] __attribute__(( section(".palign_data") ));
-		
-//VMX EPT PD table buffers
-//extern u8 g_vmx_ept_pd_table_buffers[] __attribute__(( section(".palign_data") ));
-
-//VMX EPT P table buffers
-//extern u8 g_vmx_ept_p_table_buffers[] __attribute__(( section(".palign_data") ));
-
-//xc-parteventhub
-//----------------------------------------------------------------------
-//x86vmx SUBARCH. INTERFACES
-//----------------------------------------------------------------------
 void xmhf_parteventhub_arch_x86vmx_entry(void);
-//u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r);
 
-//XXX: FIX this
-//extern u8 * _vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
-extern void _vmx_putVMCS(VCPU *vcpu);
-extern void _vmx_getVMCS(VCPU *vcpu);
-extern void _vmx_dumpVMCS(VCPU *vcpu);
-
-
-//xc-partition
-//----------------------------------------------------------------------
-//x86vmx SUBARCH. INTERFACES
-//----------------------------------------------------------------------
-//initialize partition monitor for a given CPU
-//void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu);
-
-//setup guest OS state for the partition
-//void xmhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu);
-
-//start executing the partition and guest OS
-//void xmhf_partition_arch_x86vmx_start(VCPU *vcpu);
+//void _vmx_putVMCS(VCPU *vcpu);
+//void _vmx_getVMCS(VCPU *vcpu);
+//void _vmx_dumpVMCS(VCPU *vcpu);
 
 //low-level HVM start routine (part-x86vmx-sup.S)
 u32 __vmx_start_hvm(void);
 
-//set legacy I/O protection for the partition
-//void xmhf_partition_arch_x86vmx_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype);
 
 #endif // __ASSEMBLY__
 

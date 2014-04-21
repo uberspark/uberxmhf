@@ -65,7 +65,7 @@ static const unsigned int vmx_msr_area_msrs_count = (sizeof(vmx_msr_area_msrs)/s
 
 
 //initialize partition monitor for a given CPU
-static void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu, xc_cpu_t *xc_cpu){
+static void xmhf_partition_arch_x86vmx_initializemonitor(xc_cpu_t *xc_cpu){
 	u32 bcr0;
 	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)xc_cpu->cpuarchdata;
 	u64 vmcs_phys_addr = hva2spa((void*)xc_cpuarchdata_x86vmx->vmx_vmcs_region);
@@ -225,7 +225,7 @@ static void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu, xc_cpu_t *x
 
 
 //setup guest OS state for the partition
-void xmhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu, xc_cpu_t *xc_cpu, xc_partition_t *xc_partition){
+void xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition){
 	u32 lodword, hidword;
 	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)xc_cpu->cpuarchdata;
 	xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx = (xc_partition_trapmaskdata_x86vmx_t *)xc_partition->trapmaskdata;
@@ -425,7 +425,7 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu, xc_cpu_t *xc_cpu, 
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR4_SHADOW, CR4_VMXE);
 
 	//flush guest TLB to start with
-	xmhf_memprot_arch_x86vmx_flushmappings(vcpu);
+	xmhf_memprot_arch_x86vmx_flushmappings();
 }
 
 //start executing the partition and guest OS
@@ -463,7 +463,7 @@ static void xmhf_partition_arch_x86vmx_start(xc_cpu_t *xc_cpu){
 }
 
 //set legacy I/O protection for the partition
-void xmhf_partition_arch_x86vmx_legacyIO_setprot(VCPU *vcpu, xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx, u32 port, u32 size, u32 prottype){
+void xmhf_partition_arch_x86vmx_legacyIO_setprot(xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx, u32 port, u32 size, u32 prottype){
 
 	u8 *bit_vector = (u8 *)xc_partition_trapmaskdata_x86vmx->vmx_iobitmap_region;
 	u32 byte_offset, bit_offset;
@@ -530,31 +530,27 @@ u32 __vmx_start_hvm(void) __attribute__ ((naked)) {
 //---------------------------------------------------------------------
 //initialize partition monitor for a given CPU
 void xmhf_partition_arch_initializemonitor(u32 index_cpudata){
-	VCPU *vcpu=&g_bplt_vcpu[index_cpudata];
 	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[index_cpudata];
 	
-	xmhf_partition_arch_x86vmx_initializemonitor(vcpu, xc_cpu);
+	xmhf_partition_arch_x86vmx_initializemonitor(xc_cpu);
 }
 
 //setup guest OS state for the partition
 void xmhf_partition_arch_setupguestOSstate(u32 index_cpudata, xc_partition_t *xc_partition){
-	VCPU *vcpu=(VCPU *)&g_bplt_vcpu[index_cpudata];
 	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[index_cpudata];
 
-	xmhf_partition_arch_x86vmx_setupguestOSstate(vcpu, xc_cpu, xc_partition);
+	xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu, xc_partition);
 }
 
 //start executing the partition and guest OS
 void xmhf_partition_arch_start(u32 index_cpudata){
-	//VCPU *vcpu=(VCPU *)&g_bplt_vcpu[index_cpudata];
 	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[index_cpudata];
 		xmhf_partition_arch_x86vmx_start(xc_cpu);
 }
 
 //set legacy I/O protection for the partition
 void xmhf_partition_arch_legacyIO_setprot(context_desc_t context_desc, xc_partition_t *xc_partition, u32 port, u32 size, u32 prottype){
-	VCPU *vcpu=(VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
 	xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx = (xc_partition_trapmaskdata_x86vmx_t *)xc_partition->trapmaskdata;
 		
-	xmhf_partition_arch_x86vmx_legacyIO_setprot(vcpu, xc_partition_trapmaskdata_x86vmx, port, size, prottype);
+	xmhf_partition_arch_x86vmx_legacyIO_setprot(xc_partition_trapmaskdata_x86vmx, port, size, prottype);
 }

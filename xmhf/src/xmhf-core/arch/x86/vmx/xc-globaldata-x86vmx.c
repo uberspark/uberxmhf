@@ -251,7 +251,7 @@ unsigned int g_vmx_vmcsrwfields_encodings_count __attribute__(( section(".data")
 //u8 g_vmx_vmcs_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
 		
 //VMX IO bitmap buffer (one buffer for the entire platform)
-u8 g_vmx_iobitmap_buffer[2 * PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
+//u8 g_vmx_iobitmap_buffer[2 * PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
 		
 //VMX guest and host MSR save area buffers
 //u8 g_vmx_msr_area_host_buffers[2 * PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
@@ -259,7 +259,7 @@ u8 g_vmx_iobitmap_buffer[2 * PAGE_SIZE_4K] __attribute__(( section(".palign_data
 
 //VMX MSR bitmap buffer (one buffer for the entire platform)
 //u8 g_vmx_msrbitmap_buffers[PAGE_SIZE_4K * MAX_VCPU_ENTRIES] __attribute__(( section(".palign_data") ));
-u8 g_vmx_msrbitmap_buffer[PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
+//u8 g_vmx_msrbitmap_buffer[PAGE_SIZE_4K] __attribute__(( section(".palign_data") ));
 
 //memp-x86vmx-data
 

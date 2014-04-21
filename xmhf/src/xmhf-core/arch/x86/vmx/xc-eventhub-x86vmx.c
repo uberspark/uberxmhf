@@ -334,7 +334,7 @@ static void vmx_handle_intercept_cr0access_ug(xc_cpu_t *xc_cpu, struct regs *r, 
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, (cr0_value & ~(CR0_CD | CR0_NW)));
 	
 	//flush mappings
-	xmhf_memprot_arch_x86vmx_flushmappings(xc_cpu);
+	xmhf_memprot_arch_x86vmx_flushmappings();
 }
 
 //---CR4 access handler---------------------------------------------------------
@@ -410,7 +410,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 	if( xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON) & 0x80000000UL ){
 		printf("\nVM-ENTRY error: reason=0x%08x, qualification=0x%016llx", 
 			xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON), xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION));
-		xmhf_baseplatform_arch_x86vmx_dumpVMCS(xc_cpu);
+		//xmhf_baseplatform_arch_x86vmx_dumpVMCS(xc_cpu);
 		HALT();
 	}
 
