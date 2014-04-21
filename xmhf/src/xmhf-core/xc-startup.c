@@ -85,10 +85,10 @@ static void _xc_startup_initialize_partitiondata(void){
 
 		//secondary partitions
 		for(i=0; i < MAX_SECONDARY_PARTITIONS; i++){
-				g_xc_primary_partition[i].partitionid=i;
-				g_xc_primary_partition[i].partitiontype = XC_PARTITION_SECONDARY;
-				g_xc_primary_partition[i].hptdata = &g_xc_secondary_partition_hptdata[i];
-				g_xc_primary_partition[i].trapmaskdata = NULL;
+				g_xc_secondary_partition[i].partitionid=i;
+				g_xc_secondary_partition[i].partitiontype = XC_PARTITION_SECONDARY;
+				g_xc_secondary_partition[i].hptdata = &g_xc_secondary_partition_hptdata[i];
+				g_xc_secondary_partition[i].trapmaskdata = NULL;
 		}
 }
 
