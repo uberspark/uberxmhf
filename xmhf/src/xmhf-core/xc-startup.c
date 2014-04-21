@@ -80,7 +80,7 @@ static void _xc_startup_initialize_partitiondata(void){
 				g_xc_primary_partition[i].partitionid=i;
 				g_xc_primary_partition[i].partitiontype = XC_PARTITION_PRIMARY;
 				g_xc_primary_partition[i].hptdata = &g_xc_primary_partition_hptdata[i];
-				g_xc_primary_partition[i].trapmaskdata = NULL;
+				g_xc_primary_partition[i].trapmaskdata = &g_xc_primary_partition_trapmaskdata[i];
 		}
 
 		//secondary partitions
