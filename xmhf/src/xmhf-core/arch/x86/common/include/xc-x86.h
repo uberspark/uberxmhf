@@ -134,7 +134,7 @@ struct _memorytype {
 //the vcpu structure which holds the current state of a core
 typedef struct _vcpu {
   //XXX: stuff that will go into cpu data structure as generic fields
-  u32 esp;                //used to establish stack for the CPU
+  //u32 esp;                //used to establish stack for the CPU
   u32 id;                 //LAPIC id of the core
   u32 idx;                //this vcpu's index in the g_vcpubuffers array
   u32 cpu_vendor;	   	//Intel or AMD
