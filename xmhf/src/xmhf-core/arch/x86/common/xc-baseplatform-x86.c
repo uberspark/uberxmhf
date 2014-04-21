@@ -408,7 +408,7 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 	HALT_ON_ERRORCOND ( found_index_cpudata == true );
 	
 	vcpu = &g_bplt_vcpu[index_cpudata];
-	vcpu->idx = index_cpudata;
+	//vcpu->idx = index_cpudata;
 
 	if(xmhf_baseplatform_arch_x86_isbsp()){
 		vcpu->isbsp = 1;	//this core is a BSP

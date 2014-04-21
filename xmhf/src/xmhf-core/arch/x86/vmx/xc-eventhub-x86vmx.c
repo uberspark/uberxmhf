@@ -383,7 +383,8 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r){
 	context_desc_t context_desc;
 	
 	context_desc.partition_desc.id = 0;
-	context_desc.cpu_desc.id = vcpu->idx;
+	//context_desc.cpu_desc.id = vcpu->idx;
+	context_desc.cpu_desc.id = vcpu->id;
 	context_desc.cpu_desc.isbsp = vcpu->isbsp;
 
 /*	//read VMCS from physical CPU/core

@@ -307,7 +307,7 @@ void xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor){
 
 		memset((void *)vcpu, 0, sizeof(VCPU));
 
-		vcpu->cpu_vendor = cpu_vendor;
+		//vcpu->cpu_vendor = cpu_vendor;
 
 		//allocate runtime stack
 		//vcpu->esp = ((u32)g_cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;    
@@ -345,7 +345,7 @@ void xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor){
 
 		//other VCPU data such as LAPIC id, SIPI vector and receive indication
 		vcpu->id = g_midtable[i].cpu_lapic_id;
-		vcpu->idx = i;
+		//vcpu->idx = i;
 		//vcpu->sipivector = 0;
 		//vcpu->sipireceived = 0;
 

@@ -55,7 +55,7 @@
 
 // initialize memory protection structures for a given core (vcpu)
 static void xmhf_memprot_arch_x86vmx_initialize(VCPU *vcpu, xc_partition_hptdata_x86vmx_t *eptdata){
-	HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+	//HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
 /*	if(vcpu->isbsp){
 	 printf("\n%s: BSP initializing HPT", __FUNCTION__);
@@ -90,14 +90,14 @@ void xmhf_memprot_arch_x86vmx_flushmappings(VCPU * vcpu){
 
 u64 xmhf_memprot_arch_x86vmx_get_EPTP(VCPU *vcpu)
 {
-  HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+  //HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
   return
     ((u64)(xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EPT_POINTER_HIGH)) << 32)
     | (u64)(xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EPT_POINTER_FULL));
 }
 void xmhf_memprot_arch_x86vmx_set_EPTP(VCPU *vcpu, u64 eptp)
 {
-  HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
+  //HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
   //vcpu->vmcs.control_EPT_pointer_full = (u32)eptp;
   //vcpu->vmcs.control_EPT_pointer_high = (u32)(eptp >> 32);
   xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, (u32)eptp);
