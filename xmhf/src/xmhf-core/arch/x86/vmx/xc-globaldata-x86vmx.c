@@ -263,7 +263,7 @@ u8 g_vmx_msrbitmap_buffer[PAGE_SIZE_4K] __attribute__(( section(".palign_data") 
 
 //memp-x86vmx-data
 
-#ifndef __XMHF_VERIFICATION__
+/*#ifndef __XMHF_VERIFICATION__
 
 //VMX EPT PML4 table buffers
 //memprot
@@ -284,4 +284,4 @@ u8 g_vmx_ept_p_table_buffers[PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT
 #else //__XMHF_VERIFICATION__
 	//HPT initialization is currently audited manually
 #endif //__XMHF_VERIFICATION__
-
+*/
