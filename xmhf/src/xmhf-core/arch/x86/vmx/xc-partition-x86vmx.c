@@ -74,7 +74,7 @@ static void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu, xc_cpu_t *x
 	{
 			u32 cpu_vendor=get_cpu_vendor_or_die();
 			if(cpu_vendor != CPU_VENDOR_INTEL){
-				printf("\nCPU(0x%02x) is not an Intel CPU. Halting!", vcpu->id);
+				printf("\nCPU(0x%02x) is not an Intel CPU. Halting!", xc_cpu->cpuid);
 		        HALT();
 			}
 
@@ -118,7 +118,7 @@ static void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu, xc_cpu_t *x
 				"mov	%%ecx, %0	\n"
 				::"m"(cpu_features): "eax", "ebx", "ecx", "edx" );
 		if ( ( cpu_features & (1<<5) ) == 0 ){
-			printf("CPU(0x%02x) does not support VMX. Halting!", vcpu->id);
+			printf("CPU(0x%02x) does not support VMX. Halting!", xc_cpu->cpuid);
 	  HALT();
 		}
 	#endif
@@ -148,9 +148,9 @@ static void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu, xc_cpu_t *x
 	#endif
 	xc_cpuarchdata_x86vmx->vmx_msr_efcr = (u64)edx << 32 | (u64) eax;
 
-	printf("\nCPU(0x%02x): MSR_EFER=0x%08x%08x", vcpu->id, (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msr_efer >> 32), 
+	printf("\nCPU(0x%02x): MSR_EFER=0x%08x%08x", xc_cpu->cpuid, (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msr_efer >> 32), 
           (u32)xc_cpuarchdata_x86vmx->vmx_msr_efer);
-    printf("\nCPU(0x%02x): MSR_EFCR=0x%08x%08x", vcpu->id, (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msr_efcr >> 32), 
+    printf("\nCPU(0x%02x): MSR_EFCR=0x%08x%08x", xc_cpu->cpuid, (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msr_efcr >> 32), 
           (u32)xc_cpuarchdata_x86vmx->vmx_msr_efcr);
   
 	}
@@ -167,7 +167,7 @@ static void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu, xc_cpu_t *x
 		" bts  $13, %%eax	\n"\
 		" mov  %%eax, %%cr4	" ::: "eax" );
 	#endif
-	printf("\nCPU(0x%02x): enabled VMX", vcpu->id);
+	printf("\nCPU(0x%02x): enabled VMX", xc_cpu->cpuid);
 
 	//enter VMX root operation using VMXON
 	{
@@ -194,20 +194,20 @@ static void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu, xc_cpu_t *x
 	#endif
 
 	if(!retval){
-	  printf("\nCPU(0x%02x): Fatal, unable to enter VMX root operation", vcpu->id);
+	  printf("\nCPU(0x%02x): Fatal, unable to enter VMX root operation", xc_cpu->cpuid);
 	  HALT();
 	}  
 
-	printf("\nCPU(0x%02x): Entered VMX root operation", vcpu->id);
+	printf("\nCPU(0x%02x): Entered VMX root operation", xc_cpu->cpuid);
 	}
 
 
 	//clear VMCS
 	if(!__vmx_vmclear((u64)vmcs_phys_addr)){
-	printf("\nCPU(0x%02x): VMCLEAR failed, HALT!", vcpu->id);
+	printf("\nCPU(0x%02x): VMCLEAR failed, HALT!", xc_cpu->cpuid);
 	HALT();
 	}
-	printf("\nCPU(0x%02x): VMCLEAR success.", vcpu->id);
+	printf("\nCPU(0x%02x): VMCLEAR success.", xc_cpu->cpuid);
   
   
 	//set VMCS revision id
@@ -215,10 +215,10 @@ static void xmhf_partition_arch_x86vmx_initializemonitor(VCPU *vcpu, xc_cpu_t *x
 
 	//load VMPTR
 	if(!__vmx_vmptrld((u64)vmcs_phys_addr)){
-	printf("\nCPU(0x%02x): VMPTRLD failed, HALT!", vcpu->id);
+	printf("\nCPU(0x%02x): VMPTRLD failed, HALT!", xc_cpu->cpuid);
 	HALT();
 	}
-	printf("\nCPU(0x%02x): VMPTRLD success.", vcpu->id);
+	printf("\nCPU(0x%02x): VMPTRLD success.", xc_cpu->cpuid);
 
 }
 
@@ -264,7 +264,7 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu, xc_cpu_t *xc_cpu, 
 //#endif
 //	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RSP, vcpu->esp);
 
-	*(u32 *)((u32)xc_cpu->stack - sizeof(u32)) = (u32)vcpu;
+	*(u32 *)((u32)xc_cpu->stack - sizeof(u32)) = (u32)xc_cpu;
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RSP, ((u32)xc_cpu->stack - sizeof(u32)));
 			
 
@@ -359,8 +359,8 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu, xc_cpu_t *xc_cpu, 
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, 0);
 	
 	//RIP and activity state
-	if(vcpu->isbsp){
-		//printf("\nBSP(0x%02x): copying boot-module to boot guest", vcpu->id);
+	if(xc_cpu->is_bsp){
+		//printf("\nBSP(0x%02x): copying boot-module to boot guest", xc_cpu->cpuid);
 		//#ifndef __XMHF_VERIFICATION__
 		//memcpy((void *)__GUESTOSBOOTMODULE_BASE, (void *)xcbootinfo->richguest_bootmodule_base, xcbootinfo->richguest_bootmodule_size);
 		//#endif
@@ -429,7 +429,7 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(VCPU *vcpu, xc_cpu_t *xc_cpu, 
 }
 
 //start executing the partition and guest OS
-static void xmhf_partition_arch_x86vmx_start(VCPU *vcpu){
+static void xmhf_partition_arch_x86vmx_start(xc_cpu_t *xc_cpu){
 	u32 errorcode;
     
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
@@ -448,12 +448,12 @@ static void xmhf_partition_arch_x86vmx_start(VCPU *vcpu){
 
 	switch(errorcode){
 			case 0:	//no error code, VMCS pointer is invalid
-				printf("\nCPU(0x%02x): VMLAUNCH error; VMCS pointer invalid?. HALT!", vcpu->id);
+				printf("\nCPU(0x%02x): VMLAUNCH error; VMCS pointer invalid?. HALT!", xc_cpu->cpuid);
 				break;
 			case 1:{//error code available, so dump it
 				u32 code=xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
-				printf("\nCPU(0x%02x): VMLAUNCH error; code=0x%x. HALT!", vcpu->id, code);
-				xmhf_baseplatform_arch_x86vmx_dumpVMCS(vcpu);
+				printf("\nCPU(0x%02x): VMLAUNCH error; code=0x%x. HALT!", xc_cpu->cpuid, code);
+				//xmhf_baseplatform_arch_x86vmx_dumpVMCS(vcpu);
 				break;
 			}
 	}
@@ -546,8 +546,9 @@ void xmhf_partition_arch_setupguestOSstate(u32 index_cpudata, xc_partition_t *xc
 
 //start executing the partition and guest OS
 void xmhf_partition_arch_start(u32 index_cpudata){
-	VCPU *vcpu=(VCPU *)&g_bplt_vcpu[index_cpudata];
-		xmhf_partition_arch_x86vmx_start(vcpu);
+	//VCPU *vcpu=(VCPU *)&g_bplt_vcpu[index_cpudata];
+	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[index_cpudata];
+		xmhf_partition_arch_x86vmx_start(xc_cpu);
 }
 
 //set legacy I/O protection for the partition

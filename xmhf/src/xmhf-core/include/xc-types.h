@@ -60,22 +60,6 @@ typedef struct xmhfcoreapiretval {
 	void *returnptr1;
 } xmhfcoreapiretval_t;
 
-//XMHF CPU descriptor type
-typedef struct {
-	uint32_t id;
-	bool isbsp;
-} cpu_desc_t;
-	
-//XMHF partition descriptor type
-typedef struct {
-	uint32_t id;
-} partition_desc_t;
-
-//XMHF context descriptor type (context = partition + cpu pair)
-typedef struct {
-	partition_desc_t partition_desc;
-	cpu_desc_t cpu_desc;
-} context_desc_t;
 
 typedef u8 xc_cpuarchdata_t;
 
@@ -108,10 +92,32 @@ typedef struct {
 		//u32 number_of_cpus;			//number of cpus allocated to the partition
 } xc_partition_t;
 
+
 #define XC_INDEX_INVALID			(0xFFFFFFFFUL)
 
 #define XC_PARTITION_PRIMARY		(1)
 #define XC_PARTITION_SECONDARY		(2)
+
+//XMHF CPU descriptor type
+typedef struct {
+	uint32_t id;
+	bool isbsp;
+	xc_cpu_t *xc_cpu;
+} cpu_desc_t;
+	
+//XMHF partition descriptor type
+typedef struct {
+	uint32_t id;
+} partition_desc_t;
+
+//XMHF context descriptor type (context = partition + cpu pair)
+typedef struct {
+	partition_desc_t partition_desc;
+	cpu_desc_t cpu_desc;
+} context_desc_t;
+
+
+
 
 //variables
 //XXX: move them into relevant component headers

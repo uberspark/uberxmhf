@@ -392,7 +392,8 @@ u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
 //note: this is specific to the x86 architecture backend
 void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 	context_desc_t context_desc;
-	VCPU *vcpu = NULL;
+	//VCPU *vcpu = NULL;
+	xc_cpu_t *xc_cpu = NULL;
 	u32 i, index_cpudata;
 	bool found_index_cpudata=false;
 	u32 cpu_uniqueid = xmhf_baseplatform_arch_x86_getcpulapicid();
@@ -407,13 +408,14 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 	
 	HALT_ON_ERRORCOND ( found_index_cpudata == true );
 	
-	vcpu = &g_bplt_vcpu[index_cpudata];
-	//vcpu->idx = index_cpudata;
+	//vcpu = &g_bplt_vcpu[index_cpudata];
+	xc_cpu = &g_xc_cpu[index_cpudata];
+	//xc_cpu->cpuidx = index_cpudata;
 
 	if(xmhf_baseplatform_arch_x86_isbsp()){
-		vcpu->isbsp = 1;	//this core is a BSP
+		xc_cpu->is_bsp = true;	//this core is a BSP
 	}else{
-		vcpu->isbsp = 0; // this core is a AP
+		xc_cpu->is_bsp = false; // this core is a AP
 	}	
 
 	//initialize base CPU state
@@ -423,8 +425,8 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 	xmhf_baseplatform_arch_x86_restorecpumtrrstate();
   	
 	//context_desc.partition_desc.id = 0;
-	//context_desc.cpu_desc.id = vcpu->idx;
-	//context_desc.cpu_desc.isbsp = vcpu->isbsp;
+	//context_desc.cpu_desc.id = xc_cpu->cpuidx;
+	//context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
 
 	//xmhf_runtime_main(context_desc);
 	xmhf_runtime_main(index_cpudata);

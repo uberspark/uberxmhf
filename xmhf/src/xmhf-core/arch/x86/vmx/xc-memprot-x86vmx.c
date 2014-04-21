@@ -57,7 +57,7 @@
 static void xmhf_memprot_arch_x86vmx_initialize(VCPU *vcpu, xc_partition_hptdata_x86vmx_t *eptdata){
 	//HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL);
 
-/*	if(vcpu->isbsp){
+/*	if(xc_cpu->is_bsp){
 	 printf("\n%s: BSP initializing HPT", __FUNCTION__);
 	_vmx_gathermemorytypes(vcpu);
 #ifndef __XMHF_VERIFICATION__	

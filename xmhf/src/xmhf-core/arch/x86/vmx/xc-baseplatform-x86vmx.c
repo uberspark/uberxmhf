@@ -344,8 +344,8 @@ void xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor){
 		//#endif
 
 		//other VCPU data such as LAPIC id, SIPI vector and receive indication
-		vcpu->id = g_midtable[i].cpu_lapic_id;
-		//vcpu->idx = i;
+		//xc_cpu->cpuid = g_midtable[i].cpu_lapic_id;
+		//xc_cpu->cpuidx = i;
 		//vcpu->sipivector = 0;
 		//vcpu->sipireceived = 0;
 
@@ -494,7 +494,7 @@ void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu){
       u32 fieldvalue = *field;
       //printf("\nvmwrite: enc=0x%08x, value=0x%08x", vmcsrwfields_encodings[i].encoding, fieldvalue);
       if(!__vmx_vmwrite(g_vmx_vmcsrwfields_encodings[i].encoding, fieldvalue)){
-        printf("\nCPU(0x%02x): VMWRITE failed. HALT!", vcpu->id);
+        printf("\nCPU(0x%02x): VMWRITE failed. HALT!", xc_cpu->cpuid);
         HALT();
       }
     }
