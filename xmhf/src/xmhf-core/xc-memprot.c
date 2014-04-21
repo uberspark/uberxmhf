@@ -57,8 +57,8 @@
 //void xmhf_memprot_initialize(u32 index_cpudata){
 //	xmhf_memprot_arch_initialize(index_cpudata);
 //}
-void xmhf_memprot_initialize(u32 index_cpudata, xc_partition_t *xc_partition){
-	xmhf_memprot_arch_initialize(index_cpudata, xc_partition);
+void xmhf_memprot_initialize(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition){
+	xmhf_memprot_arch_initialize(xc_cpu, xc_partition);
 }
 
 //set protection for a given physical memory address

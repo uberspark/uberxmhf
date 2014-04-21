@@ -58,8 +58,8 @@
 //void xmhf_partition_initializemonitor(context_desc_t context_desc){
 //	xmhf_partition_arch_initializemonitor(context_desc);
 //}
-void xmhf_partition_initializemonitor(u32 index_cpudata){
-	xmhf_partition_arch_initializemonitor(index_cpudata);
+void xmhf_partition_initializemonitor(xc_cpu_t *xc_cpu){
+	xmhf_partition_arch_initializemonitor(xc_cpu);
 }
 
 
@@ -73,8 +73,8 @@ void xmhf_partition_initializemonitor(u32 index_cpudata){
 //void xmhf_partition_setupguestOSstate(u32 index_cpudata){
 //	xmhf_partition_arch_setupguestOSstate(index_cpudata);
 //}
-void xmhf_partition_setupguestOSstate(u32 index_cpudata, xc_partition_t *xc_partition){
-	xmhf_partition_arch_setupguestOSstate(index_cpudata, xc_partition);
+void xmhf_partition_setupguestOSstate(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition){
+	xmhf_partition_arch_setupguestOSstate(xc_cpu, xc_partition);
 }
 
 
@@ -85,8 +85,8 @@ void xmhf_partition_setupguestOSstate(u32 index_cpudata, xc_partition_t *xc_part
 //void xmhf_partition_start(context_desc_t context_desc){
 //	xmhf_partition_arch_start(context_desc);
 //}
-void xmhf_partition_start(u32 index_cpudata){
-	xmhf_partition_arch_start(index_cpudata);
+void xmhf_partition_start(xc_cpu_t *xc_cpu){
+	xmhf_partition_arch_start(xc_cpu);
 }
 
 

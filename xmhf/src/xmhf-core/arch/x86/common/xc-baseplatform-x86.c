@@ -391,45 +391,29 @@ u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
 //common function which is entered by all CPUs upon SMP initialization
 //note: this is specific to the x86 architecture backend
 void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
-	context_desc_t context_desc;
-	//VCPU *vcpu = NULL;
 	xc_cpu_t *xc_cpu = NULL;
-	u32 i, index_cpudata;
-	bool found_index_cpudata=false;
+	u32 i;
+	bool found_xc_cpu=false;
 	u32 cpu_uniqueid = xmhf_baseplatform_arch_x86_getcpulapicid();
 	
 	for(i=0; i < g_xc_cpu_count; i++){
 		if(g_xc_cputable[i].cpuid == cpu_uniqueid){
-			index_cpudata = g_xc_cputable[i].index_cpudata;
-			found_index_cpudata = true;
+			xc_cpu = g_xc_cputable[i].xc_cpu;
+			found_xc_cpu = true;
 			break;
 		}
 	}
 	
-	HALT_ON_ERRORCOND ( found_index_cpudata == true );
+	HALT_ON_ERRORCOND ( found_xc_cpu == true );
 	
-/*	//vcpu = &g_bplt_vcpu[index_cpudata];
-	xc_cpu = &g_xc_cpu[index_cpudata];
-	//xc_cpu->cpuidx = index_cpudata;
-
-	if(xmhf_baseplatform_arch_x86_isbsp()){
-		xc_cpu->is_bsp = true;	//this core is a BSP
-	}else{
-		xc_cpu->is_bsp = false; // this core is a AP
-	}*/	
-
 	//initialize base CPU state
 	xmhf_baseplatform_arch_x86_cpuinitialize();
 
 	//replicate common MTRR state on this CPU
 	xmhf_baseplatform_arch_x86_restorecpumtrrstate();
   	
-	//context_desc.partition_desc.id = 0;
-	//context_desc.cpu_desc.id = xc_cpu->cpuidx;
-	//context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
-
 	//xmhf_runtime_main(context_desc);
-	xmhf_runtime_main(index_cpudata);
+	xmhf_runtime_main(xc_cpu);
 }
 
 //----------------------------------------------------------------------
@@ -500,15 +484,11 @@ void _ap_pmode_entry_with_paging(void) __attribute__((naked)){
 					"jb getidxloop\r\n"
 					"hlt\r\n"								//we should never get here, if so just halt
 					"gotidx:\r\n"
-					"movl 0x4(%%ebx, %%edi), %%esi\r\n"	 	//esi contains index_cpudata
-					"movl %6, %%ebx \r\n"					//ebx = &g_xc_cpustack
-					"movl %7, %%eax \r\n"					//eax = sizeof(g_xc_cpustack[0])
-					"mull %%ecx \r\n"						//ecx = index_cpudata, edx:eax = index_cpudata * sizeof(g_xc_cpustack[0])
-					"addl %%eax, %%ebx \r\n"				//ebx = &g_xc_cpustack[index_cpudata]
-					"addl %7, %%ebx \r\n"					//ebx = &g_xc_cpustack[index_cpudata] + sizeof(g_xc_cpustack[0]) 
+					"movl 0x4(%%ebx, %%edi), %%esi\r\n"	 	//esi contains xc_cpu_t *xc_cpu
+					"movl 0x0(%%esi), %%ebx	\r\n"				//ebx contains xc_cpu->stack
 					"movl %%ebx, %%esp \r\n"				//esp = ebx (stack for the cpu with index_cpudata)
 					:
-					: "m" (_gdt), "m" (_idt), "i" (MSR_APIC_BASE), "m" (g_xc_cpu_count), "i" (&g_xc_cputable), "i" (sizeof(MIDTAB)), "i" (&g_xc_cpustack), "i" (sizeof(g_xc_cpustack[0]))
+					: "m" (_gdt), "m" (_idt), "i" (MSR_APIC_BASE), "m" (g_xc_cpu_count), "i" (&g_xc_cputable), "i" (sizeof(xc_cputable_t))
 	);
 
 	xmhf_baseplatform_arch_x86_smpinitialize_commonstart();

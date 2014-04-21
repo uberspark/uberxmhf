@@ -529,23 +529,18 @@ u32 __vmx_start_hvm(void) __attribute__ ((naked)) {
 
 //---------------------------------------------------------------------
 //initialize partition monitor for a given CPU
-void xmhf_partition_arch_initializemonitor(u32 index_cpudata){
-	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[index_cpudata];
-	
+void xmhf_partition_arch_initializemonitor(xc_cpu_t *xc_cpu){
 	xmhf_partition_arch_x86vmx_initializemonitor(xc_cpu);
 }
 
 //setup guest OS state for the partition
-void xmhf_partition_arch_setupguestOSstate(u32 index_cpudata, xc_partition_t *xc_partition){
-	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[index_cpudata];
-
+void xmhf_partition_arch_setupguestOSstate(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition){
 	xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu, xc_partition);
 }
 
 //start executing the partition and guest OS
-void xmhf_partition_arch_start(u32 index_cpudata){
-	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[index_cpudata];
-		xmhf_partition_arch_x86vmx_start(xc_cpu);
+void xmhf_partition_arch_start(xc_cpu_t *xc_cpu){
+	xmhf_partition_arch_x86vmx_start(xc_cpu);
 }
 
 //set legacy I/O protection for the partition
