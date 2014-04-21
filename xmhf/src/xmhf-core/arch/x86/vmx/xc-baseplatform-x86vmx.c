@@ -343,7 +343,7 @@ void xmhf_baseplatform_arch_smpinitialize(void){
 	//g_bplt_initiatialized = true;
 
   //wake up APS
-  if(g_midtable_numentries > 1){
+  if(g_xc_cpu_count > 1){
 	  xmhf_baseplatform_arch_x86vmx_wakeupAPs();
   }
 

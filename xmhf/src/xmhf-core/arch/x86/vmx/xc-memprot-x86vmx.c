@@ -185,7 +185,7 @@ void xmhf_memprot_arch_setsingularhpt(u64 hpt){
 		u32 i;
 		
 		printf("\n%s: starting...", __FUNCTION__);
-        for( i=0 ; i<g_midtable_numentries; i++ )  {
+        for( i=0 ; i<g_xc_cpu_count; i++ )  {
 				xmhf_memprot_arch_x86vmx_set_EPTP(hpt);
 
 			printf("\n CPU %02x: set HPT to %x",  i, (u32)hpt);
