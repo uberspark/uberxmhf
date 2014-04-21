@@ -135,7 +135,7 @@ static u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") )) 
 
 
 
-static void _vmx_send_quiesce_signal(VCPU __attribute__((unused)) *xc_cpu){
+static void _vmx_send_quiesce_signal(xc_cpu_t __attribute__((unused)) *xc_cpu){
   volatile u32 *icr_low = (u32 *)(0xFEE00000 + 0x300);
   volatile u32 *icr_high = (u32 *)(0xFEE00000 + 0x310);
   u32 icr_high_value= 0xFFUL << 24;
@@ -506,7 +506,6 @@ void xmhf_smpguest_arch_eventhandler_nmiexception(struct regs *r){
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping
 u8 * xmhf_smpguest_arch_walk_pagetables(context_desc_t context_desc, u32 vaddr){
-	//xc_cpu_t *xc_cpu = (VCPU *)&g_bplt_xc_cpu[context_desc.cpu_desc.id];
 		return xmhf_smpguest_arch_x86vmx_walk_pagetables(context_desc.cpu_desc.xc_cpu, vaddr);
 }
 

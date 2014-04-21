@@ -220,144 +220,19 @@ static u8 * _ap_bootstrap_blob_mle_join_start = (u8 *) &_ap_bootstrap_blob[0x10]
 
 //----------------------------------------------------------------------
 // functions
-/*
-//initialize CPU state
-void xmhf_baseplatform_arch_x86vmx_cpuinitialize(void){
-	    txt_heap_t  __attribute__((unused)) *txt_heap;
-        os_mle_data_t __attribute__((unused)) *os_mle_data ;
-  
-
-#if defined (__DRT__)
-        // restore pre-SENTER MTRRs that were overwritten for SINIT launch 
-        // NOTE: XXX TODO; BSP MTRRs ALREADY RESTORED IN SL; IS IT
-        //   DANGEROUS TO DO THIS TWICE? 
-        // sl.c unity-maps 0xfed00000 for 2M so these should work fine 
-	#ifndef __XMHF_VERIFICATION__
-        txt_heap = get_txt_heap();
-        printf("\ntxt_heap = 0x%08x", (u32)txt_heap);
-        os_mle_data = get_os_mle_data_start(txt_heap);
-        printf("\nos_mle_data = 0x%08x", (u32)os_mle_data);
-    
-        if(!validate_mtrrs(&(os_mle_data->saved_mtrr_state))) {
-             printf("\nSECURITY FAILURE: validate_mtrrs() failed.\n");
-             HALT();
-        }
-        restore_mtrrs(&(os_mle_data->saved_mtrr_state));
-        #endif
-#endif	//__DRT__
-      
-}*/
 
 u32 xmhf_baseplatform_arch_getcpuvendor(void){
 	return xmhf_baseplatform_arch_x86_getcpuvendor();
 }
 
-
-//void xmhf_baseplatform_arch_cpuinitialize(void){
-//	xmhf_baseplatform_arch_x86_cpuinitialize();
-//
-//	//if(cpu_vendor == CPU_VENDOR_INTEL)
-//	//	xmhf_baseplatform_arch_x86vmx_cpuinitialize();
-//}
-
-//----------------------------------------------------------------------
-//bplt-x86vmx-reboot
-
-/*//VMX specific platform reboot
-void xmhf_baseplatform_arch_x86vmx_reboot(VCPU *vcpu){
-	(void)vcpu;
-
-	//shut VMX off, else CPU ignores INIT signal!
-	__asm__ __volatile__("vmxoff \r\n");
-	write_cr4(read_cr4() & ~(CR4_VMXE));
-	
-	//fall back on generic x86 reboot
-	xmhf_baseplatform_arch_x86_reboot();
-}*/
-
 //reboot platform
 void xmhf_baseplatform_arch_reboot(context_desc_t context_desc){
-	//HALT_ON_ERRORCOND (vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-	
 	//shut VMX off, else CPU ignores INIT signal!
 	__asm__ __volatile__("vmxoff \r\n");
 	write_cr4(read_cr4() & ~(CR4_VMXE));
 	
 	//fall back on generic x86 reboot
 	xmhf_baseplatform_arch_x86_reboot();
-}
-
-
-//----------------------------------------------------------------------
-//bplt-x86vmx-smp
-
-//allocate and setup VCPU structure for all the CPUs
-//note: isbsp is set by xmhf_baseplatform_arch_x86_smpinitialize_commonstart
-//in arch/x86/common/bplt-x86-smp.c
-void xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor){
-  u32 i;
-  VCPU *vcpu;
-
-#ifndef __XMHF_VERIFICATION__	
-
-	for(i=0; i < g_midtable_numentries; i++){
-		//allocate VCPU structure
-		//vcpu = (VCPU *)((u32)g_vcpubuffers + (u32)(i * SIZE_STRUCT_VCPU));
-		vcpu = (VCPU *)&g_bplt_vcpu[i];
-
-		memset((void *)vcpu, 0, sizeof(VCPU));
-
-		//vcpu->cpu_vendor = cpu_vendor;
-
-		//allocate runtime stack
-		//vcpu->esp = ((u32)g_cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;    
-
-		//allocate VMXON memory region
-		//vcpu->vmx_vmxonregion_vaddr = ((u32)g_vmx_vmxon_buffers + (i * PAGE_SIZE_4K)) ;
-
-		//allocate VMCS memory region
-		//vcpu->vmx_vmcs_vaddr = ((u32)g_vmx_vmcs_buffers + (i * PAGE_SIZE_4K)) ;
-
-		//allocate VMX IO bitmap region
-		//vcpu->vmx_vaddr_iobitmap = (u32)g_vmx_iobitmap_buffer; 
-
-		//allocate VMX guest and host MSR save areas
-		//vcpu->vmx_vaddr_msr_area_host = ((u32)g_vmx_msr_area_host_buffers + (i * (2*PAGE_SIZE_4K))) ; 
-		//vcpu->vmx_vaddr_msr_area_guest = ((u32)g_vmx_msr_area_guest_buffers + (i * (2*PAGE_SIZE_4K))) ; 
-
-		//allocate VMX MSR bitmap region
-		//vcpu->vmx_vaddr_msrbitmaps = ((u32)g_vmx_msrbitmap_buffers + (i * PAGE_SIZE_4K)) ; 
-		//vcpu->vmx_vaddr_msrbitmaps = (u32)g_vmx_msrbitmap_buffer ; 
-
-		//allocate EPT paging structures
-		//#ifdef __NESTED_PAGING__		
-		//{
-		//		//vcpu->vmx_vaddr_ept_pml4_table = ((u32)g_vmx_ept_pml4_table_buffers + (i * PAGE_SIZE_4K));
-		//		//vcpu->vmx_vaddr_ept_pdp_table = ((u32)g_vmx_ept_pdp_table_buffers + (i * PAGE_SIZE_4K));  
-		//		//vcpu->vmx_vaddr_ept_pd_tables = ((u32)g_vmx_ept_pd_table_buffers + (i * (PAGE_SIZE_4K*4))); 		
-		//		//vcpu->vmx_vaddr_ept_p_tables = ((u32)g_vmx_ept_p_table_buffers + (i * (PAGE_SIZE_4K*2048))); 
-		//		vcpu->vmx_vaddr_ept_pml4_table = ((u32)g_vmx_ept_pml4_table_buffers);
-		//		vcpu->vmx_vaddr_ept_pdp_table = ((u32)g_vmx_ept_pdp_table_buffers);  
-		//		vcpu->vmx_vaddr_ept_pd_tables = ((u32)g_vmx_ept_pd_table_buffers); 		
-		//		vcpu->vmx_vaddr_ept_p_tables = ((u32)g_vmx_ept_p_table_buffers); 
-		//}
-		//#endif
-
-		//other VCPU data such as LAPIC id, SIPI vector and receive indication
-		//xc_cpu->cpuid = g_midtable[i].cpu_lapic_id;
-		//xc_cpu->cpuidx = i;
-		//vcpu->sipivector = 0;
-		//vcpu->sipireceived = 0;
-
-		//map LAPIC to VCPU in midtable
-		g_midtable[i].vcpu_vaddr_ptr = (u32)vcpu;	
-	}
-
-#else //__XMHF_VERIFICATION__
-	//verification is always done in the context of a single core and vcpu/midtable is 
-	//populated by the verification driver
-#endif
-
 }
 
 //wake up application processors (cores) in the system
@@ -484,40 +359,10 @@ void xmhf_baseplatform_arch_smpinitialize(void){
   }
 }
 
-/*
-//---putVMCS--------------------------------------------------------------------
-// routine takes vcpu vmcsfields and stores it in the CPU VMCS 
-void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu){
-    unsigned int i;
-    for(i=0; i < g_vmx_vmcsrwfields_encodings_count; i++){
-      u32 *field = (u32 *)((u32)&vcpu->vmcs + (u32)g_vmx_vmcsrwfields_encodings[i].fieldoffset);
-      u32 fieldvalue = *field;
-      //printf("\nvmwrite: enc=0x%08x, value=0x%08x", vmcsrwfields_encodings[i].encoding, fieldvalue);
-      if(!__vmx_vmwrite(g_vmx_vmcsrwfields_encodings[i].encoding, fieldvalue)){
-        printf("\nCPU(0x%02x): VMWRITE failed. HALT!", xc_cpu->cpuid);
-        HALT();
-      }
-    }
-}
-
-//---getVMCS--------------------------------------------------------------------
-// routine takes CPU VMCS and stores it in vcpu vmcsfields  
-void xmhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu){
-  unsigned int i;
-  for(i=0; i < g_vmx_vmcsrwfields_encodings_count; i++){
-      u32 *field = (u32 *)((u32)&vcpu->vmcs + (u32)g_vmx_vmcsrwfields_encodings[i].fieldoffset);
-      __vmx_vmread(g_vmx_vmcsrwfields_encodings[i].encoding, field);
-  }  
-  for(i=0; i < g_vmx_vmcsrofields_encodings_count; i++){
-      u32 *field = (u32 *)((u32)&vcpu->vmcs + (u32)g_vmx_vmcsrofields_encodings[i].fieldoffset);
-      __vmx_vmread(g_vmx_vmcsrofields_encodings[i].encoding, field);
-  }  
-}*/
-
-//--debug: dumpVMCS dumps VMCS contents-----------------------------------------
+/*//--debug: dumpVMCS dumps VMCS contents-----------------------------------------
 void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu){
   		printf("\nGuest State follows:");
-/*		printf("\nguest_CS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_CS_selector);
+		printf("\nguest_CS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_CS_selector);
 		printf("\nguest_DS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_DS_selector);
 		printf("\nguest_ES_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_ES_selector);
 		printf("\nguest_FS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_FS_selector);
@@ -568,8 +413,8 @@ void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu){
 			(unsigned long)vcpu->vmcs.guest_CR3);
 		printf("\nguest_RSP=0x%08lx", (unsigned long)vcpu->vmcs.guest_RSP);
 		printf("\nguest_RIP=0x%08lx", (unsigned long)vcpu->vmcs.guest_RIP);
-		printf("\nguest_RFLAGS=0x%08lx", (unsigned long)vcpu->vmcs.guest_RFLAGS);*/
-}
+		printf("\nguest_RFLAGS=0x%08lx", (unsigned long)vcpu->vmcs.guest_RFLAGS);
+}*/
 
 
 //----------------------------------------------------------------------
@@ -611,6 +456,4 @@ void xmhf_baseplatform_arch_initialize(void){
 		#endif //__XMHF_VERIFICATION__
 	}
 
-  ////allocate and setup VCPU structure on each CPU
-	xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(cpu_vendor);
 }
