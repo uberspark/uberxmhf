@@ -61,7 +61,7 @@
 //PCPU	g_cpumap[MAX_PCPU_ENTRIES] __attribute__(( section(".data") ));
 
 //runtime stacks for individual cores
-u8 g_cpustacks[RUNTIME_STACK_SIZE * MAX_PCPU_ENTRIES] __attribute__(( section(".stack") ));
+//u8 g_cpustacks[RUNTIME_STACK_SIZE * MAX_PCPU_ENTRIES] __attribute__(( section(".stack") ));
 
 //master id table, contains core lapic id to VCPU mapping information
 MIDTAB g_midtable[MAX_MIDTAB_ENTRIES] __attribute__(( section(".data") ));
@@ -73,17 +73,17 @@ u32 g_midtable_numentries __attribute__(( section(".data") )) = 0;
 //variable that is incremented by 1 by all cores that boot up, this should
 //be finally equal to g_midtable_numentries at runtime which signifies
 //that all physical cores have been booted up and initialized by the runtime
-u32 g_cpus_active __attribute__(( section(".data") )) = 0;
+//u32 g_cpus_active __attribute__(( section(".data") )) = 0;
 
 //SMP lock for the above variable
-u32 g_lock_cpus_active __attribute__(( section(".data") )) = 1;
+//u32 g_lock_cpus_active __attribute__(( section(".data") )) = 1;
     
 //variable that is set to 1 by the BSP after rallying all the other cores.
 //this is used by the application cores to enter the "wait-for-SIPI" state    
-u32 g_ap_go_signal __attribute__(( section(".data") )) = 0;
+//u32 g_ap_go_signal __attribute__(( section(".data") )) = 0;
 
 //SMP lock for the above variable
-u32 g_lock_ap_go_signal __attribute__(( section(".data") )) = 1;
+//u32 g_lock_ap_go_signal __attribute__(( section(".data") )) = 1;
 
 
 //rntm-data.c
@@ -113,10 +113,10 @@ u8 g_core_dmaprot_buffer[SIZE_CORE_DMAPROT_BUFFER] __attribute__(( section(".pal
 //successfully, this should be finally equal to g_midtable_numentries at
 //runtime which signifies that EMHF appmain executed successfully on all
 //cores
-u32 g_appmain_success_counter __attribute__(( section(".data") )) = 0;
+//u32 g_appmain_success_counter __attribute__(( section(".data") )) = 0;
 
 //SMP lock for the above variable
-u32 g_lock_appmain_success_counter __attribute__(( section(".data") )) = 1;
+//u32 g_lock_appmain_success_counter __attribute__(( section(".data") )) = 1;
 
 
 //xc-apihub.c
