@@ -63,7 +63,7 @@
 
 //signal that basic base platform data structure initialization is complete 
 //(used by the exception handler component)
-bool g_bplt_initiatialized __attribute__(( section(".data") )) = false;
+//bool g_bplt_initiatialized __attribute__(( section(".data") )) = false;
 
 
 //rntm-x86-data
