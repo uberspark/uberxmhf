@@ -155,7 +155,7 @@ u32 xmhf_memprot_arch_x86vmx_getprot(xc_partition_hptdata_x86vmx_t *eptdata, u64
 //======================================================================
 // global interfaces (functions) exported by this component
 
-void xmhf_memprot_arch_initialize(u32 index_cpudata, xc_partition_t *xc_partition){
+void xmhf_memprot_arch_initialize(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition){
 	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;
 	
 	xmhf_memprot_arch_x86vmx_initialize(eptdata);

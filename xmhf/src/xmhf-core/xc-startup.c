@@ -116,21 +116,21 @@ void xmhf_runtime_entry(void){
 
 //we get control here in the context of *each* physical CPU core 
 //void xmhf_runtime_main(context_desc_t context_desc){ 
-void xmhf_runtime_main(u32 index_cpudata){ 
+void xmhf_runtime_main(xc_cpu_t *xc_cpu){ 
 	//[debug]
-	printf("\n%s: index_cpudata=%u", __FUNCTION__, index_cpudata);
+	printf("\n%s: cpu id=%u", __FUNCTION__, xc_cpu->cpuid);
 
 	//TODO: check if this CPU is allocated to the "rich" guest. if so, pass it on to
 	//the rich guest initialization procedure. if the CPU is not allocated to the
 	//rich guest, enter it into a CPU pool for use by other partitions
 	
 	//initialize and boot "rich" guest
-	xmhf_richguest_addcpuandrun(index_cpudata, xc_partition_richguest);
+	xmhf_richguest_addcpuandrun(xc_cpu, xc_partition_richguest);
 
 	//TODO: implement CPU pooling for use by other partitions
 	
 	#ifndef __XMHF_VERIFICATION__
-	printf("\n%s: index_cpudata=%u: FATAL, should not be here. HALTING!", __FUNCTION__, index_cpudata);
+	printf("\n%s: index_cpudata=%u: FATAL, should not be here. HALTING!", __FUNCTION__, xc_cpu->cpuid);
 	HALT();
 	#endif //__XMHF_VERIFICATION__
 }

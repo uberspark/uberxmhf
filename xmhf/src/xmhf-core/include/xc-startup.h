@@ -88,7 +88,7 @@ void xmhf_runtime_entry(void);
 //XMHF runtime main function; gets control in the context of each core
 //void xmhf_runtime_main(VCPU *vcpu, u32 isEarlyInit);
 //void xmhf_runtime_main(partition_desc_t partdesc, cpu_desc_t cpudesc);
-void xmhf_runtime_main(u32 index_cpudata);
+void xmhf_runtime_main(xc_cpu_t *xc_cpu);
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS

@@ -64,18 +64,18 @@ typedef struct xmhfcoreapiretval {
 typedef u8 xc_cpuarchdata_t;
 
 typedef struct {
+		void *stack;			//CPU stack
 		u32 cpuid;				//unique CPU id
 		bool is_bsp;			//true if CPU is the boot-strap processor
 		bool is_quiesced;		//true if CPU is quiesced
-		void *stack;			//CPU stack
-		//u32 index_cpuarchdata;	//index into CPU arch. specific data buffer
 		xc_cpuarchdata_t *cpuarchdata;
 		u32 index_partitiondata;	//index into partition data buffer
-} xc_cpu_t;
+} __attribute__ ((packed)) xc_cpu_t;
 
 typedef struct {
 		u32 cpuid;				//unique CPU id
-		u32 index_cpudata;		//index into CPU data buffer
+		//u32 index_cpudata;		//index into CPU data buffer
+		xc_cpu_t *xc_cpu;
 } __attribute__((packed)) xc_cputable_t;
 
 
