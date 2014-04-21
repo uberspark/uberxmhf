@@ -408,7 +408,7 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 	
 	HALT_ON_ERRORCOND ( found_index_cpudata == true );
 	
-	//vcpu = &g_bplt_vcpu[index_cpudata];
+/*	//vcpu = &g_bplt_vcpu[index_cpudata];
 	xc_cpu = &g_xc_cpu[index_cpudata];
 	//xc_cpu->cpuidx = index_cpudata;
 
@@ -416,7 +416,7 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 		xc_cpu->is_bsp = true;	//this core is a BSP
 	}else{
 		xc_cpu->is_bsp = false; // this core is a AP
-	}	
+	}*/	
 
 	//initialize base CPU state
 	xmhf_baseplatform_arch_x86_cpuinitialize();
