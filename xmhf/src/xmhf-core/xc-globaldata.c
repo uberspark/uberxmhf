@@ -94,13 +94,13 @@
 //XMHF_BOOTINFO *xcbootinfo;
 
 //runtime stack
-u8 x_init_stack[RUNTIME_STACK_SIZE] __attribute__(( section(".stack") ));
+static u8 _init_stack[MAX_PLATFORM_CPUSTACK_SIZE] __attribute__(( section(".stack") ));
 
 static XMHF_BOOTINFO xcbootinfo_store __attribute__(( section(".s_rpb") )) = {
 	.magic= RUNTIME_PARAMETER_BLOCK_MAGIC,
 	.entrypoint= (u32)xmhf_runtime_entry,
-	.stack_base = (u32)x_init_stack,
-	.stack_size = RUNTIME_STACK_SIZE,
+	.stack_base = (u32)_init_stack,
+	.stack_size = MAX_PLATFORM_CPUSTACK_SIZE,
 };
 
 XMHF_BOOTINFO *xcbootinfo= &xcbootinfo_store;
