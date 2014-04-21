@@ -44,77 +44,13 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// runtime.c
+// XMHF core startup module
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 //---includes-------------------------------------------------------------------
 #include <xmhf-core.h> 
-#include <xc-x86.h>
-
-/*//initialize global core cpu data structure, g_xc_cpu
-//and g_xc_cpu_count;
-static void _xc_startup_initialize_cpudata(XMHF_BOOTINFO *bootinfo){
-	u32 i;
-	
-	printf("\nNo. of CPU entries = %u", bootinfo->cpuinfo_numentries);
-
-	for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
-		g_xc_cpu[i].cpuid = bootinfo->cpuinfo_buffer[i].lapic_id;
-		g_xc_cpu[i].is_bsp = bootinfo->cpuinfo_buffer[i].isbsp;
-		g_xc_cpu[i].is_quiesced = false;
-		//g_xc_cpu[i].index_cpuarchdata = i;	//indexes into g_xc_cpuarchdata[i][] for arch. specific data buffer
-		g_xc_cpu[i].cpuarchdata = (xc_cpuarchdata_t *)&g_xc_cpuarchdata[i][0];
-		g_xc_cpu[i].stack = (void *) ( (u32)&g_xc_cpustack[i] + (u32)sizeof(g_xc_cpustack[i]) );
-		g_xc_cpu[i].index_partitiondata = XC_INDEX_INVALID;
-		printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x, cpuarchdata=%08x", i, bootinfo->cpuinfo_buffer[i].isbsp, bootinfo->cpuinfo_buffer[i].lapic_id, (u32)g_xc_cpu[i].cpuarchdata);
-	}
-
-	g_xc_cpu_count = bootinfo->cpuinfo_numentries;
-}*/
-
-/*//setup global partition data structures g_xc_primary_partition and g_xc_secondary_partition
-static void _xc_startup_initialize_partitiondata(void){
-		u32 i;
-		
-		//primary partitions
-		for(i=0; i < MAX_PRIMARY_PARTITIONS; i++){
-				g_xc_primary_partition[i].partitionid=i;
-				g_xc_primary_partition[i].partitiontype = XC_PARTITION_PRIMARY;
-				g_xc_primary_partition[i].hptdata = &g_xc_primary_partition_hptdata[i];
-				g_xc_primary_partition[i].trapmaskdata = &g_xc_primary_partition_trapmaskdata[i];
-		}
-
-		//secondary partitions
-		for(i=0; i < MAX_SECONDARY_PARTITIONS; i++){
-				g_xc_secondary_partition[i].partitionid=i;
-				g_xc_secondary_partition[i].partitiontype = XC_PARTITION_SECONDARY;
-				g_xc_secondary_partition[i].hptdata = &g_xc_secondary_partition_hptdata[i];
-				g_xc_secondary_partition[i].trapmaskdata = NULL;
-		}
-}*/
-
-/*// initialize global cpu table (g_xc_cputable)
-//static void _xc_startup_initialize_cputable(void){
-//static u32 _xc_startup_initialize_cputable(void){
-static xc_cpu_t * _xc_startup_initialize_cputable(void){
-	u32 i;
-	//u32 index_cpudata_bsp;
-	xc_cpu_t *xc_cpu_bsp;
-
-	for(i=0; i < g_xc_cpu_count; i++){
-			g_xc_cputable[i].cpuid = g_xc_cpu[i].cpuid;
-			g_xc_cputable[i].index_cpudata = i;
-			if(g_xc_cpu[i].is_bsp)
-				//index_cpudata_bsp = i;
-				xc_cpu_bsp = &g_xc_cpu[i];
-	}
-	
-	//return index_cpudata_bsp;
-	return xc_cpu_bsp;
-}*/
 
 void xmhf_runtime_entry(void){
-	//u32 index_cpudata_bsp;
 	xc_cpu_t *xc_cpu_bsp;
 
 	//setup debugging	
@@ -135,33 +71,8 @@ void xmhf_runtime_entry(void){
   	}
 	#endif //__XMHF_VERIFICATION__
 
-	//initialize global cpu data structure
-	//_xc_startup_initialize_cpudata(xcbootinfo);
-
-	//initialize partition data structures
-	//_xc_startup_initialize_partitiondata();
-	
-	//initialize global cpu table
-	//index_cpudata_bsp = _xc_startup_initialize_cputable();
-	//xc_cpu_bsp = _xc_startup_initialize_cputable();
+	//initialize global data structures
 	xc_cpu_bsp = (xc_cpu_t *)xc_globaldata_initialize((void *)xcbootinfo);
-
-	/*//setup Master-ID Table (MIDTABLE)
-	{
-		int i;
-		#ifndef __XMHF_VERIFICATION__
-			for(i=0; i < (int)xcbootinfo->cpuinfo_numentries; i++){
-				g_midtable[g_midtable_numentries].cpu_lapic_id = xcbootinfo->cpuinfo_buffer[i].lapic_id;
-				g_midtable[g_midtable_numentries].vcpu_vaddr_ptr = 0;
-				g_midtable_numentries++;
-			}
-		#else
-		//verification is always done in the context of a single core and vcpu/midtable is 
-		//populated by the verification driver
-		//TODO: incorporate some sort of BIOS data area within the verification harness that will
-		//allow us to populate these tables during verification
-		#endif
-	}*/
 
   	//initialize basic platform elements
 	xmhf_baseplatform_initialize();
@@ -171,12 +82,11 @@ void xmhf_runtime_entry(void){
 	xmhf_xcphandler_initialize();
 	#endif
 
-#if defined (__DMAP__)
+	#if defined (__DMAP__)
 	xmhf_dmaprot_reinitialize();
-#endif
+	#endif
 
 	//initialize richguest
-	//xmhf_richguest_initialize(index_cpudata_bsp);
 	xmhf_richguest_initialize(xc_cpu_bsp, xc_partition_richguest);
 
 	//invoke XMHF api hub initialization function to initialize core API
@@ -191,9 +101,7 @@ void xmhf_runtime_entry(void){
 	
 		//call app main
 		printf("\n%s: proceeding to call xmhfhypapp_main on BSP", __FUNCTION__);
-		printf("\n%s: CR3 before going in=%08x", __FUNCTION__, read_cr3());
 		xmhfhypapp_main(hypappenvb);
-		printf("\n%s: CR3 after coming back=%08x", __FUNCTION__, read_cr3());
 		printf("\n%s: came back into core", __FUNCTION__);
 
 	}   	
@@ -210,7 +118,6 @@ void xmhf_runtime_entry(void){
 //void xmhf_runtime_main(context_desc_t context_desc){ 
 void xmhf_runtime_main(u32 index_cpudata){ 
 	//[debug]
-	//printf("\n%s: partdesc.id=%u, cpudesc.id=%u, cpudesc.isbsp=%u", __FUNCTION__, context_desc.partition_desc.id, context_desc.cpu_desc.id, context_desc.cpu_desc.isbsp);
 	printf("\n%s: index_cpudata=%u", __FUNCTION__, index_cpudata);
 
 	//TODO: check if this CPU is allocated to the "rich" guest. if so, pass it on to
@@ -218,7 +125,6 @@ void xmhf_runtime_main(u32 index_cpudata){
 	//rich guest, enter it into a CPU pool for use by other partitions
 	
 	//initialize and boot "rich" guest
-	//xmhf_smpguest_initialize(context_desc);
 	xmhf_richguest_addcpuandrun(index_cpudata, xc_partition_richguest);
 
 	//TODO: implement CPU pooling for use by other partitions
@@ -227,5 +133,4 @@ void xmhf_runtime_main(u32 index_cpudata){
 	printf("\n%s: index_cpudata=%u: FATAL, should not be here. HALTING!", __FUNCTION__, index_cpudata);
 	HALT();
 	#endif //__XMHF_VERIFICATION__
-	
 }
