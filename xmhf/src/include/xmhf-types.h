@@ -188,7 +188,6 @@ typedef struct _sl_parameter_block {
 
 
 
-
 #endif /*ifndef __ASSEMBLY__*/
 
 #endif /* __XMHF_TYPES_H_ */

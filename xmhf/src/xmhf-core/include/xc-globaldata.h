@@ -44,73 +44,70 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/**
- * XMHF core global data module
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
+// XMHF core global data declarations
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf-core.h>
+#ifndef __XC_GLOBALDATA_H__
+#define __XC_GLOBALDATA_H__
 
 
-static u8 _init_stack[MAX_PLATFORM_CPUSTACK_SIZE] __attribute__(( section(".stack") ));
-
-static XMHF_BOOTINFO xcbootinfo_store __attribute__(( section(".s_rpb") )) = {
-	.magic= RUNTIME_PARAMETER_BLOCK_MAGIC,
-	.entrypoint= (u32)xmhf_runtime_entry,
-	.stack_base = (u32)_init_stack,
-	.stack_size = MAX_PLATFORM_CPUSTACK_SIZE,
-};
+#ifndef __ASSEMBLY__
 
 // XMHF boot information block
-XMHF_BOOTINFO *xcbootinfo= &xcbootinfo_store;
+extern XMHF_BOOTINFO *xcbootinfo;
 
 //core DMA protection buffer (if DMA protections need to be re-initialized on the target platform)
-u8 g_core_dmaprot_buffer[SIZE_CORE_DMAPROT_BUFFER] __attribute__(( section(".palign_data") ));
+extern u8 g_core_dmaprot_buffer[SIZE_CORE_DMAPROT_BUFFER] __attribute__(( section(".palign_data") ));
 
 //core parameter block
-XMHF_HYPAPP_PARAMETERBLOCK *paramcore = (XMHF_HYPAPP_PARAMETERBLOCK *)&paramcore_start;
+extern XMHF_HYPAPP_PARAMETERBLOCK *paramcore;
 
 //hypapp parameter block
-XMHF_HYPAPP_PARAMETERBLOCK *paramhypapp = (XMHF_HYPAPP_PARAMETERBLOCK *)&paramhypapp_start;
+extern XMHF_HYPAPP_PARAMETERBLOCK *paramhypapp;
 
 //hypapp header
-XMHF_HYPAPP_HEADER *g_hypappheader=(XMHF_HYPAPP_HEADER *)__TARGET_BASE_XMHFHYPAPP;
+extern XMHF_HYPAPP_HEADER *g_hypappheader;
 
 //hypapp callback hub entry point and hypapp top of stack
-u32 hypapp_cbhub_pc=0;
-u32 hypapp_tos=0;
+extern u32 hypapp_cbhub_pc;
+extern u32 hypapp_tos;
 
 // platform cpus
-xc_cpu_t g_xc_cpu[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
+extern xc_cpu_t g_xc_cpu[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
 
 // count of platform cpus
-u32 g_xc_cpu_count __attribute__(( section(".data") )) = 0;
+extern u32 g_xc_cpu_count __attribute__(( section(".data") ));
 
 // platform cpu arch. data buffer
 //u8 g_xc_cpuarchdata[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUARCHDATA_SIZE] __attribute__(( section(".palign_data") ));
-xc_cpuarchdata_t g_xc_cpuarchdata[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUARCHDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
+extern xc_cpuarchdata_t g_xc_cpuarchdata[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUARCHDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
 
 // platform cpu stacks
-u8 g_xc_cpustack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE] __attribute__(( section(".stack") ));
+extern u8 g_xc_cpustack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE] __attribute__(( section(".stack") ));
 
 // primary partitions
-xc_partition_t g_xc_primary_partition[MAX_PRIMARY_PARTITIONS] __attribute__(( section(".data") ));
+extern xc_partition_t g_xc_primary_partition[MAX_PRIMARY_PARTITIONS] __attribute__(( section(".data") ));
 
 // secondary partitions
-xc_partition_t g_xc_secondary_partition[MAX_SECONDARY_PARTITIONS] __attribute__(( section(".data") ));
+extern xc_partition_t g_xc_secondary_partition[MAX_SECONDARY_PARTITIONS] __attribute__(( section(".data") ));
 
 // primary partition hpt data buffers
-xc_partition_hptdata_t g_xc_primary_partition_hptdata[MAX_PRIMARY_PARTITIONS][MAX_PRIMARY_PARTITION_HPTDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
+extern xc_partition_hptdata_t g_xc_primary_partition_hptdata[MAX_PRIMARY_PARTITIONS][MAX_PRIMARY_PARTITION_HPTDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
 
 // secondary partition hpt data buffers
-xc_partition_hptdata_t g_xc_secondary_partition_hptdata[MAX_SECONDARY_PARTITIONS][MAX_SECONDARY_PARTITION_HPTDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
+extern xc_partition_hptdata_t g_xc_secondary_partition_hptdata[MAX_SECONDARY_PARTITIONS][MAX_SECONDARY_PARTITION_HPTDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
 
 // primary partition trap mask data buffers
-xc_partition_trapmaskdata_t g_xc_primary_partition_trapmaskdata[MAX_PRIMARY_PARTITIONS][MAX_PRIMARY_PARTITION_TRAPMASKDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
+extern xc_partition_trapmaskdata_t g_xc_primary_partition_trapmaskdata[MAX_PRIMARY_PARTITIONS][MAX_PRIMARY_PARTITION_TRAPMASKDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
 
 // partition data structure pointer for the richguest
-xc_partition_t *xc_partition_richguest = (xc_partition_t *)&g_xc_primary_partition[0];
+extern xc_partition_t *xc_partition_richguest;
 
 // cpu table
-xc_cputable_t g_xc_cputable[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
+extern xc_cputable_t g_xc_cputable[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
 
+  
+#endif //__ASSEMBLY__
+
+
+#endif //__XC_GLOBALDATA_H__

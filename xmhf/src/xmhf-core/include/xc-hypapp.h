@@ -67,39 +67,8 @@
 #define APP_INIT_FAIL           0xFF
 
 
-//application parameter block
-//for now it holds the bootsector and optional module info loaded by GRUB
-//eventually this will be generic enough for both boot-time and dynamic loading
-//capabilities
-typedef struct {
-  u32 bootsector_ptr;
-  u32 bootsector_size;
-  u32 optionalmodule_ptr;
-  u32 optionalmodule_size;
-  u32 runtimephysmembase;
-  u32 runtimesize;
-  char cmdline[1024];
-} __attribute__((packed)) APP_PARAM_BLOCK;
-
-//revised app parameter block; will replace the above decl. when done
-typedef struct {
-  u32 runtimephysmembase;
-  u32 runtimesize;
-} __attribute__((packed)) hypapp_env_block_t;
 
 
-//hypapp binary header 
-typedef struct {
-  u32 magic;
-  u32 addr_hypappfromcore;	//address is hypapp where control is transferred to from the core
-  u32 addr_hypapptocore;	//address is where control is transferred to the core when hypapp calls into core
-  u32 addr_tos;				//hypapp top-of-stack address
-  APP_PARAM_BLOCK apb;		//hypapp parameter block
-  void *optionalparam1;
-  void *optionalparam2;
-} __attribute__((packed)) XMHF_HYPAPP_HEADER;
-
-#define XMHF_HYPAPP_HEADER_MAGIC	0xDEADBEEF
 
 
 //XMHF hypapp callback declarations 
