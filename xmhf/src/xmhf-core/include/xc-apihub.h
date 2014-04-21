@@ -79,21 +79,6 @@
 
 #ifndef __ASSEMBLY__
 
-//hypapp parameter block
-typedef struct {
-	u64 param1;
-	u64 param2;
-	u64 param3;
-	u64 param4;
-	u64 param5;
-	u64 param6;
-	u64 param7;
-	u64 param8;
-	u64 result;
-	context_desc_t context_desc;
-	hypapp_env_block_t hypappenvb;
-	xmhfcoreapiretval_t retval;
-} __attribute__((packed)) XMHF_HYPAPP_PARAMETERBLOCK;
 
 // declare paramcore and paramhypapp variables (which are defined in
 // (xc.lds.S)

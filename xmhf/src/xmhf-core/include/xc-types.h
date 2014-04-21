@@ -117,45 +117,58 @@ typedef struct {
 } context_desc_t;
 
 
+//revised app parameter block; will replace the above decl. when done
+typedef struct {
+  u32 runtimephysmembase;
+  u32 runtimesize;
+} __attribute__((packed)) hypapp_env_block_t;
 
 
-//variables
-//XXX: move them into relevant component headers
+//hypapp parameter block
+typedef struct {
+	u64 param1;
+	u64 param2;
+	u64 param3;
+	u64 param4;
+	u64 param5;
+	u64 param6;
+	u64 param7;
+	u64 param8;
+	u64 result;
+	context_desc_t context_desc;
+	hypapp_env_block_t hypappenvb;
+	xmhfcoreapiretval_t retval;
+} __attribute__((packed)) XMHF_HYPAPP_PARAMETERBLOCK;
 
-// platform cpus
-extern xc_cpu_t g_xc_cpu[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
 
-// platform cpu arch. data buffer
-extern xc_cpuarchdata_t g_xc_cpuarchdata[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUARCHDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
+//application parameter block
+//for now it holds the bootsector and optional module info loaded by GRUB
+//eventually this will be generic enough for both boot-time and dynamic loading
+//capabilities
+typedef struct {
+  u32 bootsector_ptr;
+  u32 bootsector_size;
+  u32 optionalmodule_ptr;
+  u32 optionalmodule_size;
+  u32 runtimephysmembase;
+  u32 runtimesize;
+  char cmdline[1024];
+} __attribute__((packed)) APP_PARAM_BLOCK;
 
-// platform cpu stacks
-extern u8 g_xc_cpustack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE] __attribute__(( section(".stack") ));
 
-// count of platform cpus
-extern u32 g_xc_cpu_count __attribute__(( section(".data") ));
+//hypapp binary header 
+typedef struct {
+  u32 magic;
+  u32 addr_hypappfromcore;	//address is hypapp where control is transferred to from the core
+  u32 addr_hypapptocore;	//address is where control is transferred to the core when hypapp calls into core
+  u32 addr_tos;				//hypapp top-of-stack address
+  APP_PARAM_BLOCK apb;		//hypapp parameter block
+  void *optionalparam1;
+  void *optionalparam2;
+} __attribute__((packed)) XMHF_HYPAPP_HEADER;
 
-// primary partitions
-extern xc_partition_t g_xc_primary_partition[MAX_PRIMARY_PARTITIONS] __attribute__(( section(".data") ));
-
-// secondary partitions
-extern xc_partition_t g_xc_secondary_partition[MAX_SECONDARY_PARTITIONS] __attribute__(( section(".data") ));
-
-// primary partition hpt data buffers
-extern xc_partition_hptdata_t g_xc_primary_partition_hptdata[MAX_PRIMARY_PARTITIONS][MAX_PRIMARY_PARTITION_HPTDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
-
-// secondary partition hpt data buffers
-extern xc_partition_hptdata_t g_xc_secondary_partition_hptdata[MAX_SECONDARY_PARTITIONS][MAX_SECONDARY_PARTITION_HPTDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
-
-// primary partition trap mask data buffers
-extern xc_partition_trapmaskdata_t g_xc_primary_partition_trapmaskdata[MAX_PRIMARY_PARTITIONS][MAX_PRIMARY_PARTITION_TRAPMASKDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
-
-// partition data structure pointer for the richguest
-extern xc_partition_t *xc_partition_richguest;
-
-// cpu table
-extern xc_cputable_t g_xc_cputable[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
-
-  
+#define XMHF_HYPAPP_HEADER_MAGIC	0xDEADBEEF
+ 
 #endif //__ASSEMBLY__
 
 
