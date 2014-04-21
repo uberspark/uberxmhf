@@ -167,16 +167,16 @@ u64 xmhf_memprot_arch_x86vmx_get_EPTP(VCPU *vcpu); // get or set EPTP (only vali
 void xmhf_memprot_arch_x86vmx_set_EPTP(VCPU *vcpu, u64 eptp);
 
 //VMX EPT PML4 table buffers
-extern u8 g_vmx_ept_pml4_table_buffers[] __attribute__(( section(".palign_data") ));		
+//extern u8 g_vmx_ept_pml4_table_buffers[] __attribute__(( section(".palign_data") ));		
 
 //VMX EPT PDP table buffers
-extern u8 g_vmx_ept_pdp_table_buffers[] __attribute__(( section(".palign_data") ));
+//extern u8 g_vmx_ept_pdp_table_buffers[] __attribute__(( section(".palign_data") ));
 		
 //VMX EPT PD table buffers
-extern u8 g_vmx_ept_pd_table_buffers[] __attribute__(( section(".palign_data") ));
+//extern u8 g_vmx_ept_pd_table_buffers[] __attribute__(( section(".palign_data") ));
 
 //VMX EPT P table buffers
-extern u8 g_vmx_ept_p_table_buffers[] __attribute__(( section(".palign_data") ));
+//extern u8 g_vmx_ept_p_table_buffers[] __attribute__(( section(".palign_data") ));
 
 //xc-parteventhub
 //----------------------------------------------------------------------
