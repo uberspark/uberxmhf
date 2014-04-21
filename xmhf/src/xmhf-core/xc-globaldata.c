@@ -64,11 +64,11 @@
 //u8 g_cpustacks[RUNTIME_STACK_SIZE * MAX_PCPU_ENTRIES] __attribute__(( section(".stack") ));
 
 //master id table, contains core lapic id to VCPU mapping information
-MIDTAB g_midtable[MAX_MIDTAB_ENTRIES] __attribute__(( section(".data") ));
+//MIDTAB g_midtable[MAX_MIDTAB_ENTRIES] __attribute__(( section(".data") ));
 
 //number of entries in the master id table, in essence the number of 
 //physical cores in the system
-u32 g_midtable_numentries __attribute__(( section(".data") )) = 0;
+//u32 g_midtable_numentries __attribute__(( section(".data") )) = 0;
 
 //variable that is incremented by 1 by all cores that boot up, this should
 //be finally equal to g_midtable_numentries at runtime which signifies

@@ -187,7 +187,7 @@ void xmhf_smpguest_arch_x86vmx_quiesce(xc_cpu_t *xc_cpu){
         
         //wait for all the remaining CPUs to quiesce
         //printf("\nCPU(0x%02x): waiting for other CPUs to respond...", xc_cpu->cpuid);
-        while(g_vmx_quiesce_counter < (g_midtable_numentries-1) );
+        while(g_vmx_quiesce_counter < (g_xc_cpu_count-1) );
         //printf("\nCPU(0x%02x): all CPUs quiesced successfully.", xc_cpu->cpuid);
 
 }
@@ -202,7 +202,7 @@ void xmhf_smpguest_arch_x86vmx_endquiesce(xc_cpu_t *xc_cpu){
         //printf("\nCPU(0x%02x): waiting for other CPUs to resume...", xc_cpu->cpuid);
         g_vmx_quiesce_resume_signal=1;
         
-        while(g_vmx_quiesce_resume_counter < (g_midtable_numentries-1) );
+        while(g_vmx_quiesce_resume_counter < (g_xc_cpu_count-1) );
 
 		xc_cpu->is_quiesced=0;
         g_vmx_quiesce=0;  // we are out of quiesce at this point

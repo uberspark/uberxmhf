@@ -145,7 +145,7 @@ void xmhf_runtime_entry(void){
 	//index_cpudata_bsp = _xc_startup_initialize_cputable();
 	xc_cpu_bsp = _xc_startup_initialize_cputable();
 
-	//setup Master-ID Table (MIDTABLE)
+	/*//setup Master-ID Table (MIDTABLE)
 	{
 		int i;
 		#ifndef __XMHF_VERIFICATION__
@@ -160,7 +160,7 @@ void xmhf_runtime_entry(void){
 		//TODO: incorporate some sort of BIOS data area within the verification harness that will
 		//allow us to populate these tables during verification
 		#endif
-	}
+	}*/
 
   	//initialize basic platform elements
 	xmhf_baseplatform_initialize();
