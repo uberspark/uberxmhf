@@ -114,6 +114,9 @@
 //max. size of primary partition HPT data buffer
 #define	MAX_SECONDARY_PARTITION_HPTDATA_SIZE			(6*4096)
 
+//max. partition trapmask data buffer
+#define MAX_PRIMARY_PARTITION_TRAPMASKDATA_SIZE					(4*4096)
+
 //max. size of CPU arch. specific data (32K default)
 #define	MAX_PLATFORM_CPUARCHDATA_SIZE			(8*4096)
 

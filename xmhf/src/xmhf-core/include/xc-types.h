@@ -139,6 +139,9 @@ extern xc_partition_hptdata_t g_xc_primary_partition_hptdata[MAX_PRIMARY_PARTITI
 // secondary partition hpt data buffers
 extern xc_partition_hptdata_t g_xc_secondary_partition_hptdata[MAX_SECONDARY_PARTITIONS][MAX_SECONDARY_PARTITION_HPTDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
 
+// primary partition trap mask data buffers
+extern xc_partition_trapmaskdata_t g_xc_primary_partition_trapmaskdata[MAX_PRIMARY_PARTITIONS][MAX_PRIMARY_PARTITION_TRAPMASKDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
+
 // partition data structure pointer for the richguest
 extern xc_partition_t *xc_partition_richguest;
 
