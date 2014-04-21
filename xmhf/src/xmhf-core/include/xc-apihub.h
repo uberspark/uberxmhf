@@ -79,23 +79,6 @@
 
 #ifndef __ASSEMBLY__
 
-
-// declare paramcore and paramhypapp variables (which are defined in
-// (xc.lds.S)
-extern u8 paramcore_start[];
-extern u8 paramhypapp_start[];
-
-// declare core and hypapp parameter blocks which are initialized over
-// the above two memory regions
-extern XMHF_HYPAPP_PARAMETERBLOCK *paramcore;
-extern XMHF_HYPAPP_PARAMETERBLOCK *paramhypapp;
-
-//hypapp callback hub entry point and hypapp top of stack
-extern u32 hypapp_cbhub_pc;
-extern u32 hypapp_tos;
-
-extern XMHF_HYPAPP_HEADER *g_hypappheader;
-
 void xmhfcore_outputdebugstring(const char *s);
 void xmhfcore_reboot(context_desc_t context_desc);
 void xmhfcore_setmemprot(context_desc_t context_desc, u64 gpa, u32 prottype);
@@ -109,12 +92,9 @@ void xmhfcore_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u
 //exported FUNCTIONS 
 //----------------------------------------------------------------------
 void xmhf_apihub_initialize (void);
-void xmhf_apihub_fromhypapp(u32 callnum);
-
-//----------------------------------------------------------------------
-//ARCH. BACKENDS
-//----------------------------------------------------------------------
 void xmhf_apihub_arch_initialize(void);
+
+void xmhf_apihub_fromhypapp(u32 callnum);
 void xmhf_apihub_arch_tohypapp(u32 hypappcallnum);
 
 

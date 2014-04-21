@@ -53,6 +53,11 @@
 
 #ifndef __ASSEMBLY__
 
+// this is in xc.lds
+extern u8 paramcore_start[];
+extern u8 paramhypapp_start[];
+
+
 // XMHF boot information block
 extern XMHF_BOOTINFO *xcbootinfo;
 

@@ -157,39 +157,26 @@ typedef struct __tss {
 
 
 //----------------------------------------------------------------------
-// externs
-//----------------------------------------------------------------------
-//core GDT
-extern arch_x86_gdtdesc_t x_gdt;
-
-//signal that basic base platform data structure initialization is complete 
-//(used by the exception handler component)
-extern bool g_bplt_initiatialized __attribute__(( section(".data") ));
-
-extern void _ap_pmode_entry_with_paging(void);
-
-//array of exception handler stubs
-extern u8 xmhf_xcphandler_exceptionstubs[]; 
-
-
-//----------------------------------------------------------------------
 // function decls.
 //----------------------------------------------------------------------
 
+
+void _ap_pmode_entry_with_paging(void);
+
 //get CPU vendor
-u32 xmhf_baseplatform_arch_getcpuvendor(void);
+//u32 xmhf_baseplatform_arch_getcpuvendor(void);
 
 //initialize CPU state
-void xmhf_baseplatform_arch_cpuinitialize(void);
+//void xmhf_baseplatform_arch_cpuinitialize(void);
 
 //initialize SMP
-void xmhf_baseplatform_arch_smpinitialize(void);
+//void xmhf_baseplatform_arch_smpinitialize(void);
 
 //initialize basic platform elements
-void xmhf_baseplatform_arch_initialize(void);
+//void xmhf_baseplatform_arch_initialize(void);
 
 //reboot platform
-void xmhf_baseplatform_arch_reboot(context_desc_t context_desc);
+//void xmhf_baseplatform_arch_reboot(context_desc_t context_desc);
 
 //returns true if CPU has support for XSAVE/XRSTOR
 bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void);
@@ -248,59 +235,6 @@ void xmhf_baseplatform_arch_x86_restorecpumtrrstate(void);
 u32 xmhf_baseplatform_arch_x86_getgdtbase(void);
 u32 xmhf_baseplatform_arch_x86_getidtbase(void);
 u32 xmhf_baseplatform_arch_x86_gettssbase(void);
-
-//EMHF exception handler hub
-void xmhf_xcphandler_hub(u32 vector, struct regs *r);
-
-//EMHF exception handler hub
-void xmhf_xcphandler_arch_hub(u32 vector, struct regs *r);
-
-
-//----------------------------------------------------------------------
-//rich guest memory functions
-
-static inline bool xmhf_smpguest_readu16(context_desc_t context_desc, const void *guestaddress, u16 *valueptr){
-		u16 *tmp = (u16 *)xmhf_smpguest_arch_walk_pagetables(context_desc, guestaddress);
-		if((u32)tmp == 0xFFFFFFFFUL || valueptr == NULL)
-			return false;
-		*valueptr = xmhfhw_sysmemaccess_readu16((u32)tmp);
-		return true;
-}
-
-static inline bool xmhf_smpguest_writeu16(context_desc_t context_desc, const void *guestaddress, u16 value){
-		u16 *tmp = (u16 *)xmhf_smpguest_arch_walk_pagetables(context_desc, guestaddress);
-		if((u32)tmp == 0xFFFFFFFFUL || 
-			( ((u32)tmp >= xcbootinfo->physmem_base) && ((u32)tmp <= (xcbootinfo->physmem_base+xcbootinfo->size)) ) 
-		  )
-			return false;
-		xmhfhw_sysmemaccess_writeu16((u32)tmp, value);
-		return true;
-}
-
-static inline bool xmhf_smpguest_memcpyfrom(context_desc_t context_desc, void *buffer, const void *guestaddress, size_t numbytes){
-	u8 *guestbuffer = (u8 *)xmhf_smpguest_arch_walk_pagetables(context_desc, guestaddress);
-	if((u32)guestbuffer == 0xFFFFFFFFUL)
-		return false;
-	xmhfhw_sysmemaccess_copy(buffer, gpa2hva(guestbuffer), numbytes);
-}
-
-static inline bool xmhf_smpguest_memcpyto(context_desc_t context_desc, void *guestaddress, const void *buffer, size_t numbytes){
-	u8 *guestbuffer = (u8 *)xmhf_smpguest_arch_walk_pagetables(context_desc, guestaddress);
-	if((u32)guestbuffer == 0xFFFFFFFFUL || 
-		( ((u32)guestbuffer >= xcbootinfo->physmem_base) && ((u32)guestbuffer <= (xcbootinfo->physmem_base+xcbootinfo->size)) ) 
-	  )
-		return false;
-	xmhfhw_sysmemaccess_copy(gpa2hva(guestbuffer), buffer, numbytes);
-}
-
-//quiesce interface to switch all guest cores into hypervisor mode
-void xmhf_smpguest_arch_quiesce(xc_cpu_t *xc_cpu);
-
-//endquiesce interface to resume all guest cores after a quiesce
-void xmhf_smpguest_arch_endquiesce(xc_cpu_t *xc_cpu);
-
-//quiescing handler for #NMI (non-maskable interrupt) exception event
-void xmhf_smpguest_arch_eventhandler_nmiexception(struct regs *r);
 
 
 #endif //__ASSEMBLY__

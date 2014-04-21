@@ -55,24 +55,12 @@
 
 
 //----------------------------------------------------------------------
-//exported DATA 
-//----------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------
 //exported FUNCTIONS 
 //----------------------------------------------------------------------
 
 //re-initialize DMA protections (if needed) for the runtime
 bool xmhf_dmaprot_reinitialize(void);
-
-
-//----------------------------------------------------------------------
-//ARCH. BACKENDS
-//----------------------------------------------------------------------
-//re-initialize DMA protections (if needed) for the runtime
 bool xmhf_dmaprot_arch_reinitialize(void);
-
 
 
 #endif	//__ASSEMBLY__

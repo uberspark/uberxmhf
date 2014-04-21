@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// xc-x86.h - XMHF core x86 vmx arch. main header file 
+// xc-x86vmx.h - XMHF core x86 vmx arch. main header file 
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #ifndef _XC_X86VMX_H_
@@ -78,41 +78,6 @@ typedef struct {
   u8 vmx_msrbitmaps_region[PAGE_SIZE_4K];		//MSR bitmap area
 } __attribute__ ((packed)) xc_partition_trapmaskdata_x86vmx_t;
 
-//------------------------------------------------------
-// externs
-//------------------------------------------------------
-
-//this is the MLE Join stucture to bring up the APs (bplt-x86-smptrampoline.S)
-extern u32 _mle_join_start[];
-
-//VMX VMCS read-only field encodings
-extern struct _vmx_vmcsrofields_encodings g_vmx_vmcsrofields_encodings[] __attribute__(( section(".data") ));
-
-//count of VMX VMCS read-only fields
-extern unsigned int g_vmx_vmcsrofields_encodings_count __attribute__(( section(".data") ));
-
-//VMX VMCS read-write field encodings
-extern struct _vmx_vmcsrwfields_encodings g_vmx_vmcsrwfields_encodings[] __attribute__(( section(".data") ));
-
-//count of VMX VMCS read-write fields
-extern unsigned int g_vmx_vmcsrwfields_encodings_count __attribute__(( section(".data") ));
-
-//VMX VMXON buffers
-extern u8 g_vmx_vmxon_buffers[] __attribute__(( section(".palign_data") ));
-
-//VMX VMCS buffers
-extern u8 g_vmx_vmcs_buffers[] __attribute__(( section(".palign_data") ));
-		
-//VMX IO bitmap buffers
-extern u8 g_vmx_iobitmap_buffer[] __attribute__(( section(".palign_data") ));
-		
-//VMX guest and host MSR save area buffers
-extern u8 g_vmx_msr_area_host_buffers[] __attribute__(( section(".palign_data") ));
-extern u8 g_vmx_msr_area_guest_buffers[] __attribute__(( section(".palign_data") ));
-
-//VMX MSR bitmap buffers
-//extern u8 g_vmx_msrbitmap_buffers[] __attribute__(( section(".palign_data") ));
-extern u8 g_vmx_msrbitmap_buffer[] __attribute__(( section(".palign_data") ));
 
 //------------------------------------------------------
 // functions
@@ -127,15 +92,8 @@ void xmhf_baseplatform_arch_x86vmx_wakeupAPs(void);
 //allocate and setup VCPU structure for all the CPUs
 void xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor);
 
-// routine takes vcpu vmcsfields and stores it in the CPU VMCS 
-//void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu);
-
-// routine takes CPU VMCS and stores it in vcpu vmcsfields  
-//void xmhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu);
-
 //--debug: dumpVMCS dumps VMCS contents
 //void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu);
-
 
 void xmhf_memprot_arch_x86vmx_flushmappings(void); //flush hardware page table mappings (TLB) 
 u64 xmhf_memprot_arch_x86vmx_get_EPTP(void); // get or set EPTP (only valid on Intel)
@@ -143,15 +101,8 @@ void xmhf_memprot_arch_x86vmx_set_EPTP(u64 eptp);
 
 void xmhf_parteventhub_arch_x86vmx_entry(void);
 
-//void _vmx_putVMCS(VCPU *vcpu);
-//void _vmx_getVMCS(VCPU *vcpu);
-//void _vmx_dumpVMCS(VCPU *vcpu);
-
-//low-level HVM start routine (part-x86vmx-sup.S)
-u32 __vmx_start_hvm(void);
-
 
 #endif // __ASSEMBLY__
 
 
-#endif // _XC_X86_H_
+#endif // _XC_X86VMX_H_

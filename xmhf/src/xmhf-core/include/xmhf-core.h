@@ -85,7 +85,6 @@ extern RPB *rpb;
 #include <xc-dmaprot.h>			//DMA protection component
 #include <xc-partition.h>		//partition component
 #include <xc-richguest.h>		//rich guest component
-#include <xc-parteventhub.h>	//partition event-hub component
 #include <xc-xcphandler.h>		//exception handler component
 #include <xc-tpm.h>				//Trusted Platform Module component
 #include <xc-startup.h>			//secure loader component
