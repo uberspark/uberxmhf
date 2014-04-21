@@ -73,6 +73,11 @@ typedef struct {
   u8 vmx_ept_p_tables[PAGE_SIZE_4K * PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT];	//P tables
 } __attribute__ ((packed)) xc_partition_hptdata_x86vmx_t;
 
+typedef struct {
+  u8 vmx_iobitmap_region[2*PAGE_SIZE_4K];		//I/O Bitmap area
+  u8 vmx_msrbitmaps_region[PAGE_SIZE_4K];		//MSR bitmap area
+} __attribute__ ((packed)) xc_partition_trapmaskdata_x86vmx_t;
+
 //xc-richguest
 
 //----------------------------------------------------------------------
@@ -209,7 +214,7 @@ extern void _vmx_dumpVMCS(VCPU *vcpu);
 u32 __vmx_start_hvm(void);
 
 //set legacy I/O protection for the partition
-void xmhf_partition_arch_x86vmx_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype);
+//void xmhf_partition_arch_x86vmx_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype);
 
 #endif // __ASSEMBLY__
 

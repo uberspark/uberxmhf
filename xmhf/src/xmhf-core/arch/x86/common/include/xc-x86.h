@@ -152,8 +152,8 @@ typedef struct _vcpu {
 
   //XXX: stuff that will go into partition data structure as trapmasks and
   //hpt abstractions
-  u32 vmx_vaddr_iobitmap;		//virtual address of the I/O Bitmap area
-  u32 vmx_vaddr_msrbitmaps;				//virtual address of the MSR bitmap area
+  //u32 vmx_vaddr_iobitmap;		//virtual address of the I/O Bitmap area
+  //u32 vmx_vaddr_msrbitmaps;				//virtual address of the MSR bitmap area
   //u32 vmx_vaddr_ept_pml4_table;	//virtual address of EPT PML4 table
   //u32 vmx_vaddr_ept_pdp_table;	//virtual address of EPT PDP table
   //u32 vmx_vaddr_ept_pd_tables;	//virtual address of base of EPT PD tables

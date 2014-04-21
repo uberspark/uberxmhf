@@ -77,7 +77,7 @@ void xmhf_richguest_addcpuandrun(u32 index_cpudata, xc_partition_t *xc_partition
 	//setup guest OS state for partition
 	//xmhf_partition_setupguestOSstate(vcpu);
 	//xmhf_partition_setupguestOSstate(context_desc);
-	xmhf_partition_setupguestOSstate(index_cpudata);
+	xmhf_partition_setupguestOSstate(index_cpudata, xc_partition_richguest);
 
 	//initialize memory protection for this core
 	//xmhf_memprot_initialize(context_desc);		

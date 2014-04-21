@@ -78,9 +78,9 @@
 void xmhf_partition_initializemonitor(u32 index_cpudata);
 
 //setup guest OS state for the partition
-//void xmhf_partition_setupguestOSstate(VCPU *vcpu);
-//void xmhf_partition_setupguestOSstate(context_desc_t context_desc);
-void xmhf_partition_setupguestOSstate(u32 index_cpudata);
+void xmhf_partition_setupguestOSstate(u32 index_cpudata, xc_partition_t *xc_partition);
+void xmhf_partition_arch_setupguestOSstate(u32 index_cpudata, xc_partition_t *xc_partition);
+
 
 //start executing the partition and guest OS
 //void xmhf_partition_start(VCPU *vcpu);
@@ -99,10 +99,6 @@ void xmhf_partition_legacyIO_setprot(context_desc_t context_desc, u32 port, u32 
 //void xmhf_partition_arch_initializemonitor(context_desc_t context_desc);
 void xmhf_partition_arch_initializemonitor(u32 index_cpudata);
 
-//setup guest OS state for the partition
-//void xmhf_partition_arch_setupguestOSstate(VCPU *vcpu);
-//void xmhf_partition_arch_setupguestOSstate(context_desc_t context_desc);
-void xmhf_partition_arch_setupguestOSstate(u32 index_cpudata);
 
 //start executing the partition and guest OS
 //void xmhf_partition_arch_start(VCPU *vcpu);
@@ -110,7 +106,7 @@ void xmhf_partition_arch_setupguestOSstate(u32 index_cpudata);
 void xmhf_partition_arch_start(u32 index_cpudata);
 
 //set legacy I/O protection for the partition
-void xmhf_partition_arch_legacyIO_setprot(context_desc_t context_desc, u32 port, u32 size, u32 prottype);
+void xmhf_partition_arch_legacyIO_setprot(context_desc_t context_desc, xc_partition_t *xc_partition, u32 port, u32 size, u32 prottype);
 
 
 
