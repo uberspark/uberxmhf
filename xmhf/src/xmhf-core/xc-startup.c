@@ -64,6 +64,7 @@ static void _xc_startup_initialize_cpudata(XMHF_BOOTINFO *bootinfo){
 		g_xc_cpu[i].is_quiesced = false;
 		//g_xc_cpu[i].index_cpuarchdata = i;	//indexes into g_xc_cpuarchdata[i][] for arch. specific data buffer
 		g_xc_cpu[i].cpuarchdata = (xc_cpuarchdata_t *)&g_xc_cpuarchdata[i][0];
+		g_xc_cpu[i].stack = (void *) ( (u32)&g_xc_cpustack[i] + (u32)sizeof(g_xc_cpustack[i]) );
 		g_xc_cpu[i].index_partitiondata = XC_INDEX_INVALID;
 		printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x, cpuarchdata=%08x", i, bootinfo->cpuinfo_buffer[i].isbsp, bootinfo->cpuinfo_buffer[i].lapic_id, (u32)g_xc_cpu[i].cpuarchdata);
 	}
