@@ -54,10 +54,10 @@
 
 static struct _memorytype _vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
 
-//---function to obtain the vcpu of the currently executing core----------------
+//---function to obtain the xc_cpu of the currently executing core----------------
 //XXX: move this into baseplatform as backend
 //note: this always returns a valid VCPU pointer
-static VCPU *_vmx_getvcpu(void){
+static xc_cpu_t *_vmx_getxc_cpu(void){
 
 #ifndef __XMHF_VERIFICATION__
 
@@ -75,18 +75,18 @@ static VCPU *_vmx_getvcpu(void){
   lapic_id = lapic_id >> 24;
   //printf("\n%s: lapic_id of core=0x%02x", __FUNCTION__, lapic_id);
   
-  for(i=0; i < (int)g_midtable_numentries; i++){
-    if(g_midtable[i].cpu_lapic_id == lapic_id)
-        return( (VCPU *)g_midtable[i].vcpu_vaddr_ptr );
+  for(i=0; i < (int)g_xc_cpu_count; i++){
+    if(g_xc_cputable[i].cpuid == lapic_id)
+        return( (xc_cpu_t *)&g_xc_cpu[g_xc_cputable[i].index_cpudata] );
   }
 
-  printf("\n%s: fatal, unable to retrieve vcpu for id=0x%02x", __FUNCTION__, lapic_id);
+  printf("\n%s: fatal, unable to retrieve xc_cpu for id=0x%02x", __FUNCTION__, lapic_id);
   HALT();
   return NULL; // currently unreachable 
 
 #else //__XMHF_VERIFICATION
 
-	//verification is always done in the context of a single core and vcpu/midtable is 
+	//verification is always done in the context of a single core and xc_cpu/midtable is 
 	//populated by the verification driver
 	//TODO: LAPIC hardware modeling and moving this function as a public
 
@@ -135,7 +135,7 @@ static u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") )) 
 
 
 
-static void _vmx_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu){
+static void _vmx_send_quiesce_signal(VCPU __attribute__((unused)) *xc_cpu){
   volatile u32 *icr_low = (u32 *)(0xFEE00000 + 0x300);
   volatile u32 *icr_high = (u32 *)(0xFEE00000 + 0x310);
   u32 icr_high_value= 0xFFUL << 24;
@@ -148,7 +148,7 @@ static void _vmx_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu){
   *icr_low = 0x000C0400UL;      //send NMI        
   
   //check if IPI has been delivered successfully
-  //printf("\n%s: CPU(0x%02x): firing NMIs...", __FUNCTION__, vcpu->id);
+  //printf("\n%s: CPU(0x%02x): firing NMIs...", __FUNCTION__, xc_cpu->cpuid);
 #ifndef __XMHF_VERIFICATION__  
   do{
 	delivered = *icr_high;
@@ -162,20 +162,20 @@ static void _vmx_send_quiesce_signal(VCPU __attribute__((unused)) *vcpu){
   //restore icr high
   *icr_high = prev_icr_high_value;
     
-  //printf("\n%s: CPU(0x%02x): NMIs fired!", __FUNCTION__, vcpu->id);
+  //printf("\n%s: CPU(0x%02x): NMIs fired!", __FUNCTION__, xc_cpu->cpuid);
 }
 
 
 //quiesce interface to switch all guest cores into hypervisor mode
-//note: we are in atomic processsing mode for this "vcpu"
-void xmhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
+//note: we are in atomic processsing mode for this "xc_cpu"
+void xmhf_smpguest_arch_x86vmx_quiesce(xc_cpu_t *xc_cpu){
 
-        //printf("\nCPU(0x%02x): got quiesce signal...", vcpu->id);
+        //printf("\nCPU(0x%02x): got quiesce signal...", xc_cpu->cpuid);
         //grab hold of quiesce lock
         spin_lock(&g_vmx_lock_quiesce);
-        //printf("\nCPU(0x%02x): grabbed quiesce lock.", vcpu->id);
+        //printf("\nCPU(0x%02x): grabbed quiesce lock.", xc_cpu->cpuid);
 
-		vcpu->quiesced = 1;
+		xc_cpu->is_quiesced = 1;
 		//reset quiesce counter
         spin_lock(&g_vmx_lock_quiesce_counter);
         g_vmx_quiesce_counter=0;
@@ -183,31 +183,31 @@ void xmhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu){
         
         //send all the other CPUs the quiesce signal
         g_vmx_quiesce=1;  //we are now processing quiesce
-        _vmx_send_quiesce_signal(vcpu);
+        _vmx_send_quiesce_signal(xc_cpu);
         
         //wait for all the remaining CPUs to quiesce
-        //printf("\nCPU(0x%02x): waiting for other CPUs to respond...", vcpu->id);
+        //printf("\nCPU(0x%02x): waiting for other CPUs to respond...", xc_cpu->cpuid);
         while(g_vmx_quiesce_counter < (g_midtable_numentries-1) );
-        //printf("\nCPU(0x%02x): all CPUs quiesced successfully.", vcpu->id);
+        //printf("\nCPU(0x%02x): all CPUs quiesced successfully.", xc_cpu->cpuid);
 
 }
 
-void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
-		(void)vcpu;
+void xmhf_smpguest_arch_x86vmx_endquiesce(xc_cpu_t *xc_cpu){
+		(void)xc_cpu;
 
         //set resume signal to resume the cores that are quiesced
         //Note: we do not need a spinlock for this since we are in any
         //case the only core active until this point
         g_vmx_quiesce_resume_counter=0;
-        //printf("\nCPU(0x%02x): waiting for other CPUs to resume...", vcpu->id);
+        //printf("\nCPU(0x%02x): waiting for other CPUs to resume...", xc_cpu->cpuid);
         g_vmx_quiesce_resume_signal=1;
         
         while(g_vmx_quiesce_resume_counter < (g_midtable_numentries-1) );
 
-		vcpu->quiesced=0;
+		xc_cpu->is_quiesced=0;
         g_vmx_quiesce=0;  // we are out of quiesce at this point
 
-        //printf("\nCPU(0x%02x): all CPUs resumed successfully.", vcpu->id);
+        //printf("\nCPU(0x%02x): all CPUs resumed successfully.", xc_cpu->cpuid);
         
         //reset resume signal
         spin_lock(&g_vmx_lock_quiesce_resume_signal);
@@ -215,15 +215,15 @@ void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu){
         spin_unlock(&g_vmx_lock_quiesce_resume_signal);
                 
         //release quiesce lock
-        //printf("\nCPU(0x%02x): releasing quiesce lock.", vcpu->id);
+        //printf("\nCPU(0x%02x): releasing quiesce lock.", xc_cpu->cpuid);
         spin_unlock(&g_vmx_lock_quiesce);
 
         
 }
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
-//note: we are in atomic processsing mode for this "vcpu"
-void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
+//note: we are in atomic processsing mode for this "xc_cpu"
+void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu, struct regs *r){
 	u32 nmiinhvm;	//1 if NMI originated from the HVM else 0 if within the hypervisor
 	u32 _vmx_vmcs_info_vmexit_interrupt_information;
 	u32 _vmx_vmcs_info_vmexit_reason;
@@ -232,7 +232,7 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 
 	//determine if the NMI originated within the HVM or within the
 	//hypervisor. we use VMCS fields for this purpose. note that we
-	//use vmread directly instead of relying on vcpu-> to avoid 
+	//use vmread directly instead of relying on xc_cpu-> to avoid 
 	//race conditions
 	_vmx_vmcs_info_vmexit_interrupt_information = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION);
 	_vmx_vmcs_info_vmexit_reason = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON);
@@ -241,10 +241,10 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 	
 	if(g_vmx_quiesce){ //if g_vmx_quiesce =1 process quiesce regardless of where NMI originated from
 		//if this core has been quiesced, simply return
-			if(vcpu->quiesced)
+			if(xc_cpu->is_quiesced)
 				return;
 				
-			vcpu->quiesced=1;
+			xc_cpu->is_quiesced=1;
 	
 			//increment quiesce counter
 			spin_lock(&g_vmx_lock_quiesce_counter);
@@ -252,15 +252,15 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 			spin_unlock(&g_vmx_lock_quiesce_counter);
 
 			//wait until quiesceing is finished
-			//printf("\nCPU(0x%02x): Quiesced", vcpu->id);
+			//printf("\nCPU(0x%02x): Quiesced", xc_cpu->cpuid);
 			while(!g_vmx_quiesce_resume_signal);
-			//printf("\nCPU(0x%02x): EOQ received, resuming...", vcpu->id);
+			//printf("\nCPU(0x%02x): EOQ received, resuming...", xc_cpu->cpuid);
 
 			spin_lock(&g_vmx_lock_quiesce_resume_counter);
 			g_vmx_quiesce_resume_counter++;
 			spin_unlock(&g_vmx_lock_quiesce_resume_counter);
 			
-			vcpu->quiesced=0;
+			xc_cpu->is_quiesced=0;
 	}else{
 		//we are not in quiesce
 		//inject the NMI if it was triggered in guest mode
@@ -269,9 +269,9 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 			if(xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EXCEPTION_BITMAP) & CPU_EXCEPTION_NMI){
 				//TODO: hypapp has chosen to intercept NMI so callback
 			}else{
-				//printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", vcpu->id);
+				//printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", xc_cpu->cpuid);
 				xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_EXCEPTION_ERRORCODE, 0);
-				//vcpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
+				//xc_cpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
 				//	INTR_TYPE_NMI |
 				//	INTR_INFO_VALID_MASK;
 				xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_INTERRUPTION_INFORMATION, (NMI_VECTOR | INTR_TYPE_NMI | INTR_INFO_VALID_MASK));
@@ -286,7 +286,7 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs
 
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping
-u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr){
+u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(xc_cpu_t *xc_cpu, u32 vaddr){
   
   //if rich guest has paging disabled then physical address is the 
   //supplied virtual address itself
@@ -398,7 +398,7 @@ u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr){
 void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t context_desc, struct regs *r){
 	u16 cs, ip;
 	u16 guest_flags;
-	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
+	xc_cpu_t *xc_cpu = (xc_cpu_t *)context_desc.cpu_desc.xc_cpu;
 
 	//if E820 service then...
 	if((u16)r->eax == 0xE820){
@@ -407,7 +407,7 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 		//return value, CF=0 indicated no error, EAX='SMAP'
 		//ES:DI left untouched, ECX=size returned, EBX=next continuation value
 		//EBX=0 if last descriptor
-		printf("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", vcpu->id, 
+		printf("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", xc_cpu->cpuid, 
 		(u16)r->eax, r->edx, r->ebx, r->ecx, (u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_ES_SELECTOR), (u16)r->edi);
 		
 		if( (r->edx == 0x534D4150UL) && (r->ebx < xcbootinfo->memmapinfo_numentries) ){
@@ -460,13 +460,13 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 			  
 			
 		}else{	//invalid state specified during INT 15 E820, halt
-				printf("\nCPU(0x%02x): INT15 (E820), invalid state specified by guest. Halting!", vcpu->id);
+				printf("\nCPU(0x%02x): INT15 (E820), invalid state specified by guest. Halting!", xc_cpu->cpuid);
 				HALT();
 		}
 		
 		//update RIP to execute the IRET following the VMCALL instruction
 		//effectively returning from the INT 15 call made by the guest
-		//vcpu->vmcs.guest_RIP += 3;
+		//xc_cpu->vmcs.guest_RIP += 3;
 		xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+3));
 	
 		return;
@@ -482,9 +482,9 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 	}
 	
 	//update VMCS with the CS and IP and let go
-	//vcpu->vmcs.guest_RIP = ip;
-	//vcpu->vmcs.guest_CS_base = cs * 16;
-	//vcpu->vmcs.guest_CS_selector = cs;		 
+	//xc_cpu->vmcs.guest_RIP = ip;
+	//xc_cpu->vmcs.guest_CS_base = cs * 16;
+	//xc_cpu->vmcs.guest_CS_selector = cs;		 
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, ip);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_BASE, (cs * 16));
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_SELECTOR, cs);
@@ -494,30 +494,30 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 //----------------------------------------------------------------------
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
-//void xmhf_smpguest_arch_x86_eventhandler_nmiexception(VCPU *vcpu, struct regs *r){
+//void xmhf_smpguest_arch_x86_eventhandler_nmiexception(xc_cpu_t *xc_cpu, struct regs *r){
 void xmhf_smpguest_arch_eventhandler_nmiexception(struct regs *r){
-	VCPU *vcpu;
+	xc_cpu_t *xc_cpu;
 	
-	vcpu= _vmx_getvcpu();
-		xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(vcpu, r);
+	xc_cpu= _vmx_getxc_cpu();
+		xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu, r);
 }	
 
 
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping
 u8 * xmhf_smpguest_arch_walk_pagetables(context_desc_t context_desc, u32 vaddr){
-	VCPU *vcpu = (VCPU *)&g_bplt_vcpu[context_desc.cpu_desc.id];
-		return xmhf_smpguest_arch_x86vmx_walk_pagetables(vcpu, vaddr);
+	//xc_cpu_t *xc_cpu = (VCPU *)&g_bplt_xc_cpu[context_desc.cpu_desc.id];
+		return xmhf_smpguest_arch_x86vmx_walk_pagetables(context_desc.cpu_desc.xc_cpu, vaddr);
 }
 
 //quiesce interface to switch all guest cores into hypervisor mode
-void xmhf_smpguest_arch_quiesce(VCPU *vcpu){
-		xmhf_smpguest_arch_x86vmx_quiesce(vcpu);
+void xmhf_smpguest_arch_quiesce(xc_cpu_t *xc_cpu){
+		xmhf_smpguest_arch_x86vmx_quiesce(xc_cpu);
 }
 
 //endquiesce interface to resume all guest cores after a quiesce
-void xmhf_smpguest_arch_endquiesce(VCPU *vcpu){
-		xmhf_smpguest_arch_x86vmx_endquiesce(vcpu);
+void xmhf_smpguest_arch_endquiesce(xc_cpu_t *xc_cpu){
+		xmhf_smpguest_arch_x86vmx_endquiesce(xc_cpu);
 }
 
 
@@ -532,7 +532,7 @@ static void _vmx_setupEPT(xc_partition_hptdata_x86vmx_t *eptdata);
 // local (static) support functions follow
 
 //---gather memory types for system physical memory------------------------------
-//static void _vmx_gathermemorytypes(VCPU *vcpu){
+//static void _vmx_gathermemorytypes(xc_cpu_t *xc_cpu){
 static void _vmx_gathermemorytypes(void){
  	u32 eax, ebx, ecx, edx;
 	u32 index=0;
@@ -782,7 +782,7 @@ static u32 _vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr){
 
 
 //---setup EPT for VMX----------------------------------------------------------
-//static void _vmx_setupEPT(VCPU *vcpu){
+//static void _vmx_setupEPT(xc_cpu_t *xc_cpu){
 static void _vmx_setupEPT(xc_partition_hptdata_x86vmx_t *eptdata){
 	//step-1: tie in EPT PML4 structures
 	//note: the default memory type (usually WB) should be determined using 
@@ -831,10 +831,10 @@ static void _vmx_setupEPT(xc_partition_hptdata_x86vmx_t *eptdata){
 }
 
 //---vmx int 15 hook enabling function------------------------------------------
-//static void	_vmx_int15_initializehook(VCPU *vcpu){
+//static void	_vmx_int15_initializehook(xc_cpu_t *xc_cpu){
 static void	_vmx_int15_initializehook(void){
 	//we should only be called from the BSP
-	//HALT_ON_ERRORCOND(vcpu->isbsp);
+	//HALT_ON_ERRORCOND(xc_cpu->is_bsp);
 
 	//#ifndef __XMHF_VERIFICATION__
 	//{
@@ -842,7 +842,7 @@ static void	_vmx_int15_initializehook(void){
 		
 	//	u16 *ivt_int15 = (u16 *)(0x54);			//32-bit CS:IP for IVT INT 15 handler
 		
-	//	printf("\nCPU(0x%02x): original INT 15h handler at 0x%04x:0x%04x", vcpu->id,
+	//	printf("\nCPU(0x%02x): original INT 15h handler at 0x%04x:0x%04x", xc_cpu->cpuid,
 	//		ivt_int15[1], ivt_int15[0]);
 
 		//we need 8 bytes (4 for the VMCALL followed by IRET and 4 for he original 
@@ -879,7 +879,7 @@ static void	_vmx_int15_initializehook(void){
 //-------------------------------------------------------------------------
 //void xmhf_richguest_arch_initialize(u32 index_cpudata_bsp){
 void xmhf_richguest_arch_initialize(xc_cpu_t *xc_cpu_bsp, xc_partition_t *xc_partition_richguest){
-	//VCPU *vcpu = &g_bplt_vcpu[index_cpudata_bsp];
+	//xc_cpu_t *xc_cpu = &g_bplt_xc_cpu[index_cpudata_bsp];
 	
 	//printf("\n%s: index_cpudata_bsp = %u", __FUNCTION__, index_cpudata_bsp);	
 
@@ -889,17 +889,17 @@ void xmhf_richguest_arch_initialize(xc_cpu_t *xc_cpu_bsp, xc_partition_t *xc_par
 	#endif
 	
 	printf("\n%s: BSP initializing HPT", __FUNCTION__);
-	//_vmx_gathermemorytypes(vcpu);
+	//_vmx_gathermemorytypes(xc_cpu);
 	_vmx_gathermemorytypes();
 	#ifndef __XMHF_VERIFICATION__	
-	//_vmx_setupEPT(vcpu);
+	//_vmx_setupEPT(xc_cpu);
 	_vmx_setupEPT((xc_partition_hptdata_x86vmx_t *)xc_partition_richguest->hptdata);
 	#endif
 	
 	//INT 15h E820 hook enablement for VMX unrestricted guest mode
 	//note: this only happens for the BSP
 	printf("\n%s: BSP initializing INT 15 hook for UG mode...", __FUNCTION__);
-	//_vmx_int15_initializehook(vcpu);
+	//_vmx_int15_initializehook(xc_cpu);
 	_vmx_int15_initializehook();
 	
 }

@@ -135,11 +135,11 @@ struct _memorytype {
 typedef struct _vcpu {
   //XXX: stuff that will go into cpu data structure as generic fields
   //u32 esp;                //used to establish stack for the CPU
-  u32 id;                 //LAPIC id of the core
+  //u32 id;                 //LAPIC id of the core
   //u32 idx;                //this vcpu's index in the g_vcpubuffers array
   //u32 cpu_vendor;	   	//Intel or AMD
-  u32 isbsp;							//1 if this core is BSP else 0
-  u32 quiesced;				//1 if this core is currently quiesced
+  //u32 isbsp;							//1 if this core is BSP else 0
+  //u32 quiesced;				//1 if this core is currently quiesced
 	
   //XXX: stuff that will go into cpu data structure as arch. specific fields
   //u64 vmx_msrs[IA32_VMX_MSRCOUNT];  //VMX msr values
@@ -458,10 +458,10 @@ static inline bool xmhf_smpguest_memcpyto(context_desc_t context_desc, void *gue
 }
 
 //quiesce interface to switch all guest cores into hypervisor mode
-void xmhf_smpguest_arch_quiesce(VCPU *vcpu);
+void xmhf_smpguest_arch_quiesce(xc_cpu_t *xc_cpu);
 
 //endquiesce interface to resume all guest cores after a quiesce
-void xmhf_smpguest_arch_endquiesce(VCPU *vcpu);
+void xmhf_smpguest_arch_endquiesce(xc_cpu_t *xc_cpu);
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
 void xmhf_smpguest_arch_eventhandler_nmiexception(struct regs *r);

@@ -85,19 +85,19 @@ typedef struct {
 //----------------------------------------------------------------------
 
 //void xmhf_smpguest_arch_x86vmx_initialize(VCPU *vcpu);
-void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(context_desc_t context_desc, 
-	struct regs *r);
-void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r);
-u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(context_desc_t context_desc, u32 paddr, u32 errorcode);
-void xmhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu);
-void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu);
+//void xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(context_desc_t context_desc, 
+//	struct regs *r);
+//void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(VCPU *vcpu, struct regs *r);
+//u32 xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(context_desc_t context_desc, u32 paddr, u32 errorcode);
+//void xmhf_smpguest_arch_x86vmx_quiesce(VCPU *vcpu);
+//void xmhf_smpguest_arch_x86vmx_endquiesce(VCPU *vcpu);
 
 
 //perform required setup after a guest awakens a new CPU
 //void xmhf_smpguest_arch_x86vmx_postCPUwakeup(VCPU *vcpu);
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping
-u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr);
+//u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(VCPU *vcpu, u32 vaddr);
 
 
 //xc-baseplatform
@@ -188,7 +188,7 @@ void xmhf_memprot_arch_x86vmx_set_EPTP(VCPU *vcpu, u64 eptp);
 //x86vmx SUBARCH. INTERFACES
 //----------------------------------------------------------------------
 void xmhf_parteventhub_arch_x86vmx_entry(void);
-u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r);
+//u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(VCPU *vcpu, struct regs *r);
 
 //XXX: FIX this
 //extern u8 * _vmx_lib_guestpgtbl_walk(VCPU *vcpu, u32 vaddr);
