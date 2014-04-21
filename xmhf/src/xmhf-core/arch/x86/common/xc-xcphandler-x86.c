@@ -213,7 +213,7 @@ static void xmhf_xcphandler_arch_unhandled(u32 vector, struct regs *r){
 void xmhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 	switch(vector){
 			case CPU_EXCEPTION_NMI:{
-					if(g_bplt_initiatialized){
+					//if(g_bplt_initiatialized){
 						//u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
 						//VCPU *vcpu;
 
@@ -225,10 +225,10 @@ void xmhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 
 						//xmhf_smpguest_arch_eventhandler_nmiexception(vcpu, r);
 						xmhf_smpguest_arch_eventhandler_nmiexception(r);
-					}else{	//we should never receive an NMI if we are that early in our runtime initialization
-						xmhf_xcphandler_arch_unhandled(vector, r);
+					//}else{	//we should never receive an NMI if we are that early in our runtime initialization
+						//xmhf_xcphandler_arch_unhandled(vector, r);
 						//we will never get here
-					}
+					//}
 				}
 				break;
 

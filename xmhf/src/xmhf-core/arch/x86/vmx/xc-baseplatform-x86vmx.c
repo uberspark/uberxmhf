@@ -340,7 +340,7 @@ void xmhf_baseplatform_arch_smpinitialize(void){
 
 	//signal that basic base platform data structure initialization is complete 
 	//(used by the exception handler component)
-	g_bplt_initiatialized = true;
+	//g_bplt_initiatialized = true;
 
   //wake up APS
   if(g_midtable_numentries > 1){
