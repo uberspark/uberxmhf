@@ -53,190 +53,186 @@
 #include <xc-x86.h>
 #include <xc-x86vmx.h>
 
-//initialize CPU state
-void xmhf_baseplatform_arch_x86vmx_cpuinitialize(void){
-    	u32 bcr0;
-	    txt_heap_t  __attribute__((unused)) *txt_heap;
-        os_mle_data_t __attribute__((unused)) *os_mle_data ;
-  
-	    //set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
-		bcr0 = read_cr0();
-		bcr0 |= 0x20;
-		write_cr0(bcr0);
+//----------------------------------------------------------------------
+// local variables
 
-#if defined (__DRT__)
-        // restore pre-SENTER MTRRs that were overwritten for SINIT launch 
-        // NOTE: XXX TODO; BSP MTRRs ALREADY RESTORED IN SL; IS IT
-        //   DANGEROUS TO DO THIS TWICE? 
-        // sl.c unity-maps 0xfed00000 for 2M so these should work fine 
-	#ifndef __XMHF_VERIFICATION__
-        txt_heap = get_txt_heap();
-        printf("\ntxt_heap = 0x%08x", (u32)txt_heap);
-        os_mle_data = get_os_mle_data_start(txt_heap);
-        printf("\nos_mle_data = 0x%08x", (u32)os_mle_data);
+/*
+ * XMHF base platform SMP real mode trampoline
+ * this is where all AP CPUs start executing when woken up
+ * 
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
+
+/*
+	.code16
+  .global _ap_bootstrap_start
+  _ap_bootstrap_start:
+    jmp ap_bootstrap_bypassdata
+    .global _ap_cr3_value
+    _ap_cr3_value:
+      .long 0
+    .global _ap_cr4_value
+    _ap_cr4_value: 
+      .long 0
+    .global _ap_runtime_entrypoint
+    _ap_runtime_entrypoint:
+	  .long 0
+    .align 16
+    .global _mle_join_start
+    _mle_join_start:
+    .long _ap_gdt_end - _ap_gdt_start - 1 // gdt_limit
+    .long _ap_gdt_start - _ap_bootstrap_start + 0x10000// gdt_base
+    .long 0x00000008 // CS
+    .long _ap_clear_pipe - _ap_bootstrap_start + 0x10000 // entry point
+    _mle_join_end:
     
-        if(!validate_mtrrs(&(os_mle_data->saved_mtrr_state))) {
-             printf("\nSECURITY FAILURE: validate_mtrrs() failed.\n");
-             HALT();
-        }
-        restore_mtrrs(&(os_mle_data->saved_mtrr_state));
-        #endif
-#endif	//__DRT__
+    _ap_gdtdesc:
+      .word _ap_gdt_end - _ap_gdt_start - 1
+      .long _ap_gdt_start - _ap_bootstrap_start + 0x10000  
+    
+    .align 16
+    _ap_gdt_start:
+      .quad 0x0000000000000000
+      .quad 0x00cf9a000000ffff	
+      .quad 0x00cf92000000ffff
+    _ap_gdt_end:
+      .word 0
+    
+    .align 16
+  ap_bootstrap_bypassdata:
+      movw $0x1000, %ax
+    	movw %ax, %ds
+    	movw %ax, %es
+    	movw $0xFFFF, %sp
+    	movw $0x4000, %ax
+    	movw %ax, %ss
+    	
+    	movw $0x0020, %si
+
+      lgdt (%si)
+
+      movl %cr0, %eax
+      orl $0x1, %eax
+      movl %eax, %cr0
+
+      jmpl $0x08, $(_ap_clear_pipe - _ap_bootstrap_start + (AP_BOOTSTRAP_CODE_SEG << 4))
+    .code32
+    _ap_clear_pipe:
+      movw $0x10, %ax
+      movw %ax, %ds
+      movw %ax, %es
+      movw %ax, %ss
+      movw %ax, %fs
+      movw %ax, %gs
+
+             
+      movl $(_ap_cr3_value - _ap_bootstrap_start + (AP_BOOTSTRAP_CODE_SEG << 4)), %esi
+      movl (%esi), %ebx
+      movl %ebx, %cr3
+      movl $(_ap_cr4_value - _ap_bootstrap_start + (AP_BOOTSTRAP_CODE_SEG << 4)), %esi
+      movl (%esi), %ebx
+      movl %ebx, %cr4
+      movl $(_ap_runtime_entrypoint - _ap_bootstrap_start + (AP_BOOTSTRAP_CODE_SEG << 4)), %esi
+      movl (%esi), %ebx
       
-}
+      movl %cr0, %eax
+      orl $0x80000000, %eax	
+      movl %eax, %cr0
+
+      jmpl *%ebx
+      hlt
+*/
+
+static u8 _ap_bootstrap_blob[256] = {
+															//0x00: _ap_bootstrap_start
+		0xeb, 0x4e, 										//0x00: jmp ap_bootstrap_bypassdata
+		0x00, 0x00, 0x00, 0x00,								//0x02: _ap_cr3_value
+		0x00, 0x00, 0x00, 0x00,								//0x06: _ap_cr4_value
+		0x00, 0x00, 0x00, 0x00, 							//0x0a: _ap_runtime_entrypoint
+		0x90, 0x90,											//.align 16
+															//0x10: _mle_join_start
+		0x17, 0x00, 0x00, 0x00,								//0x10: .long _ap_gdt_end - _ap_gdt_start - 1 // gdt_limit
+		0x30, 0x00, 0x01, 0x00,								//0x14: .long _ap_gdt_start - _ap_bootstrap_start + 0x10000// gdt_base
+		0x08, 0x00, 0x00, 0x00,								//0x18: .long 0x00000008 // CS
+		0x77, 0x00, 0x01, 0x00, 							//0x1C: .long _ap_clear_pipe - _ap_bootstrap_start + 0x10000 // entry point
+															//0x20: _ap_gdtdesc:
+		0x17, 0x00,											//0x20: .word _ap_gdt_end - _ap_gdt_start - 1
+		0x30, 0x00, 0x01, 0x00,								//0x22: .long _ap_gdt_start - _ap_bootstrap_start + 0x10000  
+															//0x26: .align 16
+		0x90, 0x90, 0x90, 0x90, 							//0x26: .align 16
+		0x90, 0x90, 0x90, 0x90,								//0x29: .align 16
+		0x90, 0x90,											//0x2d: .align 16
+															//0x30:_ap_gdt_start:
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 	//0x30: .quad 0x0000000000000000
+		0xff, 0xff, 0x00, 0x00, 0x00, 0x9a, 0xcf, 0x00, 	//0x38: .quad 0x00cf9a000000ffff	
+		0xff, 0xff, 0x00, 0x00, 0x00, 0x92, 0xcf, 0x00, 	//0x40: .quad 0x00cf92000000ffff
+															//0x48: _ap_gdt_end:
+		0x00, 0x00,											//0x48: .word 0
+															//0x4a: .align 16
+		0x90, 0x90, 0x90, 0x90, 0x90, 0x90,					//0x4a: .align 16
+															//0x50: _ap_bootstrap_bypassdata
+		0xb8, 0x00, 0x10,									//0x50: mov    $0x1000,%ax
+		0x8e, 0xd8,                							//0x53: mov    %ax,%ds
+		0x8e, 0xc0,                							//0x55: mov    %ax,%es
+		0xbc, 0xff, 0xff,          							//0x57: mov    $0xffff,%sp
+		0xb8, 0x00, 0x40,          							//0x5a: mov    $0x4000,%ax
+		0x8e, 0xd0,                							//0x5d: mov    %ax,%ss
+		0xbe, 0x20, 0x00,          							//0x5f: mov    $0x20,%si
+		0x0f, 0x01, 0x14,          							//0x62: lgdtw  (%si)
+		0x0f, 0x20, 0xc0,          							//0x65: mov    %cr0,%eax
+		0x66, 0x83, 0xc8, 0x01,    							//0x68: or     $0x1,%eax
+		0x0f, 0x22, 0xc0,          							//0x6c: mov    %eax,%cr0
+		0x66, 0xea, 0x77, 0x00, 0x01, 0x00, 0x08, 0x00,		//0x6f: jmpl $0x08, $(_ap_clear_pipe - _ap_bootstrap_start + (AP_BOOTSTRAP_CODE_SEG << 4))
+															//0x77: _ap_clear_pipe:
+		0x66, 0xb8, 0x10, 0x00,    							//0x77: mov    $0x10,%ax
+		0x8e, 0xd8,                							//0x7b: mov    %eax,%ds
+		0x8e, 0xc0,                							//0x7d: mov    %eax,%es
+		0x8e, 0xd0,                							//0x7f: mov    %eax,%ss
+		0x8e, 0xe0,                							//0x81: mov    %eax,%fs
+		0x8e, 0xe8,                							//0x83: mov    %eax,%gs
+		0xbe, 0x02, 0x00, 0x01, 0x00,						//0x85: movl $(_ap_cr3_value - _ap_bootstrap_start + (AP_BOOTSTRAP_CODE_SEG << 4)), %esi
+		0x8b, 0x1e,                							//0x8a: mov    (%esi),%ebx
+		0x0f, 0x22, 0xdb,          							//0x8c: mov    %ebx,%cr3
+		0xbe, 0x06, 0x00, 0x01, 0x00,						//0x8f: movl $(_ap_cr4_value - _ap_bootstrap_start + (AP_BOOTSTRAP_CODE_SEG << 4)), %esi
+		0x8b, 0x1e,                							//0x94: mov    (%esi),%ebx
+		0x0f, 0x22, 0xe3,         							//0x96: mov    %ebx,%cr4
+		0xbe, 0x0a, 0x00, 0x01, 0x00,						//0x99: movl $(_ap_runtime_entrypoint - _ap_bootstrap_start + (AP_BOOTSTRAP_CODE_SEG << 4)), %esi
+		0x8b, 0x1e,                							//0x9e: mov    (%esi),%ebx
+		0x0f, 0x20, 0xc0,          							//0xa0: mov    %cr0,%eax
+		0x0d, 0x00, 0x00, 0x00, 0x80,						//0xa3: or     $0x80000000,%eax
+		0x0f, 0x22, 0xc0,         							//0xa8: mov    %eax,%cr0
+		0xff, 0xe3,              							//0xab: jmp    *%ebx
+		0xf4,	                  							//0xad: hlt    
+
+};
+
+static u32 * _ap_bootstrap_blob_cr3 = (u32 *) & _ap_bootstrap_blob[0x02];
+
+static u32 * _ap_bootstrap_blob_cr4 = (u32 *) &_ap_bootstrap_blob[0x06];
+
+static u32 * _ap_bootstrap_blob_runtime_entrypoint = (u32 *) &_ap_bootstrap_blob[0x0a];
+
+static u8 * _ap_bootstrap_blob_mle_join_start = (u8 *) &_ap_bootstrap_blob[0x10];
+
+
+
+
+
+//----------------------------------------------------------------------
+// functions
 
 u32 xmhf_baseplatform_arch_getcpuvendor(void){
 	return xmhf_baseplatform_arch_x86_getcpuvendor();
 }
 
-//initialize basic platform elements
-void xmhf_baseplatform_arch_initialize(void){
-	u32 coreptbase;
-	
-	//initialize GDT
-	xmhf_baseplatform_arch_x86_initializeGDT();
-
-	//initialize IO privilege level
-	xmhf_baseplatform_arch_x86_initializeIOPL();
-
-	//initialize IDT
-	xmhf_baseplatform_arch_x86_initializeIDT();
-
-#ifndef __XMHF_VERIFICATION__
-	//setup core page tables
-	coreptbase = xmhf_baseplatform_arch_x86_setup_pagetables();
-	printf("\n%s: coreptbase = %08x", __FUNCTION__, coreptbase);
-#endif //__XMHF_VERIFICATION__
-
-	//initialize paging
-	xmhf_baseplatform_arch_x86_initialize_paging(coreptbase);
-	
-	//initialize PCI subsystem
-	xmhf_baseplatform_arch_x86_pci_initialize();
-
-	//check ACPI subsystem
-	{
-		ACPI_RSDP rsdp;
-		#ifndef __XMHF_VERIFICATION__
-			//TODO: plug in a BIOS data area map/model
-			if(!xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp)){
-				printf("\n%s: ACPI RSDP not found, Halting!", __FUNCTION__);
-				HALT();
-			}
-		#endif //__XMHF_VERIFICATION__
-	}
-
-	//initialize TR/TSS
-	#ifndef __XMHF_VERIFICATION__
-	xmhf_baseplatform_arch_x86_initializeTR();
-	#endif //__XMHF_VERIFICATION__
-
-}
-
-void xmhf_baseplatform_arch_cpuinitialize(void){
-	xmhf_baseplatform_arch_x86_cpuinitialize();
-
-	//if(cpu_vendor == CPU_VENDOR_INTEL)
-		xmhf_baseplatform_arch_x86vmx_cpuinitialize();
-}
-
-//----------------------------------------------------------------------
-//bplt-x86vmx-reboot
-
-/*//VMX specific platform reboot
-void xmhf_baseplatform_arch_x86vmx_reboot(VCPU *vcpu){
-	(void)vcpu;
-
-	//shut VMX off, else CPU ignores INIT signal!
-	__asm__ __volatile__("vmxoff \r\n");
-	write_cr4(read_cr4() & ~(CR4_VMXE));
-	
-	//fall back on generic x86 reboot
-	xmhf_baseplatform_arch_x86_reboot();
-}*/
-
 //reboot platform
 void xmhf_baseplatform_arch_reboot(context_desc_t context_desc){
-	//HALT_ON_ERRORCOND (vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-	
 	//shut VMX off, else CPU ignores INIT signal!
 	__asm__ __volatile__("vmxoff \r\n");
 	write_cr4(read_cr4() & ~(CR4_VMXE));
 	
 	//fall back on generic x86 reboot
 	xmhf_baseplatform_arch_x86_reboot();
-}
-
-
-//----------------------------------------------------------------------
-//bplt-x86vmx-smp
-
-//allocate and setup VCPU structure for all the CPUs
-//note: isbsp is set by xmhf_baseplatform_arch_x86_smpinitialize_commonstart
-//in arch/x86/common/bplt-x86-smp.c
-void xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor){
-  u32 i;
-  VCPU *vcpu;
-
-#ifndef __XMHF_VERIFICATION__	
-
-	for(i=0; i < g_midtable_numentries; i++){
-		//allocate VCPU structure
-		//vcpu = (VCPU *)((u32)g_vcpubuffers + (u32)(i * SIZE_STRUCT_VCPU));
-		vcpu = (VCPU *)&g_bplt_vcpu[i];
-
-		memset((void *)vcpu, 0, sizeof(VCPU));
-
-		vcpu->cpu_vendor = cpu_vendor;
-
-		//allocate runtime stack
-		vcpu->esp = ((u32)g_cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;    
-
-		//allocate VMXON memory region
-		vcpu->vmx_vmxonregion_vaddr = ((u32)g_vmx_vmxon_buffers + (i * PAGE_SIZE_4K)) ;
-
-		//allocate VMCS memory region
-		vcpu->vmx_vmcs_vaddr = ((u32)g_vmx_vmcs_buffers + (i * PAGE_SIZE_4K)) ;
-
-		//allocate VMX IO bitmap region
-		vcpu->vmx_vaddr_iobitmap = (u32)g_vmx_iobitmap_buffer; 
-
-		//allocate VMX guest and host MSR save areas
-		vcpu->vmx_vaddr_msr_area_host = ((u32)g_vmx_msr_area_host_buffers + (i * (2*PAGE_SIZE_4K))) ; 
-		vcpu->vmx_vaddr_msr_area_guest = ((u32)g_vmx_msr_area_guest_buffers + (i * (2*PAGE_SIZE_4K))) ; 
-
-		//allocate VMX MSR bitmap region
-		vcpu->vmx_vaddr_msrbitmaps = ((u32)g_vmx_msrbitmap_buffers + (i * PAGE_SIZE_4K)) ; 
-
-		//allocate EPT paging structures
-		#ifdef __NESTED_PAGING__		
-		{
-				//vcpu->vmx_vaddr_ept_pml4_table = ((u32)g_vmx_ept_pml4_table_buffers + (i * PAGE_SIZE_4K));
-				//vcpu->vmx_vaddr_ept_pdp_table = ((u32)g_vmx_ept_pdp_table_buffers + (i * PAGE_SIZE_4K));  
-				//vcpu->vmx_vaddr_ept_pd_tables = ((u32)g_vmx_ept_pd_table_buffers + (i * (PAGE_SIZE_4K*4))); 		
-				//vcpu->vmx_vaddr_ept_p_tables = ((u32)g_vmx_ept_p_table_buffers + (i * (PAGE_SIZE_4K*2048))); 
-				vcpu->vmx_vaddr_ept_pml4_table = ((u32)g_vmx_ept_pml4_table_buffers);
-				vcpu->vmx_vaddr_ept_pdp_table = ((u32)g_vmx_ept_pdp_table_buffers);  
-				vcpu->vmx_vaddr_ept_pd_tables = ((u32)g_vmx_ept_pd_table_buffers); 		
-				vcpu->vmx_vaddr_ept_p_tables = ((u32)g_vmx_ept_p_table_buffers); 
-		}
-		#endif
-
-		//other VCPU data such as LAPIC id, SIPI vector and receive indication
-		vcpu->id = g_midtable[i].cpu_lapic_id;
-		vcpu->idx = i;
-		vcpu->sipivector = 0;
-		vcpu->sipireceived = 0;
-
-		//map LAPIC to VCPU in midtable
-		g_midtable[i].vcpu_vaddr_ptr = (u32)vcpu;	
-	}
-
-#else //__XMHF_VERIFICATION__
-	//verification is always done in the context of a single core and vcpu/midtable is 
-	//populated by the verification driver
-#endif
-
 }
 
 //wake up application processors (cores) in the system
@@ -337,41 +333,17 @@ void xmhf_baseplatform_arch_x86vmx_wakeupAPs(void){
 
 //initialize SMP
 void xmhf_baseplatform_arch_smpinitialize(void){
-  u32 cpu_vendor;
-  
-  //grab CPU vendor
-  cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
-  //HALT_ON_ERRORCOND(cpu_vendor == CPU_VENDOR_AMD || cpu_vendor == CPU_VENDOR_INTEL);
-  HALT_ON_ERRORCOND(cpu_vendor == CPU_VENDOR_INTEL);
 
   
-  //setup Master-ID Table (MIDTABLE)
-  {
-    int i;
-	#ifndef __XMHF_VERIFICATION__
-		for(i=0; i < (int)xcbootinfo->cpuinfo_numentries; i++){
-			g_midtable[g_midtable_numentries].cpu_lapic_id = xcbootinfo->cpuinfo_buffer[i].lapic_id;
-			g_midtable[g_midtable_numentries].vcpu_vaddr_ptr = 0;
-			g_midtable_numentries++;
-		}
-	#else
-	//verification is always done in the context of a single core and vcpu/midtable is 
-	//populated by the verification driver
-	//TODO: incorporate some sort of BIOS data area within the verification harness that will
-	//allow us to populate these tables during verification
-	#endif
-  }
-
-
-  ////allocate and setup VCPU structure on each CPU
-	xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(cpu_vendor);
+	//save cpu MTRR state which we will later replicate on all APs
+	xmhf_baseplatform_arch_x86_savecpumtrrstate();
 
 	//signal that basic base platform data structure initialization is complete 
 	//(used by the exception handler component)
-	g_bplt_initiatialized = true;
+	//g_bplt_initiatialized = true;
 
   //wake up APS
-  if(g_midtable_numentries > 1){
+  if(g_xc_cpu_count > 1){
 	  xmhf_baseplatform_arch_x86vmx_wakeupAPs();
   }
 
@@ -387,36 +359,7 @@ void xmhf_baseplatform_arch_smpinitialize(void){
   }
 }
 
-//---putVMCS--------------------------------------------------------------------
-// routine takes vcpu vmcsfields and stores it in the CPU VMCS 
-void xmhf_baseplatform_arch_x86vmx_putVMCS(VCPU *vcpu){
-    unsigned int i;
-    for(i=0; i < g_vmx_vmcsrwfields_encodings_count; i++){
-      u32 *field = (u32 *)((u32)&vcpu->vmcs + (u32)g_vmx_vmcsrwfields_encodings[i].fieldoffset);
-      u32 fieldvalue = *field;
-      //printf("\nvmwrite: enc=0x%08x, value=0x%08x", vmcsrwfields_encodings[i].encoding, fieldvalue);
-      if(!__vmx_vmwrite(g_vmx_vmcsrwfields_encodings[i].encoding, fieldvalue)){
-        printf("\nCPU(0x%02x): VMWRITE failed. HALT!", vcpu->id);
-        HALT();
-      }
-    }
-}
-
-//---getVMCS--------------------------------------------------------------------
-// routine takes CPU VMCS and stores it in vcpu vmcsfields  
-void xmhf_baseplatform_arch_x86vmx_getVMCS(VCPU *vcpu){
-  unsigned int i;
-  for(i=0; i < g_vmx_vmcsrwfields_encodings_count; i++){
-      u32 *field = (u32 *)((u32)&vcpu->vmcs + (u32)g_vmx_vmcsrwfields_encodings[i].fieldoffset);
-      __vmx_vmread(g_vmx_vmcsrwfields_encodings[i].encoding, field);
-  }  
-  for(i=0; i < g_vmx_vmcsrofields_encodings_count; i++){
-      u32 *field = (u32 *)((u32)&vcpu->vmcs + (u32)g_vmx_vmcsrofields_encodings[i].fieldoffset);
-      __vmx_vmread(g_vmx_vmcsrofields_encodings[i].encoding, field);
-  }  
-}
-
-//--debug: dumpVMCS dumps VMCS contents-----------------------------------------
+/*//--debug: dumpVMCS dumps VMCS contents-----------------------------------------
 void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu){
   		printf("\nGuest State follows:");
 		printf("\nguest_CS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_CS_selector);
@@ -471,4 +414,46 @@ void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu){
 		printf("\nguest_RSP=0x%08lx", (unsigned long)vcpu->vmcs.guest_RSP);
 		printf("\nguest_RIP=0x%08lx", (unsigned long)vcpu->vmcs.guest_RIP);
 		printf("\nguest_RFLAGS=0x%08lx", (unsigned long)vcpu->vmcs.guest_RFLAGS);
+}*/
+
+
+//----------------------------------------------------------------------
+//initialize basic platform elements
+void xmhf_baseplatform_arch_initialize(void){
+	u32 coreptbase;
+	u32 cpu_vendor;
+
+	//grab CPU vendor
+	cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
+	HALT_ON_ERRORCOND(cpu_vendor == CPU_VENDOR_INTEL);
+
+	//initialize GDT
+	xmhf_baseplatform_arch_x86_initializeGDT();
+
+	//initialize IO privilege level
+	xmhf_baseplatform_arch_x86_initializeIOPL();
+
+	//initialize IDT
+	xmhf_baseplatform_arch_x86_initializeIDT();
+
+	//initialize TR/TSS
+	#ifndef __XMHF_VERIFICATION__
+	xmhf_baseplatform_arch_x86_initializeTR();
+	#endif //__XMHF_VERIFICATION__
+
+	//initialize PCI subsystem
+	xmhf_baseplatform_arch_x86_pci_initialize();
+
+	//check ACPI subsystem
+	{
+		ACPI_RSDP rsdp;
+		#ifndef __XMHF_VERIFICATION__
+			//TODO: plug in a BIOS data area map/model
+			if(!xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp)){
+				printf("\n%s: ACPI RSDP not found, Halting!", __FUNCTION__);
+				HALT();
+			}
+		#endif //__XMHF_VERIFICATION__
+	}
+
 }

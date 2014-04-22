@@ -44,72 +44,37 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF SMP guest component 
+// XMHF core richguest component 
 // declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __EMHF_SMPGUEST_H__
-#define __EMHF_SMPGUEST_H__
-
-//bring in arch. specific declarations
-//#include <arch/xmhf-smpguest-arch.h>
-
+#ifndef __XMHF_RICHGUEST_H__
+#define __XMHF_RICHGUEST_H__
 
 #ifndef __ASSEMBLY__
 
-//----------------------------------------------------------------------
-//ARCH. BACKENDS
-//----------------------------------------------------------------------
-
-//initialize SMP guest logic
-//void xmhf_smpguest_arch_initialize(VCPU *vcpu);
-void xmhf_smpguest_arch_initialize(context_desc_t context_desc);
-
-
-//walk guest page tables; returns pointer to corresponding guest physical address
-//note: returns 0xFFFFFFFF if there is no mapping
-u8 * xmhf_smpguest_arch_walk_pagetables(context_desc_t context_desc, u32 vaddr);
-
-//perform required setup after a guest awakens a new CPU
-//void xmhf_smpguest_arch_postCPUwakeup(VCPU *vcpu);
-void xmhf_smpguest_arch_postCPUwakeup(context_desc_t context_desc);
-
-//handle LAPIC access #DB (single-step) exception event
-void xmhf_smpguest_arch_eventhandler_dbexception(context_desc_t context_desc, 
-	struct regs *r);
-
-//handle LAPIC access #NPF (nested page fault) event
-void xmhf_smpguest_arch_eventhandler_hwpgtblviolation(context_desc_t context_desc, u32 gpa, u32 errorcode);
-
-
-//----------------------------------------------------------------------
-//exported DATA 
-//----------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------
-//exported FUNCTIONS 
-//----------------------------------------------------------------------
-
-
-
-
-//initialize SMP guest logic
-//void xmhf_smpguest_initialize(VCPU *vcpu);
-void xmhf_smpguest_initialize(context_desc_t context_desc);
-
-//quiesce interface to switch all guest cores into hypervisor mode
-//void xmhf_smpguest_quiesce(VCPU *vcpu);
-
-//endquiesce interface to resume all guest cores after a quiesce
-//void xmhf_smpguest_endquiesce(VCPU *vcpu);
+void xmhf_richguest_initialize(xc_cpu_t *xc_cpu_bsp, xc_partition_t *xc_partition_richguest);
+void xmhf_richguest_arch_initialize(xc_cpu_t *xc_cpu_bsp, xc_partition_t *xc_partition_richguest);
 
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping
 u8 * xmhf_smpguest_walk_pagetables(context_desc_t context_desc, u32 vaddr);
+u8 * xmhf_smpguest_arch_walk_pagetables(context_desc_t context_desc, u32 vaddr);
 
+//----------------------------------------------------------------------
+//rich guest memory functions
+
+bool xmhf_smpguest_arch_readu16(context_desc_t context_desc, const void *guestaddress, u16 *valueptr);
+bool xmhf_smpguest_arch_writeu16(context_desc_t context_desc, const void *guestaddress, u16 value);
+bool xmhf_smpguest_arch_memcpyfrom(context_desc_t context_desc, void *buffer, const void *guestaddress, size_t numbytes);
+bool xmhf_smpguest_arch_memcpyto(context_desc_t context_desc, void *guestaddress, const void *buffer, size_t numbytes);
+
+#define xmhf_smpguest_readu16	xmhf_smpguest_arch_readu16
+#define xmhf_smpguest_writeu16 xmhf_smpguest_arch_writeu16
+#define xmhf_smpguest_memcpyfrom xmhf_smpguest_arch_memcpyfrom
+#define xmhf_smpguest_memcpyto xmhf_smpguest_arch_memcpyto
 
 
 #endif	//__ASSEMBLY__
 
-#endif //__EMHF_SMPGUEST_H__
+#endif //__XMHF_RICHGUEST_H__

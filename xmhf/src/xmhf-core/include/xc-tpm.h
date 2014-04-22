@@ -44,23 +44,14 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF TPM component declarations
+// XMHF TPM component declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __EMHF_TPM_H__
-#define __EMHF_TPM_H__
-
-
-//bring in arch. specific declarations
-//#include <arch/xmhf-tpm-arch.h>
+#ifndef __XMHF_TPM_H__
+#define __XMHF_TPM_H__
 
 
 #ifndef __ASSEMBLY__
-
-
-//----------------------------------------------------------------------
-//exported DATA 
-//----------------------------------------------------------------------
 
 
 //----------------------------------------------------------------------

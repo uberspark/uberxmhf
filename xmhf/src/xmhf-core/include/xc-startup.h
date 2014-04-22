@@ -53,30 +53,7 @@
 
 #ifndef __ASSEMBLY__
 
-//----------------------------------------------------------------------
-//exported DATA 
-//----------------------------------------------------------------------
 
-//runtime parameter block data area 
-//extern u8 arch_rpb[];
-//extern RPB arch_rpb;
-
-//runtime parameter block pointer 
-//extern RPB *rpb __attribute__(( section(".data") )); 
-//extern XMHF_BOOTINFO xcbootinfo;
-
-
-//runtime DMA protection buffer
-extern u8 g_rntm_dmaprot_buffer[] __attribute__(( section(".palign_data") ));
-
-//variable that is incremented by 1 by all cores that cycle through appmain
-//successfully, this should be finally equal to g_midtable_numentries at
-//runtime which signifies that EMHF appmain executed successfully on all
-//cores
-extern u32 g_appmain_success_counter __attribute__(( section(".data") ));
-
-//SMP lock for the above variable
-extern u32 g_lock_appmain_success_counter __attribute__(( section(".data") ));
 
 //----------------------------------------------------------------------
 //exported FUNCTIONS 
@@ -86,14 +63,7 @@ extern u32 g_lock_appmain_success_counter __attribute__(( section(".data") ));
 void xmhf_runtime_entry(void);
 
 //XMHF runtime main function; gets control in the context of each core
-//void xmhf_runtime_main(VCPU *vcpu, u32 isEarlyInit);
-//void xmhf_runtime_main(partition_desc_t partdesc, cpu_desc_t cpudesc);
-void xmhf_runtime_main(context_desc_t context_desc);
-
-//----------------------------------------------------------------------
-//ARCH. BACKENDS
-//----------------------------------------------------------------------
-
+void xmhf_runtime_main(xc_cpu_t *xc_cpu);
 
 
 #endif //__ASSEMBLY__

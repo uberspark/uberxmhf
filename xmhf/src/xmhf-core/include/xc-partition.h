@@ -44,12 +44,12 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF partition component 
+// XMHF partition component 
 // declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __EMHF_PARTITION_H__
-#define __EMHF_PARTITION_H__
+#ifndef __XMHF_PARTITION_H__
+#define __XMHF_PARTITION_H__
 
 //partition legacy I/O protection types
 #define	PART_LEGACYIO_NOACCESS		(1)		//no access
@@ -63,52 +63,28 @@
 
 #ifndef __ASSEMBLY__
 
-//----------------------------------------------------------------------
-//exported DATA 
-//----------------------------------------------------------------------
-
 
 //----------------------------------------------------------------------
 //exported FUNCTIONS 
 //----------------------------------------------------------------------
 
 //initialize partition monitor for a given CPU
-//void xmhf_partition_initializemonitor(VCPU *vcpu);
-void xmhf_partition_initializemonitor(context_desc_t context_desc);
+void xmhf_partition_initializemonitor(xc_cpu_t *xc_cpu);
+void xmhf_partition_arch_initializemonitor(xc_cpu_t *xc_cpu);
 
 //setup guest OS state for the partition
-//void xmhf_partition_setupguestOSstate(VCPU *vcpu);
-void xmhf_partition_setupguestOSstate(context_desc_t context_desc);
+void xmhf_partition_setupguestOSstate(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition);
+void xmhf_partition_arch_setupguestOSstate(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition);
 
 //start executing the partition and guest OS
-//void xmhf_partition_start(VCPU *vcpu);
-void xmhf_partition_start(context_desc_t context_desc);
+void xmhf_partition_start(xc_cpu_t *xc_cpu);
+void xmhf_partition_arch_start(xc_cpu_t *xc_cpu);
 
 //set legacy I/O protection for the partition
 void xmhf_partition_legacyIO_setprot(context_desc_t context_desc, u32 port, u32 size, u32 prottype);
-
-
-//----------------------------------------------------------------------
-//ARCH. BACKENDS
-//----------------------------------------------------------------------
-//initialize partition monitor for a given CPU
-//void xmhf_partition_arch_initializemonitor(VCPU *vcpu);
-void xmhf_partition_arch_initializemonitor(context_desc_t context_desc);
-
-
-//setup guest OS state for the partition
-//void xmhf_partition_arch_setupguestOSstate(VCPU *vcpu);
-void xmhf_partition_arch_setupguestOSstate(context_desc_t context_desc);
-
-//start executing the partition and guest OS
-//void xmhf_partition_arch_start(VCPU *vcpu);
-void xmhf_partition_arch_start(context_desc_t context_desc);
-
-//set legacy I/O protection for the partition
-void xmhf_partition_arch_legacyIO_setprot(context_desc_t context_desc, u32 port, u32 size, u32 prottype);
-
+void xmhf_partition_arch_legacyIO_setprot(context_desc_t context_desc, xc_partition_t *xc_partition, u32 port, u32 size, u32 prottype);
 
 
 #endif	//__ASSEMBLY__
 
-#endif //__EMHF_PARTITION_H__
+#endif //__XMHF_PARTITION_H__

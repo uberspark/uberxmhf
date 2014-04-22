@@ -54,6 +54,27 @@
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
+//----------------------------------------------------------------------
+// local variables
+
+//hypapp PAE page tables
+static u64 hypapp_3level_pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( section(".palign_data") ));
+static u64 hypapp_3level_pdt[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT] __attribute__(( section(".palign_data") ));
+
+//core PAE page tables
+static u64 core_3level_pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( section(".palign_data") ));
+static u64 core_3level_pdt[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT] __attribute__(( section(".palign_data") ));
+
+//core and hypapp page table base address (PTBA)
+static u32 core_ptba __attribute__(( section(".data") )) = 0;
+static u32 hypapp_ptba __attribute__(( section(".data") )) = 0;
+
+
+
+//----------------------------------------------------------------------
+// functions
+
+
 // initialization function for the core API interface
 void xmhf_apihub_arch_initialize (void){
 
@@ -201,11 +222,11 @@ void xmhf_apihub_arch_initialize (void){
 	{
 		core_ptba = (u32)&core_3level_pdpt;
 		hypapp_ptba = (u32)&hypapp_3level_pdpt;
-		printf("\n%s: core_ptba=%08x, hypapp_ptba=%08x", core_ptba, hypapp_ptba);
+		printf("\n%s: core_ptba=%08x, hypapp_ptba=%08x", __FUNCTION__, core_ptba, hypapp_ptba);
 	}
 
 		
-	//change CR3 to point to core page tables
+	/*//change CR3 to point to core page tables
 	{
 		u32 cr3;
 
@@ -216,7 +237,10 @@ void xmhf_apihub_arch_initialize (void){
 		write_cr3(cr3);
 		cr3 = read_cr3();
 		printf("\n%s: CR3 changed to %08x", __FUNCTION__, cr3);
-	}
+	}*/
+
+	//initialize core paging
+	xmhf_baseplatform_arch_x86_initialize_paging((u32)&core_3level_pdpt);
 
 	//turn on WP bit in CR0 register for supervisor mode read-only permission support
 	{
@@ -282,7 +306,7 @@ asm volatile ( 	"pushal	\r\n"							//save all GPRs
 				:	//no outputs
 				: "m" (hypappcallnum), "i" (__CS_CPL0), "i" (IA32_SYSENTER_CS_MSR), "i" (IA32_SYSENTER_ESP_MSR), "i" (&xmhf_apihub_arch_fromhypapp_stub), 
 					"i" (IA32_SYSENTER_EIP_MSR), "m" (hypapp_tos), "m" (hypapp_cbhub_pc), "m" (hypapp_ptba), "i" (__DS_CPL3)
-				:   //no clobber list
+				: "esi", "edx", "eax", "ecx"
 		);
 
 }

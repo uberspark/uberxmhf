@@ -59,9 +59,9 @@ void xmhf_xcphandler_initialize(void){
 
 
 //get IDT start address
-u8 * xmhf_xcphandler_get_idt_start(void){
-	return xmhf_xcphandler_arch_get_idt_start();
-}
+//u8 * xmhf_xcphandler_get_idt_start(void){
+//	return xmhf_xcphandler_arch_get_idt_start();
+//}
 
 
 //EMHF exception handler hub
