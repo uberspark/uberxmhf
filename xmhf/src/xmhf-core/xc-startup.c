@@ -93,19 +93,6 @@ void xmhf_runtime_entry(void){
 	//interface layer
 	xmhf_apihub_initialize();
 
-	//call hypapp main function
-	{
-		hypapp_env_block_t hypappenvb;
-		hypappenvb.runtimephysmembase = (u32)xcbootinfo->physmem_base;  
-		hypappenvb.runtimesize = (u32)xcbootinfo->size;
-	
-		//call app main
-		printf("\n%s: proceeding to call xmhfhypapp_main on BSP", __FUNCTION__);
-		xmhfhypapp_main(hypappenvb);
-		printf("\n%s: came back into core", __FUNCTION__);
-
-	}   	
-
 	//initialize base platform with SMP 
 	xmhf_baseplatform_smpinitialize();
 
@@ -115,8 +102,10 @@ void xmhf_runtime_entry(void){
 
 
 //we get control here in the context of *each* physical CPU core 
-//void xmhf_runtime_main(context_desc_t context_desc){ 
 void xmhf_runtime_main(xc_cpu_t *xc_cpu){ 
+	static u32 _xc_startup_hypappmain_counter = 0; 
+	static u32 _xc_startup_hypappmain_counter_lock = 1; 
+
 	//[debug]
 	printf("\n%s: cpu id=%u", __FUNCTION__, xc_cpu->cpuid);
 
@@ -125,6 +114,25 @@ void xmhf_runtime_main(xc_cpu_t *xc_cpu){
 	//the rich guest initialization procedure. if the CPU is not allocated to the
 	//rich guest, enter it into a CPU pool for use by other partitions
 	xmhf_richguest_addcpu(xc_cpu, xc_partition_richguest);
+	
+	//call hypapp main function
+    spin_lock(&_xc_startup_hypappmain_counter_lock);
+	{
+		hypapp_env_block_t hypappenvb;
+		hypappenvb.runtimephysmembase = (u32)xcbootinfo->physmem_base;  
+		hypappenvb.runtimesize = (u32)xcbootinfo->size;
+	
+		//call app main
+		printf("\n%s: proceeding to call xmhfhypapp_main on BSP", __FUNCTION__);
+		xmhfhypapp_main(hypappenvb);
+		_xc_startup_hypappmain_counter++;
+		printf("\n%s: came back into core", __FUNCTION__);
+
+	}   	
+    spin_unlock(&_xc_startup_hypappmain_counter_lock);
+
+	//wait for hypapp main to execute on all the cpus
+	while(_xc_startup_hypappmain_counter < g_xc_cpu_count);
 	
 	//start cpu in corresponding partition
 	printf("\n%s[%u]: starting in partition...", __FUNCTION__, xc_cpu->cpuid);
