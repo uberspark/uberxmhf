@@ -86,10 +86,10 @@ void xmhf_baseplatform_reboot(context_desc_t context_desc){
 //	return g_midtable_numentries; 
 //}
 
-xmhfcoreapiretval_t xmhf_baseplatform_getcputable(void){
-	xmhfcoreapiretval_t retval;
-	retval.returnval = (u32) g_xc_cpu_count;
-	retval.returnptr1 = (void *)&g_xc_cputable;
-	return retval;
-}
+//xmhfcoreapiretval_t xmhf_baseplatform_getcputable(void){
+//	xmhfcoreapiretval_t retval;
+//	retval.returnval = (u32) g_xc_cpu_count;
+//	retval.returnptr1 = (void *)&g_xc_cputable;
+//	return retval;
+//}
 
