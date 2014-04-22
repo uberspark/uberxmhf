@@ -44,8 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// appmain.c
-// xmhf application main module (for xmhf-core verification)
+// hyperdep hypapp main module
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -61,22 +60,10 @@ u32 hd_runtimesize=0;
 u32 cputable_numentries=0;	//number of CPUs in the platform
 __xmhfattribute__(core-ro) MIDTAB *cputable; 
 
-//----------------------------------------------------------------------
-// INITIALIZATION
-
-//static u64 hpt_get_root(VCPU *vcpu){
-		//if(vcpu->cpu_vendor == CPU_VENDOR_INTEL)
-//			return xmhfcore_memprot_arch_x86vmx_get_EPTP(vcpu);
-		//else 
-			//vcpu->cpu_vendor == CPU_VENDOR_AMD
-			//return xmhfcore_memprot_arch_x86svm_get_h_cr3(vcpu);
-//}
-
 u64 hpt_root=0;
 
-// hypapp main
-//u32 xmhf_app_main(__xmhfattribute__(core-ro) APP_PARAM_BLOCK *apb){
-u32 xmhf_app_main(hypapp_env_block_t hypappenvb){	
+// hypapp initialization
+u32 xmhf_hypapp_initialization(hypapp_env_block_t hypappenvb){	
 	printf("\nhyperDEP initializing on BSP");
 		
 	//store runtime base and size
@@ -135,8 +122,8 @@ static void hd_initialize(context_desc_t context_desc){
 }
 
 
-//u32 xmhf_app_handlehypercall(__xmhfattribute__(core-ro) VCPU *vcpu, u32 callno, __xmhfattribute__(core-ro) struct regs *r){
-u32 xmhf_app_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param){
+//u32 xmhf_hypapp_handlehypercall(__xmhfattribute__(core-ro) VCPU *vcpu, u32 callno, __xmhfattribute__(core-ro) struct regs *r){
+u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param){
 	u32 status=APP_SUCCESS;
 	u32 call_id;
 	u32 gva, gpa;
@@ -188,7 +175,7 @@ u32 xmhf_app_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 
 
 //handles XMHF shutdown callback
 //note: should not return
-void xmhf_app_handleshutdown(context_desc_t context_desc){
+void xmhf_hypapp_handleshutdown(context_desc_t context_desc){
 	//(void)r; //unused
 	printf("\n%s:%u: rebooting now", __FUNCTION__, context_desc.cpu_desc.cpuid);
 	xmhfcore_reboot(context_desc);				
@@ -196,7 +183,7 @@ void xmhf_app_handleshutdown(context_desc_t context_desc){
 
 //handles h/w pagetable violations
 //for now this always returns APP_SUCCESS
-u32 xmhf_app_handleintercept_hwpgtblviolation(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code){
+u32 xmhf_hypapp_handleintercept_hwpgtblviolation(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code){
 	u32 status = APP_SUCCESS;
 	//(void)r; //unused
 
@@ -209,7 +196,7 @@ u32 xmhf_app_handleintercept_hwpgtblviolation(context_desc_t context_desc, u64 g
 
 //handles i/o port intercepts
 //returns either APP_IOINTERCEPT_SKIP or APP_IOINTERCEPT_CHAIN
-u32 xmhf_app_handleintercept_portaccess(context_desc_t context_desc, u32 portnum, u32 access_type, u32 access_size){
+u32 xmhf_hypapp_handleintercept_portaccess(context_desc_t context_desc, u32 portnum, u32 access_type, u32 access_size){
 	//(void)vcpu; //unused
 	//(void)r; //unused
 	(void)portnum; //unused

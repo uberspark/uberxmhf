@@ -124,7 +124,7 @@ void xmhf_runtime_main(xc_cpu_t *xc_cpu){
 	
 		//call app main
 		printf("\n%s: proceeding to call xmhfhypapp_main on BSP", __FUNCTION__);
-		xmhfhypapp_main(hypappenvb);
+		xmhfhypapp_initialization(hypappenvb);
 		_xc_startup_hypappmain_counter++;
 		printf("\n%s: came back into core", __FUNCTION__);
 

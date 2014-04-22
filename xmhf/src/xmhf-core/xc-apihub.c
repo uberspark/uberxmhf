@@ -123,11 +123,11 @@ void xmhf_apihub_fromhypapp(u32 callnum){
 
 
 // hypapp main (initialization) function
-u32 xmhfhypapp_main(hypapp_env_block_t hypappenvb){
+u32 xmhfhypapp_initialization(hypapp_env_block_t hypappenvb){
 	u32 result;
 	
 	paramcore->hypappenvb = hypappenvb;
-	xmhf_apihub_arch_tohypapp(XMHF_APIHUB_HYPAPPCB_MAIN);
+	xmhf_apihub_arch_tohypapp(XMHF_APIHUB_HYPAPPCB_INITIALIZATION);
 	result = (u32)paramhypapp->result;
 	
 	return result;
