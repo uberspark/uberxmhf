@@ -392,34 +392,14 @@ static void _vmx_handle_intercept_xsetbv(xc_cpu_t *xc_cpu, struct regs *r){
 
 
 //---hvm_intercept_handler------------------------------------------------------
-//u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct regs *r){
 u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct regs *r){
-	//context_desc_t context_desc;
-	
-	//context_desc.partition_desc.partitionid = 0;
-	//context_desc.cpu_desc.cpuid = xc_cpu->cpuidx;
-	//context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
-	//context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
 
-/*	//read VMCS from physical CPU/core
-#ifndef __XMHF_VERIFICATION__
-	xmhf_baseplatform_arch_x86vmx_getVMCS(xc_cpu);
-#endif //__XMHF_VERIFICATION__
-*/
 	//sanity check for VM-entry errors
 	if( xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON) & 0x80000000UL ){
 		printf("\nVM-ENTRY error: reason=0x%08x, qualification=0x%016llx", 
 			xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON), xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION));
-		//xmhf_baseplatform_arch_x86vmx_dumpVMCS(xc_cpu);
 		HALT();
 	}
-
-	/*{
-		u32 eax, edx;
-		rdmsr(MSR_EFER, &eax, &edx);
-		printf("\n%s: MSR_EFER=%08x%08x", __FUNCTION__, edx, eax);
-	}*/
-
   
 	//handle intercepts
 	switch(xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON)){
@@ -443,7 +423,6 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 				HALT_ON_ERRORCOND( !(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PE)  ||
 					( (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PE) && (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PG) &&
 						(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RFLAGS) & EFLAGS_VM)  ) );
-				//_vmx_int15_handleintercept(xc_cpu, r);	
 				xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc, r);
 				
 			}else{	//if not E820 hook, give hypapp a chance to handle the hypercall
@@ -464,7 +443,6 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 					}
 				}
 				xmhf_smpguest_arch_x86vmx_endquiesce(xc_cpu);
-				//xc_cpu->vmcs.guest_RIP += 3;
 				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+3) );
 			}
 		}
@@ -498,22 +476,10 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 		//--------------------------------------------------------------
 		//xmhf-core only intercepts
 		//--------------------------------------------------------------
-		/*case VMX_VMEXIT_HLT:
-			if(!xc_cpu->vmx_guest_unrestricted){
-				printf("\nCPU(0x%02x): V86 monitor based real-mode exec. unsupported!", xc_cpu->cpuid);
-				HALT();
-			}else{
-				printf("\nCPU(0x%02x): Unexpected HLT intercept in UG, Halting!", xc_cpu->cpuid);
-				HALT();
-			}
-		break;*/
 
  		case VMX_VMEXIT_EXCEPTION:{
 			switch( ( xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION) & INTR_INFO_VECTOR_MASK) ){
-				//case 0x01:
-				//	xmhf_smpguest_arch_x86vmx_eventhandler_dbexception(context_desc, r);
-				//	break;				
-				
+	
 				case 0x02:	//NMI
 					#ifndef __XMHF_VERIFICATION__
 					//we currently discharge quiescing via manual inspection
@@ -536,14 +502,11 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 
  		case VMX_VMEXIT_CRX_ACCESS:{
 			u32 tofrom, gpr, crx; 
-			//printf("\nVMEXIT_CRX_ACCESS:");
-			//printf("\ninstruction length: %u", info_vmexit_instruction_length);
 			crx=(u32) ((u64)xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION) & 0x000000000000000FULL);
 			gpr=
 			 (u32) (((u64)xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION) & 0x0000000000000F00ULL) >> (u64)8);
 			tofrom = 
 			(u32) (((u64)xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION) & 0x0000000000000030ULL) >> (u64)4); 
-			//printf("\ncrx=%u, gpr=%u, tofrom=%u", crx, gpr, tofrom);
 
 			if ( ((int)gpr >=0) && ((int)gpr <= 7) ){
 				switch(crx){
@@ -552,19 +515,13 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 						break;
 					
 					case 0x4: //CR4 access
-						//if(!xc_cpu->vmx_guest_unrestricted){
-						//	printf("\nHALT: v86 monitor based real-mode exec. unsupported!");
-						//	HALT();
-						//}else{
-							vmx_handle_intercept_cr4access_ug(xc_cpu, r, gpr, tofrom);	
-						//}
+						vmx_handle_intercept_cr4access_ug(xc_cpu, r, gpr, tofrom);	
 						break;
 				
 					default:
 						printf("\nunhandled crx, halting!");
 						HALT();
 				}
-				//xc_cpu->vmcs.guest_RIP += xc_cpu->vmcs.info_vmexit_instruction_length;
 			  	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH)) );
 
 			}else{
@@ -601,7 +558,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 			
 			if(reason == TASK_SWITCH_GATE && type == INTR_TYPE_NMI){
 				printf("\nCPU(0x%02x): NMI received (MP guest shutdown?)", xc_cpu->cpuid);
-					xmhfhypapp_handleshutdown(context_desc);      
+				xmhfhypapp_handleshutdown(context_desc);      
 				printf("\nCPU(0x%02x): warning, xmhfhypapp_handleshutdown returned!", xc_cpu->cpuid);
 				printf("\nCPU(0x%02x): HALTING!", xc_cpu->cpuid);
 				HALT();
@@ -621,11 +578,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 
 		case VMX_VMEXIT_SIPI:{
 			u32 sipivector = (u8)xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION);
-			printf("\nCPU(%02x): SIPI vector=0x%08x, Halting!", xc_cpu->cpuid, sipivector);
-			//xc_cpu->vmcs.guest_CS_selector = ((sipivector * PAGE_SIZE_4K) >> 4); 
-			//xc_cpu->vmcs.guest_CS_base = (sipivector * PAGE_SIZE_4K); 
-			//xc_cpu->vmcs.guest_RIP = 0x0ULL;
-			//xc_cpu->vmcs.guest_activity_state=0;	//active
+			printf("\nCPU(%02x): SIPI vector=0x%08x", xc_cpu->cpuid, sipivector);
 			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_SELECTOR, ((sipivector * PAGE_SIZE_4K) >> 4));
 			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_BASE, (sipivector * PAGE_SIZE_4K));
 			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, 0x0ULL);
@@ -663,12 +616,6 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 			xc_cpu->cpuid, xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION));
 		HALT();
 	}
-
-/*	//write updated VMCS back to CPU
-#ifndef __XMHF_VERIFICATION__
-	xmhf_baseplatform_arch_x86vmx_putVMCS(xc_cpu);
-#endif // __XMHF_VERIFICATION__
-*/
 
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 	//ensure that whenever a partition is resumed on a xc_cpu, we have extended paging
