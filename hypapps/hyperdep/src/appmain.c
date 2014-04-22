@@ -57,18 +57,11 @@
 u32 hd_runtimephysbase=0;
 u32 hd_runtimesize=0;
 
-u32 cputable_numentries=0;	//number of CPUs in the platform
-__xmhfattribute__(core-ro) MIDTAB *cputable; 
-
-u64 hpt_root=0;
-
 // hypapp initialization
 u32 xmhf_hypapp_initialization(hypapp_env_block_t hypappenvb){	
-	printf("\nhyperDEP initializing on BSP");
+	printf("\nhyperDEP initializing");
 		
 	//store runtime base and size
-	//hd_runtimephysbase = apb->runtimephysmembase;
-	//hd_runtimesize = apb->runtimesize;
 	hd_runtimephysbase = hypappenvb.runtimephysmembase;
 	hd_runtimesize = hypappenvb.runtimesize;
 	printf("\n%s: XMHF runtime base=%08x, size=%08x", __FUNCTION__, hd_runtimephysbase, hd_runtimesize);
@@ -81,7 +74,7 @@ u32 xmhf_hypapp_initialization(hypapp_env_block_t hypappenvb){
 	//		fun();	//execute arbitrary code in core memory region, should trigger a #pf
 	//}
 
-	printf("\nhyperDEP initialized on BSP!");
+	printf("\nhyperDEP initialized!");
 	
 	return APP_INIT_SUCCESS;  //successful
 }
@@ -89,21 +82,12 @@ u32 xmhf_hypapp_initialization(hypapp_env_block_t hypappenvb){
 //----------------------------------------------------------------------
 // RUNTIME
 
-//activate DEP protection
-//static void hd_activatedep(__xmhfattribute__(core-ro) VCPU *vcpu, u32 gpa){
-//	xmhfcore_setmemprot(vcpu, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE) );	   
-//	printf("\nCPU(%02x): %s removed EXECUTE permission for page at gpa %08x", vcpu->id, __FUNCTION__, gpa);
-//}
 static void hd_activatedep(context_desc_t context_desc, u32 gpa){
 	xmhfcore_setmemprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE) );	   
 	printf("\nCPU(%02x): %s removed EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.cpuid, __FUNCTION__, gpa);
 }
 
 //de-activate DEP protection
-//static void hd_deactivatedep(__xmhfattribute__(core-ro) VCPU *vcpu, u32 gpa){
-//	xmhfcore_setmemprot(vcpu, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE) );	   
-//	printf("\nCPU(%02x): %s added EXECUTE permission for page at gpa %08x", vcpu->id, __FUNCTION__, gpa);
-//}
 static void hd_deactivatedep(context_desc_t context_desc, u32 gpa){
 	xmhfcore_setmemprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE) );	   
 	xmhfcore_memprot_flushmappings(context_desc);
@@ -111,18 +95,10 @@ static void hd_deactivatedep(context_desc_t context_desc, u32 gpa){
 }
 
 static void hd_initialize(context_desc_t context_desc){
-		/*//set singular EPT across all CPUs
-        hpt_root=xmhfcore_memprot_getHPTroot(context_desc);
-        printf("\nCPU(%02x): hpt_root=%016llx", context_desc.cpu_desc.cpuid, hpt_root);
-        
-        xmhfcore_memprot_setsingularhpt(hpt_root);
-
-		printf("\nCPU(0x%02x): hyperDEP ready to go!", context_desc.cpu_desc.cpuid);
-		*/
+	printf("\n%s: nothing to do", __FUNCTION__);
 }
 
 
-//u32 xmhf_hypapp_handlehypercall(__xmhfattribute__(core-ro) VCPU *vcpu, u32 callno, __xmhfattribute__(core-ro) struct regs *r){
 u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param){
 	u32 status=APP_SUCCESS;
 	u32 call_id;
@@ -176,7 +152,6 @@ u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u
 //handles XMHF shutdown callback
 //note: should not return
 void xmhf_hypapp_handleshutdown(context_desc_t context_desc){
-	//(void)r; //unused
 	printf("\n%s:%u: rebooting now", __FUNCTION__, context_desc.cpu_desc.cpuid);
 	xmhfcore_reboot(context_desc);				
 }
@@ -185,7 +160,6 @@ void xmhf_hypapp_handleshutdown(context_desc_t context_desc){
 //for now this always returns APP_SUCCESS
 u32 xmhf_hypapp_handleintercept_hwpgtblviolation(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code){
 	u32 status = APP_SUCCESS;
-	//(void)r; //unused
 
 	printf("\nCPU(%02x): FATAL HWPGTBL violation (gva=%x, gpa=%x, code=%x): app tried to execute data page??", context_desc.cpu_desc.cpuid, (u32)gva, (u32)gpa, (u32)error_code);
 	HALT();
@@ -197,8 +171,6 @@ u32 xmhf_hypapp_handleintercept_hwpgtblviolation(context_desc_t context_desc, u6
 //handles i/o port intercepts
 //returns either APP_IOINTERCEPT_SKIP or APP_IOINTERCEPT_CHAIN
 u32 xmhf_hypapp_handleintercept_portaccess(context_desc_t context_desc, u32 portnum, u32 access_type, u32 access_size){
-	//(void)vcpu; //unused
-	//(void)r; //unused
 	(void)portnum; //unused
 	(void)access_type; //unused
 	(void)access_size; //unused
