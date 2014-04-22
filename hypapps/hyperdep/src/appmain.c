@@ -124,14 +124,14 @@ static void hd_deactivatedep(context_desc_t context_desc, u32 gpa){
 }
 
 static void hd_initialize(context_desc_t context_desc){
-		//set singular EPT across all CPUs
+		/*//set singular EPT across all CPUs
         hpt_root=xmhfcore_memprot_getHPTroot(context_desc);
         printf("\nCPU(%02x): hpt_root=%016llx", context_desc.cpu_desc.id, hpt_root);
         
         xmhfcore_memprot_setsingularhpt(hpt_root);
 
 		printf("\nCPU(0x%02x): hyperDEP ready to go!", context_desc.cpu_desc.id);
-	
+		*/
 }
 
 
@@ -190,6 +190,7 @@ u32 xmhf_app_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 
 //note: should not return
 void xmhf_app_handleshutdown(context_desc_t context_desc){
 	//(void)r; //unused
+	printf("\n%s:%u: rebooting now", __FUNCTION__, context_desc.cpu_desc.id);
 	xmhfcore_reboot(context_desc);				
 }
 
