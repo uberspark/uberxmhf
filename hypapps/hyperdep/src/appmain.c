@@ -109,7 +109,7 @@ u32 xmhf_app_main(hypapp_env_block_t hypappenvb){
 //}
 static void hd_activatedep(context_desc_t context_desc, u32 gpa){
 	xmhfcore_setmemprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE) );	   
-	printf("\nCPU(%02x): %s removed EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.id, __FUNCTION__, gpa);
+	printf("\nCPU(%02x): %s removed EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.cpuid, __FUNCTION__, gpa);
 }
 
 //de-activate DEP protection
@@ -120,17 +120,17 @@ static void hd_activatedep(context_desc_t context_desc, u32 gpa){
 static void hd_deactivatedep(context_desc_t context_desc, u32 gpa){
 	xmhfcore_setmemprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE) );	   
 	xmhfcore_memprot_flushmappings(context_desc);
-	printf("\nCPU(%02x): %s added EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.id, __FUNCTION__, gpa);
+	printf("\nCPU(%02x): %s added EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.cpuid, __FUNCTION__, gpa);
 }
 
 static void hd_initialize(context_desc_t context_desc){
 		/*//set singular EPT across all CPUs
         hpt_root=xmhfcore_memprot_getHPTroot(context_desc);
-        printf("\nCPU(%02x): hpt_root=%016llx", context_desc.cpu_desc.id, hpt_root);
+        printf("\nCPU(%02x): hpt_root=%016llx", context_desc.cpu_desc.cpuid, hpt_root);
         
         xmhfcore_memprot_setsingularhpt(hpt_root);
 
-		printf("\nCPU(0x%02x): hyperDEP ready to go!", context_desc.cpu_desc.id);
+		printf("\nCPU(0x%02x): hyperDEP ready to go!", context_desc.cpu_desc.cpuid);
 		*/
 }
 
@@ -145,7 +145,7 @@ u32 xmhf_app_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 
 
 	gva=(u32)hypercall_param;
 	
-	printf("\nCPU(%02x): %s starting: call number=%x, gva=%x", context_desc.cpu_desc.id, __FUNCTION__, call_id, gva);
+	printf("\nCPU(%02x): %s starting: call number=%x, gva=%x", context_desc.cpu_desc.cpuid, __FUNCTION__, call_id, gva);
 
 	switch(call_id){
 		case HYPERDEP_INITIALIZE:{
@@ -156,10 +156,10 @@ u32 xmhf_app_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 
 		case HYPERDEP_ACTIVATEDEP:{
 			gpa=(u32)xmhfcore_smpguest_walk_pagetables(context_desc, gva);
 			if(gpa == 0xFFFFFFFFUL){
-				printf("\nCPU(%02x): WARNING: unable to get translation for gva=%x, just returning", context_desc.cpu_desc.id, gva);
+				printf("\nCPU(%02x): WARNING: unable to get translation for gva=%x, just returning", context_desc.cpu_desc.cpuid, gva);
 				return status;
 			}		
-			printf("\nCPU(%02x): translated gva=%x to gpa=%x", context_desc.cpu_desc.id, gva, gpa);
+			printf("\nCPU(%02x): translated gva=%x to gpa=%x", context_desc.cpu_desc.cpuid, gva, gpa);
 			hd_activatedep(context_desc, gpa);
 		}
 		break;
@@ -167,17 +167,17 @@ u32 xmhf_app_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 
 		case HYPERDEP_DEACTIVATEDEP:{
 			gpa=(u32)xmhfcore_smpguest_walk_pagetables(context_desc, gva);
 			if(gpa == 0xFFFFFFFFUL){
-				printf("\nCPU(%02x): WARNING: unable to get translation for gva=%x, just returning", context_desc.cpu_desc.id, gva);
+				printf("\nCPU(%02x): WARNING: unable to get translation for gva=%x, just returning", context_desc.cpu_desc.cpuid, gva);
 				return status;
 			}		
-			printf("\nCPU(%02x): translated gva=%x to gpa=%x", context_desc.cpu_desc.id, gva, gpa);
+			printf("\nCPU(%02x): translated gva=%x to gpa=%x", context_desc.cpu_desc.cpuid, gva, gpa);
 			hd_deactivatedep(context_desc, gpa);
 		}
 		break;
 		
 		default:
 			printf("\nCPU(0x%02x): unsupported hypercall (0x%08x)!!", 
-			  context_desc.cpu_desc.id, call_id);
+			  context_desc.cpu_desc.cpuid, call_id);
 			status=APP_ERROR;
 			break;
 	}
@@ -190,7 +190,7 @@ u32 xmhf_app_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 
 //note: should not return
 void xmhf_app_handleshutdown(context_desc_t context_desc){
 	//(void)r; //unused
-	printf("\n%s:%u: rebooting now", __FUNCTION__, context_desc.cpu_desc.id);
+	printf("\n%s:%u: rebooting now", __FUNCTION__, context_desc.cpu_desc.cpuid);
 	xmhfcore_reboot(context_desc);				
 }
 
@@ -200,7 +200,7 @@ u32 xmhf_app_handleintercept_hwpgtblviolation(context_desc_t context_desc, u64 g
 	u32 status = APP_SUCCESS;
 	//(void)r; //unused
 
-	printf("\nCPU(%02x): FATAL HWPGTBL violation (gva=%x, gpa=%x, code=%x): app tried to execute data page??", context_desc.cpu_desc.id, (u32)gva, (u32)gpa, (u32)error_code);
+	printf("\nCPU(%02x): FATAL HWPGTBL violation (gva=%x, gpa=%x, code=%x): app tried to execute data page??", context_desc.cpu_desc.cpuid, (u32)gva, (u32)gpa, (u32)error_code);
 	HALT();
 	
 	return status;
