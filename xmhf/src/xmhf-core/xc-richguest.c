@@ -62,7 +62,10 @@ void xmhf_richguest_initialize(xc_cpu_t *xc_cpu_bsp, xc_partition_t *xc_partitio
 
 //add given xc_cpu_t to the rich guest partition
 void xmhf_richguest_addcpu(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition_richguest){
-		
+	
+	//add cpu to the richguest partition
+	xc_cpu->parentpartition = xc_partition_richguest;
+	
 	//initialize CPU
 	//xmhf_baseplatform_cpuinitialize();
 
