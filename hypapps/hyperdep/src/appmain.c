@@ -58,8 +58,8 @@ u32 hd_runtimephysbase=0;
 u32 hd_runtimesize=0;
 
 // hypapp initialization
-u32 xmhf_hypapp_initialization(hypapp_env_block_t hypappenvb){	
-	printf("\nhyperDEP initializing");
+u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb){	
+	printf("\nCPU %u: hyperDEP initializing", context_desc.cpu_desc.cpuid);
 		
 	//store runtime base and size
 	hd_runtimephysbase = hypappenvb.runtimephysmembase;
@@ -74,7 +74,7 @@ u32 xmhf_hypapp_initialization(hypapp_env_block_t hypappenvb){
 	//		fun();	//execute arbitrary code in core memory region, should trigger a #pf
 	//}
 
-	printf("\nhyperDEP initialized!");
+	printf("\nCPU %u: hyperDEP initialized!", context_desc.cpu_desc.cpuid);
 	
 	return APP_INIT_SUCCESS;  //successful
 }

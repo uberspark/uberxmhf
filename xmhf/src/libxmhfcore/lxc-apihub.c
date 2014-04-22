@@ -66,7 +66,7 @@ void libxmhfcore_hypappfromcore(u32 callnum){
 					//paramhypapp->result=xmhf_app_main( (VCPU *)(u32)paramcore->param1, (APP_PARAM_BLOCK *)(u32)paramcore->param2);
 					//paramhypapp->result=xmhf_app_main((APP_PARAM_BLOCK *)(u32)paramcore->param1);
 					//paramhypapp->result=xmhf_app_main((APP_PARAM_BLOCK *)&paramcore->apb);
-					paramhypapp->result=xmhf_hypapp_initialization(paramcore->hypappenvb);
+					paramhypapp->result=xmhf_hypapp_initialization(paramcore->context_desc, paramcore->hypappenvb);
 					break;
 				}
 			
