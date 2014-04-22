@@ -67,12 +67,12 @@
 #define	XMHF_APIHUB_COREAPI_OUTPUTDEBUGSTRING			(0)
 #define XMHF_APIHUB_COREAPI_REBOOT						(1)
 #define XMHF_APIHUB_COREAPI_SETMEMPROT					(2)
-#define XMHF_APIHUB_COREAPI_MEMPROT_GETPROT				(3)
+//#define XMHF_APIHUB_COREAPI_MEMPROT_GETPROT				(3)
 #define XMHF_APIHUB_COREAPI_MEMPROT_FLUSHMAPPINGS		(4)
 #define XMHF_APIHUB_COREAPI_SMPGUEST_WALK_PAGETABLES	(5)
-#define XMHF_APIHUB_COREAPI_BASEPLATFORM_GETCPUTABLE	(15)
-#define XMHF_APIHUB_COREAPI_MEMPROT_SETSINGULARHPT		(16)
-#define XMHF_APIHUB_COREAPI_MEMPROT_GETHPTROOT			(17)
+//#define XMHF_APIHUB_COREAPI_BASEPLATFORM_GETCPUTABLE	(15)
+//#define XMHF_APIHUB_COREAPI_MEMPROT_SETSINGULARHPT		(16)
+//#define XMHF_APIHUB_COREAPI_MEMPROT_GETHPTROOT			(17)
 #define XMHF_APIHUB_COREAPI_HPT_SETENTRY				(18)
 #define XMHF_APIHUB_COREAPI_HYPAPPCBRETURN				(0xFFFF)
 
@@ -84,8 +84,8 @@ void xmhfcore_reboot(context_desc_t context_desc);
 void xmhfcore_setmemprot(context_desc_t context_desc, u64 gpa, u32 prottype);
 void xmhfcore_memprot_flushmappings(context_desc_t context_desc);
 u8 * xmhfcore_smpguest_walk_pagetables(context_desc_t context_desc, u32 vaddr);
-void xmhfcore_memprot_setsingularhpt(u64 hpt);
-u64 xmhfcore_memprot_getHPTroot(context_desc_t context_desc);
+//void xmhfcore_memprot_setsingularhpt(u64 hpt);
+//u64 xmhfcore_memprot_getHPTroot(context_desc_t context_desc);
 void xmhfcore_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u64 entry);
 
 //----------------------------------------------------------------------
