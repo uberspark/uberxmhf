@@ -141,62 +141,6 @@ static u32 exceptionstubs[] = { 	XMHF_EXCEPTION_HANDLER_ADDROF(0),
 };
 						
 
-//exclusive exception handling stack, we switch to this stack if there
-//are any exceptions during hypapp execution
-u8 exceptionstack[PAGE_SIZE_4K] __attribute__((section(".stack")));
-
-typedef struct __tss {
-	u32 prevlink;
-	u32 esp0;
-	u32 ss0;
-} tss_t;
-
-
-
-
-/*
-//---function to obtain the vcpu of the currently executing core----------------
-//XXX: TODO, move this into baseplatform as backend
-//note: this always returns a valid VCPU pointer
-static VCPU *_svm_getvcpu(void){
-
-#ifndef __XMHF_VERIFICATION__
-  
-  int i;
-  u32 eax, edx, *lapic_reg;
-  u32 lapic_id;
-  
-  //read LAPIC id of this core
-  rdmsr(MSR_APIC_BASE, &eax, &edx);
-  HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
-  eax &= (u32)0xFFFFF000UL;
-  lapic_reg = (u32 *)((u32)eax+ (u32)LAPIC_ID);
-  lapic_id = *lapic_reg;
-  //printf("\n%s: lapic base=0x%08x, id reg=0x%08x", __FUNCTION__, eax, lapic_id);
-  lapic_id = lapic_id >> 24;
-  //printf("\n%s: lapic_id of core=0x%02x", __FUNCTION__, lapic_id);
-  
-  for(i=0; i < (int)g_midtable_numentries; i++){
-    if(g_midtable[i].cpu_lapic_id == lapic_id)
-        return( (VCPU *)g_midtable[i].vcpu_vaddr_ptr );
-  }
-
-  printf("\n%s: fatal, unable to retrieve vcpu for id=0x%02x", __FUNCTION__, lapic_id);
-  HALT(); return NULL; // will never return presently 
-
-#else //__XMHF_VERIFICATION
-
-	//verification is always done in the context of a single core and vcpu/midtable is 
-	//populated by the verification driver
-	//TODO: LAPIC hardware modeling and moving this function as a public
-
-#endif //__XMHF_VERIFICATION
-  
-}
-*/
-
-
-
 //initialize EMHF core exception handlers
 void xmhf_xcphandler_arch_initialize(void){
 	u32 *pexceptionstubs;
@@ -204,14 +148,9 @@ void xmhf_xcphandler_arch_initialize(void){
 
 	printf("\n%s: setting up runtime IDT...", __FUNCTION__);
 	
-	//pexceptionstubs=(u32 *)&xmhf_xcphandler_exceptionstubs;
-	//pexceptionstubs=(u32 *)&xmhf_xcphandler_exceptionstubs;
-	
 	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
-		idtentry_t *idtentry=(idtentry_t *)((u32)xmhf_xcphandler_arch_get_idt_start()+ (i*8));
-		//idtentry->isrLow= (u16)pexceptionstubs[i];
+		idtentry_t *idtentry=(idtentry_t *)((u32)xmhf_baseplatform_arch_x86_getidtbase()+ (i*8));
 		idtentry->isrLow= (u16)exceptionstubs[i];
-		//idtentry->isrHigh= (u16) ( (u32)pexceptionstubs[i] >> 16 );
 		idtentry->isrHigh= (u16) ( (u32)exceptionstubs[i] >> 16 );
 		idtentry->isrSelector = __CS_CPL0;
 		idtentry->count=0x0;
@@ -220,21 +159,13 @@ void xmhf_xcphandler_arch_initialize(void){
 	}
 	
 	printf("\n%s: IDT setup done.", __FUNCTION__);
-
-	memset((void *)g_runtime_TSS, 0, sizeof(g_runtime_TSS));
-	{
-			tss_t *tss= (tss_t *)g_runtime_TSS;
-			tss->ss0 = __DS_CPL0;
-			tss->esp0 = (u32)&exceptionstack + (u32)sizeof(exceptionstack);
-	}
-
 }
 
 
 //get IDT start address
-u8 * xmhf_xcphandler_arch_get_idt_start(void){
-	return (u8 *)&xmhf_xcphandler_idt_start;
-}
+//u8 * xmhf_xcphandler_arch_get_idt_start(void){
+//	return (u8 *)&xmhf_xcphandler_idt_start;
+//}
 
 static void xmhf_xcphandler_arch_unhandled(u32 vector, struct regs *r){
 	u32 exception_cs, exception_eip, exception_eflags, errorcode=0;
@@ -258,6 +189,7 @@ static void xmhf_xcphandler_arch_unhandled(u32 vector, struct regs *r){
 	printf("\nstate dump follows...");
 	//things to dump
 	printf("\nCS:EIP 0x%04x:0x%08x with EFLAGS=0x%08x, errorcode=%08x", (u16)exception_cs, exception_eip, exception_eflags, errorcode);
+	printf("\nCR0=%08x, CR2=%08x, CR3=%08x, CR4=%08x", read_cr0(), read_cr2(), read_cr3(), read_cr4());
 	printf("\nEAX=0x%08x EBX=0x%08x ECX=0x%08x EDX=0x%08x", r->eax, r->ebx, r->ecx, r->edx);
 	printf("\nESI=0x%08x EDI=0x%08x EBP=0x%08x ESP=0x%08x", r->esi, r->edi, r->ebp, r->esp);
 	printf("\nCS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", (u16)read_segreg_cs(), (u16)read_segreg_ds(), (u16)read_segreg_es(), (u16)read_segreg_ss());
@@ -281,7 +213,7 @@ static void xmhf_xcphandler_arch_unhandled(u32 vector, struct regs *r){
 void xmhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 	switch(vector){
 			case CPU_EXCEPTION_NMI:{
-					if(g_bplt_initiatialized){
+					//if(g_bplt_initiatialized){
 						//u32 cpu_vendor = get_cpu_vendor_or_die();	//determine CPU vendor
 						//VCPU *vcpu;
 
@@ -293,10 +225,10 @@ void xmhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 
 						//xmhf_smpguest_arch_eventhandler_nmiexception(vcpu, r);
 						xmhf_smpguest_arch_eventhandler_nmiexception(r);
-					}else{	//we should never receive an NMI if we are that early in our runtime initialization
-						xmhf_xcphandler_arch_unhandled(vector, r);
+					//}else{	//we should never receive an NMI if we are that early in our runtime initialization
+						//xmhf_xcphandler_arch_unhandled(vector, r);
 						//we will never get here
-					}
+					//}
 				}
 				break;
 

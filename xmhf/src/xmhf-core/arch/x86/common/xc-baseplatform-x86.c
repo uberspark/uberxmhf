@@ -1,4 +1,5 @@
 /*
+/*
  * @XMHF_LICENSE_HEADER_START@
  *
  * eXtensible, Modular Hypervisor Framework (XMHF)
@@ -52,6 +53,33 @@
 #include <xmhf-core.h>
 #include <xc-x86.h>
 
+//----------------------------------------------------------------------
+// local variables
+
+//core IDT
+static u64 _idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] __attribute__(( section(".data"), aligned(16) ));
+
+//core IDT descriptor
+static arch_x86_idtdesc_t _idt __attribute__(( section(".data"), aligned(16) )) = {
+	.size=sizeof(_idt_start)-1,
+	.base=(u32)&_idt_start,
+};
+
+//runtime TSS
+u8 _tss[PAGE_SIZE_4K] __attribute__(( section(".data") )) = { 0 };
+
+//exclusive exception handling stack, we switch to this stack if there
+//are any exceptions during hypapp execution
+static u8 _exceptionstack[PAGE_SIZE_4K] __attribute__((section(".stack")));
+
+
+
+
+
+
+//----------------------------------------------------------------------
+// functions
+
 //get CPU vendor
 u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
 	u32 vendor_dword1, vendor_dword2, vendor_dword3;
@@ -82,7 +110,7 @@ u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
 
 //initialize CPU state
 void xmhf_baseplatform_arch_x86_cpuinitialize(void){
-	u32 cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
+	//u32 cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
 
 	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
 	//when the CPU supports XSAVE feature
@@ -106,6 +134,32 @@ void xmhf_baseplatform_arch_x86_cpuinitialize(void){
 
 }
 
+//----------------------------------------------------------------------
+
+//initialize CR0
+void xmhf_baseplatform_arch_x86_initializeCR0(){
+	
+	
+}
+
+
+
+// GDT
+static u64 _gdt_start[] __attribute__(( aligned(16) )) = {
+	0x0000000000000000ULL,	//NULL descriptor
+	0x00cf9b000000ffffULL,	//CPL-0 code descriptor (CS)
+	0x00cf93000000ffffULL,	//CPL-0 data descriptor (DS/SS/ES/FS/GS)
+	0x00cffb000000ffffULL,	//CPL-3 code descriptor (CS)
+	0x00cff3000000ffffULL,	//CPL-3 data descriptor (DS/SS/ES/FS/GS)
+	0x0000000000000000ULL	
+};
+
+// GDT descriptor
+static arch_x86_gdtdesc_t _gdt __attribute__(( aligned(16) )) = {
+	.size=sizeof(_gdt_start)-1,
+	.base=(u32)&_gdt_start,
+};
+
 //initialize GDT
 void xmhf_baseplatform_arch_x86_initializeGDT(void){
 	
@@ -122,12 +176,14 @@ void xmhf_baseplatform_arch_x86_initializeGDT(void){
 		"movw	%%ax, %%gs \r\n"
 		"movw  %%ax, %%ss \r\n"
 		: //no outputs
-		: "m" (x_gdt), "i" (__CS_CPL0), "i" (__DS_CPL0)
+		: "m" (_gdt), "i" (__CS_CPL0), "i" (__DS_CPL0)
 		: //no clobber
 	);
 
 	
 }
+//----------------------------------------------------------------------
+
 
 //initialize IO privilege level
 void xmhf_baseplatform_arch_x86_initializeIOPL(void){
@@ -149,11 +205,12 @@ void xmhf_baseplatform_arch_x86_initializeIDT(void){
 	asm volatile(
 		"lidt  %0 \r\n"
 		: //no outputs
-		: "m" (xmhf_xcphandler_idt)
+		: "m" (_idt)
 		: //no clobber
 	);
 	
 }
+
 
 
 
@@ -162,17 +219,25 @@ void xmhf_baseplatform_arch_x86_initializeTR(void){
 
 	{
 		u32 i;
-		u32 tss_base=(u32)&g_runtime_TSS;
+		//u32 tss_base=(u32)&g_runtime_TSS;
+		u32 tss_base=(u32)&_tss;
 		TSSENTRY *t;
-		extern u64 x_gdt_start[];
+		tss_t *tss= (tss_t *)_tss;
 		
+		//extern u64 x_gdt_start[];
+	
+		//memset((void *)_tss, 0, sizeof(_tss));
+		tss->ss0 = __DS_CPL0;
+		tss->esp0 = (u32)&_exceptionstack + (u32)sizeof(_exceptionstack);
+		
+	
 		printf("\ndumping GDT...");
 		for(i=0; i < 6; i++)
-			printf("\n    entry %u -> %016llx", i, x_gdt_start[i]);
+			printf("\n    entry %u -> %016llx", i, _gdt_start[i]);
 		printf("\nGDT dumped.");
 
 		printf("\nfixing TSS descriptor (TSS base=%x)...", tss_base);
-		t= (TSSENTRY *)(u32)&x_gdt_start[(__TRSEL/sizeof(u64))];
+		t= (TSSENTRY *)(u32)&_gdt_start[(__TRSEL/sizeof(u64))];
 		t->attributes1= 0xE9;
 		t->limit16_19attributes2= 0x0;
 		t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
@@ -183,7 +248,7 @@ void xmhf_baseplatform_arch_x86_initializeTR(void){
 
 		printf("\ndumping GDT...");
 		for(i=0; i < 6; i++)
-			printf("\n    entry %u -> %016llx", i, x_gdt_start[i]);
+			printf("\n    entry %u -> %016llx", i, _gdt_start[i]);
 		printf("\nGDT dumped.");
 
 		printf("\nsetting TR...");
@@ -198,56 +263,6 @@ void xmhf_baseplatform_arch_x86_initializeTR(void){
 	}
 
 }
-
-
-#ifndef __XMHF_VERIFICATION__
-
-//core page table setup
-//physaddr and virtaddr are assumed to be 2M aligned
-//returns 32-bit base address of page table root (can be loaded into CR3)
-u32 xmhf_baseplatform_arch_x86_setup_pagetables(void){
-  pdpt_t xpdpt;
-  pdt_t xpdt;
-  u32 hva=0, i;
-  u64 default_flags;
-	
-  xpdpt= hva2spa((void *)&x_3level_pdpt);
-  xpdt = hva2spa((void *)&x_3level_pdt);
-	
-  printf("\n%s:	pa xpdpt=0x%p, xpdt=0x%p\n", __FUNCTION__, xpdpt, xpdt);
-	
-  default_flags = (u64)(_PAGE_PRESENT);
-
-  //init pdpt
-  for(i = 0; i < PAE_PTRS_PER_PDPT; i++) {
-    u64 pdt_spa = hva2spa((void *)xpdt) + (i << PAGE_SHIFT_4K);
-    xpdpt[i] = pae_make_pdpe(pdt_spa, default_flags);
-  }
-
-  //init pdts with unity mappings
-  default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE | _PAGE_USER);
-  for(i = 0, hva = 0;
-      i < (ADDR_4GB >> (PAE_PDT_SHIFT));
-      i ++, hva += PAGE_SIZE_2M) {
-    u64 spa = hva2spa((void*)hva);
-    u64 flags = default_flags;
-
-    if(spa == 0xfee00000 || spa == 0xfec00000) {
-      //Unity-map some MMIO regions with Page Cache disabled 
-      //0xfed00000 contains Intel TXT config regs & TPM MMIO 
-      //0xfee00000 contains LAPIC base 
-      HALT_ON_ERRORCOND(hva==spa); // expecting these to be unity-mapped
-      flags |= (u64)(_PAGE_PCD);
-    }
-
-    xpdt[i] = pae_make_pde_big(spa, flags);
-  }
-
-  return hva2spa((void *)xpdpt);
-}
-
-
-#endif //__XMHF_VERIFICATION__
 
 //initialize paging
 void xmhf_baseplatform_arch_x86_initialize_paging(u32 pgtblbase){
@@ -341,76 +356,64 @@ void xmhf_baseplatform_arch_x86_wakeupAPs(void){
 }
 
 
-static mtrr_state_t g_mtrrs;
+static mtrr_state_t _mtrrs;
+
+void xmhf_baseplatform_arch_x86_savecpumtrrstate(void){
+	save_mtrrs(&_mtrrs);
+}
+
+void xmhf_baseplatform_arch_x86_restorecpumtrrstate(void){
+	restore_mtrrs(&_mtrrs);
+}
+
+u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
+  u32 eax, edx, *lapic_reg;
+  u32 lapic_id;
+  
+  //read LAPIC id of this core
+  rdmsr(MSR_APIC_BASE, &eax, &edx);
+  HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
+  eax &= (u32)0xFFFFF000UL;
+  lapic_reg = (u32 *)((u32)eax+ (u32)LAPIC_ID);
+  lapic_id = xmhfhw_sysmemaccess_readu32((u32)lapic_reg);
+  lapic_id = lapic_id >> 24;
+	
+  return lapic_id;
+}
+
+//void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(u32 index_cpudata){
+//
+//	printf("\n%s: index_cpudata=%u, top of stack=%08x, Halting!", __FUNCTION__, index_cpudata, read_esp());
+//	HALT();
+//}
 
 
 //common function which is entered by all CPUs upon SMP initialization
 //note: this is specific to the x86 architecture backend
-void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
-	  //step:1 rally all APs up, make sure all of them started, this is
-  //a task for the BSP
-  if(xmhf_baseplatform_arch_x86_isbsp()){
-    vcpu->isbsp = 1;	//this core is a BSP
-    
-	printf("\nBSP rallying APs...");
-    printf("\nBSP(0x%02x): My ESP is 0x%08x", vcpu->id, vcpu->esp);
-
-	save_mtrrs(&g_mtrrs);
-	printf("\nBSP MTRRs");
-	print_mtrrs(&g_mtrrs);
-
-    //increment a CPU to account for the BSP
-    spin_lock(&g_lock_cpus_active);
-    g_cpus_active++;
-    spin_unlock(&g_lock_cpus_active);
-
-    //wait for g_cpus_active to become g_midtable_numentries -1 to indicate
-    //that all APs have been successfully started
-    while(g_cpus_active < g_midtable_numentries);
-    
-    printf("\nAPs all awake...Setting them free...");
-    spin_lock(&g_lock_ap_go_signal);
-    g_ap_go_signal=1;
-    spin_unlock(&g_lock_ap_go_signal);
-
-  
-  }else{
-    //we are an AP, so we need to simply update the AP startup counter
-    //and wait until we are told to proceed
-    //increment active CPUs
-	vcpu->isbsp=0;	//this core is a AP
-
-    spin_lock(&g_lock_cpus_active);
-    g_cpus_active++;
-    spin_unlock(&g_lock_cpus_active);
-
-    while(!g_ap_go_signal); //Just wait for the BSP to tell us all is well.
- 
-    printf("\nAP(0x%02x): My ESP is 0x%08x, proceeding...", vcpu->id, vcpu->esp);
-  
-	restore_mtrrs(&g_mtrrs);
-	printf("\nAP(0x%02x): MTRRs synced with BSP", vcpu->id);
-  }
+void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
+	xc_cpu_t *xc_cpu = NULL;
+	u32 i;
+	bool found_xc_cpu=false;
+	u32 cpu_uniqueid = xmhf_baseplatform_arch_x86_getcpulapicid();
 	
-  //invoke EMHF runtime component main function for this CPU
-  //[x] TODO: don't reference rpb->isEarlyInit directly
-  //xmhf_runtime_main(vcpu, rpb->isEarlyInit);	
-  {
-	//partition_desc_t partdesc;
-	//cpu_desc_t cpudesc;
-	context_desc_t context_desc;
+	for(i=0; i < g_xc_cpu_count; i++){
+		if(g_xc_cputable[i].cpuid == cpu_uniqueid){
+			xc_cpu = g_xc_cputable[i].xc_cpu;
+			found_xc_cpu = true;
+			break;
+		}
+	}
 	
-	context_desc.partition_desc.id = 0;
-	context_desc.cpu_desc.id = vcpu->idx;
-	context_desc.cpu_desc.isbsp = vcpu->isbsp;
-		
-	//partdesc.id = 0;
-	//cpudesc.id = vcpu->idx;
-	//cpudesc.isbsp = vcpu->isbsp;
-	  
-	//xmhf_runtime_main(partdesc, cpudesc);  
-	xmhf_runtime_main(context_desc);
-  }
+	HALT_ON_ERRORCOND ( found_xc_cpu == true );
+	
+	//initialize base CPU state
+	xmhf_baseplatform_arch_x86_cpuinitialize();
+
+	//replicate common MTRR state on this CPU
+	xmhf_baseplatform_arch_x86_restorecpumtrrstate();
+  	
+	//xmhf_runtime_main(context_desc);
+	xmhf_runtime_main(xc_cpu);
 }
 
 //----------------------------------------------------------------------
@@ -421,9 +424,9 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(VCPU *vcpu){
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-extern arch_x86_gdtdesc_t x_gdt;
+//extern arch_x86_gdtdesc_t x_gdt;
 
-void _ap_pmode_entry_with_paging(void) __attribute__((naked)){
+/*void _ap_pmode_entry_with_paging(void) __attribute__((naked)){
 
     asm volatile(	"lgdt %0\r\n"
 					"lidt %1\r\n"
@@ -451,9 +454,57 @@ void _ap_pmode_entry_with_paging(void) __attribute__((naked)){
 					"call xmhf_baseplatform_arch_x86_smpinitialize_commonstart\r\n"
 					"hlt\r\n"								//we should never get here, if so just halt
 					:
-					: "m" (x_gdt), "m" (xmhf_xcphandler_idt), "i" (MSR_APIC_BASE), "m" (g_midtable_numentries), "i" (&g_midtable)
+					: "m" (_gdt), "m" (_idt), "i" (MSR_APIC_BASE), "m" (g_midtable_numentries), "i" (&g_midtable)
 	);
 
 	
+}*/
+
+void _ap_pmode_entry_with_paging(void) __attribute__((naked)){
+
+    asm volatile(	"lgdt %0\r\n"
+					"lidt %1\r\n"
+					"mov %2, %%ecx\r\n"
+					"rdmsr\r\n"
+					"andl $0xFFFFF000, %%eax\r\n"
+					"addl $0x20, %%eax\r\n"
+					"movl (%%eax), %%eax\r\n"
+					"shr $24, %%eax\r\n"
+					"movl %3, %%edx\r\n"
+					"movl %4, %%ebx\r\n"
+					"xorl %%ecx, %%ecx\r\n"
+					"xorl %%edi, %%edi\r\n"
+					"getidxloop:\r\n"
+					"movl 0x0(%%ebx, %%edi), %%ebp\r\n"  	//ebp contains the lapic id
+					"cmpl %%eax, %%ebp\r\n"
+					"jz gotidx\r\n"
+					"incl %%ecx\r\n"
+					"addl %5, %%edi\r\n"
+					"cmpl %%edx, %%ecx\r\n"
+					"jb getidxloop\r\n"
+					"hlt\r\n"								//we should never get here, if so just halt
+					"gotidx:\r\n"
+					"movl 0x4(%%ebx, %%edi), %%esi\r\n"	 	//esi contains xc_cpu_t *xc_cpu
+					"movl 0x0(%%esi), %%ebx	\r\n"				//ebx contains xc_cpu->stack
+					"movl %%ebx, %%esp \r\n"				//esp = ebx (stack for the cpu with index_cpudata)
+					:
+					: "m" (_gdt), "m" (_idt), "i" (MSR_APIC_BASE), "m" (g_xc_cpu_count), "i" (&g_xc_cputable), "i" (sizeof(xc_cputable_t))
+	);
+
+	xmhf_baseplatform_arch_x86_smpinitialize_commonstart();
+	
 }
 
+
+
+u32 xmhf_baseplatform_arch_x86_getgdtbase(void){
+		return (u32)&_gdt_start;
+}
+
+u32 xmhf_baseplatform_arch_x86_getidtbase(void){
+		return (u32)&_idt_start;
+}
+
+u32 xmhf_baseplatform_arch_x86_gettssbase(void){
+		return (u32)&_tss;
+}

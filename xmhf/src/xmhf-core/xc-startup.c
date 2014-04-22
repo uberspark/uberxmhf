@@ -44,28 +44,20 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// runtime.c
+// XMHF core startup module
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 //---includes-------------------------------------------------------------------
 #include <xmhf-core.h> 
 
 void xmhf_runtime_entry(void){
-	//initialize Runtime Parameter Block (rpb)
-	//rpb = (RPB *)&arch_rpb;
-	
+	xc_cpu_t *xc_cpu_bsp;
+
 	//setup debugging	
 	xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
 	printf("\nxmhf-core: starting...");
 
-  	//initialize basic platform elements
-	xmhf_baseplatform_initialize();
-
-	//copy over memmap and cpuinfo buffer
-	//memcpy(&xcbootinfo->memmapinfo_buffer, &xcbootinfo->memmapinfo_buffer, (sizeof(GRUBE820) * xcbootinfo->memmapinfo_numentries));
-	//memcpy(&xcbootinfo->cpuinfo_buffer, &xcbootinfo->cpuinfo_buffer, (sizeof(PCPU) * xcbootinfo->cpuinfo_numentries));
-	
-    //[debug] dump E820 and MP table
+    //[debug] dump E820
  	#ifndef __XMHF_VERIFICATION__
  	printf("\nNumber of E820 entries = %u", xcbootinfo->memmapinfo_numentries);
 	{
@@ -77,22 +69,25 @@ void xmhf_runtime_entry(void){
 			  xcbootinfo->memmapinfo_buffer[i].type);
 		}
   	}
-	printf("\nNumber of MP entries = %u", xcbootinfo->cpuinfo_numentries);
-	{
-		int i;
-		for(i=0; i < (int)xcbootinfo->cpuinfo_numentries; i++)
-			printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x", i, xcbootinfo->cpuinfo_buffer[i].isbsp, xcbootinfo->cpuinfo_buffer[i].lapic_id);
-	}
 	#endif //__XMHF_VERIFICATION__
 
+	//initialize global data structures
+	xc_cpu_bsp = (xc_cpu_t *)xc_globaldata_initialize((void *)xcbootinfo);
+
+  	//initialize basic platform elements
+	xmhf_baseplatform_initialize();
+
 	#ifndef __XMHF_VERIFICATION__
-	//setup EMHF exception handler component
+	//setup XMHF exception handler component
 	xmhf_xcphandler_initialize();
 	#endif
 
-#if defined (__DMAP__)
+	#if defined (__DMAP__)
 	xmhf_dmaprot_reinitialize();
-#endif
+	#endif
+
+	//initialize richguest
+	xmhf_richguest_initialize(xc_cpu_bsp, xc_partition_richguest);
 
 	//invoke XMHF api hub initialization function to initialize core API
 	//interface layer
@@ -120,22 +115,22 @@ void xmhf_runtime_entry(void){
 
 
 //we get control here in the context of *each* physical CPU core 
-void xmhf_runtime_main(context_desc_t context_desc){ 
+//void xmhf_runtime_main(context_desc_t context_desc){ 
+void xmhf_runtime_main(xc_cpu_t *xc_cpu){ 
 	//[debug]
-	printf("\n%s: partdesc.id=%u, cpudesc.id=%u, cpudesc.isbsp=%u", __FUNCTION__, context_desc.partition_desc.id, context_desc.cpu_desc.id, context_desc.cpu_desc.isbsp);
+	printf("\n%s: cpu id=%u", __FUNCTION__, xc_cpu->cpuid);
 
 	//TODO: check if this CPU is allocated to the "rich" guest. if so, pass it on to
 	//the rich guest initialization procedure. if the CPU is not allocated to the
 	//rich guest, enter it into a CPU pool for use by other partitions
 	
 	//initialize and boot "rich" guest
-	xmhf_smpguest_initialize(context_desc);
+	xmhf_richguest_addcpuandrun(xc_cpu, xc_partition_richguest);
 
 	//TODO: implement CPU pooling for use by other partitions
 	
 	#ifndef __XMHF_VERIFICATION__
-	printf("\nCPU(0x%02x): FATAL, should not be here. HALTING!", context_desc.cpu_desc.id);
+	printf("\n%s: index_cpudata=%u: FATAL, should not be here. HALTING!", __FUNCTION__, xc_cpu->cpuid);
 	HALT();
 	#endif //__XMHF_VERIFICATION__
-	
 }

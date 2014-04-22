@@ -44,12 +44,12 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF exception handler component 
+// XMHF core exception handler component 
 // declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __EMHF_XCPHANDLER_H__
-#define __EMHF_XCPHANDLER_H__
+#ifndef __XMHF_XCPHANDLER_H__
+#define __XMHF_XCPHANDLER_H__
 
 
 #ifndef __ASSEMBLY__
@@ -58,27 +58,11 @@
 //----------------------------------------------------------------------
 //exported FUNCTIONS 
 
-//initialize EMHF core exception handlers
+//initialize core exception handlers
 void xmhf_xcphandler_initialize(void);
-
-//get IDT start address
-u8 * xmhf_xcphandler_get_idt_start(void);
-
-
-
-//----------------------------------------------------------------------
-// generic arch. interfaces
-
-//initialize EMHF core exception handlers
 void xmhf_xcphandler_arch_initialize(void);
-
-//get IDT start address
-u8 * xmhf_xcphandler_arch_get_idt_start(void);
-
-
-
 
 
 #endif	//__ASSEMBLY__
 
-#endif //__EMHF_XCPHANDLER_H__
+#endif //__XMHF_XCPHANDLER_H__

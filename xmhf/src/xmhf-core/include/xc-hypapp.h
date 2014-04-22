@@ -44,17 +44,14 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// EMHF app. callback declarations
+// XMHF hypapp callback declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __EMHF_APP_H__
-#define __EMHF_APP_H__
+#ifndef __XMHF_HYPAPP_H__
+#define __XMHF_HYPAPP_H__
 
 #ifndef __ASSEMBLY__
 
-//----------------------------------------------------------------------
-// EMHF application related declarations
-//----------------------------------------------------------------------
 
 //generic catch-all app return codes
 #define APP_SUCCESS     		(0x1)
@@ -67,63 +64,19 @@
 #define APP_INIT_FAIL           0xFF
 
 
-//application parameter block
-//for now it holds the bootsector and optional module info loaded by GRUB
-//eventually this will be generic enough for both boot-time and dynamic loading
-//capabilities
-typedef struct {
-  u32 bootsector_ptr;
-  u32 bootsector_size;
-  u32 optionalmodule_ptr;
-  u32 optionalmodule_size;
-  u32 runtimephysmembase;
-  u32 runtimesize;
-  char cmdline[1024];
-} __attribute__((packed)) APP_PARAM_BLOCK;
-
-//revised app parameter block; will replace the above decl. when done
-typedef struct {
-  u32 runtimephysmembase;
-  u32 runtimesize;
-} __attribute__((packed)) hypapp_env_block_t;
-
-
-//hypapp binary header 
-typedef struct {
-  u32 magic;
-  u32 addr_hypappfromcore;	//address is hypapp where control is transferred to from the core
-  u32 addr_hypapptocore;	//address is where control is transferred to the core when hypapp calls into core
-  u32 addr_tos;				//hypapp top-of-stack address
-  APP_PARAM_BLOCK apb;		//hypapp parameter block
-  void *optionalparam1;
-  void *optionalparam2;
-} __attribute__((packed)) XMHF_HYPAPP_HEADER;
-
-#define XMHF_HYPAPP_HEADER_MAGIC	0xDEADBEEF
-
-
 //XMHF hypapp callback declarations 
 //TODO: need to go into libxmhfcore dev headers
-//extern u32 xmhf_app_main(__xmhfattribute__(input-pbv-ro) VCPU *vcpu, __xmhfattribute__(input-pbv-ro) APP_PARAM_BLOCK *apb);
-//extern u32 xmhf_app_main(__xmhfattribute__(input-pbv-ro) APP_PARAM_BLOCK *apb);
 extern u32 xmhf_app_main(hypapp_env_block_t hypappenvb);
-//extern u32 xmhf_app_handlehypercall(__xmhfattribute__(input-pbv-ro) VCPU *vcpu, __xmhfattribute__(input-pbv) u32 callno, __xmhfattribute__(input-pbv-ro) struct regs *r);	
 extern u32 xmhf_app_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param);	
-
 extern u32 xmhf_app_handleintercept_portaccess(context_desc_t context_desc, u32 portnum, u32 access_type, u32 access_size);  
 extern u32 xmhf_app_handleintercept_hwpgtblviolation(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code);
 extern void xmhf_app_handleshutdown(context_desc_t context_desc);
 
 
-
 //XMHF hypapp callbacks referenced by the XMHF core
 //note: these are the interfaces core uses to invoke hypapp callbacks
-//extern u32 xmhfhypapp_main(__xmhfattribute__(input-pbv-ro) VCPU *vcpu, __xmhfattribute__(input-pbv-ro) APP_PARAM_BLOCK *apb);
-//extern u32 xmhfhypapp_main(__xmhfattribute__(input-pbv-ro) APP_PARAM_BLOCK *apb);
 extern u32 xmhfhypapp_main(hypapp_env_block_t hypappenvb);
-//extern u32 xmhfhypapp_handlehypercall(__xmhfattribute__(input-pbv-ro) VCPU *vcpu, __xmhfattribute__(input-pbv) u32 callno, __xmhfattribute__(input-pbv-ro) struct regs *r);	
 extern u32 xmhfhypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param);	
-
 extern u32 xmhfhypapp_handleintercept_portaccess(context_desc_t context_desc, u32 portnum, u32 access_type, u32 access_size); 
 extern u32 xmhfhypapp_handleintercept_hwpgtblviolation(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code);
 extern void xmhfhypapp_handleshutdown(context_desc_t context_desc);
@@ -131,4 +84,4 @@ extern void xmhfhypapp_handleshutdown(context_desc_t context_desc);
 
 #endif	//__ASSEMBLY__
 
-#endif	// __EMHF_APP_H__
+#endif	// __XMHF_HYPAPP_H__
