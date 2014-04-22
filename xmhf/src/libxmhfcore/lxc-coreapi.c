@@ -147,7 +147,7 @@ void xmhfcore_memprot_arch_x86vmx_set_EPTP(__xmhfattribute__(core-ro) VCPU *vcpu
 	return paramcore->retval;
 }*/	
 
-void xmhfcore_memprot_setsingularhpt(u64 hpt){
+/*void xmhfcore_memprot_setsingularhpt(u64 hpt){
 	paramhypapp->param1 = (u64)hpt;
 	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_MEMPROT_SETSINGULARHPT);
 	return;
@@ -160,7 +160,7 @@ u64 xmhfcore_memprot_getHPTroot(context_desc_t context_desc){
 	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_MEMPROT_GETHPTROOT);
 	result = (u64)paramcore->result;
 	return result;
-}
+}*/
 
 void xmhfcore_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u64 entry){
 	u64 result;
