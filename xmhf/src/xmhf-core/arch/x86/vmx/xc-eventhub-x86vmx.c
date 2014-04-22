@@ -228,12 +228,12 @@ static void _vmx_handle_intercept_eptviolation(xc_cpu_t *xc_cpu, struct regs *r 
 	u32 errorcode, gpa, gva;
 	context_desc_t context_desc;
 	
-	context_desc.partition_desc.id = 0;
-	context_desc.cpu_desc.id = xc_cpu->cpuid;
+	context_desc.partition_desc.partitionid = 0;
+	context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
 	context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
 	context_desc.cpu_desc.xc_cpu = xc_cpu;
 
-	//xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_bplt_xc_cpu[context_desc.cpu_desc.id];
+	//xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_bplt_xc_cpu[context_desc.cpu_desc.cpuid];
 	//errorcode = (u32)xc_cpu->vmcs.info_exit_qualification;
 	errorcode = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION);
 	//gpa = (u32) xc_cpu->vmcs.guest_paddr_full;
@@ -254,13 +254,13 @@ static void _vmx_handle_intercept_eptviolation(xc_cpu_t *xc_cpu, struct regs *r 
 
 //---intercept handler (I/O port access)----------------------------------------
 static void _vmx_handle_intercept_ioportaccess(xc_cpu_t *xc_cpu, struct regs *r __attribute__((unused))){
-  //xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_bplt_xc_cpu[context_desc.cpu_desc.id];
+  //xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_bplt_xc_cpu[context_desc.cpu_desc.cpuid];
     u32 access_size, access_type, portnum, stringio;
 	u32 app_ret_status = APP_IOINTERCEPT_CHAIN;
 	context_desc_t context_desc;
 
-	context_desc.partition_desc.id = 0;
-	context_desc.cpu_desc.id = xc_cpu->cpuid;
+	context_desc.partition_desc.partitionid = 0;
+	context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
 	context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
 	context_desc.cpu_desc.xc_cpu = xc_cpu;
 	
@@ -396,9 +396,9 @@ static void _vmx_handle_intercept_xsetbv(xc_cpu_t *xc_cpu, struct regs *r){
 u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct regs *r){
 	//context_desc_t context_desc;
 	
-	//context_desc.partition_desc.id = 0;
-	//context_desc.cpu_desc.id = xc_cpu->cpuidx;
-	//context_desc.cpu_desc.id = xc_cpu->cpuid;
+	//context_desc.partition_desc.partitionid = 0;
+	//context_desc.cpu_desc.cpuid = xc_cpu->cpuidx;
+	//context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
 	//context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
 
 /*	//read VMCS from physical CPU/core
@@ -433,8 +433,8 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 				xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP) == VMX_UG_E820HOOK_IP){
 					context_desc_t context_desc;
 	
-					context_desc.partition_desc.id = 0;
-					context_desc.cpu_desc.id = xc_cpu->cpuid;
+					context_desc.partition_desc.partitionid = 0;
+					context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
 					context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
 					context_desc.cpu_desc.xc_cpu = xc_cpu;
 	
@@ -453,8 +453,8 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 					u64 hypercall_param = ((u64)r->edx << 32) | r->ecx;
 					context_desc_t context_desc;
 	
-					context_desc.partition_desc.id = 0;
-					context_desc.cpu_desc.id = xc_cpu->cpuid;
+					context_desc.partition_desc.partitionid = 0;
+					context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
 					context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
 					context_desc.cpu_desc.xc_cpu = xc_cpu;
 	
@@ -483,8 +483,8 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 		case VMX_VMEXIT_INIT:{
 			context_desc_t context_desc;
 	
-			context_desc.partition_desc.id = 0;
-			context_desc.cpu_desc.id = xc_cpu->cpuid;
+			context_desc.partition_desc.partitionid = 0;
+			context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
 			context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
 			context_desc.cpu_desc.xc_cpu = xc_cpu;
 
@@ -594,8 +594,8 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 			u16 tss_selector = (u16)xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION);
 			context_desc_t context_desc;
 	
-			context_desc.partition_desc.id = 0;
-			context_desc.cpu_desc.id = xc_cpu->cpuid;
+			context_desc.partition_desc.partitionid = 0;
+			context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
 			context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
 			context_desc.cpu_desc.xc_cpu = xc_cpu;
 			

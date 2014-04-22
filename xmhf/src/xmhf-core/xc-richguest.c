@@ -60,11 +60,12 @@ void xmhf_richguest_initialize(xc_cpu_t *xc_cpu_bsp, xc_partition_t *xc_partitio
 }
 
 
-//initialize environment to boot "rich" guest
-//void xmhf_smpguest_initialize(context_desc_t context_desc){
-//void xmhf_richguest_addcpuandrun(u32 index_cpudata){
-void xmhf_richguest_addcpuandrun(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition_richguest){
-		
+//add given xc_cpu_t to the rich guest partition
+void xmhf_richguest_addcpu(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition_richguest){
+	
+	//add cpu to the richguest partition
+	xc_cpu->parentpartition = xc_partition_richguest;
+	
 	//initialize CPU
 	//xmhf_baseplatform_cpuinitialize();
 
@@ -83,10 +84,6 @@ void xmhf_richguest_addcpuandrun(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition_
 	//xmhf_memprot_initialize(context_desc);		
 	xmhf_memprot_initialize(xc_cpu, xc_partition_richguest);		
 
-	//start partition (guest)
-	printf("\n%s[%u]: starting partition...", __FUNCTION__, xc_cpu->cpuid);
-	//xmhf_partition_start(context_desc);
-	xmhf_partition_start(xc_cpu);
 }
 
 
