@@ -60,25 +60,6 @@ typedef struct xmhfcoreapiretval {
 	void *returnptr1;
 } xmhfcoreapiretval_t;
 
-
-typedef u8 xc_cpuarchdata_t;
-
-typedef struct {
-		void *stack;			//CPU stack
-		u32 cpuid;				//unique CPU id
-		bool is_bsp;			//true if CPU is the boot-strap processor
-		bool is_quiesced;		//true if CPU is quiesced
-		xc_cpuarchdata_t *cpuarchdata;
-		u32 index_partitiondata;	//index into partition data buffer
-} __attribute__ ((packed)) xc_cpu_t;
-
-typedef struct {
-		u32 cpuid;				//unique CPU id
-		//u32 index_cpudata;		//index into CPU data buffer
-		xc_cpu_t *xc_cpu;
-} __attribute__((packed)) xc_cputable_t;
-
-
 typedef u8 xc_partition_hptdata_t;
 typedef u8 xc_partition_trapmaskdata_t;
 
@@ -92,11 +73,32 @@ typedef struct {
 		//u32 number_of_cpus;			//number of cpus allocated to the partition
 } xc_partition_t;
 
-
-#define XC_INDEX_INVALID			(0xFFFFFFFFUL)
-
 #define XC_PARTITION_PRIMARY		(1)
 #define XC_PARTITION_SECONDARY		(2)
+
+
+typedef u8 xc_cpuarchdata_t;
+
+typedef struct {
+		void *stack;			//CPU stack
+		u32 cpuid;				//unique CPU id
+		bool is_bsp;			//true if CPU is the boot-strap processor
+		bool is_quiesced;		//true if CPU is quiesced
+		xc_cpuarchdata_t *cpuarchdata;
+		//u32 index_partitiondata;	//index into partition data buffer
+		xc_partition_t *parentpartition;
+} __attribute__ ((packed)) xc_cpu_t;
+
+typedef struct {
+		u32 cpuid;				//unique CPU id
+		//u32 index_cpudata;		//index into CPU data buffer
+		xc_cpu_t *xc_cpu;
+} __attribute__((packed)) xc_cputable_t;
+
+
+
+
+
 
 //XMHF CPU descriptor type
 typedef struct {
