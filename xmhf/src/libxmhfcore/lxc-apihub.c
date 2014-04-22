@@ -62,11 +62,11 @@ void libxmhfcore_hypappfromcore(u32 callnum){
 	printf("\n%s: starting, callnum=%u...", __FUNCTION__, callnum);
 
 	switch(callnum){
-			case XMHF_APIHUB_HYPAPPCB_MAIN:{
+			case XMHF_APIHUB_HYPAPPCB_INITIALIZATION:{
 					//paramhypapp->result=xmhf_app_main( (VCPU *)(u32)paramcore->param1, (APP_PARAM_BLOCK *)(u32)paramcore->param2);
 					//paramhypapp->result=xmhf_app_main((APP_PARAM_BLOCK *)(u32)paramcore->param1);
 					//paramhypapp->result=xmhf_app_main((APP_PARAM_BLOCK *)&paramcore->apb);
-					paramhypapp->result=xmhf_app_main(paramcore->hypappenvb);
+					paramhypapp->result=xmhf_hypapp_initialization(paramcore->hypappenvb);
 					break;
 				}
 			
@@ -74,21 +74,21 @@ void libxmhfcore_hypappfromcore(u32 callnum){
 					//paramhypapp->result=xmhf_app_handlehypercall( (VCPU *)(u32)paramcore->param1, (u32)paramcore->param2, (struct regs *)(u32)paramcore->param3);
 					//paramhypapp->result=xmhf_app_handlehypercall( (VCPU *)&paramcore->vcpu, (u32)paramcore->param2, (struct regs *)(u32)paramcore->param3);
 					//paramhypapp->result=xmhf_app_handlehypercall( (VCPU *)&paramcore->vcpu, (u32)paramcore->param2, (struct regs *)&paramcore->r);
-					paramhypapp->result=xmhf_app_handlehypercall( paramcore->context_desc, paramcore->param1, paramcore->param2);
+					paramhypapp->result=xmhf_hypapp_handlehypercall( paramcore->context_desc, paramcore->param1, paramcore->param2);
 					
 					break;
 				}
 
 			case XMHF_APIHUB_HYPAPPCB_SHUTDOWN:{
 					//xmhf_app_handleshutdown( (VCPU *)(u32)paramcore->param1, (struct regs *)(u32)paramcore->param2);
-					xmhf_app_handleshutdown( paramcore->context_desc );
+					xmhf_hypapp_handleshutdown( paramcore->context_desc );
 					break;
 				}
 
 			case XMHF_APIHUB_HYPAPPCB_HWPGTBLVIOLATION:{
 					//paramhypapp->result=xmhf_app_handleintercept_hwpgtblviolation( (VCPU *)(u32)paramcore->param1, (struct regs *)(u32)paramcore->param2, 
 					//			paramcore->param3, paramcore->param4, paramcore->param5);
-					paramhypapp->result=xmhf_app_handleintercept_hwpgtblviolation( paramcore->context_desc, paramcore->param1, paramcore->param2, paramcore->param3);
+					paramhypapp->result=xmhf_hypapp_handleintercept_hwpgtblviolation( paramcore->context_desc, paramcore->param1, paramcore->param2, paramcore->param3);
 
 					break;
 				}
@@ -96,7 +96,7 @@ void libxmhfcore_hypappfromcore(u32 callnum){
 			case XMHF_APIHUB_HYPAPPCB_PORTACCESS:{
 					//paramhypapp->result=xmhf_app_handleintercept_portaccess( (VCPU *)(u32)paramcore->param1, (struct regs *)(u32)paramcore->param2, 
 					//			paramcore->param3, paramcore->param4, paramcore->param5);
-					paramhypapp->result=xmhf_app_handleintercept_portaccess( paramcore->context_desc, paramcore->param1, paramcore->param2, paramcore->param3);
+					paramhypapp->result=xmhf_hypapp_handleintercept_portaccess( paramcore->context_desc, paramcore->param1, paramcore->param2, paramcore->param3);
 
 					break;
 				}
