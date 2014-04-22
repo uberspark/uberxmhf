@@ -81,10 +81,6 @@ void xmhf_richguest_addcpu(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition_richgu
 	//xmhf_memprot_initialize(context_desc);		
 	xmhf_memprot_initialize(xc_cpu, xc_partition_richguest);		
 
-	//start partition (guest)
-	printf("\n%s[%u]: starting partition...", __FUNCTION__, xc_cpu->cpuid);
-	//xmhf_partition_start(context_desc);
-	xmhf_partition_start(xc_cpu);
 }
 
 
