@@ -83,16 +83,6 @@ void xmhfcore_setmemprot(context_desc_t context_desc, u64 gpa, u32 prottype){
 	return;
 }
 
-/*//void xmhfcore_memprot_getprot(VCPU *vcpu, u64 gpa)
-u32 xmhfcore_memprot_getprot(__xmhfattribute__(core-ro) VCPU *vcpu, u64 gpa){
-	u32 result;
-	paramhypapp->param1 = (u32)vcpu;
-	paramhypapp->param2 = (u64)gpa;
-	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_MEMPROT_GETPROT);
-	result = (u32)paramcore->result;
-	return result;
-}*/
-
 //void xmhfcore_memprot_flushmappings(VCPU *vcpu);
 void xmhfcore_memprot_flushmappings(context_desc_t context_desc){
 	paramhypapp->context_desc = context_desc;
@@ -110,57 +100,6 @@ u8 * xmhfcore_smpguest_walk_pagetables(context_desc_t context_desc, u32 vaddr){
 	return result;
 }
 
-/*									   
-u64 xmhfcore_memprot_arch_x86svm_get_h_cr3(__xmhfattribute__(core-ro) VCPU *vcpu){
-	u64 result;
-	paramhypapp->param1 = (u32)vcpu;
-	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_MEMPROT_ARCH_X86SVM_GET_H_CR3);
-	result = (u64)paramcore->result;
-	return result;
-}
-
-void xmhfcore_memprot_arch_x86svm_set_h_cr3(__xmhfattribute__(core-ro) VCPU *vcpu, u64 n_cr3){
-	paramhypapp->param1 = (u32)vcpu;
-	paramhypapp->param2 = (u64)n_cr3;
-	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_MEMPROT_ARCH_X86SVM_SET_H_CR3);
-	return;
-}*/
-
-/*u64 xmhfcore_memprot_arch_x86vmx_get_EPTP(__xmhfattribute__(core-ro) VCPU *vcpu){
-	u64 result;
-	paramhypapp->param1 = (u32)vcpu;
-	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_MEMPROT_ARCH_X86VMX_GET_EPTP);
-	result = (u64)paramcore->result;
-	return result;
-}
-
-
-void xmhfcore_memprot_arch_x86vmx_set_EPTP(__xmhfattribute__(core-ro) VCPU *vcpu, u64 eptp){
-	paramhypapp->param1 = (u32)vcpu;
-	paramhypapp->param2 = (u64)eptp;
-	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_MEMPROT_ARCH_X86VMX_SET_EPTP);
-	return;
-}*/
-
-/*xmhfcoreapiretval_t xmhfcore_baseplatform_getcputable(void){
-	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_BASEPLATFORM_GETCPUTABLE);
-	return paramcore->retval;
-}*/	
-
-void xmhfcore_memprot_setsingularhpt(u64 hpt){
-	paramhypapp->param1 = (u64)hpt;
-	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_MEMPROT_SETSINGULARHPT);
-	return;
-}
-
-u64 xmhfcore_memprot_getHPTroot(context_desc_t context_desc){
-	u64 result;
-	paramhypapp->context_desc = context_desc;
-	//paramhypapp->param1 = (u32)vcpu;
-	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_MEMPROT_GETHPTROOT);
-	result = (u64)paramcore->result;
-	return result;
-}
 
 void xmhfcore_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u64 entry){
 	u64 result;
@@ -172,56 +111,3 @@ void xmhfcore_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u
 }
 
 
-/*
-
-//void xmhfcore_partition_legacyIO_setprot(VCPU *vcpu, u32 port, u32 size, u32 prottype);
-void xmhfcore_partition_legacyIO_setprot(__xmhfattribute__(core-ro) VCPU *vcpu, u32 port, u32 size, u32 prottype){
-	paramhypapp->param1 = (u32)vcpu;
-	paramhypapp->param2 = (u32)port;
-	paramhypapp->param3 = (u32)size;
-	paramhypapp->param4 = (u32)prottype;
-	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_PARTITION_LEGACYIO_SETPROT);
-	return;
-}	
-
-
-int xmhfcore_tpm_open_locality(int locality){
-	int result;
-	paramhypapp->param1 = (u32)locality;
-	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_TPM_OPEN_LOCALITY);
-	result = (int)paramcore->result;
-	return result;
-}
-
-void xmhfcore_tpm_deactivate_all_localities(void){
-	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_TPM_DEACTIVATE_ALL_LOCALITIES);
-	return;
-}	
-
-
-//XXX: TODO: need to rework to handle pointer parameters properly	
-uint32_t xmhfcore_tpm_write_cmd_fifo(uint32_t locality, uint8_t *in,
-                                   uint32_t in_size, uint8_t *out,
-                                   uint32_t *out_size){
-	uint32_t result;
-	paramhypapp->param1 = (u32)locality;
-	paramhypapp->param2 = (u32)in;
-	paramhypapp->param3 = (u32)in_size;
-	paramhypapp->param4 = (u32)out;
-	paramhypapp->param5 = (u32)out_size;
-	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_TPM_WRITE_CMD_FIFO);
-	result = (uint32_t)paramcore->result;
-	return result;
-}									   
-
-//u32 xmhfcore_baseplatform_arch_x86_acpi_getRSDP(ACPI_RSDP *rsdp);
-//TODO: need to rework such that we return a pointer to the rsdp which
-//is in core area
-u32 xmhfcore_baseplatform_arch_x86_acpi_getRSDP(ACPI_RSDP *rsdp){
-	u32 result;
-	paramhypapp->param1 = (u32)rsdp;
-	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_BASEPLATFORM_ARCH_X86_ACPI_GETRSDP);
-	result = (u32)paramcore->result;
-	return result;
-}	
-*/

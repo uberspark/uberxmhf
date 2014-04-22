@@ -65,7 +65,7 @@ u32 xmhf_baseplatform_getcpuvendor(void);
 void xmhf_baseplatform_cpuinitialize(void);
 
 //get info. on the number of CPUs in the platform and their IDs
-xmhfcoreapiretval_t xmhf_baseplatform_getcputable(void);
+//xmhfcoreapiretval_t xmhf_baseplatform_getcputable(void);
 
 //initialize SMP
 void xmhf_baseplatform_smpinitialize(void);

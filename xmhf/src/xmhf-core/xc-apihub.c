@@ -96,16 +96,6 @@ void xmhf_apihub_fromhypapp(u32 callnum){
 				break;
 			}
 			
-			case XMHF_APIHUB_COREAPI_MEMPROT_SETSINGULARHPT:{ 
-				xmhf_memprot_setsingularhpt(paramhypapp->param1);
-				break;
-			}
-
-			case XMHF_APIHUB_COREAPI_MEMPROT_GETHPTROOT:{ //u64 xmhfcore_memprot_getHPTroot(...)
-				paramcore->result=xmhf_memprot_getHPTroot(paramhypapp->context_desc);
-				break;
-			}
-
 			case XMHF_APIHUB_COREAPI_HPT_SETENTRY:{ //void xmhf_memprot_hpt_setentry(...)
 				xmhf_memprot_hpt_setentry(paramhypapp->context_desc, paramhypapp->param1, paramhypapp->param2);
 				break;
@@ -133,11 +123,12 @@ void xmhf_apihub_fromhypapp(u32 callnum){
 
 
 // hypapp main (initialization) function
-u32 xmhfhypapp_main(hypapp_env_block_t hypappenvb){
+u32 xmhfhypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb){
 	u32 result;
-	
+
+	paramcore->context_desc = context_desc;
 	paramcore->hypappenvb = hypappenvb;
-	xmhf_apihub_arch_tohypapp(XMHF_APIHUB_HYPAPPCB_MAIN);
+	xmhf_apihub_arch_tohypapp(XMHF_APIHUB_HYPAPPCB_INITIALIZATION);
 	result = (u32)paramhypapp->result;
 	
 	return result;

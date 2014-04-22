@@ -44,8 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// appmain.c
-// xmhf application main module (for xmhf-core verification)
+// hyperdep hypapp main module
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -58,30 +57,11 @@
 u32 hd_runtimephysbase=0;
 u32 hd_runtimesize=0;
 
-u32 cputable_numentries=0;	//number of CPUs in the platform
-__xmhfattribute__(core-ro) MIDTAB *cputable; 
-
-//----------------------------------------------------------------------
-// INITIALIZATION
-
-//static u64 hpt_get_root(VCPU *vcpu){
-		//if(vcpu->cpu_vendor == CPU_VENDOR_INTEL)
-//			return xmhfcore_memprot_arch_x86vmx_get_EPTP(vcpu);
-		//else 
-			//vcpu->cpu_vendor == CPU_VENDOR_AMD
-			//return xmhfcore_memprot_arch_x86svm_get_h_cr3(vcpu);
-//}
-
-u64 hpt_root=0;
-
-// hypapp main
-//u32 xmhf_app_main(__xmhfattribute__(core-ro) APP_PARAM_BLOCK *apb){
-u32 xmhf_app_main(hypapp_env_block_t hypappenvb){	
-	printf("\nhyperDEP initializing on BSP");
+// hypapp initialization
+u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb){	
+	printf("\nCPU %u: hyperDEP initializing", context_desc.cpu_desc.cpuid);
 		
 	//store runtime base and size
-	//hd_runtimephysbase = apb->runtimephysmembase;
-	//hd_runtimesize = apb->runtimesize;
 	hd_runtimephysbase = hypappenvb.runtimephysmembase;
 	hd_runtimesize = hypappenvb.runtimesize;
 	printf("\n%s: XMHF runtime base=%08x, size=%08x", __FUNCTION__, hd_runtimephysbase, hd_runtimesize);
@@ -94,7 +74,7 @@ u32 xmhf_app_main(hypapp_env_block_t hypappenvb){
 	//		fun();	//execute arbitrary code in core memory region, should trigger a #pf
 	//}
 
-	printf("\nhyperDEP initialized on BSP!");
+	printf("\nCPU %u: hyperDEP initialized!", context_desc.cpu_desc.cpuid);
 	
 	return APP_INIT_SUCCESS;  //successful
 }
@@ -102,41 +82,25 @@ u32 xmhf_app_main(hypapp_env_block_t hypappenvb){
 //----------------------------------------------------------------------
 // RUNTIME
 
-//activate DEP protection
-//static void hd_activatedep(__xmhfattribute__(core-ro) VCPU *vcpu, u32 gpa){
-//	xmhfcore_setmemprot(vcpu, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE) );	   
-//	printf("\nCPU(%02x): %s removed EXECUTE permission for page at gpa %08x", vcpu->id, __FUNCTION__, gpa);
-//}
 static void hd_activatedep(context_desc_t context_desc, u32 gpa){
 	xmhfcore_setmemprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE) );	   
-	printf("\nCPU(%02x): %s removed EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.id, __FUNCTION__, gpa);
+	xmhfcore_memprot_flushmappings(context_desc);
+	printf("\nCPU(%02x): %s removed EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.cpuid, __FUNCTION__, gpa);
 }
 
 //de-activate DEP protection
-//static void hd_deactivatedep(__xmhfattribute__(core-ro) VCPU *vcpu, u32 gpa){
-//	xmhfcore_setmemprot(vcpu, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE) );	   
-//	printf("\nCPU(%02x): %s added EXECUTE permission for page at gpa %08x", vcpu->id, __FUNCTION__, gpa);
-//}
 static void hd_deactivatedep(context_desc_t context_desc, u32 gpa){
 	xmhfcore_setmemprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE) );	   
 	xmhfcore_memprot_flushmappings(context_desc);
-	printf("\nCPU(%02x): %s added EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.id, __FUNCTION__, gpa);
+	printf("\nCPU(%02x): %s added EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.cpuid, __FUNCTION__, gpa);
 }
 
 static void hd_initialize(context_desc_t context_desc){
-		//set singular EPT across all CPUs
-        hpt_root=xmhfcore_memprot_getHPTroot(context_desc);
-        printf("\nCPU(%02x): hpt_root=%016llx", context_desc.cpu_desc.id, hpt_root);
-        
-        xmhfcore_memprot_setsingularhpt(hpt_root);
-
-		printf("\nCPU(0x%02x): hyperDEP ready to go!", context_desc.cpu_desc.id);
-	
+	printf("\n%s: nothing to do", __FUNCTION__);
 }
 
 
-//u32 xmhf_app_handlehypercall(__xmhfattribute__(core-ro) VCPU *vcpu, u32 callno, __xmhfattribute__(core-ro) struct regs *r){
-u32 xmhf_app_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param){
+u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param){
 	u32 status=APP_SUCCESS;
 	u32 call_id;
 	u32 gva, gpa;
@@ -145,7 +109,7 @@ u32 xmhf_app_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 
 
 	gva=(u32)hypercall_param;
 	
-	printf("\nCPU(%02x): %s starting: call number=%x, gva=%x", context_desc.cpu_desc.id, __FUNCTION__, call_id, gva);
+	printf("\nCPU(%02x): %s starting: call number=%x, gva=%x", context_desc.cpu_desc.cpuid, __FUNCTION__, call_id, gva);
 
 	switch(call_id){
 		case HYPERDEP_INITIALIZE:{
@@ -156,10 +120,10 @@ u32 xmhf_app_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 
 		case HYPERDEP_ACTIVATEDEP:{
 			gpa=(u32)xmhfcore_smpguest_walk_pagetables(context_desc, gva);
 			if(gpa == 0xFFFFFFFFUL){
-				printf("\nCPU(%02x): WARNING: unable to get translation for gva=%x, just returning", context_desc.cpu_desc.id, gva);
+				printf("\nCPU(%02x): WARNING: unable to get translation for gva=%x, just returning", context_desc.cpu_desc.cpuid, gva);
 				return status;
 			}		
-			printf("\nCPU(%02x): translated gva=%x to gpa=%x", context_desc.cpu_desc.id, gva, gpa);
+			printf("\nCPU(%02x): translated gva=%x to gpa=%x", context_desc.cpu_desc.cpuid, gva, gpa);
 			hd_activatedep(context_desc, gpa);
 		}
 		break;
@@ -167,17 +131,17 @@ u32 xmhf_app_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 
 		case HYPERDEP_DEACTIVATEDEP:{
 			gpa=(u32)xmhfcore_smpguest_walk_pagetables(context_desc, gva);
 			if(gpa == 0xFFFFFFFFUL){
-				printf("\nCPU(%02x): WARNING: unable to get translation for gva=%x, just returning", context_desc.cpu_desc.id, gva);
+				printf("\nCPU(%02x): WARNING: unable to get translation for gva=%x, just returning", context_desc.cpu_desc.cpuid, gva);
 				return status;
 			}		
-			printf("\nCPU(%02x): translated gva=%x to gpa=%x", context_desc.cpu_desc.id, gva, gpa);
+			printf("\nCPU(%02x): translated gva=%x to gpa=%x", context_desc.cpu_desc.cpuid, gva, gpa);
 			hd_deactivatedep(context_desc, gpa);
 		}
 		break;
 		
 		default:
 			printf("\nCPU(0x%02x): unsupported hypercall (0x%08x)!!", 
-			  context_desc.cpu_desc.id, call_id);
+			  context_desc.cpu_desc.cpuid, call_id);
 			status=APP_ERROR;
 			break;
 	}
@@ -188,18 +152,17 @@ u32 xmhf_app_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 
 
 //handles XMHF shutdown callback
 //note: should not return
-void xmhf_app_handleshutdown(context_desc_t context_desc){
-	//(void)r; //unused
+void xmhf_hypapp_handleshutdown(context_desc_t context_desc){
+	printf("\n%s:%u: rebooting now", __FUNCTION__, context_desc.cpu_desc.cpuid);
 	xmhfcore_reboot(context_desc);				
 }
 
 //handles h/w pagetable violations
 //for now this always returns APP_SUCCESS
-u32 xmhf_app_handleintercept_hwpgtblviolation(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code){
+u32 xmhf_hypapp_handleintercept_hwpgtblviolation(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code){
 	u32 status = APP_SUCCESS;
-	//(void)r; //unused
 
-	printf("\nCPU(%02x): FATAL HWPGTBL violation (gva=%x, gpa=%x, code=%x): app tried to execute data page??", context_desc.cpu_desc.id, (u32)gva, (u32)gpa, (u32)error_code);
+	printf("\nCPU(%02x): FATAL HWPGTBL violation (gva=%x, gpa=%x, code=%x): app tried to execute data page??", context_desc.cpu_desc.cpuid, (u32)gva, (u32)gpa, (u32)error_code);
 	HALT();
 	
 	return status;
@@ -208,9 +171,7 @@ u32 xmhf_app_handleintercept_hwpgtblviolation(context_desc_t context_desc, u64 g
 
 //handles i/o port intercepts
 //returns either APP_IOINTERCEPT_SKIP or APP_IOINTERCEPT_CHAIN
-u32 xmhf_app_handleintercept_portaccess(context_desc_t context_desc, u32 portnum, u32 access_type, u32 access_size){
-	//(void)vcpu; //unused
-	//(void)r; //unused
+u32 xmhf_hypapp_handleintercept_portaccess(context_desc_t context_desc, u32 portnum, u32 access_type, u32 access_size){
 	(void)portnum; //unused
 	(void)access_type; //unused
 	(void)access_size; //unused

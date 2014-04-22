@@ -55,10 +55,23 @@
 
 //define XMHF core API aggregate return type
 //allows us to return multiple values without using pointers to pointers
-typedef struct xmhfcoreapiretval {
-	u64 returnval;
-	void *returnptr1;
-} xmhfcoreapiretval_t;
+//typedef struct xmhfcoreapiretval {
+//	u64 returnval;
+//	void *returnptr1;
+//} xmhfcoreapiretval_t;
+
+typedef u8 xc_partition_hptdata_t;
+typedef u8 xc_partition_trapmaskdata_t;
+
+typedef struct {
+		u32 partitionid;			//unique partition id
+		u32 partitiontype;			//primary or secondary
+		xc_partition_hptdata_t *hptdata;
+		xc_partition_trapmaskdata_t *trapmaskdata;
+} xc_partition_t;
+
+#define XC_PARTITION_PRIMARY		(1)
+#define XC_PARTITION_SECONDARY		(2)
 
 
 typedef u8 xc_cpuarchdata_t;
@@ -69,48 +82,28 @@ typedef struct {
 		bool is_bsp;			//true if CPU is the boot-strap processor
 		bool is_quiesced;		//true if CPU is quiesced
 		xc_cpuarchdata_t *cpuarchdata;
-		u32 index_partitiondata;	//index into partition data buffer
+		xc_partition_t *parentpartition;
 } __attribute__ ((packed)) xc_cpu_t;
 
 typedef struct {
 		u32 cpuid;				//unique CPU id
-		//u32 index_cpudata;		//index into CPU data buffer
 		xc_cpu_t *xc_cpu;
 } __attribute__((packed)) xc_cputable_t;
 
 
-typedef u8 xc_partition_hptdata_t;
-typedef u8 xc_partition_trapmaskdata_t;
-
+//XMHF core api CPU descriptor type
 typedef struct {
-		u32 partitionid;			//unique partition id
-		u32 partitiontype;			//primary or secondary
-		//u32 index_hwpagetabledata;	//index into h/w page table data buffer
-		xc_partition_hptdata_t *hptdata;
-		xc_partition_trapmaskdata_t *trapmaskdata;
-		//u32 indices_cpudata[MAX_PLATFORM_CPUS];	//indices into cpu data buffer for all cpus allocated to the partition
-		//u32 number_of_cpus;			//number of cpus allocated to the partition
-} xc_partition_t;
-
-
-#define XC_INDEX_INVALID			(0xFFFFFFFFUL)
-
-#define XC_PARTITION_PRIMARY		(1)
-#define XC_PARTITION_SECONDARY		(2)
-
-//XMHF CPU descriptor type
-typedef struct {
-	uint32_t id;
+	u32 cpuid;
 	bool isbsp;
 	xc_cpu_t *xc_cpu;
 } cpu_desc_t;
 	
-//XMHF partition descriptor type
+//XMHF core api partition descriptor type
 typedef struct {
-	uint32_t id;
+	u32 partitionid;
 } partition_desc_t;
 
-//XMHF context descriptor type (context = partition + cpu pair)
+//XMHF core api context descriptor type (context = partition + cpu pair)
 typedef struct {
 	partition_desc_t partition_desc;
 	cpu_desc_t cpu_desc;
@@ -137,7 +130,7 @@ typedef struct {
 	u64 result;
 	context_desc_t context_desc;
 	hypapp_env_block_t hypappenvb;
-	xmhfcoreapiretval_t retval;
+	//xmhfcoreapiretval_t retval;
 } __attribute__((packed)) XMHF_HYPAPP_PARAMETERBLOCK;
 
 
