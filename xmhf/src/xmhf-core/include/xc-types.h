@@ -91,19 +91,19 @@ typedef struct {
 } __attribute__((packed)) xc_cputable_t;
 
 
-//XMHF CPU descriptor type
+//XMHF core api CPU descriptor type
 typedef struct {
-	uint32_t id;
+	u32 cpuid;
 	bool isbsp;
 	xc_cpu_t *xc_cpu;
 } cpu_desc_t;
 	
-//XMHF partition descriptor type
+//XMHF core api partition descriptor type
 typedef struct {
-	uint32_t id;
+	u32 partitionid;
 } partition_desc_t;
 
-//XMHF context descriptor type (context = partition + cpu pair)
+//XMHF core api context descriptor type (context = partition + cpu pair)
 typedef struct {
 	partition_desc_t partition_desc;
 	cpu_desc_t cpu_desc;
