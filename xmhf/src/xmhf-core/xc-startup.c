@@ -125,7 +125,7 @@ void xmhf_runtime_main(xc_cpu_t *xc_cpu){
 	//rich guest, enter it into a CPU pool for use by other partitions
 	
 	//initialize and boot "rich" guest
-	xmhf_richguest_addcpuandrun(xc_cpu, xc_partition_richguest);
+	xmhf_richguest_addcpu(xc_cpu, xc_partition_richguest);
 
 	//TODO: implement CPU pooling for use by other partitions
 	
