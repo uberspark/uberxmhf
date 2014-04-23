@@ -183,7 +183,7 @@ void xc_hypapp_handleshutdown(xc_cpu_t *xc_cpu){
 
 //handles h/w pagetable violations
 //for now this always returns APP_SUCCESS
-u32 xc_hypapp_handleintercept_hwpgtblviolation(xc_cpu_t *xc_cpu, u64 gpa, u64 gva, u64 error_code){
+u32 xc_hypapp_handleintercept_hptfault(xc_cpu_t *xc_cpu, u64 gpa, u64 gva, u64 error_code){
 	u32 result;
 	context_desc_t context_desc;
 	
@@ -196,7 +196,7 @@ u32 xc_hypapp_handleintercept_hwpgtblviolation(xc_cpu_t *xc_cpu, u64 gpa, u64 gv
 	paramcore->param1 = gpa;
 	paramcore->param2 = gva;
 	paramcore->param3 = error_code;
-	xmhf_apihub_arch_tohypapp(XMHF_APIHUB_HYPAPPCB_HWPGTBLVIOLATION);
+	xmhf_apihub_arch_tohypapp(XMHF_APIHUB_HYPAPPCB_HPTFAULT);
 	result = (u32)paramhypapp->result;
 	
 	return result;	
