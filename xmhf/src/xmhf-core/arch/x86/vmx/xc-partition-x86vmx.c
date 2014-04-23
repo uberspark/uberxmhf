@@ -593,34 +593,17 @@ static u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") )) 
 
 
 
-static void _vmx_send_quiesce_signal(xc_cpu_t __attribute__((unused)) *xc_cpu){
-  volatile u32 *icr_low = (u32 *)(0xFEE00000 + 0x300);
-  volatile u32 *icr_high = (u32 *)(0xFEE00000 + 0x310);
-  u32 icr_high_value= 0xFFUL << 24;
+static void _vmx_send_quiesce_signal(void){
   u32 prev_icr_high_value;
-  u32 delivered;
-  
-  prev_icr_high_value = *icr_high;
-  
-  *icr_high = icr_high_value;    //send to all but self
-  *icr_low = 0x000C0400UL;      //send NMI        
-  
-  //check if IPI has been delivered successfully
-  //printf("\n%s: CPU(0x%02x): firing NMIs...", __FUNCTION__, xc_cpu->cpuid);
-#ifndef __XMHF_VERIFICATION__  
-  do{
-	delivered = *icr_high;
-	delivered &= 0x00001000;
-  }while(delivered);
-#else
-	//TODO: plug in h/w model of LAPIC, for now assume hardware just
-	//works
-#endif
 
-  //restore icr high
-  *icr_high = prev_icr_high_value;
-    
-  //printf("\n%s: CPU(0x%02x): NMIs fired!", __FUNCTION__, xc_cpu->cpuid);
+  prev_icr_high_value = xmhfhw_sysmemaccess_readu32((0xFEE00000 + 0x310));
+
+  xmhfhw_sysmemaccess_writeu32((0xFEE00000 + 0x310), (0xFFUL << 24)); //send to all but self
+  xmhfhw_sysmemaccess_writeu32((0xFEE00000 + 0x300), 0x000C0400UL); //send NMI
+
+  while( xmhfhw_sysmemaccess_readu32((0xFEE00000 + 0x310)) & 0x00001000 );
+  
+  xmhfhw_sysmemaccess_writeu32((0xFEE00000 + 0x310), prev_icr_high_value);
 }
 
 
@@ -641,7 +624,7 @@ void xmhf_smpguest_arch_x86vmx_quiesce(xc_cpu_t *xc_cpu){
         
         //send all the other CPUs the quiesce signal
         g_vmx_quiesce=1;  //we are now processing quiesce
-        _vmx_send_quiesce_signal(xc_cpu);
+        _vmx_send_quiesce_signal();
         
         //wait for all the remaining CPUs to quiesce
         //printf("\nCPU(0x%02x): waiting for other CPUs to respond...", xc_cpu->cpuid);
