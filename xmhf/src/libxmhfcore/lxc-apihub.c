@@ -93,10 +93,10 @@ void libxmhfcore_hypappfromcore(u32 callnum){
 					break;
 				}
 
-			case XMHF_APIHUB_HYPAPPCB_PORTACCESS:{
+			case XMHF_APIHUB_HYPAPPCB_TRAP:{
 					//paramhypapp->result=xmhf_app_handleintercept_portaccess( (VCPU *)(u32)paramcore->param1, (struct regs *)(u32)paramcore->param2, 
 					//			paramcore->param3, paramcore->param4, paramcore->param5);
-					paramhypapp->result=xmhf_hypapp_handleintercept_portaccess( paramcore->context_desc, paramcore->param1, paramcore->param2, paramcore->param3);
+					paramhypapp->result=xmhf_hypapp_handleintercept_trap( paramcore->context_desc, paramcore->xc_hypapp_arch_param);
 
 					break;
 				}

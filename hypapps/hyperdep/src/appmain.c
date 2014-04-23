@@ -171,11 +171,7 @@ u32 xmhf_hypapp_handleintercept_hptfault(context_desc_t context_desc, u64 gpa, u
 
 //handles i/o port intercepts
 //returns either APP_IOINTERCEPT_SKIP or APP_IOINTERCEPT_CHAIN
-u32 xmhf_hypapp_handleintercept_portaccess(context_desc_t context_desc, u32 portnum, u32 access_type, u32 access_size){
-	(void)portnum; //unused
-	(void)access_type; //unused
-	(void)access_size; //unused
-
- 	return APP_IOINTERCEPT_CHAIN;
+u32 xmhf_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch_param_t xc_hypapp_arch_param){
+ 	return APP_TRAP_CHAIN;
 }
 

@@ -204,9 +204,9 @@ u32 xc_hypapp_handleintercept_hptfault(xc_cpu_t *xc_cpu, u64 gpa, u64 gva, u64 e
 }
 
 
-//handles i/o port intercepts
-//returns either APP_IOINTERCEPT_SKIP or APP_IOINTERCEPT_CHAIN
-u32 xc_hypapp_handleintercept_portaccess(xc_cpu_t *xc_cpu, u32 portnum, u32 access_type, u32 access_size){
+//handles trap intercepts
+//returns either APP_TRAP_SKIP or APP_TRAP_CHAIN
+u32 xc_hypapp_handleintercept_trap(xc_cpu_t *xc_cpu, xc_hypapp_arch_param_t xc_hypapp_arch_param){
 	u32 result;
 	context_desc_t context_desc;
 
@@ -216,10 +216,8 @@ u32 xc_hypapp_handleintercept_portaccess(xc_cpu_t *xc_cpu, u32 portnum, u32 acce
 	context_desc.cpu_desc.xc_cpu = xc_cpu;
 	
 	paramcore->context_desc = context_desc;
-	paramcore->param1 = (u32)portnum;
-	paramcore->param2 = (u32)access_type;
-	paramcore->param3 = (u32)access_size;
-	xmhf_apihub_arch_tohypapp(XMHF_APIHUB_HYPAPPCB_PORTACCESS);
+	paramcore->xc_hypapp_arch_param = xc_hypapp_arch_param;
+	xmhf_apihub_arch_tohypapp(XMHF_APIHUB_HYPAPPCB_TRAP);
 	result = (u32)paramhypapp->result;
 	
 	return result;	
