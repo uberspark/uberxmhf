@@ -245,9 +245,9 @@ static void _vmx_handle_intercept_eptviolation(xc_cpu_t *xc_cpu, struct regs *r 
 	//if(xc_cpu->is_bsp && (gpa >= g_vmx_lapic_base) && (gpa < (g_vmx_lapic_base + PAGE_SIZE_4K)) ){
 	//	xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(context_desc, gpa, errorcode);
 	//}else{ //no, pass it to hypapp 
-		xmhf_smpguest_arch_x86vmx_quiesce(xc_cpu);
+		//xmhf_smpguest_arch_x86vmx_quiesce(xc_cpu);
 		xmhfhypapp_handleintercept_hwpgtblviolation(context_desc, gpa, gva,	(errorcode & 7));
-		xmhf_smpguest_arch_x86vmx_endquiesce(xc_cpu);
+		//xmhf_smpguest_arch_x86vmx_endquiesce(xc_cpu);
 	//}		
 }
 
@@ -278,9 +278,9 @@ static void _vmx_handle_intercept_ioportaccess(xc_cpu_t *xc_cpu, struct regs *r 
 
   //call our app handler, TODO: it should be possible for an app to
   //NOT want a callback by setting up some parameters during appmain
-	xmhf_smpguest_arch_x86vmx_quiesce(xc_cpu);
+	//xmhf_smpguest_arch_x86vmx_quiesce(xc_cpu);
 	app_ret_status=xmhfhypapp_handleintercept_portaccess(context_desc, portnum, access_type, access_size);
-    xmhf_smpguest_arch_x86vmx_endquiesce(xc_cpu);
+    //xmhf_smpguest_arch_x86vmx_endquiesce(xc_cpu);
 
   if(app_ret_status == APP_IOINTERCEPT_CHAIN){
    	if(access_type == IO_TYPE_OUT){
@@ -393,6 +393,10 @@ static void _vmx_handle_intercept_xsetbv(xc_cpu_t *xc_cpu, struct regs *r){
 
 //---hvm_intercept_handler------------------------------------------------------
 u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct regs *r){
+	static u32 _xc_partition_eventhub_lock = 1; 
+
+	//serialize event handling
+    spin_lock(&_xc_partition_eventhub_lock);
 
 	//sanity check for VM-entry errors
 	if( xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON) & 0x80000000UL ){
@@ -426,7 +430,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 				xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc, r);
 				
 			}else{	//if not E820 hook, give hypapp a chance to handle the hypercall
-				xmhf_smpguest_arch_x86vmx_quiesce(xc_cpu);
+				//xmhf_smpguest_arch_x86vmx_quiesce(xc_cpu);
 				{
 					u64 hypercall_id = (u64)r->eax;
 					u64 hypercall_param = ((u64)r->edx << 32) | r->ecx;
@@ -442,7 +446,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 						HALT();
 					}
 				}
-				xmhf_smpguest_arch_x86vmx_endquiesce(xc_cpu);
+				//xmhf_smpguest_arch_x86vmx_endquiesce(xc_cpu);
 				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+3) );
 			}
 		}
@@ -623,6 +627,9 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 	assert( (xc_cpu->vmcs.control_VMX_seccpu_based & 0x2) );
 	assert( (xc_cpu->vmcs.control_EPT_pointer_high == 0) && (xc_cpu->vmcs.control_EPT_pointer_full == (hva2spa((void*)xc_cpu->vmx_vaddr_ept_pml4_table) | 0x1E)) );
 #endif	
+
+	//end serialization and resume partition
+    spin_unlock(&_xc_partition_eventhub_lock);
 
 	return 1;
 }
