@@ -120,7 +120,7 @@ typedef struct {
 typedef struct {
 	u64 operation;
 	u64 params[MAX_XC_HYPAPP_CB_ARCH_PARAMS];
-}__attribute__ ((packed)) xc_hypapp_cb_arch_param_t;
+}__attribute__ ((packed)) xc_hypapp_arch_param_t;
 
 
 //hypapp parameter block
@@ -136,7 +136,7 @@ typedef struct {
 	u64 result;
 	context_desc_t context_desc;
 	hypapp_env_block_t hypappenvb;
-	xc_hypapp_cb_arch_param_t hypapp_cb_arch_param;
+	xc_hypapp_arch_param_t hypapp_cb_arch_param;
 } __attribute__((packed)) XMHF_HYPAPP_PARAMETERBLOCK;
 
 
