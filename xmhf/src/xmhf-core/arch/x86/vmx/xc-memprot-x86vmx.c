@@ -81,49 +81,6 @@ void xmhf_memprot_arch_x86vmx_set_EPTP(u64 eptp)
   xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_HIGH, (u32)(eptp >> 32));
 }
 
-//set protection for a given physical memory address
-void xmhf_memprot_arch_x86vmx_setprot(xc_partition_hptdata_x86vmx_t *eptdata, u64 gpa, u32 prottype){
-  u32 pfn;
-  u64 *pt;
-  u32 flags =0;
-  
-#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
-   	assert ( (vcpu != NULL) );
-	assert ( ( (gpa < xcbootinfo->physmem_base) || 
-							 (gpa >= (xcbootinfo->physmem_base + xcbootinfo->size)) 
-						   ) );
-	assert ( ( (prottype > 0)	&& 
-	                         (prottype <= MEMP_PROT_MAXVALUE) 
-	                       ) );						
-	assert (
-	 (prottype == MEMP_PROT_NOTPRESENT) ||
-	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_EXECUTE)) ||
-	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_EXECUTE)) ||
-	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READONLY) && (prottype & MEMP_PROT_NOEXECUTE)) ||
-	 ((prottype & MEMP_PROT_PRESENT) && (prottype & MEMP_PROT_READWRITE) && (prottype & MEMP_PROT_NOEXECUTE)) 
-	);
-#endif
-  
-  pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
-  pt = (u64 *)eptdata->vmx_ept_p_tables;
-  
-  //default is not-present, read-only, no-execute	
-  pt[pfn] &= ~(u64)7; //clear all previous flags
-
-  //map high level protection type to EPT protection bits
-  if(prottype & MEMP_PROT_PRESENT){
-	flags=1;	//present is defined by the read bit in EPT
-	
-	if(prottype & MEMP_PROT_READWRITE)
-		flags |= 0x2;
-		
-	if(prottype & MEMP_PROT_EXECUTE)
-		flags |= 0x4;
-  }
-  	
-  //set new flags
-  pt[pfn] |= flags; 
-}
 
 //get protection for a given physical memory address
 u32 xmhf_memprot_arch_x86vmx_getprot(xc_partition_hptdata_x86vmx_t *eptdata, u64 gpa){
@@ -162,11 +119,11 @@ void xmhf_memprot_arch_initialize(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition
 }
 
 //set protection for a given physical memory address
-void xmhf_memprot_arch_setprot(context_desc_t context_desc, xc_partition_t *xc_partition, u64 gpa, u32 prottype){
-	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;
-
-	xmhf_memprot_arch_x86vmx_setprot(eptdata, gpa, prottype);
-}
+//void xmhf_memprot_arch_setprot(context_desc_t context_desc, xc_partition_t *xc_partition, u64 gpa, u32 prottype){
+//	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;
+//
+//	xmhf_memprot_arch_x86vmx_setprot(eptdata, gpa, prottype);
+//}
 
 //get protection for a given physical memory address
 u32 xmhf_memprot_arch_getprot(context_desc_t context_desc, xc_partition_t *xc_partition, u64 gpa){

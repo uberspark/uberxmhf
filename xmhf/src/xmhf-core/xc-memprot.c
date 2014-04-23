@@ -62,9 +62,9 @@ void xmhf_memprot_initialize(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition){
 }
 
 //set protection for a given physical memory address
-void xmhf_memprot_setprot(context_desc_t context_desc, u64 gpa, u32 prottype){
-	xmhf_memprot_arch_setprot(context_desc, xc_partition_richguest, gpa, prottype);
-}
+//void xmhf_memprot_setprot(context_desc_t context_desc, u64 gpa, u32 prottype){
+//	xmhf_memprot_arch_setprot(context_desc, xc_partition_richguest, gpa, prottype);
+//}
 
 
 //get protection for a given physical memory address

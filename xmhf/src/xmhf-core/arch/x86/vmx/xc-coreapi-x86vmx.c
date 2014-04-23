@@ -52,6 +52,34 @@
 #include <xc-x86vmx.h>
 
 
+void xc_api_hpt_arch_setprot(context_desc_t context_desc, u64 gpa, u32 prottype){
+  u32 pfn;
+  u64 *pt;
+  u32 flags =0;
+  xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)context_desc.cpu_desc.xc_cpu->parentpartition->hptdata;  
+    
+  pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
+  pt = (u64 *)eptdata->vmx_ept_p_tables;
+  
+  //default is not-present, read-only, no-execute	
+  pt[pfn] &= ~(u64)7; //clear all previous flags
+
+  //map high level protection type to EPT protection bits
+  if(prottype & MEMP_PROT_PRESENT){
+	flags=1;	//present is defined by the read bit in EPT
+	
+	if(prottype & MEMP_PROT_READWRITE)
+		flags |= 0x2;
+		
+	if(prottype & MEMP_PROT_EXECUTE)
+		flags |= 0x4;
+  }
+  	
+  //set new flags
+  pt[pfn] |= flags; 
+}
+
+
 //walk level 2 page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping
 u64 xc_api_hpt_arch_lvl2pagewalk(context_desc_t context_desc, u64 gva){
