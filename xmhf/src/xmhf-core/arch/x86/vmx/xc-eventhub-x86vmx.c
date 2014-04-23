@@ -226,12 +226,6 @@ static void _vmx_handle_intercept_rdmsr(xc_cpu_t *xc_cpu, struct regs *r){
 //---intercept handler (EPT voilation)----------------------------------
 static void _vmx_handle_intercept_eptviolation(xc_cpu_t *xc_cpu, struct regs *r __attribute__((unused))){
 	u32 errorcode, gpa, gva;
-	context_desc_t context_desc;
-	
-	context_desc.partition_desc.partitionid = 0;
-	context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
-	context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
-	context_desc.cpu_desc.xc_cpu = xc_cpu;
 
 	//xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_bplt_xc_cpu[context_desc.cpu_desc.cpuid];
 	//errorcode = (u32)xc_cpu->vmcs.info_exit_qualification;
@@ -246,7 +240,7 @@ static void _vmx_handle_intercept_eptviolation(xc_cpu_t *xc_cpu, struct regs *r 
 	//	xmhf_smpguest_arch_x86vmx_eventhandler_hwpgtblviolation(context_desc, gpa, errorcode);
 	//}else{ //no, pass it to hypapp 
 		//xmhf_smpguest_arch_x86vmx_quiesce(xc_cpu);
-		xc_hypapp_handleintercept_hwpgtblviolation(context_desc, gpa, gva,	(errorcode & 7));
+		xc_hypapp_handleintercept_hwpgtblviolation(xc_cpu, gpa, gva,	(errorcode & 7));
 		//xmhf_smpguest_arch_x86vmx_endquiesce(xc_cpu);
 	//}		
 }
@@ -257,12 +251,6 @@ static void _vmx_handle_intercept_ioportaccess(xc_cpu_t *xc_cpu, struct regs *r 
   //xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_bplt_xc_cpu[context_desc.cpu_desc.cpuid];
     u32 access_size, access_type, portnum, stringio;
 	u32 app_ret_status = APP_IOINTERCEPT_CHAIN;
-	context_desc_t context_desc;
-
-	context_desc.partition_desc.partitionid = 0;
-	context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
-	context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
-	context_desc.cpu_desc.xc_cpu = xc_cpu;
 	
 	//access_size = (u32)xc_cpu->vmcs.info_exit_qualification & 0x00000007UL;
 	//access_type = ((u32)xc_cpu->vmcs.info_exit_qualification & 0x00000008UL) >> 3;
@@ -279,7 +267,7 @@ static void _vmx_handle_intercept_ioportaccess(xc_cpu_t *xc_cpu, struct regs *r 
   //call our app handler, TODO: it should be possible for an app to
   //NOT want a callback by setting up some parameters during appmain
 	//xmhf_smpguest_arch_x86vmx_quiesce(xc_cpu);
-	app_ret_status=xc_hypapp_handleintercept_portaccess(context_desc, portnum, access_type, access_size);
+	app_ret_status=xc_hypapp_handleintercept_portaccess(xc_cpu, portnum, access_type, access_size);
     //xmhf_smpguest_arch_x86vmx_endquiesce(xc_cpu);
 
   if(app_ret_status == APP_IOINTERCEPT_CHAIN){
@@ -444,14 +432,8 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 				{
 					u64 hypercall_id = (u64)r->eax;
 					u64 hypercall_param = ((u64)r->edx << 32) | r->ecx;
-					context_desc_t context_desc;
 	
-					context_desc.partition_desc.partitionid = 0;
-					context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
-					context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
-					context_desc.cpu_desc.xc_cpu = xc_cpu;
-	
-					if( xc_hypapp_handlehypercall(context_desc, hypercall_id, hypercall_param) != APP_SUCCESS){
+					if( xc_hypapp_handlehypercall(xc_cpu, hypercall_id, hypercall_param) != APP_SUCCESS){
 						printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", xc_cpu->cpuid, r->eax);
 						HALT();
 					}
@@ -473,15 +455,9 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 		break;  
 
 		case VMX_VMEXIT_INIT:{
-			context_desc_t context_desc;
-	
-			context_desc.partition_desc.partitionid = 0;
-			context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
-			context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
-			context_desc.cpu_desc.xc_cpu = xc_cpu;
 
 			printf("\n***** VMEXIT_INIT xc_hypapp_handleshutdown\n");
-			xc_hypapp_handleshutdown(context_desc);      
+			xc_hypapp_handleshutdown(xc_cpu);      
 			printf("\nCPU(0x%02x): Fatal, xc_hypapp_handleshutdown returned. Halting!", xc_cpu->cpuid);
 			HALT();
 		}
@@ -540,16 +516,10 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 			u32 type = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION) & VECTORING_INFO_TYPE_MASK;
 			u32 reason = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION) >> 30;
 			u16 tss_selector = (u16)xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION);
-			context_desc_t context_desc;
-	
-			context_desc.partition_desc.partitionid = 0;
-			context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
-			context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
-			context_desc.cpu_desc.xc_cpu = xc_cpu;
 			
 			if(reason == TASK_SWITCH_GATE && type == INTR_TYPE_NMI){
 				printf("\nCPU(0x%02x): NMI received (MP guest shutdown?)", xc_cpu->cpuid);
-				xc_hypapp_handleshutdown(context_desc);      
+				xc_hypapp_handleshutdown(xc_cpu);      
 				printf("\nCPU(0x%02x): warning, xc_hypapp_handleshutdown returned!", xc_cpu->cpuid);
 				printf("\nCPU(0x%02x): HALTING!", xc_cpu->cpuid);
 				HALT();
