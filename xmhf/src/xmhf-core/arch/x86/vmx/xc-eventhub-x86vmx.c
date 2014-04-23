@@ -395,6 +395,16 @@ static void _vmx_handle_intercept_xsetbv(xc_cpu_t *xc_cpu, struct regs *r){
 u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct regs *r){
 	static u32 _xc_partition_eventhub_lock = 1; 
 
+#ifndef __XMHF_VERIFICATION__
+	//handle cpu quiescing
+	if(xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON) == VMX_VMEXIT_EXCEPTION){
+		if ( (xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION) & INTR_INFO_VECTOR_MASK) == 0x02 ) {
+			xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu, r);
+			return 1;
+		}
+	}
+#endif //__XMHF_VERIFICATION__
+
 	//serialize event handling
     spin_lock(&_xc_partition_eventhub_lock);
 
@@ -480,29 +490,6 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 		//--------------------------------------------------------------
 		//xmhf-core only intercepts
 		//--------------------------------------------------------------
-
- 		case VMX_VMEXIT_EXCEPTION:{
-			switch( ( xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION) & INTR_INFO_VECTOR_MASK) ){
-	
-				case 0x02:	//NMI
-					#ifndef __XMHF_VERIFICATION__
-					//we currently discharge quiescing via manual inspection
-					xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu, r);
-					#endif // __XMHF_VERIFICATION__
-					break;
-				
-				default:
-					printf("\nVMEXIT-EXCEPTION:");
-					printf("\ncontrol_exception_bitmap=0x%08lx",
-						xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EXCEPTION_BITMAP));
-					printf("\ninterruption information=0x%08lx", 
-						xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION));
-					printf("\nerrorcode=0x%08lx", 
-						xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_ERROR_CODE));
-					HALT();
-			}
-		}
-		break;
 
  		case VMX_VMEXIT_CRX_ACCESS:{
 			u32 tofrom, gpr, crx; 
