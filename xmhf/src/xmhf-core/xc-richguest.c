@@ -102,8 +102,8 @@ static void xmhf_smpguest_endquiesce(VCPU *vcpu){
 
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping
-u8 * xmhf_smpguest_walk_pagetables(context_desc_t context_desc, u32 vaddr){
-	u8 *retvalue;
-	retvalue = xmhf_smpguest_arch_walk_pagetables(context_desc, vaddr);
-	return retvalue;
-}
+//u8 * xmhf_smpguest_walk_pagetables(context_desc_t context_desc, u32 vaddr){
+//	u8 *retvalue;
+//	retvalue = xmhf_smpguest_arch_walk_pagetables(context_desc, vaddr);
+//	return retvalue;
+//}

@@ -52,3 +52,110 @@
 #include <xc-x86vmx.h>
 
 
+//walk level 2 page tables; returns pointer to corresponding guest physical address
+//note: returns 0xFFFFFFFF if there is no mapping
+u64 xc_api_hpt_arch_lvl2pagewalk(context_desc_t context_desc, u64 gva){
+  
+  //if paging is disabled then physical address is the 
+  //supplied virtual address itself
+	if( !((xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PE) && (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PG)) )
+		return (u8 *)gpa2hva(gva);
+
+  if((u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR4) & CR4_PAE ){
+    //PAE paging used by guest
+    u32 kcr3 = (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR3);
+    u32 pdpt_index, pd_index, pt_index, offset;
+    u64 paddr;
+    pdpt_t kpdpt;
+    pdt_t kpd; 
+    pt_t kpt; 
+    u32 pdpt_entry, pd_entry, pt_entry;
+    u32 tmp;
+
+    // get fields from virtual addr 
+    pdpt_index = pae_get_pdpt_index(gva);
+    pd_index = pae_get_pdt_index(gva);
+    pt_index = pae_get_pt_index(gva);
+    offset = pae_get_offset_4K_page(gva);  
+
+    //grab pdpt entry
+    tmp = pae_get_addr_from_32bit_cr3(kcr3);
+    kpdpt = (pdpt_t)((u32)tmp); 
+    pdpt_entry = kpdpt[pdpt_index];
+  
+    //grab pd entry
+    if( !(pae_get_flags_from_pdpe(pdpt_entry) & _PAGE_PRESENT) )
+		return (u8 *)0xFFFFFFFFUL;
+    tmp = pae_get_addr_from_pdpe(pdpt_entry);
+    kpd = (pdt_t)((u32)tmp); 
+    pd_entry = kpd[pd_index];
+
+    if( !(pae_get_flags_from_pde(pd_entry) & _PAGE_PRESENT) )
+		return (u8 *)0xFFFFFFFFUL;
+
+
+    if ( (pd_entry & _PAGE_PSE) == 0 ) {
+      // grab pt entry
+      tmp = (u32)pae_get_addr_from_pde(pd_entry);
+      kpt = (pt_t)((u32)tmp);  
+      pt_entry  = kpt[pt_index];
+
+	  if( !(pae_get_flags_from_pte(pt_entry) & _PAGE_PRESENT) )
+		return (u8 *)0xFFFFFFFFUL;
+      
+      // find physical page base addr from page table entry 
+      paddr = (u64)pae_get_addr_from_pte(pt_entry) + offset;
+    }
+    else { // 2MB page 
+      offset = pae_get_offset_big(gva);
+      paddr = (u64)pae_get_addr_from_pde_big(pd_entry);
+      paddr += (u64)offset;
+    }
+  
+    return (u8 *)gpa2hva(paddr);
+    
+  }else{
+    //non-PAE 2 level paging used by guest
+    u32 kcr3 = (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR3);
+    u32 pd_index, pt_index, offset;
+    u64 paddr;
+    npdt_t kpd; 
+    npt_t kpt; 
+    u32 pd_entry, pt_entry;
+    u32 tmp;
+
+    // get fields from virtual addr 
+    pd_index = npae_get_pdt_index(gva);
+    pt_index = npae_get_pt_index(gva);
+    offset = npae_get_offset_4K_page(gva);  
+  
+    // grab pd entry
+    tmp = npae_get_addr_from_32bit_cr3(kcr3);
+    kpd = (npdt_t)((u32)tmp); 
+    pd_entry = kpd[pd_index];
+  
+  
+    if( !(npae_get_flags_from_pde(pd_entry) & _PAGE_PRESENT) )
+		return (u8 *)0xFFFFFFFFUL;
+
+    if ( (pd_entry & _PAGE_PSE) == 0 ) {
+      // grab pt entry
+      tmp = (u32)npae_get_addr_from_pde(pd_entry);
+      kpt = (npt_t)((u32)tmp);  
+      pt_entry  = kpt[pt_index];
+      
+      if( !(npae_get_flags_from_pte(pt_entry) & _PAGE_PRESENT) )
+		return (u8 *)0xFFFFFFFFUL;
+
+      // find physical page base addr from page table entry 
+      paddr = (u64)npae_get_addr_from_pte(pt_entry) + offset;
+    }
+    else { // 4MB page 
+      offset = npae_get_offset_big(gva);
+      paddr = (u64)npae_get_addr_from_pde_big(pd_entry);
+      paddr += (u64)offset;
+    }
+
+    return (u8 *)gpa2hva(paddr);
+  }
+}

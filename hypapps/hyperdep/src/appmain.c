@@ -118,7 +118,7 @@ u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u
 		break;
 
 		case HYPERDEP_ACTIVATEDEP:{
-			gpa=(u32)xmhfcore_smpguest_walk_pagetables(context_desc, gva);
+			gpa=(u32)xc_api_hpt_lvl2pagewalk(context_desc, gva);
 			if(gpa == 0xFFFFFFFFUL){
 				printf("\nCPU(%02x): WARNING: unable to get translation for gva=%x, just returning", context_desc.cpu_desc.cpuid, gva);
 				return status;
@@ -129,7 +129,7 @@ u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u
 		break;
 		
 		case HYPERDEP_DEACTIVATEDEP:{
-			gpa=(u32)xmhfcore_smpguest_walk_pagetables(context_desc, gva);
+			gpa=(u32)xc_api_hpt_lvl2pagewalk(context_desc, gva);
 			if(gpa == 0xFFFFFFFFUL){
 				printf("\nCPU(%02x): WARNING: unable to get translation for gva=%x, just returning", context_desc.cpu_desc.cpuid, gva);
 				return status;
