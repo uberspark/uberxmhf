@@ -74,7 +74,9 @@ void xc_api_hpt_setentry(context_desc_t context_desc, u64 gpa, u64 entry);
 u64 xc_api_hpt_getentry(context_desc_t context_desc, u64 gpa);
 void xc_api_hpt_flushcaches(context_desc_t context_desc);
 void xc_api_hpt_flushcaches_smp(context_desc_t context_desc);
+
 u64 xc_api_hpt_lvl2pagewalk(context_desc_t context_desc, u64 gva);
+u64 xc_api_hpt_arch_lvl2pagewalk(context_desc_t context_desc, u64 gva);
 
 
 #endif	//__ASSEMBLY__

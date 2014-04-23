@@ -142,8 +142,12 @@ void xc_api_hpt_flushcaches_smp(context_desc_t context_desc){
 }
 
 u64 xc_api_hpt_lvl2pagewalk(context_desc_t context_desc, u64 gva){
+	u64 result;
+	paramhypapp->context_desc = context_desc;
+	paramhypapp->param1 = gva;
 	libxmhfcore_hypapptocore(XC_API_HPT_LVL2PAGEWALK);
-	return 0;
+	result = (u64)paramcore->result;
+	return result;
 }
 
 
