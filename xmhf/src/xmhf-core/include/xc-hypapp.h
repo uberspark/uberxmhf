@@ -75,11 +75,11 @@ extern void xmhf_hypapp_handleshutdown(context_desc_t context_desc);
 
 //XMHF hypapp callbacks referenced by the XMHF core
 //note: these are the interfaces core uses to invoke hypapp callbacks
-extern u32 xmhfhypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb);
-extern u32 xmhfhypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param);	
-extern u32 xmhfhypapp_handleintercept_portaccess(context_desc_t context_desc, u32 portnum, u32 access_type, u32 access_size); 
-extern u32 xmhfhypapp_handleintercept_hwpgtblviolation(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code);
-extern void xmhfhypapp_handleshutdown(context_desc_t context_desc);
+extern u32 xc_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb);
+extern u32 xc_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param);	
+extern u32 xc_hypapp_handleintercept_portaccess(context_desc_t context_desc, u32 portnum, u32 access_type, u32 access_size); 
+extern u32 xc_hypapp_handleintercept_hwpgtblviolation(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code);
+extern void xc_hypapp_handleshutdown(context_desc_t context_desc);
 
 
 #endif	//__ASSEMBLY__

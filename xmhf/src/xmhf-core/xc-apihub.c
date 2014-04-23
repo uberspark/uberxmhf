@@ -123,7 +123,7 @@ void xmhf_apihub_fromhypapp(u32 callnum){
 
 
 // hypapp main (initialization) function
-u32 xmhfhypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb){
+u32 xc_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb){
 	u32 result;
 
 	paramcore->context_desc = context_desc;
@@ -136,7 +136,7 @@ u32 xmhfhypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hy
 
 //hypapp hypercall handler
 //returns APP_SUCCESS if we handled the hypercall else APP_ERROR
-u32 xmhfhypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param){
+u32 xc_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param){
 	u32 result;
 	
 	paramcore->context_desc = context_desc;
@@ -152,7 +152,7 @@ u32 xmhfhypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u6
 
 //handles XMHF shutdown callback
 //note: should not return
-void xmhfhypapp_handleshutdown(context_desc_t context_desc){
+void xc_hypapp_handleshutdown(context_desc_t context_desc){
 	u32 result;
 	
 	paramcore->context_desc = context_desc;
@@ -165,7 +165,7 @@ void xmhfhypapp_handleshutdown(context_desc_t context_desc){
 
 //handles h/w pagetable violations
 //for now this always returns APP_SUCCESS
-u32 xmhfhypapp_handleintercept_hwpgtblviolation(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code){
+u32 xc_hypapp_handleintercept_hwpgtblviolation(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code){
 	u32 result;
 	
 	paramcore->context_desc = context_desc;
@@ -182,7 +182,7 @@ u32 xmhfhypapp_handleintercept_hwpgtblviolation(context_desc_t context_desc, u64
 
 //handles i/o port intercepts
 //returns either APP_IOINTERCEPT_SKIP or APP_IOINTERCEPT_CHAIN
-u32 xmhfhypapp_handleintercept_portaccess(context_desc_t context_desc, u32 portnum, u32 access_type, u32 access_size){
+u32 xc_hypapp_handleintercept_portaccess(context_desc_t context_desc, u32 portnum, u32 access_type, u32 access_size){
 
 	u32 result;
 	
