@@ -83,14 +83,14 @@ u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t h
 // RUNTIME
 
 static void hd_activatedep(context_desc_t context_desc, u32 gpa){
-	xmhfcore_setmemprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE) );	   
+	xc_api_hpt_setprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE) );	   
 	xmhfcore_memprot_flushmappings(context_desc);
 	printf("\nCPU(%02x): %s removed EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.cpuid, __FUNCTION__, gpa);
 }
 
 //de-activate DEP protection
 static void hd_deactivatedep(context_desc_t context_desc, u32 gpa){
-	xmhfcore_setmemprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE) );	   
+	xc_api_hpt_setprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE) );	   
 	xmhfcore_memprot_flushmappings(context_desc);
 	printf("\nCPU(%02x): %s added EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.cpuid, __FUNCTION__, gpa);
 }

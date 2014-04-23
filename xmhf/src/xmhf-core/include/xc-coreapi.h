@@ -69,6 +69,8 @@
 
 //HPT related core APIs
 void xc_api_hpt_setprot(context_desc_t context_desc, u64 gpa, u32 prottype);
+void xc_api_hpt_arch_setprot(context_desc_t context_desc, u64 gpa, u32 prottype);
+
 u32 xc_api_hpt_getprot(context_desc_t context_desc, u64 gpa);
 void xc_api_hpt_setentry(context_desc_t context_desc, u64 gpa, u64 entry);
 u64 xc_api_hpt_getentry(context_desc_t context_desc, u64 gpa);

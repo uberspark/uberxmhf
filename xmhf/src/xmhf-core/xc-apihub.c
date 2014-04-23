@@ -117,10 +117,10 @@ void xmhf_apihub_fromhypapp(u32 callnum){
 					break;
 				}
 
-			case XMHF_APIHUB_COREAPI_SETMEMPROT:{ //void xmhf_memprot_setprot(...)
-				xmhf_memprot_setprot(paramhypapp->context_desc, (u64)paramhypapp->param1, (u32)paramhypapp->param2);
-				break;
-			}
+			//case XMHF_APIHUB_COREAPI_SETMEMPROT:{ //void xmhf_memprot_setprot(...)
+			//	xmhf_memprot_setprot(paramhypapp->context_desc, (u64)paramhypapp->param1, (u32)paramhypapp->param2);
+			//	break;
+			//}
 			
 			case XMHF_APIHUB_COREAPI_MEMPROT_FLUSHMAPPINGS:{ //void xmhfcore_memprot_flushmappings(...);
 				xmhf_memprot_flushmappings( paramhypapp->context_desc );

@@ -74,14 +74,14 @@ void xmhfcore_reboot(context_desc_t context_desc){
 }
 
 //xmhf_memprot_setprot -- setmemprot
-void xmhfcore_setmemprot(context_desc_t context_desc, u64 gpa, u32 prottype){
-
-	paramhypapp->context_desc = context_desc;
-	paramhypapp->param1 = (u64)gpa;
-	paramhypapp->param2 = (u32)prottype;
-	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_SETMEMPROT);
-	return;
-}
+//void xmhfcore_setmemprot(context_desc_t context_desc, u64 gpa, u32 prottype){
+//
+//	paramhypapp->context_desc = context_desc;
+//	paramhypapp->param1 = (u64)gpa;
+//	paramhypapp->param2 = (u32)prottype;
+//	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_SETMEMPROT);
+//	return;
+//}
 
 //void xmhfcore_memprot_flushmappings(VCPU *vcpu);
 void xmhfcore_memprot_flushmappings(context_desc_t context_desc){
@@ -91,14 +91,14 @@ void xmhfcore_memprot_flushmappings(context_desc_t context_desc){
 }	
 
 //u8 * xmhf_smpguest_walk_pagetables(VCPU *vcpu, u32 vaddr);
-u8 * xmhfcore_smpguest_walk_pagetables(context_desc_t context_desc, u32 vaddr){
-	u8 *result;
-	paramhypapp->context_desc = context_desc;
-	paramhypapp->param1 = (u32)vaddr;
-	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_SMPGUEST_WALK_PAGETABLES);
-	result = (u8 *)(u32)paramcore->result;
-	return result;
-}
+//u8 * xmhfcore_smpguest_walk_pagetables(context_desc_t context_desc, u32 vaddr){
+//	u8 *result;
+//	paramhypapp->context_desc = context_desc;
+//	paramhypapp->param1 = (u32)vaddr;
+//	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_SMPGUEST_WALK_PAGETABLES);
+//	result = (u8 *)(u32)paramcore->result;
+//	return result;
+//}
 
 
 void xmhfcore_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u64 entry){
@@ -113,7 +113,11 @@ void xmhfcore_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u
 
 //HPT related core APIs
 void xc_api_hpt_setprot(context_desc_t context_desc, u64 gpa, u32 prottype){
+	paramhypapp->context_desc = context_desc;
+	paramhypapp->param1 = (u64)gpa;
+	paramhypapp->param2 = (u32)prottype;
 	libxmhfcore_hypapptocore(XC_API_HPT_SETPROT);
+	return;
 }
 
 u32 xc_api_hpt_getprot(context_desc_t context_desc, u64 gpa){
