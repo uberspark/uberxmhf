@@ -136,7 +136,7 @@ typedef struct {
 	u64 result;
 	context_desc_t context_desc;
 	hypapp_env_block_t hypappenvb;
-	xc_hypapp_arch_param_t hypapp_cb_arch_param;
+	xc_hypapp_arch_param_t xc_hypapp_arch_param;
 } __attribute__((packed)) XMHF_HYPAPP_PARAMETERBLOCK;
 
 

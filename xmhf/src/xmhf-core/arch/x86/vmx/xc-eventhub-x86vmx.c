@@ -167,7 +167,7 @@ static void _vmx_handle_intercept_eptviolation(xc_cpu_t *xc_cpu, struct regs *r 
 //---intercept handler (I/O port access)----------------------------------------
 static void _vmx_handle_intercept_ioportaccess(xc_cpu_t *xc_cpu, struct regs *r __attribute__((unused))){
     u32 access_size, access_type, portnum, stringio;
-	u32 app_ret_status = APP_IOINTERCEPT_CHAIN;
+	u32 app_ret_status = APP_TRAP_CHAIN;
 	
 	access_size = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION) & 0x00000007UL;
 	access_type = ( xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION) & 0x00000008UL) >> 3;
@@ -176,9 +176,16 @@ static void _vmx_handle_intercept_ioportaccess(xc_cpu_t *xc_cpu, struct regs *r 
 	
 	HALT_ON_ERRORCOND(!stringio);	//we dont handle string IO intercepts
 
-	app_ret_status=xc_hypapp_handleintercept_portaccess(xc_cpu, portnum, access_type, access_size);
+	{
+		xc_hypapp_arch_param_t xc_hypapp_arch_param;
+		xc_hypapp_arch_param.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CBTRAP_IO;
+		xc_hypapp_arch_param.params[0] = portnum;
+		xc_hypapp_arch_param.params[1] = access_type;
+		xc_hypapp_arch_param.params[2] = access_size;
+		app_ret_status=xc_hypapp_handleintercept_trap(xc_cpu, xc_hypapp_arch_param);
+	}
 
-	if(app_ret_status == APP_IOINTERCEPT_CHAIN){
+	if(app_ret_status == APP_TRAP_CHAIN){
 		if(access_type == IO_TYPE_OUT){
 			if( access_size== IO_SIZE_BYTE)
 					outb((u8)r->eax, portnum);

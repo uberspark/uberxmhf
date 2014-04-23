@@ -58,8 +58,8 @@
 #define APP_ERROR				(0x0)
 
 //emhf app constant definitions
-#define APP_IOINTERCEPT_CHAIN   0xA0
-#define APP_IOINTERCEPT_SKIP    0xA1
+#define APP_TRAP_CHAIN   0xA0
+#define APP_TRAP_SKIP    0xA1
 #define APP_INIT_SUCCESS        0x0
 #define APP_INIT_FAIL           0xFF
 
@@ -68,7 +68,7 @@
 //TODO: need to go into libxmhfcore dev headers
 extern u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb);
 extern u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param);	
-extern u32 xmhf_hypapp_handleintercept_portaccess(context_desc_t context_desc, u32 portnum, u32 access_type, u32 access_size);  
+extern u32 xmhf_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch_param_t xc_hypapp_arch_param);  
 extern u32 xmhf_hypapp_handleintercept_hptfault(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code);
 extern void xmhf_hypapp_handleshutdown(context_desc_t context_desc);
 
@@ -77,7 +77,7 @@ extern void xmhf_hypapp_handleshutdown(context_desc_t context_desc);
 //note: these are the interfaces core uses to invoke hypapp callbacks
 extern u32 xc_hypapp_initialization(xc_cpu_t *xc_cpu, hypapp_env_block_t hypappenvb);
 extern u32 xc_hypapp_handlehypercall(xc_cpu_t *xc_cpu, u64 hypercall_id, u64 hypercall_param);	
-extern u32 xc_hypapp_handleintercept_portaccess(xc_cpu_t *xc_cpu, u32 portnum, u32 access_type, u32 access_size); 
+extern u32 xc_hypapp_handleintercept_trap(xc_cpu_t *xc_cpu, xc_hypapp_arch_param_t xc_hypapp_arch_param); 
 extern u32 xc_hypapp_handleintercept_hptfault(xc_cpu_t *xc_cpu, u64 gpa, u64 gva, u64 error_code);
 extern void xc_hypapp_handleshutdown(xc_cpu_t *xc_cpu);
 

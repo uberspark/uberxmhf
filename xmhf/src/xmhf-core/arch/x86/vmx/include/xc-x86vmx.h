@@ -78,6 +78,7 @@ typedef struct {
   u8 vmx_msrbitmaps_region[PAGE_SIZE_4K];		//MSR bitmap area
 } __attribute__ ((packed)) xc_partition_trapmaskdata_x86vmx_t;
 
+#define XC_HYPAPP_ARCH_PARAM_OPERATION_CBTRAP_IO		(0x1000)
 
 //------------------------------------------------------
 // functions
