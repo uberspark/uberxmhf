@@ -160,7 +160,7 @@ static void _vmx_handle_intercept_eptviolation(xc_cpu_t *xc_cpu, struct regs *r 
 	gpa = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_GUEST_PADDR_FULL);
 	gva = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_GUEST_LINEAR_ADDRESS);
 
-	xc_hypapp_handleintercept_hwpgtblviolation(xc_cpu, gpa, gva,	(errorcode & 7));
+	xc_hypapp_handleintercept_hptfault(xc_cpu, gpa, gva,	(errorcode & 7));
 }
 
 

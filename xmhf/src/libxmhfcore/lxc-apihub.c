@@ -85,10 +85,10 @@ void libxmhfcore_hypappfromcore(u32 callnum){
 					break;
 				}
 
-			case XMHF_APIHUB_HYPAPPCB_HWPGTBLVIOLATION:{
+			case XMHF_APIHUB_HYPAPPCB_HPTFAULT:{
 					//paramhypapp->result=xmhf_app_handleintercept_hwpgtblviolation( (VCPU *)(u32)paramcore->param1, (struct regs *)(u32)paramcore->param2, 
 					//			paramcore->param3, paramcore->param4, paramcore->param5);
-					paramhypapp->result=xmhf_hypapp_handleintercept_hwpgtblviolation( paramcore->context_desc, paramcore->param1, paramcore->param2, paramcore->param3);
+					paramhypapp->result=xmhf_hypapp_handleintercept_hptfault( paramcore->context_desc, paramcore->param1, paramcore->param2, paramcore->param3);
 
 					break;
 				}
