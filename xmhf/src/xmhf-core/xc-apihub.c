@@ -68,6 +68,42 @@ void xmhf_apihub_fromhypapp(u32 callnum){
 	
 	//if paramhypapp->param1 is of type VCPU * then it basically points to paramcore->vcpu, the original vcpu data structure is in paramcore->param1
 	switch(callnum){
+			case XC_API_HPT_SETPROT:{
+				xc_api_hpt_setprot(paramhypapp->context_desc, (u64)paramhypapp->param1, (u32)paramhypapp->param2);
+				break;
+			}
+
+			case XC_API_HPT_GETPROT:{
+				paramcore->result = xc_api_hpt_getprot(paramhypapp->context_desc, (u64)paramhypapp->param1);
+				break;
+			}
+
+			case XC_API_HPT_SETENTRY:{
+				xc_api_hpt_setentry(paramhypapp->context_desc, (u64)paramhypapp->param1, (u64)paramhypapp->param2);
+				break;
+			}
+
+			case XC_API_HPT_GETENTRY:{
+				paramcore->result = xc_api_hpt_getentry(paramhypapp->context_desc, (u64)paramhypapp->param1);
+				break;
+			}
+
+			case XC_API_HPT_FLUSHCACHES:{
+				xc_api_hpt_flushcaches(paramhypapp->context_desc);
+				break;
+			}
+
+			case XC_API_HPT_FLUSHCACHES_SMP:{
+				xc_api_hpt_flushcaches_smp(paramhypapp->context_desc);
+				break;
+			}
+
+			case XC_API_HPT_LVL2PAGEWALK:{ 
+				paramcore->result = xc_api_hpt_lvl2pagewalk(paramhypapp->context_desc, (u64)paramhypapp->param1);
+				break;
+			}
+				
+	
 			case XMHF_APIHUB_COREAPI_OUTPUTDEBUGSTRING:{	//void xmhfc_puts(...)
 					extern void xmhfc_puts(const char *s);	//TODO: move this into an appropriate header
 					xmhfc_puts( __xmhfattribute__(hypapp-ro) (char *)(u32)paramhypapp->param1 );
@@ -223,4 +259,46 @@ u32 xc_hypapp_handleintercept_trap(xc_cpu_t *xc_cpu, xc_hypapp_arch_param_t xc_h
 	return result;	
 
 }
+
+
+
+//-------------------------------------------------------------------------------
+// core APIs
+//-------------------------------------------------------------------------------
+
+
+//HPT related core APIs
+void xc_api_hpt_setprot(context_desc_t context_desc, u64 gpa, u32 prottype){
+	
+}
+
+u32 xc_api_hpt_getprot(context_desc_t context_desc, u64 gpa){
+	
+}
+
+void xc_api_hpt_setentry(context_desc_t context_desc, u64 gpa, u64 entry){
+	
+	
+}
+
+u64 xc_api_hpt_getentry(context_desc_t context_desc, u64 gpa){
+	
+	
+}
+
+void xc_api_hpt_flushcaches(context_desc_t context_desc){
+	
+}
+
+void xc_api_hpt_flushcaches_smp(context_desc_t context_desc){
+	
+	
+}
+
+u64 xc_api_hpt_lvl2pagewalk(context_desc_t context_desc, u64 gva){
+	
+	
+	
+}
+
 

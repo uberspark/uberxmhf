@@ -111,3 +111,39 @@ void xmhfcore_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u
 }
 
 
+//HPT related core APIs
+void xc_api_hpt_setprot(context_desc_t context_desc, u64 gpa, u32 prottype){
+	libxmhfcore_hypapptocore(XC_API_HPT_SETPROT);
+}
+
+u32 xc_api_hpt_getprot(context_desc_t context_desc, u64 gpa){
+	libxmhfcore_hypapptocore(XC_API_HPT_GETPROT);
+	return 0;
+}
+
+void xc_api_hpt_setentry(context_desc_t context_desc, u64 gpa, u64 entry){
+	libxmhfcore_hypapptocore(XC_API_HPT_SETENTRY);
+	
+}
+
+u64 xc_api_hpt_getentry(context_desc_t context_desc, u64 gpa){
+	libxmhfcore_hypapptocore(XC_API_HPT_GETENTRY);
+	return 0;
+}
+
+void xc_api_hpt_flushcaches(context_desc_t context_desc){
+	libxmhfcore_hypapptocore(XC_API_HPT_FLUSHCACHES);
+
+}
+
+void xc_api_hpt_flushcaches_smp(context_desc_t context_desc){
+	libxmhfcore_hypapptocore(XC_API_HPT_FLUSHCACHES_SMP);
+	
+}
+
+u64 xc_api_hpt_lvl2pagewalk(context_desc_t context_desc, u64 gva){
+	libxmhfcore_hypapptocore(XC_API_HPT_LVL2PAGEWALK);
+	return 0;
+}
+
+

@@ -64,6 +64,14 @@
 #define XMHF_APIHUB_HYPAPPCB_TRAP					(4)
 
 //core APIs
+#define	XC_API_HPT_SETPROT							(0xA01)
+#define	XC_API_HPT_GETPROT							(0xA02)
+#define XC_API_HPT_SETENTRY							(0xA03)
+#define XC_API_HPT_GETENTRY							(0xA04)
+#define XC_API_HPT_FLUSHCACHES						(0xA05)
+#define XC_API_HPT_FLUSHCACHES_SMP					(0xA06)
+#define XC_API_HPT_LVL2PAGEWALK						(0xA07)
+
 #define	XMHF_APIHUB_COREAPI_OUTPUTDEBUGSTRING			(0)
 #define XMHF_APIHUB_COREAPI_REBOOT						(1)
 #define XMHF_APIHUB_COREAPI_SETMEMPROT					(2)
@@ -74,6 +82,16 @@
 
 
 #ifndef __ASSEMBLY__
+
+
+//HPT related core APIs
+void xc_api_hpt_setprot(context_desc_t context_desc, u64 gpa, u32 prottype);
+u32 xc_api_hpt_getprot(context_desc_t context_desc, u64 gpa);
+void xc_api_hpt_setentry(context_desc_t context_desc, u64 gpa, u64 entry);
+u64 xc_api_hpt_getentry(context_desc_t context_desc, u64 gpa);
+void xc_api_hpt_flushcaches(context_desc_t context_desc);
+void xc_api_hpt_flushcaches_smp(context_desc_t context_desc);
+u64 xc_api_hpt_lvl2pagewalk(context_desc_t context_desc, u64 gva);
 
 void xmhfcore_outputdebugstring(const char *s);
 void xmhfcore_reboot(context_desc_t context_desc);
