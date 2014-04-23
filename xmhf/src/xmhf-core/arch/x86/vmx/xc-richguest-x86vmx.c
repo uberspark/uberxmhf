@@ -256,6 +256,9 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu, struc
 			while(!g_vmx_quiesce_resume_signal);
 			//printf("\nCPU(0x%02x): EOQ received, resuming...", xc_cpu->cpuid);
 
+			//flush EPT TLB
+			xmhf_memprot_arch_x86vmx_flushmappings();
+
 			spin_lock(&g_vmx_lock_quiesce_resume_counter);
 			g_vmx_quiesce_resume_counter++;
 			spin_unlock(&g_vmx_lock_quiesce_resume_counter);

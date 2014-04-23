@@ -177,7 +177,11 @@ u32 xmhf_memprot_arch_getprot(context_desc_t context_desc, xc_partition_t *xc_pa
 
 //flush hardware page table mappings (TLB) 
 void xmhf_memprot_arch_flushmappings(context_desc_t context_desc){
+		xc_cpu_t *xc_cpu = (xc_cpu_t *)context_desc.cpu_desc.xc_cpu;
+		
+		xmhf_smpguest_arch_x86vmx_quiesce(xc_cpu);
 		xmhf_memprot_arch_x86vmx_flushmappings();
+		xmhf_smpguest_arch_x86vmx_endquiesce(xc_cpu);
 }
 
 
