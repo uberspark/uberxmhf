@@ -119,19 +119,13 @@ void xmhf_runtime_main(xc_cpu_t *xc_cpu){
     spin_lock(&_xc_startup_hypappmain_counter_lock);
 	{
 		hypapp_env_block_t hypappenvb;
-		context_desc_t context_desc;
 
 		hypappenvb.runtimephysmembase = (u32)xcbootinfo->physmem_base;  
 		hypappenvb.runtimesize = (u32)xcbootinfo->size;
 	
-		context_desc.partition_desc.partitionid = xc_partition_richguest->partitionid;
-		context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
-		context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
-		context_desc.cpu_desc.xc_cpu = xc_cpu;
-
 		//call app main
 		printf("\n%s: proceeding to call xmhfhypapp_main on BSP", __FUNCTION__);
-		xc_hypapp_initialization(context_desc, hypappenvb);
+		xc_hypapp_initialization(xc_cpu, hypappenvb);
 		_xc_startup_hypappmain_counter++;
 		printf("\n%s: came back into core", __FUNCTION__);
 
