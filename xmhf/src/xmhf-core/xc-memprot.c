@@ -106,7 +106,7 @@ u64 * xmhf_memprot_get_default_root_pagemap_address(context_desc_t context_desc)
 
 
 
-//set singular HPT
+/*//set singular HPT
 void xmhf_memprot_setsingularhpt(u64 hpt){
 		xmhf_memprot_arch_setsingularhpt(hpt);
 }
@@ -114,7 +114,7 @@ void xmhf_memprot_setsingularhpt(u64 hpt){
 //get HPT root pointer
 u64 xmhf_memprot_getHPTroot(context_desc_t context_desc){
 	return xmhf_memprot_arch_getHPTroot(context_desc);
-}
+}*/
 
 //set HPT entry
 //void xmhf_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u64 entry){
