@@ -64,6 +64,11 @@
 #define XC_API_HPT_FLUSHCACHES_SMP					(0xA06)
 #define XC_API_HPT_LVL2PAGEWALK						(0xA07)
 
+
+#define	XC_API_TRAPMASK_SET							(0xB01)
+#define XC_API_TRAPMASK_CLEAR						(0xB02)
+
+
 #ifndef __ASSEMBLY__
 
 
@@ -86,6 +91,14 @@ void xc_api_hpt_arch_flushcaches(context_desc_t context_desc, bool dosmpflush);
 
 u64 xc_api_hpt_lvl2pagewalk(context_desc_t context_desc, u64 gva);
 u64 xc_api_hpt_arch_lvl2pagewalk(context_desc_t context_desc, u64 gva);
+
+
+//trapmask related core APIs
+void xc_api_trapmask_set(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams);
+void xc_api_trapmask_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams);
+
+void xc_api_trapmask_clear(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams);
+void xc_api_trapmask_arch_clear(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams);
 
 
 #endif	//__ASSEMBLY__

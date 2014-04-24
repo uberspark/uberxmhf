@@ -374,3 +374,70 @@ u64 xc_api_hpt_arch_lvl2pagewalk(context_desc_t context_desc, u64 gva){
     return (u8 *)gpa2hva(paddr);
   }
 }
+
+
+//---------------------------------------------------------------------------------
+// Trapmask related APIs
+
+static void _trapmask_operation_trap_io_set(context_desc_t context_desc, u16 port, u8 size){
+	xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx = (xc_partition_trapmaskdata_x86vmx_t *)context_desc.cpu_desc.xc_cpu->parentpartition->trapmaskdata;
+	u8 *bit_vector = (u8 *)xc_partition_trapmaskdata_x86vmx->vmx_iobitmap_region;
+	u32 byte_offset, bit_offset;
+	u32 i;
+
+	if(size > sizeof(u32))
+		size=sizeof(u32);
+
+	for(i=0; i < size; i++){
+		byte_offset = (port+i) / 8;
+		bit_offset = (port+i) % 8;
+		bit_vector[byte_offset] |= (1 << bit_offset);	
+	}
+}
+
+static void _trapmask_operation_trap_io_clear(context_desc_t context_desc, u16 port, u8 size){
+	xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx = (xc_partition_trapmaskdata_x86vmx_t *)context_desc.cpu_desc.xc_cpu->parentpartition->trapmaskdata;
+	u8 *bit_vector = (u8 *)xc_partition_trapmaskdata_x86vmx->vmx_iobitmap_region;
+	u32 byte_offset, bit_offset;
+	u32 i;
+
+	if(size > sizeof(u32))
+		size=sizeof(u32);
+
+	for(i=0; i < size; i++){
+		byte_offset = (port+i) / 8;
+		bit_offset = (port+i) % 8;
+		bit_vector[byte_offset] &= ~((1 << bit_offset));	
+	}
+}
+
+void xc_api_trapmask_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams){
+	switch(trapmaskparams.operation){
+		case XC_HYPAPP_ARCH_PARAM_OPERATION_TRAP_IO:{
+				//params[0]=16-bit port number, params[1]=size in bytes - 1,2 or 4
+				_trapmask_operation_trap_io_set(context_desc, (u16)trapmaskparams.params[0], (u8)trapmaskparams.params[1]);
+				break;
+		}	
+	
+		default:
+			break;
+	}
+
+}
+
+void xc_api_trapmask_arch_clear(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams){
+	switch(trapmaskparams.operation){
+		case XC_HYPAPP_ARCH_PARAM_OPERATION_TRAP_IO:{
+				//params[0]=16-bit port number, params[1]=size in bytes - 1,2 or 4
+				_trapmask_operation_trap_io_clear(context_desc, (u16)trapmaskparams.params[0], (u8)trapmaskparams.params[1]);
+				break;
+		}	
+	
+		default:
+			break;
+	}
+
+}
+
+
+

@@ -103,6 +103,16 @@ void xmhf_apihub_fromhypapp(u32 callnum){
 				break;
 			}
 				
+				
+			case XC_API_TRAPMASK_SET:{
+				xc_api_trapmask_set(paramhypapp->context_desc, paramhypapp->xc_hypapp_arch_param);	
+				break;
+			}
+
+			case XC_API_TRAPMASK_CLEAR:{
+				xc_api_trapmask_clear(paramhypapp->context_desc, paramhypapp->xc_hypapp_arch_param);	
+				break;
+			}
 	
 			case XMHF_APIHUB_COREAPI_OUTPUTDEBUGSTRING:{	//void xmhfc_puts(...)
 					extern void xmhfc_puts(const char *s);	//TODO: move this into an appropriate header
