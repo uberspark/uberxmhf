@@ -132,10 +132,10 @@ void xmhf_apihub_fromhypapp(u32 callnum){
 			//	break;
 			//}
 			
-			case XMHF_APIHUB_COREAPI_HPT_SETENTRY:{ //void xmhf_memprot_hpt_setentry(...)
-				xmhf_memprot_hpt_setentry(paramhypapp->context_desc, paramhypapp->param1, paramhypapp->param2);
-				break;
-			}
+			//case XMHF_APIHUB_COREAPI_HPT_SETENTRY:{ //void xmhf_memprot_hpt_setentry(...)
+			//	xmhf_memprot_hpt_setentry(paramhypapp->context_desc, paramhypapp->param1, paramhypapp->param2);
+			//	break;
+			//}
 
 			default:
 				printf("\n%s: WARNING, unsupported core API call (%u), returning", __FUNCTION__, callnum);

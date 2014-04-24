@@ -52,6 +52,18 @@
 #include <xc-x86vmx.h>
 
 
+void xc_api_hpt_arch_setentry(context_desc_t context_desc, u64 gpa, u64 entry){
+	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)context_desc.cpu_desc.xc_cpu->parentpartition->hptdata;  
+	
+	u64 *hpt = (u64 *)eptdata->vmx_ept_p_tables;
+	u32 hpt_index = (u32)gpa / PAGE_SIZE_4K;
+	
+	hpt[hpt_index] = entry;
+
+	return;
+}
+
+
 u32 xc_api_hpt_arch_getprot(context_desc_t context_desc, u64 gpa){
   xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)context_desc.cpu_desc.xc_cpu->parentpartition->hptdata;  
 
