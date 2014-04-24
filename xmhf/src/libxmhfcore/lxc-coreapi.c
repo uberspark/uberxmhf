@@ -121,8 +121,14 @@ void xc_api_hpt_setprot(context_desc_t context_desc, u64 gpa, u32 prottype){
 }
 
 u32 xc_api_hpt_getprot(context_desc_t context_desc, u64 gpa){
+	u32 result;
+	
+	paramhypapp->context_desc = context_desc;
+	paramhypapp->param1 = gpa;
 	libxmhfcore_hypapptocore(XC_API_HPT_GETPROT);
-	return 0;
+	result = (u32)paramcore->result;
+	
+	return result;
 }
 
 void xc_api_hpt_setentry(context_desc_t context_desc, u64 gpa, u64 entry){

@@ -82,32 +82,6 @@ void xmhf_memprot_arch_x86vmx_set_EPTP(u64 eptp)
 }
 
 
-//get protection for a given physical memory address
-u32 xmhf_memprot_arch_x86vmx_getprot(xc_partition_hptdata_x86vmx_t *eptdata, u64 gpa){
-  u32 pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
-  u64 *pt = (u64 *)eptdata->vmx_ept_p_tables;
-  u64 entry = pt[pfn];
-  u32 prottype;
-  
-  if(! (entry & 0x1) ){
-	prottype = MEMP_PROT_NOTPRESENT;
-	return prottype;
-  }
- 
-  prottype = MEMP_PROT_PRESENT;
-  
-  if( entry & 0x2 )
-	prottype |= MEMP_PROT_READWRITE;
-  else
-	prottype |= MEMP_PROT_READONLY;
-
-  if( entry & 0x4 )
-	prottype |= MEMP_PROT_EXECUTE;
-  else
-	prottype |= MEMP_PROT_NOEXECUTE;
-
-  return prottype;
-}
 
 //======================================================================
 // global interfaces (functions) exported by this component
@@ -125,12 +99,6 @@ void xmhf_memprot_arch_initialize(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition
 //	xmhf_memprot_arch_x86vmx_setprot(eptdata, gpa, prottype);
 //}
 
-//get protection for a given physical memory address
-u32 xmhf_memprot_arch_getprot(context_desc_t context_desc, xc_partition_t *xc_partition, u64 gpa){
-	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;
-
-	return xmhf_memprot_arch_x86vmx_getprot(eptdata, gpa);
-}
 
 //flush hardware page table mappings (TLB) 
 void xmhf_memprot_arch_flushmappings(context_desc_t context_desc){
