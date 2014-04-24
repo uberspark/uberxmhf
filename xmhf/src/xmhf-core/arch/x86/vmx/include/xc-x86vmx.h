@@ -85,6 +85,8 @@ typedef struct {
 #define XC_HYPAPP_ARCH_PARAM_OPERATION_TRAP_IO			(0xC01)
 
 
+#define XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS	(0xD01)
+
 //------------------------------------------------------
 // functions
 //------------------------------------------------------

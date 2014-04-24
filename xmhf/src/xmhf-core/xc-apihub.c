@@ -114,6 +114,19 @@ void xmhf_apihub_fromhypapp(u32 callnum){
 				break;
 			}
 	
+
+			case XC_API_CPUSTATE_SET:{
+				xc_api_cpustate_set(paramhypapp->context_desc, paramhypapp->xc_hypapp_arch_param);	
+				break;
+			}
+
+			case XC_API_CPUSTATE_GET:{
+				xc_api_cpustate_get(paramhypapp->context_desc, paramhypapp->param1);	
+				break;
+			}
+			
+	
+	
 			case XMHF_APIHUB_COREAPI_OUTPUTDEBUGSTRING:{	//void xmhfc_puts(...)
 					extern void xmhfc_puts(const char *s);	//TODO: move this into an appropriate header
 					xmhfc_puts( __xmhfattribute__(hypapp-ro) (char *)(u32)paramhypapp->param1 );
