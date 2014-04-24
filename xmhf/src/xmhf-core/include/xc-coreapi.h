@@ -75,6 +75,9 @@ u32 xc_api_hpt_getprot(context_desc_t context_desc, u64 gpa);
 u32 xc_api_hpt_arch_getprot(context_desc_t context_desc, u64 gpa);
 
 void xc_api_hpt_setentry(context_desc_t context_desc, u64 gpa, u64 entry);
+void xc_api_hpt_arch_setentry(context_desc_t context_desc, u64 gpa, u64 entry);
+
+
 u64 xc_api_hpt_getentry(context_desc_t context_desc, u64 gpa);
 void xc_api_hpt_flushcaches(context_desc_t context_desc);
 void xc_api_hpt_flushcaches_smp(context_desc_t context_desc);

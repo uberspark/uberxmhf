@@ -101,14 +101,14 @@ void xmhfcore_memprot_flushmappings(context_desc_t context_desc){
 //}
 
 
-void xmhfcore_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u64 entry){
-	u64 result;
-	paramhypapp->context_desc = context_desc;
-	paramhypapp->param1 = hpt_paddr;
-	paramhypapp->param2 = entry;
-	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_HPT_SETENTRY);
-	return;
-}
+//void xmhfcore_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u64 entry){
+//	u64 result;
+//	paramhypapp->context_desc = context_desc;
+//	paramhypapp->param1 = hpt_paddr;
+//	paramhypapp->param2 = entry;
+//	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_HPT_SETENTRY);
+//	return;
+//}
 
 
 //HPT related core APIs
@@ -132,8 +132,11 @@ u32 xc_api_hpt_getprot(context_desc_t context_desc, u64 gpa){
 }
 
 void xc_api_hpt_setentry(context_desc_t context_desc, u64 gpa, u64 entry){
+	paramhypapp->context_desc = context_desc;
+	paramhypapp->param1 = gpa;
+	paramhypapp->param2 = entry;
 	libxmhfcore_hypapptocore(XC_API_HPT_SETENTRY);
-	
+	return;
 }
 
 u64 xc_api_hpt_getentry(context_desc_t context_desc, u64 gpa){
