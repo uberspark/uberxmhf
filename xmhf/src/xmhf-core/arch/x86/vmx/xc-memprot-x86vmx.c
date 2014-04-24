@@ -97,7 +97,7 @@ void xmhf_memprot_arch_initialize(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition
 
 
 
-void xmhf_memprot_arch_setsingularhpt(u64 hpt){
+/*void xmhf_memprot_arch_setsingularhpt(u64 hpt){
 		u32 i;
 		
 		printf("\n%s: starting...", __FUNCTION__);
@@ -112,6 +112,6 @@ void xmhf_memprot_arch_setsingularhpt(u64 hpt){
 //get HPT root pointer
 u64 xmhf_memprot_arch_getHPTroot(context_desc_t context_desc){
 	return xmhf_memprot_arch_x86vmx_get_EPTP();
-}
+}*/
 
 
