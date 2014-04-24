@@ -52,6 +52,34 @@
 #include <xc-x86vmx.h>
 
 
+u32 xc_api_hpt_arch_getprot(context_desc_t context_desc, u64 gpa){
+  xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)context_desc.cpu_desc.xc_cpu->parentpartition->hptdata;  
+
+  u32 pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
+  u64 *pt = (u64 *)eptdata->vmx_ept_p_tables;
+  u64 entry = pt[pfn];
+  u32 prottype;
+  
+  if(! (entry & 0x1) ){
+	prottype = MEMP_PROT_NOTPRESENT;
+	return prottype;
+  }
+ 
+  prottype = MEMP_PROT_PRESENT;
+  
+  if( entry & 0x2 )
+	prottype |= MEMP_PROT_READWRITE;
+  else
+	prottype |= MEMP_PROT_READONLY;
+
+  if( entry & 0x4 )
+	prottype |= MEMP_PROT_EXECUTE;
+  else
+	prottype |= MEMP_PROT_NOEXECUTE;
+
+  return prottype;
+}
+
 void xc_api_hpt_arch_setprot(context_desc_t context_desc, u64 gpa, u32 prottype){
   u32 pfn;
   u64 *pt;

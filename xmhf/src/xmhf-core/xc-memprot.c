@@ -68,9 +68,9 @@ void xmhf_memprot_initialize(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition){
 
 
 //get protection for a given physical memory address
-u32 xmhf_memprot_getprot(context_desc_t context_desc, u64 gpa){
-	return xmhf_memprot_arch_getprot(context_desc, xc_partition_richguest, gpa);
-}
+//u32 xmhf_memprot_getprot(context_desc_t context_desc, u64 gpa){
+//	return xmhf_memprot_arch_getprot(context_desc, xc_partition_richguest, gpa);
+//}
 
 /*
 // get level-1 page map address
