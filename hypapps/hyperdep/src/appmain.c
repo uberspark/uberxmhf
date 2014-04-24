@@ -49,6 +49,7 @@
 
 #include <xmhf.h>
 #include <xmhf-core.h>
+#include <arch/x86/vmx/include/xc-x86vmx.h>
 
 #define HYPERDEP_ACTIVATEDEP			0xC0
 #define HYPERDEP_DEACTIVATEDEP			0xC1
@@ -73,6 +74,15 @@ u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t h
 	//		testfun fun = (testfun)0x10000000;
 	//		fun();	//execute arbitrary code in core memory region, should trigger a #pf
 	//}
+
+	{//trapmask API test
+		xc_hypapp_arch_param_t xc_hypapp_arch_param;
+		xc_hypapp_arch_param.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_TRAP_IO;
+		xc_hypapp_arch_param.params[0] = 0x2000;
+		xc_hypapp_arch_param.params[1] = 0x4;
+		xc_api_trapmask_set(context_desc, xc_hypapp_arch_param);
+		xc_api_trapmask_clear(context_desc, xc_hypapp_arch_param);
+	}
 
 	printf("\nCPU %u: hyperDEP initialized!", context_desc.cpu_desc.cpuid);
 	

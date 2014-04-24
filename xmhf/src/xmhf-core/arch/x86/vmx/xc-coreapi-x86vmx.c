@@ -388,6 +388,9 @@ static void _trapmask_operation_trap_io_set(context_desc_t context_desc, u16 por
 	if(size > sizeof(u32))
 		size=sizeof(u32);
 
+
+	printf("\n%s: port=%u, size=%u", __FUNCTION__, port, size);
+	
 	for(i=0; i < size; i++){
 		byte_offset = (port+i) / 8;
 		bit_offset = (port+i) % 8;
@@ -403,6 +406,8 @@ static void _trapmask_operation_trap_io_clear(context_desc_t context_desc, u16 p
 
 	if(size > sizeof(u32))
 		size=sizeof(u32);
+
+	printf("\n%s: port=%u, size=%u", __FUNCTION__, port, size);
 
 	for(i=0; i < size; i++){
 		byte_offset = (port+i) / 8;
