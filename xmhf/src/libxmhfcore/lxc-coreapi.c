@@ -140,8 +140,13 @@ void xc_api_hpt_setentry(context_desc_t context_desc, u64 gpa, u64 entry){
 }
 
 u64 xc_api_hpt_getentry(context_desc_t context_desc, u64 gpa){
+	u64 result;
+	paramhypapp->context_desc = context_desc;
+	paramhypapp->param1 = (u32)gpa;
+
 	libxmhfcore_hypapptocore(XC_API_HPT_GETENTRY);
-	return 0;
+	result = (u64)paramcore->result;
+	return result;
 }
 
 void xc_api_hpt_flushcaches(context_desc_t context_desc){
