@@ -68,6 +68,8 @@
 #define	XC_API_TRAPMASK_SET							(0xB01)
 #define XC_API_TRAPMASK_CLEAR						(0xB02)
 
+#define XC_API_CPUSTATE_SET							(0xC01)
+#define XC_API_CPUSTATE_GET							(0xC02)
 
 #ifndef __ASSEMBLY__
 
@@ -99,6 +101,14 @@ void xc_api_trapmask_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_
 
 void xc_api_trapmask_clear(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams);
 void xc_api_trapmask_arch_clear(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams);
+
+
+//cpu state related core APIs
+void xc_api_cpustate_set(context_desc_t context_desc, xc_hypapp_arch_param_t cpustateparams);
+void xc_api_cpustate_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_t cpustateparams);
+
+xc_hypapp_arch_param_t xc_api_cpustate_get(context_desc_t context_desc, u64 operation);
+xc_hypapp_arch_param_t xc_api_cpustate_arch_get(context_desc_t context_desc, u64 operation);
 
 
 #endif	//__ASSEMBLY__

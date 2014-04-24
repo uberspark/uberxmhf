@@ -181,3 +181,20 @@ void xc_api_trapmask_clear(context_desc_t context_desc, xc_hypapp_arch_param_t t
 	paramhypapp->xc_hypapp_arch_param = trapmaskparams;
 	libxmhfcore_hypapptocore(XC_API_TRAPMASK_CLEAR);
 }
+
+//cpu state related core APIs
+void xc_api_cpustate_set(context_desc_t context_desc, xc_hypapp_arch_param_t cpustateparams){
+	paramhypapp->context_desc = context_desc;
+	paramhypapp->xc_hypapp_arch_param = cpustateparams;
+	libxmhfcore_hypapptocore(XC_API_CPUSTATE_SET);
+}
+
+xc_hypapp_arch_param_t xc_api_cpustate_get(context_desc_t context_desc, u64 operation){
+	xc_hypapp_arch_param_t cpustateparams;
+	paramhypapp->context_desc = context_desc;
+	paramhypapp->param1 = operation;
+	libxmhfcore_hypapptocore(XC_API_CPUSTATE_GET);
+	cpustateparams = paramcore->xc_hypapp_arch_param;
+	return cpustateparams;
+}
+

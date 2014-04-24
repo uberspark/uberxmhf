@@ -440,4 +440,65 @@ void xc_api_trapmask_arch_clear(context_desc_t context_desc, xc_hypapp_arch_para
 }
 
 
+//-----------------------------------------------------------------------------------------------
+// CPU state related APIs
+
+static void _cpustate_operation_cpugprs_set(context_desc_t context_desc, struct regs *x86gprs){
+		
+}
+
+static void _cpustate_operation_cpugprs_get(context_desc_t context_desc, struct regs *x86gprs){
+		
+}
+
+void xc_api_cpustate_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_t cpustateparams){
+	switch(cpustateparams.operation){
+		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS:{
+				//params[0]..[7] = x86 general purpose registers - edi,esi,ebp,esp,ebx,edx,ecx,eax
+				struct regs x86gprs;
+				x86gprs.edi = cpustateparams.params[0];
+				x86gprs.esi = cpustateparams.params[1];
+				x86gprs.ebp = cpustateparams.params[2];
+				x86gprs.esp = cpustateparams.params[3];
+				x86gprs.ebx = cpustateparams.params[4];
+				x86gprs.edx = cpustateparams.params[5];
+				x86gprs.ecx = cpustateparams.params[6];
+				x86gprs.eax = cpustateparams.params[7];
+				_cpustate_operation_cpugprs_set(context_desc, &x86gprs);
+				break;
+		}	
+	
+		default:
+			break;
+	}
+
+}
+
+xc_hypapp_arch_param_t xc_api_cpustate_arch_get(context_desc_t context_desc, u64 operation){
+	xc_hypapp_arch_param_t cpustateparams;
+
+	switch(operation){
+		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS:{
+				//params[0]..[7] = x86 general purpose registers - edi,esi,ebp,esp,ebx,edx,ecx,eax
+				struct regs x86gprs;
+				_cpustate_operation_cpugprs_get(context_desc, &x86gprs);
+				cpustateparams.params[0] = x86gprs.edi;
+				cpustateparams.params[1] = x86gprs.esi;
+				cpustateparams.params[2] = x86gprs.ebp;
+				cpustateparams.params[3] = x86gprs.esp;
+				cpustateparams.params[4] = x86gprs.ebx;
+				cpustateparams.params[5] = x86gprs.edx;
+				cpustateparams.params[6] = x86gprs.ecx;
+				cpustateparams.params[7] = x86gprs.eax;
+
+				break;
+		}	
+	
+		default:
+			break;
+	}
+	
+	return cpustateparams;
+}
+
 

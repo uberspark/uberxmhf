@@ -91,3 +91,12 @@ void xc_api_trapmask_set(context_desc_t context_desc, xc_hypapp_arch_param_t tra
 void xc_api_trapmask_clear(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams){
 	xc_api_trapmask_arch_clear(context_desc, trapmaskparams);
 }
+
+//cpu state related core APIs
+void xc_api_cpustate_set(context_desc_t context_desc, xc_hypapp_arch_param_t cpustateparams){
+	xc_api_cpustate_arch_set(context_desc, cpustateparams);
+}
+
+xc_hypapp_arch_param_t xc_api_cpustate_get(context_desc_t context_desc, u64 operation){
+	xc_api_cpustate_arch_get(context_desc, operation);
+}
