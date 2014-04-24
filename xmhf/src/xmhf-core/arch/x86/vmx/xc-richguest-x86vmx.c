@@ -219,14 +219,14 @@ void xmhf_smpguest_arch_eventhandler_nmiexception(struct regs *r){
 //}
 
 //quiesce interface to switch all guest cores into hypervisor mode
-void xmhf_smpguest_arch_quiesce(xc_cpu_t *xc_cpu){
-		xmhf_smpguest_arch_x86vmx_quiesce(xc_cpu);
-}
+//void xmhf_smpguest_arch_quiesce(xc_cpu_t *xc_cpu){
+//		xmhf_smpguest_arch_x86vmx_quiesce(xc_cpu);
+//}
 
 //endquiesce interface to resume all guest cores after a quiesce
-void xmhf_smpguest_arch_endquiesce(xc_cpu_t *xc_cpu){
-		xmhf_smpguest_arch_x86vmx_endquiesce(xc_cpu);
-}
+//void xmhf_smpguest_arch_endquiesce(xc_cpu_t *xc_cpu){
+//		xmhf_smpguest_arch_x86vmx_endquiesce(xc_cpu);
+//}
 
 
 

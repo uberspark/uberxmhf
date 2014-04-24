@@ -226,7 +226,16 @@ static void vmx_handle_intercept_cr0access_ug(xc_cpu_t *xc_cpu, struct regs *r, 
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, (cr0_value & ~(CR0_CD | CR0_NW)));
 	
 	//flush mappings
-	xmhf_memprot_arch_x86vmx_flushmappings();
+	{
+		context_desc_t context_desc;
+
+		context_desc.partition_desc.partitionid = 0;
+		context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
+		context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
+		context_desc.cpu_desc.xc_cpu = xc_cpu;
+		
+		xc_api_hpt_flushcaches(context_desc);
+	}
 }
 
 //---CR4 access handler---------------------------------------------------------
