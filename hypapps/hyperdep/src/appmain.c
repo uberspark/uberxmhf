@@ -49,6 +49,7 @@
 
 #include <xmhf.h>
 #include <xmhf-core.h>
+#include <arch/x86/common/include/xc-x86.h>
 #include <arch/x86/vmx/include/xc-x86vmx.h>
 
 #define HYPERDEP_ACTIVATEDEP			0xC0
