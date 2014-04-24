@@ -62,11 +62,6 @@ static void xmhf_memprot_arch_x86vmx_initialize(xc_partition_hptdata_x86vmx_t *e
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) & ~(1 << 15) & ~(1 << 16)) );
 }
 
-//flush hardware page table mappings (TLB) 
-void xmhf_memprot_arch_x86vmx_flushmappings(void){
-  __vmx_invept(VMX_INVEPT_SINGLECONTEXT, 
-          (u64)xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EPT_POINTER_FULL));
-}
 
 
 u64 xmhf_memprot_arch_x86vmx_get_EPTP(void)
@@ -100,14 +95,6 @@ void xmhf_memprot_arch_initialize(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition
 //}
 
 
-//flush hardware page table mappings (TLB) 
-void xmhf_memprot_arch_flushmappings(context_desc_t context_desc){
-		xc_cpu_t *xc_cpu = (xc_cpu_t *)context_desc.cpu_desc.xc_cpu;
-		
-		xmhf_smpguest_arch_x86vmx_quiesce(xc_cpu);
-		xmhf_memprot_arch_x86vmx_flushmappings();
-		xmhf_smpguest_arch_x86vmx_endquiesce(xc_cpu);
-}
 
 
 void xmhf_memprot_arch_setsingularhpt(u64 hpt){

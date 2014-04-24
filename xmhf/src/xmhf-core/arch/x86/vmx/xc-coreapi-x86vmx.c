@@ -51,6 +51,142 @@
 #include <xc-x86.h>
 #include <xc-x86vmx.h>
 
+
+//----------------------------------------------------------------------
+//Queiscing interfaces
+//----------------------------------------------------------------------
+
+//the quiesce counter, all CPUs except for the one requesting the
+//quiesce will increment this when they get their quiesce signal
+static u32 g_vmx_quiesce_counter __attribute__(( section(".data") )) = 0;
+static u32 g_vmx_lock_quiesce_counter __attribute__(( section(".data") )) = 1; 
+
+//resume counter to rally all CPUs after resumption from quiesce
+static u32 g_vmx_quiesce_resume_counter __attribute__(( section(".data") )) = 0;
+static u32 g_vmx_lock_quiesce_resume_counter __attribute__(( section(".data") )) = 1; 
+    
+//the "quiesce" variable, if 1, then we have a quiesce in process
+static u32 g_vmx_quiesce __attribute__(( section(".data") )) = 0;;      
+static u32 g_vmx_lock_quiesce __attribute__(( section(".data") )) = 1; 
+    
+//resume signal, becomes 1 to signal resume after quiescing
+static u32 g_vmx_quiesce_resume_signal __attribute__(( section(".data") )) = 0;  
+static u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") )) = 1; 
+
+static void _vmx_send_quiesce_signal(void){
+  u32 prev_icr_high_value;
+
+  prev_icr_high_value = xmhfhw_sysmemaccess_readu32((0xFEE00000 + 0x310));
+
+  xmhfhw_sysmemaccess_writeu32((0xFEE00000 + 0x310), (0xFFUL << 24)); //send to all but self
+  xmhfhw_sysmemaccess_writeu32((0xFEE00000 + 0x300), 0x000C0400UL); //send NMI
+
+  while( xmhfhw_sysmemaccess_readu32((0xFEE00000 + 0x310)) & 0x00001000 );
+  
+  xmhfhw_sysmemaccess_writeu32((0xFEE00000 + 0x310), prev_icr_high_value);
+}
+
+//flush EPT TLB
+static void _vmx_ept_flushmappings(void){
+  __vmx_invept(VMX_INVEPT_SINGLECONTEXT, 
+          (u64)xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EPT_POINTER_FULL));
+}
+
+
+//quiesce interface to switch all guest cores into hypervisor mode
+//note: we are in atomic processsing mode for this "xc_cpu"
+static void _cpu_arch_x86vmx_quiesce(xc_cpu_t *xc_cpu){
+        spin_lock(&g_vmx_lock_quiesce);	        		//grab hold of quiesce lock
+		xc_cpu->is_quiesced = 1;
+        spin_lock(&g_vmx_lock_quiesce_counter);
+        g_vmx_quiesce_counter=0;						//reset quiesce counter
+        spin_unlock(&g_vmx_lock_quiesce_counter);
+        g_vmx_quiesce=1;  								//we are now processing quiesce
+        _vmx_send_quiesce_signal();				        //send all the other CPUs the quiesce signal
+        while(g_vmx_quiesce_counter < (g_xc_cpu_count-1) );         //wait for all the remaining CPUs to quiesce
+}
+
+static void _cpu_arch_x86vmx_endquiesce(xc_cpu_t *xc_cpu){
+
+        g_vmx_quiesce_resume_counter=0;		        //set resume signal to resume the cores that are quiesced
+        g_vmx_quiesce_resume_signal=1;
+        while(g_vmx_quiesce_resume_counter < (g_xc_cpu_count-1) );	//wait for all cores to resume
+		xc_cpu->is_quiesced=0;
+        g_vmx_quiesce=0;  							// we are out of quiesce at this point
+        spin_lock(&g_vmx_lock_quiesce_resume_signal);
+        g_vmx_quiesce_resume_signal=0;				        //reset resume signal
+        spin_unlock(&g_vmx_lock_quiesce_resume_signal);
+        spin_unlock(&g_vmx_lock_quiesce);         //release quiesce lock
+}
+
+//quiescing handler for #NMI (non-maskable interrupt) exception event
+//note: we are in atomic processsing mode for this "xc_cpu"
+void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu, struct regs *r){
+	u32 nmiinhvm;	//1 if NMI originated from the HVM else 0 if within the hypervisor
+	u32 _vmx_vmcs_info_vmexit_interrupt_information;
+	u32 _vmx_vmcs_info_vmexit_reason;
+
+	//determine if the NMI originated within the HVM or within the
+	//hypervisor. we use VMCS fields for this purpose. note that we
+	//use vmread directly instead of relying on xc_cpu-> to avoid 
+	//race conditions
+	_vmx_vmcs_info_vmexit_interrupt_information = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION);
+	_vmx_vmcs_info_vmexit_reason = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON);
+	
+	nmiinhvm = ( (_vmx_vmcs_info_vmexit_reason == VMX_VMEXIT_EXCEPTION) && ((_vmx_vmcs_info_vmexit_interrupt_information & INTR_INFO_VECTOR_MASK) == 2) ) ? 1 : 0;
+	
+	if(g_vmx_quiesce){ //if g_vmx_quiesce =1 process quiesce regardless of where NMI originated from
+		//if this core has been quiesced, simply return
+			if(xc_cpu->is_quiesced)
+				return;
+				
+			xc_cpu->is_quiesced=1;
+	
+			//increment quiesce counter
+			spin_lock(&g_vmx_lock_quiesce_counter);
+			g_vmx_quiesce_counter++;
+			spin_unlock(&g_vmx_lock_quiesce_counter);
+
+			//wait until quiesceing is finished
+			while(!g_vmx_quiesce_resume_signal);
+
+			//flush EPT TLB
+			_vmx_ept_flushmappings();
+
+			spin_lock(&g_vmx_lock_quiesce_resume_counter);
+			g_vmx_quiesce_resume_counter++;
+			spin_unlock(&g_vmx_lock_quiesce_resume_counter);
+			
+			xc_cpu->is_quiesced=0;
+	}else{
+		//we are not in quiesce
+		//inject the NMI if it was triggered in guest mode
+		
+		if(nmiinhvm){
+			if(xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EXCEPTION_BITMAP) & CPU_EXCEPTION_NMI){
+				//TODO: hypapp has chosen to intercept NMI so callback
+			}else{ //inject NMI back to partition
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_EXCEPTION_ERRORCODE, 0);
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_INTERRUPTION_INFORMATION, (NMI_VECTOR | INTR_TYPE_NMI | INTR_INFO_VALID_MASK));
+			}
+		}
+	}
+	
+}
+
+
+void xc_api_hpt_arch_flushcaches(context_desc_t context_desc, bool dosmpflush){
+		xc_cpu_t *xc_cpu = (xc_cpu_t *)context_desc.cpu_desc.xc_cpu;
+		if(dosmpflush)
+			_cpu_arch_x86vmx_quiesce(xc_cpu);
+			
+		_vmx_ept_flushmappings();
+		
+		if(dosmpflush)
+			_cpu_arch_x86vmx_endquiesce(xc_cpu);
+}
+
+
 u64 xc_api_hpt_arch_getentry(context_desc_t context_desc, u64 gpa){
 	u64 entry;
 	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)context_desc.cpu_desc.xc_cpu->parentpartition->hptdata;  

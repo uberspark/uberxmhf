@@ -84,11 +84,11 @@ void xmhfcore_reboot(context_desc_t context_desc){
 //}
 
 //void xmhfcore_memprot_flushmappings(VCPU *vcpu);
-void xmhfcore_memprot_flushmappings(context_desc_t context_desc){
-	paramhypapp->context_desc = context_desc;
-	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_MEMPROT_FLUSHMAPPINGS);
-	return;
-}	
+//void xmhfcore_memprot_flushmappings(context_desc_t context_desc){
+//	paramhypapp->context_desc = context_desc;
+//	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_MEMPROT_FLUSHMAPPINGS);
+//	return;
+//}	
 
 //u8 * xmhf_smpguest_walk_pagetables(VCPU *vcpu, u32 vaddr);
 //u8 * xmhfcore_smpguest_walk_pagetables(context_desc_t context_desc, u32 vaddr){
@@ -150,13 +150,13 @@ u64 xc_api_hpt_getentry(context_desc_t context_desc, u64 gpa){
 }
 
 void xc_api_hpt_flushcaches(context_desc_t context_desc){
+	paramhypapp->context_desc = context_desc;
 	libxmhfcore_hypapptocore(XC_API_HPT_FLUSHCACHES);
-
 }
 
 void xc_api_hpt_flushcaches_smp(context_desc_t context_desc){
+	paramhypapp->context_desc = context_desc;
 	libxmhfcore_hypapptocore(XC_API_HPT_FLUSHCACHES_SMP);
-	
 }
 
 u64 xc_api_hpt_lvl2pagewalk(context_desc_t context_desc, u64 gva){

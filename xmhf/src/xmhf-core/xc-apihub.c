@@ -122,10 +122,10 @@ void xmhf_apihub_fromhypapp(u32 callnum){
 			//	break;
 			//}
 			
-			case XMHF_APIHUB_COREAPI_MEMPROT_FLUSHMAPPINGS:{ //void xmhfcore_memprot_flushmappings(...);
-				xmhf_memprot_flushmappings( paramhypapp->context_desc );
-				break;
-			}
+			//case XMHF_APIHUB_COREAPI_MEMPROT_FLUSHMAPPINGS:{ //void xmhfcore_memprot_flushmappings(...);
+			//	xmhf_memprot_flushmappings( paramhypapp->context_desc );
+			//	break;
+			//}
 			
 			//case XMHF_APIHUB_COREAPI_SMPGUEST_WALK_PAGETABLES:{ //u8 * xmhf_smpguest_walk_pagetables(...);
 			//	paramcore->result = (u32)xmhf_smpguest_walk_pagetables( paramhypapp->context_desc, (u32)paramhypapp->param1);

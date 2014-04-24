@@ -100,9 +100,9 @@ u64 * xmhf_memprot_get_default_root_pagemap_address(context_desc_t context_desc)
 
 
 //flush hardware page table mappings (TLB) 
-void xmhf_memprot_flushmappings(context_desc_t context_desc){
-	xmhf_memprot_arch_flushmappings(context_desc);
-}
+//void xmhf_memprot_flushmappings(context_desc_t context_desc){
+//	xmhf_memprot_arch_flushmappings(context_desc);
+//}
 
 
 
