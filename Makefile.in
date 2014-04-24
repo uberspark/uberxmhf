@@ -358,10 +358,14 @@ install-dev:
 	@echo installed XMHF development libraries to $(prefix)/lib/xmhf/
 	$(MKDIR) -p $(prefix)/include/xmhf/include
 	$(MKDIR) -p $(prefix)/include/xmhf/xmhf-core/include
+	$(MKDIR) -p $(prefix)/include/xmhf/xmhf-core/arch/x86/common/include
+	$(MKDIR) -p $(prefix)/include/xmhf/xmhf-core/arch/x86/vmx/include
 	$(MKDIR) -p $(prefix)/include/xmhf/platform/x86pc/include
 	$(MKDIR) -p $(prefix)/include/xmhf/cpu/x86/include
 	$(CP) -rf ./xmhf/src/include/* $(prefix)/include/xmhf/include/.
 	$(CP) -rf ./xmhf/src/xmhf-core/include/* $(prefix)/include/xmhf/xmhf-core/include/.
+	$(CP) -rf ./xmhf/src/xmhf-core/arch/x86/common/include/* $(prefix)/include/xmhf/xmhf-core/arch/x86/common/include/.
+	$(CP) -rf ./xmhf/src/xmhf-core/arch/x86/vmx/include/* $(prefix)/include/xmhf/xmhf-core/arch/x86/vmx/include/.
 	$(CP) -rf ./xmhf/src/libxmhfhw/platform/x86pc/include/* $(prefix)/include/xmhf/platform/x86pc/include/.
 	$(CP) -rf ./xmhf/src/libxmhfhw/cpu/x86/include/* $(prefix)/include/xmhf/cpu/x86/include/.
 	@echo installed XMHF core development headers
