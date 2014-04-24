@@ -225,17 +225,8 @@ static void vmx_handle_intercept_cr0access_ug(xc_cpu_t *xc_cpu, struct regs *r, 
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR0_SHADOW, cr0_value);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, (cr0_value & ~(CR0_CD | CR0_NW)));
 	
-	//flush mappings
-	{
-		context_desc_t context_desc;
-
-		context_desc.partition_desc.partitionid = 0;
-		context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
-		context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
-		context_desc.cpu_desc.xc_cpu = xc_cpu;
-		
-		xc_api_hpt_flushcaches(context_desc);
-	}
+	//we need to flush logical processor VPID mappings as we emulated CR0 load above
+	__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0);
 }
 
 //---CR4 access handler---------------------------------------------------------
@@ -245,7 +236,7 @@ static void vmx_handle_intercept_cr4access_ug(xc_cpu_t *xc_cpu, struct regs *r, 
 	
 	cr4_proposed_value = _vmx_getregval(gpr, xc_cpu, r);
 	
-	//we need to flush EPT mappings as we emulated CR4 load above
+	//we need to flush logical processor VPID mappings as we emulated CR4 load above
 	__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0);
   }
 }
