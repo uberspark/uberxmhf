@@ -507,24 +507,6 @@ static void xmhf_partition_arch_x86vmx_start(xc_cpu_t *xc_cpu){
 
 }
 
-//set legacy I/O protection for the partition
-void xmhf_partition_arch_x86vmx_legacyIO_setprot(xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx, u32 port, u32 size, u32 prottype){
-
-	u8 *bit_vector = (u8 *)xc_partition_trapmaskdata_x86vmx->vmx_iobitmap_region;
-	u32 byte_offset, bit_offset;
-	u32 i;
-
-	for(i=0; i < size; i++){
-		byte_offset = (port+i) / 8;
-		bit_offset = (port+i) % 8;
-		if(prottype & PART_LEGACYIO_NOACCESS){
-			bit_vector[byte_offset] |= (1 << bit_offset);	
-		}else{
-			prottype = PART_LEGACYIO_READWRITE;
-			bit_vector[byte_offset] &= ~((1 << bit_offset));	
-		}
-	}
-}
 
 
 
@@ -545,12 +527,6 @@ void xmhf_partition_arch_start(xc_cpu_t *xc_cpu){
 	xmhf_partition_arch_x86vmx_start(xc_cpu);
 }
 
-//set legacy I/O protection for the partition
-void xmhf_partition_arch_legacyIO_setprot(context_desc_t context_desc, xc_partition_t *xc_partition, u32 port, u32 size, u32 prottype){
-	xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx = (xc_partition_trapmaskdata_x86vmx_t *)xc_partition->trapmaskdata;
-		
-	xmhf_partition_arch_x86vmx_legacyIO_setprot(xc_partition_trapmaskdata_x86vmx, port, size, prottype);
-}
 
 
 

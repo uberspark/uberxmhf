@@ -169,3 +169,15 @@ u64 xc_api_hpt_lvl2pagewalk(context_desc_t context_desc, u64 gva){
 }
 
 
+//Trapmask related APIs
+void xc_api_trapmask_set(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams){
+	paramhypapp->context_desc = context_desc;
+	paramhypapp->xc_hypapp_arch_param = trapmaskparams;
+	libxmhfcore_hypapptocore(XC_API_TRAPMASK_SET);
+}
+
+void xc_api_trapmask_clear(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams){
+	paramhypapp->context_desc = context_desc;
+	paramhypapp->xc_hypapp_arch_param = trapmaskparams;
+	libxmhfcore_hypapptocore(XC_API_TRAPMASK_CLEAR);
+}
