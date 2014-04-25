@@ -300,7 +300,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 	xc_hypapp_arch_param_t cpustateparams;
 	context_desc_t context_desc;
 
-/*	//set cpu gprs state based on cpugprs
+	//set cpu gprs state based on cpugprs
 	cpustateparams.params[0] = cpugprs->edi;
 	cpustateparams.params[1] = cpugprs->esi;
 	cpustateparams.params[2] = cpugprs->ebp;
@@ -311,18 +311,20 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 	cpustateparams.params[7] = cpugprs->eax;
 	cpustateparams.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS;
 	xc_api_cpustate_set(context_desc, cpustateparams);
-*/
-	
+
+	//XXX: don't touch cpugprs below this point
+	//---------------------------------------------------------------------------------------
+		
 	//grab a local copy of the gprs
-	x86gprs.edi = cpugprs->edi;
-	x86gprs.esi = cpugprs->esi;
-	x86gprs.ebp = cpugprs->ebp;
-	x86gprs.esp = cpugprs->esp;
-	x86gprs.ebx = cpugprs->ebx;
-	x86gprs.edx = cpugprs->edx;
-	x86gprs.ecx = cpugprs->ecx;
-	x86gprs.eax = cpugprs->eax;
-	//--------------------------------------------------------------------------------------
+	cpustateparams = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS);
+	x86gprs.edi = (u32)cpustateparams.params[0];
+	x86gprs.esi = (u32)cpustateparams.params[1];
+	x86gprs.ebp = (u32)cpustateparams.params[2];
+	x86gprs.esp = (u32)cpustateparams.params[3];
+	x86gprs.ebx = (u32)cpustateparams.params[4];
+	x86gprs.edx = (u32)cpustateparams.params[5];
+	x86gprs.ecx = (u32)cpustateparams.params[6];
+	x86gprs.eax = (u32)cpustateparams.params[7];
 	
 #ifndef __XMHF_VERIFICATION__
 	//handle cpu quiescing
@@ -525,13 +527,8 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 	assert( (xc_cpu->vmcs.control_EPT_pointer_high == 0) && (xc_cpu->vmcs.control_EPT_pointer_full == (hva2spa((void*)xc_cpu->vmx_vaddr_ept_pml4_table) | 0x1E)) );
 #endif	
 
-	
-	//end serialization and resume partition
-    spin_unlock(&_xc_partition_eventhub_lock);
 
-
-/*	//-----------------------------------------------------------------------------------------
-	//set cpu gprs state based on x86gprs
+	/*//propagate local gprs copy to actual cpu gprs 
 	cpustateparams.params[0] = x86gprs.edi;
 	cpustateparams.params[1] = x86gprs.esi;
 	cpustateparams.params[2] = x86gprs.ebp;
@@ -542,8 +539,16 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 	cpustateparams.params[7] = x86gprs.eax;
 	cpustateparams.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS;
 	xc_api_cpustate_set(context_desc, cpustateparams);
+	*/
+	
+	//end serialization and resume partition
+    spin_unlock(&_xc_partition_eventhub_lock);
 
-	//store local copy of the gprs to the original
+
+	//-----------------------------------------------------------------------------------------
+	// don't touch cpugprs above this point
+	
+	//set cpu gprs state based on x86gprs
 	cpugprs->edi = x86gprs.edi;
 	cpugprs->esi = x86gprs.esi;
 	cpugprs->ebp = x86gprs.ebp;
@@ -551,7 +556,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 	cpugprs->ebx = x86gprs.ebx;
 	cpugprs->edx = x86gprs.edx;
 	cpugprs->ecx = x86gprs.ecx;
-	cpugprs->eax = x86gprs.eax;*/
+	cpugprs->eax = x86gprs.eax;
 
 	return 1;
 }
