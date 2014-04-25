@@ -444,11 +444,27 @@ void xc_api_trapmask_arch_clear(context_desc_t context_desc, xc_hypapp_arch_para
 // CPU state related APIs
 
 static void _cpustate_operation_cpugprs_set(context_desc_t context_desc, struct regs *x86gprs){
-		
+	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)context_desc.cpu_desc.xc_cpu->cpuarchdata;
+	xc_cpuarchdata_x86vmx->x86gprs.edi = x86gprs->edi;
+	xc_cpuarchdata_x86vmx->x86gprs.esi = x86gprs->esi;
+	xc_cpuarchdata_x86vmx->x86gprs.ebp = x86gprs->ebp;
+	xc_cpuarchdata_x86vmx->x86gprs.esp = x86gprs->esp;
+	xc_cpuarchdata_x86vmx->x86gprs.ebx = x86gprs->ebx;
+	xc_cpuarchdata_x86vmx->x86gprs.edx = x86gprs->edx;
+	xc_cpuarchdata_x86vmx->x86gprs.ecx = x86gprs->ecx;
+	xc_cpuarchdata_x86vmx->x86gprs.eax = x86gprs->eax;
 }
 
 static void _cpustate_operation_cpugprs_get(context_desc_t context_desc, struct regs *x86gprs){
-		
+	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)context_desc.cpu_desc.xc_cpu->cpuarchdata;
+	x86gprs->edi = xc_cpuarchdata_x86vmx->x86gprs.edi;
+	x86gprs->esi = xc_cpuarchdata_x86vmx->x86gprs.esi;
+	x86gprs->ebp = xc_cpuarchdata_x86vmx->x86gprs.ebp;
+	x86gprs->esp = xc_cpuarchdata_x86vmx->x86gprs.esp;
+	x86gprs->ebx = xc_cpuarchdata_x86vmx->x86gprs.ebx;
+	x86gprs->edx = xc_cpuarchdata_x86vmx->x86gprs.edx;
+	x86gprs->ecx = xc_cpuarchdata_x86vmx->x86gprs.ecx;
+	x86gprs->eax = xc_cpuarchdata_x86vmx->x86gprs.eax;
 }
 
 void xc_api_cpustate_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_t cpustateparams){
@@ -490,7 +506,6 @@ xc_hypapp_arch_param_t xc_api_cpustate_arch_get(context_desc_t context_desc, u64
 				cpustateparams.params[5] = x86gprs.edx;
 				cpustateparams.params[6] = x86gprs.ecx;
 				cpustateparams.params[7] = x86gprs.eax;
-
 				break;
 		}	
 	

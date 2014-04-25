@@ -294,14 +294,41 @@ void xmhf_parteventhub_arch_x86vmx_entry(void) __attribute__((naked)){
 }
 
 
-u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct regs *r){
+u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct regs *cpugprs){
 	static u32 _xc_partition_eventhub_lock = 1; 
+	struct regs x86gprs;
+	xc_hypapp_arch_param_t cpustateparams;
+	context_desc_t context_desc;
 
+/*	//set cpu gprs state based on cpugprs
+	cpustateparams.params[0] = cpugprs->edi;
+	cpustateparams.params[1] = cpugprs->esi;
+	cpustateparams.params[2] = cpugprs->ebp;
+	cpustateparams.params[3] = cpugprs->esp;
+	cpustateparams.params[4] = cpugprs->ebx;
+	cpustateparams.params[5] = cpugprs->edx;
+	cpustateparams.params[6] = cpugprs->ecx;
+	cpustateparams.params[7] = cpugprs->eax;
+	cpustateparams.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS;
+	xc_api_cpustate_set(context_desc, cpustateparams);
+*/
+	
+	//grab a local copy of the gprs
+	x86gprs.edi = cpugprs->edi;
+	x86gprs.esi = cpugprs->esi;
+	x86gprs.ebp = cpugprs->ebp;
+	x86gprs.esp = cpugprs->esp;
+	x86gprs.ebx = cpugprs->ebx;
+	x86gprs.edx = cpugprs->edx;
+	x86gprs.ecx = cpugprs->ecx;
+	x86gprs.eax = cpugprs->eax;
+	//--------------------------------------------------------------------------------------
+	
 #ifndef __XMHF_VERIFICATION__
 	//handle cpu quiescing
 	if(xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON) == VMX_VMEXIT_EXCEPTION){
 		if ( (xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION) & INTR_INFO_VECTOR_MASK) == 0x02 ) {
-			xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu, r);
+			xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu, &x86gprs);
 			return 1;
 		}
 	}
@@ -309,6 +336,13 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 
 	//serialize event handling
     spin_lock(&_xc_partition_eventhub_lock);
+
+	//setup context_desc
+	context_desc.partition_desc.partitionid = 0;
+	context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
+	context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
+	context_desc.cpu_desc.xc_cpu = xc_cpu;
+	
 
 	//sanity check for VM-entry errors
 	if( xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON) & 0x80000000UL ){
@@ -327,27 +361,21 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 			//if INT 15h E820 hypercall, then let the xmhf-core handle it
 			if(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CS_BASE) == (VMX_UG_E820HOOK_CS << 4) &&
 				xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP) == VMX_UG_E820HOOK_IP){
-					context_desc_t context_desc;
-	
-					context_desc.partition_desc.partitionid = 0;
-					context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
-					context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
-					context_desc.cpu_desc.xc_cpu = xc_cpu;
 	
 				//we need to be either in real-mode or in protected
 				//mode with paging and EFLAGS.VM bit set (virtual-8086 mode)
 				HALT_ON_ERRORCOND( !(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PE)  ||
 					( (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PE) && (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PG) &&
 						(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RFLAGS) & EFLAGS_VM)  ) );
-				xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc, r);
+				xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc, &x86gprs);
 				
 			}else{	//if not E820 hook, give hypapp a chance to handle the hypercall
 				{
-					u64 hypercall_id = (u64)r->eax;
-					u64 hypercall_param = ((u64)r->edx << 32) | r->ecx;
+					u64 hypercall_id = (u64)x86gprs.eax;
+					u64 hypercall_param = ((u64)x86gprs.edx << 32) | x86gprs.ecx;
 	
 					if( xc_hypapp_handlehypercall(xc_cpu, hypercall_id, hypercall_param) != APP_SUCCESS){
-						printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", xc_cpu->cpuid, r->eax);
+						printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", xc_cpu->cpuid, x86gprs.eax);
 						HALT();
 					}
 				}
@@ -357,12 +385,12 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 		break;
 
 		case VMX_VMEXIT_IOIO:{
-			_vmx_handle_intercept_ioportaccess(xc_cpu, r);
+			_vmx_handle_intercept_ioportaccess(xc_cpu, &x86gprs);
 		}
 		break;
 
 		case VMX_VMEXIT_EPT_VIOLATION:{
-			_vmx_handle_intercept_eptviolation(xc_cpu, r);
+			_vmx_handle_intercept_eptviolation(xc_cpu, &x86gprs);
 		}
 		break;  
 
@@ -390,11 +418,11 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 			if ( ((int)gpr >=0) && ((int)gpr <= 7) ){
 				switch(crx){
 					case 0x0: //CR0 access
-						vmx_handle_intercept_cr0access_ug(xc_cpu, r, gpr, tofrom);	
+						vmx_handle_intercept_cr0access_ug(xc_cpu, &x86gprs, gpr, tofrom);	
 						break;
 					
 					case 0x4: //CR4 access
-						vmx_handle_intercept_cr4access_ug(xc_cpu, r, gpr, tofrom);	
+						vmx_handle_intercept_cr4access_ug(xc_cpu, &x86gprs, gpr, tofrom);	
 						break;
 				
 					default:
@@ -412,15 +440,15 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 		break;	
 
  		case VMX_VMEXIT_RDMSR:
-			_vmx_handle_intercept_rdmsr(xc_cpu, r);
+			_vmx_handle_intercept_rdmsr(xc_cpu, &x86gprs);
 			break;
 			
 		case VMX_VMEXIT_WRMSR:
-			_vmx_handle_intercept_wrmsr(xc_cpu, r);
+			_vmx_handle_intercept_wrmsr(xc_cpu, &x86gprs);
 			break;
 			
 		case VMX_VMEXIT_CPUID:
-			_vmx_handle_intercept_cpuid(xc_cpu, r);
+			_vmx_handle_intercept_cpuid(xc_cpu, &x86gprs);
 			break;
 
 		case VMX_VMEXIT_TASKSWITCH:{
@@ -445,7 +473,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 		break;
 
 		case VMX_VMEXIT_XSETBV:{
-			_vmx_handle_intercept_xsetbv(xc_cpu, r);
+			_vmx_handle_intercept_xsetbv(xc_cpu, &x86gprs);
 		}
 		break;
 
@@ -497,8 +525,33 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 	assert( (xc_cpu->vmcs.control_EPT_pointer_high == 0) && (xc_cpu->vmcs.control_EPT_pointer_full == (hva2spa((void*)xc_cpu->vmx_vaddr_ept_pml4_table) | 0x1E)) );
 #endif	
 
+	
 	//end serialization and resume partition
     spin_unlock(&_xc_partition_eventhub_lock);
+
+
+/*	//-----------------------------------------------------------------------------------------
+	//set cpu gprs state based on x86gprs
+	cpustateparams.params[0] = x86gprs.edi;
+	cpustateparams.params[1] = x86gprs.esi;
+	cpustateparams.params[2] = x86gprs.ebp;
+	cpustateparams.params[3] = x86gprs.esp;
+	cpustateparams.params[4] = x86gprs.ebx;
+	cpustateparams.params[5] = x86gprs.edx;
+	cpustateparams.params[6] = x86gprs.ecx;
+	cpustateparams.params[7] = x86gprs.eax;
+	cpustateparams.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS;
+	xc_api_cpustate_set(context_desc, cpustateparams);
+
+	//store local copy of the gprs to the original
+	cpugprs->edi = x86gprs.edi;
+	cpugprs->esi = x86gprs.esi;
+	cpugprs->ebp = x86gprs.ebp;
+	cpugprs->esp = x86gprs.esp;
+	cpugprs->ebx = x86gprs.ebx;
+	cpugprs->edx = x86gprs.edx;
+	cpugprs->ecx = x86gprs.ecx;
+	cpugprs->eax = x86gprs.eax;*/
 
 	return 1;
 }
