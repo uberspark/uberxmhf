@@ -98,5 +98,5 @@ void xc_api_cpustate_set(context_desc_t context_desc, xc_hypapp_arch_param_t cpu
 }
 
 xc_hypapp_arch_param_t xc_api_cpustate_get(context_desc_t context_desc, u64 operation){
-	xc_api_cpustate_arch_get(context_desc, operation);
+	return xc_api_cpustate_arch_get(context_desc, operation);
 }
