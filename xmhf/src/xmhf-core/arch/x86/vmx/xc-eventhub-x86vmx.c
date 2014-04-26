@@ -264,87 +264,9 @@ static void _vmx_handle_intercept_xsetbv(xc_cpu_t *xc_cpu, struct regs *r){
 			
 
 
-//---hvm_intercept_handler------------------------------------------------------
-void xmhf_parteventhub_arch_x86vmx_entry(void) __attribute__((naked)){
-		//step-1: save all CPU GPRs
-		asm volatile ("pushal\r\n");
-		
-		//step-2: grab xc_cpu_t *
-		asm volatile ("movl 32(%esp), %esi\r\n");
-			      
-		//step-3: get hold of pointer to saved GPR on stack
-		asm volatile ("movl %esp, %eax\r\n");
-
-		//step-4: invoke "C" event handler
-		//1st argument is xc_cpu_t * followed by pointer to saved GPRs
-		asm volatile ("pushl %eax\r\n");
-		asm volatile ("pushl %esi\r\n");
-		asm volatile ("call xmhf_parteventhub_arch_x86vmx_intercept_handler\r\n");
-		asm volatile ("addl $0x08, %esp\r\n");
-
-		//step-5; restore all CPU GPRs
-		asm volatile ("popal\r\n");
-
-		//resume partition
-		asm volatile ("vmresume\r\n");
-              
-		//if we get here then vm resume failed, just bail out with a BP exception 
-		asm volatile ("int $0x03\r\n");
-		asm volatile ("hlt\r\n");
-}
-
-
-u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct regs *cpugprs){
-	static u32 _xc_partition_eventhub_lock = 1; 
-	struct regs x86gprs;
+static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu, struct regs x86gprs){
 	xc_hypapp_arch_param_t cpustateparams;
-	context_desc_t context_desc;
 
-	//set cpu gprs state based on cpugprs
-	cpustateparams.params[0] = cpugprs->edi;
-	cpustateparams.params[1] = cpugprs->esi;
-	cpustateparams.params[2] = cpugprs->ebp;
-	cpustateparams.params[3] = cpugprs->esp;
-	cpustateparams.params[4] = cpugprs->ebx;
-	cpustateparams.params[5] = cpugprs->edx;
-	cpustateparams.params[6] = cpugprs->ecx;
-	cpustateparams.params[7] = cpugprs->eax;
-	cpustateparams.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS;
-	xc_api_cpustate_set(context_desc, cpustateparams);
-
-	//XXX: don't touch cpugprs below this point
-	//---------------------------------------------------------------------------------------
-		
-	//grab a local copy of the gprs
-	cpustateparams = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS);
-	x86gprs.edi = (u32)cpustateparams.params[0];
-	x86gprs.esi = (u32)cpustateparams.params[1];
-	x86gprs.ebp = (u32)cpustateparams.params[2];
-	x86gprs.esp = (u32)cpustateparams.params[3];
-	x86gprs.ebx = (u32)cpustateparams.params[4];
-	x86gprs.edx = (u32)cpustateparams.params[5];
-	x86gprs.ecx = (u32)cpustateparams.params[6];
-	x86gprs.eax = (u32)cpustateparams.params[7];
-	
-#ifndef __XMHF_VERIFICATION__
-	//handle cpu quiescing
-	if(xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON) == VMX_VMEXIT_EXCEPTION){
-		if ( (xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION) & INTR_INFO_VECTOR_MASK) == 0x02 ) {
-			xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu, &x86gprs);
-			return 1;
-		}
-	}
-#endif //__XMHF_VERIFICATION__
-
-	//serialize event handling
-    spin_lock(&_xc_partition_eventhub_lock);
-
-	//setup context_desc
-	context_desc.partition_desc.partitionid = 0;
-	context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
-	context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
-	context_desc.cpu_desc.xc_cpu = xc_cpu;
-	
 
 	//sanity check for VM-entry errors
 	if( xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON) & 0x80000000UL ){
@@ -528,7 +450,7 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 #endif	
 
 
-	/*//propagate local gprs copy to actual cpu gprs 
+	//propagate local gprs copy to actual cpu gprs 
 	cpustateparams.params[0] = x86gprs.edi;
 	cpustateparams.params[1] = x86gprs.esi;
 	cpustateparams.params[2] = x86gprs.ebp;
@@ -539,24 +461,96 @@ u32 xmhf_parteventhub_arch_x86vmx_intercept_handler(xc_cpu_t *xc_cpu, struct reg
 	cpustateparams.params[7] = x86gprs.eax;
 	cpustateparams.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS;
 	xc_api_cpustate_set(context_desc, cpustateparams);
-	*/
+}
+
+
+
+
+//---hvm_intercept_handler------------------------------------------------------
+void xmhf_parteventhub_arch_x86vmx_entry(void) __attribute__((naked)){
+		//step-1: save all CPU GPRs
+		asm volatile ("pushal\r\n");
+		
+		//step-2: grab xc_cpu_t *
+		asm volatile ("movl 32(%esp), %esi\r\n");
+			      
+		//step-3: get hold of pointer to saved GPR on stack
+		asm volatile ("movl %esp, %eax\r\n");
+
+		//step-4: invoke "C" event handler
+		//1st argument is xc_cpu_t * followed by pointer to saved GPRs
+		asm volatile ("pushl %eax\r\n");
+		asm volatile ("pushl %esi\r\n");
+		asm volatile ("call xmhf_partition_eventhub_arch_x86vmx\r\n");
+		asm volatile ("addl $0x08, %esp\r\n");
+
+		//step-5; restore all CPU GPRs
+		asm volatile ("popal\r\n");
+
+		//resume partition
+		asm volatile ("vmresume\r\n");
+              
+		//if we get here then vm resume failed, just bail out with a BP exception 
+		asm volatile ("int $0x03\r\n");
+		asm volatile ("hlt\r\n");
+}
+
+
+void xmhf_partition_eventhub_arch_x86vmx(xc_cpu_t *xc_cpu, struct regs *cpugprs){
+	static u32 _xc_partition_eventhub_lock = 1; 
+	xc_hypapp_arch_param_t cpustateparams;
+	struct regs x86gprs;
+	context_desc_t context_desc;
+
+#ifndef __XMHF_VERIFICATION__
+	//handle cpu quiescing
+	if(xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON) == VMX_VMEXIT_EXCEPTION){
+		if ( (xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION) & INTR_INFO_VECTOR_MASK) == 0x02 ) {
+			xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu, cpugprs);
+			return;
+		}
+	}
+#endif //__XMHF_VERIFICATION__
+
+	//serialize
+    spin_lock(&_xc_partition_eventhub_lock);
 	
+	//set cpu gprs state based on cpugprs
+	x86gprs.edi = cpustateparams.params[0] = cpugprs->edi;
+	x86gprs.esi = cpustateparams.params[1] = cpugprs->esi;
+	x86gprs.ebp = cpustateparams.params[2] = cpugprs->ebp;
+	x86gprs.esp = cpustateparams.params[3] = cpugprs->esp;
+	x86gprs.ebx = cpustateparams.params[4] = cpugprs->ebx;
+	x86gprs.edx = cpustateparams.params[5] = cpugprs->edx;
+	x86gprs.ecx = cpustateparams.params[6] = cpugprs->ecx;
+	x86gprs.eax = cpustateparams.params[7] = cpugprs->eax;
+	cpustateparams.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS;
+	xc_api_cpustate_set(context_desc, cpustateparams);
+
+	//setup context descriptor
+	context_desc.partition_desc.partitionid = 0;
+	context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
+	context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
+	context_desc.cpu_desc.xc_cpu = xc_cpu;
+	
+	_vmx_intercept_handler(context_desc, xc_cpu, x86gprs);
+	
+	cpustateparams = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS);
+	cpugprs->edi = (u32)cpustateparams.params[0];
+	cpugprs->esi = (u32)cpustateparams.params[1];
+	cpugprs->ebp = (u32)cpustateparams.params[2];
+	cpugprs->esp = (u32)cpustateparams.params[3];
+	cpugprs->ebx = (u32)cpustateparams.params[4];
+	cpugprs->edx = (u32)cpustateparams.params[5];
+	cpugprs->ecx = (u32)cpustateparams.params[6];
+	cpugprs->eax = (u32)cpustateparams.params[7];
+
 	//end serialization and resume partition
     spin_unlock(&_xc_partition_eventhub_lock);
-
-
-	//-----------------------------------------------------------------------------------------
-	// don't touch cpugprs above this point
-	
-	//set cpu gprs state based on x86gprs
-	cpugprs->edi = x86gprs.edi;
-	cpugprs->esi = x86gprs.esi;
-	cpugprs->ebp = x86gprs.ebp;
-	cpugprs->esp = x86gprs.esp;
-	cpugprs->ebx = x86gprs.ebx;
-	cpugprs->edx = x86gprs.edx;
-	cpugprs->ecx = x86gprs.ecx;
-	cpugprs->eax = x86gprs.eax;
-
-	return 1;
 }
+
+
+
+
+
+
