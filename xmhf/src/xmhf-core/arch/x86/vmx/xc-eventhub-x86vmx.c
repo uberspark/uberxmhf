@@ -72,11 +72,9 @@ static u32 _vmx_getregval(u32 gpr, xc_cpu_t *xc_cpu, struct regs *r){
 
 //---intercept handler (CPUID)--------------------------------------------------
 static void _vmx_handle_intercept_cpuid(xc_cpu_t *xc_cpu, struct regs *r){
-	//printf("\nCPU(0x%02x): CPUID", xc_cpu->cpuid);
 	asm volatile ("cpuid\r\n"
           :"=a"(r->eax), "=b"(r->ebx), "=c"(r->ecx), "=d"(r->edx)
           :"a"(r->eax), "c" (r->ecx));
-	//xc_cpu->vmcs.guest_RIP += xc_cpu->vmcs.info_vmexit_instruction_length;
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH)) );
 }
 
@@ -262,11 +260,23 @@ static void _vmx_handle_intercept_xsetbv(xc_cpu_t *xc_cpu, struct regs *r){
   	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH)) );
 }						
 			
-
-
-static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu, struct regs x86gprs){
+static void _vmx_propagate_cpustate_guestx86gprs(context_desc_t context_desc, struct regs *x86gprs){
 	xc_hypapp_arch_param_t cpustateparams;
 
+	//propagate local gprs copy to actual guest gprs 
+	cpustateparams.params[0] = x86gprs->edi;
+	cpustateparams.params[1] = x86gprs->esi;
+	cpustateparams.params[2] = x86gprs->ebp;
+	cpustateparams.params[3] = x86gprs->esp;
+	cpustateparams.params[4] = x86gprs->ebx;
+	cpustateparams.params[5] = x86gprs->edx;
+	cpustateparams.params[6] = x86gprs->ecx;
+	cpustateparams.params[7] = x86gprs->eax;
+	cpustateparams.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS;
+	xc_api_cpustate_set(context_desc, cpustateparams);
+}
+
+static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu, struct regs x86gprs){
 
 	//sanity check for VM-entry errors
 	if( xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON) & 0x80000000UL ){
@@ -274,7 +284,14 @@ static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu
 			xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON), xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION));
 		HALT();
 	}
-  
+
+	//make sure we have no nested events
+	if(xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION) & 0x80000000){
+		printf("\nCPU(0x%02x): HALT; Nested events unhandled with hwp:0x%08x",
+			xc_cpu->cpuid, xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION));
+		HALT();
+	}
+
 	//handle intercepts
 	switch(xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON)){
 		//--------------------------------------------------------------
@@ -435,12 +452,6 @@ static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu
 		xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_INTERRUPTIBILITY, 0);
 	}
 
-	//make sure we have no nested events
-	if(xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION) & 0x80000000){
-		printf("\nCPU(0x%02x): HALT; Nested events unhandled with hwp:0x%08x",
-			xc_cpu->cpuid, xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION));
-		HALT();
-	}
 
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 	//ensure that whenever a partition is resumed on a xc_cpu, we have extended paging
@@ -449,18 +460,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu
 	assert( (xc_cpu->vmcs.control_EPT_pointer_high == 0) && (xc_cpu->vmcs.control_EPT_pointer_full == (hva2spa((void*)xc_cpu->vmx_vaddr_ept_pml4_table) | 0x1E)) );
 #endif	
 
-
-	//propagate local gprs copy to actual cpu gprs 
-	cpustateparams.params[0] = x86gprs.edi;
-	cpustateparams.params[1] = x86gprs.esi;
-	cpustateparams.params[2] = x86gprs.ebp;
-	cpustateparams.params[3] = x86gprs.esp;
-	cpustateparams.params[4] = x86gprs.ebx;
-	cpustateparams.params[5] = x86gprs.edx;
-	cpustateparams.params[6] = x86gprs.ecx;
-	cpustateparams.params[7] = x86gprs.eax;
-	cpustateparams.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS;
-	xc_api_cpustate_set(context_desc, cpustateparams);
+	_vmx_propagate_cpustate_guestx86gprs(context_desc, &x86gprs);
 }
 
 
