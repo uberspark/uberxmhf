@@ -125,17 +125,14 @@ static void _vmx_handle_intercept_wrmsr(xc_cpu_t *xc_cpu, struct regs *r){
 static void _vmx_handle_intercept_rdmsr(xc_cpu_t *xc_cpu, struct regs *r){
 	switch(r->ecx){
 		case IA32_SYSENTER_CS_MSR:
-			//r->eax = (u32)xc_cpu->vmcs.guest_SYSENTER_CS;
 			r->eax = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SYSENTER_CS);
 			r->edx = 0;
 			break;
 		case IA32_SYSENTER_EIP_MSR:
-			//r->eax = (u32)xc_cpu->vmcs.guest_SYSENTER_EIP;
 			r->eax = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SYSENTER_EIP);
 			r->edx = 0;
 			break;
 		case IA32_SYSENTER_ESP_MSR:
-			//r->eax = (u32)xc_cpu->vmcs.guest_SYSENTER_ESP;
 			r->eax = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SYSENTER_ESP);
 			r->edx = 0;
 			break;
@@ -323,16 +320,19 @@ static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu
 				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+3) );
 			}
 		}
+		_vmx_propagate_cpustate_guestx86gprs(context_desc, &x86gprs);
 		break;
 
 		case VMX_VMEXIT_IOIO:{
 			_vmx_handle_intercept_ioportaccess(xc_cpu, &x86gprs);
 		}
+		_vmx_propagate_cpustate_guestx86gprs(context_desc, &x86gprs);
 		break;
 
 		case VMX_VMEXIT_EPT_VIOLATION:{
 			_vmx_handle_intercept_eptviolation(xc_cpu, &x86gprs);
 		}
+		_vmx_propagate_cpustate_guestx86gprs(context_desc, &x86gprs);
 		break;  
 
 		case VMX_VMEXIT_INIT:{
@@ -382,6 +382,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu
 
  		case VMX_VMEXIT_RDMSR:
 			_vmx_handle_intercept_rdmsr(xc_cpu, &x86gprs);
+			_vmx_propagate_cpustate_guestx86gprs(context_desc, &x86gprs);
 			break;
 			
 		case VMX_VMEXIT_WRMSR:
@@ -390,6 +391,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu
 			
 		case VMX_VMEXIT_CPUID:
 			_vmx_handle_intercept_cpuid(xc_cpu, &x86gprs);
+			_vmx_propagate_cpustate_guestx86gprs(context_desc, &x86gprs);
 			break;
 
 		case VMX_VMEXIT_TASKSWITCH:{
@@ -460,7 +462,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu
 	assert( (xc_cpu->vmcs.control_EPT_pointer_high == 0) && (xc_cpu->vmcs.control_EPT_pointer_full == (hva2spa((void*)xc_cpu->vmx_vaddr_ept_pml4_table) | 0x1E)) );
 #endif	
 
-	_vmx_propagate_cpustate_guestx86gprs(context_desc, &x86gprs);
+	
 }
 
 
