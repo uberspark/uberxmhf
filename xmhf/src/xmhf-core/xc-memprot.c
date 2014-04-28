@@ -62,15 +62,15 @@ void xmhf_memprot_initialize(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition){
 }
 
 //set protection for a given physical memory address
-void xmhf_memprot_setprot(context_desc_t context_desc, u64 gpa, u32 prottype){
-	xmhf_memprot_arch_setprot(context_desc, xc_partition_richguest, gpa, prottype);
-}
+//void xmhf_memprot_setprot(context_desc_t context_desc, u64 gpa, u32 prottype){
+//	xmhf_memprot_arch_setprot(context_desc, xc_partition_richguest, gpa, prottype);
+//}
 
 
 //get protection for a given physical memory address
-u32 xmhf_memprot_getprot(context_desc_t context_desc, u64 gpa){
-	return xmhf_memprot_arch_getprot(context_desc, xc_partition_richguest, gpa);
-}
+//u32 xmhf_memprot_getprot(context_desc_t context_desc, u64 gpa){
+//	return xmhf_memprot_arch_getprot(context_desc, xc_partition_richguest, gpa);
+//}
 
 /*
 // get level-1 page map address
@@ -100,13 +100,13 @@ u64 * xmhf_memprot_get_default_root_pagemap_address(context_desc_t context_desc)
 
 
 //flush hardware page table mappings (TLB) 
-void xmhf_memprot_flushmappings(context_desc_t context_desc){
-	xmhf_memprot_arch_flushmappings(context_desc);
-}
+//void xmhf_memprot_flushmappings(context_desc_t context_desc){
+//	xmhf_memprot_arch_flushmappings(context_desc);
+//}
 
 
 
-//set singular HPT
+/*//set singular HPT
 void xmhf_memprot_setsingularhpt(u64 hpt){
 		xmhf_memprot_arch_setsingularhpt(hpt);
 }
@@ -114,9 +114,9 @@ void xmhf_memprot_setsingularhpt(u64 hpt){
 //get HPT root pointer
 u64 xmhf_memprot_getHPTroot(context_desc_t context_desc){
 	return xmhf_memprot_arch_getHPTroot(context_desc);
-}
+}*/
 
 //set HPT entry
-void xmhf_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u64 entry){
-	return xmhf_memprot_arch_hpt_setentry(context_desc, xc_partition_richguest, hpt_paddr, entry);	
-}
+//void xmhf_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u64 entry){
+//	return xmhf_memprot_arch_hpt_setentry(context_desc, xc_partition_richguest, hpt_paddr, entry);	
+//}

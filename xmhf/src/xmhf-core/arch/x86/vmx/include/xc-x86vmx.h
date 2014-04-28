@@ -63,6 +63,7 @@ typedef struct {
   u64 vmx_msrs[IA32_VMX_MSRCOUNT];  
   u64 vmx_msr_efer;
   u64 vmx_msr_efcr;
+  struct regs x86gprs;
 } __attribute__((packed)) xc_cpuarchdata_x86vmx_t;
 	
 	
@@ -78,6 +79,14 @@ typedef struct {
   u8 vmx_msrbitmaps_region[PAGE_SIZE_4K];		//MSR bitmap area
 } __attribute__ ((packed)) xc_partition_trapmaskdata_x86vmx_t;
 
+#define XC_HYPAPP_ARCH_PARAM_OPERATION_CBTRAP_IO		(0x101)
+
+
+
+#define XC_HYPAPP_ARCH_PARAM_OPERATION_TRAP_IO			(0xC01)
+
+
+#define XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS	(0xD01)
 
 //------------------------------------------------------
 // functions

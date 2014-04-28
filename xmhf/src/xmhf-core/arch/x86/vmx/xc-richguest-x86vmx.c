@@ -100,113 +100,6 @@ static xc_cpu_t *_vmx_getxc_cpu(void){
 //----------------------------------------------------------------------
 
 
-//walk guest page tables; returns pointer to corresponding guest physical address
-//note: returns 0xFFFFFFFF if there is no mapping
-u8 * xmhf_smpguest_arch_x86vmx_walk_pagetables(xc_cpu_t *xc_cpu, u32 vaddr){
-  
-  //if rich guest has paging disabled then physical address is the 
-  //supplied virtual address itself
-	if( !((xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PE) && (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PG)) )
-		return (u8 *)gpa2hva(vaddr);
-
-  if((u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR4) & CR4_PAE ){
-    //PAE paging used by guest
-    u32 kcr3 = (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR3);
-    u32 pdpt_index, pd_index, pt_index, offset;
-    u64 paddr;
-    pdpt_t kpdpt;
-    pdt_t kpd; 
-    pt_t kpt; 
-    u32 pdpt_entry, pd_entry, pt_entry;
-    u32 tmp;
-
-    // get fields from virtual addr 
-    pdpt_index = pae_get_pdpt_index(vaddr);
-    pd_index = pae_get_pdt_index(vaddr);
-    pt_index = pae_get_pt_index(vaddr);
-    offset = pae_get_offset_4K_page(vaddr);  
-
-    //grab pdpt entry
-    tmp = pae_get_addr_from_32bit_cr3(kcr3);
-    kpdpt = (pdpt_t)((u32)tmp); 
-    pdpt_entry = kpdpt[pdpt_index];
-  
-    //grab pd entry
-    if( !(pae_get_flags_from_pdpe(pdpt_entry) & _PAGE_PRESENT) )
-		return (u8 *)0xFFFFFFFFUL;
-    tmp = pae_get_addr_from_pdpe(pdpt_entry);
-    kpd = (pdt_t)((u32)tmp); 
-    pd_entry = kpd[pd_index];
-
-    if( !(pae_get_flags_from_pde(pd_entry) & _PAGE_PRESENT) )
-		return (u8 *)0xFFFFFFFFUL;
-
-
-    if ( (pd_entry & _PAGE_PSE) == 0 ) {
-      // grab pt entry
-      tmp = (u32)pae_get_addr_from_pde(pd_entry);
-      kpt = (pt_t)((u32)tmp);  
-      pt_entry  = kpt[pt_index];
-
-	  if( !(pae_get_flags_from_pte(pt_entry) & _PAGE_PRESENT) )
-		return (u8 *)0xFFFFFFFFUL;
-      
-      // find physical page base addr from page table entry 
-      paddr = (u64)pae_get_addr_from_pte(pt_entry) + offset;
-    }
-    else { // 2MB page 
-      offset = pae_get_offset_big(vaddr);
-      paddr = (u64)pae_get_addr_from_pde_big(pd_entry);
-      paddr += (u64)offset;
-    }
-  
-    return (u8 *)gpa2hva(paddr);
-    
-  }else{
-    //non-PAE 2 level paging used by guest
-    u32 kcr3 = (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR3);
-    u32 pd_index, pt_index, offset;
-    u64 paddr;
-    npdt_t kpd; 
-    npt_t kpt; 
-    u32 pd_entry, pt_entry;
-    u32 tmp;
-
-    // get fields from virtual addr 
-    pd_index = npae_get_pdt_index(vaddr);
-    pt_index = npae_get_pt_index(vaddr);
-    offset = npae_get_offset_4K_page(vaddr);  
-  
-    // grab pd entry
-    tmp = npae_get_addr_from_32bit_cr3(kcr3);
-    kpd = (npdt_t)((u32)tmp); 
-    pd_entry = kpd[pd_index];
-  
-  
-    if( !(npae_get_flags_from_pde(pd_entry) & _PAGE_PRESENT) )
-		return (u8 *)0xFFFFFFFFUL;
-
-    if ( (pd_entry & _PAGE_PSE) == 0 ) {
-      // grab pt entry
-      tmp = (u32)npae_get_addr_from_pde(pd_entry);
-      kpt = (npt_t)((u32)tmp);  
-      pt_entry  = kpt[pt_index];
-      
-      if( !(npae_get_flags_from_pte(pt_entry) & _PAGE_PRESENT) )
-		return (u8 *)0xFFFFFFFFUL;
-
-      // find physical page base addr from page table entry 
-      paddr = (u64)npae_get_addr_from_pte(pt_entry) + offset;
-    }
-    else { // 4MB page 
-      offset = npae_get_offset_big(vaddr);
-      paddr = (u64)npae_get_addr_from_pde_big(pd_entry);
-      paddr += (u64)offset;
-    }
-
-    return (u8 *)gpa2hva(paddr);
-  }
-}
 
 
 
@@ -321,19 +214,19 @@ void xmhf_smpguest_arch_eventhandler_nmiexception(struct regs *r){
 
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping
-u8 * xmhf_smpguest_arch_walk_pagetables(context_desc_t context_desc, u32 vaddr){
-		return xmhf_smpguest_arch_x86vmx_walk_pagetables(context_desc.cpu_desc.xc_cpu, vaddr);
-}
+//u8 * xmhf_smpguest_arch_walk_pagetables(context_desc_t context_desc, u32 vaddr){
+//		return xc_api_hpt_lvl2pagewalk(context_desc.cpu_desc.xc_cpu, vaddr);
+//}
 
 //quiesce interface to switch all guest cores into hypervisor mode
-void xmhf_smpguest_arch_quiesce(xc_cpu_t *xc_cpu){
-		xmhf_smpguest_arch_x86vmx_quiesce(xc_cpu);
-}
+//void xmhf_smpguest_arch_quiesce(xc_cpu_t *xc_cpu){
+//		xmhf_smpguest_arch_x86vmx_quiesce(xc_cpu);
+//}
 
 //endquiesce interface to resume all guest cores after a quiesce
-void xmhf_smpguest_arch_endquiesce(xc_cpu_t *xc_cpu){
-		xmhf_smpguest_arch_x86vmx_endquiesce(xc_cpu);
-}
+//void xmhf_smpguest_arch_endquiesce(xc_cpu_t *xc_cpu){
+//		xmhf_smpguest_arch_x86vmx_endquiesce(xc_cpu);
+//}
 
 
 
@@ -720,7 +613,7 @@ void xmhf_richguest_arch_initialize(xc_cpu_t *xc_cpu_bsp, xc_partition_t *xc_par
 }
 
 bool xmhf_smpguest_arch_readu16(context_desc_t context_desc, const void *guestaddress, u16 *valueptr){
-		u16 *tmp = (u16 *)xmhf_smpguest_arch_walk_pagetables(context_desc, guestaddress);
+		u16 *tmp = (u16 *)xc_api_hpt_lvl2pagewalk(context_desc, guestaddress);
 		if((u32)tmp == 0xFFFFFFFFUL || valueptr == NULL)
 			return false;
 		*valueptr = xmhfhw_sysmemaccess_readu16((u32)tmp);
@@ -728,7 +621,7 @@ bool xmhf_smpguest_arch_readu16(context_desc_t context_desc, const void *guestad
 }
 
 bool xmhf_smpguest_arch_writeu16(context_desc_t context_desc, const void *guestaddress, u16 value){
-		u16 *tmp = (u16 *)xmhf_smpguest_arch_walk_pagetables(context_desc, guestaddress);
+		u16 *tmp = (u16 *)xc_api_hpt_lvl2pagewalk(context_desc, guestaddress);
 		if((u32)tmp == 0xFFFFFFFFUL || 
 			( ((u32)tmp >= xcbootinfo->physmem_base) && ((u32)tmp <= (xcbootinfo->physmem_base+xcbootinfo->size)) ) 
 		  )
@@ -738,14 +631,14 @@ bool xmhf_smpguest_arch_writeu16(context_desc_t context_desc, const void *guesta
 }
 
 bool xmhf_smpguest_arch_memcpyfrom(context_desc_t context_desc, void *buffer, const void *guestaddress, size_t numbytes){
-	u8 *guestbuffer = (u8 *)xmhf_smpguest_arch_walk_pagetables(context_desc, guestaddress);
+	u8 *guestbuffer = (u8 *)xc_api_hpt_lvl2pagewalk(context_desc, guestaddress);
 	if((u32)guestbuffer == 0xFFFFFFFFUL)
 		return false;
 	xmhfhw_sysmemaccess_copy(buffer, gpa2hva(guestbuffer), numbytes);
 }
 
 bool xmhf_smpguest_arch_memcpyto(context_desc_t context_desc, void *guestaddress, const void *buffer, size_t numbytes){
-	u8 *guestbuffer = (u8 *)xmhf_smpguest_arch_walk_pagetables(context_desc, guestaddress);
+	u8 *guestbuffer = (u8 *)xc_api_hpt_lvl2pagewalk(context_desc, guestaddress);
 	if((u32)guestbuffer == 0xFFFFFFFFUL || 
 		( ((u32)guestbuffer >= xcbootinfo->physmem_base) && ((u32)guestbuffer <= (xcbootinfo->physmem_base+xcbootinfo->size)) ) 
 	  )
