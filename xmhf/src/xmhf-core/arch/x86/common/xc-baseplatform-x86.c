@@ -72,8 +72,8 @@ u8 _tss[PAGE_SIZE_4K] __attribute__(( section(".data") )) = { 0 };
 //are any exceptions during hypapp execution
 static u8 _exceptionstack[PAGE_SIZE_4K] __attribute__((section(".stack")));
 
-
-
+// platform cpu stacks
+static u8 _cpustack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE] __attribute__(( section(".stack") ));
 
 
 
@@ -485,14 +485,14 @@ void _ap_pmode_entry_with_paging(void) __attribute__((naked)){
 					"hlt\r\n"								//we should never get here, if so just halt
 					"gotidx:\r\n"							// ecx contains index into g_xc_cputable
 					"movl 0x8(%%ebx, %%edi), %%eax\r\n"	 	// eax = g_xc_cputable[ecx].cpu_index
-					"movl %6, %%edi \r\n"					// edi = &g_xc_cpustack
-					"movl %7, %%ecx \r\n"					// ecx = sizeof(g_xc_cpustack[0])
-					"mull %%ecx \r\n"						// eax = sizeof(g_xc_cpustack[0]) * eax
-					"addl %%ecx, %%eax \r\n"				// eax = (sizeof(g_xc_cpustack[0]) * eax) + sizeof(g_xc_cpustack[0])
-					"addl %%edi, %%eax \r\n"				// eax = &g_xc_cpustack + (sizeof(g_xc_cpustack[0]) * eax) + sizeof(g_xc_cpustack[0])
+					"movl %6, %%edi \r\n"					// edi = &_cpustack
+					"movl %7, %%ecx \r\n"					// ecx = sizeof(_cpustack[0])
+					"mull %%ecx \r\n"						// eax = sizeof(_cpustack[0]) * eax
+					"addl %%ecx, %%eax \r\n"				// eax = (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
+					"addl %%edi, %%eax \r\n"				// eax = &_cpustack + (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
 					"movl %%eax, %%esp \r\n"				// esp = top of stack for the cpu
 					:
-					: "m" (_gdt), "m" (_idt), "i" (MSR_APIC_BASE), "m" (g_xc_cpu_count), "i" (&g_xc_cputable), "i" (sizeof(xc_cputable_t)), "i" (&g_xc_cpustack), "i" (sizeof(g_xc_cpustack[0]))
+					: "m" (_gdt), "m" (_idt), "i" (MSR_APIC_BASE), "m" (g_xc_cpu_count), "i" (&g_xc_cputable), "i" (sizeof(xc_cputable_t)), "i" (&_cpustack), "i" (sizeof(_cpustack[0]))
 	);
 
 	xmhf_baseplatform_arch_x86_smpinitialize_commonstart();
