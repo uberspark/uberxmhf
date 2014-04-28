@@ -266,7 +266,7 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu_t *xc_cpu, xc_partition
 
 	//*(u32 *)((u32)xc_cpu->stack - sizeof(u32)) = (u32)xc_cpu;
 	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RSP, ((u32)xc_cpu->stack - sizeof(u32)));
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RSP, ((u32)xc_cpu->stack ));
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RSP, read_esp());
 			
 
 #ifndef __XMHF_VERIFICATION__			
