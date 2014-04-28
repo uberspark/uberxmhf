@@ -391,20 +391,20 @@ u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
 //common function which is entered by all CPUs upon SMP initialization
 //note: this is specific to the x86 architecture backend
 void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
-	xc_cpu_t *xc_cpu = NULL;
+	u32 cpu_index;
 	u32 i;
-	bool found_xc_cpu=false;
+	bool found_cpu_index=false;
 	u32 cpu_uniqueid = xmhf_baseplatform_arch_x86_getcpulapicid();
 	
 	for(i=0; i < g_xc_cpu_count; i++){
 		if(g_xc_cputable[i].cpuid == cpu_uniqueid){
-			xc_cpu = g_xc_cputable[i].xc_cpu;
-			found_xc_cpu = true;
+			cpu_index = g_xc_cputable[i].cpu_index;
+			found_cpu_index = true;
 			break;
 		}
 	}
 	
-	HALT_ON_ERRORCOND ( found_xc_cpu == true );
+	HALT_ON_ERRORCOND ( found_cpu_index == true );
 	
 	//initialize base CPU state
 	xmhf_baseplatform_arch_x86_cpuinitialize();
@@ -413,7 +413,7 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 	xmhf_baseplatform_arch_x86_restorecpumtrrstate();
   	
 	//xmhf_runtime_main(context_desc);
-	xmhf_runtime_main(xc_cpu);
+	xmhf_runtime_main(cpu_index);
 }
 
 //----------------------------------------------------------------------
@@ -484,7 +484,7 @@ void _ap_pmode_entry_with_paging(void) __attribute__((naked)){
 					"jb getidxloop\r\n"
 					"hlt\r\n"								//we should never get here, if so just halt
 					"gotidx:\r\n"							// ecx contains index into g_xc_cputable
-					"movl 0x8(%%ebx, %%edi), %%eax\r\n"	 	// eax = g_xc_cputable[ecx].cpu_index
+					"movl 0x4(%%ebx, %%edi), %%eax\r\n"	 	// eax = g_xc_cputable[ecx].cpu_index
 					"movl %6, %%edi \r\n"					// edi = &_cpustack
 					"movl %7, %%ecx \r\n"					// ecx = sizeof(_cpustack[0])
 					"mull %%ecx \r\n"						// eax = sizeof(_cpustack[0]) * eax

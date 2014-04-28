@@ -155,7 +155,7 @@ void *xc_globaldata_initialize(void *input){
 	for(i=0; i < g_xc_cpu_count; i++){
 			g_xc_cputable[i].cpuid = g_xc_cpu[i].cpuid;
 			g_xc_cputable[i].cpu_index = i;
-			g_xc_cputable[i].xc_cpu = &g_xc_cpu[i];
+			//g_xc_cputable[i].xc_cpu = &g_xc_cpu[i];
 			if(g_xc_cpu[i].is_bsp)
 				xc_cpu_bsp = &g_xc_cpu[i];
 	}

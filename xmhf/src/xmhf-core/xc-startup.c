@@ -102,9 +102,11 @@ void xmhf_runtime_entry(void){
 
 
 //we get control here in the context of *each* physical CPU core 
-void xmhf_runtime_main(xc_cpu_t *xc_cpu){ 
+//void xmhf_runtime_main(xc_cpu_t *xc_cpu){ 
+void xmhf_runtime_main(u32 cpu_index){ 
 	static u32 _xc_startup_hypappmain_counter = 0; 
 	static u32 _xc_startup_hypappmain_counter_lock = 1; 
+	xc_cpu_t *xc_cpu = &g_xc_cpu[cpu_index];
 
 	//[debug]
 	printf("\n%s: cpu id=%u", __FUNCTION__, xc_cpu->cpuid);

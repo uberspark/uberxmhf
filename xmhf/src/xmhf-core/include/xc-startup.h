@@ -63,7 +63,7 @@
 void xmhf_runtime_entry(void);
 
 //XMHF runtime main function; gets control in the context of each core
-void xmhf_runtime_main(xc_cpu_t *xc_cpu);
+void xmhf_runtime_main(u32 cpu_index);
 
 
 #endif //__ASSEMBLY__

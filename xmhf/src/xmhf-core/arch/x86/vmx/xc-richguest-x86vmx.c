@@ -77,7 +77,7 @@ static xc_cpu_t *_vmx_getxc_cpu(void){
   
   for(i=0; i < (int)g_xc_cpu_count; i++){
     if(g_xc_cputable[i].cpuid == lapic_id)
-        return( (xc_cpu_t *)g_xc_cputable[i].xc_cpu );
+        return( (xc_cpu_t *)&g_xc_cpu[g_xc_cputable[i].cpu_index] );
   }
 
   printf("\n%s: fatal, unable to retrieve xc_cpu for id=0x%02x", __FUNCTION__, lapic_id);

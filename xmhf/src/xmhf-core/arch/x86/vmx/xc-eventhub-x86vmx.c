@@ -510,21 +510,24 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 	//grab xc_cpu for this core
 	{
 		u32 i;
+		u32 cpu_index;
 		u32 cpu_uniqueid = xmhf_baseplatform_arch_x86_getcpulapicid();
-		bool found_xc_cpu = false;
+		bool found_cpu_index = false;
 		
 		for(i=0; i < g_xc_cpu_count; i++){
 			if(g_xc_cputable[i].cpuid == cpu_uniqueid){
-				xc_cpu = g_xc_cputable[i].xc_cpu;
-				found_xc_cpu = true;
+				cpu_index = g_xc_cputable[i].cpu_index;
+				found_cpu_index = true;
 				break;
 			}
 		}
 		
-		if(!found_xc_cpu){
+		if(!found_cpu_index){
 			printf("\n%s: Fatal error, could not find xc_cpu. Halting!", __FUNCTION__);
 			HALT();
 		}
+
+		xc_cpu = &g_xc_cpu[cpu_index];
 	}
 
 	
