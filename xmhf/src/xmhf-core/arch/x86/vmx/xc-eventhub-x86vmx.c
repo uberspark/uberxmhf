@@ -474,7 +474,7 @@ void xmhf_parteventhub_arch_x86vmx_entry(void) __attribute__((naked)){
 		asm volatile ("pushal\r\n");
 		
 		//step-2: grab xc_cpu_t *
-		asm volatile ("movl 32(%esp), %esi\r\n");
+		//asm volatile ("movl 32(%esp), %esi\r\n");
 			      
 		//step-3: get hold of pointer to saved GPR on stack
 		asm volatile ("movl %esp, %eax\r\n");
@@ -482,9 +482,10 @@ void xmhf_parteventhub_arch_x86vmx_entry(void) __attribute__((naked)){
 		//step-4: invoke "C" event handler
 		//1st argument is xc_cpu_t * followed by pointer to saved GPRs
 		asm volatile ("pushl %eax\r\n");
-		asm volatile ("pushl %esi\r\n");
+		//asm volatile ("pushl %esi\r\n");
 		asm volatile ("call xmhf_partition_eventhub_arch_x86vmx\r\n");
-		asm volatile ("addl $0x08, %esp\r\n");
+		//asm volatile ("addl $0x08, %esp\r\n");
+		asm volatile ("addl $0x04, %esp\r\n");
 
 		//step-5; restore all CPU GPRs
 		asm volatile ("popal\r\n");
@@ -498,12 +499,35 @@ void xmhf_parteventhub_arch_x86vmx_entry(void) __attribute__((naked)){
 }
 
 
-void xmhf_partition_eventhub_arch_x86vmx(xc_cpu_t *xc_cpu, struct regs *cpugprs){
+//void xmhf_partition_eventhub_arch_x86vmx(xc_cpu_t *xc_cpu, struct regs *cpugprs){
+void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 	static u32 _xc_partition_eventhub_lock = 1; 
 	xc_hypapp_arch_param_t cpustateparams;
 	struct regs x86gprs;
 	context_desc_t context_desc;
+	xc_cpu_t *xc_cpu;
 
+	//grab xc_cpu for this core
+	{
+		u32 i;
+		u32 cpu_uniqueid = xmhf_baseplatform_arch_x86_getcpulapicid();
+		bool found_xc_cpu = false;
+		
+		for(i=0; i < g_xc_cpu_count; i++){
+			if(g_xc_cputable[i].cpuid == cpu_uniqueid){
+				xc_cpu = g_xc_cputable[i].xc_cpu;
+				found_xc_cpu = true;
+				break;
+			}
+		}
+		
+		if(!found_xc_cpu){
+			printf("\n%s: Fatal error, could not find xc_cpu. Halting!", __FUNCTION__);
+			HALT();
+		}
+	}
+
+	
 #ifndef __XMHF_VERIFICATION__
 	//handle cpu quiescing
 	if(xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON) == VMX_VMEXIT_EXCEPTION){
