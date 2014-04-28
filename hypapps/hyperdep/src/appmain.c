@@ -49,6 +49,8 @@
 
 #include <xmhf.h>
 #include <xmhf-core.h>
+//#include <arch/x86/common/include/xc-x86.h>
+//#include <arch/x86/vmx/include/xc-x86vmx.h>
 
 #define HYPERDEP_ACTIVATEDEP			0xC0
 #define HYPERDEP_DEACTIVATEDEP			0xC1
@@ -74,6 +76,15 @@ u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t h
 	//		fun();	//execute arbitrary code in core memory region, should trigger a #pf
 	//}
 
+	//{//trapmask API test
+	//	xc_hypapp_arch_param_t xc_hypapp_arch_param;
+	//	xc_hypapp_arch_param.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_TRAP_IO;
+	//	xc_hypapp_arch_param.params[0] = 0x2000;
+	//	xc_hypapp_arch_param.params[1] = 0x4;
+	//	xc_api_trapmask_set(context_desc, xc_hypapp_arch_param);
+	//	xc_api_trapmask_clear(context_desc, xc_hypapp_arch_param);
+	//}
+
 	printf("\nCPU %u: hyperDEP initialized!", context_desc.cpu_desc.cpuid);
 	
 	return APP_INIT_SUCCESS;  //successful
@@ -83,15 +94,17 @@ u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t h
 // RUNTIME
 
 static void hd_activatedep(context_desc_t context_desc, u32 gpa){
-	xmhfcore_setmemprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE) );	   
-	xmhfcore_memprot_flushmappings(context_desc);
+	printf("\n%s:%u originalprotection=%08x", __FUNCTION__, context_desc.cpu_desc.cpuid, xc_api_hpt_getprot(context_desc, gpa));
+	xc_api_hpt_setentry(context_desc, gpa, xc_api_hpt_getentry(context_desc, gpa));
+	xc_api_hpt_setprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE) );	   
+	xc_api_hpt_flushcaches(context_desc);
 	printf("\nCPU(%02x): %s removed EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.cpuid, __FUNCTION__, gpa);
 }
 
 //de-activate DEP protection
 static void hd_deactivatedep(context_desc_t context_desc, u32 gpa){
-	xmhfcore_setmemprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE) );	   
-	xmhfcore_memprot_flushmappings(context_desc);
+	xc_api_hpt_setprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE) );	   
+	xc_api_hpt_flushcaches_smp(context_desc);
 	printf("\nCPU(%02x): %s added EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.cpuid, __FUNCTION__, gpa);
 }
 
@@ -118,7 +131,7 @@ u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u
 		break;
 
 		case HYPERDEP_ACTIVATEDEP:{
-			gpa=(u32)xmhfcore_smpguest_walk_pagetables(context_desc, gva);
+			gpa=(u32)xc_api_hpt_lvl2pagewalk(context_desc, gva);
 			if(gpa == 0xFFFFFFFFUL){
 				printf("\nCPU(%02x): WARNING: unable to get translation for gva=%x, just returning", context_desc.cpu_desc.cpuid, gva);
 				return status;
@@ -129,7 +142,7 @@ u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u
 		break;
 		
 		case HYPERDEP_DEACTIVATEDEP:{
-			gpa=(u32)xmhfcore_smpguest_walk_pagetables(context_desc, gva);
+			gpa=(u32)xc_api_hpt_lvl2pagewalk(context_desc, gva);
 			if(gpa == 0xFFFFFFFFUL){
 				printf("\nCPU(%02x): WARNING: unable to get translation for gva=%x, just returning", context_desc.cpu_desc.cpuid, gva);
 				return status;
@@ -159,7 +172,7 @@ void xmhf_hypapp_handleshutdown(context_desc_t context_desc){
 
 //handles h/w pagetable violations
 //for now this always returns APP_SUCCESS
-u32 xmhf_hypapp_handleintercept_hwpgtblviolation(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code){
+u32 xmhf_hypapp_handleintercept_hptfault(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code){
 	u32 status = APP_SUCCESS;
 
 	printf("\nCPU(%02x): FATAL HWPGTBL violation (gva=%x, gpa=%x, code=%x): app tried to execute data page??", context_desc.cpu_desc.cpuid, (u32)gva, (u32)gpa, (u32)error_code);
@@ -171,11 +184,7 @@ u32 xmhf_hypapp_handleintercept_hwpgtblviolation(context_desc_t context_desc, u6
 
 //handles i/o port intercepts
 //returns either APP_IOINTERCEPT_SKIP or APP_IOINTERCEPT_CHAIN
-u32 xmhf_hypapp_handleintercept_portaccess(context_desc_t context_desc, u32 portnum, u32 access_type, u32 access_size){
-	(void)portnum; //unused
-	(void)access_type; //unused
-	(void)access_size; //unused
-
- 	return APP_IOINTERCEPT_CHAIN;
+u32 xmhf_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch_param_t xc_hypapp_arch_param){
+ 	return APP_TRAP_CHAIN;
 }
 

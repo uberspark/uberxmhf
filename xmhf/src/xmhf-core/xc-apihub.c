@@ -68,6 +68,65 @@ void xmhf_apihub_fromhypapp(u32 callnum){
 	
 	//if paramhypapp->param1 is of type VCPU * then it basically points to paramcore->vcpu, the original vcpu data structure is in paramcore->param1
 	switch(callnum){
+			case XC_API_HPT_SETPROT:{
+				xc_api_hpt_setprot(paramhypapp->context_desc, (u64)paramhypapp->param1, (u32)paramhypapp->param2);
+				break;
+			}
+
+			case XC_API_HPT_GETPROT:{
+				paramcore->result = xc_api_hpt_getprot(paramhypapp->context_desc, (u64)paramhypapp->param1);
+				break;
+			}
+
+			case XC_API_HPT_SETENTRY:{
+				xc_api_hpt_setentry(paramhypapp->context_desc, (u64)paramhypapp->param1, (u64)paramhypapp->param2);
+				break;
+			}
+
+			case XC_API_HPT_GETENTRY:{
+				paramcore->result = xc_api_hpt_getentry(paramhypapp->context_desc, (u64)paramhypapp->param1);
+				break;
+			}
+
+			case XC_API_HPT_FLUSHCACHES:{
+				xc_api_hpt_flushcaches(paramhypapp->context_desc);
+				break;
+			}
+
+			case XC_API_HPT_FLUSHCACHES_SMP:{
+				xc_api_hpt_flushcaches_smp(paramhypapp->context_desc);
+				break;
+			}
+
+			case XC_API_HPT_LVL2PAGEWALK:{ 
+				paramcore->result = xc_api_hpt_lvl2pagewalk(paramhypapp->context_desc, (u64)paramhypapp->param1);
+				break;
+			}
+				
+				
+			case XC_API_TRAPMASK_SET:{
+				xc_api_trapmask_set(paramhypapp->context_desc, paramhypapp->xc_hypapp_arch_param);	
+				break;
+			}
+
+			case XC_API_TRAPMASK_CLEAR:{
+				xc_api_trapmask_clear(paramhypapp->context_desc, paramhypapp->xc_hypapp_arch_param);	
+				break;
+			}
+	
+
+			case XC_API_CPUSTATE_SET:{
+				xc_api_cpustate_set(paramhypapp->context_desc, paramhypapp->xc_hypapp_arch_param);	
+				break;
+			}
+
+			case XC_API_CPUSTATE_GET:{
+				xc_api_cpustate_get(paramhypapp->context_desc, paramhypapp->param1);	
+				break;
+			}
+			
+	
+	
 			case XMHF_APIHUB_COREAPI_OUTPUTDEBUGSTRING:{	//void xmhfc_puts(...)
 					extern void xmhfc_puts(const char *s);	//TODO: move this into an appropriate header
 					xmhfc_puts( __xmhfattribute__(hypapp-ro) (char *)(u32)paramhypapp->param1 );
@@ -81,25 +140,25 @@ void xmhf_apihub_fromhypapp(u32 callnum){
 					break;
 				}
 
-			case XMHF_APIHUB_COREAPI_SETMEMPROT:{ //void xmhf_memprot_setprot(...)
-				xmhf_memprot_setprot(paramhypapp->context_desc, (u64)paramhypapp->param1, (u32)paramhypapp->param2);
-				break;
-			}
+			//case XMHF_APIHUB_COREAPI_SETMEMPROT:{ //void xmhf_memprot_setprot(...)
+			//	xmhf_memprot_setprot(paramhypapp->context_desc, (u64)paramhypapp->param1, (u32)paramhypapp->param2);
+			//	break;
+			//}
 			
-			case XMHF_APIHUB_COREAPI_MEMPROT_FLUSHMAPPINGS:{ //void xmhfcore_memprot_flushmappings(...);
-				xmhf_memprot_flushmappings( paramhypapp->context_desc );
-				break;
-			}
+			//case XMHF_APIHUB_COREAPI_MEMPROT_FLUSHMAPPINGS:{ //void xmhfcore_memprot_flushmappings(...);
+			//	xmhf_memprot_flushmappings( paramhypapp->context_desc );
+			//	break;
+			//}
 			
-			case XMHF_APIHUB_COREAPI_SMPGUEST_WALK_PAGETABLES:{ //u8 * xmhf_smpguest_walk_pagetables(...);
-				paramcore->result = (u32)xmhf_smpguest_walk_pagetables( paramhypapp->context_desc, (u32)paramhypapp->param1);
-				break;
-			}
+			//case XMHF_APIHUB_COREAPI_SMPGUEST_WALK_PAGETABLES:{ //u8 * xmhf_smpguest_walk_pagetables(...);
+			//	paramcore->result = (u32)xmhf_smpguest_walk_pagetables( paramhypapp->context_desc, (u32)paramhypapp->param1);
+			//	break;
+			//}
 			
-			case XMHF_APIHUB_COREAPI_HPT_SETENTRY:{ //void xmhf_memprot_hpt_setentry(...)
-				xmhf_memprot_hpt_setentry(paramhypapp->context_desc, paramhypapp->param1, paramhypapp->param2);
-				break;
-			}
+			//case XMHF_APIHUB_COREAPI_HPT_SETENTRY:{ //void xmhf_memprot_hpt_setentry(...)
+			//	xmhf_memprot_hpt_setentry(paramhypapp->context_desc, paramhypapp->param1, paramhypapp->param2);
+			//	break;
+			//}
 
 			default:
 				printf("\n%s: WARNING, unsupported core API call (%u), returning", __FUNCTION__, callnum);
@@ -123,8 +182,14 @@ void xmhf_apihub_fromhypapp(u32 callnum){
 
 
 // hypapp main (initialization) function
-u32 xmhfhypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb){
+u32 xc_hypapp_initialization(xc_cpu_t *xc_cpu, hypapp_env_block_t hypappenvb){
+	context_desc_t context_desc;
 	u32 result;
+
+	context_desc.partition_desc.partitionid = xc_cpu->parentpartition->partitionid;
+	context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
+	context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
+	context_desc.cpu_desc.xc_cpu = xc_cpu;
 
 	paramcore->context_desc = context_desc;
 	paramcore->hypappenvb = hypappenvb;
@@ -136,8 +201,14 @@ u32 xmhfhypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hy
 
 //hypapp hypercall handler
 //returns APP_SUCCESS if we handled the hypercall else APP_ERROR
-u32 xmhfhypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param){
+u32 xc_hypapp_handlehypercall(xc_cpu_t *xc_cpu, u64 hypercall_id, u64 hypercall_param){
 	u32 result;
+	context_desc_t context_desc;
+	
+	context_desc.partition_desc.partitionid = xc_cpu->parentpartition->partitionid;
+	context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
+	context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
+	context_desc.cpu_desc.xc_cpu = xc_cpu;
 	
 	paramcore->context_desc = context_desc;
 	paramcore->param1 = hypercall_id;
@@ -152,8 +223,14 @@ u32 xmhfhypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u6
 
 //handles XMHF shutdown callback
 //note: should not return
-void xmhfhypapp_handleshutdown(context_desc_t context_desc){
+void xc_hypapp_handleshutdown(xc_cpu_t *xc_cpu){
 	u32 result;
+	context_desc_t context_desc;
+
+	context_desc.partition_desc.partitionid = xc_cpu->parentpartition->partitionid;
+	context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
+	context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
+	context_desc.cpu_desc.xc_cpu = xc_cpu;
 	
 	paramcore->context_desc = context_desc;
 	xmhf_apihub_arch_tohypapp(XMHF_APIHUB_HYPAPPCB_SHUTDOWN);
@@ -165,14 +242,20 @@ void xmhfhypapp_handleshutdown(context_desc_t context_desc){
 
 //handles h/w pagetable violations
 //for now this always returns APP_SUCCESS
-u32 xmhfhypapp_handleintercept_hwpgtblviolation(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code){
+u32 xc_hypapp_handleintercept_hptfault(xc_cpu_t *xc_cpu, u64 gpa, u64 gva, u64 error_code){
 	u32 result;
+	context_desc_t context_desc;
 	
+	context_desc.partition_desc.partitionid = xc_cpu->parentpartition->partitionid;
+	context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
+	context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
+	context_desc.cpu_desc.xc_cpu = xc_cpu;
+
 	paramcore->context_desc = context_desc;
 	paramcore->param1 = gpa;
 	paramcore->param2 = gva;
 	paramcore->param3 = error_code;
-	xmhf_apihub_arch_tohypapp(XMHF_APIHUB_HYPAPPCB_HWPGTBLVIOLATION);
+	xmhf_apihub_arch_tohypapp(XMHF_APIHUB_HYPAPPCB_HPTFAULT);
 	result = (u32)paramhypapp->result;
 	
 	return result;	
@@ -180,20 +263,24 @@ u32 xmhfhypapp_handleintercept_hwpgtblviolation(context_desc_t context_desc, u64
 }
 
 
-//handles i/o port intercepts
-//returns either APP_IOINTERCEPT_SKIP or APP_IOINTERCEPT_CHAIN
-u32 xmhfhypapp_handleintercept_portaccess(context_desc_t context_desc, u32 portnum, u32 access_type, u32 access_size){
-
+//handles trap intercepts
+//returns either APP_TRAP_SKIP or APP_TRAP_CHAIN
+u32 xc_hypapp_handleintercept_trap(xc_cpu_t *xc_cpu, xc_hypapp_arch_param_t xc_hypapp_arch_param){
 	u32 result;
+	context_desc_t context_desc;
+
+	context_desc.partition_desc.partitionid = xc_cpu->parentpartition->partitionid;
+	context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
+	context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
+	context_desc.cpu_desc.xc_cpu = xc_cpu;
 	
 	paramcore->context_desc = context_desc;
-	paramcore->param1 = (u32)portnum;
-	paramcore->param2 = (u32)access_type;
-	paramcore->param3 = (u32)access_size;
-	xmhf_apihub_arch_tohypapp(XMHF_APIHUB_HYPAPPCB_PORTACCESS);
+	paramcore->xc_hypapp_arch_param = xc_hypapp_arch_param;
+	xmhf_apihub_arch_tohypapp(XMHF_APIHUB_HYPAPPCB_TRAP);
 	result = (u32)paramhypapp->result;
 	
 	return result;	
 
 }
+
 

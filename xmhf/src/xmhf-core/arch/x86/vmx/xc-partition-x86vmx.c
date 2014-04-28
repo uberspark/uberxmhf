@@ -425,7 +425,7 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu_t *xc_cpu, xc_partition
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR4_SHADOW, CR4_VMXE);
 
 	//flush guest TLB to start with
-	xmhf_memprot_arch_x86vmx_flushmappings();
+	//xmhf_memprot_arch_x86vmx_flushmappings();
 }
 
 
@@ -507,24 +507,6 @@ static void xmhf_partition_arch_x86vmx_start(xc_cpu_t *xc_cpu){
 
 }
 
-//set legacy I/O protection for the partition
-void xmhf_partition_arch_x86vmx_legacyIO_setprot(xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx, u32 port, u32 size, u32 prottype){
-
-	u8 *bit_vector = (u8 *)xc_partition_trapmaskdata_x86vmx->vmx_iobitmap_region;
-	u32 byte_offset, bit_offset;
-	u32 i;
-
-	for(i=0; i < size; i++){
-		byte_offset = (port+i) / 8;
-		bit_offset = (port+i) % 8;
-		if(prottype & PART_LEGACYIO_NOACCESS){
-			bit_vector[byte_offset] |= (1 << bit_offset);	
-		}else{
-			prottype = PART_LEGACYIO_READWRITE;
-			bit_vector[byte_offset] &= ~((1 << bit_offset));	
-		}
-	}
-}
 
 
 
@@ -545,185 +527,9 @@ void xmhf_partition_arch_start(xc_cpu_t *xc_cpu){
 	xmhf_partition_arch_x86vmx_start(xc_cpu);
 }
 
-//set legacy I/O protection for the partition
-void xmhf_partition_arch_legacyIO_setprot(context_desc_t context_desc, xc_partition_t *xc_partition, u32 port, u32 size, u32 prottype){
-	xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx = (xc_partition_trapmaskdata_x86vmx_t *)xc_partition->trapmaskdata;
-		
-	xmhf_partition_arch_x86vmx_legacyIO_setprot(xc_partition_trapmaskdata_x86vmx, port, size, prottype);
-}
 
 
 
-//----------------------------------------------------------------------
-//Queiscing interfaces
-//----------------------------------------------------------------------
-
-//the quiesce counter, all CPUs except for the one requesting the
-//quiesce will increment this when they get their quiesce signal
-//smpguest x86vmx
-static u32 g_vmx_quiesce_counter __attribute__(( section(".data") )) = 0;
-
-//SMP lock to access the above variable
-//smpguest x86vmx
-static u32 g_vmx_lock_quiesce_counter __attribute__(( section(".data") )) = 1; 
-
-//resume counter to rally all CPUs after resumption from quiesce
-//smpguest x86vmx
-static u32 g_vmx_quiesce_resume_counter __attribute__(( section(".data") )) = 0;
-
-//SMP lock to access the above variable
-//smpguest x86vmx
-static u32 g_vmx_lock_quiesce_resume_counter __attribute__(( section(".data") )) = 1; 
-    
-//the "quiesce" variable, if 1, then we have a quiesce in process
-//smpguest x86vmx
-static u32 g_vmx_quiesce __attribute__(( section(".data") )) = 0;;      
-
-//SMP lock to access the above variable
-//smpguest x86vmx
-static u32 g_vmx_lock_quiesce __attribute__(( section(".data") )) = 1; 
-    
-//resume signal, becomes 1 to signal resume after quiescing
-//smpguest x86vmx
-static u32 g_vmx_quiesce_resume_signal __attribute__(( section(".data") )) = 0;  
-
-//SMP lock to access the above variable
-//smpguest x86vmx
-static u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") )) = 1; 
-
-
-
-static void _vmx_send_quiesce_signal(void){
-  u32 prev_icr_high_value;
-
-  prev_icr_high_value = xmhfhw_sysmemaccess_readu32((0xFEE00000 + 0x310));
-
-  xmhfhw_sysmemaccess_writeu32((0xFEE00000 + 0x310), (0xFFUL << 24)); //send to all but self
-  xmhfhw_sysmemaccess_writeu32((0xFEE00000 + 0x300), 0x000C0400UL); //send NMI
-
-  while( xmhfhw_sysmemaccess_readu32((0xFEE00000 + 0x310)) & 0x00001000 );
-  
-  xmhfhw_sysmemaccess_writeu32((0xFEE00000 + 0x310), prev_icr_high_value);
-}
-
-
-//quiesce interface to switch all guest cores into hypervisor mode
-//note: we are in atomic processsing mode for this "xc_cpu"
-void xmhf_smpguest_arch_x86vmx_quiesce(xc_cpu_t *xc_cpu){
-
-        //printf("\nCPU(0x%02x): got quiesce signal...", xc_cpu->cpuid);
-        //grab hold of quiesce lock
-        spin_lock(&g_vmx_lock_quiesce);
-        //printf("\nCPU(0x%02x): grabbed quiesce lock.", xc_cpu->cpuid);
-
-		xc_cpu->is_quiesced = 1;
-		//reset quiesce counter
-        spin_lock(&g_vmx_lock_quiesce_counter);
-        g_vmx_quiesce_counter=0;
-        spin_unlock(&g_vmx_lock_quiesce_counter);
-        
-        //send all the other CPUs the quiesce signal
-        g_vmx_quiesce=1;  //we are now processing quiesce
-        _vmx_send_quiesce_signal();
-        
-        //wait for all the remaining CPUs to quiesce
-        //printf("\nCPU(0x%02x): waiting for other CPUs to respond...", xc_cpu->cpuid);
-        while(g_vmx_quiesce_counter < (g_xc_cpu_count-1) );
-        //printf("\nCPU(0x%02x): all CPUs quiesced successfully.", xc_cpu->cpuid);
-
-}
-
-void xmhf_smpguest_arch_x86vmx_endquiesce(xc_cpu_t *xc_cpu){
-		(void)xc_cpu;
-
-        //set resume signal to resume the cores that are quiesced
-        //Note: we do not need a spinlock for this since we are in any
-        //case the only core active until this point
-        g_vmx_quiesce_resume_counter=0;
-        //printf("\nCPU(0x%02x): waiting for other CPUs to resume...", xc_cpu->cpuid);
-        g_vmx_quiesce_resume_signal=1;
-        
-        while(g_vmx_quiesce_resume_counter < (g_xc_cpu_count-1) );
-
-		xc_cpu->is_quiesced=0;
-        g_vmx_quiesce=0;  // we are out of quiesce at this point
-
-        //printf("\nCPU(0x%02x): all CPUs resumed successfully.", xc_cpu->cpuid);
-        
-        //reset resume signal
-        spin_lock(&g_vmx_lock_quiesce_resume_signal);
-        g_vmx_quiesce_resume_signal=0;
-        spin_unlock(&g_vmx_lock_quiesce_resume_signal);
-                
-        //release quiesce lock
-        //printf("\nCPU(0x%02x): releasing quiesce lock.", xc_cpu->cpuid);
-        spin_unlock(&g_vmx_lock_quiesce);
-
-        
-}
-
-//quiescing handler for #NMI (non-maskable interrupt) exception event
-//note: we are in atomic processsing mode for this "xc_cpu"
-void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu, struct regs *r){
-	u32 nmiinhvm;	//1 if NMI originated from the HVM else 0 if within the hypervisor
-	u32 _vmx_vmcs_info_vmexit_interrupt_information;
-	u32 _vmx_vmcs_info_vmexit_reason;
-
-    (void)r;
-
-	//determine if the NMI originated within the HVM or within the
-	//hypervisor. we use VMCS fields for this purpose. note that we
-	//use vmread directly instead of relying on xc_cpu-> to avoid 
-	//race conditions
-	_vmx_vmcs_info_vmexit_interrupt_information = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION);
-	_vmx_vmcs_info_vmexit_reason = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON);
-	
-	nmiinhvm = ( (_vmx_vmcs_info_vmexit_reason == VMX_VMEXIT_EXCEPTION) && ((_vmx_vmcs_info_vmexit_interrupt_information & INTR_INFO_VECTOR_MASK) == 2) ) ? 1 : 0;
-	
-	if(g_vmx_quiesce){ //if g_vmx_quiesce =1 process quiesce regardless of where NMI originated from
-		//if this core has been quiesced, simply return
-			if(xc_cpu->is_quiesced)
-				return;
-				
-			xc_cpu->is_quiesced=1;
-	
-			//increment quiesce counter
-			spin_lock(&g_vmx_lock_quiesce_counter);
-			g_vmx_quiesce_counter++;
-			spin_unlock(&g_vmx_lock_quiesce_counter);
-
-			//wait until quiesceing is finished
-			//printf("\nCPU(0x%02x): Quiesced", xc_cpu->cpuid);
-			while(!g_vmx_quiesce_resume_signal);
-			//printf("\nCPU(0x%02x): EOQ received, resuming...", xc_cpu->cpuid);
-
-			//flush EPT TLB
-			xmhf_memprot_arch_x86vmx_flushmappings();
-
-			spin_lock(&g_vmx_lock_quiesce_resume_counter);
-			g_vmx_quiesce_resume_counter++;
-			spin_unlock(&g_vmx_lock_quiesce_resume_counter);
-			
-			xc_cpu->is_quiesced=0;
-	}else{
-		//we are not in quiesce
-		//inject the NMI if it was triggered in guest mode
-		
-		if(nmiinhvm){
-			if(xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EXCEPTION_BITMAP) & CPU_EXCEPTION_NMI){
-				//TODO: hypapp has chosen to intercept NMI so callback
-			}else{
-				//printf("\nCPU(0x%02x): Regular NMI, injecting back to guest...", xc_cpu->cpuid);
-				xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_EXCEPTION_ERRORCODE, 0);
-				//xc_cpu->vmcs.control_VM_entry_interruption_information = NMI_VECTOR |
-				//	INTR_TYPE_NMI |
-				//	INTR_INFO_VALID_MASK;
-				xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_INTERRUPTION_INFORMATION, (NMI_VECTOR | INTR_TYPE_NMI | INTR_INFO_VALID_MASK));
-			}
-		}
-	}
-	
-}
 
 
 

@@ -60,10 +60,9 @@
 #define XMHF_APIHUB_HYPAPPCB_INITIALIZATION			(0)
 #define XMHF_APIHUB_HYPAPPCB_HYPERCALL				(1)
 #define XMHF_APIHUB_HYPAPPCB_SHUTDOWN				(2)
-#define XMHF_APIHUB_HYPAPPCB_HWPGTBLVIOLATION		(3)
-#define XMHF_APIHUB_HYPAPPCB_PORTACCESS				(4)
+#define XMHF_APIHUB_HYPAPPCB_HPTFAULT				(3)
+#define XMHF_APIHUB_HYPAPPCB_TRAP					(4)
 
-//core APIs
 #define	XMHF_APIHUB_COREAPI_OUTPUTDEBUGSTRING			(0)
 #define XMHF_APIHUB_COREAPI_REBOOT						(1)
 #define XMHF_APIHUB_COREAPI_SETMEMPROT					(2)
@@ -74,6 +73,7 @@
 
 
 #ifndef __ASSEMBLY__
+
 
 void xmhfcore_outputdebugstring(const char *s);
 void xmhfcore_reboot(context_desc_t context_desc);

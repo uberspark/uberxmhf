@@ -123,6 +123,9 @@
 //max. size of CPU stack (16K default)
 #define MAX_PLATFORM_CPUSTACK_SIZE				(4*4096)
 
+//max. number of arch. specific parameters for hypapp callback
+#define MAX_XC_HYPAPP_CB_ARCH_PARAMS	8
+
 //maximum system memory map entries (e.g., E820) currently supported
 #define MAX_E820_ENTRIES    			(64)  
 

@@ -117,6 +117,12 @@ typedef struct {
 } __attribute__((packed)) hypapp_env_block_t;
 
 
+typedef struct {
+	u64 operation;
+	u64 params[MAX_XC_HYPAPP_CB_ARCH_PARAMS];
+}__attribute__ ((packed)) xc_hypapp_arch_param_t;
+
+
 //hypapp parameter block
 typedef struct {
 	u64 param1;
@@ -130,7 +136,7 @@ typedef struct {
 	u64 result;
 	context_desc_t context_desc;
 	hypapp_env_block_t hypappenvb;
-	//xmhfcoreapiretval_t retval;
+	xc_hypapp_arch_param_t xc_hypapp_arch_param;
 } __attribute__((packed)) XMHF_HYPAPP_PARAMETERBLOCK;
 
 
@@ -161,6 +167,10 @@ typedef struct {
 } __attribute__((packed)) XMHF_HYPAPP_HEADER;
 
 #define XMHF_HYPAPP_HEADER_MAGIC	0xDEADBEEF
+ 
+ 
+ 
+ 
  
 #endif //__ASSEMBLY__
 

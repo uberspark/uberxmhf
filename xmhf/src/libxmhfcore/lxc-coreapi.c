@@ -74,40 +74,127 @@ void xmhfcore_reboot(context_desc_t context_desc){
 }
 
 //xmhf_memprot_setprot -- setmemprot
-void xmhfcore_setmemprot(context_desc_t context_desc, u64 gpa, u32 prottype){
+//void xmhfcore_setmemprot(context_desc_t context_desc, u64 gpa, u32 prottype){
+//
+//	paramhypapp->context_desc = context_desc;
+//	paramhypapp->param1 = (u64)gpa;
+//	paramhypapp->param2 = (u32)prottype;
+//	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_SETMEMPROT);
+//	return;
+//}
 
+//void xmhfcore_memprot_flushmappings(VCPU *vcpu);
+//void xmhfcore_memprot_flushmappings(context_desc_t context_desc){
+//	paramhypapp->context_desc = context_desc;
+//	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_MEMPROT_FLUSHMAPPINGS);
+//	return;
+//}	
+
+//u8 * xmhf_smpguest_walk_pagetables(VCPU *vcpu, u32 vaddr);
+//u8 * xmhfcore_smpguest_walk_pagetables(context_desc_t context_desc, u32 vaddr){
+//	u8 *result;
+//	paramhypapp->context_desc = context_desc;
+//	paramhypapp->param1 = (u32)vaddr;
+//	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_SMPGUEST_WALK_PAGETABLES);
+//	result = (u8 *)(u32)paramcore->result;
+//	return result;
+//}
+
+
+//void xmhfcore_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u64 entry){
+//	u64 result;
+//	paramhypapp->context_desc = context_desc;
+//	paramhypapp->param1 = hpt_paddr;
+//	paramhypapp->param2 = entry;
+//	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_HPT_SETENTRY);
+//	return;
+//}
+
+
+//HPT related core APIs
+void xc_api_hpt_setprot(context_desc_t context_desc, u64 gpa, u32 prottype){
 	paramhypapp->context_desc = context_desc;
 	paramhypapp->param1 = (u64)gpa;
 	paramhypapp->param2 = (u32)prottype;
-	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_SETMEMPROT);
+	libxmhfcore_hypapptocore(XC_API_HPT_SETPROT);
 	return;
 }
 
-//void xmhfcore_memprot_flushmappings(VCPU *vcpu);
-void xmhfcore_memprot_flushmappings(context_desc_t context_desc){
+u32 xc_api_hpt_getprot(context_desc_t context_desc, u64 gpa){
+	u32 result;
+	
 	paramhypapp->context_desc = context_desc;
-	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_MEMPROT_FLUSHMAPPINGS);
-	return;
-}	
+	paramhypapp->param1 = gpa;
+	libxmhfcore_hypapptocore(XC_API_HPT_GETPROT);
+	result = (u32)paramcore->result;
+	
+	return result;
+}
 
-//u8 * xmhf_smpguest_walk_pagetables(VCPU *vcpu, u32 vaddr);
-u8 * xmhfcore_smpguest_walk_pagetables(context_desc_t context_desc, u32 vaddr){
-	u8 *result;
+void xc_api_hpt_setentry(context_desc_t context_desc, u64 gpa, u64 entry){
 	paramhypapp->context_desc = context_desc;
-	paramhypapp->param1 = (u32)vaddr;
-	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_SMPGUEST_WALK_PAGETABLES);
-	result = (u8 *)(u32)paramcore->result;
+	paramhypapp->param1 = gpa;
+	paramhypapp->param2 = entry;
+	libxmhfcore_hypapptocore(XC_API_HPT_SETENTRY);
+	return;
+}
+
+u64 xc_api_hpt_getentry(context_desc_t context_desc, u64 gpa){
+	u64 result;
+	paramhypapp->context_desc = context_desc;
+	paramhypapp->param1 = (u32)gpa;
+
+	libxmhfcore_hypapptocore(XC_API_HPT_GETENTRY);
+	result = (u64)paramcore->result;
+	return result;
+}
+
+void xc_api_hpt_flushcaches(context_desc_t context_desc){
+	paramhypapp->context_desc = context_desc;
+	libxmhfcore_hypapptocore(XC_API_HPT_FLUSHCACHES);
+}
+
+void xc_api_hpt_flushcaches_smp(context_desc_t context_desc){
+	paramhypapp->context_desc = context_desc;
+	libxmhfcore_hypapptocore(XC_API_HPT_FLUSHCACHES_SMP);
+}
+
+u64 xc_api_hpt_lvl2pagewalk(context_desc_t context_desc, u64 gva){
+	u64 result;
+	paramhypapp->context_desc = context_desc;
+	paramhypapp->param1 = gva;
+	libxmhfcore_hypapptocore(XC_API_HPT_LVL2PAGEWALK);
+	result = (u64)paramcore->result;
 	return result;
 }
 
 
-void xmhfcore_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u64 entry){
-	u64 result;
+//Trapmask related APIs
+void xc_api_trapmask_set(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams){
 	paramhypapp->context_desc = context_desc;
-	paramhypapp->param1 = hpt_paddr;
-	paramhypapp->param2 = entry;
-	libxmhfcore_hypapptocore(XMHF_APIHUB_COREAPI_HPT_SETENTRY);
-	return;
+	paramhypapp->xc_hypapp_arch_param = trapmaskparams;
+	libxmhfcore_hypapptocore(XC_API_TRAPMASK_SET);
 }
 
+void xc_api_trapmask_clear(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams){
+	paramhypapp->context_desc = context_desc;
+	paramhypapp->xc_hypapp_arch_param = trapmaskparams;
+	libxmhfcore_hypapptocore(XC_API_TRAPMASK_CLEAR);
+}
+
+//cpu state related core APIs
+void xc_api_cpustate_set(context_desc_t context_desc, xc_hypapp_arch_param_t cpustateparams){
+	paramhypapp->context_desc = context_desc;
+	paramhypapp->xc_hypapp_arch_param = cpustateparams;
+	libxmhfcore_hypapptocore(XC_API_CPUSTATE_SET);
+}
+
+xc_hypapp_arch_param_t xc_api_cpustate_get(context_desc_t context_desc, u64 operation){
+	xc_hypapp_arch_param_t cpustateparams;
+	paramhypapp->context_desc = context_desc;
+	paramhypapp->param1 = operation;
+	libxmhfcore_hypapptocore(XC_API_CPUSTATE_GET);
+	cpustateparams = paramcore->xc_hypapp_arch_param;
+	return cpustateparams;
+}
 

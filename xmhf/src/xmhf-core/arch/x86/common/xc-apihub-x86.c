@@ -226,19 +226,6 @@ void xmhf_apihub_arch_initialize (void){
 	}
 
 		
-	/*//change CR3 to point to core page tables
-	{
-		u32 cr3;
-
-		cr3 = read_cr3();
-		printf("\n%s: CR3=%08x", __FUNCTION__, cr3);
-		cr3 = (u32)&core_3level_pdpt;
-		printf("\n%s: attempting to change CR3 to %08x", __FUNCTION__, cr3);
-		write_cr3(cr3);
-		cr3 = read_cr3();
-		printf("\n%s: CR3 changed to %08x", __FUNCTION__, cr3);
-	}*/
-
 	//initialize core paging
 	xmhf_baseplatform_arch_x86_initialize_paging((u32)&core_3level_pdpt);
 
@@ -273,43 +260,6 @@ void xmhf_apihub_arch_initialize (void){
  * 
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
-
-void xmhf_apihub_arch_fromhypapp_stub(void);
-
-//__attribute__((naked)) void xmhf_apihub_arch_tohypapp_wip(u32 hypappcallnum){
-void xmhf_apihub_arch_tohypapp(u32 hypappcallnum){
-
-asm volatile ( 	"pushal	\r\n"							//save all GPRs
-				"pushl $backfromhypapp \r\n"			//push return EIP on top of stack
-				"movl %0, %%esi \r\n"					//esi = hypappcallnum
-				"movl $0x0, %%edx \r\n"					//store SYSENTER CS  
-				"movl %1, %%eax \r\n"
-				"movl %2, %%ecx \r\n"
-				"wrmsr \r\n"
-				"movl $0x0, %%edx \r\n"					//store SYSENTER ESP 
-				"movl %%esp, %%eax \r\n"
-				"movl %3, %%ecx \r\n"
-				"wrmsr \r\n"
-				"movl $0x0, %%edx \r\n"					//store SYSENTER EIP
-				"movl %4, %%eax \r\n"			
-				"movl %5, %%ecx \r\n"
-				"wrmsr \r\n"
-				"movl %6, %%ecx \r\n"					//store SYSEXIT ESP
-				"movl %7, %%edx \r\n"					//store SYSEXIT EIP
-				"movl %8, %%eax \r\n"					//load hypapp page tables
-				"movl %%eax, %%cr3 \r\n"			
-				"movw %9,  %%ax \r\n"			//load hypapp DS segment selector
-				"movw %%ax, %%ds \r\n"					//SS and CS loaded by sysexit below
-				"sysexit \r\n"							//invoke hypapp callback*/
-				"backfromhypapp: \r\n"
-				"popal \r\n"							// restore all GPRs
-				:	//no outputs
-				: "m" (hypappcallnum), "i" (__CS_CPL0), "i" (IA32_SYSENTER_CS_MSR), "i" (IA32_SYSENTER_ESP_MSR), "i" (&xmhf_apihub_arch_fromhypapp_stub), 
-					"i" (IA32_SYSENTER_EIP_MSR), "m" (hypapp_tos), "m" (hypapp_cbhub_pc), "m" (hypapp_ptba), "i" (__DS_CPL3)
-				: "esi", "edx", "eax", "ecx"
-		);
-
-}
 
 __attribute__((naked)) void xmhf_apihub_arch_fromhypapp_stub(void){
 
@@ -349,4 +299,39 @@ asm volatile(
 
 
 }
+
+void xmhf_apihub_arch_tohypapp(u32 hypappcallnum){
+
+asm volatile ( 	"pushal	\r\n"							//save all GPRs
+				"pushl $backfromhypapp \r\n"			//push return EIP on top of stack
+				"movl %0, %%esi \r\n"					//esi = hypappcallnum
+				"movl $0x0, %%edx \r\n"					//store SYSENTER CS  
+				"movl %1, %%eax \r\n"
+				"movl %2, %%ecx \r\n"
+				"wrmsr \r\n"
+				"movl $0x0, %%edx \r\n"					//store SYSENTER ESP 
+				"movl %%esp, %%eax \r\n"
+				"movl %3, %%ecx \r\n"
+				"wrmsr \r\n"
+				"movl $0x0, %%edx \r\n"					//store SYSENTER EIP
+				"movl %4, %%eax \r\n"			
+				"movl %5, %%ecx \r\n"
+				"wrmsr \r\n"
+				"movl %6, %%ecx \r\n"					//store SYSEXIT ESP
+				"movl %7, %%edx \r\n"					//store SYSEXIT EIP
+				"movl %8, %%eax \r\n"					//load hypapp page tables
+				"movl %%eax, %%cr3 \r\n"			
+				"movw %9,  %%ax \r\n"			//load hypapp DS segment selector
+				"movw %%ax, %%ds \r\n"					//SS and CS loaded by sysexit below
+				"sysexit \r\n"							//invoke hypapp callback*/
+				"backfromhypapp: \r\n"
+				"popal \r\n"							// restore all GPRs
+				:	//no outputs
+				: "m" (hypappcallnum), "i" (__CS_CPL0), "i" (IA32_SYSENTER_CS_MSR), "i" (IA32_SYSENTER_ESP_MSR), "i" (&xmhf_apihub_arch_fromhypapp_stub), 
+					"i" (IA32_SYSENTER_EIP_MSR), "m" (hypapp_tos), "m" (hypapp_cbhub_pc), "m" (hypapp_ptba), "i" (__DS_CPL3)
+				: "esi", "edx", "eax", "ecx"
+		);
+
+}
+
 

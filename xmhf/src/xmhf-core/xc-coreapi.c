@@ -44,53 +44,59 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//xmhf.h - main XMHF core header file 
-// this orchestrates the inclusion of other core component specific
-// headers
-//author: amit vasudevan (amitvasudevan@acm.org)
-//
-#ifndef __XMHF_CORE_H_
-#define __XMHF_CORE_H_
+#include <xmhf-core.h>
 
-#include <xmhf.h>
+/*
+ * 	XMHF core API
+ * 
+ *  author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
 
-//pull in required crypto (SHA-1)
-//libXMHFcrypto
-#ifndef __ASSEMBLY__
-	#include <xmhfcrypto.h>
-	#include <sha1.h>
-#endif /* __ASSEMBLY__ */
+//HPT related core APIs
+void xc_api_hpt_setprot(context_desc_t context_desc, u64 gpa, u32 prottype){
+	xc_api_hpt_arch_setprot(context_desc, gpa, prottype);
+}
+
+u32 xc_api_hpt_getprot(context_desc_t context_desc, u64 gpa){
+	return xc_api_hpt_arch_getprot(context_desc, gpa);
+}
+
+void xc_api_hpt_setentry(context_desc_t context_desc, u64 gpa, u64 entry){
+	xc_api_hpt_arch_setentry(context_desc, gpa, entry);
+}
+
+u64 xc_api_hpt_getentry(context_desc_t context_desc, u64 gpa){
+	return xc_api_hpt_arch_getentry(context_desc, gpa);	
+}
+
+void xc_api_hpt_flushcaches(context_desc_t context_desc){
+	xc_api_hpt_arch_flushcaches(context_desc, false);
+}
+
+void xc_api_hpt_flushcaches_smp(context_desc_t context_desc){
+	xc_api_hpt_arch_flushcaches(context_desc, true);	
+}
+
+u64 xc_api_hpt_lvl2pagewalk(context_desc_t context_desc, u64 gva){
+	return xc_api_hpt_arch_lvl2pagewalk(context_desc, gva);	
+}
 
 
-//pull in required TPM library
-//libtpm
-#ifndef __ASSEMBLY__
-	#include <tpm.h>
-#endif /* __ASSEMBLY__ */
+//Trapmask related APIs
+void xc_api_trapmask_set(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams){
+	xc_api_trapmask_arch_set(context_desc, trapmaskparams);
+}
 
-/*//forward declaration of runtime parameter block
-#ifndef __ASSEMBLY__
-extern RPB *rpb;	
-#endif	//__ASSEMBLY__
-*/
+void xc_api_trapmask_clear(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams){
+	xc_api_trapmask_arch_clear(context_desc, trapmaskparams);
+}
 
-#include <xc-types.h>			//core specific data types
-#include <xc-globaldata.h>		//core global data
+//cpu state related core APIs
+void xc_api_cpustate_set(context_desc_t context_desc, xc_hypapp_arch_param_t cpustateparams){
+	xc_api_cpustate_arch_set(context_desc, cpustateparams);
+}
 
-//----------------------------------------------------------------------
-// component headers
-#include <xc-baseplatform.h>	//base platform component
-#include <xc-memprot.h>			//memory protection component
-#include <xc-dmaprot.h>			//DMA protection component
-#include <xc-partition.h>		//partition component
-#include <xc-richguest.h>		//rich guest component
-#include <xc-xcphandler.h>		//exception handler component
-#include <xc-tpm.h>				//Trusted Platform Module component
-#include <xc-startup.h>			//secure loader component
-#include <xc-hypapp.h>			//hypapp callback declarations
-#include <xc-apihub.h>			//core API interface component
-
-#include <xc-coreapi.h>			//core API
-
-#endif /* __XMHF_CORE_H_ */
+xc_hypapp_arch_param_t xc_api_cpustate_get(context_desc_t context_desc, u64 operation){
+	return xc_api_cpustate_arch_get(context_desc, operation);
+}
