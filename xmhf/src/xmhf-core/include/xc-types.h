@@ -86,7 +86,7 @@ typedef struct {
 
 typedef struct {
 		u32 cpuid;				//unique CPU id
-		xc_cpu_t *xc_cpu;
+		//xc_cpu_t *xc_cpu;
 		u32 cpu_index;			//index into g_xc_cpu
 } __attribute__((packed)) xc_cputable_t;
 
