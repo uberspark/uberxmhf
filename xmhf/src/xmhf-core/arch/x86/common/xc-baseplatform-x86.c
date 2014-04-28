@@ -483,12 +483,16 @@ void _ap_pmode_entry_with_paging(void) __attribute__((naked)){
 					"cmpl %%edx, %%ecx\r\n"
 					"jb getidxloop\r\n"
 					"hlt\r\n"								//we should never get here, if so just halt
-					"gotidx:\r\n"
-					"movl 0x4(%%ebx, %%edi), %%esi\r\n"	 	//esi contains xc_cpu_t *xc_cpu
-					"movl 0x0(%%esi), %%ebx	\r\n"				//ebx contains xc_cpu->stack
-					"movl %%ebx, %%esp \r\n"				//esp = ebx (stack for the cpu with index_cpudata)
+					"gotidx:\r\n"							// ecx contains index into g_xc_cputable
+					"movl 0x8(%%ebx, %%edi), %%eax\r\n"	 	// eax = g_xc_cputable[ecx].cpu_index
+					"movl %6, %%edi \r\n"					// edi = &g_xc_cpustack
+					"movl %7, %%ecx \r\n"					// ecx = sizeof(g_xc_cpustack[0])
+					"mull %%ecx \r\n"						// eax = sizeof(g_xc_cpustack[0]) * eax
+					"addl %%ecx, %%eax \r\n"				// eax = (sizeof(g_xc_cpustack[0]) * eax) + sizeof(g_xc_cpustack[0])
+					"addl %%edi, %%eax \r\n"				// eax = &g_xc_cpustack + (sizeof(g_xc_cpustack[0]) * eax) + sizeof(g_xc_cpustack[0])
+					"movl %%eax, %%esp \r\n"				// esp = top of stack for the cpu
 					:
-					: "m" (_gdt), "m" (_idt), "i" (MSR_APIC_BASE), "m" (g_xc_cpu_count), "i" (&g_xc_cputable), "i" (sizeof(xc_cputable_t))
+					: "m" (_gdt), "m" (_idt), "i" (MSR_APIC_BASE), "m" (g_xc_cpu_count), "i" (&g_xc_cputable), "i" (sizeof(xc_cputable_t)), "i" (&g_xc_cpustack), "i" (sizeof(g_xc_cpustack[0]))
 	);
 
 	xmhf_baseplatform_arch_x86_smpinitialize_commonstart();
