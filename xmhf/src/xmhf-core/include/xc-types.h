@@ -77,7 +77,7 @@ typedef struct {
 typedef u8 xc_cpuarchdata_t;
 
 typedef struct {
-		void *stack;			//CPU stack
+		//void *stack;			//CPU stack
 		u32 cpuid;				//unique CPU id
 		bool is_bsp;			//true if CPU is the boot-strap processor
 		bool is_quiesced;		//true if CPU is quiesced
