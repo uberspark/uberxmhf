@@ -95,7 +95,8 @@ typedef struct {
 typedef struct {
 	u32 cpuid;
 	bool isbsp;
-	xc_cpu_t *xc_cpu;
+	//xc_cpu_t *xc_cpu;
+	u32 cpu_index;
 } cpu_desc_t;
 	
 //XMHF core api partition descriptor type

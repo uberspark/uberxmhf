@@ -107,7 +107,8 @@ static xc_cpu_t *_vmx_getxc_cpu(void){
 void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t context_desc, struct regs *r){
 	u16 cs, ip;
 	u16 guest_flags;
-	xc_cpu_t *xc_cpu = (xc_cpu_t *)context_desc.cpu_desc.xc_cpu;
+	//xc_cpu_t *xc_cpu = (xc_cpu_t *)context_desc.cpu_desc.xc_cpu;
+	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
 
 	//if E820 service then...
 	if((u16)r->eax == 0xE820){
