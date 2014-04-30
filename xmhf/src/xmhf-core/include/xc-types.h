@@ -85,7 +85,7 @@ typedef struct {
 
 //XMHF core api CPU descriptor type
 typedef struct {
-	u32 cpuid;
+	//u32 cpuid;
 	bool isbsp;
 	u32 cpu_index;
 } cpu_desc_t;
