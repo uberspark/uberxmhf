@@ -225,8 +225,9 @@ static void xmhf_partition_arch_x86vmx_initializemonitor(xc_cpu_t *xc_cpu){
 
 
 //setup guest OS state for the partition
-void xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition){
+void xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu_t *xc_cpu, u32 xc_partition_index){
 	u32 lodword, hidword;
+	xc_partition_t *xc_partition = &g_xc_primary_partition[xc_partition_index];
 	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)xc_cpu->cpuarchdata;
 	xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx = (xc_partition_trapmaskdata_x86vmx_t *)xc_partition->trapmaskdata;
 	
@@ -510,8 +511,8 @@ void xmhf_partition_arch_initializemonitor(xc_cpu_t *xc_cpu){
 }
 
 //setup guest OS state for the partition
-void xmhf_partition_arch_setupguestOSstate(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition){
-	xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu, xc_partition);
+void xmhf_partition_arch_setupguestOSstate(xc_cpu_t *xc_cpu, u32 xc_partition_index){
+	xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu, xc_partition_index);
 }
 
 //start executing the partition and guest OS

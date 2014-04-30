@@ -87,7 +87,7 @@ void xmhf_runtime_entry(void){
 	#endif
 
 	//initialize richguest
-	xmhf_richguest_initialize(xc_cpu_bsp, xc_partition_richguest);
+	xmhf_richguest_initialize(xc_partition_richguest_index);
 
 	//invoke XMHF api hub initialization function to initialize core API
 	//interface layer
@@ -115,15 +115,16 @@ void xmhf_runtime_main(u32 cpu_index){
 	//TODO: check if this CPU is allocated to the "rich" guest. if so, pass it on to
 	//the rich guest initialization procedure. if the CPU is not allocated to the
 	//rich guest, enter it into a CPU pool for use by other partitions
-	xmhf_richguest_addcpu(xc_cpu, xc_partition_richguest);
+	xmhf_richguest_addcpu(xc_cpu, xc_partition_richguest_index);
 	
 	//call hypapp main function
     spin_lock(&_xc_startup_hypappmain_counter_lock);
 	{
 		hypapp_env_block_t hypappenvb;
 		context_desc_t context_desc;
-		
-		context_desc.partition_desc.partitionid = xc_cpu->parentpartition->partitionid;
+		xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
+
+		context_desc.partition_desc.partitionid = xc_partition->partitionid;
 		context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
 		context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
 		context_desc.cpu_desc.cpu_index = cpu_index;

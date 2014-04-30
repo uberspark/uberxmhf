@@ -191,7 +191,9 @@ void xc_api_hpt_arch_flushcaches(context_desc_t context_desc, bool dosmpflush){
 u64 xc_api_hpt_arch_getentry(context_desc_t context_desc, u64 gpa){
 	u64 entry;
 	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
-	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_cpu->parentpartition->hptdata;  
+	xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
+	
+	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;  
 	
 	u64 *hpt = (u64 *)eptdata->vmx_ept_p_tables;
 	u32 hpt_index = (u32)gpa / PAGE_SIZE_4K;
@@ -203,7 +205,9 @@ u64 xc_api_hpt_arch_getentry(context_desc_t context_desc, u64 gpa){
 
 void xc_api_hpt_arch_setentry(context_desc_t context_desc, u64 gpa, u64 entry){
 	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
-	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_cpu->parentpartition->hptdata;  
+	xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
+
+	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;  
 	
 	u64 *hpt = (u64 *)eptdata->vmx_ept_p_tables;
 	u32 hpt_index = (u32)gpa / PAGE_SIZE_4K;
@@ -216,7 +220,9 @@ void xc_api_hpt_arch_setentry(context_desc_t context_desc, u64 gpa, u64 entry){
 
 u32 xc_api_hpt_arch_getprot(context_desc_t context_desc, u64 gpa){
   xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
-  xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_cpu->parentpartition->hptdata;  
+  xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
+
+  xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;  
 
   u32 pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
   u64 *pt = (u64 *)eptdata->vmx_ept_p_tables;
@@ -248,7 +254,10 @@ void xc_api_hpt_arch_setprot(context_desc_t context_desc, u64 gpa, u32 prottype)
   u64 *pt;
   u32 flags =0;
  xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
-  xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_cpu->parentpartition->hptdata;  
+ 	xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
+
+ 
+  xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;  
     
   pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
   pt = (u64 *)eptdata->vmx_ept_p_tables;
@@ -386,7 +395,9 @@ u64 xc_api_hpt_arch_lvl2pagewalk(context_desc_t context_desc, u64 gva){
 
 static void _trapmask_operation_trap_io_set(context_desc_t context_desc, u16 port, u8 size){
 	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
-	xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx = (xc_partition_trapmaskdata_x86vmx_t *)xc_cpu->parentpartition->trapmaskdata;
+	xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
+
+	xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx = (xc_partition_trapmaskdata_x86vmx_t *)xc_partition->trapmaskdata;
 	u8 *bit_vector = (u8 *)xc_partition_trapmaskdata_x86vmx->vmx_iobitmap_region;
 	u32 byte_offset, bit_offset;
 	u32 i;
@@ -403,7 +414,9 @@ static void _trapmask_operation_trap_io_set(context_desc_t context_desc, u16 por
 
 static void _trapmask_operation_trap_io_clear(context_desc_t context_desc, u16 port, u8 size){
 	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
-	xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx = (xc_partition_trapmaskdata_x86vmx_t *)xc_cpu->parentpartition->trapmaskdata;
+	xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
+
+	xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx = (xc_partition_trapmaskdata_x86vmx_t *)xc_partition->trapmaskdata;
 	u8 *bit_vector = (u8 *)xc_partition_trapmaskdata_x86vmx->vmx_iobitmap_region;
 	u32 byte_offset, bit_offset;
 	u32 i;
