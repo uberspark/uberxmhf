@@ -225,8 +225,9 @@ static void xmhf_partition_arch_x86vmx_initializemonitor(xc_cpu_t *xc_cpu){
 
 
 //setup guest OS state for the partition
-void xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition){
+void xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu_t *xc_cpu, u32 xc_partition_index){
 	u32 lodword, hidword;
+	xc_partition_t *xc_partition = &g_xc_primary_partition[xc_partition_index];
 	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)xc_cpu->cpuarchdata;
 	xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx = (xc_partition_trapmaskdata_x86vmx_t *)xc_partition->trapmaskdata;
 	
@@ -251,21 +252,13 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu_t *xc_cpu, xc_partition
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_IDTR_BASE, xmhf_baseplatform_arch_x86_getidtbase());
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_TR_BASE, xmhf_baseplatform_arch_x86_gettssbase());
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RIP, (u32)xmhf_parteventhub_arch_x86vmx_entry);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RSP, read_esp());
 
 #ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
 	if( vcpu->vmcs.host_RIP == (u64)(u32)xmhf_parteventhub_arch_x86vmx_entry)
 		vcpu->vmcs.host_RIP = 0xDEADBEEF;
 #endif //__XMHF_VERIFICATION__
 
-	//store vcpu at TOS
-//	vcpu->esp = vcpu->esp - sizeof(u32);
-//#ifndef __XMHF_VERIFICATION__
-//	*(u32 *)vcpu->esp = (u32)vcpu;
-//#endif
-//	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RSP, vcpu->esp);
-
-	*(u32 *)((u32)xc_cpu->stack - sizeof(u32)) = (u32)xc_cpu;
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RSP, ((u32)xc_cpu->stack - sizeof(u32)));
 			
 
 #ifndef __XMHF_VERIFICATION__			
@@ -518,8 +511,8 @@ void xmhf_partition_arch_initializemonitor(xc_cpu_t *xc_cpu){
 }
 
 //setup guest OS state for the partition
-void xmhf_partition_arch_setupguestOSstate(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition){
-	xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu, xc_partition);
+void xmhf_partition_arch_setupguestOSstate(xc_cpu_t *xc_cpu, u32 xc_partition_index){
+	xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu, xc_partition_index);
 }
 
 //start executing the partition and guest OS

@@ -77,7 +77,7 @@ static xc_cpu_t *_vmx_getxc_cpu(void){
   
   for(i=0; i < (int)g_xc_cpu_count; i++){
     if(g_xc_cputable[i].cpuid == lapic_id)
-        return( (xc_cpu_t *)g_xc_cputable[i].xc_cpu );
+        return( (xc_cpu_t *)&g_xc_cpu[g_xc_cputable[i].cpu_index] );
   }
 
   printf("\n%s: fatal, unable to retrieve xc_cpu for id=0x%02x", __FUNCTION__, lapic_id);
@@ -107,7 +107,8 @@ static xc_cpu_t *_vmx_getxc_cpu(void){
 void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t context_desc, struct regs *r){
 	u16 cs, ip;
 	u16 guest_flags;
-	xc_cpu_t *xc_cpu = (xc_cpu_t *)context_desc.cpu_desc.xc_cpu;
+	//xc_cpu_t *xc_cpu = (xc_cpu_t *)context_desc.cpu_desc.xc_cpu;
+	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
 
 	//if E820 service then...
 	if((u16)r->eax == 0xE820){
@@ -586,8 +587,9 @@ static void	_vmx_int15_initializehook(void){
 
 //-------------------------------------------------------------------------
 //void xmhf_richguest_arch_initialize(u32 index_cpudata_bsp){
-void xmhf_richguest_arch_initialize(xc_cpu_t *xc_cpu_bsp, xc_partition_t *xc_partition_richguest){
+void xmhf_richguest_arch_initialize(u32 xc_partition_richguest_index){
 	//xc_cpu_t *xc_cpu = &g_bplt_xc_cpu[index_cpudata_bsp];
+	xc_partition_t *xc_partition_richguest = &g_xc_primary_partition[xc_partition_richguest_index];
 	
 	//printf("\n%s: index_cpudata_bsp = %u", __FUNCTION__, index_cpudata_bsp);	
 
