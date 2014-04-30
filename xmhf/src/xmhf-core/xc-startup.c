@@ -124,7 +124,7 @@ void xmhf_runtime_main(u32 cpu_index){
 		context_desc_t context_desc;
 		xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
 
-		context_desc.partition_desc.partition_index = xc_partition->partitionid;
+		context_desc.partition_desc.partition_index = xc_cpu->parentpartition_index;
 		//context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
 		context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
 		context_desc.cpu_desc.cpu_index = cpu_index;
