@@ -53,7 +53,7 @@
 
 
 
-static u32 _vmx_getregval(u32 gpr, xc_cpu_t *xc_cpu, struct regs *r){
+static u32 _vmx_getregval(u32 gpr, struct regs *r){
 
 	  switch(gpr){
 		case 0: return r->eax;
@@ -71,7 +71,7 @@ static u32 _vmx_getregval(u32 gpr, xc_cpu_t *xc_cpu, struct regs *r){
 }
 
 //---intercept handler (CPUID)--------------------------------------------------
-static void _vmx_handle_intercept_cpuid(xc_cpu_t *xc_cpu, struct regs *r){
+static void _vmx_handle_intercept_cpuid(context_desc_t context_desc, struct regs *r){
 	asm volatile ("cpuid\r\n"
           :"=a"(r->eax), "=b"(r->ebx), "=c"(r->ecx), "=d"(r->edx)
           :"a"(r->eax), "c" (r->ecx));
@@ -97,7 +97,7 @@ static void _vmx_handle_intercept_cpuid(xc_cpu_t *xc_cpu, struct regs *r){
 //------------------------------------------------------------------------------
   
 //---intercept handler (WRMSR)--------------------------------------------------
-static void _vmx_handle_intercept_wrmsr(xc_cpu_t *xc_cpu, struct regs *r){
+static void _vmx_handle_intercept_wrmsr(context_desc_t context_desc, struct regs *r){
 	//printf("\nCPU(0x%02x): WRMSR 0x%08x", xc_cpu->cpuid, r->ecx);
 
 	switch(r->ecx){
@@ -122,7 +122,7 @@ static void _vmx_handle_intercept_wrmsr(xc_cpu_t *xc_cpu, struct regs *r){
 }
 
 //---intercept handler (RDMSR)--------------------------------------------------
-static void _vmx_handle_intercept_rdmsr(xc_cpu_t *xc_cpu, struct regs *r){
+static void _vmx_handle_intercept_rdmsr(context_desc_t context_desc, struct regs *r){
 	switch(r->ecx){
 		case IA32_SYSENTER_CS_MSR:
 			r->eax = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SYSENTER_CS);
@@ -148,19 +148,19 @@ static void _vmx_handle_intercept_rdmsr(xc_cpu_t *xc_cpu, struct regs *r){
 
 
 //---intercept handler (EPT voilation)----------------------------------
-static void _vmx_handle_intercept_eptviolation(xc_cpu_t *xc_cpu, struct regs *r __attribute__((unused))){
+static void _vmx_handle_intercept_eptviolation(context_desc_t context_desc, struct regs *r __attribute__((unused))){
 	u32 errorcode, gpa, gva;
 
 	errorcode = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION);
 	gpa = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_GUEST_PADDR_FULL);
 	gva = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_GUEST_LINEAR_ADDRESS);
 
-	xc_hypapp_handleintercept_hptfault(xc_cpu, gpa, gva,	(errorcode & 7));
+	xc_hypapp_handleintercept_hptfault(context_desc, gpa, gva,	(errorcode & 7));
 }
 
 
 //---intercept handler (I/O port access)----------------------------------------
-static void _vmx_handle_intercept_ioportaccess(xc_cpu_t *xc_cpu, struct regs *r __attribute__((unused))){
+static void _vmx_handle_intercept_ioportaccess(context_desc_t context_desc, struct regs *r __attribute__((unused))){
     u32 access_size, access_type, portnum, stringio;
 	u32 app_ret_status = APP_TRAP_CHAIN;
 	
@@ -177,7 +177,7 @@ static void _vmx_handle_intercept_ioportaccess(xc_cpu_t *xc_cpu, struct regs *r 
 		xc_hypapp_arch_param.params[0] = portnum;
 		xc_hypapp_arch_param.params[1] = access_type;
 		xc_hypapp_arch_param.params[2] = access_size;
-		app_ret_status=xc_hypapp_handleintercept_trap(xc_cpu, xc_hypapp_arch_param);
+		app_ret_status=xc_hypapp_handleintercept_trap(context_desc, xc_hypapp_arch_param);
 	}
 
 	if(app_ret_status == APP_TRAP_CHAIN){
@@ -210,12 +210,12 @@ static void _vmx_handle_intercept_ioportaccess(xc_cpu_t *xc_cpu, struct regs *r 
 
 
 //---CR0 access handler-------------------------------------------------
-static void vmx_handle_intercept_cr0access_ug(xc_cpu_t *xc_cpu, struct regs *r, u32 gpr, u32 tofrom){
+static void vmx_handle_intercept_cr0access_ug(context_desc_t context_desc, struct regs *r, u32 gpr, u32 tofrom){
 	u32 cr0_value;
 	
 	HALT_ON_ERRORCOND(tofrom == VMX_CRX_ACCESS_TO);
 	
-	cr0_value = _vmx_getregval(gpr, xc_cpu, r);
+	cr0_value = _vmx_getregval(gpr, r);
 
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR0_SHADOW, cr0_value);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, (cr0_value & ~(CR0_CD | CR0_NW)));
@@ -225,11 +225,11 @@ static void vmx_handle_intercept_cr0access_ug(xc_cpu_t *xc_cpu, struct regs *r, 
 }
 
 //---CR4 access handler---------------------------------------------------------
-static void vmx_handle_intercept_cr4access_ug(xc_cpu_t *xc_cpu, struct regs *r, u32 gpr, u32 tofrom){
+static void vmx_handle_intercept_cr4access_ug(context_desc_t context_desc, struct regs *r, u32 gpr, u32 tofrom){
   if(tofrom == VMX_CRX_ACCESS_TO){
 	u32 cr4_proposed_value;
 	
-	cr4_proposed_value = _vmx_getregval(gpr, xc_cpu, r);
+	cr4_proposed_value = _vmx_getregval(gpr, r);
 	
 	//we need to flush logical processor VPID mappings as we emulated CR4 load above
 	__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0);
@@ -237,7 +237,7 @@ static void vmx_handle_intercept_cr4access_ug(xc_cpu_t *xc_cpu, struct regs *r, 
 }
 
 //---XSETBV intercept handler-------------------------------------------
-static void _vmx_handle_intercept_xsetbv(xc_cpu_t *xc_cpu, struct regs *r){
+static void _vmx_handle_intercept_xsetbv(context_desc_t context_desc, struct regs *r){
 	u64 xcr_value;
 	
 	xcr_value = ((u64)r->edx << 32) + (u64)r->eax;
@@ -312,7 +312,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu
 					u64 hypercall_id = (u64)x86gprs.eax;
 					u64 hypercall_param = ((u64)x86gprs.edx << 32) | x86gprs.ecx;
 	
-					if( xc_hypapp_handlehypercall(xc_cpu, hypercall_id, hypercall_param) != APP_SUCCESS){
+					if( xc_hypapp_handlehypercall(context_desc, hypercall_id, hypercall_param) != APP_SUCCESS){
 						printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", xc_cpu->cpuid, x86gprs.eax);
 						HALT();
 					}
@@ -324,13 +324,13 @@ static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu
 		break;
 
 		case VMX_VMEXIT_IOIO:{
-			_vmx_handle_intercept_ioportaccess(xc_cpu, &x86gprs);
+			_vmx_handle_intercept_ioportaccess(context_desc, &x86gprs);
 		}
 		_vmx_propagate_cpustate_guestx86gprs(context_desc, &x86gprs);
 		break;
 
 		case VMX_VMEXIT_EPT_VIOLATION:{
-			_vmx_handle_intercept_eptviolation(xc_cpu, &x86gprs);
+			_vmx_handle_intercept_eptviolation(context_desc, &x86gprs);
 		}
 		_vmx_propagate_cpustate_guestx86gprs(context_desc, &x86gprs);
 		break;  
@@ -338,7 +338,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu
 		case VMX_VMEXIT_INIT:{
 
 			printf("\n***** VMEXIT_INIT xc_hypapp_handleshutdown\n");
-			xc_hypapp_handleshutdown(xc_cpu);      
+			xc_hypapp_handleshutdown(context_desc);      
 			printf("\nCPU(0x%02x): Fatal, xc_hypapp_handleshutdown returned. Halting!", xc_cpu->cpuid);
 			HALT();
 		}
@@ -359,11 +359,11 @@ static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu
 			if ( ((int)gpr >=0) && ((int)gpr <= 7) ){
 				switch(crx){
 					case 0x0: //CR0 access
-						vmx_handle_intercept_cr0access_ug(xc_cpu, &x86gprs, gpr, tofrom);	
+						vmx_handle_intercept_cr0access_ug(context_desc, &x86gprs, gpr, tofrom);	
 						break;
 					
 					case 0x4: //CR4 access
-						vmx_handle_intercept_cr4access_ug(xc_cpu, &x86gprs, gpr, tofrom);	
+						vmx_handle_intercept_cr4access_ug(context_desc, &x86gprs, gpr, tofrom);	
 						break;
 				
 					default:
@@ -381,16 +381,16 @@ static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu
 		break;	
 
  		case VMX_VMEXIT_RDMSR:
-			_vmx_handle_intercept_rdmsr(xc_cpu, &x86gprs);
+			_vmx_handle_intercept_rdmsr(context_desc, &x86gprs);
 			_vmx_propagate_cpustate_guestx86gprs(context_desc, &x86gprs);
 			break;
 			
 		case VMX_VMEXIT_WRMSR:
-			_vmx_handle_intercept_wrmsr(xc_cpu, &x86gprs);
+			_vmx_handle_intercept_wrmsr(context_desc, &x86gprs);
 			break;
 			
 		case VMX_VMEXIT_CPUID:
-			_vmx_handle_intercept_cpuid(xc_cpu, &x86gprs);
+			_vmx_handle_intercept_cpuid(context_desc, &x86gprs);
 			_vmx_propagate_cpustate_guestx86gprs(context_desc, &x86gprs);
 			break;
 
@@ -402,7 +402,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu
 			
 			if(reason == TASK_SWITCH_GATE && type == INTR_TYPE_NMI){
 				printf("\nCPU(0x%02x): NMI received (MP guest shutdown?)", xc_cpu->cpuid);
-				xc_hypapp_handleshutdown(xc_cpu);      
+				xc_hypapp_handleshutdown(context_desc);      
 				printf("\nCPU(0x%02x): warning, xc_hypapp_handleshutdown returned!", xc_cpu->cpuid);
 				printf("\nCPU(0x%02x): HALTING!", xc_cpu->cpuid);
 				HALT();
@@ -416,7 +416,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu
 		break;
 
 		case VMX_VMEXIT_XSETBV:{
-			_vmx_handle_intercept_xsetbv(xc_cpu, &x86gprs);
+			_vmx_handle_intercept_xsetbv(context_desc, &x86gprs);
 		}
 		break;
 
@@ -474,7 +474,7 @@ void xmhf_parteventhub_arch_x86vmx_entry(void) __attribute__((naked)){
 		asm volatile ("pushal\r\n");
 		
 		//step-2: grab xc_cpu_t *
-		asm volatile ("movl 32(%esp), %esi\r\n");
+		//asm volatile ("movl 32(%esp), %esi\r\n");
 			      
 		//step-3: get hold of pointer to saved GPR on stack
 		asm volatile ("movl %esp, %eax\r\n");
@@ -482,9 +482,10 @@ void xmhf_parteventhub_arch_x86vmx_entry(void) __attribute__((naked)){
 		//step-4: invoke "C" event handler
 		//1st argument is xc_cpu_t * followed by pointer to saved GPRs
 		asm volatile ("pushl %eax\r\n");
-		asm volatile ("pushl %esi\r\n");
+		//asm volatile ("pushl %esi\r\n");
 		asm volatile ("call xmhf_partition_eventhub_arch_x86vmx\r\n");
-		asm volatile ("addl $0x08, %esp\r\n");
+		//asm volatile ("addl $0x08, %esp\r\n");
+		asm volatile ("addl $0x04, %esp\r\n");
 
 		//step-5; restore all CPU GPRs
 		asm volatile ("popal\r\n");
@@ -498,12 +499,38 @@ void xmhf_parteventhub_arch_x86vmx_entry(void) __attribute__((naked)){
 }
 
 
-void xmhf_partition_eventhub_arch_x86vmx(xc_cpu_t *xc_cpu, struct regs *cpugprs){
+//void xmhf_partition_eventhub_arch_x86vmx(xc_cpu_t *xc_cpu, struct regs *cpugprs){
+void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 	static u32 _xc_partition_eventhub_lock = 1; 
 	xc_hypapp_arch_param_t cpustateparams;
 	struct regs x86gprs;
 	context_desc_t context_desc;
+	xc_cpu_t *xc_cpu;
+	u32 cpu_index;
 
+	//grab xc_cpu for this core
+	{
+		u32 i;
+		u32 cpu_uniqueid = xmhf_baseplatform_arch_x86_getcpulapicid();
+		bool found_cpu_index = false;
+		
+		for(i=0; i < g_xc_cpu_count; i++){
+			if(g_xc_cputable[i].cpuid == cpu_uniqueid){
+				cpu_index = g_xc_cputable[i].cpu_index;
+				found_cpu_index = true;
+				break;
+			}
+		}
+		
+		if(!found_cpu_index){
+			printf("\n%s: Fatal error, could not find xc_cpu. Halting!", __FUNCTION__);
+			HALT();
+		}
+
+		xc_cpu = &g_xc_cpu[cpu_index];
+	}
+
+	
 #ifndef __XMHF_VERIFICATION__
 	//handle cpu quiescing
 	if(xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON) == VMX_VMEXIT_EXCEPTION){
@@ -530,10 +557,9 @@ void xmhf_partition_eventhub_arch_x86vmx(xc_cpu_t *xc_cpu, struct regs *cpugprs)
 	xc_api_cpustate_set(context_desc, cpustateparams);
 
 	//setup context descriptor
-	context_desc.partition_desc.partitionid = 0;
-	context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
+	context_desc.partition_desc.partition_index = xc_cpu->parentpartition_index;
 	context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
-	context_desc.cpu_desc.xc_cpu = xc_cpu;
+	context_desc.cpu_desc.cpu_index = cpu_index;
 	
 	_vmx_intercept_handler(context_desc, xc_cpu, x86gprs);
 	

@@ -55,16 +55,20 @@
 //	xmhf_richguest_arch_initialize(index_cpudata_bsp);	
 //}
 
-void xmhf_richguest_initialize(xc_cpu_t *xc_cpu_bsp, xc_partition_t *xc_partition_richguest){
-	xmhf_richguest_arch_initialize(xc_cpu_bsp, xc_partition_richguest);	
+//void xmhf_richguest_initialize(xc_cpu_t *xc_cpu_bsp, xc_partition_t *xc_partition_richguest){
+//	xmhf_richguest_arch_initialize(xc_cpu_bsp, xc_partition_richguest);	
+//}
+
+void xmhf_richguest_initialize(u32 xc_partition_richguest_index){
+	xmhf_richguest_arch_initialize(xc_partition_richguest_index);	
 }
 
 
 //add given xc_cpu_t to the rich guest partition
-void xmhf_richguest_addcpu(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition_richguest){
+void xmhf_richguest_addcpu(xc_cpu_t *xc_cpu, u32 xc_partition_richguest_index){
 	
 	//add cpu to the richguest partition
-	xc_cpu->parentpartition = xc_partition_richguest;
+	xc_cpu->parentpartition_index = xc_partition_richguest_index; // rich guest partition index
 	
 	//initialize CPU
 	//xmhf_baseplatform_cpuinitialize();
@@ -78,11 +82,11 @@ void xmhf_richguest_addcpu(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition_richgu
 	//setup guest OS state for partition
 	//xmhf_partition_setupguestOSstate(vcpu);
 	//xmhf_partition_setupguestOSstate(context_desc);
-	xmhf_partition_setupguestOSstate(xc_cpu, xc_partition_richguest);
+	xmhf_partition_setupguestOSstate(xc_cpu, xc_partition_richguest_index);
 
 	//initialize memory protection for this core
 	//xmhf_memprot_initialize(context_desc);		
-	xmhf_memprot_initialize(xc_cpu, xc_partition_richguest);		
+	xmhf_memprot_initialize(xc_cpu, xc_partition_richguest_index);		
 
 }
 

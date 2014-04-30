@@ -182,14 +182,14 @@ void xmhf_apihub_fromhypapp(u32 callnum){
 
 
 // hypapp main (initialization) function
-u32 xc_hypapp_initialization(xc_cpu_t *xc_cpu, hypapp_env_block_t hypappenvb){
-	context_desc_t context_desc;
+u32 xc_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb){
 	u32 result;
-
+	/*context_desc_t context_desc;
+	
 	context_desc.partition_desc.partitionid = xc_cpu->parentpartition->partitionid;
 	context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
 	context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
-	context_desc.cpu_desc.xc_cpu = xc_cpu;
+	context_desc.cpu_desc.xc_cpu = xc_cpu;*/
 
 	paramcore->context_desc = context_desc;
 	paramcore->hypappenvb = hypappenvb;
@@ -201,14 +201,14 @@ u32 xc_hypapp_initialization(xc_cpu_t *xc_cpu, hypapp_env_block_t hypappenvb){
 
 //hypapp hypercall handler
 //returns APP_SUCCESS if we handled the hypercall else APP_ERROR
-u32 xc_hypapp_handlehypercall(xc_cpu_t *xc_cpu, u64 hypercall_id, u64 hypercall_param){
+u32 xc_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param){
 	u32 result;
-	context_desc_t context_desc;
+	/*context_desc_t context_desc;
 	
 	context_desc.partition_desc.partitionid = xc_cpu->parentpartition->partitionid;
 	context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
 	context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
-	context_desc.cpu_desc.xc_cpu = xc_cpu;
+	context_desc.cpu_desc.xc_cpu = xc_cpu;*/
 	
 	paramcore->context_desc = context_desc;
 	paramcore->param1 = hypercall_id;
@@ -223,14 +223,14 @@ u32 xc_hypapp_handlehypercall(xc_cpu_t *xc_cpu, u64 hypercall_id, u64 hypercall_
 
 //handles XMHF shutdown callback
 //note: should not return
-void xc_hypapp_handleshutdown(xc_cpu_t *xc_cpu){
+void xc_hypapp_handleshutdown(context_desc_t context_desc){
 	u32 result;
-	context_desc_t context_desc;
+	/*context_desc_t context_desc;
 
 	context_desc.partition_desc.partitionid = xc_cpu->parentpartition->partitionid;
 	context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
 	context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
-	context_desc.cpu_desc.xc_cpu = xc_cpu;
+	context_desc.cpu_desc.xc_cpu = xc_cpu;*/
 	
 	paramcore->context_desc = context_desc;
 	xmhf_apihub_arch_tohypapp(XMHF_APIHUB_HYPAPPCB_SHUTDOWN);
@@ -242,14 +242,14 @@ void xc_hypapp_handleshutdown(xc_cpu_t *xc_cpu){
 
 //handles h/w pagetable violations
 //for now this always returns APP_SUCCESS
-u32 xc_hypapp_handleintercept_hptfault(xc_cpu_t *xc_cpu, u64 gpa, u64 gva, u64 error_code){
+u32 xc_hypapp_handleintercept_hptfault(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code){
 	u32 result;
-	context_desc_t context_desc;
+	/*context_desc_t context_desc;
 	
 	context_desc.partition_desc.partitionid = xc_cpu->parentpartition->partitionid;
 	context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
 	context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
-	context_desc.cpu_desc.xc_cpu = xc_cpu;
+	context_desc.cpu_desc.xc_cpu = xc_cpu;*/
 
 	paramcore->context_desc = context_desc;
 	paramcore->param1 = gpa;
@@ -265,14 +265,14 @@ u32 xc_hypapp_handleintercept_hptfault(xc_cpu_t *xc_cpu, u64 gpa, u64 gva, u64 e
 
 //handles trap intercepts
 //returns either APP_TRAP_SKIP or APP_TRAP_CHAIN
-u32 xc_hypapp_handleintercept_trap(xc_cpu_t *xc_cpu, xc_hypapp_arch_param_t xc_hypapp_arch_param){
+u32 xc_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch_param_t xc_hypapp_arch_param){
 	u32 result;
-	context_desc_t context_desc;
+	/*context_desc_t context_desc;
 
 	context_desc.partition_desc.partitionid = xc_cpu->parentpartition->partitionid;
 	context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
 	context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
-	context_desc.cpu_desc.xc_cpu = xc_cpu;
+	context_desc.cpu_desc.xc_cpu = xc_cpu;*/
 	
 	paramcore->context_desc = context_desc;
 	paramcore->xc_hypapp_arch_param = xc_hypapp_arch_param;

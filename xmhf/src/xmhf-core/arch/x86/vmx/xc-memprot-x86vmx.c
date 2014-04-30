@@ -81,7 +81,8 @@ void xmhf_memprot_arch_x86vmx_set_EPTP(u64 eptp)
 //======================================================================
 // global interfaces (functions) exported by this component
 
-void xmhf_memprot_arch_initialize(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition){
+void xmhf_memprot_arch_initialize(xc_cpu_t *xc_cpu, u32 xc_partition_index){
+	xc_partition_t *xc_partition = &g_xc_primary_partition[xc_partition_index];
 	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;
 	
 	xmhf_memprot_arch_x86vmx_initialize(eptdata);
