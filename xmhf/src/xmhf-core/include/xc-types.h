@@ -167,8 +167,8 @@ typedef struct {
   u32 addr_hypapptocore;	//address is where control is transferred to the core when hypapp calls into core
   u32 addr_tos;				//hypapp top-of-stack address
   APP_PARAM_BLOCK apb;		//hypapp parameter block
-  void *optionalparam1;
-  void *optionalparam2;
+  //void *optionalparam1;
+  //void *optionalparam2;
 } __attribute__((packed)) XMHF_HYPAPP_HEADER;
 
 #define XMHF_HYPAPP_HEADER_MAGIC	0xDEADBEEF
