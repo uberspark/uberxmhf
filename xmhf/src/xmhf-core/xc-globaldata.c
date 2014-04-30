@@ -94,7 +94,7 @@ u32 g_xc_cpu_count __attribute__(( section(".data") )) = 0;
 xc_partition_t g_xc_primary_partition[MAX_PRIMARY_PARTITIONS] __attribute__(( section(".data") ));
 
 // secondary partitions
-xc_partition_t g_xc_secondary_partition[MAX_SECONDARY_PARTITIONS] __attribute__(( section(".data") ));
+//xc_partition_t g_xc_secondary_partition[MAX_SECONDARY_PARTITIONS] __attribute__(( section(".data") ));
 
 // primary partition hpt data buffers
 //xc_partition_hptdata_t g_xc_primary_partition_hptdata[MAX_PRIMARY_PARTITIONS][MAX_PRIMARY_PARTITION_HPTDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
@@ -146,12 +146,12 @@ void *xc_globaldata_initialize(void *input){
 		}
 
 		//secondary partitions
-		for(i=0; i < MAX_SECONDARY_PARTITIONS; i++){
-				g_xc_secondary_partition[i].partitionid=i;
-				g_xc_secondary_partition[i].partitiontype = XC_PARTITION_SECONDARY;
-				//g_xc_secondary_partition[i].hptdata = &g_xc_secondary_partition_hptdata[i];
-				//g_xc_secondary_partition[i].trapmaskdata = NULL;
-		}
+		//for(i=0; i < MAX_SECONDARY_PARTITIONS; i++){
+		//		g_xc_secondary_partition[i].partitionid=i;
+		//		g_xc_secondary_partition[i].partitiontype = XC_PARTITION_SECONDARY;
+		//		//g_xc_secondary_partition[i].hptdata = &g_xc_secondary_partition_hptdata[i];
+		//		//g_xc_secondary_partition[i].trapmaskdata = NULL;
+		//}
 	
 	//initialize cpu table
 	for(i=0; i < g_xc_cpu_count; i++){
