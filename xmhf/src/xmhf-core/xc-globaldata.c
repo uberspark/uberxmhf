@@ -65,7 +65,7 @@ static XMHF_BOOTINFO xcbootinfo_store __attribute__(( section(".s_rpb") )) = {
 XMHF_BOOTINFO *xcbootinfo= &xcbootinfo_store;
 
 //core DMA protection buffer (if DMA protections need to be re-initialized on the target platform)
-u8 g_core_dmaprot_buffer[SIZE_CORE_DMAPROT_BUFFER] __attribute__(( section(".palign_data") ));
+//u8 g_core_dmaprot_buffer[SIZE_CORE_DMAPROT_BUFFER] __attribute__(( section(".palign_data") ));
 
 //core parameter block
 XMHF_HYPAPP_PARAMETERBLOCK *paramcore = (XMHF_HYPAPP_PARAMETERBLOCK *)&paramcore_start;

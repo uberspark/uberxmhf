@@ -62,7 +62,7 @@ extern u8 paramhypapp_start[];
 extern XMHF_BOOTINFO *xcbootinfo;
 
 //core DMA protection buffer (if DMA protections need to be re-initialized on the target platform)
-extern u8 g_core_dmaprot_buffer[SIZE_CORE_DMAPROT_BUFFER] __attribute__(( section(".palign_data") ));
+//extern u8 g_core_dmaprot_buffer[SIZE_CORE_DMAPROT_BUFFER] __attribute__(( section(".palign_data") ));
 
 //core parameter block
 extern XMHF_HYPAPP_PARAMETERBLOCK *paramcore;
