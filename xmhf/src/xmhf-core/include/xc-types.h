@@ -72,7 +72,7 @@ typedef struct {
 
 #define XC_PARTITION_PRIMARY		(1)
 #define XC_PARTITION_SECONDARY		(2)
-
+#define XC_PARTITION_INDEX_INVALID	(0xFFFFFFFFUL)
 
 typedef u8 xc_cpuarchdata_t;
 
@@ -81,7 +81,8 @@ typedef struct {
 		bool is_bsp;			//true if CPU is the boot-strap processor
 		bool is_quiesced;		//true if CPU is quiesced
 		xc_cpuarchdata_t *cpuarchdata;
-		xc_partition_t *parentpartition;
+		//xc_partition_t *parentpartition;
+		u32 parentpartition_index;
 } __attribute__ ((packed)) xc_cpu_t;
 
 typedef struct {

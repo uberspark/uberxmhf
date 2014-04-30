@@ -587,8 +587,9 @@ static void	_vmx_int15_initializehook(void){
 
 //-------------------------------------------------------------------------
 //void xmhf_richguest_arch_initialize(u32 index_cpudata_bsp){
-void xmhf_richguest_arch_initialize(xc_cpu_t *xc_cpu_bsp, xc_partition_t *xc_partition_richguest){
+void xmhf_richguest_arch_initialize(u32 xc_partition_richguest_index){
 	//xc_cpu_t *xc_cpu = &g_bplt_xc_cpu[index_cpudata_bsp];
+	xc_partition_t *xc_partition_richguest = &g_xc_primary_partition[xc_partition_richguest_index];
 	
 	//printf("\n%s: index_cpudata_bsp = %u", __FUNCTION__, index_cpudata_bsp);	
 

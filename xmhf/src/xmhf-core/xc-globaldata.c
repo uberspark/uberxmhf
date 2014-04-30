@@ -106,7 +106,8 @@ xc_partition_hptdata_t g_xc_secondary_partition_hptdata[MAX_SECONDARY_PARTITIONS
 xc_partition_trapmaskdata_t g_xc_primary_partition_trapmaskdata[MAX_PRIMARY_PARTITIONS][MAX_PRIMARY_PARTITION_TRAPMASKDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
 
 // partition data structure pointer for the richguest
-xc_partition_t *xc_partition_richguest = (xc_partition_t *)&g_xc_primary_partition[0];
+//xc_partition_t *xc_partition_richguest = (xc_partition_t *)&g_xc_primary_partition[0];
+u32 xc_partition_richguest_index = 0;
 
 // cpu table
 xc_cputable_t g_xc_cputable[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
@@ -128,7 +129,8 @@ void *xc_globaldata_initialize(void *input){
 		g_xc_cpu[i].is_bsp = xcbootinfo->cpuinfo_buffer[i].isbsp;
 		g_xc_cpu[i].is_quiesced = false;
 		g_xc_cpu[i].cpuarchdata = (xc_cpuarchdata_t *)&g_xc_cpuarchdata[i][0];
-		g_xc_cpu[i].parentpartition = NULL;
+		//g_xc_cpu[i].parentpartition = NULL;
+		g_xc_cpu[i].parentpartition_index = XC_PARTITION_INDEX_INVALID;
 		printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x, cpuarchdata=%08x", i, xcbootinfo->cpuinfo_buffer[i].isbsp, xcbootinfo->cpuinfo_buffer[i].lapic_id, (u32)g_xc_cpu[i].cpuarchdata);
 	}
 

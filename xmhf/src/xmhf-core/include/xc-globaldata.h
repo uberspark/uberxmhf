@@ -103,7 +103,8 @@ extern xc_partition_hptdata_t g_xc_secondary_partition_hptdata[MAX_SECONDARY_PAR
 extern xc_partition_trapmaskdata_t g_xc_primary_partition_trapmaskdata[MAX_PRIMARY_PARTITIONS][MAX_PRIMARY_PARTITION_TRAPMASKDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
 
 // partition data structure pointer for the richguest
-extern xc_partition_t *xc_partition_richguest;
+//extern xc_partition_t *xc_partition_richguest;
+extern u32 xc_partition_richguest_index;
 
 // cpu table
 extern xc_cputable_t g_xc_cputable[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));

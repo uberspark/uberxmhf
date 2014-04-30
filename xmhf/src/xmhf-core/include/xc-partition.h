@@ -73,8 +73,8 @@ void xmhf_partition_initializemonitor(xc_cpu_t *xc_cpu);
 void xmhf_partition_arch_initializemonitor(xc_cpu_t *xc_cpu);
 
 //setup guest OS state for the partition
-void xmhf_partition_setupguestOSstate(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition);
-void xmhf_partition_arch_setupguestOSstate(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition);
+void xmhf_partition_setupguestOSstate(xc_cpu_t *xc_cpu, u32 xc_partition_index);
+void xmhf_partition_arch_setupguestOSstate(xc_cpu_t *xc_cpu, u32 xc_partition_index);
 
 //start executing the partition and guest OS
 void xmhf_partition_start(xc_cpu_t *xc_cpu);

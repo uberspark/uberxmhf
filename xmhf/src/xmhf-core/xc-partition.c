@@ -73,8 +73,8 @@ void xmhf_partition_initializemonitor(xc_cpu_t *xc_cpu){
 //void xmhf_partition_setupguestOSstate(u32 index_cpudata){
 //	xmhf_partition_arch_setupguestOSstate(index_cpudata);
 //}
-void xmhf_partition_setupguestOSstate(xc_cpu_t *xc_cpu, xc_partition_t *xc_partition){
-	xmhf_partition_arch_setupguestOSstate(xc_cpu, xc_partition);
+void xmhf_partition_setupguestOSstate(xc_cpu_t *xc_cpu, u32 xc_partition_index){
+	xmhf_partition_arch_setupguestOSstate(xc_cpu, xc_partition_index);
 }
 
 
