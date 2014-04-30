@@ -88,7 +88,7 @@ u32 g_xc_cpu_count __attribute__(( section(".data") )) = 0;
 
 // platform cpu arch. data buffer
 //u8 g_xc_cpuarchdata[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUARCHDATA_SIZE] __attribute__(( section(".palign_data") ));
-xc_cpuarchdata_t g_xc_cpuarchdata[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUARCHDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
+//xc_cpuarchdata_t g_xc_cpuarchdata[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUARCHDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
 
 // primary partitions
 xc_partition_t g_xc_primary_partition[MAX_PRIMARY_PARTITIONS] __attribute__(( section(".data") ));
@@ -97,13 +97,13 @@ xc_partition_t g_xc_primary_partition[MAX_PRIMARY_PARTITIONS] __attribute__(( se
 xc_partition_t g_xc_secondary_partition[MAX_SECONDARY_PARTITIONS] __attribute__(( section(".data") ));
 
 // primary partition hpt data buffers
-xc_partition_hptdata_t g_xc_primary_partition_hptdata[MAX_PRIMARY_PARTITIONS][MAX_PRIMARY_PARTITION_HPTDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
+//xc_partition_hptdata_t g_xc_primary_partition_hptdata[MAX_PRIMARY_PARTITIONS][MAX_PRIMARY_PARTITION_HPTDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
 
 // secondary partition hpt data buffers
-xc_partition_hptdata_t g_xc_secondary_partition_hptdata[MAX_SECONDARY_PARTITIONS][MAX_SECONDARY_PARTITION_HPTDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
+//xc_partition_hptdata_t g_xc_secondary_partition_hptdata[MAX_SECONDARY_PARTITIONS][MAX_SECONDARY_PARTITION_HPTDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
 
 // primary partition trap mask data buffers
-xc_partition_trapmaskdata_t g_xc_primary_partition_trapmaskdata[MAX_PRIMARY_PARTITIONS][MAX_PRIMARY_PARTITION_TRAPMASKDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
+//xc_partition_trapmaskdata_t g_xc_primary_partition_trapmaskdata[MAX_PRIMARY_PARTITIONS][MAX_PRIMARY_PARTITION_TRAPMASKDATA_SIZE] __attribute__(( section(".data"), aligned(4096) ));
 
 // partition data structure pointer for the richguest
 //xc_partition_t *xc_partition_richguest = (xc_partition_t *)&g_xc_primary_partition[0];
@@ -128,7 +128,7 @@ void *xc_globaldata_initialize(void *input){
 		g_xc_cpu[i].cpuid = xcbootinfo->cpuinfo_buffer[i].lapic_id;
 		g_xc_cpu[i].is_bsp = xcbootinfo->cpuinfo_buffer[i].isbsp;
 		g_xc_cpu[i].is_quiesced = false;
-		g_xc_cpu[i].cpuarchdata = (xc_cpuarchdata_t *)&g_xc_cpuarchdata[i][0];
+		//g_xc_cpu[i].cpuarchdata = (xc_cpuarchdata_t *)&g_xc_cpuarchdata[i][0];
 		//g_xc_cpu[i].parentpartition = NULL;
 		g_xc_cpu[i].parentpartition_index = XC_PARTITION_INDEX_INVALID;
 		printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x, cpuarchdata=%08x", i, xcbootinfo->cpuinfo_buffer[i].isbsp, xcbootinfo->cpuinfo_buffer[i].lapic_id, (u32)g_xc_cpu[i].cpuarchdata);
@@ -141,16 +141,16 @@ void *xc_globaldata_initialize(void *input){
 		for(i=0; i < MAX_PRIMARY_PARTITIONS; i++){
 				g_xc_primary_partition[i].partitionid=i;
 				g_xc_primary_partition[i].partitiontype = XC_PARTITION_PRIMARY;
-				g_xc_primary_partition[i].hptdata = &g_xc_primary_partition_hptdata[i];
-				g_xc_primary_partition[i].trapmaskdata = &g_xc_primary_partition_trapmaskdata[i];
+				//g_xc_primary_partition[i].hptdata = &g_xc_primary_partition_hptdata[i];
+				//g_xc_primary_partition[i].trapmaskdata = &g_xc_primary_partition_trapmaskdata[i];
 		}
 
 		//secondary partitions
 		for(i=0; i < MAX_SECONDARY_PARTITIONS; i++){
 				g_xc_secondary_partition[i].partitionid=i;
 				g_xc_secondary_partition[i].partitiontype = XC_PARTITION_SECONDARY;
-				g_xc_secondary_partition[i].hptdata = &g_xc_secondary_partition_hptdata[i];
-				g_xc_secondary_partition[i].trapmaskdata = NULL;
+				//g_xc_secondary_partition[i].hptdata = &g_xc_secondary_partition_hptdata[i];
+				//g_xc_secondary_partition[i].trapmaskdata = NULL;
 		}
 	
 	//initialize cpu table
