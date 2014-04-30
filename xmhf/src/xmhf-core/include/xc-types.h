@@ -92,7 +92,7 @@ typedef struct {
 	
 //XMHF core api partition descriptor type
 typedef struct {
-	u32 partitionid;
+	u32 partition_index;
 } partition_desc_t;
 
 //XMHF core api context descriptor type (context = partition + cpu pair)

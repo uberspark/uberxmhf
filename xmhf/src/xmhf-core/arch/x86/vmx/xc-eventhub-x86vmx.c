@@ -557,7 +557,7 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 	xc_api_cpustate_set(context_desc, cpustateparams);
 
 	//setup context descriptor
-	context_desc.partition_desc.partitionid = 0;
+	context_desc.partition_desc.partition_index = 0;
 	//context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
 	context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
 	//context_desc.cpu_desc.xc_cpu = xc_cpu;
