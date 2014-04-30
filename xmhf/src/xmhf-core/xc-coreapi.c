@@ -100,3 +100,28 @@ void xc_api_cpustate_set(context_desc_t context_desc, xc_hypapp_arch_param_t cpu
 xc_hypapp_arch_param_t xc_api_cpustate_get(context_desc_t context_desc, u64 operation){
 	return xc_api_cpustate_arch_get(context_desc, operation);
 }
+
+
+static u32 _partition_current_index=0;
+
+//partition related core APIs
+u32 xc_api_partition_create(u32 partitiontype){
+	u32 partition_index = XC_PARTITION_INDEX_INVALID;
+	
+	//we only support primary partitions
+	if(partitiontype != XC_PARTITION_PRIMARY)
+		return partition_index;
+		
+	//check if we have run out of partition memory backing
+	if(_partition_current_index > MAX_PRIMARY_PARTITIONS)
+		return partition_index;
+		
+	
+	g_xc_primary_partition[_partition_current_index].partitionid=_partition_current_index;
+	g_xc_primary_partition[_partition_current_index].partitiontype = XC_PARTITION_PRIMARY;
+	
+    partition_index = _partition_current_index;
+    _partition_current_index++;
+    
+    return partition_index;
+}
