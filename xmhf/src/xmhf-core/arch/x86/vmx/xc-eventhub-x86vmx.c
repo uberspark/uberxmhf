@@ -558,9 +558,7 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 
 	//setup context descriptor
 	context_desc.partition_desc.partition_index = xc_cpu->parentpartition_index;
-	//context_desc.cpu_desc.cpuid = xc_cpu->cpuid;
 	context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
-	//context_desc.cpu_desc.xc_cpu = xc_cpu;
 	context_desc.cpu_desc.cpu_index = cpu_index;
 	
 	_vmx_intercept_handler(context_desc, xc_cpu, x86gprs);
