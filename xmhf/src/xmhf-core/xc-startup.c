@@ -131,26 +131,24 @@ void xmhf_startup_main(u32 cpuid, bool is_bsp){
 	cpu_index=xmhf_richguest_setup(cpuid, is_bsp);
 	
 	
-	/*//call hypapp main function
+	//call hypapp main function
 	{
 		hypapp_env_block_t hypappenvb;
 		context_desc_t context_desc;
-		xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
+		//xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
 
-		context_desc.partition_desc.partition_index = xc_cpu->parentpartition_index;
-		context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
+		context_desc.partition_desc.partition_index = xc_partition_richguest_index;
+		context_desc.cpu_desc.isbsp = is_bsp;
 		context_desc.cpu_desc.cpu_index = cpu_index;
 		
 		hypappenvb.runtimephysmembase = (u32)xcbootinfo->physmem_base;  
 		hypappenvb.runtimesize = (u32)xcbootinfo->size;
 	
 		//call app main
-		printf("\n%s: proceeding to call xmhfhypapp_main on BSP", __FUNCTION__);
+		//printf("\n%s: proceeding to call xmhfhypapp_main on BSP", __FUNCTION__);
 		xc_hypapp_initialization(context_desc, hypappenvb);
-		_xc_startup_hypappmain_counter++;
-		printf("\n%s: came back into core", __FUNCTION__);
-
-	}*/   	
+		//printf("\n%s: came back into core", __FUNCTION__);
+	}   	
     
     _xc_startup_hypappmain_counter++;
     
