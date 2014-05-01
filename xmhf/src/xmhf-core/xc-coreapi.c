@@ -106,8 +106,8 @@ static u32 _partition_current_index=0;
 static u32 _xc_cpu_current_index=0;
 
 
-static xc_cputable_t _xc_cputable[MAX_PLATFORM_CPUS];
-static u32 _xc_cputable_current_index=0;
+static xc_cpupartitiontable_t _xc_cpupartitiontable[MAX_PLATFORM_CPUS];
+static u32 _xc_cpupartitiontable_current_index=0;
 
 //partition related core APIs
 u32 xc_api_partition_create(u32 partitiontype){
@@ -146,7 +146,7 @@ u32 xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_bsp){
 			return XC_PARTITION_INDEX_INVALID;
 
 	//check if we are beyond the maximum cpus supported
-	if(_xc_cputable_current_index > MAX_PLATFORM_CPUS)
+	if(_xc_cpupartitiontable_current_index > MAX_PLATFORM_CPUS)
 		return XC_PARTITION_INDEX_INVALID;
 
 	if(g_xc_primary_partition[partition_index].numcpus >= MAX_PLATFORM_CPUS)
@@ -160,10 +160,12 @@ u32 xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_bsp){
 	g_xc_cpu[cpu_index].is_quiesced = false;
 	g_xc_cpu[cpu_index].parentpartition_index = partition_index;
 	
-	_xc_cputable[_xc_cputable_current_index].cpuid = cpuid;
-	_xc_cputable[_xc_cputable_current_index].cpu_index = cpu_index;
-	_xc_cputable_current_index++;
+	_xc_cpupartitiontable[_xc_cpupartitiontable_current_index].cpuid = cpuid;
+	_xc_cpupartitiontable[_xc_cpupartitiontable_current_index].partition_index = partition_index;
+	_xc_cpupartitiontable_current_index++;
 	
+	g_xc_primary_partition[partition_index].cputable[g_xc_primary_partition[partition_index].numcpus].cpuid = cpuid;
+	g_xc_primary_partition[partition_index].cputable[g_xc_primary_partition[partition_index].numcpus].cpu_index = cpu_index;
 	g_xc_primary_partition[partition_index].numcpus++;
 	
 	printf("\n%s: returning %u (numcpus=%u)", __FUNCTION__, cpu_index, g_xc_primary_partition[partition_index].numcpus);
