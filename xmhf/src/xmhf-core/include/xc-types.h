@@ -65,7 +65,7 @@ typedef struct {
 		u32 partitionid;			//unique partition id
 		u32 partitiontype;			//primary or secondary
 		u32 numcpus;
-		//xc_cputable_t cputable[MAX_PLATFORM_CPUS];
+		xc_cputable_t cputable[MAX_PLATFORM_CPUS];
 		xc_partition_hptdata_t hptdata[MAX_PRIMARY_PARTITION_HPTDATA_SIZE] __attribute__((aligned(4096)));
 		xc_partition_trapmaskdata_t trapmaskdata[MAX_PRIMARY_PARTITION_TRAPMASKDATA_SIZE] __attribute__((aligned(4096)));
 } xc_partition_t;
@@ -85,7 +85,12 @@ typedef struct {
 } __attribute__ ((packed)) xc_cpu_t;
 
 
-
+typedef struct {
+	u32 cpuid;
+	u32 partition_index;
+} __attribute__ ((packed)) xc_cpupartitiontable_t;
+	
+	
 //XMHF core api CPU descriptor type
 typedef struct {
 	bool isbsp;
