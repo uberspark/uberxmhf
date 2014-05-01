@@ -115,13 +115,47 @@ u32 xc_api_partition_create(u32 partitiontype){
 	//check if we have run out of partition memory backing
 	if(_partition_current_index > MAX_PRIMARY_PARTITIONS)
 		return partition_index;
-		
 	
 	g_xc_primary_partition[_partition_current_index].partitionid=_partition_current_index;
 	g_xc_primary_partition[_partition_current_index].partitiontype = XC_PARTITION_PRIMARY;
+	g_xc_primary_partition[_partition_current_index].numcpus = 0;
 	
     partition_index = _partition_current_index;
     _partition_current_index++;
     
     return partition_index;
 }
+
+	
+static u32 _xc_cpu_current_index=0;
+
+u32 xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_bsp){
+	u32 cpu_index;
+		
+	//sanity check partition_index
+	if ( !(partition_index >=0 && partition_index < MAX_PRIMARY_PARTITIONS)	)
+		return XC_PARTITION_INDEX_INVALID;
+		
+	//check if have run out of xc_cpu memory backing
+	if(_xc_cpu_current_index > MAX_PLATFORM_CPUS)
+			return XC_PARTITION_INDEX_INVALID;
+
+	//check if we are beyond the maximum cpus supported
+	if(g_xc_primary_partition[partition_index].numcpus > MAX_PLATFORM_CPUS)
+		return XC_PARTITION_INDEX_INVALID;
+
+	cpu_index = _xc_cpu_current_index++;
+	
+	g_xc_cpu[cpu_index].cpuid = cpuid;
+	g_xc_cpu[cpu_index].is_bsp = is_bsp;
+	g_xc_cpu[cpu_index].is_quiesced = false;
+	
+	g_xc_primary_partition[partition_index].cputable[g_xc_primary_partition[partition_index].numcpus].cpuid = cpuid;
+	g_xc_primary_partition[partition_index].cputable[g_xc_primary_partition[partition_index].numcpus].cpu_index = cpu_index;
+	g_xc_primary_partition[partition_index].numcpus++;
+
+}
+
+
+
+

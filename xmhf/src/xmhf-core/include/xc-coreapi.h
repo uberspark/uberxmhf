@@ -113,7 +113,7 @@ xc_hypapp_arch_param_t xc_api_cpustate_arch_get(context_desc_t context_desc, u64
 
 //partition related core APIs
 u32 xc_api_partition_create(u32 partitiontype);	//returns partition_index
-u32 xc_api_partition_addcpu(u32 partition_index, u32 cpuid); //return cpu_index
+u32 xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_bsp); //return cpu_index
 context_desc_t xc_api_partition_getcontextdesc(u32 cpuid); //return context_desc_t structure
 
 #endif	//__ASSEMBLY__
