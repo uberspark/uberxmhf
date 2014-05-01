@@ -110,8 +110,11 @@ void xmhf_runtime_entry(void){
 
 //we get control here in the context of *each* physical CPU core 
 //void xmhf_runtime_main(xc_cpu_t *xc_cpu){ 
-void xmhf_runtime_main(u32 cpu_index){ 
-	static u32 _xc_startup_hypappmain_counter = 0; 
+//void xmhf_runtime_main(u32 cpu_index){ 
+void xmhf_startup_main(u32 cpuid, bool is_bsp){
+	printf("\n%s: cpuid=%08x, is_bsp=%u, Halting!\n", __FUNCTION__, cpuid, is_bsp);
+	HALT();
+	/*static u32 _xc_startup_hypappmain_counter = 0; 
 	static u32 _xc_startup_hypappmain_counter_lock = 1; 
 	xc_cpu_t *xc_cpu = &g_xc_cpu[cpu_index];
 
@@ -157,5 +160,5 @@ void xmhf_runtime_main(u32 cpu_index){
 	#ifndef __XMHF_VERIFICATION__
 	printf("\n%s: index_cpudata=%u: FATAL, should not be here. HALTING!", __FUNCTION__, xc_cpu->cpuid);
 	HALT();
-	#endif //__XMHF_VERIFICATION__
+	#endif //__XMHF_VERIFICATION__*/
 }
