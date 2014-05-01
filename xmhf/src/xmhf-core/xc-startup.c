@@ -158,7 +158,7 @@ void xmhf_startup_main(u32 cpuid, bool is_bsp){
     spin_unlock(&_xc_startup_hypappmain_counter_lock);
 
 	//wait for hypapp main to execute on all the cpus
-	while(_xc_startup_hypappmain_counter < g_xc_cpu_count);
+	while(_xc_startup_hypappmain_counter < xcbootinfo->cpuinfo_numentries);
 	
 	//start cpu in corresponding partition
 	printf("\n%s[%u]: starting in partition...", __FUNCTION__, cpu_index);
