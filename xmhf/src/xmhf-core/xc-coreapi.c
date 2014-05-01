@@ -103,6 +103,11 @@ xc_hypapp_arch_param_t xc_api_cpustate_get(context_desc_t context_desc, u64 oper
 
 
 static u32 _partition_current_index=0;
+static u32 _xc_cpu_current_index=0;
+
+
+static xc_cputable_t _xc_cputable[MAX_PLATFORM_CPUS];
+static u32 _xc_cputable_current_index=0;
 
 //partition related core APIs
 u32 xc_api_partition_create(u32 partitiontype){
@@ -118,7 +123,7 @@ u32 xc_api_partition_create(u32 partitiontype){
 	
 	g_xc_primary_partition[_partition_current_index].partitionid=_partition_current_index;
 	g_xc_primary_partition[_partition_current_index].partitiontype = XC_PARTITION_PRIMARY;
-	g_xc_primary_partition[_partition_current_index].numcpus = 0;
+	//g_xc_primary_partition[_partition_current_index].numcpus = 0;
 	
     partition_index = _partition_current_index;
     _partition_current_index++;
@@ -126,8 +131,6 @@ u32 xc_api_partition_create(u32 partitiontype){
     return partition_index;
 }
 
-	
-static u32 _xc_cpu_current_index=0;
 
 u32 xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_bsp){
 	u32 cpu_index;
@@ -143,7 +146,7 @@ u32 xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_bsp){
 			return XC_PARTITION_INDEX_INVALID;
 
 	//check if we are beyond the maximum cpus supported
-	if(g_xc_primary_partition[partition_index].numcpus > MAX_PLATFORM_CPUS)
+	if(_xc_cputable_current_index > MAX_PLATFORM_CPUS)
 		return XC_PARTITION_INDEX_INVALID;
 
 	cpu_index = _xc_cpu_current_index++;
@@ -151,14 +154,12 @@ u32 xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_bsp){
 	g_xc_cpu[cpu_index].cpuid = cpuid;
 	g_xc_cpu[cpu_index].is_bsp = is_bsp;
 	g_xc_cpu[cpu_index].is_quiesced = false;
+	g_xc_cpu[cpu_index].parentpartition_index = partition_index;
 	
-	g_xc_primary_partition[partition_index].cputable[g_xc_primary_partition[partition_index].numcpus].cpuid = cpuid;
-	g_xc_primary_partition[partition_index].cputable[g_xc_primary_partition[partition_index].numcpus].cpu_index = cpu_index;
-	g_xc_primary_partition[partition_index].numcpus++;
-
+	_xc_cputable[_xc_cputable_current_index].cpuid = cpuid;
+	_xc_cputable[_xc_cputable_current_index].cpu_index = cpu_index;
+	_xc_cputable_current_index++;
+	
+	printf("\n%s: returning %u", __FUNCTION__, cpu_index);
 	return cpu_index;
 }
-
-
-
-
