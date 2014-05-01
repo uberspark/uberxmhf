@@ -73,6 +73,10 @@ u32 xmhf_richguest_setup(u32 cpuid, bool is_bsp){
 	//xc_cpu->parentpartition_index = xc_partition_richguest_index; // rich guest partition index
 	cpu_index = xc_api_partition_addcpu(xc_partition_richguest_index, cpuid, is_bsp);
 	
+	if(cpu_index == XC_PARTITION_INDEX_INVALID){
+			printf("\n%s: could not add cpu to rich guest partition. Halting!", __FUNCTION__);
+			HALT();
+	}
 	//initialize CPU
 	//xmhf_baseplatform_cpuinitialize();
 

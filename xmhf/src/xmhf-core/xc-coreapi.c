@@ -123,7 +123,7 @@ u32 xc_api_partition_create(u32 partitiontype){
 	
 	g_xc_primary_partition[_partition_current_index].partitionid=_partition_current_index;
 	g_xc_primary_partition[_partition_current_index].partitiontype = XC_PARTITION_PRIMARY;
-	//g_xc_primary_partition[_partition_current_index].numcpus = 0;
+	g_xc_primary_partition[_partition_current_index].numcpus = 0;
 	
     partition_index = _partition_current_index;
     _partition_current_index++;
@@ -149,6 +149,10 @@ u32 xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_bsp){
 	if(_xc_cputable_current_index > MAX_PLATFORM_CPUS)
 		return XC_PARTITION_INDEX_INVALID;
 
+	if(g_xc_primary_partition[partition_index].numcpus >= MAX_PLATFORM_CPUS)
+		return XC_PARTITION_INDEX_INVALID;
+
+
 	cpu_index = _xc_cpu_current_index++;
 	
 	g_xc_cpu[cpu_index].cpuid = cpuid;
@@ -160,6 +164,8 @@ u32 xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_bsp){
 	_xc_cputable[_xc_cputable_current_index].cpu_index = cpu_index;
 	_xc_cputable_current_index++;
 	
-	printf("\n%s: returning %u", __FUNCTION__, cpu_index);
+	g_xc_primary_partition[partition_index].numcpus++;
+	
+	printf("\n%s: returning %u (numcpus=%u)", __FUNCTION__, cpu_index, g_xc_primary_partition[partition_index].numcpus);
 	return cpu_index;
 }
