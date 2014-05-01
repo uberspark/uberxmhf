@@ -95,23 +95,23 @@ static void _vmx_ept_flushmappings(void){
 
 //quiesce interface to switch all guest cores into hypervisor mode
 //note: we are in atomic processsing mode for this "xc_cpu"
-static void _cpu_arch_x86vmx_quiesce(xc_cpu_t *xc_cpu){
+static void _cpu_arch_x86vmx_quiesce(context_desc_t context_desc){
         spin_lock(&g_vmx_lock_quiesce);	        		//grab hold of quiesce lock
-		xc_cpu->is_quiesced = 1;
+		g_xc_cpu[context_desc.cpu_desc.cpu_index].is_quiesced = true;
         spin_lock(&g_vmx_lock_quiesce_counter);
         g_vmx_quiesce_counter=0;						//reset quiesce counter
         spin_unlock(&g_vmx_lock_quiesce_counter);
         g_vmx_quiesce=1;  								//we are now processing quiesce
         _vmx_send_quiesce_signal();				        //send all the other CPUs the quiesce signal
-        while(g_vmx_quiesce_counter < (g_xc_cpu_count-1) );         //wait for all the remaining CPUs to quiesce
+        while(g_vmx_quiesce_counter < (g_xc_primary_partition[context_desc.partition_desc.partition_index].numcpus-1) );         //wait for all the remaining CPUs to quiesce
 }
 
-static void _cpu_arch_x86vmx_endquiesce(xc_cpu_t *xc_cpu){
+static void _cpu_arch_x86vmx_endquiesce(context_desc_t context_desc){
 
         g_vmx_quiesce_resume_counter=0;		        //set resume signal to resume the cores that are quiesced
         g_vmx_quiesce_resume_signal=1;
-        while(g_vmx_quiesce_resume_counter < (g_xc_cpu_count-1) );	//wait for all cores to resume
-		xc_cpu->is_quiesced=0;
+        while(g_vmx_quiesce_resume_counter < (g_xc_primary_partition[context_desc.partition_desc.partition_index].numcpus-1) );	//wait for all cores to resume
+		g_xc_cpu[context_desc.cpu_desc.cpu_index].is_quiesced = false;
         g_vmx_quiesce=0;  							// we are out of quiesce at this point
         spin_lock(&g_vmx_lock_quiesce_resume_signal);
         g_vmx_quiesce_resume_signal=0;				        //reset resume signal
@@ -177,14 +177,14 @@ void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu, struc
 
 void xc_api_hpt_arch_flushcaches(context_desc_t context_desc, bool dosmpflush){
 		//xc_cpu_t *xc_cpu = (xc_cpu_t *)context_desc.cpu_desc.xc_cpu;
-		xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
+		//xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
 		if(dosmpflush)
-			_cpu_arch_x86vmx_quiesce(xc_cpu);
+			_cpu_arch_x86vmx_quiesce(context_desc);
 			
 		_vmx_ept_flushmappings();
 		
 		if(dosmpflush)
-			_cpu_arch_x86vmx_endquiesce(xc_cpu);
+			_cpu_arch_x86vmx_endquiesce(context_desc);
 }
 
 
