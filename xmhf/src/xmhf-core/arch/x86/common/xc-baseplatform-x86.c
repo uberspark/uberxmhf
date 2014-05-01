@@ -285,16 +285,16 @@ void xmhf_baseplatform_arch_x86_initialize_paging(u32 pgtblbase){
 //bplt-x86-smp
 
 //return 1 if the calling CPU is the BSP
-u32 xmhf_baseplatform_arch_x86_isbsp(void){
+bool xmhf_baseplatform_arch_x86_isbsp(void){
   u32 eax, edx;
   //read LAPIC base address from MSR
   rdmsr(MSR_APIC_BASE, &eax, &edx);
   HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
   
   if(eax & 0x100)
-    return 1;
+    return true;
   else
-    return 0;
+    return false;
 }
 
 //wake up APs using the LAPIC by sending the INIT-SIPI-SIPI IPI sequence
@@ -391,7 +391,7 @@ u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
 //common function which is entered by all CPUs upon SMP initialization
 //note: this is specific to the x86 architecture backend
 void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
-	u32 cpu_index;
+	/*u32 cpu_index;
 	u32 i;
 	bool found_cpu_index=false;
 	u32 cpu_uniqueid = xmhf_baseplatform_arch_x86_getcpulapicid();
@@ -405,6 +405,10 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 	}
 	
 	HALT_ON_ERRORCOND ( found_cpu_index == true );
+	*/
+	u32 cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
+	bool is_bsp = xmhf_baseplatform_arch_x86_isbsp();
+	
 	
 	//initialize base CPU state
 	xmhf_baseplatform_arch_x86_cpuinitialize();
@@ -413,7 +417,8 @@ void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 	xmhf_baseplatform_arch_x86_restorecpumtrrstate();
   	
 	//xmhf_runtime_main(context_desc);
-	xmhf_runtime_main(cpu_index);
+	//xmhf_runtime_main(cpu_index);
+	xmhf_startup_main(cpuid, is_bsp);
 }
 
 //----------------------------------------------------------------------
