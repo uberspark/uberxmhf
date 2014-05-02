@@ -221,6 +221,13 @@ static u8 _cpustack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE] __attribute__
 static void _ap_pmode_entry_with_paging(void) __attribute__((naked));
 static void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void);
 
+// cpu table
+static xc_cputable_t _cputable[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
+
+
+// count of platform cpus
+static u32 _cpucount __attribute__(( section(".data") )) = 0;
+
 
 //XXX: TODO: get rid of these externs and bring them in here as static
 extern arch_x86_gdtdesc_t _gdt;
@@ -443,6 +450,13 @@ void xmhf_baseplatform_arch_initialize(void){
 //initialize SMP
 void xmhf_baseplatform_arch_smpinitialize(void){
 
+	_cpucount = xcbootinfo->cpuinfo_numentries;
+	
+	//initialize cpu table
+	for(i=0; i < _cpucount; i++){
+			_cputable[i].cpuid = xcbootinfo->cpuinfo_buffer[i].lapic_id;
+			_cputable[i].cpu_index = i;
+	}
   
 	//save cpu MTRR state which we will later replicate on all APs
 	xmhf_baseplatform_arch_x86_savecpumtrrstate();
@@ -500,7 +514,7 @@ static void _ap_pmode_entry_with_paging(void) __attribute__((naked)){
 					"addl %%edi, %%eax \r\n"				// eax = &_cpustack + (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
 					"movl %%eax, %%esp \r\n"				// esp = top of stack for the cpu
 					:
-					: "m" (_gdt), "m" (_idt), "i" (MSR_APIC_BASE), "m" (g_xc_cpu_count), "i" (&g_xc_cputable), "i" (sizeof(xc_cputable_t)), "i" (&_cpustack), "i" (sizeof(_cpustack[0]))
+					: "m" (_gdt), "m" (_idt), "i" (MSR_APIC_BASE), "m" (_cpucount), "i" (&_cputable), "i" (sizeof(xc_cputable_t)), "i" (&_cpustack), "i" (sizeof(_cpustack[0]))
 	);
 
 	xmhf_baseplatform_arch_x86_smpinitialize_commonstart();

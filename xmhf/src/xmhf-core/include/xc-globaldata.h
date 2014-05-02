@@ -76,17 +76,11 @@ extern u32 hypapp_tos;
 // platform cpus
 extern xc_cpu_t g_xc_cpu[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
 
-// count of platform cpus
-extern u32 g_xc_cpu_count __attribute__(( section(".data") ));
-
 // primary partitions
 extern xc_partition_t g_xc_primary_partition[MAX_PRIMARY_PARTITIONS] __attribute__(( section(".data") ));
 
 // partition index for the richguest
 extern u32 xc_partition_richguest_index;
-
-// cpu table
-extern xc_cputable_t g_xc_cputable[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
 
   
 #endif //__ASSEMBLY__
