@@ -69,16 +69,6 @@ static void xmhf_partition_arch_x86vmx_initializemonitor(xc_cpu_t *xc_cpu){
 	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)xc_cpu->cpuarchdata;
 	u64 vmcs_phys_addr = hva2spa((void*)xc_cpuarchdata_x86vmx->vmx_vmcs_region);
 
-	//sanity check Intel CPU
-	{
-			u32 cpu_vendor=get_cpu_vendor_or_die();
-			if(cpu_vendor != CPU_VENDOR_INTEL){
-				printf("\nCPU(0x%02x) is not an Intel CPU. Halting!", xc_cpu->cpuid);
-		        HALT();
-			}
-
-	}
-
 	//to enable VMX on a core, we require it to have a TR loaded,
 	//so load it for this core
 	//__vmx_loadTR();
