@@ -449,7 +449,8 @@ void xmhf_baseplatform_arch_initialize(void){
 
 //initialize SMP
 void xmhf_baseplatform_arch_smpinitialize(void){
-
+	u32 i;
+	
 	_cpucount = xcbootinfo->cpuinfo_numentries;
 	
 	//initialize cpu table
@@ -466,7 +467,7 @@ void xmhf_baseplatform_arch_smpinitialize(void){
 	//g_bplt_initiatialized = true;
 
   //wake up APS
-  if(g_xc_cpu_count > 1){
+  if(_cpucount > 1){
 	  xmhf_baseplatform_arch_x86vmx_wakeupAPs();
   }
 
