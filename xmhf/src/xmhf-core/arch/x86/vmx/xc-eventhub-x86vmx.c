@@ -532,28 +532,28 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 	
 	//set cpu gprs state based on cpugprs
 	cpustateparams = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS);
-	x86gprs.edi = cpustateparams.params[0] = cpugprs->edi;
-	x86gprs.esi = cpustateparams.params[1] = cpugprs->esi;
-	x86gprs.ebp = cpustateparams.params[2] = cpugprs->ebp;
-	x86gprs.esp = cpustateparams.params[3];	//guest ESP is stored in the VMCS and is returned by xc_api_cpustate_get above
-	x86gprs.ebx = cpustateparams.params[4] = cpugprs->ebx;
-	x86gprs.edx = cpustateparams.params[5] = cpugprs->edx;
-	x86gprs.ecx = cpustateparams.params[6] = cpugprs->ecx;
-	x86gprs.eax = cpustateparams.params[7] = cpugprs->eax;
+	x86gprs.edi = cpustateparams.param.cpugprs.edi = cpugprs->edi;
+	x86gprs.esi = cpustateparams.param.cpugprs.esi = cpugprs->esi;
+	x86gprs.ebp = cpustateparams.param.cpugprs.ebp = cpugprs->ebp;
+	x86gprs.esp = cpustateparams.param.cpugprs.esp;	//guest ESP is stored in the VMCS and is returned by xc_api_cpustate_get above
+	x86gprs.ebx = cpustateparams.param.cpugprs.ebx = cpugprs->ebx;
+	x86gprs.edx = cpustateparams.param.cpugprs.edx = cpugprs->edx;
+	x86gprs.ecx = cpustateparams.param.cpugprs.ecx = cpugprs->ecx;
+	x86gprs.eax = cpustateparams.param.cpugprs.eax = cpugprs->eax;
 	cpustateparams.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS;
 	xc_api_cpustate_set(context_desc, cpustateparams);
 
 	_vmx_intercept_handler(context_desc, x86gprs);
 	
 	cpustateparams = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS);
-	cpugprs->edi = (u32)cpustateparams.params[0];
-	cpugprs->esi = (u32)cpustateparams.params[1];
-	cpugprs->ebp = (u32)cpustateparams.params[2];
+	cpugprs->edi = cpustateparams.param.cpugprs.edi;
+	cpugprs->esi = cpustateparams.param.cpugprs.esi;
+	cpugprs->ebp = cpustateparams.param.cpugprs.ebp;
 	//cpugprs->esp, guest ESP is loaded from VMCS which is set using xc_api_cpustate_set
-	cpugprs->ebx = (u32)cpustateparams.params[4];
-	cpugprs->edx = (u32)cpustateparams.params[5];
-	cpugprs->ecx = (u32)cpustateparams.params[6];
-	cpugprs->eax = (u32)cpustateparams.params[7];
+	cpugprs->ebx = cpustateparams.param.cpugprs.ebx;
+	cpugprs->edx = cpustateparams.param.cpugprs.edx;
+	cpugprs->ecx = cpustateparams.param.cpugprs.ecx;
+	cpugprs->eax = cpustateparams.param.cpugprs.eax;
 
 	//end serialization and resume partition
     spin_unlock(&_xc_partition_eventhub_lock);
