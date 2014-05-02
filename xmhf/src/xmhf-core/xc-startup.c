@@ -116,6 +116,7 @@ void xmhf_startup_main(u32 cpuid, bool is_bsp){
 	static u32 _xc_startup_hypappmain_counter_lock = 1; 
 	//xc_cpu_t *xc_cpu = &g_xc_cpu[cpu_index];
 	u32 cpu_index;
+	context_desc_t context_desc;
 	
 	//serialize execution
     spin_lock(&_xc_startup_hypappmain_counter_lock);
@@ -128,18 +129,23 @@ void xmhf_startup_main(u32 cpuid, bool is_bsp){
 	//the rich guest initialization procedure. if the CPU is not allocated to the
 	//rich guest, enter it into a CPU pool for use by other partitions
 	//xmhf_richguest_addcpu(xc_cpu, xc_partition_richguest_index);
-	cpu_index=xmhf_richguest_setup(cpuid, is_bsp);
+	//cpu_index=xmhf_richguest_setup(cpuid, is_bsp);
+	context_desc=xmhf_richguest_setup(cpuid, is_bsp);
 	
+	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
+		printf("\n%s: Fatal error, could not add cpu to rich guest. Halting!", __FUNCTION__);
+		HALT();
+	}
 	
 	//call hypapp main function
 	{
 		hypapp_env_block_t hypappenvb;
-		context_desc_t context_desc;
+		//context_desc_t context_desc;
 		//xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
 
-		context_desc.partition_desc.partition_index = xc_partition_richguest_index;
-		context_desc.cpu_desc.isbsp = is_bsp;
-		context_desc.cpu_desc.cpu_index = cpu_index;
+		//context_desc.partition_desc.partition_index = xc_partition_richguest_index;
+		//context_desc.cpu_desc.isbsp = is_bsp;
+		//context_desc.cpu_desc.cpu_index = cpu_index;
 		
 		hypappenvb.runtimephysmembase = (u32)xcbootinfo->physmem_base;  
 		hypappenvb.runtimesize = (u32)xcbootinfo->size;
@@ -160,7 +166,7 @@ void xmhf_startup_main(u32 cpuid, bool is_bsp){
 	
 	//start cpu in corresponding partition
 	printf("\n%s[%u]: starting in partition...", __FUNCTION__, cpu_index);
-	xmhf_partition_start(cpu_index);
+	xmhf_partition_start(context_desc.cpu_desc.cpu_index);
 	
 	#ifndef __XMHF_VERIFICATION__
 	printf("\n%s: index_cpudata=%u: FATAL, should not be here. HALTING!", __FUNCTION__, cpu_index);
