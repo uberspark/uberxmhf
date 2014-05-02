@@ -89,7 +89,7 @@ context_desc_t xmhf_richguest_setup(u32 cpuid, bool is_bsp){
 	xmhf_partition_setupguestOSstate(cpu_index, xc_partition_richguest_index);
 
 	//initialize memory protection for this core
-	xmhf_memprot_initialize(cpu_index, xc_partition_richguest_index);		
+	//xmhf_memprot_initialize(cpu_index, xc_partition_richguest_index);		
 
 	//setup context_desc and return
 	context_desc.cpu_desc.cpu_index = cpu_index;
