@@ -66,7 +66,6 @@ static const unsigned int vmx_msr_area_msrs_count = (sizeof(vmx_msr_area_msrs)/s
 
 //initialize partition monitor for a given CPU
 static void xmhf_partition_arch_x86vmx_initializemonitor(xc_cpu_t *xc_cpu){
-	u32 bcr0;
 	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)xc_cpu->cpuarchdata;
 	u64 vmcs_phys_addr = hva2spa((void*)xc_cpuarchdata_x86vmx->vmx_vmcs_region);
 
@@ -80,12 +79,6 @@ static void xmhf_partition_arch_x86vmx_initializemonitor(xc_cpu_t *xc_cpu){
 
 	}
 
-	//set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
-	bcr0 = read_cr0();
-	bcr0 |= 0x20;
-	write_cr0(bcr0);
-
-	
 	//to enable VMX on a core, we require it to have a TR loaded,
 	//so load it for this core
 	//__vmx_loadTR();

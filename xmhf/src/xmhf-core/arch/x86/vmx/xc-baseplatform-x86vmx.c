@@ -527,12 +527,19 @@ static void _ap_pmode_entry_with_paging(void) __attribute__((naked)){
 static void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 	u32 cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
 	bool is_bsp = xmhf_baseplatform_arch_x86_isbsp();
-	
+	u32 bcr0;
+		
 	//initialize base CPU state
 	xmhf_baseplatform_arch_x86_cpuinitialize();
 
 	//replicate common MTRR state on this CPU
 	xmhf_baseplatform_arch_x86_restorecpumtrrstate();
+  	
+	//set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
+	bcr0 = read_cr0();
+	bcr0 |= 0x20;
+	write_cr0(bcr0);
+
   	
 	xmhf_startup_main(cpuid, is_bsp);
 }
