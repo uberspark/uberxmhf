@@ -487,7 +487,7 @@ static void _cpustate_operation_cpugprs_set(context_desc_t context_desc, struct 
 	xc_cpuarchdata_x86vmx->x86gprs.edi = x86gprs->edi;
 	xc_cpuarchdata_x86vmx->x86gprs.esi = x86gprs->esi;
 	xc_cpuarchdata_x86vmx->x86gprs.ebp = x86gprs->ebp;
-	xc_cpuarchdata_x86vmx->x86gprs.esp = x86gprs->esp;
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, x86gprs->esp);
 	xc_cpuarchdata_x86vmx->x86gprs.ebx = x86gprs->ebx;
 	xc_cpuarchdata_x86vmx->x86gprs.edx = x86gprs->edx;
 	xc_cpuarchdata_x86vmx->x86gprs.ecx = x86gprs->ecx;
@@ -500,7 +500,7 @@ static void _cpustate_operation_cpugprs_get(context_desc_t context_desc, struct 
 	x86gprs->edi = xc_cpuarchdata_x86vmx->x86gprs.edi;
 	x86gprs->esi = xc_cpuarchdata_x86vmx->x86gprs.esi;
 	x86gprs->ebp = xc_cpuarchdata_x86vmx->x86gprs.ebp;
-	x86gprs->esp = xc_cpuarchdata_x86vmx->x86gprs.esp;
+	x86gprs->esp = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RSP);
 	x86gprs->ebx = xc_cpuarchdata_x86vmx->x86gprs.ebx;
 	x86gprs->edx = xc_cpuarchdata_x86vmx->x86gprs.edx;
 	x86gprs->ecx = xc_cpuarchdata_x86vmx->x86gprs.ecx;
