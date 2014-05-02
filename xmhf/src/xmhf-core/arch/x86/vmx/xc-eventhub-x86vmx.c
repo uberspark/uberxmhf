@@ -530,10 +530,11 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 	//xc_cpu = &g_xc_cpu[context_desc.cpu_desc.cpu_index];
 	
 	//set cpu gprs state based on cpugprs
+	cpustateparams = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS);
 	x86gprs.edi = cpustateparams.params[0] = cpugprs->edi;
 	x86gprs.esi = cpustateparams.params[1] = cpugprs->esi;
 	x86gprs.ebp = cpustateparams.params[2] = cpugprs->ebp;
-	x86gprs.esp = cpustateparams.params[3] = cpugprs->esp;
+	x86gprs.esp = cpustateparams.params[3];	//guest ESP is stored in the VMCS and is returned by xc_api_cpustate_get above
 	x86gprs.ebx = cpustateparams.params[4] = cpugprs->ebx;
 	x86gprs.edx = cpustateparams.params[5] = cpugprs->edx;
 	x86gprs.ecx = cpustateparams.params[6] = cpugprs->ecx;
@@ -541,18 +542,13 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 	cpustateparams.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS;
 	xc_api_cpustate_set(context_desc, cpustateparams);
 
-	//setup context descriptor
-	//context_desc.partition_desc.partition_index = xc_cpu->parentpartition_index;
-	//context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
-	//context_desc.cpu_desc.cpu_index = cpu_index;
-	
 	_vmx_intercept_handler(context_desc, x86gprs);
 	
 	cpustateparams = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS);
 	cpugprs->edi = (u32)cpustateparams.params[0];
 	cpugprs->esi = (u32)cpustateparams.params[1];
 	cpugprs->ebp = (u32)cpustateparams.params[2];
-	cpugprs->esp = (u32)cpustateparams.params[3];
+	//cpugprs->esp, guest ESP is loaded from VMCS which is set using xc_api_cpustate_set
 	cpugprs->ebx = (u32)cpustateparams.params[4];
 	cpugprs->edx = (u32)cpustateparams.params[5];
 	cpugprs->ecx = (u32)cpustateparams.params[6];
