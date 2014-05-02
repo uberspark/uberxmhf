@@ -509,7 +509,7 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 	u32 cpu_index;
 
 	//grab xc_cpu for this core
-	{
+	/*{
 		u32 i;
 		u32 cpu_uniqueid = xmhf_baseplatform_arch_x86_getcpulapicid();
 		bool found_cpu_index = false;
@@ -528,8 +528,13 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 		}
 
 		xc_cpu = &g_xc_cpu[cpu_index];
+	}*/
+	context_desc = xc_api_partition_getcontextdesc(xmhf_baseplatform_arch_x86_getcpulapicid());
+	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
+		printf("\n%s: invalid partition/cpu context. Halting!\n", __FUNCTION__);
+		HALT();
 	}
-
+	xc_cpu = &g_xc_cpu[context_desc.cpu_desc.cpu_index];
 	
 #ifndef __XMHF_VERIFICATION__
 	//handle cpu quiescing
@@ -557,9 +562,9 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 	xc_api_cpustate_set(context_desc, cpustateparams);
 
 	//setup context descriptor
-	context_desc.partition_desc.partition_index = xc_cpu->parentpartition_index;
-	context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
-	context_desc.cpu_desc.cpu_index = cpu_index;
+	//context_desc.partition_desc.partition_index = xc_cpu->parentpartition_index;
+	//context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
+	//context_desc.cpu_desc.cpu_index = cpu_index;
 	
 	_vmx_intercept_handler(context_desc, xc_cpu, x86gprs);
 	
