@@ -162,6 +162,7 @@ u32 xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_bsp){
 	
 	_xc_cpupartitiontable[_xc_cpupartitiontable_current_index].cpuid = cpuid;
 	_xc_cpupartitiontable[_xc_cpupartitiontable_current_index].partition_index = partition_index;
+	_xc_cpupartitiontable[_xc_cpupartitiontable_current_index].cpu_index = cpu_index;
 	_xc_cpupartitiontable_current_index++;
 	
 	g_xc_primary_partition[partition_index].cputable[g_xc_primary_partition[partition_index].numcpus].cpuid = cpuid;
@@ -170,4 +171,39 @@ u32 xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_bsp){
 	
 	printf("\n%s: returning %u (numcpus=%u)", __FUNCTION__, cpu_index, g_xc_primary_partition[partition_index].numcpus);
 	return cpu_index;
+}
+
+
+context_desc_t xc_api_partition_getcontextdesc(u32 cpuid){
+		context_desc_t context_desc;
+		u32 partition_index, cpu_index, i;
+		bool found_indices=false;
+		
+		//initialize context_desc to invalid values so we can just return it if
+		//we encounter any errors
+		context_desc.cpu_desc.cpu_index = XC_PARTITION_INDEX_INVALID;
+		context_desc.cpu_desc.isbsp = false;
+		context_desc.partition_desc.partition_index = XC_PARTITION_INDEX_INVALID;
+		
+		//obtain partition_index from cpuid
+		for(i=0; i < _xc_cpupartitiontable_current_index; i++){
+				if(_xc_cpupartitiontable[i].cpuid == cpuid){
+					partition_index = _xc_cpupartitiontable[i].partition_index;
+					cpu_index = _xc_cpupartitiontable[i].cpu_index;
+					found_indices = true;
+					break;
+				}
+		}
+
+		//check if we got a valid cpu and partition indices
+		if(!found_indices)
+			return context_desc;
+			
+		
+		//populate context_desc with cpu and partition indices
+		context_desc.cpu_desc.cpu_index = cpu_index;
+		context_desc.cpu_desc.isbsp = g_xc_cpu[cpu_index].is_bsp;
+		context_desc.partition_desc.partition_index = partition_index;
+
+		return context_desc;
 }
