@@ -70,31 +70,18 @@ context_desc_t xmhf_richguest_setup(u32 cpuid, bool is_bsp){
 	context_desc_t context_desc;
 	u32 cpu_index;
 	
-	//initialize context_desc structure
-	context_desc.cpu_desc.cpu_index = XC_PARTITION_INDEX_INVALID;
-	context_desc.cpu_desc.isbsp = is_bsp;
-	context_desc.partition_desc.partition_index = XC_PARTITION_INDEX_INVALID;
-	
-	
+
 	//add cpu to the richguest partition
-	cpu_index = xc_api_partition_addcpu(xc_partition_richguest_index, cpuid, is_bsp);
+	context_desc = xc_api_partition_addcpu(xc_partition_richguest_index, cpuid, is_bsp);
 	
 	//bail out if we could not add cpu to the rich guest partition
-	if(cpu_index == XC_PARTITION_INDEX_INVALID){
+	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
 			printf("\n%s: could not add cpu to rich guest partition. Halting!", __FUNCTION__);
 			return context_desc;
 	}
 
-	//setup context_desc
-	context_desc.cpu_desc.cpu_index = cpu_index;
-	context_desc.partition_desc.partition_index = xc_partition_richguest_index;
-
 	//setup guest OS state for partition
 	xmhf_richguest_setupguestOSstate(context_desc);
-
-	//initialize memory protection for this core
-	//xmhf_memprot_initialize(cpu_index, xc_partition_richguest_index);		
-
 
 	return context_desc;
 }
