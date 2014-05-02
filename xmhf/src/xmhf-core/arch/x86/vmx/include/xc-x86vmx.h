@@ -55,11 +55,24 @@
 
 #ifndef __ASSEMBLY__
 
-typedef struct {
-	u64 operation;
-	u64 params[MAX_XC_HYPAPP_CB_ARCH_PARAMS];
-}__attribute__ ((packed)) xc_hypapp_arch_param_t;
+//typedef struct {
+//	u64 operation;
+//	u64 params[MAX_XC_HYPAPP_CB_ARCH_PARAMS];
+//}__attribute__ ((packed)) xc_hypapp_arch_param_t;
 
+typedef struct {
+	u32 portnum;
+	u32 access_type;
+	u32 access_size;
+} xc_hypapp_arch_param_x86vmx_cbtrapio_t;
+
+typedef struct {
+	u32 operation;
+	union param {	
+		struct regs cpugprs;
+		xc_hypapp_arch_param_x86vmx_cbtrapio_t cbtrapio;
+	};
+} __attribute__ ((packed)) xc_hypapp_arch_param_t;
 
 typedef struct {
   u8 vmx_vmxon_region[PAGE_SIZE_4K];    		
