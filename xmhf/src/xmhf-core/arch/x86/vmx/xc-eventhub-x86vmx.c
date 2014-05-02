@@ -508,39 +508,12 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 	xc_cpu_t *xc_cpu;
 	u32 cpu_index;
 
-	//grab xc_cpu for this core
-	/*{
-		u32 i;
-		u32 cpu_uniqueid = xmhf_baseplatform_arch_x86_getcpulapicid();
-		bool found_cpu_index = false;
-		
-		for(i=0; i < g_xc_cpu_count; i++){
-			if(g_xc_cputable[i].cpuid == cpu_uniqueid){
-				cpu_index = g_xc_cputable[i].cpu_index;
-				found_cpu_index = true;
-				break;
-			}
-		}
-		
-		if(!found_cpu_index){
-			printf("\n%s: Fatal error, could not find xc_cpu. Halting!", __FUNCTION__);
-			HALT();
-		}
-
-		xc_cpu = &g_xc_cpu[cpu_index];
-	}*/
-	context_desc = xc_api_partition_getcontextdesc(xmhf_baseplatform_arch_x86_getcpulapicid());
-	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
-		printf("\n%s: invalid partition/cpu context. Halting!\n", __FUNCTION__);
-		HALT();
-	}
-	xc_cpu = &g_xc_cpu[context_desc.cpu_desc.cpu_index];
 	
 #ifndef __XMHF_VERIFICATION__
 	//handle cpu quiescing
 	if(xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON) == VMX_VMEXIT_EXCEPTION){
 		if ( (xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION) & INTR_INFO_VECTOR_MASK) == 0x02 ) {
-			xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu, cpugprs);
+			xmhf_smpguest_arch_eventhandler_nmiexception(cpugprs);
 			return;
 		}
 	}
@@ -548,6 +521,13 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 
 	//serialize
     spin_lock(&_xc_partition_eventhub_lock);
+
+	context_desc = xc_api_partition_getcontextdesc(xmhf_baseplatform_arch_x86_getcpulapicid());
+	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
+		printf("\n%s: invalid partition/cpu context. Halting!\n", __FUNCTION__);
+		HALT();
+	}
+	xc_cpu = &g_xc_cpu[context_desc.cpu_desc.cpu_index];
 	
 	//set cpu gprs state based on cpugprs
 	x86gprs.edi = cpustateparams.params[0] = cpugprs->edi;
