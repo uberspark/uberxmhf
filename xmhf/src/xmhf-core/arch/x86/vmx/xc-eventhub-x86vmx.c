@@ -257,18 +257,19 @@ static void _vmx_handle_intercept_xsetbv(context_desc_t context_desc, struct reg
   	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH)) );
 }						
 			
-static void _vmx_propagate_cpustate_guestx86gprs(context_desc_t context_desc, struct regs *x86gprs){
+static void _vmx_propagate_cpustate_guestx86gprs(context_desc_t context_desc, struct regs x86gprs){
 	xc_hypapp_arch_param_t cpustateparams;
 
 	//propagate local gprs copy to actual guest gprs 
-	cpustateparams.params[0] = x86gprs->edi;
+	/*cpustateparams.params[0] = x86gprs->edi;
 	cpustateparams.params[1] = x86gprs->esi;
 	cpustateparams.params[2] = x86gprs->ebp;
 	cpustateparams.params[3] = x86gprs->esp;
 	cpustateparams.params[4] = x86gprs->ebx;
 	cpustateparams.params[5] = x86gprs->edx;
 	cpustateparams.params[6] = x86gprs->ecx;
-	cpustateparams.params[7] = x86gprs->eax;
+	cpustateparams.params[7] = x86gprs->eax;*/
+	cpustateparams.param.cpugprs = x86gprs;
 	cpustateparams.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS;
 	xc_api_cpustate_set(context_desc, cpustateparams);
 }
@@ -320,19 +321,19 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+3) );
 			}
 		}
-		_vmx_propagate_cpustate_guestx86gprs(context_desc, &x86gprs);
+		_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 		break;
 
 		case VMX_VMEXIT_IOIO:{
 			_vmx_handle_intercept_ioportaccess(context_desc, &x86gprs);
 		}
-		_vmx_propagate_cpustate_guestx86gprs(context_desc, &x86gprs);
+		_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 		break;
 
 		case VMX_VMEXIT_EPT_VIOLATION:{
 			_vmx_handle_intercept_eptviolation(context_desc, &x86gprs);
 		}
-		_vmx_propagate_cpustate_guestx86gprs(context_desc, &x86gprs);
+		_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 		break;  
 
 		case VMX_VMEXIT_INIT:{
@@ -382,7 +383,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
  		case VMX_VMEXIT_RDMSR:
 			_vmx_handle_intercept_rdmsr(context_desc, &x86gprs);
-			_vmx_propagate_cpustate_guestx86gprs(context_desc, &x86gprs);
+			_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 			break;
 			
 		case VMX_VMEXIT_WRMSR:
@@ -391,7 +392,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 			
 		case VMX_VMEXIT_CPUID:
 			_vmx_handle_intercept_cpuid(context_desc, &x86gprs);
-			_vmx_propagate_cpustate_guestx86gprs(context_desc, &x86gprs);
+			_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 			break;
 
 		case VMX_VMEXIT_TASKSWITCH:{
