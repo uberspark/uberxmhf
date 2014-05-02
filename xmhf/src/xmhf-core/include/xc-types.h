@@ -87,6 +87,7 @@ typedef struct {
 
 typedef struct {
 	u32 cpuid;
+	u32 cpu_index;
 	u32 partition_index;
 } __attribute__ ((packed)) xc_cpupartitiontable_t;
 	
