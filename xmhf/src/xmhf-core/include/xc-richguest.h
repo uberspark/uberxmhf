@@ -64,7 +64,7 @@ void xmhf_richguest_arch_initialize(u32 xc_partition_richguest_index);
 //u8 * xmhf_smpguest_arch_walk_pagetables(context_desc_t context_desc, u32 vaddr);
 
 //void xmhf_richguest_addcpu(xc_cpu_t *xc_cpu, u32 xc_partition_richguest_index);
-u32 xmhf_richguest_setup(u32 cpuid, bool is_bsp);
+context_desc_t xmhf_richguest_setup(u32 cpuid, bool is_bsp);
 
 //----------------------------------------------------------------------
 //rich guest memory functions
