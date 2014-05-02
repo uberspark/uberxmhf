@@ -70,20 +70,6 @@ static void xmhf_partition_arch_x86vmx_initializemonitor(xc_cpu_t *xc_cpu){
 	u64 vmcs_phys_addr = hva2spa((void*)xc_cpuarchdata_x86vmx->vmx_vmcs_region);
 
 	  
-	//check VMX support
-	{
-	u32	cpu_features;
-	#ifndef __XMHF_VERIFICATION__
-	asm("mov	$1, %%eax \n"
-				"cpuid \n"
-				"mov	%%ecx, %0	\n"
-				::"m"(cpu_features): "eax", "ebx", "ecx", "edx" );
-		if ( ( cpu_features & (1<<5) ) == 0 ){
-			printf("CPU(0x%02x) does not support VMX. Halting!", xc_cpu->cpuid);
-	  HALT();
-		}
-	#endif
-	}
 
 	//save contents of VMX MSRs as well as MSR EFER and EFCR 
 	{
