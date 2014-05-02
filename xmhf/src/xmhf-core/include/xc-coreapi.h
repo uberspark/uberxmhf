@@ -116,6 +116,8 @@ u32 xc_api_partition_create(u32 partitiontype);	//returns partition_index
 u32 xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_bsp); //return cpu_index
 context_desc_t xc_api_partition_getcontextdesc(u32 cpuid); //return context_desc_t structure
 
+bool xc_api_partition_arch_addcpu(u32 partition_index, u32 cpu_index);
+
 #endif	//__ASSEMBLY__
 
 #endif //__XC_COREAPI_H__

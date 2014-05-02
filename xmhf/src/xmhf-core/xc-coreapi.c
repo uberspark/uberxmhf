@@ -168,6 +168,10 @@ u32 xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_bsp){
 	g_xc_primary_partition[partition_index].cputable[g_xc_primary_partition[partition_index].numcpus].cpuid = cpuid;
 	g_xc_primary_partition[partition_index].cputable[g_xc_primary_partition[partition_index].numcpus].cpu_index = cpu_index;
 	g_xc_primary_partition[partition_index].numcpus++;
+
+	//perform arch. specific cpu partition initialization
+	if(!xc_api_partition_arch_addcpu(partition_index, cpu_index))
+		return XC_PARTITION_INDEX_INVALID;
 	
 	printf("\n%s: returning %u (numcpus=%u)", __FUNCTION__, cpu_index, g_xc_primary_partition[partition_index].numcpus);
 	return cpu_index;

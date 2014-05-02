@@ -69,8 +69,8 @@
 //----------------------------------------------------------------------
 
 //initialize partition monitor for a given CPU
-void xmhf_partition_initializemonitor(u32 cpu_index);
-void xmhf_partition_arch_initializemonitor(u32 cpu_index);
+//void xmhf_partition_initializemonitor(u32 cpu_index);
+//void xmhf_partition_arch_initializemonitor(u32 cpu_index);
 
 //setup guest OS state for the partition
 void xmhf_partition_setupguestOSstate(u32 cpu_index, u32 xc_partition_index);
