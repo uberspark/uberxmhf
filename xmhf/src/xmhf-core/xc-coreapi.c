@@ -211,3 +211,8 @@ context_desc_t xc_api_partition_getcontextdesc(u32 cpuid){
 
 		return context_desc;
 }
+
+bool xc_api_partition_startcpu(context_desc_t context_desc){
+	return xc_api_partition_arch_startcpu(context_desc);
+
+}

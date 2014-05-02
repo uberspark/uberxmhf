@@ -85,9 +85,9 @@ void xmhf_partition_setupguestOSstate(u32 cpu_index, u32 xc_partition_index){
 //void xmhf_partition_start(context_desc_t context_desc){
 //	xmhf_partition_arch_start(context_desc);
 //}
-void xmhf_partition_start(u32 cpu_index){
-	xmhf_partition_arch_start(cpu_index);
-}
+//void xmhf_partition_start(u32 cpu_index){
+//	xmhf_partition_arch_start(cpu_index);
+//}
 
 
 //set legacy I/O protection for the partition

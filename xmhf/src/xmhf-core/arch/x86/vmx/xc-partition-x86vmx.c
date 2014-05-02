@@ -265,83 +265,8 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu_t *xc_cpu, u32 xc_parti
 }
 
 
-//----------------------------------------------------------------------
-// start HVM on a given physical core
-// on success: this function will not return
-// on failure: 1 if a valid error code is present, 0 if no error code, 
-// 2 if invalid error info. (should never happen)
-//----------------------------------------------------------------------
-u32 __vmx_start_hvm(void) __attribute__ ((naked)) {
-	//save GPRs
-	asm volatile ("pushal\r\n");
-   
-	//real-mode setup just like the BIOS
-	asm volatile ("movl $0x0, %eax\r\n");
-	asm volatile ("movl $0x0, %ebx\r\n");
-	asm volatile ("movl $0x0, %ecx\r\n");
-	asm volatile ("movl $0x80, %edx\r\n");
-	asm volatile ("movl $0x0, %ebp\r\n");
-	asm volatile ("movl $0x0, %esi\r\n");
-	asm volatile ("movl $0x0, %edi\r\n");
 
-	//attempt to instantiate the HVM
-	asm volatile ("vmlaunch\r\n");
-	 
-	//if we get here then some error happened during the launch
-	
-	//restore stack frame for a return from this procedure
-	asm volatile ("popal\r\n");	
 
-	//there are two possible causes of failure, VMFailInvalid or
-	//VMFailValid (VM instruction error field contains the error code)
-	//check which happened and return appropriate value in eax 
-	asm volatile ("jc __vmx_start_hvm_failinvalid\r\n"
-				  "jnz	__vmx_start_hvm_undefinedimplementation	\r\n"
-				  "movl $0x1, %eax\r\n"
-				  "ret\r\n"					//return 1 as we have error code
-				  "__vmx_start_hvm_undefinedimplementation:\r\n"
-				  "movl $0x2, %eax\r\n"		//violation of VMLAUNCH specs., handle it anyways
-				  "ret\r\n"
-				  "__vmx_start_hvm_failinvalid:\r\n"
-				  "xorl %eax, %eax\r\n"		//return 0 as we have no error code available
-				  "ret\r\n"
-	);
-
-}
-
-//start executing the partition and guest OS
-static void xmhf_partition_arch_x86vmx_start(xc_cpu_t *xc_cpu){
-	u32 errorcode;
-    
-#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
-	//ensure that whenever a partition is started on a vcpu, we have extended paging
-	//enabled and that the base points to the extended page tables we have initialized
-	assert( (vcpu->vmcs.control_EPT_pointer_high == 0) && (vcpu->vmcs.control_EPT_pointer_full == (hva2spa((void*)vcpu->vmx_vaddr_ept_pml4_table) | 0x1E)) );
-	assert( (vcpu->vmcs.control_VMX_seccpu_based & 0x2) );
-	assert( vcpu->vmcs.host_RIP == 0xDEADBEEF);
-#endif
-
-#ifndef __XMHF_VERIFICATION__
-	HALT_ON_ERRORCOND( xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_VMCS_LINK_POINTER_FULL) == 0xFFFFFFFFUL );
-
-	errorcode=__vmx_start_hvm();
-	HALT_ON_ERRORCOND(errorcode != 2);	//this means the VMLAUNCH implementation violated the specs.
-
-	switch(errorcode){
-			case 0:	//no error code, VMCS pointer is invalid
-				printf("\nCPU(0x%02x): VMLAUNCH error; VMCS pointer invalid?. HALT!", xc_cpu->cpuid);
-				break;
-			case 1:{//error code available, so dump it
-				u32 code=xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
-				printf("\nCPU(0x%02x): VMLAUNCH error; code=0x%x. HALT!", xc_cpu->cpuid, code);
-				//xmhf_baseplatform_arch_x86vmx_dumpVMCS(vcpu);
-				break;
-			}
-	}
-	HALT();
-#endif	
-
-}
 
 
 
@@ -361,10 +286,10 @@ void xmhf_partition_arch_setupguestOSstate(u32 cpu_index, u32 xc_partition_index
 }
 
 //start executing the partition and guest OS
-void xmhf_partition_arch_start(u32 cpu_index){
-	xc_cpu_t *xc_cpu = &g_xc_cpu[cpu_index];
-	xmhf_partition_arch_x86vmx_start(xc_cpu);
-}
+//void xmhf_partition_arch_start(u32 cpu_index){
+//	xc_cpu_t *xc_cpu = &g_xc_cpu[cpu_index];
+//	xmhf_partition_arch_x86vmx_start(xc_cpu);
+//}
 
 
 
