@@ -174,9 +174,9 @@ static void _vmx_handle_intercept_ioportaccess(context_desc_t context_desc, stru
 	{
 		xc_hypapp_arch_param_t xc_hypapp_arch_param;
 		xc_hypapp_arch_param.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CBTRAP_IO;
-		xc_hypapp_arch_param.cbtrapio.portnum = portnum;
-		xc_hypapp_arch_param.cbtrapio.access_type = access_type;
-		xc_hypapp_arch_param.cbtrapio.access_size = access_size;
+		xc_hypapp_arch_param.param.cbtrapio.portnum = portnum;
+		xc_hypapp_arch_param.param.cbtrapio.access_type = access_type;
+		xc_hypapp_arch_param.param.cbtrapio.access_size = access_size;
 		app_ret_status=xc_hypapp_handleintercept_trap(context_desc, xc_hypapp_arch_param);
 	}
 

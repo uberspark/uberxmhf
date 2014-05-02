@@ -68,10 +68,10 @@ typedef struct {
 
 typedef struct {
 	u32 operation;
-	union param {	
+	union {	
 		struct regs cpugprs;
 		xc_hypapp_arch_param_x86vmx_cbtrapio_t cbtrapio;
-	};
+	} param;
 } __attribute__ ((packed)) xc_hypapp_arch_param_t;
 
 typedef struct {
