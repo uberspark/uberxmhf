@@ -83,7 +83,7 @@ u32 xmhf_richguest_setup(u32 cpuid, bool is_bsp){
 	//initialize partition monitor (i.e., hypervisor) for this CPU
 	//xmhf_partition_initializemonitor(vcpu);
 	//xmhf_partition_initializemonitor(context_desc);
-	xmhf_partition_initializemonitor(cpu_index);
+	//xmhf_partition_initializemonitor(cpu_index);
 	
 
 	//setup guest OS state for partition

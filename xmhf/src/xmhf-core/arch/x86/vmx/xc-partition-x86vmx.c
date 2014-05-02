@@ -64,110 +64,6 @@ static const u32 vmx_msr_area_msrs[] = {
 static const unsigned int vmx_msr_area_msrs_count = (sizeof(vmx_msr_area_msrs)/sizeof(vmx_msr_area_msrs[0]));
 
 
-//initialize partition monitor for a given CPU
-static void xmhf_partition_arch_x86vmx_initializemonitor(xc_cpu_t *xc_cpu){
-	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)xc_cpu->cpuarchdata;
-	u64 vmcs_phys_addr = hva2spa((void*)xc_cpuarchdata_x86vmx->vmx_vmcs_region);
-
-	  
-
-	//save contents of VMX MSRs as well as MSR EFER and EFCR 
-	{
-	u32 i;
-	u32 eax, edx;
-	#ifndef __XMHF_VERIFICATION__
-	for(i=0; i < IA32_VMX_MSRCOUNT; i++){
-	#else
-	for(i=0; i < 1; i++){
-	#endif
-		#ifndef __XMHF_VERIFICATION__
-		rdmsr( (IA32_VMX_BASIC_MSR + i), &eax, &edx);
-		#endif
-		xc_cpuarchdata_x86vmx->vmx_msrs[i] = (u64)edx << 32 | (u64) eax;        
-	}
-
-	#ifndef __XMHF_VERIFICATION__
-	rdmsr(MSR_EFER, &eax, &edx);
-	#endif
-	xc_cpuarchdata_x86vmx->vmx_msr_efer = (u64)edx << 32 | (u64) eax;
-	#ifndef __XMHF_VERIFICATION__
-	rdmsr(MSR_EFCR, &eax, &edx);
-	#endif
-	xc_cpuarchdata_x86vmx->vmx_msr_efcr = (u64)edx << 32 | (u64) eax;
-
-	printf("\nCPU(0x%02x): MSR_EFER=0x%08x%08x", xc_cpu->cpuid, (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msr_efer >> 32), 
-          (u32)xc_cpuarchdata_x86vmx->vmx_msr_efer);
-    printf("\nCPU(0x%02x): MSR_EFCR=0x%08x%08x", xc_cpu->cpuid, (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msr_efcr >> 32), 
-          (u32)xc_cpuarchdata_x86vmx->vmx_msr_efcr);
-  
-	}
-
-	//we required unrestricted guest support, halt if we don;t have it
-	if( !( (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msrs[IA32_VMX_MSRCOUNT-1] >> 32) & 0x80 ) ){
-		printf("\n%s: need unrestricted guest support but did not find any. Halting!", __FUNCTION__);
-		HALT();
-	}
-
-	//enable VMX by setting CR4
-	#ifndef __XMHF_VERIFICATION__
-	asm(	" mov  %%cr4, %%eax	\n"\
-		" bts  $13, %%eax	\n"\
-		" mov  %%eax, %%cr4	" ::: "eax" );
-	#endif
-	printf("\nCPU(0x%02x): enabled VMX", xc_cpu->cpuid);
-
-	//enter VMX root operation using VMXON
-	{
-	u32 retval=0;
-	u64 vmxonregion_paddr = hva2spa((void*)xc_cpuarchdata_x86vmx->vmx_vmxon_region);
-	//set VMCS rev id
-	#ifndef __XMHF_VERIFICATION__
-	*((u32 *)xc_cpuarchdata_x86vmx->vmx_vmxon_region) = (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
-	#endif
-
-	#ifndef __XMHF_VERIFICATION__
-	asm( "vmxon %1 \n"
-			 "jbe vmfail \n"
-			 "movl $0x1, %%eax \n" 
-			 "movl %%eax, %0 \n"
-			 "jmp vmsuccess \n"
-			 "vmfail: \n"
-			 "movl $0x0, %%eax \n"
-			 "movl %%eax, %0 \n"
-			 "vmsuccess: \n" 
-	   : "=m" (retval)
-	   : "m"(vmxonregion_paddr) 
-	   : "eax");
-	#endif
-
-	if(!retval){
-	  printf("\nCPU(0x%02x): Fatal, unable to enter VMX root operation", xc_cpu->cpuid);
-	  HALT();
-	}  
-
-	printf("\nCPU(0x%02x): Entered VMX root operation", xc_cpu->cpuid);
-	}
-
-
-	//clear VMCS
-	if(!__vmx_vmclear((u64)vmcs_phys_addr)){
-	printf("\nCPU(0x%02x): VMCLEAR failed, HALT!", xc_cpu->cpuid);
-	HALT();
-	}
-	printf("\nCPU(0x%02x): VMCLEAR success.", xc_cpu->cpuid);
-  
-  
-	//set VMCS revision id
-	*((u32 *)xc_cpuarchdata_x86vmx->vmx_vmcs_region) = (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
-
-	//load VMPTR
-	if(!__vmx_vmptrld((u64)vmcs_phys_addr)){
-	printf("\nCPU(0x%02x): VMPTRLD failed, HALT!", xc_cpu->cpuid);
-	HALT();
-	}
-	printf("\nCPU(0x%02x): VMPTRLD success.", xc_cpu->cpuid);
-
-}
 
 
 
@@ -453,10 +349,10 @@ static void xmhf_partition_arch_x86vmx_start(xc_cpu_t *xc_cpu){
 
 //---------------------------------------------------------------------
 //initialize partition monitor for a given CPU
-void xmhf_partition_arch_initializemonitor(u32 cpu_index){
-	xc_cpu_t *xc_cpu = &g_xc_cpu[cpu_index];
-	xmhf_partition_arch_x86vmx_initializemonitor(xc_cpu);
-}
+//void xmhf_partition_arch_initializemonitor(u32 cpu_index){
+//	xc_cpu_t *xc_cpu = &g_xc_cpu[cpu_index];
+//	xmhf_partition_arch_x86vmx_initializemonitor(xc_cpu);
+//}
 
 //setup guest OS state for the partition
 void xmhf_partition_arch_setupguestOSstate(u32 cpu_index, u32 xc_partition_index){

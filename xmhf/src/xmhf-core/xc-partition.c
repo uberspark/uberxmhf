@@ -58,9 +58,9 @@
 //void xmhf_partition_initializemonitor(context_desc_t context_desc){
 //	xmhf_partition_arch_initializemonitor(context_desc);
 //}
-void xmhf_partition_initializemonitor(u32 cpu_index){
-	xmhf_partition_arch_initializemonitor(cpu_index);
-}
+//void xmhf_partition_initializemonitor(u32 cpu_index){
+//	xmhf_partition_arch_initializemonitor(cpu_index);
+//}
 
 
 //setup guest OS state for the partition
