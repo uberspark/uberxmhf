@@ -214,9 +214,17 @@ static u32 * _ap_bootstrap_blob_runtime_entrypoint = (u32 *) &_ap_bootstrap_blob
 
 static u8 * _ap_bootstrap_blob_mle_join_start = (u8 *) &_ap_bootstrap_blob[0x10];
 
+// platform cpu stacks
+static u8 _cpustack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE] __attribute__(( section(".stack") ));
 
 
+static void _ap_pmode_entry_with_paging(void) __attribute__((naked));
+static void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void);
 
+
+//XXX: TODO: get rid of these externs and bring them in here as static
+extern arch_x86_gdtdesc_t _gdt;
+extern arch_x86_idtdesc_t _idt;
 
 //----------------------------------------------------------------------
 // functions
@@ -331,33 +339,6 @@ void xmhf_baseplatform_arch_x86vmx_wakeupAPs(void){
 
 }
 
-//initialize SMP
-void xmhf_baseplatform_arch_smpinitialize(void){
-
-  
-	//save cpu MTRR state which we will later replicate on all APs
-	xmhf_baseplatform_arch_x86_savecpumtrrstate();
-
-	//signal that basic base platform data structure initialization is complete 
-	//(used by the exception handler component)
-	//g_bplt_initiatialized = true;
-
-  //wake up APS
-  if(g_xc_cpu_count > 1){
-	  xmhf_baseplatform_arch_x86vmx_wakeupAPs();
-  }
-
-
-  //fall through to common code  
-  {
-	 void _ap_pmode_entry_with_paging(void);
-   printf("\nRelinquishing BSP thread and moving to common...");
-   // Do some low-level init and then call allcpus_common_start() below
-   _ap_pmode_entry_with_paging(); 
-   printf("\nBSP must never get here. HALT!");
-   HALT();
-  }
-}
 
 /*//--debug: dumpVMCS dumps VMCS contents-----------------------------------------
 void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu){
@@ -456,4 +437,87 @@ void xmhf_baseplatform_arch_initialize(void){
 		#endif //__XMHF_VERIFICATION__
 	}
 
+}
+
+
+//initialize SMP
+void xmhf_baseplatform_arch_smpinitialize(void){
+
+  
+	//save cpu MTRR state which we will later replicate on all APs
+	xmhf_baseplatform_arch_x86_savecpumtrrstate();
+
+	//signal that basic base platform data structure initialization is complete 
+	//(used by the exception handler component)
+	//g_bplt_initiatialized = true;
+
+  //wake up APS
+  if(g_xc_cpu_count > 1){
+	  xmhf_baseplatform_arch_x86vmx_wakeupAPs();
+  }
+
+
+  //fall through to common code  
+  {
+   printf("\nRelinquishing BSP thread and moving to common...");
+   // Do some low-level init and then call allcpus_common_start() below
+   _ap_pmode_entry_with_paging(); 
+   printf("\nBSP must never get here. HALT!");
+   HALT();
+  }
+}
+
+
+static void _ap_pmode_entry_with_paging(void) __attribute__((naked)){
+
+    asm volatile(	"lgdt %0\r\n"
+					"lidt %1\r\n"
+					"mov %2, %%ecx\r\n"
+					"rdmsr\r\n"
+					"andl $0xFFFFF000, %%eax\r\n"
+					"addl $0x20, %%eax\r\n"
+					"movl (%%eax), %%eax\r\n"
+					"shr $24, %%eax\r\n"
+					"movl %3, %%edx\r\n"
+					"movl %4, %%ebx\r\n"
+					"xorl %%ecx, %%ecx\r\n"
+					"xorl %%edi, %%edi\r\n"
+					"getidxloop:\r\n"
+					"movl 0x0(%%ebx, %%edi), %%ebp\r\n"  	//ebp contains the lapic id
+					"cmpl %%eax, %%ebp\r\n"
+					"jz gotidx\r\n"
+					"incl %%ecx\r\n"
+					"addl %5, %%edi\r\n"
+					"cmpl %%edx, %%ecx\r\n"
+					"jb getidxloop\r\n"
+					"hlt\r\n"								//we should never get here, if so just halt
+					"gotidx:\r\n"							// ecx contains index into g_xc_cputable
+					"movl 0x4(%%ebx, %%edi), %%eax\r\n"	 	// eax = g_xc_cputable[ecx].cpu_index
+					"movl %6, %%edi \r\n"					// edi = &_cpustack
+					"movl %7, %%ecx \r\n"					// ecx = sizeof(_cpustack[0])
+					"mull %%ecx \r\n"						// eax = sizeof(_cpustack[0]) * eax
+					"addl %%ecx, %%eax \r\n"				// eax = (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
+					"addl %%edi, %%eax \r\n"				// eax = &_cpustack + (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
+					"movl %%eax, %%esp \r\n"				// esp = top of stack for the cpu
+					:
+					: "m" (_gdt), "m" (_idt), "i" (MSR_APIC_BASE), "m" (g_xc_cpu_count), "i" (&g_xc_cputable), "i" (sizeof(xc_cputable_t)), "i" (&_cpustack), "i" (sizeof(_cpustack[0]))
+	);
+
+	xmhf_baseplatform_arch_x86_smpinitialize_commonstart();
+	
+}
+
+//common function which is entered by all CPUs upon SMP initialization
+//note: this is specific to the x86 architecture backend
+static void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
+	u32 cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
+	bool is_bsp = xmhf_baseplatform_arch_x86_isbsp();
+	
+	//initialize base CPU state
+	xmhf_baseplatform_arch_x86_cpuinitialize();
+
+	//replicate common MTRR state on this CPU
+	xmhf_baseplatform_arch_x86_restorecpumtrrstate();
+  	
+	xmhf_startup_main(cpuid, is_bsp);
 }
