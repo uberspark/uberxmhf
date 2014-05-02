@@ -53,22 +53,14 @@
 #include <xc-x86.h>
 #include <xc-x86vmx.h>
 
-//critical MSRs that need to be saved/restored across guest VM switches
-static const u32 vmx_msr_area_msrs[] = {
-	MSR_EFER, 
-	MSR_IA32_PAT,
-	MSR_K6_STAR,
-};
-
-//count of critical MSRs that need to be saved/restored across VM switches
-static const unsigned int vmx_msr_area_msrs_count = (sizeof(vmx_msr_area_msrs)/sizeof(vmx_msr_area_msrs[0]));
 
 
 
 
 
 //setup guest OS state for the partition
-void xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu_t *xc_cpu, u32 xc_partition_index){
+void xmhf_partition_arch_x86vmx_setupguestOSstate(context_desc_t context_desc){
+/*void xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu_t *xc_cpu, u32 xc_partition_index){
 	u32 lodword, hidword;
 	xc_partition_t *xc_partition = &g_xc_primary_partition[xc_partition_index];
 	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)xc_cpu->cpuarchdata;
@@ -183,14 +175,12 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu_t *xc_cpu, u32 xc_parti
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, (hva2spa((void*)eptdata->vmx_ept_pml4_table) | 0x1E) );
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_HIGH, 0);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) & ~(1 << 15) & ~(1 << 16)) );
-
+*/
 
 	//--------------------------------------------------------------------------------------------------------------------------------
 	//setup guest state
 	//CR0, real-mode, PE and PG bits cleared
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, (xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR] & ~(CR0_PE) & ~(CR0_PG)) );
-	//CR4, required bits set (usually VMX enabled bit)
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR4, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & ~(CR0_PE) & ~(CR0_PG)) );
 	//CR3 set to 0, does not matter
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR3, 0);
 	//IDTR
@@ -213,7 +203,7 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu_t *xc_cpu, u32 xc_parti
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, 0);
 	
 	//RIP and activity state
-	if(xc_cpu->is_bsp){
+	if(context_desc.cpu_desc.isbsp){
 		//printf("\nBSP(0x%02x): copying boot-module to boot guest", xc_cpu->cpuid);
 		//#ifndef __XMHF_VERIFICATION__
 		//memcpy((void *)__GUESTOSBOOTMODULE_BASE, (void *)xcbootinfo->richguest_bootmodule_base, xcbootinfo->richguest_bootmodule_size);
@@ -274,9 +264,9 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu_t *xc_cpu, u32 xc_parti
 //}
 
 //setup guest OS state for the partition
-void xmhf_partition_arch_setupguestOSstate(u32 cpu_index, u32 xc_partition_index){
-	xc_cpu_t *xc_cpu = &g_xc_cpu[cpu_index];
-	xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu, xc_partition_index);
+void xmhf_partition_arch_setupguestOSstate(context_desc_t context_desc){
+	//xc_cpu_t *xc_cpu = &g_xc_cpu[cpu_index];
+	xmhf_partition_arch_x86vmx_setupguestOSstate(context_desc);
 }
 
 //start executing the partition and guest OS
