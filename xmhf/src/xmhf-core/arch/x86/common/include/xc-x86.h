@@ -161,7 +161,7 @@ typedef struct __tss {
 //----------------------------------------------------------------------
 
 
-void _ap_pmode_entry_with_paging(void);
+//void _ap_pmode_entry_with_paging(void);
 
 //get CPU vendor
 //u32 xmhf_baseplatform_arch_getcpuvendor(void);
