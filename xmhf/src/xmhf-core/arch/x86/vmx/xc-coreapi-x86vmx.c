@@ -73,6 +73,8 @@ static u32 g_vmx_lock_quiesce __attribute__(( section(".data") )) = 1;
 static u32 g_vmx_quiesce_resume_signal __attribute__(( section(".data") )) = 0;  
 static u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") )) = 1; 
 
+static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu, struct regs *r);
+
 static void _vmx_send_quiesce_signal(void){
   u32 prev_icr_high_value;
 
@@ -120,8 +122,24 @@ static void _cpu_arch_x86vmx_endquiesce(context_desc_t context_desc){
 }
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
+void xmhf_smpguest_arch_eventhandler_nmiexception(struct regs *r){
+	xc_cpu_t *xc_cpu;
+	context_desc_t context_desc;
+	
+	//xc_cpu= _vmx_getxc_cpu();
+	context_desc = xc_api_partition_getcontextdesc(xmhf_baseplatform_arch_x86_getcpulapicid());
+	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
+		printf("\n%s: invalid partition/cpu context. Halting!\n", __FUNCTION__);
+		HALT();
+	}
+	xc_cpu = &g_xc_cpu[context_desc.cpu_desc.cpu_index];
+
+	xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu, r);
+}	
+
+//quiescing handler for #NMI (non-maskable interrupt) exception event
 //note: we are in atomic processsing mode for this "xc_cpu"
-void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu, struct regs *r){
+static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu, struct regs *r){
 	u32 nmiinhvm;	//1 if NMI originated from the HVM else 0 if within the hypervisor
 	u32 _vmx_vmcs_info_vmexit_interrupt_information;
 	u32 _vmx_vmcs_info_vmexit_reason;
