@@ -73,9 +73,9 @@
 //void xmhf_partition_setupguestOSstate(u32 index_cpudata){
 //	xmhf_partition_arch_setupguestOSstate(index_cpudata);
 //}
-void xmhf_partition_setupguestOSstate(context_desc_t context_desc){
-	xmhf_partition_arch_setupguestOSstate(context_desc);
-}
+//void xmhf_partition_setupguestOSstate(context_desc_t context_desc){
+//	xmhf_partition_arch_setupguestOSstate(context_desc);
+//}
 
 
 //start executing the partition and guest OS

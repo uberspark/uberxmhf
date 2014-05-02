@@ -66,6 +66,10 @@ void xmhf_richguest_arch_initialize(u32 xc_partition_richguest_index);
 //void xmhf_richguest_addcpu(xc_cpu_t *xc_cpu, u32 xc_partition_richguest_index);
 context_desc_t xmhf_richguest_setup(u32 cpuid, bool is_bsp);
 
+void xmhf_richguest_arch_setupguestOSstate(context_desc_t context_desc);
+
+#define xmhf_richguest_setupguestOSstate xmhf_richguest_arch_setupguestOSstate
+
 //----------------------------------------------------------------------
 //rich guest memory functions
 
