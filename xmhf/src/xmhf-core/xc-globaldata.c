@@ -83,17 +83,12 @@ u32 hypapp_tos=0;
 // platform cpus
 xc_cpu_t g_xc_cpu[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
 
-// count of platform cpus
-u32 g_xc_cpu_count __attribute__(( section(".data") )) = 0;
-
 // primary partitions
 xc_partition_t g_xc_primary_partition[MAX_PRIMARY_PARTITIONS] __attribute__(( section(".data") ));
 
 // partition index for the richguest
 u32 xc_partition_richguest_index = 0;
 
-// cpu table
-xc_cputable_t g_xc_cputable[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
 
 //----------------------------------------------------------------------------------
 // global data initialization function
@@ -104,7 +99,7 @@ void *xc_globaldata_initialize(void *input){
 	xc_cpu_t *xc_cpu_bsp;
 	XMHF_BOOTINFO *xcbootinfo = (XMHF_BOOTINFO *)input;
 	
-	//initialize cpu data structure
+	/*//initialize cpu data structure
 	printf("\nNo. of CPU entries = %u", xcbootinfo->cpuinfo_numentries);
 
 	for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
@@ -113,24 +108,24 @@ void *xc_globaldata_initialize(void *input){
 		g_xc_cpu[i].is_quiesced = false;
 		g_xc_cpu[i].parentpartition_index = XC_PARTITION_INDEX_INVALID;
 		printf("\nCPU #%u: bsp=%u, lapic_id=0x%02x, cpuarchdata=%08x", i, xcbootinfo->cpuinfo_buffer[i].isbsp, xcbootinfo->cpuinfo_buffer[i].lapic_id, (u32)g_xc_cpu[i].cpuarchdata);
-	}
+	}*/
 
-	g_xc_cpu_count = xcbootinfo->cpuinfo_numentries;
+	//g_xc_cpu_count = xcbootinfo->cpuinfo_numentries;
 	
-	//initialize partition data structures
+	/*//initialize partition data structures
 		//primary partitions
 		for(i=0; i < MAX_PRIMARY_PARTITIONS; i++){
 				g_xc_primary_partition[i].partitionid=i;
 				g_xc_primary_partition[i].partitiontype = XC_PARTITION_PRIMARY;
-		}
+		}*/
 
 	//initialize cpu table
-	for(i=0; i < g_xc_cpu_count; i++){
-			g_xc_cputable[i].cpuid = g_xc_cpu[i].cpuid;
+	/*for(i=0; i < g_xc_cpu_count; i++){
+			g_xc_cputable[i].cpuid = xcbootinfo->cpuinfo_buffer[i].lapic_id;
 			g_xc_cputable[i].cpu_index = i;
-			if(g_xc_cpu[i].is_bsp)
+			if(xcbootinfo->cpuinfo_buffer[i].isbsp)
 				xc_cpu_bsp = &g_xc_cpu[i];
-	}
+	}*/
 	
 	//return index_cpudata_bsp;
 	return xc_cpu_bsp;

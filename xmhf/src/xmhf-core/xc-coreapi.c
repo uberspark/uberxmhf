@@ -100,3 +100,110 @@ void xc_api_cpustate_set(context_desc_t context_desc, xc_hypapp_arch_param_t cpu
 xc_hypapp_arch_param_t xc_api_cpustate_get(context_desc_t context_desc, u64 operation){
 	return xc_api_cpustate_arch_get(context_desc, operation);
 }
+
+
+static u32 _partition_current_index=0;
+static u32 _xc_cpu_current_index=0;
+
+
+static xc_cpupartitiontable_t _xc_cpupartitiontable[MAX_PLATFORM_CPUS];
+static u32 _xc_cpupartitiontable_current_index=0;
+
+//partition related core APIs
+u32 xc_api_partition_create(u32 partitiontype){
+	u32 partition_index = XC_PARTITION_INDEX_INVALID;
+	
+	//we only support primary partitions
+	if(partitiontype != XC_PARTITION_PRIMARY)
+		return partition_index;
+		
+	//check if we have run out of partition memory backing
+	if(_partition_current_index > MAX_PRIMARY_PARTITIONS)
+		return partition_index;
+	
+	g_xc_primary_partition[_partition_current_index].partitionid=_partition_current_index;
+	g_xc_primary_partition[_partition_current_index].partitiontype = XC_PARTITION_PRIMARY;
+	g_xc_primary_partition[_partition_current_index].numcpus = 0;
+	
+    partition_index = _partition_current_index;
+    _partition_current_index++;
+    
+    return partition_index;
+}
+
+
+u32 xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_bsp){
+	u32 cpu_index;
+		
+	printf("\n%s: partition_index=%u, cpuid=%x, is_bsp=%u", __FUNCTION__, partition_index, cpuid, is_bsp);
+		
+	//sanity check partition_index
+	if ( !(partition_index >=0 && partition_index < MAX_PRIMARY_PARTITIONS)	)
+		return XC_PARTITION_INDEX_INVALID;
+		
+	//check if have run out of xc_cpu memory backing
+	if(_xc_cpu_current_index > MAX_PLATFORM_CPUS)
+			return XC_PARTITION_INDEX_INVALID;
+
+	//check if we are beyond the maximum cpus supported
+	if(_xc_cpupartitiontable_current_index > MAX_PLATFORM_CPUS)
+		return XC_PARTITION_INDEX_INVALID;
+
+	if(g_xc_primary_partition[partition_index].numcpus >= MAX_PLATFORM_CPUS)
+		return XC_PARTITION_INDEX_INVALID;
+
+
+	cpu_index = _xc_cpu_current_index++;
+	
+	g_xc_cpu[cpu_index].cpuid = cpuid;
+	g_xc_cpu[cpu_index].is_bsp = is_bsp;
+	g_xc_cpu[cpu_index].is_quiesced = false;
+	g_xc_cpu[cpu_index].parentpartition_index = partition_index;
+	
+	_xc_cpupartitiontable[_xc_cpupartitiontable_current_index].cpuid = cpuid;
+	_xc_cpupartitiontable[_xc_cpupartitiontable_current_index].partition_index = partition_index;
+	_xc_cpupartitiontable[_xc_cpupartitiontable_current_index].cpu_index = cpu_index;
+	_xc_cpupartitiontable_current_index++;
+	
+	g_xc_primary_partition[partition_index].cputable[g_xc_primary_partition[partition_index].numcpus].cpuid = cpuid;
+	g_xc_primary_partition[partition_index].cputable[g_xc_primary_partition[partition_index].numcpus].cpu_index = cpu_index;
+	g_xc_primary_partition[partition_index].numcpus++;
+	
+	printf("\n%s: returning %u (numcpus=%u)", __FUNCTION__, cpu_index, g_xc_primary_partition[partition_index].numcpus);
+	return cpu_index;
+}
+
+
+context_desc_t xc_api_partition_getcontextdesc(u32 cpuid){
+		context_desc_t context_desc;
+		u32 partition_index, cpu_index, i;
+		bool found_indices=false;
+		
+		//initialize context_desc to invalid values so we can just return it if
+		//we encounter any errors
+		context_desc.cpu_desc.cpu_index = XC_PARTITION_INDEX_INVALID;
+		context_desc.cpu_desc.isbsp = false;
+		context_desc.partition_desc.partition_index = XC_PARTITION_INDEX_INVALID;
+		
+		//obtain partition_index from cpuid
+		for(i=0; i < _xc_cpupartitiontable_current_index; i++){
+				if(_xc_cpupartitiontable[i].cpuid == cpuid){
+					partition_index = _xc_cpupartitiontable[i].partition_index;
+					cpu_index = _xc_cpupartitiontable[i].cpu_index;
+					found_indices = true;
+					break;
+				}
+		}
+
+		//check if we got a valid cpu and partition indices
+		if(!found_indices)
+			return context_desc;
+			
+		
+		//populate context_desc with cpu and partition indices
+		context_desc.cpu_desc.cpu_index = cpu_index;
+		context_desc.cpu_desc.isbsp = g_xc_cpu[cpu_index].is_bsp;
+		context_desc.partition_desc.partition_index = partition_index;
+
+		return context_desc;
+}

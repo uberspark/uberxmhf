@@ -273,7 +273,7 @@ static void _vmx_propagate_cpustate_guestx86gprs(context_desc_t context_desc, st
 	xc_api_cpustate_set(context_desc, cpustateparams);
 }
 
-static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu, struct regs x86gprs){
+static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86gprs){
 
 	//sanity check for VM-entry errors
 	if( xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON) & 0x80000000UL ){
@@ -285,7 +285,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu
 	//make sure we have no nested events
 	if(xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION) & 0x80000000){
 		printf("\nCPU(0x%02x): HALT; Nested events unhandled with hwp:0x%08x",
-			xc_cpu->cpuid, xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION));
+			context_desc.cpu_desc.cpu_index, xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION));
 		HALT();
 	}
 
@@ -313,7 +313,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu
 					u64 hypercall_param = ((u64)x86gprs.edx << 32) | x86gprs.ecx;
 	
 					if( xc_hypapp_handlehypercall(context_desc, hypercall_id, hypercall_param) != APP_SUCCESS){
-						printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", xc_cpu->cpuid, x86gprs.eax);
+						printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", context_desc.cpu_desc.cpu_index, x86gprs.eax);
 						HALT();
 					}
 				}
@@ -339,7 +339,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu
 
 			printf("\n***** VMEXIT_INIT xc_hypapp_handleshutdown\n");
 			xc_hypapp_handleshutdown(context_desc);      
-			printf("\nCPU(0x%02x): Fatal, xc_hypapp_handleshutdown returned. Halting!", xc_cpu->cpuid);
+			printf("\nCPU(0x%02x): Fatal, xc_hypapp_handleshutdown returned. Halting!", context_desc.cpu_desc.cpu_index);
 			HALT();
 		}
 		break;
@@ -373,7 +373,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu
 			  	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH)) );
 
 			}else{
-				printf("\n[%02x]%s: invalid gpr value (%u). halting!", xc_cpu->cpuid,
+				printf("\n[%02x]%s: invalid gpr value (%u). halting!", context_desc.cpu_desc.cpu_index,
 					__FUNCTION__, gpr);
 				HALT();
 			}
@@ -401,13 +401,13 @@ static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu
 			u16 tss_selector = (u16)xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION);
 			
 			if(reason == TASK_SWITCH_GATE && type == INTR_TYPE_NMI){
-				printf("\nCPU(0x%02x): NMI received (MP guest shutdown?)", xc_cpu->cpuid);
+				printf("\nCPU(0x%02x): NMI received (MP guest shutdown?)", context_desc.cpu_desc.cpu_index);
 				xc_hypapp_handleshutdown(context_desc);      
-				printf("\nCPU(0x%02x): warning, xc_hypapp_handleshutdown returned!", xc_cpu->cpuid);
-				printf("\nCPU(0x%02x): HALTING!", xc_cpu->cpuid);
+				printf("\nCPU(0x%02x): warning, xc_hypapp_handleshutdown returned!", context_desc.cpu_desc.cpu_index);
+				printf("\nCPU(0x%02x): HALTING!", context_desc.cpu_desc.cpu_index);
 				HALT();
 			}else{
-				printf("\nCPU(0x%02x): Unhandled Task Switch. Halt!", xc_cpu->cpuid);
+				printf("\nCPU(0x%02x): Unhandled Task Switch. Halt!", context_desc.cpu_desc.cpu_index);
 				printf("\n	idt_v=0x%08x, type=0x%08x, reason=0x%08x, tsssel=0x%04x",
 					idt_v, type, reason, tss_selector); 
 			}
@@ -422,7 +422,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu
 
 		case VMX_VMEXIT_SIPI:{
 			u32 sipivector = (u8)xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION);
-			printf("\nCPU(%02x): SIPI vector=0x%08x", xc_cpu->cpuid, sipivector);
+			printf("\nCPU(%02x): SIPI vector=0x%08x", context_desc.cpu_desc.cpu_index, sipivector);
 			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_SELECTOR, ((sipivector * PAGE_SIZE_4K) >> 4));
 			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_BASE, (sipivector * PAGE_SIZE_4K));
 			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, 0x0ULL);
@@ -432,8 +432,8 @@ static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu
 
     
 		default:{
-			printf("\nCPU(0x%02x): Unhandled intercept: 0x%08x", xc_cpu->cpuid, (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON));
-			printf("\n	CPU(0x%02x): EFLAGS=0x%08x", xc_cpu->cpuid, (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RFLAGS));
+			printf("\nCPU(0x%02x): Unhandled intercept: 0x%08x", context_desc.cpu_desc.cpu_index, (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON));
+			printf("\n	CPU(0x%02x): EFLAGS=0x%08x", context_desc.cpu_desc.cpu_index, (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RFLAGS));
 			printf("\n	SS:ESP =0x%04x:0x%08x", (u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SS_SELECTOR), (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RSP));
 			printf("\n	CS:EIP =0x%04x:0x%08x", (u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CS_SELECTOR), (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP));
 			printf("\n	IDTR base:limit=0x%08x:0x%04x", (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_IDTR_BASE),
@@ -442,7 +442,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, xc_cpu_t *xc_cpu
 					(u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_GDTR_LIMIT));
 			if(xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION) & 0x80000000){
 				printf("\nCPU(0x%02x): HALT; Nested events unhandled 0x%08x",
-					xc_cpu->cpuid, xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION));
+					context_desc.cpu_desc.cpu_index, xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION));
 			}
 			HALT();
 		}		
@@ -505,37 +505,15 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 	xc_hypapp_arch_param_t cpustateparams;
 	struct regs x86gprs;
 	context_desc_t context_desc;
-	xc_cpu_t *xc_cpu;
-	u32 cpu_index;
-
-	//grab xc_cpu for this core
-	{
-		u32 i;
-		u32 cpu_uniqueid = xmhf_baseplatform_arch_x86_getcpulapicid();
-		bool found_cpu_index = false;
-		
-		for(i=0; i < g_xc_cpu_count; i++){
-			if(g_xc_cputable[i].cpuid == cpu_uniqueid){
-				cpu_index = g_xc_cputable[i].cpu_index;
-				found_cpu_index = true;
-				break;
-			}
-		}
-		
-		if(!found_cpu_index){
-			printf("\n%s: Fatal error, could not find xc_cpu. Halting!", __FUNCTION__);
-			HALT();
-		}
-
-		xc_cpu = &g_xc_cpu[cpu_index];
-	}
+	//xc_cpu_t *xc_cpu;
+	//u32 cpu_index;
 
 	
 #ifndef __XMHF_VERIFICATION__
 	//handle cpu quiescing
 	if(xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON) == VMX_VMEXIT_EXCEPTION){
 		if ( (xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION) & INTR_INFO_VECTOR_MASK) == 0x02 ) {
-			xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu, cpugprs);
+			xmhf_smpguest_arch_eventhandler_nmiexception(cpugprs);
 			return;
 		}
 	}
@@ -543,6 +521,13 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 
 	//serialize
     spin_lock(&_xc_partition_eventhub_lock);
+
+	context_desc = xc_api_partition_getcontextdesc(xmhf_baseplatform_arch_x86_getcpulapicid());
+	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
+		printf("\n%s: invalid partition/cpu context. Halting!\n", __FUNCTION__);
+		HALT();
+	}
+	//xc_cpu = &g_xc_cpu[context_desc.cpu_desc.cpu_index];
 	
 	//set cpu gprs state based on cpugprs
 	x86gprs.edi = cpustateparams.params[0] = cpugprs->edi;
@@ -557,11 +542,11 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 	xc_api_cpustate_set(context_desc, cpustateparams);
 
 	//setup context descriptor
-	context_desc.partition_desc.partition_index = xc_cpu->parentpartition_index;
-	context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
-	context_desc.cpu_desc.cpu_index = cpu_index;
+	//context_desc.partition_desc.partition_index = xc_cpu->parentpartition_index;
+	//context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
+	//context_desc.cpu_desc.cpu_index = cpu_index;
 	
-	_vmx_intercept_handler(context_desc, xc_cpu, x86gprs);
+	_vmx_intercept_handler(context_desc, x86gprs);
 	
 	cpustateparams = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS);
 	cpugprs->edi = (u32)cpustateparams.params[0];

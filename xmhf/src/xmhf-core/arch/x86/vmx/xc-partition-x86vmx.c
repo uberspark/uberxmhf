@@ -506,17 +506,20 @@ static void xmhf_partition_arch_x86vmx_start(xc_cpu_t *xc_cpu){
 
 //---------------------------------------------------------------------
 //initialize partition monitor for a given CPU
-void xmhf_partition_arch_initializemonitor(xc_cpu_t *xc_cpu){
+void xmhf_partition_arch_initializemonitor(u32 cpu_index){
+	xc_cpu_t *xc_cpu = &g_xc_cpu[cpu_index];
 	xmhf_partition_arch_x86vmx_initializemonitor(xc_cpu);
 }
 
 //setup guest OS state for the partition
-void xmhf_partition_arch_setupguestOSstate(xc_cpu_t *xc_cpu, u32 xc_partition_index){
+void xmhf_partition_arch_setupguestOSstate(u32 cpu_index, u32 xc_partition_index){
+	xc_cpu_t *xc_cpu = &g_xc_cpu[cpu_index];
 	xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu, xc_partition_index);
 }
 
 //start executing the partition and guest OS
-void xmhf_partition_arch_start(xc_cpu_t *xc_cpu){
+void xmhf_partition_arch_start(u32 cpu_index){
+	xc_cpu_t *xc_cpu = &g_xc_cpu[cpu_index];
 	xmhf_partition_arch_x86vmx_start(xc_cpu);
 }
 

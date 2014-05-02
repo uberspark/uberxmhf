@@ -86,6 +86,13 @@ void xmhf_runtime_entry(void){
 	xmhf_dmaprot_reinitialize();
 	#endif
 
+	//create a primary partition for the rich-guest
+	xc_partition_richguest_index = xc_api_partition_create(XC_PARTITION_PRIMARY);
+	if(xc_partition_richguest_index == XC_PARTITION_INDEX_INVALID){
+		printf("\n%s: could not create partition for rich guest. Halting!", __FUNCTION__);
+		HALT();
+	}
+	
 	//initialize richguest
 	xmhf_richguest_initialize(xc_partition_richguest_index);
 
@@ -103,52 +110,60 @@ void xmhf_runtime_entry(void){
 
 //we get control here in the context of *each* physical CPU core 
 //void xmhf_runtime_main(xc_cpu_t *xc_cpu){ 
-void xmhf_runtime_main(u32 cpu_index){ 
+//void xmhf_runtime_main(u32 cpu_index){ 
+void xmhf_startup_main(u32 cpuid, bool is_bsp){
 	static u32 _xc_startup_hypappmain_counter = 0; 
 	static u32 _xc_startup_hypappmain_counter_lock = 1; 
-	xc_cpu_t *xc_cpu = &g_xc_cpu[cpu_index];
+	//xc_cpu_t *xc_cpu = &g_xc_cpu[cpu_index];
+	u32 cpu_index;
+	
+	//serialize execution
+    spin_lock(&_xc_startup_hypappmain_counter_lock);
 
 	//[debug]
-	printf("\n%s: cpu id=%u", __FUNCTION__, xc_cpu->cpuid);
+	printf("\n%s: cpuid=%08x, is_bsp=%u...\n", __FUNCTION__, cpuid, is_bsp);
 
 	//add cpu to rich guest partition
 	//TODO: check if this CPU is allocated to the "rich" guest. if so, pass it on to
 	//the rich guest initialization procedure. if the CPU is not allocated to the
 	//rich guest, enter it into a CPU pool for use by other partitions
-	xmhf_richguest_addcpu(xc_cpu, xc_partition_richguest_index);
+	//xmhf_richguest_addcpu(xc_cpu, xc_partition_richguest_index);
+	cpu_index=xmhf_richguest_setup(cpuid, is_bsp);
+	
 	
 	//call hypapp main function
-    spin_lock(&_xc_startup_hypappmain_counter_lock);
 	{
 		hypapp_env_block_t hypappenvb;
 		context_desc_t context_desc;
-		xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
+		//xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
 
-		context_desc.partition_desc.partition_index = xc_cpu->parentpartition_index;
-		context_desc.cpu_desc.isbsp = xc_cpu->is_bsp;
+		context_desc.partition_desc.partition_index = xc_partition_richguest_index;
+		context_desc.cpu_desc.isbsp = is_bsp;
 		context_desc.cpu_desc.cpu_index = cpu_index;
 		
 		hypappenvb.runtimephysmembase = (u32)xcbootinfo->physmem_base;  
 		hypappenvb.runtimesize = (u32)xcbootinfo->size;
 	
 		//call app main
-		printf("\n%s: proceeding to call xmhfhypapp_main on BSP", __FUNCTION__);
+		//printf("\n%s: proceeding to call xmhfhypapp_main on BSP", __FUNCTION__);
 		xc_hypapp_initialization(context_desc, hypappenvb);
-		_xc_startup_hypappmain_counter++;
-		printf("\n%s: came back into core", __FUNCTION__);
-
+		//printf("\n%s: came back into core", __FUNCTION__);
 	}   	
+    
+    _xc_startup_hypappmain_counter++;
+    
+    //end serialized execution
     spin_unlock(&_xc_startup_hypappmain_counter_lock);
 
 	//wait for hypapp main to execute on all the cpus
-	while(_xc_startup_hypappmain_counter < g_xc_cpu_count);
+	while(_xc_startup_hypappmain_counter < xcbootinfo->cpuinfo_numentries);
 	
 	//start cpu in corresponding partition
-	printf("\n%s[%u]: starting in partition...", __FUNCTION__, xc_cpu->cpuid);
-	xmhf_partition_start(xc_cpu);
+	printf("\n%s[%u]: starting in partition...", __FUNCTION__, cpu_index);
+	xmhf_partition_start(cpu_index);
 	
 	#ifndef __XMHF_VERIFICATION__
-	printf("\n%s: index_cpudata=%u: FATAL, should not be here. HALTING!", __FUNCTION__, xc_cpu->cpuid);
+	printf("\n%s: index_cpudata=%u: FATAL, should not be here. HALTING!", __FUNCTION__, cpu_index);
 	HALT();
 	#endif //__XMHF_VERIFICATION__
 }
