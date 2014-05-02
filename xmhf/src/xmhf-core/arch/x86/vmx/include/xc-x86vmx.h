@@ -50,8 +50,8 @@
 #ifndef _XC_X86VMX_H_
 #define _XC_X86VMX_H_
 
-#include <xmhf.h>
-#include <xmhf-core.h>
+//#include <xmhf.h>
+//#include <xmhf-core.h>
 
 #ifndef __ASSEMBLY__
 

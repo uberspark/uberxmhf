@@ -50,8 +50,8 @@
 #ifndef _XC_X86_H_
 #define _XC_X86_H_
 
-#include <xmhf.h>
-#include <xmhf-core.h>
+//#include <xmhf.h>
+//#include <xmhf-core.h>
 
 //xc-baseplatform
 #include "platform/x86pc/include/common/_multiboot.h"		//multiboot
