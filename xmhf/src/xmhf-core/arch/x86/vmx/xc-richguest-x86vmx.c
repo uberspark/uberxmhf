@@ -54,7 +54,7 @@
 
 static struct _memorytype _vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
 
-//---function to obtain the xc_cpu of the currently executing core----------------
+/*//---function to obtain the xc_cpu of the currently executing core----------------
 //XXX: move this into baseplatform as backend
 //note: this always returns a valid VCPU pointer
 static xc_cpu_t *_vmx_getxc_cpu(void){
@@ -94,7 +94,7 @@ static xc_cpu_t *_vmx_getxc_cpu(void){
 
   
 }
-
+*/
 
 
 //----------------------------------------------------------------------
@@ -207,9 +207,17 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 //void xmhf_smpguest_arch_x86_eventhandler_nmiexception(xc_cpu_t *xc_cpu, struct regs *r){
 void xmhf_smpguest_arch_eventhandler_nmiexception(struct regs *r){
 	xc_cpu_t *xc_cpu;
+	context_desc_t context_desc;
 	
-	xc_cpu= _vmx_getxc_cpu();
-		xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu, r);
+	//xc_cpu= _vmx_getxc_cpu();
+	context_desc = xc_api_partition_getcontextdesc(xmhf_baseplatform_arch_x86_getcpulapicid());
+	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
+		printf("\n%s: invalid partition/cpu context. Halting!\n", __FUNCTION__);
+		HALT();
+	}
+	xc_cpu = &g_xc_cpu[context_desc.cpu_desc.cpu_index];
+
+	xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu, r);
 }	
 
 
