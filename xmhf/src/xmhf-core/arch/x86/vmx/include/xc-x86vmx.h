@@ -56,6 +56,12 @@
 #ifndef __ASSEMBLY__
 
 typedef struct {
+	u64 operation;
+	u64 params[MAX_XC_HYPAPP_CB_ARCH_PARAMS];
+}__attribute__ ((packed)) xc_hypapp_arch_param_t;
+
+
+typedef struct {
   u8 vmx_vmxon_region[PAGE_SIZE_4K];    		
   u8 vmx_vmcs_region[PAGE_SIZE_4K];           
   u8 vmx_msr_area_host_region[2*PAGE_SIZE_4K];		
