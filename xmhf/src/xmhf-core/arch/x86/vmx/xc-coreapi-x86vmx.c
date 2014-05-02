@@ -479,46 +479,50 @@ void xc_api_trapmask_arch_clear(context_desc_t context_desc, xc_hypapp_arch_para
 //-----------------------------------------------------------------------------------------------
 // CPU state related APIs
 
-static void _cpustate_operation_cpugprs_set(context_desc_t context_desc, struct regs *x86gprs){
+static void _cpustate_operation_cpugprs_set(context_desc_t context_desc, struct regs x86gprs){
 	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
 	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)xc_cpu->cpuarchdata;
-	xc_cpuarchdata_x86vmx->x86gprs.edi = x86gprs->edi;
-	xc_cpuarchdata_x86vmx->x86gprs.esi = x86gprs->esi;
-	xc_cpuarchdata_x86vmx->x86gprs.ebp = x86gprs->ebp;
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, x86gprs->esp);
-	xc_cpuarchdata_x86vmx->x86gprs.ebx = x86gprs->ebx;
-	xc_cpuarchdata_x86vmx->x86gprs.edx = x86gprs->edx;
-	xc_cpuarchdata_x86vmx->x86gprs.ecx = x86gprs->ecx;
-	xc_cpuarchdata_x86vmx->x86gprs.eax = x86gprs->eax;
+	xc_cpuarchdata_x86vmx->x86gprs.edi = x86gprs.edi;
+	xc_cpuarchdata_x86vmx->x86gprs.esi = x86gprs.esi;
+	xc_cpuarchdata_x86vmx->x86gprs.ebp = x86gprs.ebp;
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, x86gprs.esp);
+	xc_cpuarchdata_x86vmx->x86gprs.ebx = x86gprs.ebx;
+	xc_cpuarchdata_x86vmx->x86gprs.edx = x86gprs.edx;
+	xc_cpuarchdata_x86vmx->x86gprs.ecx = x86gprs.ecx;
+	xc_cpuarchdata_x86vmx->x86gprs.eax = x86gprs.eax;
 }
 
-static void _cpustate_operation_cpugprs_get(context_desc_t context_desc, struct regs *x86gprs){
+static struct regs _cpustate_operation_cpugprs_get(context_desc_t context_desc){
 	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
 	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)xc_cpu->cpuarchdata;
-	x86gprs->edi = xc_cpuarchdata_x86vmx->x86gprs.edi;
-	x86gprs->esi = xc_cpuarchdata_x86vmx->x86gprs.esi;
-	x86gprs->ebp = xc_cpuarchdata_x86vmx->x86gprs.ebp;
-	x86gprs->esp = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RSP);
-	x86gprs->ebx = xc_cpuarchdata_x86vmx->x86gprs.ebx;
-	x86gprs->edx = xc_cpuarchdata_x86vmx->x86gprs.edx;
-	x86gprs->ecx = xc_cpuarchdata_x86vmx->x86gprs.ecx;
-	x86gprs->eax = xc_cpuarchdata_x86vmx->x86gprs.eax;
+	struct regs x86gprs;
+	
+	x86gprs.edi = xc_cpuarchdata_x86vmx->x86gprs.edi;
+	x86gprs.esi = xc_cpuarchdata_x86vmx->x86gprs.esi;
+	x86gprs.ebp = xc_cpuarchdata_x86vmx->x86gprs.ebp;
+	x86gprs.esp = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RSP);
+	x86gprs.ebx = xc_cpuarchdata_x86vmx->x86gprs.ebx;
+	x86gprs.edx = xc_cpuarchdata_x86vmx->x86gprs.edx;
+	x86gprs.ecx = xc_cpuarchdata_x86vmx->x86gprs.ecx;
+	x86gprs.eax = xc_cpuarchdata_x86vmx->x86gprs.eax;
+
+	return x86gprs;
 }
 
-void xc_api_cpustate_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_t cpustateparams){
-	switch(cpustateparams.operation){
+void xc_api_cpustate_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_t ap){
+	switch(ap.operation){
 		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS:{
 				//params[0]..[7] = x86 general purpose registers - edi,esi,ebp,esp,ebx,edx,ecx,eax
-				struct regs x86gprs;
-				x86gprs.edi = cpustateparams.params[0];
-				x86gprs.esi = cpustateparams.params[1];
-				x86gprs.ebp = cpustateparams.params[2];
-				x86gprs.esp = cpustateparams.params[3];
-				x86gprs.ebx = cpustateparams.params[4];
-				x86gprs.edx = cpustateparams.params[5];
-				x86gprs.ecx = cpustateparams.params[6];
-				x86gprs.eax = cpustateparams.params[7];
-				_cpustate_operation_cpugprs_set(context_desc, &x86gprs);
+				//struct regs x86gprs;
+				//x86gprs.edi = cpustateparams.params[0];
+				//x86gprs.esi = cpustateparams.params[1];
+				//x86gprs.ebp = cpustateparams.params[2];
+				//x86gprs.esp = cpustateparams.params[3];
+				//x86gprs.ebx = cpustateparams.params[4];
+				//x86gprs.edx = cpustateparams.params[5];
+				//x86gprs.ecx = cpustateparams.params[6];
+				//x86gprs.eax = cpustateparams.params[7];
+				_cpustate_operation_cpugprs_set(context_desc, ap.param.cpugprs);
 				break;
 		}	
 	
@@ -529,21 +533,21 @@ void xc_api_cpustate_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_
 }
 
 xc_hypapp_arch_param_t xc_api_cpustate_arch_get(context_desc_t context_desc, u64 operation){
-	xc_hypapp_arch_param_t cpustateparams;
+	xc_hypapp_arch_param_t ap;
 
 	switch(operation){
 		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS:{
 				//params[0]..[7] = x86 general purpose registers - edi,esi,ebp,esp,ebx,edx,ecx,eax
-				struct regs x86gprs;
-				_cpustate_operation_cpugprs_get(context_desc, &x86gprs);
-				cpustateparams.params[0] = x86gprs.edi;
-				cpustateparams.params[1] = x86gprs.esi;
-				cpustateparams.params[2] = x86gprs.ebp;
-				cpustateparams.params[3] = x86gprs.esp;
-				cpustateparams.params[4] = x86gprs.ebx;
-				cpustateparams.params[5] = x86gprs.edx;
-				cpustateparams.params[6] = x86gprs.ecx;
-				cpustateparams.params[7] = x86gprs.eax;
+				//struct regs x86gprs;
+				ap.param.cpugprs = _cpustate_operation_cpugprs_get(context_desc);
+				//cpustateparams.params[0] = x86gprs.edi;
+				//cpustateparams.params[1] = x86gprs.esi;
+				//cpustateparams.params[2] = x86gprs.ebp;
+				//cpustateparams.params[3] = x86gprs.esp;
+				//cpustateparams.params[4] = x86gprs.ebx;
+				//cpustateparams.params[5] = x86gprs.edx;
+				//cpustateparams.params[6] = x86gprs.ecx;
+				//cpustateparams.params[7] = x86gprs.eax;
 				break;
 		}	
 	
@@ -551,7 +555,7 @@ xc_hypapp_arch_param_t xc_api_cpustate_arch_get(context_desc_t context_desc, u64
 			break;
 	}
 	
-	return cpustateparams;
+	return ap;
 }
 
 
