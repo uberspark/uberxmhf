@@ -426,7 +426,7 @@ void xmhf_baseplatform_arch_initialize(void){
 
 	//initialize TR/TSS
 	#ifndef __XMHF_VERIFICATION__
-	xmhf_baseplatform_arch_x86_initializeTR();
+	xmhf_baseplatform_arch_x86_initializeTSS();
 	#endif //__XMHF_VERIFICATION__
 
 	//initialize PCI subsystem
@@ -540,6 +540,25 @@ static void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 	bcr0 |= 0x20;
 	write_cr0(bcr0);
 
-  	
-	xmhf_startup_main(cpuid, is_bsp);
+	//load TR 
+	{
+	  u32 gdtstart = (u32)xmhf_baseplatform_arch_x86_getgdtbase();
+	  u16 trselector = 	__TRSEL;
+	  #ifndef __XMHF_VERIFICATION__
+	  asm volatile("movl %0, %%edi\r\n"
+		"xorl %%eax, %%eax\r\n"
+		"movw %1, %%ax\r\n"
+		"addl %%eax, %%edi\r\n"		//%edi is pointer to TSS descriptor in GDT
+		"addl $0x4, %%edi\r\n"		//%edi points to top 32-bits of 64-bit TSS desc.
+		"lock andl $0xFFFF00FF, (%%edi)\r\n"
+		"lock orl  $0x00008900, (%%edi)\r\n"
+		"ltr %%ax\r\n"				//load TR
+	     : 
+	     : "m"(gdtstart), "m"(trselector)
+	     : "edi", "eax"
+	  );
+	  #endif
+	}
+	
+  	xmhf_startup_main(cpuid, is_bsp);
 }
