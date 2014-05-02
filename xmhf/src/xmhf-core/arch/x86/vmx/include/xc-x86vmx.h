@@ -67,10 +67,16 @@ typedef struct {
 } xc_hypapp_arch_param_x86vmx_cbtrapio_t;
 
 typedef struct {
+	u32 portnum;
+	u32 access_size;
+} xc_hypapp_arch_param_x86vmx_trapio_t;
+
+typedef struct {
 	u32 operation;
 	union {	
 		struct regs cpugprs;
 		xc_hypapp_arch_param_x86vmx_cbtrapio_t cbtrapio;
+		xc_hypapp_arch_param_x86vmx_trapio_t trapio;
 	} param;
 } __attribute__ ((packed)) xc_hypapp_arch_param_t;
 
