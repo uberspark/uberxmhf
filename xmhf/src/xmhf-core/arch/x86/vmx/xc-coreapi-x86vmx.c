@@ -411,7 +411,7 @@ u64 xc_api_hpt_arch_lvl2pagewalk(context_desc_t context_desc, u64 gva){
 //---------------------------------------------------------------------------------
 // Trapmask related APIs
 
-static void _trapmask_operation_trap_io_set(context_desc_t context_desc, u16 port, u8 size){
+static void _trapmask_operation_trap_io_set(context_desc_t context_desc, xc_hypapp_arch_param_x86vmx_trapio_t trapio){
 	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
 	xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
 
@@ -420,17 +420,17 @@ static void _trapmask_operation_trap_io_set(context_desc_t context_desc, u16 por
 	u32 byte_offset, bit_offset;
 	u32 i;
 
-	if(size > sizeof(u32))
-		size=sizeof(u32);
+	if(trapio.access_size > sizeof(u32))
+		trapio.access_size=sizeof(u32);
 
-	for(i=0; i < size; i++){
-		byte_offset = (port+i) / 8;
-		bit_offset = (port+i) % 8;
+	for(i=0; i < trapio.access_size; i++){
+		byte_offset = (trapio.portnum+i) / 8;
+		bit_offset = (trapio.portnum+i) % 8;
 		bit_vector[byte_offset] |= (1 << bit_offset);	
 	}
 }
 
-static void _trapmask_operation_trap_io_clear(context_desc_t context_desc, u16 port, u8 size){
+static void _trapmask_operation_trap_io_clear(context_desc_t context_desc, xc_hypapp_arch_param_x86vmx_trapio_t trapio){
 	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
 	xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
 
@@ -439,21 +439,20 @@ static void _trapmask_operation_trap_io_clear(context_desc_t context_desc, u16 p
 	u32 byte_offset, bit_offset;
 	u32 i;
 
-	if(size > sizeof(u32))
-		size=sizeof(u32);
+	if(trapio.access_size > sizeof(u32))
+		trapio.access_size=sizeof(u32);
 
-	for(i=0; i < size; i++){
-		byte_offset = (port+i) / 8;
-		bit_offset = (port+i) % 8;
+	for(i=0; i < trapio.access_size; i++){
+		byte_offset = (trapio.portnum+i) / 8;
+		bit_offset = (trapio.portnum+i) % 8;
 		bit_vector[byte_offset] &= ~((1 << bit_offset));	
 	}
 }
 
-void xc_api_trapmask_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams){
-	switch(trapmaskparams.operation){
+void xc_api_trapmask_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_t ap){
+	switch(ap.operation){
 		case XC_HYPAPP_ARCH_PARAM_OPERATION_TRAP_IO:{
-				//params[0]=16-bit port number, params[1]=size in bytes - 1,2 or 4
-				_trapmask_operation_trap_io_set(context_desc, (u16)trapmaskparams.params[0], (u8)trapmaskparams.params[1]);
+				_trapmask_operation_trap_io_set(context_desc, ap.param.trapio);
 				break;
 		}	
 	
@@ -463,11 +462,10 @@ void xc_api_trapmask_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_
 
 }
 
-void xc_api_trapmask_arch_clear(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams){
-	switch(trapmaskparams.operation){
+void xc_api_trapmask_arch_clear(context_desc_t context_desc, xc_hypapp_arch_param_t ap){
+	switch(ap.operation){
 		case XC_HYPAPP_ARCH_PARAM_OPERATION_TRAP_IO:{
-				//params[0]=16-bit port number, params[1]=size in bytes - 1,2 or 4
-				_trapmask_operation_trap_io_clear(context_desc, (u16)trapmaskparams.params[0], (u8)trapmaskparams.params[1]);
+				_trapmask_operation_trap_io_clear(context_desc, ap.param.trapio);
 				break;
 		}	
 	
