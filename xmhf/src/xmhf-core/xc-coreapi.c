@@ -132,26 +132,31 @@ u32 xc_api_partition_create(u32 partitiontype){
 }
 
 
-u32 xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_bsp){
+context_desc_t xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_bsp){
+	context_desc_t context_desc;
 	u32 cpu_index;
 		
 	printf("\n%s: partition_index=%u, cpuid=%x, is_bsp=%u", __FUNCTION__, partition_index, cpuid, is_bsp);
 		
+	//initialize context_desc
+	context_desc.cpu_desc.cpu_index = XC_PARTITION_INDEX_INVALID;
+	context_desc.cpu_desc.isbsp = is_bsp;
+	context_desc.partition_desc.partition_index = XC_PARTITION_INDEX_INVALID;	
+		
 	//sanity check partition_index
 	if ( !(partition_index >=0 && partition_index < MAX_PRIMARY_PARTITIONS)	)
-		return XC_PARTITION_INDEX_INVALID;
+		return context_desc;
 		
 	//check if have run out of xc_cpu memory backing
 	if(_xc_cpu_current_index > MAX_PLATFORM_CPUS)
-			return XC_PARTITION_INDEX_INVALID;
+		return context_desc;
 
 	//check if we are beyond the maximum cpus supported
 	if(_xc_cpupartitiontable_current_index > MAX_PLATFORM_CPUS)
-		return XC_PARTITION_INDEX_INVALID;
+		return context_desc;
 
 	if(g_xc_primary_partition[partition_index].numcpus >= MAX_PLATFORM_CPUS)
-		return XC_PARTITION_INDEX_INVALID;
-
+		return context_desc;
 
 	cpu_index = _xc_cpu_current_index++;
 	
@@ -171,10 +176,14 @@ u32 xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_bsp){
 
 	//perform arch. specific cpu partition initialization
 	if(!xc_api_partition_arch_addcpu(partition_index, cpu_index))
-		return XC_PARTITION_INDEX_INVALID;
+		return context_desc;
+		
+	//create context_desc for the partition and cpu
+	context_desc.cpu_desc.cpu_index = cpu_index;
+	context_desc.partition_desc.partition_index = partition_index;
 	
 	printf("\n%s: returning %u (numcpus=%u)", __FUNCTION__, cpu_index, g_xc_primary_partition[partition_index].numcpus);
-	return cpu_index;
+	return context_desc;
 }
 
 
