@@ -63,7 +63,8 @@
 void xmhf_runtime_entry(void);
 
 //XMHF runtime main function; gets control in the context of each core
-void xmhf_runtime_main(u32 cpu_index);
+//void xmhf_runtime_main(u32 cpu_index);
+void xmhf_startup_main(u32 cpuid, bool is_bsp);
 
 
 #endif //__ASSEMBLY__

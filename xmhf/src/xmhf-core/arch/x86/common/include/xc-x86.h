@@ -161,7 +161,7 @@ typedef struct __tss {
 //----------------------------------------------------------------------
 
 
-void _ap_pmode_entry_with_paging(void);
+//void _ap_pmode_entry_with_paging(void);
 
 //get CPU vendor
 //u32 xmhf_baseplatform_arch_getcpuvendor(void);
@@ -187,7 +187,7 @@ u32 xmhf_baseplatform_arch_x86_getcpuvendor(void);
 void xmhf_baseplatform_arch_x86_cpuinitialize(void);
 
 //return 1 if the calling CPU is the BSP
-u32 xmhf_baseplatform_arch_x86_isbsp(void);
+bool xmhf_baseplatform_arch_x86_isbsp(void);
 
 //wake up APs using the LAPIC by sending the INIT-SIPI-SIPI IPI sequence
 void xmhf_baseplatform_arch_x86_wakeupAPs(void);
