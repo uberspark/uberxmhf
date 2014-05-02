@@ -75,13 +75,7 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu_t *xc_cpu, u32 xc_parti
 	xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx = (xc_partition_trapmaskdata_x86vmx_t *)xc_partition->trapmaskdata;
 	
 	//setup host state
-
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR0, read_cr0());
-	__vmx_vmwrite(VMCS_HOST_CR0, read_cr0());
-	__vmx_vmread(VMCS_HOST_CR0, &lodword);
-	printf("\nVMCS_HOST_CR0=%x, read_cr0=%x, lod=%x", xmhfhw_cpu_x86vmx_vmread(VMCS_HOST_CR0), read_cr0(), lodword);
-	HALT_ON_ERRORCOND(xmhfhw_cpu_x86vmx_vmread(VMCS_HOST_CR0) == read_cr0());
-	
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR4, read_cr4());
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR3, read_cr3());
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CS_SELECTOR, read_segreg_cs());
@@ -96,15 +90,6 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu_t *xc_cpu, u32 xc_parti
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_TR_BASE, xmhf_baseplatform_arch_x86_gettssbase());
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RIP, (u32)xmhf_parteventhub_arch_x86vmx_entry);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RSP, read_esp());
-
-#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
-	if( vcpu->vmcs.host_RIP == (u64)(u32)xmhf_parteventhub_arch_x86vmx_entry)
-		vcpu->vmcs.host_RIP = 0xDEADBEEF;
-#endif //__XMHF_VERIFICATION__
-
-			
-
-#ifndef __XMHF_VERIFICATION__			
 	rdmsr(IA32_SYSENTER_CS_MSR, &lodword, &hidword);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_SYSENTER_CS, lodword);
 	rdmsr(IA32_SYSENTER_ESP_MSR, &lodword, &hidword);
@@ -115,7 +100,6 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu_t *xc_cpu, u32 xc_parti
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_FS_BASE, (u32) (((u64)hidword << 32) | (u64)lodword) );
 	rdmsr(IA32_MSR_GS_BASE, &lodword, &hidword);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_GS_BASE, (u32) (((u64)hidword << 32) | (u64)lodword) );
-#endif
 
 	//setup default VMX controls
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_PIN_BASED, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR]);
@@ -167,7 +151,32 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu_t *xc_cpu, u32 xc_parti
     xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_PAGEFAULT_ERRORCODE_MATCH, 0x00000000);
     xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EXCEPTION_BITMAP, 0);
     xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR3_TARGET_COUNT, 0);  
-      
+
+
+	//activate secondary processor controls
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_SECCPU_BASED, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) | (1 << 31)) );
+
+	//setup unrestricted guest
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_SECCPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_SECCPU_BASED) | (1 << 7)) );
+
+	//setup VMCS link pointer
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_VMCS_LINK_POINTER_FULL, (u32)0xFFFFFFFFUL);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_VMCS_LINK_POINTER_HIGH, (u32)0xFFFFFFFFUL);
+	
+	//setup NMI intercept for core-quiescing
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_PIN_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_PIN_BASED) | (1 << 3) ) );
+	
+	//trap access to CR0 fixed 1-bits
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR0_MASK, ((((xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR] & ~(CR0_PE)) & ~(CR0_PG)) | CR0_CD) | CR0_NW) );
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR0_SHADOW, xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0));
+			
+	//trap access to CR4 fixed bits (this includes the VMXE bit)
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR4_MASK, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR4_SHADOW, CR4_VMXE);
+
+
+	//--------------------------------------------------------------------------------------------------------------------------------
 	//setup guest state
 	//CR0, real-mode, PE and PG bits cleared
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, (xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR] & ~(CR0_PE) & ~(CR0_PG)) );
@@ -237,31 +246,7 @@ void xmhf_partition_arch_x86vmx_setupguestOSstate(xc_cpu_t *xc_cpu, u32 xc_parti
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SS_BASE, 0);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SS_LIMIT, 0xFFFF);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SS_ACCESS_RIGHTS, 0x93);
-					
-	//activate secondary processor controls
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_SECCPU_BASED, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR]);
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) | (1 << 31)) );
 
-	//setup unrestricted guest
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_SECCPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_SECCPU_BASED) | (1 << 7)) );
-
-	//setup VMCS link pointer
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_VMCS_LINK_POINTER_FULL, (u32)0xFFFFFFFFUL);
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_VMCS_LINK_POINTER_HIGH, (u32)0xFFFFFFFFUL);
-	
-	//setup NMI intercept for core-quiescing
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_PIN_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_PIN_BASED) | (1 << 3) ) );
-	
-	//trap access to CR0 fixed 1-bits
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR0_MASK, ((((xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR] & ~(CR0_PE)) & ~(CR0_PG)) | CR0_CD) | CR0_NW) );
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR0_SHADOW, xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0));
-			
-	//trap access to CR4 fixed bits (this includes the VMXE bit)
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR4_MASK, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR4_SHADOW, CR4_VMXE);
-
-	//flush guest TLB to start with
-	//xmhf_memprot_arch_x86vmx_flushmappings();
 }
 
 
