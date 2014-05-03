@@ -179,6 +179,14 @@ typedef struct {
 } __attribute__ ((packed)) TSSENTRY;
 
 
+typedef struct {
+	u32 selector;
+	u32 base;
+	u32 limit;
+	u32 access_rights;
+} x86desc_t; 
+
+
 #define get_eflags(x)  __asm__ __volatile__("pushfl ; popl %0 ":"=g" (x): /* no input */ :"memory")
 #define set_eflags(x) __asm__ __volatile__("pushl %0 ; popfl": /* no output */ :"g" (x):"memory", "cc")
 
