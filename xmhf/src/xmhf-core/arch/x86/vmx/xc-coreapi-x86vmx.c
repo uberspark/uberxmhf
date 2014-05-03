@@ -509,12 +509,31 @@ static struct regs _cpustate_operation_cpugprs_get(context_desc_t context_desc){
 	return x86gprs;
 }
 
+
+static void _cpustate_operation_desc_set(context_desc_t context_desc, xc_hypapp_arch_param_x86vmx_cpustate_desc_t desc){
+	
+	
+}
+
+static xc_hypapp_arch_param_x86vmx_cpustate_desc_t _cpustate_operation_desc_get(context_desc_t context_desc){
+	xc_hypapp_arch_param_x86vmx_cpustate_desc_t desc;
+	
+	
+	return desc;
+}
+
+
 void xc_api_cpustate_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_t ap){
 	switch(ap.operation){
 		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS:{
 				_cpustate_operation_cpugprs_set(context_desc, ap.param.cpugprs);
 				break;
 		}	
+	
+		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC:{
+				_cpustate_operation_desc_set(context_desc, ap.param.desc);
+				break;
+		}
 	
 		default:
 			break;
@@ -530,6 +549,11 @@ xc_hypapp_arch_param_t xc_api_cpustate_arch_get(context_desc_t context_desc, u64
 				ap.param.cpugprs = _cpustate_operation_cpugprs_get(context_desc);
 				break;
 		}	
+
+		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC:{
+				ap.param.desc = _cpustate_operation_desc_get(context_desc);
+				break;
+		}
 	
 		default:
 			break;
