@@ -511,6 +511,48 @@ static struct regs _cpustate_operation_cpugprs_get(context_desc_t context_desc){
 
 
 static void _cpustate_operation_desc_set(context_desc_t context_desc, xc_hypapp_arch_param_x86vmx_cpustate_desc_t desc){
+
+	//CS, DS, ES, FS, GS and SS segments
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_SELECTOR, desc.cs.selector);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_BASE, desc.cs.base);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_LIMIT, desc.cs.limit);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_ACCESS_RIGHTS, desc.cs.access_rights);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_DS_SELECTOR, desc.ds.selector);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_DS_BASE, desc.ds.base);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_DS_LIMIT, desc.ds.limit);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_DS_ACCESS_RIGHTS, desc.ds.access_rights);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ES_SELECTOR, desc.es.selector);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ES_BASE, desc.es.base);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ES_LIMIT, desc.es.limit);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ES_ACCESS_RIGHTS, desc.es.access_rights);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_FS_SELECTOR, desc.fs.selector);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_FS_BASE, desc.fs.base);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_FS_LIMIT, desc.fs.limit);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_FS_ACCESS_RIGHTS, desc.fs.access_rights);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GS_SELECTOR, desc.gs.selector);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GS_BASE, desc.gs.base);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GS_LIMIT, desc.gs.limit);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GS_ACCESS_RIGHTS, desc.gs.access_rights);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SS_SELECTOR, desc.ss.selector);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SS_BASE, desc.ss.base);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SS_LIMIT, desc.ss.limit);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SS_ACCESS_RIGHTS, desc.ss.access_rights);
+	//IDTR
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_IDTR_BASE, desc.idtr.base);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_IDTR_LIMIT, desc.idtr.limit);
+	//GDTR
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GDTR_BASE, desc.gdtr.base);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GDTR_LIMIT, desc.gdtr.limit);
+	//LDTR, unusable
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_BASE, desc.ldtr.base);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_LIMIT, desc.ldtr.limit);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_SELECTOR, desc.ldtr.selector);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_ACCESS_RIGHTS, desc.ldtr.access_rights);
+	//TR, should be usable for VMX to work, but not used by guest
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_TR_BASE, desc.tr.base);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_TR_LIMIT, desc.tr.limit);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_TR_SELECTOR, desc.tr.selector);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_TR_ACCESS_RIGHTS, desc.tr.access_rights);
 	
 	
 }
@@ -518,6 +560,47 @@ static void _cpustate_operation_desc_set(context_desc_t context_desc, xc_hypapp_
 static xc_hypapp_arch_param_x86vmx_cpustate_desc_t _cpustate_operation_desc_get(context_desc_t context_desc){
 	xc_hypapp_arch_param_x86vmx_cpustate_desc_t desc;
 	
+	//CS, DS, ES, FS, GS and SS segments
+	desc.cs.selector = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CS_SELECTOR); 		
+	desc.cs.base = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CS_BASE); 			
+	desc.cs.limit = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CS_LIMIT); 			
+	desc.cs.access_rights = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CS_ACCESS_RIGHTS); 	
+	desc.ds.selector = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_DS_SELECTOR); 		
+	desc.ds.base = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_DS_BASE); 			
+	desc.ds.limit = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_DS_LIMIT); 			
+	desc.ds.access_rights = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_DS_ACCESS_RIGHTS); 	
+	desc.es.selector = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_ES_SELECTOR); 		
+	desc.es.base = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_ES_BASE); 			
+	desc.es.limit = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_ES_LIMIT); 			
+	desc.es.access_rights = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_ES_ACCESS_RIGHTS); 	
+	desc.fs.selector = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_FS_SELECTOR); 		
+	desc.fs.base = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_FS_BASE); 			
+	desc.fs.limit = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_FS_LIMIT); 			
+	desc.fs.access_rights = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_FS_ACCESS_RIGHTS); 	
+	desc.gs.selector = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_GS_SELECTOR); 		
+	desc.gs.base = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_GS_BASE); 			
+	desc.gs.limit = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_GS_LIMIT); 			
+	desc.gs.access_rights = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_GS_ACCESS_RIGHTS); 	
+	desc.ss.selector = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SS_SELECTOR); 		
+	desc.ss.base = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SS_BASE); 			
+	desc.ss.limit = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SS_LIMIT); 			
+	desc.ss.access_rights = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SS_ACCESS_RIGHTS); 	
+	//IDTR
+	desc.idtr.base = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_IDTR_BASE); 		
+	desc.idtr.limit = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_IDTR_LIMIT); 		
+	//GDTR
+	desc.gdtr.base = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_GDTR_BASE); 		
+	desc.gdtr.limit = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_GDTR_LIMIT); 		
+	//LDTR); unusable
+	desc.ldtr.base = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_LDTR_BASE); 		
+	desc.ldtr.limit = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_LDTR_LIMIT); 		
+	desc.ldtr.selector = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_LDTR_SELECTOR); 	
+	desc.ldtr.access_rights =xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_LDTR_ACCESS_RIGHTS); 
+	//TR); should be usable for VMX to work; not used by guest
+	desc.tr.base = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_TR_BASE); 			
+	desc.tr.limit = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_TR_LIMIT); 			
+	desc.tr.selector = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_TR_SELECTOR); 		
+	desc.tr.access_rights = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_TR_ACCESS_RIGHTS); 	
 	
 	return desc;
 }
