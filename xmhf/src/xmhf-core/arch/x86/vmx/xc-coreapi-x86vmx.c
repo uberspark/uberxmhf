@@ -863,17 +863,17 @@ bool xc_api_partition_arch_addcpu(u32 partition_index, u32 cpu_index){
 // 2 if invalid error info. (should never happen)
 //----------------------------------------------------------------------
 //static u32 __vmx_start_hvm(void) __attribute__ ((naked)) {
-static u32 __vmx_start_hvm(void) {
+static u32 __vmx_start_hvm(struct regs x86cpugprs) {
 	u32 errorcode;
-	struct regs x86cpugprs;
+	//struct regs x86cpugprs;
 	
-	x86cpugprs.eax = 0;
-	x86cpugprs.ebx = 0;
-	x86cpugprs.ecx = 0;
-	x86cpugprs.edx = 0x80;
-	x86cpugprs.esi = 0;
-	x86cpugprs.edi = 0;
-	x86cpugprs.ebp = 0;
+	//x86cpugprs.eax = 0;
+	//x86cpugprs.ebx = 0;
+	//x86cpugprs.ecx = 0;
+	//x86cpugprs.edx = 0x80;
+	//x86cpugprs.esi = 0;
+	//x86cpugprs.edi = 0;
+	//x86cpugprs.ebp = 0;
 
 	asm volatile (	"pushal \r\n"
 					"movl %1, %%eax\r\n"
@@ -907,12 +907,22 @@ static u32 __vmx_start_hvm(void) {
 }
 
 
-bool xc_api_partition_arch_startcpu(context_desc_t context_desc_t){
+bool xc_api_partition_arch_startcpu(context_desc_t context_desc){
 	u32 errorcode;
+    struct regs x86cpugprs;
+    xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = &g_xc_cpu[context_desc.cpu_desc.cpu_index].cpuarchdata;
+    
+    x86cpugprs.eax = xc_cpuarchdata_x86vmx->x86gprs.eax;
+    x86cpugprs.ebx = xc_cpuarchdata_x86vmx->x86gprs.ebx;
+	x86cpugprs.ecx = xc_cpuarchdata_x86vmx->x86gprs.ecx;
+	x86cpugprs.edx = xc_cpuarchdata_x86vmx->x86gprs.edx;
+	x86cpugprs.esi = xc_cpuarchdata_x86vmx->x86gprs.esi;
+	x86cpugprs.edi = xc_cpuarchdata_x86vmx->x86gprs.edi;
+	x86cpugprs.ebp = xc_cpuarchdata_x86vmx->x86gprs.ebp;
     
 	HALT_ON_ERRORCOND( xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_VMCS_LINK_POINTER_FULL) == 0xFFFFFFFFUL );
 
-	errorcode=__vmx_start_hvm();
+	errorcode=__vmx_start_hvm(x86cpugprs);
 	HALT_ON_ERRORCOND(errorcode != 2);	//this means the VMLAUNCH implementation violated the specs.
 
 	switch(errorcode){
