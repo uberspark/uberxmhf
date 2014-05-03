@@ -652,8 +652,21 @@ void xmhf_richguest_arch_setupguestOSstate(context_desc_t context_desc){
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & ~(CR0_PE) & ~(CR0_PG)) );
 	//CR3 set to 0, does not matter
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR3, 0);
+	
+	
+	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS;
+	ap.param.cpugprs.eax = 0;
+	ap.param.cpugprs.ebx = 0;
+	ap.param.cpugprs.ecx = 0;
+	ap.param.cpugprs.edx = 0x80;
+	ap.param.cpugprs.esi = 0;
+	ap.param.cpugprs.edi = 0;
+	ap.param.cpugprs.ebp = 0;
+	ap.param.cpugprs.esp = 0;
+	xc_api_cpustate_set(context_desc, ap);
+							
 	//RSP
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, 0);
+	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, 0);
 	
 	/*"movl $0x0, %%eax\r\n"
 					"movl $0x0, %%ebx\r\n"
