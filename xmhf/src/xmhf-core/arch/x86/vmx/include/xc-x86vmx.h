@@ -78,6 +78,7 @@ typedef struct {
 	x86desc_t fs;
 	x86desc_t gs;
 	x86desc_t ss;
+	x86desc_t idtr;
 	x86desc_t ldtr;
 	x86desc_t gdtr;
 	x86desc_t tr;
