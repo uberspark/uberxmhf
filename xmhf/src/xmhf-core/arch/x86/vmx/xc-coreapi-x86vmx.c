@@ -865,16 +865,24 @@ bool xc_api_partition_arch_addcpu(u32 partition_index, u32 cpu_index){
 //static u32 __vmx_start_hvm(void) __attribute__ ((naked)) {
 static u32 __vmx_start_hvm(void) {
 	u32 errorcode;
+	struct regs x86cpugprs;
 	
+	x86cpugprs.eax = 0;
+	x86cpugprs.ebx = 0;
+	x86cpugprs.ecx = 0;
+	x86cpugprs.edx = 0x80;
+	x86cpugprs.esi = 0;
+	x86cpugprs.edi = 0;
+	x86cpugprs.ebp = 0;
 
 	asm volatile (	"pushal \r\n"
-					"movl $0x0, %%eax\r\n"
-					"movl $0x0, %%ebx\r\n"
-					"movl $0x0, %%ecx\r\n"
-					"movl $0x80, %%edx\r\n"
-					"movl $0x0, %%ebp\r\n"
-					"movl $0x0, %%esi\r\n"
-					"movl $0x0, %%edi\r\n"
+					"movl %1, %%eax\r\n"
+					"movl %2, %%ebx\r\n"
+					"movl %3, %%ecx\r\n"
+					"movl %4, %%edx\r\n"
+					"movl %5, %%esi\r\n"
+					"movl %6, %%edi\r\n"
+					"movl %7, %%ebp\r\n"
 					"vmlaunch\r\n"
 					"popal \r\n"
 					"jc __vmx_start_hvm_failinvalid\r\n"
@@ -890,8 +898,8 @@ static u32 __vmx_start_hvm(void) {
 					"xorl %%eax, %%eax\r\n"		//return 0 as we have no error code available
 					"movl %%eax, %0 \r\n"
 					"__vmx_start_continue:\r\n"	
-					: "=m"(errorcode)
-					:
+					: "=g"(errorcode)
+					: "g" (x86cpugprs.eax), "g" (x86cpugprs.ebx), "g" (x86cpugprs.ecx), "g" (x86cpugprs.edx), "g" (x86cpugprs.esi), "g" (x86cpugprs.edi), "g" (x86cpugprs.ebp)
 					: "eax", "ebx", "ecx", "edx", "esi", "edi", "ebp"
 				);
 

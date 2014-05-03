@@ -655,6 +655,15 @@ void xmhf_richguest_arch_setupguestOSstate(context_desc_t context_desc){
 	//RSP
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, 0);
 	
+	/*"movl $0x0, %%eax\r\n"
+					"movl $0x0, %%ebx\r\n"
+					"movl $0x0, %%ecx\r\n"
+					"movl $0x80, %%edx\r\n"
+					"movl $0x0, %%ebp\r\n"
+					"movl $0x0, %%esi\r\n"
+					"movl $0x0, %%edi\r\n"
+	*/				
+	
 	//RIP and activity state
 	if(context_desc.cpu_desc.isbsp){
 		xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, 0x7c00);
