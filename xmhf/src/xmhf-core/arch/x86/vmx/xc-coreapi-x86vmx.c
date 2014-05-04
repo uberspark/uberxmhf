@@ -624,6 +624,13 @@ void xc_api_cpustate_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_
 				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RFLAGS, ap.param.activity.rflags);
 				break;
 		}
+
+		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS:{
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, ap.param.controlregs.cr0 );
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR3, ap.param.controlregs.cr3 );
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR4, ap.param.controlregs.cr4 );
+				break;
+		}
 	
 		default:
 			break;
@@ -649,6 +656,13 @@ xc_hypapp_arch_param_t xc_api_cpustate_arch_get(context_desc_t context_desc, u64
 				ap.param.activity.rip = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP); 			
 				ap.param.activity.activity_state =xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_ACTIVITY_STATE);  	
 				ap.param.activity.rflags = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RFLAGS); 		
+				break;
+		}
+
+		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS:{
+				ap.param.controlregs.cr0 = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0); 
+				ap.param.controlregs.cr3 = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR3); 
+				ap.param.controlregs.cr4 = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR4); 
 				break;
 		}
 	

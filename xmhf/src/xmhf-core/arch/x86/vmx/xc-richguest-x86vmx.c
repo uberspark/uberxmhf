@@ -649,10 +649,14 @@ void xmhf_richguest_arch_setupguestOSstate(context_desc_t context_desc){
 	//--------------------------------------------------------------------------------------------------------------------------------
 	//setup guest state
 	//CR0, real-mode, PE and PG bits cleared
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & ~(CR0_PE) & ~(CR0_PG)) );
+	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & ~(CR0_PE) & ~(CR0_PG)) );
 	//CR3 set to 0, does not matter
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR3, 0);
-	
+	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR3, 0);
+	ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS);
+	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS;
+	ap.param.controlregs.cr0 = ap.param.controlregs.cr0 & ~(CR0_PE) & ~(CR0_PG);
+	ap.param.controlregs.cr3 = 0;
+	xc_api_cpustate_set(context_desc, ap);
 	
 	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS;
 	ap.param.cpugprs.eax = 0;
