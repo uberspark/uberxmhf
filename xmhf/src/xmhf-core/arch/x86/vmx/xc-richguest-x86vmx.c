@@ -104,7 +104,7 @@ static xc_cpu_t *_vmx_getxc_cpu(void){
 
 
 //handle guest memory reporting (via INT 15h redirection)
-void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t context_desc, struct regs r){
+struct regs xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t context_desc, struct regs r){
 	u16 cs, ip;
 	u16 guest_flags;
 	//xc_cpu_t *xc_cpu = (xc_cpu_t *)context_desc.cpu_desc.xc_cpu;
@@ -191,7 +191,7 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 		ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
 		xc_api_cpustate_set(context_desc, ap);
 	
-		return;
+		return r;
 	} //E820 service
 	
 	//ok, this is some other INT 15h service, so simply chain to the original
@@ -219,6 +219,8 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 	ap.param.desc = desc;
 	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC;
 	xc_api_cpustate_set(context_desc, ap);
+	
+	return r;
 }
 
 

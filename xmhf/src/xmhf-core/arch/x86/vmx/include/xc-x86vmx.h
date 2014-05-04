@@ -168,6 +168,7 @@ void xmhf_memprot_arch_x86vmx_set_EPTP(u64 eptp);
 void xmhf_parteventhub_arch_x86vmx_entry(void);
 
 
+
 #endif // __ASSEMBLY__
 
 
