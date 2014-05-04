@@ -51,6 +51,7 @@
 #include <xc-x86.h>
 #include <xc-x86vmx.h>
 
+extern struct regs xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t context_desc, struct regs r);
 
 
 static u32 _vmx_getregval(u32 gpr, struct regs *r){
@@ -306,7 +307,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 				HALT_ON_ERRORCOND( !(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PE)  ||
 					( (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PE) && (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PG) &&
 						(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RFLAGS) & EFLAGS_VM)  ) );
-				xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc, x86gprs);
+				x86gprs = xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc, x86gprs);
 				
 			}else{	//if not E820 hook, give hypapp a chance to handle the hypercall
 				{
