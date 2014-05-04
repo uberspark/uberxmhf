@@ -85,12 +85,19 @@ typedef struct {
 } xc_hypapp_arch_param_x86vmx_cpustate_desc_t;
 
 typedef struct {
+	u64 rip;
+	u64 rflags;
+	u32 activity_state;
+} xc_hypapp_arch_param_x86vmx_cpustate_activity_t;
+
+typedef struct {
 	u32 operation;
 	union {	
 		struct regs cpugprs;
 		xc_hypapp_arch_param_x86vmx_cbtrapio_t cbtrapio;
 		xc_hypapp_arch_param_x86vmx_trapio_t trapio;
 		xc_hypapp_arch_param_x86vmx_cpustate_desc_t desc;
+		xc_hypapp_arch_param_x86vmx_cpustate_activity_t activity;
 	} param;
 } __attribute__ ((packed)) xc_hypapp_arch_param_t;
 
@@ -127,6 +134,7 @@ typedef struct {
 
 #define XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS		(0xD01)
 #define XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC		(0xD02)
+#define XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY	(0xD03)
 
 //------------------------------------------------------
 // functions

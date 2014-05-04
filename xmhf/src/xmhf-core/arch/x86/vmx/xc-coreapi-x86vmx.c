@@ -617,6 +617,13 @@ void xc_api_cpustate_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_
 				_cpustate_operation_desc_set(context_desc, ap.param.desc);
 				break;
 		}
+
+		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY:{
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, ap.param.activity.rip);
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ACTIVITY_STATE, ap.param.activity.activity_state);	
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RFLAGS, ap.param.activity.rflags);
+				break;
+		}
 	
 		default:
 			break;
@@ -635,6 +642,13 @@ xc_hypapp_arch_param_t xc_api_cpustate_arch_get(context_desc_t context_desc, u64
 
 		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC:{
 				ap.param.desc = _cpustate_operation_desc_get(context_desc);
+				break;
+		}
+
+		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY:{
+				ap.param.activity.rip = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP); 			
+				ap.param.activity.activity_state =xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_ACTIVITY_STATE);  	
+				ap.param.activity.rflags = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RFLAGS); 		
 				break;
 		}
 	

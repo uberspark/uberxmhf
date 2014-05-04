@@ -677,19 +677,18 @@ void xmhf_richguest_arch_setupguestOSstate(context_desc_t context_desc){
 					"movl $0x0, %%edi\r\n"
 	*/				
 	
-	//RIP and activity state
+	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
+	ap.param.activity.rflags = ((((0 & ~((1<<3)|(1<<5)|(1<<15)) ) | (1 <<1)) | (1<<9)) & ~(1<<14));
 	if(context_desc.cpu_desc.isbsp){
-		xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, 0x7c00);
-		xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ACTIVITY_STATE, 0);	//normal activity state
+		ap.param.activity.rip = 0x7c00;
+		ap.param.activity.activity_state = 0;	//normal activity state
 	}else{
-		xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, 0);
-		xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ACTIVITY_STATE, 3);	//wait-for-SIPI
+		ap.param.activity.rip = 0;
+		ap.param.activity.activity_state = 3;	//wait-for-SIPI
 	}
+	xc_api_cpustate_set(context_desc, ap);
 
-
-	//RFLAGS
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RFLAGS, ((((0 & ~((1<<3)|(1<<5)|(1<<15)) ) | (1 <<1)) | (1<<9)) & ~(1<<14)) );
-
+	
 /*	//CS, DS, ES, FS, GS and SS segments
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_SELECTOR, 		0 
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_BASE, 			0 
