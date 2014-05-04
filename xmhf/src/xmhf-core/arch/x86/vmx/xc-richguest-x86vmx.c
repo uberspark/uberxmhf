@@ -104,7 +104,7 @@ static xc_cpu_t *_vmx_getxc_cpu(void){
 
 
 //handle guest memory reporting (via INT 15h redirection)
-void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t context_desc, struct regs *r){
+void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t context_desc, struct regs r){
 	u16 cs, ip;
 	u16 guest_flags;
 	//xc_cpu_t *xc_cpu = (xc_cpu_t *)context_desc.cpu_desc.xc_cpu;
@@ -119,27 +119,27 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 	activity = ap.param.activity;
 
 	//if E820 service then...
-	if((u16)r->eax == 0xE820){
+	if((u16)r.eax == 0xE820){
 		//AX=0xE820, EBX=continuation value, 0 for first call
 		//ES:DI pointer to buffer, ECX=buffer size, EDX='SMAP'
 		//return value, CF=0 indicated no error, EAX='SMAP'
 		//ES:DI left untouched, ECX=size returned, EBX=next continuation value
 		//EBX=0 if last descriptor
 		printf("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", context_desc.cpu_desc.cpu_index, 
-		(u16)r->eax, r->edx, r->ebx, r->ecx, (u16)desc.es.selector, (u16)r->edi);
+		(u16)r.eax, r.edx, r.ebx, r.ecx, (u16)desc.es.selector, (u16)r.edi);
 		
-		if( (r->edx == 0x534D4150UL) && (r->ebx < xcbootinfo->memmapinfo_numentries) ){
+		if( (r.edx == 0x534D4150UL) && (r.ebx < xcbootinfo->memmapinfo_numentries) ){
 			
 			//copy the E820 descriptor and return its size
-			if(!xmhf_smpguest_memcpyto(context_desc, (const void *)((u32)(desc.es.base+(u16)r->edi)), (void *)&xcbootinfo->memmapinfo_buffer[r->ebx], sizeof(GRUBE820)) ){
+			if(!xmhf_smpguest_memcpyto(context_desc, (const void *)((u32)(desc.es.base+(u16)r.edi)), (void *)&xcbootinfo->memmapinfo_buffer[r.ebx], sizeof(GRUBE820)) ){
 				printf("\n%s: Error in copying e820 descriptor to guest. Halting!", __FUNCTION__);
 				HALT();
 			}	
 				
-			r->ecx=20;
+			r.ecx=20;
 
 			//set EAX to 'SMAP' as required by the service call				
-			r->eax=r->edx;
+			r.eax=r.edx;
 
 			//we need to update carry flag in the guest EFLAGS register
 			//however since INT 15 would have pushed the guest FLAGS on stack
@@ -153,17 +153,17 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 			//...
 		
 			//grab guest eflags on guest stack
-			if(!xmhf_smpguest_readu16(context_desc, (const void *)((u32)desc.ss.base + (u16)r->esp + 0x4), &guest_flags)){
+			if(!xmhf_smpguest_readu16(context_desc, (const void *)((u32)desc.ss.base + (u16)r.esp + 0x4), &guest_flags)){
 				printf("\n%s: Error in reading guest_flags. Halting!", __FUNCTION__);
 				HALT();
 			}
 	
 			//increment e820 descriptor continuation value
-			r->ebx=r->ebx+1;
+			r.ebx=r.ebx+1;
 					
-			if(r->ebx > (xcbootinfo->memmapinfo_numentries-1) ){
+			if(r.ebx > (xcbootinfo->memmapinfo_numentries-1) ){
 				//we have reached the last record, so set CF and make EBX=0
-				r->ebx=0;
+				r.ebx=0;
 				guest_flags |= (u16)EFLAGS_CF;
 			}else{
 				//we still have more records, so clear CF
@@ -171,7 +171,7 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 			}
 
 			//write updated eflags in guest stack
-			if(!xmhf_smpguest_writeu16(context_desc, (const void *)((u32)desc.ss.base + (u16)r->esp + 0x4), guest_flags)){
+			if(!xmhf_smpguest_writeu16(context_desc, (const void *)((u32)desc.ss.base + (u16)r.esp + 0x4), guest_flags)){
 				printf("\n%s: Error in updating guest_flags. Halting!", __FUNCTION__);
 				HALT();
 			}

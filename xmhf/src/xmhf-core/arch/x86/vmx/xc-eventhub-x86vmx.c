@@ -306,7 +306,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 				HALT_ON_ERRORCOND( !(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PE)  ||
 					( (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PE) && (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PG) &&
 						(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RFLAGS) & EFLAGS_VM)  ) );
-				xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc, &x86gprs);
+				xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc, x86gprs);
 				
 			}else{	//if not E820 hook, give hypapp a chance to handle the hypercall
 				{
