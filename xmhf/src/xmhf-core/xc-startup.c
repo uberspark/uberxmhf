@@ -115,7 +115,7 @@ void xmhf_startup_main(u32 cpuid, bool is_bsp){
 	static u32 _xc_startup_hypappmain_counter = 0; 
 	static u32 _xc_startup_hypappmain_counter_lock = 1; 
 	//xc_cpu_t *xc_cpu = &g_xc_cpu[cpu_index];
-	u32 cpu_index;
+	//u32 cpu_index;
 	context_desc_t context_desc;
 	
 	//serialize execution
@@ -165,7 +165,7 @@ void xmhf_startup_main(u32 cpuid, bool is_bsp){
 	while(_xc_startup_hypappmain_counter < xcbootinfo->cpuinfo_numentries);
 	
 	//start cpu in corresponding partition
-	printf("\n%s[%u]: starting in partition...", __FUNCTION__, cpu_index);
+	printf("\n%s[%u]: starting in partition...", __FUNCTION__, context_desc.cpu_desc.cpu_index);
 	//xmhf_partition_start(context_desc.cpu_desc.cpu_index);
 	if(!xc_api_partition_startcpu(context_desc)){
 		printf("\n%s: should not be here. HALTING!", __FUNCTION__);
