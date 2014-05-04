@@ -108,7 +108,15 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 	u16 cs, ip;
 	u16 guest_flags;
 	//xc_cpu_t *xc_cpu = (xc_cpu_t *)context_desc.cpu_desc.xc_cpu;
-	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
+	//xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
+	xc_hypapp_arch_param_t ap;
+	xc_hypapp_arch_param_x86vmx_cpustate_desc_t desc;
+	xc_hypapp_arch_param_x86vmx_cpustate_activity_t activity;
+	
+	ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC);
+	desc = ap.param.desc;
+	ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
+	activity = ap.param.activity;
 
 	//if E820 service then...
 	if((u16)r->eax == 0xE820){
@@ -117,13 +125,13 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 		//return value, CF=0 indicated no error, EAX='SMAP'
 		//ES:DI left untouched, ECX=size returned, EBX=next continuation value
 		//EBX=0 if last descriptor
-		printf("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", xc_cpu->cpuid, 
-		(u16)r->eax, r->edx, r->ebx, r->ecx, (u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_ES_SELECTOR), (u16)r->edi);
+		printf("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", context_desc.cpu_desc.cpu_index, 
+		(u16)r->eax, r->edx, r->ebx, r->ecx, (u16)desc.es.selector, (u16)r->edi);
 		
 		if( (r->edx == 0x534D4150UL) && (r->ebx < xcbootinfo->memmapinfo_numentries) ){
 			
 			//copy the E820 descriptor and return its size
-			if(!xmhf_smpguest_memcpyto(context_desc, (const void *)((u32)(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_ES_BASE)+(u16)r->edi)), (void *)&xcbootinfo->memmapinfo_buffer[r->ebx], sizeof(GRUBE820)) ){
+			if(!xmhf_smpguest_memcpyto(context_desc, (const void *)((u32)(desc.es.base+(u16)r->edi)), (void *)&xcbootinfo->memmapinfo_buffer[r->ebx], sizeof(GRUBE820)) ){
 				printf("\n%s: Error in copying e820 descriptor to guest. Halting!", __FUNCTION__);
 				HALT();
 			}	
@@ -145,7 +153,7 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 			//...
 		
 			//grab guest eflags on guest stack
-			if(!xmhf_smpguest_readu16(context_desc, (const void *)((u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SS_BASE) + (u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RSP) + 0x4), &guest_flags)){
+			if(!xmhf_smpguest_readu16(context_desc, (const void *)((u32)desc.ss.base + (u16)r->esp + 0x4), &guest_flags)){
 				printf("\n%s: Error in reading guest_flags. Halting!", __FUNCTION__);
 				HALT();
 			}
@@ -163,21 +171,25 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 			}
 
 			//write updated eflags in guest stack
-			if(!xmhf_smpguest_writeu16(context_desc, (const void *)((u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SS_BASE) + (u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RSP) + 0x4), guest_flags)){
+			if(!xmhf_smpguest_writeu16(context_desc, (const void *)((u32)desc.ss.base + (u16)r->esp + 0x4), guest_flags)){
 				printf("\n%s: Error in updating guest_flags. Halting!", __FUNCTION__);
 				HALT();
 			}
 			  
 			
 		}else{	//invalid state specified during INT 15 E820, halt
-				printf("\nCPU(0x%02x): INT15 (E820), invalid state specified by guest. Halting!", xc_cpu->cpuid);
+				printf("\nCPU(0x%02x): INT15 (E820), invalid state specified by guest. Halting!", context_desc.cpu_desc.cpu_index);
 				HALT();
 		}
 		
 		//update RIP to execute the IRET following the VMCALL instruction
 		//effectively returning from the INT 15 call made by the guest
 		//xc_cpu->vmcs.guest_RIP += 3;
-		xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+3));
+		//xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+3));
+		activity.rip+=3;
+		ap.param.activity = activity;
+		ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
+		xc_api_cpustate_set(context_desc, ap);
 	
 		return;
 	} //E820 service
@@ -195,9 +207,18 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 	//xc_cpu->vmcs.guest_RIP = ip;
 	//xc_cpu->vmcs.guest_CS_base = cs * 16;
 	//xc_cpu->vmcs.guest_CS_selector = cs;		 
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, ip);
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_BASE, (cs * 16));
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_SELECTOR, cs);
+	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, ip);
+	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_BASE, (cs * 16));
+	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_SELECTOR, cs);
+	activity.rip = ip;
+	ap.param.activity = activity;
+	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
+	xc_api_cpustate_set(context_desc, ap);
+	desc.cs.base = (cs *16);
+	desc.cs.selector = cs;
+	ap.param.desc = desc;
+	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC;
+	xc_api_cpustate_set(context_desc, ap);
 }
 
 
