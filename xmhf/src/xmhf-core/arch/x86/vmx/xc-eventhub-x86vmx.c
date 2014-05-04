@@ -54,17 +54,17 @@
 extern struct regs xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t context_desc, struct regs r);
 
 
-static u32 _vmx_getregval(u32 gpr, struct regs *r){
+static u32 _vmx_getregval(u32 gpr, struct regs r){
 
 	  switch(gpr){
-		case 0: return r->eax;
-		case 1: return r->ecx;
-		case 2: return r->edx;
-		case 3: return r->ebx;
+		case 0: return r.eax;
+		case 1: return r.ecx;
+		case 2: return r.edx;
+		case 3: return r.ebx;
 		case 4: return xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RSP);
-		case 5: return r->ebp;
-		case 6: return r->esi;
-		case 7: return r->edi;
+		case 5: return r.ebp;
+		case 6: return r.esi;
+		case 7: return r.edi;
 		default:
 			printf("\n%s: warning, invalid gpr value (%u): returning zero value", __FUNCTION__, gpr);
 			return 0;
@@ -72,10 +72,11 @@ static u32 _vmx_getregval(u32 gpr, struct regs *r){
 }
 
 //---intercept handler (CPUID)--------------------------------------------------
-static void _vmx_handle_intercept_cpuid(context_desc_t context_desc, struct regs *r){
+static struct regs _vmx_handle_intercept_cpuid(context_desc_t context_desc, struct regs r){
 	asm volatile ("cpuid\r\n"
-          :"=a"(r->eax), "=b"(r->ebx), "=c"(r->ecx), "=d"(r->edx)
-          :"a"(r->eax), "c" (r->ecx));
+          :"=a"(r.eax), "=b"(r.ebx), "=c"(r.ecx), "=d"(r.edx)
+          :"a"(r.eax), "c" (r.ecx));
+    return r;
 }
 
 //------------------------------------------------------------------------------
@@ -97,55 +98,57 @@ static void _vmx_handle_intercept_cpuid(context_desc_t context_desc, struct regs
 //------------------------------------------------------------------------------
   
 //---intercept handler (WRMSR)--------------------------------------------------
-static void _vmx_handle_intercept_wrmsr(context_desc_t context_desc, struct regs *r){
-	//printf("\nCPU(0x%02x): WRMSR 0x%08x", xc_cpu->cpuid, r->ecx);
+static void _vmx_handle_intercept_wrmsr(context_desc_t context_desc, struct regs r){
+	//printf("\nCPU(0x%02x): WRMSR 0x%08x", xc_cpu->cpuid, r.ecx);
 
-	switch(r->ecx){
+	switch(r.ecx){
 		case IA32_SYSENTER_CS_MSR:
-			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SYSENTER_CS, r->eax);
+			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SYSENTER_CS, r.eax);
 			break;
 		case IA32_SYSENTER_EIP_MSR:
-			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SYSENTER_EIP, r->eax);
+			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SYSENTER_EIP, r.eax);
 			break;
 		case IA32_SYSENTER_ESP_MSR:
-			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SYSENTER_ESP, r->eax);
+			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SYSENTER_ESP, r.eax);
 			break;
 		default:{
 			asm volatile ("wrmsr\r\n"
           : //no outputs
-          :"a"(r->eax), "c" (r->ecx), "d" (r->edx));	
+          :"a"(r.eax), "c" (r.ecx), "d" (r.edx));	
 			break;
 		}
-	}
+	} 
 }
 
 //---intercept handler (RDMSR)--------------------------------------------------
-static void _vmx_handle_intercept_rdmsr(context_desc_t context_desc, struct regs *r){
-	switch(r->ecx){
+static struct regs _vmx_handle_intercept_rdmsr(context_desc_t context_desc, struct regs r){
+	switch(r.ecx){
 		case IA32_SYSENTER_CS_MSR:
-			r->eax = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SYSENTER_CS);
-			r->edx = 0;
+			r.eax = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SYSENTER_CS);
+			r.edx = 0;
 			break;
 		case IA32_SYSENTER_EIP_MSR:
-			r->eax = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SYSENTER_EIP);
-			r->edx = 0;
+			r.eax = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SYSENTER_EIP);
+			r.edx = 0;
 			break;
 		case IA32_SYSENTER_ESP_MSR:
-			r->eax = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SYSENTER_ESP);
-			r->edx = 0;
+			r.eax = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SYSENTER_ESP);
+			r.edx = 0;
 			break;
 		default:{
 			asm volatile ("rdmsr\r\n"
-          : "=a"(r->eax), "=d"(r->edx)
-          : "c" (r->ecx));
+          : "=a"(r.eax), "=d"(r.edx)
+          : "c" (r.ecx));
 			break;
 		}
 	}
+	
+	return r;
 }
 
 
 //---intercept handler (EPT voilation)----------------------------------
-static void _vmx_handle_intercept_eptviolation(context_desc_t context_desc, struct regs *r __attribute__((unused))){
+static void _vmx_handle_intercept_eptviolation(context_desc_t context_desc, struct regs r __attribute__((unused))){
 	u32 errorcode, gpa, gva;
 
 	errorcode = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION);
@@ -157,7 +160,7 @@ static void _vmx_handle_intercept_eptviolation(context_desc_t context_desc, stru
 
 
 //---intercept handler (I/O port access)----------------------------------------
-static void _vmx_handle_intercept_ioportaccess(context_desc_t context_desc, struct regs *r __attribute__((unused))){
+static struct regs _vmx_handle_intercept_ioportaccess(context_desc_t context_desc, struct regs r __attribute__((unused))){
     u32 access_size, access_type, portnum, stringio;
 	u32 app_ret_status = APP_TRAP_CHAIN;
 	
@@ -180,30 +183,30 @@ static void _vmx_handle_intercept_ioportaccess(context_desc_t context_desc, stru
 	if(app_ret_status == APP_TRAP_CHAIN){
 		if(access_type == IO_TYPE_OUT){
 			if( access_size== IO_SIZE_BYTE)
-					outb((u8)r->eax, portnum);
+					outb((u8)r.eax, portnum);
 			else if (access_size == IO_SIZE_WORD)
-					outw((u16)r->eax, portnum);
+					outw((u16)r.eax, portnum);
 			else if (access_size == IO_SIZE_DWORD)
-					outl((u32)r->eax, portnum);	
+					outl((u32)r.eax, portnum);	
 		}else{
 			if( access_size== IO_SIZE_BYTE){
-					r->eax &= 0xFFFFFF00UL;	//clear lower 8 bits
-					r->eax |= (u8)inb(portnum);
+					r.eax &= 0xFFFFFF00UL;	//clear lower 8 bits
+					r.eax |= (u8)inb(portnum);
 			}else if (access_size == IO_SIZE_WORD){
-					r->eax &= 0xFFFF0000UL;	//clear lower 16 bits
-					r->eax |= (u16)inw(portnum);
+					r.eax &= 0xFFFF0000UL;	//clear lower 16 bits
+					r.eax |= (u16)inw(portnum);
 			}else if (access_size == IO_SIZE_DWORD){
-					r->eax = (u32)inl(portnum);	
+					r.eax = (u32)inl(portnum);	
 			}
 		}
 	}
 
-	return;
+	return r;
 }
 
 
 //---CR0 access handler-------------------------------------------------
-static void vmx_handle_intercept_cr0access_ug(context_desc_t context_desc, struct regs *r, u32 gpr, u32 tofrom){
+static void vmx_handle_intercept_cr0access_ug(context_desc_t context_desc, struct regs r, u32 gpr, u32 tofrom){
 	u32 cr0_value;
 	
 	HALT_ON_ERRORCOND(tofrom == VMX_CRX_ACCESS_TO);
@@ -218,7 +221,7 @@ static void vmx_handle_intercept_cr0access_ug(context_desc_t context_desc, struc
 }
 
 //---CR4 access handler---------------------------------------------------------
-static void vmx_handle_intercept_cr4access_ug(context_desc_t context_desc, struct regs *r, u32 gpr, u32 tofrom){
+static void vmx_handle_intercept_cr4access_ug(context_desc_t context_desc, struct regs r, u32 gpr, u32 tofrom){
   if(tofrom == VMX_CRX_ACCESS_TO){
 	u32 cr4_proposed_value;
 	
@@ -230,13 +233,13 @@ static void vmx_handle_intercept_cr4access_ug(context_desc_t context_desc, struc
 }
 
 //---XSETBV intercept handler-------------------------------------------
-static void _vmx_handle_intercept_xsetbv(context_desc_t context_desc, struct regs *r){
+static void _vmx_handle_intercept_xsetbv(context_desc_t context_desc, struct regs r){
 	u64 xcr_value;
 	
-	xcr_value = ((u64)r->edx << 32) + (u64)r->eax;
+	xcr_value = ((u64)r.edx << 32) + (u64)r.eax;
 	
-	if(r->ecx != XCR_XFEATURE_ENABLED_MASK){
-			printf("\n%s: unhandled XCR register %u", __FUNCTION__, r->ecx);
+	if(r.ecx != XCR_XFEATURE_ENABLED_MASK){
+			printf("\n%s: unhandled XCR register %u", __FUNCTION__, r.ecx);
 			HALT();
 	}
 
@@ -308,14 +311,14 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 		break;
 
 		case VMX_VMEXIT_IOIO:{
-			_vmx_handle_intercept_ioportaccess(context_desc, &x86gprs);
+			x86gprs = _vmx_handle_intercept_ioportaccess(context_desc, x86gprs);
 			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH)) );
 		}
 		_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 		break;
 
 		case VMX_VMEXIT_EPT_VIOLATION:{
-			_vmx_handle_intercept_eptviolation(context_desc, &x86gprs);
+			_vmx_handle_intercept_eptviolation(context_desc, x86gprs);
 		}
 		_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 		break;  
@@ -344,11 +347,11 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 			if ( ((int)gpr >=0) && ((int)gpr <= 7) ){
 				switch(crx){
 					case 0x0: //CR0 access
-						vmx_handle_intercept_cr0access_ug(context_desc, &x86gprs, gpr, tofrom);	
+						vmx_handle_intercept_cr0access_ug(context_desc, x86gprs, gpr, tofrom);	
 						break;
 					
 					case 0x4: //CR4 access
-						vmx_handle_intercept_cr4access_ug(context_desc, &x86gprs, gpr, tofrom);	
+						vmx_handle_intercept_cr4access_ug(context_desc, x86gprs, gpr, tofrom);	
 						break;
 				
 					default:
@@ -366,18 +369,18 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 		break;	
 
  		case VMX_VMEXIT_RDMSR:
-			_vmx_handle_intercept_rdmsr(context_desc, &x86gprs);
+			x86gprs = _vmx_handle_intercept_rdmsr(context_desc, x86gprs);
 			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH)) );
 			_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 			break;
 			
 		case VMX_VMEXIT_WRMSR:
-			_vmx_handle_intercept_wrmsr(context_desc, &x86gprs);
+			_vmx_handle_intercept_wrmsr(context_desc, x86gprs);
 			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH)) );
 			break;
 			
 		case VMX_VMEXIT_CPUID:
-			_vmx_handle_intercept_cpuid(context_desc, &x86gprs);
+			x86gprs = _vmx_handle_intercept_cpuid(context_desc, x86gprs);
 			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH)) );
 			_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 			break;
@@ -404,7 +407,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 		break;
 
 		case VMX_VMEXIT_XSETBV:{
-			_vmx_handle_intercept_xsetbv(context_desc, &x86gprs);
+			_vmx_handle_intercept_xsetbv(context_desc, x86gprs);
 			//skip the emulated XSETBV instruction
 			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH)) );
 		}
