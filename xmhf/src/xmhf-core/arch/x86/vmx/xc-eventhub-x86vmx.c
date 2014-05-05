@@ -570,16 +570,29 @@ void xmhf_parteventhub_arch_x86vmx_entry(void) __attribute__((naked)){
 		
 		asm volatile (
 			"pushal\r\n"
+			"movl %0, %%eax \r\n"				//eax = VMCS_INFO_VMEXIT_REASON
+			"vmread %%eax, %%ebx \r\n"			//ebx = VMCS[VMCS_INFO_VMEXIT_REASON]
+			"cmpl %1, %%ebx \r\n"				//if (ebx == VMX_VMEXIT_EXCEPTION)
+			"jne normal \r\n"					//nope, so just do normal eventhub processing
+			"movl %2, %%eax \r\n"				//eax = VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION
+			"vmread %%eax, %%ebx \r\n"			//ebx = VMCS[VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION]
+			"andl %3, %%ebx \r\n"				//ebx &= INTR_INFO_VECTOR_MASK
+			"cmpl %4, %%ebx \r\n"				//if (ebx == 0x2)
+			"jne normal \r\n"					//nope, so just do normal eventhub processing
+			"int $0x02 \r\n"					//NMI exception intercept, so trigger NMI handler
+			"jmp exithub \r\n"					//skip over normal event hub processing
+			"normal: \r\n"						//normal event hub processing setup
 			"movl %%esp, %%eax\r\n"
 			"pushl %%eax\r\n"
 			"call xmhf_partition_eventhub_arch_x86vmx\r\n"
 			"addl $0x04, %%esp\r\n"
+			"exithub: \r\n"						//event hub epilogue to resume partition
 			"popal\r\n"
 			"vmresume\r\n"
 			"int $0x03\r\n"
 			"hlt\r\n"
 			: //no outputs
-			: //no inputs
+			: "i" (VMCS_INFO_VMEXIT_REASON), "i" (VMX_VMEXIT_EXCEPTION), "i" (VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION), "i" (INTR_INFO_VECTOR_MASK), "i" (0x2)
 			: //no clobber
 		);
 
@@ -592,19 +605,6 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 	xc_hypapp_arch_param_t cpustateparams;
 	struct regs x86gprs;
 	context_desc_t context_desc;
-	//xc_cpu_t *xc_cpu;
-	//u32 cpu_index;
-
-	
-#ifndef __XMHF_VERIFICATION__
-	//handle cpu quiescing
-	if(xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON) == VMX_VMEXIT_EXCEPTION){
-		if ( (xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION) & INTR_INFO_VECTOR_MASK) == 0x02 ) {
-			xmhf_smpguest_arch_eventhandler_nmiexception(cpugprs);
-			return;
-		}
-	}
-#endif //__XMHF_VERIFICATION__
 
 	//serialize
     spin_lock(&_xc_partition_eventhub_lock);
