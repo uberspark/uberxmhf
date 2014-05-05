@@ -713,6 +713,7 @@ void xmhf_richguest_arch_setupguestOSstate(context_desc_t context_desc){
 		ap.param.activity.rip = 0;
 		ap.param.activity.activity_state = 3;	//wait-for-SIPI
 	}
+	ap.param.activity.interruptibility=0;
 	xc_api_cpustate_set(context_desc, ap);
 
 	
