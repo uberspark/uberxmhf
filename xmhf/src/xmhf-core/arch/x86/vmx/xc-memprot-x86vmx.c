@@ -54,13 +54,13 @@
 
 
 // initialize memory protection structures for a given core (vcpu)
-static void xmhf_memprot_arch_x86vmx_initialize(xc_partition_hptdata_x86vmx_t *eptdata){
+/*static void xmhf_memprot_arch_x86vmx_initialize(xc_partition_hptdata_x86vmx_t *eptdata){
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_SECCPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_SECCPU_BASED) | (1 <<1) | (1 << 5)) );
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VPID, 1);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, (hva2spa((void*)eptdata->vmx_ept_pml4_table) | 0x1E) );
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_HIGH, 0);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) & ~(1 << 15) & ~(1 << 16)) );
-}
+}*/
 
 
 
@@ -81,12 +81,12 @@ void xmhf_memprot_arch_x86vmx_set_EPTP(u64 eptp)
 //======================================================================
 // global interfaces (functions) exported by this component
 
-void xmhf_memprot_arch_initialize(xc_cpu_t *xc_cpu, u32 xc_partition_index){
-	xc_partition_t *xc_partition = &g_xc_primary_partition[xc_partition_index];
-	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;
+//void xmhf_memprot_arch_initialize(xc_cpu_t *xc_cpu, u32 xc_partition_index){
+//	xc_partition_t *xc_partition = &g_xc_primary_partition[xc_partition_index];
+//	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;
 	
-	xmhf_memprot_arch_x86vmx_initialize(eptdata);
-}
+//	xmhf_memprot_arch_x86vmx_initialize(eptdata);
+//}
 
 //set protection for a given physical memory address
 //void xmhf_memprot_arch_setprot(context_desc_t context_desc, xc_partition_t *xc_partition, u64 gpa, u32 prottype){

@@ -210,10 +210,8 @@ void xmhf_baseplatform_arch_x86_initializeIDT(void){
 }
 
 
-
-
 //initialize TR/TSS
-void xmhf_baseplatform_arch_x86_initializeTR(void){
+void xmhf_baseplatform_arch_x86_initializeTSS(void){
 
 	{
 		u32 i;
@@ -249,14 +247,14 @@ void xmhf_baseplatform_arch_x86_initializeTR(void){
 			printf("\n    entry %u -> %016llx", i, _gdt_start[i]);
 		printf("\nGDT dumped.");
 
-		printf("\nsetting TR...");
+		/*printf("\nsetting TR...");
 		  __asm__ __volatile__("movw %0, %%ax\r\n"
 			"ltr %%ax\r\n"				//load TR
 			 : 
 			 : "g"(__TRSEL)
 			 : "eax"
 		  );
-		printf("\nTR set successfully");
+		printf("\nTR set successfully");*/
 		
 	}
 
