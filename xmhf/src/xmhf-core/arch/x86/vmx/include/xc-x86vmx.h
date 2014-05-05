@@ -96,6 +96,23 @@ typedef struct {
 	u64 cr4;
 } xc_hypapp_arch_param_x86vmx_cpustate_controlregs_t;
 
+typedef struct {
+  u32  info_vminstr_error;
+  u32  info_vmexit_reason;
+  u32  info_vmexit_interrupt_information;
+  u32  info_vmexit_interrupt_error_code;
+  u32  info_idt_vectoring_information;
+  u32  info_idt_vectoring_error_code;
+  u32  info_vmexit_instruction_length;
+  u32  info_vmx_instruction_information;
+  u64  info_exit_qualification;
+  u64  info_io_rcx;
+  u64  info_io_rsi;
+  u64  info_io_rdi;
+  u64  info_io_rip;
+  u64  info_guest_linear_address;
+} xc_hypapp_arch_param_x86vmx_cpustate_inforegs_t;
+
 
 typedef struct {
 	u32 operation;
@@ -106,6 +123,7 @@ typedef struct {
 		xc_hypapp_arch_param_x86vmx_cpustate_desc_t desc;
 		xc_hypapp_arch_param_x86vmx_cpustate_activity_t activity;
 		xc_hypapp_arch_param_x86vmx_cpustate_controlregs_t controlregs;
+		xc_hypapp_arch_param_x86vmx_cpustate_inforegs_t inforegs;
 	} param;
 } __attribute__ ((packed)) xc_hypapp_arch_param_t;
 
@@ -144,6 +162,7 @@ typedef struct {
 #define XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC		(0xD02)
 #define XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY	(0xD03)
 #define XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS	(0xD04)
+#define XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_INFOREGS	(0xD05)
 
 //------------------------------------------------------
 // functions
