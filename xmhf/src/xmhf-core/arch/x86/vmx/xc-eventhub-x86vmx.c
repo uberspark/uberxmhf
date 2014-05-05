@@ -198,13 +198,17 @@ static struct regs _vmx_handle_intercept_ioportaccess(context_desc_t context_des
 //---CR0 access handler-------------------------------------------------
 static void vmx_handle_intercept_cr0access_ug(context_desc_t context_desc, struct regs r, u32 gpr, u32 tofrom){
 	u32 cr0_value;
+	xc_hypapp_arch_param_t ap;
 	
 	HALT_ON_ERRORCOND(tofrom == VMX_CRX_ACCESS_TO);
 	
 	cr0_value = _vmx_getregval(gpr, r);
 
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR0_SHADOW, cr0_value);
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, (cr0_value & ~(CR0_CD | CR0_NW)));
+	ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS);
+	ap.param.controlregs.cr0 = cr0_value;
+	ap.param.controlregs.control_cr0_shadow = (cr0_value & ~(CR0_CD | CR0_NW));
+	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS;
+	xc_api_cpustate_set(context_desc, ap);
 	
 	//we need to flush logical processor VPID mappings as we emulated CR0 load above
 	__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0);

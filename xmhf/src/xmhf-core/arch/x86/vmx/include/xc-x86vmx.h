@@ -93,6 +93,7 @@ typedef struct {
 
 typedef struct {
 	u64 cr0;
+	u64 control_cr0_shadow;
 	u64 cr3;
 	u64 cr4;
 } xc_hypapp_arch_param_x86vmx_cpustate_controlregs_t;
