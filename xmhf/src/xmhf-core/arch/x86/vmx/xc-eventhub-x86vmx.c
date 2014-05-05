@@ -61,7 +61,7 @@ static u32 _vmx_getregval(u32 gpr, struct regs r){
 		case 1: return r.ecx;
 		case 2: return r.edx;
 		case 3: return r.ebx;
-		case 4: return xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RSP);
+		case 4: return r.esp;
 		case 5: return r.ebp;
 		case 6: return r.esi;
 		case 7: return r.edi;
