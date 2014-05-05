@@ -324,6 +324,8 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
 		case VMX_VMEXIT_IOIO:{
 			u32 access_size, access_type, portnum, stringio;
+			xc_hypapp_arch_param_t ioio_ap;
+			xc_hypapp_arch_param_x86vmx_cpustate_activity_t ioio_activity;
 			
 			access_size = inforegs.info_exit_qualification & 0x00000007UL;
 			access_type = ( inforegs.info_exit_qualification & 0x00000008UL) >> 3;
@@ -331,9 +333,14 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 			stringio = ( inforegs.info_exit_qualification & 0x00000010UL) >> 4;
 
 			x86gprs = _vmx_handle_intercept_ioportaccess(context_desc, access_size, access_type, portnum, stringio, x86gprs);
-			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+inforegs.info_vmexit_instruction_length) );
+			_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
+			ioio_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
+			ioio_activity = ioio_ap.param.activity;
+			ioio_activity.rip+=inforegs.info_vmexit_instruction_length;
+			ioio_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
+			ioio_ap.param.activity = ioio_activity;
+			xc_api_cpustate_set(context_desc, ioio_ap);
 		}
-		_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 		break;
 
 		case VMX_VMEXIT_EPT_VIOLATION:{
@@ -345,11 +352,9 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
 			_vmx_handle_intercept_eptviolation(context_desc, gpa, gva, errorcode, x86gprs);
 		}
-		_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 		break;  
 
 		case VMX_VMEXIT_INIT:{
-
 			printf("\n***** VMEXIT_INIT xc_hypapp_handleshutdown\n");
 			xc_hypapp_handleshutdown(context_desc);      
 			printf("\nCPU(0x%02x): Fatal, xc_hypapp_handleshutdown returned. Halting!", context_desc.cpu_desc.cpu_index);
@@ -363,11 +368,12 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
  		case VMX_VMEXIT_CRX_ACCESS:{
 			u32 tofrom, gpr, crx; 
+			xc_hypapp_arch_param_t crxaccess_ap;
+			xc_hypapp_arch_param_x86vmx_cpustate_activity_t crxaccess_activity;
+
 			crx=(u32) ((u64)inforegs.info_exit_qualification & 0x000000000000000FULL);
-			gpr=
-			 (u32) (((u64)inforegs.info_exit_qualification & 0x0000000000000F00ULL) >> (u64)8);
-			tofrom = 
-			(u32) (((u64)inforegs.info_exit_qualification & 0x0000000000000030ULL) >> (u64)4); 
+			gpr=(u32) (((u64)inforegs.info_exit_qualification & 0x0000000000000F00ULL) >> (u64)8);
+			tofrom = (u32) (((u64)inforegs.info_exit_qualification & 0x0000000000000030ULL) >> (u64)4); 
 
 			if ( ((int)gpr >=0) && ((int)gpr <= 7) ){
 				switch(crx){
@@ -383,7 +389,12 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 						printf("\nunhandled crx, halting!");
 						HALT();
 				}
-			  	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+inforegs.info_vmexit_instruction_length) );
+				crxaccess_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
+				crxaccess_activity = crxaccess_ap.param.activity;
+				crxaccess_activity.rip+=inforegs.info_vmexit_instruction_length;
+				crxaccess_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
+				crxaccess_ap.param.activity = crxaccess_activity;
+				xc_api_cpustate_set(context_desc, crxaccess_ap);
 
 			}else{
 				printf("\n[%02x]%s: invalid gpr value (%u). halting!", context_desc.cpu_desc.cpu_index,
@@ -393,22 +404,52 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 		}
 		break;	
 
- 		case VMX_VMEXIT_RDMSR:
+ 		case VMX_VMEXIT_RDMSR:{
+			xc_hypapp_arch_param_t rdmsr_ap;
+			xc_hypapp_arch_param_x86vmx_cpustate_activity_t rdmsr_activity;
+
 			x86gprs = _vmx_handle_intercept_rdmsr(context_desc, x86gprs);
-			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+inforegs.info_vmexit_instruction_length) );
 			_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
-			break;
+
+			rdmsr_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
+			rdmsr_activity = rdmsr_ap.param.activity;
+			rdmsr_activity.rip+=inforegs.info_vmexit_instruction_length;
+			rdmsr_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
+			rdmsr_ap.param.activity = rdmsr_activity;
+			xc_api_cpustate_set(context_desc, rdmsr_ap);
+		}
+		break;
 			
-		case VMX_VMEXIT_WRMSR:
+		case VMX_VMEXIT_WRMSR:{
+			xc_hypapp_arch_param_t wrmsr_ap;
+			xc_hypapp_arch_param_x86vmx_cpustate_activity_t wrmsr_activity;
+
 			_vmx_handle_intercept_wrmsr(context_desc, x86gprs);
-			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+inforegs.info_vmexit_instruction_length) );
-			break;
+
+			wrmsr_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
+			wrmsr_activity = wrmsr_ap.param.activity;
+			wrmsr_activity.rip+=inforegs.info_vmexit_instruction_length;
+			wrmsr_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
+			wrmsr_ap.param.activity = wrmsr_activity;
+			xc_api_cpustate_set(context_desc, wrmsr_ap);
+		}
+		break;
 			
-		case VMX_VMEXIT_CPUID:
+		case VMX_VMEXIT_CPUID:{
+			xc_hypapp_arch_param_t cpuid_ap;
+			xc_hypapp_arch_param_x86vmx_cpustate_activity_t cpuid_activity;
+
 			x86gprs = _vmx_handle_intercept_cpuid(context_desc, x86gprs);
-			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+inforegs.info_vmexit_instruction_length) );
 			_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
-			break;
+
+			cpuid_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
+			cpuid_activity = cpuid_ap.param.activity;
+			cpuid_activity.rip+=inforegs.info_vmexit_instruction_length;
+			cpuid_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
+			cpuid_ap.param.activity = cpuid_activity;
+			xc_api_cpustate_set(context_desc, cpuid_ap);
+		}
+		break;
 
 		case VMX_VMEXIT_TASKSWITCH:{
 			u32 idt_v = inforegs.info_idt_vectoring_information & VECTORING_INFO_VALID_MASK;
@@ -432,51 +473,60 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 		break;
 
 		case VMX_VMEXIT_XSETBV:{
+			xc_hypapp_arch_param_t xsetbv_ap;
+			xc_hypapp_arch_param_x86vmx_cpustate_activity_t xsetbv_activity;
+
 			_vmx_handle_intercept_xsetbv(context_desc, x86gprs);
-			//skip the emulated XSETBV instruction
-			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+inforegs.info_vmexit_instruction_length) );
+
+			xsetbv_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
+			xsetbv_activity = xsetbv_ap.param.activity;
+			xsetbv_activity.rip+=inforegs.info_vmexit_instruction_length;
+			xsetbv_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
+			xsetbv_ap.param.activity = xsetbv_activity;
+			xc_api_cpustate_set(context_desc, xsetbv_ap);
 		}
 		break;
 
 		case VMX_VMEXIT_SIPI:{
 			u32 sipivector = (u8)inforegs.info_exit_qualification;
+			xc_hypapp_arch_param_t sipi_ap;
+			xc_hypapp_arch_param_x86vmx_cpustate_activity_t sipi_activity;
+			xc_hypapp_arch_param_x86vmx_cpustate_desc_t sipi_desc;
+			
+			sipi_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
+			sipi_activity = sipi_ap.param.activity;
+			sipi_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC);
+			sipi_desc = sipi_ap.param.desc;
+			
 			printf("\nCPU(%02x): SIPI vector=0x%08x", context_desc.cpu_desc.cpu_index, sipivector);
-			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_SELECTOR, ((sipivector * PAGE_SIZE_4K) >> 4));
-			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_BASE, (sipivector * PAGE_SIZE_4K));
-			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, 0x0ULL);
-			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ACTIVITY_STATE, 0);	//active
+			sipi_desc.cs.selector = ((sipivector * PAGE_SIZE_4K) >> 4);
+			sipi_desc.cs.base = (sipivector * PAGE_SIZE_4K);
+			sipi_activity.rip = 0;
+			sipi_activity.activity_state = 0; //active
+
+			sipi_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
+			sipi_ap.param.activity = sipi_activity;
+			xc_api_cpustate_set(context_desc, sipi_ap);
+			sipi_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC;
+			sipi_ap.param.desc = sipi_desc;
+			xc_api_cpustate_set(context_desc, sipi_ap);
+			
 		}
 		break;
 
     
 		default:{
-			printf("\nCPU(0x%02x): Unhandled intercept: 0x%08x", context_desc.cpu_desc.cpu_index, (u32)inforegs.info_vmexit_reason);
-			printf("\n	CPU(0x%02x): EFLAGS=0x%08x", context_desc.cpu_desc.cpu_index, (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RFLAGS));
-			printf("\n	SS:ESP =0x%04x:0x%08x", (u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SS_SELECTOR), (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RSP));
-			printf("\n	CS:EIP =0x%04x:0x%08x", (u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CS_SELECTOR), (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP));
-			printf("\n	IDTR base:limit=0x%08x:0x%04x", (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_IDTR_BASE),
-					(u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_IDTR_LIMIT));
-			printf("\n	GDTR base:limit=0x%08x:0x%04x", (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_GDTR_BASE),
-					(u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_GDTR_LIMIT));
+			printf("\nCPU(0x%02x): Unhandled intercept: 0x%08x Halting!", context_desc.cpu_desc.cpu_index, (u32)inforegs.info_vmexit_reason);
 			HALT();
 		}		
-	} //end switch((u32)xc_cpu->vmcs.info_vmexit_reason)
+	} //end inforegs.info_vmexit_reason
 	
 
- 	//check and clear guest interruptibility state
+ 	//clear guest interruptibility state
 	if(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_INTERRUPTIBILITY) != 0){
 		xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_INTERRUPTIBILITY, 0);
 	}
 
-
-#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
-	//ensure that whenever a partition is resumed on a xc_cpu, we have extended paging
-	//enabled and that the base points to the extended page tables we have initialized
-	assert( (xc_cpu->vmcs.control_VMX_seccpu_based & 0x2) );
-	assert( (xc_cpu->vmcs.control_EPT_pointer_high == 0) && (xc_cpu->vmcs.control_EPT_pointer_full == (hva2spa((void*)xc_cpu->vmx_vaddr_ept_pml4_table) | 0x1E)) );
-#endif	
-
-	
 }
 
 
