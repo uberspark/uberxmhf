@@ -88,6 +88,7 @@ typedef struct {
 	u64 rip;
 	u64 rflags;
 	u32 activity_state;
+	u32 interruptibility;
 } xc_hypapp_arch_param_x86vmx_cpustate_activity_t;
 
 typedef struct {
