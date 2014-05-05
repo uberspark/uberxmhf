@@ -148,27 +148,17 @@ static struct regs _vmx_handle_intercept_rdmsr(context_desc_t context_desc, stru
 
 
 //---intercept handler (EPT voilation)----------------------------------
-static void _vmx_handle_intercept_eptviolation(context_desc_t context_desc, struct regs r __attribute__((unused))){
-	u32 errorcode, gpa, gva;
-
-	errorcode = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION);
-	gpa = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_GUEST_PADDR_FULL);
-	gva = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_GUEST_LINEAR_ADDRESS);
+static void _vmx_handle_intercept_eptviolation(context_desc_t context_desc, u32 gpa, u32 gva, u32 errorcode, struct regs r __attribute__((unused))){
 
 	xc_hypapp_handleintercept_hptfault(context_desc, gpa, gva,	(errorcode & 7));
 }
 
 
 //---intercept handler (I/O port access)----------------------------------------
-static struct regs _vmx_handle_intercept_ioportaccess(context_desc_t context_desc, struct regs r __attribute__((unused))){
-    u32 access_size, access_type, portnum, stringio;
+static struct regs _vmx_handle_intercept_ioportaccess(context_desc_t context_desc, u32 access_size, u32 access_type, 
+	u32 portnum, u32 stringio, struct regs r __attribute__((unused))){
 	u32 app_ret_status = APP_TRAP_CHAIN;
-	
-	access_size = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION) & 0x00000007UL;
-	access_type = ( xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION) & 0x00000008UL) >> 3;
-	portnum =  ( xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION) & 0xFFFF0000UL) >> 16;
-	stringio = ( xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION) & 0x00000010UL) >> 4;
-	
+
 	HALT_ON_ERRORCOND(!stringio);	//we dont handle string IO intercepts
 
 	{
@@ -261,23 +251,29 @@ static void _vmx_propagate_cpustate_guestx86gprs(context_desc_t context_desc, st
 //====================================================================================
 
 static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86gprs){
-
+	xc_hypapp_arch_param_t ap;
+	xc_hypapp_arch_param_x86vmx_cpustate_inforegs_t inforegs;
+	
+	ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_INFOREGS);
+	inforegs = ap.param.inforegs;
+	
+	
 	//sanity check for VM-entry errors
-	if( xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON) & 0x80000000UL ){
+	if( inforegs.info_vmexit_reason & 0x80000000UL ){
 		printf("\nVM-ENTRY error: reason=0x%08x, qualification=0x%016llx", 
-			xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON), xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION));
+			inforegs.info_vmexit_reason, inforegs.info_exit_qualification);
 		HALT();
 	}
 
 	//make sure we have no nested events
-	if(xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION) & 0x80000000){
+	if( inforegs.info_idt_vectoring_information & 0x80000000){
 		printf("\nCPU(0x%02x): HALT; Nested events unhandled with hwp:0x%08x",
-			context_desc.cpu_desc.cpu_index, xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION));
+			context_desc.cpu_desc.cpu_index, inforegs.info_idt_vectoring_information);
 		HALT();
 	}
 
 	//handle intercepts
-	switch(xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON)){
+	switch(inforegs.info_vmexit_reason){
 		//--------------------------------------------------------------
 		//xmhf-core and hypapp intercepts
 		//--------------------------------------------------------------
@@ -311,14 +307,27 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 		break;
 
 		case VMX_VMEXIT_IOIO:{
-			x86gprs = _vmx_handle_intercept_ioportaccess(context_desc, x86gprs);
-			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH)) );
+			u32 access_size, access_type, portnum, stringio;
+			
+			access_size = inforegs.info_exit_qualification & 0x00000007UL;
+			access_type = ( inforegs.info_exit_qualification & 0x00000008UL) >> 3;
+			portnum =  ( inforegs.info_exit_qualification & 0xFFFF0000UL) >> 16;
+			stringio = ( inforegs.info_exit_qualification & 0x00000010UL) >> 4;
+
+			x86gprs = _vmx_handle_intercept_ioportaccess(context_desc, access_size, access_type, portnum, stringio, x86gprs);
+			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+inforegs.info_vmexit_instruction_length) );
 		}
 		_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 		break;
 
 		case VMX_VMEXIT_EPT_VIOLATION:{
-			_vmx_handle_intercept_eptviolation(context_desc, x86gprs);
+			u32 errorcode, gpa, gva;
+
+			errorcode = inforegs.info_exit_qualification;
+			gpa = inforegs.info_guest_paddr_full;
+			gva = inforegs.info_guest_linear_address;
+
+			_vmx_handle_intercept_eptviolation(context_desc, gpa, gva, errorcode, x86gprs);
 		}
 		_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 		break;  
@@ -338,11 +347,11 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
  		case VMX_VMEXIT_CRX_ACCESS:{
 			u32 tofrom, gpr, crx; 
-			crx=(u32) ((u64)xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION) & 0x000000000000000FULL);
+			crx=(u32) ((u64)inforegs.info_exit_qualification & 0x000000000000000FULL);
 			gpr=
-			 (u32) (((u64)xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION) & 0x0000000000000F00ULL) >> (u64)8);
+			 (u32) (((u64)inforegs.info_exit_qualification & 0x0000000000000F00ULL) >> (u64)8);
 			tofrom = 
-			(u32) (((u64)xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION) & 0x0000000000000030ULL) >> (u64)4); 
+			(u32) (((u64)inforegs.info_exit_qualification & 0x0000000000000030ULL) >> (u64)4); 
 
 			if ( ((int)gpr >=0) && ((int)gpr <= 7) ){
 				switch(crx){
@@ -358,7 +367,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 						printf("\nunhandled crx, halting!");
 						HALT();
 				}
-			  	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH)) );
+			  	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+inforegs.info_vmexit_instruction_length) );
 
 			}else{
 				printf("\n[%02x]%s: invalid gpr value (%u). halting!", context_desc.cpu_desc.cpu_index,
@@ -370,26 +379,26 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
  		case VMX_VMEXIT_RDMSR:
 			x86gprs = _vmx_handle_intercept_rdmsr(context_desc, x86gprs);
-			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH)) );
+			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+inforegs.info_vmexit_instruction_length) );
 			_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 			break;
 			
 		case VMX_VMEXIT_WRMSR:
 			_vmx_handle_intercept_wrmsr(context_desc, x86gprs);
-			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH)) );
+			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+inforegs.info_vmexit_instruction_length) );
 			break;
 			
 		case VMX_VMEXIT_CPUID:
 			x86gprs = _vmx_handle_intercept_cpuid(context_desc, x86gprs);
-			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH)) );
+			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+inforegs.info_vmexit_instruction_length) );
 			_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 			break;
 
 		case VMX_VMEXIT_TASKSWITCH:{
-			u32 idt_v = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION) & VECTORING_INFO_VALID_MASK;
-			u32 type = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION) & VECTORING_INFO_TYPE_MASK;
-			u32 reason = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION) >> 30;
-			u16 tss_selector = (u16)xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION);
+			u32 idt_v = inforegs.info_idt_vectoring_information & VECTORING_INFO_VALID_MASK;
+			u32 type = inforegs.info_idt_vectoring_information & VECTORING_INFO_TYPE_MASK;
+			u32 reason = inforegs.info_exit_qualification >> 30;
+			u16 tss_selector = (u16)inforegs.info_exit_qualification;
 			
 			if(reason == TASK_SWITCH_GATE && type == INTR_TYPE_NMI){
 				printf("\nCPU(0x%02x): NMI received (MP guest shutdown?)", context_desc.cpu_desc.cpu_index);
@@ -409,12 +418,12 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 		case VMX_VMEXIT_XSETBV:{
 			_vmx_handle_intercept_xsetbv(context_desc, x86gprs);
 			//skip the emulated XSETBV instruction
-			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH)) );
+			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+inforegs.info_vmexit_instruction_length) );
 		}
 		break;
 
 		case VMX_VMEXIT_SIPI:{
-			u32 sipivector = (u8)xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION);
+			u32 sipivector = (u8)inforegs.info_exit_qualification;
 			printf("\nCPU(%02x): SIPI vector=0x%08x", context_desc.cpu_desc.cpu_index, sipivector);
 			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_SELECTOR, ((sipivector * PAGE_SIZE_4K) >> 4));
 			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_BASE, (sipivector * PAGE_SIZE_4K));
@@ -425,7 +434,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
     
 		default:{
-			printf("\nCPU(0x%02x): Unhandled intercept: 0x%08x", context_desc.cpu_desc.cpu_index, (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON));
+			printf("\nCPU(0x%02x): Unhandled intercept: 0x%08x", context_desc.cpu_desc.cpu_index, (u32)inforegs.info_vmexit_reason);
 			printf("\n	CPU(0x%02x): EFLAGS=0x%08x", context_desc.cpu_desc.cpu_index, (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RFLAGS));
 			printf("\n	SS:ESP =0x%04x:0x%08x", (u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SS_SELECTOR), (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RSP));
 			printf("\n	CS:EIP =0x%04x:0x%08x", (u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CS_SELECTOR), (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP));
@@ -433,10 +442,6 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 					(u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_IDTR_LIMIT));
 			printf("\n	GDTR base:limit=0x%08x:0x%04x", (u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_GDTR_BASE),
 					(u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_GDTR_LIMIT));
-			if(xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION) & 0x80000000){
-				printf("\nCPU(0x%02x): HALT; Nested events unhandled 0x%08x",
-					context_desc.cpu_desc.cpu_index, xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION));
-			}
 			HALT();
 		}		
 	} //end switch((u32)xc_cpu->vmcs.info_vmexit_reason)
