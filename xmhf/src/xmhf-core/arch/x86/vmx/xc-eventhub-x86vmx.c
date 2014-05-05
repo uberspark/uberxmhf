@@ -279,16 +279,27 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 		//--------------------------------------------------------------
 		
 		case VMX_VMEXIT_VMCALL:{
+			xc_hypapp_arch_param_t vmmcall_ap;
+			xc_hypapp_arch_param_x86vmx_cpustate_desc_t vmmcall_desc;
+			xc_hypapp_arch_param_x86vmx_cpustate_activity_t vmmcall_activity;
+			xc_hypapp_arch_param_x86vmx_cpustate_controlregs_t vmmcall_controlregs;
+			
+			vmmcall_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC);
+			vmmcall_desc = vmmcall_ap.param.desc;
+			vmmcall_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
+			vmmcall_activity = vmmcall_ap.param.activity;
+			vmmcall_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS);
+			vmmcall_controlregs = vmmcall_ap.param.controlregs;
+			
 			//if INT 15h E820 hypercall, then let the xmhf-core handle it
-			if(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CS_BASE) == (VMX_UG_E820HOOK_CS << 4) &&
-				xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP) == VMX_UG_E820HOOK_IP){
-	
+			if(vmmcall_desc.cs.base == (VMX_UG_E820HOOK_CS << 4) &&	vmmcall_activity.rip == VMX_UG_E820HOOK_IP){
 				//we need to be either in real-mode or in protected
 				//mode with paging and EFLAGS.VM bit set (virtual-8086 mode)
-				HALT_ON_ERRORCOND( !(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PE)  ||
-					( (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PE) && (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PG) &&
-						(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RFLAGS) & EFLAGS_VM)  ) );
+				HALT_ON_ERRORCOND( !(vmmcall_controlregs.cr0 & CR0_PE)  ||
+					( (vmmcall_controlregs.cr0 & CR0_PE) && (vmmcall_controlregs.cr0 & CR0_PG) &&
+						(vmmcall_activity.rflags & EFLAGS_VM)  ) );
 				x86gprs = xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc, x86gprs);
+				_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 				
 			}else{	//if not E820 hook, give hypapp a chance to handle the hypercall
 				{
@@ -300,10 +311,15 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 						HALT();
 					}
 				}
-				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+3) );
+
+				vmmcall_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
+				vmmcall_activity = vmmcall_ap.param.activity;
+				vmmcall_activity.rip+=3;
+				vmmcall_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
+				vmmcall_ap.param.activity = vmmcall_activity;
+				xc_api_cpustate_set(context_desc, vmmcall_ap);
 			}
 		}
-		_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 		break;
 
 		case VMX_VMEXIT_IOIO:{
