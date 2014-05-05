@@ -567,32 +567,22 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
 //---hvm_intercept_handler------------------------------------------------------
 void xmhf_parteventhub_arch_x86vmx_entry(void) __attribute__((naked)){
-		//step-1: save all CPU GPRs
-		asm volatile ("pushal\r\n");
 		
-		//step-2: grab xc_cpu_t *
-		//asm volatile ("movl 32(%esp), %esi\r\n");
-			      
-		//step-3: get hold of pointer to saved GPR on stack
-		asm volatile ("movl %esp, %eax\r\n");
+		asm volatile (
+			"pushal\r\n"
+			"movl %%esp, %%eax\r\n"
+			"pushl %%eax\r\n"
+			"call xmhf_partition_eventhub_arch_x86vmx\r\n"
+			"addl $0x04, %%esp\r\n"
+			"popal\r\n"
+			"vmresume\r\n"
+			"int $0x03\r\n"
+			"hlt\r\n"
+			: //no outputs
+			: //no inputs
+			: //no clobber
+		);
 
-		//step-4: invoke "C" event handler
-		//1st argument is xc_cpu_t * followed by pointer to saved GPRs
-		asm volatile ("pushl %eax\r\n");
-		//asm volatile ("pushl %esi\r\n");
-		asm volatile ("call xmhf_partition_eventhub_arch_x86vmx\r\n");
-		//asm volatile ("addl $0x08, %esp\r\n");
-		asm volatile ("addl $0x04, %esp\r\n");
-
-		//step-5; restore all CPU GPRs
-		asm volatile ("popal\r\n");
-
-		//resume partition
-		asm volatile ("vmresume\r\n");
-              
-		//if we get here then vm resume failed, just bail out with a BP exception 
-		asm volatile ("int $0x03\r\n");
-		asm volatile ("hlt\r\n");
 }
 
 
