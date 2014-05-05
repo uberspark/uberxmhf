@@ -665,6 +665,24 @@ xc_hypapp_arch_param_t xc_api_cpustate_arch_get(context_desc_t context_desc, u64
 				ap.param.controlregs.cr4 = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR4); 
 				break;
 		}
+		
+		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_INFOREGS:{
+				ap.param.inforegs.info_vminstr_error = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
+				ap.param.inforegs.info_vmexit_reason = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON);
+				ap.param.inforegs.info_vmexit_interrupt_information = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION);
+				ap.param.inforegs.info_vmexit_interrupt_error_code = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_ERROR_CODE);
+				ap.param.inforegs.info_idt_vectoring_information = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION);
+				ap.param.inforegs.info_idt_vectoring_error_code = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_ERROR_CODE);
+				ap.param.inforegs.info_vmexit_instruction_length = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH);
+				ap.param.inforegs.info_vmx_instruction_information = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMX_INSTRUCTION_INFORMATION);
+				ap.param.inforegs.info_exit_qualification = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION);
+				ap.param.inforegs.info_io_rcx = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IO_RCX);
+				ap.param.inforegs.info_io_rsi = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IO_RSI);
+				ap.param.inforegs.info_io_rdi = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IO_RDI);
+				ap.param.inforegs.info_io_rip = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IO_RIP);
+				ap.param.inforegs.info_guest_linear_address = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_GUEST_LINEAR_ADDRESS);
+				break;
+		}
 	
 		default:
 			break;
