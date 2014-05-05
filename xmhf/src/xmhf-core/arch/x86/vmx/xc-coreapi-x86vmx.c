@@ -634,6 +634,13 @@ void xc_api_cpustate_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_
 				break;
 		}
 	
+		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_SYSENTER:{
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SYSENTER_CS, ap.param.sysenter.sysenter_cs);
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SYSENTER_ESP, ap.param.sysenter.sysenter_rsp);
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SYSENTER_EIP, ap.param.sysenter.sysenter_rip);
+				break;
+		}
+	
 		default:
 			break;
 	}
@@ -667,6 +674,13 @@ xc_hypapp_arch_param_t xc_api_cpustate_arch_get(context_desc_t context_desc, u64
 				ap.param.controlregs.control_cr0_shadow = xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_CR0_SHADOW);
 				ap.param.controlregs.cr3 = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR3); 
 				ap.param.controlregs.cr4 = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR4); 
+				break;
+		}
+		
+		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_SYSENTER:{
+				ap.param.sysenter.sysenter_cs = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SYSENTER_CS);
+				ap.param.sysenter.sysenter_rip = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SYSENTER_EIP);
+				ap.param.sysenter.sysenter_rsp = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SYSENTER_ESP);
 				break;
 		}
 		

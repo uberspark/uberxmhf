@@ -100,16 +100,23 @@ static struct regs _vmx_handle_intercept_cpuid(context_desc_t context_desc, stru
 //---intercept handler (WRMSR)--------------------------------------------------
 static void _vmx_handle_intercept_wrmsr(context_desc_t context_desc, struct regs r){
 	//printf("\nCPU(0x%02x): WRMSR 0x%08x", xc_cpu->cpuid, r.ecx);
-
+	xc_hypapp_arch_param_t ap;
+	
+	ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_SYSENTER);
+	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_SYSENTER;
+		
 	switch(r.ecx){
 		case IA32_SYSENTER_CS_MSR:
-			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SYSENTER_CS, r.eax);
+			ap.param.sysenter.sysenter_cs = r.eax;
+			xc_api_cpustate_set(context_desc, ap);
 			break;
 		case IA32_SYSENTER_EIP_MSR:
-			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SYSENTER_EIP, r.eax);
+			ap.param.sysenter.sysenter_rip = r.eax;
+			xc_api_cpustate_set(context_desc, ap);
 			break;
 		case IA32_SYSENTER_ESP_MSR:
-			xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SYSENTER_ESP, r.eax);
+			ap.param.sysenter.sysenter_rsp = r.eax;
+			xc_api_cpustate_set(context_desc, ap);
 			break;
 		default:{
 			asm volatile ("wrmsr\r\n"
@@ -122,17 +129,21 @@ static void _vmx_handle_intercept_wrmsr(context_desc_t context_desc, struct regs
 
 //---intercept handler (RDMSR)--------------------------------------------------
 static struct regs _vmx_handle_intercept_rdmsr(context_desc_t context_desc, struct regs r){
+	xc_hypapp_arch_param_t ap;
+	
+	ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_SYSENTER);
+
 	switch(r.ecx){
 		case IA32_SYSENTER_CS_MSR:
-			r.eax = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SYSENTER_CS);
+			r.eax = ap.param.sysenter.sysenter_cs;
 			r.edx = 0;
 			break;
 		case IA32_SYSENTER_EIP_MSR:
-			r.eax = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SYSENTER_EIP);
+			r.eax = ap.param.sysenter.sysenter_rip;
 			r.edx = 0;
 			break;
 		case IA32_SYSENTER_ESP_MSR:
-			r.eax = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SYSENTER_ESP);
+			r.eax = ap.param.sysenter.sysenter_rsp;
 			r.edx = 0;
 			break;
 		default:{
