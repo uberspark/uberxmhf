@@ -111,6 +111,7 @@ typedef struct {
   u64  info_io_rdi;
   u64  info_io_rip;
   u64  info_guest_linear_address;
+  u64  info_guest_paddr_full;
 } xc_hypapp_arch_param_x86vmx_cpustate_inforegs_t;
 
 

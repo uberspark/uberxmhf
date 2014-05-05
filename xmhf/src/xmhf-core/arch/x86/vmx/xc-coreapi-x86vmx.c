@@ -681,6 +681,7 @@ xc_hypapp_arch_param_t xc_api_cpustate_arch_get(context_desc_t context_desc, u64
 				ap.param.inforegs.info_io_rdi = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IO_RDI);
 				ap.param.inforegs.info_io_rip = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IO_RIP);
 				ap.param.inforegs.info_guest_linear_address = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_GUEST_LINEAR_ADDRESS);
+				ap.param.inforegs.info_guest_paddr_full = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_GUEST_PADDR_FULL);
 				break;
 		}
 	
