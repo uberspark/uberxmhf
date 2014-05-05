@@ -99,6 +99,12 @@ typedef struct {
 } xc_hypapp_arch_param_x86vmx_cpustate_controlregs_t;
 
 typedef struct {
+	u32 sysenter_cs;
+	u64 sysenter_rsp;
+	u64 sysenter_rip;
+} xc_hypapp_arch_param_x86vmx_cpustate_sysenter_t;
+
+typedef struct {
   u32  info_vminstr_error;
   u32  info_vmexit_reason;
   u32  info_vmexit_interrupt_information;
@@ -127,6 +133,7 @@ typedef struct {
 		xc_hypapp_arch_param_x86vmx_cpustate_activity_t activity;
 		xc_hypapp_arch_param_x86vmx_cpustate_controlregs_t controlregs;
 		xc_hypapp_arch_param_x86vmx_cpustate_inforegs_t inforegs;
+		xc_hypapp_arch_param_x86vmx_cpustate_sysenter_t sysenter;
 	} param;
 } __attribute__ ((packed)) xc_hypapp_arch_param_t;
 
@@ -166,6 +173,7 @@ typedef struct {
 #define XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY	(0xD03)
 #define XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS	(0xD04)
 #define XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_INFOREGS	(0xD05)
+#define XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_SYSENTER	(0xD06)
 
 //------------------------------------------------------
 // functions
