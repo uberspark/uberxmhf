@@ -411,7 +411,7 @@ u64 xc_api_hpt_arch_lvl2pagewalk(context_desc_t context_desc, u64 gva){
 //---------------------------------------------------------------------------------
 // Trapmask related APIs
 
-static void _trapmask_operation_trap_io_set(context_desc_t context_desc, u16 port, u8 size){
+static void _trapmask_operation_trap_io_set(context_desc_t context_desc, xc_hypapp_arch_param_x86vmx_trapio_t trapio){
 	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
 	xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
 
@@ -420,17 +420,17 @@ static void _trapmask_operation_trap_io_set(context_desc_t context_desc, u16 por
 	u32 byte_offset, bit_offset;
 	u32 i;
 
-	if(size > sizeof(u32))
-		size=sizeof(u32);
+	if(trapio.access_size > sizeof(u32))
+		trapio.access_size=sizeof(u32);
 
-	for(i=0; i < size; i++){
-		byte_offset = (port+i) / 8;
-		bit_offset = (port+i) % 8;
+	for(i=0; i < trapio.access_size; i++){
+		byte_offset = (trapio.portnum+i) / 8;
+		bit_offset = (trapio.portnum+i) % 8;
 		bit_vector[byte_offset] |= (1 << bit_offset);	
 	}
 }
 
-static void _trapmask_operation_trap_io_clear(context_desc_t context_desc, u16 port, u8 size){
+static void _trapmask_operation_trap_io_clear(context_desc_t context_desc, xc_hypapp_arch_param_x86vmx_trapio_t trapio){
 	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
 	xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
 
@@ -439,21 +439,20 @@ static void _trapmask_operation_trap_io_clear(context_desc_t context_desc, u16 p
 	u32 byte_offset, bit_offset;
 	u32 i;
 
-	if(size > sizeof(u32))
-		size=sizeof(u32);
+	if(trapio.access_size > sizeof(u32))
+		trapio.access_size=sizeof(u32);
 
-	for(i=0; i < size; i++){
-		byte_offset = (port+i) / 8;
-		bit_offset = (port+i) % 8;
+	for(i=0; i < trapio.access_size; i++){
+		byte_offset = (trapio.portnum+i) / 8;
+		bit_offset = (trapio.portnum+i) % 8;
 		bit_vector[byte_offset] &= ~((1 << bit_offset));	
 	}
 }
 
-void xc_api_trapmask_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams){
-	switch(trapmaskparams.operation){
+void xc_api_trapmask_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_t ap){
+	switch(ap.operation){
 		case XC_HYPAPP_ARCH_PARAM_OPERATION_TRAP_IO:{
-				//params[0]=16-bit port number, params[1]=size in bytes - 1,2 or 4
-				_trapmask_operation_trap_io_set(context_desc, (u16)trapmaskparams.params[0], (u8)trapmaskparams.params[1]);
+				_trapmask_operation_trap_io_set(context_desc, ap.param.trapio);
 				break;
 		}	
 	
@@ -463,11 +462,10 @@ void xc_api_trapmask_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_
 
 }
 
-void xc_api_trapmask_arch_clear(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams){
-	switch(trapmaskparams.operation){
+void xc_api_trapmask_arch_clear(context_desc_t context_desc, xc_hypapp_arch_param_t ap){
+	switch(ap.operation){
 		case XC_HYPAPP_ARCH_PARAM_OPERATION_TRAP_IO:{
-				//params[0]=16-bit port number, params[1]=size in bytes - 1,2 or 4
-				_trapmask_operation_trap_io_clear(context_desc, (u16)trapmaskparams.params[0], (u8)trapmaskparams.params[1]);
+				_trapmask_operation_trap_io_clear(context_desc, ap.param.trapio);
 				break;
 		}	
 	
@@ -481,48 +479,167 @@ void xc_api_trapmask_arch_clear(context_desc_t context_desc, xc_hypapp_arch_para
 //-----------------------------------------------------------------------------------------------
 // CPU state related APIs
 
-static void _cpustate_operation_cpugprs_set(context_desc_t context_desc, struct regs *x86gprs){
+static void _cpustate_operation_cpugprs_set(context_desc_t context_desc, struct regs x86gprs){
 	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
 	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)xc_cpu->cpuarchdata;
-	xc_cpuarchdata_x86vmx->x86gprs.edi = x86gprs->edi;
-	xc_cpuarchdata_x86vmx->x86gprs.esi = x86gprs->esi;
-	xc_cpuarchdata_x86vmx->x86gprs.ebp = x86gprs->ebp;
-	xc_cpuarchdata_x86vmx->x86gprs.esp = x86gprs->esp;
-	xc_cpuarchdata_x86vmx->x86gprs.ebx = x86gprs->ebx;
-	xc_cpuarchdata_x86vmx->x86gprs.edx = x86gprs->edx;
-	xc_cpuarchdata_x86vmx->x86gprs.ecx = x86gprs->ecx;
-	xc_cpuarchdata_x86vmx->x86gprs.eax = x86gprs->eax;
+	xc_cpuarchdata_x86vmx->x86gprs.edi = x86gprs.edi;
+	xc_cpuarchdata_x86vmx->x86gprs.esi = x86gprs.esi;
+	xc_cpuarchdata_x86vmx->x86gprs.ebp = x86gprs.ebp;
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, x86gprs.esp);
+	xc_cpuarchdata_x86vmx->x86gprs.ebx = x86gprs.ebx;
+	xc_cpuarchdata_x86vmx->x86gprs.edx = x86gprs.edx;
+	xc_cpuarchdata_x86vmx->x86gprs.ecx = x86gprs.ecx;
+	xc_cpuarchdata_x86vmx->x86gprs.eax = x86gprs.eax;
 }
 
-static void _cpustate_operation_cpugprs_get(context_desc_t context_desc, struct regs *x86gprs){
+static struct regs _cpustate_operation_cpugprs_get(context_desc_t context_desc){
 	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
 	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)xc_cpu->cpuarchdata;
-	x86gprs->edi = xc_cpuarchdata_x86vmx->x86gprs.edi;
-	x86gprs->esi = xc_cpuarchdata_x86vmx->x86gprs.esi;
-	x86gprs->ebp = xc_cpuarchdata_x86vmx->x86gprs.ebp;
-	x86gprs->esp = xc_cpuarchdata_x86vmx->x86gprs.esp;
-	x86gprs->ebx = xc_cpuarchdata_x86vmx->x86gprs.ebx;
-	x86gprs->edx = xc_cpuarchdata_x86vmx->x86gprs.edx;
-	x86gprs->ecx = xc_cpuarchdata_x86vmx->x86gprs.ecx;
-	x86gprs->eax = xc_cpuarchdata_x86vmx->x86gprs.eax;
+	struct regs x86gprs;
+	
+	x86gprs.edi = xc_cpuarchdata_x86vmx->x86gprs.edi;
+	x86gprs.esi = xc_cpuarchdata_x86vmx->x86gprs.esi;
+	x86gprs.ebp = xc_cpuarchdata_x86vmx->x86gprs.ebp;
+	x86gprs.esp = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RSP);
+	x86gprs.ebx = xc_cpuarchdata_x86vmx->x86gprs.ebx;
+	x86gprs.edx = xc_cpuarchdata_x86vmx->x86gprs.edx;
+	x86gprs.ecx = xc_cpuarchdata_x86vmx->x86gprs.ecx;
+	x86gprs.eax = xc_cpuarchdata_x86vmx->x86gprs.eax;
+
+	return x86gprs;
 }
 
-void xc_api_cpustate_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_t cpustateparams){
-	switch(cpustateparams.operation){
+
+static void _cpustate_operation_desc_set(context_desc_t context_desc, xc_hypapp_arch_param_x86vmx_cpustate_desc_t desc){
+
+	//CS, DS, ES, FS, GS and SS segments
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_SELECTOR, desc.cs.selector);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_BASE, desc.cs.base);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_LIMIT, desc.cs.limit);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_ACCESS_RIGHTS, desc.cs.access_rights);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_DS_SELECTOR, desc.ds.selector);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_DS_BASE, desc.ds.base);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_DS_LIMIT, desc.ds.limit);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_DS_ACCESS_RIGHTS, desc.ds.access_rights);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ES_SELECTOR, desc.es.selector);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ES_BASE, desc.es.base);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ES_LIMIT, desc.es.limit);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ES_ACCESS_RIGHTS, desc.es.access_rights);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_FS_SELECTOR, desc.fs.selector);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_FS_BASE, desc.fs.base);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_FS_LIMIT, desc.fs.limit);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_FS_ACCESS_RIGHTS, desc.fs.access_rights);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GS_SELECTOR, desc.gs.selector);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GS_BASE, desc.gs.base);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GS_LIMIT, desc.gs.limit);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GS_ACCESS_RIGHTS, desc.gs.access_rights);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SS_SELECTOR, desc.ss.selector);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SS_BASE, desc.ss.base);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SS_LIMIT, desc.ss.limit);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SS_ACCESS_RIGHTS, desc.ss.access_rights);
+	//IDTR
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_IDTR_BASE, desc.idtr.base);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_IDTR_LIMIT, desc.idtr.limit);
+	//GDTR
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GDTR_BASE, desc.gdtr.base);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GDTR_LIMIT, desc.gdtr.limit);
+	//LDTR, unusable
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_BASE, desc.ldtr.base);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_LIMIT, desc.ldtr.limit);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_SELECTOR, desc.ldtr.selector);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_ACCESS_RIGHTS, desc.ldtr.access_rights);
+	//TR, should be usable for VMX to work, but not used by guest
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_TR_BASE, desc.tr.base);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_TR_LIMIT, desc.tr.limit);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_TR_SELECTOR, desc.tr.selector);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_TR_ACCESS_RIGHTS, desc.tr.access_rights);
+	
+	
+}
+
+static xc_hypapp_arch_param_x86vmx_cpustate_desc_t _cpustate_operation_desc_get(context_desc_t context_desc){
+	xc_hypapp_arch_param_x86vmx_cpustate_desc_t desc;
+	
+	//CS, DS, ES, FS, GS and SS segments
+	desc.cs.selector = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CS_SELECTOR); 		
+	desc.cs.base = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CS_BASE); 			
+	desc.cs.limit = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CS_LIMIT); 			
+	desc.cs.access_rights = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CS_ACCESS_RIGHTS); 	
+	desc.ds.selector = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_DS_SELECTOR); 		
+	desc.ds.base = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_DS_BASE); 			
+	desc.ds.limit = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_DS_LIMIT); 			
+	desc.ds.access_rights = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_DS_ACCESS_RIGHTS); 	
+	desc.es.selector = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_ES_SELECTOR); 		
+	desc.es.base = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_ES_BASE); 			
+	desc.es.limit = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_ES_LIMIT); 			
+	desc.es.access_rights = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_ES_ACCESS_RIGHTS); 	
+	desc.fs.selector = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_FS_SELECTOR); 		
+	desc.fs.base = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_FS_BASE); 			
+	desc.fs.limit = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_FS_LIMIT); 			
+	desc.fs.access_rights = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_FS_ACCESS_RIGHTS); 	
+	desc.gs.selector = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_GS_SELECTOR); 		
+	desc.gs.base = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_GS_BASE); 			
+	desc.gs.limit = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_GS_LIMIT); 			
+	desc.gs.access_rights = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_GS_ACCESS_RIGHTS); 	
+	desc.ss.selector = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SS_SELECTOR); 		
+	desc.ss.base = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SS_BASE); 			
+	desc.ss.limit = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SS_LIMIT); 			
+	desc.ss.access_rights = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SS_ACCESS_RIGHTS); 	
+	//IDTR
+	desc.idtr.base = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_IDTR_BASE); 		
+	desc.idtr.limit = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_IDTR_LIMIT); 		
+	//GDTR
+	desc.gdtr.base = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_GDTR_BASE); 		
+	desc.gdtr.limit = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_GDTR_LIMIT); 		
+	//LDTR); unusable
+	desc.ldtr.base = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_LDTR_BASE); 		
+	desc.ldtr.limit = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_LDTR_LIMIT); 		
+	desc.ldtr.selector = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_LDTR_SELECTOR); 	
+	desc.ldtr.access_rights =xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_LDTR_ACCESS_RIGHTS); 
+	//TR); should be usable for VMX to work; not used by guest
+	desc.tr.base = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_TR_BASE); 			
+	desc.tr.limit = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_TR_LIMIT); 			
+	desc.tr.selector = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_TR_SELECTOR); 		
+	desc.tr.access_rights = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_TR_ACCESS_RIGHTS); 	
+	
+	return desc;
+}
+
+
+void xc_api_cpustate_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_t ap){
+	switch(ap.operation){
 		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS:{
-				//params[0]..[7] = x86 general purpose registers - edi,esi,ebp,esp,ebx,edx,ecx,eax
-				struct regs x86gprs;
-				x86gprs.edi = cpustateparams.params[0];
-				x86gprs.esi = cpustateparams.params[1];
-				x86gprs.ebp = cpustateparams.params[2];
-				x86gprs.esp = cpustateparams.params[3];
-				x86gprs.ebx = cpustateparams.params[4];
-				x86gprs.edx = cpustateparams.params[5];
-				x86gprs.ecx = cpustateparams.params[6];
-				x86gprs.eax = cpustateparams.params[7];
-				_cpustate_operation_cpugprs_set(context_desc, &x86gprs);
+				_cpustate_operation_cpugprs_set(context_desc, ap.param.cpugprs);
 				break;
 		}	
+	
+		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC:{
+				_cpustate_operation_desc_set(context_desc, ap.param.desc);
+				break;
+		}
+
+		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY:{
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, ap.param.activity.rip);
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ACTIVITY_STATE, ap.param.activity.activity_state);	
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RFLAGS, ap.param.activity.rflags);
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_INTERRUPTIBILITY, ap.param.activity.interruptibility);
+				break;
+		}
+
+		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS:{
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, ap.param.controlregs.cr0 );
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR0_SHADOW, ap.param.controlregs.control_cr0_shadow);
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR3, ap.param.controlregs.cr3 );
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR4, ap.param.controlregs.cr4 );
+				break;
+		}
+	
+		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_SYSENTER:{
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SYSENTER_CS, ap.param.sysenter.sysenter_cs);
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SYSENTER_ESP, ap.param.sysenter.sysenter_rsp);
+				xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SYSENTER_EIP, ap.param.sysenter.sysenter_rip);
+				break;
+		}
 	
 		default:
 			break;
@@ -531,29 +648,358 @@ void xc_api_cpustate_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_
 }
 
 xc_hypapp_arch_param_t xc_api_cpustate_arch_get(context_desc_t context_desc, u64 operation){
-	xc_hypapp_arch_param_t cpustateparams;
+	xc_hypapp_arch_param_t ap;
 
 	switch(operation){
 		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS:{
-				//params[0]..[7] = x86 general purpose registers - edi,esi,ebp,esp,ebx,edx,ecx,eax
-				struct regs x86gprs;
-				_cpustate_operation_cpugprs_get(context_desc, &x86gprs);
-				cpustateparams.params[0] = x86gprs.edi;
-				cpustateparams.params[1] = x86gprs.esi;
-				cpustateparams.params[2] = x86gprs.ebp;
-				cpustateparams.params[3] = x86gprs.esp;
-				cpustateparams.params[4] = x86gprs.ebx;
-				cpustateparams.params[5] = x86gprs.edx;
-				cpustateparams.params[6] = x86gprs.ecx;
-				cpustateparams.params[7] = x86gprs.eax;
+				ap.param.cpugprs = _cpustate_operation_cpugprs_get(context_desc);
 				break;
 		}	
+
+		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC:{
+				ap.param.desc = _cpustate_operation_desc_get(context_desc);
+				break;
+		}
+
+		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY:{
+				ap.param.activity.rip = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP); 			
+				ap.param.activity.activity_state =xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_ACTIVITY_STATE);  	
+				ap.param.activity.rflags = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RFLAGS); 		
+				ap.param.activity.interruptibility = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_INTERRUPTIBILITY);
+				break;
+		}
+
+		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS:{
+				ap.param.controlregs.cr0 = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0); 
+				ap.param.controlregs.control_cr0_shadow = xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_CR0_SHADOW);
+				ap.param.controlregs.cr3 = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR3); 
+				ap.param.controlregs.cr4 = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR4); 
+				break;
+		}
+		
+		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_SYSENTER:{
+				ap.param.sysenter.sysenter_cs = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SYSENTER_CS);
+				ap.param.sysenter.sysenter_rip = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SYSENTER_EIP);
+				ap.param.sysenter.sysenter_rsp = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SYSENTER_ESP);
+				break;
+		}
+		
+		case XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_INFOREGS:{
+				ap.param.inforegs.info_vminstr_error = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
+				ap.param.inforegs.info_vmexit_reason = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON);
+				ap.param.inforegs.info_vmexit_interrupt_information = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION);
+				ap.param.inforegs.info_vmexit_interrupt_error_code = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_ERROR_CODE);
+				ap.param.inforegs.info_idt_vectoring_information = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_INFORMATION);
+				ap.param.inforegs.info_idt_vectoring_error_code = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IDT_VECTORING_ERROR_CODE);
+				ap.param.inforegs.info_vmexit_instruction_length = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH);
+				ap.param.inforegs.info_vmx_instruction_information = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMX_INSTRUCTION_INFORMATION);
+				ap.param.inforegs.info_exit_qualification = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_EXIT_QUALIFICATION);
+				ap.param.inforegs.info_io_rcx = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IO_RCX);
+				ap.param.inforegs.info_io_rsi = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IO_RSI);
+				ap.param.inforegs.info_io_rdi = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IO_RDI);
+				ap.param.inforegs.info_io_rip = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_IO_RIP);
+				ap.param.inforegs.info_guest_linear_address = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_GUEST_LINEAR_ADDRESS);
+				ap.param.inforegs.info_guest_paddr_full = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_GUEST_PADDR_FULL);
+				break;
+		}
 	
 		default:
 			break;
 	}
 	
-	return cpustateparams;
+	return ap;
 }
 
 
+
+static void _xc_api_partition_arch_addcpu_setupbasestate(u32 partition_index, u32 cpu_index){
+	const u32 vmx_msr_area_msrs[] = {MSR_EFER, MSR_IA32_PAT, MSR_K6_STAR}; //critical MSRs that need to be saved/restored across guest VM switches
+	const unsigned int vmx_msr_area_msrs_count = (sizeof(vmx_msr_area_msrs)/sizeof(vmx_msr_area_msrs[0]));	//count of critical MSRs that need to be saved/restored across VM switches
+	u32 lodword, hidword;
+	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[cpu_index];
+	xc_partition_t *xc_partition = &g_xc_primary_partition[partition_index];
+	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)xc_cpu->cpuarchdata;
+	xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx = (xc_partition_trapmaskdata_x86vmx_t *)xc_partition->trapmaskdata;
+	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;
+
+	
+	//setup host state
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR0, read_cr0());
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR4, read_cr4());
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR3, read_cr3());
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CS_SELECTOR, read_segreg_cs());
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_DS_SELECTOR, read_segreg_ds());
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_ES_SELECTOR, read_segreg_es());
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_FS_SELECTOR, read_segreg_fs());
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_GS_SELECTOR, read_segreg_gs());
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_SS_SELECTOR, read_segreg_ss());
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_TR_SELECTOR, read_tr_sel());
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_GDTR_BASE, xmhf_baseplatform_arch_x86_getgdtbase());
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_IDTR_BASE, xmhf_baseplatform_arch_x86_getidtbase());
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_TR_BASE, xmhf_baseplatform_arch_x86_gettssbase());
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RIP, (u32)xmhf_parteventhub_arch_x86vmx_entry);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RSP, read_esp());
+	rdmsr(IA32_SYSENTER_CS_MSR, &lodword, &hidword);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_SYSENTER_CS, lodword);
+	rdmsr(IA32_SYSENTER_ESP_MSR, &lodword, &hidword);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_SYSENTER_ESP, (u32)(((u64)hidword << 32) | (u64)lodword));
+	rdmsr(IA32_SYSENTER_EIP_MSR, &lodword, &hidword);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_SYSENTER_EIP, (u32)(((u64)hidword << 32) | (u64)lodword));
+	rdmsr(IA32_MSR_FS_BASE, &lodword, &hidword);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_FS_BASE, (u32) (((u64)hidword << 32) | (u64)lodword) );
+	rdmsr(IA32_MSR_GS_BASE, &lodword, &hidword);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_GS_BASE, (u32) (((u64)hidword << 32) | (u64)lodword) );
+
+	//setup default VMX controls
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_PIN_BASED, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_CONTROLS, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_CONTROLS, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR]);
+
+	//IO bitmap support
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL, (u32)hva2spa((void*)xc_partition_trapmaskdata_x86vmx->vmx_iobitmap_region));
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_IO_BITMAPA_ADDRESS_HIGH, 0);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL, (u32)hva2spa( ((void*)xc_partition_trapmaskdata_x86vmx->vmx_iobitmap_region + PAGE_SIZE_4K) ));
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_IO_BITMAPB_ADDRESS_HIGH, 0);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) | (1 << 25)) );
+
+	//Critical MSR load/store
+	{
+		u32 i;
+		msr_entry_t *hmsr = (msr_entry_t *)xc_cpuarchdata_x86vmx->vmx_msr_area_host_region;
+		msr_entry_t *gmsr = (msr_entry_t *)xc_cpuarchdata_x86vmx->vmx_msr_area_guest_region;
+
+		#ifndef __XMHF_VERIFICATION__
+		//store initial values of the MSRs
+		for(i=0; i < vmx_msr_area_msrs_count; i++){
+			u32 msr, eax, edx;
+			msr = vmx_msr_area_msrs[i];						
+			rdmsr(msr, &eax, &edx);
+			hmsr[i].index = gmsr[i].index = msr;
+			hmsr[i].data = gmsr[i].data = ((u64)edx << 32) | (u64)eax;
+		}
+		#endif
+
+		//host MSR load on exit, we store it ourselves before entry
+		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_LOAD_ADDRESS_FULL, (u32)hva2spa((void*)xc_cpuarchdata_x86vmx->vmx_msr_area_host_region));
+		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_LOAD_ADDRESS_HIGH, 0);
+		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_LOAD_COUNT, vmx_msr_area_msrs_count);
+
+		//guest MSR load on entry, store on exit
+		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_FULL, (u32)hva2spa((void*)xc_cpuarchdata_x86vmx->vmx_msr_area_guest_region));
+		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_HIGH, 0);
+		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_MSR_LOAD_COUNT, vmx_msr_area_msrs_count);
+		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_FULL, (u32)hva2spa((void*)xc_cpuarchdata_x86vmx->vmx_msr_area_guest_region));
+		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_HIGH, 0);
+		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_STORE_COUNT, vmx_msr_area_msrs_count);
+		
+	}
+
+
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_PAGEFAULT_ERRORCODE_MASK, 0x00000000);
+    xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_PAGEFAULT_ERRORCODE_MATCH, 0x00000000);
+    xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EXCEPTION_BITMAP, 0);
+    xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR3_TARGET_COUNT, 0);  
+
+
+	//activate secondary processor controls
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_SECCPU_BASED, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) | (1 << 31)) );
+
+	//setup unrestricted guest
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_SECCPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_SECCPU_BASED) | (1 << 7)) );
+
+	//setup VMCS link pointer
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_VMCS_LINK_POINTER_FULL, (u32)0xFFFFFFFFUL);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_VMCS_LINK_POINTER_HIGH, (u32)0xFFFFFFFFUL);
+	
+	//setup NMI intercept for core-quiescing
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_PIN_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_PIN_BASED) | (1 << 3) ) );
+	
+	//trap access to CR0 fixed 1-bits
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR0_MASK, ((((xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR] & ~(CR0_PE)) & ~(CR0_PG)) | CR0_CD) | CR0_NW) );
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR0_SHADOW, xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0));
+			
+	//trap access to CR4 fixed bits (this includes the VMXE bit)
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR4_MASK, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR4_SHADOW, CR4_VMXE);
+
+	//setup memory protection
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_SECCPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_SECCPU_BASED) | (1 <<1) | (1 << 5)) );
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VPID, 1);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, (hva2spa((void*)eptdata->vmx_ept_pml4_table) | 0x1E) );
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_HIGH, 0);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) & ~(1 << 15) & ~(1 << 16)) );
+
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR4, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
+}
+
+
+bool xc_api_partition_arch_addcpu(u32 partition_index, u32 cpu_index){
+	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)&g_xc_cpu[cpu_index].cpuarchdata;
+	u64 vmcs_phys_addr = hva2spa((void*)xc_cpuarchdata_x86vmx->vmx_vmcs_region);
+
+	//save contents of VMX MSRs as well as MSR EFER and EFCR 
+	{
+		u32 i;
+		u32 eax, edx;
+		for(i=0; i < IA32_VMX_MSRCOUNT; i++){
+			rdmsr( (IA32_VMX_BASIC_MSR + i), &eax, &edx);
+			xc_cpuarchdata_x86vmx->vmx_msrs[i] = (u64)edx << 32 | (u64) eax;        
+		}
+
+		rdmsr(MSR_EFER, &eax, &edx);
+		xc_cpuarchdata_x86vmx->vmx_msr_efer = (u64)edx << 32 | (u64) eax;
+		rdmsr(MSR_EFCR, &eax, &edx);
+		xc_cpuarchdata_x86vmx->vmx_msr_efcr = (u64)edx << 32 | (u64) eax;
+
+		//printf("\nCPU(0x%02x): MSR_EFER=0x%08x%08x", xc_cpu->cpuid, (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msr_efer >> 32), 
+		//	(u32)xc_cpuarchdata_x86vmx->vmx_msr_efer);
+		//printf("\nCPU(0x%02x): MSR_EFCR=0x%08x%08x", xc_cpu->cpuid, (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msr_efcr >> 32), 
+		//	(u32)xc_cpuarchdata_x86vmx->vmx_msr_efcr);
+  	}
+
+	//we require unrestricted guest support, bail out if we don't have it
+	if( !( (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msrs[IA32_VMX_MSRCOUNT-1] >> 32) & 0x80 ) ){
+		printf("\n%s: need unrestricted guest support but did not find any!", __FUNCTION__);
+		return false;
+	}
+
+	//enable VMX by setting CR4
+	asm volatile	(	"mov  %%cr4, %%eax	\r\n"
+						"bts  $13, %%eax \r\n"
+						"mov  %%eax, %%cr4 \r\n" 
+						:
+						:
+						: "eax" 
+					);
+
+	//enter VMX root operation using VMXON
+	{
+		u32 retval=0;
+		u64 vmxonregion_paddr = hva2spa((void*)xc_cpuarchdata_x86vmx->vmx_vmxon_region);
+		//set VMCS rev id
+		*((u32 *)xc_cpuarchdata_x86vmx->vmx_vmxon_region) = (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
+
+		asm volatile( "vmxon %1 \n"
+				 "jbe vmfail \n"
+				 "movl $0x1, %%eax \n" 
+				 "movl %%eax, %0 \n"
+				 "jmp vmsuccess \n"
+				 "vmfail: \n"
+				 "movl $0x0, %%eax \n"
+				 "movl %%eax, %0 \n"
+				 "vmsuccess: \n" 
+		   : "=m" (retval)
+		   : "m"(vmxonregion_paddr) 
+		   : "eax");
+
+		if(!retval){
+			printf("\n%s: unable to enter VMX root operation", __FUNCTION__);
+			return false;
+		}  
+	}
+
+	//clear VMCS
+	if(!__vmx_vmclear((u64)vmcs_phys_addr))
+		return false;
+  
+	//set VMCS revision id
+	*((u32 *)xc_cpuarchdata_x86vmx->vmx_vmcs_region) = (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
+
+	//load VMPTR
+	if(!__vmx_vmptrld((u64)vmcs_phys_addr))
+		return false;
+
+	//setup base state of the partition
+	_xc_api_partition_arch_addcpu_setupbasestate(partition_index, cpu_index);
+		
+	return true;
+}
+
+
+
+
+//----------------------------------------------------------------------
+// start HVM on a given physical core
+// on success: this function will not return
+// on failure: 1 if a valid error code is present, 0 if no error code, 
+// 2 if invalid error info. (should never happen)
+//----------------------------------------------------------------------
+//static u32 __vmx_start_hvm(void) __attribute__ ((naked)) {
+static u32 __vmx_start_hvm(struct regs x86cpugprs) {
+	u32 errorcode;
+	//struct regs x86cpugprs;
+	
+	//x86cpugprs.eax = 0;
+	//x86cpugprs.ebx = 0;
+	//x86cpugprs.ecx = 0;
+	//x86cpugprs.edx = 0x80;
+	//x86cpugprs.esi = 0;
+	//x86cpugprs.edi = 0;
+	//x86cpugprs.ebp = 0;
+
+	asm volatile (	"pushal \r\n"
+					"movl %1, %%eax\r\n"
+					"movl %2, %%ebx\r\n"
+					"movl %3, %%ecx\r\n"
+					"movl %4, %%edx\r\n"
+					"movl %5, %%esi\r\n"
+					"movl %6, %%edi\r\n"
+					"movl %7, %%ebp\r\n"
+					"vmlaunch\r\n"
+					"popal \r\n"
+					"jc __vmx_start_hvm_failinvalid\r\n"
+					"jnz	__vmx_start_hvm_undefinedimplementation	\r\n"
+					"movl $0x1, %%eax\r\n"		//VMLAUNCH error, XXX: need to read from VM instruction error field in VMCS
+					"movl %%eax, %0 \r\n"
+					"jmp __vmx_start_continue \r\n"
+					"__vmx_start_hvm_undefinedimplementation:\r\n"
+					"movl $0x2, %%eax\r\n"		//violation of VMLAUNCH specs., handle it anyways
+					"movl %%eax, %0 \r\n"
+					"jmp __vmx_start_continue \r\n"
+					"__vmx_start_hvm_failinvalid:\r\n"
+					"xorl %%eax, %%eax\r\n"		//return 0 as we have no error code available
+					"movl %%eax, %0 \r\n"
+					"__vmx_start_continue:\r\n"	
+					: "=g"(errorcode)
+					: "g" (x86cpugprs.eax), "g" (x86cpugprs.ebx), "g" (x86cpugprs.ecx), "g" (x86cpugprs.edx), "g" (x86cpugprs.esi), "g" (x86cpugprs.edi), "g" (x86cpugprs.ebp)
+					: "eax", "ebx", "ecx", "edx", "esi", "edi", "ebp"
+				);
+
+	return errorcode;
+}
+
+
+bool xc_api_partition_arch_startcpu(context_desc_t context_desc){
+	u32 errorcode;
+    struct regs x86cpugprs;
+    xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = &g_xc_cpu[context_desc.cpu_desc.cpu_index].cpuarchdata;
+    
+    x86cpugprs.eax = xc_cpuarchdata_x86vmx->x86gprs.eax;
+    x86cpugprs.ebx = xc_cpuarchdata_x86vmx->x86gprs.ebx;
+	x86cpugprs.ecx = xc_cpuarchdata_x86vmx->x86gprs.ecx;
+	x86cpugprs.edx = xc_cpuarchdata_x86vmx->x86gprs.edx;
+	x86cpugprs.esi = xc_cpuarchdata_x86vmx->x86gprs.esi;
+	x86cpugprs.edi = xc_cpuarchdata_x86vmx->x86gprs.edi;
+	x86cpugprs.ebp = xc_cpuarchdata_x86vmx->x86gprs.ebp;
+    
+	HALT_ON_ERRORCOND( xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_VMCS_LINK_POINTER_FULL) == 0xFFFFFFFFUL );
+
+	errorcode=__vmx_start_hvm(x86cpugprs);
+	HALT_ON_ERRORCOND(errorcode != 2);	//this means the VMLAUNCH implementation violated the specs.
+
+	switch(errorcode){
+			case 0:	//no error code, VMCS pointer is invalid
+				printf("%s: VMLAUNCH error; VMCS pointer invalid?", __FUNCTION__);
+				break;
+			case 1:{//error code available, so dump it
+				u32 code=xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
+				printf("\n%s: VMLAUNCH error; code=%x", __FUNCTION__, code);
+				break;
+			}
+	}
+	
+	return false;
+}

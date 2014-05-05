@@ -35,7 +35,7 @@ export LIBBAREMETAL_SRC := $(realpath @LIBBAREMETAL_SRC@)
 
 # XMHF core source location
 export XMHFCORE_SRC := $(realpath xmhf/src/xmhf-core)
-XMHFCORE_INC = -I$(realpath xmhf/src/xmhf-core/include) -I$(realpath xmhf/src/xmhf-core/arch/x86/common/include) -I$(realpath xmhf/src/xmhf-core/arch/x86/vmx/include)
+XMHFCORE_INC = -I$(realpath xmhf/src/xmhf-core/) -I$(realpath xmhf/src/xmhf-core/include) -I$(realpath xmhf/src/xmhf-core/arch/x86/common/include) -I$(realpath xmhf/src/xmhf-core/arch/x86/vmx/include)
 
 # libxmhfcore source location
 export LIBXMHFCORE_SRC := $(realpath xmhf/src/libxmhfcore)

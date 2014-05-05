@@ -104,34 +104,42 @@ static xc_cpu_t *_vmx_getxc_cpu(void){
 
 
 //handle guest memory reporting (via INT 15h redirection)
-void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t context_desc, struct regs *r){
+struct regs xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t context_desc, struct regs r){
 	u16 cs, ip;
 	u16 guest_flags;
 	//xc_cpu_t *xc_cpu = (xc_cpu_t *)context_desc.cpu_desc.xc_cpu;
-	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
+	//xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
+	xc_hypapp_arch_param_t ap;
+	xc_hypapp_arch_param_x86vmx_cpustate_desc_t desc;
+	xc_hypapp_arch_param_x86vmx_cpustate_activity_t activity;
+	
+	ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC);
+	desc = ap.param.desc;
+	ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
+	activity = ap.param.activity;
 
 	//if E820 service then...
-	if((u16)r->eax == 0xE820){
+	if((u16)r.eax == 0xE820){
 		//AX=0xE820, EBX=continuation value, 0 for first call
 		//ES:DI pointer to buffer, ECX=buffer size, EDX='SMAP'
 		//return value, CF=0 indicated no error, EAX='SMAP'
 		//ES:DI left untouched, ECX=size returned, EBX=next continuation value
 		//EBX=0 if last descriptor
-		printf("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", xc_cpu->cpuid, 
-		(u16)r->eax, r->edx, r->ebx, r->ecx, (u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_ES_SELECTOR), (u16)r->edi);
+		printf("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", context_desc.cpu_desc.cpu_index, 
+		(u16)r.eax, r.edx, r.ebx, r.ecx, (u16)desc.es.selector, (u16)r.edi);
 		
-		if( (r->edx == 0x534D4150UL) && (r->ebx < xcbootinfo->memmapinfo_numentries) ){
+		if( (r.edx == 0x534D4150UL) && (r.ebx < xcbootinfo->memmapinfo_numentries) ){
 			
 			//copy the E820 descriptor and return its size
-			if(!xmhf_smpguest_memcpyto(context_desc, (const void *)((u32)(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_ES_BASE)+(u16)r->edi)), (void *)&xcbootinfo->memmapinfo_buffer[r->ebx], sizeof(GRUBE820)) ){
+			if(!xmhf_smpguest_memcpyto(context_desc, (const void *)((u32)(desc.es.base+(u16)r.edi)), (void *)&xcbootinfo->memmapinfo_buffer[r.ebx], sizeof(GRUBE820)) ){
 				printf("\n%s: Error in copying e820 descriptor to guest. Halting!", __FUNCTION__);
 				HALT();
 			}	
 				
-			r->ecx=20;
+			r.ecx=20;
 
 			//set EAX to 'SMAP' as required by the service call				
-			r->eax=r->edx;
+			r.eax=r.edx;
 
 			//we need to update carry flag in the guest EFLAGS register
 			//however since INT 15 would have pushed the guest FLAGS on stack
@@ -145,17 +153,17 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 			//...
 		
 			//grab guest eflags on guest stack
-			if(!xmhf_smpguest_readu16(context_desc, (const void *)((u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SS_BASE) + (u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RSP) + 0x4), &guest_flags)){
+			if(!xmhf_smpguest_readu16(context_desc, (const void *)((u32)desc.ss.base + (u16)r.esp + 0x4), &guest_flags)){
 				printf("\n%s: Error in reading guest_flags. Halting!", __FUNCTION__);
 				HALT();
 			}
 	
 			//increment e820 descriptor continuation value
-			r->ebx=r->ebx+1;
+			r.ebx=r.ebx+1;
 					
-			if(r->ebx > (xcbootinfo->memmapinfo_numentries-1) ){
+			if(r.ebx > (xcbootinfo->memmapinfo_numentries-1) ){
 				//we have reached the last record, so set CF and make EBX=0
-				r->ebx=0;
+				r.ebx=0;
 				guest_flags |= (u16)EFLAGS_CF;
 			}else{
 				//we still have more records, so clear CF
@@ -163,23 +171,27 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 			}
 
 			//write updated eflags in guest stack
-			if(!xmhf_smpguest_writeu16(context_desc, (const void *)((u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_SS_BASE) + (u16)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RSP) + 0x4), guest_flags)){
+			if(!xmhf_smpguest_writeu16(context_desc, (const void *)((u32)desc.ss.base + (u16)r.esp + 0x4), guest_flags)){
 				printf("\n%s: Error in updating guest_flags. Halting!", __FUNCTION__);
 				HALT();
 			}
 			  
 			
 		}else{	//invalid state specified during INT 15 E820, halt
-				printf("\nCPU(0x%02x): INT15 (E820), invalid state specified by guest. Halting!", xc_cpu->cpuid);
+				printf("\nCPU(0x%02x): INT15 (E820), invalid state specified by guest. Halting!", context_desc.cpu_desc.cpu_index);
 				HALT();
 		}
 		
 		//update RIP to execute the IRET following the VMCALL instruction
 		//effectively returning from the INT 15 call made by the guest
 		//xc_cpu->vmcs.guest_RIP += 3;
-		xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+3));
+		//xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RIP)+3));
+		activity.rip+=3;
+		ap.param.activity = activity;
+		ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
+		xc_api_cpustate_set(context_desc, ap);
 	
-		return;
+		return r;
 	} //E820 service
 	
 	//ok, this is some other INT 15h service, so simply chain to the original
@@ -195,9 +207,20 @@ void xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t contex
 	//xc_cpu->vmcs.guest_RIP = ip;
 	//xc_cpu->vmcs.guest_CS_base = cs * 16;
 	//xc_cpu->vmcs.guest_CS_selector = cs;		 
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, ip);
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_BASE, (cs * 16));
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_SELECTOR, cs);
+	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, ip);
+	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_BASE, (cs * 16));
+	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_SELECTOR, cs);
+	activity.rip = ip;
+	ap.param.activity = activity;
+	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
+	xc_api_cpustate_set(context_desc, ap);
+	desc.cs.base = (cs *16);
+	desc.cs.selector = cs;
+	ap.param.desc = desc;
+	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC;
+	xc_api_cpustate_set(context_desc, ap);
+	
+	return r;
 }
 
 
@@ -638,4 +661,147 @@ bool xmhf_smpguest_arch_memcpyto(context_desc_t context_desc, void *guestaddress
 	  )
 		return false;
 	xmhfhw_sysmemaccess_copy(gpa2hva(guestbuffer), buffer, numbytes);
+}
+
+
+
+//setup guest OS state for the partition
+void xmhf_richguest_arch_setupguestOSstate(context_desc_t context_desc){
+	xc_hypapp_arch_param_t ap;
+	
+	//--------------------------------------------------------------------------------------------------------------------------------
+	//setup guest state
+	//CR0, real-mode, PE and PG bits cleared
+	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & ~(CR0_PE) & ~(CR0_PG)) );
+	//CR3 set to 0, does not matter
+	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR3, 0);
+	ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS);
+	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS;
+	ap.param.controlregs.cr0 = ap.param.controlregs.cr0 & ~(CR0_PE) & ~(CR0_PG);
+	ap.param.controlregs.cr3 = 0;
+	xc_api_cpustate_set(context_desc, ap);
+	
+	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS;
+	ap.param.cpugprs.eax = 0;
+	ap.param.cpugprs.ebx = 0;
+	ap.param.cpugprs.ecx = 0;
+	ap.param.cpugprs.edx = 0x80;
+	ap.param.cpugprs.esi = 0;
+	ap.param.cpugprs.edi = 0;
+	ap.param.cpugprs.ebp = 0;
+	ap.param.cpugprs.esp = 0;
+	xc_api_cpustate_set(context_desc, ap);
+							
+	//RSP
+	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, 0);
+	
+	/*"movl $0x0, %%eax\r\n"
+					"movl $0x0, %%ebx\r\n"
+					"movl $0x0, %%ecx\r\n"
+					"movl $0x80, %%edx\r\n"
+					"movl $0x0, %%ebp\r\n"
+					"movl $0x0, %%esi\r\n"
+					"movl $0x0, %%edi\r\n"
+	*/				
+	
+	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
+	ap.param.activity.rflags = ((((0 & ~((1<<3)|(1<<5)|(1<<15)) ) | (1 <<1)) | (1<<9)) & ~(1<<14));
+	if(context_desc.cpu_desc.isbsp){
+		ap.param.activity.rip = 0x7c00;
+		ap.param.activity.activity_state = 0;	//normal activity state
+	}else{
+		ap.param.activity.rip = 0;
+		ap.param.activity.activity_state = 3;	//wait-for-SIPI
+	}
+	ap.param.activity.interruptibility=0;
+	xc_api_cpustate_set(context_desc, ap);
+
+	
+/*	//CS, DS, ES, FS, GS and SS segments
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_SELECTOR, 		0 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_BASE, 			0 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_LIMIT, 			0xFFFF 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_ACCESS_RIGHTS, 	0x93 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_DS_SELECTOR, 		0 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_DS_BASE, 			0 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_DS_LIMIT, 			0xFFFF 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_DS_ACCESS_RIGHTS, 	0x93 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ES_SELECTOR, 		0 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ES_BASE, 			0 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ES_LIMIT, 			0xFFFF 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ES_ACCESS_RIGHTS, 	0x93 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_FS_SELECTOR, 		0 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_FS_BASE, 			0 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_FS_LIMIT, 			0xFFFF 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_FS_ACCESS_RIGHTS, 	0x93 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GS_SELECTOR, 		0 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GS_BASE, 			0 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GS_LIMIT, 			0xFFFF 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GS_ACCESS_RIGHTS, 	0x93 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SS_SELECTOR, 		0 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SS_BASE, 			0 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SS_LIMIT, 			0xFFFF 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SS_ACCESS_RIGHTS, 	0x93 
+	//IDTR
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_IDTR_BASE, 		0 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_IDTR_LIMIT, 		0x3ff 
+	//GDTR
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GDTR_BASE, 		0 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GDTR_LIMIT, 		0 
+	//LDTR, unusable
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_BASE, 		0 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_LIMIT, 		0 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_SELECTOR, 	0 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_ACCESS_RIGHTS,0x10000 
+	//TR, should be usable for VMX to work, but not used by guest
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_TR_BASE, 			0 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_TR_LIMIT, 			0 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_TR_SELECTOR, 		0 
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_TR_ACCESS_RIGHTS, 	0x83 
+*/
+
+	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC;
+	//CS, DS, ES, FS, GS and SS segments
+	ap.param.desc.cs.selector 		 = 0  ;
+	ap.param.desc.cs.base 			 = 0  ;
+	ap.param.desc.cs.limit 			 = 0xFFFF  ;
+	ap.param.desc.cs.access_rights 	 = 0x93  ;	
+	ap.param.desc.ds.selector 		 = 0  ;
+	ap.param.desc.ds.base 			 = 0  ;
+	ap.param.desc.ds.limit 			 = 0xFFFF  ;
+	ap.param.desc.ds.access_rights 	 = 0x93  ;	
+	ap.param.desc.es.selector 		 = 0  ;
+	ap.param.desc.es.base 			 = 0  ;
+	ap.param.desc.es.limit 			 = 0xFFFF  ;
+	ap.param.desc.es.access_rights 	 = 0x93  ;	
+	ap.param.desc.fs.selector 		 = 0  ;
+	ap.param.desc.fs.base 			 = 0  ;
+	ap.param.desc.fs.limit 			 = 0xFFFF  ;
+	ap.param.desc.fs.access_rights 	 = 0x93  ;	
+	ap.param.desc.gs.selector 		 = 0  ;
+	ap.param.desc.gs.base 			 = 0  ;
+	ap.param.desc.gs.limit 			 = 0xFFFF  ;
+	ap.param.desc.gs.access_rights 	 = 0x93  ;	
+	ap.param.desc.ss.selector 		 = 0  ;
+	ap.param.desc.ss.base	 		 = 0  ;
+	ap.param.desc.ss.limit 			 = 0xFFFF  ;
+	ap.param.desc.ss.access_rights 	 = 0x93  ;	
+	//IDTR                             
+	ap.param.desc.idtr.base			 = 0  ;
+	ap.param.desc.idtr.limit 		 = 0x3ff  ;
+	//GDTR                             
+	ap.param.desc.gdtr.base			 = 0  ;
+	ap.param.desc.gdtr.limit 		 = 0  ;
+	//LDTR); unusable                  
+	ap.param.desc.ldtr.base			 = 0  ;
+	ap.param.desc.ldtr.limit 		 = 0  ;
+	ap.param.desc.ldtr.selector		 = 0  ;
+	ap.param.desc.ldtr.access_rights = 0x10000 ; 
+	//TR); should be usable for VMX to work; not used by guest
+	ap.param.desc.tr.base 			 = 0  ;	
+	ap.param.desc.tr.limit 			 = 0  ;	
+	ap.param.desc.tr.selector 		 = 0  ;	
+	ap.param.desc.tr.access_rights 	 = 0x83  ; 	
+	xc_api_cpustate_set(context_desc, ap);
+
 }
