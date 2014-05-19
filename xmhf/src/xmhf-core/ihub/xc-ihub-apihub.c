@@ -46,20 +46,14 @@
 
 #include <xmhf-core.h>
 
+#include <xc-x86.h>
+#include <xc-x86vmx.h>
+
 /*
- * 	xc-apihub
- * 
- *  XMHF core API hub
- * 
+ * 	xc-apihub - runtime arch. independent portion
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-
-// initialization function for the core API interface
-void xmhf_apihub_initialize (void){
-		//invoke arch specific initialization
-		xmhf_apihub_arch_initialize();
-}
 
 //function where we get control when hypapp tries to invoke a function in
 //the core
@@ -282,5 +276,4 @@ u32 xc_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch_p
 	return result;	
 
 }
-
 

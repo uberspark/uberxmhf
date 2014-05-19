@@ -56,6 +56,9 @@
 // XMHF boot information block
 extern XMHF_BOOTINFO *xcbootinfo;
 
+//core and hypapp page table base address (PTBA)
+extern u32 core_ptba;
+extern u32 hypapp_ptba;
   
 #endif //__ASSEMBLY__
 
