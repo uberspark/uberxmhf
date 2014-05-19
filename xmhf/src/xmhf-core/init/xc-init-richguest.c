@@ -44,36 +44,15 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF "rich" (SMP) guest component implementation
+// XMHF core "rich" guest component implementation -- initialization portion
 // takes care of initializing and booting up the "rich" guest
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf-core.h> 
 
-
-//void xmhf_richguest_initialize(u32 index_cpudata_bsp){
-//	xmhf_richguest_arch_initialize(index_cpudata_bsp);	
-//}
-
-//void xmhf_richguest_initialize(xc_cpu_t *xc_cpu_bsp, xc_partition_t *xc_partition_richguest){
-//	xmhf_richguest_arch_initialize(xc_cpu_bsp, xc_partition_richguest);	
-//}
-
-//void xmhf_richguest_initialize(u32 xc_partition_richguest_index){
-//	xmhf_richguest_arch_initialize(xc_partition_richguest_index);	
-//}
-
-//void xmhf_richguest_initialize(void){
-//	xmhf_richguest_arch_initialize();	
-//}
-
-
-//add given xc_cpu_t to the rich guest partition
-//void xmhf_richguest_addcpu(xc_cpu_t *xc_cpu, u32 xc_partition_richguest_index){
+//add given cpu to the rich guest partition
 context_desc_t xmhf_richguest_setup(u32 cpuid, bool is_bsp){
 	context_desc_t context_desc;
-	u32 cpu_index;
-	
 
 	//add cpu to the richguest partition
 	context_desc = xc_api_partition_addcpu(XC_PARTITION_RICHGUEST_INDEX, cpuid, is_bsp);
@@ -90,24 +69,3 @@ context_desc_t xmhf_richguest_setup(u32 cpuid, bool is_bsp){
 	return context_desc;
 }
 
-
-/*//quiesce interface to switch all guest cores into hypervisor mode
-static void xmhf_smpguest_quiesce(VCPU *vcpu) __attribute__((unused));
-static void xmhf_smpguest_quiesce(VCPU *vcpu){
-	xmhf_smpguest_arch_quiesce(vcpu);
-}
-
-//endquiesce interface to resume all guest cores after a quiesce
-static void xmhf_smpguest_endquiesce(VCPU *vcpu) __attribute__((unused));
-static void xmhf_smpguest_endquiesce(VCPU *vcpu){
-	xmhf_smpguest_arch_endquiesce(vcpu);
-}*/
-
-
-//walk guest page tables; returns pointer to corresponding guest physical address
-//note: returns 0xFFFFFFFF if there is no mapping
-//u8 * xmhf_smpguest_walk_pagetables(context_desc_t context_desc, u32 vaddr){
-//	u8 *retvalue;
-//	retvalue = xmhf_smpguest_arch_walk_pagetables(context_desc, vaddr);
-//	return retvalue;
-//}
