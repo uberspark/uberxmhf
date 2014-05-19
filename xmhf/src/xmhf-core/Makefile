@@ -9,6 +9,8 @@ export XMHF_RUNTIME_ARCH_SRC := $(realpath $(srcdir)/arch)
 
 # grab list of all source files
 C_SOURCES := $(wildcard $(srcdir)/*.c)
+C_SOURCES += $(wildcard $(srcdir)/shared/*.c)
+
 A_SOURCES := 
 #C_SOURCES += $(wildcard $(srcdir)/xmhf-apihub/*.c)
 #A_SOURCES += $(wildcard $(srcdir)/xmhf-apihub/*.S)
