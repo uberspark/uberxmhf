@@ -77,11 +77,6 @@ extern XMHF_HYPAPP_HEADER *g_hypappheader;
 extern u32 hypapp_cbhub_pc;
 extern u32 hypapp_tos;
 
-// platform cpus
-extern xc_cpu_t g_xc_cpu[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
-
-// primary partitions
-extern xc_partition_t g_xc_primary_partition[MAX_PRIMARY_PARTITIONS] __attribute__(( section(".data") ));
 
   
 #endif //__ASSEMBLY__

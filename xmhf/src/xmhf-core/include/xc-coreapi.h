@@ -131,6 +131,15 @@ bool xc_api_partition_arch_startcpu(context_desc_t context_desc);
 
 bool xc_api_partition_arch_addcpu(u32 partition_index, u32 cpu_index);
 
+//global data
+
+// platform cpus
+extern xc_cpu_t g_xc_cpu[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
+
+// primary partitions
+extern xc_partition_t g_xc_primary_partition[MAX_PRIMARY_PARTITIONS] __attribute__(( section(".data") ));
+
+
 #endif	//__ASSEMBLY__
 
 #endif //__XC_COREAPI_H__

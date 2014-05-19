@@ -57,8 +57,6 @@
 void xmhf_startup_main(u32 cpuid, bool is_bsp){
 	static u32 _xc_startup_hypappmain_counter = 0; 
 	static u32 _xc_startup_hypappmain_counter_lock = 1; 
-	//xc_cpu_t *xc_cpu = &g_xc_cpu[cpu_index];
-	//u32 cpu_index;
 	context_desc_t context_desc;
 	
 	//serialize execution
@@ -83,12 +81,6 @@ void xmhf_startup_main(u32 cpuid, bool is_bsp){
 	//call hypapp main function
 	{
 		hypapp_env_block_t hypappenvb;
-		//context_desc_t context_desc;
-		//xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
-
-		//context_desc.partition_desc.partition_index = xc_partition_richguest_index;
-		//context_desc.cpu_desc.isbsp = is_bsp;
-		//context_desc.cpu_desc.cpu_index = cpu_index;
 		
 		hypappenvb.runtimephysmembase = (u32)xcbootinfo->physmem_base;  
 		hypappenvb.runtimesize = (u32)xcbootinfo->size;

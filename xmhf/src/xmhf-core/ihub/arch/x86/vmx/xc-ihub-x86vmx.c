@@ -614,7 +614,6 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 		printf("\n%s: invalid partition/cpu context. Halting!\n", __FUNCTION__);
 		HALT();
 	}
-	//xc_cpu = &g_xc_cpu[context_desc.cpu_desc.cpu_index];
 	
 	//set cpu gprs state based on cpugprs
 	cpustateparams = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS);
