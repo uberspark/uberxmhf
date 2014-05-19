@@ -5,7 +5,7 @@ srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
 vpath %.c $(srcdir)
 vpath %.S $(srcdir)
 
-export XMHF_RUNTIME_ARCH_SRC := $(realpath $(srcdir)/arch)
+#export XMHF_RUNTIME_ARCH_SRC := $(realpath $(srcdir)/arch)
 
 # grab list of all source files
 C_SOURCES := $(wildcard $(srcdir)/*.c)
@@ -75,8 +75,9 @@ THE_ARCHIVE = xmhf-runtime
 .PHONY: all
 all: $(THE_ARCHIVE)
 
-$(THE_ARCHIVE): libxmhfruntimearch $(OBJECTS) 
-	cd $(XMHF_RUNTIME_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(srcdir)/xc.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) ./_objs_libxmhfruntimearch/libxmhfruntimearch.a $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
+#$(THE_ARCHIVE): libxmhfruntimearch $(OBJECTS) 
+$(THE_ARCHIVE): $(OBJECTS) 
+	cd $(XMHF_RUNTIME_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(srcdir)/xc.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
 	cd $(XMHF_RUNTIME_OBJECTS_DIR) && $(OBJCOPY) --output-format=binary $(THE_ARCHIVE).exe $(THE_ARCHIVE).bin
 
 
@@ -111,9 +112,9 @@ verify: $(OBJECTS_VERIFY)
 	$(CP) -f $< $(XMHF_RUNTIME_OBJECTS_DIR)/$(@F).c
 	
 
-.PHONY: libxmhfruntimearch
-libxmhfruntimearch: 
-	@echo building libxmhfruntimearch...
-	mkdir -p $(XMHF_RUNTIME_OBJECTS_DIR)
-	cd $(XMHF_RUNTIME_OBJECTS_DIR) && $(MAKE) -f $(XMHF_RUNTIME_ARCH_SRC)/Makefile -w all
-	@echo libxmhfruntimearch build SUCCESS
+#.PHONY: libxmhfruntimearch
+#libxmhfruntimearch: 
+#	@echo building libxmhfruntimearch...
+#	mkdir -p $(XMHF_RUNTIME_OBJECTS_DIR)
+#	cd $(XMHF_RUNTIME_OBJECTS_DIR) && $(MAKE) -f $(XMHF_RUNTIME_ARCH_SRC)/Makefile -w all
+#	@echo libxmhfruntimearch build SUCCESS
