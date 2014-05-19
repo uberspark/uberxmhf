@@ -82,10 +82,10 @@ xc_partition_t g_xc_primary_partition[MAX_PRIMARY_PARTITIONS] __attribute__(( se
 // global data initialization function
 //----------------------------------------------------------------------------------
 
-void *xc_globaldata_initialize(void *input){
-	u32 i;
-	xc_cpu_t *xc_cpu_bsp;
-	XMHF_BOOTINFO *xcbootinfo = (XMHF_BOOTINFO *)input;
+//void *xc_globaldata_initialize(void *input){
+//	u32 i;
+//	xc_cpu_t *xc_cpu_bsp;
+//	XMHF_BOOTINFO *xcbootinfo = (XMHF_BOOTINFO *)input;
 	
 	/*//initialize cpu data structure
 	printf("\nNo. of CPU entries = %u", xcbootinfo->cpuinfo_numentries);
@@ -116,7 +116,7 @@ void *xc_globaldata_initialize(void *input){
 	}*/
 	
 	//return index_cpudata_bsp;
-	return xc_cpu_bsp;
-}
+//	return xc_cpu_bsp;
+//}
 
 
