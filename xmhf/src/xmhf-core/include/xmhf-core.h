@@ -83,9 +83,7 @@ extern RPB *rpb;
 //----------------------------------------------------------------------
 // component headers
 #include <xc-baseplatform.h>	//base platform component
-#include <xc-memprot.h>			//memory protection component
 #include <xc-dmaprot.h>			//DMA protection component
-#include <xc-partition.h>		//partition component
 #include <xc-richguest.h>		//rich guest component
 #include <xc-xcphandler.h>		//exception handler component
 #include <xc-tpm.h>				//Trusted Platform Module component
