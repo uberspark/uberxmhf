@@ -48,8 +48,8 @@
 // declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHF_RICHGUEST_H__
-#define __XMHF_RICHGUEST_H__
+#ifndef __XC_RICHGUEST_H__
+#define __XC_RICHGUEST_H__
 
 #ifndef __ASSEMBLY__
 
@@ -57,8 +57,9 @@
 //void xmhf_richguest_arch_initialize(xc_cpu_t *xc_cpu_bsp, xc_partition_t *xc_partition_richguest);
 //void xmhf_richguest_initialize(u32 xc_partition_richguest_index);
 //void xmhf_richguest_arch_initialize(u32 xc_partition_richguest_index);
-void xmhf_richguest_initialize(void);
+//void xmhf_richguest_initialize(void);
 void xmhf_richguest_arch_initialize(void);
+#define xmhf_richguest_initialize xmhf_richguest_arch_initialize
 
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping
@@ -88,4 +89,4 @@ bool xmhf_smpguest_arch_memcpyto(context_desc_t context_desc, void *guestaddress
 
 #endif	//__ASSEMBLY__
 
-#endif //__XMHF_RICHGUEST_H__
+#endif //__XC_RICHGUEST_H__
