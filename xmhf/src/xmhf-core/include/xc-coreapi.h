@@ -71,6 +71,16 @@
 #define XC_API_CPUSTATE_SET							(0xC01)
 #define XC_API_CPUSTATE_GET							(0xC02)
 
+
+// memory protection types
+#define MEMP_PROT_NOTPRESENT	(1)	// page not present
+#define	MEMP_PROT_PRESENT		(2)	// page present
+#define MEMP_PROT_READONLY		(4)	// page read-only
+#define MEMP_PROT_READWRITE		(8) // page read-write
+#define MEMP_PROT_EXECUTE		(16) // page execute
+#define MEMP_PROT_NOEXECUTE		(32) // page no-execute
+#define MEMP_PROT_MAXVALUE		(MEMP_PROT_NOTPRESENT+MEMP_PROT_PRESENT+MEMP_PROT_READONLY+MEMP_PROT_READWRITE+MEMP_PROT_NOEXECUTE+MEMP_PROT_EXECUTE)
+
 #ifndef __ASSEMBLY__
 
 
