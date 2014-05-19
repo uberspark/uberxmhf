@@ -51,7 +51,7 @@
 
 #include <xmhf-core.h>
 
-//get CPU vendor
+/*//get CPU vendor
 u32 xmhf_baseplatform_getcpuvendor(void){
 	return xmhf_baseplatform_arch_getcpuvendor();
 }
@@ -77,7 +77,7 @@ void xmhf_baseplatform_smpinitialize(void){
 //}
 void xmhf_baseplatform_reboot(context_desc_t context_desc){
 	xmhf_baseplatform_arch_reboot(context_desc);
-}
+}*/
 
 //get info. on the number of CPUs in the platform and their IDs
 //u32 xmhf_baseplatform_getcputable(void *buffer, u32 sizeofbuffer){
