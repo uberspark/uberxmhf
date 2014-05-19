@@ -50,63 +50,6 @@
 //---includes-------------------------------------------------------------------
 #include <xmhf-core.h> 
 
-void xmhf_runtime_entry(void){
-	xc_cpu_t *xc_cpu_bsp;
-
-	//setup debugging	
-	xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
-	printf("\nxmhf-core: starting...");
-
-    //[debug] dump E820
- 	#ifndef __XMHF_VERIFICATION__
- 	printf("\nNumber of E820 entries = %u", xcbootinfo->memmapinfo_numentries);
-	{
-		int i;
-		for(i=0; i < (int)xcbootinfo->memmapinfo_numentries; i++){
-			printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
-			  xcbootinfo->memmapinfo_buffer[i].baseaddr_high, xcbootinfo->memmapinfo_buffer[i].baseaddr_low,
-			  xcbootinfo->memmapinfo_buffer[i].length_high, xcbootinfo->memmapinfo_buffer[i].length_low,
-			  xcbootinfo->memmapinfo_buffer[i].type);
-		}
-  	}
-	#endif //__XMHF_VERIFICATION__
-
-	//initialize global data structures
-	xc_cpu_bsp = (xc_cpu_t *)xc_globaldata_initialize((void *)xcbootinfo);
-
-  	//initialize basic platform elements
-	xmhf_baseplatform_initialize();
-
-	#ifndef __XMHF_VERIFICATION__
-	//setup XMHF exception handler component
-	xmhf_xcphandler_initialize();
-	#endif
-
-	#if defined (__DMAP__)
-	xmhf_dmaprot_reinitialize();
-	#endif
-
-	//create a primary partition for the rich-guest
-	xc_partition_richguest_index = xc_api_partition_create(XC_PARTITION_PRIMARY);
-	if(xc_partition_richguest_index == XC_PARTITION_INDEX_INVALID){
-		printf("\n%s: could not create partition for rich guest. Halting!", __FUNCTION__);
-		HALT();
-	}
-	
-	//initialize richguest
-	xmhf_richguest_initialize(xc_partition_richguest_index);
-
-	//invoke XMHF api hub initialization function to initialize core API
-	//interface layer
-	xmhf_apihub_initialize();
-
-	//initialize base platform with SMP 
-	xmhf_baseplatform_smpinitialize();
-
-	printf("\nRuntime: We should NEVER get here!");
-	HALT_ON_ERRORCOND(0);
-}
-
 
 //we get control here in the context of *each* physical CPU core 
 //void xmhf_runtime_main(xc_cpu_t *xc_cpu){ 
