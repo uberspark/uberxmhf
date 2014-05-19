@@ -53,9 +53,9 @@
 
 
 //initialize EMHF core exception handlers
-void xmhf_xcphandler_initialize(void){
-	xmhf_xcphandler_arch_initialize();
-}
+//void xmhf_xcphandler_initialize(void){
+//	xmhf_xcphandler_arch_initialize();
+//}
 
 
 //get IDT start address
@@ -65,6 +65,6 @@ void xmhf_xcphandler_initialize(void){
 
 
 //EMHF exception handler hub
-void xmhf_xcphandler_hub(u32 vector, struct regs *r){
-	xmhf_xcphandler_arch_hub(vector, r);
-}
+//void xmhf_xcphandler_hub(u32 vector, struct regs *r){
+//	xmhf_xcphandler_arch_hub(vector, r);
+//}
