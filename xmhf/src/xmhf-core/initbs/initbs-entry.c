@@ -51,7 +51,7 @@
 #include <xmhf-core.h> 
 
 void xmhf_runtime_entry(void){
-	xc_cpu_t *xc_cpu_bsp;
+	//xc_cpu_t *xc_cpu_bsp;
 
 	//setup debugging	
 	xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
@@ -72,7 +72,7 @@ void xmhf_runtime_entry(void){
 	#endif //__XMHF_VERIFICATION__
 
 	//initialize global data structures
-	xc_cpu_bsp = (xc_cpu_t *)xc_globaldata_initialize((void *)xcbootinfo);
+	//xc_cpu_bsp = (xc_cpu_t *)xc_globaldata_initialize((void *)xcbootinfo);
 
   	//initialize basic platform elements
 	xmhf_baseplatform_initialize();
