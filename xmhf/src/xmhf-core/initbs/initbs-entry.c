@@ -51,7 +51,6 @@
 #include <xmhf-core.h> 
 
 void xmhf_runtime_entry(void){
-	//xc_cpu_t *xc_cpu_bsp;
 
 	//setup debugging	
 	xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
@@ -71,30 +70,17 @@ void xmhf_runtime_entry(void){
   	}
 	#endif //__XMHF_VERIFICATION__
 
-	//initialize global data structures
-	//xc_cpu_bsp = (xc_cpu_t *)xc_globaldata_initialize((void *)xcbootinfo);
-
   	//initialize basic platform elements
 	xmhf_baseplatform_initialize();
 
-	#ifndef __XMHF_VERIFICATION__
 	//setup XMHF exception handler component
 	xmhf_xcphandler_initialize();
-	#endif
 
 	#if defined (__DMAP__)
 	xmhf_dmaprot_reinitialize();
 	#endif
 
-	/*//create a primary partition for the rich-guest
-	xc_partition_richguest_index = xc_api_partition_create(XC_PARTITION_PRIMARY);
-	if(xc_partition_richguest_index == XC_PARTITION_INDEX_INVALID){
-		printf("\n%s: could not create partition for rich guest. Halting!", __FUNCTION__);
-		HALT();
-	}*/
-	
 	//initialize richguest
-	//xmhf_richguest_initialize(xc_partition_richguest_index);
 	xmhf_richguest_initialize();
 
 	//invoke XMHF api hub initialization function to initialize core API

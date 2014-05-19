@@ -9,8 +9,13 @@ export XMHF_RUNTIME_ARCH_SRC := $(realpath $(srcdir)/arch)
 
 # grab list of all source files
 C_SOURCES := $(wildcard $(srcdir)/*.c)
+
 C_SOURCES += $(wildcard $(srcdir)/initbs/*.c)
+C_SOURCES += $(shell find $(srcdir)/initbs/arch/x86/common/ -type f -name '*.c')
+C_SOURCES += $(shell find $(srcdir)/initbs/arch/x86/vmx/ -type f -name '*.c')
+
 C_SOURCES += $(wildcard $(srcdir)/init/*.c)
+
 C_SOURCES += $(wildcard $(srcdir)/shared/*.c)
 
 A_SOURCES := 
