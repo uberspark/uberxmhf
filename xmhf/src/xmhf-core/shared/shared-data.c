@@ -67,3 +67,23 @@ XMHF_BOOTINFO *xcbootinfo= &xcbootinfo_store;
 //core and hypapp page table base address (PTBA)
 u32 core_ptba = 0;
 u32 hypapp_ptba = 0;
+
+//core parameter block
+XMHF_HYPAPP_PARAMETERBLOCK *paramcore = (XMHF_HYPAPP_PARAMETERBLOCK *)&paramcore_start;
+
+//hypapp parameter block
+XMHF_HYPAPP_PARAMETERBLOCK *paramhypapp = (XMHF_HYPAPP_PARAMETERBLOCK *)&paramhypapp_start;
+
+//hypapp header
+XMHF_HYPAPP_HEADER *g_hypappheader=(XMHF_HYPAPP_HEADER *)__TARGET_BASE_XMHFHYPAPP;
+
+//hypapp callback hub entry point and hypapp top of stack
+u32 hypapp_cbhub_pc=0;
+u32 hypapp_tos=0;
+
+// platform cpus
+xc_cpu_t g_xc_cpu[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
+
+// primary partitions
+xc_partition_t g_xc_primary_partition[MAX_PRIMARY_PARTITIONS] __attribute__(( section(".data") ));
+

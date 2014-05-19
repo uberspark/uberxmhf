@@ -78,7 +78,6 @@ extern RPB *rpb;
 */
 
 #include <xc-types.h>			//core specific data types
-#include <xc-globaldata.h>		//core global data
 #include <xc-shareddata.h>		//core shared data
 
 //----------------------------------------------------------------------
