@@ -62,7 +62,7 @@
 						"movl 	%%esp, %%eax\r\n"					\
 						"pushl 	%%eax\r\n"							\
 						"pushl	%1\r\n" 							\
-						"call	xmhf_xcphandler_hub\r\n"			\
+						"call	xmhf_xcphandler_arch_hub\r\n"			\
 						"addl  	$0x08, %%esp\r\n"					\
 						"popal	 \r\n"								\
 						"iretl\r\n"									\
