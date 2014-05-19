@@ -59,6 +59,30 @@ extern XMHF_BOOTINFO *xcbootinfo;
 //core and hypapp page table base address (PTBA)
 extern u32 core_ptba;
 extern u32 hypapp_ptba;
+
+// this is in xc.lds
+extern u8 paramcore_start[];
+extern u8 paramhypapp_start[];
+
+//core parameter block
+extern XMHF_HYPAPP_PARAMETERBLOCK *paramcore;
+
+//hypapp parameter block
+extern XMHF_HYPAPP_PARAMETERBLOCK *paramhypapp;
+
+//hypapp header
+extern XMHF_HYPAPP_HEADER *g_hypappheader;
+
+//hypapp callback hub entry point and hypapp top of stack
+extern u32 hypapp_cbhub_pc;
+extern u32 hypapp_tos;
+
+// platform cpus
+extern xc_cpu_t g_xc_cpu[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
+
+// primary partitions
+extern xc_partition_t g_xc_primary_partition[MAX_PRIMARY_PARTITIONS] __attribute__(( section(".data") ));
+
   
 #endif //__ASSEMBLY__
 
