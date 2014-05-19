@@ -59,8 +59,12 @@
 //	xmhf_richguest_arch_initialize(xc_cpu_bsp, xc_partition_richguest);	
 //}
 
-void xmhf_richguest_initialize(u32 xc_partition_richguest_index){
-	xmhf_richguest_arch_initialize(xc_partition_richguest_index);	
+//void xmhf_richguest_initialize(u32 xc_partition_richguest_index){
+//	xmhf_richguest_arch_initialize(xc_partition_richguest_index);	
+//}
+
+void xmhf_richguest_initialize(void){
+	xmhf_richguest_arch_initialize();	
 }
 
 
@@ -72,7 +76,7 @@ context_desc_t xmhf_richguest_setup(u32 cpuid, bool is_bsp){
 	
 
 	//add cpu to the richguest partition
-	context_desc = xc_api_partition_addcpu(xc_partition_richguest_index, cpuid, is_bsp);
+	context_desc = xc_api_partition_addcpu(XC_PARTITION_RICHGUEST_INDEX, cpuid, is_bsp);
 	
 	//bail out if we could not add cpu to the rich guest partition
 	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){

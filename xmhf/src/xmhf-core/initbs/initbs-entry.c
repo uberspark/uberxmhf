@@ -86,15 +86,16 @@ void xmhf_runtime_entry(void){
 	xmhf_dmaprot_reinitialize();
 	#endif
 
-	//create a primary partition for the rich-guest
+	/*//create a primary partition for the rich-guest
 	xc_partition_richguest_index = xc_api_partition_create(XC_PARTITION_PRIMARY);
 	if(xc_partition_richguest_index == XC_PARTITION_INDEX_INVALID){
 		printf("\n%s: could not create partition for rich guest. Halting!", __FUNCTION__);
 		HALT();
-	}
+	}*/
 	
 	//initialize richguest
-	xmhf_richguest_initialize(xc_partition_richguest_index);
+	//xmhf_richguest_initialize(xc_partition_richguest_index);
+	xmhf_richguest_initialize();
 
 	//invoke XMHF api hub initialization function to initialize core API
 	//interface layer
