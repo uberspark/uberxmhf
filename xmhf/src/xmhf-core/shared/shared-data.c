@@ -64,3 +64,6 @@ static XMHF_BOOTINFO xcbootinfo_store __attribute__(( section(".s_rpb") )) = {
 // XMHF boot information block
 XMHF_BOOTINFO *xcbootinfo= &xcbootinfo_store;
 
+//core and hypapp page table base address (PTBA)
+u32 core_ptba = 0;
+u32 hypapp_ptba = 0;
