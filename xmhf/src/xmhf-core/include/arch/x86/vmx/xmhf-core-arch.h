@@ -50,7 +50,7 @@
 #ifndef __XMHF_CORE_ARCH_H_
 #define __XMHF_CORE_ARCH_H_
 
-#include <arch/x86/common/include/xc-x86.h>
-#include <arch/x86/vmx/include/xc-x86vmx.h>
+#include <arch/x86/common/xc-x86.h>
+#include <arch/x86/vmx/xc-x86vmx.h>
 
 #endif /* __XMHF_CORE_ARCH_H_ */
