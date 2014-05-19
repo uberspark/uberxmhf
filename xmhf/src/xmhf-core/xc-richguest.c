@@ -63,9 +63,9 @@
 //	xmhf_richguest_arch_initialize(xc_partition_richguest_index);	
 //}
 
-void xmhf_richguest_initialize(void){
-	xmhf_richguest_arch_initialize();	
-}
+//void xmhf_richguest_initialize(void){
+//	xmhf_richguest_arch_initialize();	
+//}
 
 
 //add given xc_cpu_t to the rich guest partition
