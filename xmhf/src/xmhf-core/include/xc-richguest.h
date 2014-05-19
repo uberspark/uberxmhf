@@ -55,8 +55,10 @@
 
 //void xmhf_richguest_initialize(xc_cpu_t *xc_cpu_bsp, xc_partition_t *xc_partition_richguest);
 //void xmhf_richguest_arch_initialize(xc_cpu_t *xc_cpu_bsp, xc_partition_t *xc_partition_richguest);
-void xmhf_richguest_initialize(u32 xc_partition_richguest_index);
-void xmhf_richguest_arch_initialize(u32 xc_partition_richguest_index);
+//void xmhf_richguest_initialize(u32 xc_partition_richguest_index);
+//void xmhf_richguest_arch_initialize(u32 xc_partition_richguest_index);
+void xmhf_richguest_initialize(void);
+void xmhf_richguest_arch_initialize(void);
 
 //walk guest page tables; returns pointer to corresponding guest physical address
 //note: returns 0xFFFFFFFF if there is no mapping

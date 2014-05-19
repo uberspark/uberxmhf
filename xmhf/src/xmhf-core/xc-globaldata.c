@@ -75,7 +75,7 @@ xc_cpu_t g_xc_cpu[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
 xc_partition_t g_xc_primary_partition[MAX_PRIMARY_PARTITIONS] __attribute__(( section(".data") ));
 
 // partition index for the richguest
-u32 xc_partition_richguest_index = 0;
+//u32 xc_partition_richguest_index = 0;
 
 
 //----------------------------------------------------------------------------------

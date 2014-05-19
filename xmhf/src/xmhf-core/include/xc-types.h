@@ -73,6 +73,7 @@ typedef struct {
 #define XC_PARTITION_PRIMARY		(1)
 #define XC_PARTITION_SECONDARY		(2)
 #define XC_PARTITION_INDEX_INVALID	(0xFFFFFFFFUL)
+#define XC_PARTITION_RICHGUEST_INDEX	(0)
 
 typedef u8 xc_cpuarchdata_t;
 
