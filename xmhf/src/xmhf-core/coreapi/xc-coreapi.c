@@ -102,7 +102,7 @@ xc_hypapp_arch_param_t xc_api_cpustate_get(context_desc_t context_desc, u64 oper
 }
 
 
-static u32 _partition_current_index=1;
+static u32 _partition_current_index=0;
 static u32 _xc_cpu_current_index=0;
 
 

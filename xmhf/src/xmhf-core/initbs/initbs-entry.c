@@ -81,7 +81,7 @@ void xmhf_runtime_entry(void){
 	#endif
 
 	//initialize richguest
-	xmhf_richguest_initialize();
+	//xmhf_richguest_initialize();
 
 	//invoke XMHF api hub initialization function to initialize core API
 	//interface layer
