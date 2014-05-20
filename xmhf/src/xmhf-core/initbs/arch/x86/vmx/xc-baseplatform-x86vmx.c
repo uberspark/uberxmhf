@@ -576,5 +576,5 @@ static void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 	  #endif
 	}
 	
-  	xmhf_startup_main(cpuid, is_bsp);
+  	init_entry(cpuid, is_bsp);
 }
