@@ -48,26 +48,18 @@
 // declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHF_RICHGUEST_H__
-#define __XMHF_RICHGUEST_H__
+#ifndef __XC_RICHGUEST_H__
+#define __XC_RICHGUEST_H__
 
 #ifndef __ASSEMBLY__
 
-//void xmhf_richguest_initialize(xc_cpu_t *xc_cpu_bsp, xc_partition_t *xc_partition_richguest);
-//void xmhf_richguest_arch_initialize(xc_cpu_t *xc_cpu_bsp, xc_partition_t *xc_partition_richguest);
-void xmhf_richguest_initialize(u32 xc_partition_richguest_index);
-void xmhf_richguest_arch_initialize(u32 xc_partition_richguest_index);
+//[initbs]
+void xmhf_richguest_arch_initialize(u32 partition_index);
+#define xmhf_richguest_initialize xmhf_richguest_arch_initialize
 
-//walk guest page tables; returns pointer to corresponding guest physical address
-//note: returns 0xFFFFFFFF if there is no mapping
-//u8 * xmhf_smpguest_walk_pagetables(context_desc_t context_desc, u32 vaddr);
-//u8 * xmhf_smpguest_arch_walk_pagetables(context_desc_t context_desc, u32 vaddr);
-
-//void xmhf_richguest_addcpu(xc_cpu_t *xc_cpu, u32 xc_partition_richguest_index);
-context_desc_t xmhf_richguest_setup(u32 cpuid, bool is_bsp);
-
+//[init]
+context_desc_t xmhf_richguest_setup(u32 partition_index, u32 cpuid, bool is_bsp);
 void xmhf_richguest_arch_setupguestOSstate(context_desc_t context_desc);
-
 #define xmhf_richguest_setupguestOSstate xmhf_richguest_arch_setupguestOSstate
 
 //----------------------------------------------------------------------
@@ -86,4 +78,4 @@ bool xmhf_smpguest_arch_memcpyto(context_desc_t context_desc, void *guestaddress
 
 #endif	//__ASSEMBLY__
 
-#endif //__XMHF_RICHGUEST_H__
+#endif //__XC_RICHGUEST_H__

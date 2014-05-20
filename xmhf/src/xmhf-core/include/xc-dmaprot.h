@@ -47,22 +47,21 @@
 // XMHF DMA protection component declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHF_DMAPROT_H__
-#define __XMHF_DMAPROT_H__
+#ifndef __XC_DMAPROT_H__
+#define __XC_DMAPROT_H__
 
 
 #ifndef __ASSEMBLY__
 
-
 //----------------------------------------------------------------------
-//exported FUNCTIONS 
+//FUNCTIONS 
 //----------------------------------------------------------------------
 
 //re-initialize DMA protections (if needed) for the runtime
-bool xmhf_dmaprot_reinitialize(void);
 bool xmhf_dmaprot_arch_reinitialize(void);
+#define xmhf_dmaprot_reinitialize xmhf_dmaprot_arch_reinitialize
 
 
 #endif	//__ASSEMBLY__
 
-#endif //__XMHF_DMAPROT_H__
+#endif //__XC_DMAPROT_H__

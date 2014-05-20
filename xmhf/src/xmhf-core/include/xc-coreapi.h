@@ -71,6 +71,16 @@
 #define XC_API_CPUSTATE_SET							(0xC01)
 #define XC_API_CPUSTATE_GET							(0xC02)
 
+
+// memory protection types
+#define MEMP_PROT_NOTPRESENT	(1)	// page not present
+#define	MEMP_PROT_PRESENT		(2)	// page present
+#define MEMP_PROT_READONLY		(4)	// page read-only
+#define MEMP_PROT_READWRITE		(8) // page read-write
+#define MEMP_PROT_EXECUTE		(16) // page execute
+#define MEMP_PROT_NOEXECUTE		(32) // page no-execute
+#define MEMP_PROT_MAXVALUE		(MEMP_PROT_NOTPRESENT+MEMP_PROT_PRESENT+MEMP_PROT_READONLY+MEMP_PROT_READWRITE+MEMP_PROT_NOEXECUTE+MEMP_PROT_EXECUTE)
+
 #ifndef __ASSEMBLY__
 
 
@@ -120,6 +130,15 @@ bool xc_api_partition_arch_startcpu(context_desc_t context_desc);
 
 
 bool xc_api_partition_arch_addcpu(u32 partition_index, u32 cpu_index);
+
+//global data
+
+// platform cpus
+extern xc_cpu_t g_xc_cpu[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
+
+// primary partitions
+extern xc_partition_t g_xc_primary_partition[MAX_PRIMARY_PARTITIONS] __attribute__(( section(".data") ));
+
 
 #endif	//__ASSEMBLY__
 

@@ -46,15 +46,13 @@
 
 
 /*
- * 	xmhf-apihub.h
- * 
  *  XMHF core API interface component declarations/definitions
  * 
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#ifndef __XMHF_APIHUB_H__
-#define __XMHF_APIHUB_H__
+#ifndef __XC_APIHUB_H__
+#define __XC_APIHUB_H__
 
 //hypapp callbacks
 #define XMHF_APIHUB_HYPAPPCB_INITIALIZATION			(0)
@@ -74,7 +72,7 @@
 
 #ifndef __ASSEMBLY__
 
-
+//--- core API functions (XXX: need to go in xmhf development headers)
 void xmhfcore_outputdebugstring(const char *s);
 void xmhfcore_reboot(context_desc_t context_desc);
 void xmhfcore_setmemprot(context_desc_t context_desc, u64 gpa, u32 prottype);
@@ -82,16 +80,20 @@ void xmhfcore_memprot_flushmappings(context_desc_t context_desc);
 u8 * xmhfcore_smpguest_walk_pagetables(context_desc_t context_desc, u32 vaddr);
 void xmhfcore_memprot_hpt_setentry(context_desc_t context_desc, u64 hpt_paddr, u64 entry);
 
-//----------------------------------------------------------------------
-//exported FUNCTIONS 
-//----------------------------------------------------------------------
-void xmhf_apihub_initialize (void);
-void xmhf_apihub_arch_initialize(void);
 
+//----------------------------------------------------------------------
+//FUNCTIONS 
+//----------------------------------------------------------------------
+
+//[initbs]
+void xmhf_apihub_arch_initialize(void);
+#define xmhf_apihub_initialize	xmhf_apihub_arch_initialize
+
+//[ihub]
 void xmhf_apihub_fromhypapp(u32 callnum);
 void xmhf_apihub_arch_tohypapp(u32 hypappcallnum);
 
 
 #endif	//__ASSEMBLY__
 
-#endif //__XMHF_APIHUB_H__
+#endif //__XC_APIHUB_H__

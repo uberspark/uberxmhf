@@ -44,53 +44,28 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//xmhf.h - main XMHF core header file 
-// this orchestrates the inclusion of other core component specific
-// headers
-//author: amit vasudevan (amitvasudevan@acm.org)
-//
-#ifndef __XMHF_CORE_H_
-#define __XMHF_CORE_H_
+// XMHF core "rich" guest component implementation -- initialization portion
+// takes care of initializing and booting up the "rich" guest
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf.h>
+#include <xmhf-core.h> 
 
-//pull in core arch. header
-#include <xmhf-core-arch.h>
+//add given cpu to the rich guest partition
+context_desc_t xmhf_richguest_setup(u32 partition_index, u32 cpuid, bool is_bsp){
+	context_desc_t context_desc;
 
-//pull in required crypto (SHA-1)
-//libXMHFcrypto
-#ifndef __ASSEMBLY__
-	#include <xmhfcrypto.h>
-	#include <sha1.h>
-#endif /* __ASSEMBLY__ */
+	//add cpu to the richguest partition
+	context_desc = xc_api_partition_addcpu(partition_index, cpuid, is_bsp);
+	
+	//bail out if we could not add cpu to the rich guest partition
+	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
+			printf("\n%s: could not add cpu to rich guest partition. Halting!", __FUNCTION__);
+			return context_desc;
+	}
 
+	//setup guest OS state for partition
+	xmhf_richguest_setupguestOSstate(context_desc);
 
-//pull in required TPM library
-//libtpm
-#ifndef __ASSEMBLY__
-	#include <tpm.h>
-#endif /* __ASSEMBLY__ */
+	return context_desc;
+}
 
-/*//forward declaration of runtime parameter block
-#ifndef __ASSEMBLY__
-extern RPB *rpb;	
-#endif	//__ASSEMBLY__
-*/
-
-#include <xc-types.h>			//core specific data types
-#include <xc-shareddata.h>		//core shared data
-
-//----------------------------------------------------------------------
-// component headers
-#include <xc-baseplatform.h>	//base platform component
-#include <xc-dmaprot.h>			//DMA protection component
-#include <xc-richguest.h>		//rich guest component
-#include <xc-xcphandler.h>		//exception handler component
-#include <xc-tpm.h>				//Trusted Platform Module component
-#include <xc-startup.h>			//secure loader component
-#include <xc-hypapp.h>			//hypapp callback declarations
-#include <xc-apihub.h>			//core API interface component
-
-#include <xc-coreapi.h>			//core API
-
-#endif /* __XMHF_CORE_H_ */

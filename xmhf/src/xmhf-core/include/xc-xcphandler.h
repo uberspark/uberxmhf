@@ -48,8 +48,8 @@
 // declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHF_XCPHANDLER_H__
-#define __XMHF_XCPHANDLER_H__
+#ifndef __XC_XCPHANDLER_H__
+#define __XC_XCPHANDLER_H__
 
 
 #ifndef __ASSEMBLY__
@@ -59,10 +59,11 @@
 //exported FUNCTIONS 
 
 //initialize core exception handlers
-void xmhf_xcphandler_initialize(void);
 void xmhf_xcphandler_arch_initialize(void);
+
+#define xmhf_xcphandler_initialize	xmhf_xcphandler_arch_initialize
 
 
 #endif	//__ASSEMBLY__
 
-#endif //__XMHF_XCPHANDLER_H__
+#endif //__XC_XCPHANDLER_H__
