@@ -212,7 +212,7 @@ u64 xc_api_hpt_arch_getentry(context_desc_t context_desc, u64 gpa){
 	//xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
 	xc_partition_t *xc_partition;
 	
-	HALT_ON_ERRORCOND( context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID );
+	HALT_ON_ERRORCOND( context_desc.partition_desc.partition_index != XC_PARTITION_INDEX_INVALID );
 	
 	xc_partition = &g_xc_primary_partition[context_desc.partition_desc.partition_index];
 	
@@ -232,7 +232,7 @@ void xc_api_hpt_arch_setentry(context_desc_t context_desc, u64 gpa, u64 entry){
 	//xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
 	xc_partition_t *xc_partition;
 	
-	HALT_ON_ERRORCOND( context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID );
+	HALT_ON_ERRORCOND( context_desc.partition_desc.partition_index != XC_PARTITION_INDEX_INVALID );
 	
 	xc_partition = &g_xc_primary_partition[context_desc.partition_desc.partition_index];
 	
