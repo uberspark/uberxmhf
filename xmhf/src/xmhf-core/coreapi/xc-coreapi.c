@@ -109,6 +109,27 @@ static u32 _xc_cpu_current_index=0;
 static xc_cpupartitiontable_t _xc_cpupartitiontable[MAX_PLATFORM_CPUS];
 static u32 _xc_cpupartitiontable_current_index=0;
 
+
+static void _xc_api_partition_create_establishEPTshape(xc_partition_hptdata_x86vmx_t *eptdata){
+	u64 *pml4_table, *pdp_table, *pd_table;
+	u32 i, j, paddr=0;
+
+	pml4_table = (u64 *)eptdata->vmx_ept_pml4_table;
+	pml4_table[0] = (u64) (hva2spa((void*)eptdata->vmx_ept_pdp_table) | 0x7); 
+
+	pdp_table = (u64 *)eptdata->vmx_ept_pdp_table;
+		
+	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+		pdp_table[i] = (u64) ( hva2spa((void*)eptdata->vmx_ept_pd_tables + (PAGE_SIZE_4K * i)) | 0x7 );
+		pd_table = (u64 *)  ((u32)eptdata->vmx_ept_pd_tables + (PAGE_SIZE_4K * i)) ;
+		
+		for(j=0; j < PAE_PTRS_PER_PDT; j++){
+			pd_table[j] = (u64) ( hva2spa((void*)eptdata->vmx_ept_p_tables + (PAGE_SIZE_4K * ((i*PAE_PTRS_PER_PDT)+j))) | 0x7 );
+		}
+	}
+}
+
+
 //partition related core APIs
 u32 xc_api_partition_create(u32 partitiontype){
 	u32 partition_index = XC_PARTITION_INDEX_INVALID;
@@ -124,6 +145,8 @@ u32 xc_api_partition_create(u32 partitiontype){
 	g_xc_primary_partition[_partition_current_index].partitionid=_partition_current_index;
 	g_xc_primary_partition[_partition_current_index].partitiontype = XC_PARTITION_PRIMARY;
 	g_xc_primary_partition[_partition_current_index].numcpus = 0;
+
+	_xc_api_partition_create_establishEPTshape( (xc_partition_hptdata_x86vmx_t *)g_xc_primary_partition[_partition_current_index].hptdata );
 	
     partition_index = _partition_current_index;
     _partition_current_index++;
