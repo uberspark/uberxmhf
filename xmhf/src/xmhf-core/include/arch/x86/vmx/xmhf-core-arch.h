@@ -44,53 +44,13 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//xmhf.h - main XMHF core header file 
-// this orchestrates the inclusion of other core component specific
-// headers
-//author: amit vasudevan (amitvasudevan@acm.org)
-//
-#ifndef __XMHF_CORE_H_
-#define __XMHF_CORE_H_
+// XMHF core arch. specific header file 
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf.h>
+#ifndef __XMHF_CORE_ARCH_H_
+#define __XMHF_CORE_ARCH_H_
 
-//pull in core arch. header
-#include <xmhf-core-arch.h>
+#include <arch/x86/common/xc-x86.h>
+#include <arch/x86/vmx/xc-x86vmx.h>
 
-//pull in required crypto (SHA-1)
-//libXMHFcrypto
-#ifndef __ASSEMBLY__
-	#include <xmhfcrypto.h>
-	#include <sha1.h>
-#endif /* __ASSEMBLY__ */
-
-
-//pull in required TPM library
-//libtpm
-#ifndef __ASSEMBLY__
-	#include <tpm.h>
-#endif /* __ASSEMBLY__ */
-
-/*//forward declaration of runtime parameter block
-#ifndef __ASSEMBLY__
-extern RPB *rpb;	
-#endif	//__ASSEMBLY__
-*/
-
-#include <xc-types.h>			//core specific data types
-#include <xc-shareddata.h>		//core shared data
-
-//----------------------------------------------------------------------
-// component headers
-#include <xc-baseplatform.h>	//base platform component
-#include <xc-dmaprot.h>			//DMA protection component
-#include <xc-richguest.h>		//rich guest component
-#include <xc-xcphandler.h>		//exception handler component
-#include <xc-tpm.h>				//Trusted Platform Module component
-#include <xc-startup.h>			//secure loader component
-#include <xc-hypapp.h>			//hypapp callback declarations
-#include <xc-apihub.h>			//core API interface component
-
-#include <xc-coreapi.h>			//core API
-
-#endif /* __XMHF_CORE_H_ */
+#endif /* __XMHF_CORE_ARCH_H_ */

@@ -44,53 +44,53 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//xmhf.h - main XMHF core header file 
-// this orchestrates the inclusion of other core component specific
-// headers
-//author: amit vasudevan (amitvasudevan@acm.org)
-//
-#ifndef __XMHF_CORE_H_
-#define __XMHF_CORE_H_
+// XMHF core initialization boostrap (init-bs) entry module
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf.h>
+//---includes-------------------------------------------------------------------
+#include <xmhf-core.h> 
 
-//pull in core arch. header
-#include <xmhf-core-arch.h>
+void xmhf_runtime_entry(void){
 
-//pull in required crypto (SHA-1)
-//libXMHFcrypto
-#ifndef __ASSEMBLY__
-	#include <xmhfcrypto.h>
-	#include <sha1.h>
-#endif /* __ASSEMBLY__ */
+	//setup debugging	
+	xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
+	printf("\nxmhf-core: starting...");
 
+    //[debug] dump E820
+ 	#ifndef __XMHF_VERIFICATION__
+ 	printf("\nNumber of E820 entries = %u", xcbootinfo->memmapinfo_numentries);
+	{
+		int i;
+		for(i=0; i < (int)xcbootinfo->memmapinfo_numentries; i++){
+			printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
+			  xcbootinfo->memmapinfo_buffer[i].baseaddr_high, xcbootinfo->memmapinfo_buffer[i].baseaddr_low,
+			  xcbootinfo->memmapinfo_buffer[i].length_high, xcbootinfo->memmapinfo_buffer[i].length_low,
+			  xcbootinfo->memmapinfo_buffer[i].type);
+		}
+  	}
+	#endif //__XMHF_VERIFICATION__
 
-//pull in required TPM library
-//libtpm
-#ifndef __ASSEMBLY__
-	#include <tpm.h>
-#endif /* __ASSEMBLY__ */
+  	//initialize basic platform elements
+	xmhf_baseplatform_initialize();
 
-/*//forward declaration of runtime parameter block
-#ifndef __ASSEMBLY__
-extern RPB *rpb;	
-#endif	//__ASSEMBLY__
-*/
+	//setup XMHF exception handler component
+	xmhf_xcphandler_initialize();
 
-#include <xc-types.h>			//core specific data types
-#include <xc-shareddata.h>		//core shared data
+	#if defined (__DMAP__)
+	xmhf_dmaprot_reinitialize();
+	#endif
 
-//----------------------------------------------------------------------
-// component headers
-#include <xc-baseplatform.h>	//base platform component
-#include <xc-dmaprot.h>			//DMA protection component
-#include <xc-richguest.h>		//rich guest component
-#include <xc-xcphandler.h>		//exception handler component
-#include <xc-tpm.h>				//Trusted Platform Module component
-#include <xc-startup.h>			//secure loader component
-#include <xc-hypapp.h>			//hypapp callback declarations
-#include <xc-apihub.h>			//core API interface component
+	//initialize richguest
+	//xmhf_richguest_initialize();
 
-#include <xc-coreapi.h>			//core API
+	//invoke XMHF api hub initialization function to initialize core API
+	//interface layer
+	xmhf_apihub_initialize();
 
-#endif /* __XMHF_CORE_H_ */
+	//initialize base platform with SMP 
+	xmhf_baseplatform_smpinitialize();
+
+	printf("\nRuntime: We should NEVER get here!");
+	HALT_ON_ERRORCOND(0);
+}
+
