@@ -52,9 +52,7 @@
 
 
 //we get control here in the context of *each* physical CPU core 
-//void xmhf_runtime_main(xc_cpu_t *xc_cpu){ 
-//void xmhf_runtime_main(u32 cpu_index){ 
-void xmhf_startup_main(u32 cpuid, bool is_bsp){
+void init_entry(u32 cpuid, bool is_bsp){
 	static u32 _xc_startup_hypappmain_counter = 0; 
 	static u32 _xc_startup_hypappmain_counter_lock = 1; 
 	context_desc_t context_desc;
