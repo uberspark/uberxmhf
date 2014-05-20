@@ -311,47 +311,26 @@ static u32 _vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr){
 //---setup EPT for VMX----------------------------------------------------------
 //static void _vmx_setupEPT(xc_cpu_t *xc_cpu){
 static void _vmx_setupEPT(xc_partition_hptdata_x86vmx_t *eptdata){
-	//step-1: tie in EPT PML4 structures
-	//note: the default memory type (usually WB) should be determined using 
-	//IA32_MTRR_DEF_TYPE_MSR. If MTRR's are not enabled (really?)
-	//then all default memory is type UC (uncacheable)
-	//u64 *pml4_table, *pdp_table, *pd_table, *p_table;
 	u64 *p_table;
-	//u32 i, j, k, paddr=0;
 	u32 k, paddr=0;
 
-	//pml4_table = (u64 *)eptdata->vmx_ept_pml4_table;
-	//pml4_table[0] = (u64) (hva2spa((void*)eptdata->vmx_ept_pdp_table) | 0x7); 
-
-	//pdp_table = (u64 *)eptdata->vmx_ept_pdp_table;
-		
-	//for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-		//pdp_table[i] = (u64) ( hva2spa((void*)eptdata->vmx_ept_pd_tables + (PAGE_SIZE_4K * i)) | 0x7 );
-		//pd_table = (u64 *)  ((u32)eptdata->vmx_ept_pd_tables + (PAGE_SIZE_4K * i)) ;
-		
-		//for(j=0; j < PAE_PTRS_PER_PDT; j++){
-			//pd_table[j] = (u64) ( hva2spa((void*)eptdata->vmx_ept_p_tables + (PAGE_SIZE_4K * ((i*PAE_PTRS_PER_PDT)+j))) | 0x7 );
-			//p_table = (u64 *)  ((u32)eptdata->vmx_ept_p_tables + (PAGE_SIZE_4K * ((i*PAE_PTRS_PER_PDT)+j))) ;
-			p_table = (u64 *)  ((u32)eptdata->vmx_ept_p_tables) ;
+	p_table = (u64 *)  ((u32)eptdata->vmx_ept_p_tables) ;
 			
-			for(k=0; k < (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT); k++){
-				u32 memorytype = _vmx_getmemorytypeforphysicalpage((u64)paddr);
-				//make XMHF physical pages inaccessible
-				if( (paddr >= (xcbootinfo->physmem_base)) &&
-					(paddr < (xcbootinfo->physmem_base + xcbootinfo->size)) ){
-					p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) | (u64)0x0 ;	//not-present
-				}else{
-					if(memorytype == 0)
-						p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) |  (u64)0x7 ;	//present, UC
-					else
-						p_table[k] = (u64) (paddr)  | ((u64)6 << 3) | (u64)0x7 ;	//present, WB, track host MTRR
-				}
-				
-				paddr += PAGE_SIZE_4K;
-			}
-		//}
-	//}
-
+	for(k=0; k < (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT); k++){
+		u32 memorytype = _vmx_getmemorytypeforphysicalpage((u64)paddr);
+		//make XMHF physical pages inaccessible
+		if( (paddr >= (xcbootinfo->physmem_base)) &&
+			(paddr < (xcbootinfo->physmem_base + xcbootinfo->size)) ){
+			p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) | (u64)0x0 ;	//not-present
+		}else{
+			if(memorytype == 0)
+				p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) |  (u64)0x7 ;	//present, UC
+			else
+				p_table[k] = (u64) (paddr)  | ((u64)6 << 3) | (u64)0x7 ;	//present, WB, track host MTRR
+		}
+		
+		paddr += PAGE_SIZE_4K;
+	}
 }
 
 //---vmx int 15 hook enabling function------------------------------------------
