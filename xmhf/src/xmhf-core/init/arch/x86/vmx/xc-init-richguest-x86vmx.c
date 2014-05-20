@@ -57,7 +57,8 @@ static struct _memorytype _vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT me
 // local (static) support function forward declarations
 static void _vmx_gathermemorytypes(void);
 static u32 _vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr);
-static void _vmx_setupEPT(xc_partition_hptdata_x86vmx_t *eptdata);
+//static void _vmx_setupEPT(xc_partition_hptdata_x86vmx_t *eptdata);
+static void _vmx_setupEPT(context_desc_t context_desc);
 
 //---gather memory types for system physical memory------------------------------
 static void _vmx_gathermemorytypes(void){
@@ -310,26 +311,25 @@ static u32 _vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr){
 
 //---setup EPT for VMX----------------------------------------------------------
 //static void _vmx_setupEPT(xc_cpu_t *xc_cpu){
-static void _vmx_setupEPT(xc_partition_hptdata_x86vmx_t *eptdata){
-	u64 *p_table;
-	u32 k, paddr=0;
+//static void _vmx_setupEPT(xc_partition_hptdata_x86vmx_t *eptdata){
+static void _vmx_setupEPT(context_desc_t context_desc){
+	u64 p_table_value;
+	u64 gpa;
 
-	p_table = (u64 *)  ((u32)eptdata->vmx_ept_p_tables) ;
-			
-	for(k=0; k < (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT); k++){
-		u32 memorytype = _vmx_getmemorytypeforphysicalpage((u64)paddr);
+	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
+		u32 memorytype = _vmx_getmemorytypeforphysicalpage((u64)gpa);
 		//make XMHF physical pages inaccessible
-		if( (paddr >= (xcbootinfo->physmem_base)) &&
-			(paddr < (xcbootinfo->physmem_base + xcbootinfo->size)) ){
-			p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) | (u64)0x0 ;	//not-present
+		if( (gpa >= (xcbootinfo->physmem_base)) &&
+			(gpa < (xcbootinfo->physmem_base + xcbootinfo->size)) ){
+			p_table_value = (u64) (gpa)  | ((u64)memorytype << 3) | (u64)0x0 ;	//not-present
 		}else{
 			if(memorytype == 0)
-				p_table[k] = (u64) (paddr)  | ((u64)memorytype << 3) |  (u64)0x7 ;	//present, UC
+				p_table_value = (u64) (gpa)  | ((u64)memorytype << 3) |  (u64)0x7 ;	//present, UC
 			else
-				p_table[k] = (u64) (paddr)  | ((u64)6 << 3) | (u64)0x7 ;	//present, WB, track host MTRR
+				p_table_value = (u64) (gpa)  | ((u64)6 << 3) | (u64)0x7 ;	//present, WB, track host MTRR
 		}
 		
-		paddr += PAGE_SIZE_4K;
+		xc_api_hpt_setentry(context_desc, gpa, p_table_value);
 	}
 }
 
@@ -352,11 +352,16 @@ static void	_vmx_int15_initializehook(void){
 
 //-------------------------------------------------------------------------
 void xmhf_richguest_arch_initialize(u32 partition_index){
-	xc_partition_t *xc_partition_richguest = &g_xc_primary_partition[partition_index];
+	//xc_partition_t *xc_partition_richguest = &g_xc_primary_partition[partition_index];
 	
 	//g_xc_primary_partition[XC_PARTITION_RICHGUEST_INDEX].partitionid=XC_PARTITION_RICHGUEST_INDEX;
 	//g_xc_primary_partition[XC_PARTITION_RICHGUEST_INDEX].partitiontype = XC_PARTITION_PRIMARY;
 	//g_xc_primary_partition[XC_PARTITION_RICHGUEST_INDEX].numcpus = 0;
+	context_desc_t context_desc;
+	
+	context_desc.cpu_desc.cpu_index=XC_PARTITION_INDEX_INVALID;
+	context_desc.cpu_desc.isbsp = true;
+	context_desc.partition_desc.partition_index = partition_index;
 
 
 	printf("\n%s: copying boot-module to boot guest", __FUNCTION__);
@@ -364,7 +369,8 @@ void xmhf_richguest_arch_initialize(u32 partition_index){
 	
 	printf("\n%s: BSP initializing HPT", __FUNCTION__);
 	_vmx_gathermemorytypes();
-	_vmx_setupEPT((xc_partition_hptdata_x86vmx_t *)xc_partition_richguest->hptdata);
+	//_vmx_setupEPT((xc_partition_hptdata_x86vmx_t *)xc_partition_richguest->hptdata);
+	_vmx_setupEPT(context_desc);
 	
 	//INT 15h E820 hook enablement for VMX unrestricted guest mode
 	//note: this only happens for the BSP
