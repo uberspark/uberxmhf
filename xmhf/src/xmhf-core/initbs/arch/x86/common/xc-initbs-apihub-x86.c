@@ -95,7 +95,7 @@ void xmhf_apihub_arch_initialize (void){
 			
 	}
 
-	g_hypappheader->addr_hypapptocore = (u32)&xmhf_apihub_fromhypapp;
+	//g_hypappheader->addr_hypapptocore = (u32)&xmhf_apihub_fromhypapp;
 
 	//check for PCID support (if present)
 	{
