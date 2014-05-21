@@ -8,9 +8,9 @@ vpath %.S $(srcdir)
 # grab list of all source files
 C_SOURCES := $(wildcard $(srcdir)/*.c)
 
-#C_SOURCES += $(wildcard $(srcdir)/initbs/*.c)
-#C_SOURCES += $(shell find $(srcdir)/initbs/arch/x86/common/ -type f -name '*.c')
-#C_SOURCES += $(shell find $(srcdir)/initbs/arch/x86/vmx/ -type f -name '*.c')
+C_SOURCES += $(wildcard $(srcdir)/initbs/*.c)
+C_SOURCES += $(shell find $(srcdir)/initbs/arch/x86/common/ -type f -name '*.c')
+C_SOURCES += $(shell find $(srcdir)/initbs/arch/x86/vmx/ -type f -name '*.c')
 
 #----------------------------------------------------------------------
 # xc-xcphandler-x86.o: In function `__xmhf_exception_handler_4':
@@ -20,9 +20,9 @@ C_SOURCES := $(wildcard $(srcdir)/*.c)
 # xmhf/src/xmhf-core/initbs/arch/x86/vmx/xc-baseplatform-x86vmx.c:(.text+0x70a): undefined reference to `init_entry'
 # make[1]: *** [xmhf-core] Error 1
 
-#C_SOURCES += $(wildcard $(srcdir)/init/*.c)
-#C_SOURCES += $(shell find $(srcdir)/init/arch/x86/common/ -type f -name '*.c')
-#C_SOURCES += $(shell find $(srcdir)/init/arch/x86/vmx/ -type f -name '*.c')
+C_SOURCES += $(wildcard $(srcdir)/init/*.c)
+C_SOURCES += $(shell find $(srcdir)/init/arch/x86/common/ -type f -name '*.c')
+C_SOURCES += $(shell find $(srcdir)/init/arch/x86/vmx/ -type f -name '*.c')
 
 #-----------------------------------------------------------------------
 #init-entry.o: In function `init_entry':
@@ -42,9 +42,9 @@ C_SOURCES := $(wildcard $(srcdir)/*.c)
 #make[1]: *** [xmhf-core] Error 1
 
 
-#C_SOURCES += $(wildcard $(srcdir)/ihub/*.c)
-#C_SOURCES += $(shell find $(srcdir)/ihub/arch/x86/common/ -type f -name '*.c')
-#C_SOURCES += $(shell find $(srcdir)/ihub/arch/x86/vmx/ -type f -name '*.c')
+C_SOURCES += $(wildcard $(srcdir)/ihub/*.c)
+C_SOURCES += $(shell find $(srcdir)/ihub/arch/x86/common/ -type f -name '*.c')
+C_SOURCES += $(shell find $(srcdir)/ihub/arch/x86/vmx/ -type f -name '*.c')
 
 #------------------------------------------------------------------------
 #xc-ihub-apihub.o: In function `xmhf_apihub_fromhypapp':
