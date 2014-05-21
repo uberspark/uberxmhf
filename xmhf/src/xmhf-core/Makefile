@@ -128,6 +128,17 @@ C_SOURCES := $(wildcard $(srcdir)/*.c)
 #C_SOURCES += $(shell find $(srcdir)/coreapi/arch/x86/common/ -type f -name '*.c')
 #C_SOURCES += $(shell find $(srcdir)/coreapi/arch/x86/vmx/ -type f -name '*.c')
 
+#------------------------------------------------------------------------------------------
+#xc-coreapi-x86vmx.o: In function `xmhf_smpguest_arch_eventhandler_nmiexception':
+#xmhf/src/xmhf-core/coreapi/arch/x86/vmx/xc-coreapi-x86vmx.c:(.text+0x13): undefined reference to `xmhf_baseplatform_arch_x86_getcpulapicid'
+#xc-coreapi-x86vmx.o: In function `_xc_api_partition_arch_addcpu_setupbasestate':
+#xmhf/src/xmhf-core/coreapi/arch/x86/vmx/xc-coreapi-x86vmx.c:(.text+0x22e0): undefined reference to `xmhf_baseplatform_arch_x86_getgdtbase'
+#xmhf/src/xmhf-core/coreapi/arch/x86/vmx/xc-coreapi-x86vmx.c:(.text+0x22fb): undefined reference to `xmhf_baseplatform_arch_x86_getidtbase'
+#xmhf/src/xmhf-core/coreapi/arch/x86/vmx/xc-coreapi-x86vmx.c:(.text+0x2316): undefined reference to `xmhf_baseplatform_arch_x86_gettssbase'
+#xmhf/src/xmhf-core/coreapi/arch/x86/vmx/xc-coreapi-x86vmx.c:(.text+0x232f): undefined reference to `xmhf_parteventhub_arch_x86vmx_entry'
+#make[1]: *** [xmhf-core] Error 1
+
+
 
 C_SOURCES += $(wildcard $(srcdir)/shared/*.c)
 
