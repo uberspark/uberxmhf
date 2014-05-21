@@ -387,6 +387,7 @@ install-dev:
 	install --mode=644 ./xmhfhypapp.lds $(prefix)/share/xmhf
 	install --mode=644 ./xmhfhypapp.mk $(prefix)/share/xmhf
 	@echo installed XMHF hypapp build and linker scripts
+	mkdir -p $(pkgconfigdir)
 	install --mode=644 ./xmhf.pc $(pkgconfigdir)
 	@echo installed XMHF pkg-config meta information
 	@echo INSTALL SUCCESS
