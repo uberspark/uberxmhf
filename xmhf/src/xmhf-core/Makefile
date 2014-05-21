@@ -124,13 +124,11 @@ C_SOURCES := $(wildcard $(srcdir)/*.c)
 #xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-richguest-x86vmx.c:(.text+0xa8c): undefined reference to `xc_api_hpt_lvl2pagewalk'
 
 
-#C_SOURCES += $(wildcard $(srcdir)/coreapi/*.c)
-#C_SOURCES += $(shell find $(srcdir)/coreapi/arch/x86/common/ -type f -name '*.c')
-#C_SOURCES += $(shell find $(srcdir)/coreapi/arch/x86/vmx/ -type f -name '*.c')
+C_SOURCES += $(wildcard $(srcdir)/coreapi/*.c)
+C_SOURCES += $(shell find $(srcdir)/coreapi/arch/x86/common/ -type f -name '*.c')
+C_SOURCES += $(shell find $(srcdir)/coreapi/arch/x86/vmx/ -type f -name '*.c')
 
 #------------------------------------------------------------------------------------------
-#xc-coreapi-x86vmx.o: In function `xmhf_smpguest_arch_eventhandler_nmiexception':
-#xmhf/src/xmhf-core/coreapi/arch/x86/vmx/xc-coreapi-x86vmx.c:(.text+0x13): undefined reference to `xmhf_baseplatform_arch_x86_getcpulapicid'
 #xc-coreapi-x86vmx.o: In function `_xc_api_partition_arch_addcpu_setupbasestate':
 #xmhf/src/xmhf-core/coreapi/arch/x86/vmx/xc-coreapi-x86vmx.c:(.text+0x22e0): undefined reference to `xmhf_baseplatform_arch_x86_getgdtbase'
 #xmhf/src/xmhf-core/coreapi/arch/x86/vmx/xc-coreapi-x86vmx.c:(.text+0x22fb): undefined reference to `xmhf_baseplatform_arch_x86_getidtbase'
@@ -141,6 +139,8 @@ C_SOURCES := $(wildcard $(srcdir)/*.c)
 
 
 C_SOURCES += $(wildcard $(srcdir)/shared/*.c)
+C_SOURCES += $(shell find $(srcdir)/shared/arch/x86/common/ -type f -name '*.c')
+C_SOURCES += $(shell find $(srcdir)/shared/arch/x86/vmx/ -type f -name '*.c')
 
 C_SOURCES := $(patsubst $(srcdir)/%, %, $(C_SOURCES))
 
