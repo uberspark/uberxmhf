@@ -374,7 +374,20 @@ void xmhf_baseplatform_arch_x86_restorecpumtrrstate(void){
 
 
 u32 xmhf_baseplatform_arch_x86_getgdtbase(void){
-		return (u32)&_gdt_start;
+		struct {
+			u16 limit;
+			u32 base;
+		} __attribute__ ((packed)) gdtr;
+		
+		
+		asm volatile(
+			"sgdt %0 \r\n"
+			: //no output
+			: "m" (gdtr)
+			: //no clobber
+		);
+		
+		return gdtr.base;
 }
 
 u32 xmhf_baseplatform_arch_x86_getidtbase(void){
