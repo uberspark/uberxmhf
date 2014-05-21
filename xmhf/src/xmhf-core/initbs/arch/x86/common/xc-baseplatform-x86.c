@@ -391,7 +391,21 @@ u32 xmhf_baseplatform_arch_x86_getgdtbase(void){
 }
 
 u32 xmhf_baseplatform_arch_x86_getidtbase(void){
-		return (u32)&_idt_start;
+		struct {
+			u16 limit;
+			u32 base;
+		} __attribute__ ((packed)) idtr;
+		
+		
+		asm volatile(
+			"sidt %0 \r\n"
+			: //no output
+			: "m" (idtr)
+			: //no clobber
+		);
+		
+		return idtr.base;
+		//return (u32)&_idt_start;
 }
 
 u32 xmhf_baseplatform_arch_x86_gettssbase(void){
