@@ -12,6 +12,15 @@ C_SOURCES += $(wildcard $(srcdir)/initbs/*.c)
 C_SOURCES += $(shell find $(srcdir)/initbs/arch/x86/common/ -type f -name '*.c')
 C_SOURCES += $(shell find $(srcdir)/initbs/arch/x86/vmx/ -type f -name '*.c')
 
+#----------------------------------------------------------------------
+# xc-xcphandler-x86.o: In function `__xmhf_exception_handler_4':
+# /mnt/data/repos/xmhf-istcverification.git/xmhf/src/xmhf-core/initbs/arch/x86/common/xc-xcphandler-x86.c:(.text+0x14e): undefined reference to `xmhf_xcphandler_arch_hub'
+# xc-xcphandler-x86.o:/mnt/data/repos/xmhf-istcverification.git/xmhf/src/xmhf-core/initbs/arch/x86/common/xc-xcphandler-x86.c:(.text+0x16e): more undefined references to `xmhf_xcphandler_arch_hub' follow
+# xc-baseplatform-x86vmx.o: In function `xmhf_baseplatform_arch_x86_smpinitialize_commonstart':
+# /mnt/data/repos/xmhf-istcverification.git/xmhf/src/xmhf-core/initbs/arch/x86/vmx/xc-baseplatform-x86vmx.c:(.text+0x70a): undefined reference to `init_entry'
+# make[1]: *** [xmhf-core] Error 1
+
+
 C_SOURCES += $(wildcard $(srcdir)/shared/*.c)
 
 C_SOURCES := $(patsubst $(srcdir)/%, %, $(C_SOURCES))
