@@ -8,9 +8,9 @@ vpath %.S $(srcdir)
 # grab list of all source files
 C_SOURCES := $(wildcard $(srcdir)/*.c)
 
-C_SOURCES += $(wildcard $(srcdir)/initbs/*.c)
-C_SOURCES += $(shell find $(srcdir)/initbs/arch/x86/common/ -type f -name '*.c')
-C_SOURCES += $(shell find $(srcdir)/initbs/arch/x86/vmx/ -type f -name '*.c')
+#C_SOURCES += $(wildcard $(srcdir)/initbs/*.c)
+#C_SOURCES += $(shell find $(srcdir)/initbs/arch/x86/common/ -type f -name '*.c')
+#C_SOURCES += $(shell find $(srcdir)/initbs/arch/x86/vmx/ -type f -name '*.c')
 
 #----------------------------------------------------------------------
 # xc-xcphandler-x86.o: In function `__xmhf_exception_handler_4':
@@ -24,13 +24,31 @@ C_SOURCES += $(wildcard $(srcdir)/init/*.c)
 C_SOURCES += $(shell find $(srcdir)/init/arch/x86/common/ -type f -name '*.c')
 C_SOURCES += $(shell find $(srcdir)/init/arch/x86/vmx/ -type f -name '*.c')
 
-C_SOURCES += $(wildcard $(srcdir)/ihub/*.c)
-C_SOURCES += $(shell find $(srcdir)/ihub/arch/x86/common/ -type f -name '*.c')
-C_SOURCES += $(shell find $(srcdir)/ihub/arch/x86/vmx/ -type f -name '*.c')
+#-----------------------------------------------------------------------
+#init-entry.o: In function `init_entry':
+#/mnt/data/repos/xmhf-istcverification.git/xmhf/src/xmhf-core/init/init-entry.c:(.text+0xa1): undefined reference to `xc_api_partition_create'
+#/mnt/data/repos/xmhf-istcverification.git/xmhf/src/xmhf-core/init/init-entry.c:(.text+0x1fb): undefined reference to `xc_hypapp_initialization'
+#/mnt/data/repos/xmhf-istcverification.git/xmhf/src/xmhf-core/init/init-entry.c:(.text+0x293): undefined reference to `xc_api_partition_startcpu'
+#xc-init-richguest.o: In function `xmhf_richguest_setup':
+#/mnt/data/repos/xmhf-istcverification.git/xmhf/src/xmhf-core/init/xc-init-richguest.c:(.text+0x3c): undefined reference to `xc_api_partition_addcpu'
+#xc-init-richguest-x86vmx.o: In function `_vmx_setupEPT':
+#/mnt/data/repos/xmhf-istcverification.git/xmhf/src/xmhf-core/init/arch/x86/vmx/xc-init-richguest-x86vmx.c:(.text+0x297f): undefined reference to `xc_api_hpt_setentry'
+#xc-init-richguest-x86vmx.o: In function `xmhf_richguest_arch_setupguestOSstate':
+#/mnt/data/repos/xmhf-istcverification.git/xmhf/src/xmhf-core/init/arch/x86/vmx/xc-init-richguest-x86vmx.c:(.text+0x2b44): undefined reference to `xc_api_cpustate_get'
+#/mnt/data/repos/xmhf-istcverification.git/xmhf/src/xmhf-core/init/arch/x86/vmx/xc-init-richguest-x86vmx.c:(.text+0x2be8): undefined reference to `xc_api_cpustate_set'
+#/mnt/data/repos/xmhf-istcverification.git/xmhf/src/xmhf-core/init/arch/x86/vmx/xc-init-richguest-x86vmx.c:(.text+0x2c80): undefined reference to `xc_api_cpustate_set'
+#/mnt/data/repos/xmhf-istcverification.git/xmhf/src/xmhf-core/init/arch/x86/vmx/xc-init-richguest-x86vmx.c:(.text+0x2d39): undefined reference to `xc_api_cpustate_set'
+#/mnt/data/repos/xmhf-istcverification.git/xmhf/src/xmhf-core/init/arch/x86/vmx/xc-init-richguest-x86vmx.c:(.text+0x2e9d): undefined reference to `xc_api_cpustate_set'
+#make[1]: *** [xmhf-core] Error 1
 
-C_SOURCES += $(wildcard $(srcdir)/coreapi/*.c)
-C_SOURCES += $(shell find $(srcdir)/coreapi/arch/x86/common/ -type f -name '*.c')
-C_SOURCES += $(shell find $(srcdir)/coreapi/arch/x86/vmx/ -type f -name '*.c')
+
+#C_SOURCES += $(wildcard $(srcdir)/ihub/*.c)
+#C_SOURCES += $(shell find $(srcdir)/ihub/arch/x86/common/ -type f -name '*.c')
+#C_SOURCES += $(shell find $(srcdir)/ihub/arch/x86/vmx/ -type f -name '*.c')
+
+#C_SOURCES += $(wildcard $(srcdir)/coreapi/*.c)
+#C_SOURCES += $(shell find $(srcdir)/coreapi/arch/x86/common/ -type f -name '*.c')
+#C_SOURCES += $(shell find $(srcdir)/coreapi/arch/x86/vmx/ -type f -name '*.c')
 
 
 C_SOURCES += $(wildcard $(srcdir)/shared/*.c)
