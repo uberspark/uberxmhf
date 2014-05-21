@@ -28,7 +28,7 @@ sudo apt-get install gcc-multilib
         Install using sudo apt-get install cbmc_4.7_amd64.deb
 
     Clang
-        Version 3.3 - available at: http://www.llvm.org/releases/3.3/clang+llvm-3.3-amd64-Ubuntu-12.04.2.tar.gz
+        Version 3.3 - available at: http://llvm.org/releases/3.3/clang+llvm-3.3-i386-debian6.tar.bz2
         Untar and setup PATH to point to clang "bin" directory; XMHF uses Clang as the C compiler.
 
 
