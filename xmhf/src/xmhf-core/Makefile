@@ -8,9 +8,9 @@ vpath %.S $(srcdir)
 # grab list of all source files
 C_SOURCES := $(wildcard $(srcdir)/*.c)
 
-C_SOURCES += $(wildcard $(srcdir)/initbs/*.c)
-C_SOURCES += $(shell find $(srcdir)/initbs/arch/x86/common/ -type f -name '*.c')
-C_SOURCES += $(shell find $(srcdir)/initbs/arch/x86/vmx/ -type f -name '*.c')
+#C_SOURCES += $(wildcard $(srcdir)/initbs/*.c)
+#C_SOURCES += $(shell find $(srcdir)/initbs/arch/x86/common/ -type f -name '*.c')
+#C_SOURCES += $(shell find $(srcdir)/initbs/arch/x86/vmx/ -type f -name '*.c')
 
 #----------------------------------------------------------------------
 # xc-xcphandler-x86.o: In function `__xmhf_exception_handler_4':
@@ -20,9 +20,9 @@ C_SOURCES += $(shell find $(srcdir)/initbs/arch/x86/vmx/ -type f -name '*.c')
 # xmhf/src/xmhf-core/initbs/arch/x86/vmx/xc-baseplatform-x86vmx.c:(.text+0x70a): undefined reference to `init_entry'
 # make[1]: *** [xmhf-core] Error 1
 
-C_SOURCES += $(wildcard $(srcdir)/init/*.c)
-C_SOURCES += $(shell find $(srcdir)/init/arch/x86/common/ -type f -name '*.c')
-C_SOURCES += $(shell find $(srcdir)/init/arch/x86/vmx/ -type f -name '*.c')
+#C_SOURCES += $(wildcard $(srcdir)/init/*.c)
+#C_SOURCES += $(shell find $(srcdir)/init/arch/x86/common/ -type f -name '*.c')
+#C_SOURCES += $(shell find $(srcdir)/init/arch/x86/vmx/ -type f -name '*.c')
 
 #-----------------------------------------------------------------------
 #init-entry.o: In function `init_entry':
@@ -46,87 +46,86 @@ C_SOURCES += $(wildcard $(srcdir)/ihub/*.c)
 C_SOURCES += $(shell find $(srcdir)/ihub/arch/x86/common/ -type f -name '*.c')
 C_SOURCES += $(shell find $(srcdir)/ihub/arch/x86/vmx/ -type f -name '*.c')
 
-#------------------------------------------------------------------------
-#xc-ihub-apihub.o: In function `xmhf_apihub_fromhypapp':
-#xmhf/src/xmhf-core/ihub/xc-ihub-apihub.c:(.text+0x185): undefined reference to `xc_api_hpt_setprot'
-#xmhf/src/xmhf-core/ihub/xc-ihub-apihub.c:(.text+0x1b2): undefined reference to `xc_api_hpt_getprot'
-#xmhf/src/xmhf-core/ihub/xc-ihub-apihub.c:(.text+0x20b): undefined reference to `xc_api_hpt_setentry'
-#xmhf/src/xmhf-core/ihub/xc-ihub-apihub.c:(.text+0x238): undefined reference to `xc_api_hpt_getentry'
-#xmhf/src/xmhf-core/ihub/xc-ihub-apihub.c:(.text+0x26b): undefined reference to `xc_api_hpt_flushcaches'
-#xmhf/src/xmhf-core/ihub/xc-ihub-apihub.c:(.text+0x292): undefined reference to `xc_api_hpt_flushcaches_smp'
-#xmhf/src/xmhf-core/ihub/xc-ihub-apihub.c:(.text+0x2bf): undefined reference to `xc_api_hpt_lvl2pagewalk'
-#xmhf/src/xmhf-core/ihub/xc-ihub-apihub.c:(.text+0x350): undefined reference to `xc_api_trapmask_set'
-#xmhf/src/xmhf-core/ihub/xc-ihub-apihub.c:(.text+0x3d5): undefined reference to `xc_api_trapmask_clear'
-#xmhf/src/xmhf-core/ihub/xc-ihub-apihub.c:(.text+0x45a): undefined reference to `xc_api_cpustate_set'
-#xmhf/src/xmhf-core/ihub/xc-ihub-apihub.c:(.text+0x4a1): undefined reference to `xc_api_cpustate_get'
-#xmhf/src/xmhf-core/ihub/xc-ihub-apihub.c:(.text+0x4df): undefined reference to `xmhf_baseplatform_arch_reboot'
-#c-ihub-xcphandler-x86.o: In function `xmhf_xcphandler_arch_hub':
-#xmhf/src/xmhf-core/ihub/arch/x86/common/xc-ihub-xcphandler-x86.c:(.text+0x2d): undefined reference to `xmhf_smpguest_arch_eventhandler_nmiexception'
-#c-ihub-x86vmx.o: In function `xmhf_partition_eventhub_arch_x86vmx':
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x7c): undefined reference to `xmhf_baseplatform_arch_x86_getcpulapicid'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x8e): undefined reference to `xc_api_partition_getcontextdesc'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x158): undefined reference to `xc_api_cpustate_get'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x266): undefined reference to `xc_api_cpustate_set'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x32b): undefined reference to `xc_api_cpustate_get'
-#c-ihub-x86vmx.o: In function `_vmx_intercept_handler':
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x434): undefined reference to `xc_api_cpustate_get'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x6bd): undefined reference to `xc_api_cpustate_get'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x76f): undefined reference to `xc_api_cpustate_get'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x821): undefined reference to `xc_api_cpustate_get'
-#c-ihub-x86vmx.o:/mnt/data/repos/xmhf-istcverification.git/xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0xa8a): more undefined references to `xc_api_cpustate_get' follow
-#c-ihub-x86vmx.o: In function `_vmx_intercept_handler':
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0xb72): undefined reference to `xc_api_cpustate_set'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0xc9a): undefined reference to `xc_api_cpustate_get'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0xd98): undefined reference to `xc_api_cpustate_set'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0xfd9): undefined reference to `xc_api_cpustate_get'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x10dc): undefined reference to `xc_api_cpustate_set'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x11b2): undefined reference to `xc_api_cpustate_get'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x129a): undefined reference to `xc_api_cpustate_set'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x14ee): undefined reference to `xc_api_cpustate_get'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x15f1): undefined reference to `xc_api_cpustate_set'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x1799): undefined reference to `xc_api_cpustate_get'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x189c): undefined reference to `xc_api_cpustate_set'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x1950): undefined reference to `xc_api_cpustate_get'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x1a53): undefined reference to `xc_api_cpustate_set'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x1bac): undefined reference to `xc_api_cpustate_get'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x1caf): undefined reference to `xc_api_cpustate_set'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x1edf): undefined reference to `xc_api_cpustate_get'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x1fe2): undefined reference to `xc_api_cpustate_set'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x2051): undefined reference to `xc_api_cpustate_get'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x20fb): undefined reference to `xc_api_cpustate_get'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x2226): undefined reference to `xc_api_cpustate_set'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x229e): undefined reference to `xc_api_cpustate_set'
-#c-ihub-x86vmx.o: In function `_vmx_propagate_cpustate_guestx86gprs':
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x2385): undefined reference to `xc_api_cpustate_set'
-#c-ihub-x86vmx.o: In function `vmx_handle_intercept_cr0access_ug':
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x27e0): undefined reference to `xc_api_cpustate_get'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x2874): undefined reference to `xc_api_cpustate_set'
-#c-ihub-x86vmx.o: In function `_vmx_handle_intercept_rdmsr':
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x29b0): undefined reference to `xc_api_cpustate_get'
-#c-ihub-x86vmx.o: In function `_vmx_handle_intercept_wrmsr':
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x2b3d): undefined reference to `xc_api_cpustate_get'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x2c23): undefined reference to `xc_api_cpustate_set'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x2c8c): undefined reference to `xc_api_cpustate_set'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x2cf5): undefined reference to `xc_api_cpustate_set'
-#c-ihub-richguest-x86vmx.o: In function `xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting':
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-richguest-x86vmx.c:(.text+0x5d): undefined reference to `xc_api_cpustate_get'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-richguest-x86vmx.c:(.text+0x10f): undefined reference to `xc_api_cpustate_get'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-richguest-x86vmx.c:(.text+0x53f): undefined reference to `xc_api_cpustate_set'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-richguest-x86vmx.c:(.text+0x6a0): undefined reference to `xc_api_cpustate_set'
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-richguest-x86vmx.c:(.text+0x72f): undefined reference to `xc_api_cpustate_set'
-#c-ihub-richguest-x86vmx.o: In function `xmhf_smpguest_arch_memcpyto':
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-richguest-x86vmx.c:(.text+0x7ac): undefined reference to `xc_api_hpt_lvl2pagewalk'
-#c-ihub-richguest-x86vmx.o: In function `xmhf_smpguest_arch_readu16':
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-richguest-x86vmx.c:(.text+0x866): undefined reference to `xc_api_hpt_lvl2pagewalk'
-#c-ihub-richguest-x86vmx.o: In function `xmhf_smpguest_arch_writeu16':
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-richguest-x86vmx.c:(.text+0x8fc): undefined reference to `xc_api_hpt_lvl2pagewalk'
-#c-ihub-richguest-x86vmx.o: In function `xmhf_smpguest_arch_memcpyfrom':
-#xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-richguest-x86vmx.c:(.text+0xa8c): undefined reference to `xc_api_hpt_lvl2pagewalk'
+##------------------------------------------------------------------------
+## xc-ihub-apihub.o: In function `xmhf_apihub_fromhypapp':
+# xmhf/src/xmhf-core/ihub/xc-ihub-apihub.c:(.text+0x185): undefined reference to `xc_api_hpt_setprot'
+# xmhf/src/xmhf-core/ihub/xc-ihub-apihub.c:(.text+0x1b2): undefined reference to `xc_api_hpt_getprot'
+# xmhf/src/xmhf-core/ihub/xc-ihub-apihub.c:(.text+0x20b): undefined reference to `xc_api_hpt_setentry'
+# xmhf/src/xmhf-core/ihub/xc-ihub-apihub.c:(.text+0x238): undefined reference to `xc_api_hpt_getentry'
+# xmhf/src/xmhf-core/ihub/xc-ihub-apihub.c:(.text+0x26b): undefined reference to `xc_api_hpt_flushcaches'
+# xmhf/src/xmhf-core/ihub/xc-ihub-apihub.c:(.text+0x292): undefined reference to `xc_api_hpt_flushcaches_smp'
+# xmhf/src/xmhf-core/ihub/xc-ihub-apihub.c:(.text+0x2bf): undefined reference to `xc_api_hpt_lvl2pagewalk'
+# xmhf/src/xmhf-core/ihub/xc-ihub-apihub.c:(.text+0x350): undefined reference to `xc_api_trapmask_set'
+# xmhf/src/xmhf-core/ihub/xc-ihub-apihub.c:(.text+0x3d5): undefined reference to `xc_api_trapmask_clear'
+# xmhf/src/xmhf-core/ihub/xc-ihub-apihub.c:(.text+0x45a): undefined reference to `xc_api_cpustate_set'
+# xmhf/src/xmhf-core/ihub/xc-ihub-apihub.c:(.text+0x4a1): undefined reference to `xc_api_cpustate_get'
+# xmhf/src/xmhf-core/ihub/xc-ihub-apihub.c:(.text+0x4df): undefined reference to `xc_api_platform_shutdown'
+## xc-ihub-xcphandler-x86.o: In function `xmhf_xcphandler_arch_hub':
+# xmhf/src/xmhf-core/ihub/arch/x86/common/xc-ihub-xcphandler-x86.c:(.text+0x2d): undefined reference to `xmhf_smpguest_arch_eventhandler_nmiexception'
+## xc-ihub-x86vmx.o: In function `xmhf_partition_eventhub_arch_x86vmx':
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x8e): undefined reference to `xc_api_partition_getcontextdesc'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x158): undefined reference to `xc_api_cpustate_get'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x266): undefined reference to `xc_api_cpustate_set'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x32b): undefined reference to `xc_api_cpustate_get'
+## xc-ihub-x86vmx.o: In function `_vmx_intercept_handler':
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x434): undefined reference to `xc_api_cpustate_get'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x6bd): undefined reference to `xc_api_cpustate_get'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x76f): undefined reference to `xc_api_cpustate_get'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x821): undefined reference to `xc_api_cpustate_get'
+## xc-ihub-x86vmx.o: xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0xa8a): more undefined references to `xc_api_cpustate_get' follow
+## xc-ihub-x86vmx.o: In function `_vmx_intercept_handler':
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0xb72): undefined reference to `xc_api_cpustate_set'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0xc9a): undefined reference to `xc_api_cpustate_get'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0xd98): undefined reference to `xc_api_cpustate_set'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0xfd9): undefined reference to `xc_api_cpustate_get'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x10dc): undefined reference to `xc_api_cpustate_set'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x11b2): undefined reference to `xc_api_cpustate_get'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x129a): undefined reference to `xc_api_cpustate_set'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x14ee): undefined reference to `xc_api_cpustate_get'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x15f1): undefined reference to `xc_api_cpustate_set'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x1799): undefined reference to `xc_api_cpustate_get'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x189c): undefined reference to `xc_api_cpustate_set'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x1950): undefined reference to `xc_api_cpustate_get'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x1a53): undefined reference to `xc_api_cpustate_set'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x1bac): undefined reference to `xc_api_cpustate_get'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x1caf): undefined reference to `xc_api_cpustate_set'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x1edf): undefined reference to `xc_api_cpustate_get'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x1fe2): undefined reference to `xc_api_cpustate_set'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x2051): undefined reference to `xc_api_cpustate_get'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x20fb): undefined reference to `xc_api_cpustate_get'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x2226): undefined reference to `xc_api_cpustate_set'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x229e): undefined reference to `xc_api_cpustate_set'
+## xc-ihub-x86vmx.o: In function `_vmx_propagate_cpustate_guestx86gprs':
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x2385): undefined reference to `xc_api_cpustate_set'
+## xc-ihub-x86vmx.o: In function `vmx_handle_intercept_cr0access_ug':
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x27e0): undefined reference to `xc_api_cpustate_get'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x2874): undefined reference to `xc_api_cpustate_set'
+## xc-ihub-x86vmx.o: In function `_vmx_handle_intercept_rdmsr':
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x29b0): undefined reference to `xc_api_cpustate_get'
+## xc-ihub-x86vmx.o: In function `_vmx_handle_intercept_wrmsr':
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x2b3d): undefined reference to `xc_api_cpustate_get'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x2c23): undefined reference to `xc_api_cpustate_set'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x2c8c): undefined reference to `xc_api_cpustate_set'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-x86vmx.c:(.text+0x2cf5): undefined reference to `xc_api_cpustate_set'
+## xc-ihub-richguest-x86vmx.o: In function `xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting':
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-richguest-x86vmx.c:(.text+0x5d): undefined reference to `xc_api_cpustate_get'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-richguest-x86vmx.c:(.text+0x10f): undefined reference to `xc_api_cpustate_get'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-richguest-x86vmx.c:(.text+0x53f): undefined reference to `xc_api_cpustate_set'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-richguest-x86vmx.c:(.text+0x6a0): undefined reference to `xc_api_cpustate_set'
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-richguest-x86vmx.c:(.text+0x72f): undefined reference to `xc_api_cpustate_set'
+## xc-ihub-richguest-x86vmx.o: In function `xmhf_smpguest_arch_memcpyto':
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-richguest-x86vmx.c:(.text+0x7ac): undefined reference to `xc_api_hpt_lvl2pagewalk'
+## xc-ihub-richguest-x86vmx.o: In function `xmhf_smpguest_arch_readu16':
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-richguest-x86vmx.c:(.text+0x866): undefined reference to `xc_api_hpt_lvl2pagewalk'
+## xc-ihub-richguest-x86vmx.o: In function `xmhf_smpguest_arch_writeu16':
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-richguest-x86vmx.c:(.text+0x8fc): undefined reference to `xc_api_hpt_lvl2pagewalk'
+## xc-ihub-richguest-x86vmx.o: In function `xmhf_smpguest_arch_memcpyfrom':
+# xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-richguest-x86vmx.c:(.text+0xa8c): undefined reference to `xc_api_hpt_lvl2pagewalk'
 
 
-C_SOURCES += $(wildcard $(srcdir)/coreapi/*.c)
-C_SOURCES += $(shell find $(srcdir)/coreapi/arch/x86/common/ -type f -name '*.c')
-C_SOURCES += $(shell find $(srcdir)/coreapi/arch/x86/vmx/ -type f -name '*.c')
+#C_SOURCES += $(wildcard $(srcdir)/coreapi/*.c)
+#C_SOURCES += $(shell find $(srcdir)/coreapi/arch/x86/common/ -type f -name '*.c')
+#C_SOURCES += $(shell find $(srcdir)/coreapi/arch/x86/vmx/ -type f -name '*.c')
 
 #------------------------------------------------------------------------------------------
 #xc-coreapi-x86vmx.o: In function `_xc_api_partition_arch_addcpu_setupbasestate':
