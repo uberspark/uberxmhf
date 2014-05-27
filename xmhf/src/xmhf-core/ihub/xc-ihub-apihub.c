@@ -128,7 +128,7 @@ void xmhf_apihub_fromhypapp(u32 callnum){
 				}
 				
 			case XMHF_APIHUB_COREAPI_REBOOT:{	//void xmhf_baseplatform_reboot(...)
-					xmhf_baseplatform_reboot(paramhypapp->context_desc );
+					xc_api_platform_shutdown(paramhypapp->context_desc );
 					printf("\n%s: xmhf_baseplatform_reboot should never return. halting!", __FUNCTION__);
 					HALT();
 					break;

@@ -248,3 +248,9 @@ bool xc_api_partition_startcpu(context_desc_t context_desc){
 	return xc_api_partition_arch_startcpu(context_desc);
 
 }
+
+
+//platform related core API
+void xc_api_platform_shutdown(context_desc_t context_desc){
+	xc_api_platform_arch_shutdown(context_desc);
+}
