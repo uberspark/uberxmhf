@@ -77,7 +77,7 @@ void xmhf_baseplatform_arch_reboot(context_desc_t context_desc);
 #define xmhf_baseplatform_cpuinitialize xmhf_baseplatform_arch_cpuinitialize
 #define xmhf_baseplatform_smpinitialize xmhf_baseplatform_arch_smpinitialize
 #define xmhf_baseplatform_initialize	xmhf_baseplatform_arch_initialize
-#define xmhf_baseplatform_reboot		xmhf_baseplatform_arch_reboot
+//#define xmhf_baseplatform_reboot		xmhf_baseplatform_arch_reboot
 
 #endif	//__ASSEMBLY__
 
