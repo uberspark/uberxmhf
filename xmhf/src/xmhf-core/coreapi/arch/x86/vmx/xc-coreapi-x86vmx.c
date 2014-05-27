@@ -1015,3 +1015,15 @@ bool xc_api_partition_arch_startcpu(context_desc_t context_desc){
 	
 	return false;
 }
+
+//platform related core API
+
+//shutdown platform
+void xc_api_platform_arch_shutdown(context_desc_t context_desc){
+	//shut VMX off, else CPU ignores INIT signal!
+	asm volatile("vmxoff \r\n");
+	write_cr4(read_cr4() & ~(CR4_VMXE));
+	
+	//fall back on generic x86 reboot
+	xmhf_baseplatform_arch_x86_reboot();
+}

@@ -240,15 +240,6 @@ u32 xmhf_baseplatform_arch_getcpuvendor(void){
 	return xmhf_baseplatform_arch_x86_getcpuvendor();
 }
 
-//reboot platform
-void xmhf_baseplatform_arch_reboot(context_desc_t context_desc){
-	//shut VMX off, else CPU ignores INIT signal!
-	__asm__ __volatile__("vmxoff \r\n");
-	write_cr4(read_cr4() & ~(CR4_VMXE));
-	
-	//fall back on generic x86 reboot
-	xmhf_baseplatform_arch_x86_reboot();
-}
 
 //wake up application processors (cores) in the system
 void xmhf_baseplatform_arch_x86vmx_wakeupAPs(void){
