@@ -52,4 +52,14 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
  
+__attribute__((naked)) void entry_cr3(void){
+
+		asm volatile (
+			"call entry	\r\n"
+			:
+			:
+			:
+		);
+}
+
 
