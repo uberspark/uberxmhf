@@ -52,6 +52,10 @@
 
 #ifndef __ASSEMBLY__
 
+static inline void entry(void){
+
+
+}
 
 #endif //__ASSEMBLY__
 
