@@ -25,14 +25,18 @@ SLAB_OBJECTS_DIR = _objs_slab
 # archive name
 THE_ARCHIVE = xmhf-slab
 
-LINKER_SCRIPT := $(srcdir)/xmhf-slab.lscript
+LINKER_SCRIPT_INPUT := $(srcdir)/xmhf-slab.lscript
+LINKER_SCRIPT_OUTPUT := xmhf-slab.lds
+
 
 # targets
 .PHONY: all
 all: $(THE_ARCHIVE)
 
 $(THE_ARCHIVE): $(OBJECTS) 
-	cd $(SLAB_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(LINKER_SCRIPT) -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
+	cd $(SLAB_OBJECTS_DIR) && cp -f $(LINKER_SCRIPT_INPUT) $(LINKER_SCRIPT_INPUT).c
+	cd $(SLAB_OBJECTS_DIR) && $(CC) -P -E $(LINKER_SCRIPT_INPUT).c -o $(LINKER_SCRIPT_OUTPUT)
+	cd $(SLAB_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(LINKER_SCRIPT_OUTPUT) -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
 	cd $(SLAB_OBJECTS_DIR) && $(OBJCOPY) --output-format=binary $(THE_ARCHIVE).exe $(THE_ARCHIVE).bin
 
 %.o: %.c   
