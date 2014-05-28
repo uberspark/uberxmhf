@@ -59,6 +59,7 @@ SECTIONS
 	. = 0x10200000;
 
 	.slab_rodata : {
+		*(.slabrodata)
 		*(.rodata)
 		*(.rodata.str1.1)
 		*(.comment)
