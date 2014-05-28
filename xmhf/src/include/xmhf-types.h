@@ -194,6 +194,7 @@ typedef struct {
 typedef struct {
 	u32 slab_index;
 	u32 slab_privilegemask;
+	u32 slab_tos;
 	slab_section_t slab_rodata;
 	slab_section_t slab_rwdata;
 	slab_section_t slab_code;

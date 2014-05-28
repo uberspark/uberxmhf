@@ -51,10 +51,14 @@
  * 
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
+
+__attribute__ ((section(".stack"))) static u8 _slab_stack[XMHF_SLAB_STACKSIZE];
+
  
 __attribute__ ((section(".slabrodata"))) slab_header_t slab_header = {
 	.slab_index = 0,
 	.slab_privilegemask = 0,
+	.slab_tos = ((u32)(&_slab_stack) + sizeof(_slab_stack)), 
 	.slab_rodata.base = 0,
 	.slab_rodata.size = 0,
 	.slab_rwdata.base = 0,
@@ -64,3 +68,5 @@ __attribute__ ((section(".slabrodata"))) slab_header_t slab_header = {
 	.slab_stack.base = 0,
 	.slab_stack.size = 0,
 };
+
+
