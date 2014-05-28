@@ -191,6 +191,8 @@ typedef struct {
 	u32 end;
 } slab_section_t;
 
+typedef void * slab_entrystub_t;
+
 typedef struct {
 	u32 slab_index;
 	u32 slab_macmid;
@@ -201,6 +203,7 @@ typedef struct {
 	slab_section_t slab_code;
 	slab_section_t slab_stack;
 	slab_section_t slab_trampoline;
+	slab_entrystub_t entry_cr3;
 } slab_header_t;
 
 #endif /*ifndef __ASSEMBLY__*/
