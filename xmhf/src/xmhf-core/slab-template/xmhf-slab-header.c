@@ -67,6 +67,7 @@ __attribute__ ((section(".stack"))) static u8 _slab_stack[XMHF_SLAB_STACKSIZE];
  
 __attribute__ ((section(".slabrodata"))) slab_header_t slab_header = {
 	.slab_index = 0,
+	.slab_macmid = 0,
 	.slab_privilegemask = 0,
 	.slab_tos = ((u32)(&_slab_stack) + sizeof(_slab_stack)), 
 	.slab_rodata.start = &slab_rodata_start,
