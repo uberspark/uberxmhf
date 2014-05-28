@@ -4,6 +4,7 @@
 srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
 vpath %.c $(srcdir)
 vpath %.S $(srcdir)
+vpath %.lscript $(srcdir)
 
 # grab list of all source files
 C_SOURCES := $(wildcard $(srcdir)/*.c)
@@ -24,12 +25,14 @@ SLAB_OBJECTS_DIR = _objs_slab
 # archive name
 THE_ARCHIVE = xmhf-slab
 
+LINKER_SCRIPT := $(srcdir)/xmhf-slab.lscript
+
 # targets
 .PHONY: all
 all: $(THE_ARCHIVE)
 
 $(THE_ARCHIVE): $(OBJECTS) 
-	cd $(SLAB_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(srcdir)/xc-slab.lscript -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
+	cd $(SLAB_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(LINKER_SCRIPT) -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
 	cd $(SLAB_OBJECTS_DIR) && $(OBJCOPY) --output-format=binary $(THE_ARCHIVE).exe $(THE_ARCHIVE).bin
 
 %.o: %.c   
