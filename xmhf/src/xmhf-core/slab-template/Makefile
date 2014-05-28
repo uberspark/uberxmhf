@@ -35,7 +35,7 @@ all: $(THE_ARCHIVE)
 
 $(THE_ARCHIVE): $(OBJECTS) 
 	cd $(SLAB_OBJECTS_DIR) && cp -f $(LINKER_SCRIPT_INPUT) xmhf-slab.lscript.c
-	cd $(SLAB_OBJECTS_DIR) && $(CC) -P -E xmhf-slab.lscript.c -o $(LINKER_SCRIPT_OUTPUT)
+	cd $(SLAB_OBJECTS_DIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E xmhf-slab.lscript.c -o $(LINKER_SCRIPT_OUTPUT)
 	cd $(SLAB_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(LINKER_SCRIPT_OUTPUT) -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
 	cd $(SLAB_OBJECTS_DIR) && $(OBJCOPY) --output-format=binary $(THE_ARCHIVE).exe $(THE_ARCHIVE).bin
 

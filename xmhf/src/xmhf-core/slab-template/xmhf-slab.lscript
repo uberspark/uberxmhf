@@ -44,6 +44,8 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#include <xmhf.h>
+
 OUTPUT_ARCH("i386")
 
 /* ENTRY() */
@@ -56,7 +58,7 @@ MEMORY
 
 SECTIONS
 {
-	. = 0x10200000;
+	. = XMHF_SLAB_REGION_START;
 
 	.slab_rodata : {
 		slab_rodata_start = . ;
