@@ -58,6 +58,10 @@ MEMORY
 
 SECTIONS
 {
+	/* shared slab read-only data area */
+	. = XMHF_SLAB_REGION_SHARED_RODATA;
+	_slab_region_shared_rodata = .;
+
 	. = XMHF_SLAB_REGION_START;
 
 	.slab_rodata : {

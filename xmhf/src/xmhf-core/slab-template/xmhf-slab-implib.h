@@ -51,6 +51,7 @@
 #define __XMHF_SLAB_IMPLIB_H__
 
 #ifndef __ASSEMBLY__
+extern slab_table_t *g_slab_table;
 
 static inline void entry(void){
 
