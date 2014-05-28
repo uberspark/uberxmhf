@@ -52,4 +52,8 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
  
+void entry(void){
+	printf("\n%s: Huhu we are here", __FUNCTION__);
+}
 
+	
