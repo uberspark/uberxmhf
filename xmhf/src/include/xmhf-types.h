@@ -187,8 +187,8 @@ typedef struct _sl_parameter_block {
 #define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
 
 typedef struct {
-	u32 base;
-	u32 size;
+	u32 start;
+	u32 end;
 } slab_section_t;
 
 typedef struct {

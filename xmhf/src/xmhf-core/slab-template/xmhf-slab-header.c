@@ -52,6 +52,16 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
+// this is in xmhf-slab.lscript
+extern u8 slab_rodata_start[];
+extern u8 slab_rodata_end[];
+extern u8 slab_rwdata_start[];
+extern u8 slab_rwdata_end[];
+extern u8 slab_code_start[];
+extern u8 slab_code_end[];
+extern u8 slab_stack_start[];
+extern u8 slab_stack_end[];
+
 __attribute__ ((section(".stack"))) static u8 _slab_stack[XMHF_SLAB_STACKSIZE];
 
  
@@ -59,14 +69,14 @@ __attribute__ ((section(".slabrodata"))) slab_header_t slab_header = {
 	.slab_index = 0,
 	.slab_privilegemask = 0,
 	.slab_tos = ((u32)(&_slab_stack) + sizeof(_slab_stack)), 
-	.slab_rodata.base = 0,
-	.slab_rodata.size = 0,
-	.slab_rwdata.base = 0,
-	.slab_rwdata.size = 0,
-	.slab_code.base = 0,
-	.slab_code.size = 0,
-	.slab_stack.base = 0,
-	.slab_stack.size = 0,
+	.slab_rodata.start = &slab_rodata_start,
+	.slab_rodata.end = (u32)&slab_rodata_end,
+	.slab_rwdata.start = &slab_rwdata_start,
+	.slab_rwdata.end = (u32)&slab_rwdata_end,
+	.slab_code.start = (u32)&slab_code_start,
+	.slab_code.end = (u32)&slab_code_end,
+	.slab_stack.start = (u32)&slab_stack_start,
+	.slab_stack.end = (u32)&slab_stack_end,
 };
 
 
