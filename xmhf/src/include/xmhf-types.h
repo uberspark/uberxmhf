@@ -186,7 +186,20 @@ typedef struct _sl_parameter_block {
 //"runtime" parameter block magic value
 #define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
 
+typedef struct {
+	u32 base;
+	u32 size;
+} slab_section_t;
 
+typedef struct {
+	u32 slab_index;
+	u32 slab_privilegemask;
+	slab_section_t slab_rodata;
+	slab_section_t slab_rwdata;
+	slab_section_t slab_code;
+	slab_section_t slab_stack;
+	slab_section_t slab_trampoline;
+} slab_header_t;
 
 #endif /*ifndef __ASSEMBLY__*/
 
