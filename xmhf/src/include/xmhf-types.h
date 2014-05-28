@@ -186,6 +186,8 @@ typedef struct _sl_parameter_block {
 //"runtime" parameter block magic value
 #define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
 
+
+//-------------------------------------------------------
 typedef struct {
 	u32 start;
 	u32 end;
@@ -205,6 +207,11 @@ typedef struct {
 	slab_section_t slab_trampoline;
 	slab_entrystub_t entry_cr3;
 } slab_header_t;
+
+typedef struct {
+	slab_header_t slab_header;
+} slab_table_t;
+
 
 #endif /*ifndef __ASSEMBLY__*/
 
