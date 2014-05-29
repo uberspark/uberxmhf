@@ -53,7 +53,7 @@
 #ifndef __ASSEMBLY__
 extern slab_table_t *g_slab_table;
 
-static inline void ignition(u32 destination_slab_index, u32 funcnum, u32 addrtos){
+static inline void ignition(u32 destination_slab_index, u32 funcnum, u32 addrtos) __attribute__((always_inline)){
 	//edi = address of parameters on stack
 	//esi = return address
 	
