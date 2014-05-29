@@ -64,8 +64,8 @@ extern u8 slab_code_end[];
 extern u8 slab_stack_start[];
 extern u8 slab_stack_end[];
 
-extern u8 _slab_region_shared_rodata[];
-slab_table_t *g_slab_table = (slab_table_t *)&_slab_region_shared_rodata;
+//extern u8 _slab_region_shared_rodata[];
+//slab_table_t *g_slab_table = (slab_table_t *)&_slab_region_shared_rodata;
 
 
 __attribute__ ((section(".stack"))) static u8 _slab_stack[XMHF_SLAB_STACKSIZE];
