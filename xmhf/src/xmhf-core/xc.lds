@@ -50,7 +50,8 @@ ENTRY(xmhf_runtime_entry)
 
 MEMORY
 {
-  all (rwxai) : ORIGIN = 0x10200000, LENGTH = 202M /* max. length */
+  all (rwxai) : ORIGIN = 0x10200000, LENGTH = 14M /* max. length */
+  slabmem (rwxai) : ORIGIN = 0x11000000, LENGTH = 16M
   unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 
@@ -62,7 +63,7 @@ SECTIONS
 		*(.s_rpb)
 		*(.text)
 		. = ALIGN(4096);    
-	} =0x9090 
+	} >all =0x9090 
 
 	.data : {
 		*(.data)
@@ -72,17 +73,25 @@ SECTIONS
 		*(.eh_frame) /* exception-metadata. might be able to discard */
 		*(.bss)
 		. = ALIGN(4096);    
-	} =0x0000 
+	} >all =0x0000 
 
 	.palign_data : {
 		*(.palign_data)
 		. = ALIGN(4096);    
-	} =0x0000 
+	} >all =0x0000 
 
 	.stack : {
 		*(.stack)
-		. = ALIGN(4096);    
-	} =0x0000
+		. = ALIGN(0x01000000);    
+	} >all =0x0000
+
+
+	/* [test] slabs start */
+	. = 0x11000000;
+	.slabtest : {
+		. = ALIGN(0x01000000);
+	} >slabmem =0x0000
+
 
 	/* this is to cause the link to fail if there is
 	* anything we didn't explicitly place.

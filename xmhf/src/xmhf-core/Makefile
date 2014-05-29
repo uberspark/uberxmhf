@@ -155,10 +155,10 @@ THE_ARCHIVE = xmhf-core
 
 # targets
 .PHONY: all
-#all: $(THE_ARCHIVE)
-all:
-	mkdir -p $(XMHF_CORE_OBJECTS_DIR)
-	cd $(XMHF_CORE_OBJECTS_DIR) && $(MAKE) -f $(srcdir)/slab-template/Makefile -w all
+all: $(THE_ARCHIVE)
+#all:
+#	mkdir -p $(XMHF_CORE_OBJECTS_DIR)
+#	cd $(XMHF_CORE_OBJECTS_DIR) && $(MAKE) -f $(srcdir)/slab-template/Makefile -w all
 
 
 $(THE_ARCHIVE): $(OBJECTS) 
