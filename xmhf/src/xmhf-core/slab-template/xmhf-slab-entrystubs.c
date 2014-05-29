@@ -55,7 +55,7 @@
 __attribute__((naked)) void entry_cr3(void){
 
 		asm volatile (
-			"call entry	\r\n"
+			"jmpl entry	\r\n"
 			:
 			:
 			:
