@@ -51,7 +51,7 @@
 #define __XMHF_SLAB_IMPLIB_H__
 
 #ifndef __ASSEMBLY__
-extern slab_table_t *g_slab_table;
+extern slab_table_t _slab_table[];
 
 static inline void ignition(u32 destination_slab_index, u32 funcnum, u32 addrtos) __attribute__((always_inline)){
 	//edi = address of parameters on stack
@@ -65,7 +65,7 @@ static inline void ignition(u32 destination_slab_index, u32 funcnum, u32 addrtos
 		"call *%%ecx \r\n"
 		"retfromslab:	\r\n"
 		:	//outputs
-		: "g" (addrtos), "g" (funcnum), "m" (g_slab_table->slab_header.entry_cr3)	//inputs
+		: "g" (addrtos), "g" (funcnum), "m" (_slab_table[destination_slab_index].slab_header.entry_cr3)	//inputs
 		: "edi", "esi", "eax", "ecx" 	//clobber
 	);
 

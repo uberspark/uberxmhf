@@ -60,7 +60,7 @@ SECTIONS
 {
 	/* shared slab read-only data area */
 	. = XMHF_SLAB_REGION_SHARED_RODATA;
-	_slab_region_shared_rodata = .;
+	_slab_table = .;
 
 	. = XMHF_SLAB_REGION_START;
 
