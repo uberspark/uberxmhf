@@ -158,7 +158,7 @@ THE_ARCHIVE = xmhf-core
 all: $(THE_ARCHIVE)
 
 $(THE_ARCHIVE): testslab $(OBJECTS) 
-	cd $(XMHF_CORE_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(srcdir)/xc.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
+	cd $(XMHF_CORE_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(srcdir)/xc.lds -o $(THE_ARCHIVE).exe _objs_slab/xmhf-slab.slo $(OBJECTS_ARCHIVE) $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
 	cd $(XMHF_CORE_OBJECTS_DIR) && $(OBJCOPY) --output-format=binary $(THE_ARCHIVE).exe $(THE_ARCHIVE).bin
 
 .PHONY: testslab
