@@ -55,15 +55,15 @@ extern slab_table_t _slab_table[];
 
 static inline void ignition(u32 destination_slab_index, u32 funcnum, u32 addrtos) __attribute__((always_inline)){
 	//edi = address of parameters on stack
-	//esi = return address
+	////esi = return address
 	
 	asm volatile(
 		"movl %0, %%edi \r\n"
-		"movl $retfromslab, %%esi \r\n"
+		//"movl $retfromslab, %%esi \r\n"
 		"movl %1, %%eax \r\n"
 		"movl %2, %%ecx \r\n"
-		"call *%%ecx \r\n"
-		"retfromslab:	\r\n"
+		"jmpl *%%ecx \r\n"
+		//"retfromslab:	\r\n"
 		:	//outputs
 		: "g" (addrtos), "g" (funcnum), "m" (_slab_table[destination_slab_index].slab_header.entry_cr3)	//inputs
 		: "edi", "esi", "eax", "ecx" 	//clobber
