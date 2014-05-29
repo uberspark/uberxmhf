@@ -53,9 +53,27 @@
 #ifndef __ASSEMBLY__
 extern slab_table_t *g_slab_table;
 
-static inline void entry(void){
+static inline void ignition(u32 destination_slab_index, u32 funcnum, u32 addrtos){
+	//edi = address of parameters on stack
+	//esi = return address
+	
+	asm volatile(
+		"movl %0, %%edi \r\n"
+		"movl $retfromslab, %%esi \r\n"
+		"movl %1, %%eax \r\n"
+		"movl %2, %%ecx \r\n"
+		"call *%%ecx \r\n"
+		"retfromslab:	\r\n"
+		:	//outputs
+		: "g" (addrtos), "g" (funcnum), "m" (g_slab_table->slab_header.entry_cr3)	//inputs
+		: "edi", "esi", "eax", "ecx" 	//clobber
+	);
+
+}
 
 
+static inline void sample_entry(void){
+	ignition(XMHF_SLAB_INDEX_TEMPLATE, 0, 0);
 }
 
 #endif //__ASSEMBLY__
