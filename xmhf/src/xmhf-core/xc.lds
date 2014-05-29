@@ -89,6 +89,7 @@ SECTIONS
 	/* [test] slabs start */
 	. = 0x11000000;
 	.slabtest : {
+		_test_slab_header = . ;
 		_objs_slab/xmhf-slab.slo(*)
 		. = ALIGN(0x01000000);
 	} >slabmem =0x0000
