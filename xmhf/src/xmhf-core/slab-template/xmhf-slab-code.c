@@ -45,7 +45,6 @@
  */
 
 #include <xmhf-core.h>
-#include "xmhf-slab-implib.h"
 
 /*
  * slab code
@@ -55,7 +54,6 @@
  
 void entry(void){
 	printf("\n%s: Huhu we are here", __FUNCTION__);
-	sample_entry();
 }
 
 	
