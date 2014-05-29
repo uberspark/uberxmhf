@@ -156,14 +156,16 @@ THE_ARCHIVE = xmhf-core
 # targets
 .PHONY: all
 all: $(THE_ARCHIVE)
-#all:
-#	mkdir -p $(XMHF_CORE_OBJECTS_DIR)
-#	cd $(XMHF_CORE_OBJECTS_DIR) && $(MAKE) -f $(srcdir)/slab-template/Makefile -w all
 
-
-$(THE_ARCHIVE): $(OBJECTS) 
+$(THE_ARCHIVE): testslab $(OBJECTS) 
 	cd $(XMHF_CORE_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(srcdir)/xc.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
 	cd $(XMHF_CORE_OBJECTS_DIR) && $(OBJCOPY) --output-format=binary $(THE_ARCHIVE).exe $(THE_ARCHIVE).bin
+
+.PHONY: testslab
+testslab:
+	mkdir -p $(XMHF_CORE_OBJECTS_DIR)
+	cd $(XMHF_CORE_OBJECTS_DIR) && $(MAKE) -f $(srcdir)/slab-template/Makefile -w all
+
 
 %.o: %.c   
 	mkdir -p $(XMHF_CORE_OBJECTS_DIR)
