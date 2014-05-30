@@ -107,9 +107,9 @@ void xmhf_runtime_entry(void){
 			_slab_table[0].slab_header.entry_cr3 = _test_slab_header.entry_cr3;
 
 			//invoke slab interface
-			printf("\n%s: preparing to invoke slab interface", __FUNCTION__);
-			//entry();
-			value=entry(5, 3);
+			printf("\n%s: preparing to invoke slab interfaces", __FUNCTION__);
+			entry_0();
+			value=entry_1(5, 3);
 			printf("\n%s: came back to initbs, value=%u", __FUNCTION__, value);
 	}
 

@@ -71,9 +71,7 @@ extern slab_table_t _slab_table[];
 
 }*/
 
-
-//static inline void entry(void) __attribute__((noinline)){
-static inline u32 entry(u32 param1, u32 param2) __attribute__((noinline)){
+static inline void entry_0(void) __attribute__((noinline)){
 	//edi = base address of input parameter frame on stack (including return address)
 	//eax = function number
 	//ecx = interface address
@@ -85,6 +83,25 @@ static inline u32 entry(u32 param1, u32 param2) __attribute__((noinline)){
 		"jmpl *%%ecx \r\n"
 		: //outputs
 		: "i" (0), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3)	//inputs
+		: "edi", "eax", "ecx" 	//clobber
+	);
+
+}
+
+
+//static inline void entry(void) __attribute__((noinline)){
+static inline u32 entry_1(u32 param1, u32 param2) __attribute__((noinline)){
+	//edi = base address of input parameter frame on stack (including return address)
+	//eax = function number
+	//ecx = interface address
+	
+	asm volatile(
+		"leal 0x4(%%ebp), %%edi \r\n"
+		"movl %0, %%eax \r\n"
+		"movl %1, %%ecx \r\n"
+		"jmpl *%%ecx \r\n"
+		: //outputs
+		: "i" (1), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3)	//inputs
 		: "edi", "eax", "ecx" 	//clobber
 	);
 
