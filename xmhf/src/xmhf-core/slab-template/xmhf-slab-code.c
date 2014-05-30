@@ -55,9 +55,12 @@
 u32 my_entry_cr3;
 extern slab_table_t _slab_table[];
  
-void entry(void){
+//void entry(void){
+u32 entry(u32 param1, u32 param2){
 	my_entry_cr3 = _slab_table[0].slab_header.entry_cr3;
 	printf("\n%s: Huhu we are here: entry_cr3=%08x", __FUNCTION__, my_entry_cr3);
+	printf("\n%s: param1=%u, param2=%u", __FUNCTION__, param1, param2);
+	return param1+param2;
 }
 
 	

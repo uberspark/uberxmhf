@@ -90,6 +90,8 @@ void xmhf_runtime_entry(void){
 	//[test] slab
 	{
 			extern slab_header_t _test_slab_header;
+			u32 value;
+			
 			printf("\nslab testing, dumping slab header");
 			printf("\n	slab_index=%u", _test_slab_header.slab_index);
 			printf("\n	slab_macmid=%08x", _test_slab_header.slab_macmid);
@@ -106,8 +108,9 @@ void xmhf_runtime_entry(void){
 
 			//invoke slab interface
 			printf("\n%s: preparing to invoke slab interface", __FUNCTION__);
-			entry();
-			printf("\n%s: came back to initbs", __FUNCTION__);
+			//entry();
+			value=entry(5, 3);
+			printf("\n%s: came back to initbs, value=%u", __FUNCTION__, value);
 	}
 
 
