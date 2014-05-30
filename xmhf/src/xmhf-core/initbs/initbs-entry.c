@@ -49,6 +49,9 @@
 
 //---includes-------------------------------------------------------------------
 #include <xmhf-core.h> 
+#include <xmhf-slab-implib.h>
+
+extern slab_table_t _slab_table[];
 
 void xmhf_runtime_entry(void){
 
@@ -98,6 +101,8 @@ void xmhf_runtime_entry(void){
 			printf("\n  slab_stack(%08x-%08x)", _test_slab_header.slab_stack.start, _test_slab_header.slab_stack.end);
 			printf("\n  slab_trampoline(%08x-%08x)", _test_slab_header.slab_trampoline.start, _test_slab_header.slab_trampoline.end);
 			printf("\n  slab_entrycr3=%08x", _test_slab_header.entry_cr3);
+			
+			_slab_table[0].slab_header.entry_cr3 = _test_slab_header.entry_cr3;
 	}
 
 
