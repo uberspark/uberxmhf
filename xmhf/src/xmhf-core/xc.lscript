@@ -44,7 +44,9 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-OUTPUT_ARCH(i386)
+#include <xmhf.h>
+
+OUTPUT_ARCH("i386")
 
 ENTRY(xmhf_runtime_entry)
 
