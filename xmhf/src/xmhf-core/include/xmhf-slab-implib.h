@@ -73,20 +73,18 @@ extern slab_table_t _slab_table[];
 
 
 static inline void entry(void) __attribute__((noinline)){
-	//ignition(XMHF_SLAB_INDEX_TEMPLATE, 0, 0);
-	//edi = address of parameters on stack
-	////esi = return address
+	//edi = base address of input parameter frame on stack (including return address)
+	//eax = function number
+	//ecx = interface address
 	
 	asm volatile(
-		"movl %0, %%edi \r\n"
-		//"movl $retfromslab, %%esi \r\n"
-		"movl %1, %%eax \r\n"
-		"movl %2, %%ecx \r\n"
-		"call *%%ecx \r\n"
-		//"retfromslab:	\r\n"
-		:	//outputs
-		: "g" (0), "g" (0), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3)	//inputs
-		: "edi", "esi", "eax", "ecx" 	//clobber
+		"leal 0x4(%%ebp), %%edi \r\n"
+		"movl %0, %%eax \r\n"
+		"movl %1, %%ecx \r\n"
+		"jmpl *%%ecx \r\n"
+		: //outputs
+		: "i" (0), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3)	//inputs
+		: "edi", "eax", "ecx" 	//clobber
 	);
 
 }
