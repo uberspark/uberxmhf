@@ -72,7 +72,8 @@ extern slab_table_t _slab_table[];
 }*/
 
 
-static inline void entry(void) __attribute__((noinline)){
+//static inline void entry(void) __attribute__((noinline)){
+static inline u32 entry(u32 param1, u32 param2) __attribute__((noinline)){
 	//edi = base address of input parameter frame on stack (including return address)
 	//eax = function number
 	//ecx = interface address
