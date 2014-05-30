@@ -103,7 +103,13 @@ void xmhf_runtime_entry(void){
 			printf("\n  slab_entrycr3=%08x", _test_slab_header.entry_cr3);
 			
 			_slab_table[0].slab_header.entry_cr3 = _test_slab_header.entry_cr3;
+
+			//invoke slab interface
+			printf("\n%s: preparing to invoke slab interface", __FUNCTION__);
+			entry();
+			printf("\n%s: came back to initbs", __FUNCTION__);
 	}
+
 
 
 	//invoke XMHF api hub initialization function to initialize core API
