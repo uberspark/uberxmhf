@@ -48,8 +48,6 @@
 
 OUTPUT_ARCH("i386")
 
-/* ENTRY() */
-
 MEMORY
 {
   slabmem (rwxai) : ORIGIN = XMHF_SLAB_REGION_START, LENGTH = 16M /* max. length */
@@ -58,10 +56,6 @@ MEMORY
 
 SECTIONS
 {
-	/* shared slab read-only data area */
-	/* . = XMHF_SLAB_REGION_SHARED_RODATA; */
-	/* _slab_table = .; */
-
 	. = XMHF_SLAB_REGION_START;
 
 	.slab_rodata : {
@@ -89,7 +83,6 @@ SECTIONS
 		. = ALIGN(0x200000);    
 		slab_code_end = . ;
 	} >slabmem =0x9090 
-
 
 	.slab_stack : {
 		slab_stack_start = . ;
