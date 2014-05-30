@@ -51,7 +51,8 @@ ENTRY(xmhf_runtime_entry)
 MEMORY
 {
   all (rwxai) : ORIGIN = 0x10200000, LENGTH = 14M /* max. length */
-  slabmem (rwxai) : ORIGIN = 0x11000000, LENGTH = 16M
+  slabroshareddatamem (rai) : ORIGIN = 0x11000000, LENGTH = 2M
+  slabmem (rwxai) : ORIGIN = 0x11200000, LENGTH = 16M
   unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 
@@ -86,8 +87,16 @@ SECTIONS
 	} >all =0x0000
 
 
+	/* shared slab read-only data area */
+	. = 0x11000000; 
+	.slabroshareddata : {
+		_slab_table = .;
+		. = ALIGN(0x01000000);    
+	} >slabroshareddatamem =0x0000
+	
+
 	/* [test] slabs start */
-	. = 0x11000000;
+	. = 0x11200000;
 	.slabtest : {
 		_test_slab_header = . ;
 		_objs_slab/xmhf-slab.slo(*)
