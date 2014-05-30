@@ -53,8 +53,11 @@
  */
  
 __attribute__((naked)) void entry_cr3(void){
+	//edi = base address of input parameter frame on stack (including return address)
+	//eax = function number
 
-		asm volatile (
+	asm volatile (
+			"movl %%edi, %%esp \r\n"	
 			"jmp entry	\r\n"
 			:
 			:
