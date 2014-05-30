@@ -57,8 +57,13 @@ __attribute__((naked)) void entry_cr3(void){
 	//eax = function number
 
 	asm volatile (
-			"movl %%edi, %%esp \r\n"	
-			"jmp entry	\r\n"
+			"movl %%edi, %%esp \r\n"
+			"cmpl $0x0, %%eax \r\n"
+			"je entry_0 \r\n"
+			"cmpl $0x1, %%eax \r\n"
+			"je entry_1 \r\n"
+			"xorl %%eax, %%eax \r\n"
+			"ret \r\n"	
 			:
 			:
 			:
