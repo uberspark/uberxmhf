@@ -72,7 +72,7 @@ static inline void ignition(u32 destination_slab_index, u32 funcnum, u32 addrtos
 }
 
 
-static inline void entry(void){
+static inline void entry(void) __attribute__((noinline)){
 	ignition(XMHF_SLAB_INDEX_TEMPLATE, 0, 0);
 }
 
