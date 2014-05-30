@@ -51,9 +51,13 @@
  * 
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
+
+u32 my_entry_cr3;
+extern slab_table_t _slab_table[];
  
 void entry(void){
-	printf("\n%s: Huhu we are here", __FUNCTION__);
+	my_entry_cr3 = _slab_table[0].slab_header.entry_cr3;
+	printf("\n%s: Huhu we are here: entry_cr3=%08x", __FUNCTION__, my_entry_cr3);
 }
 
 	
