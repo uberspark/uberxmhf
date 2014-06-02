@@ -71,19 +71,28 @@ extern slab_table_t _slab_table[];
 
 }*/
 
-static inline void entry_0(void) __attribute__((noinline)){
-	//edi = base address of input parameter frame on stack (including return address)
-	//eax = function number
-	//ecx = interface address
-	
+__attribute__((naked)) static inline void entry_0(void) __attribute__((noinline)){
+	//setup
+	//esi = base address of input parameter frame on stack (including return address)
+	//edi = return address
+	//ebx = function number
+	//ecx = number of 32-bit dwords comprising the parameters (excluding return address)
+	//we have eax, edx to play around with
+		
 	asm volatile(
-		"leal 0x4(%%ebp), %%edi \r\n"
-		"movl %0, %%eax \r\n"
-		"movl %1, %%ecx \r\n"
-		"jmpl *%%ecx \r\n"
+		"pushal \r\n"					//save all caller gprs
+		"leal (%%esp), %%esi \r\n"		//setup esi
+		"movl $1f, %%edi \r\n"			//setup edi
+		"movl %0, %%ebx \r\n"			//setup ebx
+		"movl %1, %%ecx \r\n"			//setup ecx
+		"movl %2, %%eax \r\n"
+		"jmpl *%%eax \r\n"				//jump to destination slab interface
+		"1: \r\n"						//destination slab returns here
+		"popal \r\n"					//restore caller gprs
+		"ret \r\n"						//return
 		: //outputs
-		: "i" (0), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3)	//inputs
-		: "edi", "eax", "ecx" 	//clobber
+		: "i" (0), "i" (0), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3)	//inputs
+		: //no clobber
 	);
 
 }
