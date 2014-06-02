@@ -107,6 +107,26 @@ static inline u32 entry_1(u32 param1, u32 param2) __attribute__((noinline)){
 
 }
 
+static inline context_desc_t entry_2(u32 cpu_index, bool isbsp, u32 partition_index) __attribute__((noinline)){
+	
+	//edi = base address of input parameter frame on stack (including return address)
+	//eax = function number
+	//ecx = interface address
+	
+	asm volatile(
+		"leal 0x4(%%ebp), %%edi \r\n"
+		"movl %0, %%eax \r\n"
+		"movl %1, %%ecx \r\n"
+		"jmpl *%%ecx \r\n"
+		: //outputs
+		: "i" (2), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3)	//inputs
+		: "edi", "eax", "ecx" 	//clobber
+	);
+	
+	
+}
+
+
 #endif //__ASSEMBLY__
 
 #endif //__XMHF_SLAB_IMPLIB__

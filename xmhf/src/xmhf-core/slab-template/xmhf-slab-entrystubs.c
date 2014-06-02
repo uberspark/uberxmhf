@@ -62,6 +62,8 @@ __attribute__((naked)) void entry_cr3(void){
 			"je entry_0 \r\n"
 			"cmpl $0x1, %%eax \r\n"
 			"je entry_1 \r\n"
+			"cmpl $0x2, %%eax \r\n"
+			"je entry_2 \r\n"
 			"xorl %%eax, %%eax \r\n"
 			"ret \r\n"	
 			:
