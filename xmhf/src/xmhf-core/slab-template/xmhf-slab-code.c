@@ -66,4 +66,14 @@ u32 entry_1(u32 param1, u32 param2){
 	return param1+param2;
 }
 
+context_desc_t entry_2(u32 cpu_index, bool isbsp, u32 partition_index){
+	context_desc_t ctx;
+
+	printf("\n%s: Got control: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, cpu_index, isbsp, partition_index);
 	
+	ctx.cpu_desc.cpu_index = cpu_index;
+	ctx.cpu_desc.isbsp = isbsp;
+	ctx.partition_desc.partition_index = partition_index;
+	
+	return ctx;
+}	

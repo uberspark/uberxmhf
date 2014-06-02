@@ -90,6 +90,7 @@ void xmhf_runtime_entry(void){
 	//[test] slab
 	{
 			extern slab_header_t _test_slab_header;
+			context_desc_t ctx;
 			u32 value;
 			
 			printf("\nslab testing, dumping slab header");
@@ -110,7 +111,10 @@ void xmhf_runtime_entry(void){
 			printf("\n%s: preparing to invoke slab interfaces", __FUNCTION__);
 			entry_0();
 			value=entry_1(5, 3);
+			ctx= entry_2(2048, true, 4096);
 			printf("\n%s: came back to initbs, value=%u", __FUNCTION__, value);
+			printf("\n%s: ctx: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, ctx.cpu_desc.cpu_index, ctx.cpu_desc.isbsp, ctx.partition_desc.partition_index);
+
 	}
 
 
