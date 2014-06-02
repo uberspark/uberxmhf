@@ -53,19 +53,21 @@
  */
  
 __attribute__((naked)) void entry_cr3(void){
-	//edi = base address of input parameter frame on stack (including return address)
-	//eax = function number
+	//setup
+	//esi = base address of input parameter frame on stack (including return address)
+	//edi = return address
+	//ebx = function number
+	//ecx = number of 32-bit dwords comprising the parameters (excluding return address)
+	//we have eax, edx to play around with
 
 	asm volatile (
-			"movl %%edi, %%esp \r\n"
-			"cmpl $0x0, %%eax \r\n"
-			"je entry_0 \r\n"
-			"cmpl $0x1, %%eax \r\n"
-			"je entry_1 \r\n"
-			"cmpl $0x2, %%eax \r\n"
-			"je entry_2 \r\n"
-			"xorl %%eax, %%eax \r\n"
-			"ret \r\n"	
+			"pushl %%edi \r\n" 				//save return address
+			"cmpl $0x0, %%ebx \r\n"			//check for correct function number
+			"jne 1f \r\n"
+			"call entry_0 \r\n"				//call function
+			"1:\r\n"
+			"popl %%edi \r\n"
+			"jmpl *%%edi \r\n"				//return back to caller slab
 			:
 			:
 			:
