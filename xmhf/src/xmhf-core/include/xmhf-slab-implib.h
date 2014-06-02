@@ -73,7 +73,7 @@ extern slab_table_t _slab_table[];
 
 __attribute__((naked)) static inline void entry_0(void) __attribute__((noinline)){
 	//setup
-	//esi = base address of input parameter frame on stack (including return address)
+	//esi = base address of input parameter frame on stack (excluding return address)
 	//edi = return address
 	//ebx = function number
 	//ecx = number of 32-bit dwords comprising the parameters (excluding return address)
@@ -81,7 +81,7 @@ __attribute__((naked)) static inline void entry_0(void) __attribute__((noinline)
 		
 	asm volatile(
 		"pushal \r\n"					//save all caller gprs
-		"leal (%%esp), %%esi \r\n"		//setup esi
+		"leal 0x4(%%esp), %%esi \r\n"	//setup esi
 		"movl $1f, %%edi \r\n"			//setup edi
 		"movl %0, %%ebx \r\n"			//setup ebx
 		"movl %1, %%ecx \r\n"			//setup ecx
