@@ -80,19 +80,30 @@ __attribute__((naked)) static inline void entry_0(void) __attribute__((noinline)
 	//we have eax, edx to play around with
 		
 	asm volatile(
-		"pushal \r\n"					//save all caller gprs
-		"leal 0x4(%%esp), %%esi \r\n"	//setup esi
+		"pushl %%edi \r\n"				//save caller gprs
+		"pushl %%esi \r\n"			
+		"pushl %%ebp \r\n"
+		"pushl %%ecx \r\n"
+		"pushl %%ebx \r\n"
+		
+		"leal 24(%%esp), %%esi \r\n"	//setup esi
 		"movl $1f, %%edi \r\n"			//setup edi
 		"movl %0, %%ebx \r\n"			//setup ebx
 		"movl %1, %%ecx \r\n"			//setup ecx
 		"movl %2, %%eax \r\n"
+		"xorl %%edx, %%edx \r\n"		//clear out edx for further use
 		"jmpl *%%eax \r\n"				//jump to destination slab interface
+		
 		"1: \r\n"						//destination slab returns here
-		"popal \r\n"					//restore caller gprs
+		"popl %%ebx \r\n"				//restore caller gprs
+		"popl %%ecx \r\n"
+		"popl %%ebp \r\n"
+		"popl %%esi \r\n"
+		"popl %%edi \r\n"
 		"ret \r\n"						//return
 		: //outputs
 		: "i" (0), "i" (0), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3)	//inputs
-		: //no clobber
+		: "eax", "edx"
 	);
 
 }
