@@ -109,7 +109,7 @@ void xmhf_runtime_entry(void){
 
 			//invoke slab interface
 			printf("\n%s: preparing to invoke slab interfaces", __FUNCTION__);
-			//entry_0();
+			entry_0();
 			//value=entry_1(5, 3);
 			ctx= entry_2(2048, true, 4096);
 			printf("\n%s: came back to initbs, value=%u", __FUNCTION__, value);
