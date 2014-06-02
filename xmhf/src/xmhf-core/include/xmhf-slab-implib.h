@@ -109,7 +109,7 @@ static inline u32 entry_1(u32 param1, u32 param2) __attribute__((noinline)){
 
 static inline context_desc_t entry_2(u32 cpu_index, bool isbsp, u32 partition_index) __attribute__((noinline)){
 	
-	//edi = base address of input parameter frame on stack (including return address)
+	/*//edi = base address of input parameter frame on stack (including return address)
 	//eax = function number
 	//ecx = interface address
 	
@@ -121,9 +121,16 @@ static inline context_desc_t entry_2(u32 cpu_index, bool isbsp, u32 partition_in
 		: //outputs
 		: "i" (2), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3)	//inputs
 		: "edi", "eax", "ecx" 	//clobber
-	);
+	);*/
+	context_desc_t ctx;
+
+	printf("\n%s: Got control: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, cpu_index, isbsp, partition_index);
 	
+	ctx.cpu_desc.cpu_index = cpu_index;
+	ctx.cpu_desc.isbsp = isbsp;
+	ctx.partition_desc.partition_index = partition_index;
 	
+	return ctx;
 }
 
 
