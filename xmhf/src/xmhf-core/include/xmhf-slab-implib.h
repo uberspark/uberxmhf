@@ -149,29 +149,43 @@ static inline u32 entry_1(u32 param1, u32 param2) __attribute__((noinline)){
 }
 
 static inline context_desc_t entry_2(u32 cpu_index, bool isbsp, u32 partition_index) __attribute__((noinline)){
-	
-	/*//edi = base address of input parameter frame on stack (including return address)
-	//eax = function number
-	//ecx = interface address
-	
+	context_desc_t retval;
+	//setup
+	//esi = base address of input parameter frame on stack (excluding return address)
+	//edi = return address
+	//ebx = function number
+	//ecx = number of 32-bit dwords comprising the parameters (excluding return address)
+	//edx = number of 32-bit dwords that will be automatically popped off the stack by the callee function
+	//we have eax, edx to play around with
+		
 	asm volatile(
-		"leal 0x4(%%ebp), %%edi \r\n"
-		"movl %0, %%eax \r\n"
-		"movl %1, %%ecx \r\n"
-		"jmpl *%%ecx \r\n"
-		: //outputs
-		: "i" (2), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3)	//inputs
-		: "edi", "eax", "ecx" 	//clobber
-	);*/
-	context_desc_t ctx;
+		"pushl %%edi \r\n"				//save caller gprs
+		"pushl %%esi \r\n"			
+		"pushl %%ebp \r\n"
+		"pushl %%ecx \r\n"
+		"pushl %%ebx \r\n"
+		
+		"leal 0x8(%%ebp), %%esi \r\n"	//setup esi
+		"movl $1f, %%edi \r\n"			//setup edi
+		"movl %0, %%ebx \r\n"			//setup ebx
+		"movl %1, %%ecx \r\n"			//setup ecx
+		"movl %2, %%eax \r\n"
+		"movl $1, %%edx \r\n"		//clear out edx for further use
+		"jmpl *%%eax \r\n"				//jump to destination slab interface
+				
+		"1: \r\n"						//destination slab returns here
+		//"movl %%eax, %0 \r\n"
+		"popl %%ebx \r\n"				//restore caller gprs
+		"popl %%ecx \r\n"
+		"popl %%ebp \r\n"
+		"popl %%esi \r\n"
+		"popl %%edi \r\n"
+		: //"=a" (retval)
+		: "i" (2), "i" (((sizeof(cpu_index)+sizeof(isbsp)+sizeof(partition_index))/sizeof(u32)) + sizeof(u32)), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3)	//inputs
+		: "eax", "edx"
+	);
 
-	printf("\n%s: Got control: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, cpu_index, isbsp, partition_index);
-	
-	ctx.cpu_desc.cpu_index = cpu_index;
-	ctx.cpu_desc.isbsp = isbsp;
-	ctx.partition_desc.partition_index = partition_index;
-	
-	return ctx;
+	return retval;
 }
 
 
