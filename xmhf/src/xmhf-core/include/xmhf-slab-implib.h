@@ -110,19 +110,39 @@ __attribute__((naked)) static inline void entry_0(void) __attribute__((noinline)
 
 
 //static inline void entry(void) __attribute__((noinline)){
-static inline u32 entry_1(u32 param1, u32 param2) __attribute__((noinline)){
-	//edi = base address of input parameter frame on stack (including return address)
-	//eax = function number
-	//ecx = interface address
-	
+__attribute__((naked)) static inline u32 entry_1(u32 param1, u32 param2) __attribute__((noinline)){
+	//setup
+	//esi = base address of input parameter frame on stack (excluding return address)
+	//edi = return address
+	//ebx = function number
+	//ecx = number of 32-bit dwords comprising the parameters (excluding return address)
+	//we have eax, edx to play around with
+		
 	asm volatile(
-		"leal 0x4(%%ebp), %%edi \r\n"
-		"movl %0, %%eax \r\n"
-		"movl %1, %%ecx \r\n"
-		"jmpl *%%ecx \r\n"
+		"pushl %%edi \r\n"				//save caller gprs
+		"pushl %%esi \r\n"			
+		"pushl %%ebp \r\n"
+		"pushl %%ecx \r\n"
+		"pushl %%ebx \r\n"
+		
+		"leal 24(%%esp), %%esi \r\n"	//setup esi
+		"movl $1f, %%edi \r\n"			//setup edi
+		"movl %0, %%ebx \r\n"			//setup ebx
+		"movl %1, %%ecx \r\n"			//setup ecx
+		"movl %2, %%eax \r\n"
+		"xorl %%edx, %%edx \r\n"		//clear out edx for further use
+		"jmpl *%%eax \r\n"				//jump to destination slab interface
+		
+		"1: \r\n"						//destination slab returns here
+		"popl %%ebx \r\n"				//restore caller gprs
+		"popl %%ecx \r\n"
+		"popl %%ebp \r\n"
+		"popl %%esi \r\n"
+		"popl %%edi \r\n"
+		"ret \r\n"						//return
 		: //outputs
-		: "i" (1), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3)	//inputs
-		: "edi", "eax", "ecx" 	//clobber
+		: "i" (1), "i" ((sizeof(param1)+sizeof(param2))/sizeof(u32)), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3)	//inputs
+		: "eax", "edx"
 	);
 
 }

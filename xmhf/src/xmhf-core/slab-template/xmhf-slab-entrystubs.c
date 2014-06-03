@@ -68,12 +68,21 @@ __attribute__((naked)) void entry_cr3(void){
 			"movl %%esp, %%edi \r\n"		//edi = esp
 			"cld \r\n"
 			"rep movsl \r\n"				//copy parameters 
-			
+
+			"1:\r\n"
 			"cmpl $0x0, %%ebx \r\n"			//check for correct function number
 			"jne 1f \r\n"
 			"call entry_0 \r\n"				//call function
-	
+			"jmp endswitch \r\n"
+			
 			"1:\r\n"
+			"cmpl $0x1, %%ebx \r\n"			//check for correct function number
+			"jne 1f \r\n"
+			"call entry_1 \r\n"				//call function
+			"jmp endswitch \r\n"
+			
+			"1:\r\n"
+			"endswitch:\r\n"
 			"addl %%ebp, %%esp \r\n"		//remove parameters from stack
 			"popl %%edi \r\n"
 			"jmpl *%%edi \r\n"				//return back to caller slab
