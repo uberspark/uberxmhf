@@ -71,7 +71,7 @@ extern slab_table_t _slab_table[];
 
 }*/
 
-__attribute__((naked)) static inline void entry_0(void) __attribute__((noinline)){
+static inline void entry_0(void) __attribute__((noinline)){
 	//setup
 	//esi = base address of input parameter frame on stack (excluding return address)
 	//edi = return address
@@ -86,7 +86,7 @@ __attribute__((naked)) static inline void entry_0(void) __attribute__((noinline)
 		"pushl %%ecx \r\n"
 		"pushl %%ebx \r\n"
 		
-		"leal 24(%%esp), %%esi \r\n"	//setup esi
+		"leal 0x8(%%ebp), %%esi \r\n"	//setup esi
 		"movl $1f, %%edi \r\n"			//setup edi
 		"movl %0, %%ebx \r\n"			//setup ebx
 		"movl %1, %%ecx \r\n"			//setup ecx
@@ -100,7 +100,6 @@ __attribute__((naked)) static inline void entry_0(void) __attribute__((noinline)
 		"popl %%ebp \r\n"
 		"popl %%esi \r\n"
 		"popl %%edi \r\n"
-		"ret \r\n"						//return
 		: //outputs
 		: "i" (0), "i" (0), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3)	//inputs
 		: "eax", "edx"
@@ -110,7 +109,8 @@ __attribute__((naked)) static inline void entry_0(void) __attribute__((noinline)
 
 
 //static inline void entry(void) __attribute__((noinline)){
-__attribute__((naked)) static inline u32 entry_1(u32 param1, u32 param2) __attribute__((noinline)){
+static inline u32 entry_1(u32 param1, u32 param2) __attribute__((noinline)){
+	u32 retval;
 	//setup
 	//esi = base address of input parameter frame on stack (excluding return address)
 	//edi = return address
@@ -125,26 +125,27 @@ __attribute__((naked)) static inline u32 entry_1(u32 param1, u32 param2) __attri
 		"pushl %%ecx \r\n"
 		"pushl %%ebx \r\n"
 		
-		"leal 24(%%esp), %%esi \r\n"	//setup esi
+		"leal 0x8(%%ebp), %%esi \r\n"			//setup esi
 		"movl $1f, %%edi \r\n"			//setup edi
-		"movl %0, %%ebx \r\n"			//setup ebx
-		"movl %1, %%ecx \r\n"			//setup ecx
-		"movl %2, %%eax \r\n"
+		"movl %1, %%ebx \r\n"			//setup ebx
+		"movl %2, %%ecx \r\n"			//setup ecx
+		"movl %3, %%eax \r\n"
 		"xorl %%edx, %%edx \r\n"		//clear out edx for further use
 		"jmpl *%%eax \r\n"				//jump to destination slab interface
-		
+				
 		"1: \r\n"						//destination slab returns here
+		"movl %%eax, %0 \r\n"
 		"popl %%ebx \r\n"				//restore caller gprs
 		"popl %%ecx \r\n"
 		"popl %%ebp \r\n"
 		"popl %%esi \r\n"
 		"popl %%edi \r\n"
-		"ret \r\n"						//return
-		: //outputs
+		: "=a" (retval)
 		: "i" (1), "i" ((sizeof(param1)+sizeof(param2))/sizeof(u32)), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3)	//inputs
 		: "eax", "edx"
 	);
 
+	return retval;
 }
 
 static inline context_desc_t entry_2(u32 cpu_index, bool isbsp, u32 partition_index) __attribute__((noinline)){
