@@ -85,6 +85,7 @@ __attribute__((naked)) void entry_cr3(void){
 			"cmpl $0x2, %%ebx \r\n"			//check for correct function number
 			"jne 1f \r\n"
 			"call entry_2 \r\n"				//call function
+			"subl $4, %%ebp \r\n"
 			"jmp endswitch \r\n"
 			
 			"1:\r\n"
