@@ -62,13 +62,28 @@ __attribute__((naked)) void entry_cr3(void){
 
 	asm volatile (
 			"pushl %%edi \r\n" 				//save return address
-			"movl %%ecx, %%ebp \r\n"
-			"shl $2, %%ebp \r\n"			//ebp = number of bytes occupied by input parameters
+			
+			"xorl %%ebp, %%ebp \r\n"			//ebp = 0
+			"cmpl $0, %%edx \r\n"
+			"je 1f \r\n"					//check to see if we need to allocate space for aggregate return value, if not just proceed
+			"movl %%edx, %%ebp \r\n"		//
+			"shl $2, %%ebp \r\n"			//ebp = number of bytes that we need to allocate for aggregate return value
+			"movl %%esp, %%edx \r\n"		//
+			"subl %%ebp, %%edx \r\n"		//edx = address where aggregate return value begins on stack
+			"1:\r\n"
+			"shl $2, %%ecx \r\n"			//ecx = number of bytes occupied by input parameters
+			"addl %%ecx, %%ebp \r\n"		//ebp = total bytes that we need to allocate for aggregate return value + input parameters
+			"shr $2, %%ecx \r\n"			//ecx = number of dwords occupied by input parameters
 			"subl %%ebp, %%esp 	\r\n"		//esp = new empty tos to house input parameters
 			"movl %%esp, %%edi \r\n"		//edi = esp
 			"cld \r\n"
 			"rep movsl \r\n"				//copy parameters 
-
+			"cmpl $0, %%edx \r\n"
+			"je 1f \r\n"
+			"addl $4, %%esp \r\n"			//pop out old aggregate return value address
+			"pushl %%edx \r\n"				//store local aggregate return value address
+			"movl %%edx, %%esi \r\n"
+			
 			"1:\r\n"
 			"cmpl $0x0, %%ebx \r\n"			//check for correct function number
 			"jne 1f \r\n"
