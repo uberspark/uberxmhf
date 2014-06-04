@@ -171,7 +171,10 @@ __attribute__((naked)) static inline context_desc_t entry_2(u32 cpu_index, bool 
 		"jmpl *%%eax \r\n"				//jump to destination slab interface
 				
 		"1: \r\n"						//destination slab returns here
-		//"movl %%eax, %0 \r\n"
+		"movl %3, %%ecx \r\n"
+		"movl 24(%%esp), %%edi \r\n"
+		"cld \r\n"
+		"rep movsb \r\n"
 		"popl %%ebx \r\n"				//restore caller gprs
 		"popl %%ecx \r\n"
 		"popl %%ebp \r\n"
