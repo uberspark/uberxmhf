@@ -91,7 +91,7 @@ __attribute__((naked)) static inline void entry_0(void) __attribute__((noinline)
 		"movl %0, %%ebx \r\n"			//setup ebx
 		"movl %1, %%ecx \r\n"			//setup ecx
 		"movl %2, %%eax \r\n"
-		"xorl %%edx, %%edx \r\n"		//clear out edx for further use
+		"movl %3, %%edx \r\n"			//setup edx
 		"jmpl *%%eax \r\n"				//jump to destination slab interface
 		
 		"1: \r\n"						//destination slab returns here
@@ -102,7 +102,7 @@ __attribute__((naked)) static inline void entry_0(void) __attribute__((noinline)
 		"popl %%edi \r\n"
 		"ret \r\n"
 		: //outputs
-		: "i" (0), "i" (0), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3)	//inputs
+		: "i" (0), "i" (0), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3), "i" (0)	//inputs
 		: 
 	);
 
@@ -130,7 +130,7 @@ __attribute__ ((naked)) static inline u32 entry_1(u32 param1, u32 param2) __attr
 		"movl %0, %%ebx \r\n"			//setup ebx
 		"movl %1, %%ecx \r\n"			//setup ecx
 		"movl %2, %%eax \r\n"
-		"xorl %%edx, %%edx \r\n"		//clear out edx for further use
+		"movl %3, %%edx \r\n"			//setup edx
 		"jmpl *%%eax \r\n"				//jump to destination slab interface
 				
 		"1: \r\n"						//destination slab returns here
@@ -141,7 +141,7 @@ __attribute__ ((naked)) static inline u32 entry_1(u32 param1, u32 param2) __attr
 		"popl %%edi \r\n"
 		"ret \r\n"
 		: //outputs
-		: "i" (1), "i" ((sizeof(param1)+sizeof(param2))/sizeof(u32)), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3)	//inputs
+		: "i" (1), "i" ((sizeof(param1)+sizeof(param2))/sizeof(u32)), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3), "i" (0)
 		: 
 	);
 }
@@ -167,7 +167,7 @@ __attribute__((naked)) static inline context_desc_t entry_2(u32 cpu_index, bool 
 		"movl %0, %%ebx \r\n"			//setup ebx
 		"movl %1, %%ecx \r\n"			//setup ecx
 		"movl %2, %%eax \r\n"
-		"movl $1, %%edx \r\n"		//clear out edx for further use
+		"movl %3, %%edx \r\n"			//setup edx
 		"jmpl *%%eax \r\n"				//jump to destination slab interface
 				
 		"1: \r\n"						//destination slab returns here
@@ -179,7 +179,7 @@ __attribute__((naked)) static inline context_desc_t entry_2(u32 cpu_index, bool 
 		"popl %%edi \r\n"
 		"ret $4 \r\n"
 		: //"=a" (retval)
-		: "i" (2), "i" (((sizeof(cpu_index)+sizeof(isbsp)+sizeof(partition_index))/sizeof(u32)) + sizeof(u32)), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3)	//inputs
+		: "i" (2), "i" (((sizeof(cpu_index)+sizeof(isbsp)+sizeof(partition_index))/sizeof(u32)) + sizeof(u32)), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3), "i" (sizeof(context_desc_t))	//inputs
 		: 
 	);
 
