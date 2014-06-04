@@ -172,7 +172,10 @@ testslab:
 %.o: %.c   
 	mkdir -p $(XMHF_CORE_OBJECTS_DIR)
 	@echo Building "$(@F)" from "$<" 
-	$(CC) -c $(CFLAGS) -o $(XMHF_CORE_OBJECTS_DIR)/$(@F) $<
+	#$(CC) -c $(CFLAGS) -o $(XMHF_CORE_OBJECTS_DIR)/$(@F) $<
+	$(CC) -S -emit-llvm $(CFLAGS) $< -o $(XMHF_CORE_OBJECTS_DIR)/$(@F).ll
+	cd $(XMHF_CORE_OBJECTS_DIR) && llc -O=0 $(@F).ll
+	cd $(XMHF_CORE_OBJECTS_DIR) && $(CC) -c $(CFLAGS) $(@F).s -o $(@F)
 
 .PHONY: clean
 clean:
