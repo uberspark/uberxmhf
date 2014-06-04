@@ -178,6 +178,7 @@ testslab:
 	@echo Building "$(@F)" from "$<" 
 	#$(CC) -c $(CFLAGS) -o $(XMHF_CORE_OBJECTS_DIR)/$(@F) $<
 	$(CC) -S -emit-llvm $(CFLAGS) $< -o $(XMHF_CORE_OBJECTS_DIR)/$(@F).ll
+	cd $(XMHF_CORE_OBJECTS_DIR) && fixnaked.pl $(@F).ll
 	cd $(XMHF_CORE_OBJECTS_DIR) && llc -O=0 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
 	cd $(XMHF_CORE_OBJECTS_DIR) && $(CC) -c $(CFLAGS) $(@F).s -o $(@F)
 
