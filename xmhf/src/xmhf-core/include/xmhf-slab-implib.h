@@ -141,7 +141,7 @@ __attribute__ ((naked)) static inline u32 entry_1(u32 param1, u32 param2) __attr
 		"popl %%edi \r\n"
 		"ret \r\n"
 		: //outputs
-		: "i" (1), "i" ((sizeof(param1)+sizeof(param2))/sizeof(u32)), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3), "i" (0)
+		: "i" (1), "i" ((sizeof(param1)+sizeof(param2))), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3), "i" (0)
 		: 
 	);
 }
@@ -182,7 +182,7 @@ __attribute__((naked)) static inline context_desc_t entry_2(u32 cpu_index, bool 
 		"popl %%edi \r\n"
 		"ret $4 \r\n"
 		: //"=a" (retval)
-		: "i" (2), "i" (((sizeof(cpu_index)+sizeof(isbsp)+sizeof(partition_index))/sizeof(u32)) + sizeof(u32)), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3), "i" (sizeof(context_desc_t))	//inputs
+		: "i" (2), "i" ( sizeof(cpu_index)+sizeof(isbsp)+sizeof(partition_index)+sizeof(u32) ), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3), "i" (sizeof(context_desc_t))	//inputs
 		: 
 	);
 
