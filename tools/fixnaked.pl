@@ -46,7 +46,7 @@ while( $i <= $#array) {
 	$trimline =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
 	
 	while($trimline ne "}"){
-		if(  !( ($trimline =~ /^call void asm/) || ($trimline =~ /^ret/) ) ){
+		if(  !( ($trimline =~ /^call /) || ($trimline =~ /^ret/) ) ){
 			#$line = ";$line";
 			$array[$i] = ";$line";
 		}
