@@ -22,6 +22,7 @@ all: $(OBJECTS)
 %.o: %.c   
 	@echo Building "$(@F)" from "$<" 
 	$(CC) -S -emit-llvm $(CFLAGS) $< -o $(@F).ll
+	fixnaked.pl $(@F).ll
 	llc -O=0 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
 	$(CC) -c $(CFLAGS) $(@F).s -o $(@F)
 
