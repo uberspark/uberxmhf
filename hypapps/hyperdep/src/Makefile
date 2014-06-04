@@ -16,11 +16,15 @@ CFLAGS += -I.
 .PHONY: all
 all: $(OBJECTS) 
 
-%.o: %.S $(I_SOURCES) Makefile ../Makefile ../../../Makefile 
-	$(CC) -c $(ASFLAGS) -o $@ $<
-%.o: %.c $(I_SOURCES) Makefile ../Makefile ../../../Makefile
-	$(CC) -c $(CFLAGS) -o $@ $<
+%.o: %.c   
+	@echo Building "$(@F)" from "$<" 
+	$(CC) -S -emit-llvm $(CFLAGS) $< -o $(@F).ll
+	llc -O=0 $(@F).ll
+	$(CC) -c $(CFLAGS) $(@F).s -o $(@F)
 
 .PHONY: clean 
 clean: 
 	$(RM) -rf *.o
+	$(RM) -rf *.s
+	$(RM) -rf *.ll
+	
