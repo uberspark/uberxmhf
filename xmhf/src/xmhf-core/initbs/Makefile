@@ -48,6 +48,7 @@ $(THE_ARCHIVE): $(OBJECTS)
 #	$(CC) -c $(CFLAGS) -o $(SLAB_OBJECTS_DIR)/$(@F) $<
 
 %.o: %.c   
+	mkdir -p $(SLAB_OBJECTS_DIR)
 	$(CC) -S -emit-llvm $(CFLAGS) $< -o $(SLAB_OBJECTS_DIR)/$(@F).ll
 	cd $(SLAB_OBJECTS_DIR) && fixnaked.pl $(@F).ll
 	cd $(SLAB_OBJECTS_DIR) && llc -O=0 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
