@@ -90,6 +90,7 @@ void xmhf_runtime_entry(void){
 	//[test] slab
 	{
 			extern slab_header_t _test_slab_header;
+			xc_hypapp_arch_param_t ap_input, ap_output;
 			context_desc_t ctx;
 			u32 value;
 			
@@ -112,8 +113,45 @@ void xmhf_runtime_entry(void){
 			entry_0();
 			value=entry_1(5, 3);
 			ctx= entry_2(2048, true, 4096);
+			
+			ap_input.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_INFOREGS;
+			ap_input.param.inforegs.info_vminstr_error = 0; 
+			ap_input.param.inforegs.info_vmexit_reason = 1; 
+			ap_input.param.inforegs.info_vmexit_interrupt_information = 2; 
+			ap_input.param.inforegs.info_vmexit_interrupt_error_code = 3; 
+			ap_input.param.inforegs.info_idt_vectoring_information = 4; 
+			ap_input.param.inforegs.info_idt_vectoring_error_code = 5; 
+			ap_input.param.inforegs.info_vmexit_instruction_length = 6; 
+			ap_input.param.inforegs.info_vmx_instruction_information = 7; 
+			ap_input.param.inforegs.info_exit_qualification = 8; 
+			ap_input.param.inforegs.info_io_rcx = 9; 
+			ap_input.param.inforegs.info_io_rsi = 10; 
+			ap_input.param.inforegs.info_io_rdi = 11; 
+			ap_input.param.inforegs.info_io_rip = 12; 
+			ap_input.param.inforegs.info_guest_linear_address = 13; 
+			ap_input.param.inforegs.info_guest_paddr_full = 14; 
+						
+			//ap_output = entry_3(ctx, ap_input);			
+			ap_output = ap_input;
+						
 			printf("\n%s: came back to initbs, value=%u", __FUNCTION__, value);
 			printf("\n%s: ctx: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, ctx.cpu_desc.cpu_index, ctx.cpu_desc.isbsp, ctx.partition_desc.partition_index);
+
+			printf("\nap_output.param.inforegs.info_vminstr_error                  %u",  ap_output.param.inforegs.info_vminstr_error                ); 
+			printf("\nap_output.param.inforegs.info_vmexit_reason                  %u",  ap_output.param.inforegs.info_vmexit_reason                ); 
+			printf("\nap_output.param.inforegs.info_vmexit_interrupt_information   %u",  ap_output.param.inforegs.info_vmexit_interrupt_information ); 
+			printf("\nap_output.param.inforegs.info_vmexit_interrupt_error_code    %u",  ap_output.param.inforegs.info_vmexit_interrupt_error_code  ); 
+			printf("\nap_output.param.inforegs.info_idt_vectoring_information      %u",  ap_output.param.inforegs.info_idt_vectoring_information    ); 
+			printf("\nap_output.param.inforegs.info_idt_vectoring_error_code       %u",  ap_output.param.inforegs.info_idt_vectoring_error_code     ); 
+			printf("\nap_output.param.inforegs.info_vmexit_instruction_length      %u",  ap_output.param.inforegs.info_vmexit_instruction_length    ); 
+			printf("\nap_output.param.inforegs.info_vmx_instruction_information    %u",  ap_output.param.inforegs.info_vmx_instruction_information  ); 
+			printf("\nap_output.param.inforegs.info_exit_qualification             %llu",  ap_output.param.inforegs.info_exit_qualification           ); 
+			printf("\nap_output.param.inforegs.info_io_rcx                         %llu",  ap_output.param.inforegs.info_io_rcx                       ); 
+			printf("\nap_output.param.inforegs.info_io_rsi                         %llu",  ap_output.param.inforegs.info_io_rsi                       ); 
+			printf("\nap_output.param.inforegs.info_io_rdi                         %llu",  ap_output.param.inforegs.info_io_rdi                       ); 
+			printf("\nap_output.param.inforegs.info_io_rip                         %llu",  ap_output.param.inforegs.info_io_rip                       ); 
+			printf("\nap_output.param.inforegs.info_guest_linear_address           %llu",  ap_output.param.inforegs.info_guest_linear_address         ); 
+			printf("\nap_output.param.inforegs.info_guest_paddr_full               %llu",  ap_output.param.inforegs.info_guest_paddr_full             ); 
 
 	}
 
