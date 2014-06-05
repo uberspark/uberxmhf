@@ -62,16 +62,16 @@
 // local variables
 
 //core IDT
-static u64 _idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] __attribute__(( section(".data"), aligned(16) ));
+static u64 _idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] __attribute__(( aligned(16) ));
 
 //core IDT descriptor
-arch_x86_idtdesc_t _idt __attribute__(( section(".data"), aligned(16) )) = {
+arch_x86_idtdesc_t _idt __attribute__(( aligned(16) )) = {
 	.size=sizeof(_idt_start)-1,
 	.base=(u32)&_idt_start,
 };
 
 //runtime TSS
-u8 _tss[PAGE_SIZE_4K] __attribute__(( section(".data") )) = { 0 };
+u8 _tss[PAGE_SIZE_4K] = { 0 };
 
 //exclusive exception handling stack, we switch to this stack if there
 //are any exceptions during hypapp execution
@@ -375,12 +375,12 @@ void xmhf_baseplatform_arch_x86_restorecpumtrrstate(void){
 // local variables
 
 //hypapp PAE page tables
-static u64 hypapp_3level_pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( section(".palign_data") ));
-static u64 hypapp_3level_pdt[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT] __attribute__(( section(".palign_data") ));
+static u64 hypapp_3level_pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( aligned(4096) ));
+static u64 hypapp_3level_pdt[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT] __attribute__(( aligned(4096) ));
 
 //core PAE page tables
-static u64 core_3level_pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( section(".palign_data") ));
-static u64 core_3level_pdt[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT] __attribute__(( section(".palign_data") ));
+static u64 core_3level_pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( aligned(4096) ));
+static u64 core_3level_pdt[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT] __attribute__(( aligned(4096) ));
 
 // initialization function for the core API interface
 void xmhf_apihub_arch_initialize (void){
