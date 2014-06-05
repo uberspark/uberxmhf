@@ -22,7 +22,7 @@ OBJECTS_ARCHIVE := $(patsubst %.c, %.o, $(C_SOURCES_FILENAMEONLY))
 OBJECTS := $(patsubst %.c, %.o, $(C_SOURCES))
 
 # folder where objects go
-SLAB_OBJECTS_DIR = _objs_slab_initbs
+SLAB_OBJECTS_DIR = _objs_initbs
 
 # archive name
 THE_ARCHIVE = xc-initbs
