@@ -88,27 +88,7 @@ __attribute__((naked)) void entry_cr3(void){
 			"1:\r\n"
 			"cmpl $0x0, %%ebx \r\n"			//check for correct function number
 			"jne 1f \r\n"
-			"call entry_0 \r\n"				//call function
-			"jmp endswitch \r\n"
-			
-			"1:\r\n"
-			"cmpl $0x1, %%ebx \r\n"			//check for correct function number
-			"jne 1f \r\n"
-			"call entry_1 \r\n"				//call function
-			"jmp endswitch \r\n"
-
-			"1:\r\n"
-			"cmpl $0x2, %%ebx \r\n"			//check for correct function number
-			"jne 1f \r\n"
-			"call entry_2 \r\n"				//call function
-			"subl $4, %%ebp \r\n"
-			"jmp endswitch \r\n"
-
-			"1:\r\n"
-			"cmpl $0x3, %%ebx \r\n"			//check for correct function number
-			"jne 1f \r\n"
-			"call entry_3 \r\n"				//call function
-			"subl $4, %%ebp \r\n"
+			"call xmhf_runtime_entry \r\n"				//call function
 			"jmp endswitch \r\n"
 			
 			"1:\r\n"
