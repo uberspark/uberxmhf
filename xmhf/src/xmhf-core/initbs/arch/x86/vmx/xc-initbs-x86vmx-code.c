@@ -44,14 +44,17 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/*
- * XMHF core base platform component (x86 vmx arch. backend)
+/* 
+ * XMHF core initbs (initialization-bootstrap) slab
+ * x86 vmx arch. backend
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
 #include <xmhf-core.h>
 #include <xc-x86.h>
 #include <xc-x86vmx.h>
+
+/* originally within xc-baseplatform-x86vmx.c */
 
 //----------------------------------------------------------------------
 // local variables
@@ -569,3 +572,18 @@ static void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 	
   	init_entry(cpuid, is_bsp);
 }
+
+
+
+/* originally within xc-initbs-dmaprot-x86vmx.c */
+
+//re-initialize DMA protections (if needed) for the runtime
+bool xmhf_dmaprot_arch_reinitialize(void){
+	//we don't need to reinitialize DMA protections since we setup
+	//VT-d PMRs in the secure loader
+	return true;
+}
+
+
+
+
