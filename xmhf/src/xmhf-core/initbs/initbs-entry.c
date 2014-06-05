@@ -131,8 +131,7 @@ void xmhf_runtime_entry(void){
 			ap_input.param.inforegs.info_guest_linear_address = 13; 
 			ap_input.param.inforegs.info_guest_paddr_full = 14; 
 						
-			//ap_output = entry_3(ctx, ap_input);			
-			ap_output = ap_input;
+			ap_output = entry_3(ctx, ap_input);			
 						
 			printf("\n%s: came back to initbs, value=%u", __FUNCTION__, value);
 			printf("\n%s: ctx: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, ctx.cpu_desc.cpu_index, ctx.cpu_desc.isbsp, ctx.partition_desc.partition_index);
