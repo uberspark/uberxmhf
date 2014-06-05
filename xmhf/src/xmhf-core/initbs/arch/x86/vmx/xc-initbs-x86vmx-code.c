@@ -225,11 +225,11 @@ static void _ap_pmode_entry_with_paging(void) __attribute__((naked));
 static void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void);
 
 // cpu table
-static xc_cputable_t _cputable[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
+static xc_cputable_t _cputable[MAX_PLATFORM_CPUS];
 
 
 // count of platform cpus
-static u32 _cpucount __attribute__(( section(".data") )) = 0;
+static u32 _cpucount = 0;
 
 
 //XXX: TODO: get rid of these externs and bring them in here as static
