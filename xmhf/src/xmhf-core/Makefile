@@ -8,9 +8,9 @@ vpath %.S $(srcdir)
 # grab list of all source files
 C_SOURCES := $(wildcard $(srcdir)/*.c)
 
-C_SOURCES += $(wildcard $(srcdir)/initbs/*.c)
-C_SOURCES += $(shell find $(srcdir)/initbs/arch/x86/common/ -type f -name '*.c')
-C_SOURCES += $(shell find $(srcdir)/initbs/arch/x86/vmx/ -type f -name '*.c')
+#C_SOURCES += $(wildcard $(srcdir)/initbs/*.c)
+#C_SOURCES += $(shell find $(srcdir)/initbs/arch/x86/common/ -type f -name '*.c')
+#C_SOURCES += $(shell find $(srcdir)/initbs/arch/x86/vmx/ -type f -name '*.c')
 
 #----------------------------------------------------------------------
 # xc-xcphandler-x86.o: In function `__xmhf_exception_handler_4':
@@ -161,7 +161,7 @@ LLC_ATTR = -3dnow,-3dnowa,-64bit,-64bit-mode,-adx,-aes,-atom,-avx,-avx2,-bmi,-bm
 .PHONY: all
 all: $(THE_ARCHIVE)
 
-$(THE_ARCHIVE): testslab $(OBJECTS) 
+$(THE_ARCHIVE): testslab initbs $(OBJECTS) 
 	cd $(XMHF_CORE_OBJECTS_DIR) && cp -f $(srcdir)/xc.lscript xc.lscript.c
 	cd $(XMHF_CORE_OBJECTS_DIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E xc.lscript.c -o xc.lds
 	cd $(XMHF_CORE_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T xc.lds -o $(THE_ARCHIVE).exe _objs_slab/xmhf-slab.slo $(OBJECTS_ARCHIVE) $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
@@ -172,6 +172,10 @@ testslab:
 	mkdir -p $(XMHF_CORE_OBJECTS_DIR)
 	cd $(XMHF_CORE_OBJECTS_DIR) && $(MAKE) -f $(srcdir)/slab-template/Makefile -w all
 
+.PHONY: initbs
+initbs:
+	mkdir -p $(XMHF_CORE_OBJECTS_DIR)
+	cd $(XMHF_CORE_OBJECTS_DIR) && $(MAKE) -f $(srcdir)/initbs/Makefile -w all
 
 %.o: %.c   
 	mkdir -p $(XMHF_CORE_OBJECTS_DIR)
