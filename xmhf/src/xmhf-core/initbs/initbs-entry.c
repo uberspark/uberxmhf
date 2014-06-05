@@ -109,10 +109,20 @@ void xmhf_runtime_entry(void){
 			_slab_table[0].slab_header.entry_cr3 = _test_slab_header.entry_cr3;
 
 			//invoke slab interface
-			printf("\n%s: preparing to invoke slab interfaces", __FUNCTION__);
+			
+			printf("\n%s: preparing to invoke entry_0, esp=%x", __FUNCTION__, read_esp());
 			entry_0();
+			printf("\n%s: came back from entry_0, esp=%x", __FUNCTION__, read_esp());
+
+			printf("\n%s: preparing to invoke entry_1, esp=%x", __FUNCTION__, read_esp());
 			value=entry_1(5, 3);
+			printf("\n%s: came back from entry_1, esp=%x", __FUNCTION__, read_esp());
+			printf("\n%s: came back from entry_1, value=%u", __FUNCTION__, value);
+
+			printf("\n%s: preparing to invoke entry_2, esp=%x", __FUNCTION__, read_esp());
 			ctx= entry_2(2048, true, 4096);
+			printf("\n%s: came back from entry_2, esp=%x", __FUNCTION__, read_esp());
+			printf("\n%s: ctx: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, ctx.cpu_desc.cpu_index, ctx.cpu_desc.isbsp, ctx.partition_desc.partition_index);
 			
 			ap_input.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_INFOREGS;
 			ap_input.param.inforegs.info_vminstr_error = 0; 
@@ -130,12 +140,10 @@ void xmhf_runtime_entry(void){
 			ap_input.param.inforegs.info_io_rip = 12; 
 			ap_input.param.inforegs.info_guest_linear_address = 13; 
 			ap_input.param.inforegs.info_guest_paddr_full = 14; 
-						
-			ap_output = entry_3(ctx, ap_input);			
-						
-			printf("\n%s: came back to initbs, value=%u", __FUNCTION__, value);
-			printf("\n%s: ctx: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, ctx.cpu_desc.cpu_index, ctx.cpu_desc.isbsp, ctx.partition_desc.partition_index);
 
+			printf("\n%s: preparing to invoke entry_3, esp=%x", __FUNCTION__, read_esp());
+			ap_output = entry_3(ctx, ap_input);			
+			printf("\n%s: came back from entry_3, esp=%x", __FUNCTION__, read_esp());
 			printf("\nap_output.param.inforegs.info_vminstr_error                  %u",  ap_output.param.inforegs.info_vminstr_error                ); 
 			printf("\nap_output.param.inforegs.info_vmexit_reason                  %u",  ap_output.param.inforegs.info_vmexit_reason                ); 
 			printf("\nap_output.param.inforegs.info_vmexit_interrupt_information   %u",  ap_output.param.inforegs.info_vmexit_interrupt_information ); 
