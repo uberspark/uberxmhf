@@ -103,6 +103,13 @@ __attribute__((naked)) void entry_cr3(void){
 			"call entry_2 \r\n"				//call function
 			"subl $4, %%ebp \r\n"
 			"jmp endswitch \r\n"
+
+			"1:\r\n"
+			"cmpl $0x3, %%ebx \r\n"			//check for correct function number
+			"jne 1f \r\n"
+			"call entry_3 \r\n"				//call function
+			"subl $4, %%ebp \r\n"
+			"jmp endswitch \r\n"
 			
 			"1:\r\n"
 			"endswitch:\r\n"

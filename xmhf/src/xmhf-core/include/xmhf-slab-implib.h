@@ -189,6 +189,51 @@ __attribute__((naked)) static inline context_desc_t entry_2(u32 cpu_index, bool 
 }
 
 
+__attribute__((naked)) static inline xc_hypapp_arch_param_t entry_3(context_desc_t context_desc, xc_hypapp_arch_param_t archparam) __attribute__((noinline)){
+
+	//setup
+	//esi = base address of input parameter frame on stack (excluding return address)
+	//edi = return address
+	//ebx = function number
+	//ecx = number of 32-bit dwords comprising the parameters (excluding return address)
+	//edx = number of 32-bit dwords that will be automatically popped off the stack by the callee function
+	//we have eax, edx to play around with
+		
+	asm volatile(
+		"pushl %%edi \r\n"				//save caller gprs
+		"pushl %%esi \r\n"			
+		"pushl %%ebp \r\n"
+		"pushl %%ecx \r\n"
+		"pushl %%ebx \r\n"
+		
+		"leal 24(%%esp), %%esi \r\n"	//setup esi
+		"movl $1f, %%edi \r\n"			//setup edi
+		"movl %0, %%ebx \r\n"			//setup ebx
+		"movl %1, %%ecx \r\n"			//setup ecx
+		"movl %2, %%eax \r\n"
+		"movl %3, %%edx \r\n"			//setup edx
+		"jmpl *%%eax \r\n"				//jump to destination slab interface
+				
+		"1: \r\n"						//destination slab returns here
+		"movl %3, %%ecx \r\n"
+		"movl 24(%%esp), %%edi \r\n"
+		"cld \r\n"
+		"rep movsb \r\n"
+		"popl %%ebx \r\n"				//restore caller gprs
+		"popl %%ecx \r\n"
+		"popl %%ebp \r\n"
+		"popl %%esi \r\n"
+		"popl %%edi \r\n"
+		"ret $4 \r\n"
+		: //"=a" (retval)
+		: "i" (3), "i" ( sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t)+sizeof(u32) ), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3), "i" (sizeof(xc_hypapp_arch_param_t))	//inputs
+		: 
+	);
+
+
+}
+
+
 #endif //__ASSEMBLY__
 
 #endif //__XMHF_SLAB_IMPLIB__

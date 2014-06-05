@@ -77,3 +77,29 @@ context_desc_t entry_2(u32 cpu_index, bool isbsp, u32 partition_index){
 	
 	return ctx;
 }	
+
+xc_hypapp_arch_param_t entry_3(context_desc_t context_desc, xc_hypapp_arch_param_t archparam){
+	xc_hypapp_arch_param_t retparam;
+
+	printf("\n%s: Got control: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, context_desc.cpu_desc.cpu_index, context_desc.cpu_desc.isbsp, context_desc.partition_desc.partition_index);
+	
+	retparam.operation = archparam.operation;
+	retparam.param.inforegs.info_vminstr_error = archparam.param.inforegs.info_vminstr_error;
+	retparam.param.inforegs.info_vmexit_reason = archparam.param.inforegs.info_vmexit_reason;
+	retparam.param.inforegs.info_vmexit_interrupt_information = archparam.param.inforegs.info_vmexit_interrupt_information;
+	retparam.param.inforegs.info_vmexit_interrupt_error_code = archparam.param.inforegs.info_vmexit_interrupt_error_code;
+	retparam.param.inforegs.info_idt_vectoring_information = archparam.param.inforegs.info_idt_vectoring_information;
+	retparam.param.inforegs.info_idt_vectoring_error_code = archparam.param.inforegs.info_idt_vectoring_error_code;
+	retparam.param.inforegs.info_vmexit_instruction_length = archparam.param.inforegs.info_vmexit_instruction_length;
+	retparam.param.inforegs.info_vmx_instruction_information = archparam.param.inforegs.info_vmx_instruction_information;
+	retparam.param.inforegs.info_exit_qualification = archparam.param.inforegs.info_exit_qualification;
+	retparam.param.inforegs.info_io_rcx = archparam.param.inforegs.info_io_rcx;
+	retparam.param.inforegs.info_io_rsi = archparam.param.inforegs.info_io_rsi;
+	retparam.param.inforegs.info_io_rdi = archparam.param.inforegs.info_io_rdi;
+	retparam.param.inforegs.info_io_rip = archparam.param.inforegs.info_io_rip;
+	retparam.param.inforegs.info_guest_linear_address = archparam.param.inforegs.info_guest_linear_address;
+	retparam.param.inforegs.info_guest_paddr_full = archparam.param.inforegs.info_guest_paddr_full;
+	
+	return retparam;
+}
+
