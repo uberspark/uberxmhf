@@ -57,7 +57,7 @@
 			"1:\r\n"								\
 			"cmpl $"#fn_num", %%ebx \r\n"			\
 			"jne 1f \r\n"							\
-			"call "#fn_name" \r\n"					\//call function
+			"call "#fn_name" \r\n"					\
 			"subl $"#fn_aggregateret", %%ebp \r\n"	\
 			"jmp endswitch \r\n"					\
 
@@ -70,33 +70,33 @@
 							
 #define XMHF_SLAB_DEFINTERFACE(...) __attribute__((naked)) void _slab_interface(void){	\
 	asm volatile (							\
-			"pushl %%edi \r\n" 				\//save return address
+			"pushl %%edi \r\n" 				\
 											\
-			"xorl %%ebp, %%ebp \r\n"		\//ebp = 0
+			"xorl %%ebp, %%ebp \r\n"		\
 			"cmpl $0, %%edx \r\n"			\
-			"je 1f \r\n"					\//check to see if we need to allocate space for aggregate return value, if not just proceed
-			"movl %%edx, %%ebp \r\n"		\//
-			"movl %%esp, %%edx \r\n"		\//
-			"subl %%ebp, %%edx \r\n"		\//edx = address where aggregate return value begins on stack
+			"je 1f \r\n"					\
+			"movl %%edx, %%ebp \r\n"		\
+			"movl %%esp, %%edx \r\n"		\
+			"subl %%ebp, %%edx \r\n"		\
 			"1:\r\n"						\
-			"addl %%ecx, %%ebp \r\n"		\//ebp = total bytes that we need to allocate for aggregate return value + input parameters
-			"subl %%ebp, %%esp 	\r\n"		\//esp = new empty tos to house input parameters
-			"movl %%esp, %%edi \r\n"		\//edi = esp
+			"addl %%ecx, %%ebp \r\n"		\
+			"subl %%ebp, %%esp 	\r\n"		\
+			"movl %%esp, %%edi \r\n"		\
 			"cld \r\n"						\
 			"rep movsb \r\n"				\
 			"cmpl $0, %%edx \r\n"			\
 			"je 1f \r\n"					\
-			"addl $4, %%esp \r\n"			\//pop out old aggregate return value address
-			"pushl %%edx \r\n"				\//store local aggregate return value address
+			"addl $4, %%esp \r\n"			\
+			"pushl %%edx \r\n"				\
 			"movl %%edx, %%esi \r\n"		\
 											\
 			__VA_ARGS__ 					\
 											\
 			"1:\r\n"						\
 			"endswitch:\r\n"				\
-			"addl %%ebp, %%esp \r\n"		\//remove parameters from stack
+			"addl %%ebp, %%esp \r\n"		\
 			"popl %%edi \r\n"				\
-			"jmpl *%%edi \r\n"				\//return back to caller slab
+			"jmpl *%%edi \r\n"				\
 			:								\
 			:								\
 			:								\
