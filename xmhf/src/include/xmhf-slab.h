@@ -108,6 +108,40 @@
 }											\
 
 
+#define XMHF_SLAB_DEFIMPORTFNSTUB(dest_slab_index, fnnum, fn_paramsize, fn_retsize) asm volatile(	\
+						"pushl %%edi \r\n"				\
+						"pushl %%esi \r\n"				\
+						"pushl %%ebp \r\n"				\
+						"pushl %%ecx \r\n"				\
+						"pushl %%ebx \r\n"				\
+														\
+						"leal 24(%%esp), %%esi \r\n"	\
+						"movl $1f, %%edi \r\n"			\
+						"movl %0, %%ebx \r\n"			\
+						"movl %1, %%ecx \r\n"			\
+						"movl %2, %%eax \r\n"			\
+						"movl %3, %%edx \r\n"			\
+						"jmpl *%%eax \r\n"				\
+														\
+						"1: \r\n"						\
+						"movl %3, %%ecx \r\n"			\
+						"movl 24(%%esp), %%edi \r\n"	\
+						"cld \r\n"						\
+						"rep movsb \r\n"				\
+						"popl %%ebx \r\n"				\
+						"popl %%ecx \r\n"				\
+						"popl %%ebp \r\n"				\
+						"popl %%esi \r\n"				\
+						"popl %%edi \r\n"				\
+						"ret $4 \r\n"					\
+						: 								\
+						: "i" (fnnum), "i" (fn_paramsize), "m" (_slab_table[dest_slab_index].slab_header.entry_cr3), "i" (fn_retsize))	\
+						:	 							\
+						);								\
+
+#define XMHF_SLAB_DEFIMPORTFN(fn_decl, fn_stub)	__attribute__((naked), (noinline)) static inline fn_decl { fn_stub }
+
+
 #endif //__ASSEMBLY__
 
 #endif //__XMHF_SLAB_H__
