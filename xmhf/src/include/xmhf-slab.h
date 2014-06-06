@@ -135,11 +135,11 @@
 						"popl %%edi \r\n"				\
 						"ret $4 \r\n"					\
 						: 								\
-						: "i" (fnnum), "i" (fn_paramsize), "m" (_slab_table[dest_slab_index].slab_header.entry_cr3), "i" (fn_retsize))	\
+						: "i" (fnnum), "i" (fn_paramsize), "m" (_slab_table[dest_slab_index].slab_header.entry_cr3), "i" (fn_retsize)	\
 						:	 							\
 						);								\
 
-#define XMHF_SLAB_DEFIMPORTFN(fn_decl, fn_stub)	__attribute__((naked), (noinline)) static inline fn_decl { fn_stub }
+#define XMHF_SLAB_DEFIMPORTFN(fn_decl, fn_stub)	__attribute__((naked)) __attribute__ ((noinline)) static inline fn_decl { fn_stub }
 
 
 #endif //__ASSEMBLY__
