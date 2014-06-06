@@ -56,13 +56,15 @@
 
 #ifndef __ASSEMBLY__
 
-#define XMHF_SLAB_DEFEXPORTFN(fn_name, fn_num, fn_aggregateret)		\
+#define _XMHF_SLAB_DEFEXPORTFN(fn_name, fn_num, fn_aggregateret)		\
 			"1:\r\n"								\
 			"cmpl $"#fn_num", %%ebx \r\n"			\
 			"jne 1f \r\n"							\
 			"call "#fn_name" \r\n"					\
 			"subl $"#fn_aggregateret", %%ebp \r\n"	\
 			"jmp endswitch \r\n"					\
+
+#define XMHF_SLAB_DEFEXPORTFN(fn_name, fn_num, fn_aggregateret)		_XMHF_SLAB_DEFEXPORTFN(fn_name, fn_num, fn_aggregateret)
 
 //setup
 //esi = base address of input parameter frame on stack (excluding return address)
