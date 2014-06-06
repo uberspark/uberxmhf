@@ -103,3 +103,11 @@ xc_hypapp_arch_param_t entry_3(context_desc_t context_desc, xc_hypapp_arch_param
 	return retparam;
 }
 
+///////
+
+XMHF_SLAB_DEFINTERFACE(
+	XMHF_SLAB_DEFEXPORTFN(entry_0, 0, 0x0)
+	XMHF_SLAB_DEFEXPORTFN(entry_1, 1, 0x0)
+	XMHF_SLAB_DEFEXPORTFN(entry_2, 2, 0x4)
+	XMHF_SLAB_DEFEXPORTFN(entry_3, 3, 0x0)
+)
