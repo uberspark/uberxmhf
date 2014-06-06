@@ -51,7 +51,7 @@
  * 
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
-
+/*
 //extern void entry_cr3(void);
 extern void _slab_interface(void);
 
@@ -87,6 +87,6 @@ __attribute__ ((section(".slabrodata"))) slab_header_t slab_header = {
 	.slab_stack.end = (u32)&slab_stack_end,
 	//.entry_cr3 = &entry_cr3,
 	.entry_cr3 = &_slab_interface,
-};
+};*/
 
 

@@ -108,6 +108,7 @@ xc_hypapp_arch_param_t entry_3(context_desc_t context_desc, xc_hypapp_arch_param
 }
 
 ///////
+XMHF_SLAB("test")
 
 XMHF_SLAB_DEFINTERFACE(
 	XMHF_SLAB_DEFEXPORTFN(entry_0, XMHF_SLAB_TEST_FNENTRY0, XMHF_SLAB_EXPORTFN_RETTYPE_NORMAL)
