@@ -50,6 +50,14 @@
 #ifndef __XMHF_SLAB_IMPLIB_H__
 #define __XMHF_SLAB_IMPLIB_H__
 
+
+#define	XMHF_SLAB_TEST_FNENTRY0	0
+#define	XMHF_SLAB_TEST_FNENTRY1	1
+#define XMHF_SLAB_TEST_FNENTRY2	2
+#define XMHF_SLAB_TEST_FNENTRY3	3
+
+#ifndef __XMHF_SLAB_INTERNAL_USE__
+
 #ifndef __ASSEMBLY__
 extern slab_table_t _slab_table[];
 
@@ -235,5 +243,8 @@ __attribute__((naked)) static inline xc_hypapp_arch_param_t entry_3(context_desc
 
 
 #endif //__ASSEMBLY__
+
+#endif //__XMHF_SLAB_INTERNAL_USE__
+
 
 #endif //__XMHF_SLAB_IMPLIB__
