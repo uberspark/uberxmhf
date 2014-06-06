@@ -51,6 +51,9 @@
 #ifndef __XMHF_SLAB_H__
 #define __XMHF_SLAB_H__
 
+#define	XMHF_SLAB_EXPORTFN_RETTYPE_NORMAL		0x0
+#define	XMHF_SLAB_EXPORTFN_RETTYPE_AGGREGATE	0x4
+
 #ifndef __ASSEMBLY__
 
 #define XMHF_SLAB_DEFEXPORTFN(fn_name, fn_num, fn_aggregateret)		\
@@ -60,7 +63,6 @@
 			"call "#fn_name" \r\n"					\
 			"subl $"#fn_aggregateret", %%ebp \r\n"	\
 			"jmp endswitch \r\n"					\
-
 
 //setup
 //esi = base address of input parameter frame on stack (excluding return address)
