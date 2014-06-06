@@ -52,7 +52,8 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-extern void entry_cr3(void);
+//extern void entry_cr3(void);
+extern void _slab_interface(void);
 
 // this is in xmhf-slab.lscript
 extern u8 slab_rodata_start[];
@@ -84,7 +85,8 @@ __attribute__ ((section(".slabrodata"))) slab_header_t slab_header = {
 	.slab_code.end = (u32)&slab_code_end,
 	.slab_stack.start = (u32)&slab_stack_start,
 	.slab_stack.end = (u32)&slab_stack_end,
-	.entry_cr3 = &entry_cr3,
+	//.entry_cr3 = &entry_cr3,
+	.entry_cr3 = &_slab_interface,
 };
 
 
