@@ -62,6 +62,9 @@
 extern slab_table_t _slab_table[];
 
 XMHF_SLAB_DEFIMPORTFN(void entry_0(void), XMHF_SLAB_DEFIMPORTFNSTUB(XMHF_SLAB_INDEX_TEMPLATE, XMHF_SLAB_TEST_FNENTRY0, (0), 0))
+XMHF_SLAB_DEFIMPORTFN(u32 entry_1(u32 param1, u32 param2), XMHF_SLAB_DEFIMPORTFNSTUB(XMHF_SLAB_INDEX_TEMPLATE, XMHF_SLAB_TEST_FNENTRY1, (sizeof(u32)+sizeof(u32)), 0))
+XMHF_SLAB_DEFIMPORTFN(context_desc_t entry_2(u32 cpu_index, bool isbsp, u32 partition_index), XMHF_SLAB_DEFIMPORTFNSTUB(XMHF_SLAB_INDEX_TEMPLATE, XMHF_SLAB_TEST_FNENTRY2, (sizeof(u32)+sizeof(bool)+sizeof(u32)+sizeof(u32)), sizeof(context_desc_t)) )
+XMHF_SLAB_DEFIMPORTFN(xc_hypapp_arch_param_t entry_3(context_desc_t context_desc, xc_hypapp_arch_param_t archparam), XMHF_SLAB_DEFIMPORTFNSTUB(XMHF_SLAB_INDEX_TEMPLATE, XMHF_SLAB_TEST_FNENTRY3, (sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t)+sizeof(u32)), sizeof(xc_hypapp_arch_param_t)))
 
 
 
@@ -102,7 +105,7 @@ XMHF_SLAB_DEFIMPORTFN(void entry_0(void), XMHF_SLAB_DEFIMPORTFNSTUB(XMHF_SLAB_IN
 
 }*/
 
-
+/*
 //static inline void entry(void) __attribute__((noinline)){
 __attribute__ ((naked)) static inline u32 entry_1(u32 param1, u32 param2) __attribute__((noinline)){
 	//setup
@@ -138,9 +141,9 @@ __attribute__ ((naked)) static inline u32 entry_1(u32 param1, u32 param2) __attr
 		: "i" (1), "i" ((sizeof(param1)+sizeof(param2))), "m" (_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_header.entry_cr3), "i" (0)
 		: 
 	);
-}
+}*/
 
-__attribute__((naked)) static inline context_desc_t entry_2(u32 cpu_index, bool isbsp, u32 partition_index) __attribute__((noinline)){
+/*__attribute__((naked)) static inline context_desc_t entry_2(u32 cpu_index, bool isbsp, u32 partition_index) __attribute__((noinline)){
 	//setup
 	//esi = base address of input parameter frame on stack (excluding return address)
 	//edi = return address
@@ -180,9 +183,9 @@ __attribute__((naked)) static inline context_desc_t entry_2(u32 cpu_index, bool 
 		: 
 	);
 
-}
+}*/
 
-
+/*
 __attribute__((naked)) static inline xc_hypapp_arch_param_t entry_3(context_desc_t context_desc, xc_hypapp_arch_param_t archparam) __attribute__((noinline)){
 
 	//setup
@@ -225,7 +228,7 @@ __attribute__((naked)) static inline xc_hypapp_arch_param_t entry_3(context_desc
 	);
 
 
-}
+}*/
 
 
 #endif //__ASSEMBLY__
