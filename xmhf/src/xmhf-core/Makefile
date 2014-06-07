@@ -133,9 +133,9 @@ C_SOURCES += $(shell find $(srcdir)/coreapi/arch/x86/vmx/ -type f -name '*.c')
 
 
 
-C_SOURCES += $(wildcard $(srcdir)/shared/*.c)
-C_SOURCES += $(shell find $(srcdir)/shared/arch/x86/common/ -type f -name '*.c')
-C_SOURCES += $(shell find $(srcdir)/shared/arch/x86/vmx/ -type f -name '*.c')
+#C_SOURCES += $(wildcard $(srcdir)/shared/*.c)
+#C_SOURCES += $(shell find $(srcdir)/shared/arch/x86/common/ -type f -name '*.c')
+#C_SOURCES += $(shell find $(srcdir)/shared/arch/x86/vmx/ -type f -name '*.c')
 
 C_SOURCES := $(patsubst $(srcdir)/%, %, $(C_SOURCES))
 
