@@ -54,6 +54,11 @@
 #define	XMHF_SLAB_EXPORTFN_RETTYPE_NORMAL		0x0
 #define	XMHF_SLAB_EXPORTFN_RETTYPE_AGGREGATE	0x4
 
+
+#define XMHF_SLAB_INDEX_TEMPLATE	(0)
+#define XMHF_SLAB_INITBS_INDEX		(1)
+
+
 #ifndef __ASSEMBLY__
 
 #define _XMHF_SLAB_DEFEXPORTFN(fn_name, fn_num, fn_aggregateret)		\
