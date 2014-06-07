@@ -161,11 +161,16 @@ LLC_ATTR = -3dnow,-3dnowa,-64bit,-64bit-mode,-adx,-aes,-atom,-avx,-avx2,-bmi,-bm
 .PHONY: all
 all: $(THE_ARCHIVE)
 
-$(THE_ARCHIVE): testslab initbs $(OBJECTS) 
+$(THE_ARCHIVE): libxcshared testslab initbs $(OBJECTS) 
 	cd $(XMHF_CORE_OBJECTS_DIR) && cp -f $(srcdir)/xc.lscript xc.lscript.c
 	cd $(XMHF_CORE_OBJECTS_DIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E xc.lscript.c -o xc.lds
 	cd $(XMHF_CORE_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T xc.lds -o $(THE_ARCHIVE).exe _objs_slab/xmhf-slab.slo $(OBJECTS_ARCHIVE) $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
 	cd $(XMHF_CORE_OBJECTS_DIR) && $(OBJCOPY) --output-format=binary $(THE_ARCHIVE).exe $(THE_ARCHIVE).bin
+
+.PHONY: libxcshared
+libxcshared:
+	mkdir -p $(XMHF_CORE_OBJECTS_DIR)
+	cd $(XMHF_CORE_OBJECTS_DIR) && $(MAKE) -f $(srcdir)/libxcshared/Makefile -w all
 
 .PHONY: testslab
 testslab:
