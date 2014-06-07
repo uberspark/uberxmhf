@@ -63,7 +63,7 @@
 void xmhf_runtime_entry(void);
 
 //[init]
-void init_entry(u32 cpuid, bool is_bsp);
+//void init_entry(u32 cpuid, bool is_bsp);
 
 
 #endif //__ASSEMBLY__
