@@ -53,6 +53,7 @@
 #include <xmhf-core.h>
 #include <xc-x86.h>
 #include <xc-x86vmx.h>
+#include <xc-init.h>
 
 /* originally within xc-baseplatform-x86vmx.c */
 
