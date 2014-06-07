@@ -50,6 +50,29 @@
 //---includes-------------------------------------------------------------------
 #include <xmhf-core.h> 
 
+/* originally in xc-init-richguest.c */
+
+//add given cpu to the rich guest partition
+context_desc_t xmhf_richguest_setup(u32 partition_index, u32 cpuid, bool is_bsp){
+	context_desc_t context_desc;
+
+	//add cpu to the richguest partition
+	context_desc = xc_api_partition_addcpu(partition_index, cpuid, is_bsp);
+	
+	//bail out if we could not add cpu to the rich guest partition
+	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
+			printf("\n%s: could not add cpu to rich guest partition. Halting!", __FUNCTION__);
+			return context_desc;
+	}
+
+	//setup guest OS state for partition
+	xmhf_richguest_setupguestOSstate(context_desc);
+
+	return context_desc;
+}
+
+
+/* originally in init-entry.c */
 
 //we get control here in the context of *each* physical CPU core 
 void init_entry(u32 cpuid, bool is_bsp){

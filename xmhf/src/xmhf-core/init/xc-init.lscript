@@ -44,28 +44,61 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF core "rich" guest component implementation -- initialization portion
-// takes care of initializing and booting up the "rich" guest
-// author: amit vasudevan (amitvasudevan@acm.org)
+#include <xmhf.h>
 
-#include <xmhf-core.h> 
+OUTPUT_ARCH("i386")
 
-//add given cpu to the rich guest partition
-context_desc_t xmhf_richguest_setup(u32 partition_index, u32 cpuid, bool is_bsp){
-	context_desc_t context_desc;
-
-	//add cpu to the richguest partition
-	context_desc = xc_api_partition_addcpu(partition_index, cpuid, is_bsp);
-	
-	//bail out if we could not add cpu to the rich guest partition
-	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
-			printf("\n%s: could not add cpu to rich guest partition. Halting!", __FUNCTION__);
-			return context_desc;
-	}
-
-	//setup guest OS state for partition
-	xmhf_richguest_setupguestOSstate(context_desc);
-
-	return context_desc;
+MEMORY
+{
+  slabmem (rwxai) : ORIGIN = XMHF_SLAB_REGION_START, LENGTH = 16M /* max. length */
+  unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 
+SECTIONS
+{
+	. = XMHF_SLAB_REGION_START;
+
+	.slab_rodata : {
+		slab_rodata_start = . ;
+		*(.slabrodata)
+		*(.rodata)
+		*(.rodata.str1.1)
+		*(.comment)
+		*(.eh_frame) /* exception-metadata. might be able to discard */
+		. = ALIGN(0x200000);    
+		slab_rodata_end = . ;
+	} >slabmem =0x0000 
+
+	.slab_rwdata : {
+		slab_rwdata_start = . ;
+		*(.data)
+		*(.bss)
+		. = ALIGN(0x200000);    
+		slab_rwdata_end = . ;
+	} >slabmem =0x0000 
+
+	.slab_code : {
+		slab_code_start = . ;
+		*(.text)
+		. = ALIGN(0x200000);    
+		slab_code_end = . ;
+	} >slabmem =0x9090 
+
+	.slab_stack : {
+		slab_stack_start = . ;
+		*(.stack)
+		. = ALIGN(0x200000);    
+		slab_stack_end = . ;
+	} >slabmem =0x0000
+
+	/* this is to cause the link to fail if there is
+	* anything we didn't explicitly place.
+	* when this does cause link to fail, temporarily comment
+	* this part out to see what sections end up in the output
+	* which are not handled above, and handle them.
+	*/
+	.unaccounted : {
+	*(*)
+	} >unaccounted
+
+}
