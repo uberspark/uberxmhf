@@ -58,9 +58,13 @@ SECTIONS
 {
 	. = XMHF_SLAB_INIT_REGION_START;
 
+	.slab_header : {
+		*(.slabrodata)
+		. = ALIGN(0x1);
+	} >slabmem  
+
 	.slab_rodata : {
 		slab_rodata_start = . ;
-		*(.slabrodata)
 		*(.rodata)
 		*(.rodata.str1.1)
 		*(.comment)

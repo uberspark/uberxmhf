@@ -140,7 +140,7 @@
 						"popl %%edi \r\n"				\
 						"ret $4 \r\n"					\
 						: 								\
-						: "i" (fnnum), "i" (fn_paramsize), "m" (_slab_table[dest_slab_index].slab_header.entry_cr3), "i" (fn_retsize)	\
+						: "i" (fnnum), "i" (fn_paramsize), "m" (_slab_table[dest_slab_index].entry_cr3), "i" (fn_retsize)	\
 						:	 							\
 						);								\
 

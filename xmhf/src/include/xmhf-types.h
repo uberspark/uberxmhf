@@ -208,9 +208,9 @@ typedef struct {
 	slab_entrystub_t entry_cr3;
 } slab_header_t;
 
-typedef struct {
-	slab_header_t slab_header;
-} slab_table_t;
+//typedef struct {
+//	slab_header_t slab_header;
+//} slab_table_t;
 
 
 #endif /*ifndef __ASSEMBLY__*/

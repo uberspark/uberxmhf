@@ -93,7 +93,10 @@ SECTIONS
 	. = XMHF_SLAB_REGION_SHARED_RODATA; 
 	.slabroshareddata : {
 		_slab_table = .;
-		. = ALIGN(0x01000000);    
+		_objs_slab/xmhf-slab.slo(.slab_header)
+		_objs_initbs/xc-initbs.slo(.slab_header)
+		_objs_init/xc-init.slo(.slab_header)
+		. = ALIGN(0x00200000);
 	} >slabroshareddatamem =0x0000
 	
 

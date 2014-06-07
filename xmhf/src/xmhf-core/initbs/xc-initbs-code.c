@@ -52,7 +52,7 @@
 #include <xmhf-slab-implib.h>
 #include <xc-init.h>
 
-extern slab_table_t _slab_table[];
+extern slab_header_t _slab_table[];
 
 void xmhf_runtime_entry(void){
 
@@ -88,6 +88,25 @@ void xmhf_runtime_entry(void){
 	//xmhf_richguest_initialize();
 
 
+	//print out slab table
+	{
+			u32 i;
+			
+			for(i=0; i <3; i++){
+				printf("\nslab %u: dumping slab header", i);
+				printf("\n	slab_index=%u", _slab_table[i].slab_index);
+				printf("\n	slab_macmid=%08x", _slab_table[i].slab_macmid);
+				printf("\n	slab_privilegemask=%08x", _slab_table[i].slab_privilegemask);
+				printf("\n	slab_tos=%08x", _slab_table[i].slab_tos);
+				printf("\n  slab_rodata(%08x-%08x)", _slab_table[i].slab_rodata.start, _slab_table[i].slab_rodata.end);
+				printf("\n  slab_rwdata(%08x-%08x)", _slab_table[i].slab_rwdata.start, _slab_table[i].slab_rwdata.end);
+				printf("\n  slab_code(%08x-%08x)", _slab_table[i].slab_code.start, _slab_table[i].slab_code.end);
+				printf("\n  slab_stack(%08x-%08x)", _slab_table[i].slab_stack.start, _slab_table[i].slab_stack.end);
+				printf("\n  slab_trampoline(%08x-%08x)", _slab_table[i].slab_trampoline.start, _slab_table[i].slab_trampoline.end);
+				printf("\n  slab_entrycr3=%08x", _slab_table[i].entry_cr3);
+			}
+	}
+
 	//[test] slab
 	{
 			extern slab_header_t _test_slab_header;
@@ -107,7 +126,7 @@ void xmhf_runtime_entry(void){
 			printf("\n  slab_trampoline(%08x-%08x)", _test_slab_header.slab_trampoline.start, _test_slab_header.slab_trampoline.end);
 			printf("\n  slab_entrycr3=%08x", _test_slab_header.entry_cr3);
 			
-			_slab_table[0].slab_header.entry_cr3 = _test_slab_header.entry_cr3;
+			//_slab_table[0].slab_header.entry_cr3 = _test_slab_header.entry_cr3;
 
 			//invoke slab interface
 			
@@ -179,7 +198,7 @@ void xmhf_runtime_entry(void){
 			printf("\n  slab_trampoline(%08x-%08x)", _init_slab_header.slab_trampoline.start, _init_slab_header.slab_trampoline.end);
 			printf("\n  slab_entrycr3=%08x", _init_slab_header.entry_cr3);
 			
-			_slab_table[XMHF_SLAB_INIT_INDEX].slab_header.entry_cr3 = _init_slab_header.entry_cr3;
+			//_slab_table[XMHF_SLAB_INIT_INDEX].slab_header.entry_cr3 = _init_slab_header.entry_cr3;
 	}
 
 	//invoke XMHF api hub initialization function to initialize core API
