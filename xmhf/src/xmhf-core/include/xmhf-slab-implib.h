@@ -59,7 +59,7 @@
 #ifndef __XMHF_SLAB_INTERNAL_USE__
 
 #ifndef __ASSEMBLY__
-extern slab_table_t _slab_table[];
+extern slab_header_t _slab_table[];
 
 XMHF_SLAB_DEFIMPORTFN(void entry_0(void), XMHF_SLAB_DEFIMPORTFNSTUB(XMHF_SLAB_INDEX_TEMPLATE, XMHF_SLAB_TEST_FNENTRY0, (0), 0))
 XMHF_SLAB_DEFIMPORTFN(u32 entry_1(u32 param1, u32 param2), XMHF_SLAB_DEFIMPORTFNSTUB(XMHF_SLAB_INDEX_TEMPLATE, XMHF_SLAB_TEST_FNENTRY1, (sizeof(u32)+sizeof(u32)), 0))
