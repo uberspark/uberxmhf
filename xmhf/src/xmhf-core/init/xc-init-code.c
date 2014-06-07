@@ -49,6 +49,9 @@
 
 //---includes-------------------------------------------------------------------
 #include <xmhf-core.h> 
+#define __XMHF_SLAB_INTERNAL_USE__
+#include <xc-init.h>
+#undef __XMHF_SLAB_INTERNAL_USE__
 
 /* originally in xc-init-richguest.c */
 
@@ -151,3 +154,10 @@ void init_entry(u32 cpuid, bool is_bsp){
 		HALT();
 	}
 }
+
+///////
+XMHF_SLAB("init")
+
+XMHF_SLAB_DEFINTERFACE(
+	XMHF_SLAB_DEFEXPORTFN(init_entry, XMHF_SLAB_INIT_FNINITENTRY, XMHF_SLAB_EXPORTFN_RETTYPE_NORMAL)
+)
