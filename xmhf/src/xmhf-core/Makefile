@@ -42,9 +42,9 @@ C_SOURCES := $(wildcard $(srcdir)/*.c)
 #make[1]: *** [xmhf-core] Error 1
 
 
-C_SOURCES += $(wildcard $(srcdir)/ihub/*.c)
-C_SOURCES += $(shell find $(srcdir)/ihub/arch/x86/common/ -type f -name '*.c')
-C_SOURCES += $(shell find $(srcdir)/ihub/arch/x86/vmx/ -type f -name '*.c')
+#C_SOURCES += $(wildcard $(srcdir)/ihub/*.c)
+#C_SOURCES += $(shell find $(srcdir)/ihub/arch/x86/common/ -type f -name '*.c')
+#C_SOURCES += $(shell find $(srcdir)/ihub/arch/x86/vmx/ -type f -name '*.c')
 
 ##------------------------------------------------------------------------
 ## xc-ihub-apihub.o: In function `xmhf_apihub_fromhypapp':
