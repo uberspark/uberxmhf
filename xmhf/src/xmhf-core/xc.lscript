@@ -54,7 +54,7 @@ MEMORY
 {
   all (rwxai) : ORIGIN = 0x10200000, LENGTH = 14M 
   slabroshareddatamem (rai) : ORIGIN = XMHF_SLAB_REGION_SHARED_RODATA, LENGTH = 16M
-  slabmem (rwxai) : ORIGIN = XMHF_SLAB_REGION_START, LENGTH = 48M
+  slabmem (rwxai) : ORIGIN = XMHF_SLAB_REGION_START, LENGTH = 64M
   unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 
@@ -96,6 +96,7 @@ SECTIONS
 		_objs_slab/xmhf-slab.slo(.slab_header)
 		_objs_initbs/xc-initbs.slo(.slab_header)
 		_objs_init/xc-init.slo(.slab_header)
+		_objs_ihub/xc-ihub.slo(.slab_header)
 		. = ALIGN(0x01000000);
 	} >slabroshareddatamem =0x0000
 	
@@ -119,6 +120,13 @@ SECTIONS
 	.slabinit : {
 		_init_slab_header = . ;
 		_objs_init/xc-init.slo(*)
+		. = ALIGN(0x01000000);
+	} >slabmem =0x0000
+
+	. = XMHF_SLAB_IHUB_REGION_START;
+	.slabihub : {
+		_ihub_slab_header = . ;
+		_objs_ihub/xc-ihub.slo(*)
 		. = ALIGN(0x01000000);
 	} >slabmem =0x0000
 
