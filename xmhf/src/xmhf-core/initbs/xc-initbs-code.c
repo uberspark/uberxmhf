@@ -109,22 +109,22 @@ void xmhf_runtime_entry(void){
 
 	//[test] slab
 	{
-			extern slab_header_t _test_slab_header;
+			//extern slab_header_t _test_slab_header;
 			xc_hypapp_arch_param_t ap_input, ap_output;
 			context_desc_t ctx;
 			u32 value;
 			
-			printf("\nslab testing, dumping slab header");
-			printf("\n	slab_index=%u", _test_slab_header.slab_index);
-			printf("\n	slab_macmid=%08x", _test_slab_header.slab_macmid);
-			printf("\n	slab_privilegemask=%08x", _test_slab_header.slab_privilegemask);
-			printf("\n	slab_tos=%08x", _test_slab_header.slab_tos);
-			printf("\n  slab_rodata(%08x-%08x)", _test_slab_header.slab_rodata.start, _test_slab_header.slab_rodata.end);
-			printf("\n  slab_rwdata(%08x-%08x)", _test_slab_header.slab_rwdata.start, _test_slab_header.slab_rwdata.end);
-			printf("\n  slab_code(%08x-%08x)", _test_slab_header.slab_code.start, _test_slab_header.slab_code.end);
-			printf("\n  slab_stack(%08x-%08x)", _test_slab_header.slab_stack.start, _test_slab_header.slab_stack.end);
-			printf("\n  slab_trampoline(%08x-%08x)", _test_slab_header.slab_trampoline.start, _test_slab_header.slab_trampoline.end);
-			printf("\n  slab_entrycr3=%08x", _test_slab_header.entry_cr3);
+			//printf("\nslab testing, dumping slab header");
+			//printf("\n	slab_index=%u", _test_slab_header.slab_index);
+			//printf("\n	slab_macmid=%08x", _test_slab_header.slab_macmid);
+			//printf("\n	slab_privilegemask=%08x", _test_slab_header.slab_privilegemask);
+			//printf("\n	slab_tos=%08x", _test_slab_header.slab_tos);
+			//printf("\n  slab_rodata(%08x-%08x)", _test_slab_header.slab_rodata.start, _test_slab_header.slab_rodata.end);
+			//printf("\n  slab_rwdata(%08x-%08x)", _test_slab_header.slab_rwdata.start, _test_slab_header.slab_rwdata.end);
+			//printf("\n  slab_code(%08x-%08x)", _test_slab_header.slab_code.start, _test_slab_header.slab_code.end);
+			//printf("\n  slab_stack(%08x-%08x)", _test_slab_header.slab_stack.start, _test_slab_header.slab_stack.end);
+			//printf("\n  slab_trampoline(%08x-%08x)", _test_slab_header.slab_trampoline.start, _test_slab_header.slab_trampoline.end);
+			//printf("\n  slab_entrycr3=%08x", _test_slab_header.entry_cr3);
 			
 			//_slab_table[0].slab_header.entry_cr3 = _test_slab_header.entry_cr3;
 
@@ -184,19 +184,19 @@ void xmhf_runtime_entry(void){
 
 	//setup [init] slab
 	{
-			extern slab_header_t _init_slab_header;
+			//extern slab_header_t _init_slab_header;
 			
-			printf("\nslab testing, dumping init slab header");
-			printf("\n	slab_index=%u", _init_slab_header.slab_index);
-			printf("\n	slab_macmid=%08x", _init_slab_header.slab_macmid);
-			printf("\n	slab_privilegemask=%08x", _init_slab_header.slab_privilegemask);
-			printf("\n	slab_tos=%08x", _init_slab_header.slab_tos);
-			printf("\n  slab_rodata(%08x-%08x)", _init_slab_header.slab_rodata.start, _init_slab_header.slab_rodata.end);
-			printf("\n  slab_rwdata(%08x-%08x)", _init_slab_header.slab_rwdata.start, _init_slab_header.slab_rwdata.end);
-			printf("\n  slab_code(%08x-%08x)", _init_slab_header.slab_code.start, _init_slab_header.slab_code.end);
-			printf("\n  slab_stack(%08x-%08x)", _init_slab_header.slab_stack.start, _init_slab_header.slab_stack.end);
-			printf("\n  slab_trampoline(%08x-%08x)", _init_slab_header.slab_trampoline.start, _init_slab_header.slab_trampoline.end);
-			printf("\n  slab_entrycr3=%08x", _init_slab_header.entry_cr3);
+			//printf("\nslab testing, dumping init slab header");
+			//printf("\n	slab_index=%u", _init_slab_header.slab_index);
+			//printf("\n	slab_macmid=%08x", _init_slab_header.slab_macmid);
+			//printf("\n	slab_privilegemask=%08x", _init_slab_header.slab_privilegemask);
+			//printf("\n	slab_tos=%08x", _init_slab_header.slab_tos);
+			//printf("\n  slab_rodata(%08x-%08x)", _init_slab_header.slab_rodata.start, _init_slab_header.slab_rodata.end);
+			//printf("\n  slab_rwdata(%08x-%08x)", _init_slab_header.slab_rwdata.start, _init_slab_header.slab_rwdata.end);
+			//printf("\n  slab_code(%08x-%08x)", _init_slab_header.slab_code.start, _init_slab_header.slab_code.end);
+			//printf("\n  slab_stack(%08x-%08x)", _init_slab_header.slab_stack.start, _init_slab_header.slab_stack.end);
+			//printf("\n  slab_trampoline(%08x-%08x)", _init_slab_header.slab_trampoline.start, _init_slab_header.slab_trampoline.end);
+			//printf("\n  slab_entrycr3=%08x", _init_slab_header.entry_cr3);
 			
 			//_slab_table[XMHF_SLAB_INIT_INDEX].slab_header.entry_cr3 = _init_slab_header.entry_cr3;
 	}
