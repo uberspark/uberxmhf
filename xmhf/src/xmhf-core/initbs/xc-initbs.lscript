@@ -58,11 +58,6 @@ SECTIONS
 {
 	. = XMHF_SLAB_INITBS_REGION_START;
 
-	.slab_header : {
-		*(.slabrodata)
-		. = ALIGN(0x1);
-	} >slabmem  
-
 	.slab_rodata : {
 		slab_rodata_start = . ;
 		*(.rodata)
@@ -94,6 +89,10 @@ SECTIONS
 		. = ALIGN(0x200000);    
 		slab_stack_end = . ;
 	} >slabmem =0x0000
+
+	.slab_header : {
+		*(.slabrodata)
+	} >slabmem  
 
 	/* this is to cause the link to fail if there is
 	* anything we didn't explicitly place.
