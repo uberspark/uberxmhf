@@ -50,13 +50,13 @@ OUTPUT_ARCH("i386")
 
 MEMORY
 {
-  slabmem (rwxai) : ORIGIN = XMHF_SLAB_INIT_REGION_START, LENGTH = 16M /* max. length */
+  slabmem (rwxai) : ORIGIN = XMHF_SLAB_IHUB_REGION_START, LENGTH = 16M /* max. length */
   unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 
 SECTIONS
 {
-	. = XMHF_SLAB_INIT_REGION_START;
+	. = XMHF_SLAB_IHUB_REGION_START;
 
 	.slab_rodata : {
 		slab_rodata_start = . ;
