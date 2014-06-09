@@ -98,13 +98,12 @@ void init_entry(u32 cpuid, bool is_bsp){
 	//[debug]
 	printf("\n%s: cpuid=%08x, is_bsp=%u...\n", __FUNCTION__, cpuid, is_bsp);
 
-	//[debug]
-	printf("\n\n");
-	HALT();
 	
 	//create rich guest partition if we are the BSP
 	if(is_bsp){
+		printf("\n%s: proceeding to create rich guest partition (esp=%x)\n", __FUNCTION__, read_esp());
 		xc_richguest_partition_index = xc_api_partition_create(XC_PARTITION_PRIMARY);
+		printf("\n%s: came back (esp=%x)\n", __FUNCTION__, read_esp());
 		if(xc_richguest_partition_index == XC_PARTITION_INDEX_INVALID){
 			printf("\n%s: Fatal error, could not create rich guest partition!", __FUNCTION__);
 			HALT();
@@ -112,7 +111,6 @@ void init_entry(u32 cpuid, bool is_bsp){
 		printf("\n%s: BSP: created rich guest partition %u", __FUNCTION__, xc_richguest_partition_index);
 		xmhf_richguest_initialize(xc_richguest_partition_index);
 		printf("\n%s: BSP: initialized rich guest partition %u", __FUNCTION__, xc_richguest_partition_index);
-		
 	}
 	
 	//add cpu to rich guest partition
