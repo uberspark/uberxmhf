@@ -58,6 +58,7 @@
 #define XMHF_SLAB_INDEX_TEMPLATE	(0)
 #define XMHF_SLAB_INITBS_INDEX		(1)
 #define XMHF_SLAB_INIT_INDEX		(2)
+#define XMHF_SLAB_IHUB_INDEX		(3)
 
 #ifndef __ASSEMBLY__
 
@@ -106,6 +107,15 @@
 			"addl %%ebp, %%esp \r\n"		\
 			"popl %%edi \r\n"				\
 			"jmpl *%%edi \r\n"				\
+			:								\
+			:								\
+			:								\
+		);									\
+}											\
+
+#define XMHF_SLAB_DEFINTERFACEBARE(fn) __attribute__((naked)) void _slab_interface(void){	\
+	asm volatile (							\
+			"jmp "#fn" \r\n" 				\
 			:								\
 			:								\
 			:								\

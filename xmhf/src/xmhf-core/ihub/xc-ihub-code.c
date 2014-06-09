@@ -277,3 +277,9 @@ u32 xc_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch_p
 
 }
 
+//////////
+XMHF_SLAB("ihub")
+
+XMHF_SLAB_DEFINTERFACEBARE(xmhf_parteventhub_arch_x86vmx_entry)
+
+
