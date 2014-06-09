@@ -47,7 +47,9 @@
 #include <xmhf.h>
 #include <xmhf-core.h>
 
+#define __XMHF_SLAB_INTERNAL_USE__
 #include <xc-coreapi.h>
+#undef __XMHF_SLAB_INTERNAL_USE__
 
 /*
  * XMHF core API calls that hypapps rely on
