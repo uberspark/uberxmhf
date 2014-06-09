@@ -81,8 +81,10 @@
 #define MEMP_PROT_NOEXECUTE		(32) // page no-execute
 #define MEMP_PROT_MAXVALUE		(MEMP_PROT_NOTPRESENT+MEMP_PROT_PRESENT+MEMP_PROT_READONLY+MEMP_PROT_READWRITE+MEMP_PROT_NOEXECUTE+MEMP_PROT_EXECUTE)
 
+
 #ifndef __ASSEMBLY__
 
+#ifndef __XMHF_SLAB_INTERNAL_USE__
 
 //HPT related core APIs
 void xc_api_hpt_setprot(context_desc_t context_desc, u64 gpa, u32 prottype);
@@ -144,7 +146,10 @@ extern xc_cpu_t g_xc_cpu[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
 // primary partitions
 extern xc_partition_t g_xc_primary_partition[MAX_PRIMARY_PARTITIONS] __attribute__(( section(".data") ));
 
+#endif //__XMHF_SLAB_INTERNAL_USE__
+
 
 #endif	//__ASSEMBLY__
+
 
 #endif //__XC_COREAPI_H__
