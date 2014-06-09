@@ -123,9 +123,9 @@ C_SOURCES := $(wildcard $(srcdir)/*.c)
 # xmhf/src/xmhf-core/ihub/arch/x86/vmx/xc-ihub-richguest-x86vmx.c:(.text+0xa8c): undefined reference to `xc_api_hpt_lvl2pagewalk'
 
 
-C_SOURCES += $(wildcard $(srcdir)/coreapi/*.c)
-C_SOURCES += $(shell find $(srcdir)/coreapi/arch/x86/common/ -type f -name '*.c')
-C_SOURCES += $(shell find $(srcdir)/coreapi/arch/x86/vmx/ -type f -name '*.c')
+#C_SOURCES += $(wildcard $(srcdir)/coreapi/*.c)
+#C_SOURCES += $(shell find $(srcdir)/coreapi/arch/x86/common/ -type f -name '*.c')
+#C_SOURCES += $(shell find $(srcdir)/coreapi/arch/x86/vmx/ -type f -name '*.c')
 
 #------------------------------------------------------------------------------------------
 #xc-coreapi-x86vmx.o: In function `_xc_api_partition_arch_addcpu_setupbasestate':
