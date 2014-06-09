@@ -97,6 +97,7 @@ SECTIONS
 		_objs_initbs/xc-initbs.slo(.slab_header)
 		_objs_init/xc-init.slo(.slab_header)
 		_objs_ihub/xc-ihub.slo(.slab_header)
+		_objs_coreapi/xc-coreapi.slo(.slab_header)
 		. = ALIGN(0x01000000);
 	} >slabroshareddatamem =0x0000
 	
@@ -127,6 +128,13 @@ SECTIONS
 	.slabihub : {
 		_ihub_slab_header = . ;
 		_objs_ihub/xc-ihub.slo(*)
+		. = ALIGN(0x01000000);
+	} >slabmem =0x0000
+
+	. = XMHF_SLAB_COREAPI_REGION_START;
+	.slabcoreapi : {
+		_coreapi_slab_header = . ;
+		_objs_coreapi/xc-coreapi.slo(*)
 		. = ALIGN(0x01000000);
 	} >slabmem =0x0000
 
