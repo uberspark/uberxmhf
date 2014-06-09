@@ -102,7 +102,6 @@ static void _vmx_gathermemorytypes(void){
 	memset((void *)&_vmx_ept_memorytypes, 0, sizeof(struct _memorytype) * MAX_MEMORYTYPE_ENTRIES);
 	#endif
 
-  
 	//2. grab memory types using FIXED MTRRs
     //0x00000000-0x0007FFFF
     rdmsr(IA32_MTRR_FIX64K_00000, &eax, &edx);
@@ -253,6 +252,7 @@ static void _vmx_gathermemorytypes(void){
   //      _vmx_ept_memorytypes[i].startaddr, _vmx_ept_memorytypes[i].endaddr, _vmx_ept_memorytypes[i].type);
   //  }
   //}
+
   
 }
 
@@ -332,8 +332,10 @@ static void _vmx_setupEPT(context_desc_t context_desc){
 			else
 				p_table_value = (u64) (gpa)  | ((u64)6 << 3) | (u64)0x7 ;	//present, WB, track host MTRR
 		}
-		
+
+		printf("\n%s: gpa=%x, proceedig to call xc_api_hpt_setentry (esp=%x)\n", __FUNCTION__, (u32)gpa, read_esp());
 		xc_api_hpt_setentry(context_desc, gpa, p_table_value);
+		printf("\n%s: back, esp=%x\n", __FUNCTION__, read_esp());
 	}
 }
 
@@ -374,7 +376,12 @@ void xmhf_richguest_arch_initialize(u32 partition_index){
 	printf("\n%s: BSP initializing HPT", __FUNCTION__);
 	_vmx_gathermemorytypes();
 	//_vmx_setupEPT((xc_partition_hptdata_x86vmx_t *)xc_partition_richguest->hptdata);
+
 	_vmx_setupEPT(context_desc);
+
+	//[debug]
+	printf("\n\nDebug Halting\n\n");
+	HALT();
 	
 	//INT 15h E820 hook enablement for VMX unrestricted guest mode
 	//note: this only happens for the BSP
