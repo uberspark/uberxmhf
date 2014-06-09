@@ -98,6 +98,10 @@ void init_entry(u32 cpuid, bool is_bsp){
 	//[debug]
 	printf("\n%s: cpuid=%08x, is_bsp=%u...\n", __FUNCTION__, cpuid, is_bsp);
 
+	//[debug]
+	printf("\n\n");
+	HALT();
+	
 	//create rich guest partition if we are the BSP
 	if(is_bsp){
 		xc_richguest_partition_index = xc_api_partition_create(XC_PARTITION_PRIMARY);
