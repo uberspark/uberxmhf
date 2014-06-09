@@ -84,7 +84,6 @@
 
 #ifndef __ASSEMBLY__
 
-#ifndef __XMHF_SLAB_INTERNAL_USE__
 
 //HPT related core APIs
 void xc_api_hpt_setprot(context_desc_t context_desc, u64 gpa, u32 prottype);
@@ -137,6 +136,8 @@ bool xc_api_partition_arch_addcpu(u32 partition_index, u32 cpu_index);
 //platform related core APIs
 void xc_api_platform_shutdown(context_desc_t context_desc);
 void xc_api_platform_arch_shutdown(context_desc_t context_desc);
+
+#ifdef __XMHF_SLAB_INTERNAL_USE__
 
 //global data
 

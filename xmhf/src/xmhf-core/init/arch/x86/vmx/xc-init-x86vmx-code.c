@@ -48,8 +48,12 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf-core.h> 
+
+#include <xc-coreapi.h>
+
 #include <xc-x86.h>
 #include <xc-x86vmx.h>
+
 
 static struct _memorytype _vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
 
