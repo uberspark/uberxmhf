@@ -130,7 +130,7 @@ void init_entry(u32 cpuid, bool is_bsp){
 	
 		//call app main
 		//printf("\n%s: proceeding to call xmhfhypapp_main on BSP", __FUNCTION__);
-		xc_hypapp_initialization(context_desc, hypappenvb);
+		//xc_hypapp_initialization(context_desc, hypappenvb);
 		//printf("\n%s: came back into core", __FUNCTION__);
 	}   	
     
