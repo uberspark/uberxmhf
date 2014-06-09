@@ -49,6 +49,9 @@
 #include <xc-x86.h>
 #include <xc-x86vmx.h>
 
+#include <xc-coreapi.h>
+
+
 /*
  * 	xc-apihub - runtime arch. independent portion
  *  author: amit vasudevan (amitvasudevan@acm.org)

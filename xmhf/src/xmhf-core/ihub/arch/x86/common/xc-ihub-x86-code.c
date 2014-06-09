@@ -51,6 +51,9 @@
 
 #include <xmhf.h>
 #include <xmhf-core.h>
+
+#include <xc-coreapi.h>
+
 #include <xc-x86.h>
 
 /* originally in xc-ihub-apihub-x86.c */

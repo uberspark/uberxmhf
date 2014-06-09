@@ -91,6 +91,6 @@ extern RPB *rpb;
 #include <xc-hypapp.h>			//hypapp callback declarations
 #include <xc-apihub.h>			//core API interface component
 
-#include <xc-coreapi.h>			//core API
+//#include <xc-coreapi.h>			//core API
 
 #endif /* __XMHF_CORE_H_ */

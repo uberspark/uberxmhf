@@ -49,6 +49,9 @@
 
 //---includes-------------------------------------------------------------------
 #include <xmhf-core.h> 
+
+#include <xc-coreapi.h>
+
 #define __XMHF_SLAB_INTERNAL_USE__
 #include <xc-init.h>
 #undef __XMHF_SLAB_INTERNAL_USE__
