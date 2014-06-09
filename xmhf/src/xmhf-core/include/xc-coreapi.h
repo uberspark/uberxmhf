@@ -103,6 +103,7 @@
 
 #define XMHF_SLAB_COREAPI_FNXCAPIPLATFORMSHUTDOWN				15	
 
+#define	XMHF_SLAB_COREAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION	16
 
 #ifndef __ASSEMBLY__
 
@@ -198,7 +199,7 @@ XMHF_SLAB_DEFIMPORTFN(bool xc_api_partition_startcpu(context_desc_t context_desc
                                                                             
 XMHF_SLAB_DEFIMPORTFN(void xc_api_platform_shutdown(context_desc_t context_desc),										XMHF_SLAB_DEFIMPORTFNSTUB(XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIPLATFORMSHUTDOWN			, (sizeof(context_desc_t))									, 0)								)
 
-
+XMHF_SLAB_DEFIMPORTFN(void xc_coreapi_arch_eventhandler_nmiexception(struct regs *r),									XMHF_SLAB_DEFIMPORTFNSTUB(XMHF_SLAB_COREAPI_INDEX, 	XMHF_SLAB_COREAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION, (sizeof(struct regs *)), 0)	)
 #endif //__XMHF_SLAB_INTERNAL_USE__
 
 
