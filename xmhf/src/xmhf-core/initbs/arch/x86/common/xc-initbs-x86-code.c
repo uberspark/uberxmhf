@@ -52,6 +52,9 @@
 
 #include <xmhf.h>
 #include <xmhf-core.h>
+
+#include <xc-coreapi.h>
+
 #include <xc-x86.h>
 #include <xc-x86vmx.h>
 
@@ -722,7 +725,7 @@ static void xmhf_xcphandler_arch_unhandled(u32 vector, struct regs *r){
 void xmhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 	switch(vector){
 			case CPU_EXCEPTION_NMI:{
-				xmhf_smpguest_arch_eventhandler_nmiexception(r);
+				xc_coreapi_arch_eventhandler_nmiexception(r);
 				}
 				break;
 
