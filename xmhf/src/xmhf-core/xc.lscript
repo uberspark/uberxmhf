@@ -54,7 +54,7 @@ MEMORY
 {
   all (rwxai) : ORIGIN = 0x10200000, LENGTH = 14M 
   slabroshareddatamem (rai) : ORIGIN = XMHF_SLAB_REGION_SHARED_RODATA, LENGTH = 16M
-  slabmem (rwxai) : ORIGIN = XMHF_SLAB_REGION_START, LENGTH = 64M
+  slabmem (rwxai) : ORIGIN = XMHF_SLAB_REGION_START, LENGTH = 96M
   unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 
