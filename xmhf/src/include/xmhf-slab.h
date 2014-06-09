@@ -59,6 +59,7 @@
 #define XMHF_SLAB_INITBS_INDEX		(1)
 #define XMHF_SLAB_INIT_INDEX		(2)
 #define XMHF_SLAB_IHUB_INDEX		(3)
+#define XMHF_SLAB_COREAPI_INDEX		(4)
 
 #ifndef __ASSEMBLY__
 
