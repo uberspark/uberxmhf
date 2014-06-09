@@ -172,6 +172,7 @@ extern xc_partition_t g_xc_primary_partition[MAX_PRIMARY_PARTITIONS] __attribute
 
 
 #else  //!__XMHF_SLAB_INTERNAL_USE__
+extern slab_header_t _slab_table[];
 
 XMHF_SLAB_DEFIMPORTFN(void xc_api_hpt_setprot(context_desc_t context_desc, u64 gpa, u32 prottype), 						XMHF_SLAB_DEFIMPORTFNSTUB(XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIHPTSETPROT					, (sizeof(context_desc_t)+sizeof(u64)+sizeof(u32))			, 0)								)
 XMHF_SLAB_DEFIMPORTFN(u32 xc_api_hpt_getprot(context_desc_t context_desc, u64 gpa), 									XMHF_SLAB_DEFIMPORTFNSTUB(XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIHPTGETPROT					, (sizeof(context_desc_t)+sizeof(u64))						, 0)								)
