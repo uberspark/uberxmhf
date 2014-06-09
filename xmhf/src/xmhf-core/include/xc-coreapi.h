@@ -170,6 +170,9 @@ extern xc_cpu_t g_xc_cpu[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
 // primary partitions
 extern xc_partition_t g_xc_primary_partition[MAX_PRIMARY_PARTITIONS] __attribute__(( section(".data") ));
 
+//core API NMI callback
+void xc_coreapi_arch_eventhandler_nmiexception(struct regs *r);
+
 
 #else  //!__XMHF_SLAB_INTERNAL_USE__
 extern slab_header_t _slab_table[];

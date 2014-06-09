@@ -128,7 +128,7 @@ static void _cpu_arch_x86vmx_endquiesce(context_desc_t context_desc){
 }
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
-void xmhf_smpguest_arch_eventhandler_nmiexception(struct regs *r){
+void xc_coreapi_arch_eventhandler_nmiexception(struct regs *r){
 	xc_cpu_t *xc_cpu;
 	context_desc_t context_desc;
 	
