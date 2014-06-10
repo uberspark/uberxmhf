@@ -51,8 +51,8 @@
 #ifndef __XMHF_SLAB_H__
 #define __XMHF_SLAB_H__
 
-#define	XMHF_SLAB_EXPORTFN_RETTYPE_NORMAL		0x0
-#define	XMHF_SLAB_EXPORTFN_RETTYPE_AGGREGATE	0x4
+#define	XMHF_SLAB_FN_RETTYPE_NORMAL		0x0
+#define	XMHF_SLAB_FN_RETTYPE_AGGREGATE	0x4
 
 
 #define XMHF_SLAB_INDEX_TEMPLATE	(0)
@@ -124,7 +124,7 @@
 }											\
 
 
-#define XMHF_SLAB_DEFIMPORTFNSTUB(dest_slab_index, fnnum, fn_paramsize, fn_retsize) asm volatile(	\
+#define _XMHF_SLAB_DEFIMPORTFNSTUB(dest_slab_index, fnnum, fn_paramsize, fn_retsize, fn_aggregateret) asm volatile(	\
 						"pushl %%edi \r\n"				\
 						"pushl %%esi \r\n"				\
 						"pushl %%ebp \r\n"				\
@@ -149,11 +149,14 @@
 						"popl %%ebp \r\n"				\
 						"popl %%esi \r\n"				\
 						"popl %%edi \r\n"				\
-						"ret $4 \r\n"					\
+						"ret $"#fn_aggregateret" \r\n"					\
 						: 								\
 						: "i" (fnnum), "i" (fn_paramsize), "m" (_slab_table[dest_slab_index].entry_cr3), "i" (fn_retsize)	\
 						:	 							\
 						);								\
+
+#define XMHF_SLAB_DEFIMPORTFNSTUB(dest_slab_index, fnnum, fn_paramsize, fn_retsize, fn_aggregateret) _XMHF_SLAB_DEFIMPORTFNSTUB(dest_slab_index, fnnum, fn_paramsize, fn_retsize, fn_aggregateret)
+
 
 #define XMHF_SLAB_DEFIMPORTFN(fn_decl, fn_stub)	__attribute__((naked)) __attribute__ ((noinline)) static inline fn_decl { fn_stub }
 

@@ -58,7 +58,7 @@
 #ifndef __ASSEMBLY__
 extern slab_header_t _slab_table[];
 
-XMHF_SLAB_DEFIMPORTFN(void init_entry(u32 cpuid, bool is_bsp), XMHF_SLAB_DEFIMPORTFNSTUB(XMHF_SLAB_INIT_INDEX, XMHF_SLAB_INIT_FNINITENTRY, (sizeof(u32)+sizeof(bool)), 0))
+XMHF_SLAB_DEFIMPORTFN(void init_entry(u32 cpuid, bool is_bsp), XMHF_SLAB_DEFIMPORTFNSTUB(XMHF_SLAB_INIT_INDEX, XMHF_SLAB_INIT_FNINITENTRY, (sizeof(u32)+sizeof(bool)), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
 
 #endif //__ASSEMBLY__
 
