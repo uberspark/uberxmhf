@@ -333,9 +333,9 @@ static void _vmx_setupEPT(context_desc_t context_desc){
 				p_table_value = (u64) (gpa)  | ((u64)6 << 3) | (u64)0x7 ;	//present, WB, track host MTRR
 		}
 
-		printf("\n%s: gpa=%x, proceedig to call xc_api_hpt_setentry (esp=%x)\n", __FUNCTION__, (u32)gpa, read_esp());
+		//printf("\n%s: gpa=%x, proceedig to call xc_api_hpt_setentry (esp=%x)\n", __FUNCTION__, (u32)gpa, read_esp());
 		xc_api_hpt_setentry(context_desc, gpa, p_table_value);
-		printf("\n%s: back, esp=%x\n", __FUNCTION__, read_esp());
+		//printf("\n%s: back, esp=%x\n", __FUNCTION__, read_esp());
 	}
 }
 
@@ -379,10 +379,6 @@ void xmhf_richguest_arch_initialize(u32 partition_index){
 
 	_vmx_setupEPT(context_desc);
 
-	//[debug]
-	printf("\n\nDebug Halting\n\n");
-	HALT();
-	
 	//INT 15h E820 hook enablement for VMX unrestricted guest mode
 	//note: this only happens for the BSP
 	printf("\n%s: BSP initializing INT 15 hook for UG mode...", __FUNCTION__);

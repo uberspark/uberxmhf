@@ -103,7 +103,7 @@ void init_entry(u32 cpuid, bool is_bsp){
 	if(is_bsp){
 		printf("\n%s: proceeding to create rich guest partition (esp=%x)\n", __FUNCTION__, read_esp());
 		xc_richguest_partition_index = xc_api_partition_create(XC_PARTITION_PRIMARY);
-		printf("\n%s: came back (esp=%x)\n", __FUNCTION__, read_esp());
+		//printf("\n%s: came back (esp=%x)\n", __FUNCTION__, read_esp());
 		if(xc_richguest_partition_index == XC_PARTITION_INDEX_INVALID){
 			printf("\n%s: Fatal error, could not create rich guest partition!", __FUNCTION__);
 			HALT();
@@ -164,5 +164,5 @@ void init_entry(u32 cpuid, bool is_bsp){
 XMHF_SLAB("init")
 
 XMHF_SLAB_DEFINTERFACE(
-	XMHF_SLAB_DEFEXPORTFN(init_entry, XMHF_SLAB_INIT_FNINITENTRY, XMHF_SLAB_EXPORTFN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(init_entry, XMHF_SLAB_INIT_FNINITENTRY, XMHF_SLAB_FN_RETTYPE_NORMAL)
 )
