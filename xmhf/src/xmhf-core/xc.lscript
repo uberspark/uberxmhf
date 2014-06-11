@@ -54,7 +54,7 @@ MEMORY
 {
   all (rwxai) : ORIGIN = 0x10200000, LENGTH = 14M 
   slabroshareddatamem (rai) : ORIGIN = XMHF_SLAB_REGION_SHARED_RODATA, LENGTH = 16M
-  slabmem (rwxai) : ORIGIN = XMHF_SLAB_REGION_START, LENGTH = 96M
+  slabmem (rwxai) : ORIGIN = XMHF_SLAB_REGION_START, LENGTH = 112M
   unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 
@@ -98,6 +98,7 @@ SECTIONS
 		_objs_init/xc-init.slo(.slab_header)
 		_objs_ihub/xc-ihub.slo(.slab_header)
 		_objs_coreapi/xc-coreapi.slo(.slab_header)
+		_objs_hypapp-hyperdep/hypapp-hyperdep.slo(.slab_header)
 		. = ALIGN(0x01000000);
 	} >slabroshareddatamem =0x0000
 	
@@ -135,6 +136,13 @@ SECTIONS
 	.slabcoreapi : {
 		_coreapi_slab_header = . ;
 		_objs_coreapi/xc-coreapi.slo(*)
+		. = ALIGN(0x01000000);
+	} >slabmem =0x0000
+
+	. = XMHF_SLAB_HYPAPP_HYPERDEP_REGION_START;
+	.slabhypapphyperdep : {
+		_hypapphyperdep_slab_header = . ;
+		_objs_hypapp-hyperdep/hypapp-hyperdep.slo(*)
 		. = ALIGN(0x01000000);
 	} >slabmem =0x0000
 

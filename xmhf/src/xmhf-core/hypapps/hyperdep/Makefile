@@ -23,7 +23,7 @@ OBJECTS := $(patsubst %.c, %.o, $(C_SOURCES))
 SLAB_OBJECTS_DIR = _objs_hypapp-hyperdep
 
 # archive name
-THE_ARCHIVE = xmhf-slab
+THE_ARCHIVE = hypapp-hyperdep
 
 LINKER_SCRIPT_INPUT := $(srcdir)/hypapp-hyperdep.lscript
 LINKER_SCRIPT_OUTPUT := hypapp-hyperdep.lds
