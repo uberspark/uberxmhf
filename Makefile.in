@@ -267,8 +267,14 @@ export VFLAGS
 CFLAGS = $(FLAGS)
 export CFLAGS
 
+ifeq ($(strip $(XMHF_HYPAPPS)),)
 .PHONY: all
 all: subdirs install-dev
+else
+.PHONY: all
+all: subdirs install-dev build-hypapps
+endif
+
 
 
 .PHONY: subdirs
@@ -399,6 +405,14 @@ install-dev:
 .PHONY: test
 test:
 	cd $(APP_ROOT) && $(MAKE) -w test
+
+
+.PHONY: build-hypapps
+build-hypapps:
+	@echo --------------------------------------------------------------
+	@echo preparing to build hypapps
+	@echo -------------------------------------------------------------- 
+
 
 #.PHONY: clean distclean init-late-clean
 .PHONY: clean distclean 
