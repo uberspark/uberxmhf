@@ -273,8 +273,6 @@ all: subdirs
 
 .PHONY: subdirs
 subdirs: $(LIBBAREMETAL_SRC) $(XMHFCORE_SRC)
-	@echo $(XMHF_HYPAPPS)
-	@echo $(XMHF_HYPAPPS_DIRS)
 	mkdir -p $(XMHF_OBJDIR)
 	@echo **************************************************************
 	@echo Building libbaremetal...
