@@ -99,6 +99,7 @@ export builddir=@builddir@
 export APP_ARCHIVE := $(APP_ROOT)/xmhfhypapp.a
 
 export XMHF_HYPAPPS := @XMHF_HYPAPPS@
+export XMHF_HYPAPPS_DIRS := $(realpath $(XMHF_HYPAPPS))
 
 ##################################################################################
 ### BEGIN Variables controlled using autoconf
@@ -272,7 +273,8 @@ all: subdirs
 
 .PHONY: subdirs
 subdirs: $(LIBBAREMETAL_SRC) $(XMHFCORE_SRC)
-	echo $(XMHF_HYPAPPS)
+	@echo $(XMHF_HYPAPPS)
+	@echo $(XMHF_HYPAPPS_DIRS)
 	mkdir -p $(XMHF_OBJDIR)
 	@echo **************************************************************
 	@echo Building libbaremetal...
