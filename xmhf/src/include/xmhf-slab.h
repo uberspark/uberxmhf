@@ -61,6 +61,8 @@
 #define XMHF_SLAB_IHUB_INDEX		(3)
 #define XMHF_SLAB_COREAPI_INDEX		(4)
 
+#define XMHF_SLAB_HYPAPP_HYPERDEP_INDEX		(5)
+
 #ifndef __ASSEMBLY__
 
 #define _XMHF_SLAB_DEFEXPORTFN(fn_name, fn_num, fn_aggregateret)		\
