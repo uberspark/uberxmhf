@@ -50,9 +50,7 @@
 #include <xmhf.h>
 #include <xmhf-core.h>
 
-#define __XMHF_SLAB_INTERNAL_USE__
 #include <xc-coreapi.h>
-#undef __XMHF_SLAB_INTERNAL_USE__
 
 
 //#include <arch/x86/common/include/xc-x86.h>
