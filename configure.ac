@@ -56,7 +56,7 @@ COREAPIHUB_ARCH=$[]with_coreapihub_arch
 # XMHF hypapps to be built
 AC_SUBST([XMHF_HYPAPPS])
 AC_ARG_WITH([xmhf_hypapps],
-        AS_HELP_STRING([--with-hypapps=@<:@path@:>@],
+        AS_HELP_STRING([--with-xmhf-hypapps=@<:@path@:>@],
                 [space delimited paths to hypapp source root directories]),
                 , [with_xmhf_hypapps=./hypapps/app])
 XMHF_HYPAPPS=$[]with_xmhf_hypapps
