@@ -52,6 +52,9 @@
 
 #include <xc-coreapi.h>
 
+#define __XMHF_SLAB_INTERNAL_USE__
+#include <hypapp-hyperdep.h>
+#undef __XMHF_SLAB_INTERNAL_USE__
 
 //#include <arch/x86/common/include/xc-x86.h>
 //#include <arch/x86/vmx/include/xc-x86vmx.h>
@@ -191,4 +194,16 @@ u32 xmhf_hypapp_handleintercept_hptfault(context_desc_t context_desc, u64 gpa, u
 u32 xmhf_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch_param_t xc_hypapp_arch_param){
  	return APP_TRAP_CHAIN;
 }
+
+////////
+XMHF_SLAB("hypapp-hyperdep")
+
+XMHF_SLAB_DEFINTERFACE(
+	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_initialization				,XMHF_SLAB_HYPAPP_HYPERDEP_FNINITIALIZATION							,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handlehypercall				,XMHF_SLAB_HYPAPP_HYPERDEP_FNHANDLEHYPERCALL						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handleintercept_hptfault		,XMHF_SLAB_HYPAPP_HYPERDEP_FNHANDLEINTERCEPTHPTFAULT				,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handleintercept_trap			,XMHF_SLAB_HYPAPP_HYPERDEP_FNHANDLEINTERCEPTTRAP					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handleshutdown				,XMHF_SLAB_HYPAPP_HYPERDEP_FNSHUTDOWN								,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+)
+
 
