@@ -171,7 +171,7 @@ u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u
 //note: should not return
 void xmhf_hypapp_handleshutdown(context_desc_t context_desc){
 	printf("\n%s:%u: rebooting now", __FUNCTION__, context_desc.cpu_desc.cpu_index);
-	xmhfcore_reboot(context_desc);				
+	xc_api_platform_shutdown(context_desc);				
 }
 
 //handles h/w pagetable violations
