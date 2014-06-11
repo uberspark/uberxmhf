@@ -268,7 +268,7 @@ CFLAGS = $(FLAGS)
 export CFLAGS
 
 .PHONY: all
-all: subdirs 
+all: subdirs install-dev
 
 
 .PHONY: subdirs
