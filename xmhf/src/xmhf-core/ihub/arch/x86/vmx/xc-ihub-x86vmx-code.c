@@ -50,6 +50,8 @@
 
 #include <xc-coreapi.h>
 
+#include <hypapp-hyperdep.h>
+
 #include <xc-x86.h>
 #include <xc-x86vmx.h>
 
@@ -165,7 +167,7 @@ static struct regs _vmx_handle_intercept_rdmsr(context_desc_t context_desc, stru
 //---intercept handler (EPT voilation)----------------------------------
 static void _vmx_handle_intercept_eptviolation(context_desc_t context_desc, u32 gpa, u32 gva, u32 errorcode, struct regs r __attribute__((unused))){
 
-	xc_hypapp_handleintercept_hptfault(context_desc, gpa, gva,	(errorcode & 7));
+	xmhf_hypapp_handleintercept_hptfault(context_desc, gpa, gva,	(errorcode & 7));
 }
 
 
@@ -182,7 +184,7 @@ static struct regs _vmx_handle_intercept_ioportaccess(context_desc_t context_des
 		xc_hypapp_arch_param.param.cbtrapio.portnum = portnum;
 		xc_hypapp_arch_param.param.cbtrapio.access_type = access_type;
 		xc_hypapp_arch_param.param.cbtrapio.access_size = access_size;
-		app_ret_status=xc_hypapp_handleintercept_trap(context_desc, xc_hypapp_arch_param);
+		app_ret_status=xmhf_hypapp_handleintercept_trap(context_desc, xc_hypapp_arch_param);
 	}
 
 	if(app_ret_status == APP_TRAP_CHAIN){
@@ -333,7 +335,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 					u64 hypercall_id = (u64)x86gprs.eax;
 					u64 hypercall_param = ((u64)x86gprs.edx << 32) | x86gprs.ecx;
 	
-					if( xc_hypapp_handlehypercall(context_desc, hypercall_id, hypercall_param) != APP_SUCCESS){
+					if( xmhf_hypapp_handlehypercall(context_desc, hypercall_id, hypercall_param) != APP_SUCCESS){
 						printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", context_desc.cpu_desc.cpu_index, x86gprs.eax);
 						HALT();
 					}
@@ -393,9 +395,9 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 		break;  
 
 		case VMX_VMEXIT_INIT:{
-			printf("\n***** VMEXIT_INIT xc_hypapp_handleshutdown\n");
-			xc_hypapp_handleshutdown(context_desc);      
-			printf("\nCPU(0x%02x): Fatal, xc_hypapp_handleshutdown returned. Halting!", context_desc.cpu_desc.cpu_index);
+			printf("\n***** VMEXIT_INIT xmhf_hypapp_handleshutdown\n");
+			xmhf_hypapp_handleshutdown(context_desc);      
+			printf("\nCPU(0x%02x): Fatal, xmhf_hypapp_handleshutdown returned. Halting!", context_desc.cpu_desc.cpu_index);
 			HALT();
 		}
 		break;
@@ -501,8 +503,8 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 			
 			if(reason == TASK_SWITCH_GATE && type == INTR_TYPE_NMI){
 				printf("\nCPU(0x%02x): NMI received (MP guest shutdown?)", context_desc.cpu_desc.cpu_index);
-				xc_hypapp_handleshutdown(context_desc);      
-				printf("\nCPU(0x%02x): warning, xc_hypapp_handleshutdown returned!", context_desc.cpu_desc.cpu_index);
+				xmhf_hypapp_handleshutdown(context_desc);      
+				printf("\nCPU(0x%02x): warning, xmhf_hypapp_handleshutdown returned!", context_desc.cpu_desc.cpu_index);
 				printf("\nCPU(0x%02x): HALTING!", context_desc.cpu_desc.cpu_index);
 				HALT();
 			}else{
