@@ -56,7 +56,6 @@
 #include <xc-x86.h>
 #include <xc-x86vmx.h>
 
-extern slab_header_t _slab_table[];
 
 //----------------------------------------------------------------------
 //Queiscing interfaces

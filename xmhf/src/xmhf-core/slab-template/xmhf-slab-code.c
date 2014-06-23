@@ -56,7 +56,6 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-extern slab_header_t _slab_table[];
  
 void entry_0(void){
 	u32 my_entry_cr3 = _slab_table[0].entry_cr3;
