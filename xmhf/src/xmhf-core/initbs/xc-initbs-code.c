@@ -52,8 +52,6 @@
 #include <xmhf-slab-implib.h>
 #include <xc-init.h>
 
-extern slab_header_t _slab_table[];
-
 void xmhf_runtime_entry(void){
 
 	//setup debugging	

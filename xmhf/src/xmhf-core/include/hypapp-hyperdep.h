@@ -70,7 +70,6 @@
 
 
 #else  //!__XMHF_SLAB_INTERNAL_USE__
-extern slab_header_t _slab_table[];
 
 XMHF_SLAB_DEFIMPORTFN(u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb)						,XMHF_SLAB_DEFIMPORTFNSTUB(XMHF_SLAB_HYPAPP_HYPERDEP_INDEX,	XMHF_SLAB_HYPAPP_HYPERDEP_FNINITIALIZATION			, (sizeof(context_desc_t)+sizeof(hypapp_env_block_t))			, 0	, XMHF_SLAB_FN_RETTYPE_NORMAL))
 XMHF_SLAB_DEFIMPORTFN(u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param)				,XMHF_SLAB_DEFIMPORTFNSTUB(XMHF_SLAB_HYPAPP_HYPERDEP_INDEX,	XMHF_SLAB_HYPAPP_HYPERDEP_FNHANDLEHYPERCALL			, (sizeof(context_desc_t)+sizeof(u64)+sizeof(u64))				, 0	, XMHF_SLAB_FN_RETTYPE_NORMAL))

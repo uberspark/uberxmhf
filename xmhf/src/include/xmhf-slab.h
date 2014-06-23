@@ -65,6 +65,8 @@
 
 #ifndef __ASSEMBLY__
 
+extern slab_header_t _slab_table[];
+
 #define _XMHF_SLAB_DEFEXPORTFN(fn_name, fn_num, fn_aggregateret)		\
 			"1:\r\n"								\
 			"cmpl $"#fn_num", %%ebx \r\n"			\
