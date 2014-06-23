@@ -87,7 +87,7 @@ extern RPB *rpb;
 #include <xc-richguest.h>		//rich guest component
 #include <xc-xcphandler.h>		//exception handler component
 #include <xc-tpm.h>				//Trusted Platform Module component
-#include <xc-startup.h>			//secure loader component
+//#include <xc-startup.h>			//secure loader component
 #include <xc-hypapp.h>			//hypapp callback declarations
 #include <xc-apihub.h>			//core API interface component
 
