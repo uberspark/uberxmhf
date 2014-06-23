@@ -374,13 +374,6 @@ void xmhf_baseplatform_arch_x86_restorecpumtrrstate(void){
 
 /*originally within xc-initbs-apihub-x86.c */
 
-//----------------------------------------------------------------------
-// local variables
-
-//hypapp PAE page tables
-static u64 hypapp_3level_pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( aligned(4096) ));
-static u64 hypapp_3level_pdt[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT] __attribute__(( aligned(4096) ));
-
 //core PAE page tables
 static u64 core_3level_pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( aligned(4096) ));
 static u64 core_3level_pdt[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT] __attribute__(( aligned(4096) ));
@@ -391,31 +384,6 @@ void xmhf_apihub_arch_initialize (void){
 #ifndef __XMHF_VERIFICATION__
 
 	printf("\n%s: starting...", __FUNCTION__);
-	printf("\n%s: hypappheader at %08x", __FUNCTION__, g_hypappheader);
-	printf("\n%s: hypappheader->magic is %08x", __FUNCTION__, g_hypappheader->magic);
-	
-	printf("\n%s: paramcore at 0x%08x", __FUNCTION__, (u32)paramcore);
-	printf("\n%s: paramhypapp at 0x%08x", __FUNCTION__, (u32)paramhypapp);
-	
-	hypapp_cbhub_pc = (u32)g_hypappheader->addr_hypappfromcore;
-	hypapp_tos = (u32)g_hypappheader->addr_tos;
-
-	printf("\n%s: hypapp cbhub entry point=%x, TOS=%x", __FUNCTION__, hypapp_cbhub_pc, hypapp_tos);
-
-	//cast hypapp header information into hypappheader 
-	//(a data structure of type XMHF_HYPAPP_HEADER) and populate the
-	//hypapp parameter block field
-	{
-		g_hypappheader->apb.bootsector_ptr = (u32)xcbootinfo->richguest_bootmodule_base;
-		g_hypappheader->apb.bootsector_size = (u32)xcbootinfo->richguest_bootmodule_size;
-		g_hypappheader->apb.runtimephysmembase = (u32)xcbootinfo->physmem_base;  
-		strncpy(g_hypappheader->apb.cmdline, xcbootinfo->cmdline_buffer, sizeof(g_hypappheader->apb.cmdline));
-		printf("\n%s: sizeof(XMHF_HYPAPP_HEADER)=%u", __FUNCTION__, sizeof(XMHF_HYPAPP_HEADER));
-		printf("\n%s: sizeof(APP_PARAM_BLOCK)=%u", __FUNCTION__, sizeof(APP_PARAM_BLOCK));
-			
-	}
-
-	//g_hypappheader->addr_hypapptocore = (u32)&xmhf_apihub_fromhypapp;
 
 	//check for PCID support (if present)
 	{
@@ -447,26 +415,26 @@ void xmhf_apihub_arch_initialize (void){
 			u64 flags = default_flags;
 
 			//mark core code/data/stack pages supervisor
-			if(spa >= 0x10000000 && spa < 0x1CC00000)
-				flags &= ~(u64)(_PAGE_USER);
+			//if(spa >= 0x10000000 && spa < 0x1CC00000)
+			//	flags &= ~(u64)(_PAGE_USER);
 			
 			//mark core parameter region as read-write, no-execute
-			if(spa == 0x1CC00000){
-				//flags |= (u64)(_PAGE_RW | _PAGE_NX);
-				flags |= (u64)(_PAGE_RW);
-				flags |= (u64)(_PAGE_NX);
-			}	
+			//if(spa == 0x1CC00000){
+			//	//flags |= (u64)(_PAGE_RW | _PAGE_NX);
+			//	flags |= (u64)(_PAGE_RW);
+			//	flags |= (u64)(_PAGE_NX);
+			//}	
 			
 			//mark hypapp parameter region as user-read-only, no-execute
-			if(spa == 0x1CE00000){
-				flags &= ~(u64)(_PAGE_RW);
-				flags |= (u64)_PAGE_NX;
-			}
+			//if(spa == 0x1CE00000){
+			//	flags &= ~(u64)(_PAGE_RW);
+			//	flags |= (u64)_PAGE_NX;
+			//}
 			//mark hypapp code/data/stack pages as read-only, no-execute
-			if(spa >= 0x1D000000 && spa < 0x20000000){
-				flags &= ~(u64)(_PAGE_RW);
-				flags |= (u64)_PAGE_NX;
-			}
+			//if(spa >= 0x1D000000 && spa < 0x20000000){
+			//	flags &= ~(u64)(_PAGE_RW);
+			//	flags |= (u64)_PAGE_NX;
+			//}
 		
 			if(spa == 0xfee00000 || spa == 0xfec00000) {
 				//Unity-map some MMIO regions with Page Cache disabled 
@@ -479,62 +447,6 @@ void xmhf_apihub_arch_initialize (void){
 		}	
 	}
 	
-	//initialize hypapp PAE page-tables
-	{
-		u32 i, hva=0;
-		u64 default_flags = (u64)(_PAGE_PRESENT);
-		
-		//init pdpt
-		for(i = 0; i < PAE_PTRS_PER_PDPT; i++) {
-			u64 pdt_spa = hva2spa((void *)hypapp_3level_pdt) + (i << PAGE_SHIFT_4K);
-			hypapp_3level_pdpt[i] = pae_make_pdpe(pdt_spa, default_flags);
-		}
-
-		//init pdts with unity mappings
-		default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE | _PAGE_USER);
-		for(i = 0, hva = 0; i < (ADDR_4GB >> (PAE_PDT_SHIFT)); i++, hva += PAGE_SIZE_2M) {
-			u64 spa = hva2spa((void*)hva);
-			u64 flags = default_flags;
-
-			//mark core code/data/stack pages supervisor
-			if(spa >= 0x10000000 && spa < 0x1CC00000)
-				flags &= ~(u64)(_PAGE_USER);
-			
-			//mark core parameter region as user-read-only, no-execute
-			if(spa == 0x1CC00000){
-				flags &= ~(u64)(_PAGE_RW);
-				flags |= (u64)(_PAGE_NX);
-			}
-		
-			//mark hypapp parameter region as user-read-write, no-execute
-			if(spa == 0x1CE00000){
-				flags |= (u64)(_PAGE_RW);
-				flags |= (u64)(_PAGE_NX);
-			}
-			
-			//mark hypapp code/data/stack pages as read-write
-			if(spa >= 0x1D000000 && spa < 0x20000000)
-				flags |= (u64)(_PAGE_RW);
-
-			if(spa == 0xfee00000 || spa == 0xfec00000) {
-				//Unity-map some MMIO regions with Page Cache disabled 
-				//0xfed00000 contains Intel TXT config regs & TPM MMIO 
-				//0xfee00000 contains LAPIC base 
-				flags |= (u64)(_PAGE_PCD);
-			}
-
-			hypapp_3level_pdt[i] = pae_make_pde_big(spa, flags);
-		}	
-	}
-
-
-	//setup core and hypapp page table base addresses and print them out
-	{
-		core_ptba = (u32)&core_3level_pdpt;
-		hypapp_ptba = (u32)&hypapp_3level_pdpt;
-		printf("\n%s: core_ptba=%08x, hypapp_ptba=%08x", __FUNCTION__, core_ptba, hypapp_ptba);
-	}
-
 		
 	//initialize core paging
 	xmhf_baseplatform_arch_x86_initialize_paging((u32)&core_3level_pdpt);

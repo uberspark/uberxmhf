@@ -157,10 +157,10 @@ SECTIONS
 	} >unaccounted
 
 	/* paramcore = core parameter area (1MB in size) */
-	. = 0x1CC00000;
-	paramcore_start = .;
+	/*. = 0x1CC00000;
+	paramcore_start = .;*/
 	
 	/* paramhypapp = hypapp parameter area (1MB in size) */
-	. = 0x1CE00000;
-	paramhypapp_start = .;
+	/*. = 0x1CE00000;
+	paramhypapp_start = .;*/
 }
