@@ -66,6 +66,7 @@
 u32 hd_runtimephysbase=0;
 u32 hd_runtimesize=0;
 
+
 // hypapp initialization
 u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb){	
 	printf("\nCPU %u: hyperDEP initializing", context_desc.cpu_desc.cpu_index);
