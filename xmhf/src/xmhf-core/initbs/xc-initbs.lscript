@@ -93,6 +93,10 @@ SECTIONS
 	.slab_header : {
 		*(.slabrodata)
 	} >slabmem  
+	
+	.s_rpb : {
+		*(.s_rpb)
+	} >slabmem  
 
 	/* this is to cause the link to fail if there is
 	* anything we didn't explicitly place.
