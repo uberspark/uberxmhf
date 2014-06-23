@@ -52,6 +52,10 @@
 #include <xmhf-slab-implib.h>
 #include <xc-init.h>
 
+#define __XMHF_SLAB_INTERNAL_USE__
+#include <xc-initbs.h>
+#undef __XMHF_SLAB_INTERNAL_USE__
+
 void xmhf_runtime_entry(void){
 
 	//setup debugging	
@@ -210,3 +214,9 @@ void xmhf_runtime_entry(void){
 	HALT_ON_ERRORCOND(0);
 }
 
+///////
+XMHF_SLAB("initbs")
+
+XMHF_SLAB_DEFINTERFACE(
+	XMHF_SLAB_DEFEXPORTFN(xmhf_runtime_entry, XMHF_SLAB_INITBS_FNXMHFRUNTIMEENTRY, XMHF_SLAB_FN_RETTYPE_NORMAL)
+)

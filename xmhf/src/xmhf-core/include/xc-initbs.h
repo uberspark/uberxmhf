@@ -50,22 +50,23 @@
 #ifndef __XMHF_STARTUP_H__
 #define __XMHF_STARTUP_H__
 
+#define	XMHF_SLAB_INITBS_FNXMHFRUNTIMEENTRY	0
+
 
 #ifndef __ASSEMBLY__
 
+#ifndef __XMHF_SLAB_INTERNAL_USE__
 
+XMHF_SLAB_DEFIMPORTFN(void xmhf_runtime_entry(void), XMHF_SLAB_DEFIMPORTFNSTUB(XMHF_SLAB_INITBS_INDEX, XMHF_SLAB_INIT_FNXMHFRUNTIMEENTRY, (0), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
 
-//----------------------------------------------------------------------
-//exported FUNCTIONS 
-//----------------------------------------------------------------------
+#else //__XMHF_SLAB_INTERNAL_USE__
 
-//entry point of EMHF runtime; this is where we get control from the SL
 void xmhf_runtime_entry(void);
 
-//[init]
-//void init_entry(u32 cpuid, bool is_bsp);
-
+#endif //__XMHF_SLAB_INTERNAL_USE__
 
 #endif //__ASSEMBLY__
+
+
 
 #endif //__XMHF_STARTUP_H__
