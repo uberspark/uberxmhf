@@ -44,29 +44,24 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/**
- * XMHF core shared data module
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
+// XMHF core initialization boostrap (init-bs) entry module
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf-core.h>
+//---includes-------------------------------------------------------------------
+#include <xmhf-core.h> 
 
+#define __XMHF_SLAB_INTERNAL_USE__
+#include <xc-initbs.h>
+#undef __XMHF_SLAB_INTERNAL_USE__
 
+static u8 _init_stack[MAX_PLATFORM_CPUSTACK_SIZE] __attribute__(( section(".stack") ));
 
-//core and hypapp page table base address (PTBA)
-u32 core_ptba = 0;
-u32 hypapp_ptba = 0;
+static XMHF_BOOTINFO xcbootinfo_store __attribute__(( section(".s_rpb") )) = {
+	.magic= RUNTIME_PARAMETER_BLOCK_MAGIC,
+	.entrypoint= (u32)xmhf_runtime_entry,
+	.stack_base = (u32)_init_stack,
+	.stack_size = MAX_PLATFORM_CPUSTACK_SIZE,
+};
 
-//core parameter block
-XMHF_HYPAPP_PARAMETERBLOCK *paramcore = (XMHF_HYPAPP_PARAMETERBLOCK *)&paramcore_start;
-
-//hypapp parameter block
-XMHF_HYPAPP_PARAMETERBLOCK *paramhypapp = (XMHF_HYPAPP_PARAMETERBLOCK *)&paramhypapp_start;
-
-//hypapp header
-XMHF_HYPAPP_HEADER *g_hypappheader=(XMHF_HYPAPP_HEADER *)__TARGET_BASE_XMHFHYPAPP;
-
-//hypapp callback hub entry point and hypapp top of stack
-u32 hypapp_cbhub_pc=0;
-u32 hypapp_tos=0;
-
+// XMHF boot information block
+XMHF_BOOTINFO *xcbootinfo= &xcbootinfo_store;
