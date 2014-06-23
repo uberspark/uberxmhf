@@ -92,7 +92,7 @@ void xmhf_runtime_entry(void){
 	{
 			u32 i;
 			
-			for(i=0; i <3; i++){
+			for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++){
 				printf("\nslab %u: dumping slab header", i);
 				printf("\n	slab_index=%u", _slab_table[i].slab_index);
 				printf("\n	slab_macmid=%08x", _slab_table[i].slab_macmid);

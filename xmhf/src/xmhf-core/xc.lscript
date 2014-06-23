@@ -136,7 +136,7 @@ SECTIONS
 	.slabcoreapi : {
 		_coreapi_slab_header = . ;
 		_objs_coreapi/xc-coreapi.slo(*)
-		. = ALIGN(0x01000000);
+		. = ALIGN(0x02000000);
 	} >slabmem =0x0000
 
 	. = XMHF_SLAB_HYPAPP_HYPERDEP_REGION_START;
