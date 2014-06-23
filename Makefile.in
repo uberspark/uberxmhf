@@ -37,8 +37,8 @@ export LIBBAREMETAL_SRC := $(realpath @LIBBAREMETAL_SRC@)
 export XMHFCORE_SRC := $(realpath xmhf/src/xmhf-core)
 XMHFCORE_INC = -I$(realpath xmhf/src/xmhf-core/) -I$(realpath xmhf/src/xmhf-core/include) -I$(realpath xmhf/src/xmhf-core/include/arch/x86/common) -I$(realpath xmhf/src/xmhf-core/include/arch/x86/vmx)
 
-# libxmhfcore source location
-export LIBXMHFCORE_SRC := $(realpath xmhf/src/libxmhfcore)
+## libxmhfcore source location
+#export LIBXMHFCORE_SRC := $(realpath xmhf/src/libxmhfcore)
 
 # libxmhfhw source location
 export LIBXMHFHW_SRC := $(realpath xmhf/src/libxmhfhw)
@@ -301,13 +301,13 @@ subdirs: $(LIBBAREMETAL_SRC) $(XMHFCORE_SRC)
 	@echo **************************************************************
 	@echo libxmhfdebug.a build SUCCESS
 	@echo **************************************************************
-	@echo **************************************************************
-	@echo Building libxmhfcore...
-	@echo **************************************************************
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBXMHFCORE_SRC)/Makefile -w all
-	@echo **************************************************************
-	@echo libxmhfcore.a build SUCCESS
-	@echo **************************************************************
+	#@echo **************************************************************
+	#@echo Building libxmhfcore...
+	#@echo **************************************************************
+	#cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBXMHFCORE_SRC)/Makefile -w all
+	#@echo **************************************************************
+	#@echo libxmhfcore.a build SUCCESS
+	#@echo **************************************************************
 	@echo **************************************************************
 	@echo Building XMHF core...
 	@echo **************************************************************
@@ -361,7 +361,7 @@ install-dev:
 	$(MKDIR) -p $(prefix)/lib/xmhf
 	$(MKDIR) -p $(prefix)/include/xmhf
 	@echo prepared target folders $(prefix)/lib/xmhf and $(prefix)/include/xmhf
-	$(CP) -f $(XMHF_OBJDIR)/_objs_libxmhfcore/libxmhfcore.a $(prefix)/lib/xmhf/libxmhfcore.a
+	#$(CP) -f $(XMHF_OBJDIR)/_objs_libxmhfcore/libxmhfcore.a $(prefix)/lib/xmhf/libxmhfcore.a
 	$(CP) -f $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a $(prefix)/lib/xmhf/libbaremetal.a
 	@echo installed XMHF development libraries to $(prefix)/lib/xmhf/
 	$(MKDIR) -p $(prefix)/include/xmhf/include
@@ -438,13 +438,13 @@ clean:
 	@echo **************************************************************
 	@echo libxmhfdebug.a clean SUCCESS
 	@echo **************************************************************
-	@echo **************************************************************
-	@echo Cleaning libxmhfcore...
-	@echo **************************************************************
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBXMHFCORE_SRC)/Makefile -w clean
-	@echo **************************************************************
-	@echo libxmhfcore.a clean SUCCESS
-	@echo **************************************************************
+	#@echo **************************************************************
+	#@echo Cleaning libxmhfcore...
+	#@echo **************************************************************
+	#cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBXMHFCORE_SRC)/Makefile -w clean
+	#@echo **************************************************************
+	#@echo libxmhfcore.a clean SUCCESS
+	#@echo **************************************************************
 	@echo **************************************************************
 	@echo Cleaning XMHF core...
 	@echo **************************************************************

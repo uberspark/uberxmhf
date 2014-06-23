@@ -62,6 +62,8 @@ XMHF_SLAB_DEFIMPORTFN(void xmhf_runtime_entry(void), XMHF_SLAB_DEFIMPORTFNSTUB(X
 #else //__XMHF_SLAB_INTERNAL_USE__
 
 void xmhf_runtime_entry(void);
+void xmhf_apihub_arch_initialize(void);
+#define xmhf_apihub_initialize	xmhf_apihub_arch_initialize
 
 #endif //__XMHF_SLAB_INTERNAL_USE__
 
