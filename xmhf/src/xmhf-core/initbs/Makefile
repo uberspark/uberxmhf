@@ -45,6 +45,7 @@ $(THE_ARCHIVE): $(OBJECTS)
 	cd $(SLAB_OBJECTS_DIR) && nm $(THE_ARCHIVE).slo | awk '{ print $$3 }' | awk NF >$(THE_ARCHIVE).slo.syms
 	cd $(SLAB_OBJECTS_DIR) && $(OBJCOPY) --localize-symbols=$(THE_ARCHIVE).slo.syms $(THE_ARCHIVE).slo $(THE_ARCHIVE).slo
 	cd $(SLAB_OBJECTS_DIR) && $(OBJCOPY) --globalize-symbol=xmhf_runtime_entry $(THE_ARCHIVE).slo $(THE_ARCHIVE).slo
+	cd $(SLAB_OBJECTS_DIR) && $(OBJCOPY) --globalize-symbol=xcbootinfo $(THE_ARCHIVE).slo $(THE_ARCHIVE).slo
 
 #%.o: %.c   
 #	mkdir -p $(SLAB_OBJECTS_DIR)
