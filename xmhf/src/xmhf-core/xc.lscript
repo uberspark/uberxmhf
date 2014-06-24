@@ -189,6 +189,30 @@ SECTIONS
 		_slab_xccoreapi_trampoline_end = .;
 	} >all=0x0000
 
+	.slab_xhhyperdep : {
+		_slab_xhhyperdep_code_start = .;
+		_slab_xhhyperdep_entrypoint = .;
+		_objs_slab_xhhyperdep/xhhyperdep.slo(.slabcode)
+		. = ALIGN(0x200000);
+		_slab_xhhyperdep_code_end = .;
+		_slab_xhhyperdep_rodata_start = .;
+		_objs_slab_xhhyperdep/xhhyperdep.slo(.slabrodata)
+		. = ALIGN(0x200000);
+		_slab_xhhyperdep_rodata_end = .;
+		_slab_xhhyperdep_rwdata_start = .;
+		_objs_slab_xhhyperdep/xhhyperdep.slo(.slabrwdata)
+		. = ALIGN(0x200000);
+		_slab_xhhyperdep_rwdata_end = .;
+		_slab_xhhyperdep_stack_start = .;
+		_objs_slab_xhhyperdep/xhhyperdep.slo(.slabstack)
+		. = ALIGN(0x200000);
+		_slab_xhhyperdep_stack_end = .;
+		_slab_xhhyperdep_trampoline_start = .;
+		_objs_slab_xhhyperdep/xhhyperdep.slo(.slabtrampoline)
+		. = ALIGN(0x200000);
+		_slab_xhhyperdep_trampoline_end = .;
+	} >all=0x0000
+
 	.shared : {
 		*(.text)
 		*(.data)
