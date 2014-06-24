@@ -65,3 +65,39 @@ static XMHF_BOOTINFO xcbootinfo_store __attribute__(( section(".s_rpb") )) = {
 
 // XMHF boot information block
 XMHF_BOOTINFO *xcbootinfo= &xcbootinfo_store;
+
+/*
+extern u8 slab_xxx_code_start[];													
+extern u8 slab_xxx_code_end[];														
+extern u8 slab_xxx_rodata_start[];													
+extern u8 slab_xxx_rodata_end[];													
+extern u8 slab_xxx_rwdata_start[];													
+extern u8 slab_xxx_rwdata_end[];													
+extern u8 slab_xxx_stack_start[];													
+extern u8 slab_xxx_stack_end[];														
+extern u8 slab_xxx_trampoline_start[];													
+extern u8 slab_xxx_trampoline_end[];														
+extern u32 slab_xxx_entrypoint;	
+
+
+__attribute__ ((section("sharedro"))) slab_header_t slab_header[] = {			
+		{.slab_index = 0,															
+		.slab_macmid = 0,															
+		.slab_privilegemask = 0,													
+		.slab_tos = slab_xxx_stack_end, 					
+		.slab_rodata.start = slab_xxx_rodata_start,									
+		.slab_rodata.end = slab_xxx_rodata_end,									
+		.slab_rwdata.start = slab_xxx_rwdata_start,									
+		.slab_rwdata.end = slab_xxx_rwdata_end,									
+		.slab_code.start = slab_xxx_code_start,									
+		.slab_code.end = slab_xxx_code_end,										
+		.slab_stack.start = slab_xxx_stack_start,									
+		.slab_stack.end = slab_xxxx_stack_end,
+		.slab_trampoline.start = slab_xxx_trampoline_start,
+		.slab_trampoline.end = slab_xxx_trampoline_end,										
+		.entry = slab_xxx_entrypoint,												
+		}
+	};																				
+
+
+*/
