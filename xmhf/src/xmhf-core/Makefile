@@ -162,7 +162,7 @@ LLC_ATTR = -3dnow,-3dnowa,-64bit,-64bit-mode,-adx,-aes,-atom,-avx,-avx2,-bmi,-bm
 all: $(THE_ARCHIVE)
 
 #$(THE_ARCHIVE): libxcshared testslab initbs init ihub coreapi hypapp-hyperdep $(OBJECTS) 
-$(THE_ARCHIVE): libxcshared testslab initbs init ihub $(OBJECTS) 
+$(THE_ARCHIVE): libxcshared testslab initbs init ihub coreapi $(OBJECTS) 
 	cd $(XMHF_CORE_OBJECTS_DIR) && cp -f $(srcdir)/xc.lscript xc.lscript.c
 	cd $(XMHF_CORE_OBJECTS_DIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E xc.lscript.c -o xc.lds
 	cd $(XMHF_CORE_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T xc.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) _objs_libxcshared/libxcshared.a $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
