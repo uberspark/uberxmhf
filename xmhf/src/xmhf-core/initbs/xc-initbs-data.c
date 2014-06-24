@@ -176,7 +176,7 @@ extern u8 _slab_xhhyperdep_trampoline_start[];
 extern u8 _slab_xhhyperdep_trampoline_end[];														
 extern u8 _slab_xhhyperdep_entrypoint[];	
 
-__attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_table[] = {			
+__attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_table[XMHF_SLAB_NUMBEROFSLABS] = {			
 	{	
 		.slab_index = 0,															
 		.slab_macmid = 0,															
