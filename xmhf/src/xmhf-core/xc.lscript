@@ -141,6 +141,30 @@ SECTIONS
 		_slab_xcinit_trampoline_end = .;
 	} >all=0x0000
 
+	.slab_xcihub : {
+		_slab_xcihub_code_start = .;
+		_slab_xcihub_entrypoint = .;
+		_objs_slab_xcihub/xcihub.slo(.slabcode)
+		. = ALIGN(0x200000);
+		_slab_xcihub_code_end = .;
+		_slab_xcihub_rodata_start = .;
+		_objs_slab_xcihub/xcihub.slo(.slabrodata)
+		. = ALIGN(0x200000);
+		_slab_xcihub_rodata_end = .;
+		_slab_xcihub_rwdata_start = .;
+		_objs_slab_xcihub/xcihub.slo(.slabrwdata)
+		. = ALIGN(0x200000);
+		_slab_xcihub_rwdata_end = .;
+		_slab_xcihub_stack_start = .;
+		_objs_slab_xcihub/xcihub.slo(.slabstack)
+		. = ALIGN(0x200000);
+		_slab_xcihub_stack_end = .;
+		_slab_xcihub_trampoline_start = .;
+		_objs_slab_xcihub/xcihub.slo(.slabtrampoline)
+		. = ALIGN(0x200000);
+		_slab_xcihub_trampoline_end = .;
+	} >all=0x0000
+
 	.shared : {
 		*(.text)
 		*(.data)
