@@ -59,6 +59,7 @@ SECTIONS
 	. = 0;
 
 	.slabcode : {
+		*(.slab_entrystub)
 		*(.text)
 	} >slabmem =0x9090 
 

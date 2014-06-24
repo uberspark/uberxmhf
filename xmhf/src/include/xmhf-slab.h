@@ -83,7 +83,7 @@ extern slab_header_t _slab_table[];
 //ebx = function number
 //ecx = number of 32-bit dwords comprising the parameters (excluding return address)
 							
-#define XMHF_SLAB_DEFINTERFACE(...) __attribute__((naked)) void _slab_interface(void){	\
+#define XMHF_SLAB_DEFINTERFACE(...) __attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) void _slab_interface(void){	\
 	asm volatile (							\
 			"pushl %%edi \r\n" 				\
 											\
@@ -118,7 +118,7 @@ extern slab_header_t _slab_table[];
 		);									\
 }											\
 
-#define XMHF_SLAB_DEFINTERFACEBARE(fn) __attribute__((naked)) void _slab_interface(void){	\
+#define XMHF_SLAB_DEFINTERFACEBARE(fn) __attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) void _slab_interface(void){	\
 	asm volatile (							\
 			"jmp "#fn" \r\n" 				\
 			:								\
