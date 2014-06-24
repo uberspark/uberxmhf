@@ -50,49 +50,33 @@ OUTPUT_ARCH("i386")
 
 MEMORY
 {
-  slabmem (rwxai) : ORIGIN = XMHF_SLAB_INIT_REGION_START, LENGTH = 16M /* max. length */
+  slabmem (rwxai) : ORIGIN = 0, LENGTH = 16M /* max. length */
   unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 
 SECTIONS
 {
-	. = XMHF_SLAB_INIT_REGION_START;
+	. = 0;
 
-	.slab_rodata : {
-		slab_rodata_start = . ;
+	.slabcode : {
+		*(.text)
+	} >slabmem =0x9090 
+
+	.slabrodata : {
 		*(.rodata)
 		*(.rodata.str1.1)
 		*(.comment)
-		*(.eh_frame) /* exception-metadata. might be able to discard */
-		. = ALIGN(0x200000);    
-		slab_rodata_end = . ;
+		*(.eh_frame) 
 	} >slabmem =0x0000 
 
-	.slab_rwdata : {
-		slab_rwdata_start = . ;
+	.slabrwdata : {
 		*(.data)
 		*(.bss)
-		. = ALIGN(0x200000);    
-		slab_rwdata_end = . ;
 	} >slabmem =0x0000 
 
-	.slab_code : {
-		slab_code_start = . ;
-		*(.text)
-		. = ALIGN(0x200000);    
-		slab_code_end = . ;
-	} >slabmem =0x9090 
-
-	.slab_stack : {
-		slab_stack_start = . ;
+	.slabstack : {
 		*(.stack)
-		. = ALIGN(0x200000);    
-		slab_stack_end = . ;
 	} >slabmem =0x0000
-
-	.slab_header : {
-		*(.slabrodata)
-	} >slabmem  
 
 	/* this is to cause the link to fail if there is
 	* anything we didn't explicitly place.
