@@ -22,10 +22,10 @@ OBJECTS_ARCHIVE := $(patsubst %.c, %.o, $(C_SOURCES_FILENAMEONLY))
 OBJECTS := $(patsubst %.c, %.o, $(C_SOURCES))
 
 # folder where objects go
-SLAB_OBJECTS_DIR = _objs_initbs
+SLAB_OBJECTS_DIR = _objs_slab_xcinitbs
 
 # archive name
-THE_ARCHIVE = xc-initbs
+THE_ARCHIVE = xcinitbs
 
 LINKER_SCRIPT_INPUT := $(srcdir)/xc-initbs.lscript
 LINKER_SCRIPT_OUTPUT := xc-initbs.lds
@@ -38,14 +38,15 @@ LLC_ATTR = -3dnow,-3dnowa,-64bit,-64bit-mode,-adx,-aes,-atom,-avx,-avx2,-bmi,-bm
 all: $(THE_ARCHIVE)
 
 $(THE_ARCHIVE): $(OBJECTS) 
-	cd $(SLAB_OBJECTS_DIR) && cp -f $(LINKER_SCRIPT_INPUT) xc-initbs.lscript.c
-	cd $(SLAB_OBJECTS_DIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E xc-initbs.lscript.c -o $(LINKER_SCRIPT_OUTPUT)
+	cd $(SLAB_OBJECTS_DIR) && cp -f $(LINKER_SCRIPT_INPUT) xcinitbs.lscript.c
+	cd $(SLAB_OBJECTS_DIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E xcinitbs.lscript.c -o $(LINKER_SCRIPT_OUTPUT)
 	cd $(SLAB_OBJECTS_DIR) && $(LD) -r --oformat elf32-i386 -T $(LINKER_SCRIPT_OUTPUT) -o $(THE_ARCHIVE).slo $(OBJECTS_ARCHIVE) $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
 	#cd $(SLAB_OBJECTS_DIR) && $(LD) -r --oformat elf32-i386 -T $(LINKER_SCRIPT_OUTPUT) -o $(THE_ARCHIVE).slo $(OBJECTS_ARCHIVE)
 	cd $(SLAB_OBJECTS_DIR) && nm $(THE_ARCHIVE).slo | awk '{ print $$3 }' | awk NF >$(THE_ARCHIVE).slo.syms
 	cd $(SLAB_OBJECTS_DIR) && $(OBJCOPY) --localize-symbols=$(THE_ARCHIVE).slo.syms $(THE_ARCHIVE).slo $(THE_ARCHIVE).slo
 	cd $(SLAB_OBJECTS_DIR) && $(OBJCOPY) --globalize-symbol=xmhf_runtime_entry $(THE_ARCHIVE).slo $(THE_ARCHIVE).slo
 	cd $(SLAB_OBJECTS_DIR) && $(OBJCOPY) --globalize-symbol=xcbootinfo $(THE_ARCHIVE).slo $(THE_ARCHIVE).slo
+	cd $(SLAB_OBJECTS_DIR) && $(OBJCOPY) --globalize-symbol=_slab_table $(THE_ARCHIVE).slo $(THE_ARCHIVE).slo
 
 #%.o: %.c   
 #	mkdir -p $(SLAB_OBJECTS_DIR)

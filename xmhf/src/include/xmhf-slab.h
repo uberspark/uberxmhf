@@ -166,7 +166,7 @@ extern slab_header_t _slab_table[];
 
 
 
-
+/*
 #define XMHF_SLAB(slab_name)	\
 	extern void _slab_interface(void);												\
 	extern u8 slab_rodata_start[];													\
@@ -195,7 +195,11 @@ extern slab_header_t _slab_table[];
 		.slab_stack.end = (u32)&slab_stack_end,										\
 		.entry_cr3 = &_slab_interface,												\
 	};																				\
+*/
 
+
+#define XMHF_SLAB(slab_name)	\
+	__attribute__ ((section(".stack"))) static u8 _slab_stack[XMHF_SLAB_STACKSIZE];	\
 
 #endif //__ASSEMBLY__
 
