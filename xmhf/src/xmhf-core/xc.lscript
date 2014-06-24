@@ -52,9 +52,9 @@ ENTRY(xmhf_runtime_entry)
 
 MEMORY
 {
-  all (rwxai) : ORIGIN = 0x10200000, LENGTH = 14M 
-  slabroshareddatamem (rai) : ORIGIN = XMHF_SLAB_REGION_SHARED_RODATA, LENGTH = 16M
-  slabmem (rwxai) : ORIGIN = XMHF_SLAB_REGION_START, LENGTH = 112M
+  all (rwxai) : ORIGIN = 0x10200000, LENGTH = 254M 
+/*  slabroshareddatamem (rai) : ORIGIN = XMHF_SLAB_REGION_SHARED_RODATA, LENGTH = 16M
+  slabmem (rwxai) : ORIGIN = XMHF_SLAB_REGION_START, LENGTH = 112M */
   unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 
@@ -62,7 +62,51 @@ SECTIONS
 {
 	. = 0x10200000;
 
-	.text : {
+	.header : {
+		*(.sharedro_xcbootinfo)
+		*(.sharedro_slab_table)
+		. = ALIGN(0x200000);
+	} >all=0x0000
+
+	.slab_xcinitbs : {
+		_slab_xcinitbs_code_start = .;
+		_slab_xcinitbs_entrypoint = .;
+		_objs_slab_xcinitbs/xcinitbs.slo(.slabcode)
+		. = ALIGN(0x200000);
+		_slab_xcinitbs_code_end = .;
+		_slab_xcinitbs_rodata_start = .;
+		_objs_slab_xcinitbs/xcinitbs.slo(.slabrodata)
+		. = ALIGN(0x200000);
+		_slab_xcinitbs_rodata_end = .;
+		_slab_xcinitbs_rwdata_start = .;
+		_objs_slab_xcinitbs/xcinitbs.slo(.slabrwdata)
+		. = ALIGN(0x200000);
+		_slab_xcinitbs_rwdata_end = .;
+		_slab_xcinitbs_stack_start = .;
+		_objs_slab_xcinitbs/xcinitbs.slo(.slabstack)
+		. = ALIGN(0x200000);
+		_slab_xcinitbs_stack_end = .;
+		_slab_xcinitbs_trampoline_start = .;
+		_objs_slab_xcinitbs/xcinitbs.slo(.slabtrampoline)
+		. = ALIGN(0x200000);
+		_slab_xcinitbs_trampoline_end = .;
+	} >all=0x0000
+
+
+	.shared : {
+		*(.text)
+		*(.data)
+		*(.rodata)
+		*(.rodata.str1.1)
+		*(.comment)
+		*(.eh_frame)
+		*(.bss)
+		*(.palign_data)
+		*(.stack)
+		. = ALIGN(0x200000);
+	} >all=0x0000
+
+	/*.text : {
 		*(.s_rpb)
 		*(.text)
 		. = ALIGN(4096);    
@@ -73,7 +117,7 @@ SECTIONS
 		*(.rodata)
 		*(.rodata.str1.1)
 		*(.comment)
-		*(.eh_frame) /* exception-metadata. might be able to discard */
+		*(.eh_frame)
 		*(.bss)
 		. = ALIGN(4096);    
 	} >all =0x0000 
@@ -87,10 +131,11 @@ SECTIONS
 		*(.stack)
 		. = ALIGN(0x01000000);    
 	} >all =0x0000
-
+	*/
+	
 
 	/* shared slab read-only data area */
-	. = XMHF_SLAB_REGION_SHARED_RODATA; 
+	/*. = XMHF_SLAB_REGION_SHARED_RODATA; 
 	.slabroshareddata : {
 		_slab_table = .;
 		_objs_slab/xmhf-slab.slo(.slab_header)
@@ -100,11 +145,11 @@ SECTIONS
 		_objs_coreapi/xc-coreapi.slo(.slab_header)
 		_objs_hypapp-hyperdep/hypapp-hyperdep.slo(.slab_header)
 		. = ALIGN(0x01000000);
-	} >slabroshareddatamem =0x0000
+	} >slabroshareddatamem =0x0000*/
 	
 
 	/* [test] slabs start */
-	. = XMHF_SLAB_REGION_START;
+	/*. = XMHF_SLAB_REGION_START;
 	.slabtest : {
 		_test_slab_header = . ;
 		_objs_slab/xmhf-slab.slo(*)
@@ -145,6 +190,7 @@ SECTIONS
 		_objs_hypapp-hyperdep/hypapp-hyperdep.slo(*)
 		. = ALIGN(0x01000000);
 	} >slabmem =0x0000
+	*/
 
 	/*
 	.slab_xxx : {
@@ -183,7 +229,8 @@ SECTIONS
 	.unaccounted : {
 	*(*)
 	} >unaccounted
-
+	
+	
 	/* paramcore = core parameter area (1MB in size) */
 	/*. = 0x1CC00000;
 	paramcore_start = .;*/

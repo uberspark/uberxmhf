@@ -56,7 +56,7 @@
 
 static u8 _init_stack[MAX_PLATFORM_CPUSTACK_SIZE] __attribute__(( section(".stack") ));
 
-static XMHF_BOOTINFO xcbootinfo_store __attribute__(( section(".s_rpb") )) = {
+static XMHF_BOOTINFO xcbootinfo_store __attribute__(( section(".sharedro_xcbootinfo") )) = {
 	.magic= RUNTIME_PARAMETER_BLOCK_MAGIC,
 	.entrypoint= (u32)xmhf_runtime_entry,
 	.stack_base = (u32)_init_stack,
@@ -65,6 +65,7 @@ static XMHF_BOOTINFO xcbootinfo_store __attribute__(( section(".s_rpb") )) = {
 
 // XMHF boot information block
 XMHF_BOOTINFO *xcbootinfo= &xcbootinfo_store;
+
 
 /*
 extern u8 slab_xxx_code_start[];													
@@ -92,7 +93,7 @@ __attribute__ ((section("sharedro"))) slab_header_t slab_header[] = {
 		.slab_code.start = slab_xxx_code_start,									
 		.slab_code.end = slab_xxx_code_end,										
 		.slab_stack.start = slab_xxx_stack_start,									
-		.slab_stack.end = slab_xxxx_stack_end,
+		.slab_stack.end = slab_xxx_stack_end,
 		.slab_trampoline.start = slab_xxx_trampoline_start,
 		.slab_trampoline.end = slab_xxx_trampoline_end,										
 		.entry = slab_xxx_entrypoint,												
@@ -101,3 +102,40 @@ __attribute__ ((section("sharedro"))) slab_header_t slab_header[] = {
 
 
 */
+
+
+extern u8 _slab_xcinitbs_code_start[];													
+extern u8 _slab_xcinitbs_code_end[];														
+extern u8 _slab_xcinitbs_rodata_start[];													
+extern u8 _slab_xcinitbs_rodata_end[];													
+extern u8 _slab_xcinitbs_rwdata_start[];													
+extern u8 _slab_xcinitbs_rwdata_end[];													
+extern u8 _slab_xcinitbs_stack_start[];													
+extern u8 _slab_xcinitbs_stack_end[];														
+extern u8 _slab_xcinitbs_trampoline_start[];													
+extern u8 _slab_xcinitbs_trampoline_end[];														
+extern u8 _slab_xcinitbs_entrypoint[];	
+
+
+__attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_table[] = {			
+	{	
+		.slab_index = 0,															
+		.slab_macmid = 0,															
+		.slab_privilegemask = 0,													
+		.slab_tos = _slab_xcinitbs_stack_end, 					
+		.slab_code.start = _slab_xcinitbs_code_start,									
+		.slab_code.end = _slab_xcinitbs_code_end,										
+		.slab_rodata.start = _slab_xcinitbs_rodata_start,									
+		.slab_rodata.end = _slab_xcinitbs_rodata_end,									
+		.slab_rwdata.start = _slab_xcinitbs_rwdata_start,									
+		.slab_rwdata.end = _slab_xcinitbs_rwdata_end,									
+		.slab_stack.start = _slab_xcinitbs_stack_start,									
+		.slab_stack.end = _slab_xcinitbs_stack_end,
+		.slab_trampoline.start = _slab_xcinitbs_trampoline_start,
+		.slab_trampoline.end = _slab_xcinitbs_trampoline_end,										
+		.entry_cr3 = _slab_xcinitbs_entrypoint,												
+	},
+};																				
+
+
+

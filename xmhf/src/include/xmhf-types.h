@@ -200,9 +200,9 @@ typedef struct {
 	u32 slab_macmid;
 	u32 slab_privilegemask;
 	u32 slab_tos;
+	slab_section_t slab_code;
 	slab_section_t slab_rodata;
 	slab_section_t slab_rwdata;
-	slab_section_t slab_code;
 	slab_section_t slab_stack;
 	slab_section_t slab_trampoline;
 	slab_entrystub_t entry_cr3;
