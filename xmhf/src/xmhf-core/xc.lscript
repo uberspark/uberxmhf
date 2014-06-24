@@ -146,6 +146,34 @@ SECTIONS
 		. = ALIGN(0x01000000);
 	} >slabmem =0x0000
 
+	/*
+	.slab_xxx : {
+		_slab_xxx_code_start = .;
+		_slab_xxx_entry_point = .;
+		_objs_slab_xxx/xxx.slo(slabcode)
+		. = ALIGN(0x200000);
+		_slab_xxx_code_end = .;
+		_slab_xxx_rodata_start = .;
+		_objs_slab_xxx/xxx.slo(slabrodata)
+		. = ALIGN(0x200000);
+		_slab_xxx_rodata_end = .;
+		_slab_xxx_rwdata_start = .;
+		_objs_slab_xxx/xxx.slo(slabrwdata)
+		. = ALIGN(0x200000);
+		_slab_xxx_rwdata_end = .;
+		_slab_xxx_stack_start = .;
+		_objs_slab_xxx/xxx.slo(slabstack)
+		. = ALIGN(0x200000);
+		_slab_xxx_stack_end = .;
+		_slab_xxx_trampoline_start = .;
+		_objs_slab_xxx/xxx.slo(slabtrampoline)
+		. = ALIGN(0x200000);
+		_slab_xxx_trampoline_end = .;
+	} >slabmem=0x0000
+
+	*/
+
+
 	/* this is to cause the link to fail if there is
 	* anything we didn't explicitly place.
 	* when this does cause link to fail, temporarily comment
