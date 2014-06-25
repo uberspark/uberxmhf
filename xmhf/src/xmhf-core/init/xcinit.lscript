@@ -78,6 +78,11 @@ SECTIONS
 	.slabstack : {
 		*(.stack)
 	} >slabmem =0x0000
+	
+	.slabtrampoline : {
+		*(.slab_trampoline)
+	} >slabmem =0x0000
+
 
 	/* this is to cause the link to fail if there is
 	* anything we didn't explicitly place.

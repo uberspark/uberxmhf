@@ -162,7 +162,7 @@ extern slab_header_t _slab_table[];
 #define XMHF_SLAB_DEFIMPORTFNSTUB(dest_slab_index, fnnum, fn_paramsize, fn_retsize, fn_aggregateret) _XMHF_SLAB_DEFIMPORTFNSTUB(dest_slab_index, fnnum, fn_paramsize, fn_retsize, fn_aggregateret)
 
 
-#define XMHF_SLAB_DEFIMPORTFN(fn_decl, fn_stub)	__attribute__((naked)) __attribute__ ((noinline)) static inline fn_decl { fn_stub }
+#define XMHF_SLAB_DEFIMPORTFN(fn_decl, fn_stub)	__attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute__ ((noinline)) static inline fn_decl { fn_stub }
 
 
 
@@ -200,6 +200,7 @@ extern slab_header_t _slab_table[];
 
 #define XMHF_SLAB(slab_name)	\
 	__attribute__ ((section(".stack"))) u8 _slab_stack[XMHF_SLAB_STACKSIZE];	\
+	__attribute__ ((section(".slab_trampoline"))) u8 _slab_trampoline_peg[1];	\
 
 #endif //__ASSEMBLY__
 

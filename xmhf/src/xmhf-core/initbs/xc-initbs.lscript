@@ -79,6 +79,10 @@ SECTIONS
 		*(.stack)
 	} >slabmem =0x0000
 
+	.slabtrampoline : {
+		*(.slab_trampoline)
+	} >slabmem =0x0000
+
 	.slab_header : {
 		*(.slabrodata)
 	} >slabmem  
