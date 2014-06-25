@@ -83,10 +83,6 @@ SECTIONS
 		*(.slab_trampoline)
 	} >slabmem =0x0000
 
-	.slab_header : {
-		*(.slabrodata)
-	} >slabmem  
-	
 	.sharedro_xcbootinfo : {
 		*(.sharedro_xcbootinfo)
 	} >slabmem  
