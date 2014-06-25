@@ -447,6 +447,58 @@ void xmhf_apihub_arch_initialize (void){
 			_slab_table[i].slab_macmid = macmid;
 	}
 	
+/*	
+	for(i=0; i < numofslabs; i++){
+			//for each slab with index i
+			_xcinitbs_slab_populate_pagetables(i);
+	}
+	
+	_xcinitbs_slab_populate_pagetables{
+		for(i=0; i < PAE_PTRS_PER_PDPT; i++)
+			_slab_pagetables[slab_index].pdpt[i] = pae_make_pdpe(hva2spa(_slab_pagetables[slab_index].pdt[i]), default_flags);
+
+		//init pdts with unity mappings
+		for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+			for(j=0; j < PAE_PTRS_PER_PDT; j++){
+				u32 hva = ((i * PAE_PTRS_PER_PDT) + j) * PAGE_SIZE_2M;
+				u64 spa = hva2spa((void*)hva);
+				u64 flags = getflagsforspa(spa);
+						
+				_slab_pagetables[slab_index].pdt[i][j] = pae_make_pde_big(spa, flags);
+			}
+		}
+		
+	}
+
+	getflagsforspa(spa){
+					switch(spa){
+					case OTHER_SLAB_CODE:
+					case OTHER_SLAB_RODATA:
+					case OTHER_SLAB_RWDATA:
+						default_flags = 0;
+					case OTHER_SLAB_TRAMPOLINE:
+						default_flags = present | read-only | pse;
+					case OTHER_SLAB_STACK:
+						default_flags = present | read-only | no execute | pse;
+						
+					case MY_SLAB_CODE:
+						default_flags = present | read-only | pse;
+					case MY_SLAB_RODATA:
+						default_flags = present | read-only | no-execute | pse;
+					case MY_SLAB_RWDATA:
+					case MY_SLAB_STACK:
+						default_flags = present | read-write | no-execute | pse;
+					case MY_SLAB_TRAMPOLINE:
+						default_flags = present | read-only | pse;
+						
+					case SHARED_SLAB_RODATA:
+						default_flags = present | read-only | no-execute | pse;
+					case OTHER
+						default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE | _PAGE_USER);
+				}
+	}
+*/		
+	
 		
 	//initialize paging
 	xmhf_baseplatform_arch_x86_initialize_paging((u32)_slab_pagetables[0].pdpt);
