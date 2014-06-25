@@ -378,12 +378,27 @@ void xmhf_baseplatform_arch_x86_restorecpumtrrstate(void){
 static u64 core_3level_pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( aligned(4096) ));
 static u64 core_3level_pdt[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT] __attribute__(( aligned(4096) ));
 
+static struct {
+	u64 pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( aligned(4096) ));
+	u64 pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT] __attribute__(( aligned(4096) ));
+} _slab_pagetables[XMHF_SLAB_NUMBEROFSLABS];
+
 // initialization function for the core API interface
 void xmhf_apihub_arch_initialize (void){
 
 #ifndef __XMHF_VERIFICATION__
 
 	printf("\n%s: starting...", __FUNCTION__);
+
+	//[debug]
+	{
+		u32 i;
+		for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++){
+				printf("\nslab %u: pdpt=%08x, pdt[0]=%08x, pdt[1]=%08x", i, (u32)_slab_pagetables[i].pdpt, (u32)_slab_pagetables[i].pdt[0], (u32)_slab_pagetables[i].pdt[1]);
+				printf("\n                    pdt[2]=%08x, pdt[3]=%08x", (u32)_slab_pagetables[i].pdt[2], (u32)_slab_pagetables[i].pdt[3]);
+		}
+	}
+
 
 	//check for PCID support (if present)
 	{
