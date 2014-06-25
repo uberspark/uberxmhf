@@ -432,6 +432,13 @@ void xmhf_apihub_arch_initialize (void){
 		}
 	}
 	
+	//setup slab macm id's
+	{
+		u32 i;
+		for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++)
+			_slab_table[i].slab_macmid = (u32)_slab_pagetables[0].pdpt;
+	}
+	
 	/*{
 		u32 i, hva=0;
 		u64 default_flags = (u64)(_PAGE_PRESENT);
