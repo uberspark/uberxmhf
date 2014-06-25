@@ -128,7 +128,7 @@ extern slab_header_t _slab_table[];
 }											\
 
 
-#define _XMHF_SLAB_DEFIMPORTFNSTUB(dest_slab_index, fnnum, fn_paramsize, fn_retsize, fn_aggregateret) asm volatile(	\
+#define _XMHF_SLAB_DEFIMPORTFNSTUB(src_slab_index, dest_slab_index, fnnum, fn_paramsize, fn_retsize, fn_aggregateret) asm volatile(	\
 						"pushl %%edi \r\n"				\
 						"pushl %%esi \r\n"				\
 						"pushl %%ebp \r\n"				\
@@ -140,7 +140,7 @@ extern slab_header_t _slab_table[];
 						"movl %0, %%ebx \r\n"			\
 						"movl %1, %%ecx \r\n"			\
 						"movl %3, %%edx \r\n"			\
-						"movl %4, %%eax \r\n"			\
+						"movl %5, %%eax \r\n"			\
 						"movl %%eax, %%cr3 \r\n"		\
 						"movl %2, %%eax \r\n"			\
 						"jmpl *%%eax \r\n"				\
@@ -159,11 +159,11 @@ extern slab_header_t _slab_table[];
 						"popl %%edi \r\n"				\
 						"ret $"#fn_aggregateret" \r\n"					\
 						: 								\
-						: "i" (fnnum), "i" (fn_paramsize), "m" (_slab_table[dest_slab_index].entry_cr3), "i" (fn_retsize), "m" (_slab_table[dest_slab_index].slab_macmid)	\
+						: "i" (fnnum), "i" (fn_paramsize), "m" (_slab_table[dest_slab_index].entry_cr3), "i" (fn_retsize), "m" (_slab_table[src_slab_index].slab_macmid), "m" (_slab_table[dest_slab_index].slab_macmid)	\
 						:	 							\
 						);								\
 
-#define XMHF_SLAB_DEFIMPORTFNSTUB(dest_slab_index, fnnum, fn_paramsize, fn_retsize, fn_aggregateret) _XMHF_SLAB_DEFIMPORTFNSTUB(dest_slab_index, fnnum, fn_paramsize, fn_retsize, fn_aggregateret)
+#define XMHF_SLAB_DEFIMPORTFNSTUB(src_slab_index, dest_slab_index, fnnum, fn_paramsize, fn_retsize, fn_aggregateret) _XMHF_SLAB_DEFIMPORTFNSTUB(src_slab_index, dest_slab_index, fnnum, fn_paramsize, fn_retsize, fn_aggregateret)
 
 
 #define XMHF_SLAB_DEFIMPORTFN(fn_decl, fn_stub)	__attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute__ ((noinline)) static inline fn_decl { fn_stub }
