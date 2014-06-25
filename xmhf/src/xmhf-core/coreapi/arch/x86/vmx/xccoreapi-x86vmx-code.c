@@ -741,7 +741,8 @@ static void _xc_api_partition_arch_addcpu_setupbasestate(u32 partition_index, u3
 	//setup host state
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR0, read_cr0());
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR4, read_cr4());
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR3, read_cr3());
+	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR3, read_cr3());
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR3, _slab_table[XMHF_SLAB_IHUB_INDEX].slab_macmid);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CS_SELECTOR, read_segreg_cs());
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_DS_SELECTOR, read_segreg_ds());
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_ES_SELECTOR, read_segreg_es());
