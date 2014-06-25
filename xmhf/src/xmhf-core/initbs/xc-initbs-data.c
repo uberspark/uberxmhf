@@ -50,9 +50,7 @@
 //---includes-------------------------------------------------------------------
 #include <xmhf-core.h> 
 
-#define __XMHF_SLAB_INTERNAL_USE__
 #include <xc-initbs.h>
-#undef __XMHF_SLAB_INTERNAL_USE__
 
 static u8 _init_stack[MAX_PLATFORM_CPUSTACK_SIZE] __attribute__(( section(".stack") ));
 

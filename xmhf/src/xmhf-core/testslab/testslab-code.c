@@ -46,9 +46,7 @@
 
 #include <xmhf-core.h>
 
-#define __XMHF_SLAB_INTERNAL_USE__
 #include <xmhf-slab-implib.h>
-#undef __XMHF_SLAB_INTERNAL_USE__
 
 /*
  * slab code

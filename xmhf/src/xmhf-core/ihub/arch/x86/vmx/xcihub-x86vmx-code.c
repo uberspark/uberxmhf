@@ -47,13 +47,14 @@
 // XMHF ihub slab -- x86 (VMX) backend implementation
 // author: amit vasudevan (amitvasudevan@acm.org)
 #include <xmhf-core.h> 
-
-#include <xc-coreapi.h>
-
-#include <hypapp-hyperdep.h>
-
 #include <xc-x86.h>
 #include <xc-x86vmx.h>
+
+#define __XMHF_SLAB_CALLER_INDEX__ XMHF_SLAB_IHUB_INDEX
+#include <xc-coreapi.h>
+#include <hypapp-hyperdep.h>
+#undef __XMHF_SLAB_CALLER_INDEX__
+
 
 /* originally in xc-ihub-x86vmx.c */
 

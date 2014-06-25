@@ -49,12 +49,13 @@
 
 //---includes-------------------------------------------------------------------
 #include <xmhf-core.h> 
+
+#include <xc-initbs.h>
+
+#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_INDEX_INITBS
 #include <xmhf-slab-implib.h>
 #include <xc-init.h>
-
-#define __XMHF_SLAB_INTERNAL_USE__
-#include <xc-initbs.h>
-#undef __XMHF_SLAB_INTERNAL_USE__
+#undef __XMHF_SLAB_CALLER_INDEX__
 
 void xmhf_runtime_entry(void){
 

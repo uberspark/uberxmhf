@@ -48,13 +48,11 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf-core.h> 
-
-#define __XMHF_SLAB_INTERNAL_USE__
-#include <xc-coreapi.h>
-#undef __XMHF_SLAB_INTERNAL_USE__
-
 #include <xc-x86.h>
 #include <xc-x86vmx.h>
+
+#include <xc-coreapi.h>
+
 
 
 //----------------------------------------------------------------------
