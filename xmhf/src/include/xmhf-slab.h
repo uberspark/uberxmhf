@@ -199,7 +199,7 @@ extern slab_header_t _slab_table[];
 
 
 #define XMHF_SLAB(slab_name)	\
-	__attribute__ ((section(".stack"))) static u8 _slab_stack[XMHF_SLAB_STACKSIZE];	\
+	__attribute__ ((section(".stack"))) u8 _slab_stack[XMHF_SLAB_STACKSIZE];	\
 
 #endif //__ASSEMBLY__
 
