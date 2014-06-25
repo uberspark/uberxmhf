@@ -139,11 +139,15 @@ extern slab_header_t _slab_table[];
 						"movl $1f, %%edi \r\n"			\
 						"movl %0, %%ebx \r\n"			\
 						"movl %1, %%ecx \r\n"			\
-						"movl %2, %%eax \r\n"			\
 						"movl %3, %%edx \r\n"			\
+						"movl %4, %%eax \r\n"			\
+						"movl %%eax, %%cr3 \r\n"		\
+						"movl %2, %%eax \r\n"			\
 						"jmpl *%%eax \r\n"				\
 														\
 						"1: \r\n"						\
+						"movl %4, %%ecx \r\n"			\
+						"movl %%ecx, %%cr3 \r\n"		\
 						"movl %3, %%ecx \r\n"			\
 						"movl 24(%%esp), %%edi \r\n"	\
 						"cld \r\n"						\
@@ -155,7 +159,7 @@ extern slab_header_t _slab_table[];
 						"popl %%edi \r\n"				\
 						"ret $"#fn_aggregateret" \r\n"					\
 						: 								\
-						: "i" (fnnum), "i" (fn_paramsize), "m" (_slab_table[dest_slab_index].entry_cr3), "i" (fn_retsize)	\
+						: "i" (fnnum), "i" (fn_paramsize), "m" (_slab_table[dest_slab_index].entry_cr3), "i" (fn_retsize), "m" (_slab_table[dest_slab_index].slab_macmid)	\
 						:	 							\
 						);								\
 
