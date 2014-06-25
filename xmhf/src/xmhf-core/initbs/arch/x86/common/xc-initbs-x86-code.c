@@ -414,6 +414,25 @@ void xmhf_apihub_arch_initialize (void){
 	
 	//initialize core PAE page-tables
 	{
+		u32 i, j;
+		u64 default_flags = (u64)(_PAGE_PRESENT);
+		
+		for(i=0; i < PAE_PTRS_PER_PDPT; i++)
+			_slab_pagetables[0].pdpt[i] = pae_make_pdpe(hva2spa(_slab_pagetables[0].pdt[i]), default_flags);
+
+		//init pdts with unity mappings
+		default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE | _PAGE_USER);
+		for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+			for(j=0; j < PAE_PTRS_PER_PDT; j++){
+				u32 hva = ((i * PAE_PTRS_PER_PDT) + j) * PAGE_SIZE_2M;
+				u64 spa = hva2spa((void*)hva);
+				u64 flags = default_flags;
+				_slab_pagetables[0].pdt[i][j] = pae_make_pde_big(spa, flags);
+			}
+		}
+	}
+	
+	/*{
 		u32 i, hva=0;
 		u64 default_flags = (u64)(_PAGE_PRESENT);
 		
@@ -460,11 +479,13 @@ void xmhf_apihub_arch_initialize (void){
 
 			core_3level_pdt[i] = pae_make_pde_big(spa, flags);
 		}	
-	}
+	}*/
 	
 		
 	//initialize core paging
-	xmhf_baseplatform_arch_x86_initialize_paging((u32)&core_3level_pdpt);
+	//xmhf_baseplatform_arch_x86_initialize_paging((u32)&core_3level_pdpt);
+	xmhf_baseplatform_arch_x86_initialize_paging((u32)_slab_pagetables[0].pdpt);
+	
 
 	//turn on WP bit in CR0 register for supervisor mode read-only permission support
 	{
