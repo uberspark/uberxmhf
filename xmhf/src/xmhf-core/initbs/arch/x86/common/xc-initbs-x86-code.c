@@ -386,6 +386,30 @@ static struct {
 	u64 pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT] __attribute__(( aligned(4096) ));
 } _slab_pagetables[XMHF_SLAB_NUMBEROFSLABS];
 
+
+// initialize slab page tables for a given slab index, returns the macm base
+static u32 _xcinitbs_slab_populate_pagetables(u32 slab_index){
+		u32 i, j;
+		u64 default_flags = (u64)(_PAGE_PRESENT);
+		
+		for(i=0; i < PAE_PTRS_PER_PDPT; i++)
+			_slab_pagetables[slab_index].pdpt[i] = pae_make_pdpe(hva2spa(_slab_pagetables[slab_index].pdt[i]), default_flags);
+
+		//init pdts with unity mappings
+		default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE | _PAGE_USER);
+		for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+			for(j=0; j < PAE_PTRS_PER_PDT; j++){
+				u32 hva = ((i * PAE_PTRS_PER_PDT) + j) * PAGE_SIZE_2M;
+				u64 spa = hva2spa((void*)hva);
+				u64 flags = default_flags;
+				_slab_pagetables[slab_index].pdt[i][j] = pae_make_pde_big(spa, flags);
+			}
+		}
+	
+		return (u32)_slab_pagetables[slab_index].pdpt;
+}
+
+
 // initialization function for the core API interface
 void xmhf_apihub_arch_initialize (void){
 
