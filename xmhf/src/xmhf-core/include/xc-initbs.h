@@ -55,17 +55,17 @@
 
 #ifndef __ASSEMBLY__
 
-#ifndef __XMHF_SLAB_INTERNAL_USE__
+#ifdef __XMHF_SLAB_CALLER_INDEX__ 
 
 XMHF_SLAB_DEFIMPORTFN(void xmhf_runtime_entry(void), XMHF_SLAB_DEFIMPORTFNSTUB(XMHF_SLAB_INITBS_INDEX, XMHF_SLAB_INIT_FNXMHFRUNTIMEENTRY, (0), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
 
-#else //__XMHF_SLAB_INTERNAL_USE__
+#else 	//!__XMHF_SLAB_CALLER_INDEX__
 
 void xmhf_runtime_entry(void);
 void xmhf_apihub_arch_initialize(void);
 #define xmhf_apihub_initialize	xmhf_apihub_arch_initialize
 
-#endif //__XMHF_SLAB_INTERNAL_USE__
+#endif	//__XMHF_SLAB_CALLER_INDEX__
 
 #endif //__ASSEMBLY__
 

@@ -53,15 +53,20 @@
 
 #define	XMHF_SLAB_INIT_FNINITENTRY	0
 
-#ifndef __XMHF_SLAB_INTERNAL_USE__
-
 #ifndef __ASSEMBLY__
+
+#ifdef __XMHF_SLAB_CALLER_INDEX__ 
 
 XMHF_SLAB_DEFIMPORTFN(void init_entry(u32 cpuid, bool is_bsp), XMHF_SLAB_DEFIMPORTFNSTUB(XMHF_SLAB_INIT_INDEX, XMHF_SLAB_INIT_FNINITENTRY, (sizeof(u32)+sizeof(bool)), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
 
+#else 	//!__XMHF_SLAB_CALLER_INDEX__
+
+void init_entry(u32 cpuid, bool is_bsp);
+
+#endif	//__XMHF_SLAB_CALLER_INDEX__
+
 #endif //__ASSEMBLY__
 
-#endif //__XMHF_SLAB_INTERNAL_USE__
 
 
 #endif //__XC_INIT_H__
