@@ -387,6 +387,82 @@ static struct {
 } _slab_pagetables[XMHF_SLAB_NUMBEROFSLABS];
 
 
+#define	_SLAB_SPATYPE_OTHER_SLAB_MASK			(0xF0)
+
+#define	_SLAB_SPATYPE_OTHER_SLAB_CODE			(0xF0)
+#define	_SLAB_SPATYPE_OTHER_SLAB_RODATA			(0xF1)
+#define _SLAB_SPATYPE_OTHER_SLAB_RWDATA			(0xF2)
+#define _SLAB_SPATYPE_OTHER_SLAB_STACK			(0xF3)
+#define _SLAB_SPATYPE_OTHER_SLAB_TRAMPOLINE		(0xF4)
+
+#define	_SLAB_SPATYPE_SLAB_CODE					(0x0)
+#define	_SLAB_SPATYPE_SLAB_RODATA				(0x1)
+#define _SLAB_SPATYPE_SLAB_RWDATA				(0x2)
+#define _SLAB_SPATYPE_SLAB_STACK				(0x3)
+#define _SLAB_SPATYPE_SLAB_TRAMPOLINE			(0x4)
+
+#define _SLAB_SPATYPE_NOTASLAB					(0xFF00)
+
+static u32 _xcinitbs_slab_getspatype(u32 slab_index, u32 spa){
+	u32 i;
+
+	for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++){
+		u32 mask = (i == slab_index) ? 0 : _SLAB_SPATYPE_OTHER_SLAB_MASK;
+		if(spa >= _slab_table[i].slab_code.start  && spa < _slab_table[i].slab_code.end)
+			return _SLAB_SPATYPE_SLAB_CODE | mask;
+		if (spa >= _slab_table[i].slab_rodata.start  && spa < _slab_table[i].slab_rodata.end)
+			return _SLAB_SPATYPE_SLAB_RODATA | mask;
+		if (spa >= _slab_table[i].slab_rwdata.start  && spa < _slab_table[i].slab_rwdata.end)	
+			return _SLAB_SPATYPE_SLAB_RWDATA | mask;
+		if (spa >= _slab_table[i].slab_stack.start  && spa < _slab_table[i].slab_stack.end)	
+			return _SLAB_SPATYPE_SLAB_STACK | mask;
+		if (spa >= _slab_table[i].slab_trampoline.start  && spa < _slab_table[i].slab_trampoline.end)	
+			return _SLAB_SPATYPE_SLAB_TRAMPOLINE | mask;
+	}	
+
+	return _SLAB_SPATYPE_NOTASLAB;
+}
+
+static u64 _xcinitbs_slab_getptflagsforspa(u32 slab_index, u32 spa){
+	u64 flags;
+	u32 spatype = _xcinitbs_slab_getspatype(slab_index, spa);
+	
+	switch(spatype){
+		case _SLAB_SPATYPE_OTHER_SLAB_CODE:
+		case _SLAB_SPATYPE_OTHER_SLAB_RODATA:
+		case _SLAB_SPATYPE_OTHER_SLAB_RWDATA:
+			flags = 0;	//not-present
+			break;
+		case _SLAB_SPATYPE_OTHER_SLAB_STACK:
+			flags = (u64)(_PAGE_PRESENT | _PAGE_PSE | _PAGE_NX); //present | read-only | no execute | pse
+			break;	
+		case _SLAB_SPATYPE_OTHER_SLAB_TRAMPOLINE:
+			flags = (u64)(_PAGE_PRESENT | _PAGE_PSE);	//present | read-only | pse
+			break;
+		
+		case _SLAB_SPATYPE_SLAB_CODE:
+			flags = (u64)(_PAGE_PRESENT | _PAGE_PSE); // present | read-only | pse
+			break;
+		case _SLAB_SPATYPE_SLAB_RODATA:
+			flags = (u64)(_PAGE_PRESENT | _PAGE_PSE | _PAGE_NX); //present | read-only | no-execute | pse
+			break;
+		case _SLAB_SPATYPE_SLAB_RWDATA:
+		case _SLAB_SPATYPE_SLAB_STACK:
+			flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_NX | _PAGE_PSE); //present | read-write | no-execute | pse
+			break;
+		case _SLAB_SPATYPE_SLAB_TRAMPOLINE:
+			flags = (u64)(_PAGE_PRESENT | _PAGE_PSE); //present | read-only | pse;
+			break;
+			
+		default:
+			flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE);
+			break;
+	}
+	
+	return flags;
+}
+
+
 // initialize slab page tables for a given slab index, returns the macm base
 static u32 _xcinitbs_slab_populate_pagetables(u32 slab_index){
 		u32 i, j;
