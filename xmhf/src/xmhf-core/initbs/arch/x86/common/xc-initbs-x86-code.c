@@ -516,10 +516,9 @@ void xmhf_apihub_arch_initialize (void){
 	
 	//setup slab page tables and macm id's
 	{
-		u32 macmid = _xcinitbs_slab_populate_pagetables(0);
 		u32 i;
 		for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++)
-			_slab_table[i].slab_macmid = macmid;
+			_slab_table[i].slab_macmid = _xcinitbs_slab_populate_pagetables(i);
 	}
 	
 /*	
