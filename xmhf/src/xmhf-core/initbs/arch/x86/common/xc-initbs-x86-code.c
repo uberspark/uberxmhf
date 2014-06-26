@@ -472,13 +472,11 @@ static u32 _xcinitbs_slab_populate_pagetables(u32 slab_index){
 			_slab_pagetables[slab_index].pdpt[i] = pae_make_pdpe(hva2spa(_slab_pagetables[slab_index].pdt[i]), default_flags);
 
 		//init pdts with unity mappings
-		//default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE | _PAGE_USER);
-		default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE);
 		for(i=0; i < PAE_PTRS_PER_PDPT; i++){
 			for(j=0; j < PAE_PTRS_PER_PDT; j++){
 				u32 hva = ((i * PAE_PTRS_PER_PDT) + j) * PAGE_SIZE_2M;
 				u64 spa = hva2spa((void*)hva);
-				u64 flags = default_flags;
+				u64 flags = _xcinitbs_slab_getptflagsforspa(slab_index, (u32)spa);
 				_slab_pagetables[slab_index].pdt[i][j] = pae_make_pde_big(spa, flags);
 			}
 		}
