@@ -114,9 +114,6 @@ void xmhf_runtime_entry(void){
 	//setup slab page tables and turn on paging
 	xmhf_apihub_initialize();
 
-	printf("\nXMHF Tester Finished!\n\n");
-	HALT();
-
 	//[test] slab
 	{
 			//extern slab_header_t _test_slab_header;
@@ -211,6 +208,9 @@ void xmhf_runtime_entry(void){
 			//_slab_table[XMHF_SLAB_INIT_INDEX].slab_header.entry_cr3 = _init_slab_header.entry_cr3;
 	}
 
+
+	printf("\nXMHF Tester Finished!\n\n");
+	HALT();
 
 	//initialize base platform with SMP 
 	xmhf_baseplatform_smpinitialize();

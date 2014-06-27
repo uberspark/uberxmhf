@@ -548,6 +548,8 @@ void xmhf_apihub_arch_initialize (void){
 		u32 i;
 		//for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++)
 		//	_slab_table[i].slab_macmid = _xcinitbs_slab_populate_pagetables(i);
+
+		_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_macmid = _xcinitbs_slab_populate_pagetables(XMHF_SLAB_INDEX_TEMPLATE);
 		_slab_table[XMHF_SLAB_INITBS_INDEX].slab_macmid = _xcinitbs_slab_populate_pagetables(XMHF_SLAB_INITBS_INDEX);
 		
 	}
