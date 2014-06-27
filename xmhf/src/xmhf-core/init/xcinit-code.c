@@ -87,6 +87,9 @@ void init_entry(u32 cpuid, bool is_bsp){
 	context_desc_t context_desc;
 	static volatile bool bsp_done=false;
 	static u32 xc_richguest_partition_index=XC_PARTITION_INDEX_INVALID;
+
+	printf("\n%s: cpu=%x, is_bsp=%u. Halting\n", __FUNCTION__, cpuid, is_bsp);
+	HALT();
 	
 	//ensure BSP is the first to grab the lock below
 	if(!is_bsp)
