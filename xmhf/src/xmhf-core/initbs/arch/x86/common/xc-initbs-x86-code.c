@@ -426,7 +426,7 @@ static u32 _xcinitbs_slab_getspatype(u32 slab_index, u32 spa){
 static u64 _xcinitbs_slab_getptflagsforspa(u32 slab_index, u32 spa){
 	u64 flags;
 	u32 spatype = _xcinitbs_slab_getspatype(slab_index, spa);
-	printf("\n%s: slab_index=%u, spa=%08x, spatype = %x\n", __FUNCTION__, slab_index, spa, spatype);
+	//printf("\n%s: slab_index=%u, spa=%08x, spatype = %x\n", __FUNCTION__, slab_index, spa, spatype);
 	
 	switch(spatype){
 		case _SLAB_SPATYPE_OTHER_SLAB_CODE:
@@ -610,11 +610,6 @@ void xmhf_apihub_arch_initialize (void){
 	//initialize paging
 	xmhf_baseplatform_arch_x86_initialize_paging((u32)_slab_table[XMHF_SLAB_INITBS_INDEX].slab_macmid);
 	printf("\n%s: setup slab paging\n", __FUNCTION__);
-
-	printf("\nXMHF Tester Finished!\n\n");
-	HALT();
-	
-
 
 #endif //__XMHF_VERIFICATION__
 }
