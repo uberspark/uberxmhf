@@ -112,7 +112,17 @@
       movw %ax, %fs
       movw %ax, %gs
 
-             
+	  // set CR0 WP bit
+	  movl %cr0, %eax
+	  orl 0x00010000, %eax
+	  movl %eax, %cr0
+	  
+	  // set NX bit
+	  movl 0xc0000080, %ecx
+	  rdmsr
+	  orl (1 << 11), %eax
+	  wrmsr
+	  			
       movl $(_ap_cr3_value - _ap_bootstrap_start + (0x1000 << 4)), %esi
       movl (%esi), %ebx
       movl %ebx, %cr3
