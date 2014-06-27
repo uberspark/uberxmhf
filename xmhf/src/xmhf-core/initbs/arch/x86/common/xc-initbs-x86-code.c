@@ -406,7 +406,7 @@ static struct {
 static u32 _xcinitbs_slab_getspatype(u32 slab_index, u32 spa){
 	u32 i;
 
-	/*for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++){
+	for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++){
 		u32 mask = (i == slab_index) ? 0 : _SLAB_SPATYPE_OTHER_SLAB_MASK;
 		if(spa >= _slab_table[i].slab_code.start  && spa < _slab_table[i].slab_code.end)
 			return _SLAB_SPATYPE_SLAB_CODE | mask;
@@ -418,7 +418,7 @@ static u32 _xcinitbs_slab_getspatype(u32 slab_index, u32 spa){
 			return _SLAB_SPATYPE_SLAB_STACK | mask;
 		if (spa >= _slab_table[i].slab_trampoline.start  && spa < _slab_table[i].slab_trampoline.end)	
 			return _SLAB_SPATYPE_SLAB_TRAMPOLINE | mask;
-	}*/	
+	}	
 
 	return _SLAB_SPATYPE_NOTASLAB;
 }
@@ -426,6 +426,7 @@ static u32 _xcinitbs_slab_getspatype(u32 slab_index, u32 spa){
 static u64 _xcinitbs_slab_getptflagsforspa(u32 slab_index, u32 spa){
 	u64 flags;
 	u32 spatype = _xcinitbs_slab_getspatype(slab_index, spa);
+	printf("\n%s: slab_index=%u, spa=%08x, spatype = %x\n", __FUNCTION__, slab_index, spa, spatype);
 	
 	switch(spatype){
 		case _SLAB_SPATYPE_OTHER_SLAB_CODE:
@@ -520,12 +521,35 @@ void xmhf_apihub_arch_initialize (void){
 			else
 				printf("\n%s: PCID not supported", __FUNCTION__);
 	}
+
+	//turn on WP bit in CR0 register for supervisor mode read-only permission support
+	{
+		u32 cr0;
+		cr0=read_cr0();
+		printf("\n%s: CR0=%08x", __FUNCTION__, cr0);
+		cr0 |= CR0_WP;
+		printf("\n%s: attempting to change CR0 to %08x", __FUNCTION__, cr0);
+		write_cr0(cr0);
+		cr0 = read_cr0();
+		printf("\n%s: CR0 changed to %08x", __FUNCTION__, cr0);
+	}
+
+	//turn on NX protections
+	{
+		u32 eax, edx;
+		rdmsr(MSR_EFER, &eax, &edx);
+		eax |= (1 << EFER_NXE);
+		wrmsr(MSR_EFER, eax, edx);
+		printf("\n%s: NX protections enabled: MSR_EFER=%08x%08x", __FUNCTION__, edx, eax);
+	}
 	
 	//setup slab page tables and macm id's
 	{
 		u32 i;
-		for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++)
-			_slab_table[i].slab_macmid = _xcinitbs_slab_populate_pagetables(i);
+		//for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++)
+		//	_slab_table[i].slab_macmid = _xcinitbs_slab_populate_pagetables(i);
+		_slab_table[XMHF_SLAB_INITBS_INDEX].slab_macmid = _xcinitbs_slab_populate_pagetables(XMHF_SLAB_INITBS_INDEX);
+		
 	}
 	
 	printf("\n%s: setup slab page tables and macm id's\n", __FUNCTION__);
@@ -586,28 +610,11 @@ void xmhf_apihub_arch_initialize (void){
 	//initialize paging
 	xmhf_baseplatform_arch_x86_initialize_paging((u32)_slab_table[XMHF_SLAB_INITBS_INDEX].slab_macmid);
 	printf("\n%s: setup slab paging\n", __FUNCTION__);
+
+	printf("\nXMHF Tester Finished!\n\n");
+	HALT();
 	
 
-	//turn on WP bit in CR0 register for supervisor mode read-only permission support
-	{
-		u32 cr0;
-		cr0=read_cr0();
-		printf("\n%s: CR0=%08x", __FUNCTION__, cr0);
-		cr0 |= CR0_WP;
-		printf("\n%s: attempting to change CR0 to %08x", __FUNCTION__, cr0);
-		write_cr0(cr0);
-		cr0 = read_cr0();
-		printf("\n%s: CR0 changed to %08x", __FUNCTION__, cr0);
-	}
-
-	//turn on NX protections
-	{
-		u32 eax, edx;
-		rdmsr(MSR_EFER, &eax, &edx);
-		eax |= (1 << EFER_NXE);
-		wrmsr(MSR_EFER, eax, edx);
-		printf("\n%s: NX protections enabled: MSR_EFER=%08x%08x", __FUNCTION__, edx, eax);
-	}
 
 #endif //__XMHF_VERIFICATION__
 }
