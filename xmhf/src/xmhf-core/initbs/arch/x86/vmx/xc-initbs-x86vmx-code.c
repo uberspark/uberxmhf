@@ -151,7 +151,7 @@
 */
 
 
-static u8 _ap_bootstrap_blob[256] = {
+/*static u8 _ap_bootstrap_blob[256] = {
 															//0x00: _ap_bootstrap_start
 		0xeb, 0x4e, 										//0x00: jmp ap_bootstrap_bypassdata
 		0x00, 0x00, 0x00, 0x00,								//0x02: _ap_cr3_value
@@ -212,9 +212,9 @@ static u8 _ap_bootstrap_blob[256] = {
 		0xff, 0xe3,              							//0xab: jmp    *%ebx
 		0xf4,	                  							//0xad: hlt    
 
-};
+};*/
 
-//extern u8 _ap_bootstrap_blob[256];
+extern u8 _ap_bootstrap_blob[256];
 
 static u32 * _ap_bootstrap_blob_cr3 = (u32 *) & _ap_bootstrap_blob[0x02];
 
