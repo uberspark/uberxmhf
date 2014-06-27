@@ -51,8 +51,8 @@
 
 	.section .data
 	.code16
-  .global _ap_bootstrap_blob
-  _ap_bootstrap_blob:
+  .global _ap_bootstrap_blob_defunct
+  _ap_bootstrap_blob_defunct:
   _ap_bootstrap_start:
     jmp ap_bootstrap_bypassdata
     .global _ap_cr3_value
