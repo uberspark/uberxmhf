@@ -546,7 +546,6 @@ static void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 	bool is_bsp = xmhf_baseplatform_arch_x86_isbsp();
 	u32 bcr0;
 		
-	printf("\n%s: cpu %x, isbsp=%u\n", __FUNCTION__, cpuid, is_bsp);
 	//initialize base CPU state
 	xmhf_baseplatform_arch_x86_cpuinitialize();
 
@@ -577,6 +576,9 @@ static void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 	  );
 	  #endif
 	}
+
+
+	printf("\n%s: cpu %x, isbsp=%u, Proceeding to call init_entry...\n", __FUNCTION__, cpuid, is_bsp);
 	
   	init_entry(cpuid, is_bsp);
 }
