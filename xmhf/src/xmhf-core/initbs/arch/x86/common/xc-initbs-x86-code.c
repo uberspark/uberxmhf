@@ -528,6 +528,8 @@ void xmhf_apihub_arch_initialize (void){
 			_slab_table[i].slab_macmid = _xcinitbs_slab_populate_pagetables(i);
 	}
 	
+	printf("\n%s: setup slab page tables and macm id's\n", __FUNCTION__);
+	
 /*	
 	for(i=0; i < numofslabs; i++){
 			//for each slab with index i
@@ -583,6 +585,7 @@ void xmhf_apihub_arch_initialize (void){
 		
 	//initialize paging
 	xmhf_baseplatform_arch_x86_initialize_paging((u32)_slab_table[XMHF_SLAB_INITBS_INDEX].slab_macmid);
+	printf("\n%s: setup slab paging\n", __FUNCTION__);
 	
 
 	//turn on WP bit in CR0 register for supervisor mode read-only permission support
