@@ -453,9 +453,16 @@ static u64 _xcinitbs_slab_getptflagsforspa(u32 slab_index, u32 spa){
 		case _SLAB_SPATYPE_SLAB_TRAMPOLINE:
 			flags = (u64)(_PAGE_PRESENT | _PAGE_PSE); //present | read-only | pse;
 			break;
-			
+	
 		default:
 			flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE);
+			if(spa == 0xfee00000 || spa == 0xfec00000) {
+				//map some MMIO regions with Page Cache disabled 
+				//0xfed00000 contains Intel TXT config regs & TPM MMIO 
+				//0xfee00000 contains LAPIC base 
+				flags |= (u64)(_PAGE_PCD);
+			}
+
 			break;
 	}
 	
