@@ -51,8 +51,8 @@
 
 	.section .data
 	.code16
-  .global _ap_bootstrap_blob_defunct
-  _ap_bootstrap_blob_defunct:
+  .global _ap_bootstrap_blob
+  _ap_bootstrap_blob:
   _ap_bootstrap_start:
     jmp ap_bootstrap_bypassdata
     .global _ap_cr3_value
@@ -113,15 +113,15 @@
       movw %ax, %gs
 
 	  // set CR0 WP bit
-	  movl %cr0, %eax
-	  orl 0x00010000, %eax
-	  movl %eax, %cr0
+	  //movl %cr0, %eax
+	  //orl 0x00010000, %eax
+	  //movl %eax, %cr0
 	  
 	  // set NX bit
-	  movl 0xc0000080, %ecx
-	  rdmsr
-	  orl (1 << 11), %eax
-	  wrmsr
+	  //movl 0xc0000080, %ecx
+	  //rdmsr
+	  //orl (1 << 11), %eax
+	  //wrmsr
 	  			
       movl $(_ap_cr3_value - _ap_bootstrap_start + (0x1000 << 4)), %esi
       movl (%esi), %ebx
