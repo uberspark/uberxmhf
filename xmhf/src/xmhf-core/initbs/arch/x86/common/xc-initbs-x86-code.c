@@ -582,7 +582,7 @@ void xmhf_apihub_arch_initialize (void){
 	
 		
 	//initialize paging
-	xmhf_baseplatform_arch_x86_initialize_paging((u32)_slab_pagetables[0].pdpt);
+	xmhf_baseplatform_arch_x86_initialize_paging((u32)_slab_table[XMHF_SLAB_INITBS_INDEX].slab_macmid);
 	
 
 	//turn on WP bit in CR0 register for supervisor mode read-only permission support
