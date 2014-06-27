@@ -150,7 +150,7 @@
       hlt
 */
 
-/*
+
 static u8 _ap_bootstrap_blob[256] = {
 															//0x00: _ap_bootstrap_start
 		0xeb, 0x4e, 										//0x00: jmp ap_bootstrap_bypassdata
@@ -212,9 +212,9 @@ static u8 _ap_bootstrap_blob[256] = {
 		0xff, 0xe3,              							//0xab: jmp    *%ebx
 		0xf4,	                  							//0xad: hlt    
 
-};*/
+};
 
-extern u8 _ap_bootstrap_blob[256];
+//extern u8 _ap_bootstrap_blob[256];
 
 static u32 * _ap_bootstrap_blob_cr3 = (u32 *) & _ap_bootstrap_blob[0x02];
 
@@ -546,6 +546,7 @@ static void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 	bool is_bsp = xmhf_baseplatform_arch_x86_isbsp();
 	u32 bcr0;
 		
+	printf("\n%s: cpu %x, isbsp=%u\n", __FUNCTION__, cpuid, is_bsp);
 	//initialize base CPU state
 	xmhf_baseplatform_arch_x86_cpuinitialize();
 
