@@ -11,15 +11,26 @@ C_SOURCES := $(wildcard $(srcdir)/*.c)
 C_SOURCES += $(shell find $(srcdir)/arch/x86/common/ -type f -name '*.c')
 C_SOURCES += $(shell find $(srcdir)/arch/x86/vmx/ -type f -name '*.c')
 
+A_SOURCES := $(shell find $(srcdir)/arch/x86/vmx/ -type f -name '*.S')
+
+
 C_SOURCES := $(patsubst $(srcdir)/%, %, $(C_SOURCES))
+
+A_SOURCES := $(patsubst $(srcdir)/%, %, $(A_SOURCES))
 
 # grab list of file names only for binary generation
 C_SOURCES_FILENAMEONLY := $(notdir $(C_SOURCES))
 
+A_SOURCES_FILENAMEONLY := $(notdir $(A_SOURCES))
+
 OBJECTS_ARCHIVE := $(patsubst %.c, %.o, $(C_SOURCES_FILENAMEONLY))
+
+OBJECTS_ARCHIVE += $(patsubst %.S, %.o, $(A_SOURCES_FILENAMEONLY))
 
 # list of object dependencies
 OBJECTS := $(patsubst %.c, %.o, $(C_SOURCES))
+
+OBJECTS += $(patsubst %.S, %.o, $(A_SOURCES))
 
 # folder where objects go
 SLAB_OBJECTS_DIR = _objs_slab_xcinitbs
@@ -59,6 +70,10 @@ $(THE_ARCHIVE): $(OBJECTS)
 	cd $(SLAB_OBJECTS_DIR) && fixnaked.pl $(@F).ll
 	cd $(SLAB_OBJECTS_DIR) && llc -O=0 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
 	cd $(SLAB_OBJECTS_DIR) && $(CC) -c $(CFLAGS) $(@F).s -o $(@F)
+
+%.o: %.S   
+	mkdir -p $(SLAB_OBJECTS_DIR)
+	cd $(SLAB_OBJECTS_DIR) && gcc -c $(CFLAGS) $< -o $(@F)
 
 .PHONY: clean
 clean:
