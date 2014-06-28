@@ -578,7 +578,7 @@ static void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 	}
 
 
-	if(is_bsp){
+	if(is_bsp || cpuid == 0x5 ){
 		printf("\n%s: cpu %x, isbsp=%u, Proceeding to call init_entry...\n", __FUNCTION__, cpuid, is_bsp);
 		init_entry(cpuid, is_bsp);
 	}else{
