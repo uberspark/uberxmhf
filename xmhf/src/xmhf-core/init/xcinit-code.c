@@ -90,7 +90,7 @@ void init_entry(u32 cpuid, bool is_bsp){
 
 	printf("\n%s: cpu=%x, is_bsp=%u. Halting\n", __FUNCTION__, cpuid, is_bsp);
 	//printf("\nXMHF Tester Finished!\n\n");
-	HALT();
+	//HALT();
 	
 	//ensure BSP is the first to grab the lock below
 	if(!is_bsp)
