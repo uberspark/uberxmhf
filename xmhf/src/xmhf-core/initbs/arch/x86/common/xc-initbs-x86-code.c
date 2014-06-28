@@ -420,7 +420,7 @@ static u32 _xcinitbs_slab_getspatype(u32 slab_index, u32 spa){
 			if (spa >= _slab_table[i].slab_rwdata.start  && spa < _slab_table[i].slab_rwdata.end)	
 				return _SLAB_SPATYPE_TEST;
 			if (spa >= _slab_table[i].slab_stack.start  && spa < _slab_table[i].slab_stack.end)	
-				return _SLAB_SPATYPE_TEST;
+				return _SLAB_SPATYPE_NOTASLAB;
 			if (spa >= _slab_table[i].slab_trampoline.start  && spa < _slab_table[i].slab_trampoline.end)	
 				return _SLAB_SPATYPE_TEST;
 		}else{
