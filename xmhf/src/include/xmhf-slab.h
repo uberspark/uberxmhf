@@ -142,7 +142,6 @@ extern slab_header_t _slab_table[];
 						"movl %3, %%edx \r\n"			\
 						"movl %5, %%eax \r\n"			\
 						"movl %%eax, %%cr3 \r\n"		\
-						"int $0x03	\r\n"				\
 						"movl %2, %%eax \r\n"			\
 						"jmpl *%%eax \r\n"				\
 														\
