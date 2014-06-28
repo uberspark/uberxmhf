@@ -111,10 +111,10 @@ void xmhf_runtime_entry(void){
 	}
 
 
-	asm volatile("int $0x03 \r\n");
-
 	//setup slab page tables and turn on paging
 	xmhf_apihub_initialize();
+
+	asm volatile("int $0x03 \r\n");
 
 	//[test] slab
 	{
