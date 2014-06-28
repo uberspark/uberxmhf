@@ -406,7 +406,7 @@ static struct {
 static u32 _xcinitbs_slab_getspatype(u32 slab_index, u32 spa){
 	u32 i;
 
-	/*for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++){
+	for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++){
 		u32 mask = (i == slab_index) ? 0 : _SLAB_SPATYPE_OTHER_SLAB_MASK;
 		if(spa >= _slab_table[i].slab_code.start  && spa < _slab_table[i].slab_code.end)
 			return _SLAB_SPATYPE_SLAB_CODE | mask;
@@ -418,7 +418,7 @@ static u32 _xcinitbs_slab_getspatype(u32 slab_index, u32 spa){
 			return _SLAB_SPATYPE_SLAB_STACK | mask;
 		if (spa >= _slab_table[i].slab_trampoline.start  && spa < _slab_table[i].slab_trampoline.end)	
 			return _SLAB_SPATYPE_SLAB_TRAMPOLINE | mask;
-	}*/	
+	}	
 
 	return _SLAB_SPATYPE_NOTASLAB;
 }
