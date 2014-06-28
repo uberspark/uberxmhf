@@ -408,6 +408,10 @@ static u32 _xcinitbs_slab_getspatype(u32 slab_index, u32 spa){
 
 	for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++){
 		u32 mask = (i == slab_index) ? 0 : _SLAB_SPATYPE_OTHER_SLAB_MASK;
+		
+		if(i == XMHF_SLAB_INITBS_INDEX)
+			return _SLAB_SPATYPE_NOTASLAB;
+		
 		if(spa >= _slab_table[i].slab_code.start  && spa < _slab_table[i].slab_code.end)
 			return _SLAB_SPATYPE_SLAB_CODE | mask;
 		if (spa >= _slab_table[i].slab_rodata.start  && spa < _slab_table[i].slab_rodata.end)
