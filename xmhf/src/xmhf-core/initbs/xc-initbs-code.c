@@ -176,8 +176,8 @@ void xmhf_runtime_entry(void){
 
 	}
 
-	printf("\nXMHF Tester Finished!\n\n");
-	HALT();
+	//printf("\nXMHF Tester Finished!\n\n");
+	//HALT();
 
 	//initialize base platform with SMP 
 	xmhf_baseplatform_smpinitialize();
