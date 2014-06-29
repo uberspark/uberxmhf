@@ -87,6 +87,10 @@ SECTIONS
 		*(.sharedro_xcbootinfo)
 	} >slabmem  
 
+	.sharedro_xcbootinfoptr : {
+		*(.sharedro_xcbootinfoptr)
+	} >slabmem  
+
 	.sharedro_slab_table : {
 		*(.sharedro_slab_table)
 	} >slabmem  
