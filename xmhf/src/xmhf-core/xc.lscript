@@ -64,6 +64,7 @@ SECTIONS
 
 	.header : {
 		*(.sharedro_xcbootinfo)
+		*(.sharedro_xcbootinfoptr)
 		*(.sharedro_slab_table)
 		. = ALIGN(0x200000);
 	} >all=0x0000

@@ -62,7 +62,7 @@ static XMHF_BOOTINFO xcbootinfo_store __attribute__(( section(".sharedro_xcbooti
 };
 
 // XMHF boot information block
-XMHF_BOOTINFO *xcbootinfo= &xcbootinfo_store;
+__attribute__(( section(".sharedro_xcbootinfoptr") )) XMHF_BOOTINFO *xcbootinfo= &xcbootinfo_store;
 
 
 /*
