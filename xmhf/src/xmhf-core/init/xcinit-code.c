@@ -62,8 +62,14 @@
 context_desc_t xmhf_richguest_setup(u32 partition_index, u32 cpuid, bool is_bsp){
 	context_desc_t context_desc;
 
+	printf("%s: starting\n", __FUNCTION__);
+	
+	printf("%s: proceeding to call xc_api_partition_addcpu\n", __FUNCTION__);
+
 	//add cpu to the richguest partition
 	context_desc = xc_api_partition_addcpu(partition_index, cpuid, is_bsp);
+	printf("%s: back\n", __FUNCTION__);
+
 	
 	//bail out if we could not add cpu to the rich guest partition
 	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
@@ -71,8 +77,10 @@ context_desc_t xmhf_richguest_setup(u32 partition_index, u32 cpuid, bool is_bsp)
 			return context_desc;
 	}
 
+	printf("%s: proceeding to call xmhf_richguest_setupguestOSstate\n", __FUNCTION__);
 	//setup guest OS state for partition
 	xmhf_richguest_setupguestOSstate(context_desc);
+	printf("%s: back\n", __FUNCTION__);
 
 	return context_desc;
 }

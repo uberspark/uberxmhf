@@ -375,7 +375,8 @@ void xmhf_richguest_arch_initialize(u32 partition_index){
 
 	printf("\n%s: copying boot-module to boot guest", __FUNCTION__);
 	memcpy((void *)__GUESTOSBOOTMODULE_BASE, (void *)xcbootinfo->richguest_bootmodule_base, xcbootinfo->richguest_bootmodule_size);
-	
+	HALT();
+		
 	printf("\n%s: BSP initializing HPT", __FUNCTION__);
 	_vmx_gathermemorytypes();
 	//_vmx_setupEPT((xc_partition_hptdata_x86vmx_t *)xc_partition_richguest->hptdata);
