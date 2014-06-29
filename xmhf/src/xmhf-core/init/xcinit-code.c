@@ -152,6 +152,8 @@ void init_entry(u32 cpuid, bool is_bsp){
 	if(is_bsp)
 		bsp_done=true;
 
+	printf("\n%s: cpu %x, isbsp=%u, Waiting for all cpus fo cycle through hypapp main", __FUNCTION__, cpuid, is_bsp);
+	
 	//wait for hypapp main to execute on all the cpus
 	while(_xc_startup_hypappmain_counter < xcbootinfo->cpuinfo_numentries);
 	

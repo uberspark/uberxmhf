@@ -578,13 +578,13 @@ static void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 	}
 
 
-	//if(is_bsp || cpuid == 0x5 ){
+	if(is_bsp){
 		printf("\n%s: cpu %x, isbsp=%u, Proceeding to call init_entry...\n", __FUNCTION__, cpuid, is_bsp);
 		init_entry(cpuid, is_bsp);
-	//}else{
-	//	printf("\n%s: cpu %x, isbsp=%u, Halting\n", __FUNCTION__, cpuid, is_bsp);
-	//	HALT();
-	//}
+	}else{
+		printf("\n%s: cpu %x, isbsp=%u, Halting\n", __FUNCTION__, cpuid, is_bsp);
+		HALT();
+	}
 }
 
 
