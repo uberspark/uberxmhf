@@ -64,7 +64,7 @@
 static u64 _idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] __attribute__(( aligned(16) ));
 
 //core IDT descriptor
-arch_x86_idtdesc_t _idt __attribute__(( aligned(16) )) = {
+static arch_x86_idtdesc_t _idt __attribute__(( aligned(16) )) = {
 	.size=sizeof(_idt_start)-1,
 	.base=(u32)&_idt_start,
 };
@@ -176,14 +176,15 @@ static u32 exceptionstubs[] = { 	XMHF_EXCEPTION_HANDLER_ADDROF(0),
 						
 
 //initialize EMHF core exception handlers
-void xmhf_xcphandler_arch_initialize(void){
+//void xmhf_xcphandler_arch_initialize(void){
+arch_x86_idtdesc_t xcexhub_initialize(void){
 	u32 *pexceptionstubs;
 	u32 i;
 
 	printf("\n%s: setting up runtime IDT...", __FUNCTION__);
 	
 	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
-		idtentry_t *idtentry=(idtentry_t *)((u32)xmhf_baseplatform_arch_x86_getidtbase()+ (i*8));
+		idtentry_t *idtentry=(idtentry_t *)((u32)&_idt_start+ (i*8));
 		idtentry->isrLow= (u16)exceptionstubs[i];
 		idtentry->isrHigh= (u16) ( (u32)exceptionstubs[i] >> 16 );
 		idtentry->isrSelector = __CS_CPL0;
@@ -193,6 +194,7 @@ void xmhf_xcphandler_arch_initialize(void){
 	}
 	
 	printf("\n%s: IDT setup done.", __FUNCTION__);
+	return _idt;
 }
 
 
