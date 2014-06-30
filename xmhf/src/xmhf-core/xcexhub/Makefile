@@ -25,7 +25,7 @@ OBJECTS := $(patsubst %.c, %.o, $(C_SOURCES))
 SLAB_OBJECTS_DIR = _objs_slab_xcexhub
 
 # archive name
-THE_ARCHIVE = xccoreapi
+THE_ARCHIVE = xcexhub
 
 LINKER_SCRIPT_INPUT := $(srcdir)/xcexhub.lscript
 LINKER_SCRIPT_OUTPUT := xcexhub.lds
