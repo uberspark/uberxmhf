@@ -44,33 +44,24 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-
-/*
- * 
- *  XMHF core exception handling slab 
- * 
- *  author: amit vasudevan (amitvasudevan@acm.org)
+/* 
+ * XMHF core exception handling slab
+ * x86 arch. backend
+ * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#ifndef __XCEXHUB_H__
-#define __XCEXHUB_H__
+#include <xmhf.h>
+#include <xmhf-core.h>
+#include <xc-x86.h>
+#include <xc-x86vmx.h>
 
-#define XMHF_SLAB_XCEXHUB_FNXCEXHUBINITIALIZE							0				
-
-#ifndef __ASSEMBLY__
-
-#ifdef __XMHF_SLAB_CALLER_INDEX__ 
-
-XMHF_SLAB_DEFIMPORTFN(arch_x86_idtdesc_t xcexhub_initialize(void),	XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCEXHUB_INDEX,	XMHF_SLAB_XCEXHUB_FNXCEXHUBINITIALIZE, (0)			, sizeof(arch_x86_idtdesc_t), XMHF_SLAB_FN_RETTYPE_AGGREGATE)								)
-
-#else 	//!__XMHF_SLAB_CALLER_INDEX__
-
-arch_x86_idtdesc_t xcexhub_initialize(void);
-
-#endif	//__XMHF_SLAB_CALLER_INDEX__
+#include <xcexhub.h>
 
 
-#endif	//__ASSEMBLY__
+//////////
+XMHF_SLAB("xcexhub")
 
+XMHF_SLAB_DEFINTERFACE(
+	XMHF_SLAB_DEFEXPORTFN(xcexhub_initialize				,XMHF_SLAB_XCEXHUB_FNXCEXHUBINITIALIZE				,	XMHF_SLAB_FN_RETTYPE_AGGREGATE)
+)
 
-#endif //__XCEXHUB_H__
