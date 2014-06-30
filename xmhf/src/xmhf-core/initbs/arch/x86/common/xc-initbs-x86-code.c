@@ -213,7 +213,8 @@ void xmhf_baseplatform_arch_x86_initializeTSS(void){
 	
 		//memset((void *)_tss, 0, sizeof(_tss));
 		tss->ss0 = __DS_CPL0;
-		tss->esp0 = (u32)&_exceptionstack + (u32)sizeof(_exceptionstack);
+		//tss->esp0 = (u32)&_exceptionstack + (u32)sizeof(_exceptionstack);
+		tss->esp0 = (u32)_slab_table[XMHF_SLAB_XCEXHUB_INDEX].slab_tos;
 		
 	
 		printf("\ndumping GDT...");
