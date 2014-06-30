@@ -439,7 +439,7 @@ void xmhf_baseplatform_arch_initialize(void){
 	xmhf_baseplatform_arch_x86_initializeIOPL();
 
 	//initialize IDT
-	xmhf_baseplatform_arch_x86_initializeIDT();
+	//xmhf_baseplatform_arch_x86_initializeIDT();
 
 	//initialize TR/TSS
 	#ifndef __XMHF_VERIFICATION__
