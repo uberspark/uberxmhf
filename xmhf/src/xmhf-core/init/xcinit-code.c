@@ -69,15 +69,14 @@ context_desc_t xmhf_richguest_setup(u32 partition_index, u32 cpuid, bool is_bsp)
 	context_desc = xc_api_partition_addcpu(partition_index, cpuid, is_bsp);
 	printf("%s: back\n", __FUNCTION__);
 
-	HALT();
-	
 	//bail out if we could not add cpu to the rich guest partition
 	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
 			printf("\n%s: could not add cpu to rich guest partition. Halting!", __FUNCTION__);
 			return context_desc;
 	}
 
-	//printf("%s: proceeding to call xmhf_richguest_setupguestOSstate\n", __FUNCTION__);
+	printf("%s: proceeding to call xmhf_richguest_setupguestOSstate\n", __FUNCTION__);
+	
 	//setup guest OS state for partition
 	xmhf_richguest_setupguestOSstate(context_desc);
 	//printf("%s: back\n", __FUNCTION__);
@@ -161,6 +160,7 @@ void init_entry(u32 cpuid, bool is_bsp){
 		bsp_done=true;
 
 	printf("\n%s: cpu %x, isbsp=%u, Waiting for all cpus fo cycle through hypapp main", __FUNCTION__, cpuid, is_bsp);
+	printf("\n\n");
 	
 	//wait for hypapp main to execute on all the cpus
 	while(_xc_startup_hypappmain_counter < xcbootinfo->cpuinfo_numentries);

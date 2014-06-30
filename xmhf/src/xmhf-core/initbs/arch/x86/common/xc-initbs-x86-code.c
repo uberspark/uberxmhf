@@ -404,7 +404,7 @@ static struct {
 #define _SLAB_SPATYPE_SLAB_TRAMPOLINE			(0x4)
 
 #define _SLAB_SPATYPE_NOTASLAB					(0xFF00)
-//#define _SLAB_SPATYPE_TEST						(0xFF01)
+#define _SLAB_SPATYPE_TEST						(0xFF01)
 
 static u32 _xcinitbs_slab_getspatype(u32 slab_index, u32 spa){
 	u32 i;
@@ -412,7 +412,7 @@ static u32 _xcinitbs_slab_getspatype(u32 slab_index, u32 spa){
 	for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++){
 		u32 mask = (i == slab_index) ? 0 : _SLAB_SPATYPE_OTHER_SLAB_MASK;
 		
-		/*if(i == XMHF_SLAB_INITBS_INDEX && slab_index != XMHF_SLAB_INITBS_INDEX){
+		if(i == XMHF_SLAB_INITBS_INDEX && slab_index != XMHF_SLAB_INITBS_INDEX){
 			if(spa >= _slab_table[i].slab_code.start  && spa < _slab_table[i].slab_code.end)
 				return _SLAB_SPATYPE_TEST;
 			if (spa >= _slab_table[i].slab_rodata.start  && spa < _slab_table[i].slab_rodata.end)
@@ -420,10 +420,10 @@ static u32 _xcinitbs_slab_getspatype(u32 slab_index, u32 spa){
 			if (spa >= _slab_table[i].slab_rwdata.start  && spa < _slab_table[i].slab_rwdata.end)	
 				return _SLAB_SPATYPE_TEST;
 			if (spa >= _slab_table[i].slab_stack.start  && spa < _slab_table[i].slab_stack.end)	
-				return _SLAB_SPATYPE_NOTASLAB;
+				return _SLAB_SPATYPE_SLAB_STACK | mask;
 			if (spa >= _slab_table[i].slab_trampoline.start  && spa < _slab_table[i].slab_trampoline.end)	
 				return _SLAB_SPATYPE_TEST;
-		}else{*/
+		}else{
 			if(spa >= _slab_table[i].slab_code.start  && spa < _slab_table[i].slab_code.end)
 				return _SLAB_SPATYPE_SLAB_CODE | mask;
 			if (spa >= _slab_table[i].slab_rodata.start  && spa < _slab_table[i].slab_rodata.end)
@@ -434,7 +434,7 @@ static u32 _xcinitbs_slab_getspatype(u32 slab_index, u32 spa){
 				return _SLAB_SPATYPE_SLAB_STACK | mask;
 			if (spa >= _slab_table[i].slab_trampoline.start  && spa < _slab_table[i].slab_trampoline.end)	
 				return _SLAB_SPATYPE_SLAB_TRAMPOLINE | mask;
-		//}
+		}
 		
 	}	
 
@@ -474,9 +474,9 @@ static u64 _xcinitbs_slab_getptflagsforspa(u32 slab_index, u32 spa){
 			flags = (u64)(_PAGE_PRESENT | _PAGE_PSE); //present | read-only | pse;
 			break;
 	
-		//case _SLAB_SPATYPE_TEST:
-		//	flags = (u64)(_PAGE_PRESENT | _PAGE_PSE); //present | read-only | pse;
-		//	break;
+		case _SLAB_SPATYPE_TEST:
+			flags = (u64)(_PAGE_PRESENT | _PAGE_PSE); //present | read-only | pse;
+			break;
 
 	
 		default:
