@@ -81,7 +81,7 @@ void xmhf_runtime_entry(void){
 	xmhf_baseplatform_initialize();
 
 	//setup XMHF exception handler component
-	xmhf_xcphandler_initialize();
+	//xmhf_xcphandler_initialize();
 
 	#if defined (__DMAP__)
 	xmhf_dmaprot_reinitialize();
