@@ -56,6 +56,7 @@
 
 #define __XMHF_SLAB_CALLER_INDEX__ 	XMHF_SLAB_INITBS_INDEX
 #include <xc-init.h>
+#include <xcexhub.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
 
 /* originally within xc-baseplatform-x86vmx.c */
@@ -241,7 +242,7 @@ static u32 _cpucount = 0;
 
 //XXX: TODO: get rid of these externs and bring them in here as static
 extern arch_x86_gdtdesc_t _gdt;
-extern arch_x86_idtdesc_t _idt;
+static arch_x86_idtdesc_t _idt;
 
 //----------------------------------------------------------------------
 // functions
@@ -440,6 +441,7 @@ void xmhf_baseplatform_arch_initialize(void){
 
 	//initialize IDT
 	//xmhf_baseplatform_arch_x86_initializeIDT();
+	_idt = xcexhub_initialize();
 
 	//initialize TR/TSS
 	#ifndef __XMHF_VERIFICATION__
