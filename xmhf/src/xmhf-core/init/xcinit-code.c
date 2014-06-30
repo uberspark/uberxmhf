@@ -166,7 +166,9 @@ void init_entry(u32 cpuid, bool is_bsp){
 	while(_xc_startup_hypappmain_counter < xcbootinfo->cpuinfo_numentries);
 	
 	//start cpu in corresponding partition
-	printf("\n%s[%u]: starting in partition...", __FUNCTION__, context_desc.cpu_desc.cpu_index);
+	printf("\n%s[%u]: starting in partition...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
+	HALT();
+	
 	//xmhf_partition_start(context_desc.cpu_desc.cpu_index);
 	if(!xc_api_partition_startcpu(context_desc)){
 		printf("\n%s: should not be here. HALTING!", __FUNCTION__);
