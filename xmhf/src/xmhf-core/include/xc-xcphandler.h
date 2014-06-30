@@ -51,7 +51,7 @@
 #ifndef __XC_XCPHANDLER_H__
 #define __XC_XCPHANDLER_H__
 
-
+/*
 #ifndef __ASSEMBLY__
 
 
@@ -65,5 +65,6 @@ void xmhf_xcphandler_arch_initialize(void);
 
 
 #endif	//__ASSEMBLY__
+*/
 
 #endif //__XC_XCPHANDLER_H__
