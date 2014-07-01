@@ -1,0 +1,386 @@
+/*
+ * @XMHF_LICENSE_HEADER_START@
+ *
+ * eXtensible, Modular Hypervisor Framework (XMHF)
+ * Copyright (c) 2009-2012 Carnegie Mellon University
+ * Copyright (c) 2010-2012 VDG Inc.
+ * All Rights Reserved.
+ *
+ * Developed by: XMHF Team
+ *               Carnegie Mellon University / CyLab
+ *               VDG Inc.
+ *               http://xmhf.org
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in
+ * the documentation and/or other materials provided with the
+ * distribution.
+ *
+ * Neither the names of Carnegie Mellon or VDG Inc, nor the names of
+ * its contributors may be used to endorse or promote products derived
+ * from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ * @XMHF_LICENSE_HEADER_END@
+ */
+
+#include <xmhf.h>
+
+OUTPUT_ARCH("i386")
+
+ENTRY(xmhf_runtime_entry)
+
+MEMORY
+{
+  all (rwxai) : ORIGIN = 0x10200000, LENGTH = 254M 
+/*  slabroshareddatamem (rai) : ORIGIN = XMHF_SLAB_REGION_SHARED_RODATA, LENGTH = 16M
+  slabmem (rwxai) : ORIGIN = XMHF_SLAB_REGION_START, LENGTH = 112M */
+  unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
+}
+
+SECTIONS
+{
+	. = 0x10200000;
+
+	.header : {
+		*(.sharedro_xcbootinfo)
+		*(.sharedro_xcbootinfoptr)
+		*(.sharedro_slab_table)
+		. = ALIGN(0x200000);
+	} >all=0x0000
+
+	.slab_testslab : {
+		_slab_testslab_code_start = .;
+		_slab_testslab_entrypoint = .;
+		_objs_slab_testslab/testslab.slo(.slabcode)
+		. = ALIGN(0x200000);
+		_slab_testslab_code_end = .;
+		_slab_testslab_rodata_start = .;
+		_objs_slab_testslab/testslab.slo(.slabrodata)
+		. = ALIGN(0x200000);
+		_slab_testslab_rodata_end = .;
+		_slab_testslab_rwdata_start = .;
+		_objs_slab_testslab/testslab.slo(.slabrwdata)
+		. = ALIGN(0x200000);
+		_slab_testslab_rwdata_end = .;
+		_slab_testslab_stack_start = .;
+		_objs_slab_testslab/testslab.slo(.slabstack)
+		. = ALIGN(0x200000);
+		_slab_testslab_stack_end = .;
+		_slab_testslab_trampoline_start = .;
+		_objs_slab_testslab/testslab.slo(.slabtrampoline)
+		. = ALIGN(0x200000);
+		_slab_testslab_trampoline_end = .;
+	} >all=0x0000
+
+
+	.slab_xcinitbs : {
+		_slab_xcinitbs_code_start = .;
+		_slab_xcinitbs_entrypoint = .;
+		_objs_slab_xcinitbs/xcinitbs.slo(.slabcode)
+		. = ALIGN(0x200000);
+		_slab_xcinitbs_code_end = .;
+		_slab_xcinitbs_rodata_start = .;
+		_objs_slab_xcinitbs/xcinitbs.slo(.slabrodata)
+		. = ALIGN(0x200000);
+		_slab_xcinitbs_rodata_end = .;
+		_slab_xcinitbs_rwdata_start = .;
+		_objs_slab_xcinitbs/xcinitbs.slo(.slabrwdata)
+		. = ALIGN(0x200000);
+		_slab_xcinitbs_rwdata_end = .;
+		_slab_xcinitbs_stack_start = .;
+		_objs_slab_xcinitbs/xcinitbs.slo(.slabstack)
+		. = ALIGN(0x200000);
+		_slab_xcinitbs_stack_end = .;
+		_slab_xcinitbs_trampoline_start = .;
+		_objs_slab_xcinitbs/xcinitbs.slo(.slabtrampoline)
+		. = ALIGN(0x200000);
+		_slab_xcinitbs_trampoline_end = .;
+	} >all=0x0000
+
+	.slab_xcinit : {
+		_slab_xcinit_code_start = .;
+		_slab_xcinit_entrypoint = .;
+		_objs_slab_xcinit/xcinit.slo(.slabcode)
+		. = ALIGN(0x200000);
+		_slab_xcinit_code_end = .;
+		_slab_xcinit_rodata_start = .;
+		_objs_slab_xcinit/xcinit.slo(.slabrodata)
+		. = ALIGN(0x200000);
+		_slab_xcinit_rodata_end = .;
+		_slab_xcinit_rwdata_start = .;
+		_objs_slab_xcinit/xcinit.slo(.slabrwdata)
+		. = ALIGN(0x200000);
+		_slab_xcinit_rwdata_end = .;
+		_slab_xcinit_stack_start = .;
+		_objs_slab_xcinit/xcinit.slo(.slabstack)
+		. = ALIGN(0x200000);
+		_slab_xcinit_stack_end = .;
+		_slab_xcinit_trampoline_start = .;
+		_objs_slab_xcinit/xcinit.slo(.slabtrampoline)
+		. = ALIGN(0x200000);
+		_slab_xcinit_trampoline_end = .;
+	} >all=0x0000
+
+	.slab_xcihub : {
+		_slab_xcihub_code_start = .;
+		_slab_xcihub_entrypoint = .;
+		_objs_slab_xcihub/xcihub.slo(.slabcode)
+		. = ALIGN(0x200000);
+		_slab_xcihub_code_end = .;
+		_slab_xcihub_rodata_start = .;
+		_objs_slab_xcihub/xcihub.slo(.slabrodata)
+		. = ALIGN(0x200000);
+		_slab_xcihub_rodata_end = .;
+		_slab_xcihub_rwdata_start = .;
+		_objs_slab_xcihub/xcihub.slo(.slabrwdata)
+		. = ALIGN(0x200000);
+		_slab_xcihub_rwdata_end = .;
+		_slab_xcihub_stack_start = .;
+		_objs_slab_xcihub/xcihub.slo(.slabstack)
+		. = ALIGN(0x200000);
+		_slab_xcihub_stack_end = .;
+		_slab_xcihub_trampoline_start = .;
+		_objs_slab_xcihub/xcihub.slo(.slabtrampoline)
+		. = ALIGN(0x200000);
+		_slab_xcihub_trampoline_end = .;
+	} >all=0x0000
+
+	.slab_xccoreapi : {
+		_slab_xccoreapi_code_start = .;
+		_slab_xccoreapi_entrypoint = .;
+		_objs_slab_xccoreapi/xccoreapi.slo(.slabcode)
+		. = ALIGN(0x200000);
+		_slab_xccoreapi_code_end = .;
+		_slab_xccoreapi_rodata_start = .;
+		_objs_slab_xccoreapi/xccoreapi.slo(.slabrodata)
+		. = ALIGN(0x200000);
+		_slab_xccoreapi_rodata_end = .;
+		_slab_xccoreapi_rwdata_start = .;
+		_objs_slab_xccoreapi/xccoreapi.slo(.slabrwdata)
+		. = ALIGN(0x200000);
+		_slab_xccoreapi_rwdata_end = .;
+		_slab_xccoreapi_stack_start = .;
+		_objs_slab_xccoreapi/xccoreapi.slo(.slabstack)
+		. = ALIGN(0x200000);
+		_slab_xccoreapi_stack_end = .;
+		_slab_xccoreapi_trampoline_start = .;
+		_objs_slab_xccoreapi/xccoreapi.slo(.slabtrampoline)
+		. = ALIGN(0x200000);
+		_slab_xccoreapi_trampoline_end = .;
+	} >all=0x0000
+
+	.slab_xcexhub : {
+		_slab_xcexhub_code_start = .;
+		_slab_xcexhub_entrypoint = .;
+		_objs_slab_xcexhub/xcexhub.slo(.slabcode)
+		. = ALIGN(0x200000);
+		_slab_xcexhub_code_end = .;
+		_slab_xcexhub_rodata_start = .;
+		_objs_slab_xcexhub/xcexhub.slo(.slabrodata)
+		. = ALIGN(0x200000);
+		_slab_xcexhub_rodata_end = .;
+		_slab_xcexhub_rwdata_start = .;
+		_objs_slab_xcexhub/xcexhub.slo(.slabrwdata)
+		. = ALIGN(0x200000);
+		_slab_xcexhub_rwdata_end = .;
+		_slab_xcexhub_stack_start = .;
+		_objs_slab_xcexhub/xcexhub.slo(.slabstack)
+		. = ALIGN(0x200000);
+		_slab_xcexhub_stack_end = .;
+		_slab_xcexhub_trampoline_start = .;
+		_objs_slab_xcexhub/xcexhub.slo(.slabtrampoline)
+		. = ALIGN(0x200000);
+		_slab_xcexhub_trampoline_end = .;
+	} >all=0x0000
+
+	.slab_xhhyperdep : {
+		_slab_xhhyperdep_code_start = .;
+		_slab_xhhyperdep_entrypoint = .;
+		_objs_slab_xhhyperdep/xhhyperdep.slo(.slabcode)
+		. = ALIGN(0x200000);
+		_slab_xhhyperdep_code_end = .;
+		_slab_xhhyperdep_rodata_start = .;
+		_objs_slab_xhhyperdep/xhhyperdep.slo(.slabrodata)
+		. = ALIGN(0x200000);
+		_slab_xhhyperdep_rodata_end = .;
+		_slab_xhhyperdep_rwdata_start = .;
+		_objs_slab_xhhyperdep/xhhyperdep.slo(.slabrwdata)
+		. = ALIGN(0x200000);
+		_slab_xhhyperdep_rwdata_end = .;
+		_slab_xhhyperdep_stack_start = .;
+		_objs_slab_xhhyperdep/xhhyperdep.slo(.slabstack)
+		. = ALIGN(0x200000);
+		_slab_xhhyperdep_stack_end = .;
+		_slab_xhhyperdep_trampoline_start = .;
+		_objs_slab_xhhyperdep/xhhyperdep.slo(.slabtrampoline)
+		. = ALIGN(0x200000);
+		_slab_xhhyperdep_trampoline_end = .;
+	} >all=0x0000
+
+	.shared : {
+		*(.text)
+		*(.data)
+		*(.rodata)
+		*(.rodata.str1.1)
+		*(.comment)
+		*(.eh_frame)
+		*(.bss)
+		*(.palign_data)
+		*(.stack)
+		. = ALIGN(0x200000);
+	} >all=0x0000
+
+	/*.text : {
+		*(.s_rpb)
+		*(.text)
+		. = ALIGN(4096);    
+	} >all =0x9090 
+
+	.data : {
+		*(.data)
+		*(.rodata)
+		*(.rodata.str1.1)
+		*(.comment)
+		*(.eh_frame)
+		*(.bss)
+		. = ALIGN(4096);    
+	} >all =0x0000 
+
+	.palign_data : {
+		*(.palign_data)
+		. = ALIGN(4096);    
+	} >all =0x0000 
+
+	.stack : {
+		*(.stack)
+		. = ALIGN(0x01000000);    
+	} >all =0x0000
+	*/
+	
+
+	/* shared slab read-only data area */
+	/*. = XMHF_SLAB_REGION_SHARED_RODATA; 
+	.slabroshareddata : {
+		_slab_table = .;
+		_objs_slab/xmhf-slab.slo(.slab_header)
+		_objs_initbs/xc-initbs.slo(.slab_header)
+		_objs_init/xc-init.slo(.slab_header)
+		_objs_ihub/xc-ihub.slo(.slab_header)
+		_objs_coreapi/xc-coreapi.slo(.slab_header)
+		_objs_hypapp-hyperdep/hypapp-hyperdep.slo(.slab_header)
+		. = ALIGN(0x01000000);
+	} >slabroshareddatamem =0x0000*/
+	
+
+	/* [test] slabs start */
+	/*. = XMHF_SLAB_REGION_START;
+	.slabtest : {
+		_test_slab_header = . ;
+		_objs_slab/xmhf-slab.slo(*)
+		. = ALIGN(0x01000000);
+	} >slabmem =0x0000
+
+	. = XMHF_SLAB_INITBS_REGION_START;
+	.slabinitbs : {
+		_initbs_slab_header = . ;
+		_objs_initbs/xc-initbs.slo(*)
+		. = ALIGN(0x01000000);
+	} >slabmem =0x0000
+	
+	. = XMHF_SLAB_INIT_REGION_START;
+	.slabinit : {
+		_init_slab_header = . ;
+		_objs_init/xc-init.slo(*)
+		. = ALIGN(0x01000000);
+	} >slabmem =0x0000
+
+	. = XMHF_SLAB_IHUB_REGION_START;
+	.slabihub : {
+		_ihub_slab_header = . ;
+		_objs_ihub/xc-ihub.slo(*)
+		. = ALIGN(0x01000000);
+	} >slabmem =0x0000
+
+	. = XMHF_SLAB_COREAPI_REGION_START;
+	.slabcoreapi : {
+		_coreapi_slab_header = . ;
+		_objs_coreapi/xc-coreapi.slo(*)
+		. = ALIGN(0x02000000);
+	} >slabmem =0x0000
+
+	. = XMHF_SLAB_HYPAPP_HYPERDEP_REGION_START;
+	.slabhypapphyperdep : {
+		_hypapphyperdep_slab_header = . ;
+		_objs_hypapp-hyperdep/hypapp-hyperdep.slo(*)
+		. = ALIGN(0x01000000);
+	} >slabmem =0x0000
+	*/
+
+	/*
+	.slab_xxx : {
+		_slab_xxx_code_start = .;
+		_slab_xxx_entry_point = .;
+		_objs_slab_xxx/xxx.slo(slabcode)
+		. = ALIGN(0x200000);
+		_slab_xxx_code_end = .;
+		_slab_xxx_rodata_start = .;
+		_objs_slab_xxx/xxx.slo(slabrodata)
+		. = ALIGN(0x200000);
+		_slab_xxx_rodata_end = .;
+		_slab_xxx_rwdata_start = .;
+		_objs_slab_xxx/xxx.slo(slabrwdata)
+		. = ALIGN(0x200000);
+		_slab_xxx_rwdata_end = .;
+		_slab_xxx_stack_start = .;
+		_objs_slab_xxx/xxx.slo(slabstack)
+		. = ALIGN(0x200000);
+		_slab_xxx_stack_end = .;
+		_slab_xxx_trampoline_start = .;
+		_objs_slab_xxx/xxx.slo(slabtrampoline)
+		. = ALIGN(0x200000);
+		_slab_xxx_trampoline_end = .;
+	} >slabmem=0x0000
+
+	*/
+
+
+	/* this is to cause the link to fail if there is
+	* anything we didn't explicitly place.
+	* when this does cause link to fail, temporarily comment
+	* this part out to see what sections end up in the output
+	* which are not handled above, and handle them.
+	*/
+	.unaccounted : {
+	*(*)
+	} >unaccounted
+	
+	
+	/* paramcore = core parameter area (1MB in size) */
+	/*. = 0x1CC00000;
+	paramcore_start = .;*/
+	
+	/* paramhypapp = hypapp parameter area (1MB in size) */
+	/*. = 0x1CE00000;
+	paramhypapp_start = .;*/
+}

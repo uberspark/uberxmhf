@@ -37,8 +37,8 @@ export LIBBAREMETAL_SRC := $(realpath @LIBBAREMETAL_SRC@)
 export XMHFCORE_SRC := $(realpath xmhf/src/xmhf-core)
 XMHFCORE_INC = -I$(realpath xmhf/src/xmhf-core/) -I$(realpath xmhf/src/xmhf-core/include) -I$(realpath xmhf/src/xmhf-core/include/arch/x86/common) -I$(realpath xmhf/src/xmhf-core/include/arch/x86/vmx)
 
-# libxmhfcore source location
-export LIBXMHFCORE_SRC := $(realpath xmhf/src/libxmhfcore)
+## libxmhfcore source location
+#export LIBXMHFCORE_SRC := $(realpath xmhf/src/libxmhfcore)
 
 # libxmhfhw source location
 export LIBXMHFHW_SRC := $(realpath xmhf/src/libxmhfhw)
@@ -98,6 +98,8 @@ export builddir=@builddir@
 
 export APP_ARCHIVE := $(APP_ROOT)/xmhfhypapp.a
 
+export XMHF_HYPAPPS := @XMHF_HYPAPPS@
+export XMHF_HYPAPPS_DIRS := $(realpath $(XMHF_HYPAPPS))
 
 ##################################################################################
 ### BEGIN Variables controlled using autoconf
@@ -265,8 +267,14 @@ export VFLAGS
 CFLAGS = $(FLAGS)
 export CFLAGS
 
+ifeq ($(strip $(XMHF_HYPAPPS)),)
 .PHONY: all
-all: subdirs 
+all: subdirs install-dev
+else
+.PHONY: all
+all: subdirs install-dev build-hypapps
+endif
+
 
 
 .PHONY: subdirs
@@ -293,13 +301,13 @@ subdirs: $(LIBBAREMETAL_SRC) $(XMHFCORE_SRC)
 	@echo **************************************************************
 	@echo libxmhfdebug.a build SUCCESS
 	@echo **************************************************************
-	@echo **************************************************************
-	@echo Building libxmhfcore...
-	@echo **************************************************************
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBXMHFCORE_SRC)/Makefile -w all
-	@echo **************************************************************
-	@echo libxmhfcore.a build SUCCESS
-	@echo **************************************************************
+	#@echo **************************************************************
+	#@echo Building libxmhfcore...
+	#@echo **************************************************************
+	#cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBXMHFCORE_SRC)/Makefile -w all
+	#@echo **************************************************************
+	#@echo libxmhfcore.a build SUCCESS
+	#@echo **************************************************************
 	@echo **************************************************************
 	@echo Building XMHF core...
 	@echo **************************************************************
@@ -327,7 +335,7 @@ subdirs: $(LIBBAREMETAL_SRC) $(XMHFCORE_SRC)
 	@echo **************************************************************
 	@echo --------------------------------------------------------------
 	@echo generating final binaries...
-	cd $(XMHF_OBJDIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin ./_objs_xmhf-secureloader/xmhf-secureloader.bin ./_objs_xmhf-runtime/xmhf-runtime.bin > ./xmhf.tmp.img
+	cd $(XMHF_OBJDIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin ./_objs_xmhf-secureloader/xmhf-secureloader.bin ./_objs_xmhf-core/xmhf-core.bin > ./xmhf.tmp.img
 	cd $(XMHF_OBJDIR) && gzip -c ./xmhf.tmp.img > ./xmhf-$(TARGET_HWPLATFORM).bin.gz
 	cd $(XMHF_OBJDIR) && $(RM) -rf ./xmhf.tmp.img 
 	@echo xmhf binary generation SUCCESS
@@ -353,7 +361,7 @@ install-dev:
 	$(MKDIR) -p $(prefix)/lib/xmhf
 	$(MKDIR) -p $(prefix)/include/xmhf
 	@echo prepared target folders $(prefix)/lib/xmhf and $(prefix)/include/xmhf
-	$(CP) -f $(XMHF_OBJDIR)/_objs_libxmhfcore/libxmhfcore.a $(prefix)/lib/xmhf/libxmhfcore.a
+	#$(CP) -f $(XMHF_OBJDIR)/_objs_libxmhfcore/libxmhfcore.a $(prefix)/lib/xmhf/libxmhfcore.a
 	$(CP) -f $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a $(prefix)/lib/xmhf/libbaremetal.a
 	@echo installed XMHF development libraries to $(prefix)/lib/xmhf/
 	$(MKDIR) -p $(prefix)/include/xmhf/include
@@ -398,6 +406,14 @@ install-dev:
 test:
 	cd $(APP_ROOT) && $(MAKE) -w test
 
+
+.PHONY: build-hypapps
+build-hypapps:
+	@echo --------------------------------------------------------------
+	@echo preparing to build hypapps
+	@echo -------------------------------------------------------------- 
+
+
 #.PHONY: clean distclean init-late-clean
 .PHONY: clean distclean 
 clean:
@@ -422,13 +438,13 @@ clean:
 	@echo **************************************************************
 	@echo libxmhfdebug.a clean SUCCESS
 	@echo **************************************************************
-	@echo **************************************************************
-	@echo Cleaning libxmhfcore...
-	@echo **************************************************************
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBXMHFCORE_SRC)/Makefile -w clean
-	@echo **************************************************************
-	@echo libxmhfcore.a clean SUCCESS
-	@echo **************************************************************
+	#@echo **************************************************************
+	#@echo Cleaning libxmhfcore...
+	#@echo **************************************************************
+	#cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBXMHFCORE_SRC)/Makefile -w clean
+	#@echo **************************************************************
+	#@echo libxmhfcore.a clean SUCCESS
+	#@echo **************************************************************
 	@echo **************************************************************
 	@echo Cleaning XMHF core...
 	@echo **************************************************************

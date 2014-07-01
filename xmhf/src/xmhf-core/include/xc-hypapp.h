@@ -66,12 +66,12 @@
 
 //XMHF hypapp callback declarations 
 //TODO: need to go into libxmhfcore dev headers
-extern u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb);
+/*extern u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb);
 extern u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param);	
 extern u32 xmhf_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch_param_t xc_hypapp_arch_param);  
 extern u32 xmhf_hypapp_handleintercept_hptfault(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code);
 extern void xmhf_hypapp_handleshutdown(context_desc_t context_desc);
-
+*/
 
 //XMHF hypapp callbacks referenced by the XMHF core
 //note: these are the interfaces core uses to invoke hypapp callbacks
@@ -81,12 +81,12 @@ extern u32 xc_hypapp_handleintercept_trap(xc_cpu_t *xc_cpu, xc_hypapp_arch_param
 extern u32 xc_hypapp_handleintercept_hptfault(xc_cpu_t *xc_cpu, u64 gpa, u64 gva, u64 error_code);
 extern void xc_hypapp_handleshutdown(xc_cpu_t *xc_cpu);
 */
-extern u32 xc_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb);
+/*extern u32 xc_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb);
 extern u32 xc_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param);	
 extern u32 xc_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch_param_t xc_hypapp_arch_param); 
 extern u32 xc_hypapp_handleintercept_hptfault(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code);
 extern void xc_hypapp_handleshutdown(context_desc_t context_desc);
-
+*/
 #endif	//__ASSEMBLY__
 
 #endif	// __XMHF_HYPAPP_H__

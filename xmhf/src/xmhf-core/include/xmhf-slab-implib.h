@@ -44,73 +44,38 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// xmhf.h - main XMHF header file 
+// XMHF slab import library decls./defns.
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHF_H_
-#define __XMHF_H_
+#ifndef __XMHF_SLAB_IMPLIB_H__
+#define __XMHF_SLAB_IMPLIB_H__
+
+
+#define	XMHF_SLAB_TEST_FNENTRY0	0
+#define	XMHF_SLAB_TEST_FNENTRY1	1
+#define XMHF_SLAB_TEST_FNENTRY2	2
+#define XMHF_SLAB_TEST_FNENTRY3	3
 
 #ifndef __ASSEMBLY__
 
-//pull in required libxmhfc C includes
-#include <stdint.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#ifndef __XMHF_VERIFICATION__
-		#include <assert.h>
-#endif
-#endif // __ASSEMBLY__ 
+#ifdef __XMHF_SLAB_CALLER_INDEX__ 
 
-//pull in required crypto (SHA-1)
-//libXMHFcrypto
-//#ifndef __ASSEMBLY__
-//	#include <xmhfcrypto.h>
-//	#include <sha1.h>
-//#endif // __ASSEMBLY__
+XMHF_SLAB_DEFIMPORTFN(void entry_0(void), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_INDEX_TEMPLATE, XMHF_SLAB_TEST_FNENTRY0, (0), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
+XMHF_SLAB_DEFIMPORTFN(u32 entry_1(u32 param1, u32 param2), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_INDEX_TEMPLATE, XMHF_SLAB_TEST_FNENTRY1, (sizeof(u32)+sizeof(u32)), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
+XMHF_SLAB_DEFIMPORTFN(context_desc_t entry_2(u32 cpu_index, bool isbsp, u32 partition_index), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_INDEX_TEMPLATE, XMHF_SLAB_TEST_FNENTRY2, (sizeof(u32)+sizeof(bool)+sizeof(u32)+sizeof(u32)), sizeof(context_desc_t), XMHF_SLAB_FN_RETTYPE_AGGREGATE) )
+XMHF_SLAB_DEFIMPORTFN(xc_hypapp_arch_param_t entry_3(context_desc_t context_desc, xc_hypapp_arch_param_t archparam), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_INDEX_TEMPLATE, XMHF_SLAB_TEST_FNENTRY3, (sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t)+sizeof(u32)), sizeof(xc_hypapp_arch_param_t), XMHF_SLAB_FN_RETTYPE_AGGREGATE))
+
+#else 	//!__XMHF_SLAB_CALLER_INDEX__
+
+void entry_0(void);
+u32 entry_1(u32 param1, u32 param2);
+context_desc_t entry_2(u32 cpu_index, bool isbsp, u32 partition_index);
+xc_hypapp_arch_param_t entry_3(context_desc_t context_desc, xc_hypapp_arch_param_t archparam);
+
+#endif	//__XMHF_SLAB_CALLER_INDEX__
 
 
-//pull in required TPM library
-//libtpm
-//#ifndef __ASSEMBLY__
-//	#include <tpm.h>
-//#endif // __ASSEMBLY__ 
-
-#include <xmhf-config.h>		//XMHF platform/arch config
-#include <xmhf-types.h>			//XMHF specific base types
-#include <xmhf-debug.h>			//libxmhfdebug
-#include <xmhf-error.h> 
-#include <xmhf-slab.h>
-
-#ifdef __XMHF_VERIFICATION__
-	//include verification related primitives
-	#include <xmhf-verification.h>
-#endif //__XMHF_VERIFICATION__
-
-/*
-//forward declaration of runtime parameter block
-#ifndef __ASSEMBLY__
-extern RPB *rpb;	
-#endif	//__ASSEMBLY__
+#endif //__ASSEMBLY__
 
 
-//----------------------------------------------------------------------
-// component headers
-#include <xmhf-baseplatform.h>	//XMHF base platform component
-#include <xmhf-memprot.h>		//XMHF memory protection component
-#include <xmhf-dmaprot.h>		//XMHF DMA protection component
-#include <xmhf-partition.h>		//XMHF partition component
-#include <xmhf-smpguest.h>		//XMHF SMP guest component
-#include <xmhf-parteventhub.h>	//XMHF partition event-hub component
-#include <xmhf-xcphandler.h>	//XMHF exception handler component
-#include <xmhf-tpm.h>			//XMHF Trusted Platform Module component
-#include <xmhf-sl.h>			//XMHF secure loader component
-#include <xmhf-runtime.h>		//XMHF secure loader component
-#include <xmhf-app.h>			//XMHF Application callback declarations
-#include <xmhf-apihub.h>		//XMHF core API interface component
-*/
-
-#endif /* __XMHF_H_ */
+#endif //__XMHF_SLAB_IMPLIB__

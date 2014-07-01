@@ -78,19 +78,19 @@ extern RPB *rpb;
 */
 
 #include <xc-types.h>			//core specific data types
-#include <xc-shareddata.h>		//core shared data
+//#include <xc-shareddata.h>		//core shared data
 
 //----------------------------------------------------------------------
 // component headers
 #include <xc-baseplatform.h>	//base platform component
 #include <xc-dmaprot.h>			//DMA protection component
 #include <xc-richguest.h>		//rich guest component
-#include <xc-xcphandler.h>		//exception handler component
+//#include <xc-xcphandler.h>		//exception handler component
 #include <xc-tpm.h>				//Trusted Platform Module component
-#include <xc-startup.h>			//secure loader component
+//#include <xc-startup.h>			//secure loader component
 #include <xc-hypapp.h>			//hypapp callback declarations
-#include <xc-apihub.h>			//core API interface component
+//#include <xc-apihub.h>			//core API interface component
 
-#include <xc-coreapi.h>			//core API
+//#include <xc-coreapi.h>			//core API
 
 #endif /* __XMHF_CORE_H_ */
