@@ -117,7 +117,7 @@ void xmhf_runtime_entry(void){
 	//setup platform exception handling
 	xcinitbs_arch_initialize_exception_handling();
 
-	asm volatile("int $0x03 \r\n");
+	//asm volatile("int $0x03 \r\n");
 
 	//[test] slab
 	{
