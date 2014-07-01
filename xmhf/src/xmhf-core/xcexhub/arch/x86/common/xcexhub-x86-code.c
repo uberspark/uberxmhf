@@ -125,6 +125,7 @@ __attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u8 _x
 						"movl %2, %%esp \r\n"						\
 																	\
 						"pushal	\r\n"								\
+																	\
 						"movw	%3, %%ax\r\n"						\
 						"movw	%%ax, %%ds\r\n"						\
 						"movl 	%%esp, %%eax\r\n"					\
@@ -132,11 +133,12 @@ __attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u8 _x
 						"pushl	%4\r\n" 							\
 						"call	xmhf_xcphandler_arch_hub\r\n"		\
 						"addl  	$0x08, %%esp\r\n"					\
+																	\
 						"popal	 \r\n"								\
 																	\
-						"btsl	$0, %0		\r\n"					\
-																	\
 						"movl %1, %%esp \r\n"						\
+																	\
+						"btsl	$0, %0		\r\n"					\
 																	\
 						"iretl\r\n"									\
 					:												\
