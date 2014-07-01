@@ -104,12 +104,18 @@ void xmhf_baseplatform_arch_x86_initializeIDT(void){
 */
 
 __attribute__((section(".stack"))) static u32 _xcexhub_exception_lock = 1;
-__attribute__((section(".stack"))) static u32 _xcexhub_exception_savedesp = 0;
-__attribute__((section(".stack"))) static u32 _xcexhub_exception_savedcr3 = 0;
+__attribute__((section(".stack"))) static u32 _xcexhub_exception_savedesp[MAX_PLATFORM_CPUS];
+__attribute__((section(".stack"))) static u32 _xcexhub_exception_savedesp_index = &_xcexhub_exception_savedesp[0];
+//__attribute__((section(".stack"))) static u32 _xcexhub_exception_savedcr3 = 0;
 //exclusive exception handling stack, we switch to this stack if there
 //are any exceptions during hypapp execution
-__attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u8 _xcexhub_exception_stack[PAGE_SIZE_4K];
+__attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u8 _xcexhub_exception_stack[MAX_PLATFORM_CPUS][PAGE_SIZE_4K];
+__attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u32 _xcexhub_exception_stack_index = &_xcexhub_exception_stack[1];
 
+
+//XXX: TODO: we can't use a lock for the entire exception handling below since out current
+//quiesce logic holds up every core within the NMI handler; this needs to be reentrant so
+//we need to operate on core-specific save structures
 
 #define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
 	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
@@ -120,14 +126,19 @@ __attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u8 _x
 						"btrl	$0, %0	\r\n"						\	
 						"jnc 1b \r\n"   							\
 																	\
-						"movl %%esp, %1 \r\n"						\
-																	\
-						"movl %2, %%esp \r\n"						\
-																	\
-						"pushal	\r\n"								\
+						"xchg %%esp, %1 \r\n"						\ //esp = current _xcehub_exception_stack_index
+						"push %1 \r\n"					//esp on esxception entry
+						"pushal \r\n"
+						"movl %esp, %eax"
+						"add sizeof(pushal)+4, %eax"					//eax = current _xcehub_exception_stack_index
+						"add PAGE_SIZE_4K, eax \r\n"
+						"movl eax, %1 \r\n"							//_xcehub_exception_stack_index = next stack index
+						
+						
+						"btsl	$0, %0		\r\n"					\
 																	\
 						"movl %%cr3, %%eax \r\n"					\
-						"movl %%eax, %3 \r\n"						\
+						"push eax \r\n"				\
 																	\
 						"movl %4, %%eax \r\n"						\
 						"movl %%eax, %%cr3 \r\n"					\
@@ -140,14 +151,13 @@ __attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u8 _x
 						"call	xmhf_xcphandler_arch_hub\r\n"		\
 						"addl  	$0x08, %%esp\r\n"					\
 																	\
-						"movl %3, %%eax \r\n"						\
+						"popl %%eax \r\n"						\
 						"movl %%eax, %%cr3 \r\n"					\
 																	\
 						"popal	 \r\n"								\
 																	\
-						"movl %1, %%esp \r\n"						\
+						"pop %%esp \r\n"						\
 																	\
-						"btsl	$0, %0		\r\n"					\
 																	\
 						"iretl\r\n"									\
 					:												\
