@@ -439,10 +439,6 @@ void xmhf_baseplatform_arch_initialize(void){
 	//initialize IO privilege level
 	xmhf_baseplatform_arch_x86_initializeIOPL();
 
-	//initialize IDT
-	//xmhf_baseplatform_arch_x86_initializeIDT();
-	_idt = xcexhub_initialize();
-
 	//initialize TR/TSS
 	#ifndef __XMHF_VERIFICATION__
 	xmhf_baseplatform_arch_x86_initializeTSS();
@@ -465,6 +461,11 @@ void xmhf_baseplatform_arch_initialize(void){
 
 }
 
+void xcinitbs_arch_initialize_exception_handling(void){
+	printf("\n%s: proceeding to invoke xcexhub_initialize...", __FUNCTION__);
+	_idt = xcexhub_initialize();
+	printf("\n%s: xcexhub_initialize completed successfully.", __FUNCTION__);
+}
 
 //initialize SMP
 void xmhf_baseplatform_arch_smpinitialize(void){
