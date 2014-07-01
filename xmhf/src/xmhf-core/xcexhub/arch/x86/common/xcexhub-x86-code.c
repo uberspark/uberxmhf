@@ -193,6 +193,8 @@ arch_x86_idtdesc_t xcexhub_initialize(void){
 								//present=1, DPL=11b, system=0, type=1110b
 	}
 	
+	xmhf_baseplatform_arch_x86_initializeIDT();
+	
 	printf("\n%s: IDT setup done.", __FUNCTION__);
 	return _idt;
 }
