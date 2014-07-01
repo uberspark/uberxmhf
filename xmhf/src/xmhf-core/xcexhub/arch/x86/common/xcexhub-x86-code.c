@@ -126,42 +126,41 @@ __attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u32 _
 						"btrl	$0, %0	\r\n"						\	
 						"jnc 1b \r\n"   							\
 																	\
-						"xchg %%esp, %1 \r\n"						\ //esp = current _xcehub_exception_stack_index
-						"push %1 \r\n"					//esp on esxception entry
-						"pushal \r\n"
-						"movl %esp, %eax"
-						"add sizeof(pushal)+4, %eax"					//eax = current _xcehub_exception_stack_index
-						"add PAGE_SIZE_4K, eax \r\n"
-						"movl eax, %1 \r\n"							//_xcehub_exception_stack_index = next stack index
-						
-						
+						"xchg %%esp, %1 \r\n"						\ 	
+						"pushl %1 \r\n"								\	
+						"pushal \r\n"								\
+						"movl %%esp, %%eax \r\n"					\
+						"addl $36, %%eax \r\n"						\	
+						"addl $4096, %%eax \r\n"					\
+						"movl %%eax, %1 \r\n"						\	
+																	\
 						"btsl	$0, %0		\r\n"					\
 																	\
 						"movl %%cr3, %%eax \r\n"					\
-						"push eax \r\n"				\
+						"pushl %%eax \r\n"							\
 																	\
-						"movl %4, %%eax \r\n"						\
+						"movl %2, %%eax \r\n"						\
 						"movl %%eax, %%cr3 \r\n"					\
 																	\
-						"movw	%5, %%ax\r\n"						\
+						"movw	%3, %%ax\r\n"						\
 						"movw	%%ax, %%ds\r\n"						\
 						"movl 	%%esp, %%eax\r\n"					\
 						"pushl 	%%eax\r\n"							\
-						"pushl	%6\r\n" 							\
+						"pushl	%4\r\n" 							\
 						"call	xmhf_xcphandler_arch_hub\r\n"		\
 						"addl  	$0x08, %%esp\r\n"					\
 																	\
-						"popl %%eax \r\n"						\
+						"popl %%eax \r\n"							\
 						"movl %%eax, %%cr3 \r\n"					\
 																	\
 						"popal	 \r\n"								\
 																	\
-						"pop %%esp \r\n"						\
+						"pop %%esp \r\n"							\
 																	\
 																	\
 						"iretl\r\n"									\
 					:												\
-					:	"m" (_xcexhub_exception_lock), "m" (_xcexhub_exception_savedesp), "i"((u32)&_xcexhub_exception_stack + (u32)PAGE_SIZE_4K), "m" (_xcexhub_exception_savedcr3), "m" (_slab_table[XMHF_SLAB_XCEXHUB_INDEX].slab_macmid), "i" (__DS_CPL0), "i" (vector)				\
+					:	"m" (_xcexhub_exception_lock), "m" (_xcexhub_exception_stack_index), "m" (_slab_table[XMHF_SLAB_XCEXHUB_INDEX].slab_macmid), "i" (__DS_CPL0), "i" (vector)				\
 		);															\
 	}\
 
