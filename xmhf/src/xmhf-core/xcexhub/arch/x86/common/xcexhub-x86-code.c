@@ -69,9 +69,6 @@ static arch_x86_idtdesc_t _idt __attribute__(( aligned(16) )) = {
 	.base=(u32)&_idt_start,
 };
 
-//exclusive exception handling stack, we switch to this stack if there
-//are any exceptions during hypapp execution
-static u8 _exceptionstack[PAGE_SIZE_4K] __attribute__((section(".stack")));
 
 
 //initialize IDT
@@ -107,6 +104,11 @@ void xmhf_baseplatform_arch_x86_initializeIDT(void){
 */
 
 __attribute__((section(".stack"))) static u32 _xcexhub_exception_lock = 1;
+__attribute__((section(".stack"))) static u32 _xcexhub_exception_savedesp = 0;
+__attribute__((section(".stack"))) static u32 _xcexhub_exception_savedcr3 = 0;
+//exclusive exception handling stack, we switch to this stack if there
+//are any exceptions during hypapp execution
+__attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u8 _xcexhub_exception_stack[PAGE_SIZE_4K];
 
 
 #define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
@@ -118,21 +120,27 @@ __attribute__((section(".stack"))) static u32 _xcexhub_exception_lock = 1;
 						"btrl	$0, %0	\r\n"						\	
 						"jnc 1b \r\n"   							\
 																	\
+						"movl %%esp, %1 \r\n"						\
+																	\
+						"movl %2, %%esp \r\n"						\
+																	\
 						"pushal	\r\n"								\
-						"movw	%1, %%ax\r\n"						\
+						"movw	%3, %%ax\r\n"						\
 						"movw	%%ax, %%ds\r\n"						\
 						"movl 	%%esp, %%eax\r\n"					\
 						"pushl 	%%eax\r\n"							\
-						"pushl	%2\r\n" 							\
+						"pushl	%4\r\n" 							\
 						"call	xmhf_xcphandler_arch_hub\r\n"		\
 						"addl  	$0x08, %%esp\r\n"					\
 						"popal	 \r\n"								\
 																	\
 						"btsl	$0, %0		\r\n"					\
 																	\
+						"movl %1, %%esp \r\n"						\
+																	\
 						"iretl\r\n"									\
 					:												\
-					:	"m" (_xcexhub_exception_lock), "i" (__DS_CPL0), "i" (vector)				\
+					:	"m" (_xcexhub_exception_lock), "m" (_xcexhub_exception_savedesp), "i"((u32)&_xcexhub_exception_stack + (u32)PAGE_SIZE_4K), "i" (__DS_CPL0), "i" (vector)				\
 		);															\
 	}\
 
