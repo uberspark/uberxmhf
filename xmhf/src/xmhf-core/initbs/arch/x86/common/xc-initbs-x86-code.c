@@ -402,6 +402,17 @@ static u32 _xcinitbs_slab_getspatype(u32 slab_index, u32 spa){
 				return _SLAB_SPATYPE_SLAB_STACK | mask;
 			if (spa >= _slab_table[i].slab_trampoline.start  && spa < _slab_table[i].slab_trampoline.end)	
 				return _SLAB_SPATYPE_TEST;
+		}else if (i == XMHF_SLAB_XCEXHUB_INDEX && slab_index != XMHF_SLAB_XCEXHUB_INDEX){
+			if(spa >= _slab_table[i].slab_code.start  && spa < _slab_table[i].slab_code.end)
+				return _SLAB_SPATYPE_TEST;
+			if (spa >= _slab_table[i].slab_rodata.start  && spa < _slab_table[i].slab_rodata.end)
+				return _SLAB_SPATYPE_TEST;
+			if (spa >= _slab_table[i].slab_rwdata.start  && spa < _slab_table[i].slab_rwdata.end)	
+				return _SLAB_SPATYPE_TEST;
+			if (spa >= _slab_table[i].slab_stack.start  && spa < _slab_table[i].slab_stack.end)	
+				return _SLAB_SPATYPE_SLAB_STACK | mask;
+			if (spa >= _slab_table[i].slab_trampoline.start  && spa < _slab_table[i].slab_trampoline.end)	
+				return _SLAB_SPATYPE_TEST;
 		}else{
 			if(spa >= _slab_table[i].slab_code.start  && spa < _slab_table[i].slab_code.end)
 				return _SLAB_SPATYPE_SLAB_CODE | mask;
