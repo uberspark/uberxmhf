@@ -129,11 +129,14 @@ __attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u8 _x
 						"movl %%cr3, %%eax \r\n"					\
 						"movl %%eax, %3 \r\n"						\
 																	\
-						"movw	%4, %%ax\r\n"						\
+						"movl %4, %%eax \r\n"						\
+						"movl %%eax, %%cr3 \r\n"					\
+																	\
+						"movw	%5, %%ax\r\n"						\
 						"movw	%%ax, %%ds\r\n"						\
 						"movl 	%%esp, %%eax\r\n"					\
 						"pushl 	%%eax\r\n"							\
-						"pushl	%5\r\n" 							\
+						"pushl	%6\r\n" 							\
 						"call	xmhf_xcphandler_arch_hub\r\n"		\
 						"addl  	$0x08, %%esp\r\n"					\
 																	\
@@ -148,7 +151,7 @@ __attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u8 _x
 																	\
 						"iretl\r\n"									\
 					:												\
-					:	"m" (_xcexhub_exception_lock), "m" (_xcexhub_exception_savedesp), "i"((u32)&_xcexhub_exception_stack + (u32)PAGE_SIZE_4K), "m" (_xcexhub_exception_savedcr3), "i" (__DS_CPL0), "i" (vector)				\
+					:	"m" (_xcexhub_exception_lock), "m" (_xcexhub_exception_savedesp), "i"((u32)&_xcexhub_exception_stack + (u32)PAGE_SIZE_4K), "m" (_xcexhub_exception_savedcr3), "m" (_slab_table[XMHF_SLAB_XCEXHUB_INDEX].slab_macmid), "i" (__DS_CPL0), "i" (vector)				\
 		);															\
 	}\
 
