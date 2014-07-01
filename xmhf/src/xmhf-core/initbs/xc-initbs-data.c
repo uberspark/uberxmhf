@@ -162,6 +162,18 @@ extern u8 _slab_xccoreapi_trampoline_start[];
 extern u8 _slab_xccoreapi_trampoline_end[];														
 extern u8 _slab_xccoreapi_entrypoint[];	
 
+extern u8 _slab_xcexhub_code_start[];													
+extern u8 _slab_xcexhub_code_end[];														
+extern u8 _slab_xcexhub_rodata_start[];													
+extern u8 _slab_xcexhub_rodata_end[];													
+extern u8 _slab_xcexhub_rwdata_start[];													
+extern u8 _slab_xcexhub_rwdata_end[];													
+extern u8 _slab_xcexhub_stack_start[];													
+extern u8 _slab_xcexhub_stack_end[];														
+extern u8 _slab_xcexhub_trampoline_start[];													
+extern u8 _slab_xcexhub_trampoline_end[];														
+extern u8 _slab_xcexhub_entrypoint[];	
+
 extern u8 _slab_xhhyperdep_code_start[];													
 extern u8 _slab_xhhyperdep_code_end[];														
 extern u8 _slab_xhhyperdep_rodata_start[];													
@@ -263,6 +275,24 @@ __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_table[XMHF
 		.slab_trampoline.start = _slab_xccoreapi_trampoline_start,
 		.slab_trampoline.end = _slab_xccoreapi_trampoline_end,										
 		.entry_cr3 = _slab_xccoreapi_entrypoint,												
+	},
+
+	{	
+		.slab_index = 0,															
+		.slab_macmid = 0,															
+		.slab_privilegemask = 0,													
+		.slab_tos = _slab_xcexhub_stack_end, 					
+		.slab_code.start = _slab_xcexhub_code_start,									
+		.slab_code.end = _slab_xcexhub_code_end,										
+		.slab_rodata.start = _slab_xcexhub_rodata_start,									
+		.slab_rodata.end = _slab_xcexhub_rodata_end,									
+		.slab_rwdata.start = _slab_xcexhub_rwdata_start,									
+		.slab_rwdata.end = _slab_xcexhub_rwdata_end,									
+		.slab_stack.start = _slab_xcexhub_stack_start,									
+		.slab_stack.end = _slab_xcexhub_stack_end,
+		.slab_trampoline.start = _slab_xcexhub_trampoline_start,
+		.slab_trampoline.end = _slab_xcexhub_trampoline_end,										
+		.entry_cr3 = _slab_xcexhub_entrypoint,												
 	},
 
 	{	

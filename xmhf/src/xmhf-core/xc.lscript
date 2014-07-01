@@ -190,6 +190,30 @@ SECTIONS
 		_slab_xccoreapi_trampoline_end = .;
 	} >all=0x0000
 
+	.slab_xcexhub : {
+		_slab_xcexhub_code_start = .;
+		_slab_xcexhub_entrypoint = .;
+		_objs_slab_xcexhub/xcexhub.slo(.slabcode)
+		. = ALIGN(0x200000);
+		_slab_xcexhub_code_end = .;
+		_slab_xcexhub_rodata_start = .;
+		_objs_slab_xcexhub/xcexhub.slo(.slabrodata)
+		. = ALIGN(0x200000);
+		_slab_xcexhub_rodata_end = .;
+		_slab_xcexhub_rwdata_start = .;
+		_objs_slab_xcexhub/xcexhub.slo(.slabrwdata)
+		. = ALIGN(0x200000);
+		_slab_xcexhub_rwdata_end = .;
+		_slab_xcexhub_stack_start = .;
+		_objs_slab_xcexhub/xcexhub.slo(.slabstack)
+		. = ALIGN(0x200000);
+		_slab_xcexhub_stack_end = .;
+		_slab_xcexhub_trampoline_start = .;
+		_objs_slab_xcexhub/xcexhub.slo(.slabtrampoline)
+		. = ALIGN(0x200000);
+		_slab_xcexhub_trampoline_end = .;
+	} >all=0x0000
+
 	.slab_xhhyperdep : {
 		_slab_xhhyperdep_code_start = .;
 		_slab_xhhyperdep_entrypoint = .;
