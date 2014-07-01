@@ -44,73 +44,29 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// xmhf.h - main XMHF header file 
+// XMHF slab import library decls./defns.
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHF_H_
-#define __XMHF_H_
+#ifndef __XC_INIT_H__
+#define __XC_INIT_H__
+
+
+#define	XMHF_SLAB_INIT_FNINITENTRY	0
 
 #ifndef __ASSEMBLY__
 
-//pull in required libxmhfc C includes
-#include <stdint.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#ifndef __XMHF_VERIFICATION__
-		#include <assert.h>
-#endif
-#endif // __ASSEMBLY__ 
+#ifdef __XMHF_SLAB_CALLER_INDEX__ 
 
-//pull in required crypto (SHA-1)
-//libXMHFcrypto
-//#ifndef __ASSEMBLY__
-//	#include <xmhfcrypto.h>
-//	#include <sha1.h>
-//#endif // __ASSEMBLY__
+XMHF_SLAB_DEFIMPORTFN(void init_entry(u32 cpuid, bool is_bsp), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_INIT_INDEX, XMHF_SLAB_INIT_FNINITENTRY, (sizeof(u32)+sizeof(bool)), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
+
+#else 	//!__XMHF_SLAB_CALLER_INDEX__
+
+void init_entry(u32 cpuid, bool is_bsp);
+
+#endif	//__XMHF_SLAB_CALLER_INDEX__
+
+#endif //__ASSEMBLY__
 
 
-//pull in required TPM library
-//libtpm
-//#ifndef __ASSEMBLY__
-//	#include <tpm.h>
-//#endif // __ASSEMBLY__ 
 
-#include <xmhf-config.h>		//XMHF platform/arch config
-#include <xmhf-types.h>			//XMHF specific base types
-#include <xmhf-debug.h>			//libxmhfdebug
-#include <xmhf-error.h> 
-#include <xmhf-slab.h>
-
-#ifdef __XMHF_VERIFICATION__
-	//include verification related primitives
-	#include <xmhf-verification.h>
-#endif //__XMHF_VERIFICATION__
-
-/*
-//forward declaration of runtime parameter block
-#ifndef __ASSEMBLY__
-extern RPB *rpb;	
-#endif	//__ASSEMBLY__
-
-
-//----------------------------------------------------------------------
-// component headers
-#include <xmhf-baseplatform.h>	//XMHF base platform component
-#include <xmhf-memprot.h>		//XMHF memory protection component
-#include <xmhf-dmaprot.h>		//XMHF DMA protection component
-#include <xmhf-partition.h>		//XMHF partition component
-#include <xmhf-smpguest.h>		//XMHF SMP guest component
-#include <xmhf-parteventhub.h>	//XMHF partition event-hub component
-#include <xmhf-xcphandler.h>	//XMHF exception handler component
-#include <xmhf-tpm.h>			//XMHF Trusted Platform Module component
-#include <xmhf-sl.h>			//XMHF secure loader component
-#include <xmhf-runtime.h>		//XMHF secure loader component
-#include <xmhf-app.h>			//XMHF Application callback declarations
-#include <xmhf-apihub.h>		//XMHF core API interface component
-*/
-
-#endif /* __XMHF_H_ */
+#endif //__XC_INIT_H__

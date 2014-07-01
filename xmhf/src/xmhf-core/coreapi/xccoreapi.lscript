@@ -44,41 +44,53 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF base platform component 
-// declarations
-// author: amit vasudevan (amitvasudevan@acm.org)
+#include <xmhf.h>
 
-#ifndef __XC_BASEPLATFORM_H__
-#define __XC_BASEPLATFORM_H__
+OUTPUT_ARCH("i386")
 
+MEMORY
+{
+  slabmem (rwxai) : ORIGIN = 0, LENGTH = 16M /* max. length */
+  unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
+}
 
-#ifndef __ASSEMBLY__
+SECTIONS
+{
+	. = 0;
 
-//----------------------------------------------------------------------
-// FUNCTIONS 
-//----------------------------------------------------------------------
+	.slabcode : {
+		*(.slab_entrystub)
+		*(.text)
+	} >slabmem =0x9090 
 
-//get CPU vendor
-u32 xmhf_baseplatform_arch_getcpuvendor(void);
+	.slabrodata : {
+		*(.rodata)
+		*(.rodata.str1.1)
+		*(.comment)
+		*(.eh_frame) 
+	} >slabmem =0x0000 
 
-//initialize CPU state
-void xmhf_baseplatform_arch_cpuinitialize(void);
+	.slabrwdata : {
+		*(.data)
+		*(.bss)
+	} >slabmem =0x0000 
 
-//initialize SMP
-void xmhf_baseplatform_arch_smpinitialize(void);
+	.slabstack : {
+		*(.stack)
+	} >slabmem =0x0000
 
-//initialize basic platform elements
-void xmhf_baseplatform_arch_initialize(void);
+	.slabtrampoline : {
+		*(.slab_trampoline)
+	} >slabmem =0x0000
 
-//reboot platform
-void xmhf_baseplatform_arch_reboot(context_desc_t context_desc);
+	/* this is to cause the link to fail if there is
+	* anything we didn't explicitly place.
+	* when this does cause link to fail, temporarily comment
+	* this part out to see what sections end up in the output
+	* which are not handled above, and handle them.
+	*/
+	.unaccounted : {
+	*(*)
+	} >unaccounted
 
-#define xmhf_baseplatform_getcpuvendor	xmhf_baseplatform_arch_getcpuvendor
-#define xmhf_baseplatform_cpuinitialize xmhf_baseplatform_arch_cpuinitialize
-#define xmhf_baseplatform_smpinitialize xmhf_baseplatform_arch_smpinitialize
-#define xmhf_baseplatform_initialize	xmhf_baseplatform_arch_initialize
-//#define xmhf_baseplatform_reboot		xmhf_baseplatform_arch_reboot
-
-#endif	//__ASSEMBLY__
-
-#endif //__XC_BASEPLATFORM_H__
+}

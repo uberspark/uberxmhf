@@ -44,41 +44,24 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF base platform component 
-// declarations
-// author: amit vasudevan (amitvasudevan@acm.org)
+/* 
+ * XMHF core exception handling slab
+ * x86 arch. backend
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
-#ifndef __XC_BASEPLATFORM_H__
-#define __XC_BASEPLATFORM_H__
+#include <xmhf.h>
+#include <xmhf-core.h>
+#include <xc-x86.h>
+#include <xc-x86vmx.h>
+
+#include <xcexhub.h>
 
 
-#ifndef __ASSEMBLY__
+//////////
+XMHF_SLAB("xcexhub")
 
-//----------------------------------------------------------------------
-// FUNCTIONS 
-//----------------------------------------------------------------------
+XMHF_SLAB_DEFINTERFACE(
+	XMHF_SLAB_DEFEXPORTFN(xcexhub_initialize				,XMHF_SLAB_XCEXHUB_FNXCEXHUBINITIALIZE				,	XMHF_SLAB_FN_RETTYPE_AGGREGATE)
+)
 
-//get CPU vendor
-u32 xmhf_baseplatform_arch_getcpuvendor(void);
-
-//initialize CPU state
-void xmhf_baseplatform_arch_cpuinitialize(void);
-
-//initialize SMP
-void xmhf_baseplatform_arch_smpinitialize(void);
-
-//initialize basic platform elements
-void xmhf_baseplatform_arch_initialize(void);
-
-//reboot platform
-void xmhf_baseplatform_arch_reboot(context_desc_t context_desc);
-
-#define xmhf_baseplatform_getcpuvendor	xmhf_baseplatform_arch_getcpuvendor
-#define xmhf_baseplatform_cpuinitialize xmhf_baseplatform_arch_cpuinitialize
-#define xmhf_baseplatform_smpinitialize xmhf_baseplatform_arch_smpinitialize
-#define xmhf_baseplatform_initialize	xmhf_baseplatform_arch_initialize
-//#define xmhf_baseplatform_reboot		xmhf_baseplatform_arch_reboot
-
-#endif	//__ASSEMBLY__
-
-#endif //__XC_BASEPLATFORM_H__
