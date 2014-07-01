@@ -576,7 +576,6 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 void xmhf_parteventhub_arch_x86vmx_entry(void) __attribute__((naked)){
 		
 		asm volatile (
-			"int $0x03 \r\n"
 			"pushal\r\n"
 			"movl %0, %%eax \r\n"				//eax = VMCS_INFO_VMEXIT_REASON
 			"vmread %%eax, %%ebx \r\n"			//ebx = VMCS[VMCS_INFO_VMEXIT_REASON]
