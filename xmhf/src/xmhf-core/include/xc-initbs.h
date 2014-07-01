@@ -64,6 +64,7 @@ XMHF_SLAB_DEFIMPORTFN(void xmhf_runtime_entry(void), XMHF_SLAB_DEFIMPORTFNSTUB(_
 void xmhf_runtime_entry(void);
 void xmhf_apihub_arch_initialize(void);
 #define xmhf_apihub_initialize	xmhf_apihub_arch_initialize
+void xcinitbs_arch_initialize_exception_handling(void);
 
 #endif	//__XMHF_SLAB_CALLER_INDEX__
 
