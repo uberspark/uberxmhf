@@ -88,7 +88,7 @@ void xmhf_baseplatform_arch_x86_initializeIDT(void){
 
 /* originally within xc-xcphandler-x86.c */
 
-#define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
+/*#define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
 	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
 		asm volatile(	"pushal	\r\n"								\
 						"movw	%0, %%ax\r\n"						\
@@ -104,6 +104,39 @@ void xmhf_baseplatform_arch_x86_initializeIDT(void){
 					:	"i" (__DS_CPL0), "i" (vector)				\
 		);															\
 	}\
+*/
+
+__attribute__((section(".stack"))) static u32 _xcexhub_exception_lock = 1;
+
+
+#define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
+	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
+		asm volatile(												\
+						"1:	bt	$0, %0	\r\n"						\
+						"jnc 1b	\r\n"								\
+						"lock \r\n"   								\	
+						"btrl	$0, %0	\r\n"						\	
+						"jnc 1b \r\n"   							\
+																	\
+						"pushal	\r\n"								\
+						"movw	%1, %%ax\r\n"						\
+						"movw	%%ax, %%ds\r\n"						\
+						"movl 	%%esp, %%eax\r\n"					\
+						"pushl 	%%eax\r\n"							\
+						"pushl	%2\r\n" 							\
+						"call	xmhf_xcphandler_arch_hub\r\n"		\
+						"addl  	$0x08, %%esp\r\n"					\
+						"popal	 \r\n"								\
+																	\
+						"btsl	$0, %0		\r\n"					\
+																	\
+						"iretl\r\n"									\
+					:												\
+					:	"m" (_xcexhub_exception_lock), "i" (__DS_CPL0), "i" (vector)				\
+		);															\
+	}\
+
+
 
 #define XMHF_EXCEPTION_HANDLER_ADDROF(vector) &__xmhf_exception_handler_##vector
 
@@ -241,7 +274,6 @@ static void xmhf_xcphandler_arch_unhandled(u32 vector, struct regs *r){
 		}
 		printf("\n-----end------------");
 	}
-	HALT();
 }
 
 //exception handler hub
@@ -252,9 +284,16 @@ void xmhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 				}
 				break;
 
+			case 0x3:{
+					xmhf_xcphandler_arch_unhandled(vector, r);
+					printf("\n%s: exception 3, returning", __FUNCTION__);
+			}
+			break;
+			
 			default:{
 				xmhf_xcphandler_arch_unhandled(vector, r);
-				//we will never get here
+				printf("\nHalting System!\n");
+				HALT();
 			}
 	}
 }

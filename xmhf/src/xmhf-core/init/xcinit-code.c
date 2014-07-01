@@ -96,7 +96,8 @@ void init_entry(u32 cpuid, bool is_bsp){
 	static u32 xc_richguest_partition_index=XC_PARTITION_INDEX_INVALID;
 
 	printf("\n%s: cpu=%x, is_bsp=%u. Halting\n", __FUNCTION__, cpuid, is_bsp);
-	//asm volatile("int $0x03 \r\n");
+	asm volatile("int $0x03 \r\n");
+	HALT();
 	
 	//printf("\nXMHF Tester Finished!\n\n");
 	//HALT();
