@@ -76,9 +76,9 @@
 
 /* sl stack, this is just a placeholder and ensures that the linker
  actually "allocates" the stack up until 0x10000*/
-u8 _sl_stack[1] __attribute__((section(".sl_stack")));
+//u8 _sl_stack[1] __attribute__((section(".sl_stack")));
 
-__attribute__((naked)) void _xmhf_sl_entry(void) __attribute__(( section(".sl_header") )) __attribute__(( align(4096) )){
+__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__(( align(4096) )) void _xmhf_sl_entry(void) {
 	
 asm volatile ( 	".global _mle_page_table_start \r\n"
 			   "_mle_page_table_start:\r\n"
