@@ -46,6 +46,8 @@
 
 #include <xmhf-core.h>
 
+#include <xcprimeon.h>
+
 /*
  * slab code
  * 
