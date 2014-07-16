@@ -67,6 +67,18 @@ XMHF_SLAB_DEFIMPORTFN(void xcprimeon_startup(void),	XMHF_SLAB_DEFIMPORTFNSTUB(__
 
 void xcprimeon_startup(void);
 
+//----------------------------------------------------------------------
+//ARCH. BACKENDS
+//----------------------------------------------------------------------
+void* xmhf_sl_arch_hva2sla(uintptr_t x);
+u64 xmhf_sl_arch_sla2spa(void* x);
+bool xmhf_sl_arch_integrity_check(u8* runtime_base_addr, size_t runtime_len);
+void xmhf_sl_arch_sanitize_post_launch(void);
+void xmhf_sl_arch_early_dmaprot_init(u32 membase, u32 size);
+void xmhf_sl_arch_xfer_control_to_runtime(XMHF_BOOTINFO *xcbootinfo);
+void xmhf_sl_arch_baseplatform_initialize(void);
+
+
 #endif	//__XMHF_SLAB_CALLER_INDEX__
 
 

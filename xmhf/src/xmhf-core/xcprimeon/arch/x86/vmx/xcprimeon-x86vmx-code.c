@@ -50,7 +50,10 @@
  */
  
 #include <xmhf.h>
-#include <xmhf-sl.h>
+//#include <xmhf-sl.h>
+
+#include <xcprimeon.h>
+
 
 #include "platform/x86pc/include/common/_multiboot.h"		//multiboot
 #include "cpu/x86/include/common/_processor.h"  	//CPU
