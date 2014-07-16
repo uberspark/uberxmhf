@@ -7,7 +7,10 @@ vpath %.S $(srcdir)
 vpath %.lscript $(srcdir)
 
 # grab list of all source files
+# grab list of all source files
 C_SOURCES := $(wildcard $(srcdir)/*.c)
+C_SOURCES += $(shell find $(srcdir)/arch/x86/common/ -type f -name '*.c')
+C_SOURCES += $(shell find $(srcdir)/arch/x86/vmx/ -type f -name '*.c')
 
 C_SOURCES := $(patsubst $(srcdir)/%, %, $(C_SOURCES))
 

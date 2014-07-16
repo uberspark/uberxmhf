@@ -48,13 +48,14 @@
 
 #include <xcprimeon.h>
 
-//this is the SL parameter block and is placed in a seperate (untrusted)
+/*//this is the SL parameter block and is placed in a seperate (untrusted)
 //section. It is populated by the XMHF bootloader.
-XMHF_BOOTINFO xslbootinfo __attribute__(( section(".sl_untrusted_params") )) = {
+XMHF_BOOTINFO xcbootinfo __attribute__(( section(".sl_untrusted_params") )) = {
 	.magic = SL_PARAMETER_BLOCK_MAGIC,
 };
 
 XMHF_BOOTINFO *xcbootinfo = (XMHF_BOOTINFO *)&xmhf_rpb_start;
+*/
 
 /*
  * slab code
@@ -68,72 +69,66 @@ void xcprimeon_startup(void){
 	u32 runtime_size_2Maligned;
 
 	//initialize debugging early on
-	xmhf_debug_init((char *)&xslbootinfo.debugcontrol_buffer);
+	xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
 
 	printf("%s: alive and starting...\n", __FUNCTION__);
 	
-	//debug: dump SL parameter block
-	printf("SL: xslbootinfo at = 0x%08x\n", (u32)&xslbootinfo);
-	printf("	numE820Entries=%u\n", xslbootinfo.memmapinfo_numentries);
-	printf("	system memory map buffer at 0x%08x\n", (u32)&xslbootinfo.memmapinfo_buffer);
-	printf("	numCPUEntries=%u\n", xslbootinfo.cpuinfo_numentries);
-	printf("	cpuinfo buffer at 0x%08x\n", (u32)&xslbootinfo.cpuinfo_buffer);
-	printf("	SL + core size= %u bytes\n", xslbootinfo.size);
+	//debug: dump bootinfo
+	printf("SL: xcbootinfo at = 0x%08x\n", (u32)xcbootinfo);
+	printf("	numE820Entries=%u\n", xcbootinfo->memmapinfo_numentries);
+	printf("	system memory map buffer at 0x%08x\n", (u32)&xcbootinfo->memmapinfo_buffer);
+	printf("	numCPUEntries=%u\n", xcbootinfo->cpuinfo_numentries);
+	printf("	cpuinfo buffer at 0x%08x\n", (u32)&xcbootinfo->cpuinfo_buffer);
+	printf("	SL + core size= %u bytes\n", xcbootinfo->size);
 	printf("	OS bootmodule at 0x%08x, size=%u bytes\n", 
-		xslbootinfo.richguest_bootmodule_base, xslbootinfo.richguest_bootmodule_size);
-    printf("\tcmdline = \"%s\"\n", xslbootinfo.cmdline_buffer);
+		xcbootinfo->richguest_bootmodule_base, xcbootinfo->richguest_bootmodule_size);
+    printf("\tcmdline = \"%s\"\n", xcbootinfo->cmdline_buffer);
 
 	//get runtime physical base
-	//runtime_physical_base = __TARGET_BASE_CORE;
 	runtime_physical_base = __TARGET_BASE_SL;
 	
 	//compute 2M aligned runtime size
-	runtime_size_2Maligned = (((xslbootinfo.size) + (1 << 21) - 1) & ~((1 << 21) - 1));
+	runtime_size_2Maligned = (((xcbootinfo->size) + (1 << 21) - 1) & ~((1 << 21) - 1));
 	
 
 	printf("SL: runtime at 0x%08x; size=0x%08x bytes adjusted to 0x%08x bytes (2M aligned)\n", 
-			runtime_physical_base, xslbootinfo.size, runtime_size_2Maligned);
+			runtime_physical_base, xcbootinfo->size, runtime_size_2Maligned);
 
-	//setup runtime parameter block with required parameters
+	//setup bootinfo with required parameters
 	{
 		printf("SL: XMHF_BOOTINFO at 0x%08x, magic=0x%08x\n", (u32)xcbootinfo, xcbootinfo->magic);
 		HALT_ON_ERRORCOND(xcbootinfo->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
 			
-		//populate runtime parameter block fields
-		//xcbootinfo->isEarlyInit = 1; //tell runtime if we started "early" or "late"
-		
 		//store runtime physical and virtual base addresses along with size
 		xcbootinfo->physmem_base = runtime_physical_base; 
-		//xcbootinfo->XtVmmRuntimeVirtBase = __TARGET_BASE_CORE;
 		xcbootinfo->virtmem_base = __TARGET_BASE_SL;
-		//xcbootinfo->XtVmmRuntimeSize = xslbootinfo.size - __TARGET_SIZE_SL;
-		xcbootinfo->size = xslbootinfo.size;
+		xcbootinfo->size = xcbootinfo->size;
 
 		//store revised E820 map and number of entries
-		memcpy((void *)xcbootinfo->memmapinfo_buffer, (void *)&xslbootinfo.memmapinfo_buffer, (sizeof(GRUBE820) * xslbootinfo.memmapinfo_numentries) );
-		xcbootinfo->memmapinfo_numentries = xslbootinfo.memmapinfo_numentries; 
+		//memcpy((void *)xcbootinfo->memmapinfo_buffer, (void *)&xcbootinfo->memmapinfo_buffer, (sizeof(GRUBE820) * xcbootinfo->memmapinfo_numentries) );
+		//xcbootinfo->memmapinfo_numentries = xcbootinfo->memmapinfo_numentries; 
 
 		//store CPU table and number of CPUs
-		memcpy((void *)xcbootinfo->cpuinfo_buffer, (void *)&xslbootinfo.cpuinfo_buffer, (sizeof(PCPU) * xslbootinfo.cpuinfo_numentries) );
-		xcbootinfo->cpuinfo_numentries = xslbootinfo.cpuinfo_numentries; 
+		//memcpy((void *)xcbootinfo->cpuinfo_buffer, (void *)&xcbootinfo->cpuinfo_buffer, (sizeof(PCPU) * xcbootinfo->cpuinfo_numentries) );
+		//xcbootinfo->cpuinfo_numentries = xcbootinfo->cpuinfo_numentries; 
 
 		//setup guest OS boot module info in LPB	
-		xcbootinfo->richguest_bootmodule_base=xslbootinfo.richguest_bootmodule_base;
-		xcbootinfo->richguest_bootmodule_size=xslbootinfo.richguest_bootmodule_size;
+		//xcbootinfo->richguest_bootmodule_base=xcbootinfo->richguest_bootmodule_base;
+		//xcbootinfo->richguest_bootmodule_size=xcbootinfo->richguest_bootmodule_size;
 
 		//pass optional app module if any
 		//xcbootinfo->runtime_appmodule_base = 0;
 		//xcbootinfo->runtime_appmodule_size = 0;
 
-	#if defined (__DEBUG_SERIAL__)
+	//#if defined (__DEBUG_SERIAL__)
 		//pass along UART config for serial debug output
-		//xcbootinfo->RtmUartConfig = xslbootinfo.uart_config;
-		memcpy(&xcbootinfo->debugcontrol_buffer, &xslbootinfo.debugcontrol_buffer, sizeof(xcbootinfo->debugcontrol_buffer));
-	#endif
+		//xcbootinfo->RtmUartConfig = xcbootinfo->uart_config;
+		//memcpy(&xcbootinfo->debugcontrol_buffer, &xcbootinfo->debugcontrol_buffer, sizeof(xcbootinfo->debugcontrol_buffer));
+	//#endif
 
 		//pass command line configuration forward 
-		COMPILE_TIME_ASSERT(sizeof(xslbootinfo.cmdline_buffer) == sizeof(xcbootinfo->cmdline_buffer));
-		strncpy(xcbootinfo->cmdline_buffer, (void *)&xslbootinfo.cmdline_buffer, sizeof(xslbootinfo.cmdline_buffer));
+		//COMPILE_TIME_ASSERT(sizeof(xcbootinfo->cmdline_buffer) == sizeof(xcbootinfo->cmdline_buffer));
+		//strncpy(xcbootinfo->cmdline_buffer, (void *)&xcbootinfo->cmdline_buffer, sizeof(xcbootinfo->cmdline_buffer));
 	}
 
 	//initialize basic platform elements
@@ -147,8 +142,8 @@ void xcprimeon_startup(void){
 
 #if defined (__DMAP__)    
 	//setup DMA protection on runtime (secure loader is already DMA protected)
-	//xmhf_sl_arch_early_dmaprot_init(xslbootinfo.runtime_size);
-	xmhf_sl_arch_early_dmaprot_init(__TARGET_BASE_SL, xslbootinfo.size);
+	//xmhf_sl_arch_early_dmaprot_init(xcbootinfo->runtime_size);
+	xmhf_sl_arch_early_dmaprot_init(__TARGET_BASE_SL, xcbootinfo->size);
 #endif
 
 	//transfer control to runtime
