@@ -44,79 +44,45 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-OUTPUT_ARCH(i386)
 
-ENTRY(_sl_start)
-
-/* Goal: constrain the size of the trusted portion of the SL to 64K. AMD
- * systems limit the Secure Loader Block to 64K max.  Intel permits a   
- * larger MLE (their name for SLB), but we want to remain compatible
- * with both.
+/*
+ * 
+ *  XMHF core primeon slab 
+ * 
+ *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-/* Useful reference:
- * http://docs.redhat.com/docs/en-US/Red_Hat_Enterprise_Linux/4/html/Using_ld_the_GNU_Linker/memory.html
- */
+#ifndef __XCPRIMEON_H__
+#define __XCPRIMEON_H__
 
-MEMORY
-{
-  low  (rwxai) : ORIGIN = 0x10000000,   LENGTH = 64K
-  high (rwxai) : ORIGIN = 0x10010000, LENGTH = 1984K /* balance of 2M total */ 
-  unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
-}
+#define XMHF_SLAB_XCPRIMEON_FNSTARTUP							0				
 
-              
-SECTIONS
-{
-	/* memory map 0-64K SL relative falls in our TCB */
-	. = 0x10000000;
-	.sl_header : {
-		*(.sl_header)
-		. = ALIGN(4096);    
-	} >low
+#ifndef __ASSEMBLY__
 
-	.text : {
-		*(.text)
-	} >low
+#ifdef __XMHF_SLAB_CALLER_INDEX__ 
 
-	.data : {
-		*(.data)
-	} >low
+XMHF_SLAB_DEFIMPORTFN(void xcprimeon_startup(void),	XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCPRIMEON_INDEX,	XMHF_SLAB_XCPRIMEON_FNSTARTUP, (0)			, (0), XMHF_SLAB_FN_RETTYPE_NORMAL)								)
 
-	.rodata : {
-		*(.rodata)
-		*(.rodata.str1.1)
-	} >low
+#else 	//!__XMHF_SLAB_CALLER_INDEX__
 
-	.bss : {
-		*(.bss)
-		. = ALIGN(16);    
-	} >low
+void xcprimeon_startup(void);
 
-	.sl_stack : {
-		*(.sl_stack)
-		. = ALIGN(0x10000);
-	} >low
+//----------------------------------------------------------------------
+//ARCH. BACKENDS
+//----------------------------------------------------------------------
+void* xmhf_sl_arch_hva2sla(uintptr_t x);
+u64 xmhf_sl_arch_sla2spa(void* x);
+bool xmhf_sl_arch_integrity_check(u8* runtime_base_addr, size_t runtime_len);
+void xmhf_sl_arch_sanitize_post_launch(void);
+void xmhf_sl_arch_early_dmaprot_init(u32 membase, u32 size);
+void xmhf_sl_arch_xfer_control_to_runtime(XMHF_BOOTINFO *xcbootinfo);
+void xmhf_sl_arch_baseplatform_initialize(void);
 
-	/* memory map from 64K-2MB SL relative is outside our TCB */ 
-	.sl_untrusted_params : {
-		*(.sl_untrusted_params)
-		*(.comment)
-		. = ALIGN(0x200000);
-		xmhf_rpb_start = .;
-	} >high
 
-	/DISCARD/ : {
-	*(.eh_frame)
-	} >low
+#endif	//__XMHF_SLAB_CALLER_INDEX__
 
-	/* this is to cause the link to fail if there is
-	* anything we didn't explicitly place.
-	* when this does cause link to fail, temporarily comment
-	* this part out to see what sections end up in the output
-	* which are not handled above, and handle them.
-	*/
-	.unaccounted : {
-	*(*)
-	} >unaccounted
-}
+
+#endif	//__ASSEMBLY__
+
+
+#endif //__XCPRIMEON_H__

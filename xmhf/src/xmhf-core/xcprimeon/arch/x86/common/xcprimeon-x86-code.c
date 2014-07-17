@@ -51,7 +51,9 @@
  */
  
 #include <xmhf.h>
-#include <xmhf-sl.h>
+//#include <xmhf-sl.h>
+
+#include <xcprimeon.h>
 
 #include "cpu/x86/include/common/_processor.h"  	//CPU
 #include "cpu/x86/include/common/_paging.h"     	//MMU
@@ -106,6 +108,20 @@
 }
 */
 
+void xmhf_sl_arch_x86_invoke_runtime_entrypoint(u32 entrypoint, u32 stacktop) {
+		
+	asm volatile(
+		"movl %0, %%esp \r\n"
+		"movl %1, %%eax \r\n"
+		"jmpl *%%eax \r\n"
+		: //no outputs
+		: "m" (stacktop), "m" (entrypoint)
+		: "eax", "esp"
+	);
+		
+		
+} 
+
 void xmhf_sl_arch_xfer_control_to_runtime(XMHF_BOOTINFO *xcbootinfo){
 	u32 ptba;	//page table base address
 
@@ -139,16 +155,3 @@ void xmhf_sl_arch_baseplatform_initialize(void){
 }
 
 
-void xmhf_sl_arch_x86_invoke_runtime_entrypoint(u32 entrypoint, u32 stacktop) {
-		
-	asm volatile(
-		"movl %0, %%esp \r\n"
-		"movl %1, %%eax \r\n"
-		"jmpl *%%eax \r\n"
-		: //no outputs
-		: "m" (stacktop), "m" (entrypoint)
-		: "eax", "esp"
-	);
-		
-		
-} 

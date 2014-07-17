@@ -56,6 +56,7 @@
 //----------------------------------------------------------------------
 // XMHF platform memory map
 	//size of memory that is pre-allocated by XMHF on the platform (currently 256MB)
+	#define __TARGET_BASE_XMHF				0x10000000		//at 256M
 	#define __TARGET_SIZE_XMHF				0x10000000
 
 	//physical address where the XMHF boot-loader is loaded (e.g., via GRUB)
@@ -65,10 +66,9 @@
 	//physical address of XMHF secure loader + core runtime
 	//SL currently sits at absolute address 256MB (0x10000000). 
 	//core runtime is at an offset of 2M from this SL base address
-	#define __TARGET_BASE_SL				0x10000000		//256MB
+	#define __TARGET_BASE_SL				0x10200000		//256MB
 	#define __TARGET_SIZE_SL				0x00200000
 	
-	#define __TARGET_BASE_CORE				0x10200000		//258M
 
 	//physical address of XMHF hypapp
 	#define __TARGET_BASE_XMHFHYPAPP		0x1D000000      //480M
@@ -76,10 +76,12 @@
 //----------------------------------------------------------------------	
 
 //"sl" parameter block magic value
-#define SL_PARAMETER_BLOCK_MAGIC		0xDEADBEEF
+//#define SL_PARAMETER_BLOCK_MAGIC		0xDEADBEEF
 
 //"runtime" parameter block magic value
 #define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
+
+#define SL_PARAMETER_BLOCK_MAGIC		0xF00DDEAD
 
 
 //16K stack for each core during runtime
@@ -168,7 +170,7 @@
 
 #define	XMHF_SLAB_STACKSIZE		(16384)
 
-#define XMHF_SLAB_NUMBEROFSLABS			7
+#define XMHF_SLAB_NUMBEROFSLABS			8
 
 #define XMHF_SLAB_REGION_SHARED_RODATA 	0x11000000
 #define XMHF_SLAB_REGION_START			0x12000000
