@@ -73,3 +73,75 @@ bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void){
 	
 }
 
+u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
+  u32 eax, edx, *lapic_reg;
+  u32 lapic_id;
+  
+  //read LAPIC id of this core
+  rdmsr(MSR_APIC_BASE, &eax, &edx);
+  HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
+  eax &= (u32)0xFFFFF000UL;
+  lapic_reg = (u32 *)((u32)eax+ (u32)LAPIC_ID);
+  lapic_id = xmhfhw_sysmemaccess_readu32((u32)lapic_reg);
+  lapic_id = lapic_id >> 24;
+	
+  return lapic_id;
+}
+
+u32 xmhf_baseplatform_arch_x86_getgdtbase(void){
+		struct {
+			u16 limit;
+			u32 base;
+		} __attribute__ ((packed)) gdtr;
+		
+		
+		asm volatile(
+			"sgdt %0 \r\n"
+			: //no output
+			: "m" (gdtr)
+			: //no clobber
+		);
+		
+		return gdtr.base;
+}
+
+u32 xmhf_baseplatform_arch_x86_getidtbase(void){
+		struct {
+			u16 limit;
+			u32 base;
+		} __attribute__ ((packed)) idtr;
+		
+		
+		asm volatile(
+			"sidt %0 \r\n"
+			: //no output
+			: "m" (idtr)
+			: //no clobber
+		);
+		
+		return idtr.base;
+		//return (u32)&_idt_start;
+}
+
+u32 xmhf_baseplatform_arch_x86_gettssbase(void){
+	  u32 gdtbase = (u32)xmhf_baseplatform_arch_x86_getgdtbase();
+	  u16 trselector = 	__TRSEL;
+	  u32 tssdesc_low, tssdesc_high;
+	  
+	  asm volatile(
+		"movl %2, %%edi\r\n"
+		"xorl %%eax, %%eax\r\n"
+		"movw %3, %%ax\r\n"
+		"addl %%eax, %%edi\r\n"		//%edi is pointer to TSS descriptor in GDT
+		"movl (%%edi), %0 \r\n"		//move low 32-bits of TSS descriptor into tssdesc_low
+		"addl $0x4, %%edi\r\n"		//%edi points to top 32-bits of 64-bit TSS desc.
+		"movl (%%edi), %1 \r\n"		//move high 32-bits of TSS descriptor into tssdesc_high
+	     : "=r" (tssdesc_low), "=r" (tssdesc_high)
+	     : "m"(gdtbase), "m"(trselector)
+	     : "edi", "eax"
+	  );
+
+	   return (  (u32)(  ((u32)tssdesc_high & 0xFF000000UL) | (((u32)tssdesc_high & 0x000000FFUL) << 16)  | ((u32)tssdesc_low >> 16)  ) );
+	//return (u32)&_tss;
+}
+
