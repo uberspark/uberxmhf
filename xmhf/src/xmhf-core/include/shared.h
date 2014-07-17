@@ -65,6 +65,7 @@ extern __attribute__(( aligned(16) )) __attribute__(( section(".section_archds")
 extern __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) arch_x86_idtdesc_t _idt;
 
 
+
 #endif	//__ASSEMBLY__
 
 
