@@ -60,16 +60,6 @@
 #undef __XMHF_SLAB_CALLER_INDEX__
 
 
-//core IDT
-static u64 _idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] __attribute__(( aligned(16) ));
-
-//core IDT descriptor
-static arch_x86_idtdesc_t _idt __attribute__(( aligned(16) )) = {
-	.size=sizeof(_idt_start)-1,
-	.base=(u32)&_idt_start,
-};
-
-
 
 //initialize IDT
 void xmhf_baseplatform_arch_x86_initializeIDT(void){
@@ -238,7 +228,8 @@ static u32 exceptionstubs[] = { 	XMHF_EXCEPTION_HANDLER_ADDROF(0),
 
 //initialize EMHF core exception handlers
 //void xmhf_xcphandler_arch_initialize(void){
-arch_x86_idtdesc_t xcexhub_initialize(void){
+//arch_x86_idtdesc_t xcexhub_initialize(void){
+void xcexhub_initialize(void){
 	u32 *pexceptionstubs;
 	u32 i;
 
@@ -257,7 +248,7 @@ arch_x86_idtdesc_t xcexhub_initialize(void){
 	xmhf_baseplatform_arch_x86_initializeIDT();
 	
 	printf("\n%s: IDT setup done.", __FUNCTION__);
-	return _idt;
+	//return _idt;
 }
 
 
