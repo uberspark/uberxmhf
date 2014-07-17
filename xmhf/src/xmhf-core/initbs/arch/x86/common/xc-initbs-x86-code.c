@@ -521,6 +521,20 @@ void xmhf_apihub_arch_initialize (void){
 				printf("\nslab %u: pdpt=%08x, pdt[0]=%08x, pdt[1]=%08x", i, (u32)_slab_pagetables[i].pdpt, (u32)_slab_pagetables[i].pdt[0], (u32)_slab_pagetables[i].pdt[1]);
 				printf("\n                    pdt[2]=%08x, pdt[3]=%08x", (u32)_slab_pagetables[i].pdt[2], (u32)_slab_pagetables[i].pdt[3]);
 		}
+		
+		
+		/*{
+			extern u8 _map_archstructs_start[];
+			extern u8 _map_archstructs_tss[];
+			extern u8 _map_archstructs_gdt[];
+			extern u8 _map_archstructs_idt[];
+			extern u8 _map_archstructs_end[];
+		
+			printf("\n");
+			printf("_map_archstructs_start=%08x, _map_archstructs_end=%08x\n", _map_archstructs_start, _map_archstructs_end);
+		
+		}*/
+
 	}
 
 

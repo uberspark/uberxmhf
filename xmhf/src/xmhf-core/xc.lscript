@@ -267,6 +267,24 @@ SECTIONS
 		_slab_xhhyperdep_trampoline_end = .;
 	} >all=0x0000
 
+
+	/*.map_archstructs : {
+		_map_archstructs_start = .;
+		_map_archstructs_tss = .;
+		. = . + 0x1000;
+		_map_archstructs_gdt = .;
+		. = . + 0x2000;
+		_map_archstructs_idt = .;
+		. = . + 0x2000;
+		_map_archstructs_end = .;
+		. = ALIGN(0x200000);
+	} >all=0x0000*/
+	
+	.section_archstructs : {
+		*(.section_archstructs);
+		. = ALIGN(0x200000);
+	} >all=0x0000
+	
 	.shared : {
 		*(.text)
 		*(.data)
@@ -281,6 +299,7 @@ SECTIONS
 	} >all=0x0000
 
 
+	
 	/* this is to cause the link to fail if there is
 	* anything we didn't explicitly place.
 	* when this does cause link to fail, temporarily comment
