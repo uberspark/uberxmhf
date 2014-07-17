@@ -69,9 +69,6 @@
 // local variables
 
 
-//runtime TSS
-u8 _tss[PAGE_SIZE_4K] = { 0 };
-
 
 
 
