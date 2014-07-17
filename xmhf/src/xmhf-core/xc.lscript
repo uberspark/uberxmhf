@@ -52,7 +52,8 @@ ENTRY(xmhf_runtime_entry)
 
 MEMORY
 {
-  all (rwxai) : ORIGIN = 0x10200000, LENGTH = 254M 
+  all (rwxai) : ORIGIN = 0x10000000, LENGTH = 256M 
+/*  all (rwxai) : ORIGIN = 0x10200000, LENGTH = 254M */
 /*  slabroshareddatamem (rai) : ORIGIN = XMHF_SLAB_REGION_SHARED_RODATA, LENGTH = 16M
   slabmem (rwxai) : ORIGIN = XMHF_SLAB_REGION_START, LENGTH = 112M */
   unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
@@ -60,7 +61,9 @@ MEMORY
 
 SECTIONS
 {
-	. = 0x10200000;
+	/*. = 0x10200000;*/
+	. = 0x10000000;
+	
 
 	.header : {
 		*(.sharedro_xcbootinfo)
@@ -68,6 +71,32 @@ SECTIONS
 		*(.sharedro_slab_table)
 		. = ALIGN(0x200000);
 	} >all=0x0000
+
+
+	.slab_xcprimeon : {
+		_slab_xcprimeon_code_start = .;
+		_slab_xcprimeon_entrypoint = .;
+		_objs_slab_xcprimeon/xcprimeon.slo(.slabcode)
+		. = ALIGN(0x200000);
+		_slab_xcprimeon_code_end = .;
+		_slab_xcprimeon_rodata_start = .;
+		_objs_slab_xcprimeon/xcprimeon.slo(.slabrodata)
+		. = ALIGN(0x200000);
+		_slab_xcprimeon_rodata_end = .;
+		_slab_xcprimeon_rwdata_start = .;
+		_objs_slab_xcprimeon/xcprimeon.slo(.slabrwdata)
+		. = ALIGN(0x200000);
+		_slab_xcprimeon_rwdata_end = .;
+		_slab_xcprimeon_stack_start = .;
+		_objs_slab_xcprimeon/xcprimeon.slo(.slabstack)
+		. = ALIGN(0x200000);
+		_slab_xcprimeon_stack_end = .;
+		_slab_xcprimeon_trampoline_start = .;
+		_objs_slab_xcprimeon/xcprimeon.slo(.slabtrampoline)
+		. = ALIGN(0x200000);
+		_slab_xcprimeon_trampoline_end = .;
+	} >all=0x0000
+
 
 	.slab_testslab : {
 		_slab_testslab_code_start = .;

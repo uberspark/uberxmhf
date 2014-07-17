@@ -262,7 +262,7 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
     //with free amount of memory for runtime
     {
         u32 foundentry=0;
-        u32 slruntimephysicalbase=__TARGET_BASE_SL;	//SL + runtime base
+        u32 slruntimephysicalbase=__TARGET_BASE_XMHF;	//SL + runtime base
         u32 i;
      
         //for(i= (int)(grube820list_numentries-1); i >=0; i--){
@@ -916,72 +916,66 @@ void cstartup(multiboot_info_t *mbi){
     //deal with MP and get CPU table
     dealwithMP();
 
-    //check (and revise) platform E820 memory map to see if we can
-    //load at __TARGET_BASE_SL 
-    //sl_rt_size = mod_array[0].mod_start - __TARGET_BASE_BOOTLOADER + __TARGET_SIZE_BOOTLOADER;
-    sl_rt_size = (mod_array[0].mod_start - __TARGET_BASE_BOOTLOADER) - __TARGET_SIZE_BOOTLOADER;
-    hypapp_size = mod_array[0].mod_end - mod_array[0].mod_start;
-    //hypervisor_image_baseaddress = dealwithE820(mbi, PAGE_ALIGN_UP2M(sl_rt_size) + PAGE_ALIGN_UP2M(hypapp_size) ); 
+    //check (and revise) platform E820 memory map to see if we can load at __TARGET_BASE_XMHF
+    printf("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
+	sl_rt_size = (mod_array[0].mod_start - __TARGET_BASE_BOOTLOADER) - __TARGET_SIZE_BOOTLOADER;
 	hypervisor_image_baseaddress = dealwithE820(mbi, __TARGET_SIZE_XMHF); 
-
-	//sanity check memory map and limits
-		//ensure we are loading at 256M
-		HALT_ON_ERRORCOND( (hypervisor_image_baseaddress == __TARGET_BASE_SL) );
+	printf("xmhf-bootloader: XMHF binary base=%08x, actual size=%08x bytes, reserved size=%08x bytes\n", hypervisor_image_baseaddress, sl_rt_size, __TARGET_SIZE_XMHF);
+	
+	//sanity check memory map and limits; ensure we are loading at 256M
+	HALT_ON_ERRORCOND( (hypervisor_image_baseaddress == __TARGET_BASE_XMHF) );
 		
-		//load address of XMHF bootloader = 30MB
-		//sizeof ( XMHF bootloader) = 2MB
-		//sizeof ( XMHF secureloader+ XMHF runtime + hypapp binary + guest OS boot-sector + SINIT module (if any) + hypapp specific modules (if any) ) 
-		//should not be greater than 224MB since we will be loading our system at absolute address 256MB and our current memcpy does not tackle overlaps
-		if ( mod_array[mods_count-1].mod_end >= __TARGET_BASE_SL ){
-			printf("\nXMHF boot-loader: Halting! XMHF load memory map limits violated. TOMM=0x%08x", mod_array[mods_count-1].mod_end);
-			HALT();
-		}
+	//load address of XMHF bootloader = 30MB
+	//sizeof ( XMHF bootloader) = 2MB
+	//sizeof ( XMHF hypervisor binary + guest OS boot-sector + SINIT module (if any) + hypapp specific modules (if any) ) 
+	//should not be greater than 224MB since we will be loading our system at absolute address 256MB and our current memcpy does not tackle overlaps
+	if ( mod_array[mods_count-1].mod_end >= __TARGET_BASE_XMHF ){
+		printf("XMHF boot-loader: Halting! XMHF load memory map limits violated. TOMM=0x%08x\n", mod_array[mods_count-1].mod_end);
+		HALT();
+	}
 
-		//SL+core memory map is from 0x10000000-0x1D000000
-		if(sl_rt_size > (__TARGET_BASE_XMHFHYPAPP - __TARGET_BASE_SL) ){
-			printf("\nXMHF boot-loader: Halting! XMHF SL + core memory limit overflow. size=%08x (max:%08x)", sl_rt_size, (__TARGET_BASE_XMHFHYPAPP - __TARGET_BASE_SL));
-			HALT();
-		}
+	//SL+core memory map is from 0x10000000-0x1D000000
+	//if(sl_rt_size > (__TARGET_BASE_XMHFHYPAPP - __TARGET_BASE_SL) ){
+	//		printf("\nXMHF boot-loader: Halting! XMHF SL + core memory limit overflow. size=%08x (max:%08x)", sl_rt_size, (__TARGET_BASE_XMHFHYPAPP - __TARGET_BASE_SL));
+	//		HALT();
+	//	}
 		
-		//hypapp memory map is from 0x1D000000-0x20000000
-		if( hypapp_size > __TARGET_SIZE_XMHFHYPAPP ){
-			printf("\nXMHF boot-loader: Halting! XMHF hypapp memory limit overflow. size=%08x (max:%08x)", hypapp_size, __TARGET_SIZE_XMHFHYPAPP);
-			HALT();
-		}
+	//	//hypapp memory map is from 0x1D000000-0x20000000
+	//	if( hypapp_size > __TARGET_SIZE_XMHFHYPAPP ){
+	//		printf("\nXMHF boot-loader: Halting! XMHF hypapp memory limit overflow. size=%08x (max:%08x)", hypapp_size, __TARGET_SIZE_XMHFHYPAPP);
+	//		HALT();
+	//	}
 		
 
-    //relocate the SL+core runtime+hyypapp binaries to corresponding memory regions
-    memcpy((void*)__TARGET_BASE_SL, (void*)(__TARGET_BASE_BOOTLOADER+__TARGET_SIZE_BOOTLOADER), sl_rt_size);
-	memcpy((void*)__TARGET_BASE_XMHFHYPAPP, (void *)mod_array[0].mod_start, hypapp_size);
+    printf("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
+    //relocate XMHF hypervisor binary to preferred load address
+    memcpy((void*)__TARGET_BASE_XMHF, (void*)(__TARGET_BASE_BOOTLOADER+__TARGET_SIZE_BOOTLOADER), sl_rt_size);
+    printf("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
 
-	////DMA protect SL+runtime via VTd PMRs
-	//if(cpu_vendor == CPU_VENDOR_INTEL){
-	//	extern bool vtdinit_dmaprotect(u32 membase, u32 size);
-	//	vtdinit_dmaprotect(__TARGET_BASE_SL, sl_rt_size);
-	//}
 	
     /* runtime */
-    print_hex("    INIT(early): *UNTRUSTED* gold runtime: ",
-              g_init_gold.sha_runtime, SHA_DIGEST_LENGTH);
-    hashandprint("    INIT(early): *UNTRUSTED* comp runtime: ",
-                 (u8*)hypervisor_image_baseaddress+0x200000, sl_rt_size-0x200000);
+    //print_hex("    INIT(early): *UNTRUSTED* gold runtime: ",
+    //         g_init_gold.sha_runtime, SHA_DIGEST_LENGTH);
+    //hashandprint("    INIT(early): *UNTRUSTED* comp runtime: ",
+    //             (u8*)hypervisor_image_baseaddress+0x200000, sl_rt_size-0x200000);
     /* SL low 64K */
-    print_hex("    INIT(early): *UNTRUSTED* gold SL low 64K: ",
-              g_init_gold.sha_slbelow64K, SHA_DIGEST_LENGTH);
-    hashandprint("    INIT(early): *UNTRUSTED* comp SL low 64K: ",
-                 (u8*)hypervisor_image_baseaddress, 0x10000);
+    //print_hex("    INIT(early): *UNTRUSTED* gold SL low 64K: ",
+    //          g_init_gold.sha_slbelow64K, SHA_DIGEST_LENGTH);
+    //hashandprint("    INIT(early): *UNTRUSTED* comp SL low 64K: ",
+    //             (u8*)hypervisor_image_baseaddress, 0x10000);
     /* SL above 64K */
-    print_hex("    INIT(early): *UNTRUSTED* gold SL above 64K: ",
-              g_init_gold.sha_slabove64K, SHA_DIGEST_LENGTH);
-    hashandprint("    INIT(early): *UNTRUSTED* comp SL above 64K): ",
-                 (u8*)hypervisor_image_baseaddress+0x10000, 0x200000-0x10000);
+    //print_hex("    INIT(early): *UNTRUSTED* gold SL above 64K: ",
+    //          g_init_gold.sha_slabove64K, SHA_DIGEST_LENGTH);
+    //hashandprint("    INIT(early): *UNTRUSTED* comp SL above 64K): ",
+    //             (u8*)hypervisor_image_baseaddress+0x10000, 0x200000-0x10000);
 
     
     //print out stats
-    printf("\nINIT(early): relocated hypervisor binary image to 0x%08x", hypervisor_image_baseaddress);
-    printf("\nINIT(early): 2M aligned size = 0x%08lx", PAGE_ALIGN_UP2M((mod_array[0].mod_end - mod_array[0].mod_start)));
-    printf("\nINIT(early): un-aligned size = 0x%08x", mod_array[0].mod_end - mod_array[0].mod_start);
-    
+    //printf("\nINIT(early): relocated hypervisor binary image to 0x%08x", hypervisor_image_baseaddress);
+    //printf("\nINIT(early): 2M aligned size = 0x%08lx", PAGE_ALIGN_UP2M((mod_array[0].mod_end - mod_array[0].mod_start)));
+    //printf("\nINIT(early): un-aligned size = 0x%08x", mod_array[0].mod_end - mod_array[0].mod_start);
+
+#if 0    
     //fill in "sl" parameter block
     {
         //"sl" parameter block is at hypervisor_image_baseaddress + 0x10000
@@ -1025,7 +1019,32 @@ void cstartup(multiboot_info_t *mbi){
 #endif
         strncpy(xslbootinfo->cmdline_buffer, (const char *)mbi->cmdline, sizeof(xslbootinfo->cmdline_buffer));
     }
-   
+#endif //old parameter block fill logic
+
+
+    //fill in bootinfo
+    {
+        xslbootinfo = (XMHF_BOOTINFO *)((u32)hypervisor_image_baseaddress);
+        printf("xmhf-bootloader: xslbootinfo=%08x, magic=%x\n", (u32)xslbootinfo, xslbootinfo->magic);
+        HALT_ON_ERRORCOND(xslbootinfo->magic == SL_PARAMETER_BLOCK_MAGIC);
+        xslbootinfo->memmapinfo_numentries = grube820list_numentries;
+        HALT_ON_ERRORCOND(xslbootinfo->memmapinfo_numentries <= 64);
+		memcpy((void *)&xslbootinfo->memmapinfo_buffer, (void *)&grube820list, (sizeof(GRUBE820) * grube820list_numentries));         
+        xslbootinfo->cpuinfo_numentries = pcpus_numentries;
+        HALT_ON_ERRORCOND(xslbootinfo->cpuinfo_numentries <= 8);
+        memcpy((void *)&xslbootinfo->cpuinfo_buffer, (void *)&pcpus, (sizeof(PCPU) * pcpus_numentries));
+        xslbootinfo->size = sl_rt_size;
+        xslbootinfo->richguest_bootmodule_base = mod_array[1].mod_start;
+        xslbootinfo->richguest_bootmodule_size = (mod_array[1].mod_end - mod_array[1].mod_start); 
+	
+		#if defined (__DEBUG_SERIAL__)
+        memcpy(&xslbootinfo->debugcontrol_buffer, &g_uart_config, sizeof(uart_config_t));
+		#endif
+        strncpy(xslbootinfo->cmdline_buffer, (const char *)mbi->cmdline, sizeof(xslbootinfo->cmdline_buffer));
+    }
+
+    printf("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
+
     //switch to MP mode
     //setup Master-ID Table (MIDTABLE)
     {
@@ -1123,7 +1142,8 @@ void mp_cstartup (BOOTVCPU *vcpu){
         //put all APs in INIT state
         
         printf("\nBSP(0x%02x): APs ready, doing DRTM...", vcpu->id);
-        do_drtm(vcpu, hypervisor_image_baseaddress, sl_rt_size); // this function will not return
+        //do_drtm(vcpu, hypervisor_image_baseaddress, sl_rt_size); // this function will not return
+        do_drtm(vcpu, __TARGET_BASE_SL, sl_rt_size); // this function will not return
     
         printf("\nBSP(0x%02x): FATAL, should never be here!", vcpu->id);
         HALT();

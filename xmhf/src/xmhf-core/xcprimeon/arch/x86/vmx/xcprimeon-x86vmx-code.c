@@ -50,7 +50,10 @@
  */
  
 #include <xmhf.h>
-#include <xmhf-sl.h>
+//#include <xmhf-sl.h>
+
+#include <xcprimeon.h>
+
 
 #include "platform/x86pc/include/common/_multiboot.h"		//multiboot
 #include "cpu/x86/include/common/_processor.h"  	//CPU
@@ -76,9 +79,9 @@
 
 /* sl stack, this is just a placeholder and ensures that the linker
  actually "allocates" the stack up until 0x10000*/
-u8 _sl_stack[1] __attribute__((section(".sl_stack")));
+//u8 _sl_stack[1] __attribute__((section(".sl_stack")));
 
-__attribute__((naked)) void _xmhf_sl_entry(void) __attribute__(( section(".sl_header") )) __attribute__(( align(4096) )){
+__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__(( align(4096) )) void _xmhf_sl_entry(void) {
 	
 asm volatile ( 	".global _mle_page_table_start \r\n"
 			   "_mle_page_table_start:\r\n"
@@ -98,12 +101,13 @@ asm volatile ( 	".global _mle_page_table_start \r\n"
 				"movw %%ax, %%fs \r\n"
 				"movw %%ax, %%gs \r\n"
 			    "movw %%ax, %%ss \r\n"
-			    "movl $0x10010000, %%esp \r\n" /* XXX TODO Get rid of magic number*/
+			    "movl $0x10200000, %%esp \r\n" /* XXX TODO Get rid of magic number*/
+			    "jmp xcprimeon_startup \r\n"
 			    :
 			    :
 		);
 
-		xmhf_sl_main();
+		//xmhf_sl_main();
 
 }
 
