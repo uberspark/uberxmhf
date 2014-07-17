@@ -52,7 +52,8 @@ ENTRY(xmhf_runtime_entry)
 
 MEMORY
 {
-  all (rwxai) : ORIGIN = 0x10200000, LENGTH = 254M 
+  all (rwxai) : ORIGIN = 0x10000000, LENGTH = 256M 
+/*  all (rwxai) : ORIGIN = 0x10200000, LENGTH = 254M */
 /*  slabroshareddatamem (rai) : ORIGIN = XMHF_SLAB_REGION_SHARED_RODATA, LENGTH = 16M
   slabmem (rwxai) : ORIGIN = XMHF_SLAB_REGION_START, LENGTH = 112M */
   unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
@@ -60,7 +61,9 @@ MEMORY
 
 SECTIONS
 {
-	. = 0x10200000;
+	/*. = 0x10200000;*/
+	. = 0x10000000;
+	
 
 	.header : {
 		*(.sharedro_xcbootinfo)
