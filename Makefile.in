@@ -315,14 +315,14 @@ subdirs: $(LIBBAREMETAL_SRC) $(XMHFCORE_SRC)
 	@echo **************************************************************
 	@echo XMHF core build SUCCESS
 	@echo **************************************************************
-	@echo **************************************************************
-	@echo Building XMHF secure loader...
-	@echo **************************************************************
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_SECURELOADER_SRC)/Makefile -w all \
-			RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
-	@echo **************************************************************
-	@echo XMHF secure loader build SUCCESS
-	@echo **************************************************************
+	#@echo **************************************************************
+	#@echo Building XMHF secure loader...
+	#@echo **************************************************************
+	#cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_SECURELOADER_SRC)/Makefile -w all \
+	#		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
+	#@echo **************************************************************
+	#@echo XMHF secure loader build SUCCESS
+	#@echo **************************************************************
 	@echo **************************************************************
 	@echo Building XMHF boot loader...
 	@echo **************************************************************
