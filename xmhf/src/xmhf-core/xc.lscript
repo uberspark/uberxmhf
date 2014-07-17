@@ -65,10 +65,11 @@ SECTIONS
 	. = 0x10000000;
 	
 
-	.header : {
+	.slab_shared : {
 		*(.sharedro_xcbootinfo)
 		*(.sharedro_xcbootinfoptr)
 		*(.sharedro_slab_table)
+		*(.section_archds);
 		. = ALIGN(0x200000);
 	} >all=0x0000
 
@@ -268,23 +269,6 @@ SECTIONS
 	} >all=0x0000
 
 
-	/*.map_archstructs : {
-		_map_archstructs_start = .;
-		_map_archstructs_tss = .;
-		. = . + 0x1000;
-		_map_archstructs_gdt = .;
-		. = . + 0x2000;
-		_map_archstructs_idt = .;
-		. = . + 0x2000;
-		_map_archstructs_end = .;
-		. = ALIGN(0x200000);
-	} >all=0x0000*/
-	
-	.section_archds : {
-		*(.section_archds);
-		. = ALIGN(0x200000);
-	} >all=0x0000
-	
 	.shared : {
 		*(.text)
 		*(.data)
