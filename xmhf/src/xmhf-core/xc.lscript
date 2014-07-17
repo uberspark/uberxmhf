@@ -280,8 +280,8 @@ SECTIONS
 		. = ALIGN(0x200000);
 	} >all=0x0000*/
 	
-	.section_archstructs : {
-		*(.section_archstructs);
+	.section_archds : {
+		*(.section_archds);
 		. = ALIGN(0x200000);
 	} >all=0x0000
 	

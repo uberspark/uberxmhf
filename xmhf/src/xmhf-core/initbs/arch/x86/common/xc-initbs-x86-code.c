@@ -141,23 +141,6 @@ void xmhf_baseplatform_arch_x86_initializeCR0(){
 }
 
 
-
-// GDT
-static u64 _gdt_start[] __attribute__(( aligned(16) )) = {
-	0x0000000000000000ULL,	//NULL descriptor
-	0x00cf9b000000ffffULL,	//CPL-0 code descriptor (CS)
-	0x00cf93000000ffffULL,	//CPL-0 data descriptor (DS/SS/ES/FS/GS)
-	0x00cffb000000ffffULL,	//CPL-3 code descriptor (CS)
-	0x00cff3000000ffffULL,	//CPL-3 data descriptor (DS/SS/ES/FS/GS)
-	0x0000000000000000ULL	
-};
-
-// GDT descriptor
-arch_x86_gdtdesc_t _gdt __attribute__(( aligned(16) )) = {
-	.size=sizeof(_gdt_start)-1,
-	.base=(u32)&_gdt_start,
-};
-
 //initialize GDT
 void xmhf_baseplatform_arch_x86_initializeGDT(void){
 	
