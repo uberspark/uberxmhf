@@ -101,12 +101,13 @@ asm volatile ( 	".global _mle_page_table_start \r\n"
 				"movw %%ax, %%fs \r\n"
 				"movw %%ax, %%gs \r\n"
 			    "movw %%ax, %%ss \r\n"
-			    "movl $0x10010000, %%esp \r\n" /* XXX TODO Get rid of magic number*/
+			    "movl $0x10200000, %%esp \r\n" /* XXX TODO Get rid of magic number*/
+			    "jmp xcprimeon_startup \r\n"
 			    :
 			    :
 		);
 
-		xmhf_sl_main();
+		//xmhf_sl_main();
 
 }
 

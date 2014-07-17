@@ -181,10 +181,10 @@ typedef struct _sl_parameter_block {
 */
 
 //"sl" parameter block magic value
-#define SL_PARAMETER_BLOCK_MAGIC		0xDEADBEEF
+//#define SL_PARAMETER_BLOCK_MAGIC		0xDEADBEEF
 
 //"runtime" parameter block magic value
-#define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
+//#define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
 
 
 //-------------------------------------------------------
