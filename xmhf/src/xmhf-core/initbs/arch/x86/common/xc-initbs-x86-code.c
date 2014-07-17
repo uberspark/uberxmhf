@@ -61,8 +61,6 @@
 #include <xc-coreapi.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
 
-extern __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) u64 _gdt_start[] ;
-extern __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) arch_x86_gdtdesc_t _gdt;
 
 
 /* originally within xc-baseplatform-x86.c */
