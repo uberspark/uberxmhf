@@ -62,20 +62,6 @@
 #undef __XMHF_SLAB_CALLER_INDEX__
 
 
-
-/* originally within xc-baseplatform-x86.c */
-
-//----------------------------------------------------------------------
-// local variables
-
-
-
-
-
-
-//----------------------------------------------------------------------
-// functions
-
 //get CPU vendor
 u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
 	u32 vendor_dword1, vendor_dword2, vendor_dword3;
@@ -130,14 +116,6 @@ void xmhf_baseplatform_arch_x86_cpuinitialize(void){
 
 }
 
-//----------------------------------------------------------------------
-
-//initialize CR0
-void xmhf_baseplatform_arch_x86_initializeCR0(){
-	
-	
-}
-
 
 //initialize GDT
 void xmhf_baseplatform_arch_x86_initializeGDT(void){
@@ -161,8 +139,6 @@ void xmhf_baseplatform_arch_x86_initializeGDT(void){
 
 	
 }
-//----------------------------------------------------------------------
-
 
 //initialize IO privilege level
 void xmhf_baseplatform_arch_x86_initializeIOPL(void){
@@ -178,30 +154,15 @@ void xmhf_baseplatform_arch_x86_initializeIOPL(void){
 	
 }
 
-
-
 //initialize TR/TSS
 void xmhf_baseplatform_arch_x86_initializeTSS(void){
-
-	{
 		u32 i;
-		//u32 tss_base=(u32)&g_runtime_TSS;
 		u32 tss_base=(u32)&_tss;
 		TSSENTRY *t;
 		tss_t *tss= (tss_t *)_tss;
 		
-		//extern u64 x_gdt_start[];
-	
-		//memset((void *)_tss, 0, sizeof(_tss));
 		tss->ss0 = __DS_CPL0;
-		//tss->esp0 = (u32)&_exceptionstack + (u32)sizeof(_exceptionstack);
 		tss->esp0 = (u32)_slab_table[XMHF_SLAB_XCEXHUB_INDEX].slab_tos;
-		
-	
-		//printf("\ndumping GDT...");
-		//for(i=0; i < 6; i++)
-		//	printf("\n    entry %u -> %016llx", i, _gdt_start[i]);
-		//printf("\nGDT dumped.");
 
 		printf("\nfixing TSS descriptor (TSS base=%x)...", tss_base);
 		t= (TSSENTRY *)(u32)&_gdt_start[(__TRSEL/sizeof(u64))];
@@ -212,22 +173,6 @@ void xmhf_baseplatform_arch_x86_initializeTSS(void){
 		t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);      
 		t->limit0_15=0x67;
 		printf("\nTSS descriptor fixed.");
-
-		//printf("\ndumping GDT...");
-		//for(i=0; i < 6; i++)
-		//	printf("\n    entry %u -> %016llx", i, _gdt_start[i]);
-		//printf("\nGDT dumped.");
-
-		/*printf("\nsetting TR...");
-		  __asm__ __volatile__("movw %0, %%ax\r\n"
-			"ltr %%ax\r\n"				//load TR
-			 : 
-			 : "g"(__TRSEL)
-			 : "eax"
-		  );
-		printf("\nTR set successfully");*/
-		
-	}
 
 }
 
@@ -502,19 +447,6 @@ void xmhf_apihub_arch_initialize (void){
 				printf("\nslab %u: pdpt=%08x, pdt[0]=%08x, pdt[1]=%08x", i, (u32)_slab_pagetables[i].pdpt, (u32)_slab_pagetables[i].pdt[0], (u32)_slab_pagetables[i].pdt[1]);
 				printf("\n                    pdt[2]=%08x, pdt[3]=%08x", (u32)_slab_pagetables[i].pdt[2], (u32)_slab_pagetables[i].pdt[3]);
 		}
-		
-		
-		/*{
-			extern u8 _map_archstructs_start[];
-			extern u8 _map_archstructs_tss[];
-			extern u8 _map_archstructs_gdt[];
-			extern u8 _map_archstructs_idt[];
-			extern u8 _map_archstructs_end[];
-		
-			printf("\n");
-			printf("_map_archstructs_start=%08x, _map_archstructs_end=%08x\n", _map_archstructs_start, _map_archstructs_end);
-		
-		}*/
 
 	}
 
@@ -565,59 +497,7 @@ void xmhf_apihub_arch_initialize (void){
 	
 	printf("\n%s: setup slab page tables and macm id's\n", __FUNCTION__);
 	
-/*	
-	for(i=0; i < numofslabs; i++){
-			//for each slab with index i
-			_xcinitbs_slab_populate_pagetables(i);
-	}
-	
-	_xcinitbs_slab_populate_pagetables{
-		for(i=0; i < PAE_PTRS_PER_PDPT; i++)
-			_slab_pagetables[slab_index].pdpt[i] = pae_make_pdpe(hva2spa(_slab_pagetables[slab_index].pdt[i]), default_flags);
 
-		//init pdts with unity mappings
-		for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-			for(j=0; j < PAE_PTRS_PER_PDT; j++){
-				u32 hva = ((i * PAE_PTRS_PER_PDT) + j) * PAGE_SIZE_2M;
-				u64 spa = hva2spa((void*)hva);
-				u64 flags = getflagsforspa(spa);
-						
-				_slab_pagetables[slab_index].pdt[i][j] = pae_make_pde_big(spa, flags);
-			}
-		}
-		
-	}
-
-	getflagsforspa(spa){
-					switch(spa){
-					case OTHER_SLAB_CODE:
-					case OTHER_SLAB_RODATA:
-					case OTHER_SLAB_RWDATA:
-						default_flags = 0;
-					case OTHER_SLAB_TRAMPOLINE:
-						default_flags = present | read-only | pse;
-					case OTHER_SLAB_STACK:
-						default_flags = present | read-only | no execute | pse;
-						
-					case MY_SLAB_CODE:
-						default_flags = present | read-only | pse;
-					case MY_SLAB_RODATA:
-						default_flags = present | read-only | no-execute | pse;
-					case MY_SLAB_RWDATA:
-					case MY_SLAB_STACK:
-						default_flags = present | read-write | no-execute | pse;
-					case MY_SLAB_TRAMPOLINE:
-						default_flags = present | read-only | pse;
-						
-					case SHARED_SLAB_RODATA:
-						default_flags = present | read-only | no-execute | pse;
-					case OTHER
-						default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE | _PAGE_USER);
-				}
-	}
-*/		
-	
-		
 	//initialize paging
 	xmhf_baseplatform_arch_x86_initialize_paging((u32)_slab_table[XMHF_SLAB_INITBS_INDEX].slab_macmid);
 	printf("\n%s: setup slab paging\n", __FUNCTION__);
