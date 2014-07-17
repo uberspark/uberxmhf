@@ -73,3 +73,7 @@ __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) arc
 	.base=(u32)&_gdt_start,
 };
 
+// TSS
+__attribute__(( aligned(4096) )) __attribute__(( section(".section_archds") )) u8 _tss[PAGE_SIZE_4K] = { 0 };
+
+
