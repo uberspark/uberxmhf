@@ -61,6 +61,9 @@
 #include <xc-coreapi.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
 
+extern __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) u64 _gdt_start[] ;
+extern __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) arch_x86_gdtdesc_t _gdt;
+
 
 /* originally within xc-baseplatform-x86.c */
 
@@ -200,10 +203,10 @@ void xmhf_baseplatform_arch_x86_initializeTSS(void){
 		tss->esp0 = (u32)_slab_table[XMHF_SLAB_XCEXHUB_INDEX].slab_tos;
 		
 	
-		printf("\ndumping GDT...");
-		for(i=0; i < 6; i++)
-			printf("\n    entry %u -> %016llx", i, _gdt_start[i]);
-		printf("\nGDT dumped.");
+		//printf("\ndumping GDT...");
+		//for(i=0; i < 6; i++)
+		//	printf("\n    entry %u -> %016llx", i, _gdt_start[i]);
+		//printf("\nGDT dumped.");
 
 		printf("\nfixing TSS descriptor (TSS base=%x)...", tss_base);
 		t= (TSSENTRY *)(u32)&_gdt_start[(__TRSEL/sizeof(u64))];
@@ -215,10 +218,10 @@ void xmhf_baseplatform_arch_x86_initializeTSS(void){
 		t->limit0_15=0x67;
 		printf("\nTSS descriptor fixed.");
 
-		printf("\ndumping GDT...");
-		for(i=0; i < 6; i++)
-			printf("\n    entry %u -> %016llx", i, _gdt_start[i]);
-		printf("\nGDT dumped.");
+		//printf("\ndumping GDT...");
+		//for(i=0; i < 6; i++)
+		//	printf("\n    entry %u -> %016llx", i, _gdt_start[i]);
+		//printf("\nGDT dumped.");
 
 		/*printf("\nsetting TR...");
 		  __asm__ __volatile__("movw %0, %%ax\r\n"

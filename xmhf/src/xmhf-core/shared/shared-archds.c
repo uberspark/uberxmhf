@@ -58,7 +58,7 @@
 
 
 // GDT
-__attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) static u64 _gdt_start[]  = {
+__attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) u64 _gdt_start[]  = {
 	0x0000000000000000ULL,	//NULL descriptor
 	0x00cf9b000000ffffULL,	//CPL-0 code descriptor (CS)
 	0x00cf93000000ffffULL,	//CPL-0 data descriptor (DS/SS/ES/FS/GS)
