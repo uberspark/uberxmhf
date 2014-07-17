@@ -56,6 +56,8 @@
 #include "cpu/x86/include/common/_msr.h"        	//model specific registers
 #include "cpu/x86/include/common/_paging.h"     	//MMU
 #include "cpu/x86/include/common/_io.h"         	//legacy I/O
+#include "platform/x86pc/include/common/_memaccess.h"	//platform memory access
+
 
 //returns true if CPU has support for XSAVE/XRSTOR
 bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void){
