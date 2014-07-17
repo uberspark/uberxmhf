@@ -61,6 +61,8 @@
 extern __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) u64 _gdt_start[] ;
 extern __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) arch_x86_gdtdesc_t _gdt;
 extern __attribute__(( aligned(4096) )) __attribute__(( section(".section_archds") )) u8 _tss[PAGE_SIZE_4K];
+extern __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) u64 _idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
+extern __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) arch_x86_idtdesc_t _idt;
 
 
 #endif	//__ASSEMBLY__
