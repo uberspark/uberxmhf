@@ -271,7 +271,7 @@ SECTIONS
 	} >all=0x0000
 
 
-	.shared : {
+	/*.shared : {
 		*(.text)
 		*(.data)
 		*(.rodata)
@@ -282,7 +282,7 @@ SECTIONS
 		*(.palign_data)
 		*(.stack)
 		. = ALIGN(0x200000);
-	} >all=0x0000
+	} >all=0x0000*/
 
 
 	
