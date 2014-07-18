@@ -85,3 +85,5 @@ __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) arc
 	.base=(u32)&_idt_start,
 };
 
+//libxmhfdebug
+__attribute__(( section(".libxmhfdebugdata") )) u32 libxmhfdebug_lock = 1;
