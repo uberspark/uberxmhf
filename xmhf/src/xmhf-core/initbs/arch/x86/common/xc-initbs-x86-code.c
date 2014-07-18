@@ -321,24 +321,24 @@ static u32 _xcinitbs_slab_getspatype(u32 slab_index, u32 spa){
 	for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++){
 		u32 mask = (i == slab_index) ? 0 : _SLAB_SPATYPE_OTHER_SLAB_MASK;
 		
-		if(i == XMHF_SLAB_INITBS_INDEX && slab_index != XMHF_SLAB_INITBS_INDEX){
+		/*if(i == XMHF_SLAB_INITBS_INDEX && slab_index != XMHF_SLAB_INITBS_INDEX){
 			if(spa >= _slab_table[i].slab_code.start  && spa < _slab_table[i].slab_code.end)
 				return _SLAB_SPATYPE_TEST;
 			if (spa >= _slab_table[i].slab_rodata.start  && spa < _slab_table[i].slab_rodata.end)
-				return _SLAB_SPATYPE_TEST;
+				return _SLAB_SPATYPE_SLAB_RODATA | mask;
 			if (spa >= _slab_table[i].slab_rwdata.start  && spa < _slab_table[i].slab_rwdata.end)	
-				return _SLAB_SPATYPE_TEST;
+				return _SLAB_SPATYPE_SLAB_RWDATA | mask;
 			if (spa >= _slab_table[i].slab_stack.start  && spa < _slab_table[i].slab_stack.end)	
 				return _SLAB_SPATYPE_SLAB_STACK | mask;
 			if (spa >= _slab_table[i].slab_trampoline.start  && spa < _slab_table[i].slab_trampoline.end)	
 				return _SLAB_SPATYPE_TEST;
-		}else if (i == XMHF_SLAB_XCEXHUB_INDEX && slab_index != XMHF_SLAB_XCEXHUB_INDEX){
+		}else*/ if (i == XMHF_SLAB_XCEXHUB_INDEX && slab_index != XMHF_SLAB_XCEXHUB_INDEX){
 			if(spa >= _slab_table[i].slab_code.start  && spa < _slab_table[i].slab_code.end)
 				return _SLAB_SPATYPE_TEST;
 			if (spa >= _slab_table[i].slab_rodata.start  && spa < _slab_table[i].slab_rodata.end)
-				return _SLAB_SPATYPE_TEST;
+				return _SLAB_SPATYPE_SLAB_RODATA | mask;
 			if (spa >= _slab_table[i].slab_rwdata.start  && spa < _slab_table[i].slab_rwdata.end)	
-				return _SLAB_SPATYPE_TEST;
+				return _SLAB_SPATYPE_SLAB_RWDATA | mask;
 			if (spa >= _slab_table[i].slab_stack.start  && spa < _slab_table[i].slab_stack.end)	
 				return _SLAB_SPATYPE_SLAB_STACK | mask;
 			if (spa >= _slab_table[i].slab_trampoline.start  && spa < _slab_table[i].slab_trampoline.end)	
