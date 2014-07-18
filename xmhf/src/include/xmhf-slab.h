@@ -171,8 +171,9 @@ extern __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_tab
 #define XMHF_SLAB_DEFIMPORTFNSTUB(src_slab_index, dest_slab_index, fnnum, fn_paramsize, fn_retsize, fn_aggregateret) _XMHF_SLAB_DEFIMPORTFNSTUB(src_slab_index, dest_slab_index, fnnum, fn_paramsize, fn_retsize, fn_aggregateret)
 
 
-#define XMHF_SLAB_DEFIMPORTFN(fn_decl, fn_stub)	__attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute__ ((noinline)) static inline fn_decl { fn_stub }
+//#define XMHF_SLAB_DEFIMPORTFN(fn_decl, fn_stub)	__attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute__ ((noinline)) static inline fn_decl { fn_stub }
 
+#define XMHF_SLAB_DEFIMPORTFN(fn_rettype, fn_name, fn_decl, fn_stub)	__attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute__ ((noinline)) static inline fn_rettype fn_name fn_decl { fn_stub }
 
 
 /*
