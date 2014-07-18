@@ -128,7 +128,7 @@ typedef struct {
 } __attribute__((packed)) XMHF_BOOTINFO;
 
 //forward declaration of core boot info structure
-extern XMHF_BOOTINFO *xcbootinfo;
+//extern XMHF_BOOTINFO *xcbootinfo;
 
 /*//"runtime" parameter block structure; arch_rpb (in startup component) 
 //is the default definition

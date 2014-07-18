@@ -241,8 +241,8 @@ static u32 _cpucount = 0;
 
 
 //XXX: TODO: get rid of these externs and bring them in here as static
-extern arch_x86_gdtdesc_t _gdt;
-static arch_x86_idtdesc_t _idt;
+//extern arch_x86_gdtdesc_t _gdt;
+//static arch_x86_idtdesc_t _idt;
 
 //----------------------------------------------------------------------
 // functions
@@ -463,7 +463,8 @@ void xmhf_baseplatform_arch_initialize(void){
 
 void xcinitbs_arch_initialize_exception_handling(void){
 	printf("\n%s: proceeding to invoke xcexhub_initialize...", __FUNCTION__);
-	_idt = xcexhub_initialize();
+	//_idt = xcexhub_initialize();
+	xcexhub_initialize();
 	printf("\n%s: xcexhub_initialize completed successfully.", __FUNCTION__);
 }
 

@@ -67,7 +67,10 @@
 
 #ifndef __ASSEMBLY__
 
-extern slab_header_t _slab_table[];
+//extern slab_header_t _slab_table[];
+
+extern __attribute__(( section(".sharedro_xcbootinfoptr") )) XMHF_BOOTINFO *xcbootinfo;
+extern __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_table[XMHF_SLAB_NUMBEROFSLABS];
 
 #define _XMHF_SLAB_DEFEXPORTFN(fn_name, fn_num, fn_aggregateret)		\
 			"1:\r\n"								\
