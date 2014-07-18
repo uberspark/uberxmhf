@@ -59,66 +59,15 @@
 #include <xc-coreapi.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
 
-
-//core IDT
-static u64 _idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] __attribute__(( aligned(16) ));
-
-//core IDT descriptor
-static arch_x86_idtdesc_t _idt __attribute__(( aligned(16) )) = {
-	.size=sizeof(_idt_start)-1,
-	.base=(u32)&_idt_start,
-};
-
-
-
-//initialize IDT
-void xmhf_baseplatform_arch_x86_initializeIDT(void){
-
-	asm volatile(
-		"lidt  %0 \r\n"
-		: //no outputs
-		: "m" (_idt)
-		: //no clobber
-	);
-	
-}
-
-/* originally within xc-xcphandler-x86.c */
-
-/*#define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
-	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
-		asm volatile(	"pushal	\r\n"								\
-						"movw	%0, %%ax\r\n"						\
-						"movw	%%ax, %%ds\r\n"						\
-						"movl 	%%esp, %%eax\r\n"					\
-						"pushl 	%%eax\r\n"							\
-						"pushl	%1\r\n" 							\
-						"call	xmhf_xcphandler_arch_hub\r\n"			\
-						"addl  	$0x08, %%esp\r\n"					\
-						"popal	 \r\n"								\
-						"iretl\r\n"									\
-					:												\
-					:	"i" (__DS_CPL0), "i" (vector)				\
-		);															\
-	}\
-*/
-
 __attribute__((section(".stack"))) static u32 _xcexhub_exception_lock = 1;
 __attribute__((section(".stack"))) static u32 _xcexhub_exception_savedesp[MAX_PLATFORM_CPUS];
 __attribute__((section(".stack"))) static u32 _xcexhub_exception_savedesp_index = &_xcexhub_exception_savedesp[0];
-//__attribute__((section(".stack"))) static u32 _xcexhub_exception_savedcr3 = 0;
-//exclusive exception handling stack, we switch to this stack if there
-//are any exceptions during hypapp execution
 __attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u8 _xcexhub_exception_stack[MAX_PLATFORM_CPUS][PAGE_SIZE_4K];
 __attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u32 _xcexhub_exception_stack_index = &_xcexhub_exception_stack[1];
 
 
-//XXX: TODO: we can't use a lock for the entire exception handling below since out current
-//quiesce logic holds up every core within the NMI handler; this needs to be reentrant so
-//we need to operate on core-specific save structures
-
 #define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
-	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
+	__attribute__(( section(".slab_trampoline") )) static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
 		asm volatile(												\
 						"1:	bt	$0, %0	\r\n"						\
 						"jnc 1b	\r\n"								\
@@ -234,11 +183,23 @@ static u32 exceptionstubs[] = { 	XMHF_EXCEPTION_HANDLER_ADDROF(0),
 							XMHF_EXCEPTION_HANDLER_ADDROF(30),
 							XMHF_EXCEPTION_HANDLER_ADDROF(31),
 };
-						
 
-//initialize EMHF core exception handlers
-//void xmhf_xcphandler_arch_initialize(void){
-arch_x86_idtdesc_t xcexhub_initialize(void){
+
+
+//load IDT
+void xmhf_baseplatform_arch_x86_initializeIDT(void){
+
+	asm volatile(
+		"lidt  %0 \r\n"
+		: //no outputs
+		: "m" (_idt)
+		: //no clobber
+	);
+	
+}
+
+//initialize core exception handlers
+void xcexhub_initialize(void){
 	u32 *pexceptionstubs;
 	u32 i;
 
@@ -257,13 +218,13 @@ arch_x86_idtdesc_t xcexhub_initialize(void){
 	xmhf_baseplatform_arch_x86_initializeIDT();
 	
 	printf("\n%s: IDT setup done.", __FUNCTION__);
-	return _idt;
 }
 
 
-/* originally in xc-ihub-xcphandler-x86.c */
 
-static void xmhf_xcphandler_arch_unhandled(u32 vector, struct regs *r){
+						
+
+__attribute__(( section(".slab_trampoline") )) static void xmhf_xcphandler_arch_unhandled(u32 vector, struct regs *r){
 	u32 exception_cs, exception_eip, exception_eflags, errorcode=0;
 
 	if(vector == CPU_EXCEPTION_DF ||
@@ -305,7 +266,7 @@ static void xmhf_xcphandler_arch_unhandled(u32 vector, struct regs *r){
 }
 
 //exception handler hub
-void xmhf_xcphandler_arch_hub(u32 vector, struct regs *r){
+__attribute__(( section(".slab_trampoline") )) void xmhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 	switch(vector){
 			case CPU_EXCEPTION_NMI:{
 				xc_coreapi_arch_eventhandler_nmiexception(r);

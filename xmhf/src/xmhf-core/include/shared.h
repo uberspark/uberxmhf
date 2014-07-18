@@ -44,13 +44,29 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF core initialization boostrap (init-bs) entry module
-// author: amit vasudevan (amitvasudevan@acm.org)
 
-//---includes-------------------------------------------------------------------
-#include <xmhf-core.h> 
+/*
+ * 
+ *  XMHF slab shared mapping decls.
+ * 
+ *  author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
-#include <xc-initbs.h>
+#ifndef __SHARED_H__
+#define __SHARED_H__
 
-static u8 _init_stack[MAX_PLATFORM_CPUSTACK_SIZE] __attribute__(( section(".stack") ));
 
+#ifndef __ASSEMBLY__
+
+extern __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) u64 _gdt_start[] ;
+extern __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) arch_x86_gdtdesc_t _gdt;
+extern __attribute__(( aligned(4096) )) __attribute__(( section(".section_archds") )) u8 _tss[PAGE_SIZE_4K];
+extern __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) u64 _idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
+extern __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) arch_x86_idtdesc_t _idt;
+
+
+
+#endif	//__ASSEMBLY__
+
+
+#endif //__SHARED_H__

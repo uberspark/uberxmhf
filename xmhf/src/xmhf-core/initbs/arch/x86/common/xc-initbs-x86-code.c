@@ -62,22 +62,6 @@
 #undef __XMHF_SLAB_CALLER_INDEX__
 
 
-/* originally within xc-baseplatform-x86.c */
-
-//----------------------------------------------------------------------
-// local variables
-
-
-//runtime TSS
-u8 _tss[PAGE_SIZE_4K] = { 0 };
-
-
-
-
-
-//----------------------------------------------------------------------
-// functions
-
 //get CPU vendor
 u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
 	u32 vendor_dword1, vendor_dword2, vendor_dword3;
@@ -132,31 +116,6 @@ void xmhf_baseplatform_arch_x86_cpuinitialize(void){
 
 }
 
-//----------------------------------------------------------------------
-
-//initialize CR0
-void xmhf_baseplatform_arch_x86_initializeCR0(){
-	
-	
-}
-
-
-
-// GDT
-static u64 _gdt_start[] __attribute__(( aligned(16) )) = {
-	0x0000000000000000ULL,	//NULL descriptor
-	0x00cf9b000000ffffULL,	//CPL-0 code descriptor (CS)
-	0x00cf93000000ffffULL,	//CPL-0 data descriptor (DS/SS/ES/FS/GS)
-	0x00cffb000000ffffULL,	//CPL-3 code descriptor (CS)
-	0x00cff3000000ffffULL,	//CPL-3 data descriptor (DS/SS/ES/FS/GS)
-	0x0000000000000000ULL	
-};
-
-// GDT descriptor
-arch_x86_gdtdesc_t _gdt __attribute__(( aligned(16) )) = {
-	.size=sizeof(_gdt_start)-1,
-	.base=(u32)&_gdt_start,
-};
 
 //initialize GDT
 void xmhf_baseplatform_arch_x86_initializeGDT(void){
@@ -180,8 +139,6 @@ void xmhf_baseplatform_arch_x86_initializeGDT(void){
 
 	
 }
-//----------------------------------------------------------------------
-
 
 //initialize IO privilege level
 void xmhf_baseplatform_arch_x86_initializeIOPL(void){
@@ -197,30 +154,15 @@ void xmhf_baseplatform_arch_x86_initializeIOPL(void){
 	
 }
 
-
-
 //initialize TR/TSS
 void xmhf_baseplatform_arch_x86_initializeTSS(void){
-
-	{
 		u32 i;
-		//u32 tss_base=(u32)&g_runtime_TSS;
 		u32 tss_base=(u32)&_tss;
 		TSSENTRY *t;
 		tss_t *tss= (tss_t *)_tss;
 		
-		//extern u64 x_gdt_start[];
-	
-		//memset((void *)_tss, 0, sizeof(_tss));
 		tss->ss0 = __DS_CPL0;
-		//tss->esp0 = (u32)&_exceptionstack + (u32)sizeof(_exceptionstack);
 		tss->esp0 = (u32)_slab_table[XMHF_SLAB_XCEXHUB_INDEX].slab_tos;
-		
-	
-		printf("\ndumping GDT...");
-		for(i=0; i < 6; i++)
-			printf("\n    entry %u -> %016llx", i, _gdt_start[i]);
-		printf("\nGDT dumped.");
 
 		printf("\nfixing TSS descriptor (TSS base=%x)...", tss_base);
 		t= (TSSENTRY *)(u32)&_gdt_start[(__TRSEL/sizeof(u64))];
@@ -231,22 +173,6 @@ void xmhf_baseplatform_arch_x86_initializeTSS(void){
 		t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);      
 		t->limit0_15=0x67;
 		printf("\nTSS descriptor fixed.");
-
-		printf("\ndumping GDT...");
-		for(i=0; i < 6; i++)
-			printf("\n    entry %u -> %016llx", i, _gdt_start[i]);
-		printf("\nGDT dumped.");
-
-		/*printf("\nsetting TR...");
-		  __asm__ __volatile__("movw %0, %%ax\r\n"
-			"ltr %%ax\r\n"				//load TR
-			 : 
-			 : "g"(__TRSEL)
-			 : "eax"
-		  );
-		printf("\nTR set successfully");*/
-		
-	}
 
 }
 
@@ -358,6 +284,10 @@ void xmhf_baseplatform_arch_x86_restorecpumtrrstate(void){
 
 /*originally within xc-initbs-apihub-x86.c */
 
+extern u8 _slab_shareddata_memregion_start[];
+extern u8 _slab_shareddata_memregion_end[];
+
+
 //core PAE page tables
 static u64 core_3level_pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( aligned(4096) ));
 static u64 core_3level_pdt[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT] __attribute__(( aligned(4096) ));
@@ -383,50 +313,34 @@ static struct {
 #define _SLAB_SPATYPE_SLAB_TRAMPOLINE			(0x4)
 
 #define _SLAB_SPATYPE_NOTASLAB					(0xFF00)
-#define _SLAB_SPATYPE_TEST						(0xFF01)
 
 static u32 _xcinitbs_slab_getspatype(u32 slab_index, u32 spa){
 	u32 i;
 
+	//slab memory regions
 	for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++){
 		u32 mask = (i == slab_index) ? 0 : _SLAB_SPATYPE_OTHER_SLAB_MASK;
 		
-		if(i == XMHF_SLAB_INITBS_INDEX && slab_index != XMHF_SLAB_INITBS_INDEX){
-			if(spa >= _slab_table[i].slab_code.start  && spa < _slab_table[i].slab_code.end)
-				return _SLAB_SPATYPE_TEST;
-			if (spa >= _slab_table[i].slab_rodata.start  && spa < _slab_table[i].slab_rodata.end)
-				return _SLAB_SPATYPE_TEST;
-			if (spa >= _slab_table[i].slab_rwdata.start  && spa < _slab_table[i].slab_rwdata.end)	
-				return _SLAB_SPATYPE_TEST;
-			if (spa >= _slab_table[i].slab_stack.start  && spa < _slab_table[i].slab_stack.end)	
-				return _SLAB_SPATYPE_SLAB_STACK | mask;
-			if (spa >= _slab_table[i].slab_trampoline.start  && spa < _slab_table[i].slab_trampoline.end)	
-				return _SLAB_SPATYPE_TEST;
-		}else if (i == XMHF_SLAB_XCEXHUB_INDEX && slab_index != XMHF_SLAB_XCEXHUB_INDEX){
-			if(spa >= _slab_table[i].slab_code.start  && spa < _slab_table[i].slab_code.end)
-				return _SLAB_SPATYPE_TEST;
-			if (spa >= _slab_table[i].slab_rodata.start  && spa < _slab_table[i].slab_rodata.end)
-				return _SLAB_SPATYPE_TEST;
-			if (spa >= _slab_table[i].slab_rwdata.start  && spa < _slab_table[i].slab_rwdata.end)	
-				return _SLAB_SPATYPE_TEST;
-			if (spa >= _slab_table[i].slab_stack.start  && spa < _slab_table[i].slab_stack.end)	
-				return _SLAB_SPATYPE_SLAB_STACK | mask;
-			if (spa >= _slab_table[i].slab_trampoline.start  && spa < _slab_table[i].slab_trampoline.end)	
-				return _SLAB_SPATYPE_TEST;
-		}else{
-			if(spa >= _slab_table[i].slab_code.start  && spa < _slab_table[i].slab_code.end)
-				return _SLAB_SPATYPE_SLAB_CODE | mask;
-			if (spa >= _slab_table[i].slab_rodata.start  && spa < _slab_table[i].slab_rodata.end)
-				return _SLAB_SPATYPE_SLAB_RODATA | mask;
-			if (spa >= _slab_table[i].slab_rwdata.start  && spa < _slab_table[i].slab_rwdata.end)	
-				return _SLAB_SPATYPE_SLAB_RWDATA | mask;
-			if (spa >= _slab_table[i].slab_stack.start  && spa < _slab_table[i].slab_stack.end)	
-				return _SLAB_SPATYPE_SLAB_STACK | mask;
-			if (spa >= _slab_table[i].slab_trampoline.start  && spa < _slab_table[i].slab_trampoline.end)	
-				return _SLAB_SPATYPE_SLAB_TRAMPOLINE | mask;
-		}
-		
+		if(spa >= _slab_table[i].slab_code.start  && spa < _slab_table[i].slab_code.end)
+			return _SLAB_SPATYPE_SLAB_CODE | mask;
+		if (spa >= _slab_table[i].slab_rodata.start  && spa < _slab_table[i].slab_rodata.end)
+			return _SLAB_SPATYPE_SLAB_RODATA | mask;
+		if (spa >= _slab_table[i].slab_rwdata.start  && spa < _slab_table[i].slab_rwdata.end)	
+			return _SLAB_SPATYPE_SLAB_RWDATA | mask;
+		if (spa >= _slab_table[i].slab_stack.start  && spa < _slab_table[i].slab_stack.end)	
+			return _SLAB_SPATYPE_SLAB_STACK | mask;
+		if (spa >= _slab_table[i].slab_trampoline.start  && spa < _slab_table[i].slab_trampoline.end)	
+			return _SLAB_SPATYPE_SLAB_TRAMPOLINE | mask;
 	}	
+
+	//slab shared data region 
+	//TODO: add per shared data variable access policy rather than entire section
+	if(spa >= (u32)_slab_shareddata_memregion_start && spa < (u32)_slab_shareddata_memregion_end){
+			if (slab_index == XMHF_SLAB_INITBS_INDEX || slab_index == XMHF_SLAB_XCEXHUB_INDEX)
+				return _SLAB_SPATYPE_SLAB_RWDATA; //map read-write in initbs (GDT,TSS setup) and xcexhub (IDT setup)
+			else
+				return _SLAB_SPATYPE_SLAB_RODATA; //map read-only in all other slabs 
+	}
 
 	return _SLAB_SPATYPE_NOTASLAB;
 }
@@ -463,11 +377,6 @@ static u64 _xcinitbs_slab_getptflagsforspa(u32 slab_index, u32 spa){
 		case _SLAB_SPATYPE_SLAB_TRAMPOLINE:
 			flags = (u64)(_PAGE_PRESENT | _PAGE_PSE); //present | read-only | pse;
 			break;
-	
-		case _SLAB_SPATYPE_TEST:
-			flags = (u64)(_PAGE_PRESENT | _PAGE_PSE); //present | read-only | pse;
-			break;
-
 	
 		default:
 			flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE);
@@ -521,6 +430,7 @@ void xmhf_apihub_arch_initialize (void){
 				printf("\nslab %u: pdpt=%08x, pdt[0]=%08x, pdt[1]=%08x", i, (u32)_slab_pagetables[i].pdpt, (u32)_slab_pagetables[i].pdt[0], (u32)_slab_pagetables[i].pdt[1]);
 				printf("\n                    pdt[2]=%08x, pdt[3]=%08x", (u32)_slab_pagetables[i].pdt[2], (u32)_slab_pagetables[i].pdt[3]);
 		}
+
 	}
 
 
@@ -570,59 +480,7 @@ void xmhf_apihub_arch_initialize (void){
 	
 	printf("\n%s: setup slab page tables and macm id's\n", __FUNCTION__);
 	
-/*	
-	for(i=0; i < numofslabs; i++){
-			//for each slab with index i
-			_xcinitbs_slab_populate_pagetables(i);
-	}
-	
-	_xcinitbs_slab_populate_pagetables{
-		for(i=0; i < PAE_PTRS_PER_PDPT; i++)
-			_slab_pagetables[slab_index].pdpt[i] = pae_make_pdpe(hva2spa(_slab_pagetables[slab_index].pdt[i]), default_flags);
 
-		//init pdts with unity mappings
-		for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-			for(j=0; j < PAE_PTRS_PER_PDT; j++){
-				u32 hva = ((i * PAE_PTRS_PER_PDT) + j) * PAGE_SIZE_2M;
-				u64 spa = hva2spa((void*)hva);
-				u64 flags = getflagsforspa(spa);
-						
-				_slab_pagetables[slab_index].pdt[i][j] = pae_make_pde_big(spa, flags);
-			}
-		}
-		
-	}
-
-	getflagsforspa(spa){
-					switch(spa){
-					case OTHER_SLAB_CODE:
-					case OTHER_SLAB_RODATA:
-					case OTHER_SLAB_RWDATA:
-						default_flags = 0;
-					case OTHER_SLAB_TRAMPOLINE:
-						default_flags = present | read-only | pse;
-					case OTHER_SLAB_STACK:
-						default_flags = present | read-only | no execute | pse;
-						
-					case MY_SLAB_CODE:
-						default_flags = present | read-only | pse;
-					case MY_SLAB_RODATA:
-						default_flags = present | read-only | no-execute | pse;
-					case MY_SLAB_RWDATA:
-					case MY_SLAB_STACK:
-						default_flags = present | read-write | no-execute | pse;
-					case MY_SLAB_TRAMPOLINE:
-						default_flags = present | read-only | pse;
-						
-					case SHARED_SLAB_RODATA:
-						default_flags = present | read-only | no-execute | pse;
-					case OTHER
-						default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE | _PAGE_USER);
-				}
-	}
-*/		
-	
-		
 	//initialize paging
 	xmhf_baseplatform_arch_x86_initialize_paging((u32)_slab_table[XMHF_SLAB_INITBS_INDEX].slab_macmid);
 	printf("\n%s: setup slab paging\n", __FUNCTION__);

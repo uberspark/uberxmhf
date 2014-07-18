@@ -80,6 +80,8 @@ extern RPB *rpb;
 #include <xc-types.h>			//core specific data types
 //#include <xc-shareddata.h>		//core shared data
 
+#include <shared.h>				//shared slab mappings, TODO: find a way to move this up to xmhf-slab.h since it is not core slab specific
+
 //----------------------------------------------------------------------
 // component headers
 #include <xc-baseplatform.h>	//base platform component
