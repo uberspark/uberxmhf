@@ -64,6 +64,9 @@
 #include "platform/x86pc/include/common/_memaccess.h"	//platform memory access
 #include "platform/x86pc/include/common/_biosdata.h"	//BIOS data areas
 
+//libxmhfdebug
+u32 libxmhfdebug_lock = 1;
+
 //the vcpu structure which holds the current state of a core
 typedef struct _bootvcpu {
   u32 esp;                //used to establish stack for the CPU
