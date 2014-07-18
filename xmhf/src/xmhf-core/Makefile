@@ -165,7 +165,8 @@ all: $(THE_ARCHIVE)
 $(THE_ARCHIVE): libshared xcprimeon testslab initbs init ihub coreapi xcexhub xhhyperdep $(OBJECTS) 
 	cd $(XMHF_CORE_OBJECTS_DIR) && cp -f $(srcdir)/xc.lscript xc.lscript.c
 	cd $(XMHF_CORE_OBJECTS_DIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E xc.lscript.c -o xc.lds
-	cd $(XMHF_CORE_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T xc.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) _objs_libshared/libshared.a $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
+	cd $(XMHF_CORE_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T xc.lds -o $(THE_ARCHIVE).exe _objs_libshared/libshared.a 
+	#cd $(XMHF_CORE_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T xc.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) _objs_libshared/libshared.a $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
 	#cd $(XMHF_CORE_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T xc.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
 	cd $(XMHF_CORE_OBJECTS_DIR) && $(OBJCOPY) --output-format=binary $(THE_ARCHIVE).exe $(THE_ARCHIVE).bin
 

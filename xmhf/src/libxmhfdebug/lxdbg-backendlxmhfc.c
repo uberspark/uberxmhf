@@ -46,11 +46,15 @@
 
 #include <xmhf.h>
 
-static u32 xmhfc_puts_lock = 1;
+//__attribute__(( section(".libxmhfdebugdata") )) static u32 xmhfc_puts_lock = 1;
+
+extern u32 libxmhfdebug_lock;
 
 void xmhfc_puts(const char *s){
-	spin_lock(&xmhfc_puts_lock);
+	//spin_lock(&xmhfc_puts_lock);
+	spin_lock(&libxmhfdebug_lock);
 	dbg_x86_uart_putstr(s);
-	spin_unlock(&xmhfc_puts_lock);
+	//spin_unlock(&xmhfc_puts_lock);
+	spin_unlock(&libxmhfdebug_lock);
 }
 

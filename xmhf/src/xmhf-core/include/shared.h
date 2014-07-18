@@ -64,6 +64,8 @@ extern __attribute__(( aligned(4096) )) __attribute__(( section(".section_archds
 extern __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) u64 _idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
 extern __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) arch_x86_idtdesc_t _idt;
 
+//libxmhfdebug
+extern __attribute__(( section(".libxmhfdebugdata") )) u32 libxmhfdebug_lock;
 
 
 #endif	//__ASSEMBLY__
