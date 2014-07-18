@@ -65,12 +65,14 @@ SECTIONS
 	. = 0x10000000;
 	
 
-	.slab_shared : {
+	.slab_shareddata : {
+		_slab_shareddata_memregion_start = .;
 		*(.sharedro_xcbootinfo)
 		*(.sharedro_xcbootinfoptr)
 		*(.sharedro_slab_table)
 		*(.section_archds);
 		. = ALIGN(0x200000);
+		_slab_shareddata_memregion_end = .;
 	} >all=0x0000
 
 
