@@ -102,17 +102,19 @@ u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t h
 // RUNTIME
 
 static void hd_activatedep(context_desc_t context_desc, u32 gpa){
-	printf("\n%s:%u originalprotection=%08x", __FUNCTION__, context_desc.cpu_desc.cpu_index, xc_api_hpt_getprot(context_desc, gpa));
-	xc_api_hpt_setentry(context_desc, gpa, xc_api_hpt_getentry(context_desc, gpa));
-	xc_api_hpt_setprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE) );	   
-	xc_api_hpt_flushcaches(context_desc);
+	u64 entry;
+	printf("\n%s:%u originalprotection=%08x", __FUNCTION__, context_desc.cpu_desc.cpu_index, XMHF_SLAB_CALL(xc_api_hpt_getprot(context_desc, gpa)));
+	entry = XMHF_SLAB_CALL(xc_api_hpt_getentry(context_desc, gpa));
+	XMHF_SLAB_CALL(xc_api_hpt_setentry(context_desc, gpa, entry));
+	XMHF_SLAB_CALL(xc_api_hpt_setprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE) ));	   
+	XMHF_SLAB_CALL(xc_api_hpt_flushcaches(context_desc));
 	printf("\nCPU(%02x): %s removed EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.cpu_index, __FUNCTION__, gpa);
 }
 
 //de-activate DEP protection
 static void hd_deactivatedep(context_desc_t context_desc, u32 gpa){
-	xc_api_hpt_setprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE) );	   
-	xc_api_hpt_flushcaches_smp(context_desc);
+	XMHF_SLAB_CALL(xc_api_hpt_setprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE) ));	   
+	XMHF_SLAB_CALL(xc_api_hpt_flushcaches_smp(context_desc));
 	printf("\nCPU(%02x): %s added EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.cpu_index, __FUNCTION__, gpa);
 }
 
@@ -139,7 +141,7 @@ u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u
 		break;
 
 		case HYPERDEP_ACTIVATEDEP:{
-			gpa=(u32)xc_api_hpt_lvl2pagewalk(context_desc, gva);
+			gpa=(u32)XMHF_SLAB_CALL(xc_api_hpt_lvl2pagewalk(context_desc, gva));
 			if(gpa == 0xFFFFFFFFUL){
 				printf("\nCPU(%02x): WARNING: unable to get translation for gva=%x, just returning", context_desc.cpu_desc.cpu_index, gva);
 				return status;
@@ -150,7 +152,7 @@ u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u
 		break;
 		
 		case HYPERDEP_DEACTIVATEDEP:{
-			gpa=(u32)xc_api_hpt_lvl2pagewalk(context_desc, gva);
+			gpa=(u32)XMHF_SLAB_CALL(xc_api_hpt_lvl2pagewalk(context_desc, gva));
 			if(gpa == 0xFFFFFFFFUL){
 				printf("\nCPU(%02x): WARNING: unable to get translation for gva=%x, just returning", context_desc.cpu_desc.cpu_index, gva);
 				return status;
@@ -175,7 +177,7 @@ u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u
 //note: should not return
 void xmhf_hypapp_handleshutdown(context_desc_t context_desc){
 	printf("\n%s:%u: rebooting now", __FUNCTION__, context_desc.cpu_desc.cpu_index);
-	xc_api_platform_shutdown(context_desc);				
+	XMHF_SLAB_CALL(xc_api_platform_shutdown(context_desc));				
 }
 
 //handles h/w pagetable violations

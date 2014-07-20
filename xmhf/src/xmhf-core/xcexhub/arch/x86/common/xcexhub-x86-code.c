@@ -269,7 +269,7 @@ __attribute__(( section(".slab_trampoline") )) static void xmhf_xcphandler_arch_
 __attribute__(( section(".slab_trampoline") )) void xmhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 	switch(vector){
 			case CPU_EXCEPTION_NMI:{
-				xc_coreapi_arch_eventhandler_nmiexception(r);
+				XMHF_SLAB_CALL(xc_coreapi_arch_eventhandler_nmiexception(r));
 				}
 				break;
 
