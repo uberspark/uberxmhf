@@ -464,7 +464,7 @@ void xmhf_baseplatform_arch_initialize(void){
 void xcinitbs_arch_initialize_exception_handling(void){
 	printf("\n%s: proceeding to invoke xcexhub_initialize...", __FUNCTION__);
 	//_idt = xcexhub_initialize();
-	xcexhub_initialize();
+	XMHF_SLAB_CALL(xcexhub_initialize());
 	printf("\n%s: xcexhub_initialize completed successfully.", __FUNCTION__);
 }
 
@@ -584,7 +584,7 @@ static void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 
 	//if(is_bsp){
 		printf("\n%s: cpu %x, isbsp=%u, Proceeding to call init_entry...\n", __FUNCTION__, cpuid, is_bsp);
-		init_entry(cpuid, is_bsp);
+		XMHF_SLAB_CALL(init_entry(cpuid, is_bsp));
 	//}else{
 	//	printf("\n%s: cpu %x, isbsp=%u, Halting\n", __FUNCTION__, cpuid, is_bsp);
 	//	HALT();

@@ -66,7 +66,7 @@ context_desc_t xmhf_richguest_setup(u32 partition_index, u32 cpuid, bool is_bsp)
 	
 	printf("%s: proceeding to call xc_api_partition_addcpu\n", __FUNCTION__);
 	//add cpu to the richguest partition
-	context_desc = xc_api_partition_addcpu(partition_index, cpuid, is_bsp);
+	context_desc = XMHF_SLAB_CALL(xc_api_partition_addcpu(partition_index, cpuid, is_bsp));
 	printf("%s: back\n", __FUNCTION__);
 
 	//bail out if we could not add cpu to the rich guest partition
@@ -116,7 +116,7 @@ void init_entry(u32 cpuid, bool is_bsp){
 	//create rich guest partition if we are the BSP
 	if(is_bsp){
 		printf("\n%s: proceeding to create rich guest partition (esp=%x)\n", __FUNCTION__, read_esp());
-		xc_richguest_partition_index = xc_api_partition_create(XC_PARTITION_PRIMARY);
+		xc_richguest_partition_index = XMHF_SLAB_CALL(xc_api_partition_create(XC_PARTITION_PRIMARY));
 		//printf("\n%s: came back (esp=%x)\n", __FUNCTION__, read_esp());
 		if(xc_richguest_partition_index == XC_PARTITION_INDEX_INVALID){
 			printf("\n%s: Fatal error, could not create rich guest partition!", __FUNCTION__);
@@ -173,7 +173,7 @@ void init_entry(u32 cpuid, bool is_bsp){
 	//HALT();
 	
 	//xmhf_partition_start(context_desc.cpu_desc.cpu_index);
-	if(!xc_api_partition_startcpu(context_desc)){
+	if(!XMHF_SLAB_CALL(xc_api_partition_startcpu(context_desc))){
 		printf("\n%s: should not be here. HALTING!", __FUNCTION__);
 		HALT();
 	}
