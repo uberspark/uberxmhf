@@ -409,9 +409,6 @@ static u32 _xcinitbs_slab_populate_pagetables(u32 slab_index){
 		u32 i, j;
 		u64 default_flags = (u64)(_PAGE_PRESENT);
 		
-		if(slab_index == XMHF_SLAB_INITBS_INDEX)
-			printf("%s: slab_index = %u\n", __FUNCTION__, slab_index);
-			
 		for(i=0; i < PAE_PTRS_PER_PDPT; i++)
 			_slab_pagetables[slab_index].pdpt[i] = pae_make_pdpe(hva2spa(_slab_pagetables[slab_index].pdt[i]), default_flags);
 
@@ -422,8 +419,6 @@ static u32 _xcinitbs_slab_populate_pagetables(u32 slab_index){
 				u64 spa = hva2spa((void*)hva);
 				u64 flags = _xcinitbs_slab_getptflagsforspa(slab_index, (u32)spa);
 				_slab_pagetables[slab_index].pdt[i][j] = pae_make_pde_big(spa, flags);
-				if(slab_index == XMHF_SLAB_INITBS_INDEX)
-					printf("   %08x-%08x, flags=%x\n", (u32)spa, (u32)spa+PAGE_SIZE_2M, (u32)flags);
 			}
 		}
 	
@@ -495,33 +490,12 @@ void xmhf_apihub_arch_initialize (void){
 	
 	printf("\n%s: setup slab page tables and macm id's\n", __FUNCTION__);
 	
-	{
-			u8 *p = (u8 *)0x10200000;
-			u32 i;
-			printf("%s: proceeding to dump code at shared data...\n", __FUNCTION__);
-			for (i=0; i < 16; i++)
-				printf("%02x ", p[i]);
-		
-			printf("Done\n");
-	}
-
-
-
+	
 	//initialize paging
 	xmhf_baseplatform_arch_x86_initialize_paging((u32)_slab_table[XMHF_SLAB_INITBS_INDEX].slab_macmid);
 	printf("\n%s: setup slab paging\n", __FUNCTION__);
 
-	{
-			u8 *p = (u8 *)0x10200000;
-			u32 i;
-			printf("%s: proceeding to dump code at shared data...\n", __FUNCTION__);
-			for (i=0; i < 16; i++)
-				printf("%02x ", p[i]);
-		
-			printf("Done\n");
-	}
-
-
+	
 #endif //__XMHF_VERIFICATION__
 }
 
