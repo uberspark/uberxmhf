@@ -495,10 +495,32 @@ void xmhf_apihub_arch_initialize (void){
 	
 	printf("\n%s: setup slab page tables and macm id's\n", __FUNCTION__);
 	
+	{
+			u8 *p = (u8 *)0x10200000;
+			u32 i;
+			printf("%s: proceeding to dump code at shared data...\n", __FUNCTION__);
+			for (i=0; i < 16; i++)
+				printf("%02x ", p[i]);
+		
+			printf("Done\n");
+	}
+
+
 
 	//initialize paging
 	xmhf_baseplatform_arch_x86_initialize_paging((u32)_slab_table[XMHF_SLAB_INITBS_INDEX].slab_macmid);
 	printf("\n%s: setup slab paging\n", __FUNCTION__);
+
+	{
+			u8 *p = (u8 *)0x10200000;
+			u32 i;
+			printf("%s: proceeding to dump code at shared data...\n", __FUNCTION__);
+			for (i=0; i < 16; i++)
+				printf("%02x ", p[i]);
+		
+			printf("Done\n");
+	}
+
 
 #endif //__XMHF_VERIFICATION__
 }
