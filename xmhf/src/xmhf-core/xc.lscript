@@ -75,6 +75,13 @@ SECTIONS
 		_slab_shareddata_memregion_end = .;
 	} >all=0x0000
 
+	.slab_trampoline : {
+		_slab_trampoline_memregion_start = .;
+		*(.slabtrampoline)
+		. = ALIGN(0x200000);
+		_slab_trampoline_memregion_end = .;
+	} >all=0x0000
+
 
 	.slab_xcprimeon : {
 		_slab_xcprimeon_code_start = .;
@@ -94,10 +101,10 @@ SECTIONS
 		_objs_slab_xcprimeon/xcprimeon.slo(.slabstack)
 		. = ALIGN(0x200000);
 		_slab_xcprimeon_stack_end = .;
-		_slab_xcprimeon_trampoline_start = .;
+		/*_slab_xcprimeon_trampoline_start = .;
 		_objs_slab_xcprimeon/xcprimeon.slo(.slabtrampoline)
 		. = ALIGN(0x200000);
-		_slab_xcprimeon_trampoline_end = .;
+		_slab_xcprimeon_trampoline_end = .;*/
 	} >all=0x0000
 
 
@@ -119,10 +126,10 @@ SECTIONS
 		_objs_slab_testslab/testslab.slo(.slabstack)
 		. = ALIGN(0x200000);
 		_slab_testslab_stack_end = .;
-		_slab_testslab_trampoline_start = .;
+		/*_slab_testslab_trampoline_start = .;
 		_objs_slab_testslab/testslab.slo(.slabtrampoline)
 		. = ALIGN(0x200000);
-		_slab_testslab_trampoline_end = .;
+		_slab_testslab_trampoline_end = .;*/
 	} >all=0x0000
 
 
@@ -144,10 +151,10 @@ SECTIONS
 		_objs_slab_xcinitbs/xcinitbs.slo(.slabstack)
 		. = ALIGN(0x200000);
 		_slab_xcinitbs_stack_end = .;
-		_slab_xcinitbs_trampoline_start = .;
+		/*_slab_xcinitbs_trampoline_start = .;
 		_objs_slab_xcinitbs/xcinitbs.slo(.slabtrampoline)
 		. = ALIGN(0x200000);
-		_slab_xcinitbs_trampoline_end = .;
+		_slab_xcinitbs_trampoline_end = .;*/
 	} >all=0x0000
 
 	.slab_xcinit : {
@@ -168,10 +175,10 @@ SECTIONS
 		_objs_slab_xcinit/xcinit.slo(.slabstack)
 		. = ALIGN(0x200000);
 		_slab_xcinit_stack_end = .;
-		_slab_xcinit_trampoline_start = .;
+		/*_slab_xcinit_trampoline_start = .;
 		_objs_slab_xcinit/xcinit.slo(.slabtrampoline)
 		. = ALIGN(0x200000);
-		_slab_xcinit_trampoline_end = .;
+		_slab_xcinit_trampoline_end = .;*/
 	} >all=0x0000
 
 	.slab_xcihub : {
@@ -192,10 +199,10 @@ SECTIONS
 		_objs_slab_xcihub/xcihub.slo(.slabstack)
 		. = ALIGN(0x200000);
 		_slab_xcihub_stack_end = .;
-		_slab_xcihub_trampoline_start = .;
+		/*_slab_xcihub_trampoline_start = .;
 		_objs_slab_xcihub/xcihub.slo(.slabtrampoline)
 		. = ALIGN(0x200000);
-		_slab_xcihub_trampoline_end = .;
+		_slab_xcihub_trampoline_end = .;*/
 	} >all=0x0000
 
 	.slab_xccoreapi : {
@@ -216,10 +223,10 @@ SECTIONS
 		_objs_slab_xccoreapi/xccoreapi.slo(.slabstack)
 		. = ALIGN(0x200000);
 		_slab_xccoreapi_stack_end = .;
-		_slab_xccoreapi_trampoline_start = .;
+		/*_slab_xccoreapi_trampoline_start = .;
 		_objs_slab_xccoreapi/xccoreapi.slo(.slabtrampoline)
 		. = ALIGN(0x200000);
-		_slab_xccoreapi_trampoline_end = .;
+		_slab_xccoreapi_trampoline_end = .;*/
 	} >all=0x0000
 
 	.slab_xcexhub : {
@@ -240,10 +247,10 @@ SECTIONS
 		_objs_slab_xcexhub/xcexhub.slo(.slabstack)
 		. = ALIGN(0x200000);
 		_slab_xcexhub_stack_end = .;
-		_slab_xcexhub_trampoline_start = .;
+		/*_slab_xcexhub_trampoline_start = .;
 		_objs_slab_xcexhub/xcexhub.slo(.slabtrampoline)
 		. = ALIGN(0x200000);
-		_slab_xcexhub_trampoline_end = .;
+		_slab_xcexhub_trampoline_end = .;*/
 	} >all=0x0000
 
 	.slab_xhhyperdep : {
@@ -264,10 +271,10 @@ SECTIONS
 		_objs_slab_xhhyperdep/xhhyperdep.slo(.slabstack)
 		. = ALIGN(0x200000);
 		_slab_xhhyperdep_stack_end = .;
-		_slab_xhhyperdep_trampoline_start = .;
+		/*_slab_xhhyperdep_trampoline_start = .;
 		_objs_slab_xhhyperdep/xhhyperdep.slo(.slabtrampoline)
 		. = ALIGN(0x200000);
-		_slab_xhhyperdep_trampoline_end = .;
+		_slab_xhhyperdep_trampoline_end = .;*/
 	} >all=0x0000
 
 

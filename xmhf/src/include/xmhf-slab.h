@@ -134,6 +134,7 @@ extern __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_tab
 
 
 #define _XMHF_SLAB_DEFIMPORTFNSTUB(src_slab_index, dest_slab_index, fnnum, fn_paramsize, fn_retsize, fn_aggregateret) asm volatile(	\
+						"1: jmp 1b		\r\n"			\
 						"pushl %%edi \r\n"				\
 						"pushl %%esi \r\n"				\
 						"pushl %%ebp \r\n"				\
@@ -148,7 +149,7 @@ extern __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_tab
 						"movl %5, %%eax \r\n"			\
 						"movl %%eax, %%cr3 \r\n"		\
 						"movl %2, %%eax \r\n"			\
-						"jmpl *%%eax \r\n"				\
+						"jmpl *%%eax	\r\n"			\
 														\
 						"1: \r\n"						\
 						"movl %4, %%ecx \r\n"			\
@@ -213,7 +214,8 @@ extern __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_tab
 
 #define XMHF_SLAB(slab_name)	\
 	__attribute__ ((section(".stack"))) u8 _slab_stack[XMHF_SLAB_STACKSIZE];	\
-	__attribute__ ((section(".slab_trampoline"))) u8 _slab_trampoline_peg[1];	\
+
+//	__attribute__ ((section(".slab_trampoline"))) u8 _slab_trampoline_peg[1];	\
 
 #endif //__ASSEMBLY__
 
