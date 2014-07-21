@@ -464,6 +464,30 @@ void xmhf_baseplatform_arch_initialize(void){
 void xcinitbs_arch_initialize_exception_handling(void){
 	printf("%s: proceeding to invoke xcexhub_initialize...\n", __FUNCTION__);
 	//_idt = xcexhub_initialize();
+	//asm volatile ("1: jmp 1b \r\n");
+	
+	{
+			u8 *p = (u8 *)0x10000000;
+			u32 i;
+			printf("%s: proceeding to dump code at shared data...\n", __FUNCTION__);
+			for (i=0; i < 16; i++)
+				printf("%02x ", p[i]);
+		
+			printf("Done\n");
+	}
+
+
+	{
+			u8 *p = (u8 *)0x10200000;
+			u32 i;
+			printf("%s: proceeding to dump code at trampoline...\n", __FUNCTION__);
+			for (i=0; i < 16; i++)
+				printf("%02x ", p[i]);
+		
+	}
+	
+	printf("%s: Halting\n", __FUNCTION__);
+	HALT();
 	XMHF_SLAB_CALL(xcexhub_initialize());
 	printf("%s: xcexhub_initialize completed successfully.\n", __FUNCTION__);
 }
