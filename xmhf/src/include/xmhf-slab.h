@@ -132,7 +132,7 @@ extern __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_tab
 		);									\
 }											\
 
-
+/*
 #define _XMHF_SLAB_DEFIMPORTFNSTUB(src_slab_index, dest_slab_index, fnnum, fn_paramsize, fn_retsize, fn_aggregateret) asm volatile(	\
 						"pushl %%edi \r\n"				\
 						"pushl %%esi \r\n"				\
@@ -157,6 +157,35 @@ extern __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_tab
 						"movl 24(%%esp), %%edi \r\n"	\
 						"cld \r\n"						\
 						"rep movsb \r\n"				\
+						"popl %%ebx \r\n"				\
+						"popl %%ecx \r\n"				\
+						"popl %%ebp \r\n"				\
+						"popl %%esi \r\n"				\
+						"popl %%edi \r\n"				\
+						"ret $"#fn_aggregateret" \r\n"					\
+						: 								\
+						: "i" (fnnum), "i" (fn_paramsize), "m" (_slab_table[dest_slab_index].entry_cr3), "i" (fn_retsize), "m" (_slab_table[src_slab_index].slab_macmid), "m" (_slab_table[dest_slab_index].slab_macmid)	\
+						:	 							\
+						);								\
+*/
+
+#define _XMHF_SLAB_DEFIMPORTFNSTUB(src_slab_index, dest_slab_index, fnnum, fn_paramsize, fn_retsize, fn_aggregateret) asm volatile(	\
+						"pushl %%edi \r\n"				\
+						"pushl %%esi \r\n"				\
+						"pushl %%ebp \r\n"				\
+						"pushl %%ecx \r\n"				\
+						"pushl %%ebx \r\n"				\
+														\
+						"leal 24(%%esp), %%esi \r\n"	\
+						"movl $1f, %%edi \r\n"			\
+						"movl %0, %%ebx \r\n"			\
+						"movl %1, %%ecx \r\n"			\
+						"movl %3, %%edx \r\n"			\
+						"movl %5, %%eax \r\n"			\
+						"movl %2, %%ebp \r\n"			\
+						"jmp _slab_trampoline \r\n"		\
+														\
+						"1: \r\n"						\
 						"popl %%ebx \r\n"				\
 						"popl %%ecx \r\n"				\
 						"popl %%ebp \r\n"				\
