@@ -305,7 +305,6 @@ static struct {
 #define	_SLAB_SPATYPE_OTHER_SLAB_RODATA			(0xF1)
 #define _SLAB_SPATYPE_OTHER_SLAB_RWDATA			(0xF2)
 #define _SLAB_SPATYPE_OTHER_SLAB_STACK			(0xF3)
-//#define _SLAB_SPATYPE_OTHER_SLAB_TRAMPOLINE		(0xF4)
 
 #define	_SLAB_SPATYPE_SLAB_CODE					(0x0)
 #define	_SLAB_SPATYPE_SLAB_RODATA				(0x1)
@@ -331,8 +330,6 @@ static u32 _xcinitbs_slab_getspatype(u32 slab_index, u32 spa){
 			return _SLAB_SPATYPE_SLAB_RWDATA | mask;
 		if (spa >= _slab_table[i].slab_stack.start  && spa < _slab_table[i].slab_stack.end)	
 			return _SLAB_SPATYPE_SLAB_STACK | mask;
-		//if (spa >= _slab_table[i].slab_trampoline.start  && spa < _slab_table[i].slab_trampoline.end)	
-		//	return _SLAB_SPATYPE_SLAB_TRAMPOLINE | mask;
 	}	
 
 	//slab shared data region 
@@ -346,7 +343,6 @@ static u32 _xcinitbs_slab_getspatype(u32 slab_index, u32 spa){
 
 	//slab trampoline region
 	if(spa >= (u32)_slab_trampoline_memregion_start && spa < (u32)_slab_trampoline_memregion_end){
-			printf("%s: mapped trampoline as shared (%08x-%08x)\n", __FUNCTION__, (u32)_slab_trampoline_memregion_start, (u32)_slab_trampoline_memregion_end);
 			return _SLAB_SPATYPE_SLAB_TRAMPOLINE; //map read-only in all slabs 
 	}
 	
@@ -369,9 +365,6 @@ static u64 _xcinitbs_slab_getptflagsforspa(u32 slab_index, u32 spa){
 			//flags = (u64)(_PAGE_PRESENT | _PAGE_PSE | _PAGE_NX); //present | read-only | no execute | pse
 			flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE | _PAGE_NX); //present | read-write | no execute | pse
 			break;	
-		//case _SLAB_SPATYPE_OTHER_SLAB_TRAMPOLINE:
-		//	flags = (u64)(_PAGE_PRESENT | _PAGE_PSE);	//present | read-only | pse
-		//	break;
 		
 		case _SLAB_SPATYPE_SLAB_CODE:
 			flags = (u64)(_PAGE_PRESENT | _PAGE_PSE); // present | read-only | pse

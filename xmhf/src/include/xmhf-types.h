@@ -127,65 +127,6 @@ typedef struct {
 	u8 cmdline_buffer[MAX_CMDLINE_BUFFER_SIZE];
 } __attribute__((packed)) XMHF_BOOTINFO;
 
-//forward declaration of core boot info structure
-//extern XMHF_BOOTINFO *xcbootinfo;
-
-/*//"runtime" parameter block structure; arch_rpb (in startup component) 
-//is the default definition
-typedef struct {
-	u32 magic;
-	u32 XtVmmEntryPoint;
-	u32 XtGuestOSBootModuleBase;
-	u32 XtGuestOSBootModuleSize;
-	u32 runtime_appmodule_base;
-	u32 runtime_appmodule_size;
-	u32 XtVmmStackBase;
-	u32 XtVmmStackSize;
-	u32 XtVmmRuntimePhysBase;
-	u32 XtVmmRuntimeVirtBase;
-	u32 XtVmmRuntimeSize;
-	u32 XtVmmE820Buffer;
-	u32 XtVmmE820NumEntries;
-	u32 XtVmmMPCpuinfoBuffer;
-	u32 XtVmmMPCpuinfoNumEntries;
-    u8 RtmUartConfig[16];	        // runtime options parsed in init and passed forward 
-    char cmdline[128]; 				// runtime options parsed in init and passed forward 
-	u32 isEarlyInit;					//1 for an "early init" else 0 (late-init)
-} __attribute__((packed)) RPB, *PRPB;
-
-//forward declaration of runtime parameter block
-extern RPB *rpb;	
-*/
-/*
-//"sl" parameter block structure 
-typedef struct _sl_parameter_block {
-	u32 magic;						//magic identifier
-	u32 errorHandler;				//error handler (currently unused)
-	u32 isEarlyInit;				//"early" or "late" init
-	u32 numE820Entries;				//number of E820 entries
-	u8  memmapbuffer[1280];			//max. 64 entries of 20 bytes each describing the system memory map
-	u32 numCPUEntries;				//number of cores
-	u8  cpuinfobuffer[128];			//max. 8 entries of 16 bytes each describing each physical core in the system
-	u32 runtime_size;				//size of the runtime image
-	u32 runtime_osbootmodule_base;	//guest OS bootmodule base
-	u32 runtime_osbootmodule_size;	//guest OS bootmodule size
-	u32 runtime_appmodule_base;		//XMHF hypapp optional module base
-	u32 runtime_appmodule_size;		//XMHF hypapp optional module size
-    u64 rdtsc_before_drtm;			// Performance measurements related to DRTM
-    u64 rdtsc_after_drtm;
-
-    // runtime options parsed in init and passed forward 
-    u8 uart_config[16];
-    char cmdline[128]; // runtime options parsed in init and passed forward 
-} __attribute__((packed)) SL_PARAMETER_BLOCK;
-*/
-
-//"sl" parameter block magic value
-//#define SL_PARAMETER_BLOCK_MAGIC		0xDEADBEEF
-
-//"runtime" parameter block magic value
-//#define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
-
 
 //-------------------------------------------------------
 typedef struct {
@@ -204,13 +145,8 @@ typedef struct {
 	slab_section_t slab_rodata;
 	slab_section_t slab_rwdata;
 	slab_section_t slab_stack;
-	slab_section_t slab_trampoline;
 	slab_entrystub_t entry_cr3;
 } slab_header_t;
-
-//typedef struct {
-//	slab_header_t slab_header;
-//} slab_table_t;
 
 
 #endif /*ifndef __ASSEMBLY__*/
