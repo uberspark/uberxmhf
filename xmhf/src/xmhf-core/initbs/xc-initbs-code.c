@@ -105,7 +105,7 @@ void xmhf_runtime_entry(void){
 				printf("\n  slab_rwdata(%08x-%08x)", _slab_table[i].slab_rwdata.start, _slab_table[i].slab_rwdata.end);
 				printf("\n  slab_code(%08x-%08x)", _slab_table[i].slab_code.start, _slab_table[i].slab_code.end);
 				printf("\n  slab_stack(%08x-%08x)", _slab_table[i].slab_stack.start, _slab_table[i].slab_stack.end);
-				printf("\n  slab_trampoline(%08x-%08x)", _slab_table[i].slab_trampoline.start, _slab_table[i].slab_trampoline.end);
+				//printf("\n  slab_trampoline(%08x-%08x)", _slab_table[i].slab_trampoline.start, _slab_table[i].slab_trampoline.end);
 				printf("\n  slab_entrycr3=%08x", _slab_table[i].entry_cr3);
 			}
 	}
@@ -114,8 +114,10 @@ void xmhf_runtime_entry(void){
 	//setup slab page tables and turn on paging
 	xmhf_apihub_initialize();
 
+	printf("proceeding to initialize exception handling...\n");
 	//setup platform exception handling
 	xcinitbs_arch_initialize_exception_handling();
+	printf("exception handling initialized.\n");
 
 	//asm volatile("int $0x03 \r\n");
 

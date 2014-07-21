@@ -462,10 +462,10 @@ void xmhf_baseplatform_arch_initialize(void){
 }
 
 void xcinitbs_arch_initialize_exception_handling(void){
-	printf("\n%s: proceeding to invoke xcexhub_initialize...", __FUNCTION__);
+	printf("%s: proceeding to invoke xcexhub_initialize...\n", __FUNCTION__);
 	//_idt = xcexhub_initialize();
 	XMHF_SLAB_CALL(xcexhub_initialize());
-	printf("\n%s: xcexhub_initialize completed successfully.", __FUNCTION__);
+	printf("%s: xcexhub_initialize completed successfully.\n", __FUNCTION__);
 }
 
 //initialize SMP

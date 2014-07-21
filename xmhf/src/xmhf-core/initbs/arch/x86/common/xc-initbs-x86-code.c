@@ -286,7 +286,8 @@ void xmhf_baseplatform_arch_x86_restorecpumtrrstate(void){
 
 extern u8 _slab_shareddata_memregion_start[];
 extern u8 _slab_shareddata_memregion_end[];
-
+extern u8 _slab_trampoline_memregion_start[];
+extern u8 _slab_trampoline_memregion_end[];
 
 //core PAE page tables
 static u64 core_3level_pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( aligned(4096) ));
@@ -304,12 +305,13 @@ static struct {
 #define	_SLAB_SPATYPE_OTHER_SLAB_RODATA			(0xF1)
 #define _SLAB_SPATYPE_OTHER_SLAB_RWDATA			(0xF2)
 #define _SLAB_SPATYPE_OTHER_SLAB_STACK			(0xF3)
-#define _SLAB_SPATYPE_OTHER_SLAB_TRAMPOLINE		(0xF4)
+//#define _SLAB_SPATYPE_OTHER_SLAB_TRAMPOLINE		(0xF4)
 
 #define	_SLAB_SPATYPE_SLAB_CODE					(0x0)
 #define	_SLAB_SPATYPE_SLAB_RODATA				(0x1)
 #define _SLAB_SPATYPE_SLAB_RWDATA				(0x2)
 #define _SLAB_SPATYPE_SLAB_STACK				(0x3)
+
 #define _SLAB_SPATYPE_SLAB_TRAMPOLINE			(0x4)
 
 #define _SLAB_SPATYPE_NOTASLAB					(0xFF00)
@@ -329,8 +331,8 @@ static u32 _xcinitbs_slab_getspatype(u32 slab_index, u32 spa){
 			return _SLAB_SPATYPE_SLAB_RWDATA | mask;
 		if (spa >= _slab_table[i].slab_stack.start  && spa < _slab_table[i].slab_stack.end)	
 			return _SLAB_SPATYPE_SLAB_STACK | mask;
-		if (spa >= _slab_table[i].slab_trampoline.start  && spa < _slab_table[i].slab_trampoline.end)	
-			return _SLAB_SPATYPE_SLAB_TRAMPOLINE | mask;
+		//if (spa >= _slab_table[i].slab_trampoline.start  && spa < _slab_table[i].slab_trampoline.end)	
+		//	return _SLAB_SPATYPE_SLAB_TRAMPOLINE | mask;
 	}	
 
 	//slab shared data region 
@@ -341,6 +343,13 @@ static u32 _xcinitbs_slab_getspatype(u32 slab_index, u32 spa){
 			else
 				return _SLAB_SPATYPE_SLAB_RODATA; //map read-only in all other slabs 
 	}
+
+	//slab trampoline region
+	if(spa >= (u32)_slab_trampoline_memregion_start && spa < (u32)_slab_trampoline_memregion_end){
+			printf("%s: mapped trampoline as shared (%08x-%08x)\n", __FUNCTION__, (u32)_slab_trampoline_memregion_start, (u32)_slab_trampoline_memregion_end);
+			return _SLAB_SPATYPE_SLAB_TRAMPOLINE; //map read-only in all slabs 
+	}
+	
 
 	return _SLAB_SPATYPE_NOTASLAB;
 }
@@ -360,9 +369,9 @@ static u64 _xcinitbs_slab_getptflagsforspa(u32 slab_index, u32 spa){
 			//flags = (u64)(_PAGE_PRESENT | _PAGE_PSE | _PAGE_NX); //present | read-only | no execute | pse
 			flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE | _PAGE_NX); //present | read-write | no execute | pse
 			break;	
-		case _SLAB_SPATYPE_OTHER_SLAB_TRAMPOLINE:
-			flags = (u64)(_PAGE_PRESENT | _PAGE_PSE);	//present | read-only | pse
-			break;
+		//case _SLAB_SPATYPE_OTHER_SLAB_TRAMPOLINE:
+		//	flags = (u64)(_PAGE_PRESENT | _PAGE_PSE);	//present | read-only | pse
+		//	break;
 		
 		case _SLAB_SPATYPE_SLAB_CODE:
 			flags = (u64)(_PAGE_PRESENT | _PAGE_PSE); // present | read-only | pse
@@ -374,6 +383,7 @@ static u64 _xcinitbs_slab_getptflagsforspa(u32 slab_index, u32 spa){
 		case _SLAB_SPATYPE_SLAB_STACK:
 			flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_NX | _PAGE_PSE); //present | read-write | no-execute | pse
 			break;
+		
 		case _SLAB_SPATYPE_SLAB_TRAMPOLINE:
 			flags = (u64)(_PAGE_PRESENT | _PAGE_PSE); //present | read-only | pse;
 			break;
@@ -399,6 +409,9 @@ static u32 _xcinitbs_slab_populate_pagetables(u32 slab_index){
 		u32 i, j;
 		u64 default_flags = (u64)(_PAGE_PRESENT);
 		
+		if(slab_index == XMHF_SLAB_INITBS_INDEX)
+			printf("%s: slab_index = %u\n", __FUNCTION__, slab_index);
+			
 		for(i=0; i < PAE_PTRS_PER_PDPT; i++)
 			_slab_pagetables[slab_index].pdpt[i] = pae_make_pdpe(hva2spa(_slab_pagetables[slab_index].pdt[i]), default_flags);
 
@@ -409,6 +422,8 @@ static u32 _xcinitbs_slab_populate_pagetables(u32 slab_index){
 				u64 spa = hva2spa((void*)hva);
 				u64 flags = _xcinitbs_slab_getptflagsforspa(slab_index, (u32)spa);
 				_slab_pagetables[slab_index].pdt[i][j] = pae_make_pde_big(spa, flags);
+				if(slab_index == XMHF_SLAB_INITBS_INDEX)
+					printf("   %08x-%08x, flags=%x\n", (u32)spa, (u32)spa+PAGE_SIZE_2M, (u32)flags);
 			}
 		}
 	

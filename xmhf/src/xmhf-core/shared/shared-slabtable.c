@@ -61,8 +61,8 @@ extern u8 _slab_xcprimeon_rwdata_start[];
 extern u8 _slab_xcprimeon_rwdata_end[];													
 extern u8 _slab_xcprimeon_stack_start[];													
 extern u8 _slab_xcprimeon_stack_end[];														
-extern u8 _slab_xcprimeon_trampoline_start[];													
-extern u8 _slab_xcprimeon_trampoline_end[];														
+//extern u8 _slab_xcprimeon_trampoline_start[];													
+//extern u8 _slab_xcprimeon_trampoline_end[];														
 extern u8 _slab_xcprimeon_entrypoint[];	
 
 extern u8 _slab_testslab_code_start[];													
@@ -73,8 +73,8 @@ extern u8 _slab_testslab_rwdata_start[];
 extern u8 _slab_testslab_rwdata_end[];													
 extern u8 _slab_testslab_stack_start[];													
 extern u8 _slab_testslab_stack_end[];														
-extern u8 _slab_testslab_trampoline_start[];													
-extern u8 _slab_testslab_trampoline_end[];														
+//extern u8 _slab_testslab_trampoline_start[];													
+//extern u8 _slab_testslab_trampoline_end[];														
 extern u8 _slab_testslab_entrypoint[];	
 
 extern u8 _slab_xcinitbs_code_start[];													
@@ -85,8 +85,8 @@ extern u8 _slab_xcinitbs_rwdata_start[];
 extern u8 _slab_xcinitbs_rwdata_end[];													
 extern u8 _slab_xcinitbs_stack_start[];													
 extern u8 _slab_xcinitbs_stack_end[];														
-extern u8 _slab_xcinitbs_trampoline_start[];													
-extern u8 _slab_xcinitbs_trampoline_end[];														
+//extern u8 _slab_xcinitbs_trampoline_start[];													
+//extern u8 _slab_xcinitbs_trampoline_end[];														
 extern u8 _slab_xcinitbs_entrypoint[];	
 
 extern u8 _slab_xcinit_code_start[];													
@@ -97,8 +97,8 @@ extern u8 _slab_xcinit_rwdata_start[];
 extern u8 _slab_xcinit_rwdata_end[];													
 extern u8 _slab_xcinit_stack_start[];													
 extern u8 _slab_xcinit_stack_end[];														
-extern u8 _slab_xcinit_trampoline_start[];													
-extern u8 _slab_xcinit_trampoline_end[];														
+//extern u8 _slab_xcinit_trampoline_start[];													
+//extern u8 _slab_xcinit_trampoline_end[];														
 extern u8 _slab_xcinit_entrypoint[];	
 
 extern u8 _slab_xcihub_code_start[];													
@@ -109,8 +109,8 @@ extern u8 _slab_xcihub_rwdata_start[];
 extern u8 _slab_xcihub_rwdata_end[];													
 extern u8 _slab_xcihub_stack_start[];													
 extern u8 _slab_xcihub_stack_end[];														
-extern u8 _slab_xcihub_trampoline_start[];													
-extern u8 _slab_xcihub_trampoline_end[];														
+//extern u8 _slab_xcihub_trampoline_start[];													
+//extern u8 _slab_xcihub_trampoline_end[];														
 extern u8 _slab_xcihub_entrypoint[];	
 
 extern u8 _slab_xccoreapi_code_start[];													
@@ -121,8 +121,8 @@ extern u8 _slab_xccoreapi_rwdata_start[];
 extern u8 _slab_xccoreapi_rwdata_end[];													
 extern u8 _slab_xccoreapi_stack_start[];													
 extern u8 _slab_xccoreapi_stack_end[];														
-extern u8 _slab_xccoreapi_trampoline_start[];													
-extern u8 _slab_xccoreapi_trampoline_end[];														
+//extern u8 _slab_xccoreapi_trampoline_start[];													
+//extern u8 _slab_xccoreapi_trampoline_end[];														
 extern u8 _slab_xccoreapi_entrypoint[];	
 
 extern u8 _slab_xcexhub_code_start[];													
@@ -133,8 +133,8 @@ extern u8 _slab_xcexhub_rwdata_start[];
 extern u8 _slab_xcexhub_rwdata_end[];													
 extern u8 _slab_xcexhub_stack_start[];													
 extern u8 _slab_xcexhub_stack_end[];														
-extern u8 _slab_xcexhub_trampoline_start[];													
-extern u8 _slab_xcexhub_trampoline_end[];														
+//extern u8 _slab_xcexhub_trampoline_start[];													
+//extern u8 _slab_xcexhub_trampoline_end[];														
 extern u8 _slab_xcexhub_entrypoint[];	
 
 extern u8 _slab_xhhyperdep_code_start[];													
@@ -145,8 +145,8 @@ extern u8 _slab_xhhyperdep_rwdata_start[];
 extern u8 _slab_xhhyperdep_rwdata_end[];													
 extern u8 _slab_xhhyperdep_stack_start[];													
 extern u8 _slab_xhhyperdep_stack_end[];														
-extern u8 _slab_xhhyperdep_trampoline_start[];													
-extern u8 _slab_xhhyperdep_trampoline_end[];														
+//extern u8 _slab_xhhyperdep_trampoline_start[];													
+//extern u8 _slab_xhhyperdep_trampoline_end[];														
 extern u8 _slab_xhhyperdep_entrypoint[];	
 
 __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_table[XMHF_SLAB_NUMBEROFSLABS] = {			
@@ -163,8 +163,8 @@ __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_table[XMHF
 		.slab_rwdata.end = _slab_xcprimeon_rwdata_end,									
 		.slab_stack.start = _slab_xcprimeon_stack_start,									
 		.slab_stack.end = _slab_xcprimeon_stack_end,
-		.slab_trampoline.start = _slab_xcprimeon_trampoline_start,
-		.slab_trampoline.end = _slab_xcprimeon_trampoline_end,										
+//		.slab_trampoline.start = _slab_xcprimeon_trampoline_start,
+//		.slab_trampoline.end = _slab_xcprimeon_trampoline_end,										
 		.entry_cr3 = _slab_xcprimeon_entrypoint,												
 	},
 
@@ -182,8 +182,8 @@ __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_table[XMHF
 		.slab_rwdata.end = _slab_testslab_rwdata_end,									
 		.slab_stack.start = _slab_testslab_stack_start,									
 		.slab_stack.end = _slab_testslab_stack_end,
-		.slab_trampoline.start = _slab_testslab_trampoline_start,
-		.slab_trampoline.end = _slab_testslab_trampoline_end,										
+//		.slab_trampoline.start = _slab_testslab_trampoline_start,
+//		.slab_trampoline.end = _slab_testslab_trampoline_end,										
 		.entry_cr3 = _slab_testslab_entrypoint,												
 	},
 
@@ -200,8 +200,8 @@ __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_table[XMHF
 		.slab_rwdata.end = _slab_xcinitbs_rwdata_end,									
 		.slab_stack.start = _slab_xcinitbs_stack_start,									
 		.slab_stack.end = _slab_xcinitbs_stack_end,
-		.slab_trampoline.start = _slab_xcinitbs_trampoline_start,
-		.slab_trampoline.end = _slab_xcinitbs_trampoline_end,										
+//		.slab_trampoline.start = _slab_xcinitbs_trampoline_start,
+//		.slab_trampoline.end = _slab_xcinitbs_trampoline_end,										
 		.entry_cr3 = _slab_xcinitbs_entrypoint,												
 	},
 
@@ -218,8 +218,8 @@ __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_table[XMHF
 		.slab_rwdata.end = _slab_xcinit_rwdata_end,									
 		.slab_stack.start = _slab_xcinit_stack_start,									
 		.slab_stack.end = _slab_xcinit_stack_end,
-		.slab_trampoline.start = _slab_xcinit_trampoline_start,
-		.slab_trampoline.end = _slab_xcinit_trampoline_end,										
+//		.slab_trampoline.start = _slab_xcinit_trampoline_start,
+//		.slab_trampoline.end = _slab_xcinit_trampoline_end,										
 		.entry_cr3 = _slab_xcinit_entrypoint,												
 	},
 
@@ -236,8 +236,8 @@ __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_table[XMHF
 		.slab_rwdata.end = _slab_xcihub_rwdata_end,									
 		.slab_stack.start = _slab_xcihub_stack_start,									
 		.slab_stack.end = _slab_xcihub_stack_end,
-		.slab_trampoline.start = _slab_xcihub_trampoline_start,
-		.slab_trampoline.end = _slab_xcihub_trampoline_end,										
+//		.slab_trampoline.start = _slab_xcihub_trampoline_start,
+//		.slab_trampoline.end = _slab_xcihub_trampoline_end,										
 		.entry_cr3 = _slab_xcihub_entrypoint,												
 	},
 
@@ -254,8 +254,8 @@ __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_table[XMHF
 		.slab_rwdata.end = _slab_xccoreapi_rwdata_end,									
 		.slab_stack.start = _slab_xccoreapi_stack_start,									
 		.slab_stack.end = _slab_xccoreapi_stack_end,
-		.slab_trampoline.start = _slab_xccoreapi_trampoline_start,
-		.slab_trampoline.end = _slab_xccoreapi_trampoline_end,										
+//		.slab_trampoline.start = _slab_xccoreapi_trampoline_start,
+//		.slab_trampoline.end = _slab_xccoreapi_trampoline_end,										
 		.entry_cr3 = _slab_xccoreapi_entrypoint,												
 	},
 
@@ -272,8 +272,8 @@ __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_table[XMHF
 		.slab_rwdata.end = _slab_xcexhub_rwdata_end,									
 		.slab_stack.start = _slab_xcexhub_stack_start,									
 		.slab_stack.end = _slab_xcexhub_stack_end,
-		.slab_trampoline.start = _slab_xcexhub_trampoline_start,
-		.slab_trampoline.end = _slab_xcexhub_trampoline_end,										
+//		.slab_trampoline.start = _slab_xcexhub_trampoline_start,
+//		.slab_trampoline.end = _slab_xcexhub_trampoline_end,										
 		.entry_cr3 = _slab_xcexhub_entrypoint,												
 	},
 
@@ -290,8 +290,8 @@ __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_table[XMHF
 		.slab_rwdata.end = _slab_xhhyperdep_rwdata_end,									
 		.slab_stack.start = _slab_xhhyperdep_stack_start,									
 		.slab_stack.end = _slab_xhhyperdep_stack_end,
-		.slab_trampoline.start = _slab_xhhyperdep_trampoline_start,
-		.slab_trampoline.end = _slab_xhhyperdep_trampoline_end,										
+//		.slab_trampoline.start = _slab_xhhyperdep_trampoline_start,
+//		.slab_trampoline.end = _slab_xhhyperdep_trampoline_end,										
 		.entry_cr3 = _slab_xhhyperdep_entrypoint,												
 	},
 
