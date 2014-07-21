@@ -134,7 +134,6 @@ extern __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_tab
 
 
 #define _XMHF_SLAB_DEFIMPORTFNSTUB(src_slab_index, dest_slab_index, fnnum, fn_paramsize, fn_retsize, fn_aggregateret) asm volatile(	\
-						"1: jmp 1b		\r\n"			\
 						"pushl %%edi \r\n"				\
 						"pushl %%esi \r\n"				\
 						"pushl %%ebp \r\n"				\
