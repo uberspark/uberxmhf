@@ -72,12 +72,16 @@ __attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_t
 			"pushl %%ecx \r\n"						//save caller param/ret count
 			
 			"movl %%ebp, %%eax \r\n"				//eax= callee entry point
+
+			"int $0x03 \r\n"
 											
 			"xorl %%ebp, %%ebp \r\n"				//zero out %ebp so we can use it to keep track of stack frame
 			
 			"xorl %%edx, %%edx \r\n"				//edx=0
 			"movw %%cx, %%dx \r\n"					//edx=parameter dwords
 			"shr $16, %%ecx \r\n"					//ecx=result dwords
+			
+			"int $0x03 \r\n"
 						
 			"cmpl $0, %%ecx \r\n"					//check if we are supporting aggregate return type for this slab call
 			"je 1f \r\n"							//if no, then skip aggregate return type stack frame adjustment
@@ -88,13 +92,20 @@ __attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_t
 			"addl $4, %%esi	\r\n"					//skip the caller aggregate return type buffer pointer on input parameter list
 													//we will create a new stack frame for our return type buffer pointer
 			"subl $4, %%edx \r\n"					//reduce parameter size by 1 dword to account for the aggregate return type buffer pointer
+
+			"int $0x03 \r\n"
 			
 			"1:\r\n"						
 			"addl %%edx, %%ebp \r\n"				//ebp=parameter + result dwords
 			"subl %%ebp, %%esp 	\r\n"				//adjust top of stack to accomodate input parameters and aggregate return type buffer (if applicable)
 			"movl %%esp, %%edi \r\n"				//edi=top of stack (with room made for input parameters)
+			
+			"xchg %%ecx, %%edx \r\n"
 			"cld \r\n"								//clear direction flag to copy forward
 			"rep movsb \r\n"						//copy input parameters (at esi) to top of stack
+			"xchg %%ecx, %%edx \r\n"
+			
+			"int $0x03 \r\n"
 			
 			"cmpl $0, %%ecx \r\n"					//if we have aggregate return type then we need to push the aggregate return type buffer address
 			"je 1f \r\n"							//if not, then invoke the callee slab entry point
