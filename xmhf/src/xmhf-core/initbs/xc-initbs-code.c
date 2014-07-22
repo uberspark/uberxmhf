@@ -133,6 +133,15 @@ void xmhf_runtime_entry(void){
 			printf("\n%s: came back from entry_1, value=%u", __FUNCTION__, value);
 			*/
 			
+			printf("%s: doing int3\n", __FUNCTION__);
+			asm volatile("int $0x03 \r\n");
+			printf("%s: doing int3\n", __FUNCTION__);
+			asm volatile("int $0x03 \r\n");
+			printf("%s: doing int3\n", __FUNCTION__);
+			asm volatile("int $0x03 \r\n");
+			printf("%s: int3 test done\n", __FUNCTION__);
+			
+			
 			printf("%s: preparing to invoke entry_2, esp=%x\n", __FUNCTION__, read_esp());
 			ctx= XMHF_SLAB_CALL(entry_2(2048, true, 4096));
 			printf("\n%s: came back from entry_2, esp=%x", __FUNCTION__, read_esp());

@@ -95,6 +95,10 @@ SECTIONS
 		*(.sharedro_slab_table)
 	} >slabmem  
 
+	.libxmhfdebugdata : {
+		*(.libxmhfdebugdata)
+	} >slabmem  
+
 	/* this is to cause the link to fail if there is
 	* anything we didn't explicitly place.
 	* when this does cause link to fail, temporarily comment

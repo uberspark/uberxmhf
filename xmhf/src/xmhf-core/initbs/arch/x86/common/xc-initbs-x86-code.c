@@ -497,25 +497,31 @@ void xmhf_apihub_arch_initialize (void){
 //bootstrap exception handling without SMP support
 //only designed until real SMP exception handler slab (xcexhub) can take control
 
-__attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u8 _xcinitbs_exception_stack[PAGE_SIZE_4K];
-__attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u32 _xcinitbs_exception_stack_index = &_xcinitbs_exception_stack + PAGE_SIZE_4K;
+__attribute__((section(".libxmhfdebugdata"))) __attribute__(( aligned(4096) )) static u8 _xcinitbs_exception_stack[PAGE_SIZE_4K];
+__attribute__((section(".libxmhfdebugdata"))) __attribute__(( aligned(4096) )) static u32 _xcinitbs_exception_stack_index = &_xcinitbs_exception_stack + PAGE_SIZE_4K;
 
 #define XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(vector) 												\
 	__attribute__(( section(".slab_trampoline") )) static void __xcinitbs_exception_handler_##vector(void) __attribute__((naked)) { 					\
 		asm volatile(												\
-						"movl	%0, %%ebx\r\n"						\
-						"movl	%%ebx, %%cr3\r\n"						\
-						"movw	%1, %%bx\r\n"						\
-						"movw	%%bx, %%ds\r\n"						\
-						"movl   %2, %%esp \r\n"						\
+						"xchg   %0, %%esp \r\n"						\
 						"pushal \r\n"								\
-						"movl 	%%esp, %%ebx\r\n"					\
-						"pushl 	%%ebx\r\n"							\
-						"pushl	%3\r\n" 							\
+						"pushl %%esp \r\n"							\
+						"pushl  %0 \r\n"							\
+						"movl %%cr3, %%ebx \r\n"					\
+						"pushl %%ebx		\r\n"					\
+						"movl	%1, %%ebx\r\n"						\
+						"movl	%%ebx, %%cr3\r\n"					\
+						"pushl	%2\r\n" 							\
 						"call	xmhf_xcinitbs_xcphandler_arch_hub\r\n"		\
-						"1: jmp 1b	 \r\n"								\
+						"addl $4, %%esp \r\n"						\
+						"popl %%ebx \r\n"							\
+						"movl  %%ebx, %%cr3 \r\n"					\
+						"addl $8, %%esp \r\n"						\
+						"popal \r\n"								\
+						"xchg	%0, %%esp \r\n"						\
+						"iretl \r\n"								\
 					:												\
-					:	"m" (_slab_table[XMHF_SLAB_INITBS_INDEX].slab_macmid), "i" (__DS_CPL0), "m" (_xcinitbs_exception_stack_index), "i" (vector)				\
+					:	"m" (_xcinitbs_exception_stack_index), "m" (_slab_table[XMHF_SLAB_INITBS_INDEX].slab_macmid), "i" (vector)				\
 		);															\
 	}\
 
@@ -615,7 +621,7 @@ void xcinitbs_initialize_exceptionhandling(void){
 }
 					
 
-__attribute__(( section(".slab_trampoline") )) static void xmhf_xcinitbs_xcphandler_arch_unhandled(u32 vector, struct regs *r){
+__attribute__(( section(".slab_trampoline") )) static void xmhf_xcinitbs_xcphandler_arch_unhandled(u32 vector, u32 orig_cr3, u32 orig_esp, struct regs *r){
 	u32 exception_cs, exception_eip, exception_eflags, errorcode=0;
 
 	if(vector == CPU_EXCEPTION_DF ||
@@ -625,21 +631,21 @@ __attribute__(( section(".slab_trampoline") )) static void xmhf_xcinitbs_xcphand
 		vector == CPU_EXCEPTION_GP ||
 		vector == CPU_EXCEPTION_PF ||
 		vector == CPU_EXCEPTION_AC){
-		errorcode = *(uint32_t *)(r->esp+0);
-		r->esp += sizeof(uint32_t);	//skip error code on stack if applicable
+		errorcode = *(uint32_t *)(orig_esp+0);
+		orig_esp += sizeof(uint32_t);	//skip error code on stack if applicable
 	}
 
-	exception_eip = *(uint32_t *)(r->esp+0);
-	exception_cs = *(uint32_t *)(r->esp+sizeof(uint32_t));
-	exception_eflags = *(uint32_t *)(r->esp+(2*sizeof(uint32_t)));
+	exception_eip = *(uint32_t *)(orig_esp+0);
+	exception_cs = *(uint32_t *)(orig_esp+sizeof(uint32_t));
+	exception_eflags = *(uint32_t *)(orig_esp+(2*sizeof(uint32_t)));
 
 	printf("\nunhandled exception %x, halting!", vector);
 	printf("\nstate dump follows...");
 	//things to dump
 	printf("\nCS:EIP 0x%04x:0x%08x with EFLAGS=0x%08x, errorcode=%08x", (u16)exception_cs, exception_eip, exception_eflags, errorcode);
-	printf("\nCR0=%08x, CR2=%08x, CR3=%08x, CR4=%08x", read_cr0(), read_cr2(), read_cr3(), read_cr4());
+	printf("\nCR0=%08x, CR2=%08x, CR3=%08x, CR4=%08x", read_cr0(), read_cr2(), orig_cr3, read_cr4());
 	printf("\nEAX=0x%08x EBX=0x%08x ECX=0x%08x EDX=0x%08x", r->eax, r->ebx, r->ecx, r->edx);
-	printf("\nESI=0x%08x EDI=0x%08x EBP=0x%08x ESP=0x%08x", r->esi, r->edi, r->ebp, r->esp);
+	printf("\nESI=0x%08x EDI=0x%08x EBP=0x%08x ESP=0x%08x", r->esi, r->edi, r->ebp, orig_esp);
 	printf("\nCS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", (u16)read_segreg_cs(), (u16)read_segreg_ds(), (u16)read_segreg_es(), (u16)read_segreg_ss());
 	printf("\nFS=0x%04x, GS=0x%04x", (u16)read_segreg_fs(), (u16)read_segreg_gs());
 	printf("\nTR=0x%04x", (u16)read_tr_sel());
@@ -647,7 +653,7 @@ __attribute__(( section(".slab_trampoline") )) static void xmhf_xcinitbs_xcphand
 	//do a stack dump in the hopes of getting more info.
 	{
 		uint32_t i;
-		uint32_t stack_start = r->esp;
+		uint32_t stack_start = orig_esp;
 		printf("\n-----stack dump (16 entries)-----");
 		for(i=stack_start; i < stack_start+(16*sizeof(uint32_t)); i+=sizeof(uint32_t)){
 			printf("\nStack(0x%08x) -> 0x%08x", i, *(uint32_t *)i);
@@ -657,10 +663,20 @@ __attribute__(( section(".slab_trampoline") )) static void xmhf_xcinitbs_xcphand
 }
 
 //exception handler hub
-__attribute__(( section(".slab_trampoline") )) void xmhf_xcinitbs_xcphandler_arch_hub(u32 vector, struct regs *r){
-		xmhf_xcinitbs_xcphandler_arch_unhandled(vector, r);
-		printf("\nHalting System!\n");
-		HALT();
+__attribute__(( section(".slab_trampoline") )) void xmhf_xcinitbs_xcphandler_arch_hub(u32 vector, u32 orig_cr3, u32 orig_esp, struct regs *r){
+	
+	switch(vector){
+		case 0x3:
+			xmhf_xcinitbs_xcphandler_arch_unhandled(vector, orig_cr3, orig_esp, r);
+			printf("Int3 dbgprint -- continue\n");
+			break;
+		
+		default:
+			xmhf_xcinitbs_xcphandler_arch_unhandled(vector, orig_cr3, orig_esp, r);
+			printf("\nHalting System!\n");
+			HALT();
+	}
+	
 }
 	
 

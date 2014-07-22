@@ -66,7 +66,6 @@ __attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_t
 	
 	asm volatile(	
 			"movl %%edx, %%cr3 \r\n"				//load callee MAC
-			"int $0x03 \r\n"
 			"pushl %%esi \r\n"						//save caller parameter base address
 			"pushl %%eax \r\n"						//save caller MAC
 			"pushl %%edi \r\n" 						//save caller return address
