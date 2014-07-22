@@ -122,7 +122,7 @@ void xmhf_runtime_entry(void){
 			context_desc_t ctx;
 			u32 value;
 			
-			/*//invoke slab interface
+			//invoke slab interface
 			printf("\n%s: preparing to invoke entry_0, esp=%x", __FUNCTION__, read_esp());
 			XMHF_SLAB_CALL(entry_0());
 			printf("\n%s: came back from entry_0, esp=%x", __FUNCTION__, read_esp());
@@ -131,15 +131,14 @@ void xmhf_runtime_entry(void){
 			value=XMHF_SLAB_CALL(entry_1(5, 3));
 			printf("\n%s: came back from entry_1, esp=%x", __FUNCTION__, read_esp());
 			printf("\n%s: came back from entry_1, value=%u", __FUNCTION__, value);
-			*/
-			
-			printf("%s: doing int3\n", __FUNCTION__);
-			asm volatile("int $0x03 \r\n");
-			printf("%s: doing int3\n", __FUNCTION__);
-			asm volatile("int $0x03 \r\n");
-			printf("%s: doing int3\n", __FUNCTION__);
-			asm volatile("int $0x03 \r\n");
-			printf("%s: int3 test done\n", __FUNCTION__);
+						
+			//printf("%s: doing int3\n", __FUNCTION__);
+			//asm volatile("int $0x03 \r\n");
+			//printf("%s: doing int3\n", __FUNCTION__);
+			//asm volatile("int $0x03 \r\n");
+			//printf("%s: doing int3\n", __FUNCTION__);
+			//asm volatile("int $0x03 \r\n");
+			//printf("%s: int3 test done\n", __FUNCTION__);
 			
 			
 			printf("%s: preparing to invoke entry_2, esp=%x\n", __FUNCTION__, read_esp());
