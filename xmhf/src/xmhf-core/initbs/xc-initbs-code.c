@@ -122,7 +122,7 @@ void xmhf_runtime_entry(void){
 			context_desc_t ctx;
 			u32 value;
 			
-			//invoke slab interface
+			/*//invoke slab interface
 			printf("\n%s: preparing to invoke entry_0, esp=%x", __FUNCTION__, read_esp());
 			XMHF_SLAB_CALL(entry_0());
 			printf("\n%s: came back from entry_0, esp=%x", __FUNCTION__, read_esp());
@@ -131,8 +131,9 @@ void xmhf_runtime_entry(void){
 			value=XMHF_SLAB_CALL(entry_1(5, 3));
 			printf("\n%s: came back from entry_1, esp=%x", __FUNCTION__, read_esp());
 			printf("\n%s: came back from entry_1, value=%u", __FUNCTION__, value);
-
-			printf("\n%s: preparing to invoke entry_2, esp=%x", __FUNCTION__, read_esp());
+			*/
+			
+			printf("%s: preparing to invoke entry_2, esp=%x\n", __FUNCTION__, read_esp());
 			ctx= XMHF_SLAB_CALL(entry_2(2048, true, 4096));
 			printf("\n%s: came back from entry_2, esp=%x", __FUNCTION__, read_esp());
 			printf("\n%s: ctx: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, ctx.cpu_desc.cpu_index, ctx.cpu_desc.isbsp, ctx.partition_desc.partition_index);

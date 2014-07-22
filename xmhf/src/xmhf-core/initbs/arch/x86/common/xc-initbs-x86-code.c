@@ -497,21 +497,25 @@ void xmhf_apihub_arch_initialize (void){
 //bootstrap exception handling without SMP support
 //only designed until real SMP exception handler slab (xcexhub) can take control
 
+__attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u8 _xcinitbs_exception_stack[PAGE_SIZE_4K];
+__attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u32 _xcinitbs_exception_stack_index = &_xcinitbs_exception_stack + PAGE_SIZE_4K;
+
 #define XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(vector) 												\
 	__attribute__(( section(".slab_trampoline") )) static void __xcinitbs_exception_handler_##vector(void) __attribute__((naked)) { 					\
 		asm volatile(												\
+						"movl	%0, %%ebx\r\n"						\
+						"movl	%%ebx, %%cr3\r\n"						\
+						"movw	%1, %%bx\r\n"						\
+						"movw	%%bx, %%ds\r\n"						\
+						"movl   %2, %%esp \r\n"						\
 						"pushal \r\n"								\
-						"movw	%0, %%ax\r\n"						\
-						"movw	%%ax, %%ds\r\n"						\
-						"movl 	%%esp, %%eax\r\n"					\
-						"pushl 	%%eax\r\n"							\
-						"pushl	%1\r\n" 							\
+						"movl 	%%esp, %%ebx\r\n"					\
+						"pushl 	%%ebx\r\n"							\
+						"pushl	%3\r\n" 							\
 						"call	xmhf_xcinitbs_xcphandler_arch_hub\r\n"		\
-						"addl  	$0x08, %%esp\r\n"					\
-						"popal	 \r\n"								\
-						"iretl\r\n"									\
+						"1: jmp 1b	 \r\n"								\
 					:												\
-					:	"i" (__DS_CPL0), "i" (vector)				\
+					:	"m" (_slab_table[XMHF_SLAB_INITBS_INDEX].slab_macmid), "i" (__DS_CPL0), "m" (_xcinitbs_exception_stack_index), "i" (vector)				\
 		);															\
 	}\
 
@@ -654,19 +658,9 @@ __attribute__(( section(".slab_trampoline") )) static void xmhf_xcinitbs_xcphand
 
 //exception handler hub
 __attribute__(( section(".slab_trampoline") )) void xmhf_xcinitbs_xcphandler_arch_hub(u32 vector, struct regs *r){
-	switch(vector){
-			case 0x3:{
-				xmhf_xcinitbs_xcphandler_arch_unhandled(vector, r);
-				printf("\n%s: exception 3, returning", __FUNCTION__);
-			}
-			break;
-			
-			default:{
-				xmhf_xcinitbs_xcphandler_arch_unhandled(vector, r);
-				printf("\nHalting System!\n");
-				HALT();
-			}
-	}
+		xmhf_xcinitbs_xcphandler_arch_unhandled(vector, r);
+		printf("\nHalting System!\n");
+		HALT();
 }
 	
 
