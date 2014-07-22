@@ -115,19 +115,6 @@ void xmhf_runtime_entry(void){
 	xmhf_apihub_initialize();
 
 
-	asm volatile("int $0x03 \r\n");
-	
-	printf("\nXMHF Tester Finished!\n");
-	printf("\n\n");
-	HALT();
-
-
-	printf("proceeding to initialize exception handling...\n");
-	//setup platform exception handling
-	xcinitbs_arch_initialize_exception_handling();
-	printf("exception handling initialized.\n");
-
-
 	//[test] slab
 	{
 			//extern slab_header_t _test_slab_header;
@@ -187,6 +174,18 @@ void xmhf_runtime_entry(void){
 			printf("\nap_output.param.inforegs.info_guest_paddr_full               %llu",  ap_output.param.inforegs.info_guest_paddr_full             ); 
 
 	}
+	
+	printf("\nXMHF Tester Finished!\n");
+	printf("\n\n");
+	HALT();
+
+
+	printf("proceeding to initialize exception handling...\n");
+	//setup platform exception handling
+	xcinitbs_arch_initialize_exception_handling();
+	printf("exception handling initialized.\n");
+
+
 
 	//printf("\nXMHF Tester Finished!\n\n");
 	//HALT();
