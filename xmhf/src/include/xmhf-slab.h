@@ -72,13 +72,21 @@
 extern __attribute__(( section(".sharedro_xcbootinfoptr") )) XMHF_BOOTINFO *xcbootinfo;
 extern __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_table[XMHF_SLAB_NUMBEROFSLABS];
 
-#define _XMHF_SLAB_DEFEXPORTFN(fn_name, fn_num, fn_aggregateret)		\
+/*#define _XMHF_SLAB_DEFEXPORTFN(fn_name, fn_num, fn_aggregateret)		\
 			"1:\r\n"								\
 			"cmpl $"#fn_num", %%ebx \r\n"			\
 			"jne 1f \r\n"							\
 			"call "#fn_name" \r\n"					\
 			"subl $"#fn_aggregateret", %%ebp \r\n"	\
 			"jmp endswitch \r\n"					\
+*/
+
+#define _XMHF_SLAB_DEFEXPORTFN(fn_name, fn_num, fn_aggregateret)		\
+			"cmpl $"#fn_num", %%ebx \r\n"			\
+			"jne 1f \r\n"							\
+			"jmp "#fn_name" \r\n"					\
+			"1:\r\n"								\
+
 
 #define XMHF_SLAB_DEFEXPORTFN(fn_name, fn_num, fn_aggregateret)		_XMHF_SLAB_DEFEXPORTFN(fn_name, fn_num, fn_aggregateret)
 
@@ -87,7 +95,7 @@ extern __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_tab
 //edi = return address
 //ebx = function number
 //ecx = number of 32-bit dwords comprising the parameters (excluding return address)
-							
+/*							
 #define XMHF_SLAB_DEFINTERFACE(...) __attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) void _slab_interface(void){	\
 	asm volatile (							\
 			"pushl %%edi \r\n" 				\
@@ -121,7 +129,20 @@ extern __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_tab
 			:								\
 			:								\
 		);									\
+}*/											\
+
+
+#define XMHF_SLAB_DEFINTERFACE(...) __attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) void _slab_interface(void){	\
+	asm volatile (							\
+											\
+			__VA_ARGS__ 					\
+											\
+			:								\
+			:								\
+			:								\
+		);									\
 }											\
+
 
 #define XMHF_SLAB_DEFINTERFACEBARE(fn) __attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) void _slab_interface(void){	\
 	asm volatile (							\
@@ -169,6 +190,15 @@ extern __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_tab
 						);								\
 */
 
+// esi = 32-bit address of input parameter base
+// edi = 32-bit address of return from slab call
+// ebp = 32-bit address of destination slab entry point
+// ecx = top 16-bits = size of result dwords
+//		 bottom 16-bits = size of parameter dwords
+// ebx = 32-bit function number
+// eax = 32-bit src slab macmid
+// edx = 32-bit dst slab macmid
+
 #define _XMHF_SLAB_DEFIMPORTFNSTUB(src_slab_index, dest_slab_index, fnnum, fn_paramsize, fn_retsize, fn_aggregateret) asm volatile(	\
 						"pushl %%edi \r\n"				\
 						"pushl %%esi \r\n"				\
@@ -178,11 +208,14 @@ extern __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_tab
 														\
 						"leal 24(%%esp), %%esi \r\n"	\
 						"movl $1f, %%edi \r\n"			\
-						"movl %0, %%ebx \r\n"			\
-						"movl %1, %%ecx \r\n"			\
-						"movl %3, %%edx \r\n"			\
-						"movl %5, %%eax \r\n"			\
-						"movl %2, %%ebp \r\n"			\
+						"movl %0, %%ebp \r\n"			\
+						"movw %1, %%cx \r\n"			\
+						"rol $16, %%ecx \r\n"			\
+						"movw %2, %%cx \r\n"			\
+						"movl %3, %%ebx \r\n"			\
+						"movl %4, %%eax \r\n"			\
+						"movl %5, %%edx \r\n"			\
+														\
 						"jmp _slab_trampoline \r\n"		\
 														\
 						"1: \r\n"						\
@@ -193,7 +226,7 @@ extern __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_tab
 						"popl %%edi \r\n"				\
 						"ret $"#fn_aggregateret" \r\n"					\
 						: 								\
-						: "i" (fnnum), "i" (fn_paramsize), "m" (_slab_table[dest_slab_index].entry_cr3), "i" (fn_retsize), "m" (_slab_table[src_slab_index].slab_macmid), "m" (_slab_table[dest_slab_index].slab_macmid)	\
+						: "m" (_slab_table[dest_slab_index].entry_cr3), "i" (fn_retsize), "i" (fn_paramsize), "i" (fnnum), "m" (_slab_table[src_slab_index].slab_macmid), "m" (_slab_table[dest_slab_index].slab_macmid)	\
 						:	 							\
 						);								\
 
