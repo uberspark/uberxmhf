@@ -73,7 +73,7 @@ __attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_t
 			
 			"movl %%ebp, %%eax \r\n"				//eax= callee entry point
 
-			"int $0x03 \r\n"
+			//"int $0x03 \r\n"
 											
 			"xorl %%ebp, %%ebp \r\n"				//zero out %ebp so we can use it to keep track of stack frame
 			
@@ -81,7 +81,7 @@ __attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_t
 			"movw %%cx, %%dx \r\n"					//edx=parameter dwords
 			"shr $16, %%ecx \r\n"					//ecx=result dwords
 			
-			"int $0x03 \r\n"
+			//"int $0x03 \r\n"
 						
 			"cmpl $0, %%ecx \r\n"					//check if we are supporting aggregate return type for this slab call
 			"je 1f \r\n"							//if no, then skip aggregate return type stack frame adjustment
@@ -93,7 +93,7 @@ __attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_t
 													//we will create a new stack frame for our return type buffer pointer
 			"subl $4, %%edx \r\n"					//reduce parameter size by 1 dword to account for the aggregate return type buffer pointer
 
-			"int $0x03 \r\n"
+			//"int $0x03 \r\n"
 			
 			"1:\r\n"						
 			"addl %%edx, %%ebp \r\n"				//ebp=parameter + result dwords
@@ -105,7 +105,7 @@ __attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_t
 			"rep movsb \r\n"						//copy input parameters (at esi) to top of stack
 			"xchg %%ecx, %%edx \r\n"
 			
-			"int $0x03 \r\n"
+			//"int $0x03 \r\n"
 			
 			"cmpl $0, %%ecx \r\n"					//if we have aggregate return type then we need to push the aggregate return type buffer address
 			"je 1f \r\n"							//if not, then invoke the callee slab entry point
@@ -116,22 +116,20 @@ __attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_t
 											
 			"addl %%ebp, %%esp \r\n"				//discard callee stack frame that we created
 			
-			"popl %%ecx \r\n"						//restore caller MAC, return address and param/return size
-			"popl %%edi \r\n"				
-			"popl %%eax \r\n"
+			"popl %%ecx \r\n"						//ecx = caller param/return size
+			"popl %%ebp \r\n"						//ebp = caller return address
+			"popl %%ebx \r\n"						//ebx = caller MAC
 		
-			"movl %%eax, %%cr3 \r\n"				//load caller MAC
+			"movl %%ebx, %%cr3 \r\n"				//load caller MAC
 			
-			"movl %%edi, %%eax \r\n"				//eax=caller return address
-
-			"popl %%edi \r\n"						//edi=caller parameter base address
-			"movl (%%edi), %%edi \r\n"				//edi=caller aggregate return type buffer
+			"popl %%edi \r\n"						//edi = caller parameter base address
+			"movl (%%edi), %%edi \r\n"				//edi = caller aggregate return type buffer
 			
-			"shr $16, %%ecx \r\n"					//ecx=result dwords
+			"shr $16, %%ecx \r\n"					//ecx = result size
 			"cld \r\n"						
 			"rep movsb \r\n"						//store aggregate return value (if any)
 			
-			"jmpl *%%eax \r\n"						//go back to caller
+			"jmpl *%%ebp \r\n"						//go back to caller
 		: 
 		: 
 		:	 							
