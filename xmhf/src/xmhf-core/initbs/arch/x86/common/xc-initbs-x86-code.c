@@ -493,6 +493,181 @@ void xmhf_apihub_arch_initialize (void){
 }
 
 
+//--------------------------------------------------------------------------------------
+//bootstrap exception handling without SMP support
+//only designed until real SMP exception handler slab (xcexhub) can take control
 
+#define XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(vector) 												\
+	__attribute__(( section(".slab_trampoline") )) static void __xcinitbs_exception_handler_##vector(void) __attribute__((naked)) { 					\
+		asm volatile(												\
+						"pushal \r\n"								\
+						"movw	%0, %%ax\r\n"						\
+						"movw	%%ax, %%ds\r\n"						\
+						"movl 	%%esp, %%eax\r\n"					\
+						"pushl 	%%eax\r\n"							\
+						"pushl	%1\r\n" 							\
+						"call	xmhf_xcinitbs_xcphandler_arch_hub\r\n"		\
+						"addl  	$0x08, %%esp\r\n"					\
+						"popal	 \r\n"								\
+						"iretl\r\n"									\
+					:												\
+					:	"i" (__DS_CPL0), "i" (vector)				\
+		);															\
+	}\
+
+
+#define XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(vector) &__xcinitbs_exception_handler_##vector
+
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(0)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(1)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(2)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(3)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(4)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(5)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(6)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(7)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(8)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(9)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(10)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(11)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(12)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(13)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(14)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(15)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(16)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(17)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(18)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(19)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(20)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(21)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(22)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(23)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(24)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(25)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(26)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(27)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(28)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(29)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(30)
+XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(31)
+	
+static u32 __xcinitbs_exceptionstubs[] = { 	XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(0),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(1),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(2),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(3),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(4),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(5),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(6),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(7),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(8),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(9),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(10),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(11),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(12),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(13),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(14),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(15),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(16),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(17),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(18),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(19),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(20),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(21),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(22),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(23),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(24),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(25),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(26),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(27),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(28),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(29),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(30),
+							XMHF_INITBS_EXCEPTION_HANDLER_ADDROF(31),
+};
+
+
+//initialize basic exception handling
+void xcinitbs_initialize_exceptionhandling(void){
+	u32 *pexceptionstubs;
+	u32 i;
+
+	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
+		idtentry_t *idtentry=(idtentry_t *)((u32)&_idt_start+ (i*8));
+		idtentry->isrLow= (u16)__xcinitbs_exceptionstubs[i];
+		idtentry->isrHigh= (u16) ( (u32)__xcinitbs_exceptionstubs[i] >> 16 );
+		idtentry->isrSelector = __CS_CPL0;
+		idtentry->count=0x0;
+		idtentry->type=0xEE;	//32-bit interrupt gate
+								//present=1, DPL=11b, system=0, type=1110b
+	}
+
+	//load IDT
+	asm volatile(
+		"lidt  %0 \r\n"
+		: //no outputs
+		: "m" (_idt)
+		: //no clobber
+	);
+}
+					
+
+__attribute__(( section(".slab_trampoline") )) static void xmhf_xcinitbs_xcphandler_arch_unhandled(u32 vector, struct regs *r){
+	u32 exception_cs, exception_eip, exception_eflags, errorcode=0;
+
+	if(vector == CPU_EXCEPTION_DF ||
+		vector == CPU_EXCEPTION_TS ||
+		vector == CPU_EXCEPTION_NP ||
+		vector == CPU_EXCEPTION_SS ||
+		vector == CPU_EXCEPTION_GP ||
+		vector == CPU_EXCEPTION_PF ||
+		vector == CPU_EXCEPTION_AC){
+		errorcode = *(uint32_t *)(r->esp+0);
+		r->esp += sizeof(uint32_t);	//skip error code on stack if applicable
+	}
+
+	exception_eip = *(uint32_t *)(r->esp+0);
+	exception_cs = *(uint32_t *)(r->esp+sizeof(uint32_t));
+	exception_eflags = *(uint32_t *)(r->esp+(2*sizeof(uint32_t)));
+
+	printf("\nunhandled exception %x, halting!", vector);
+	printf("\nstate dump follows...");
+	//things to dump
+	printf("\nCS:EIP 0x%04x:0x%08x with EFLAGS=0x%08x, errorcode=%08x", (u16)exception_cs, exception_eip, exception_eflags, errorcode);
+	printf("\nCR0=%08x, CR2=%08x, CR3=%08x, CR4=%08x", read_cr0(), read_cr2(), read_cr3(), read_cr4());
+	printf("\nEAX=0x%08x EBX=0x%08x ECX=0x%08x EDX=0x%08x", r->eax, r->ebx, r->ecx, r->edx);
+	printf("\nESI=0x%08x EDI=0x%08x EBP=0x%08x ESP=0x%08x", r->esi, r->edi, r->ebp, r->esp);
+	printf("\nCS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", (u16)read_segreg_cs(), (u16)read_segreg_ds(), (u16)read_segreg_es(), (u16)read_segreg_ss());
+	printf("\nFS=0x%04x, GS=0x%04x", (u16)read_segreg_fs(), (u16)read_segreg_gs());
+	printf("\nTR=0x%04x", (u16)read_tr_sel());
+
+	//do a stack dump in the hopes of getting more info.
+	{
+		uint32_t i;
+		uint32_t stack_start = r->esp;
+		printf("\n-----stack dump (16 entries)-----");
+		for(i=stack_start; i < stack_start+(16*sizeof(uint32_t)); i+=sizeof(uint32_t)){
+			printf("\nStack(0x%08x) -> 0x%08x", i, *(uint32_t *)i);
+		}
+		printf("\n-----end------------");
+	}
+}
+
+//exception handler hub
+__attribute__(( section(".slab_trampoline") )) void xmhf_xcinitbs_xcphandler_arch_hub(u32 vector, struct regs *r){
+	switch(vector){
+			case 0x3:{
+				xmhf_xcinitbs_xcphandler_arch_unhandled(vector, r);
+				printf("\n%s: exception 3, returning", __FUNCTION__);
+			}
+			break;
+			
+			default:{
+				xmhf_xcinitbs_xcphandler_arch_unhandled(vector, r);
+				printf("\nHalting System!\n");
+				HALT();
+			}
+	}
+}
+	
 
 
