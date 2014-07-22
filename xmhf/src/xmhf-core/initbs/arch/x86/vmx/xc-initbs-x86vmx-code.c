@@ -444,6 +444,12 @@ void xmhf_baseplatform_arch_initialize(void){
 	xmhf_baseplatform_arch_x86_initializeTSS();
 	#endif //__XMHF_VERIFICATION__
 
+	//initialize basic exception handling
+	printf("%s: proceeding to initialize basic exception handling\n", __FUNCTION__);
+	xcinitbs_initialize_exceptionhandling();
+	printf("%s: basic exception handling initialized\n", __FUNCTION__);
+	
+
 	//initialize PCI subsystem
 	xmhf_baseplatform_arch_x86_pci_initialize();
 

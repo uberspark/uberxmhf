@@ -114,12 +114,19 @@ void xmhf_runtime_entry(void){
 	//setup slab page tables and turn on paging
 	xmhf_apihub_initialize();
 
+
+	asm volatile("int $0x03 \r\n");
+	
+	printf("\nXMHF Tester Finished!\n");
+	printf("\n\n");
+	HALT();
+
+
 	printf("proceeding to initialize exception handling...\n");
 	//setup platform exception handling
 	xcinitbs_arch_initialize_exception_handling();
 	printf("exception handling initialized.\n");
 
-	//asm volatile("int $0x03 \r\n");
 
 	//[test] slab
 	{
