@@ -115,7 +115,7 @@ void xmhf_runtime_entry(void){
 	xmhf_apihub_initialize();
 
 
-	//[test] slab
+	/*//[test] slab
 	{
 			//extern slab_header_t _test_slab_header;
 			xc_hypapp_arch_param_t ap_input, ap_output;
@@ -186,7 +186,7 @@ void xmhf_runtime_entry(void){
 	
 	printf("\nXMHF Tester Finished!\n");
 	printf("\n\n");
-	HALT();
+	HALT();*/
 
 
 	printf("proceeding to initialize exception handling...\n");
