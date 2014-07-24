@@ -46,7 +46,7 @@
 
 #include <xmhf-core.h>
 
-#include <xmhf-slab-implib.h>
+#include <testslab1.h>
 
 /*
  * slab code

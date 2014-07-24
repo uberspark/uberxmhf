@@ -53,7 +53,7 @@
 #include <xc-initbs.h>
 
 #define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_INITBS_INDEX
-#include <xmhf-slab-implib.h>
+#include <testslab1.h>
 #include <xc-init.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
 
