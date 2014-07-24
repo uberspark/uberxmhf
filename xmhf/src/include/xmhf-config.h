@@ -66,7 +66,7 @@
 	//physical address of XMHF secure loader + core runtime
 	//SL currently sits at absolute address 256MB (0x10000000). 
 	//core runtime is at an offset of 2M from this SL base address
-	#define __TARGET_BASE_SL				0x10200000		//256MB
+	#define __TARGET_BASE_SL				0x10400000		//256MB
 	#define __TARGET_SIZE_SL				0x00200000
 	
 

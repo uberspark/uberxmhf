@@ -109,21 +109,21 @@ static void _vmx_handle_intercept_wrmsr(context_desc_t context_desc, struct regs
 	//printf("\nCPU(0x%02x): WRMSR 0x%08x", xc_cpu->cpuid, r.ecx);
 	xc_hypapp_arch_param_t ap;
 	
-	ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_SYSENTER);
+	ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_SYSENTER));
 	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_SYSENTER;
 		
 	switch(r.ecx){
 		case IA32_SYSENTER_CS_MSR:
 			ap.param.sysenter.sysenter_cs = r.eax;
-			xc_api_cpustate_set(context_desc, ap);
+			XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
 			break;
 		case IA32_SYSENTER_EIP_MSR:
 			ap.param.sysenter.sysenter_rip = r.eax;
-			xc_api_cpustate_set(context_desc, ap);
+			XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
 			break;
 		case IA32_SYSENTER_ESP_MSR:
 			ap.param.sysenter.sysenter_rsp = r.eax;
-			xc_api_cpustate_set(context_desc, ap);
+			XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
 			break;
 		default:{
 			asm volatile ("wrmsr\r\n"
@@ -138,7 +138,7 @@ static void _vmx_handle_intercept_wrmsr(context_desc_t context_desc, struct regs
 static struct regs _vmx_handle_intercept_rdmsr(context_desc_t context_desc, struct regs r){
 	xc_hypapp_arch_param_t ap;
 	
-	ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_SYSENTER);
+	ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_SYSENTER));
 
 	switch(r.ecx){
 		case IA32_SYSENTER_CS_MSR:
@@ -168,7 +168,7 @@ static struct regs _vmx_handle_intercept_rdmsr(context_desc_t context_desc, stru
 //---intercept handler (EPT voilation)----------------------------------
 static void _vmx_handle_intercept_eptviolation(context_desc_t context_desc, u32 gpa, u32 gva, u32 errorcode, struct regs r __attribute__((unused))){
 
-	xmhf_hypapp_handleintercept_hptfault(context_desc, gpa, gva,	(errorcode & 7));
+	XMHF_SLAB_CALL(xmhf_hypapp_handleintercept_hptfault(context_desc, gpa, gva,	(errorcode & 7)));
 }
 
 
@@ -185,7 +185,7 @@ static struct regs _vmx_handle_intercept_ioportaccess(context_desc_t context_des
 		xc_hypapp_arch_param.param.cbtrapio.portnum = portnum;
 		xc_hypapp_arch_param.param.cbtrapio.access_type = access_type;
 		xc_hypapp_arch_param.param.cbtrapio.access_size = access_size;
-		app_ret_status=xmhf_hypapp_handleintercept_trap(context_desc, xc_hypapp_arch_param);
+		app_ret_status=XMHF_SLAB_CALL(xmhf_hypapp_handleintercept_trap(context_desc, xc_hypapp_arch_param));
 	}
 
 	if(app_ret_status == APP_TRAP_CHAIN){
@@ -222,11 +222,11 @@ static void vmx_handle_intercept_cr0access_ug(context_desc_t context_desc, struc
 	
 	cr0_value = _vmx_getregval(gpr, r);
 
-	ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS);
+	ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS));
 	ap.param.controlregs.cr0 = cr0_value;
 	ap.param.controlregs.control_cr0_shadow = (cr0_value & ~(CR0_CD | CR0_NW));
 	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS;
-	xc_api_cpustate_set(context_desc, ap);
+	XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
 	
 	//we need to flush logical processor VPID mappings as we emulated CR0 load above
 	__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0);
@@ -267,7 +267,7 @@ static void _vmx_propagate_cpustate_guestx86gprs(context_desc_t context_desc, st
 
 	ap.param.cpugprs = x86gprs;
 	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS;
-	xc_api_cpustate_set(context_desc, ap);
+	XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
 }
 
 //====================================================================================
@@ -276,7 +276,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 	xc_hypapp_arch_param_t ap;
 	xc_hypapp_arch_param_x86vmx_cpustate_inforegs_t inforegs;
 	
-	ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_INFOREGS);
+	ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_INFOREGS));
 	inforegs = ap.param.inforegs;
 	
 	
@@ -306,11 +306,11 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 			xc_hypapp_arch_param_x86vmx_cpustate_activity_t vmmcall_activity;
 			xc_hypapp_arch_param_x86vmx_cpustate_controlregs_t vmmcall_controlregs;
 			
-			vmmcall_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC);
+			vmmcall_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC));
 			vmmcall_desc = vmmcall_ap.param.desc;
-			vmmcall_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
+			vmmcall_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
 			vmmcall_activity = vmmcall_ap.param.activity;
-			vmmcall_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS);
+			vmmcall_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS));
 			vmmcall_controlregs = vmmcall_ap.param.controlregs;
 			
 			//if INT 15h E820 hypercall, then let the xmhf-core handle it
@@ -323,12 +323,12 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 				x86gprs = xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc, x86gprs);
 				_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 
-				vmmcall_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
+				vmmcall_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
 				vmmcall_activity = vmmcall_ap.param.activity;
 				vmmcall_activity.interruptibility=0;
 				vmmcall_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
 				vmmcall_ap.param.activity = vmmcall_activity;
-				xc_api_cpustate_set(context_desc, vmmcall_ap);
+				XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, vmmcall_ap));
 
 				
 			}else{	//if not E820 hook, give hypapp a chance to handle the hypercall
@@ -336,19 +336,19 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 					u64 hypercall_id = (u64)x86gprs.eax;
 					u64 hypercall_param = ((u64)x86gprs.edx << 32) | x86gprs.ecx;
 	
-					if( xmhf_hypapp_handlehypercall(context_desc, hypercall_id, hypercall_param) != APP_SUCCESS){
+					if( XMHF_SLAB_CALL(xmhf_hypapp_handlehypercall(context_desc, hypercall_id, hypercall_param)) != APP_SUCCESS){
 						printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", context_desc.cpu_desc.cpu_index, x86gprs.eax);
 						HALT();
 					}
 				}
 
-				vmmcall_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
+				vmmcall_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
 				vmmcall_activity = vmmcall_ap.param.activity;
 				vmmcall_activity.rip+=3;
 				vmmcall_activity.interruptibility=0;
 				vmmcall_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
 				vmmcall_ap.param.activity = vmmcall_activity;
-				xc_api_cpustate_set(context_desc, vmmcall_ap);
+				XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, vmmcall_ap));
 			}
 		}
 		break;
@@ -365,13 +365,13 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
 			x86gprs = _vmx_handle_intercept_ioportaccess(context_desc, access_size, access_type, portnum, stringio, x86gprs);
 			_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
-			ioio_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
+			ioio_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
 			ioio_activity = ioio_ap.param.activity;
 			ioio_activity.rip+=inforegs.info_vmexit_instruction_length;
 			ioio_activity.interruptibility=0;
 			ioio_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
 			ioio_ap.param.activity = ioio_activity;
-			xc_api_cpustate_set(context_desc, ioio_ap);
+			XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ioio_ap));
 		}
 		break;
 
@@ -386,18 +386,18 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
 			_vmx_handle_intercept_eptviolation(context_desc, gpa, gva, errorcode, x86gprs);
 
-			eptviolation_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
+			eptviolation_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
 			eptviolation_activity = eptviolation_ap.param.activity;
 			eptviolation_activity.interruptibility=0;
 			eptviolation_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
 			eptviolation_ap.param.activity = eptviolation_activity;
-			xc_api_cpustate_set(context_desc, eptviolation_ap);
+			XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, eptviolation_ap));
 		}
 		break;  
 
 		case VMX_VMEXIT_INIT:{
 			printf("\n***** VMEXIT_INIT xmhf_hypapp_handleshutdown\n");
-			xmhf_hypapp_handleshutdown(context_desc);      
+			XMHF_SLAB_CALL(xmhf_hypapp_handleshutdown(context_desc));      
 			printf("\nCPU(0x%02x): Fatal, xmhf_hypapp_handleshutdown returned. Halting!", context_desc.cpu_desc.cpu_index);
 			HALT();
 		}
@@ -430,13 +430,13 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 						printf("\nunhandled crx, halting!");
 						HALT();
 				}
-				crxaccess_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
+				crxaccess_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
 				crxaccess_activity = crxaccess_ap.param.activity;
 				crxaccess_activity.rip+=inforegs.info_vmexit_instruction_length;
 				crxaccess_activity.interruptibility=0;
 				crxaccess_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
 				crxaccess_ap.param.activity = crxaccess_activity;
-				xc_api_cpustate_set(context_desc, crxaccess_ap);
+				XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, crxaccess_ap));
 
 			}else{
 				printf("\n[%02x]%s: invalid gpr value (%u). halting!", context_desc.cpu_desc.cpu_index,
@@ -453,13 +453,13 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 			x86gprs = _vmx_handle_intercept_rdmsr(context_desc, x86gprs);
 			_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 
-			rdmsr_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
+			rdmsr_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
 			rdmsr_activity = rdmsr_ap.param.activity;
 			rdmsr_activity.rip+=inforegs.info_vmexit_instruction_length;
 			rdmsr_activity.interruptibility=0;
 			rdmsr_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
 			rdmsr_ap.param.activity = rdmsr_activity;
-			xc_api_cpustate_set(context_desc, rdmsr_ap);
+			XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, rdmsr_ap));
 		}
 		break;
 			
@@ -469,13 +469,13 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
 			_vmx_handle_intercept_wrmsr(context_desc, x86gprs);
 
-			wrmsr_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
+			wrmsr_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
 			wrmsr_activity = wrmsr_ap.param.activity;
 			wrmsr_activity.rip+=inforegs.info_vmexit_instruction_length;
 			wrmsr_activity.interruptibility=0;
 			wrmsr_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
 			wrmsr_ap.param.activity = wrmsr_activity;
-			xc_api_cpustate_set(context_desc, wrmsr_ap);
+			XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, wrmsr_ap));
 		}
 		break;
 			
@@ -486,13 +486,13 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 			x86gprs = _vmx_handle_intercept_cpuid(context_desc, x86gprs);
 			_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 
-			cpuid_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
+			cpuid_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
 			cpuid_activity = cpuid_ap.param.activity;
 			cpuid_activity.rip+=inforegs.info_vmexit_instruction_length;
 			cpuid_activity.interruptibility=0;
 			cpuid_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
 			cpuid_ap.param.activity = cpuid_activity;
-			xc_api_cpustate_set(context_desc, cpuid_ap);
+			XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, cpuid_ap));
 		}
 		break;
 
@@ -504,7 +504,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 			
 			if(reason == TASK_SWITCH_GATE && type == INTR_TYPE_NMI){
 				printf("\nCPU(0x%02x): NMI received (MP guest shutdown?)", context_desc.cpu_desc.cpu_index);
-				xmhf_hypapp_handleshutdown(context_desc);      
+				XMHF_SLAB_CALL(xmhf_hypapp_handleshutdown(context_desc));      
 				printf("\nCPU(0x%02x): warning, xmhf_hypapp_handleshutdown returned!", context_desc.cpu_desc.cpu_index);
 				printf("\nCPU(0x%02x): HALTING!", context_desc.cpu_desc.cpu_index);
 				HALT();
@@ -523,13 +523,13 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
 			_vmx_handle_intercept_xsetbv(context_desc, x86gprs);
 
-			xsetbv_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
+			xsetbv_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
 			xsetbv_activity = xsetbv_ap.param.activity;
 			xsetbv_activity.rip+=inforegs.info_vmexit_instruction_length;
 			xsetbv_activity.interruptibility=0;
 			xsetbv_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
 			xsetbv_ap.param.activity = xsetbv_activity;
-			xc_api_cpustate_set(context_desc, xsetbv_ap);
+			XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, xsetbv_ap));
 		}
 		break;
 
@@ -539,9 +539,9 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 			xc_hypapp_arch_param_x86vmx_cpustate_activity_t sipi_activity;
 			xc_hypapp_arch_param_x86vmx_cpustate_desc_t sipi_desc;
 			
-			sipi_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
+			sipi_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
 			sipi_activity = sipi_ap.param.activity;
-			sipi_ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC);
+			sipi_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC));
 			sipi_desc = sipi_ap.param.desc;
 			
 			printf("\nCPU(%02x): SIPI vector=0x%08x", context_desc.cpu_desc.cpu_index, sipivector);
@@ -553,10 +553,10 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
 			sipi_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
 			sipi_ap.param.activity = sipi_activity;
-			xc_api_cpustate_set(context_desc, sipi_ap);
+			XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, sipi_ap));
 			sipi_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC;
 			sipi_ap.param.desc = sipi_desc;
-			xc_api_cpustate_set(context_desc, sipi_ap);
+			XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, sipi_ap));
 			
 		}
 		break;
@@ -616,14 +616,14 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 	//serialize
     spin_lock(&_xc_partition_eventhub_lock);
 
-	context_desc = xc_api_partition_getcontextdesc(xmhf_baseplatform_arch_x86_getcpulapicid());
+	context_desc = XMHF_SLAB_CALL(xc_api_partition_getcontextdesc(xmhf_baseplatform_arch_x86_getcpulapicid()));
 	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
 		printf("\n%s: invalid partition/cpu context. Halting!\n", __FUNCTION__);
 		HALT();
 	}
 	
 	//set cpu gprs state based on cpugprs
-	cpustateparams = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS);
+	cpustateparams = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS));
 	x86gprs.edi = cpustateparams.param.cpugprs.edi = cpugprs->edi;
 	x86gprs.esi = cpustateparams.param.cpugprs.esi = cpugprs->esi;
 	x86gprs.ebp = cpustateparams.param.cpugprs.ebp = cpugprs->ebp;
@@ -633,11 +633,11 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 	x86gprs.ecx = cpustateparams.param.cpugprs.ecx = cpugprs->ecx;
 	x86gprs.eax = cpustateparams.param.cpugprs.eax = cpugprs->eax;
 	cpustateparams.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS;
-	xc_api_cpustate_set(context_desc, cpustateparams);
+	XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, cpustateparams));
 
 	_vmx_intercept_handler(context_desc, x86gprs);
 	
-	cpustateparams = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS);
+	cpustateparams = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS));
 	cpugprs->edi = cpustateparams.param.cpugprs.edi;
 	cpugprs->esi = cpustateparams.param.cpugprs.esi;
 	cpugprs->ebp = cpustateparams.param.cpugprs.ebp;
@@ -662,9 +662,9 @@ struct regs xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t
 	xc_hypapp_arch_param_x86vmx_cpustate_desc_t desc;
 	xc_hypapp_arch_param_x86vmx_cpustate_activity_t activity;
 	
-	ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC);
+	ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC));
 	desc = ap.param.desc;
-	ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
+	ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
 	activity = ap.param.activity;
 
 	//if E820 service then...
@@ -736,7 +736,7 @@ struct regs xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t
 		activity.rip+=3;
 		ap.param.activity = activity;
 		ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
-		xc_api_cpustate_set(context_desc, ap);
+		XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
 	
 		return r;
 	} //E820 service
@@ -754,12 +754,12 @@ struct regs xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t
 	activity.rip = ip;
 	ap.param.activity = activity;
 	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
-	xc_api_cpustate_set(context_desc, ap);
+	XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
 	desc.cs.base = (cs *16);
 	desc.cs.selector = cs;
 	ap.param.desc = desc;
 	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC;
-	xc_api_cpustate_set(context_desc, ap);
+	XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
 	
 	return r;
 }
@@ -767,7 +767,7 @@ struct regs xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t
 
 
 bool xmhf_smpguest_arch_readu16(context_desc_t context_desc, const void *guestaddress, u16 *valueptr){
-		u16 *tmp = (u16 *)xc_api_hpt_lvl2pagewalk(context_desc, guestaddress);
+		u16 *tmp = (u16 *)XMHF_SLAB_CALL(xc_api_hpt_lvl2pagewalk(context_desc, guestaddress));
 		if((u32)tmp == 0xFFFFFFFFUL || valueptr == NULL)
 			return false;
 		*valueptr = xmhfhw_sysmemaccess_readu16((u32)tmp);
@@ -775,7 +775,7 @@ bool xmhf_smpguest_arch_readu16(context_desc_t context_desc, const void *guestad
 }
 
 bool xmhf_smpguest_arch_writeu16(context_desc_t context_desc, const void *guestaddress, u16 value){
-		u16 *tmp = (u16 *)xc_api_hpt_lvl2pagewalk(context_desc, guestaddress);
+		u16 *tmp = (u16 *)XMHF_SLAB_CALL(xc_api_hpt_lvl2pagewalk(context_desc, guestaddress));
 		if((u32)tmp == 0xFFFFFFFFUL || 
 			( ((u32)tmp >= xcbootinfo->physmem_base) && ((u32)tmp <= (xcbootinfo->physmem_base+xcbootinfo->size)) ) 
 		  )
@@ -785,14 +785,14 @@ bool xmhf_smpguest_arch_writeu16(context_desc_t context_desc, const void *guesta
 }
 
 bool xmhf_smpguest_arch_memcpyfrom(context_desc_t context_desc, void *buffer, const void *guestaddress, size_t numbytes){
-	u8 *guestbuffer = (u8 *)xc_api_hpt_lvl2pagewalk(context_desc, guestaddress);
+	u8 *guestbuffer = (u8 *)XMHF_SLAB_CALL(xc_api_hpt_lvl2pagewalk(context_desc, guestaddress));
 	if((u32)guestbuffer == 0xFFFFFFFFUL)
 		return false;
 	xmhfhw_sysmemaccess_copy(buffer, gpa2hva(guestbuffer), numbytes);
 }
 
 bool xmhf_smpguest_arch_memcpyto(context_desc_t context_desc, void *guestaddress, const void *buffer, size_t numbytes){
-	u8 *guestbuffer = (u8 *)xc_api_hpt_lvl2pagewalk(context_desc, guestaddress);
+	u8 *guestbuffer = (u8 *)XMHF_SLAB_CALL(xc_api_hpt_lvl2pagewalk(context_desc, guestaddress));
 	if((u32)guestbuffer == 0xFFFFFFFFUL || 
 		( ((u32)guestbuffer >= xcbootinfo->physmem_base) && ((u32)guestbuffer <= (xcbootinfo->physmem_base+xcbootinfo->size)) ) 
 	  )

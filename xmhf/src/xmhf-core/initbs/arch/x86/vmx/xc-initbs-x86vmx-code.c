@@ -444,6 +444,12 @@ void xmhf_baseplatform_arch_initialize(void){
 	xmhf_baseplatform_arch_x86_initializeTSS();
 	#endif //__XMHF_VERIFICATION__
 
+	//initialize basic exception handling
+	printf("%s: proceeding to initialize basic exception handling\n", __FUNCTION__);
+	xcinitbs_initialize_exceptionhandling();
+	printf("%s: basic exception handling initialized\n", __FUNCTION__);
+	
+
 	//initialize PCI subsystem
 	xmhf_baseplatform_arch_x86_pci_initialize();
 
@@ -462,10 +468,9 @@ void xmhf_baseplatform_arch_initialize(void){
 }
 
 void xcinitbs_arch_initialize_exception_handling(void){
-	printf("\n%s: proceeding to invoke xcexhub_initialize...", __FUNCTION__);
-	//_idt = xcexhub_initialize();
-	xcexhub_initialize();
-	printf("\n%s: xcexhub_initialize completed successfully.", __FUNCTION__);
+	printf("%s: proceeding to invoke xcexhub_initialize...\n", __FUNCTION__);
+	XMHF_SLAB_CALL(xcexhub_initialize());
+	printf("%s: xcexhub_initialize completed successfully.\n", __FUNCTION__);
 }
 
 //initialize SMP
@@ -584,7 +589,7 @@ static void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 
 	//if(is_bsp){
 		printf("\n%s: cpu %x, isbsp=%u, Proceeding to call init_entry...\n", __FUNCTION__, cpuid, is_bsp);
-		init_entry(cpuid, is_bsp);
+		XMHF_SLAB_CALL(init_entry(cpuid, is_bsp));
 	//}else{
 	//	printf("\n%s: cpu %x, isbsp=%u, Halting\n", __FUNCTION__, cpuid, is_bsp);
 	//	HALT();

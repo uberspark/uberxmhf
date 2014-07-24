@@ -337,7 +337,7 @@ static void _vmx_setupEPT(context_desc_t context_desc){
 		}
 
 		//printf("\n%s: gpa=%x, proceedig to call xc_api_hpt_setentry (esp=%x)\n", __FUNCTION__, (u32)gpa, read_esp());
-		xc_api_hpt_setentry(context_desc, gpa, p_table_value);
+		XMHF_SLAB_CALL(xc_api_hpt_setentry(context_desc, gpa, p_table_value));
 		//printf("\n%s: back, esp=%x\n", __FUNCTION__, read_esp());
 	}
 }
@@ -398,11 +398,11 @@ void xmhf_richguest_arch_setupguestOSstate(context_desc_t context_desc){
 	//--------------------------------------------------------------------------------------------------------------------------------
 	//setup guest state
 	//CR0, real-mode, PE and PG bits cleared
-	ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS);
+	ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS));
 	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS;
 	ap.param.controlregs.cr0 = ap.param.controlregs.cr0 & ~(CR0_PE) & ~(CR0_PG);
 	ap.param.controlregs.cr3 = 0;
-	xc_api_cpustate_set(context_desc, ap);
+	XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
 	
 	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS;
 	ap.param.cpugprs.eax = 0;
@@ -413,7 +413,7 @@ void xmhf_richguest_arch_setupguestOSstate(context_desc_t context_desc){
 	ap.param.cpugprs.edi = 0;
 	ap.param.cpugprs.ebp = 0;
 	ap.param.cpugprs.esp = 0;
-	xc_api_cpustate_set(context_desc, ap);
+	XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
 							
 
 	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
@@ -426,7 +426,7 @@ void xmhf_richguest_arch_setupguestOSstate(context_desc_t context_desc){
 		ap.param.activity.activity_state = 3;	//wait-for-SIPI
 	}
 	ap.param.activity.interruptibility=0;
-	xc_api_cpustate_set(context_desc, ap);
+	XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
 
 	
 	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC;
@@ -471,6 +471,6 @@ void xmhf_richguest_arch_setupguestOSstate(context_desc_t context_desc){
 	ap.param.desc.tr.limit 			 = 0  ;	
 	ap.param.desc.tr.selector 		 = 0  ;	
 	ap.param.desc.tr.access_rights 	 = 0x83  ; 	
-	xc_api_cpustate_set(context_desc, ap);
+	XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
 
 }
