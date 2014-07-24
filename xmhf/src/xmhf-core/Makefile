@@ -162,7 +162,7 @@ LLC_ATTR = -3dnow,-3dnowa,-64bit,-64bit-mode,-adx,-aes,-atom,-avx,-avx2,-bmi,-bm
 all: $(THE_ARCHIVE)
 
 #$(THE_ARCHIVE): libxcshared testslab initbs init ihub coreapi hypapp-hyperdep $(OBJECTS) 
-$(THE_ARCHIVE): libshared xcprimeon testslab initbs init ihub coreapi xcexhub xhhyperdep $(OBJECTS) 
+$(THE_ARCHIVE): libshared xcprimeon testslab1 testslab2 initbs init ihub coreapi xcexhub xhhyperdep $(OBJECTS) 
 	cd $(XMHF_CORE_OBJECTS_DIR) && cp -f $(srcdir)/xc.lscript xc.lscript.c
 	cd $(XMHF_CORE_OBJECTS_DIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E xc.lscript.c -o xc.lds
 	cd $(XMHF_CORE_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T xc.lds -o $(THE_ARCHIVE).exe _objs_libshared/libshared.a 
@@ -180,10 +180,15 @@ xcprimeon:
 	mkdir -p $(XMHF_CORE_OBJECTS_DIR)
 	cd $(XMHF_CORE_OBJECTS_DIR) && $(MAKE) -f $(srcdir)/xcprimeon/Makefile -w all
 
-.PHONY: testslab
-testslab:
+.PHONY: testslab1
+testslab1:
 	mkdir -p $(XMHF_CORE_OBJECTS_DIR)
-	cd $(XMHF_CORE_OBJECTS_DIR) && $(MAKE) -f $(srcdir)/testslab/Makefile -w all
+	cd $(XMHF_CORE_OBJECTS_DIR) && $(MAKE) -f $(srcdir)/testslab1/Makefile -w all
+
+.PHONY: testslab2
+testslab2:
+	mkdir -p $(XMHF_CORE_OBJECTS_DIR)
+	cd $(XMHF_CORE_OBJECTS_DIR) && $(MAKE) -f $(srcdir)/testslab2/Makefile -w all
 
 .PHONY: initbs
 initbs:
