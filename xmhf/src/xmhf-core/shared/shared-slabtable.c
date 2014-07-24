@@ -63,15 +63,15 @@ extern u8 _slab_xcprimeon_stack_start[];
 extern u8 _slab_xcprimeon_stack_end[];														
 extern u8 _slab_xcprimeon_entrypoint[];	
 
-extern u8 _slab_testslab_code_start[];													
-extern u8 _slab_testslab_code_end[];														
-extern u8 _slab_testslab_rodata_start[];													
-extern u8 _slab_testslab_rodata_end[];													
-extern u8 _slab_testslab_rwdata_start[];													
-extern u8 _slab_testslab_rwdata_end[];													
-extern u8 _slab_testslab_stack_start[];													
-extern u8 _slab_testslab_stack_end[];														
-extern u8 _slab_testslab_entrypoint[];	
+extern u8 _slab_testslabp_code_start[];													
+extern u8 _slab_testslabp_code_end[];														
+extern u8 _slab_testslabp_rodata_start[];													
+extern u8 _slab_testslabp_rodata_end[];													
+extern u8 _slab_testslabp_rwdata_start[];													
+extern u8 _slab_testslabp_rwdata_end[];													
+extern u8 _slab_testslabp_stack_start[];													
+extern u8 _slab_testslabp_stack_end[];														
+extern u8 _slab_testslabp_entrypoint[];	
 
 extern u8 _slab_xcinitbs_code_start[];													
 extern u8 _slab_xcinitbs_code_end[];														
@@ -155,16 +155,16 @@ __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_table[XMHF
 		.slab_index = 0,															
 		.slab_macmid = 0,															
 		.slab_privilegemask = 0,													
-		.slab_tos = _slab_testslab_stack_end, 					
-		.slab_code.start = _slab_testslab_code_start,									
-		.slab_code.end = _slab_testslab_code_end,										
-		.slab_rodata.start = _slab_testslab_rodata_start,									
-		.slab_rodata.end = _slab_testslab_rodata_end,									
-		.slab_rwdata.start = _slab_testslab_rwdata_start,									
-		.slab_rwdata.end = _slab_testslab_rwdata_end,									
-		.slab_stack.start = _slab_testslab_stack_start,									
-		.slab_stack.end = _slab_testslab_stack_end,
-		.entry_cr3 = _slab_testslab_entrypoint,												
+		.slab_tos = _slab_testslabp_stack_end, 					
+		.slab_code.start = _slab_testslabp_code_start,									
+		.slab_code.end = _slab_testslabp_code_end,										
+		.slab_rodata.start = _slab_testslabp_rodata_start,									
+		.slab_rodata.end = _slab_testslabp_rodata_end,									
+		.slab_rwdata.start = _slab_testslabp_rwdata_start,									
+		.slab_rwdata.end = _slab_testslabp_rwdata_end,									
+		.slab_stack.start = _slab_testslabp_stack_start,									
+		.slab_stack.end = _slab_testslabp_stack_end,
+		.entry_cr3 = _slab_testslabp_entrypoint,												
 	},
 
 	{	
