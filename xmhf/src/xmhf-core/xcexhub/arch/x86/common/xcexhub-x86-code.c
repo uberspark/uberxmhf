@@ -203,7 +203,7 @@ void xcexhub_initialize(void){
 	u32 *pexceptionstubs;
 	u32 i;
 
-	printf("\n%s: setting up runtime IDT...", __FUNCTION__);
+	printf("%s: setting up runtime IDT...\n", __FUNCTION__);
 	
 	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
 		idtentry_t *idtentry=(idtentry_t *)((u32)&_idt_start+ (i*8));
@@ -217,7 +217,7 @@ void xcexhub_initialize(void){
 	
 	xmhf_baseplatform_arch_x86_initializeIDT();
 	
-	printf("\n%s: IDT setup done.", __FUNCTION__);
+	printf("%s: IDT setup done.\n", __FUNCTION__);
 }
 
 
@@ -269,7 +269,7 @@ __attribute__(( section(".slab_trampoline") )) static void xmhf_xcphandler_arch_
 __attribute__(( section(".slab_trampoline") )) void xmhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 	switch(vector){
 			case CPU_EXCEPTION_NMI:{
-				xc_coreapi_arch_eventhandler_nmiexception(r);
+				XMHF_SLAB_CALL(xc_coreapi_arch_eventhandler_nmiexception(r));
 				}
 				break;
 

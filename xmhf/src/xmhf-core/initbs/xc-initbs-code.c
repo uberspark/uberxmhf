@@ -105,7 +105,7 @@ void xmhf_runtime_entry(void){
 				printf("\n  slab_rwdata(%08x-%08x)", _slab_table[i].slab_rwdata.start, _slab_table[i].slab_rwdata.end);
 				printf("\n  slab_code(%08x-%08x)", _slab_table[i].slab_code.start, _slab_table[i].slab_code.end);
 				printf("\n  slab_stack(%08x-%08x)", _slab_table[i].slab_stack.start, _slab_table[i].slab_stack.end);
-				printf("\n  slab_trampoline(%08x-%08x)", _slab_table[i].slab_trampoline.start, _slab_table[i].slab_trampoline.end);
+				//printf("\n  slab_trampoline(%08x-%08x)", _slab_table[i].slab_trampoline.start, _slab_table[i].slab_trampoline.end);
 				printf("\n  slab_entrycr3=%08x", _slab_table[i].entry_cr3);
 			}
 	}
@@ -114,12 +114,8 @@ void xmhf_runtime_entry(void){
 	//setup slab page tables and turn on paging
 	xmhf_apihub_initialize();
 
-	//setup platform exception handling
-	xcinitbs_arch_initialize_exception_handling();
 
-	//asm volatile("int $0x03 \r\n");
-
-	//[test] slab
+	/*//[test] slab
 	{
 			//extern slab_header_t _test_slab_header;
 			xc_hypapp_arch_param_t ap_input, ap_output;
@@ -128,16 +124,25 @@ void xmhf_runtime_entry(void){
 			
 			//invoke slab interface
 			printf("\n%s: preparing to invoke entry_0, esp=%x", __FUNCTION__, read_esp());
-			entry_0();
+			XMHF_SLAB_CALL(entry_0());
 			printf("\n%s: came back from entry_0, esp=%x", __FUNCTION__, read_esp());
 
 			printf("\n%s: preparing to invoke entry_1, esp=%x", __FUNCTION__, read_esp());
-			value=entry_1(5, 3);
+			value=XMHF_SLAB_CALL(entry_1(5, 3));
 			printf("\n%s: came back from entry_1, esp=%x", __FUNCTION__, read_esp());
 			printf("\n%s: came back from entry_1, value=%u", __FUNCTION__, value);
-
-			printf("\n%s: preparing to invoke entry_2, esp=%x", __FUNCTION__, read_esp());
-			ctx= entry_2(2048, true, 4096);
+						
+			//printf("%s: doing int3\n", __FUNCTION__);
+			//asm volatile("int $0x03 \r\n");
+			//printf("%s: doing int3\n", __FUNCTION__);
+			//asm volatile("int $0x03 \r\n");
+			//printf("%s: doing int3\n", __FUNCTION__);
+			//asm volatile("int $0x03 \r\n");
+			//printf("%s: int3 test done\n", __FUNCTION__);
+			
+			
+			printf("%s: preparing to invoke entry_2, esp=%x\n", __FUNCTION__, read_esp());
+			ctx= XMHF_SLAB_CALL(entry_2(2048, true, 4096));
 			printf("\n%s: came back from entry_2, esp=%x", __FUNCTION__, read_esp());
 			printf("\n%s: ctx: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, ctx.cpu_desc.cpu_index, ctx.cpu_desc.isbsp, ctx.partition_desc.partition_index);
 			
@@ -159,7 +164,7 @@ void xmhf_runtime_entry(void){
 			ap_input.param.inforegs.info_guest_paddr_full = 14; 
 
 			printf("\n%s: preparing to invoke entry_3, esp=%x", __FUNCTION__, read_esp());
-			ap_output = entry_3(ctx, ap_input);			
+			ap_output = XMHF_SLAB_CALL(entry_3(ctx, ap_input));			
 			printf("\n%s: came back from entry_3, esp=%x", __FUNCTION__, read_esp());
 			printf("\nap_output.param.inforegs.info_vminstr_error                  %u",  ap_output.param.inforegs.info_vminstr_error                ); 
 			printf("\nap_output.param.inforegs.info_vmexit_reason                  %u",  ap_output.param.inforegs.info_vmexit_reason                ); 
@@ -178,6 +183,18 @@ void xmhf_runtime_entry(void){
 			printf("\nap_output.param.inforegs.info_guest_paddr_full               %llu",  ap_output.param.inforegs.info_guest_paddr_full             ); 
 
 	}
+	
+	printf("\nXMHF Tester Finished!\n");
+	printf("\n\n");
+	HALT();*/
+
+
+	printf("proceeding to initialize exception handling...\n");
+	//setup platform exception handling
+	xcinitbs_arch_initialize_exception_handling();
+	printf("exception handling initialized.\n");
+
+
 
 	//printf("\nXMHF Tester Finished!\n\n");
 	//HALT();
