@@ -23,7 +23,7 @@ OBJECTS := $(patsubst %.c, %.o, $(C_SOURCES))
 SLAB_OBJECTS_DIR = _objs_slab_testslab2
 
 # archive name
-THE_ARCHIVE = testslabdp
+THE_ARCHIVE = testslab2
 
 LINKER_SCRIPT_INPUT := $(srcdir)/testslab2.lscript
 LINKER_SCRIPT_OUTPUT := testslab2.lds

@@ -119,6 +119,26 @@ SECTIONS
 		_slab_testslab1_stack_end = .;
 	} >all=0x0000
 
+	.slab_testslab2 : {
+		_slab_testslab2_code_start = .;
+		_slab_testslab2_entrypoint = .;
+		_objs_slab_testslab2/testslab2.slo(.slabcode)
+		. = ALIGN(0x200000);
+		_slab_testslab2_code_end = .;
+		_slab_testslab2_rodata_start = .;
+		_objs_slab_testslab2/testslab2.slo(.slabrodata)
+		. = ALIGN(0x200000);
+		_slab_testslab2_rodata_end = .;
+		_slab_testslab2_rwdata_start = .;
+		_objs_slab_testslab2/testslab2.slo(.slabrwdata)
+		. = ALIGN(0x200000);
+		_slab_testslab2_rwdata_end = .;
+		_slab_testslab2_stack_start = .;
+		_objs_slab_testslab2/testslab2.slo(.slabstack)
+		. = ALIGN(0x200000);
+		_slab_testslab2_stack_end = .;
+	} >all=0x0000
+
 
 	.slab_xcinitbs : {
 		_slab_xcinitbs_code_start = .;

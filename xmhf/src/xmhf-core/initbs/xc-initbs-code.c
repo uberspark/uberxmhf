@@ -54,6 +54,7 @@
 
 #define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_INITBS_INDEX
 #include <testslab1.h>
+#include <testslab2.h>
 #include <xc-init.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
 
@@ -115,7 +116,7 @@ void xmhf_runtime_entry(void){
 	xmhf_apihub_initialize();
 
 
-	/*//[test] slab
+	//[test] testslab1
 	{
 			//extern slab_header_t _test_slab_header;
 			xc_hypapp_arch_param_t ap_input, ap_output;
@@ -183,10 +184,20 @@ void xmhf_runtime_entry(void){
 			printf("\nap_output.param.inforegs.info_guest_paddr_full               %llu",  ap_output.param.inforegs.info_guest_paddr_full             ); 
 
 	}
+
+
+	//testslab2
+	{
+			//invoke testslab 2 interface
+			printf("\n%s: preparing to invoke testslab2_entry_0, esp=%x", __FUNCTION__, read_esp());
+			XMHF_SLAB_CALL(testslab2_entry_0());
+			printf("\n%s: came back from testslab2_entry_0, esp=%x", __FUNCTION__, read_esp());
+	}
+
 	
 	printf("\nXMHF Tester Finished!\n");
 	printf("\n\n");
-	HALT();*/
+	HALT();
 
 
 	printf("proceeding to initialize exception handling...\n");
