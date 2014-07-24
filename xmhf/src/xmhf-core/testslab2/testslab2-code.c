@@ -44,38 +44,26 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF slab import library decls./defns.
-// author: amit vasudevan (amitvasudevan@acm.org)
+#include <xmhf-core.h>
 
-#ifndef __XMHF_SLAB_IMPLIB_H__
-#define __XMHF_SLAB_IMPLIB_H__
+#include <testslab2.h>
 
+/*
+ * slab code
+ * 
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
-#define	XMHF_SLAB_TEST_FNENTRY0	0
-#define	XMHF_SLAB_TEST_FNENTRY1	1
-#define XMHF_SLAB_TEST_FNENTRY2	2
-#define XMHF_SLAB_TEST_FNENTRY3	3
+ 
+void testslab2_entry_0(void){
+	printf("\n%s: Got control, nothing to do, returning", __FUNCTION__);
+}
+	
 
-#ifndef __ASSEMBLY__
+///////
+XMHF_SLAB("testslab2")
 
-#ifdef __XMHF_SLAB_CALLER_INDEX__ 
+XMHF_SLAB_DEFINTERFACE(
+	XMHF_SLAB_DEFEXPORTFN(testslab2_entry_0, XMHF_SLAB_TESTSLAB2_FNTESTSLAB2ENTRY0, XMHF_SLAB_FN_RETTYPE_NORMAL)
+)
 
-XMHF_SLAB_DEFIMPORTFN(void, entry_0, (void), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_INDEX_TEMPLATE, XMHF_SLAB_TEST_FNENTRY0, (0), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
-XMHF_SLAB_DEFIMPORTFN(u32, entry_1, (u32 param1, u32 param2), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_INDEX_TEMPLATE, XMHF_SLAB_TEST_FNENTRY1, (sizeof(u32)+sizeof(u32)), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
-XMHF_SLAB_DEFIMPORTFN(context_desc_t, entry_2, (u32 cpu_index, bool isbsp, u32 partition_index), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_INDEX_TEMPLATE, XMHF_SLAB_TEST_FNENTRY2, (sizeof(u32)+sizeof(bool)+sizeof(u32)+sizeof(u32)), sizeof(context_desc_t), XMHF_SLAB_FN_RETTYPE_AGGREGATE) )
-XMHF_SLAB_DEFIMPORTFN(xc_hypapp_arch_param_t, entry_3, (context_desc_t context_desc, xc_hypapp_arch_param_t archparam), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_INDEX_TEMPLATE, XMHF_SLAB_TEST_FNENTRY3, (sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t)+sizeof(u32)), sizeof(xc_hypapp_arch_param_t), XMHF_SLAB_FN_RETTYPE_AGGREGATE))
-
-#else 	//!__XMHF_SLAB_CALLER_INDEX__
-
-void entry_0(void);
-u32 entry_1(u32 param1, u32 param2);
-context_desc_t entry_2(u32 cpu_index, bool isbsp, u32 partition_index);
-xc_hypapp_arch_param_t entry_3(context_desc_t context_desc, xc_hypapp_arch_param_t archparam);
-
-#endif	//__XMHF_SLAB_CALLER_INDEX__
-
-
-#endif //__ASSEMBLY__
-
-
-#endif //__XMHF_SLAB_IMPLIB__
