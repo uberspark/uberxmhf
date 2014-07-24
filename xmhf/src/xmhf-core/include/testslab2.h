@@ -44,26 +44,29 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <xmhf-core.h>
+// XMHF slab import library decls./defns.
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <testslab2.h>
+#ifndef __TESTSLAB2_H__
+#define __TESTSLAB2_H__
 
-/*
- * slab code
- * 
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
 
- 
-void testslab2_entry_0(void){
-	printf("\n%s: Got control, nothing to do, returning", __FUNCTION__);
-}
-	
+#define	XMHF_SLAB_TESTSLAB2_FNTESTSLAB2ENTRY0	0
 
-///////
-XMHF_SLAB("testslab2")
+#ifndef __ASSEMBLY__
 
-XMHF_SLAB_DEFINTERFACE(
-	XMHF_SLAB_DEFEXPORTFN(entry_0, XMHF_SLAB_TESTSLAB2_FNTESTSLAB2ENTRY0, XMHF_SLAB_FN_RETTYPE_NORMAL)
-)
+#ifdef __XMHF_SLAB_CALLER_INDEX__ 
 
+XMHF_SLAB_DEFIMPORTFN(void, entry_0, (void), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_TESTSLAB2_INDEX, XMHF_SLAB_TESTSLAB2_FNTESTSLAB2ENTRY0, (0), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
+
+#else 	//!__XMHF_SLAB_CALLER_INDEX__
+
+void testslab2_entry_0(void);
+
+#endif	//__XMHF_SLAB_CALLER_INDEX__
+
+
+#endif //__ASSEMBLY__
+
+
+#endif //__TESTSLAB2_H__
