@@ -94,6 +94,8 @@ void xcprimeon_startup(void){
 	printf("SL: runtime at 0x%08x; size=0x%08x bytes adjusted to 0x%08x bytes (2M aligned)\n", 
 			runtime_physical_base, xcbootinfo->size, runtime_size_2Maligned);
 
+
+	
 	//setup bootinfo with required parameters
 	{
 		printf("SL: XMHF_BOOTINFO at 0x%08x, magic=0x%08x\n", (u32)xcbootinfo, xcbootinfo->magic);
@@ -130,6 +132,21 @@ void xcprimeon_startup(void){
 		//COMPILE_TIME_ASSERT(sizeof(xcbootinfo->cmdline_buffer) == sizeof(xcbootinfo->cmdline_buffer));
 		//strncpy(xcbootinfo->cmdline_buffer, (void *)&xcbootinfo->cmdline_buffer, sizeof(xcbootinfo->cmdline_buffer));
 	}
+
+	//[debug] dump E820
+ 	#ifndef __XMHF_VERIFICATION__
+ 	printf("\nNumber of E820 entries = %u", xcbootinfo->memmapinfo_numentries);
+	{
+		int i;
+		for(i=0; i < (int)xcbootinfo->memmapinfo_numentries; i++){
+			printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
+			  xcbootinfo->memmapinfo_buffer[i].baseaddr_high, xcbootinfo->memmapinfo_buffer[i].baseaddr_low,
+			  xcbootinfo->memmapinfo_buffer[i].length_high, xcbootinfo->memmapinfo_buffer[i].length_low,
+			  xcbootinfo->memmapinfo_buffer[i].type);
+		}
+  	}
+	#endif //__XMHF_VERIFICATION__
+
 
 	//initialize basic platform elements
 	xmhf_sl_arch_baseplatform_initialize();

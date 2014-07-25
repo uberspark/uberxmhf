@@ -64,20 +64,7 @@ void xmhf_runtime_entry(void){
 	//xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
 	//printf("\nxmhf-core: starting...");
 
-    //[debug] dump E820
- 	#ifndef __XMHF_VERIFICATION__
- 	printf("\nNumber of E820 entries = %u", xcbootinfo->memmapinfo_numentries);
-	{
-		int i;
-		for(i=0; i < (int)xcbootinfo->memmapinfo_numentries; i++){
-			printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
-			  xcbootinfo->memmapinfo_buffer[i].baseaddr_high, xcbootinfo->memmapinfo_buffer[i].baseaddr_low,
-			  xcbootinfo->memmapinfo_buffer[i].length_high, xcbootinfo->memmapinfo_buffer[i].length_low,
-			  xcbootinfo->memmapinfo_buffer[i].type);
-		}
-  	}
-	#endif //__XMHF_VERIFICATION__
-
+    
   	//initialize basic platform elements
 	xmhf_baseplatform_initialize();
 
