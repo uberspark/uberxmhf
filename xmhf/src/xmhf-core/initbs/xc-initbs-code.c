@@ -189,12 +189,10 @@ void xmhf_runtime_entry(void){
 ///////
 XMHF_SLAB("initbs")
 
-//TODO: make this normal interface when we move page-table initialization into primeon slab
-//primeon slab will then invoke this via its trampoline
-//XMHF_SLAB_DEFINTERFACE(
-//	XMHF_SLAB_DEFEXPORTFN(xmhf_runtime_entry, XMHF_SLAB_INITBS_FNXMHFRUNTIMEENTRY, XMHF_SLAB_FN_RETTYPE_NORMAL)
-//)
-
-XMHF_SLAB_DEFINTERFACEBARE(
-	xmhf_runtime_entry
+XMHF_SLAB_DEFINTERFACE(
+	XMHF_SLAB_DEFEXPORTFN(xmhf_runtime_entry, XMHF_SLAB_INITBS_FNXMHFRUNTIMEENTRY, XMHF_SLAB_FN_RETTYPE_NORMAL)
 )
+
+//XMHF_SLAB_DEFINTERFACEBARE(
+//	xmhf_runtime_entry
+//)

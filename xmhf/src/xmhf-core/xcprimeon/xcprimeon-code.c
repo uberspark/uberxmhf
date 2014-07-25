@@ -48,6 +48,10 @@
 
 #include <xcprimeon.h>
 
+#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_XCPRIMEON_INDEX
+#include <xc-initbs.h>
+#undef __XMHF_SLAB_CALLER_INDEX__
+
 /*//this is the SL parameter block and is placed in a seperate (untrusted)
 //section. It is populated by the XMHF bootloader.
 XMHF_BOOTINFO xcbootinfo __attribute__(( section(".sl_untrusted_params") )) = {
@@ -187,7 +191,8 @@ void xcprimeon_startup(void){
 	xcprimeon_initialize_slab_tables();
 		
 	//transfer control to runtime
-	xmhf_sl_arch_xfer_control_to_runtime(xcbootinfo);
+	//xmhf_sl_arch_xfer_control_to_runtime(xcbootinfo);
+	XMHF_SLAB_CALL(xmhf_runtime_entry());
 
 #ifndef __XMHF_VERIFICATION__
 	//we should never get here
