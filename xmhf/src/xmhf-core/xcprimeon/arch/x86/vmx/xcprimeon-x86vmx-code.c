@@ -232,6 +232,10 @@ void xmhf_sl_arch_early_dmaprot_init(u32 membase, u32 size){
 		}
 }
 
+u32 xmhf_baseplatform_arch_getcpuvendor(void){
+	return xmhf_baseplatform_arch_x86_getcpuvendor();
+}
+
 //----------------------------------------------------------------------
 //initialize basic platform elements
 void xcprimeon_platform_arch_initialize(void){
