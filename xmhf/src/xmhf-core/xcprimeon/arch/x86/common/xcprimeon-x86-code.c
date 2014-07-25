@@ -411,10 +411,6 @@ extern u8 _slab_shareddata_memregion_end[];
 extern u8 _slab_trampoline_memregion_start[];
 extern u8 _slab_trampoline_memregion_end[];
 
-//core PAE page tables
-static u64 core_3level_pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( aligned(4096) ));
-static u64 core_3level_pdt[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT] __attribute__(( aligned(4096) ));
-
 static struct {
 	u64 pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( aligned(4096) ));
 	u64 pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT] __attribute__(( aligned(4096) ));
@@ -437,7 +433,7 @@ static struct {
 
 #define _SLAB_SPATYPE_NOTASLAB					(0xFF00)
 
-static u32 _xcinitbs_slab_getspatype(u32 slab_index, u32 spa){
+static u32 _xcprimeon_slab_getspatype(u32 slab_index, u32 spa){
 	u32 i;
 
 	//slab memory regions
@@ -472,7 +468,7 @@ static u32 _xcinitbs_slab_getspatype(u32 slab_index, u32 spa){
 	return _SLAB_SPATYPE_NOTASLAB;
 }
 
-static u64 _xcinitbs_slab_getptflagsforspa(u32 slab_index, u32 spa){
+static u64 _xcprimeon_slab_getptflagsforspa(u32 slab_index, u32 spa){
 	u64 flags;
 	u32 spatype = _xcinitbs_slab_getspatype(slab_index, spa);
 	//printf("\n%s: slab_index=%u, spa=%08x, spatype = %x\n", __FUNCTION__, slab_index, spa, spatype);
@@ -520,7 +516,7 @@ static u64 _xcinitbs_slab_getptflagsforspa(u32 slab_index, u32 spa){
 
 
 // initialize slab page tables for a given slab index, returns the macm base
-static u32 _xcinitbs_slab_populate_pagetables(u32 slab_index){
+static u32 _xcprimeon_slab_populate_pagetables(u32 slab_index){
 		u32 i, j;
 		u64 default_flags = (u64)(_PAGE_PRESENT);
 		
@@ -532,7 +528,7 @@ static u32 _xcinitbs_slab_populate_pagetables(u32 slab_index){
 			for(j=0; j < PAE_PTRS_PER_PDT; j++){
 				u32 hva = ((i * PAE_PTRS_PER_PDT) + j) * PAGE_SIZE_2M;
 				u64 spa = hva2spa((void*)hva);
-				u64 flags = _xcinitbs_slab_getptflagsforspa(slab_index, (u32)spa);
+				u64 flags = _xcprimeon_slab_getptflagsforspa(slab_index, (u32)spa);
 				_slab_pagetables[slab_index].pdt[i][j] = pae_make_pde_big(spa, flags);
 			}
 		}
@@ -562,10 +558,7 @@ void xcprimeon_initialize_slab_tables(void){
 	{
 		u32 i;
 		for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++)
-			_slab_table[i].slab_macmid = _xcinitbs_slab_populate_pagetables(i);
-
-		//_slab_table[XMHF_SLAB_INDEX_TEMPLATE].slab_macmid = _xcinitbs_slab_populate_pagetables(XMHF_SLAB_INDEX_TEMPLATE);
-		//_slab_table[XMHF_SLAB_INITBS_INDEX].slab_macmid = _xcinitbs_slab_populate_pagetables(XMHF_SLAB_INITBS_INDEX);
+			_slab_table[i].slab_macmid = _xcprimeon_slab_populate_pagetables(i);
 		
 	}
 	
@@ -573,7 +566,7 @@ void xcprimeon_initialize_slab_tables(void){
 	
 	
 	//initialize paging
-	xmhf_baseplatform_arch_x86_initialize_paging((u32)_slab_table[XMHF_SLAB_INITBS_INDEX].slab_macmid);
+	xmhf_baseplatform_arch_x86_initialize_paging((u32)_slab_table[XMHF_SLAB_XCPRIMEON_INDEX].slab_macmid);
 	printf("\n%s: setup slab paging\n", __FUNCTION__);
 
 	
