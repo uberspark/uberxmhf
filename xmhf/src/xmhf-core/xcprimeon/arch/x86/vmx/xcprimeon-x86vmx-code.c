@@ -232,3 +232,62 @@ void xmhf_sl_arch_early_dmaprot_init(u32 membase, u32 size){
 		}
 }
 
+//----------------------------------------------------------------------
+//initialize basic platform elements
+void xcprimeon_platform_arch_initialize(void){
+	u32 coreptbase;
+	u32 cpu_vendor;
+
+	//grab CPU vendor
+	cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
+	HALT_ON_ERRORCOND(cpu_vendor == CPU_VENDOR_INTEL);
+
+	//check VMX support
+	{
+		u32	cpu_features;
+		asm volatile(	"mov	$1, %%eax \n"
+						"cpuid \n"
+						"mov	%%ecx, %0	\n"
+					:
+					:"m"(cpu_features)
+					: "eax", "ebx", "ecx", "edx" 
+					);
+		if ( ( cpu_features & (1<<5) ) == 0 ){
+			printf("No VMX support. Halting!");
+			HALT();
+		}
+	}
+
+	//initialize GDT
+	xmhf_baseplatform_arch_x86_initializeGDT();
+
+	//initialize IO privilege level
+	xmhf_baseplatform_arch_x86_initializeIOPL();
+
+	//initialize TR/TSS
+	#ifndef __XMHF_VERIFICATION__
+	xmhf_baseplatform_arch_x86_initializeTSS();
+	#endif //__XMHF_VERIFICATION__
+
+	//initialize basic exception handling
+	printf("%s: proceeding to initialize basic exception handling\n", __FUNCTION__);
+	xcinitbs_initialize_exceptionhandling();
+	printf("%s: basic exception handling initialized\n", __FUNCTION__);
+	
+
+	//initialize PCI subsystem
+	xmhf_baseplatform_arch_x86_pci_initialize();
+
+	//check ACPI subsystem
+	{
+		ACPI_RSDP rsdp;
+		#ifndef __XMHF_VERIFICATION__
+			//TODO: plug in a BIOS data area map/model
+			if(!xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp)){
+				printf("\n%s: ACPI RSDP not found, Halting!", __FUNCTION__);
+				HALT();
+			}
+		#endif //__XMHF_VERIFICATION__
+	}
+
+}

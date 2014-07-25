@@ -66,7 +66,7 @@ void xmhf_runtime_entry(void){
 
     
   	//initialize basic platform elements
-	xmhf_baseplatform_initialize();
+	//xmhf_baseplatform_initialize();
 
 	//setup XMHF exception handler component
 	//xmhf_xcphandler_initialize();
