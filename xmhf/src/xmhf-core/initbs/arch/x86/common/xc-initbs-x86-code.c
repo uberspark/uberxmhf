@@ -66,24 +66,6 @@
 
 
 
-//initialize paging
-void xmhf_baseplatform_arch_x86_initialize_paging(u32 pgtblbase){
-	
-	asm volatile(
-		"movl	%%cr4, %%eax \r\n"
-		"orl	$(0x00000030), %%eax \r\n"	//CR4_PAE | CR4_PSE
-		"movl	%%eax, %%cr4 \r\n"
-		"movl	%0, %%eax \r\n"				//EDI = page table base address
-		"movl	%%eax, %%cr3 \r\n"			
-		"movl   %%cr0, %%eax \r\n"
-		"orl	$(0x80000015), %%eax \r\n"   // ET, EM, PE, PG
-		"movl	%%eax, %%cr0 \r\n"	    	//turn on paging
-		: //no outputs
-		: "m" (pgtblbase)
-		: "eax"
-	);
-	
-}
 
 //----------------------------------------------------------------------
 //bplt-x86-smp
