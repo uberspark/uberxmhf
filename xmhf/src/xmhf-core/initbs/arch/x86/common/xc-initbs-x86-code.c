@@ -63,31 +63,6 @@
 
 
 
-//initialize CPU state
-void xmhf_baseplatform_arch_x86_cpuinitialize(void){
-	//u32 cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
-
-	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
-	//when the CPU supports XSAVE feature
-	if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature()){
-		u32 t_cr4;
-		t_cr4 = read_cr4();
-		t_cr4 |= CR4_OSXSAVE;	
-		write_cr4(t_cr4);
-	}
-
-	//turn on NX protections via MSR EFER
-	//note: on BSP NX protections are turned on much before we get here, but on APs this is the place we
-	//set NX protections on
-	{
-		u32 eax, edx;
-		rdmsr(MSR_EFER, &eax, &edx);
-		eax |= (1 << EFER_NXE);
-		wrmsr(MSR_EFER, eax, edx);
-		printf("\n%s: NX protections enabled: MSR_EFER=%08x%08x", __FUNCTION__, edx, eax);
-	}	
-
-}
 
 
 
