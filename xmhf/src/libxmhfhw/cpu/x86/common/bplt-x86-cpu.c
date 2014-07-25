@@ -179,6 +179,10 @@ u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
 	return cpu_vendor;
 }
 
+u32 xmhf_baseplatform_arch_getcpuvendor(void){
+	return xmhf_baseplatform_arch_x86_getcpuvendor();
+}
+
 
 //initialize CPU state
 void xmhf_baseplatform_arch_x86_cpu_initialize(void){
