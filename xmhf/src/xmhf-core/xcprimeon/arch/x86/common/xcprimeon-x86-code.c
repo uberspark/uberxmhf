@@ -50,7 +50,7 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
  
-#include <xmhf.h>
+#include <xmhf-core.h>
 //#include <xmhf-sl.h>
 
 #include <xcprimeon.h>
@@ -250,7 +250,7 @@ void xmhf_baseplatform_arch_x86_initializeTSS(void){
 __attribute__((section(".libxmhfdebugdata"))) __attribute__(( aligned(4096) )) static u8 _xcprimeon_exception_stack[PAGE_SIZE_4K];
 __attribute__((section(".libxmhfdebugdata"))) __attribute__(( aligned(4096) )) static u32 _xcprimeon_exception_stack_index = &_xcprimeon_exception_stack + PAGE_SIZE_4K;
 
-#define XMHF_INITBS_EXCEPTION_HANDLER_DEFINE(vector) 												\
+#define XMHF_XCPRIMEON_EXCEPTION_HANDLER_DEFINE(vector) 												\
 	__attribute__(( section(".slab_trampoline") )) static void __xcprimeon_exception_handler_##vector(void) __attribute__((naked)) { 					\
 		asm volatile(												\
 						"xchg   %0, %%esp \r\n"						\

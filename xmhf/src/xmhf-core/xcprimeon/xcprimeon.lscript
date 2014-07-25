@@ -84,6 +84,10 @@ SECTIONS
 		*(.slab_trampoline)
 	} >slabmem =0x0000
 
+	.libxmhfdebugdata : {
+		*(.libxmhfdebugdata)
+	} >slabmem  
+
 	/* this is to cause the link to fail if there is
 	* anything we didn't explicitly place.
 	* when this does cause link to fail, temporarily comment
