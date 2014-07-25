@@ -494,7 +494,7 @@ static void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 	u32 bcr0;
 		
 	//initialize base CPU state
-	xmhf_baseplatform_arch_x86_cpuinitialize();
+	xmhf_baseplatform_arch_x86_cpu_initialize();
 
 	//replicate common MTRR state on this CPU
 	xmhf_baseplatform_arch_x86_restorecpumtrrstate();
