@@ -275,7 +275,7 @@ void xcprimeon_platform_arch_initialize(void){
 
 	//initialize basic exception handling
 	printf("%s: proceeding to initialize basic exception handling\n", __FUNCTION__);
-	xcinitbs_initialize_exceptionhandling();
+	_xcprimeon_initialize_exceptionhandling();
 	printf("%s: basic exception handling initialized\n", __FUNCTION__);
 	
 
