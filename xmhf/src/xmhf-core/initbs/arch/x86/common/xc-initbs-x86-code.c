@@ -90,64 +90,6 @@ void xmhf_baseplatform_arch_x86_cpuinitialize(void){
 }
 
 
-//initialize GDT
-void xmhf_baseplatform_arch_x86_initializeGDT(void){
-	
-	asm volatile(
-		"lgdt  %0 \r\n"
-		"pushl	%1 \r\n"				// far jump to runtime entry point
-		"pushl	$reloadsegs \r\n"
-		"lret \r\n"
-		"reloadsegs: \r\n"
-		"movw	%2, %%ax \r\n"
-		"movw	%%ax, %%ds \r\n"	
-		"movw	%%ax, %%es \r\n"
-		"movw	%%ax, %%fs \r\n"
-		"movw	%%ax, %%gs \r\n"
-		"movw  %%ax, %%ss \r\n"
-		: //no outputs
-		: "m" (_gdt), "i" (__CS_CPL0), "i" (__DS_CPL0)
-		: //no clobber
-	);
-
-	
-}
-
-//initialize IO privilege level
-void xmhf_baseplatform_arch_x86_initializeIOPL(void){
-	
-	asm volatile(
-		"pushl	$0x3000 \r\n"					// clear flags, but set IOPL=3 (CPL-3)
-		"popf \r\n"
-		: //no outputs
-		: //no inputs
-		: //no clobber
-	);
-	
-	
-}
-
-//initialize TR/TSS
-void xmhf_baseplatform_arch_x86_initializeTSS(void){
-		u32 i;
-		u32 tss_base=(u32)&_tss;
-		TSSENTRY *t;
-		tss_t *tss= (tss_t *)_tss;
-		
-		tss->ss0 = __DS_CPL0;
-		tss->esp0 = (u32)_slab_table[XMHF_SLAB_XCEXHUB_INDEX].slab_tos;
-
-		printf("\nfixing TSS descriptor (TSS base=%x)...", tss_base);
-		t= (TSSENTRY *)(u32)&_gdt_start[(__TRSEL/sizeof(u64))];
-		t->attributes1= 0xE9;
-		t->limit16_19attributes2= 0x0;
-		t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
-		t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
-		t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);      
-		t->limit0_15=0x67;
-		printf("\nTSS descriptor fixed.");
-
-}
 
 //initialize paging
 void xmhf_baseplatform_arch_x86_initialize_paging(u32 pgtblbase){
