@@ -184,7 +184,7 @@ bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void);
 
 u32 xmhf_baseplatform_arch_x86_getcpuvendor(void);
 
-void xmhf_baseplatform_arch_x86_cpuinitialize(void);
+void xmhf_baseplatform_arch_x86_cpu_initialize(void);
 
 //return 1 if the calling CPU is the BSP
 bool xmhf_baseplatform_arch_x86_isbsp(void);

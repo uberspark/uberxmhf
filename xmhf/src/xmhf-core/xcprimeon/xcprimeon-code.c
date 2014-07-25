@@ -48,6 +48,10 @@
 
 #include <xcprimeon.h>
 
+#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_XCPRIMEON_INDEX
+#include <xc-initbs.h>
+#undef __XMHF_SLAB_CALLER_INDEX__
+
 /*//this is the SL parameter block and is placed in a seperate (untrusted)
 //section. It is populated by the XMHF bootloader.
 XMHF_BOOTINFO xcbootinfo __attribute__(( section(".sl_untrusted_params") )) = {
@@ -94,6 +98,8 @@ void xcprimeon_startup(void){
 	printf("SL: runtime at 0x%08x; size=0x%08x bytes adjusted to 0x%08x bytes (2M aligned)\n", 
 			runtime_physical_base, xcbootinfo->size, runtime_size_2Maligned);
 
+
+	
 	//setup bootinfo with required parameters
 	{
 		printf("SL: XMHF_BOOTINFO at 0x%08x, magic=0x%08x\n", (u32)xcbootinfo, xcbootinfo->magic);
@@ -131,8 +137,24 @@ void xcprimeon_startup(void){
 		//strncpy(xcbootinfo->cmdline_buffer, (void *)&xcbootinfo->cmdline_buffer, sizeof(xcbootinfo->cmdline_buffer));
 	}
 
+	//[debug] dump E820
+ 	#ifndef __XMHF_VERIFICATION__
+ 	printf("\nNumber of E820 entries = %u", xcbootinfo->memmapinfo_numentries);
+	{
+		int i;
+		for(i=0; i < (int)xcbootinfo->memmapinfo_numentries; i++){
+			printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
+			  xcbootinfo->memmapinfo_buffer[i].baseaddr_high, xcbootinfo->memmapinfo_buffer[i].baseaddr_low,
+			  xcbootinfo->memmapinfo_buffer[i].length_high, xcbootinfo->memmapinfo_buffer[i].length_low,
+			  xcbootinfo->memmapinfo_buffer[i].type);
+		}
+  	}
+	#endif //__XMHF_VERIFICATION__
+
+
 	//initialize basic platform elements
-	xmhf_sl_arch_baseplatform_initialize();
+	//xmhf_sl_arch_baseplatform_initialize();
+	xcprimeon_platform_arch_initialize();
 	
 	//sanitize cache/MTRR/SMRAM (most important is to ensure that MTRRs 
 	//do not contain weird mappings)
@@ -146,8 +168,31 @@ void xcprimeon_startup(void){
 	xmhf_sl_arch_early_dmaprot_init(__TARGET_BASE_SL, xcbootinfo->size);
 #endif
 
+	//print out slab table
+	{
+			u32 i;
+			
+			for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++){
+				printf("\nslab %u: dumping slab header", i);
+				printf("\n	slab_index=%u", _slab_table[i].slab_index);
+				printf("\n	slab_macmid=%08x", _slab_table[i].slab_macmid);
+				printf("\n	slab_privilegemask=%08x", _slab_table[i].slab_privilegemask);
+				printf("\n	slab_tos=%08x", _slab_table[i].slab_tos);
+				printf("\n  slab_rodata(%08x-%08x)", _slab_table[i].slab_rodata.start, _slab_table[i].slab_rodata.end);
+				printf("\n  slab_rwdata(%08x-%08x)", _slab_table[i].slab_rwdata.start, _slab_table[i].slab_rwdata.end);
+				printf("\n  slab_code(%08x-%08x)", _slab_table[i].slab_code.start, _slab_table[i].slab_code.end);
+				printf("\n  slab_stack(%08x-%08x)", _slab_table[i].slab_stack.start, _slab_table[i].slab_stack.end);
+				//printf("\n  slab_trampoline(%08x-%08x)", _slab_table[i].slab_trampoline.start, _slab_table[i].slab_trampoline.end);
+				printf("\n  slab_entrycr3=%08x", _slab_table[i].entry_cr3);
+			}
+	}
+
+	//initialize slab page tables
+	xcprimeon_initialize_slab_tables();
+		
 	//transfer control to runtime
-	xmhf_sl_arch_xfer_control_to_runtime(xcbootinfo);
+	//xmhf_sl_arch_xfer_control_to_runtime(xcbootinfo);
+	XMHF_SLAB_CALL(xmhf_runtime_entry());
 
 #ifndef __XMHF_VERIFICATION__
 	//we should never get here

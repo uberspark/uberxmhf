@@ -61,25 +61,12 @@
 void xmhf_runtime_entry(void){
 
 	//setup debugging	
-	xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
-	printf("\nxmhf-core: starting...");
+	//xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
+	//printf("\nxmhf-core: starting...");
 
-    //[debug] dump E820
- 	#ifndef __XMHF_VERIFICATION__
- 	printf("\nNumber of E820 entries = %u", xcbootinfo->memmapinfo_numentries);
-	{
-		int i;
-		for(i=0; i < (int)xcbootinfo->memmapinfo_numentries; i++){
-			printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
-			  xcbootinfo->memmapinfo_buffer[i].baseaddr_high, xcbootinfo->memmapinfo_buffer[i].baseaddr_low,
-			  xcbootinfo->memmapinfo_buffer[i].length_high, xcbootinfo->memmapinfo_buffer[i].length_low,
-			  xcbootinfo->memmapinfo_buffer[i].type);
-		}
-  	}
-	#endif //__XMHF_VERIFICATION__
-
+    
   	//initialize basic platform elements
-	xmhf_baseplatform_initialize();
+	//xmhf_baseplatform_initialize();
 
 	//setup XMHF exception handler component
 	//xmhf_xcphandler_initialize();
@@ -92,28 +79,10 @@ void xmhf_runtime_entry(void){
 	//xmhf_richguest_initialize();
 
 
-	//print out slab table
-	{
-			u32 i;
-			
-			for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++){
-				printf("\nslab %u: dumping slab header", i);
-				printf("\n	slab_index=%u", _slab_table[i].slab_index);
-				printf("\n	slab_macmid=%08x", _slab_table[i].slab_macmid);
-				printf("\n	slab_privilegemask=%08x", _slab_table[i].slab_privilegemask);
-				printf("\n	slab_tos=%08x", _slab_table[i].slab_tos);
-				printf("\n  slab_rodata(%08x-%08x)", _slab_table[i].slab_rodata.start, _slab_table[i].slab_rodata.end);
-				printf("\n  slab_rwdata(%08x-%08x)", _slab_table[i].slab_rwdata.start, _slab_table[i].slab_rwdata.end);
-				printf("\n  slab_code(%08x-%08x)", _slab_table[i].slab_code.start, _slab_table[i].slab_code.end);
-				printf("\n  slab_stack(%08x-%08x)", _slab_table[i].slab_stack.start, _slab_table[i].slab_stack.end);
-				//printf("\n  slab_trampoline(%08x-%08x)", _slab_table[i].slab_trampoline.start, _slab_table[i].slab_trampoline.end);
-				printf("\n  slab_entrycr3=%08x", _slab_table[i].entry_cr3);
-			}
-	}
 
 
 	//setup slab page tables and turn on paging
-	xmhf_apihub_initialize();
+	//xmhf_apihub_initialize();
 
 
 /*	//[test] testslab1
@@ -220,12 +189,10 @@ void xmhf_runtime_entry(void){
 ///////
 XMHF_SLAB("initbs")
 
-//TODO: make this normal interface when we move page-table initialization into primeon slab
-//primeon slab will then invoke this via its trampoline
-//XMHF_SLAB_DEFINTERFACE(
-//	XMHF_SLAB_DEFEXPORTFN(xmhf_runtime_entry, XMHF_SLAB_INITBS_FNXMHFRUNTIMEENTRY, XMHF_SLAB_FN_RETTYPE_NORMAL)
-//)
-
-XMHF_SLAB_DEFINTERFACEBARE(
-	xmhf_runtime_entry
+XMHF_SLAB_DEFINTERFACE(
+	XMHF_SLAB_DEFEXPORTFN(xmhf_runtime_entry, XMHF_SLAB_INITBS_FNXMHFRUNTIMEENTRY, XMHF_SLAB_FN_RETTYPE_NORMAL)
 )
+
+//XMHF_SLAB_DEFINTERFACEBARE(
+//	xmhf_runtime_entry
+//)
