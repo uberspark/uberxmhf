@@ -164,6 +164,9 @@ void xcprimeon_startup(void){
 	xmhf_sl_arch_early_dmaprot_init(__TARGET_BASE_SL, xcbootinfo->size);
 #endif
 
+	//initialize slab page tables
+	xcprimeon_initialize_slab_tables();
+		
 	//transfer control to runtime
 	xmhf_sl_arch_xfer_control_to_runtime(xcbootinfo);
 
