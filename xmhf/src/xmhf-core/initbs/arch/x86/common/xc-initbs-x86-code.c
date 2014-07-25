@@ -327,38 +327,6 @@ void xmhf_apihub_arch_initialize (void){
 	}
 
 
-	//check for PCID support (if present)
-	{
-			u32 eax, ebx, ecx, edx;
-			
-			cpuid(0x1, &eax, &ebx, &ecx, &edx);
-			
-			if( ecx & (1UL << 17) )
-				printf("\n%s: PCID supported", __FUNCTION__);
-			else
-				printf("\n%s: PCID not supported", __FUNCTION__);
-	}
-
-	//turn on WP bit in CR0 register for supervisor mode read-only permission support
-	{
-		u32 cr0;
-		cr0=read_cr0();
-		printf("\n%s: CR0=%08x", __FUNCTION__, cr0);
-		cr0 |= CR0_WP;
-		printf("\n%s: attempting to change CR0 to %08x", __FUNCTION__, cr0);
-		write_cr0(cr0);
-		cr0 = read_cr0();
-		printf("\n%s: CR0 changed to %08x", __FUNCTION__, cr0);
-	}
-
-	//turn on NX protections
-	{
-		u32 eax, edx;
-		rdmsr(MSR_EFER, &eax, &edx);
-		eax |= (1 << EFER_NXE);
-		wrmsr(MSR_EFER, eax, edx);
-		printf("\n%s: NX protections enabled: MSR_EFER=%08x%08x", __FUNCTION__, edx, eax);
-	}
 	
 	//setup slab page tables and macm id's
 	{
