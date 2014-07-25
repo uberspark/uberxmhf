@@ -80,6 +80,7 @@ void xmhf_sl_arch_baseplatform_initialize(void);
 
 
 void xcprimeon_platform_arch_initialize(void);
+void _xcprimeon_initialize_exceptionhandling(void);
 
 #endif	//__XMHF_SLAB_CALLER_INDEX__
 
