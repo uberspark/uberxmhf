@@ -247,9 +247,6 @@ static u32 _cpucount = 0;
 //----------------------------------------------------------------------
 // functions
 
-u32 xmhf_baseplatform_arch_getcpuvendor(void){
-	return xmhf_baseplatform_arch_x86_getcpuvendor();
-}
 
 
 //wake up application processors (cores) in the system
