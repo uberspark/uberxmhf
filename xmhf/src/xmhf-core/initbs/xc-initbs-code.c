@@ -61,8 +61,8 @@
 void xmhf_runtime_entry(void){
 
 	//setup debugging	
-	xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
-	printf("\nxmhf-core: starting...");
+	//xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
+	//printf("\nxmhf-core: starting...");
 
     //[debug] dump E820
  	#ifndef __XMHF_VERIFICATION__
