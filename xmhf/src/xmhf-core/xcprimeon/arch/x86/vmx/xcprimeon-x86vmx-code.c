@@ -49,7 +49,7 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
  
-#include <xmhf.h>
+#include <xmhf-core.h>
 //#include <xmhf-sl.h>
 
 #include <xcprimeon.h>
@@ -232,3 +232,45 @@ void xmhf_sl_arch_early_dmaprot_init(u32 membase, u32 size){
 		}
 }
 
+
+//----------------------------------------------------------------------
+//initialize basic platform elements
+void xcprimeon_platform_arch_initialize(void){
+	u32 coreptbase;
+
+	//initialize CPU
+	xmhf_baseplatform_arch_x86_cpu_initialize();
+
+	//initialize GDT
+	xmhf_baseplatform_arch_x86_initializeGDT();
+
+	//initialize IO privilege level
+	xmhf_baseplatform_arch_x86_initializeIOPL();
+
+	//initialize TR/TSS
+	#ifndef __XMHF_VERIFICATION__
+	xmhf_baseplatform_arch_x86_initializeTSS();
+	#endif //__XMHF_VERIFICATION__
+
+	//initialize basic exception handling
+	printf("%s: proceeding to initialize basic exception handling\n", __FUNCTION__);
+	_xcprimeon_initialize_exceptionhandling();
+	printf("%s: basic exception handling initialized\n", __FUNCTION__);
+	
+
+	//initialize PCI subsystem
+	xmhf_baseplatform_arch_x86_pci_initialize();
+
+	//check ACPI subsystem
+	{
+		ACPI_RSDP rsdp;
+		#ifndef __XMHF_VERIFICATION__
+			//TODO: plug in a BIOS data area map/model
+			if(!xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp)){
+				printf("\n%s: ACPI RSDP not found, Halting!", __FUNCTION__);
+				HALT();
+			}
+		#endif //__XMHF_VERIFICATION__
+	}
+
+}

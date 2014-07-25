@@ -83,22 +83,6 @@ SECTIONS
 		*(.slab_trampoline)
 	} >slabmem =0x0000
 
-	.sharedro_xcbootinfo : {
-		*(.sharedro_xcbootinfo)
-	} >slabmem  
-
-	.sharedro_xcbootinfoptr : {
-		*(.sharedro_xcbootinfoptr)
-	} >slabmem  
-
-	.sharedro_slab_table : {
-		*(.sharedro_slab_table)
-	} >slabmem  
-
-	.libxmhfdebugdata : {
-		*(.libxmhfdebugdata)
-	} >slabmem  
-
 	/* this is to cause the link to fail if there is
 	* anything we didn't explicitly place.
 	* when this does cause link to fail, temporarily comment

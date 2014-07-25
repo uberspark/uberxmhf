@@ -150,3 +150,125 @@ u32 xmhf_baseplatform_arch_x86_gettssbase(void){
 	//return (u32)&_tss;
 }
 
+
+//get CPU vendor
+u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
+	u32 vendor_dword1, vendor_dword2, vendor_dword3;
+	u32 cpu_vendor;
+	asm(	"xor	%%eax, %%eax \n"
+				  "cpuid \n"		
+				  "mov	%%ebx, %0 \n"
+				  "mov	%%edx, %1 \n"
+				  "mov	%%ecx, %2 \n"
+			     :	//no inputs
+					 : "m"(vendor_dword1), "m"(vendor_dword2), "m"(vendor_dword3)
+					 : "eax", "ebx", "ecx", "edx" );
+
+	if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
+			&& vendor_dword3 == AMD_STRING_DWORD3)
+		cpu_vendor = CPU_VENDOR_AMD;
+	else if(vendor_dword1 == INTEL_STRING_DWORD1 && vendor_dword2 == INTEL_STRING_DWORD2
+			&& vendor_dword3 == INTEL_STRING_DWORD3)
+		cpu_vendor = CPU_VENDOR_INTEL;
+	else{
+		printf("\n%s: unrecognized x86 CPU (0x%08x:0x%08x:0x%08x). HALT!",
+			__FUNCTION__, vendor_dword1, vendor_dword2, vendor_dword3);
+		HALT();
+	}   	 	
+
+	return cpu_vendor;
+}
+
+u32 xmhf_baseplatform_arch_getcpuvendor(void){
+	return xmhf_baseplatform_arch_x86_getcpuvendor();
+}
+
+
+//initialize CPU state
+void xmhf_baseplatform_arch_x86_cpu_initialize(void){
+	//u32 cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
+	u32 cpu_vendor;
+
+	//grab CPU vendor
+	cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
+	HALT_ON_ERRORCOND(cpu_vendor == CPU_VENDOR_INTEL);
+
+	//check VMX support
+	{
+		u32	cpu_features;
+		asm volatile(	"mov	$1, %%eax \n"
+						"cpuid \n"
+						"mov	%%ecx, %0	\n"
+					:
+					:"m"(cpu_features)
+					: "eax", "ebx", "ecx", "edx" 
+					);
+		if ( ( cpu_features & (1<<5) ) == 0 ){
+			printf("No VMX support. Halting!");
+			HALT();
+		}
+	}
+
+	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
+	//when the CPU supports XSAVE feature
+	if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature()){
+		u32 t_cr4;
+		t_cr4 = read_cr4();
+		t_cr4 |= CR4_OSXSAVE;	
+		write_cr4(t_cr4);
+	}
+
+	//check for PCID support (if present)
+	{
+			u32 eax, ebx, ecx, edx;
+			
+			cpuid(0x1, &eax, &ebx, &ecx, &edx);
+			
+			if( ecx & (1UL << 17) )
+				printf("\n%s: PCID supported", __FUNCTION__);
+			else
+				printf("\n%s: PCID not supported", __FUNCTION__);
+	}
+
+	//turn on WP bit in CR0 register for supervisor mode read-only permission support
+	{
+		u32 cr0;
+		cr0=read_cr0();
+		printf("\n%s: CR0=%08x", __FUNCTION__, cr0);
+		cr0 |= CR0_WP;
+		printf("\n%s: attempting to change CR0 to %08x", __FUNCTION__, cr0);
+		write_cr0(cr0);
+		cr0 = read_cr0();
+		printf("\n%s: CR0 changed to %08x", __FUNCTION__, cr0);
+	}
+
+	//turn on NX protections
+	{
+		u32 eax, edx;
+		rdmsr(MSR_EFER, &eax, &edx);
+		eax |= (1 << EFER_NXE);
+		wrmsr(MSR_EFER, eax, edx);
+		printf("\n%s: NX protections enabled: MSR_EFER=%08x%08x", __FUNCTION__, edx, eax);
+	}
+
+}
+
+
+//initialize paging
+void xmhf_baseplatform_arch_x86_initialize_paging(u32 pgtblbase){
+	
+	asm volatile(
+		"movl	%%cr4, %%eax \r\n"
+		"orl	$(0x00000030), %%eax \r\n"	//CR4_PAE | CR4_PSE
+		"movl	%%eax, %%cr4 \r\n"
+		"movl	%0, %%eax \r\n"				//EDI = page table base address
+		"movl	%%eax, %%cr3 \r\n"			
+		"movl   %%cr0, %%eax \r\n"
+		"orl	$(0x80000015), %%eax \r\n"   // ET, EM, PE, PG
+		"movl	%%eax, %%cr0 \r\n"	    	//turn on paging
+		: //no outputs
+		: "m" (pgtblbase)
+		: "eax"
+	);
+	
+}
