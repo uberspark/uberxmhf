@@ -149,7 +149,8 @@ void xcprimeon_startup(void){
 
 
 	//initialize basic platform elements
-	xmhf_sl_arch_baseplatform_initialize();
+	//xmhf_sl_arch_baseplatform_initialize();
+	xcprimeon_platform_arch_initialize();
 	
 	//sanitize cache/MTRR/SMRAM (most important is to ensure that MTRRs 
 	//do not contain weird mappings)
