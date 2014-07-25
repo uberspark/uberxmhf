@@ -187,6 +187,27 @@ u32 xmhf_baseplatform_arch_getcpuvendor(void){
 //initialize CPU state
 void xmhf_baseplatform_arch_x86_cpu_initialize(void){
 	//u32 cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
+	u32 cpu_vendor;
+
+	//grab CPU vendor
+	cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
+	HALT_ON_ERRORCOND(cpu_vendor == CPU_VENDOR_INTEL);
+
+	//check VMX support
+	{
+		u32	cpu_features;
+		asm volatile(	"mov	$1, %%eax \n"
+						"cpuid \n"
+						"mov	%%ecx, %0	\n"
+					:
+					:"m"(cpu_features)
+					: "eax", "ebx", "ecx", "edx" 
+					);
+		if ( ( cpu_features & (1<<5) ) == 0 ){
+			printf("No VMX support. Halting!");
+			HALT();
+		}
+	}
 
 	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
 	//when the CPU supports XSAVE feature
