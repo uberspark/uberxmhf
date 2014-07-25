@@ -135,7 +135,7 @@ void xmhf_sl_arch_xfer_control_to_runtime(XMHF_BOOTINFO *xcbootinfo){
 	#endif
 }
 
-void xmhf_sl_arch_baseplatform_initialize(void){
+/*void xmhf_sl_arch_baseplatform_initialize(void){
 	
 	//initialize PCI subsystem
 	xmhf_baseplatform_arch_x86_pci_initialize();
@@ -152,7 +152,7 @@ void xmhf_sl_arch_baseplatform_initialize(void){
 		#endif //__XMHF_VERIFICATION__
 	}
 	
-}
+}*/
 
 //get CPU vendor
 u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
