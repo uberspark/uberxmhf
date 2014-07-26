@@ -34,7 +34,7 @@ export XMHF_VERIFYDIR := $(CURDIR)/_verify
 export XMHFLIBS_SRC := $(realpath @XMHFLIBS_SRC@)
 
 # XMHF core source location
-export XMHFCORE_SRC := $(realpath xmhf/src/xmhf-core)
+export XMHFCORE_SRC := $(realpath xmhf-core)
 XMHFCORE_INC = -I$(realpath xmhf-core/) -I$(realpath xmhf-core/include) -I$(realpath xmhf-core/include/arch/x86/common) -I$(realpath xmhf-core/include/arch/x86/vmx)
 
 ## libxmhfcore source location
@@ -73,6 +73,7 @@ XMHFLIBS_INC = $(foreach dir,$(XMHFLIBS_SUBLIBS),-I$(dir)/include)
 # populate library and include paths
 export ADDL_LIBS :=
 export ADDL_INCLUDES :=
+export XMHFLIBS_DIR := $(XMHF_OBJDIR)/_objs_xmhf-libs
 
 #ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_xmhf-runtime/_objs_libxmhfruntimearch/libxmhfruntimearch.a
 
@@ -139,6 +140,8 @@ export MKDIR = @MKDIR@
 export CAT = @CAT@
 
 export CCLIB = @CCLIB@
+export CCLIB := $(realpath $(CCLIB))
+
 
 # FIXME- this should be configurable
 # export CFLAGS=-m32
@@ -309,13 +312,13 @@ subdirs: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
 	#@echo **************************************************************
 	#@echo libxmhfcore.a build SUCCESS
 	#@echo **************************************************************
-	#@echo **************************************************************
-	#@echo Building XMHF core...
-	#@echo **************************************************************
-	#cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFCORE_SRC)/Makefile -w all
-	#@echo **************************************************************
-	#@echo XMHF core build SUCCESS
-	#@echo **************************************************************
+	@echo **************************************************************
+	@echo Building XMHF core...
+	@echo **************************************************************
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFCORE_SRC)/Makefile -w all
+	@echo **************************************************************
+	@echo XMHF core build SUCCESS
+	@echo **************************************************************
 	#@echo **************************************************************
 	#@echo Building XMHF secure loader...
 	#@echo **************************************************************
