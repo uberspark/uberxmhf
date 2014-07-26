@@ -41,7 +41,7 @@ all: $(THE_ARCHIVE)
 $(THE_ARCHIVE): $(OBJECTS) 
 	cd $(SLAB_OBJECTS_DIR) && cp -f $(LINKER_SCRIPT_INPUT) xcihub.lscript.c
 	cd $(SLAB_OBJECTS_DIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E xcihub.lscript.c -o $(LINKER_SCRIPT_OUTPUT)
-	cd $(SLAB_OBJECTS_DIR) && $(LD) -r --oformat elf32-i386 -T $(LINKER_SCRIPT_OUTPUT) -o $(THE_ARCHIVE).slo $(OBJECTS_ARCHIVE) $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
+	cd $(SLAB_OBJECTS_DIR) && $(LD) -r --oformat elf32-i386 -T $(LINKER_SCRIPT_OUTPUT) -o $(THE_ARCHIVE).slo $(OBJECTS_ARCHIVE) -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfutil -lxmhfdebug -lxmhfhw -lxmhfutil -lxmhfc -lclang_rt.full-i386
 	#cd $(SLAB_OBJECTS_DIR) && $(LD) -r --oformat elf32-i386 -T $(LINKER_SCRIPT_OUTPUT) -o $(THE_ARCHIVE).slo $(OBJECTS_ARCHIVE)
 	cd $(SLAB_OBJECTS_DIR) && nm $(THE_ARCHIVE).slo | awk '{ print $$3 }' | awk NF >$(THE_ARCHIVE).slo.syms
 	cd $(SLAB_OBJECTS_DIR) && $(OBJCOPY) --localize-symbols=$(THE_ARCHIVE).slo.syms $(THE_ARCHIVE).slo $(THE_ARCHIVE).slo

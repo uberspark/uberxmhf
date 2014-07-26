@@ -170,7 +170,7 @@ $(THE_ARCHIVE): libshared xcprimeon testslab1 testslab2 initbs init ihub coreapi
 	#cd $(XMHF_CORE_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T xc.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) $(ADDL_LIBS) $(CCLIB)/lib/linux/libclang_rt.full-i386.a
 	cd $(XMHF_CORE_OBJECTS_DIR) && $(OBJCOPY) --output-format=binary $(THE_ARCHIVE).exe $(THE_ARCHIVE).bin
 
-.PHONY: libxcshared
+.PHONY: libshared
 libshared:
 	mkdir -p $(XMHF_CORE_OBJECTS_DIR)
 	cd $(XMHF_CORE_OBJECTS_DIR) && $(MAKE) -f $(srcdir)/shared/Makefile -w all
