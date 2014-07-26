@@ -1,4 +1,4 @@
-# Makefile for libbaremetal
+# Makefile for libs
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 # Builds a bunch of sublibraries
@@ -12,23 +12,24 @@ LIBDIRS = $(wildcard $(srcdir)/lib*)
 LIBDIRSRELATIVE := $(patsubst $(srcdir)/%, %, $(LIBDIRS))
 
 
-LIBBAREMETAL_OBJECTS_DIR = _objs_libbaremetal
+LIBS_OBJECTS_DIR = _objs_libs
 
 .PHONY: all
 all: subdirs
 
 .PHONY: subdirs
 subdirs: $(LIBDIRS)
-	mkdir -p $(LIBBAREMETAL_OBJECTS_DIR)
+	mkdir -p $(LIBS_OBJECTS_DIR)
 	@for i in $(LIBDIRS); \
 	do \
-		(cd $(LIBBAREMETAL_OBJECTS_DIR) &&	echo "Making all in $$i..." && $(MAKE) -f $$i/Makefile -w all) || exit 1; \
+		(cd $(LIBS_OBJECTS_DIR) &&	echo "Making all in $$i..." && $(MAKE) -f $$i/Makefile -w all) || exit 1; \
 	done;
 	@for i in $(LIBDIRSRELATIVE); \
 	do \
-		(cd $(LIBBAREMETAL_OBJECTS_DIR)/_objs_$$i && ar -rcs ../libbaremetal.a *.o) || exit 1; \
+		#(cd $(LIBS_OBJECTS_DIR)/_objs_$$i && ar -rcs ../libbaremetal.a *.o) || exit 1; \
+		(cd $(LIBS_OBJECTS_DIR)/_objs_$$i && cp *.a ../.) || exit 1; \
 	done;
 
 .PHONY: clean
 clean:
-	rm -rf $(LIBBAREMETAL_OBJECTS_DIR)
+	rm -rf $(LIBS_OBJECTS_DIR)
