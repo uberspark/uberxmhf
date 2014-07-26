@@ -60,7 +60,7 @@ LIBXMHFDEBUG_INC = -I$(realpath xmhf-libs/libxmhfdebug/include) -I$(realpath xmh
 #XMHF_SECURELOADER_INC = -I$(realpath xmhf/src/xmhf-secureloader/include) 
 
 # XMHF bootloader source location
-export XMHF_BOOTLOADER_SRC := $(realpath xmhf/src/xmhf-bootloader)
+export XMHF_BOOTLOADER_SRC := $(realpath xmhf-bootloader)
 
 # libbaremetal archive
 # TODO: specify via configure
@@ -327,16 +327,16 @@ subdirs: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
 	#@echo **************************************************************
 	#@echo XMHF secure loader build SUCCESS
 	#@echo **************************************************************
-	#@echo **************************************************************
-	#@echo Building XMHF boot loader...
-	#@echo **************************************************************
-	#cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_BOOTLOADER_SRC)/Makefile -w all \
-	#	RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
-	#	SLBELOW64K_INTEGRITY_HASH=\""$(shell ( dd if=$(XMHF_OBJDIR)/_objs_xmhf-secureloader/sl.bin bs=1024 count=64 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
-	#	SLABOVE64K_INTEGRITY_HASH=\""$(shell ( dd if=$(XMHF_OBJDIR)/_objs_xmhf-secureloader/sl.bin bs=1024 skip=64 count=1984 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
-	#@echo **************************************************************
-	#@echo XMHF boot loader build SUCCESS
-	#@echo **************************************************************
+	@echo **************************************************************
+	@echo Building XMHF boot loader...
+	@echo **************************************************************
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_BOOTLOADER_SRC)/Makefile -w all \
+		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
+		SLBELOW64K_INTEGRITY_HASH=\""$(shell ( dd if=$(XMHF_OBJDIR)/_objs_xmhf-secureloader/sl.bin bs=1024 count=64 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
+		SLABOVE64K_INTEGRITY_HASH=\""$(shell ( dd if=$(XMHF_OBJDIR)/_objs_xmhf-secureloader/sl.bin bs=1024 skip=64 count=1984 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
+	@echo **************************************************************
+	@echo XMHF boot loader build SUCCESS
+	@echo **************************************************************
 	#@echo --------------------------------------------------------------
 	#@echo generating final binaries...
 	##cd $(XMHF_OBJDIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin ./_objs_xmhf-secureloader/xmhf-secureloader.bin ./_objs_xmhf-core/xmhf-core.bin > ./xmhf.tmp.img
