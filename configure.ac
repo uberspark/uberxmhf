@@ -115,19 +115,19 @@ AS_IF([test "x${enable_dmap}" != "xno"],
 
 
 # libbaremetal source directory
-AC_SUBST([LIBBAREMETAL_SRC])
+AC_SUBST([XMHFLIBS_SRC])
 AC_ARG_WITH([libbaremetalsrc],
         AS_HELP_STRING([--with-libbaremetalsrc=@<:@path@:>@],
                 [path to libbaremetal source directory]),
-                , [with_libbaremetalsrc=./libs])
-LIBBAREMETAL_SRC=$[]with_libbaremetalsrc
+                , [with_libbaremetalsrc=./xmhf-libs])
+XMHFLIBS_SRC=$[]with_libbaremetalsrc
 # make absolute
-dnl AS_IF([test "x${LIBBAREMETAL_SRC:0:1}" != "x/"],
-dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$LIBBAREMETAL_SRC])
+dnl AS_IF([test "x${XMHFLIBS_SRC:0:1}" != "x/"],
+dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$XMHFLIBS_SRC])
 
-AC_CHECK_FILE([${LIBBAREMETAL_SRC}/libxmhfc],
+AC_CHECK_FILE([${XMHFLIBS_SRC}/libxmhfc],
         ,
-        AC_MSG_FAILURE([libs not found at "${LIBBAREMETAL_SRC}"]))
+        AC_MSG_FAILURE([libs not found at "${XMHFLIBS_SRC}"]))
 
 # libtommath source directory
 #AC_SUBST([LIBTOMMATH_SRC])

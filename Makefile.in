@@ -30,8 +30,8 @@ export XMHF_VERIFYDIR := $(CURDIR)/_verify
 
 # libbaremetal "source" location, currently hard-coded
 # TODO: specify via configure
-# LIBBAREMETAL_SRC = $(CURDIR)/libbaremetal
-export LIBBAREMETAL_SRC := $(realpath @LIBBAREMETAL_SRC@)
+# XMHFLIBS_SRC = $(CURDIR)/libbaremetal
+export XMHFLIBS_SRC := $(realpath @XMHFLIBS_SRC@)
 
 # XMHF core source location
 export XMHFCORE_SRC := $(realpath xmhf/src/xmhf-core)
@@ -41,15 +41,15 @@ XMHFCORE_INC = -I$(realpath xmhf-core/) -I$(realpath xmhf-core/include) -I$(real
 #export LIBXMHFCORE_SRC := $(realpath xmhf/src/libxmhfcore)
 
 # libxmhfhw source location
-export LIBXMHFHW_SRC := $(realpath libs/libxmhfhw)
-LIBXMHFHW_INC = $(realpath libs/libxmhfhw)
+export LIBXMHFHW_SRC := $(realpath xmhf-libs/libxmhfhw)
+LIBXMHFHW_INC = $(realpath xmhf-libs/libxmhfhw)
 
 # libbaremetal-xmhfbackends source location
-#export LIBBAREMETAL_XMHFBACKENDS_SRC := $(realpath xmhf/src/xmhf-core/libbaremetal-xmhfbackends)
+#export XMHFLIBS_XMHFBACKENDS_SRC := $(realpath xmhf/src/xmhf-core/libbaremetal-xmhfbackends)
 
 # libxmhfdebug source location
-export LIBXMHFDEBUG_SRC := $(realpath libs/libxmhfdebug)
-LIBXMHFDEBUG_INC = -I$(realpath libs/libxmhfdebug/include) -I$(realpath libs/libxmhfdebug/arch/x86/include)
+export LIBXMHFDEBUG_SRC := $(realpath xmhf-libs/libxmhfdebug)
+LIBXMHFDEBUG_INC = -I$(realpath xmhf-libs/libxmhfdebug/include) -I$(realpath xmhf-libs/libxmhfdebug/arch/x86/include)
 
 
 # XMHF runtime source location
@@ -64,11 +64,11 @@ export XMHF_BOOTLOADER_SRC := $(realpath xmhf/src/xmhf-bootloader)
 
 # libbaremetal archive
 # TODO: specify via configure
-LIBBAREMETAL_ARCHIVE = libbaremetal.a
+XMHFLIBS_ARCHIVE = libbaremetal.a
 
 # libbaremetal includes
-LIBBAREMETAL_SUBLIBS = $(wildcard $(LIBBAREMETAL_SRC)/lib*)
-LIBBAREMETAL_INC = $(foreach dir,$(LIBBAREMETAL_SUBLIBS),-I$(dir)/include)
+XMHFLIBS_SUBLIBS = $(wildcard $(XMHFLIBS_SRC)/lib*)
+XMHFLIBS_INC = $(foreach dir,$(XMHFLIBS_SUBLIBS),-I$(dir)/include)
 
 # populate library and include paths
 export ADDL_LIBS :=
@@ -82,7 +82,7 @@ ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a
 ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libxmhfdebug/libxmhfdebug.a
 ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libxmhfhw/libxmhfhw.a
 #ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_xmhf-runtime/_objs_libxmhfruntimearch/libxmhfruntimearch.a
-ADDL_INCLUDES += -I$(XMHF_INC) $(LIBXMHFDEBUG_INC) $(XMHFCORE_INC) -I$(LIBXMHFHW_INC) $(LIBBAREMETAL_INC)
+ADDL_INCLUDES += -I$(XMHF_INC) $(LIBXMHFDEBUG_INC) $(XMHFCORE_INC) -I$(LIBXMHFHW_INC) $(XMHFLIBS_INC)
 
 # link libbaremetal *again* to resolve more dependencies
 ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a
@@ -279,12 +279,12 @@ all: subdirs
 
 
 .PHONY: subdirs
-subdirs: $(LIBBAREMETAL_SRC) $(XMHFCORE_SRC)
+subdirs: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
 	mkdir -p $(XMHF_OBJDIR)
 	@echo **************************************************************
 	@echo Building XMHF libs...
 	@echo **************************************************************
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBBAREMETAL_SRC)/Makefile -w all
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFLIBS_SRC)/Makefile -w all
 	@echo **************************************************************
 	@echo XMHF libs build SUCCESS
 	@echo **************************************************************
@@ -422,7 +422,7 @@ clean:
 	@echo **************************************************************
 	@echo Cleaning libbaremetal...
 	@echo **************************************************************
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBBAREMETAL_SRC)/Makefile -w clean
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFLIBS_SRC)/Makefile -w clean
 	@echo **************************************************************
 	@echo libbaremetal.a clean SUCCESS
 	@echo **************************************************************
