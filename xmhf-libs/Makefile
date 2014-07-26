@@ -12,7 +12,7 @@ LIBDIRS = $(wildcard $(srcdir)/lib*)
 LIBDIRSRELATIVE := $(patsubst $(srcdir)/%, %, $(LIBDIRS))
 
 
-LIBS_OBJECTS_DIR = _objs_libs
+LIBS_OBJECTS_DIR = _objs_xmhf-libs
 
 .PHONY: all
 all: subdirs
