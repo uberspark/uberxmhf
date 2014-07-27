@@ -57,19 +57,21 @@
 //pull in core arch. header
 #include <xmhf-core-arch.h>
 
+#include <shared.h>				//shared slab mappings, TODO: find a way to move this up to xmhf-slab.h since it is not core slab specific
+
 //pull in required crypto (SHA-1)
 //libXMHFcrypto
-#ifndef __ASSEMBLY__
-	#include <xmhfcrypto.h>
-	#include <sha1.h>
-#endif /* __ASSEMBLY__ */
+//#ifndef __ASSEMBLY__
+//	#include <xmhfcrypto.h>
+//	#include <sha1.h>
+//#endif /* __ASSEMBLY__ */
 
 
 //pull in required TPM library
 //libtpm
-#ifndef __ASSEMBLY__
-	#include <tpm.h>
-#endif /* __ASSEMBLY__ */
+//#ifndef __ASSEMBLY__
+//	#include <tpm.h>
+//#endif /* __ASSEMBLY__ */
 
 /*//forward declaration of runtime parameter block
 #ifndef __ASSEMBLY__
@@ -77,22 +79,8 @@ extern RPB *rpb;
 #endif	//__ASSEMBLY__
 */
 
-#include <xc-types.h>			//core specific data types
-//#include <xc-shareddata.h>		//core shared data
+#include <_xctypes.h>			//core specific data types
+#include <_xchypapp.h>			//hypapp callback declarations
 
-#include <shared.h>				//shared slab mappings, TODO: find a way to move this up to xmhf-slab.h since it is not core slab specific
-
-//----------------------------------------------------------------------
-// component headers
-#include <xc-baseplatform.h>	//base platform component
-#include <xc-dmaprot.h>			//DMA protection component
-#include <xc-richguest.h>		//rich guest component
-//#include <xc-xcphandler.h>		//exception handler component
-#include <xc-tpm.h>				//Trusted Platform Module component
-//#include <xc-startup.h>			//secure loader component
-#include <xc-hypapp.h>			//hypapp callback declarations
-//#include <xc-apihub.h>			//core API interface component
-
-//#include <xc-coreapi.h>			//core API
 
 #endif /* __XMHF_CORE_H_ */

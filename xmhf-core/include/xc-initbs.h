@@ -66,6 +66,15 @@ void xmhf_apihub_arch_initialize(void);
 #define xmhf_apihub_initialize	xmhf_apihub_arch_initialize
 void xcinitbs_arch_initialize_exception_handling(void);
 
+//initialize SMP
+void xmhf_baseplatform_arch_smpinitialize(void);
+#define xmhf_baseplatform_smpinitialize xmhf_baseplatform_arch_smpinitialize
+
+//re-initialize DMA protections (if needed) for the runtime
+bool xmhf_dmaprot_arch_reinitialize(void);
+#define xmhf_dmaprot_reinitialize xmhf_dmaprot_arch_reinitialize
+
+
 #endif	//__XMHF_SLAB_CALLER_INDEX__
 
 #endif //__ASSEMBLY__
