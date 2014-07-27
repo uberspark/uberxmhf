@@ -62,6 +62,13 @@ XMHF_SLAB_DEFIMPORTFN(void, init_entry, (u32 cpuid, bool is_bsp), XMHF_SLAB_DEFI
 #else 	//!__XMHF_SLAB_CALLER_INDEX__
 
 void init_entry(u32 cpuid, bool is_bsp);
+void xmhf_richguest_arch_initialize(u32 partition_index);
+#define xmhf_richguest_initialize xmhf_richguest_arch_initialize
+
+context_desc_t xmhf_richguest_setup(u32 partition_index, u32 cpuid, bool is_bsp);
+void xmhf_richguest_arch_setupguestOSstate(context_desc_t context_desc);
+#define xmhf_richguest_setupguestOSstate xmhf_richguest_arch_setupguestOSstate
+
 
 #endif	//__XMHF_SLAB_CALLER_INDEX__
 
