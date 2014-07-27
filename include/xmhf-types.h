@@ -127,6 +127,8 @@ typedef struct {
 	u8 cmdline_buffer[MAX_CMDLINE_BUFFER_SIZE];
 } __attribute__((packed)) XMHF_BOOTINFO;
 
+__attribute__(( section(".sharedro_xcbootinfoptr") )) extern XMHF_BOOTINFO *xcbootinfo;
+
 
 //-------------------------------------------------------
 typedef struct {

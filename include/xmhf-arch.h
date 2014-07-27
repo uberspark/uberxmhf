@@ -44,13 +44,14 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF core arch. specific header file 
+// XMHF arch. specific header file 
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHF_CORE_ARCH_H_
-#define __XMHF_CORE_ARCH_H_
+#ifndef __XMHF_ARCH_H_
+#define __XMHF_ARCH_H_
 
+// we only support x86-vmx arch for now
 #include <arch/x86/common/xc-x86.h>
 #include <arch/x86/vmx/xc-x86vmx.h>
 
-#endif /* __XMHF_CORE_ARCH_H_ */
+#endif /* __XMHF_ARCH_H_ */

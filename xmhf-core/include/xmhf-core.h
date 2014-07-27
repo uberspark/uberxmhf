@@ -55,9 +55,9 @@
 #include <xmhf.h>
 
 //pull in core arch. header
-#include <xmhf-core-arch.h>
+//#include <xmhf-core-arch.h>
 
-#include <shared.h>				//shared slab mappings, TODO: find a way to move this up to xmhf-slab.h since it is not core slab specific
+//#include <shared.h>				//shared slab mappings, TODO: find a way to move this up to xmhf-slab.h since it is not core slab specific
 
 //pull in required crypto (SHA-1)
 //libXMHFcrypto

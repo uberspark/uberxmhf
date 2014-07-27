@@ -51,8 +51,8 @@
  */
 
 #include <xmhf-core.h>
-#include <xc-x86.h>
-#include <xc-x86vmx.h>
+//#include <xc-x86.h>
+//#include <xc-x86vmx.h>
 
 #define __XMHF_SLAB_CALLER_INDEX__ 	XMHF_SLAB_INITBS_INDEX
 #include <xc-init.h>
