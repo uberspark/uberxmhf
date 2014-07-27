@@ -115,41 +115,41 @@ AS_IF([test "x${enable_dmap}" != "xno"],
 
 
 # libbaremetal source directory
-AC_SUBST([LIBBAREMETAL_SRC])
+AC_SUBST([XMHFLIBS_SRC])
 AC_ARG_WITH([libbaremetalsrc],
         AS_HELP_STRING([--with-libbaremetalsrc=@<:@path@:>@],
                 [path to libbaremetal source directory]),
-                , [with_libbaremetalsrc=./xmhf/src/libbaremetal])
-LIBBAREMETAL_SRC=$[]with_libbaremetalsrc
+                , [with_libbaremetalsrc=./xmhf-libs])
+XMHFLIBS_SRC=$[]with_libbaremetalsrc
 # make absolute
-dnl AS_IF([test "x${LIBBAREMETAL_SRC:0:1}" != "x/"],
-dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$LIBBAREMETAL_SRC])
+dnl AS_IF([test "x${XMHFLIBS_SRC:0:1}" != "x/"],
+dnl       [EMHFCOREDIR=$ac_abs_top_builddir/$XMHFLIBS_SRC])
 
-AC_CHECK_FILE([${LIBBAREMETAL_SRC}/libxmhfc],
+AC_CHECK_FILE([${XMHFLIBS_SRC}/libxmhfc],
         ,
-        AC_MSG_FAILURE([libbaremetal not found at "${LIBBAREMETAL_SRC}"]))
+        AC_MSG_FAILURE([libs not found at "${XMHFLIBS_SRC}"]))
 
 # libtommath source directory
-AC_SUBST([LIBTOMMATH_SRC])
-AC_ARG_WITH([libtommathsrc],
-        AS_HELP_STRING([--with-libtommathsrc=@<:@path@:>@],
-                [path to libtommath source directory]),
-                , [with_libtommathsrc=./xmhf/third-party/libtommath])
-LIBTOMMATH_SRC=$[]with_libtommathsrc
-AC_CHECK_FILE([${LIBTOMMATH_SRC}/tommath.h],
-        ,
-        AC_MSG_FAILURE([libtommath not found at "${LIBTOMMATH_SRC}"]))
+#AC_SUBST([LIBTOMMATH_SRC])
+#AC_ARG_WITH([libtommathsrc],
+#        AS_HELP_STRING([--with-libtommathsrc=@<:@path@:>@],
+#                [path to libtommath source directory]),
+#                , [with_libtommathsrc=./xmhf/third-party/libtommath])
+#LIBTOMMATH_SRC=$[]with_libtommathsrc
+#AC_CHECK_FILE([${LIBTOMMATH_SRC}/tommath.h],
+#        ,
+#        AC_MSG_FAILURE([libtommath not found at "${LIBTOMMATH_SRC}"]))
 
 # libtomcrypt source directory
-AC_SUBST([LIBTOMCRYPT_SRC])
-AC_ARG_WITH([libtomcryptsrc],
-        AS_HELP_STRING([--with-libtomcryptsrc=@<:@path@:>@],
-                [path to libtomcrypt source directory]),
-                , [with_libtomcryptsrc=./xmhf/third-party/libtomcrypt])
-LIBTOMCRYPT_SRC=$[]with_libtomcryptsrc
-AC_CHECK_FILE([${LIBTOMCRYPT_SRC}/src/headers/tomcrypt.h],
-        ,
-        AC_MSG_FAILURE([libtomcrypt not found at "${LIBTOMCRYPT_SRC}"]))
+#AC_SUBST([LIBTOMCRYPT_SRC])
+#AC_ARG_WITH([libtomcryptsrc],
+#        AS_HELP_STRING([--with-libtomcryptsrc=@<:@path@:>@],
+#                [path to libtomcrypt source directory]),
+#                , [with_libtomcryptsrc=./xmhf/third-party/libtomcrypt])
+#LIBTOMCRYPT_SRC=$[]with_libtomcryptsrc
+#AC_CHECK_FILE([${LIBTOMCRYPT_SRC}/src/headers/tomcrypt.h],
+#        ,
+#        AC_MSG_FAILURE([libtomcrypt not found at "${LIBTOMCRYPT_SRC}"]))
 
 AC_SUBST([EMHFCOREDIR])
 AC_ARG_WITH([emhfcore],
