@@ -62,12 +62,12 @@ SECTIONS
 	.multiboot_header : {
 		*(.multiboot_header)
 		. = ALIGN(4096);    
-	} = 0x0000
+	} >all=0x0000
 
 	.text : {
 		*(.text)
 		. = ALIGN(4096);    
-	} =0x9090 
+	} >all=0x9090 
 
 	.data : {
 		*(.data)
@@ -76,12 +76,16 @@ SECTIONS
 		*(.eh_frame)
 		*(.bss)
 		. = ALIGN(4096);    
-	} =0x0000 
+	} >all=0x0000 
   
 	.stack : {
 		*(.stack)
+	} >all=0x0000
+
+	.libxmhfdebugdata : {
+		*(.libxmhfdebugdata)
 		. = ALIGN(0x200000);
-	} =0x0000
+	} >all=0x0000
 
 	/DISCARD/ : {
 			*(.comment)

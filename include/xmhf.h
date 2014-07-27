@@ -79,11 +79,19 @@
 //	#include <tpm.h>
 //#endif // __ASSEMBLY__ 
 
-#include <xmhf-config.h>		//XMHF platform/arch config
+#include <xmhf-config.h>		//XMHF platform/arch config, TODO: this needs to be platform/arch independent push arch dependent stuff into arch/
 #include <xmhf-types.h>			//XMHF specific base types
-#include <xmhf-debug.h>			//libxmhfdebug
 #include <xmhf-error.h> 
+
+#include <xmhf-arch.h>			//XMHF arch. specific types/defn.
+
 #include <xmhf-slab.h>
+
+#include <shared.h>				//shared slab mappings
+
+
+#include <xmhf-debug.h>			//libxmhfdebug
+
 
 #ifdef __XMHF_VERIFICATION__
 	//include verification related primitives

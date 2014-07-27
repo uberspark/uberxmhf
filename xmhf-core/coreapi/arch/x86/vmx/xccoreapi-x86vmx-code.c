@@ -48,8 +48,8 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf-core.h> 
-#include <xc-x86.h>
-#include <xc-x86vmx.h>
+//#include <xc-x86.h>
+//#include <xc-x86vmx.h>
 
 #include <xc-coreapi.h>
 
