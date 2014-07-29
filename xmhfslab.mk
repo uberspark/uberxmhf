@@ -15,11 +15,8 @@ XMHF_SLAB_OBJECTS := $(patsubst %.c, %.o, $(XMHF_SLAB_SOURCES_SUBST))
 # folder where objects go
 XMHF_SLAB_OBJECTS_DIR := _objs_slab_$(XMHF_SLAB_NAME)
 
-# binary name
-XMHF_SLAB_BINARY := $(XMHF_SLAB_NAME)
-
-LINKER_SCRIPT_INPUT := $(srcdir)/testslab1.lscript
-LINKER_SCRIPT_OUTPUT := testslab1.lds
+LINKER_SCRIPT_INPUT := $(XMHF_DIR)/xmhfslab.lscript
+LINKER_SCRIPT_OUTPUT := $(XMHF_SLAB_NAME).lds
 
 
 # LLC flags
@@ -30,11 +27,11 @@ LLC_ATTR = -3dnow,-3dnowa,-64bit,-64bit-mode,-adx,-aes,-atom,-avx,-avx2,-bmi,-bm
 all: buildslabbin
 
 buildslabbin: $(XMHF_SLAB_OBJECTS) 
-	#cd $(XMHF_SLAB_OBJECTS_DIR) && cp -f $(LINKER_SCRIPT_INPUT) testslab1.lscript.c
-	#cd $(XMHF_SLAB_OBJECTS_DIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E testslab1.lscript.c -o $(LINKER_SCRIPT_OUTPUT)
-	#cd $(XMHF_SLAB_OBJECTS_DIR) && $(LD) -r --oformat elf32-i386 -T $(LINKER_SCRIPT_OUTPUT) -o $(XMHF_SLAB_BINARY).slo $(XMHF_SLAB_OBJECTS_ARCHIVE) -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfutil -lxmhfdebug -lxmhfhw -lxmhfutil -lxmhfc -lclang_rt.full-i386
-	#cd $(XMHF_SLAB_OBJECTS_DIR) && nm $(XMHF_SLAB_BINARY).slo | awk '{ print $$3 }' | awk NF >$(XMHF_SLAB_BINARY).slo.syms
-	#cd $(XMHF_SLAB_OBJECTS_DIR) && $(OBJCOPY) --localize-symbols=$(XMHF_SLAB_BINARY).slo.syms $(XMHF_SLAB_BINARY).slo $(XMHF_SLAB_BINARY).slo
+	cd $(XMHF_SLAB_OBJECTS_DIR) && cp -f $(LINKER_SCRIPT_INPUT) $(XMHF_SLAB_NAME).lscript.c
+	cd $(XMHF_SLAB_OBJECTS_DIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E $(XMHF_SLAB_NAME).lscript.c -o $(LINKER_SCRIPT_OUTPUT)
+	cd $(XMHF_SLAB_OBJECTS_DIR) && $(LD) -r --oformat elf32-i386 -T $(LINKER_SCRIPT_OUTPUT) -o $(XMHF_SLAB_NAME).slo $(XMHF_SLAB_OBJECTS_ARCHIVE) -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfutil -lxmhfdebug -lxmhfhw -lxmhfutil -lxmhfc -lclang_rt.full-i386
+	cd $(XMHF_SLAB_OBJECTS_DIR) && nm $(XMHF_SLAB_NAME).slo | awk '{ print $$3 }' | awk NF >$(XMHF_SLAB_NAME).slo.syms
+	cd $(XMHF_SLAB_OBJECTS_DIR) && $(OBJCOPY) --localize-symbols=$(XMHF_SLAB_NAME).slo.syms $(XMHF_SLAB_NAME).slo $(XMHF_SLAB_NAME).slo
 
 %.o: %.c   
 	mkdir -p $(XMHF_SLAB_OBJECTS_DIR)
