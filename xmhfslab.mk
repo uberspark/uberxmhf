@@ -1,10 +1,6 @@
 # common makefile for slabs
 # author: amit vasudevan (amitvasudevan@acm.org)
 
-srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
-vpath %.c $(srcdir)
-vpath %.S $(srcdir)
-vpath %.lscript $(srcdir)
 
 XMHF_SLAB_SOURCES_SUBST := $(patsubst $(srcdir)/%, %, $(XMHF_SLAB_SOURCES))
 
@@ -17,10 +13,10 @@ XMHF_SLAB_OBJECTS_ARCHIVE := $(patsubst %.c, %.o, $(XMHF_SLAB_SOURCES_FILENAMEON
 XMHF_SLAB_OBJECTS := $(patsubst %.c, %.o, $(XMHF_SLAB_SOURCES_SUBST))
 
 # folder where objects go
-XMHF_SLAB_OBJECTS_DIR = _objs_slab_$(XMHF_SLAB_NAME)
+XMHF_SLAB_OBJECTS_DIR := _objs_slab_$(XMHF_SLAB_NAME)
 
 # binary name
-XMHF_SLAB_BINARY = $(XMHF_SLAB_NAME)
+XMHF_SLAB_BINARY := $(XMHF_SLAB_NAME)
 
 LINKER_SCRIPT_INPUT := $(srcdir)/testslab1.lscript
 LINKER_SCRIPT_OUTPUT := testslab1.lds
@@ -31,14 +27,14 @@ LLC_ATTR = -3dnow,-3dnowa,-64bit,-64bit-mode,-adx,-aes,-atom,-avx,-avx2,-bmi,-bm
 
 # targets
 .PHONY: all
-all: $(XMHF_SLAB_BINARY)
+all: buildslabbin
 
-$(XMHF_SLAB_BINARY): $(XMHF_SLAB_OBJECTS) 
-	cd $(XMHF_SLAB_OBJECTS_DIR) && cp -f $(LINKER_SCRIPT_INPUT) testslab1.lscript.c
-	cd $(XMHF_SLAB_OBJECTS_DIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E testslab1.lscript.c -o $(LINKER_SCRIPT_OUTPUT)
-	cd $(XMHF_SLAB_OBJECTS_DIR) && $(LD) -r --oformat elf32-i386 -T $(LINKER_SCRIPT_OUTPUT) -o $(XMHF_SLAB_BINARY).slo $(XMHF_SLAB_OBJECTS_ARCHIVE) -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfutil -lxmhfdebug -lxmhfhw -lxmhfutil -lxmhfc -lclang_rt.full-i386
-	cd $(XMHF_SLAB_OBJECTS_DIR) && nm $(XMHF_SLAB_BINARY).slo | awk '{ print $$3 }' | awk NF >$(XMHF_SLAB_BINARY).slo.syms
-	cd $(XMHF_SLAB_OBJECTS_DIR) && $(OBJCOPY) --localize-symbols=$(XMHF_SLAB_BINARY).slo.syms $(XMHF_SLAB_BINARY).slo $(XMHF_SLAB_BINARY).slo
+buildslabbin: $(XMHF_SLAB_OBJECTS) 
+	#cd $(XMHF_SLAB_OBJECTS_DIR) && cp -f $(LINKER_SCRIPT_INPUT) testslab1.lscript.c
+	#cd $(XMHF_SLAB_OBJECTS_DIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E testslab1.lscript.c -o $(LINKER_SCRIPT_OUTPUT)
+	#cd $(XMHF_SLAB_OBJECTS_DIR) && $(LD) -r --oformat elf32-i386 -T $(LINKER_SCRIPT_OUTPUT) -o $(XMHF_SLAB_BINARY).slo $(XMHF_SLAB_OBJECTS_ARCHIVE) -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfutil -lxmhfdebug -lxmhfhw -lxmhfutil -lxmhfc -lclang_rt.full-i386
+	#cd $(XMHF_SLAB_OBJECTS_DIR) && nm $(XMHF_SLAB_BINARY).slo | awk '{ print $$3 }' | awk NF >$(XMHF_SLAB_BINARY).slo.syms
+	#cd $(XMHF_SLAB_OBJECTS_DIR) && $(OBJCOPY) --localize-symbols=$(XMHF_SLAB_BINARY).slo.syms $(XMHF_SLAB_BINARY).slo $(XMHF_SLAB_BINARY).slo
 
 %.o: %.c   
 	mkdir -p $(XMHF_SLAB_OBJECTS_DIR)
@@ -53,10 +49,4 @@ clean:
 	$(RM) -rf $(XMHF_SLAB_OBJECTS_DIR)
 
 
-############################################################################################
-# options that each slab will customize
-
-XMHF_SLAB_NAME := slabname
-XMHF_SLAB_PRIVILEGED := y
-XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
 
