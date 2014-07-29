@@ -270,6 +270,9 @@ export VFLAGS
 CFLAGS = $(FLAGS)
 export CFLAGS
 
+export XMHF_SLAB_DIRS := `IFS=; while read -r name; do printf "%s " "\$$name"; done < $(XMHF_DIR)/SLABS`
+
+
 #ifeq ($(strip $(XMHF_HYPAPPS)),)
 .PHONY: all
 #all: subdirs install-dev
@@ -292,12 +295,23 @@ subdirs: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
 	@echo XMHF libs build SUCCESS
 	@echo **************************************************************
 	@echo **************************************************************
-	@echo Test build slab...
+	@echo Building slabs...
 	@echo **************************************************************
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_DIR)/xmhf-core/testslab1/Makefile -w all
+	@for i in $(XMHF_SLAB_DIRS); \
+	do \
+		(cd $(XMHF_OBJDIR) &&	echo "Making all in $$i..." && $(MAKE) -f $(XMHF_DIR)/$$i/Makefile -w all) || exit 1; \
+	done;
 	@echo **************************************************************
-	@echo build SUCCESS
+	@echo Slabs build SUCCESS
 	@echo **************************************************************
+
+	#@echo **************************************************************
+	#@echo Test build slab...
+	#@echo **************************************************************
+	#cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_DIR)/xmhf-core/testslab1/Makefile -w all
+	#@echo **************************************************************
+	#@echo build SUCCESS
+	#@echo **************************************************************
 	#@echo **************************************************************
 	#@echo Building libxmhfhw...
 	#@echo **************************************************************
