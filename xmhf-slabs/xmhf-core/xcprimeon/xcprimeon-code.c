@@ -46,6 +46,7 @@
 
 #include <xmhf-core.h>
 
+#include <xmhf-debug.h>
 #include <xcprimeon.h>
 
 #define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_XCPRIMEON_INDEX
