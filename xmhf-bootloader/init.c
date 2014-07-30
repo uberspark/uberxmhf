@@ -687,12 +687,12 @@ static bool svm_prepare_cpu(void)
 //cpu_vendor = intel or amd
 //slbase= physical memory address of start of sl
 void do_drtm(BOOTVCPU __attribute__((unused))*vcpu, u32 slbase, size_t mle_size __attribute__((unused))){
-#ifdef __MP_VERSION__
+//#ifdef __MP_VERSION__
     HALT_ON_ERRORCOND(vcpu->id == 0);
     //send INIT IPI to all APs 
     send_init_ipi_to_all_APs();
     printf("\nINIT(early): sent INIT IPI to APs");
-#endif
+//#endif
 
 #if defined (__DRT__)
 
@@ -708,18 +708,18 @@ void do_drtm(BOOTVCPU __attribute__((unused))*vcpu, u32 slbase, size_t mle_size 
         //issue SKINIT
         //our secure loader is the first 64K of the hypervisor image
         printf("\nINIT(early): transferring control to SL via SKINIT...");
-		#ifndef PERF_CRIT
-        if(NULL != xslbootinfo) {
-            __asm__ __volatile__ (
-                "cpuid\r\n"
-                "cpuid\r\n"
-                "cpuid\r\n"
-                "rdtsc\r\n"
-                : "=A"(xslbootinfo->rdtsc_before_drtm)
-                : /* no inputs */
-                : "ebx","ecx");
-        }
-		#endif
+		//#ifndef PERF_CRIT
+        //if(NULL != xslbootinfo) {
+        //    __asm__ __volatile__ (
+        //        "cpuid\r\n"
+        //        "cpuid\r\n"
+        //        "cpuid\r\n"
+        //        "rdtsc\r\n"
+        //        : "=A"(xslbootinfo->rdtsc_before_drtm)
+        //        : /* no inputs */
+        //        : "ebx","ecx");
+       // }
+		//#endif
         skinit((u32)slbase);
     } else {
         printf("\n******  INIT(early): Begin TXT Stuff  ******\n");        

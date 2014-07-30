@@ -399,16 +399,12 @@ u64 entryctls;
 
 //VMX VMCS fields
 struct _vmx_vmcsfields {
-#if defined(__NESTED_PAGING__)
 	//16-bit control fields
 	unsigned int control_vpid;
-#endif
   // Natural 32-bit Control fields
   unsigned int  control_VMX_pin_based;
   unsigned int  control_VMX_cpu_based;
-//#if defined(__NESTED_PAGING__)
 	unsigned int  control_VMX_seccpu_based;
-//#endif
   unsigned int  control_exception_bitmap;
   unsigned int  control_pagefault_errorcode_mask; 
   unsigned int  control_pagefault_errorcode_match; 
@@ -450,10 +446,8 @@ struct _vmx_vmcsfields {
   unsigned int  control_TSC_offset_high;
   unsigned int  control_virtual_APIC_page_address_full;
   unsigned int  control_virtual_APIC_page_address_high;
-#if defined(__NESTED_PAGING__)
 	unsigned int control_EPT_pointer_full; 
 	unsigned int control_EPT_pointer_high;
-#endif
   // Natural 64-bit Host-State fields
   unsigned long long  host_CR0;
   unsigned long long  host_CR3;
@@ -535,7 +529,6 @@ struct _vmx_vmcsfields {
   unsigned int  guest_VMCS_link_pointer_high;
   unsigned int  guest_IA32_DEBUGCTL_full;
   unsigned int  guest_IA32_DEBUGCTL_high;
-  #if defined(__NESTED_PAGING__)
     unsigned int 	guest_paddr_full;
     unsigned int 	guest_paddr_high;
     unsigned int  guest_PDPTE0_full; 
@@ -546,7 +539,6 @@ struct _vmx_vmcsfields {
 	  unsigned int  guest_PDPTE2_high;
     unsigned int  guest_PDPTE3_full; 
 	  unsigned int  guest_PDPTE3_high;
-  #endif
   //Read-Only Fields
   unsigned int  info_vminstr_error;
   unsigned int  info_vmexit_reason;

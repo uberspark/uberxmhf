@@ -407,18 +407,18 @@ tb_error_t txt_launch_environment(void *sinit_ptr, size_t sinit_size,
     /* pause before executing GETSEC[SENTER] */
     delay(0x80000000);
 
-#ifndef PERF_CRIT
-    if(NULL != slpb) {
-        __asm__ __volatile__ (
-            "cpuid\r\n"
-            "cpuid\r\n"
-            "cpuid\r\n"
-            "rdtsc\r\n"
-            : "=A"(slpb->rdtsc_before_drtm)
-            : /* no inputs */
-            : "ebx","ecx");
-    }
-#endif
+//#ifndef PERF_CRIT
+//   if(NULL != slpb) {
+//        __asm__ __volatile__ (
+//            "cpuid\r\n"
+//            "cpuid\r\n"
+//            "cpuid\r\n"
+//            "rdtsc\r\n"
+//            : "=A"(slpb->rdtsc_before_drtm)
+//            : /* no inputs */
+//            : "ebx","ecx");
+//    }
+//#endif
     
     __getsec_senter((uint32_t)sinit, (sinit->size)*4);
     printf("ERROR--we should not get here!\n");
