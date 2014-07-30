@@ -258,17 +258,10 @@ export CFLAGS
 export XMHF_SLAB_DIRS := $(shell cat $(XMHF_DIR)/SLABS)
 XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
 
-#ifeq ($(strip $(XMHF_HYPAPPS)),)
 .PHONY: all
-#all: subdirs install-dev
 all: genfiles libshared subdirs
-#else
-#.PHONY: all
-#all: subdirs install-dev build-hypapps
-#endif
 #all:
 #	xmhfgenslabtable.pl $(XMHF_SLAB_NAMES)
-
 
 .PHONY: genfiles
 genfiles:
@@ -281,90 +274,34 @@ libshared:
 	mkdir -p $(XMHF_OBJDIR)
 	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_DIR)/xmhf-slabs/shared/Makefile -w all
 
-
 .PHONY: subdirs
 subdirs: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
-	#@echo **************************************************************
 	@echo Building XMHF libs...
-	#@echo **************************************************************
 	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFLIBS_SRC)/Makefile -w all
-	#@echo **************************************************************
 	@echo XMHF libs build SUCCESS
-	#@echo **************************************************************
-	#@echo **************************************************************
 	@echo Building slabs...
-	#@echo **************************************************************
 	@for i in $(XMHF_SLAB_DIRS); \
 	do \
 		(cd $(XMHF_OBJDIR) &&	echo "Making all in $$i..." && $(MAKE) -f $(XMHF_DIR)/$$i/Makefile -w all) || exit 1; \
 	done;
-	#@echo **************************************************************
 	@echo Slabs build SUCCESS
-	#@echo **************************************************************
-	#@echo **************************************************************
 	@echo Linking XMHF binary...
-	#@echo **************************************************************
 	cd $(XMHF_OBJDIR) && cp -f xmhf.lscript xmhf.lscript.c
 	cd $(XMHF_OBJDIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E xmhf.lscript.c -o xmhf.lds
 	cd $(XMHF_OBJDIR) && $(LD) --oformat elf32-i386 -T xmhf.lds -o xmhf.exe _objs_libshared/libshared.a
 	cd $(XMHF_OBJDIR) && $(OBJCOPY) --output-format=binary xmhf.exe xmhf.bin
-	#@echo **************************************************************
 	@echo XMHF link SUCCESS
-	#@echo **************************************************************
-	#@echo **************************************************************
-	#@echo Building libxmhfhw...
-	#@echo **************************************************************
-	#cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBXMHFHW_SRC)/Makefile -w all
-	#@echo **************************************************************
-	#@echo libxmhfhw.a build SUCCESS
-	#@echo **************************************************************
-	#@echo **************************************************************
-	#@echo Building libxmhfdebug...
-	#@echo **************************************************************
-	#cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBXMHFDEBUG_SRC)/Makefile -w all
-	#@echo **************************************************************
-	#@echo libxmhfdebug.a build SUCCESS
-	#@echo **************************************************************
-	#@echo **************************************************************
-	#@echo Building libxmhfcore...
-	#@echo **************************************************************
-	#cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBXMHFCORE_SRC)/Makefile -w all
-	#@echo **************************************************************
-	#@echo libxmhfcore.a build SUCCESS
-	#@echo **************************************************************
-	#@echo **************************************************************
-	#@echo Building XMHF core...
-	#@echo **************************************************************
-	#cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFCORE_SRC)/Makefile -w all
-	#@echo **************************************************************
-	#@echo XMHF core build SUCCESS
-	#@echo **************************************************************
-	#@echo **************************************************************
-	#@echo Building XMHF secure loader...
-	#@echo **************************************************************
-	#cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_SECURELOADER_SRC)/Makefile -w all \
-	#		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
-	#@echo **************************************************************
-	#@echo XMHF secure loader build SUCCESS
-	#@echo **************************************************************
-	#@echo **************************************************************
 	@echo Building XMHF boot loader...
-	#@echo **************************************************************
 	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_BOOTLOADER_SRC)/Makefile -w all \
 		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
 		SLBELOW64K_INTEGRITY_HASH=\""$(shell ( dd if=$(XMHF_OBJDIR)/_objs_xmhf-secureloader/sl.bin bs=1024 count=64 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
 		SLABOVE64K_INTEGRITY_HASH=\""$(shell ( dd if=$(XMHF_OBJDIR)/_objs_xmhf-secureloader/sl.bin bs=1024 skip=64 count=1984 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
-	#@echo **************************************************************
 	@echo XMHF boot loader build SUCCESS
-	#@echo **************************************************************
-	#@echo --------------------------------------------------------------
 	@echo generating final binaries...
-	##cd $(XMHF_OBJDIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin ./_objs_xmhf-secureloader/xmhf-secureloader.bin ./_objs_xmhf-core/xmhf-core.bin > ./xmhf.tmp.img
 	cd $(XMHF_OBJDIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin ./xmhf.bin > ./xmhf.tmp.img
 	cd $(XMHF_OBJDIR) && gzip -c ./xmhf.tmp.img > ./xmhf-$(TARGET_HWPLATFORM).bin.gz
 	cd $(XMHF_OBJDIR) && $(RM) -rf ./xmhf.tmp.img 
 	@echo xmhf binary generation SUCCESS
-	#@echo --------------------------------------------------------------
 
 .PHONY: install
 install: install-bin
@@ -375,122 +312,16 @@ install-bin:
 	install -d $(DESTDIR)/boot
 	install --mode=644 $(XMHF_OBJDIR)/_objs_xmhf-core/xmhf-$(TARGET_HWPLATFORM).bin.gz $(DESTDIR)/boot
 
-#.PHONY: install-dev
-#install-dev:
-#	@echo --------------------------------------------------------------
-#	@echo installing development lib/headers to: $(prefix)
-#	@echo -------------------------------------------------------------- 
-#	$(RM) -rf $(prefix)/lib/xmhf
-#	$(RM) -rf $(prefix)/include/xmhf
-#	@echo cleaned up target folders $(prefix)/lib/xmhf and $(prefix)/include/xmhf
-#	$(MKDIR) -p $(prefix)/lib/xmhf
-#	$(MKDIR) -p $(prefix)/include/xmhf
-#	@echo prepared target folders $(prefix)/lib/xmhf and $(prefix)/include/xmhf
-#	#$(CP) -f $(XMHF_OBJDIR)/_objs_libxmhfcore/libxmhfcore.a $(prefix)/lib/xmhf/libxmhfcore.a
-#	$(CP) -f $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a $(prefix)/lib/xmhf/libbaremetal.a
-#	@echo installed XMHF development libraries to $(prefix)/lib/xmhf/
-#	$(MKDIR) -p $(prefix)/include/xmhf/include
-#	$(MKDIR) -p $(prefix)/include/xmhf/xmhf-core/include
-#	$(MKDIR) -p $(prefix)/include/xmhf/xmhf-core/include/arch/x86/common
-#	$(MKDIR) -p $(prefix)/include/xmhf/xmhf-core/include/arch/x86/vmx
-#	$(MKDIR) -p $(prefix)/include/xmhf/platform/x86pc/include
-#	$(MKDIR) -p $(prefix)/include/xmhf/cpu/x86/include
-#	$(CP) -rf ./xmhf/src/include/* $(prefix)/include/xmhf/include/.
-#	$(CP) -rf ./xmhf/src/xmhf-core/include/* $(prefix)/include/xmhf/xmhf-core/include/.
-#	$(CP) -rf ./xmhf/src/xmhf-core/include/arch/x86/common/* $(prefix)/include/xmhf/xmhf-core/include/arch/x86/common/.
-#	$(CP) -rf ./xmhf/src/xmhf-core/include/arch/x86/vmx/* $(prefix)/include/xmhf/xmhf-core/include/arch/x86/vmx/.
-#	$(CP) -rf ./xmhf/src/libxmhfhw/platform/x86pc/include/* $(prefix)/include/xmhf/platform/x86pc/include/.
-#	$(CP) -rf ./xmhf/src/libxmhfhw/cpu/x86/include/* $(prefix)/include/xmhf/cpu/x86/include/.
-#	@echo installed XMHF core development headers
-#	$(MKDIR) -p $(prefix)/include/xmhf/libbaremetal/libtpm/include
-#	$(MKDIR) -p $(prefix)/include/xmhf/libbaremetal/libtv_utpm/include
-#	$(MKDIR) -p $(prefix)/include/xmhf/libbaremetal/libxmhfc/include
-#	$(MKDIR) -p $(prefix)/include/xmhf/libbaremetal/libxmhfcrypto/include
-#	$(MKDIR) -p $(prefix)/include/xmhf/libbaremetal/libxmhfutil/include
-#	$(CP) -rf ./xmhf/src/libbaremetal/libtpm/include/* $(prefix)/include/xmhf/libbaremetal/libtpm/include/.
-#	$(CP) -rf ./xmhf/src/libbaremetal/libtv_utpm/include/* $(prefix)/include/xmhf/libbaremetal/libtv_utpm/include/.
-#	$(CP) -rf ./xmhf/src/libbaremetal/libxmhfc/include/* $(prefix)/include/xmhf/libbaremetal/libxmhfc/include/.
-#	$(CP) -rf ./xmhf/src/libbaremetal/libxmhfcrypto/include/* $(prefix)/include/xmhf/libbaremetal/libxmhfcrypto/include/.
-#	$(CP) -rf ./xmhf/src/libbaremetal/libxmhfutil/include/* $(prefix)/include/xmhf/libbaremetal/libxmhfutil/include/.
-#	@echo installed XMHF libbaremetal development headers
-#	$(MKDIR) -p $(prefix)/include/xmhf/libxmhfdebug/include
-#	$(CP) -rf ./xmhf/src/libxmhfdebug/include/* $(prefix)/include/xmhf/libxmhfdebug/include/.
-#	@echo installed XMHF libxmhfdebug development headers
-#	$(MKDIR) -p $(prefix)/share/xmhf
-#	install --mode=644 ./xmhfhypapp.lds $(prefix)/share/xmhf
-#	install --mode=644 ./xmhfhypapp.mk $(prefix)/share/xmhf
-#	@echo installed XMHF hypapp build and linker scripts
-#	mkdir -p $(pkgconfigdir)
-#	install --mode=644 ./xmhf.pc $(pkgconfigdir)
-#	@echo installed XMHF pkg-config meta information
-#	@echo INSTALL SUCCESS
-#	@echo --------------------------------------------------------------
-
 # Currently the only tests we have are in the TrustVisor tree
 .PHONY: test
 test:
 	cd $(APP_ROOT) && $(MAKE) -w test
 
 
-.PHONY: build-hypapps
-build-hypapps:
-	@echo --------------------------------------------------------------
-	@echo preparing to build hypapps
-	@echo -------------------------------------------------------------- 
-
-
 #.PHONY: clean distclean init-late-clean
 .PHONY: clean distclean 
 clean:
-	@echo **************************************************************
-	@echo Cleaning libbaremetal...
-	@echo **************************************************************
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFLIBS_SRC)/Makefile -w clean
-	@echo **************************************************************
-	@echo libbaremetal.a clean SUCCESS
-	@echo **************************************************************
-	@echo **************************************************************
-	@echo Cleaning libxmhfhw...
-	@echo **************************************************************
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBXMHFHW_SRC)/Makefile -w clean
-	@echo **************************************************************
-	@echo libxmhfhw.a clean SUCCESS
-	@echo **************************************************************
-	@echo **************************************************************
-	@echo Cleaning libxmhfdebug...
-	@echo **************************************************************
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBXMHFDEBUG_SRC)/Makefile -w clean
-	@echo **************************************************************
-	@echo libxmhfdebug.a clean SUCCESS
-	@echo **************************************************************
-	#@echo **************************************************************
-	#@echo Cleaning libxmhfcore...
-	#@echo **************************************************************
-	#cd $(XMHF_OBJDIR) && $(MAKE) -f $(LIBXMHFCORE_SRC)/Makefile -w clean
-	#@echo **************************************************************
-	#@echo libxmhfcore.a clean SUCCESS
-	#@echo **************************************************************
-	@echo **************************************************************
-	@echo Cleaning XMHF core...
-	@echo **************************************************************
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFCORE_SRC)/Makefile -w clean
-	@echo **************************************************************
-	@echo XMHF core clean SUCCESS
-	@echo **************************************************************
-	@echo **************************************************************
-	@echo Cleaning XMHF secure loader...
-	@echo **************************************************************
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_SECURELOADER_SRC)/Makefile -w clean
-	@echo **************************************************************
-	@echo XMHF secure loader clean SUCCESS
-	@echo **************************************************************
-	@echo **************************************************************
-	@echo cleaning XMHF boot loader...
-	@echo **************************************************************
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_BOOTLOADER_SRC)/Makefile -w clean
-	@echo **************************************************************
-	@echo XMHF boot loader cleanup SUCCESS
-	@echo **************************************************************
+	$(RM) -f $(XMHF_DIR)/xmhf-slabs/shared/shared-slabtable.c
 	rm -rf *.html
 	rm -rf doc
 	$(RM) -rf $(XMHF_OBJDIR)
@@ -500,8 +331,6 @@ distclean: clean
 	# http://www.gnu.org/software/automake/manual/automake.html#Clean
 	$(RM) -rf Makefile
 	$(RM) -rf xmhf.pc
-
-
 
 verify:
 	#cd xmhf/src/xmhf-core && make -w verify
