@@ -90,7 +90,7 @@
 #include <shared.h>				//shared slab mappings
 
 
-#include <xmhf-debug.h>			//libxmhfdebug
+//#include <xmhf-debug.h>			//libxmhfdebug
 
 
 #ifdef __XMHF_VERIFICATION__
