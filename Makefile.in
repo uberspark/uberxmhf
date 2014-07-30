@@ -270,8 +270,8 @@ export VFLAGS
 CFLAGS = $(FLAGS)
 export CFLAGS
 
-export XMHF_SLAB_DIRS := `IFS=; while read -r name; do printf "%s " "\$$name"; done < $(XMHF_DIR)/SLABS`
-
+export XMHF_SLAB_DIRS := $(shell cat $(XMHF_DIR)/SLABS)
+XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
 
 #ifeq ($(strip $(XMHF_HYPAPPS)),)
 .PHONY: all
@@ -281,12 +281,13 @@ all: subdirs
 #.PHONY: all
 #all: subdirs install-dev build-hypapps
 #endif
-
-
+#all:
+#	xmhfgenlscript.pl $(XMHF_SLAB_NAMES)
 
 .PHONY: subdirs
 subdirs: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
 	mkdir -p $(XMHF_OBJDIR)
+	cd $(XMHF_OBJDIR) && xmhfgenlscript.pl $(XMHF_SLAB_NAMES) >xmhf.lscript
 	#@echo **************************************************************
 	@echo Building XMHF libs...
 	#@echo **************************************************************
@@ -304,13 +305,15 @@ subdirs: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
 	#@echo **************************************************************
 	@echo Slabs build SUCCESS
 	#@echo **************************************************************
-
 	#@echo **************************************************************
-	#@echo Test build slab...
+	@echo Linking XMHF binary...
 	#@echo **************************************************************
-	#cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_DIR)/xmhf-core/testslab1/Makefile -w all
+	cd $(XMHF_OBJDIR) && cp -f xmhf.lscript xmhf.lscript.c
+	cd $(XMHF_OBJDIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E xmhf.lscript.c -o xmhf.lds
+	cd $(XMHF_OBJDIR) && $(LD) --oformat elf32-i386 -T xmhf.lds -o xmhf.exe  
+	cd $(XMHF_OBJDIR) && $(OBJCOPY) --output-format=binary xmhf.exe xmhf.bin
 	#@echo **************************************************************
-	#@echo build SUCCESS
+	@echo XMHF link SUCCESS
 	#@echo **************************************************************
 	#@echo **************************************************************
 	#@echo Building libxmhfhw...
