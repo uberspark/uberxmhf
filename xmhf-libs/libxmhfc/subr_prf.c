@@ -73,7 +73,7 @@ static int
 kvprintf(char const *fmt, void (*func)(int, void*), void *arg, int radix, va_list ap);
 
 
-int printf(const char *fmt, ...){
+/*int printf(const char *fmt, ...){
 	va_list ap;
 	int retval;
 
@@ -93,7 +93,7 @@ int vprintf(const char *fmt, va_list ap){
 	xmhfc_puts(&buffer);
 	
 	return (retval);
-}
+}*/
 
 
 /*
