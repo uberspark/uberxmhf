@@ -359,22 +359,22 @@ subdirs: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
 	#@echo XMHF secure loader build SUCCESS
 	#@echo **************************************************************
 	#@echo **************************************************************
-	#@echo Building XMHF boot loader...
+	@echo Building XMHF boot loader...
 	#@echo **************************************************************
-	#cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_BOOTLOADER_SRC)/Makefile -w all \
-	#	RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
-	#	SLBELOW64K_INTEGRITY_HASH=\""$(shell ( dd if=$(XMHF_OBJDIR)/_objs_xmhf-secureloader/sl.bin bs=1024 count=64 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
-	#	SLABOVE64K_INTEGRITY_HASH=\""$(shell ( dd if=$(XMHF_OBJDIR)/_objs_xmhf-secureloader/sl.bin bs=1024 skip=64 count=1984 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_BOOTLOADER_SRC)/Makefile -w all \
+		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
+		SLBELOW64K_INTEGRITY_HASH=\""$(shell ( dd if=$(XMHF_OBJDIR)/_objs_xmhf-secureloader/sl.bin bs=1024 count=64 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
+		SLABOVE64K_INTEGRITY_HASH=\""$(shell ( dd if=$(XMHF_OBJDIR)/_objs_xmhf-secureloader/sl.bin bs=1024 skip=64 count=1984 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
 	#@echo **************************************************************
-	#@echo XMHF boot loader build SUCCESS
+	@echo XMHF boot loader build SUCCESS
 	#@echo **************************************************************
 	#@echo --------------------------------------------------------------
-	#@echo generating final binaries...
+	@echo generating final binaries...
 	##cd $(XMHF_OBJDIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin ./_objs_xmhf-secureloader/xmhf-secureloader.bin ./_objs_xmhf-core/xmhf-core.bin > ./xmhf.tmp.img
-	#cd $(XMHF_OBJDIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin ./_objs_xmhf-core/xmhf-core.bin > ./xmhf.tmp.img
-	#cd $(XMHF_OBJDIR) && gzip -c ./xmhf.tmp.img > ./xmhf-$(TARGET_HWPLATFORM).bin.gz
-	#cd $(XMHF_OBJDIR) && $(RM) -rf ./xmhf.tmp.img 
-	#@echo xmhf binary generation SUCCESS
+	cd $(XMHF_OBJDIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin ./xmhf.bin > ./xmhf.tmp.img
+	cd $(XMHF_OBJDIR) && gzip -c ./xmhf.tmp.img > ./xmhf-$(TARGET_HWPLATFORM).bin.gz
+	cd $(XMHF_OBJDIR) && $(RM) -rf ./xmhf.tmp.img 
+	@echo xmhf binary generation SUCCESS
 	#@echo --------------------------------------------------------------
 
 .PHONY: install
