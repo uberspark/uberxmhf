@@ -73,7 +73,7 @@ static int
 kvprintf(char const *fmt, void (*func)(int, void*), void *arg, int radix, va_list ap);
 
 
-/*int printf(const char *fmt, ...){
+/*int _XDPRINTF_(const char *fmt, ...){
 	va_list ap;
 	int retval;
 
@@ -208,14 +208,14 @@ ksprintn(char *nbuf, uintmax_t num, int base, int *lenp, int upper)
 }
 
 /*
- * Scaled down version of printf(3).
+ * Scaled down version of _XDPRINTF_(3).
  *
  * Two additional formats:
  *
  * The format %b is supported to decode error registers.
  * Its usage is:
  *
- *	printf("reg=%b\n", regval, "<base><arg>*");
+ *	_XDPRINTF_("reg=%b\n", regval, "<base><arg>*");
  *
  * where <base> is the output base expressed as a control character, e.g.
  * \10 gives octal; \20 gives hex.  Each arg is a sequence of characters,

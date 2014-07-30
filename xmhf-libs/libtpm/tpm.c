@@ -135,7 +135,7 @@ uint32_t _tpm_submit_cmd(uint32_t locality, uint16_t tag, uint32_t cmd,
     uint32_t    cmd_size, rsp_size = 0;
 
     if ( out_size == NULL ) {
-        printf("TPM: invalid param for _tpm_submit_cmd()\n");
+        _XDPRINTF_("TPM: invalid param for _tpm_submit_cmd()\n");
         return TPM_BAD_PARAMETER;
     }
 
@@ -148,7 +148,7 @@ uint32_t _tpm_submit_cmd(uint32_t locality, uint16_t tag, uint32_t cmd,
     cmd_size = CMD_HEAD_SIZE + arg_size;
 
     if ( cmd_size > TPM_CMD_SIZE_MAX ) {
-        printf("TPM: cmd exceeds the max supported size.\n");
+        _XDPRINTF_("TPM: cmd exceeds the max supported size.\n");
         return TPM_BAD_PARAMETER;
     }
 
@@ -200,7 +200,7 @@ uint32_t tpm_submit_cmd(uint32_t locality, uint32_t cmd,
     rv = _tpm_submit_cmd(locality, TPM_TAG_RQU_COMMAND, cmd,
                          arg_size, out_size);
     end = rdtsc64();
-    printf("TPM: PERF: Command 0x%08x consumed %lld cycles\n", cmd, end-start);
+    _XDPRINTF_("TPM: PERF: Command 0x%08x consumed %lld cycles\n", cmd, end-start);
     return rv;
 }
 
@@ -220,10 +220,10 @@ uint32_t tpm_pcr_read(uint32_t locality, uint32_t pcr, tpm_pcr_value_t *out)
     ret = tpm_submit_cmd(locality, TPM_ORD_PCR_READ, sizeof(pcr), &out_size);
 
 #ifdef TPM_TRACE
-    printf("TPM: Pcr %d Read return value = %08X\n", pcr, ret);
+    _XDPRINTF_("TPM: Pcr %d Read return value = %08X\n", pcr, ret);
 #endif
     if ( ret != TPM_SUCCESS ) {
-        printf("TPM: Pcr %d Read return value = %08X\n", pcr, ret);
+        _XDPRINTF_("TPM: Pcr %d Read return value = %08X\n", pcr, ret);
         return ret;
     }
 
@@ -233,7 +233,7 @@ uint32_t tpm_pcr_read(uint32_t locality, uint32_t pcr, tpm_pcr_value_t *out)
 
 #ifdef TPM_TRACE
     {
-        printf("TPM: ");
+        _XDPRINTF_("TPM: ");
         //print_hex(NULL, out->digest, out_size);
     }
 #endif
@@ -264,10 +264,10 @@ uint32_t tpm_pcr_extend(uint32_t locality, uint32_t pcr,
     ret = tpm_submit_cmd(locality, TPM_ORD_PCR_EXTEND, in_size, &out_size);
 
 #ifdef TPM_TRACE
-    printf("TPM: Pcr %d extend, return value = %08X\n", pcr, ret);
+    _XDPRINTF_("TPM: Pcr %d extend, return value = %08X\n", pcr, ret);
 #endif
     if ( ret != TPM_SUCCESS ) {
-        printf("TPM: Pcr %d extend, return value = %08X\n", pcr, ret);
+        _XDPRINTF_("TPM: Pcr %d extend, return value = %08X\n", pcr, ret);
         return ret;
     }
 
@@ -278,7 +278,7 @@ uint32_t tpm_pcr_extend(uint32_t locality, uint32_t pcr,
 
 #ifdef TPM_TRACE
     {
-        printf("TPM: ");
+        _XDPRINTF_("TPM: ");
         //print_hex(NULL, out->digest, out_size);
     }
 #endif
@@ -309,16 +309,16 @@ uint32_t tpm_get_version(uint8_t *major, uint8_t *minor)
     ret = tpm_submit_cmd(0, TPM_ORD_GET_CAPABILITY, in_size, &out_size);
 
 #ifdef TPM_TRACE
-    printf("TPM: get version, return value = %08X\n", ret);
+    _XDPRINTF_("TPM: get version, return value = %08X\n", ret);
 #endif
     if ( ret != TPM_SUCCESS ) {
-        printf("TPM: get version, return value = %08X\n", ret);
+        _XDPRINTF_("TPM: get version, return value = %08X\n", ret);
         return ret;
     }
 
 #ifdef TPM_TRACE
     {
-        printf("TPM: ");
+        _XDPRINTF_("TPM: ");
         //print_hex(NULL, WRAPPER_OUT_BUF, out_size);
     }
 #endif
@@ -343,7 +343,7 @@ uint32_t tpm_get_capability(
     uint32_t ret, offset, out_size;
 
     if ( sub_cap == NULL || resp_size == NULL || resp == NULL ) {
-        printf("TPM: tpm_get_capability() bad parameter\n");
+        _XDPRINTF_("TPM: tpm_get_capability() bad parameter\n");
         return TPM_BAD_PARAMETER;
     }
 
@@ -357,17 +357,17 @@ uint32_t tpm_get_capability(
     ret = tpm_submit_cmd(locality, TPM_ORD_GET_CAPABILITY, offset, &out_size);
 
 #ifdef TPM_TRACE
-    printf("TPM: get capability, return value = %08X\n", ret);
+    _XDPRINTF_("TPM: get capability, return value = %08X\n", ret);
 #endif
     if ( ret != TPM_SUCCESS ) {
-        printf("TPM: get capability, return value = %08X\n", ret);
+        _XDPRINTF_("TPM: get capability, return value = %08X\n", ret);
         return ret;
     }
 
     offset = 0;
     LOAD_INTEGER(WRAPPER_OUT_BUF, offset, *resp_size);
     if ( out_size < sizeof(*resp_size) + *resp_size ) {
-        printf("TPM: capability response too small\n");
+        _XDPRINTF_("TPM: capability response too small\n");
         return TPM_FAIL;
     }
     LOAD_BLOB(WRAPPER_OUT_BUF, offset, resp, *resp_size);
@@ -399,17 +399,17 @@ uint32_t tpm_get_random(uint32_t locality, uint8_t *random_data,
     ret = tpm_submit_cmd(locality, TPM_ORD_GET_RANDOM, in_size, &out_size);
 
 #ifdef TPM_TRACE
-    printf("TPM: get random %u bytes, return value = %08X\n", *data_size, ret);
+    _XDPRINTF_("TPM: get random %u bytes, return value = %08X\n", *data_size, ret);
 #endif
     if ( ret != TPM_SUCCESS ) {
-        printf("TPM: get random %u bytes, return value = %08X\n", *data_size,
+        _XDPRINTF_("TPM: get random %u bytes, return value = %08X\n", *data_size,
                ret);
         return ret;
     }
 
 #ifdef TPM_TRACE
     {
-        printf("TPM: ");
+        _XDPRINTF_("TPM: ");
         //print_hex(NULL, WRAPPER_OUT_BUF, out_size);
     }
 #endif
@@ -429,13 +429,13 @@ uint32_t tpm_get_random(uint32_t locality, uint8_t *random_data,
 
     /* if TPM doesn't return all requested random bytes, try one more time */
     if ( *data_size < requested_size ) {
-        printf("requested %x random bytes but only got %x\n", requested_size,
+        _XDPRINTF_("requested %x random bytes but only got %x\n", requested_size,
                *data_size);
         /* we're only going to try twice */
         if ( first_attempt ) {
             first_attempt = false;
             second_size = requested_size - *data_size;
-            printf("trying one more time to get remaining %x bytes\n",
+            _XDPRINTF_("trying one more time to get remaining %x bytes\n",
                    second_size);
             ret = tpm_get_random(locality, random_data + *data_size,
                                  &second_size);

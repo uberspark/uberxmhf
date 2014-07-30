@@ -203,7 +203,7 @@ void xcexhub_initialize(void){
 	u32 *pexceptionstubs;
 	u32 i;
 
-	printf("%s: setting up runtime IDT...\n", __FUNCTION__);
+	_XDPRINTF_("%s: setting up runtime IDT...\n", __FUNCTION__);
 	
 	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
 		idtentry_t *idtentry=(idtentry_t *)((u32)&_idt_start+ (i*8));
@@ -217,7 +217,7 @@ void xcexhub_initialize(void){
 	
 	xmhf_baseplatform_arch_x86_initializeIDT();
 	
-	printf("%s: IDT setup done.\n", __FUNCTION__);
+	_XDPRINTF_("%s: IDT setup done.\n", __FUNCTION__);
 }
 
 
@@ -242,26 +242,26 @@ __attribute__(( section(".slab_trampoline") )) static void xmhf_xcphandler_arch_
 	exception_cs = *(uint32_t *)(r->esp+sizeof(uint32_t));
 	exception_eflags = *(uint32_t *)(r->esp+(2*sizeof(uint32_t)));
 
-	printf("\nunhandled exception %x, halting!", vector);
-	printf("\nstate dump follows...");
+	_XDPRINTF_("\nunhandled exception %x, halting!", vector);
+	_XDPRINTF_("\nstate dump follows...");
 	//things to dump
-	printf("\nCS:EIP 0x%04x:0x%08x with EFLAGS=0x%08x, errorcode=%08x", (u16)exception_cs, exception_eip, exception_eflags, errorcode);
-	printf("\nCR0=%08x, CR2=%08x, CR3=%08x, CR4=%08x", read_cr0(), read_cr2(), read_cr3(), read_cr4());
-	printf("\nEAX=0x%08x EBX=0x%08x ECX=0x%08x EDX=0x%08x", r->eax, r->ebx, r->ecx, r->edx);
-	printf("\nESI=0x%08x EDI=0x%08x EBP=0x%08x ESP=0x%08x", r->esi, r->edi, r->ebp, r->esp);
-	printf("\nCS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", (u16)read_segreg_cs(), (u16)read_segreg_ds(), (u16)read_segreg_es(), (u16)read_segreg_ss());
-	printf("\nFS=0x%04x, GS=0x%04x", (u16)read_segreg_fs(), (u16)read_segreg_gs());
-	printf("\nTR=0x%04x", (u16)read_tr_sel());
+	_XDPRINTF_("\nCS:EIP 0x%04x:0x%08x with EFLAGS=0x%08x, errorcode=%08x", (u16)exception_cs, exception_eip, exception_eflags, errorcode);
+	_XDPRINTF_("\nCR0=%08x, CR2=%08x, CR3=%08x, CR4=%08x", read_cr0(), read_cr2(), read_cr3(), read_cr4());
+	_XDPRINTF_("\nEAX=0x%08x EBX=0x%08x ECX=0x%08x EDX=0x%08x", r->eax, r->ebx, r->ecx, r->edx);
+	_XDPRINTF_("\nESI=0x%08x EDI=0x%08x EBP=0x%08x ESP=0x%08x", r->esi, r->edi, r->ebp, r->esp);
+	_XDPRINTF_("\nCS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", (u16)read_segreg_cs(), (u16)read_segreg_ds(), (u16)read_segreg_es(), (u16)read_segreg_ss());
+	_XDPRINTF_("\nFS=0x%04x, GS=0x%04x", (u16)read_segreg_fs(), (u16)read_segreg_gs());
+	_XDPRINTF_("\nTR=0x%04x", (u16)read_tr_sel());
 
 	//do a stack dump in the hopes of getting more info.
 	{
 		uint32_t i;
 		uint32_t stack_start = r->esp;
-		printf("\n-----stack dump (16 entries)-----");
+		_XDPRINTF_("\n-----stack dump (16 entries)-----");
 		for(i=stack_start; i < stack_start+(16*sizeof(uint32_t)); i+=sizeof(uint32_t)){
-			printf("\nStack(0x%08x) -> 0x%08x", i, *(uint32_t *)i);
+			_XDPRINTF_("\nStack(0x%08x) -> 0x%08x", i, *(uint32_t *)i);
 		}
-		printf("\n-----end------------");
+		_XDPRINTF_("\n-----end------------");
 	}
 }
 
@@ -275,13 +275,13 @@ __attribute__(( section(".slab_trampoline") )) void xmhf_xcphandler_arch_hub(u32
 
 			case 0x3:{
 					xmhf_xcphandler_arch_unhandled(vector, r);
-					printf("\n%s: exception 3, returning", __FUNCTION__);
+					_XDPRINTF_("\n%s: exception 3, returning", __FUNCTION__);
 			}
 			break;
 			
 			default:{
 				xmhf_xcphandler_arch_unhandled(vector, r);
-				printf("\nHalting System!\n");
+				_XDPRINTF_("\nHalting System!\n");
 				HALT();
 			}
 	}

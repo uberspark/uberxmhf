@@ -98,7 +98,7 @@ int      getw(FILE *);
 int      pclose(FILE *);
 void     perror(const char *);
 FILE    *popen(const char *, const char *);
-//int      printf(const char *, ...);
+//int      _XDPRINTF_(const char *, ...);
 int      putc(int, FILE *);
 int      putchar(int);
 int      putc_unlocked(int, FILE *);

@@ -56,7 +56,7 @@
 
  
 void testslab2_entry_0(void){
-	printf("\n%s: Got control, nothing to do, returning", __FUNCTION__);
+	_XDPRINTF_("\n%s: Got control, nothing to do, returning", __FUNCTION__);
 }
 	
 

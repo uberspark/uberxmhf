@@ -61,7 +61,7 @@
 #endif
 
 #ifndef EU_LOG_PRINTLN
-#define EU_LOG_PRINTLN( prefix, fmt, args...) printf( "%-50s " fmt "\n", prefix, ## args)
+#define EU_LOG_PRINTLN( prefix, fmt, args...) _XDPRINTF_( "%-50s " fmt "\n", prefix, ## args)
 #endif
 
 #include <stdio.h>
@@ -101,13 +101,13 @@ static int eu_logfn(const char* fmt, const char* prefix, int pri, const char *fi
   /* int written; */
 
   snprintf(loc_string, 128, "%s[%d]:%s:%s:%d:", prefix, pri, file, fn, line);
-  printf("%-50s ", loc_string);
+  _XDPRINTF_("%-50s ", loc_string);
 
   va_start(va, line);
   vprintf(fmt, va);
   va_end(va);
 
-  printf("\n");
+  _XDPRINTF_("\n");
   return 0;
 }
 
