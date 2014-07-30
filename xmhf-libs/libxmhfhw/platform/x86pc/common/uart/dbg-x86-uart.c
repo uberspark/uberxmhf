@@ -110,7 +110,8 @@ void dbg_x86_uart_putstr(const char *s){
 
 
 //initialize UART comms.
-void dbg_x86_uart_init(char *params){
+//void dbg_x86_uart_init(char *params){
+void xmhf_hw_platform_serialinit(char *params){
 
   //override default UART parameters with the one passed via the
   //command line

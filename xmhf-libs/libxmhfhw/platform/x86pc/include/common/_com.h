@@ -304,6 +304,8 @@ typedef struct {
 } __attribute__((packed)) uart_config_t;
 
 
+void xmhf_hw_platform_serialinit(char *params);
+
 #endif // __ASSEMBLY__
 
 
