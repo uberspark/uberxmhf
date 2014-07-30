@@ -23,41 +23,26 @@ export XMHF_DIR := $(CURDIR)
 # objects directory (used for building binaries without polluting source namespace)
 export XMHF_OBJDIR = $(CURDIR)/_objects
 
+# top-level include directory
 XMHF_INC = $(CURDIR)/include
 
 # verification directory (used for verification without polluting source namespace)
 export XMHF_VERIFYDIR := $(CURDIR)/_verify
 
-# libbaremetal "source" location, currently hard-coded
-# TODO: specify via configure
-# XMHFLIBS_SRC = $(CURDIR)/libbaremetal
+# xmhf libs directory
 export XMHFLIBS_SRC := $(realpath @XMHFLIBS_SRC@)
 
 # XMHF core source location
-export XMHFCORE_SRC := $(realpath xmhf-core)
-XMHFCORE_INC = -I$(realpath xmhf-core/) -I$(realpath xmhf-core/include) -I$(realpath xmhf-core/include/arch/x86/common) -I$(realpath xmhf-core/include/arch/x86/vmx)
-
-## libxmhfcore source location
-#export LIBXMHFCORE_SRC := $(realpath xmhf/src/libxmhfcore)
+export XMHFCORE_SRC := $(realpath xmhf-slabs/xmhf-core)
+XMHFCORE_INC = -I$(realpath xmhf-slabs/xmhf-core/) -I$(realpath xmhf-slabs/xmhf-core/include) -I$(realpath xmhf-slabs/xmhf-core/include/arch/x86/common) -I$(realpath xmhf-slabs/xmhf-core/include/arch/x86/vmx)
 
 # libxmhfhw source location
 export LIBXMHFHW_SRC := $(realpath xmhf-libs/libxmhfhw)
 LIBXMHFHW_INC = $(realpath xmhf-libs/libxmhfhw)
 
-# libbaremetal-xmhfbackends source location
-#export XMHFLIBS_XMHFBACKENDS_SRC := $(realpath xmhf/src/xmhf-core/libbaremetal-xmhfbackends)
-
 # libxmhfdebug source location
 export LIBXMHFDEBUG_SRC := $(realpath xmhf-libs/libxmhfdebug)
 LIBXMHFDEBUG_INC = -I$(realpath xmhf-libs/libxmhfdebug/include) -I$(realpath xmhf-libs/libxmhfdebug/arch/x86/include)
-
-
-# XMHF runtime source location
-#export XMHF_CORE_SRC := $(realpath xmhf/src/xmhf-core)
-
-# XMHF secureloader source location
-#export XMHF_SECURELOADER_SRC := $(realpath xmhf/src/xmhf-secureloader)
-#XMHF_SECURELOADER_INC = -I$(realpath xmhf/src/xmhf-secureloader/include) 
 
 # XMHF bootloader source location
 export XMHF_BOOTLOADER_SRC := $(realpath xmhf-bootloader)
@@ -288,7 +273,7 @@ all: libshared subdirs
 .PHONY: libshared
 libshared:
 	mkdir -p $(XMHF_OBJDIR)
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_DIR)/xmhf-core/shared/Makefile -w all
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_DIR)/xmhf-slabs/shared/Makefile -w all
 
 
 .PHONY: subdirs
