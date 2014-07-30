@@ -276,13 +276,20 @@ XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
 #ifeq ($(strip $(XMHF_HYPAPPS)),)
 .PHONY: all
 #all: subdirs install-dev
-all: subdirs
+all: libshared subdirs
 #else
 #.PHONY: all
 #all: subdirs install-dev build-hypapps
 #endif
 #all:
 #	xmhfgenlscript.pl $(XMHF_SLAB_NAMES)
+
+
+.PHONY: libshared
+libshared:
+	mkdir -p $(XMHF_OBJDIR)
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_DIR)/xmhf-core/shared/Makefile -w all
+
 
 .PHONY: subdirs
 subdirs: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
@@ -310,7 +317,7 @@ subdirs: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
 	#@echo **************************************************************
 	cd $(XMHF_OBJDIR) && cp -f xmhf.lscript xmhf.lscript.c
 	cd $(XMHF_OBJDIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E xmhf.lscript.c -o xmhf.lds
-	cd $(XMHF_OBJDIR) && $(LD) --oformat elf32-i386 -T xmhf.lds -o xmhf.exe  
+	cd $(XMHF_OBJDIR) && $(LD) --oformat elf32-i386 -T xmhf.lds -o xmhf.exe _objs_libshared/libshared.a
 	cd $(XMHF_OBJDIR) && $(OBJCOPY) --output-format=binary xmhf.exe xmhf.bin
 	#@echo **************************************************************
 	@echo XMHF link SUCCESS
