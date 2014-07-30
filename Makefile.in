@@ -261,14 +261,20 @@ XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
 #ifeq ($(strip $(XMHF_HYPAPPS)),)
 .PHONY: all
 #all: subdirs install-dev
-#all: libshared subdirs
+all: genfiles libshared subdirs
 #else
 #.PHONY: all
 #all: subdirs install-dev build-hypapps
 #endif
-all:
-	xmhfgenslabtable.pl $(XMHF_SLAB_NAMES)
+#all:
+#	xmhfgenslabtable.pl $(XMHF_SLAB_NAMES)
 
+
+.PHONY: genfiles
+genfiles:
+	mkdir -p $(XMHF_OBJDIR)
+	cd $(XMHF_OBJDIR) && xmhfgenlscript.pl $(XMHF_SLAB_NAMES) >xmhf.lscript
+	cd $(XMHF_OBJDIR) && xmhfgenslabtable.pl $(XMHF_SLAB_NAMES) >$(XMHF_DIR)/xmhf-slabs/shared/shared-slabtable.c
 
 .PHONY: libshared
 libshared:
@@ -278,8 +284,6 @@ libshared:
 
 .PHONY: subdirs
 subdirs: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
-	mkdir -p $(XMHF_OBJDIR)
-	cd $(XMHF_OBJDIR) && xmhfgenlscript.pl $(XMHF_SLAB_NAMES) >xmhf.lscript
 	#@echo **************************************************************
 	@echo Building XMHF libs...
 	#@echo **************************************************************
