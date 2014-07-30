@@ -8,9 +8,11 @@ XMHF_SLAB_SOURCES_SUBST := $(patsubst $(srcdir)/%, %, $(XMHF_SLAB_SOURCES))
 XMHF_SLAB_SOURCES_FILENAMEONLY := $(notdir $(XMHF_SLAB_SOURCES_SUBST))
 
 XMHF_SLAB_OBJECTS_ARCHIVE := $(patsubst %.c, %.o, $(XMHF_SLAB_SOURCES_FILENAMEONLY))
+XMHF_SLAB_OBJECTS_ARCHIVE := $(patsubst %.S, %.o, $(XMHF_SLAB_OBJECTS_ARCHIVE))
 
 # list of object dependencies
 XMHF_SLAB_OBJECTS := $(patsubst %.c, %.o, $(XMHF_SLAB_SOURCES_SUBST))
+XMHF_SLAB_OBJECTS := $(patsubst %.S, %.o, $(XMHF_SLAB_OBJECTS))
 
 # folder where objects go
 XMHF_SLAB_OBJECTS_DIR := _objs_slab_$(XMHF_SLAB_NAME)
@@ -39,6 +41,10 @@ buildslabbin: $(XMHF_SLAB_OBJECTS)
 	cd $(XMHF_SLAB_OBJECTS_DIR) && fixnaked.pl $(@F).ll
 	cd $(XMHF_SLAB_OBJECTS_DIR) && llc -O=0 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
 	cd $(XMHF_SLAB_OBJECTS_DIR) && $(CC) -c $(CFLAGS) $(@F).s -o $(@F)
+
+%.o: %.S   
+	mkdir -p $(XMHF_SLAB_OBJECTS_DIR)
+	cd $(XMHF_SLAB_OBJECTS_DIR) && gcc -c $(CFLAGS) $< -o $(@F)
 
 
 .PHONY: clean
