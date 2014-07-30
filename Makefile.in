@@ -49,43 +49,43 @@ export XMHF_BOOTLOADER_SRC := $(realpath xmhf-bootloader)
 
 # libbaremetal archive
 # TODO: specify via configure
-XMHFLIBS_ARCHIVE = libbaremetal.a
+#XMHFLIBS_ARCHIVE = libbaremetal.a
 
 # libbaremetal includes
 XMHFLIBS_SUBLIBS = $(wildcard $(XMHFLIBS_SRC)/lib*)
 XMHFLIBS_INC = $(foreach dir,$(XMHFLIBS_SUBLIBS),-I$(dir)/include)
 
 # populate library and include paths
-export ADDL_LIBS :=
+#export ADDL_LIBS :=
 export ADDL_INCLUDES :=
 export XMHFLIBS_DIR := $(XMHF_OBJDIR)/_objs_xmhf-libs
 
 #ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_xmhf-runtime/_objs_libxmhfruntimearch/libxmhfruntimearch.a
 
-ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a
+#ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a
 
 #ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_libbaremetal-xmhfbackends/libbaremetal-xmhfbackends.a
-ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libxmhfdebug/libxmhfdebug.a
-ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libxmhfhw/libxmhfhw.a
+#ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libxmhfdebug/libxmhfdebug.a
+#ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libxmhfhw/libxmhfhw.a
 #ADDL_LIBS += $(XMHF_OBJDIR)/_objs_xmhf-core/_objs_xmhf-runtime/_objs_libxmhfruntimearch/libxmhfruntimearch.a
 ADDL_INCLUDES += -I$(XMHF_INC) $(LIBXMHFDEBUG_INC) $(XMHFCORE_INC) -I$(LIBXMHFHW_INC) $(XMHFLIBS_INC)
 
 # link libbaremetal *again* to resolve more dependencies
-ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a
+#ADDL_LIBS += $(XMHF_OBJDIR)/_objs_libbaremetal/libbaremetal.a
 
-export XMHFCORE_OBJECTS_DIR = $(XMHF_OBJDIR)/_objs_xmhf-core
+#export XMHFCORE_OBJECTS_DIR = $(XMHF_OBJDIR)/_objs_xmhf-core
 
 # App's source tree root (
-export APP_ROOT := $(realpath @APP_ROOT@)
+#export APP_ROOT := $(realpath @APP_ROOT@)
 
 # The APP_ARCHIVE is what MUST contain ALL of the App's binary code
 # 'make install-dev' is handled indepdendently
 export builddir=@builddir@
 
-export APP_ARCHIVE := $(APP_ROOT)/xmhfhypapp.a
+#export APP_ARCHIVE := $(APP_ROOT)/xmhfhypapp.a
 
-export XMHF_HYPAPPS := @XMHF_HYPAPPS@
-export XMHF_HYPAPPS_DIRS := $(realpath $(XMHF_HYPAPPS))
+#export XMHF_HYPAPPS := @XMHF_HYPAPPS@
+#export XMHF_HYPAPPS_DIRS := $(realpath $(XMHF_HYPAPPS))
 
 ##################################################################################
 ### BEGIN Variables controlled using autoconf
