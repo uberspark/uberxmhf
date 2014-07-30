@@ -9,8 +9,8 @@ vpath %.c $(srcdir)
 
 # grab list of all source files
 C_SOURCES := $(shell find $(srcdir)/ -type f -name '*.c')
-C_SOURCES += $(shell find $(srcdir)/arch/x86/common/ -type f -name '*.c')
-C_SOURCES += $(shell find $(srcdir)/arch/x86/vmx/ -type f -name '*.c')
+#C_SOURCES += $(shell find $(srcdir)/arch/x86/common/ -type f -name '*.c')
+#C_SOURCES += $(shell find $(srcdir)/arch/x86/vmx/ -type f -name '*.c')
 
 C_SOURCES := $(patsubst $(srcdir)/%, %, $(C_SOURCES))
 
