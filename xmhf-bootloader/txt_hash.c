@@ -105,14 +105,14 @@ bool are_hashes_equal(const tb_hash_t *hash1, const tb_hash_t *hash2,
                       uint8_t hash_alg)
 {
     if ( ( hash1 == NULL ) || ( hash2 == NULL ) ) {
-        printf("Error: hash pointer is zero.\n");
+        _XDPRINTF_("Error: hash pointer is zero.\n");
         return false;
     }
 
     if ( hash_alg == TB_HALG_SHA1 )
         return (memcmp((const char*)hash1, (const char*)hash2, SHA1_LENGTH) == 0);
     else {
-        printf("unsupported hash alg (%u)\n", hash_alg);
+        _XDPRINTF_("unsupported hash alg (%u)\n", hash_alg);
         return false;
     }
 }
@@ -127,7 +127,7 @@ bool hash_buffer(const unsigned char* buf, size_t size, tb_hash_t *hash,
                  uint8_t hash_alg)
 {
     if ( hash == NULL ) {
-        printf("Error: There is no space for output hash.\n");
+        _XDPRINTF_("Error: There is no space for output hash.\n");
         return false;
     }
 
@@ -136,7 +136,7 @@ bool hash_buffer(const unsigned char* buf, size_t size, tb_hash_t *hash,
         return true;
     }
     else {
-        printf("unsupported hash alg (%u)\n", hash_alg);
+        _XDPRINTF_("unsupported hash alg (%u)\n", hash_alg);
         return false;
     }
 }
@@ -152,7 +152,7 @@ bool extend_hash(tb_hash_t *hash1, const tb_hash_t *hash2, uint8_t hash_alg)
     uint8_t buf[2*get_hash_size(hash_alg)];
 
     if ( hash1 == NULL || hash2 == NULL ) {
-        printf("Error: There is no space for output hash.\n");
+        _XDPRINTF_("Error: There is no space for output hash.\n");
         return false;
     }
 
@@ -163,7 +163,7 @@ bool extend_hash(tb_hash_t *hash1, const tb_hash_t *hash2, uint8_t hash_alg)
         return true;
     }
     else {
-        printf("unsupported hash alg (%u)\n", hash_alg);
+        _XDPRINTF_("unsupported hash alg (%u)\n", hash_alg);
         return false;
     }
 }
@@ -171,14 +171,14 @@ bool extend_hash(tb_hash_t *hash1, const tb_hash_t *hash2, uint8_t hash_alg)
 void print_hash(const tb_hash_t *hash, uint8_t hash_alg)
 {
     if ( hash == NULL ) {
-        printf("NULL");
+        _XDPRINTF_("NULL");
         return;
     }
 
     if ( hash_alg == TB_HALG_SHA1 )
         print_hex(NULL, (const uint8_t *)hash->sha1, sizeof(hash->sha1));
     else {
-        printf("unsupported hash alg (%u)\n", hash_alg);
+        _XDPRINTF_("unsupported hash alg (%u)\n", hash_alg);
         return;
     }
 }
@@ -187,14 +187,14 @@ void copy_hash(tb_hash_t *dest_hash, const tb_hash_t *src_hash,
                uint8_t hash_alg)
 {
     if ( dest_hash == NULL || dest_hash == NULL ) {
-        printf("hashes are NULL\n");
+        _XDPRINTF_("hashes are NULL\n");
         return;
     }
 
     if ( hash_alg == TB_HALG_SHA1 )
         memcpy(dest_hash, src_hash, SHA1_LENGTH);
     else
-        printf("unsupported hash alg (%u)\n", hash_alg);
+        _XDPRINTF_("unsupported hash alg (%u)\n", hash_alg);
 }
 
 

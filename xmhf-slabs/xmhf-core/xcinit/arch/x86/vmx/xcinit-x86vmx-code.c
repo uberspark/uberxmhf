@@ -84,14 +84,14 @@ static void _vmx_gathermemorytypes(void){
   	#endif
   	
   	if( !(edx & (u32)(1 << 12)) ){
-  		printf("\n%s: CPU does not support MTRRs!", __FUNCTION__);
+  		_XDPRINTF_("\n%s: CPU does not support MTRRs!", __FUNCTION__);
   		HALT();
   	}
 
   	//check MTRR caps
   	rdmsr(IA32_MTRRCAP, &eax, &edx);
 	num_vmtrrs = (u8)eax;
-  	printf("\nIA32_MTRRCAP: VCNT=%u, FIX=%u, WC=%u, SMRR=%u",
+  	_XDPRINTF_("\nIA32_MTRRCAP: VCNT=%u, FIX=%u, WC=%u, SMRR=%u",
   		num_vmtrrs, ((eax & (1 << 8)) >> 8),  ((eax & (1 << 10)) >> 10),
   			((eax & (1 << 11)) >> 11));
 	//sanity check that fixed MTRRs are supported
@@ -244,14 +244,14 @@ static void _vmx_gathermemorytypes(void){
 		}
 	}
 
-	printf("\n%s: gathered MTRR details, number of entries=%u", __FUNCTION__, index);
+	_XDPRINTF_("\n%s: gathered MTRR details, number of entries=%u", __FUNCTION__, index);
 	HALT_ON_ERRORCOND( index <= (MAX_MEMORYTYPE_ENTRIES+1) );
 
   //[debug: dump the contents of _vmx_ept_memorytypes]
   //{
   //  int i;
   //  for(i=0; i < MAX_MEMORYTYPE_ENTRIES; i++){
-  //    printf("\nrange  0x%016llx-0x%016llx (type=%u)", 
+  //    _XDPRINTF_("\nrange  0x%016llx-0x%016llx (type=%u)", 
   //      _vmx_ept_memorytypes[i].startaddr, _vmx_ept_memorytypes[i].endaddr, _vmx_ept_memorytypes[i].type);
   //  }
   //}
@@ -284,7 +284,7 @@ static u32 _vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr){
         return _vmx_ept_memorytypes[i].type;    
     }
     
-    printf("\n%s: endaddr < 1M and unmatched fixed MTRR. Halt!", __FUNCTION__);
+    _XDPRINTF_("\n%s: endaddr < 1M and unmatched fixed MTRR. Halt!", __FUNCTION__);
     HALT();
   }
  
@@ -301,7 +301,7 @@ static u32 _vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr){
           if(prev_type == MTRR_TYPE_RESV){
             prev_type = _vmx_ept_memorytypes[i].type;
           }else{
-            printf("\nprev_type=%u, _vmx_ept_memorytypes=%u", prev_type, _vmx_ept_memorytypes[i].type);
+            _XDPRINTF_("\nprev_type=%u, _vmx_ept_memorytypes=%u", prev_type, _vmx_ept_memorytypes[i].type);
             HALT_ON_ERRORCOND ( prev_type == _vmx_ept_memorytypes[i].type);
           }
         }
@@ -336,9 +336,9 @@ static void _vmx_setupEPT(context_desc_t context_desc){
 				p_table_value = (u64) (gpa)  | ((u64)6 << 3) | (u64)0x7 ;	//present, WB, track host MTRR
 		}
 
-		//printf("\n%s: gpa=%x, proceedig to call xc_api_hpt_setentry (esp=%x)\n", __FUNCTION__, (u32)gpa, read_esp());
+		//_XDPRINTF_("\n%s: gpa=%x, proceedig to call xc_api_hpt_setentry (esp=%x)\n", __FUNCTION__, (u32)gpa, read_esp());
 		XMHF_SLAB_CALL(xc_api_hpt_setentry(context_desc, gpa, p_table_value));
-		//printf("\n%s: back, esp=%x\n", __FUNCTION__, read_esp());
+		//_XDPRINTF_("\n%s: back, esp=%x\n", __FUNCTION__, read_esp());
 	}
 }
 
@@ -373,10 +373,10 @@ void xmhf_richguest_arch_initialize(u32 partition_index){
 	context_desc.partition_desc.partition_index = partition_index;
 
 
-	printf("\n%s: copying boot-module to boot guest: base=%08x, size=%u bytes", __FUNCTION__, (u32)xcbootinfo->richguest_bootmodule_base, xcbootinfo->richguest_bootmodule_size);
+	_XDPRINTF_("\n%s: copying boot-module to boot guest: base=%08x, size=%u bytes", __FUNCTION__, (u32)xcbootinfo->richguest_bootmodule_base, xcbootinfo->richguest_bootmodule_size);
 	memcpy((void *)__GUESTOSBOOTMODULE_BASE, (void *)xcbootinfo->richguest_bootmodule_base, xcbootinfo->richguest_bootmodule_size);
 		
-	printf("\n%s: BSP initializing HPT", __FUNCTION__);
+	_XDPRINTF_("\n%s: BSP initializing HPT", __FUNCTION__);
 	_vmx_gathermemorytypes();
 	//_vmx_setupEPT((xc_partition_hptdata_x86vmx_t *)xc_partition_richguest->hptdata);
 
@@ -384,7 +384,7 @@ void xmhf_richguest_arch_initialize(u32 partition_index){
 
 	//INT 15h E820 hook enablement for VMX unrestricted guest mode
 	//note: this only happens for the BSP
-	printf("\n%s: BSP initializing INT 15 hook for UG mode...", __FUNCTION__);
+	_XDPRINTF_("\n%s: BSP initializing INT 15 hook for UG mode...", __FUNCTION__);
 	_vmx_int15_initializehook();
 }
 

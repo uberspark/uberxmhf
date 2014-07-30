@@ -267,9 +267,9 @@ void xmhf_baseplatform_arch_x86vmx_wakeupAPs(void){
     //step-2: wake up the APs sending the INIT-SIPI-SIPI sequence as per the
     //MP protocol. Use the APIC for IPI purposes.
     if(!txt_is_launched()) { // XXX TODO: Do actual GETSEC[WAKEUP] in here?
-        printf("\nBSP: Using APIC to awaken APs...");
+        _XDPRINTF_("\nBSP: Using APIC to awaken APs...");
         xmhf_baseplatform_arch_x86_wakeupAPs();
-        printf("\nBSP: APs should be awake.");
+        _XDPRINTF_("\nBSP: APs should be awake.");
     }else{
 		//we ran SENTER, so do a GETSEC[WAKEUP]
         txt_heap_t *txt_heap;
@@ -281,14 +281,14 @@ void xmhf_baseplatform_arch_x86vmx_wakeupAPs(void){
         // sl.c unity-maps 0xfed00000 for 2M so these should work fine 
         #ifndef __XMHF_VERIFICATION__
         txt_heap = get_txt_heap();
-        //printf("\ntxt_heap = 0x%08x", (u32)txt_heap);
+        //_XDPRINTF_("\ntxt_heap = 0x%08x", (u32)txt_heap);
         os_mle_data = get_os_mle_data_start(txt_heap);
         (void)os_mle_data;
-        //printf("\nos_mle_data = 0x%08x", (u32)os_mle_data);
+        //_XDPRINTF_("\nos_mle_data = 0x%08x", (u32)os_mle_data);
         sinit_mle_data = get_sinit_mle_data_start(txt_heap);
-        //printf("\nsinit_mle_data = 0x%08x", (u32)sinit_mle_data);
+        //_XDPRINTF_("\nsinit_mle_data = 0x%08x", (u32)sinit_mle_data);
         os_sinit_data = get_os_sinit_data_start(txt_heap);
-        //printf("\nos_sinit_data = 0x%08x", (u32)os_sinit_data);
+        //_XDPRINTF_("\nos_sinit_data = 0x%08x", (u32)os_sinit_data);
 	#endif
             
         // Start APs.  Choose wakeup mechanism based on
@@ -299,36 +299,36 @@ void xmhf_baseplatform_arch_x86vmx_wakeupAPs(void){
         // unity-mapped trampoline that starts at 64K
         // physical. Without SENTER, or with AMD, APs start in
         // 16-bit mode.  We get to skip that. 
-        //printf("\nBSP: _mle_join_start = 0x%08x, _ap_bootstrap_start = 0x%08x",
+        //_XDPRINTF_("\nBSP: _mle_join_start = 0x%08x, _ap_bootstrap_start = 0x%08x",
 		//	(u32)_mle_join_start, (u32)_ap_bootstrap_start);
-        printf("\nBSP: _ap_bootstrap_blob_mle_join_start = 0x%08x, _ap_bootstrap_blob = 0x%08x",
+        _XDPRINTF_("\nBSP: _ap_bootstrap_blob_mle_join_start = 0x%08x, _ap_bootstrap_blob = 0x%08x",
 			(u32)_ap_bootstrap_blob_mle_join_start, (u32)_ap_bootstrap_blob);
 
         // enable SMIs on BSP before waking APs (which will enable them on APs)
         // because some SMM may take immediate SMI and hang if AP gets in first 
-        //printf("Enabling SMIs on BSP\n");
+        //_XDPRINTF_("Enabling SMIs on BSP\n");
         //__getsec_smctrl();
                 
         #ifndef __XMHF_VERIFICATION__
         mle_join = (mle_join_t*)((u32)_ap_bootstrap_blob_mle_join_start - (u32)_ap_bootstrap_blob + 0x10000); // XXX magic number
         #endif
         
-        printf("\nBSP: mle_join.gdt_limit = %x", mle_join->gdt_limit);
-        printf("\nBSP: mle_join.gdt_base = %x", mle_join->gdt_base);
-        printf("\nBSP: mle_join.seg_sel = %x", mle_join->seg_sel);
-        printf("\nBSP: mle_join.entry_point = %x", mle_join->entry_point);                
+        _XDPRINTF_("\nBSP: mle_join.gdt_limit = %x", mle_join->gdt_limit);
+        _XDPRINTF_("\nBSP: mle_join.gdt_base = %x", mle_join->gdt_base);
+        _XDPRINTF_("\nBSP: mle_join.seg_sel = %x", mle_join->seg_sel);
+        _XDPRINTF_("\nBSP: mle_join.entry_point = %x", mle_join->entry_point);                
 
 	#ifndef __XMHF_VERIFICATION__
         write_priv_config_reg(TXTCR_MLE_JOIN, (uint64_t)(unsigned long)mle_join);
 		
         if (os_sinit_data->capabilities.rlp_wake_monitor) {
-            printf("\nBSP: joining RLPs to MLE with MONITOR wakeup");
-            printf("\nBSP: rlp_wakeup_addr = 0x%x", sinit_mle_data->rlp_wakeup_addr);
+            _XDPRINTF_("\nBSP: joining RLPs to MLE with MONITOR wakeup");
+            _XDPRINTF_("\nBSP: rlp_wakeup_addr = 0x%x", sinit_mle_data->rlp_wakeup_addr);
             *((uint32_t *)(unsigned long)(sinit_mle_data->rlp_wakeup_addr)) = 0x01;
         }else {
-            printf("\nBSP: joining RLPs to MLE with GETSEC[WAKEUP]");
+            _XDPRINTF_("\nBSP: joining RLPs to MLE with GETSEC[WAKEUP]");
             __getsec_wakeup();
-            printf("\nBSP: GETSEC[WAKEUP] completed");
+            _XDPRINTF_("\nBSP: GETSEC[WAKEUP] completed");
         }
 	#endif
 
@@ -336,9 +336,9 @@ void xmhf_baseplatform_arch_x86vmx_wakeupAPs(void){
 	}
 	
 #else //!__DRT__
-        printf("\nBSP: Using APIC to awaken APs...");
+        _XDPRINTF_("\nBSP: Using APIC to awaken APs...");
         xmhf_baseplatform_arch_x86_wakeupAPs();
-        printf("\nBSP: APs should be awake.");
+        _XDPRINTF_("\nBSP: APs should be awake.");
 
 #endif 
 
@@ -348,67 +348,67 @@ void xmhf_baseplatform_arch_x86vmx_wakeupAPs(void){
 
 /*//--debug: dumpVMCS dumps VMCS contents-----------------------------------------
 void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu){
-  		printf("\nGuest State follows:");
-		printf("\nguest_CS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_CS_selector);
-		printf("\nguest_DS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_DS_selector);
-		printf("\nguest_ES_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_ES_selector);
-		printf("\nguest_FS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_FS_selector);
-		printf("\nguest_GS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_GS_selector);
-		printf("\nguest_SS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_SS_selector);
-		printf("\nguest_TR_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_TR_selector);
-		printf("\nguest_LDTR_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_LDTR_selector);
-		printf("\nguest_CS_access_rights=0x%08lx", 
+  		_XDPRINTF_("\nGuest State follows:");
+		_XDPRINTF_("\nguest_CS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_CS_selector);
+		_XDPRINTF_("\nguest_DS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_DS_selector);
+		_XDPRINTF_("\nguest_ES_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_ES_selector);
+		_XDPRINTF_("\nguest_FS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_FS_selector);
+		_XDPRINTF_("\nguest_GS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_GS_selector);
+		_XDPRINTF_("\nguest_SS_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_SS_selector);
+		_XDPRINTF_("\nguest_TR_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_TR_selector);
+		_XDPRINTF_("\nguest_LDTR_selector=0x%04x", (unsigned short)vcpu->vmcs.guest_LDTR_selector);
+		_XDPRINTF_("\nguest_CS_access_rights=0x%08lx", 
 			(unsigned long)vcpu->vmcs.guest_CS_access_rights);
-		printf("\nguest_DS_access_rights=0x%08lx", 
+		_XDPRINTF_("\nguest_DS_access_rights=0x%08lx", 
 			(unsigned long)vcpu->vmcs.guest_DS_access_rights);
-		printf("\nguest_ES_access_rights=0x%08lx", 
+		_XDPRINTF_("\nguest_ES_access_rights=0x%08lx", 
 			(unsigned long)vcpu->vmcs.guest_ES_access_rights);
-		printf("\nguest_FS_access_rights=0x%08lx", 
+		_XDPRINTF_("\nguest_FS_access_rights=0x%08lx", 
 			(unsigned long)vcpu->vmcs.guest_FS_access_rights);
-		printf("\nguest_GS_access_rights=0x%08lx", 
+		_XDPRINTF_("\nguest_GS_access_rights=0x%08lx", 
 			(unsigned long)vcpu->vmcs.guest_GS_access_rights);
-		printf("\nguest_SS_access_rights=0x%08lx", 
+		_XDPRINTF_("\nguest_SS_access_rights=0x%08lx", 
 			(unsigned long)vcpu->vmcs.guest_SS_access_rights);
-		printf("\nguest_TR_access_rights=0x%08lx", 
+		_XDPRINTF_("\nguest_TR_access_rights=0x%08lx", 
 			(unsigned long)vcpu->vmcs.guest_TR_access_rights);
-		printf("\nguest_LDTR_access_rights=0x%08lx", 
+		_XDPRINTF_("\nguest_LDTR_access_rights=0x%08lx", 
 			(unsigned long)vcpu->vmcs.guest_LDTR_access_rights);
 
-		printf("\nguest_CS_base/limit=0x%08lx/0x%04x", 
+		_XDPRINTF_("\nguest_CS_base/limit=0x%08lx/0x%04x", 
 			(unsigned long)vcpu->vmcs.guest_CS_base, (unsigned short)vcpu->vmcs.guest_CS_limit);
-		printf("\nguest_DS_base/limit=0x%08lx/0x%04x", 
+		_XDPRINTF_("\nguest_DS_base/limit=0x%08lx/0x%04x", 
 			(unsigned long)vcpu->vmcs.guest_DS_base, (unsigned short)vcpu->vmcs.guest_DS_limit);
-		printf("\nguest_ES_base/limit=0x%08lx/0x%04x", 
+		_XDPRINTF_("\nguest_ES_base/limit=0x%08lx/0x%04x", 
 			(unsigned long)vcpu->vmcs.guest_ES_base, (unsigned short)vcpu->vmcs.guest_ES_limit);
-		printf("\nguest_FS_base/limit=0x%08lx/0x%04x", 
+		_XDPRINTF_("\nguest_FS_base/limit=0x%08lx/0x%04x", 
 			(unsigned long)vcpu->vmcs.guest_FS_base, (unsigned short)vcpu->vmcs.guest_FS_limit);
-		printf("\nguest_GS_base/limit=0x%08lx/0x%04x", 
+		_XDPRINTF_("\nguest_GS_base/limit=0x%08lx/0x%04x", 
 			(unsigned long)vcpu->vmcs.guest_GS_base, (unsigned short)vcpu->vmcs.guest_GS_limit);
-		printf("\nguest_SS_base/limit=0x%08lx/0x%04x", 
+		_XDPRINTF_("\nguest_SS_base/limit=0x%08lx/0x%04x", 
 			(unsigned long)vcpu->vmcs.guest_SS_base, (unsigned short)vcpu->vmcs.guest_SS_limit);
-		printf("\nguest_GDTR_base/limit=0x%08lx/0x%04x",
+		_XDPRINTF_("\nguest_GDTR_base/limit=0x%08lx/0x%04x",
 			(unsigned long)vcpu->vmcs.guest_GDTR_base, (unsigned short)vcpu->vmcs.guest_GDTR_limit);		
-		printf("\nguest_IDTR_base/limit=0x%08lx/0x%04x",
+		_XDPRINTF_("\nguest_IDTR_base/limit=0x%08lx/0x%04x",
 			(unsigned long)vcpu->vmcs.guest_IDTR_base, (unsigned short)vcpu->vmcs.guest_IDTR_limit);		
-		printf("\nguest_TR_base/limit=0x%08lx/0x%04x",
+		_XDPRINTF_("\nguest_TR_base/limit=0x%08lx/0x%04x",
 			(unsigned long)vcpu->vmcs.guest_TR_base, (unsigned short)vcpu->vmcs.guest_TR_limit);		
-		printf("\nguest_LDTR_base/limit=0x%08lx/0x%04x",
+		_XDPRINTF_("\nguest_LDTR_base/limit=0x%08lx/0x%04x",
 			(unsigned long)vcpu->vmcs.guest_LDTR_base, (unsigned short)vcpu->vmcs.guest_LDTR_limit);		
 
-		printf("\nguest_CR0=0x%08lx, guest_CR4=0x%08lx, guest_CR3=0x%08lx",
+		_XDPRINTF_("\nguest_CR0=0x%08lx, guest_CR4=0x%08lx, guest_CR3=0x%08lx",
 			(unsigned long)vcpu->vmcs.guest_CR0, (unsigned long)vcpu->vmcs.guest_CR4,
 			(unsigned long)vcpu->vmcs.guest_CR3);
-		printf("\nguest_RSP=0x%08lx", (unsigned long)vcpu->vmcs.guest_RSP);
-		printf("\nguest_RIP=0x%08lx", (unsigned long)vcpu->vmcs.guest_RIP);
-		printf("\nguest_RFLAGS=0x%08lx", (unsigned long)vcpu->vmcs.guest_RFLAGS);
+		_XDPRINTF_("\nguest_RSP=0x%08lx", (unsigned long)vcpu->vmcs.guest_RSP);
+		_XDPRINTF_("\nguest_RIP=0x%08lx", (unsigned long)vcpu->vmcs.guest_RIP);
+		_XDPRINTF_("\nguest_RFLAGS=0x%08lx", (unsigned long)vcpu->vmcs.guest_RFLAGS);
 }*/
 
 
 
 void xcinitbs_arch_initialize_exception_handling(void){
-	printf("%s: proceeding to invoke xcexhub_initialize...\n", __FUNCTION__);
+	_XDPRINTF_("%s: proceeding to invoke xcexhub_initialize...\n", __FUNCTION__);
 	XMHF_SLAB_CALL(xcexhub_initialize());
-	printf("%s: xcexhub_initialize completed successfully.\n", __FUNCTION__);
+	_XDPRINTF_("%s: xcexhub_initialize completed successfully.\n", __FUNCTION__);
 }
 
 //initialize SMP
@@ -438,10 +438,10 @@ void xmhf_baseplatform_arch_smpinitialize(void){
 
   //fall through to common code  
   {
-   printf("\nRelinquishing BSP thread and moving to common...");
+   _XDPRINTF_("\nRelinquishing BSP thread and moving to common...");
    // Do some low-level init and then call allcpus_common_start() below
    _ap_pmode_entry_with_paging(); 
-   printf("\nBSP must never get here. HALT!");
+   _XDPRINTF_("\nBSP must never get here. HALT!");
    HALT();
   }
 }
@@ -526,10 +526,10 @@ static void xmhf_baseplatform_arch_x86_smpinitialize_commonstart(void){
 
 
 	//if(is_bsp){
-		printf("\n%s: cpu %x, isbsp=%u, Proceeding to call init_entry...\n", __FUNCTION__, cpuid, is_bsp);
+		_XDPRINTF_("\n%s: cpu %x, isbsp=%u, Proceeding to call init_entry...\n", __FUNCTION__, cpuid, is_bsp);
 		XMHF_SLAB_CALL(init_entry(cpuid, is_bsp));
 	//}else{
-	//	printf("\n%s: cpu %x, isbsp=%u, Halting\n", __FUNCTION__, cpuid, is_bsp);
+	//	_XDPRINTF_("\n%s: cpu %x, isbsp=%u, Halting\n", __FUNCTION__, cpuid, is_bsp);
 	//	HALT();
 	//}
 }

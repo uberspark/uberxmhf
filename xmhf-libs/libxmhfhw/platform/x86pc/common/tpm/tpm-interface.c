@@ -67,16 +67,16 @@ int xmhf_tpm_open_locality(int locality){
     }
 	
     if(xmhf_tpm_arch_open_locality(locality)) {
-      printf("\n%s: FAILED to open TPM locality %d\n", __FUNCTION__, locality);
+      _XDPRINTF_("\n%s: FAILED to open TPM locality %d\n", __FUNCTION__, locality);
       return 1;
     };
 
     if(!xmhf_tpm_is_tpm_ready(locality)) {
-        printf("\n%s: ERROR TPM is not ready, failed to open locality %d\n", __FUNCTION__, locality);
+        _XDPRINTF_("\n%s: ERROR TPM is not ready, failed to open locality %d\n", __FUNCTION__, locality);
         return 1;
     } 
 
-    printf("\n%s: opened TPM locality %d", __FUNCTION__, locality);
+    _XDPRINTF_("\n%s: opened TPM locality %d", __FUNCTION__, locality);
     return 0;    
 }
 

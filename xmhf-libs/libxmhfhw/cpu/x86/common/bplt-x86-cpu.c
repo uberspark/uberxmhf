@@ -171,7 +171,7 @@ u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
 			&& vendor_dword3 == INTEL_STRING_DWORD3)
 		cpu_vendor = CPU_VENDOR_INTEL;
 	else{
-		printf("\n%s: unrecognized x86 CPU (0x%08x:0x%08x:0x%08x). HALT!",
+		_XDPRINTF_("\n%s: unrecognized x86 CPU (0x%08x:0x%08x:0x%08x). HALT!",
 			__FUNCTION__, vendor_dword1, vendor_dword2, vendor_dword3);
 		HALT();
 	}   	 	
@@ -204,7 +204,7 @@ void xmhf_baseplatform_arch_x86_cpu_initialize(void){
 					: "eax", "ebx", "ecx", "edx" 
 					);
 		if ( ( cpu_features & (1<<5) ) == 0 ){
-			printf("No VMX support. Halting!");
+			_XDPRINTF_("No VMX support. Halting!");
 			HALT();
 		}
 	}
@@ -225,21 +225,21 @@ void xmhf_baseplatform_arch_x86_cpu_initialize(void){
 			cpuid(0x1, &eax, &ebx, &ecx, &edx);
 			
 			if( ecx & (1UL << 17) )
-				printf("\n%s: PCID supported", __FUNCTION__);
+				_XDPRINTF_("\n%s: PCID supported", __FUNCTION__);
 			else
-				printf("\n%s: PCID not supported", __FUNCTION__);
+				_XDPRINTF_("\n%s: PCID not supported", __FUNCTION__);
 	}
 
 	//turn on WP bit in CR0 register for supervisor mode read-only permission support
 	{
 		u32 cr0;
 		cr0=read_cr0();
-		printf("\n%s: CR0=%08x", __FUNCTION__, cr0);
+		_XDPRINTF_("\n%s: CR0=%08x", __FUNCTION__, cr0);
 		cr0 |= CR0_WP;
-		printf("\n%s: attempting to change CR0 to %08x", __FUNCTION__, cr0);
+		_XDPRINTF_("\n%s: attempting to change CR0 to %08x", __FUNCTION__, cr0);
 		write_cr0(cr0);
 		cr0 = read_cr0();
-		printf("\n%s: CR0 changed to %08x", __FUNCTION__, cr0);
+		_XDPRINTF_("\n%s: CR0 changed to %08x", __FUNCTION__, cr0);
 	}
 
 	//turn on NX protections
@@ -248,7 +248,7 @@ void xmhf_baseplatform_arch_x86_cpu_initialize(void){
 		rdmsr(MSR_EFER, &eax, &edx);
 		eax |= (1 << EFER_NXE);
 		wrmsr(MSR_EFER, eax, edx);
-		printf("\n%s: NX protections enabled: MSR_EFER=%08x%08x", __FUNCTION__, edx, eax);
+		_XDPRINTF_("\n%s: NX protections enabled: MSR_EFER=%08x%08x", __FUNCTION__, edx, eax);
 	}
 
 }
