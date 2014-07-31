@@ -53,7 +53,8 @@
 
 #ifndef __ASSEMBLY__
 
-#define HALT()	{ _XDPRINTF_("\n\n"); __asm__ __volatile__ ("hlt\r\n"); }
+#define HALT()	{ while(1); }
+//#define HALT_ON_ERRORCOND(_p) { if ( !(_p) ) { _XDPRINTF_("\nFatal: Halting! Condition '%s' failed, line %d, file %s\n\n", #_p , __LINE__, __FILE__); HALT(); } }
 #define HALT_ON_ERRORCOND(_p) { if ( !(_p) ) { _XDPRINTF_("\nFatal: Halting! Condition '%s' failed, line %d, file %s\n\n", #_p , __LINE__, __FILE__); HALT(); } }
 //#define WARNING(_p) { if ( !(_p) ) { _XDPRINTF_("\nWarning Assertion '%s' failed, line %d, file %s\n", #_p , __LINE__, __FILE__);} }
 

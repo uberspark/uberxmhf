@@ -48,6 +48,7 @@
 //  author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h> 
+#include <xmhf-debug.h>
 
 #include "cpu/x86/include/common/_processor.h"  	//CPU
 #include "cpu/x86/include/common/_io.h"         	//legacy I/O
@@ -191,10 +192,9 @@ void xmhf_baseplatform_arch_x86_pci_type1_read(u32 bus, u32 device, u32 function
 			u32 *value){
         
 	//sanity checks
-	HALT_ON_ERRORCOND( bus <= 255 );
-  HALT_ON_ERRORCOND( PCI_DEVICE_FN(device,function) <= 255 );
-  HALT_ON_ERRORCOND( index <= 4095 );
-  
+	if ( bus > 255 || PCI_DEVICE_FN(device,function) > 255 || index > 4095)
+		return;
+		
   //encode and send the 32-bit type-1 address to PCI address port
 	outl(PCI_TYPE1_ADDRESS(bus, device, function, index), PCI_CONFIG_ADDR_PORT);
 
@@ -223,10 +223,9 @@ void xmhf_baseplatform_arch_x86_pci_type1_write(u32 bus, u32 device, u32 functio
 	u32 value){
 
  	//sanity checks
-	HALT_ON_ERRORCOND( bus <= 255 );
-  HALT_ON_ERRORCOND( PCI_DEVICE_FN(device,function) <= 255 );
-  HALT_ON_ERRORCOND( index <= 4095 );
-
+	if( bus > 255 || PCI_DEVICE_FN(device,function) > 255 || index > 4095)
+		return;
+		
   //encode and send the 32-bit type-1 address to PCI address port
 	outl(PCI_TYPE1_ADDRESS(bus, device, function, index), PCI_CONFIG_ADDR_PORT);
 

@@ -48,8 +48,12 @@
  * XMHF secureloader x86-vmx backend
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
- 
+
+#include <xmhf.h>
 #include <xmhf-core.h>
+#include <xmhf-debug.h>
+ 
+//#include <xmhf-core.h>
 //#include <xmhf-sl.h>
 
 #include <xcprimeon.h>

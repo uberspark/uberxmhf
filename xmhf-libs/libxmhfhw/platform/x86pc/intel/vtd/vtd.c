@@ -49,6 +49,8 @@
 
 #include <xmhf.h> 
 
+#include <xmhf-debug.h>
+
 #include "platform/x86pc/include/common/_acpi.h"			//ACPI glue
 #include "platform/x86pc/include/intel/vtd/vtd.h"		//VMX DMA protection
 #include "platform/x86pc/include/common/_memaccess.h"		//platform memory access
@@ -187,8 +189,8 @@ bool vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, u32 *dmar_phys_addr_va
 	//memset(&rsdp, 0, sizeof(ACPI_RSDP));
 	//memset(&rsdt, 0, sizeof(ACPI_RSDT));
 	//sanity check NULL parameter
-	HALT_ON_ERRORCOND(dmar_phys_addr_var != NULL);
-	HALT_ON_ERRORCOND(maxhandle != NULL);
+	if (dmar_phys_addr_var == NULL || maxhandle == NULL)
+		return false;
 	
 	//set maxhandle to 0 to start with. if we have any errors before
 	//we finalize maxhandle we can just bail out
@@ -196,7 +198,6 @@ bool vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, u32 *dmar_phys_addr_va
 	
 	//get ACPI RSDP
 	status=xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
-	//HALT_ON_ERRORCOND(status != 0);	//we need a valid RSDP to proceed
 	if(status == 0)
 		return false;
 		
@@ -209,7 +210,6 @@ bool vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, u32 *dmar_phys_addr_va
 	
 	//get the RSDT entry list
 	num_rsdtentries = (rsdt.length - sizeof(ACPI_RSDT))/ sizeof(u32);
-	//HALT_ON_ERRORCOND(num_rsdtentries < ACPI_MAX_RSDT_ENTRIES);
 	if(num_rsdtentries >= ACPI_MAX_RSDT_ENTRIES){
 			_XDPRINTF_("\n%s: Error num_rsdtentries(%u) > ACPI_MAX_RSDT_ENTRIES (%u)", __FUNCTION__, num_rsdtentries, ACPI_MAX_RSDT_ENTRIES);
 			return false;
@@ -296,7 +296,8 @@ bool vtd_drhd_initialize(vtd_drhd_handle_t drhd_handle){
 	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
 	
 	//sanity check
-	HALT_ON_ERRORCOND(drhd != NULL);
+	if (drhd == NULL)
+		return false;
 
 	//verify required capabilities
 	{
@@ -347,7 +348,8 @@ bool vtd_drhd_invalidatecaches(vtd_drhd_handle_t drhd_handle){
 	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
 
 	//sanity check
-	HALT_ON_ERRORCOND(drhd != NULL);
+	if (drhd == NULL)
+		return false;
 
 	//invalidate CET cache
   	//wait for context cache invalidation request to send
@@ -414,7 +416,8 @@ bool vtd_drhd_set_root_entry_table(vtd_drhd_handle_t drhd_handle,  u8 *retbuffer
 	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
 	
 	//sanity check
-	HALT_ON_ERRORCOND(drhd != NULL);
+	if (drhd == NULL)
+		return false;
 
 	//setup DRHD RET (root-entry)
 	_XDPRINTF_("\nSetting up DRHD RET...");
@@ -449,7 +452,8 @@ void vtd_drhd_enable_translation(vtd_drhd_handle_t drhd_handle){
 	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
 	
 	//sanity check
-	HALT_ON_ERRORCOND(drhd != NULL);
+	if (drhd == NULL)
+		return;
 
 	
 	//turn on translation
@@ -481,7 +485,8 @@ void vtd_drhd_disable_translation(vtd_drhd_handle_t drhd_handle){
 	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
 	
 	//sanity check
-	HALT_ON_ERRORCOND(drhd != NULL);
+	if ( drhd == NULL)
+		return;
 	
 	//disable translation
 	_XDPRINTF_("\nDisabling VT-d translation...");
@@ -508,7 +513,8 @@ void vtd_drhd_enable_pmr(vtd_drhd_handle_t drhd_handle){
 	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
 	
 	//sanity check
-	HALT_ON_ERRORCOND(drhd != NULL);
+	if (drhd == NULL)
+		return;
 
 	_XDPRINTF_("\nEnabling PMR...");
 	{
@@ -530,7 +536,8 @@ void vtd_drhd_disable_pmr(vtd_drhd_handle_t drhd_handle){
 	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
 	
 	//sanity check
-	HALT_ON_ERRORCOND(drhd != NULL);
+	if(drhd == NULL)
+		return;
 
 	_XDPRINTF_("\nDisabling PMR...");
 	{
@@ -553,7 +560,8 @@ void vtd_drhd_set_plm_base_and_limit(vtd_drhd_handle_t drhd_handle, u32 base, u3
 	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
 	
 	//sanity check
-	HALT_ON_ERRORCOND(drhd != NULL);
+	if(drhd == NULL)
+		return;
 
 	//set PLMBASE register
 	plmbase.value = base;
@@ -572,7 +580,8 @@ void vtd_drhd_set_phm_base_and_limit(vtd_drhd_handle_t drhd_handle, u64 base, u6
 	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
 	
 	//sanity check
-	HALT_ON_ERRORCOND(drhd != NULL);
+	if (drhd == NULL)
+		return;
 
 	//set PHMBASE register
 	phmbase.value = base;

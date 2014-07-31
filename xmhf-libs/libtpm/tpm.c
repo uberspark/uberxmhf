@@ -89,6 +89,8 @@
  * Adapted for libtpm - generic TPM library 
  * by Amit Vasudevan amitvasudevan@acm.org 
  */
+#include <xmhf.h>
+#include <xmhf-debug.h>
  
 #include <stddef.h>
 #include <string.h>
@@ -181,13 +183,13 @@ uint32_t _tpm_submit_cmd(uint32_t locality, uint16_t tag, uint32_t cmd,
 }
 
 /* from emhf's processor.h */
-static inline uint64_t rdtsc64(void)
-{
-  uint64_t rv;
-
-  __asm__ __volatile__ ("rdtsc" : "=A" (rv));
-  return (rv);
-}
+//static inline uint64_t rdtsc64(void)
+//{
+ // uint64_t rv;
+//
+//  __asm__ __volatile__ ("rdtsc" : "=A" (rv));
+//  return (rv);
+//}
 
 /*static inline*/
 uint32_t tpm_submit_cmd(uint32_t locality, uint32_t cmd,

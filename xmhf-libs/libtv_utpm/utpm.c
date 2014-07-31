@@ -48,6 +48,8 @@
  * Written for TrustVisor by Ning Qu
  * Edited by Zongwei Zhou, Jonathan McCune for EMHF project
  */
+#include <xmhf.h>
+#include <xmhf-debug.h>
 
 #include <stdint.h>
 #include <stddef.h>

@@ -51,6 +51,7 @@
  */
 
 #include <xmhf.h>
+#include <xmhf-debug.h>
 
 #include "cpu/x86/include/common/_processor.h"  	//CPU
 #include "cpu/x86/include/common/_msr.h"        	//model specific registers
@@ -82,7 +83,10 @@ u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
   
   //read LAPIC id of this core
   rdmsr(MSR_APIC_BASE, &eax, &edx);
-  HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
+  if (edx != 0 ){ //APIC is not below 4G, unsupported
+	_XDPRINTF_("%s: APIC is not below 4G, unsupported. Halting!", __FUNCTION__);
+	HALT();
+}
   eax &= (u32)0xFFFFF000UL;
   lapic_reg = (u32 *)((u32)eax+ (u32)LAPIC_ID);
   lapic_id = xmhfhw_sysmemaccess_readu32((u32)lapic_reg);
@@ -191,7 +195,10 @@ void xmhf_baseplatform_arch_x86_cpu_initialize(void){
 
 	//grab CPU vendor
 	cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
-	HALT_ON_ERRORCOND(cpu_vendor == CPU_VENDOR_INTEL);
+	if (cpu_vendor != CPU_VENDOR_INTEL){
+		_XDPRINTF_("%s: not an Intel CPU but running VMX backend. Halting!", __FUNCTION__);
+		HALT();
+	}
 
 	//check VMX support
 	{

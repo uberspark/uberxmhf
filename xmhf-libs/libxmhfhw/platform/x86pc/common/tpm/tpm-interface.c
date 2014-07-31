@@ -58,6 +58,7 @@
  */
 
 #include <xmhf.h> 
+#include <xmhf-debug.h>
 
 //open TPM locality
 int xmhf_tpm_open_locality(int locality){

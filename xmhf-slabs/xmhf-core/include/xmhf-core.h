@@ -52,7 +52,7 @@
 #ifndef __XMHF_CORE_H_
 #define __XMHF_CORE_H_
 
-#include <xmhf.h>
+//#include <xmhf.h>
 
 //pull in core arch. header
 //#include <xmhf-core-arch.h>

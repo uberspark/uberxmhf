@@ -51,6 +51,8 @@
 //version, base and BSP indications
 //author: amit vasudevan (amitvasudevan@acm.org)
 #include <xmhf.h> 
+#include <xmhf-debug.h>
+
 
 //#include "cpu/x86/include/common/_multiboot.h"		//multiboot
 //#include "cpu/x86/include/common/_processor.h"  	//CPU

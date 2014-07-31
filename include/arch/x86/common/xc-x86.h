@@ -64,6 +64,7 @@
 #include "cpu/x86/include/intel/txt/_txt.h"			//Trusted eXecution Technology (SENTER support)
 #include "platform/x86pc/include/common/_pci.h"        	//PCI bus glue
 #include "platform/x86pc/include/common/_acpi.h"			//ACPI glue
+#include "platform/x86pc/include/common/_com.h"        	//UART/serial
 #include "platform/x86pc/include/intel/vtd/vtd.h"		//VMX DMA protection
 #include "platform/x86pc/include/common/_memaccess.h"	//platform memory access
 

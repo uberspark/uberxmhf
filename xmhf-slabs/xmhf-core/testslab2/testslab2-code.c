@@ -44,7 +44,9 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#include <xmhf.h>
 #include <xmhf-core.h>
+#include <xmhf-debug.h>
 
 #include <testslab2.h>
 
