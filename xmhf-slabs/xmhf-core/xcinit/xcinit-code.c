@@ -111,6 +111,8 @@ void init_entry(u32 cpuid, bool is_bsp){
 	//serialize execution
     spin_lock(&_xc_startup_hypappmain_counter_lock);
 
+	xmhf_hw_platform_serial_puts("XMHF init: got control...\n");
+
 	//[debug]
 	_XDPRINTF_("\n%s: cpuid=%08x, is_bsp=%u...\n", __FUNCTION__, cpuid, is_bsp);
 
@@ -169,6 +171,10 @@ void init_entry(u32 cpuid, bool is_bsp){
 	
 	//wait for hypapp main to execute on all the cpus
 	while(_xc_startup_hypappmain_counter < xcbootinfo->cpuinfo_numentries);
+
+	if(is_bsp)
+		xmhf_hw_platform_serial_puts("XMHF init: bsp came out -- we are good to go...\n");
+
 	
 	//start cpu in corresponding partition
 	_XDPRINTF_("\n%s[%u]: starting in partition...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);

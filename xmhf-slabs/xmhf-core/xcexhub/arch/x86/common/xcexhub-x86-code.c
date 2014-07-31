@@ -268,6 +268,8 @@ __attribute__(( section(".slab_trampoline") )) static void xmhf_xcphandler_arch_
 
 //exception handler hub
 __attribute__(( section(".slab_trampoline") )) void xmhf_xcphandler_arch_hub(u32 vector, struct regs *r){
+	xmhf_hw_platform_serial_puts("XMHF xcechub: exception!\n");
+
 	switch(vector){
 			case CPU_EXCEPTION_NMI:{
 				XMHF_SLAB_CALL(xc_coreapi_arch_eventhandler_nmiexception(r));
