@@ -50,7 +50,8 @@
 //---includes-------------------------------------------------------------------
 #include <xmhf.h> 
 #include <xmhf-core.h>
-#include <xmhf-debug-x86.h>
+#include <xmhf-debug.h>
+
 #include <xmhfcrypto.h>
 #include <tpm.h>
 #include <cmdline.h>

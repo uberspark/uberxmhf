@@ -48,7 +48,9 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 //---includes-------------------------------------------------------------------
-#include <xmhf-core.h> 
+#include <xmhf.h>
+#include <xmhf-core.h>
+#include <xmhf-debug.h>
 
 #include <xc-initbs.h>
 

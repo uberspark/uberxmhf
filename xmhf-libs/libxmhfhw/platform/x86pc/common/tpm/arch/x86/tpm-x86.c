@@ -50,6 +50,7 @@
  */
 
 #include <xmhf.h>
+#include <xmhf-debug.h>
 
 #include <tpm.h>
 #include "cpu/x86/include/common/_processor.h"  	//CPU

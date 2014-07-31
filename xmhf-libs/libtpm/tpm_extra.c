@@ -84,6 +84,8 @@
  *
  * "Extra" functions unnecessary in SL denoted as such.
  */
+#include <xmhf.h>
+#include <xmhf-debug.h>
 
 #include <stddef.h>
 #include <stdio.h>
@@ -1009,7 +1011,6 @@ uint32_t tpm_save_state(uint32_t locality)
             break;
 
         retries++;
-        //HALT_ON_ERRORCOND(false); // XXX need delay support
         //delay(100);
         //delay support; should probably end up using udelay (EMHF) or
         //environment specific delay routine

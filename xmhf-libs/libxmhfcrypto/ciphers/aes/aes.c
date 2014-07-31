@@ -82,6 +82,8 @@
 
 //#include "tomcrypt.h"
 #include <xmhf.h>
+#include <xmhf-debug.h>
+
 #include <xmhfcrypto.h>
 #include <aes.h>
 

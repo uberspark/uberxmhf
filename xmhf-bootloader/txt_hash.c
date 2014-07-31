@@ -84,6 +84,7 @@
  */
 
 #include <xmhf.h> 
+#include <xmhf-debug.h>
 
 #include "platform/x86pc/include/common/_multiboot.h"		//multiboot
 #include "cpu/x86/include/common/_processor.h"  	//CPU
@@ -175,9 +176,9 @@ void print_hash(const tb_hash_t *hash, uint8_t hash_alg)
         return;
     }
 
-    if ( hash_alg == TB_HALG_SHA1 )
-        print_hex(NULL, (const uint8_t *)hash->sha1, sizeof(hash->sha1));
-    else {
+    if ( hash_alg == TB_HALG_SHA1 ){
+        //print_hex(NULL, (const uint8_t *)hash->sha1, sizeof(hash->sha1));
+    }else {
         _XDPRINTF_("unsupported hash alg (%u)\n", hash_alg);
         return;
     }

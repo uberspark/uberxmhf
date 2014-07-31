@@ -1484,7 +1484,7 @@ void zeromem(void *dst, size_t len);
 
 //tomcrypt_argchk.h
 //#define LTC_ARGCHK(x)	assert(x)
-#define LTC_ARGCHK(x)	HALT_ON_ERRORCOND(x)
+#define LTC_ARGCHK(x)
 #define LTC_ARGCHKVD(x) LTC_ARGCHK(x)
 
 

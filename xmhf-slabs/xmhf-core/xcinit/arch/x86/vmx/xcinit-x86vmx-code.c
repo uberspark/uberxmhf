@@ -47,7 +47,9 @@
 // XMHF rich guest -- initialization portion, x86 (VMX) backend implementation
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf-core.h> 
+#include <xmhf.h>
+#include <xmhf-core.h>
+#include <xmhf-debug.h>
 //#include <xc-x86.h>
 //#include <xc-x86vmx.h>
 

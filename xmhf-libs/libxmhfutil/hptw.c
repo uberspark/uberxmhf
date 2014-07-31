@@ -44,6 +44,9 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#include <xmhf.h>
+#include <xmhf-debug.h>
+
 #include <hpt.h>
 #include <hptw.h>
 #include <string.h> /* for memset */

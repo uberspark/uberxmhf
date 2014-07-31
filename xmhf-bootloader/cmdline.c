@@ -84,8 +84,11 @@
  */
 
 #include <xmhf.h> 
-#include <xmhf-debug-x86.h>
+#include <xmhf-debug.h>
+
 #include <cmdline.h>
+
+//#include "platform/x86pc/include/common/_com.h"			//UART/serial
 
 
 /*

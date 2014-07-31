@@ -85,6 +85,7 @@
  */
 
 #include <xmhf.h> 
+#include <xmhf-debug.h>
 
 #include "platform/x86pc/include/common/_multiboot.h"		//multiboot
 #include "cpu/x86/include/common/_processor.h"  	//CPU
@@ -256,7 +257,7 @@ static void print_acm_hdr(acm_hdr_t *hdr, const char *mod_name)
            hdr->scratch_size);
 
     /* GDT */
-    print_hex("\t\t SINIT GDT: ", (void *)((u32)hdr+hdr->gdt_base), hdr->gdt_limit);
+    //print_hex("\t\t SINIT GDT: ", (void *)((u32)hdr+hdr->gdt_base), hdr->gdt_limit);
     /* info table */
     _XDPRINTF_("\t info_table:\n");
     info_table = get_acmod_info_table(hdr);

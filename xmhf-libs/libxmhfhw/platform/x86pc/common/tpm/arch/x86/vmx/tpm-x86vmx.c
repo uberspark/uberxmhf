@@ -50,6 +50,7 @@
  */
 
 #include <xmhf.h>
+#include <xmhf-debug.h>
 
 #include "platform/x86pc/include/common/_multiboot.h"		//multiboot
 #include "cpu/x86/include/intel/txt/_txt.h"			//Trusted eXecution Technology (SENTER support)
