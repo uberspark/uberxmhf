@@ -103,9 +103,14 @@ void dbg_x86_uart_putc(char ch){
 
 
 // write string to serial port 
-void dbg_x86_uart_putstr(const char *s){
-	while (*s)
-		dbg_x86_uart_putc(*s++);
+//void dbg_x86_uart_putstr(const char *s){
+//	while (*s)
+//		dbg_x86_uart_putc(*s++);
+//}
+
+void xmhf_hw_platform_serial_puts(char *buffer){
+	while (*buffer)
+		dbg_x86_uart_putc(*buffer++);
 }
 
 
