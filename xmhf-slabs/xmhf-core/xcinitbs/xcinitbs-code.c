@@ -66,8 +66,7 @@ void xmhf_runtime_entry(void){
 	//xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
 	//_XDPRINTF_("\nxmhf-core: starting...");
 
-	xmhf_hw_platform_serial_puts("XMHF xcinitbs: got control...\n");
-    
+   
   	//initialize basic platform elements
 	//xmhf_baseplatform_initialize();
 

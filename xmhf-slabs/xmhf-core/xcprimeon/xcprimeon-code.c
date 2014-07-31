@@ -77,8 +77,6 @@ void xcprimeon_startup(void){
 	//initialize debugging early on
 	xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
 
-	xmhf_hw_platform_serial_puts("XMHF xcprimeon: alive and starting...\n");
-	
 	_XDPRINTF_("%s: alive and starting...\n", __FUNCTION__);
 	
 	//debug: dump bootinfo
