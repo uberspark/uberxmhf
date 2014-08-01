@@ -82,6 +82,8 @@
 
 //#include "tomcrypt.h"
 #include <xmhf.h>
+#include <xmhf-debug.h>
+
 #include <xmhfcrypto.h>
 #include <aes.h>
 
@@ -750,19 +752,19 @@ int ECB_TEST(void)
     rijndael_ecb_decrypt(tmp[0], tmp[1], &key);
     if (XMEMCMP(tmp[0], tests[i].ct, 16) || XMEMCMP(tmp[1], tests[i].pt, 16)) { 
 #if 0
-       printf("\n\nTest %d failed\n", i);
+       _XDPRINTF_("\n\nTest %d failed\n", i);
        if (XMEMCMP(tmp[0], tests[i].ct, 16)) {
-          printf("CT: ");
+          _XDPRINTF_("CT: ");
           for (i = 0; i < 16; i++) {
-             printf("%02x ", tmp[0][i]);
+             _XDPRINTF_("%02x ", tmp[0][i]);
           }
-          printf("\n");
+          _XDPRINTF_("\n");
        } else {
-          printf("PT: ");
+          _XDPRINTF_("PT: ");
           for (i = 0; i < 16; i++) {
-             printf("%02x ", tmp[1][i]);
+             _XDPRINTF_("%02x ", tmp[1][i]);
           }
-          printf("\n");
+          _XDPRINTF_("\n");
        }
 #endif       
         return CRYPT_FAIL_TESTVECTOR;

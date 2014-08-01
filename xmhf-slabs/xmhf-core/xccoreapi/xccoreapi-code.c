@@ -44,7 +44,9 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#include <xmhf.h>
 #include <xmhf-core.h>
+#include <xmhf-debug.h>
 
 #include <xc-coreapi.h>
 
@@ -161,7 +163,7 @@ context_desc_t xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_b
 	context_desc_t context_desc;
 	u32 cpu_index;
 		
-	printf("\n%s: partition_index=%u, cpuid=%x, is_bsp=%u", __FUNCTION__, partition_index, cpuid, is_bsp);
+	_XDPRINTF_("\n%s: partition_index=%u, cpuid=%x, is_bsp=%u", __FUNCTION__, partition_index, cpuid, is_bsp);
 		
 	//initialize context_desc
 	context_desc.cpu_desc.cpu_index = XC_PARTITION_INDEX_INVALID;
@@ -207,7 +209,7 @@ context_desc_t xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_b
 	context_desc.cpu_desc.cpu_index = cpu_index;
 	context_desc.partition_desc.partition_index = partition_index;
 	
-	printf("\n%s: returning %u (numcpus=%u)", __FUNCTION__, cpu_index, g_xc_primary_partition[partition_index].numcpus);
+	_XDPRINTF_("\n%s: returning %u (numcpus=%u)", __FUNCTION__, cpu_index, g_xc_primary_partition[partition_index].numcpus);
 	return context_desc;
 }
 

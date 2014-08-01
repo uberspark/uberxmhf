@@ -44,7 +44,9 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#include <xmhf.h>
 #include <xmhf-core.h>
+#include <xmhf-debug.h>
 
 #include <testslab2.h>
 
@@ -56,7 +58,7 @@
 
  
 void testslab2_entry_0(void){
-	printf("\n%s: Got control, nothing to do, returning", __FUNCTION__);
+	_XDPRINTF_("\n%s: Got control, nothing to do, returning", __FUNCTION__);
 }
 	
 

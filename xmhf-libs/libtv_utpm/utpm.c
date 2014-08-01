@@ -48,6 +48,8 @@
  * Written for TrustVisor by Ning Qu
  * Edited by Zongwei Zhou, Jonathan McCune for EMHF project
  */
+#include <xmhf.h>
+#include <xmhf-debug.h>
 
 #include <stdint.h>
 #include <stddef.h>
@@ -716,7 +718,7 @@ TPM_RESULT utpm_seal_deprecated(uint8_t* pcrAtRelease, uint8_t* input, uint32_t 
     confounder_size = TPM_CONFOUNDER_SIZE;
 	rand_bytes(confounder, &confounder_size);
     if(TPM_CONFOUNDER_SIZE != confounder_size) {
-		printf("[TV] Unseal ERROR: insufficient entropy!\n");
+		_XDPRINTF_("[TV] Unseal ERROR: insufficient entropy!\n");
         return UTPM_ERR_INSUFFICIENT_ENTROPY;
     }
     
@@ -793,16 +795,16 @@ TPM_RESULT utpm_unseal_deprecated(utpm_master_state_t *utpm, uint8_t* input, uin
      * seal/unseal about identifying which PCRs to seal to, etc. */
 	if(memcmp(output+TPM_CONFOUNDER_SIZE+TPM_HASH_SIZE, utpm->pcr_bank[0].value, TPM_PCR_SIZE))
 	{
-		printf("[TV] Unseal ERROR: wrong pcr value!\n");
-		printf("[TV] sealed pcr:");
+		_XDPRINTF_("[TV] Unseal ERROR: wrong pcr value!\n");
+		_XDPRINTF_("[TV] sealed pcr:");
 		for(i=0;i<TPM_PCR_SIZE;i++) {
-			printf("%x ",output[i+TPM_CONFOUNDER_SIZE+TPM_HASH_SIZE]);
+			_XDPRINTF_("%x ",output[i+TPM_CONFOUNDER_SIZE+TPM_HASH_SIZE]);
 		}
-		printf("\n[TV] current pcr:");
+		_XDPRINTF_("\n[TV] current pcr:");
 		for(i=0;i<TPM_PCR_SIZE;i++) {
-			printf("%x ",utpm->pcr_bank[0].value[i]);
+			_XDPRINTF_("%x ",utpm->pcr_bank[0].value[i]);
 		}
-		printf("\n");
+		_XDPRINTF_("\n");
 		return 1;
 	}
 
@@ -816,7 +818,7 @@ TPM_RESULT utpm_unseal_deprecated(utpm_master_state_t *utpm, uint8_t* input, uin
 	/* compare the hmac */
 	if (memcmp(hashdata, oldhmac, TPM_HASH_SIZE))
 	{
-		printf("[TV] Unseal ERROR: HMAC check fail\n");
+		_XDPRINTF_("[TV] Unseal ERROR: HMAC check fail\n");
 		return 1;
 	}
 
@@ -844,10 +846,10 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
     uint8_t *tpm_pcr_composite = NULL;
     TPM_QUOTE_INFO quote_info;    
 
-    printf("[TV:UTPM] utpm_quote invoked\n");
+    _XDPRINTF_("[TV:UTPM] utpm_quote invoked\n");
 
     if(!externalnonce || !tpmsel || !output || !outlen || !pcrComp || !pcrCompLen || !utpm) {
-        printf("[TV:UTPM] ERROR: NULL function parameter!\n");
+        _XDPRINTF_("[TV:UTPM] ERROR: NULL function parameter!\n");
         rv = 1; /* FIXME: Indicate invalid input parameter */
         goto out;
     }
@@ -921,7 +923,7 @@ TPM_RESULT utpm_quote(TPM_NONCE* externalnonce, TPM_PCR_SELECTION* tpmsel, /* hy
                                   find_hash("sha1"),
                                   0, /* no salt for v1.5 padding */
                                   &g_rsa_key))) {
-        printf("[TV:UTPM] ERROR: tpm_pkcs1_sign FAILED\n");
+        _XDPRINTF_("[TV:UTPM] ERROR: tpm_pkcs1_sign FAILED\n");
         goto out;
       }
       if (outlen_long != *outlen) {
@@ -980,7 +982,7 @@ TPM_RESULT utpm_quote_deprecated(uint8_t* externalnonce, uint8_t* output, uint32
                                        find_hash("sha1"),
                                        0, /* no salt for v1.5 padding */
                                        &g_rsa_key))) {
-            printf("[TV] Quote ERROR: rsa sign fail\n");
+            _XDPRINTF_("[TV] Quote ERROR: rsa sign fail\n");
             return 1;
           }
         }
@@ -1029,7 +1031,7 @@ TPM_RESULT utpm_rand(uint8_t* buffer, uint32_t *numbytes)
     
 	rv = rand_bytes(buffer, numbytes);
     if(0 != rv) {
-		printf("[TV] ERROR: utpm_rand: insufficient entropy\n");
+		_XDPRINTF_("[TV] ERROR: utpm_rand: insufficient entropy\n");
         return UTPM_ERR_INSUFFICIENT_ENTROPY;
     }
 

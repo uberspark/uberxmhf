@@ -44,7 +44,9 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#include <xmhf.h>
 #include <xmhf-core.h>
+#include <xmhf-debug.h>
 
 #include <xcprimeon.h>
 
@@ -75,18 +77,18 @@ void xcprimeon_startup(void){
 	//initialize debugging early on
 	xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
 
-	printf("%s: alive and starting...\n", __FUNCTION__);
+	_XDPRINTF_("%s: alive and starting...\n", __FUNCTION__);
 	
 	//debug: dump bootinfo
-	printf("SL: xcbootinfo at = 0x%08x\n", (u32)xcbootinfo);
-	printf("	numE820Entries=%u\n", xcbootinfo->memmapinfo_numentries);
-	printf("	system memory map buffer at 0x%08x\n", (u32)&xcbootinfo->memmapinfo_buffer);
-	printf("	numCPUEntries=%u\n", xcbootinfo->cpuinfo_numentries);
-	printf("	cpuinfo buffer at 0x%08x\n", (u32)&xcbootinfo->cpuinfo_buffer);
-	printf("	SL + core size= %u bytes\n", xcbootinfo->size);
-	printf("	OS bootmodule at 0x%08x, size=%u bytes\n", 
+	_XDPRINTF_("SL: xcbootinfo at = 0x%08x\n", (u32)xcbootinfo);
+	_XDPRINTF_("	numE820Entries=%u\n", xcbootinfo->memmapinfo_numentries);
+	_XDPRINTF_("	system memory map buffer at 0x%08x\n", (u32)&xcbootinfo->memmapinfo_buffer);
+	_XDPRINTF_("	numCPUEntries=%u\n", xcbootinfo->cpuinfo_numentries);
+	_XDPRINTF_("	cpuinfo buffer at 0x%08x\n", (u32)&xcbootinfo->cpuinfo_buffer);
+	_XDPRINTF_("	SL + core size= %u bytes\n", xcbootinfo->size);
+	_XDPRINTF_("	OS bootmodule at 0x%08x, size=%u bytes\n", 
 		xcbootinfo->richguest_bootmodule_base, xcbootinfo->richguest_bootmodule_size);
-    printf("\tcmdline = \"%s\"\n", xcbootinfo->cmdline_buffer);
+    _XDPRINTF_("\tcmdline = \"%s\"\n", xcbootinfo->cmdline_buffer);
 
 	//get runtime physical base
 	runtime_physical_base = __TARGET_BASE_SL;
@@ -95,14 +97,14 @@ void xcprimeon_startup(void){
 	runtime_size_2Maligned = (((xcbootinfo->size) + (1 << 21) - 1) & ~((1 << 21) - 1));
 	
 
-	printf("SL: runtime at 0x%08x; size=0x%08x bytes adjusted to 0x%08x bytes (2M aligned)\n", 
+	_XDPRINTF_("SL: runtime at 0x%08x; size=0x%08x bytes adjusted to 0x%08x bytes (2M aligned)\n", 
 			runtime_physical_base, xcbootinfo->size, runtime_size_2Maligned);
 
 
 	
 	//setup bootinfo with required parameters
 	{
-		printf("SL: XMHF_BOOTINFO at 0x%08x, magic=0x%08x\n", (u32)xcbootinfo, xcbootinfo->magic);
+		_XDPRINTF_("SL: XMHF_BOOTINFO at 0x%08x, magic=0x%08x\n", (u32)xcbootinfo, xcbootinfo->magic);
 		HALT_ON_ERRORCOND(xcbootinfo->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
 			
 		//store runtime physical and virtual base addresses along with size
@@ -139,11 +141,11 @@ void xcprimeon_startup(void){
 
 	//[debug] dump E820
  	#ifndef __XMHF_VERIFICATION__
- 	printf("\nNumber of E820 entries = %u", xcbootinfo->memmapinfo_numentries);
+ 	_XDPRINTF_("\nNumber of E820 entries = %u", xcbootinfo->memmapinfo_numentries);
 	{
 		int i;
 		for(i=0; i < (int)xcbootinfo->memmapinfo_numentries; i++){
-			printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
+			_XDPRINTF_("\n0x%08x%08x, size=0x%08x%08x (%u)", 
 			  xcbootinfo->memmapinfo_buffer[i].baseaddr_high, xcbootinfo->memmapinfo_buffer[i].baseaddr_low,
 			  xcbootinfo->memmapinfo_buffer[i].length_high, xcbootinfo->memmapinfo_buffer[i].length_low,
 			  xcbootinfo->memmapinfo_buffer[i].type);
@@ -173,17 +175,17 @@ void xcprimeon_startup(void){
 			u32 i;
 			
 			for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++){
-				printf("\nslab %u: dumping slab header", i);
-				printf("\n	slab_index=%u", _slab_table[i].slab_index);
-				printf("\n	slab_macmid=%08x", _slab_table[i].slab_macmid);
-				printf("\n	slab_privilegemask=%08x", _slab_table[i].slab_privilegemask);
-				printf("\n	slab_tos=%08x", _slab_table[i].slab_tos);
-				printf("\n  slab_rodata(%08x-%08x)", _slab_table[i].slab_rodata.start, _slab_table[i].slab_rodata.end);
-				printf("\n  slab_rwdata(%08x-%08x)", _slab_table[i].slab_rwdata.start, _slab_table[i].slab_rwdata.end);
-				printf("\n  slab_code(%08x-%08x)", _slab_table[i].slab_code.start, _slab_table[i].slab_code.end);
-				printf("\n  slab_stack(%08x-%08x)", _slab_table[i].slab_stack.start, _slab_table[i].slab_stack.end);
-				//printf("\n  slab_trampoline(%08x-%08x)", _slab_table[i].slab_trampoline.start, _slab_table[i].slab_trampoline.end);
-				printf("\n  slab_entrycr3=%08x", _slab_table[i].entry_cr3);
+				_XDPRINTF_("\nslab %u: dumping slab header", i);
+				_XDPRINTF_("\n	slab_index=%u", _slab_table[i].slab_index);
+				_XDPRINTF_("\n	slab_macmid=%08x", _slab_table[i].slab_macmid);
+				_XDPRINTF_("\n	slab_privilegemask=%08x", _slab_table[i].slab_privilegemask);
+				_XDPRINTF_("\n	slab_tos=%08x", _slab_table[i].slab_tos);
+				_XDPRINTF_("\n  slab_rodata(%08x-%08x)", _slab_table[i].slab_rodata.start, _slab_table[i].slab_rodata.end);
+				_XDPRINTF_("\n  slab_rwdata(%08x-%08x)", _slab_table[i].slab_rwdata.start, _slab_table[i].slab_rwdata.end);
+				_XDPRINTF_("\n  slab_code(%08x-%08x)", _slab_table[i].slab_code.start, _slab_table[i].slab_code.end);
+				_XDPRINTF_("\n  slab_stack(%08x-%08x)", _slab_table[i].slab_stack.start, _slab_table[i].slab_stack.end);
+				//_XDPRINTF_("\n  slab_trampoline(%08x-%08x)", _slab_table[i].slab_trampoline.start, _slab_table[i].slab_trampoline.end);
+				_XDPRINTF_("\n  slab_entrycr3=%08x", _slab_table[i].entry_cr3);
 			}
 	}
 
@@ -196,7 +198,7 @@ void xcprimeon_startup(void){
 
 #ifndef __XMHF_VERIFICATION__
 	//we should never get here
-	printf("\nSL: Fatal, should never be here!");
+	_XDPRINTF_("\nSL: Fatal, should never be here!");
 	HALT();
 #else
 	return;

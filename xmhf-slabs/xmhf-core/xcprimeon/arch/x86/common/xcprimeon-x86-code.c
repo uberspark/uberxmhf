@@ -50,7 +50,11 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
  
+#include <xmhf.h>
 #include <xmhf-core.h>
+#include <xmhf-debug.h>
+
+//#include <xmhf-core.h>
 //#include <xmhf-sl.h>
 
 #include <xcprimeon.h>
@@ -80,23 +84,23 @@
 
     print_hex("SL: Golden Runtime SHA-1: ", g_sl_gold.sha_runtime, SHA_DIGEST_LENGTH);
 
-    printf("\nSL: CR0 %08lx, CD bit %ld", read_cr0(), read_cr0() & CR0_CD);
+    _XDPRINTF_("\nSL: CR0 %08lx, CD bit %ld", read_cr0(), read_cr0() & CR0_CD);
     hashandprint("SL: Computed Runtime SHA-1: ",
                  runtime_base_addr, runtime_len);    
 
     if(xmhf_tpm_open_locality(locality)) {
-        printf("SL: FAILED to open TPM locality %d\n", locality);
+        _XDPRINTF_("SL: FAILED to open TPM locality %d\n", locality);
         return false;
     }
     
     if((ret = tpm_pcr_read(locality, 17, &pcr17)) != TPM_SUCCESS) {
-        printf("TPM: ERROR: tpm_pcr_read FAILED with error code 0x%08x\n", ret);
+        _XDPRINTF_("TPM: ERROR: tpm_pcr_read FAILED with error code 0x%08x\n", ret);
         return false;
     }
     print_hex("PCR-17: ", &pcr17, sizeof(pcr17));
 
     if((ret = tpm_pcr_read(locality, 18, &pcr18)) != TPM_SUCCESS) {
-        printf("TPM: ERROR: tpm_pcr_read FAILED with error code 0x%08x\n", ret);
+        _XDPRINTF_("TPM: ERROR: tpm_pcr_read FAILED with error code 0x%08x\n", ret);
         return false;
     }
     print_hex("PCR-18: ", &pcr18, sizeof(pcr18));    
@@ -125,7 +129,7 @@ void xmhf_sl_arch_x86_invoke_runtime_entrypoint(u32 entrypoint, u32 stacktop) {
 void xmhf_sl_arch_xfer_control_to_runtime(XMHF_BOOTINFO *xcbootinfo){
 	u32 ptba;	//page table base address
 
-	printf("Transferring control to runtime\n");
+	_XDPRINTF_("Transferring control to runtime\n");
 
 	#ifndef __XMHF_VERIFICATION__
 	//transfer control to runtime and never return
@@ -146,7 +150,7 @@ void xmhf_sl_arch_xfer_control_to_runtime(XMHF_BOOTINFO *xcbootinfo){
 		#ifndef __XMHF_VERIFICATION__
 			//TODO: plug in a BIOS data area map/model
 			if(!xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp)){
-				printf("\n%s: ACPI RSDP not found, Halting!", __FUNCTION__);
+				_XDPRINTF_("\n%s: ACPI RSDP not found, Halting!", __FUNCTION__);
 				HALT();
 			}
 		#endif //__XMHF_VERIFICATION__
@@ -202,7 +206,7 @@ void xmhf_baseplatform_arch_x86_initializeTSS(void){
 		tss->ss0 = __DS_CPL0;
 		tss->esp0 = (u32)_slab_table[XMHF_SLAB_XCEXHUB_INDEX].slab_tos;
 
-		printf("\nfixing TSS descriptor (TSS base=%x)...", tss_base);
+		_XDPRINTF_("\nfixing TSS descriptor (TSS base=%x)...", tss_base);
 		t= (TSSENTRY *)(u32)&_gdt_start[(__TRSEL/sizeof(u64))];
 		t->attributes1= 0xE9;
 		t->limit16_19attributes2= 0x0;
@@ -210,7 +214,7 @@ void xmhf_baseplatform_arch_x86_initializeTSS(void){
 		t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
 		t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);      
 		t->limit0_15=0x67;
-		printf("\nTSS descriptor fixed.");
+		_XDPRINTF_("\nTSS descriptor fixed.");
 
 }
 
@@ -362,26 +366,26 @@ __attribute__(( section(".slab_trampoline") )) static void _xcprimeon_xcphandler
 	exception_cs = *(uint32_t *)(orig_esp+sizeof(uint32_t));
 	exception_eflags = *(uint32_t *)(orig_esp+(2*sizeof(uint32_t)));
 
-	printf("\nunhandled exception %x, halting!", vector);
-	printf("\nstate dump follows...");
+	_XDPRINTF_("\nunhandled exception %x, halting!", vector);
+	_XDPRINTF_("\nstate dump follows...");
 	//things to dump
-	printf("\nCS:EIP 0x%04x:0x%08x with EFLAGS=0x%08x, errorcode=%08x", (u16)exception_cs, exception_eip, exception_eflags, errorcode);
-	printf("\nCR0=%08x, CR2=%08x, CR3=%08x, CR4=%08x", read_cr0(), read_cr2(), orig_cr3, read_cr4());
-	printf("\nEAX=0x%08x EBX=0x%08x ECX=0x%08x EDX=0x%08x", r->eax, r->ebx, r->ecx, r->edx);
-	printf("\nESI=0x%08x EDI=0x%08x EBP=0x%08x ESP=0x%08x", r->esi, r->edi, r->ebp, orig_esp);
-	printf("\nCS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", (u16)read_segreg_cs(), (u16)read_segreg_ds(), (u16)read_segreg_es(), (u16)read_segreg_ss());
-	printf("\nFS=0x%04x, GS=0x%04x", (u16)read_segreg_fs(), (u16)read_segreg_gs());
-	printf("\nTR=0x%04x", (u16)read_tr_sel());
+	_XDPRINTF_("\nCS:EIP 0x%04x:0x%08x with EFLAGS=0x%08x, errorcode=%08x", (u16)exception_cs, exception_eip, exception_eflags, errorcode);
+	_XDPRINTF_("\nCR0=%08x, CR2=%08x, CR3=%08x, CR4=%08x", read_cr0(), read_cr2(), orig_cr3, read_cr4());
+	_XDPRINTF_("\nEAX=0x%08x EBX=0x%08x ECX=0x%08x EDX=0x%08x", r->eax, r->ebx, r->ecx, r->edx);
+	_XDPRINTF_("\nESI=0x%08x EDI=0x%08x EBP=0x%08x ESP=0x%08x", r->esi, r->edi, r->ebp, orig_esp);
+	_XDPRINTF_("\nCS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", (u16)read_segreg_cs(), (u16)read_segreg_ds(), (u16)read_segreg_es(), (u16)read_segreg_ss());
+	_XDPRINTF_("\nFS=0x%04x, GS=0x%04x", (u16)read_segreg_fs(), (u16)read_segreg_gs());
+	_XDPRINTF_("\nTR=0x%04x", (u16)read_tr_sel());
 
 	//do a stack dump in the hopes of getting more info.
 	{
 		uint32_t i;
 		uint32_t stack_start = orig_esp;
-		printf("\n-----stack dump (16 entries)-----");
+		_XDPRINTF_("\n-----stack dump (16 entries)-----");
 		for(i=stack_start; i < stack_start+(16*sizeof(uint32_t)); i+=sizeof(uint32_t)){
-			printf("\nStack(0x%08x) -> 0x%08x", i, *(uint32_t *)i);
+			_XDPRINTF_("\nStack(0x%08x) -> 0x%08x", i, *(uint32_t *)i);
 		}
-		printf("\n-----end------------");
+		_XDPRINTF_("\n-----end------------");
 	}
 }
 
@@ -391,12 +395,12 @@ __attribute__(( section(".slab_trampoline") )) void _xcprimeon_xcphandler_arch_h
 	switch(vector){
 		case 0x3:
 			_xcprimeon_xcphandler_arch_unhandled(vector, orig_cr3, orig_esp, r);
-			printf("Int3 dbgprint -- continue\n");
+			_XDPRINTF_("Int3 dbgprint -- continue\n");
 			break;
 		
 		default:
 			_xcprimeon_xcphandler_arch_unhandled(vector, orig_cr3, orig_esp, r);
-			printf("\nHalting System!\n");
+			_XDPRINTF_("\nHalting System!\n");
 			HALT();
 	}
 	
@@ -471,7 +475,7 @@ static u32 _xcprimeon_slab_getspatype(u32 slab_index, u32 spa){
 static u64 _xcprimeon_slab_getptflagsforspa(u32 slab_index, u32 spa){
 	u64 flags;
 	u32 spatype = _xcprimeon_slab_getspatype(slab_index, spa);
-	//printf("\n%s: slab_index=%u, spa=%08x, spatype = %x\n", __FUNCTION__, slab_index, spa, spatype);
+	//_XDPRINTF_("\n%s: slab_index=%u, spa=%08x, spatype = %x\n", __FUNCTION__, slab_index, spa, spatype);
 	
 	switch(spatype){
 		case _SLAB_SPATYPE_OTHER_SLAB_CODE:
@@ -542,14 +546,14 @@ void xcprimeon_initialize_slab_tables(void){
 
 #ifndef __XMHF_VERIFICATION__
 
-	printf("\n%s: starting...", __FUNCTION__);
+	_XDPRINTF_("\n%s: starting...", __FUNCTION__);
 
 	//[debug]
 	{
 		u32 i;
 		for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++){
-				printf("\nslab %u: pdpt=%08x, pdt[0]=%08x, pdt[1]=%08x", i, (u32)_slab_pagetables[i].pdpt, (u32)_slab_pagetables[i].pdt[0], (u32)_slab_pagetables[i].pdt[1]);
-				printf("\n                    pdt[2]=%08x, pdt[3]=%08x", (u32)_slab_pagetables[i].pdt[2], (u32)_slab_pagetables[i].pdt[3]);
+				_XDPRINTF_("\nslab %u: pdpt=%08x, pdt[0]=%08x, pdt[1]=%08x", i, (u32)_slab_pagetables[i].pdpt, (u32)_slab_pagetables[i].pdt[0], (u32)_slab_pagetables[i].pdt[1]);
+				_XDPRINTF_("\n                    pdt[2]=%08x, pdt[3]=%08x", (u32)_slab_pagetables[i].pdt[2], (u32)_slab_pagetables[i].pdt[3]);
 		}
 
 	}
@@ -562,12 +566,12 @@ void xcprimeon_initialize_slab_tables(void){
 		
 	}
 	
-	printf("\n%s: setup slab page tables and macm id's\n", __FUNCTION__);
+	_XDPRINTF_("\n%s: setup slab page tables and macm id's\n", __FUNCTION__);
 	
 	
 	//initialize paging
 	xmhf_baseplatform_arch_x86_initialize_paging((u32)_slab_table[XMHF_SLAB_XCPRIMEON_INDEX].slab_macmid);
-	printf("\n%s: setup slab paging\n", __FUNCTION__);
+	_XDPRINTF_("\n%s: setup slab paging\n", __FUNCTION__);
 
 	
 #endif //__XMHF_VERIFICATION__

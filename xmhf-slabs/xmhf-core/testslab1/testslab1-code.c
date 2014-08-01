@@ -44,7 +44,9 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#include <xmhf.h>
 #include <xmhf-core.h>
+#include <xmhf-debug.h>
 
 #include <testslab1.h>
 
@@ -57,20 +59,20 @@
  
 void entry_0(void){
 	u32 my_entry_cr3 = _slab_table[0].entry_cr3;
-	printf("\n%s: Got control, entry_cr3=%08x", __FUNCTION__, my_entry_cr3);
+	_XDPRINTF_("\n%s: Got control, entry_cr3=%08x", __FUNCTION__, my_entry_cr3);
 }
 	
 u32 entry_1(u32 param1, u32 param2){
 	u32 my_entry_cr3 = _slab_table[0].entry_cr3;
-	printf("\n%s: Huhu we are here: entry_cr3=%08x", __FUNCTION__, my_entry_cr3);
-	printf("\n%s: param1=%u, param2=%u", __FUNCTION__, param1, param2);
+	_XDPRINTF_("\n%s: Huhu we are here: entry_cr3=%08x", __FUNCTION__, my_entry_cr3);
+	_XDPRINTF_("\n%s: param1=%u, param2=%u", __FUNCTION__, param1, param2);
 	return param1+param2;
 }
 
 context_desc_t entry_2(u32 cpu_index, bool isbsp, u32 partition_index){
 	context_desc_t ctx;
 
-	printf("\n%s: Got control: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, cpu_index, isbsp, partition_index);
+	_XDPRINTF_("\n%s: Got control: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, cpu_index, isbsp, partition_index);
 	
 	ctx.cpu_desc.cpu_index = cpu_index;
 	ctx.cpu_desc.isbsp = isbsp;
@@ -82,7 +84,7 @@ context_desc_t entry_2(u32 cpu_index, bool isbsp, u32 partition_index){
 xc_hypapp_arch_param_t entry_3(context_desc_t context_desc, xc_hypapp_arch_param_t archparam){
 	xc_hypapp_arch_param_t retparam;
 
-	printf("\n%s: Got control: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, context_desc.cpu_desc.cpu_index, context_desc.cpu_desc.isbsp, context_desc.partition_desc.partition_index);
+	_XDPRINTF_("\n%s: Got control: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, context_desc.cpu_desc.cpu_index, context_desc.cpu_desc.isbsp, context_desc.partition_desc.partition_index);
 	
 	retparam.operation = archparam.operation;
 	retparam.param.inforegs.info_vminstr_error = archparam.param.inforegs.info_vminstr_error;

@@ -92,6 +92,7 @@
  */
 
 #include <xmhf.h> 
+#include <xmhf-debug.h>
 
 #include "platform/x86pc/include/common/_multiboot.h"		//multiboot
 #include "cpu/x86/include/common/_processor.h"  	//CPU
@@ -128,20 +129,20 @@ static mle_hdr_t g_mle_hdr = {
 ///XXX
 static void print_file_info(void)
 {
-    printf("file addresses:\n");
-    printf("\t &g_mle_hdr=%p\n", &g_mle_hdr);
+    _XDPRINTF_("file addresses:\n");
+    _XDPRINTF_("\t &g_mle_hdr=%p\n", &g_mle_hdr);
 }
 
 static void print_mle_hdr(const mle_hdr_t *mle_hdr)
 {
-    printf("MLE header:\n");
-    printf("\t uuid="); print_uuid(&mle_hdr->uuid); printf("\n");
-    printf("\t length=%x\n", mle_hdr->length);
-    printf("\t version=%08x\n", mle_hdr->version);
-    printf("\t entry_point=%08x\n", mle_hdr->entry_point);
-    printf("\t first_valid_page=%08x\n", mle_hdr->first_valid_page);
-    printf("\t mle_start_off=%x\n", mle_hdr->mle_start_off);
-    printf("\t mle_end_off=%x\n", mle_hdr->mle_end_off);
+    _XDPRINTF_("MLE header:\n");
+    _XDPRINTF_("\t uuid="); print_uuid(&mle_hdr->uuid); _XDPRINTF_("\n");
+    _XDPRINTF_("\t length=%x\n", mle_hdr->length);
+    _XDPRINTF_("\t version=%08x\n", mle_hdr->version);
+    _XDPRINTF_("\t entry_point=%08x\n", mle_hdr->entry_point);
+    _XDPRINTF_("\t first_valid_page=%08x\n", mle_hdr->first_valid_page);
+    _XDPRINTF_("\t mle_start_off=%x\n", mle_hdr->mle_start_off);
+    _XDPRINTF_("\t mle_end_off=%x\n", mle_hdr->mle_end_off);
     print_txt_caps("\t ", mle_hdr->capabilities);
 }
 
@@ -158,16 +159,16 @@ static void *build_mle_pagetable(uint32_t mle_start, uint32_t mle_size)
     void *pg_dir_ptr_tab, *pg_dir, *pg_tab;
     uint64_t *pte;
 
-    printf("MLE start=%x, end=%x, size=%x\n", mle_start, mle_start+mle_size,
+    _XDPRINTF_("MLE start=%x, end=%x, size=%x\n", mle_start, mle_start+mle_size,
            mle_size);
     if ( mle_size > 512*PAGE_SIZE_4K ) {
-        printf("MLE size too big for single page table\n");
+        _XDPRINTF_("MLE size too big for single page table\n");
         return NULL;
     }
 
     /* should start on page boundary */
     if ( PAGE_ALIGN_4K(mle_start) != mle_start ) {
-        printf("MLE start is not page-aligned\n");
+        _XDPRINTF_("MLE start is not page-aligned\n");
         return NULL;
     }
 
@@ -178,7 +179,7 @@ static void *build_mle_pagetable(uint32_t mle_start, uint32_t mle_size)
     /* NB: This memset will clobber the AMD-specific SL header.  That
      * is okay, as we are launching on an Intel TXT system. */
     memset(ptab_base, 0, ptab_size); 
-    printf("ptab_size=%x, ptab_base=%p\n", ptab_size, ptab_base);
+    _XDPRINTF_("ptab_size=%x, ptab_base=%p\n", ptab_size, ptab_base);
 
     pg_dir_ptr_tab = ptab_base;
     pg_dir         = pg_dir_ptr_tab + PAGE_SIZE_4K;
@@ -187,12 +188,12 @@ static void *build_mle_pagetable(uint32_t mle_start, uint32_t mle_size)
     /* only use first entry in page dir ptr table */
     *(uint64_t *)pg_dir_ptr_tab = MAKE_PDTE(pg_dir);
 
-    printf("*(uint64_t *)pg_dir_ptr_tab = 0x%16llx\n",
+    _XDPRINTF_("*(uint64_t *)pg_dir_ptr_tab = 0x%16llx\n",
            *(uint64_t *)pg_dir_ptr_tab);
 
     /* only use first entry in page dir */
     *(uint64_t *)pg_dir = MAKE_PDTE(pg_tab);
-    printf("*(uint64_t *)pg_dir = 0x%16llx\n",
+    _XDPRINTF_("*(uint64_t *)pg_dir = 0x%16llx\n",
            *(uint64_t *)pg_dir);
 
     
@@ -200,7 +201,7 @@ static void *build_mle_pagetable(uint32_t mle_start, uint32_t mle_size)
     mle_off = 0;
     do {
         *pte = MAKE_PDTE(mle_start + mle_off);
-        printf("pte = 0x%08x\n*pte = 0x%15llx\n",
+        _XDPRINTF_("pte = 0x%08x\n*pte = 0x%15llx\n",
                (u32)pte, *pte);
 
         pte++;
@@ -224,21 +225,21 @@ static bool check_sinit_module(void *base, size_t size)
 
     /* display chipset fuse and device and vendor id info */
     didvid._raw = read_pub_config_reg(TXTCR_DIDVID);
-    printf("chipset ids: vendor: 0x%x, device: 0x%x, revision: 0x%x\n",
+    _XDPRINTF_("chipset ids: vendor: 0x%x, device: 0x%x, revision: 0x%x\n",
            didvid.vendor_id, didvid.device_id, didvid.revision_id);
     ver._raw = read_pub_config_reg(TXTCR_VER_FSBIF);
     if ( (ver._raw & 0xffffffff) == 0xffffffff ||
          (ver._raw & 0xffffffff) == 0x00 )         /* need to use VER.EMIF */
         ver._raw = read_pub_config_reg(TXTCR_VER_EMIF);
-    printf("chipset production fused: %x\n", ver.prod_fused );
+    _XDPRINTF_("chipset production fused: %x\n", ver.prod_fused );
 
     if ( is_sinit_acmod(base, size, false) &&
          does_acmod_match_chipset((acm_hdr_t *)base) ) {
-        printf("SINIT matches platform\n");
+        _XDPRINTF_("SINIT matches platform\n");
         return true;
     }
     /* no SINIT found for this platform */
-    printf("no SINIT AC module found\n");
+    _XDPRINTF_("no SINIT AC module found\n");
     return false;
 }
 
@@ -290,7 +291,7 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
     /* Copy populated MLE header into SL */
     HALT_ON_ERRORCOND(sizeof(mle_hdr_t) < TEMPORARY_MAX_MLE_HEADER_SIZE);
     memcpy(phys_mle_start, &g_mle_hdr, sizeof(mle_hdr_t));
-    printf("Copied mle_hdr (0x%08x, 0x%x bytes) into SL (0x%08x)\n",
+    _XDPRINTF_("Copied mle_hdr (0x%08x, 0x%x bytes) into SL (0x%08x)\n",
            (u32)&g_mle_hdr, sizeof(mle_hdr_t), (u32)phys_mle_start);
     /* this is linear addr (offset from MLE base) of mle header, in MLE page tables */
     os_sinit_data->mle_hdr_base = 0;
@@ -309,8 +310,8 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
 		//os_sinit_data->vtd_pmr_hi_base = (u64)(__TARGET_BASE_SL+ __TARGET_SIZE_SL);
 		//os_sinit_data->vtd_pmr_hi_size = (u64)PAGE_ALIGN_UP2M(sl_rt_size) - (u64)__TARGET_SIZE_SL;
 		
-		printf("\nvtd_pmr_lo_base=%016llx, size=%016llx", os_sinit_data->vtd_pmr_lo_base, os_sinit_data->vtd_pmr_lo_size);
-		//printf("\nvtd_pmr_hi_base=%016llx, size=%016llx", os_sinit_data->vtd_pmr_hi_base, os_sinit_data->vtd_pmr_hi_size);
+		_XDPRINTF_("\nvtd_pmr_lo_base=%016llx, size=%016llx", os_sinit_data->vtd_pmr_lo_base, os_sinit_data->vtd_pmr_lo_size);
+		//_XDPRINTF_("\nvtd_pmr_hi_base=%016llx, size=%016llx", os_sinit_data->vtd_pmr_hi_base, os_sinit_data->vtd_pmr_hi_size);
 
 	}
 
@@ -329,7 +330,7 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
     else if ( sinit_caps.rlp_wake_getsec )
         os_sinit_data->capabilities.rlp_wake_getsec = 1;
     else {     /* should have been detected in verify_acmod() */
-        printf("SINIT capabilities are icompatible (0x%x)\n", sinit_caps._raw);
+        _XDPRINTF_("SINIT capabilities are icompatible (0x%x)\n", sinit_caps._raw);
         return NULL;
     }
     /* capabilities : require MLE pagetable in ECX on launch */
@@ -368,7 +369,7 @@ tb_error_t txt_launch_environment(void *sinit_ptr, size_t sinit_size,
     else sinit = (acm_hdr_t*)sinit_ptr;
 
     if(!check_sinit_module((void *)sinit, sinit_size)) {
-        printf("check_sinit_module failed\n");
+        _XDPRINTF_("check_sinit_module failed\n");
         return TB_ERR_SINIT_NOT_PRESENT;
     }
     /* if it is newer than BIOS-provided version, then copy it to */
@@ -403,7 +404,7 @@ tb_error_t txt_launch_environment(void *sinit_ptr, size_t sinit_size,
     if ( !set_mtrrs_for_acmod(sinit) )
         return TB_ERR_FATAL;
 
-    printf("executing GETSEC[SENTER]...\n");
+    _XDPRINTF_("executing GETSEC[SENTER]...\n");
     /* pause before executing GETSEC[SENTER] */
     delay(0x80000000);
 
@@ -421,7 +422,7 @@ tb_error_t txt_launch_environment(void *sinit_ptr, size_t sinit_size,
 //#endif
     
     __getsec_senter((uint32_t)sinit, (sinit->size)*4);
-    printf("ERROR--we should not get here!\n");
+    _XDPRINTF_("ERROR--we should not get here!\n");
     return TB_ERR_FATAL;
 }
 
@@ -439,24 +440,24 @@ bool txt_prepare_cpu(void)
 
     /* must be in protected mode */
     if ( !(cr0 & CR0_PE) ) {
-        printf("ERR: not in protected mode\n");
+        _XDPRINTF_("ERR: not in protected mode\n");
         return false;
     }
 
     /* cache must be enabled (CR0.CD = CR0.NW = 0) */
     if ( cr0 & CR0_CD ) {
-        printf("CR0.CD set; clearing it.\n");
+        _XDPRINTF_("CR0.CD set; clearing it.\n");
         cr0 &= ~CR0_CD;
     }
     if ( cr0 & CR0_NW ) {
-        printf("CR0.NW set; clearing it.\n");
+        _XDPRINTF_("CR0.NW set; clearing it.\n");
         cr0 &= ~CR0_NW;
     }
 
     /* native FPU error reporting must be enabled for proper */
     /* interaction behavior */
     if ( !(cr0 & CR0_NE) ) {
-        printf("CR0.NE not set; setting it.\n");
+        _XDPRINTF_("CR0.NE not set; setting it.\n");
         cr0 |= CR0_NE;
     }
 
@@ -465,17 +466,17 @@ bool txt_prepare_cpu(void)
     /* cannot be in virtual-8086 mode (EFLAGS.VM=1) */
     get_eflags(eflags);
     if ( eflags & EFLAGS_VM ) {
-        printf("EFLAGS.VM set; clearing it.\n");
+        _XDPRINTF_("EFLAGS.VM set; clearing it.\n");
         set_eflags(eflags | ~EFLAGS_VM);
     }
 
-    printf("CR0 and EFLAGS OK\n");
+    _XDPRINTF_("CR0 and EFLAGS OK\n");
 
     /*
      * verify that we're not already in a protected environment
      */
     if ( txt_is_launched() ) {
-        printf("already in protected environment\n");
+        _XDPRINTF_("already in protected environment\n");
         return false;
     }
 
@@ -487,12 +488,12 @@ bool txt_prepare_cpu(void)
     /* no machine check in progress (IA32_MCG_STATUS.MCIP=1) */
     mcg_stat = rdmsr64(MSR_MCG_STATUS);
     if ( mcg_stat & 0x04 ) {
-        printf("machine check in progress\n");
+        _XDPRINTF_("machine check in progress\n");
         return false;
     }
 
     if ( !get_parameters(&params) ) {
-        printf("get_parameters() failed\n");
+        _XDPRINTF_("get_parameters() failed\n");
         return false;
     }
 
@@ -501,22 +502,22 @@ bool txt_prepare_cpu(void)
     for ( i = 0; i < (mcg_cap & 0xff); i++ ) {
         mcg_stat = rdmsr64(MSR_MC0_STATUS + 4*i);
         if ( mcg_stat & (1ULL << 63) ) {
-            printf("MCG[%u] = %llx ERROR\n", i, mcg_stat);
+            _XDPRINTF_("MCG[%u] = %llx ERROR\n", i, mcg_stat);
             if ( !params.preserve_mce )
                 return false;
         }
     }
 
     if ( params.preserve_mce )
-        printf("supports preserving machine check errors\n");
+        _XDPRINTF_("supports preserving machine check errors\n");
     else
-        printf("no machine check errors\n");
+        _XDPRINTF_("no machine check errors\n");
 
     if ( params.proc_based_scrtm )
-        printf("CPU support processor-based S-CRTM\n");
+        _XDPRINTF_("CPU support processor-based S-CRTM\n");
 
     /* all is well with the processor state */
-    printf("CPU is ready for SENTER\n");
+    _XDPRINTF_("CPU is ready for SENTER\n");
 
     return true;
 }
@@ -544,7 +545,7 @@ bool get_parameters(getsec_parameters_t *params)
     /* sanity check because GETSEC[PARAMETERS] will fail if not set */
     cr4 = read_cr4();
     if ( !(cr4 & CR4_SMXE) ) {
-        printf("SMXE not enabled, can't read parameters\n");
+        _XDPRINTF_("SMXE not enabled, can't read parameters\n");
         return false;
     }
 
@@ -567,7 +568,7 @@ bool get_parameters(getsec_parameters_t *params)
         /* supported ACM versions */
         else if ( param_type == 1 ) {
             if ( params->n_versions == MAX_SUPPORTED_ACM_VERSIONS )
-                printf("number of supported ACM version exceeds "
+                _XDPRINTF_("number of supported ACM version exceeds "
                        "MAX_SUPPORTED_ACM_VERSIONS\n");
             else {
                 params->acm_versions[params->n_versions].mask = ebx;
@@ -590,7 +591,7 @@ bool get_parameters(getsec_parameters_t *params)
             params->preserve_mce = (eax & 0x00000040) ? true : false;
         }
         else {
-            printf("unknown GETSEC[PARAMETERS] type: %d\n", param_type);
+            _XDPRINTF_("unknown GETSEC[PARAMETERS] type: %d\n", param_type);
             param_type = 0;    /* set so that we break out of the loop */
         }
     } while ( param_type != 0 );

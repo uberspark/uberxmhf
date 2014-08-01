@@ -66,6 +66,8 @@
 
 #ifdef __PROFILING__
 
+#define PERF_CHK(x)	
+
 typedef struct perf_counter {
   /* per-cpu */
   u64 start_time[MAX_VCPU_ENTRIES];
@@ -96,7 +98,7 @@ static inline void perf_ctr_reset(perf_ctr_t *p)
   u32 i;
   spin_lock(&(p->lock));
   for(i=0; i<MAX_VCPU_ENTRIES; i++) {
-    HALT_ON_ERRORCOND(p->start_time[i] == 0);
+    PERF_CHK(p->start_time[i] == 0);
   }
   p->total_time = 0;
   p->count = 0;
@@ -106,8 +108,8 @@ static inline void perf_ctr_reset(perf_ctr_t *p)
 /* p must be initialized, and the specified timer not running */
 static inline void perf_ctr_timer_start(perf_ctr_t *p, u32 cpuid)
 {
-  HALT_ON_ERRORCOND(cpuid < MAX_VCPU_ENTRIES);
-  HALT_ON_ERRORCOND(p->start_time[cpuid] == 0);
+  PERF_CHK(cpuid < MAX_VCPU_ENTRIES);
+  PERF_CHK(p->start_time[cpuid] == 0);
 
   p->start_time[cpuid] = rdtsc64();
 }
@@ -115,8 +117,8 @@ static inline void perf_ctr_timer_start(perf_ctr_t *p, u32 cpuid)
 /* specified timer must be running */
 static inline void perf_ctr_timer_record(perf_ctr_t *p, u32 cpuid)
 {
-  HALT_ON_ERRORCOND(cpuid < MAX_VCPU_ENTRIES);
-  HALT_ON_ERRORCOND(p->start_time[cpuid] != 0);
+  PERF_CHK(cpuid < MAX_VCPU_ENTRIES);
+  PERF_CHK(p->start_time[cpuid] != 0);
 
   spin_lock(&(p->lock));
   p->total_time += rdtsc64() - p->start_time[cpuid];
@@ -128,8 +130,8 @@ static inline void perf_ctr_timer_record(perf_ctr_t *p, u32 cpuid)
 /* specified timer must be running */
 static inline void perf_ctr_timer_discard(perf_ctr_t *p, u32 cpuid)
 {
-  HALT_ON_ERRORCOND(cpuid < MAX_VCPU_ENTRIES);
-  HALT_ON_ERRORCOND(p->start_time[cpuid] != 0);
+  PERF_CHK(cpuid < MAX_VCPU_ENTRIES);
+  PERF_CHK(p->start_time[cpuid] != 0);
 
   p->start_time[cpuid] = 0;
 }

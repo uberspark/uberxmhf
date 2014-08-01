@@ -87,7 +87,7 @@ static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
       break;
   
     default:
-      printf("\n%s: Halt, Unsupported register=%08x", __FUNCTION__, reg);
+      _XDPRINTF_("\n%s: Halt, Unsupported register=%08x", __FUNCTION__, reg);
       HALT();
       break;
   }
@@ -113,7 +113,7 @@ static void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
     }
   
     default:
-     printf("\n%s: Halt, Unsupported access width=%08x", __FUNCTION__, regtype);
+     _XDPRINTF_("\n%s: Halt, Unsupported access width=%08x", __FUNCTION__, regtype);
      HALT();
   }
 
@@ -134,17 +134,17 @@ static bool vtdinit_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned __attr
 
 	//verify required capabilities
 	{
-		printf("\nVerifying DRHD capabilities...");
+		_XDPRINTF_("\nVerifying DRHD capabilities...");
 	
 		//read CAP register
 		_vtd_reg(drhd, VTD_REG_READ, VTD_CAP_REG_OFF, (void *)&cap.value);
 		
 		if(! (cap.bits.plmr && cap.bits.phmr) ){
-			printf("\nWarning:	PL/HMR unsupported. Halting!");
+			_XDPRINTF_("\nWarning:	PL/HMR unsupported. Halting!");
 			HALT();
 		}
 		
-		printf("\nDRHD unit has all required capabilities");
+		_XDPRINTF_("\nDRHD unit has all required capabilities");
 	}
 	
 	
@@ -176,8 +176,8 @@ static bool vtdinit_drhd_initialize(VTD_DRHD *drhd, u32 membase_2Maligned __attr
 	 _vtd_reg(drhd, VTD_REG_READ, VTD_PHMBASE_REG_OFF, (void *)&phmbase.value);
      _vtd_reg(drhd, VTD_REG_READ, VTD_PHMLIMIT_REG_OFF, (void *)&phmlimit.value);
 	_vtd_reg(drhd, VTD_REG_READ, VTD_PMEN_REG_OFF, (void *)&pmen.value);
-	printf("\n%s: PMEN=%08x, PLMBASE=%08x, PLMLIMIT=%08x", __FUNCTION__, pmen.value, plmbase.value, plmlimit.value);
-	printf("\n%s: PHMBASE=%016llx, PLMLIMIT=%016llx", __FUNCTION__, phmbase.value, phmlimit.value);
+	_XDPRINTF_("\n%s: PMEN=%08x, PLMBASE=%08x, PLMLIMIT=%08x", __FUNCTION__, pmen.value, plmbase.value, plmlimit.value);
+	_XDPRINTF_("\n%s: PHMBASE=%016llx, PLMLIMIT=%016llx", __FUNCTION__, phmbase.value, phmlimit.value);
 
 
 	return true;
@@ -197,7 +197,7 @@ bool vtdinit_dmaprotect(u32 membase __attribute__((unused)), u32 size __attribut
 	u32 i, dmarfound;
 	u32 dmaraddrphys, remappingstructuresaddrphys;
 	
-	printf("\n%s: size=%08x", __FUNCTION__, size);
+	_XDPRINTF_("\n%s: size=%08x", __FUNCTION__, size);
 	
 	//zero out rsdp and rsdt structures
 	memset(&rsdp, 0, sizeof(ACPI_RSDP));
@@ -206,12 +206,12 @@ bool vtdinit_dmaprotect(u32 membase __attribute__((unused)), u32 size __attribut
 	//get ACPI RSDP
 	status=xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp);
 	HALT_ON_ERRORCOND(status != 0);	//we need a valid RSDP to proceed
-	printf("\n%s: RSDP at %08x", __FUNCTION__, status);
+	_XDPRINTF_("\n%s: RSDP at %08x", __FUNCTION__, status);
   
 	//grab ACPI RSDT
 	//xmhfhw_sysmemaccess_copy((u8 *)&rsdt, (u8 *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
 	memcpy((u8 *)&rsdt, (u8 *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
-	printf("\n%s: RSDT at %08x, len=%u bytes, hdrlen=%u bytes", 
+	_XDPRINTF_("\n%s: RSDT at %08x, len=%u bytes, hdrlen=%u bytes", 
 		__FUNCTION__, rsdp.rsdtaddress, rsdt.length, sizeof(ACPI_RSDT));
 	
 	//get the RSDT entry list
@@ -219,7 +219,7 @@ bool vtdinit_dmaprotect(u32 membase __attribute__((unused)), u32 size __attribut
 	HALT_ON_ERRORCOND(num_rsdtentries < ACPI_MAX_RSDT_ENTRIES);
 	memcpy((u8 *)&rsdtentries, (u8 *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
 			sizeof(u32)*num_rsdtentries);			
-	printf("\n%s: RSDT entry list at %08x, len=%u", __FUNCTION__,
+	_XDPRINTF_("\n%s: RSDT entry list at %08x, len=%u", __FUNCTION__,
 		(rsdp.rsdtaddress + sizeof(ACPI_RSDT)), num_rsdtentries);
 
 	//find the VT-d DMAR table in the list (if any)
@@ -236,12 +236,12 @@ bool vtdinit_dmaprotect(u32 membase __attribute__((unused)), u32 size __attribut
 		return false;  
 
 	dmaraddrphys = rsdtentries[i]; //DMAR table physical memory address;
-	printf("\n%s: DMAR at %08x", __FUNCTION__, dmaraddrphys);
+	_XDPRINTF_("\n%s: DMAR at %08x", __FUNCTION__, dmaraddrphys);
 
 	//detect DRHDs in the DMAR table
 	i=0;
 	remappingstructuresaddrphys=dmaraddrphys+sizeof(VTD_DMAR);
-	printf("\n%s: remapping structures at %08x", __FUNCTION__, remappingstructuresaddrphys);
+	_XDPRINTF_("\n%s: remapping structures at %08x", __FUNCTION__, remappingstructuresaddrphys);
   
 	while(i < (dmar.length-sizeof(VTD_DMAR))){
 		u16 type, length;
@@ -250,7 +250,7 @@ bool vtdinit_dmaprotect(u32 membase __attribute__((unused)), u32 size __attribut
 
 		switch(type){
 			case  0:  //DRHD
-				printf("\nDRHD at %08x, len=%u bytes", (u32)(remappingstructuresaddrphys+i), length);
+				_XDPRINTF_("\nDRHD at %08x, len=%u bytes", (u32)(remappingstructuresaddrphys+i), length);
 				HALT_ON_ERRORCOND(vtd_num_drhd < VTD_MAX_DRHD);
 				memcpy((u8 *)&vtd_drhd[vtd_num_drhd], (u8 *)(remappingstructuresaddrphys+i), length);
 				vtd_num_drhd++;
@@ -262,24 +262,24 @@ bool vtdinit_dmaprotect(u32 membase __attribute__((unused)), u32 size __attribut
 				break;
 		}
 	}
-    printf("\n%s: total DRHDs detected= %u units", __FUNCTION__, vtd_num_drhd);
+    _XDPRINTF_("\n%s: total DRHDs detected= %u units", __FUNCTION__, vtd_num_drhd);
 
 	//be a little verbose about what we found
-	printf("\n%s: DMAR Devices:", __FUNCTION__);
+	_XDPRINTF_("\n%s: DMAR Devices:", __FUNCTION__);
 	for(i=0; i < vtd_num_drhd; i++){
 		VTD_CAP_REG cap;    
 		VTD_ECAP_REG ecap;
-		printf("\n	Device %u on PCI seg %04x; base=0x%016llx", i, 
+		_XDPRINTF_("\n	Device %u on PCI seg %04x; base=0x%016llx", i, 
 					vtd_drhd[i].pcisegment, vtd_drhd[i].regbaseaddr);
 		_vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_CAP_REG_OFF, (void *)&cap.value);
-		printf("\n		cap=0x%016llx", (u64)cap.value);
+		_XDPRINTF_("\n		cap=0x%016llx", (u64)cap.value);
 		_vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_ECAP_REG_OFF, (void *)&ecap.value);
-		printf("\n		ecap=0x%016llx", (u64)ecap.value);
+		_XDPRINTF_("\n		ecap=0x%016llx", (u64)ecap.value);
 	}
 
 	//initialize all DRHD units
 	for(i=0; i < vtd_num_drhd; i++){
-		printf("\n%s: initializing DRHD unit %u...", __FUNCTION__, i);
+		_XDPRINTF_("\n%s: initializing DRHD unit %u...", __FUNCTION__, i);
 		if(!vtdinit_drhd_initialize(&vtd_drhd[i], PAGE_ALIGN_2M(membase), PAGE_ALIGN_UP2M(size)) )
 			return false;
 	}
@@ -290,7 +290,7 @@ bool vtdinit_dmaprotect(u32 membase __attribute__((unused)), u32 size __attribut
 	//xmhfhw_sysmemaccess_writeu32(dmaraddrphys, 0UL);
 
 	//success
-	printf("\n%s: success, leaving...", __FUNCTION__);
+	_XDPRINTF_("\n%s: success, leaving...", __FUNCTION__);
 
 	return true;
 }

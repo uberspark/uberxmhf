@@ -85,6 +85,7 @@
  */
 
 #include <xmhf.h> 
+#include <xmhf-debug.h>
 
 #include "platform/x86pc/include/common/_multiboot.h"		//multiboot
 #include "cpu/x86/include/common/_processor.h"  	//CPU
@@ -170,13 +171,13 @@ void print_mtrrs(const mtrr_state_t *saved_state)
 {
     int i;
     
-    printf("mtrr_def_type: e = %d, fe = %d, type = %x\n",
+    _XDPRINTF_("mtrr_def_type: e = %d, fe = %d, type = %x\n",
            saved_state->mtrr_def_type.e, saved_state->mtrr_def_type.fe,
            saved_state->mtrr_def_type.type );
-    printf("mtrrs:\n");
-    printf("\t\tbase\tmask\ttype\tv\n");
+    _XDPRINTF_("mtrrs:\n");
+    _XDPRINTF_("\t\tbase\tmask\ttype\tv\n");
     for ( i = 0; i < saved_state->num_var_mtrrs; i++ ) {
-        printf("\t\t%6.6x\t%6.6x\t%2.2x\t%d\n",
+        _XDPRINTF_("\t\t%6.6x\t%6.6x\t%2.2x\t%d\n",
                saved_state->mtrr_physbases[i].base,
                saved_state->mtrr_physmasks[i].mask,
                saved_state->mtrr_physbases[i].type,
@@ -197,7 +198,7 @@ void save_mtrrs(mtrr_state_t *saved_state)
     if ( mtrr_cap.vcnt > MAX_VARIABLE_MTRRS ) {
         /* print warning but continue saving what we can */
         /* (set_mem_type() won't exceed the array, so we're safe doing this) */
-        printf("actual # var MTRRs (%d) > MAX_VARIABLE_MTRRS (%d)\n",
+        _XDPRINTF_("actual # var MTRRs (%d) > MAX_VARIABLE_MTRRS (%d)\n",
                mtrr_cap.vcnt, MAX_VARIABLE_MTRRS);
         saved_state->num_var_mtrrs = MAX_VARIABLE_MTRRS;
     }
@@ -290,7 +291,7 @@ static int get_region_type(const mtrr_state_t *saved_state,
 /*     if ( get_region_type(saved_state, TXT_PRIV_CONFIG_REGS_BASE, */
 /*                          NR_TXT_CONFIG_PAGES) */
 /*            != MTRR_TYPE_UNCACHABLE ) { */
-/*         printf("MMIO space for TXT private config space should be UC\n"); */
+/*         _XDPRINTF_("MMIO space for TXT private config space should be UC\n"); */
 /*         return false; */
 /*     } */
 
@@ -298,7 +299,7 @@ static int get_region_type(const mtrr_state_t *saved_state,
 /*     if ( get_region_type(saved_state, TXT_PUB_CONFIG_REGS_BASE, */
 /*                          NR_TXT_CONFIG_PAGES) */
 /*            != MTRR_TYPE_UNCACHABLE ) { */
-/*         printf("MMIO space for TXT public config space should be UC\n"); */
+/*         _XDPRINTF_("MMIO space for TXT public config space should be UC\n"); */
 /*         return false; */
 /*     } */
 
@@ -306,14 +307,14 @@ static int get_region_type(const mtrr_state_t *saved_state,
 /*     if ( get_region_type(saved_state, TPM_LOCALITY_BASE, */
 /*                          NR_TPM_LOCALITY_PAGES * TPM_NR_LOCALITIES) */
 /*            != MTRR_TYPE_UNCACHABLE ) { */
-/*         printf("MMIO space for TPM should be UC\n"); */
+/*         _XDPRINTF_("MMIO space for TPM should be UC\n"); */
 /*         return false; */
 /*     } */
 
 /*     /\* mmio space for APIC should be UC *\/ */
 /*     if ( get_region_type(saved_state, MMIO_APIC_BASE, NR_MMIO_APIC_PAGES) */
 /*            != MTRR_TYPE_UNCACHABLE ) { */
-/*         printf("MMIO space for APIC should be UC\n"); */
+/*         _XDPRINTF_("MMIO space for APIC should be UC\n"); */
 /*         return false; */
 /*     } */
 
@@ -321,15 +322,15 @@ static int get_region_type(const mtrr_state_t *saved_state,
 /*     /\* mmio space for IOAPIC should be UC *\/ */
 /*     acpi_table_ioapic = (acpi_table_ioapic_t *)get_acpi_ioapic_table(); */
 /*     if ( acpi_table_ioapic == NULL) { */
-/*         printf("acpi_table_ioapic == NULL\n"); */
+/*         _XDPRINTF_("acpi_table_ioapic == NULL\n"); */
 /*         return false; */
 /*     } */
-/*     printf("acpi_table_ioapic @ %p, .address = %x\n", */
+/*     _XDPRINTF_("acpi_table_ioapic @ %p, .address = %x\n", */
 /*            acpi_table_ioapic, acpi_table_ioapic->address); */
 /*     if ( get_region_type(saved_state, acpi_table_ioapic->address, */
 /*                          NR_MMIO_IOAPIC_PAGES) */
 /*            != MTRR_TYPE_UNCACHABLE ) { */
-/*         printf("MMIO space(%x) for IOAPIC should be UC\n", */
+/*         _XDPRINTF_("MMIO space(%x) for IOAPIC should be UC\n", */
 /*                acpi_table_ioapic->address); */
 /*         return false; */
 /*     } */
@@ -338,15 +339,15 @@ static int get_region_type(const mtrr_state_t *saved_state,
 /*     /\* mmio space for PCI config space should be UC *\/ */
 /*     acpi_table_mcfg = (acpi_table_mcfg_t *)get_acpi_mcfg_table(); */
 /*     if ( acpi_table_mcfg == NULL) { */
-/*         printf("acpi_table_mcfg == NULL\n"); */
+/*         _XDPRINTF_("acpi_table_mcfg == NULL\n"); */
 /*         return false; */
 /*     } */
-/*     printf("acpi_table_mcfg @ %p, .base_address = %x\n", */
+/*     _XDPRINTF_("acpi_table_mcfg @ %p, .base_address = %x\n", */
 /*            acpi_table_mcfg, acpi_table_mcfg->base_address); */
 /*     if ( get_region_type(saved_state, acpi_table_mcfg->base_address, */
 /*                          NR_MMIO_PCICFG_PAGES) */
 /*            != MTRR_TYPE_UNCACHABLE ) { */
-/*         printf("MMIO space(%x) for PCI config space should be UC\n", */
+/*         _XDPRINTF_("MMIO space(%x) for PCI config space should be UC\n", */
 /*                acpi_table_mcfg->base_address); */
 /*         return false; */
 /*     } */
@@ -366,7 +367,7 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
     /* number variable MTRRs */
     mtrr_cap.raw = rdmsr64(MSR_MTRRcap);
     if ( mtrr_cap.vcnt < saved_state->num_var_mtrrs ) {
-        printf("actual # var MTRRs (%d) < saved # (%d)\n",
+        _XDPRINTF_("actual # var MTRRs (%d) < saved # (%d)\n",
                mtrr_cap.vcnt, saved_state->num_var_mtrrs);
         return false;
     }
@@ -388,7 +389,7 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
                 break;
         }
         if ( tb != 0x1000000 ) {
-            printf("var MTRRs with non-contiguous regions: "
+            _XDPRINTF_("var MTRRs with non-contiguous regions: "
                    "base=%06x, mask=%06x\n",
                    (unsigned int) saved_state->mtrr_physbases[ndx].base,
                    (unsigned int) saved_state->mtrr_physmasks[ndx].mask);
@@ -461,14 +462,14 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
             if ( j < saved_state->num_var_mtrrs )
                 continue;
 
-            printf("var MTRRs overlaping regions, invalid type combinations\n");
+            _XDPRINTF_("var MTRRs overlaping regions, invalid type combinations\n");
             print_mtrrs(saved_state);
             return false;
         }
     }
 
 /*     if ( !validate_mmio_regions(saved_state) ) { */
-/*         printf("Some mmio region should be UC type\n"); */
+/*         _XDPRINTF_("Some mmio region should be UC type\n"); */
 /*         print_mtrrs(saved_state); */
 /*         return false; */
 /*     } */
@@ -482,7 +483,7 @@ void restore_mtrrs(mtrr_state_t *saved_state)
     int ndx;
 
     if(NULL == saved_state) {
-        printf("\nFATAL ERROR: restore_mtrrs(): called with NULL\n");
+        _XDPRINTF_("\nFATAL ERROR: restore_mtrrs(): called with NULL\n");
         HALT();
     }
 
@@ -549,7 +550,7 @@ bool set_mem_type(void *base, uint32_t size, uint32_t mem_type)
     num_pages = (size + PAGE_SIZE_4K - 1) >> PAGE_SHIFT_4K;
     ndx = 0;
 
-    printf("setting MTRRs for acmod: base=%p, size=%x, num_pages=%d\n",
+    _XDPRINTF_("setting MTRRs for acmod: base=%p, size=%x, num_pages=%d\n",
            base, size, num_pages);
 
     while ( num_pages > 0 ) {
@@ -587,7 +588,7 @@ bool set_mem_type(void *base, uint32_t size, uint32_t mem_type)
         num_pages -= pages_in_range;
         ndx++;
         if ( ndx == mtrr_cap.vcnt ) {
-            printf("exceeded number of var MTRRs when mapping range\n");
+            _XDPRINTF_("exceeded number of var MTRRs when mapping range\n");
             return false;
         }
     }
