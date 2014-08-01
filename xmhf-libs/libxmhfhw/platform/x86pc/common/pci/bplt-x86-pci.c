@@ -48,6 +48,7 @@
 //  author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h> 
+#include <xmhf-debug.h>
 
 #include "cpu/x86/include/common/_processor.h"  	//CPU
 #include "cpu/x86/include/common/_io.h"         	//legacy I/O
@@ -174,7 +175,7 @@ static void _pci_enumeratebus(void){
 				if(vendor_id == 0xFFFF && device_id == 0xFFFF)
 					break;
 				
-				printf("\n	%02x:%02x.%1x -> vendor_id=%04x, device_id=%04x", b, d, f, vendor_id, device_id);						
+				_XDPRINTF_("\n	%02x:%02x.%1x -> vendor_id=%04x, device_id=%04x", b, d, f, vendor_id, device_id);						
 			}
 		}
 	}
@@ -191,10 +192,9 @@ void xmhf_baseplatform_arch_x86_pci_type1_read(u32 bus, u32 device, u32 function
 			u32 *value){
         
 	//sanity checks
-	HALT_ON_ERRORCOND( bus <= 255 );
-  HALT_ON_ERRORCOND( PCI_DEVICE_FN(device,function) <= 255 );
-  HALT_ON_ERRORCOND( index <= 4095 );
-  
+	if ( bus > 255 || PCI_DEVICE_FN(device,function) > 255 || index > 4095)
+		return;
+		
   //encode and send the 32-bit type-1 address to PCI address port
 	outl(PCI_TYPE1_ADDRESS(bus, device, function, index), PCI_CONFIG_ADDR_PORT);
 
@@ -223,10 +223,9 @@ void xmhf_baseplatform_arch_x86_pci_type1_write(u32 bus, u32 device, u32 functio
 	u32 value){
 
  	//sanity checks
-	HALT_ON_ERRORCOND( bus <= 255 );
-  HALT_ON_ERRORCOND( PCI_DEVICE_FN(device,function) <= 255 );
-  HALT_ON_ERRORCOND( index <= 4095 );
-
+	if( bus > 255 || PCI_DEVICE_FN(device,function) > 255 || index > 4095)
+		return;
+		
   //encode and send the 32-bit type-1 address to PCI address port
 	outl(PCI_TYPE1_ADDRESS(bus, device, function, index), PCI_CONFIG_ADDR_PORT);
 
@@ -263,7 +262,7 @@ void xmhf_baseplatform_arch_x86_pci_initialize(void){
   //reading PCI_CONFIG_ADDR_PORT should return with bit 31 set
 	//if system supports type-1 access
   if (inl(PCI_CONFIG_ADDR_PORT) != 0x80000000) {
-  	printf("\n%s: system does not support type-1 access. HALT!", __FUNCTION__);
+  	_XDPRINTF_("\n%s: system does not support type-1 access. HALT!", __FUNCTION__);
 		HALT();	
   }
 
@@ -271,10 +270,10 @@ void xmhf_baseplatform_arch_x86_pci_initialize(void){
   outl(tmp, PCI_CONFIG_ADDR_PORT);
 
 	//say we are good to go and enumerate the PCI bus 
-	printf("\n%s: PCI type-1 access supported.", __FUNCTION__);
-	printf("\n%s: PCI bus enumeration follows:", __FUNCTION__);
+	_XDPRINTF_("\n%s: PCI type-1 access supported.", __FUNCTION__);
+	_XDPRINTF_("\n%s: PCI bus enumeration follows:", __FUNCTION__);
 	//_pci_enumeratebus();
-	printf("\n%s: Done with PCI bus enumeration.", __FUNCTION__);
+	_XDPRINTF_("\n%s: Done with PCI bus enumeration.", __FUNCTION__);
 
 	return;
 }

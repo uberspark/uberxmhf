@@ -47,7 +47,9 @@
 // XMHF core API -- x86vmx arch. backend
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf-core.h> 
+#include <xmhf.h>
+#include <xmhf-core.h>
+#include <xmhf-debug.h>
 //#include <xc-x86.h>
 //#include <xc-x86vmx.h>
 
@@ -132,7 +134,7 @@ void xc_coreapi_arch_eventhandler_nmiexception(struct regs *r){
 	//xc_cpu= _vmx_getxc_cpu();
 	context_desc = xc_api_partition_getcontextdesc(xmhf_baseplatform_arch_x86_getcpulapicid());
 	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
-		printf("\n%s: invalid partition/cpu context. Halting!\n", __FUNCTION__);
+		_XDPRINTF_("\n%s: invalid partition/cpu context. Halting!\n", __FUNCTION__);
 		HALT();
 	}
 	xc_cpu = &g_xc_cpu[context_desc.cpu_desc.cpu_index];
@@ -871,15 +873,15 @@ bool xc_api_partition_arch_addcpu(u32 partition_index, u32 cpu_index){
 		rdmsr(MSR_EFCR, &eax, &edx);
 		xc_cpuarchdata_x86vmx->vmx_msr_efcr = (u64)edx << 32 | (u64) eax;
 
-		//printf("\nCPU(0x%02x): MSR_EFER=0x%08x%08x", xc_cpu->cpuid, (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msr_efer >> 32), 
+		//_XDPRINTF_("\nCPU(0x%02x): MSR_EFER=0x%08x%08x", xc_cpu->cpuid, (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msr_efer >> 32), 
 		//	(u32)xc_cpuarchdata_x86vmx->vmx_msr_efer);
-		//printf("\nCPU(0x%02x): MSR_EFCR=0x%08x%08x", xc_cpu->cpuid, (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msr_efcr >> 32), 
+		//_XDPRINTF_("\nCPU(0x%02x): MSR_EFCR=0x%08x%08x", xc_cpu->cpuid, (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msr_efcr >> 32), 
 		//	(u32)xc_cpuarchdata_x86vmx->vmx_msr_efcr);
   	}
 
 	//we require unrestricted guest support, bail out if we don't have it
 	if( !( (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msrs[IA32_VMX_MSRCOUNT-1] >> 32) & 0x80 ) ){
-		printf("\n%s: need unrestricted guest support but did not find any!", __FUNCTION__);
+		_XDPRINTF_("\n%s: need unrestricted guest support but did not find any!", __FUNCTION__);
 		return false;
 	}
 
@@ -913,7 +915,7 @@ bool xc_api_partition_arch_addcpu(u32 partition_index, u32 cpu_index){
 		   : "eax");
 
 		if(!retval){
-			printf("\n%s: unable to enter VMX root operation", __FUNCTION__);
+			_XDPRINTF_("\n%s: unable to enter VMX root operation", __FUNCTION__);
 			return false;
 		}  
 	}
@@ -1009,11 +1011,11 @@ bool xc_api_partition_arch_startcpu(context_desc_t context_desc){
 
 	switch(errorcode){
 			case 0:	//no error code, VMCS pointer is invalid
-				printf("%s: VMLAUNCH error; VMCS pointer invalid?", __FUNCTION__);
+				_XDPRINTF_("%s: VMLAUNCH error; VMCS pointer invalid?", __FUNCTION__);
 				break;
 			case 1:{//error code available, so dump it
 				u32 code=xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
-				printf("\n%s: VMLAUNCH error; code=%x", __FUNCTION__, code);
+				_XDPRINTF_("\n%s: VMLAUNCH error; code=%x", __FUNCTION__, code);
 				break;
 			}
 	}

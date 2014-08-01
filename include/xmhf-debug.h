@@ -44,50 +44,56 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <xmhf.h> 
-#include <xmhf-debug-x86.h>
+#ifndef __XMHF_DEBUG_H__
+#define __XMHF_DEBUG_H__
 
-#define COLS     80
-#define ROWS     25
-#define ATTR     7
 
-static char *vidmem=(char *)0xB8000;
-static unsigned int vid_x, vid_y;
+#ifndef __ASSEMBLY__
 
-static void vgamem_newln(void){
-    vid_x = 0;
-    vid_y++;
+#define LOG_LEVEL_NONE    0x00
+#define LOG_LEVEL_ALL     0xFF
 
-    if (vid_y >= ROWS){
-        vid_y = ROWS-1;
-        memcpy((char*)vidmem,(char*)vidmem + 2*COLS, (ROWS-1)*2*COLS);
-        memcpy((char*)vidmem + (ROWS-1)*2*COLS, 0, 2*COLS);
-    }
+#define LOG_TARGET_NONE   0x00
+#define LOG_TARGET_VGA    0x01
+#define LOG_TARGET_SERIAL 0x02
+#define LOG_TARGET_MEMORY 0x04
+
+#define LOG_PROFILE (1<<0)
+#define LOG_TRACE   (1<<1)
+#define LOG_ERROR   (1<<2)
+
+#define ENABLED_LOG_TYPES (LOG_PROFILE|LOG_TRACE|LOG_ERROR)
+
+static inline void xmhf_debug_init(char *params){
+	(void)params;
+#ifdef __DEBUG_SERIAL__
+  xmhf_hw_platform_serialinit(params);
+#endif
 }
 
-void dbg_x86_vgamem_putc(char ch)
-{
-    if ( ch == '\n' )
-        vgamem_newln();
-    else
-    {
-        vidmem[(vid_x + (vid_y * COLS)) * 2]  = ch;
-        vidmem[((vid_x + (vid_y * COLS)) * 2) + 1] = ATTR;
-        if ( ++vid_x >= COLS ) vgamem_newln();
-    }
+#if defined (__DEBUG_SERIAL__)
+
+extern u32 libxmhfdebug_lock;
+
+static inline void _XDPRINTF_(const char *fmt, ...){
+    va_list       ap;
+	int retval;
+	char buffer[1024];
+
+	va_start(ap, fmt);
+	retval = vsnprintf(&buffer, 1024, fmt, ap);
+	spin_lock(&libxmhfdebug_lock);
+	xmhf_hw_platform_serial_puts(&buffer);
+	spin_unlock(&libxmhfdebug_lock);
+    va_end(ap);
 }
 
-void dbg_x86_vgamem_putstr(const char *str)
-{
-    int c;
+#else
 
-    while ( (c = *str++) != '\0' )
-        dbg_x86_vgamem_putc(c);
-}
+#define _XDPRINTF_(format, args...)  
 
+#endif
 
-void dbg_x86_vgamem_init(char *params){
-  (void)params;	//we don't use params for the VGA backend currently
-  memset((char *)vidmem, 0, COLS * ROWS * 2);
-  vid_x = vid_y = 0;
-}
+#endif	//__ASSEMBLY__
+
+#endif //__XMHF_DEBUG_H__

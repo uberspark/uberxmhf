@@ -48,8 +48,12 @@
  * XMHF secureloader x86-vmx backend
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
- 
+
+#include <xmhf.h>
 #include <xmhf-core.h>
+#include <xmhf-debug.h>
+ 
+//#include <xmhf-core.h>
 //#include <xmhf-sl.h>
 
 #include <xcprimeon.h>
@@ -120,21 +124,21 @@ void xmhf_sl_arch_sanitize_post_launch(void){
         os_mle_data_t *os_mle_data;
 
         txt_heap = get_txt_heap();
-		printf("SL: txt_heap = 0x%08x\n", (u32)txt_heap);
+		_XDPRINTF_("SL: txt_heap = 0x%08x\n", (u32)txt_heap);
         /// compensate for special DS here in SL 
         //os_mle_data = get_os_mle_data_start((txt_heap_t*)((u32)txt_heap - sl_baseaddr));
         os_mle_data = get_os_mle_data_start((txt_heap_t*)((u32)txt_heap));
-        printf("SL: os_mle_data = 0x%08x\n", (u32)os_mle_data);
+        _XDPRINTF_("SL: os_mle_data = 0x%08x\n", (u32)os_mle_data);
         
         // restore pre-SENTER MTRRs that were overwritten for SINIT launch 
         if(!validate_mtrrs(&(os_mle_data->saved_mtrr_state))) {
-            printf("SECURITY FAILURE: validate_mtrrs() failed.\n");
+            _XDPRINTF_("SECURITY FAILURE: validate_mtrrs() failed.\n");
             HALT();
         }
-        printf("SL: Validated MTRRs\n");
+        _XDPRINTF_("SL: Validated MTRRs\n");
 
         restore_mtrrs(&(os_mle_data->saved_mtrr_state));
-        printf("SL: Restored MTRRs\n");
+        _XDPRINTF_("SL: Restored MTRRs\n");
     
 	#endif
 }
@@ -150,7 +154,7 @@ static bool vtd_dmaprotect(u32 membase, u32 size){
 	
 #ifndef __XMHF_VERIFICATION__	
 
-	printf("\n%s: size=%08x", __FUNCTION__, size);
+	_XDPRINTF_("\n%s: size=%08x", __FUNCTION__, size);
 	
 	//scan for available DRHD units in the platform
 	if(!vtd_scanfor_drhd_units(&vtd_drhd_maxhandle, &vtd_dmar_table_physical_address))
@@ -164,7 +168,7 @@ static bool vtd_dmaprotect(u32 membase, u32 size){
 	
 	//initialize all DRHD units
 	for(drhd_handle=0; drhd_handle < vtd_drhd_maxhandle; drhd_handle++){
-		printf("\n%s: Setting up DRHD unit %u...", __FUNCTION__, drhd_handle);
+		_XDPRINTF_("\n%s: Setting up DRHD unit %u...", __FUNCTION__, drhd_handle);
 		
 		if(!vtd_drhd_initialize(drhd_handle) )
 			return false;
@@ -215,20 +219,20 @@ static bool vtd_dmaprotect(u32 membase, u32 size){
 	xmhfhw_sysmemaccess_writeu32(vtd_dmar_table_physical_address, 0UL);
 
 	//success
-	printf("\n%s: success, leaving...", __FUNCTION__);
+	_XDPRINTF_("\n%s: success, leaving...", __FUNCTION__);
 
 	return true;
 }
 
 
 void xmhf_sl_arch_early_dmaprot_init(u32 membase, u32 size){
-		printf("SL: Initializing DMA protections...\n");
+		_XDPRINTF_("SL: Initializing DMA protections...\n");
 		
 		if(!vtd_dmaprotect(membase, size)){
-			printf("SL: Fatal, could not initialize DMA protections. Halting!\n");
+			_XDPRINTF_("SL: Fatal, could not initialize DMA protections. Halting!\n");
 			HALT();	
 		}else{
-			printf("SL: Initialized DMA protections successfully\n");
+			_XDPRINTF_("SL: Initialized DMA protections successfully\n");
 		}
 }
 
@@ -253,9 +257,9 @@ void xcprimeon_platform_arch_initialize(void){
 	#endif //__XMHF_VERIFICATION__
 
 	//initialize basic exception handling
-	printf("%s: proceeding to initialize basic exception handling\n", __FUNCTION__);
+	_XDPRINTF_("%s: proceeding to initialize basic exception handling\n", __FUNCTION__);
 	_xcprimeon_initialize_exceptionhandling();
-	printf("%s: basic exception handling initialized\n", __FUNCTION__);
+	_XDPRINTF_("%s: basic exception handling initialized\n", __FUNCTION__);
 	
 
 	//initialize PCI subsystem
@@ -267,7 +271,7 @@ void xcprimeon_platform_arch_initialize(void){
 		#ifndef __XMHF_VERIFICATION__
 			//TODO: plug in a BIOS data area map/model
 			if(!xmhf_baseplatform_arch_x86_acpi_getRSDP(&rsdp)){
-				printf("\n%s: ACPI RSDP not found, Halting!", __FUNCTION__);
+				_XDPRINTF_("\n%s: ACPI RSDP not found, Halting!", __FUNCTION__);
 				HALT();
 			}
 		#endif //__XMHF_VERIFICATION__

@@ -48,7 +48,9 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 //---includes-------------------------------------------------------------------
-#include <xmhf-core.h> 
+#include <xmhf.h>
+#include <xmhf-core.h>
+#include <xmhf-debug.h>
 
 #include <xc-initbs.h>
 
@@ -62,9 +64,9 @@ void xmhf_runtime_entry(void){
 
 	//setup debugging	
 	//xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
-	//printf("\nxmhf-core: starting...");
+	//_XDPRINTF_("\nxmhf-core: starting...");
 
-    
+   
   	//initialize basic platform elements
 	//xmhf_baseplatform_initialize();
 
@@ -93,28 +95,28 @@ void xmhf_runtime_entry(void){
 			u32 value;
 			
 			//invoke slab interface
-			printf("\n%s: preparing to invoke entry_0, esp=%x", __FUNCTION__, read_esp());
+			_XDPRINTF_("\n%s: preparing to invoke entry_0, esp=%x", __FUNCTION__, read_esp());
 			XMHF_SLAB_CALL(entry_0());
-			printf("\n%s: came back from entry_0, esp=%x", __FUNCTION__, read_esp());
+			_XDPRINTF_("\n%s: came back from entry_0, esp=%x", __FUNCTION__, read_esp());
 
-			printf("\n%s: preparing to invoke entry_1, esp=%x", __FUNCTION__, read_esp());
+			_XDPRINTF_("\n%s: preparing to invoke entry_1, esp=%x", __FUNCTION__, read_esp());
 			value=XMHF_SLAB_CALL(entry_1(5, 3));
-			printf("\n%s: came back from entry_1, esp=%x", __FUNCTION__, read_esp());
-			printf("\n%s: came back from entry_1, value=%u", __FUNCTION__, value);
+			_XDPRINTF_("\n%s: came back from entry_1, esp=%x", __FUNCTION__, read_esp());
+			_XDPRINTF_("\n%s: came back from entry_1, value=%u", __FUNCTION__, value);
 						
-			//printf("%s: doing int3\n", __FUNCTION__);
+			//_XDPRINTF_("%s: doing int3\n", __FUNCTION__);
 			//asm volatile("int $0x03 \r\n");
-			//printf("%s: doing int3\n", __FUNCTION__);
+			//_XDPRINTF_("%s: doing int3\n", __FUNCTION__);
 			//asm volatile("int $0x03 \r\n");
-			//printf("%s: doing int3\n", __FUNCTION__);
+			//_XDPRINTF_("%s: doing int3\n", __FUNCTION__);
 			//asm volatile("int $0x03 \r\n");
-			//printf("%s: int3 test done\n", __FUNCTION__);
+			//_XDPRINTF_("%s: int3 test done\n", __FUNCTION__);
 			
 			
-			printf("%s: preparing to invoke entry_2, esp=%x\n", __FUNCTION__, read_esp());
+			_XDPRINTF_("%s: preparing to invoke entry_2, esp=%x\n", __FUNCTION__, read_esp());
 			ctx= XMHF_SLAB_CALL(entry_2(2048, true, 4096));
-			printf("\n%s: came back from entry_2, esp=%x", __FUNCTION__, read_esp());
-			printf("\n%s: ctx: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, ctx.cpu_desc.cpu_index, ctx.cpu_desc.isbsp, ctx.partition_desc.partition_index);
+			_XDPRINTF_("\n%s: came back from entry_2, esp=%x", __FUNCTION__, read_esp());
+			_XDPRINTF_("\n%s: ctx: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, ctx.cpu_desc.cpu_index, ctx.cpu_desc.isbsp, ctx.partition_desc.partition_index);
 			
 			ap_input.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_INFOREGS;
 			ap_input.param.inforegs.info_vminstr_error = 0; 
@@ -133,24 +135,24 @@ void xmhf_runtime_entry(void){
 			ap_input.param.inforegs.info_guest_linear_address = 13; 
 			ap_input.param.inforegs.info_guest_paddr_full = 14; 
 
-			printf("\n%s: preparing to invoke entry_3, esp=%x", __FUNCTION__, read_esp());
+			_XDPRINTF_("\n%s: preparing to invoke entry_3, esp=%x", __FUNCTION__, read_esp());
 			ap_output = XMHF_SLAB_CALL(entry_3(ctx, ap_input));			
-			printf("\n%s: came back from entry_3, esp=%x", __FUNCTION__, read_esp());
-			printf("\nap_output.param.inforegs.info_vminstr_error                  %u",  ap_output.param.inforegs.info_vminstr_error                ); 
-			printf("\nap_output.param.inforegs.info_vmexit_reason                  %u",  ap_output.param.inforegs.info_vmexit_reason                ); 
-			printf("\nap_output.param.inforegs.info_vmexit_interrupt_information   %u",  ap_output.param.inforegs.info_vmexit_interrupt_information ); 
-			printf("\nap_output.param.inforegs.info_vmexit_interrupt_error_code    %u",  ap_output.param.inforegs.info_vmexit_interrupt_error_code  ); 
-			printf("\nap_output.param.inforegs.info_idt_vectoring_information      %u",  ap_output.param.inforegs.info_idt_vectoring_information    ); 
-			printf("\nap_output.param.inforegs.info_idt_vectoring_error_code       %u",  ap_output.param.inforegs.info_idt_vectoring_error_code     ); 
-			printf("\nap_output.param.inforegs.info_vmexit_instruction_length      %u",  ap_output.param.inforegs.info_vmexit_instruction_length    ); 
-			printf("\nap_output.param.inforegs.info_vmx_instruction_information    %u",  ap_output.param.inforegs.info_vmx_instruction_information  ); 
-			printf("\nap_output.param.inforegs.info_exit_qualification             %llu",  ap_output.param.inforegs.info_exit_qualification           ); 
-			printf("\nap_output.param.inforegs.info_io_rcx                         %llu",  ap_output.param.inforegs.info_io_rcx                       ); 
-			printf("\nap_output.param.inforegs.info_io_rsi                         %llu",  ap_output.param.inforegs.info_io_rsi                       ); 
-			printf("\nap_output.param.inforegs.info_io_rdi                         %llu",  ap_output.param.inforegs.info_io_rdi                       ); 
-			printf("\nap_output.param.inforegs.info_io_rip                         %llu",  ap_output.param.inforegs.info_io_rip                       ); 
-			printf("\nap_output.param.inforegs.info_guest_linear_address           %llu",  ap_output.param.inforegs.info_guest_linear_address         ); 
-			printf("\nap_output.param.inforegs.info_guest_paddr_full               %llu",  ap_output.param.inforegs.info_guest_paddr_full             ); 
+			_XDPRINTF_("\n%s: came back from entry_3, esp=%x", __FUNCTION__, read_esp());
+			_XDPRINTF_("\nap_output.param.inforegs.info_vminstr_error                  %u",  ap_output.param.inforegs.info_vminstr_error                ); 
+			_XDPRINTF_("\nap_output.param.inforegs.info_vmexit_reason                  %u",  ap_output.param.inforegs.info_vmexit_reason                ); 
+			_XDPRINTF_("\nap_output.param.inforegs.info_vmexit_interrupt_information   %u",  ap_output.param.inforegs.info_vmexit_interrupt_information ); 
+			_XDPRINTF_("\nap_output.param.inforegs.info_vmexit_interrupt_error_code    %u",  ap_output.param.inforegs.info_vmexit_interrupt_error_code  ); 
+			_XDPRINTF_("\nap_output.param.inforegs.info_idt_vectoring_information      %u",  ap_output.param.inforegs.info_idt_vectoring_information    ); 
+			_XDPRINTF_("\nap_output.param.inforegs.info_idt_vectoring_error_code       %u",  ap_output.param.inforegs.info_idt_vectoring_error_code     ); 
+			_XDPRINTF_("\nap_output.param.inforegs.info_vmexit_instruction_length      %u",  ap_output.param.inforegs.info_vmexit_instruction_length    ); 
+			_XDPRINTF_("\nap_output.param.inforegs.info_vmx_instruction_information    %u",  ap_output.param.inforegs.info_vmx_instruction_information  ); 
+			_XDPRINTF_("\nap_output.param.inforegs.info_exit_qualification             %llu",  ap_output.param.inforegs.info_exit_qualification           ); 
+			_XDPRINTF_("\nap_output.param.inforegs.info_io_rcx                         %llu",  ap_output.param.inforegs.info_io_rcx                       ); 
+			_XDPRINTF_("\nap_output.param.inforegs.info_io_rsi                         %llu",  ap_output.param.inforegs.info_io_rsi                       ); 
+			_XDPRINTF_("\nap_output.param.inforegs.info_io_rdi                         %llu",  ap_output.param.inforegs.info_io_rdi                       ); 
+			_XDPRINTF_("\nap_output.param.inforegs.info_io_rip                         %llu",  ap_output.param.inforegs.info_io_rip                       ); 
+			_XDPRINTF_("\nap_output.param.inforegs.info_guest_linear_address           %llu",  ap_output.param.inforegs.info_guest_linear_address         ); 
+			_XDPRINTF_("\nap_output.param.inforegs.info_guest_paddr_full               %llu",  ap_output.param.inforegs.info_guest_paddr_full             ); 
 
 	}
 
@@ -158,31 +160,31 @@ void xmhf_runtime_entry(void){
 	//testslab2
 	{
 			//invoke testslab 2 interface
-			printf("\n%s: preparing to invoke testslab2_entry_0, esp=%x", __FUNCTION__, read_esp());
+			_XDPRINTF_("\n%s: preparing to invoke testslab2_entry_0, esp=%x", __FUNCTION__, read_esp());
 			XMHF_SLAB_CALL(testslab2_entry_0());
-			printf("\n%s: came back from testslab2_entry_0, esp=%x", __FUNCTION__, read_esp());
+			_XDPRINTF_("\n%s: came back from testslab2_entry_0, esp=%x", __FUNCTION__, read_esp());
 	}
 
 	
-	printf("\nXMHF Tester Finished!\n");
-	printf("\n\n");
+	_XDPRINTF_("\nXMHF Tester Finished!\n");
+	_XDPRINTF_("\n\n");
 	HALT();
 */
 
-	printf("proceeding to initialize exception handling...\n");
+	_XDPRINTF_("proceeding to initialize exception handling...\n");
 	//setup platform exception handling
 	xcinitbs_arch_initialize_exception_handling();
-	printf("exception handling initialized.\n");
+	_XDPRINTF_("exception handling initialized.\n");
 
 
 
-	//printf("\nXMHF Tester Finished!\n\n");
+	//_XDPRINTF_("\nXMHF Tester Finished!\n\n");
 	//HALT();
 
 	//initialize base platform with SMP 
 	xmhf_baseplatform_smpinitialize();
 
-	printf("\nRuntime: We should NEVER get here!");
+	_XDPRINTF_("\nRuntime: We should NEVER get here!");
 	HALT_ON_ERRORCOND(0);
 }
 

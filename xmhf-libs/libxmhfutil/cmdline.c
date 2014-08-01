@@ -84,6 +84,8 @@
  */
 
 #include <xmhf.h> 
+#include <xmhf-debug.h>
+
 #include <cmdline.h>
 
 const char* cmdline_get_option_val(const cmdline_option_t *options,
@@ -95,7 +97,7 @@ const char* cmdline_get_option_val(const cmdline_option_t *options,
         if ( strcmp(options[i].name, opt_name) == 0 )
             return vals[i];
     }
-    printf("requested unknown option: %s\n", opt_name);
+    _XDPRINTF_("requested unknown option: %s\n", opt_name);
     return NULL;
 }
 

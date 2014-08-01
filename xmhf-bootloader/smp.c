@@ -51,6 +51,8 @@
 //version, base and BSP indications
 //author: amit vasudevan (amitvasudevan@acm.org)
 #include <xmhf.h> 
+#include <xmhf-debug.h>
+
 
 //#include "cpu/x86/include/common/_multiboot.h"		//multiboot
 //#include "cpu/x86/include/common/_processor.h"  	//CPU
@@ -99,21 +101,21 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
 	//we need to look at ACPI MADT. Logical cores on some machines
 	//(e.g HP8540p laptop with Core i5) are reported only using ACPI MADT
 	//and there is no MP structures on such systems!
-	printf("\nFinding SMP info. via ACPI...");
+	_XDPRINTF_("\nFinding SMP info. via ACPI...");
 	rsdp=(ACPI_RSDP *)ACPIGetRSDP();
 	if(!rsdp){
-		printf("\nSystem is not ACPI Compliant, falling through...");
+		_XDPRINTF_("\nSystem is not ACPI Compliant, falling through...");
 		goto fallthrough;
 	}
 	
-	printf("\nACPI RSDP at 0x%08x", (u32)rsdp);
+	_XDPRINTF_("\nACPI RSDP at 0x%08x", (u32)rsdp);
 
 #if 0	
 	xsdt=(ACPI_XSDT *)(u32)rsdp->xsdtaddress;
 	n_xsdt_entries=(u32)((xsdt->length-sizeof(ACPI_XSDT))/8);
 
-	printf("\nACPI XSDT at 0x%08x", xsdt);
-  printf("\n	len=0x%08x, headerlen=0x%08x, numentries=%u", 
+	_XDPRINTF_("\nACPI XSDT at 0x%08x", xsdt);
+  _XDPRINTF_("\n	len=0x%08x, headerlen=0x%08x, numentries=%u", 
 			xsdt->length, sizeof(ACPI_XSDT), n_xsdt_entries);
   
   xsdtentrylist=(u64 *) ( (u32)xsdt + sizeof(ACPI_XSDT) );
@@ -129,8 +131,8 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
 	rsdt=(ACPI_RSDT *)(u32)rsdp->rsdtaddress;
 	n_rsdt_entries=(u32)((rsdt->length-sizeof(ACPI_RSDT))/4);
 
-	printf("\nACPI RSDT at 0x%08x", (u32)rsdt);
-  printf("\n	len=0x%08x, headerlen=0x%08x, numentries=%u", 
+	_XDPRINTF_("\nACPI RSDT at 0x%08x", (u32)rsdt);
+  _XDPRINTF_("\n	len=0x%08x, headerlen=0x%08x, numentries=%u", 
 			rsdt->length, sizeof(ACPI_RSDT), n_rsdt_entries);
   
   rsdtentrylist=(u32 *) ( (u32)rsdt + sizeof(ACPI_RSDT) );
@@ -147,12 +149,12 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
 
 
 	if(!madt_found){
-		printf("\nACPI MADT not found, falling through...");
+		_XDPRINTF_("\nACPI MADT not found, falling through...");
 		goto fallthrough;
 	}
 
-	printf("\nACPI MADT at 0x%08x", (u32)madt);
-	printf("\n	len=0x%08x, record-length=%u bytes", madt->length,
+	_XDPRINTF_("\nACPI MADT at 0x%08x", (u32)madt);
+	_XDPRINTF_("\n	len=0x%08x, record-length=%u bytes", madt->length,
 			madt->length - sizeof(ACPI_MADT));
 	
 	//scan through MADT APIC records to find processors
@@ -165,7 +167,7 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
 		
 		do{
 			ACPI_MADT_APIC *apicrecord = (ACPI_MADT_APIC *)((u32)madt + sizeof(ACPI_MADT) + madtcurrentrecordoffset);				
- 		  printf("\nrec type=0x%02x, length=%u bytes, flags=0x%08x, id=0x%02x", apicrecord->type,
+ 		  _XDPRINTF_("\nrec type=0x%02x, length=%u bytes, flags=0x%08x, id=0x%02x", apicrecord->type,
 			 		apicrecord->length, apicrecord->flags, apicrecord->lapicid);
 
 			if(apicrecord->type == 0x0 && (apicrecord->flags & 0x1)){ //processor record
@@ -205,11 +207,11 @@ fallthrough:
 			mp_scan_config(mp_getebda(), 0x400, &mpfp) ||					
 			mp_scan_config(0xF0000, 0x10000, &mpfp) ){
 
-	    printf("\nMP table found at: 0x%08x", (u32)mpfp);
-  		printf("\nMP spec rev=0x%02x", mpfp->spec_rev);
-  		printf("\nMP feature info1=0x%02x", mpfp->mpfeatureinfo1);
-  		printf("\nMP feature info2=0x%02x", mpfp->mpfeatureinfo2);
-  		printf("\nMP Configuration table at 0x%08x", mpfp->paddrpointer);
+	    _XDPRINTF_("\nMP table found at: 0x%08x", (u32)mpfp);
+  		_XDPRINTF_("\nMP spec rev=0x%02x", mpfp->spec_rev);
+  		_XDPRINTF_("\nMP feature info1=0x%02x", mpfp->mpfeatureinfo1);
+  		_XDPRINTF_("\nMP feature info2=0x%02x", mpfp->mpfeatureinfo2);
+  		_XDPRINTF_("\nMP Configuration table at 0x%08x", mpfp->paddrpointer);
   
   		HALT_ON_ERRORCOND( mpfp->paddrpointer != 0 );
 			mpctable = (MPCONFTABLE *)mpfp->paddrpointer;
@@ -217,16 +219,16 @@ fallthrough:
   
 		  {//debug
 		    int i;
-		    printf("\nOEM ID: ");
+		    _XDPRINTF_("\nOEM ID: ");
 		    for(i=0; i < 8; i++)
-		      printf("%c", mpctable->oemid[i]);
-		    printf("\nProduct ID: ");
+		      _XDPRINTF_("%c", mpctable->oemid[i]);
+		    _XDPRINTF_("\nProduct ID: ");
 		    for(i=0; i < 12; i++)
-		      printf("%c", mpctable->productid[i]);
+		      _XDPRINTF_("%c", mpctable->productid[i]);
 		  }
   
-		  printf("\nEntry count=%u", mpctable->entrycount);
-		  printf("\nLAPIC base=0x%08x", mpctable->lapicaddr);
+		  _XDPRINTF_("\nEntry count=%u", mpctable->entrycount);
+		  _XDPRINTF_("\nLAPIC base=0x%08x", mpctable->lapicaddr);
 		  
 		  //now step through CPU entries in the MP-table to determine
 		  //how many CPUs we have
@@ -243,7 +245,7 @@ fallthrough:
 		      
 		      if(cpu->cpuflags & 0x1){
  		        HALT_ON_ERRORCOND( *num_pcpus < MAX_PCPU_ENTRIES);		        
-						printf("\nCPU (0x%08x) #%u: lapic id=0x%02x, ver=0x%02x, cpusig=0x%08x", 
+						_XDPRINTF_("\nCPU (0x%08x) #%u: lapic id=0x%02x, ver=0x%02x, cpusig=0x%08x", 
 		          (u32)cpu, i, cpu->lapicid, cpu->lapicver, cpu->cpusig);
 		        pcpus[i].lapic_id = cpu->lapicid;
 		        pcpus[i].lapic_ver = cpu->lapicver;
@@ -282,7 +284,7 @@ static u32 mp_scan_config(u32 base, u32 length, MPFP **mpfp){
 	u32 *bp = (u32 *)base;
   MPFP *mpf;
 
-  printf("\n%s: Finding MP table from 0x%08x for %u bytes",
+  _XDPRINTF_("\n%s: Finding MP table from 0x%08x for %u bytes",
                         __FUNCTION__, (u32)bp, length);
 
   while (length > 0) {
@@ -293,7 +295,7 @@ static u32 mp_scan_config(u32 base, u32 length, MPFP **mpfp){
                     ((mpf->spec_rev == 1)
                      || (mpf->spec_rev == 4))) {
 
-                        printf("\n%s: found SMP MP-table at 0x%08x",
+                        _XDPRINTF_("\n%s: found SMP MP-table at 0x%08x",
                                __FUNCTION__, (u32)mpf);
 
 												*mpfp = mpf;

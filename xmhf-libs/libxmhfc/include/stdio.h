@@ -98,7 +98,7 @@ int      getw(FILE *);
 int      pclose(FILE *);
 void     perror(const char *);
 FILE    *popen(const char *, const char *);
-int      printf(const char *, ...);
+//int      _XDPRINTF_(const char *, ...);
 int      putc(int, FILE *);
 int      putchar(int);
 int      putc_unlocked(int, FILE *);
@@ -119,7 +119,7 @@ FILE    *tmpfile(void);
 char    *tmpnam(char *);
 int      ungetc(int, FILE *);
 int      vfprintf(FILE *, const char *, va_list);
-int      vprintf(const char *, va_list);
+//int      vprintf(const char *, va_list);
 int      vsnprintf(char *, size_t, const char *, va_list);
 int      vsprintf(char *, const char *, va_list);
 

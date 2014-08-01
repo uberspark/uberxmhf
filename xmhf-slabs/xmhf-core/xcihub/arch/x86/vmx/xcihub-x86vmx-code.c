@@ -46,7 +46,9 @@
 
 // XMHF ihub slab -- x86 (VMX) backend implementation
 // author: amit vasudevan (amitvasudevan@acm.org)
-#include <xmhf-core.h> 
+#include <xmhf.h>
+#include <xmhf-core.h>
+#include <xmhf-debug.h>
 //#include <xc-x86.h>
 //#include <xc-x86vmx.h>
 
@@ -75,7 +77,7 @@ static u32 _vmx_getregval(u32 gpr, struct regs r){
 		case 6: return r.esi;
 		case 7: return r.edi;
 		default:
-			printf("\n%s: warning, invalid gpr value (%u): returning zero value", __FUNCTION__, gpr);
+			_XDPRINTF_("\n%s: warning, invalid gpr value (%u): returning zero value", __FUNCTION__, gpr);
 			return 0;
 	}
 }
@@ -108,7 +110,7 @@ static struct regs _vmx_handle_intercept_cpuid(context_desc_t context_desc, stru
   
 //---intercept handler (WRMSR)--------------------------------------------------
 static void _vmx_handle_intercept_wrmsr(context_desc_t context_desc, struct regs r){
-	//printf("\nCPU(0x%02x): WRMSR 0x%08x", xc_cpu->cpuid, r.ecx);
+	//_XDPRINTF_("\nCPU(0x%02x): WRMSR 0x%08x", xc_cpu->cpuid, r.ecx);
 	xc_hypapp_arch_param_t ap;
 	
 	ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_SYSENTER));
@@ -253,12 +255,12 @@ static void _vmx_handle_intercept_xsetbv(context_desc_t context_desc, struct reg
 	xcr_value = ((u64)r.edx << 32) + (u64)r.eax;
 	
 	if(r.ecx != XCR_XFEATURE_ENABLED_MASK){
-			printf("\n%s: unhandled XCR register %u", __FUNCTION__, r.ecx);
+			_XDPRINTF_("\n%s: unhandled XCR register %u", __FUNCTION__, r.ecx);
 			HALT();
 	}
 
 	//XXX: TODO: check for invalid states and inject GP accordingly
-	printf("\n%s: xcr_value=%llx", __FUNCTION__, xcr_value);
+	_XDPRINTF_("\n%s: xcr_value=%llx", __FUNCTION__, xcr_value);
 	
 	//set XCR with supplied value
 	xsetbv(XCR_XFEATURE_ENABLED_MASK, xcr_value);
@@ -284,14 +286,14 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 	
 	//sanity check for VM-entry errors
 	if( inforegs.info_vmexit_reason & 0x80000000UL ){
-		printf("\nVM-ENTRY error: reason=0x%08x, qualification=0x%016llx", 
+		_XDPRINTF_("\nVM-ENTRY error: reason=0x%08x, qualification=0x%016llx", 
 			inforegs.info_vmexit_reason, inforegs.info_exit_qualification);
 		HALT();
 	}
 
 	//make sure we have no nested events
 	if( inforegs.info_idt_vectoring_information & 0x80000000){
-		printf("\nCPU(0x%02x): HALT; Nested events unhandled with hwp:0x%08x",
+		_XDPRINTF_("\nCPU(0x%02x): HALT; Nested events unhandled with hwp:0x%08x",
 			context_desc.cpu_desc.cpu_index, inforegs.info_idt_vectoring_information);
 		HALT();
 	}
@@ -339,7 +341,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 					u64 hypercall_param = ((u64)x86gprs.edx << 32) | x86gprs.ecx;
 	
 					if( XMHF_SLAB_CALL(xmhf_hypapp_handlehypercall(context_desc, hypercall_id, hypercall_param)) != APP_SUCCESS){
-						printf("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", context_desc.cpu_desc.cpu_index, x86gprs.eax);
+						_XDPRINTF_("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", context_desc.cpu_desc.cpu_index, x86gprs.eax);
 						HALT();
 					}
 				}
@@ -398,9 +400,9 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 		break;  
 
 		case VMX_VMEXIT_INIT:{
-			printf("\n***** VMEXIT_INIT xmhf_hypapp_handleshutdown\n");
+			_XDPRINTF_("\n***** VMEXIT_INIT xmhf_hypapp_handleshutdown\n");
 			XMHF_SLAB_CALL(xmhf_hypapp_handleshutdown(context_desc));      
-			printf("\nCPU(0x%02x): Fatal, xmhf_hypapp_handleshutdown returned. Halting!", context_desc.cpu_desc.cpu_index);
+			_XDPRINTF_("\nCPU(0x%02x): Fatal, xmhf_hypapp_handleshutdown returned. Halting!", context_desc.cpu_desc.cpu_index);
 			HALT();
 		}
 		break;
@@ -429,7 +431,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 						break;
 				
 					default:
-						printf("\nunhandled crx, halting!");
+						_XDPRINTF_("\nunhandled crx, halting!");
 						HALT();
 				}
 				crxaccess_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
@@ -441,7 +443,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 				XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, crxaccess_ap));
 
 			}else{
-				printf("\n[%02x]%s: invalid gpr value (%u). halting!", context_desc.cpu_desc.cpu_index,
+				_XDPRINTF_("\n[%02x]%s: invalid gpr value (%u). halting!", context_desc.cpu_desc.cpu_index,
 					__FUNCTION__, gpr);
 				HALT();
 			}
@@ -505,14 +507,14 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 			u16 tss_selector = (u16)inforegs.info_exit_qualification;
 			
 			if(reason == TASK_SWITCH_GATE && type == INTR_TYPE_NMI){
-				printf("\nCPU(0x%02x): NMI received (MP guest shutdown?)", context_desc.cpu_desc.cpu_index);
+				_XDPRINTF_("\nCPU(0x%02x): NMI received (MP guest shutdown?)", context_desc.cpu_desc.cpu_index);
 				XMHF_SLAB_CALL(xmhf_hypapp_handleshutdown(context_desc));      
-				printf("\nCPU(0x%02x): warning, xmhf_hypapp_handleshutdown returned!", context_desc.cpu_desc.cpu_index);
-				printf("\nCPU(0x%02x): HALTING!", context_desc.cpu_desc.cpu_index);
+				_XDPRINTF_("\nCPU(0x%02x): warning, xmhf_hypapp_handleshutdown returned!", context_desc.cpu_desc.cpu_index);
+				_XDPRINTF_("\nCPU(0x%02x): HALTING!", context_desc.cpu_desc.cpu_index);
 				HALT();
 			}else{
-				printf("\nCPU(0x%02x): Unhandled Task Switch. Halt!", context_desc.cpu_desc.cpu_index);
-				printf("\n	idt_v=0x%08x, type=0x%08x, reason=0x%08x, tsssel=0x%04x",
+				_XDPRINTF_("\nCPU(0x%02x): Unhandled Task Switch. Halt!", context_desc.cpu_desc.cpu_index);
+				_XDPRINTF_("\n	idt_v=0x%08x, type=0x%08x, reason=0x%08x, tsssel=0x%04x",
 					idt_v, type, reason, tss_selector); 
 			}
 			HALT();
@@ -546,7 +548,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 			sipi_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC));
 			sipi_desc = sipi_ap.param.desc;
 			
-			printf("\nCPU(%02x): SIPI vector=0x%08x", context_desc.cpu_desc.cpu_index, sipivector);
+			_XDPRINTF_("\nCPU(%02x): SIPI vector=0x%08x", context_desc.cpu_desc.cpu_index, sipivector);
 			sipi_desc.cs.selector = ((sipivector * PAGE_SIZE_4K) >> 4);
 			sipi_desc.cs.base = (sipivector * PAGE_SIZE_4K);
 			sipi_activity.rip = 0;
@@ -565,7 +567,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
     
 		default:{
-			printf("\nCPU(0x%02x): Unhandled intercept: 0x%08x Halting!", context_desc.cpu_desc.cpu_index, (u32)inforegs.info_vmexit_reason);
+			_XDPRINTF_("\nCPU(0x%02x): Unhandled intercept: 0x%08x Halting!", context_desc.cpu_desc.cpu_index, (u32)inforegs.info_vmexit_reason);
 			HALT();
 		}		
 	} //end inforegs.info_vmexit_reason
@@ -620,7 +622,7 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 
 	context_desc = XMHF_SLAB_CALL(xc_api_partition_getcontextdesc(xmhf_baseplatform_arch_x86_getcpulapicid()));
 	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
-		printf("\n%s: invalid partition/cpu context. Halting!\n", __FUNCTION__);
+		_XDPRINTF_("\n%s: invalid partition/cpu context. Halting!\n", __FUNCTION__);
 		HALT();
 	}
 	
@@ -676,14 +678,14 @@ struct regs xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t
 		//return value, CF=0 indicated no error, EAX='SMAP'
 		//ES:DI left untouched, ECX=size returned, EBX=next continuation value
 		//EBX=0 if last descriptor
-		printf("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", context_desc.cpu_desc.cpu_index, 
+		_XDPRINTF_("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", context_desc.cpu_desc.cpu_index, 
 		(u16)r.eax, r.edx, r.ebx, r.ecx, (u16)desc.es.selector, (u16)r.edi);
 		
 		if( (r.edx == 0x534D4150UL) && (r.ebx < xcbootinfo->memmapinfo_numentries) ){
 			
 			//copy the E820 descriptor and return its size
 			if(!xmhf_smpguest_memcpyto(context_desc, (const void *)((u32)(desc.es.base+(u16)r.edi)), (void *)&xcbootinfo->memmapinfo_buffer[r.ebx], sizeof(GRUBE820)) ){
-				printf("\n%s: Error in copying e820 descriptor to guest. Halting!", __FUNCTION__);
+				_XDPRINTF_("\n%s: Error in copying e820 descriptor to guest. Halting!", __FUNCTION__);
 				HALT();
 			}	
 				
@@ -705,7 +707,7 @@ struct regs xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t
 		
 			//grab guest eflags on guest stack
 			if(!xmhf_smpguest_readu16(context_desc, (const void *)((u32)desc.ss.base + (u16)r.esp + 0x4), &guest_flags)){
-				printf("\n%s: Error in reading guest_flags. Halting!", __FUNCTION__);
+				_XDPRINTF_("\n%s: Error in reading guest_flags. Halting!", __FUNCTION__);
 				HALT();
 			}
 	
@@ -723,13 +725,13 @@ struct regs xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t
 
 			//write updated eflags in guest stack
 			if(!xmhf_smpguest_writeu16(context_desc, (const void *)((u32)desc.ss.base + (u16)r.esp + 0x4), guest_flags)){
-				printf("\n%s: Error in updating guest_flags. Halting!", __FUNCTION__);
+				_XDPRINTF_("\n%s: Error in updating guest_flags. Halting!", __FUNCTION__);
 				HALT();
 			}
 			  
 			
 		}else{	//invalid state specified during INT 15 E820, halt
-				printf("\nCPU(0x%02x): INT15 (E820), invalid state specified by guest. Halting!", context_desc.cpu_desc.cpu_index);
+				_XDPRINTF_("\nCPU(0x%02x): INT15 (E820), invalid state specified by guest. Halting!", context_desc.cpu_desc.cpu_index);
 				HALT();
 		}
 		
@@ -748,7 +750,7 @@ struct regs xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t
 
 	//read the original INT 15h handler which is stored right after the VMCALL instruction
 	if(!xmhf_smpguest_readu16(context_desc, 0x4AC+0x4, &ip) || !xmhf_smpguest_readu16(context_desc, 0x4AC+0x6, &cs)){
-		printf("\n%s: Error in reading original INT 15h handler. Halting!", __FUNCTION__);
+		_XDPRINTF_("\n%s: Error in reading original INT 15h handler. Halting!", __FUNCTION__);
 		HALT();
 	}
 	

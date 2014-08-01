@@ -50,7 +50,8 @@
 //---includes-------------------------------------------------------------------
 #include <xmhf.h> 
 #include <xmhf-core.h>
-#include <xmhf-debug-x86.h>
+#include <xmhf-debug.h>
+
 #include <xmhfcrypto.h>
 #include <tpm.h>
 #include <cmdline.h>
@@ -150,7 +151,7 @@ size_t sl_rt_size;
 //---MP config table handling---------------------------------------------------
 void dealwithMP(void){
     if(!smp_getinfo(pcpus, &pcpus_numentries)){
-        printf("\nFatal error with SMP detection. Halting!");
+        _XDPRINTF_("\nFatal error with SMP detection. Halting!");
         HALT();
     }
 }
@@ -198,12 +199,12 @@ void send_init_ipi_to_all_APs(void) {
     //read LAPIC base address from MSR
     rdmsr(MSR_APIC_BASE, &eax, &edx);
     HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
-    printf("\nLAPIC base and status=0x%08x", eax);
+    _XDPRINTF_("\nLAPIC base and status=0x%08x", eax);
     
     icr = (u32 *) (((u32)eax & 0xFFFFF000UL) + 0x300);
 
     //send INIT
-    printf("\nSending INIT IPI to all APs...");
+    _XDPRINTF_("\nSending INIT IPI to all APs...");
     *icr = 0x000c4500UL;
     udelay(10000);
     //wait for command completion
@@ -214,9 +215,9 @@ void send_init_ipi_to_all_APs(void) {
         }while(--timeout > 0 && (val & 0x1000) );
     }
     if(timeout == 0) {
-        printf("\nERROR: send_init_ipi_to_all_APs() TIMEOUT!\n");
+        _XDPRINTF_("\nERROR: send_init_ipi_to_all_APs() TIMEOUT!\n");
     }
-    printf("\nDone.\n");
+    _XDPRINTF_("\nDone.\n");
 }
 
 
@@ -226,7 +227,7 @@ void send_init_ipi_to_all_APs(void) {
 u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused))){
     //check if GRUB has a valid E820 map
     if(!(mbi->flags & MBI_MEMMAP)){
-        printf("\n%s: no E820 map provided. HALT!", __FUNCTION__);
+        _XDPRINTF_("\n%s: no E820 map provided. HALT!", __FUNCTION__);
         HALT();
     }
   
@@ -252,9 +253,9 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
     //debug: print grube820list
     {
         u32 i;
-        printf("\noriginal system E820 map follows:\n");
+        _XDPRINTF_("\noriginal system E820 map follows:\n");
         for(i=0; i < grube820list_numentries; i++){
-            printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
+            _XDPRINTF_("\n0x%08x%08x, size=0x%08x%08x (%u)", 
                    grube820list[i].baseaddr_high, grube820list[i].baseaddr_low,
                    grube820list[i].length_high, grube820list[i].length_low,
                    grube820list[i].type);
@@ -280,7 +281,7 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
                     continue; 
 
                 if(grube820list[i].length_high){
-                    printf("\n%s: E820 parsing error (64-bit length for < 4GB). HALT!");
+                    _XDPRINTF_("\n%s: E820 parsing error (64-bit length for < 4GB). HALT!");
                     HALT();
                 }
 
@@ -293,12 +294,12 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
         } 
     
         if(!foundentry){
-            printf("\n%s: unable to find E820 memory for SL+runtime. HALT!");
+            _XDPRINTF_("\n%s: unable to find E820 memory for SL+runtime. HALT!");
             HALT();
         }
 
 		//entry number we need to split is indexed by i
-		printf("\nproceeding to revise E820...");
+		_XDPRINTF_("\nproceeding to revise E820...");
 		
 		{
 				
@@ -356,14 +357,14 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
 				memcpy((void *)&grube820list, (void *)&te820, (grube820list_numentries * sizeof(GRUBE820)) );
 		}
 
-		printf("\nE820 revision complete.");
+		_XDPRINTF_("\nE820 revision complete.");
 			
 		//debug: print grube820list
 		{
 			u32 i;
-			printf("\nrevised system E820 map follows:\n");
+			_XDPRINTF_("\nrevised system E820 map follows:\n");
 			for(i=0; i < grube820list_numentries; i++){
-				printf("\n0x%08x%08x, size=0x%08x%08x (%u)", 
+				_XDPRINTF_("\n0x%08x%08x, size=0x%08x%08x (%u)", 
 					   grube820list[i].baseaddr_high, grube820list[i].baseaddr_low,
 					   grube820list[i].length_high, grube820list[i].length_low,
 					   grube820list[i].type);
@@ -390,13 +391,13 @@ bool txt_supports_txt(void) {
 
     /* Check for VMX support */
     if ( !(cpuid_ext_feat_info & CPUID_X86_FEATURE_VMX) ) {
-        printf("ERR: CPU does not support VMX\n");
+        _XDPRINTF_("ERR: CPU does not support VMX\n");
         return false;
     }
-    printf("CPU is VMX-capable\n");
+    _XDPRINTF_("CPU is VMX-capable\n");
     /* and that VMX is enabled in the feature control MSR */
     if ( !(feat_ctrl_msr & IA32_FEATURE_CONTROL_MSR_ENABLE_VMX_IN_SMX) ) {
-        printf("ERR: VMXON disabled by feature control MSR (%llx)\n",
+        _XDPRINTF_("ERR: VMXON disabled by feature control MSR (%llx)\n",
                feat_ctrl_msr);
         return false;
     }
@@ -404,38 +405,38 @@ bool txt_supports_txt(void) {
     
     /* Check that processor supports SMX instructions */
     if ( !(cpuid_ext_feat_info & CPUID_X86_FEATURE_SMX) ) {
-        printf("ERR: CPU does not support SMX\n");
+        _XDPRINTF_("ERR: CPU does not support SMX\n");
         return false;
     }
-    printf("CPU is SMX-capable\n");
+    _XDPRINTF_("CPU is SMX-capable\n");
     
     /* and that SENTER (w/ full params) is enabled */
     if ( !(feat_ctrl_msr & (IA32_FEATURE_CONTROL_MSR_ENABLE_SENTER |
                             IA32_FEATURE_CONTROL_MSR_SENTER_PARAM_CTL)) ) {
-        printf("ERR: SENTER disabled by feature control MSR (%llx)\n",
+        _XDPRINTF_("ERR: SENTER disabled by feature control MSR (%llx)\n",
                feat_ctrl_msr);
         return false;
     }
-    printf("SENTER should work.\n");
+    _XDPRINTF_("SENTER should work.\n");
 
     /* testing for chipset support requires enabling SMX on the processor */
     write_cr4(read_cr4() | CR4_SMXE);
-    printf("SMX enabled in CR4\n");
+    _XDPRINTF_("SMX enabled in CR4\n");
 
     /* Verify that an TXT-capable chipset is present and check that
      * all needed SMX capabilities are supported. */
 
     cap = (capabilities_t)__getsec_capabilities(0);
     if(!cap.chipset_present) {
-        printf("ERR: TXT-capable chipset not present\n");
+        _XDPRINTF_("ERR: TXT-capable chipset not present\n");
         return false;
     }        
     if (!(cap.senter && cap.sexit && cap.parameters && cap.smctrl &&
           cap.wakeup)) {
-        printf("ERR: insufficient SMX capabilities (0x%08x)\n", cap._raw);
+        _XDPRINTF_("ERR: insufficient SMX capabilities (0x%08x)\n", cap._raw);
         return false;
     }    
-    printf("TXT chipset and all needed capabilities (0x%08x) present\n", cap._raw);    
+    _XDPRINTF_("TXT chipset and all needed capabilities (0x%08x) present\n", cap._raw);    
     
     return true;
 }
@@ -446,18 +447,18 @@ tb_error_t txt_verify_platform(void)
     txt_heap_t *txt_heap;
     txt_ests_t ests;
 
-    printf("txt_verify_platform\n");
+    _XDPRINTF_("txt_verify_platform\n");
     
     /* check TXT supported */
     if(!txt_supports_txt()) {
-        printf("FATAL ERROR: TXT not suppported\n");
+        _XDPRINTF_("FATAL ERROR: TXT not suppported\n");
         HALT();
     }    
 
     /* check is TXT_RESET.STS is set, since if it is SENTER will fail */
     ests = (txt_ests_t)read_pub_config_reg(TXTCR_ESTS);
     if ( ests.txt_reset_sts ) {
-        printf("TXT_RESET.STS is set and SENTER is disabled (%llx)\n",
+        _XDPRINTF_("TXT_RESET.STS is set and SENTER is disabled (%llx)\n",
                ests._raw);
         return TB_ERR_SMX_NOT_SUPPORTED;
     }
@@ -481,24 +482,24 @@ void txt_status_regs(void) {
     acmod_error_t acmod_err;
 
     err = (txt_errorcode_t)read_pub_config_reg(TXTCR_ERRORCODE);
-    printf("TXT.ERRORCODE=%llx\n", err._raw);
+    _XDPRINTF_("TXT.ERRORCODE=%llx\n", err._raw);
 
     /* AC module error (don't know how to parse other errors) */
     if ( err.valid ) {
         if ( err.external == 0 )       /* processor error */
-            printf("\t processor error %x\n", (uint32_t)err.type);
+            _XDPRINTF_("\t processor error %x\n", (uint32_t)err.type);
         else {                         /* external SW error */
             sw_err._raw = err.type;
             if ( sw_err.src == 1 )     /* unknown SW error */
-                printf("unknown SW error %x:%x\n", sw_err.err1, sw_err.err2);
+                _XDPRINTF_("unknown SW error %x:%x\n", sw_err.err1, sw_err.err2);
             else {                     /* ACM error */
                 acmod_err._raw = sw_err._raw;
-                printf("AC module error : acm_type=%x, progress=%02x, "
+                _XDPRINTF_("AC module error : acm_type=%x, progress=%02x, "
                        "error=%x\n", acmod_err.acm_type, acmod_err.progress,
                        acmod_err.error);
                 /* error = 0x0a, progress = 0x0d => error2 is a TPM error */
                 if ( acmod_err.error == 0x0a && acmod_err.progress == 0x0d )
-                    printf("TPM error code = %x\n", acmod_err.error2);
+                    _XDPRINTF_("TPM error code = %x\n", acmod_err.error2);
             }
         }
     }
@@ -507,7 +508,7 @@ void txt_status_regs(void) {
      * display LT.ESTS error
      */
     ests = (txt_ests_t)read_pub_config_reg(TXTCR_ESTS);
-    printf("LT.ESTS=%llx\n", ests._raw);
+    _XDPRINTF_("LT.ESTS=%llx\n", ests._raw);
 
     /*
      * display LT.E2STS error
@@ -515,7 +516,7 @@ void txt_status_regs(void) {
      */
     if ( ests.txt_wake_error_sts ) {
         e2sts = (txt_e2sts_t)read_pub_config_reg(TXTCR_E2STS);
-        printf("LT.E2STS=%llx\n", e2sts._raw);
+        _XDPRINTF_("LT.E2STS=%llx\n", e2sts._raw);
     }    
 }
 
@@ -536,11 +537,11 @@ bool txt_do_senter(void *phys_mle_start, size_t mle_size) {
     txt_status_regs();
     
     if((err = txt_verify_platform()) != TB_ERR_NONE) {
-        printf("ERROR: txt_verify_platform returned 0x%08x\n", (u32)err);
+        _XDPRINTF_("ERROR: txt_verify_platform returned 0x%08x\n", (u32)err);
         return false;
     }
     if(!txt_prepare_cpu()) {
-        printf("ERROR: txt_prepare_cpu failed.\n");
+        _XDPRINTF_("ERROR: txt_prepare_cpu failed.\n");
         return false;
     }
     
@@ -570,15 +571,15 @@ static bool txt_parse_sinit(module_t *mod_array, unsigned int mods_count) {
     
     for(i=(int)mods_count-1; i >= 0; i--) {
         bytes = mod_array[i].mod_end - mod_array[i].mod_start;
-        printf("Checking whether MBI module %i is SINIT...\n", i);
+        _XDPRINTF_("Checking whether MBI module %i is SINIT...\n", i);
         if(is_sinit_acmod((void*)mod_array[i].mod_start, bytes, false)) {
             g_sinit_module_ptr = (u8*)mod_array[i].mod_start;
             g_sinit_module_size = bytes;
-            printf("YES! SINIT found @ %p, %d bytes\n",
+            _XDPRINTF_("YES! SINIT found @ %p, %d bytes\n",
                    g_sinit_module_ptr, g_sinit_module_size);
             return true;
         } else {
-            printf("no.\n");
+            _XDPRINTF_("no.\n");
         }
     }
 
@@ -596,14 +597,14 @@ static bool svm_verify_platform(void)
     cpuid(0x80000001, &eax, &ebx, &ecx, &edx);
     
     if ((ecx & SVM_CPUID_FEATURE) == 0) {
-        printf("ERR: CPU does not support AMD SVM\n");
+        _XDPRINTF_("ERR: CPU does not support AMD SVM\n");
         return false;
     }
 
     /* Check whether SVM feature is disabled in BIOS */
     rdmsr(VM_CR_MSR, &eax, &edx);
     if (eax & VM_CR_SVME_DISABLE) {
-        printf("ERR: AMD SVM Extension is disabled in BIOS\n");
+        _XDPRINTF_("ERR: AMD SVM Extension is disabled in BIOS\n");
         return false;
     }
 
@@ -612,12 +613,12 @@ static bool svm_verify_platform(void)
     wrmsr64(MSR_EFER, efer | (1<<EFER_SVME));
     efer = rdmsr64(MSR_EFER);
     if ((efer & (1<<EFER_SVME)) == 0) {
-        printf("ERR: Could not enable AMD SVM\n");
+        _XDPRINTF_("ERR: Could not enable AMD SVM\n");
         return false;
     }
 
     cpuid(0x8000000A, &eax, &ebx, &ecx, &edx);
-    printf("AMD SVM version %d enabled\n", eax & 0xff);
+    _XDPRINTF_("AMD SVM version %d enabled\n", eax & 0xff);
 
     return true;
 }
@@ -639,14 +640,14 @@ static bool svm_prepare_cpu(void)
     /* must be in protected mode */
     cr0 = read_cr0();
     if (!(cr0 & CR0_PE)) {
-        printf("ERR: not in protected mode\n");
+        _XDPRINTF_("ERR: not in protected mode\n");
         return false;
     }
 
     /* make sure the APIC is enabled */
     apicbase = rdmsr64(MSR_APIC_BASE);
     if (!(apicbase & MSR_IA32_APICBASE_ENABLE)) {
-        printf("APIC disabled\n");
+        _XDPRINTF_("APIC disabled\n");
         return false;
     }
 
@@ -655,7 +656,7 @@ static bool svm_prepare_cpu(void)
     /* no machine check in progress (IA32_MCG_STATUS.MCIP=1) */
     mcg_stat = rdmsr64(MSR_MCG_STATUS);
     if (mcg_stat & 0x04) {
-        printf("machine check in progress\n");
+        _XDPRINTF_("machine check in progress\n");
         return false;
     }
 
@@ -665,18 +666,18 @@ static bool svm_prepare_cpu(void)
     for (i = 0; i < bound; i++) {
         mcg_stat = rdmsr64(MSR_MC0_STATUS + 4*i);               
         if (mcg_stat & (1ULL << 63)) {
-            printf("MCG[%d] = %llx ERROR\n", i, mcg_stat);
+            _XDPRINTF_("MCG[%d] = %llx ERROR\n", i, mcg_stat);
             return false;
         }
     }
     
-    printf("no machine check errors\n");
+    _XDPRINTF_("no machine check errors\n");
     
     /* clear microcode on all the APs handled in mp_cstartup() */
     /* put all APs in INIT handled in do_drtm() */
 
     /* all is well with the processor state */
-    printf("CPU is ready for SKINIT\n");
+    _XDPRINTF_("CPU is ready for SKINIT\n");
 
     return true;
 }
@@ -691,23 +692,23 @@ void do_drtm(BOOTVCPU __attribute__((unused))*vcpu, u32 slbase, size_t mle_size 
     HALT_ON_ERRORCOND(vcpu->id == 0);
     //send INIT IPI to all APs 
     send_init_ipi_to_all_APs();
-    printf("\nINIT(early): sent INIT IPI to APs");
+    _XDPRINTF_("\nINIT(early): sent INIT IPI to APs");
 //#endif
 
 #if defined (__DRT__)
 
     if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
         if(!svm_verify_platform()) {
-            printf("\nINIT(early): ERROR: svm_verify_platform FAILED!\n");
+            _XDPRINTF_("\nINIT(early): ERROR: svm_verify_platform FAILED!\n");
             HALT();
         }
         if(!svm_prepare_cpu()) {
-            printf("\nINIT(early): ERROR: svm_prepare_cpu FAILED!\n");
+            _XDPRINTF_("\nINIT(early): ERROR: svm_prepare_cpu FAILED!\n");
             HALT();
         }
         //issue SKINIT
         //our secure loader is the first 64K of the hypervisor image
-        printf("\nINIT(early): transferring control to SL via SKINIT...");
+        _XDPRINTF_("\nINIT(early): transferring control to SL via SKINIT...");
 		//#ifndef PERF_CRIT
         //if(NULL != xslbootinfo) {
         //    __asm__ __volatile__ (
@@ -722,9 +723,9 @@ void do_drtm(BOOTVCPU __attribute__((unused))*vcpu, u32 slbase, size_t mle_size 
 		//#endif
         skinit((u32)slbase);
     } else {
-        printf("\n******  INIT(early): Begin TXT Stuff  ******\n");        
+        _XDPRINTF_("\n******  INIT(early): Begin TXT Stuff  ******\n");        
         txt_do_senter((void*)(slbase+3*PAGE_SIZE_4K), TEMPORARY_HARDCODED_MLE_SIZE);
-        printf("\nINIT(early): error(fatal), should never come here!");
+        _XDPRINTF_("\nINIT(early): error(fatal), should never come here!");
         HALT();
     }
     
@@ -736,13 +737,13 @@ void do_drtm(BOOTVCPU __attribute__((unused))*vcpu, u32 slbase, size_t mle_size 
 		typedef void(*FCALL)(void);
 		FCALL invokesl;
 		
-		printf("\n****** NO DRTM startup ******\n");
-		printf("\nslbase=0x%08x, sl_entry_point_offset=0x%08x", (u32)slbase, *sl_entry_point_offset);
+		_XDPRINTF_("\n****** NO DRTM startup ******\n");
+		_XDPRINTF_("\nslbase=0x%08x, sl_entry_point_offset=0x%08x", (u32)slbase, *sl_entry_point_offset);
 		sl_entry_point = (u32)slbase + (u32) (*sl_entry_point_offset);
 		invokesl = (FCALL)(u32)sl_entry_point;
-		printf("\nSL entry point to transfer control to: 0x%08x", invokesl);
+		_XDPRINTF_("\nSL entry point to transfer control to: 0x%08x", invokesl);
 		invokesl();
-        printf("\nINIT(early): error(fatal), should never come here!");
+        _XDPRINTF_("\nINIT(early): error(fatal), should never come here!");
         HALT();
 	}	
 #endif    
@@ -754,10 +755,10 @@ void setupvcpus(u32 cpu_vendor, MIDTAB *midtable, u32 midtable_numentries){
     u32 i;
     BOOTVCPU *vcpu;
   
-    printf("\n%s: cpustacks range 0x%08x-0x%08x in 0x%08x chunks",
+    _XDPRINTF_("\n%s: cpustacks range 0x%08x-0x%08x in 0x%08x chunks",
            __FUNCTION__, (u32)cpustacks, (u32)cpustacks + (RUNTIME_STACK_SIZE * MAX_VCPU_ENTRIES),
            RUNTIME_STACK_SIZE);
-    printf("\n%s: vcpubuffers range 0x%08x-0x%08x in 0x%08x chunks",
+    _XDPRINTF_("\n%s: vcpubuffers range 0x%08x-0x%08x in 0x%08x chunks",
            __FUNCTION__, (u32)vcpubuffers, (u32)vcpubuffers + (SIZE_STRUCT_BOOTVCPU * MAX_VCPU_ENTRIES),
            SIZE_STRUCT_BOOTVCPU);
           
@@ -771,7 +772,7 @@ void setupvcpus(u32 cpu_vendor, MIDTAB *midtable, u32 midtable_numentries){
         vcpu->id = midtable[i].cpu_lapic_id;
 
         midtable[i].vcpu_vaddr_ptr = (u32)vcpu;
-        printf("\nCPU #%u: vcpu_vaddr_ptr=0x%08x, esp=0x%08x", i, midtable[i].vcpu_vaddr_ptr,
+        _XDPRINTF_("\nCPU #%u: vcpu_vaddr_ptr=0x%08x, esp=0x%08x", i, midtable[i].vcpu_vaddr_ptr,
                vcpu->esp);
     }
 }
@@ -785,7 +786,7 @@ void wakeupAPs(void){
     //read LAPIC base address from MSR
     rdmsr(MSR_APIC_BASE, &eax, &edx);
     HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
-    //printf("\nLAPIC base and status=0x%08x", eax);
+    //_XDPRINTF_("\nLAPIC base and status=0x%08x", eax);
     
     icr = (u32 *) (((u32)eax & 0xFFFFF000UL) + 0x300);
     
@@ -796,7 +797,7 @@ void wakeupAPs(void){
 
     //our test code is at 1000:0000, we need to send 10 as vector
     //send INIT
-    printf("\nSending INIT IPI to all APs...");
+    _XDPRINTF_("\nSending INIT IPI to all APs...");
     *icr = 0x000c4500UL;
     udelay(10000);
     //wait for command completion
@@ -806,13 +807,13 @@ void wakeupAPs(void){
             val = *icr;
         }while( (val & 0x1000) );
     }
-    printf("Done.");
+    _XDPRINTF_("Done.");
 
     //send SIPI (twice as per the MP protocol)
     {
         int i;
         for(i=0; i < 2; i++){
-            printf("\nSending SIPI-%u...", i);
+            _XDPRINTF_("\nSending SIPI-%u...", i);
             *icr = 0x000c4610UL;
             udelay(200);
             //wait for command completion
@@ -822,11 +823,11 @@ void wakeupAPs(void){
                     val = *icr;
                 }while( (val & 0x1000) );
             }
-            printf("Done.");
+            _XDPRINTF_("Done.");
         }
     }    
     
-    printf("\nAPs should be awake!");
+    _XDPRINTF_("\nAPs should be awake!");
 }
 
 /* The TPM must be ready for the AMD CPU to send it commands at
@@ -840,20 +841,20 @@ bool svm_prepare_tpm(void) {
     uint32_t locality = EMHF_TPM_LOCALITY_PREF; /* target.h */
     bool ret = true;
     
-    printf("\nINIT:TPM: prepare_tpm starting.");
+    _XDPRINTF_("\nINIT:TPM: prepare_tpm starting.");
     //dump_locality_access_regs();
     xmhf_tpm_deactivate_all_localities();
     //dump_locality_access_regs();
     
     if(TPM_SUCCESS == tpm_wait_cmd_ready(locality)) {
-        printf("INIT:TPM: successfully opened in Locality %d.\n", locality);            
+        _XDPRINTF_("INIT:TPM: successfully opened in Locality %d.\n", locality);            
     } else {
-        printf("INIT:TPM: ERROR: Locality %d could not be opened.\n", locality);
+        _XDPRINTF_("INIT:TPM: ERROR: Locality %d could not be opened.\n", locality);
         ret = false;
     }
     xmhf_tpm_deactivate_all_localities();
     //dump_locality_access_regs();
-    printf("\nINIT:TPM: prepare_tpm done.");
+    _XDPRINTF_("\nINIT:TPM: prepare_tpm done.");
 
     return ret;
 }
@@ -888,15 +889,15 @@ void cstartup(multiboot_info_t *mbi){
     mods_count = mbi->mods_count;
 
 	//welcome banner
-	printf("\neXtensible Modular Hypervisor Framework (XMHF) %s", ___XMHF_BUILD_VERSION___);
-	printf("\nBuild revision: %s\n", ___XMHF_BUILD_REVISION___);
+	_XDPRINTF_("\neXtensible Modular Hypervisor Framework (XMHF) %s", ___XMHF_BUILD_VERSION___);
+	_XDPRINTF_("\nBuild revision: %s\n", ___XMHF_BUILD_REVISION___);
 	
-    printf("\nXMHF boot-loader: initializing, total modules=%u", mods_count);
+    _XDPRINTF_("\nXMHF boot-loader: initializing, total modules=%u", mods_count);
 
 	//we need at least 2 modules passed to us via GRUB, the hypapp binary and the guest OS boot-sector. 
 	//If we don't have the bare minimum, bail out early
 	if(mods_count < 2){
-		printf("\nXMHF boot-loader: Halting, you need a hypapp and the guest OS boot sector at bare minimum!");
+		_XDPRINTF_("\nXMHF boot-loader: Halting, you need a hypapp and the guest OS boot sector at bare minimum!");
 		HALT(); 		
 	}
 
@@ -904,27 +905,27 @@ void cstartup(multiboot_info_t *mbi){
     cpu_vendor = get_cpu_vendor_or_die(); // HALT()'s if unrecognized    
 
     if(CPU_VENDOR_INTEL == cpu_vendor) {
-        printf("\nINIT(early): detected an Intel CPU");
+        _XDPRINTF_("\nINIT(early): detected an Intel CPU");
         
         /* Intel systems require an SINIT module */
         if(!txt_parse_sinit(mod_array, mods_count)) {
-            printf("\nINIT(early): FATAL ERROR: Intel CPU without SINIT module!\n");
+            _XDPRINTF_("\nINIT(early): FATAL ERROR: Intel CPU without SINIT module!\n");
             HALT();
         }            
     } else if(CPU_VENDOR_AMD == cpu_vendor) {
-        printf("\nINIT(early): detected an AMD CPU");
+        _XDPRINTF_("\nINIT(early): detected an AMD CPU");
     } else {
-        printf("\nINIT(early): Dazed and confused: Unknown CPU vendor %d\n", cpu_vendor);
+        _XDPRINTF_("\nINIT(early): Dazed and confused: Unknown CPU vendor %d\n", cpu_vendor);
     }
     
     //deal with MP and get CPU table
     dealwithMP();
 
     //check (and revise) platform E820 memory map to see if we can load at __TARGET_BASE_XMHF
-    printf("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
+    _XDPRINTF_("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
 	sl_rt_size = (mod_array[0].mod_start - __TARGET_BASE_BOOTLOADER) - __TARGET_SIZE_BOOTLOADER;
 	hypervisor_image_baseaddress = dealwithE820(mbi, __TARGET_SIZE_XMHF); 
-	printf("xmhf-bootloader: XMHF binary base=%08x, actual size=%08x bytes, reserved size=%08x bytes\n", hypervisor_image_baseaddress, sl_rt_size, __TARGET_SIZE_XMHF);
+	_XDPRINTF_("xmhf-bootloader: XMHF binary base=%08x, actual size=%08x bytes, reserved size=%08x bytes\n", hypervisor_image_baseaddress, sl_rt_size, __TARGET_SIZE_XMHF);
 	
 	//sanity check memory map and limits; ensure we are loading at 256M
 	HALT_ON_ERRORCOND( (hypervisor_image_baseaddress == __TARGET_BASE_XMHF) );
@@ -934,27 +935,27 @@ void cstartup(multiboot_info_t *mbi){
 	//sizeof ( XMHF hypervisor binary + guest OS boot-sector + SINIT module (if any) + hypapp specific modules (if any) ) 
 	//should not be greater than 224MB since we will be loading our system at absolute address 256MB and our current memcpy does not tackle overlaps
 	if ( mod_array[mods_count-1].mod_end >= __TARGET_BASE_XMHF ){
-		printf("XMHF boot-loader: Halting! XMHF load memory map limits violated. TOMM=0x%08x\n", mod_array[mods_count-1].mod_end);
+		_XDPRINTF_("XMHF boot-loader: Halting! XMHF load memory map limits violated. TOMM=0x%08x\n", mod_array[mods_count-1].mod_end);
 		HALT();
 	}
 
 	//SL+core memory map is from 0x10000000-0x1D000000
 	//if(sl_rt_size > (__TARGET_BASE_XMHFHYPAPP - __TARGET_BASE_SL) ){
-	//		printf("\nXMHF boot-loader: Halting! XMHF SL + core memory limit overflow. size=%08x (max:%08x)", sl_rt_size, (__TARGET_BASE_XMHFHYPAPP - __TARGET_BASE_SL));
+	//		_XDPRINTF_("\nXMHF boot-loader: Halting! XMHF SL + core memory limit overflow. size=%08x (max:%08x)", sl_rt_size, (__TARGET_BASE_XMHFHYPAPP - __TARGET_BASE_SL));
 	//		HALT();
 	//	}
 		
 	//	//hypapp memory map is from 0x1D000000-0x20000000
 	//	if( hypapp_size > __TARGET_SIZE_XMHFHYPAPP ){
-	//		printf("\nXMHF boot-loader: Halting! XMHF hypapp memory limit overflow. size=%08x (max:%08x)", hypapp_size, __TARGET_SIZE_XMHFHYPAPP);
+	//		_XDPRINTF_("\nXMHF boot-loader: Halting! XMHF hypapp memory limit overflow. size=%08x (max:%08x)", hypapp_size, __TARGET_SIZE_XMHFHYPAPP);
 	//		HALT();
 	//	}
 		
 
-    printf("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
+    _XDPRINTF_("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
     //relocate XMHF hypervisor binary to preferred load address
     memcpy((void*)__TARGET_BASE_XMHF, (void*)(__TARGET_BASE_BOOTLOADER+__TARGET_SIZE_BOOTLOADER), sl_rt_size);
-    printf("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
+    _XDPRINTF_("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
 
 	
     /* runtime */
@@ -975,9 +976,9 @@ void cstartup(multiboot_info_t *mbi){
 
     
     //print out stats
-    //printf("\nINIT(early): relocated hypervisor binary image to 0x%08x", hypervisor_image_baseaddress);
-    //printf("\nINIT(early): 2M aligned size = 0x%08lx", PAGE_ALIGN_UP2M((mod_array[0].mod_end - mod_array[0].mod_start)));
-    //printf("\nINIT(early): un-aligned size = 0x%08x", mod_array[0].mod_end - mod_array[0].mod_start);
+    //_XDPRINTF_("\nINIT(early): relocated hypervisor binary image to 0x%08x", hypervisor_image_baseaddress);
+    //_XDPRINTF_("\nINIT(early): 2M aligned size = 0x%08lx", PAGE_ALIGN_UP2M((mod_array[0].mod_end - mod_array[0].mod_start)));
+    //_XDPRINTF_("\nINIT(early): un-aligned size = 0x%08x", mod_array[0].mod_end - mod_array[0].mod_start);
 
 #if 0    
     //fill in "sl" parameter block
@@ -1010,7 +1011,7 @@ void cstartup(multiboot_info_t *mbi){
 				if(!is_sinit_acmod((void*)mod_array[i].mod_start, bytes, false)){
 						xslbootinfo->runtime_appmodule_base= mod_array[i].mod_start;
 						xslbootinfo->runtime_appmodule_size= bytes;
-						printf("\nINIT(early): found app module, base=0x%08x, size=0x%08x",
+						_XDPRINTF_("\nINIT(early): found app module, base=0x%08x, size=0x%08x",
 								xslbootinfo->runtime_appmodule_base, xslbootinfo->runtime_appmodule_size);
 						break;
 				}
@@ -1029,7 +1030,7 @@ void cstartup(multiboot_info_t *mbi){
     //fill in bootinfo
     {
         xslbootinfo = (XMHF_BOOTINFO *)((u32)hypervisor_image_baseaddress);
-        printf("xmhf-bootloader: xslbootinfo=%08x, magic=%x\n", (u32)xslbootinfo, xslbootinfo->magic);
+        _XDPRINTF_("xmhf-bootloader: xslbootinfo=%08x, magic=%x\n", (u32)xslbootinfo, xslbootinfo->magic);
         HALT_ON_ERRORCOND(xslbootinfo->magic == SL_PARAMETER_BLOCK_MAGIC);
         xslbootinfo->memmapinfo_numentries = grube820list_numentries;
         HALT_ON_ERRORCOND(xslbootinfo->memmapinfo_numentries <= 64);
@@ -1047,7 +1048,7 @@ void cstartup(multiboot_info_t *mbi){
         strncpy(xslbootinfo->cmdline_buffer, (const char *)mbi->cmdline, sizeof(xslbootinfo->cmdline_buffer));
     }
 
-    printf("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
+    _XDPRINTF_("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
 
     //switch to MP mode
     //setup Master-ID Table (MIDTABLE)
@@ -1070,7 +1071,7 @@ void cstartup(multiboot_info_t *mbi){
     //fall through and enter mp_cstartup via init_core_lowlevel_setup
     init_core_lowlevel_setup();
         
-    printf("\nINIT(early): error(fatal), should never come here!");
+    _XDPRINTF_("\nINIT(early): error(fatal), should never come here!");
     HALT();
 }
 
@@ -1096,11 +1097,11 @@ void svm_clear_microcode(BOOTVCPU *vcpu){
 
     // Current microcode patch level available via MSR read
     rdmsr(MSR_AMD64_PATCH_LEVEL, &ucode_rev, &dummy);
-    printf("\nCPU(0x%02x): existing microcode version 0x%08x", vcpu->id, ucode_rev);
+    _XDPRINTF_("\nCPU(0x%02x): existing microcode version 0x%08x", vcpu->id, ucode_rev);
     
     if(ucode_rev != 0) {
         wrmsr(MSR_AMD64_PATCH_CLEAR, dummy, dummy);
-        printf("\nCPU(0x%02x): microcode CLEARED", vcpu->id);
+        _XDPRINTF_("\nCPU(0x%02x): microcode CLEARED", vcpu->id);
     }
 }
 
@@ -1121,17 +1122,17 @@ void mp_cstartup (BOOTVCPU *vcpu){
     if(isbsp()){
         //clear microcode if AMD CPU
         if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
-            printf("\nBSP(0x%02x): Clearing microcode...", vcpu->id);
+            _XDPRINTF_("\nBSP(0x%02x): Clearing microcode...", vcpu->id);
             svm_clear_microcode(vcpu);
-            printf("\nBSP(0x%02x): Microcode clear.", vcpu->id);
+            _XDPRINTF_("\nBSP(0x%02x): Microcode clear.", vcpu->id);
 
             if(!svm_prepare_tpm()) {
-                printf("\nBSP(0x%02x): ERROR: svm_prepare_tpm FAILED.", vcpu->id);
+                _XDPRINTF_("\nBSP(0x%02x): ERROR: svm_prepare_tpm FAILED.", vcpu->id);
                 // XXX TODO HALT();
             }            
         }
          
-        printf("\nBSP(0x%02x): Rallying APs...", vcpu->id);
+        _XDPRINTF_("\nBSP(0x%02x): Rallying APs...", vcpu->id);
 
         //increment a CPU to account for the BSP
         spin_lock(&lock_cpus_active);
@@ -1145,19 +1146,19 @@ void mp_cstartup (BOOTVCPU *vcpu){
 
         //put all APs in INIT state
         
-        printf("\nBSP(0x%02x): APs ready, doing DRTM...", vcpu->id);
+        _XDPRINTF_("\nBSP(0x%02x): APs ready, doing DRTM...", vcpu->id);
         //do_drtm(vcpu, hypervisor_image_baseaddress, sl_rt_size); // this function will not return
         do_drtm(vcpu, __TARGET_BASE_SL, sl_rt_size); // this function will not return
     
-        printf("\nBSP(0x%02x): FATAL, should never be here!", vcpu->id);
+        _XDPRINTF_("\nBSP(0x%02x): FATAL, should never be here!", vcpu->id);
         HALT();
     
     }else{
         //clear microcode if AMD CPU
         if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
-            printf("\nAP(0x%02x): Clearing microcode...", vcpu->id);
+            _XDPRINTF_("\nAP(0x%02x): Clearing microcode...", vcpu->id);
             svm_clear_microcode(vcpu);
-            printf("\nAP(0x%02x): Microcode clear.", vcpu->id);
+            _XDPRINTF_("\nAP(0x%02x): Microcode clear.", vcpu->id);
         }
     
         //update the AP startup counter
@@ -1165,7 +1166,7 @@ void mp_cstartup (BOOTVCPU *vcpu){
         cpus_active++;
         spin_unlock(&lock_cpus_active);
 
-        printf("\nAP(0x%02x): Waiting for DRTM establishment...", vcpu->id);
+        _XDPRINTF_("\nAP(0x%02x): Waiting for DRTM establishment...", vcpu->id);
  
         HALT();               
     }

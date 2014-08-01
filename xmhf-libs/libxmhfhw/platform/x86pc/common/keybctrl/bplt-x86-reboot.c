@@ -50,6 +50,7 @@
  */
 
 #include <xmhf.h>
+#include <xmhf-debug.h>
 
 #include "cpu/x86/include/common/_processor.h"  	//CPU
 #include "cpu/x86/include/common/_io.h"         	//legacy I/O
@@ -65,7 +66,7 @@ void xmhf_baseplatform_arch_x86_reboot(void){
 	outb(0xFE, 0x64);
 	
 	//never get here
-	printf("\n%s: should never get here. halt!", __FUNCTION__);
+	_XDPRINTF_("\n%s: should never get here. halt!", __FUNCTION__);
 	HALT();
 
 #else   //__XMHF_VERIFICATION__
@@ -75,14 +76,3 @@ void xmhf_baseplatform_arch_x86_reboot(void){
 
 }
 
-/*//[REFACTOR] 
-//move this into bplt-x86-vmx-reboot
-//reboot platform
-void xmhf_baseplatform_arch_reboot(VCPU *vcpu){
-	HALT_ON_ERRORCOND (vcpu->cpu_vendor == CPU_VENDOR_AMD || vcpu->cpu_vendor == CPU_VENDOR_INTEL);
-	
-	if(vcpu->cpu_vendor == CPU_VENDOR_AMD)
-		xmhf_baseplatform_arch_x86svm_reboot(vcpu);
-	else //CPU_VENDOR_INTEL
-		xmhf_baseplatform_arch_x86vmx_reboot(vcpu);
-}*/

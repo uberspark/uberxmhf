@@ -48,7 +48,9 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 //---includes-------------------------------------------------------------------
-#include <xmhf-core.h> 
+#include <xmhf.h>
+#include <xmhf-core.h>
+#include <xmhf-debug.h>
 
 #include <xc-init.h>
 
@@ -62,24 +64,24 @@
 context_desc_t xmhf_richguest_setup(u32 partition_index, u32 cpuid, bool is_bsp){
 	context_desc_t context_desc;
 
-	printf("%s: starting\n", __FUNCTION__);
+	_XDPRINTF_("%s: starting\n", __FUNCTION__);
 	
-	printf("%s: proceeding to call xc_api_partition_addcpu\n", __FUNCTION__);
+	_XDPRINTF_("%s: proceeding to call xc_api_partition_addcpu\n", __FUNCTION__);
 	//add cpu to the richguest partition
 	context_desc = XMHF_SLAB_CALL(xc_api_partition_addcpu(partition_index, cpuid, is_bsp));
-	printf("%s: back\n", __FUNCTION__);
+	_XDPRINTF_("%s: back\n", __FUNCTION__);
 
 	//bail out if we could not add cpu to the rich guest partition
 	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
-			printf("\n%s: could not add cpu to rich guest partition. Halting!", __FUNCTION__);
+			_XDPRINTF_("\n%s: could not add cpu to rich guest partition. Halting!", __FUNCTION__);
 			return context_desc;
 	}
 
-	printf("%s: proceeding to call xmhf_richguest_setupguestOSstate\n", __FUNCTION__);
+	_XDPRINTF_("%s: proceeding to call xmhf_richguest_setupguestOSstate\n", __FUNCTION__);
 	
 	//setup guest OS state for partition
 	xmhf_richguest_setupguestOSstate(context_desc);
-	//printf("%s: back\n", __FUNCTION__);
+	//_XDPRINTF_("%s: back\n", __FUNCTION__);
 
 	return context_desc;
 }
@@ -95,11 +97,11 @@ void init_entry(u32 cpuid, bool is_bsp){
 	static volatile bool bsp_done=false;
 	static u32 xc_richguest_partition_index=XC_PARTITION_INDEX_INVALID;
 
-	printf("\n%s: cpu=%x, is_bsp=%u. Halting\n", __FUNCTION__, cpuid, is_bsp);
+	_XDPRINTF_("\n%s: cpu=%x, is_bsp=%u. Halting\n", __FUNCTION__, cpuid, is_bsp);
 	//asm volatile("int $0x03 \r\n");
 	//HALT();
 	
-	//printf("\nXMHF Tester Finished!\n\n");
+	//_XDPRINTF_("\nXMHF Tester Finished!\n\n");
 	//HALT();
 	
 	//ensure BSP is the first to grab the lock below
@@ -110,21 +112,21 @@ void init_entry(u32 cpuid, bool is_bsp){
     spin_lock(&_xc_startup_hypappmain_counter_lock);
 
 	//[debug]
-	printf("\n%s: cpuid=%08x, is_bsp=%u...\n", __FUNCTION__, cpuid, is_bsp);
+	_XDPRINTF_("\n%s: cpuid=%08x, is_bsp=%u...\n", __FUNCTION__, cpuid, is_bsp);
 
 	
 	//create rich guest partition if we are the BSP
 	if(is_bsp){
-		printf("\n%s: proceeding to create rich guest partition (esp=%x)\n", __FUNCTION__, read_esp());
+		_XDPRINTF_("\n%s: proceeding to create rich guest partition (esp=%x)\n", __FUNCTION__, read_esp());
 		xc_richguest_partition_index = XMHF_SLAB_CALL(xc_api_partition_create(XC_PARTITION_PRIMARY));
-		//printf("\n%s: came back (esp=%x)\n", __FUNCTION__, read_esp());
+		//_XDPRINTF_("\n%s: came back (esp=%x)\n", __FUNCTION__, read_esp());
 		if(xc_richguest_partition_index == XC_PARTITION_INDEX_INVALID){
-			printf("\n%s: Fatal error, could not create rich guest partition!", __FUNCTION__);
+			_XDPRINTF_("\n%s: Fatal error, could not create rich guest partition!", __FUNCTION__);
 			HALT();
 		}
-		printf("\n%s: BSP: created rich guest partition %u", __FUNCTION__, xc_richguest_partition_index);
+		_XDPRINTF_("\n%s: BSP: created rich guest partition %u", __FUNCTION__, xc_richguest_partition_index);
 		xmhf_richguest_initialize(xc_richguest_partition_index);
-		printf("\n%s: BSP: initialized rich guest partition %u", __FUNCTION__, xc_richguest_partition_index);
+		_XDPRINTF_("\n%s: BSP: initialized rich guest partition %u", __FUNCTION__, xc_richguest_partition_index);
 	}
 	
 	//add cpu to rich guest partition
@@ -136,7 +138,7 @@ void init_entry(u32 cpuid, bool is_bsp){
 	context_desc=xmhf_richguest_setup(xc_richguest_partition_index, cpuid, is_bsp);
 	
 	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
-		printf("\n%s: Fatal error, could not add cpu to rich guest. Halting!", __FUNCTION__);
+		_XDPRINTF_("\n%s: Fatal error, could not add cpu to rich guest. Halting!", __FUNCTION__);
 		HALT();
 	}
 	
@@ -148,9 +150,9 @@ void init_entry(u32 cpuid, bool is_bsp){
 		hypappenvb.runtimesize = (u32)xcbootinfo->size;
 	
 		//call app main
-		//printf("\n%s: proceeding to call xmhfhypapp_main on BSP", __FUNCTION__);
+		//_XDPRINTF_("\n%s: proceeding to call xmhfhypapp_main on BSP", __FUNCTION__);
 		//xc_hypapp_initialization(context_desc, hypappenvb);
-		//printf("\n%s: came back into core", __FUNCTION__);
+		//_XDPRINTF_("\n%s: came back into core", __FUNCTION__);
 	}   	
     
     _xc_startup_hypappmain_counter++;
@@ -162,19 +164,20 @@ void init_entry(u32 cpuid, bool is_bsp){
 	if(is_bsp)
 		bsp_done=true;
 
-	printf("\n%s: cpu %x, isbsp=%u, Waiting for all cpus fo cycle through hypapp main", __FUNCTION__, cpuid, is_bsp);
-	printf("\n\n");
+	_XDPRINTF_("\n%s: cpu %x, isbsp=%u, Waiting for all cpus fo cycle through hypapp main", __FUNCTION__, cpuid, is_bsp);
+	_XDPRINTF_("\n\n");
 	
 	//wait for hypapp main to execute on all the cpus
 	while(_xc_startup_hypappmain_counter < xcbootinfo->cpuinfo_numentries);
+
 	
 	//start cpu in corresponding partition
-	printf("\n%s[%u]: starting in partition...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
+	_XDPRINTF_("\n%s[%u]: starting in partition...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
 	//HALT();
 	
 	//xmhf_partition_start(context_desc.cpu_desc.cpu_index);
 	if(!XMHF_SLAB_CALL(xc_api_partition_startcpu(context_desc))){
-		printf("\n%s: should not be here. HALTING!", __FUNCTION__);
+		_XDPRINTF_("\n%s: should not be here. HALTING!", __FUNCTION__);
 		HALT();
 	}
 }
