@@ -55,11 +55,11 @@
 
 #ifndef __ASSEMBLY__
 
-#ifdef __XMHF_SLAB_CALLER_INDEX__ 
-
-XMHF_SLAB_DEFIMPORTFN(void, xmhf_runtime_entry, (void), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_INITBS_INDEX, XMHF_SLAB_INITBS_FNXMHFRUNTIMEENTRY, (0), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
-
-#else 	//!__XMHF_SLAB_CALLER_INDEX__
+//#ifdef __XMHF_SLAB_CALLER_INDEX__ 
+//
+//XMHF_SLAB_DEFIMPORTFN(void, xmhf_runtime_entry, (void), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_INITBS_INDEX, XMHF_SLAB_INITBS_FNXMHFRUNTIMEENTRY, (0), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
+//
+//#else 	//!__XMHF_SLAB_CALLER_INDEX__
 
 void xmhf_runtime_entry(void);
 void xmhf_apihub_arch_initialize(void);
@@ -75,7 +75,7 @@ bool xmhf_dmaprot_arch_reinitialize(void);
 #define xmhf_dmaprot_reinitialize xmhf_dmaprot_arch_reinitialize
 
 
-#endif	//__XMHF_SLAB_CALLER_INDEX__
+//#endif	//__XMHF_SLAB_CALLER_INDEX__
 
 #endif //__ASSEMBLY__
 

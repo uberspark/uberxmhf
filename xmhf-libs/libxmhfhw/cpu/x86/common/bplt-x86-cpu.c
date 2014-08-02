@@ -225,30 +225,6 @@ void xmhf_baseplatform_arch_x86_cpu_initialize(void){
 		write_cr4(t_cr4);
 	}
 
-	//check for PCID support (if present)
-	{
-			u32 eax, ebx, ecx, edx;
-			
-			cpuid(0x1, &eax, &ebx, &ecx, &edx);
-			
-			if( ecx & (1UL << 17) )
-				_XDPRINTF_("\n%s: PCID supported", __FUNCTION__);
-			else
-				_XDPRINTF_("\n%s: PCID not supported", __FUNCTION__);
-	}
-
-	//turn on WP bit in CR0 register for supervisor mode read-only permission support
-	{
-		u32 cr0;
-		cr0=read_cr0();
-		_XDPRINTF_("\n%s: CR0=%08x", __FUNCTION__, cr0);
-		cr0 |= CR0_WP;
-		_XDPRINTF_("\n%s: attempting to change CR0 to %08x", __FUNCTION__, cr0);
-		write_cr0(cr0);
-		cr0 = read_cr0();
-		_XDPRINTF_("\n%s: CR0 changed to %08x", __FUNCTION__, cr0);
-	}
-
 	//turn on NX protections
 	{
 		u32 eax, edx;
