@@ -21,20 +21,15 @@ print "\n{";
 print "\n	. = 0x10000000;";
 print "\n";
 print "\n	.slab_shareddata : {";
-print "\n		_slab_shareddata_memregion_start = .;";
 print "\n		*(.sharedro_xcbootinfo)";
 print "\n		*(.sharedro_xcbootinfoptr)";
-print "\n		*(.sharedro_slab_table)";
 print "\n		*(.section_archds);";
 print "\n		. = ALIGN(0x200000);";
-print "\n		_slab_shareddata_memregion_end = .;";
 print "\n	} >all=0x0000";
 print "\n";
 print "\n	.slab_trampoline : {";
-print "\n		_slab_trampoline_memregion_start = .;";
 print "\n		*(.slabtrampoline)";
 print "\n		. = ALIGN(0x200000);";
-print "\n		_slab_trampoline_memregion_end = .;";
 print "\n	} >all=0x0000";
 
 
@@ -65,6 +60,7 @@ print "\n";
 
 print "\n	.libxmhfdebugdata : {";
 print "\n		*(.libxmhfdebugdata)";
+print "\n	    *(*)";
 print "\n	} >all=0x0000";
 print "\n";
 print "\n	/* this is to cause the link to fail if there is";

@@ -50,9 +50,7 @@
 
 #include <xcprimeon.h>
 
-#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_XCPRIMEON_INDEX
 #include <xc-initbs.h>
-#undef __XMHF_SLAB_CALLER_INDEX__
 
 /*//this is the SL parameter block and is placed in a seperate (untrusted)
 //section. It is populated by the XMHF bootloader.
@@ -170,27 +168,8 @@ void xcprimeon_startup(void){
 	xmhf_sl_arch_early_dmaprot_init(__TARGET_BASE_SL, xcbootinfo->size);
 #endif
 
-	//print out slab table
-	{
-			u32 i;
-			
-			for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++){
-				_XDPRINTF_("\nslab %u: dumping slab header", i);
-				_XDPRINTF_("\n	slab_index=%u", _slab_table[i].slab_index);
-				_XDPRINTF_("\n	slab_macmid=%08x", _slab_table[i].slab_macmid);
-				_XDPRINTF_("\n	slab_privilegemask=%08x", _slab_table[i].slab_privilegemask);
-				_XDPRINTF_("\n	slab_tos=%08x", _slab_table[i].slab_tos);
-				_XDPRINTF_("\n  slab_rodata(%08x-%08x)", _slab_table[i].slab_rodata.start, _slab_table[i].slab_rodata.end);
-				_XDPRINTF_("\n  slab_rwdata(%08x-%08x)", _slab_table[i].slab_rwdata.start, _slab_table[i].slab_rwdata.end);
-				_XDPRINTF_("\n  slab_code(%08x-%08x)", _slab_table[i].slab_code.start, _slab_table[i].slab_code.end);
-				_XDPRINTF_("\n  slab_stack(%08x-%08x)", _slab_table[i].slab_stack.start, _slab_table[i].slab_stack.end);
-				//_XDPRINTF_("\n  slab_trampoline(%08x-%08x)", _slab_table[i].slab_trampoline.start, _slab_table[i].slab_trampoline.end);
-				_XDPRINTF_("\n  slab_entrycr3=%08x", _slab_table[i].entry_cr3);
-			}
-	}
-
 	//initialize slab page tables
-	xcprimeon_initialize_slab_tables();
+	xcprimeon_initialize_page_tables();
 		
 	//transfer control to runtime
 	//xmhf_sl_arch_xfer_control_to_runtime(xcbootinfo);
