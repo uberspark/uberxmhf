@@ -53,7 +53,9 @@
 
 #include <hypapp-hyperdep.h>
 
+#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_HYPAPP_HYPERDEP_INDEX
 #include <xc-coreapi.h>
+#undef __XMHF_SLAB_CALLER_INDEX__
 
 //#include <arch/x86/common/include/xc-x86.h>
 //#include <arch/x86/vmx/include/xc-x86vmx.h>

@@ -107,32 +107,32 @@
 
 #ifndef __ASSEMBLY__
 
-//#ifdef __XMHF_SLAB_CALLER_INDEX__ 
-//
-//XMHF_SLAB_DEFIMPORTFN(void, xc_api_hpt_setprot, (context_desc_t context_desc, u64 gpa, u32 prottype), 						XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIHPTSETPROT					, (sizeof(context_desc_t)+sizeof(u64)+sizeof(u32))			, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
-//XMHF_SLAB_DEFIMPORTFN(u32, xc_api_hpt_getprot, (context_desc_t context_desc, u64 gpa), 									XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIHPTGETPROT					, (sizeof(context_desc_t)+sizeof(u64))						, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
-//XMHF_SLAB_DEFIMPORTFN(void, xc_api_hpt_setentry, (context_desc_t context_desc, u64 gpa, u64 entry), 						XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIHPTSETENTRY				, (sizeof(context_desc_t)+sizeof(u64)+sizeof(u64))			, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
-//XMHF_SLAB_DEFIMPORTFN(u64, xc_api_hpt_getentry, (context_desc_t context_desc, u64 gpa), 									XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIHPTGETENTRY				, (sizeof(context_desc_t)+sizeof(u64))						, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
-//XMHF_SLAB_DEFIMPORTFN(void, xc_api_hpt_flushcaches, (context_desc_t context_desc), 										XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIHPTFLUSHCACHES				, (sizeof(context_desc_t))									, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
-//XMHF_SLAB_DEFIMPORTFN(void, xc_api_hpt_flushcaches_smp, (context_desc_t context_desc), 									XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIHPTFLUSHCACHESSMP			, (sizeof(context_desc_t))									, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
-//XMHF_SLAB_DEFIMPORTFN(u64, xc_api_hpt_lvl2pagewalk, (context_desc_t context_desc, u64 gva), 								XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIHPTLVL2PAGEWALK			, (sizeof(context_desc_t)+sizeof(u64))						, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
-//                                                                           
-//XMHF_SLAB_DEFIMPORTFN(void, xc_api_trapmask_set, (context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams), 	XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPITRAPMASKSET				, (sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t))	, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
-//XMHF_SLAB_DEFIMPORTFN(void, xc_api_trapmask_clear, (context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams), 	XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPITRAPMASKCLEAR				, (sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t))	, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
-//                                                                            
-//XMHF_SLAB_DEFIMPORTFN(void, xc_api_cpustate_set, (context_desc_t context_desc, xc_hypapp_arch_param_t cpustateparams), 	XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPICPUSTATESET				, (sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t))	, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
-//XMHF_SLAB_DEFIMPORTFN(xc_hypapp_arch_param_t, xc_api_cpustate_get, (context_desc_t context_desc, u64 operation), 			XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPICPUSTATEGET				, (sizeof(context_desc_t)+sizeof(u64)+sizeof(u32))			, sizeof(xc_hypapp_arch_param_t), XMHF_SLAB_FN_RETTYPE_AGGREGATE)	)
-//                                                                            
-//XMHF_SLAB_DEFIMPORTFN(u32, xc_api_partition_create, (u32 partitiontype),													XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIPARTITIONCREATE			, (sizeof(u32))												, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
-//XMHF_SLAB_DEFIMPORTFN(context_desc_t, xc_api_partition_addcpu, (u32 partition_index, u32 cpuid, bool is_bsp), 				XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIPARTITIONADDCPU			, (sizeof(u32)+sizeof(u32)+sizeof(bool)+sizeof(u32))		, sizeof(context_desc_t), XMHF_SLAB_FN_RETTYPE_AGGREGATE)			)
-//XMHF_SLAB_DEFIMPORTFN(context_desc_t, xc_api_partition_getcontextdesc, (u32 cpuid), 										XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIPARTITIONGETCONTEXTDESC	, (sizeof(u32)+sizeof(u32))									, sizeof(context_desc_t), XMHF_SLAB_FN_RETTYPE_AGGREGATE)			)
-//XMHF_SLAB_DEFIMPORTFN(bool, xc_api_partition_startcpu, (context_desc_t context_desc), 										XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIPARTITIONSTARTCPU			, (sizeof(context_desc_t))									, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
-//                                                                            
-//XMHF_SLAB_DEFIMPORTFN(void, xc_api_platform_shutdown, (context_desc_t context_desc),										XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIPLATFORMSHUTDOWN			, (sizeof(context_desc_t))									, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
-//
-//XMHF_SLAB_DEFIMPORTFN(void, xc_coreapi_arch_eventhandler_nmiexception, (struct regs *r),									XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX, 	XMHF_SLAB_COREAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION, (sizeof(struct regs *)), 0, XMHF_SLAB_FN_RETTYPE_NORMAL)	)
-//
-//#else 	//!__XMHF_SLAB_CALLER_INDEX__
+#ifdef __XMHF_SLAB_CALLER_INDEX__ 
+
+XMHF_SLAB_DEFIMPORTFN(void, xc_api_hpt_setprot, (context_desc_t context_desc, u64 gpa, u32 prottype), 						XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIHPTSETPROT					, (sizeof(context_desc_t)+sizeof(u64)+sizeof(u32))			, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
+XMHF_SLAB_DEFIMPORTFN(u32, xc_api_hpt_getprot, (context_desc_t context_desc, u64 gpa), 									XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIHPTGETPROT					, (sizeof(context_desc_t)+sizeof(u64))						, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
+XMHF_SLAB_DEFIMPORTFN(void, xc_api_hpt_setentry, (context_desc_t context_desc, u64 gpa, u64 entry), 						XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIHPTSETENTRY				, (sizeof(context_desc_t)+sizeof(u64)+sizeof(u64))			, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
+XMHF_SLAB_DEFIMPORTFN(u64, xc_api_hpt_getentry, (context_desc_t context_desc, u64 gpa), 									XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIHPTGETENTRY				, (sizeof(context_desc_t)+sizeof(u64))						, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
+XMHF_SLAB_DEFIMPORTFN(void, xc_api_hpt_flushcaches, (context_desc_t context_desc), 										XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIHPTFLUSHCACHES				, (sizeof(context_desc_t))									, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
+XMHF_SLAB_DEFIMPORTFN(void, xc_api_hpt_flushcaches_smp, (context_desc_t context_desc), 									XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIHPTFLUSHCACHESSMP			, (sizeof(context_desc_t))									, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
+XMHF_SLAB_DEFIMPORTFN(u64, xc_api_hpt_lvl2pagewalk, (context_desc_t context_desc, u64 gva), 								XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIHPTLVL2PAGEWALK			, (sizeof(context_desc_t)+sizeof(u64))						, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
+                                                                            
+XMHF_SLAB_DEFIMPORTFN(void, xc_api_trapmask_set, (context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams), 	XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPITRAPMASKSET				, (sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t))	, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
+XMHF_SLAB_DEFIMPORTFN(void, xc_api_trapmask_clear, (context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams), 	XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPITRAPMASKCLEAR				, (sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t))	, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
+                                                                            
+XMHF_SLAB_DEFIMPORTFN(void, xc_api_cpustate_set, (context_desc_t context_desc, xc_hypapp_arch_param_t cpustateparams), 	XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPICPUSTATESET				, (sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t))	, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
+XMHF_SLAB_DEFIMPORTFN(xc_hypapp_arch_param_t, xc_api_cpustate_get, (context_desc_t context_desc, u64 operation), 			XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPICPUSTATEGET				, (sizeof(context_desc_t)+sizeof(u64)+sizeof(u32))			, sizeof(xc_hypapp_arch_param_t), XMHF_SLAB_FN_RETTYPE_AGGREGATE)	)
+                                                                            
+XMHF_SLAB_DEFIMPORTFN(u32, xc_api_partition_create, (u32 partitiontype),													XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIPARTITIONCREATE			, (sizeof(u32))												, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
+XMHF_SLAB_DEFIMPORTFN(context_desc_t, xc_api_partition_addcpu, (u32 partition_index, u32 cpuid, bool is_bsp), 				XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIPARTITIONADDCPU			, (sizeof(u32)+sizeof(u32)+sizeof(bool)+sizeof(u32))		, sizeof(context_desc_t), XMHF_SLAB_FN_RETTYPE_AGGREGATE)			)
+XMHF_SLAB_DEFIMPORTFN(context_desc_t, xc_api_partition_getcontextdesc, (u32 cpuid), 										XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIPARTITIONGETCONTEXTDESC	, (sizeof(u32)+sizeof(u32))									, sizeof(context_desc_t), XMHF_SLAB_FN_RETTYPE_AGGREGATE)			)
+XMHF_SLAB_DEFIMPORTFN(bool, xc_api_partition_startcpu, (context_desc_t context_desc), 										XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIPARTITIONSTARTCPU			, (sizeof(context_desc_t))									, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
+                                                                            
+XMHF_SLAB_DEFIMPORTFN(void, xc_api_platform_shutdown, (context_desc_t context_desc),										XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX,	XMHF_SLAB_COREAPI_FNXCAPIPLATFORMSHUTDOWN			, (sizeof(context_desc_t))									, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
+
+XMHF_SLAB_DEFIMPORTFN(void, xc_coreapi_arch_eventhandler_nmiexception, (struct regs *r),									XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_COREAPI_INDEX, 	XMHF_SLAB_COREAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION, (sizeof(struct regs *)), 0, XMHF_SLAB_FN_RETTYPE_NORMAL)	)
+
+#else 	//!__XMHF_SLAB_CALLER_INDEX__
 
 //HPT related core APIs
 void xc_api_hpt_setprot(context_desc_t context_desc, u64 gpa, u32 prottype);
@@ -197,7 +197,7 @@ extern xc_partition_t g_xc_primary_partition[MAX_PRIMARY_PARTITIONS] __attribute
 //core API NMI callback
 void xc_coreapi_arch_eventhandler_nmiexception(struct regs *r);
 
-//#endif	//__XMHF_SLAB_CALLER_INDEX__
+#endif	//__XMHF_SLAB_CALLER_INDEX__
 
 
 #endif	//__ASSEMBLY__

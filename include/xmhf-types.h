@@ -130,6 +130,27 @@ typedef struct {
 __attribute__(( section(".sharedro_xcbootinfoptr") )) extern XMHF_BOOTINFO *xcbootinfo;
 
 
+//-------------------------------------------------------
+typedef struct {
+	u32 start;
+	u32 end;
+} slab_section_t;
+
+typedef void * slab_entrystub_t;
+
+typedef struct {
+	u32 slab_index;
+	u32 slab_macmid;
+	u32 slab_privilegemask;
+	u32 slab_tos;
+	slab_section_t slab_code;
+	slab_section_t slab_rodata;
+	slab_section_t slab_rwdata;
+	slab_section_t slab_stack;
+	slab_entrystub_t entry_cr3;
+} slab_header_t;
+
+
 #endif /*ifndef __ASSEMBLY__*/
 
 #endif /* __XMHF_TYPES_H_ */

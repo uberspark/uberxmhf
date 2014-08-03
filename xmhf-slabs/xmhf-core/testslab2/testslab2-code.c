@@ -44,41 +44,28 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF core startup component declarations
-// author: amit vasudevan (amitvasudevan@acm.org)
+#include <xmhf.h>
+#include <xmhf-core.h>
+#include <xmhf-debug.h>
 
-#ifndef __XMHF_STARTUP_H__
-#define __XMHF_STARTUP_H__
+#include <testslab2.h>
 
-#define	XMHF_SLAB_INITBS_FNXMHFRUNTIMEENTRY	0
+/*
+ * slab code
+ * 
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
+ 
+void testslab2_entry_0(void){
+	_XDPRINTF_("\n%s: Got control, nothing to do, returning", __FUNCTION__);
+}
+	
 
-#ifndef __ASSEMBLY__
+///////
+XMHF_SLAB("testslab2")
 
-#ifdef __XMHF_SLAB_CALLER_INDEX__ 
+XMHF_SLAB_DEFINTERFACE(
+	XMHF_SLAB_DEFEXPORTFN(testslab2_entry_0, XMHF_SLAB_TESTSLAB2_FNTESTSLAB2ENTRY0, XMHF_SLAB_FN_RETTYPE_NORMAL)
+)
 
-XMHF_SLAB_DEFIMPORTFN(void, xmhf_runtime_entry, (void), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_INITBS_INDEX, XMHF_SLAB_INITBS_FNXMHFRUNTIMEENTRY, (0), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
-
-#else 	//!__XMHF_SLAB_CALLER_INDEX__
-
-void xmhf_runtime_entry(void);
-void xmhf_apihub_arch_initialize(void);
-#define xmhf_apihub_initialize	xmhf_apihub_arch_initialize
-void xcinitbs_arch_initialize_exception_handling(void);
-
-//initialize SMP
-void xmhf_baseplatform_arch_smpinitialize(void);
-#define xmhf_baseplatform_smpinitialize xmhf_baseplatform_arch_smpinitialize
-
-//re-initialize DMA protections (if needed) for the runtime
-bool xmhf_dmaprot_arch_reinitialize(void);
-#define xmhf_dmaprot_reinitialize xmhf_dmaprot_arch_reinitialize
-
-
-#endif	//__XMHF_SLAB_CALLER_INDEX__
-
-#endif //__ASSEMBLY__
-
-
-
-#endif //__XMHF_STARTUP_H__

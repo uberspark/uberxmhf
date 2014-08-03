@@ -158,11 +158,14 @@ XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
 
 .PHONY: all
 all: genfiles libshared subdirs
+#all:
+#	xmhfgenslabtable.pl $(XMHF_SLAB_NAMES)
 
 .PHONY: genfiles
 genfiles:
 	mkdir -p $(XMHF_OBJDIR)
 	cd $(XMHF_OBJDIR) && xmhfgenlscript.pl $(XMHF_SLAB_NAMES) >xmhf.lscript
+	cd $(XMHF_OBJDIR) && xmhfgenslabtable.pl $(XMHF_SLAB_NAMES) >$(XMHF_DIR)/xmhf-slabs/shared/shared-slabtable.c
 
 .PHONY: libshared
 libshared:
@@ -183,7 +186,7 @@ subdirs: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
 	@echo Linking XMHF binary...
 	cd $(XMHF_OBJDIR) && cp -f xmhf.lscript xmhf.lscript.c
 	cd $(XMHF_OBJDIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E xmhf.lscript.c -o xmhf.lds
-	cd $(XMHF_OBJDIR) && $(LD) --oformat elf32-i386 -T xmhf.lds -o xmhf.exe _objs_libshared/libshared.a -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfutil -lxmhfhw -lxmhfutil -lxmhfc -lclang_rt.full-i386
+	cd $(XMHF_OBJDIR) && $(LD) --oformat elf32-i386 -T xmhf.lds -o xmhf.exe _objs_libshared/libshared.a
 	cd $(XMHF_OBJDIR) && $(OBJCOPY) --output-format=binary xmhf.exe xmhf.bin
 	@echo XMHF link SUCCESS
 	@echo Building XMHF boot loader...
@@ -216,6 +219,7 @@ test:
 #.PHONY: clean distclean init-late-clean
 .PHONY: clean distclean 
 clean:
+	$(RM) -f $(XMHF_DIR)/xmhf-slabs/shared/shared-slabtable.c
 	rm -rf *.html
 	rm -rf doc
 	$(RM) -rf $(XMHF_OBJDIR)

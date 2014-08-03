@@ -58,7 +58,9 @@
 
 #include <xc-initbs.h>
 
+#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_INITBS_INDEX
 #include <xc-coreapi.h>
+#undef __XMHF_SLAB_CALLER_INDEX__
 
 
 

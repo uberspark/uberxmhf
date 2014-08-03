@@ -196,8 +196,6 @@ void xmhf_baseplatform_arch_x86_initializeIOPL(void){
 	
 }
 
-__attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u8 _tss_stack[PAGE_SIZE_4K];
-
 //initialize TR/TSS
 void xmhf_baseplatform_arch_x86_initializeTSS(void){
 		u32 i;
@@ -206,7 +204,7 @@ void xmhf_baseplatform_arch_x86_initializeTSS(void){
 		tss_t *tss= (tss_t *)_tss;
 		
 		tss->ss0 = __DS_CPL0;
-		tss->esp0 = (u32)_tss_stack + PAGE_SIZE_4K;
+		tss->esp0 = (u32)_slab_table[XMHF_SLAB_XCEXHUB_INDEX].slab_tos;
 
 		_XDPRINTF_("\nfixing TSS descriptor (TSS base=%x)...", tss_base);
 		t= (TSSENTRY *)(u32)&_gdt_start[(__TRSEL/sizeof(u64))];
@@ -236,18 +234,23 @@ __attribute__((section(".libxmhfdebugdata"))) __attribute__(( aligned(4096) )) s
 						"pushal \r\n"								\
 						"pushl %%esp \r\n"							\
 						"pushl  %0 \r\n"							\
-						"pushl	%1\r\n" 							\
+						"movl %%cr3, %%ebx \r\n"					\
+						"pushl %%ebx		\r\n"					\
+						"movl	%1, %%ebx\r\n"						\
+						"movl	%%ebx, %%cr3\r\n"					\
+						"pushl	%2\r\n" 							\
 						"call	_xcprimeon_xcphandler_arch_hub\r\n"		\
 						"addl $4, %%esp \r\n"						\
+						"popl %%ebx \r\n"							\
+						"movl  %%ebx, %%cr3 \r\n"					\
 						"addl $8, %%esp \r\n"						\
 						"popal \r\n"								\
 						"xchg	%0, %%esp \r\n"						\
 						"iretl \r\n"								\
 					:												\
-					:	"m" (_xcprimeon_exception_stack_index), "i" (vector)				\
+					:	"m" (_xcprimeon_exception_stack_index), "m" (_slab_table[XMHF_SLAB_XCPRIMEON_INDEX].slab_macmid), "i" (vector)				\
 		);															\
 	}\
-
 
 
 #define XMHF_XCPRIMEON_EXCEPTION_HANDLER_ADDROF(vector) &__xcprimeon_exception_handler_##vector
@@ -407,56 +410,170 @@ __attribute__(( section(".slab_trampoline") )) void _xcprimeon_xcphandler_arch_h
 //========================================================================================
 /*originally within xc-initbs-apihub-x86.c */
 
+extern u8 _slab_shareddata_memregion_start[];
+extern u8 _slab_shareddata_memregion_end[];
+extern u8 _slab_trampoline_memregion_start[];
+extern u8 _slab_trampoline_memregion_end[];
 
-static u64 _pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( aligned(4096) ));
-static u64 _pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT] __attribute__(( aligned(4096) ));
+static struct {
+	u64 pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( aligned(4096) ));
+	u64 pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT] __attribute__(( aligned(4096) ));
+} _slab_pagetables[XMHF_SLAB_NUMBEROFSLABS];
 
-static u64 _xcprimeon_getptflagsforspa(u32 spa){
-	u64 flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE);
-	if(spa == 0xfee00000 || spa == 0xfec00000) {
-		//map some MMIO regions with Page Cache disabled 
-		//0xfed00000 contains Intel TXT config regs & TPM MMIO 
-		//0xfee00000 contains LAPIC base 
-		flags |= (u64)(_PAGE_PCD);
+
+#define	_SLAB_SPATYPE_OTHER_SLAB_MASK			(0xF0)
+
+#define	_SLAB_SPATYPE_OTHER_SLAB_CODE			(0xF0)
+#define	_SLAB_SPATYPE_OTHER_SLAB_RODATA			(0xF1)
+#define _SLAB_SPATYPE_OTHER_SLAB_RWDATA			(0xF2)
+#define _SLAB_SPATYPE_OTHER_SLAB_STACK			(0xF3)
+
+#define	_SLAB_SPATYPE_SLAB_CODE					(0x0)
+#define	_SLAB_SPATYPE_SLAB_RODATA				(0x1)
+#define _SLAB_SPATYPE_SLAB_RWDATA				(0x2)
+#define _SLAB_SPATYPE_SLAB_STACK				(0x3)
+
+#define _SLAB_SPATYPE_SLAB_TRAMPOLINE			(0x4)
+
+#define _SLAB_SPATYPE_NOTASLAB					(0xFF00)
+
+static u32 _xcprimeon_slab_getspatype(u32 slab_index, u32 spa){
+	u32 i;
+
+	//slab memory regions
+	for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++){
+		u32 mask = (i == slab_index) ? 0 : _SLAB_SPATYPE_OTHER_SLAB_MASK;
+		
+		if(spa >= _slab_table[i].slab_code.start  && spa < _slab_table[i].slab_code.end)
+			return _SLAB_SPATYPE_SLAB_CODE | mask;
+		if (spa >= _slab_table[i].slab_rodata.start  && spa < _slab_table[i].slab_rodata.end)
+			return _SLAB_SPATYPE_SLAB_RODATA | mask;
+		if (spa >= _slab_table[i].slab_rwdata.start  && spa < _slab_table[i].slab_rwdata.end)	
+			return _SLAB_SPATYPE_SLAB_RWDATA | mask;
+		if (spa >= _slab_table[i].slab_stack.start  && spa < _slab_table[i].slab_stack.end)	
+			return _SLAB_SPATYPE_SLAB_STACK | mask;
+	}	
+
+	//slab shared data region 
+	//TODO: add per shared data variable access policy rather than entire section
+	if(spa >= (u32)_slab_shareddata_memregion_start && spa < (u32)_slab_shareddata_memregion_end){
+			if (slab_index == XMHF_SLAB_XCPRIMEON_INDEX || slab_index == XMHF_SLAB_INITBS_INDEX || slab_index == XMHF_SLAB_XCEXHUB_INDEX)
+				return _SLAB_SPATYPE_SLAB_RWDATA; //map read-write in initbs (GDT,TSS setup) and xcexhub (IDT setup)
+			else
+				return _SLAB_SPATYPE_SLAB_RODATA; //map read-only in all other slabs 
 	}
+
+	//slab trampoline region
+	if(spa >= (u32)_slab_trampoline_memregion_start && spa < (u32)_slab_trampoline_memregion_end){
+			return _SLAB_SPATYPE_SLAB_TRAMPOLINE; //map read-only in all slabs 
+	}
+	
+
+	return _SLAB_SPATYPE_NOTASLAB;
+}
+
+static u64 _xcprimeon_slab_getptflagsforspa(u32 slab_index, u32 spa){
+	u64 flags;
+	u32 spatype = _xcprimeon_slab_getspatype(slab_index, spa);
+	//_XDPRINTF_("\n%s: slab_index=%u, spa=%08x, spatype = %x\n", __FUNCTION__, slab_index, spa, spatype);
+	
+	switch(spatype){
+		case _SLAB_SPATYPE_OTHER_SLAB_CODE:
+		case _SLAB_SPATYPE_OTHER_SLAB_RODATA:
+		case _SLAB_SPATYPE_OTHER_SLAB_RWDATA:
+			flags = 0;	//not-present
+			break;
+		case _SLAB_SPATYPE_OTHER_SLAB_STACK:
+			//flags = (u64)(_PAGE_PRESENT | _PAGE_PSE | _PAGE_NX); //present | read-only | no execute | pse
+			flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE | _PAGE_NX); //present | read-write | no execute | pse
+			break;	
+		
+		case _SLAB_SPATYPE_SLAB_CODE:
+			flags = (u64)(_PAGE_PRESENT | _PAGE_PSE); // present | read-only | pse
+			break;
+		case _SLAB_SPATYPE_SLAB_RODATA:
+			flags = (u64)(_PAGE_PRESENT | _PAGE_PSE | _PAGE_NX); //present | read-only | no-execute | pse
+			break;
+		case _SLAB_SPATYPE_SLAB_RWDATA:
+		case _SLAB_SPATYPE_SLAB_STACK:
+			flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_NX | _PAGE_PSE); //present | read-write | no-execute | pse
+			break;
+		
+		case _SLAB_SPATYPE_SLAB_TRAMPOLINE:
+			flags = (u64)(_PAGE_PRESENT | _PAGE_PSE); //present | read-only | pse;
+			break;
+	
+		default:
+			flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE);
+			if(spa == 0xfee00000 || spa == 0xfec00000) {
+				//map some MMIO regions with Page Cache disabled 
+				//0xfed00000 contains Intel TXT config regs & TPM MMIO 
+				//0xfee00000 contains LAPIC base 
+				flags |= (u64)(_PAGE_PCD);
+			}
+
+			break;
+	}
+	
 	return flags;
 }
 
-// initialize page tables and return page table base
-static u32 _xcprimeon_populate_pagetables(void){
+
+// initialize slab page tables for a given slab index, returns the macm base
+static u32 _xcprimeon_slab_populate_pagetables(u32 slab_index){
 		u32 i, j;
 		u64 default_flags = (u64)(_PAGE_PRESENT);
 		
 		for(i=0; i < PAE_PTRS_PER_PDPT; i++)
-			_pdpt[i] = pae_make_pdpe(hva2spa(_pdt[i]), default_flags);
+			_slab_pagetables[slab_index].pdpt[i] = pae_make_pdpe(hva2spa(_slab_pagetables[slab_index].pdt[i]), default_flags);
 
 		//init pdts with unity mappings
 		for(i=0; i < PAE_PTRS_PER_PDPT; i++){
 			for(j=0; j < PAE_PTRS_PER_PDT; j++){
 				u32 hva = ((i * PAE_PTRS_PER_PDT) + j) * PAGE_SIZE_2M;
 				u64 spa = hva2spa((void*)hva);
-				u64 flags = _xcprimeon_getptflagsforspa((u32)spa);
-				_pdt[i][j] = pae_make_pde_big(spa, flags);
+				u64 flags = _xcprimeon_slab_getptflagsforspa(slab_index, (u32)spa);
+				_slab_pagetables[slab_index].pdt[i][j] = pae_make_pde_big(spa, flags);
 			}
 		}
 	
-		return (u32)_pdpt;
+		return (u32)_slab_pagetables[slab_index].pdpt;
 }
 
 
 // initialization function for the core API interface
-void xcprimeon_initialize_page_tables(void){
-	u32 pgtblbase;
+void xcprimeon_initialize_slab_tables(void){
+
+#ifndef __XMHF_VERIFICATION__
 
 	_XDPRINTF_("\n%s: starting...", __FUNCTION__);
 
-	pgtblbase = _xcprimeon_populate_pagetables();
+	//[debug]
+	{
+		u32 i;
+		for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++){
+				_XDPRINTF_("\nslab %u: pdpt=%08x, pdt[0]=%08x, pdt[1]=%08x", i, (u32)_slab_pagetables[i].pdpt, (u32)_slab_pagetables[i].pdt[0], (u32)_slab_pagetables[i].pdt[1]);
+				_XDPRINTF_("\n                    pdt[2]=%08x, pdt[3]=%08x", (u32)_slab_pagetables[i].pdt[2], (u32)_slab_pagetables[i].pdt[3]);
+		}
 
-	_XDPRINTF_("\n%s: setup page tables\n", __FUNCTION__);
+	}
+
+	//setup slab page tables and macm id's
+	{
+		u32 i;
+		for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++)
+			_slab_table[i].slab_macmid = _xcprimeon_slab_populate_pagetables(i);
 		
+	}
+	
+	_XDPRINTF_("\n%s: setup slab page tables and macm id's\n", __FUNCTION__);
+	
+	
 	//initialize paging
-	xmhf_baseplatform_arch_x86_initialize_paging(pgtblbase);
+	xmhf_baseplatform_arch_x86_initialize_paging((u32)_slab_table[XMHF_SLAB_XCPRIMEON_INDEX].slab_macmid);
 	_XDPRINTF_("\n%s: setup slab paging\n", __FUNCTION__);
 
+	
+#endif //__XMHF_VERIFICATION__
 }
 

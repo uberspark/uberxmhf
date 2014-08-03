@@ -54,8 +54,10 @@
 
 #include <xcihub.h>
 
+#define __XMHF_SLAB_CALLER_INDEX__ XMHF_SLAB_IHUB_INDEX
 #include <xc-coreapi.h>
 #include <hypapp-hyperdep.h>
+#undef __XMHF_SLAB_CALLER_INDEX__
 
 
 /* originally in xc-ihub-x86vmx.c */
