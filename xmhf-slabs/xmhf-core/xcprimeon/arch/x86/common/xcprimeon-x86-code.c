@@ -54,9 +54,6 @@
 #include <xmhf-core.h>
 #include <xmhf-debug.h>
 
-//#include <xmhf-core.h>
-//#include <xmhf-sl.h>
-
 #include <xcprimeon.h>
 
 #include "cpu/x86/include/common/_processor.h"  	//CPU

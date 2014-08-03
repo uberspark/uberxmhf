@@ -59,17 +59,8 @@
 
 #ifndef __ASSEMBLY__
 
-//#ifdef __XMHF_SLAB_CALLER_INDEX__ 
-
-//XMHF_SLAB_DEFIMPORTFN(arch_x86_idtdesc_t xcexhub_initialize(void),	XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCEXHUB_INDEX,	XMHF_SLAB_XCEXHUB_FNXCEXHUBINITIALIZE, (0)			, sizeof(arch_x86_idtdesc_t), XMHF_SLAB_FN_RETTYPE_AGGREGATE)								)
-//XMHF_SLAB_DEFIMPORTFN(void, xcexhub_initialize, (void),	XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCEXHUB_INDEX,	XMHF_SLAB_XCEXHUB_FNXCEXHUBINITIALIZE, (0)			, (0), XMHF_SLAB_FN_RETTYPE_NORMAL)								)
-//
-//#else 	//!__XMHF_SLAB_CALLER_INDEX__
-
 //arch_x86_idtdesc_t xcexhub_initialize(void);
 void xcexhub_initialize(void);
-
-//#endif	//__XMHF_SLAB_CALLER_INDEX__
 
 
 #endif	//__ASSEMBLY__

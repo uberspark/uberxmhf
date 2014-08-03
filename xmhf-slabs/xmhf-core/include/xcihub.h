@@ -55,12 +55,6 @@
 
 #ifndef __ASSEMBLY__
 
-//#ifdef __XMHF_SLAB_CALLER_INDEX__ 
-
-//XMHF_SLAB_DEFIMPORTFN(void, ihub_entry, (void), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_IHUB_INDEX, XMHF_SLAB_IHUB_FNIHUBENTRY, (0), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
-
-//#else 	//!__XMHF_SLAB_CALLER_INDEX__
-
 //----------------------------------------------------------------------
 //rich guest memory functions
 
@@ -74,8 +68,6 @@ bool xmhf_smpguest_arch_memcpyto(context_desc_t context_desc, void *guestaddress
 #define xmhf_smpguest_memcpyfrom xmhf_smpguest_arch_memcpyfrom
 #define xmhf_smpguest_memcpyto xmhf_smpguest_arch_memcpyto
 
-
-//#endif	//__XMHF_SLAB_CALLER_INDEX__
 
 #endif //__ASSEMBLY__
 
