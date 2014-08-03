@@ -44,41 +44,29 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF core startup component declarations
+// XMHF slab import library decls./defns.
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHF_STARTUP_H__
-#define __XMHF_STARTUP_H__
+#ifndef __XCRICHGUEST_H__
+#define __XCRICHGUEST_H__
 
-#define	XMHF_SLAB_INITBS_FNXMHFRUNTIMEENTRY	0
 
+#define	XMHF_SLAB_INIT_FNINITENTRY	0
 
 #ifndef __ASSEMBLY__
 
-//#ifdef __XMHF_SLAB_CALLER_INDEX__ 
-//
-//XMHF_SLAB_DEFIMPORTFN(void, xmhf_runtime_entry, (void), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_INITBS_INDEX, XMHF_SLAB_INITBS_FNXMHFRUNTIMEENTRY, (0), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
-//
-//#else 	//!__XMHF_SLAB_CALLER_INDEX__
 
-void xmhf_runtime_entry(void);
-void xmhf_apihub_arch_initialize(void);
-#define xmhf_apihub_initialize	xmhf_apihub_arch_initialize
-void xcinitbs_arch_initialize_exception_handling(void);
+void init_entry(u32 cpuid, bool is_bsp);
+void xmhf_richguest_arch_initialize(u32 partition_index);
+#define xmhf_richguest_initialize xmhf_richguest_arch_initialize
 
-//initialize SMP
-void xmhf_baseplatform_arch_smpinitialize(void);
-#define xmhf_baseplatform_smpinitialize xmhf_baseplatform_arch_smpinitialize
+context_desc_t xmhf_richguest_setup(u32 partition_index, u32 cpuid, bool is_bsp);
+void xmhf_richguest_arch_setupguestOSstate(context_desc_t context_desc);
+#define xmhf_richguest_setupguestOSstate xmhf_richguest_arch_setupguestOSstate
 
-//re-initialize DMA protections (if needed) for the runtime
-bool xmhf_dmaprot_arch_reinitialize(void);
-#define xmhf_dmaprot_reinitialize xmhf_dmaprot_arch_reinitialize
-
-
-//#endif	//__XMHF_SLAB_CALLER_INDEX__
 
 #endif //__ASSEMBLY__
 
 
 
-#endif //__XMHF_STARTUP_H__
+#endif //__XCRICHGUEST_H__

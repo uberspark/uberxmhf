@@ -53,10 +53,8 @@
 #include <xmhf.h>
 #include <xmhf-core.h>
 #include <xmhf-debug.h>
-//#include <xc-x86.h>
-//#include <xc-x86vmx.h>
 
-#include <xc-init.h>
+#include <xcsmp.h>
 #include <xcexhub.h>
 
 /* originally within xc-baseplatform-x86vmx.c */

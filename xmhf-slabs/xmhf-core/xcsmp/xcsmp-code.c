@@ -52,9 +52,8 @@
 #include <xmhf-core.h>
 #include <xmhf-debug.h>
 
-#include <xc-initbs.h>
-
-#include <xc-init.h>
+#include <xcsmp.h>
+#include <xcrichguest.h>
 
 void xmhf_runtime_entry(void){
 

@@ -52,9 +52,9 @@
 #include <xmhf-core.h>
 #include <xmhf-debug.h>
 
-#include <xc-init.h>
+#include <xcrichguest.h>
 
-#include <xc-coreapi.h>
+#include <xcapi.h>
 
 /* originally in xc-init-richguest.c */
 
