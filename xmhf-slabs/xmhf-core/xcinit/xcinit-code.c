@@ -54,7 +54,9 @@
 
 #include <xc-init.h>
 
+#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_INIT_INDEX
 #include <xc-coreapi.h>
+#undef __XMHF_SLAB_CALLER_INDEX__
 
 /* originally in xc-init-richguest.c */
 

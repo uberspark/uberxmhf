@@ -55,11 +55,11 @@
 
 #ifndef __ASSEMBLY__
 
-//#ifdef __XMHF_SLAB_CALLER_INDEX__ 
+#ifdef __XMHF_SLAB_CALLER_INDEX__ 
 
-//XMHF_SLAB_DEFIMPORTFN(void, init_entry, (u32 cpuid, bool is_bsp), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_INIT_INDEX, XMHF_SLAB_INIT_FNINITENTRY, (sizeof(u32)+sizeof(bool)), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
+XMHF_SLAB_DEFIMPORTFN(void, init_entry, (u32 cpuid, bool is_bsp), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_INIT_INDEX, XMHF_SLAB_INIT_FNINITENTRY, (sizeof(u32)+sizeof(bool)), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
 
-//#else 	//!__XMHF_SLAB_CALLER_INDEX__
+#else 	//!__XMHF_SLAB_CALLER_INDEX__
 
 void init_entry(u32 cpuid, bool is_bsp);
 void xmhf_richguest_arch_initialize(u32 partition_index);
@@ -70,7 +70,7 @@ void xmhf_richguest_arch_setupguestOSstate(context_desc_t context_desc);
 #define xmhf_richguest_setupguestOSstate xmhf_richguest_arch_setupguestOSstate
 
 
-//#endif	//__XMHF_SLAB_CALLER_INDEX__
+#endif	//__XMHF_SLAB_CALLER_INDEX__
 
 #endif //__ASSEMBLY__
 

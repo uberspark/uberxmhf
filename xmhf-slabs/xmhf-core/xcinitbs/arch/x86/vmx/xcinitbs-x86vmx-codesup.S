@@ -112,6 +112,11 @@
       movw %ax, %fs
       movw %ax, %gs
 
+	  // set CR0 WP bit
+	  movl %cr0, %eax
+	  orl $0x00010000, %eax
+	  movl %eax, %cr0
+	  
 	  // set NX bit
 	  movl $0xc0000080, %ecx
 	  rdmsr

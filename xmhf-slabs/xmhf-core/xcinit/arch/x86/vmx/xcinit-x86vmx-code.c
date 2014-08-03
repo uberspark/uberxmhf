@@ -55,7 +55,9 @@
 
 #include <xc-init.h>
 
+#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_INIT_INDEX
 #include <xc-coreapi.h>
+#undef __XMHF_SLAB_CALLER_INDEX__
 
 
 static struct _memorytype _vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array

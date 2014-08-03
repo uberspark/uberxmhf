@@ -56,7 +56,9 @@
 //#include <xc-x86.h>
 //#include <xc-x86vmx.h>
 
+#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_XCEXHUB_INDEX
 #include <xc-coreapi.h>
+#undef __XMHF_SLAB_CALLER_INDEX__
 
 __attribute__((section(".stack"))) static u32 _xcexhub_exception_lock = 1;
 __attribute__((section(".stack"))) static u32 _xcexhub_exception_savedesp[MAX_PLATFORM_CPUS];
@@ -84,13 +86,22 @@ __attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u32 _
 																	\
 						"btsl	$0, %0		\r\n"					\
 																	\
-						"movw	%2, %%ax\r\n"						\
+						"movl %%cr3, %%eax \r\n"					\
+						"pushl %%eax \r\n"							\
+																	\
+						"movl %2, %%eax \r\n"						\
+						"movl %%eax, %%cr3 \r\n"					\
+																	\
+						"movw	%3, %%ax\r\n"						\
 						"movw	%%ax, %%ds\r\n"						\
 						"movl 	%%esp, %%eax\r\n"					\
 						"pushl 	%%eax\r\n"							\
-						"pushl	%3\r\n" 							\
+						"pushl	%4\r\n" 							\
 						"call	xmhf_xcphandler_arch_hub\r\n"		\
 						"addl  	$0x08, %%esp\r\n"					\
+																	\
+						"popl %%eax \r\n"							\
+						"movl %%eax, %%cr3 \r\n"					\
 																	\
 						"popal	 \r\n"								\
 																	\
@@ -99,9 +110,10 @@ __attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u32 _
 																	\
 						"iretl\r\n"									\
 					:												\
-					:	"m" (_xcexhub_exception_lock), "m" (_xcexhub_exception_stack_index), "i" (__DS_CPL0), "i" (vector)				\
+					:	"m" (_xcexhub_exception_lock), "m" (_xcexhub_exception_stack_index), "m" (_slab_table[XMHF_SLAB_XCEXHUB_INDEX].slab_macmid), "i" (__DS_CPL0), "i" (vector)				\
 		);															\
 	}\
+
 
 
 #define XMHF_EXCEPTION_HANDLER_ADDROF(vector) &__xmhf_exception_handler_##vector
