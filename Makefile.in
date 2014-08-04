@@ -27,10 +27,6 @@ XMHFCORE_INC = -I$(realpath xmhf-slabs/xmhf-core/) -I$(realpath xmhf-slabs/xmhf-
 export LIBXMHFHW_SRC := $(realpath xmhf-libs/libxmhfhw)
 LIBXMHFHW_INC = $(realpath xmhf-libs/libxmhfhw)
 
-# libxmhfdebug source location
-export LIBXMHFDEBUG_SRC := $(realpath xmhf-libs/libxmhfdebug)
-LIBXMHFDEBUG_INC = -I$(realpath xmhf-libs/libxmhfdebug/include) -I$(realpath xmhf-libs/libxmhfdebug/arch/x86/include)
-
 # XMHF bootloader source location
 export XMHF_BOOTLOADER_SRC := $(realpath xmhf-bootloader)
 
@@ -41,7 +37,7 @@ XMHFLIBS_INC = $(foreach dir,$(XMHFLIBS_SUBLIBS),-I$(dir)/include)
 # populate library and include paths
 export ADDL_INCLUDES :=
 export XMHFLIBS_DIR := $(XMHF_OBJDIR)/_objs_xmhf-libs
-ADDL_INCLUDES += -I$(XMHF_INC) $(LIBXMHFDEBUG_INC) $(XMHFCORE_INC) -I$(LIBXMHFHW_INC) $(XMHFLIBS_INC)
+ADDL_INCLUDES += -I$(XMHF_INC) $(XMHFCORE_INC) -I$(LIBXMHFHW_INC) $(XMHFLIBS_INC)
 
 ##################################################################################
 ### BEGIN Variables controlled using autoconf
@@ -130,10 +126,6 @@ ifeq ($(DEBUG_SERIAL), y)
 	VFLAGS += -D__DEBUG_SERIAL__
 	FLAGS += -DDEBUG_PORT=$(DEBUG_SERIAL_PORT)
 	VFLAGS += -DDEBUG_PORT=$(DEBUG_SERIAL_PORT)
-endif
-ifeq ($(DEBUG_VGA), y)
-	FLAGS += -D__DEBUG_VGA__
-	VFLAGS += -D__DEBUG_VGA__
 endif
 ifeq ($(DRT), y)
 	FLAGS += -D__DRT__
