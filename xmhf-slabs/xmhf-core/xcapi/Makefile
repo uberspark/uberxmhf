@@ -18,16 +18,14 @@ vpath %.lscript $(srcdir)
 ########################################################################
 # options that each slab will customize
 
-export XMHF_SLAB_NAME := xcinitbs
+export XMHF_SLAB_NAME := xcapi
 export XMHF_SLAB_PRIVILEGED := y
 export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
 XMHF_SLAB_SOURCES += $(shell find $(srcdir)/arch/x86/common/ -type f -name '*.c')
 XMHF_SLAB_SOURCES += $(shell find $(srcdir)/arch/x86/vmx/ -type f -name '*.c')
-XMHF_SLAB_SOURCES += $(shell find $(srcdir)/arch/x86/vmx/ -type f -name '*.S')
 
 
 ########################################################################
 # generic slab build harness
 include $(XMHF_DIR)/xmhfslab.mk
-
 

@@ -50,7 +50,7 @@
 
 #include <xcprimeon.h>
 
-#include <xc-initbs.h>
+#include <xcsmp.h>
 
 /*//this is the SL parameter block and is placed in a seperate (untrusted)
 //section. It is populated by the XMHF bootloader.

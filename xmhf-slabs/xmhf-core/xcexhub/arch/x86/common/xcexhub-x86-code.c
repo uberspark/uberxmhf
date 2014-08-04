@@ -53,10 +53,8 @@
 #include <xmhf.h>
 #include <xmhf-core.h>
 #include <xmhf-debug.h>
-//#include <xc-x86.h>
-//#include <xc-x86vmx.h>
 
-#include <xc-coreapi.h>
+#include <xcapi.h>
 
 __attribute__((section(".stack"))) static u32 _xcexhub_exception_lock = 1;
 __attribute__((section(".stack"))) static u32 _xcexhub_exception_savedesp[MAX_PLATFORM_CPUS];

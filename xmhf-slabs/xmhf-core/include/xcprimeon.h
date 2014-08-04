@@ -59,11 +59,6 @@
 
 #ifndef __ASSEMBLY__
 
-//#ifdef __XMHF_SLAB_CALLER_INDEX__ 
-//
-//XMHF_SLAB_DEFIMPORTFN(void, xcprimeon_startup, (void),	XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCPRIMEON_INDEX,	XMHF_SLAB_XCPRIMEON_FNSTARTUP, (0)			, (0), XMHF_SLAB_FN_RETTYPE_NORMAL)								)
-//
-//#else 	//!__XMHF_SLAB_CALLER_INDEX__
 
 void xcprimeon_startup(void);
 
@@ -82,8 +77,6 @@ void xmhf_sl_arch_baseplatform_initialize(void);
 void xcprimeon_platform_arch_initialize(void);
 void _xcprimeon_initialize_exceptionhandling(void);
 void xcprimeon_initialize_slab_tables(void);
-
-//#endif	//__XMHF_SLAB_CALLER_INDEX__
 
 
 #endif	//__ASSEMBLY__

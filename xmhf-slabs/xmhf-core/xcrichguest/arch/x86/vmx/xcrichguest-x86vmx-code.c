@@ -50,12 +50,10 @@
 #include <xmhf.h>
 #include <xmhf-core.h>
 #include <xmhf-debug.h>
-//#include <xc-x86.h>
-//#include <xc-x86vmx.h>
 
-#include <xc-init.h>
+#include <xcsmp.h>
 
-#include <xc-coreapi.h>
+#include <xcapi.h>
 
 
 static struct _memorytype _vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array

@@ -61,8 +61,8 @@ static XMHF_BOOTINFO xcbootinfo_store __attribute__(( section(".sharedro_xcbooti
 	.magic= RUNTIME_PARAMETER_BLOCK_MAGIC,
 	//.entrypoint= (u32)xmhf_runtime_entry,
 	//.stack_base = (u32)_init_stack,
-	.entrypoint= (u32)_slab_xcinitbs_entrypoint,
-	.stack_base = (u32)_slab_xcinitbs_stack_start,
+	//.entrypoint= (u32)_slab_xcinitbs_entrypoint,
+	//.stack_base = (u32)_slab_xcinitbs_stack_start,
 	.stack_size = MAX_PLATFORM_CPUSTACK_SIZE,
 };
 

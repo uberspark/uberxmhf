@@ -52,7 +52,7 @@
 #include <xmhf-core.h>
 #include <xmhf-debug.h>
 
-#include <xc-initbs.h>
+#include <xcsmp.h>
 
 static u8 _init_stack[MAX_PLATFORM_CPUSTACK_SIZE] __attribute__(( section(".stack") ));
 

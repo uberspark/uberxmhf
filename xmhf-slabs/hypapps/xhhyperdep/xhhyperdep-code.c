@@ -51,9 +51,9 @@
 #include <xmhf-core.h>
 #include <xmhf-debug.h>
 
-#include <hypapp-hyperdep.h>
+#include <xhhyperdep.h>
 
-#include <xc-coreapi.h>
+#include <xcapi.h>
 
 //#include <arch/x86/common/include/xc-x86.h>
 //#include <arch/x86/vmx/include/xc-x86vmx.h>
