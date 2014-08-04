@@ -29,21 +29,29 @@ AC_SUBST([CCLIB], [`$CC -m32 --print-file-name=`])
 
 # user-defined options
 
-# target platform
-#AC_SUBST([TARGET_PLATFORM])
-#AC_ARG_WITH([target_platform],
-#        AS_HELP_STRING([--with-target-platform=@<:@PLATFORM@:>@],
-#                [select target platform (x86-pc)]),
-#                , [with_target_platform=x86-pc])
-#TARGET_PLATFORM=$[]with_target_platform
+# target cpu
+AC_SUBST([TARGET_CPU])
+AC_ARG_WITH([target_cpu],
+        AS_HELP_STRING([--with-target-cpu=@<:@CPU@:>@],
+                [select target cpu (x86)]),
+                , [with_target_cpu=x86])
+TARGET_CPU=$[]with_target_cpu
 
-# target architecture
-#AC_SUBST([TARGET_ARCH])
-#AC_ARG_WITH([target_arch],
-#        AS_HELP_STRING([--with-target-arch=@<:@ARCH@:>@],
-#                [select target architecture (x86-vmx, x86-svm)]),
-#                , [with_target_arch=x86-vmx])
-#TARGET_ARCH=$[]with_target_arch
+# target container
+AC_SUBST([TARGET_CONTAINER])
+AC_ARG_WITH([target_container],
+        AS_HELP_STRING([--with-target-container=@<:@CONTAINER@:>@],
+                [select target container (vmx)]),
+                , [with_target_container=vmx])
+TARGET_CONTAINER=$[]with_target_container
+
+# target platform
+AC_SUBST([TARGET_PLATFORM])
+AC_ARG_WITH([target_platform],
+        AS_HELP_STRING([--with-target-platform=@<:@PLATFORM@:>@],
+                [select target platform (x86pc)]),
+                , [with_target_platform=x86pc])
+TARGET_PLATFORM=$[]with_target_platform
 
 
 # XMHF hypapps to be built
