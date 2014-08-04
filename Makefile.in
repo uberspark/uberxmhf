@@ -25,7 +25,7 @@ XMHFCORE_INC = -I$(realpath xmhf-slabs/xmhf-core/) -I$(realpath xmhf-slabs/xmhf-
 
 # libxmhfhw source location
 export LIBXMHFHW_SRC := $(realpath xmhf-libs/libxmhfhw)
-LIBXMHFHW_INC = $(realpath xmhf-libs/libxmhfhw)
+LIBXMHFHW_INC = $(realpath xmhf-libs/libxmhfhw/include)
 
 # XMHF bootloader source location
 export XMHF_BOOTLOADER_SRC := $(realpath xmhf-bootloader)
