@@ -52,33 +52,6 @@
 #ifndef __XMHF_CORE_H_
 #define __XMHF_CORE_H_
 
-//#include <xmhf.h>
-
-//pull in core arch. header
-//#include <xmhf-core-arch.h>
-
-//#include <shared.h>				//shared slab mappings, TODO: find a way to move this up to xmhf-slab.h since it is not core slab specific
-
-//pull in required crypto (SHA-1)
-//libXMHFcrypto
-//#ifndef __ASSEMBLY__
-//	#include <xmhfcrypto.h>
-//	#include <sha1.h>
-//#endif /* __ASSEMBLY__ */
-
-
-//pull in required TPM library
-//libtpm
-//#ifndef __ASSEMBLY__
-//	#include <tpm.h>
-//#endif /* __ASSEMBLY__ */
-
-/*//forward declaration of runtime parameter block
-#ifndef __ASSEMBLY__
-extern RPB *rpb;	
-#endif	//__ASSEMBLY__
-*/
-
 #include <_xctypes.h>			//core specific data types
 #include <_xchypapp.h>			//hypapp callback declarations
 

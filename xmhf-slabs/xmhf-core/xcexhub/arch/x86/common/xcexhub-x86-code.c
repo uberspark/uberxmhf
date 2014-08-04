@@ -53,11 +53,9 @@
 #include <xmhf.h>
 #include <xmhf-core.h>
 #include <xmhf-debug.h>
-//#include <xc-x86.h>
-//#include <xc-x86vmx.h>
 
 #define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_XCEXHUB_INDEX
-#include <xc-coreapi.h>
+#include <xcapi.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
 
 __attribute__((section(".stack"))) static u32 _xcexhub_exception_lock = 1;

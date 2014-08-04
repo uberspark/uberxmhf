@@ -52,8 +52,8 @@
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#ifndef __XC_COREAPI_H__
-#define __XC_COREAPI_H__
+#ifndef __XCAPI_H__
+#define __XCAPI_H__
 
 //core APIs
 #define	XC_API_HPT_SETPROT							(0xA01)
@@ -71,7 +71,6 @@
 #define XC_API_CPUSTATE_SET							(0xC01)
 #define XC_API_CPUSTATE_GET							(0xC02)
 
-
 // memory protection types
 #define MEMP_PROT_NOTPRESENT	(1)	// page not present
 #define	MEMP_PROT_PRESENT		(2)	// page present
@@ -80,7 +79,6 @@
 #define MEMP_PROT_EXECUTE		(16) // page execute
 #define MEMP_PROT_NOEXECUTE		(32) // page no-execute
 #define MEMP_PROT_MAXVALUE		(MEMP_PROT_NOTPRESENT+MEMP_PROT_PRESENT+MEMP_PROT_READONLY+MEMP_PROT_READWRITE+MEMP_PROT_NOEXECUTE+MEMP_PROT_EXECUTE)
-
 
 #define XMHF_SLAB_COREAPI_FNXCAPIHPTSETPROT						0				
 #define XMHF_SLAB_COREAPI_FNXCAPIHPTGETPROT						1
@@ -199,8 +197,7 @@ void xc_coreapi_arch_eventhandler_nmiexception(struct regs *r);
 
 #endif	//__XMHF_SLAB_CALLER_INDEX__
 
-
 #endif	//__ASSEMBLY__
 
 
-#endif //__XC_COREAPI_H__
+#endif //__XCAPI_H__

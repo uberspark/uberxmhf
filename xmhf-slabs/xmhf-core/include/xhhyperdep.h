@@ -52,8 +52,8 @@
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#ifndef __HYPAPP_HYPERDEP_H__
-#define __HYPAPP_HYPERDEP_H__
+#ifndef __XHHYPERDEP_H__
+#define __XHHYPERDEP_H__
 
 #define XMHF_SLAB_HYPAPP_HYPERDEP_FNINITIALIZATION					0
 #define XMHF_SLAB_HYPAPP_HYPERDEP_FNHANDLEHYPERCALL					1
@@ -82,7 +82,8 @@ void xmhf_hypapp_handleshutdown(context_desc_t context_desc);
 
 #endif	//__XMHF_SLAB_CALLER_INDEX__
 
+
 #endif	//__ASSEMBLY__
 
 
-#endif //__HYPAPP_HYPERDEP_H__
+#endif //__XHHYPERDEP_H__
