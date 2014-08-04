@@ -56,22 +56,6 @@
 #include <xcprimeon.h>
 
 
-#include "platform/x86pc/include/common/_multiboot.h"		//multiboot
-#include "cpu/x86/include/common/_processor.h"  	//CPU
-//#include "cpu/x86/include/common/_msr.h"        	//model specific registers
-#include "cpu/x86/include/common/_paging.h"     	//MMU
-//#include "cpu/x86/include/common/_io.h"         	//legacy I/O
-//#include "cpu/x86/include/common/_apic.h"       	//APIC
-//#include "cpu/x86/include/amd/svm/_svm.h"        	//SVM extensions
-//#include "cpu/x86/include/intel/vmx/_vmx.h"			//VMX extensions
-#include "cpu/x86/include/intel/txt/_txt.h"			//Trusted eXecution Technology (SENTER support)
-//#include "platform/x86pc/include/common/_pci.h"        	//PCI bus glue
-//#include "platform/x86pc/include/common/_acpi.h"			//ACPI glue
-//#include "platform/x86pc/include/amd/dev/_svm_eap.h"		//SVM DMA protection
-#include "platform/x86pc/include/intel/vtd/vtd.h"		//VMX DMA protection
-#include "platform/x86pc/include/common/_memaccess.h"	//platform memory access
-
-
 /**
  * XMHF secureloader x86-vmx entry module
  * author: amit vasudevan (amitvasudevan@acm.org)
