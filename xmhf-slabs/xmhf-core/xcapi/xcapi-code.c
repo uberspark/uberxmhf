@@ -48,7 +48,7 @@
 #include <xmhf-core.h>
 #include <xmhf-debug.h>
 
-#include <xc-coreapi.h>
+#include <xcapi.h>
 
 /*
  * 	XMHF core API

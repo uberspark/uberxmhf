@@ -44,62 +44,29 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF core initialization boostrap (init-bs) entry module
+// XMHF slab import library decls./defns.
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-//---includes-------------------------------------------------------------------
-#include <xmhf.h>
-#include <xmhf-core.h>
-#include <xmhf-debug.h>
-
-#include <xc-initbs.h>
-
-#include <xc-init.h>
-
-void xmhf_runtime_entry(void){
-
-	//setup debugging	
-	//xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
-	//_XDPRINTF_("\nxmhf-core: starting...");
-
-   
-  	//initialize basic platform elements
-	//xmhf_baseplatform_initialize();
-
-	//setup XMHF exception handler component
-	//xmhf_xcphandler_initialize();
-
-	#if defined (__DMAP__)
-	xmhf_dmaprot_reinitialize();
-	#endif
-
-	//initialize richguest
-	//xmhf_richguest_initialize();
+#ifndef __XCRICHGUEST_H__
+#define __XCRICHGUEST_H__
 
 
-	_XDPRINTF_("proceeding to initialize exception handling...\n");
-	//setup platform exception handling
-	xcinitbs_arch_initialize_exception_handling();
-	_XDPRINTF_("exception handling initialized.\n");
+#define	XMHF_SLAB_INIT_FNINITENTRY	0
+
+#ifndef __ASSEMBLY__
 
 
-	//_XDPRINTF_("\nXMHF Tester Finished!\n\n");
-	//HALT();
+void init_entry(u32 cpuid, bool is_bsp);
+void xmhf_richguest_arch_initialize(u32 partition_index);
+#define xmhf_richguest_initialize xmhf_richguest_arch_initialize
 
-	//initialize base platform with SMP 
-	xmhf_baseplatform_smpinitialize();
+context_desc_t xmhf_richguest_setup(u32 partition_index, u32 cpuid, bool is_bsp);
+void xmhf_richguest_arch_setupguestOSstate(context_desc_t context_desc);
+#define xmhf_richguest_setupguestOSstate xmhf_richguest_arch_setupguestOSstate
 
-	_XDPRINTF_("\nRuntime: We should NEVER get here!");
-	HALT_ON_ERRORCOND(0);
-}
 
-///////
-XMHF_SLAB("initbs")
+#endif //__ASSEMBLY__
 
-XMHF_SLAB_DEFINTERFACE(
-	XMHF_SLAB_DEFEXPORTFN(xmhf_runtime_entry, XMHF_SLAB_INITBS_FNXMHFRUNTIMEENTRY, XMHF_SLAB_FN_RETTYPE_NORMAL)
-)
 
-//XMHF_SLAB_DEFINTERFACEBARE(
-//	xmhf_runtime_entry
-//)
+
+#endif //__XCRICHGUEST_H__

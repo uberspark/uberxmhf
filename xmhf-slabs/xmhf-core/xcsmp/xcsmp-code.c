@@ -44,41 +44,61 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF core startup component declarations
+// XMHF core initialization boostrap (init-bs) entry module
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHF_STARTUP_H__
-#define __XMHF_STARTUP_H__
+//---includes-------------------------------------------------------------------
+#include <xmhf.h>
+#include <xmhf-core.h>
+#include <xmhf-debug.h>
 
-#define	XMHF_SLAB_INITBS_FNXMHFRUNTIMEENTRY	0
+#include <xcsmp.h>
+#include <xcrichguest.h>
 
+void xmhf_runtime_entry(void){
 
-#ifndef __ASSEMBLY__
+	//setup debugging	
+	//xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
+	//_XDPRINTF_("\nxmhf-core: starting...");
 
-//#ifdef __XMHF_SLAB_CALLER_INDEX__ 
-//
-//XMHF_SLAB_DEFIMPORTFN(void, xmhf_runtime_entry, (void), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_INITBS_INDEX, XMHF_SLAB_INITBS_FNXMHFRUNTIMEENTRY, (0), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
-//
-//#else 	//!__XMHF_SLAB_CALLER_INDEX__
+   
+  	//initialize basic platform elements
+	//xmhf_baseplatform_initialize();
 
-void xmhf_runtime_entry(void);
-void xmhf_apihub_arch_initialize(void);
-#define xmhf_apihub_initialize	xmhf_apihub_arch_initialize
-void xcinitbs_arch_initialize_exception_handling(void);
+	//setup XMHF exception handler component
+	//xmhf_xcphandler_initialize();
 
-//initialize SMP
-void xmhf_baseplatform_arch_smpinitialize(void);
-#define xmhf_baseplatform_smpinitialize xmhf_baseplatform_arch_smpinitialize
+	#if defined (__DMAP__)
+	xmhf_dmaprot_reinitialize();
+	#endif
 
-//re-initialize DMA protections (if needed) for the runtime
-bool xmhf_dmaprot_arch_reinitialize(void);
-#define xmhf_dmaprot_reinitialize xmhf_dmaprot_arch_reinitialize
-
-
-//#endif	//__XMHF_SLAB_CALLER_INDEX__
-
-#endif //__ASSEMBLY__
+	//initialize richguest
+	//xmhf_richguest_initialize();
 
 
+	_XDPRINTF_("proceeding to initialize exception handling...\n");
+	//setup platform exception handling
+	xcinitbs_arch_initialize_exception_handling();
+	_XDPRINTF_("exception handling initialized.\n");
 
-#endif //__XMHF_STARTUP_H__
+
+	//_XDPRINTF_("\nXMHF Tester Finished!\n\n");
+	//HALT();
+
+	//initialize base platform with SMP 
+	xmhf_baseplatform_smpinitialize();
+
+	_XDPRINTF_("\nRuntime: We should NEVER get here!");
+	HALT_ON_ERRORCOND(0);
+}
+
+///////
+XMHF_SLAB("initbs")
+
+XMHF_SLAB_DEFINTERFACE(
+	XMHF_SLAB_DEFEXPORTFN(xmhf_runtime_entry, XMHF_SLAB_INITBS_FNXMHFRUNTIMEENTRY, XMHF_SLAB_FN_RETTYPE_NORMAL)
+)
+
+//XMHF_SLAB_DEFINTERFACEBARE(
+//	xmhf_runtime_entry
+//)
