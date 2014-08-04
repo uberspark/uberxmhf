@@ -54,20 +54,21 @@
 //#include <xmhf-core.h>
 
 //xc-baseplatform
-#include "platform/x86pc/include/common/_multiboot.h"		//multiboot
-#include "cpu/x86/include/common/_processor.h"  	//CPU
-#include "cpu/x86/include/common/_msr.h"        	//model specific registers
-#include "cpu/x86/include/common/_paging.h"     	//MMU
-#include "cpu/x86/include/common/_io.h"         	//legacy I/O
-#include "cpu/x86/include/common/_apic.h"       	//APIC
-#include "cpu/x86/include/intel/vmx/_vmx.h"			//VMX extensions
-#include "cpu/x86/include/intel/txt/_txt.h"			//Trusted eXecution Technology (SENTER support)
-#include "platform/x86pc/include/common/_pci.h"        	//PCI bus glue
-#include "platform/x86pc/include/common/_acpi.h"			//ACPI glue
-#include "platform/x86pc/include/common/_com.h"        	//UART/serial
-#include "platform/x86pc/include/intel/vtd/vtd.h"		//VMX DMA protection
-#include "platform/x86pc/include/common/_memaccess.h"	//platform memory access
-#include "platform/x86pc/include/common/_tpm.h"        	//TPM
+#include <xmhfhw/platform/x86pc/_multiboot.h>		//multiboot
+#include <xmhfhw/cpu/x86/_processor.h>  	//CPU
+#include <xmhfhw/cpu/x86/_msr.h>        	//model specific registers
+#include <xmhfhw/cpu/x86/_paging.h>     	//MMU
+#include <xmhfhw/cpu/x86/_io.h>         	//legacy I/O
+#include <xmhfhw/cpu/x86/_apic.h>       	//APIC
+#include <xmhfhw/cpu/x86/txt/_txt.h>			//Trusted eXecution Technology (SENTER support)
+#include <xmhfhw/container/vmx/_vmx.h>			//VMX extensions
+#include <xmhfhw/platform/x86pc/_pci.h>        	//PCI bus glue
+#include <xmhfhw/platform/x86pc/_acpi.h>			//ACPI glue
+#include <xmhfhw/platform/x86pc/_com.h>        	//UART/serial
+#include <xmhfhw/platform/x86pc/vtd/vtd.h>		//VMX DMA protection
+#include <xmhfhw/platform/x86pc/_memaccess.h>	//platform memory access
+#include <xmhfhw/platform/x86pc/_tpm.h>        	//TPM
+#include <xmhfhw/platform/x86pc/_biosdata.h>	//BIOS data areas
 
 
 #ifndef __ASSEMBLY__
