@@ -52,12 +52,12 @@
 #include <xmhf-core.h>
 #include <xmhf-debug.h>
 
-#include <xc-initbs.h>
+#include <xcsmp.h>
 
 #define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_INITBS_INDEX
 #include <testslab1.h>
 #include <testslab2.h>
-#include <xc-init.h>
+#include <xcrichguest.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
 
 void xmhf_runtime_entry(void){

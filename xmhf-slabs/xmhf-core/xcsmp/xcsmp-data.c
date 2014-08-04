@@ -44,36 +44,15 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF slab import library decls./defns.
+// XMHF core initialization boostrap (init-bs) entry module
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XC_INIT_H__
-#define __XC_INIT_H__
+//---includes-------------------------------------------------------------------
+#include <xmhf.h>
+#include <xmhf-core.h>
+#include <xmhf-debug.h>
 
+#include <xcsmp.h>
 
-#define	XMHF_SLAB_INIT_FNINITENTRY	0
+static u8 _init_stack[MAX_PLATFORM_CPUSTACK_SIZE] __attribute__(( section(".stack") ));
 
-#ifndef __ASSEMBLY__
-
-#ifdef __XMHF_SLAB_CALLER_INDEX__ 
-
-XMHF_SLAB_DEFIMPORTFN(void, init_entry, (u32 cpuid, bool is_bsp), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_INIT_INDEX, XMHF_SLAB_INIT_FNINITENTRY, (sizeof(u32)+sizeof(bool)), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
-
-#else 	//!__XMHF_SLAB_CALLER_INDEX__
-
-void init_entry(u32 cpuid, bool is_bsp);
-void xmhf_richguest_arch_initialize(u32 partition_index);
-#define xmhf_richguest_initialize xmhf_richguest_arch_initialize
-
-context_desc_t xmhf_richguest_setup(u32 partition_index, u32 cpuid, bool is_bsp);
-void xmhf_richguest_arch_setupguestOSstate(context_desc_t context_desc);
-#define xmhf_richguest_setupguestOSstate xmhf_richguest_arch_setupguestOSstate
-
-
-#endif	//__XMHF_SLAB_CALLER_INDEX__
-
-#endif //__ASSEMBLY__
-
-
-
-#endif //__XC_INIT_H__

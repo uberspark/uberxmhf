@@ -52,10 +52,10 @@
 #include <xmhf-core.h>
 #include <xmhf-debug.h>
 
-#include <xc-init.h>
+#include <xcrichguest.h>
 
 #define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_INIT_INDEX
-#include <xc-coreapi.h>
+#include <xcapi.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
 
 /* originally in xc-init-richguest.c */

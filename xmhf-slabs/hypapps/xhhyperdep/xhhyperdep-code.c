@@ -51,10 +51,10 @@
 #include <xmhf-core.h>
 #include <xmhf-debug.h>
 
-#include <hypapp-hyperdep.h>
+#include <xhhyperdep.h>
 
 #define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_HYPAPP_HYPERDEP_INDEX
-#include <xc-coreapi.h>
+#include <xcapi.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
 
 //#include <arch/x86/common/include/xc-x86.h>

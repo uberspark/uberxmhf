@@ -51,7 +51,7 @@
 #include <xcprimeon.h>
 
 #define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_XCPRIMEON_INDEX
-#include <xc-initbs.h>
+#include <xcsmp.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
 
 /*//this is the SL parameter block and is placed in a seperate (untrusted)
