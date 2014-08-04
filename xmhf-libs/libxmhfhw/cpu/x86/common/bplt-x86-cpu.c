@@ -53,13 +53,6 @@
 #include <xmhf.h>
 #include <xmhf-debug.h>
 
-#include "cpu/x86/include/common/_processor.h"  	//CPU
-#include "cpu/x86/include/common/_msr.h"        	//model specific registers
-#include "cpu/x86/include/common/_paging.h"     	//MMU
-#include "cpu/x86/include/common/_io.h"         	//legacy I/O
-#include "platform/x86pc/include/common/_memaccess.h"	//platform memory access
-#include "cpu/x86/include/common/_apic.h"	//platform apic
-
 
 //returns true if CPU has support for XSAVE/XRSTOR
 bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void){

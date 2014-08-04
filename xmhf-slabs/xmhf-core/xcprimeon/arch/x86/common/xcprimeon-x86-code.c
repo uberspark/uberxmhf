@@ -56,11 +56,6 @@
 
 #include <xcprimeon.h>
 
-#include "cpu/x86/include/common/_processor.h"  	//CPU
-#include "cpu/x86/include/common/_paging.h"     	//MMU
-#include "platform/x86pc/include/common/_acpi.h"			//ACPI glue
-#include "platform/x86pc/include/common/_memaccess.h"	//platform memory access
-
 //we only have confidence in the runtime's expected value here in the SL
 //static INTEGRITY_MEASUREMENT_VALUES g_sl_gold /* __attribute__(( section("") )) */ = {
 //    .sha_runtime = ___RUNTIME_INTEGRITY_HASH___,

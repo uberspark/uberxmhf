@@ -87,12 +87,6 @@
 #include <xmhf.h> 
 #include <xmhf-debug.h>
 
-#include "platform/x86pc/include/common/_multiboot.h"		//multiboot
-#include "cpu/x86/include/common/_processor.h"  	//CPU
-#include "cpu/x86/include/common/_msr.h"        	//model specific registers
-#include "cpu/x86/include/common/_paging.h"     	//MMU
-#include "cpu/x86/include/intel/txt/_txt.h"			//Trusted eXecution Technology (SENTER support)
-
 
 #define MTRR_TYPE_MIXED         -1
 #define MMIO_APIC_BASE          0xFEE00000

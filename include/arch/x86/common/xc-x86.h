@@ -67,6 +67,7 @@
 #include "platform/x86pc/include/common/_com.h"        	//UART/serial
 #include "platform/x86pc/include/intel/vtd/vtd.h"		//VMX DMA protection
 #include "platform/x86pc/include/common/_memaccess.h"	//platform memory access
+#include "platform/x86pc/include/common/_tpm.h"        	//TPM
 
 
 #ifndef __ASSEMBLY__

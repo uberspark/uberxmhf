@@ -51,9 +51,6 @@
 
 #include <xmhf.h> 
 
-#include "platform/x86pc/include/common/_acpi.h"			//ACPI glue
-#include "platform/x86pc/include/common/_memaccess.h"	//platform memory access
-
 
 //------------------------------------------------------------------------------
 //compute checksum of ACPI table

@@ -50,9 +50,6 @@
  */ 
 
 #include <xmhf.h> 
-#include "cpu/x86/include/common/_processor.h"  	//CPU
-#include "cpu/x86/include/common/_io.h"         	//legacy I/O
-#include "platform/x86pc/include/common/_com.h"		//serial UART as debugging backend
 
 // frequency of UART clock source
 #define UART_CLOCKFREQ   1843200
