@@ -54,9 +54,11 @@
 #include <xmhf-core.h>
 #include <xmhf-debug.h>
 
-#define __XMHF_SLAB_CALLER_INDEX__ 	XMHF_SLAB_INITBS_INDEX
 #include <xcsmp.h>
+
+#define __XMHF_SLAB_CALLER_INDEX__ 	XMHF_SLAB_INITBS_INDEX
 #include <xcexhub.h>
+#include <xcrichguest.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
 
 /* originally within xc-baseplatform-x86vmx.c */
