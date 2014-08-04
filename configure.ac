@@ -30,20 +30,20 @@ AC_SUBST([CCLIB], [`$CC -m32 --print-file-name=`])
 # user-defined options
 
 # target platform
-AC_SUBST([TARGET_PLATFORM])
-AC_ARG_WITH([target_platform],
-        AS_HELP_STRING([--with-target-platform=@<:@PLATFORM@:>@],
-                [select target platform (x86-pc)]),
-                , [with_target_platform=x86-pc])
-TARGET_PLATFORM=$[]with_target_platform
+#AC_SUBST([TARGET_PLATFORM])
+#AC_ARG_WITH([target_platform],
+#        AS_HELP_STRING([--with-target-platform=@<:@PLATFORM@:>@],
+#                [select target platform (x86-pc)]),
+#                , [with_target_platform=x86-pc])
+#TARGET_PLATFORM=$[]with_target_platform
 
 # target architecture
-AC_SUBST([TARGET_ARCH])
-AC_ARG_WITH([target_arch],
-        AS_HELP_STRING([--with-target-arch=@<:@ARCH@:>@],
-                [select target architecture (x86-vmx, x86-svm)]),
-                , [with_target_arch=x86-vmx])
-TARGET_ARCH=$[]with_target_arch
+#AC_SUBST([TARGET_ARCH])
+#AC_ARG_WITH([target_arch],
+#        AS_HELP_STRING([--with-target-arch=@<:@ARCH@:>@],
+#                [select target architecture (x86-vmx, x86-svm)]),
+#                , [with_target_arch=x86-vmx])
+#TARGET_ARCH=$[]with_target_arch
 
 
 # XMHF hypapps to be built
