@@ -44,17 +44,49 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF arch. specific header file 
-// author: amit vasudevan (amitvasudevan@acm.org)
+/**
+ * EMHF TPM component x86 VMX subarch. backend
+ * author: amit vasudevan (amitvasudevan@acm.org) and Jonathan M. McCune
+ */
 
-#ifndef __XMHF_ARCH_H_
-#define __XMHF_ARCH_H_
-
-#if defined(__XMHF_TARGET_TRIAD_X86_VMX_X86PC__)
-	#include <arch/x86-vmx-x86pc/xmhf-x86-vmx-x86pc.h>
-#else
-	#error "You must define a valid cpu-container-platform triad before trying to build."
-#endif
+#include <xmhf.h>
+#include <xmhf-debug.h>
 
 
-#endif /* __XMHF_ARCH_H_ */
+//open TPM locality
+int xmhf_tpm_arch_x86vmx_open_locality(int locality){
+        txt_didvid_t didvid;
+        txt_ver_fsbif_emif_t ver;
+
+        // display chipset fuse and device and vendor id info 
+        didvid._raw = read_pub_config_reg(TXTCR_DIDVID);
+        _XDPRINTF_("\n%s: chipset ids: vendor: 0x%x, device: 0x%x, revision: 0x%x", __FUNCTION__,
+               didvid.vendor_id, didvid.device_id, didvid.revision_id);
+        ver._raw = read_pub_config_reg(TXTCR_VER_FSBIF);
+        if ( (ver._raw & 0xffffffff) == 0xffffffff ||
+             (ver._raw & 0xffffffff) == 0x00 )         /* need to use VER.EMIF */
+            ver._raw = read_pub_config_reg(TXTCR_VER_EMIF);
+        _XDPRINTF_("\n%s: chipset production fused: %x", __FUNCTION__, ver.prod_fused);
+        
+        if(txt_is_launched()) {
+            write_priv_config_reg(locality == 1 ? TXTCR_CMD_OPEN_LOCALITY1
+                                  : TXTCR_CMD_OPEN_LOCALITY2, 0x01);
+            read_priv_config_reg(TXTCR_E2STS);   /* just a fence, so ignore return */
+            return 0;
+        } else {
+            _XDPRINTF_("\n%s: ERROR: Locality opening UNIMPLEMENTED on Intel without SENTER\n", __FUNCTION__);
+            return 1;
+        }        
+}
+
+//open TPM locality
+int xmhf_tpm_arch_open_locality(int locality){
+	//u32 cpu_vendor = get_cpu_vendor_or_die();
+
+    //if(cpu_vendor == CPU_VENDOR_INTEL) {
+        return xmhf_tpm_arch_x86vmx_open_locality(locality);
+       
+    //} else { /* AMD */        
+	//	return xmhf_tpm_arch_x86svm_open_locality(locality);
+    //}
+}
