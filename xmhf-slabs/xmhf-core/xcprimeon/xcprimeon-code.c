@@ -109,7 +109,7 @@ void xcprimeon_entry(void){
 	xcprimeon_arch_initialize_page_tables();
 		
 	//proceed with SMP initialization
-	if ( XMHF_SLAB_CALL(xmhf_runtime_entry()) ){
+	if ( XMHF_SLAB_CALL(xcsmp_entry()) ){
 		//we should never get here
 		_XDPRINTF_("\nSL: Fatal, should never be here!");
 		HALT();

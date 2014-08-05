@@ -56,7 +56,8 @@
 #ifndef __ASSEMBLY__
 
 
-void init_entry(u32 cpuid, bool is_bsp);
+bool xcrichguest_entry(u32 cpuid, bool is_bsp);
+
 void xmhf_richguest_arch_initialize(u32 partition_index);
 #define xmhf_richguest_initialize xmhf_richguest_arch_initialize
 
