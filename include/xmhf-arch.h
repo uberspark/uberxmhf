@@ -50,8 +50,11 @@
 #ifndef __XMHF_ARCH_H_
 #define __XMHF_ARCH_H_
 
-// we only support x86-vmx arch for now
-#include <arch/x86/common/xc-x86.h>
-#include <arch/x86/vmx/xc-x86vmx.h>
+#if defined(__XMHF_TARGET_TRIAD_X86_VMX_X86PC__)
+	#include <arch/x86-vmx-x86pc/xmhf-x86-vmx-x86pc.h>
+#else
+	#error "You must define a valid cpu-container-platform triad before trying to build."
+#endif
+
 
 #endif /* __XMHF_ARCH_H_ */

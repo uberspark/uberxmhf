@@ -44,21 +44,197 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// xc-x86vmx.h - XMHF core x86 vmx arch. main header file 
+// xmhf-x86-vmx-x86pc.h
+// XMHF x86-vmx-x86pc arch header
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef _XC_X86VMX_H_
-#define _XC_X86VMX_H_
+#ifndef _XMHF_X86_VMX_X86PC_H_
+#define _XMHF_X86_VMX_X86PC_H_
 
-//#include <xmhf.h>
-//#include <xmhf-core.h>
+#include <xmhfhw/platform/x86pc/_multiboot.h>		//multiboot
+#include <xmhfhw/cpu/x86/_processor.h>  			//CPU
+#include <xmhfhw/cpu/x86/_msr.h>        			//model specific registers
+#include <xmhfhw/cpu/x86/_paging.h>     			//MMU
+#include <xmhfhw/cpu/x86/_io.h>         			//legacy I/O
+#include <xmhfhw/cpu/x86/_apic.h>       			//APIC
+#include <xmhfhw/cpu/x86/txt/_txt.h>				//Trusted eXecution Technology (SENTER support)
+#include <xmhfhw/container/vmx/_vmx.h>				//VMX extensions
+#include <xmhfhw/platform/x86pc/_pci.h>        		//PCI bus glue
+#include <xmhfhw/platform/x86pc/_acpi.h>			//ACPI glue
+#include <xmhfhw/platform/x86pc/_com.h>        		//UART/serial
+#include <xmhfhw/platform/x86pc/vtd/vtd.h>			//VMX DMA protection
+#include <xmhfhw/platform/x86pc/_memaccess.h>		//platform memory access
+#include <xmhfhw/platform/x86pc/_tpm.h>        		//TPM
+#include <xmhfhw/platform/x86pc/_biosdata.h>		//BIOS data areas
 
 #ifndef __ASSEMBLY__
 
-//typedef struct {
-//	u64 operation;
-//	u64 params[MAX_XC_HYPAPP_CB_ARCH_PARAMS];
-//}__attribute__ ((packed)) xc_hypapp_arch_param_t;
+
+typedef struct {
+  u32 eip;
+  u32 cs;
+  u32 eflags;
+} __attribute__((packed)) INTR_SAMEPRIVILEGE_STACKFRAME_NOERRORCODE;
+
+//---platform
+typedef struct {
+  u32 errorcode;
+  u32 eip;
+  u32 cs;
+  u32 eflags;
+} __attribute__((packed)) INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE;
+
+//MTRR memory type structure
+struct _memorytype {
+  u64 startaddr;
+  u64 endaddr;
+  u32 type;
+  u32 invalid;
+  u32 reserved[6];
+} __attribute__((packed));
+
+//---platform
+#define MAX_MEMORYTYPE_ENTRIES    98    //8*11 fixed MTRRs and 10 variable MTRRs
+#define MAX_FIXED_MEMORYTYPE_ENTRIES  88
+#define MAX_VARIABLE_MEMORYTYPE_ENTRIES 10
+
+
+//---platform
+//total number of FIXED and VARIABLE MTRRs on current x86 platforms
+#define NUM_MTRR_MSRS		31
+
+
+//---platform
+//VMX MSR indices 
+#define INDEX_IA32_VMX_BASIC_MSR            0x0
+#define INDEX_IA32_VMX_PINBASED_CTLS_MSR    0x1
+#define INDEX_IA32_VMX_PROCBASED_CTLS_MSR   0x2
+#define INDEX_IA32_VMX_EXIT_CTLS_MSR        0x3
+#define INDEX_IA32_VMX_ENTRY_CTLS_MSR       0x4
+#define INDEX_IA32_VMX_MISC_MSR       	    0x5
+#define INDEX_IA32_VMX_CR0_FIXED0_MSR       0x6
+#define INDEX_IA32_VMX_CR0_FIXED1_MSR       0x7
+#define INDEX_IA32_VMX_CR4_FIXED0_MSR       0x8
+#define INDEX_IA32_VMX_CR4_FIXED1_MSR       0x9
+#define INDEX_IA32_VMX_VMCS_ENUM_MSR        0xA
+#define INDEX_IA32_VMX_PROCBASED_CTLS2_MSR  0xB
+
+//---platform
+#define IA32_VMX_MSRCOUNT   								12
+
+
+// segment selectors
+#define 	__CS_CPL0 	0x0008 	//CPL-0 code segment selector
+#define 	__DS_CPL0 	0x0010 	//CPL-0 data segment selector
+#define		__CS_CPL3	0x001b	//CPL-3 code segment selector
+#define		__DS_CPL3	0x0023  //CPL-3 data segment selector
+#define 	__TRSEL 	0x0028  //TSS (task) selector
+
+
+
+//x86 GDT descriptor type
+typedef struct {
+		u16 size;
+		u32 base;
+} __attribute__((packed)) arch_x86_gdtdesc_t;
+
+//x86 IDT descriptor type
+typedef struct {
+		u16 size;
+		u32 base;
+} __attribute__((packed)) arch_x86_idtdesc_t;
+
+//TSS descriptor (partial)
+typedef struct __tss {
+	u32 prevlink;
+	u32 esp0;
+	u32 ss0;
+} tss_t;
+
+#define	EMHF_XCPHANDLER_MAXEXCEPTIONS	32
+#define EMHF_XCPHANDLER_IDTSIZE			(EMHF_XCPHANDLER_MAXEXCEPTIONS * 8)
+
+
+//----------------------------------------------------------------------
+// function decls.
+//----------------------------------------------------------------------
+
+
+//void _ap_pmode_entry_with_paging(void);
+
+//get CPU vendor
+//u32 xmhf_baseplatform_arch_getcpuvendor(void);
+
+//initialize CPU state
+//void xmhf_baseplatform_arch_cpuinitialize(void);
+
+//initialize SMP
+//void xmhf_baseplatform_arch_smpinitialize(void);
+
+//initialize basic platform elements
+//void xmhf_baseplatform_arch_initialize(void);
+
+//reboot platform
+//void xmhf_baseplatform_arch_reboot(context_desc_t context_desc);
+
+//returns true if CPU has support for XSAVE/XRSTOR
+bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void);
+
+
+u32 xmhf_baseplatform_arch_x86_getcpuvendor(void);
+
+void xmhf_baseplatform_arch_x86_cpu_initialize(void);
+
+//return 1 if the calling CPU is the BSP
+bool xmhf_baseplatform_arch_x86_isbsp(void);
+
+//wake up APs using the LAPIC by sending the INIT-SIPI-SIPI IPI sequence
+void xmhf_baseplatform_arch_x86_wakeupAPs(void);
+
+//generic x86 platform reboot
+void xmhf_baseplatform_arch_x86_reboot(void);
+
+//get the physical address of the root system description pointer (rsdp)
+u32 xmhf_baseplatform_arch_x86_acpi_getRSDP(ACPI_RSDP *rsdp);
+
+//PCI subsystem initialization
+void xmhf_baseplatform_arch_x86_pci_initialize(void);
+
+//does a PCI type-1 write of PCI config space for a given bus, device, 
+//function and index
+void xmhf_baseplatform_arch_x86_pci_type1_write(u32 bus, u32 device, u32 function, u32 index, u32 len,
+	u32 value);
+	
+//does a PCI type-1 read of PCI config space for a given bus, device, 
+//function and index
+void xmhf_baseplatform_arch_x86_pci_type1_read(u32 bus, u32 device, u32 function, u32 index, u32 len,
+			u32 *value);
+
+//microsecond delay
+void xmhf_baseplatform_arch_x86_udelay(u32 usecs);
+
+//initialize GDT
+void xmhf_baseplatform_arch_x86_initializeGDT(void);
+
+//initialize IO privilege level
+void xmhf_baseplatform_arch_x86_initializeIOPL(void);
+
+//initialize IDT
+void xmhf_baseplatform_arch_x86_initializeIDT(void);
+
+//setup core page tables
+u32 xmhf_baseplatform_arch_x86_setup_pagetables(void);
+
+//initialize paging
+void xmhf_baseplatform_arch_x86_initialize_paging(u32 pgtblbase);
+
+void xmhf_baseplatform_arch_x86_savecpumtrrstate(void);
+void xmhf_baseplatform_arch_x86_restorecpumtrrstate(void);
+
+u32 xmhf_baseplatform_arch_x86_getgdtbase(void);
+u32 xmhf_baseplatform_arch_x86_getidtbase(void);
+u32 xmhf_baseplatform_arch_x86_gettssbase(void);
+
 
 typedef struct {
 	u32 portnum;
@@ -199,7 +375,8 @@ void xmhf_parteventhub_arch_x86vmx_entry(void);
 
 
 
-#endif // __ASSEMBLY__
 
+#endif //__ASSEMBLY__
 
-#endif // _XC_X86VMX_H_
+#endif // #define _XMHF_X86_VMX_X86PC_H_
+
