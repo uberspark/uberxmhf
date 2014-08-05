@@ -88,7 +88,7 @@ context_desc_t xmhf_richguest_setup(u32 partition_index, u32 cpuid, bool is_bsp)
 /* originally in init-entry.c */
 
 //we get control here in the context of *each* physical CPU core 
-void init_entry(u32 cpuid, bool is_bsp){
+bool xcrichguest_entry(u32 cpuid, bool is_bsp){
 	static u32 _xc_startup_hypappmain_counter = 0; 
 	static u32 _xc_startup_hypappmain_counter_lock = 1; 
 	context_desc_t context_desc;

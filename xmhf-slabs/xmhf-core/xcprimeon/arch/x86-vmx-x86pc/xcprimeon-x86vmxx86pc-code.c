@@ -494,7 +494,7 @@ void xcprimeon_arch_postdrt(void){
 	}
 	_XDPRINTF_("SL: Validated MTRRs\n");
 
-	restore_mtrrs(&(os_mle_data->saved_mtrr_state));
+	xmhfhw_cpu_x86_restore_mtrrs(&(os_mle_data->saved_mtrr_state));
     _XDPRINTF_("SL: Restored MTRRs\n");
 }
 
