@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF core startup module
+// XMHF rich guest (xcrichguest)
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 //---includes-------------------------------------------------------------------
@@ -53,39 +53,27 @@
 #include <xmhf-debug.h>
 
 #include <xcrichguest.h>
-
 #include <xcapi.h>
 
-/* originally in xc-init-richguest.c */
-
 //add given cpu to the rich guest partition
-context_desc_t xmhf_richguest_setup(u32 partition_index, u32 cpuid, bool is_bsp){
+static context_desc_t _xcrichguest_setup(u32 partition_index, u32 cpuid, bool is_bsp){
 	context_desc_t context_desc;
 
-	_XDPRINTF_("%s: starting\n", __FUNCTION__);
-	
-	_XDPRINTF_("%s: proceeding to call xc_api_partition_addcpu\n", __FUNCTION__);
 	//add cpu to the richguest partition
 	context_desc = XMHF_SLAB_CALL(xc_api_partition_addcpu(partition_index, cpuid, is_bsp));
-	_XDPRINTF_("%s: back\n", __FUNCTION__);
 
 	//bail out if we could not add cpu to the rich guest partition
 	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
-			_XDPRINTF_("\n%s: could not add cpu to rich guest partition. Halting!", __FUNCTION__);
-			return context_desc;
+		_XDPRINTF_("\n%s: could not add cpu to rich guest partition. Halting!", __FUNCTION__);
+		return context_desc;
 	}
 
-	_XDPRINTF_("%s: proceeding to call xmhf_richguest_setupguestOSstate\n", __FUNCTION__);
-	
 	//setup guest OS state for partition
-	xmhf_richguest_setupguestOSstate(context_desc);
-	//_XDPRINTF_("%s: back\n", __FUNCTION__);
+	xcrichguest_arch_setupguestOSstate(context_desc);
 
 	return context_desc;
 }
 
-
-/* originally in init-entry.c */
 
 //we get control here in the context of *each* physical CPU core 
 bool xcrichguest_entry(u32 cpuid, bool is_bsp){
@@ -96,11 +84,6 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
 	static u32 xc_richguest_partition_index=XC_PARTITION_INDEX_INVALID;
 
 	_XDPRINTF_("\n%s: cpu=%x, is_bsp=%u. Halting\n", __FUNCTION__, cpuid, is_bsp);
-	//asm volatile("int $0x03 \r\n");
-	//HALT();
-	
-	//_XDPRINTF_("\nXMHF Tester Finished!\n\n");
-	//HALT();
 	
 	//ensure BSP is the first to grab the lock below
 	if(!is_bsp)
@@ -111,19 +94,17 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
 
 	//[debug]
 	_XDPRINTF_("\n%s: cpuid=%08x, is_bsp=%u...\n", __FUNCTION__, cpuid, is_bsp);
-
 	
 	//create rich guest partition if we are the BSP
 	if(is_bsp){
 		_XDPRINTF_("\n%s: proceeding to create rich guest partition (esp=%x)\n", __FUNCTION__, read_esp());
 		xc_richguest_partition_index = XMHF_SLAB_CALL(xc_api_partition_create(XC_PARTITION_PRIMARY));
-		//_XDPRINTF_("\n%s: came back (esp=%x)\n", __FUNCTION__, read_esp());
 		if(xc_richguest_partition_index == XC_PARTITION_INDEX_INVALID){
 			_XDPRINTF_("\n%s: Fatal error, could not create rich guest partition!", __FUNCTION__);
 			HALT();
 		}
 		_XDPRINTF_("\n%s: BSP: created rich guest partition %u", __FUNCTION__, xc_richguest_partition_index);
-		xmhf_richguest_initialize(xc_richguest_partition_index);
+		xcrichguest_arch_initialize(xc_richguest_partition_index);
 		_XDPRINTF_("\n%s: BSP: initialized rich guest partition %u", __FUNCTION__, xc_richguest_partition_index);
 	}
 	
@@ -131,9 +112,7 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
 	//TODO: check if this CPU is allocated to the "rich" guest. if so, pass it on to
 	//the rich guest initialization procedure. if the CPU is not allocated to the
 	//rich guest, enter it into a CPU pool for use by other partitions
-	//xmhf_richguest_addcpu(xc_cpu, xc_partition_richguest_index);
-	//cpu_index=xmhf_richguest_setup(cpuid, is_bsp);
-	context_desc=xmhf_richguest_setup(xc_richguest_partition_index, cpuid, is_bsp);
+	context_desc=_xcrichguest_setup(xc_richguest_partition_index, cpuid, is_bsp);
 	
 	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
 		_XDPRINTF_("\n%s: Fatal error, could not add cpu to rich guest. Halting!", __FUNCTION__);
@@ -148,9 +127,9 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
 		hypappenvb.runtimesize = (u32)xcbootinfo->size;
 	
 		//call app main
-		//_XDPRINTF_("\n%s: proceeding to call xmhfhypapp_main on BSP", __FUNCTION__);
-		//xc_hypapp_initialization(context_desc, hypappenvb);
-		//_XDPRINTF_("\n%s: came back into core", __FUNCTION__);
+		_XDPRINTF_("\n%s: proceeding to call xmhfhypapp_main on BSP", __FUNCTION__);
+		XMHF_SLAB_CALL(xmhf_hypapp_initialization(context_desc, hypappenvb));
+		_XDPRINTF_("\n%s: came back into core", __FUNCTION__);
 	}   	
     
     _xc_startup_hypappmain_counter++;
@@ -167,11 +146,9 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
 	
 	//wait for hypapp main to execute on all the cpus
 	while(_xc_startup_hypappmain_counter < xcbootinfo->cpuinfo_numentries);
-
 	
 	//start cpu in corresponding partition
 	_XDPRINTF_("\n%s[%u]: starting in partition...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
-	//HALT();
 	
 	//xmhf_partition_start(context_desc.cpu_desc.cpu_index);
 	if(!XMHF_SLAB_CALL(xc_api_partition_startcpu(context_desc))){
@@ -181,8 +158,5 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
 }
 
 ///////
-XMHF_SLAB("init")
+XMHF_SLAB("xcrichguest")
 
-XMHF_SLAB_DEFINTERFACE(
-	XMHF_SLAB_DEFEXPORTFN(init_entry, XMHF_SLAB_INIT_FNINITENTRY, XMHF_SLAB_FN_RETTYPE_NORMAL)
-)

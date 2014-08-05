@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF rich guest -- initialization portion, x86 (VMX) backend implementation
+// XMHF rich guest x86-vmx-x86pc arch. backend
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -52,7 +52,6 @@
 #include <xmhf-debug.h>
 
 #include <xcsmp.h>
-
 #include <xcapi.h>
 
 
@@ -62,7 +61,6 @@ static struct _memorytype _vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT me
 // local (static) support function forward declarations
 static void _vmx_gathermemorytypes(void);
 static u32 _vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr);
-//static void _vmx_setupEPT(xc_partition_hptdata_x86vmx_t *eptdata);
 static void _vmx_setupEPT(context_desc_t context_desc);
 
 //---gather memory types for system physical memory------------------------------
@@ -357,26 +355,20 @@ static void	_vmx_int15_initializehook(void){
 		xmhfhw_sysmemaccess_writeu16(0x56, 0x0040); 
 }
 
-//-------------------------------------------------------------------------
-void xmhf_richguest_arch_initialize(u32 partition_index){
-	//xc_partition_t *xc_partition_richguest = &g_xc_primary_partition[partition_index];
-	
-	//g_xc_primary_partition[XC_PARTITION_RICHGUEST_INDEX].partitionid=XC_PARTITION_RICHGUEST_INDEX;
-	//g_xc_primary_partition[XC_PARTITION_RICHGUEST_INDEX].partitiontype = XC_PARTITION_PRIMARY;
-	//g_xc_primary_partition[XC_PARTITION_RICHGUEST_INDEX].numcpus = 0;
+
+//================================================================================
+void xcrichguest_arch_initialize(u32 partition_index){
 	context_desc_t context_desc;
 	
 	context_desc.cpu_desc.cpu_index=XC_PARTITION_INDEX_INVALID;
 	context_desc.cpu_desc.isbsp = true;
 	context_desc.partition_desc.partition_index = partition_index;
 
-
 	_XDPRINTF_("\n%s: copying boot-module to boot guest: base=%08x, size=%u bytes", __FUNCTION__, (u32)xcbootinfo->richguest_bootmodule_base, xcbootinfo->richguest_bootmodule_size);
 	memcpy((void *)__GUESTOSBOOTMODULE_BASE, (void *)xcbootinfo->richguest_bootmodule_base, xcbootinfo->richguest_bootmodule_size);
 		
 	_XDPRINTF_("\n%s: BSP initializing HPT", __FUNCTION__);
 	_vmx_gathermemorytypes();
-	//_vmx_setupEPT((xc_partition_hptdata_x86vmx_t *)xc_partition_richguest->hptdata);
 
 	_vmx_setupEPT(context_desc);
 
@@ -387,10 +379,8 @@ void xmhf_richguest_arch_initialize(u32 partition_index){
 }
 
 
-
-
 //setup guest OS state for the partition
-void xmhf_richguest_arch_setupguestOSstate(context_desc_t context_desc){
+void xcrichguest_arch_setupguestOSstate(context_desc_t context_desc){
 	xc_hypapp_arch_param_t ap;
 	
 	//--------------------------------------------------------------------------------------------------------------------------------
