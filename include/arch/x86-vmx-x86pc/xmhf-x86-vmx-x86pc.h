@@ -51,6 +51,8 @@
 #ifndef _XMHF_X86_VMX_X86PC_H_
 #define _XMHF_X86_VMX_X86PC_H_
 
+#include "_config.h"								//include arch. specific configuration parameters
+
 #include <xmhfhw/platform/x86pc/_multiboot.h>		//multiboot
 #include <xmhfhw/cpu/x86/_processor.h>  			//CPU
 #include <xmhfhw/cpu/x86/_msr.h>        			//model specific registers

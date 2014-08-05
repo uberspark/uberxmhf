@@ -50,39 +50,10 @@
 #ifndef __XMHF_CONFIG_H__
 #define __XMHF_CONFIG_H__
 
-//======================================================================
-//XMHF platform/arch. specific configurable constant definitions
-
-//----------------------------------------------------------------------
-// XMHF platform memory map
-	//size of memory that is pre-allocated by XMHF on the platform (currently 256MB)
-	#define __TARGET_BASE_XMHF				0x10000000		//at 256M
-	#define __TARGET_SIZE_XMHF				0x10000000
-
-	//physical address where the XMHF boot-loader is loaded (e.g., via GRUB)
-	#define __TARGET_BASE_BOOTLOADER		0x01E00000		//30MB
-	#define __TARGET_SIZE_BOOTLOADER		0x00200000		//2MB
-
-	//physical address of XMHF secure loader + core runtime
-	//SL currently sits at absolute address 256MB (0x10000000). 
-	//core runtime is at an offset of 2M from this SL base address
-	#define __TARGET_BASE_SL				0x10400000		//256MB
-	#define __TARGET_SIZE_SL				0x00200000
-	
-
-	//physical address of XMHF hypapp
-	#define __TARGET_BASE_XMHFHYPAPP		0x1D000000      //480M
-	#define __TARGET_SIZE_XMHFHYPAPP		0x02000000		//32M
-//----------------------------------------------------------------------	
-
-//"sl" parameter block magic value
-//#define SL_PARAMETER_BLOCK_MAGIC		0xDEADBEEF
-
 //"runtime" parameter block magic value
 #define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
 
 #define SL_PARAMETER_BLOCK_MAGIC		0xF00DDEAD
-
 
 //16K stack for each core during runtime
 #define RUNTIME_STACK_SIZE  			(16384)     
@@ -130,32 +101,6 @@
 
 //maximum system memory map entries (e.g., E820) currently supported
 #define MAX_E820_ENTRIES    			(64)  
-
-//size of core DMA protection buffer (if platform DMA protections need to be re-initialized within the core)
-#define SIZE_CORE_DMAPROT_BUFFER		(128*1024)
-
-//preferred TPM locality to use for access inside hypervisor
-//needs to be 2 or 1 (4 is hw-only, 3 is sinit-only on Intel)
-#define EMHF_TPM_LOCALITY_PREF 2
-
-//where the guest OS boot record is loaded 
-#define __GUESTOSBOOTMODULE_BASE		0x7c00
-#define __GUESTOSBOOTMODULESUP1_BASE	0x7C00
-
-//code segment of memory address where APs startup initially
-//address 0x1000:0x0000 or 0x10000 physical
-#define AP_BOOTSTRAP_CODE_SEG 			0x1000
-
-//TXT SENTER MLE specific constants
-#define TEMPORARY_HARDCODED_MLE_SIZE       0x10000
-#define TEMPORARY_MAX_MLE_HEADER_SIZE      0x80
-#define TEMPORARY_HARDCODED_MLE_ENTRYPOINT TEMPORARY_MAX_MLE_HEADER_SIZE
-
-//VMX Unrestricted Guest (UG) E820 hook support
-//we currently use the BIOS data area (BDA) unused region
-//at 0x0040:0x00AC
-#define	VMX_UG_E820HOOK_CS				(0x0040)	
-#define	VMX_UG_E820HOOK_IP				(0x00AC)
 
 // SHA-1 hash of runtime should be defined during build process.
 // However, if it's not, don't fail.  Just proceed with all zeros.
