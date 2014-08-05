@@ -9,26 +9,21 @@ srcdir := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 vpath %.c $(srcdir)
 
 # grab list of all source files
-C_SOURCES := $(shell find $(srcdir)/cpu/x86/common/ -type f -name '*.c')
-C_SOURCES += $(shell find $(srcdir)/cpu/x86/intel/ -type f -name '*.c')
-
-C_SOURCES += $(shell find $(srcdir)/platform/x86pc/common/ -type f -name '*.c')
-C_SOURCES += $(shell find $(srcdir)/platform/x86pc/intel/ -type f -name '*.c')
+C_SOURCES := $(shell find $(srcdir)/cpu/$(XMHF_TARGET_CPU)/ -type f -name '*.c')
+C_SOURCES += $(shell find $(srcdir)/container/$(XMHF_TARGET_CONTAINER)/ -type f -name '*.c')
+C_SOURCES += $(shell find $(srcdir)/platform/$(XMHF_TARGET_PLATFORM)/ -type f -name '*.c')
 
 C_SOURCES := $(patsubst $(srcdir)/%, %, $(C_SOURCES))
 
 C_SOURCES_FILENAMEONLY := $(notdir $(C_SOURCES))
-
-#C_SOURCES_FILENAMEONLY := $(shell find $(srcdir)/cpu/x86/ -type f -name '*.c' -printf '%f\n')
-#C_SOURCES_FILENAMEONLY += $(shell find $(srcdir)/platform/x86pc/ -type f -name '*.c' -printf '%f\n')
 
 OBJECTS := $(patsubst %.c, %.o, $(C_SOURCES))
 OBJECTS_VERIFY := $(patsubst %.c, %.v, $(C_SOURCES))
 
 OBJECTS_ARCHIVE := $(patsubst %.c, %.o, $(C_SOURCES_FILENAMEONLY))
 
-I_SOURCES := $(shell find $(srcdir)/cpu/x86/include/ -type f -name '*.h')
-I_SOURCES += $(shell find $(srcdir)/platform/x86pc/include/ -type f -name '*.h')
+#I_SOURCES := $(shell find $(srcdir)/cpu/x86/include/ -type f -name '*.h')
+#I_SOURCES += $(shell find $(srcdir)/platform/x86pc/include/ -type f -name '*.h')
 
 CFLAGS += -nostdinc -fno-builtin -nostdlib -Wall 
 

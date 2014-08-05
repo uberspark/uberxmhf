@@ -48,7 +48,6 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h> 
-#include "cpu/x86/include/common/_msr.h"        	//model specific registers
 
 .extern midtable_numentries
 .extern mp_cstartup

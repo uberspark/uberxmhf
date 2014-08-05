@@ -21,9 +21,8 @@ vpath %.lscript $(srcdir)
 export XMHF_SLAB_NAME := xcsmp
 export XMHF_SLAB_PRIVILEGED := y
 export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
-XMHF_SLAB_SOURCES += $(shell find $(srcdir)/arch/x86/common/ -type f -name '*.c')
-XMHF_SLAB_SOURCES += $(shell find $(srcdir)/arch/x86/vmx/ -type f -name '*.c')
-XMHF_SLAB_SOURCES += $(shell find $(srcdir)/arch/x86/vmx/ -type f -name '*.S')
+XMHF_SLAB_SOURCES += $(shell find $(srcdir)/arch/$(XMHF_TARGET_TRIAD)/ -type f -name '*.c')
+XMHF_SLAB_SOURCES += $(shell find $(srcdir)/arch/$(XMHF_TARGET_TRIAD)/ -type f -name '*.S')
 
 
 ########################################################################
