@@ -58,12 +58,11 @@
 
 bool xcrichguest_entry(u32 cpuid, bool is_bsp);
 
-void xmhf_richguest_arch_initialize(u32 partition_index);
-#define xmhf_richguest_initialize xmhf_richguest_arch_initialize
-
-context_desc_t xmhf_richguest_setup(u32 partition_index, u32 cpuid, bool is_bsp);
-void xmhf_richguest_arch_setupguestOSstate(context_desc_t context_desc);
-#define xmhf_richguest_setupguestOSstate xmhf_richguest_arch_setupguestOSstate
+//----------------------------------------------------------------------
+//ARCH. BACKENDS
+//----------------------------------------------------------------------
+void xcrichguest_arch_initialize(u32 partition_index);
+void xcrichguest_arch_setupguestOSstate(context_desc_t context_desc);
 
 
 #endif //__ASSEMBLY__
