@@ -246,7 +246,7 @@ void xmhf_baseplatform_arch_x86_pci_type1_write(u32 bus, u32 device, u32 functio
 //PCI subsystem initialization
 //check that PCI chipset supports type-1 accesses
 //true for most systems after 2001
-void xmhf_baseplatform_arch_x86_pci_initialize(void){
+void xmhfhw_platform_bus_init(void){
   u32 tmp;
 
 	//save value at PCI_CONFIG_ADDR_PORT

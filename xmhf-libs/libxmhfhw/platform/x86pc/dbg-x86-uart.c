@@ -113,7 +113,7 @@ void xmhf_hw_platform_serial_puts(char *buffer){
 
 //initialize UART comms.
 //void dbg_x86_uart_init(char *params){
-void xmhf_hw_platform_serialinit(char *params){
+void xmhfhw_platform_serial_init(char *params){
 
   //override default UART parameters with the one passed via the
   //command line
