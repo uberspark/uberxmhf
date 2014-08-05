@@ -55,7 +55,7 @@
 
 #ifndef __ASSEMBLY__
 
-void xmhf_runtime_entry(void);
+bool xmhf_runtime_entry(void);
 void xmhf_apihub_arch_initialize(void);
 #define xmhf_apihub_initialize	xmhf_apihub_arch_initialize
 void xcinitbs_arch_initialize_exception_handling(void);

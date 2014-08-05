@@ -208,6 +208,7 @@ typedef struct{
 	u8 x_gpe1_blk[12];
 }__attribute__ ((packed)) ACPI_FADT;
 
+u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp);
 
 #endif	//__ASSEMBLY__
 

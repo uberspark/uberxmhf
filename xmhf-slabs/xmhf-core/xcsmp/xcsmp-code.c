@@ -55,7 +55,7 @@
 #include <xcsmp.h>
 #include <xcrichguest.h>
 
-void xmhf_runtime_entry(void){
+bool xmhf_runtime_entry(void){
 
 	//setup debugging	
 	//xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
