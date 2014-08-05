@@ -1,9 +1,6 @@
 # top-level Makefile for XMHF
 # author: amit vasudevan (amitvasudevan@acm.org)
 
-# target hardware platform
-export TARGET_HWPLATFORM := x86
-
 # directory where this Makefile resides (source root)
 export XMHF_DIR := $(CURDIR)
 
@@ -25,11 +22,7 @@ XMHFCORE_INC = -I$(realpath xmhf-slabs/xmhf-core/) -I$(realpath xmhf-slabs/xmhf-
 
 # libxmhfhw source location
 export LIBXMHFHW_SRC := $(realpath xmhf-libs/libxmhfhw)
-LIBXMHFHW_INC = $(realpath xmhf-libs/libxmhfhw)
-
-# libxmhfdebug source location
-export LIBXMHFDEBUG_SRC := $(realpath xmhf-libs/libxmhfdebug)
-LIBXMHFDEBUG_INC = -I$(realpath xmhf-libs/libxmhfdebug/include) -I$(realpath xmhf-libs/libxmhfdebug/arch/x86/include)
+LIBXMHFHW_INC = $(realpath xmhf-libs/libxmhfhw/include)
 
 # XMHF bootloader source location
 export XMHF_BOOTLOADER_SRC := $(realpath xmhf-bootloader)
@@ -41,7 +34,7 @@ XMHFLIBS_INC = $(foreach dir,$(XMHFLIBS_SUBLIBS),-I$(dir)/include)
 # populate library and include paths
 export ADDL_INCLUDES :=
 export XMHFLIBS_DIR := $(XMHF_OBJDIR)/_objs_xmhf-libs
-ADDL_INCLUDES += -I$(XMHF_INC) $(LIBXMHFDEBUG_INC) $(XMHFCORE_INC) -I$(LIBXMHFHW_INC) $(XMHFLIBS_INC)
+ADDL_INCLUDES += -I$(XMHF_INC) $(XMHFCORE_INC) -I$(LIBXMHFHW_INC) $(XMHFLIBS_INC)
 
 ##################################################################################
 ### BEGIN Variables controlled using autoconf
@@ -54,8 +47,11 @@ export DEBUG_SERIAL_PORT := @DEBUG_SERIAL_PORT@
 export DEBUG_VGA := @DEBUG_VGA@
 export DRT := @DRT@
 export DMAP := @DMAP@
+
+export XMHF_TARGET_CPU := @TARGET_CPU@
+export XMHF_TARGET_CONTAINER := @TARGET_CONTAINER@
 export XMHF_TARGET_PLATFORM := @TARGET_PLATFORM@
-export XMHF_TARGET_ARCH := @TARGET_ARCH@
+export XMHF_TARGET_TRIAD := $(XMHF_TARGET_CPU)-$(XMHF_TARGET_CONTAINER)-$(XMHF_TARGET_PLATFORM)
 
 # Path settings; our project is not unique in this aspect
 export prefix=@prefix@
@@ -119,21 +115,36 @@ VFLAGS += -D___XMHF_BUILD_VERSION___=\"$(XMHF_BUILD_VERSION)\"
 FLAGS += -D___XMHF_BUILD_REVISION___=\"$(XMHF_BUILD_REVISION)\"
 VFLAGS += -D___XMHF_BUILD_REVISION___=\"$(XMHF_BUILD_REVISION)\"
 
-ifeq ($(XMHF_TARGET_ARCH), x86-svm)
-	VFLAGS += -D__XMHF_TARGET_ARCH_X86_SVM__
+# target cpu
+ifeq ($(XMHF_TARGET_CPU), x86)
+	FLAGS += -D__XMHF_TARGET_CPU_X86__
+	VFLAGS += -D__XMHF_TARGET_CPU_X86__
 endif
-ifeq ($(XMHF_TARGET_ARCH), x86-vmx)
-	VFLAGS += -D__XMHF_TARGET_ARCH_X86_VMX__
+
+# target container
+ifeq ($(XMHF_TARGET_CONTAINER), vmx)
+	FLAGS += -D__XMHF_TARGET_CONTAINER_VMX__
+	VFLAGS += -D__XMHF_TARGET_CONTAINER_VMX__
 endif
+
+# target platform
+ifeq ($(XMHF_TARGET_PLATFORM), x86pc)
+	FLAGS += -D__XMHF_TARGET_PLATFORM_X86PC__
+	VFLAGS += -D__XMHF_TARGET_PLATFORM_X86PC__
+endif
+
+# target triad
+ifeq ($(XMHF_TARGET_TRIAD), x86-vmx-x86pc)
+	FLAGS += -D__XMHF_TARGET_TRIAD_X86_VMX_X86PC__
+	VFLAGS += -D__XMHF_TARGET_TRIAD_X86_VMX_X86PC__
+endif
+
+# other options
 ifeq ($(DEBUG_SERIAL), y)
 	FLAGS += -D__DEBUG_SERIAL__
 	VFLAGS += -D__DEBUG_SERIAL__
 	FLAGS += -DDEBUG_PORT=$(DEBUG_SERIAL_PORT)
 	VFLAGS += -DDEBUG_PORT=$(DEBUG_SERIAL_PORT)
-endif
-ifeq ($(DEBUG_VGA), y)
-	FLAGS += -D__DEBUG_VGA__
-	VFLAGS += -D__DEBUG_VGA__
 endif
 ifeq ($(DRT), y)
 	FLAGS += -D__DRT__
@@ -197,7 +208,7 @@ subdirs: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
 	@echo XMHF boot loader build SUCCESS
 	@echo generating final binaries...
 	cd $(XMHF_OBJDIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin ./xmhf.bin > ./xmhf.tmp.img
-	cd $(XMHF_OBJDIR) && gzip -c ./xmhf.tmp.img > ./xmhf-$(TARGET_HWPLATFORM).bin.gz
+	cd $(XMHF_OBJDIR) && gzip -c ./xmhf.tmp.img > ./xmhf-$(XMHF_TARGET_TRIAD).bin.gz
 	cd $(XMHF_OBJDIR) && $(RM) -rf ./xmhf.tmp.img 
 	@echo xmhf binary generation SUCCESS
 
@@ -208,7 +219,7 @@ install: install-bin
 install-bin:
 	# Install the _actual_ final product
 	install -d $(DESTDIR)/boot
-	install --mode=644 $(XMHF_OBJDIR)/_objs_xmhf-core/xmhf-$(TARGET_HWPLATFORM).bin.gz $(DESTDIR)/boot
+	install --mode=644 $(XMHF_OBJDIR)/_objs_xmhf-core/xmhf-$(XMHF_TARGET_TRIAD).bin.gz $(DESTDIR)/boot
 
 # Currently the only tests we have are in the TrustVisor tree
 .PHONY: test
