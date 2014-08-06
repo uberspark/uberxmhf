@@ -21,13 +21,14 @@ sudo apt-get install pbuilder texinfo ruby build-essential autoconf libtool pkg-
 sudo apt-get install gcc-multilib
 
 
-3. Other packages needed:
--------------------------
+3. Other packages and environment settings needed:
+--------------------------------------------------
 
 Clang
 	Version 3.3 - available at: http://llvm.org/releases/3.3/clang+llvm-3.3-i386-debian6.tar.bz2
     Untar and setup PATH to point to clang "bin" directory; XMHF uses Clang as the C compiler.
 
+Add <srcroot>/tools to the PATH so the build harness can find required supporting scripts
 
 4. XMHF source organization:
 ----------------------------
