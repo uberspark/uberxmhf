@@ -51,7 +51,6 @@
 #define __XCRICHGUEST_H__
 
 
-#define	XMHF_SLAB_INIT_FNINITENTRY	0
 
 #ifndef __ASSEMBLY__
 

@@ -55,7 +55,6 @@
 #ifndef __XCPRIMEON_H__
 #define __XCPRIMEON_H__
 
-#define XMHF_SLAB_XCPRIMEON_FNSTARTUP							0				
 
 #ifndef __ASSEMBLY__
 
