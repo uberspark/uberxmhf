@@ -1,8 +1,9 @@
 <srcroot> refers to the directory where this README resides
 
-This document briefly describes the layout of the source-code and associated build details as 
-related to the XMHF compositional verification project. 
-For a more general XMHF build and debugging documentation refer to <srcroot>/xmhf/README.md
+This document briefly describes the layout of the source-code and associated build 
+details for XMHF development.
+For a more detailed XMHF build and debugging documentation refer to <srcroot>/docs/OVERVIEW.md
+and <srcroot>/docs/README.md
 
 Author: Amit Vasudevan (amitvasudevan@acm.org)
  
@@ -23,27 +24,46 @@ sudo apt-get install gcc-multilib
 3. Other packages needed:
 -------------------------
 
-    CBMC
-        Version planned 4.7 - available at: http://www.cprover.org/cbmc/download/cbmc_4.7_amd64.deb
-        Install using sudo apt-get install cbmc_4.7_amd64.deb
-
-    Clang
-        Version 3.3 - available at: http://llvm.org/releases/3.3/clang+llvm-3.3-i386-debian6.tar.bz2
-        Untar and setup PATH to point to clang "bin" directory; XMHF uses Clang as the C compiler.
+Clang
+	Version 3.3 - available at: http://llvm.org/releases/3.3/clang+llvm-3.3-i386-debian6.tar.bz2
+    Untar and setup PATH to point to clang "bin" directory; XMHF uses Clang as the C compiler.
 
 
 4. XMHF source organization:
 ----------------------------
 
-<srcroot>/xmhf/src/include - top-level framework headers
-<srcroot>/xmhf/src/xmhf-core - XMHF core sources
-<srcroot>/xmhf/src/libxmhfcore - XMHF core interface library for hypapps
-<srcroot>/xmhf/src/libxmhfhw - Hardware (CPU and Platform) library for XMHF. Includes UART, PIT, PCI bus, ACPI, VT-d, and CPU interfaces
-<srcroot>/xmhf/src/libxmhfdebug - Debugging library
-<srcroot>/xmhf/src/xmhf-bootloader - XMHF (untrusted) bootloader
-<srcroot>/xmhf/src/xmhf-secureloader - XMHF secure loader which sets up framework DMA protection and transfers control to XMHF core
-<srcroot>/xmhf/src/libbaremetal - Various general purpose libraries (libxmhfc, libxmhfcrypto, libtpm, libxmhfutil)
-<srcroot>/hypapps/hyperdep - Hyperdep hypapp sources
+<srcroot>/ 									-- build harness and scripts
+
+<srcroot>/tools 							-- various scripts used during the build process
+
+<srcroot>/include							-- top-level XMHF headers
+<srcroot>/include/arch						-- arch. specific headers
+
+<srcroot>/xmhf-bootloader					-- XMHF bootloader
+
+<srcroot>/xmhf-libs							-- various "mini" libraries
+
+<srcroot>/xmhf-libs/libxmhfhw				-- XMHF hardware backend library
+<srcroot>/xmhf-libs/libxmhfc				-- mini C runtime library (memcpy, strcpy etc.)
+<srcroot>/xmhf-libs/libxmhfcrypto 			-- small crypto library (SHA-1, AES etc.)
+<srcroot>/xmhf-libs/libxmhfutil 			-- various general purpose utilities (e.g., command line parsing)
+<srcroot>/xmhf-libs/libtv_utpm  			-- micro software TPM library (still a work in progress)
+
+<srcroot>/xmhf-slabs/						-- houses XMHF framework modules
+
+<srcroot>/xmhf-slabs/shared					-- shared modules that are part of every other XMHF module
+
+<srcroot>/xmhf-slabs/hypapps				-- individual hypapp modules
+<srcroot>/xmhf-slabs/hypapps/xhhyperdep		-- hyper Data Execution Prevention (DEP) hypapp
+
+<srcroot>/xmhf-slabs/xmhf-core				-- XMHF core modules
+<srcroot>/xmhf-slabs/xmhf-core/include		-- XMHF core specific headers
+<srcroot>/xmhf-slabs/xmhf-core/xcprimeon	-- core initialization module
+<srcroot>/xmhf-slabs/xmhf-core/xcsmp		-- core SMP support module
+<srcroot>/xmhf-slabs/xmhf-core/xcexhub		-- core exception handling module
+<srcroot>/xmhf-slabs/xmhf-core/xcrichguest	-- core rich-guest support module
+<srcroot>/xmhf-slabs/xmhf-core/xcihub		-- core intercept handling module
+<srcroot>/xmhf-slabs/xmhf-core/xcapi		-- core API module
 
 
 5. Building:
@@ -54,33 +74,27 @@ The following demonstrates building the XMHF core and hyperdep hypapp
 	a) Building XMHF core: done while in <srcroot>
 
 		./autogen.sh
-		./configure
-		make
-		sudo make install-dev
-
-	If all went well <srcroot>/_objects/xmhf-x86.bin.gz will be created
-
- 
-    b) Building hyperdep hypapp: done while in <srcroot>/hypapps/hyperdep and after building the core as in a) above
-
-		make clean
+		./configure --with-target-cpu=x86 --with-target-container=vmx --with-target-platform=x86pc --with-xmhf-hypapps=xmhf-slabs/hypapps/xhhyperdep
 		make
 
-	If all went well <srcroot>/hypapps/hyperdep/hyperdep-x86.bin.gz will be created
+	If all went well <srcroot>/_objects/xmhf-<target triad>.bin.gz will be created
+	
+	<target triad> is the XMHF target arch. E.g., xmhf-x86-vmx-x86pc.bin.gz
+
 
  
 6. Installing and running the binaries:
 ---------------------------------------
 
-Refer to <srcroot>/xmhf/doc/hardware-requirements.md for XMHF target hardware requirements.
+Refer to <srcroot>/docs/hardware-requirements.md for XMHF target hardware requirements.
 
-Refer to <srcroot>/xmhf/doc/installing-xmhf.md for the base installation. Replace the section 
+Refer to <srcroot>/docs/installing-xmhf.md for the base installation. Replace the section 
 "GRUB entry to boot Linux" with the contents below:
 
 title  XMHF - Ubuntu 12.04 LTS
     rootnoverify (hd0,0)                        
-    kernel /xmhf-x86.bin.gz serial=115200,8n1,0x3f8
-    module /xmhfhypapp-x86.bin.gz
+    kernel /xmhf-x86-vmx-x86pc.bin.gz serial=115200,8n1,0x3f8
+    modulenounzip (hd0,0)+1                       
     modulenounzip (hd0,0)+1                       
     modulenounzip /4th_gen_i5_i7_SINIT_75.BIN
     
