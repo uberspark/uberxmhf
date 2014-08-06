@@ -50,23 +50,16 @@
 #ifndef __XCSMP_H__
 #define __XCSMP_H__
 
-#define	XMHF_SLAB_INITBS_FNXMHFRUNTIMEENTRY	0
-
 
 #ifndef __ASSEMBLY__
 
-void xmhf_runtime_entry(void);
-void xmhf_apihub_arch_initialize(void);
-#define xmhf_apihub_initialize	xmhf_apihub_arch_initialize
-void xcinitbs_arch_initialize_exception_handling(void);
+bool xcsmp_entry(void);
 
-//initialize SMP
-void xmhf_baseplatform_arch_smpinitialize(void);
-#define xmhf_baseplatform_smpinitialize xmhf_baseplatform_arch_smpinitialize
-
-//re-initialize DMA protections (if needed) for the runtime
-bool xmhf_dmaprot_arch_reinitialize(void);
-#define xmhf_dmaprot_reinitialize xmhf_dmaprot_arch_reinitialize
+//----------------------------------------------------------------------
+//ARCH. BACKENDS
+//----------------------------------------------------------------------
+bool xcsmp_arch_dmaprot_reinitialize(void);
+bool xcsmp_arch_smpinitialize(void);
 
 
 #endif //__ASSEMBLY__

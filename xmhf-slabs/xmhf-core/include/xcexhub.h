@@ -55,12 +55,15 @@
 #ifndef __XCEXHUB_H__
 #define __XCEXHUB_H__
 
-#define XMHF_SLAB_XCEXHUB_FNXCEXHUBINITIALIZE							0				
 
 #ifndef __ASSEMBLY__
 
-//arch_x86_idtdesc_t xcexhub_initialize(void);
 void xcexhub_initialize(void);
+
+//----------------------------------------------------------------------
+//ARCH. BACKENDS
+//----------------------------------------------------------------------
+void xcexhub_arch_initialize(void);
 
 
 #endif	//__ASSEMBLY__
