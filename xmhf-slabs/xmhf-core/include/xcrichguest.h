@@ -63,7 +63,7 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp);
 //----------------------------------------------------------------------
 void xcrichguest_arch_initialize(u32 partition_index);
 void xcrichguest_arch_setupguestOSstate(context_desc_t context_desc);
-
+struct regs xcrichguest_arch_handle_guestmemoryreporting(context_desc_t context_desc, struct regs r);
 
 #endif //__ASSEMBLY__
 
