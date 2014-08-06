@@ -44,55 +44,21 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// hyperdep hypapp main module
+// hello world hypapp main module
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
 #include <xmhf-core.h>
 #include <xmhf-debug.h>
 
-#include <xhhyperdep.h>
-
+#include <xhhelloworld.h>
 #include <xcapi.h>
 
-//#include <arch/x86/common/include/xc-x86.h>
-//#include <arch/x86/vmx/include/xc-x86vmx.h>
-
-#define HYPERDEP_ACTIVATEDEP			0xC0
-#define HYPERDEP_DEACTIVATEDEP			0xC1
-#define HYPERDEP_INITIALIZE				0xC2
-
-u32 hd_runtimephysbase=0;
-u32 hd_runtimesize=0;
-
+#define HELLOWORLD_PING					0xC0
 
 // hypapp initialization
 u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb){	
-	_XDPRINTF_("\nCPU %u: hyperDEP initializing", context_desc.cpu_desc.cpu_index);
-		
-	//store runtime base and size
-	hd_runtimephysbase = hypappenvb.runtimephysmembase;
-	hd_runtimesize = hypappenvb.runtimesize;
-	_XDPRINTF_("\n%s: XMHF runtime base=%08x, size=%08x", __FUNCTION__, hd_runtimephysbase, hd_runtimesize);
-
-	//apb->runtimephysmembase=0;	//write to core parameter area, should trigger a #PF
-	//*((u32 *)0x10000000) = 0; 	//write to core memory, should trigger a #PF
-	//{
-	//		typedef void (*testfun)(void);
-	//		testfun fun = (testfun)0x10000000;
-	//		fun();	//execute arbitrary code in core memory region, should trigger a #pf
-	//}
-
-	//{//trapmask API test
-	//	xc_hypapp_arch_param_t xc_hypapp_arch_param;
-	//	xc_hypapp_arch_param.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_TRAP_IO;
-	//	xc_hypapp_arch_param.params[0] = 0x2000;
-	//	xc_hypapp_arch_param.params[1] = 0x4;
-	//	xc_api_trapmask_set(context_desc, xc_hypapp_arch_param);
-	//	xc_api_trapmask_clear(context_desc, xc_hypapp_arch_param);
-	//}
-
-	_XDPRINTF_("\nCPU %u: hyperDEP initialized!", context_desc.cpu_desc.cpu_index);
+	_XDPRINTF_("\nCPU %u: helloworld initialized", context_desc.cpu_desc.cpu_index);
 	
 	return APP_INIT_SUCCESS;  //successful
 }
@@ -100,67 +66,21 @@ u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t h
 //----------------------------------------------------------------------
 // RUNTIME
 
-static void hd_activatedep(context_desc_t context_desc, u32 gpa){
-	u64 entry;
-	_XDPRINTF_("\n%s:%u originalprotection=%08x", __FUNCTION__, context_desc.cpu_desc.cpu_index, XMHF_SLAB_CALL(xc_api_hpt_getprot(context_desc, gpa)));
-	entry = XMHF_SLAB_CALL(xc_api_hpt_getentry(context_desc, gpa));
-	XMHF_SLAB_CALL(xc_api_hpt_setentry(context_desc, gpa, entry));
-	XMHF_SLAB_CALL(xc_api_hpt_setprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE) ));	   
-	XMHF_SLAB_CALL(xc_api_hpt_flushcaches(context_desc));
-	_XDPRINTF_("\nCPU(%02x): %s removed EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.cpu_index, __FUNCTION__, gpa);
-}
-
-//de-activate DEP protection
-static void hd_deactivatedep(context_desc_t context_desc, u32 gpa){
-	XMHF_SLAB_CALL(xc_api_hpt_setprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE) ));	   
-	XMHF_SLAB_CALL(xc_api_hpt_flushcaches_smp(context_desc));
-	_XDPRINTF_("\nCPU(%02x): %s added EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.cpu_index, __FUNCTION__, gpa);
-}
-
-static void hd_initialize(context_desc_t context_desc){
-	_XDPRINTF_("\n%s: nothing to do", __FUNCTION__);
-}
-
 
 u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param){
 	u32 status=APP_SUCCESS;
 	u32 call_id;
-	u32 gva, gpa;
 	
 	call_id= hypercall_id;
 
-	gva=(u32)hypercall_param;
-	
-	_XDPRINTF_("\nCPU(%02x): %s starting: call number=%x, gva=%x", context_desc.cpu_desc.cpu_index, __FUNCTION__, call_id, gva);
+	_XDPRINTF_("\nCPU(%02x): %s starting: call number=%x", context_desc.cpu_desc.cpu_index, __FUNCTION__, call_id);
 
 	switch(call_id){
-		case HYPERDEP_INITIALIZE:{
-			hd_initialize(context_desc);
+		case HELLOWORLD_PING:{
+			_XDPRINTF_("%s: helloworld ping!");
 		}
 		break;
 
-		case HYPERDEP_ACTIVATEDEP:{
-			gpa=(u32)XMHF_SLAB_CALL(xc_api_hpt_lvl2pagewalk(context_desc, gva));
-			if(gpa == 0xFFFFFFFFUL){
-				_XDPRINTF_("\nCPU(%02x): WARNING: unable to get translation for gva=%x, just returning", context_desc.cpu_desc.cpu_index, gva);
-				return status;
-			}		
-			_XDPRINTF_("\nCPU(%02x): translated gva=%x to gpa=%x", context_desc.cpu_desc.cpu_index, gva, gpa);
-			hd_activatedep(context_desc, gpa);
-		}
-		break;
-		
-		case HYPERDEP_DEACTIVATEDEP:{
-			gpa=(u32)XMHF_SLAB_CALL(xc_api_hpt_lvl2pagewalk(context_desc, gva));
-			if(gpa == 0xFFFFFFFFUL){
-				_XDPRINTF_("\nCPU(%02x): WARNING: unable to get translation for gva=%x, just returning", context_desc.cpu_desc.cpu_index, gva);
-				return status;
-			}		
-			_XDPRINTF_("\nCPU(%02x): translated gva=%x to gpa=%x", context_desc.cpu_desc.cpu_index, gva, gpa);
-			hd_deactivatedep(context_desc, gpa);
-		}
-		break;
-		
 		default:
 			_XDPRINTF_("\nCPU(0x%02x): unsupported hypercall (0x%08x)!!", 
 			  context_desc.cpu_desc.cpu_index, call_id);
@@ -184,7 +104,7 @@ void xmhf_hypapp_handleshutdown(context_desc_t context_desc){
 u32 xmhf_hypapp_handleintercept_hptfault(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code){
 	u32 status = APP_SUCCESS;
 
-	_XDPRINTF_("\nCPU(%02x): FATAL HWPGTBL violation (gva=%x, gpa=%x, code=%x): app tried to execute data page??", context_desc.cpu_desc.cpu_index, (u32)gva, (u32)gpa, (u32)error_code);
+	_XDPRINTF_("\nCPU(%02x): FATAL HWPGTBL violation (gva=%x, gpa=%x, code=%x): unhandled", context_desc.cpu_desc.cpu_index, (u32)gva, (u32)gpa, (u32)error_code);
 	HALT();
 	
 	return status;
@@ -198,7 +118,7 @@ u32 xmhf_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch
 }
 
 ////////
-XMHF_SLAB("hypapp-hyperdep")
+XMHF_SLAB("xhhelloworld")
 
 XMHF_SLAB_DEFINTERFACE(
 	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_initialization				,XMHF_SLAB_HYPAPP_HYPERDEP_FNINITIALIZATION							,	XMHF_SLAB_FN_RETTYPE_NORMAL)
