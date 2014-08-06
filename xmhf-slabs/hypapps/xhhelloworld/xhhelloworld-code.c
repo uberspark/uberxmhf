@@ -84,7 +84,7 @@ u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u
 		default:
 			_XDPRINTF_("\nCPU(0x%02x): unsupported hypercall (0x%08x)!!", 
 			  context_desc.cpu_desc.cpu_index, call_id);
-			status=APP_ERROR;
+			//status=APP_ERROR;
 			break;
 	}
 
