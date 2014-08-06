@@ -50,8 +50,6 @@
 #ifndef __XCSMP_H__
 #define __XCSMP_H__
 
-#define	XMHF_SLAB_INITBS_FNXMHFRUNTIMEENTRY	0
-
 
 #ifndef __ASSEMBLY__
 

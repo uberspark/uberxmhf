@@ -51,8 +51,6 @@
 #define __XCIHUB_H__
 
 
-#define	XMHF_SLAB_IHUB_FNIHUBENTRY	0
-
 #ifndef __ASSEMBLY__
 
 
@@ -61,19 +59,6 @@
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
 void xcihub_arch_entry(void);
-
-//----------------------------------------------------------------------
-//rich guest memory functions
-
-bool xmhf_smpguest_arch_readu16(context_desc_t context_desc, const void *guestaddress, u16 *valueptr);
-bool xmhf_smpguest_arch_writeu16(context_desc_t context_desc, const void *guestaddress, u16 value);
-bool xmhf_smpguest_arch_memcpyfrom(context_desc_t context_desc, void *buffer, const void *guestaddress, size_t numbytes);
-bool xmhf_smpguest_arch_memcpyto(context_desc_t context_desc, void *guestaddress, const void *buffer, size_t numbytes);
-
-#define xmhf_smpguest_readu16	xmhf_smpguest_arch_readu16
-#define xmhf_smpguest_writeu16 xmhf_smpguest_arch_writeu16
-#define xmhf_smpguest_memcpyfrom xmhf_smpguest_arch_memcpyfrom
-#define xmhf_smpguest_memcpyto xmhf_smpguest_arch_memcpyto
 
 
 #endif //__ASSEMBLY__
