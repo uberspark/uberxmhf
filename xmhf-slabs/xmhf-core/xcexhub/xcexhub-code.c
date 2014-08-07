@@ -63,3 +63,6 @@ void xcexhub_initialize(void){
 XMHF_SLAB("xcexhub")
 
 
+XMHF_SLAB_DEFINTERFACE(
+	XMHF_SLAB_DEFEXPORTFN(xcexhub_initialize				,XMHF_SLAB_XCEXHUB_FNXCEXHUBINITIALIZE				,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+)

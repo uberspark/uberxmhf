@@ -200,7 +200,7 @@ u32 xmhf_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch
 }
 
 ////////
-XMHF_SLAB("hypapp-hyperdep")
+XMHF_SLAB("xhhyperdep")
 
 XMHF_SLAB_DEFINTERFACE(
 	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_initialization				,XMHF_SLAB_HYPAPP_HYPERDEP_FNINITIALIZATION							,	XMHF_SLAB_FN_RETTYPE_NORMAL)

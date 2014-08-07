@@ -163,3 +163,6 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
 ///////
 XMHF_SLAB("xcrichguest")
 
+XMHF_SLAB_DEFINTERFACE(
+	XMHF_SLAB_DEFEXPORTFN(xcrichguest_entry, XMHF_SLAB_INIT_FNINITENTRY, XMHF_SLAB_FN_RETTYPE_NORMAL)
+)

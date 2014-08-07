@@ -261,7 +261,7 @@ void xc_api_platform_shutdown(context_desc_t context_desc){
 
 
 ///////
-XMHF_SLAB("coreapi")
+XMHF_SLAB("xcapi")
 
 XMHF_SLAB_DEFINTERFACE(
 

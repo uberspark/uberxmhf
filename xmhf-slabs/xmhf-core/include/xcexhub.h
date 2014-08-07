@@ -55,6 +55,7 @@
 #ifndef __XCEXHUB_H__
 #define __XCEXHUB_H__
 
+#define 	XMHF_SLAB_XCEXHUB_FNXCEXHUBINITIALIZE	0
 
 #ifndef __ASSEMBLY__
 
