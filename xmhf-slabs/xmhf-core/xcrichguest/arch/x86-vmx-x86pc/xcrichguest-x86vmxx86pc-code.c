@@ -51,14 +51,10 @@
 #include <xmhf-core.h>
 #include <xmhf-debug.h>
 
-#include <xcsmp.h>
-<<<<<<< HEAD:xmhf-slabs/xmhf-core/xcrichguest/arch/x86-vmx-x86pc/xcrichguest-x86vmx-code.c
+
+#include <xcrichguest.h>
 
 #define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_INIT_INDEX
-||||||| merged common ancestors
-
-=======
->>>>>>> develop:xmhf-slabs/xmhf-core/xcrichguest/arch/x86-vmx-x86pc/xcrichguest-x86vmxx86pc-code.c
 #include <xcapi.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
 

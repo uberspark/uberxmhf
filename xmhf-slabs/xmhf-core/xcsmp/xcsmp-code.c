@@ -60,33 +60,7 @@
 #include <xcrichguest.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
 
-<<<<<<< HEAD
-void xmhf_runtime_entry(void){
-
-	//setup debugging	
-	//xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
-	//_XDPRINTF_("\nxmhf-core: starting...");
-
-   
-  	//initialize basic platform elements
-	//xmhf_baseplatform_initialize();
-
-	//setup XMHF exception handler component
-	//xmhf_xcphandler_initialize();
-
-	#if defined (__DMAP__)
-	xmhf_dmaprot_reinitialize();
-	#endif
-
-	//initialize richguest
-	//xmhf_richguest_initialize();
-
-
-
-
-	//setup slab page tables and turn on paging
-	//xmhf_apihub_initialize();
-
+bool xcsmp_entry(void){
 
 /*	//[test] testslab1
 	{
@@ -172,59 +146,7 @@ void xmhf_runtime_entry(void){
 	HALT();
 */
 
-	_XDPRINTF_("proceeding to initialize exception handling...\n");
-	//setup platform exception handling
-	xcinitbs_arch_initialize_exception_handling();
-	_XDPRINTF_("exception handling initialized.\n");
 
-
-
-	//_XDPRINTF_("\nXMHF Tester Finished!\n\n");
-	//HALT();
-
-	//initialize base platform with SMP 
-	xmhf_baseplatform_smpinitialize();
-
-	_XDPRINTF_("\nRuntime: We should NEVER get here!");
-	HALT_ON_ERRORCOND(0);
-||||||| merged common ancestors
-void xmhf_runtime_entry(void){
-
-	//setup debugging	
-	//xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
-	//_XDPRINTF_("\nxmhf-core: starting...");
-
-   
-  	//initialize basic platform elements
-	//xmhf_baseplatform_initialize();
-
-	//setup XMHF exception handler component
-	//xmhf_xcphandler_initialize();
-
-	#if defined (__DMAP__)
-	xmhf_dmaprot_reinitialize();
-	#endif
-
-	//initialize richguest
-	//xmhf_richguest_initialize();
-
-
-	_XDPRINTF_("proceeding to initialize exception handling...\n");
-	//setup platform exception handling
-	xcinitbs_arch_initialize_exception_handling();
-	_XDPRINTF_("exception handling initialized.\n");
-
-
-	//_XDPRINTF_("\nXMHF Tester Finished!\n\n");
-	//HALT();
-
-	//initialize base platform with SMP 
-	xmhf_baseplatform_smpinitialize();
-
-	_XDPRINTF_("\nRuntime: We should NEVER get here!");
-	HALT_ON_ERRORCOND(0);
-=======
-bool xcsmp_entry(void){
 
 #if defined (__DMAP__)
 	xcsmp_arch_dmaprot_reinitialize();
@@ -239,7 +161,6 @@ bool xcsmp_entry(void){
 		HALT();
 	}
 	
->>>>>>> develop
 }
 
 ///////
