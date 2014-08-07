@@ -50,6 +50,7 @@
 #ifndef __XCIHUB_H__
 #define __XCIHUB_H__
 
+#define	XMHF_SLAB_IHUB_FNIHUBENTRY	0
 
 #ifndef __ASSEMBLY__
 

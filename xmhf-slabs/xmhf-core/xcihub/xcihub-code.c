@@ -53,6 +53,7 @@
 #undef __XMHF_SLAB_CALLER_INDEX__
 
 //////////
-XMHF_SLAB("ihub")
+XMHF_SLAB("xcihub")
 
 
+XMHF_SLAB_DEFINTERFACEBARE(xcihub_arch_entry)
