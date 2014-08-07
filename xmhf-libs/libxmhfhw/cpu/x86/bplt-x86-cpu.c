@@ -182,7 +182,7 @@ u32 xmhf_baseplatform_arch_getcpuvendor(void){
 
 
 //initialize CPU state
-void xmhf_baseplatform_arch_x86_cpu_initialize(void){
+void xmhfhw_cpu_initialize(void){
 	//u32 cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
 	u32 cpu_vendor;
 
@@ -255,7 +255,7 @@ void xmhf_baseplatform_arch_x86_cpu_initialize(void){
 
 
 //initialize paging
-void xmhf_baseplatform_arch_x86_initialize_paging(u32 pgtblbase){
+void xmhfhw_cpu_x86_initialize_paging(u32 pgtblbase){
 	
 	asm volatile(
 		"movl	%%cr4, %%eax \r\n"

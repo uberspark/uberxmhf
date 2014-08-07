@@ -389,7 +389,7 @@ tb_error_t txt_launch_environment(void *sinit_ptr, size_t sinit_size,
 
     /* save MTRRs before we alter them for SINIT launch */
     os_mle_data = get_os_mle_data_start(txt_heap);
-    save_mtrrs(&(os_mle_data->saved_mtrr_state));
+    xmhfhw_cpu_x86_save_mtrrs(&(os_mle_data->saved_mtrr_state));
 
     /* set MTRRs properly for AC module (SINIT) */
     if ( !set_mtrrs_for_acmod(sinit) )

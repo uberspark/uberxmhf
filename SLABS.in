@@ -6,5 +6,5 @@ xmhf-slabs/xmhf-core/xcrichguest
 xmhf-slabs/xmhf-core/xcihub
 xmhf-slabs/xmhf-core/xcapi
 xmhf-slabs/xmhf-core/xcexhub
-xmhf-slabs/hypapps/xhhyperdep
+@XMHF_HYPAPPS@
 

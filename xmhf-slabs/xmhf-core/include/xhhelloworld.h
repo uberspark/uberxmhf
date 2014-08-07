@@ -44,15 +44,28 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF core initialization boostrap (init-bs) entry module
-// author: amit vasudevan (amitvasudevan@acm.org)
 
-//---includes-------------------------------------------------------------------
-#include <xmhf.h>
-#include <xmhf-core.h>
-#include <xmhf-debug.h>
+/*
+ * 
+ *  helloworld hypapp slab decls.
+ * 
+ *  author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
-#include <xcsmp.h>
+#ifndef __XHHELLOWORLD_H__
+#define __XHHELLOWORLD_H__
 
-static u8 _init_stack[MAX_PLATFORM_CPUSTACK_SIZE] __attribute__(( section(".stack") ));
 
+#ifndef __ASSEMBLY__
+
+u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb);
+u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param);
+u32 xmhf_hypapp_handleintercept_hptfault(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code);
+u32 xmhf_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch_param_t xc_hypapp_arch_param);
+void xmhf_hypapp_handleshutdown(context_desc_t context_desc);													
+
+
+#endif	//__ASSEMBLY__
+
+
+#endif //__XHHELLOWORLD_H__

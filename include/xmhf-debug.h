@@ -67,7 +67,7 @@
 static inline void xmhf_debug_init(char *params){
 	(void)params;
 #ifdef __DEBUG_SERIAL__
-  xmhf_hw_platform_serialinit(params);
+  xmhfhw_platform_serial_init(params);
 #endif
 }
 

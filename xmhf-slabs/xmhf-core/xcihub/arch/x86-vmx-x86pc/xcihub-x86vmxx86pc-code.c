@@ -55,12 +55,9 @@
 #define __XMHF_SLAB_CALLER_INDEX__ XMHF_SLAB_IHUB_INDEX
 #include <xcapi.h>
 #include <xhhyperdep.h>
+#include <xcrichguest.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
 
-
-/* originally in xc-ihub-x86vmx.c */
-
-extern struct regs xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t context_desc, struct regs r);
 
 
 static u32 _vmx_getregval(u32 gpr, struct regs r){
@@ -322,7 +319,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 				HALT_ON_ERRORCOND( !(vmmcall_controlregs.cr0 & CR0_PE)  ||
 					( (vmmcall_controlregs.cr0 & CR0_PE) && (vmmcall_controlregs.cr0 & CR0_PG) &&
 						(vmmcall_activity.rflags & EFLAGS_VM)  ) );
-				x86gprs = xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc, x86gprs);
+				x86gprs = XMHF_SLAB_CALL(xcrichguest_arch_handle_guestmemoryreporting(context_desc, x86gprs));
 				_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 
 				vmmcall_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
@@ -574,40 +571,6 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
 
 
-//---hvm_intercept_handler------------------------------------------------------
-void xmhf_parteventhub_arch_x86vmx_entry(void) __attribute__((naked)){
-		
-		asm volatile (
-			"pushal\r\n"
-			"movl %0, %%eax \r\n"				//eax = VMCS_INFO_VMEXIT_REASON
-			"vmread %%eax, %%ebx \r\n"			//ebx = VMCS[VMCS_INFO_VMEXIT_REASON]
-			"cmpl %1, %%ebx \r\n"				//if (ebx == VMX_VMEXIT_EXCEPTION)
-			"jne normal \r\n"					//nope, so just do normal eventhub processing
-			"movl %2, %%eax \r\n"				//eax = VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION
-			"vmread %%eax, %%ebx \r\n"			//ebx = VMCS[VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION]
-			"andl %3, %%ebx \r\n"				//ebx &= INTR_INFO_VECTOR_MASK
-			"cmpl %4, %%ebx \r\n"				//if (ebx == 0x2)
-			"jne normal \r\n"					//nope, so just do normal eventhub processing
-			"int $0x02 \r\n"					//NMI exception intercept, so trigger NMI handler
-			"jmp exithub \r\n"					//skip over normal event hub processing
-			"normal: \r\n"						//normal event hub processing setup
-			"movl %%esp, %%eax\r\n"
-			"pushl %%eax\r\n"
-			"call xmhf_partition_eventhub_arch_x86vmx\r\n"
-			"addl $0x04, %%esp\r\n"
-			"exithub: \r\n"						//event hub epilogue to resume partition
-			"popal\r\n"
-			"vmresume\r\n"
-			"int $0x03\r\n"
-			"hlt\r\n"
-			: //no outputs
-			: "i" (VMCS_INFO_VMEXIT_REASON), "i" (VMX_VMEXIT_EXCEPTION), "i" (VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION), "i" (INTR_INFO_VECTOR_MASK), "i" (0x2)
-			: //no clobber
-		);
-
-}
-
-
 //void xmhf_partition_eventhub_arch_x86vmx(xc_cpu_t *xc_cpu, struct regs *cpugprs){
 void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 	static u32 _xc_partition_eventhub_lock = 1; 
@@ -654,153 +617,41 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 }
 
 
-/* originally in xc-ihub-richguest-x86vmx.c */
+//==================================================================================
 
-//handle guest memory reporting (via INT 15h redirection)
-struct regs xmhf_smpguest_arch_x86vmx_handle_guestmemoryreporting(context_desc_t context_desc, struct regs r){
-	u16 cs, ip;
-	u16 guest_flags;
-	xc_hypapp_arch_param_t ap;
-	xc_hypapp_arch_param_x86vmx_cpustate_desc_t desc;
-	xc_hypapp_arch_param_x86vmx_cpustate_activity_t activity;
-	
-	ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC));
-	desc = ap.param.desc;
-	ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
-	activity = ap.param.activity;
-
-	//if E820 service then...
-	if((u16)r.eax == 0xE820){
-		//AX=0xE820, EBX=continuation value, 0 for first call
-		//ES:DI pointer to buffer, ECX=buffer size, EDX='SMAP'
-		//return value, CF=0 indicated no error, EAX='SMAP'
-		//ES:DI left untouched, ECX=size returned, EBX=next continuation value
-		//EBX=0 if last descriptor
-		_XDPRINTF_("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", context_desc.cpu_desc.cpu_index, 
-		(u16)r.eax, r.edx, r.ebx, r.ecx, (u16)desc.es.selector, (u16)r.edi);
+//---hvm_intercept_handler------------------------------------------------------
+void xcihub_arch_entry(void) __attribute__((naked)){
 		
-		if( (r.edx == 0x534D4150UL) && (r.ebx < xcbootinfo->memmapinfo_numentries) ){
-			
-			//copy the E820 descriptor and return its size
-			if(!xmhf_smpguest_memcpyto(context_desc, (const void *)((u32)(desc.es.base+(u16)r.edi)), (void *)&xcbootinfo->memmapinfo_buffer[r.ebx], sizeof(GRUBE820)) ){
-				_XDPRINTF_("\n%s: Error in copying e820 descriptor to guest. Halting!", __FUNCTION__);
-				HALT();
-			}	
-				
-			r.ecx=20;
+		asm volatile (
+			"pushal\r\n"
+			"movl %0, %%eax \r\n"				//eax = VMCS_INFO_VMEXIT_REASON
+			"vmread %%eax, %%ebx \r\n"			//ebx = VMCS[VMCS_INFO_VMEXIT_REASON]
+			"cmpl %1, %%ebx \r\n"				//if (ebx == VMX_VMEXIT_EXCEPTION)
+			"jne normal \r\n"					//nope, so just do normal eventhub processing
+			"movl %2, %%eax \r\n"				//eax = VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION
+			"vmread %%eax, %%ebx \r\n"			//ebx = VMCS[VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION]
+			"andl %3, %%ebx \r\n"				//ebx &= INTR_INFO_VECTOR_MASK
+			"cmpl %4, %%ebx \r\n"				//if (ebx == 0x2)
+			"jne normal \r\n"					//nope, so just do normal eventhub processing
+			"int $0x02 \r\n"					//NMI exception intercept, so trigger NMI handler
+			"jmp exithub \r\n"					//skip over normal event hub processing
+			"normal: \r\n"						//normal event hub processing setup
+			"movl %%esp, %%eax\r\n"
+			"pushl %%eax\r\n"
+			"call xmhf_partition_eventhub_arch_x86vmx\r\n"
+			"addl $0x04, %%esp\r\n"
+			"exithub: \r\n"						//event hub epilogue to resume partition
+			"popal\r\n"
+			"vmresume\r\n"
+			"int $0x03\r\n"
+			"hlt\r\n"
+			: //no outputs
+			: "i" (VMCS_INFO_VMEXIT_REASON), "i" (VMX_VMEXIT_EXCEPTION), "i" (VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION), "i" (INTR_INFO_VECTOR_MASK), "i" (0x2)
+			: //no clobber
+		);
 
-			//set EAX to 'SMAP' as required by the service call				
-			r.eax=r.edx;
-
-			//we need to update carry flag in the guest EFLAGS register
-			//however since INT 15 would have pushed the guest FLAGS on stack
-			//we cannot simply reflect the change by modifying vmcb->rflags
-			//instead we need to make the change to the pushed FLAGS register on
-			//the guest stack. the real-mode IRET frame looks like the following 
-			//when viewed at top of stack
-			//guest_ip		(16-bits)
-			//guest_cs		(16-bits)
-			//guest_flags (16-bits)
-			//...
-		
-			//grab guest eflags on guest stack
-			if(!xmhf_smpguest_readu16(context_desc, (const void *)((u32)desc.ss.base + (u16)r.esp + 0x4), &guest_flags)){
-				_XDPRINTF_("\n%s: Error in reading guest_flags. Halting!", __FUNCTION__);
-				HALT();
-			}
-	
-			//increment e820 descriptor continuation value
-			r.ebx=r.ebx+1;
-					
-			if(r.ebx > (xcbootinfo->memmapinfo_numentries-1) ){
-				//we have reached the last record, so set CF and make EBX=0
-				r.ebx=0;
-				guest_flags |= (u16)EFLAGS_CF;
-			}else{
-				//we still have more records, so clear CF
-				guest_flags &= ~(u16)EFLAGS_CF;
-			}
-
-			//write updated eflags in guest stack
-			if(!xmhf_smpguest_writeu16(context_desc, (const void *)((u32)desc.ss.base + (u16)r.esp + 0x4), guest_flags)){
-				_XDPRINTF_("\n%s: Error in updating guest_flags. Halting!", __FUNCTION__);
-				HALT();
-			}
-			  
-			
-		}else{	//invalid state specified during INT 15 E820, halt
-				_XDPRINTF_("\nCPU(0x%02x): INT15 (E820), invalid state specified by guest. Halting!", context_desc.cpu_desc.cpu_index);
-				HALT();
-		}
-		
-		//update RIP to execute the IRET following the VMCALL instruction
-		//effectively returning from the INT 15 call made by the guest
-		activity.rip+=3;
-		ap.param.activity = activity;
-		ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
-		XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
-	
-		return r;
-	} //E820 service
-	
-	//ok, this is some other INT 15h service, so simply chain to the original
-	//INT 15h handler
-
-	//read the original INT 15h handler which is stored right after the VMCALL instruction
-	if(!xmhf_smpguest_readu16(context_desc, 0x4AC+0x4, &ip) || !xmhf_smpguest_readu16(context_desc, 0x4AC+0x6, &cs)){
-		_XDPRINTF_("\n%s: Error in reading original INT 15h handler. Halting!", __FUNCTION__);
-		HALT();
-	}
-	
-	//update VMCS with the CS and IP and let go
-	activity.rip = ip;
-	ap.param.activity = activity;
-	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
-	XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
-	desc.cs.base = (cs *16);
-	desc.cs.selector = cs;
-	ap.param.desc = desc;
-	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC;
-	XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
-	
-	return r;
 }
 
-
-
-bool xmhf_smpguest_arch_readu16(context_desc_t context_desc, const void *guestaddress, u16 *valueptr){
-		u16 *tmp = (u16 *)XMHF_SLAB_CALL(xc_api_hpt_lvl2pagewalk(context_desc, guestaddress));
-		if((u32)tmp == 0xFFFFFFFFUL || valueptr == NULL)
-			return false;
-		*valueptr = xmhfhw_sysmemaccess_readu16((u32)tmp);
-		return true;
-}
-
-bool xmhf_smpguest_arch_writeu16(context_desc_t context_desc, const void *guestaddress, u16 value){
-		u16 *tmp = (u16 *)XMHF_SLAB_CALL(xc_api_hpt_lvl2pagewalk(context_desc, guestaddress));
-		if((u32)tmp == 0xFFFFFFFFUL || 
-			( ((u32)tmp >= xcbootinfo->physmem_base) && ((u32)tmp <= (xcbootinfo->physmem_base+xcbootinfo->size)) ) 
-		  )
-			return false;
-		xmhfhw_sysmemaccess_writeu16((u32)tmp, value);
-		return true;
-}
-
-bool xmhf_smpguest_arch_memcpyfrom(context_desc_t context_desc, void *buffer, const void *guestaddress, size_t numbytes){
-	u8 *guestbuffer = (u8 *)XMHF_SLAB_CALL(xc_api_hpt_lvl2pagewalk(context_desc, guestaddress));
-	if((u32)guestbuffer == 0xFFFFFFFFUL)
-		return false;
-	xmhfhw_sysmemaccess_copy(buffer, gpa2hva(guestbuffer), numbytes);
-}
-
-bool xmhf_smpguest_arch_memcpyto(context_desc_t context_desc, void *guestaddress, const void *buffer, size_t numbytes){
-	u8 *guestbuffer = (u8 *)XMHF_SLAB_CALL(xc_api_hpt_lvl2pagewalk(context_desc, guestaddress));
-	if((u32)guestbuffer == 0xFFFFFFFFUL || 
-		( ((u32)guestbuffer >= xcbootinfo->physmem_base) && ((u32)guestbuffer <= (xcbootinfo->physmem_base+xcbootinfo->size)) ) 
-	  )
-		return false;
-	xmhfhw_sysmemaccess_copy(gpa2hva(guestbuffer), buffer, numbytes);
-}
 
 
 
