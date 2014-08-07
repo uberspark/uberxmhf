@@ -54,7 +54,7 @@
 
 #define __XMHF_SLAB_CALLER_INDEX__ XMHF_SLAB_IHUB_INDEX
 #include <xcapi.h>
-#include <xhhyperdep.h>
+#include <xhhyperdep.h>	//TODO: remove this hardcoded hypapp dependency
 #include <xcrichguest.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
 

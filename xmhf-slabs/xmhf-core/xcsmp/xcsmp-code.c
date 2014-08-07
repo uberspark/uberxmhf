@@ -58,6 +58,7 @@
 #include <testslab1.h>
 #include <testslab2.h>
 #include <xcrichguest.h>
+#include <xcexhub.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
 
 bool xcsmp_entry(void){
