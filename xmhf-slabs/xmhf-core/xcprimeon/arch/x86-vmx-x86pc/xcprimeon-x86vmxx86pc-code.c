@@ -606,7 +606,6 @@ void xcprimeon_arch_earlydmaprot(u32 membase, u32 size){
 }
 
 // initialization function for the core API interface
-<<<<<<< HEAD:xmhf-slabs/xmhf-core/xcprimeon/arch/x86-vmx-x86pc/xcprimeon-x86-code.c
 void xcprimeon_initialize_slab_tables(void){
 
 #ifndef __XMHF_VERIFICATION__

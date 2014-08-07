@@ -129,7 +129,7 @@ void xcprimeon_entry(void){
 
 	//initialize slab page tables
 	xcprimeon_initialize_slab_tables();
-=		
+		
 	//proceed with SMP initialization
 	if ( XMHF_SLAB_CALL(xcsmp_entry()) ){
 		//we should never get here

@@ -51,12 +51,14 @@
 #define __XCRICHGUEST_H__
 
 #define	XMHF_SLAB_INIT_FNINITENTRY	0
+#define	XMHF_SLAB_INIT_FNGUESTMEMORYREPORTING	1
 
 #ifndef __ASSEMBLY__
 
 #ifdef __XMHF_SLAB_CALLER_INDEX__ 
 
-XMHF_SLAB_DEFIMPORTFN(void, init_entry, (u32 cpuid, bool is_bsp), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_INIT_INDEX, XMHF_SLAB_INIT_FNINITENTRY, (sizeof(u32)+sizeof(bool)), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
+XMHF_SLAB_DEFIMPORTFN(bool, xcrichguest_entry, (u32 cpuid, bool is_bsp), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_INIT_INDEX, XMHF_SLAB_INIT_FNINITENTRY, (sizeof(u32)+sizeof(bool)), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
+XMHF_SLAB_DEFIMPORTFN(struct regs, xcrichguest_arch_handle_guestmemoryreporting, (context_desc_t context_desc, struct regs r), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_INIT_INDEX, XMHF_SLAB_INIT_FNGUESTMEMORYREPORTING, (sizeof(context_desc_t)+sizeof(struct regs)+sizeof(u32)), (sizeof(struct regs)), XMHF_SLAB_FN_RETTYPE_AGGREGATE))
 
 #else 	//!__XMHF_SLAB_CALLER_INDEX__
 
