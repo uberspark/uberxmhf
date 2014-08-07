@@ -56,6 +56,7 @@
 
 #define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_INIT_INDEX
 #include <xcapi.h>
+#include <xhhyperdep.h>	//TODO: remove this hardcoded hypapp dependency
 #undef __XMHF_SLAB_CALLER_INDEX__
 
 //add given cpu to the rich guest partition
